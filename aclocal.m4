@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2001-07-21
+dnl Updated   : 2001-08-01
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2001 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -1301,10 +1301,10 @@ test $cf_cv_have_term_h = yes && AC_DEFINE(HAVE_TERM_H)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Look for a Bourne-shell compatible program from a list that we know about:
-dnl	ash	Almquist Shell (sh based; NetBSD)
+dnl	ash	Almquist Shell (sh based)
 dnl	bash	Bourne Again Shell (sh, ksh based)
-dnl	jsh	Job Control Shell (sh based; Solaris)
-dnl	keysh 	Key Shell (ksh based; HP-UX)
+dnl	jsh	Job Control Bourne Shell (sh based)
+dnl	keysh 	Key Shell (ksh based)
 dnl	ksh	Korn Shell (sh based)
 dnl	pdksh	Public-domain ksh
 dnl	sh	Bourne Shell or POSIX Shell
@@ -1314,15 +1314,15 @@ AC_DEFUN([CF_DEFAULT_SHELL],
 AC_MSG_CHECKING(for the default shell program)
 cf_shell_progs="ifelse($1,,sh,[$1])"
 if test -z "$cf_shell_progs" ; then
-	cf_shell_progs="sh ksh bash zsh pdksh ash jsh keysh"
-	# TIN preferred default shell for BSD systems is csh.  Others are sh.
+	cf_shell_progs="sh ksh bash zsh pdksh jsh keysh ash"
+	# TIN preferred default shell for BSD systems is csh. Others are sh.
 	AC_TRY_COMPILE([
 #include <sys/params.h>],[
 #if (defined(BSD) && (BSD >= 199103))
 #else
 make an error
 #endif
-],[$cf_shell_progs="csh $cf_shell_progs"])
+],[$cf_shell_progs="csh tcsh $cf_shell_progs"])
 fi
 CF_MSG_LOG(paths of shell programs: $cf_shell_progs)
 if test -f /etc/shells ; then
@@ -1332,11 +1332,18 @@ if test -f /etc/shells ; then
 		cf_path=`egrep '/'$cf_prog'$' /etc/shells 2>/dev/null`
 		if test -n "$cf_path"
 		then
-			if test -f "$cf_path"
-			then
-				DEFAULT_SHELL="$cf_path"
-				break
-			fi
+			for cf_shell in $cf_path
+			do
+				if test -f "$cf_shell"
+				then
+					DEFAULT_SHELL="$cf_shell"
+					break
+				fi
+			done
+		fi
+		if test -n "$DEFAULT_SHELL"
+		then
+			break
 		fi
 	done
 	AC_MSG_RESULT($DEFAULT_SHELL)
@@ -1344,7 +1351,7 @@ else
 	CF_MSG_LOG($PATH)
 AC_PATH_PROGS(DEFAULT_SHELL,
 	$cf_shell_progs,,
-	$PATH:/bin:/usr/bin:/usr/xpg4/bin:/usr/local/bin)
+	$PATH:/bin:/usr/bin:/usr/xpg4/bin:/bin/posix:/usr/bin/posix:/usr/old/bin:/usr/local/bin)
 fi
 if test -z "$DEFAULT_SHELL" ; then
 	AC_MSG_WARN(

@@ -97,7 +97,7 @@ info_message (
  */
 void
 wait_message (
-	int delay,
+	int sdelay,
 	const char *fmt,
 	...)
 {
@@ -119,7 +119,7 @@ wait_message (
 	cursoron ();
 	my_flush();
 
-	(void) sleep(delay);
+	(void) sleep(sdelay);
 /*	clear_message(); would be nice, but tin doesn't expect this yet */
 	va_end(ap);
 }

@@ -124,7 +124,7 @@ group_right (
 		else {
 			int n = next_unread ((int) base[grpmenu.curr]);
 
-			if (n >= 0)
+			if (grpmenu.curr == which_thread(n) && n >= 0)
 				return enter_pager (n, TRUE);
 		}
 	}
@@ -303,7 +303,7 @@ group_page (
 			case iKeyGroupReadBasenote:
 			case iKeyGroupReadBasenote2:	/* read current basenote */
 				if (grpmenu.curr >= 0)
-					ret_code = enter_pager ((int) base[grpmenu.curr], FALSE/*TRUE*/);
+					ret_code = enter_pager ((int) base[grpmenu.curr], FALSE /*TRUE*/);
 				else
 					info_message(_(txt_no_arts));
 				break;
@@ -916,7 +916,7 @@ group_page (
 
 	art_close (&pgart);				/* Close any open art */
 
-	return (ret_code);
+	return ret_code;
 }
 
 
@@ -1254,7 +1254,7 @@ bld_sline (
 	if (CURR_GROUP.attribute->show_author != SHOW_FROM_NONE)
 		get_author (FALSE, &arts[j], from, len_from);
 
-	strncpy(arts_sub, arts[j].subject, len_subj + 12);
+	strncpy(arts_sub, arts[j].subject, len_subj + 12);	/* +12? this should be -12, shouldn't it? */
 	arts_sub[len_subj - 12 + 1] = '\0';
 
 #ifndef USE_CURSES
@@ -1471,7 +1471,7 @@ group_catchup(
 	int ch)
 {
 	char buf[LEN];
-	int yn = 1;
+	int pyn = 1;
 
 	if (num_of_tagged_arts && prompt_yn (cLINES, _(txt_catchup_despite_tags), TRUE) != 1)
 		return 0;
@@ -1479,22 +1479,22 @@ group_catchup(
 	/* FIXME: -> lang.c */
 	snprintf(buf, sizeof(buf) - 1, _(txt_mark_arts_read), (ch == iKeyGroupCatchupNextUnread) ? _(" and enter next unread group") : "");
 
-	if (!CURR_GROUP.newsrc.num_unread || !tinrc.confirm_action || (yn = prompt_yn (cLINES, buf, TRUE)) == 1)
+	if (!CURR_GROUP.newsrc.num_unread || !tinrc.confirm_action || (pyn = prompt_yn (cLINES, buf, TRUE)) == 1)
 		grp_mark_read (&CURR_GROUP, arts);
 
 	switch (ch) {
 		case iKeyGroupCatchup:				/* 'c' */
-			if (yn == 1)
+			if (pyn == 1)
 				return GRP_NEXT;
 			break;
 
 		case iKeyGroupCatchupNextUnread:	/* 'C' */
-			if (yn == 1)
+			if (pyn == 1)
 				return GRP_NEXTUNREAD;
 			break;
 
 		case iKeyCatchupLeft:				/* <- group catchup on exit */
-			switch (yn) {
+			switch (pyn) {
 				case -1:					/* ESCAPE - do nothing */
 					break;
 

@@ -1084,7 +1084,7 @@ read_nov_file (
 	TIN_FCLOSE (fp);
 
 	if (tin_errno)
-		return(-1);
+		return -1;
 
 	return top_art;
 }
@@ -1161,7 +1161,8 @@ write_nov_file (
 			if (article->thread != ART_EXPIRED && article->artnum >= group->xmin) {
 				fprintf (fp, "%ld\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
 					article->artnum,
-					article->subject,
+					tinrc.post_8bit_header ? article->subject : rfc1522_encode(article->subject, FALSE),
+/*					rfc1522_encode(article->subject, FALSE), */
 					print_from (article),
 					print_date (article->date),
 					(article->msgid ? article->msgid : ""),
@@ -1636,7 +1637,7 @@ print_from (
 	*from = '\0';
 
 	if (article->name != (char *) 0)
-		snprintf (from, sizeof(from) - 1, "%s <%s>", rfc1522_encode(article->name, FALSE), article->from);
+		snprintf (from, sizeof(from) - 1, "%s <%s>", tinrc.post_8bit_header ? article->name : rfc1522_encode(article->name, FALSE), article->from);
 	else
 		STRCPY (from, article->from);
 

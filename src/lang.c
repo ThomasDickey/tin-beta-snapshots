@@ -428,8 +428,8 @@ Articles, threads, tagged articles or articles matching a pattern can be mailed\
 ('m' command), printed ('o' command), saved ('s' command), piped ('|' command).\n\
 Use  the 'w' command  to post a  news article,  the 'f'/'F' commands  to post a\n\
 follow-up to  an existing  news article  and the 'r'/'R' commands  to reply via\n\
-mail to an existing news article author.  The 'M' command allows the operation\n\
-of tin to be configured via a menu.\n\n\
+mail to an  existing news article author.  The 'M' command allows the operation\n\
+of %s to be configured via a menu.\n\n\
 For more information read the manual page, README, INSTALL, TODO and FTP files.\n\
 Please send bug-reports/comments to %s with the 'R' command.\n");
 constext txt_invalid_from[] = N_("Invalid  From: %s  line. Read the INSTALL file again.");
@@ -837,6 +837,20 @@ constext *txt_kill_level_type[] = {
 		N_("Kill all arts & show with K"),
 		N_("Kill all arts and never show")
 };
+
+#ifdef CHARSET_CONVERSION
+constext *txt_mime_charsets[] = {
+	"US-ASCII",
+	"ISO-8859-1", "ISO-8859-2", "ISO-8859-3", "ISO-8859-4", "ISO-8859-5",
+	"ISO-8859-6", "ISO-8859-7", "ISO-8859-8", "ISO-8859-9", "ISO-8859-10",
+	"ISO-8859-13", "ISO-8859-14", "ISO-8859-15", "ISO-8859-16",
+	"KOI8-RU", "KOI8-R", "KOI8-U",
+	"EUC-CN", "EUC-JP", "EUC-KR", "EUC-TW",
+	"ISO-2022-CN", "ISO-2022-CN-EXT", "ISO-2022-JP", "ISO-2022-JP-1",
+	"ISO-2022-JP-2", "ISO-2022-KR",
+	"UTF-8"
+};
+#endif /* CHARSET_CONVERSION */
 
 #ifndef DISABLE_PRINTING
 	constext txt_print[] = N_("Print");
@@ -1645,14 +1659,28 @@ struct opttxt txt_mm_charset = {
 # mm_charset is considered not displayable and represented as '?'.\n")
 };
 
+#ifdef CHARSET_CONVERSION
+struct opttxt txt_mm_local_charset = {
+	N_("Enter local (display) charset (e.g. US-ASCII, EUC-KR, ...), <CR> to set."),
+	N_("MM_LOCAL_CHARSET                   : "),
+	N_("# Charset supported locally which is used for displayingarticles.\n")
+};
+
+struct opttxt txt_mm_network_charset = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("MM_NETWORK_CHARSET                 : "),
+	N_("# Charset used for MIME (Content-Type) header in postings.\n")
+};
+#endif /* CHARSET_CONVERSION */
+
 struct opttxt txt_post_mime_encoding = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("MIME encoding in news messages     : "),
 	N_("# MIME encoding (8bit, base64, quoted-printable, 7bit) of the body\n\
 # for mails and posts, if necessary. QP is efficient for most European\n\
 # character sets (ISO-8859-X) with small fraction of non-US-ASCII chars,\n\
-# while Base64 is more efficient for most 8bit East Asian,Greek,and Russian\n\
-# charsets with a lot of 8bit characters.\n\
+# while Base64 is more efficient for most 8bit East Asian, Greek, and\n\
+# Russian charsets with a lot of 8bit characters.\n\
 # For EUC-KR, 7bit encoding specifies that EUC charsets be converted\n\
 # to corresponding ISO-2022-KR. The same may be true of EUC-JP/CN.\n\
 # Korean users should set post_mime_encoding to 8bit and mail_mime_encoding\n\
@@ -1661,12 +1689,12 @@ struct opttxt txt_post_mime_encoding = {
 # it's never meant to be used for Usenet news. Japanese always use\n\
 # ISO-2022-JP for both news and mail. Automatic conversion of EUC-JP and\n\
 # other 8bit Japanese encodings into ISO-2022-JP (even if 7bit is chosen)\n\
-# is NOT yet implemented. (it may not be necessary at all as Japanese\n\
+# is NOT yet implemented. (It may not be necessary at all as Japanese\n\
 # terminal emulators and editors appear to have native support of\n\
 # ISO-2022-JP). In case of Chinese, the situation seems to be more\n\
 # complicated (different newsgroups and hierarchies for Chinese use different\n\
 # MIME charsets and encodings) and no special handling is yet implemented.\n\
-# Summing up 7bit does NOT have any effect on MIME charset other than EUC-KR\n")
+# Summing up 7bit does NOT have any effect on MIME charset other than EUC-KR.\n")
 };
 
 struct opttxt txt_post_8bit_header = {

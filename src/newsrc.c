@@ -1169,7 +1169,7 @@ pcParseNewsrcLine (
 	*sub = UNSUBSCRIBED;				/* Default to no entry */
 
 	if ((ptr = strpbrk(line, " !:")) == NULL)			/* space|SUBSCRIBED|UNSUBSCRIBED */
-		return(NULL);
+		return NULL;
 
 	*sub = *ptr;						/* Save the subscription status */
 	tmp = ptr;							/* Keep this blank for later */
@@ -1177,11 +1177,11 @@ pcParseNewsrcLine (
 
 #if 0
 	if (ptr == NULL)					/* No seq info, so return a blank */
-		return(tmp);
+		return tmp;
 #endif /* 0 */
 
 	if ((ptr = strpbrk(ptr, " \t")) == NULL)
-		return(tmp);
+		return tmp;
 
 	return (ptr + 1);	/* Return pointer to sequence info. At worst this will be \0 */
 }

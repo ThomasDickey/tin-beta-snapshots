@@ -23,12 +23,13 @@ src/joinpath.c
 src/keymap.c
 src/lang.c
 src/list.c
+src/lock.c
 src/mail.c
 src/main.c
-src/makecfg.c
 src/memory.c
 src/mimetypes.c
 src/misc.c
+src/my_tmpfile.c
 src/newsrc.c
 src/nntplib.c
 src/nrctbl.c
@@ -56,6 +57,7 @@ src/string.c
 src/tags.c
 src/tcurses.c
 src/thread.c
+src/tmpfile.c
 src/trace.c
 src/wildmat.c
 src/xref.c

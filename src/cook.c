@@ -643,6 +643,11 @@ process_text_body_part(
 #if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
 		if (decode)
 			buffer_to_local (line);
+#else
+#	ifdef CHARSET_CONVERSION
+		if (decode)
+			 buffer_to_local (line, charset, tinrc.mm_local_charset);
+#	endif /* CHARSET_CONVERSION */
 #endif /* LOCAL_CHARSET || MAC_OS_X */
 
 		/*
@@ -650,7 +655,7 @@ process_text_body_part(
 		 * Detect and process uuencoded sections
 		 * Check quoting depth
 		 */
-		len = (int)strlen(line);
+		len = (int) strlen(line);
 
 		if (!in_sig) {
 			if (strcmp (line, SIGDASHES) == 0) {

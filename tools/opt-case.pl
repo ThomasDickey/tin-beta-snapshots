@@ -7,7 +7,7 @@
 # 2000-04-27 <urs@tin.org>
 #
 # NOTE: the case= line must come before any line with a regexp pattern,
-#       (that is the order tins saves the filter file, if you created the
+#       (that is the order tin saves the filter file, if you created the
 #       filter by hand and never let tin rewrite the file, you might want to
 #       check that first)
 #
@@ -15,7 +15,7 @@
 #       filter via w2r.pl before
 
 # version number
-# $VERSION = "0.2.0";
+# $VERSION = "0.2.1";
 
 # perl 5 is needed for lookahead assertions and perl < 5.004 is know to be
 # buggy
@@ -65,3 +65,40 @@ while (defined($line = <>)) {
 	# other lines don't need to be translated
 	print "$line\n";
 }
+
+__END__
+
+=head1 NAME
+
+opt-case.pl - Optimize case insensitive regexp filters for tin
+
+=head1 SYNOPSIS
+
+B<opt-case.pl> < I<input> [> I<output>]
+
+=head1 DESCRIPTION
+
+B<opt-case.pl> reads a B<tin>(1) filter-file (B<tin>(5)) with regexp
+filters on STDIN and turns all case insensitive regexp into case
+sensitive ones whenever possible, as case sensitive regexp are (a
+bit) faster.
+
+=head1 NOTES
+
+The case= line must come before any line with a regexp pattern, (that
+is the order B<tin>(1) saves the filter file, if you created the
+filter by hand and never let B<tin>(1) rewrite the file, you might
+want to check that first).
+
+Don't use B<opt-case.pl> on wildmat filerts, transform them into
+regexp filter via B<w2r.pl>(1) first.
+
+=head1 AUTHOR
+
+Urs Janssen E<lt>urs@tin.orgE<gt>
+
+=head1 SEE ALSO
+
+B<tin>(1), B<tin>(5), B<w2r.pl>(1)
+
+=cut

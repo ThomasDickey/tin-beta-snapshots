@@ -241,7 +241,11 @@ struct t_config tinrc = {
 	"In article %M you wrote:",		/* mail_quote_format */
 	"",		/* maildir */
 	"",		/* mail_address */
-	"",		/* mm_charset */
+	"",		/* mm_charset, defaults to $MM_CHARSET */
+#ifdef CHARSET_CONVERSION
+	"",		/* mm_local_charset, defaults to mm_charset */
+	0,			/* mm_network_charset, defaults to US-ASCII */
+#endif /* CHARSET_CONVERSION */
 	"Newsgroups Followup-To Summary Keywords X-Comment-To",		/* news_headers_to_display */
 	"",		/* news_headers_to_not_display */
 	"%F wrote:",		/* news_quote_format */
@@ -889,7 +893,7 @@ create_mail_save_dirs (
 		created = TRUE;
 	}
 
-	return (created);
+	return created;
 }
 
 

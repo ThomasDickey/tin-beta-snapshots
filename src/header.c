@@ -77,7 +77,7 @@ get_host_name (
 		}
 	}
 	hostname[MAXHOSTNAMELEN] = '\0';
-	return (hostname);
+	return hostname;
 }
 
 
@@ -133,7 +133,7 @@ static const char *domain_name_hack = DOMAIN_NAME;
 			domain[0] = '\0';
 	}
 	domain[MAXHOSTNAMELEN] = '\0';
-	return (domain);
+	return domain;
 }
 #endif /* DOMAIN_NAME */
 
@@ -163,7 +163,7 @@ get_fqdn (
 		(void) strncpy(name, host, MAXHOSTNAMELEN);
 	} else
 		if (gethostname(name, MAXHOSTNAMELEN))
-			return(NULL);
+			return NULL;
 
 	if ('0' <= *name && *name <= '9') {
 		in.s_addr = inet_addr(name);
@@ -201,7 +201,7 @@ get_fqdn (
 		}
 	}
 
-	return(fqdn);
+	return fqdn;
 }
 #endif /* HAVE_GETHOSTBYNAME */
 
@@ -254,7 +254,7 @@ get_user_name (
 		tin_done (EXIT_FAILURE);
 	}
 #	endif /* M_AMIGA || VMS */
-	return(username);
+	return username;
 }
 
 
@@ -274,11 +274,11 @@ get_full_name (
 
 	if ((p = getenv ("NAME")) != (char *) 0) {
 		strncpy (fullname, p, sizeof (fullname));
-		return (fullname);
+		return fullname;
 	}
 	if ((p =  getenv ("REALNAME")) != (char *) 0) {
 		strncpy (fullname, p, sizeof (fullname));
-		return (fullname);
+		return fullname;
 	}
 
 #	ifdef VMS
@@ -299,7 +299,7 @@ get_full_name (
 		STRCPY(fullname, buf);
 #		endif /* !DONT_HAVE_PW_GECOS */
 #	endif /* VMS */
-	return (fullname);
+	return fullname;
 }
 
 

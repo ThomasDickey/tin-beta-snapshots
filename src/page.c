@@ -704,7 +704,7 @@ return_to_index:
 
 			case iKeyPagePrevArt:	/* previous article */
 				if ((n = prev_response (this_resp)) == -1)
-					return (this_resp);
+					return this_resp;
 
 				if (load_article(n) < 0)
 					return GRP_ARTFAIL;
@@ -811,7 +811,7 @@ return_to_index:
 		}
 	}
 	/* NOTREACHED */
-	return GRP_ARTFAIL; /* default-value - I don't think we should get here */
+	return GRP_ARTFAIL;
 }
 
 

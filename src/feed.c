@@ -467,7 +467,7 @@ feed_articles (
 							printascii (keysupersede, map_to_local(iKeyFeedSupersede, &menukeymap.feed_supersede_article)),
 							printascii (keyquit, map_to_local(iKeyQuit, &menukeymap.feed_supersede_article)));
 				option = (char) prompt_slk_response (iKeyFeedSupersede,
-										&menukeymap.feed_supersede_article,
+										&menukeymap.feed_supersede_article, "%s",
 										sized_message(buf, arts[respnum].subject));
 
 				switch (option) {
@@ -633,8 +633,13 @@ got_sig_pipe_while_piping:
 
 		case FEED_SAVE:
 		case FEED_AUTOSAVE_TAGGED:
-			if (proc_ch != 'n' && !is_mailbox && processed_ok)
-				ret2 = post_process_files (proc_ch, (function == FEED_SAVE ? FALSE : TRUE));
+			if (proc_ch != 'n' && !is_mailbox && processed_ok) {
+				if (proc_ch < 0) {
+					if (proc_ch_default != 'n')
+					  ret2 = post_process_files (proc_ch_default, (function == FEED_SAVE ? FALSE : TRUE));
+				} else
+					ret2 = post_process_files (proc_ch, (function == FEED_SAVE ? FALSE : TRUE));
+			}
 			free_save_array ();		/* NB: This is where num_save etc.. gets purged */
 			break;
 

@@ -87,7 +87,7 @@ get_search_pattern (
 	sprintf (tmpbuf, (forward ? fwd_msg : bwd_msg), def);
 
 	if (!prompt_string_default(tmpbuf, def, _(txt_no_search_string), which_hist))
-		return (NULL);
+		return NULL;
 
 	wait_message (0, _(txt_searching));
 
@@ -95,7 +95,7 @@ get_search_pattern (
 
 	if (tinrc.wildcard) {			/* ie, not wildmat() */
 		strcpy(def, quote_wild_whitespace (def));
-		return(def);
+		return def;
 	}
 
 	/*
@@ -103,7 +103,7 @@ get_search_pattern (
 	 */
 /* TODO somehow use REGEX_FMT here ? */
 	sprintf(tmpbuf, "*%s*", def);
-	return(tmpbuf);
+	return tmpbuf;
 }
 
 

@@ -43,9 +43,9 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.5.9"
+#		define VERSION		"1.5.10"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20010723"
+#	define RELEASEDATE	"20010913"
 #	define RELEASENAME	"Chord of Souls"
 #	define TINRC_VERSION	"1.2"
 

@@ -103,7 +103,7 @@ _page_down (
 			curslot = maxslot - 1;
 	}
 
-	return (curslot);
+	return curslot;
 }
 
 

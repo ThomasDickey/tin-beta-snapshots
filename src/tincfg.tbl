@@ -134,6 +134,10 @@
 	mail_quote_format		OPT_STRING
 	advertising			OPT_ON_OFF
 	mm_charset			OPT_STRING
+#ifdef CHARSET_CONVERSION
+	mm_local_charset		OPT_STRING
+	mm_network_charset		txt_mime_charsets	NUM_MIME_CHARSETS
+#endif
 	post_mime_encoding		txt_mime_encodings	NUM_MIME_ENCODINGS
 	post_8bit_header		OPT_ON_OFF
 	mail_mime_encoding		txt_mime_encodings	NUM_MIME_ENCODINGS

@@ -201,7 +201,7 @@ prompt_to_send (
 #endif /* HAVE_PGP_GPG */
 					printascii (keysend, map_to_local(iKeyPostSend, &menukeymap.post_send)));
 
-	return prompt_slk_response (iKeyPostSend, &menukeymap.post_send,
+	return prompt_slk_response (iKeyPostSend, &menukeymap.post_send, "%s",
 				sized_message(buf, subject));
 }
 
@@ -1045,7 +1045,11 @@ check_article_to_be_posted (
 		errors_catbp |= CA_ERROR_MISSING_BODY_SEPERATOT;
 
 	/* check for MIME Content-Type and Content-Transfer-Encoding */
+#ifdef CHARSET_CONVERSION
+	if (strcasecmp (txt_mime_charsets[tinrc.mm_network_charset], "US-ASCII"))
+#else
 	if (strcasecmp (tinrc.mm_charset, "US-ASCII"))
+#endif /* CHARSET_CONVERSION */
 		mime_usascii = FALSE;
 	if (strcasecmp (txt_mime_encodings[tinrc.post_mime_encoding], "7bit"))
 		mime_7bit = FALSE;
@@ -1370,8 +1374,7 @@ post_article_loop:
 #endif /* HAVE_PGP_GPG */
 
 			ch = prompt_slk_response((art_unchanged ? iKeyPostPostpone : iKeyPostPost3),
-					&menukeymap.post_post,
-					_(txt_quit_edit_post),
+					&menukeymap.post_post, _(txt_quit_edit_post),
 					printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_post)),
 					printascii (keyedit, map_to_local (iKeyPostEdit, &menukeymap.post_post)),
 #ifdef HAVE_ISPELL
@@ -1406,9 +1409,9 @@ post_article_loop:
 							printascii (keypostpone, map_to_local (iKeyPostPostpone, &menukeymap.post_post)));
 
 			/* Superfluous force_command stuff not used in current code */
-			ch = (/*force_command ? ch_default :*/ prompt_slk_response (ch,
-						&menukeymap.post_post, sized_message(buf,
-						""/* TODO was note_h.subj */)));
+			ch = ( /* force_command ? ch_default : */ prompt_slk_response (ch,
+						&menukeymap.post_post, "%s", sized_message(buf,
+						"" /* TODO was note_h.subj */ )));
 		}
 	}
 
@@ -1924,7 +1927,7 @@ pickup_postponed_articles (
 							printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_postpone)));
 
 			ch = prompt_slk_response (iKeyPromptYes, &menukeymap.post_postpone,
-						sized_message(buf, subject));
+					"%s", sized_message(buf, subject));
 
 			if (ch == iKeyPostponeAll)
 				all = TRUE;
@@ -2823,7 +2826,7 @@ mail_bug_report (
 		start_line_offset++;
 	}
 
-	fprintf (fp, "\nPlease enter bug report/gripe/comment:\n\n");
+	fprintf (fp, "\nPlease enter detailed bug report, gripe or comment:\n\n");
 	start_line_offset += 2;
 
 	if (!tinrc.use_mailreader_i)
@@ -3102,7 +3105,7 @@ cancel_article (
 					printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_delete)));
 
 		option = prompt_slk_response (option_default, &menukeymap.post_delete,
-						sized_message(buff, art->subject));
+						"%s", sized_message(buff, art->subject));
 
 		switch (option) {
 			case iKeyPostCancel:
@@ -3237,7 +3240,7 @@ cancel_article (
 						printascii (keycancel, map_to_local (iKeyPostCancel, &menukeymap.post_cancel)));
 
 			ch = prompt_slk_response(ch_default, &menukeymap.post_cancel,
-					sized_message(buff, note_h.subj));
+					"%s", sized_message(buff, note_h.subj));
 		}
 		switch (ch) {
 			case iKeyPostEdit:
@@ -3468,7 +3471,8 @@ repost_article (
 						printascii (keypost, map_to_local (iKeyPostPost3, &menukeymap.post_post)),
 						printascii (keypostpone, map_to_local (iKeyPostPostpone, &menukeymap.post_post)));
 
-		ch = prompt_slk_response (ch_default, &menukeymap.post_post, sized_message(buff, note_h.subj));
+		ch = prompt_slk_response (ch_default, &menukeymap.post_post,
+			"%s", sized_message(buff, note_h.subj));
 	}
 	return (post_loop(POST_REPOST, psGrp, ch, (Superseding ? _(txt_superseding_art) : _(txt_repost_an_article)), art_type, start_line_offset));
 }
@@ -3635,7 +3639,7 @@ checknadd_headers (
 					 * Only write followup header if not blank, no newsgroups header or
 					 * followups != newsgroups
 					 */
-					if (*ptr && ( /* ( *newsgroups == '\0') ||*/ (strcasecmp (newsgroups, ptr))))
+					if (*ptr && (/* (*newsgroups == '\0') ||*/ (strcasecmp (newsgroups, ptr))))
 						sprintf (line, "Followup-To: %s\n", ptr);
 					else
 						*line = '\0';
@@ -4033,7 +4037,7 @@ pcCopyArtHeader (
 	fclose (fp);
 
 	if (tin_errno != 0)
-		return(FALSE);
+		return FALSE;
 
 	if (found) {
 		p = ((header[0] == ' ') ? &header[1] : header);
@@ -4231,20 +4235,24 @@ add_headers (
 
 					/* Unlocalized date-header */
 					if (getenv("LC_ALL") != (char*) 0) {
-						old_lc_all = setlocale(LC_ALL, (char *) 0);
+						old_lc_all = my_strdup(setlocale(LC_ALL, (char *) 0));
 						setlocale(LC_ALL, "POSIX");
 					} else {
-						old_lc_time = setlocale(LC_TIME, (char *) 0);
+						old_lc_time = my_strdup(setlocale(LC_TIME, (char *) 0));
 						setlocale(LC_TIME, "POSIX");
 					}
 					(void) time (&epoch);
 					gmdate=gmtime(&epoch); /* my_strftime has no %z or %Z */
 					my_strftime(dateheader, sizeof(dateheader) - 1, "Date: %a, %d %b %Y %H:%M:%S -0000\n", gmdate);
 					/* change back LC_* */
-					if (old_lc_all != (char*) 0)
+					if (old_lc_all != (char*) 0) {
 						setlocale(LC_ALL, old_lc_all);
-					else if (old_lc_time != (char*) 0)
+						free(old_lc_all);
+					}
+					else if (old_lc_time != (char*) 0) {
 						setlocale(LC_TIME, old_lc_time);
+						free(old_lc_time);
+					}
 					if ((rval = write (fd_out, dateheader, strlen(dateheader))) == (ssize_t) -1) /* abort on write errors */ {
 						writesuccess = FALSE;
 						break;
@@ -4260,7 +4268,7 @@ add_headers (
 				 * line
 				 */
 				for (cp = strchr (line, ':'), cp++; *cp; cp++) {
-					if (!isspace(*cp)) {
+					if (!isspace((int) *cp)) {
 						emptyhdr = FALSE;
 						break;
 					}

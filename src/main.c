@@ -955,7 +955,7 @@ show_intro_page (
 		my_printf("\n");
 	}
 
-	snprintf(buf, sizeof(buf) - 1, _(txt_intro_page), PRODUCT, PRODUCT, bug_addr);
+	snprintf(buf, sizeof(buf) - 1, _(txt_intro_page), PRODUCT, PRODUCT, PRODUCT, bug_addr);
 
 	my_fputs (buf, stdout);
 	my_flush();

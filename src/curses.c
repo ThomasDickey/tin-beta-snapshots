@@ -17,6 +17,10 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
+#ifndef TNNTP_H
+#	include "tnntp.h"
+#endif /* !TNNTP_H */
+
 
 #ifdef USE_CURSES
 
@@ -310,14 +314,14 @@ get_termcaps (void)
 
 	my_strncpy(the_termname, p, sizeof(the_termname) - 1);
 
-#if USE_TERMINFO
+#ifdef USE_TERMINFO
 	setupterm(the_termname, fileno(stdout), (int *)0);
 #else
 	if (tgetent (_terminal, the_termname) != 1) {
 		my_fprintf (stderr, _(txt_cannot_get_term_entry), tin_progname);
 		return (FALSE);
 	}
-#endif
+#endif /* USE_TERMINFO */
 
 	/* load in all those pesky values */
 	for (n = 0; n < SIZEOF(table); n++) {

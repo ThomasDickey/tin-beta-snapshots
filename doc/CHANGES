@@ -1,6 +1,58 @@
+-- 1.5.10 release 20011013 "" --
+
+ 035) Stephan Kulow <coolo@caldera.de>
+      BUG. format-strings passed to prompt_slk_response() weren't "quoted".
+      FIX. feed.c, post.c
+
+U074) Yury July <july@july.stealth.ru>
+      Timur Maryin <tima@east.ru>
+      BUG. adddate destroys $LC_ALL/$LC_TIME
+      FIX. post.c
+
+U073) Urs Janssen <urs@tin.org>
+      Gerald Krause <gerald@divbyzero.de>
+      ADD. UTF-8 sequence checker
+      FIX. misc.c
+
+U072) Joseph Parmelee <jparmele@wildbear.com>
+      ADD. made 'S' and 's' (in conjuntion with delete_tmp_files and/or
+           post_proc_type) more consisten. 'S' now only does postprocessing
+           if told to and 's' now prompts for tmp-file deletion if
+           delete_tmp_files is set.
+      FIX. feed.c, save.c
+
+U071) Urs Janssen <urs@tin.org>
+      BUG. typo in the man-page
+      BUG. 8bit chars in Subject werent rfc2047 encodet in local cached
+           overviews
+      BUG. From was rfc2047 encodet in local cached overviews even if
+           post_8bit_chars was on.
+      ADD. crsr-right with auto_list_thread=OFF and no more
+           unread arts in the current thread now enters the first
+           article in the current thread instead of advance to the
+           next unread art.
+      ADD. tinrc.mm_local_charset, tinrc.mm_network_charset
+           to perform local_charset<->network_charset conversion via
+           iconv() if available
+      ADD. config.guess, config.sub update
+      ADD. start BeOS port (networking missing)
+      ADD. renamed some vars to avoid shadowing on QNX
+      ADD. new quad_t check to avoid waring with autoconf >= 2.5
+      ADD. w2r.pl and opt-case.pl man-pages
+      BUG. nls didn't work
+      BUG. shell detection failed in some cases
+      BUG. make install_manpge didn't create $(DESTDIR)$(INS_MANUAL_DIR)5
+           if needed
+      FIX. tin.1, tin.5, config.guess, config.sub, Makefile[.in], aclocal.m4
+           configure[.in], autoconf.h[in], tincfg.tbl, extern.h, proto.h
+           tin.h, tinrc.h, tnntp.h, active.c, art.c, config.c, cook.c
+           curses.c, group.c, inews.c, init.c, lang.c, misc.c, plp_snprintf.c
+           post.c, rfc2046.c, rfc2047.c, read.c, screen.c, thread.c
+           POTFILES.in
+
 -- 1.5.9 release 20010723 "Chord of Souls" --
 
-U068) Thomas E. Dickey <dickey@herndon4.his.com>
+U070) Thomas E. Dickey <dickey@herndon4.his.com>
       REM. top-level makefile.in
       ADD. configure option --with-shell, to set the DEFAULT_SHELL.
       ADD. configure option --with-pcre

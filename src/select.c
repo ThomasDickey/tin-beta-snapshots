@@ -712,7 +712,7 @@ skip_newgroups (
 			i++;
 	}
 
-	return(i);
+	return i;
 }
 
 
@@ -789,7 +789,7 @@ reposition_group (
 	 */
 	if (pos_num <= newgroups) {
 		error_message(_(txt_skipping_newgroups));
-		return(default_num);
+		return default_num;
 	}
 
 	wait_message (0, _(txt_moving), group->name);
@@ -810,7 +810,7 @@ reposition_group (
 		return (pos_num - 1);
 	} else {
 		tinrc.default_move_group = default_num + 1;
-		return (default_num);
+		return default_num;
 	}
 }
 

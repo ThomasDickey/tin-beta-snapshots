@@ -73,7 +73,7 @@ prompt_num (
 
 	clear_message ();
 
-	return (num);
+	return num;
 }
 
 
@@ -447,7 +447,7 @@ prompt_string_default (
 		}
 	}
 
-	return(def);					/* use the default */
+	return def;					/* use the default */
 }
 
 
@@ -523,7 +523,7 @@ sized_message (
 	if (have > want)
 		have = want;
 	sprintf (mesg, format, have, subject);
-	return(mesg);
+	return mesg;
 }
 
 
@@ -535,7 +535,8 @@ int
 prompt_slk_response (
 	int ch_default,
 	const t_menukeys /* char */ *responses,
-	const char *fmt, ...)
+	const char *fmt,
+	...)
 {
 	va_list ap;
 	char ch;

@@ -7,9 +7,9 @@
 PROJECT	= tin
 LVER	= 1
 PVER	= 5
-SVER	= 9
+SVER	= 10
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20010723
+DVER	= 20010913
 EXE	= tin
 
 # directory structure
@@ -165,6 +165,7 @@ DOC	= \
 	$(DOCDIR)/keymap.sample \
 	$(DOCDIR)/mailcap.sample \
 	$(DOCDIR)/mime.types \
+	$(DOCDIR)/opt-case.pl.1 \
 	$(DOCDIR)/pgp.txt \
 	$(DOCDIR)/rcvars.txt \
 	$(DOCDIR)/reading-mail.txt \
@@ -177,6 +178,7 @@ DOC	= \
 	$(DOCDIR)/plp_snprintf.3 \
 	$(DOCDIR)/tin.1 \
 	$(DOCDIR)/tin.5 \
+	$(DOCDIR)/w2r.pl.1 \
 	$(DOCDIR)/wildmat.3
 
 TOL	= \

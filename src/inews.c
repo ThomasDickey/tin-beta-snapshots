@@ -180,6 +180,9 @@ submit_inews (
 
 				case 1:	/* insert Sender */
 					snprintf (sender_hdr, sizeof(sender_hdr), "Sender: %s", ptr);
+#		if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
+					buffer_to_network(sender_hdr);
+#		endif /* LOCAL_CHARSET || MAC_OS_X || CHARSET_CONVERSION */
 					STRCPY (sender_hdr, rfc1522_encode (sender_hdr, ismail));
 					break;
 
@@ -365,7 +368,11 @@ submit_news_file (
 	checknadd_headers (name);
 
 	/* 7bit ISO-2022-KR is NEVER to be used in Korean news posting. */
-	if (!(strcasecmp(tinrc.mm_charset, "euc-kr") || strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_7bit)))
+#ifdef CHARSET_CONVERSION
+	if (!(strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-KR") || strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_7bit)))
+#else
+	if (!(strcasecmp(tinrc.mm_charset, "EUC-KR") || strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_7bit)))
+#endif /* CHARSET_CONVERSION */
 		tinrc.post_mime_encoding = 0;	/* FIXME: txt_8bit */
 
 	rfc15211522_encode(name, txt_mime_encodings[tinrc.post_mime_encoding], tinrc.post_8bit_header, ismail);
