@@ -9,7 +9,7 @@
  *              and the name of the newsrc file for a given
  *              alias of the server.
  *
- * Copyright (c) 1996-2002 Sven Paulus <sven@tin.org>
+ * Copyright (c) 1996-2003 Sven Paulus <sven@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

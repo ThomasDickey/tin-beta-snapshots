@@ -1,4 +1,13 @@
--- 1.5.16 release 20021204 "" --
+-- 1.5.16 release 20021229 "" --
+
+U130) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. compile-check that ncurses/ncursesw header files are
+           consistent with the libraries
+      FIX. aclocal.m4
+
+U129) Michael Bienia <michael@vorlon.ping.de>
+      ADD. make tin_getline() multibyte safe
+      FIX. proto.h, tcurses.h, curses.c, getline.c, tcurses.c
 
 U128) Olaf Dietrich <olaf@dtrx.de>
       BUG. TeX2ISO was done before charset conversion
@@ -22,9 +31,10 @@ U125) Urs Janssen <urs@tin.org>
       ADD. allow negative values for wrap_column
       ADD. config.guess, config.sub update
       ADD. don't read keymap file in batch-mode
-      FIX. proto.h, art.c, config.c, cook.c, inews.c, init.c, keymap.c
-           lang.c, main.c, misc.c, post.c, rfc2047.c, tin.1, tin.pot, de.po
-           et.po, en_GB.po, config.guess, config.sub
+      FIX. proto.h, tinrc.h, art.c, config.c, cook.c, feed.c, inews.c, init.c
+           keymap.c, lang.c, main.c, misc.c, post.c, rfc2047.c, tin.1, tin.5
+           tin.pot, de.po, et.po, en_GB.po, config.guess, config.sub
+           aclocal.m4
 
 U124) Toomas Soome <Toomas.Soome@microlink.ee>
       ADD. updated estonian translation

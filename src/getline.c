@@ -3,7 +3,7 @@
  *  Module    : tin_getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 1994-07-27
+ *  Updated   : 2002-12-18
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -42,7 +42,12 @@
 #define TAB	'\t'
 #define DEL	'\177'
 
-static char gl_buf[BUF_SIZE];	/* input buffer */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	static wchar_t gl_buf[BUF_SIZE];	/* wide-character input buffer */
+	static char buf[BUF_SIZE];
+#else
+	static char gl_buf[BUF_SIZE];	/* input buffer */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 static int gl_init_done = 0;	/* -1 is terminal, 1 is batch */
 static const char *gl_prompt;	/* to save the prompt string */
 static int gl_width = 0;	/* net size available for input */
@@ -52,10 +57,15 @@ static t_bool is_passwd;
 /*
  * local prototypes
  */
-static void gl_addchar(int c);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	static void gl_addwchar(wint_t wc);
+	static int gl_tab(wchar_t *wbuf, int offset, int *loc);
+#else
+	static void gl_addchar(int c);
+	static int gl_tab(char *buf, int offset, int *loc);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 static void gl_del(int loc);
 static void gl_fixup(int change, int cursor);
-static int gl_tab(char *buf, int offset, int *loc);
 static void gl_redraw(void);
 static void gl_newline(int w);
 static void gl_kill(void);
@@ -64,9 +74,15 @@ static void hist_add(int w);
 static void hist_next(int w);
 static void hist_prev(int w);
 
-static int (*gl_in_hook) (char *) = 0;
-static int (*gl_out_hook) (char *) = 0;
-static int (*gl_tab_hook) (char *, int, int *) = gl_tab;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	static int (*gl_in_hook) (wchar_t *) = 0;
+	static int (*gl_out_hook) (wchar_t *) = 0;
+	static int (*gl_tab_hook) (wchar_t *, int, int *) = gl_tab;
+#else
+	static int (*gl_in_hook) (char *) = 0;
+	static int (*gl_out_hook) (char *) = 0;
+	static int (*gl_tab_hook) (char *, int, int *) = gl_tab;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 char *
 tin_getline(
@@ -78,13 +94,18 @@ tin_getline(
 	int which_hist)
 {
 	int c, i, loc, tmp, gl_max;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wint_t wc;
+#else
+	char *buf = gl_buf;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	is_passwd = passwd;
 
 	set_xclick_off();
-	if (prompt == NULL) {
+	if (prompt == NULL)
 		prompt = "";
-	}
+
 	gl_buf[0] = 0;		/* used as end of input indicator */
 	gl_fixup(-1, 0);	/* this resets gl_fixup */
 	gl_width = cCOLS - strlen(prompt);
@@ -92,14 +113,12 @@ tin_getline(
 	gl_pos = gl_cnt = 0;
 
 	if (max_chars == 0) {
-		if (number_only) {
+		if (number_only)
 			gl_max = 6;
-		} else {
+		else
 			gl_max = BUF_SIZE;
-		}
-	} else {
+	} else
 		gl_max = max_chars;
-	}
 
 	my_fputs(prompt, stdout);
 	cursoron();
@@ -114,10 +133,37 @@ tin_getline(
 	if (!cmd_line && gl_max == BUF_SIZE)
 		CleartoEOLN();
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if (str != NULL) {
+		wchar_t wbuf[LEN];
+		if (mbstowcs(wbuf, str, LEN - 1) != (size_t) -1) {
+			for (i = 0; wbuf[i]; i++)
+				gl_addwchar(wbuf[i]);
+		}
+	}
+
+	while ((wc = ReadWch()) != WEOF) {
+		if ((gl_cnt < gl_max) && iswprint(wc)) {
+			if (number_only) {
+				if (iswdigit(wc)) {
+					gl_addwchar(wc);
+				/* Minus */
+				} else if (number_only == 2 && gl_pos == 0 && wc == (wint_t) '-') {
+					gl_addwchar(wc);
+				} else {
+					ring_bell();
+				}
+			} else
+				gl_addwchar(wc);
+		} else {
+			c = (int) wc;
+			switch (wc) {
+#else
 	if (str != NULL) {
 		for (i = 0; str[i]; i++)
 			gl_addchar(str[i]);
 	}
+
 	while ((c = ReadCh()) != EOF) {
 		c &= 0xff;
 		if ((gl_cnt < gl_max) && my_isprint(c)) {
@@ -130,11 +176,11 @@ tin_getline(
 				} else {
 					ring_bell();
 				}
-			} else {
+			} else
 				gl_addchar(c);
-			}
 		} else {
 			switch (c) {
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				case ESC:	/* abort */
 #ifdef HAVE_KEY_PREFIX
 				case KEY_PREFIX:
@@ -144,61 +190,86 @@ tin_getline(
 						case KEYMAP_PAGE_UP:
 							hist_prev(which_hist);
 							break;
+
 						case KEYMAP_PAGE_DOWN:
 						case KEYMAP_DOWN:
 							hist_next(which_hist);
 							break;
+
 						case KEYMAP_RIGHT:
 							gl_fixup(-1, gl_pos + 1);
 							break;
+
 						case KEYMAP_LEFT:
 							gl_fixup(-1, gl_pos - 1);
 							break;
+
 						case KEYMAP_HOME:
 							gl_fixup(-1, 0);
 							break;
+
 						case KEYMAP_END:
 							gl_fixup(-1, gl_cnt);
 							break;
+
 						case KEYMAP_DEL:
 							gl_del(0);
 							break;
+
 						case KEYMAP_INS:
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+							gl_addwchar((wint_t) ' ');
+#else
 							gl_addchar(' ');
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 							break;
+
 						default:
 							return (char *) 0;
 					}
 					break;
+
 				case '\n':	/* newline */
 				case '\r':
 					gl_newline(which_hist);
-					return gl_buf;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+					wcstombs(buf, gl_buf, BUF_SIZE - 1);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+					return buf;
+
 				case CTRL_A:
 					gl_fixup(-1, 0);
 					break;
+
 				case CTRL_B:
 					gl_fixup(-1, gl_pos - 1);
 					break;
+
 				case CTRL_D:
 					if (gl_cnt == 0) {
 						gl_buf[0] = 0;
 						my_fputc('\n', stdout);
-						return gl_buf;
-					} else {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+						wcstombs(buf, gl_buf, BUF_SIZE - 1);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+						return buf;
+					} else
 						gl_del(0);
-					}
 					break;
+
 				case CTRL_E:
 					gl_fixup(-1, gl_cnt);
 					break;
+
 				case CTRL_F:
 					gl_fixup(-1, gl_pos + 1);
 					break;
+
 				case CTRL_H:
 				case DEL:
 					gl_del(-1);
 					break;
+
 				case TAB:
 					if (gl_tab_hook) {
 						tmp = gl_pos;
@@ -207,32 +278,41 @@ tin_getline(
 							gl_fixup(loc, tmp);
 					}
 					break;
+
 				case CTRL_W:
 					gl_kill_back_word();
 					break;
+
 				case CTRL_U:
 					gl_fixup(-1, 0);
 					/* FALLTHROUGH */
 				case CTRL_K:
 					gl_kill();
 					break;
+
 				case CTRL_L:
 				case CTRL_R:
 					gl_redraw();
 					break;
+
 				case CTRL_N:
 					hist_next(which_hist);
 					break;
+
 				case CTRL_P:
 					hist_prev(which_hist);
 					break;
+
 				default:
 					ring_bell();
 					break;
 			}
 		}
 	}
-	return gl_buf;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wcstombs(buf, gl_buf, BUF_SIZE - 1);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	return buf;
 }
 
 
@@ -241,8 +321,13 @@ tin_getline(
  * the character is in the allowed template of characters
  */
 static void
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+gl_addwchar(
+	wint_t wc)
+#else
 gl_addchar(
 	int c)
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 {
 	int i;
 
@@ -263,7 +348,11 @@ gl_addchar(
 	for (i = gl_cnt; i >= gl_pos; i--)
 		gl_buf[i + 1] = gl_buf[i];
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	gl_buf[gl_pos] = (wchar_t) wc;
+#else
 	gl_buf[gl_pos] = c;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	gl_fixup(gl_pos, gl_pos + 1);
 }
 
@@ -293,17 +382,25 @@ gl_newline(
 	hist_add(w);		/* only adds if nonblank */
 	if (gl_out_hook) {
 		change = gl_out_hook(gl_buf);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		len = wcswidth(gl_buf, BUF_SIZE);
+#else
 		len = strlen(gl_buf);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	}
 	if (loc > len)
 		loc = len;
 	gl_fixup(change, loc);	/* must do this before appending \n */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	gl_buf[len] = (wchar_t) '\0';
+#else
 	gl_buf[len] = '\0';
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 }
 
 
 /*
- * Delete a character.  The loc variable can be:
+ * Delete a character. The loc variable can be:
  *    -1 : delete character to left of cursor
  *     0 : delete character under cursor
  */
@@ -317,9 +414,8 @@ gl_del(
 		for (i = gl_pos + loc; i < gl_cnt; i++)
 			gl_buf[i] = gl_buf[i + 1];
 		gl_fixup(gl_pos + loc, gl_pos + loc);
-	} else {
+	} else
 		ring_bell();
-	}
 }
 
 
@@ -331,11 +427,14 @@ gl_kill(
 	void)
 {
 	if (gl_pos < gl_cnt) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		gl_buf[gl_pos] = (wchar_t) '\0';
+#else
 		gl_buf[gl_pos] = '\0';
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		gl_fixup(gl_pos, gl_pos);
-	} else {
+	} else
 		ring_bell();
-	}
 }
 
 
@@ -348,24 +447,44 @@ gl_kill_back_word(
 {
 	int i, cur;
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	/* delete spaces */
+	for (i = gl_pos - 1; i >= 0 && iswspace((wint_t) gl_buf[i]); --i)
+		;
+
+	/* delete not alnum characters but graph characters */
+	for(; i >= 0 && iswgraph((wint_t) gl_buf[i]) && !iswalnum((wint_t) gl_buf[i]); --i)
+		;
+
+	/* delete all graph characters except '/' */
+	for(; i >= 0 && gl_buf[i] != (wchar_t) '/' && iswgraph((wint_t) gl_buf[i]); --i)
+		;
+#else
 	/* delete spaces */
 	for (i = gl_pos - 1; i >= 0 && isspace((int) gl_buf[i]); --i)
 		;
+
 	/* delete not alnum characters but graph characters */
 	for (; i >= 0 && isgraph((int) gl_buf[i]) && !isalnum((int) gl_buf[i]); --i)
 		;
+
 	/* delete all graph characters except '/' */
 	for (; i >= 0 && gl_buf[i] != '/' && isgraph((int) gl_buf[i]); --i)
 		;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 	i++;
 	if (i != gl_pos) {
 		cur = gl_pos;
 		gl_fixup(-1, i);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		wcscpy(&gl_buf[i], &gl_buf[cur]);
+#else
 		strcpy(&gl_buf[i], &gl_buf[cur]);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		gl_fixup(i, i);
-	} else {
+	} else
 		ring_bell();
-	}
 }
 
 
@@ -387,7 +506,7 @@ gl_redraw(
 
 /*
  * This function is used both for redrawing when input changes or for
- * moving within the input line.  The parameters are:
+ * moving within the input line. The parameters are:
  *   change : the index of the start of changes in the input buffer,
  *            with -1 indicating no changes.
  *   cursor : the desired location of the cursor after the call.
@@ -416,7 +535,11 @@ gl_fixup(
 	pad = (off_right) ? gl_width - 1 : gl_cnt - gl_shift;	/* old length */
 	backup = gl_pos - gl_shift;
 	if (change >= 0) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		gl_cnt = wcswidth(gl_buf, BUF_SIZE);
+#else
 		gl_cnt = strlen(gl_buf);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		if (change > gl_cnt)
 			change = gl_cnt;
 	}
@@ -465,8 +588,13 @@ gl_fixup(
 				my_fputc('$', stdout);
 				left++;
 			}
-			for (i = left; i < right; i++)
+			for (i = left; i < right; i++) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				my_fputwc((wint_t) gl_buf[i], stdout);
+#else
 				my_fputc(gl_buf[i], stdout);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			}
 			if (off_right) {
 				my_fputc('$', stdout);
 				gl_pos = right + 1;
@@ -481,8 +609,13 @@ gl_fixup(
 			while (i--)
 				my_fputc('\b', stdout);
 		} else {
-			for (i = gl_pos; i < cursor; i++)
+			for (i = gl_pos; i < cursor; i++) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				my_fputwc((wint_t) gl_buf[i], stdout);
+#else
 				my_fputc(gl_buf[i], stdout);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			}
 		}
 		my_flush();
 	}
@@ -495,18 +628,31 @@ gl_fixup(
  */
 static int
 gl_tab(
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wbuf,
+#else
 	char *buf,
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	int offset,
 	int *loc)
 {
 	int i, count, len;
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	len = wcswidth(wbuf, ARRAY_SIZE(wbuf));
+	count = TABSIZE - (offset + *loc) % TABSIZE;
+	for (i = len; i >= *loc; i--)
+		wbuf[i + count] = wbuf[i];
+	for (i = 0; i < count; i++)
+		wbuf[*loc + i] = (wchar_t) ' ';
+#else
 	len = strlen(buf);
 	count = TABSIZE - (offset + *loc) % TABSIZE;
 	for (i = len; i >= *loc; i--)
 		buf[i + count] = buf[i];
 	for (i = 0; i < count; i++)
 		buf[*loc + i] = ' ';
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	i = *loc;
 	*loc = i + count;
 	return i;
@@ -517,18 +663,36 @@ static void
 hist_add(
 	int w)
 {
-	char *p = gl_buf;
+	char *p;
+	char *tmp;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	int size = wcstombs(NULL, gl_buf, 0);
+
+	tmp = my_malloc(size + 1);
+	if (wcstombs(tmp, gl_buf, size) == (size_t) -1) {
+		/* conversation failed */
+		free(tmp);
+		return;
+	} else
+		tmp[size] = '\0';
+#else
+	tmp = my_strdup(gl_buf);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	p = tmp;
 
 	if (w == HIST_NONE)
 		return;
 
 	while (*p == ' ' || *p == '\t')		/* only save nonblank line */
 		p++;
+
 	if (*p) {
-		input_history[w][hist_last[w]] = my_strdup(gl_buf);
+		input_history[w][hist_last[w]] = tmp;
 		hist_last[w] = (hist_last[w] + 1) % HIST_SIZE;
 		FreeAndNull(input_history[w][hist_last[w]]);	/* erase next location */
-	}
+	} else	/* we didn't need tmp, so free it */
+		free(tmp);
+
 	hist_pos[w] = hist_last[w];
 }
 
@@ -541,6 +705,7 @@ hist_prev(
 	int w)
 {
 	int next;
+	size_t size;
 
 	if (w == HIST_NONE)
 		return;
@@ -549,13 +714,18 @@ hist_prev(
 	if (next != hist_last[w]) {
 		if (input_history[w][next]) {
 			hist_pos[w] = next;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			if ((size = mbstowcs(gl_buf, input_history[w][hist_pos[w]], BUF_SIZE - 1)) == (size_t) -1)
+				size = 0;
+			gl_buf[size] = (wchar_t) '\0';
+#else
 			strcpy(gl_buf, input_history[w][hist_pos[w]]);
-		} else {
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		} else
 			ring_bell();
-		}
-	} else {
+	} else
 		ring_bell();
-	}
+
 	if (gl_in_hook)
 		gl_in_hook(gl_buf);
 	gl_fixup(0, BUF_SIZE);
@@ -569,6 +739,7 @@ static void
 hist_next(
 	int w)
 {
+	size_t size;
 
 	if (w == HIST_NONE)
 		return;
@@ -576,13 +747,18 @@ hist_next(
 	if (hist_pos[w] != hist_last[w]) {
 		hist_pos[w] = (hist_pos[w] + 1) % HIST_SIZE;
 		if (input_history[w][hist_pos[w]]) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			if ((size = mbstowcs(gl_buf, input_history[w][hist_pos[w]], BUF_SIZE - 1)) == (size_t) -1)
+				size = 0;
+			gl_buf[size] = (wchar_t) '\0';
+#else
 			strcpy(gl_buf, input_history[w][hist_pos[w]]);
-		} else {
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		} else
 			gl_buf[0] = 0;
-		}
-	} else {
+	} else
 		ring_bell();
-	}
+
 	if (gl_in_hook)
 		gl_in_hook(gl_buf);
 	gl_fixup(0, BUF_SIZE);

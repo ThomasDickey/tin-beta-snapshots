@@ -3,7 +3,7 @@
 #
 msgid	""
 msgstr	"Project-Id-Version: tin 1.5.15\n"
-	"POT-Creation-Date: 2002-12-04 01:34+0100\n"
+	"POT-Creation-Date: 2002-12-09 13:58+0100\n"
 	"PO-Revision-Date: 2002-11-15 20:10+0000\n"
 	"Last-Translator: Robert Brady <rwb197@zepler.org>\n"
 	"Language-Team: \n"
@@ -28,11 +28,11 @@ msgid	"Server has non of the groups listed in %s"
 msgstr	""
 
 #. TODO: -> lang.c
-#: src/art.c:1577
+#: src/art.c:1602
 msgid	"Catchup"
 msgstr	""
 
-#: src/art.c:1577
+#: src/art.c:1602
 msgid	"Updating"
 msgstr	""
 
@@ -954,7 +954,7 @@ msgstr	""
 
 #: src/lang.c:237
 #, c-format
-msgid	"Enter wildcard pattern [%s]> "
+msgid	"Enter pattern [%s]> "
 msgstr	""
 
 #: src/lang.c:238
@@ -5090,182 +5090,182 @@ msgid	"# The 4th field is the basedir (ie. ~/Mail or ~/News)\n"
 	"#\n"
 msgstr	""
 
-#: src/main.c:617
+#: src/main.c:612
 #, c-format
 msgid	"Version: %s release %s (\"%s\") %s %s"
 msgstr	""
 
-#: src/main.c:620
+#: src/main.c:615
 #, c-format
 msgid	"Version: %s release %s (\"%s\")"
 msgstr	""
 
-#: src/main.c:910 src/main.c:914
+#: src/main.c:905 src/main.c:909
 #, c-format
 msgid	"%s only useful for batch mode operations\n"
 msgstr	""
 
-#: src/main.c:918
+#: src/main.c:913
 #, c-format
 msgid	"%s only useful without batch mode operations\n"
 msgstr	""
 
-#: src/main.c:950
+#: src/main.c:945
 #, c-format
 msgid	"A Usenet reader.\n"
 	"\n"
 	"Usage: %s [options] [newsgroup[,...]]"
 msgstr	""
 
-#: src/main.c:954
+#: src/main.c:949
 msgid	"  -a       toggle color flag"
 msgstr	"  -a       toggle colour flag"
 
-#: src/main.c:957
+#: src/main.c:952
 msgid	"  -A       force authentication on connect"
 msgstr	""
 
-#: src/main.c:960
+#: src/main.c:955
 msgid	"  -B       BBS mode. File operations limited to home directories."
 msgstr	""
 
-#: src/main.c:963
+#: src/main.c:958
 msgid	"  -c       mark all news as read in subscribed newsgroups (batch mode)"
 msgstr	""
 
-#: src/main.c:964
+#: src/main.c:959
 msgid	"  -d       don't show newsgroup descriptions"
 msgstr	""
 
-#: src/main.c:967
+#: src/main.c:962
 msgid	"  -D       debug mode 1=NNTP 2=ALL"
 msgstr	""
 
-#: src/main.c:970
+#: src/main.c:965
 #, c-format
 msgid	"  -f file  subscribed to newsgroups file [default=%s]"
 msgstr	""
 
-#: src/main.c:971
+#: src/main.c:966
 msgid	"  -G limit get only limit articles/group"
 msgstr	""
 
 #. FIXME, default should be $NNTPSERVER if set ...
-#: src/main.c:976
+#: src/main.c:971
 #, c-format
 msgid	"  -g serv  read news from NNTP server serv [default=%s]"
 msgstr	""
 
-#: src/main.c:980
+#: src/main.c:975
 msgid	"  -h       this help message"
 msgstr	""
 
-#: src/main.c:981
+#: src/main.c:976
 #, c-format
 msgid	"  -H       help information about %s"
 msgstr	""
 
-#: src/main.c:984
+#: src/main.c:979
 #, c-format
 msgid	"  -I dir   news index file directory [default=%s]"
 msgstr	""
 
-#: src/main.c:988
+#: src/main.c:983
 msgid	"  -l       use only LISTGROUP instead of GROUP (-n) command"
 msgstr	""
 
-#: src/main.c:990
+#: src/main.c:985
 msgid	"  -l       TODO: document feature"
 msgstr	""
 
-#: src/main.c:993
+#: src/main.c:988
 #, c-format
 msgid	"  -m dir   mailbox directory [default=%s]"
 msgstr	""
 
-#: src/main.c:994
+#: src/main.c:989
 msgid	"  -M user  mail new news to specified user (batch mode)"
 msgstr	""
 
-#: src/main.c:997
+#: src/main.c:992
 msgid	"  -n       only read subscribed .newsrc groups from NNTP server"
 msgstr	""
 
-#: src/main.c:999
+#: src/main.c:994
 msgid	"  -n       TODO: document feature"
 msgstr	""
 
-#: src/main.c:1002
+#: src/main.c:997
 msgid	"  -N       mail new news to your posts (batch mode)"
 msgstr	""
 
-#: src/main.c:1003
+#: src/main.c:998
 msgid	"  -o       post all postponed articles and exit"
 msgstr	""
 
-#: src/main.c:1006
+#: src/main.c:1001
 #, c-format
 msgid	"  -p port  use port as NNTP port [default=%d]"
 msgstr	""
 
-#: src/main.c:1009
+#: src/main.c:1004
 msgid	"  -q       don't check for new newsgroups"
 msgstr	""
 
-#: src/main.c:1012
+#: src/main.c:1007
 msgid	"  -Q       quick start. Same as -nqd"
 msgstr	""
 
-#: src/main.c:1014
+#: src/main.c:1009
 msgid	"  -Q       quick start. Same as -qd"
 msgstr	""
 
-#: src/main.c:1019
+#: src/main.c:1014
 msgid	"  -r       read news remotely from default NNTP server"
 msgstr	""
 
-#: src/main.c:1022
+#: src/main.c:1017
 msgid	"  -R       read news saved by -S option"
 msgstr	""
 
-#: src/main.c:1023
+#: src/main.c:1018
 #, c-format
 msgid	"  -s dir   save news directory [default=%s]"
 msgstr	""
 
-#: src/main.c:1024
+#: src/main.c:1019
 msgid	"  -S       save new news for later reading (batch mode)"
 msgstr	""
 
-#: src/main.c:1027
+#: src/main.c:1022
 msgid	"  -u       update index files (batch mode)"
 msgstr	""
 
-#: src/main.c:1030
+#: src/main.c:1025
 msgid	"  -v       verbose output for batch mode options"
 msgstr	""
 
-#: src/main.c:1031
+#: src/main.c:1026
 msgid	"  -V       print version & date information"
 msgstr	""
 
-#: src/main.c:1032
+#: src/main.c:1027
 msgid	"  -w       post an article and exit"
 msgstr	""
 
-#: src/main.c:1033
+#: src/main.c:1028
 msgid	"  -X       don't save any files on quit"
 msgstr	""
 
-#: src/main.c:1034
+#: src/main.c:1029
 msgid	"  -z       start if any unread news"
 msgstr	""
 
-#: src/main.c:1035
+#: src/main.c:1030
 msgid	"  -Z       return status indicating if any unread news (batch mode)"
 msgstr	""
 
-#: src/main.c:1037
+#: src/main.c:1032
 #, c-format
 msgid	"\n"
 	"Mail bug reports/comments to %s"

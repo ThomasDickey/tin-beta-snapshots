@@ -3,10 +3,10 @@
  *  Module    : tcurses.h
  *  Author    : Thomas Dickey
  *  Created   : 1997-03-02
- *  Updated   : 2001-11-10
+ *  Updated   : 2002-12-18
  *  Notes     : curses #include files, #defines & struct's
  *
- * Copyright (c) 1997-2002 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2003 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -91,7 +91,10 @@
 
 #define HpGlitch(func)			/*nothing*/
 
-extern int cmdReadCh (void);
+extern int cmdReadCh(void);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	extern wint_t cmdReadWch(void);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 extern char *screen_contents(int row, int col, char *buffer);
 extern int my_innstr(char *str, int n);
@@ -100,6 +103,10 @@ extern void my_erase(void);
 extern void my_fflush(FILE *stream);
 extern void my_fputc(int ch, FILE *stream);
 extern void my_fputs(const char *str, FILE *stream);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	extern void my_fputwc(wint_t wc, FILE *fp);
+	extern wint_t ReadWch(void);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 extern void my_fprintf(FILE *stream, const char *fmt, ...)
 #if defined(__GNUC__) && !defined(printf)
 	__attribute__((format(printf,2,3)))
@@ -133,6 +140,14 @@ extern void write_line(int row, char *buffer);
 
 #define my_fputc(ch, stream)		fputc(ch, stream)
 #define my_fputs(str, stream)		fputs(str, stream)
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#	define my_fputwc(wc, stream)	{ \
+		if (fwide(stream, 0) <= 0) \
+			fprintf(stream, "%lc", wc); \
+		else \
+			fputwc(wc, stream); \
+	}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 #define my_printf			printf
 #define my_fprintf			fprintf

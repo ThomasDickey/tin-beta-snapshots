@@ -3,10 +3,10 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2000-02-08
+ *  Updated   : 2002-12-09
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
- * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -91,7 +91,7 @@ static t_bool feed_article(int art, int function, int *curr, int max, t_bool use
 /*
  * 'filename' holds 'filelen' amount of storage in which to place the
  * filename to save-to. The filename is also returned after basic syntax
- * checking.  We default to the global save filename or group specific
+ * checking. We default to the global save filename or group specific
  * filename if it exists
  */
 static char *
@@ -175,7 +175,7 @@ get_post_proc_type(
 /*
  * This is the handler that processes a single article for all the
  * various FEED_ functions. 'art' is the index in arts[]
- * Assumes no article is open when we enter -  opens and closes the art being
+ * Assumes no article is open when we enter - opens and closes the art being
  * processed. As a performance hack this is not done if 'use_current' is set.
  * Returns TRUE if the article was processed okay
  */
@@ -399,8 +399,8 @@ feed_articles(
 			return;
 
 		case iKeyFeedPat:
-			sprintf(mesg, _(txt_feed_pattern), tinrc.default_regex_pattern);
-			if (!(prompt_string_default(mesg, tinrc.default_regex_pattern, _(txt_no_match), HIST_REGEX_PATTERN)))
+			sprintf(mesg, _(txt_feed_pattern), tinrc.default_pattern);
+			if (!(prompt_string_default(mesg, tinrc.default_pattern, _(txt_no_match), HIST_REGEX_PATTERN)))
 				return;
 			break;
 
@@ -575,11 +575,11 @@ feed_articles(
 			break;
 
 		case iKeyFeedHot:		/* hot (auto-selected) articles */
-		case iKeyFeedPat:		/* regex pattern matched articles */
+		case iKeyFeedPat:		/* pattern matched articles */
 			for (i = 0; i < grpmenu.max; i++) {
 				for_each_art_in_thread(j, i) {
 					if (ch == iKeyFeedPat) {
-						if (!REGEX_MATCH(arts[j].subject, tinrc.default_regex_pattern, TRUE))
+						if (!REGEX_MATCH(arts[j].subject, tinrc.default_pattern, TRUE))
 							continue;
 					} else if (!arts[j].selected)
 						continue;

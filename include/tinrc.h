@@ -6,7 +6,7 @@
  *  Updated   : 2002-11-06
  *  Notes     :
  *
- * Copyright (c) 1999-2002 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 1999-2003 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -80,7 +80,7 @@ struct t_config {
 	char default_range_group[LEN];
 	char default_range_select[LEN];
 	char default_range_thread[LEN];
-	char default_regex_pattern[LEN];
+	char default_pattern[LEN];
 	char default_repost_group[LEN];		/* default group to repost to */
 	char default_save_file[PATH_LEN];
 	char default_search_art[LEN];		/* default when searching in article */

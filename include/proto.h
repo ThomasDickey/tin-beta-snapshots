@@ -3,10 +3,10 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2002-11-11
+ *  Updated   : 2002-12-14
  *  Notes     :
  *
- * Copyright (c) 1997-2002 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -123,6 +123,9 @@ extern OUTC_RETTYPE outchar(OUTC_ARGS);
 extern int InitScreen(void);
 extern int RawState(void);
 extern int ReadCh(void);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	extern wint_t ReadWch(void);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 extern int get_arrow_key(int prech);
 extern int get_termcaps(void);
 extern void ClearScreen(void);

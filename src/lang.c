@@ -3,10 +3,10 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-11-12
+ *  Updated   : 2002-12-09
  *  Notes     :
  *
- * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -122,15 +122,15 @@ constext txt_connecting[] = N_("Connecting to %s...");
 constext txt_connecting_port[] = N_("Connecting to %s:%d...");
 
 #ifdef M_AMIGA
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2002 Iain Lea & Mark Tomlinson.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2003 Iain Lea & Mark Tomlinson.";
 #endif /* M_AMIGA */
 
 #ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2002 Iain Lea.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2003 Iain Lea.";
 #endif /* M_UNIX */
 
 #ifdef VMS
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2002 Iain Lea & Tod McQuillin & other.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2003 Iain Lea & Tod McQuillin & other.";
 #endif /* VMS */
 
 constext txt_cr[] = N_("<CR>");
@@ -234,7 +234,7 @@ constext txt_filesystem_full[] = N_("Error writing %s file. Filesystem full? Fil
 constext txt_filesystem_full_backup[] = N_("Error making backup of %s file. Filesystem full?");
 constext txt_filter_global_rules[] = N_("Filtering global rules (%d/%d)...");
 constext txt_filter_rule_created[] = N_("Rule created by: ");
-constext txt_feed_pattern[] = N_("Enter wildcard pattern [%s]> ");
+constext txt_feed_pattern[] = N_("Enter pattern [%s]> ");
 constext txt_followup_newsgroups[] = N_("\nYou requested followups to your article to go to the following %s:\n");
 constext txt_followup_poster[] = N_("  %s\t Answers will be directed to you by mail.\n");
 constext txt_gethostbyname[] = N_("%s%s: Unknown host.\n");

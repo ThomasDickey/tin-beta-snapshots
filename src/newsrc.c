@@ -6,7 +6,7 @@
  *  Updated   : 2002-12-01
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
- * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,13 +62,13 @@ static void print_bitmap_seq(FILE *fp, struct t_group *group);
 /*
  * Read .newsrc into my_group[]. my_group[] ints point to active[] entries.
  * If allgroups is set, then my_group[] is completely overwritten,
- * otherwise, groups are appended.  Any bogus groups will be handled
+ * otherwise, groups are appended. Any bogus groups will be handled
  * accordingly. Bogus groups will _not_ be subscribed to as a design
  * principle.
  *
  * Returns the numer of lines read(useful for a check newsrc >= oldnewsrc)
- *    < 0 error
- *    >=0 number of lines read
+ * 	< 0 error
+ * 	>=0 number of lines read
  */
 signed long int
 read_newsrc(
@@ -933,7 +933,7 @@ print_bitmap_seq(
 
 
 /*
- *  rewrite .newsrc and position group at specifed position
+ * rewrite .newsrc and position group at specifed position
  */
 int
 pos_group_in_newsrc(
@@ -996,7 +996,7 @@ pos_group_in_newsrc(
 	unsub_created = TRUE;
 
 	/*
-	 *  split newsrc into subscribed and unsubscribed to files
+	 * split newsrc into subscribed and unsubscribed to files
 	 */
 	group_len = strlen(group->name);
 
@@ -1032,7 +1032,7 @@ pos_group_in_newsrc(
 		goto rewrite_group_done;
 
 	/*
-	 *  write subscribed groups & repositioned group to newnewsrc
+	 * write subscribed groups & repositioned group to newnewsrc
 	 */
 	if ((fp_sub = fopen(sub, "r")) == NULL)
 		goto rewrite_group_done;
@@ -1113,7 +1113,7 @@ rewrite_group_done:
 
 
 /*
- *  catchup all groups in .newsrc
+ * catchup all groups in .newsrc
  */
 void
 catchup_newsrc_file(

@@ -13,7 +13,7 @@
 #       - check for ~/.newsauth and use username/password if found
 #
 # version Number
-my $version = "1.0.3";
+my $version = "1.0.4";
 
 # TODO: put into a "my %config('NNTPServer' => 'news', ... );" array
 my $NNTPServer	= 'news';		# your NNTP servers name
@@ -382,7 +382,7 @@ sub signarticle {
 
 	$pgphead = "X-Signed-Headers: $signheaders\n";
 	foreach $header (@signheaders) {
-		if ($$HeaderR{lc($header)} =~ m/^[^\s:]+: (.+)/o) {
+		if ($$HeaderR{lc($header)} =~ m/^[^\s:]+: (.+?)\n?$/so) {
 			$pgphead .= $header.": ".$1."\n";
 		}
 	}

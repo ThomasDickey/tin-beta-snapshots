@@ -7,7 +7,7 @@
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
- * Copyright (c) 1997-2002 Dirk Nimmich <nimmich@uni-muenster.de>
+ * Copyright (c) 1997-2003 Dirk Nimmich <nimmich@uni-muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

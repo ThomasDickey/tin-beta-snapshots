@@ -6,7 +6,7 @@
  *  Updated   : 2001-11-10
  *  Notes     : #defines and structs for config.c
  *
- * Copyright (c) 1997-2002 Thomas E. Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2003 Thomas E. Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

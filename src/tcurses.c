@@ -3,11 +3,11 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-03-02
- *  Updated   : 2002-11-01
+ *  Updated   : 2002-12-18
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
- * Copyright (c) 1997-2002 Thomas Dickey <dickey@herndon4.his.com>
+ * Copyright (c) 1997-2003 Thomas Dickey <dickey@herndon4.his.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -500,6 +500,63 @@ again:
 }
 
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+wint_t
+ReadWch(
+	void)
+{
+	wint_t wch;
+
+	if (cmd_line)
+		wch = cmdReadWch();
+	else {
+		allow_resize(TRUE);
+#if defined(HAVE_NCURSESW)
+		get_wch(&wch);
+#else
+		wch = (wint_t) getch();
+
+		if (wch < KEY_MIN) {
+			/* read in the multibyte sequence */
+			char *mbs = my_malloc(MB_CUR_MAX + 1);
+			int i, res;
+
+			mbs[0] = (char) wch;
+			nodelay(stdscr, TRUE);
+			for (i = 1; i < (int) MB_CUR_MAX; i++)
+				if ((mbs[i] = getch()) == ERR)
+					break;
+			nodelay(stdscr, FALSE);
+
+			mbs[i] = '\0';
+			res = mbtowc((wchar_t *) (&wch), mbs, MB_CUR_MAX);
+			free(mbs);
+			if (res == -1)
+				return WEOF; /* error */
+		}
+#endif /* HAVE_NCURSESW */
+		allow_resize(FALSE);
+		if (need_resize) {
+			handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
+			need_resize = cNo;
+		}
+		if (wch == KEY_BACKSPACE)
+			wch = (wint_t) '\010';	/* fix for Ctrl-H - show headers */
+		else if (wch == ESC || wch >= KEY_MIN) {
+			/* TODO:
+			 * check out why using unget_wch() here causes problems at
+			 * get_arrow_key()
+			 */
+			/* unget_wch(wch); */
+			ungetch((int) wch);
+			wch = ESC;
+		}
+	}
+	return wch;
+}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+
 void
 my_printf(
 	const char *fmt,
@@ -578,6 +635,44 @@ my_fputs(
 		addstr((char *) str);
 	}
 }
+
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+void
+my_fputwc(
+	wint_t wc,
+	FILE *fp)
+{
+	if (cmd_line) {
+		if (_inraw && wc == (wint_t) '\n')
+			fputwc((wint_t) '\r', fp);
+		fputwc(wc, fp);
+	} else {
+#if defined(HAVE_NCURSESW)
+		cchar_t cc;
+
+		cc.attr = A_NORMAL;
+		cc.chars[0] = (wchar_t) wc;
+		cc.chars[1] = (wchar_t) '\0';
+
+		add_wch(&cc);
+#else
+		char *mbs;
+		int len;
+
+		mbs = my_malloc(MB_CUR_MAX + 1);
+
+		if ((len = wctomb(mbs, wc)) != -1) {
+			mbs[len] = '\0';
+			addstr(mbs);
+		} else
+			addch('?');
+
+		free(mbs);
+#endif /* HAVE_NCURSESW */
+	}
+}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 
 void

@@ -15,11 +15,11 @@ Closing NNTP data files should be done with TIN_FCLOSE(fp) as the NNTP
 socket should be kept open, whereas local spool fd's must be closed.
 TIN_FCLOSE() takes care of this.
 
-If you wish to quit reading an NNTP stream, then call drain_buffer(fp) to
+If you wish to quit reading a NNTP stream, then call drain_buffer(fp) to
 clear out any pending data on NNTP socket.
 
 nntp_command(command, valid_response, rest_of_data) should be used for
-sending all generic NNTP command. It returns an fd to the open stream
+sending all generic NNTP command. It returns a fd to the open stream
 for reading the rest of the data.
 
 
