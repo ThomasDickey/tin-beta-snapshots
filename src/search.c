@@ -460,6 +460,7 @@ search_article (
 	int start_line,
 	int lines,
 	t_lineinfo *line,
+	t_bool show_ctrl_l,
 	FILE *fp)
 {
 	char *pattern, *ptr;
@@ -490,8 +491,16 @@ search_article (
 			if (i < 0)
 				break;
 		}
+
 /* TODO consider not searching some line types ? - body search skips hdrs */
 		fseek (fp, line[i].offset, SEEK_SET);
+
+		/*
+		 * Don't search beyond ^L if hiding is enabled
+		 */
+		if (!show_ctrl_l && (line[i].flags&C_CTRLL))
+			break;
+
 		ptr = tin_fgets(fp, FALSE);
 
 		if (tinrc.wildcard) {

@@ -1,4 +1,29 @@
--- 1.5.4 release 20000419 "1959" --
+-- 1.5.4 release 20000511 "1959" --
+
+U029) Jason Faultless <jason@radar.tele2.co.uk>
+      Urs Janssen <urs@tin.org>
+      BUG. missing initialization artinfo and hdr
+      ADD. $MAILCAPS parsing and mime.types fallback
+      FIX. Makefile[.in], feed.c, mailcap.c, rfc2045.c
+
+U028) Jason Faultless <jason@radar.tele2.co.uk>
+      BUG. possible errors/crashes when 'q'uitting during article load
+      BUG. off-by-1 error in mailcap %s expansion
+      BUG. count in "%d articles mailed" sometimes incorrect
+      ADD. don't search beyond ^L when ^L hiding is enabled
+      ADD. 'V' in pager now saves/views uuencoded files where possible
+      ADD. minor doc updates
+      FIX. tin.1, proto.h, rfc2045.h, tin.h, art.c, cook.c, feed.c, filter.c
+           group.c, mailcap.c, main.c, misc.c, page.c, post.c, rfc2045.c
+           save.c, search.c, select.c
+
+ 023) Urs Janssen <urs@tin.org>
+      BUG. add Sender to FORGERY cancels
+      FIX. post.c
+
+ 021) Urs Janssen <urs@tin.org>
+      BUG. removed unsupported o from TIN_EDIT_KEYS_EXT
+      FIX. post.c
 
 U027) Thomas E. Dickey <dickey@clark.net>
       ADD. several configure cleanups/improvements

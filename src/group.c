@@ -296,7 +296,7 @@ group_page (
 			case iKeyGroupReadBasenote:
 			case iKeyGroupReadBasenote2:	/* read current basenote */
 				if (grpmenu.curr >= 0)
-					ret_code = enter_pager ((int) base[grpmenu.curr], TRUE);
+					ret_code = enter_pager ((int) base[grpmenu.curr], FALSE/*TRUE*/);
 				else
 					info_message(_(txt_no_arts));
 				break;

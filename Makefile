@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 5
 SVER	= 4
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20000419
+DVER	= 20000511
 EXE	= tin
 MANEXT	= 1
 
@@ -156,6 +156,7 @@ DOC	= \
 	$(DOCDIR)/internals.txt \
 	$(DOCDIR)/iso2asc.txt \
 	$(DOCDIR)/good-netkeeping-seal \
+	$(DOCDIR)/mime.types \
 	$(DOCDIR)/pgp.txt \
 	$(DOCDIR)/plp_snprintf.3 \
 	$(DOCDIR)/rcvars.txt \
@@ -163,13 +164,16 @@ DOC	= \
 	$(DOCDIR)/umlaute.txt \
 	$(DOCDIR)/umlauts.txt \
 	$(DOCDIR)/tin.defaults \
-	$(DOCDIR)/tin.1
+	$(DOCDIR)/tin.1 \
+	$(DOCDIR)/tools.txt
 
 TOL	= \
 	$(TOLDIR)/metamutt \
+	$(TOLDIR)/opt-case.pl \
 	$(TOLDIR)/tinpp \
 	$(TOLDIR)/tinlock \
 	$(TOLDIR)/url_handler.sh \
+	$(TOLDIR)/w2r.pl \
 	$(TOLDIR)/expand_aliases.tgz
 
 TOP	= \
@@ -401,9 +405,11 @@ chmod:
 	./install.sh \
 	./mkdirs.sh \
 	$(TOLDIR)/metamutt \
+	$(TOLDIR)/opt-case.pl \
 	$(TOLDIR)/tinpp \
 	$(TOLDIR)/tinlock \
 	$(TOLDIR)/url_handler.sh \
+	$(TOLDIR)/w2r.pl \
 	$(PCREDIR)/perltest \
 	$(CANDIR)/Build
 

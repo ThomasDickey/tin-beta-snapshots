@@ -276,7 +276,7 @@ extern void vGrpDelMailArt (struct t_article *psArt);
 
 /* mailcap.c */
 extern char *lookup_mailcap (int type, const char *subtype);
-extern char *lookup_mimetype (const char *ext);
+extern void lookup_mimetype (const char *ext, t_part *part);
 
 /* main.c */
 extern int main (int argc, char *argv[]);
@@ -570,7 +570,7 @@ extern void wait_message (int delay, const char *fmt, ...);
 extern int get_search_vectors (int *start, int *end);
 extern int search (int key, int current_art, t_bool forward);
 extern int search_active (t_bool forward);
-extern int search_article (t_bool forward, int start_line, int lines, t_lineinfo *line, FILE *fp);
+extern int search_article (t_bool forward, int start_line, int lines, t_lineinfo *line, t_bool show_ctrl_l, FILE *fp);
 extern int search_config (t_bool forward, int current, int last);
 extern int search_help (t_bool forward, int current, int last);
 extern int search_body (int current_art);

@@ -906,7 +906,12 @@ enum resizer { cNo, cYes, cRedraw };
  */
 #define UNREAD_GROUP(i)		(!active[my_group[i]].bogus && active[my_group[i]].newsrc.num_unread > 0)
 
-#define POST_PROC_TYPE(x)		(ch_post_process[x])
+/*
+ * Expands to singlar/plural version of string
+ */
+#define PLURAL(x,y)			((x == 1) ? _(y##_singular) : _(y##_plural))
+
+#define POST_PROC_TYPE(x)	(ch_post_process[x])
 
 /*
  * News/Mail group types

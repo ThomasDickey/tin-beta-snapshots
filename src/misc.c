@@ -508,7 +508,7 @@ tin_done (
 				/* FIXME: prompt for retry? (i.e. remove break) */
 				wait_message(0, _(txt_warn_newsrc), newsrc,
 					(read_newsrc_lines - wrote_newsrc_lines),
-					(read_newsrc_lines - wrote_newsrc_lines) == 1 ? _(txt_group_singular) : _(txt_group_plural),
+					PLURAL(read_newsrc_lines - wrote_newsrc_lines, txt_group),
 					OLDNEWSRC_FILE);
 				continue_prompt();
 				break;

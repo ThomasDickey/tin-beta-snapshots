@@ -134,7 +134,7 @@
 #	endif /* HAVE_ISPELL */
 #endif /* HAVE_PGP_GPG */
 #define TIN_EDIT_KEYS	"\033eoq"
-#define TIN_EDIT_KEYS_EXT	"\033eoqM"
+#define TIN_EDIT_KEYS_EXT	"\033eqM"
 #define TIN_CONT_KEYS	"\033ac"
 
 /* tmpname for responses by mail */
@@ -254,12 +254,15 @@ init_postinfo (
 }
 
 
+/*
+ * TODO: add p'o'stpone function here? would be nice but difficult
+ *       as the postpone fetcher looks for articles with corect headers
+ */
 static t_bool
 repair_article (
 	char *result)
 {
 	int ch;
-
 	ch = prompt_slk_response (iKeyPostEdit, TIN_EDIT_KEYS_EXT, _(txt_bad_article));
 
 	*result = ch;
@@ -1036,7 +1039,7 @@ check_article_to_be_posted (
 		 * Print a note about each newsgroup
 		 */
 		setup_check_article_screen (&init);
-		my_fprintf (stderr, _(txt_art_newsgroups), subject, ngcnt == 1 ? _(txt_newsgroup_singular) : _(txt_newsgroup_plural));
+		my_fprintf (stderr, _(txt_art_newsgroups), subject, PLURAL(ngcnt, txt_newsgroup));
 		my_fflush (stderr);
 		for (i = 0; i < ngcnt; i++) {
 			psGrp = psGrpFind (ngptrs[i]);
@@ -1080,7 +1083,7 @@ check_article_to_be_posted (
 #endif /* HAVE_FASCIST_NEWSADMIN */
 			}
 			if (!errors) {
-				my_fprintf (stderr, _(txt_followup_newsgroups), ftngcnt == 1 ? _(txt_newsgroup_singular) : _(txt_newsgroup_plural));
+				my_fprintf (stderr, _(txt_followup_newsgroups), PLURAL(ftngcnt, txt_newsgroup));
 				for (i = 0; i < ftngcnt; i++) {
 					psGrp = psGrpFind (ftngptrs[i]);
 					if (psGrp) {
@@ -2353,11 +2356,8 @@ mail_loop(
 
 #ifdef HAVE_PGP_GPG
 			case iKeyPostPGP:
-/* TODO			what was with the next line ? */
-/*				my_strncpy (mail_to, arts[respnum].from, sizeof (mail_to));*/
 				if (pcCopyArtHeader (HEADER_TO, filename, mail_to) && pcCopyArtHeader (HEADER_SUBJECT, filename, subject))
 					invoke_pgp_mail (filename, mail_to);
-/*fprintf(stderr, "PGPmailto:%s!\n", mail_to);*/
 				break;
 #endif /* HAVE_PGP_GPG */
 
@@ -2371,9 +2371,6 @@ mail_loop(
 			{
 				t_bool confirm = TRUE;
 
-/* TODO			Why was the code grabbing mail_to here ? */
-/*				my_strncpy (mail_to, arts[respnum].from, sizeof (mail_to));*/
-/* TODO			why do this for a mail article, why should we change anything ? */
 				checknadd_headers (filename);
 				if (prompt && prompt_yn (cLINES, prompt, FALSE) != 1)
 					confirm = FALSE;
@@ -2649,7 +2646,7 @@ mail_to_author (
 
 	if (copy_text) {
 		start_line_offset += add_mail_quote (fp, respnum);
-		
+
 		if (with_headers) {
 			fseek (pgart.raw, 0L, SEEK_SET);
 			get_initials (respnum, initials, sizeof (initials));
@@ -2695,12 +2692,11 @@ mail_to_author (
 	 * But since we don't have a chance to get the final subject back from
 	 * the mailer I think this is the best solution. -dn, 2000-03-16
 	 */
-	 if (ret_code == POSTED_OK)
-	 	update_posted_info_file (group, 'r', subject);
-	 	/* TODO update_posted_info_file elsewhere ? */
+	if (ret_code == POSTED_OK)
+		update_posted_info_file (group, 'r', subject); /* TODO update_posted_info_file elsewhere ? */
 
-	 if (tinrc.unlink_article)
-	 	unlink (nam);
+	if (tinrc.unlink_article)
+		unlink (nam);
 
 	 return ret_code;
 }
@@ -2934,7 +2930,12 @@ cancel_article (
 
 		sprintf (line2, "cyberspam!%s", line);
 		msg_add_header ("Path", line2);
+#	if 0
 		msg_add_header ("From", note_h.from);
+#	else /* some servers match Sender against From */
+		msg_add_header ("From", from_name);
+		msg_add_header ("Sender", note_h.from);
+#	endif /* 0 */
 		sprintf (line, "<cancel.%s", note_h.messageid + 1);
 		msg_add_header ("Message-ID", line);
 		msg_add_header ("X-Cancelled-By", from_name);
@@ -2971,6 +2972,7 @@ cancel_article (
 	sprintf (buf, "cancel %s", note_h.messageid);
 	msg_add_header ("Control", buf);
 
+	/* TODO: does this catch x-posts to moderated groups? */
 	if (group->moderated == 'm')
 		msg_add_header ("Approved", from_name);
 

@@ -72,54 +72,6 @@ static void yank_active_file (void);
  */
 t_menu selmenu = { 1, 0, 0, 0, show_selection_page, draw_group_arrow };
 
-#if 0
-/*
- *  TRUE, if we should check whether it's time to reread the active file
- *  after this keypress.
- */
-static t_bool
-continual_key (
-	int ch,
-	int ch1)
-{
-	switch(ch) {
-#ifndef NO_SHELL_ESCAPE
-		case iKeyShellEscape:
-#endif /* !NO_SHELL_ESCAPE */
-		/* case iKeyLookupMessage: */
-		case iKeyOptionMenu:
-		case iKeyQuit:
-		case iKeyQuitTin:
-		case iKeyPostponed:
-		case iKeySelectResetNewsrc:
-		case iKeySelectBugReport:
-		case iKeyDisplayPostHist:
-		case iKeySelectQuitNoWrite:
-		case iKeySelectSyncActive:
-		case iKeySelectHelp:
-		case iKeySelectPost:
-			return FALSE;
-
-#ifndef WIN32
-		case ESC:
-#	ifdef HAVE_KEY_PREFIX
-		case KEY_PREFIX:
-#	endif /* HAVE_KEY_PREFIX */
-			switch(ch1) {
-#endif /* !WIN32 */
-				case KEYMAP_LEFT:
-					return FALSE;
-#ifndef WIN32
-			}
-			nobreak;	/* FALLTHROUGH */
-#endif /* !WIN32 */
-
-		default:
-			return TRUE;
-	}
-}
-#endif /* 0 */
-
 
 static int
 select_left (
@@ -137,53 +89,6 @@ select_right (
 }
 
 
-#if 0
-static int
-sel_handle_keypad (
-	int ch,
-	int ch1)
-{
-#ifdef WIN32
-	ch = ch1;
-#endif /* WIN32 */
-	switch (ch) {
-		case KEYMAP_UP:
-			ch = iKeyUp;
-			break;
-		case KEYMAP_DOWN:
-			ch = iKeyDown;
-			break;
-		case KEYMAP_LEFT:
-			ch = select_left();
-			break;
-		case KEYMAP_RIGHT:
-			ch = select_right();
-			break;
-		case KEYMAP_PAGE_UP:
-			ch = iKeyPageUp;
-			break;
-		case KEYMAP_PAGE_DOWN:
-			ch = iKeyPageDown;
-			break;
-		case KEYMAP_HOME:
-			ch = iKeyFirstPage;
-			break;
-		case KEYMAP_END:
-			ch = iKeyLastPage;
-			break;
-#ifndef WIN32
-		case KEYMAP_MOUSE:
-			ch = mouse_action(ch, select_left, select_right);
-			break;
-#endif /* !WIN32 */
-		default:
-			break;
-	}
-	return ch;
-}
-#endif /* 0 */
-
-
 void
 selection_page (
 	int start_groupnum,
@@ -191,9 +96,6 @@ selection_page (
 {
 	char buf[LEN];
 	int i, n, ch;
-#if 0
-	int ch1 = 0;
-#endif /* 0 */
 
 	selmenu.curr = start_groupnum;
 
@@ -219,26 +121,6 @@ selection_page (
 
 		set_xclick_on ();
 		ch = handle_keypad(select_left, select_right);
-#if 0
-		ch = ReadCh ();
-		ch1 = KEYMAP_UNKNOWN;
-#ifndef WIN32
-		switch(ch) {
-			case ESC:	/* (ESC) common arrow keys */
-#	ifdef HAVE_KEY_PREFIX
-			case KEY_PREFIX:
-#	endif /* HAVE_KEY_PREFIX */
-				ch1 = get_arrow_key (ch);
-				ch = sel_handle_keypad(ch, ch1);
-				break;
-			default:
-				break;
-		}
-#endif /* !WIN32 */
-
-		if (continual_key (ch, ch1))
-			(void) resync_active_file ();
-#endif /* 0 */
 
 		switch (ch) {
 
@@ -741,7 +623,7 @@ yank_active_file (
 				selmenu.curr = my_group_add (oldgroup);
 			set_groupname_len (yank_in_active_file);
 			show_selection_page ();
-			info_message (_(txt_added_groups), selmenu.max - oldmax, (selmenu.max - oldmax) == 1 ? _(txt_group_singular) : _(txt_group_plural));
+			info_message (_(txt_added_groups), selmenu.max - oldmax, PLURAL(selmenu.max - oldmax, txt_group));
 		} else
 			info_message (_(txt_no_groups_to_yank_in));
 	} else {												/* Yank out */

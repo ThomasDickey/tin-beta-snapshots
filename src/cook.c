@@ -19,7 +19,7 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea, Rich Skrenta.
+ *    This product includes software developed by Jason Faultless
  * 4. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
@@ -128,6 +128,7 @@ put_cooked (
 	char *p, *bufp;
 	char buf[LEN];
 	static int overflow = 0;
+	static int saved_flags = 0;
 	va_list ap;
 
 	va_start(ap, fmt);
@@ -135,12 +136,12 @@ put_cooked (
 
 	bufp = buf;
 
-	for (p=bufp; *p; p++) {
+	for (p = bufp; *p; p++) {
 		if (*p == '\n' || overflow+p-bufp >= cCOLS) {
 			fwrite(bufp, p-bufp, 1, art->cooked);
 
 			fputs("\n", art->cooked);
-			bufp=p;
+			bufp = p;
 			overflow = 0;
 
 			/* Skip over newline if that's what split the current buffer */
@@ -152,7 +153,11 @@ put_cooked (
 				art->cookl[0].offset = 0;
 			}
 
-			art->cookl[art->cooked_lines].flags = flags;
+			/*
+			 * Pick up flags from a previous partial write
+			 */
+			art->cookl[art->cooked_lines].flags = flags | saved_flags;
+			saved_flags = 0;
 			art->cooked_lines++;
 
 			/*
@@ -169,10 +174,12 @@ put_cooked (
 	 * If there is anything left over, then it must be a non \n terminated
 	 * partial line from base64 decoding etc.. Dump it now and the rest of
 	 * the line (with the \n) will fill in the t_lineinfo
+	 * We must save the flags now as the rest of the line may not have the same properties
 	 * We need to keep the length for accounting purposes
 	 */
 	if (*bufp != '\0') {
 		fputs(bufp, art->cooked);
+		saved_flags = flags;
 		overflow += strlen(bufp);
 	}
 
@@ -192,7 +199,7 @@ decode_text_line(
 	char buf[HEADER_LEN];
 	static char buf2[HEADER_LEN];
 	int chs;
-	t_bool last_char_was_cr = FALSE;
+	t_bool last_char_was_cr = FALSE;	/* TODO - needs to be static ?? */
 
 	chs = mmdecode(line, encoding == ENCODING_BASE64 ? 'b' : 'q', '\0', buf2, charset);
 	if (chs >= 0)
@@ -262,6 +269,16 @@ new_uue(
 	ptr->params->name = my_strdup("name");
 	ptr->params->value = my_strdup(str_trim(name));
 	ptr->params->next = NULL;
+
+	ptr->encoding = ENCODING_UUE;	/* treat as x-uuencode */
+
+	ptr->offset = ftell(art->raw);
+
+	/*
+	 * If an extension is present, try and add a Content-Type
+	 */
+	if ((name = strrchr(name, '.')) != NULL)
+		lookup_mimetype (name+1, ptr);
 
 	return ptr;
 }
@@ -364,7 +381,7 @@ process_text_body_part(
 				in_sig = TRUE;
 				if (in_uue) {
 					in_uue = FALSE;
-					put_cooked (C_UUE, txt_uue, "incomplet ", curruue->lines, get_filename(curruue->params));
+					put_cooked (C_UUE, txt_uue, "incomplete ", curruue->lines, get_filename(curruue->params));
 				}
 			}
 		}
@@ -402,24 +419,22 @@ process_text_body_part(
 					is_uubody = TRUE;
 				else if (len == sum+1+1)
 					is_uubody = TRUE;
-#ifdef DEBUG
-if (debug == 2)
-	fprintf(stderr, "%s sum=%d len=%d (%s)\n", bool_unparse(is_uubody), sum, len, line);
-#endif /* DEBUG */
+#ifdef DEBUG_ART
+fprintf(stderr, "%s sum=%d len=%d (%s)\n", bool_unparse(is_uubody), sum, len, line);
+#endif /* DEBUG_ART */
 			}
 
 			if (in_uue) {
 				if (is_uubody)
 					curruue->lines++;
 				else {
-#if 0
-#	ifdef DEBUG
-		if (debug == 2)
-			fprintf(stderr, "not a uue line while reading a uue body?\n");
-#	endif /* DEBUG */
-					in_uue = FALSE;
-					put_cooked (C_UUE, txt_uue, "incomplete ", curruue->lines, get_filename(curruue->params));
-#endif /* 0 */
+					if (line[0] == '\n') {		/* Blank line in a uubody - definitely a failure */
+#	ifdef DEBUG_ART
+						fprintf(stderr, "not a uue line while reading a uue body?\n");
+#	endif /* DEBUG_ART */
+						in_uue = FALSE;
+						put_cooked (C_UUE, txt_uue, "incomplete ", curruue->lines, get_filename(curruue->params));
+					}
 				}
 			} else {
 #if 0
@@ -479,7 +494,7 @@ if (debug == 2)
 /* TODO integrate above into expand_ctrl_chars */
 
 		if (expand_ctrl_chars (to, line, sizeof(to)))
-			flags |= C_CTRLF;				/* Line contains form-feed */
+			flags |= C_CTRLL;				/* Line contains form-feed */
 
 		put_cooked (flags, "%s", to);
 	} /* for */
@@ -529,6 +544,7 @@ header_wanted(
 }
 
 
+/* #define DEBUG_ART	1 */
 #ifdef DEBUG_ART
 static void
 dump_cooked(
@@ -634,7 +650,7 @@ cook_article(
 				ptr->depth * 4, "",
 				content_types[ptr->type], ptr->subtype,
 				content_encodings[ptr->encoding], ptr->lines,
-				(name)?", name: ":"", (name)?name:"");
+				(name)? ", name: " : "", (name) ? name: "");
 
 			/* Try to view anything of type text, may need to review this */
 			if (IS_PLAINTEXT(ptr))
@@ -653,7 +669,7 @@ cook_article(
 					0, "",
 					content_types[hdr->ext->type], hdr->ext->subtype,
 					content_encodings[hdr->ext->encoding], hdr->ext->lines,
-					(name)?", name: ":"", (name)?name:"");
+					(name)? ", name: " : "", (name) ? name : "");
 		}
 	}
 

@@ -51,14 +51,13 @@
 #	include  "rfc2045.h"
 #endif /* !RFC2045_H */
 
-#define FIRST_HEADER	4
-
+#define PAGE_HEADER	4
 
 /*
  * size of page header over and above INDEX_TOP
  * [ Used because NOTESLINES only specifies a 2 line header ]
  */
-#define HDR_ADJUST	(FIRST_HEADER-INDEX_TOP)
+#define HDR_ADJUST	(PAGE_HEADER-INDEX_TOP)
 
 /*
  * The number of lines available to display actual article text
@@ -91,7 +90,7 @@ static int rotate;				/* 0=normal, 13=rot13 decode */
 static int search_line;			/* Line to commence next search from */
 
 static t_bool show_all_headers;	/* CTRL-H with headers specified */
-static t_bool reveal_ctrl_f;	/* set when ^L hiding is off */
+static t_bool reveal_ctrl_l;	/* set when ^L hiding is off */
 static t_bool hide_uue;			/* set when uuencoded sections are 'hidden' */
 
 /*
@@ -155,14 +154,6 @@ handle_pager_keypad(void)
 				case KEYMAP_DOWN:
 					ch = iKeyDown;
 					break;
-#if 0
-				case KEYMAP_UP:
-					ch = iKeyPageUp;
-					break;
-				case KEYMAP_DOWN:
-					ch = iKeyPageDown;
-					break;
-#endif /* USE_CURSES */
 				case KEYMAP_PAGE_UP:
 					ch = iKeyPageUp;
 					break;
@@ -179,13 +170,13 @@ handle_pager_keypad(void)
 				case KEYMAP_MOUSE:
 					switch (xmouse) {
 						case MOUSE_BUTTON_1:
-							if (xrow < 3 || xrow >= cLINES-1)/* TODO fix count */
+							if (xrow < PAGE_HEADER || xrow >= cLINES-1)
 								ch = iKeyPageDown;
 							else
 								ch = iKeyPageNextUnread;
 							break;
 						case MOUSE_BUTTON_2:
-							if (xrow < 3 || xrow >= cLINES-1)/* TODO fix count */
+							if (xrow < PAGE_HEADER || xrow >= cLINES-1)
 								ch = iKeyPageUp;
 							else
 								ch = iKeyQuit;
@@ -283,10 +274,6 @@ show_page (
 				else
 					set_xclick_on ();
 				mouse_click_on = !mouse_click_on;
-#ifdef DEBUG
-				if (debug == 2)
-					fprintf(stderr, "Mouse toggle %d\n", mouse_click_on);
-#endif /* DEBUG */
 				break;
 
 			case iKeyPageUp:		/* page up */
@@ -342,17 +329,22 @@ page_goto_next_unread:
 
 			case iKeyFirstPage:		/* beginning of article */
 			case iKeyPageFirstPage2:
-				curr_line = 0;
-/* TODO don't redr if was on first page */
-				draw_page (group->name, 0);
+				if (curr_line != 0) {
+					curr_line = 0;
+					draw_page (group->name, 0);
+				}
 				break;
 
 			case iKeyLastPage:		/* end of article */
 			case iKeyPageLastPage2:
-				/* TODO again wrong if header size changes */
-				curr_line = artlines - ARTLINES;	/* Display a full last page for neatness */
-/* TODO don't redr if was on last page */
-				draw_page (group->name, 0);
+#ifdef DEBUG
+fprintf(stderr, "curr_line %d, artlines %d, ARTLINES %d, c+a %d\n", curr_line, artlines, ARTLINES, curr_line+artlines);
+#endif /* DEBUG */
+				if (curr_line + ARTLINES != artlines) {
+					/* Display a full last page for neatness */
+					curr_line = artlines - ARTLINES;
+					draw_page (group->name, 0);
+				}
 				break;
 
 			case iKeyUp:		/* line up */
@@ -460,7 +452,7 @@ page_goto_next_unread:
 
 			case iKeySearchSubjF:	/* search in article */
 			case iKeySearchSubjB:
-				if ((i = search_article ((ch == iKeySearchSubjF), search_line, artlines, artline, note_fp)) == -1)
+				if ((i = search_article ((ch == iKeySearchSubjF), search_line, artlines, artline, reveal_ctrl_l, note_fp)) == -1)
 					break;
 
 				process_search();
@@ -562,7 +554,7 @@ page_goto_next_unread:
 				break;
 
 			case iKeyPageReveal:			/* toggle hiding after ^L */
-				reveal_ctrl_f = !reveal_ctrl_f;
+				reveal_ctrl_l = !reveal_ctrl_l;
 				draw_page (group->name, 0);
 				break;
 
@@ -800,7 +792,7 @@ return_to_index:
 				break;
 
 			case iKeyPageSkipIncludedText:	/* skip included text */
-				for (i=curr_line; i < artlines /*TODO - ARTLINES*/; i++) {
+				for (i=curr_line; i < artlines; i++) {
 					if (!(artline[i].flags & (C_QUOTE1|C_QUOTE2|C_QUOTE3)))
 						break;
 				}
@@ -854,7 +846,7 @@ draw_page (
 	int part)
 {
 	char *buff;
-	int i, top;
+	int i;
 	int end;	/* last line to draw */
 
 	signal_context = cPage;
@@ -871,19 +863,11 @@ draw_page (
 
 	buff = my_malloc(cCOLS+1);	/* Need to account for \n */
 
-	/*
-	 * If the header would change, redo the whole lot
-	 */
-	if ((curr_line == 1 && part > 0) || (curr_line == 0 && part < 0))
-		part = 0;
-
-	if (part == 0)
+	if (part == 0) {
 		ClearScreen();
-	else
+		show_first_header (group);
+	} else
 		MoveCursor (0, 0);
-
-	show_first_header (group);
-	top = FIRST_HEADER;
 
 	/* Down-scroll, only redraw bottom 'part' lines of screen */
 	i = (part > 0) ? ARTLINES-part : 0;
@@ -891,7 +875,7 @@ draw_page (
 	/* Up-scroll, only redraw the top 'part' lines of screen */
 	end = (part < 0) ? -part : ARTLINES;
 
-	for (; i<end; i++) {
+	for (; i < end; i++) {
 		t_lineinfo *curr;
 
 		if (curr_line + i >= artlines)		/* ran out of article */
@@ -920,23 +904,23 @@ draw_page (
 
 #ifdef HAVE_COLOR
 #	ifdef USE_CURSES
-		move(i+top, 0);
+		move(i+PAGE_HEADER, 0);
 #	else
-		MoveCursor (i+top, 0);
+		MoveCursor (i+PAGE_HEADER, 0);
 #	endif /* USE_CURSES */
-		print_color (i+top, buff, curr->flags);
+		print_color (i+PAGE_HEADER, buff, curr->flags);
 #else
 #	ifdef USE_CURSES
 		my_fputs(buff, stdout);
 		my_fputs(cCRLF, stdout);
 #	else
-		MoveCursor (i+top, 0);
+		MoveCursor (i+PAGE_HEADER, 0);
 		my_printf ("%s" cCRLF, buff);
 #	endif /* USE_CURSES */
 #endif /* HAVE_COLOR */
 
 		/* Blank the screen after a ^L (only occurs when showing cooked) */
-		if (!reveal_ctrl_f && (curr->flags & C_CTRLF)) {
+		if (!reveal_ctrl_l && (curr->flags & C_CTRLL)) {
 			CleartoEOS();
 			break;
 		}
@@ -981,9 +965,14 @@ show_mime_article (
 	offset = ftell (fp);
 	rewind (fp);
 
-	if ((mm = getenv("METAMAIL")))
+	if ((mm = getenv("METAMAIL"))) {
+		if (strcmp (mm, "(internal)") == 0) {	/* Special hack - use internal viewer */
+			draw_page (CURR_GROUP.name, 0);
+			decode_save_mime (&pgart);
+			return;
+		}
 		snprintf (buf, sizeof(buf)-1, mm);
-	else
+	} else
 		snprintf (buf, sizeof(buf)-1, METAMAIL_CMD, PATH_METAMAIL);
 
 	EndWin();
@@ -997,10 +986,6 @@ show_mime_article (
 	} else
 		info_message (_(txt_error_metamail_failed), strerror(errno));
 
-	/*
-	 * if we don't set note_end the undecoded article is displayed
-	 * after metamail quits
-	 */
 	Raw(TRUE);
 	InitWin ();
 	continue_prompt ();
@@ -1018,7 +1003,7 @@ show_mime_article (
 
 
 /*
- * FIRST_HEADER defines the size in lines of this header
+ * PAGE_HEADER defines the size in lines of this header
  */
 static void
 show_first_header (
@@ -1215,20 +1200,29 @@ load_article(
 	/*
 	 * Remember current & previous articles for '-' command
 	 */
+#if 0
 	if (new_respnum != this_resp) {
 		last_resp = this_resp;
 		this_resp = new_respnum;		/* Set new art globally */
 	} else
 		goto already_open;
+#endif /* 0 */
+	if (new_respnum == this_resp)
+{
+#ifdef DEBUG
+fprintf(stderr, "ART %d already open\n", new_respnum);
+#endif /* DEBUG */
+		goto already_open;
+}
 
 	art_close (&pgart);			/* close previously opened art in pager */
 
 	make_group_path (CURR_GROUP.name, group_path);
 
-	switch (art_open (&arts[this_resp], group_path, TRUE, &pgart)) {
+	switch (art_open (&arts[new_respnum], group_path, TRUE, &pgart)) {
 
 		case ART_UNAVAILABLE:
-			art_mark_read (&CURR_GROUP, &arts[this_resp]);
+			art_mark_read (&CURR_GROUP, &arts[new_respnum]);
 			wait_message (1, _(txt_art_unavailable));
 			nobreak;	/* FALLTHROUGH */
 
@@ -1239,10 +1233,13 @@ load_article(
 #if 0
 			if (prompt_yn(cLINES, "Fake art unavailable ? ", FALSE) == 1) {
 				art_close(&pgart);
-				art_mark_read (&CURR_GROUP, &arts[this_resp]);
+				art_mark_read (&CURR_GROUP, &arts[new_respnum]);
 				return GRP_ARTFAIL;
 			}
-#endif
+#endif /* 0 */
+			last_resp = this_resp;
+			this_resp = new_respnum;		/* Set new art globally */
+
 			break;
 	}
 
@@ -1260,27 +1257,24 @@ already_open:
 	search_line = -1;
 
 	rotate = 0;			/* normal mode, not rot13 */
-	reveal_ctrl_f = FALSE;
+	reveal_ctrl_l = FALSE;
 	hide_uue = tinrc.hide_uue;
 
-	/* TODO too many draw_page()s here - do it once on entry and then sort it out ? */
+	/*
+	 * Automatically invoke attachment viewing if requested
+	 */
 #ifdef HAVE_METAMAIL
 	if (tinrc.use_metamail && note_h->mime && !(IS_PLAINTEXT(note_h->ext))) {
 		if (tinrc.ask_for_metamail) {
 			draw_page (CURR_GROUP.name, 0);
-			if (prompt_yn (cLINES, _(txt_use_mime), TRUE) == 1) {
+			if (prompt_yn (cLINES, _(txt_use_mime), TRUE) == 1)
 				show_mime_article (pgart.raw);
-/*				rewind (pgart.raw);*/
-				draw_page (CURR_GROUP.name, 0);
-			}
-/* TODO Footer not redrawn */
-		} else {
+		} else
 			show_mime_article (pgart.raw);
-			draw_page (CURR_GROUP.name, 0);
-		}
-	} else
+	}
 #endif /* HAVE_METAMAIL */
-		draw_page (CURR_GROUP.name, 0);
+
+	draw_page (CURR_GROUP.name, 0);
 
 	return 0;
 }
@@ -1322,18 +1316,16 @@ process_search(
 	 * Is matching line off the current view ?
 	 * Reposition within article if needed, try to get matched line
 	 * in the middle of the screen
- * TODO this is a bit broken since ARTLINES is not constant when leaving the 1st page
- * the (ideal_pos == 0 ? 2 : 0) should go away if we get constant header sizes
 	 */
 	if (i < curr_line || i >= curr_line+ARTLINES) {
 		int ideal_pos = i - (ARTLINES / 2);
 
 		if (ideal_pos + ARTLINES > artlines)		/* Off the end */
-			curr_line = artlines - ARTLINES - (ideal_pos == 0 ? 2 : 0);
+			curr_line = artlines - ARTLINES;
 		else										/* Pos is just fine */
 			curr_line = ideal_pos;
 	}
-	/* TODO un-inverse the previous search string */
+
 	draw_page (CURR_GROUP.name, 0);
 	search_line = i;								/* draw_page() resets this to 0 */
 

@@ -193,10 +193,16 @@ feed_article(
 
 	switch (function) {
 		case FEED_MAIL:
-			if (mail_to_someone (tinrc.default_mail_address, confirm, openartptr) == POSTED_NONE)
-				ok = FALSE;
-			else			/* POSTED_REDRAW, POSTED_OK */
-				redraw_screen = TRUE;
+			switch (mail_to_someone (tinrc.default_mail_address, confirm, openartptr)) {
+				case POSTED_REDRAW:
+					redraw_screen = TRUE;
+					/* FALLTHROUGH */
+				case POSTED_NONE:
+					ok = FALSE;
+					break;
+				case POSTED_OK:
+					break;
+			}
 
 			confirm = bool_not(ok);		/* Only confirm the next one after a failure */
 			break;
@@ -471,7 +477,7 @@ feed_articles (
 					processed_ok = save_art_to_file (0, FALSE, "", &pgart);
 				else {
 					t_openartinfo openart;
-
+					memset (&openart, 0, sizeof(t_openartinfo));
 					if (art_open (&arts[respnum], group_path, do_rfc1521_decoding, &openart) != 0)
 						break;
 					processed_ok = save_art_to_file (0, FALSE, "", &openart);
@@ -614,22 +620,19 @@ got_sig_pipe_while_piping:
 			if (tinrc.use_mailreader_i)
 				info_message (_(txt_external_mail_done));
 			else
-				info_message (_(txt_articles_mailed), count,
-					(count > 1 ? _(txt_article_plural) : _(txt_article_singular)));
+				info_message (_(txt_articles_mailed), count, PLURAL(count, txt_article));
 			break;
 
 #ifndef DISABLE_PRINTING
 		case FEED_PRINT:
-			info_message (_(txt_articles_printed), count,
-				(count > 1 ? _(txt_article_plural) : _(txt_article_singular)));
+			info_message (_(txt_articles_printed), count, PLURAL(count, txt_article));
 			break;
 #endif /* !DISABLE_PRINTING */
 
 		case FEED_SAVE:
 		case FEED_AUTOSAVE_TAGGED:
 			if (ch == iKeyFeedArt)
-				info_message (_(txt_saved_arts), count,
-					(count > 1 ? _(txt_article_plural) : _(txt_article_singular)));
+				info_message (_(txt_saved_arts), count, PLURAL(count, txt_article));
 			break;
 		default:
 			break;

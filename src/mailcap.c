@@ -19,7 +19,7 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea, Rich Skrenta.
+ *    This product includes software developed by Jason Faultless
  * 4. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
@@ -41,19 +41,18 @@
 #	include "tin.h"
 #endif /* !TIN_H */
 #if 0
-#ifndef TCURSES_H
-#	include "tcurses.h"
-#endif /* !TCURSES_H */
-#ifndef MENUKEYS_H
-#	include  "menukeys.h"
-#endif /* !MENUKEYS_H */
-#ifndef RFC2045_H
-#	include  "rfc2045.h"
-#endif /* !RFC2045_H */
-#endif
+#	ifndef TCURSES_H
+#		include "tcurses.h"
+#	endif /* !TCURSES_H */
+#	ifndef MENUKEYS_H
+#		include  "menukeys.h"
+#	endif /* !MENUKEYS_H */
+#	ifndef RFC2045_H
+#		include  "rfc2045.h"
+#	endif /* !RFC2045_H */
+#endif /* 0 */
 
-#define DEFAULT_MAILCAP		"/etc/mailcap"
-
+#define DEFAULT_MAILCAPS "~/.mailcap:/etc/mailcap:/usr/etc/mailcap:/usr/local/etc/mailcap"
 
 /*
  * Parse a mailcap line for matching type and subtype
@@ -68,30 +67,10 @@ parse_line(
 	t_bool *wild)
 {
 	char *command;
-	char *ptr;
 	int i;
-	t_bool quote = FALSE;
-	t_bool backquote = FALSE;
 
 	strtok (line, ";");
 	command = strtok (NULL, "\n");		/* Get the command info */
-
-	/*
-	 * Split off the command name - don't split on backquoted ; or
-	 * ; in " "
-	 */
-	for (ptr = command; *ptr; ptr++) {
-		if (*ptr == '\"')
-			quote = !quote;
-		else if (*ptr == '\\')
-			backquote = TRUE;
-		else if (*ptr == ';') {
-			if (!(quote || backquote))
-				break;
-		} else if (backquote)
-			backquote = FALSE;
-	}
-	*ptr = '\0';
 
 	strtok (line, "/");					/* Split the type+subtype */
 
@@ -127,20 +106,33 @@ lookup_mailcap(
 	int type,
 	const char *subtype)
 {
-	FILE *fp;
+	FILE *fp = (FILE *) 0;
 	char buf[LEN];
 	char mailcap[LEN];
-	char mailcap_file[PATH_LEN];
+	char mailcaps[LEN];
 	char *command;
-	char *ptr = buf;
+	char *ptr;
 	t_bool wild;
 
-	strcpy (mailcap_file, get_val ("MAILCAP", DEFAULT_MAILCAP));	
-
-	if ((fp = fopen(mailcap_file, "r")) == NULL)
+	/*
+	 * lookup all files given in $MAILCAPS, if $MAILCAPS is unset
+	 * use DEFAULT_MAILCAPS as fallback serachpath
+	 */
+	ptr = get_val("MAILCAPS", DEFAULT_MAILCAPS);
+	strncpy(mailcaps, ptr, sizeof(mailcaps) - 1);
+	ptr = strtok(mailcaps, ":");
+	while (ptr != (char *) 0) {
+		/* expand ~ and/or $HOME etc. */
+		strfpath (ptr, mailcap, sizeof (mailcap), homedir, (char *) 0, (char *) 0, (char *) 0);
+		if ((fp = fopen(mailcap, "r")) != (FILE *) 0)
+			break;
+		ptr = strtok(NULL, ":");
+	}
+	if (!fp)	/* no mailcaps file */
 		return NULL;
 
 	mailcap[0] = '\0';
+	ptr = buf;
 
 	while ((fgets (ptr, sizeof(buf) - strlen(buf), fp)) != NULL) {
 
@@ -164,8 +156,7 @@ lookup_mailcap(
 		}
 	}
 #ifdef DEBUG
-	if (debug == 2)
-		fprintf(stderr, "Best match: (%s) char 0 %d\n", mailcap, mailcap[0]);
+	fprintf(stderr, "Best match: (%s) char 0 %d\n", mailcap, mailcap[0]);
 #endif /* DEBUG */
 	fclose (fp);
 
@@ -178,42 +169,55 @@ lookup_mailcap(
 
 /*
  * Match a filename extension to a content-type / subtype pair in mime.types
- * Use this as input to lookup_mailcap() and return an appropriate command
+ * Update the passed-in attachment structure with type/subtype if found
  */
-char *
+void
 lookup_mimetype (
-	const char *ext)
+	const char *ext,
+	t_part *part)
 {
-	FILE *fp;
+	FILE *fp = (FILE *) 0;
 	char buf[LEN];
-	char *exts;
 
-	if ((fp = fopen("/etc/mime.types", "r")) == NULL)
-		return NULL;
+	/*
+	 * check $HOME/.mime.types first, then /etc/mime.types and 
+	 * TIN_DEFAULTS_DIR/mime.types
+	 */
+	snprintf(buf, sizeof(buf), "%s/.mime.types", homedir);
+	fp = fopen (buf, "r");
+	if (!fp)
+		fp = fopen("/etc/mime.types", "r");
+#ifdef TIN_DEFAULTS_DIR
+	if (!fp) {
+		snprintf(buf, sizeof(buf), "%s/mime.types", TIN_DEFAULTS_DIR);
+		fp = fopen(buf, "r");
+	}
+#endif /* TIN_DEFAULTS_DIR */
+
+	if (!fp)
+		return;
 
 	while ((fgets (buf, sizeof(buf), fp)) != NULL) {
+		char *exts;
 
 		if (buf[0] == '#' || buf[0] == '\n')		/* Skip comments & blank lines */
 			continue;
 
 		strtok(buf, " \t\n");
+
 		while ((exts = strtok (NULL, " \t\n")) != NULL) {	/* Work through list of extensions */
 			if (strcasecmp (ext, exts) == 0) {
 				int i;
 
 				if ((i = content_type (strtok(buf, "/"))) != -1) {
 					char *ptr;
-#ifdef DEBUG
-					if (debug == 2)
-						fprintf(stderr, "Matched type %d\n", i);
-#endif /* DEBUG */
-					if ((ptr = lookup_mailcap(i, strtok(NULL, "\n"))) != NULL) {
-#ifdef DEBUG
-						if (debug == 2)
-							fprintf(stderr, "looked up %s\n", ptr);
-#endif /* DEBUG */
+
+					if ((ptr = strtok(NULL, "\n")) != NULL) {
+						part->type = i;
+						part->subtype = my_strdup(ptr);
+
 						fclose (fp);
-						return ptr;
+						return;
 					}
 				}
 			}
@@ -221,6 +225,5 @@ lookup_mimetype (
 	}
 
 	fclose (fp);
-
-	return NULL;
+	return;
 }

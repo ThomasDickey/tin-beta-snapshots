@@ -138,7 +138,7 @@ struct t_header
 
 #	define C_URL		0x100	/* Contains URL */
 #	define C_MAIL		0x200	/* Contains mailto: */
-#	define C_CTRLF		0x400	/* Contains ^F */
+#	define C_CTRLL		0x400	/* Contains ^L */
 
 typedef struct lineinfo
 {

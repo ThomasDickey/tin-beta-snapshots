@@ -1006,6 +1006,16 @@ Toggle $\fBTEX2ISO\fR decoding for current article.
 .B %
 Toggle ROT-13 decoding for this article. This is the same as \fBd\fR.
 .TP
+.B (
+Toggle the display of uuencoded sections on/off. The default behaviour is
+taken from the hide_uue variable in the tinrc file.
+.TP
+.B )
+The formfeed character (^L) is often used to hide 'spoilers' that the reader
+may not initially wish to see when viewing an article. Any text after a formfeed
+is not displayed. This keypress acts like a reveal key and turns the hidden text
+back on. Scrolling the formfeed off the screen will also reveal the text.
+.TP
 .B -
 Re-enter the last message that was viewed.
 .TP
@@ -1558,6 +1568,7 @@ the newgroup description can be displayed. Default is 32.
 If ON, then sections of uuencoded data will be shown with a single tag
 line showing the size and filename (much the same as a MIME attachment).
 Otherwise the raw uuencoded data is displayed. Default is OFF.
+This behaviour can also be toggled in the article viewer.
 .TP
 .B info_in_last_line
 If ON, show current group description or article subject in the last line
@@ -2617,9 +2628,15 @@ these strings. The matching is case-insensitive. Example:
 .sp
 \fISPAMTRAP=spam,delete,remove\fP
 .TP
+.B MAILCAPS
+Set this variable to point to your mailcaps file. If unset
+\fI/etc/mailcap\fP will be used.
+.TP
 .B METAMAIL
 Set this variable to point to \fBmetamail\fR(1) or a replacement
 (i.e. metamutt).
+.TP
+.B MM_CHARSET
 .TP
 .B ISPELL
 Set this variable to point to \fBispell\fR(1) or a replacement and it's

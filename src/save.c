@@ -284,8 +284,7 @@ check_start_save_any_news (
 		if (art_count) {
 			if (verbose)
 				wait_message (0, _(txt_saved_group), art_count, hot_count,
-					(art_count > 1 ? _(txt_article_plural) : _(txt_article_singular)),
-					group->name);
+					PLURAL(art_count, txt_article), group->name);
 			unread_news = TRUE;
 		}
 	}
@@ -309,8 +308,7 @@ check_start_save_any_news (
 		case MAIL_ANY_NEWS:
 		case SAVE_ANY_NEWS:
 			sprintf (buf, _(txt_saved_summary), (function == MAIL_ANY_NEWS ? _(txt_mailed) : _(txt_saved)),
-					saved_arts, (saved_arts > 1 ? _(txt_article_plural) : _(txt_article_singular)),
-					group_count, (group_count > 1 ? _(txt_group_plural) : _(txt_group_singular)));
+					PLURAL(saved_arts, txt_article), PLURAL(group_count, txt_group));
 			fprintf (fp_log, "%s", buf);
 			if (verbose)
 				wait_message (0, buf);
@@ -1203,8 +1201,7 @@ post_process_uud (
 		item = UUGetFileListItem(i);
 		my_flush();
 	}
-	my_printf(_(txt_libuu_saved), open_out_file, num_save, errors,
-		(errors > 1 ? _(txt_error_plural) : _(txt_error_singular)));
+	my_printf(_(txt_libuu_saved), open_out_file, num_save, errors, PLURAL(errors, txt_error));
 	my_printf(cCRLF);
 	UUCleanUp();
 	delete_processed_files (auto_delete); /* TRUE = auto-delete files */
@@ -1585,6 +1582,147 @@ print_art_seperator_line (
 }
 
 
+static void
+start_viewer(
+	char *app,
+	char *path)
+{
+	char *ptr, *toptr;
+	char viewer[PATH_LEN];
+	t_bool quote = FALSE;
+	t_bool backquote = FALSE;
+	t_bool percent = FALSE;
+
+	/*
+	 * Split off the command name - don't split on backquoted ; or ; in " "
+	 * Substitute %s with the filename - again don't substitute if in \ or "
+	 */
+	for (ptr = app, toptr = viewer; *ptr; ptr++) {
+		if (*ptr == '\"')
+			quote = !quote;
+		else if (*ptr == '\\')
+			backquote = TRUE;
+		else if (*ptr == '%' && !backquote && !quote)
+			percent = TRUE;
+		else if (*ptr == ';' && !backquote && !quote)
+			break;
+		else if (*ptr == 's' && percent) {
+			sprintf (toptr-1, "\"%s\"", path);
+			toptr += strlen(path) + 1;
+		} else if (backquote)
+			backquote = FALSE;
+		else if (percent)
+			percent = FALSE;
+
+		if (!(*ptr == 's' && percent))
+			*toptr++ = *ptr;
+	}
+	*toptr = '\0';
+
+	wait_message(1, "Starting %s\n", viewer);
+	system(viewer);
+}
+
+
+#define HAVE_UUDECODE 1
+#ifdef HAVE_UUDECODE
+	static void uudecode_line(char *buf, FILE *fp);
+#endif /* HAVE_UUDECODE */
+
+static void
+decode_save_one(
+	t_part *ptr,
+	FILE *rawfp)
+{
+	char buf[2048], buf2[2048];
+	char savepath[PATH_LEN];
+	char *name;
+	char *savefile;				/* ptr to filename portion of savepath */
+	int i;
+	struct t_attribute *attr = CURR_GROUP.attribute;
+	FILE *fp;
+
+	/*
+	 * Determine the filename
+	 * FIXME: use joinpath()
+	 *        honor, that tinrc.default_save_file holds the filename
+	 *        _and_ the path (-> no path prepending needed)
+	 */
+	strncpy (savepath, attr->savedir, sizeof(savepath));
+	strcat (savepath, "/");
+	savefile = savepath + strlen(savepath);
+	if ((name = get_filename(ptr->params)) != NULL)
+		strcat (savepath, name);
+	else
+		strcat (savepath, attr->savefile ? attr->savefile : tinrc.default_save_file);
+
+	/*
+	 * Decode/save the attachment
+	 */
+/* TODO don't overwrite by default */
+	if ((fp = fopen (savepath, "w")) == NULL) {
+		error_message ("Couldn't open %s for saving", savepath);
+		return;
+	}
+
+	if (ptr->encoding == ENCODING_BASE64)
+		mmdecode(NULL, 'b', 0, NULL, NULL);				/* flush */
+
+	fseek(rawfp, ptr->offset, SEEK_SET);
+
+	for (i = 0; i < ptr->lines ; i++) {
+		if ((fgets(buf, sizeof(buf), rawfp)) == NULL)
+			break;
+
+		/* This should catch cases where people illegally append text etc */
+		if (buf[0] == '\0')
+			break;
+
+		switch (ptr->encoding) {
+			int count;
+
+			case ENCODING_QP:
+			case ENCODING_BASE64:
+				count = mmdecode(buf, ptr->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2, NULL);
+				fwrite(buf2, count, 1, fp);
+				break;
+
+			case ENCODING_UUE:
+#ifdef HAVE_UUDECODE
+				/*
+				 * x-uuencode attatchments have all the header info etc which we must ignore
+				 */
+				if (strncmp(buf, "begin ", 6) != 0 && strncmp(buf, "end\n", 4) != 0 && buf[0] != '\n')
+					uudecode_line (buf, fp);
+				break;
+#else
+				wait_message(1, "x-uuencode not supported yet");
+				/* FALLTHROUGH */
+#endif /* HAVE_UUDECODE */
+			default:
+				fputs(buf, fp);
+		}
+	}
+	fclose(fp);
+
+	sprintf(buf, "View '%s' (%s/%s) ? (y/n): ", savefile, content_types[ptr->type], ptr->subtype);
+	if (prompt_yn (cLINES, buf, FALSE) == 1) {
+		char *app;
+
+		if ((app = lookup_mailcap (ptr->type, ptr->subtype)) != NULL) {
+			start_viewer (app, savepath);
+			free (app);
+			/* TODO redraw screen if (needstermainal) */
+		} else
+			wait_message (2, "No viewer found for %s/%s\n", content_types[ptr->type], ptr->subtype);
+	}
+
+	sprintf(buf, "Save '%s' (%s/%s) ? (y/n): ", savefile, content_types[ptr->type], ptr->subtype);
+	if (prompt_yn (cLINES, buf, FALSE) != 1)
+		unlink (savepath);
+}
+
+
 /*
  * decode and save a binary MIME attachment
  * optionally locate and launch a viewer application
@@ -1599,84 +1737,60 @@ decode_save_mime(
 	 * Iterate over all the attachments
 	 */
 	for (ptr = art->hdr.ext; ptr != NULL; ptr = ptr->next) {
-		char buf[2048], buf2[2048];
-		char savepath[PATH_LEN];
-		char *name;
-		char *savefile;				/* ptr to filename portion of savepath */
-		int i;
-		struct t_attribute *attr = CURR_GROUP.attribute;
-		FILE *fp;
+		t_part *uueptr;
 
+		/*
+		 * Handle uuencoded sections in this message part
+		 */
+		for (uueptr = ptr->uue; uueptr != NULL; uueptr = uueptr->next)
+			decode_save_one (uueptr, art->raw);
+
+		/*
+		 * Decode this message part if appropriate
+		 */
 		if (ptr->type == TYPE_MULTIPART || IS_PLAINTEXT(ptr))
 			continue;
 
-		/*
-		 * Determine the filename
-		 * FIXME: use joinpath()
-		 *        honor, that tinrc.default_save_file holds the filename
-		 *        _and_ the path (-> no path prepending needed)
-		 */
-		strncpy (savepath, attr->savedir, sizeof(savepath));
-		strcat (savepath, "/");
-		savefile = savepath + strlen(savepath);
-		if ((name = get_filename(ptr->params)) != NULL)
-			strcat (savepath, name);
-		else
-			strcat (savepath, attr->savefile ? attr->savefile : tinrc.default_save_file);
-
-		/*
-		 * Decode/save the attachment
-		 */
-/* TODO don't overwrite by default */
-		if ((fp = fopen (savepath, "w")) == NULL) {
-			error_message ("Couldn't open %s for saving", savepath);
-			return;
-		}
-			
-		mmdecode(NULL, 'b', 0, NULL, NULL);				/* flush */
-		fseek(art->raw, ptr->offset, SEEK_SET);
-
-		for (i = 0; i < ptr->lines ; i++) {
-			if ((fgets(buf, sizeof(buf), art->raw)) == NULL)
-				break;
-
-			/* This should catch cases where people illegally append text etc */
-			if (buf[0] == '\0')
-				break;
-
-			switch (ptr->encoding) {
-				int count;
-
-				case ENCODING_QP:
-				case ENCODING_BASE64:
-					count = mmdecode(buf, ptr->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2, NULL);
-					fwrite(buf2, count, 1, fp);
-					break;
-				case ENCODING_UUE:
-					wait_message(1, "x-uuencode not supported yet");
-					/* FALLTHROUGH */
-				default:
-					fputs(buf, fp);
-			}
-		}
-		fclose(fp);
-
-		sprintf(buf, "View '%s' (%s/%s) ? (y/n): ", savefile, content_types[ptr->type], ptr->subtype);
-		if (prompt_yn (cLINES, buf, FALSE) == 1) {
-			char *app;
-			if ((app = lookup_mailcap (ptr->type, ptr->subtype)) != NULL) {
-				char viewer[PATH_LEN];
-
-				sprintf(viewer, app, savepath);
-				free (app);
-				wait_message(1, "Starting %s\n", viewer);
-				system(viewer);
-			} else
-				wait_message (2, "No viewer found for %s/%s\n", content_types[ptr->type], ptr->subtype);
-		}
-
-		sprintf(buf, "Save '%s' (%s/%s) ? (y/n): ", savefile, content_types[ptr->type], ptr->subtype);
-		if (prompt_yn (cLINES, buf, FALSE) != 1)
-			unlink (savepath);
+		decode_save_one (ptr, art->raw);
 	}
 }
+
+
+#ifdef HAVE_UUDECODE
+/* Single character decode.  */
+#define	DEC(Char) (((Char) - ' ') & 077)
+static void
+uudecode_line(
+	char *buf,
+	FILE *fp) 
+{
+	char *p = buf;
+	int n;
+
+	n = DEC (*p);
+#ifdef DEBUG_ART
+	fprintf(stderr, "check=%2d of:    %s", n, p);
+#endif /* DEBUG_ART */
+	for (++p; n > 0; p += 4, n -= 3) {
+		char ch;
+		if (n >= 3) {
+			ch = DEC (p[0]) << 2 | DEC (p[1]) >> 4;
+			fputc (ch, fp);
+			ch = DEC (p[1]) << 4 | DEC (p[2]) >> 2;
+			fputc (ch, fp);
+			ch = DEC (p[2]) << 6 | DEC (p[3]);
+			fputc (ch, fp);
+		} else {
+			if (n >= 1) {
+				ch = DEC (p[0]) << 2 | DEC (p[1]) >> 4;
+				fputc (ch, fp);
+			}
+			if (n >= 2) {
+				ch = DEC (p[1]) << 4 | DEC (p[2]) >> 2;
+				fputc (ch, fp);
+			}
+		}			
+	}
+	return;
+}
+#endif /* HAVE_UUDECODE */
