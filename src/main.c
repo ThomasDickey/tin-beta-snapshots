@@ -253,10 +253,10 @@ main (
 	 * FIXME: is global attributes still needed? if so use TIN_DEFAULTS_DIR
 	 */
 	if (!batch_mode /* || (batch_mode && verbose)*/) /* FIXME: NLS support missing */
-		wait_message (0, txt_reading_attributes_file, "global ");
+		wait_message (0, _(txt_reading_attributes_file), _(txt_global));
 	read_attributes_file (global_attributes_file, TRUE);
 	if (!batch_mode /* || (batch_mode && verbose)*/)
-		wait_message (0, txt_reading_attributes_file, "");
+		wait_message (0, _(txt_reading_attributes_file), "");
 	read_attributes_file (local_attributes_file, FALSE);
 
 	/*
@@ -264,8 +264,7 @@ main (
 	 * This has to be done before quick post
 	 * because the filters will be updated.
 	 */
-	global_filtered_articles = read_filter_file (global_filter_file, TRUE);
-	local_filtered_articles = read_filter_file (local_filter_file, FALSE);
+	filtered_articles = read_filter_file (filter_file);
 
 #ifdef DEBUG
 	debug_print_filters ();
@@ -281,7 +280,8 @@ main (
 	}
 
 	if ((count = count_postponed_articles()))
-		wait_message(3, _(txt_info_postponed), count, IS_PLURAL(count));
+		wait_message(3, _(txt_info_postponed), count,
+			(count > 1 ? _(txt_article_plural) : _(txt_article_singular)));
 
 	/*
 	 * Read text descriptions for mail and/or news groups
@@ -589,7 +589,7 @@ read_cmd_line_options (
 			case 'U':	/* update index files in background */
 #	ifndef NNTP_ONLY
 				update_fork = TRUE;
-/*				batch_mode = FALSE    _NOTE_ only the child goes batch_mode */
+/*				batch_mode = FALSE */	/*_NOTE_ only the child goes batch_mode */
 #	else
 				error_message (_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
@@ -806,7 +806,7 @@ update_index_files (
 	void)
 {
 	if (!catchup && (read_news_via_nntp && xover_supported)) {
-		error_message (txt_batch_update_unavail, tin_progname);
+		error_message (_(txt_batch_update_unavail), tin_progname);
 		tin_done (EXIT_FAILURE);
 	}
 
@@ -817,7 +817,7 @@ update_index_files (
 		verbose = FALSE;
 		switch ((int) fork ()) {			/* fork child to update indexes in background */
 			case -1:						/* error forking */
-				perror_message (txt_batch_update_failed);
+				perror_message (_(txt_batch_update_failed));
 				break;
 			case 0:							/* child process */
 				batch_mode = TRUE;			/* put child into batch */

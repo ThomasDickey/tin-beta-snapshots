@@ -112,8 +112,7 @@ read_config_file (
 		return FALSE;
 
 	if (!batch_mode)
-		/* FIXME: -> lang.c */
-		wait_message (0, _(txt_reading_config_file), (global_file) ? "global " : "");
+		wait_message (0, _(txt_reading_config_file), (global_file) ? _(txt_global) : "");
 
 	while (fgets (buf, (int) sizeof (buf), fp) != (char *) 0) {
 		if (buf[0] == '#' || buf[0] == '\n') {
@@ -301,10 +300,8 @@ read_config_file (
 				break;
 			}
 
-			if (match_string (buf, "default_maildir=", tinrc.maildir, sizeof (tinrc.maildir))) {
-				joinpath (posted_msgs_file, tinrc.maildir, POSTED_FILE);
+			if (match_string (buf, "default_maildir=", tinrc.maildir, sizeof (tinrc.maildir)))
 				break;
-			}
 
 #ifndef DISABLE_PRINTING
 			if (match_string (buf, "default_printer=", tinrc.printer, sizeof (tinrc.printer)))
@@ -457,6 +454,9 @@ read_config_file (
 				break;
 
 			if (match_boolean (buf, "keep_posted_articles=", &tinrc.keep_posted_articles))
+				break;
+
+			if (match_string (buf, "keep_posted_articles_file=", tinrc.keep_posted_articles_file, sizeof (tinrc.keep_posted_articles_file)))
 				break;
 
 			if (match_integer (buf, "kill_level=", &tinrc.kill_level, KILL_NOTHREAD))
@@ -748,6 +748,11 @@ read_config_file (
 	fclose (fp);
 
 	/*
+	 * set posted_msgs_file
+	 */
+	joinpath (posted_msgs_file, tinrc.maildir, *tinrc.keep_posted_articles_file ? tinrc.keep_posted_articles_file : POSTED_FILE);
+
+	/*
 	 * sort out conflicting settings
 	 */
 
@@ -940,6 +945,9 @@ write_config_file (
 
 	fprintf (fp, _(txt_keep_posted_articles.tinrc));
 	fprintf (fp, "keep_posted_articles=%s\n\n", print_boolean (tinrc.keep_posted_articles));
+
+	fprintf (fp, _(txt_keep_posted_articles_file.tinrc));
+	fprintf (fp, "keep_posted_articles_file=%s\n\n", tinrc.keep_posted_articles_file);
 
 	fprintf (fp, _(txt_add_posted_to_filter.tinrc));
 	fprintf (fp, "add_posted_to_filter=%s\n\n", print_boolean (tinrc.add_posted_to_filter));
@@ -1853,6 +1861,7 @@ change_config_file (
 						case OPT_MAILDIR:
 						case OPT_SAVEDIR:
 						case OPT_SIGFILE:
+						case OPT_KEEP_POSTED_ARTICLES_FILE:
 #ifdef M_AMIGA
 							if (tin_bbs_mode)
 								break;
@@ -1862,7 +1871,7 @@ change_config_file (
 								OPT_ARG_COLUMN + (int) strlen (option_table[option].txt->opt),
 								OPT_STRING_list[option_table[option].var_index]
 								);
-							joinpath (posted_msgs_file, tinrc.maildir, POSTED_FILE);
+							joinpath (posted_msgs_file, tinrc.maildir, *tinrc.keep_posted_articles_file ? tinrc.keep_posted_articles_file : POSTED_FILE);
 							break;
 
 						case OPT_MAIL_MIME_ENCODING:

@@ -115,7 +115,7 @@ set_default_attributes (
 	psAttrib->savedir = tinrc.savedir;
 	psAttrib->savefile = (char *) 0;
 	psAttrib->sigfile = tinrc.sigfile;
-	psAttrib->organization = (default_organization ? default_organization : (char *) 0);
+	psAttrib->organization = (*default_organization ? default_organization : (char *) 0);
 	psAttrib->followup_to = (char *) 0;
 #ifndef DISABLE_PRINTING
 	psAttrib->printer = tinrc.printer;
@@ -296,6 +296,7 @@ read_attributes_file (
 			default:
 				break;
 			}
+/* TODO report syntax errors */
 		}
 		fclose (fp);
 	}

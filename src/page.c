@@ -47,50 +47,153 @@
 #ifndef MENUKEYS_H
 #	include  "menukeys.h"
 #endif /* !MENUKEYS_H */
+#ifndef RFC2045_H
+#	include  "rfc2045.h"
+#endif /* !RFC2045_H */
 
-struct t_header note_h;
+#define FIRST_HEADER	4
+#define CONT_HEADER		2
 
-FILE *note_fp;					/* the body of the current article */
 
-int MORE_POS;				/* set in set_win_size () */
-int RIGHT_POS;				/* set in set_win_size () */
-int glob_respnum;
-int last_resp, this_resp;		/* previous & current article # in arts[] for '-' command */
-int note_line;
-int note_page;					/* what page we're on */
+/*
+ * size of page header over and above INDEX_TOP, this is 2 for the 1st page, and
+ * 0 otherwise
+ * [ Used because NOTESLINES only specifies a 2 line header ]
+ */
+#define HDR_ADJUST	((curr_line == 0) ? FIRST_HEADER-INDEX_TOP : CONT_HEADER-INDEX_TOP)
 
-long note_mark[MAX_PAGES];	/* holds ftell() on beginning of each page */
-long mark_body;				/* holds ftell() on beginning of message body */
-long note_size;				/* stat() size in bytes of article */
+/*
+ * The number of lines available to display actual article text
+ */
+#define ARTLINES	(NOTESLINES-HDR_ADJUST)
 
-t_bool note_end;				/* we're done showing this article */
+FILE *note_fp;			/* active stream (raw or cooked) */
+int artlines;			/* active # of lines in pager */
+int curr_line;			/* current line in art (indexed from 0) */
+t_lineinfo *artline;	/* active 'lineinfo' data */
 
-static t_bool show_all_headers = FALSE;	/* CTRL-H with headers specified */
+t_openartinfo pgart;	/* Global context of article open in the pager */
 
-static char buf2[HEADER_LEN+50];
-static char first_char;
-static char skip_include;
+int MORE_POS;			/* set in set_win_size () */
+int RIGHT_POS;			/* set in set_win_size () */
+int respnum = -1;		/* Index in arts[] of paged article */
+int last_resp;			/* previous & current article # in arts[] for '-' command */
+int this_resp;
 
-static int rotate;						/* 0=normal, 13=rot13 decode */
-static int tabwidth = 8;
+int tabwidth = 8;
 
-static t_bool doing_pgdn;
-static t_bool show_prev_header = FALSE;	/* remember display status of last line */
+struct t_header *note_h = &pgart.hdr;	/* Easy access to article headers */
+
+static int rotate;				/* 0=normal, 13=rot13 decode */
+static int search_line;			/* Line to commence next search from */
+
+static t_bool show_all_headers;	/* CTRL-H with headers specified */
 static t_bool tex2iso_article;
-
 
 /*
  * Local prototypes
  */
-static int prompt_response (int ch, int respnum);
-static int show_last_page (void);
-static t_bool expand_ctrl_chars (char *tobuf, char *frombuf, int length, int do_rotation);
-static void add_persist (char *p_header, char *p_content);
-static void show_cont_header (int respnum);
-static void show_first_header (int respnum, char *group);
+static int load_article (int new_respnum);
+static int prompt_response (int ch, int curr_respnum);
+static void process_search (void);
+static void show_cont_header (void);
+static void show_first_header (char *group);
 #ifdef HAVE_METAMAIL
-	static void show_mime_article (FILE *fp, struct t_article *art);
+	static void show_mime_article (FILE *fp);
 #endif /* HAVE_METAMAIL */
+
+
+/*
+ * Scroll visible article part of display down (+ve) or up (-ve) by 'i'
+ * lines.
+ */
+static void
+scroll_page (
+	int i)
+{
+	scrollok(stdscr, TRUE);
+    setscrreg(INDEX_TOP+HDR_ADJUST, ARTLINES+1);
+    scrl(i);
+    setscrreg(0, cLINES);
+	scrollok(stdscr, FALSE);
+}
+
+
+/*
+ * Map keypad codes to standard keyboard characters
+ */
+static int
+handle_pager_keypad(void)
+{
+	int ch = ReadCh ();
+
+	switch (ch) {
+#ifndef WIN32
+		case ESC:
+#	ifdef HAVE_KEY_PREFIX
+		case KEY_PREFIX:
+#	endif /* HAVE_KEY_PREFIX */
+			switch (get_arrow_key (ch)) {
+#endif /* !WIN32 */
+				case KEYMAP_LEFT:
+					ch = iKeyQuit;
+					break;
+				case KEYMAP_RIGHT:
+					ch = iKeyPageNextUnread;
+					break;
+#ifdef USE_CURSES
+				case KEYMAP_UP:
+					ch = iKeyUp;
+					break;
+				case KEYMAP_DOWN:
+					ch = iKeyDown;
+					break;
+#endif /* USE_CURSES */
+				case KEYMAP_PAGE_UP:
+					ch = iKeyPageUp;
+					break;
+				case KEYMAP_PAGE_DOWN:
+					ch = iKeyPageDown;
+					break;
+				case KEYMAP_HOME:
+					ch = iKeyFirstPage;
+					break;
+				case KEYMAP_END:
+					ch = iKeyLastPage;
+					break;
+#ifndef WIN32
+				case KEYMAP_MOUSE:
+					switch (xmouse) {
+						case MOUSE_BUTTON_1:
+							if (xrow < 3 || xrow >= cLINES-1)/* TODO fix count */
+								ch = iKeyPageDown;
+							else
+								ch = iKeyPageNextUnread;
+							break;
+						case MOUSE_BUTTON_2:
+							if (xrow < 3 || xrow >= cLINES-1)/* TODO fix count */
+								ch = iKeyPageUp;
+							else
+								ch = iKeyQuit;
+							break;
+						case MOUSE_BUTTON_3:
+							ch = iKeyMouseToggle;
+							break;
+						default:
+							break;
+					}
+					break;
+				default:
+					break;
+			}
+			break;
+		default:
+			break;
+	}
+#endif /* !WIN32 */
+	return ch;
+}
+
 
 /*
  * The main routine for viewing articles
@@ -107,8 +210,8 @@ static void show_first_header (int respnum, char *group);
  */
 int
 show_page (
-	struct t_group *group,
-	int respnum,			/* index into arts[] */
+	struct t_group *group,	/* A bit useless since it is always CURR_GROUP */
+	int start_respnum,		/* index into arts[] */
 	int *threadnum)			/* to allow movement in thread mode */
 {
 	char buf[LEN];
@@ -116,182 +219,173 @@ show_page (
 	int ch, i, n = 0;
 	int filter_state = NO_FILTERING;
 	int old_sort_art_type = tinrc.sort_article_type;
-	long art;
-	struct stat note_stat;
 	t_bool mouse_click_on = TRUE;
 
-	local_filtered_articles = FALSE;	/* used in thread level */
-
+	filtered_articles = FALSE;	/* used in thread level */
 	make_group_path (group->name, group_path);
 
-restart:
-	if (read_news_via_nntp)
-		wait_message (0, _(txt_reading_article));
+	/*
+	 * Peek to see if the pager started due to a body search
+	 * Stop load_article() changing context again
+	 */
+	if (srch_lineno != -1)
+		respnum = start_respnum;
 
-	glob_respnum = respnum;
+	if (load_article(start_respnum) < 0)
+		return GRP_ARTFAIL;
 
-	/* Remember current & previous articles for '-' command */
-	if (respnum != this_resp) {
-		last_resp = this_resp;
-		this_resp = respnum;
-	}
-
-	rotate = 0;			/* normal mode, not rot13 */
-	art = arts[respnum].artnum;
-
-	switch (art_open (&arts[respnum], group_path, TRUE)) {
-
-		case ART_UNAVAILABLE:
-			art_mark_read (group, &arts[respnum]);
-			wait_message (1, _(txt_art_unavailable));
-			nobreak;	/* FALLTHROUGH */
-
-		case ART_ABORT:
-			return GRP_ARTFAIL;	/* special retcode to stop redrawing screen */
-
-		default:					/* Normal case */
-#if 0
-			if (prompt_yn(cLINES, "Fake art unavailable ? ", FALSE) == 1) {
-				art_close();
-				art_mark_read (group, &arts[respnum]);
-				return GRP_ARTFAIL;
-			}
-#endif
-			break;
-	}
-
-	art_mark_read (group, &arts[respnum]);
-
-	/* Get article size */
-	if (fstat(fileno(note_fp), &note_stat) == -1)
-		note_size = 0;
-	else
-		note_size = note_stat.st_size;
-
-#ifdef HAVE_METAMAIL
-	if (*note_h.mimeversion && *note_h.contenttype
-	    && (!STRNCMPEQ("text/plain", note_h.contenttype, 10))
-	    && tinrc.use_metamail) {
-		if (tinrc.ask_for_metamail) {
-			show_note_page (group->name, respnum);
-			if (prompt_yn (cLINES, _(txt_use_mime), TRUE) == 1) {
-				show_mime_article (note_fp, &arts[respnum]);
-				note_page = 0;
-				note_end = FALSE;
-				rewind (note_fp);
-				show_note_page (group->name, respnum);
-			}
-		} else {
-			show_mime_article (note_fp, &arts[respnum]);
-			show_note_page (group->name, respnum);
-		}
-	} else
-		show_note_page (group->name, respnum);
-#else
-	show_note_page (group->name, respnum);
-#endif /* HAVE_METAMAIL */
+	if (srch_lineno != -1)
+		process_search();
 
 	forever {
-		ch = ReadCh ();
+		switch (ch = handle_pager_keypad()) {
+#ifndef WIN32
+			case ESC:       /* Abort */
+				break;
+#endif /* !WIN32 */
 
-		if (ch > '0' && ch <= '9') {
-			if (!HAS_FOLLOWUPS (which_thread (respnum)))
-				info_message (_(txt_no_responses));
-			else {
-				n = prompt_response (ch, respnum);
-				if (n != -1) {
-					respnum = n;
-					goto restart;
-				}
-			}
-			continue;
-		}
-		switch (ch) {
-			case ESC:
-#ifdef HAVE_KEY_PREFIX
-			case KEY_PREFIX:
-#endif /* HAVE_KEY_PREFIX */
-				switch (get_arrow_key (ch)) {
-					case KEYMAP_LEFT:
-						goto return_to_index;
-
-					case KEYMAP_RIGHT:
-						goto page_goto_next_unread;
-
-					case KEYMAP_UP:
-					case KEYMAP_PAGE_UP:
-						goto page_up;
-
-					case KEYMAP_DOWN:
-					case KEYMAP_PAGE_DOWN:
-						goto page_down;
-
-					case KEYMAP_HOME:
-						goto begin_of_article;
-
-					case KEYMAP_END:
-						goto end_of_article;
-
-					case KEYMAP_MOUSE:
-						switch (xmouse)
-						{
-							case MOUSE_BUTTON_1:
-								if (xrow < 3 || xrow >= cLINES-1)
-									goto page_down;
-								goto page_goto_next_unread;
-							case MOUSE_BUTTON_2:
-								if (xrow < 3 || xrow >= cLINES-1)
-									goto page_up;
-								goto return_to_index;
-							case MOUSE_BUTTON_3:
-								if (mouse_click_on) {
-									set_xclick_off ();
-									mouse_click_on = FALSE;
-								} else {
-									set_xclick_on ();
-									mouse_click_on = TRUE;
-								}
-								break;
-							default:
-								break;
-						}
-						break;
-					default:
-						break;
+			case '0': case '1': case '2': case '3': case '4': case '5':
+			case '6': case '7': case '8': case '9':
+				if (!HAS_FOLLOWUPS (which_thread (respnum)))
+					info_message (_(txt_no_responses));
+				else {
+					if ((n = prompt_response (ch, respnum)) != -1) {
+						if (load_article(n) < 0)
+							return GRP_ARTFAIL;
+					}
 				}
 				break;
 
 #ifndef NO_SHELL_ESCAPE
 			case iKeyShellEscape:
 				shell_escape ();
-				redraw_page (group->name, respnum);
+				draw_page (group->name, 0);
 				break;
 #endif /* !NO_SHELL_ESCAPE */
 
-			case iKeyLastPage:	/* goto end of article */
-			case iKeyPageLastPage2:
-end_of_article:
-				if (show_last_page ())
-					show_note_page (group->name, respnum);
-
+			case iKeyMouseToggle:
+				if (mouse_click_on)
+					set_xclick_off ();
+				else
+					set_xclick_on ();
+				mouse_click_on = !mouse_click_on;
+fprintf(stderr, "Mouse toggle %d\n", mouse_click_on);
 				break;
+
+#ifndef USE_CURSES
+			case iKeyUp:		/* line up */
+			case iKeyUp2:
+#endif /* USE_CURSES */
+			case iKeyPageUp:		/* page up */
+			case iKeyPageUp2:
+			case iKeyPageUp3:
+				if (curr_line == 0)
+					info_message (_(txt_begin_of_art));
+				else {
+					curr_line -= (tinrc.full_page_scroll) ? ARTLINES : ARTLINES/2;
+					draw_page (group->name, 0);
+				}
+				break;
+
+#ifndef USE_CURSES
+			case iKeyDown:
+			case iKeyDown2:
+#endif /* USE_CURSES */
+			case iKeyPageDown:		/* page down or next response */
+			case iKeyPageDown2:
+			case iKeyPageDown3:
+			case iKeyPageNextUnread:
+				if (curr_line + ARTLINES >= artlines) {	/* End is already on screen */
+					switch (ch) {
+						case iKeyPageNextUnread:	/* <TAB> */
+							goto page_goto_next_unread;
+
+						case iKeyPageDown:
+						case iKeyPageDown2:
+							if (tinrc.pgdn_goto_next)
+								goto page_goto_next_unread;
+							break;
+
+						case iKeyPageDown3:			/* <SPACE> */
+							if (tinrc.space_goto_next_unread)
+								goto page_goto_next_unread;
+							break;
+					}
+					info_message (_(txt_end_of_art));
+				} else {
+					if (tinrc.tab_goto_next_unread)
+						goto page_goto_next_unread;
+
+					curr_line += (tinrc.full_page_scroll) ? ARTLINES : ARTLINES/2;
+
+					if (tinrc.show_last_line_prev_page)
+						curr_line--;
+					draw_page (group->name, 0);
+				}
+				break;
+
+page_goto_next_unread:
+				if ((n = next_unread (next_response (respnum))) == -1)
+					return (which_thread (respnum));
+				if (load_article(n) < 0)
+					return GRP_ARTFAIL;
+				break;
+
+			case iKeyFirstPage:		/* beginning of article */
+			case iKeyPageFirstPage2:
+				curr_line = 0;
+/* TODO don't redr if was on first page */
+				draw_page (group->name, 0);
+				break;
+
+			case iKeyLastPage:		/* end of article */
+			case iKeyPageLastPage2:
+				/* TODO again wrong if header size changes */
+				curr_line = artlines - ARTLINES;	/* Display a full last page for neatness */
+/* TODO don't redr if was on last page */
+				draw_page (group->name, 0);
+				break;
+
+#ifdef USE_CURSES
+			case iKeyUp:		/* line up */
+			case iKeyUp2:
+				if (curr_line == 0) {
+					info_message (_(txt_begin_of_art));
+					break;
+				}
+
+				curr_line--;
+				scroll_page (-1);
+				draw_page (group->name, -1);
+				break;
+
+			case iKeyDown:		/* line down */
+			case iKeyDown2:
+				if (curr_line+ARTLINES >= artlines) {
+					info_message (_(txt_end_of_art));
+					break;
+				}
+
+				curr_line++;
+				scroll_page (1);
+				draw_page (group->name, 1);
+				break;
+#endif /* USE_CURSES */
 
 			case iKeyLastViewed:	/* show last viewed article */
 				if (last_resp < 0 || (which_thread(last_resp) == -1)) {
 					info_message (_(txt_no_last_message));
 					break;
 				}
-				art_close ();
-				respnum = last_resp;
-				goto restart;
+				if (load_article(last_resp) < 0)
+					return GRP_ARTFAIL;
+				break;
 
 			case iKeyLookupMessage:			/* Goto article by Message-ID */
 
 				if ((i = prompt_msgid ()) != ART_UNAVAILABLE) {
-					art_close ();
-					respnum = i;
-
-					goto restart;
+					if (load_article(i) < 0)
+						return GRP_ARTFAIL;
 				}
 				break;
 
@@ -314,10 +408,10 @@ end_of_article:
 					break;
 				}
 
-				art_close ();
-				respnum = parent->article;
+				if (load_article(parent->article) < 0)
+					return GRP_ARTFAIL;
 
-				goto restart;
+				break;
 			}
 
 			case iKeyPipe:		/* pipe article/thread/tagged arts to command */
@@ -348,191 +442,143 @@ end_of_article:
 						feed_articles (FEED_AUTOSAVE_TAGGED, PAGE_LEVEL, &CURR_GROUP, (int) base[grpmenu.curr]);
 					else
 						info_message (_(txt_no_tagged_arts_to_save));
-					}
+				}
 				break;
 
-			case iKeySearchSubjF:	/* search forwards in article */
-				if (search_article (TRUE))
-					show_note_page (group->name, respnum);
+			case iKeySearchSubjF:	/* search in article */
+			case iKeySearchSubjB:
+				if ((i = search_article ((ch == iKeySearchSubjF), search_line, artlines, artline, note_fp)) == -1)
+					break;
+
+				process_search();
 				break;
 
 			case iKeySearchBody:	/* article body search */
 				if ((n = search_body (respnum)) != -1) {
-					respnum = n;
-					art_close ();
-					goto restart;
+					respnum = n;			/* Stop load_article() changing context again */
+					if (load_article(n) < 0)
+						return GRP_ARTFAIL;
+					process_search();
 				}
 				break;
 
-			case iKeyPageTopThd:	/* goto first article in current thread */
+			case iKeyPageTopThd:	/* first article in current thread */
 				if (arts[respnum].inthread) {
-					n = which_thread (respnum);
-					if (n >= 0 && base[n] != respnum) {
+					if ((n = which_thread (respnum)) >= 0 && base[n] != respnum) {
 						assert (n < grpmenu.max);
-						respnum = base[n];
-						art_close ();
-						goto restart;
+						if (load_article(base[n]) < 0)
+							return GRP_ARTFAIL;
 					}
 				}
 				break;
 
-			case iKeyPageBotThd:	/* goto last article in current thread */
+			case iKeyPageBotThd:	/* last article in current thread */
 				for (i = respnum; i >= 0; i = arts[i].thread)
 					n = i;
 
 				if (n != respnum) {
-					respnum = n;
-					art_close ();
-					goto restart;
-				}
-				break;
-
-			case iKeyPageDown:		/* page down or next response */
-			case iKeyPageDown2:
-			case iKeyPageDown3:
-page_down:
-				if (!tinrc.space_goto_next_unread) {
-					if (note_page != ART_UNAVAILABLE) {
-						if (note_end) {
-							if (tinrc.pgdn_goto_next)
-								art_close();
-							else {
-								doing_pgdn = FALSE;
-								break;
-							}
-						} else {
-							doing_pgdn = TRUE;
-							show_note_page (group->name, respnum);
-							break;
-						}
-					}
-					if ((n = next_response (respnum)) == -1)
-						return (which_thread (respnum));
-
-					respnum = n;
-					goto restart;
-				} else {
-					if ((note_page == ART_UNAVAILABLE) || note_end)
-						goto page_goto_next_unread;
-
-					doing_pgdn = TRUE;
-					show_note_page (group->name, respnum);
+					if (load_article(n) < 0)
+						return GRP_ARTFAIL;
 				}
 				break;
 
 			case iKeyPageNextThd:
-			case iKeyPageNextThd2:	/* go to start of next thread */
-				art_close ();
+			case iKeyPageNextThd2:	/* start of next thread */
 				if ((n = next_thread (respnum)) == -1)
 					return (which_thread (respnum));
-				respnum = n;
-				goto restart;
-
-			case iKeyPageNextUnread:	/* goto next unread article */
-page_goto_next_unread:
-				skip_include = '\0';
-				if (note_page != ART_UNAVAILABLE) {
-					if (!(tinrc.tab_goto_next_unread || note_end)) {
-						doing_pgdn = TRUE;
-						show_note_page (group->name, respnum);
-						break;
-					}
-					art_close();
-				}
-				if ((n = next_unread (next_response (respnum))) == -1)
-					return (which_thread (respnum));
-				respnum = n;
-				goto restart;
+				if (load_article(n) < 0)
+					return GRP_ARTFAIL;
+				break;
 
 #ifdef HAVE_PGP_GPG
 			case iKeyPagePGPCheckArticle:
 				if (pgp_check_article())
-					redraw_page(group->name, respnum);
+					draw_page (group->name, 0);
 				break;
 #endif /* HAVE_PGP_GPG */
 
-			case iKeyPageToggleHeaders:	/* toggle display of article headers */
-				if (note_page == ART_UNAVAILABLE) {
-					if ((n = next_response (respnum)) == -1)
-						return (which_thread (respnum));
-					respnum = n;
-					goto restart;
+			case iKeyPageToggleHeaders:	/* toggle display of whole 'raw' article */
+				if (show_all_headers) {
+					artline = pgart.cookl;
+					artlines = pgart.cooked_lines;
+					note_fp = pgart.cooked;
 				} else {
-					note_page = 0;
-					note_end = FALSE;
-					rewind (note_fp);
-					show_all_headers = !show_all_headers;
-					show_note_page (group->name, respnum);
+					int j = 0;
+					/*
+					 * We do this on the fly, since most of the time it won't be used
+					 */
+					if (!pgart.rawl) {
+						rewind (pgart.raw);
+						/* Need one extra as the last \n in the file will be accounted too */
+						pgart.rawl = my_malloc(sizeof(t_lineinfo) * (note_h->ext->lines+1));
+						do {
+							pgart.rawl[j].offset = ftell(pgart.raw);
+							pgart.rawl[j].flags = 0;
+							j++;
+						} while ((tin_fgets(pgart.raw, FALSE)) != NULL);
+						pgart.rawl = my_realloc((char *)pgart.rawl, sizeof(t_lineinfo) * note_h->ext->lines);
+					}
+					artline = pgart.rawl;
+					artlines = note_h->ext->lines;
+					note_fp = pgart.raw;
 				}
+				curr_line = 0;
+				show_all_headers = !show_all_headers;
+				draw_page (group->name, 0);
 				break;
 
 			case iKeyPageToggleTex2iso:	/* toggle german TeX to ISO latin1 style conversion */
 				if ((tex2iso_supported = !tex2iso_supported))
-					tex2iso_article = iIsArtTexEncoded (art, group_path);
+					tex2iso_article = iIsArtTexEncoded (arts[respnum].artnum, group_path);
 
-				redraw_page (group->name, respnum);
+				draw_page (group->name, 0);
 				info_message (_(txt_toggled_tex2iso), (tex2iso_supported) ? "on" : "off");
 				break;
 
-			/* haeh? */
 			case iKeyPageToggleTabs:	/* toggle tab stops 8 vs 4 */
 				tabwidth = ((tabwidth == 8) ? 4 : 8);
-				redraw_page (group->name, respnum);
+				resize_article (&pgart);
+				draw_page (group->name, 0);
 				break;
 
 			case iKeyPageQuickAutoSel:		/* quickly auto-select article */
 			case iKeyPageQuickKill:		/* quickly kill article */
-				if ((local_filtered_articles = quick_filter (
+				if ((filtered_articles = quick_filter (
 						(ch == iKeyPageQuickKill) ? FILTER_KILL : FILTER_SELECT,
 						group, &arts[respnum])))
 					goto return_to_index;
 
-				redraw_page (group->name, respnum);
+				draw_page (group->name, 0);
 				break;
 
 			case iKeyPageAutoSel:		/* auto-select article menu */
 			case iKeyPageAutoKill:		/* kill article menu */
 				if (filter_menu ((ch == iKeyPageAutoKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[respnum])) {
-					if ((local_filtered_articles = filter_articles (group)))
+					if ((filtered_articles = filter_articles (group)))
 						goto return_to_index;
 				}
-				redraw_page (group->name, respnum);
+				draw_page (group->name, 0);
 				break;
 
 		   case iKeyPageEditFilter:
-				if (!invoke_editor (local_filter_file, 25)) /* FIXME: is 25 correct offset? */
+				if (!invoke_editor (filter_file, 25)) /* FIXME: is 25 correct offset? */
 					break;
 				unfilter_articles ();
-				(void) read_filter_file (local_filter_file, FALSE);
-				if ((local_filtered_articles = filter_articles (group)))
+				(void) read_filter_file (filter_file);
+				if ((filtered_articles = filter_articles (group)))
 					goto return_to_index;
-				redraw_page (group->name, respnum);
+				draw_page (group->name, 0);
 				break;
 
 			case iKeyRedrawScr:		/* redraw current page of article */
 				my_retouch();
-				redraw_page (group->name, respnum);
-				break;
-
-			case iKeyFirstPage:		/* goto beginning of article */
-			case iKeyPageFirstPage2:
-begin_of_article:
-				if (note_page == ART_UNAVAILABLE) {
-					ClearScreen ();
-					my_printf (_(txt_art_unavailable)/*, arts[respnum].artnum*/);
-					my_flush ();
-				} else {
-					note_page = 0;
-					note_end = FALSE;
-					rewind (note_fp);
-					show_note_page (group->name, respnum);
-				}
+				draw_page (group->name, 0);
 				break;
 
 			case iKeyPageToggleRot:
 			case iKeyPageToggleRot2:	/* toggle rot-13 mode */
 				rotate = (rotate ? 0 : 13);
-				redraw_page (group->name, respnum);
+				draw_page (group->name, 0);
 				info_message (_(txt_toggled_rot13));
 				break;
 
@@ -540,41 +586,15 @@ begin_of_article:
 			case iKeySearchAuthB:	/* author search backward */
 				if ((n = search (SEARCH_AUTH, respnum, (ch == iKeySearchAuthF))) < 0)
 					break;
-				respnum = n;
-				goto restart;
-				/* NOTREACHED */
-
-			case iKeyPageUp:		/* page up */
-			case iKeyPageUp2:
-			case iKeyPageUp3:
-page_up:
-				if (note_page == ART_UNAVAILABLE) {
-					art_close ();
-					if ((n = prev_response (respnum)) == -1)
-						return (respnum);
-
-					respnum = n;
-					goto restart;
-
-				} else {
-					if (note_page <= 1)
-						info_message (_(txt_begin_of_art));
-					else {
-						note_page -= 2;
-						note_end = FALSE;
-						fseek (note_fp, note_mark[note_page], SEEK_SET);
-						show_note_page (group->name, respnum);
-					}
-				}
+				if (load_article(n) < 0)
+					return GRP_ARTFAIL;
 				break;
 
 			case iKeyPageCatchup:			/* catchup - mark read, goto next */
 			case iKeyPageCatchupNextUnread:	/* goto next unread */
-				/* FIXME snprintf() ? */
-				sprintf(buf, _(txt_mark_thread_read), (ch == iKeyPageCatchupNextUnread) ? _(txt_enter_next_thread) : "");
+				snprintf(buf, sizeof(buf)-1, _(txt_mark_thread_read), (ch == iKeyPageCatchupNextUnread) ? _(txt_enter_next_thread) : "");
 				if (!tinrc.confirm_action || prompt_yn (cLINES, buf, TRUE) == 1) {
 					thd_mark_read (group, base[which_thread(respnum)]);
-					art_close ();
 					return (ch == iKeyPageCatchupNextUnread) ? GRP_NEXTUNREAD : GRP_NEXT;
 				}
 				break;
@@ -588,14 +608,17 @@ page_up:
 			case iKeyPageCancel:			/* cancel an article */
 				if (can_post) {
 					if (cancel_article (group, &arts[respnum], respnum))
-						redraw_page (group->name, respnum);
+						draw_page (group->name, 0);
 				} else
 					info_message (_(txt_cannot_post));
 				break;
 
 			case iKeyPageEditArticle:		/* edit an article (mailgroup only) */
 				if (iArtEdit (group, &arts[respnum]))
-					goto restart;
+#if 0
+FIXME - will a draw_page() enough here ?
+					goto restart;		/* TODO ehhhhh ? */
+#endif
 				break;
 
 			case iKeyPageFollowupQuote:		/* post a followup to this article */
@@ -608,23 +631,21 @@ page_up:
 				(void) post_response (group->name, respnum,
 				  (ch == iKeyPageFollowupQuote || ch == iKeyPageFollowupQuoteHeaders) ? TRUE : FALSE,
 				  ch == iKeyPageFollowupQuoteHeaders ? TRUE : FALSE);
-				redraw_page (group->name, respnum);
+				draw_page (group->name, 0);
 				break;
 
 			case iKeyPageHelp:	/* help */
 				show_info_page (HELP_INFO, help_page, _(txt_art_pager_com));
-				redraw_page (group->name, respnum);
+				draw_page (group->name, 0);
 				break;
 
 			case iKeyPageToggleHelpDisplay:	/* toggle mini help menu */
 				toggle_mini_help (PAGE_LEVEL);
-				redraw_page (group->name, respnum);
+				draw_page (group->name, 0);
 				break;
 
 			case iKeyQuit:	/* return to index page */
 return_to_index:
-				art_close ();
-
 				if (filter_state == NO_FILTERING && tinrc.sort_article_type != old_sort_art_type) {
 					make_threads (group, TRUE);
 				}
@@ -633,7 +654,7 @@ return_to_index:
 				if (threadnum)
 					*threadnum = which_response (respnum);
 
-				if (filter_state == FILTERING || local_filtered_articles) {
+				if (filter_state == FILTERING || filtered_articles) {
 					int old_top = top_art;
 					long old_artnum = arts[respnum].artnum;
 					filter_articles (group);
@@ -644,21 +665,20 @@ return_to_index:
 
 			case iKeyPageToggleInverseVideo:	/* toggle inverse video */
 				toggle_inverse_video ();
-				redraw_page (group->name, respnum);
+				draw_page (group->name, 0);
 				show_inverse_video_status ();
 				break;
 
 #ifdef HAVE_COLOR
 			case iKeyToggleColor:		/* toggle color */
 				if (toggle_color ()) {
-					redraw_page (group->name, respnum);
+					draw_page (group->name, 0);
 					show_color_status ();
 				}
 				break;
 #endif /* HAVE_COLOR */
 
 			case iKeyPageListThd:	/* -> thread page that this article is in */
-				art_close ();
 				fixup_thread (respnum, FALSE);
 				return GRP_GOTOTHREAD;
 
@@ -666,55 +686,42 @@ return_to_index:
 				if (change_config_file (group) == FILTERING)
 					filter_state = FILTERING;
 				set_subj_from_size (cCOLS);
-				redraw_page (group->name, respnum);
+				draw_page (group->name, 0);
 				break;
 
 			case iKeyPageNextArt:	/* skip to next article */
-				art_close ();
 				if ((n = next_response (respnum)) == -1)
 					return (which_thread(respnum));
-				respnum = n;
-				goto restart;
-				/* NOTREACHED */
 
-			/*
-			 * TODO: junk this functionality and replace 'k' below with
-			 *       'K' here. See TODO file
-			 */
+				if (load_article(n) < 0)
+					return GRP_ARTFAIL;
+				break;
+
 			case iKeyPageKillThd:	/* mark rest of thread as read */
 				thd_mark_read (group, respnum);
 				if ((n = next_unread (next_response (respnum))) == -1)
 					goto return_to_index;
-				art_close ();
-				respnum = n;
-				goto restart;
-				/* NOTREACHED */
+				if (load_article(n) < 0)
+					return GRP_ARTFAIL;
+				break;
 
 			case iKeyPageNextUnreadArt:	/* next unread article */
-				if (note_page != ART_UNAVAILABLE)
-					art_close ();
-
-				if ((n = next_unread (next_response(respnum))) != -1) {
-					respnum = n;
-					goto restart;
-				}
-				return (which_thread (respnum));
+				goto page_goto_next_unread;
 
 			case iKeyPagePrevArt:	/* previous article */
-				art_close ();
 				if ((n = prev_response (respnum)) == -1)
 					return (respnum);
 
-				respnum = n;
-				goto restart;
+				if (load_article(n) < 0)
+					return GRP_ARTFAIL;
+				break;
 
 			case iKeyPagePrevUnreadArt:	/* previous unread article */
 				if ((n = prev_unread (prev_response (respnum))) == -1)
 					info_message (_(txt_no_prev_unread_art));
 				else {
-					art_close ();
-					respnum = n;
-					goto restart;
+					if (load_article(n) < 0)
+						return GRP_ARTFAIL;
 				}
 				break;
 
@@ -725,7 +732,7 @@ return_to_index:
 			case iKeyPageReplyQuoteHeaders:
 			case iKeyPageReply:
 				mail_to_author (group->name, respnum, (ch == iKeyPageReplyQuote || ch == iKeyPageReplyQuoteHeaders) ? TRUE : FALSE, ch == iKeyPageReplyQuoteHeaders ? TRUE : FALSE);
-				redraw_page (group->name, respnum);
+				draw_page (group->name, 0);
 				break;
 
 			case iKeyPageTag:	/* tag/untag article for saving */
@@ -733,7 +740,6 @@ return_to_index:
 				break;
 
 			case iKeyPageGroupSel:	/* return to group selection page */
-				art_close ();
 				if (filter_state == FILTERING) {
 					filter_articles (group);
 					make_threads (group, FALSE);
@@ -746,21 +752,21 @@ return_to_index:
 
 			case iKeyPagePost:	/* post a basenote */
 				if (post_article (group->name))
-					redraw_page (group->name, respnum);
+					draw_page (group->name, 0);
 				break;
 
 			case iKeyPostponed:
 			case iKeyPostponed2:	/* post postponed article */
 				if (can_post) {
 					if (pickup_postponed_articles (FALSE, FALSE))
-						redraw_page (group->name, respnum);
+						draw_page (group->name, 0);
 				} else
 					info_message(_(txt_cannot_post));
 				break;
 
 			case iKeyDisplayPostHist:	/* display messages posted by user */
 				if (user_posted_messages ())
-					redraw_page (group->name, respnum);
+					draw_page (group->name, 0);
 				break;
 
 			case iKeyPageMarkArtUnread:	/* mark article as unread (to return) */
@@ -769,8 +775,16 @@ return_to_index:
 				break;
 
 			case iKeyPageSkipIncludedText:	/* skip included text */
-				skip_include = first_char;
-				goto page_down;
+				for (i=curr_line; i < artlines /*TODO - ARTLINES*/; i++) {
+					if (!(artline[i].flags & (C_QUOTE1|C_QUOTE2|C_QUOTE3)))
+						break;
+				}
+
+				if (i != curr_line) {
+					curr_line = i;
+					draw_page (group->name, 0);
+				}
+				break;
 
 			case iKeyToggleInfoLastLine: /* this is _not_ correct, we do not toggle status here */
 				info_message ("%s", arts[respnum].subject);
@@ -780,7 +794,7 @@ return_to_index:
 			case iKeyPageToggleHighlight:
 				if (use_color) { /* make sure we have color turned on */
 					word_highlight = !word_highlight;
-					redraw_page(group->name, respnum);
+					draw_page (group->name, 0);
 					info_message(_(txt_toggled_high), (word_highlight) ? "on" : "off");
 				}
 				break;
@@ -795,287 +809,127 @@ return_to_index:
 }
 
 
-void
-redraw_page (
-	char *group,
-	int respnum)
-{
-	if (note_page == ART_UNAVAILABLE) {
-		ClearScreen ();
-		error_message (_(txt_art_unavailable));
-	} else if (note_page > 0) {
-		note_page--;
-		fseek (note_fp, note_mark[note_page], SEEK_SET);
-		show_note_page (group, respnum);
-	}
-}
-
-
-static t_bool
-expand_ctrl_chars (
-	char *tobuf,
-	char *frombuf,
-	int length,
-	int do_rotation)
-{
-	char *p, *q;
-	int i, j;
-	t_bool ctrl_L = FALSE;
-
-	for (p = frombuf, q = tobuf; *p && *p != '\n' && q < &tobuf[length]; p++) {
-		if (*p == '\b' && q > tobuf) {
-			q--;
-		} else if (*p == '\t') {
-			i = q - tobuf;
-			j = ((i+tabwidth)/tabwidth) * tabwidth;
-
-			while (i++ < j)
-				*q++ = ' ';
-
-		} else if (((*p) & 0xFF) < ' ') {
-			*q++ = '^';
-			*q++ = ((*p) & 0xFF) + '@';
-			if (*p == 12)
-				ctrl_L = TRUE;
-		} else if (do_rotation) {
-			if (*p >= 'A' && *p <= 'Z')
-				*q++ = (*p - 'A' + do_rotation) % 26 + 'A';
-			else if (*p >= 'a' && *p <= 'z')
-				*q++ = (*p - 'a' + do_rotation) % 26 + 'a';
-			else
-				*q++ = *p;
-		} else
-			*q++ = *p;
-	}
-	*q = '\0';
-
-	return ctrl_L;
-}
-
-
 /*
- * This is the core routine that actually gets a chunk of article onto the
- * display
+ * Redraw the current page, curr_line will be the first line displayed
+ * The rest of the code just sets curr_line, this function must ensure
+ * it is set to something sane
+ * If part is !=0, then only draw the first (-ve) or last (+ve) few lines
  */
 void
-show_note_page (
+draw_page (
 	char *group,
-	int respnum)
+	int part)
 {
-	char buf3[2*HEADER_LEN+200];
-	int lines;
-	int i;
-	static char buf[HEADER_LEN];
-	t_bool below_sig;				/* are we in the signature? */
-	t_bool ctrl_L = FALSE;		/* form feed character detected */
-	t_bool do_display_header;
-	t_bool first = TRUE;
+	char *buff;
+	int i, top;
+	int end;	/* last line to draw */
 
 	signal_context = cPage;
 
-	lines = (tinrc.beginner_level ? (cLINES - (MINI_HELP_LINES - 1)) : cLINES);
+	/*
+	 * Ensure curr_line is in bounds
+	 */
+	if (curr_line < 0)
+		curr_line = 0;			/* Oops - off the top */
+	if (curr_line > artlines)
+		curr_line = artlines;	/* Oops - off the end */
 
-	ClearScreen ();
+	search_line = curr_line;	/* Reset search to start from top of display */
 
-	note_line = 1;
+	buff = my_malloc(cCOLS+1);	/* Need to account for \n */
 
-	if (!note_page) {
-		buf2[0] = '\0';
-		doing_pgdn = FALSE;
-		show_first_header (respnum, group);
-	} else
-		show_cont_header (respnum);
+	/*
+	 * If the header would change, redo the whole lot
+	 */
+	if ((curr_line == 1 && part > 0) || (curr_line == 0 && part < 0))
+		part = 0;
 
-	if (skip_include)
-		note_page--;
+	if (part == 0)
+		ClearScreen();
+	else
+		move (0, 0);
 
-	below_sig = FALSE;				/* begin of article -> not in signature */
+	if (curr_line == 0) {
+		show_first_header (group);
+		top = FIRST_HEADER;
+	} else {
+		show_cont_header ();
+		top = CONT_HEADER;
+	}
 
-	while (note_line < lines) { /* loop show_note_page */
+	/* Down-scroll, only redraw bottom 'part' lines of screen */
+	i = (part > 0) ? ARTLINES-part : 0;
 
-		if (tinrc.show_last_line_prev_page) {
-			note_mark[note_page+1] = ftell (note_fp);
-			if (doing_pgdn && first && buf2[0])
-				goto print_a_line;
-		}
-		first = FALSE;
-		if (fgets (buf, (int) sizeof(buf), note_fp) == 0) {
-			note_end = TRUE;
-			skip_include = '\0';
+	/* Up-scroll, only redraw the top 'part' lines of screen */
+	end = (part < 0) ? -part : ARTLINES;
+
+	for (; i<end; i++) {
+		t_lineinfo *curr;
+
+		if (curr_line + i >= artlines)		/* ran out of article */
 			break;
-		}
 
-		in_headers = (ftell (note_fp) < mark_body); /* still in header? */
+		curr = &artline[curr_line+i];
+		fseek (note_fp, curr->offset, SEEK_SET);
 
-		if (in_headers && !show_all_headers) {
-			if (*buf == ' ' || *buf == '\t')	{	/* continuation line */
-				if (!show_prev_header)	/* last line was not displayed */
-					continue;				/* so don't display this line, too */
-			} else {
-				/* no continuation line */
-				do_display_header = FALSE; /* default: don't display header */
-				if (num_headers_to_display
-					 && (news_headers_to_display_array[0][0] == '*')) {
-					do_display_header = TRUE; /* wild do */
-				} else {
-					for (i = 0; i < num_headers_to_display; i++) {
-						if (!strncasecmp (buf, news_headers_to_display_array[i],
-											strlen (news_headers_to_display_array[i]))) {
-							do_display_header = TRUE;
-							break;
-						}
-					}
-				}
-				if (num_headers_to_not_display
-					 && (news_headers_to_not_display_array[0][0] == '*')) {
-					do_display_header = FALSE; /* wild don't: doesn't make sense! */
-				} else {
-					for (i = 0; i < num_headers_to_not_display; i++) {
-						if (!strncasecmp (buf, news_headers_to_not_display_array[i],
-									  strlen (news_headers_to_not_display_array[i]))) {
-							do_display_header = FALSE;
-							break;
-						}
-					}
-				}
-
-				/* do_display_header is set if line should be displayed */
-				show_prev_header = do_display_header;	/* remember for cont. */
-				if (!do_display_header)
-					continue;
-			} /* endif continuation line */
-		} /* endif in_headers && !show_all_headers */
-
-		buf[sizeof (buf) - 1] = '\0';
-
-		ctrl_L = expand_ctrl_chars(buf2, buf, sizeof (buf), rotate);
-
-print_a_line:
-		if (first)
-			StartInverse ();
-
-		if (!strcmp (buf2, "-- "))
-			below_sig = TRUE;			/* begin of signature */
-
-		strip_line (buf2);
+		buff = fgets (buff, cCOLS+1, note_fp);
 
 		/*
-		 * RFC 2047 headers spanning two or more lines should be
-		 * concatenated, but it's not done yet for fear that it may
-		 * disrupt other parts.
+		 * rotN encoding on body data only
 		 */
+		if (rotate != 0 && curr->flags&C_BODY) {
+			char *p = buff;
 
-		if (in_headers
-			 && ((!tinrc.display_mime_header_asis && !show_all_headers)
-					|| (!tinrc.display_mime_allheader_asis && show_all_headers)))  {
-			/* check if it's a continuation header line */
-			if (buf2[0] != ' ' && buf2[0] != '\t') {
-				/*
-				 * necessary, if there were only blanks in the header line, which
-				 * are stripped by strip_line (buf2) above
-				 */
-				if (strstr (buf2, ": ")) {
-					char header_name[80];	/* is the a length limit for a header-name ?*/
-					size_t header_name_len;
-
-					header_name_len = strstr (buf2, ": ") - buf2;
-
-					if (header_name_len >= 79)
-						header_name_len = 79;
-
-					strncpy(header_name, buf2, header_name_len);
-					header_name[header_name_len] = '\0';
-					match_header(buf2, header_name, buf3, (char *) 0, HEADER_LEN);
-					strncpy(buf2 + header_name_len + 2, buf3, HEADER_LEN - 2 - header_name_len);
-				}
-			} else
-				strcpy(buf2, rfc1522_decode(buf2));
-		}
-
-		if (tex2iso_supported && tex2iso_article) {
-			strcpy (buf3, buf2);
-			ConvertTeX2Iso (buf3, buf2);
-		}
-
-		if (iso2asc_supported >= 0) {
-			strcpy (buf3, buf2);
-			ConvertIso2Asc (buf3, buf2, iso2asc_supported);
-		}
-
-		ConvertBody2Printable (buf2);
-
-		first_char = buf2[0] ? buf2[0] : first_char;
-
-		if (!below_sig || tinrc.show_signatures) {
-			if (!skip_include  || (first_char != skip_include)) {
-				if (skip_include) {
-					skip_include = '\0';
-					note_page++;
-				}
-#	ifdef HAVE_COLOR
-#		ifdef USE_CURSES
-				move(note_line - 1, 0);
-#		endif /* USE_CURSES */
-				print_color (buf2, below_sig);
-#	else
-#		ifdef USE_CURSES
-#			if 0 /* this cut's off log header lines after cCOLS bytes */
-				WriteLine(note_line - 1, buf2);
-#			else
-				my_fputs(buf2, stdout);
-				my_fputs(cCRLF, stdout);
-#			endif /* 0 */
-#		else
-				my_printf ("%s" cCRLF, buf2);
-#		endif /* USE_CURSES */
-#	endif /* HAVE_COLOR */
-				note_line += ((int) (strlen (buf2) - 1) / cCOLS) + 1;
+			for (p=buff; *p; p++) {
+				if (*p >= 'A' && *p <= 'Z')
+					*p = (*p - 'A' + rotate) % 26 + 'A';
+				else if (*p >= 'a' && *p <= 'z')
+					*p = (*p - 'a' + rotate) % 26 + 'a';
 			}
 		}
+strip_line(buff);
+#ifdef HAVE_COLOR
+#	ifdef USE_CURSES
+		move(i+top, 0);
+#	endif /* USE_CURSES */
+		print_color (buff, curr->flags);
+#else
+#	ifdef USE_CURSES
+		my_fputs(buff, stdout);
+		my_fputs(cCRLF, stdout);
+#	else
+		my_printf ("%s" cCRLF, buff);
+#	endif /* USE_CURSES */
+#endif /* HAVE_COLOR */
 
-		if (first)
-			EndInverse ();
-
-		first = FALSE;
-		doing_pgdn = FALSE;
-
-		if (ctrl_L)
+		/* Blank the screen after a ^L (only occurs when showing cooked) */
+		if (curr->flags & C_CTRLF) {
+			CleartoEOS();
 			break;
-
-	} /* loop show_note_page */
-
-	if (!tinrc.show_last_line_prev_page)
-		note_mark[++note_page] = ftell (note_fp);
-	else
-		note_page++;
-
-	if (ftell (note_fp) == note_size)
-		note_end = TRUE;
+		}
+	}
 
 #	ifdef HAVE_COLOR
 	fcol(tinrc.col_text);
 #	endif /* HAVE_COLOR */
-	if (note_end) {
+
+	free(buff);
+
+	show_mini_help (PAGE_LEVEL);
+
+	/*
+	 * Print an appropriate footer
+	 */
+	if (curr_line + ARTLINES >= artlines) {
+		clear_message();
 		MoveCursor (cLINES, MORE_POS-(5+BLANK_PAGE_COLS));
 		StartInverse ();
 
 		my_fputs (((arts[respnum].thread != -1) ? _(txt_next_resp) : _(txt_last_resp)), stdout);
-
 		my_flush ();
 		EndInverse ();
-	} else {
-		if (note_size > 0)
-			draw_percent_mark (note_mark[note_page], note_size);
-		else {
-			MoveCursor (cLINES, MORE_POS-BLANK_PAGE_COLS);
-			StartInverse ();
-			my_fputs (_(txt_more), stdout);
-			my_flush ();
-			EndInverse ();
-		}
-	}
-
-	show_mini_help (PAGE_LEVEL);
+	} else
+		draw_percent_mark (curr_line+ARTLINES, artlines);
 
 	stow_cursor();
 }
@@ -1084,8 +938,7 @@ print_a_line:
 #ifdef HAVE_METAMAIL
 static void
 show_mime_article (
-	FILE *fp,
-	struct t_article *art)
+	FILE *fp)
 {
 	FILE *mime_fp;
 	char *mm;
@@ -1094,10 +947,11 @@ show_mime_article (
 
 	offset = ftell (fp);
 	rewind (fp);
+
 	if ((mm = getenv("METAMAIL")))
-		sprintf (buf, mm);
+		snprintf (buf, sizeof(buf)-1, mm);
 	else
-		sprintf (buf, METAMAIL_CMD, PATH_METAMAIL);
+		snprintf (buf, sizeof(buf)-1, METAMAIL_CMD, PATH_METAMAIL);
 
 	EndWin();
 	Raw(FALSE);
@@ -1112,20 +966,17 @@ show_mime_article (
 
 	/*
 	 * if we don't set note_end the undecoded article is displayed
-	 *  after metamail quits
+	 * after metamail quits
 	 */
-#	if 0
-	note_end = TRUE;
-#	endif /* 0*/
 	Raw(TRUE);
 	InitWin ();
 	continue_prompt ();
 
+	/* This is redundant, but harmless, unless we are viewing the raw art */
 	fseek (fp, offset, SEEK_SET);	/* goto old position */
+
 	MoveCursor (cLINES, MORE_POS-(5+BLANK_PAGE_COLS));
 	StartInverse ();
-
-	my_fputs (((art->thread != -1) ? _(txt_next_resp) : _(txt_last_resp)), stdout);
 
 	my_flush ();
 	EndInverse ();
@@ -1133,9 +984,11 @@ show_mime_article (
 #endif /* HAVE_METAMAIL */
 
 
+/*
+ * FIRST_HEADER defines the size in lines of this header
+ */
 static void
 show_first_header (
-	int respnum,
 	char *group)
 {
 	char buf[HEADER_LEN];
@@ -1148,11 +1001,9 @@ show_first_header (
 	whichresp = which_response (respnum);
 	x_resp = num_of_responses (which_thread (respnum));
 
-	ClearScreen ();
-
 	if (!my_strftime (buf, sizeof (buf), "%a, %d %b %Y %H:%M:%S",
 							localtime (&arts[respnum].date)))
-		strcpy (buf, note_h.date);
+		strcpy (buf, BlankIfNull(note_h->date));
 
 	/*
 	 * Work out how much room we have for group name, allow 1 space before and
@@ -1191,10 +1042,10 @@ show_first_header (
 #	endif /* HAVE_COLOR */
 
 	/* Displaying the value of X-Comment-To header in the upper right corner */
-	if (note_h.ftnto[0] && tinrc.show_xcommentto) {
+	if (note_h->ftnto && tinrc.show_xcommentto) {
 		char ftbuf[HEADER_LEN]; /* FTN-To aka X-Comment-To */
 		my_fputs (buf, stdout);
-		strip_address(note_h.ftnto, ftbuf);
+		strip_address(note_h->ftnto, ftbuf);
 		ftbuf[19] = '\0';
 		Convert2Printable (ftbuf);
 		StartInverse ();
@@ -1211,6 +1062,9 @@ show_first_header (
 		my_fputs (tmp, stdout);
 	}
 
+	/*
+	 * TODO Consider using note_h->hdr->lines if !MULTIPART
+	 */
 	if (arts[respnum].lines < 0)
 		strcpy (tmp, "?");
 	else
@@ -1235,7 +1089,7 @@ show_first_header (
 		my_fputs (buf, stdout);
 	}
 
-	strncpy (buf, (*note_h.subj ? note_h.subj : arts[respnum].subject), HEADER_LEN - 1);
+	strncpy (buf, (note_h->subj ? note_h->subj : arts[respnum].subject), HEADER_LEN - 1);
 
 	buf[RIGHT_POS - 5 - n] = '\0';
 
@@ -1276,8 +1130,8 @@ show_first_header (
 		strncpy (buf, arts[respnum].from, cCOLS-1);
 	buf[cCOLS-1] = '\0';
 
-	if (*note_h.org) {
-		sprintf (tmp, _(txt_at_s), note_h.org);
+	if (note_h->org) {
+		sprintf (tmp, _(txt_at_s), note_h->org);
 		tmp[sizeof(tmp)-1] = '\0';
 
 		if ((int) strlen (buf) + (int) strlen (tmp) >= cCOLS -1) {
@@ -1305,14 +1159,15 @@ show_first_header (
 #	ifdef HAVE_COLOR
 	fcol(tinrc.col_normal);
 #	endif /* HAVE_COLOR */
-
-	note_line += 4;
 }
 
 
+/*
+ * CONT_HEADER defines the size in lines of this header
+ */
 static void
 show_cont_header (
-	int respnum)
+	void)
 {
 	char *buf;
 	int maxresp;
@@ -1330,22 +1185,21 @@ show_cont_header (
 	 * checker up although we still depend on _(txt_thread_resp_page)
 	 * not being too long
 	 */
-	buf = (char *) my_malloc (strlen((arts[respnum].name ? arts[respnum].name : arts[respnum].from)) + strlen(note_h.subj) + cCOLS + 5*3*sizeof(int));
-
+	buf = (char *) my_malloc (strlen((arts[respnum].name ? arts[respnum].name : arts[respnum].from)) + strlen(note_h->subj) + cCOLS + 5*3*sizeof(int));
 	if (whichresp) {
 		sprintf(buf, _(txt_thread_resp_page),
 			whichbase + 1,
 			grpmenu.max,
 			whichresp,
 			maxresp,
-			note_page + 1,
-			arts[respnum].name ? arts[respnum].name : arts[respnum].from, note_h.subj);
+			((curr_line+ARTLINES+1) / ARTLINES) + 1,
+			arts[respnum].name ? arts[respnum].name : arts[respnum].from, note_h->subj);
 	} else {
 		sprintf(buf, _(txt_thread_page),
 			whichbase + 1,
 			grpmenu.max,
-			note_page + 1,
-			arts[respnum].name ? arts[respnum].name : arts[respnum].from, note_h.subj);
+			((curr_line+ARTLINES+1) / ARTLINES) + 1,
+			arts[respnum].name ? arts[respnum].name : arts[respnum].from, note_h->subj);
 	}
 	strip_line (buf);
 
@@ -1365,178 +1219,104 @@ show_cont_header (
 #	endif /* HAVE_COLOR */
 
 	free(buf);
-
-	note_line += 2;
 }
 
 
 /*
- * Returns:
- *		0				Art opened successfully
- *		ART_UNAVAILABLE	Couldn't find article
- *		ART_ABORT		User aborted during read of article
+ * Change the pager article context to arts[new_respnum]
+ * Return GRP_ARTFAIL if article could not be opened
  */
-int
-art_open (
-	struct t_article *art,
-	char *group_path,
-	t_bool rfc1521decode)
+static int
+load_article(
+	int new_respnum)
 {
-	char *ptr;
-	char buf[8192];
-	char p_header[8192];
-	char p_content[8192];
-	struct t_header_list *pptr, *pqtr;
-	int c, is_summary;
+	char group_path[LEN];
 
-	art_close ();	/* just in case */
+	if (read_news_via_nntp)
+		wait_message (0, _(txt_reading_article));
 
-	if ((tex2iso_article = (tex2iso_supported ? iIsArtTexEncoded (art->artnum, group_path) : FALSE)))
-		wait_message (0, _(txt_is_tex_ecoded));
-
-	if ((note_fp = open_art_fp (group_path, art->artnum, art->lines, rfc1521decode)) == (FILE *) 0) {
-		note_page = ART_UNAVAILABLE;		/* Flag error for later */
-		return ((tin_errno == 0) ? ART_UNAVAILABLE : ART_ABORT);
-	}
-
-	note_h.from[0] = '\0';
-	note_h.path[0] = '\0';
-	note_h.subj[0] = '\0';
-	note_h.org[0] = '\0';
-	note_h.date[0] = '\0';
-	note_h.newsgroups[0] = '\0';
-	note_h.messageid[0] = '\0';
-	note_h.references[0] = '\0';
-	note_h.distrib[0] = '\0';
-	note_h.followup[0] = '\0';
-	note_h.keywords[0] = '\0';
-	note_h.summary[0] = '\0';
-	note_h.mimeversion[0] = '\0';
-	note_h.contenttype[0] = '\0';
-	note_h.contentenc[0] = '\0';
-	note_h.ftnto[0] = '\0';
-	if (note_h.persist != NULL) {
-		for (pptr = note_h.persist; pptr != NULL; pptr = pqtr) {
-			pqtr = pptr->next;
-			free (pptr);
-		}
-	}
-	note_h.persist = NULL;
-
-	while (fgets(buf, (int) sizeof(buf), note_fp) != 0) {
-		buf[sizeof(buf)-1] = '\0';
-
-		if (*buf == '\n')
-			break;
-
-		/* do not remove \n in Summary lines */
-		/* FIXME */
-		is_summary = (strncasecmp (buf, "Summary: ", 9) == 0);
-
-		/* check for continued header line */
-		while((c = peek_char(note_fp)) != EOF && isspace(c) && c != '\n' && (strlen(buf) < (sizeof(buf)-1))) {
-			if (strlen(buf) > 0 && buf[strlen(buf)-1] == '\n') {
-				if (!is_summary)
-					buf[strlen(buf)-1] = '\0';
-			}
-			fgets(buf + strlen(buf), sizeof buf - strlen(buf), note_fp);
-		}
-
-		for (ptr = buf; *ptr && ((*ptr != '\n') || (ptr[1] != '\0')); ptr++) {
-			if ((((*ptr) & 0xFF) < ' ') && (*ptr != '\n') && ((*ptr != '\t') || (!is_summary)))
-				*ptr = ' ';
-		}
-		*ptr = '\0';
-
-		if (match_header (buf, "Path", note_h.path, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "From", note_h.from, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "Subject", note_h.subj, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "Organization", note_h.org, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "Date", note_h.date, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "Newsgroups", note_h.newsgroups, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "Message-ID", note_h.messageid, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "References", note_h.references, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "Distribution", note_h.distrib, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "Followup-To", note_h.followup, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "Keywords", note_h.keywords, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "Summary", note_h.summary, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "Mime-Version", note_h.mimeversion, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "Content-Type", note_h.contenttype, (char*)0, HEADER_LEN)) {
-			str_lwr (note_h.contenttype, note_h.contenttype);
-			continue;
-		}
-		if (match_header (buf, "Content-Transfer-Encoding", note_h.contentenc, (char*)0, HEADER_LEN)) {
-			str_lwr (note_h.contentenc, note_h.contentenc);
-			continue;
-		}
-		if (match_header (buf, "X-Comment-To", note_h.ftnto, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "Author-IDs", note_h.authorids, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "P-Author-IDs", note_h.authorids, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "X-P-Author-IDs", note_h.authorids, (char*)0, HEADER_LEN))
-			continue;
-		if (match_header (buf, "P-", p_content, p_header, HEADER_LEN)) {
-			add_persist (p_header, p_content);
-			continue;
-		}
-		if (match_header (buf, "X-P-", p_content, p_header, HEADER_LEN)) {
-			add_persist (p_header, p_content);
-			continue;
-		}
-	}
-
-	mark_body = ftell (note_fp);
-	note_mark[0] = 0L;
-	rewind (note_fp);
-	note_end = FALSE;
+fprintf(stderr, "load_art %s(new=%d, curr=%d)\n", (new_respnum == respnum) ? "ALREADY OPEN!":"", new_respnum, respnum);
 
 	/*
-	 * If Newsgroups is empty its a good bet the article is a mail article
+	 * Remember current & previous articles for '-' command
 	 */
-	if (!*note_h.newsgroups) {
-		strcpy (note_h.newsgroups, group_path);
-		while ((ptr = strchr (note_h.newsgroups, '/')))
-			*ptr = '.';
+	if (new_respnum != this_resp) {
+		last_resp = this_resp;	/* Looks like global this_resp == respnum */
+		this_resp = new_respnum;
 	}
 
-	/* This is used as some warped success indicator in art_close() */
-	note_page = 0;
+	if (new_respnum == respnum)
+		goto already_open;
+
+	respnum = new_respnum;		/* Set new art globally */
+
+	art_close (&pgart);			/* close previously opened art in pager */
+
+	make_group_path (CURR_GROUP.name, group_path);
+
+	switch (art_open (&arts[respnum], group_path, TRUE, &pgart)) {
+
+		case ART_UNAVAILABLE:
+			art_mark_read (&CURR_GROUP, &arts[respnum]);
+			wait_message (1, _(txt_art_unavailable));
+			nobreak;	/* FALLTHROUGH */
+
+		case ART_ABORT:
+			return GRP_ARTFAIL;	/* special retcode to stop redrawing screen */
+
+		default:					/* Normal case */
+#if 0
+			if (prompt_yn(cLINES, "Fake art unavailable ? ", FALSE) == 1) {
+				art_close(&pgart);
+				art_mark_read (&CURR_GROUP, &arts[respnum]);
+				return GRP_ARTFAIL;
+			}
+#endif
+			break;
+	}
+
+already_open:
+	art_mark_read (&CURR_GROUP, &arts[respnum]);
+
+	/*
+	 * Setup to start viewing cooked version
+	 */
+	show_all_headers = FALSE;
+	curr_line = 0;
+	note_fp = pgart.cooked;
+	artline = pgart.cookl;
+	artlines = pgart.cooked_lines;
+	search_line = -1;
+
+	rotate = 0;			/* normal mode, not rot13 */
+
+	/* TODO too many draw_page()s here - do it once on entry and then sort it out ? */
+#ifdef HAVE_METAMAIL
+	if (tinrc.use_metamail && note_h->mime && !(IS_PLAINTEXT(note_h->ext))) {
+		if (tinrc.ask_for_metamail) {
+			draw_page (CURR_GROUP.name, 0);
+			if (prompt_yn (cLINES, _(txt_use_mime), TRUE) == 1) {
+				show_mime_article (pgart.raw);
+				rewind (pgart.raw);
+				draw_page (CURR_GROUP.name, 0);
+			}
+/* TODO Footer not redrawn */
+		} else {
+			show_mime_article (pgart.raw);
+			draw_page (CURR_GROUP.name, 0);
+		}
+	} else
+#endif /* HAVE_METAMAIL */
+		draw_page (CURR_GROUP.name, 0);
 
 	return 0;
-}
-
-
-void
-art_close (
-	void)
-{
-	show_all_headers = FALSE; /* start without displaying ALL headers */
-	if (note_fp && note_page >= 0) {
-		fclose (note_fp);
-		note_fp = (FILE *) 0;
-	}
 }
 
 
 static int
 prompt_response (
 	int ch,
-	int respnum)
+	int curr_respnum)
 {
 	int num;
 
@@ -1547,148 +1327,76 @@ prompt_response (
 		return -1;
 	}
 
-	return find_response (which_thread (respnum), num);
-}
-
-
-static int
-show_last_page (
-	void)
-{
-	char buf[LEN];
-	char buf3[LEN+50];
-	t_bool ctrl_L;		/* form feed character detected */
-
-	if (note_end)
-		return FALSE;
-
-	while (!note_end) {
-		note_line = (!note_page ? 5 : 3);
-
-		while (note_line < cLINES) {
-			if (fgets (buf, (int) sizeof(buf), note_fp) == 0) {
-				note_end = TRUE;
-				break;
-			}
-			buf[sizeof (buf)-1] = '\0';
-
-			ctrl_L = expand_ctrl_chars (buf3, buf, sizeof (buf), 0);
-
-			note_line += ((int) strlen (buf3) / cCOLS) + 1;
-
-			if (ctrl_L)
-				break;
-		}
-		if (note_mark[note_page] == note_size) {
-			note_end = TRUE;
-			note_page--;
-			break;
-		} else if (!note_end)
-			note_mark[++note_page] = ftell(note_fp);
-	}
-	fseek (note_fp, note_mark[note_page], SEEK_SET);
-	return TRUE;
+	return find_response (which_thread (curr_respnum), num);
 }
 
 
 /*
- * buf:  Article header
- * pat:  Text to match in header
- * body: Return buffer
- * len:  sizeof(body)
- *
- * Returns:
- *	FALSE	Header was not matched.
- *	TRUE	Header was matched. body contains NULL terminated content
- *			portion of buf (ie with pat: and leading space removed)
+ * Reposition within art as needed, highlight searched string
+ * This is tied quite closely to the information stored by
+ * get_search_vectors()
  */
-t_bool
-match_header (
-	char *buf,
-	const char *pat,
-	char *body,
-	char *nodec_body,
-	size_t len)
+static void
+process_search(
+	void)
 {
-	size_t hlen;
-	size_t plen = strlen (pat);
+	char tmp[LEN];
+	int i, start, end;
 
-	/* A quick check on the length before calling strnicmp() etc. */
-
-	/*
-	 * Does ': ' follow the header text?
-	 * or are we searching for a prefix?
-	 */
-	if (strlen(buf) < plen + 2 || buf[plen] != ':' || buf[plen+1] != ' ')
-		/* if (pat[plen-1] != '-') */
-		if (!(body && nodec_body))
-			return FALSE;
+	if ((i = get_search_vectors (&start, &end)) == -1)
+		return;
 
 	/*
-	 * If the header matches, skip past the ': ' and any leading whitespace
+	 * Is matching line off the current view ?
+	 * Reposition within article if needed, try to get matched line
+	 * in the middle of the screen
+ * TODO this is a bit broken since ARTLINES is not constant when leaving the 1st page
+ * the (ideal_pos == 0 ? 2 : 0) should go away if we get constant header sizes
 	 */
-	if (strncasecmp(buf, pat, plen) == 0) {
-		while (buf[plen] != ' ')
-			plen++;
-		hlen = plen - 1;
-		plen++;
-		while (buf[plen] == ' ')
-			plen++;
+	if (i < curr_line || i >= curr_line+ARTLINES) {
+		int ideal_pos = i - (ARTLINES / 2);
 
-		/*
-		 * Copy the 'body' of the header into return string
-		 */
-
-#ifdef LOCAL_CHARSET
-		/*
-		 * we have a bit of a problem here, if the header contains 8 bit
-		 * character, they were already converted to local charset in
-		 * rfc1521_decode(), they will be decoded again by rfc1522_decode in
-		 * modifiedstrncpy(). We just convert the chars back to network charset
-		 * for now, but this should be done differently, I would guess.
-		 */
-		buffer_to_network(buf+plen);
-#endif /* LOCAL_CHARSET */
-
-		if (body) {
-			modifiedstrncpy (body, &buf[plen], len, TRUE);
-			body[len - 1] = '\0';
-		}
-
-		if (body && nodec_body) {
-			strncpy (nodec_body, buf, len);
-			nodec_body[hlen] = '\0';
-		} else if (nodec_body) {
-			modifiedstrncpy (nodec_body, &buf[plen], len, FALSE);
-			nodec_body[len - 1] = '\0';
-		}
-
-		return TRUE;
+		if (ideal_pos + ARTLINES > artlines)		/* Off the end */
+			curr_line = artlines - ARTLINES - (ideal_pos == 0 ? 2 : 0);
+		else										/* Pos is just fine */
+			curr_line = ideal_pos;
 	}
+	/* TODO un-inverse the previous search string */
+	draw_page (CURR_GROUP.name, 0);
+	search_line = i;								/* draw_page() resets this to 0 */
 
-	return FALSE;
+#ifdef USE_CURSES
+	/*
+	 * Highlight found string
+	 */
+	MoveCursor (i - curr_line + HDR_ADJUST + 2, start);
+	innstr (tmp, end - start);
+	StartInverse ();
+	my_fputs (tmp, stdout);
+	my_flush ();
+	EndInverse ();
+	stow_cursor();
+#else
+	screen[screen_row].col[screen_col+i] = value[i];	/* TODO inverse whole line ? */
+#endif /* USE_CURSES */
 }
 
 
-static void
-add_persist (
-	char *p_header,
-	char *p_content)
+/*
+ * Re-cook an article
+ */
+void
+resize_article(
+	t_openartinfo *artinfo)
 {
-	struct t_header_list *pptr;
+	free(artinfo->cookl);
+	if (artinfo->cooked)
+		fclose(artinfo->cooked);
 
-	if (note_h.persist != NULL) {
-		for (pptr = note_h.persist; pptr->next != NULL; pptr = pptr->next)
-			;
-		pptr->next = (struct t_header_list *) my_malloc(sizeof(struct t_header_list));
-		pptr = pptr->next;
-		strcpy(pptr->header, p_header);
-		strcpy(pptr->content, p_content);
-		pptr->next = NULL;
-	} else {
-		note_h.persist = (struct t_header_list *) my_malloc(sizeof(struct t_header_list));
-		strcpy(note_h.persist->header, p_header);
-		strcpy(note_h.persist->content, p_content);
-		note_h.persist->next = NULL;
-	}
+	cook_article (artinfo);
+
+	show_all_headers = FALSE;
+	artline = pgart.cookl;
+	artlines = pgart.cooked_lines;
+	note_fp = pgart.cooked;
 }

@@ -49,6 +49,10 @@
 #	define tigetnum(s) tgetnum(s)
 #endif /* USE_TERMINFO */
 
+#ifndef RFC2045_H
+#	include <rfc2045.h>
+#endif /* !RFC2045_H */
+
 /*
  * The prototypes bracketed by DECL_xxxx ifdef's are used to get moderately
  * clean compiles on systems with pre-ANSI/POSIX headers when compiler
@@ -298,7 +302,6 @@ extern char *optarg;
 /*
  * Local variables
  */
-extern FILE *note_fp;				/* body of current article */
 extern char **news_headers_to_display_array;
 extern char **news_headers_to_not_display_array;
 extern char *OPT_CHAR_list[];
@@ -318,7 +321,6 @@ extern char default_organization[PATH_LEN];
 extern char default_signature[PATH_LEN];
 extern char global_attributes_file[PATH_LEN];
 extern char global_config_file[PATH_LEN];
-extern char global_filter_file[PATH_LEN];
 extern char homedir[PATH_LEN];
 extern char index_maildir[PATH_LEN];
 extern char index_newsdir[PATH_LEN];
@@ -328,7 +330,7 @@ extern char last_put[];
 extern char libdir[PATH_LEN];
 extern char local_attributes_file[PATH_LEN];
 extern char local_config_file[PATH_LEN];
-extern char local_filter_file[PATH_LEN];
+extern char filter_file[PATH_LEN];
 extern char local_input_history_file[PATH_LEN];
 extern char local_newsgroups_file[PATH_LEN];
 extern char local_newsrctable_file[PATH_LEN];
@@ -364,6 +366,8 @@ extern char host_name[];
 extern const char base64_alphabet[64];
 
 extern const char **info_help;
+extern constext *content_encodings[];
+extern constext *content_types[];
 extern constext *help_group[];
 extern constext *help_page[];
 extern constext *help_select[];
@@ -384,6 +388,7 @@ extern constext txt_7bit[];
 extern constext txt_8bit[];
 extern constext txt_active_file_is_empty[];
 extern constext txt_added_groups[];
+extern constext txt_all[];
 extern constext txt_all_groups[];
 extern constext txt_append_overwrite_quit[];
 extern constext txt_art_cancel[];
@@ -403,7 +408,14 @@ extern constext txt_art_unavailable[];
 extern constext txt_article_cancelled[];
 extern constext txt_article_cannot_open[];
 extern constext txt_article_cannot_reopen[];
+extern constext txt_article_plural[];
 extern constext txt_article_reposted[];
+extern constext txt_article_singular[];
+extern constext txt_articles_mailed[];
+#ifndef DISABLE_PRINTING
+	extern constext txt_articles_printed[];
+#endif /* !DISABLE_PRINTING */
+extern constext txt_attach[];
 extern constext txt_at_s[];
 extern constext txt_auth_failed[];
 extern constext txt_auth_pass[];
@@ -440,6 +452,7 @@ extern constext txt_cannot_write_to_directory[];
 extern constext txt_catchup_all_read_groups[];
 extern constext txt_catchup_despite_tags[];
 extern constext txt_catchup_update_info[];
+extern constext txt_caughtup[];
 extern constext txt_check_article[];
 extern constext txt_checking_for_news[];
 extern constext txt_checking_new_groups[];
@@ -458,6 +471,7 @@ extern constext txt_default[];
 extern constext txt_delete_processed_files[];
 extern constext txt_deleting[];
 extern constext txt_disconnecting[];
+extern constext txt_end_of_art[];
 extern constext txt_end_of_arts[];
 extern constext txt_end_of_groups[];
 extern constext txt_end_of_thread[];
@@ -519,7 +533,9 @@ extern constext txt_error_no_from[];
 extern constext txt_error_no_read_permission[];
 extern constext txt_error_no_such_file[];
 extern constext txt_error_no_write_permission[];
+extern constext txt_error_plural[];
 extern constext txt_error_sender_in_header_not_allowed[];
+extern constext txt_error_singular[];
 extern constext txt_exiting[];
 extern constext txt_external_mail_done[];
 extern constext txt_extracting_archive[];
@@ -538,10 +554,13 @@ extern constext txt_followup_poster[];
 extern constext txt_from_line_only[];
 extern constext txt_from_line_only_case[];
 extern constext txt_full[];
+extern constext txt_global[];
 extern constext txt_group[];
 extern constext txt_group_is_moderated[];
+extern constext txt_group_plural[];
 extern constext txt_group_select_com[];
 extern constext txt_group_selection[];
+extern constext txt_group_singular[];
 extern constext txt_help_disp[];
 extern constext txt_help_disp_[];
 extern constext txt_help_navi[];
@@ -551,6 +570,7 @@ extern constext txt_help_misc_[];
 extern constext txt_help_ops[];
 extern constext txt_help_ops_[];
 extern constext txt_help_B[];
+extern constext txt_help_B_[];
 extern constext txt_help_D[];
 extern constext txt_help_I[];
 extern constext txt_help_K[];
@@ -600,6 +620,7 @@ extern constext txt_help_g_num[];
 extern constext txt_help_g_q[];
 extern constext txt_help_g_r[];
 extern constext txt_help_g_search[];
+extern constext txt_help_g_search_[];
 extern constext txt_help_g_T[];
 extern constext txt_help_g_tab[];
 extern constext txt_help_g_x[];
@@ -685,7 +706,7 @@ extern constext txt_invalid_from[];
 extern constext txt_invalid_sender[];
 extern constext txt_inverse_off[];
 extern constext txt_inverse_on[];
-extern constext txt_is_tex_ecoded[];
+extern constext txt_is_tex_encoded[];
 extern constext txt_kill_from[];
 extern constext txt_kill_lines[];
 extern constext txt_kill_menu[];
@@ -724,7 +745,9 @@ extern constext txt_more[];
 extern constext txt_moving[];
 extern constext txt_msgid_line_only[];
 extern constext txt_newsgroup[];
+extern constext txt_newsgroup_plural[];
 extern constext txt_newsgroup_position[];
+extern constext txt_newsgroup_singular[];
 extern constext txt_newsrc_again[];
 extern constext txt_newsrc_nogroups[];
 extern constext txt_newsrc_saved[];
@@ -833,6 +856,7 @@ extern constext txt_save_filename[];
 extern constext txt_saved[];
 extern constext txt_saved_arts[];
 extern constext txt_saved_group[];
+extern constext txt_saved_groupname[];
 extern constext txt_saved_nothing[];
 extern constext txt_saved_pattern_to[];
 extern constext txt_saved_summary[];
@@ -896,6 +920,7 @@ extern constext txt_toggled_rot13[];
 extern constext txt_toggled_tex2iso[];
 extern constext txt_type_h_for_help[];
 extern constext txt_unlimited_time[];
+extern constext txt_unread[];
 extern constext txt_unsubscribe_pattern[];
 extern constext txt_unsubscribed_num_groups[];
 extern constext txt_unsubscribed_to[];
@@ -903,6 +928,7 @@ extern constext txt_unsubscribing[];
 extern constext txt_untagged_art[];
 extern constext txt_untagged_thread[];
 extern constext txt_unthreading_arts[];
+extern constext txt_updated[];
 extern constext txt_uudecoding[];
 extern constext txt_value_out_of_range[];
 extern constext txt_warn_art_line_too_long[];
@@ -911,6 +937,8 @@ extern constext txt_warn_cancel[];
 extern constext txt_warn_encoding_and_external_inews[];
 extern constext txt_warn_newsrc[];
 extern constext txt_warn_multiple_sigs[];
+extern constext txt_warn_re_but_no_references[];
+extern constext txt_warn_references_but_no_re[];
 extern constext txt_warn_sig_too_long[];
 extern constext txt_warn_suspicious_mail[];
 extern constext txt_warn_update[];
@@ -926,7 +954,6 @@ extern constext txt_you_have_mail[];
 #ifndef DISABLE_PRINTING
 	extern constext txt_help_o[];
 	extern constext txt_print[];
-	extern constext txt_printed[];
 	extern constext txt_printing[];
 #endif /* !DISABLE_PRINTING */
 
@@ -968,8 +995,8 @@ extern int RIGHT_POS;
 extern int _hp_glitch;
 extern int cCOLS;
 extern int cLINES;
+extern int curr_line;
 extern int debug;
-extern int glob_respnum;
 extern int group_hash[TABLE_SIZE];
 extern int groupname_len;
 extern int iso2asc_supported;
@@ -983,8 +1010,6 @@ extern int num_headers_to_display;
 extern int num_headers_to_not_display;
 extern int max_subj;
 extern int need_resize;
-extern int note_line;
-extern int note_page;				/* what page we're on */
 extern int num_active;
 extern int num_newnews;
 extern int num_of_killed_arts;
@@ -992,7 +1017,9 @@ extern int num_of_selected_arts;
 extern int num_of_tagged_arts;
 extern int num_save;
 extern int signal_context;
+extern int srch_lineno;
 extern int system_status;
+extern int tabwidth;
 extern int this_resp;
 extern int thread_basenote;
 extern int tin_errno;
@@ -1003,9 +1030,6 @@ extern int xrow;
 
 extern long *base;
 extern long head_next;
-extern long note_mark[MAX_PAGES];	/* ftells on beginnings of pages */
-extern long mark_body;					/* ftell on beginning of body */
-extern long note_size;
 
 extern signed long int read_newsrc_lines;
 
@@ -1018,6 +1042,9 @@ extern uid_t tin_uid;
 
 extern struct regex_cache strip_re_regex;
 extern struct regex_cache strip_was_regex;
+extern struct regex_cache uubegin_regex;
+extern struct regex_cache uubody_regex;
+extern struct regex_cache url_regex;
 
 #ifdef HAVE_COLOR
 	extern struct regex_cache quote_regex;
@@ -1029,7 +1056,6 @@ extern struct t_article *arts;
 extern struct t_config tinrc;
 extern struct t_filters glob_filter;
 extern struct t_group *active;
-extern struct t_header note_h;
 extern struct t_newnews *newnews;
 extern struct t_option option_table[];
 extern struct t_posted *posted;
@@ -1044,14 +1070,12 @@ extern t_bool disable_gnksa_domain_check;
 extern t_bool disable_sender;
 extern t_bool do_rfc1521_decoding;
 extern t_bool force_reread_active_file;
-extern t_bool global_filtered_articles;
 extern t_bool got_sig_pipe;
 extern t_bool in_headers; /* colorful headers */
-extern t_bool local_filtered_articles;
+extern t_bool filtered_articles;
 extern t_bool local_index;
 extern t_bool list_active;
 extern t_bool newsrc_active;
-extern t_bool note_end;					/* end of article ? */
 extern t_bool no_write;
 extern t_bool post_article_and_exit;
 extern t_bool post_postponed_and_exit;
@@ -1071,6 +1095,8 @@ extern t_bool xref_supported;
 extern t_menu selmenu;
 extern t_menu grpmenu;
 extern t_menu *currmenu;
+
+extern t_openartinfo pgart;
 
 #define HIST_SIZE		15
 #define HIST_OTHER		 0
@@ -1360,6 +1386,7 @@ extern struct opttxt txt_mailer_format;
 extern struct opttxt txt_use_mailreader_i;
 extern struct opttxt txt_unlink_article;
 extern struct opttxt txt_keep_posted_articles;
+extern struct opttxt txt_keep_posted_articles_file;
 extern struct opttxt txt_keep_dead_articles;
 extern struct opttxt txt_strip_newsrc;
 extern struct opttxt txt_strip_bogus;

@@ -423,7 +423,7 @@ thread_page (
 				if (thdmenu.max == 1)
 					info_message (_(txt_no_responses));
 				else
-					prompt_item_num (ch, txt_select_art);
+					prompt_item_num (ch, _(txt_select_art));
 				break;
 
 #ifndef NO_SHELL_ESCAPE
@@ -561,9 +561,7 @@ thread_page (
 			case iKeySearchBody:			/* search article body */
 				if ((n = search_body (find_response (thread_basenote, thdmenu.curr))) != -1) {
 					fixup_thread (n, TRUE);
-#if 0 /* Body search only positions, since it can't move to correct place in art */
 					ret_code = enter_pager(n, FALSE);
-#endif /* 0 */
 				}
 				break;
 
@@ -648,14 +646,14 @@ thread_page (
 				art_mark_will_return (group, &arts[n]); /*art_mark_unread (group, &arts[n]);*/
 				bld_tline (thdmenu.curr, &arts[n]);
 				draw_line (thdmenu.curr, MAGIC);
-				info_message (_(txt_marked_as_unread), "Article");
+				info_message (_(txt_marked_as_unread), _("Article"));
 				draw_thread_arrow ();
 				break;
 
 			case iKeyThreadMarkThdUnread:		/* mark thread as unread */
 				thd_mark_unread (group, base[thread_basenote]);
 				update_thread_page ();
-				info_message (_(txt_marked_as_unread), "Thread");
+				info_message (_(txt_marked_as_unread), _("Thread"));
 				break;
 
 			case iKeyThreadSelArt:		/* mark article as selected */
@@ -1315,7 +1313,7 @@ again:
 			return 0;
 
 		default:					/* >=0 normal exit, new basenote */
-			if (local_filtered_articles)
+			if (filtered_articles)
 				return GRP_KILLED; /* ?? set group cursor back to 0 and do nothing */
 			fixup_thread (this_resp, FALSE);
 

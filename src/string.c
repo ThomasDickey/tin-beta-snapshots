@@ -118,22 +118,6 @@ my_strncpy (
 }
 
 
-/* this strcpy variant removes \n and "" */
-void
-strcpynl (
-	char *to,
-	const char *from)
-{
-	while (*from && *from != '\r' && *from != '\n') {
-		if (*from == '"')
-			from++;	/* this is just plain silly */
-		else
-			*to++ = *from++;
-	}
-	*to = 0;
-}
-
-
 /*
  * case-insensitive version of strstr()
  */
@@ -179,44 +163,14 @@ mystrcat (
 
 
 void
-modifiedstrncpy (
-	char *target,
-	const char *source,
-	size_t size,
-	int decode)
-{
-	char buf[2048];
-	int count;
-	char *c;
-
-	count = sizeof(buf)-1;
-	c = buf;
-	while (*source) {
-		if (*source!= 1) {
-			*c++ = *source++;
-			if (!--count)
-				break;
-		}
-		else source++;
-	}
-	*c = 0;
-	c = (decode ? (rfc1522_decode(buf)) : buf);
-
-	while (--size)
-		*target++ = *c++;
-
-	*target = 0;
-}
-
-
-void
 str_lwr (
-	char *dst,
-	const char *src)
+	char *str)
 {
-	while (*src) {
-		*dst++ = (char)tolower((unsigned char)*src);
-		src++;
+	char *dst = str;
+
+	while (*str) {
+		*dst++ = (char)tolower((unsigned char)*str);
+		str++;
 	}
 	*dst = '\0';
 }
@@ -427,10 +381,7 @@ strncasecmp (
 
 
 /*
- * FIXME - this is broken if string is all whitespace
- *
- * str_trim - substitute multiple white spaces with one space
- *            and delete heading and trailing whitespace
+ * str_trim - leading and trailing whitespace
  *
  * INPUT:  string  - string to trim
  *
@@ -444,23 +395,24 @@ str_trim (
 {
 	char *rp;		/* reading string pointer */
 	char *wp;		/* writing string pointer */
-	t_bool ws = TRUE;		/* white space flag */
+	char *ls;		/* last space */
 
-	for (wp = rp = string; *rp; rp++) {		/* loop over string */
-		if (isspace((int)*rp)) {		/* is it a white space? */
-			if (!ws) {		/* was the last character not a white space? */
-				*wp++ = ' ';		/* store a blank */
-				ws = TRUE;
-			}
-		} else /* no white space */ {
-			*wp++ = *rp;		/* store the character */
-			ws = FALSE;
-		}
+	for (rp = wp = ls = string; isspace((int)*rp); rp++)		/* Skip leading space */
+		;
+
+	while (*rp) {
+		if (isspace((int)*rp)) {
+			if (ls == NULL)		/* Remember last written space */
+				ls = wp;
+		} else
+			ls = NULL;			/* It wasn't the last space */
+		*wp++ = *rp++;
 	}
-	if (ws)		/* delete trailing blank */
-		wp--;
 
-	*wp = '\0';
+	if (ls)						/* ie, there is trailing space */
+		*ls = '\0';
+	else
+		*wp = '\0';
 
 	return (string);
 }

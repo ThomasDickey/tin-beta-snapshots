@@ -180,7 +180,7 @@ Save/read articles to/in directory. Default is \fI$HOME/News\fP.
 .TP
 .B -S
 Save unread articles for later reading by the ``\fB-R\fR'' option. For more
-information read section AUTOMATIC MAILING AND SAVING NEW NEWS\fP.
+information read section AUTOMATIC MAILING AND SAVING NEW NEWS.
 .TP
 .B -u
 Create/update index files for every group in \fI$HOME/.newsrc\fP or file
@@ -369,11 +369,14 @@ within \fBtin\fR.
 Beg. of list/article	\fBHome\fR	\fB^\fR (1)
 End of list/article	\fBEnd\fR	\fB$\fR (2)
 Page Up	\fBPgUp\fR	\fB^U\fR or \fB^B\fR or \fBb\fR
-Page Down	\fBPgDn\fR	\fB^D\fR or \fB^F\fR or \fB<SPACE>\fR
-Line Up	\fBUp arrow\fR	\fBk\fR or \fB^P\fR (not at article level)
-Line Down	\fBDown arrow\fR	\fBj\fR or \fB^N\fR (not at article level)
+Page Down	\fBPgDn\fR	\fB^D\fR or \fB^F\fR or \fB<SPACE>\fR (3)
+Line Up	\fBUp arrow\fR	\fBk\fR or \fB^P\fR
+Line Down	\fBDown arrow\fR	\fBj\fR or \fB^N\fR
 (1) also \fBg\fR in the article, config and help menus
 (2) also \fBG\fR in the article, config and help menus
+(3) When viewing the last page of an article, PgDn and SPACE will
+    optionally move to the next article. See the tinrc variables
+    pgdn_goto_next and space_goto_next_unread for more information.
 .fi
 .RE
 .\"
@@ -1009,9 +1012,9 @@ Re-enter the last message that was viewed.
 .B /
 Forward search the text of this article.
 .TP
-.\".B ?         Not implemented
-.\"Backward search the text of this article.
-.\".TP
+.B ?
+Backward search the text of this article.
+.TP
 .B :
 Skip to the end of the quoted text in this article.
 .TP
@@ -1064,7 +1067,8 @@ information on filtering.
 Goto next base article.
 .TP
 .B <TAB>
-Goto next unread article.
+Goto next unread article. If the tinrc variable tab_goto_next_unread is set
+to OFF, then this key will first page through the current article.
 .TP
 .B a
 Author forward search.
@@ -1540,15 +1544,15 @@ external commands. Default is OFF.
 .TP
 .B Scroll full page (full_page_scroll)
 If set ON then PageUp and PageDown move the cursor by a full page at a time,
-otherwise movement is half a page at a time. Currently this has no effect in the
-pager and the GLOBAL OPTIONS MENU.
+otherwise movement is half a page at a time. Currently this has no effect in
+the GLOBAL OPTIONS MENU.
 .TP
 .B Number of articles per group to get (getart_limit)
 If \fBuse_getart_limit\fR is ON and getart_limit is > 0 not more than
-getart_limit articles/group are fetched from the server. If \fBuse_getart_limit\fR
-is ON and getart_limit is < 0 tin will start fetching articles from
-your first unread minus absolute value of getart_limit. Default is 0, which
-means no limit.
+getart_limit articles/group are fetched from the server. If
+\fBuse_getart_limit\fR is ON and getart_limit is < 0 tin will start fetching
+articles from your first unread minus absolute value of getart_limit. Default
+is 0, which means no limit.
 .TP
 .B Number of days during which article is considered recent (recent_time)
 If set to 0, this feature is deactivated, otherwise it means the
@@ -1578,15 +1582,13 @@ If ON keep all postings in \fI$HOME/Mail/posted\fP. Default is ON.
 .TP
 .B Handling of killed articles (kill_level)
 This option controls the processing and display of articles that are killed.
-There are 3 options:
-0 (default) is the 'traditional' behaviour of tin. Only unread articles are
-killed once only by marking them read. Options 1 and 2 will process all
-articles in the group and therefore there is a processing overhead when using
-them.
-Option 1 will thread killed articles as normal but they will be marked with
-a 'K'.
-Option 2 simply does not display killed articles.
-kill_level was first present is tin-1.2 and has been resurrected for 1.4
+There are 3 options: 0 (default) is the 'traditional' behaviour of tin. Only
+unread articles are killed once only by marking them read. Options 1 and 2
+will process all articles in the group and therefore there is a processing
+overhead when using them. Option 1 will thread killed articles as normal but
+they will be marked with a 'K'. Option 2 simply does not display killed
+articles. kill_level was first present is tin-1.2 and has been resurrected
+for 1.4
 .TP
 .B Use 8bit characters in mail headers (mail_8bit_header)
 Allows 8bit characters unencoded in the header of mail message. Default is
@@ -1616,12 +1618,12 @@ If ON mark articles that are saved as read. Default is ON.
 .TP
 .B MM_CHARSET (mm_charset)
 Charset supported locally, which is also used for MIME header (charset
-parameter and charset name in header encoding)
-in mail and news posting unless local charset/encoding needs to be
-converted into other charset/encoding as in case of EUC-KR which
-is converted to ISO-2022-KR if \fBmail_mime_encoding\fR is set to 7bit.
-Possible values include ISO-8859-X (where X is 1 to 10), EUC-JP, EUC-CN,
-EUC-KR, EUC-TW, Big5, Shift_JIS, and so forth.
+parameter and charset name in header encoding) in mail and news posting
+unless local charset/encoding needs to be converted into other
+charset/encoding as in case of EUC-KR which is converted to ISO-2022-KR if
+\fBmail_mime_encoding\fR is set to 7bit. Possible values include ISO-8859-X
+(where X is 1 to 10), EUC-JP, EUC-CN, EUC-KR, EUC-TW, Big5, Shift_JIS, and
+so forth.
 If \fBMIME_STRICT_CHARSET\fR is defined at the compile time, text in
 charset other than the value of this parameter is considered
 not displayable and represented as '?'. Otherwise, all character
@@ -1630,15 +1632,15 @@ the value of the environment variable $\fBMM_CHARSET\fR is used. US-ASCII
 or compile-time default is used in case neither of them is defined.
 .TP
 .B newnews
-These are internal timers used by tin to keep track of new newsgroups. Do not
-change them unless you understand what they are for.
+These are internal timers used by tin to keep track of new newsgroups. Do
+not change them unless you understand what they are for.
 .TP
 .B Display these header fields (or *) (news_headers_to_display)
 Which news headers you wish to see. If you want to see _all_ the headers,
 place an '*' as this value. This is the only way a wildcard can be used.
 If you enter 'X-' as the value, you will see all headers beginning
-with 'X-' (like X-Alan or X-Pape). You can list more than one by delimiting with
-spaces. Not defining anything turns off this option.
+with 'X-' (like X-Alan or X-Pape). You can list more than one by delimiting
+with spaces. Not defining anything turns off this option.
 .TP
 .B Do not display these header fields (news_headers_to_not_display)
 Same as \fBnews_headers_to_display\fR except it denotes the opposite.
@@ -1650,13 +1652,13 @@ would do something like this:
 Not defining anything turns off this option.
 .TP
 .B Quote line when following up (news_quote_format)
-Format of quote line when posting/following up an article (%A=Address, %D=Date,
-%F=Addr+Name, %G=Groupname, %M=Message-Id, %N=Name).
+Format of quote line when posting/following up an article (%A=Address,
+%D=Date, %F=Addr+Name, %G=Groupname, %M=Message-Id, %N=Name).
 Default is "%F wrote:"
 .TP
-.B PgDn goes to next article at EOF (pgdn_goto_next)
-If ON the PGDN or DOWN command will goto next article when pressed
-at end of message
+.B PgDn goes to next article at end of article (pgdn_goto_next)
+If ON the Page Down keys will goto the next article when pressed
+at the end of a message
 .TP
 .B Goto first unread article in group (pos_first_unread)
 If ON put cursor at first unread article in group otherwise at last article.
@@ -1774,19 +1776,19 @@ but it is highly recommended to turn it on as it makes quotes much more
 readable.
 .TP
 .B Expression for highlighting quoted text (quote_regex)
-A regular expression that will be applied when reading articles. All matching
-lines are shown in col_quote. If quote_regex is blank, then tin uses a builtin
-default for this.
+A regular expression that will be applied when reading articles. All
+matching lines are shown in col_quote. If quote_regex is blank, then tin
+uses a builtin default for this.
 .TP
 .B Expression for highlighting twice quoted text (quote_regex2)
-A regular expression that will be applied when reading articles. All matching
-lines are shown in col_quote2. If quote_regex2 is blank, then tin uses a builtin
-default for this.
+A regular expression that will be applied when reading articles. All
+matching lines are shown in col_quote2. If quote_regex2 is blank, then tin
+uses a builtin default for this.
 .TP
 .B Expression for highlighting =>3 times quoted text (quote_regex3)
-A regular expression that will be applied when reading articles. All matching
-lines are shown in col_quote3. If quote_regex3 is blank, then tin uses a builtin
-default for this.
+A regular expression that will be applied when reading articles. All
+matching lines are shown in col_quote3. If quote_regex3 is blank, then tin
+uses a builtin default for this.
 .TP
 .B Quote signatures (quote_signatures)
 If ON quote signatures, too.
@@ -1870,8 +1872,9 @@ replying to an article by mail where the e-mail address contains one of
 these strings. The matching is case-insensitive.
 .TP
 .B Space goes to next unread article (space_goto_next_unread)
-If ON the SPACE command will goto next unread article at article viewer
-level when the end of the article is reached (rn-style pager)
+SPACE normally acts as a Page Down key and has no effect at the end of
+an article. If this option is turned ON the SPACE command will goto the next
+unread article when the end of the article is reached (rn-style pager)
 .TP
 .B Start editor with line offset (start_editor_offset)
 Set ON if the editor used for posting, follow-ups and bug reports has the
@@ -2809,30 +2812,30 @@ Berigan, Enrik Berkhan, Juergen Bernau, Dan Berry, Michael Bienia, David
 Binderman, Andrey Blochintsev, Chris Blum, Fokke de Boer, Andreas Borchert,
 Mark Boucher, Bill Brolik, Herman ten Brugge, Martin Buck, Jeremy Buhler,
 Leila Burrell-Davis, Sean Casey, Peter Castro, Troy Cauble, Andrey A.
-Chernov, Albert Chin-A-Young, Tan Kwee Chuan, Boleslaw Ciesielski, Robert
-Claeson, Steven Cogswell, Don Costello, Bryan Curnutt, Ned Danieley, Lars
-Dannenberg, Chris Davies, John Davis, Borislav Deianov, Thomas E. Dickey,
-Olaf Dietrich, Theo Van Dinter, Ralf Doeblitz, Bryan Dongray, Michael
-Douglass, Craig Durland, Bernd Eckenfels, Phil Edge, Kirk Edson, Nick
-Efthymiou, Stefan Elf, Rob Engle, Olle Eriksson, Brent Ermlick, Bernd
-Ernesti, Ragnar Hojland Espinosa, Jason Faultless, Michael Faurot, Werner
-Fleck, John M. Flinchbaugh, Andy Gabor, Torsten Gesang, Ruediger Geys,
-Callum Gibson, Mike Glendinning, Philippe Goujard, Dan Greenspan, Karlo
-Gross, Carl Hage, Paul Halsema, Ed Hanway, Scott Hauck, Christian Haul, Per
-Headland, Arnold Hendriks, Daniel Hermans, Jose Herrero, Dave Hill, Tom
-Hite, Torsten Homeyer, Ulli Horlacher, Keith Howell, Tommy Hsieh, Shih-Kun
-Huang, Steve Hunt, Jeff Hurwitt, Jeon Hyoung-Jo, Pieter Immelman, Jarkko
-Isokungas, Patrick St. Jean, Hal Jespersen, Park Sang Jin, Robbin Johnson,
-Jarkko Jormanainen, Nelson Kading, Geoffrey Keating, Karsten Keil, Charles
-S. Kerr, Fritz Kleeman, Andreas Kies, Janne Kiviluoto, Tomasz Kloczko,
-Dwarven Knight, Thomas Koenig, Karl-Koenig Koenigsson, Martin Kraemer,
-Thomas Kroener, Florian Kuehnert, Kris Kugel, Manoj Kumar, Dawid Kuroczko,
-Yuri Kuzmenko, Olivier Lacroix, Geoff Lane, Alex Lange, Alain Lasserre,
-Stanislav Latishko, Hannu Laurila, Vincent Lefevre, Alexander Lehmann, Marty
-Leisner, Thomas Leitner, Hakan Lennestal, Kevin Lentin, Chua Choon Leong,
-Chris Lewis, Andreas Ley, David-Michael Lincke, Otto Lind, Richard Lloyd,
-Florian Lohoff, Reinhard Luebke, Clifford Luke, Michael Lupp, David
-MacKenzie, Hugh Mahon, Giuseppe De Marco, Dmitri A. Martynoff, Kazushi
+Chernov, Albert Chin-A-Young, Park Chong-Dae, Tan Kwee Chuan, Boleslaw
+Ciesielski, Robert Claeson, Steven Cogswell, Don Costello, Bryan Curnutt,
+Ned Danieley, Lars Dannenberg, Chris Davies, John Davis, Borislav Deianov,
+Thomas E. Dickey, Olaf Dietrich, Theo Van Dinter, Ralf Doeblitz, Bryan
+Dongray, Michael Douglass, Craig Durland, Bernd Eckenfels, Phil Edge, Kirk
+Edson, Nick Efthymiou, Stefan Elf, Rob Engle, Olle Eriksson, Brent Ermlick,
+Bernd Ernesti, Ragnar Hojland Espinosa, Jason Faultless, Michael Faurot,
+Werner Fleck, John M. Flinchbaugh, Andy Gabor, Torsten Gesang, Ruediger
+Geys, Callum Gibson, Mike Glendinning, Philippe Goujard, Dan Greenspan,
+Karlo Gross, Carl Hage, Paul Halsema, Ed Hanway, Scott Hauck, Christian
+Haul, Per Headland, Arnold Hendriks, Daniel Hermans, Jose Herrero, Dave
+Hill, Tom Hite, Torsten Homeyer, Ulli Horlacher, Keith Howell, Tommy Hsieh,
+Shih-Kun Huang, Steve Hunt, Jeff Hurwitt, Jeon Hyoung-Jo, Pieter Immelman,
+Jarkko Isokungas, Patrick St. Jean, Hal Jespersen, Park Sang Jin, Robbin
+Johnson, Jarkko Jormanainen, Nelson Kading, Geoffrey Keating, Karsten Keil,
+Charles S. Kerr, Fritz Kleeman, Andreas Kies, Janne Kiviluoto, Tomasz
+Kloczko, Dwarven Knight, Thomas Koenig, Karl-Koenig Koenigsson, Martin
+Kraemer, Thomas Kroener, Florian Kuehnert, Kris Kugel, Manoj Kumar, Dawid
+Kuroczko, Yuri Kuzmenko, Olivier Lacroix, Geoff Lane, Alex Lange, Alain
+Lasserre, Stanislav Latishko, Hannu Laurila, Vincent Lefevre, Alexander
+Lehmann, Marty Leisner, Thomas Leitner, Hakan Lennestal, Kevin Lentin, Chua
+Choon Leong, Chris Lewis, Andreas Ley, David-Michael Lincke, Otto Lind,
+Richard Lloyd, Florian Lohoff, Reinhard Luebke, Clifford Luke, Michael Lupp,
+David MacKenzie, Hugh Mahon, Giuseppe De Marco, Dmitri A. Martynoff, Kazushi
 Marukawa, William McBrine, Owen Medd, Philipp Mergenthaler, Arkadiusz
 Miskiewicz, Soren Moller, Bruce Momjian, Sergio Morales, Michael Morrell,
 Klaus Mueller, Mike Muise, Udo Munk, John R. Myers, Daniel Naber, Torsten
@@ -2847,14 +2850,14 @@ Peter Van Rossem, Clifton Royston, Rich Salz, Gary Sanders, Nickolay Saukh,
 John Sauter, Christopher Sawtell, Holger Schif, Volker Schmidt, John
 Schmitz, Torsten Schneider, Stefan Scholl, Rainer Scholz, Juergen Schroeder,
 Larry Schwimmer, Bart Sears, Karl-Olav Serrander, Doug Sewell, Philip
-Shearer, Jungshik Shin, Sergey Shkonda, Andreas Siegert, Mark Smith, Steve
-Spearman, Helmut Springer, Cliff Stanford, Steve Starck, Jason Steiner, Ralf
-Stephan, Michael Stenns, Helmrich Streitmatter, Hans Werner Strube, Dieter
-Stueken, Ed Sznyter, Dean Takemori, Darrell Tangman, Derek Terveer, Carsten
-Theis, Julian Thompson, David Tiller, Andry Timonin, Mark Tomlin, Michael
-Traub, Adri Verhoef, Paul Vickers, Oliver B. Warzecha, Jason Wessel, Cary
-Whitney, Henrik Wist, Greg Woods, Lloyd Wright, Jens Wuepper, Billy Y.,
-Hideaki Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
+Shearer, Jungshik Shin, Sergey Shkonda, Andreas Siegert, Mark Smith, Toomas
+Soome, Steve Spearman, Helmut Springer, Cliff Stanford, Steve Starck, Jason
+Steiner, Ralf Stephan, Michael Stenns, Helmrich Streitmatter, Hans Werner
+Strube, Dieter Stueken, Ed Sznyter, Dean Takemori, Darrell Tangman, Derek
+Terveer, Carsten Theis, Julian Thompson, David Tiller, Andry Timonin, Mark
+Tomlin, Michael Traub, Adri Verhoef, Paul Vickers, Oliver B. Warzecha, Jason
+Wessel, Cary Whitney, Henrik Wist, Greg Woods, Lloyd Wright, Jens Wuepper,
+Billy Y., Hideaki Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
 .\"
 .\"
 .SH AUTHOR

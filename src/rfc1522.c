@@ -123,6 +123,10 @@ hex2bin (
 }
 
 
+/*
+ * Do B or Q decoding of a chunk of data in 'what' to 'where'
+ * Return number of bytes decoded into 'where' or -1.
+ */
 int
 mmdecode (
 	const char *what,
@@ -206,16 +210,11 @@ mmdecode (
 }
 
 
-void
-get_mm_charset (
-	void)
-{
-	if (!*tinrc.mm_charset) {
-		STRCPY(tinrc.mm_charset, get_val("MM_CHARSET", MM_CHARSET));
-	}
-}
-
-
+/*
+ * This routine decodes encoded headers in the
+ * =?charset?encoding?coded text?=
+ * format
+ */
 char *
 rfc1522_decode (
 	const char *s)
@@ -225,9 +224,8 @@ rfc1522_decode (
 	static char buffer[2048];
 	char charset[1024];
 	char encoding;
-	char adjacentflag = 0;
+	t_bool adjacentflag = FALSE;
 
-	get_mm_charset();
 	c = s;
 	t = buffer;
 	while (*c && t - buffer < 2048) {
@@ -243,7 +241,7 @@ rfc1522_decode (
 					continue;
 				}
 			}
-			adjacentflag = 0;
+			adjacentflag = FALSE;
 			*t++ = *c++;
 			continue;
 		}
@@ -392,10 +390,10 @@ which_encoding (
 		w++;
 	}
 	if (nonprint) {
-/*
- * Always use B encoding regardless of the efficiency if charset is
- * EUC-KR for backward compatibility with old Korean mail program
- */
+		/*
+		 * Always use B encoding regardless of the efficiency if charset is
+		 * EUC-KR for backward compatibility with old Korean mail program
+		 */
 		if (chars + 2 * (nonprint + schars) /* QP size */ >
 			 (chars * 4 + 3) / 3	  /* B64 size */
 			 || !strcasecmp(tinrc.mm_charset, "EUC-KR"))
@@ -749,7 +747,6 @@ rfc1522_encode (
 		break_long_line = TRUE;
 #endif /* !MIME_BREAK_LONG_LINES */
 
-	get_mm_charset();
 	b = buf;
 	x = rfc1522_do_encode(s, &b, break_long_line);
 	quoteflag = quoteflag || x;

@@ -145,13 +145,13 @@ static const char *domain_name_hack = DOMAIN_NAME;
 
 #ifdef HAVE_GETHOSTBYNAME
 #	define MAXLINELEN   1024
+#	define WS	" \f\n\r\t\v"
 /* find FQDN - gethostbyaddr() */
 const char *
 get_fqdn (
 	const char *host)
 {
-	FILE *inf;
-	char *cp, *domain;
+	char *domain;
 	char line[MAXLINELEN+1];
 	char name[MAXHOSTNAMELEN+2];
 	static char fqdn[1024];
@@ -186,21 +186,17 @@ get_fqdn (
 			: inet_ntoa(in)
 		: "");
 	if (!*fqdn || (fqdn[strlen(fqdn)-1] <= '9')) {
+		FILE *inf;
+
 		*fqdn = '\0';
-		inf = fopen("/etc/resolv.conf", "r");
-		if (inf) {
+		if ((inf = fopen("/etc/resolv.conf", "r")) != NULL) {
 			while(fgets(line, MAXLINELEN, inf)) {
+				char *ptr;
+
 				line[MAXLINELEN] = '\0';
-				(void) str_trim(line);
-				if (strncmp(line,"domain ", 7) == 0) {
-					domain = line + 7;
-					break;
-				}
-				if (strncmp(line, "search ", 7) == 0) {
-					domain = line + 7;
-					cp = strchr(domain, ' ');
-					if (cp)
-						*cp = '\0';
+				ptr = strtok(line, WS);
+				if ((strncmp(ptr, "domain", 6) == 0) || (strncmp(ptr, "search", 6) == 0)) {
+					domain = strtok(NULL, WS);
 					break;
 				}
 			}

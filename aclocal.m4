@@ -409,7 +409,7 @@ AC_DEFUN(AM_WITH_NLS,
 
     # If this is used in GNU gettext we have to set USE_NLS to `yes'
     # because some of the sources are only built for this goal.
-    if test "$PACKAGE" = gettext; then
+    if test "$PACKAGE" = "gettext" ; then
       USE_NLS=yes
       USE_INCLUDED_LIBINTL=yes
       AC_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl)

@@ -51,7 +51,7 @@
 const char **info_help;
 
 static const char *info_title;
-static constext txt_help_empty_line[] = cCRLF;
+static constext txt_help_empty_line[] = "  ";
 
 static int cur_page;
 static int group_len = 0;
@@ -76,6 +76,7 @@ constext *help_select[] = {
 	txt_help_n,
 		txt_help_empty_line,
 	txt_help_g_search,
+	txt_help_g_search_,
 		txt_help_empty_line,
 		txt_help_disp,
 		txt_help_disp_,
@@ -145,6 +146,7 @@ constext *help_group[] = {
 	txt_help_i_search,
 	txt_help_a,
 	txt_help_B,
+	txt_help_B_,
 		txt_help_empty_line,
 		txt_help_disp,
 		txt_help_disp_,
@@ -237,6 +239,7 @@ constext *help_thread[] = {
 	txt_help_i_search,
 	txt_help_a,
 	txt_help_B,
+	txt_help_B_,
 		txt_help_empty_line,
 		txt_help_disp,
 		txt_help_disp_,
@@ -315,6 +318,7 @@ constext *help_page[] = {
 	txt_help_p_search,
 	txt_help_a,
 	txt_help_B,
+	txt_help_B_,
 		txt_help_empty_line,
 		txt_help_disp,
 		txt_help_disp_,
@@ -599,7 +603,7 @@ display_info_page (
 
 	if (info_type == HELP_INFO) {
 		for (i = pos_help; i < (pos_help + help_lines) && info_help[i]; i++)
-			my_fputs (info_help[i], stdout);
+			my_printf ("%s" cCRLF, _(info_help[i]));
 	} else {
 		for (i = pos_help; i < (pos_help + help_lines) && posted[i].date[0]; i++) {
 			sprintf (buf, "%8s  %c  %-*s  %s",
@@ -611,7 +615,7 @@ display_info_page (
 	}
 	CleartoEOS ();
 
-	center_line (cLINES, FALSE, txt_hit_space_for_more);
+	center_line (cLINES, FALSE, _(txt_hit_space_for_more));
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_normal);
 #endif /* HAVE_COLOR */
@@ -635,23 +639,23 @@ show_mini_help (
 
 	switch (level) {
 		case SELECT_LEVEL:
-			center_line (line, FALSE, txt_mini_select_1);
-			center_line (line+1, FALSE, txt_mini_select_2);
-			center_line (line+2, FALSE, txt_mini_select_3);
+			center_line (line, FALSE, _(txt_mini_select_1));
+			center_line (line+1, FALSE, _(txt_mini_select_2));
+			center_line (line+2, FALSE, _(txt_mini_select_3));
 			break;
 		case GROUP_LEVEL:
-			center_line (line, FALSE, txt_mini_group_1);
-			center_line (line+1, FALSE, txt_mini_group_2);
-			center_line (line+2, FALSE, txt_mini_group_3);
+			center_line (line, FALSE, _(txt_mini_group_1));
+			center_line (line+1, FALSE, _(txt_mini_group_2));
+			center_line (line+2, FALSE, _(txt_mini_group_3));
 			break;
 		case THREAD_LEVEL:
-			center_line (line, FALSE, txt_mini_thread_1);
-			center_line (line+1, FALSE, txt_mini_thread_2);
+			center_line (line, FALSE, _(txt_mini_thread_1));
+			center_line (line+1, FALSE, _(txt_mini_thread_2));
 			break;
 		case PAGE_LEVEL:
-			center_line (line, FALSE, txt_mini_page_1);
-			center_line (line+1, FALSE, txt_mini_page_2);
-			center_line (line+2, FALSE, txt_mini_page_3);
+			center_line (line, FALSE, _(txt_mini_page_1));
+			center_line (line+1, FALSE, _(txt_mini_page_2));
+			center_line (line+2, FALSE, _(txt_mini_page_3));
 			break;
 		default: /* should not happen */
 			error_message ("Unknown display level"); /* FIXME: -> lang.c */

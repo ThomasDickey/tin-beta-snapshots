@@ -41,6 +41,9 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
+#ifndef RFC2045_H
+#	include "rfc2045.h"
+#endif /* !RFC2045_H */
 
 /*
  * Dynamic arrays maximum & current sizes
@@ -53,6 +56,7 @@ int num_newnews = 0;
 int max_art = 0;
 int max_save = 0;
 int num_save = 0;
+
 /*
  * Dynamic arrays
  */
@@ -222,6 +226,12 @@ free_all_arrays (
 	FreeIfNeeded(strip_re_regex.extra);
 	FreeIfNeeded(strip_was_regex.re);
 	FreeIfNeeded(strip_was_regex.extra);
+	FreeIfNeeded(uubegin_regex.re);
+	FreeIfNeeded(uubegin_regex.extra);
+	FreeIfNeeded(uubody_regex.re);
+	FreeIfNeeded(uubody_regex.extra);
+	FreeIfNeeded(url_regex.re);
+	FreeIfNeeded(url_regex.extra);
 
 	if (base != (long *) 0) {
 		free ((char *) base);

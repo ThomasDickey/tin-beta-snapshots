@@ -80,7 +80,6 @@ char default_signature[PATH_LEN];
 char domain_name[MAXHOSTNAMELEN];
 char global_attributes_file[PATH_LEN];
 char global_config_file[PATH_LEN];
-char global_filter_file[PATH_LEN];
 char homedir[PATH_LEN];
 char host_name[MAXHOSTNAMELEN];
 char index_maildir[PATH_LEN];
@@ -90,7 +89,7 @@ char inewsdir[PATH_LEN];
 char libdir[PATH_LEN];			/* directory where news config files are (ie. active) */
 char local_attributes_file[PATH_LEN];
 char local_config_file[PATH_LEN];
-char local_filter_file[PATH_LEN];
+char filter_file[PATH_LEN];
 char local_input_history_file[PATH_LEN];
 char local_newsgroups_file[PATH_LEN];	/* local copy of NNTP newsgroups file */
 char local_newsrctable_file[PATH_LEN];
@@ -130,7 +129,6 @@ char proc_ch_default;				/* set in change_config_file () */
 	char TMPDIR[PATH_LEN];
 #endif /* M_OS2 */
 
-int NOTESLINES;				/* set in set_win_size () */
 int groupname_len = 0;			/* 'runtime' copy of groupname_max_len */
 int hist_last[HIST_MAXNUM+1];
 int hist_pos[HIST_MAXNUM+1];
@@ -161,10 +159,9 @@ t_bool created_rcdir;			/* checks if first time tin is started */
 t_bool dangerous_signal_exit;		/* no get_respcode() in nntp_command when dangerous signal exit */
 t_bool disable_gnksa_domain_check;	/* disable checking TLD in From: etc. */
 t_bool disable_sender;			/* disable generation of Sender: header */
-t_bool global_filtered_articles;	/* globally killed / auto-selected articles */
 t_bool got_sig_pipe = FALSE;
-t_bool in_headers;			/* color in headers */
-t_bool local_filtered_articles;		/* locally killed / auto-selected articles */
+t_bool in_headers;			/* color in headers */	/* TODO kill me */
+t_bool filtered_articles;		/* locally killed / auto-selected articles */
 t_bool local_index;			/* do private indexing? */
 t_bool list_active;
 t_bool newsrc_active;
@@ -203,7 +200,7 @@ char *input_history[HIST_MAXNUM+1][HIST_SIZE+1];
 	static struct passwd pwdentry;
 #endif /* !M_AMIGA */
 
-	struct regex_cache strip_re_regex, strip_was_regex
+struct regex_cache strip_re_regex, strip_was_regex, uubegin_regex, uubody_regex, url_regex
 #ifdef HAVE_COLOR
 		, quote_regex, quote_regex2, quote_regex3
 #endif /* HAVE_COLOR */
@@ -342,6 +339,7 @@ struct t_config tinrc = {
 #endif /* USE_INVERSE_HACK */
 	TRUE,		/* keep_dead_articles */
 	TRUE,		/* keep_posted_articles */
+	POSTED_FILE,	/* keep_posted_articles_file */
 	FALSE,		/* mail_8bit_header */
 	TRUE,		/* mark_saved_read */
 	TRUE,		/* pgdn_goto_next */
@@ -353,7 +351,7 @@ struct t_config tinrc = {
 	FALSE,		/* process_only_unread */
 	FALSE,		/* prompt_followupto */
 	TRUE,		/* quote_empty_lines */
-	TRUE,		/* quote_signatures */
+	FALSE,		/* quote_signatures */
 #ifdef HAVE_MMDF_MAILER
 	TRUE,		/* save_to_mmdf_mailbox */
 #else
@@ -612,8 +610,7 @@ init_selfinfo (
 	dangerous_signal_exit = FALSE;
 	disable_gnksa_domain_check = FALSE;
 	disable_sender = FALSE;
-	global_filtered_articles = FALSE;
-	local_filtered_articles = FALSE;
+	filtered_articles = FALSE;
 	iso2asc_supported = atoi (get_val ("ISO2ASC", DEFAULT_ISO2ASC));
 	if (iso2asc_supported > NUM_ISO_TABLES)
 		iso2asc_supported = 0;
@@ -747,15 +744,16 @@ init_selfinfo (
 		}
 	}
 
+	/*
+	 * Formerly get_mm_charset(), read_site_config() may set mm_charset
+	 */
+	if (!*tinrc.mm_charset)
+		STRCPY(tinrc.mm_charset, get_val("MM_CHARSET", MM_CHARSET));
+
 	/* read_site_config() might have changed the value of libdir */
 	/* FIXME: we'd better use TIN_DEFAULTS_DIR instead of TIN_LIBDIR here */
 	joinpath (global_attributes_file, libdir, ATTRIBUTES_FILE);
 	joinpath (global_config_file, libdir, CONFIG_FILE);
-	/*
-	 * FIXME: as we don't know which patternmatzching style the user
-	 * has defined a global filter file is useless
-	 */
-	joinpath (global_filter_file, libdir, FILTER_FILE);
 
 #ifdef VMS
 	joindir (rcdir, homedir, RCDIR); /* we're naming a directory here */
@@ -823,7 +821,7 @@ init_selfinfo (
 		my_mkdir (index_savedir, (mode_t)S_IRWXUGO);
 	joinpath (local_attributes_file, rcdir, ATTRIBUTES_FILE);
 	joinpath (local_config_file, rcdir, CONFIG_FILE);
-	joinpath (local_filter_file, rcdir, FILTER_FILE);
+	joinpath (filter_file, rcdir, FILTER_FILE);
 	joinpath (local_input_history_file, rcdir, INPUT_HISTORY_FILE);
 	joinpath (local_newsrctable_file, rcdir, NEWSRCTABLE_FILE);
 	joinpath (local_newsgroups_file, rcdir, NEWSGROUPS_FILE);
@@ -885,7 +883,7 @@ init_selfinfo (
 		write_attributes_file (local_attributes_file);
 
 	init_postinfo();
-	sprintf (txt_help_bug_report, txt_help_bug, bug_addr);
+	sprintf (txt_help_bug_report, _(txt_help_bug), bug_addr);
 
 #ifdef HAVE_PGP_GPG
 	init_pgp();
@@ -1068,4 +1066,8 @@ postinit_regexp (
 		STRCPY(tinrc.quote_regex3, DEFAULT_QUOTE_REGEX3);
 	compile_regex (tinrc.quote_regex3, &quote_regex3, PCRE_CASELESS);
 #endif /* HAVE_COLOR */
+
+	compile_regex (UUBEGIN_REGEX, &uubegin_regex, PCRE_CASELESS|PCRE_ANCHORED);
+	compile_regex (UUBODY_REGEX, &uubody_regex, PCRE_ANCHORED);
+	compile_regex (URL_REGEX, &url_regex, PCRE_CASELESS);
 }

@@ -291,12 +291,13 @@ iIsArtTexEncoded (
 	FILE *fp;
 	int i, len;
 	t_bool body = FALSE;
+	t_bool ret = FALSE;
 
 	/*
-	 * TODO: This is a farce. Reread the whole art !!
-	 *       should be done as part of single pass when article is pulled down
+	 * TODO: This is a farce! Reread the whole art via NNTP !!
+	 *       should be done as part of cook_article()
 	 */
-	if ((fp = open_art_fp ((char *)group_path, art, 0, TRUE)) == (FILE *) 0)
+	if ((fp = open_art_fp ((char *)group_path, art)) == (FILE *) 0)
 		return FALSE;
 
 	while (fgets (line, (int) sizeof(line), fp) != (char *) 0) {
@@ -321,14 +322,17 @@ iIsArtTexEncoded (
 		for (i = 1; i < len; i++) {
 			if (((line[i] == '\\') || (line[i] == '\"')) &&
 			    (isalnum((unsigned char)line[i-1])) && (isalnum((unsigned char)line[i+1]))) {
-				fclose (fp);
-				return TRUE;
+				ret = TRUE;
+#ifdef NNTP_ABLE
+				drain_buffer(fp);
+#endif /* NNTP_ABLE */
+				break;
 			}
 		}
 	}
-	fclose (fp);
+	TIN_FCLOSE (fp);
 
-	return FALSE;
+	return ret;
 }
 
 
@@ -347,9 +351,11 @@ Convert2Printable (
 	}
 }
 
+#if 0
 /*
  *  Same as Convert2Printable() but allows Backspace (ASCII 8), TAB (ASCII 9),
  *  and LineFeed (ASCII 12) according to son of RFC 1036 section 4.4
+ * FIXME: ASCII 12 == FormFeed - what is correct ??
  */
 void
 ConvertBody2Printable (
@@ -362,3 +368,4 @@ ConvertBody2Printable (
 			*c = '?';
 	}
 }
+#endif

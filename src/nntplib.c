@@ -851,7 +851,7 @@ get_server (
 			 * Use standard NNTP closing message and response code if user is
 			 * quitting tin and leave loop.
 			 */
-			strncpy(string, txt_nntp_ok_goodbye, size - 2);
+			strncpy(string, _(txt_nntp_ok_goodbye), size - 2);
 			strcat(string, cCRLF);		/* tin_fgets() needs CRLF */
 			break;
 		}

@@ -135,29 +135,20 @@ test_regex(
 	t_bool nocase,
 	struct regex_cache *cache)
 {
-	const char *regex_errmsg = 0;
 	int regex_errpos;
 
 	if (!tinrc.wildcard) {
 		if (wildmat (string, regex, nocase))
 			return TRUE;
 	} else {
-		if (!cache->re) {
-			if ((cache->re = pcre_compile(regex, PCRE_EXTENDED | ((nocase) ? PCRE_CASELESS : 0),
-												&regex_errmsg, &regex_errpos, NULL)) == NULL)
-				sprintf (mesg, txt_pcre_error_at, regex_errmsg, regex_errpos);
-			else {
-				cache->extra = pcre_study(cache->re, 0, &regex_errmsg);
-				if (regex_errmsg != NULL)
-					sprintf (mesg, txt_pcre_error_text, regex_errmsg);
-			}
-		}
+		if (!cache->re)
+			compile_regex (regex, cache, ((nocase) ? PCRE_CASELESS : 0));
 		if (cache->re) {
 			regex_errpos = pcre_exec(cache->re, cache->extra, string, strlen(string), 0, 0, NULL, 0);
 			if (regex_errpos >= 0)
 				return TRUE;
 			else if (regex_errpos != PCRE_ERROR_NOMATCH)
-				sprintf (mesg, txt_pcre_error_num, regex_errpos);
+				sprintf (mesg, _(txt_pcre_error_num), regex_errpos);
 		}
 	}
 
@@ -249,8 +240,7 @@ free_all_filter_arrays (void) /* FIXME: use free_filter_array() instead */
 
 t_bool
 read_filter_file (
-	char *file,
-	t_bool global_file)
+	char *file)
 {
 	FILE *fp;
 	char *s;
@@ -281,15 +271,14 @@ read_filter_file (
 		return FALSE;
 
 	if (!batch_mode)
-		wait_message (0, txt_reading_filter_file, (global_file ? "global " : ""));
+		wait_message (0, _(txt_reading_filter_file));
 
 	(void) time (&current_secs);
 
 	/*
 	 * Reset all filter arrays if doing a reread of the active file
 	 */
-	if (global_file)
-		free_all_filter_arrays ();
+	free_all_filter_arrays ();
 
 	psGrp = (struct t_group *) 0;
 	arr_ptr = (struct t_filter *) 0;
@@ -566,7 +555,6 @@ if (debug) {
 	if (cmd_line)
 		printf ("\r\n");
 
-	/* is this needed? */
 	if (!batch_mode)
 		clear_message();
 
@@ -589,7 +577,7 @@ vWriteFilterFile (
 	if ((hFp = fopen (pcFile, "w")) == (FILE *) 0)
 		return;
 
-	fprintf (hFp, txt_filter_file, tinrc.filter_days);
+	fprintf (hFp, _(txt_filter_file), tinrc.filter_days);
 	fflush (hFp);
 
 	/*
@@ -825,34 +813,34 @@ filter_menu (
 	 */
 
 	if (type == FILTER_KILL) {
-		ptr_filter_from = txt_kill_from;
-		ptr_filter_lines = txt_kill_lines;
-		ptr_filter_menu = txt_kill_menu;
-		ptr_filter_msgid = txt_kill_msgid;
-		ptr_filter_scope = txt_kill_scope;
-		ptr_filter_subj = txt_kill_subj;
-		ptr_filter_text = txt_kill_text;
-		ptr_filter_time = txt_kill_time;
-		ptr_filter_help_scope = txt_help_kill_scope;
-		ptr_filter_quit_edit_save = txt_quit_edit_save_kill;
+		ptr_filter_from = _(txt_kill_from);
+		ptr_filter_lines = _(txt_kill_lines);
+		ptr_filter_menu = _(txt_kill_menu);
+		ptr_filter_msgid = _(txt_kill_msgid);
+		ptr_filter_scope = _(txt_kill_scope);
+		ptr_filter_subj = _(txt_kill_subj);
+		ptr_filter_text = _(txt_kill_text);
+		ptr_filter_time = _(txt_kill_time);
+		ptr_filter_help_scope = _(txt_help_kill_scope);
+		ptr_filter_quit_edit_save = _(txt_quit_edit_save_kill);
 	} else {
-		ptr_filter_from = txt_select_from;
-		ptr_filter_lines = txt_select_lines;
-		ptr_filter_menu = txt_select_menu;
-		ptr_filter_msgid = txt_select_msgid;
-		ptr_filter_scope = txt_select_scope;
-		ptr_filter_subj = txt_select_subj;
-		ptr_filter_text = txt_select_text;
-		ptr_filter_time = txt_select_time;
-		ptr_filter_help_scope = txt_help_select_scope;
-		ptr_filter_quit_edit_save = txt_quit_edit_save_select;
+		ptr_filter_from = _(txt_select_from);
+		ptr_filter_lines = _(txt_select_lines);
+		ptr_filter_menu = _(txt_select_menu);
+		ptr_filter_msgid = _(txt_select_msgid);
+		ptr_filter_scope = _(txt_select_scope);
+		ptr_filter_subj = _(txt_select_subj);
+		ptr_filter_text = _(txt_select_text);
+		ptr_filter_time = _(txt_select_time);
+		ptr_filter_help_scope = _(txt_help_select_scope);
+		ptr_filter_quit_edit_save = _(txt_quit_edit_save_select);
 	}
 
-	ptr_filter_score = txt_filter_score;
+	ptr_filter_score = _(txt_filter_score);
 
 	len = cCOLS - 30;
 
-	sprintf (text_time, txt_time_default_days, tinrc.filter_days);
+	sprintf (text_time, _(txt_time_default_days), tinrc.filter_days);
 	sprintf (text_subj, ptr_filter_subj, len, len, art->subject);
 
 	strcpy (buf, art->from);
@@ -876,19 +864,19 @@ filter_menu (
 	my_printf ("%s%s", ptr_filter_scope, group->name);
 	my_flush ();
 
-	show_menu_help (txt_help_filter_text);
+	show_menu_help (_(txt_help_filter_text));
 
 	if (!prompt_menu_string (INDEX_TOP, (int) strlen (ptr_filter_text), rule.text))
 		return FALSE;
 
 	if (*rule.text) {
-		i = get_choice (INDEX_TOP+1, txt_help_filter_text_type,
-			       txt_filter_text_type,
-			       txt_subj_line_only_case,
-			       txt_subj_line_only,
-			       txt_from_line_only_case,
-			       txt_from_line_only,
-			       txt_msgid_line_only);
+		i = get_choice (INDEX_TOP+1, _(txt_help_filter_text_type),
+			       _(txt_filter_text_type),
+			       _(txt_subj_line_only_case),
+			       _(txt_subj_line_only),
+			       _(txt_from_line_only_case),
+			       _(txt_from_line_only),
+			       _(txt_msgid_line_only));
 		if (i == -1)
 			return FALSE;
 
@@ -919,7 +907,7 @@ filter_menu (
 		/*
 		 * Subject:
 		 */
-		i = get_choice (INDEX_TOP+3, txt_help_filter_subj, text_subj, txt_yes, txt_no, (char *)0, (char *)0, (char *)0);
+		i = get_choice (INDEX_TOP+3, _(txt_help_filter_subj), text_subj, _(txt_yes), _(txt_no), (char *)0, (char *)0, (char *)0);
 
 		if (i == -1)
 			return FALSE;
@@ -929,7 +917,7 @@ filter_menu (
 		/*
 		 * From:
 		 */
-		i = get_choice (INDEX_TOP+4, txt_help_filter_from, text_from, (rule.subj_ok ? txt_no : txt_yes), (rule.subj_ok ? txt_yes : txt_no), (char *)0, (char *)0, (char *)0);
+		i = get_choice (INDEX_TOP+4, _(txt_help_filter_from), text_from, (rule.subj_ok ? _(txt_no) : _(txt_yes)), (rule.subj_ok ? _(txt_yes) : _(txt_no)), (char *)0, (char *)0, (char *)0);
 
 		if (i == -1)
 			return FALSE;
@@ -940,9 +928,9 @@ filter_menu (
 		 * Message-Id:
 		 */
 		if (rule.subj_ok || rule.from_ok)
-			i = get_choice (INDEX_TOP+5, txt_help_filter_msgid, text_msgid, txt_no, txt_full, txt_last, txt_only, (char *)0);
+			i = get_choice (INDEX_TOP+5, _(txt_help_filter_msgid), text_msgid, _(txt_no), _(txt_full), _(txt_last), _(txt_only), (char *)0);
 		else
-			i = get_choice (INDEX_TOP+5, txt_help_filter_msgid, text_msgid, txt_full, txt_last, txt_only, txt_no, (char *)0);
+			i = get_choice (INDEX_TOP+5, _(txt_help_filter_msgid), text_msgid, _(txt_full), _(txt_last), _(txt_only), _(txt_no), (char *)0);
 
 		if (i == -1)
 			return FALSE;
@@ -981,7 +969,7 @@ filter_menu (
 	/*
 	 * Lines:
 	 */
-	show_menu_help (txt_help_filter_lines);
+	show_menu_help (_(txt_help_filter_lines));
 
 	buf[0] = '\0';
 
@@ -1014,7 +1002,7 @@ filter_menu (
 	 * Scoring value
 	 */
 	buf[0] = '\0';
-	show_menu_help(txt_filter_score_help); /* FIXME: a sprintf() is necessary here */
+	show_menu_help(_(txt_filter_score_help)); /* FIXME: a sprintf() is necessary here */
 
 	if (!prompt_menu_string(INDEX_TOP+8, (int)strlen(ptr_filter_score), buf))
 		return FALSE;
@@ -1036,7 +1024,7 @@ filter_menu (
 	 */
 	sprintf (double_time, "2x %s", text_time);
 	sprintf (quat_time, "4x %s", text_time);
-	i = get_choice (INDEX_TOP+9, txt_help_filter_time, ptr_filter_time, txt_unlimited_time, text_time, double_time, quat_time, (char *)0);
+	i = get_choice (INDEX_TOP+9, _(txt_help_filter_time), ptr_filter_time, _(txt_unlimited_time), text_time, double_time, quat_time, (char *)0);
 
 	if (i == -1)
 		return FALSE;
@@ -1048,7 +1036,7 @@ filter_menu (
 	 */
 	if (*rule.text || rule.subj_ok || rule.from_ok || rule.msgid_ok || rule.lines_ok) {
 		strcpy (argv[0], group->name);
-		strcpy (argv[1], txt_all_groups);
+		strcpy (argv[1], _(txt_all_groups));
 		strcpy (argv[2], group->name);
 		ptr = strrchr (argv[2], '.');
 		if (ptr != (char *) 0) {
@@ -1089,10 +1077,10 @@ filter_menu (
 
 		case iKeyFilterEdit:
 			bAddFilterRule (group, art, &rule); /* save the rule */
-			if (!invoke_editor (local_filter_file, 25)) /* FIXME: is 25 correct offset ? */
+			if (!invoke_editor (filter_file, 25)) /* FIXME: is 25 correct offset ? */
 				return FALSE;
 			unfilter_articles ();
-			(void) read_filter_file (local_filter_file, FALSE);
+			(void) read_filter_file (filter_file);
 			return TRUE;
 			/* keep lint quiet: */
 			/* FALLTHROUGH */
@@ -1372,7 +1360,7 @@ bAddFilterRule (
 				psPtr[*plNum-1].lines_num, (unsigned long int) psPtr[*plNum-1].time);
 #endif /* DEBUG */
 
-		vWriteFilterFile (local_filter_file);
+		vWriteFilterFile (filter_file);
 	}
 
 	return bFiltered;
@@ -1443,7 +1431,7 @@ filter_articles (
 	 */
 	inscope = set_filter_scope (group);
 	if (!cmd_line && !batch_mode)
-		wait_message (0, txt_filter_global_rules, inscope, group->glob_filter->num);
+		wait_message (0, _(txt_filter_global_rules), inscope, group->glob_filter->num);
 	num = group->glob_filter->num;
 	ptr = group->glob_filter->filter;
 

@@ -50,8 +50,6 @@
 #	define CURRENTDIR ""
 #endif /* !M_AMIGA */
 
-#define SIGDASHES "-- \n"
-
 static char sigfile[PATH_LEN];
 
 static FILE *open_random_sig (char *sigdir);

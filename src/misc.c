@@ -56,6 +56,9 @@
 #ifndef TIN_POLICY_H
 #	include	"policy.h"
 #endif /* !TIN_POLICY_H */
+#ifndef RFC2045_H
+#	include	"rfc2045.h"
+#endif /* !RFC2045_H */
 
 /*
  * defines to control GNKSA-checks behaviour:
@@ -219,7 +222,7 @@ copy_body (
 	}
 
 	while (fgets (buf, (int) sizeof(buf), fp_ip) != (char *) 0) {
-		if (!with_sig && !strcmp(buf, "-- \n"))
+		if (!with_sig && !strcmp(buf, SIGDASHES))
 			break;
 		if (strstr(prefix, "%s")) { /* initials wanted */
 			if (buf[0] != '\n') { /* line is not empty */
@@ -504,7 +507,10 @@ tin_done (
 
 			if (wrote_newsrc_lines < read_newsrc_lines) {
 				/* FIXME: prompt for retry? (i.e. remove break) */
-				wait_message(0, _(txt_warn_newsrc), newsrc, (read_newsrc_lines - wrote_newsrc_lines), (read_newsrc_lines - wrote_newsrc_lines) == 1 ? "" : _(txt_plural), OLDNEWSRC_FILE);
+				wait_message(0, _(txt_warn_newsrc), newsrc,
+					(read_newsrc_lines - wrote_newsrc_lines),
+					(read_newsrc_lines - wrote_newsrc_lines) == 1 ? _(txt_group_singular) : _(txt_group_plural),
+					OLDNEWSRC_FILE);
 				continue_prompt();
 				break;
 			}
@@ -780,7 +786,7 @@ rename_file (
 
 t_bool
 invoke_cmd (
-	char *nam)
+	const char *nam)
 {
 	int ret;
 
@@ -823,7 +829,7 @@ draw_percent_mark (
 	long cur_num,
 	long max_num)
 {
-	char buf[32]; /* FIXME: ensure it's always big enough */
+	char buf[32]; /* FIXME: ensure it's always big enough snprintf() ?*/
 	int percent;
 
 	if (NOTESLINES <= 0)
@@ -945,7 +951,7 @@ base_name (
 		}
 	}
 #ifdef M_OS2
-	str_lwr (program, program);
+	str_lwr (program);
 #endif /* M_OS2 */
 #ifdef VMS
 	if ((cp = strrchr(program, '.')) != 0)
@@ -1454,33 +1460,49 @@ strfquote (
 		}
 		if (*format == '%') {
 			switch (*++format) {
+
 				case '\0':
 					*s++ = '%';
 					goto out;
 					/* NOTREACHED */
 					break;
+
 				case '%':
 					*s++ = '%';
 					continue;
+
 				case 'A':	/* Articles Email address */
-					strcpy (tbuf, arts[respnum].from);
+					STRCPY(tbuf, arts[respnum].from);
 					break;
+
+				case 'C':	/* First Name of author */
+					if (arts[respnum].name != (char *) 0) {
+						STRCPY(tbuf, arts[respnum].name);
+						if (strrchr (arts[respnum].name, ' '))
+							*(strrchr (tbuf, ' ')) = '\0';
+					} else {
+						STRCPY(tbuf, arts[respnum].from);
+					}
+					break;
+
 				case 'D':	/* Articles Date */
-					strcpy(tbuf, note_h.date);
+					STRCPY(tbuf, BlankIfNull(pgart.hdr.date));
 					break;
+
 				case 'F':	/* Articles Address+Name */
-					if (arts[respnum].name) {
-						sprintf (tbuf, "%s <%s>",
-							arts[respnum].name,
-							arts[respnum].from);
-					} else
-						strcpy (tbuf, arts[respnum].from);
+					if (arts[respnum].name)
+						snprintf (tbuf, LEN, "%s <%s>", arts[respnum].name, arts[respnum].from);
+					else {
+						STRCPY(tbuf, arts[respnum].from);
+					}
 					break;
+
 				case 'G':	/* Groupname of Article */
-					strcpy (tbuf, group);
+					STRCPY(tbuf, group);
 					break;
+
 				case 'I':	/* Initials of author */
-					strcpy (tbuf, ((arts[respnum].name != (char *) 0) ? arts[respnum].name : arts[respnum].from));
+					STRCPY(tbuf, ((arts[respnum].name != (char *) 0) ? arts[respnum].name : arts[respnum].from));
 					j = 0;
 					iflag = TRUE;
 					for (i = 0; tbuf[i]; i++) {
@@ -1493,20 +1515,15 @@ strfquote (
 					}
 					tbuf[j] = '\0';
 					break;
+
 				case 'M':	/* Articles MessageId */
-					strcpy (tbuf, note_h.messageid);
+					STRCPY(tbuf, BlankIfNull(pgart.hdr.messageid));
 					break;
+
 				case 'N':	/* Articles Name of author */
 					strcpy (tbuf, ((arts[respnum].name != (char *) 0) ? arts[respnum].name : arts[respnum].from));
 					break;
-				case 'C':	/* First Name of author */
-					if (arts[respnum].name != (char *) 0) {
-						strcpy (tbuf, arts[respnum].name);
-						if (strrchr (arts[respnum].name, ' '))
-							*(strrchr (tbuf, ' ')) = '\0';
-					} else
-						strcpy (tbuf, arts[respnum].from);
-					break;
+
 				default:
 					tbuf[0] = '%';
 					tbuf[1] = *format;
@@ -1607,10 +1624,10 @@ strfeditor (
 					*s++ = '%';
 					continue;
 				case 'E':	/* Editor */
-					strcpy (tbuf, editor);
+					STRCPY(tbuf, editor);
 					break;
 				case 'F':	/* Filename */
-					strcpy(tbuf, filename);
+					STRCPY(tbuf, filename);
 					break;
 				case 'N':	/* Line number */
 					sprintf (tbuf, "%d", linenum);
@@ -1825,10 +1842,6 @@ strfpath (
 #else
 						my_strncpy (tmp, group, 14);
 #endif /* HAVE_LONG_FILE_NAMES */
-#if 0 /* this looks ugly */
-						/* convert 1st letter to uppercase */
-						tmp[0] = (char) toupper(tmp[0]);
-#endif /* 0 */
 #ifndef VMS
 						joinpath (tbuf, buf, tmp);
 #	ifdef WIN32
@@ -1954,6 +1967,7 @@ escape_shell_meta (
  *   %T  To
  *   %S  Subject
  *   %U  User
+ * Returns length of produced string (is always ignored currently).
  */
 int
 strfmailer (
@@ -1961,37 +1975,57 @@ strfmailer (
 	char *subject,
 	char *to,
 	const char *filename,
-	char *s,
+	char *dest,
 	size_t maxsize,
-	char *format) /* return value is always ignored */
+	char *format)
 {
-	char *endp = s + maxsize;
-	char *start = s;
+	char *endp = dest + maxsize;
+	char *start = dest;
 	char tbuf[PATH_LEN];
 	int quote_area = no_quote;
 
-	if (s == (char *) 0 || format == (char *) 0 || maxsize == 0)
+	/*
+	 * safe guards: no destination to write to, no format, no space to
+	 * write, or nothing to replace and format string longer than available
+	 * space => return without any action
+	 */
+	if (dest == (char *) 0 || format == (char *) 0 || maxsize == 0)
 		return 0;
 
 	if (strchr (format, '%') == (char *) 0 && strlen (format) + 1 >= maxsize)
 		return 0;
 
-	for (; *format && s < endp - 1; format++) {
+	/*
+	 * walk through format until end of format or end of available space
+	 * and replace place holders
+	 */
+	for (; *format && dest < endp - 1; format++) {
 		tbuf[0] = '\0';
 
+		/*
+		 * take over any character other than '\' and '%' and continue with
+		 * next character in format; remember quote area
+		 */
 		if (*format != '\\' && *format != '%') {
 			if (*format == '"' && quote_area != sgl_quote)
 				quote_area = (quote_area == dbl_quote ? no_quote : dbl_quote);
 			if (*format == '\'' && quote_area != dbl_quote)
 				quote_area = (quote_area == sgl_quote ? no_quote : sgl_quote);
-			*s++ = *format;
+			*dest++ = *format;
 			continue;
 		}
 
+		/*
+		 * handle sequences introduced by '\':
+		 * - "\n" gets line feed
+		 * - '\' followed by NULL gets '\' and leaves loop
+		 * - '\' followed by any other character is copied literally and
+		 *   shell escaped; if that exceeds the available space, return 0
+		 */
 		if (*format == '\\') {
 			switch (*++format) {
 				case '\0':
-					*s++ = '\\';
+					*dest++ = '\\';
 					goto out;
 					/* NOTREACHED */
 					break;
@@ -1999,44 +2033,71 @@ strfmailer (
 					strcpy (tbuf, "\n");
 					break;
 				default:
-					tbuf[0] = '%';
+					tbuf[0] = '\\';
 					tbuf[1] = *format;
 					tbuf[2] = '\0';
 					break;
 			}
 			if (*tbuf) {
-				if (sh_format (s, endp - s, "%s", tbuf) >= 0)
-					s += strlen(s);
+				if (sh_format (dest, endp - dest, "%s", tbuf) >= 0)
+					dest += strlen(dest);
 				else
 					return 0;
 			}
 		}
+
+		/*
+		 * handle sequences introduced by '%'
+		 * - '%' followed by NULL gets '%' and leaves loop
+		 * - '%%' gets '%'
+		 * - '%F' expands to filename
+		 * - '%M' expands to mailer
+		 * - '%S' expands to subject of message
+		 * - '%T' expands to recipient(s) of message
+		 * - '%U' expands to userid
+		 * - '%' followed by any other character is copied literally
+		 */
 		if (*format == '%') {
 			t_bool ismail = TRUE;
 			t_bool escaped = FALSE;
 			switch (*++format) {
 				case '\0':
-					*s++ = '%';
+					*dest++ = '%';
 					goto out;
 				case '%':
-					*s++ = '%';
+					*dest++ = '%';
 					continue;
 				case 'F':	/* Filename */
-					strcpy (tbuf, filename);
+					STRCPY(tbuf, filename);
 					break;
 				case 'M':	/* Mailer */
-					strcpy (tbuf, the_mailer);
+					STRCPY(tbuf, the_mailer);
 					break;
 				case 'S':	/* Subject */
-					strcpy (tbuf, escape_shell_meta (rfc1522_encode (subject, ismail) , quote_area));
+					/* don't MIME encode Subject if using external mail client */
+					if (tinrc.use_mailreader_i)
+						strncpy (tbuf, escape_shell_meta (subject, quote_area), sizeof(tbuf));
+					else
+						strncpy (tbuf, escape_shell_meta (rfc1522_encode (subject, ismail), quote_area), sizeof(tbuf));
+					tbuf[sizeof(tbuf) - 1] = '\0';	/* just in case */
 					escaped = TRUE;
 					break;
 				case 'T':	/* To */
-					strcpy (tbuf, escape_shell_meta (rfc1522_encode (to, ismail), quote_area));
+					/* don't MIME encode To if using external mail client */
+					if (tinrc.use_mailreader_i)
+						strncpy (tbuf, escape_shell_meta (to, quote_area), sizeof(tbuf));
+					else
+						strncpy (tbuf, escape_shell_meta (rfc1522_encode (to, ismail), quote_area), sizeof(tbuf));
+					tbuf[sizeof(tbuf) - 1] = '\0';	/* just in case */
 					escaped = TRUE;
 					break;
 				case 'U':	/* User */
-					strcpy (tbuf, rfc1522_encode (userid, ismail));
+					/* don't MIME encode User if using external mail client */
+					if (tinrc.use_mailreader_i)
+						strncpy (tbuf, userid, sizeof(tbuf));
+					else
+						strncpy (tbuf, rfc1522_encode (userid, ismail), sizeof(tbuf));
+					tbuf[sizeof(tbuf) - 1] = '\0';	/* just in case */
 					break;
 				default:
 					tbuf[0] = '%';
@@ -2046,21 +2107,21 @@ strfmailer (
 			}
 			if (*tbuf) {
 				if (escaped) {
-					if (endp - s > 0) {
-						strncpy(s, tbuf, endp - s);
-						s += strlen(s);
+					if (endp - dest > 0) {
+						strncpy(dest, tbuf, endp - dest);
+						dest += strlen(dest);
 					}
-				} else if (sh_format (s, endp - s, "%s", tbuf) >= 0) {
-					s += strlen(s);
+				} else if (sh_format (dest, endp - dest, "%s", tbuf) >= 0) {
+					dest += strlen(dest);
 				} else
 					return 0;
 			}
 		}
 	}
 out:
-	if (s < endp && *format == '\0') {
-		*s = '\0';
-		return (s - start);
+	if (dest < endp && *format == '\0') {
+		*dest = '\0';
+		return (dest - start);
 	} else
 		return 0;
 }

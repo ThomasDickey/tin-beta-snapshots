@@ -126,7 +126,9 @@
  */
 
 /* Internal use only - Need only be an invalid untypable key value */
-#define iKeyCatchupLeft 0
+#define iKeyCatchupLeft 0	/* These two must be in mutually exclusive menus */
+#define iKeyMouseToggle	0
+
 #define iKeyAbort ESC
 #define iKeyPageDown3 ' '
 #ifndef NO_SHELL_ESCAPE

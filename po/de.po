@@ -6,7 +6,7 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: tin 1.5.3\n"
+"Project-Id-Version: tin 1.5.4\n"
 "POT-Creation-Date: 1999-12-20 20:50+0000\n"
 "PO-Revision-Date: 2000-02-05 18:00+0100\n"
 "Last-Translator: Sven Hartge <oweh@ds9.argh.org>, Kai Bojens <kbojens@on-luebeck.de>\n"
@@ -849,8 +849,8 @@ msgstr "Gruppe %.*s ('q' zum beenden...) "
 
 #: src/lang.c:224
 #, c-format
-msgid "Group %*s... "
-msgstr "Gruppe %*s... "
+msgid "Group %.*s... "
+msgstr "Gruppe %.*s... "
 
 #: src/lang.c:227
 #, c-format
@@ -1249,8 +1249,10 @@ msgid "g G\t  display first (G = last) page of article"
 msgstr "g G\t  zeigt erste (G = letzte) Seite des Artikels"
 
 #: src/lang.c:358
-msgid "k K\t  mark article (K = thread) as read and advance to next unread"
-msgstr "k K\t  markiere Artikel (K = Thread) als gelesen; nächster ungelesener"
+#msgid "k K\t  mark article (K = thread) as read and advance to next unread"
+#msgstr "k K\t  markiere Artikel (K = Thread) als gelesen; nächster ungelesener"
+msgid "K\t  mark thread as read and advance to next unread"
+msgstr "K\t  markiere Thread als gelesen und springe zu nächstem ungelesenem"
 
 #: src/lang.c:359
 msgid "m\t  mail article/thread/hot/pattern/tagged articles to someone"
@@ -2471,8 +2473,8 @@ msgstr "Lese %sKonfigurations-Datei...\n"
 
 #: src/lang.c:787
 #, c-format
-msgid "Reading %sfilter file...\n"
-msgstr "Lese %sFilter-Datei...\n"
+msgid "Reading filter file...\n"
+msgstr "Lese Filter-Datei...\n"
 
 #: src/lang.c:788
 msgid "Reading input history file...\n"
@@ -4103,11 +4105,13 @@ msgid "Number of articles to get          : "
 msgstr "Anzahl, der zu holenden Artikel    : "
 
 #: src/lang.c:1361
-# +sh 26.01.2000 Hä? Der erste Teil ist klar, aber danach ?!
 msgid ""
 "# Number of articles to get (0=no limit), if negative sets maximum number\n"
 "# of already read articles to be read before first unread one\n"
 msgstr ""
+"# Anzahl der zu holenden Artikel (0=unbegrenzt), falls ein negativer Wert\n"
+"# angegeben wird, holt tin alle ungelesenen plus die letzten n gelesenen\n"
+"# Artikel\n"
 
 #: src/lang.c:1392
 msgid "Enter number of days article is considered recent. <CR> sets."
@@ -4519,11 +4523,11 @@ msgid ""
 "# NOT lead to conversion of EUC-KR into ISO-2022-KR in news-postings since\n"
 "# it's never meant to be used for Usenet news. Japanese always use\n"
 "# ISO-2022-JP for both news and mail. Automatic conversion of EUC-JP and\n"
-"# other 8bit Japanese encodings into ISO-2022-JP(even if 7bit is chosen)\n"
-"# is NOT yet implemented.(it may not be necessary at all as Japanese\n"
+"# other 8bit Japanese encodings into ISO-2022-JP (even if 7bit is chosen)\n"
+"# is NOT yet implemented. (it may not be necessary at all as Japanese\n"
 "# terminal emulators and editors appear to have native support of\n"
 "# ISO-2022-JP). In case of Chinese, the situation seems to be more\n"
-"# complicated(different newsgroups and hierarchies for Chinese use "
+"# complicated (different newsgroups and hierarchies for Chinese use "
 "different\n"
 "# MIME charsets and encodings) and no special handling is yet implemented.\n"
 "# Summing up 7bit does NOT have any effect on MIME charset other than "
@@ -4543,7 +4547,7 @@ msgstr ""
 "# einer Wandlung von EUC-KR nach ISO-2022-KR in Newspostings, da es für\n"
 "# Newspostings nie vorgesehen war. Japaner benutzen ISO-2022-JP für Mail\n"
 "# und News. Die automatische Wandlung von EUC-JP und anderen 8bit\n"
-"# Zeichensätzen aus Japan nach ISO-2022-JP(selbst wenn 7bit gewählt wurde)\n"
+"# Zeichensätzen aus Japan nach ISO-2022-JP (selbst wenn 7bit gewählt wurde)\n"
 "# wird noch NICHT unterstützt. (Es scheint auch nicht notwendig zu sein\n"
 "# da die meisten Japanischen Terminals ISO-2022-JP unterstützen)\n"
 "# Chinesisch ist noch komplizierter (in verschiedenen Newsgruppen und\n"
@@ -4663,9 +4667,8 @@ msgid "No. of days a filter entry is valid: "
 msgstr "Tage, die ein Filter gültig ist    : "
 
 #: src/lang.c:1684
-# +kb 29.01.00 Hmmm. Wie soll man short term filter übersetzen?
 msgid "# Num of days a short term filter will be active\n"
-msgstr ""
+msgstr "# Anzahl der Tage die ein temporaerer Filter aktiv ist\n"
 
 #: src/lang.c:1688
 msgid "Add subject of posted articles to filter. <SPACE> toggles & <CR> sets."

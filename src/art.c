@@ -78,19 +78,13 @@ static void thread_by_subject (void);
 
 /*
  * Display a suitable 'entering group' message if screen needs redrawing
+ * Allow for the non-printing %s, and the %-age counter
  */
 void
 show_art_msg(char *group)
 {
-	ClearScreen ();
-#if defined(HAVE_POLL) || defined(HAVE_SELECT)
-	/* strlen("Group %s ('q' to quit)... 'low'/'high'") = 45 */
-	/* FIXME: 'high'/'low' is "%6d/%-6d", see screen.c */
-	wait_message(0, _(txt_group), cCOLS - strlen(_(txt_group)) + 18, group);
-#else
-	/* strlen("Group %s ... 'low'/'high'") = 31 */
-	wait_message(0, _(txt_group), cCOLS - strlen(_(txt_group)) + 18, group);
-#endif /* HAVE_POLL || HAVE_SELECT */
+/* what if cCOLS < (strlen)+18 ? */
+	wait_message(0, _(txt_group), cCOLS - strlen(_(txt_group)) + 2 - 3, group);
 }
 
 /*
@@ -172,14 +166,8 @@ index_group (
 	if (group == (struct t_group *) 0)
 		return TRUE;
 
-	i = strlen(_(txt_group)) + 18;
-
-	/* very small screen */
-	if (cCOLS < i)
-		i = 0;
-
 	if (!batch_mode)
-		wait_message (0, _(txt_group), cCOLS - i, group->name);
+		show_art_msg (group->name);
 
 	make_group_path (group->name, group_path);
 	signal_context = cArt;			/* Set this once glob_group is valid */
@@ -670,33 +658,28 @@ parse_headers (
 	FILE *fp,
 	struct t_article *h)
 {
-	char buf[HEADER_LEN];
 	char art_from_addr[HEADER_LEN];
 	char art_full_name[HEADER_LEN];
-	char *ptr, *s;
+	char *hdr, *ptr, *s;
 	int lineno = 0;
 	int max_lineno = 25;
-	t_bool got_archive, got_date, got_from, got_lines;
-	t_bool got_msgid, got_received, got_refs, got_subject, got_xref;
+	t_bool got_from, got_lines, got_received;
 
-	got_archive = got_date = got_from = got_lines = FALSE;
-	got_msgid = got_received = got_refs = got_subject = got_xref = FALSE;
+	got_from = got_lines = got_received = FALSE;
 
 	while ((ptr = tin_fgets(fp, TRUE)) != NULL) {
 		/*
-		 * Look for the end of informations which tin want to get.
+		 * Look for the end of information which tin wants to get.
 		 * Applies when reading local spool and via NNTP.
 		 */
-		if (lineno > max_lineno /*|| got_archive*/)
+		if (lineno++ > max_lineno || h->archive)
 			break;
-
-		lineno++;
 
 		switch (toupper((unsigned char)*ptr)) {
 			case 'A':	/* Archive-name:  optional */
-				if (match_header (ptr+1, "rchive-name", (char*)0, buf, HEADER_LEN) && *buf != '\0') {
+				if ((hdr = parse_header (ptr+1, "rchive-name", FALSE))) {
 					/* TODO - what if header of form news/group/name/part01 ? */
-					if ((s = strrchr (buf, '/')) != NULL) {
+					if ((s = strrchr (hdr, '/')) != NULL) {
 						if (STRNCASECMPEQ(s+1, "part", 4)) {
 							h->part = my_strdup (s+5);
 							strtok(h->part, "\n");
@@ -706,27 +689,23 @@ parse_headers (
 						} else
 							continue;
 
-						strtok(buf, "/");
-						h->archive = hash_str (buf);
-						got_archive = TRUE;
+						strtok(hdr, "/");
+						h->archive = hash_str (hdr);
 					}
 				}
 				break;
 			case 'D':	/* Date:  mandatory */
-				if (!got_date) {
-					if (match_header (ptr+1, "ate", (char*)0, buf, HEADER_LEN) && *buf != '\0') {
-						h->date = parsedate (buf, (struct _TIMEINFO *) 0);
-						got_date = TRUE;
-					}
+				if (!h->date) {
+					if ((hdr = parse_header (ptr+1, "ate", FALSE)))
+						h->date = parsedate (hdr, (struct _TIMEINFO *) 0);
 				}
 				break;
 			case 'F':	/* From:  mandatory */
 			case 'T':	/* To:    mandatory (mailbox) */
 				if (!got_from) {
-					if ((match_header (ptr+1, "rom", (char*)0, buf, HEADER_LEN) ||
-					    match_header (ptr+1, "o", (char*)0, buf, HEADER_LEN)) &&
-					    *buf != '\0') {
-						h->gnksa_code = parse_from (buf, art_from_addr, art_full_name);
+					if ((hdr = parse_header (ptr+1, "rom", FALSE)) ||
+									(hdr = parse_header (ptr+1, "o", FALSE))) {
+						h->gnksa_code = parse_from (hdr, art_from_addr, art_full_name);
 						h->from = hash_str (art_from_addr);
 						if (*art_full_name)
 							h->name = hash_str (eat_tab(rfc1522_decode(art_full_name)));
@@ -736,51 +715,44 @@ parse_headers (
 				break;
 			case 'L':	/* Lines:  optional */
 				if (!got_lines) {
-					if (match_header (ptr+1, "ines", (char*)0, buf, HEADER_LEN) && *buf != '\0') {
-						h->lines = atoi (buf);
+					if ((hdr = parse_header (ptr+1, "ines", FALSE))) {
+						h->lines = atoi (hdr);
 						got_lines = TRUE;
 					}
 				}
 				break;
 			case 'M':	/* Message-ID:  mandatory */
-				if (!got_msgid) {
-					if (match_header (ptr+1, "essage-ID", (char*)0, buf, HEADER_LEN) && *buf != '\0') {
-						h->msgid = my_strdup (buf);
-						got_msgid = TRUE;
-					}
+				if (!h->msgid) {
+					if ((hdr = parse_header (ptr+1, "essage-ID", FALSE)))
+						h->msgid = my_strdup (hdr);
 				}
 				break;
 			case 'R':	/* References:  optional */
-				if (!got_refs) {
-					if (match_header (ptr+1, "eferences", (char*)0, buf, HEADER_LEN) && *buf != '\0') {
-						h->refs = my_strdup (buf);
-						got_refs = TRUE;
-					}
+				if (!h->refs) {
+					if ((hdr = parse_header (ptr+1, "eferences", FALSE)))
+						h->refs = my_strdup (hdr);
 				}
 
-				/* Received:  If found its probably a mail article */
+				/* Received:  If found it's probably a mail article */
 				if (!got_received) {
-					if (match_header (ptr+1, "eceived", (char*)0, buf, HEADER_LEN) && *buf != '\0') {
-						max_lineno = 50;
+					if ((hdr = parse_header (ptr+1, "eceived", FALSE))) {
+						max_lineno = 50;		/* Get extra lines for some reason */
 						got_received = TRUE;
 					}
 				}
 				break;
 			case 'S':	/* Subject:  mandatory */
-				if (!got_subject) {
-					if (match_header (ptr+1, "ubject", (char*)0, buf, HEADER_LEN) && *buf != '\0') {
-						s = eat_re (eat_tab(rfc1522_decode(buf)), FALSE);
+				if (!h->subject) {
+					if ((hdr = parse_header (ptr+1, "ubject", FALSE))) {
+						s = eat_re (eat_tab(rfc1522_decode(hdr)), FALSE);
 						h->subject = hash_str (s);
-						got_subject = TRUE;
 					}
 				}
 				break;
 			case 'X':	/* Xref:  optional */
-				if (!got_xref) {
-					if (match_header (ptr+1, "ref", (char*)0, buf, HEADER_LEN) && *buf != '\0') {
-						h->xref = my_strdup (buf);
-						got_xref = TRUE;
-					}
+				if (!h->xref) {
+					if ((hdr = parse_header (ptr+1, "ref", FALSE)))
+						h->xref = my_strdup (hdr);
 				}
 				break;
 			default:
@@ -798,12 +770,11 @@ parse_headers (
 		return FALSE;
 
 	/*
-	 * The son of RFC 1036 states that the following hdrs are
-	 * mandatory. It also states that Subject, Newsgroups
-	 * and Path are too. Ho hum.
+	 * The son of RFC 1036 states that the following hdrs are mandatory. It
+	 * also states that Subject, Newsgroups and Path are too. Ho hum.
 	 */
-	if (got_from && got_date && got_msgid) {
-		if (!got_subject)
+	if (got_from && h->date && h->msgid) {
+		if (!h->subject)
 			h->subject = hash_str ("<No subject>");
 
 #ifdef DEBUG
@@ -1072,7 +1043,7 @@ iReadNovFile (
 
 		/* we might loose accuracy here, but that shouldn't hurt */
 		if (artnum % MODULO_COUNT_NUM == 0)
-			show_progress(mesg, (int) (artnum-min), (int) (max-min));
+			show_progress(mesg, artnum - min, max - min);
 
 		top_art++;
 	}
@@ -1344,7 +1315,9 @@ do_update (
 
 	if (verbose) {
 		wait_message (0, _(txt_catchup_update_info),
-			(catchup ? _("Caughtup") : _("Updated")), selmenu.max, IS_PLURAL(selmenu.max), (unsigned long int) (time(NULL) - beg_epoch));
+			(catchup ? _(txt_caughtup) : _(txt_updated)), selmenu.max,
+			(selmenu.max != 1 ? _(txt_group_plural) : _(txt_group_singular)),
+			(unsigned long int) (time(NULL) - beg_epoch));
 	}
 }
 
