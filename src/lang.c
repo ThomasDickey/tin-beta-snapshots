@@ -474,6 +474,11 @@ constext txt_invalid_from[] = N_("Invalid  From: %s  line. Read the INSTALL file
 constext txt_invalid_sender[] = N_("Invalid  Sender:-header %s");
 constext txt_inverse_off[] = N_("Inverse video disabled");
 constext txt_inverse_on[] = N_("Inverse video enabled");
+constext txt_keymap_missing_key[] = N_("Missing definition for %s\n");
+constext txt_keymap_invalid_key[] = N_("Invalid key definition '%s'\n");
+constext txt_keymap_invalid_name[] = N_("Invalid keyname '%s'\n");
+constext txt_keymap_redef[] = N_("Redefined key %s '%s' -> '%s'\n");
+constext txt_keymap_conflict[] = N_("Key '%s' is defined for both %s%s and %s%s\n");
 constext txt_last_resp[] = N_("-- Last response --");
 constext txt_lines[] = N_("Lines %s  ");
 constext txt_listing_archive[] = N_("Listing %s archive...");
@@ -618,6 +623,7 @@ constext txt_prompt_fup_ignore[] = N_("Accept Followup-To? (p/i/q) ");
 constext txt_prompt_unchanged_art[] = N_("Article unchanged, abort posting? (Y/n) ");
 constext txt_prompt_unchanged_mail[] = N_("Article unchanged, abort mailing? (Y/n) ");
 constext txt_prompt_see_postponed[] = N_("Do you want to see postponed articles (%d)? ");
+constext txt_reading_keymap_file[] = N_("Reading keymap file ...\n");
 constext txt_repost[] = N_("Repost");
 
 #ifdef HAVE_LIBUU
@@ -749,7 +755,10 @@ constext *txt_post_process_type[] = {
 		N_("Uudecode & extract zip archive")
 };
 
+#if 0
+/* moved to keymap.c because they may be localized */
 char ch_post_process[] = { 'n', 's', 'u', 'l', 'e', 'L', 'E' };
+#endif /* 0 */
 
 constext *txt_sort_type[] = {
 		N_("Nothing"),

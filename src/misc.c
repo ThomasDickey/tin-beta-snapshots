@@ -78,6 +78,7 @@ static int gnksa_check_domain_literal (char *domain);
 static int gnksa_check_localpart (char *localpart);
 static int gnksa_dequote_plainphrase (char *realname, char *decoded, int addrtype);
 static int gnksa_split_from (char *from, char *address, char *realname, int *addrtype);
+static int peek_char (FILE *fp);
 static int strfeditor (char *editor, int linenum, const char *filename, char *s, size_t maxsize, char *format);
 static void write_input_history_file (void);
 #ifdef LOCAL_CHARSET
@@ -788,8 +789,8 @@ invoke_cmd (
 	const char *nam)
 {
 	int ret;
-
 	t_bool save_cmd_line = cmd_line;
+
 	if (!save_cmd_line) {
 		EndWin ();
 		Raw (FALSE);
@@ -2279,7 +2280,7 @@ vPrintBugAddress (
 /*
  * take a peek at the next char in file
  */
-int
+static int
 peek_char (
 	FILE *fp)
 {

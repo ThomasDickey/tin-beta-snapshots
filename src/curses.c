@@ -239,7 +239,7 @@ setup_screen (void)
 #  define NO_CAP(s)           (s == 0 || s == (char *)-1)
 #  if !defined(HAVE_TIGETNUM) && defined(HAVE_TIGETINT)
 #    define tigetnum tigetint
-#  endif
+#  endif /* !HAVE_TIGETNUM && HAVE_TIGETINT */
 #else /* USE_TERMCAP */
 #  undef USE_TERMCAP
 #  define USE_TERMCAP 1
@@ -1104,7 +1104,7 @@ highlight_string (
 #if 0
 	my_fputs (tmp, stdout);
 	my_flush ();
-#endif
+#endif /* 0 */
 	EndInverse ();
 	stow_cursor();
 }

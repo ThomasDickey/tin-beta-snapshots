@@ -67,7 +67,9 @@ static int current_bcol = 0;
  * local prototypes
  */
 static t_bool check_valid_mark (const char *s);
+static void color_fputs (const char *s, FILE *stream, int color, t_bool signature);
 static void put_mark_char (int c, FILE *stream, t_bool signature);
+
 
 #ifdef USE_CURSES
 static void
@@ -244,7 +246,7 @@ put_mark_char (
 /*
  * Like fputs(), but highlights words denoted by * and _ in colour
  */
-void
+static void
 color_fputs (
 	const char *s,
 	FILE *stream,
@@ -342,7 +344,7 @@ print_color (
 #if 0
 		offsets[0] = 0;
 		offsets[1] = 0;
-#endif
+#endif /* 0 */
 
 		while (pcre_exec (url_regex.re, url_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) != PCRE_ERROR_NOMATCH) {
 			highlight_string (row, (ptr-buf)+offsets[0], offsets[1]-offsets[0]);

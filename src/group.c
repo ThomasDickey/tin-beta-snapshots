@@ -193,10 +193,10 @@ group_page (
 
 	while (ret_code >= 0) {
 		set_xclick_on ();
-		switch (ch = handle_keypad(group_left, group_right)) {
+		switch (ch = handle_keypad (group_left, group_right, &menukeymap.group_nav)) {
 
 #ifndef WIN32
-			case ESC:		/* Abort */
+			case iKeyAbort:		/* Abort */
 				break;
 #endif /* !WIN32 */
 

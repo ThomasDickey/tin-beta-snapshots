@@ -370,7 +370,7 @@ save_art_to_file (
 				return FALSE;
 			}
 
-			ch = prompt_slk_response(tinrc.default_save_mode, "aoq\033", _(txt_append_overwrite_quit), file);
+			ch = prompt_slk_response (tinrc.default_save_mode, &menukeymap.save_append_overwrite_quit, _(txt_append_overwrite_quit), file);
 			switch (ch) {
 				case iKeySaveAppendFile:
 					strcpy (mode, "a+");
@@ -381,7 +381,7 @@ save_art_to_file (
 					break;
 
 				case iKeyAbort:
-				case iKeySaveDontSaveFile2:
+				case iKeyQuit:
 /*					save[i].saved = FALSE;*/
 					wait_message (1, _(txt_art_not_saved));
 					return FALSE;

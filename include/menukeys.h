@@ -3,7 +3,7 @@
  *  Module    : menukeys.h
  *  Author    : S.Robbins
  *  Created   : 1994-08-15
- *  Updated   : 1995-12-21
+ *  Updated   : 1995-12-21; 2000-06-10, Dirk Nimmich
  *  Notes     :
  *
  * Copyright (c) 1994-2000 Steve Robbins <stever@cs.mcgill.ca>
@@ -37,7 +37,6 @@
 
 #ifndef MENUKEYS_H
 #	define MENUKEYS_H 1
-
 
 /* Revised 9 October 1996 by Branden Robinson in ASCII order
  *
@@ -312,6 +311,13 @@
 #define iKeyPageRepost 'x'
 #define iKeyPageMarkArtUnread 'z'
 
+/* pgp.c */
+
+#define iKeyPgpEncSign 'b'
+#define iKeyPgpEncrypt 'e'
+#define iKeyPgpIncludekey 'i'
+#define iKeyPgpSign 's'
+
 /* post.c */
 
 #define iKeyPostCancel 'd'
@@ -325,13 +331,13 @@
 #define iKeyPostContinue 'c'
 #define iKeyPostAbort 'a'
 #define iKeyPostIgnore 'i'
+#define iKeyPostMail 'm'
 #define iKeyPostPost 'p'
 #define iKeyPostPost2 'y'
 #define iKeyPostSend 's'
 #define iKeyPostSend2 'y'
 #define iKeyPostSupersede 's'
 #define iKeyPostPostpone 'o'
-
 #define iKeyPostponeYes 'y'
 #define iKeyPostponeYesOverride 'Y'
 #define iKeyPostponeYesAll 'A'
@@ -346,14 +352,13 @@
 
 #define iKeySaveAppendFile 'a'
 #define iKeySaveOverwriteFile 'o'
-#define iKeySaveDontSaveFile2 'q'
-
 #define iKeyPProcExtractZip 'E'
 #define iKeyPProcListZip 'L'
 #define iKeyPProcExtractZoo 'e'
 #define iKeyPProcListZoo 'l'
 #define iKeyPProcShar 's'
 #define iKeyPProcUUDecode 'u'
+#define iKeyPProcNone 'n'
 
 /* select.c */
 
@@ -367,7 +372,7 @@
 #define iKeySelectSubscribePat 'S'
 #define iKeySelectUnsubscribePat 'U'
 #define iKeySelectQuitNoWrite 'X'
-#define iKeySelectSyncActive 'Y'
+#define iKeySelectSyncWithActive 'Y'
 #define iKeySelectMarkGrpUnread2 'Z'
 #define iKeySelectCatchup 'c'
 #define iKeySelectToggleDescriptions 'd'
@@ -404,5 +409,54 @@
 #define iKeyThreadPost 'w'
 #define iKeyThreadMarkArtUnread 'z'
 #define iKeyThreadUndoSel '~'
+
+typedef struct kn {
+	const char defaultkey;	/* The default key definition */
+	char localkey;				/* The actual key definition */
+	const char *t;						/* Qualifier string in mapping file */
+} t_keynode;
+
+typedef struct mk {
+	t_keynode **keys;			/* valid keys in this menu */
+	char *defaultkeys;		/* all valid default keys in an array of char */
+	char *localkeys;			/* local keys in the same order as defaultkeys */
+} t_menukeys;
+
+typedef struct mkm {
+	/*
+	 * NOTE: If you prepend an entry, make sure you change the reference to
+	 * the first entry in keymap.c:build_keymaps() (menuptr), too.
+	 */
+	t_menukeys config_change;
+	t_menukeys feed_art_thread_regex_tag;
+	t_menukeys feed_post_process_type;
+	t_menukeys feed_supersede_article;
+	t_menukeys filter_quit_edit_save;
+	t_menukeys group_nav;
+	t_menukeys nrctbl_create;
+	t_menukeys page_nav;
+	t_menukeys pgp_mail;
+	t_menukeys pgp_news;
+	t_menukeys post_cancel;
+	t_menukeys post_cont;
+	t_menukeys post_delete;
+	t_menukeys post_edit;
+	t_menukeys post_edit_ext;
+	t_menukeys post_ignore_fupto;
+	t_menukeys post_mail_fup;
+	t_menukeys post_post;
+	t_menukeys post_postpone;
+	t_menukeys post_send;
+	t_menukeys prompt_yn;
+	t_menukeys save_append_overwrite_quit;
+	t_menukeys select_nav;
+	t_menukeys thread_nav;
+} t_menukeymap;
+
+extern int handle_keypad (int (*left_action) (void), int (*right_action) (void), const t_menukeys *menukeys);
+extern int prompt_slk_response (int ch_default, const t_menukeys *responses, const char *fmt, ...);
+extern int map_to_local (const char key, const t_menukeys *menukeys);
+extern int map_to_default (const char key, const t_menukeys *menukeys);
+extern t_menukeymap menukeymap;
 
 #endif /* !MENUKEYS_H */

@@ -20,13 +20,14 @@ src/help.c
 src/inews.c
 src/init.c
 src/joinpath.c
+src/keymap.c
 src/lang.c
 src/list.c
 src/mail.c
-src/mailcap.c
 src/main.c
 src/makecfg.c
 src/memory.c
+src/mimetypes.c
 src/misc.c
 src/newsrc.c
 src/nntplib.c

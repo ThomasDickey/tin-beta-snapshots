@@ -102,6 +102,7 @@ HFILES	= \
 	$(INCDIR)/bool.h \
 	$(INCDIR)/bugrep.h \
 	$(INCDIR)/extern.h \
+	$(INCDIR)/keymap.h \
 	$(INCDIR)/menukeys.h \
 	$(INCDIR)/nntplib.h \
 	$(INCDIR)/plp_snprintf.h \
@@ -137,12 +138,13 @@ CFILES	= \
 	$(SRCDIR)/help.c \
 	$(SRCDIR)/inews.c \
 	$(SRCDIR)/init.c \
+	$(SRCDIR)/keymap.c \
 	$(SRCDIR)/lang.c \
 	$(SRCDIR)/list.c \
 	$(SRCDIR)/mail.c \
-	$(SRCDIR)/mailcap.c \
 	$(SRCDIR)/main.c \
 	$(SRCDIR)/memory.c \
+	$(SRCDIR)/mimetypes.c \
 	$(SRCDIR)/misc.c \
 	$(SRCDIR)/newsrc.c \
 	$(SRCDIR)/nntplib.c \
@@ -202,12 +204,13 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/inews.o \
 	$(OBJDIR)/init.o \
 	$(OBJDIR)/joinpath.o \
+	$(OBJDIR)/keymap.o \
 	$(OBJDIR)/lang.o \
 	$(OBJDIR)/list.o \
 	$(OBJDIR)/mail.o \
-	$(OBJDIR)/mailcap.o \
 	$(OBJDIR)/main.o \
 	$(OBJDIR)/memory.o \
+	$(OBJDIR)/mimetypes.o \
 	$(OBJDIR)/misc.o \
 	$(OBJDIR)/newsrc.o \
 	$(OBJDIR)/nntplib.o \
@@ -453,15 +456,18 @@ $(OBJDIR)/init.o:		$(SRCDIR)/init.c $(TIN_DEP) \
 				$(INCDIR)/tnntp.h \
 				$(INCDIR)/version.h
 $(OBJDIR)/joinpath.o:		$(SRCDIR)/joinpath.c $(TIN_DEP)
+$(OBJDIR)/keymap.o:		$(SRCDIR)/keymap.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h \
+				$(INCDIR)/menukeys.h
 $(OBJDIR)/lang.o:		$(SRCDIR)/lang.c $(TIN_DEP)
 $(OBJDIR)/list.o:		$(SRCDIR)/list.c $(TIN_DEP)
 $(OBJDIR)/mail.o:		$(SRCDIR)/mail.c $(TIN_DEP)
-$(OBJDIR)/mailcap.o:		$(SRCDIR)/mail.c $(TIN_DEP)
 $(OBJDIR)/main.o:		$(SRCDIR)/main.c $(TIN_DEP) \
 				$(INCDIR)/bugrep.h \
 				$(INCDIR)/version.h
 $(OBJDIR)/makecfg.o:		$(SRCDIR)/makecfg.c $(TIN_DEP)
 $(OBJDIR)/memory.o:		$(SRCDIR)/memory.c $(TIN_DEP)
+$(OBJDIR)/mimetypes.o:		$(SRCDIR)/mimetypes.c $(TIN_DEP)
 $(OBJDIR)/misc.o:		$(SRCDIR)/misc.c $(TIN_DEP) \
 				$(INCDIR)/bugrep.h \
 				$(INCDIR)/policy.h \
@@ -479,7 +485,8 @@ $(OBJDIR)/page.o:		$(SRCDIR)/page.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h \
 				$(INCDIR)/rfc2046.h
 $(OBJDIR)/parsdate.o:		$(OBJDIR)/parsdate.y $(TIN_DEP)
-$(OBJDIR)/pgp.o:		$(SRCDIR)/pgp.c $(TIN_DEP)
+$(OBJDIR)/pgp.o:		$(SRCDIR)/pgp.c $(TIN_DEP) \
+				$(INCDIR)/menukeys.h
 $(OBJDIR)/plp_snprintf.o:	$(SRCDIR)/plp_snprintf.c $(TIN_DEP) \
 				$(INCDIR)/plp_snprintf.h
 $(OBJDIR)/post.o:		$(SRCDIR)/post.c $(TIN_DEP) \

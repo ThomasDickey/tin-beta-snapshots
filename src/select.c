@@ -120,7 +120,7 @@ selection_page (
 			show_selection_page ();
 
 		set_xclick_on ();
-		ch = handle_keypad(select_left, select_right);
+		ch = handle_keypad (select_left, select_right, &menukeymap.select_nav);
 
 		switch (ch) {
 
@@ -434,7 +434,7 @@ selection_page (
 				yank_active_file();
 				break;
 
-			case iKeySelectSyncActive:  /* Re-read active file to see if any new news */
+			case iKeySelectSyncWithActive:  /* Re-read active file to see if any new news */
 				sync_active_file ();
 				break;
 

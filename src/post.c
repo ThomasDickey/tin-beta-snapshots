@@ -115,28 +115,6 @@
 /* When prompting for subject, display no more than 20 characters */
 #define DISPLAY_SUBJECT_LEN 20
 
-/* which keys are allowed for posting/sending? */
-#ifdef HAVE_PGP_GPG
-#	ifdef HAVE_ISPELL
-#		define TIN_POST_KEYS	"\033egiopyq"
-#		define TIN_SEND_KEYS	"\033egiqsy"
-#	else
-#		define TIN_POST_KEYS	"\033egopyq"
-#		define TIN_SEND_KEYS	"\033egqsy"
-#	endif /* HAVE_ISPELL */
-#else
-#	ifdef HAVE_ISPELL
-#		define TIN_POST_KEYS	"\033eiopqy"
-#		define TIN_SEND_KEYS	"\033eiqsy"
-#	else
-#		define TIN_POST_KEYS	"\033eopyq"
-#		define TIN_SEND_KEYS	"\033eqsy"
-#	endif /* HAVE_ISPELL */
-#endif /* HAVE_PGP_GPG */
-#define TIN_EDIT_KEYS	"\033eoq"
-#define TIN_EDIT_KEYS_EXT	"\033eqM"
-#define TIN_CONT_KEYS	"\033ac"
-
 /* tmpname for responses by mail */
 #ifdef VMS
 #	define TIN_LETTER	"letter."
@@ -211,7 +189,7 @@ static char
 prompt_to_send (
 	const char *subject)
 {
-	return (prompt_slk_response (iKeyPostSend, TIN_SEND_KEYS, sized_message(_(txt_quit_edit_send), subject)));
+	return (prompt_slk_response (iKeyPostSend, &menukeymap.post_send, sized_message(_(txt_quit_edit_send), subject)));
 }
 
 
@@ -225,7 +203,7 @@ prompt_rejected (
 	my_fflush(stderr);
 	Raw (TRUE);
 
-	return (prompt_slk_response (iKeyPostEdit, TIN_EDIT_KEYS, _(txt_quit_edit_postpone)));
+	return (prompt_slk_response (iKeyPostEdit, &menukeymap.post_edit, _(txt_quit_edit_postpone)));
 }
 
 
@@ -263,7 +241,7 @@ repair_article (
 	char *result)
 {
 	int ch;
-	ch = prompt_slk_response (iKeyPostEdit, TIN_EDIT_KEYS_EXT, _(txt_bad_article));
+	ch = prompt_slk_response (iKeyPostEdit, &menukeymap.post_edit_ext, _(txt_bad_article));
 
 	*result = ch;
 	if (ch == iKeyPostEdit) {
@@ -1247,10 +1225,10 @@ post_article_loop:
 				break;
 		}
 		if (type != POST_REPOST)
-			ch = prompt_slk_response(iKeyPostPost, TIN_POST_KEYS, _(txt_quit_edit_post));
+			ch = prompt_slk_response(iKeyPostPost, &menukeymap.post_post, _(txt_quit_edit_post));
 		else
 			/* Superfluous force_command stuff not used in current code */
-			ch = (/*force_command ? ch_default :*/ prompt_slk_response (ch, TIN_POST_KEYS, sized_message(_(txt_quit_edit_xpost), ""/* TODOTODOTODO !!!note_h.subj*/)));
+			ch = (/*force_command ? ch_default :*/ prompt_slk_response (ch, &menukeymap.post_post, sized_message(_(txt_quit_edit_xpost), ""/* TODOTODOTODO !!!note_h.subj*/)));
 	}
 
 post_article_done:
@@ -1484,6 +1462,10 @@ create_normal_article_headers(
 
 	msg_write_signature (fp, FALSE, &CURR_GROUP);
 	fclose (fp);
+
+#if 1
+	cursoron();
+#endif /* 1 */
 
 	return TRUE;
 }
@@ -1733,7 +1715,7 @@ pickup_postponed_articles (
 			return TRUE;
 
 		if (!all) {
-			ch = prompt_slk_response (iKeyPostponeYes, "\033qyYnA", sized_message(_(txt_postpone_repost), subject));
+			ch = prompt_slk_response (iKeyPostponeYes, &menukeymap.post_postpone, sized_message(_(txt_postpone_repost), subject));
 
 			if (ch == iKeyPostponeYesAll)
 				all = TRUE;
@@ -2052,7 +2034,7 @@ post_response (
 
 	if (note_h.followup && STRCMPEQ(note_h.followup, "poster")) {
 /*		clear_message (); */
-		ch = prompt_slk_response(iKeyPageMail, "\033mpyq", _(txt_resp_to_poster));
+		ch = prompt_slk_response(iKeyPageMail, &menukeymap.post_mail_fup, _(txt_resp_to_poster));
 		switch (ch) {
 			case iKeyPostPost:
 			case iKeyPostPost2:
@@ -2087,7 +2069,7 @@ post_response (
 		}
 		my_flush ();
 
-		ch = prompt_slk_response(iKeyPostPost, "\033ipqy", _(txt_prompt_fup_ignore));
+		ch = prompt_slk_response(iKeyPostPost, &menukeymap.post_ignore_fupto, _(txt_prompt_fup_ignore));
 		switch (ch) {
 			case iKeyQuit:
 			case iKeyAbort:
@@ -2619,7 +2601,7 @@ mail_to_author (
 	if (spamtrap_found) {
 		char ch;
 
-		ch = prompt_slk_response (iKeyPostContinue, TIN_CONT_KEYS, _(txt_warn_suspicious_mail));
+		ch = prompt_slk_response (iKeyPostContinue, &menukeymap.post_cont, _(txt_warn_suspicious_mail));
 		switch (ch) {
 			case iKeyPostAbort:
 			case iKeyAbort:
@@ -2898,7 +2880,7 @@ cancel_article (
 		return redraw_screen;
 #endif /* FORGERY */
 	} else {
-		option = prompt_slk_response (option_default, "\033dqs", sized_message(_(txt_cancel_article), art->subject));
+		option = prompt_slk_response (option_default, &menukeymap.post_delete, sized_message(_(txt_cancel_article), art->subject));
 
 		switch (option) {
 			case iKeyPostCancel:
@@ -3023,7 +3005,7 @@ cancel_article (
 	Raw (oldraw);
 
 	forever {
-		ch = prompt_slk_response(ch_default, "\033deq", sized_message(_(txt_quit_cancel), note_h.subj));
+		ch = prompt_slk_response(ch_default, &menukeymap.post_cancel, sized_message(_(txt_quit_cancel), note_h.subj));
 		switch (ch) {
 			case iKeyPostEdit:
 				invoke_editor (cancel, start_line_offset);
@@ -3224,7 +3206,7 @@ repost_article (
 		force_command = TRUE;
 	}
 
-	ch = (force_command ? ch_default : prompt_slk_response (ch_default, TIN_POST_KEYS, sized_message(_(txt_quit_edit_xpost), note_h.subj)));
+	ch = (force_command ? ch_default : prompt_slk_response (ch_default, &menukeymap.post_post, sized_message(_(txt_quit_edit_xpost), note_h.subj)));
 
 	return (post_loop(POST_REPOST, psGrp, ch,
 				(Superseding ? _(txt_superseding_art) : _(txt_repost_an_article)),

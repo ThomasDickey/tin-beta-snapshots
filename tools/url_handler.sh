@@ -17,7 +17,7 @@ case $method in
 	ncftp $target
 	;;
 
-    http)   
+    http)
 	if test x$DISPLAY = x; then
 	    lynx $url
 	else

@@ -7,9 +7,9 @@
 PROJECT	= tin
 LVER	= 1
 PVER	= 5
-SVER	= 4
+SVER	= 5
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20000523
+DVER	= 20000611
 EXE	= tin
 MANEXT	= 1
 
@@ -32,6 +32,7 @@ HFILES	= \
 	$(INCDIR)/bugrep.h \
 	$(INCDIR)/config.h \
 	$(INCDIR)/extern.h \
+	$(INCDIR)/keymap.h \
 	$(INCDIR)/menukeys.h \
 	$(INCDIR)/nntplib.h \
 	$(INCDIR)/plp_snprintf.h \
@@ -69,13 +70,14 @@ CFILES	= \
 	$(SRCDIR)/inews.c \
 	$(SRCDIR)/init.c \
 	$(SRCDIR)/joinpath.c \
+	$(SRCDIR)/keymap.c \
 	$(SRCDIR)/lang.c \
 	$(SRCDIR)/list.c \
 	$(SRCDIR)/mail.c \
-	$(SRCDIR)/mailcap.c \
 	$(SRCDIR)/main.c \
 	$(SRCDIR)/makecfg.c \
 	$(SRCDIR)/memory.c \
+	$(SRCDIR)/mimetypes.c \
 	$(SRCDIR)/misc.c \
 	$(SRCDIR)/newsrc.c\
 	$(SRCDIR)/nntplib.c \
@@ -154,9 +156,10 @@ DOC	= \
 	$(DOCDIR)/art_handling.txt \
 	$(DOCDIR)/auth.txt \
 	$(DOCDIR)/filtering \
+	$(DOCDIR)/good-netkeeping-seal \
 	$(DOCDIR)/internals.txt \
 	$(DOCDIR)/iso2asc.txt \
-	$(DOCDIR)/good-netkeeping-seal \
+	$(DOCDIR)/keymap.sample \
 	$(DOCDIR)/mime.types \
 	$(DOCDIR)/pgp.txt \
 	$(DOCDIR)/plp_snprintf.3 \
@@ -305,7 +308,8 @@ POFILES = \
 	$(PODIR)/POTFILES.in \
 	$(PODIR)/tin.pot \
 	$(PODIR)/de.po \
-	$(PODIR)/et.po
+	$(PODIR)/et.po \
+	$(PODIR)/en_GB.po
 
 
 ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(AMIGA) $(VMS) $(PCRE) $(MISC) $(CAN) $(INTLFILES) $(POFILES)

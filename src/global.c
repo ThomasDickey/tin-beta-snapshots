@@ -53,6 +53,7 @@
  */
 static int _page_up (int curslot, int maxslot);
 static int _page_down (int curslot, int maxslot);
+static int mouse_action(int ch, int (*left_action) (void), int (*right_action) (void));
 
 /*
  * Return the new line index following a PageUp request.
@@ -249,7 +250,7 @@ move_to_item (
  * Handle mouse clicks. We simply map the event to a return
  * keymap code that will drop through to call the correct function
  */
-int
+static int
 mouse_action(
 	int ch,
 	int (*left_action) (void),		/* Typically catchup type event */
@@ -288,7 +289,8 @@ mouse_action(
 int
 handle_keypad (
 	int (*left_action) (void),
-	int (*right_action) (void))
+	int (*right_action) (void),
+	const t_menukeys *menukeys)
 {
 	int ch = ReadCh ();
 
@@ -326,16 +328,17 @@ handle_keypad (
 					break;
 #ifndef WIN32
 				case KEYMAP_MOUSE:
-					ch = mouse_action(ch, left_action, right_action);
+					ch = mouse_action (ch, left_action, right_action);
 					break;
 				default:
 					break;
 			}
 			break;
+#endif /* !WIN32 */
 		default:
+			ch = map_to_default (ch, menukeys);
 			break;
 	}
-#endif /* !WIN32 */
 	return ch;
 }
 

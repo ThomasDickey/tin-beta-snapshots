@@ -75,7 +75,7 @@ sub w2p {
 			$reg =~ s/\./\\./o;	# quote .
 			$reg =~ s/\)/\\)/o;	# quote )
 			$reg =~ s/\(/\\(/o;	# quote (
-			$reg =~ s/\*/\.*/o;	# translate * 
+			$reg =~ s/\*/\.*/o;	# translate *
 			$reg =~ s/\?/\./o;	# translate ?
 			$reg =~ s/\^/\\^/o;	# quote ^
 			$reg =~ s/\$/\\\$/o;	# quote $

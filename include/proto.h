@@ -83,7 +83,6 @@ extern void ConvertTeX2Iso (char *from, char *to);
 
 /* color.c */
 extern void bcol (int color);
-extern void color_fputs (const char *s, FILE *stream, int color, t_bool signature);	/* this can be static void color_fputs */
 extern void fcol (int color);
 extern void print_color (int row, char *str, int flags);
 
@@ -131,7 +130,7 @@ extern void highlight_string (int row, int col, int size);
 #ifndef USE_CURSES
 	extern void scrl (int lines);
 	extern void setscrreg (int topline, int bottomline);
-#endif
+#endif /* !USE_CURSES */
 extern void set_keypad_off (void);
 extern void set_keypad_on (void);
 extern void set_xclick_off (void);
@@ -177,8 +176,6 @@ extern int unfilter_articles (void);
 extern char *tin_getline (const char *prompt, int number_only, const char *str, int max_chars, t_bool passwd, int which_hist);
 
 /* global.c */
-extern int handle_keypad (int (*left_action) (void), int (*right_action) (void));
-extern int mouse_action (int ch, int (*left_action) (void), int (*right_action) (void));
 extern void bug_report (void);
 extern void move_up (void);
 extern void move_down (void);
@@ -244,6 +241,11 @@ extern void set_up_private_index_cache (void);
 /* joinpath.c */
 extern void joinpath (char *result, const char *dir, const char *file);
 
+/* keymap.c */
+extern t_bool read_keymap_file (void);
+extern void free_keymaps (void);
+extern void build_keymaps (void);
+
 /* list.c */
 extern char *random_organization (char *in_org);
 extern int find_group_index (const char *group);
@@ -274,10 +276,7 @@ extern void vGrpDelMailArt (struct t_article *psArt);
 	extern void write_mail_active_file (void);
 #endif /* HAVE_MH_MAIL_HANDLING */
 
-/* mailcap.c */
-#if 0
-	extern char *lookup_mailcap (int type, const char *subtype);
-#endif /* 0 */
+/* mimetypes.c */
 extern void lookup_mimetype (const char *ext, t_part *part);
 
 /* main.c */
@@ -313,7 +312,6 @@ extern int gnksa_do_check_from(char *from, char *address, char *realname);
 extern int my_chdir (char *path);
 extern int my_isprint (int c);
 extern int my_mkdir (char *path, mode_t mode);
-extern int peek_char (FILE *fp);	/* this can be static int peek_char */
 extern int strfmailer (char *the_mailer, char *subject, char *to, const char *filename, char *s, size_t maxsize, char *format);
 extern int strfpath (char *format, char *str, size_t maxsize, char *the_homedir, char *maildir, char *savedir, char *group);
 extern int strfquote (char *group, int respnum, char *s, size_t maxsize, char *format);
@@ -486,7 +484,6 @@ extern char *prompt_string_default (const char *prompt, char *def, const char *f
 extern char *sized_message (const char *format, const char *subject);
 extern int prompt_list (int row, int col, int var, constext *help_text, constext *prompt_text, constext *list[], int size);
 extern int prompt_num (int ch, const char *prompt);
-extern int prompt_slk_response (int ch_default, const char *responses, const char *fmt, ...);
 extern int prompt_yn (int line, const char *prompt, t_bool default_answer);
 extern int prompt_msgid (void);
 extern t_bool prompt_default_string (const char *prompt, char *buf, int buf_len, char *default_prompt, int which_hist);
