@@ -5,12 +5,38 @@
  *  Created   : 1991-04-01
  *  Updated   : 1997-12-28
  *  Notes     :
- *  Copyright : (c) Copyright 1991-99 by Iain Lea & Rich Skrenta
- *              You may  freely  copy or  redistribute  this software,
- *              so  long as there is no profit made from its use, sale
- *              trade or  reproduction.  You may not change this copy-
- *              right notice, and it must be included in any copy made
+ *
+ * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Iain Lea, Rich Skrenta
+ * 4. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 
 #ifndef TIN_H
 #	include "tin.h"
@@ -137,7 +163,7 @@ main (
 	tmp_no_write = no_write; /* keep no_write */
 	no_write = TRUE;		 /* don't allow any writing back during startup */
 
-#if defined(M_UNIX)
+#ifdef M_UNIX
 #	ifndef USE_CURSES
 	if (INTERACTIVE) {
 		if (!get_termcaps ()) {
@@ -204,7 +230,7 @@ main (
 		create_save_active_file ();
 	no_write = TRUE;
 
-#if defined(HAVE_MH_MAIL_HANDLING)
+#ifdef HAVE_MH_MAIL_HANDLING
 	read_mail_active_file ();
 #endif /* HAVE_MH_MAIL_HANDLING */
 
@@ -255,7 +281,7 @@ main (
 	/*
 	 * Read text descriptions for mail and/or news groups
 	 */
-#if defined(HAVE_MH_MAIL_HANDLING)
+#ifdef HAVE_MH_MAIL_HANDLING
 	read_mailgroups_file ();
 #endif /* HAVE_MH_MAIL_HANDLING */
 	read_newsgroups_file ();
@@ -597,7 +623,7 @@ read_cmd_line_options (
 			get_newsrcname(newsrc, uts.nodename);
 #else
 			char nodenamebuf[32];
-#	if defined(M_AMIGA)
+#	ifdef M_AMIGA
 			my_strncpy (nodenamebuf, get_val ("NodeName", "PROBLEM_WITH_NODE_NAME"), sizeof (nodenamebuf));
 #	else /* NeXT, Apollo */
 			(void) gethostname(nodenamebuf, sizeof(nodenamebuf));
@@ -754,7 +780,7 @@ check_for_any_new_news (
 	if (StartAnyUnread) {
 		batch_mode = TRUE;			/* Suppress some unwanted on-screen garbage */
 		if ((i = check_start_save_any_news (START_ANY_NEWS)) == -1)
-			exit (EXIT_SUCCESS);			/* No new/unread news so exit */
+			giveup();				/* No new/unread news so exit */
 		batch_mode = FALSE;
 	}
 
@@ -807,15 +833,21 @@ update_index_files (
 				case 0:				/* child process */
 					create_index_lock_file (lock_file);
 					process_id = getpid ();
-#	if defined(BSD) /* FIXME: check for setsid/setpgid/... and remove OS depending ifdefs */
-#		if defined(__FreeBSD__) || defined(__NetBSD__)
+#	if defined(BSD) /* FIXME: sort and remove OS depending ifdefs */
+#		ifdef HAVE_SETSID
 					setsid();
 #		else
-#			ifdef __osf__
+#			ifdef HAVE_SETPGID
 					setpgid (0, 0);
 #			else
-					setpgrp (0, process_id);	/* reset process group leader to this process */
-#			endif /* __osf__ */
+#				ifdef HAVE_SETPGRP
+#					ifdef SETPGRP_VOID
+						setpgrp ();
+#					else
+						setpgrp (0, process_id);	/* reset process group leader to this process */
+#					endif /* SETPGRP_VOID */
+#				endif /* HAVE_SETPGRP */
+#			endif /* HAVE_SETPGID */
 #			ifdef TIOCNOTTY
 					{
 						int fd;
@@ -826,7 +858,7 @@ update_index_files (
 						}
 					}
 #			endif /* TIOCNOTTY */
-#		endif /* __FreeBSD__ || __NetBSD__ */
+#		endif /* HAVE_SETSID */
 #	else
 #		ifdef HAVE_SETPGRP
 #				ifdef SETPGRP_VOID

@@ -7,9 +7,9 @@
 PROJECT	= tin
 LVER	= 1
 PVER	= 5
-SVER	= 1
+SVER	= 2
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 19991228
+DVER	= 20000119
 EXE	= tin
 MANEXT	= 1
 
@@ -34,6 +34,7 @@ HFILES	= \
 	$(INCDIR)/extern.h \
 	$(INCDIR)/menukeys.h \
 	$(INCDIR)/nntplib.h \
+	$(INCDIR)/plp_snprintf.h \
 	$(INCDIR)/policy.h \
 	$(INCDIR)/proto.h \
 	$(INCDIR)/stpwatch.h \
@@ -162,6 +163,7 @@ DOC	= \
 TOL	= \
 	$(TOLDIR)/metamutt \
 	$(TOLDIR)/tinpp \
+	$(TOLDIR)/tinlock \
 	$(TOLDIR)/expand_aliases.tgz
 
 TOP	= \
@@ -285,16 +287,15 @@ INTLFILES = \
         $(INTLDIR)/po2tbl.sed.in \
         $(INTLDIR)/textdomain.c \
         $(INTLDIR)/VERSION \
-        $(INTLDIR)/xopen-msg.sed \
-	
-POFILES = \
-	$(PODIR)/Makefile.in \
-	$(PODIR)/Makefile.in.in \
-	$(PODIR)/POTFILES \
-	$(PODIR)/POTFILES.in \
-	$(PODIR)/tin.pot
+        $(INTLDIR)/xopen-msg.sed
 
-	
+POFILES = \
+	$(PODIR)/Makefile.in.in \
+	$(PODIR)/POTFILES.in \
+	$(PODIR)/tin.pot \
+	$(PODIR)/de.po
+
+
 ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(AMIGA) $(VMS) $(PCRE) $(MISC) $(CAN) $(INTLFILES) $(POFILES)
 
 ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(AMGDIR) $(VMSDIR) $(PCREDIR) $(CANDIR) $(CANDIR)/doc $(INTLDIR) $(PODIR)
@@ -316,6 +317,8 @@ BZIP2	= bzip2
 WC	= wc
 SED	= sed
 TR	= tr
+TEST	= test
+
 
 all:
 	@$(ECHO) "Top level Makefile for the $(PROJECT) v$(VER) Usenet newsreader."
@@ -355,10 +358,10 @@ clean:
 	$(INCDIR)/*~ \
 	$(SRCDIR)/*~ \
 	$(PCREDIR)/*~
-	@-if test -f $(PCREDIR)/Makefile ; then $(CD) $(PCREDIR) && $(MAKE) clean ; fi
-	@-if test -f $(INTLDIR)/Makefile ; then $(CD) $(INTLDIR) && $(MAKE) clean ; fi
-	@-if test -f $(PODIR)/Makefile ; then $(CD) $(PODIR) && $(MAKE) clean ; fi
-	@-if test -f $(SRCDIR)/Makefile ; then $(CD) $(SRCDIR) && $(MAKE) clean ; fi
+	@-if $(TEST) -f $(PCREDIR)/Makefile ; then $(CD) $(PCREDIR) && $(MAKE) clean ; fi
+	@-if $(TEST) -f $(INTLDIR)/Makefile ; then $(CD) $(INTLDIR) && $(MAKE) clean ; fi
+	@-if $(TEST) -f $(PODIR)/Makefile ; then $(CD) $(PODIR) && $(MAKE) clean ; fi
+	@-if $(TEST) -f $(SRCDIR)/Makefile ; then $(CD) $(SRCDIR) && $(MAKE) clean ; fi
 
 man:
 	@$(MAKE) manpage
@@ -391,6 +394,7 @@ chmod:
 	./install.sh \
 	./mkdirs.sh \
 	$(TOLDIR)/tinpp \
+	$(TOLDIR)/tinlock \
 	$(TOLDIR)/metamutt \
 	$(PCREDIR)/perltest \
 	$(CANDIR)/Build
@@ -424,15 +428,22 @@ bzip2:
 #
 name:
 	@DATE=`date +%Y%m%d` ; NAME=`basename \`pwd\`` ;\
-	if test $$NAME != "$(PROJECT)-$(VER)" ; then \
+	if $(TEST) $$NAME != "$(PROJECT)-$(VER)" ; then \
 		$(MV) ../$$NAME ../$(PROJECT)-$(VER) ;\
 	fi ;\
+	$(SED) "s,^PACKAGE=[[:print:]]*,PACKAGE=$(PROJECT)," ./configure.in > ./configure.in.out && \
+	$(SED) "s,^VERSION=[[:print:]]*,VERSION=$(VER)," ./configure.in.out > ./configure.in && \
+	$(RM) ./configure.in.out ;\
 	$(SED) "s,^DVER[[:space:]]*=[[:print:]]*,DVER	= $$DATE," ./Makefile > ./Makefile.tmp && \
 	$(MV) ./Makefile.tmp ./Makefile ;\
 	$(SED) "s,RELEASEDATE[[:space:]]*\"[[:print:]]*\",RELEASEDATE	\"$$DATE\"," $(INCDIR)/version.h > $(INCDIR)/version.h.tmp && \
-	$(SED) "s, VERSION[[:space:]]*\"[[:print:]]*\", VERSION		\"$(VER)\"," $(INCDIR)/version.h.tmp > $(INCDIR)/version.h ;\
+	$(SED) "s, VERSION[[:space:]]*\"[[:print:]]*\", VERSION		\"$(VER)\"," $(INCDIR)/version.h.tmp > $(INCDIR)/version.h && \
+	$(RM) $(INCDIR)/version.h.tmp ;\
 	$(SED) "s,^DVER[[:space:]]*=[[:print:]]*,DVER		= $$DATE," ./makefile.in > ./makefile.in.tmp && \
-	$(MV) ./makefile.in.tmp ./makefile.in
+	$(MV) ./makefile.in.tmp ./makefile.in && \
+	if $(TEST) configure.in -nt configure ; then \
+		autoconf ;\
+	fi
 
 dist:
 	@$(MAKE) name
@@ -462,7 +473,12 @@ distclean:
 	$(CANDIR)/canlocktest \
 	$(CANDIR)/endian \
 	$(CANDIR)/hmactest \
-	$(INTLDIR)/Makefile
+	$(INTLDIR)/libintl.h \
+	$(INTLDIR)/po2tbl.sed \
+	$(INTLDIR)/Makefile \
+	$(PODIR)/Makefile.in \
+	$(PODIR)/Makefile \
+	$(PODIR)/POTFILES
 
 configure: configure.in aclocal.m4
 	autoconf

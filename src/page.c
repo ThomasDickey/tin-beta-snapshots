@@ -5,12 +5,38 @@
  *  Created   : 1991-04-01
  *  Updated   : 1995-07-26
  *  Notes     :
- *  Copyright : (c) Copyright 1991-99 by Iain Lea & Rich Skrenta
- *              You may  freely  copy or  redistribute  this software,
- *              so  long as there is no profit made from its use, sale
- *              trade or  reproduction.  You may not change this copy-
- *              right notice, and it must be included in any copy made
+ *
+ * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Iain Lea, Rich Skrenta.
+ * 4. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 
 #ifndef TIN_H
 #	include "tin.h"
@@ -70,10 +96,12 @@ static void show_first_header (int respnum, char *group);
  * The main routine for viewing articles
  * Returns:
  *    >=0	normal exit - return a new base[] note
- *    <0	indicates some unusual condition. See GRP_* in tin.h for possible values
+ *    <0	indicates some unusual condition. See GRP_* in tin.h
  *			GRP_QUIT		User is doing a 'Q'
  *			GRP_RETURN		Back to selection level due to 'T' command
- *			GRP_ARTFAIL		We didn't make it into the art - don't bother fixing the screen up
+ *			GRP_ARTFAIL		We didn't make it into the art
+ *							don't bother fixing the screen up
+ *			GRP_GOTOTHREAD	To thread menu due to 'l' command
  *			GRP_NEXT		Catchup with 'c'
  *			GRP_NEXTUNREAD	   "      "  'C'
  */
@@ -409,12 +437,12 @@ page_goto_next_unread:
 				respnum = n;
 				goto restart;
 
-#ifdef HAVE_PGP
+#ifdef HAVE_PGP_GPG
 			case iKeyPagePGPCheckArticle:
 				if (pgp_check_article())
 					redraw_page(group->name, respnum);
 				break;
-#endif /* HAVE_PGP */
+#endif /* HAVE_PGP_GPG */
 
 			case iKeyPageToggleHeaders:	/* toggle display of article headers */
 				if (note_page == ART_UNAVAILABLE) {
@@ -445,10 +473,10 @@ page_goto_next_unread:
 				redraw_page (group->name, respnum);
 				break;
 
-			case iKeyThreadQuickAutoSel:		/* quickly auto-select article */
-			case iKeyThreadQuickKill:		/* quickly kill article */
+			case iKeyPageQuickAutoSel:		/* quickly auto-select article */
+			case iKeyPageQuickKill:		/* quickly kill article */
 				if ((local_filtered_articles = quick_filter (
-						(ch == iKeyThreadQuickKill) ? FILTER_KILL : FILTER_SELECT,
+						(ch == iKeyPageQuickKill) ? FILTER_KILL : FILTER_SELECT,
 						group, &arts[respnum])))
 					goto return_to_index;
 
@@ -525,6 +553,7 @@ page_up:
 
 			case iKeyPageCatchup:			/* catchup - mark read, goto next */
 			case iKeyPageCatchupNextUnread:	/* goto next unread */
+				/* FIXME snprintf() ? */
 				sprintf(buf, _(txt_mark_thread_read), (ch == iKeyPageCatchupNextUnread) ? _(txt_enter_next_thread) : "");
 				if (!tinrc.confirm_action || prompt_yn (cLINES, buf, TRUE) == 1) {
 					thd_mark_read (group, base[which_thread(respnum)]);
@@ -594,7 +623,6 @@ return_to_index:
 					make_threads (group, FALSE);
 					i = find_new_pos (old_top, old_artnum, i);
 				}
-
 				return i;
 
 			case iKeyPageToggleInverseVideo:	/* toggle inverse video */
@@ -612,15 +640,6 @@ return_to_index:
 				break;
 #endif /* HAVE_COLOR */
 
-			case iKeyPageKillThd:	/* mark rest of thread as read */
-				thd_mark_read (group, respnum);
-				if ((n = next_unread (next_response (respnum))) == -1)
-					goto return_to_index;
-				art_close ();
-				respnum = n;
-				goto restart;
-				/* NOTREACHED */
-
 			case iKeyPageListThd:	/* -> thread page that this article is in */
 				art_close ();
 				fixup_thread (respnum, FALSE);
@@ -637,6 +656,19 @@ return_to_index:
 				art_close ();
 				if ((n = next_response (respnum)) == -1)
 					return (which_thread(respnum));
+				respnum = n;
+				goto restart;
+				/* NOTREACHED */
+
+			/*
+			 * TODO: junk this functionality and replace 'k' below with
+			 *       'K' here. See TODO file
+			 */
+			case iKeyPageKillThd:	/* mark rest of thread as read */
+				thd_mark_read (group, respnum);
+				if ((n = next_unread (next_response (respnum))) == -1)
+					goto return_to_index;
+				art_close ();
 				respnum = n;
 				goto restart;
 				/* NOTREACHED */
@@ -1044,7 +1076,7 @@ print_a_line:
 }
 
 
-#if defined(HAVE_METAMAIL)
+#ifdef HAVE_METAMAIL
 static void
 show_mime_article (
 	FILE *fp,
@@ -1077,9 +1109,9 @@ show_mime_article (
 	 * if we don't set note_end the undecoded article is displayed
 	 *  after metamail quits
 	 */
-#if 0
+#	if 0
 	note_end = TRUE;
-#endif /* 0*/
+#	endif /* 0*/
 	Raw(TRUE);
 	InitWin ();
 	continue_prompt ();
@@ -1093,7 +1125,7 @@ show_mime_article (
 	my_flush ();
 	EndInverse ();
 }
-#endif /* defined(HAVE_METAMAIL) */
+#endif /* HAVE_METAMAIL */
 
 
 static void

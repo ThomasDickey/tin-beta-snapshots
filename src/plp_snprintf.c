@@ -5,12 +5,12 @@
 
 /*
  * Overview:
- * 
+ *
  * This version of snprintf was developed originally for printing
  * on a motley collection of specialized hardware that had NO IO
  * library.  Due to contractual restrictions,  a clean room implementation
  * of the printf() code had to be developed.
- * 
+ *
  * The method chosen for printf was to be as paranoid as possible,
  * as these platforms had NO memory protection,  and very small
  * address spaces.  This made it possible to try to print
@@ -18,53 +18,53 @@
  * against this,  all printing was done via a buffer, generous enough
  * to hold strings,  but small enough to protect against overruns,
  * etc.
- * 
+ *
  * Strangely enough,  this proved to be of immense importance when
  * SPRINTFing to a buffer on a stack...  The rest,  of course,  is
  * well known,  as buffer overruns in the stack are a common way to
  * do horrible things to operating systems, security, etc etc.
- * 
+ *
  * This version of snprintf is VERY limited by modern standards.
- * 
+ *
  * COPYRIGHT AND TERMS OF USE:
- * 
+ *
  * You may use, copy, distribute, or otherwise incorporate this software
  * and documentation into any product or other item,  provided that
  * the copyright in the documentation and source code as well as the
  * source code generated constant strings in the object, executable
  * or other code remain in place and are present in executable modules
  * or objects.
- * 
+ *
  * You may modify this code as appropriate to your usage; however the
  * modified version must be identified by changing the various source
  * and object code identification strings as is appropriately noted
  * in the source code.
- * 
+ *
  * The next include line is expected to work in conjunction with the
  * GNU CONFIGURE utility.  You  should define the following macros
  * appropriately:
- * 
+ *
  * HAVE_STDARG_H - if the <stdargs.h> include file is available
  * HAVE_VARARG_H - if the <varargs.h> include file is available
- * 
+ *
  * HAVE_STRERROR - if the strerror() routine is available.
  *   If it is not available, then examine the lines containing
  *   the tests below.  You may need to fiddle with HAVE_SYS_NERR
  *   and  HAVE_SYS_NERR_DEF to make compilation work correctly.
  *        HAVE_SYS_NERR
  *        HAVE_SYS_NERR_DEF
- * 
+ *
  * HAVE_QUAD_T   - if the quad_t type is defined
  * HAVE_LONG_LONG  - if the long long type is defined
- * 
+ *
  *   If you are using the GNU configure (autoconf) facility, add the
  *   following line to the configure.in file, to force checking for the
  *   quad_t and long long  data types:
- * 
+ *
  *     AC_CHECK_TYPE(quad_t,NONE)
- * 
+ *
  * 	dnl test to see if long long is defined
- * 
+ *
  * 	AC_MSG_CHECKING(checking for long long)
  * 	AC_TRY_COMPILE([
  * 	#include <sys/types.h>
@@ -74,30 +74,30 @@
  * 	if test $ac_cv_long_long = yes; then
  * 	  AC_DEFINE(HAVE_LONG_LONG)
  * 	fi
- * 
- * 
+ *
+ *
  *   Add the following lines to the acconfig.h in the correct
  *   position.
- * 
- *     / * Define if quad_t is NOT present on the system  * /                    
+ *
+ *     / * Define if quad_t is NOT present on the system  * /
  *     #undef quad_t
- * 
- *     / * Define if long long is present on the system  * /                    
+ *
+ *     / * Define if long long is present on the system  * /
  *     #undef HAVE_LONG_LONG
- * 
+ *
  *   When you run configure, if quad_t is NOT defined, the config.h
  *   file will have in it:
  *     #define quad_t NONE
  *
  *   If it is defined, the config.h file will have
  *   / * #undef quad_t * /
- * 
+ *
  *   If long long is defined, you will have:
  *     #define HAVE_LONG_LONG
- * 
+ *
  *    This code is then used in the source code to enable quad quad
  *   and long long support.
- * 
+ *
  */
 
 
@@ -107,79 +107,65 @@
 
 #if !defined(HAVE_SNPRINTF) && !defined(HAVE_VSNPRINTF)
 
-#if 0 /* includes below are allready done in tin.h */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-#include <sys/types.h>
-#include <ctype.h>
-#include <stdlib.h>
-#if defined(HAVE_STRING_H)
-# include <string.h>
-#endif
-#if defined(HAVE_STRINGS_H)
-# include <strings.h>
-#endif
-#include <stdio.h>
-#endif /* 0 */
+#	if !defined(PLP_SNPRINTF_H) && !defined(TIN_H)
+#		include "plp_snprintf.h"
+#	endif /* !PLP_SNPRINTF_H && !TIN_H */
 
 /*
- * For testing, define these values
- */
-#if 0
-#define HAVE_STDARG_H 1
-#define TEST 1
-#define HAVE_QUAD_T 1
-#endif
-
-/**** ENDINCLUDE ****/
-
-/*************************************************
  * KEEP THIS STRING - MODIFY AT THE END WITH YOUR REVISIONS
  * i.e. - the LOCAL REVISIONS part is for your use
- *************************************************/
- 
- 
-static char *const _id = "plp_snprintf V1999.02.20 Copyright Patrick Powell 1988-1999 <papowell@astart.com> "
- "$Id: plp_snprintf.c,v 1.4 1999/02/20 17:44:16 papowell Exp $"
- " LOCAL REVISIONS: tin 1.5.0-01";
+ */
+
+static const char *_id = "plp_snprintf V1999.02.20 Copyright Patrick Powell 1988-1999 <papowell@astart.com> \
+@Id: plp_snprintf.c,v 1.4 1999/02/20 17:44:16 papowell Exp papowell @\
+ LOCAL REVISIONS: tin 1.5.2-01";
 
 /* varargs declarations: */
 
-# undef HAVE_STDARGS    /* let's hope that works everywhere (mj) */
-# undef VA_LOCAL_DECL
-# undef VA_START
-# undef VA_SHIFT
-# undef VA_END
+#ifdef HAVE_STDARGS
+#	undef HAVE_STDARGS    /* let's hope that works everywhere (mj) */
+#endif /* HAVE_STDARGS */
+#ifdef VA_LOCAL_DECL
+#	undef VA_LOCAL_DECL
+#endif /* VA_LOCAL_DECL */
+#ifdef VA_START
+#	undef VA_START
+#endif /* VA_START */
+#ifdef VA_SHIFT
+#	undef VA_SHIFT
+#endif /* VA_SHIFT */
+#ifdef VA_END
+#	undef VA_END
+#endif /* VA_END */
 
-#if defined(HAVE_STDARG_H)
-# include <stdarg.h>
-# define HAVE_STDARGS    /* let's hope that works everywhere (mj) */
-# define VA_LOCAL_DECL   va_list ap;
-# define VA_START(f)     va_start(ap, f)
-# define VA_SHIFT(v,t)	;	/* no-op for ANSI */
-# define VA_END          va_end(ap)
+#ifdef HAVE_STDARG_H
+#	include <stdarg.h>
+#	define HAVE_STDARGS    /* let's hope that works everywhere (mj) */
+#	define VA_LOCAL_DECL   va_list ap;
+#	define VA_START(f)     va_start(ap, f)
+#	define VA_SHIFT(v,t)	;	/* no-op for ANSI */
+#	define VA_END          va_end(ap)
 #else
-# if defined(HAVE_VARARGS_H)
-#  include <varargs.h>
-#  undef HAVE_STDARGS
-#  define VA_LOCAL_DECL   va_list ap;
-#  define VA_START(f)     va_start(ap)		/* f is ignored! */
-#  define VA_SHIFT(v,t)	v = va_arg(ap,t)
-#  define VA_END		va_end(ap)
-# else
+#	ifdef HAVE_VARARGS_H
+#		include <varargs.h>
+#		undef HAVE_STDARGS
+# 		define VA_LOCAL_DECL   va_list ap;
+#		define VA_START(f)     va_start(ap)		/* f is ignored! */
+#		define VA_SHIFT(v,t)	v = va_arg(ap,t)
+#		define VA_END		va_end(ap)
+#	else
 XX ** NO VARARGS ** XX
-# endif
-#endif
+#	endif /* HAVE_VARARGS_H */
+#endif /* HAVE_STDARG_H */
 
 /* the dreaded QUAD_T strikes again... */
-#if !defined(HAVE_QUAD_T)
-#  if defined(quad_t) && qaud_t == NONE
-#   define HAVE_QUAD_T 0
-#  else
-#   define HAVE_QUAD_T 1
-#  endif
-#endif
+#ifndef HAVE_QUAD_T
+#	if defined(quad_t) && qaud_t == NONE
+#		define HAVE_QUAD_T 0
+#	else
+#		define HAVE_QUAD_T 1
+#	endif /* quad_t && qaud_t== NONE */
+#endif /* HAVE_QUAD_T */
 #if HAVE_QUAD_T==1 && !defined(HAVE_LONG_LONG)
   ERROR you need long long
 #endif
@@ -197,21 +183,24 @@ union value {
 	double dvalue;
 };
 
-#undef cval 
+#ifdef cval
+#	undef cval
+#endif /* cval */
 #define cval(s) (*((unsigned char *)s))
 
-extern int errno;
-static char * plp_Errormsg ( int err );
-static void dopr( char *buffer, const char *format, va_list args );
-static void fmtstr(  char *value, int ljust, int len, int zpad, int precision );
-static void fmtnum(  union value *value, int base, int dosign,
-	int ljust, int len, int zpad, int precision );
-static void fmtdouble( int fmt, double value,
-	int ljust, int len, int zpad, int precision );
-static void dostr( char * );
+
+static char *plp_Errormsg(int err);
+static void plp_strcat(char *dest, const char *src);
+static void dopr(char *buffer, const char *format, va_list args);
+static void fmtstr(char *value, int ljust, int len, int zpad, int precision);
+static void fmtnum(union value *value, int plp_base, int dosign, int ljust, int len, int zpad, int precision);
+static void fmtdouble(int fmt, double value, int ljust, int len, int zpad, int precision);
+static void dostr(char *);
+static void dopr_outch(int c);
+
 static char *output;
-static void dopr_outch( int c );
 static char *end;
+
 int visible_control = 1;
 
 
@@ -220,9 +209,8 @@ int plp_vsnprintf(char *str, size_t count, const char *fmt, va_list args)
 	str[0] = 0;
 	end = str+count-1;
 	dopr( str, fmt, args );
-	if( count>0 ){
+	if( count>0 )
 		end[0] = 0;
-	}
 	return(strlen(str));
 }
 
@@ -263,7 +251,7 @@ static void dopr( char *buffer, const char *format, va_list args )
 	int set_precision;
 	double dval;
 	int err = errno;
-	int base = 0;
+	int plp_base = 0;
 	int signed_val = 0;
 
 	output = buffer;
@@ -271,9 +259,9 @@ static void dopr( char *buffer, const char *format, va_list args )
 		switch( ch ){
 		case '%':
 			longflag = quadflag =
-			ljust = len = zpad = base = signed_val = 0;
+			ljust = len = zpad = plp_base = signed_val = 0;
 			precision = -1; set_precision = 0;
-		nextch: 
+		nextch:
 			ch = *format++;
 			switch( ch ){
 			case 0:
@@ -296,15 +284,15 @@ static void dopr( char *buffer, const char *format, va_list args )
 			case 'l': ++longflag; goto nextch;
 			case 'q': quadflag = 1; goto nextch;
 			case 'u': case 'U':
-				if( base == 0 ){ base = 10; signed_val = 0; }
+				if( plp_base == 0 ){ plp_base = 10; signed_val = 0; }
 			case 'o': case 'O':
-				if( base == 0 ){ base = 8; signed_val = 0; }
+				if( plp_base == 0 ){ plp_base = 8; signed_val = 0; }
 			case 'd': case 'D':
-				if( base == 0 ){ base = 10; signed_val = 1; }
+				if( plp_base == 0 ){ plp_base = 10; signed_val = 1; }
 			case 'x':
-				if( base == 0 ){ base = 16; signed_val = 0; }
+				if( plp_base == 0 ){ plp_base = 16; signed_val = 0; }
 			case 'X':
-				if( base == 0 ){ base = -16; signed_val = 0; }
+				if( plp_base == 0 ){ plp_base = -16; signed_val = 0; }
 				if( quadflag || longflag > 1 ){
 #if defined(HAVE_LONG_LONG)
 					if( signed_val ){
@@ -332,7 +320,8 @@ static void dopr( char *buffer, const char *format, va_list args )
 						value.value = va_arg( args, unsigned int );
 					}
 				}
-				fmtnum( &value,base,signed_val, ljust, len, zpad, precision ); break;
+				fmtnum( &value,plp_base,signed_val, ljust, len, zpad, precision );
+				break;
 			case 's':
 				strvalue = va_arg( args, char *);
 				fmtstr( strvalue,ljust,len, zpad, precision );
@@ -376,23 +365,23 @@ static void dopr( char *buffer, const char *format, va_list args )
 static void
 fmtstr(  char *value, int ljust, int len, int zpad, int precision )
 {
-	int padlen, strlen, i, c;	/* amount to pad */
+	int padlen, slen, i, c;	/* amount to pad */
 
 	if( value == 0 ){
 		value = "<NULL>";
 	}
 	if( precision > 0 ){
-		strlen = precision;
+		slen = precision;
 	} else {
-		/* cheap strlen so you do not have library call */
-		for( strlen = i = 0; (c=cval(value+i)); ++i ){
+		/* cheap slen so you do not have library call */
+		for( slen = i = 0; (c=cval(value+i)); ++i ){
 			if( visible_control && iscntrl( c ) && !isspace(c) ){
-				++strlen;
+				++slen;
 			}
-			++strlen;
+			++slen;
 		}
 	}
-	padlen = len - strlen;
+	padlen = len - slen;
 	if( padlen < 0 ) padlen = 0;
 	if( ljust ) padlen = -padlen;
 	while( padlen > 0 ) {
@@ -414,38 +403,38 @@ fmtstr(  char *value, int ljust, int len, int zpad, int precision )
 }
 
 static void
-fmtnum(  union value *value, int base, int dosign, int ljust,
+fmtnum(  union value *value, int plp_base, int dosign, int ljust,
 	int len, int zpad, int precision )
 {
 	int signvalue = 0;
-#if defined(HAVE_LONG_LONG)
+#ifdef HAVE_LONG_LONG
 	unsigned long long uvalue;
 #else
 	unsigned long uvalue;
-#endif
+#endif /* HAVE_LONG_LONG */
 	char convert[64];
 	int place = 0;
 	int padlen = 0;	/* amount to pad */
 	int caps = 0;
 
-	/* fprintf(stderr,"value 0x%x, base %d, dosign %d, ljust %d, len %d, zpad %d\n",
-		value, base, dosign, ljust, len, zpad );/ **/
+	/* fprintf(stderr,"value 0x%x, plp_base %d, dosign %d, ljust %d, len %d, zpad %d\n",
+		value, plp_base, dosign, ljust, len, zpad );/ **/
 	uvalue = value->value;
 	if( dosign ){
 		if( value->value < 0 ) {
 			signvalue = '-';
-			uvalue = -value->value; 
+			uvalue = -value->value;
 		}
 	}
-	if( base < 0 ){
+	if( plp_base < 0 ){
 		caps = 1;
-		base = -base;
+		plp_base = -plp_base;
 	}
 	do{
 		convert[place++] =
 			(caps? "0123456789ABCDEF":"0123456789abcdef")
-			 [uvalue % (unsigned)base  ];
-		uvalue = (uvalue / (unsigned)base );
+			 [uvalue % (unsigned)plp_base  ];
+		uvalue = (uvalue / (unsigned)plp_base );
 	}while(uvalue);
 	convert[place] = 0;
 	padlen = len - place;
@@ -476,7 +465,8 @@ fmtnum(  union value *value, int base, int dosign, int ljust,
 	}
 }
 
-void plp_mystrcat(char *dest, char *src )
+static void
+plp_strcat(char *dest, const char *src )
 {
 	if( dest && src ){
 		dest += strlen(dest);
@@ -488,31 +478,31 @@ static void
 fmtdouble( int fmt, double value, int ljust, int len, int zpad, int precision )
 {
 	char convert[128];
-	char fmtstr[128];
+	char fmts[128];
 	int l;
 
-	if( len == 0 ) len = 10;
-	if( len > (sizeof(convert) - 20) ){
+	if( len == 0 )
+		len = 10;
+	if( len > (sizeof(convert) - 20) )
 		len = sizeof(convert) - 20;
-	}
-	if( precision > sizeof(convert) - 20 ){
+	if( precision > sizeof(convert) - 20 )
 		precision = sizeof(convert) - 20;
-	}
-	if( precision > len ) precision = len;
-	strcpy( fmtstr, "%" );
-	if( ljust ) plp_mystrcat(fmtstr, "-" );
-	if( zpad ) plp_mystrcat(fmtstr, "0" );
-	if( len ){
-		sprintf( fmtstr+strlen(fmtstr), "%d", len );
-	}
-	if( precision > 0 ){
-		sprintf( fmtstr+strlen(fmtstr), ".%d", precision );
-	}
-	l = strlen( fmtstr );
-	fmtstr[l] = fmt;
-	fmtstr[l+1] = 0;
+	if( precision > len )
+		precision = len;
+	strcpy( fmts, "%" );
+	if( ljust )
+		plp_strcat(fmts, "-" );
+	if( zpad )
+		plp_strcat(fmts, "0" );
+	if( len )
+		sprintf( fmts+strlen(fmts), "%d", len );
+	if( precision > 0 )
+		sprintf( fmts+strlen(fmts), ".%d", precision );
+	l = strlen( fmts );
+	fmts[l] = fmt;
+	fmts[l+1] = 0;
 	/* this is easier than trying to do the portable dtostr */
-	sprintf( convert, fmtstr, value );
+	sprintf( convert, fmts, value );
 	dostr( convert );
 }
 

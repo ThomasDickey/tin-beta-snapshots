@@ -5,12 +5,38 @@
  *  Created   : 1991-04-01
  *  Updated   : 1994-12-21
  *  Notes     :
- *  Copyright : (c) Copyright 1991-99 by Iain Lea & Rich Skrenta
- *              You may  freely  copy or  redistribute  this software,
- *              so  long as there is no profit made from its use, sale
- *              trade or  reproduction.  You may not change this copy-
- *              right notice, and it must be included in any copy made
+ *
+ * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Iain Lea, Rich Skrenta.
+ * 4. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 
 #ifndef TIN_H
 #	include "tin.h"
@@ -25,14 +51,13 @@
 /*
  * Local prototypes
  */
-static int handle_keypad (int ch, int ch1);
+static int sel_handle_keypad (int ch, int ch1);
 static int reposition_group (struct t_group *group, int default_num);
 static int select_left (void);
 static int select_right (void);
 static t_bool continual_key (int ch, int ch1);
 static t_bool pos_next_unread_group (t_bool redraw);
 static void catchup_group (struct t_group *group, t_bool goto_next_unread_group);
-static void erase_group_arrow (void);
 static void read_groups (void);
 static void select_quit (void);
 static void select_read_group (void);
@@ -47,7 +72,7 @@ static void yank_active_file (void);
  * selmenu.max = Total # of groups in my_group[]
  * selmenu.first, selmenu.last are static here
  */
-t_menu selmenu = { 1, 0, 0, 0, show_selection_page, erase_group_arrow, draw_group_arrow };
+t_menu selmenu = { 1, 0, 0, 0, show_selection_page, draw_group_arrow };
 
 /*
  *  TRUE, if we should check whether it's time to reread the active file
@@ -112,12 +137,11 @@ select_right (
 }
 
 
-static int
-handle_keypad (
+static int /* TODO merge with generic function */
+sel_handle_keypad (
 	int ch,
 	int ch1)
 {
-/* fprintf(stderr, "KP %d %d\n", ch, ch1); */
 #ifndef WIN32
 	switch (ch1) {
 #else
@@ -149,7 +173,6 @@ handle_keypad (
 			break;
 #ifndef WIN32
 		case KEYMAP_MOUSE:
-/* fprintf(stderr, "Mouse event\n"); */
 			ch = mouse_action(ch, select_left, select_right);
 			break;
 #endif /* !WIN32 */
@@ -166,7 +189,10 @@ selection_page (
 	int num_cmd_line_groups)
 {
 	char buf[LEN];
-	int i, n, ch, ch1 = 0;
+	int i, n, ch;
+#if 0
+	int ch1 = 0;
+#endif /* 0 */
 
 	selmenu.curr = start_groupnum;
 
@@ -189,7 +215,10 @@ selection_page (
 	forever {
 		if (!resync_active_file () && reread_active_after_posting ())	/* reread active file if necessary */
 			show_selection_page ();
+
 		set_xclick_on ();
+		switch (ch = handle_keypad(select_left, select_right)) {
+#if 0
 		ch = ReadCh ();
 		ch1 = KEYMAP_UNKNOWN;
 #ifndef WIN32
@@ -199,9 +228,7 @@ selection_page (
 			case KEY_PREFIX:
 #	endif /* HAVE_KEY_PREFIX */
 				ch1 = get_arrow_key (ch);
-/* fprintf(stderr, "get_arrow_key=%d (%d)\n", ch1, ch); */
-				ch = handle_keypad(ch, ch1);
-/* fprintf(stderr, "handle_keypad = %d\n", ch); */
+				ch = sel_handle_keypad(ch, ch1);
 			default:
 				break;
 		}
@@ -211,9 +238,10 @@ selection_page (
 			(void) resync_active_file ();
 
 		switch (ch) {
+#endif /* 0 */
 
 #ifndef WIN32
-			case ESC:	/* (ESC) common arrow keys */
+			case ESC:		/* Abort */
 				break;
 #endif /* !WIN32 */
 
@@ -225,8 +253,7 @@ selection_page (
 
 #ifndef NO_SHELL_ESCAPE
 			case iKeyShellEscape:
-				shell_escape ();
-				show_selection_page ();
+				do_shell_escape ();
 				break;
 #endif /* !NO_SHELL_ESCAPE */
 
@@ -236,6 +263,28 @@ selection_page (
 
 			case iKeyLastPage:	/* show last page of groups */
 				end_of_list();
+				break;
+
+			case iKeyPageUp:		/* page up */
+			case iKeyPageUp2:
+			case iKeyPageUp3:
+				page_up();
+				break;
+
+			case iKeyPageDown:		/* page down */
+			case iKeyPageDown2:
+			case iKeyPageDown3:
+				page_down();
+				break;
+
+			case iKeyUp:		/* line up */
+			case iKeyUp2:
+				move_up();
+				break;
+
+			case iKeyDown:		/* line down */
+			case iKeyDown2:
+				move_down();
 				break;
 
 			case iKeySetRange:	/* set range */
@@ -262,26 +311,10 @@ selection_page (
 					read_groups();
 				break;							/* Nothing more to do at the moment */
 
-			case iKeyPageDown:		/* page down */
-			case iKeyPageDown2:
-			case iKeyPageDown3:
-				page_down();
-				break;
-
 			case iKeyRedrawScr:		/* redraw */
 				my_retouch ();					/* TODO not done elsewhere, maybe should be in show_selection_page */
 				set_xclick_off ();
 				show_selection_page ();
-				break;
-
-			case iKeyDown:		/* line down */
-			case iKeyDown2:
-				move_down();
-				break;
-
-			case iKeyUp:		/* line up */
-			case iKeyUp2:
-				move_up();
 				break;
 
 			case iKeySelectResetNewsrc:	/* reset .newsrc */
@@ -295,12 +328,6 @@ selection_page (
 					selmenu.curr = 0;
 					show_selection_page ();
 				}
-				break;
-
-			case iKeyPageUp:		/* page up */
-			case iKeyPageUp2:
-			case iKeyPageUp3:
-				page_up();
 				break;
 
 			case iKeySelectCatchup:	/* catchup - mark all articles as read */
@@ -367,15 +394,13 @@ selection_page (
 
 				n = selmenu.curr;
 				selmenu.curr = reposition_group (&active[my_group[n]], n);
-				HpGlitch(erase_group_arrow ());
-				if (selmenu.curr < selmenu.first ||
-					selmenu.curr >= selmenu.last ||
-					selmenu.curr != n) {
+				HpGlitch(erase_arrow ());
+				if (selmenu.curr < selmenu.first || selmenu.curr >= selmenu.last || selmenu.curr != n)
 					show_selection_page ();
-				} else {
+				else {
 					i = selmenu.curr;
 					selmenu.curr = n;
-					erase_group_arrow ();
+					erase_arrow ();
 					selmenu.curr = i;
 					clear_message ();
 					draw_group_arrow ();
@@ -467,7 +492,7 @@ selection_page (
 					delete_group(CURR_GROUP.name);		/* remove bogus group */
 					read_newsrc(newsrc, TRUE);		/* reload newsrc */
 					toggle_my_groups (tinrc.show_only_unread_groups, "");		/* keep current display-state */
-					show_selection_page();		/* reddraw screen */
+					show_selection_page();		/* redraw screen */
 					info_message (buf);
 				}
 				break;
@@ -657,15 +682,6 @@ show_selection_page (
 }
 
 
-static void
-erase_group_arrow (
-	void)
-{
-	if (selmenu.max)
-		erase_arrow_mark (INDEX_TOP + selmenu.curr - selmenu.first);
-}
-
-
 void
 draw_group_arrow (
 	void)
@@ -699,7 +715,7 @@ yank_active_file (
 	static t_bool yank_in_active_file = TRUE;
 
 	if (oldmax)
-		oldgroup = strdup(CURR_GROUP.name);
+		oldgroup = my_strdup(CURR_GROUP.name);
 
 	if (yank_in_active_file) {
 		wait_message (0, _(txt_yanking_all_groups));
@@ -726,7 +742,7 @@ yank_active_file (
 		wait_message (0, _(txt_yanking_sub_groups));
 
 		toggle_my_groups(tinrc.show_only_unread_groups, "");
-		HpGlitch(erase_group_arrow ());
+		HpGlitch(erase_arrow ());
 
 		selmenu.curr = -1;
 		if (oldmax)					/* Keep us positioned on the group we were before */
@@ -840,8 +856,10 @@ reposition_group (
 	char pos[LEN];
 	int pos_num, newgroups;
 
+#if 0 /* move group code already traps no_write */
 	if (no_write)
 		return (tinrc.default_move_group ? tinrc.default_move_group : default_num + 1);
+#endif /* 0 */
 
 	sprintf (buf, _(txt_newsgroup_position), group->name,
 		(tinrc.default_move_group ? tinrc.default_move_group : default_num + 1));
@@ -915,7 +933,7 @@ catchup_group (
 
 /*
  * Set selmenu.curr to next group with unread arts
- * If the current group has unread arts, it will be counted. This is important !
+ * If the current group has unread arts, it will be found first !
  * If redraw is set, update the selection menu appropriately
  * Return FALSE if no groups left to read
  *        TRUE  at all other times
@@ -972,12 +990,8 @@ read_groups (
 
 	clear_message ();
 
-	forever { /* if xmin > xmax the newsservers active is broken */
-		if (done /* || CURR_GROUP.xmin > CURR_GROUP.xmax */)
-			break;
-
+	while (!done) {		/* if xmin > xmax the newsservers active is broken */
 		switch (group_page (&CURR_GROUP)) {
-
 			case GRP_QUIT:
 				select_quit();
 
@@ -992,10 +1006,11 @@ read_groups (
 					done = TRUE;
 				break;
 
-			case GRP_ENTER:			/* group_page() has set selmenu.curr, no need to change it */
+			case GRP_ENTER:		/* group_page() has already set selmenu.curr */
 				break;
 
 			case GRP_RETURN:
+			case GRP_EXIT:
 			default:
 				done = TRUE;
 				break;

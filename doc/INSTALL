@@ -1,20 +1,18 @@
 Compilation and installation notes for tin - 1998-12-27 (still incomplete!)
 -------------------------------------------------------
 
-Note: The section 'News machine names' is now at the beginning as it
-      seemed to be the most sought after section.
-
 This following configure options and defines are documented in detail:
 ----------------------------------------------------------------------
   --enable-8bit-keys	     --enable-posting      --with-metamail
   --enable-color	     --enable-piping       --with-ncurses
   --enable-curses	     --enable-shell-escape --with-nntp-default-server
   --enable-debug	     --enable-xhdr-xref    --with-nov-dir
-  --enable-etiquette	     --with-defaults-dir   --with-pgp
+  --enable-etiquette	     --with-defaults-dir   --disable-pgp-gpg
+  --with-pgp                 --with-pgpk           --with-gpg
   --enable-fascist-newsadmin --with-domain-name    --with-spooldir
   --enable-inverse-video     --with-inews-dir      FORGERY
   --enable-locale	     --with-inn-nntplib    HAVE_LIBUU
-  --enable-mh-mail-handling  --with-iso-to-ascii   
+  --enable-mh-mail-handling  --with-iso-to-ascii
   --enable-mmdf-mailer       --with-ispell         NNTP_INEWS
   --enable-nntp		     --with-libdir         NNTP_SERVER_FILE
   --enable-nntp-only	     --with-local-charset  (SMALL_MEMORY_MACHINE)
@@ -29,7 +27,7 @@ TIN related:
   --enable-break-long-lines        --with-mailbox
   --enable-echo                    --with-mailer
   --enable-mime-strict-charset     --with-mime-default-charset
-  --enable-pgp                     --with-nov-fname
+  --with-nov-fname
   --enable-prototypes              --with-socks
   --enable-warnings                --with-socks5
   --with-dbmalloc                  --with-sum
@@ -42,7 +40,7 @@ TIN related:
   ENFORCE_RFC1034                  REQUIRE_BRACKET_IN_DOMAIN_LITERAL
   JUST_TESTING                     TINC_DNS
   EVIL_INSIDE                      USE_CANLOCK
-  REREAD_ACTIVE_FILE_SECS
+  REREAD_ACTIVE_FILE_SECS          THREAD_SUM
 
 
 System related:
@@ -251,13 +249,27 @@ yet fully implemented. You can expect errors if you use this option so
 let me know the problems by sending me a bug report ('R' bug command
 from within tin).
 
+--disable-pgp-gpg
+Use to turn off all pgp/gpg support, use --with[out]-[pgp|pgpk|gpg]
+to select exactly one of the encryption systems!
+
 --with-pgp=PATH
-Define if you have PGP (Pretty Good Privacy encryption system)
+Define if you have PGP-2 (Pretty Good Privacy encryption system)
 installed and want the option of checking signatures, extract keys,
 sign messages and add public key to messages.  This is bound to the
-key 'g' or '^G'.
-If found in search path, this is used automatically (pgp-5 (HAVE_PGP_5 set)
-is prefered over pgp-2 (HAVE_PGP_2 set)).
+key 'g' or '^G'. Say --without-pgp if you don't want pgp-2 support.
+
+--with-pgpk=PATH
+Define if you have PGP-5 (Pretty Good Privacy encryption system)
+installed and want the option of checking signatures, extract keys,
+sign messages and add public key to messages.  This is bound to the
+key 'g' or '^G'. Say --without-pgpk if you don't want pgp-5 support.
+
+--with-gpg=PATH
+Define if you have GPG (GNU Privacy Guard encryption system)
+installed and want the option of checking signatures, extract keys,
+sign messages and add public key to messages.  This is bound to the
+key 'g' or '^G'. Say --without-gpg if you don't want gpg support.
 
 --with-inn-nntplib=PATH
 Define if you want to use the INN library functions GetConfigValue()
@@ -312,13 +324,17 @@ to print an article, even if you disable this feature. They are just not
 able to use the 'o' key to do so.
 
 --enable-fascist-newsadmin (default: off)
-Enable if you want users articles to be posted to groups that your site
-receives.  This will change the warning that a group that the user is
-posting to was not found in the sites active file to an error in the
-article checking routine therefore causing the user to remove the group
-from his/her posting or to abort the posting of the article.
-
-[FIXME: Find another name for this option.		-dn, 1998-12-27]
+Enable if you want to restrict articles posted with your tin a bit
+to enforce some formal rules. This will change the following
+warnings to an error in the article checking routine therefore
+causing the user to reenter the editor and change the article or to
+abort posting:
+ - Group(s) in Newsgroups: or Followup-To: header were not found in
+   the sites' active file
+ - Approved: header was found when user was in beginner level
+ - Signature has more than MAX_SIG_LINES (see include/tin.h) lines
+ - Crossposting without Followup-To: header
+ - Followup-To: header with more than one newsgroup
 
 --enable-mmdf-mailer (default: off, except on SCO Unix)
 If enabled, MMDF type mail handling is used as the default (instead of
@@ -362,25 +378,25 @@ reclaimed.
 Compiled & installed on the following machines:
 -----------------------------------------------
 i486-pc-linux-gnulibc1   (libc 5.4.33) gcc 2.7.2.1  (1.4.0 release 19991113)          <urs@tin.org>
-i586-pc-linux-gnu        (glibc 2.0.7) egcs 2.91.60 (1.4.0 release 19991113)          <urs@tin.org>
-i586-pc-linux-gnu        (glibc 2.0.7) fcc 1.0      (1.4.0 release 19991113)          <urs@tin.org>
+i586-pc-linux-gnu        (glibc 2.0.7) egcs 2.91.60 (1.5.1 release 20000103)          <urs@tin.org>
+i586-pc-linux-gnu        (glibc 2.1.1) fcc 1.0      (1.5.1 release 19991113)          <urs@tin.org>
 i586-pc-linux-gnu        (glibc 2.0.7) tcc 4.1.2    (1.4.0 release 19991113)   [3]    <urs@tin.org>
-i586-pc-linux-gnu        (glibc 2.1.1) gcc 2.95.2   (1.4.0 release 19991113)          <urs@tin.org>
+i586-pc-linux-gnu        (glibc 2.1.1) gcc 2.95.2   (1.5.1 release 20000103)          <urs@tin.org>
 i586-pc-linux-gnu        (glibc 2.1.1) lcc 4.27     (1.4.0 release 19991113)   [3][4] <urs@tin.org>
 mipsel-unknown-linux-gnu (glibc 2.0.7) gcc 2.7.2    (1.4.0 release 19991113)          <urs@tin.org>
 sparc-unknown-linux-gnu  (glibc 2.0.1) gcc 2.7.2.3  (1.4.0 release 19991113)          <urs@tin.org>
 
 m68k-cbm-netbsd1.4                     egcs 2.91.60 (pre-1.4 release 19990927)        <rhoenie@many.de>
 vax-unknown-netbsd1.4M                 egcs 2.91.60 (pre-1.4 release 19990927)        <laura@tin.org>
-i386-unknown-netbsd1.4.1               egcs 2.91.60 (1.4.0 release 19991113)          <urs@tin.org>
+i386-unknown-netbsd1.4.1               egcs 2.91.60 (1.5.1 release 20000103)          <urs@tin.org>
 
-i386-unknown-freebsd2.2                gcc 2.7.2.1  (1.4.0 release 19991113)          <urs@tin.org>
+i386-unknown-freebsd2.2                gcc 2.7.2.1  (1.5.1 release 20000103)          <urs@tin.org>
 i386-unknown-freebsd3.1                gcc 2.7.2.1  (pre-1.4 release 19990927)        <goose@muffin.org>
 i386-unknown-freebsd3.2                egcs 2.91.60 (pre-1.4 release 19990927)        <goose@muffin.org>
 
 sparc-sun-sunos4.1.3                   gcc 2.6.0    (pre-1.4 release 19990927)        <andy@tin.org>
 sparc-sun-solaris2.5                   gcc 2.7.2    (pre-1.4 release 19990927)        <urs@tin.org>
-sparc-sun-solaris2.5.1                 gcc 2.8.1    (1.4.0 release 19991113)          <urs@tin.org>
+sparc-sun-solaris2.5.1                 gcc 2.8.1    (1.5.1 release 20000103)          <urs@tin.org>
 sparc-sun-solaris2.6                   gcc 2.8.1    (pre-1.4 release 19990927)        <dk@ssw.krakow.pl>
 
 mips-sgi-irix5.2                       cc 3.18      (pre-1.4 release 19990927)        <sven@tin.org>
@@ -398,11 +414,11 @@ rs6000-ibm-aix4.1.5.0                  gcc 2.8.1    (pre-1.4 release 19990927)  
 powerpc-ibm-aix4.3.1.0                 egcs 2.91.60 (pre-1.4 release 19990927)        <rhoenie@mayn.de>
 
 hppa1.1-hp-hpux9.05                    cc 9.84      (1.4.0 release 19991113)          <urs@tin.org>
-hppa1.1-hp-hpux9.07                    cc 9.77      (1.4.0 release 19991113)          <urs@tin.org>
+hppa1.1-hp-hpux9.07                    cc 9.77      (1.5.1 release 20000103)          <urs@tin.org>
 hppa1.1-hp-hpux9.07                    gcc 2.7.2.3  (1.4.0 release 19991113)          <urs@tin.org>
 hppa1.1-hp-hpux10.20                   cc 10.32.20  (1.4.0 release 19991113)          <andy@tin.org>
 hppa1.1-hp-hpux10.20                   gcc 2.8.1    (1.4.0 release 19991113)          <andy@tin.org>
-hppa2.0-hp-hpux10.20                   cc 10.32.05  (1.4.0 release 19991113)          <urs@tin.org>
+hppa2.0-hp-hpux10.20                   cc 10.32.05  (1.5.1 release 20000103)          <urs@tin.org>
 hppa2.0-hp-hpux10.20                   gcc 2.7.2.3  (1.4.0 release 19991113)          <urs@tin.org>
 
 i386-sni-sysv4                         cc 3.5F      (1.4.0 release 19991113)          <urs@tin.org>

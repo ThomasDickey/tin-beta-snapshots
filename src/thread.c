@@ -5,12 +5,38 @@
  *  Created   : 1991-04-01
  *  Updated   : 1997-12-26
  *  Notes     :
- *  Copyright : (c) Copyright 1991-99 by Iain Lea
- *              You may  freely  copy or  redistribute  this software,
- *              so  long as there is no profit made from its use, sale
- *              trade or  reproduction.  You may not change this copy-
- *              right notice, and it must be included in any copy made
+ *
+ * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Iain Lea.
+ * 4. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 
 #ifndef TIN_H
 #	include "tin.h"
@@ -35,22 +61,24 @@ t_bool show_subject;
 /*
  * Local prototypes
  */
+static int enter_pager (int art, t_bool ignore_unavail);
+static int thread_catchup (int ch);
+static int thread_tab_pressed (void);
 static t_bool find_unexpired (struct t_msgid *ptr);
 static t_bool has_sibling (struct t_msgid *ptr);
 static void bld_tline (int l, struct t_article *art);
 static void draw_tline (int i, t_bool full);
 static void draw_thread_arrow (void);
-static void erase_thread_arrow (void);
 static void make_prefix (struct t_msgid *art, char *prefix, int maxlen);
 static void update_thread_page (void);
 
-#if 0
-thdmenu.curr = 0;		/* Current screen cursor position in thread */
-thdmenu.max = 0;		/* Essentially = # threaded arts in current thread */
-thdmenu.first = 0;		/* response # at top of screen */
-thdmenu.last = 0;		/* response # at end of screen */
-#endif /* 0 */
-static t_menu thdmenu = {0, 0, 0, 0, show_thread_page, erase_thread_arrow, draw_thread_arrow };
+/*
+ * thdmenu.curr		Current screen cursor position in thread
+ * thdmenu.max		Essentially = # threaded arts in current thread
+ * thdmenu.first	Response # at top of screen
+ * thdmenu.last		Response # at end of screen
+ */
+static t_menu thdmenu = {0, 0, 0, 0, show_thread_page, draw_thread_arrow };
 
 /*
  * Build one line of the thread page display. Looks long winded, but
@@ -235,7 +263,6 @@ draw_tline (
 {
 	int tlen;
 	int x = full ? 0 : (MARK_OFFSET-2);
-	int k = MARK_OFFSET;
 #	ifdef USE_CURSES
 	char buffer[BUFSIZ];
 	char *s = screen_contents(INDEX2LNUM(i), x, buffer);
@@ -255,20 +282,41 @@ draw_tline (
 	MoveCursor(INDEX2LNUM(i), x);
 	if (tlen)
 		my_printf("%.*s", tlen, s);
+
 	/*
 	 * it is somewhat less efficient to go back and redo that art mark
 	 * if selected, but it is quite readable as to what is happening
 	 */
-	if (s[k-x] == tinrc.art_marked_selected || (tinrc.kill_level == KILL_THREAD && s[k-x] == ART_MARK_READ_SELECTED)) {
-		MoveCursor (INDEX2LNUM(i), k);
+	if (s[MARK_OFFSET-x] == tinrc.art_marked_selected || (tinrc.kill_level == KILL_THREAD && s[MARK_OFFSET-x] == ART_MARK_READ_SELECTED)) {
+		MoveCursor (INDEX2LNUM(i), MARK_OFFSET);
 		ToggleInverse ();
-		my_fputc (s[k-x], stdout);
+		my_fputc (s[MARK_OFFSET-x], stdout);
 		ToggleInverse ();
 	}
 
 	MoveCursor(INDEX2LNUM(i)+1, 0);
 	return;
 }
+
+
+static int
+thread_left (
+	void)
+{
+	if (tinrc.thread_catchup_on_exit)
+		return iKeyCatchupLeft;			/* ie, not via 'c' or 'C' */
+	else
+		return iKeyQuit;
+}
+
+
+static int
+thread_right (
+	void)
+{
+	return iKeyThreadReadArt;
+}
+
 
 /*
  * Show current thread.
@@ -277,34 +325,33 @@ draw_tline (
  * If threaded on References: or Archive-name: show
  *   <respnum> <subject> <name>
  * Return values:
- *		>= 0				Normal return to group level
  *		GRP_RETURN		Return to selection screen
- *		GRP_QUIT			'Q'uit all the way out
- *		GRP_NEXT			Catchup goto next group
+ *		GRP_QUIT		'Q'uit all the way out
+ *		GRP_NEXT		Catchup goto next group
  *		GRP_NEXTUNREAD	Catchup enter next unread thread
  *		GRP_KILLED		Thread was killed at art level ?????
+ *		GRP_EXIT		Return to group menu
  */
 int
 thread_page (
 	struct t_group *group,
 	int respnum,				/* base[] article of thread to view */
-	int thread_depth)			/* initial depth in thread */
+	int thread_depth,			/* initial depth in thread */
+	t_pagerinfo *page)			/* !NULL if we must go direct to the pager */
 {
-	char buf[LEN];
-	int ret_code = 0;
+	int ret_code = 0;			/* Set to < 0 when it is time to leave this menu */
 	int ch = 0;
 	int i, n;
-	t_bool ignore_unavail = FALSE;	/* Set if we keep going after an 'article unavailable' */
-	t_bool thread_done = FALSE;		/* Set when it is time to leave */
 
 	thread_respnum = respnum;		/* Bodge to make this variable global */
+
 	if ((n = which_thread (thread_respnum)) >= 0)
 		thread_basenote = n;
 	thdmenu.max = num_of_responses (thread_basenote) + 1;
 
 	if (thdmenu.max <= 0) {
 		info_message (_(txt_no_resps_in_thread));
-		return 0;
+		return GRP_EXIT;
 	}
 
 	/*
@@ -339,105 +386,38 @@ thread_page (
 	if (thdmenu.curr < 0)
 		thdmenu.curr = 0;
 
+	/*
+	 * See if we're on a direct call from the group menu to the pager
+	 */
+	if (page) {
+		if ((ret_code = enter_pager (page->art, page->ignore_unavail)) != 0)
+			return ret_code;
+		/* else fall through to stay in thread level */
+	}
+
 	/* Now we know where the cursor is, actually put something on the screen */
 	show_thread_page ();
 
-	while (!thread_done) {
+	while (ret_code >= 0) {
 		set_xclick_on ();
-		ch = ReadCh ();
+		switch (ch = handle_keypad(thread_left, thread_right)) {
 
-		if (ch > '0' && ch <= '9') {	/* 0 goes to basenote */
-			if (thdmenu.max == 1)
-				info_message (_(txt_no_responses));
-			else
-				prompt_item_num (ch, txt_select_art);
-			continue;
-		}
-		switch (ch) {
-#	ifndef WIN32
-			case ESC:	/* common arrow keys */
-#		ifdef HAVE_KEY_PREFIX
-			case KEY_PREFIX:
-#		endif /* HAVE_KEY_PREFIX */
-				switch (get_arrow_key (ch)) {
-#	endif /* !WIN32 */
-					case KEYMAP_UP:
-						move_up();
-						break;
-
-					case KEYMAP_DOWN:
-						move_down();
-						break;
-
-					case KEYMAP_LEFT:
-						if (tinrc.thread_catchup_on_exit)
-							goto thread_catchup;
-						else
-							thread_done = TRUE;
-						break;
-
-					case KEYMAP_RIGHT:
-						goto thread_read_article;
-
-					case KEYMAP_PAGE_UP:
-						page_up();
-						break;
-
-					case KEYMAP_PAGE_DOWN:
-						page_down();
-						break;
-
-					case KEYMAP_HOME:
-						top_of_list();
-						break;
-
-					case KEYMAP_END:
-						end_of_list();
-						break;
-
-#	ifndef WIN32
-					case KEYMAP_MOUSE:
-						switch (xmouse)
-						{
-							case MOUSE_BUTTON_1:
-							case MOUSE_BUTTON_3:
-								if (xrow < INDEX2LNUM(thdmenu.first) || xrow > INDEX2LNUM(thdmenu.last-1)) {
-									page_down();
-									break;
-								}
-								erase_thread_arrow ();
-								thdmenu.curr = xrow-INDEX2LNUM(thdmenu.first)+thdmenu.first;
-								draw_thread_arrow ();
-								if (xmouse == MOUSE_BUTTON_1)
-									goto thread_read_article;
-								break;
-
-							case MOUSE_BUTTON_2:
-								if (xrow < INDEX2LNUM(thdmenu.first) || xrow > INDEX2LNUM(thdmenu.last-1)) {
-									page_up();
-									break;
-								}
-								if (tinrc.thread_catchup_on_exit)
-									goto thread_catchup;
-								else
-									thread_done = TRUE;
-								break;
-
-							default:
-								break;
-						}
-						break;
-
-					default:
-						break;
-				}
+#ifndef WIN32
+			case ESC:			/* Abort */
 				break;
-#	endif /* !WIN32 */
+#endif /* !WIN32 */
+
+			case '1': case '2': case '3': case '4': case '5':
+			case '6': case '7': case '8': case '9':
+				if (thdmenu.max == 1)
+					info_message (_(txt_no_responses));
+				else
+					prompt_item_num (ch, txt_select_art);
+				break;
 
 #	ifndef NO_SHELL_ESCAPE
 			case iKeyShellEscape:
-				shell_escape ();
-				show_thread_page ();
+				do_shell_escape ();
 				break;
 #	endif /* !NO_SHELL_ESCAPE */
 
@@ -454,8 +434,8 @@ thread_page (
 					info_message (_(txt_no_last_message));
 					break;
 				}
-				i = this_resp;
-				goto enter_pager;
+				ret_code = enter_pager (this_resp, FALSE);
+				break;
 
 			case iKeySetRange:	/* set range */
 				if (bSetRange (THREAD_LEVEL, 0, thdmenu.max, thdmenu.curr))
@@ -483,72 +463,11 @@ thread_page (
 
 			case iKeyThreadReadArt:
 			case iKeyThreadReadArt2:	/* read current article within thread */
-thread_read_article:
-				i = find_response (thread_basenote, thdmenu.curr);
-				goto enter_pager;
+				ret_code = enter_pager (find_response (thread_basenote, thdmenu.curr), FALSE);
+				break;
 
 			case iKeyThreadReadNextArtOrThread:
-thread_tab_pressed:
-				n = ((thdmenu.curr == 0) ? thread_respnum : find_response (thread_basenote, thdmenu.curr));
-
-				for (i = n; i != -1; i = arts[i].thread) {
-					if ((arts[i].status == ART_UNREAD) || (arts[i].status == ART_WILL_RETURN))
-						break;
-				}
-
-				if (i == -1) {					/* We ran out of thread */
-					ret_code = GRP_NEXTUNREAD;
-					thread_done = TRUE;
-					break;
-				}
-
-				ignore_unavail = TRUE;
-
-				/*
-				 * General entry point into the pager. 'i' is the arts[i] we wish to view
-				 */
-enter_pager:
-				n = show_page (group, i, &thdmenu.curr);
-
-				/*
-				 * In some cases, we want to keep going after an ARTFAIL
-				 */
-				if (ignore_unavail) {
-					ignore_unavail = FALSE;
-					if (n == GRP_ARTFAIL)
-						n = GRP_NEXTUNREAD;
-				}
-
-				switch (n) {
-
-					case GRP_ARTFAIL:
-					case GRP_GOTOTHREAD:
-						show_thread_page();
-						break;
-
-					case GRP_RETURN:
-					case GRP_NEXT:				/* Skip to next thread */
-						ret_code = n;
-						thread_done = TRUE;
-						break;
-
-					case GRP_QUIT:
-						ret_code = GRP_QUIT;
-						thread_done = TRUE;
-						break;
-
-					case GRP_NEXTUNREAD:
-						goto thread_tab_pressed;
-
-					default:
-						if (local_filtered_articles) {
-							ret_code = GRP_KILLED; /* ?? */
-							thread_done = TRUE;
-							break;
-						}
-						fixup_thread (this_resp, FALSE);
-						show_thread_page();
-				}
+				ret_code = thread_tab_pressed();
 				break;
 
 			case iKeyThreadPost:	/* post a basenote */
@@ -584,32 +503,24 @@ enter_pager:
 				page_down();
 				break;
 
-			case iKeyThreadCatchup:					/* catchup thread, move to next one */
+			case iKeyCatchupLeft:				/* come here when exiting thread via <- */
+			case iKeyThreadCatchup:				/* catchup thread, move to next one */
 			case iKeyThreadCatchupNextUnread:	/* -> next with unread arts */
-thread_catchup:										/* come here when exiting thread via <- */
-				n = ((thdmenu.curr == 0) ? thread_respnum : find_response (thread_basenote, 0));
-				for (i = n; i != -1; i = arts[i].thread) {
-					if ((arts[i].status == ART_UNREAD) || (arts[i].status == ART_WILL_RETURN))
-						break;
-				}
-				if (i != -1) {	/* still unread arts in the thread */
-					sprintf(buf, _(txt_mark_thread_read), (ch == iKeyThreadCatchupNextUnread) ? _(txt_enter_next_thread) : "");
-					if (!tinrc.confirm_action || (tinrc.confirm_action && prompt_yn (cLINES, buf, TRUE) == 1))
-						thd_mark_read (group, base[thread_basenote]);
-				}
-				ret_code = (ch == iKeyThreadCatchupNextUnread ? GRP_NEXTUNREAD : GRP_NEXT);
-				thread_done = TRUE;
+				ret_code = thread_catchup(ch);
 				break;
 
 			case iKeyThreadMarkArtRead: /* mark article as read */
 				n = find_response (thread_basenote, thdmenu.curr);
-				art_mark_read (group, &arts[n]);
-				bld_tline (thdmenu.curr, &arts[n]);
-				draw_tline (thdmenu.curr, FALSE);
-				if ((n = next_unread (n)) == -1)  {	/* no more articles in this thread _and_ group */
-					thread_done = TRUE;
+				if ((arts[n].status == ART_UNREAD) || (arts[n].status == ART_WILL_RETURN)) {
+					art_mark_read (group, &arts[n]);
+					bld_tline (thdmenu.curr, &arts[n]);
+					draw_tline (thdmenu.curr, FALSE);
+				}
+				if ((n = next_unread (n)) == -1)  {	/* no more unread articles */
+					ret_code = GRP_EXIT;
 					break;
 				}
+				fixup_thread(n, TRUE);			/* We may be in the next thread now */
 				n = which_response (n);
 				move_to_item(n);
 				break;
@@ -627,16 +538,16 @@ thread_catchup:										/* come here when exiting thread via <- */
 				break;
 
 			case iKeyLookupMessage:
-				if ((n = prompt_msgid ()) != ART_UNAVAILABLE) {
-					i = n;
-					goto enter_pager;
-				}
+				if ((n = prompt_msgid ()) != ART_UNAVAILABLE)
+					ret_code = enter_pager (n, FALSE);
 				break;
 
 			case iKeySearchBody:			/* search article body */
 				if ((n = search_body (find_response (thread_basenote, thdmenu.curr))) != -1) {
 					fixup_thread (n, TRUE);
-/*					goto enter_pager;*/
+#if 0 /* Body search only positions, since it can't move to correct place in art */
+					ret_code = enter_pager(n, FALSE);
+#endif /* 0 */
 				}
 				break;
 
@@ -677,12 +588,11 @@ thread_catchup:										/* come here when exiting thread via <- */
 #	endif /* HAVE_COLOR */
 
 			case iKeyQuit:				/* return to previous level */
-				thread_done = TRUE;
+				ret_code = GRP_EXIT;
 				break;
 
 			case iKeyQuitTin:			/* quit */
 				ret_code = GRP_QUIT;
-				thread_done = TRUE;
 				break;
 
 			case iKeyThreadTag:			/* tag/untag article */
@@ -781,7 +691,7 @@ thread_catchup:										/* come here when exiting thread via <- */
 			default:
 				info_message (_(txt_bad_command));
 		}
-	} /* !thread_done */
+	} /* ret_code >= 0 */
 
 	set_xclick_off ();
 	clear_note_area ();
@@ -865,36 +775,10 @@ static void
 draw_thread_arrow (
 	void)
 {
-	MoveCursor (INDEX2LNUM(thdmenu.curr), 0);
-
-	if (tinrc.draw_arrow) {
-		my_fputs ("->", stdout);
-		my_flush ();
-	} else {
-		StartInverse ();
-		draw_tline (thdmenu.curr, TRUE);
-		EndInverse ();
-	}
-	stow_cursor();
+	draw_arrow_mark (INDEX_TOP + thdmenu.curr - thdmenu.first);
 
 	if (tinrc.info_in_last_line)
 		info_message ("%s", arts[find_response (thread_basenote, thdmenu.curr)].subject);
-}
-
-
-static void
-erase_thread_arrow (
-	void)
-{
-	MoveCursor (INDEX2LNUM(thdmenu.curr), 0);
-
-	if (tinrc.draw_arrow)
-		my_fputs ("  ", stdout);
-	else {
-		HpGlitch(EndInverse ());
-		draw_tline (thdmenu.curr, TRUE);
-	}
-	my_flush ();
 }
 
 
@@ -1318,4 +1202,141 @@ make_prefix (
 	prefix[maxlen] = '\0'; /* just in case strlen(buf) > maxlen */
 	free (buf);
 	return;
+}
+
+
+/*
+ * There are 3 catchup methods:
+ * When exiting thread via <-
+ * Catchup thread, move to next one
+ * Catchup thread and enter next one with unread arts
+ * Return a suitable ret_code
+ */
+static int
+thread_catchup(
+	int ch)
+{
+	char buf[LEN];
+	int i, n;
+	int yn = 1;
+
+	/* Find first unread art in this thread */
+	n = ((thdmenu.curr == 0) ? thread_respnum : find_response (thread_basenote, 0));
+	for (i = n; i != -1; i = arts[i].thread) {
+		if ((arts[i].status == ART_UNREAD) || (arts[i].status == ART_WILL_RETURN))
+			break;
+	}
+
+/* FIXME do some NLS/snprintf work here - see equivalent code in group_catchup() */
+	if (i != -1) {				/* still unread arts in this thread */
+		sprintf(buf, _(txt_mark_thread_read), (ch == iKeyThreadCatchupNextUnread) ? _(txt_enter_next_thread) : "");
+		if (!tinrc.confirm_action || (tinrc.confirm_action && (yn = prompt_yn (cLINES, buf, TRUE)) == 1))
+			thd_mark_read (&CURR_GROUP, base[thread_basenote]);
+	}
+
+	switch (ch) {
+		case iKeyThreadCatchup:				/* 'c' */
+			if (yn == 1)
+				return GRP_NEXT;
+			break;
+
+		case iKeyThreadCatchupNextUnread:	/* 'C' */
+			if (yn == 1)
+				return GRP_NEXTUNREAD;
+			break;
+
+		case iKeyCatchupLeft:			/* <- thread catchup on exit */
+			switch (yn) {
+				case -1:				/* ESC from prompt, stay in group */
+					break;
+				case 1:					/* We caught up - advance group */
+					return GRP_NEXT;
+				default:				/* Just leave the group */
+					return GRP_EXIT;
+			}
+		default:
+			break;
+	}
+	return 0;							/* Default is to stay in current screen */
+}
+
+
+/*
+ * This is the single entry point into the article pager
+ * 'art' is the arts[art] we wish to read
+ * ignore_unavail should be set if we wish to keep going after 'article
+ * unavailable'.
+ * Return:
+ *	<0 to quit to group menu
+ *	 0 to stay in thread menu
+ *  >0 after normal exit from pager to return to previous menu level
+ */
+static int
+enter_pager(
+	int art,
+	t_bool ignore_unavail)
+{
+	int i;
+
+	i = show_page (&CURR_GROUP, art, &thdmenu.curr);
+
+	/*
+	 * Keep paging if we ignore unavailable arts
+	 */
+	if (ignore_unavail && i == GRP_ARTFAIL)
+		i = GRP_NEXTUNREAD;
+
+	switch (i) {
+		/* These exit to group menu */
+		case GRP_QUIT:				/* 'Q' all the way out */
+		case GRP_RETURN:			/* 'T' back to select menu */
+		case GRP_NEXT:				/* 'c' Move to next thread on group menu */
+		case GRP_NEXTUNREAD:		/* 'C' */
+			break;
+
+		/* These stay in thread menu */
+		case GRP_ARTFAIL:
+		case GRP_GOTOTHREAD:		/* 'l' from pager */
+			show_thread_page();
+			return 0;
+
+		default:					/* >=0 normal exit, new basenote */
+			if (local_filtered_articles)
+				return GRP_KILLED; /* ?? set group cursor back to 0 and do nothing */
+			fixup_thread (this_resp, FALSE);
+			show_thread_page();
+			return 1;				/* Must return any +ve integer */
+	}
+	return i;
+}
+
+
+/*
+ * Find index in arts[] of next unread article _IN_THIS_THREAD_
+ * Page it or return GRP_NEXTUNREAD if thread is all read
+ * (to tell group menu to skip to next thread)
+ */
+static int
+thread_tab_pressed(
+	void)
+{
+	int i, n;
+
+	/*
+	 * Find current position in thread
+	 */
+	n = ((thdmenu.curr == 0) ? thread_respnum : find_response (thread_basenote, thdmenu.curr));
+
+	/*
+	 * Find and display next unread
+	 */
+	for (i = n; i != -1; i = arts[i].thread) {
+		if ((arts[i].status == ART_UNREAD) || (arts[i].status == ART_WILL_RETURN))
+			return (enter_pager (i, TRUE));
+	}
+
+	/*
+	 * We ran out of thread, tell group.c to enter the next with unread
+	 */
+	return GRP_NEXTUNREAD;
 }

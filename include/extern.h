@@ -5,15 +5,41 @@
  *  Created   : 1991-04-01
  *  Updated   : 1998-07-13
  *  Notes     :
- *  Copyright : (c) Copyright 1991-99 by Iain Lea
- *              You may  freely  copy or  redistribute  this software,
- *              so  long as there is no profit made from its use, sale
- *              trade or  reproduction.  You may not change this copy-
- *              right notice, and it must be included in any copy made
+ *
+ * Copyright (c) 1997-2000 Iain Lea <iain@bricbrac.de>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Iain Lea.
+ * 4. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 #ifndef EXTERN_H
-#define EXTERN_H 1
+#	define EXTERN_H 1
 
 /*
  * Library prototypes
@@ -339,6 +365,7 @@ extern char domain_name[];
 extern char host_name[];
 
 extern const char base64_alphabet[64];
+
 extern const char **info_help;
 extern constext *help_group[];
 extern constext *help_page[];
@@ -409,11 +436,6 @@ extern constext txt_cannot_get_nntp_server_name[];
 extern constext txt_cannot_get_term[];
 extern constext txt_cannot_get_term_entry[];
 extern constext txt_cannot_open[];
-
-#if defined(NNTP_ABLE) || defined(NNTP_ONLY)
-	extern constext txt_cannot_open_active_file[];
-#endif /* NNTP_ABLE || NNTP_ONLY */
-
 extern constext txt_cannot_post[];
 extern constext txt_cannot_post_group[];
 extern constext txt_cannot_write_index[];
@@ -604,11 +626,6 @@ extern constext txt_help_kill_scope[];
 extern constext txt_help_l[];
 extern constext txt_help_m[];
 extern constext txt_help_n[];
-
-#ifndef DISABLE_PRINTING
-	extern constext txt_help_o[];
-#endif /* !DISABLE_PRINTING */
-
 extern constext txt_help_p_S[];
 extern constext txt_help_p_caret_dollar[];
 extern constext txt_help_p_at[];
@@ -632,17 +649,10 @@ extern constext txt_help_p_tab[];
 extern constext txt_help_p_tilda[];
 extern constext txt_help_p_u[];
 extern constext txt_help_p_z[];
-
-#ifndef DONT_HAVE_PIPING
-	extern constext txt_help_pipe[];
-#endif /* !DONT_HAVE_PIPING */
-
 extern constext txt_help_plus[];
-
 extern constext txt_help_q[];
 extern constext txt_help_quick_kill[];
 extern constext txt_help_quick_select[];
-
 extern constext txt_help_r[];
 extern constext txt_help_s[];
 extern constext txt_help_s_i[];
@@ -688,18 +698,6 @@ extern constext txt_kill_text[];
 extern constext txt_kill_time[];
 extern constext txt_last[];
 extern constext txt_last_resp[];
-
-#ifdef HAVE_LIBUU
-	extern constext txt_libuu_saved[];
-	extern constext txt_libuu_success[];
-	extern constext txt_libuu_error_decode[];
-	extern constext txt_libuu_error_missing[];
-	extern constext txt_libuu_error_no_begin[];
-	extern constext txt_libuu_error_no_end[];
-	extern constext txt_libuu_error_no_data[];
-	extern constext txt_libuu_error_unknown[];
-#endif /* HAVE_LIBUU */
-
 extern constext txt_lines[];
 extern constext txt_listing_archive[];
 extern constext txt_mail[];
@@ -738,11 +736,6 @@ extern constext txt_nntp_authorization_failed[];
 extern constext txt_no[];
 extern constext txt_no_arts[];
 extern constext txt_no_arts_posted[];
-
-#ifndef DONT_HAVE_PIPING
-	extern constext txt_no_command[];
-#endif /* !DONT_HAVE_PIPING */
-
 extern constext txt_no_description[];
 extern constext txt_no_filename[];
 extern constext txt_no_group[];
@@ -775,7 +768,6 @@ extern constext txt_nrctbl_create[];
 extern constext txt_nrctbl_default[];
 extern constext txt_nrctbl_info[];
 extern constext txt_only[];
-
 extern constext txt_option_not_enabled[];
 extern constext txt_options_menu[];
 extern constext txt_out_of_memory[];
@@ -794,13 +786,6 @@ extern constext txt_post_subject[];
 extern constext txt_posted_info_file[];
 extern constext txt_posting[];
 extern constext txt_postpone_repost[];
-
-#ifndef DISABLE_PRINTING
-	extern constext txt_print[];
-	extern constext txt_printed[];
-	extern constext txt_printing[];
-#endif /* !DISABLE_PRINTING */
-
 extern constext txt_prompt_fup_ignore[];
 extern constext txt_prompt_unchanged_art[];
 extern constext txt_prompt_unchanged_bug[];
@@ -877,11 +862,6 @@ extern constext txt_select_thread[];
 extern constext txt_select_time[];
 extern constext txt_server_name_in_file_env_var[];
 extern constext txt_servers_active[];
-
-#ifndef NO_SHELL_ESCAPE
-	extern constext txt_shell_escape[];
-#endif /* !NO_SHELL_ESCAPE */
-
 extern constext txt_skipping_newgroups[];
 extern constext txt_subj_line_only[];
 extern constext txt_subj_line_only_case[];
@@ -907,14 +887,12 @@ extern constext txt_thread_saved_to_many[];
 extern constext txt_thread_x_of_n[];
 extern constext txt_threading_arts[];
 extern constext txt_time_default_days[];
-
 extern constext txt_tinrc_defaults[];
 extern constext txt_tinrc_filter[];
 extern constext txt_tinrc_header[];
 extern constext txt_tinrc_info_in_last_line[];
 extern constext txt_tinrc_newnews[];
 extern constext txt_tinrc_post_process_command[];
-
 extern constext txt_toggled_rot13[];
 extern constext txt_toggled_tex2iso[];
 extern constext txt_type_h_for_help[];
@@ -932,14 +910,6 @@ extern constext txt_warn_art_line_too_long[];
 extern constext txt_warn_blank_subject[];
 extern constext txt_warn_cancel[];
 extern constext txt_warn_encoding_and_external_inews[];
-
-#ifndef HAVE_FASCIST_NEWSADMIN
-	extern constext txt_warn_followup_to_several_groups[];
-	extern constext txt_warn_missing_followup_to[];
-	extern constext txt_warn_not_in_newsrc[];
-	extern constext txt_warn_not_valid_newsgroup[];
-#endif /* !HAVE_FASCIST_NEWSADMIN */
-
 extern constext txt_warn_newsrc[];
 extern constext txt_warn_multiple_sigs[];
 extern constext txt_warn_sig_too_long[];
@@ -953,6 +923,44 @@ extern constext txt_yanking_all_groups[];
 extern constext txt_yanking_sub_groups[];
 extern constext txt_yes[];
 extern constext txt_you_have_mail[];
+
+#ifndef DISABLE_PRINTING
+	extern constext txt_help_o[];
+	extern constext txt_print[];
+	extern constext txt_printed[];
+	extern constext txt_printing[];
+#endif /* !DISABLE_PRINTING */
+
+#ifndef DONT_HAVE_PIPING
+	extern constext txt_help_pipe[];
+	extern constext txt_no_command[];
+#endif /* !DONT_HAVE_PIPING */
+
+#ifndef HAVE_FASCIST_NEWSADMIN
+	extern constext txt_warn_followup_to_several_groups[];
+	extern constext txt_warn_missing_followup_to[];
+	extern constext txt_warn_not_in_newsrc[];
+	extern constext txt_warn_not_valid_newsgroup[];
+#endif /* !HAVE_FASCIST_NEWSADMIN */
+
+#ifdef HAVE_LIBUU
+	extern constext txt_libuu_saved[];
+	extern constext txt_libuu_success[];
+	extern constext txt_libuu_error_decode[];
+	extern constext txt_libuu_error_missing[];
+	extern constext txt_libuu_error_no_begin[];
+	extern constext txt_libuu_error_no_end[];
+	extern constext txt_libuu_error_no_data[];
+	extern constext txt_libuu_error_unknown[];
+#endif /* HAVE_LIBUU */
+
+#if defined(NNTP_ABLE) || defined(NNTP_ONLY)
+	extern constext txt_cannot_open_active_file[];
+#endif /* NNTP_ABLE || NNTP_ONLY */
+
+#ifndef NO_SHELL_ESCAPE
+	extern constext txt_shell_escape[];
+#endif /* !NO_SHELL_ESCAPE */
 
 extern int *my_group;
 extern int MORE_POS;
@@ -1009,14 +1017,14 @@ extern pid_t process_id;
 extern uid_t real_uid;
 extern uid_t tin_uid;
 
+extern struct regex_cache strip_re_regex;
+extern struct regex_cache strip_was_regex;
+
 #ifdef HAVE_COLOR
 	extern struct regex_cache quote_regex;
 	extern struct regex_cache quote_regex2;
 	extern struct regex_cache quote_regex3;
 #endif /* HAVE_COLOR */
-
-extern struct regex_cache strip_re_regex;
-extern struct regex_cache strip_was_regex;
 
 extern struct t_article *arts;
 extern struct t_config tinrc;
@@ -1027,6 +1035,7 @@ extern struct t_newnews *newnews;
 extern struct t_option option_table[];
 extern struct t_posted *posted;
 extern struct t_save *save;
+
 extern t_bool can_post;
 extern t_bool catchup;
 extern t_bool check_any_unread;
@@ -1066,7 +1075,6 @@ extern t_bool update_fork;
 extern t_bool verbose;
 extern t_bool xover_supported;
 extern t_bool xref_supported;
-extern t_bool xflag;			/* 'X'-key */
 
 extern t_menu selmenu;
 extern t_menu grpmenu;
@@ -1178,7 +1186,7 @@ extern char *input_history[HIST_MAXNUM+1][HIST_SIZE+1];
 	extern constext txt_pipe_to_command[];
 	extern constext txt_piping[];
 #else
-#	ifdef VMS /* M.St. 15.01.98 */
+#	ifdef VMS
 		extern constext txt_pipe_to_command[];
 		extern constext txt_piping[];
 #	endif /* VMS */
@@ -1211,20 +1219,17 @@ extern char *input_history[HIST_MAXNUM+1][HIST_SIZE+1];
 
 #ifdef HAVE_METAMAIL
 	extern constext txt_use_mime[];
-#endif /* HAVE_METAMAIL */
-
-#if defined(HAVE_METAMAIL)
 	extern constext txt_error_metamail_failed[];
 #endif /* HAVE_METAMAIL */
 
-#ifdef HAVE_PGP
+#ifdef HAVE_PGP_GPG
 	extern constext txt_help_ctrl_g[];
 	extern constext txt_pgp_add[];
 	extern constext txt_pgp_mail[];
 	extern constext txt_pgp_news[];
 	extern constext txt_pgp_not_avail[];
 	extern constext txt_pgp_nothing[];
-#endif /* HAVE_PGP */
+#endif /* HAVE_PGP_GPG */
 
 #ifdef HAVE_SYS_UTSNAME_H
 	extern struct utsname system_info;
@@ -1236,7 +1241,7 @@ extern constext txt_intro_page[];
 extern constext txt_processing_mail_arts[];
 extern constext txt_processing_saved_arts[];
 
-#if defined(HAVE_MH_MAIL_HANDLING)
+#ifdef HAVE_MH_MAIL_HANDLING
 	extern constext txt_reading_mail_active_file[];
 	extern constext txt_reading_mailgroups_file[];
 #endif /* HAVE_MH_MAIL_HANDLING */
@@ -1306,54 +1311,17 @@ extern struct opttxt txt_show_xcommentto;
 extern struct opttxt txt_display_mime_header_asis;
 extern struct opttxt txt_display_mime_allheader_asis;
 extern struct opttxt txt_alternative_handling;
-#ifdef HAVE_COLOR
-	extern struct opttxt txt_quote_regex;
-	extern struct opttxt txt_quote_regex2;
-	extern struct opttxt txt_quote_regex3;
-#endif	/* HAVE_COLOR */
 extern struct opttxt txt_strip_re_regex;
 extern struct opttxt txt_strip_was_regex;
-#ifdef HAVE_METAMAIL
-	extern struct opttxt txt_use_metamail;
-	extern struct opttxt txt_ask_for_metamail;
-#endif	/* HAVE_METAMAIL */
 extern struct opttxt txt_catchup_read_groups;
 extern struct opttxt txt_group_catchup_on_exit;
 extern struct opttxt txt_thread_catchup_on_exit;
 extern struct opttxt txt_confirm_action;
 extern struct opttxt txt_confirm_to_quit;
 extern struct opttxt txt_use_mouse;
-#ifdef HAVE_KEYPAD
-	extern struct opttxt txt_use_keypad;
-#endif	/* HAVE_KEYPAD */
 extern struct opttxt txt_use_getart_limit;
 extern struct opttxt txt_getart_limit;
 extern struct opttxt txt_recent_time;
-#ifdef HAVE_COLOR
-	extern struct opttxt txt_use_color;
-	extern struct opttxt txt_col_normal;
-	extern struct opttxt txt_col_back;
-	extern struct opttxt txt_col_invers_bg;
-	extern struct opttxt txt_col_invers_fg;
-	extern struct opttxt txt_col_text;
-	extern struct opttxt txt_col_minihelp;
-	extern struct opttxt txt_col_help;
-	extern struct opttxt txt_col_message;
-	extern struct opttxt txt_col_quote;
-	extern struct opttxt txt_col_quote2;
-	extern struct opttxt txt_col_quote3;
-	extern struct opttxt txt_col_head;
-	extern struct opttxt txt_col_newsheaders;
-	extern struct opttxt txt_col_subject;
-	extern struct opttxt txt_col_response;
-	extern struct opttxt txt_col_from;
-	extern struct opttxt txt_col_title;
-	extern struct opttxt txt_col_signature;
-	extern struct opttxt txt_word_highlight;
-	extern struct opttxt txt_word_h_display_marks;
-	extern struct opttxt txt_col_markstar;
-	extern struct opttxt txt_col_markdash;
-#endif	/* HAVE_COLOR */
 extern struct opttxt txt_mail_address;
 extern struct opttxt txt_prompt_followupto;
 extern struct opttxt txt_sigfile;
@@ -1402,5 +1370,40 @@ extern struct opttxt txt_strip_bogus;
 extern struct opttxt txt_reread_active_file_secs;
 extern struct opttxt txt_auto_reconnect;
 extern struct opttxt txt_cache_overview_files;
+#ifdef HAVE_COLOR
+	extern struct opttxt txt_quote_regex;
+	extern struct opttxt txt_quote_regex2;
+	extern struct opttxt txt_quote_regex3;
+	extern struct opttxt txt_use_color;
+	extern struct opttxt txt_col_normal;
+	extern struct opttxt txt_col_back;
+	extern struct opttxt txt_col_invers_bg;
+	extern struct opttxt txt_col_invers_fg;
+	extern struct opttxt txt_col_text;
+	extern struct opttxt txt_col_minihelp;
+	extern struct opttxt txt_col_help;
+	extern struct opttxt txt_col_message;
+	extern struct opttxt txt_col_quote;
+	extern struct opttxt txt_col_quote2;
+	extern struct opttxt txt_col_quote3;
+	extern struct opttxt txt_col_head;
+	extern struct opttxt txt_col_newsheaders;
+	extern struct opttxt txt_col_subject;
+	extern struct opttxt txt_col_response;
+	extern struct opttxt txt_col_from;
+	extern struct opttxt txt_col_title;
+	extern struct opttxt txt_col_signature;
+	extern struct opttxt txt_word_highlight;
+	extern struct opttxt txt_word_h_display_marks;
+	extern struct opttxt txt_col_markstar;
+	extern struct opttxt txt_col_markdash;
+#endif /* HAVE_COLOR */
+#ifdef HAVE_KEYPAD
+	extern struct opttxt txt_use_keypad;
+#endif /* HAVE_KEYPAD */
+#ifdef HAVE_METAMAIL
+	extern struct opttxt txt_use_metamail;
+	extern struct opttxt txt_ask_for_metamail;
+#endif /* HAVE_METAMAIL */
 
 #endif /* !EXTERN_H */

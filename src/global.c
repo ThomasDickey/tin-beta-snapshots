@@ -3,14 +3,40 @@
  *  Module    : global.c
  *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
  *  Created   : 1999-12-12
- *  Updated   : 1999-12-12
+ *  Updated   : 2000-01-05
  *  Notes     : Generic nagivation and key handling routines
- *  Copyright : (c) 1996-99 by Jason Faultless
- *              You may  freely  copy or  redistribute  this software,
- *              so  long as there is no profit made from its use, sale
- *              trade or  reproduction.  You may not change this copy-
- *              right notice, and it must be included in any copy made
+ *
+ * Copyright (c) 1999-2000 Jason Faultless <jason@radar.tele2.co.uk>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Jason Faultless.
+ * 4. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 
 #ifndef TIN_H
 #	include "tin.h"
@@ -185,8 +211,8 @@ prompt_item_num (
 	if (num < 0)
 		num = 0;
 
-	if (num >= selmenu.max)
-		num = selmenu.max - 1;
+	if (num >= currmenu->max)
+		num = currmenu->max - 1;
 
 	move_to_item (num);
 }
@@ -202,8 +228,8 @@ move_to_item (
 	if (currmenu->curr == n)
 		return;
 
-	HpGlitch(currmenu->erase_arrow ());
-	currmenu->erase_arrow ();
+	HpGlitch(erase_arrow ());
+	erase_arrow ();
 
 	currmenu->curr = n;
 	if (currmenu->curr < 0)
@@ -219,7 +245,8 @@ move_to_item (
 
 
 /*
- * Handle (ncurses) mouse clicks. We simply map the event to a return
+ * TODO - fold the call in select.c into here and make this static
+ * Handle mouse clicks. We simply map the event to a return
  * keymap code that will drop through to call the correct function
  */
 int
@@ -229,14 +256,14 @@ mouse_action(
 	int (*right_action) (void))		/* Typically read next etc.. */
 {
 	int INDEX_BOTTOM = INDEX_TOP + currmenu->last - currmenu->first;
-/* fprintf(stderr, "IB %d row %d\n", INDEX_BOTTOM, xrow); */
+
 	switch (xmouse) {
 		case MOUSE_BUTTON_1:
 		case MOUSE_BUTTON_3:
 			if (xrow < INDEX_TOP || xrow >= INDEX_BOTTOM)
 				return iKeyPageDown;
 
-			currmenu->erase_arrow();
+			erase_arrow();
 			currmenu->curr = xrow - INDEX_TOP + currmenu->first;
 			currmenu->draw_arrow();
 
@@ -249,6 +276,7 @@ mouse_action(
 				return iKeyPageUp;
 
 			return left_action();
+			/* NOTREACHED */
 			break;
 
 		default:
@@ -256,6 +284,61 @@ mouse_action(
 	}
 
 	return ch;			/* Pass through */
+}
+
+
+int
+handle_keypad (
+	int (*left_action) (void),
+	int (*right_action) (void))
+{
+	int ch = ReadCh ();
+
+	switch (ch) {
+#ifndef WIN32
+		case ESC:	/* common arrow keys */
+#	ifdef HAVE_KEY_PREFIX
+		case KEY_PREFIX:
+#	endif /* HAVE_KEY_PREFIX */
+			switch (get_arrow_key (ch)) {
+#endif /* !WIN32 */
+				case KEYMAP_UP:
+					ch = iKeyUp;
+					break;
+				case KEYMAP_DOWN:
+					ch = iKeyDown;
+					break;
+				case KEYMAP_LEFT:
+					ch = left_action();
+					break;
+				case KEYMAP_RIGHT:
+					ch = right_action();
+					break;
+				case KEYMAP_PAGE_UP:
+					ch = iKeyPageUp;
+					break;
+				case KEYMAP_PAGE_DOWN:
+					ch = iKeyPageDown;
+					break;
+				case KEYMAP_HOME:
+					ch = iKeyFirstPage;
+					break;
+				case KEYMAP_END:
+					ch = iKeyLastPage;
+					break;
+#ifndef WIN32
+				case KEYMAP_MOUSE:
+					ch = mouse_action(ch, left_action, right_action);
+					break;
+				default:
+					break;
+			}
+			break;
+		default:
+			break;
+	}
+#endif /* !WIN32 */
+	return ch;
 }
 
 

@@ -4,11 +4,33 @@
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
  *  Updated   : 1997-03-19
- *  Copyright : (c) Copyright 1997-99 by Urs Janssen
- *              You may  freely  copy or  redistribute  this software,
- *              so  long as there is no profit made from its use, sale
- *              trade or  reproduction.  You may not change this copy-
- *              right notice, and it must be included in any copy made.
+ *
+ * Copyright (c) 1997-2000 Urs Janssen <urs@tin.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef TIN_H
@@ -39,7 +61,7 @@ get_host_name (
 	if ((ptr = getenv("NodeName")) != (char *) 0)
 		strncpy(hostname, ptr, MAXHOSTNAMELEN);
 #	else
-#		if defined(WIN32)
+#		ifdef WIN32
 	if ((ptr = getenv("COMPUTERNAME")) != (char *) 0)
 		strncpy(hostname, ptr, MAXHOSTNAMELEN);
 #		endif /* WIN32 */
@@ -75,7 +97,7 @@ get_domain_name (
 	FILE *fp;
 	static char domain[8192];
 
-#	if defined(M_AMIGA)
+#	ifdef M_AMIGA
 /*
  * Damn compiler bugs...
  * Without this hack, SASC 6.55 produces a TST.B d16(pc),
@@ -91,7 +113,7 @@ static const char *domain_name_hack = DOMAIN_NAME;
 	if (strlen(DOMAIN_NAME))
 		strcpy(domain, DOMAIN_NAME);
 
-#	if defined(M_AMIGA)
+#	ifdef M_AMIGA
 	if (strchr(domain, ':')) { /* absolute AmigaOS paths contain one, RFC-hostnames don't */
 #	else
 	if (domain[0] == '/' && domain[1]) {
@@ -269,7 +291,6 @@ get_full_name (
 	if ((p = strchr (buf, '&'))) {
 		*p++ = '\0';
 		strcpy (tmp, pw->pw_name);
-		/* strcpy(tmp, get_user_name()); */
 		if (*tmp && *tmp >= 'a' && *tmp <= 'z')
 			*tmp = *tmp - 32;
 		sprintf (fullname, "%s%s%s", buf, tmp, p);
@@ -301,17 +322,22 @@ get_from_name (
 	if (!(fromhost && *fromhost))
 		fromhost = domain_name;
 
-	if (thisgrp && (thisgrp->attribute->from != (char *) 0)) {
+	if (thisgrp && *thisgrp->attribute->from != '\0') {
 		strcpy(from_name, thisgrp->attribute->from);
 		return;
 	}
-
+#	if 0
 	if (*tinrc.mail_address) {
 		strcpy(from_name, tinrc.mail_address);
 		return;
 	}
+#	endif /* 0 */
 
+#	if 0
 	sprintf (from_name, ((strchr(get_full_name(), '.')) ? "\"%s\" <%s@%s>" : "%s <%s@%s>"), get_full_name(), get_user_name(), fromhost);
+#	else
+	sprintf (from_name, ((strpbrk(get_full_name(), "!()<>@,;:\\\".[]")) ? "\"%s\" <%s@%s>" : "%s <%s@%s>"), get_full_name(), get_user_name(), fromhost);
+#	endif /* 0 */
 #	ifdef DEBUG
 	if (debug == 2)
 		error_message ("FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", from_name, get_user_name(), domain_name, get_full_name());
@@ -324,7 +350,7 @@ get_from_name (
  * build_sender()
  * returns *(Full_Name <user@fq.domainna.me>)
  */
-#if !defined(FORGERY)
+#ifndef FORGERY
 char *
 build_sender (
 	void)

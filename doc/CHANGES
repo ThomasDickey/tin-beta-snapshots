@@ -1,25 +1,83 @@
--- 1.5.1 release 19991223 "" --
+-- 1.5.2 release 20000118 "" --
+
+U012) Jason Faultless <jason@radar.tele2.co.uk>
+      ADD. better PGP/GPG support
+      ADD. big group/thread menu cleanup
+      ADD. proper return code handling to group menu
+      ADD. generic keymap/mouse handling
+      ADD. cleanup draw/erase arrow routines
+      ADD. made 'K' on thread menu more consistent with group menu
+      ADD. use 'from' attribute for PGP signing if set
+      ADD. updated WHATSNEW
+      BUG. catchup handling in thread menu inconsistent
+      BUG. silly typo in menu handling
+      BUG. -z did not restore terminal modes
+      BUG. group 'z' and 'Z' unread message corrupt
+      BUG. manpage had '[' and ']' in thread section instead of pager
+      FIX. tin.1, menukeys.h, proto.h, tin.h, global.c, group.c, page.c
+           pgp.c, select.c, thread.c
+
+ 009) Jason Faultless <jason@radar.tele2.co.uk>
+      BUG. -z did not restore terminal modes   
+      FIX. main.c
+
+U011) Ralf Doeblitz <doeblitz@gmx.de>
+      ADD. human readable time-stamp in filters
+      ADD. GNKSA filter documentation
+      FIX. filtering, filter.c
+
+U010) Urs Janssen <urs@tin.org>
+      ADD. BSD-license
+      ADD. minor Makefile/configure cleanup
+      FIX. Makefile, Makefile[.in], include/*.h, src/*.c
+
+U009) Arkadiusz Miskiewicz <misiek@misiek.eu.org>
+      BUG. missing freeaddrinfo()
+      FIX. nntplib.c
+
+-- 1.5.1 release 20000103 "Sumerland" --
+
+U008) Urs Janssen <urs@tin.org>
+      BUG. typo broke snprintf() fallback
+      BUG. used strlen() instead of sizeof() in various places
+      BUG. possible Y2K bug in parsedate.y (can't show up in tin)
+      BUG. --disable-nls didn't work
+      ADD. check for gpg
+      ADD. -DTHREAD_SUM
+      ADD. code cleanup
+      ADD. speed-up start when there are several new groups on the server
+      REM. patch 006
+      FIX. configure[.in], autoconf.h[in], tin.h, parsedate.y, active.c
+           config.c, group.c, nntplib.c, pgp.c, post.c, select.c, tags.c
+           thread.c
+
+U007) Michael Bienia <michael@vorlon.ping.de>
+      Urs Janssen <urs@tin.org>
+      BUG. gpg support didn't work if neither pgp nor pgp-5 was
+           found on the system
+      FIX. configure[.in], autoconf.h[in], extern.h, menukeys.h, proto.h
+           help.c, init.c, lang.c, page.c, pgp.c, post.c
 
  008) Jason Faultless <jason@radar.tele2.co.uk>
       Urs Janssen <urs@tin.org>
       BUG. removed annyoing "Reading attributes file ..."-messages
-           for reach new group
+           for each new group
       FIX. active.c, attrib.c, lang.c, main.c
 
-U007) Sebastian Bork <sebi@sebi.org>
+U006) Sebastian Bork <sebi@sebi.org>
       BUG. misplaced parenthesis
       FIX. post.c
 
-U006) Arkadiusz Miskiewicz <misiek@misiek.eu.org>
+U005) Arkadiusz Miskiewicz <misiek@misiek.eu.org>
       ADD. better check is system is IPv6 ready
       ADD. NLS support
-      FIX. configure[.in], autoconf.h[in], tin.h, *
+      FIX. configure[.in], autoconf.h[in], *.c
 
-U005) Mark Ayzenshteyn <marka@bonzo.org>
+U004) Mark Ayzenshteyn <marka@bonzo.org>
       ADD. uudecode files with spaces in name
       FIX. save.c
 
-U004) Jason Faultless <jason@radar.tele2.co.uk>
+U003) Jason Faultless <jason@radar.tele2.co.uk>
       ADD. split article tagging type code to tag.c
       ADD. start of GPG support
       ADD. big code cleanup
@@ -27,15 +85,6 @@ U004) Jason Faultless <jason@radar.tele2.co.uk>
       FIX. README, CHANGES, TODO, extern.h, proto.h, tin.h, auth.c
            config.c, curses.c, feed.c, filter.c, group.c, lang.c, memory.c
            misc.c, page.c, pgp.c, select.c, thread.c
-
-U003) Urs Janssen <urs@tin.org>
-      BUG. typo broke snprintf() fallback
-      BUG. used strlen() instead of sizeof() in various places
-      ADD. check for gpg
-      ADD. -DTHREAD_SUM
-      REM. patch 006
-      FIX. configure[.in], autoconf.h[in], tin.h, config.c, nntplib.c, pgp.c
-           post.c, select.c, thread.c
 
 -- 1.5.0 release 19991201 "Blueprint" --
 

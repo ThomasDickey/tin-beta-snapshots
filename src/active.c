@@ -5,12 +5,38 @@
  *  Created   : 1992-02-16
  *  Updated   : 1999-11-19
  *  Notes     :
- *  Copyright : (c) Copyright 1991-99 by Iain Lea
- *              You may  freely  copy or  redistribute  this software,
- *              so  long as there is no profit made from its use, sale
- *              trade or  reproduction.  You may not change this copy-
- *              right notice, and it must be included in any copy made
+ *
+ * Copyright (c) 1992-2000 Iain Lea <iain@bricbrac.de>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Iain Lea.
+ * 4. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 
 #ifndef TIN_H
 #	include	"tin.h"
@@ -30,6 +56,9 @@ t_bool force_reread_active_file = FALSE;
 static char acSaveActiveFile[PATH_LEN];
 static time_t active_timestamp;	/* time active file read (local) */
 
+/*
+ * if you are using C-News nntpd set NUM_SIMULTANEOUS_GROUP_COMMAND to 1
+ */
 #ifdef NNTP_ABLE
 #	define NUM_SIMULTANEOUS_GROUP_COMMAND 50
 #endif /* NNTP_ABLE */
@@ -80,6 +109,7 @@ need_reread_active_file (
 /*
  * Resync active file when reread_active_file_secs have passed or
  * force_reread_actve_file is set.
+ * Return TRUE if a reread was performed
  */
 t_bool
 resync_active_file (
@@ -622,23 +652,14 @@ check_for_any_new_groups (
 				*ptr = '\0';
 			}
 
-#ifdef OLD_SLOW_STARTUP /* IMHO this should go outside the while loop */
-			free_attributes_array ();
-			spin_cursor();
-			read_attributes_file (global_attributes_file, TRUE);
-			read_attributes_file (local_attributes_file, FALSE);
-#endif /* OLD_SLOW_STARTUP */
-
 			subscribe_new_group (line, autosubscribe, autounsubscribe);
 		}
 
 		TIN_FCLOSE (fp);
 
-#ifndef OLD_SLOW_STARTUP
-			free_attributes_array ();
-			read_attributes_file (global_attributes_file, TRUE);
-			read_attributes_file (local_attributes_file, FALSE);
-#endif /* !OLD_SLOW_STARTUP */
+		free_attributes_array ();
+		read_attributes_file (global_attributes_file, TRUE);
+		read_attributes_file (local_attributes_file, FALSE);
 
 		if (tin_errno)
 			return;				/* Don't update the time if we quit */

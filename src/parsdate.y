@@ -4,7 +4,7 @@
  *  Module    : parsedate.y
  *  Author    : S. Bellovin, R. $alz, J. Berets, P. Eggert
  *  Created   : 1990-08-01
- *  Updated   : 1994-09-23
+ *  Updated   : 2000-01-03
  *  Notes     : This grammar has 6 shift/reduce conflicts.
  *              Originally written by Steven M. Bellovin <smb@research.att.com>
  *              while at the University of North Carolina at Chapel Hill.
@@ -529,6 +529,8 @@ Convert(
 
     if (Year < 0)
 	Year = -Year;
+    if (Year < 70)
+        Year += 2000;
     if (Year < 100)
 	Year += 1900;
     if (Year < EPOCH)
@@ -587,7 +589,7 @@ RelativeMonth(
 
     tm = localtime(&Start);
     Month = 12 * tm->tm_year + tm->tm_mon + RelMonth;
-    Year = Month / 12;
+    Year = Month / 12 + 1900;
     Month = Month % 12 + 1;
     return DSTcorrect(Start,
 	    Convert(Month, (time_t)tm->tm_mday, Year,
@@ -831,7 +833,7 @@ parsedate(
     }
 
     tm = localtime(&now->time);
-    yyYear = tm->tm_year;
+    yyYear = tm->tm_year + 1900;
     yyMonth = tm->tm_mon + 1;
     yyDay = tm->tm_mday;
     yyTimezone = now->tzone;

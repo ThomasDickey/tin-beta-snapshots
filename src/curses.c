@@ -360,13 +360,13 @@ InitScreen (void)
 	_cleartoeos	= "\033[J";
 	_getwinsize	= "\2330 q";
 #endif /* M_AMIGA */
-#if defined(M_OS2)
+#ifdef M_OS2
 	_cleartoeos	= NULL;
 	_terminalinit	= NULL;
 	_terminalend	= "";
 	initscr ();
 #endif /* M_OS2 */
-#if defined(VMS)
+#ifdef VMS
 	_cleartoeos	= "\033[J";
 	_terminalinit	= NULL;
 	_terminalend	= "";
@@ -710,7 +710,7 @@ Raw (
 		_inraw = 1;
 	}
 #else
-#	if !defined(M_OS2)
+#	ifndef M_OS2
 
 #		if defined(M_AMIGA) && defined(__SASC)
 	_inraw = state;

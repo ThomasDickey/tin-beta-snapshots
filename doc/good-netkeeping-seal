@@ -224,9 +224,9 @@ as an editable field in a form will meet the requirement.
 Rationale: Topics drift as a discussion progresses, and users need the
 ability to change the Subject header to reflect the drift. Similarly, a
 user may determine that the discussion no longer belongs in some of the
-places that it started, or that its continuation needs to go elsewhere. 
+places that it started, or that its continuation needs to go elsewhere.
 The software must not impede the user's ability to make these
-judgments, possibly during the composition of her followup article.  
+judgments, possibly during the composition of her followup article.
 It's not acceptable to have users who respond to "Please direct
 followups appropriately" with "I can't; the software won't let me."
 
@@ -255,7 +255,7 @@ software by replacing non-standard prefixes (such as "Re^2: ", "Re(2):
 prefix "Re: ".
 
 Rationale: These things should be obvious, but many authors of news
-software don't seem to understand the relevant sections of RFC 1036. 
+software don't seem to understand the relevant sections of RFC 1036.
 Truncated "Subject: " headers, especially when gratuitous non-ASCII
 characters are also thrown in, are a major annoyance for users and can
 make threading difficult or impossible.
@@ -472,7 +472,7 @@ such as "delete".  Similarly, in English software, the text of the
 supersede command SHOULD include the word "supersede".
 
 Rationale: People make mistakes and need the ability to revoke or
-correct them; both `cancel' and `supersede' exist for good reasons. 
+correct them; both `cancel' and `supersede' exist for good reasons.
 However, software should not encourage users to abuse the net, either
 intentionally or accidentally, by sending unauthorized (`rogue') cancels
 or supersedes.  The supersede option is essential: due (a.o.) to

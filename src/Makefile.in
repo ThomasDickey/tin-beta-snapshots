@@ -3,6 +3,36 @@
 #
 # Updated: 1999-12-16
 #
+# Copyright (c) 1995-2000 Thomas E. Dickey <dickey@clark.net>
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. All advertising materials mentioning features or use of this software
+#    must display the following acknowledgement:
+#    This product includes software developed by Thomas E. Dickey.
+# 4. The name of the author may not be used to endorse or promote
+#    products derived from this software without specific prior written
+#    permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+# OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+# GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
 
 SHELL		= /bin/sh
 prefix		= @prefix@
@@ -37,9 +67,9 @@ INS_SYSDEF_DIR	= @TIN_DEFAULTS_DIR@
 INS_MANUAL_EXT	= 1
 
 # Project
-PROJECT	= tin
-EXE	= tin$x
-VER	= 1.5.1
+PROJECT	= @PACKAGE@
+EXE	= @PACKAGE@$x
+VER	= @VERSION@
 MANEXT	= 1
 
 # directory structure
@@ -73,6 +103,7 @@ HFILES	= \
 	$(INCDIR)/extern.h \
 	$(INCDIR)/menukeys.h \
 	$(INCDIR)/nntplib.h \
+	$(INCDIR)/plp_snprintf.h \
 	$(INCDIR)/policy.h \
 	$(INCDIR)/proto.h \
 	$(INCDIR)/stpwatch.h \
@@ -267,6 +298,7 @@ install: $(INSTALL_PREFIX)$(INS_BINARY_DIR)
 	@$(CD) $(INSTALL_PREFIX)$(INS_BINARY_DIR) && $(RM) -f r$(EXE)
 	@$(LN) $(INSTALL_PREFIX)$(INS_BINARY_DIR)/$(EXE) $(INSTALL_PREFIX)$(INS_BINARY_DIR)/r$(EXE)
 	@$(MAKE) install_manpage
+	@$(MAKE) install_nls
 
 install_setuid:
 	@$(MAKE) all
@@ -275,6 +307,11 @@ install_setuid:
 	@$(CD) $(INSTALL_PREFIX)$(INS_BINARY_DIR) && $(RM) -f r$(EXE)
 	@$(LN) $(INSTALL_PREFIX)$(INS_BINARY_DIR)/$(EXE) $(INSTALL_PREFIX)$(INS_BINARY_DIR)/r$(EXE)
 	@$(MAKE) install_manpage
+	@$(MAKE) install_nls
+
+install_nls:
+	@$(ECHO) "Installing NLS-files"
+	@-if test ../po/Makefile ; then $(CD) ../po/ && $(MAKE) install ; fi
 
 tags:
 	@$(ECHO) "Generating tags (results in ./tags)..."
@@ -404,7 +441,8 @@ $(OBJDIR)/page.o:		$(SRCDIR)/page.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
 $(OBJDIR)/parsdate.o:		$(OBJDIR)/parsdate.y $(TIN_DEP)
 $(OBJDIR)/pgp.o:		$(SRCDIR)/pgp.c $(TIN_DEP)
-$(OBJDIR)/plp_snprintf.o:	$(SRCDIR)/plp_snprintf.c $(TIN_DEP)
+$(OBJDIR)/plp_snprintf.o:	$(SRCDIR)/plp_snprintf.c $(TIN_DEP) \
+				$(INCDIR)/plp_snprintf.h
 $(OBJDIR)/post.o:		$(SRCDIR)/post.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h \
 				$(INCDIR)/version.h

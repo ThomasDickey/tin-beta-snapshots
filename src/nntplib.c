@@ -594,6 +594,8 @@ get_tcp6_socket (
 /*	hints.ai_flags    = AI_CANONNAME; */
 	hints.ai_family   = ADDRFAM;
 	hints.ai_socktype = SOCK_STREAM;
+	res = (struct addrinfo *) 0;
+	res0 = (struct addrinfo *) 0;
 	err = getaddrinfo(mymachine, myport, &hints, &res0);
 	if (err != 0) {
 		my_fprintf (stderr, "\ngetaddrinfo: %s\n", gai_strerror(err)); /* FIXME: -> lang.c */
@@ -610,6 +612,8 @@ get_tcp6_socket (
 			break;
 		}
 	}
+	if (res0 != (struct addrinfo *) 0)
+		freeaddrinfo(res0);
 	if (err < 0) {
 		my_fprintf (stderr, _("\nsocket or connect problem\n")); /* FIXME: -> lang.c */
 		return (-1);
