@@ -74,6 +74,10 @@ static long find_first_unread (struct t_group *group);
 static t_bool parse_headers (FILE *fp, struct t_article *h);
 static void print_expired_arts (int num_expired);
 static void thread_by_subject (void);
+#ifdef THREAD_SUM
+	static void sort_base (unsigned int sort_threads_type);
+	static int score_comp_base (t_comptype p1, t_comptype p2);
+#endif /* THREAD_SUM */
 
 
 /*
@@ -613,6 +617,11 @@ make_threads (
 	}
 
 	find_base (group);
+#ifdef THREAD_SUM
+	/* sort base[] */
+	if (group->attribute && group->attribute->sort_art_type > SORT_BY_NOTHING && group->attribute->thread_arts > THREAD_NONE)
+		sort_base (group->attribute->sort_art_type);
+#endif /* THREAD_SUM */
 }
 
 
@@ -646,6 +655,21 @@ sort_arts (
 }
 
 
+#ifdef THREAD_SUM
+static void
+sort_base (
+	unsigned int sort_threads_type)
+{
+	switch (sort_threads_type) {
+		case SORT_BY_SCORE_DESCEND:
+		case SORT_BY_SCORE_ASCEND:
+			qsort (base, (size_t)grpmenu.max, sizeof(long), score_comp_base);
+			break;
+	}
+}
+#endif /* THREAD_SUM */
+
+
 /*
  * TODO
  * Seems to be only called when reading local spool and no overview files exist
@@ -676,6 +700,7 @@ parse_headers (
 		if (lineno++ > max_lineno || h->archive)
 			break;
 
+		unfold_header (ptr);
 		switch (toupper((unsigned char)*ptr)) {
 			case 'A':	/* Archive-name:  optional */
 				if ((hdr = parse_header (ptr+1, "rchive-name", FALSE))) {
@@ -866,7 +891,7 @@ read_nov_file (
 		p = buf;
 
 		/*
-		 * read the article number
+		 * read the article number, guaranteed to be the first field
 		 */
 		artnum = atol (p);
 
@@ -900,7 +925,12 @@ read_nov_file (
 			p = q + 1;
 
 		/*
-		 * READ subject
+		 * TODO: rewrite the code below as the field order is not fixed,
+		 *       but defined in "LIST OVERVIEW.FMT"
+		 */
+
+		/*
+		 * read Subject
 		 */
 		if ((q = strchr (p, '\t')) == (char *) 0) {
 #ifdef DEBUG
@@ -915,7 +945,7 @@ read_nov_file (
 		p = q + 1;
 
 		/*
-		 * READ author
+		 * read From
 		 */
 		if ((q = strchr (p, '\t')) == (char *) 0) {
 #ifdef DEBUG
@@ -934,7 +964,7 @@ read_nov_file (
 
 		p = q + 1;
 		/*
-		 * READ article date
+		 * read Date
 		 */
 		if ((q = strchr (p, '\t')) == (char *) 0) {
 #ifdef DEBUG
@@ -949,7 +979,7 @@ read_nov_file (
 		p = q + 1;
 
 		/*
-		 * READ article message id
+		 * read Message-ID
 		 */
 		q = strchr (p, '\t');
 		if (q == (char *) 0 || p == q) {	/* Empty msgid's */
@@ -967,7 +997,7 @@ read_nov_file (
 		p = q + 1;
 
 		/*
-		 * READ article references
+		 * read References
 		 */
 		if ((q = strchr (p, '\t')) == (char *) 0) {
 #ifdef DEBUG
@@ -983,7 +1013,7 @@ read_nov_file (
 		p = q + 1;
 
 		/*
-		 * SKIP article bytes
+		 * skip Bytes
 		 */
 		if ((q = strchr (p, '\t')) == (char *) 0) {
 #ifdef DEBUG
@@ -997,7 +1027,7 @@ read_nov_file (
 		p = (q == (char *) 0 ? (char *) 0 : q + 1);
 
 		/*
-		 * READ article lines
+		 * read Lines
 		 */
 		if (p != (char *) 0) {
 			if ((q = strchr (p, '\t')) != (char *) 0)
@@ -1010,7 +1040,7 @@ read_nov_file (
 		}
 
 		/*
-		 * READ article xrefs
+		 * read Xref
 		 */
 		if (p != (char *) 0 && xref_supported) {
 			if ((q = strstr (p, "Xref: ")) == (char *) 0)
@@ -1459,31 +1489,60 @@ score_comp (
 }
 
 
+#ifdef THREAD_SUM
+/*
+ * Compares the total score of two threads. Used for sorting base[].
+ */
+static int
+score_comp_base (
+	t_comptype p1,
+	t_comptype p2)
+{
+	int a = get_score_of_thread (*(const long *)p1);
+	int b = get_score_of_thread (*(const long *)p2);
+
+	if (CURR_GROUP.attribute->sort_art_type == SORT_BY_SCORE_ASCEND) {
+		if (a > b)
+			return 1;
+		if (a < b)
+			return -1;
+	}
+	else {
+		if (a < b)
+			return 1;
+		if (a > b)
+			return -1;
+	}
+	return 0;
+}
+#endif /* THREAD_SUM */
+
+
 void
 set_article (
 	struct t_article *art)
 {
-	art->subject	= (char *) 0;
-	art->from	= (char *) 0;
-	art->name	= (char *) 0;
-	art->date	= (time_t) 0;
-	art->xref	= (char *) 0;
-	art->msgid	= (char *) 0;
-	art->refs	= (char *) 0;
-	art->refptr	= (struct t_msgid *) 0;
-	art->line_count	= -1;
-	art->archive	= (char *) 0;
-	art->part	= (char *) 0;
-	art->patch	= (char *) 0;
-	art->thread	= ART_EXPIRED;
-	art->status	= ART_UNREAD;
-	art->inthread	= FALSE;
-	art->killed	= FALSE;
-	art->tagged	= FALSE;
-	art->selected	= FALSE;
-	art->zombie	= FALSE;
-	art->delete_it	= FALSE;
-	art->inrange	= FALSE;
+	art->subject = (char *) 0;
+	art->from = (char *) 0;
+	art->name = (char *) 0;
+	art->date = (time_t) 0;
+	art->xref = (char *) 0;
+	art->msgid = (char *) 0;
+	art->refs = (char *) 0;
+	art->refptr = (struct t_msgid *) 0;
+	art->line_count = -1;
+	art->archive = (char *) 0;
+	art->part = (char *) 0;
+	art->patch = (char *) 0;
+	art->thread = ART_EXPIRED;
+	art->status = ART_UNREAD;
+	art->inthread = FALSE;
+	art->killed = FALSE;
+	art->tagged = FALSE;
+	art->selected = FALSE;
+	art->zombie = FALSE;
+	art->delete_it = FALSE;
+	art->inrange = FALSE;
 }
 
 

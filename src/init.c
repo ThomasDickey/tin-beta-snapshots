@@ -68,7 +68,7 @@ static int read_site_config(void);
 
 
 char active_times_file[PATH_LEN];
-char article[PATH_LEN];			/* ~/.article file */
+char article[PATH_LEN];			/* ~/TIN_ARTICLE_NAME file */
 char bug_nntpserver1[PATH_LEN];		/* welcome message of NNTP server used */
 char bug_nntpserver2[PATH_LEN];		/* welcome message of NNTP server used */
 char cmdline_nntpserver[PATH_LEN];
@@ -761,11 +761,7 @@ init_selfinfo (
 #	endif /* M_AMIGA */
 #endif /* !DISABLE_PRINTING */
 	strcpy (mailer, get_val (ENV_VAR_MAILER, DEFAULT_MAILER));
-#ifdef VMS
-	joinpath (article, homedir, "article.");
-#else
-	joinpath (article, homedir, ".article");
-#endif /* VMS */
+	joinpath (article, homedir, TIN_ARTICLE_NAME);
 #ifdef APPEND_PID
 	sprintf (article+strlen(article), ".%d", (int) process_id);
 #endif /* APPEND_PID */

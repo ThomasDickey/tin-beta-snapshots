@@ -1,4 +1,23 @@
--- 1.5.9 release 20010313 "" --
+-- 1.5.9 release 20010506 "" --
+
+U063) Dirk Nimmich <nimmich@uni-muenster.de>
+      BUG. article with 0 lines in cooked body quits tin
+      BUG. automatic unfolding of headers is not always desired
+      BUG. posting of folded headers was impossible
+      BUG. post key when following up to a posting with Followup-To poster
+           set was 'w' instead of 'p'
+      ADD. note about FQDN
+      FIX. INSTALL, proto.h, art.c, cook.c, post.c, rfc2046.c, rfc2047.c
+           read.c
+
+U062) Martin Klaiber <martinkl@zedat.fu-berlin.de>
+      ADD. sort threads by score
+      FIX. art.c, thread.c
+
+U061) Andreas Metzler <tin-dev@downhill.at.eu.org>
+      ADD. Message-ID (if known) to filter-file
+      ADD. Message-ID (if known) to posted_articles_file
+      FIX. proto.h, filter.c, post.c
 
 U060) Dirk Nimmich <nimmich@uni-muenster.de>
       Nickolay Dudorov <nnd@wint.itfs.nsk.su>
@@ -6,22 +25,26 @@ U060) Dirk Nimmich <nimmich@uni-muenster.de>
       FIX. keymap.c
 
 U059) Urs Janssen <urs@tin.org>
-      BUG. backup_file() treated missing sourcefiles as a error
+      BUG. backup_file() treated missing sourcefiles as an error
       BUG. if a nntp:-url only contained the name of a group but didn't
            specify a article the last groupname component wasn't recognized.
       BUG. crahsed when hitting iKeySelectReadGrp* with
            show_only_unread_groups=ON and all arts read.
+      ADD. moved 'article'-tmp-filenames to tin.h
       ADD. joined iKeyPagePrint/iKeyGroupPrint
       ADD. news:, snews:, nntp: scheme to url_handler.sh
-      ADD. 'U' news:, snews:, nntp: and mailto: to 'U'RL-command
+      ADD. news:, snews:, nntp: and mailto: to 'U'RL-command
       ADD. recognize IPv6 http:, ftp: and gopher: URLs
-      ADD. config.guess, config.sub update
-      ADD. keep_posted_articles_file locking
+      ADD. config.guess, config.sub, install.sh update
+      ADD. (dot-)file locking routines
       ADD. portable uniq tmpfile generation
-      FIX. config.guess, config.sub, url_handler.sh, de.po, keymap.sample
-           tin.5, Makefile[.in], autoconf.h[in], keymap.h, menukeys.h, tin.h
-           auth.c, group.c, help.c, keymap.c, lang.c, lock.c, misc.c, page.c
-           post.c, select.c, tmpfile.c
+      ADD. THREAD_WEIGHT
+      ADD. strrstr() fallback
+      FIX. config.guess, config.sub, configure[.in], install.sh
+           url_handler.sh, de.po, keymap.sample, mailcap.sample, tin.5
+           Makefile[.in], autoconf.h[in], keymap.h, menukeys.h, tin.h, auth.c
+           group.c, help.c, init.c, keymap.c, lang.c, lock.c, misc.c, page.c
+           pgp.c, post.c, select.c, string.c, thread.c, tmpfile.c
 
 -- 1.5.8 release 20010221 "Blue Water" --
 
@@ -66,7 +89,7 @@ U053) Dirk Nimmich <nimmich@uni-muenster.de>
       BUG. ~/.signature was used instead of file named in tinrc/attributes
       BUG. memory leak and possible buffer overruns in
            post.c:user_posted_messages()
-      BUG. sig-demiliter wasn't recognized if qp-encodet over 2 lines
+      BUG. sig-delimiter wasn't recognized if qp-encoded over 2 lines
       FIX. Makefile.in, pgp.txt, extern.h, config.c, cook.c, inews.c, lang.c
            pgp.c, post.c, prompt.c, sigfile.c
 

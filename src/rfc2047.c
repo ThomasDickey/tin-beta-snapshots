@@ -428,11 +428,9 @@ contains_nonprintables (
 
 
 /*
- * Uncommented this conditional compilation statement
- * in order to implement mandatory break-up of long lines
- * in mail messages in accordance with rfc 2047 (rfc 1522)
+ * implement mandatory break-up of long lines in mail messages in accordance
+ * with rfc 2047 (rfc 1522)
  */
-/* #ifdef MIME_BREAK_LONG_LINES */
 static int
 sizeofnextword (
 	char *w)
@@ -446,7 +444,6 @@ sizeofnextword (
 		x++;
 	return x - w;
 }
-/* #endif */
 
 
 static int
@@ -485,23 +482,8 @@ rfc1522_do_encode (
 	t_bool any_quoting_done = FALSE;
 	t_bool isbroken_within = FALSE;	/* is word broken due to length restriction on encoded of word? */
 	t_bool rightafter_ew = FALSE;
-
-/*
- * Uncommented this and other conditional compilation statement
- * depending on MIME_BREAK_LONG_LINES in this function
- * in order to implement mandatory break-up of long lines
- * in mail messages in accordance with RFC 2047 (RFC 1522).
- * Whether or not long lines are broken up depends on
- * boolean variable break_long_line, instead.
- * break_long_line is FALSE for news posting unless MIME_BREAK_LONG_LINES
- * is defined, but it's TRUE for mail messages regardless of whether or not
- * MIME_BREAK_LONG_LINES is defined
- */
-/* #ifdef MIME_BREAK_LONG_LINES */
 	int column = 0;				/* current column */
 	int word_cnt = 0;
-
-/* #endif */
 	size_t ewsize = 0;			/* size of current encoded-word */
 	char buf[2048];				/* buffer for encoded stuff */
 	char buf2[80];				/* buffer for this and that */
@@ -762,10 +744,10 @@ rfc15211522_encode (
 {
 	FILE *f;
 	FILE *g;
-	char *c, *d;
+	char *c;
+	char *header;
 	char encoding;
 	char buffer[2048];
-	char header[4096];
 	t_bool body_encoding_needed = FALSE;
 	t_bool umlauts = FALSE;
 	BodyPtr body_encode;
@@ -778,29 +760,18 @@ rfc15211522_encode (
 		fclose(g);
 		return;
 	}
-	header[0] = 0;
-	d = header;
 	quoteflag = 0;
-	while (fgets(buffer, 2048, f)) {
+	while ((header = tin_fgets(f, TRUE))) {
 #ifdef LOCAL_CHARSET
-		buffer_to_network(buffer);
+		buffer_to_network(header);
 #endif /* LOCAL_CHARSET */
-		if (header[0]
-			 && (!isspace((unsigned char) buffer[0]) || isreturn(buffer[0]))) {
-			if (allow_8bit_header)
-				fputs(header, g);
-			else
-				fputs(rfc1522_encode(header, ismail), g);
-			fputc('\n', g);
-			header[0] = '\0';
-			d = header;
-		}
-		if (isreturn(buffer[0]))
+		if (*header == '\0')
 			break;
-		c = buffer;
-		while (*c && !isreturn(*c))
-			*d++ = *c++;
-		*d = 0;
+		if (allow_8bit_header)
+			fputs(header, g);
+		else
+			fputs(rfc1522_encode(header, ismail), g);
+		fputc('\n', g);
 	}
 	fputc('\n', g);
 	while (fgets(buffer, 2048, f)) {

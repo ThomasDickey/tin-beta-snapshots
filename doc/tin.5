@@ -17,6 +17,7 @@ the
 newsreader.
 
 .SH FILES
+.\" TODO: mention .article[.$$], .cancel[.$$], .letter[.$$]?
 .PP
 .IR $MAILCAPS
 .br
@@ -547,7 +548,7 @@ Below is a list of all keynames and their default bindings.
 \fBToggleInfoLastLine\fP	i
 \fBDown2\fP	j
 \fBUp2\fP	k
-\fBPrint\fP        o
+\fBPrint\fP	o
 \fBQuit\fP	q
 \fBVersion\fP	v
 \fBPost\fP	w
@@ -1463,8 +1464,16 @@ using the wildmat notation.
 .B word_h_display_marks
 Should the leading and ending stars and dashes also be displayed,
 even when they are highlighting marks?
-0 - no    1 - yes, display mark    2 - print a space instead
-3 - print a space, but only in signatures
+.in +.5i
+.ti -\w'\(em'u
+\(em 0 = no
+.ti -\w'\(em'u
+\(em 1 = yes, display mark
+.ti -\w'\(em'u
+\(em 2 = print a space instead
+.ti -\w'\(em'u
+\(em 3 = print a space, but only in signatures
+.in -.5i
 .TP
 .B word_highlight
 Enable word highlighting. See \fBword_h_display_marks\fP for the options

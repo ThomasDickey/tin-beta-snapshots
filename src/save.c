@@ -252,6 +252,7 @@ fprintf(stderr, "start_save: create_path(%s)\n", tmp);
 					fclose (fp);
 					saved_arts++;
 
+					/* TODO: if article allready contains To: Cc: Bcc: it get's 'relayed' */
 					if (function == MAIL_ANY_NEWS) {
 						strfmailer (mailer, arts[j].subject, mail_news_user, savefile, buf, sizeof (buf), tinrc.mailer_format);
 						invoke_cmd (buf);		/* Keep trying after errors */

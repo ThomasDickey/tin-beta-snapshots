@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 1997-12-31
+ *  Updated   : 2001-04-24
  *  Notes     :
  *
  * Copyright (c) 1997-2001 Urs Janssen <urs@tin.org>
@@ -579,3 +579,31 @@ my_strerror (
 	return temp;
 }
 #endif /* !HAVE_STRERROR */
+
+
+/* strrstr() based on Lars Wirzenius' <lars.wirzenius@helsinki.fi> code */
+#ifndef HAVE_STRRSTR
+char *
+strrstr (
+	const char *str,
+	const char *pat)
+{
+	size_t slen, plen;
+	const char *ptr;
+
+	if (str == (char *) 0 || pat == (char *) 0)
+		return (char *) 0;
+
+	slen = strlen(str);
+	plen = strlen(pat);
+
+	if (plen <= slen) {
+		for (ptr = str + (slen - plen); ptr > str; --ptr) {
+			if (*ptr == *pat && strncmp(ptr, pat, plen) == 0)
+				return (char *) ptr;
+		}
+	}
+
+	return (char *) 0;
+}
+#endif /* HAVE_STRRSTR */

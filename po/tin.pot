@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2001-03-12 04:53+0100\n"
+"POT-Creation-Date: 2001-05-06 17:24+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -243,7 +243,7 @@ msgid "# and set Followup-To: poster\n"
 msgstr ""
 
 #. FIXME: -> lang.c
-#: src/auth.c:182
+#: src/auth.c:183
 #, c-format
 msgid "Insecure permissions of %s (%o)"
 msgstr ""
@@ -5393,25 +5393,25 @@ msgid "Unreachable ?\n"
 msgstr ""
 
 #. FIXME: replace 'Thread' by 'Article' if THREAD_NONE
-#: src/page.c:604 src/save.c:528 src/thread.c:664
+#: src/page.c:604 src/save.c:529 src/thread.c:660
 msgid "Thread"
 msgstr ""
 
-#: src/page.c:770 src/save.c:525 src/thread.c:657
+#: src/page.c:770 src/save.c:526 src/thread.c:653
 msgid "Article"
 msgstr ""
 
-#: src/post.c:1495
+#: src/post.c:1499
 #, c-format
 msgid "%s is bogus"
 msgstr ""
 
-#: src/post.c:1497
+#: src/post.c:1501
 #, c-format
 msgid "No attributes for %s"
 msgstr ""
 
-#: src/post.c:1685
+#: src/post.c:1689
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr ""
@@ -5422,11 +5422,11 @@ msgstr ""
 msgid "Aborting read, please wait..."
 msgstr ""
 
-#: src/read.c:343
+#: src/read.c:347
 msgid "Aborted read\n"
 msgstr ""
 
-#: src/read.c:399
+#: src/read.c:403
 msgid "Draining\n"
 msgstr ""
 
@@ -5440,35 +5440,35 @@ msgid "[- Unavailable -]"
 msgstr ""
 
 #. TODO maybe print something more context dependent here ?
-#: src/save.c:509
+#: src/save.c:510
 msgid "No articles to save"
 msgstr ""
 
-#: src/save.c:519
+#: src/save.c:520
 #, c-format
 msgid "Warning: Only %d out of %d articles were saved"
 msgstr ""
 
-#: src/save.c:531
+#: src/save.c:532
 #, c-format
 msgid "Tagged %s"
 msgstr ""
 
-#: src/save.c:541
+#: src/save.c:542
 #, c-format
 msgid "-- %s saved to %s%s --"
 msgstr ""
 
-#: src/save.c:542 src/save.c:545
+#: src/save.c:543 src/save.c:546
 msgid "mailbox "
 msgstr ""
 
-#: src/save.c:544
+#: src/save.c:545
 #, c-format
 msgid "-- %s saved to %s%s - %s --"
 msgstr ""
 
-#: src/save.c:1092
+#: src/save.c:1093
 msgid "bytes"
 msgstr ""
 
@@ -5493,12 +5493,12 @@ msgstr ""
 msgid "All parts tagged"
 msgstr ""
 
-#: src/thread.c:744
+#: src/thread.c:740
 #, c-format
 msgid "List Thread (%d of %d)"
 msgstr ""
 
-#: src/thread.c:746
+#: src/thread.c:742
 #, c-format
 msgid "Thread (%.*s)"
 msgstr ""

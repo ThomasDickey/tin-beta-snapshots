@@ -175,7 +175,7 @@ extern void feed_articles (int function, int level, struct t_group *group, int r
 extern t_bool filter_articles (struct t_group *group);
 extern t_bool filter_menu (int type, struct t_group *group, struct t_article *art);
 extern t_bool quick_filter (int type, struct t_group *group, struct t_article *art);
-extern t_bool quick_filter_select_posted_art (struct t_group *group, const char *subj);
+extern t_bool quick_filter_select_posted_art (struct t_group *group, const char *subj, const char *a_message_id);
 extern t_bool read_filter_file (const char *file);
 extern void free_all_filter_arrays (void);
 extern int unfilter_articles (void);
@@ -273,6 +273,7 @@ extern void init_group_hash (void);
 extern int fd_lock(int fd, t_bool block);
 extern int test_fd_lock(int fd);
 extern int fd_unlock(int fd);
+extern t_bool dot_lock(const char *filename);
 
 /* mail.c */
 extern t_bool art_edit (struct t_group *psGrp, struct t_article *psArt);
@@ -542,12 +543,6 @@ extern void rfc1557_encode (char *line, FILE *f, int e);
 	extern void rfc1922_encode (char *line, FILE *f, int e);
 #endif /* 0 */
 
-/* rfc2047.c */
-extern char *rfc1522_decode (const char *s);
-extern char *rfc1522_encode (char *s,t_bool ismail);
-extern int mmdecode (const char *what, int encoding, int delimiter, char *where, const char *charset);
-extern void rfc15211522_encode (const char *filename, constext *mime_encoding, t_bool allow_8bit_header,t_bool ismail);
-
 /* rfc2046.c */
 extern const char *get_param (t_param *list, const char *name);
 extern char *parse_header (char *buf, const char *pat, t_bool decode);
@@ -558,6 +553,13 @@ extern t_part *new_part (t_part *part);
 extern void art_close (t_openartinfo *artinfo);
 extern void free_and_init_header (struct t_header *hdr);
 extern void free_parts (t_part *ptr);
+extern void unfold_header (char *line);
+
+/* rfc2047.c */
+extern char *rfc1522_decode (const char *s);
+extern char *rfc1522_encode (char *s,t_bool ismail);
+extern int mmdecode (const char *what, int encoding, int delimiter, char *where, const char *charset);
+extern void rfc15211522_encode (const char *filename, constext *mime_encoding, t_bool allow_8bit_header,t_bool ismail);
 
 /* save.c */
 extern int check_start_save_any_news (int function, t_bool catchup);
@@ -663,6 +665,10 @@ extern void str_lwr (char *str);
 	extern char *my_strerror (int n);
 #	define strerror(n) my_strerror(n)
 #endif /* !HAVE_STRERROR */
+#ifndef HAVE_STRRSTR
+	extern char * my_strrstr(const char *str, const char *pat);
+#	define strrstr(s,p)	my_strrstr(s,p)
+#endif /* !HAVE_STRRSTR */
 
 /* tags.c */
 extern int line_is_tagged (int n);
@@ -676,10 +682,11 @@ extern void undo_auto_select_arts (void);
 extern void undo_selections (void);
 
 /* tmpfile.c */
-extern int my_tmpfile(char *buffer, size_t size);
+extern int my_tmpfile(char *filename, size_t name_size, t_bool need_name, const char *base_dir);
 
 /* thread.c */
 extern int find_response (int i, int n);
+extern int get_score_of_thread (int n);
 extern int new_responses (int thread);
 extern int next_response (int n);
 extern int next_thread (int n);

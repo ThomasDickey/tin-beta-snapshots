@@ -1,5 +1,14 @@
-Compilation and installation notes for tin - 2000-01-22 (still incomplete!)
+Compilation and installation notes for tin - 2001-01-17 (still incomplete!)
 -------------------------------------------------------
+
+Note: Tin requires a valid fully qualified domain name for the host you are
+      running tin on. IF YOU DON'T HAVE A HOST NAME WITH A VALID DOMAIN GO
+      AND GET ONE AND CONFIGURE YOUR HOST -- NOW! (This will prevent problems
+      with other software, too.) Otherwise users may get "Invalid Sender"
+      error messages and won't be able to post using the internal inews. You
+      may optionally have a look at the tin.defaults file (watch out for
+      disable_sender) and install it in the --with-defaults-dir directory
+      using `make install_sysdefs`.
 
 Note: The section 'News machine names' is now at the beginning as it
       seemed to be the most sought after section.
@@ -55,7 +64,7 @@ TIN related:
   JUST_TESTING                     TINC_DNS
   EVIL_INSIDE                      USE_CANLOCK
   REREAD_ACTIVE_FILE_SECS          THREAD_SUM
-  HAVE_MOBOXRD
+  HAVE_MOBOXRD                     THREAD_WEIGHT
 
 System related:
   --bindir              --libexecdir          --program-transform-name
@@ -591,6 +600,9 @@ f300-fujitsu-uxpv4.1_ES                    cc 1.04       (pre-1.4 release 199909
 i686-pc-cygwin              (Cygwin 1.1.6) gcc 2.95.2    (1.5.7 release 20001104)   [2]    <urs@tin.org>
 
 powerpc-apple-rhapsody5.6                  gcc 2.7.2.3   (1.5.4 release 20000523)   [5]    <bkuemmer@gmx.net>
+
+powerpc-apple-darwin1.3                    gcc 2.95.2    (1.4.5 release 20010409)          <ventora-public@gmx.de>
+
 
 [1] add extra space at the end of buf[] in src/screen.c:spin_cursor()
     (fixed in the 1.4.0 release)

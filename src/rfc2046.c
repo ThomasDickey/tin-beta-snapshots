@@ -51,6 +51,7 @@
  */
 static int boundary_cmp (const char *line, const char *boundary);
 static void add_persist (struct t_header *hdr, const char *p_header, char *p_content);
+static int count_lines (char *line);
 
 /*
  * Local variables
@@ -465,7 +466,9 @@ parse_rfc822_headers(
 
 		if (to) {
 			fprintf(to, "%s\n", line);		/* Put raw data */
-			progress(++hdr->ext->line_count);	/* Should we count header lines ? */
+
+			hdr->ext->line_count += count_lines (line);
+			progress(hdr->ext->line_count);	/* Should we count header lines ? */
 		}
 
 		/*
@@ -477,6 +480,7 @@ parse_rfc822_headers(
 			return 0;
 		}
 
+		unfold_header (line);
 		if ((ptr = parse_header (line, "From", TRUE))) {
 			hdr->from = my_strdup(ptr);
 			continue;
@@ -529,9 +533,9 @@ parse_rfc822_headers(
 			hdr->ftnto = my_strdup(ptr);
 			continue;
 		}
-		if (((ptr = parse_header (line, "Author-IDs", TRUE))) ||
-			((ptr = parse_header (line, "P-Author-IDs", TRUE))) ||
-			((ptr = parse_header (line, "X-P-Author-IDs", TRUE)))) {
+		if ((ptr = parse_header (line, "Author-IDs", TRUE)) ||
+			(ptr = parse_header (line, "P-Author-IDs", TRUE)) ||
+			(ptr = parse_header (line, "X-P-Author-IDs", TRUE))) {
 			hdr->authorids = my_strdup(ptr);
 			continue;
 		}
@@ -562,6 +566,43 @@ parse_rfc822_headers(
 	}
 
 	return tin_errno;
+}
+
+
+/*
+ * Count lines in a continuated header.
+ * line MUST NOT end in a newline.
+ */
+static int
+count_lines(
+	char *line)
+{
+	char *src = line;
+	char c;
+	int lines = 1;
+
+	while ((c = *src++))
+		if (c == '\n')
+			lines++;
+	return lines;
+}
+
+
+/*
+ * Unfold header, i.e. strip any newline off it. Don't strip other
+ * whitespace, it depends on the header if this is legal (structured
+ * headers) or not (unstructured headers, e.g. Subject)
+ */
+void
+unfold_header(
+	char *line)
+{
+	char *src = line, *dst = line;
+	char c;
+
+	while ((c = *src++))
+		if (c != '\n') *dst++ = c;
+	*dst = c;
 }
 
 
@@ -600,7 +641,9 @@ parse_multipart_article(
 /*fprintf(stderr, "---:%s\n", line);*/
 
 		fprintf(artinfo->raw, "%s\n", line);
-		progress(++artinfo->hdr.ext->line_count);		/* Overall line count */
+
+		artinfo->hdr.ext->line_count += count_lines (line);
+		progress(artinfo->hdr.ext->line_count);		/* Overall line count */
 
 		if (bnd == BOUND_END) {							/* End of this part detected */
 #ifdef NNTP_ABLE
