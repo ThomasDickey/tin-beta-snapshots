@@ -449,7 +449,9 @@ extern constext txt_cannot_create[];
 extern constext txt_cannot_create_uniq_name[];
 extern constext txt_cannot_find_base_art[];
 extern constext txt_cannot_get_nntp_server_name[];
-extern constext txt_cannot_get_term_entry[];
+#ifndef USE_CURSES
+	extern constext txt_cannot_get_term_entry[];
+#endif /* !USE_CURSES */
 extern constext txt_cannot_open[];
 extern constext txt_cannot_open_for_saving[];
 extern constext txt_cannot_post[];
@@ -463,7 +465,9 @@ extern constext txt_caughtup[];
 extern constext txt_check_article[];
 extern constext txt_checking_for_news[];
 extern constext txt_checking_new_groups[];
-extern constext txt_checksum_of_file[];
+#ifndef HAVE_LIBUU
+	extern constext txt_checksum_of_file[];
+#endif /* !HAVE_LIBUU */
 extern constext txt_choose_post_process_type[];
 extern constext txt_color_off[];
 extern constext txt_color_on[];
@@ -543,7 +547,9 @@ extern constext txt_error_sender_in_header_not_allowed[];
 extern constext txt_error_singular[];
 extern constext txt_exiting[];
 extern constext txt_external_mail_done[];
-extern constext txt_extracting_archive[];
+#ifndef HAVE_LIBUU
+	extern constext txt_extracting_archive[];
+#endif /* !HAVE_LIBUU */
 extern constext txt_extracting_shar[];
 extern constext txt_failed_to_connect_to_server[];
 extern constext txt_feed_pattern[];
@@ -718,7 +724,9 @@ extern constext txt_is_tex_encoded[];
 extern constext txt_keymap_missing_key[];
 extern constext txt_keymap_invalid_key[];
 extern constext txt_keymap_invalid_name[];
-extern constext txt_keymap_redef[];
+#ifdef DEBUG
+	extern constext txt_keymap_redef[];
+#endif /* DEBUG */
 extern constext txt_keymap_conflict[];
 extern constext txt_kill_from[];
 extern constext txt_kill_lines[];
@@ -731,7 +739,9 @@ extern constext txt_kill_time[];
 extern constext txt_last[];
 extern constext txt_last_resp[];
 extern constext txt_lines[];
-extern constext txt_listing_archive[];
+#ifndef HAVE_LIBUU
+	extern constext txt_listing_archive[];
+#endif /* !HAVE_LIBUU */
 extern constext txt_mail[];
 extern constext txt_mail_art_to[];
 extern constext txt_mail_bug_report[];
@@ -901,6 +911,7 @@ extern constext txt_select_time[];
 extern constext txt_server_name_in_file_env_var[];
 extern constext txt_servers_active[];
 extern constext txt_skipping_newgroups[];
+extern constext txt_space[];
 extern constext txt_starting_command[];
 extern constext txt_subj_line_only[];
 extern constext txt_subj_line_only_case[];
@@ -912,9 +923,12 @@ extern constext txt_supersede_article[];
 extern constext txt_supersede_group[];
 extern constext txt_superseding_art[];
 extern constext txt_suspended_message[];
+extern constext txt_tab[];
 extern constext txt_tagged_art[];
 extern constext txt_tagged_thread[];
-extern constext txt_testing_archive[];
+#ifndef HAVE_LIBUU
+	extern constext txt_testing_archive[];
+#endif /* !HAVE_LIBUU */
 extern constext txt_there_is_no_news[];
 extern constext txt_thread_com[];
 extern constext txt_thread_marked_as_deselected[];
@@ -945,8 +959,12 @@ extern constext txt_untagged_art[];
 extern constext txt_untagged_thread[];
 extern constext txt_unthreading_arts[];
 extern constext txt_updated[];
-extern constext txt_uudecoding[];
-extern constext txt_uuencode_not_supported[];
+#ifndef HAVE_LIBUU
+	extern constext txt_uudecoding[];
+#endif /* !HAVE_LIBUU */
+#ifndef HAVE_UUDECODE
+	extern constext txt_uuencode_not_supported[];
+#endif /* !HAVE_UUDECODE */
 extern constext txt_value_out_of_range[];
 extern constext txt_view_attachment[];
 extern constext txt_warn_art_line_too_long[];
@@ -1090,7 +1108,6 @@ extern t_bool do_rfc1521_decoding;
 extern t_bool force_reread_active_file;
 extern t_bool got_sig_pipe;
 extern t_bool have_linescroll;
-extern t_bool in_headers; /* colorful headers */
 extern t_bool filtered_articles;
 extern t_bool local_index;
 extern t_bool list_active;

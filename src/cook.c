@@ -208,7 +208,7 @@ set_rest (
 	char *ptr)
 {
 	char *new_rest;
-	int new_rest_len;
+	size_t new_rest_len;
 
 	new_rest_len = strlen (ptr);
 	if (new_rest_len) {
@@ -524,6 +524,7 @@ read_decoded_qp_line (
 	FreeIfNeeded (buf2);
 	return lines_read;
 }
+
 
 /*
  * Add a new uuencode attachment description to the current part

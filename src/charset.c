@@ -140,8 +140,8 @@ static constext *const iso2asc[NUM_ISO_TABLES][256-ISO_EXTRA] =
  * german tex style to latin1 conversion (by root@aspic, 12/04/93)
  */
 
-#define	TEX_SUBST	15
-#define	SPACES		"                                                                                                         "
+#define TEX_SUBST	15
+#define SPACES		"                                                                                                         "
 
 static const char *const tex_from[TEX_SUBST] =
 {

@@ -138,6 +138,7 @@ group_page (
 	struct t_group *group)
 {
 	char buf[128];
+	char key[MAXKEYLEN];
 	char pat[128];
 	int ch = 0;
 	int i, n;
@@ -180,7 +181,7 @@ group_page (
 	clear_note_area ();
 
 	if (group->attribute->auto_select) {
-		error_message (_(txt_autoselecting_articles));
+		error_message (_(txt_autoselecting_articles), printascii (key, map_to_local (iKeyGroupMarkUnselArtRead, &menukeymap.group_nav)));
 		do_auto_select_arts();						/* 'X' command */
 		xflag = TRUE;
 	}
@@ -695,7 +696,7 @@ group_page (
 				info_message (cvers);
 				break;
 
-			case iKeyGroupPost:	/* post an article */
+			case iKeyPost:	/* post an article */
 				if (post_article (group->name))
 					show_group_page ();
 				break;
@@ -897,7 +898,7 @@ group_page (
 				break;
 
 			default:
-				info_message (_(txt_bad_command));
+				info_message (_(txt_bad_command), printascii (key, map_to_local (iKeyHelp, &menukeymap.group_nav)));
 				break;
 		} /* switch(ch) */
 	} /* ret_code >= 0 */
@@ -1429,6 +1430,8 @@ enter_thread (
 				break;
 		}
 	}
+	/* NOTREACHED */
+	return 0;
 }
 
 

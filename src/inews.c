@@ -68,7 +68,7 @@
 #		endif /* MULTINET */
 #	else
 #		ifdef HAVE_NETDB_H
-#			include	<netdb.h>
+#			include <netdb.h>
 #		endif /* HAVE_NETDB_H */
 #	endif /* VMS */
 
@@ -80,7 +80,7 @@
 #	endif /* HAVE_NETINET_IN_H */
 #endif /* 0 */
 
-#define	PATHMASTER	"not-for-mail"
+#define PATHMASTER	"not-for-mail"
 
 /*
  * Submit an article using the NNTP POST command

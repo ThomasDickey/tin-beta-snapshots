@@ -1,10 +1,14 @@
 Bugs
 ----
+o  help screen and prompts should show the actual key mapping, not the
+   default
+
 o  thread_articles=0 lacks score for read arts if show_score=ON and
    kill_level>=1
 
 o  make intsall_sysdefs overwrites an existing tin.defaults file without
    making a backup
+   [Urs Janssen <urs@tin.org>]
 
 o  pgp.txt badly out of date
 
@@ -152,6 +156,10 @@ o  when enabling the 'cc/bcc on every message that is sent', and
 
 New features
 ------------
+o  allow multiple keys/action in keymap file, i.e.:
+         PostPost        p y
+   [Urs Janssen <urs@tin.org>]
+
 o  check if servers high mark is lower as the one in users newsrc, if so
    issue a warning and allow the luser to reset the highmark in the newsrc
    to the servers 'l'ow or the servers 'h'igh mark or 'i'gnore it.
@@ -370,6 +378,10 @@ o  Merge the selection code with the range code. Having two similar methods
 
 Internal Changes
 ----------------
+o  join some keys, i.e PostponeYes, PostponeNo -> PromptYes, PromptNo;
+   GroupPost, PagePost, SelectPost -> Post
+   [Urs Janssen <urs@tin.org>]
+
 o  what type is base[] ?
    There is a lot of confusion internally over how it is used
    compare setup_hard_base() with find_base() etc..
@@ -444,6 +456,8 @@ o  strip Xref:-header if saving news in batch mode (-S)?
 
 Docs/online help
 ----------------
+o  document keymap feature
+
 o  man page always needs work
 
 o  error message when tin -uv and using xover is misleading

@@ -325,11 +325,18 @@ invoke_pgp_mail (
 	char *mail_to)
 {
 	char ch, ch_default = iKeyPgpSign;
+	char keyboth[MAXKEYLEN], keyencrypt[MAXKEYLEN], keyquit[MAXKEYLEN];
+	char keysign[MAXKEYLEN];
 
 	if (!pgp_available())
 		return;
 
-	ch = prompt_slk_response (ch_default, &menukeymap.pgp_mail, _(txt_pgp_mail));
+	ch = prompt_slk_response (ch_default, &menukeymap.pgp_mail,
+			_(txt_pgp_mail),
+			printascii (keyencrypt, map_to_local (iKeyPgpSign, &menukeymap.pgp_mail)),
+			printascii (keysign, map_to_local (iKeyPgpSign, &menukeymap.pgp_mail)),
+			printascii (keyboth, map_to_local (iKeyPgpSign, &menukeymap.pgp_mail)),
+			printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.pgp_mail)));
 	switch (ch) {
 		case iKeyAbort:
 		case iKeyQuit:
@@ -366,11 +373,16 @@ invoke_pgp_news (
 	char *artfile)
 {
 	char ch, ch_default = iKeyPgpSign;
+	char keyinclude[MAXKEYLEN], keyquit[MAXKEYLEN], keysign[MAXKEYLEN];
 
 	if (!pgp_available())
 		return;
 
-	ch = prompt_slk_response (ch_default, &menukeymap.pgp_news, _(txt_pgp_news));
+	ch = prompt_slk_response (ch_default, &menukeymap.pgp_news,
+				_(txt_pgp_news),
+				printascii (keysign, map_to_local (iKeyPgpSign, &menukeymap.pgp_news)),
+				printascii (keyinclude, map_to_local (iKeyPgpIncludekey, &menukeymap.pgp_news)),
+				printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.pgp_news)));
 	switch (ch) {
 		case iKeyAbort:
 		case iKeyQuit:

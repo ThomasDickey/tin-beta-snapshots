@@ -166,24 +166,32 @@ prompt_yn (
 	const char *prompt,
 	t_bool default_answer)
 {
-	int ch, prompt_ch;
+	char *keyprompt;
+	char keyno[MAXKEYLEN], keyyes[MAXKEYLEN];
+	int ch = 'y', prompt_ch = 'y';
+	size_t maxlen;
 	t_bool yn_loop = TRUE;
 
-/*	fflush(stdin);*/		/* Prevent finger trouble from making important decisions */
+/*	fflush(stdin); */		/* Prevent finger trouble from making important decisions */
+
+	(void) printascii (keyyes, (default_answer ? toupper(map_to_local(iKeyPromptYes, &menukeymap.prompt_yn)) : map_to_local(iKeyPromptYes, &menukeymap.prompt_yn)));
+	(void) printascii (keyno, (!default_answer ? toupper(map_to_local(iKeyPromptNo, &menukeymap.prompt_yn)) : map_to_local(iKeyPromptNo, &menukeymap.prompt_yn)));
+	maxlen = MAX(strlen (keyyes), strlen (keyno));
 
 	while (yn_loop) {
 		prompt_ch = map_to_local ((default_answer ? iKeyPromptYes : iKeyPromptNo), &menukeymap.prompt_yn);
+		keyprompt = (default_answer ? keyyes : keyno);
 
 		if (!cmd_line) {
 			MoveCursor (line, 0);
 			CleartoEOLN ();
 		}
-		my_printf ("%s%c", prompt, prompt_ch);
+		my_printf ("%s (%s/%s) %-*s", prompt, keyyes, keyno, maxlen, keyprompt);
 		if (!cmd_line)
 			cursoron ();
 		my_flush ();
 		if (!cmd_line)
-			MoveCursor (line, (int) strlen (prompt));
+			MoveCursor (line, (int) strlen (prompt) + strlen(keyyes) + strlen(keyno) + 5);
 
 		if (((ch = (char) ReadCh()) == '\n') || (ch == '\r'))
 			ch = prompt_ch;
@@ -547,7 +555,7 @@ prompt_slk_response (
 	char buf[LEN];
 
 	va_start (ap, fmt);
-	vsprintf(buf, fmt, ap);	/* We need to do this, else wait_message() will clobber us */
+	vsnprintf (buf, sizeof(buf) - 1, fmt, ap);	/* We need to do this, else wait_message() will clobber us */
 	va_end (ap);
 
 	ch_default = map_to_local (ch_default, responses);

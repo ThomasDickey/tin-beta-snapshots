@@ -813,7 +813,6 @@ art_open (
 	t_openartinfo *artinfo)
 {
 	char *ptr;
-	int ret;
 	FILE *fp;
 
 	if ((fp = open_art_fp (group_path, art->artnum)) == NULL)
@@ -826,7 +825,7 @@ art_open (
 #if 0
 	if (decode) {
 #endif /* 0 */
-		if ((ret = parse_rfc2045_article (fp, art->lines, artinfo)) != 0)
+		if (parse_rfc2045_article (fp, art->lines, artinfo) != 0)
 			return ART_ABORT;
 #if 0
 	} else

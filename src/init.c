@@ -54,7 +54,7 @@
 #	include  "version.h"
 #endif /* !VERSION_H */
 #ifndef BUGREP_H
-#	include	"bugrep.h"
+#	include "bugrep.h"
 #endif /* !BUGREP_H */
 
 /*
@@ -160,7 +160,6 @@ t_bool dangerous_signal_exit;		/* no get_respcode() in nntp_command when dangero
 t_bool disable_gnksa_domain_check;	/* disable checking TLD in From: etc. */
 t_bool disable_sender;			/* disable generation of Sender: header */
 t_bool got_sig_pipe = FALSE;
-t_bool in_headers;			/* color in headers */	/* TODO kill me */
 t_bool filtered_articles;		/* locally killed / auto-selected articles */
 t_bool local_index;			/* do private indexing? */
 t_bool list_active;

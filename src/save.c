@@ -348,6 +348,7 @@ save_art_to_file (
 {
 	FILE *fp;
 	char *file;
+	char keyappend[MAXKEYLEN], keyoverwrite[MAXKEYLEN], keyquit[MAXKEYLEN];
 	char mode[3];
 	char save_art_info[LEN];
 	int ch;
@@ -370,7 +371,12 @@ save_art_to_file (
 				return FALSE;
 			}
 
-			ch = prompt_slk_response (tinrc.default_save_mode, &menukeymap.save_append_overwrite_quit, _(txt_append_overwrite_quit), file);
+			ch = prompt_slk_response (tinrc.default_save_mode,
+						&menukeymap.save_append_overwrite_quit,
+						_(txt_append_overwrite_quit), file,
+						printascii (keyappend, map_to_local (iKeySaveAppendFile, &menukeymap.save_append_overwrite_quit)),
+						printascii (keyoverwrite, map_to_local (iKeySaveOverwriteFile, &menukeymap.save_append_overwrite_quit)),
+						printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.save_append_overwrite_quit)));
 			switch (ch) {
 				case iKeySaveAppendFile:
 					strcpy (mode, "a+");
@@ -1052,6 +1058,7 @@ post_process_files (
 			auto_delete);
 			break;
 
+#if 0
 		case iKeyPProcListZoo:
 			post_process_uud (
 #	ifndef HAVE_LIBUU
@@ -1083,6 +1090,7 @@ post_process_files (
 #	endif /* !HAVE_LIBUU */
 			auto_delete);
 			break;
+#endif /* 0 */
 
 		default:
 			break;
@@ -1373,7 +1381,7 @@ uudecode_file (
 		invoke_cmd (buf);
 		(void) sleep (1);
 	}
-
+#if 0
 	if (pp > POST_PROC_UUDECODE) {
 		int i;
 		/*
@@ -1419,7 +1427,8 @@ uudecode_file (
 			(void) sleep (3);
 		}
 	}
-#		endif /* ! M_UNIX */
+#endif /* 0 */
+#		endif /* !M_UNIX */
 }
 #	endif /* !HAVE_LIBUU */
 
@@ -1763,7 +1772,7 @@ decode_save_mime(
 
 #ifdef HAVE_UUDECODE
 /* Single character decode.  */
-#define	DEC(Char) (((Char) - ' ') & 077)
+#define DEC(Char) (((Char) - ' ') & 077)
 static void
 uudecode_line(
 	char *buf,

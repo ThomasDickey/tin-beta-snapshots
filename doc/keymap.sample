@@ -31,6 +31,7 @@ Down2				j
 Up2				k
 Quit				q
 Version				v
+Post				w
 Pipe				|
 PageUp				^B
 PageDown			^D
@@ -103,7 +104,6 @@ GroupToggleReadUnread		r
 GroupSave			s
 GroupTag			t
 GroupToggleThreading		u
-GroupPost			w
 GroupRepost			x
 GroupMarkArtUnread		z
 GroupUndoSel			~
@@ -170,7 +170,6 @@ PageReplyQuote			r
 PageSave			s
 PageTag				t
 PageGotoParent			u
-PagePost			w
 PageRepost			x
 PageMarkArtUnread		z
 
@@ -191,8 +190,8 @@ PostContinue			c
 PostAbort			a
 PostIgnore			i
 PostMail			m
-PostPost			p
 PostPost2			y
+PostPost3			p
 PostSend			s
 PostSend2			y
 PostSupersede			s
@@ -200,10 +199,8 @@ PostPostpone			o
 
 #####
 
-PostponeYes			y
-PostponeYesOverride		Y
-PostponeYesAll			A
-PostponeNo			n
+PostponeOverride		Y
+PostponeAll			A
 
 #####
 
@@ -247,7 +244,6 @@ SelectEnterNextUnreadGrp2	n
 SelectToggleReadDisplay		r
 SelectSubscribe			s
 SelectUnsubscribe		u
-SelectPost			w
 SelectYankActive		y
 SelectMarkGrpUnread		z
 
@@ -270,6 +266,5 @@ ThreadToggleSubjDisplay		d
 ThreadMail			m
 ThreadSave			s
 ThreadTag			t
-ThreadPost			w
 ThreadMarkArtUnread		z
 ThreadUndoSel			~

@@ -71,14 +71,15 @@ get_mailcap_entry (
 	t_mailcap *foo = (t_mailcap *) 0;
 
 	ptr = (char *) get_val("MAILCAPS", DEFAULT_MAILCAPS);
-	STRCPY (mailcaps, ptr);
+	STRCPY(mailcaps, ptr);
 	ptr = strtok(mailcaps, ":");
 	while (ptr != (char *) 0) {
 		/* expand ~ and/or $HOME etc. */
-		strfpath (ptr, mailcap, sizeof (mailcap), homedir, (char *) 0, (char *) 0, (char *) 0);
-		if ((fp = fopen(mailcap, "r")) != (FILE *) 0)
-			break;
-		ptr = strtok(NULL, ":");
+		if (strfpath (ptr, mailcap, sizeof (mailcap), homedir, (char *) 0, (char *) 0, (char *) 0)) {
+			if ((fp = fopen(mailcap, "r")) != (FILE *) 0)
+				break;
+			ptr = strtok(NULL, ":");
+		}
 	}
 	if (!fp) /* no mailcaps file */
 		return ((t_mailcap *) 0);
@@ -106,14 +107,14 @@ get_mailcap_entry (
 			if (!strncmp(ptr, content_types[part->type], strlen(ptr) - strlen(ptr2))) {
 				if (!strncmp(ptr + strlen(content_types[part->type]) + 1, part->subtype, strlen(part->subtype))) {
 					/* full match, so parse line and evaluate test if given. */
-					STRCPY (mailcap, ptr);
+					STRCPY(mailcap, ptr);
 					foo = parse_mailcap_line (mailcap, part);
 					if (foo != (t_mailcap *) 0)
 						break; /* perfect match with test succeded (if given) */
 				} else {
 					if ((*(ptr2 + 1) == '*') || (*(ptr2 + 1) == ';')) { /* wildmat match */
 						if (!strlen(wildcap)) { /* we don't already have a wildmat match */
-							STRCPY (wildcap, buf);
+							STRCPY(wildcap, buf);
 							foo = parse_mailcap_line (wildcap, part);
 							if (foo == (t_mailcap *) 0) /* test failed */
 								wildcap[0] = '\0'; /* ignore match */
@@ -164,7 +165,7 @@ parse_mailcap_line(
 	blen = strlen(content_types[part->type]) + strlen(part->subtype) + 2;
 	buf = (char *) my_malloc(sizeof(char) * blen);
 	memset(buf, 0, blen);
-	snprintf (buf, sizeof(buf) - 1, "%s/%s", content_types[part->type], part->subtype);
+	sprintf (buf, "%s/%s", content_types[part->type], part->subtype);
 	tmailcap->type = buf;
 	ptr += strlen(ptr) + 1;
 	if ((ptr = get_mailcap_field(ptr)) != (char *) 0) {
@@ -247,9 +248,8 @@ get_mailcap_field(
 	t_bool backquote = FALSE;
 	t_bool doublequote = FALSE;
 
-	str_trim(mailcap);
+	ptr = str_trim(mailcap);
 
-	ptr = mailcap;
 	while(*ptr != '\0') {
 		switch (*ptr) {
 			case '\\':
@@ -364,9 +364,9 @@ expand_mailcap_meta(
 
 			case 's':
 				if (percent) {
-					char *nptr = (char *) 0;
+					char *nptr;
 
-					if ((nptr = get_filename(part->params)) == NULL)
+					if ((nptr = get_filename(part->params)) == (char *) 0)
 						nptr = attr->savefile ? attr->savefile : tinrc.default_save_file;
 
 					while (space <= (strlen(attr->savedir) + 1 + strlen(nptr) + 2)) { /* not enough space? */

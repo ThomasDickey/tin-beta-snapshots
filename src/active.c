@@ -39,10 +39,10 @@
 
 
 #ifndef TIN_H
-#	include	"tin.h"
+#	include "tin.h"
 #endif /* !TIN_H */
 #ifndef TCURSES_H
-#	include	"tcurses.h"
+#	include "tcurses.h"
 #endif /* !TCURSES_H */
 
 /*
@@ -272,7 +272,7 @@ static void
 read_newsrc_active_file (
 	void)
 {
-	FILE *fp = (FILE *) 0;
+	FILE *fp;
 	char *ptr;
 	char moderated[PATH_LEN];
 	int window = 0;

@@ -345,7 +345,7 @@ OUT:
  */
 
 /*fix me - put me in tin.h */
-#define	FOLD_TO_UPPER(a)	(toupper ((unsigned char)(a)))
+#define FOLD_TO_UPPER(a)	(toupper ((unsigned char)(a)))
 
 #ifndef HAVE_STRCASECMP
 int

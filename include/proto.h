@@ -77,9 +77,11 @@ extern void write_attributes_file (char *file);
 /* charset.c */
 extern t_bool iIsArtTexEncoded (FILE *fp);
 extern void Convert2Printable (char* buf);
-extern void ConvertBody2Printable (char* buf);
 extern void ConvertIso2Asc (char *iso, char *asc, int t);
 extern void ConvertTeX2Iso (char *from, char *to);
+#if 0
+	extern void ConvertBody2Printable (char* buf);
+#endif /* 0 */
 
 /* color.c */
 extern void bcol (int color);
@@ -160,7 +162,7 @@ extern void setup_screen (void);
 extern void envargs (int *Pargc, char ***Pargv, const char *envstr);
 
 /* feed.c */
-extern char get_post_proc_type (int proc_type);
+/* extern char get_post_proc_type (int proc_type); */
 extern void feed_articles (int function, int level, struct t_group *group, int respnum);
 
 /* filter.c */
@@ -242,6 +244,7 @@ extern void set_up_private_index_cache (void);
 extern void joinpath (char *result, const char *dir, const char *file);
 
 /* keymap.c */
+extern char *printascii(char *buf, char ch);
 extern t_bool read_keymap_file (void);
 extern void free_keymaps (void);
 extern void build_keymaps (void);
@@ -598,13 +601,15 @@ extern void allow_resize(t_bool allow);
 extern void handle_resize (t_bool repaint);
 extern void set_signal_catcher (int flag);
 extern void set_signal_handlers (void);
-extern void set_signals_art (void);
-extern void set_signals_config (void);
-extern void set_signals_group (void);
-extern void set_signals_help (void);
-extern void set_signals_page (void);
-extern void set_signals_select (void);
-extern void set_signals_thread (void);
+#if 0
+	extern void set_signals_art (void);
+	extern void set_signals_config (void);
+	extern void set_signals_group (void);
+	extern void set_signals_help (void);
+	extern void set_signals_page (void);
+	extern void set_signals_select (void);
+	extern void set_signals_thread (void);
+#endif /* 0 */
 
 /* strftime.c */
 extern size_t my_strftime (char *s, size_t maxsize, const char *format, struct tm *timeptr);

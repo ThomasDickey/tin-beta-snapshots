@@ -244,7 +244,7 @@ get_user_name (
 	username[0] = '\0';
 #	if defined (M_AMIGA) || defined (VMS)
 	if ((p = getenv ("USER"))) {
-		STRCPY (username, p);
+		STRCPY(username, p);
 #		ifdef VMS
 		lower (username);
 #		endif /* VMS */
@@ -265,7 +265,9 @@ get_full_name (
 	char buf[128];
 	char tmp[128];
 	static char fullname[128];
+#	if !defined(VMS) && !defined(DONT_HAVE_PW_GECOS)
 	struct passwd *pw;
+#	endif /* !VMS && !DONT_HAVE_PW_GECOS */
 
 	fullname[0] = '\0';
 
@@ -279,21 +281,21 @@ get_full_name (
 	}
 
 #	ifdef VMS
-	strncpy (fullname, fix_fullname(get_uaf_fullname()), sizeof (fullname));
+	STRCPY(fullname, fix_fullname(get_uaf_fullname()));
 #	else
 #		ifndef DONT_HAVE_PW_GECOS
 	pw = getpwuid (getuid ());
-	strncpy (buf, pw->pw_gecos, sizeof (fullname));
+	STRCPY(buf, pw->pw_gecos);
 	if ((p = strchr (buf, ',')))
 		*p = '\0';
 	if ((p = strchr (buf, '&'))) {
 		*p++ = '\0';
-		strcpy (tmp, pw->pw_name);
+		STRCPY(tmp, pw->pw_name);
 		if (*tmp && isalpha((int)*tmp) && islower((int)*tmp))
 			*tmp = toupper((int)*tmp);
-		sprintf (fullname, "%s%s%s", buf, tmp, p);
+		snprintf (fullname, sizeof(fullname) -1, "%s%s%s", buf, tmp, p);
 	} else
-		strcpy (fullname, buf);
+		STRCPY(fullname, buf);
 #		endif /* !DONT_HAVE_PW_GECOS */
 #	endif /* VMS */
 	return (fullname);

@@ -54,10 +54,10 @@
 #	include "trace.h"
 #endif /* !included_trace_h */
 #ifndef TIN_POLICY_H
-#	include	"policy.h"
+#	include "policy.h"
 #endif /* !TIN_POLICY_H */
 #ifndef RFC2046_H
-#	include	"rfc2046.h"
+#	include "rfc2046.h"
 #endif /* !RFC2046_H */
 
 /*
@@ -78,7 +78,6 @@ static int gnksa_check_domain_literal (char *domain);
 static int gnksa_check_localpart (char *localpart);
 static int gnksa_dequote_plainphrase (char *realname, char *decoded, int addrtype);
 static int gnksa_split_from (char *from, char *address, char *realname, int *addrtype);
-static int peek_char (FILE *fp);
 static int strfeditor (char *editor, int linenum, const char *filename, char *s, size_t maxsize, char *format);
 static void write_input_history_file (void);
 #ifdef LOCAL_CHARSET
@@ -160,8 +159,7 @@ copy_fp (
 	while ((have = fread (buf, 1, sizeof(buf), fp_ip)) != 0) {
 		sent = fwrite (buf, 1, have, fp_op);
 		if (sent != have) {
-			TRACE(("copy_fp wrote %d of %d:{%.*s}",
-				sent, have, (int) sent, buf));
+			TRACE(("copy_fp wrote %d of %d:{%.*s}", sent, have, (int) sent, buf));
 			if (!got_sig_pipe) /* !SIGPIPE => more serious error */
 				perror_message (_(txt_error_copy_fp));
 			return FALSE;
@@ -488,7 +486,7 @@ tin_done (
 					} else
 						break;
 				}
-				wait_message (0, "Catchup %s...", group->name);
+				wait_message (0, "Catchup %s...", group->name);	/* FIXME: -> lang.c */
 				grp_mark_read (group, NULL);
 			}
 		}
@@ -679,6 +677,7 @@ my_mkdir (
 #endif /* !HAVE_MKDIR */
 }
 
+
 int
 my_chdir (
 	char *path)
@@ -695,6 +694,7 @@ my_chdir (
 
 	return retcode;
 }
+
 
 #ifdef M_UNIX
 void
@@ -739,6 +739,7 @@ rename_file (
 #	endif /* HAVE_LINK */
 }
 #endif /* M_UNIX */
+
 
 #ifdef VMS
 void
@@ -849,6 +850,7 @@ draw_percent_mark (
 	EndInverse ();
 }
 
+
 /*
  * seteuid/setegid - BSD 4.3 (based on POSIX setuid/setgid)
  * setreuid/setregid - BSD 4.2
@@ -890,6 +892,7 @@ set_real_uid_gid (
 #	endif /* HAVE_SETEUID && HAVE_SETEGID */
 #endif /* HAVE_SET_GID_UID */
 }
+
 
 void
 set_tin_uid_gid (
@@ -2275,20 +2278,6 @@ vPrintBugAddress (
 	my_fprintf (stderr, _("%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n"),
 		tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME, bug_addr);
 	my_fflush (stderr);
-}
-
-
-/*
- * take a peek at the next char in file
- */
-static int
-peek_char (
-	FILE *fp)
-{
-	int c = fgetc(fp);
-	if (c != EOF)
-		ungetc(c, fp);
-	return c;
 }
 
 

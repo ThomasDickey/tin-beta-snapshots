@@ -40,11 +40,10 @@
 #ifndef KEYMAP_H
 #	include "keymap.h"
 #endif /* !KEYMAP_H */
-#	ifndef MENUKEYS_H
-#include "menukeys.h"
+#ifndef MENUKEYS_H
+#	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 
-static char *printascii(char *buf, char ch);
 static int keymapsize (t_keynode *ptr[]);
 static t_bool check_duplicates(t_keynode *keyptr1, t_keynode *keyptr2);
 static t_bool processkey(t_keynode *keyptr, char *keyname, char key);
@@ -103,7 +102,14 @@ struct keymap Key = {
 		{ iKeyUp2, iKeyUp2, "Up2" },
 		{ iKeyQuit, iKeyQuit, "Quit" },
 		{ iKeyVersion, iKeyVersion, "Version" },
+		{ iKeyPost, iKeyPost, "Post" },
 		{ iKeyPipe, iKeyPipe, "Pipe" },
+		/*
+		 * The following two are "internal" keys that don't have a real
+		 * mapping.
+		 */
+		{ iKeyCatchupLeft, iKeyCatchupLeft, "" },
+		{ iKeyMouseToggle, iKeyMouseToggle, "" },
 		{ 0, 0, NULL }
 	},
 	{
@@ -173,7 +179,6 @@ struct keymap Key = {
 		{ iKeyGroupSave, iKeyGroupSave, "Save" },
 		{ iKeyGroupTag, iKeyGroupTag, "Tag" },
 		{ iKeyGroupToggleThreading, iKeyGroupToggleThreading, "ToggleThreading" },
-		{ iKeyGroupPost, iKeyGroupPost, "Post" },
 		{ iKeyGroupRepost, iKeyGroupRepost, "Repost" },
 		{ iKeyGroupMarkArtUnread, iKeyGroupMarkArtUnread, "MarkArtUnread" },
 		{ iKeyGroupUndoSel, iKeyGroupUndoSel, "UndoSel" },
@@ -249,7 +254,6 @@ struct keymap Key = {
 		{ iKeyPageSave, iKeyPageSave, "Save" },
 		{ iKeyPageTag, iKeyPageTag, "Tag" },
 		{ iKeyPageGotoParent, iKeyPageGotoParent, "GotoParent" },
-		{ iKeyPagePost, iKeyPagePost, "Post" },
 		{ iKeyPageRepost, iKeyPageRepost, "Repost" },
 		{ iKeyPageMarkArtUnread, iKeyPageMarkArtUnread, "MarkArtUnread" },
 		{ 0, 0, NULL }
@@ -276,8 +280,8 @@ struct keymap Key = {
 		{ iKeyPostContinue, iKeyPostContinue, "Continue" },
 		{ iKeyPostIgnore, iKeyPostIgnore, "Ignore" },
 		{ iKeyPostMail, iKeyPostMail, "Mail" },
-		{ iKeyPostPost, iKeyPostPost, "Post" },
 		{ iKeyPostPost2, iKeyPostPost2, "Post2" },
+		{ iKeyPostPost3, iKeyPostPost3, "Post3" },
 		{ iKeyPostPostpone, iKeyPostPostpone, "Postpone" },
 		{ iKeyPostSend, iKeyPostSend, "Send" },
 		{ iKeyPostSend2, iKeyPostSend2, "Send2" },
@@ -286,18 +290,18 @@ struct keymap Key = {
 	},
 	{
 		{ 0, 0, "Postpone" },
-		{ iKeyPostponeNo, iKeyPostponeNo, "No" },
-		{ iKeyPostponeYes, iKeyPostponeYes, "Yes" },
-		{ iKeyPostponeYesAll, iKeyPostponeYesAll, "YesAll" },
-		{ iKeyPostponeYesOverride, iKeyPostponeYesOverride, "YesOverride" },
+		{ iKeyPostponeAll, iKeyPostponeAll, "All" },
+		{ iKeyPostponeOverride, iKeyPostponeOverride, "Override" },
 		{ 0, 0, NULL }
 	},
 	{
 	 	{ 0, 0, "PProc" },
+#if 0
 		{ iKeyPProcExtractZip, iKeyPProcExtractZip, "ExtractZip" },
 		{ iKeyPProcExtractZoo, iKeyPProcExtractZoo, "ExtractZoo" },
 		{ iKeyPProcListZip, iKeyPProcListZip, "ListZip" },
 		{ iKeyPProcListZoo, iKeyPProcListZoo, "ListZoo" },
+#endif /* 0 */
 		{ iKeyPProcNone, iKeyPProcNone, "None" },
 		{ iKeyPProcShar, iKeyPProcShar, "Shar" },
 		{ iKeyPProcUUDecode, iKeyPProcUUDecode, "UUDecode" },
@@ -337,7 +341,6 @@ struct keymap Key = {
 		{ iKeySelectToggleReadDisplay, iKeySelectToggleReadDisplay, "ToggleReadDisplay" },
 		{ iKeySelectSubscribe, iKeySelectSubscribe, "Subscribe" },
 		{ iKeySelectUnsubscribe, iKeySelectUnsubscribe, "Unsubscribe" },
-		{ iKeySelectPost, iKeySelectPost, "Post" },
 		{ iKeySelectYankActive, iKeySelectYankActive, "YankActive" },
 		{ iKeySelectMarkGrpUnread, iKeySelectMarkGrpUnread, "MarkGrpUnread" },
 		{ 0, 0, NULL }
@@ -361,7 +364,6 @@ struct keymap Key = {
 		{ iKeyThreadMail, iKeyThreadMail, "Mail" },
 		{ iKeyThreadSave, iKeyThreadSave, "Save" },
 		{ iKeyThreadTag, iKeyThreadTag, "Tag" },
-		{ iKeyThreadPost, iKeyThreadPost, "Post" },
 		{ iKeyThreadMarkArtUnread, iKeyThreadMarkArtUnread, "MarkArtUnread" },
 		{ iKeyThreadUndoSel, iKeyThreadUndoSel, "UndoSel" },
 		{ 0, 0, NULL }
@@ -381,6 +383,7 @@ t_keynode *keygroups[] = {
 	&Key.Pgp.tag,
 	&Key.Post.tag,
 	&Key.Postpone.tag,
+	&Key.PProc.tag,
 	&Key.Prompt.tag,
 	&Key.Save.tag,
 	&Key.Select.tag,
@@ -430,8 +433,12 @@ t_keynode *keys_feed_art_thread_regex_tag[] = {
  */
 t_keynode *keys_feed_post_process_type[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.PProc.None, &Key.PProc.Shar,
-	&Key.PProc.UUDecode, &Key.PProc.ListZoo, &Key.PProc.ExtractZoo,
-	&Key.PProc.ListZip, &Key.PProc.ExtractZip, NULL };
+	&Key.PProc.UUDecode,
+#if 0
+	&Key.PProc.ListZoo, &Key.PProc.ExtractZoo,
+	&Key.PProc.ListZip, &Key.PProc.ExtractZip,
+#endif /* 0 */
+	NULL };
 
 t_keynode *keys_feed_supersede_article[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.Feed.Repost, &Key.Feed.Supersede,
@@ -462,7 +469,7 @@ t_keynode *keys_group_nav[] = {
 	&Key.Group.EditFilter, &Key.Group.QuickAutoSel, &Key.Group.QuickKill,
 	&Key.Global.RedrawScr, &Key.Global.Down, &Key.Global.Down2,
 	&Key.Global.Up, &Key.Global.Up2, &Key.Global.PageUp, &Key.Global.PageUp2,
-	&Key.Global.PageUp3, /* DONT USE iKeyCatchupLeft, */ &Key.Group.Catchup,
+	&Key.Global.PageUp3, &Key.Global.CatchupLeft, &Key.Group.Catchup,
 	&Key.Group.CatchupNextUnread, &Key.Group.ToggleSubjDisplay,
 	&Key.Group.Goto, &Key.Global.Help, &Key.Global.ToggleHelpDisplay,
 	&Key.Global.ToggleInverseVideo,
@@ -475,7 +482,7 @@ t_keynode *keys_group_nav[] = {
 	&Key.Global.QuitTin, &Key.Group.ToggleReadUnread,
 	&Key.Group.ToggleGetartLimit, &Key.Group.BugReport, &Key.Group.TagParts,
 	&Key.Group.Tag, &Key.Group.ToggleThreading, &Key.Group.Untag,
-	&Key.Global.Version, &Key.Group.Post, &Key.Global.Postponed,
+	&Key.Global.Version, &Key.Global.Post, &Key.Global.Postponed,
 	&Key.Global.Postponed2, &Key.Global.DisplayPostHist,
 	&Key.Group.MarkArtUnread, &Key.Group.MarkThdUnread, &Key.Group.SelThd,
 	&Key.Group.ToggleThdSel, &Key.Group.ReverseSel, &Key.Group.UndoSel,
@@ -494,12 +501,11 @@ t_keynode *keys_page_nav[] = {
 #ifndef NO_SHELL_ESCAPE
 	&Key.Global.ShellEscape,
 #endif /* !NO_SHELL_ESCAPE */
-	/* DONT USE iKeyMouseToggle, */
-	&Key.Global.PageUp, &Key.Global.PageUp2, &Key.Global.PageUp3,
-	&Key.Global.PageDown, &Key.Global.PageDown2, &Key.Global.PageDown3,
-	&Key.Page.NextUnread, &Key.Global.FirstPage, &Key.Page.FirstPage2,
-	&Key.Global.LastPage, &Key.Page.LastPage2, &Key.Global.Up,
-	&Key.Global.Up2, &Key.Global.Down, &Key.Global.Down2,
+	&Key.Global.MouseToggle, &Key.Global.PageUp, &Key.Global.PageUp2,
+	&Key.Global.PageUp3, &Key.Global.PageDown, &Key.Global.PageDown2,
+	&Key.Global.PageDown3, &Key.Page.NextUnread, &Key.Global.FirstPage,
+	&Key.Page.FirstPage2, &Key.Global.LastPage, &Key.Page.LastPage2,
+	&Key.Global.Up, &Key.Global.Up2, &Key.Global.Down, &Key.Global.Down2,
 	&Key.Global.LastViewed, &Key.Global.LookupMessage, &Key.Page.GotoParent,
 	&Key.Global.Pipe, &Key.Page.Mail,
 #ifndef DISABLE_PRINTING
@@ -528,7 +534,7 @@ t_keynode *keys_page_nav[] = {
 	&Key.Page.KillThd, &Key.Page.NextUnreadArt, &Key.Page.PrevArt,
 	&Key.Page.PrevUnreadArt, &Key.Global.QuitTin, &Key.Page.ReplyQuote,
 	&Key.Page.ReplyQuoteHeaders, &Key.Page.Reply, &Key.Page.Tag,
-	&Key.Page.GroupSel, &Key.Global.Version, &Key.Page.Post,
+	&Key.Page.GroupSel, &Key.Global.Version, &Key.Global.Post,
 	&Key.Global.Postponed, &Key.Global.Postponed2, &Key.Global.DisplayPostHist,
 	&Key.Page.MarkArtUnread, &Key.Page.SkipIncludedText,
 	&Key.Global.ToggleInfoLastLine,
@@ -565,12 +571,12 @@ t_keynode *keys_post_edit_ext[] = {
 	&Key.Global.OptionMenu, NULL };
 
 t_keynode *keys_post_ignore_fupto[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.Post.Ignore, &Key.Post.Post,
-	&Key.Post.Post2, NULL };
+	&Key.Global.Abort, &Key.Global.Quit, &Key.Post.Ignore, &Key.Global.Post,
+	&Key.Post.Post2, &Key.Post.Post3, NULL };
 
 t_keynode *keys_post_mail_fup[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.Post.Post, &Key.Post.Post2,
-	&Key.Post.Mail, NULL };
+	&Key.Global.Abort, &Key.Global.Quit, &Key.Global.Post, &Key.Post.Post2,
+	&Key.Post.Post3, &Key.Post.Mail, NULL };
 
 t_keynode *keys_post_post[] = {
 	&Key.Global.Abort, &Key.Global.Quit,
@@ -580,12 +586,12 @@ t_keynode *keys_post_post[] = {
 #ifdef HAVE_ISPELL
 	&Key.Post.Ispell,
 #endif /* HAVE_ISPELL */
-	&Key.Post.Edit, &Key.Post.Post, &Key.Post.Post2, &Key.Post.Postpone,
-	NULL };
+	&Key.Post.Edit, &Key.Global.Post, &Key.Post.Post2, &Key.Post.Post3,
+	&Key.Post.Postpone, NULL };
 
 t_keynode *keys_post_postpone[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.Postpone.Yes,
-	&Key.Postpone.YesAll, &Key.Postpone.YesOverride, &Key.Postpone.No, NULL };
+	&Key.Global.Abort, &Key.Global.Quit, &Key.Prompt.Yes,
+	&Key.Postpone.All, &Key.Postpone.Override, &Key.Prompt.No, NULL };
 
 t_keynode *keys_post_send[] = {
 	&Key.Global.Abort, &Key.Global.Quit,
@@ -630,7 +636,7 @@ t_keynode *keys_select_nav[] = {
 	&Key.Global.QuitTin, &Key.Select.QuitNoWrite,
 	&Key.Select.ToggleReadDisplay, &Key.Select.BugReport,
 	&Key.Select.Subscribe, &Key.Select.SubscribePat, &Key.Select.Unsubscribe,
-	&Key.Select.UnsubscribePat, &Key.Global.Version, &Key.Select.Post,
+	&Key.Select.UnsubscribePat, &Key.Global.Version, &Key.Global.Post,
 	&Key.Global.Postponed, &Key.Global.Postponed2, &Key.Global.DisplayPostHist,
 	&Key.Select.YankActive, &Key.Select.SyncWithActive,
 	&Key.Select.MarkGrpUnread, &Key.Select.MarkGrpUnread2, NULL };
@@ -645,15 +651,16 @@ t_keynode *keys_thread_nav[] = {
 	&Key.Global.FirstPage, &Key.Global.LastPage, &Key.Global.LastViewed,
 	&Key.Global.SetRange, &Key.Global.Pipe, &Key.Thread.Mail,
 	&Key.Thread.Save, &Key.Thread.AutoSaveTagged, &Key.Thread.ReadArt,
-	&Key.Thread.ReadArt2, &Key.Thread.ReadNextArtOrThread, &Key.Thread.Post,
+	&Key.Thread.ReadArt2, &Key.Thread.ReadNextArtOrThread, &Key.Global.Post,
 	&Key.Global.RedrawScr, &Key.Global.Down, &Key.Global.Down2,
 	&Key.Global.Up, &Key.Global.Up2, &Key.Global.PageUp, &Key.Global.PageUp2,
 	&Key.Global.PageUp3, &Key.Global.PageDown, &Key.Global.PageDown2,
-	&Key.Global.PageDown3, /* DONT USE iKeyCatchupLeft, */
-	&Key.Thread.Catchup, &Key.Thread.CatchupNextUnread,
-	&Key.Thread.MarkArtRead, &Key.Thread.ToggleSubjDisplay, &Key.Global.Help,
-	&Key.Global.LookupMessage, &Key.Global.SearchBody, &Key.Global.SearchSubjF,
-	&Key.Global.SearchSubjB, &Key.Global.SearchAuthF, &Key.Global.SearchAuthB,
+	&Key.Global.PageDown3, &Key.Global.CatchupLeft, &Key.Thread.Catchup,
+	&Key.Thread.CatchupNextUnread, &Key.Thread.MarkArtRead,
+	&Key.Thread.ToggleSubjDisplay, &Key.Global.Help,
+	&Key.Global.LookupMessage, &Key.Global.SearchBody,
+	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB,
+	&Key.Global.SearchAuthF, &Key.Global.SearchAuthB,
 	&Key.Global.ToggleHelpDisplay, &Key.Global.ToggleInverseVideo,
 #ifdef HAVE_COLOR
 	&Key.Global.ToggleColor,
@@ -803,7 +810,7 @@ free_keymaps (
  * Render ch in human readable ASCII
  * Is there no lib function to do this ?
  */
-static char *
+char *
 printascii (
 	char *buf,
 	char ch)
@@ -812,13 +819,13 @@ printascii (
 		buf[0] = ch;
 		buf[1] = '\0';
 	} else if (ch == '\t') {	/* TAB */
-		strcpy (buf, "TAB");
+		strcpy (buf, _(txt_tab));
 	} else if (iscntrl(ch)) {	/* Control keys */
 		buf[0] = '^';
 		buf[1] = (ch & 0xFF) + '@';
 		buf[2] = '\0';
 	} else if (ch == ' ')		/* SPACE */
-		strcpy (buf, "SPACE");
+		strcpy (buf, _(txt_space));
 	else
 		strcpy (buf, "???");	/* Never happen ? */
 
@@ -894,9 +901,11 @@ t_bool
 read_keymap_file (
 	void)
 {
-	FILE *fp;
+	FILE *fp = (FILE *) 0;
 	char *line, *keydef, *keyname;
-	char buf[LEN];
+	char *ptr;
+	const char *ptr2, *map;
+	char buf[LEN], buff[LEN];
 	char key;
 	int i;
 	t_bool ret = TRUE;
@@ -904,8 +913,41 @@ read_keymap_file (
 	if (!batch_mode)
 		wait_message (0, _(txt_reading_keymap_file));
 
-	joinpath (buf, rcdir, KEYMAP_FILE);
-	if ((fp = fopen (buf, "r")) == NULL)
+	/*
+	 * checks TIN_HOMEDIR/HOME/TIN_DEFAULTS_DIR
+	 * for keymap."locale" or keymap
+	 *
+	 * locale is first match from LC_CYTYPE, LC_MESSAGES, LC_ALL or LANG
+	 */
+	ptr2 = get_val("TIN_HOMEDIR", get_val("HOME", homedir));
+	/* get locale suffix */
+	map = get_val("LC_CTYPE", get_val("LC_MESSAGES", get_val("LC_ALL", get_val("LANG", ""))));
+	if (strlen(map)) {
+		if ((ptr = strchr (map, '.')))
+				*ptr = '\0';
+		snprintf(buff, sizeof(buf) - 1, "%s/.tin/keymap.%s", ptr2, map);
+		if (strfpath (buff, buf, sizeof(buf), homedir, (char *) 0, (char *) 0, (char *) 0))
+			fp = fopen (buf, "r");
+	}
+	if (!fp) {
+		snprintf(buff, sizeof(buf) - 1, "%s/.tin/keymap", ptr2);
+		if (strfpath (buff, buf, sizeof(buf), homedir, (char *) 0, (char *) 0, (char *) 0))
+			fp = fopen (buf, "r");
+	}
+#ifdef TIN_DEFAULTS_DIR
+	if (strlen(map) && !fp) {
+		snprintf(buff, sizeof(buf) - 1, "%s/keymap.%s", TIN_DEFAULTS_DIR, map);
+		if (strfpath (buff, buf, sizeof(buf), homedir, (char *) 0, (char *) 0, (char *) 0))
+			fp = fopen (buf, "r");
+	}
+	if (!fp) {
+		snprintf(buff, sizeof(buf) - 1, "%s/keymap", TIN_DEFAULTS_DIR);
+		if (strfpath (buff, buf, sizeof(buf), homedir, (char *) 0, (char *) 0, (char *) 0))
+			fp = fopen (buf, "r");
+	}
+#endif /* TIN_DEFAULTS_DIR */
+
+	if (!fp)
 		return FALSE;
 
 	while ((line = fgets (buf, sizeof(buf), fp)) != NULL) {

@@ -32,12 +32,12 @@ metamutt
 	obsolete as tin now has a small (and unfinished) builtin
 	MIME-parser, set METAMAIL=(internal) to use the builtin version.
 
-tinpp*
+tinpp
 	is a shell script to be used as post_process_command (tinrc)
 	it detects the file type of the saved file and spawns a related
 	viewer/application on it.
 
-url_handler.sh*
+url_handler.sh
 	is a shell script (need to be placed in /usr/local/bin/) which
 	passes the URL selected by the 'U' command in to to a related
 	viewer/application. this one is very basic.

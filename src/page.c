@@ -223,6 +223,7 @@ show_page (
 {
 	char buf[LEN];
 	char group_path[LEN];
+	char key[MAXKEYLEN];
 	int ch, i, n = 0;
 	int filter_state = NO_FILTERING;
 	int old_sort_art_type = tinrc.sort_article_type;
@@ -769,7 +770,7 @@ return_to_index:
 				info_message (cvers);
 				break;
 
-			case iKeyPagePost:	/* post a basenote */
+			case iKeyPost:	/* post a basenote */
 				if (post_article (group->name))
 					draw_page (group->name, 0);
 				break;
@@ -828,7 +829,7 @@ return_to_index:
 				break;
 
 			default:
-				info_message(_(txt_bad_command));
+				info_message(_(txt_bad_command), printascii (key, map_to_local (iKeyHelp, &menukeymap.page_nav)));
 		}
 	}
 	/* NOTREACHED */
