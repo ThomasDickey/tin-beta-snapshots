@@ -196,7 +196,6 @@ art_mark_xref_read(
 
 		c = *ptr;
 		*ptr = '\0';
-
 		psGrp = group_find(group);
 
 #ifdef DEBUG
@@ -215,8 +214,7 @@ art_mark_xref_read(
 
 		if (psGrp && psGrp->newsrc.xbitmap) {
 			if (artnum >= psGrp->newsrc.xmin && artnum <= psGrp->xmax) {
-				artread = ((NTEST(psGrp->newsrc.xbitmap, artnum - psGrp->newsrc.xmin) == ART_READ) ? TRUE : FALSE);
-				if (!artread) {
+				if (!(artread = ((NTEST(psGrp->newsrc.xbitmap, artnum - psGrp->newsrc.xmin) == ART_READ) ? TRUE : FALSE))) {
 					NSET0(psGrp->newsrc.xbitmap, artnum - psGrp->newsrc.xmin);
 					if (psGrp->newsrc.num_unread > 0)
 						psGrp->newsrc.num_unread--;
@@ -262,10 +260,9 @@ NSETRNG1(
 			}
 		} else {
 			BIT_OR(bitmap, low, (NBITSON << NBITIDX(low)));
-			if (NOFFSET(high) > NOFFSET(low) + 1) {
-				memset(&bitmap[NOFFSET(low) + 1], NBITSON,
-					(size_t) (NOFFSET(high) - NOFFSET(low) - 1));
-			}
+			if (NOFFSET(high) > NOFFSET(low) + 1)
+				memset(&bitmap[NOFFSET(low) + 1], NBITSON, (size_t) (NOFFSET(high) - NOFFSET(low) - 1));
+
 			BIT_OR(bitmap, high, ~ (NBITNEG1 << NBITIDX(high)));
 		}
 	}
@@ -295,11 +292,9 @@ NSETRNG0(
 			}
 		} else {
 			BIT_AND(bitmap, low, ~(NBITSON << NBITIDX(low)));
+			if (NOFFSET(high) > NOFFSET(low) + 1)
+				memset(&bitmap[NOFFSET(low) + 1], 0, (size_t) (NOFFSET(high) - NOFFSET(low) - 1));
 
-			if (NOFFSET(high) > NOFFSET(low) + 1) {
-				memset(&bitmap[NOFFSET(low) + 1], 0,
-					(size_t) (NOFFSET(high) - NOFFSET(low) - 1));
-			}
 			BIT_AND(bitmap, high, NBITNEG1 << NBITIDX(high));
 		}
 	}

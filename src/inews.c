@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2002-04-17
+ *  Updated   : 2002-12-04
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -196,8 +196,11 @@ submit_inews(
 #		endif /* CHARSET_CONVERSION */
 					if (!tinrc.post_8bit_header) {
 						char *p;
-
-						p = rfc1522_encode(sender_hdr, group, ismail);
+#ifdef CHARSET_CONVERSION
+						p = rfc1522_encode(sender_hdr, txt_mime_charsets[group->attribute->mm_network_charset], ismail);
+#else
+						p = rfc1522_encode(sender_hdr, tinrc.mm_charset, ismail);
+#endif /* CHARSET_CONVERSION */
 						STRCPY(sender_hdr, p);
 						free(p);
 					}
@@ -488,7 +491,11 @@ sender_needed(
 
 	snprintf(sender_line, sizeof(sender_line), "Sender: %s", sender);
 
-	p = rfc1522_encode(sender_line, group, FALSE);
+#ifdef CHARSET_CONVERSION
+	p = rfc1522_encode(sender_line, txt_mime_charsets[group->attribute->mm_network_charset], FALSE);
+#else
+	p = rfc1522_encode(sender_line, tinrc.mm_charset, FALSE);
+#endif /* CHARSET_CONVERSION */
 	if (GNKSA_OK != gnksa_do_check_from(p + 8, sender_addr, sender_name)) {
 		free(p);
 		return -2;

@@ -133,7 +133,6 @@ expand_ctrl_chars(
  * Extend the lineoffset array as needed in CHUNK amounts.
  * flags are 'hints' to the pager about line content
  */
-#if 1	/* this code should be multibyte safe (but it still has a bug somewhere) */
 static void
 put_cooked(
 	t_bool wrap_lines,
@@ -144,13 +143,13 @@ put_cooked(
 	char *p, *bufp;
 	char buf[LEN];
 	int wrap_column;
- 	int space;
+	int space;
 	static int overflow = 0;
 	static int saved_flags = 0;
-#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	int b;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	int bytes;
 	wint_t *wp;
-#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	va_list ap;
 
 	va_start(ap, fmt);
@@ -162,25 +161,26 @@ put_cooked(
 		wrap_column = ((tinrc.wrap_column > 0) ? tinrc.wrap_column : cCOLS);
 
 	p = bufp = buf;
-#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wp = my_malloc ((MB_CUR_MAX + 1) * sizeof(wint_t));
-#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-         
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 	while (*p) {
 		if (wrap_lines) {
 			space = wrap_column;
 			while (space > 0 && *p && *p != '\n') {
-#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				if ((b = mbtowc((wchar_t *) wp, p, MB_CUR_MAX)) > 0) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				if ((bytes = mbtowc((wchar_t *) wp, p, MB_CUR_MAX)) > 0) {
 					if ((space -= wcwidth(*wp)) < 0)
 						break;
-					p += b;
+					p += bytes;
 				} else
 					p++;
-#	else
+#else
 				p++;
 				space--;
-#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			}
 		} else {
 			while (*p && *p != '\n')
@@ -214,9 +214,9 @@ put_cooked(
 		art->cookl[art->cooked_lines].offset = ftell(art->cooked);
 	}
 
-#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	free(wp);
-#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	/*
 	 * If there is anything left over, then it must be a non \n terminated
@@ -233,86 +233,6 @@ put_cooked(
 
 	va_end(ap);
 }
-#else /* this code is not multibyte safe */
-static void
-put_cooked(
-	t_bool wrap_lines,
-	int flags,
-	const char *fmt,
-	...)
-{
-	char *p, *bufp;
-	char buf[LEN];
-	int wrap_column;
-	static int overflow = 0;
-	static int saved_flags = 0;
-	va_list ap;
-
-	va_start(ap, fmt);
-	vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
-
-	bufp = buf;
-
-	if (tinrc.wrap_column < 0)
-		wrap_column = ((tinrc.wrap_column > -cCOLS) ? cCOLS + tinrc.wrap_column : cCOLS);
-	else
-		wrap_column = ((tinrc.wrap_column > 0) ? tinrc.wrap_column : cCOLS);
-
-	/*
-	 * TODO: make multibyte safe:
-	 *       don't wrap in the middle of a multibyte char
-	 *       don't compare byte-length but wcswidth() with wrap_column
-	 */
-	for (p = bufp; *p; p++) {
-		if (*p == '\n' || (wrap_lines && (overflow + p - bufp >= wrap_column))) {
-			fwrite(bufp, p - bufp, 1, art->cooked);
-
-			fputs("\n", art->cooked);
-			bufp = p;
-			overflow = 0;
-
-			/* Skip over newline if that's what split the current buffer */
-			if (*p == '\n')
-				++bufp;
-
-			if (art->cooked_lines == 0) {
-				art->cookl = my_malloc(sizeof(t_lineinfo) * CHUNK);
-				art->cookl[0].offset = 0;
-			}
-
-			/*
-			 * Pick up flags from a previous partial write
-			 */
-			art->cookl[art->cooked_lines].flags = flags | saved_flags;
-			saved_flags = 0;
-			art->cooked_lines++;
-
-			/*
-			 * Grow the array of lines if needed - we resize it properly at the end
-			 */
-			if (art->cooked_lines % CHUNK == 0)
-				art->cookl = my_realloc(art->cookl, sizeof(t_lineinfo) * CHUNK * ((art->cooked_lines / CHUNK) + 1));
-
-			art->cookl[art->cooked_lines].offset = ftell(art->cooked);
-		}
-	}
-
-	/*
-	 * If there is anything left over, then it must be a non \n terminated
-	 * partial line from base64 decoding etc.. Dump it now and the rest of
-	 * the line (with the \n) will fill in the t_lineinfo
-	 * We must save the flags now as the rest of the line may not have the same properties
-	 * We need to keep the length for accounting purposes
-	 */
-	if (*bufp != '\0') {
-		fputs(bufp, art->cooked);
-		saved_flags = flags;
-		overflow += strlen(bufp);
-	}
-
-	va_end(ap);
-}
-#endif /* 1 */
 
 
 /*
@@ -749,19 +669,8 @@ process_text_body_part(
 		if (!(line && strlen(line)))
 			break;	/* premature end of file, file error etc. */
 
-		/*
-		 * conversion should be conde before ISO2ASC conversion
-		 * (done in process_charsets()) to allow TEX2ISO && ISO2ASC,
-		 * i.e. "a -> auml -> ae
-		 */
-		if ((CURR_GROUP.attribute->tex2iso_conv) && art->tex2iso) {
-			char *texbuf;
-			texbuf = my_strdup(line);
-			convert_tex2iso(texbuf, line);
-			free(texbuf);
-		}
-
-		process_charsets(&line, &max_line_len, get_param(part->params, "charset"), tinrc.mm_local_charset);
+		/* convert network to local charset, tex2iso, iso2asc etc. */
+		process_charsets(&line, &max_line_len, get_param(part->params, "charset"), tinrc.mm_local_charset, CURR_GROUP.attribute->tex2iso_conv && art->tex2iso);
 		/* we might have realloced line, so make sure we use this new buffer */
 		buf = line;
 

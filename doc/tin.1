@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2002-11-16
+.\" Updated   : 2002-11-29
 .\" Notes     : still needs some work, i.e.:
 .\"             - document authorization (.newsauth)
 .\"             - postprocess differences when linked against libuu
 .\"
 .\"
-.TH tin 1 "November 16th, 2002" "1.5.16" "A Usenet newsreader"
+.TH tin 1 "November 29th, 2002" "1.5.16" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -593,7 +593,8 @@ OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES").
 Positions the cursor on the next group with unread articles in it.
 .TP
 .B Quit 'q'
-Quit \fBtin\fP - ask the user to confirm if \fBconfirm_to_quit\fP is on.
+Quit \fBtin\fP - ask the user to confirm if \fBconfirm_choice\fP is
+set accordingly.
 .TP
 .B QuitTin 'Q'
 Quit \fBtin\fP - don't ask the user to confirm.

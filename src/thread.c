@@ -92,15 +92,15 @@ build_tline(
 	struct t_article *art)
 {
 	char mark;
+	int gap, fill, i;
+	int rest_of_line = cCOLS;
+	int len_from, len_subj;
+	struct t_msgid *ptr;
 #ifdef USE_CURSES
 	char buff[BUFSIZ];
 #else
 	char *buff = screen[INDEX2TNUM(l)].col;
 #endif /* USE_CURSES */
-	int gap, fill, i;
-	int rest_of_line = cCOLS;
-	int len_from, len_subj;
-	struct t_msgid *ptr;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t wtmp[BUFSIZ], wtmp2[BUFSIZ];
 	char tmp[BUFSIZ];
@@ -220,7 +220,7 @@ build_tline(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				if (mbstowcs(wtmp2, art->subject, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
 					wcspart(wtmp, wtmp2, gap, ARRAY_SIZE(wtmp));
-					if (wcstombs(tmp, wtmp, sizeof(tmp)) != (size_t) -1)
+					if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
 						strncat(buff, tmp, sizeof(buff) - len - 1);
 				}
 #else
@@ -250,12 +250,11 @@ build_tline(
 			 * Now add the author info at the end. This will be 0 terminated
 			 */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-			tmp[0] = '\0';
 			get_author(TRUE, art, tmp, sizeof(tmp) - 1);
 
 			if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) -1) != (size_t) -1) {
 				wcspart(wtmp, wtmp2, len_from, ARRAY_SIZE(wtmp));
-				if (wcstombs(tmp, wtmp, sizeof(tmp)) != (size_t) -1)
+				if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
 					strncat(buff, tmp, sizeof(buff) - strlen(buff) - 1);
 			}
 #else
@@ -265,12 +264,11 @@ build_tline(
 
 	} else { /* Add the author info. This is always shown if subject is not */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		tmp[0] = '\0';
 		get_author(TRUE, art, tmp, sizeof(tmp) - 1);
 
 		if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) -1) != (size_t) -1) {
 			wcspart(wtmp, wtmp2, cCOLS - strlen(buff), ARRAY_SIZE(wtmp));
-			if (wcstombs(tmp, wtmp, sizeof(tmp)) != (size_t) -1)
+			if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
 				strncat(buff, tmp, sizeof(buff) - strlen(buff) - 1);
 		}
 #else
@@ -405,9 +403,7 @@ thread_page(
 
 	if ((n = which_thread(thread_respnum)) >= 0)
 		thread_basenote = n;
-	thdmenu.max = num_of_responses(thread_basenote) + 1;
-
-	if (thdmenu.max <= 0) {
+	if ((thdmenu.max = num_of_responses(thread_basenote) + 1) <= 0) {
 		info_message(_(txt_no_resps_in_thread));
 		return GRP_EXIT;
 	}
@@ -581,8 +577,7 @@ thread_page(
 					break;
 				}
 				fixup_thread(n, TRUE);			/* We may be in the next thread now */
-				n = which_response(n);
-				move_to_item(n);
+				move_to_item(which_response(n));
 				break;
 
 			case iKeyThreadToggleSubjDisplay:	/* toggle display of subject & subj/author */
@@ -777,7 +772,7 @@ show_thread_page(
 
 	assert(thdmenu.first != 0 || the_index == thread_respnum);
 
-	if (show_subject)
+	if (show_subject) /* TODO: -> lang.c */
 		snprintf(mesg, sizeof(mesg) - 1, _("List Thread (%d of %d)"), grpmenu.curr + 1, grpmenu.max);
 	else
 		snprintf(mesg, sizeof(mesg) - 1, _("Thread (%.*s)"), cCOLS - 23, arts[thread_respnum].subject);
@@ -1209,6 +1204,7 @@ next_unread(
 
 /*
  * Find the previous unread response in this thread
+ * TODO: why doesn't this handle ART_WILL_RETURN like next_unread() does?
  */
 int
 prev_unread(
@@ -1353,8 +1349,10 @@ thread_catchup(
 			switch (pyn) {
 				case -1:				/* ESC from prompt, stay in group */
 					break;
+
 				case 1:					/* We caught up - advance group */
 					return GRP_NEXT;
+
 				default:				/* Just leave the group */
 					return GRP_EXIT;
 			}

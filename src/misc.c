@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-11-01
+ *  Updated   : 2002-12-04
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -570,7 +570,8 @@ tin_done(
 	if (!no_write) {
 		forever {
 			if (((wrote_newsrc_lines = write_newsrc()) >= 0L) && (wrote_newsrc_lines >= read_newsrc_lines)) {
-				my_fputs(_(txt_newsrc_saved), stdout);
+				if (!batch_mode || (batch_mode && verbose))
+					my_fputs(_(txt_newsrc_saved), stdout);
 				break;
 			}
 
@@ -1104,10 +1105,6 @@ get_author(
 	author = ((thread && !show_subject) ? SHOW_FROM_BOTH : CURR_GROUP.attribute->show_author);
 
 	switch (author) {
-		case SHOW_FROM_NONE:
-			str[0] = '\0';
-			break;
-
 		case SHOW_FROM_ADDR:
 			strncpy(str, art->from, len);
 			break;
@@ -1123,7 +1120,9 @@ get_author(
 				strncpy(str, art->from, len);
 			break;
 
+		case SHOW_FROM_NONE:
 		default:
+			len = 0;
 			break;
 	}
 
@@ -1947,7 +1946,11 @@ strfmailer(
 					else {
 						char *p;
 
-						p = rfc1522_encode(subject, NULL, ismail);
+#ifdef CHARSET_CONVERSION
+						p = rfc1522_encode(subject, txt_mime_charsets[tinrc.mm_network_charset], ismail);
+#else
+						p = rfc1522_encode(subject, tinrc.mm_charset, ismail);
+#endif /* CHARSET_CONVERSION */
 						strncpy(tbuf, escape_shell_meta(p, quote_area), sizeof(tbuf));
 						free(p);
 					}
@@ -1962,7 +1965,11 @@ strfmailer(
 					else {
 						char *p;
 
-						p = rfc1522_encode(to, NULL, ismail);
+#ifdef CHARSET_CONVERSION
+						p = rfc1522_encode(to, txt_mime_charsets[tinrc.mm_network_charset], ismail);
+#else
+						p = rfc1522_encode(to, tinrc.mm_charset, ismail);
+#endif /* CHARSET_CONVERSION */
 						strncpy(tbuf, escape_shell_meta(p, quote_area), sizeof(tbuf));
 						free(p);
 					}
@@ -1977,7 +1984,11 @@ strfmailer(
 					else {
 						char *p;
 
-						p = rfc1522_encode(userid, NULL, ismail);
+#ifdef CHARSET_CONVERSION
+						p = rfc1522_encode(userid, txt_mime_charsets[tinrc.mm_network_charset], ismail);
+#else
+						p = rfc1522_encode(userid, tinrc.mm_charset, ismail);
+#endif /* CHARSET_CONVERSION */
 						strncpy(tbuf, p, sizeof(tbuf));
 						free(p);
 					}
@@ -2779,7 +2790,8 @@ process_charsets(
 	char **line,
 	int *max_line_len,
 	const char *network_charset,
-	const char *local_charset)
+	const char *local_charset,
+	t_bool conv_tex2iso)
 {
 #ifdef CHARSET_CONVERSION
 	if (strcasecmp(network_charset, "US-ASCII")) {	/* network_charset is NOT US-ASCII */
@@ -2804,6 +2816,17 @@ process_charsets(
 	buffer_to_local(*line);
 #	endif /* LOCAL_CHARSET || MAC_OS_X */
 #endif /* CHARSET_CONVERSION */
+
+	/*
+	 * TEX2ISO conversion should be done before ISO2ASC conversion
+	 * to allow TEX2ISO && ISO2ASC, i.e. "a -> auml -> ae
+	 */
+	if (conv_tex2iso) {
+		char *texbuf;
+		texbuf = my_strdup(*line);
+		convert_tex2iso(texbuf, *line);
+		free(texbuf);
+	}
 
 	/* iso2asc support */
 #ifdef CHARSET_CONVERSION

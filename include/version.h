@@ -42,7 +42,7 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.5.16"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20021120"
+#	define RELEASEDATE	"20021206"
 #	define RELEASENAME	"Spiders"
 #	define TINRC_VERSION	"1.3.0"
 

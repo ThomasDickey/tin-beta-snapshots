@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002 Free Software Foundation, Inc.
 
-timestamp='2002-11-13'
+timestamp='2002-11-30'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -118,7 +118,7 @@ esac
 # Here we must recognize all the valid KERNEL-OS combinations.
 maybe_os=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\2/'`
 case $maybe_os in
-  nto-qnx* | linux-gnu* | freebsd*-gnu* | storm-chaos* | os2-emx* | windows32-* | rtmk-nova*)
+  nto-qnx* | linux-gnu* | freebsd*-gnu* | netbsd*-gnu* | storm-chaos* | os2-emx* | rtmk-nova*)
     os=-$maybe_os
     basic_machine=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\1/'`
     ;;
@@ -278,8 +278,8 @@ case $basic_machine in
 	# because (1) that's what they normally are, and
 	# (2) the word "unknown" tends to confuse beginning users.
 	i*86 | x86_64)
-	  basic_machine=$basic_machine-pc
-	  ;;
+		basic_machine=$basic_machine-pc
+		;;
 	# Object if more than one company name word.
 	*-*-*)
 		echo Invalid configuration \`$1\': machine \`$basic_machine\' not recognized 1>&2
@@ -1073,8 +1073,8 @@ esac
 if [ x"$os" != x"" ]
 then
 case $os in
-        # First match some system type aliases
-        # that might get confused with valid system types.
+	# First match some system type aliases
+	# that might get confused with valid system types.
 	# -solaris* is a basic system type, with this one exception.
 	-solaris1 | -solaris1.*)
 		os=`echo $os | sed -e 's|solaris1|sunos4|'`
@@ -1126,8 +1126,10 @@ case $os in
 			;;
 		esac
 		;;
+	-nto-qnx*)
+		;;
 	-nto*)
-		os=-nto-qnx
+		os=`echo $os | sed -e 's|nto|nto-qnx|'`
 		;;
 	-sim | -es1800* | -hms* | -xray | -os68k* | -none* | -v88r* \
 	      | -windows* | -osx | -abug | -netware* | -os9* | -beos* \
