@@ -647,6 +647,10 @@ global_get_multiparts (
 		if (!global_get_multipart_info (i, &tmp2))
 			continue;
 
+		/* test (1/5)' is not the same as 'test (1/15)' */
+		if (tmp.total != tmp2.total)
+			continue;
+
 		part_index = tmp2.part_number - 1;
 
 		/* skip the "blah (00/102)" info messages... */
@@ -1769,7 +1773,7 @@ valid_artnum (
 	register int cur = 1;
 
 	while ((dctop /= 2))
-		cur *= 2;
+		cur <<= 1;
 
 	range = cur / 2;
 	cur--;

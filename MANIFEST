@@ -1,4 +1,4 @@
-MANIFEST for tin-1.5.10 (Sat Nov 17 19:47:38 CET 2001)
+MANIFEST for tin-1.5.11 (Mon Dec  3 19:46:24 CET 2001)
 ----------------------------------------------------
   13347 ./Makefile
    7664 ./MANIFEST
@@ -9,22 +9,22 @@ MANIFEST for tin-1.5.10 (Sat Nov 17 19:47:38 CET 2001)
  104405 ./aclocal.m4
     915 ./conf-tin
   38315 ./config.guess
-  28412 ./config.sub
+  28441 ./config.sub
  418656 ./configure
   27924 ./configure.in
    5555 ./install.sh
     777 ./mkdirs.sh
   11651 ./doc/ABOUT-NLS
-  38562 ./doc/CHANGES
+  39639 ./doc/CHANGES
  153544 ./doc/CHANGES.old
    1469 ./doc/DEBUG_REFS
-  35812 ./doc/INSTALL
-  24700 ./doc/TODO
+  35797 ./doc/INSTALL
+  24831 ./doc/TODO
    1976 ./doc/WHATSNEW
    2671 ./doc/art_handling.txt
    3863 ./doc/auth.txt
    4971 ./doc/config-anomalies
-  10964 ./doc/filtering
+  10958 ./doc/filtering
   35175 ./doc/good-netkeeping-seal
    3661 ./doc/internals.txt
   23621 ./doc/iso2asc.txt
@@ -37,13 +37,13 @@ MANIFEST for tin-1.5.10 (Sat Nov 17 19:47:38 CET 2001)
    1227 ./doc/reading-mail.txt
    1615 ./doc/umlaute.txt
    1914 ./doc/umlauts.txt
-   4661 ./doc/tin.defaults
+   4673 ./doc/tin.defaults
    1888 ./doc/tools.txt
    5890 ./doc/mbox.5
    2128 ./doc/newsoverview.5
    6963 ./doc/plp_snprintf.3
- 104903 ./doc/tin.1
-  55019 ./doc/tin.5
+ 103077 ./doc/tin.1
+  56018 ./doc/tin.5
    4729 ./doc/w2r.pl.1
    2196 ./doc/wildmat.3
     344 ./tools/expiretover
@@ -56,29 +56,29 @@ MANIFEST for tin-1.5.10 (Sat Nov 17 19:47:38 CET 2001)
    2227 ./include/bool.h
    2128 ./include/bugrep.h
    9688 ./include/oldconfig.h
-  52111 ./include/extern.h
+  52150 ./include/extern.h
   11305 ./include/keymap.h
   15828 ./include/menukeys.h
    6567 ./include/nntplib.h
     666 ./include/plp_snprintf.h
-  12056 ./include/policy.h
+  12067 ./include/policy.h
   29999 ./include/proto.h
    5262 ./include/rfc2046.h
    3559 ./include/stpwatch.h
    4376 ./include/tcurses.h
-  60321 ./include/tin.h
-  11543 ./include/tinrc.h
+  60378 ./include/tin.h
+  11596 ./include/tinrc.h
    5950 ./include/tnntp.h
    2416 ./include/trace.h
    2713 ./include/version.h
   25286 ./src/active.c
-  44980 ./src/art.c
-  25055 ./src/attrib.c
+  45079 ./src/art.c
+  25553 ./src/attrib.c
   12247 ./src/auth.c
   10704 ./src/charset.c
    8039 ./src/color.c
-  70999 ./src/config.c
-  27453 ./src/cook.c
+  71226 ./src/config.c
+  27472 ./src/cook.c
   27538 ./src/curses.c
   12376 ./src/debug.c
    3675 ./src/envarg.c
@@ -88,41 +88,41 @@ MANIFEST for tin-1.5.10 (Sat Nov 17 19:47:38 CET 2001)
    7489 ./src/global.c
   38911 ./src/group.c
    4493 ./src/hashstr.c
-   8827 ./src/header.c
+   8829 ./src/header.c
   27638 ./src/help.c
   13291 ./src/inews.c
-  32207 ./src/init.c
+  32044 ./src/init.c
    3053 ./src/joinpath.c
   37915 ./src/keymap.c
-  99580 ./src/lang.c
+  99841 ./src/lang.c
    4382 ./src/list.c
    6954 ./src/lock.c
-  12134 ./src/mail.c
+  12153 ./src/mail.c
   24899 ./src/main.c
   10477 ./src/makecfg.c
   10853 ./src/memory.c
    3192 ./src/mimetypes.c
-  85783 ./src/misc.c
-  38601 ./src/newsrc.c
+  85976 ./src/misc.c
+  38599 ./src/newsrc.c
   27017 ./src/nntplib.c
    7430 ./src/nrctbl.c
   26290 ./src/open.c
-  42363 ./src/page.c
+  42408 ./src/page.c
   24256 ./src/parsdate.y
   16970 ./src/plp_snprintf.c
-  13329 ./src/pgp.c
- 120724 ./src/post.c
+  13371 ./src/pgp.c
+ 120794 ./src/post.c
   14007 ./src/prompt.c
   10872 ./src/read.c
   25071 ./src/refs.c
    4558 ./src/regex.c
-  14594 ./src/rfc1524.c
+  14596 ./src/rfc1524.c
    7503 ./src/rfc2045.c
-  21920 ./src/rfc2046.c
+  21939 ./src/rfc2046.c
   25625 ./src/rfc2047.c
   36743 ./src/save.c
    9613 ./src/screen.c
-  12644 ./src/search.c
+  12643 ./src/search.c
   28804 ./src/select.c
    7960 ./src/sigfile.c
   12882 ./src/signal.c
@@ -132,7 +132,7 @@ MANIFEST for tin-1.5.10 (Sat Nov 17 19:47:38 CET 2001)
   10733 ./src/tcurses.c
    3550 ./src/tmpfile.c
    3432 ./src/my_tmpfile.c
-  35100 ./src/thread.c
+  35099 ./src/thread.c
    2601 ./src/trace.c
    4369 ./src/wildmat.c
    7719 ./src/xref.c
@@ -225,14 +225,14 @@ MANIFEST for tin-1.5.10 (Sat Nov 17 19:47:38 CET 2001)
    4321 ./pcre/testdata/testoutput6
   13879 ./include/autoconf.hin
    5800 ./pcre/pcre.mms
-  18837 ./src/Makefile.in
+  18795 ./src/Makefile.in
    2124 ./src/ibm437_l1.tab
    2124 ./src/ibm850_l1.tab
    2124 ./src/l1_ibm437.tab
    2124 ./src/l1_ibm850.tab
    4284 ./src/l1_next.tab
    4284 ./src/next_l1.tab
-   6659 ./src/tincfg.tbl
+   6686 ./src/tincfg.tbl
    8747 ./src/descrip.mms
     954 ./libcanlock/Build
     882 ./libcanlock/CHANGES
@@ -286,8 +286,8 @@ MANIFEST for tin-1.5.10 (Sat Nov 17 19:47:38 CET 2001)
    2814 ./intl/xopen-msg.sed
    6989 ./po/Makefile.inn
     798 ./po/POTFILES.in
- 111310 ./po/tin.pot
- 172640 ./po/de.po
- 172658 ./po/et.po
- 113659 ./po/en_GB.po
-4929929 total
+ 111752 ./po/tin.pot
+ 173506 ./po/de.po
+ 172654 ./po/et.po
+ 113657 ./po/en_GB.po
+4933106 total

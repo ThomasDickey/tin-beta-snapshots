@@ -756,7 +756,7 @@ process_text_body_part(
 		if (MATCH_REGEX (news_regex, line, len))
 			flags |= C_NEWS;
 
-		if (tex2iso_supported && art->tex2iso) {
+		if ((CURR_GROUP.attribute->tex2iso_conv) && art->tex2iso) {
 			char texbuf[LEN];
 			strcpy (texbuf, line);
 			convert_tex2iso (texbuf, line);

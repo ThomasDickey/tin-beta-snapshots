@@ -1,8 +1,39 @@
+-- 1.5.11 release 20011203 "" --
+
+U085) Andreas Metzler <tin-dev@downhill.at.eu.org>
+      ADD. docu update (inews_prog)
+      REM. $TEX2ISO env-var
+      ADD. tex2iso_cov tinrc-item
+      FIX. INSTALL, TODO, tin.1, tin.5, tin.defaults, extern.h, tin.h, tinrc.h
+           attrib.c, config.c, cook.c, init.c, lang.c, page.c, rfc2046.c
+           tincfg.tbl
+
+U084) Sven Hartge <hartge@ds9.argh.org>
+      Andreas Metzler <tin-dev@downhill.at.eu.org>
+      ADD. de.po update
+      FIX. de.po
+
+U083) Urs Janssen <urs@tin.org>
+      ADD. config.sub update
+      ADD. '<', '(', ')', ':' as NEWS_REGEX 'terminator'
+      BUG. possible buffer overrun and emtpy pgp-address
+      BUG. missing screen redraw after supersede
+      BUG. possible dereferenced pointer (network_charset)
+      FIX. config.sub, tin.h, misc.c, pgp.c, post.c, version.sh, tin.1
+
+U082) Mark Trumbull <mjt@pipedreaminteractive.com>
+      BUG. multipart threading sometimes joins threads which don't belong
+           together
+      FIX. art.c
+
+ 037) Urs Janssen <urs@tin.org>
+      ADD. allow new GTLDs: .biz, .info, .name, .museum
+      FIX. policy.h
+
 -- 1.5.10 release 20011117 "Darkcell" --
 
 U081) Mark Trumbull <mjt@pipedreaminteractive.com>
-      ADD. new threading method: sort by subject but (try to) join
-           multipart arts to a thread.
+      ADD. new threading method: join multipart arts to a thread
       FIX. propto.h, tin.h, art.c, group.c, lang.c, thread.c
 
 U080) Toomas Soome <tsoome@ut.ee>

@@ -75,6 +75,7 @@
 	news_headers_to_not_display	OPT_STRING
 	alternative_handling		OPT_ON_OFF
 	hide_uue			OPT_ON_OFF
+	tex2iso_conv			OPT_ON_OFF
 #ifdef	HAVE_METAMAIL
 	use_metamail			OPT_ON_OFF
 	ask_for_metamail		OPT_ON_OFF

@@ -1553,7 +1553,6 @@ vNewsrcTestHarness (
 	set_bitmap_range_unread (&group.newsrc, rng_min, rng_max);
 	debug_print_newsrc (&group.newsrc, stdout);
 
-
 	NSETBLK0(group.newsrc.xbitmap, group.newsrc.xbitlen);
 	debug_print_newsrc (&group.newsrc, stdout);
 
@@ -1611,5 +1610,4 @@ my_printf ("\nRNG Min-Max=[%ld-%ld] Beg-End=[%ld-%ld] OFF=[%ld] LEN=[%ld]\n", ne
 	}
 }
 #	endif /* DEBUG_NEWSRC_FIXME */
-
 #endif /* DEBUG_NEWSRC */

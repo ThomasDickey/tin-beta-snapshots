@@ -87,6 +87,7 @@
 #	define ATTRIB_ISPELL		32
 #endif /* HAVE_ISPELL */
 #define ATTRIB_SORT_THREADS_TYPE	33
+#define ATTRIB_TEX2ISO_CONV		34
 
 /*
  * Local prototypes
@@ -149,6 +150,7 @@ set_default_attributes (
 	attributes->delete_tmp_files = FALSE;
 	attributes->post_proc_type = tinrc.post_process;
 	attributes->x_comment_to = FALSE;
+	attributes->tex2iso_conv = tinrc.tex2iso_conv;
 }
 
 
@@ -286,6 +288,7 @@ read_attributes_file (
 				break;
 
 			case 't':
+				MATCH_BOOLEAN ("tex2iso_conv=", ATTRIB_TEX2ISO_CONV);
 				MATCH_INTEGER ("thread_arts=", ATTRIB_THREAD_ARTS, THREAD_MAX);
 				break;
 
@@ -465,6 +468,9 @@ do_set_attrib (
 			group->attribute->ispell = my_strdup (data);
 			break;
 #endif /* HAVE_ISPELL */
+		case ATTRIB_TEX2ISO_CONV:
+			group->attribute->tex2iso_conv = *data;
+			break;
 		default:
 			break;
 	}
@@ -501,7 +507,10 @@ write_attributes_file (
 	if (!cmd_line && !batch_mode)
 		wait_message (0, _(txt_writing_attributes_file));
 
-	/* FIXME - move strings to lang.c */
+	/*
+	 * FIXME - move strings to lang.c
+	 * TODO: sort in a usefull order
+	 */
 	fprintf (fp, _("# Group attributes file for the TIN newsreader\n#\n"));
 	fprintf (fp, _("#  scope=STRING (ie. alt.sources, alt.*,!alt.bin* etc..) [mandatory]\n"));
 	fprintf (fp, _("#  maildir=STRING (ie. ~/Mail)\n"));
@@ -517,7 +526,7 @@ write_attributes_file (
 	fprintf (fp, _("#  news_quote_format=STRING\n"));
 	fprintf (fp, _("#  quote_chars=STRING (%%s, %%S for initials)\n"));
 #ifdef HAVE_ISPELL
-	fprintf (fp, _("#  ispell = STRING\n"));
+	fprintf (fp, _("#  ispell=STRING\n"));
 #endif /* HAVE_ISPELL */
 	fprintf (fp, _("#  auto_select=ON/OFF\n"));
 	fprintf (fp, _("#  auto_save=ON/OFF\n"));
@@ -525,7 +534,7 @@ write_attributes_file (
 	fprintf (fp, _("#  delete_tmp_files=ON/OFF\n"));
 	fprintf (fp, _("#  show_only_unread=ON/OFF\n"));
 	fprintf (fp, _("#  thread_arts=NUM\n"));
-	fprintf (fp, _("#    0=none, 1=subj, 2=refs, 3=both\n"));
+	fprintf (fp, _("#    0=none, 1=subj, 2=refs, 3=both, 4=multipart\n"));
 	fprintf (fp, _("#  show_author=NUM\n"));
 	fprintf (fp, _("#    0=none, 1=name, 2=addr, 3=both\n"));
 	fprintf (fp, _("#  sort_art_type=NUM\n"));
@@ -552,6 +561,7 @@ write_attributes_file (
 	fprintf (fp, _("#    2=from (case sensitive) 3=from (ignore case)\n"));
 	fprintf (fp, _("#    4=msgid 5=lines\n"));
 	fprintf (fp, _("#  x_comment_to=ON/OFF\n"));
+	fprintf (fp, _("#  tex2iso_conv=ON/OFF\n"));
 	fprintf (fp, _("#\n# Note that it is best to put general (global scoping)\n"));
 	fprintf (fp, _("# entries first followed by group specific entries.\n#\n"));
 	fprintf (fp, _("############################################################################\n\n"));
@@ -629,6 +639,8 @@ write_attributes_file (
 		fprintf (fp, "quick_select_header=%d\n\n", group->attribute->quick_select_header);
 		fprintf (fp, "x_comment_to=%s\n",
 			print_boolean (group->attribute->x_comment_to));
+		fprintf (fp, "tex2iso_conv=%s\n",
+			print_boolean (group->attribute->tex2iso_conv));
 	}
 #endif /* 0 */
 
@@ -735,6 +747,8 @@ dump_attributes (
 		fprintf (stderr, "quick_select_header=%d\n", group->attribute->quick_select_header);
 		fprintf (stderr, "x_comment_to=%s\n\n",
 			print_boolean (group->attribute->x_comment_to));
+		fprintf (stderr, "tex2iso_conv=%s\n\n",
+			print_boolean (group->attribute->tex2iso_conv));
 	}
 }
 #	endif /* DEBUG */

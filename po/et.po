@@ -86,8 +86,8 @@ msgid "#  quote_chars=STRING (%%s, %%S for initials)\n"
 msgstr "#  quote_chars=SÕNE (%%s, %%S annavad initsiaalid)\n"
 
 #: src/attrib.c:520
-msgid "#  ispell = STRING\n"
-msgstr "#  ispell = SÕNE\n"
+msgid "#  ispell=STRING\n"
+msgstr "#  ispell=SÕNE\n"
 
 #: src/attrib.c:522
 msgid "#  auto_select=ON/OFF\n"

@@ -162,7 +162,6 @@ t_bool read_local_newsgroups_file;	/* read newsgroups file locally or via NNTP *
 t_bool read_news_via_nntp = FALSE;	/* read news locally or via NNTP */
 t_bool read_saved_news = FALSE;		/* tin -R read saved news from tin -S */
 t_bool show_description = TRUE;		/* current copy of tinrc flag */
-t_bool tex2iso_supported;		/* Convert german style TeX to ISO-Latin1 */
 t_bool batch_mode;			/* update index files only mode */
 t_bool verbose = FALSE;			/* update index files only mode */
 t_bool (*wildcard_func) (const char *str, char *patt, t_bool icase);		/* Wildcard matching function */
@@ -374,6 +373,7 @@ struct t_config tinrc = {
 	FALSE,		/* strip_newsrc */
 	FALSE,		/* tab_after_X_selection */
 	TRUE,		/* tab_goto_next_unread */
+	FALSE,		/* tex2iso_conv */
 	TRUE,		/* thread_catchup_on_exit */
 	TRUE,		/* unlink_article */
 	"",		/* inews_prog */
@@ -591,7 +591,6 @@ init_selfinfo (
 	read_local_newsgroups_file = FALSE;
 	force_reread_active_file = TRUE;
 	reread_active_for_posted_arts = TRUE;
-	tex2iso_supported = (atoi (get_val ("TEX2ISO", "0")) != 0) ? TRUE : FALSE;
 	batch_mode = FALSE;
 	check_for_new_newsgroups = !batch_mode;
 	wildcard_func = wildmat;
@@ -613,9 +612,8 @@ init_selfinfo (
 	index_savedir[0] = '\0';
 	newsrc[0] = '\0';
 
-	sprintf (page_header, "%s %s release %s (\"%s\") [%s%s%s]",
+	sprintf (page_header, "%s %s release %s (\"%s\") [%s%s]",
 		tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME,
-		(tex2iso_supported ? " TeX2ISO" : ""),
 		(iso2asc_supported >= 0 ? " ISO2ASC" : ""));
 	sprintf (cvers, txt_copyright_notice, page_header);
 

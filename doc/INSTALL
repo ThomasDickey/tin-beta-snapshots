@@ -287,8 +287,8 @@ Define if you want to use the built-in NNTP POST routine so that you no
 longer have to rely on the mini-inews from NNTP to be installed on each
 client machine. Also check that --with-domain-name is correctly set to
 produce a correct From: headers for your site. If defined then the
-~/.tin/tinrc variable "use_builtin_inews" default will be set to ON rather
-than OFF. The tinrc file is created automatically for each user the first
+~/.tin/tinrc variable "inews_prog" default will be set to --internal.
+The tinrc file is created automatically for each user the first
 time they use tin.
 
 NNTP_SERVER_FILE (default: /etc/nntpserver, on Amiga: uulib:nntpserver)
@@ -623,7 +623,7 @@ i586-pc-linux-gnu           (glibc 2.2.2)  gcc 2.95.3    (1.5.9 release 20010723
 i586-pc-linux-gnu           (glibc 2.0.7)  tcc 4.1.2     (1.4.0 release 19991113)   [3]    <urs@tin.org>
 i586-pc-linux-gnu           (glibc 2.1.1)  lcc 4.27      (1.4.0 release 19991113)   [3][4] <urs@tin.org>
 i586-pc-linux-gnu           (glibc 2.1.1)  fcc 1.0       (1.5.1 release 20000103)          <urs@tin.org>
-i686-pc-linux-gnu           (glibc 2.2.2)  gcc 3.0.2     (1.5.9 release 20010723)          <urs@tin.org>
+i686-pc-linux-gnu           (glibc 2.2.2)  gcc 3.0.2     (1.5.10 release 20011117)         <urs@tin.org>
 ia64-unknown-linux          (glibc 2.2.0)  sgicc 0.01.0  (1.5.8 release 20010221)          <urs@tin.org>
 ia64-unknown-linux          (glibc 2.2.3)  gcc 2.96-ia64 (1.5.8 release 20010221)          <urs@tin.org>
 mipsel-unknown-linux-gnu    (glibc 2.0.7)  gcc 2.7.2     (1.4.0 release 19991113)          <urs@tin.org>
@@ -650,7 +650,7 @@ i386-unknown-openbsd2.7                    gcc 2.95.2    (1.4.4 release 20000803
 m68k-sun-sunos4.1.1                        gcc 2.7.2.2   (pre-1.4 release 981002)          <urs@tin.org>
 sparc-sun-sunos4.1.3                       gcc 2.6.0     (pre-1.4 release 19990927)        <andy@tin.org>
 sparc-sun-solaris2.5                       gcc 2.7.2     (pre-1.4 release 19990927)        <urs@tin.org>
-sparc-sun-solaris2.5.1                     gcc 2.8.1     (1.5.9 release 20010723)          <urs@tin.org>
+sparc-sun-solaris2.5.1                     gcc 2.8.1     (1.5.10 release 20011117)         <urs@tin.org>
 sparc-sun-solaris2.6                       gcc 2.8.1     (pre-1.4 release 19990927)        <dk@ssw.krakow.pl>
 sparc-sun-solaris2.7                       gcc 2.95.2    (1.5.6 release 20000803)   [6]    <urs@tin.org>
 sparc-sun-solaris2.8                       gcc 2.95.2    (1.5.9 release 20010723)   [6]    <urs@tin.org>

@@ -706,7 +706,7 @@ enum resizer { cNo, cYes, cRedraw };
 /*
  * case insensitive
  */
-#define NEWS_REGEX	"\\b(?:s?news|nntp):[^\\s@]+[@.][^\\s@]+(?:$|(?=[\\s.>,\"/]))\\b"
+#define NEWS_REGEX	"\\b(?:s?news|nntp):[^\\s@]+[@.][^\\s@]+(?:$|(?=[\\s.><,\"/():]))\\b"
 /*
  * case insensitive, no implemented
  */
@@ -1400,6 +1400,7 @@ struct t_attribute
 	unsigned sort_threads_type:2;	/* 0=none, 1=score descend, 2=score ascend */
 	unsigned int post_proc_type:2;		/* 0=none, 1=shar, 2=uudecode */
 	unsigned int x_comment_to:1;		/* insert X-Comment-To: in Followup */
+	unsigned int tex2iso_conv:1;		/* Convert TeX2ISO */
 };
 
 /*

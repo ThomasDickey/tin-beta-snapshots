@@ -690,6 +690,9 @@ read_config_file (
 			if (match_boolean (buf, "tab_goto_next_unread=", &tinrc.tab_goto_next_unread))
 				break;
 
+			if (match_boolean (buf, "tex2iso_conv=", &tinrc.tex2iso_conv))
+				break;
+
 			if (match_boolean (buf, "thread_catchup_on_exit=", &tinrc.thread_catchup_on_exit))
 				break;
 
@@ -1006,6 +1009,9 @@ write_config_file (
 
 	fprintf (fp, _(txt_show_signatures.tinrc));
 	fprintf (fp, "show_signatures=%s\n\n", print_boolean(tinrc.show_signatures));
+
+	fprintf (fp, _(txt_tex2iso_conv.tinrc));
+	fprintf (fp, "tex2iso_conv=%s\n\n", print_boolean (tinrc.tex2iso_conv));
 
 	fprintf (fp, _(txt_hide_uue.tinrc));
 	fprintf (fp, "hide_uue=%s\n\n", print_boolean(tinrc.hide_uue));
@@ -1817,6 +1823,7 @@ change_config_file (
 						 * case OPT_STRIP_BLANKS:
 						 * case OPT_TAB_AFTER_X_SELECTION:
 						 * case OPT_TAB_GOTO_NEXT_UNREAD:
+						 * case OPT_TEX2ISO_CONV:
 						 * case OPT_THREAD_CATCHUP_ON_EXIT:
 						 * case OPT_UNLINK_ARTICLE:
 						 * case OPT_USE_MAILREADER_I:
