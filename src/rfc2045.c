@@ -6,7 +6,7 @@
  *  Updated   : 1998-01-03
  *  Notes     : RFC 2045/2047 encoding
  *
- * Copyright (c) 1995-2001 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2002 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -117,7 +117,7 @@ rfc1521_encode (
 			b = NULL;
 		} else {
 			char *line_crlf = line;
-			int len = strlen(line);
+			size_t len = strlen(line);
 			char tmpbuf[2050]; /* FIXME: this is sizeof(buffer)+2 from rfc15211522_encode() */
 
 			/*
@@ -162,6 +162,7 @@ rfc1521_encode (
 			 * \n.
 			 */
 			xpos = 0;
+			b = NULL;
 			return;
 		}
 		b = buffer;
@@ -280,7 +281,6 @@ rfc1557_encode (
 		fputc(SI, f);
 	if (line[i] == '\n')
 		fputc('\n', f);
-	return;
 }
 
 

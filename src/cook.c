@@ -6,7 +6,7 @@
  *  Updated   :
  *  Notes     : Split from page.c
  *
- * Copyright (c) 2000-2001 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 2000-2002 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -311,6 +311,7 @@ read_decoded_base64_line (
 {
 	char *dest = line;
 	char *ptr;
+	char c;
 	char buf2[HEADER_LEN];	/* holds the entire decoded line */
 	char buf[HEADER_LEN];	/* holds the entire encoded line; allowed are 76 char + CRLF (cf. RFC 2045, section 6.8), so "this should be enough for everyone" */
 	int count = 0;
@@ -354,8 +355,6 @@ read_decoded_base64_line (
 	 * Ok, now read a new line from the original article.
 	 */
 	do {
-		char c;
-
 		if (fgets(buf, sizeof(buf), file) == NULL) {
 			/*
 			 * Premature end of file (or file error), leave loop. To prevent
@@ -472,13 +471,14 @@ read_decoded_qp_line (
 			 */
 			break;
 		endptr = &buf[buflen - 1];
+		buf[buflen] = '\0';
 		c = *endptr;
 		/*
 		 * Strip trailing white space at the end of the line, but no more than
 		 * the number of characters that were newly read.
 		 * See RFC 2045, section 6.7, #3
 		 */
-		while ((chars_added > 0) && ((c == ' ') || (c == '\t') || (c == '\n'))) {
+		while ((chars_added > 0) && ((c == ' ') || (c == '\t') || (c == '\n') || (c == '\r'))) {
 			c = *--endptr;
 			buflen--;
 			chars_added--;
@@ -632,6 +632,16 @@ process_text_body_part(
 			default:
 				line = fgets (buf, (int) sizeof (buf), in);
 				lines_left--;
+#if defined(MIME_STRICT_CHARSET) && !defined(CHARSET_CONVERSION)
+				if (charset && strcasecmp(charset, tinrc.mm_charset)) { /* different charsets */
+					char *c = line;
+					while (*c != '\0') {
+						if ((unsigned char) *c >= 128)
+							*c = '?';
+						c++;
+					}
+				}
+#endif /* MIME_STRICT_CHARSET && !CHARSET_CONVERSION */
 				break;
 		}
 		if (!(line && strlen(line)))
@@ -666,7 +676,7 @@ process_text_body_part(
 
 		if (hide_uue) {
 			int offsets[6];
-			int size_offsets = sizeof(offsets)/sizeof(int);
+			int size_offsets = (int) (sizeof(offsets)/sizeof(int));
 			t_bool is_uubody = FALSE;		/* Set if this line looks like a uuencoded line */
 
 			/*
@@ -833,10 +843,9 @@ dump_cooked(
 	void)
 {
 	int i;
+	char *line;
 
 	for (i = 0; i < art->cooked_lines; i++) {
-		char *line;
-
 		fseek(art->cooked, art->cookl[i].offset, SEEK_SET);
 		line = tin_fgets(art->cooked, FALSE);
 		fprintf(stderr, "[%3d] %4ld %3x [%s]\n", i, art->cookl[i].offset, art->cookl[i].flags, line);
@@ -919,9 +928,10 @@ cook_article(
 	 */
 	if (hdr->mime && hdr->ext->type == TYPE_MULTIPART) {
 		t_part *ptr;
+		const char *name;
 
 		for (ptr = hdr->ext->next; ptr != NULL; ptr = ptr->next) {
-			const char *name = get_filename(ptr->params);
+			name = get_filename(ptr->params);
 
 			/*
 			 * Ignore non text/plain sections with alternative handling

@@ -6,7 +6,7 @@
  *  Updated   : 2000-06-25
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
- * Copyright (c) 2000-2001 Urs Janssen <urs@tin.org>, Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 2000-2002 Urs Janssen <urs@tin.org>, Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,7 @@ static t_mailcap *parse_mailcap_line (const char *mailcap, t_part *part, const c
 
 /*
  * mainloop:
- * 	scan mailcap file(s), look for a matching entry extract fields,
+ * 	scan mailcap file(s), look for a matching entry, extract fields,
  * 	expand metas
  *
  * TODO: don't used fixed length buffers
@@ -73,6 +73,7 @@ get_mailcap_entry (
 	char wildcap[LEN];	/* basetype match */
 	t_mailcap *foo = (t_mailcap *) 0;
 
+	mailcaps[0] = '\0';
 	/* build list of mailcap files */
 	if ((ptr = getenv ("MAILCAPS")) != (char *) 0) {
 		if (strlen(ptr)) {
@@ -84,6 +85,8 @@ get_mailcap_entry (
 
 	mailcap[0] = '\0';
 	wildcap[0] = '\0';
+	buf[0] = '\0';
+
 	ptr = buf;
 
 	nptr = strtok(mailcaps, ":");
@@ -127,15 +130,17 @@ get_mailcap_entry (
 							}
 						} /* else no match, no action required */
 					} /* else invalid mailcap line (no /), no action required */
-				}
+					if (strlen(wildcap)) {	/* we just had a wildmat match */
+						fclose (fp);
+						return foo;
+					}
+				} /* while ((fgets (ptr, ... */
 				fclose (fp);
 			}
 		} /* else strfpath() failed, no action required */
 		nptr = strtok(NULL, ":"); /* get next filename */
 	}
-	foo = (t_mailcap *) 0; /* weed out possible junk */
-	if (strlen(wildcap))	/* we had a wildmat match somewhere */
-		foo = parse_mailcap_line (wildcap, part, path);
+	foo = (t_mailcap *) 0; /* no match, weed out possible junk */
 	return foo;
 }
 
@@ -264,7 +269,7 @@ parse_mailcap_line(
 	if (tmailcap->test != (char *) 0) { /* test field given */
 		/* TODO: EndWin()/InitWin() around system needed? */
 		/* TODO: use invoke_cmd() ? */
-		if (system(tmailcap->test) != 0) { /* test failed ? */
+		if (system(tmailcap->test) != 0) { /* test failed? */
 			free_mailcap (tmailcap);
 			return ((t_mailcap *) 0);
 		}
@@ -291,12 +296,12 @@ get_mailcap_field(
 	while(*ptr != '\0') {
 		switch (*ptr) {
 			case '\\':
-				backquote = !backquote;
+				backquote = bool_not(backquote);
 				break;
 
 			case '"':
 				if (!backquote)
-					doublequote = !doublequote;
+					doublequote = bool_not(doublequote);
 				backquote = FALSE;
 				break;
 
@@ -375,7 +380,7 @@ expand_mailcap_meta(
 
 		switch (*ptr) {
 			case '\\':
-				quote = !quote;
+				quote = bool_not(quote);
 				break;
 
 			case '%':
@@ -434,7 +439,7 @@ expand_mailcap_meta(
 
 			case 's':
 				if (percent) {
-					char *nptr = '\0';
+					char *nptr = (char *) 0;
 
 					if (nametemplate)
 						nptr = expand_mailcap_meta(nametemplate, part, (char *) 0, path);

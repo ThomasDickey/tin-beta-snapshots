@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2001-12-03
+.\" Updated   : 2002-02-15
 .\" Notes     : needs a lot of work
 .\"
-.TH tin 5 "December 3rd, 2001" "1.5.11" "A Usenet newsreader"
+.TH tin 5 "February 15th, 2002" "1.5.11" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -1243,6 +1243,14 @@ Format of quote line when replying (via mail) to an article (%A=Address,
 %D=Date, %F=Addr+Name, %G=Groupname, %M=Message-Id, %N=Name). Default is "In
 article %M you wrote:"
 .TP
+.B Format of the mailbox (mailbox_format)
+Select one of the following mailbox-formats: MBOXO (default), MBOXRD
+or MMDF. See
+.BR mbox (5)
+for more details on MBOXO and MBOXRD and
+.BR mmdf (5)
+for more details about MMDF.
+.TP
 .B mark_saved_read
 If ON mark articles that are saved as read. Default is ON.
 .TP
@@ -1264,8 +1272,11 @@ default is used in case neither of them is defined.
 Charset used for reading and displaying articles; replaces \fBmm_charset\fP.
 Conversion between \fBmm_local_charset\fP and \fBmm_network_charset\fP is
 done via
-.BR iconv (3),
-if this function is not available on your system this option is disabled.
+.BR iconv (3);
+if this function is not available on your system or \fBtin\fP can easily
+detect the local charset via
+.BR nl_langinfo (3),
+this option is disabled.
 .TP
 .B mm_network_charset
 Charset used for posting and MIME headers; replaces \fBmm_charset\fP.
@@ -1273,6 +1284,14 @@ Conversion between \fBmm_network_charset\fP and \fBmm_local_charset\fP is
 done via
 .BR iconv (3),
 if this function is not available on your system this option is disabled.
+\fBmm_network_charset\fP is limited to one of the following charsets:
+.in +.3i
+US-ASCII, ISO-8859-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8-{R,U,RU}
+EUC-{CN,JP,KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2,KR}, UTF-8
+.in -.3i
+Not all values might work on your system, see
+.BR iconv_open (3)
+for more details.
 .TP
 .B newnews
 These are internal timers used by
@@ -1392,12 +1411,6 @@ If ON quote signatures, too.
 .B reread_active_file_secs
 The news active file is reread at regular intervals to show if any new news
 has arrived. Default is 1200. Setting this to 0 will disable this feature.
-.TP
-.B save_to_mmdf_mailbox
-Allows articles to be saved to a MMDF style mailbox instead of
-.BR mbox (5)
-format.
-Default is OFF unless reading news on SCO Unix which uses MMDF by default.
 .TP
 .B show_author
 .in +.5i
@@ -1867,11 +1880,14 @@ uses the LIST SUBSCRIPTIONS (\fBRFC2980\fP) command instead.
 .BR tin (1),
 .BR xterm (1x),
 .BR iconv (3),
+.BR iconv_open (3),
+.BR nl_langinfo (3),
 .BR pcre (3),
 .BR system (3),
 .BR mailcap (4),
 .BR active (5),
 .BR mbox (5),
+.BR mmdf (5),
 .BR newsoverview (5),
 .BR overview.fmt (5),
 .BR innd (8),

@@ -6,7 +6,7 @@
  *  Updated   : 1997-12-31
  *  Notes     :
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -209,7 +209,7 @@ prompt_yn (
 
 					case KEYMAP_UP:
 					case KEYMAP_DOWN:
-						default_answer = !default_answer;
+						default_answer = bool_not(default_answer);
 						yn_loop = TRUE; /* don't leave loop */
 						break;
 

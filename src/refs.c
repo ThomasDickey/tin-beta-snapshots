@@ -8,7 +8,7 @@
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
  *
- * Copyright (c) 1996-2001 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 1996-2002 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -132,6 +132,7 @@ hash_msgid (
 	return hash;
 }
 
+
 /*
  * Thread us into our parents' list of children.
  */
@@ -176,6 +177,7 @@ add_to_parent (
 		p->sibling = ptr;
 	}
 }
+
 
 /*
  * Adds or updates a message id in the cache.
@@ -311,6 +313,7 @@ add_msgid (
 	return ptr;
 }
 
+
 /*
  * Find a Message-ID in the cache. Return ptr to this node, or NULL if
  * not found.
@@ -335,6 +338,7 @@ find_msgid (
 
 	return NULL;
 }
+
 
 /*
  * Take a raw line of references data and return a ptr to a linked list of
@@ -378,6 +382,7 @@ parse_references (
 	return current;
 }
 
+
 /*
  * Reconstruct the References: field from the parent pointers
  * NB: The original Refs: can be no longer than HEADER_LEN (see open.c)
@@ -414,6 +419,7 @@ _get_references (
 	return refs;
 }
 
+
 /*
  * A wrapper to the above, null terminate the string and shrink it
  * to correct size
@@ -429,15 +435,13 @@ get_references (
 		return NULL;
 
 	refs = _get_references(refptr, 1);
-
 	len = strlen(refs);
-
 	refs[len - 1] = '\0';
-
 	refs = (char *) my_realloc(refs, len);
 
 	return refs;
 }
+
 
 /*
  * Clear the entire msgid cache, freeing up all chains. This is
@@ -466,6 +470,7 @@ free_msgids (
 	}
 }
 
+
 #if 0	/* But please don't remove it */
 static void
 dump_msgids (
@@ -476,7 +481,7 @@ dump_msgids (
 
 	my_fprintf(stderr, "Dumping...\n");
 
-	for (i = 0; i<MSGID_HASH_SIZE; i++) {
+	for (i = 0; i < MSGID_HASH_SIZE; i++) {
 
 		if (msgids[i] != NULL) {
 
@@ -491,6 +496,7 @@ dump_msgids (
 	}
 }
 #endif /* 0 */
+
 
 /*
  * The rest of this code deals with reference threading
@@ -530,7 +536,6 @@ dump_msgids (
  * the reference tree to locate the 'next' article in the thread.
  *
  */
-
 /*
  * Clear out all the article fields from the msgid hash prior to a
  * rethread.
@@ -547,6 +552,7 @@ clear_art_ptrs (
 			ptr->article = ART_UNAVAILABLE;
 	}
 }
+
 
 /*
  * Function to dump an ASCII tree map of a thread rooted at msgid.
@@ -587,6 +593,7 @@ dump_thread (
 	return;
 }
 
+
 /*
  * Dump out all the threads from the msgid point of view, show the
  * related article index in arts[] where possible
@@ -608,6 +615,7 @@ dump_msgid_thread (
 	return;
 }
 
+
 static void
 dump_msgid_threads (
 	void)
@@ -617,7 +625,7 @@ dump_msgid_threads (
 
 	fprintf(dbgfd, "Dump started.\n\n");
 
-	for (i = 0; i<MSGID_HASH_SIZE; i++) {
+	for (i = 0; i < MSGID_HASH_SIZE; i++) {
 		if (msgids[i] != NULL) {
 
 			for (ptr = msgids[i]; ptr != NULL; ptr = ptr->next) {
@@ -633,6 +641,7 @@ dump_msgid_threads (
 	fprintf(dbgfd, "Dump complete.\n\n");
 }
 #endif /* DEBUG_REFS */
+
 
 /*
  * Find the next message in the thread.
@@ -714,6 +723,7 @@ find_next (
 	return ptr;
 }
 
+
 /*
  * Run the .thread and .inthread pointers through the members of this
  * thread.
@@ -743,6 +753,7 @@ build_thread (
 
 }
 
+
 /*
  * Run a new set of threads through the base articles, using the
  * parent / child / sibling  / article pointers in the msgid hash.
@@ -762,7 +773,7 @@ thread_by_reference (
 	/*
 	 * Build threads starting from root msgids (ie without parent)
 	 */
-	for (i = 0; i<MSGID_HASH_SIZE; i++) {
+	for (i = 0; i < MSGID_HASH_SIZE; i++) {
 		if (msgids[i] != NULL) {
 			for (ptr = msgids[i]; ptr != NULL; ptr = ptr->next) {
 				if (ptr->parent == NULL)
@@ -787,8 +798,8 @@ thread_by_reference (
 #endif /* DEBUG_REFS */
 
 	return;
-
 }
+
 
 /*
  * Do the equivalent of subject threading, but only on the thread base
@@ -856,6 +867,7 @@ collate_subjects (
 	return;
 }
 
+
 /*
  * Builds the reference tree:
  *
@@ -874,9 +886,10 @@ void
 build_references (
 	struct t_group *group)
 {
+	char *s;
 	int i;
 	struct t_article *art;
-	char *s;
+	struct t_msgid *refs;
 
 	/*
 	 * The articles are currently unsorted, and are as they were put by setup_hard_base()
@@ -939,8 +952,6 @@ build_references (
 	 * Add the References data to the cache
 	 */
 	for (i = 0; i < top_art; i++) {
-		struct t_msgid *refs;
-
 		if (!arts[i].refs)						/* No refs - skip */
 			continue;
 
@@ -962,7 +973,6 @@ build_references (
 #ifdef DEBUG_REFS
 	fclose(dbgfd);
 #endif /* DEBUG_REFS */
-
 }
 
 /* end of refs.c */

@@ -14,11 +14,14 @@ install with:
 
 Install at your own risk.
 
+For a more detailed description of all the configure options read
+doc/INSTALL.
+
 Before mailing a bug-reportto tin-bugs@tin.org please check if you are using
-the latest release, and if not, please upgrade first! Have a look a the TODO
-file for known bugs. If you still think you've found a bug, please use the
-mail_bugreport function (shift-R) and write in English. Please do NOT
-enclose a core-file in your bugreport until we request it.
+the latest release, and if not, please upgrade first! Have a look a the
+doc/TODO file for known bugs. If you still think you've found a bug, please
+use the mail_bugreport function (shift-R) and write in English. Please do
+NOT enclose a core-file in your bugreport until we request it.
 
 The latest release is available at:
 <ftp://ftp.tin.org/pub/news/clients/tin/current/>
@@ -28,16 +31,3 @@ If you have additional questions or would like to be informed about the
 latest new features/version you may subscribe to the (developers)
 tin mailing lists; to subscribe write to majordomo@tin.org, asking
 in the body to: subscribe <listname> and/or read news.software.readers.
-
-Y2K Information:
-The authors of tin believes that it is Y2K-compliant, as long as the
-underlying operating system and C library are. Internally, it makes some
-use of binary timestamps in Unix format (number of seconds since 1-Jan-1970)
-and uses C library services to convert these to printing forms. Some
-NNTP-commands still use two-digit year-portions, tin tries it's best to
-convert them to a useful four-digit year format wherever needed and
-possible.
-
-It should be noted that tin does not come with any form of warranty. If you
-need a full Y2K audit performing, then the source is available for this to
-be done.

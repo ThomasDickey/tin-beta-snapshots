@@ -6,7 +6,7 @@
  *  Updated   : 2001-11-10
  *  Notes     :
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -334,17 +334,14 @@ invoke_editor (
 	const char *filename,
 	int lineno) /* return value is always ignored */
 {
-	char *my_editor;
 	char buf[PATH_LEN], fnameb[PATH_LEN];
 	char editor_format[PATH_LEN];
-	t_bool retcode;
 	static char editor[PATH_LEN];
 	static t_bool first = TRUE;
+	t_bool retcode;
 
 	if (first) {
-		my_editor = getenv ("EDITOR");
-
-		my_strncpy (editor, my_editor != NULL ? my_editor : get_val ("VISUAL", DEFAULT_EDITOR), sizeof(editor) - 1);
+		my_strncpy (editor, get_val("VISUAL", get_val("EDITOR", DEFAULT_EDITOR)), sizeof(editor) - 1);
 		first = FALSE;
 	}
 
@@ -475,7 +472,7 @@ shell_escape (
 	center_line (0, TRUE, mesg);
 	MoveCursor (INDEX_TOP, 0);
 
-	(void)invoke_cmd(p);
+	(void) invoke_cmd(p);
 
 	prompt_continue ();
 
@@ -727,11 +724,7 @@ int
 my_chdir (
 	char *path)
 {
-	int retcode;
-
-	retcode = chdir (path);
-
-	return retcode;
+	return chdir (path);
 }
 
 
@@ -1266,7 +1259,7 @@ void
 toggle_inverse_video (
 	void)
 {
-	tinrc.inverse_okay = !tinrc.inverse_okay;
+	tinrc.inverse_okay = bool_not(tinrc.inverse_okay);
 	if (tinrc.inverse_okay) {
 #ifndef USE_INVERSE_HACK
 		tinrc.draw_arrow = FALSE;
@@ -1296,7 +1289,7 @@ toggle_color (
 		return FALSE;
 	} else
 #	endif /* USE_CURSES */
-		use_color = !use_color;
+		use_color = bool_not(use_color);
 
 	return TRUE;
 }
@@ -1367,6 +1360,7 @@ strfquote (
 {
 	char *endp = s + maxsize;
 	char *start = s;
+	char tbuf[LEN];
 	int i, j;
 	t_bool iflag;
 
@@ -1377,8 +1371,6 @@ strfquote (
 		return 0;
 
 	for (; *format && s < endp - 1; format++) {
-		char tbuf[LEN];
-
 		tbuf[0] = '\0';
 
 		if (*format != '\\' && *format != '%') {
@@ -1671,6 +1663,7 @@ _strfpath (
 	char *endp = str + maxsize;
 	const char *startp = format;
 	char defbuf[PATH_LEN];
+	char tbuf[PATH_LEN];
 	char *envptr;
 	int i;
 #ifndef M_AMIGA
@@ -1685,8 +1678,6 @@ _strfpath (
 		return 0;
 
 	for (; *format && str < endp - 1; format++) {
-		char tbuf[PATH_LEN];
-
 		tbuf[0] = '\0';
 
 		/*
@@ -1828,7 +1819,7 @@ _strfpath (
 				break;
 			case '%':	/* Different forms of parsing cmds */
 				format++;
-				if (*format && *format == 'G') {
+				if (*format && *format == 'G' && group != NULL) {
 					memset(tbuf, 0, sizeof(tbuf));
 					STRCPY(tbuf, group->name);
 					i = strlen(tbuf);
@@ -2109,6 +2100,7 @@ out:
 		return 0;
 }
 
+
 /*
  * get_initials() - get initial letters of a posters name
  */
@@ -2130,7 +2122,7 @@ get_initials (
 	iflag = FALSE;
 	j = 0;
 	for (i = 0; tbuf[i] && j < maxsize - 1; i++) {
-		if (isalpha((int)tbuf[i])) {
+		if (isalpha((int) tbuf[i])) {
 			if (!iflag) {
 				s[j++] = tbuf[i];
 				iflag = TRUE;
@@ -2143,7 +2135,8 @@ get_initials (
 }
 
 
-void get_cwd (
+void
+get_cwd (
 	char *buf)
 {
 #ifdef HAVE_GETCWD
@@ -2680,7 +2673,7 @@ buffer_to_local (
 #	ifndef HAVE_WORKING_ICONV /* TODO: write configure check */
 					/* iconv() might crash on broken multibyte sequences so check them */
 					if (!strcasecmp(cnetwork_charset, "UTF-8"))
-						utf8_valid(line);
+						(void) utf8_valid(line);
 #	endif /* HAVE_WORKING_ICONV */
 					{
 						inbuf = (char *) line;
@@ -3609,7 +3602,7 @@ gnksa_do_check_from (
 
 		/* convert FQDN part to lowercase */
 		for (aux = addr_begin; *aux; aux++)
-			*aux = tolower((int)*aux);
+			*aux = tolower((int) *aux);
 
 		if (GNKSA_OK != (result = gnksa_check_domain(addr_begin))
 		    && (GNKSA_OK == code)) /* error detected */
@@ -3697,7 +3690,17 @@ strip_line (
 #	ifndef HAVE_WORKING_ICONV /* TODO: write configure check */
 /*
  * 'check' a given UTF-8 strig and '?'-out illegal sequences
- * TODO: is this check check complete?
+ * TODO: is this check complete?
+ *
+ * UTF-8           = ASCII / UTF-8-non-ascii
+ * ASCII           = %x00-%x7F
+ * UTF-8-non-ascii = UTF8-2 / UTF8-3 / UTF8-4
+ * UTF8-1          = %x80-BF
+ * UTF8-2          = %xC2-DF 1*UTF8-1
+ * UTF8-3          = %xE0 %xA0-BF 1*UTF8-1 / %xE1-EC 2*UTF8-1 /
+ *                   %xED %x80-9F 1*UTF8-1 / %xEE-EF 2*UTF8-1
+ * UTF8-4          = %xF0 %x90-BF 2*UTF8-1 / %xF1-F3 3*UTF8-1 /
+ *                   %xF4 %x80-8F 2*UTF8-1
  */
 static char *
 utf8_valid(
@@ -3711,7 +3714,7 @@ utf8_valid(
 	c = line;
 
 	while (*c != '\0' && *c != '\n') {
-		if (!(*c & 0x80)) { /* plain US-ASCII ?*/
+		if (!(*c & 0x80)) { /* plain US-ASCII? */
 			c++;
 			continue;
 		}
@@ -3725,7 +3728,7 @@ utf8_valid(
 		} while ((d <<= 1) & 0x80);	/* get sequence length */
 
 		d = *c;
-		e = *(c+1);
+		e = *(c + 1);
 
 		switch (numc) {
 			case 2:
@@ -3735,31 +3738,24 @@ utf8_valid(
 				break;
 
 			case 3:
-				f = *(c+2);
+				f = *(c + 2);
 				/* out of range or sequences which would also fit into 2 bytes */
 				if (d < 0xe0 || d > 0xef || (d == 0xe0 && e < 0xa0))
 					illegal = TRUE;
-				/* Unicode 3.0 noncharacters */
+				/* U+D800 ... U+DFFF */
+				if (d == 0xed && e > 0x9f)
+					illegal = TRUE;
 				/* U+FDD0 ... U+FDEF */
 				if (d == 0xef && e == 0xb7 && (f >= 0x90 && f <= 0xaf))
 					illegal = TRUE;
-				/* Unicode 3.0 noncharacters */
 				/* U+FFFE, U+FFFF */
 				if (d == 0xef && e == 0xbf && (f == 0xbe || f == 0xbf))
 					illegal = TRUE;
-#	if 0 /* do need to take care about these? */
-				/* UTF-16 surrogates */
-				if (d == 0xed && (e == 0xa0 || e == 0xae || e == 0xb0 || e == 0xbe) && f == 0x80)
-					illegal = TRUE;
-				/* UTF-16 surrogates */
-				if (d == 0xed && (e == 0xad || e == 0xaf || e == 0xbf) && f == 0xbf)
-					illegal = TRUE;
-#	endif /* 0 */
 				break;
 
 			case 4:
-				f = *(c+2);
-				g = *(c+3);
+				f = *(c + 2);
+				g = *(c + 3);
 				/* out of range or sequences which would also fit into 3 bytes */
 				if (d < 0xf0 || d > 0xf7 || (d == 0xf0 && e < 0x90))
 					illegal = TRUE;
@@ -3768,7 +3764,7 @@ utf8_valid(
 					illegal = TRUE;
 				/* Unicode 3.1 noncharacters */
 				/* U+1FFFE, U+1FFFF, U+2FFFE, U+2FFFF, U+3FFFE, U+3FFFF; (Unicode 3.1) */
-				if (d == 0xf0 && (e == 0x9f || e == 0xaf || e == 0xbf) && f == 0xbf && (g == 0xbe || g ==0xbf))
+				if (d == 0xf0 && (e == 0x9f || e == 0xaf || e == 0xbf) && f == 0xbf && (g == 0xbe || g == 0xbf))
 					illegal = TRUE;
 				/* Unicode 3.1 noncharacters */
 				/* U+4FFFE, U+4FFFF, U+5FFFE, U+5FFFF, U+6FFFE, U+6FFFF, U+7FFFE, U+7FFFF */
@@ -3805,20 +3801,22 @@ utf8_valid(
 				break;
 		}
 
-		for (d = 1; d < numc; d++) {
-			e = *(c + d);
-			if (e < 0x80 || e > 0xbf || *(c + d) == '\0' || *(c + d) == '\n')
-				illegal = TRUE;
+		if (!illegal) {
+			for (d = 1; d < numc; d++) {
+				e = *(c + d);
+				if (e < 0x80 || e > 0xbf || *(c + d) == '\0' || *(c + d) == '\n')
+					illegal = TRUE;
+			}
 		}
 
 		if (!illegal)
 			c += numc; /* skip over valid sequence */
 		else {
 			while (numc--) {
-				if (*c & 0x80)	/* replace 'dangerous' bytes */
-					*c = '?';
 				if (*c == '\0' || *c == '\n')
 					break;
+				if (*c & 0x80)	/* replace 'dangerous' bytes */
+					*c = '?';
 				c++;
 			}
 		}

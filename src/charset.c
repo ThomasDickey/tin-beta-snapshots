@@ -6,7 +6,7 @@
  *  Updated   : 1994-02-28
  *  Notes     : ISO to ascii charset conversion routines
  *
- * Copyright (c) 1993-2001 Markus Kuhn <mgk25@cl.cam.ac.uk>
+ * Copyright (c) 1993-2002 Markus Kuhn <mgk25@cl.cam.ac.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -333,9 +333,9 @@ convert_to_printable (
 	int t_len = 0;
 #endif /* ENABLE_MBLEN */
 
-	for (c = (unsigned char *)buf; *c; c++) {
+	for (c = (unsigned char *) buf; *c; c++) {
 #ifdef ENABLE_MBLEN
-		if (!my_isprint(*c) && (t_len = mblen(c, MAX(2,MB_CUR_MAX))) <= 1)
+		if (!my_isprint(*c) && (t_len = mblen((const char *)c, MAX(2,MB_CUR_MAX))) <= 1)
 			*c = '?';
 		while (--t_len > 0)
 			c++;
@@ -347,7 +347,6 @@ convert_to_printable (
 }
 
 
-#if 1
 /*
  * Same as convert_to_printable() but allows Backspace (ASCII 8), TAB (ASCII
  * 9), and FormFeed (ASCII 12) according to son of RFC 1036 section 4.4;
@@ -358,20 +357,19 @@ convert_body2printable (
 	char *buf)
 {
 	unsigned char *c;
-#	ifdef ENABLE_MBLEN
+#ifdef ENABLE_MBLEN
 	int t_len = 0;
-#	endif /* ENABLE_MBLEN */
+#endif /* ENABLE_MBLEN */
 
 	for (c = (unsigned char *)buf; *c; c++) {
-#	ifdef ENABLE_MBLEN
-		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13) && (t_len = mblen(c, MAX(2,MB_CUR_MAX))) <= 1)
+#ifdef ENABLE_MBLEN
+		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13) && (t_len = mblen((const char *)c, MAX(2,MB_CUR_MAX))) <= 1)
 			*c = '?';
 		while (--t_len > 0)
 			c++;
-#	else
+#else
 		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13))
 			*c = '?';
-#	endif /* ENABLE_MBLEN */
+#endif /* ENABLE_MBLEN */
 	}
 }
-#endif /* 1 */

@@ -6,7 +6,7 @@
  *  Updated   : 2001-11-10
  *  Notes     :
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -487,7 +487,7 @@ show_help_page (
 
 		case INFO_PAGER:
 		default: /* should not happen */
-			error_message (_("Unknown display level")); /* FIXME: -> lang.c */
+			error_message (_(txt_error_unknown_dlevel));
 			fclose (fp);
 			return;
 	}
@@ -630,7 +630,7 @@ show_mini_help (
 			break;
 
 		default: /* should not happen */
-			error_message (_("Unknown display level")); /* FIXME: -> lang.c */
+			error_message (_(txt_error_unknown_dlevel));
 			break;
 	}
 #ifdef HAVE_COLOR
@@ -643,7 +643,7 @@ void
 toggle_mini_help (
 	int level)
 {
-	tinrc.beginner_level = !tinrc.beginner_level;
+	tinrc.beginner_level = bool_not(tinrc.beginner_level);
 	set_win_size (&cLINES, &cCOLS);
 	show_mini_help (level);
 }

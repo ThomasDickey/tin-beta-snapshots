@@ -6,7 +6,7 @@
  *  Updated   : 1997-12-31
  *  Notes     :
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -596,7 +596,7 @@ group_page (
 
 			case iKeyGroupToggleGetartLimit:
 				clear_message ();
-				tinrc.use_getart_limit = !tinrc.use_getart_limit;
+				tinrc.use_getart_limit = bool_not(tinrc.use_getart_limit);
 				ret_code = GRP_NEXTUNREAD;
 				break;
 
@@ -826,7 +826,7 @@ group_page (
 
 			case iKeyGroupReverseSel:	/* reverse selections */
 				for (i = 0; i < top_art; i++)
-					arts[i].selected = !arts[i].selected;
+					arts[i].selected = bool_not(arts[i].selected);
 				update_group_page ();
 				break;
 
@@ -900,7 +900,7 @@ group_page (
 				break;
 
 			case iKeyToggleInfoLastLine:
-				tinrc.info_in_last_line = !tinrc.info_in_last_line;
+				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
 				show_group_page ();
 				break;
 
@@ -1035,7 +1035,7 @@ toggle_read_unread (
 			i = n;
 	}
 
-	CURR_GROUP.attribute->show_only_unread = !CURR_GROUP.attribute->show_only_unread;
+	CURR_GROUP.attribute->show_only_unread = bool_not(CURR_GROUP.attribute->show_only_unread);
 
 	find_base (&CURR_GROUP);
 	if (i >= 0 && (n = which_thread (i)) >= 0)

@@ -3,10 +3,10 @@
  *  Module    : policy.h
  *  Author    : Ralf Doeblitz <doeblitz@gmx.de>
  *  Created   : 1999-01-12
- *  Updated   : 2001-01-12
+ *  Updated   : 2002-02-19
  *  Notes     : #defines and static data for policy configuration
  *
- * Copyright (c) 1999-2001 Ralf Doeblitz <doeblitz@gmx.de>
+ * Copyright (c) 1999-2002 Ralf Doeblitz <doeblitz@gmx.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -91,7 +91,6 @@
  * .fi  Finland                        .fj  Fiji
  * .fk  Falkland Islands (Malvina)     .fm  Micronesia, Federal State of
  * .fo  Faroe Islands                  .fr  France
- * .fx  France, Metropolitan
  *
  * .ga  Gabon                          .gb  United Kingdom
  * .gd  Grenada                        .ge  Georgia
@@ -202,11 +201,13 @@
  * .yu  Yugoslavia
  *
  * .za  South Africa                   .zm  Zambia
- * .zr  Zaire (former)                 .zw  Zimbabwe
+ * .zw  Zimbabwe
  *
  *
  * invalid TLDs:
  * .cs  former Czechoslovakia, now: .cz and .sk
+ * .zr  former Zaire, now: .cd
+ * .fx  France, Metropolitan
  *
  * unused TLDs:
  * .nt  Neutral Zone
@@ -217,7 +218,6 @@
  * 'expireing' TLDs:
  *(.hk  Hong Kong, now: .cn)
  * .su  former USSR, now: .ru
- * .zr  former Zaire, now .cg
  */
 
 static char gnksa_country_codes[26*26] = {
@@ -227,7 +227,7 @@ static char gnksa_country_codes[26*26] = {
 /* C */ 1,0,1,1,0, 1,1,1,1,0, 1,1,1,1,1, 0,0,1,0,0, 1,1,0,1,1,1,
 /* D */ 0,0,0,0,1, 0,0,0,0,1, 1,0,1,0,1, 0,0,0,0,0, 0,0,0,0,0,1,
 /* E */ 0,0,1,0,1, 0,1,1,0,0, 0,0,0,0,0, 0,0,1,1,1, 0,0,0,0,0,0,
-/* F */ 0,0,0,0,0, 0,0,0,1,1, 1,0,1,0,1, 0,0,1,0,0, 0,0,0,1,0,0,
+/* F */ 0,0,0,0,0, 0,0,0,1,1, 1,0,1,0,1, 0,0,1,0,0, 0,0,0,0,0,0,
 /* G */ 1,1,0,1,1, 1,1,1,1,0, 0,1,1,1,0, 1,1,1,1,1, 1,0,1,0,1,0,
 /* H */ 0,0,0,0,0, 0,0,0,0,0, 1,0,1,1,0, 0,0,1,0,1, 1,0,0,0,0,0,
 /* I */ 0,0,0,1,1, 0,0,0,0,0, 0,1,1,1,1, 0,1,1,1,1, 0,0,0,0,0,0,
@@ -247,7 +247,7 @@ static char gnksa_country_codes[26*26] = {
 /* W */ 0,0,0,0,0, 1,0,0,0,0, 0,0,0,0,0, 0,0,0,1,0, 0,0,0,0,0,0,
 /* X */ 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0,0,
 /* Y */ 0,0,0,0,1, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,1, 1,0,0,0,0,0,
-/* Z */ 1,0,0,0,0, 0,0,0,0,0, 0,0,1,0,0, 0,0,1,0,0, 0,0,1,0,0,0
+/* Z */ 1,0,0,0,0, 0,0,0,0,0, 0,0,1,0,0, 0,0,0,0,0, 0,0,1,0,0,0
 /*      A B C D E  F G H I J  K L M N O  P Q R S T  U V W X Y Z */
 };
 
@@ -256,6 +256,7 @@ static char gnksa_country_codes[26*26] = {
  * valid domains with 3 or more characters
  */
 static const char *gnksa_domain_list[] = {
+	"biz",	/* Businesses */
 	"com",	/* Commercial */
 	"edu",	/* Educational */
 	"gov",	/* US Government */
@@ -263,20 +264,18 @@ static const char *gnksa_domain_list[] = {
 	"mil",	/* US Dept of Defense */
 	"net",	/* Networks */
 	"org",	/* Organizations */
-	"arpa",	/* Advanced Research Projects Agency */
-	"uucp",
-#	if 0
-	"bitnet",	/* AFAIK .bitnet is dead */
-#	endif /* 0 */
-	/* the new domain names, some still not yet valid */
-	"biz",	/* Businesses */
+	"aero",	/* Air-transport industry */
+	"arpa",	/* Address and Routing Parameter Area */
+	"coop",	/* Non-profit cooperatives */
 	"info",	/* Unrestricted use */
 	"name",	/* For registration by individuals */
 	"museum",	/* Museums */
-#	if 0
+#	if 0		/* not yet valid */
 	"pro",	/* Accountants, lawyers, and physicians */
-	"aero",	/* Air-transport industry */
-	"coop",	/* Non-profit cooperatives */
+#	endif /* 0 */
+#	if 0		/* $DEAD */
+	"uucp",
+	"bitnet",
 #	endif /* 0 */
 	/* the next four are defined in RFC 2606 */
 	"invalid",

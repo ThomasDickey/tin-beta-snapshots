@@ -6,7 +6,7 @@
  *  Updated   : 2001-11-10
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1995-2001 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1995-2002 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -91,7 +91,6 @@
 #	undef DEFAULT_SHELL
 #	undef DOMAIN_NAME
 #	undef HAVE_FASCIST_NEWSADMIN
-#	undef HAVE_MMDF_MAILER
 #	undef INEWSDIR
 #	undef INN_NNTPLIB
 #	undef LOCAL_CHARSET
@@ -162,6 +161,7 @@
 #	undef HAVE_GETOPT_H
 #	undef HAVE_ICONV_H
 #	undef HAVE_IOCTL_H
+#	undef HAVE_LANGINFO_H
 #	undef HAVE_LIBC_H
 #	undef HAVE_LOCALE_H
 #	undef HAVE_MALLOC_H
@@ -190,6 +190,7 @@
 #	undef HAVE_SYS_IOCTL_H
 #	undef HAVE_SYS_NDIR_H
 #	undef HAVE_SYS_PARAM_H
+#	undef HAVE_SYS_POLL_H
 #	undef HAVE_SYS_PTEM_H
 #	undef HAVE_SYS_PTY_H
 #	undef HAVE_SYS_SELECT_H
@@ -240,6 +241,7 @@
 #	undef HAVE_MKSTEMP
 #	undef HAVE_MKTEMP
 #	undef HAVE_MUNMAP
+#	undef HAVE_NL_LANGINFO
 #	undef HAVE_POLL
 #	undef HAVE_PUTENV
 #	undef HAVE_RESIZETERM
@@ -251,6 +253,7 @@
 #	undef HAVE_SNPRINTF
 #	undef HAVE_STPCPY
 #	undef HAVE_STRCASECMP
+#	undef HAVE_STRCASESTR
 #	undef HAVE_STRCHR
 #	undef HAVE_STRDUP
 #	undef HAVE_STRERROR
@@ -285,6 +288,7 @@
 #	undef DECL_GETPWNAM
 #	undef DECL_GETSERVBYNAME
 #	undef DECL_POPEN
+#	undef DECL_STRCASESTR
 #	undef DECL_SYS_ERRLIST
 #	undef DECL_TGETSTR
 #	undef DECL_TGOTO
@@ -612,6 +616,7 @@
 #	undef HAVE_TMPFILE
 
 #	undef HAVE_ICONV
+#	undef HAVE_WORKING_NL_LANGINFO_CODESET
 
 #	undef HAVE_GETTIMEOFDAY
 #endif /* !TIN_AUTOCONF_H */

@@ -6,7 +6,7 @@
  *  Updated   : 2001-11-10
  *  Notes     :
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -87,26 +87,27 @@ static void start_viewer(t_part *part, const char *path);
 
 
 /*
- *  Check for articles and say how many new/unread in each group.
- *  or
- *  Start if new/unread articles and return first group with new/unread.
- *  or
- *  Save any new articles to savedir and mark arts read and mail user
- *  and inform how many arts in which groups were saved.
- *  or
- *  Mail any new articles to specified user and mark arts read and mail
- *  user and inform how many arts in which groups were mailed.
- *  Return codes:
- *  CHECK_ANY_NEWS	- code to pass to exit() - see manpage for list
- *  START_ANY_NEWS	- index in my_group of first group with unread news or -1
- *  MAIL_ANY_NEWS	- not checked
- *  SAVE_ANY_NEWS	- not checked
+ * Check for articles and say how many new/unread in each group.
+ * or
+ * Start if new/unread articles and return first group with new/unread.
+ * or
+ * Save any new articles to savedir and mark arts read and mail user
+ * and inform how many arts in which groups were saved.
+ * or
+ * Mail any new articles to specified user and mark arts read and mail
+ * user and inform how many arts in which groups were mailed.
+ * Return codes:
+ * 	CHECK_ANY_NEWS	- code to pass to exit() - see manpage for list
+ * 	START_ANY_NEWS	- index in my_group of first group with unread news or -1
+ * 	MAIL_ANY_NEWS	- not checked
+ * 	SAVE_ANY_NEWS	- not checked
  */
 int
 check_start_save_any_news (
 	int function,
 	t_bool catchup)
 {
+	FILE *artfp;
 	FILE *fp;
 	FILE *fp_log = (FILE *) 0;
 	char buf[LEN], logfile[LEN];
@@ -116,6 +117,7 @@ check_start_save_any_news (
 	char subject[HEADER_LEN];
 	int group_count;
 	int i, j;
+	int art_count, hot_count;
 	int saved_arts = 0;					/* Total # saved arts */
 	struct t_group *group;
 	t_bool log_opened = TRUE;
@@ -157,13 +159,11 @@ check_start_save_any_news (
 	 * For each group we subscribe to...
 	 */
 	for (i = 0; i < selmenu.max; i++) {
-		int art_count, hot_count;
-
+		art_count = hot_count = 0;
 		group = &active[my_group[i]];
+
 		if (!index_group (group))
 			continue;
-
-		art_count = hot_count = 0;
 
 		make_group_path (group->name, group_path);
 
@@ -194,8 +194,6 @@ fprintf(stderr, "start_save: create_path(%s)\n", tmp);
 		 * For each article in this group...
 		 */
 		for (j = 0; j < top_art; j++) {
-			FILE *artfp;
-
 			if (arts[j].status != ART_UNREAD)
 				continue;
 
@@ -313,7 +311,6 @@ fprintf(stderr, "start_save: create_path(%s)\n", tmp);
 		default:
 			break;
 	}
-
 	return 0;
 }
 
@@ -401,20 +398,24 @@ save_art_to_file (
 	FILE *fp;
 	char from[HEADER_LEN];
 	time_t epoch;
-	t_bool mmdf = (save[indexnum].is_mailbox && tinrc.save_to_mmdf_mailbox);
+	t_bool mmdf = (save[indexnum].is_mailbox && !strcasecmp(txt_mailbox_formats[tinrc.mailbox_format], "MMDF"));
 
 	if ((fp = open_save_filename(save[indexnum].path, save[indexnum].is_mailbox)) == NULL)
 		return FALSE;
 
-	/*
-	 * Add "^From from date" line as mailbox-seperator on top of each article
-	 * We always do this since it is harmless, but we could restrict this to
-	 * mailbox saves only.
-	 */
-	if (artinfo->hdr.from)
-		strip_name (artinfo->hdr.from, from);
-	(void) time (&epoch);
-	fprintf (fp, "%sFrom %s %s", (mmdf ? MMDFHDRTXT : ""), from, ctime (&epoch));
+	if (mmdf)
+		fprintf (fp, "%s", MMDFHDRTXT);
+	else {
+		if (artinfo->hdr.from)
+			strip_name (artinfo->hdr.from, from);
+		(void) time (&epoch);
+		fprintf (fp, "From %s %s", from, ctime (&epoch));
+		/*
+		 * TODO: add Content-Length: header when using MBOXO
+		 *       so tin actually write MBOXCL instead of MBOXO?
+		 */
+	}
+
 	if (fseek (artinfo->raw, 0L, SEEK_SET) == -1)
 		perror_message ("fseek() error on [%s]", save[indexnum].artptr->subject); /* FIXME: -> lang.c */
 
@@ -541,6 +542,7 @@ save_batch (
 
 	/*
 	 * We report the range of saved-to files for regular saves of > 1 articles
+	 * TODO: "mailbox " -> lang.c
 	 */
 	if (num_save == 1 || save[0].is_mailbox)
 		snprintf (buf, sizeof(buf), _("-- %s saved to %s%s --"),
@@ -1085,11 +1087,9 @@ sum_and_view (
 		 * You can't do this with (fgets != NULL)
 		 */
 		while (!feof(fp_in)) {
-			char *ptr;
-
 			fgets (buf, (int) sizeof(buf), fp_in);
-			if ((ptr = strchr (buf, '\n')) != NULL)
-				*ptr = '\0';
+			if ((ext = strchr (buf, '\n')) != NULL)
+				*ext = '\0';
 		}
 		fflush (fp_in);
 		pclose (fp_in);
@@ -1252,10 +1252,10 @@ print_art_seperator_line (
 {
 #ifdef DEBUG
 	if (debug == 2)
-		error_message ("Mailbox=[%d]  MMDF=[%d]", is_mailbox, tinrc.save_to_mmdf_mailbox);
+		error_message ("Mailbox=[%d], mailbox_format=[%s]", is_mailbox, txt_mailbox_formats[tinrc.mailbox_format]);
 #endif /* DEBUG */
 
-	fprintf (fp, "%s", (is_mailbox && tinrc.save_to_mmdf_mailbox) ? MMDFHDRTXT : "\n");
+	fprintf (fp, "%s", (is_mailbox && !strcasecmp(txt_mailbox_formats[tinrc.mailbox_format], "MMDF")) ? MMDFHDRTXT : "\n");
 }
 
 
@@ -1432,13 +1432,12 @@ decode_save_mime(
 	t_bool postproc)
 {
 	t_part *ptr;
+	t_part *uueptr;
 
 	/*
 	 * Iterate over all the attachments
 	 */
 	for (ptr = art->hdr.ext; ptr != NULL; ptr = ptr->next) {
-		t_part *uueptr;
-
 		/*
 		 * Handle uuencoded sections in this message part
 		 * We don't do this when postprocessing as the generic uudecode
@@ -1472,13 +1471,12 @@ uudecode_line(
 	FILE *fp)
 {
 	const char *p = buf;
+	char ch;
 	int n;
 
 	n = DEC (*p);
 
 	for (++p; n > 0; p += 4, n -= 3) {
-		char ch;
-
 		if (n >= 3) {
 			ch = DEC (p[0]) << 2 | DEC (p[1]) >> 4;
 			fputc (ch, fp);

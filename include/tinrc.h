@@ -6,7 +6,7 @@
  *  Updated   : 2000-01-03
  *  Notes     :
  *
- * Copyright (c) 1999-2001 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 1999-2002 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -90,6 +90,7 @@ struct t_config {
 	char default_shell_command[LEN];
 	char mail_quote_format[LEN];
 	char maildir[PATH_LEN];				/* mailbox dir where = saves are stored */
+	int mailbox_format;					/* format of the mailbox (mboxo, mboxrd, mmdf, ...) */
 	char mail_address[HEADER_LEN];				/* user's mail address */
 	char mm_charset[LEN];				/* MIME charset: moved from rfc1522.c */
 #ifdef CHARSET_CONVERSION
@@ -191,7 +192,6 @@ struct t_config {
 	t_bool prompt_followupto;			/* display empty Followup-To header in editor */
 	t_bool quote_empty_lines;			/* quote empty lines, too */
 	t_bool quote_signatures;			/* quote signatures */
-	t_bool save_to_mmdf_mailbox;		/* save mail to MMDF/mbox format mailbox */
 	t_bool show_description;
 	t_bool show_last_line_prev_page;	/* set TRUE to see last line of prev page (ala nn) */
 	t_bool show_lines;

@@ -6,7 +6,7 @@
  *  Updated   : 1998-04-05
  *  Notes     : MIME header encoding/decoding stuff
  *
- * Copyright (c) 1995-2001 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2002 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -129,13 +129,9 @@ mmdecode (
 	char *t;
 	t_bool decode_gt128 = FALSE;
 
-#ifdef MIME_STRICT_CHARSET
-#	ifdef CHARSET_CONVERSION
-	if (charset && !strcasecmp(charset, tinrc.mm_local_charset))
-#	else
+#if defined(MIME_STRICT_CHARSET) && !defined(CHARSET_CONVERSION)
 	if (charset && !strcasecmp(charset, tinrc.mm_charset))
-#	endif /* CHARSET_CONVERSION */
-#endif /* MIME_STRICT_CHARSET */
+#endif /* MIME_STRICT_CHARSET && !CHARSET_CONVERSION*/
 		decode_gt128 = TRUE;
 
 	t = where;
@@ -180,7 +176,8 @@ mmdecode (
 
 		build_base64_rank_table();
 		if (!what || !where) {		/* flush */
-			pattern = bits = 0;
+			pattern = 0;
+			bits = 0;
 			return 0;
 		}
 		while (*what != delimiter) {
@@ -221,8 +218,10 @@ rfc1522_decode (
 	char encoding;
 	t_bool adjacentflag = FALSE;
 
+	charset[0] = '\0';
 	c = s;
 	t = buffer;
+
 	while (*c && t - buffer < 2048) {
 		if (*c != '=') {
 			if (adjacentflag && isspace((unsigned char) *c)) {
@@ -328,7 +327,6 @@ do_b_encode (
 	int max_ewsize,
 	t_bool isstruct_head)
 {
-
 	char tmp[60];				/* strings to be B encoded */
 	char *t = tmp;
 	int len8 = 0;				/* the number of trailing 8bit chars, which
@@ -489,21 +487,20 @@ rfc1522_do_encode(
 	 * then, in a second pass, we replace all SPACEs inside encoded
 	 * words by '_', break long lines, etc.
 	 */
-
-	int encoding;					  /* which encoding to use ('B' or 'Q') */
-	t_bool quoting = FALSE;		  /* currently inside quote block? */
-	t_bool any_quoting_done = FALSE;
-	t_bool isbroken_within = FALSE;	/* is word broken due to length restriction on encoded of word? */
-	t_bool rightafter_ew = FALSE;
+	char *c;
+	char *t;
+	char buf[2048];				/* buffer for encoded stuff */
+	char buf2[80];					/* buffer for this and that */
+	int encoding;					/* which encoding to use ('B' or 'Q') */
+	int ew_taken_len;
 	int column = 0;				/* current column */
 	int word_cnt = 0;
 	size_t ewsize = 0;			/* size of current encoded-word */
-	char buf[2048];				/* buffer for encoded stuff */
-	char buf2[80];				/* buffer for this and that */
-	char *c;
-	char *t;
+	t_bool quoting = FALSE;		/* currently inside quote block? */
+	t_bool any_quoting_done = FALSE;
+	t_bool isbroken_within = FALSE;	/* is word broken due to length restriction on encoded of word? */
 	t_bool isstruct_head = FALSE;		/* are we dealing with structured header? */
-	int ew_taken_len;
+	t_bool rightafter_ew = FALSE;
 
 /*
  * the list of structured header fields where '(' and ')' are
@@ -548,7 +545,8 @@ rfc1522_do_encode(
 					ewsize = mystrcat(&t, buf2);
 					if (break_long_line) {
 						if (word_cnt == 2) {
-							/* Make sure we fit the first encoded
+							/*
+							 * Make sure we fit the first encoded
 							 * word in with the header keyword,
 							 * since we cannot break the line
 							 * directly after the keyword.
@@ -577,7 +575,8 @@ rfc1522_do_encode(
 						ewsize++;
 					}
 					what++;
-					/* Be sure to encode at least one char, even if
+					/*
+					 * Be sure to encode at least one char, even if
 					 * that overflows the line limit, otherwise, we
 					 * will be stuck in a loop (if this were in the
 					 * while condition above). (Can only happen in
@@ -747,18 +746,13 @@ rfc1522_encode (
 #ifdef MIME_BREAK_LONG_LINES
 	t_bool break_long_line = TRUE;
 #else
-	t_bool break_long_line = FALSE;
-#endif /* MIME_BREAK_LONG_LINES */
-
 /*
  * Even if MIME_BREAK_LONG_LINES is NOT defined,
  * long headers in mail messages should be broken up in
  * accordance with RFC 2047(1522)
  */
-#ifndef MIME_BREAK_LONG_LINES
-	if (ismail)
-		break_long_line = TRUE;
-#endif /* !MIME_BREAK_LONG_LINES */
+	t_bool break_long_line = ismail;
+#endif /* MIME_BREAK_LONG_LINES */
 
 	b = buf;
 	x = rfc1522_do_encode(s, &b, break_long_line);

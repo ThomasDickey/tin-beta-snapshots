@@ -7,7 +7,7 @@
  *  Notes     : Routines to make reading news locally (ie. /var/spool/news)
  *              or via NNTP transparent
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,6 +67,7 @@ char *nntp_server = (char *)0;
 static char txt_xover_string[] = "XOVER";
 static char *txt_xover = txt_xover_string;
 
+
 /*
  * Open a connection to the NNTP server. Authenticate if necessary or
  * desired, and test if the server supports XOVER.
@@ -114,7 +115,7 @@ nntp_open (
 #	endif /* DEBUG */
 
 	ret = server_init (nntp_server, NNTP_TCP_NAME, nntp_tcp_port, line);
-DEBUG_IO((stderr, "server_init returns %d,%s\n", ret, line));
+	DEBUG_IO((stderr, "server_init returns %d,%s\n", ret, line));
 
 	if (!batch_mode && ret >= 0 && cmd_line)
 		my_fputc ('\n', stdout);
@@ -168,7 +169,7 @@ DEBUG_IO((stderr, "server_init returns %d,%s\n", ret, line));
 	if (!is_reconnect) {
 		/* remove leading whitespace and save server's initial response */
 		linep = line;
-		while (isspace((int)*linep))
+		while (isspace((int) *linep))
 			linep++;
 
 		STRCPY(bug_nntpserver1, linep);
@@ -181,28 +182,30 @@ DEBUG_IO((stderr, "server_init returns %d,%s\n", ret, line));
 #	ifdef DEBUG
 	debug_nntp ("nntp_open", "mode reader");
 #	endif /* DEBUG */
-DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
+	DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
 	put_server ("MODE READER");
 
 	/*
-	 * According to the latest NNTP draft (Aug 1999), MODE READER may only
+	 * According to the latest NNTP draft (Jan 2002), MODE READER may only
 	 * return the following response codes:
 	 *
-	 *   200 (OK_CANPOST) Hello, you can post
-	 *   201 (OK_NOPOST) Hello, you can't post
-	 *   202 (OK_NOIHAVE) - discussed on the itef mailinglist
-	 *   203 (OK_NOPOSTIHAVE) - discussed on the itef mailinglist
-	 *   400 (ERR_GOODBYE) Service temporarily unavailable
-	 *   502 (ERR_ACCESS) Service unavailable
+	 *   200 (OK_CANPOST)     Hello, you can post
+	 *   201 (OK_NOPOST)      Hello, you can't post
+	 *  (202 (OK_NOIHAVE)     discussed on the itef mailinglist)
+	 *  (203 (OK_NOPOSTIHAVE) discussed on the itef mailinglist)
+	 *   400 (ERR_GOODBYE)    Service temporarily unavailable
+	 *   502 (ERR_ACCESS)     Service unavailable
 	 *
 	 * However, there may be old servers out there that do not implement this
-	 * command and therefore return ERR_COMMAND (500).
+	 * command and therefore return ERR_COMMAND (500). Unfortunately there
+	 * are some new servers out there (i.e. INN 2.4.0 (20020220 prerelease)
+	 * which do return ERR_COMMAND if they are feed only servers.
 	 */
 
 	ret = get_respcode(line);
 	switch (ret) {
 		case OK_CANPOST:
-		case OK_NOIHAVE:
+/*		case OK_NOIHAVE: */
 #	ifndef NO_POSTING
 			can_post = TRUE;
 #	endif /* !NO_POSTING */
@@ -210,7 +213,7 @@ DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
 			break;
 
 		case OK_NOPOST:
-		case OK_NOPOSTIHAVE:
+/*		case OK_NOPOSTIHAVE: */
 			can_post = FALSE;
 			sec = TRUE;
 			break;
@@ -227,9 +230,8 @@ DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
 	}
 
 	/*
-	 * NOTE: Latest NNTP draft (Aug 1998) states that LIST EXTENSIONS should
-	 *       (not SHOULD, however) be used to find out what commands are
-	 *       supported.
+	 * NOTE: Latest NNTP draft (Jan 2002) states that LIST EXTENSIONS should
+	 *       be used to find out what commands are supported.
 	 *
 	 * TODO: Implement LIST EXTENSIONS here. Get this list before issuing
 	 *       authentication because the authentication method required may be
@@ -254,7 +256,7 @@ DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
 		ret = get_respcode (line);
 		switch (ret) {
 			case OK_CANPOST:
-			case OK_NOIHAVE:
+/*			case OK_NOIHAVE: */
 #	ifndef NO_POSTING
 				can_post = TRUE;
 #	endif /* !NO_POSTING */
@@ -262,7 +264,7 @@ DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
 				break;
 
 			case OK_NOPOST:
-			case OK_NOPOSTIHAVE:
+/*			case OK_NOPOSTIHAVE: */
 				can_post = FALSE;
 				sec = TRUE;
 				break;
@@ -286,7 +288,7 @@ DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
 
 		/* Remove leading white space and save server's second response */
 		linep = line;
-		while (isspace((int)*linep))
+		while (isspace((int) *linep))
 			linep++;
 
 		STRCPY(bug_nntpserver2, linep);
@@ -305,7 +307,7 @@ DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
 			j = atoi (get_val ("COLUMNS", "80"));
 			chr1 = my_strdup ((sec ? bug_nntpserver2 : bug_nntpserver1));
 
-			if (((int)strlen (chr1)) >= j) {
+			if (((int) strlen (chr1)) >= j) {
 				chr2 = chr1 + strlen (chr1) - 1;
 				while (chr2 - chr1 >= j)
 					chr2--;
@@ -322,8 +324,7 @@ DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
 
 	/*
 	 * Check if NNTP supports XOVER or OVER (successor of XOVER as of latest
-	 * NNTP Draft (Aug 1999)) command
-	 * ie, we _don't_ get an ERR_COMMAND
+	 * NNTP Draft (Jan 2002) command; ie, we _don't_ get an ERR_COMMAND
 	 *
 	 * TODO: Don't try (X)OVER if listed in LIST EXTENSIONS.
 	 */
@@ -374,24 +375,24 @@ nntp_close (
 #endif /* NNTP_ABLE */
 }
 
-/*
- *  Get a response code from the server.
- *  Returns:
- *    +ve NNTP return code
- *    -1  on an error or user abort. We don't differentiate.
- *  If 'message' is not NULL, then any trailing text after the response
- *  code is copied into it.
- *  Does not perform authentication if required; use get_respcode()
- *  instead.
- */
 
+/*
+ * Get a response code from the server.
+ * Returns:
+ * 	+ve NNTP return code
+ * 	-1  on an error or user abort. We don't differentiate.
+ * If 'message' is not NULL, then any trailing text after the response
+ * code is copied into it.
+ * Does not perform authentication if required; use get_respcode()
+ * instead.
+ */
 int
 get_only_respcode (
 	char *message)
 {
+	int respcode;
 #ifdef NNTP_ABLE
 	char *ptr, *end;
-	int respcode;
 
 	ptr = tin_fgets (FAKE_NNTP_FP, FALSE);
 
@@ -422,31 +423,29 @@ DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
 	if (message != NULL)				/* Pass out the rest of the text */
 		strcpy(message, end);
 
-	return respcode;
-#else
-	return 0;
 #endif /* NNTP_ABLE */
+	return respcode;
 }
 
-/*
- *  Get a response code from the server.
- *  Returns:
- *    +ve NNTP return code
- *    -1  on an error
- *  If 'message' is not NULL, then any trailing text after the response
- *	 code is copied into it.
- *  Performs authentication if required and repeats the last command if
- *  necessary after a timeout.
- */
 
+/*
+ * Get a response code from the server.
+ * Returns:
+ * 	+ve NNTP return code
+ * 	-1  on an error
+ * If 'message' is not NULL, then any trailing text after the response
+ *	code is copied into it.
+ * Performs authentication if required and repeats the last command if
+ * necessary after a timeout.
+ */
 int
 get_respcode (
 	char *message)
 {
+	int respcode = 0;
 #ifdef NNTP_ABLE
 	char savebuf[NNTP_STRLEN];
 	char *ptr, *end;
-	int respcode;
 
 	respcode = get_only_respcode (message);
 	if ((respcode == ERR_NOAUTH) || (respcode == NEED_AUTHINFO)) {
@@ -473,16 +472,14 @@ get_respcode (
 
 		} else {
 			error_message (_(txt_auth_failed), ERR_ACCESS);
-/*			return -1;*/
+			/*	return -1; */
 			tin_done (EXIT_FAILURE);
 		}
 	}
-
-	return respcode;
-#else
-	return 0;
 #endif /* NNTP_ABLE */
+	return respcode;
 }
+
 
 #ifdef NNTP_ABLE
 /*
@@ -520,10 +517,10 @@ DEBUG_IO((stderr, "nntp_command (%s)\n", command));
 }
 #endif /* NNTP_ABLE */
 
+
 /*
  * Open the news active file locally or send the LIST command
  */
-
 FILE *
 open_news_active_fp (
 	void)
@@ -536,10 +533,10 @@ open_news_active_fp (
 		return (fopen (news_active_file, "r"));
 }
 
+
 /*
  * Open the NEWSLIBDIR/overview.fmt file locally or send LIST OVERVIEW.FMT
  */
-
 FILE *
 open_overview_fmt_fp (
 	void)
@@ -562,12 +559,12 @@ open_overview_fmt_fp (
 #endif /* NNTP_ABLE */
 }
 
+
 /*
  * Open the active.times file locally or send the NEWGROUPS command
  *
  * NEWGROUPS yymmdd hhmmss
  */
-
 FILE *
 open_newgroups_fp (
 	int idx)
@@ -597,6 +594,7 @@ open_newgroups_fp (
 		return (fopen (active_times_file, "r"));
 }
 
+
 /*
  * Get a list of default groups to subscribe to
  */
@@ -613,6 +611,7 @@ open_subscription_fp (
 		return (fopen (subscriptions_file, "r"));
 }
 
+
 #ifdef HAVE_MH_MAIL_HANDLING
 /*
  * Open the mail active file locally
@@ -624,6 +623,7 @@ open_mail_active_fp (
 	return fopen (mail_active_file, mode);
 }
 
+
 /*
  *  Open mail groups description file locally
  */
@@ -634,6 +634,7 @@ open_mailgroups_fp (
 	return fopen (mailgroups_file, "r");
 }
 #endif /* HAVE_MH_MAIL_HANDLING */
+
 
 /*
  * If reading via NNTP the newsgroups file will be saved to ~/.tin/newsgroups
@@ -673,34 +674,34 @@ open_newsgroups_fp (
 		return fopen (newsgroups_file, "r");
 }
 
+
 /*
  * Open a group NOV/XOVER file
  */
-
 FILE *
 open_xover_fp (
 	struct t_group *psGrp,
-	const char *pcMode,
+	const char *mode,
 	long lMin,
 	long lMax)
 {
 #ifdef NNTP_ABLE
-	if (read_news_via_nntp && xover_supported && *pcMode == 'r' && psGrp->type == GROUP_TYPE_NEWS) {
-		char acLine[NNTP_STRLEN];
+	if (read_news_via_nntp && xover_supported && *mode == 'r' && psGrp->type == GROUP_TYPE_NEWS) {
+		char line[NNTP_STRLEN];
 
-		sprintf (acLine, "%s %ld-%ld", txt_xover, lMin, lMax);
-		return(nntp_command (acLine, OK_XOVER, NULL));
+		sprintf (line, "%s %ld-%ld", txt_xover, lMin, lMax);
+		return (nntp_command (line, OK_XOVER, NULL));
 	} else {
 #endif /* NNTP_ABLE */
 		char *pcNovFile;
 
-		pcNovFile = find_nov_file (psGrp, (*pcMode == 'r' ? R_OK : W_OK));
+		pcNovFile = find_nov_file (psGrp, (*mode == 'r' ? R_OK : W_OK));
 #ifdef DEBUG
 		if (debug)
 			error_message ("READ file=[%s]", pcNovFile);
 #endif /* DEBUG */
 		if (pcNovFile != (char *) 0)
-			return fopen (pcNovFile, pcMode);
+			return fopen (pcNovFile, mode);
 
 		return (FILE *) 0;
 #ifdef NNTP_ABLE

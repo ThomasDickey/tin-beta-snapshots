@@ -6,7 +6,7 @@
  *  Updated   : 1995-04-19
  *  Notes     :
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,13 +95,14 @@ show_art_msg(
 	wait_message(0, _(txt_group), cCOLS - strlen(_(txt_group)) + 2 - 3, group);
 }
 
+
 /*
- *  Construct the pointers to the base article in each thread.
- *  If we are showing only unread, then point to the first unread. I have
- *  no idea why this should be so, it causes problems elsewhere [which_response]
- *  .inthread is set on each article that is after the first article in the
- *  thread.  Articles which have been expired have their .thread set to
- *  ART_EXPIRED
+ * Construct the pointers to the base article in each thread.
+ * If we are showing only unread, then point to the first unread. I have
+ * no idea why this should be so, it causes problems elsewhere [which_response]
+ * .inthread is set on each article that is after the first article in the
+ * thread.  Articles which have been expired have their .thread set to
+ * ART_EXPIRED
  */
 void
 find_base (
@@ -146,17 +147,22 @@ find_base (
 			base[grpmenu.max++] = i;
 		}
 	}
+#ifdef THREAD_SUM
+	/* sort base[] */
+	if (group->attribute && group->attribute->sort_threads_type > SORT_THREADS_BY_NOTHING)
+		sort_base (group->attribute->sort_threads_type);
+#endif /* THREAD_SUM */
 }
 
 
 /*
- *  Main group indexing routine.
+ * Main group indexing routine.
  *
- *  Will read any existing index, create or incrementally update
- *  the index by looking at the articles in the spool directory,
- *  and attempt to write a new index if necessary.
+ * Will read any existing index, create or incrementally update
+ * the index by looking at the articles in the spool directory,
+ * and attempt to write a new index if necessary.
  *
- *  Returns FALSE if the user aborted the indexing, otherwise TRUE
+ * Returns FALSE if the user aborted the indexing, otherwise TRUE
  */
 t_bool
 index_group (
@@ -185,9 +191,9 @@ index_group (
 	free_msgids ();
 
 	/*
-	 *  Load articles within min..max from xover index file if it exists
-	 *  and then create base[] article numbers from loaded articles.
-	 *  If nov file does not exist then create base[] with setup_base().
+	 * Load articles within min..max from xover index file if it exists
+	 * and then create base[] article numbers from loaded articles.
+	 * If nov file does not exist then create base[] with setup_base().
 	 */
 #ifdef PROFILE
 	BegStopWatch("setup_base");
@@ -324,7 +330,8 @@ find_first_unread (
 
 	if ((p = group->newsrc.xbitmap)) {
 		end += group->newsrc.xbitlen / 8;
-		for (; *p == '\0' && p < end; p++, first += 8);
+		for (; *p == '\0' && p < end; p++, first += 8)
+			;
 	}
 	return first;
 }
@@ -639,36 +646,40 @@ global_get_multiparts (
 	}
 
 	/* try to find all the multiparts... */
-	for (i = 0; i < top_art; ++i) {
-		int part_index = 0;
+	{
+		int part_index;
 
-		if (strncmp (arts[i].subject, tmp.subject, tmp.subject_compare_len))
-			continue;
-		if (!global_get_multipart_info (i, &tmp2))
-			continue;
+		for (i = 0; i < top_art; ++i) {
 
-		/* test (1/5)' is not the same as 'test (1/15)' */
-		if (tmp.total != tmp2.total)
-			continue;
+			if (strncmp (arts[i].subject, tmp.subject, tmp.subject_compare_len))
+				continue;
 
-		part_index = tmp2.part_number - 1;
+			if (!global_get_multipart_info (i, &tmp2))
+				continue;
 
-		/* skip the "blah (00/102)" info messages... */
-		if (part_index < 0)
-			continue;
+			/* 'test (1/5)' is not the same as 'test (1/15)' */
+			if (tmp.total != tmp2.total)
+				continue;
 
-		/* skip insane "blah (103/102) subjects... */
-		if (part_index >= tmp.total)
-			continue;
+			part_index = tmp2.part_number - 1;
 
-		/* repost check: do we already have this part? */
-		if (info[part_index].part_number != -1) {
-			assert (info[part_index].part_number == tmp2.part_number && "bookkeeping error");
-			continue;
+			/* skip the "blah (00/102)" info messages... */
+			if (part_index < 0)
+				continue;
+
+			/* skip insane "blah (103/102) subjects... */
+			if (part_index >= tmp.total)
+				continue;
+
+			/* repost check: do we already have this part? */
+			if (info[part_index].part_number != -1) {
+				assert (info[part_index].part_number == tmp2.part_number && "bookkeeping error");
+				continue;
+			}
+
+			/* we have a match, hooray! */
+			info[part_index] = tmp2;
 		}
-
-		/* we have a match, hooray! */
-		info[part_index] = tmp2;
 	}
 
 	/* see if we got them all. */
@@ -692,12 +703,12 @@ static void
 thread_by_multipart (
 	void)
 {
-	int i, j, ret, threadNum, parent;
+	int i, j, threadNum, parent;
 	MultiPartInfo *minfo = NULL;
 
 	for (i = 0; i < top_art; i++) {
 
-		if (arts[i].thread != ART_NORMAL || IGNORE_ART(i) || arts[i].inthread || !(ret=global_get_multiparts(i, &minfo)))
+		if (arts[i].thread != ART_NORMAL || IGNORE_ART(i) || arts[i].inthread || !global_get_multiparts(i, &minfo))
 			continue;
 
 		threadNum = -1;
@@ -826,13 +837,7 @@ make_threads (
 		default: /* not reached */
 			break;
 	}
-
 	find_base (group);
-#ifdef THREAD_SUM
-	/* sort base[] */
-	if (group->attribute && group->attribute->sort_threads_type > SORT_THREADS_BY_NOTHING /* && group->attribute->thread_arts > THREAD_NONE*/ )
-		sort_base (group->attribute->sort_threads_type);
-#endif /* THREAD_SUM */
 }
 
 

@@ -3,11 +3,11 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2001-12-03
+.\" Updated   : 2002-02-18
 .\" Notes     : still needs some work (but getting there ;)
 .\"
 .\"
-.TH tin 1 "December 3rd, 2001" "1.5.11" "A Usenet newsreader"
+.TH tin 1 "February 18th, 2002" "1.5.12" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -190,8 +190,8 @@ the environment variable $\fBNNTPPORT\fP if set.
 Don't check for new newsgroups.
 .TP
 .B -Q
-Quick start. Start \fBtin\fP as quickly as possible. Currently this is equivalent
-to ''\fB-nqd\fP''.
+Quick start. Start \fBtin\fP as quickly as possible. Currently this is
+equivalent to ''\fB-nqd\fP''.
 .TP
 .B -r
 Read news remotely from the default NNTP server specified in the environment
@@ -340,11 +340,11 @@ group to post to.
 .PP
 At the Group level the title contains the name of the group, the number
 of conversation threads, the threading-method, the total number of articles,
-the number of killed articles and the number of hot articles. i.e.,
+the number of killed articles and the number of hot articles. I.e.,
 alt.sources (5T(B) 23A 0K 0H).
 It might also contain an 'R' if your are in \fBshow_only_unread\fP mode and
 an 'M' if the group is moderated.
-(The later does not work with the ''\fB-n\fP'' command-line switch!).
+(The later does not work with the ''\fB-n\fP'' command-line switch!)
 If a thread has unread articles in it it's marked with a '+' in font of the
 total number of articles in the thread.
 If a thread has hot articles in it (see also section FILTERING ARTICLES)
@@ -585,8 +585,8 @@ See the section NEWSGROUP LISTS & WILDCARDS for the types of pattern that
 .TP
 .B u
 Unsubscribe to current group. This can be used to remove bogus groups.
-See \fBstrip_bogus\fP in the GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES
-section.
+See \fBstrip_bogus\fP in the GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE
+VARIABLES section.
 .TP
 .B U
 Unsubscribe to groups matching user specified pattern.
@@ -1048,9 +1048,10 @@ taken from the \fBhide_uue\fP variable in the tinrc file.
 .TP
 .B )
 The formfeed character (^L) is often used to hide 'spoilers' that the reader
-may not initially wish to see when viewing an article. Any text after a formfeed
-is not displayed. This keypress acts like a reveal key and turns the hidden text
-back on. Scrolling the formfeed off the screen will also reveal the text.
+may not initially wish to see when viewing an article. Any text after a
+formfeed is not displayed. This keypress acts like a reveal key and turns the
+hidden text back on. Scrolling down will also reveal the text, scrolling up
+will hide it again.
 .TP
 .B -
 Re-enter the last message that was viewed.
@@ -1244,6 +1245,12 @@ Return to group selection level.
 .B u
 Goto parent article.
 .TP
+.B U
+Browse URLs in article.
+.TP
+.B V
+View or save multimedia attachments.
+.TP
 .B w
 Post an article to the current group. If posting fails for some reason, you'll
 get the chance to edit ('e') the article again, postpone ('o') it for later
@@ -1351,12 +1358,12 @@ This only occurs if \fBuse_metamail\fP is also switched ON.
 Default is ON.
 .TP
 .B Send you a blind cc automatically (auto_bcc)
-If ON automatically put your name in the ''Bcc:'' field when mailing an article.
-Default is OFF
+If ON automatically put your name in the ''Bcc:'' field when mailing an
+article. Default is OFF
 .TP
 .B Send you a cc automatically (auto_cc)
-If ON automatically put your name in the ''Cc:'' field when mailing an article.
-Default is OFF
+If ON automatically put your name in the ''Cc:'' field when mailing an
+article. Default is OFF
 .TP
 .B List thread using right arrow key (auto_list_thread)
 If ON automatically list thread when entering it using right arrow key.
@@ -1478,7 +1485,8 @@ ON = filter case sensitive, OFF = ignore case. Default is OFF.
 .TP
 .B default_filter_kill_expire
 Defaults for quick (1 key) kill filter expire.
-ON = limit to \fBdefault_filter_days\fP, OFF = don't ever expire. Default is OFF.
+ON = limit to \fBdefault_filter_days\fP, OFF = don't ever expire. Default
+is OFF.
 .TP
 .B default_filter_kill_global
 Defaults for quick (1 key) kill filter global.
@@ -1486,7 +1494,8 @@ ON=apply to all groups OFF=apply to current group. Default is ON.
 .TP
 .B default_filter_kill_header
 Defaults for quick (1 key) kill filter header.
-0,1 = ''Subject:'', 2,3 = ''From:'', 4 = ''Message-Id:'' & full ''References:'' line,
+0,1 = ''Subject:'', 2,3 = ''From:'',
+4 = ''Message-Id:'' & full ''References:'' line,
 5 = ''Message-Id:'' & last ''References:'' entry only,
 6 = ''Message-Id:'' entry only, 7 = ''Lines:''
 .TP
@@ -1496,7 +1505,8 @@ ON=filter case sensitive OFF=ignore case. Default is OFF.
 .TP
 .B default_filter_select_expire
 Defaults for quick (1 key) auto-selection filter expire.
-ON = limit to \fBdefault_filter_days\fP, OFF = don't ever expire. Default is OFF.
+ON = limit to \fBdefault_filter_days\fP, OFF = don't ever expire.
+Default is OFF.
 .TP
 .B default_filter_select_global
 Defaults for quick (1 key) auto-selection filter global.
@@ -1504,7 +1514,8 @@ ON=apply to all groups OFF=apply to current group. Default is ON.
 .TP
 .B default_filter_select_header
 Defaults for quick (1 key) auto-selection filter header.
-0,1 = ''Subject:'', 2,3 = ''From:'', 4 = ''Message-Id:'' & full ''References:'' line,
+0,1 = ''Subject:'', 2,3 = ''From:'',
+4 = ''Message-Id:'' & full ''References:'' line,
 5 = ''Message-Id:'' & last ''References:'' entry only,
 6 = ''Message-Id:'' entry only, 7 = ''Lines:''
 .TP
@@ -1593,8 +1604,8 @@ the GLOBAL OPTIONS MENU.
 .B Number of articles per group to get (getart_limit)
 If \fBuse_getart_limit\fP is ON and \fBgetart_limit\fP is > 0 not more than
 \fBgetart_limit\fP articles/group are fetched from the server. If
-\fBuse_getart_limit\fP is ON and \fBgetart_limit\fP is < 0 \fBtin\fP will start
-fetching articles from your first unread minus absolute value of
+\fBuse_getart_limit\fP is ON and \fBgetart_limit\fP is < 0 \fBtin\fP will
+start fetching articles from your first unread minus absolute value of
 \fBgetart_limit\fP. Default is 0, which means no limit.
 .TP
 .B Number of days during which article is considered recent (recent_time)
@@ -1628,8 +1639,8 @@ If ON use inverse video for page headers at different levels. Default is ON.
 .TP
 .B Keep failed articles in ~/dead.articles (keep_dead_articles)
 If ON keep all failed postings in \fI${TIN_HOMEDIR-"$HOME"}/dead.articles\fR
-besides keeping the last failed posting in \fI${TIN_HOMEDIR-"$HOME"}/dead.article\fR.
-Default is ON.
+besides keeping the last failed posting in
+\fI${TIN_HOMEDIR-"$HOME"}/dead.article\fR. Default is ON.
 .TP
 .B Keep posted articles in ~/Mail/posted (keep_posted_articles)
 If ON keep all postings in \fI${TIN_HOMEDIR-"$HOME"}/Mail/posted\fR.
@@ -1670,6 +1681,14 @@ EUC-KR (Korean).
 .B Quote line when mailing (mail_quote_format)
 Default is "In article %M you wrote:"
 .TP
+.B Format of the mailbox (mailbox_format)
+Select one of the following mailbox-formats: MBOXO (default), MBOXRD
+or MMDF. See
+.BR mbox (5)
+for more details on MBOXO and MBOXRD and
+.BR mmdf (5)
+or more details about MMDF.
+.TP
 .B Mark saved articles/threads as read (mark_saved_read)
 If ON mark articles that are saved as read. Default is ON.
 .TP
@@ -1692,8 +1711,11 @@ or compile-time default is used in case neither of them is defined.
 Charset used for reading and displaying articles; replaces \fBmm_charset\fP.
 Conversion between \fBmm_local_charset\fP and \fBmm_network_charset\fP is
 done via
-.BR iconv (3),
-if this function is not available on your system this option is disabled.
+.BR iconv (3);
+if this function is not available on your system or \fBtin\fP can easily
+detect the local charset via
+.BR nl_langinfo (3),
+this option is disabled.
 .TP
 .B MM_NETWORK_CHARSET (mm_network_charset)
 Charset used for posting and MIME headers; replaces \fBmm_charset\fP.
@@ -1701,6 +1723,14 @@ Conversion between \fBmm_network_charset\fP and \fBmm_local_charset\fP is
 done via
 .BR iconv (3),
 if this function is not available on your system this option is disabled.
+\fBmm_network_charset\fP is limited to one of the following charsets:
+.in +.3i
+US-ASCII, ISO-8859-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8-{R,U,RU}
+EUC-{CN,JP,KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2,KR}, UTF-8
+.in -.3i
+Not all values might work on your system, see
+.BR iconv_open (3)
+for more details.
 .TP
 .B newnews
 These are internal timers used by \fBtin\fP to keep track of new newsgroups.
@@ -1814,12 +1844,6 @@ If ON quote signatures, too.
 The news active file is reread at regular intervals to show if any new news
 has arrived. Default is 1200. Setting this to 0 will disable this feature.
 .TP
-.B Save mail in MMDF style (save_to_mmdf_mailbox)
-Allows articles to be saved to a MMDF style mailbox instead of
-.BR mbox (5)
-format.
-Default is OFF unless reading news on SCO Unix which uses MMDF by default.
-.TP
 .B In group menu, show author by (show_author)
 .in +.5i
 .ti -\w'\(em'u
@@ -1895,7 +1919,9 @@ Sort by descending Score (1) is the default.
 .B Spamtrap warning address parts (spamtrap_warning_addresses)
 Set this option to a list of comma-separated strings to be warned if you are
 replying to an article by mail where the e-mail address contains one of
-these strings. The matching is case-insensitive.
+these strings. The matching is case-insensitive. Example:
+.sp
+\fIspam,delete,remove\fR
 .TP
 .B Space goes to next unread article (space_goto_next_unread)
 SPACE normally acts as a Page Down key and has no effect at the end of
@@ -2083,12 +2109,12 @@ and replying direct through mail to the author of an article.
 Use the 'w' command to post an article to a newsgroup. After entering
 the post subject the default editor (i.e.,
 .BR vi (1))
-or the editor specified by the $\fBEDITOR\fP environment variable will be
-started and the article can be entered. To crosspost articles simply add a
-comma and the name of the newsgroup(s) to the end of the ''Newsgroups:''
-line at the beginning of the article. After saving and exiting the editor
-you are asked if you wish to a)bort posting the article, e)dit the article
-again or p)ost the article to the specified newsgroup(s).
+or the editor specified by the $\fBVISUAL\fP or $\fBEDITOR\fP environment
+variable will be started and the article can be entered. To crosspost
+articles simply add a comma and the name of the newsgroup(s) to the end of
+the ''Newsgroups:'' line at the beginning of the article. After saving and
+exiting the editor you are asked if you wish to a)bort posting the article,
+e)dit the article again or p)ost the article to the specified newsgroup(s).
 .PP
 Use the 'W' command to display a history of the articles you have posted.
 The date the article was posted, which newsgroups the article was
@@ -2558,8 +2584,8 @@ the command line to override the same option specified in the environment.
 .TP
 .B TIN_HOMEDIR
 Define this variable if you do not want the \fI.tin\fR directory in
-\fI$HOME/.tin\fR. (i.e., if you want all \fBtin\fP's private files in \fI/tmp/.tin\fR
-you would set $\fBTIN_HOMEDIR\fP to \fI/tmp\fR.
+\fI$HOME/.tin\fR. (i.e., if you want all \fBtin\fP's private files in
+\fI/tmp/.tin\fR you would set $\fBTIN_HOMEDIR\fP to \fI/tmp\fR.
 .TP
 .B TIN_INDEX_NEWSDIR
 Define this variable if you do not want the \fI.news\fR directory in
@@ -2644,19 +2670,20 @@ This variable has precedence over the default mailer that is used in all
 mailing operations within \fBtin\fP. If reading news on Amiga OS use
 $\fBTIN_MAIL\fP, if reading news on VMS use \fBTIN_MAILER\fP instead.
 .TP
-.B EDITOR
+.B VISUAL
 This variable has precedence over the default editor (i.e.,
 .BR vi (1))
 that is used in all editing operations within \fBtin\fP (i.e., posting 'w',
-replying 'r', follow-ups 'f', ...). See
+replying 'r', follow-ups 'f', ...). Evaluation order is
+\fI${VISUAL-"${EDITOR-vi}"}\fR. See
 .BR environ (5)
 for more infos.
 .TP
-.B VISUAL
-If $\fBEDITOR\fP is unset, then this variable is looked up for a default
+.B EDITOR
+If $\fBVISUAL\fP is unset, then this variable is looked up for a default
 editor. If $\fBEDITOR\fP and $\fBVISUAL\fP are both unset, \fBtin\fP will
 uses the systems default editor (i.e.
-.BR vi (1)
+.BR vi (1))
 on UNIX-systems). See
 .BR environ (5)
 for more infos.
@@ -2682,13 +2709,6 @@ list are unsubscribed from without further query. For example, setting
 will automatically unsubscribe the user from all new alt.flame groups
 and all groups starting with u (university groups) other than UK groups (which
 will be queried for as usual).
-.TP
-.B SPAMTRAP
-Set this variable to a list of comma-separated strings to be warned if you
-are replying to an article by mail where the e-mail address contains one of
-these strings. The matching is case-insensitive. Example:
-.sp
-\fISPAMTRAP=spam,delete,remove\fR
 .TP
 .B MAILCAPS
 This variable can be used to override the default path search for mailcap
@@ -2791,6 +2811,10 @@ The type of terminal in use. This is used when looking up termcap sequences.
 See
 .BR environ (5)
 for more infos.
+.\" .TP
+.\" .B TMPDIR
+.\" A pathname of a directory made available for \fBtin\fP to create
+.\" temporary files.
 .\"
 .\"
 .\" .SH DIAGNOSTICS
@@ -2878,6 +2902,8 @@ ftp.tin.org:/pub/news/clients/tin/v1.5/
 .IP "v1.5.9 (beta) - July 23rd 2001"
 ftp.tin.org:/pub/news/clients/tin/v1.5/
 .IP "v1.5.10 (beta) - November 17th 2001"
+ftp.tin.org:/pub/news/clients/tin/v1.5/
+.IP "v1.5.11 (beta) - January 30th 2002"
 ftp.tin.org:/pub/news/clients/tin/v1.5/
 .\"
 .\"
@@ -2970,19 +2996,19 @@ Maryin, William McBrine, Owen Medd, Philipp Mergenthaler, Andreas Metzler,
 Arkadiusz Miskiewicz, Soren Moller, Bruce Momjian, Sergio Morales, Michael
 Morrell, Klaus Mueller, Mike Muise, Udo Munk, John R. Myers, Daniel Naber,
 Torsten Neumann, Dirk Nimmich, James Nugen, David E. O'Brien, Michael
-O'Reilly, Oleg Ohotnikov, Ronald Orr, Julien Oster, Jeb Palmer, Neil Parker,
-Joseph Parmelee, Tom Parry, Jim Patterson, Sven Paulus, Walter Pelissero,
-Cameron Perkins, Colin Perkins, Eric Peterson, Tim Pierce, Bill Poitras,
-Scott W. Powers, Wolfgang Prediger, GianPiero Puccioni, Thomas Quinot,
-Stefan Rapp, Martin Reising, Kyle Rhorer, Ted Richards, Steve Robbins,
-Ollivier Robert, Branden Robinson, Jim Robinson, Thomas Roessler, Erik van
-Roode, Meelis Roos, Stephen Roseman, Roland Rosenfeld, Peter Van Rossem,
-Clifton Royston, Rich Salz, Gary Sanders, Nickolay Saukh, John Sauter,
-Christopher Sawtell, Holger Schif, Volker Schmidt, John Schmitz, Torsten
-Schneider, Stefan Scholl, Rainer Scholz, Juergen Schroeder, Larry Schwimmer,
-Randy Scott, Bart Sears, Karl-Olav Serrander, Doug Sewell, Philip Shearer,
-Jungshik Shin, Sergey Shkonda, Andreas Siegert, Mark Smith, Toomas Soome,
-Steve Spearman, Helmut Springer, Cliff Stanford, Steve Starck, Jason
+O'Reilly, Oleg Ohotnikov, Ronald Orr, Julien Oster, Philip Paeps, Jeb
+Palmer, Neil Parker, Joseph Parmelee, Tom Parry, Jim Patterson, Sven Paulus,
+Walter Pelissero, Cameron Perkins, Colin Perkins, Eric Peterson, Tim Pierce,
+Bill Poitras, Scott W. Powers, Wolfgang Prediger, GianPiero Puccioni, Thomas
+Quinot, Stefan Rapp, Martin Reising, Kyle Rhorer, Ted Richards, Steve
+Robbins, Ollivier Robert, Branden Robinson, Jim Robinson, Thomas Roessler,
+Erik van Roode, Meelis Roos, Stephen Roseman, Roland Rosenfeld, Peter Van
+Rossem, Clifton Royston, Rich Salz, Gary Sanders, Nickolay Saukh, John
+Sauter, Christopher Sawtell, Holger Schif, Volker Schmidt, John Schmitz,
+Torsten Schneider, Stefan Scholl, Rainer Scholz, Juergen Schroeder, Larry
+Schwimmer, Randy Scott, Bart Sears, Karl-Olav Serrander, Doug Sewell, Philip
+Shearer, Jungshik Shin, Sergey Shkonda, Andreas Siegert, Mark Smith, Toomas
+Soome, Steve Spearman, Helmut Springer, Cliff Stanford, Steve Starck, Jason
 Steiner, Ralf Stephan, Michael Stenns, Helmrich Streitmatter, Hans Werner
 Strube, Dieter Stueken, Ed Sznyter, Dean Takemori, Darrell Tangman, Derek
 Terveer, Carsten Theis, Julian Thompson, David Tiller, Andry Timonin, Mark
@@ -3019,10 +3045,11 @@ Urs Janssen <urs@tin.org>
 .BR tass (1),
 .BR unshar (1),
 .BR uudecode (1),
-.BR tin (5),
 .BR vi (1),
 .BR xterm (1x),
 .BR iconv (3),
+.BR iconv_open (3),
+.BR nl_langinfo (3),
 .BR pcre (3),
 .BR snprintf (3),
 .BR vsnprintf (3),
@@ -3030,7 +3057,9 @@ Urs Janssen <urs@tin.org>
 .BR environ (5),
 .BR locale (5),
 .BR mbox (5),
+.BR mmdf (5),
 .BR newsoverview (5),
+.BR tin (5),
 .BR RFC977 ,
 .BR RFC1036 ,
 .BR RFC1524 ,

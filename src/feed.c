@@ -6,7 +6,7 @@
  *  Updated   : 2000-02-08
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -147,7 +147,8 @@ get_save_filename(
  * Return a post_proc char or 0 if aborting the save process
  */
 static int
-get_post_proc_type(void)
+get_post_proc_type(
+	void)
 {
 	char ch;
 	char keynone[MAXKEYLEN], keyquit[MAXKEYLEN], keyshar[MAXKEYLEN];

@@ -6,7 +6,7 @@
  *  Updated   : 2001-11-10
  *  Notes     :
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -680,7 +680,7 @@ thread_page (
 
 			case iKeyThreadReverseSel:		/* reverse selections */
 				for (i = (int) base[thread_basenote]; i != -1; i = arts[i].thread)
-					arts[i].selected = !arts[i].selected;
+					arts[i].selected = bool_not(arts[i].selected);
 				update_thread_page ();
 				break;
 
@@ -705,7 +705,7 @@ thread_page (
 				break;
 
 			case iKeyToggleInfoLastLine:		/* display subject in last line */
-				tinrc.info_in_last_line = !tinrc.info_in_last_line;
+				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
 				show_thread_page();
 				break;
 
@@ -1244,7 +1244,7 @@ make_prefix (
 	prefix_ptr = depth * 2 - 1;
 
 	if (prefix_ptr > maxlen - 1 - !(maxlen % 2)) {
-		int odd = !(maxlen % 2);
+		int odd = ((maxlen % 2) ? 0 : 1);
 
 		prefix_ptr -= maxlen - ++depth_level - 2 - odd;
 
@@ -1252,7 +1252,7 @@ make_prefix (
 			if (depth_level < maxlen / 5)
 				depth_level++;
 			prefix_ptr -= maxlen - depth_level - 2 - odd;
-			odd = !odd;
+			odd = (odd ? 0 : 1);
 		}
 	}
 

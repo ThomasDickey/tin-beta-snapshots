@@ -6,7 +6,7 @@
  *  Updated   : 1997-12-31
  *  Notes     : NNTP builtin version of inews
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -147,9 +147,8 @@ submit_inews (
 	 * type, so we skip the test if FORGERY is set
 	 *
 	 * check for valid From: line
-	 * this will be done once again in sender_needed!?!
 	 */
-	if (GNKSA_OK != gnksa_check_from(rfc1522_encode(from_name, FALSE) + 6)) { /* error in address */
+	if (GNKSA_OK != gnksa_check_from(from_name + 6)) { /* error in address */
 		error_message (_(txt_invalid_from), from_name + 6);
 		fclose (fp);
 		return ret_code;
@@ -406,7 +405,7 @@ submit_news_file (
 			if (prompt_yn(cLINES, _(txt_post_via_builtin_inews), TRUE)) {
 				ret_code = submit_inews (name, a_message_id);
 				if (ret_code) {
-					if (prompt_yn(cLINES, _(txt_post_via_builtin_inews_only), TRUE)==1)
+					if (prompt_yn(cLINES, _(txt_post_via_builtin_inews_only), TRUE) == 1)
 						strcpy(tinrc.inews_prog,"--internal");
 				}
 			}
@@ -428,7 +427,8 @@ submit_news_file (
  *               -2 = error (no '.' and/or '@' in Sender)
  */
 #if defined(NNTP_INEWS) && !defined(FORGERY)
-static int sender_needed (
+static int
+sender_needed (
 	char *from,
 	char *sender)
 {
@@ -436,25 +436,21 @@ static int sender_needed (
 	char *sender_at_pos;
 	char *sender_dot_pos;
 	char from_addr[HEADER_LEN];
-	char from_line[HEADER_LEN];
 	char from_name[HEADER_LEN];
 	char sender_addr[HEADER_LEN];
 	char sender_line[HEADER_LEN];
 	char sender_name[HEADER_LEN];
 
-#ifdef DEBUG
-	if (debug == 2)
-		wait_message (0, "sender_needed From:=[%s]", from);
-#endif /* DEBUG */
+#	ifdef DEBUG
+	if (debug == 2) {
+		wait_message (3, "sender_needed From:=[%s]", from);
+		wait_message (3, "sender_needed Sender:=[%s]", sender);
+	}
+#	endif /* DEBUG */
 
-	snprintf (from_line, sizeof(from_line), "From: %s", from);
-	if (GNKSA_OK != gnksa_do_check_from(rfc1522_encode(from_line, FALSE) + 6, from_addr, from_name))
-		return -1;
+	/* split From: line into address & comment */
 
-#ifdef DEBUG
-	if (debug == 2)
-		wait_message (0, "sender_needed Sender:=[%s]", sender);
-#endif /* DEBUG */
+	gnksa_do_check_from(from, from_addr, from_name);
 
 	snprintf (sender_line, sizeof(sender_line), "Sender: %s", sender);
 	if (GNKSA_OK != gnksa_do_check_from(rfc1522_encode(sender_line, FALSE) + 8, sender_addr, sender_name))

@@ -6,7 +6,7 @@
  *  Updated   : 2001-11-10
  *  Notes     : This file contains key mapping routines and variables.
  *
- * Copyright (c) 2000-2001 Dirk Nimmich <nimmich@uni-muenster.de>
+ * Copyright (c) 2000-2002 Dirk Nimmich <nimmich@uni-muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -928,23 +928,23 @@ read_keymap_file (
 		if ((ptr = strchr (map, '.')))
 				*ptr = '\0';
 		snprintf(buff, sizeof(buff) - 1, "%s/.tin/keymap.%s", ptr2, map);
-		if (strfpath (buff, buf, sizeof(buf), &CURR_GROUP))
+		if (strfpath (buff, buf, sizeof(buf), NULL))
 			fp = fopen (buf, "r");
 	}
 	if (!fp) {
 		snprintf(buff, sizeof(buff) - 1, "%s/.tin/keymap", ptr2);
-		if (strfpath (buff, buf, sizeof(buf), &CURR_GROUP))
+		if (strfpath (buff, buf, sizeof(buf), NULL))
 			fp = fopen (buf, "r");
 	}
 #ifdef TIN_DEFAULTS_DIR
 	if (strlen(map) && !fp) {
 		snprintf(buff, sizeof(buff) - 1, "%s/keymap.%s", TIN_DEFAULTS_DIR, map);
-		if (strfpath (buff, buf, sizeof(buf), &CURR_GROUP))
+		if (strfpath (buff, buf, sizeof(buf), NULL))
 			fp = fopen (buf, "r");
 	}
 	if (!fp) {
 		snprintf(buff, sizeof(buff) - 1, "%s/keymap", TIN_DEFAULTS_DIR);
-		if (strfpath (buff, buf, sizeof(buf), &CURR_GROUP))
+		if (strfpath (buff, buf, sizeof(buf), NULL))
 			fp = fopen (buf, "r");
 	}
 #endif /* TIN_DEFAULTS_DIR */

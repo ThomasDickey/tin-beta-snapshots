@@ -5,7 +5,7 @@
  *  Created   : 1997-03-10
  *  Updated   : 1997-03-19
  *
- * Copyright (c) 1997-2001 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2002 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,6 +83,7 @@ get_host_name (
 
 #ifdef DOMAIN_NAME
 /* find domainname - check DOMAIN_NAME */
+/* TODO: check /etc/defaultdomain as a last resort? */
 const char *
 get_domain_name (
 	void)
@@ -140,7 +141,7 @@ static const char *domain_name_hack = DOMAIN_NAME;
 
 #ifdef HAVE_GETHOSTBYNAME
 #	define MAXLINELEN   1024
-#	define WS	" \f\n\r\t\v"
+#	define WS	" \f\t\v"
 /* find FQDN - gethostbyaddr() */
 const char *
 get_fqdn (
@@ -155,8 +156,8 @@ get_fqdn (
 
 	*fqdn = '\0';
 	domain = NULL;
-
 	name[MAXHOSTNAMELEN] = '\0';
+
 	if (host) {
 		if (strchr(host, '.'))
 			return host;
@@ -184,23 +185,36 @@ get_fqdn (
 		FILE *inf;
 
 		*fqdn = '\0';
+
 		if ((inf = fopen("/etc/resolv.conf", "r")) != NULL) {
+			char *eos;
+
 			while(fgets(line, MAXLINELEN, inf)) {
-				char *ptr;
+
+				if (line[0] == '#' || line[0] == '\n')
+					continue;
 
 				line[MAXLINELEN] = '\0';
-				ptr = strtok(line, WS);
-				if ((strncmp(ptr, "domain", 6) == 0) || (strncmp(ptr, "search", 6) == 0)) {
-					domain = strtok(NULL, WS);
-					break;
+
+				if ((eos = strpbrk(line, WS)) != NULL) {
+					int j = eos - line;
+
+					if (j) {
+						if ((strncmp(line, "domain", j) == 0) || (strncmp(line, "search", j) == 0)) {
+							domain = strtok(eos, WS);
+							break;
+						}
+					}
 				}
 			}
-			if (domain)
+			if (domain) {
+				strip_line(domain);
 				sprintf(fqdn, "%s.%s", name, domain);
+			}
+
 			fclose(inf);
 		}
 	}
-
 	return fqdn;
 }
 #endif /* HAVE_GETHOSTBYNAME */

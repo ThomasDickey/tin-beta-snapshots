@@ -6,7 +6,7 @@
  *  Updated   : 1999-11-19
  *  Notes     :
  *
- * Copyright (c) 1992-2001 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2002 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -366,7 +366,7 @@ read_newsrc_active_file (
 							sprintf(fmt, "%%ld %%ld %%ld %%%ds", NNTP_STRLEN);
 
 							if (sscanf (line, fmt, &count, &min, &max, ngname) != 4)
-								error_message(_("Invalid response to GROUP command, %s"), line); /* FIXME: -> lang.c*/
+								error_message(_("Invalid response to GROUP command, %s"), line); /* FIXME: -> lang.c */
 							if (strcmp(ngname, ngnames[index_o]) != 0)
 								error_message(_("Wrong newsgroup name in response of GROUP command, %s for %s"), line, ngnames[index_o]); /* FIXME: -> lang.c */
 							ptr = ngname;

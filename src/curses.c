@@ -37,7 +37,7 @@ t_bool have_linescroll = TRUE;	/* USE_CURSES always allows line scrolling */
 
 #ifndef ns32000
 #	undef	sinix
-#endif /* !ns32000-2001 */
+#endif /* !ns32000 */
 
 #ifdef VMS
 #	include <descrip.h>

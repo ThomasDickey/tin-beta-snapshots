@@ -6,7 +6,7 @@
  *  Updated   : 2001-07-22
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,12 +69,14 @@
 /*
  * Native Language Support.
  */
-#ifdef HAVE_LOCALE_H
-#	include <locale.h>
-#endif /* HAVE_LOCALE_H */
-#ifndef HAVE_SETLOCALE
-#	define setlocale(Category, Locale) /* empty */
-#endif /* !HAVE_SETLOCALE */
+#ifndef NO_LOCALE
+#	ifdef HAVE_LOCALE_H
+#		include <locale.h>
+#	endif /* HAVE_LOCALE_H */
+#	ifndef HAVE_SETLOCALE
+#		define setlocale(Category, Locale) /* empty */
+#	endif /* !HAVE_SETLOCALE */
+#endif /* !NO_LOCALE */
 
 #define N_(Str) Str
 
@@ -290,10 +292,6 @@ enum resizer { cNo, cYes, cRedraw };
 #	include <prototypes.h>
 #endif /* HAVE_PROTOTYPES_H */
 
-#if defined(HAVE_LOCALE_H) && !defined(NO_LOCALE)
-#	include <locale.h>
-#endif /* HAVE_LOCALE_H && !NO_LOCALE */
-
 #ifdef HAVE_SYS_UTSNAME_H
 #	include <sys/utsname.h>
 #endif /* HAVE_SYS_UTSNAME_H */
@@ -328,6 +326,10 @@ enum resizer { cNo, cYes, cRedraw };
 
 #ifdef HAVE_POLL_H
 #	include <poll.h>
+#else
+#	ifdef HAVE_SYS_POLL_H
+#		include <sys/poll.h>
+#	endif /* HAVE_SYS_POLL_H */
 #endif /* HAVE_POLL_H */
 
 /*
@@ -694,15 +696,17 @@ enum resizer { cNo, cYes, cRedraw };
  * split out ftp (only ftp allows username:passwd@, RFC 1738)?
  */
 #if 0 /* this one is ok for IPv4 */
-#	define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/]*(?::[^:@/]*)?@)?(?:[^\\W_]+(?:(?:[-.][^\\W_]+)+)?\\.[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
+#	define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/]*(?::[^:@/]*)?@)?(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
 #else	/* this one should be IPv6 safe - test me! */
-#	define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/]*(?::[^:@/]*)?@)?(?:[^\\W_]+(?:(?:[-.][^\\W_]+)+)?\\.[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:[0-9A-F]{0,4}:){1,7}[0-9A-F]{1,4}|(?:[0-9A-F]{0,4}:){1,3}(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
+#	define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/]*(?::[^:@/]*)?@)?(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:[0-9A-F]{0,4}:){1,7}[0-9A-F]{1,4}|(?:[0-9A-F]{0,4}:){1,3}(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
 #endif /* 0 */
 /*
  * case insensitive
  * check against RFC 2368
  */
-#define MAIL_REGEX	"\\b(?:mailto:(?:(?:[-\\w$.+!*'(),;/?:@&=]|(?:%[\\da-f]{2}))+))"
+/* #define MAIL_REGEX	"\\b(?:mailto:(?:(?:[-\\w$.+!*'(),;/?:@&=]|(?:%[\\da-f]{2}))+))" */
+#define MAIL_REGEX	"\\b(?:mailto:(?:[-\\w$.+!*'(),;/?:@&=]|%[\\da-f]{2})+)"
+
 /*
  * case insensitive
  */
@@ -710,7 +714,7 @@ enum resizer { cNo, cYes, cRedraw };
 /*
  * case insensitive, no implemented
  */
-#define TELNET_REGEX	"\\btelnet://(?:[^:@/]*(?::[^:@/]*)?@)?(?:[^\\W_]+(?:(?:[-.][^\\W_]+)+)?\\.[a-z]{2,6}\\.?||localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?/?"
+#define TELNET_REGEX	"\\btelnet://(?:[^:@/]*(?::[^:@/]*)?@)?(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?\\.)+[a-z]{2,6}\\.?||localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?/?"
 
 
 #define FILTER_FILE	"filter"
@@ -750,6 +754,13 @@ enum resizer { cNo, cYes, cRedraw };
 #		include <iconv.h>
 #	endif /* HAVE_ICONV_H */
 #endif /* HAVE_ICONV && !LOCAL_CHARSET */
+
+#ifdef HAVE_LANGINFO_H
+#	include <langinfo.h>
+#else
+	typedef int nl_item;
+#	define CODESET ((nl_item) 1)
+#endif /* HAVE_LANGINFO_H */
 
 #ifndef MAX
 #	define MAX(a,b)	(((a) > (b)) ? (a) : (b))
@@ -870,8 +881,10 @@ enum resizer { cNo, cYes, cRedraw };
 #define MIME_ENCODING_7BIT	3
 
 #ifdef CHARSET_CONVERSION			/* can/should do charset conversion via iconv() */
-#	define NUM_MIME_CHARSETS 29	/* # known 'outgoing' charsets */
+#	define NUM_MIME_CHARSETS 27	/* # known 'outgoing' charsets */
 #endif /* CHARSET_CONVERSION */
+
+#define NUM_MAILBOX_FORMATS 3		/* MBOX0, MBOXRD, MMDF */
 
 /*
  * Number of charset-traslation tables (iso2asci)

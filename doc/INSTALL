@@ -33,24 +33,23 @@ The following configure options and defines are documented in detail:
   --enable-lockf                          --with-metamail
   --enable-mh-mail-handling               --with-mime-default-charset
   --enable-mime-strict-charset            --with-ncurses
-  --enable-mmdf-mailer                    --with-nntp-default-server
-  --enable-nntp                           --with-nov-dir
-  --enable-nntp-only                      --with-nov-fname
-  --enable-pgp-gpg                        --with-pcre
-  --enable-piping                         --with-pgp
-  --enable-posting                        --with-pgpk
-  --enable-printing                       --with-screen
-  --enable-prototypes                     --with-shell
-  --enable-shell-escape                   --with-spooldir
-  --enable-warnings                       --with-trace
-  --enable-xhdr-xref
+  --enable-nntp                           --with-nntp-default-server
+  --enable-nntp-only                      --with-nov-dir
+  --enable-pgp-gpg                        --with-nov-fname
+  --enable-piping                         --with-pcre
+  --enable-posting                        --with-pgp
+  --enable-printing                       --with-pgpk
+  --enable-prototypes                     --with-screen
+  --enable-shell-escape                   --with-shell
+  --enable-warnings                       --with-spooldir
+  --enable-xhdr-xref                      --with-trace
 
   ENFORCE_RFC1034                         NNTP_SERVER_FILE
   EVIL_INSIDE                             PROFILE
-  FORGERY                                 REQUIRE_BRACKETS_IN_DOMAIN_LITERAL
-  HAVE_LIBUU                              SMALL_MEMORY_MACHINE
-  HAVE_UUDEVIEW_H                         THREAD_SUM
-  NETLIBS                                 THREAD_WEIGHT
+  FOLLOW_USEFOR_DRAFT                     REQUIRE_BRACKETS_IN_DOMAIN_LITERAL
+  FORGERY                                 SMALL_MEMORY_MACHINE
+  HAVE_LIBUU                              THREAD_SUM
+  HAVE_UUDEVIEW_H                         THREAD_WEIGHT
   NNTP_INEWS                              USE_CANLOCK
 
 Not yet documented configure options and defines:
@@ -62,11 +61,11 @@ TIN related:
   --enable-nls                            --with-socks5
   --with-catgets                          --with-sum
 
-  DEBUG                                   MATCH_TAR_PATTERN
-  DEBUG_NEWSRC                            NEW_HASH_METHOD
-  DEBUG_NEWSRC_FIXME                      OPTIMIZE_JUST_STAR
-  DEBUG_REFS (see doc/DEBUG_REFS)         REREAD_ACTIVE_FILE_SECS
-  JUST_TESTING
+  DEBUG                                   JUST_TESTING
+  DEBUG_NEWSRC                            MATCH_TAR_PATTERN
+  DEBUG_NEWSRC_FIXME                      NEW_HASH_METHOD
+  DEBUG_REFS (see doc/DEBUG_REFS)         OPTIMIZE_JUST_STAR
+  HAVE_UUDECODE                           REREAD_ACTIVE_FILE_SECS
 
 System related:
   --bindir                                --oldincludedir
@@ -92,9 +91,9 @@ If the first letter of the string is a '/' the gateway name will be read from
 the specified file.
 
 Example: If you are on machine 'tragic' at network domain 'confusion.com',
-Tin will assume your From: line should read "user@tragic.confusion.com".  If
+Tin will assume your From: line should read "user@tragic.confusion.com". If
 your inews script instead rewrites your address as "user@confusion.com", you
-will be unable to cancel your own postings.  To make your posts and cancels
+will be unable to cancel your own postings. To make your posts and cancels
 work properly, configure using --with-domain-name="confusion.com".
 
 General Notes on Building Tin
@@ -150,7 +149,7 @@ Testing Tin
 -----------
 
 Of course you _were_ going to test it before installing it for anyone else
-to use, weren't you?  This is just a little reminder and some suggestions
+to use, weren't you? This is just a little reminder and some suggestions
 on what to test first, and where to look first if it's broken.
 
 Things to test:
@@ -158,8 +157,8 @@ Things to test:
 1) Check that you can read news from several local and world-wide groups.
    If this fails, check that the NNTP define directives are correctly set,
    and for local news systems, that the News directory structure define
-   directives are correctly set.  For NNTP versions, check that the server is
-   actually running and can be connected to from your machine.  This should
+   directives are correctly set. For NNTP versions, check that the server is
+   actually running and can be connected to from your machine. This should
    help you find and fix some of the most common problems.
 
    If reading news works fine, then:
@@ -174,10 +173,10 @@ Things to test:
 
    If posting news works fine, then:
 
-3) Check that you can cancel one of your test postings.  If not, it is
+3) Check that you can cancel one of your test postings. If not, it is
    almost certain that your News machine defines need to be set correctly,
    because Tin thinks your From: line is different from what has actually
-   been posted.  See the section on News machine names above and below.
+   been posted. See the section on News machine names above and below.
 
 Further testing is desirable, but left to your individual conscience and
 ingenuity.
@@ -271,9 +270,9 @@ If disabled, don't allow using XHDR XREF if XOVER doesn't work to mark
 crossposted articles as read in all groups.
 
 The following options determine which locking method should be used when
-appending posted or postponed messages to mailbox-style files.  Tin will
-try each method that can be configured, in succession.  If none of your
-selections can be configured, tin will try each possibility anyway.  The
+appending posted or postponed messages to mailbox-style files. Tin will
+try each method that can be configured, in succession. If none of your
+selections can be configured, tin will try each possibility anyway. The
 intent of these options is to prevent particular locking methods from
 being configured into the executable.
 
@@ -294,16 +293,13 @@ time they use tin.
 NNTP_SERVER_FILE (default: /etc/nntpserver, on Amiga: uulib:nntpserver)
 Only define if your NNTP-server file is other than /etc/nntpserver.
 
-NETLIBS (default: empty)
-Contains the networking libraries needed to link with nntplib.o file.
-
 
 Options to set some default values
 ----------------------------------
 
 --with-shell=PROG (default: sh, except on BSD where csh is used)
 Define the default shell which is used if the $SHELL variable is not set,
-and the user has not defined it in their tinrc file.  Do not give the
+and the user has not defined it in their tinrc file. Do not give the
 directory as part of the program name; the configure script will look for
 it in standard locations.
 
@@ -393,23 +389,23 @@ following values:
 
 --with-screen=type (default: termcap)
 This is a simpler way (than --with-ncurses and --enable-curses) to specify the
-screen library.  If you give none of these options, the configure script will
+screen library. If you give none of these options, the configure script will
 look for the termcap or terminfo interfaces, and attempt to use the most
-appropriate one that your system supports.  The other screen types which
+appropriate one that your system supports. The other screen types which
 you may select are: curses, ncurses, ncursesw, pdcurses.
 
 --with-ncurses
-Define this if you want to link with ncurses instead of termcap.  Note:  This
+Define this if you want to link with ncurses instead of termcap. Note: This
 is required on some Linux distributions (i.e., SuSE) where there is either a
-curses or termcap library which is not ncurses.  If ncurses is installed as the
+curses or termcap library which is not ncurses. If ncurses is installed as the
 curses library, this option is usually not needed.
 
 --enable-curses (default: off)
 Enable this if you wish to use the curses screen optimizing rather than
-termcap.  This has been tested well starting with ncurses 4.1; it should work
+termcap. This has been tested well starting with ncurses 4.1; it should work
 (except for mouse support and screen resizing) with SVr4 curses (Solaris
 2.5 is known to have a bug in libc which prevents use of curses, ncurses
-works well on that platform).  To build with ncurses screen optimizing,
+works well on that platform). To build with ncurses screen optimizing,
 you must give both the --with-ncurses and --enable-curses options or
 give the --with-screen=ncurses option.
 
@@ -419,12 +415,12 @@ Can be toggled in tin by the 'I' command. Users can also set draw_arrow and
 inverse_ok variables in their tinrc to override this default.
 
 --enable-8bit-keys (default: on)
-Enable if your terminal generates 8-bit controls.  For Unix systems we
+Enable if your terminal generates 8-bit controls. For Unix systems we
 assume this may imply your arrow keys begin either with CSI (0x9b) or SS3
-(0x8f).  Most ANSI terminals generate 7-bit controls (e.g., CSI is
+(0x8f). Most ANSI terminals generate 7-bit controls (e.g., CSI is
 "<esc>["), but some such as VT220 can be configured more efficiently to
-generate 8-bit prefix codes, saving a byte per control sequence.  This
-applies to cursor movement at the same time.  The actual codes are read
+generate 8-bit prefix codes, saving a byte per control sequence. This
+applies to cursor movement at the same time. The actual codes are read
 from termcap (this does not affect the curses configuration).
 
 
@@ -432,7 +428,7 @@ Feature options
 ---------------
 
 --enable-color (default: on)
-Enable if you want to have ANSI-color support.  This works on most color
+Enable if you want to have ANSI-color support. This works on most color
 displays and the color xterm. The color mode can be switched on/off in
 ~/.tin/tinrc (use_color) and can be toggled with option -a or key '&'.
 
@@ -443,28 +439,28 @@ systems!
 
 --with-pcre[=PATH] (default: bundled copy of pcre)
 Define if you wish to use an externally-installed copy of PCRE
-(Perl-compatible regular expressions).  If you specify a PATH, it should
+(Perl-compatible regular expressions). If you specify a PATH, it should
 be the root of a directory containing the include- and lib-directories
-where PCRE is installed.  If you do not specify a PATH, the makefile
-will use the standard locations for this library.  Tin will build with
+where PCRE is installed. If you do not specify a PATH, the makefile
+will use the standard locations for this library. Tin will build with
 PCRE 2.08 and later.
 
 --with-pgp=PATH (default: from system $PATH)
 Define if you have PGP-2 (Pretty Good Privacy encryption system)
 installed and want the option of checking signatures, extract keys,
-sign messages and add public key to messages.  This is bound to the
+sign messages and add public key to messages. This is bound to the
 key 'g' or '^G'. Say --without-pgp if you don't want pgp-2 support.
 
 --with-pgpk=PATH (default: from system $PATH)
 Define if you have PGP-5 (Pretty Good Privacy encryption system)
 installed and want the option of checking signatures, extract keys,
-sign messages and add public key to messages.  This is bound to the
+sign messages and add public key to messages. This is bound to the
 key 'g' or '^G'. Say --without-pgpk if you don't want pgp-5 support.
 
 --with-gpg=PATH (default: from system $PATH)
 Define if you have GPG (GNU Privacy Guard encryption system)
 installed and want the option of checking signatures, extract keys,
-sign messages and add public key to messages.  This is bound to the
+sign messages and add public key to messages. This is bound to the
 key 'g' or '^G'. Say --without-gpg if you don't want gpg support.
 
 --with-ispell=PATH (default: set automatically)
@@ -516,23 +512,13 @@ yet fully implemented. You can expect errors if you use this option so let
 me know the problems by sending me a bug report ('R' bug command from
 within tin). See doc/reading-mail.txt for further information.
 
---enable-mmdf-mailer (default: off, except on SCO Unix)
-If enabled, MMDF type mail handling is used as the default (instead of
-mbox format). On SCO Unix this is always the case, no matter what you use
-here. It can be dynamically changed by setting the tinrc variable
-save_to_mmdf_mailbox to ON or OFF, respectively.
-
-[NOTE: To change the default behaviour on SCO Unix, have a look to
- include/tin.h and search for HAVE_MMDF_MAILER.]
-
 HAVE_LIBUU (default: set automatically)
 HAVE_UUDEVIEW_H (default: set automatically)
 Define *both* if you want to use libuu for uudecoding and collecting
 multipart binary articles (libuu is part of uudeview, which can be found at
-<http://zeus.informatik.uni-frankfurt.de/~fp/uudeview/>). libuu must be
-somewhere in the library paths, uudeview.h somewhere in the include paths
-when compiling. If they are found there by configure, these defines are set
-automatically.
+<http://www.fpx.de/fp/Software/UUDeview/>). libuu must be somewhere in the
+library paths, uudeview.h somewhere in the include paths when compiling. If
+they are found there by configure, these defines are set automatically.
 
 
 Debug/test options
@@ -548,7 +534,7 @@ all debug info. Debug files written to /tmp are ARTS, ACTIVE, BASE and
 NNTP.
 
 --with-trace (default: off)
-Trace data which is formatted and written to the screen.  Use this to debug
+Trace data which is formatted and written to the screen. Use this to debug
 changes to the curses or termcap interfaces.
 
 --with-dmalloc (default: off)
@@ -579,9 +565,9 @@ encoded words and are longer than 76 characters.
 
 FORGERY (default: not set)
 Define if you want to be able to cancel postings you did not write
-yourself.  The !cyberspam and cancel conventions are supported.  Be
+yourself. The !cyberspam and cancel conventions are supported. Be
 careful with this feature, it should not be used in an free accessible
-tin.  This feature does not work with INN using the INN-inews (when
+tin. This feature does not work with INN using the INN-inews (when
 using without NNTP), because INN-inews rejects these cancels.
 
 ENFORCE_RFC1034
@@ -608,44 +594,48 @@ USE_CANLOCK
 turn on cancel-locks, you need to compile libcanlock first by running
 ./Build in the libcanlock dir
 
-HAVE_MBOXRD
-quote quoted and plain From_ lines in the body. mboxo is more common.
-
+FOLLOW_USEFOR_DRAFT
+issue a warning instead of an error-message if Newsgroups: or
+Followup-To:-header contains spaces, newlines or tabs.
 
 Compiled & installed on the following machines:
 -----------------------------------------------
 alphaev6-unknown-linux-gnu  (glibc 2.2.0)  gcc 2.95.2    (1.5.9 release 20010723)          <urs@tin.org>
 alphaev67-unknown-linux-gnu (glibc 2.1.3)  gcc 2.95.3    (1.5.9 release 20010723)          <urs@tin.org>
-armv4l-unknown-linux-gnu    (glibc 2.1.2)  gcc 2.95.1    (1.5.9 release 20010723)          <urs@tin.org>
+armv4l-unknown-linux-gnu    (glibc 2.2.3)  gcc 2.95.3    (1.5.11 release 20020130)         <urs@tin.org>
+hppa1.1-unknown-linux-gnu   (glibc 2.2.4)  gcc 3.0.3     (1.5.11 release 20020130)         <urs@tin.org>
 i486-pc-linux-gnulibc1      (libc 5.4.33)  gcc 2.7.2.1   (1.4.0 release 19991113)          <urs@tin.org>
 i486-pc-linux-gnuoldld      (libc 4.5.26)  gcc 2.5.8     (1.4.5 release 20010409)          <dennis@pcde.inka.de>
-i586-pc-linux-gnu           (glibc 2.2.2)  gcc 2.95.3    (1.5.9 release 20010723)          <urs@tin.org>
+i586-pc-linux-gnu           (glibc 2.2.5)  gcc 2.95.3    (1.5.11 release 20020130)          <urs@tin.org>
 i586-pc-linux-gnu           (glibc 2.0.7)  tcc 4.1.2     (1.4.0 release 19991113)   [3]    <urs@tin.org>
 i586-pc-linux-gnu           (glibc 2.1.1)  lcc 4.27      (1.4.0 release 19991113)   [3][4] <urs@tin.org>
 i586-pc-linux-gnu           (glibc 2.1.1)  fcc 1.0       (1.5.1 release 20000103)          <urs@tin.org>
-i686-pc-linux-gnu           (glibc 2.2.2)  gcc 3.0.2     (1.5.10 release 20011117)         <urs@tin.org>
+i686-pc-linux-gnu           (glibc 2.2.4)  gcc 3.0.4     (1.5.11 release 20020130)         <urs@tin.org>
+i686-pc-linux-gnu           (glibc 2.2.4)  icc 5.0.1     (1.5.11 release 20020130)         <urs@tin.org>
 ia64-unknown-linux          (glibc 2.2.0)  sgicc 0.01.0  (1.5.8 release 20010221)          <urs@tin.org>
-ia64-unknown-linux          (glibc 2.2.3)  gcc 2.96-ia64 (1.5.8 release 20010221)          <urs@tin.org>
+ia64-unknown-linux          (glibc 2.2.2)  gcc 3.0       (1.5.11 release 20020130)         <urs@tin.org>
+ia64-unknown-linux          (glibc 2.2.2)  ecc 5.0.1     (1.5.11 release 20020130)         <urs@tin.org>
+m68k-unknown-linux-gnu      (glibc 2.1.3)  gcc 2.95.2    (1.4.5 release 20010409)          <st.weichert@gmx.de>
 mipsel-unknown-linux-gnu    (glibc 2.0.7)  gcc 2.7.2     (1.4.0 release 19991113)          <urs@tin.org>
 powerpc-unknown-linux-gnu   (glibc 2.1.3)  gcc 2.95.2    (1.5.6 release 20000803)          <urs@tin.org>
 s390-ibm-linux              (glibc 2.1.3)  gcc 2.95.2    (1.5.9 release 20010723)          <urs@tin.org>
-sparc-unknown-linux-gnu     (glibc 2.0.1)  gcc 2.7.2.3   (1.4.0 release 19991113)          <urs@tin.org>
+sparc-unknown-linux-gnu     (glibc 2.2.4)  gcc 2.95.3    (1.5.10 release 20011117)         <urs@tin.org>
 
-alpha-unknown-netbsd1.5                    egcs 2.91.66  (1.5.9 release 20010723)          <urs@tin.org>
-alphaev6-unknown-netbsd1.5
+alpha-unknown-netbsd1.5.2                  egcs 2.91.66  (1.5.11 release 20020130)         <urs@tin.org>
 i386-unknown-netbsd1.4.1                   egcs 2.91.60  (1.5.1 release 20000103)          <urs@tin.org>
 i386-unknown-netbsdelf1.5                  egcs-2.91.66  (1.5.9 release 20010723)          <urs@tin.org>
 m68k-cbm-netbsd1.4                         egcs 2.91.60  (pre-1.4 release 19990927)        <rhoenie@many.de>
 vax-unknown-netbsd1.4M                     egcs 2.91.60  (pre-1.4 release 19990927)        <laura@tin.org>
 
-alpha-unknown-freebsd4.3                   gcc 2.95.3    (1.5.9 release 20010723)          <urs@tin.org>
-alphaev67-unknown-freebsd4.3
+alpha-unknown-freebsd4.5                   gcc 2.95.3    (1.5.11 release 20020130)         <urs@tin.org>
 i386-unknown-freebsd2.2                    gcc 2.7.2.1   (1.5.6 release 20000803)   [7]    <urs@tin.org>
 i386-unknown-freebsd3.1                    gcc 2.7.2.1   (pre-1.4 release 19990927)        <goose@muffin.org>
 i386-unknown-freebsd3.2                    egcs 2.91.60  (pre-1.4 release 19990927)        <goose@muffin.org>
-i386-unknown-freebsd4.3                    gcc 2.95.3    (1.5.9 release 20010723)          <urs@tin.org>
+i386-unknown-freebsd4.4                    gcc 2.95.3    (1.5.11 release 20020130)         <urs@tin.org>
 
+alpha-unknown-openbsd3.0                   gcc 2.95.3    (1.5.10 release 20011117)         <urs@tin.org>
 i386-unknown-openbsd2.7                    gcc 2.95.2    (1.4.4 release 20000803)          <ry04@rz.uni-karlsruhe.de>
+i386-unknown-openbsd3.0                    gcc 2.95.3    (1.5.11 release 20020130)         <urs@tin.org>
 
 m68k-sun-sunos4.1.1                        gcc 2.7.2.2   (pre-1.4 release 981002)          <urs@tin.org>
 sparc-sun-sunos4.1.3                       gcc 2.6.0     (pre-1.4 release 19990927)        <andy@tin.org>
@@ -670,8 +660,10 @@ alphaev6-dec-osf4.0f                       gcc 2.95.2    (1.5.3 release 20000221
 alphaev6-dec-osf5.0                        cc 6.3-126    (1.5.6 release 20000803)          <urs@tin.org>
 alphaev6-dec-osf5.1                        cc 6.3-126    (1.5.6 release 20000803)          <urs@tin.org>
 alphaev67-dec-osf5.1                       cc 6.4-212    (1.5.9 release 20010723)          <urs@tin.org>
+alphaev67-dec-osf5.1                       gcc 3.0.1     (1.5.11 release 20020130)         <urs@tin.org>
 
 powerpc-ibm-aix4.3.1.0                     egcs 2.91.60  (pre-1.4 release 19990927)        <rhoenie@mayn.de>
+powerpc-ibm-aix4.3.3.0                     gcc 2.95.3    (1.5.10 release 20011117)         <nils@bissingstrasse36.de>
 rs6000-ibm-aix3.2.5                        xlc 1.3       (pre-1.4 release 19990927)        <andy@tin.org>
 rs6000-ibm-aix4.1.5.0                      xlc 3.1       (1.4.0 release 19991113)          <andy@tin.org>
 rs6000-ibm-aix4.1.5.0                      gcc 2.8.1     (pre-1.4 release 19990927)        <andy@tin.org>
@@ -695,11 +687,12 @@ i686-pc-cygwin              (Cygwin 1.1.6) gcc 2.95.2    (1.5.8 release 20010221
 
 powerpc-apple-rhapsody5.6                  gcc 2.7.2.3   (1.5.4 release 20000523)   [5]    <bkuemmer@gmx.net>
 
+powerpc-apple-darwin1.3                    gcc 2.95.2    (1.4.5 release 20010409)          <ventora-public@gmx.de>
 powerpc-apple-darwin1.3.7                  gcc 2.95.2    (1.5.9 release 20010723)          <urs@tin.org>
 
 i386-unknown-gnu0.2                        gcc 2.95.3    (1.5.9 release 20010723)          <urs@tin.org>
 
-x86-pc-nto-qnx                             gcc 2.95.2    (1.5.9 release 20010723)          <urs@tin.org>
+i386-pc-nto-qnx                            gcc 2.95.2    (1.5.9 release 20010723)          <urs@tin.org>
 
 [i586-pc-beos                              gcc 2.9-beos  (1.5.9 release 20010723)   [8][9] <urs@tin.org>]
 

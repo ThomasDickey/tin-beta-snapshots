@@ -415,7 +415,7 @@ get_tcp_socket (
 #			endif /* HAVE_GETSERVBYNAME */
 
 	/* If not a raw ip address, try nameserver */
-	if (!isdigit((unsigned char)*machine) ||
+	if (!isdigit((unsigned char) *machine) ||
 #			ifdef HAVE_INET_ATON
 	    !inet_aton(machine, &defaddr)
 #			else
@@ -838,7 +838,7 @@ get_server (
 	while (nntp_rd_fp == NULL || s_gets (string, size, nntp_rd_fp) == (char *) 0) {
 
 #		ifdef DEBUG
-		if (errno != 0 && errno != EINTR)	/*	I'm sure this will only confuse end users*/
+		if (errno != 0 && errno != EINTR)	/* I'm sure this will only confuse end users */
 			perror_message("get_server()");
 #		endif /* DEBUG */
 

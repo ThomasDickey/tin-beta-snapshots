@@ -9,7 +9,7 @@
  *              and the name of the newsrc file for a given
  *              alias of the server.
  *
- * Copyright (c) 1996-2001 Sven Paulus <sven@tin.org>
+ * Copyright (c) 1996-2002 Sven Paulus <sven@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -170,7 +170,7 @@ get_newsrcname (
 			char tmp_newsrc[PATH_LEN];
 			int error = 0;
 
-			if (!strfpath (name_found, tmp_newsrc, sizeof (tmp_newsrc), &CURR_GROUP)) {
+			if (!strfpath (name_found, tmp_newsrc, sizeof (tmp_newsrc), NULL)) {
 					my_fprintf (stderr, _("couldn't expand %s\n"), name_found);
 					error = 1;
 			} else {

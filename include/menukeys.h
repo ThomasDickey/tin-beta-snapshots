@@ -6,7 +6,7 @@
  *  Updated   : 1995-12-21; 2000-06-10, Dirk Nimmich
  *  Notes     :
  *
- * Copyright (c) 1994-2001 Steve Robbins <stever@cs.mcgill.ca>
+ * Copyright (c) 1994-2002 Steve Robbins <stever@cs.mcgill.ca>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

@@ -1,12 +1,86 @@
--- 1.5.11 release 20011225 "" --
+-- 1.5.12 release 20020227 "" --
+
+U094) Dirk Nimmich <nimmich@muenster.de>
+      BUG. didn't ignore \r after softbreaks in qp-articles
+      FIX. cook.c
+
+U093) Philip Paeps <philip@paeps.cx>
+      Urs Janssen <urs@tin.org>
+      ADD. configure check for strcasestr
+      FIX. configure[.in], autoconf.h[in], proto.h, string.c
+
+U092) Toomas Soome <tsoome@ut.ee>
+      BUG. get_fqdn() might return a domainname with a tailing \n
+      FIX. header.c
+
+U091) Andreas Metzler <tin-dev@downhill.at.eu.org>
+      BUG. mail_to_author() ignores current group (needed for attributes)
+      BUG. overlong translation in filtermenu
+      BUG. unnecessary rfc1522_encode()-calls
+      BUG. typo in CA_ERROR_MISSING_NEWSGROUPS error-message
+      ADD. some missing german translations
+      REM. $SPAMTRAP
+      FIX. inews.c, lang.c, post.c, de.po, en_GB.po, et.po, TODO, tin.1
+
+U090) Olaf Dietrich <olaf@dtrx.de>
+      ADD. ignore MIME_STRICT_CHARSET if iconv(3) is available
+      ADD. new ^L-handling
+      BUG. decode_save_one() didn't honor MIME_STRICT_CHARSET
+      FIX. proto.h, cook.c, page.c, rfc2047.c, search.c, tin.1
+
+U089) Urs Janssen <urs@tin.org>
+      ADD. moved some var-declarations out of loops
+      ADD. config.guess, config.sub update
+      ADD. "No match"-message for unsuccessful-body searches
+      ADD. check for sys/pool.h
+      ADD. tinrc.mailbox_format
+      ADD. mmdf(5)-man page
+      ADD. new TLDs .coop and .aero
+      ADD. install rtin-man page
+      ADD. automatically set mm_local_charset to current local charset
+      REM. obsolete TLD .zr, .fx, and .uucp
+      REM. --enable-mmdf-mailer, HAVE_MBOXRD, save_to_mmdf_mailbox
+      REM. check for OK_NOIHAVE, OK_NOPOSTIHAVE responses to MODE READER,
+           they are no loner mentioned in the draft
+      BUG. p'^O'st postponed articles didn't respect attributes
+      BUG. $EDITOR had higher priority as $VISUAL (introduced in 006;
+           never trust your local guru!)
+      BUG. strfpath()-called with uninitialized group-pointer
+      BUG. possible bufferoverruns due to missing string-termination
+      FIX. Makefile, Makefile.in, configure[.in], autoconf.h[in], extern.h
+           policy.h, proto.h, tin.h, tinrc.h, art.c, config.c, cook.c, init.c
+           keymap.c, lang.c, langinfo.c, mimetypes.c, misc.c, nrctbl.c, open.c
+           page.c, post.c, refs.c, rfc1524.c, rfc2045.c, rfc2046.c, save.c
+           tags.c, tincfg.tbl, mbox.5, mmdf.5, tin.1, tin.5, config.guess
+           config.sub
+
+-- 1.5.11 release 20020130 "Toxicity" --
+
+U088) Toomas Soome <tsoome@ut.ee>
+      ADD. updated Estonian translation
+      FIX. et.po
+
+U087) Olaf Dietrich <olaf@dtrx.de>
+      BUG. a resync after reread_active_file_secs in 'y'ank in all-state
+           groups didn't change yank_in_active_file.
+      BUG. runtime change of post_mime_encoding might garble next posting
+      ADD. use cooked art instead of raw for supersedes/reposts
+      FIX. post.c, rfc2045.c, select.c
+
+U086) Martin Klaiber <martinkl@zedat.fu-berlin.de>
+      BUG. missing sort_base() call
+      FIX. art.c
 
 U085) Andreas Metzler <tin-dev@downhill.at.eu.org>
       ADD. docu update
       REM. $TEX2ISO env-var
       ADD. tex2iso_cov menu/tinrc/attributes-item
+      BUG. gpg didn't append pub.key
+      ADD. allow user specified wildcard-mailcaps to override
+           system wide-exact ones
       FIX. INSTALL, TODO, tin.1, tin.5, tin.defaults, extern.h, tin.h, tinrc.h
-           attrib.c, config.c, cook.c, init.c, lang.c, page.c, rfc2046.c
-           tincfg.tbl, de.po, en_GB.po, et.po, tin.pot
+           attrib.c, config.c, cook.c, init.c, lang.c, page.c, pgp.c
+           rfc1524.c, rfc2046.c, tincfg.tbl, de.po, en_GB.po, et.po, tin.pot
 
 U084) Sven Hartge <hartge@ds9.argh.org>
       Andreas Metzler <tin-dev@downhill.at.eu.org>
@@ -14,15 +88,28 @@ U084) Sven Hartge <hartge@ds9.argh.org>
       FIX. de.po
 
 U083) Urs Janssen <urs@tin.org>
-      ADD. updated pcre (3.7 -> 3.8)
+      ADD. updated pcre (3.7 -> 3.9)
       ADD. config.guess, config.sub update
-      ADD. '<', '(', ')', ':' as NEWS_REGEX 'terminator'
-      BUG. possible buffer overrun and emtpy pgp-address
+      ADD. improved NEWS_REGEX and URL_REGEXP, simplified MAIL_REGEX
+      ADD. FOLLOW_USEFOR_DRAFT (see doc/INSTALL)
+      ADD. skip comments in resolv.conf
+      ADD. allow --with-pcre without argument to take the lib from
+           system-path
+      ADD. minor code cleanup (removed some unused vars, added missing
+           ifdefs, ...)
+      REM. ISO-8859-6 and ISO-8859-8 from possible mm_network_charsets
+      BUG. missing initialization of mailcaps[]
+      BUG. possible buffer overrun and empty pgp-address
       BUG. missing screen redraw after supersede
       BUG. possible dereferenced pointer (network_charset)
-      BUG. fixed some typos
-      FIX. config.guess, config.sub, tin.h, lang.c, misc.c, pgp.c, post.c
-           version.sh, tin.1, tin.5, pcre.c, pcretest.c, *.po
+      BUG. fixed some typos, reformated po-files
+      BUG. mailing_list attribute was ignored on no posting servers in page
+           level
+      FIX. config.guess, config.sub, Makefile, extern.h, tin.h, art.c
+           charset.c, config.c, cook.c, feed.c, filter.c, header.c, lang.c
+           main.c, misc.c, page.c, pgp.c, post.c, rfc1524.c, rfc2047.c
+           search.c, version.sh, tin.1, tin.5, pcre.c, pcretest.c, aclocal.m4
+           *.po
 
 U082) Mark Trumbull <mjt@pipedreaminteractive.com>
       BUG. multipart threading sometimes joins threads which don't belong
@@ -49,7 +136,7 @@ U079) Andreas Metzler <tin-dev@downhill.at.eu.org>
       BUG. missing localization of some 'M'enu items
       FIX. proto.h, config.c, filter.c, lang.c, prompt.c, de.po
 
- 036) Dirk Nimmich <nimmich@uni-muenster.de>
+ 036) Dirk Nimmich <nimmich@muenster.de>
       BUG. base64 encoding was broken
       FIX. rfc2045.c
 
@@ -63,7 +150,7 @@ U078) Thomas E. Dickey <dickey@invisible-island.net>
            config.c, help.c, init.c, keymap.c, lang.c, makecfg.c, misc.c
            save.c, thread.c, tincfg.tbl, pcre/*
 
-U077) Dirk Nimmich <nimmich@uni-muenster.de>
+U077) Dirk Nimmich <nimmich@muenster.de>
       BUG. '^H' was handled as a physical backspace
       BUG. duplicate addresses when displaying recipient addresses
       BUG. duplicate Cc and Bcc addresses when mailing to yourself and
@@ -85,7 +172,7 @@ U076) Andreas Metzler <tin-dev@downhill.at.eu.org>
            init.c, lang.c, post.c, sigfile.c, tincfg.tbl
 
 U075) Randy Scott <scottr9@yahoo.com>
-      ADD. turned percent progressmeter into a timer
+      ADD. turned percent progress meter into a timer
       FIX. screen.c
 
  035) Stephan Kulow <coolo@caldera.de>
@@ -94,7 +181,7 @@ U075) Randy Scott <scottr9@yahoo.com>
 
 U074) Yury July <july@july.stealth.ru>
       Timur Maryin <tima@east.ru>
-      BUG. adddate destroys $LC_ALL/$LC_TIME
+      BUG. add-date destroys $LC_ALL/$LC_TIME
       FIX. post.c
 
 U073) Urs Janssen <urs@tin.org>
@@ -103,8 +190,8 @@ U073) Urs Janssen <urs@tin.org>
       FIX. misc.c
 
 U072) Joseph Parmelee <jparmele@wildbear.com>
-      ADD. made 'S' and 's' (in conjuntion with delete_tmp_files and/or
-           post_proc_type) more consisten. 'S' now only does postprocessing
+      ADD. made 'S' and 's' (in conjunction with delete_tmp_files and/or
+           post_proc_type) more consistent. 'S' now only does postprocessing
            if told to and 's' now prompts for tmp-file deletion if
            delete_tmp_files is set.
       FIX. feed.c, save.c
@@ -133,7 +220,7 @@ U071) Urs Janssen <urs@tin.org>
       ADD. w2r.pl and opt-case.pl man-pages
       BUG. nls didn't work
       BUG. shell detection failed in some cases
-      BUG. make install_manpge didn't create $(DESTDIR)$(INS_MANUAL_DIR)5
+      BUG. make install_manpage didn't create $(DESTDIR)$(INS_MANUAL_DIR)5
            if needed
       FIX. tin.1, tin.5, config.guess, config.sub, Makefile[.in], aclocal.m4
            configure[.in], autoconf.h[in], tincfg.tbl, extern.h, proto.h
@@ -196,7 +283,7 @@ U064) Kazushi Marukawa <jam@pobox.com>
       BUG. empty random organization file could crash tin
       FIX. misc.c
 
-U063) Dirk Nimmich <nimmich@uni-muenster.de>
+U063) Dirk Nimmich <nimmich@muenster.de>
       BUG. article with 0 lines in cooked body quits tin
       BUG. automatic unfolding of headers is not always desired
       BUG. posting of folded headers was impossible
@@ -220,7 +307,7 @@ U062) Martin Klaiber <martinkl@zedat.fu-berlin.de>
            filter.c, init.c, lang.c, refs.c, screen.c, tincfg.tbl
 
 U061) Andreas Metzler <tin-dev@downhill.at.eu.org>
-      Dirk Nimmich <nimmich@uni-muenster.de>
+      Dirk Nimmich <nimmich@muenster.de>
       ADD. Message-ID (if known) to filter-file
       ADD. Message-ID (if known) to posted_articles_file
       ADD. Date to posted_articles_file
@@ -228,7 +315,7 @@ U061) Andreas Metzler <tin-dev@downhill.at.eu.org>
            posted_articles_file
       FIX. TODO, proto.h, filter.c, post.c
 
-U060) Dirk Nimmich <nimmich@uni-muenster.de>
+U060) Dirk Nimmich <nimmich@muenster.de>
       Nickolay Dudorov <nnd@wint.itfs.nsk.su>
       BUG. some environment variables could be destroyed
       FIX. keymap.c
@@ -260,12 +347,12 @@ U059) Urs Janssen <urs@tin.org>
       ADD. recognize IPv6 http:, ftp: and gopher: URLs
       ADD. config.guess, config.sub, install.sh update
       ADD. (dot-)file locking routines
-      ADD. portable uniq tmpfile generation
+      ADD. portable unique tmpfile generation
       ADD. tmpfile() fall back
       ADD. strrstr() fall back
       ADD. THREAD_WEIGHT
       ADD. made some vars static
-      ADD. check for missing/duplictaed From: line befor posting
+      ADD. check for missing/duplicated From: line before posting
       ADD. minor code cleanup
       ADD. $GNUPGHOME support
       REM. "Article unchanged" prompt for postings (not mails, not reposts)
@@ -307,7 +394,7 @@ U054) Jason Faultless <jason@radar.tele2.co.uk>
       ADD. ^H wraps long lines
       FIX. page.c
 
-U053) Dirk Nimmich <nimmich@uni-muenster.de>
+U053) Dirk Nimmich <nimmich@muenster.de>
       BUG. existing tin.defaults and mime.types were not backed up when doing
            make install_sysdefs
       BUG. some config files could be trashed on a bad write
@@ -330,14 +417,14 @@ U053) Dirk Nimmich <nimmich@uni-muenster.de>
       FIX. Makefile.in, pgp.txt, extern.h, config.c, cook.c, inews.c, lang.c
            pgp.c, post.c, prompt.c, sigfile.c
 
- 031) Dirk Nimmich <nimmich@uni-muenster.de>
+ 031) Dirk Nimmich <nimmich@muenster.de>
       BUG. empty news_headers_to_[not_]display_array could cause a SIGSEGV
       BUG. changing beginner_level or show_description from the options menu
            messed up the screen
       FIX. proto.h, config.c, signal.c
 
 U052) Urs Janssen <urs@tin.org>
-      BUG. dumps core when opening a cached art which is canceled in the
+      BUG. dumps core when opening a cached art which is cancelled in the
            meantime
       BUG. update_posted_msgs_file() didn't quote From_ lines in !MMDF
            mailboxes
@@ -418,7 +505,7 @@ U047) Scott Marovich <marovich@hpl.hp.com>
       BUG. missing vars for HPs STREAMS-based network-protocol stack.
       FIX. nntplib.c
 
-U046) Dirk Nimmich <nimmich@uni-muenster.de>
+U046) Dirk Nimmich <nimmich@muenster.de>
       ADD. completed switching menus to "key=action" style
       ADD. current key mapping in mini help
       BUG. did not compile with --disable-curses
@@ -474,7 +561,7 @@ U042) Thomas E. Dickey <dickey@invisible-island.net>
       BUG. couple of problems with NLS configuration
       FIX. aclocal.m4, Makefile[.in]
 
-U041) Dirk Nimmich <nimmich@uni-muenster.de>
+U041) Dirk Nimmich <nimmich@muenster.de>
       ADD. prompt_yn prints current key bindings for PromptYes/PromptNo
       ADD. switched menus to "key=action" style
       BUG. unbound keys caused actions in several menus
@@ -514,7 +601,7 @@ U036) Toomas Soome <tsoome@ut.ee>
       ADD. updated Estonian translation
       FIX. et.po
 
-U035) Dirk Nimmich <nimmich@uni-muenster.de>
+U035) Dirk Nimmich <nimmich@muenster.de>
       Jason Faultless <jason@radar.tele2.co.uk>
       ADD. allow remapping of keys
       BUG. potential buffer overruns when saving attachments
@@ -550,11 +637,11 @@ U031) Kai Bojens <kbojens@herkules.on-luebeck.de>
       ADD. updated german translation
       FIX. de.po
 
- 024) Dirk Nimmich <nimmich@uni-muenster.de>
+ 024) Dirk Nimmich <nimmich@muenster.de>
       BUG. possible core on empty groups with out of sync overviews
       FIX. art.c
 
-U030) Dirk Nimmich <nimmich@uni-muenster.de>
+U030) Dirk Nimmich <nimmich@muenster.de>
       BUG. last line in qp-encoded arts isn't always displayed
       FIX. cook.c
 
@@ -611,7 +698,7 @@ U025) Urs Janssen <urs@tin.org>
       ADD. minor URL_REGEX, MAIL_REGEX, NEWS_REGEX improvements
       FIX. tin.h, active.c, rfc2045.c
 
-U024) Dirk Nimmich <nimmich@uni-muenster.de>
+U024) Dirk Nimmich <nimmich@muenster.de>
       BUG. didn't compile with pgp/gpg support turned on
       BUG. upper case Content-Type problem
       ADD. per-line scrolling in the pager for !USE_CURSES configurations
@@ -648,7 +735,7 @@ U022) Toomas Soome <tsoome@ut.ee>
            init.c, lang.c, main.c, nntplib.c, post.c, save.c, select.c
            thread.c, tincfg.tbl, et.po
 
-U021) Dirk Nimmich <nimmich@uni-muenster.de>
+U021) Dirk Nimmich <nimmich@muenster.de>
       BUG. decide posting type (base article (w) or followup (f)) based on
            References: (don't rely on "Re: " in Subject:)
       BUG. 'F'ollowup with Followup-To: poster quoted text when 'm'ailing
@@ -656,7 +743,7 @@ U021) Dirk Nimmich <nimmich@uni-muenster.de>
            Followup-To: poster was set and 'm'ailing the answer
       BUG. empty From:/Cc:/Bcc: line when mailing and no mail_address set
       ADD. spamtrap warning even with use_mailreader_i=ON
-      ADD. honor unlink_article when mailing, too
+      ADD. honour unlink_article when mailing, too
       ADD. warn if Subject: begins with "Re: " but there are no References:
       ADD. warn if there are References: but Subject: does not begin with
            "Re: " and does not contain "(was:"
@@ -665,7 +752,7 @@ U021) Dirk Nimmich <nimmich@uni-muenster.de>
       FIX. TODO, extern.h, proto.h, art.c, config.c, feed.c, group.c, lang.c
            main.c, misc.c, page.c, post.c, save.c, select.c
 
- 019) Dirk Nimmich <nimmich@uni-muenster.de>
+ 019) Dirk Nimmich <nimmich@muenster.de>
       BUG. don't MIME encode headers when using external mail client
            (use_mailreader_i)
       BUG. close several potential security holes (buffer overruns) in
@@ -712,7 +799,7 @@ U018) Jason Faultless <jason@radar.tele2.co.uk>
       ADD. general cleanup
       ADD. inverse highlight on config screen if draw_arrow=FALSE
       ADD. batch_save now does something
-      ADD. auto_save attribute is now honored
+      ADD. auto_save attribute is now honoured
       ADD. more intuitive handling when strip_bogus=KEEP
       BUG. 'ignore art unavailable' broken
       BUG. invalid start_line_offset in mail_bugreport()
@@ -760,7 +847,7 @@ U016) Urs Janssen <urs@tin.org>
       ADD. number of hot arts/group to verbose -Z output
       FIX. save.c
 
-U015) Dirk Nimmich <nimmich@uni-muenster.de>
+U015) Dirk Nimmich <nimmich@muenster.de>
       BUG. reconnect on QUIT is not necessary
       ADD. allow interactive authentication on startup if invoked with -A
       FIX. extern.h, auth.c lang.c, nntplib.c

@@ -6,7 +6,7 @@
  *  Updated   : 2001-11-10
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,7 @@ static void show_config_page (void);
 	static t_bool match_color (char *line, const char *pat, int *dst, int max);
 #endif /* HAVE_COLOR */
 
-enum state { IGNORE, CHECK, UPGRADE };
+enum rc_state { IGNORE, CHECK, UPGRADE };
 
 #define DASH_TO_SPACE(mark)	(mark == '_' ? ' ' : mark)
 #define SPACE_TO_DASH(mark)	(mark == ' ' ? '_' : mark)
@@ -324,7 +324,7 @@ read_config_file (
 
 			if (match_boolean (buf, "default_filter_kill_case=", &tinrc.default_filter_kill_case)) {
 				/* ON=false, OFF=true */
-				tinrc.default_filter_kill_case = !tinrc.default_filter_kill_case;
+				tinrc.default_filter_kill_case = bool_not(tinrc.default_filter_kill_case);
 				break;
 			}
 
@@ -339,7 +339,7 @@ read_config_file (
 
 			if (match_boolean (buf, "default_filter_select_case=", &tinrc.default_filter_select_case)) {
 				/* ON=false, OFF=true */
-				tinrc.default_filter_select_case = !tinrc.default_filter_select_case;
+				tinrc.default_filter_select_case = bool_not(tinrc.default_filter_select_case);
 				break;
 			}
 
@@ -494,8 +494,10 @@ read_config_file (
 				break;
 
 #ifdef CHARSET_CONVERSION
+#	if 0 /* disabled */
 			if (match_string (buf, "mm_local_charset=", tinrc.mm_local_charset, sizeof (tinrc.mm_local_charset)))
 				break;
+#	endif /* 0 */
 
 			if (match_list (buf, "mm_network_charset=", txt_mime_charsets, NUM_MIME_CHARSETS, &tinrc.mm_network_charset))
 				break;
@@ -508,6 +510,9 @@ read_config_file (
 				break;
 
 			if (match_string (buf, "mail_quote_format=", tinrc.mail_quote_format, sizeof (tinrc.mail_quote_format)))
+				break;
+
+			if (match_list (buf, "mailbox_format=", txt_mailbox_formats, NUM_MAILBOX_FORMATS, &tinrc.mailbox_format))
 				break;
 
 			break;
@@ -652,9 +657,6 @@ read_config_file (
 			if (match_boolean (buf, "show_signatures=", &tinrc.show_signatures))
 				break;
 
-			if (match_boolean (buf, "save_to_mmdf_mailbox=", &tinrc.save_to_mmdf_mailbox))
-				break;
-
 			if (match_boolean (buf, "strip_blanks=", &tinrc.strip_blanks))
 				break;
 
@@ -774,8 +776,18 @@ read_config_file (
 		tinrc.draw_arrow = TRUE;
 
 #ifdef CHARSET_CONVERSION
-	if (!*tinrc.mm_local_charset)
-		strcpy(tinrc.mm_local_charset, tinrc.mm_charset);
+	{
+		char *p;
+
+		if ((p = tin_nl_langinfo(CODESET)) != NULL) {
+			if (!strcmp(p, "ANSI_X3.4-1968"))
+				strcpy(tinrc.mm_local_charset, "US-ASCII");
+			else
+				strcpy(tinrc.mm_local_charset, p);
+		} else
+		if (!*tinrc.mm_local_charset)
+			strcpy(tinrc.mm_local_charset, tinrc.mm_charset);
+	}
 #endif /* CHARSET_CONVERSION */
 
 	return TRUE;
@@ -919,8 +931,8 @@ write_config_file (
 	fprintf (fp, _(txt_maildir.tinrc));
 	fprintf (fp, "default_maildir=%s\n\n", tinrc.maildir);
 
-	fprintf (fp, _(txt_save_to_mmdf_mailbox.tinrc));
-	fprintf (fp, "save_to_mmdf_mailbox=%s\n\n", print_boolean (tinrc.save_to_mmdf_mailbox));
+	fprintf (fp, _(txt_mailbox_format.tinrc));
+	fprintf (fp, "mailbox_format=%s\n\n", txt_mailbox_formats[tinrc.mailbox_format]);
 
 #ifndef DISABLE_PRINTING
 	fprintf (fp, _(txt_print_header.tinrc));
@@ -1170,8 +1182,10 @@ write_config_file (
 	fprintf (fp, "mm_charset=%s\n\n", tinrc.mm_charset);
 
 #ifdef CHARSET_CONVERSION
+#	if 0
 	fprintf (fp, _(txt_mm_local_charset.tinrc));
 	fprintf (fp, "mm_local_charset=%s\n\n", tinrc.mm_local_charset);
+#	endif /* 0 */
 
 	fprintf (fp, _(txt_mm_network_charset.tinrc));
 	fprintf (fp, "mm_network_charset=%s\n\n", txt_mime_charsets[tinrc.mm_network_charset]);
@@ -1255,13 +1269,15 @@ write_config_file (
 	fprintf (fp, "default_shell_command=%s\n\n", tinrc.default_shell_command);
 
 	fprintf (fp, _(txt_tinrc_newnews));
-	for (i = 0; i < num_newnews; i++) {
+	{
 		char timestring[LEN];
 
-		timestring[0] = '\0';
-		my_strftime(timestring, LEN - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(newnews[i].time)));
-		fprintf (fp, "newnews=%s %lu (%s)\n", newnews[i].host,
-								(unsigned long int) newnews[i].time, timestring);
+		for (i = 0; i < num_newnews; i++) {
+			timestring[0] = '\0';
+			my_strftime(timestring, LEN - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(newnews[i].time)));
+			fprintf (fp, "newnews=%s %lu (%s)\n", newnews[i].host,
+									(unsigned long int) newnews[i].time, timestring);
+		}
 	}
 
 	if (ferror (fp) || fclose (fp))
@@ -1539,9 +1555,12 @@ change_config_file (
 	int option, old_option;
 	int ret_code = NO_FILTERING;
 	int mime_encoding = MIME_ENCODING_7BIT;
-	int mime_charset = 0;
+	int mailbox_format = 0;
 	t_bool change_option = FALSE;
 	t_bool original_on_off_value;
+#ifdef CHARSET_CONVERSION
+	int mime_charset = 0;
+#endif /* CHARSET_CONVERSION */
 
 	actual_top_option = -1;
 	option = 0;
@@ -1944,8 +1963,10 @@ change_config_file (
 #ifndef CHARSET_CONVERSION
 						case OPT_MM_CHARSET:
 #else
+#	if 0 /* we don't need this anymore due to autodetection */
 						case OPT_MM_LOCAL_CHARSET:
-#endif /* CHARSET_CONVERSION */
+#	endif /* 0 */
+#endif /* !CHARSET_CONVERSION */
 						case OPT_MAIL_QUOTE_FORMAT:
 						case OPT_NEWS_QUOTE_FORMAT:
 						case OPT_QUOTE_CHARS:
@@ -1988,6 +2009,19 @@ change_config_file (
 								OPT_STRING_list[option_table[option].var_index]
 								);
 							joinpath (posted_msgs_file, tinrc.maildir, *tinrc.keep_posted_articles_file ? tinrc.keep_posted_articles_file : POSTED_FILE);
+							break;
+
+						case OPT_MAILBOX_FORMAT:
+							mailbox_format = *(option_table[option].variable);
+							mailbox_format = prompt_list (option_row(option),
+										OPT_ARG_COLUMN,
+										mailbox_format,
+										option_table[option].txt->help,
+										_(option_table[option].txt->opt),
+										option_table[option].opt_list,
+										option_table[option].opt_count
+										);
+							*(option_table[option].variable) = mailbox_format;
 							break;
 
 #ifdef CHARSET_CONVERSION
@@ -2448,7 +2482,7 @@ ulBuildArgv (
 		return (NULL);
 	}
 
-	for (tmp = cmd; isspace ((int)*tmp); tmp++)
+	for (tmp = cmd; isspace ((int) *tmp); tmp++)
 		;
 
 	buf = my_strdup(tmp);
@@ -2468,16 +2502,16 @@ ulBuildArgv (
 	new_argv[0] = NULL;
 
 	while (*tmp) {
-		if (!isspace((int)*tmp)) { /*found the begining of a word*/
+		if (!isspace((int) *tmp)) { /* found the begining of a word */
 			new_argv[i] = tmp;
-			for (; *tmp && !isspace((int)*tmp); tmp++)
+			for (; *tmp && !isspace((int) *tmp); tmp++)
 				;
 			if (*tmp) {
 				*tmp = '\0';
 				tmp++;
 			}
 			i++;
-			new_argv = (char **) realloc (new_argv, ((i + 1) * sizeof (char *)));
+			new_argv = (char **) my_realloc((void *)new_argv, ((i + 1) * sizeof(char *)));
 			new_argv[i] = NULL;
 		} else
 			tmp++;

@@ -6,7 +6,7 @@
  *  Updated   : 1999-12-06
  *  Notes     : Split out from other modules
  *
- * Copyright (c) 1999-2001 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 1999-2002 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -143,10 +143,11 @@ get_multiparts (
 	MultiPartInfo tmp, tmp2;
 	MultiPartInfo *info = 0;
 	int i = 0;
+	int part_index;
 
 	/* entry assertions */
-	assert (0<=base_index && base_index<grpmenu.max && "Invalid base index");
-	assert (malloc_and_setme_info!=NULL && "malloc_and_setme_info must not be NULL");
+	assert (0 <= base_index && base_index < grpmenu.max && "Invalid base index");
+	assert (malloc_and_setme_info != NULL && "malloc_and_setme_info must not be NULL");
 
 	/* make sure this is a multipart message... */
 	if (!get_multipart_info(base_index, &tmp) || tmp.total < 1)
@@ -161,8 +162,6 @@ get_multiparts (
 
 	/* try to find all the multiparts... */
 	for (i = 0; i < grpmenu.max; ++i) {
-		int part_index = 0;
-
 		if (strncmp (arts[base[i]].subject, tmp.subject, tmp.subject_compare_len))
 			continue;
 		if (!get_multipart_info (i, &tmp2))
@@ -232,19 +231,16 @@ tag_multipart (
 	 * so num_of_tagged_arts doesn't get corrupted
 	 */
 	for (i = 0; i < qty; ++i) {
-		long art = base[info[i].base_index];
-		if (arts[art].tagged != 0)
-			remove_tag(art);
+		if (arts[base[info[i].base_index]].tagged != 0)
+			remove_tag(base[info[i].base_index]);
 	}
 
 	/*
 	 * get_multiparts() sorts info by part number,
 	 * so a simple for loop tags in the right order
 	 */
-	for (i = 0; i < qty; ++i) {
-		const int my_base_index = info[i].base_index;
-		arts[base[my_base_index]].tagged = ++num_of_tagged_arts;
-	}
+	for (i = 0; i < qty; ++i)
+		arts[base[info[i].base_index]].tagged = ++num_of_tagged_arts;
 
 	free (info);
 
@@ -492,11 +488,12 @@ vDelRange (
 				active[iIndex].inrange = FALSE;
 			break;
 		case GROUP_LEVEL:
-			for (iIndex = 0; iIndex < iNumMax - 1; iIndex++) {
+			{
 				int iNum;
-
-				for (iNum = (int) base[iIndex]; iNum != -1; iNum = arts[iNum].thread)
-					arts[iNum].inrange = FALSE;
+				for (iIndex = 0; iIndex < iNumMax - 1; iIndex++) {
+					for (iNum = (int) base[iIndex]; iNum != -1; iNum = arts[iNum].thread)
+						arts[iNum].inrange = FALSE;
+				}
 			}
 			break;
 		case THREAD_LEVEL:

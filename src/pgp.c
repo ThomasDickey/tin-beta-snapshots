@@ -6,7 +6,7 @@
  *  Updated   : 1999-12-02
  *  Notes     : PGP support
  *
- * Copyright (c) 1995-2001 Steven J. Madsen <steve@erinet.com>
+ * Copyright (c) 1995-2002 Steven J. Madsen <steve@erinet.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -289,16 +289,11 @@ pgp_append_public_key (
 
 	snprintf(keyfile, sizeof(keyfile) - 1, KEYFILE, TMPDIR, process_id);
 
-/* TODO I'm guessing the pgp append key command creates 'keyfile' and that we should remove it */
-#	ifdef HAVE_GPG
-	/*
-	 * FIXME: reoder !gpg opts (if possible) and make this obsolete
-	 *        we can't reoder the gpg opts as --export must be the last one
-	 */
-		sh_format (cmd, sizeof(cmd), APPEND_KEY, PGPNAME, pgpopts, buf, keyfile);
-#	else
-		sh_format (cmd, sizeof(cmd), APPEND_KEY, PGPNAME, pgpopts, keyfile, buf);
-#	endif /* HAVE_GPG */
+/*
+ * TODO: I'm guessing the pgp append key command creates 'keyfile' and that
+ * we should remove it
+ */
+	sh_format (cmd, sizeof(cmd), APPEND_KEY, PGPNAME, pgpopts, keyfile, buf);
 
 	if (invoke_cmd (cmd)) {
 		if ((fp = fopen(file, "a")) != NULL) {

@@ -7,7 +7,7 @@
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
- * Copyright (c) 1997-2001 Dirk Nimmich <nimmich@uni-muenster.de>
+ * Copyright (c) 1997-2002 Dirk Nimmich <nimmich@uni-muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -413,7 +413,8 @@ authenticate (
 
 #else
 static void no_authenticate (void);			/* proto-type */
-static void no_authenticate (					/* ANSI C requires non-empty source file */
+static void
+no_authenticate (					/* ANSI C requires non-empty source file */
 	void)
 {
 }
