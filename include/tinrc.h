@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2003-05-06
+ *  Updated   : 2003-08-10
  *  Notes     :
  *
  * Copyright (c) 1999-2003 Jason Faultless <jason@altarstone.com>
@@ -202,6 +202,7 @@ struct t_config {
 	t_bool keep_dead_articles;			/* keep all dead articles in dead.articles */
 	char posted_articles_file[LEN];		/* if set, file in which to keep posted articles */
 	t_bool mail_8bit_header;			/* allow 8bit chars. in header of mail message */
+	t_bool mark_ignore_tags;			/* Ignore tags for iKeyGroupMarkThdRead/iKeyThreadMarkArtRead */
 	t_bool mark_saved_read;				/* mark saved article/thread as read */
 	t_bool pgdn_goto_next;
 	t_bool pos_first_unread;			/* position cursor at first/last unread article */

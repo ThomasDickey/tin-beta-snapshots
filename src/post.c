@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-06-18
+ *  Updated   : 2003-08-10
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -782,7 +782,7 @@ check_article_to_be_posted(
 #ifdef CHARSET_CONVERSION
 		/* are all characters in article contained in network_charset? */
 		if (strcmp(tinrc.mm_local_charset, txt_mime_charsets[mmnwcharset]) && !charset_conversion_fails) { /* local_charset != network_charset */
-			cp = my_malloc(strlen(line) * 4);
+			cp = my_malloc(strlen(line) * 4 + 1);
 			strcpy(cp, line);
 			charset_conversion_fails = !buffer_to_network(cp, mmnwcharset);
 			free(cp);
@@ -1091,7 +1091,7 @@ check_article_to_be_posted(
 #ifdef CHARSET_CONVERSION
 		/* are all characters in article contained in network_charset? */
 		if (strcmp(tinrc.mm_local_charset, txt_mime_charsets[mmnwcharset]) && !charset_conversion_fails) { /* local_charset != network_charset */
-			cp = my_malloc(strlen(line) * 4);
+			cp = my_malloc(strlen(line) * 4 + 1);
 			strcpy(cp, line);
 			charset_conversion_fails = !buffer_to_network(cp, mmnwcharset);
 			free(cp);
@@ -2898,7 +2898,8 @@ int
 mail_to_someone(
 	const char *address,
 	t_bool confirm_to_mail,
-	t_openartinfo *artinfo)
+	t_openartinfo *artinfo,
+	const struct t_group *group)
 {
 	FILE *fp;
 	char ch = iKeyPostSend;
@@ -2943,7 +2944,7 @@ mail_to_someone(
 	} else {
 		if (confirm_to_mail)
 			ch = prompt_to_send(subject);
-		ret_code = mail_loop(nam, ch, subject, NULL, NULL);
+		ret_code = mail_loop(nam, ch, subject, group ? group->name : NULL, NULL);
 	}
 
 	if (tinrc.unlink_article)

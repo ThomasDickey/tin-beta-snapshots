@@ -1,15 +1,15 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2003-06-26
+# Updated: 2003-07-22
 #
 
 PROJECT	= tin
 LVER	= 1
-PVER	= 6
+PVER	= 7
 SVER	= 0
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20030714
+DVER	= 20030810
 EXE	= tin
 
 # directory structure
@@ -211,7 +211,8 @@ TOP	= \
 	$(TOPDIR)/configure \
 	$(TOPDIR)/configure.in \
 	$(TOPDIR)/install.sh \
-	$(TOPDIR)/mkdirs.sh
+	$(TOPDIR)/mkdirs.sh \
+	$(TOPDIR)/tin.spec
 
 PCRE	= \
 	$(PCREDIR)/AUTHORS \

@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2003-05-18
+ *  Updated   : 2003-07-21
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
@@ -1044,5 +1044,5 @@ cook_article(
 		art->cookl = my_realloc(art->cookl, sizeof(t_lineinfo) * art->cooked_lines);
 
 	rewind(art->cooked);
-	return TRUE;
+	return (tin_errno != 0) ? FALSE : TRUE;
 }

@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-06-29
+ *  Updated   : 2003-08-10
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>
@@ -944,6 +944,7 @@ extern constext txt_posting[];
 extern constext txt_postpone_repost[];
 extern constext txt_prefix_hot[];
 extern constext txt_prefix_tagged[];
+extern constext txt_prefix_untagged[];
 extern constext txt_prompt_fup_ignore[];
 extern constext txt_prompt_unchanged_mail[];
 extern constext txt_prompt_see_postponed[];
@@ -1045,14 +1046,14 @@ extern constext txt_supersede_group[];
 extern constext txt_superseding_art[];
 extern constext txt_suspended_message[];
 extern constext txt_tab[];
-extern constext txt_tagged_art[];
-extern constext txt_tagged_thread[];
 extern constext txt_there_is_no_news[];
-extern constext txt_thread[];
+extern constext txt_thread_upper[];
 extern constext txt_thread_com[];
 extern constext txt_thread_marked_as_deselected[];
 extern constext txt_thread_marked_as_selected[];
+extern constext txt_thread_plural[];
 extern constext txt_thread_range[];
+extern constext txt_thread_singular[];
 extern constext txt_thread_x_of_n[];
 extern constext txt_threading_arts[];
 extern constext txt_time_default_days[];
@@ -1077,8 +1078,6 @@ extern constext txt_unsubscribe_pattern[];
 extern constext txt_unsubscribed_num_groups[];
 extern constext txt_unsubscribed_to[];
 extern constext txt_unsubscribing[];
-extern constext txt_untagged_art[];
-extern constext txt_untagged_thread[];
 extern constext txt_unthreading_arts[];
 extern constext txt_updated[];
 extern constext txt_updating[];
@@ -1107,6 +1106,7 @@ extern constext txt_usage_mail_bugreport[];
 extern constext txt_usage_mail_new_news[];
 extern constext txt_usage_mail_new_news_to_user[];
 extern constext txt_usage_newsrc_file[];
+extern constext txt_usage_no_posting[];
 extern constext txt_usage_post_article[];
 extern constext txt_usage_post_postponed_arts[];
 extern constext txt_usage_read_news_remotely[];
@@ -1275,6 +1275,7 @@ extern t_bool created_rcdir;
 extern t_bool dangerous_signal_exit; /* TRUE if SIGHUP, SIGTERM, SIGUSR1 */
 extern t_bool disable_gnksa_domain_check;
 extern t_bool disable_sender;
+extern t_bool force_no_post;
 extern t_bool force_reread_active_file;
 extern t_bool got_sig_pipe;
 extern t_bool have_linescroll;
@@ -1497,6 +1498,7 @@ extern struct opttxt txt_mail_quote_format;
 extern struct opttxt txt_mailbox_format;
 extern struct opttxt txt_maildir;
 extern struct opttxt txt_mailer_format;
+extern struct opttxt txt_mark_ignore_tags;
 extern struct opttxt txt_mark_saved_read;
 extern struct opttxt txt_mono_markstar;
 extern struct opttxt txt_mono_markdash;

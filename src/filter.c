@@ -94,7 +94,7 @@ static int set_filter_scope(struct t_group *group);
 static struct t_filter_comment *add_filter_comment(struct t_filter_comment *ptr, char *text);
 static struct t_filter_comment *free_filter_comment(struct t_filter_comment *ptr);
 static struct t_filter_comment *copy_filter_comment(struct t_filter_comment *from, struct t_filter_comment *to);
-static t_bool add_filter_rule(struct t_group *group, struct t_article *art, struct t_filter_rule *rule, int origin);
+static t_bool add_filter_rule(struct t_group *group, struct t_article *art, struct t_filter_rule *rule);
 static t_bool test_regex(const char *string, char *regex, t_bool nocase, struct regex_cache *cache);
 static void expand_filter_array(struct t_filters *ptr);
 static void free_filter_item(struct t_filter *ptr);
@@ -1274,7 +1274,7 @@ filter_menu(
 		switch (ch) {
 
 		case iKeyFilterEdit:
-			add_filter_rule(group, art, &rule, INTERNAL_LEVEL); /* save the rule */
+			add_filter_rule(group, art, &rule); /* save the rule */
 			rule.comment = free_filter_comment(rule.comment);
 			if (!invoke_editor(filter_file, FILTER_FILE_OFFSET))
 				return FALSE;
@@ -1295,7 +1295,7 @@ filter_menu(
 			/*
 			 * Add the filter rule and save it to the filter file
 			 */
-			ret = add_filter_rule(group, art, &rule, INTERNAL_LEVEL);
+			ret = add_filter_rule(group, art, &rule);
 			rule.comment = free_filter_comment(rule.comment);
 			return ret;
 			/* keep lint quiet: */
@@ -1317,8 +1317,7 @@ t_bool
 quick_filter(
 	int type,
 	struct t_group *group,
-	struct t_article *art,
-	int origin)
+	struct t_article *art)
 {
 	char *scope;
 	char txt[LEN];
@@ -1371,7 +1370,7 @@ quick_filter(
 	rule.check_string = TRUE;
 	rule.score = (type == FILTER_KILL) ? tinrc.score_kill : tinrc.score_select;
 
-	ret = add_filter_rule(group, art, &rule, origin);
+	ret = add_filter_rule(group, art, &rule);
 	rule.comment = free_filter_comment(rule.comment);
 	return ret;
 }
@@ -1452,10 +1451,10 @@ quick_filter_select_posted_art(
 			/* Hack */
 			art.refptr = (struct t_msgid *) &refptr_dummyart;
 
-			filtered = add_filter_rule(group, &art, &rule, INTERNAL_LEVEL);
+			filtered = add_filter_rule(group, &art, &rule);
 		} else {
 			art.subject = my_strdup(subj);
-			filtered = add_filter_rule(group, &art, &rule, INTERNAL_LEVEL);
+			filtered = add_filter_rule(group, &art, &rule);
 			FreeIfNeeded(art.subject);
 		}
 		rule.comment = free_filter_comment(rule.comment);
@@ -1471,8 +1470,7 @@ static t_bool
 add_filter_rule(
 	struct t_group *group,
 	struct t_article *art,
-	struct t_filter_rule *rule,
-	int origin)
+	struct t_filter_rule *rule)
 {
 	char acBuf[PATH_LEN];
 	char sbuf[(sizeof(acBuf) / 2)]; /* half as big as acBuf so quote_wild(sbuf) fits into acBuf */

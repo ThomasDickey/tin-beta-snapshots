@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2003-05-05
+ *  Updated   : 2003-08-03
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -1110,8 +1110,10 @@ highlight_string(
 
 		my_strncpy(tmp, &(screen[row].col[0]), sizeof(tmp) - 1);
 		tmp[col] = '\0';
-		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
+		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
+			wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
 			col = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+		}
 	}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
@@ -1139,7 +1141,9 @@ word_highlight_string(
 	 * Mapping of the tinrc.mono_mark* values to the corresponding escape sequences
 	 */
 	char *attributes[MAX_ATTR + 1];
+	char *dest, *src;
 	char output[LEN];
+	int byte_offset = col;
 	int wsize = size;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t wtmp[LEN];
@@ -1153,8 +1157,7 @@ word_highlight_string(
 	attributes[5] = _dim;	/* Dim */
 	attributes[6] = _bold;	/* Bold */
 
-	my_strncpy(output, &(screen[row].col[col]), size);
-	/* output[size] = '\0'; */ /* my_strncpy() already '\0' terminated output */
+	my_strncpy(output, &(screen[row].col[byte_offset]), size);
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	/*
@@ -1162,15 +1165,19 @@ word_highlight_string(
 	 * offsets; calculate now the correct starting column and
 	 * width
 	 */
-	if (col > 0) {
+	if (byte_offset > 0) {
 		char tmp[LEN];
 		my_strncpy(tmp, &(screen[row].col[0]), sizeof(tmp) - 1);
-		tmp[col] = '\0';
-		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
+		tmp[byte_offset] = '\0';
+		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
+			wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
 			col = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+		}
 	}
-	if (mbstowcs(wtmp, output, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
+	if (mbstowcs(wtmp, output, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
+		wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
 		wsize = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+	}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	MoveCursor(row, col);
@@ -1182,7 +1189,19 @@ word_highlight_string(
 		 (output[0] == '-' && output[size - 1] == '-')) {
 
 		switch (tinrc.word_h_display_marks) {
-			case 0: /* FIXME */
+			case 0: /* remove marks */
+				MoveCursor(row, col + wsize - 2);
+				CleartoEOLN();
+				my_fputs(&(screen[row].col[byte_offset + size]), stdout);
+				output[0] = output[size - 1] = ' ';
+				str_trim(output);
+				strncpy(&(screen[row].col[byte_offset]), output, size - 2);
+				src = &(screen[row].col[byte_offset + size]);
+				dest = &(screen[row].col[byte_offset + size - 2]);
+				while (*src)
+					*dest++ = *src++;
+				*dest++ = '\0';
+				MoveCursor(row, col);
 				break;
 
 			case 2: /* print space */
@@ -1192,6 +1211,8 @@ word_highlight_string(
 				my_fputs(" ", stdout);
 				output[0] = output[size - 1] = ' ';
 				str_trim(output);
+				screen[row].col[byte_offset] = ' ';
+				screen[row].col[byte_offset + size - 1] = ' ';
 				break;
 
 			default:	/* print mark (case 1) */

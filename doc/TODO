@@ -41,22 +41,11 @@ o  better integrate saving of MIME/non-MIME articles when not using libuu.
    [mostly done]
    [Jason Faultless <jason@altarstone.com>]
 
-o  attributes are ignored for mail-actions (except mail_to_author())
-   cause mail_loop() usualy doesn't know the group we are in.
-   [20020211 Andreas Metzler <tin-dev@downhill.at.eu.org>]
-
 o  reusing p'o'stponed articles in mailing_list groups doesn't work
    (possible fix: store Newsgroups (and other infos) via msg_add_header()
     (to overwrite any old values) in X-Tin-Postponed:-header and remove it
     before posting.)
    [20010623 Urs Janssen <urs@tin.org>]
-
-o  reference based filters won't work with long (> 500 chars)
-   References: lines
-   (this might be due to the shortening of the line done by tin, e.g.
-    if one has a filter based on the 5th oldest message-id and the
-    line get's much longer by the time that id might be removed by
-    tin and the filter won't work anymore)
 
 o  batch mode has several bugs
    - -Z and giving a cmd-line group ends up in a loop
@@ -65,9 +54,6 @@ o  batch mode has several bugs
       nor taken inot account for the 'any unread news' status.
    - -cZ does not perform catchup, feature or bug?
    - shall we allow stand alone -c?
-   - -M/-N do not remove To:, Cc:, Bcc: headers befor passing article
-     to MTA (would require article parsing *sigh*) nor do they wrap
-     the article into message/rfc822.
    [Urs Janssen <urs@tin.org>]
 
 o  '-s' cmd-line switch implicitly changes 'savedir' in tinrc
@@ -95,8 +81,7 @@ o  rewrite code to use INEWS_PATH instead of INEWSDIR
    [20021007 Urs Janssen <urs@tin.org>
 
 o  remove built in path of external commands (metamail, ispell, ...)
-   [for metamail/ispell $METAMAIL/$ISPELL could be used to override
-    systempath and progname]
+   [for ispell $ISPELL could be used to override systempath and progname]
 
 o  overview file cacheing code is over-complex
    - cache the original overview info instead of rebuilding it from
@@ -120,13 +105,6 @@ o  fix the outstandig mem-leaks, see
 
 Pager Problems
 --------------
-o  lines which are exatly cCOLS wide introduce an extra \n in the pager
-   in raw mode (^H)
-   [20010628 Urs Janssen <urs@tin.org>]
-
-o  word_h_display_marks=0 doesn't work for the !USE_CUSRSES case
-   [20020720 Urs Janssen <urs@tin.org>]
-
 o  raw mode loses (illegal) chars in multibyte based groups
    [20021006 Michael Bienia <michael@vorlon.ping.de>]
 
@@ -159,13 +137,6 @@ o  make auto'S'ave also work for inrange articles/threads(/groups)
 o  sub-parse message/rfc822 messages (might occur in mail-groups)
    [20030310 Urs Janssen <urs@tin.org>]
 
-o  instead of exiting when tin fails to get the systems domainname fall
-   into no posting mode and issue a warning.
-   [20021125 Urs Janssen <urs@tin.org>]
-
-o  add new cmd-line flag to force 'no_posting' mode
-   [20021125 Urs Janssen <urs@tin.org>]
-
 o  turn ask_for_metamail into $MM_NOASK support (see metamail(1))
    [20030314 Urs Janssen <urs@tin.org>]
 
@@ -181,6 +152,9 @@ o  allow bold, underline, italic, ... as colour substitution for
    monochrom terminals (map green=underline, italic=yellow)
    (see also <20020416202232.A4575@bloatware.reston01.va.comcast.net>)
    [20030218 Serge Matveev <sm@cl.spb.ru>]
+
+o  add switch to disable URL-highlighting without disabling inverse-video
+   [20030805 Urs Janssen <urs@tin.org>]
 
 o  hierarchical 'M'enu, e.g. hide all color_* options as long as
    use_color is turned off, put all art_marked_*into a 'submenu', ...
@@ -592,7 +566,6 @@ o  check where iKeyAbort should be used instead of ESC (etc.pp.)
 o  close potential security holes:
    - change all system()/popen() calls to fork() and exec() calls
    - check where we should use snprintf() instead of sprintf()
-   - check where we should use vsnprintf() instead of vsprintf()
    - check where we should use strncat() instead of strcat()
    - check where we should use strncpy() instead of strcpy()
    - check possible races with access()/link()/rename()/stat()/
@@ -720,9 +693,6 @@ o  commas in real-name might cause problems in mail-replys
    To: Last, First<user@accou.nt> which is last@localhost,user@accou.nt
    should we try to fix things and quote the realname part?
    [20021007 Urs Janssen <urs@tin.org>]
-
-o  is $METAMAIL tin specific? if so, remove it.
-   [20030317 Urs Janssen <urs@tin.org>]
 
 o  what is with FOPEN_OPTS (VMS)? is it missing from ~50% of all
    fopen()-calls or can it be droped entirely?

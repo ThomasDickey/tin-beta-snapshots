@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2003-06-29
+ *  Updated   : 2003-08-10
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -114,7 +114,7 @@ getserverbyfile(
 	char *new_env;
 	static char *old_env = NULL;
 #	endif /* !HAVE_SETENV && HAVE_PUTENV */
-#endif
+#endif /* NNTP_ABLE */
 	if (!read_news_via_nntp) {
 		STRCPY(buf, "local");	/* what if a server is named "local"? */
 		return buf;

@@ -3,7 +3,7 @@
  *  Module    : getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 2003-04-15
+ *  Updated   : 2003-08-03
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -138,6 +138,7 @@ tin_getline(
 		wchar_t wbuf[LEN];
 
 		if (mbstowcs(wbuf, str, ARRAY_SIZE(wbuf) - 1) != (size_t) -1) {
+			wbuf[ARRAY_SIZE(wbuf) - 1] = (wchar_t) '\0';
 			for (i = 0; wbuf[i]; i++)
 				gl_addwchar(wbuf[i]);
 		}

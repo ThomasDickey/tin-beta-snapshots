@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-07-02
+ *  Updated   : 2003-08-10
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -474,6 +474,9 @@ read_config_file(
 				break;
 #endif /* !CHARSET_CONVERSION */
 
+			if (match_boolean(buf, "mark_ignore_tags=", &tinrc.mark_ignore_tags))
+				break;
+
 			if (match_boolean(buf, "mark_saved_read=", &tinrc.mark_saved_read))
 				break;
 
@@ -870,6 +873,9 @@ write_config_file(
 
 	fprintf(fp, _(txt_confirm_choice.tinrc));
 	fprintf(fp, "confirm_choice=%s\n\n", txt_confirm_choices[tinrc.confirm_choice]);
+
+	fprintf(fp, _(txt_mark_ignore_tags.tinrc));
+	fprintf(fp, "mark_ignore_tags=%s\n\n", print_boolean(tinrc.mark_ignore_tags));
 
 	fprintf(fp, _(txt_auto_reconnect.tinrc));
 	fprintf(fp, "auto_reconnect=%s\n\n", print_boolean(tinrc.auto_reconnect));
@@ -2825,13 +2831,13 @@ rc_update(
 		tinrc.thread_articles = THREAD_BOTH;
 
 	if (use_builtin_inews)
-		strncpy(tinrc.inews_prog, "--internal", sizeof(tinrc.inews_prog) - 1);
+		strncpy(tinrc.inews_prog, INTERNAL_CMD, sizeof(tinrc.inews_prog) - 1);
 
-	env = get_val("METAMAIL", "");
-	if (use_metamail || !strcmp(env, "(internal)"))
-		strncpy(tinrc.metamail_prog, "--internal", sizeof(tinrc.metamail_prog) - 1);
+	env = getenv("NOMETAMAIL");
+	if (!use_metamail || (NULL == env))
+		strncpy(tinrc.metamail_prog, INTERNAL_CMD, sizeof(tinrc.metamail_prog) - 1);
 	else
-		my_strncpy(tinrc.metamail_prog, env, sizeof(tinrc.metamail_prog) - 1);
+		my_strncpy(tinrc.metamail_prog, METAMAIL_CMD, sizeof(tinrc.metamail_prog) - 1);
 
 	rewind(fp);
 	return TRUE;

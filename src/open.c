@@ -3,7 +3,7 @@
  *  Module    : open.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-06-29
+ *  Updated   : 2003-07-22
  *  Notes     : Routines to make reading news locally (ie. /var/spool/news)
  *              or via NNTP transparent
  *
@@ -142,9 +142,7 @@ nntp_open(
 
 		case OK_CANPOST:
 /*		case OK_NOIHAVE: */
-#	ifndef NO_POSTING
-			can_post = TRUE;
-#	endif /* !NO_POSTING */
+			can_post = TRUE && !force_no_post;
 			break;
 
 		case OK_NOPOST:
@@ -154,9 +152,7 @@ nntp_open(
 
 		default:
 			if (ret >= 200 && ret <= 299) {
-#	ifndef NO_POSTING
-				can_post = TRUE;
-#	endif /* !NO_POSTING */
+				can_post = TRUE && !force_no_post;
 				break;
 			}
 			if (ret < 0)
@@ -205,9 +201,7 @@ nntp_open(
 	switch ((ret = get_respcode(line, sizeof(line)))) {
 		case OK_CANPOST:
 /*		case OK_NOIHAVE: */
-#	ifndef NO_POSTING
-			can_post = TRUE;
-#	endif /* !NO_POSTING */
+			can_post = TRUE && !force_no_post;
 			sec = TRUE;
 			break;
 
@@ -255,9 +249,7 @@ nntp_open(
 		switch ((ret = get_respcode(line, sizeof(line)))) {
 			case OK_CANPOST:
 /*			case OK_NOIHAVE: */
-#	ifndef NO_POSTING
-				can_post = TRUE;
-#	endif /* !NO_POSTING */
+				can_post = TRUE && !force_no_post;
 				sec = TRUE;
 				break;
 

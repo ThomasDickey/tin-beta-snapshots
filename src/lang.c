@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-06-29
+ *  Updated   : 2003-08-10
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -350,7 +350,7 @@ constext txt_help_group_goto_group[] = N_("choose group by name");
 constext txt_help_group_last_thread[] = N_("choose last thread in list");
 constext txt_help_group_list_thread[] = N_("list articles within current thread (bring up Thread sub-menu)");
 constext txt_help_group_mark_article_unread[] = N_("mark article as unread");
-constext txt_help_group_mark_thread_read[] = N_("mark current thread as read");
+constext txt_help_group_mark_thread_read[] = N_("mark current thread or tagged threads as read");
 constext txt_help_group_mark_thread_unread[] = N_("mark thread as unread");
 constext txt_help_group_mark_unsel_art_read[] = N_("toggle display of all/selected articles");
 constext txt_help_group_next[] = N_("display next group");
@@ -405,7 +405,7 @@ constext txt_help_thread_catchup[] = N_("mark thread as read and return to group
 constext txt_help_thread_catchup_next_unread[] = N_("mark thread as read and enter next unread thread or group");
 constext txt_help_thread_first_article[] = N_("choose first article in list");
 constext txt_help_thread_last_article[] = N_("choose last article in list");
-constext txt_help_thread_mark_article_read[] = N_("mark article as read and move cursor to next unread article");
+constext txt_help_thread_mark_article_read[] = N_("mark article or tagged articles as read and move cursor to next unread article");
 constext txt_help_thread_read_article[] = N_("read chosen article");
 constext txt_help_thread_toggle_subj_display[] = N_("cycle the display of authors email address, real name, both or neither");
 constext txt_help_title_disp[] = N_("Display properties\n------------------");
@@ -577,6 +577,7 @@ constext txt_posting[] = N_("Posting article...");
 constext txt_postpone_repost[] = N_("Post postponed articles [%%.*s]? (%s/%s/%s/%s/%s): ");
 constext txt_prefix_hot[] = N_("Hot %s");
 constext txt_prefix_tagged[] = N_("Tagged %s");
+constext txt_prefix_untagged[] = N_("Untagged %s");
 constext txt_processing_mail_arts[] = N_("Processing mail messages marked for deletion.");
 constext txt_processing_saved_arts[] = N_("Processing saved articles marked for deletion.");
 constext txt_prompt_fup_ignore[] = N_("Accept Followup-To? %s=post, %s=ignore, %s=quit: ");
@@ -682,8 +683,6 @@ constext txt_suspended_message[] = N_("\nStopped. Type 'fg' to restart %s\n");
 
 constext txt_time_default_days[] = N_("%d days");
 constext txt_tab[] = N_("<TAB>");
-constext txt_tagged_art[] = N_("Tagged article");
-constext txt_tagged_thread[] = N_("Tagged thread");
 constext txt_tinrc_defaults[] = N_("# Default action/prompt strings\n");
 constext txt_tinrc_filter[] = N_("# Defaults for quick (1 key) kill & auto-selection filters\n\
 # header=NUM  0,1=Subject: 2,3=From: 4=Message-ID: & full References: line\n\
@@ -701,11 +700,13 @@ constext txt_tinrc_header[] = "# %s configuration file V%s\n\
 constext txt_tinrc_info_in_last_line[] = N_("# If ON use print current subject or newsgroup description in the last line\n");
 constext txt_tinrc_newnews[] = N_("# Host & time info used for detecting new groups (don't touch)\n");
 constext txt_there_is_no_news[] = N_("There is no news\n");
-constext txt_thread[] = N_("Thread");
+constext txt_thread_upper[] = N_("Thread");
 constext txt_thread_com[] = N_("Thread Level Commands");
 constext txt_thread_marked_as_deselected[] = N_("Thread deselected");
 constext txt_thread_marked_as_selected[] = N_("Thread selected");
+constext txt_thread_plural[] = N_("threads");
 constext txt_thread_range[] = N_("Thread range");
+constext txt_thread_singular[] = N_("thread");
 constext txt_thread_x_of_n[] = N_("%sThread %4s of %4s");
 constext txt_threading_arts[] = N_("Threading articles...");
 constext txt_toggled_high[] = N_("Toggled word highlighting %s");
@@ -726,8 +727,6 @@ constext txt_unread[] = N_("unread ");
 constext txt_unsubscribed_num_groups[] = N_("unsubscribed from %d groups");
 constext txt_unsubscribed_to[] = N_("Unsubscribed from %s");
 constext txt_unsubscribing[] = N_("Unsubscribing... ");
-constext txt_untagged_art[] = N_("Untagged article");
-constext txt_untagged_thread[] = N_("Untagged thread");
 constext txt_unthreading_arts[] = N_("Unthreading articles...");
 constext txt_updated[] = N_("Updated");
 constext txt_updating[] = N_("Updating");
@@ -749,6 +748,7 @@ constext txt_usage_mail_bugreport[] = N_("\nMail bug reports/comments to %s");
 constext txt_usage_mail_new_news[] = N_("  -N       mail new news to your posts (batch mode)");
 constext txt_usage_mail_new_news_to_user[] = N_("  -M user  mail new news to specified user (batch mode)");
 constext txt_usage_newsrc_file[] = N_("  -f file  subscribed to newsgroups file [default=%s]");
+constext txt_usage_no_posting[] = N_("  -x       no posting mode");
 constext txt_usage_post_article[] = N_("  -w       post an article and exit");
 constext txt_usage_post_postponed_arts[] = N_("  -o       post all postponed articles and exit");
 constext txt_usage_read_news_remotely[] = N_("  -r       read news remotely from default NNTP server");
@@ -1687,6 +1687,12 @@ struct opttxt txt_confirm_choice = {
 	N_("# What should we ask confirmation for.\n")
 };
 
+struct opttxt txt_mark_ignore_tags = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("'Mark article read' ignores tags   :"),
+	N_("# If ON the 'Mark article read' function marks only the current article.\n")
+};
+
 struct opttxt txt_url_handler = {
 	N_("Program to run to open URL's, <CR> sets, <ESC> cancels."),
 	N_("Program that opens URL's           :"),
@@ -2104,8 +2110,8 @@ struct opttxt txt_mail_8bit_header = {
 
 struct opttxt txt_strip_blanks = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Strip blanks of end of lines       :"),
-	N_("# If ON strip blanks from end of lines to speedup display on slow terminals\n")
+	N_("Strip blanks from ends of lines    :"),
+	N_("# If ON strip blanks from ends of lines for faster display on slow terminals.\n")
 };
 
 #ifdef HAVE_ICONV_OPEN_TRANSLIT

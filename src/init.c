@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-06-06
+ *  Updated   : 2003-08-10
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -144,6 +144,11 @@ t_bool dangerous_signal_exit;		/* no get_respcode() in nntp_command when dangero
 t_bool disable_gnksa_domain_check;	/* disable checking TLD in From: etc. */
 t_bool disable_sender;			/* disable generation of Sender: header */
 t_bool filtered_articles;		/* locally killed / auto-selected articles */
+#ifdef NO_POSTING
+	t_bool force_no_post = TRUE;		/* force no posting mode */
+#else
+	t_bool force_no_post = FALSE;	/* don't force no posting mode */
+#endif /* NO_POSTING */
 t_bool got_sig_pipe = FALSE;
 t_bool list_active;
 t_bool newsrc_active;
@@ -356,6 +361,7 @@ struct t_config tinrc = {
 	TRUE,		/* keep_dead_articles */
 	POSTED_FILE,	/* posted_articles_file */
 	FALSE,		/* mail_8bit_header */
+	FALSE,		/* mark_ignore_tags */
 	TRUE,		/* mark_saved_read */
 	TRUE,		/* pgdn_goto_next */
 	TRUE,		/* pos_first_unread */
@@ -672,11 +678,7 @@ init_selfinfo(
 	 */
 	if (domain_name[0] == '\0') {
 		error_message(_(txt_error_no_domain_name));
-		giveup();
-		/*
-		 * TODO: ask the user to fall into no posting mode (can_post=FALSE)
-		 *       instead of exeting.
-		 */
+		force_no_post = TRUE;
 	}
 
 	/*

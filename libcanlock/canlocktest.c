@@ -102,4 +102,5 @@ int main()
     sprintf(cankey, "%s", "sha1:K4rkWRjRcXmIzvK51ArAP:Jy");
     checker(cankey, canlock);
     printf("---above should have been okay, no---\n");
+    exit(0);
 }
