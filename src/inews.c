@@ -474,11 +474,11 @@ sender_needed(
 
 	snprintf(sender_line, sizeof(sender_line), "Sender: %s", sender);
 
-#ifdef CHARSET_CONVERSION
+#	ifdef CHARSET_CONVERSION
 	p = rfc1522_encode(sender_line, group ? txt_mime_charsets[group->attribute->mm_network_charset] : txt_mime_charsets[tinrc.mm_network_charset], FALSE);
-#else
+#	else
 	p = rfc1522_encode(sender_line, tinrc.mm_charset, FALSE);
-#endif /* CHARSET_CONVERSION */
+#	endif /* CHARSET_CONVERSION */
 	if (GNKSA_OK != gnksa_do_check_from(p + 8, sender_addr, sender_name)) {
 		free(p);
 		return -2;

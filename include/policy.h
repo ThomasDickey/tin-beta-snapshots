@@ -3,7 +3,7 @@
  *  Module    : policy.h
  *  Author    : Ralf Doeblitz <doeblitz@gmx.de>
  *  Created   : 1999-01-12
- *  Updated   : 2003-03-11
+ *  Updated   : 2003-09-08
  *  Notes     : #defines and static data for policy configuration
  *
  * Copyright (c) 1999-2003 Ralf Doeblitz <doeblitz@gmx.de>
@@ -201,20 +201,28 @@
  * .zw  Zimbabwe
  *
  *
- * invalid TLDs:
- * .cs  former Czechoslovakia, now: .cz and .sk
- * .zr  former Zaire, now: .cd
+ * invalid/obsolete TLDs:
+ * .bu  Burma, now .mm
+ * .cs  former Czechoslovakia, now .cz and .sk
+ * .dd  former German Democratic Republic, now .de
  * .fx  France, Metropolitan
+ * .yd  Democratic Yemen, now .ye
+ * .zr  former Zaire, now .cd
+ * 
+ * user-assigned code elements:
+ * .aa, .qm, .qz, .xa, .xz, .zz
  *
  * unused TLDs:
  * .nt  Neutral Zone
  *
  * requested new TLDs:
+ * .cs  Serbia and Montenegro
  * .eu  European Union
  *
  * 'expireing' TLDs:
- *(.hk  Hong Kong, now: .cn)
- * .su  former USSR, now: .ru
+ * .gb  United Kingdom, use .uk
+ *(.hk  Hong Kong, now .cn)
+ * .su  former USSR, now .ru
  */
 
 static char gnksa_country_codes[26*26] = {

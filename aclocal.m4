@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2003-06-04
+dnl Updated   : 2003-09-13
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2003 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -16,10 +16,7 @@ dnl    notice, this list of conditions and the following disclaimer.
 dnl 2. Redistributions in binary form must reproduce the above copyright
 dnl    notice, this list of conditions and the following disclaimer in the
 dnl    documentation and/or other materials provided with the distribution.
-dnl 3. All advertising materials mentioning features or use of this software
-dnl    must display the following acknowledgement:
-dnl	This product includes software developed by Thomas E. Dickey.
-dnl 4. The name of the author may not be used to endorse or promote
+dnl 3. The name of the author may not be used to endorse or promote
 dnl    products derived from this software without specific prior written
 dnl    permission.
 dnl

@@ -343,7 +343,7 @@ draw_line(
 #endif /* USE_CURSES */
 
 	if (tinrc.strip_blanks)
-		 strip_line(s);
+		strip_line(s);
 	if (!magic) {
 		tlen = strlen(s);	/* note new line length */
 		CleartoEOLN();

@@ -476,7 +476,7 @@ my_malloc1(
 	void *p;
 
 #ifdef DEBUG
-	vDbgPrintMalloc(TRUE, file, line, size);
+	debug_print_malloc(TRUE, file, line, size);
 #endif /* DEBUG */
 
 	if ((p = malloc(size)) == NULL) {
@@ -500,7 +500,7 @@ my_calloc1(
 	void *p;
 
 #ifdef DEBUG
-	vDbgPrintMalloc(TRUE, file, line, nmemb * size);
+	debug_print_malloc(TRUE, file, line, nmemb * size);
 #endif /* DEBUG */
 
 	if ((p = calloc(nmemb, size)) == NULL) {
@@ -519,7 +519,7 @@ my_realloc1(
 	size_t size)
 {
 #ifdef DEBUG
-	vDbgPrintMalloc(FALSE, file, line, size);
+	debug_print_malloc(FALSE, file, line, size);
 #endif /* DEBUG */
 
 	p = ((!p) ? (calloc(1, size)) : realloc(p, size));

@@ -169,7 +169,7 @@ get_newsrcname(
 			int error = 0;
 
 			if (!strfpath(name_found, tmp_newsrc, sizeof(tmp_newsrc), NULL)) {
-					my_fprintf(stderr, _("couldn't expand %s\n"), name_found);
+					my_fprintf(stderr, _("couldn't expand %s\n"), name_found); /* TODO: -> lang.c */
 					error = 1;
 			} else {
 				if (tmp_newsrc[0] == '/')

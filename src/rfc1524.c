@@ -3,7 +3,7 @@
  *  Module    : rfc1524.c
  *  Author    : Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-05-15
- *  Updated   : 2002-06-18
+ *  Updated   : 2002-08-24
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
  * Copyright (c) 2000-2003 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
@@ -39,7 +39,7 @@
 #endif /* !TIN_H */
 #ifndef RFC2046_H
 #	include "rfc2046.h"
-#endif /* RFC2046_H */
+#endif /* !RFC2046_H */
 
 /* TODO: what about !unix systems? */
 #define DEFAULT_MAILCAPS "~/.mailcap:/etc/mailcap:/usr/etc/mailcap:/usr/local/etc/mailcap:/etc/mail/mailcap"
@@ -48,7 +48,7 @@
 #define MAILCAPFIELDS 13
 
 /* local prototypes */
-static char *expand_mailcap_meta(const char *mailcap, t_part *part, char *nametemplate, const char *path);
+static char *expand_mailcap_meta(const char *mailcap, t_part *part, t_bool escape_shell_meta_chars, const char *path);
 static char *get_mailcap_field(char *mailcap);
 static t_mailcap *parse_mailcap_line(const char *mailcap, t_part *part, const char *path);
 
@@ -208,7 +208,7 @@ parse_mailcap_line(
 			ptr += strlen(ptr) + 1;
 		}
 		if (!strncasecmp(ptr, "nametemplate=", 13)) {
-			tmailcap->nametemplate = expand_mailcap_meta(ptr + 13, part, (char *) 0, path);
+			tmailcap->nametemplate = expand_mailcap_meta(ptr + 13, part, FALSE, path);
 			ptr += strlen(ptr) + 1;
 		}
 		if (!strncasecmp(ptr, "test=", 5)) {
@@ -246,21 +246,21 @@ parse_mailcap_line(
 	 * nametemplate
 	 */
 	if (tmailcap->command != NULL)
-		tmailcap->command = expand_mailcap_meta(tmailcap->command, part, tmailcap->nametemplate, path);
+		tmailcap->command = expand_mailcap_meta(tmailcap->command, part, TRUE, tmailcap->nametemplate ? tmailcap->nametemplate : path);
 	if (tmailcap->description != NULL)
-		tmailcap->description = expand_mailcap_meta(tmailcap->description, part, tmailcap->nametemplate, path);
+		tmailcap->description = expand_mailcap_meta(tmailcap->description, part, FALSE, tmailcap->nametemplate ? tmailcap->nametemplate : path);
 	if (tmailcap->test != NULL)
-		tmailcap->test = expand_mailcap_meta(tmailcap->test, part, tmailcap->nametemplate, path);
+		tmailcap->test = expand_mailcap_meta(tmailcap->test, part, TRUE, tmailcap->nametemplate ? tmailcap->nametemplate : path);
 	if (tmailcap->compose != NULL)
-		tmailcap->compose = expand_mailcap_meta(tmailcap->compose, part, tmailcap->nametemplate, path);
+		tmailcap->compose = expand_mailcap_meta(tmailcap->compose, part, TRUE, tmailcap->nametemplate ? tmailcap->nametemplate : path);
 	if (tmailcap->composetyped != NULL)
-		tmailcap->composetyped = expand_mailcap_meta(tmailcap->composetyped, part, tmailcap->nametemplate, path);
+		tmailcap->composetyped = expand_mailcap_meta(tmailcap->composetyped, part, TRUE, tmailcap->nametemplate ? tmailcap->nametemplate : path);
 	if (tmailcap->edit != NULL)
-		tmailcap->edit = expand_mailcap_meta(tmailcap->edit, part, tmailcap->nametemplate, path);
+		tmailcap->edit = expand_mailcap_meta(tmailcap->edit, part, TRUE, tmailcap->nametemplate ? tmailcap->nametemplate : path);
 	if (tmailcap->print != NULL)
-		tmailcap->print = expand_mailcap_meta(tmailcap->print, part, tmailcap->nametemplate, path);
+		tmailcap->print = expand_mailcap_meta(tmailcap->print, part, TRUE, tmailcap->nametemplate ? tmailcap->nametemplate : path);
 	if (tmailcap->x11bitmap != NULL)
-		tmailcap->x11bitmap = expand_mailcap_meta(tmailcap->x11bitmap, part, tmailcap->nametemplate, path);
+		tmailcap->x11bitmap = expand_mailcap_meta(tmailcap->x11bitmap, part, TRUE, tmailcap->nametemplate ? tmailcap->nametemplate : path);
 
 	free(optr);
 
@@ -345,13 +345,12 @@ static char *
 expand_mailcap_meta(
 	const char *mailcap,
 	t_part *part,
-	char *nametemplate,
+	t_bool escape_shell_meta_chars,
 	const char *path)
 {
 	const char *ptr;
 	char *line, *lptr;
-	t_bool quote = FALSE;
-	t_bool percent = FALSE;
+	int quote = no_quote;
 	size_t linelen, space, olen;
 
 	if ((ptr = strchr(mailcap, '%')) == NULL) /* nothing to expand */
@@ -377,116 +376,87 @@ expand_mailcap_meta(
 			lptr = line + olen;		/* adjust pointer to current position */
 		}
 
-		switch (*ptr) {
-			case '\\':
-				quote = bool_not(quote);
-				break;
-
-			case '%':
-				if (!quote)
-					percent = TRUE;
-				else {
-					*lptr++ = '%';
-					space--;
-					quote = FALSE;
-				}
-				break;
-
-			case '{':
-				if (percent) {
-					char *end;
-
-					percent = FALSE;
-					if ((end = strchr(ptr, '}')) != NULL) {
-						if (part->params != NULL) {
-							char *parameter;
-							const char *value;
-
-							parameter = my_calloc(1, end - ptr + 1);
-							strncpy(parameter, ptr + 1, end - ptr - 1); /* extract paramter name */
-
-							if ((value = get_param(part->params, parameter)) != NULL) { /* match? */
-								CHECK_SPACE(strlen(value));
-								strcat(line, value);
-								lptr = line + strlen(line);
-								space -= strlen(line);
-							}
-						free(parameter);
-						}
-						ptr = end;	/* skip past closing } */
-					}
-					break; /* full %{...} */
-				}
-				/* FALLTHROUGH */
-
-#if 0 /* TODO: */
-			case 'F':
-				if (percent) {
-					percent = FALSE;
-					break;
-				}
-				/* FALLTHROUGH */
-
-			case 'n':
-				if (percent) {
-					percent = FALSE;
-					break;
-				}
-				/* FALLTHROUGH */
-#endif /* 0 */
-
-			case 's':
-				if (percent) {
-					char *nptr = (char *) 0;
-
-					if (nametemplate && (nptr = expand_mailcap_meta(nametemplate, part, (char *) 0, path)) != 0) {
-						CHECK_SPACE(strlen(nptr) + 2);
-						strcat(line, nptr);
-						free(nptr);
-					} else {
-						CHECK_SPACE(strlen(path) + 2);
-						strcat(line, path);
-					}
-
-					lptr = line + strlen(line);
-					space -= strlen(line);
-					percent = FALSE;
-					break;
-				}
-				/* FALLTHROUGH */
-
-			case 't':
-				if (percent) {
-					CHECK_SPACE((strlen(content_types[part->type]) + 1 + strlen(part->subtype)));
-					strcat(line, content_types[part->type]);
-					strcat(line, "/");
-					strcat(line, part->subtype);
-					lptr = line + strlen(line);
-					space -= strlen(line);
-					percent = FALSE;
-					break;
-				}
-				/* FALLTHROUGH */
-
-			default:
-				if (quote) { /* last char was \ */
-					*lptr = '\\';
-					lptr++;
-					space--;
-					quote = FALSE;
-				}
-				if (percent) { /* unknow %x sequence */
-					*lptr = '%';
-					lptr++;
-					space--;
-					percent = FALSE;
-					quote = FALSE;
-				}
-				*lptr = *ptr;
-				lptr++;
+		if ('\\' == *ptr) {
+			ptr++;
+			if (('\\' == *ptr) || ('%' == *ptr)) {
+				*lptr++ = *ptr++;
 				space--;
+			}
+			continue;
 		}
-		ptr++;
+		if ('%' == *ptr) {
+			ptr++;
+			if ('{' == *ptr) {	/* Content-Type parameter */
+				char *end;
+
+				if ((end = strchr(ptr, '}')) != NULL) {
+					if (part->params != NULL) {
+						char *parameter;
+						const char *value;
+
+						parameter = my_calloc(1, end - ptr + 1);
+						strncpy(parameter, ptr + 1, end - ptr - 1);	/* extract paramter name */
+						if ((value = get_param(part->params, parameter)) != NULL) { /* match? */
+							const char *nptr = escape_shell_meta_chars ? escape_shell_meta(value, quote) : value;
+
+							CHECK_SPACE(strlen(nptr));
+							strcat(line, nptr);
+							lptr = line + strlen(line);
+							space -= strlen(line);
+						}
+						free(parameter);
+					}
+					ptr = end;	/* skip past closing } */
+					ptr++;
+				} else {
+					/* sequence broken, output literally */
+					*lptr++ = '%';
+					*lptr++ = *ptr++;
+					space -= 2;
+				}
+				continue;
+#if 0 /* TODO */
+			} else if ('F' == *ptr) {	/* Content-Types and Filenames of sub parts */
+			} else if ('n' == *ptr) {	/* Number of sub parts */
+			}
+#endif /* 0 */
+			} else if ('s' == *ptr) {	/* Filename */
+				const char *nptr = escape_shell_meta_chars ? escape_shell_meta(path, quote) : path;
+
+				CHECK_SPACE(strlen(nptr) + 2);
+				strcat(line, nptr);
+				lptr = line + strlen(line);
+				space -= strlen(line);
+				ptr++;
+				continue;
+			} else if ('t' == *ptr) {	/* Content-Type */
+				const char *nptr = escape_shell_meta_chars ? escape_shell_meta(part->subtype, quote) : part->subtype;
+
+				CHECK_SPACE((strlen(content_types[part->type]) + 1 + strlen(nptr)));
+				strcat(line, content_types[part->type]);
+				strcat(line, "/");
+				strcat(line, nptr);
+				lptr = line + strlen(line);
+				space -= strlen(line);
+				ptr++;
+				continue;
+			} else {	/* unknown % sequence */
+				*lptr++ = '%';
+				space--;
+				continue;
+			}
+		}
+
+		if (escape_shell_meta_chars) {
+			if (('\'' == *ptr) && (quote != dbl_quote))
+				quote = (quote == no_quote ? sgl_quote : no_quote);
+			else if (('"' == *ptr) && (quote != sgl_quote))
+				quote = (quote == no_quote ? dbl_quote : no_quote);
+		}
+
+		/* any other char */
+		*lptr++ = *ptr++;
+		space--;
 	}
 	return line;
 }

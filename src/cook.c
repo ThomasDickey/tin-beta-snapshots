@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2003-07-21
+ *  Updated   : 2003-08-26
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
@@ -573,6 +573,7 @@ new_uue(
 	if (!(*part)->uue)			/* new_part() is simple and doesn't attach list heads */
 		(*part)->uue = ptr;
 
+	free_list(ptr->params);
 	/*
 	 * Load the name into the parameter list
 	 */

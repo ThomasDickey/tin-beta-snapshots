@@ -1,4 +1,4 @@
-MANIFEST for tin-1.7.0 (Sun Aug 10 16:31:04 CEST 2003)
+MANIFEST for tin-1.7.1 (Thu Sep 18 18:37:48 CEST 2003)
 ----------------------------------------------------
   13085 ./Makefile
    7531 ./MANIFEST
@@ -6,22 +6,22 @@ MANIFEST for tin-1.7.0 (Sun Aug 10 16:31:04 CEST 2003)
     217 ./README.MAC
    2209 ./README.VMS
    1006 ./README.WIN
- 133232 ./aclocal.m4
+ 133038 ./aclocal.m4
     882 ./conf-tin
-  41853 ./config.guess
-  30260 ./config.sub
- 449433 ./configure
-  28778 ./configure.in
+  42069 ./config.guess
+  30369 ./config.sub
+ 449401 ./configure
+  28552 ./configure.in
    5555 ./install.sh
     777 ./mkdirs.sh
    1505 ./tin.spec
   18847 ./doc/ABOUT-NLS
-   2574 ./doc/CHANGES
+   5169 ./doc/CHANGES
  226345 ./doc/CHANGES.old
    1469 ./doc/DEBUG_REFS
-  29430 ./doc/INSTALL
-  31189 ./doc/TODO
-   3302 ./doc/WHATSNEW
+  29446 ./doc/INSTALL
+  29986 ./doc/TODO
+    412 ./doc/WHATSNEW
    2617 ./doc/art_handling.txt
    3862 ./doc/auth.txt
    5346 ./doc/config-anomalies
@@ -46,8 +46,8 @@ MANIFEST for tin-1.7.0 (Sun Aug 10 16:31:04 CEST 2003)
    4168 ./doc/mmdf.5
    2128 ./doc/newsoverview.5
    6963 ./doc/plp_snprintf.3
- 120218 ./doc/tin.1
-  69817 ./doc/tin.5
+ 120476 ./doc/tin.1
+  70016 ./doc/tin.5
    4733 ./doc/w2r.1
    2196 ./doc/wildmat.3
     344 ./tools/expiretover
@@ -61,89 +61,89 @@ MANIFEST for tin-1.7.0 (Sun Aug 10 16:31:04 CEST 2003)
    2702 ./include/bool.h
    2128 ./include/bugrep.h
    9502 ./include/oldconfig.h
-  57728 ./include/extern.h
+  57722 ./include/extern.h
   11429 ./include/keymap.h
   15886 ./include/menukeys.h
-   6539 ./include/nntplib.h
+   6599 ./include/nntplib.h
     665 ./include/plp_snprintf.h
-  11836 ./include/policy.h
-  29898 ./include/proto.h
+  12079 ./include/policy.h
+  30209 ./include/proto.h
    5047 ./include/rfc2046.h
    3373 ./include/stpwatch.h
    5400 ./include/tcurses.h
-  66312 ./include/tin.h
-  12814 ./include/tinrc.h
+  66282 ./include/tin.h
+  12821 ./include/tinrc.h
    5736 ./include/tnntp.h
    2256 ./include/trace.h
-   2685 ./include/version.h
-  24977 ./src/active.c
-  50476 ./src/art.c
-  30113 ./src/attrib.c
-  12301 ./src/auth.c
+   2686 ./include/version.h
+  25033 ./src/active.c
+  49222 ./src/art.c
+  30131 ./src/attrib.c
+  12365 ./src/auth.c
   13846 ./src/charset.c
    5981 ./src/color.c
-  85273 ./src/config.c
-  29286 ./src/cook.c
-  34665 ./src/curses.c
-   9928 ./src/debug.c
+  85678 ./src/config.c
+  29311 ./src/cook.c
+  34682 ./src/curses.c
+   9917 ./src/debug.c
    3414 ./src/envarg.c
-  25215 ./src/feed.c
-  52178 ./src/filter.c
+  25277 ./src/feed.c
+  51671 ./src/filter.c
   17968 ./src/getline.c
    7254 ./src/global.c
-  44489 ./src/group.c
+  44582 ./src/group.c
    4158 ./src/hashstr.c
-   9671 ./src/header.c
+   9701 ./src/header.c
   27952 ./src/help.c
-  13778 ./src/inews.c
-  31889 ./src/init.c
+  13781 ./src/inews.c
+  31958 ./src/init.c
    2845 ./src/joinpath.c
-  38017 ./src/keymap.c
- 113906 ./src/lang.c
+  38018 ./src/keymap.c
+ 114194 ./src/lang.c
    4310 ./src/langinfo.c
    7033 ./src/list.c
    6672 ./src/lock.c
   11882 ./src/mail.c
-  26791 ./src/main.c
+  26795 ./src/main.c
   10227 ./src/makecfg.c
-  12207 ./src/memory.c
-   5222 ./src/mimetypes.c
-  83791 ./src/misc.c
-  37475 ./src/newsrc.c
+  12216 ./src/memory.c
+   5257 ./src/mimetypes.c
+  84046 ./src/misc.c
+  37066 ./src/newsrc.c
   27755 ./src/nntplib.c
-   7248 ./src/nrctbl.c
-  26546 ./src/open.c
-  55089 ./src/page.c
+   7270 ./src/nrctbl.c
+  28554 ./src/open.c
+  55221 ./src/page.c
   24132 ./src/parsdate.y
   16966 ./src/plp_snprintf.c
   12670 ./src/pgp.c
- 130410 ./src/post.c
-  13850 ./src/prompt.c
+ 130733 ./src/post.c
+  13860 ./src/prompt.c
   10822 ./src/read.c
   24976 ./src/refs.c
    4621 ./src/regex.c
-  14215 ./src/rfc1524.c
+  14488 ./src/rfc1524.c
    5553 ./src/rfc2045.c
-  26708 ./src/rfc2046.c
+  28567 ./src/rfc2046.c
   23766 ./src/rfc2047.c
-  36925 ./src/save.c
-  11495 ./src/screen.c
-  12769 ./src/search.c
-  30574 ./src/select.c
-   7739 ./src/sigfile.c
-  12361 ./src/signal.c
-   7001 ./src/strftime.c
-  12465 ./src/string.c
-  13814 ./src/tags.c
+  37008 ./src/save.c
+  10834 ./src/screen.c
+  12776 ./src/search.c
+  30616 ./src/select.c
+   7740 ./src/sigfile.c
+  12534 ./src/signal.c
+   7215 ./src/strftime.c
+  15675 ./src/string.c
+  13816 ./src/tags.c
   15871 ./src/tcurses.c
    3058 ./src/tmpfile.c
    3376 ./src/my_tmpfile.c
-  40019 ./src/thread.c
-   2466 ./src/trace.c
-   4120 ./src/version.c
+  40018 ./src/thread.c
+   2464 ./src/trace.c
+   4109 ./src/version.c
    5489 ./src/wildmat.c
-   7133 ./src/xface.c
-   7397 ./src/xref.c
+   7129 ./src/xface.c
+   7365 ./src/xref.c
    4987 ./amiga/README
    5520 ./amiga/tin.readme
    9918 ./amiga/smakefile
@@ -176,50 +176,50 @@ MANIFEST for tin-1.7.0 (Sun Aug 10 16:31:04 CEST 2003)
     389 ./vms/vmstimval.h
     179 ./pcre/AUTHORS
    2218 ./pcre/COPYING
-  57033 ./pcre/ChangeLog
+  59675 ./pcre/ChangeLog
    8049 ./pcre/INSTALL
    2218 ./pcre/LICENCE
    2405 ./pcre/Makefile.in
-  12927 ./pcre/Makefile.in-old
-   5101 ./pcre/NEWS
+  12476 ./pcre/Makefile.in-old
+   5514 ./pcre/NEWS
    4790 ./pcre/NON-UNIX-USE
   16335 ./pcre/README
    3077 ./pcre/RunTest.in
      72 ./pcre/config.h
-   4781 ./pcre/configure.in
+   4720 ./pcre/configure.in
    4766 ./pcre/dftables.c
   11406 ./pcre/get.c
-  28259 ./pcre/internal.h
+  28334 ./pcre/internal.h
    4289 ./pcre/maketables.c
    1093 ./pcre/pcre-config.in
- 231769 ./pcre/pcre.c
+ 233449 ./pcre/pcre.c
     271 ./pcre/pcre.def
-   6632 ./pcre/pcre.in
+   6717 ./pcre/pcre.in
   11338 ./pcre/pcredemo.c
-  15347 ./pcre/pcregrep.c
-  10114 ./pcre/pcreposix.c
+  15371 ./pcre/pcregrep.c
+  10193 ./pcre/pcreposix.c
    2347 ./pcre/pcreposix.h
-  39441 ./pcre/pcretest.c
+  39984 ./pcre/pcretest.c
    5232 ./pcre/perltest
    9610 ./pcre/printint.c
-  12544 ./pcre/study.c
-    395 ./pcre/version.sh
-   6405 ./pcre/doc/pcre.3
+  13539 ./pcre/study.c
+    398 ./pcre/version.sh
+   6924 ./pcre/doc/pcre.3
   55267 ./pcre/doc/pcrepattern.3
   73940 ./pcre/testdata/testinput1
   20201 ./pcre/testdata/testinput2
     569 ./pcre/testdata/testinput3
    8396 ./pcre/testdata/testinput4
-   2579 ./pcre/testdata/testinput5
-  98300 ./pcre/testdata/testoutput1
-  82791 ./pcre/testdata/testoutput2
-   1527 ./pcre/testdata/testoutput3
-  14599 ./pcre/testdata/testoutput4
-  18789 ./pcre/testdata/testoutput5
-  19111 ./include/autoconf.hin
+   2889 ./pcre/testdata/testinput5
+  98303 ./pcre/testdata/testoutput1
+  82522 ./pcre/testdata/testoutput2
+   1498 ./pcre/testdata/testoutput3
+  14602 ./pcre/testdata/testoutput4
+  19217 ./pcre/testdata/testoutput5
+  19049 ./include/autoconf.hin
    5800 ./pcre/pcre.mms
   20141 ./src/Makefile.in
-   7144 ./src/tincfg.tbl
+   7211 ./src/tincfg.tbl
    8747 ./src/descrip.mms
     954 ./libcanlock/Build
     882 ./libcanlock/CHANGES
@@ -281,13 +281,13 @@ MANIFEST for tin-1.7.0 (Sun Aug 10 16:31:04 CEST 2003)
      41 ./intl/VERSION
    4962 ./po/Makefile.inn
     839 ./po/POTFILES.in
- 120827 ./po/tin.pot
- 164556 ./po/de.gmo
- 195151 ./po/de.po
+ 121210 ./po/tin.pot
+ 164399 ./po/de.gmo
+ 195427 ./po/de.po
    7444 ./po/en_GB.gmo
- 123346 ./po/en_GB.po
- 156930 ./po/et.gmo
- 187192 ./po/et.po
- 104478 ./po/fr.gmo
- 165579 ./po/fr.po
-5913326 total
+ 123730 ./po/en_GB.po
+ 156502 ./po/et.gmo
+ 187490 ./po/et.po
+ 104476 ./po/fr.gmo
+ 166027 ./po/fr.po
+5927860 total

@@ -620,7 +620,7 @@ static t_keynode *keys_select_nav[] = {
 	&Key.Global.Eight, &Key.Global.Nine,
 #ifndef NO_SHELL_ESCAPE
 	&Key.Global.ShellEscape,
-#endif /* NO_SHELL_ESCAPE */
+#endif /* !NO_SHELL_ESCAPE */
 	&Key.Global.FirstPage, &Key.Global.LastPage, &Key.Global.PageUp,
 	&Key.Global.PageUp2, &Key.Global.PageUp3, &Key.Global.PageDown,
 	&Key.Global.PageDown2, &Key.Global.PageDown3, &Key.Global.Up,

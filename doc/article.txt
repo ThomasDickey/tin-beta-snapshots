@@ -1,0 +1,41 @@
+This attempts to document the article lifecycle.
+
+arts[] is trashed and rebuilt everytime a group is entered.
+This is handled entirely by index_group()
+
+setup_hard_base() creates an array of 'valid' article numbers in base[]
+
+read_overview() populates arts[] from overview data (cached or XOVER)
+Articles are initialised with set_article()
+Key initial default values are:
+	art->thread = ART_EXPIRED
+	art->status = ART_UNREAD
+
+read_art_headers() then plugs in any gaps due to new articles not yet in the
+overview (or reads all the headers if there are no overviews).
+All articles that are verified as already present (ie loaded by read_overview())
+or are newly added will have art->thread set to ART_UNTHREADED
+valid_artnum() is used to check if base[n] maps to any known arts[].artnum
+[ After this base[] is reused as the thread base pointer array, which involves
+  a change of type from long to int. This is why the code is full of ugly
+  (int) base[] casts ]
+
+parse_unread_arts() uses the newsrc bitmask to explicitly set
+art->status to either ART_UNREAD or ART_READ
+Therefore anything not in the bitmap will default to ART_UNREAD
+
+Any articles that still have art->thread set to ART_EXPIRED will
+have art->status set to ART_READ
+
+write_overview() rewrites the cached overview data for any
+articles above the group low watermark where arts->thread != ART_EXPIRED
+
+build_references() doesn't affect any of this
+
+make_threads() in essence does:
+	if (arts[i].thread >= 0)
+		arts[i].thread = ART_UNTHREADED;
+to 'unthread' all the currently threaded & valid arts and calls find_base()
+
+find_base() will not thread articles with ->thread == ART_EXPIRED
+It makes no actual changes to ->status or ->thread

@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-07-28
+ *  Updated   : 2003-09-05
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -768,9 +768,9 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  * NOTE: the "-(?!-)" assertion must be removed when IDN is introduced
  */
 #if 0 /* this one is ok for IPv4 */
-#	define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/]*(?::[^:@/]*)?@)?(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
+#	define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
 #else	/* this one should be IPv6 safe - test me! */
-#	define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/]*(?::[^:@/]*)?@)?(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:[0-9A-F]{0,4}:){1,7}[0-9A-F]{1,4}|(?:[0-9A-F]{0,4}:){1,3}(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
+#	define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:[0-9A-F]{0,4}:){1,7}[0-9A-F]{1,4}|(?:[0-9A-F]{0,4}:){1,3}(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
 #endif /* 0 */
 /*
  * case insensitive
@@ -1004,14 +1004,15 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define TINRC_CONFIRM_SELECT	(tinrc.confirm_choice == 2 || tinrc.confirm_choice == 5 || tinrc.confirm_choice == 6 || tinrc.confirm_choice == 7)
 
 /*
- * Number of MIME Encodings
+ * MIME Encodings
  */
-#define NUM_MIME_ENCODINGS	4
-
-#define MIME_ENCODING_8BIT	0
-#define MIME_ENCODING_BASE64	1
-#define MIME_ENCODING_QP	2
-#define MIME_ENCODING_7BIT	3
+enum {
+	MIME_ENCODING_8BIT = 0,
+	MIME_ENCODING_BASE64,
+	MIME_ENCODING_QP,
+	MIME_ENCODING_7BIT,
+	NUM_MIME_ENCODINGS
+};
 
 #ifdef CHARSET_CONVERSION			/* can/should do charset conversion via iconv() */
 #	define NUM_MIME_CHARSETS 27	/* # known 'outgoing' charsets */
@@ -1123,7 +1124,6 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 /*
  * used by feed_articles() & show_mini_help() & quick_filter & add_filter_rule
  */
-#define INTERNAL_LEVEL  0	/* do we need this? see comments in filter.c */
 #define SELECT_LEVEL	1
 #define GROUP_LEVEL	2
 #define THREAD_LEVEL	3
@@ -1179,6 +1179,16 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define THREAD_SCORE_MAX	0
 #define THREAD_SCORE_SUM	1
 #define THREAD_SCORE_WEIGHT	2
+
+/*
+ * Values for interactive_mailer
+ */
+enum {
+	INTERACTIVE_NONE = 0,
+	INTERACTIVE_WITH_HEADERS,
+	INTERACTIVE_WITHOUT_HEADERS,
+	NUM_INTERACTIVE_MAILERS
+};
 
 /*
  * used in feed.c & save.c
@@ -1262,6 +1272,15 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define UUE_NO			0		/* Don't hide uue data */
 #define UUE_YES			1		/* Hide uue data */
 #define UUE_ALL			2		/* Hide uue data harder */
+
+/*
+ * used in misc.c/rfc1524.c
+ */
+enum quote_enum {
+	no_quote = 0,
+	dbl_quote,
+	sgl_quote
+};
 
 
 /*
@@ -2185,14 +2204,6 @@ typedef void (*BodyPtr) (char *, FILE *, int);
 #		define EndWin		EndWind
 #	endif /* !ferror */
 #endif /* __DECC */
-
-#ifdef HAVE_TEMPNAM
-#	define my_tempnam(a,b)	tempnam(a,b)
-#else
-#	ifdef HAVE_TMPNAM
-#		define my_tempnam(a,b)	tmpnam((char *)0)
-#	endif /* HAVE_TMPNAM */
-#endif /* HAVE_TEMPNAM */
 
 #ifndef my_tmpfile_only
 /*

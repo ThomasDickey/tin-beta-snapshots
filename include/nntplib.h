@@ -97,6 +97,7 @@
 
 #define	OK_CANPOST		200	/* Hello; you can post */
 #define	OK_NOPOST		201	/* Hello; you can't post */
+#define	OK_EXTENSIONS	202	/* extensions supported follow */
 #define	OK_NOIHAVE		202	/* Hello; you can't IHAVE; discussed on the IETF-mailinglist */
 #define	OK_SLAVE		202	/* Slave status noted */
 #define	OK_NOPOSTIHAVE	203	/* Hello; you can't POST or IHAVE; iscussed on the IETF-mailinglist */

@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-10
+ *  Updated   : 2003-08-12
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -200,7 +200,7 @@ constext txt_error_invalid_response_to_group[] = N_("Invalid response to GROUP c
 constext txt_error_locale[] = "Can't set the specified locale!";
 constext txt_error_mime_end[] = N_("MIME parse error: Unexpected end of %s/%s article");
 constext txt_error_mime_start[] = N_("MIME parse error: Start boundary whilst reading headers");
-constext txt_error_no_domain_name[] = N_("Can't get a (fully-qualified) domain-name!\n");
+constext txt_error_no_domain_name[] = N_("Can't get a (fully-qualified) domain-name!");
 constext txt_error_no_enter_permission[] = N_("No permissions to go into %s\n");
 constext txt_error_no_from[] = N_("\nError: From: line missing.\n");
 constext txt_error_no_read_permission[] = N_("No read permissions for %s\n");
@@ -1042,7 +1042,7 @@ Warning: The \"%s:\" line has spaces in it that SHOULD be removed.\n");
 #	else
 		constext txt_mini_group_3[] = N_("%s=mail; %s=print; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post");
 		constext txt_mini_page_3[] = N_("%s=mail; %s=print; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post");
-#	endif /* DONT_HAVE_PIPING */
+#	endif /* !DONT_HAVE_PIPING */
 #else
 #	ifndef DONT_HAVE_PIPING
 		constext txt_mini_group_3[] = N_("%s=pipe; %s=mail; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post");
@@ -1050,8 +1050,8 @@ Warning: The \"%s:\" line has spaces in it that SHOULD be removed.\n");
 #	else
 		constext txt_mini_group_3[] = N_("%s=mail; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post");
 		constext txt_mini_page_3[] = N_("%s=mail; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post");
-#	endif /* DONT_HAVE_PIPING */
-#endif /* DISABLE_PRINTING */
+#	endif /* !DONT_HAVE_PIPING */
+#endif /* !DISABLE_PRINTING */
 
 #ifdef HAVE_COLOR
 #	ifdef USE_CURSES
@@ -1283,6 +1283,13 @@ constext *txt_mailbox_formats[] = {
 	"MBOXO",
 	"MBOXRD",
 	"MMDF"
+};
+
+/* interactive mailers */
+constext *txt_interactive_mailers[] = {
+	N_("no"),
+	N_("with headers"),
+	N_("without headers")
 };
 
 struct opttxt txt_display_options = {
@@ -1935,6 +1942,12 @@ struct opttxt txt_mono_markstroke = {
 	""
 };
 
+struct opttxt txt_url_highlight = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("URL highlighting in message body   :"),
+	N_("# Enable URL highlighting?\n")
+};
+
 struct opttxt txt_word_highlight = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Word highlighting in message body  :"),
@@ -2249,12 +2262,13 @@ struct opttxt txt_mailer_format = {
 # ie. elm interactive          :    elm -i %%F -s \"%%S\" \"%%T\"\n")
 };
 
-struct opttxt txt_use_mailreader_i = {
+struct opttxt txt_interactive_mailer = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Use interactive mail reader        :"),
-	N_("# Interactive mailreader: if ON mailreader will be invoked earlier for\n\
-# reply so you can use more of its features (eg. MIME, pgp, ...)\n\
-# this option has to suit default_mailer_format\n")
+	N_("# Interactive mailreader:\n\
+# 0 = no interactive mailreader\n\
+# 1 = use interactive mailreader with headers in file\n\
+# 2 = use interactive mailreader without headers in file\n")
 };
 
 struct opttxt txt_unlink_article = {

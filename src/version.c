@@ -3,7 +3,7 @@
  *  Module    : version.c
  *  Author    : U. Janssen
  *  Created   : 2003-05-11
- *  Updated   : 2003-06-27
+ *  Updated   : 2003-08-21
  *  Notes     :
  *
  * Copyright (c) 2003 Urs Janssen <urs@tin.org>
@@ -47,7 +47,7 @@
 
 /*
  * line    is the entire line we should check
- * skip    must the the leading portion of the version line not including the
+ * skip    must be the leading portion of the version line not including the
  *         version number (which must be a dotted triple)
  * verson  is the version number (dotted triple) we expect to match
  *
@@ -69,7 +69,7 @@ check_upgrade(
 	size_t len = strlen(skip) + strlen(fmt) + 1; /* format buffer len */
 
 	rc_majorv = rc_minorv = rc_subv = c_majorv = c_minorv = c_subv = -1;
-	format = my_malloc(strlen(skip) + 10);
+	format = my_malloc(len + 1);
 	snprintf(format, len, "%s%s", skip, fmt);
 	sscanf(line, format, &rc_majorv, &rc_minorv, &rc_subv);
 	free(format);

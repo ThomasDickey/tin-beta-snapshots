@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-03
+ *  Updated   : 2003-08-26
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -231,7 +231,7 @@ check_start_save_any_news(
 						continue;
 					}
 
-					if (function == MAIL_ANY_NEWS) {
+					if ((function == MAIL_ANY_NEWS) && ((INTERACTIVE_NONE == tinrc.interactive_mailer) || (INTERACTIVE_WITH_HEADERS == tinrc.interactive_mailer))) {
 						fprintf(savefp, "To: %s\n", mail_news_user);
 						fprintf(savefp, "Subject: %s\n", arts[j].subject);
 						/*
@@ -1430,20 +1430,9 @@ decode_save_mime(
 	t_part *ptr, *uueptr;
 
 	/*
-	 * Process only the uue part in the 'main' article to prevent saving out the
-	 * preamble as a text section etc..
-	 */
-	if (!postproc) {
-		for (uueptr = art->hdr.ext->uue; uueptr != NULL; uueptr = uueptr->next) {
-			if (!(decode_save_one(uueptr, art->raw, postproc)))
-				break;
-		}
-	}
-
-	/*
 	 * Iterate over all the attachments
 	 */
-	for (ptr = art->hdr.ext->next; ptr != NULL; ptr = ptr->next) {
+	for (ptr = art->hdr.ext; ptr != NULL; ptr = ptr->next) {
 		/*
 		 * Handle uuencoded sections in this message part.
 		 * Only works when the uuencoded file is entirely within the current
@@ -1459,9 +1448,12 @@ decode_save_mime(
 		}
 
 		/*
-		 * TYPE_MULTIPART is an envelope type, don't process it
+		 * TYPE_MULTIPART is an envelope type, don't process it.
+		 * If we had an UUE part, the "surrounding" text/plain plays
+		 * the role of a multipart part. Check to see if we want to
+		 * save text and if not, skip this part.
 		 */
-		if (ptr->type == TYPE_MULTIPART)
+		if ((ptr->type == TYPE_MULTIPART || ((NULL != ptr->uue) && (!check_save_mime_type(ptr, CURR_GROUP.attribute->mime_types_to_save)))))
 			continue;
 
 		if (!(decode_save_one(ptr, art->raw, postproc)))

@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2003-08-10
+ *  Updated   : 2003-08-12
  *  Notes     :
  *
  * Copyright (c) 1999-2003 Jason Faultless <jason@altarstone.com>
@@ -177,6 +177,7 @@ struct t_config {
 	int mono_markslash;				/* attribute for text highlighting with /slashes/ */
 	int mono_markstroke;				/* attribute for text highlighting with -strokes- */
 	t_bool word_highlight;				/* like word_highlight but stored in tinrc */
+	t_bool url_highlight;				/* highlight urls in text bodies */
 	int wrap_column;				/* screen column to wrap of text messages */
 #	ifdef HAVE_COLOR
 		t_bool use_color;					/* like use_color but stored in tinrc */
@@ -230,7 +231,7 @@ struct t_config {
 	t_bool thread_catchup_on_exit;		/* catchup thread with left arrow key or not */
 	t_bool unlink_article;
 	char inews_prog[PATH_LEN];
-	t_bool use_mailreader_i;			/* invoke user's mailreader earlier to use more of its features (i = interactive) */
+	int interactive_mailer;			/* invoke user's mailreader */
 	t_bool use_mouse;					/* enables/disables mouse support under xterm */
 #	ifdef HAVE_KEYPAD
 		t_bool use_keypad;

@@ -1222,7 +1222,7 @@ build_sline(
 	if ((j = line_is_tagged(respnum)))
 		strcpy(new_resps, tin_ltoa(j, 3));
 	else
-		sprintf(new_resps, "  %c", sbuf.art_mark);
+		snprintf(new_resps, sizeof(new_resps), "  %c", sbuf.art_mark);
 
 	/*
 	 * Find index of first unread in this thread
@@ -1233,19 +1233,20 @@ build_sline(
 		if (n > 1) { /* change this to (n > 0) if you do a n-- above */
 			if (arts[j].line_count != -1) {
 				char tmp_buffer[4];
+
 				strcpy(tmp_buffer, tin_ltoa(n, 3));
-				sprintf(art_cnt, "%s %s ", tmp_buffer, tin_ltoa(arts[j].line_count, 4));
+				snprintf(art_cnt, sizeof(art_cnt), "%s %s ", tmp_buffer, tin_ltoa(arts[j].line_count, 4));
 			} else
-				sprintf(art_cnt, "%s    ? ", tin_ltoa(n, 3));
+				snprintf(art_cnt, sizeof(art_cnt), "%s    ? ", tin_ltoa(n, 3));
 		} else {
 			if (arts[j].line_count != -1)
-				sprintf(art_cnt, "    %s ", tin_ltoa(arts[j].line_count, 4));
+				snprintf(art_cnt, sizeof(art_cnt), "    %s ", tin_ltoa(arts[j].line_count, 4));
 			else
 				strcpy(art_cnt, "       ? ");
 		}
 	} else {
 		if (n > 1) /* change this to (n > 0) if you do a n-- above */
-			sprintf(art_cnt, "%s ", tin_ltoa(n, 3));
+			snprintf(art_cnt, sizeof(art_cnt), "%s ", tin_ltoa(n, 3));
 		else
 			strcpy(art_cnt, "    ");
 	}

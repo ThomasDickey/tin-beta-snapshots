@@ -43,7 +43,7 @@
 #endif /* !TCURSES_H */
 #ifndef TNNTP_H
 #	include "tnntp.h"
-#endif /* TNNTP_H */
+#endif /* !TNNTP_H */
 
 #define BITS_TO_BYTES(n)	((size_t) ((n + NBITS - 1) / NBITS))
 
@@ -1432,22 +1432,17 @@ set_default_bitmap(
 
 /* TEST harness */
 #ifdef DEBUG_NEWSRC
-
-#	ifdef DEBUG_NEWSRC_FIXME	/* something's broken here */
-		static void set_bitmap_range_read(struct t_newsrc *newsrc, long beg, long end);
-		static void set_bitmap_range_unread(struct t_newsrc *newsrc, long beg, long end);
-#	endif /* DEBUG_NEWSRC_FIXME */
+static void set_bitmap_range_read(struct t_newsrc *my_newsrc, long beg, long end);
+static void set_bitmap_range_unread(struct t_newsrc *my_newsrc, long beg, long end);
 
 void
-vNewsrcTestHarness(
+newsrc_test_harness(
 	void)
 {
 	char seq[20000];
-	char *temp_file = NULL;
 	FILE *fp;
 	int i;
 	int retry = 10; /* max. retrys */
-	int fd;
 	long rng_min, rng_max;
 	struct t_group group;
 
@@ -1470,7 +1465,7 @@ vNewsrcTestHarness(
 
 	strcpy(seq, get_val("TIN_SEQ", ""));
 
-	my_printf("\nENV Min=[%ld] Max=[%ld] Rng=[%ld-%ld] Count=[%ld] Seq=[%s]\n",
+	fprintf(stderr, "\nENV Min=[%ld] Max=[%ld] Rng=[%ld-%ld] Count=[%ld] Seq=[%s]\n",
 		group.xmin, group.xmax, rng_min, rng_max, group.count, seq);
 
 	for (i = 0; i < 3; i++) {
@@ -1485,74 +1480,65 @@ vNewsrcTestHarness(
 		while (retry) {
 		/* FIXME - this is secure now, but doesn't write any debug output */
 		/* (it didn't before too) */
-			if ((temp_file = my_tempnam("", "NEWSRC")) != NULL) {
-				if ((fd = open (temp_file, (O_CREAT|O_EXCL), (S_IRUSR|S_IWUSR))) != -1) {
-					if ((fp = fopen(temp_file, "w")) != NULL) {
-						my_printf("\n%d. PARSE Seq=[%s]\n", i + 1, seq);
-						parse_bitmap_seq(&group, seq);
-						debug_print_newsrc(&group.newsrc, stdout);
-						print_bitmap_seq(fp, &group);
-						my_printf("   PRINT Seq=[");
-						print_bitmap_seq(stdout, &group);
-						fclose(fp);
-					} else
-						retry--;
-					close(fd);
-					break;
-				} else
-					retry--;
+			if ((fp = tmpfile()) != NULL) {
+				fprintf(stderr, "\n%d. PARSE Seq=[%s]\n", i + 1, seq);
+				parse_bitmap_seq(&group, seq);
+				debug_print_newsrc(&group.newsrc, stderr);
+				print_bitmap_seq(fp, &group);
+				fprintf(stderr, "   PRINT Seq=");
+				print_bitmap_seq(stderr, &group);
+				rewind(fp);
+				break;
 			} else
 				retry--;
 		}
 
-		debug_print_newsrc(&group.newsrc, stdout);
+		debug_print_newsrc(&group.newsrc, stderr);
 
 		if (!retry)
 			error_message(_(txt_cannot_create_uniq_name));
 		else {
-			fp = fopen(temp_file, "r");
 			fgets(seq, (int) sizeof(seq), fp);
 			seq[strlen(seq) - 1] = '\0';
 			fclose(fp);
 		}
 	}
-#	ifdef DEBUG_NEWSRC_FIXME	/* something's broken here */
 	set_bitmap_range_read(&group.newsrc, rng_min, rng_max);
-	debug_print_newsrc(&group.newsrc, stdout);
+	debug_print_newsrc(&group.newsrc, stderr);
 
 	set_bitmap_range_unread(&group.newsrc, rng_min, rng_max);
-	debug_print_newsrc(&group.newsrc, stdout);
+	debug_print_newsrc(&group.newsrc, stderr);
 
-	NSETBLK0(group.newsrc.xbitmap, group.newsrc.xbitlen);
-	debug_print_newsrc(&group.newsrc, stdout);
+	if (group.newsrc.xbitmap != NULL)
+		NSETBLK0(group.newsrc.xbitmap, group.newsrc.xbitlen);
+	debug_print_newsrc(&group.newsrc, stderr);
 
-	NSETBLK1(group.newsrc.xbitmap, group.newsrc.xbitlen);
-	debug_print_newsrc(&group.newsrc, stdout);
-#	endif /* DEBUG_NEWSRC_FIXME */
+	if (group.newsrc.xbitmap != NULL)
+		NSETBLK1(group.newsrc.xbitmap, group.newsrc.xbitlen);
+	debug_print_newsrc(&group.newsrc, stderr);
 	my_printf("\n");
 }
 
 
-#	ifdef DEBUG_NEWSRC_FIXME	/* something's broken here */
 static void
 set_bitmap_range_read(
-	struct t_newsrc *newsrc,
+	struct t_newsrc *my_newsrc,
 	long beg,
 	long end)
 {
 	long length, offset;
 
-	if (beg >= newsrc->xmin && end <= newsrc->xmax) {
-		offset = beg - newsrc->xmin;
-		length = end - newsrc->xmin;
+	if (beg >= my_newsrc->xmin && end <= my_newsrc->xmax) {
+		offset = beg - my_newsrc->xmin;
+		length = end - my_newsrc->xmin;
 
-my_printf("\nRNG Min-Max=[%ld-%ld] Beg-End=[%ld-%ld] OFF=[%ld] LEN=[%ld]\n",
-newsrc->xmin, newsrc->xmax, beg, end, offset, length);
+fprintf(stderr, "\nRNG Min-Max=[%ld-%ld] Beg-End=[%ld-%ld] OFF=[%ld] LEN=[%ld]\n",
+my_newsrc->xmin, my_newsrc->xmax, beg, end, offset, length);
 
 		if (beg == end) {
-			NSET0(newsrc->xbitmap, offset);
+			NSET0(my_newsrc->xbitmap, offset);
 		} else {
-			NSETRNG0(newsrc->xbitmap, offset, length);
+			NSETRNG0(my_newsrc->xbitmap, offset, length);
 		}
 	}
 }
@@ -1560,24 +1546,23 @@ newsrc->xmin, newsrc->xmax, beg, end, offset, length);
 
 static void
 set_bitmap_range_unread(
-	struct t_newsrc *newsrc,
+	struct t_newsrc *my_newsrc,
 	long beg,
 	long end)
 {
 	long length, offset;
 
-	if (beg >= newsrc->xmin && end <= newsrc->xmax) {
-		offset = beg - newsrc->xmin;
-		length = end - newsrc->xmin;
+	if (beg >= my_newsrc->xmin && end <= my_newsrc->xmax) {
+		offset = beg - my_newsrc->xmin;
+		length = end - my_newsrc->xmin;
 
-my_printf("\nRNG Min-Max=[%ld-%ld] Beg-End=[%ld-%ld] OFF=[%ld] LEN=[%ld]\n", newsrc->xmin, newsrc->xmax, beg, end, offset, length);
+fprintf(stderr, "\nRNG Min-Max=[%ld-%ld] Beg-End=[%ld-%ld] OFF=[%ld] LEN=[%ld]\n", my_newsrc->xmin, my_newsrc->xmax, beg, end, offset, length);
 
 		if (beg == end) {
-			NSET1(newsrc->xbitmap, offset);
+			NSET1(my_newsrc->xbitmap, offset);
 		} else {
-			NSETRNG1(newsrc->xbitmap, offset, length);
+			NSETRNG1(my_newsrc->xbitmap, offset, length);
 		}
 	}
 }
-#	endif /* DEBUG_NEWSRC_FIXME */
 #endif /* DEBUG_NEWSRC */

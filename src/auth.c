@@ -114,13 +114,13 @@ authinfo_generic(
 	put_server(tmpbuf);
 
 #ifdef HAVE_SETENV
-	sprintf(tmpbuf, "%d.%d.%d",
+	snprintf(tmpbuf, sizeof(tmpbuf), "%d.%d.%d",
 			fileno(get_nntp_fp(FAKE_NNTP_FP)),
 			fileno(get_nntp_wr_fp(FAKE_NNTP_FP)), cookiefd);
 	setenv("NNTP_AUTH_FDS", tmpbuf, 1);
 #else
 #	ifdef HAVE_PUTENV
-	sprintf(tmpbuf, "NNTP_AUTH_FDS=%d.%d.%d",
+	snprintf(tmpbuf, sizeof(tmpbuf), "NNTP_AUTH_FDS=%d.%d.%d",
 			fileno(get_nntp_fp(FAKE_NNTP_FP)),
 			fileno(get_nntp_wr_fp(FAKE_NNTP_FP)), cookiefd);
 	new_env = my_strdup(tmpbuf);
@@ -258,7 +258,7 @@ do_authinfo_original(
 	char line[PATH_LEN];
 	int ret;
 
-	sprintf(line, "AUTHINFO USER %s", authuser);
+	snprintf(line, sizeof(line), "AUTHINFO USER %s", authuser);
 #ifdef DEBUG
 	debug_nntp("authorization", line);
 #endif /* DEBUG */
@@ -274,7 +274,7 @@ do_authinfo_original(
 		return ERR_AUTHBAD;
 	}
 
-	sprintf(line, "AUTHINFO PASS %s", authpass);
+	snprintf(line, sizeof(line), "AUTHINFO PASS %s", authpass);
 #ifdef DEBUG
 	debug_nntp("authorization", line);
 #endif /* DEBUG */

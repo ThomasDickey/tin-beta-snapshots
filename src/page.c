@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-10
+ *  Updated   : 2003-09-12
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -993,6 +993,7 @@ return_to_index:
 			case iKeyPageViewAttach:
 				XFACE_SUPPRESS();
 				decode_save_mime(&pgart, FALSE);
+				draw_page(group->name, 0);
 				XFACE_SHOW();
 				break;
 
@@ -1002,6 +1003,7 @@ return_to_index:
 					resize_article(FALSE, &pgart); /* umbreak long lines */
 					process_url();
 					resize_article(TRUE, &pgart); /* rebreak long lines */
+					draw_page(group->name, 0);
 					XFACE_SHOW();
 				}
 				break;
@@ -1092,14 +1094,16 @@ print_message_page(
 		/*
 		 * Highlight URL's and mail addresses
 		 */
-		if (curr->flags & C_URL)
-			highlight_regexes(i + scroll_region_top, &url_regex, -1);
+		if (tinrc.url_highlight) {
+			if (curr->flags & C_URL)
+				highlight_regexes(i + scroll_region_top, &url_regex, -1);
 
-		if (curr->flags & C_MAIL)
-			highlight_regexes(i + scroll_region_top, &mail_regex, -1);
+			if (curr->flags & C_MAIL)
+				highlight_regexes(i + scroll_region_top, &mail_regex, -1);
 
-		if (curr->flags & C_NEWS)
-			highlight_regexes(i + scroll_region_top, &news_regex, -1);
+			if (curr->flags & C_NEWS)
+				highlight_regexes(i + scroll_region_top, &news_regex, -1);
+		}
 
 		/*
 		 * Highlight /slashes/, *stars*, _underscores_ and -strokes-
@@ -1316,11 +1320,7 @@ draw_page_header(
 
 	buf[i] = '\0';
 
-	if (maxlen != grplen) {					/* ie groupname was too long */
-		strncat(buf, group, maxlen - 3);
-		strcat(buf, "...");
-	} else
-		strncat(buf, group, maxlen);
+	trunc(group, buf + i, sizeof(buf) - i, maxlen);
 
 	for (i = strlen(buf); i < RIGHT_POS + mb_diff; i++)	/* Pad out to right */
 		buf[i] = ' ';
@@ -1337,7 +1337,7 @@ draw_page_header(
 		/* Can't eval tin_ltoa() more than once in a statement due to statics */
 		strcpy(x, tin_ltoa(which_thread(this_resp) + 1, 4));
 
-		sprintf(tmp, _(txt_thread_x_of_n), buf, x, tin_ltoa(grpmenu.max, 4));
+		snprintf(tmp, sizeof(tmp), _(txt_thread_x_of_n), buf, x, tin_ltoa(grpmenu.max, 4));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp)) != (size_t) -1) {
 			wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
@@ -1356,13 +1356,13 @@ draw_page_header(
 	if (arts[this_resp].line_count < 0)
 		strcpy(tmp, "?");
 	else
-		sprintf(tmp, "%-4d", arts[this_resp].line_count);
+		snprintf(tmp, sizeof(tmp), "%-4d", arts[this_resp].line_count);
 
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_head);
 #endif /* HAVE_COLOR */
 
-	sprintf(buf, _(txt_lines), tmp);
+	snprintf(buf, sizeof(buf), _(txt_lines), tmp);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if (mbstowcs(wtmp, buf, ARRAY_SIZE(wtmp)) != (size_t) -1) {
 		wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
@@ -1396,13 +1396,14 @@ draw_page_header(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if (mbstowcs(wtmp, buf, ARRAY_SIZE(wtmp)) != (size_t) -1) {
 		wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
-		wcspart(wbuf, wtmp, RIGHT_POS - 5 - i, ARRAY_SIZE(wbuf), FALSE);
+		wtrunc(wtmp, wbuf, ARRAY_SIZE(wbuf), RIGHT_POS - 5 - i);
 		scrlen = wcswidth(wbuf, ARRAY_SIZE(wbuf));
 		wcstombs(buf, wbuf, sizeof(wbuf));
 	} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	{
-		buf[RIGHT_POS - 5 - i] = '\0';
+		STRCPY(tmp, buf);
+		trunc(tmp, buf, sizeof(buf), RIGHT_POS - 5 - i);
 		scrlen = (int) strlen(buf);
 	}
 
@@ -1449,10 +1450,13 @@ draw_page_header(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if (mbstowcs(wtmp, buf, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
 		wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
-		wcspart(wbuf, wtmp, cCOLS - 1, ARRAY_SIZE(wbuf) - 1, FALSE);
+		wtrunc(wtmp, wbuf, ARRAY_SIZE(wbuf), cCOLS - 1);
 	} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-		buf[cCOLS - 1] = '\0';
+	{
+		STRCPY(tmp, buf);
+		trunc(tmp, buf, sizeof(buf), cCOLS - 1);
+	}
 
 	if (note_h->org) {
 		snprintf(tmp, sizeof(tmp), _(txt_at_s), note_h->org);
@@ -1465,7 +1469,7 @@ draw_page_header(
 			if (wcswidth(wbuf, ARRAY_SIZE(wbuf)) + wcswidth(wtmp, ARRAY_SIZE(wtmp)) >= cCOLS - 1) {
 				wcsncat(wbuf, wtmp, ARRAY_SIZE(wbuf) - wcslen(wbuf) - 1);
 				wcscpy(wtmp, wbuf);
-				wcspart(wbuf, wtmp, cCOLS - 1, ARRAY_SIZE(wbuf) - 1, FALSE);
+				wtrunc(wtmp, wbuf, ARRAY_SIZE(wbuf), cCOLS - 1);
 			} else {
 				int j = cCOLS - 1 - wcswidth(wtmp, ARRAY_SIZE(wtmp)) - wcswidth(wbuf, ARRAY_SIZE(wbuf));
 
@@ -1478,8 +1482,9 @@ draw_page_header(
 		} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			if ((int) strlen(buf) + (int) strlen(tmp) >= cCOLS - 1) {
-				strncat(buf, tmp, cCOLS - 1 - strlen(buf));
-				buf[cCOLS - 1] = '\0';
+				strncat(buf, tmp, sizeof(buf) - strlen(buf) - 1);
+				STRCPY(tmp, buf);
+				trunc(tmp, buf, sizeof(buf), cCOLS - 1);
 			} else {
 				pos = cCOLS - 1 - (int) strlen(tmp);
 				for (i = strlen(buf); i < pos; i++)
