@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-02-21
+ *  Updated   : 2004-11-16
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -71,6 +71,8 @@ static t_help_page select_help_page[] = {
 	{ txt_help_global_line_down, iKeyDown },
 	{ txt_help_global_line_up, iKeyUp2 },
 	{ txt_help_global_line_up, iKeyUp },
+	{ txt_help_global_scroll_down, iKeyScrollDown },
+	{ txt_help_global_scroll_up, iKeyScrollUp },
 	{ txt_help_empty_line, 0 },
 	{ txt_help_select_first_group, iKeyFirstPage },
 	{ txt_help_select_last_group, iKeyLastPage },
@@ -148,6 +150,8 @@ static t_help_page group_help_page[] = {
 	{ txt_help_global_line_down, iKeyDown },
 	{ txt_help_global_line_up, iKeyUp2 },
 	{ txt_help_global_line_up, iKeyUp },
+	{ txt_help_global_scroll_down, iKeyScrollDown },
+	{ txt_help_global_scroll_up, iKeyScrollUp },
 	{ txt_help_empty_line, 0 },
 	{ txt_help_group_first_thread, iKeyFirstPage },
 	{ txt_help_group_last_thread, iKeyLastPage },
@@ -255,6 +259,8 @@ static t_help_page thread_help_page[] = {
 	{ txt_help_global_line_down, iKeyDown },
 	{ txt_help_global_line_up, iKeyUp2 },
 	{ txt_help_global_line_up, iKeyUp },
+	{ txt_help_global_scroll_down, iKeyScrollDown },
+	{ txt_help_global_scroll_up, iKeyScrollUp },
 	{ txt_help_empty_line, 0 },
 	{ txt_help_thread_first_article, iKeyFirstPage },
 	{ txt_help_thread_last_article, iKeyLastPage },

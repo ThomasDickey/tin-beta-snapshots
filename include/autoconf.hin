@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2004-08-20
+ *  Updated   : 2004-09-14
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2004 Thomas Dickey <dickey@invisible-island.net>
@@ -238,6 +238,7 @@
 #	undef HAVE_FLOCK
 #	undef HAVE_FORK
 #	undef HAVE_FTIME
+#	undef HAVE_FTRUNCATE
 #	undef HAVE_GAI_STRERROR
 #	undef HAVE_GETADDRINFO
 #	undef HAVE_GETCWD
@@ -597,7 +598,8 @@
 #	undef BROKEN_LISTGROUP
 
 /*
- * on some old systems the WIFEXITED()/WEXITSTATUS() macros do not work
+ * on some old systems the WIFEXITED()/WEXITSTATUS() macros do not work,
+ * e.g. SEIUX3.2, DG/UX5.4R3, NEXTSTEP3
  */
 #	undef IGNORE_SYSTEM_STATUS
 
@@ -649,6 +651,7 @@
  */
 #	if defined(MULTIBYTE_ABLE) || defined(HAVE_LIBUTF8_H)
 #		define SUPPORT_UTF8 1
+#		define SUPPORT_UCP 1
 #	endif /* MULTIBYTE_ABLE || HAVE_LIBUTF8_H */
 
 /*

@@ -1,15 +1,15 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2004-09-05
+# Updated: 2004-09-14
 #
 
 PROJECT	= tin
 LVER	= 1
 PVER	= 7
-SVER	= 6
+SVER	= 7
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20040906
+DVER	= 20041215
 EXE	= tin
 
 # directory structure
@@ -236,6 +236,11 @@ PCRE	= \
 	$(PCREDIR)/perltest \
 	$(PCREDIR)/printint.c \
 	$(PCREDIR)/study.c \
+	$(PCREDIR)/ucp.c \
+	$(PCREDIR)/ucp.h \
+	$(PCREDIR)/ucpinternal.h \
+	$(PCREDIR)/ucptable.c \
+	$(PCREDIR)/ucptypetable.c \
 	$(PCREDIR)/version.sh \
 	$(PCREDIR)/doc/pcre.3 \
 	$(PCREDIR)/doc/pcrepattern.3 \
@@ -244,11 +249,13 @@ PCRE	= \
 	$(PCREDIR)/testdata/testinput3 \
 	$(PCREDIR)/testdata/testinput4 \
 	$(PCREDIR)/testdata/testinput5 \
+	$(PCREDIR)/testdata/testinput6 \
 	$(PCREDIR)/testdata/testoutput1 \
 	$(PCREDIR)/testdata/testoutput2 \
 	$(PCREDIR)/testdata/testoutput3 \
 	$(PCREDIR)/testdata/testoutput4 \
 	$(PCREDIR)/testdata/testoutput5 \
+	$(PCREDIR)/testdata/testoutput6
 
 CAN	= \
 	$(CANDIR)/Build \

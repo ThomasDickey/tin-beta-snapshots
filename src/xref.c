@@ -126,7 +126,7 @@ read_xref_header(
 	FILE *fp;
 	char *ptr, *q;
 	char buf[HEADER_LEN];
-	long artnum = 0L;
+	long artnum;
 
 	snprintf(buf, sizeof(buf), "XHDR XREF %ld", art->artnum);
 	if ((fp = nntp_command(buf, OK_HEAD, NULL, 0)) == NULL)

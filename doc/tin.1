@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2004-09-06
+.\" Updated   : 2004-12-15
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "September 6th, 2004" "1.7.6" "A Usenet newsreader"
+.TH tin 1 "December 15th, 2004" "1.7.7" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -470,6 +470,12 @@ Toggle use of ANSI color.
 .TP
 .B RedrawScr '^L'
 Redraw the current screen.
+.TP
+.B ScrollUp '<'
+Scroll screen up by one line.
+.TP
+.B ScrollDown '>'
+Scroll screen down by one line.
 .TP
 .B Postponed '^O'
 Reload postponed article. If your system blocks the \fBPostponed\fP key you
@@ -1321,10 +1327,10 @@ The character used to show that an article was killed. Default is 'K'.
 The character used to show that an article was hot before it was read.
 Default is ':'. \fBkill_level\fP must be set accordingly.
 .TP
-.B Ask before using \fBmetamail_prog\fP (ask_for_metamail)
-If ON \fBtin\fP will ask before using \fBmetamail_prog\fP
-to display MIME messages. This only occurs if \fBmetamail_prog\fP is set.
-Default is OFF.
+.B Ask before using MIME viewer (ask_for_metamail)
+If ON \fBtin\fP will ask before using a MIME viewer
+(\fBmetamail_prog\fP) to display MIME messages. This only occurs if a
+MIME viewer is set.  Default is OFF.
 .TP
 .B Send you a blind cc automatically (auto_bcc)
 If ON automatically put your name in the ''Bcc:'' field when mailing an

@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2003-05-14
+ *  Updated   : 2004-11-16
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2004 Dirk Nimmich <nimmich@muenster.de>
@@ -43,6 +43,9 @@
 #ifndef MENUKEYS_H
 #	include "menukeys.h"
 #endif /* !MENUKEYS_H */
+#ifndef VERSION_H
+#	include "version.h"
+#endif /* !VERSION_H */
 
 static size_t keymapsize(t_keynode *ptr[]);
 static t_bool check_duplicates(t_keynode *keyptr1, t_keynode *keyptr2);
@@ -108,6 +111,8 @@ static struct keymap Key = {
 		{ iKeyVersion, iKeyVersion, "Version" },
 		{ iKeyPost, iKeyPost, "Post" },
 		{ iKeyPipe, iKeyPipe, "Pipe" },
+		{ iKeyScrollUp, iKeyScrollUp, "ScrollUp" },
+		{ iKeyScrollDown, iKeyScrollDown, "ScrollDown" },
 		/*
 		 * The following two are "internal" keys that don't have a real
 		 * mapping.
@@ -399,7 +404,7 @@ static t_keynode *keys_config_change[] = {
 	&Key.Config.Select2, &Key.Global.RedrawScr, &Key.Global.One,
 	&Key.Global.Two, &Key.Global.Three, &Key.Global.Four, &Key.Global.Five,
 	&Key.Global.Six, &Key.Global.Seven, &Key.Global.Eight, &Key.Global.Nine,
-	NULL };
+	&Key.Global.ScrollUp, &Key.Global.ScrollDown, NULL };
 
 static t_keynode *keys_feed_art_thread_regex_tag[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.Feed.Art, &Key.Feed.Hot,
@@ -480,7 +485,7 @@ static t_keynode *keys_group_nav[] = {
 	&Key.Group.ToggleThdSel, &Key.Group.ReverseSel, &Key.Group.UndoSel,
 	&Key.Group.SelPattern, &Key.Group.SelThdIfUnreadSelected,
 	&Key.Group.MarkUnselArtRead, &Key.Group.DoAutoSel,
-	&Key.Global.ToggleInfoLastLine, NULL };
+	&Key.Global.ToggleInfoLastLine, &Key.Global.ScrollUp, &Key.Global.ScrollDown, NULL };
 
 static t_keynode *keys_info_nav[] = {
 	&Key.Global.Abort, &Key.Global.MouseToggle, &Key.Global.Up,
@@ -643,7 +648,8 @@ static t_keynode *keys_select_nav[] = {
 	&Key.Select.UnsubscribePat, &Key.Global.Version, &Key.Global.Post,
 	&Key.Global.Postponed, &Key.Global.Postponed2, &Key.Global.DisplayPostHist,
 	&Key.Select.YankActive, &Key.Select.SyncWithActive,
-	&Key.Select.MarkGrpUnread, &Key.Select.MarkGrpUnread2, NULL };
+	&Key.Select.MarkGrpUnread, &Key.Select.MarkGrpUnread2,
+	&Key.Global.ScrollUp, &Key.Global.ScrollDown, NULL };
 
 static t_keynode *keys_thread_nav[] = {
 	&Key.Global.Abort, &Key.Global.One, &Key.Global.Two, &Key.Global.Three,
@@ -675,7 +681,7 @@ static t_keynode *keys_thread_nav[] = {
 	&Key.Thread.MarkArtUnread, &Key.Thread.MarkThdUnread, &Key.Thread.SelArt,
 	&Key.Thread.ToggleArtSel, &Key.Thread.ReverseSel, &Key.Thread.UndoSel,
 	&Key.Global.Postponed, &Key.Global.Postponed2, &Key.Global.DisplayPostHist,
-	&Key.Global.ToggleInfoLastLine, NULL };
+	&Key.Global.ToggleInfoLastLine, &Key.Global.ScrollUp, &Key.Global.ScrollDown, NULL };
 
 t_menukeymap menukeymap = {
 	{ keys_config_change, NULL, NULL },
@@ -923,6 +929,7 @@ read_keymap_file(
 	char buf[LEN], buff[NAME_LEN + 1];
 	char key;
 	int i;
+	int upgrade = RC_CHECK;
 	t_bool ret = TRUE;
 
 	/*
@@ -962,12 +969,18 @@ read_keymap_file(
 	if (!fp)
 		return TRUE; /* no keymap file is not an error */
 
+	map = my_strdup(buf); /* remember keymap-name */
+
 	while ((line = fgets(buf, sizeof(buf), fp)) != NULL) {
 		/*
 		 * Ignore blank and comment lines
 		 */
-		if (line[0] == '#' || line[0] == '\n')
+		if (line[0] == '#' || line[0] == '\n') {
+			if (upgrade == RC_CHECK)
+				upgrade = check_upgrade(line, "# Keymap file V", KEYMAP_VERSION);
+
 			continue;
+		}
 
 		kname = strtok(line, KEYSEPS);
 		keydef = strtok(NULL, KEYSEPS);
@@ -1046,6 +1059,14 @@ read_keymap_file(
 	}
 
 	fclose(fp);
+	/* TODO: do something usefull */
+	/*
+	if (upgrade != RC_IGNORE) {
+		upgrade_prompt_quit(upgrade, map);
+	}
+	*/
+	free(map);
+
 	build_keymaps();
 	return ret;
 }

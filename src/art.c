@@ -324,7 +324,7 @@ index_group(
 	struct t_group *group)
 {
 	int i;
-	int changed = 0;				/* Count of articles whose overview has changed */
+	int changed;				/* Count of articles whose overview has changed */
 	int respnum;
 	int total;
 	long last_read_article;

@@ -49,13 +49,14 @@ The following configure options and defines are documented in detail:
   --mandir                                --with-spooldir
   --prefix                                --with-trace
 
+
   ENFORCE_RFC1034                         HAVE_UUDEVIEW_H
   EVIL_INSIDE                             NNTP_INEWS
   FOLLOW_USEFOR_DRAFT                     NNTP_SERVER_FILE
   FORGERY                                 PROFILE
   REQUIRE_BRACKETS_IN_DOMAIN_LITERAL      SMALL_MEMORY_MACHINE
   HAVE_LIBUU                              XFACE_ABLE
-  USE_CANLOCK
+  USE_CANLOCK                             HAVE_BROKEN_SSCANF
 
 
 Not yet documented configure options and defines:
@@ -629,8 +630,8 @@ let tin generate Message-IDs
 
 USE_CANLOCK
 turn on cancel-locks, you need to compile libcanlock first by running
-./Build in the libcanlock dir and uncomment the CANLOCK/CANLIB lines in
-src/Makefile
+./Build in the libcanlock dir or by using "make canlock" from the src
+dir. You also have to uncomment the CANLOCK/CANLIB lines in src/Makefile.
 
 FOLLOW_USEFOR_DRAFT
 issue a warning instead of an error-message if Newsgroups: or

@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-09-05
+ *  Updated   : 2004-10-26
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -1207,39 +1207,45 @@ write_config_file(
 	fprintf(fp, "col_urls=%d\n\n", tinrc.col_urls);
 #endif /* HAVE_COLOR */
 
-#ifdef XFACE_ABLE
-	fprintf(fp, _(txt_use_slrnface.tinrc));
-	fprintf(fp, "use_slrnface=%s\n\n", print_boolean(tinrc.use_slrnface));
-#endif /*XFACE_ABLE */
-
 	fprintf(fp, _(txt_url_highlight.tinrc));
 	fprintf(fp, "url_highlight=%s\n\n", print_boolean(tinrc.url_highlight));
 
 	fprintf(fp, _(txt_word_highlight.tinrc));
 	fprintf(fp, "word_highlight=%s\n\n", print_boolean(tinrc.word_highlight));
 
-	fprintf(fp, _(txt_wrap_column.tinrc));
-	fprintf(fp, "wrap_column=%d\n\n", tinrc.wrap_column);
-
 	fprintf(fp, _(txt_word_h_display_marks.tinrc));
 	fprintf(fp, "word_h_display_marks=%d\n\n", tinrc.word_h_display_marks);
 
 #ifdef HAVE_COLOR
 	fprintf(fp, _(txt_col_markstar.tinrc));
-	fprintf(fp, "col_markstar=%d\n", tinrc.col_markstar);
-	fprintf(fp, "col_markdash=%d\n", tinrc.col_markdash);
-	fprintf(fp, "col_markslash=%d\n", tinrc.col_markslash);
+	fprintf(fp, "col_markstar=%d\n\n", tinrc.col_markstar);
+	fprintf(fp, _(txt_col_markdash.tinrc));
+	fprintf(fp, "col_markdash=%d\n\n", tinrc.col_markdash);
+	fprintf(fp, _(txt_col_markslash.tinrc));
+	fprintf(fp, "col_markslash=%d\n\n", tinrc.col_markslash);
+	fprintf(fp, _(txt_col_markstroke.tinrc));
 	fprintf(fp, "col_markstroke=%d\n\n", tinrc.col_markstroke);
 #endif /* HAVE_COLOR */
 
 	fprintf(fp, _(txt_mono_markstar.tinrc));
-	fprintf(fp, "mono_markstar=%d\n", tinrc.mono_markstar);
-	fprintf(fp, "mono_markdash=%d\n", tinrc.mono_markdash);
-	fprintf(fp, "mono_markslash=%d\n", tinrc.mono_markslash);
+	fprintf(fp, "mono_markstar=%d\n\n", tinrc.mono_markstar);
+	fprintf(fp, _(txt_mono_markdash.tinrc));
+	fprintf(fp, "mono_markdash=%d\n\n", tinrc.mono_markdash);
+	fprintf(fp, _(txt_mono_markslash.tinrc));
+	fprintf(fp, "mono_markslash=%d\n\n", tinrc.mono_markslash);
+	fprintf(fp, _(txt_mono_markstroke.tinrc));
 	fprintf(fp, "mono_markstroke=%d\n\n", tinrc.mono_markstroke);
 
 	fprintf(fp, _(txt_mail_address.tinrc));
 	fprintf(fp, "mail_address=%s\n\n", tinrc.mail_address);
+
+#ifdef XFACE_ABLE
+	fprintf(fp, _(txt_use_slrnface.tinrc));
+	fprintf(fp, "use_slrnface=%s\n\n", print_boolean(tinrc.use_slrnface));
+#endif /*XFACE_ABLE */
+
+	fprintf(fp, _(txt_wrap_column.tinrc));
+	fprintf(fp, "wrap_column=%d\n\n", tinrc.wrap_column);
 
 #ifndef CHARSET_CONVERSION
 	fprintf(fp, _(txt_mm_charset.tinrc));
@@ -1754,7 +1760,7 @@ rc_update(
 	}
 
 	/* update the values */
-	tinrc.confirm_choice = (confirm_action ? 1 : 0 ) + (confirm_to_quit ? 3 : 0);
+	tinrc.confirm_choice = (confirm_action ? 1 : 0) + (confirm_to_quit ? 3 : 0);
 
 	if (!use_getart_limit)
 		tinrc.getart_limit = 0;

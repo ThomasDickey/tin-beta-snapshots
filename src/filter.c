@@ -1344,7 +1344,7 @@ filter_menu(
 		if ((i = get_choice(INDEX_TOP + 13, ptr_filter_help_scope, ptr_filter_scope, list, j + 1)) > 0)
 			strncpy(rule.scope, i == j ? "*" : list[i], sizeof(rule.scope));
 
-		for(j--; j >= 0; j--)
+		for (j--; j >= 0; j--)
 			free(list[j]);
 		free(list);
 

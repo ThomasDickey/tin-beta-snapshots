@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-08-20
+ *  Updated   : 2004-09-19
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -734,7 +734,7 @@ check_article_to_be_posted(
 	char references[HEADER_LEN];
 	char subject[HEADER_LEN];
 	int cnt = 0;
-	int col, i = 0;
+	int col, i;
 	int errors = 0;
 	int warnings = 0;
 	int init = 1;
@@ -927,6 +927,10 @@ check_article_to_be_posted(
 				saw_references = TRUE;
 		}
 
+		/*
+		 * TODO: also check for other illegal chars?
+		 *       a 'common' error is to use a semicolon instead of a comma.
+		 */
 		if (cp - line == 10 && !strncasecmp(line, "Newsgroups", 10)) {
 			found_newsgroups_lines++;
 			for (cp = line + 11; *cp == ' '; cp++)
@@ -1817,19 +1821,23 @@ create_normal_article_headers(
 {
 	FILE *fp;
 	char from_name[HEADER_LEN];
+#ifdef FORGERY
 	char tmp[HEADER_LEN];
-	char *prompt;
+#endif /* FORGERY */
+	char *prompt, *tmp2;
 
 	/* Get subject for posting article - Limit the display if needed */
-	strunc(tinrc.default_post_subject, tmp, sizeof(tmp), DISPLAY_SUBJECT_LEN);
+	tmp2 = strunc(tinrc.default_post_subject, DISPLAY_SUBJECT_LEN);
 
-	prompt = fmt_string(_(txt_post_subject), tmp);
+	prompt = fmt_string(_(txt_post_subject), tmp2);
 
 	if (!(prompt_string_default(prompt, tinrc.default_post_subject, _(txt_no_subject), HIST_POST_SUBJECT))) {
 		free(prompt);
+		free(tmp2);
 		return FALSE;
 	}
 	free(prompt);
+	free(tmp2);
 
 	if ((fp = fopen(article, "w")) == NULL) {
 		perror_message(_(txt_cannot_open), article);
@@ -3912,6 +3920,7 @@ checknadd_headers(
 
 		suffix[0] = '\0';
 #if defined(HAVE_SYS_UTSNAME_H) && defined(HAVE_UNAME)
+		if (*system_info.release) {
 #	ifdef _AIX
 		snprintf(suffix, sizeof(suffix), " (%s/%s.%s)",
 			system_info.sysname, system_info.version, system_info.release);
@@ -3924,12 +3933,15 @@ checknadd_headers(
 				system_info.sysname, system_info.release, system_info.machine);
 #		endif /* SEIUX */
 #	endif /* _AIX */
-#else
-#	ifdef SYSTEM_NAME
-		if (strlen(SYSTEM_NAME))
-			snprintf(suffix, sizeof(suffix), " (%s)", SYSTEM_NAME);
-#	endif /* SYSTEM_NAME */
+		}
 #endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
+#ifdef SYSTEM_NAME
+		if (!*suffix) {
+			if (strlen(SYSTEM_NAME))
+				snprintf(suffix, sizeof(suffix), " (%s)", SYSTEM_NAME);
+		}
+#endif /* SYSTEM_NAME */
+
 		fprintf(fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s)%s\n",
 			PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME, suffix);
 	}
@@ -4178,7 +4190,7 @@ submit_mail_file(
 	t_bool include_text)
 {
 	FILE *fp;
-	char *fcc = NULL;
+	char *fcc;
 	char buf[HEADER_LEN];
 	char mail_to[HEADER_LEN];
 	struct t_header hdr;
@@ -4411,7 +4423,7 @@ address_in_list(
 	const char *address)
 {
 	char **addr_list;
-	char *curr_address = NULL, *this_address = NULL;
+	char *curr_address = NULL, *this_address;
 	t_bool found = FALSE;
 	unsigned int num_addr = 0, i;
 
@@ -4533,7 +4545,7 @@ static const char *
 build_messageid(
 	void)
 {
-	int i = 0;
+	int i;
 	static char buf[1024]; /* Message-IDs are limited to 998-12+CRLF octets */
 	static unsigned long int seqnum = 0; /* we'd use a counter in tinrc */
 	time_t t = time(NULL);

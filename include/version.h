@@ -3,7 +3,7 @@
  *  Module    : version.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-09-19
+ *  Updated   : 2004-10-19
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -40,14 +40,15 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.7.6"
+#		define VERSION		"1.7.7"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20040906"
-#	define RELEASENAME	"Baleshare"
+#	define RELEASEDATE	"20041215"
+#	define RELEASENAME	"Scalpay"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.7"
 #	define ATTRIBUTES_VERSION	"1.0.3"
 #	define FILTER_VERSION	"1.0.0"
+#	define KEYMAP_VERSION	"1.0.0"
 #	define SERVERCONFIG_VERSION	"1.0.0"
 
 #	ifdef VMS

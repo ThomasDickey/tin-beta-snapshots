@@ -3,7 +3,7 @@
  *  Module    : global.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-12
- *  Updated   : 2000-01-05
+ *  Updated   : 2004-11-16
  *  Notes     : Generic nagivation and key handling routines
  *
  * Copyright (c) 1999-2004 Jason Faultless <jason@altarstone.com>
@@ -48,60 +48,10 @@
 /*
  * Local prototypes
  */
-static int _page_up(int curslot, int maxslot);
-static int _page_down(int curslot, int maxslot);
 static int mouse_action(int ch, int (*left_action) (void), int (*right_action) (void));
-
-/*
- * Return the new line index following a PageUp request.
- * Take half page scrolling into account
- */
-static int
-_page_up(
-	int curslot,
-	int maxslot)
-{
-	int n, scroll_lines;
-
-	if (curslot == 0)
-		return (maxslot - 1);
-
-	scroll_lines = (tinrc.scroll_lines == -2) ? NOTESLINES / 2 : NOTESLINES;
-
-	if ((n = curslot % scroll_lines) > 0)
-		curslot -= n;
-	else
-		curslot = ((curslot - scroll_lines) / scroll_lines) * scroll_lines;
-
-	return ((curslot < 0) ? 0 : curslot);
-}
-
-
-/*
- * Return the new line index following a PageDown request.
- * Take half page scrolling into account
- */
-static int
-_page_down(
-	int curslot,
-	int maxslot)
-{
-	int scroll_lines;
-
-	if (curslot == maxslot - 1)
-		return 0;
-
-	scroll_lines = (tinrc.scroll_lines == -2) ? NOTESLINES / 2 : NOTESLINES;
-
-	curslot = ((curslot + scroll_lines) / scroll_lines) * scroll_lines;
-
-	if (curslot >= maxslot) {
-		curslot = (maxslot / scroll_lines) * scroll_lines;
-		if (curslot < maxslot - 1)
-			curslot = maxslot - 1;
-	}
-	return curslot;
-}
+#ifdef USE_CURSES
+	static void do_scroll(int jump);
+#endif /* USE_CURSES */
 
 
 /*
@@ -112,29 +62,19 @@ void
 set_first_screen_item(
 	void)
 {
+	if (currmenu->max == 0) {
+		currmenu->first = 0;
+		currmenu->curr = -1;
+		return;
+	}
+
 	if (currmenu->curr >= currmenu->max)
 		currmenu->curr = currmenu->max - 1;
+	else if (currmenu->curr < -1)
+		currmenu->curr = -1;
 
-	if (NOTESLINES <= 0)
-		currmenu->first = 0;
-	else {
+	if (currmenu->curr < currmenu->first || currmenu->curr > currmenu->first + NOTESLINES - 1) /* current selection is out of screen */
 		currmenu->first = (currmenu->curr / NOTESLINES) * NOTESLINES;
-		if (currmenu->first < 0)
-			currmenu->first = 0;
-	}
-
-	currmenu->last = currmenu->first + NOTESLINES;
-
-	if (currmenu->last >= currmenu->max) {
-		currmenu->last = currmenu->max;
-		currmenu->first = (currmenu->max / NOTESLINES) * NOTESLINES;
-
-		if (currmenu->first == currmenu->last || currmenu->first < 0)
-			currmenu->first = ((currmenu->first < 0) ? 0 : currmenu->last - NOTESLINES);
-	}
-
-	if (currmenu->max == 0)
-		currmenu->first = currmenu->last = 0;
 }
 
 
@@ -142,8 +82,28 @@ void
 move_up(
 	void)
 {
-	if (currmenu->max)
-		move_to_item((currmenu->curr == 0) ? (currmenu->max - 1) : (currmenu->curr - 1));
+	if (!currmenu->max)
+		return;
+
+	if (currmenu->curr - 1 < currmenu->first && currmenu->curr != 0) {
+		currmenu->first--;
+#ifdef USE_CURSES
+		do_scroll(-1);
+		currmenu->draw_item(currmenu->curr - 1);
+#else
+		currmenu->redraw();
+#endif /* USE_CURSES */
+	}
+	if (currmenu->curr == 0) {
+		currmenu->first = MAX(0, currmenu->max - NOTESLINES);
+
+		if (currmenu->max - 1 >= NOTESLINES) {
+			currmenu->curr = currmenu->max - 1;
+			currmenu->redraw();
+		} else
+			move_to_item(currmenu->max - 1);
+	} else
+		move_to_item(currmenu->curr - 1);
 }
 
 
@@ -151,8 +111,19 @@ void
 move_down(
 	void)
 {
-	if (currmenu->max)
-		move_to_item((currmenu->curr + 1 >= currmenu->max) ? 0 : (currmenu->curr + 1));
+	if (!currmenu->max)
+		return;
+
+	if (currmenu->curr + 1 > currmenu->first + NOTESLINES - 1 && currmenu->curr + 1 < currmenu->max) {
+		currmenu->first++;
+#ifdef USE_CURSES
+		do_scroll(1);
+		currmenu->draw_item(currmenu->curr + 1);
+#else
+		currmenu->redraw();
+#endif /* USE_CURSES */
+	}
+	move_to_item((currmenu->curr + 1 >= currmenu->max) ? 0 : (currmenu->curr + 1));
 }
 
 
@@ -160,8 +131,24 @@ void
 page_up(
 	void)
 {
-	if (currmenu->max)
-		move_to_item(_page_up(currmenu->curr, currmenu->max));
+	int scroll_lines;
+
+	if (!currmenu->max)
+		return;
+
+	if (currmenu->curr == currmenu->first) {
+		scroll_lines = (tinrc.scroll_lines == -2) ? NOTESLINES / 2 : NOTESLINES;
+		if (currmenu->first == 0) {
+			/* wrap around */
+			currmenu->first = MAX(0, currmenu->max - scroll_lines);
+			currmenu->curr = currmenu->max - 1;
+		} else {
+			currmenu->first = MAX(0, currmenu->first - scroll_lines);
+			currmenu->curr = currmenu->first;
+		}
+		currmenu->redraw();
+	} else
+		move_to_item(currmenu->first);
 }
 
 
@@ -169,8 +156,26 @@ void
 page_down(
 	void)
 {
-	if (currmenu->max)
-		move_to_item(_page_down(currmenu->curr, currmenu->max));
+	int scroll_lines;
+
+	if (!currmenu->max)
+		return;
+
+	if (currmenu->curr == currmenu->max - 1) {
+		/* wrap around */
+		currmenu->first = 0;
+		currmenu->curr = 0;
+		currmenu->redraw();
+	} else {
+		scroll_lines = (tinrc.scroll_lines == -2) ? NOTESLINES / 2 : NOTESLINES;
+		if (currmenu->first + scroll_lines >= currmenu->max)
+			move_to_item(currmenu->max - 1);
+		else {
+			currmenu->first += scroll_lines;
+			currmenu->curr = currmenu->first;
+			currmenu->redraw();
+		}
+	}
 }
 
 
@@ -229,16 +234,84 @@ move_to_item(
 	HpGlitch(erase_arrow());
 	erase_arrow();
 
-	currmenu->curr = n;
-	if (currmenu->curr < 0)
+	if ((currmenu->curr = n) < 0)
 		currmenu->curr = 0;
 	clear_message();
 
-	if (n >= currmenu->first && n < currmenu->last)
+	if (n >= currmenu->first && n < currmenu->first + NOTESLINES)
 		currmenu->draw_arrow();
 	else
 		currmenu->redraw();
 }
+
+
+/*
+ * scroll the screen one line down
+ * the selected item is only moved if it is scrolled off the screen
+ */
+void
+scroll_down(
+	void)
+{
+	if (!currmenu->max || currmenu->first + NOTESLINES >= currmenu->max)
+		return;
+
+	currmenu->first++;
+#ifdef USE_CURSES
+	do_scroll(1);
+	currmenu->draw_item(currmenu->first + NOTESLINES - 1);
+	stow_cursor();
+	if (currmenu->curr < currmenu->first)
+		move_to_item(currmenu->curr + 1);
+#else
+	if (currmenu->curr < currmenu->first)
+		currmenu->curr++;
+	currmenu->redraw();
+#endif /* USE_CURSES */
+}
+
+
+/*
+ * scroll the screen one line up
+ * the selected item is only moved if it is scrolled off the screen
+ */
+void
+scroll_up(
+	void)
+{
+	if (!currmenu->max || currmenu->first == 0)
+		return;
+
+	currmenu->first--;
+#ifdef USE_CURSES
+	do_scroll(-1);
+	currmenu->draw_item(currmenu->first);
+	 stow_cursor();
+	if (currmenu->curr >= currmenu->first + NOTESLINES)
+		move_to_item(currmenu->curr - 1);
+#else
+	if (currmenu->curr >= currmenu->first + NOTESLINES)
+		currmenu->curr--;
+	currmenu->redraw();
+#endif /* USE_CURSES */
+}
+
+
+#ifdef USE_CURSES
+/* TODO: merge with options_menu.c:do_scroll() and move to tcurses.c */
+/* scroll the screen 'jump' lines down or up (if 'jump' < 0) */
+static void
+do_scroll(
+	int jump)
+{
+	scrollok(stdscr, TRUE);
+	MoveCursor(INDEX_TOP, 0);
+	SetScrollRegion(INDEX_TOP, INDEX_TOP + NOTESLINES - 1);
+	ScrollScreen(jump);
+	SetScrollRegion(0, LINES - 1);
+	scrollok(stdscr, FALSE);
+}
+#endif /* USE_CURSES */
 
 
 /*
@@ -251,7 +324,7 @@ mouse_action(
 	int (*left_action) (void),		/* Typically catchup type event */
 	int (*right_action) (void))		/* Typically read next etc.. */
 {
-	int INDEX_BOTTOM = INDEX_TOP + currmenu->last - currmenu->first;
+	int INDEX_BOTTOM = INDEX_TOP + NOTESLINES;
 
 	switch (xmouse) {
 		case MOUSE_BUTTON_1:

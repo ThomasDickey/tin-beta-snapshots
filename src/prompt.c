@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-07-03
+ *  Updated   : 2004-09-19
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -599,8 +599,7 @@ sized_message(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		max_len = cCOLS - strlen(format) + 2 - 1;	/* The formatting info (%s) wastes 2 chars, but our prompt needs 1 char */
 
-	buf = my_malloc(strlen(subject) + 1);
-	strunc(subject, buf, strlen(subject) + 1, max_len);
+	buf = strunc(subject, max_len);
 
 	*result = fmt_string(format, buf);
 	free(buf);

@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2004-01-07
+ *  Updated   : 2004-12-01
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2004 Steven J. Madsen <steve@erinet.com>
@@ -38,14 +38,15 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
-#ifndef TCURSES_H
-#	include "tcurses.h"
-#endif /* !TCURSES_H */
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
 
 #ifdef HAVE_PGP_GPG
+#	ifndef TCURSES_H
+#		include "tcurses.h"
+#	endif /* !TCURSES_H */
+#	ifndef MENUKEYS_H
+#		include "menukeys.h"
+#	endif /* !MENUKEYS_H */
+
 
 /*
  * The first two args are typically the PGP command name and then $PGPOPTS

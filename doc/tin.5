@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2004-09-06
+.\" Updated   : 2004-12-15
 .\" Notes     : needs a some work
 .\"
-.TH tin 5 "September 6th, 2004" "1.7.6" "A Usenet newsreader"
+.TH tin 5 "December 15th, 2004" "1.7.7" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -741,6 +741,8 @@ Below is a list of all keynames and their default bindings.
 \fBVersion\fP	v
 \fBPost\fP	w
 \fBPipe\fP	|
+\fBScrollUp\fP	<
+\fBScrollDown\fP	>
 \fBPageUp\fP	^B
 \fBPageDown\fP	^D
 \fBPageDown2\fP	^F
@@ -1097,12 +1099,12 @@ The character used to show that an article was killed. Default is 'K'.
 The character used to show that an article was hot before it was read.
 Default is ':'. \fBkill_level\fP must be set accordingly.
 .TP
-.B Ask before using \fBmetamail_prog\fP (ask_for_metamail)
+.B Ask before using MIME viewer (ask_for_metamail)
 If ON
 .BR tin (1)
-will ask before using \fBmetamail_prog\fP
-to display MIME messages. This only occurs if \fBmetamail_prog\fP is set.
-Default is OFF.
+will ask before using a MIME viewer (\fBmetamail_prog\fP) to display
+MIME messages. This only occurs if a MIME viewer is set.  Default is
+OFF.
 .TP
 .B auto_bcc
 If ON automatically put your name in the ''Bcc:'' field when mailing an

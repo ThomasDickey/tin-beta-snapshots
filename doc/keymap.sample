@@ -1,7 +1,7 @@
+# Keymap file V1.0.0 for the TIN newsreader
+#
 # Sample keymap file
-#
 # This file contains the default key mappings
-#
 #
 # Global keys
 
@@ -35,6 +35,8 @@ Quit				q
 Version				v
 Post				w
 Pipe				|
+ScrollUp			<
+ScrollDown			>
 PageUp				^B
 PageDown			^D
 PageDown2			^F

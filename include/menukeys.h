@@ -3,7 +3,7 @@
  *  Module    : menukeys.h
  *  Author    : S.Robbins
  *  Created   : 1994-08-15
- *  Updated   : 2003-05-14
+ *  Updated   : 2004-11-16
  *  Notes     :
  *
  * Copyright (c) 1994-2004 Steve Robbins <stever@cs.mcgill.ca>
@@ -167,6 +167,8 @@
 #define iKeyVersion 'v'
 #define iKeyPost 'w'
 #define iKeyPipe '|'
+#define iKeyScrollUp '<'
+#define iKeyScrollDown '>'
 #define iKeyPageUp ctrl('B')
 #define iKeyPageDown ctrl('D')
 #define iKeyPageDown2 ctrl('F')

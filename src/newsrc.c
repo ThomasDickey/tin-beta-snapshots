@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-03-14
+ *  Updated   : 2004-11-16
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -682,10 +682,7 @@ grp_mark_unread(
 	if (group->xmin > 0)
 		group->newsrc.xmin = group->xmin;
 
-	bitlength = (group->newsrc.xmax - group->newsrc.xmin) + 1;
-
-	if (bitlength < 0)
-		bitlength = 0;
+	bitlength = MAX(0, group->newsrc.xmax - group->newsrc.xmin + 1);
 
 	if (bitlength > 0)
 		newbitmap = my_malloc(BITS_TO_BYTES(bitlength));

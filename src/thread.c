@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-07-19
+ *  Updated   : 2004-12-01
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -65,6 +65,7 @@ static t_bool find_unexpired(struct t_msgid *ptr);
 static t_bool has_sibling(struct t_msgid *ptr);
 static void build_tline(int l, struct t_article *art);
 static void draw_thread_arrow(void);
+static void draw_thread_item(int item);
 static void make_prefix(struct t_msgid *art, char *prefix, int maxlen);
 static void show_thread_page(void);
 static void update_thread_page(void);
@@ -74,9 +75,8 @@ static void update_thread_page(void);
  * thdmenu.curr		Current screen cursor position in thread
  * thdmenu.max		Essentially = # threaded arts in current thread
  * thdmenu.first	Response # at top of screen
- * thdmenu.last		Response # at end of screen
  */
-static t_menu thdmenu = {0, 0, 0, 0, show_thread_page, draw_thread_arrow };
+static t_menu thdmenu = {0, 0, 0, show_thread_page, draw_thread_arrow, draw_thread_item };
 
 
 /*
@@ -343,7 +343,15 @@ build_tline(
 
 	if (mark == tinrc.art_marked_selected)
 		draw_mark_selected(l);
-	MoveCursor(INDEX2LNUM(l) + 1, 0);
+}
+
+
+static void
+draw_thread_item(
+	int item)
+{
+	build_tline(item, &arts[find_response(thread_basenote, item)]);
+	return;
 }
 
 
@@ -390,9 +398,9 @@ thread_page(
 	char key[MAXKEYLEN];
 	char mark[] = { '\0', '\0' };
 	int ret_code = 0;			/* Set to < 0 when it is time to leave this menu */
-	int ch = 0;
+	int ch;
 	int i, n;
-	t_bool repeat_search = FALSE;
+	t_bool repeat_search;
 
 	thread_respnum = respnum;		/* Bodge to make this variable global */
 
@@ -408,6 +416,8 @@ thread_page(
 	 * or an explicit thread_depth has been specified
 	 */
 	thdmenu.curr = thdmenu.max;
+	/* reset the first item on screen to 0 */
+	thdmenu.first = 0;
 
 	if (thread_depth)
 		thdmenu.curr = thread_depth;
@@ -447,8 +457,7 @@ thread_page(
 		if ((ch = handle_keypad(thread_left, thread_right, &menukeymap.thread_nav)) == iKeySearchRepeat) {
 			ch = i_key_search_last;
 			repeat_search = TRUE;
-		}
-		else
+		} else
 			repeat_search = FALSE;
 
 		switch (ch) {
@@ -567,6 +576,14 @@ thread_page(
 			case iKeyPageDown2:
 			case iKeyPageDown3:
 				page_down();
+				break;
+
+			case iKeyScrollDown:
+				scroll_down();
+				break;
+
+			case iKeyScrollUp:
+				scroll_up();
 				break;
 
 			case iKeyCatchupLeft:				/* come here when exiting thread via <- */
@@ -703,8 +720,8 @@ thread_page(
 				art_mark(group, &arts[n], ART_WILL_RETURN);
 				mark[0] = get_art_mark(&arts[n]);
 				mark_screen(thdmenu.curr, MARK_OFFSET, mark);
-				info_message(_(txt_marked_as_unread), _(txt_article_upper));
 				draw_thread_arrow();
+				info_message(_(txt_marked_as_unread), _(txt_article_upper));
 				break;
 
 			case iKeyThreadMarkThdUnread:		/* mark thread as unread */
@@ -781,10 +798,7 @@ show_thread_page(
 	currmenu = &thdmenu;
 
 	ClearScreen();
-
 	set_first_screen_item();
-
-	art = find_response(thread_basenote, thdmenu.first);
 
 	/*
 	 * If threading by Refs, it helps to see the subject line
@@ -798,19 +812,13 @@ show_thread_page(
 	show_title(title);
 	free(title);
 
-	MoveCursor(INDEX_TOP, 0);
-
-	for (i = thdmenu.first; i < thdmenu.last; ++i) {
+	art = find_response(thread_basenote, thdmenu.first);
+	for (i = thdmenu.first; i < thdmenu.first + NOTESLINES && i < thdmenu.max; ++i) {
 		build_tline(i, &arts[art]);
 		art = next_response(art);
 	}
 
-	CleartoEOS();
 	show_mini_help(THREAD_LEVEL);
-
-	if (thdmenu.last == thdmenu.max)
-		info_message(_(txt_end_of_thread));
-
 	draw_thread_arrow();
 }
 
@@ -820,15 +828,15 @@ update_thread_page(
 	void)
 {
 	char mark[] = { '\0', '\0' };
-	int i, j, the_index;
+	int i, the_index;
 
 	the_index = find_response(thread_basenote, thdmenu.first);
 	assert(thdmenu.first != 0 || the_index == thread_respnum);
 
-	for (j = 0, i = thdmenu.first; j < NOTESLINES && i < thdmenu.last; ++i, ++j) {
-		if ((&arts[the_index])->tagged) {
+	for (i = thdmenu.first; i < thdmenu.first + NOTESLINES && i < thdmenu.max; ++i) {
+		if ((&arts[the_index])->tagged)
 			mark_screen(i, MARK_OFFSET - 2, tin_ltoa((&arts[the_index])->tagged, 3));
-		} else {
+		else {
 			mark[0] = get_art_mark(&arts[the_index]);
 			mark_screen(i, MARK_OFFSET - 2, "  ");	/* clear space used by tag numbering */
 			mark_screen(i, MARK_OFFSET, mark);
@@ -851,6 +859,8 @@ draw_thread_arrow(
 
 	if (tinrc.info_in_last_line)
 		info_message("%s", arts[find_response(thread_basenote, thdmenu.curr)].subject);
+	else if (thdmenu.curr == thdmenu.max - 1)
+		info_message(_(txt_end_of_thread));
 }
 
 
@@ -921,9 +931,10 @@ which_thread(
 	for (i = n; arts[i].prev >= 0; i = arts[i].prev)
 		;
 	/* Find in base[] */
-	for (j = 0; j < grpmenu.max; j++)
+	for (j = 0; j < grpmenu.max; j++) {
 		if (base[j] == i)
 			return j;
+	}
 
 	error_message(_(txt_cannot_find_base_art), n);
 	return -1;
@@ -966,10 +977,7 @@ num_of_responses(
 	int oldi = -3;
 	int sum = 0;
 
-	assert(n < grpmenu.max);
-
-	if (n < 0)
-		n = 0;
+	assert(n < grpmenu.max && n >= 0);
 
 	for_each_art_in_thread(i, n) {
 		assert(i != ART_EXPIRED);

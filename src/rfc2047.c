@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2004-03-10
+ *  Updated   : 2004-11-26
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2004 Chris Blum <chris@resolution.de>
@@ -789,7 +789,7 @@ do_rfc15211522_encode(
 	BodyPtr body_encode;
 	int i;
 #ifdef CHARSET_CONVERSION
-	int mmnwcharset = 0;
+	int mmnwcharset;
 
 	if (group) /* Posting */
 		mmnwcharset = group->attribute->mm_network_charset;
@@ -843,12 +843,12 @@ do_rfc15211522_encode(
 			}
 		}
 	}
-	/*
-	 * This should work as g should be at least as long as f.
-	 * We could use ftruncate(), but this isn't part of ISO-C.
-	 */
-	rewind(f);
+
 	rewind(g);
+	rewind(f);
+#ifdef HAVE_FTRUNCATE
+	ftruncate(fileno(f), 0);
+#endif /* HAVE_FTRUNCATE */
 
 	/* copy header */
 	while (fgets(buffer, 2048, g) && !isreturn(buffer[0]))
