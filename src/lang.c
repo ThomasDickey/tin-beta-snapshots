@@ -144,7 +144,7 @@ constext txt_end_of_art[] = N_("*** End of article ***");
 constext txt_end_of_arts[] = N_("*** End of articles ***");
 constext txt_end_of_groups[] = N_("*** End of groups ***");
 constext txt_end_of_thread[] = N_("*** End of thread ***");
-constext txt_enter_message_id[] = N_("Enter Message-ID to goto> ");
+constext txt_enter_message_id[] = N_("Enter Message-ID to go to> ");
 constext txt_enter_next_thread[] = N_(" and enter next unread thread");
 constext txt_enter_option_num[] = N_("Enter option number> ");
 constext txt_enter_range[] = N_("Enter range [%s]> ");
@@ -264,7 +264,7 @@ constext txt_help_article_mark_thread_read[] = N_("mark thread as read and advan
 constext txt_help_article_next[] = N_("display next article");
 constext txt_help_article_next_thread[] = N_("display first article in next thread");
 constext txt_help_article_next_unread[] = N_("display next unread article");
-constext txt_help_article_parent[] = N_("goto the article that this one followed up");
+constext txt_help_article_parent[] = N_("go to the article that this one followed up");
 #ifdef HAVE_PGP_GPG
 	constext txt_help_article_pgp[] = N_("perform PGP operations on article");
 #endif /* HAVE_PGP_GPG */
@@ -290,7 +290,7 @@ constext txt_help_article_toggle_rot13[] = N_("toggle ROT-13 (basic decode) for 
 constext txt_help_article_toggle_tabwidth[] = N_("toggle tabwidth 4 <-> 8");
 constext txt_help_article_toggle_tex2iso[] = N_("toggle german TeX style decoding for current article");
 constext txt_help_article_toggle_uue[] = N_("toggle display of uuencoded sections on/off");
-constext txt_help_article_view_attachments[] = N_("View/save multimedia attachmenats");
+constext txt_help_article_view_attachments[] = N_("View/save multimedia attachments");
 constext txt_help_bug[] = N_("report bug or comment via mail to %s");
 constext txt_help_global_article_range[] = N_("choose range of articles to be affected by next command");
 constext txt_help_global_esc[] = N_("escape from command prompt");
@@ -298,7 +298,7 @@ constext txt_help_global_help[] = N_("get help");
 constext txt_help_global_last_art[] = N_("display last article viewed");
 constext txt_help_global_line_down[] = N_("down one line");
 constext txt_help_global_line_up[] = N_("up one line");
-constext txt_help_global_lookup_art[] = N_("goto article chosen by Message-ID");
+constext txt_help_global_lookup_art[] = N_("go to article chosen by Message-ID");
 constext txt_help_global_mail[] = N_("mail article/thread/hot/pattern/tagged articles to someone");
 constext txt_help_global_option_menu[] = N_("menu of configurable options");
 constext txt_help_global_page_down[] = N_("down one page");
@@ -1180,21 +1180,21 @@ struct opttxt txt_kill_level = {
 struct opttxt txt_tab_goto_next_unread = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Tab goes to next unread article    :"),
-	N_("# If ON the TAB command will goto next unread article at article viewer level\n")
+	N_("# If ON the TAB command will go to next unread article at article viewer level\n")
 };
 
 struct opttxt txt_space_goto_next_unread = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Space goes to next unread article  :"),
-	N_("# If ON the SPACE command will goto next unread article at article viewer\n\
+	N_("# If ON the SPACE command will go to next unread article at article viewer\n\
 # level when the end of the article is reached (rn-style pager)\n")
 };
 
 struct opttxt txt_pgdn_goto_next = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("PgDn goes to next article at EOF   :"),
-	N_("# If ON the PGDN or DOWN command will goto next article when pressed\n\
-# at end of message\n")
+	N_("# If ON the PGDN or DOWN command will go to next unread article when\n\
+# pressed at end of message\n")
 };
 
 struct opttxt txt_auto_list_thread = {

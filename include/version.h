@@ -45,7 +45,7 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.5.11"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20011203"
+#	define RELEASEDATE	"20011225"
 #	define RELEASENAME	"Darkcell"
 #	define TINRC_VERSION	"1.2"
 

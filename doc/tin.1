@@ -1727,8 +1727,8 @@ Format of quote line when posting/following up an article (%A=Address,
 %D=Date, %F=Addr+Name, %G=Groupname, %M=Message-Id, %N=Name).
 Default is "%F wrote:"
 .TP
-.B PgDn goes to next article at end of article (pgdn_goto_next)
-If ON the Page Down keys will goto the next article when pressed
+.B PgDn goes to next unread article at end of article (pgdn_goto_next)
+If ON the Page Down keys will go to the next unread article when pressed
 at the end of a message
 .TP
 .B Goto first unread article in group (pos_first_unread)
@@ -1899,7 +1899,7 @@ these strings. The matching is case-insensitive.
 .TP
 .B Space goes to next unread article (space_goto_next_unread)
 SPACE normally acts as a Page Down key and has no effect at the end of
-an article. If this option is turned ON the SPACE command will goto the next
+an article. If this option is turned ON the SPACE command will go to the next
 unread article when the end of the article is reached (rn-style pager)
 .TP
 .B Start editor with line offset (start_editor_offset)
@@ -1925,12 +1925,12 @@ If ON, then unsubscribed groups will be permanently removed from
 your \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR file. Default is OFF.
 .TP
 .B Do tab after X automatically (tab_after_X_selection)
-If enabled will automatically goto the first unread article after having
+If enabled will automatically go to the first unread article after having
 selected all hot articles and threads with the 'X' command at group index
 level. Default is OFF.
 .TP
 .B Tab goes to next unread article (tab_goto_next_unread)
-If enabled pressing <TAB> at the article viewer level will goto the next
+If enabled pressing <TAB> at the article viewer level will go to the next
 unread article immediately instead of first paging through the current
 one. Default is ON.
 .TP

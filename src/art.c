@@ -612,7 +612,7 @@ global_look_for_multipart_info (
  * @param malloc_and_setme_info on success, set to a malloced array the
  * parts found.
  */
-int
+static int
 global_get_multiparts (
 	int aindex,
 	MultiPartInfo **malloc_and_setme_info)

@@ -1409,7 +1409,7 @@ process_url(
 		 * TODO: add multiple URLs per line handling
 		 *       handle mailto: and news: (not NNTP) URLs internal
 		 */
-		while (TRUE) {
+		forever {
 			char url[LEN];
 
 			/* any matches left? */
