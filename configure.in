@@ -1,0 +1,899 @@
+dnl Project   : tin - a Usenet reader
+dnl Module    : configure.in
+dnl Author    : Thomas E. Dickey <dickey@clark.net>
+dnl Created   : 1995-08-24
+dnl Updated   : 1999-11-22
+dnl Notes     :
+dnl
+dnl Copyright 1996,1997,1998,1999 by Thomas Dickey
+dnl             You may  freely  copy or  redistribute  this software,
+dnl             so  long as there is no profit made from its use, sale
+dnl             trade or  reproduction.  You may not change this copy-
+dnl             right notice, and it must be included in any copy made
+dnl
+dnl Process this file with autoconf to produce a configure script.
+
+AC_PREREQ(2.13.19990117)
+AC_INIT(include/tin.h)
+AC_CONFIG_HEADER(include/autoconf.h:include/autoconf.hin)
+AC_PREFIX_DEFAULT(/usr/local)
+
+CF_CHECK_CACHE
+
+CF_WITH_PATH(install-prefix,
+	[  --install-prefix        prefixes actual install location],
+	INSTALL_PREFIX,/)
+case ".$INSTALL_PREFIX" in # (vi
+./)	INSTALL_PREFIX=
+	;; # (vi
+./*/)	;; # (vi
+./*)	INSTALL_PREFIX="$INSTALL_PREFIX/"
+	;;
+esac
+
+###	Compiler/options that autoconf doesn't get right
+case "$host_os" in
+	aix*)	#(vi
+		if test "$CC" = ""; then
+			AC_PATH_PROG(XLC, xlc)
+			if test "$ac_cv_path_XLC" != ""; then
+				CC="$ac_cv_path_XLC"
+			fi
+		fi
+		;;
+	hpux*)	#(vi
+		test "$CC" != "cc" && test -z "$CFLAGS" && CFLAGS="-O"
+		;;
+esac
+
+###	Checks for programs.
+save_CFLAGS="$CFLAGS"
+AC_PROG_CC
+AC_PROG_GCC_TRADITIONAL
+AC_PROG_MAKE_SET
+AC_PROG_INSTALL
+AC_PROG_RANLIB
+CF_PROG_YACC
+AC_CHECK_PROGS(LINT, lint alint lclint tdlint, [])
+CF_ANSI_CC_REQD
+CF_PROG_EXT
+CF_LIB_PREFIX(LIB_PREFIX)
+
+CF_WITH_PROGRAM(ispell,
+[  --with-ispell           (default: from system path)])
+
+CF_WITH_PROGRAM(metamail,
+[  --with-metamail         (default: from system path)])
+
+CF_WITH_PROGRAM(sum,
+[  --with-sum              (default: from system path)])
+CF_PROG_SUM_R
+
+CF_PATH_EDITOR
+CF_PATH_MAILER
+CF_PATH_MAILBOX
+
+## PGP Support
+AC_MSG_CHECKING(if you want PGP-Support)
+CF_ARG_DISABLE(pgp,
+	[  --disable-pgp           disable PGP Support],
+	[USE_PGP=no],
+	[USE_PGP=yes])
+AC_MSG_RESULT($enableval)
+
+if test "$USE_PGP" = "yes" ; then
+AC_PATH_PROG(PGPK, pgpk, no)
+if test $PGPK != no ; then
+	AC_DEFINE(HAVE_PGP)
+	AC_DEFINE(HAVE_PGP_5)
+else
+	AC_PATH_PROG(PGP, pgp, no)
+	if test $PGP != no; then
+		AC_DEFINE(HAVE_PGP)
+	fi
+fi
+fi
+
+### check for this early, since it'll override several options
+AC_MSG_CHECKING(if NNTP-support will be used)
+CF_ARG_DISABLE(nntp,
+	[  --disable-nntp          disable reading via NNTP],
+	[USE_NNTP=no],
+	[USE_NNTP=yes])
+AC_MSG_RESULT($enableval)
+
+USE_SPOOLDIR=yes
+if test "$USE_NNTP" = "yes" ; then
+AC_MSG_CHECKING(whether to be NNTP_ONLY)
+CF_ARG_ENABLE(nntp-only,
+	[  --enable-nntp-only      enable reading via NNTP only],
+	[AC_DEFINE(NNTP_ONLY)
+	 USE_SPOOLDIR=no],
+	[AC_DEFINE(NNTP_ABLE)])
+AC_MSG_RESULT($enableval)
+fi
+
+###	use option --enable-debug to compile-in test/development code
+AC_MSG_CHECKING(if you want to compile-in debug support)
+CF_ARG_ENABLE(debug,
+	[  --enable-debug          turn on debug/profiling/traces],
+	[ENABLE_DEBUG=''
+	CFLAGS="-g $CFLAGS"
+	LDFLAGS="-g $LDFLAGS"],
+	[ENABLE_DEBUG='#'
+	test -z "$save_CFLAGS" && CFLAGS=`echo $CFLAGS|sed -e 's/-g //' -e 's/-g$//'`])
+AC_MSG_RESULT($enableval)
+AC_SUBST(ENABLE_DEBUG)
+
+###	use option --disable-echo to suppress full display compiling commands
+CF_DISABLE_ECHO
+
+### use option --enable-prototypes to turn on optional prototypes
+AC_MSG_CHECKING(if you want to compile with fallback prototypes)
+CF_ARG_ENABLE(prototypes,
+	[  --enable-prototypes     check for optional prototypes],
+	[with_decl_check=yes],
+	[with_decl_check=no])
+AC_MSG_RESULT($enableval)
+
+###	use option --enable-warnings to turn on all gcc warnings
+EXTRA_CFLAGS=""
+if test -n "$GCC"
+then
+AC_MSG_CHECKING(if you want to turn on gcc warnings)
+CF_ARG_ENABLE(warnings,
+	[  --enable-warnings       turn on GCC compiler warnings],
+	[with_warnings=yes],
+	[with_warnings=no])
+AC_MSG_RESULT($with_warnings)
+if test "$with_warnings" = "yes"
+then
+	with_ext_const=yes
+	CF_GCC_WARNINGS
+fi
+fi
+
+## !NNTP_ONLY
+if test "$USE_SPOOLDIR" = "yes"; then
+	## options for directories
+	AC_MSG_CHECKING(for news-library path)
+	CF_WITH_PATH(libdir,
+		[  --with-libdir=PATH      news-library],
+		NEWSLIBDIR,/usr/lib/news)
+	AC_MSG_RESULT($NEWSLIBDIR)
+
+	AC_MSG_CHECKING(for news spool-directory path)
+	CF_WITH_PATH(spooldir,
+		[  --with-spooldir=PATH    news spool-directory],
+		SPOOLDIR,/var/spool/news)
+	AC_MSG_RESULT($SPOOLDIR)
+
+	AC_MSG_CHECKING(for news overview-directory path)
+	CF_WITH_PATH(nov-dir,
+		[  --with-nov-dir=PATH     news overview-directory],
+		NOVROOTDIR,$SPOOLDIR)
+	AC_MSG_RESULT($NOVROOTDIR)
+
+	AC_MSG_CHECKING(for overview filename)
+	CF_WITH_VALUE(nov-fname,
+		[  --with-nov-fname        specify names of overview files],
+		OVERVIEW_FILE,.overview)
+	AC_MSG_RESULT($OVERVIEW_FILE)
+
+	INEWSPATH="$NEWSLIBDIR"
+else
+	NEWSLIBDIR=""
+	SPOOLDIR=""
+	NOVROOTDIR=""
+	INEWSPATH="/usr/lib/news"
+fi
+
+AC_MSG_CHECKING(for directory containing \"inews\")
+CF_WITH_PATH(inews-dir,
+	[  --with-inews-dir=PATH   directory containing "inews"],
+	INEWSDIR,$INEWSPATH)
+AC_MSG_RESULT($INEWSDIR)
+
+## !NNTP_ONLY
+if test "$USE_SPOOLDIR" = "yes"; then
+	## options for libraries
+	AC_MSG_CHECKING(for optional INN-NNTP library)
+	CF_WITH_VALUE(inn-nntplib,
+		[  --with-inn-nntplib=PATH specify INN-NNTP library],
+		INN_NNTPLIB)
+	AC_MSG_RESULT($INN_NNTPLIB)
+else
+	INN_NNTPLIB=""
+fi
+AC_SUBST(INN_NNTPLIB)
+
+### Look for network libraries first, since some functions (such as gethostname)
+### are used in a lot of places.
+AC_CACHE_CHECK(if you want socks library,cf_cv_use_libsocks,[
+AC_ARG_WITH(socks,
+	[  --with-socks[=path]     link with socks library if available],
+	[cf_cv_use_libsocks=$withval],
+	[cf_cv_use_libsocks=no])
+])
+
+AC_CACHE_CHECK(if you want socks5 library,cf_cv_use_libsocks5,[
+AC_ARG_WITH(socks5,
+	[  --with-socks5[=path]    link with socks5 library if available],
+	[cf_cv_use_libsocks5=$withval],
+	[cf_cv_use_libsocks5=no])
+])
+
+if test "x$cf_cv_use_libsocks" != xno ; then
+	CF_SOCKS($cf_cv_use_libsocks)
+else
+	CF_NETLIBS
+	if test "x$cf_cv_use_libsocks5" != xno ; then
+	CF_SOCKS5($cf_cv_use_libsocks5)
+	fi
+fi
+
+### Look for ncurses in the usual places, accommodating compilers that don't
+### search /usr/local by default.
+AC_MSG_CHECKING(if you want ncurses library)
+found_ncurses=no
+AC_ARG_WITH(ncurses,
+	[  --with-ncurses          link with ncurses if available],
+	[found_ncurses=$withval],
+	[found_ncurses=no])
+AC_MSG_RESULT($found_ncurses)
+if test $found_ncurses != no ; then
+	 CF_NCURSES_CPPFLAGS
+	 CF_NCURSES_LIBS
+fi
+
+AC_MSG_CHECKING(if you want curses, rather than termcap, interface)
+CF_ARG_ENABLE(curses,
+	[  --enable-curses         use curses interface],
+	[AC_DEFINE(USE_CURSES)])
+AC_MSG_RESULT($enableval)
+use_curses=$enableval
+
+## debugging libraries (do this after other libraries)
+AC_MSG_CHECKING(if you want dbmalloc library)
+debug_malloc=none
+AC_ARG_WITH(dbmalloc,
+	[  --with-dbmalloc         use Conor Cahill's dbmalloc library],
+	[AC_MSG_RESULT(yes)
+	 AC_CHECK_LIB(dbmalloc,debug_malloc,
+	 AC_CHECK_HEADER(dbmalloc.h,debug_malloc=DBMALLOC))],
+	AC_MSG_RESULT(no))
+
+AC_MSG_CHECKING(if you want dmalloc library)
+AC_ARG_WITH(dmalloc,
+	[  --with-dmalloc          use Gray Watson's dmalloc library],
+	[AC_MSG_RESULT(yes)
+	 AC_CHECK_LIB(dmalloc,dmalloc_debug,
+	 AC_CHECK_HEADER(dmalloc.h,debug_malloc=DMALLOC))],
+	AC_MSG_RESULT(no))
+
+AC_MSG_CHECKING(if you want debugging-trace)
+AC_ARG_WITH(trace,
+	[  --with-trace            use debugging/traces],
+	[AC_MSG_RESULT(yes)
+	 AC_DEFINE(USE_TRACE)
+	 test $found_ncurses = no && EXTRAOBJS="$EXTRAOBJS trace.o"],
+	AC_MSG_RESULT(no))
+AC_SUBST(EXTRAOBJS)
+
+## options for miscellaneous definitions
+AC_MSG_CHECKING(for domain-name)
+CF_ARG_WITH(domain-name,
+	[  --with-domain-name      sets \$DOMAIN_NAME],
+	DOMAIN_NAME)
+if test "$DOMAIN_NAME" != ""; then
+	AC_DEFINE_UNQUOTED(DOMAIN_NAME, "$DOMAIN_NAME")
+fi
+AC_MSG_RESULT($DOMAIN_NAME)
+
+if test "$USE_NNTP" = "yes" ; then
+AC_MSG_CHECKING(for NNTP default-server)
+CF_ARG_WITH(nntp-default-server,
+	[  --with-nntp-default-server
+                          (sets \$NNTP_DEFAULT_SERVER)
+                          (default: news\$DOMAIN_NAME)],
+	[NNTP_DEFAULT_SERVER])
+
+    if test "$NNTP_DEFAULT_SERVER" = "" ; then
+	if test "$DOMAIN_NAME" != "" ; then
+		test -z "$NNTP_DEFAULT_SERVER" && case "$DOMAIN_NAME" in #(((
+	 	/*)
+			if test -r "$DOMAIN_NAME" ; then
+				NNTP_DEFAULT_SERVER="news.`cat $DOMAIN_NAME`"
+			else
+				NNTP_DEFAULT_SERVER="news"
+			fi
+			;;
+	 	*)
+			NNTP_DEFAULT_SERVER="news.$DOMAIN_NAME"
+			;;
+	 	esac
+	else
+		NNTP_DEFAULT_SERVER="news"
+	fi
+    fi
+AC_MSG_RESULT($NNTP_DEFAULT_SERVER)
+fi
+
+## These options are interdependent, so we delay defining them til now:
+test -n "$NNTP_DEFAULT_SERVER" \
+	&& AC_DEFINE_UNQUOTED(NNTP_DEFAULT_SERVER,"$NNTP_DEFAULT_SERVER")
+test ".$INEWSDIR" != ".$NEWSLIBDIR" && AC_DEFINE_UNQUOTED(INEWSDIR,"$INEWSDIR")
+AC_DEFINE_UNQUOTED(NEWSLIBDIR,"$NEWSLIBDIR")
+AC_DEFINE_UNQUOTED(NOVROOTDIR,"$NOVROOTDIR")
+AC_DEFINE_UNQUOTED(SPOOLDIR,"$SPOOLDIR")
+
+## optional features
+AC_MSG_CHECKING(whether to use MH style mail handling)
+CF_ARG_ENABLE(mh-mail-handling,
+	[  --enable-mh-mail-handling
+                          use MH style mail handling],
+	[AC_DEFINE(HAVE_MH_MAIL_HANDLING)])
+AC_MSG_RESULT($enableval)
+
+AC_MSG_CHECKING(whether to enable 8-bit keycodes)
+CF_ARG_DISABLE(8bit-keys,
+	[  --disable-8bit-keys     disable 8-bit keycode support],,
+	[AC_DEFINE(HAVE_KEY_PREFIX)])
+AC_MSG_RESULT($enableval)
+
+AC_MSG_CHECKING(whether to enable ANSI-color)
+CF_ARG_DISABLE(color,
+	[  --disable-color         disable ANSI-color support])
+use_color=$enableval
+AC_MSG_RESULT($use_color)
+
+AC_MSG_CHECKING(whether to enable posting-etiquette)
+CF_ARG_DISABLE(etiquette,
+	[  --disable-etiquette     disable printing of posting-etiquette],
+	[AC_DEFINE(NO_ETIQUETTE)])
+AC_MSG_RESULT($enableval)
+
+AC_MSG_CHECKING(whether to strictly observe RFC1522 and break long lines)
+CF_ARG_ENABLE(break-long-lines,
+	[  --enable-break-long-lines
+                          break long mime-encoded lines],
+	[AC_DEFINE(MIME_BREAK_LONG_LINES)])
+AC_MSG_RESULT($enableval)
+
+AC_MSG_CHECKING(whether to force MM_CHARSET obeyance when decoding mime)
+CF_ARG_DISABLE(mime-strict-charset,
+	[  --disable-mime-strict-charset
+                          force MM_CHARSET obeyance],,
+	[AC_DEFINE(MIME_STRICT_CHARSET)])
+AC_MSG_RESULT($enableval)
+
+AC_MSG_CHECKING(for MIME character-set)
+CF_WITH_DFTENV(mime-default-charset,
+	[  --with-mime-default-charset
+                          fallback for \$MM_CHARSET],
+	MM_CHARSET,US-ASCII)
+AC_MSG_RESULT($MM_CHARSET)
+
+AC_MSG_CHECKING(for default ISO/ASCII table)
+CF_WITH_DFTENV(iso-to-ascii,
+	[  --with-iso-to-ascii     ISO -> ASCII conversion],
+	DEFAULT_ISO2ASC,-1)
+AC_MSG_RESULT($DEFAULT_ISO2ASC)
+
+AC_MSG_CHECKING(whether to use character set conversion)
+CF_ARG_WITH(local-charset,
+	[  --with-local-charset=CHARSET
+                          set local charset to convert from/to],
+	LOCAL_CHARSET)
+AC_MSG_RESULT($LOCAL_CHARSET)
+
+AC_MSG_CHECKING(whether to enable locale support)
+CF_ARG_DISABLE(locale,
+	[  --disable-locale        disable locale support],
+	[AC_DEFINE(NO_LOCALE)])
+AC_MSG_RESULT($enableval)
+
+AC_MSG_CHECKING(whether to enable posting)
+CF_ARG_DISABLE(posting,
+	[  --disable-posting       disable posting],
+	[AC_DEFINE(NO_POSTING)])
+AC_MSG_RESULT($enableval)
+
+AC_MSG_CHECKING(whether to enable shell escape)
+CF_ARG_DISABLE(shell-escape,
+	[  --disable-shell-escape  disable shell escape],
+	[AC_DEFINE(NO_SHELL_ESCAPE)])
+AC_MSG_RESULT($enableval)
+
+AC_MSG_CHECKING(whether to have fascist newsadmin)
+CF_ARG_ENABLE(fascist-newsadmin,
+	[  --enable-fascist-newsadmin
+                          have fascist newsadmin],
+	[AC_DEFINE(HAVE_FASCIST_NEWSADMIN)])
+AC_MSG_RESULT($enableval)
+
+AC_MSG_CHECKING(whether to enable inverse video and highlighting)
+CF_ARG_DISABLE(inverse-video,
+	[  --disable-inverse-video disable inverse video and highlighting],
+	[AC_DEFINE(USE_INVERSE_HACK)])
+AC_MSG_RESULT($enableval)
+
+AC_MSG_CHECKING(whether to have MMDF type mailer as default)
+CF_ARG_ENABLE(mmdf-mailer,
+	[  --enable-mmdf-mailer    have MMDF type mailer as default],
+	[AC_DEFINE(HAVE_MMDF_MAILER)])
+AC_MSG_RESULT($enableval)
+
+AC_MSG_CHECKING(whether to enable piping support)
+CF_ARG_DISABLE(piping,
+	[  --disable-piping        disable piping support],
+	[AC_DEFINE(DONT_HAVE_PIPING)])
+AC_MSG_RESULT($enableval)
+
+AC_MSG_CHECKING(whether to enable printer support)
+CF_ARG_DISABLE(printing,
+	[  --disable-printing      disable printer support],
+	[AC_DEFINE(DISABLE_PRINTING)])
+AC_MSG_RESULT($enableval)
+
+AC_MSG_CHECKING(whether to unique tmp-files by appending .pid)
+CF_ARG_DISABLE(append-pid,
+	[  --disable-append-pid    disable appending .pid to tmp-files],,
+	[AC_DEFINE(APPEND_PID)])
+AC_MSG_RESULT($enableval)
+
+AC_MSG_CHECKING(whether to fallback to XHDR XREF if XOVER isn't supported)
+CF_ARG_DISABLE(xhdr-xref,
+	[  --disable-xhdr-xref     disable XHDR XREF fallback],,
+	[AC_DEFINE(XHDR_XREF)])
+AC_MSG_RESULT($enableval)
+
+### bypass a bug in old versions of leafnode & NNTPcache
+AC_MSG_CHECKING(whether to send a GROUP command before a LISTGROUP)
+CF_ARG_ENABLE(broken-listgroup-fix,
+	[  --enable-broken-listgroup-fix
+                          send extra GROUP command before LISTGROUP
+                         ],
+	[AC_DEFINE(BROKEN_LISTGROUP)])
+AC_MSG_RESULT($enableval)
+
+### checks for the location of the system-wide default setting file
+AC_MSG_CHECKING(for directory containing tin.defaults file)
+CF_WITH_PATH(defaults-dir,
+	[  --with-defaults-dir=PATH
+                          directory containing tin.defaults file
+                         ],
+	TIN_DEFAULTS_DIR,/etc/tin)
+AC_MSG_RESULT($TIN_DEFAULTS_DIR)
+AC_DEFINE_UNQUOTED(TIN_DEFAULTS_DIR,"$TIN_DEFAULTS_DIR")
+
+### checks for operator characteristics (should be the last option)
+AC_MSG_CHECKING(whether to make a coffee while compiling)
+AC_ARG_WITH(coffee,
+	[  --with-coffee           coffee support],
+	[ case "$withval" in
+	yes)
+	AC_MSG_RESULT(yes - with milk - please!)
+	AC_DEFINE(HAVE_COFFEE)
+	;;
+	*)
+	AC_MSG_RESULT(no)
+	;;
+	esac],
+	AC_MSG_RESULT(no))
+
+###	checks for compiler characteristics
+CF_MAKEFLAGS
+AC_LANG_C
+AC_C_CONST
+AC_C_INLINE
+CF_CPP_EXPANDS
+CF_CPP_CONCATS
+CF_CHECK_NESTED_PARAMS
+
+### check for alloca (only required for bison)
+case "$YACC" in
+bison*)
+	AC_FUNC_ALLOCA
+	;;
+*)
+	ALLOCA=""
+	AC_SUBST(ALLOCA)
+	;;
+esac
+
+###	Checks for header files.
+AC_STDC_HEADERS
+AC_HEADER_DIRENT
+AC_HEADER_TIME
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS(\
+	arpa/inet.h \
+	curses.h \
+	errno.h \
+	fcntl.h \
+	getopt.h \
+	ioctl.h \
+	libc.h \
+	locale.h \
+	malloc.h \
+	netdb.h \
+	netinet/in.h \
+	netlib.h \
+	nomacros.h \
+	poll.h \
+	prototypes.h \
+	pwd.h \
+	sgtty.h \
+	stdarg.h \
+	stddef.h \
+	stdlib.h \
+	string.h \
+	strings.h \
+	stropts.h \
+	sys/bsdtypes.h \
+	sys/ioctl.h \
+	sys/param.h \
+	sys/ptem.h \
+	sys/pty.h \
+	sys/select.h \
+	sys/stream.h \
+	sys/socket.h \
+	sys/time.h \
+	sys/timeb.h \
+	sys/times.h \
+	sys/utsname.h \
+	term.h \
+	termio.h \
+	time.h \
+	unistd.h \
+	varargs.h \
+	waitstatus.h \
+)
+
+###	Checks that depend on existence-checks for headers
+CF_SIZECHANGE
+CF_SYS_SELECT_TIMEVAL
+
+###	Checks for Datatypes.
+AC_CHECK_TYPE(gid_t, int)
+AC_TYPE_MODE_T
+AC_TYPE_OFF_T
+AC_TYPE_PID_T
+AC_CHECK_TYPE(quad_t, NONE)
+AC_TYPE_SIZE_T
+AC_TYPE_UID_T
+AC_CHECK_TYPE(time_t, long)
+dnl test to see if long long is defined
+AC_MSG_CHECKING(checking for long long)
+AC_TRY_COMPILE([
+#include <sys/types.h>
+],[long long x; x = 0],
+ac_cv_long_long=yes, ac_cv_long_long=no)
+AC_MSG_RESULT($ac_cv_long_long)
+if test $ac_cv_long_long = yes; then
+	AC_DEFINE(HAVE_LONG_LONG)
+fi
+
+###	Checks for libraries.
+# libuu/uudeview
+# only define HAVE_LIBUU and HAVE_UUDEVIEW_H if both are found
+AC_CHECK_LIB(uu, UUInitialize,
+	[AC_CHECK_HEADER(uudeview.h,
+		[AC_DEFINE(HAVE_LIBUU)
+		AC_DEFINE(HAVE_UUDEVIEW_H)
+		LIBS="$LIBS -luu"]
+	)]
+)
+
+if test $use_curses = yes ; then
+	if test $found_ncurses != yes ; then
+		CF_CURSES_LIBS
+	fi
+	cf_cv_termlib=curses
+else
+	CF_TERMCAP_LIBS
+	# terminfo-based termcap interfaces may be prototyped in <curses.h>,
+	# which may/may not be compatible with <termcap.h>
+	AC_MSG_CHECKING(if we should include termcap.h)
+	cf_save_CFLAGS="$CFLAGS"
+	CFLAGS="$CFLAGS -I$srcdir/include"
+	AC_TRY_COMPILE([
+#define HAVE_TERMCAP_H 1
+#include <tcurses.h>],[
+#ifdef NCURSES_VERSION
+make an error
+#endif
+],
+		[cf_result=yes],
+		[cf_result=no])
+	AC_MSG_RESULT($cf_result)
+	CFLAGS="$cf_save_CFLAGS"
+	test $cf_result = yes && AC_DEFINE(HAVE_TERMCAP_H)
+fi
+CF_TYPE_OUTCHAR
+
+cf_tc_externs="tgoto tgetstr tputs tgetent tgetflag"
+if test ".$cf_cv_termlib" = .terminfo ; then
+	AC_DEFINE(USE_TERMINFO)
+	cf_tc_externs="$cf_tc_externs tigetnum"
+elif test ".$cf_cv_termlib" = .termcap ; then
+	cf_tc_externs="$cf_tc_externs tgetnum"
+else
+	cf_tc_externs=""
+fi
+
+###	Checks for external-data
+CF_ERRNO
+CF_SYS_ERRLIST
+
+###	Checks for library functions.
+AC_CHECK_FUNCS(\
+	atoi \
+	atol \
+	bcopy \
+	ftime \
+	fdopen \
+	ftime \
+	getcwd \
+	inet_aton \
+	is_xterm \
+	isascii \
+	link \
+	memcmp \
+	memcpy \
+	memmove \
+	memset \
+	mkdir \
+	mktemp \
+	mkstemp \
+	poll \
+	putenv \
+	rewinddir \
+	resizeterm \
+	select \
+	setegid \
+	seteuid \
+	setgid \
+	setlocale \
+	setpgrp \
+	setregid \
+	setreuid \
+	setuid \
+	sigaction \
+	snprintf \
+	strchr \
+	strcasecmp \
+	strerror \
+	strftime \
+	strpbrk \
+	strstr \
+	strtol \
+	tempnam \
+	tmpnam \
+	tzset \
+	uname \
+	unlink \
+	use_default_colors \
+	usleep \
+	vsnprintf \
+)
+
+CF_POSIX_JC
+CF_FUNC_FORK
+CF_FUNC_MEMMOVE
+
+AC_MSG_CHECKING(if select expects int * arguments)
+AC_EGREP_HEADER([select\(.*, *int *\*,],time.h,AC_DEFINE(HAVE_SELECT_INTP) AC_MSG_RESULT(yes), AC_MSG_RESULT(no))
+
+AC_FUNC_CLOSEDIR_VOID
+AC_FUNC_SETPGRP
+AC_FUNC_SETVBUF_REVERSED
+
+###	Checks for network library functions.
+AC_CHECK_FUNCS(\
+	gai_strerror \
+	getaddrinfo \
+	gethostbyname \
+	getservbyname \
+	inet_addr \
+	inet_ntoa \
+	strncasecmp \
+)
+
+CF_SET_GID_UID
+CF_TYPE_SIGACTION
+CF_TERMIOS
+CF_TM_GMTOFF
+
+AC_SYS_LONG_FILE_NAMES
+CF_FUNC_SYSTEM
+
+# Check if we are trying to use curses+color, but cannot
+if test $use_color = yes ; then
+	if test $use_curses = yes ; then
+	 	CF_NCURSES_BROKEN
+		CF_COLOR_CURSES
+		if test $cf_cv_color_curses = yes ; then
+			AC_DEFINE(HAVE_COLOR)
+		else
+			AC_MSG_WARN(This curses library does not support color)
+		fi
+	else
+		AC_DEFINE(HAVE_COLOR)
+	fi
+fi
+
+# GCC and Apollo compilers are quite noisy about signal constants (quiet them).
+if test -n "$GCC"; then
+	check_sig_const=yes
+elif test -f /sys/dm/dm ; then
+	check_sig_const=yes
+elif test -f /sys/dm/spm ; then
+	check_sig_const=yes
+else
+	check_sig_const=no
+fi
+
+if test $check_sig_const = yes ; then
+	CF_SIG_CONST
+fi
+
+CF_COMPTYPE
+CF_COREFILE
+
+### test this last, since it uses a partly-built autoconf.h
+# Setup includes for test-program to verify declarations
+CHECK_DECL_FLAG="-I$srcdir/include -I$srcdir/pcre"
+CHECK_DECL_HDRS='
+#define M_UNIX
+#define __CPROTO__
+#define HAVE_CONFDEFS_H
+#include <tin.h>'
+TIN_DECL_HDRS="$CHECK_DECL_HDRS"
+
+dnl These return non-int values, and can be troublesome if not declared
+CF_CHECK_DECL(\
+	errno \
+	getenv \
+	getlogin \
+	getpwnam \
+	popen \
+	strchr \
+)
+
+dnl Check network stuff separately, to limit the effect of inconsistent headers
+CHECK_DECL_HDRS="$TIN_DECL_HDRS
+#include <tnntp.h>"
+CF_CHECK_DECL(\
+	gethostbyname \
+	getservbyname \
+	inet_ntoa \
+	socket \
+)
+
+if test $use_curses = no ; then
+CHECK_DECL_HDRS="$TIN_DECL_HDRS
+#include <tcurses.h>"
+CF_CHECK_DECL(\
+	tgetstr \
+	tgoto \
+)
+fi
+
+if test $with_decl_check = yes; then
+CHECK_DECL_HDRS="$TIN_DECL_HDRS"
+CF_CHECK_DECL(\
+	_flsbuf \
+	atoi \
+	atol \
+	bcopy \
+	bzero \
+	calloc \
+	fclose \
+	fdopen \
+	fflush \
+	fgetc \
+	fileno \
+	fprintf \
+	fputc \
+	fputs \
+	fread \
+	free \
+	fseek \
+	fwrite \
+	getcwd \
+	gethostname \
+	getopt \
+	getpass \
+	ioctl \
+	isascii \
+	malloc \
+	memset \
+	mkstemp \
+	mktemp \
+	pclose \
+	perror \
+	printf \
+	putenv \
+	qsort \
+	realloc \
+	rename \
+	rewind \
+	select \
+	setegid \
+	setenv \
+	seteuid \
+	setpgrp \
+	setregid \
+	setreuid \
+	snprintf \
+	sscanf \
+	strcasecmp \
+	strftime \
+	strncasecmp \
+	strtol \
+	system \
+	tempnam \
+	time \
+	tolower \
+	toupper \
+	ungetc \
+	usleep \
+	vsprintf \
+	vsnprintf \
+)
+
+if test $use_curses = no ; then
+CHECK_DECL_HDRS="$TIN_DECL_HDRS
+#include <tcurses.h>"
+CF_CHECK_DECL($cf_tc_externs)
+fi
+
+CHECK_DECL_HDRS="$TIN_DECL_HDRS
+#include <tnntp.h>"
+CF_CHECK_DECL(\
+	connect \
+)
+
+fi
+
+CF_TIOCGWINSZ
+
+### append special libraries that get in the way of testing
+case $debug_malloc in
+DBMALLOC)
+	AC_DEFINE(USE_DBMALLOC)
+	LIBS="$LIBS -ldbmalloc"
+	;;
+DMALLOC)
+	AC_DEFINE(USE_DMALLOC)
+	LIBS="$LIBS -ldmalloc"
+	;;
+esac
+
+### The 'pcre' library uses non-standard #define's
+test ".$ac_cv_func_strerror" != ".yes" && \
+test ".$cf_cv_have_sys_errlist" = ".yes" && \
+	PCRE_DEFINES="$PCRE_DEFINES -DSTRERROR_FROM_ERRLIST"
+test ".$ac_cv_func_memmove" != ".yes" && \
+test ".$cf_cv_good_bcopy" = ".yes" && \
+	PCRE_DEFINES="$PCRE_DEFINES -DUSE_BCOPY"
+AC_SUBST(PCRE_DEFINES)
+
+### sum up warnings
+if test "$cf_cv_termlib" = none ; then
+	if test "$found_ncurses" != yes; then
+        	echo "Warning: no term-lib found, you might run into trouble later."
+	fi
+fi
+if test "$YACC" = "" ; then
+	echo "Warning: no yacc-parser found, you might run into trouble later."
+fi
+if test "$RANLIB" = "" ; then
+        echo "Warning: no librarie archive builder found, you might run into trouble later."
+fi
+
+### Finally, build autoconf.h and the makefiles
+CFLAGS="$CFLAGS $EXTRA_CFLAGS"
+AC_OUTPUT(makefile pcre/Makefile src/Makefile)

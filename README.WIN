@@ -1,0 +1,53 @@
+     Compile Tin For Windows
+     -----------------------
+
+     - what is it?
+       - A Usenet newsreader
+
+     - system
+       - Windows 95, should work on NT, too
+
+     - Cygwin (http://sourceware.cygnus.com/cygwin/)
+       - for B20
+
+     - preliminaries
+       - install ncurses first
+         - get tin source (e.g. from ftp://ftp.tin.org/tin/)
+
+     - configure
+       - export CC=gcc
+       - export CFLAGS="-DLOCAL_CHARSET=850 -DSTATIC"
+                                        ^^^
+                            (or 437 depends on "mode con")
+       - ./configure --with-ncurses --libdir=/usr/local/lib --disable-locale
+
+     - make
+       - cd src
+       - make
+
+     - make install
+       - does not work. Just copy tin.exe from the src dir to a directory in
+         your path.
+       - add to your profile:
+              export NNTPSERVER=your.nntp.server
+              export TERM=pcansi
+
+     - notes
+       - You also need an editor. vim works fine.
+       - tin needs an /etc/passwd
+              username:x:500:100:Real Name:/home:/bin/sh.exe
+       - in autoexec or in cygnus.bat
+              set HOME=c:\home
+              set USER=username
+       - tested with
+           tin pre-1.4 release 981225 ("Volcane")
+           tin pre-1.4 release 19990517 ("Psychonaut")
+           tin pre-1.4 release 19991104 ("Nine While Nine")
+
+     - lates version of this file
+       - on http://www.uni-karlsruhe.de/~uafr/windows/
+       - as tin_cygwin.txt
+
+     - contributed by
+       - uafr@gmx.de (Wolfgang Becker)
+         6.11.1999

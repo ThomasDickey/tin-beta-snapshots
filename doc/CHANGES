@@ -1,0 +1,53 @@
+-- 1.5.0 release 19991201 "Blueprint" --
+
+U002) Dawid Kuroczko <dk@ssw.krakow.pl>
+      ADD. indicator for articles newer then n-days
+      FIX. extern.h, tin.h, tinrc.h, config.c, init.c, lang.c, thread.c
+           tincfg.tbl
+
+U001) Urs Janssen <urs@tin.org>
+      ADD. Patrick Powells snrprintf(), vsnrprintf() fallbacks
+      REM. INDEX_DAEMON-code
+      FIX. configure[.in], autoconf.h[in], plp_snrprintf.c, *.c
+
+-- 1.4.1 release 19991201 "Polish" --
+
+ 006) Jeremy Buhler <jbuhler@cs.washington.edu>
+      ADD. check for server requested auth type
+      FIX. auth.txt, nntplib.h, proto.h, auth.c, inews.c, nntplib.c, open.c
+
+ 005) Thomas E. Dickey <dickey@clark.net>
+      ADD. configure script improvements
+      BUG. screen modes weren't restored before piping to external command
+      FIX. aclocal.m4, configure[.in], autoconf.h[in], extern.h, feed.c
+           makecfg.c, misc.c, tincfg.tbl
+
+ 004) Henryk Bochmann <bochmann@tudurz.urz.tu-dresden.de>
+      ADD. add X-Headers in cancels and reposts
+      FIX. post.c
+
+ 003) Jason Faultless <jason@radar.tele2.co.uk>
+      BUG. fixed the newgroup during session hack which didn't work
+           with leafnode
+      BUG. Possible core when entering newgroups
+      BUG. Possible core when saving from the pager
+      ADD. documentation / manpage update
+      REM. changes to 'g' semantics on group selection menu
+      FIX. WHATSNEW, tin.1, active.c, feed.c, post.c, select.c
+
+ 002) Carsten Theis <c.theis@ndh.net>
+      BUG. unwanted \n in Subject if using mailreader_i
+      FIX. post.c
+
+ 001) Urs Janssen <urs@tin.org>
+      ADD. better check for 'article changed?'
+      ADD. check ~/.newsauth permissions
+      BUG. default permissions allowed other users to read
+           users .inputhistory-file which might have cached
+           the users nntp-password
+      FIX. Makefile, extern.h, proto.h, auth.c, getline.c, init.c, misc.c
+           post.c
+
+-- 1.4.0 release 19991113 "No Labels" --
+
+For changes made till the 1.4.0 release look at CHANGES.old

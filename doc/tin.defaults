@@ -1,0 +1,146 @@
+#
+# TIN 1.4 - a threaded newsreader
+#
+# tin.defaults - set some machine specified options
+#                and override compile time defaults
+#
+# Only do changes in this file, if your actual configurations
+# differs from the configuration compiled in. All values have
+# defaults at compile time, so usually editing this file is not
+# needed. An exception are distributed binaries which run on
+# different machines, here some configuration might be necessary.
+#
+
+############# global options ####################################
+
+# domainname - this sets a global domain name used in From lines
+#
+# set your full domain name without a trailing dot
+#
+#domainname=domain.com
+
+# organization - defines the name of your organization
+#
+#organization=TIN unltd.
+
+# newslibdir - defines the default place for some configuration
+#              files
+# common values are /usr/lib/news, /var/lib/news, /usr/local/lib/news
+#
+#newslibdir=/usr/lib/news
+
+# bugaddress - defines the email address to which users can send
+#              bugreports using tin's builtin function
+#
+# The default points to a developers mailing list located at tin.org.
+# You might want to change this address to one of your local
+# administration if you want to deal with your lusers problems on
+# your own.
+#
+#bugaddress=tin-bugs@tin.org
+
+# inewsdir - defines the directory containing of the inews executable
+#
+# Usually tin uses its own builtin inews routines. you might want
+# to use an external inews, so you can define the directory where tin
+# expects the executable. The program's name is set to inews, don't
+# include it
+#
+#inewsdir=/usr/lib/news
+
+# mm_charset - the default charset to be used in MIME's
+#              Content-Type header
+#
+# luser may change this setting in their tinrcs but it's a good
+# idea to set mm_charset here for providing a default
+# in most western countries ISO-8859-1 might be the best value
+#
+#mm_charset=iso-8859-1
+
+# post_mime_encoding
+#
+# luser may change this setting in their tinrcs but it's a good
+# idea to set post_mime_encoding here for providing a default
+# in most western countries 8bit might be the best value
+#
+#post_mime_encoding=8bit
+
+# mail_mime_encoding
+#
+# luser may change this setting in their tinrcs but it's a good
+# idea to set mail_mime_encoding here for providing a default
+# as mail isn't guaranteed to be 8bit clean quoted-printable is
+# a good choice
+#
+#mail_mime_encoding=quoted-printable
+
+# disable_gnksa_domain_check - allow unregistered top level domains
+#
+# you should activate this only if you are using in an intranet environment
+# where articles do _not_ leak out into usenet
+#
+#disable_gnksa_domain_check=OFF
+
+# disable_sender - post without Sender: even if tin normally would add it
+#
+# use this only if you cannot generate a valid Sender:, eg. if you do not
+# have a registered FQDN for your system
+#
+# disable_sender has no effect if use_builtin_inews is OFF
+#
+#disable_sender=OFF
+
+############# reading from a local spool #########################
+#
+# If you are using tin only via NNTP connections, this section
+# has no meaning for you.
+#
+
+# spooldir - the base of your newsspool (INN, Bnews, Cnews style)
+# common values are /var/spool/news, /usr/spool/news, /news/spool
+#
+#spooldir=/var/spool/news
+
+# overviewdir - the base of your NOV database
+#
+# the overview files are either included within your spooldir or
+# in a separate directory tree
+# common values are /var/spool/overview, /usr/spool/overview, /news/overview
+#
+#overviewdir=/var/spool/overview
+
+# overviewfile - the name of a single overview file
+#
+# the name of a single file within the overview spool
+# common values are .overview, over.view
+#
+#overviewfile=.overview
+
+# activefile - the full pathname of your newssystem's active file
+#
+# usually the active file is newslibdir, so you only have
+# to change this setting if your configuration differs
+#
+#activefile=/usr/lib/news/active
+
+# activetimesfile - the full pathname of your newssystem's active.times file
+#
+# usually the active file is newslibdir, so you only have
+# to change this setting if your configuration differs
+#
+#activetimesfile=/usr/lib/news/active.times
+
+# newsgroupsfile - the full pathname of your newssystem's newsgroups file
+#
+# usually the newsgroups file is newslibdir, so you only have
+# to change this setting if your configuration differs
+#
+#newsgroupsfile=/usr/lib/news/newsgroups
+
+# subscriptionsfile - the full pathname of your newssystem's
+#                     subscriptions file
+#
+# usually the newsgroups file is newslibdir, so you only have
+# to change this setting if your configuration differs
+#
+#subscriptionsfile=/usr/lib/news/subscriptions

@@ -1,0 +1,422 @@
+# Source Makefile for tin
+# - for configuration options read the ../doc/INSTALL file.
+#
+# Updated: 1998-01-31
+#
+
+SHELL		= /bin/sh
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+top_srcdir	= @top_srcdir@
+srcdir		= @srcdir@
+VPATH		= $(srcdir)
+
+# Compiler, linker & parser commands
+CC	= @CC@
+CPP	= @CPP@
+x	= @PROG_EXT@
+PRELIB	= @LIB_PREFIX@
+
+DEBUG	= @ENABLE_DEBUG@ -DDEBUG #-DDEBUG_NEWSRC -DPROFILE -DDEBUG_REFS
+CANLOCK = # -DUSE_CANLOCK # -DEVIL_INSIDE
+CPPOPTS	= @DEFS@ -I. -I../include -I$(top_srcdir)/pcre -I$(INCDIR) $(DEBUG) $(CANLOCK) @CPPFLAGS@
+CFLAGS	= @CFLAGS@
+
+LD	= $(CC)
+LDFLAGS	= @LDFLAGS@
+YACC	= @YACC@
+
+CANLIB	= # -L../libcanlock -lcanlock
+LIBS	= -L../pcre -lpcre $(CANLIB) @LIBS@ @INN_NNTPLIB@
+
+# Where do you want the binary & manual page installed?
+INSTALL_PREFIX	= @INSTALL_PREFIX@
+INS_BINARY_DIR	= @bindir@
+INS_MANUAL_DIR	= @mandir@/man
+INS_SYSDEF_DIR	= @TIN_DEFAULTS_DIR@
+INS_MANUAL_EXT	= 1
+
+# Project
+PROJECT	= tin
+EXE	= tin$x
+EXED	= tind
+VER	= 1.4
+MANEXT	= 1
+
+# directory structure
+DOCDIR	= $(srcdir)/../doc
+INCDIR	= $(top_srcdir)/include
+BINDIR	= .
+OBJDIR	= .
+SRCDIR	= $(srcdir)
+
+# standard commands
+CD	= cd
+CFLOW	= cflow
+CHMOD	= chmod
+CP	= cp
+CSCOPE	= cscope
+ECHO	= echo
+LINT	= @LINT@
+LN	= ln
+LS	= ls -l
+MV	= mv -f
+RM	= rm
+TAGS	= ctags
+ETAGS	= etags
+INSTALL	= @INSTALL@
+@SET_MAKE@
+
+HFILES	= \
+	../include/autoconf.h \
+	$(INCDIR)/bool.h \
+	$(INCDIR)/bugrep.h \
+	$(INCDIR)/extern.h \
+	$(INCDIR)/menukeys.h \
+	$(INCDIR)/nntplib.h \
+	$(INCDIR)/policy.h \
+	$(INCDIR)/proto.h \
+	$(INCDIR)/stpwatch.h \
+	$(INCDIR)/tin.h \
+	$(INCDIR)/tinrc.h \
+	$(INCDIR)/version.h
+#	$(INCDIR)/config.h
+
+CFILES	= \
+	$(SRCDIR)/active.c \
+	$(SRCDIR)/art.c \
+	$(SRCDIR)/attrib.c \
+	$(SRCDIR)/auth.c \
+	$(SRCDIR)/charset.c \
+	$(SRCDIR)/color.c \
+	$(SRCDIR)/config.c \
+	$(SRCDIR)/curses.c \
+	$(SRCDIR)/debug.c \
+	$(SRCDIR)/envarg.c \
+	$(SRCDIR)/feed.c \
+	$(SRCDIR)/filter.c \
+	$(SRCDIR)/getline.c \
+	$(SRCDIR)/group.c \
+	$(SRCDIR)/hashstr.c \
+	$(SRCDIR)/header.c \
+	$(SRCDIR)/help.c \
+	$(SRCDIR)/inews.c \
+	$(SRCDIR)/init.c \
+	$(SRCDIR)/lang.c \
+	$(SRCDIR)/list.c \
+	$(SRCDIR)/mail.c \
+	$(SRCDIR)/main.c \
+	$(SRCDIR)/memory.c \
+	$(SRCDIR)/misc.c \
+	$(SRCDIR)/newsrc.c \
+	$(SRCDIR)/nntplib.c \
+	$(SRCDIR)/nrctbl.c \
+	$(SRCDIR)/open.c \
+	$(SRCDIR)/page.c \
+	$(SRCDIR)/parsdate.y \
+	$(SRCDIR)/pgp.c \
+	$(SRCDIR)/plp_snprintf.c \
+	$(SRCDIR)/post.c \
+	$(SRCDIR)/prompt.c \
+	$(SRCDIR)/read.c \
+	$(SRCDIR)/refs.c \
+	$(SRCDIR)/regex.c \
+	$(SRCDIR)/rfc1521.c \
+	$(SRCDIR)/rfc1522.c \
+	$(SRCDIR)/save.c \
+	$(SRCDIR)/screen.c \
+	$(SRCDIR)/search.c \
+	$(SRCDIR)/select.c \
+	$(SRCDIR)/sigfile.c \
+	$(SRCDIR)/signal.c \
+	$(SRCDIR)/strftime.c \
+	$(SRCDIR)/string.c \
+	$(SRCDIR)/thread.c \
+	$(SRCDIR)/wildmat.c \
+	$(SRCDIR)/xref.c
+
+EXTRAOBJS = @EXTRAOBJS@
+
+EXTRALIBS = ../pcre/$(PRELIB)pcre.a
+
+OFILES	= @ALLOCA@ $(EXTRAOBJS) \
+	$(OBJDIR)/active.o \
+	$(OBJDIR)/art.o \
+	$(OBJDIR)/attrib.o \
+	$(OBJDIR)/auth.o \
+	$(OBJDIR)/charset.o \
+	$(OBJDIR)/color.o \
+	$(OBJDIR)/config.o \
+	$(OBJDIR)/curses.o \
+	$(OBJDIR)/debug.o \
+	$(OBJDIR)/envarg.o \
+	$(OBJDIR)/feed.o \
+	$(OBJDIR)/filter.o \
+	$(OBJDIR)/getline.o \
+	$(OBJDIR)/group.o \
+	$(OBJDIR)/hashstr.o \
+	$(OBJDIR)/header.o \
+	$(OBJDIR)/help.o \
+	$(OBJDIR)/inews.o \
+	$(OBJDIR)/init.o \
+	$(OBJDIR)/joinpath.o \
+	$(OBJDIR)/lang.o \
+	$(OBJDIR)/list.o \
+	$(OBJDIR)/mail.o \
+	$(OBJDIR)/main.o \
+	$(OBJDIR)/memory.o \
+	$(OBJDIR)/misc.o \
+	$(OBJDIR)/newsrc.o \
+	$(OBJDIR)/nntplib.o \
+	$(OBJDIR)/nrctbl.o \
+	$(OBJDIR)/open.o \
+	$(OBJDIR)/page.o \
+	$(OBJDIR)/parsdate.o \
+	$(OBJDIR)/pgp.o \
+	$(OBJDIR)/plp_snprintf.o \
+	$(OBJDIR)/post.o \
+	$(OBJDIR)/prompt.o \
+	$(OBJDIR)/read.o \
+	$(OBJDIR)/refs.o \
+	$(OBJDIR)/regex.o \
+	$(OBJDIR)/rfc1521.o \
+	$(OBJDIR)/rfc1522.o \
+	$(OBJDIR)/save.o \
+	$(OBJDIR)/screen.o \
+	$(OBJDIR)/search.o \
+	$(OBJDIR)/select.o \
+	$(OBJDIR)/sigfile.o \
+	$(OBJDIR)/signal.o \
+	$(OBJDIR)/strftime.o \
+	$(OBJDIR)/string.o \
+	$(OBJDIR)/tcurses.o \
+	$(OBJDIR)/thread.o \
+	$(OBJDIR)/wildmat.o \
+	$(OBJDIR)/xref.o
+
+
+ALL_FILES = $(HFILES) $(CFILES) $(NNTP)
+
+LINTFLAGS = -a -c -h -n -x $(CPPOPTS) \
+	-DUSE_ISO2ASC=\"2\" \
+	-DHAVE_ISPELL \
+	-DHAVE_COLOR
+
+all: $(BINDIR)/$(EXE)
+
+.SUFFIXES: .i
+
+.c.o:
+@SHOW_CC@
+	@ECHO_CC@$(CC) $(CPPOPTS) $(CFLAGS) -c $(srcdir)/$*.c
+
+.c.i:
+@SHOW_CC@
+	@ECHO_CC@$(CPP) -C $(CPPOPTS) $*.c >$@
+
+# explicit rules to allow running lint, and to accommodate older 'make' programs
+$(OBJDIR)/parsdate.o: $(SRCDIR)/parsdate.y
+	@$(ECHO) "expect 6 shift/reduce conflicts..."
+	$(YACC) $(SRCDIR)/parsdate.y
+	$(MV) y.tab.c $(OBJDIR)/parsdate.c
+@SHOW_CC@
+	@ECHO_CC@$(CC) $(CPPOPTS) $(CFLAGS) -c $(OBJDIR)/parsdate.c
+
+$(OBJDIR)/parsdate.c: $(SRCDIR)/parsdate.y
+	@$(ECHO) "expect 6 shift/reduce conflicts..."
+	$(YACC) $(SRCDIR)/parsdate.y
+	$(MV) y.tab.c $(OBJDIR)/parsdate.c
+
+$(BINDIR)/$(EXE): $(OFILES) $(EXTRALIBS)
+	@$(ECHO) "Linking $(EXE) v$(VER)..."
+	$(LD) $(LDFLAGS) -o $(BINDIR)/$(EXE) $(OFILES) $(NNTPLIB) $(NETLIBS) $(LIBS) $(DEBUG)
+	@$(LS) $(BINDIR)/$(EXE)
+
+help:
+	@$(ECHO) "This Makefile offers the following options:"
+	@$(ECHO) " "
+	@$(ECHO) "    make [all]           [ Build the binary for your OS ]"
+	@$(ECHO) "    make clean           [ Delete all object files ]"
+	@$(ECHO) "    make install         [ Install the binary & the manual page ]"
+	@$(ECHO) "    make install_setuid  [ Install the binary setuid & the manual page ]"
+	@$(ECHO) "    make install_manpage [ Install the manual page ]"
+	@$(ECHO) "    make install_sysdefs [ Install the system-wide-defaults file ]"
+	@$(ECHO) "    make help            [ Show this text ]"
+	@$(ECHO) " "
+
+$(INSTALL_PREFIX)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT) \
+$(INSTALL_PREFIX)$(INS_BINARY_DIR) \
+$(INS_SYSDEF_DIR) :
+	$(srcdir)/../mkdirs.sh $@
+
+install_manpage: $(INSTALL_PREFIX)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)
+	@$(ECHO) "Installing $(EXE) manual page to $(INSTALL_PREFIX)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)..."
+	@$(INSTALL) -m 444 $(DOCDIR)/$(EXE).$(MANEXT) $(INSTALL_PREFIX)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(EXE).$(INS_MANUAL_EXT)
+
+install_sysdefs: $(INS_SYSDEF_DIR)
+	@$(ECHO) "Installing system-wide defaults file to $(INS_SYSDEF_DIR)..."
+	@$(INSTALL) -m 644 $(DOCDIR)/tin.defaults $(INS_SYSDEF_DIR)/tin.defaults
+
+install: $(INSTALL_PREFIX)$(INS_BINARY_DIR)
+	@$(MAKE) all
+	@$(ECHO) "Installing $(EXE) v$(VER) to $(INSTALL_PREFIX)$(INS_BINARY_DIR)..."
+	@$(INSTALL) -s $(BINDIR)/$(EXE) $(INSTALL_PREFIX)$(INS_BINARY_DIR)/$(EXE)
+	@$(CD) $(INSTALL_PREFIX)$(INS_BINARY_DIR) && $(RM) -f r$(EXE)
+	@$(LN) $(INSTALL_PREFIX)$(INS_BINARY_DIR)/$(EXE) $(INSTALL_PREFIX)$(INS_BINARY_DIR)/r$(EXE)
+	@$(MAKE) install_manpage
+
+install_setuid:
+	@$(MAKE) all
+	@$(ECHO) "Installing SETUID $(EXE) v$(VER) to $(INSTALL_PREFIX)$(INS_BINARY_DIR)..."
+	@$(INSTALL) -s -o news -g news -m 6755 $(BINDIR)/$(EXE) $(INSTALL_PREFIX)$(INS_BINARY_DIR)/$(EXE)
+	@$(CD) $(INSTALL_PREFIX)$(INS_BINARY_DIR) && $(RM) -f r$(EXE)
+	@$(LN) $(INSTALL_PREFIX)$(INS_BINARY_DIR)/$(EXE) $(INSTALL_PREFIX)$(INS_BINARY_DIR)/r$(EXE)
+	@$(MAKE) install_manpage
+
+tags:
+	@$(ECHO) "Generating tags (results in ./tags)..."
+	@-$(RM) -f tags
+	@$(TAGS) $(HFILES) $(CFILES)
+
+TAGS:
+	@$(ECHO) "Generating emacs tags (results in ./TAGS)..."
+	@-$(RM) -f TAGS
+	@$(ETAGS) $(HFILES) $(CFILES)
+
+lint:	$(CFILES) $(OBJDIR)/parsdate.c tincfg.h
+	@$(ECHO) "Linting source (results in ./LINT)..."
+	@$(LINT) $(LINTFLAGS) -DNNTP_ABLE `/bin/ls $(CFILES)|sed -e 's/\.y/.c/'` $(LIBS) > LINT
+
+clean:
+	@$(ECHO) "Cleaning..."
+	@-$(RM) -f $(OFILES)
+	@-$(RM) -f $(OBJDIR)/parsdate.c
+	@-$(RM) -f LINT *.ln *.out
+	@-$(RM) -f makecfg$x makecfg.o tincfg.h
+	@-$(RM) -f core *~
+	@-$(RM) -f $(EXE) $(EXED)
+	@$(ECHO) "Cleaning Philip Hazel's Perl regular expressions library..."
+	@$(CD) ../pcre && $(MAKE) @cf_cv_makeflags@ clean
+
+laundry \
+dirty:
+	@$(ECHO) "I'm sorry, this is not supported yet ..."
+
+distclean \
+clobber: clean
+	@$(ECHO) "Clobbering..."
+	@-$(RM) -f $(OFILES) $(BINDIR)/$(EXE) $(BINDIR)/$(EXED) tags TAGS LINT cflow.$(PROJECT)
+
+cflow:
+	@$(ECHO) "Creating cflow for $(PROJECT)..."
+	@$(CFLOW) -I$(INCDIR) -I$(SRCDIR) -I../pcre $(CFILES) > cflow.$(PROJECT)
+
+cscope:
+	@$(ECHO) "Creating cscope database $(PROJECT)..."
+	@$(CSCOPE) $(ALL_FILES)
+
+canlock:
+	@$(ECHO) "Building libcanlock..."
+	@$(CD) ../libcanlock && ./Build
+
+TIN_DEP	= \
+	Makefile \
+	$(INCDIR)/tin.h \
+	$(INCDIR)/tinrc.h \
+	../include/autoconf.h \
+	$(INCDIR)/extern.h \
+	$(INCDIR)/nntplib.h \
+	$(INCDIR)/proto.h
+
+
+../pcre/$(PRELIB)pcre.a:
+	@$(ECHO) "Building Philip Hazel's Perl regular expressions library..."
+	@$(CD) ../pcre && $(MAKE) @cf_cv_makeflags@ $(PRELIB)pcre.a
+
+tincfg.h:			$(SRCDIR)/tincfg.tbl \
+				makecfg$x
+	./makecfg $(SRCDIR)/tincfg.tbl tincfg.h
+
+makecfg$x:			$(OBJDIR)/makecfg.o
+	$(LD) $(LDFLAGS) $(OBJDIR)/makecfg.o -o $@ @LIBS@
+
+$(OBJDIR)/active.o:		$(SRCDIR)/active.c $(TIN_DEP)
+$(OBJDIR)/art.o:		$(SRCDIR)/art.c $(TIN_DEP) \
+				$(INCDIR)/stpwatch.h
+$(OBJDIR)/attrib.o:		$(SRCDIR)/attrib.c $(TIN_DEP)
+$(OBJDIR)/auth.o:		$(SRCDIR)/auth.c $(TIN_DEP)
+$(OBJDIR)/charset.o:		$(SRCDIR)/charset.c $(TIN_DEP)
+$(OBJDIR)/color.o:		$(SRCDIR)/color.c $(TIN_DEP)
+$(OBJDIR)/config.o:		$(SRCDIR)/config.c $(TIN_DEP) \
+				tincfg.h \
+				$(INCDIR)/menukeys.h \
+				$(INCDIR)/version.h
+$(OBJDIR)/curses.o:		$(SRCDIR)/curses.c $(TIN_DEP)
+$(OBJDIR)/debug.o:		$(SRCDIR)/debug.c $(TIN_DEP)
+$(OBJDIR)/envarg.o:		$(SRCDIR)/envarg.c $(TIN_DEP)
+$(OBJDIR)/feed.o:		$(SRCDIR)/feed.c $(TIN_DEP) \
+				$(INCDIR)/menukeys.h
+$(OBJDIR)/filter.o:		$(SRCDIR)/filter.c $(TIN_DEP) \
+				$(INCDIR)/menukeys.h
+$(OBJDIR)/getline.o:		$(SRCDIR)/getline.c $(TIN_DEP)
+$(OBJDIR)/group.o:		$(SRCDIR)/group.c $(TIN_DEP) \
+				$(INCDIR)/menukeys.h
+$(OBJDIR)/hashstr.o:		$(SRCDIR)/hashstr.c $(TIN_DEP)
+$(OBJDIR)/header.o:		$(SRCDIR)/header.c $(TIN_DEP)
+$(OBJDIR)/help.o:		$(SRCDIR)/help.c $(TIN_DEP) \
+				$(INCDIR)/menukeys.h
+$(OBJDIR)/inews.o:		$(SRCDIR)/inews.c $(TIN_DEP)
+$(OBJDIR)/init.o:		$(SRCDIR)/init.c $(TIN_DEP) \
+				$(INCDIR)/menukeys.h \
+				$(INCDIR)/version.h \
+				$(INCDIR)/bugrep.h
+$(OBJDIR)/joinpath.o:		$(SRCDIR)/joinpath.c $(TIN_DEP)
+$(OBJDIR)/lang.o:		$(SRCDIR)/lang.c $(TIN_DEP)
+$(OBJDIR)/list.o:		$(SRCDIR)/list.c $(TIN_DEP)
+$(OBJDIR)/mail.o:		$(SRCDIR)/mail.c $(TIN_DEP)
+$(OBJDIR)/main.o:		$(SRCDIR)/main.c $(TIN_DEP) \
+				$(INCDIR)/version.h \
+				$(INCDIR)/bugrep.h
+$(OBJDIR)/makecfg.o:		$(SRCDIR)/makecfg.c $(TIN_DEP)
+$(OBJDIR)/memory.o:		$(SRCDIR)/memory.c $(TIN_DEP)
+$(OBJDIR)/misc.o:		$(SRCDIR)/misc.c $(TIN_DEP) \
+				$(INCDIR)/version.h \
+				$(INCDIR)/bugrep.h \
+				$(INCDIR)/policy.h
+$(OBJDIR)/newsrc.o:		$(SRCDIR)/newsrc.c $(TIN_DEP)
+$(OBJDIR)/nntplib.o:		$(SRCDIR)/nntplib.c $(TIN_DEP)
+$(OBJDIR)/nrctbl.o:		$(SRCDIR)/nrctbl.c $(TIN_DEP) \
+				$(INCDIR)/menukeys.h \
+				$(INCDIR)/version.h
+$(OBJDIR)/open.o:		$(SRCDIR)/open.c $(TIN_DEP) \
+				$(INCDIR)/version.h
+$(OBJDIR)/page.o:		$(SRCDIR)/page.c $(TIN_DEP) \
+				$(INCDIR)/menukeys.h
+$(OBJDIR)/parsdate.o:		$(OBJDIR)/parsdate.y $(TIN_DEP)
+$(OBJDIR)/pgp.o:		$(SRCDIR)/pgp.c $(TIN_DEP)
+$(OBJDIR)/plp_snprintf.o:	$(SRCDIR)/plp_snprintf.c $(TIN_DEP)
+$(OBJDIR)/post.o:		$(SRCDIR)/post.c $(TIN_DEP) \
+				$(INCDIR)/menukeys.h \
+				$(INCDIR)/version.h
+$(OBJDIR)/prompt.o:		$(SRCDIR)/prompt.c $(TIN_DEP) \
+				$(INCDIR)/menukeys.h
+$(OBJDIR)/read.o:		$(SRCDIR)/read.c $(TIN_DEP)
+$(OBJDIR)/refs.o:		$(SRCDIR)/refs.c $(TIN_DEP)
+$(OBJDIR)/regex.o:		$(SRCDIR)/regex.c $(TIN_DEP)
+$(OBJDIR)/rfc1521.o:		$(SRCDIR)/rfc1521.c $(TIN_DEP)
+$(OBJDIR)/rfc1522.o:		$(SRCDIR)/rfc1522.c $(TIN_DEP)
+$(OBJDIR)/save.o:		$(SRCDIR)/save.c $(TIN_DEP) \
+				$(INCDIR)/menukeys.h
+$(OBJDIR)/screen.o:		$(SRCDIR)/screen.c $(TIN_DEP)
+$(OBJDIR)/search.o:		$(SRCDIR)/search.c $(TIN_DEP)
+$(OBJDIR)/select.o:		$(SRCDIR)/select.c $(TIN_DEP) \
+				$(INCDIR)/menukeys.h
+$(OBJDIR)/sigfile.o:		$(SRCDIR)/sigfile.c $(TIN_DEP)
+$(OBJDIR)/signal.o:		$(SRCDIR)/signal.c $(TIN_DEP)
+$(OBJDIR)/strftime.o:		$(SRCDIR)/strftime.c $(TIN_DEP)
+$(OBJDIR)/string.o:		$(SRCDIR)/string.c $(TIN_DEP)
+$(OBJDIR)/tcurses.o:		$(SRCDIR)/tcurses.c $(TIN_DEP)
+$(OBJDIR)/thread.o:		$(SRCDIR)/thread.c $(TIN_DEP) \
+				$(INCDIR)/menukeys.h
+$(OBJDIR)/wildmat.o:		$(SRCDIR)/wildmat.c $(TIN_DEP)
+$(OBJDIR)/xref.o:		$(SRCDIR)/xref.c $(TIN_DEP)
