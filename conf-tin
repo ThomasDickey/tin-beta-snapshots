@@ -1,0 +1,42 @@
+#! /bin/sh
+# Remove the files created by this script before running it.
+#rm -f config.cache config.status config.log
+rm -f makefile src/Makefile include/autoconf.h
+
+if test ! -f configure
+then
+	autoconf
+fi
+
+OUT=td-conf.out
+cat >>$OUT <<EOF/
+** `date`
+** node: `uname -a`
+** from: `pwd`
+** user: `id`
+** conf: $*
+EOF/
+OPTS="$*"
+
+CC="${CC-cc}"
+
+# set
+#	--with-domain-name=doma.in
+# and
+#	--with-nntp-default-server=news.doma.in
+# to your local needs
+
+echo "Making with $CC $CFLAGS"
+CFLAGS="$CFLAGS" \
+CC="$CC" \
+./configure --verbose \
+	--enable-nntp-only \
+	--enable-prototypes \
+	--disable-echo \
+	--disable-mime-strict-charset \
+	--with-domain-name=/etc/NNTP_INEWS_DOMAIN \
+	--with-coffee \
+        $OPTS $* 2>&1 |tee -a $OUT
+
+# makefile.in is somewhat outdated, but Makefile is uptodate
+rm makefile

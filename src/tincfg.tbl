@@ -1,0 +1,158 @@
+;   Project   : tin - a Usenet reader
+;   Module    : tincfg.tbl
+;   Author    : Thomas E. Dickey <dickey@clark.net>
+;   Created   : 1996-11-01
+;   Updated   : 1999-11-22
+;   Notes     : #defines and structs for config.c
+;   Copyright 1996 by Thomas E. Dickey
+;               You may  freely  copy or  redistribute  this software,
+;               so  long as there is no profit made from its use, sale
+;               trade or  reproduction.  You may not change this copy-
+;               right notice, and it must be included in any copy made
+
+; display options
+	beginner_level			OPT_ON_OFF
+	show_description		OPT_ON_OFF
+	show_author			txt_show_from	SHOW_FROM_BOTH+1
+	draw_arrow			OPT_ON_OFF
+	inverse_okay			OPT_ON_OFF
+	thread_articles			txt_thread	THREAD_MAX+1
+	sort_article_type		txt_sort_type	SORT_BY_SCORE_ASCEND+1
+	pos_first_unread		OPT_ON_OFF
+	show_only_unread_arts		OPT_ON_OFF
+	show_only_unread_groups		OPT_ON_OFF
+	kill_level			txt_kill_level_type	KILL_NOTHREAD+1
+	tab_goto_next_unread		OPT_ON_OFF
+	space_goto_next_unread		OPT_ON_OFF
+	pgdn_goto_next			OPT_ON_OFF
+	auto_list_thread		OPT_ON_OFF
+	tab_after_X_selection		OPT_ON_OFF
+	art_marked_deleted		OPT_CHAR
+	art_marked_inrange		OPT_CHAR
+	art_marked_return		OPT_CHAR
+	art_marked_selected		OPT_CHAR
+	art_marked_fresh		OPT_CHAR
+	art_marked_unread		OPT_CHAR
+	groupname_max_length		OPT_NUM
+	show_lines			OPT_ON_OFF
+	show_score			OPT_ON_OFF
+	full_page_scroll		OPT_ON_OFF
+	show_last_line_prev_page	OPT_ON_OFF
+	show_signatures			OPT_ON_OFF
+	news_headers_to_display		OPT_STRING
+	news_headers_to_not_display	OPT_STRING
+	show_xcommentto			OPT_ON_OFF
+	display_mime_header_asis	OPT_ON_OFF
+	display_mime_allheader_asis	OPT_ON_OFF
+	alternative_handling		OPT_ON_OFF
+#ifdef	HAVE_METAMAIL
+	use_metamail			OPT_ON_OFF
+	ask_for_metamail		OPT_ON_OFF
+#endif
+	catchup_read_groups		OPT_ON_OFF
+	group_catchup_on_exit		OPT_ON_OFF
+	thread_catchup_on_exit		OPT_ON_OFF
+	confirm_action			OPT_ON_OFF
+	confirm_to_quit			OPT_ON_OFF
+	use_mouse			OPT_ON_OFF
+#ifdef	HAVE_KEYPAD
+	use_keypad			OPT_ON_OFF
+#endif
+
+; getart_limit options
+	use_getart_limit		OPT_ON_OFF
+	getart_limit			OPT_NUM
+	fresh_time			OPT_NUM
+
+; colour options
+#ifdef	HAVE_COLOR
+	use_color			OPT_ON_OFF
+	col_normal			txt_colors	MAX_COLOR+1
+	col_back			txt_colors	MAX_COLOR+1
+	col_invers_bg			txt_colors	MAX_COLOR+1
+	col_invers_fg			txt_colors	MAX_COLOR+1
+	col_text			txt_colors	MAX_COLOR+1
+	col_minihelp			txt_colors	MAX_COLOR+1
+	col_help			txt_colors	MAX_COLOR+1
+	col_message			txt_colors	MAX_COLOR+1
+	col_quote			txt_colors	MAX_COLOR+1
+	col_quote2			txt_colors	MAX_COLOR+1
+	col_quote3			txt_colors	MAX_COLOR+1
+	col_head			txt_colors	MAX_COLOR+1
+	col_newsheaders			txt_colors	MAX_COLOR+1
+	col_subject			txt_colors	MAX_COLOR+1
+	col_response			txt_colors	MAX_COLOR+1
+	col_from			txt_colors	MAX_COLOR+1
+	col_title			txt_colors	MAX_COLOR+1
+	col_signature			txt_colors	MAX_COLOR+1
+	word_highlight			OPT_ON_OFF
+	word_h_display_marks		txt_marks	MAX_MARK+1
+	col_markstar			txt_colors	MAX_COLOR+1
+	col_markdash			txt_colors	MAX_COLOR+1
+#endif
+
+; posting/mailing options
+	mail_address			OPT_STRING
+	prompt_followupto		OPT_ON_OFF
+	sigfile			OPT_STRING
+	sigdashes			OPT_ON_OFF
+	signature_repost		OPT_ON_OFF
+	quote_chars			OPT_STRING
+	quote_empty_lines		OPT_ON_OFF
+	quote_signatures		OPT_ON_OFF
+	news_quote_format		OPT_STRING
+	xpost_quote_format		OPT_STRING
+	mail_quote_format		OPT_STRING
+	advertising			OPT_ON_OFF
+	mm_charset			OPT_STRING
+	post_mime_encoding		txt_mime_encodings	NUM_MIME_ENCODINGS
+	post_8bit_header		OPT_ON_OFF
+	mail_mime_encoding		txt_mime_encodings	NUM_MIME_ENCODINGS
+	mail_8bit_header		OPT_ON_OFF
+	strip_blanks			OPT_ON_OFF
+	auto_cc				OPT_ON_OFF
+	auto_bcc			OPT_ON_OFF
+	spamtrap_warning_addresses	OPT_STRING
+	filter_days		OPT_NUM
+	add_posted_to_filter		OPT_ON_OFF
+
+; saving/printing options
+	maildir				OPT_STRING
+	save_to_mmdf_mailbox		OPT_ON_OFF
+	batch_save			OPT_ON_OFF
+	savedir				OPT_STRING
+	auto_save			OPT_ON_OFF
+	mark_saved_read			OPT_ON_OFF
+	post_process		txt_post_process_type POST_PROC_UUD_EXT_ZIP+1
+	process_only_unread		OPT_ON_OFF
+#ifndef DISABLE_PRINTING
+	print_header			OPT_ON_OFF
+	printer			OPT_STRING
+#endif
+
+; expert options
+#ifdef HAVE_COLOR
+	quote_regex			OPT_STRING
+	quote_regex2			OPT_STRING
+	quote_regex3			OPT_STRING
+#endif
+	strip_re_regex			OPT_STRING
+	strip_was_regex			OPT_STRING
+
+	wildcard			txt_wildcard_type	2
+	force_screen_redraw		OPT_ON_OFF
+	start_editor_offset		OPT_ON_OFF
+	editor_format		OPT_STRING
+#if defined(NNTP_ABLE) || defined(NNTP_ONLY)
+	use_builtin_inews		OPT_ON_OFF
+#endif
+	mailer_format		OPT_STRING
+	use_mailreader_i		OPT_ON_OFF
+	unlink_article			OPT_ON_OFF
+	keep_posted_articles		OPT_ON_OFF
+	keep_dead_articles		OPT_ON_OFF
+	strip_newsrc			OPT_ON_OFF
+	strip_bogus			txt_strip_bogus_type BOGUS_ASK+1
+	reread_active_file_secs		OPT_NUM
+	auto_reconnect			OPT_ON_OFF
+	cache_overview_files		OPT_ON_OFF

@@ -1,0 +1,129 @@
+I/O in tin (updated 05/01/98)
+----------
+
+All critical I/O, be it NNTP data or not, should be done with
+tin_fgets() This handles data formatting, removes any trailing \n and \r
+and deals with timeouts, reconnections and user aborts.
+
+It supports the use of 'q' to abort the operation and 'Q' to exit tin
+without error recovery.
+
+tin_errno will be set to !0 to flag errors. Currently the only
+supported error is 'user aborted with q'.
+
+Closing NNTP data files should be done with TIN_FCLOSE(fp) as the NNTP
+socket should be kept open, whereas local spool fd's must be closed.
+TIN_FCLOSE() takes care of this.
+
+If you wish to quit reading an NNTP stream, then call drain_buffer(fp) to
+clear out any pending data on NNTP socket.
+
+nntp_command(command, valid_response, rest_of_data) should be used for
+sending all generic NNTP command. It returns an fd to the open stream
+for reading the rest of the data.
+
+
+Example of a typical exchange:
+
+if (nntp_command ("GROUP comp.thing", OK_GROUP, NULL) != NULL) {
+
+	while ((ptr = tin_fgets(buff, sizeof(buff), nntp_rd_fd)) != NULL)
+		process_data(ptr);
+
+	if (tin_errno != 0)
+		return (read_error);
+
+}
+
+
+
+Hashing in tin (updated 05/01/98)
+--------------
+
+All the main arrays in tin are dynamically managed by functions in memory.c
+They are preallocated to an initial size and then grown if the high
+water mark is exceeded.
+
+The main structures are:
+
+active[]
+An array of all the groups in the active file
+
+arts[]
+This is an array of the article headers for the current group. Only headers
+present in the overview (NOV) database are stored.
+
+base[]
+An array of integers that represent the index in arts[] of the current
+root article for each displayed thread.
+
+group_hash[]
+active[] is hashed for faster access. An entry of -1 denotes no group at
+this hashnode, >= 0 denotes an index into active[]
+Multiple groups on one node are chained via the .next field (another index
+ptr to active[])
+
+my_group[]
+List of integer pointers into active[]
+These are the groups that actually appear on the selection screen
+
+msgids[]
+Hashed array of all the individual message-ids in arts[]
+All the Message-ID and Reference headers are broken down and stored here.
+They are linked together by parent, sibling and child pointers
+
+table[]
+Hash of the key text headers from the articles, to save space and speed up
+searches and compares.
+
+
+The functions that manipulate the above include:
+
+active.c:
+	read_news_active_file() populates active[] using psGrpAdd()
+
+
+art.c:
+	Many of the overview headers are stored with hash_str()
+    base[] is populated by find_base()
+
+hashstr.c:
+	hash_str() Hashes text strings
+
+	In the article header, the following text is hashed:
+		From: (including full name if supplied)
+		Archive-name:
+		Subject:
+
+
+list.c:
+	init_group_hash() clears group_hash[]
+	find_group_index() returns index of group in active[]
+	psGrpFind() returns a pointer to a group in active[]
+	psGrpAdd() adds a group into active[] and hashes it in group_hash[]
+	hash_groupname() returns hash key for a group
+		This is also used to hash the actual filenames written
+		in ~/.tin/.news (when not using NNTP)
+		There is experimental code here for a (presumably)
+		improved hash function that was never completed.
+
+main.c:
+	Just the initializers for hashing
+
+
+memory.c:
+	Dynamic array management.
+	hash_reclaim() - free up table[] which holds the
+	text cache
+
+
+refs.c:
+	Handling for msgids[]
+	When threading, each msgid in the hash has a pointer back to
+	its article header in arts[] or ART_UNAVAILABLE if the article is not
+	available
+
+
+select.c:
+	my_group_add() adds a group to my_group[]
+	my_group_find() returns the index of a group in my_group[]
