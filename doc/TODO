@@ -366,7 +366,7 @@ o  MIME-pgp support according to RFC2015, RFC3156 - (should be easy now)
    and/or in the format that used by signcontrol/pgpverify (see also
    tinews.pl)
 
-o  pgp-6 support
+o  pgp-{6,7} support
 
 o  add counter to post-processing commands (processing file x of y)
    (Is post-processing really that slow? [Jason Faultless
@@ -467,7 +467,7 @@ o  sort Followup-To:/Newsgroups: after stripping doubled newsgroups and
 o  if Newsgroups:-line has groups in it which are not present in the users
    active file ask the user if he wants to strip these groups from the
    newsgroups-line (N/y)
-   do the same for Followup-to:
+   do the same for Followup-To:
 
 o  check if any valid groups are in the Followup-To:-line and if not inform
    the user and use Newsgroups: instead (at the start of post_response())
@@ -485,7 +485,7 @@ o  bring up a warning when trying to f'up into a binary group
    (use a regexp to detect binary groups i.e.:
     (?:\.binae?r|de\.alt\.dateien\.))
    (Warning, sending a followup to a binary group is undesired, post it
-   anyway? N/y)
+    anyway? N/y)
    [Urs Janssen <urs@tin.org>]
 
 o  posting to a binary group should warn if no followup is set to another
@@ -496,7 +496,9 @@ o  posting to a binary group should warn if no followup is set to another
 o  when posting to a group containing uppercase-letters: bring up a
    warning: "Newsgroup-names should be all lowercase, correct it? (Y/n)"
 
-o  Enhance -w to take newsgroup name as argument and use vGrpGetArtInfo()
+o  Enhance -w to take newsgroup name as argument.
+
+o  Enhance -n to take newsgroup name as argument and use vGrpGetArtInfo()
    to allow posting to groups other than those in newsrc.
 
 Filtering enhancements
@@ -672,6 +674,9 @@ o  tin.defaults could use more documentation on manpage (tin.5)
 
 Not yet classified
 ------------------
+o  why are -A and -g disabled on M_AMIGA?
+   [20020928 Urs Janssen <urs@tin.org>]
+
 o  -R should work even if tin is compiled without NNTP_{ABLE,ONLY}
    [20020829 Urs Janssen <urs@tin.org>]
 

@@ -54,7 +54,7 @@
  * ARTLINES is the number of lines available to display actual article text.
  */
 #define PAGE_HEADER	4
-#define ARTLINES	(NOTESLINES-(PAGE_HEADER-INDEX_TOP))
+#define ARTLINES	(NOTESLINES - (PAGE_HEADER - INDEX_TOP))
 
 int curr_line;			/* current line in art (indexed from 0) */
 static FILE *note_fp;			/* active stream (raw or cooked) */
@@ -136,7 +136,7 @@ scroll_page(
 				break;
 
 			case -1:
-				i -= 1;
+				i--;
 				break;
 
 			case -2:
@@ -506,7 +506,6 @@ page_goto_next_unread:
 				break;
 
 			case iKeyLookupMessage:			/* Goto article by Message-ID */
-
 				if ((i = prompt_msgid()) != ART_UNAVAILABLE) {
 					if (load_article(i) < 0)
 						return GRP_ARTFAIL;
@@ -1060,21 +1059,21 @@ draw_page(
 	 */
 	if (curr_line < 0)
 		curr_line = 0;			/* Oops - off the top */
-	if (curr_line > artlines)
-		curr_line = artlines;	/* Oops - off the end */
+	else {
+		if (curr_line > artlines)
+			curr_line = artlines;	/* Oops - off the end */
+	}
 
 	search_line = curr_line;	/* Reset search to start from top of display */
 
 	scroll_region_top = PAGE_HEADER;
 
 	/* Down-scroll, only redraw bottom 'part' lines of screen */
-	start = (part > 0) ? ARTLINES - part : 0;
-	if (start < 0)
+	if ((start = (part > 0) ? ARTLINES - part : 0) < 0)
 		start = 0;
 
 	/* Up-scroll, only redraw the top 'part' lines of screen */
-	end = (part < 0) ? -part : ARTLINES;
-	if (end > ARTLINES)
+	if ((end = (part < 0) ? -part : ARTLINES) > ARTLINES)
 		end = ARTLINES;
 
 	/*
@@ -1311,9 +1310,7 @@ draw_page_header(
 		}
 	}
 
-	strip_line(buf);
-
-	convert_to_printable(buf);
+	convert_to_printable(strip_line(buf));
 
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_from);
@@ -1350,7 +1347,6 @@ load_article(
 		make_group_path(CURR_GROUP.name, group_path);
 
 		switch (art_open(TRUE, &arts[new_respnum], group_path, &pgart, TRUE)) {
-
 			case ART_UNAVAILABLE:
 				art_mark_read(&CURR_GROUP, &arts[new_respnum]);
 				wait_message(1, _(txt_art_unavailable));
@@ -1392,7 +1388,6 @@ load_article(
 	artline = pgart.cookl;
 	artlines = pgart.cooked_lines;
 	search_line = -1;
-
 	rotate = 0;			/* normal mode, not rot13 */
 	reveal_ctrl_l = FALSE;
 	reveal_ctrl_l_lines = -1;	/* all ^L's active */
@@ -1413,7 +1408,6 @@ load_article(
 #endif /* HAVE_METAMAIL */
 
 	draw_page(CURR_GROUP.name, 0);
-
 	return 0;
 }
 
@@ -1767,13 +1761,11 @@ display_info_page(
 	scroll_region_top = INDEX_TOP;
 
 	/* Down-scroll, only redraw bottom 'part' lines of screen */
-	start = (part > 0) ? NOTESLINES - part : 0;
-	if (start < 0)
+	if ((start = (part > 0) ? NOTESLINES - part : 0) < 0)
 		start = 0;
 
 	/* Up-scroll, only redraw the top 'part' lines of screen */
-	end = (part < 0) ? -part : NOTESLINES;
-	if (end < NOTESLINES)
+	if ((end = (part < 0) ? -part : NOTESLINES) < NOTESLINES)
 		end = NOTESLINES;
 
 	/* Print title */

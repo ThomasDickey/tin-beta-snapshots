@@ -98,7 +98,7 @@ fd_lock(
 /*
  * test_fd_lock(fd)
  *
- * check for a existing lock on file descriptor with fcntl(), lockf()
+ * check for an existing lock on file descriptor with fcntl(), lockf()
  * or flock()
  *
  * returncodes:

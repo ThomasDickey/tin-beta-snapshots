@@ -208,9 +208,8 @@ prompt_item_num(
 		clear_message();
 		return;
 	}
-	num--;		/* index from 0 (internal) vs. 1 (user) */
 
-	if (num < 0)
+	if (--num < 0) /* index from 0 (internal) vs. 1 (user) */
 		num = 0;
 
 	if (num >= currmenu->max)

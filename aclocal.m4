@@ -1559,7 +1559,7 @@ AC_REQUIRE([CF_FIND_IPV6_TYPE])
 cf_ipv6lib=none
 cf_ipv6dir=none
 
-AC_MSG_CHECKING(for ipv6 library if required)
+AC_MSG_CHECKING(for IPv6 library if required)
 case $cf_cv_ipv6type in #(vi
 solaris) #(vi
 	;;
@@ -1625,7 +1625,7 @@ if test "$cf_ipv6lib" != "none"; then
 	if test $cf_found_library = no ; then
 		AC_MSG_ERROR(
 [No $cf_ipv6lib library found, cannot continue.  You must fetch lib$cf_ipv6lib.a
-from an appropriate ipv6 kit and compile beforehand.])
+from an appropriate IPv6 kit and compile beforehand.])
 	fi
 fi
 

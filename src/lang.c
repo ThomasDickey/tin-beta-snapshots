@@ -58,7 +58,7 @@ constext txt_art_unavailable[] = N_("Article unavailable");
 constext txt_art_parent_none[] = N_("Article has no parent");
 constext txt_art_parent_killed[] = N_("Parent article has been killed");
 constext txt_art_parent_unavail[] = N_("Parent article is unavailable");
-constext txt_article_cancelled[] = "Article cancelled by author\n";
+constext txt_article_cancelled[] = "Article cancelled by author.\n";
 constext txt_article_plural[] = N_("articles");
 constext txt_article_reposted[] = N_("This is a repost of the following article:");
 constext txt_article_singular[] = N_("article");
@@ -417,8 +417,8 @@ constext txt_info_not_subscribed[] = N_("You are not subscribed to this group");
 constext txt_info_no_write[] = N_("Operation disabled in no-overwrite mode");
 constext txt_info_x_conversion_note[] = N_("X-Conversion-Note: multipart/alternative contents have been removed.\n\
   To get the whole article, turn alternative handling OFF in the Option Menu\n");
-constext txt_is_mailbox[]= N_("Save filename for %s/%s is a mailbox. Attachment not saved");
-constext txt_is_tex_encoded[]= N_("TeX2Iso encoded article");
+constext txt_is_mailbox[] = N_("Save filename for %s/%s is a mailbox. Attachment not saved");
+constext txt_is_tex_encoded[] = N_("TeX2Iso encoded article");
 constext txt_intro_page[] = N_("\nWelcome to %s, a full screen threaded Netnews reader. It can read news locally\n\
 (ie. <spool>/news) or remotely (-r option)  from a NNTP (Network News Transport\n\
 Protocol) server. -h lists the available command line options.\n\n\
@@ -591,16 +591,11 @@ constext txt_pcre_error_text[] = N_("Error in regex: study - pcre internal error
 	constext txt_pipe_to_command[] = N_("Pipe to command [%.*s]> ");
 	constext txt_piping[] = N_("Piping...");
 #else
-#	ifdef VMS
-		constext txt_pipe_to_command[] = N_("");
-		constext txt_piping[] = N_("");
-#	endif /* VMS */
 	constext txt_piping_not_enabled[] = N_("Piping not enabled.");
 #endif /* !DONT_HAVE_PIPING */
 
 constext txt_post_a_followup[] = N_("Post a followup...");
-constext txt_post_error_ask_postpone[]=
-N_("An error has occurred while posting the article. If you think that this\n\
+constext txt_post_error_ask_postpone[] = N_("An error has occurred while posting the article. If you think that this\n\
 error is temporary or otherwise correctable, you can postpone the article\n\
 and pick it up again with ^O later.\n");
 constext txt_post_history_menu[] = N_("Posted articles history");
@@ -1065,7 +1060,7 @@ constext txt_all_groups[] = N_("All groups");
 constext txt_filter_text_type[] = N_("Apply pattern to    : ");
 constext txt_from_line_only[] = N_("From: line (ignore case)      ");
 constext txt_from_line_only_case[] = N_("From: line (case sensitive)   ");
-constext txt_help_filter_comment[] = ("One or more lines of comment. <CR> to add a line or proceed if line is empty.");
+constext txt_help_filter_comment[] = N_("One or more lines of comment. <CR> to add a line or proceed if line is empty.");
 constext txt_help_filter_from[] = N_("From: line to add to filter file. <SPACE> toggles & <CR> sets.");
 constext txt_help_filter_lines[] = N_("Linecount of articles to be filtered. < for less, > for more, = for equal.");
 constext txt_help_filter_msgid[] = N_("Message-ID: line to add to filter file. <SPACE> toggles & <CR> sets.");

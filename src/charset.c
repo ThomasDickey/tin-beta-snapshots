@@ -336,7 +336,7 @@ is_art_tex_encoded(
 /*
  * Replace all non printable characters by '?'
  */
-void
+char *
 convert_to_printable(
 	char *buf)
 {
@@ -356,6 +356,7 @@ convert_to_printable(
 			*c = '?';
 #endif /* ENABLE_MBLEN */
 	}
+	return buf;
 }
 
 

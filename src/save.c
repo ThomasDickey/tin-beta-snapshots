@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-04-10
+ *  Updated   : 2002-10-01
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -896,6 +896,7 @@ post_process_uud(
 	char path[PATH_LEN];
 	char s[LEN], t[LEN], u[LEN];
 	int state;
+	mode_t mode = (S_IRUSR | S_IWUSR);
 #endif /* HAVE_LIBUU */
 
 	/*
@@ -977,10 +978,11 @@ post_process_uud(
 						/* don't use PATH_LEN - we use an absolute value (128) below */
 						char name[130];
 
-						if (sscanf(s + 6, "%*o %128c\n", name) != 1)     /* Get the real filename */
+						if (sscanf(s + 6, "%o %128c\n", &mode, name) != 2)		/* Get the real filename and the mode */
 							name[0] = '\0';
 						else
 							strtok(name, "\n");
+
 						name[129] = '\0';
 						str_trim(name);
 
@@ -1034,8 +1036,15 @@ post_process_uud(
 			}	/* switch (state) */
 
 			if (state == END) {
+				/* set the mode after getting rid of dangerous bits */
+				if (!(mode &= ~(S_ISUID | S_ISGID | S_ISVTX)))
+					mode = (S_IRUSR | S_IWUSR);
+
+				fchmod (fileno(fp_out), mode);
+
 				fclose(fp_out);
 				fp_out = NULL;
+
 				my_printf(_(txt_uu_success), filename);
 				my_printf(cCRLF);
 				sum_and_view(path, filename);

@@ -5,7 +5,7 @@
 .\" Updated   : 2002-09-16
 .\" Notes     : needs a lot of work
 .\"
-.TH tin 5 "September 16th, 2002" "1.5.14" "A Usenet newsreader"
+.TH tin 5 "October 2nd, 2002" "1.5.15" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -477,7 +477,10 @@ Used when a group is a mailing list. All responses to the group will be
 directed to this email address instead
 .TP
 .B x_headers
-A list of headers that will be automatically added when posting
+A string includinga headername and the contents of the header that will
+be automatically added when posting. If the string starts with a / or ~
+then it is assumed to be the name of a file containing the header and it's
+content to be inserted.
 .TP
 .B x_body
 A piece of text that will be added at the start of a message body. If this

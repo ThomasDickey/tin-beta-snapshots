@@ -642,9 +642,9 @@ AC_MSG_RESULT($TIN_DEFAULTS_DIR)
 AC_DEFINE_UNQUOTED(TIN_DEFAULTS_DIR,"$TIN_DEFAULTS_DIR")
 
 ### check for ipv6 support
-AC_MSG_CHECKING([whether to enable ipv6])
+AC_MSG_CHECKING([whether to enable IPv6])
 CF_ARG_ENABLE(ipv6,
-	[  --enable-ipv6           enable ipv6 (with ipv4) support (default: disabled)],
+	[  --enable-ipv6           enable IPv6 (with IPv4) support (default: disabled)],
 [AC_DEFINE(ENABLE_IPV6)])
 AC_MSG_RESULT($enableval)
 if test "$enableval" = "yes"; then

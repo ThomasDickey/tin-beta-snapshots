@@ -699,8 +699,8 @@ enum resizer { cNo, cYes, cRedraw };
  * #define DEFAULT_STRIP_WAS_REGEX  ".\\((?:[Ww]a[rs]|[Bb]y[l³]o):(?:(?:[^)(])*(?:\\([^)(]*\\))*)+\\)\\s*$"
  */
 
-/* case insensitive & ^-anchored */
-#define UUBEGIN_REGEX	"begin\\s+[0-7]{3,4}\\s+"
+/* case sensitive & ^-anchored */
+#define UUBEGIN_REGEX	"begin\\s\\s?[0-7]{3,4}\\s+"
 /* case sensitive & ^-anchored */
 #define UUBODY_REGEX	"(?:`|.[\\x20-\\x60]{1,61})$"
 
@@ -1819,7 +1819,7 @@ extern void joindir (char *result, const char *dir, const char *file);
 #	define ENV_VAR_SHELL		""
 #endif /* !ENV_VAR_SHELL */
 #ifndef TIN_EDITOR_FMT_ON
-#	define TIN_EDITOR_FMT_ON		""
+#	define TIN_EDITOR_FMT_ON		TIN_EDITOR_FMT_OFF
 #endif /* !TIN_EDITOR_FMT_ON */
 #ifndef MAILER_FORMAT
 #	define MAILER_FORMAT		""

@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-09-17
+ *  Updated   : 2002-09-28
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -80,9 +80,7 @@ static void write_input_history_file(void);
 	static int to_network(int c);
 #endif /* LOCAL_CHARSET */
 #ifdef CHARSET_CONVERSION
-#	ifndef HAVE_WORKING_ICONV /* TODO: write configure check */
 	static char *utf8_valid(char *line);
-#	endif /* HAVE_WORKING_ICONV */
 #endif /* CHARSET_CONVERSION */
 #if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
 	static void buffer_to_local(char *line);
@@ -410,8 +408,8 @@ invoke_ispell(
 {
 	FILE *fp_all, *fp_body, *fp_head;
 	char buf[PATH_LEN], nam_body[100], nam_head[100];
-	t_bool retcode;
 	char ispell[PATH_LEN];
+	t_bool retcode;
 
 	if (psGrp && psGrp->attribute->ispell != NULL)
 		STRCPY(ispell, psGrp->attribute->ispell);
@@ -466,7 +464,6 @@ invoke_ispell(
 	append_file(nam_head, nam_body);
 	unlink(nam_body);
 	rename_file(nam_head, nam);
-
 	return retcode;
 }
 #endif /* HAVE_ISPELL */
@@ -531,11 +528,11 @@ void
 tin_done(
 	int ret)
 {
-	static int nested;
 	int i;
 	signed long int wrote_newsrc_lines = -1;
-	t_bool ask = TRUE;
+	static int nested = 0;
 	struct t_group *group;
+	t_bool ask = TRUE;
 
 	if (nested++)
 		giveup();
@@ -1010,204 +1007,6 @@ mail_check(
 }
 
 
-#if 0
-/*
- * Returns the user name and E-mail address of the user
- *
- * Written by ahd 15 July 1989
- * Borrowed from UUPC/extended with some mods by nms
- * Rewritten from scratch by Th. Quinot, 1997-01-03
- */
-
-#	ifdef lint
-static int once;
-#		define ONCE	while (once)
-#	else
-#		define ONCE	while (0)
-#	endif /* lint */
-
-#	define APPEND_TO(dest, src) do { \
-	(void) sprintf((dest), "%s", (src)); \
-	(dest) = strchr((dest), '\0'); \
-	} ONCE
-#	define RTRIM(whatbuf, whatp) do { (whatp)--; \
-	while ((whatp) >= (whatbuf) && \
-	(*(whatp) == ' ')) \
-	*((whatp)--) = '\0'; } ONCE
-#	define LTRIM(whatbuf, whatp) for ((whatp) = (whatbuf); \
-	(whatp) && (*(whatp) == ' '); \
-	(whatp)++)
-#	define TRIM(whatbuf, whatp) do { RTRIM((whatbuf), (whatp)); \
-	LTRIM((whatbuf), (whatp)); \
-	} ONCE
-
-void
-parse_from(
-	char *addr,
-	char *addrspec,
-	char *comment)
-{
-	char atom_buf[HEADER_LEN];
-	char quoted_buf[HEADER_LEN];
-
-	char *atom_p = atom_buf;
-	char *quoted_p = quoted_buf;
-
-	char asbuf[HEADER_LEN];
-	char cmtbuf[HEADER_LEN];
-
-	char *ap = addr,
-		 *asp = asbuf,
-		*cmtp = cmtbuf;
-	unsigned int state = 0;
-/*
- * 0 = fundamental, 1 = in quotes, 2 = escaped in quotes,
- * 3 = in angle brackets, 4 = in parentheses
- */
-
-	unsigned int plevel = 0;
-	/* Parentheses nesting level */
-
-	unsigned int atom_type = 0;
-	/* 0 = unknown, 1 = address */
-
-	*asp = *cmtp = '\0';
-	for (; *ap; ap++) {
-		switch (state) {
-			case 0:
-				switch (*ap) {
-					case '\"':
-						*atom_p = '\0';
-						quoted_p = quoted_buf;
-						*(quoted_p++) = '\"';
-						state = 1;
-						break;
-
-					case '<':
-						*atom_p = '\0';
-						APPEND_TO(cmtp, atom_buf);
-						atom_p = atom_buf;
-						atom_type = 0;
-						asp = asbuf;
-						state = 3;
-						break;
-
-					case '(':
-						*atom_p = '\0';
-						APPEND_TO(asp, atom_buf);
-						atom_p = atom_buf;
-						atom_type = 0;
-						plevel++;
-						state = 4;
-						break;
-
-					case ' ':
-					case '\t':
-						if (atom_type == 1) {
-							*atom_p = '\0';
-							APPEND_TO(asp, atom_buf);
-							atom_p = atom_buf;
-							atom_type = 0;
-						} else
-							*(atom_p++) = *ap;
-						break;
-
-					default:
-						*(atom_p++) = *ap;
-						break;
-				}
-				break;
-
-			case 1:
-				if (*ap == '\"') {
-					switch (*(ap + 1)) {
-						case '@':
-						case '%':
-							*(quoted_p++) = '\"';
-							*quoted_p = '\0';
-							APPEND_TO(asp, quoted_buf);
-							APPEND_TO(cmtp, atom_buf);
-							atom_type = 1;
-							break;
-
-						default:
-							*quoted_p = '\0';
-							APPEND_TO(asp, atom_buf);
-							APPEND_TO(cmtp, quoted_buf + 1);
-							break;
-					}
-					state = 0;
-					break;
-				} else if (*ap == '\\')
-					state = 2;
-				*(quoted_p++) = *ap;
-				break;
-
-			case 2:
-				*(quoted_p++) = *ap;
-				state = 1;
-				break;
-
-			case 3:
-				if (*ap == '>') {
-					*asp = '\0';
-					state = 0;
-				} else
-					*(asp++) = *ap;
-				break;
-
-			case 4:
-				switch (*ap) {
-					case ')':
-						if (!--plevel) {
-							*cmtp = '\0';
-							state = 0;
-						} else
-							*(cmtp++) = *ap;
-						break;
-
-					case '(':
-						plevel++;
-						/* FALLTHROUGH */
-
-					default:
-						*(cmtp++) = *ap;
-					break;
-				}
-				break;
-
-			default:
-				/* Does not happen. */
-				goto FATAL;
-		}
-	}
-	*cmtp = *asp = *atom_p = '\0';
-	if (!state) {
-		if ((atom_type == 1) || !*asbuf) {
-			APPEND_TO(asp, atom_buf);
-		} else {
-			APPEND_TO(cmtp, atom_buf);
-		}
-	}
-	/* Address specifier */
-	TRIM(asbuf, asp);
-	/* Comment */
-	TRIM(cmtbuf, cmtp);
-	strcpy(addrspec, asp);
-	strcpy(comment, cmtp);
-	return;
-FATAL:
-	strcpy(addrspec, "error@hell");
-	*comment = '\0';
-}
-#	undef APPEND_TO
-#	undef RTRIM
-#	undef LTRIM
-#	undef TRIM
-
-#endif /* 0 */
-
-
 /*
  * Return a pointer into s eliminating any leading Re:'s. Example:
  *
@@ -1308,18 +1107,22 @@ get_author(
 		case SHOW_FROM_NONE:
 			str[0] = '\0';
 			break;
+
 		case SHOW_FROM_ADDR:
 			strncpy(str, art->from, len);
 			break;
+
 		case SHOW_FROM_NAME:
 			strncpy(str, (art->name ? art->name : art->from), len);
 			break;
+
 		case SHOW_FROM_BOTH:
 			if (art->name)
 				snprintf(str, len, "%s <%s>", art->name, art->from);
 			else
 				strncpy(str, art->from, len);
 			break;
+
 		default:
 			break;
 	}
@@ -1332,13 +1135,12 @@ void
 toggle_inverse_video(
 	void)
 {
-	tinrc.inverse_okay = bool_not(tinrc.inverse_okay);
-	if (tinrc.inverse_okay) {
+	if (!(tinrc.inverse_okay = bool_not(tinrc.inverse_okay)))
+		tinrc.draw_arrow = TRUE;
 #ifndef USE_INVERSE_HACK
+	else
 		tinrc.draw_arrow = FALSE;
 #endif /* !USE_INVERSE_HACK */
-	} else
-		tinrc.draw_arrow = TRUE;
 }
 
 
@@ -1386,10 +1188,10 @@ void
 create_index_lock_file(
 	char *the_lock_file)
 {
-	char buf[64];
 	FILE *fp;
-	time_t epoch;
+	char buf[64];
 	struct stat sb;
+	time_t epoch;
 
 	if (stat(the_lock_file, &sb) == 0) {
 		if ((fp = fopen(the_lock_file, "r")) != NULL) {
@@ -1457,12 +1259,15 @@ strfquote(
 					goto out;
 					/* NOTREACHED */
 					break;
+
 				case 'n':	/* linefeed */
 					strcpy(tbuf, "\n");
 					break;
+
 				case 't':	/* tab */
 					strcpy(tbuf, "\t");
 					break;
+
 				default:
 					tbuf[0] = '%';
 					tbuf[1] = *format;
@@ -1610,9 +1415,11 @@ strfeditor(
 					goto out;
 					/* NOTREACHED */
 					break;
+
 				case 'n':	/* linefeed */
 					strcpy(tbuf, "\n");
 					break;
+
 				default:
 					tbuf[0] = '%';
 					tbuf[1] = *format;
@@ -1635,18 +1442,23 @@ strfeditor(
 					goto out;
 					/* NOTREACHED */
 					break;
+
 				case '%':
 					*s++ = '%';
 					continue;
+
 				case 'E':	/* Editor */
 					STRCPY(tbuf, editor);
 					break;
+
 				case 'F':	/* Filename */
 					STRCPY(tbuf, filename);
 					break;
+
 				case 'N':	/* Line number */
 					sprintf(tbuf, "%d", linenum);
 					break;
+
 				default:
 					tbuf[0] = '%';
 					tbuf[1] = *format;
@@ -1694,7 +1506,6 @@ strfpath_cp(
 			return NULL;
 		}
 	}
-
 	return str;
 }
 
@@ -1767,6 +1578,7 @@ _strfpath(
 					case '/':	/* users homedir */
 						joinpath(tbuf, homedir, "");
 						break;
+
 					default:	/* some other users homedir */
 #ifndef M_AMIGA
 						i = 0;
@@ -1791,6 +1603,7 @@ _strfpath(
 				if ((str = strfpath_cp(str, tbuf, endp)) == NULL)
 					return 0;
 				break;
+
 #ifndef VMS
 			case '$':	/* Read the envvar and use its value */
 				i = 0;
@@ -1830,6 +1643,7 @@ _strfpath(
 				}
 				break;
 #endif /* !VMS */
+
 			case '=':
 				/*
 				 * Mailbox name expansion
@@ -1856,6 +1670,7 @@ _strfpath(
 				} else					/* Wasn't the first char in format */
 					*str++ = *format;
 				break;
+
 			case '+':
 				/*
 				 * Group name expansion
@@ -1885,6 +1700,7 @@ _strfpath(
 				} else					/* Wasn't the first char in format */
 					*str++ = *format;
 				break;
+
 			case '%':	/* Different forms of parsing cmds */
 				format++;
 				if (*format && *format == 'G' && group != NULL) {
@@ -2074,9 +1890,11 @@ strfmailer(
 					goto out;
 					/* NOTREACHED */
 					break;
+
 				case 'n':	/* linefeed */
 					strcpy(tbuf, "\n");
 					break;
+
 				default:
 					tbuf[0] = '\\';
 					tbuf[1] = *format;
@@ -2109,15 +1927,19 @@ strfmailer(
 				case '\0':
 					*dest++ = '%';
 					goto out;
+
 				case '%':
 					*dest++ = '%';
 					continue;
+
 				case 'F':	/* Filename */
 					STRCPY(tbuf, filename);
 					break;
+
 				case 'M':	/* Mailer */
 					STRCPY(tbuf, the_mailer);
 					break;
+
 				case 'S':	/* Subject */
 					/* don't MIME encode Subject if using external mail client */
 					if (tinrc.use_mailreader_i)
@@ -2127,6 +1949,7 @@ strfmailer(
 					tbuf[sizeof(tbuf) - 1] = '\0';	/* just in case */
 					escaped = TRUE;
 					break;
+
 				case 'T':	/* To */
 					/* don't MIME encode To if using external mail client */
 					if (tinrc.use_mailreader_i)
@@ -2136,6 +1959,7 @@ strfmailer(
 					tbuf[sizeof(tbuf) - 1] = '\0';	/* just in case */
 					escaped = TRUE;
 					break;
+
 				case 'U':	/* User */
 					/* don't MIME encode User if using external mail client */
 					if (tinrc.use_mailreader_i)
@@ -2144,6 +1968,7 @@ strfmailer(
 						strncpy(tbuf, rfc1522_encode(userid, NULL, ismail), sizeof(tbuf));
 					tbuf[sizeof(tbuf) - 1] = '\0';	/* just in case */
 					break;
+
 				default:
 					tbuf[0] = '%';
 					tbuf[1] = *format;
@@ -2314,6 +2139,10 @@ file_mtime(
 }
 
 
+/*
+ * TODO: this seems to be unix specific, avoid !M_UNIX calls or
+ *       add code for other OS
+ */
 char *
 random_organization(
 	char *in_org)
@@ -2324,7 +2153,7 @@ random_organization(
 
 	*selorg = '\0';
 
-	if (*in_org != '/')
+	if (*in_org != '/')	/* M_UNIXism?! */
 		return in_org;
 
 	srand((unsigned int) time(NULL));
@@ -3241,9 +3070,11 @@ gnksa_dequote_plainphrase(
 		case GNKSA_ADDRTYPE_ROUTE:
 			initialstate = 0;
 			break;
+
 		case GNKSA_ADDRTYPE_OLDSTYLE:
 			initialstate = 5;
 			break;
+
 		default:
 			/* shouldn't happen */
 			return GNKSA_INTERNAL_ERROR;
@@ -3856,7 +3687,6 @@ gnksa_check_from(
 }
 
 
-#if 1
 /*
  * parse given address
  * return error code on GNKSA check failure
@@ -3869,13 +3699,12 @@ parse_from(
 {
 	return gnksa_do_check_from(from, address, realname);
 }
-#endif /* 1 */
 
 
 /*
  * Strip trailing blanks, tabs, \r and \n
  */
-void
+char *
 strip_line(
 	char *line)
 {
@@ -3885,11 +3714,12 @@ strip_line(
 		ptr--;
 
 	*++ptr = '\0';
+
+	return line;
 }
 
 
 #ifdef CHARSET_CONVERSION
-#	ifndef HAVE_WORKING_ICONV /* TODO: write configure check */
 /*
  * 'check' a given UTF-8 strig and '?'-out illegal sequences
  * TODO: is this check complete?
@@ -4025,5 +3855,4 @@ utf8_valid(
 	}
 	return line;
 }
-#	endif /* HAVE_WORKING_ICONV */
 #endif /* CHARSET_CONVERSION */
