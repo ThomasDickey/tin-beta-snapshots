@@ -6,7 +6,7 @@
  *  Updated   : 1997-12-27
  *  Notes     :
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -201,48 +201,6 @@ search_active (
 }
 
 
-#if 0
-/*
- * Called by help.c
- */
-int
-search_help (
-	t_bool forward,
-	int current,
-	int last)
-{
-	char *buf;
-	int incr = forward ? 1 : -1;
-	int result = current;
-	int n;
-
-	if (!(buf = get_search_pattern(
-				forward,
-				_(txt_search_forwards),
-				_(txt_search_backwards),
-				tinrc.default_search_group,
-				HIST_HELP_SEARCH
-	))) return result;
-
-	current += incr;
-	n = current;
-	do {
-		if (n < 0)
-			n = last;
-		else if (n > last)
-			n = 0;
-		if (REGEX_MATCH (info_help[n], buf, TRUE)) {
-			result = n;
-			break;
-		}
-		n += incr;
-	} while (n != current);
-	clear_message ();
-	return result;
-}
-#endif /* 0 */
-
-
 /*
  * Scan the body of an arts[i] for searchbuf
  * used only by search_body()
@@ -257,7 +215,6 @@ body_search (
 {
 	char *line;
 	char group_path[PATH_LEN];
-	int  code;
 	t_openartinfo artinfo;
 
 	if (!read_news_via_nntp || CURR_GROUP.type != GROUP_TYPE_NEWS)
@@ -268,11 +225,12 @@ body_search (
 	memset (&artinfo, 0, sizeof(t_openartinfo));
 	switch (art_open (TRUE, &arts[i], group_path, &artinfo)) {
 		case ART_ABORT:					/* User 'q'uit */
-			code = -1;
-			goto exit_search;
-		case ART_UNAVAILABLE:
-			code = 0;					/* Treat as string not present */
-			goto exit_search;
+			art_close (&artinfo);
+			return -1;
+		case ART_UNAVAILABLE:			/* Treat as string not present */
+			art_close (&artinfo);
+			info_message (_(txt_no_match));
+			return 0;
 	}
 
 	/*
@@ -310,14 +268,13 @@ body_search (
 	}
 
 	if (tin_errno != 0) {			/* User abort */
-		code = -1;
-		goto exit_search;
+		art_close (&artinfo);
+		return -1;
 	}
 
-	code = 0;						/* Didn't find it */
-exit_search:
 	art_close (&artinfo);
-	return code;
+	info_message (_(txt_no_match));
+	return 0;
 }
 
 
@@ -462,6 +419,7 @@ search_article (
 	int lines,
 	t_lineinfo *line,
 	t_bool show_ctrl_l,
+	int reveal_ctrl_l_lines,
 	FILE *fp)
 {
 	char *pattern, *ptr;
@@ -499,7 +457,7 @@ search_article (
 		/*
 		 * Don't search beyond ^L if hiding is enabled
 		 */
-		if (!show_ctrl_l && (line[i].flags&C_CTRLL))
+		if (!show_ctrl_l && (line[i].flags&C_CTRLL) && i > reveal_ctrl_l_lines)
 			break;
 
 		ptr = tin_fgets(fp, FALSE);

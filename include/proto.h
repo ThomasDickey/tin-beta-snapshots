@@ -3,10 +3,10 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2000-01-03
+ *  Updated   : 2002-01-29
  *  Notes     :
  *
- * Copyright (c) 1997-2001 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2002 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,12 +83,10 @@ extern void write_attributes_file (const char *file);
 
 /* charset.c */
 extern t_bool is_art_tex_encoded (FILE *fp);
-extern void convert_to_printable (char* buf);
+extern void convert_body2printable (char* buf);
 extern void convert_iso2asc (char *iso, char *asc, int t);
 extern void convert_tex2iso (char *from, char *to);
-#if 1
-	extern void convert_body2printable (char* buf);
-#endif /* 1 */
+extern void convert_to_printable (char* buf);
 
 /* color.c */
 #ifdef HAVE_COLOR
@@ -99,15 +97,15 @@ extern void draw_pager_line (const char *str, int flags);
 
 /* config.c */
 extern char **ulBuildArgv (char *cmd, int *new_argc);
+extern char *fmt_option_prompt (char *dst, int len, t_bool editing, int option);
 extern char *quote_space_to_dash (char *str);
 extern const char *print_boolean (t_bool value);
-extern char *fmt_option_prompt (char *dst, int len, t_bool editing, int option);
 extern int change_config_file (struct t_group *group);
 extern int option_row (int option);
 extern t_bool match_boolean (char *line, const char *pat, t_bool *dst);
 extern t_bool match_integer (char *line, const char *pat, int *dst, int maxval);
-extern t_bool match_long (char *line, const char *pat, long *dst);
 extern t_bool match_list (char *line, constext *pat, constext *const *table, size_t tablelen, int *dst);
+extern t_bool match_long (char *line, const char *pat, long *dst);
 extern t_bool match_string (char *line, const char *pat, char *dst, size_t dstlen);
 extern t_bool read_config_file (char *file, t_bool global_file);
 extern void quote_dash_to_space (char *str);
@@ -118,7 +116,7 @@ extern void write_config_file (char *file);
 /* cook.c */
 extern const char *get_filename (t_param *ptr);
 extern t_bool cook_article (t_bool wrap_lines, t_openartinfo *artinfo, int tabs, t_bool uue);
-t_bool expand_ctrl_chars (char *to, const char *from, int length, size_t cook_width);
+extern t_bool expand_ctrl_chars (char *to, const char *from, int length, size_t cook_width);
 
 /* curses.c */
 extern OUTC_RETTYPE outchar (OUTC_ARGS);
@@ -171,10 +169,10 @@ extern void setup_screen (void);
 extern void envargs (int *Pargc, char ***Pargv, const char *envstr);
 
 /* feed.c */
-/* extern char get_post_proc_type (int proc_type); */
 extern void feed_articles (int function, int level, struct t_group *group, int respnum);
 
 /* filter.c */
+extern int unfilter_articles (void);
 extern t_bool filter_articles (struct t_group *group);
 extern t_bool filter_menu (int type, struct t_group *group, struct t_article *art);
 extern t_bool quick_filter (int type, struct t_group *group, struct t_article *art);
@@ -182,7 +180,6 @@ extern t_bool quick_filter_select_posted_art (struct t_group *group, const char 
 extern t_bool read_filter_file (const char *file);
 extern void free_all_filter_arrays (void);
 extern void refresh_filter_menu (void);
-extern int unfilter_articles (void);
 
 /* getline.c */
 extern char *tin_getline (const char *prompt, int number_only, const char *str, int max_chars, t_bool passwd, int which_hist);
@@ -256,8 +253,11 @@ extern void joinpath (char *result, const char *dir, const char *file);
 /* keymap.c */
 extern char *printascii(char *buf, int ch);
 extern t_bool read_keymap_file (void);
-extern void free_keymaps (void);
 extern void build_keymaps (void);
+extern void free_keymaps (void);
+
+/* langinfo.c */
+extern char *tin_nl_langinfo(nl_item item);
 
 /* list.c */
 extern char *random_organization (char *in_org);
@@ -266,17 +266,11 @@ extern struct t_group *group_add (const char *group);
 extern struct t_group *group_find (const char *group_name);
 extern unsigned long hash_groupname (const char *group);
 extern void init_group_hash (void);
-#if 0
-	extern struct t_group *psGrpFirst (void);
-	extern struct t_group *psGrpLast (void);
-	extern struct t_group *psGrpNext (void);
-	extern struct t_group *psGrpPrev (void);
-#endif /* 0 */
 
 /* lock.c */
 extern int fd_lock(int fd, t_bool block);
-extern int test_fd_lock(int fd);
 extern int fd_unlock(int fd);
+extern int test_fd_lock(int fd);
 extern t_bool dot_lock(const char *filename);
 extern t_bool dot_unlock(const char *filename);
 
@@ -441,7 +435,7 @@ extern FILE *open_news_active_fp (void);
 extern FILE *open_newsgroups_fp (void);
 extern FILE *open_overview_fmt_fp (void);
 extern FILE *open_subscription_fp (void);
-extern FILE *open_xover_fp (struct t_group *psGrp, const char *pcMode, long lMin, long lMax);
+extern FILE *open_xover_fp (struct t_group *psGrp, const char *mode, long lMin, long lMax);
 extern FILE *open_art_header (long art);
 extern int get_respcode (char *);
 extern int get_only_respcode (char *);
@@ -603,9 +597,8 @@ extern void wait_message (int sdelay, const char *fmt, ...);
 extern int get_search_vectors (int *start, int *end);
 extern int search (int key, int current_art, t_bool forward);
 extern int search_active (t_bool forward);
-extern int search_article (t_bool forward, int start_line, int lines, t_lineinfo *line, t_bool show_ctrl_l, FILE *fp);
+extern int search_article (t_bool forward, int start_line, int lines, t_lineinfo *line, t_bool show_ctrl_l, int reveal_ctrl_l_lines, FILE *fp);
 extern int search_config (t_bool forward, int current, int last);
-/* extern int search_help (t_bool forward, int current, int last); */
 extern int search_body (int current_art);
 
 /* select.c */
@@ -629,15 +622,6 @@ extern void handle_resize (t_bool repaint);
 extern void set_noteslines (int num_lines);
 extern void set_signal_catcher (int flag);
 extern void set_signal_handlers (void);
-#if 0
-	extern void set_signals_art (void);
-	extern void set_signals_config (void);
-	extern void set_signals_group (void);
-	extern void set_signals_help (void);
-	extern void set_signals_page (void);
-	extern void set_signals_select (void);
-	extern void set_signals_thread (void);
-#endif /* 0 */
 
 /* strftime.c */
 extern size_t my_strftime (char *s, size_t maxsize, const char *format, struct tm *timeptr);
@@ -646,8 +630,10 @@ extern size_t my_strftime (char *s, size_t maxsize, const char *format, struct t
 extern char *eat_tab (char *s);
 extern char *my_strdup (const char *str);
 extern char *str_trim (char *string);
-extern const char *strcasestr (const char *haystack, const char *needle);
 extern char *tin_ltoa (long value, int digits);
+#if !defined(HAVE_STRCASESTR) || defined(DECL_STRCASESTR)
+	extern const char *strcasestr (const char *haystack, const char *needle);
+#endif /* !HAVE_STRCASESTR || DECL_STRCASESTR */
 extern int sh_format (char *dst, size_t len, const char *fmt, ...);
 extern size_t mystrcat (char **t, const char *s);
 extern void my_strncpy (char *p, const char *q, size_t n);
@@ -726,6 +712,5 @@ extern t_bool overview_xref_support (void);
 extern void NSETRNG0 (t_bitmap *bitmap, long low, long high);
 extern void NSETRNG1 (t_bitmap *bitmap, long low, long high);
 extern void art_mark_xref_read (struct t_article *art);
-
 
 #endif /* !PROTO_H */

@@ -6,7 +6,7 @@
  *  Updated   : 28/02/2000
  *  Notes     : rfc2046 MIME article definitions
  *
- * Copyright (c) 2000-2001 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 2000-2002 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@
 #ifndef RFC2046_H
 #	define RFC2046_H 1
 
-/* The version of MIME we conform to */
+/* The version of MIME we conform to - currently unused */
 #	define MIME_SUPPORTED_VERSION	1.0
 
 /* These must track the array definitions in lang.c */
@@ -50,7 +50,6 @@
 #	define TYPE_TEXT				0
 #	define TYPE_MULTIPART		1
 #	define TYPE_APPLICATION		2
-
 
 #	define ENCODING_7BIT			0
 #	define ENCODING_QP			1
@@ -75,6 +74,7 @@ typedef struct param
 	char *value;
 	struct param *next;
 } t_param;
+
 
 /*
  * Describes the properties of an article or article attachment
@@ -124,6 +124,7 @@ struct t_header
 	t_part *ext;			/* Extended Mime header information */
 };
 
+
 /* flags for lineinfo.flags */
 /* Primary colours */
 #	define C_HEADER	0x001
@@ -142,11 +143,13 @@ struct t_header
 #	define C_NEWS		0x400 /* Contains news|nntp: */
 #	define C_CTRLL		0x800	/* Contains ^L */
 
+
 typedef struct lineinfo
 {
 	long offset;			/* Offset of this line */
 	int flags;				/* Info about this line */
 } t_lineinfo;
+
 
 /*
  * Oddball collection of information about the open article

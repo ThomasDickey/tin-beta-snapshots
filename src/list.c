@@ -6,7 +6,7 @@
  *  Updated   : 1997-01-07
  *  Notes     : Low level functions handling the active[] list and its group_hash index
  *
- * Copyright (c) 1993-2001 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2002 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,7 +66,7 @@ hash_groupname (
 	const char *group)
 {
 #ifdef NEW_HASH_METHOD	/* still testing */
-	unsigned long hash = 0L, g, val;
+	unsigned long hash = 0L, g, hash_value;
 	/* prime == smallest prime number greater than size of string table */
 	int prime = 1423;
 	char *p;
@@ -78,11 +78,10 @@ hash_groupname (
 			hash ^= g;
 		}
 	}
-	val = hash % prime;
+	hash_value = hash % prime;
 /*
-my_printf ("hash=[%s] [%ld]\n", group, val);
+my_printf ("hash=[%s] [%ld]\n", group, hash_value);
 */
-	return val;
 #else
 	unsigned long hash_value = 0L;
 	unsigned int len = 0;
@@ -95,14 +94,14 @@ my_printf ("hash=[%s] [%ld]\n", group, val);
 		hash_value %= TABLE_SIZE;
 	}
 	hash_value %= TABLE_SIZE;
+#endif /* NEW_HASH_METHOD */
 
 	return hash_value;
-#endif /* NEW_HASH_METHOD */
 }
 
 
 /*
- *  Find group name in active[] array and return index otherwise -1
+ * Find group name in active[] array and return index otherwise -1
  */
 int
 find_group_index (
@@ -129,7 +128,7 @@ find_group_index (
 
 
 /*
- *  Find group name in active[] array and return pointer to element
+ * Find group name in active[] array and return pointer to element
  */
 struct t_group *
 group_find (

@@ -3,7 +3,7 @@
 #
 # Updated: 2001-07-22
 #
-# Copyright (c) 1995-2001 Thomas E. Dickey <dickey@clark.net>
+# Copyright (c) 1995-2002 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -147,6 +147,7 @@ CFILES	= \
 	$(SRCDIR)/init.c \
 	$(SRCDIR)/keymap.c \
 	$(SRCDIR)/lang.c \
+	$(SRCDIR)/langinfo.c \
 	$(SRCDIR)/list.c \
 	$(SRCDIR)/lock.c \
 	$(SRCDIR)/mail.c \
@@ -218,6 +219,7 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/joinpath.o \
 	$(OBJDIR)/keymap.o \
 	$(OBJDIR)/lang.o \
+	$(OBJDIR)/langinfo.o \
 	$(OBJDIR)/list.o \
 	$(OBJDIR)/lock.o \
 	$(OBJDIR)/mail.o \
@@ -317,14 +319,18 @@ $(INS_SYSDEF_DIR) :
 install_manpage: $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT) $(DESTDIR)$(INS_MANUAL_DIR)5
 	@$(ECHO) "Installing $(PROJECT) manual pages to $(DESTDIR)$(INS_MANUAL_DIR) ..."
 	@$(INSTALL) -m 444 $(DOCDIR)/tin.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(PROJECT).$(INS_MANUAL_EXT)
+	@( $(CD) $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT) && $(RM) -f r$(PROJECT).$(INS_MANUAL_EXT) && $(LN) $(PROJECT).$(INS_MANUAL_EXT) r$(PROJECT).$(INS_MANUAL_EXT) )
 	@$(INSTALL) -m 444 $(DOCDIR)/tin.5 $(DESTDIR)$(INS_MANUAL_DIR)5/$(PROJECT).5
 	@-if test ! -f $(DESTDIR)$(INS_MANUAL_DIR)5/mbox.5 ; then $(INSTALL) -m 444 $(DOCDIR)/mbox.5 $(DESTDIR)$(INS_MANUAL_DIR)5/mbox.5 ; fi
+	@-if test ! -f $(DESTDIR)$(INS_MANUAL_DIR)5/mmdf.5 ; then $(INSTALL) -m 444 $(DOCDIR)/mmdf.5 $(DESTDIR)$(INS_MANUAL_DIR)5/mmdf.5 ; fi
 
 uninstall_manpage:
 	@$(ECHO) "Uninstalling $(PROJECT) manual page in $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT) ..."
 	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(PROJECT).$(INS_MANUAL_EXT)
+	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/r$(PROJECT).$(INS_MANUAL_EXT)
 	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)5/$(PROJECT).5
 #	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)5/mbox.5
+#	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)5/mmdf.5
 
 install_sysdefs: $(INS_SYSDEF_DIR)
 	@$(ECHO) "Installing system-wide defaults to $(INS_SYSDEF_DIR) ..."
@@ -496,6 +502,7 @@ $(OBJDIR)/keymap.o:		$(SRCDIR)/keymap.c $(TIN_DEP) \
 				$(INCDIR)/keymap.h \
 				$(INCDIR)/menukeys.h
 $(OBJDIR)/lang.o:		$(SRCDIR)/lang.c $(TIN_DEP)
+$(OBJDIR)/langinfo.o:		$(SRCDIR)/langinfo.c $(TIN_DEP)
 $(OBJDIR)/list.o:		$(SRCDIR)/list.c $(TIN_DEP)
 $(OBJDIR)/lock.o:		$(SRCDIR)/lock.c $(TIN_DEP)
 $(OBJDIR)/mail.o:		$(SRCDIR)/mail.c $(TIN_DEP)

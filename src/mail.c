@@ -6,7 +6,7 @@
  *  Updated   : 2001-07-22
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
- * Copyright (c) 1992-2001 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2002 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,10 +47,10 @@
 
 static void read_groups_descriptions (FILE *fp, FILE *fp_save);
 
+
 /*
  * Load the mail active file into active[]
  */
-
 #ifdef HAVE_MH_MAIL_HANDLING
 void
 read_mail_active_file (
@@ -137,7 +137,6 @@ read_mail_active_file (
 /*
  * Write out mailgroups from active[] to ~/.tin/active.mail
  */
-
 void
 write_mail_active_file (
 	void)
@@ -206,7 +205,7 @@ read_mailgroups_file (
 			my_fputs("\n", stdout);
 	}
 }
-#endif /* HAVE_MAIL_HANDLING */
+#endif /* HAVE_MH_MAIL_HANDLING */
 
 
 /*

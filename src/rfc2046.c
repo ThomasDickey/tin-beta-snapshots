@@ -6,7 +6,7 @@
  *  Updated   : 28/02/2000
  *  Notes     : RFC 2046 MIME article parsing
  *
- * Copyright (c) 2000-2001 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 2000-2002 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -252,7 +252,6 @@ parse_content_type(
 		content->params = NULL;
 		parse_params (params, content);
 	}
-	return;
 }
 
 
@@ -339,7 +338,8 @@ new_part (
 	if (part == NULL)						/* List head - we don't do this */
 		return ptr;
 
-	for (p = part; p->next != NULL; p = p->next);
+	for (p = part; p->next != NULL; p = p->next)
+		;
 	p->next = ptr;
 
 	return ptr;
@@ -643,8 +643,9 @@ parse_multipart_article(
 	int depth)
 {
 	char *line;
-	const char *boundary;
 	char *ptr;
+	const char *boundary;
+	int bnd;
 	int state = M_SEARCHING;
 	t_part *curr_part = 0;
 
@@ -655,8 +656,9 @@ parse_multipart_article(
 		return -1;
 
 	while ((line = tin_fgets(infile, (state == M_HDR))) != (char *) 0) {
-		int bnd = boundary_cmp(line, boundary);
-/*fprintf(stderr, "---:%s\n", line);*/
+		bnd = boundary_cmp(line, boundary);
+
+/* fprintf(stderr, "---:%s\n", line); */
 
 		fprintf(artinfo->raw, "%s\n", line);
 

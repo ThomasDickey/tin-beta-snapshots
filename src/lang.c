@@ -6,7 +6,7 @@
  *  Updated   : 2001-11-10
  *  Notes     :
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -124,15 +124,15 @@ constext txt_connecting[] = N_("Connecting to %s...");
 constext txt_connecting_port[] = N_("Connecting to %s:%d...");
 
 #ifdef M_AMIGA
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2001 Iain Lea & Mark Tomlinson.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2002 Iain Lea & Mark Tomlinson.";
 #endif /* M_AMIGA */
 
 #ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2001 Iain Lea.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2002 Iain Lea.";
 #endif /* M_UNIX */
 
 #ifdef VMS
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2001 Iain Lea & Tod McQuillin & other.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2002 Iain Lea & Tod McQuillin & other.";
 #endif /* VMS */
 
 constext txt_cr[] = N_("<CR>");
@@ -196,19 +196,21 @@ Error: Posting contains  non-ASCII characters  but the  MIME encoding\n\
        using the M)enu of configurable options or by editing tinrc.\n");
 constext txt_error_header_line_blank[] = N_("\nError: Article starts with blank line instead of header\n");
 constext txt_error_header_line_colon[] = N_("\nError: Header on line %d does not have a colon after the header name:\n%s\n");
-constext txt_error_header_line_comma[] = N_("\n\
-Error: the \"%s:\" line has spaces  in it that MUST be removed.\n\
+constext txt_error_header_line_empty[] = N_("\nError: The \"%s:\" line is empty.\n");
+#ifndef FOLLOW_USEFOR_DRAFT
+	constext txt_error_header_line_comma[] = N_("\n\
+Error: The \"%s:\" line has spaces  in it that MUST be removed.\n\
        The only allowable  space is the one  separating the colon (:)\n\
        from  the  contents.  Use a  comma  (,)  to separate  multiple\n\
        newsgroup names.\n");
-constext txt_error_header_line_empty[] = N_("\nError: the \"%s:\" line is empty.\n");
-constext txt_error_header_line_groups_contd[] = N_("\n\
+	constext txt_error_header_line_groups_contd[] = N_("\n\
 Error: The \"%s:\" line is  continued in  the next line.  Since\n\
        the line  may not  contain  whitespace,  this is  not allowed.\n\
        Please write all newsgroups into a single line.\n");
-constext txt_error_header_line_missing[] = N_("\nError: the \"%s:\" line is missing from the article header.\n");
+#endif /* !FOLLOW_USEFOR_DRAFT */
+constext txt_error_header_line_missing[] = N_("\nError: The \"%s:\" line is missing from the article header.\n");
 constext txt_error_header_line_space[] = N_("\nError: Header on line %d does not have a space after the colon:\n%s\n");
-constext txt_error_header_duplicate[] = N_("\nError: there are multiple (%d) \"%s:\" lines in the header.\n");
+constext txt_error_header_duplicate[] = N_("\nError: There are multiple (%d) \"%s:\" lines in the header.\n");
 #ifdef HAVE_METAMAIL
 	constext txt_error_metamail_failed[] = N_("metamail failed: %s");
 #endif /* HAVE_METAMAIL */
@@ -222,6 +224,7 @@ constext txt_error_passwd_missing[] = N_("Can't get user information (/etc/passw
 constext txt_error_plural[] = N_("errors");
 constext txt_error_sender_in_header_not_allowed[] = N_("\nError on line %d: \"Sender:\" header not allowed (it will be added for you)\n");
 constext txt_error_singular[] = N_("error");
+constext txt_error_unknown_dlevel[] = N_("Unknown display level");
 constext txt_esc[] = N_("<ESC>");
 constext txt_exiting[] = N_("Exiting...");
 constext txt_external_mail_done[] = N_("leaving external mail-reader");
@@ -413,7 +416,7 @@ constext txt_info_nopostponed[] = N_("*** No postponed articles ***");
 constext txt_info_not_subscribed[] = N_("You are not subscribed to this group");
 constext txt_info_no_write[] = N_("Operation disabled in no-overwrite mode");
 constext txt_info_x_conversion_note[] = N_("X-Conversion-Note: multipart/alternative contents have been removed.\n\
-\tTo get the whole article, turn alternative handling OFF in the Option Menu\n");
+  To get the whole article, turn alternative handling OFF in the Option Menu\n");
 constext txt_is_mailbox[]= N_("Save filename for %s/%s is a mailbox. Attachment not saved");
 constext txt_is_tex_encoded[]= N_("TeX2Iso encoded article");
 constext txt_intro_page[] = N_("\nWelcome to %s, a full screen threaded Netnews reader. It can read news locally\n\
@@ -515,7 +518,7 @@ constext txt_nntp_authorization_failed[] = N_("NNTP authorization password not f
 	constext txt_nntp_ok_goodbye[] = N_("205  Closing connection");
 #endif /* NNTP_ABLE */
 
-constext txt_no[] = N_("No ");
+constext txt_no[] = N_("No  ");
 constext txt_no_arts[] = N_("*** No articles ***");
 constext txt_no_arts_posted[] = N_("No articles have been posted");
 
@@ -843,8 +846,8 @@ constext *txt_kill_level_type[] = {
 constext *txt_mime_charsets[] = {
 	"US-ASCII",
 	"ISO-8859-1", "ISO-8859-2", "ISO-8859-3", "ISO-8859-4", "ISO-8859-5",
-	"ISO-8859-6", "ISO-8859-7", "ISO-8859-8", "ISO-8859-9", "ISO-8859-10",
-	"ISO-8859-13", "ISO-8859-14", "ISO-8859-15", "ISO-8859-16",
+	"ISO-8859-7", "ISO-8859-9", "ISO-8859-10", "ISO-8859-13", "ISO-8859-14",
+	"ISO-8859-15", "ISO-8859-16",
 	"KOI8-RU", "KOI8-R", "KOI8-U",
 	"EUC-CN", "EUC-JP", "EUC-KR", "EUC-TW",
 	"ISO-2022-CN", "ISO-2022-CN-EXT", "ISO-2022-JP", "ISO-2022-JP-1",
@@ -852,6 +855,13 @@ constext *txt_mime_charsets[] = {
 	"UTF-8"
 };
 #endif /* CHARSET_CONVERSION */
+
+/* different mailbox formats */
+constext *txt_mailbox_formats[] = {
+	"MBOXO",
+	"MBOXRD",
+	"MMDF"
+};
 
 #ifndef DISABLE_PRINTING
 	constext txt_print[] = N_("Print");
@@ -929,6 +939,16 @@ Warning: You are using a non-plain transfer encoding (such as base64 or\n\
          quoted-printable) and an external inews program to submit your\n\
          article.  If a signature is appended by that inews program it will\n\
          not be encoded properly.\n");
+
+#ifdef FOLLOW_USEFOR_DRAFT
+	constext txt_warn_header_line_groups_contd[] = N_("\n\
+Warning: The \"%s:\" line is continued in the next line.\n\
+         This is a very new feature and may not be accepted by all servers.\n\
+         To avoid trouble please write all newsgroups into a single line.\n");
+	constext txt_warn_header_line_comma[] = N_("\n\
+Warning: The \"%s:\" line has spaces in it that SHOULD be removed.\n");
+#endif /* FOLLOW_USEFOR_DRAFT */
+
 constext txt_warn_update[] = N_("\n\nYou are upgrading to tin %s from an earlier version.\n\
 Some values in your configuration file have changed!\nRead WHATSNEW, etc...\n");
 
@@ -977,7 +997,7 @@ constext txt_writing_attributes_file[] = N_("Writing attributes file...");
 constext txt_x_resp[] = N_("%d Responses%s");
 constext txt_yanking_all_groups[] = N_("Yanking in all groups...");
 constext txt_yanking_sub_groups[] = N_("Yanking in subscribed to groups...");
-constext txt_yes[] = N_("Yes");
+constext txt_yes[] = N_("Yes ");
 constext txt_you_have_mail[] = N_("    You have mail\n");
 constext txt_all_groups[] = N_("All groups");
 constext txt_filter_text_type[] = N_("Apply pattern to    : ");
@@ -1716,6 +1736,12 @@ struct opttxt txt_mm_network_charset = {
 };
 #endif /* CHARSET_CONVERSION */
 
+struct opttxt txt_mailbox_format = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Mailbox format                     :"),
+	N_("# Format of the mailbox.\n")
+};
+
 struct opttxt txt_post_mime_encoding = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("MIME encoding in news messages     :"),
@@ -1813,12 +1839,6 @@ struct opttxt txt_maildir = {
 	N_("The directory where articles/threads are to be saved in mailbox format."),
 	N_("Mail directory                     :"),
 	N_("# (-m) directory where articles/threads are saved in mailbox format\n")
-};
-
-struct opttxt txt_save_to_mmdf_mailbox = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Save mail in MMDF style            :"),
-	N_("# If ON save mail to a MMDF style mailbox (default is normal mbox format)\n")
 };
 
 struct opttxt txt_batch_save = {

@@ -6,7 +6,7 @@
  *  Updated   : 1998-02-04
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -784,7 +784,6 @@ static const char *ptr_filter_groupname;
 static char text_subj[PATH_LEN];
 static char text_from[PATH_LEN];
 static char text_msgid[PATH_LEN];
-static int filter_context;
 
 
 static void
@@ -859,7 +858,6 @@ filter_menu (
 	signal_context = cFilter;
 
 	signal_context = cFilter;
-	filter_context = 0;
 
 	rule.text[0] = '\0';
 	rule.scope[0] = '\0';
@@ -1201,8 +1199,8 @@ quick_filter (
 #ifdef DEBUG
 	if (debug)
 		error_message ("%s header=[%d] scope=[%s] expire=[%s] case=[%d]",
-			(type == FILTER_KILL) ? "KILL" : "SELECT",
-			header, (scope ? scope : ""), (expire ? "ON" : "OFF"), icase);
+			(type == FILTER_KILL) ? "KILL" : "SELECT", header,
+			(scope ? scope : ""), txt_onoff[expire != FALSE ? 1 : 0], icase);
 #endif /* DEBUG */
 
 	/*
@@ -1301,7 +1299,7 @@ quick_filter_select_posted_art (
 			refptr_dummyart.article = ART_NORMAL;
 			my_strncpy(refptr_dummyart.txt, a_message_id, HEADER_LEN);
 			/* Hack */
-			art.refptr=(struct t_msgid *) &refptr_dummyart;
+			art.refptr = (struct t_msgid *) &refptr_dummyart;
 
 			filtered = bAddFilterRule (group, &art, &rule);
 		} else {
@@ -1706,22 +1704,22 @@ wait_message (1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].li
 				 * Filter on Xref: lines
 				 */
 				if (arts[i].xref && *arts[i].xref != '\0') {
-					if (ptr[j].xref_max > 0 || ptr[j].xref != (char*)0) {
+					if (ptr[j].xref_max > 0 || ptr[j].xref != (char*) 0) {
 						char *s, *e;
 						int group_count;
 
 						s = arts[i].xref;
 
-						while(*s && !isspace((int)*s))
+						while(*s && !isspace((int) *s))
 							s++;
-						while(*s && isspace((int)*s))
+						while(*s && isspace((int) *s))
 							s++;
 
 						group_count = 0;
 
 						while(*s) {
 							e = s;
-							while (*e && *e != ':' && !isspace((int)*e))
+							while (*e && *e != ':' && !isspace((int) *e))
 								e++;
 
 							if (ptr[j].xref_max > 0) {
@@ -1736,7 +1734,7 @@ wait_message (1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].li
 								if (k == ptr[j].xref_score_cnt)
 									group_count++;
 							}
-							if (ptr[j].xref != (char*)0) {
+							if (ptr[j].xref != (char*) 0) {
 								strncpy(buf, s, e - s);
 								buf[e - s] = '\0';
 								/* don't filter when we are actually in that group */
@@ -1747,9 +1745,9 @@ wait_message (1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].li
 								}
 							}
 							s = e;
-							while(*s && !isspace((int)*s))
+							while(*s && !isspace((int) *s))
 								s++;
-							while(*s && isspace((int)*s))
+							while(*s && isspace((int) *s))
 								s++;
 						}
 						if (group_count == -1 || group_count>ptr[j].xref_max) {

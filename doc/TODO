@@ -1,5 +1,37 @@
 Bugs
 ----
+o  running multiple tin in paralell (each connected to a different
+   server) will trash all newnews=timestamps (and other configchanges)
+   except the last form the formaly running tins on quit.
+   same problem with .oldnewsrc
+   [20020215 Mario Holbe <Mario.Holbe@RZ.TU-Ilmenau.DE>]
+   appending $NNTPSERVER (like for the overview-cache) (to .tin-dir)
+   would be a good, a extra field for specifying .tin-dir in rewsrctbl
+   a better solution. [Urs]
+
+o  attributes are ignore for mail-actions (except mail_to_author()) cause
+   mail_loop() doesn't know the group we are in.
+   [20020211 Andreas Metzler <tin-dev@downhill.at.eu.org>]
+
+o  posting with --enable-break-long-lines and !7bit chars in From:
+   doesn't work if encoded line is > 76 chars (gnksa-check doesn't
+   allow \n in From)
+   [20020212 Urs Janﬂen <urs@tin.org>]
+
+o  The percentage indicator shown when searching article bodies uses
+   lines/article not total number of lines or total number of article;
+   not very usefull (and thus "time remaining" indicator isn't very
+   usefull too).
+   [20020203 Sebastian Bork <sebi@sebi.org>]
+
+o  The "time remaining" is not only updated on the screen when it
+   changes, but constantly, leading to a very slow behaviour on a
+   modem link.
+   [20020203 Sebastian Bork <sebi@sebi.org>]
+
+o  mailing_list attribute is ignored on no posting servers in select level
+   [Urs Janﬂen <urs@tin.org>]
+
 o  'u' etc.pp. may leed to a 'crash' due to which_thread() returning -1
    if no (unread) articles are left. which_response() exits in that case,
    not very userfriendly.
@@ -8,12 +40,8 @@ o  'u' etc.pp. may leed to a 'crash' due to which_thread() returning -1
 o  incorrect nested boundaries in multipart articles hang tin
    [20010804 Urs Janﬂen <urs@tin.org>]
 
-o  Scrolling down to the bottom of an article fails, when a spoiler
-   is set in the article. The text below the spoiler cannot be read.
-   [20010701 Martin Klaiber <martinkl@zedat.fu-berlin.de>]
-   (^L handling needs some work - urs)
-
 o  -S, -N and -M cmd-line switches are broken (again)
+   -S doesn't create subdirs, thus saving fails
    [20010628 Urs Janssen <urs@tin.org>]
 
 o  lines which are exatly cCOLS wide introduce an extra \n in the pager
@@ -43,12 +71,13 @@ o  batch mode has several bugs
    - -Z and giving a cmd-line group ends up in a loop
      (filters each group several times)
    - -M/-N do not remove To:, Cc:, Bcc: headers befor passing article
-     to MTA (would require article parsing *sigh*)
+     to MTA (would require article parsing *sigh*) nor do they wrap
+     the article into message/rfc822.
    [Urs Janssen <urs@tin.org>]
 
 o  libuu code doesn't start viewer
    include basic library source in tin for uudecoding
-   (http://www.fpx.de/fp/Software/UUDeview/)
+   (<http://www.fpx.de/fp/Software/UUDeview/>)
    [Urs Janssen <urs@tin.org>]
 
 o  '-s' cmd-line switch implicitly changes 'savedir' in tinrc
@@ -102,7 +131,7 @@ o  if posting with external inews fails fall-back to built_in_inews would be
     you post or must use external inews if you read_saved_news?]
 
 o  make INEWSDIR (rename to INEWS_PROG) to hold (path,) name and args of
-   inews. i.e. 'INEWSDIR=/usr/lib/news/bin/inews -h < %s'?
+   inews. i.e. 'INEWS_PROG=/usr/lib/news/bin/inews -h < %s'?
 
 o  remove built in path of external commands (metamail, ispell, ...)
    [for metamail/ispell $METAMAIL/$ISPELL could be used to override
@@ -112,6 +141,11 @@ o  overview file cacheing code is over-complex and broken in places
    - if cache-dir is removed during the session it's not recreated
 
 o  full_page_scroll=OFF is not implemented in config.c (option 'M'enu)
+   [is this still needed? we have single-line scrolling now.]
+
+o  tin uses the first sig-isolator as recent one, USEFOR says it should
+   use the last. There is no consense that tin should follow this USEFOR
+   requirement.
 
 Pager Problems
 --------------
@@ -153,6 +187,26 @@ o  with --enable-forgery reposting of an thread reposts only the first
 
 New features
 ------------
+o  add base224 (<http://b-news.sf.net/>) and yydecode support (see
+   <http://nerv.cx/liyang/download/yydecode/> for readable code,
+   ignore the crap on <http://www.yenc.org/>)
+   [20020216 Urs Janﬂen <urs@tin.org>]
+
+o  add maildir support (besides MBOX{O,RD} and MMDF} and maybe
+   MH (not only reading but also writing), mailstore, BABYL, Kendra (MMDF
+   like with 20*CTRL-A as sep.) and add man-pages for the varius formats.
+   (see <http://www.ifi.uio.no/~larsi/notes/BABYL> for BABYL,
+    <http://www.qmail.org/man/man5/maildir.html> for maildir,
+    <http://www.qmail.org/man/man5/mbox.html> for MBOXCL and MBOXCL2)
+   [20020215 Urs Janﬂen <urs@tin.org>]
+
+o  turn CA_ERROR_SPACE_IN_NEWSGROUPS, CA_ERROR_NEWLINE_IN_NEWSGROUPS,
+   CA_ERROR_SPACE_IN_FOLLOWUP_TO, CA_ERROR_NEWLINE_IN_FOLLOWUP_TO into
+   CA_WARNING_s (see draft-ietf-usefor-article-06.txt 5.5) and mark them
+   for removal in the future.
+   [define FOLLOW_USEFOR_DRAFT to turn the mentioned errors into
+    warnings. 20011226 Urs Janﬂen <urs@tin.org>]
+
 o  support "Suggested Minimal Digest Format"
    <ftp://rtfm.mit.edu/pub/usenet/news.answers/faqs/minimal-digest-format>
 
@@ -164,10 +218,6 @@ o  rewrite thread-method selection that users can easyly combine different
 o  join use_getart_limit and getart_limit (getart_limit=0 means
    use_getart_limit=OFF)
    [20011114 Urs Janssen <urs@tin.org>]
-
-o  for "mime.types"-lookups use the logest match found, not the first one.
-   check all existing/known "mime.types"-files.
-   [20011002 Urs Janssen <urs@tin.org>]
 
 o  if there are no tagged but hot articles in the group make 'S' work on
    the hot articles instead of complaining about no tagged arts.
@@ -286,11 +336,10 @@ o  Rather than Cc/Bcc, I'd like to see tin simply append the
    in the (M)enu command, possibly overridden by the current
    setting of "record" environment variable. The folder would
    have to be locked using a convention that will hold off
-   the various Unix mailer programs (see mbox(5)).
-   [append_mail() should do the trick, fd_lock()/fd_unlock() might need
-    to be enhanced for dotfile locking.]
+   the various Unix mailer programs (see mbox(5), mmdf(5)).
+   [append_mail() should do the trick]
 
-o  MIME-pgp support according to RFC2015 - (should be easy now)
+o  MIME-pgp support according to RFC2015, RFC3156 - (should be easy now)
 
 o  pgp-6 support
 
@@ -320,7 +369,7 @@ o  Add to the POST_INFO-level:
      'h' help-screen
 
 o  Add a commandline switch (-V) that prints out all values of cpp-symbols
-   etc. [party done]
+   etc. [partly done]
 
 o  Reorganize tinrc into related sections for easier editing
    e.g., Display, Posting etc.
@@ -370,7 +419,7 @@ o  Merge the selection code with the range code. Having two similar methods
    of picking articles with similar goals is wasteful.
    [Jason Faultless <jason@radar.tele2.co.uk>]
 
-o  add check for zlib and option to write/read gziped local overviews
+o  add check for zlib and option to write/read gzipped local overviews
    zlib might also be be used for post-processing.
 
 Posting enhancements
@@ -399,7 +448,7 @@ o  bring up a warning on a long Newsgroups: (>=5) line and
 
 o  bring up a warning when trying to f'up into a binary group
    (use a regexp to detect binary groups i.e.:
-   (\.binae?r|de\.alt\.dateien\.))
+    (?:\.binae?r|de\.alt\.dateien\.))
    (Warning, sending a followup to a binary group is undesired, post it
    anyway? N/y)
    [Urs Janssen <urs@tin.org>]
@@ -437,6 +486,13 @@ o  allow expiring filter entrys n-days after the last time they matched
 
 Internal Changes
 ----------------
+o  change '#define TMPDIR "/tmp/"' to
+   '#define TMPDIR get_val("TMPDIR", "/tmp/")'
+   (SUSV2 XBD Files: "applications are encouraged to use
+    the contents of TMPDIR for creating temporary files rather than
+    the specific name /tmp")
+   [Urs Janssen <urs@tin.org>]
+
 o  make configure look for strrstr() in libpub/publib.h
    [Urs Janssen <urs@tin.org>]
 
@@ -447,7 +503,7 @@ o  join some keys, i.e PostponeYes, PostponeNo -> PromptYes, PromptNo;
    GroupPost, PagePost, SelectPost -> Post
    [Urs Janssen <urs@tin.org>]
 
-o  what type is base[] ?
+o  what type is base[]?
    There is a lot of confusion internally over how it is used
    compare setup_hard_base() with find_base() etc..
    [Jason Faultless <jason@radar.tele2.co.uk>]
@@ -496,9 +552,6 @@ o  add check for sizeof char, short, int, long, ...
    make sure that the code works even with 'uncommon' values
    (i.e. char = 1 byte with 32 bit)
 
-o  join Makefile and makefile (not entirely possible)
-   update makefile[.in]
-
 o  cleanup (=rewrite) inews.c/header.c/thread.c
 
 o  cleanup main.c/init_selfinfo()
@@ -511,11 +564,13 @@ o  is art->inthread really needed, surely art->thread contains enough
 o  check where tin_done() or giveup() should be called instead of using
    exit()
 
-o  check where STRCPY() should be used
+o  check where my_strncpy() or STRCPY() should be used
+   or include OpenBSDs strlcpy(3) (and strlcat(3)) and use it.
+   (ftp://ftp.openbsd.org/pub/OpenBSD/src/lib/libc/string/)
 
-o  check code with lclint (http://www.sds.lcs.mit.edu/lclint/),
-   ccmalloc (http://iseran.ira.uka.de/~armin/ccmalloc/) and MSS
-   (http://hem1.passagen.se/blizzar/mss/)
+o  check code with lclint (<http://www.sds.lcs.mit.edu/lclint/>),
+   ccmalloc (<http://www.inf.ethz.ch/personal/biere/projects/ccmalloc/>)
+   and MSS (<http://hem1.passagen.se/blizzar/mss/>)
 
 o  rewrite the tag code so that arts[].tagged becomes index in arts[]
    of next tagged article. num_of_tagged_arts becomes index of first
@@ -559,10 +614,6 @@ o  make select/group/thread/page-level multibyte "safe". they all use
    wide-char/multibyte functions, see <http://clisp.cons.org/~haible/>)
    [20010904 urs@tin.org]
 
-o  when superse'D'ing an UTF-8/qp article you'll get the raw (not RFC-2045
-   decoded) article in the editor.
-   [20010905 urs@tin.org]
-
 o  make mm_network_charset an "option_list" to avoid junk input or
    undesired (UTF-1, UTF-7, UTF-16*, UTF-32*, UCS-2, UCS-4, ...) encodings.
    add configure check for the hardcoded charsets (try iconv_open(x,
@@ -578,14 +629,16 @@ o  add instalation guide (in html)
 o  document keymap feature
 
 o  man page always needs work
-   'U', 'V' in pager need documenting
+   i.e. 'U', 'V' in pager need documenting
 
-o  error message when tin -uv and using xover is misleading
+o  error message when tin -uv and using XOVER is misleading
 
 o  tin.defaults could use more documentation on manpage (tin.5)
 
 Not yet classified
 ------------------
+o  nuke $BUG_ADDRESS
+
 o  setting TIN_HOMEDIR to a nonexistant dir gives a "Filesystem full"
    error-message (but doesn't abort) instead of creating the dir. bug?
    feature? if the later we should give a more exact error-message.
@@ -596,7 +649,7 @@ o  check_article_to_be_posted() still need some cleanup
     overhead)
    [20010629 Urs Janssen <urs@tin.org>]
 
-o  update gettext stuff to >= gettext-0.10.36
+o  update gettext stuff to >= gettext-0.11
 
 o  should the postponed file be in MH-format if tin is running in MH-mode?
    if so we need to extend fetch_postponed_article()
@@ -622,3 +675,6 @@ o  numbering of Hot articles is wrong after (post)processing them
 o  think about group numbering in "only unread" display mode
    (using different numbers in show all/show only unread leads to some
     problems, f.e. group moving)
+
+o  what is with HAVE_UUDECODE (it's always true, do we need the
+   !HAVE_UUDECODE path?)

@@ -5,7 +5,7 @@
 ;   Updated   : 2001-11-10
 ;   Notes     : #defines and structs for config.c
 ;
-; Copyright (c) 1996-2001 Thomas E. Dickey <dickey@invisible-island.net>
+; Copyright (c) 1996-2002 Thomas E. Dickey <dickey@invisible-island.net>
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without
@@ -142,7 +142,9 @@
 	mm_charset			OPT_STRING
 #endif
 #ifdef CHARSET_CONVERSION
+#if 0
 	mm_local_charset		OPT_STRING
+#endif
 	mm_network_charset		txt_mime_charsets	NUM_MIME_CHARSETS
 #endif
 	post_mime_encoding		txt_mime_encodings	NUM_MIME_ENCODINGS
@@ -159,12 +161,12 @@
 ; saving/printing options
 	saving_options			OPT_TITLE
 	maildir				OPT_STRING
-	save_to_mmdf_mailbox		OPT_ON_OFF
+	mailbox_format			txt_mailbox_formats	NUM_MAILBOX_FORMATS
 	batch_save			OPT_ON_OFF
 	savedir				OPT_STRING
 	auto_save			OPT_ON_OFF
 	mark_saved_read			OPT_ON_OFF
-	post_process			txt_post_process_type POST_PROC_UUDECODE+1
+	post_process			txt_post_process_type	POST_PROC_UUDECODE+1
 	post_process_view		OPT_ON_OFF
 	process_only_unread		OPT_ON_OFF
 #ifndef DISABLE_PRINTING

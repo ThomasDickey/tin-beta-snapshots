@@ -6,7 +6,7 @@
  *  Updated   : 2001-04-24
  *  Notes     :
  *
- * Copyright (c) 1997-2001 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2002 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -86,7 +86,8 @@ tin_ltoa (
  *
  * also, strdup is not mandatory in ANSI-C
  */
-char *my_strdup (
+char *
+my_strdup (
 	const char *str)
 {
 	size_t len = strlen (str) + 1;
@@ -118,6 +119,7 @@ my_strncpy (
 }
 
 
+#ifndef HAVE_STRCASESTR
 /*
  * case-insensitive version of strstr()
  */
@@ -132,7 +134,7 @@ strcasestr (
 	h = haystack;
 	n = needle;
 	while (*haystack) {
-		if (tolower ((unsigned char)*h) == tolower ((unsigned char)*n)) {
+		if (tolower ((unsigned char) *h) == tolower ((unsigned char) *n)) {
 			h++;
 			n++;
 			if (!*n)
@@ -144,6 +146,7 @@ strcasestr (
 	}
 	return NULL;
 }
+#endif /* !HAVE_STRCASESTR */
 
 
 size_t

@@ -7,9 +7,9 @@
 PROJECT	= tin
 LVER	= 1
 PVER	= 5
-SVER	= 11
+SVER	= 12
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20011225
+DVER	= 20020227
 EXE	= tin
 
 # directory structure
@@ -71,6 +71,7 @@ CFILES	= \
 	$(SRCDIR)/joinpath.c \
 	$(SRCDIR)/keymap.c \
 	$(SRCDIR)/lang.c \
+	$(SRCDIR)/langinfo.c \
 	$(SRCDIR)/list.c \
 	$(SRCDIR)/lock.c \
 	$(SRCDIR)/mail.c \
@@ -174,6 +175,7 @@ DOC	= \
 	$(DOCDIR)/tin.defaults \
 	$(DOCDIR)/tools.txt \
 	$(DOCDIR)/mbox.5 \
+	$(DOCDIR)/mmdf.5 \
 	$(DOCDIR)/newsoverview.5 \
 	$(DOCDIR)/plp_snprintf.3 \
 	$(DOCDIR)/tin.1 \
@@ -235,7 +237,6 @@ PCRE	= \
 	$(PCREDIR)/pcreposix.h \
 	$(PCREDIR)/pcretest.c \
 	$(PCREDIR)/perltest \
-	$(PCREDIR)/pgrep.c \
 	$(PCREDIR)/study.c \
 	$(PCREDIR)/version.sh \
 	$(PCREDIR)/doc/Tech.Notes \
@@ -375,7 +376,7 @@ all:
 	@$(ECHO) " "
 	@$(ECHO) "    make build           [ Compile $(PROJECT) ]"
 	@$(ECHO) "    make clean           [ Delete all object and backup files ]"
-	@$(ECHO) "    make dist            [ Create a gziped distribution tar file ]"
+	@$(ECHO) "    make dist            [ Create a gzipped & bzipped distribution tar file ]"
 	@$(ECHO) "    make distclean       [ Delete all config, object and backup files ]"
 	@$(ECHO) "    make install         [ Install the binary and the manual page ]"
 	@$(ECHO) "    make install_sysdefs [ Install the system-wide-defaults file ]"
@@ -447,7 +448,7 @@ chmod:
 
 tar:
 	@$(ECHO) "Generating gzipped tar file..."
-	@-$(RM) $(PROJECT)-$(VER).tgz > /dev/null 2>&1
+	@-$(RM) -f $(PROJECT)-$(VER).tar.gz
 	@$(TAR) cvf $(PROJECT)-$(VER).tar -C ../ \
 	`$(ECHO) $(ALL_FILES) \
 	| $(TR) -s '[[:space:]]' "[\012*]" \
@@ -459,7 +460,7 @@ tar:
 
 bzip2:
 	@$(ECHO) "Generating bzipped tar file..."
-	@-$(RM) $(PROJECT)-$(VER).tar.bz2 > /dev/null 2>&1
+	@-$(RM) -f $(PROJECT)-$(VER).tar.bz2
 	@$(TAR) cvf $(PROJECT)-$(VER).tar -C ../ \
 	`$(ECHO) $(ALL_FILES) \
 	| $(TR) -s '[[:space:]]' "[\012*]" \
@@ -493,6 +494,7 @@ dist:
 	@$(MAKE) manifest
 	@$(MAKE) chmod
 	@$(MAKE) tar
+	@$(MAKE) bzip2
 
 version:
 	@$(ECHO) "$(PROJECT)-$(VER)"

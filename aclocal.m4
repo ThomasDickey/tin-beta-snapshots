@@ -718,6 +718,7 @@ case .$cf_pcre_home in #(vi
 	;;
 .yes) #(vi
 	PCREDIR_MAKE='#'
+	PCREDIR_LIBS="-lpcre"
 	;;
 .*)
 	CF_PATH_SYNTAX(cf_pcre_home)

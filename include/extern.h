@@ -6,7 +6,7 @@
  *  Updated   : 2001-11-10
  *  Notes     :
  *
- * Copyright (c) 1997-2001 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1997-2002 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -391,6 +391,7 @@ extern constext *txt_kill_level_type[];
 #ifdef CHARSET_CONVERSION
 	extern constext *txt_mime_charsets[];
 #endif /* CHARSET_CONVERSION */
+extern constext *txt_mailbox_formats[];
 extern constext *txt_marks[];
 extern constext *txt_mime_encodings[NUM_MIME_ENCODINGS];
 extern constext *txt_onoff[];
@@ -539,7 +540,10 @@ extern constext txt_error_header_line_blank[];
 extern constext txt_error_header_line_colon[];
 extern constext txt_error_header_line_comma[];
 extern constext txt_error_header_line_empty[];
-extern constext txt_error_header_line_groups_contd[];
+#ifndef FOLLOW_USEFOR_DRAFT
+	extern constext txt_error_header_line_comma[];
+	extern constext txt_error_header_line_groups_contd[];
+#endif /* !FOLLOW_USEFOR_DRAFT */
 extern constext txt_error_header_line_missing[];
 extern constext txt_error_header_line_space[];
 extern constext txt_error_no_domain_name[];
@@ -552,6 +556,7 @@ extern constext txt_error_passwd_missing[];
 extern constext txt_error_plural[];
 extern constext txt_error_sender_in_header_not_allowed[];
 extern constext txt_error_singular[];
+extern constext txt_error_unknown_dlevel[];
 extern constext txt_esc[];
 extern constext txt_exiting[];
 extern constext txt_external_mail_done[];
@@ -999,6 +1004,10 @@ extern constext txt_warn_article_unchanged[];
 extern constext txt_warn_blank_subject[];
 extern constext txt_warn_cancel[];
 extern constext txt_warn_encoding_and_external_inews[];
+#ifdef FOLLOW_USEFOR_DRAFT
+	extern constext txt_warn_header_line_comma[];
+	extern constext txt_warn_header_line_groups_contd[];
+#endif /* FOLLOW_USEFOR_DRAFT */
 extern constext txt_warn_newsrc[];
 extern constext txt_warn_multiple_sigs[];
 extern constext txt_warn_re_but_no_references[];
@@ -1386,7 +1395,6 @@ extern struct opttxt txt_quote_empty_lines;
 extern struct opttxt txt_quote_signatures;
 extern struct opttxt txt_recent_time;
 extern struct opttxt txt_reread_active_file_secs;
-extern struct opttxt txt_save_to_mmdf_mailbox;
 extern struct opttxt txt_savedir;
 extern struct opttxt txt_saving_options;
 extern struct opttxt txt_show_author;
@@ -1425,6 +1433,7 @@ extern struct opttxt txt_xpost_quote_format;
 	extern struct opttxt txt_mm_local_charset;
 	extern struct opttxt txt_mm_network_charset;
 #endif /* CHARSET_CONVERSION */
+extern struct opttxt txt_mailbox_format;
 #ifdef HAVE_COLOR
 	extern struct opttxt txt_quote_regex;
 	extern struct opttxt txt_quote_regex2;

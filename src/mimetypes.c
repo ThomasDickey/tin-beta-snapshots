@@ -6,7 +6,7 @@
  *  Updated   : 2000-06-05
  *  Notes     : mime.types handling
  *
- * Copyright (c) 2000-2001 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 2000-2002 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,7 @@ lookup_mimetype (
 	t_part *part)
 {
 	FILE *fp = (FILE *) 0;
+	char *exts;
 	char buf[LEN];
 
 	/*
@@ -72,8 +73,6 @@ lookup_mimetype (
 		return;
 
 	while ((fgets (buf, sizeof(buf), fp)) != NULL) {
-		char *exts;
-
 		if (buf[0] == '#' || buf[0] == '\n')		/* Skip comments & blank lines */
 			continue;
 

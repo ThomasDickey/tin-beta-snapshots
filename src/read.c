@@ -5,7 +5,7 @@
  *  Created   : 1997-04-10
  *  Updated   : 1998-07-04
  *
- * Copyright (c) 1997-2001 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 1997-2002 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -176,8 +176,8 @@ wait_for_input (
 /*	return (WaitForChar(Input(), 0) == DOSTRUE) ? TRUE : FALSE; */
 #	endif /* M_AMIGA */
 /*
- * FIXME, insert !HAVE_SELECT code here - NB: we already have VMS specific code
- *        at the top of this function
+ * FIXME: insert !HAVE_SELECT code here - NB: we already have VMS specific
+ *        code at the top of this function
  */
 	return FALSE;
 }

@@ -6,7 +6,7 @@
  *  Updated   : 2001-07-22
  *  Notes     : signal handlers for different modes and window resizing
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,6 @@
 /*
  * Needed for resizing under an xterm
  */
-
 #ifdef HAVE_TERMIOS_H
 #	include <termios.h>
 #else
@@ -117,64 +116,64 @@ static void _CDECL signal_handler (SIG_ARGS);
 
 int signal_context = cMain;
 int need_resize = cNo;
-
 int NOTESLINES;			/* # lines of useable area */
+
 
 #ifndef __LCLINT__ /* lclint doesn't like it */
 static const struct {
 	int code;
 	const char *name;
 } signal_list[] = {
-#ifdef SIGINT
+#	ifdef SIGINT
 	{ SIGINT,	"SIGINT" },	/* ctrl-C */
-#endif /* SIGINT */
-#ifdef SIGQUIT
+#	endif /* SIGINT */
+#	ifdef SIGQUIT
 	{ SIGQUIT,	"SIGQUIT " },	/* ctrl-\ */
-#endif /* SIGQUIT */
-#ifdef SIGILL
+#	endif /* SIGQUIT */
+#	ifdef SIGILL
 	{ SIGILL,	"SIGILL" },	/* illegal instruction */
-#endif /* SIGILL */
-#ifdef SIGFPE
+#	endif /* SIGILL */
+#	ifdef SIGFPE
 	{ SIGFPE,	"SIGFPE" },	/* floating point exception */
-#endif /* SIGFPE */
-#ifdef SIGBUS
+#	endif /* SIGFPE */
+#	ifdef SIGBUS
 	{ SIGBUS,	"SIGBUS" },	/* bus error */
-#endif /* SIGBUS */
-#ifdef SIGSEGV
+#	endif /* SIGBUS */
+#	ifdef SIGSEGV
 	{ SIGSEGV,	"SIGSEGV" },	/* segmentation violation */
-#endif /* SIGSEGV */
-#ifdef SIGPIPE
+#	endif /* SIGSEGV */
+#	ifdef SIGPIPE
 	{ SIGPIPE,	"SIGPIPE" },	/* broken pipe */
-#endif /* SIGPIPE */
-#ifdef SIGCHLD
+#	endif /* SIGPIPE */
+#	ifdef SIGCHLD
 	{ SIGCHLD,	"SIGCHLD" },	/* death of a child process */
-#endif /* SIGCHLD */
-#ifdef SIGPWR
+#	endif /* SIGCHLD */
+#	ifdef SIGPWR
 	{ SIGPWR,	"SIGPWR" },	/* powerfail */
-#endif /* SIGPWR */
-#ifdef SIGTSTP
+#	endif /* SIGPWR */
+#	ifdef SIGTSTP
 	{ SIGTSTP,	"SIGTSTP" },	/* terminal-stop */
-#endif /* SIGTSTP */
-#ifdef SIGHUP
+#	endif /* SIGTSTP */
+#	ifdef SIGHUP
 	{ SIGHUP,	"SIGHUP" },	/* hang up */
-#endif /* SIGHUP */
-#ifdef SIGUSR1
+#	endif /* SIGHUP */
+#	ifdef SIGUSR1
 	{ SIGUSR1,	"SIGUSR1" },	/* User-defined signal 1 */
-#endif /* SIGUSR1 */
-#ifdef SIGTERM
+#	endif /* SIGUSR1 */
+#	ifdef SIGTERM
 	{ SIGTERM,	"SIGTERM" },	/* termination */
-#endif /* SIGTERM */
-#ifdef SIGWINCH
+#	endif /* SIGTERM */
+#	ifdef SIGWINCH
 	{ SIGWINCH,	"SIGWINCH" },	/* window-size change */
-#endif /* SIGWINCH */
+#	endif /* SIGWINCH */
 };
 #endif /* !__LCLINT__ */
 
 
 #ifdef HAVE_NESTED_PARAMS
-RETSIGTYPE (*sigdisp(int signum, RETSIGTYPE (_CDECL *func)(SIG_ARGS)))(SIG_ARGS)
+	RETSIGTYPE (*sigdisp(int signum, RETSIGTYPE (_CDECL *func)(SIG_ARGS)))(SIG_ARGS)
 #else
-RETSIGTYPE (*sigdisp(signum, func))(SIG_ARGS)
+	RETSIGTYPE (*sigdisp(signum, func))(SIG_ARGS)
 	int signum;
 	RETSIGTYPE (_CDECL *func)(SIG_ARGS);
 #endif /* HAVE_NESTED_PARAMS */
@@ -191,13 +190,13 @@ RETSIGTYPE (*sigdisp(signum, func))(SIG_ARGS)
 #	endif /* SA_RESTART */
 	if (sigaction (signum, &sa, &osa) < 0)
 		return SIG_ERR;
-
 	return (osa.sa_handler);
 #else
 #	define RESTORE_HANDLER(x, y)  signal (x, y)
 	return (signal (signum, func));
 #endif /* HAVE_POSIX_JC */
 }
+
 
 /*
  * Block/unblock SIGWINCH/SIGTSTP restarting syscalls
@@ -225,12 +224,14 @@ allow_resize (
 #endif /* HAVE_POSIX_JC */
 }
 
+
 static const char *
 signal_name (
 	int code)
 {
 	size_t n;
 	const char *name = "unknown";
+
 	for (n = 0; n < SIZEOF(signal_list); n++) {
 		if (signal_list[n].code == code) {
 			name = signal_list[n].name;
@@ -239,6 +240,7 @@ signal_name (
 	}
 	return name;
 }
+
 
 /*
  * Rescale the display buffer and redraw the contents according to
@@ -305,6 +307,7 @@ handle_resize (
 #endif /* SIGWINCH || SIGTSTP */
 }
 
+
 #ifdef SIGTSTP
 static void
 handle_suspend (
@@ -332,6 +335,7 @@ handle_suspend (
 		set_xclick_on ();
 }
 #endif /* SIGTSTP */
+
 
 static void _CDECL
 signal_handler (
@@ -556,6 +560,7 @@ set_win_size (
 	set_noteslines (*num_lines);
 	return (*num_lines != old_lines || *num_cols != old_cols);
 }
+
 
 void
 set_noteslines (

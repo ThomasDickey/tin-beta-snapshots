@@ -6,7 +6,7 @@
  *  Updated   : 1997-12-28
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -298,7 +298,7 @@ auto_subscribe_groups (
 	if (newsrc_mode)
 		chmod (newsrc_file, newsrc_mode);
 
-/* TODO test me ! */
+	/* TODO test me ! */
 	while ((ptr = tin_fgets (fp_subs, FALSE)) != (char *) 0) {
 		if (ptr[0] != '#') {
 			if (group_find (ptr) != 0)
@@ -1486,6 +1486,11 @@ vNewsrcTestHarness (
 	long rng_min, rng_max;
 	struct t_group group;
 
+	/*
+	 * those env.-vars are not documented:
+	 * $TIN_RNG_MIN, $TIN_RNG_MAX, $TIN_MIN, $TIN_MAX, $TIN_COUNT
+	 * $TIN_SEQ
+	 */
 	rng_min = atoi (get_val ("TIN_RNG_MIN", "1"));
 	rng_max = atoi (get_val ("TIN_RNG_MAX", "1"));
 

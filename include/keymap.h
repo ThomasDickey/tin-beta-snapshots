@@ -6,7 +6,7 @@
  *  Updated   : 2000-06-10
  *  Notes     :
  *
- * Copyright (c) 1999-2001 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 1999-2002 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

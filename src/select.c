@@ -6,7 +6,7 @@
  *  Updated   : 1994-12-21
  *  Notes     :
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -118,8 +118,13 @@ selection_page (
 	show_selection_page ();	/* display group selection page */
 
 	forever {
-		if (!resync_active_file () && reread_active_after_posting ())	/* reread active file if necessary */
-			show_selection_page ();
+		if (!resync_active_file ()) {
+			if (reread_active_after_posting ()) /* reread active file if necessary */
+				show_selection_page ();
+		} else {
+			if (!yank_in_active_file)
+				yank_in_active_file = bool_not(yank_in_active_file); /* yank out if yanked in */
+		}
 
 		set_xclick_on ();
 		ch = handle_keypad (select_left, select_right, &menukeymap.select_nav);
@@ -228,7 +233,7 @@ selection_page (
 				break;
 
 			case iKeySelectToggleDescriptions:	/* toggle newsgroup descriptions */
-				show_description = !show_description;
+				show_description = bool_not(show_description);
 				if (show_description)
 					read_newsgroups_file ();
 				set_groupname_len (FALSE);
@@ -268,7 +273,7 @@ selection_page (
 #endif /* HAVE_COLOR */
 
 			case iKeyToggleInfoLastLine:	/* display group description */
-				tinrc.info_in_last_line = !tinrc.info_in_last_line;
+				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
 				show_selection_page ();
 				break;
 
@@ -335,7 +340,7 @@ selection_page (
 				 * all subscribed to groups and only groups
 				 * that contain unread articles
 				 */
-				tinrc.show_only_unread_groups = !tinrc.show_only_unread_groups;
+				tinrc.show_only_unread_groups = bool_not(tinrc.show_only_unread_groups);
 				wait_message (0, _(txt_reading_groups), (tinrc.show_only_unread_groups) ? _("unread") : _("all"));
 
 				toggle_my_groups (tinrc.show_only_unread_groups, "");
@@ -665,7 +670,7 @@ yank_active_file (
 		show_selection_page ();
 	}
 
-	yank_in_active_file = !yank_in_active_file;
+	yank_in_active_file = bool_not(yank_in_active_file);
 
 	if (oldmax)
 		FreeAndNull (oldgroup);

@@ -6,7 +6,7 @@
  *  Updated   : 1997-12-20
  *  Notes     : Group attribute routines
  *
- * Copyright (c) 1993-2001 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2002 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -512,7 +512,7 @@ write_attributes_file (
 	 * TODO: sort in a usefull order
 	 */
 	fprintf (fp, _("# Group attributes file for the TIN newsreader\n#\n"));
-	fprintf (fp, _("#  scope=STRING (ie. alt.sources, alt.*,!alt.bin* etc..) [mandatory]\n"));
+	fprintf (fp, _("#  scope=STRING (ie. alt.*,!alt.bin*) [mandatory]\n"));
 	fprintf (fp, _("#  maildir=STRING (ie. ~/Mail)\n"));
 	fprintf (fp, _("#  savedir=STRING (ie. ~user/News)\n"));
 	fprintf (fp, _("#  savefile=STRING (ie. =linux)\n"));
@@ -670,14 +670,14 @@ debug_print_filter_attributes (
 			group->name, group->attribute->quick_kill_header,
 			(group->attribute->quick_kill_scope ?
 				group->attribute->quick_kill_scope : ""),
-			(group->attribute->quick_kill_case ? "ON" : "OFF"),
-			(group->attribute->quick_kill_expire ? "ON" : "OFF"));
+			txt_onoff[group->attribute->quick_kill_case != FALSE ? 1 : 0],
+			txt_onoff[group->attribute->quick_kill_expire != FALSE ? 1 : 0]);
 		my_printf ("Grp=[%s] SELECT header=[%d] scope=[%s] case=[%s] expire=[%s]\n",
 			group->name, group->attribute->quick_select_header,
 			(group->attribute->quick_select_scope ?
 				group->attribute->quick_select_scope: ""),
-			(group->attribute->quick_select_case ? "ON" : "OFF"),
-			(group->attribute->quick_select_expire ? "ON" : "OFF"));
+			txt_onoff[group->attribute->quick_select_case != FALSE ? 1 : 0],
+			txt_onoff[group->attribute->quick_select_expire != FALSE ? 1 : 0]);
 	}
 
 	my_printf("END ***\n");

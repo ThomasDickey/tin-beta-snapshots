@@ -44,8 +44,8 @@ all:	$(PRELIB)pcre.a $(PRELIB)pcreposix.a pcretest$x pgrep$x
 @SHOW_CC@
 	@ECHO_CC@$(CPP) -C $(CPPOPTS) $*.c >$@
 
-pgrep$x:	$(PRELIB)pcre.a pgrep.o
-		$(CC) $(CFLAGS) -o $@ pgrep.o $(PRELIB)pcre.a
+pgrep$x:	$(PRELIB)pcre.a pcregrep.o
+		$(CC) $(CFLAGS) -o $@ pcregrep.o $(PRELIB)pcre.a
 
 pcretest$x:	$(PRELIB)pcre.a $(PRELIB)pcreposix.a pcretest.o
 		$(CC) $(CFLAGS) -o $@ pcretest.o $(PRELIB)pcre.a $(PRELIB)pcreposix.a
@@ -74,7 +74,7 @@ study.o:	study.c $(PCR_DEP)
 
 pcretest.o:	pcretest.c pcre.h
 
-pgrep.o:	pgrep.c pcre.h
+pcregrep.o:	pcregrep.c pcre.h
 
 # An auxiliary program makes the default character table source
 

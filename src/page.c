@@ -6,7 +6,7 @@
  *  Updated   : 2001-07-22
  *  Notes     :
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -87,6 +87,7 @@ static FILE *info_file;
 static const char *info_title;
 static int curr_info_line;
 static int num_info_lines;
+static int reveal_ctrl_l_lines;	/* number of lines (from top) with de-activated ^L */
 static t_lineinfo *infoline;
 
 static t_bool show_all_headers;	/* CTRL-H with headers specified */
@@ -99,6 +100,8 @@ static t_bool hide_uue;			/* set when uuencoded sections are 'hidden' */
 static int handle_pager_keypad (t_menukeys *menukeys);
 static int load_article (int new_respnum);
 static int prompt_response (int ch, int curr_respnum);
+static t_bool deactivate_next_ctrl_l (void);
+static t_bool activate_last_ctrl_l (void);
 static void preprocess_info_message (FILE *info_fh);
 static void print_message_page (FILE *file, t_lineinfo *messageline, size_t messagelines, size_t lcurr_line, size_t begin, size_t end, int help_level);
 static void process_search (int *lcurr_line, size_t message_lines, size_t screen_lines, int help_level);
@@ -203,6 +206,60 @@ handle_pager_keypad(
 
 
 /*
+ * Make hidden part of article after ^L visible.
+ * Returns:
+ *    FALSE no ^L found, no changes
+ *    TRUE  ^L found and displayed page must be updated
+ *          (draw_page must be called)
+ */
+static t_bool
+deactivate_next_ctrl_l (
+	void)
+{
+	int i;
+	int end = curr_line + ARTLINES;
+
+	if (reveal_ctrl_l)
+		return FALSE;
+	if (end > artlines)
+		end = artlines;
+	for (i = reveal_ctrl_l_lines + 1; i < end; i++)
+		if (artline[i].flags & C_CTRLL) {
+			reveal_ctrl_l_lines = i;
+			return TRUE;
+		}
+	reveal_ctrl_l_lines = end - 1;
+	return FALSE;
+}
+
+
+/*
+ * Re-hide revealed part of article after last ^L
+ * that is currently displayed.
+ * Returns:
+ *    FALSE no ^L found, no changes
+ *    TRUE  ^L found and displayed page must be updated
+ *          (draw_page must be called)
+ */
+static t_bool
+activate_last_ctrl_l (
+	void)
+{
+	int i;
+
+	if (reveal_ctrl_l)
+		return FALSE;
+	for (i = reveal_ctrl_l_lines; i >= curr_line; i--)
+		if (artline[i].flags & C_CTRLL) {
+			reveal_ctrl_l_lines = i - 1;
+			return TRUE;
+		}
+	reveal_ctrl_l_lines = curr_line - 1;
+	return FALSE;
+}
+
+
+/*
  * The main routine for viewing articles
  * Returns:
  *    >=0	normal exit - return a new base[] note
@@ -227,10 +284,14 @@ show_page (
 	int ch, i, n = 0;
 	int filter_state = NO_FILTERING;
 	int old_sort_art_type = tinrc.sort_article_type;
+	int art_type = GROUP_TYPE_NEWS;
 	t_bool mouse_click_on = TRUE;
 
 	filtered_articles = FALSE;	/* used in thread level */
 	make_group_path (group->name, group_path);
+
+	if (group->attribute->mailing_list != (char *) 0)
+		art_type = GROUP_TYPE_MAIL;
 
 	/*
 	 * Peek to see if the pager started due to a body search
@@ -276,17 +337,21 @@ show_page (
 					set_xclick_off ();
 				else
 					set_xclick_on ();
-				mouse_click_on = !mouse_click_on;
+				mouse_click_on = bool_not(mouse_click_on);
 				break;
 
 			case iKeyPageUp:		/* page up */
 			case iKeyPageUp2:
 			case iKeyPageUp3:
-				if (curr_line == 0)
-					info_message (_(txt_begin_of_art));
-				else {
-					curr_line -= (tinrc.full_page_scroll) ? ARTLINES : ARTLINES/2;
+				if (activate_last_ctrl_l())
 					draw_page (group->name, 0);
+				else {
+					if (curr_line == 0)
+						info_message (_(txt_begin_of_art));
+					else {
+						curr_line -= (tinrc.full_page_scroll) ? ARTLINES : ARTLINES/2;
+						draw_page (group->name, 0);
+					}
 				}
 				break;
 
@@ -294,32 +359,36 @@ show_page (
 			case iKeyPageDown2:
 			case iKeyPageDown3:
 			case iKeyPageNextUnread:
-				if (curr_line + ARTLINES >= artlines) {	/* End is already on screen */
-					switch (ch) {
-						case iKeyPageNextUnread:	/* <TAB> */
+				if (!((ch == iKeyPageNextUnread) && tinrc.tab_goto_next_unread) && deactivate_next_ctrl_l())
+					draw_page (group->name, 0);
+				else {
+					if (curr_line + ARTLINES >= artlines) {	/* End is already on screen */
+						switch (ch) {
+							case iKeyPageNextUnread:	/* <TAB> */
+								goto page_goto_next_unread;
+
+							case iKeyPageDown:
+							case iKeyPageDown2:
+								if (tinrc.pgdn_goto_next)
+									goto page_goto_next_unread;
+								break;
+
+							case iKeyPageDown3:			/* <SPACE> */
+								if (tinrc.space_goto_next_unread)
+									goto page_goto_next_unread;
+								break;
+						}
+						info_message (_(txt_end_of_art));
+					} else {
+						if ((ch == iKeyPageNextUnread) && tinrc.tab_goto_next_unread)
 							goto page_goto_next_unread;
 
-						case iKeyPageDown:
-						case iKeyPageDown2:
-							if (tinrc.pgdn_goto_next)
-								goto page_goto_next_unread;
-							break;
+						curr_line += (tinrc.full_page_scroll) ? ARTLINES : ARTLINES/2;
 
-						case iKeyPageDown3:			/* <SPACE> */
-							if (tinrc.space_goto_next_unread)
-								goto page_goto_next_unread;
-							break;
+						if (tinrc.show_last_line_prev_page)
+							curr_line--;
+						draw_page (group->name, 0);
 					}
-					info_message (_(txt_end_of_art));
-				} else {
-					if ((ch == iKeyPageNextUnread) && tinrc.tab_goto_next_unread)
-						goto page_goto_next_unread;
-
-					curr_line += (tinrc.full_page_scroll) ? ARTLINES : ARTLINES/2;
-
-					if (tinrc.show_last_line_prev_page)
-						curr_line--;
-					draw_page (group->name, 0);
 				}
 				break;
 
@@ -332,7 +401,8 @@ page_goto_next_unread:
 
 			case iKeyFirstPage:		/* beginning of article */
 			case iKeyPageFirstPage2:
-				if (curr_line != 0) {
+				if (reveal_ctrl_l_lines > -1 || curr_line != 0) {
+					reveal_ctrl_l_lines = -1;
 					curr_line = 0;
 					draw_page (group->name, 0);
 				}
@@ -340,7 +410,8 @@ page_goto_next_unread:
 
 			case iKeyLastPage:		/* end of article */
 			case iKeyPageLastPage2:
-				if (curr_line + ARTLINES != artlines) {
+				if (reveal_ctrl_l_lines < artlines - 1 || curr_line + ARTLINES != artlines) {
+					reveal_ctrl_l_lines = artlines - 1;
 					/* Display a full last page for neatness */
 					curr_line = artlines - ARTLINES;
 					draw_page (group->name, 0);
@@ -349,32 +420,40 @@ page_goto_next_unread:
 
 			case iKeyUp:		/* line up */
 			case iKeyUp2:
-				if (curr_line == 0) {
-					info_message (_(txt_begin_of_art));
-					break;
-				}
-
-				curr_line--;
-				if (have_linescroll) {
-					scroll_page (-1);
-					draw_page (group->name, -1);
-				} else
+				if (activate_last_ctrl_l())
 					draw_page (group->name, 0);
+				else {
+					if (curr_line == 0) {
+						info_message (_(txt_begin_of_art));
+						break;
+					}
+
+					curr_line--;
+					if (have_linescroll) {
+						scroll_page (-1);
+						draw_page (group->name, -1);
+					} else
+						draw_page (group->name, 0);
+				}
 				break;
 
 			case iKeyDown:		/* line down */
 			case iKeyDown2:
-				if (curr_line + ARTLINES >= artlines) {
-					info_message (_(txt_end_of_art));
-					break;
-				}
-
-				curr_line++;
-				if (have_linescroll) {
-					scroll_page (1);
-					draw_page (group->name, 1);
-				} else
+				if (deactivate_next_ctrl_l())
 					draw_page (group->name, 0);
+				else {
+					if (curr_line + ARTLINES >= artlines) {
+						info_message (_(txt_end_of_art));
+						break;
+					}
+
+					curr_line++;
+					if (have_linescroll) {
+						scroll_page (1);
+						draw_page (group->name, 1);
+					} else
+						draw_page (group->name, 0);
+				}
 				break;
 
 			case iKeyLastViewed:	/* show last viewed article */
@@ -452,7 +531,7 @@ page_goto_next_unread:
 
 			case iKeySearchSubjF:	/* search in article */
 			case iKeySearchSubjB:
-				if ((i = search_article ((ch == iKeySearchSubjF), search_line, artlines, artline, reveal_ctrl_l, note_fp)) == -1)
+				if ((i = search_article ((ch == iKeySearchSubjF), search_line, artlines, artline, reveal_ctrl_l, reveal_ctrl_l_lines, note_fp)) == -1)
 					break;
 
 				process_search(&curr_line, artlines, ARTLINES, PAGE_LEVEL);
@@ -512,7 +591,7 @@ page_goto_next_unread:
 
 				resize_article (TRUE, &pgart);	/* Also recooks it.. */
 				draw_page (group->name, 0);
-				info_message (_(txt_toggled_tex2iso), ((group->attribute->tex2iso_conv)) ? "on" : "off");
+				info_message (_(txt_toggled_tex2iso), txt_onoff[group->attribute->tex2iso_conv != FALSE ? 1 : 0]);
 				break;
 
 			case iKeyPageToggleTabs:		/* toggle tab stops 8 vs 4 */
@@ -522,7 +601,7 @@ page_goto_next_unread:
 				break;
 
 			case iKeyPageToggleUue:			/* toggle display off uuencoded sections */
-				hide_uue = !hide_uue;
+				hide_uue = bool_not(hide_uue);
 				resize_article (TRUE, &pgart);	/* Also recooks it.. */
 
 				/*
@@ -536,6 +615,10 @@ page_goto_next_unread:
 
 			case iKeyPageReveal:			/* toggle hiding after ^L */
 				reveal_ctrl_l = !reveal_ctrl_l;
+				if (!reveal_ctrl_l) {	/* switched back to active ^L's */
+					reveal_ctrl_l_lines = -1;
+					curr_line = 0;
+				}
 				draw_page (group->name, 0);
 				break;
 
@@ -603,7 +686,7 @@ page_goto_next_unread:
 				break;
 
 			case iKeyPageCancel:			/* cancel an article */
-				if (can_post) {
+				if (can_post || art_type != GROUP_TYPE_NEWS) {
 					if (cancel_article (group, &arts[this_resp], this_resp))
 						draw_page (group->name, 0);
 				} else
@@ -618,7 +701,7 @@ page_goto_next_unread:
 			case iKeyPageFollowupQuote:		/* post a followup to this article */
 			case iKeyPageFollowupQuoteHeaders:
 			case iKeyPageFollowup:
-				if (!can_post) {
+				if (!can_post && art_type == GROUP_TYPE_NEWS) {
 					info_message (_(txt_cannot_post));
 					break;
 				}
@@ -751,7 +834,7 @@ return_to_index:
 
 			case iKeyPostponed:
 			case iKeyPostponed2:	/* post postponed article */
-				if (can_post) {
+				if (can_post || art_type != GROUP_TYPE_NEWS) {
 					if (pickup_postponed_articles (FALSE, FALSE))
 						draw_page (group->name, 0);
 				} else
@@ -787,9 +870,9 @@ return_to_index:
 #ifdef HAVE_COLOR
 			case iKeyPageToggleHighlight:
 				if (use_color) { /* make sure we have color turned on */
-					word_highlight = !word_highlight;
+					word_highlight = bool_not(word_highlight);
 					draw_page (group->name, 0);
-					info_message(_(txt_toggled_high), (word_highlight) ? "on" : "off");
+					info_message(_(txt_toggled_high), txt_onoff[word_highlight != FALSE ? 1 : 0]);
 				}
 				break;
 #endif /* HAVE_COLOR */
@@ -825,19 +908,21 @@ print_message_page (
 	size_t end,
 	int help_level)
 {
+	char *line;
+	char *p;
 	size_t i = begin;
+	t_lineinfo *curr;
 
 	for (; i < end; i++) {
-		t_lineinfo *curr;
-		char *line;
-
 		if (lcurr_line + i >= messagelines)		/* ran out of message */
 			break;
 
 		curr = &messageline[lcurr_line + i];
 		fseek (file, curr->offset, SEEK_SET);
+
 		if ((line = tin_fgets (file, FALSE)) == NULL)
 			break;	/* ran out of message */
+
 		if ((int) strlen(line) >= cCOLS)
 			line[cCOLS] = '\0';
 
@@ -845,8 +930,7 @@ print_message_page (
 		 * rotN encoding on body and sig data only
 		 */
 		if ((rotate != 0) && (curr->flags & (C_BODY | C_SIG))) {
-			char *p = line;
-
+			p = line;
 			for (p = line; *p; p++) {
 				if (*p >= 'A' && *p <= 'Z')
 					*p = (*p - 'A' + rotate) % 26 + 'A';
@@ -877,7 +961,7 @@ print_message_page (
 			highlight_regexes (i + scroll_region_top, &news_regex);
 
 		/* Blank the screen after a ^L (only occurs when showing cooked) */
-		if (!reveal_ctrl_l && (curr->flags & C_CTRLL)) {
+		if (!reveal_ctrl_l && (curr->flags & C_CTRLL) && (int)(lcurr_line + i) > reveal_ctrl_l_lines) {
 			CleartoEOS();
 			break;
 		}
@@ -902,7 +986,6 @@ draw_page (
 	const char *group,
 	int part)
 {
-	char *buff;
 	int i;
 	int end;	/* last line to draw */
 
@@ -917,8 +1000,6 @@ draw_page (
 		curr_line = artlines;	/* Oops - off the end */
 
 	search_line = curr_line;	/* Reset search to start from top of display */
-
-	buff = my_malloc(cCOLS + 1);	/* Need to account for \n */
 
 	if (part == 0) {
 		ClearScreen();
@@ -1015,7 +1096,7 @@ show_first_header (
 	char tmp[LEN];
 	int whichresp;
 	int x_resp;
-	int pos, i, n;
+	int pos, i;
 	int grplen, maxlen;
 
 	whichresp = which_response (this_resp);
@@ -1084,7 +1165,7 @@ show_first_header (
 #endif /* HAVE_COLOR */
 
 	sprintf (buf, _(txt_lines), tmp);
-	n = strlen (buf);
+	i = strlen (buf);
 	my_fputs (buf, stdout);
 
 #ifdef HAVE_COLOR
@@ -1094,17 +1175,17 @@ show_first_header (
 	if (pgart.tex2iso) {
 		*buf = '\0';
 		strcpy (buf, "TeX ");
-		n += strlen (buf);
+		i += strlen (buf);
 		my_fputs (buf, stdout);
 	}
 
 	strncpy (buf, (note_h->subj ? note_h->subj : arts[this_resp].subject), HEADER_LEN - 1);
 
-	buf[RIGHT_POS - 5 - n] = '\0';
+	buf[RIGHT_POS - 5 - i] = '\0';
 
 	pos = ((cCOLS - (int) strlen (buf)) / 2) - 2;
 
-	MoveCursor (1, ((pos > n) ? pos : n));
+	MoveCursor (1, ((pos > i) ? pos : i));
 
 	convert_to_printable (buf);
 
@@ -1238,6 +1319,7 @@ load_article(
 
 	rotate = 0;			/* normal mode, not rot13 */
 	reveal_ctrl_l = FALSE;
+	reveal_ctrl_l_lines = -1;	/* all ^L's active */
 	hide_uue = tinrc.hide_uue;
 
 	/*
@@ -1374,7 +1456,7 @@ toggle_raw(
 		note_fp = pgart.raw;
 	}
 	curr_line = 0;
-	show_all_headers = !show_all_headers;
+	show_all_headers = bool_not(show_all_headers);
 	draw_page (group->name, 0);
 }
 
@@ -1577,7 +1659,7 @@ info_pager (
 
 			case iKeySearchSubjF:
 			case iKeySearchSubjB:
-				if ((search_article ((ch == iKeySearchSubjF), search_line, num_info_lines, infoline, TRUE, info_file)) == -1)
+				if ((search_article ((ch == iKeySearchSubjF), search_line, num_info_lines, infoline, TRUE, 0, info_file)) == -1)
 					break;
 
 				process_search (&curr_info_line, num_info_lines, NOTESLINES, INFO_PAGER);
@@ -1631,7 +1713,6 @@ static void
 preprocess_info_message (
 	FILE *info_fh)
 {
-	char *line;
 	int chunk = 50;
 
 	rewind (info_fh);
@@ -1647,7 +1728,7 @@ preprocess_info_message (
 			chunk += 50;
 			infoline = my_realloc((char *)infoline, sizeof(t_lineinfo) * chunk);
 		}
-	} while ((line = tin_fgets(info_fh, FALSE)) != NULL);
+	} while (tin_fgets(info_fh, FALSE) != NULL);
 
 	num_info_lines--;
 	infoline = my_realloc((char *)infoline, sizeof(t_lineinfo) * num_info_lines);

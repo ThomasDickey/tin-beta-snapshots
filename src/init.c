@@ -6,7 +6,7 @@
  *  Updated   : 2001-11-10
  *  Notes     :
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -239,6 +239,7 @@ struct t_config tinrc = {
 	"",		/* default_shell_command */
 	"In article %M you wrote:",		/* mail_quote_format */
 	"",		/* maildir */
+	0,			/* mailbox_format */
 	"",		/* mail_address */
 	"",		/* mm_charset, defaults to $MM_CHARSET */
 #ifdef CHARSET_CONVERSION
@@ -251,7 +252,7 @@ struct t_config tinrc = {
 	DEFAULT_COMMENT,	/* quote_chars */
 #ifdef HAVE_COLOR
 	"",		/* quote_regex */
-	"",		/* quote_regex 2nd level*/
+	"",		/* quote_regex 2nd level */
 	"",		/* quote_regex >= 3rd level */
 #endif /* HAVE_COLOR */
 	"",		/* sigfile */
@@ -348,11 +349,6 @@ struct t_config tinrc = {
 	FALSE,		/* prompt_followupto */
 	TRUE,		/* quote_empty_lines */
 	FALSE,		/* quote_signatures */
-#ifdef HAVE_MMDF_MAILER
-	TRUE,		/* save_to_mmdf_mailbox */
-#else
-	FALSE,		/* save_to_mmdf_mailbox */
-#endif /* HAVE_MMDF_MAILER */
 	TRUE,		/* show_description */
 	FALSE,		/* show_last_line_prev_page */
 	TRUE,		/* show_lines */
@@ -514,9 +510,14 @@ init_selfinfo (
 	(void) umask (real_umask);
 
 #if defined(HAVE_SETLOCALE) && defined(LC_ALL) && !defined(NO_LOCALE)
-	setlocale (LC_ALL, "");
+	if (!setlocale(LC_ALL, "")) {
+		/*
+		 * TODO: issue a warning here like
+		 *       "Can't set the specified locale! Check $LANG, $LC_CTYPE, $LC_ALL"
+		 */
+		;
+	}
 #endif /* HAVE_SETLOCALE && LC_ALL && !NO_LOCALE */
-
 
 /* FIXME: move to get_user_name() [header.c] */
 #ifndef M_AMIGA
@@ -878,7 +879,7 @@ create_mail_save_dirs (
 	char path[PATH_LEN];
 	struct stat sb;
 
-	if (!strfpath (tinrc.maildir, path, sizeof (path), &CURR_GROUP))
+	if (!strfpath (tinrc.maildir, path, sizeof (path), NULL))
 		joinpath (path, homedir, DEFAULT_MAILDIR);
 
 	if (stat (path, &sb) == -1) {
@@ -886,7 +887,7 @@ create_mail_save_dirs (
 		created = TRUE;
 	}
 
-	if (!strfpath (tinrc.savedir, path, sizeof (path), &CURR_GROUP))
+	if (!strfpath (tinrc.savedir, path, sizeof (path), NULL))
 		joinpath (path, homedir, DEFAULT_SAVEDIR);
 
 	if (stat (path, &sb) == -1) {

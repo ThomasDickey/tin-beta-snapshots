@@ -6,7 +6,7 @@
  *  Updated   : 2001-04-23
  *  Notes     :
  *
- * Copyright (c) 2001 Urs Janssen <urs@tin.org>
+ * Copyright (c) 2001-2002 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,8 @@
  * returncodes:
  * >0 = file descriptor of tmpfile
  *      if need_name is set to true and/or we have to unlink the file
- *      ourself buffer if set to the name of the tmp file located in base_dir
+ *      ourself. filename if set to the name of the tmp file located in
+ *      base_dir
  * -1 = some error occured
  */
 int

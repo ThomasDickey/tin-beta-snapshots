@@ -44,7 +44,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.5.11
+VERSION=1.5.12
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -108,7 +108,7 @@ case "$host_cpu:$host_vendor:$host_os" in
 		fi
 		;;
 	# check for cygwin enviroment
-	# -DSTATIC is needed for pcre 
+	# -DSTATIC is needed for pcre
 	*:*:*cygwin*)	#(vi
 		PCRE_DEFINES="$PCRE_DEFINES -DSTATIC"
 		;;
@@ -532,7 +532,7 @@ CF_ARG_DISABLE(etiquette,
 	[AC_DEFINE(NO_ETIQUETTE)])
 AC_MSG_RESULT($enableval)
 
-AC_MSG_CHECKING(whether to strictly observe RFC1522 and break long lines)
+AC_MSG_CHECKING(whether to strictly observe RFC2047 and break long lines)
 CF_ARG_ENABLE(break-long-lines,
 	[  --enable-break-long-lines
                           break long mime-encoded lines],
@@ -595,12 +595,6 @@ AC_MSG_CHECKING(whether to enable inverse video and highlighting)
 CF_ARG_DISABLE(inverse-video,
 	[  --disable-inverse-video disable inverse video and highlighting],
 	[AC_DEFINE(USE_INVERSE_HACK)])
-AC_MSG_RESULT($enableval)
-
-AC_MSG_CHECKING(whether to have MMDF type mailer as default)
-CF_ARG_ENABLE(mmdf-mailer,
-	[  --enable-mmdf-mailer    have MMDF type mailer as default],
-	[AC_DEFINE(HAVE_MMDF_MAILER)])
 AC_MSG_RESULT($enableval)
 
 AC_MSG_CHECKING(whether to enable piping support)
@@ -705,6 +699,7 @@ CF_CHECK_HEADERS(\
 	getopt.h \
 	iconv.h \
 	ioctl.h \
+	langinfo.h \
 	libc.h \
 	locale.h \
 	malloc.h \
@@ -730,6 +725,7 @@ CF_CHECK_HEADERS(\
 	sys/file.h \
 	sys/ioctl.h \
 	sys/param.h \
+	sys/poll.h \
 	sys/ptem.h \
 	sys/pty.h \
 	sys/select.h \
@@ -867,6 +863,7 @@ AC_CHECK_FUNCS(\
 	mkdir \
 	mktemp \
 	mkstemp \
+	nl_langinfo \
 	poll \
 	putenv \
 	rewinddir \
@@ -878,6 +875,7 @@ AC_CHECK_FUNCS(\
 	stpcpy \
 	strchr \
 	strcasecmp \
+	strcasestr \
 	strdup \
 	strftime \
 	strpbrk \
@@ -901,12 +899,21 @@ AC_CHECK_FUNC(flock,
 		AC_DEFINE(HAVE_FLOCK)
 		LIBS="$LIBS -lbsd")])
 
+AC_MSG_CHECKING(if nl_langinfo(CODESET) is working)
+AC_TRY_LINK([#include <langinfo.h>], [char* cs = nl_langinfo(CODESET);],
+	AC_DEFINE(HAVE_WORKING_NL_LANGINFO_CODESET) AC_MSG_RESULT(yes),
+	AC_MSG_RESULT(no)
+)
+
 CF_POSIX_JC
 CF_FUNC_FORK
 CF_FUNC_MEMMOVE
 
 AC_MSG_CHECKING(if select expects int * arguments)
-AC_EGREP_HEADER([select\(.*, *int *\*,],time.h,AC_DEFINE(HAVE_SELECT_INTP) AC_MSG_RESULT(yes), AC_MSG_RESULT(no))
+AC_EGREP_HEADER([select\(.*, *int *\*,],time.h,
+	AC_DEFINE(HAVE_SELECT_INTP) AC_MSG_RESULT(yes),
+	AC_MSG_RESULT(no)
+)
 
 AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_SETPGRP
@@ -984,6 +991,7 @@ CF_CHECK_DECL(\
 	getpwnam \
 	popen \
 	strchr \
+	strcasestr \
 )
 
 dnl Check network stuff separately, to limit the effect of inconsistent headers

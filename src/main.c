@@ -6,7 +6,7 @@
  *  Updated   : 2001-07-22
  *  Notes     :
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,9 +95,19 @@ main (
 	t_bool tmp_no_write;
 
 	/* initialize locale support */
-	setlocale(LC_ALL, "");
+#if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
+	if (!setlocale(LC_ALL, "")) {
+	/*
+	 * TODO: issue a warning here like
+	 *       "Can't set the specified locale! Check $LANG, $LC_CTYPE, $LC_ALL"
+	 */
+	 ;
+	}
+#	ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
+#	endif /* ENABLE_NLS */
+#endif /* HAVE_SETLOCALE && !NO_LOCALE */
 
 	set_signal_handlers ();
 
@@ -410,7 +420,7 @@ read_cmd_line_options (
 #	ifndef M_AMIGA
 			case 'a':
 #		ifdef HAVE_COLOR
-				use_color = !use_color;
+				use_color = bool_not(use_color);
 #		else
 				error_message (_(txt_option_not_enabled), "-DHAVE_COLOR");
 				giveup();
@@ -724,6 +734,17 @@ read_cmd_line_options (
 #else
 				"-MIME_STRICT_CHARSET "
 #endif /* MIME_BREAK_LONG_LINES */
+#ifdef CHARSET_CONVERSION
+				"+CHARSET_CONVERSION "
+#else
+				"-CHARSET_CONVERSION "
+#endif /* CHARSET_CONVERSION */
+				"\n\t"
+#ifdef LOCAL_CHARSET
+				"+LOCAL_CHARSET "
+#else
+				"-LOCAL_CHARSET "
+#endif /* LOCAL_CHARSET */
 #ifdef NO_LOCALE
 				"+NO_LOCALE "
 #else
@@ -740,6 +761,11 @@ read_cmd_line_options (
 				newsrc_active = TRUE;
 				check_for_new_newsgroups = FALSE;
 				break;
+
+#if 0
+			case 'W':	/* reserved according to SUSV3 XDB Utility Syntax Guidelines, Guideline 3 */
+				break;
+#endif /* 0 */
 
 			case 'X':	/* don't save ~/.newsrc on exit */
 				no_write = TRUE;

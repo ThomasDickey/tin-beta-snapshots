@@ -6,7 +6,7 @@
  *  Updated   : 1999-11-13
  *  Notes     :
  *
- * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,10 +43,10 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.5.11"
+#		define VERSION		"1.5.12"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20011225"
-#	define RELEASENAME	"Darkcell"
+#	define RELEASEDATE	"20020227"
+#	define RELEASENAME	"Toxicity"
 #	define TINRC_VERSION	"1.2"
 
 #	ifdef M_AMIGA
