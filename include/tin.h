@@ -699,12 +699,12 @@ enum resizer { cNo, cYes, cRedraw };
  *     LDAP (RFC 2255), POP (RFC 2384)
  * add IPv6 (RFC 2732, RFC 2373) support
  */
-/* 
+/*
  * case insensitive
  * split out ftp (only ftp allows username:passwd@, RFC 1738)
  */
 #define URL_REGEX "\\b(?:https?|ftp|gopher)://(?:[^:@/]*(?::[^:@/]*)?@)?(?:[^\\W_]+(?:(?:[-.][^\\W_]+)+)?\\.[a-z]{2,5}|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
-/* 
+/*
  * case insensitive
  * check against RFC 2368
  */
@@ -2142,7 +2142,7 @@ extern struct tm *localtime(time_t *);
 
 /* libcanlock */
 #ifdef USE_CANLOCK
-#  include "../libcanlock/canlock.h"
+#	include "../libcanlock/canlock.h"
 #endif /* USE_CANLOCK */
 
 /* FXIME: use autoconf here to detect if stat(2)-structure has st_mtime */
@@ -2161,11 +2161,11 @@ extern struct tm *localtime(time_t *);
 #endif /* HAVE_VSNPRINTF */
 
 /* GCC-specific attributes */
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__APPLE_CC__)
 #	define UNUSED(x) x __attribute__((unused))
 #else
 #	define UNUSED(x) x
-#endif /* __GNUC__ */
+#endif /* __GNUC__ && !__APPLE_CC__ */
 
 /* can we use mblen()? */
 #if defined(HAVE_MBLEN) && defined(HAVE_SETLOCALE) && defined(MB_CUR_MAX) && !defined (NO_LOCALE)
@@ -2174,7 +2174,7 @@ extern struct tm *localtime(time_t *);
 
 /* init_selfinfo() needs MM_CHARSET */
 #ifndef MM_CHARSET
-#  define MM_CHARSET "US-ASCII"
+#	define MM_CHARSET "US-ASCII"
 #endif /* !MM_CHARSET */
 
 #endif /* !TIN_H */

@@ -66,6 +66,7 @@ INS_BINARY_DIR	= @bindir@
 INS_MANUAL_DIR	= @mandir@/man
 INS_SYSDEF_DIR	= @TIN_DEFAULTS_DIR@
 INS_MANUAL_EXT	= 1
+INS_OLD_SUFFIX  = old
 
 # Project
 PROJECT	= @PACKAGE@
@@ -310,6 +311,8 @@ uninstall_manpage:
 
 install_sysdefs: $(INS_SYSDEF_DIR)
 	@$(ECHO) "Installing system-wide defaults to $(INS_SYSDEF_DIR)..."
+	@-if test -f $(INS_SYSDEF_DIR)/tin.defaults ; then $(ECHO) "  ... backing up existing tin.defaults file to tin.defaults.$(INS_OLD_SUFFIX)" ; $(MV) $(INS_SYSDEF_DIR)/tin.defaults $(INS_SYSDEF_DIR)/tin.defaults.$(INS_OLD_SUFFIX) ; fi
+	@-if test -f $(INS_SYSDEF_DIR)/mime.types ; then $(ECHO) "  ... backing up existing mime.types file to mime.types.$(INS_OLD_SUFFIX)" ; $(MV) $(INS_SYSDEF_DIR)/mime.types $(INS_SYSDEF_DIR)/mime.types.$(INS_OLD_SUFFIX) ; fi
 	@$(INSTALL) -m 644 $(DOCDIR)/tin.defaults $(INS_SYSDEF_DIR)/tin.defaults
 	@$(INSTALL) -m 644 $(DOCDIR)/mime.types $(INS_SYSDEF_DIR)/mime.types
 

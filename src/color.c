@@ -315,7 +315,7 @@ draw_pager_line (
 	}
 
 	if (word_highlight && use_color)
-		color_fputs(str, stdout, color, (flags&C_SIG));
+		color_fputs(str, stdout, color, (flags & C_SIG));
 	else
 #endif /* HAVE_COLOR */
 		my_fputs(str, stdout);

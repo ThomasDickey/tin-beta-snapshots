@@ -3,7 +3,7 @@
  *  Module    : policy.h
  *  Author    : Ralf Doeblitz <doeblitz@gmx.de>
  *  Created   : 1999-01-12
- *  Updated   : 2000-05-13
+ *  Updated   : 2000-12-10
  *  Notes     : #defines and static data for policy configuration
  *
  * Copyright (c) 1999-2000 Ralf Doeblitz <doeblitz@gmx.de>
@@ -253,10 +253,9 @@ static char gnksa_country_codes[26*26] = {
 /*      A B C D E  F G H I J  K L M N O  P Q R S T  U V W X Y Z */
 };
 
+
 /*
  * valid domains with 3 or more characters
- *
- * later add: nom, rec, web, arts, firm, info, shop
  */
 static const char *gnksa_domain_list[] = {
 	"com",	/* Commercial */
@@ -273,19 +272,13 @@ static const char *gnksa_domain_list[] = {
 #	endif /* 0 */
 #	if 0
 	/* the new domain names, not yet valid */
-	"nom",
-	"rec",
-	"web",
-	"arts",
-	"firm",
+	"biz",
+	"pro",
+	"aero",
+	"coop",
 	"info",
-	"shop",
-#	endif /* 0 */
-#	if 0
-	/* the new domain names, not yet valid */
-	"tel",
-	"news",
-	"shop",
+	"name",
+	"museum",
 #	endif /* 0 */
 	/* the next four are defined in RFC 2606 */
 	"invalid",
@@ -302,5 +295,3 @@ static const char *gnksa_domain_list[] = {
 	""
 };
 #endif /* !TIN_POLICY_H */
-
-/* end of file */

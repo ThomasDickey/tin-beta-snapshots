@@ -49,11 +49,10 @@
  * List of allowed seperator chars in active file
  * unsed in parse_active_line()
  */
-#define ACTIVE_SEP		" \n"
+#define ACTIVE_SEP	" \n"
 
 t_bool force_reread_active_file = FALSE;
 
-static char acSaveActiveFile[PATH_LEN];
 static time_t active_timestamp;	/* time active file read (local) */
 
 /*
@@ -69,13 +68,13 @@ static time_t active_timestamp;	/* time active file read (local) */
  */
 static int find_newnews_index (char *cur_newnews_host);
 static void active_add (struct t_group *ptr, long count, long max, long min, const char *moderated);
+static void append_group_line (char *active_file, char *group_path, long art_max, long art_min, char *base_dir);
 static void check_for_any_new_groups (void);
+static void make_group_list (char *active_file, char *base_dir, char *group_path);
+static void make_group_name (char *base_dir, char *group_name, char *group_path);
 static void read_active_file (void);
 static void read_newsrc_active_file (void);
 static void subscribe_new_group (char *group, char *autosubscribe, char *autounsubscribe);
-static void vAppendGrpLine (char *pcActiveFile, char *pcGrpPath, long lArtMax, long lArtMin, char *pcBaseDir);
-static void vInitVariables (void);
-static void vMakeGrpList (char *pcActiveFile, char *pcBaseDir, char *pcGrpPath);
 
 
 /*
@@ -128,7 +127,7 @@ resync_active_file (
 	else
 		old_group[0] = '\0';
 
-	vWriteNewsrc ();
+	write_newsrc ();
 	read_news_active_file ();
 
 	if (read_cmd_line_groups ())
@@ -180,7 +179,7 @@ active_add (
 	ptr->newsrc.xbitmap = (t_bitmap *) 0;
 	ptr->attribute = (struct t_attribute *) 0;
 	ptr->glob_filter = &glob_filter;
-	vSetDefaultBitmap (ptr);
+	set_default_bitmap (ptr);
 
 #ifdef WIN32				/* Paths are in form - x:\a\b\c */
 	if (strchr(moderated, '\\'))
@@ -213,7 +212,7 @@ process_bogus (
 	if (read_saved_news || tinrc.strip_bogus != BOGUS_ASK)
 		return FALSE;
 
-	if ((ptr = psGrpAdd(name)) == NULL)
+	if ((ptr = group_add(name)) == NULL)
 		return FALSE;
 
 	active_add (ptr, 0L, 1L, 0L, "n");
@@ -293,7 +292,7 @@ read_newsrc_active_file (
 	if ((fp = fopen (newsrc, "r")) == (FILE *) 0)
 		return;
 
-	if (file_size(newsrc) <= 0) {
+	if (file_size(newsrc) <= 0L) {
 		fclose(fp);
 		return;
 	}
@@ -319,20 +318,20 @@ read_newsrc_active_file (
 
 		if (read_news_via_nntp) {
 #ifdef NNTP_ABLE
-			char acBuf[NNTP_STRLEN];
-			char acLine[NNTP_STRLEN];
+			char buf[NNTP_STRLEN];
+			char line[NNTP_STRLEN];
 			if (window < NUM_SIMULTANEOUS_GROUP_COMMAND && ptr) {
 				ngnames[index_i] = my_strdup(ptr);
-				sprintf (acBuf, "GROUP %s", ngnames[index_i]);
+				sprintf (buf, "GROUP %s", ngnames[index_i]);
 #	ifdef DEBUG
-				debug_nntp ("read_newsrc_active_file", acBuf);
+				debug_nntp ("read_newsrc_active_file", buf);
 #	endif /* DEBUG */
-				put_server (acBuf);
+				put_server (buf);
 				index_i = (index_i + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
 				window++;
 			}
 			if (window == NUM_SIMULTANEOUS_GROUP_COMMAND || ptr == NULL) {
-				int respcode = get_respcode(acLine);
+				int respcode = get_respcode(line);
 
 				if (reconnected_in_last_get_server) {
 					/*
@@ -344,11 +343,11 @@ read_newsrc_active_file (
 					int i;
 					int j = index_o;
 					for (i = 0; i < window - 1; i++) {
-						sprintf (acBuf, "GROUP %s", ngnames[j]);
+						sprintf (buf, "GROUP %s", ngnames[j]);
 #	ifdef DEBUG
-						debug_nntp ("read_newsrc_active_file", acBuf);
+						debug_nntp ("read_newsrc_active_file", buf);
 #	endif /* DEBUG */
-						put_server (acBuf);
+						put_server (buf);
 						j = (j + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
 					}
 					if (--index_o < 0)
@@ -367,10 +366,10 @@ read_newsrc_active_file (
 
 							sprintf(fmt, "%%ld %%ld %%ld %%%ds", NNTP_STRLEN);
 
-							if (sscanf (acLine, fmt, &count, &min, &max, ngname) != 4)
-								error_message("Invalid response to GROUP command, %s", acLine); /* FIXME: -> lang.c*/
+							if (sscanf (line, fmt, &count, &min, &max, ngname) != 4)
+								error_message(_("Invalid response to GROUP command, %s"), line); /* FIXME: -> lang.c*/
 							if (strcmp(ngname, ngnames[index_o]) != 0)
-								error_message("Wrong newsgroup name in response of GROUP command, %s for %s", acLine, ngnames[index_o]); /* FIXME: -> lang.c */
+								error_message(_("Wrong newsgroup name in response of GROUP command, %s for %s"), line, ngnames[index_o]); /* FIXME: -> lang.c */
 							ptr = ngname;
 							free(ngnames[index_o]);
 							index_o = (index_o + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
@@ -385,13 +384,13 @@ read_newsrc_active_file (
 						continue;
 
 					case ERR_ACCESS:
-						error_message (cCRLF "%s", acLine);
+						error_message (cCRLF "%s", line);
 						tin_done (NNTP_ERROR_EXIT);
 						/* keep lint quiet: */
 						/* FALLTHROUGH */
 					default:
 #	ifdef DEBUG
-						debug_nntp ("NOT_OK", acLine);
+						debug_nntp ("NOT_OK", line);
 #	endif /* DEBUG */
 						free(ngnames[index_o]);
 						index_o = (index_o + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
@@ -402,7 +401,7 @@ read_newsrc_active_file (
 				continue;
 #endif /* NNTP_ABLE */
 		} else {
-			if (vGrpGetArtInfo (spooldir, ptr, GROUP_TYPE_NEWS, &count, &max, &min))
+			if (group_get_art_info (spooldir, ptr, GROUP_TYPE_NEWS, &count, &max, &min))
 				continue;
 		}
 
@@ -416,10 +415,10 @@ read_newsrc_active_file (
 		 * NULL means group already present, so we just fixup the counters
 		 * This call may implicitly ++num_active
 		 */
-		if ((grpptr = psGrpAdd(ptr)) == NULL) {
+		if ((grpptr = group_add(ptr)) == NULL) {
 			t_bool changed = FALSE;
 
-			if ((grpptr = psGrpFind(ptr)) == NULL)
+			if ((grpptr = group_find(ptr)) == NULL)
 				continue;
 
 			if (max > grpptr->xmax) {
@@ -432,7 +431,7 @@ read_newsrc_active_file (
 			}
 			if (changed) {
 				grpptr->count = count;
-				expand_bitmap(grpptr, 0); /* expand_bitmap(grpptr,grpptr->xmin) should be enought*/
+				expand_bitmap(grpptr, 0); /* expand_bitmap(grpptr,grpptr->xmin) should be enough */
 			}
 			continue;
 		}
@@ -504,9 +503,9 @@ read_active_file (
 		 * NULL means group already present, so we just fixup the counters
 		 * This call may implicitly ++num_active
 		 */
-		if ((grpptr = psGrpAdd(ptr)) == NULL) {
+		if ((grpptr = group_add(ptr)) == NULL) {
 
-			if ((grpptr = psGrpFind(ptr)) == NULL)
+			if ((grpptr = group_find(ptr)) == NULL)
 				continue;
 
 			if (max > grpptr->xmax) {
@@ -563,7 +562,7 @@ read_news_active_file (
 		} else
 			fclose(fp);
 
-		if (file_size(newsrc) <= 0) {
+		if (file_size(newsrc) <= 0L) {
 			list_active = TRUE;
 			newsrc_active = FALSE;
 		}
@@ -721,7 +720,7 @@ subscribe_new_group (
 			return;
 		}
 
-		if ((ptr = psGrpAdd(group)) != NULL)
+		if ((ptr = group_add(group)) != NULL)
 			active_add(ptr, 0L, 1L, 0L, "y");
 
 		if ((idx = my_group_add(group)) < 0)
@@ -902,145 +901,136 @@ void
 create_save_active_file (
 	void)
 {
-	char acGrpPath[PATH_LEN];
+	char group_path[PATH_LEN];
+	char local_save_active_file[PATH_LEN];
 
-	vInitVariables ();
+	snprintf (local_save_active_file, sizeof(local_save_active_file) - 1, "%s/%s/%s", homedir, RCDIR, ACTIVE_SAVE_FILE);
 
-	if (no_write && file_size (acSaveActiveFile) != -1)
+	if (no_write && file_size (local_save_active_file) != -1L)
 		return;
 
 	my_printf (_(txt_creating_active));
 
-	vPrintActiveHead (acSaveActiveFile);
-	strcpy (acGrpPath, tinrc.savedir);
-	vMakeGrpList (acSaveActiveFile, tinrc.savedir, acGrpPath);
+	print_active_head (local_save_active_file);
+	strcpy (group_path, tinrc.savedir);
+	make_group_list (local_save_active_file, tinrc.savedir, group_path);
 }
 
 
 static void
-vInitVariables (
-	void)
+make_group_list (
+	char *active_file,
+	char *base_dir,
+	char *group_path)
 {
-	char *pcPtr;
-	char acTempActiveFile[PATH_LEN];
-	char acMailActiveFile[PATH_LEN];
-	char acMailDir[PATH_LEN];
-	char acHomeDir[PATH_LEN];
-	char acSaveDir[PATH_LEN];
-#ifndef M_AMIGA
-	struct passwd *psPwd;
-	struct passwd sPwd;
+	DIR *dir;
+	DIR_BUF *direntry;
+	char *ptr;
+	char filename[PATH_LEN];
+	char path[PATH_LEN];
+	long art_max;
+	long art_min;
+	struct stat stat_info;
+	t_bool is_dir;
 
-	psPwd = (struct passwd *) 0;
-	if (((pcPtr = getlogin ()) != (char *) 0) && strlen (pcPtr))
-		psPwd = getpwnam (pcPtr);
-
-	if (psPwd == (struct passwd *) 0)
-		psPwd = getpwuid (getuid ());
-
-	if (psPwd != (struct passwd *) 0) {
-		memcpy (&sPwd, psPwd, sizeof (struct passwd));
-		psPwd = &sPwd;
-	}
-#endif /* !M_AMIGA */
-
-	if ((pcPtr = getenv ("TIN_HOMEDIR")) != (char *) 0) {
-		strcpy (acHomeDir, pcPtr);
-	} else if ((pcPtr = getenv ("HOME")) != (char *) 0) {
-		strcpy (acHomeDir, pcPtr);
-#ifndef M_AMIGA
-	} else if (psPwd != (struct passwd *) 0) {
-		strcpy (acHomeDir, psPwd->pw_dir);
-	} else
-		strcpy (acHomeDir, "/tmp");
-#else
-	} else
-		strcpy (acHomeDir, "T:");
-#endif /* !M_AMIGA */
-
-#ifdef WIN32
-#	define DOTTINDIR "tin"
-#else
-#	define DOTTINDIR ".tin"
-#endif /* WIN32 */
-	sprintf (acTempActiveFile, "%s/%s/%ld.tmp", acHomeDir, DOTTINDIR, (long) getpid ());
-	sprintf (acMailActiveFile, "%s/%s/%s", acHomeDir, DOTTINDIR, ACTIVE_MAIL_FILE);
-	sprintf (acSaveActiveFile, "%s/%s/%s", acHomeDir, DOTTINDIR, ACTIVE_SAVE_FILE);
-	sprintf (acMailDir, "%s/Mail", acHomeDir);
-	sprintf (acSaveDir, "%s/News", acHomeDir);
-}
-
-
-static void
-vMakeGrpList (
-	char *pcActiveFile,
-	char *pcBaseDir,
-	char *pcGrpPath)
-{
-	DIR *tDirFile;
-	DIR_BUF *tFile;
-	char *pcPtr;
-	char acFile[PATH_LEN];
-	char acPath[PATH_LEN];
-	long lArtMax;
-	long lArtMin;
-	struct stat sStatInfo;
-	t_bool bIsDir;
-
-	if (access (pcGrpPath, R_OK))
+	if (access (group_path, R_OK))
 		return;
 
-	tDirFile = opendir (pcGrpPath);
+	dir = opendir (group_path);
 
-	if (tDirFile != (DIR *) 0) {
-		bIsDir = FALSE;
-		while ((tFile = readdir (tDirFile)) != (DIR_BUF *) 0) {
-			STRCPY(acFile, tFile->d_name);
-			sprintf (acPath, "%s/%s", pcGrpPath, acFile);
+	if (dir != (DIR *) 0) {
+		is_dir = FALSE;
+		while ((direntry = readdir (dir)) != (DIR_BUF *) 0) {
+			STRCPY(filename, direntry->d_name);
+			sprintf (path, "%s/%s", group_path, filename);
 
-			if (!(acFile[0] == '.' && acFile[1] == '\0') &&
-				!(acFile[0] == '.' && acFile[1] == '.' && acFile[2] == '\0')) {
-				if (stat (acPath, &sStatInfo) != -1) {
-					if (S_ISDIR(sStatInfo.st_mode))
-						bIsDir = TRUE;
+			if (!(filename[0] == '.' && filename[1] == '\0') &&
+				!(filename[0] == '.' && filename[1] == '.' && filename[2] == '\0')) {
+				if (stat (path, &stat_info) != -1) {
+					if (S_ISDIR(stat_info.st_mode))
+						is_dir = TRUE;
 				}
 			}
-			if (bIsDir) {
-				bIsDir = FALSE;
-				strcpy (pcGrpPath, acPath);
+			if (is_dir) {
+				is_dir = FALSE;
+				strcpy (group_path, path);
 
-				vMakeGrpList (pcActiveFile, pcBaseDir, pcGrpPath);
-				vFindArtMaxMin (pcGrpPath, &lArtMax, &lArtMin);
-				vAppendGrpLine (pcActiveFile, pcGrpPath, lArtMax, lArtMin, pcBaseDir);
+				make_group_list (active_file, base_dir, group_path);
+				find_art_max_min (group_path, &art_max, &art_min);
+				append_group_line (active_file, group_path, art_max, art_min, base_dir);
 
-				pcPtr = strrchr (pcGrpPath, '/');
-				if (pcPtr != (char *) 0)
-					*pcPtr = '\0';
+				ptr = strrchr (group_path, '/');
+				if (ptr != (char *) 0)
+					*ptr = '\0';
 			}
 		}
-		CLOSEDIR(tDirFile);
+		CLOSEDIR(dir);
 	}
 }
 
 
 static void
-vAppendGrpLine (
-	char *pcActiveFile,
-	char *pcGrpPath,
-	long lArtMax,
-	long lArtMin,
-	char *pcBaseDir)
+append_group_line (
+	char *active_file,
+	char *group_path,
+	long art_max,
+	long art_min,
+	char *base_dir)
 {
-	FILE *hFp;
-	char acGrpName[PATH_LEN];
+	FILE *fp;
+	char *file_tmp;
+	char group_name[PATH_LEN];
 
-	if (lArtMax == 0 && lArtMin == 1)
+	if (art_max == 0 && art_min == 1)
 		return;
 
-	if ((hFp = fopen (pcActiveFile, "a+")) != (FILE *) 0) {
-		vMakeGrpName (pcBaseDir, acGrpName, pcGrpPath);
-		my_printf ("Appending=[%s %ld %ld %s]\n", acGrpName, lArtMax, lArtMin, pcBaseDir);
-		vPrintGrpLine (hFp, acGrpName, lArtMax, lArtMin, pcBaseDir);
-		fclose (hFp);
+	file_tmp = get_tmpfilename(active_file);
+
+	if (!backup_file (active_file, file_tmp))
+	{
+		free (file_tmp);
+		return;
 	}
+
+	if ((fp = fopen (active_file, "a+")) != (FILE *) 0) {
+		make_group_name (base_dir, group_name, group_path);
+		my_printf ("Appending=[%s %ld %ld %s]\n", group_name, art_max, art_min, base_dir);
+		print_group_line (fp, group_name, art_max, art_min, base_dir);
+		if (ferror(fp) || fclose (fp))
+			/* TODO: issue warning? */
+			rename (file_tmp, active_file);
+	}
+	unlink (file_tmp);
+	free (file_tmp);
+}
+
+
+/*
+ * Given an absolute pathname & a base pathname build a newsgroup name
+ * base = /usr/spool/news
+ * absolute path = /usr/spool/news/alt/sources
+ * newsgroup = alt.sources
+ */
+static void
+make_group_name (
+	char *base_dir,
+	char *group_name,
+	char *group_path)
+{
+	char *base_ptr;
+	char *name_ptr;
+	char *path_ptr;
+
+	base_ptr = base_dir;
+	path_ptr = group_path;
+
+	while (*base_ptr && (*base_ptr == *path_ptr)) {
+		base_ptr++;
+		path_ptr++;
+	}
+	strcpy (group_name, ++path_ptr);
+
+	name_ptr = group_name;
+	while ((name_ptr = strchr (name_ptr, '/')) != (char *) 0)
+		*name_ptr = '.';
 }

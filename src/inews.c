@@ -387,6 +387,16 @@ submit_news_file (
 #endif /* M_UNIX */
 
 		ret_code = invoke_cmd (buf);
+#ifdef NNTP_INEWS
+		if (!ret_code && read_news_via_nntp && !read_saved_news && !tinrc.use_builtin_inews) {
+			if (prompt_yn(cLINES, _(txt_post_via_builtin_inews), TRUE)) {
+				ret_code = submit_inews (name, a_message_id);
+				if (ret_code) {
+					tinrc.use_builtin_inews = prompt_yn(cLINES, _(txt_post_via_builtin_inews_only), TRUE);
+				}
+			}
+		}
+#endif /* NNTP_INEWS */
 	}
 
 	return ret_code;

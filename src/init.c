@@ -777,6 +777,12 @@ init_selfinfo (
 
 	if (!index_newsdir[0])
 		JOINPATH(index_newsdir, get_val ("TIN_INDEX_NEWSDIR", rcdir), INDEX_NEWSDIR);
+#if 0
+	 else {
+		if (stat (index_newsdir, &sb) == -1)
+			my_mkdir (index_newsdir, (mode_t)S_IRWXUGO);
+	}
+#endif /* 0 */
 
 	JOINPATH(index_maildir, get_val ("TIN_INDEX_MAILDIR", rcdir), INDEX_MAILDIR);
 	if (stat (index_maildir, &sb) == -1)
@@ -822,13 +828,6 @@ init_selfinfo (
 #ifdef NNTP_ABLE
 	nntp_tcp_port = (unsigned short) atoi (get_val ("NNTPPORT", NNTP_TCP_PORT));
 #endif /* NNTP_ABLE */
-
-#if 0
-	 else {
-		if (stat (index_newsdir, &sb) == -1)
-			my_mkdir (index_newsdir, (mode_t)S_IRWXUGO);
-	}
-#endif /* 0 */
 
 	if (stat (posted_info_file, &sb) == -1) {
 		if ((fp = fopen (posted_info_file, "w")) != (FILE *) 0) {

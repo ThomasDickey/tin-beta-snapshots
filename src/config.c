@@ -54,7 +54,9 @@
 #	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 
+static t_bool match_item (char *line, const char *pat, char *dst, size_t dstlen);
 static void expand_rel_abs_pathname (int line, int col, char *str);
+static void redraw_screen (int option);
 static void show_config_page (void);
 
 #ifdef HAVE_COLOR
@@ -775,14 +777,11 @@ write_config_file (
 	char *file_tmp;
 	int i;
 
-	if (no_write && file_size (file) != -1)
+	if (no_write && file_size (file) != -1L)
 		return;
 
-	/* alloc memory for tmp-filename */
-	file_tmp = (char *) my_malloc (strlen (file)+5);
-
 	/* generate tmp-filename */
-	sprintf (file_tmp, "%s.tmp", file);
+	file_tmp = get_tmpfilename(file);
 
 	if ((fp = fopen (file_tmp, "w")) == (FILE *) 0) {
 		error_message (_(txt_filesystem_full_backup), CONFIG_FILE);
@@ -1432,6 +1431,17 @@ refresh_config_page (
 	last_option = act_option;
 }
 
+static void
+redraw_screen (
+	int option)
+{
+	my_retouch ();
+	set_xclick_off ();
+	ClearScreen ();
+	show_config_page ();
+	highlight_option (option);
+}
+
 /*
  *  options menu so that the user can dynamically change parameters
  */
@@ -1608,11 +1618,7 @@ change_config_file (
 				break;
 
 			case iKeyRedrawScr:	/* redraw screen */
-				my_retouch ();
-				set_xclick_off ();
-				ClearScreen ();
-				show_config_page ();
-				highlight_option (option);
+				redraw_screen (option);
 				break;
 
 			default:
@@ -1636,7 +1642,7 @@ change_config_file (
 						/* show mini help menu */
 						case OPT_BEGINNER_LEVEL:
 							if (!bool_equal(tinrc.beginner_level, original_on_off_value))
-								(void) set_win_size (&cLINES, &cCOLS);
+								set_noteslines (cLINES);
 							break;
 
 						/* show all arts or just new/unread arts */
@@ -1685,7 +1691,7 @@ change_config_file (
 							show_description = tinrc.show_description;
 							if (show_description) {			/* force reread of newgroups file */
 								read_newsgroups_file ();
-								clear_message ();
+								redraw_screen (option);	/* tidy up screen */
 							} else
 								set_groupname_len (FALSE);
 
@@ -1854,15 +1860,17 @@ change_config_file (
 
 						case OPT_NEWS_HEADERS_TO_DISPLAY:
 							prompt_option_string (option);
-							free (*news_headers_to_display_array);
-							free (news_headers_to_display_array);
+							if (news_headers_to_display_array)
+								FreeIfNeeded (*news_headers_to_display_array);
+							FreeIfNeeded ((char *) news_headers_to_display_array);
 							news_headers_to_display_array = ulBuildArgv(tinrc.news_headers_to_display, &num_headers_to_display);
 							break;
 
 						case OPT_NEWS_HEADERS_TO_NOT_DISPLAY:
 							prompt_option_string (option);
-							free (*news_headers_to_not_display_array);
-							free (news_headers_to_not_display_array);
+							if (news_headers_to_not_display_array)
+								FreeIfNeeded (*news_headers_to_not_display_array);
+							FreeIfNeeded ((char *) news_headers_to_not_display_array);
 							news_headers_to_not_display_array = ulBuildArgv(tinrc.news_headers_to_not_display, &num_headers_to_not_display);
 							break;
 
@@ -1960,7 +1968,6 @@ change_config_file (
 							break;
 					} /* switch (option) */
 
-					RepaintOption(option);			/* Else unsaved changes remain on screen */
 					break;
 
 				case OPT_NUM:
@@ -2007,6 +2014,7 @@ change_config_file (
 			} /* switch (option_table[option].var_type) */
 			change_option = FALSE;
 			show_menu_help (_(txt_select_config_file_option));
+			RepaintOption (option);
 		} /* if (change_option) */
 	} /* forever */
 	/* NOTREACHED */
@@ -2170,7 +2178,7 @@ match_list (
 		line += patlen;
 		*dst = 0;	/* default, if no match */
 		for (n = 0; n < tablelen; n++) {
-			if (match_string (line, table[n], temp, sizeof(temp))) {
+			if (match_item (line, table[n], temp, sizeof(temp))) {
 				*dst = (int)n;
 				break;
 			}
@@ -2192,6 +2200,28 @@ match_string (
 	size_t patlen = strlen (pat);
 
 	if (STRNCMPEQ(line, pat, patlen) && (strlen(line) > patlen + 1)) {
+		strncpy (dst, &line[patlen], dstlen);
+		if ((ptr = strrchr (dst, '\n')) != (char *) 0)
+			*ptr = '\0';
+
+		return TRUE;
+	}
+	return FALSE;
+}
+
+
+/* same as match_string() but without safeguard */
+static t_bool
+match_item (
+	char *line,
+	const char *pat,
+	char *dst,
+	size_t dstlen)
+{
+	char *ptr;
+	size_t patlen = strlen (pat);
+
+	if (STRNCMPEQ(line, pat, patlen)) {
 		strncpy (dst, &line[patlen], dstlen);
 		if ((ptr = strrchr (dst, '\n')) != (char *) 0)
 			*ptr = '\0';

@@ -240,7 +240,7 @@ bld_tline (
 		get_author (TRUE, art, buff+strlen(buff), cCOLS-strlen(buff));
 
 	/* protect display from non-displayable characters (e.g., form-feed) */
-	Convert2Printable (buff);
+	convert_to_printable (buff);
 
 	if (!tinrc.strip_blanks) {
 		/*

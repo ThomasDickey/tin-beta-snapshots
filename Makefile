@@ -7,9 +7,9 @@
 PROJECT	= tin
 LVER	= 1
 PVER	= 5
-SVER	= 7
+SVER	= 8
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20000929
+DVER	= 20001218
 EXE	= tin
 
 # directory structure

@@ -309,7 +309,7 @@ constext txt_help_ctrl_f[] = N_("^F ^B\t  down (^B = up) one page");
 	constext txt_help_ctrl_g[] = N_("^G\t  perform PGP operations on article");
 #endif /* HAVE_PGP_GPG */
 
-constext txt_help_ctrl_h[] = N_("^H\t  show article headers");
+constext txt_help_ctrl_h[] = N_("^H\t  show article in raw-mode (including all headers)");
 constext txt_help_ctrl_k[] = N_("^K\t  kill an article via a menu");
 constext txt_help_ctrl_l[] = N_("^L\t  redraw page");
 constext txt_help_ctrl_n[] = N_("^N ^P\t  down (^P = up) one line");
@@ -617,6 +617,8 @@ constext txt_post_newsgroups[] = N_("Post to newsgroup(s) [%s]> ");
 constext txt_post_processing[] = N_("-- post processing started --");
 constext txt_post_processing_finished[] = N_("-- post processing completed --");
 constext txt_post_subject[] = N_("Post subject [%s]> ");
+constext txt_post_via_builtin_inews[] = N_("Posting using external inews failed. Use builtin inews instead?");
+constext txt_post_via_builtin_inews_only[] = N_("It worked! Should I always use my builtin inews from now on?");
 constext txt_posted_info_file[] = N_("# Summary of mailed/posted messages viewable by 'W' command from within tin.\n");
 constext txt_posting[] = N_("Posting article...");
 constext txt_postpone_repost[] = N_("Post postponed articles [%%.*s]? (%s/%s/%s/%s/%s): ");
@@ -1029,7 +1031,7 @@ constext txt_filter_file[] = N_("# Global & local filter file for the TIN newsre
 # or:\n\
 #   xref=PATTERN      Kill pattern (e.g. alt.flame*)\n\
 #   \n\
-#   time=NUM          Filter period in days (default %d)\n#\n");
+#   time=NUM          time_t value when rule expires\n#\n");
 constext txt_filter_score[] = N_("Enter score for rule (default=100): ");
 constext txt_filter_score_help[] = N_("Enter the score weight (range 0 < score <= 10000)");
 
@@ -1325,7 +1327,7 @@ struct opttxt txt_quote_regex3 = {
 # quoted >=3 times. >=3 times quoted lines are shown in col_quote3.\n\
 # If you leave this blank, tin will use a builtin default.\n")
 };
-#endif	/* HAVE_COLOR */
+#endif /* HAVE_COLOR */
 
 struct opttxt txt_strip_re_regex = {
 	N_("A regex used to find Subject prefixes to remove.  Use '|' as separator."),
@@ -1354,7 +1356,7 @@ struct opttxt txt_ask_for_metamail = {
 	N_("# If ON tin will ask before using metamail to display MIME messages\n\
 # this only happens if use_metamail is switched ON\n")
 };
-#endif	/* HAVE_METAMAIL */
+#endif /* HAVE_METAMAIL */
 
 struct opttxt txt_catchup_read_groups = {
 	N_("Ask to mark groups read when quitting. <SPACE> toggles & <CR> sets."),
@@ -1398,7 +1400,7 @@ struct opttxt txt_use_keypad = {
 	N_("Use scroll keys on keypad          : "),
 	N_("# If ON enable scroll keys on terminals that support it\n")
 };
-#endif	/* HAVE_KEYPAD */
+#endif /* HAVE_KEYPAD */
 
 struct opttxt txt_use_getart_limit = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
@@ -1561,7 +1563,7 @@ struct opttxt txt_col_markdash = {
 	N_("Color of highlighting with _dash_  : "),
 	""
 };
-#endif	/* HAVE_COLOR */
+#endif /* HAVE_COLOR */
 
 struct opttxt txt_mail_address = {
 	N_("Enter default mail address. <CR> sets."),

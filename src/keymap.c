@@ -905,11 +905,12 @@ read_keymap_file (
 	 * checks TIN_HOMEDIR/HOME/TIN_DEFAULTS_DIR
 	 * for keymap."locale" or keymap
 	 *
-	 * locale is first match from LC_CYTYPE, LC_MESSAGES, LC_ALL or LANG
+	 * locale is first match from LC_ALL, LC_CTYPE, LC_MESSAGES, LANG
+	 *
 	 */
 	ptr2 = get_val("TIN_HOMEDIR", get_val("HOME", homedir));
 	/* get locale suffix */
-	map = get_val("LC_CTYPE", get_val("LC_MESSAGES", get_val("LC_ALL", get_val("LANG", ""))));
+	map = get_val("LC_ALL", get_val("LC_CTYPE", get_val("LC_MESSAGES", get_val("LANG", ""))));
 	if (strlen(map)) {
 		if ((ptr = strchr (map, '.')))
 				*ptr = '\0';

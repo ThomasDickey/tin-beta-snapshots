@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2000-08-24
+.\" Updated   : 2000-12-05
 .\" Notes     : needs a lot of work
 .\"
-.TH tin 5 "August 24th, 2000" "1.5.6" "A Usenet newsreader"
+.TH tin 5 "December 5th, 2000" "1.5.8" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -18,6 +18,8 @@ newsreader.
 
 .SH FILES
 .PP
+.IR $MAILCAPS
+.br
 .IR $HOME/.mailcap
 .br
 .IR /etc/mailcap
@@ -234,7 +236,7 @@ secret to be used for canlocks
 .IR ${TIN_HOMEDIR-"$HOME"}/.newsauth
 .sp
 .RS
-"\fInntpserver\fP \fIpassword\fP [\fIuser\fP]" pairs for NNTP servers
+"\fInntpserver\fR \fIpassword\fR [\fIuser\fR]" pairs for NNTP servers
 that require authorization. Any line that starts with "#" is a comment.
 Blank lines are ignored. This file should be readable only for the user as
 it contains the users uncrypted password for reading news!
@@ -270,7 +272,7 @@ subscribed newsgroups
 .IR ${TIN_HOMEDIR-"$HOME"}/.oldnewsrc
 .sp
 .RS
-backup of \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fP
+backup of \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR
 .RE
 .PP
 
@@ -281,21 +283,21 @@ history of last used strings
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR-"$HOME"}/.tin/.mail/
+.IR ${TIN_INDEX_MAILDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}/.mail/
 .sp
 .RS
 mailgroups index files
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR-"$HOME"}/.tin/.news/
+.IR ${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}/.news/
 .sp
 .RS
 newsgroups index files
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR-"$HOME"}/.tin/.save/
+.IR ${TIN_INDEX_SAVEDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}/.save/
 .sp
 .RS
 saved newsgroups index files
@@ -305,8 +307,8 @@ saved newsgroups index files
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/active.mail
 .sp
 .RS
-active file ("\fImail_group_name\fP \fImaxnum\fP \fIminnum\fP
-\fImailspool\fP"-pairs) of user's mailgroups (requires
+active file ("\fImail_group_name\fR \fImaxnum\fR \fIminnum\fR
+\fImailspool\fR"-pairs) of user's mailgroups (requires
 .BR tin (1)
 to be build with mh-mail-handling support).
 .TP
@@ -343,10 +345,158 @@ active file of user's saved newsgroups, used by \fBtin -R\fR.
 .RE
 .PP
 
+.\" tin uses inns old (pre 2.x) Path convention.
+.\" as with inn >= 2.2.x getting more and more popular
+.\" we should think about checking for the new Paths
+.\" (described shown below).
+.IR ${TIN_LIBDIR-"/news/etc"}/attributes
+.sp
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/attributes
 .sp
 .RS
-user specified group attributes
+The group attributes files may be used to override some global settings from
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/tinrc\fR on a per group basis. Order is
+important as last match counts; this allows to refine attributes for
+narrowed scopes. Note that the \fIscope=<grouplist>\fP line has to be
+specified before the attributes are specified for that list. All attributes
+are set to a reasonable default so you only have to specify the attribute
+that you want to change. All toggle attributes are set by specifying ON/OFF.
+Otherwise, they function exactly as their global equivalents. The following
+group attributes are available:
+.TP
+.B scope
+This changes the list of groups to which the attributes that follow will be
+applied. See the section NEWSGROUP LISTS & WILDCARDS in
+.BR tin (1)
+for the types of pattern that can be used here.
+.TP
+.B maildir
+Identical to the tinrc variable default_maildir
+.TP
+.B savedir
+Identical to the tinrc variable default_savedir
+.TP
+.B savefile
+.TP
+.B organization
+.TP
+.B from
+Identical to the tinrc variable mail_address
+.TP
+.B sigfile
+The path that specifies the signature file to use when posting, following
+up to or replying to an article. If the path is a directory then the
+signature will be randomly generated from files that are in the specified
+directory. If the path starts with a ! the programm the path points to will
+be executed to generate a signature. --none will surpress any signature.
+.TP
+.B followup_to
+.TP
+.B printer
+.TP
+.B auto_select
+.TP
+.B auto_save
+Identical to the tinrc variable of the same name
+.TP
+.B batch_save
+Can be used to override the global setting in tinrc on a
+per group basis. For more information read section AUTOMATIC MAILING AND
+SAVING NEW NEWS in
+.BR tin (1)
+.
+.TP
+.B delete_tmp_files
+If this is set to ON, then saved article files that have been post-processed
+will be automatically deleted. If set to OFF, you will be prompted as to
+whether to delete each file in turn. Note that automatic processing of
+Tagged articles using 'S' will also suppress promting.
+.TP
+.B show_only_unread
+Identical to the tinrc variable of the same name
+.TP
+.B thread_arts
+Identical to the tinrc variable thread_articles
+.TP
+.B show_author
+Identical to the tinrc variable of the same name
+.TP
+.B sort_art_type
+Identical to the tinrc variable sort_article_type
+.TP
+.B post_proc_type
+Identical to the tinrc variable post_process_type
+.TP
+.B mailing_list
+Used when a group is a mailing list. All responses to the group will be
+directed to this email address instead
+.TP
+.B x_headers
+A list of headers that will be automatically added when posting
+.TP
+.B x_body
+A piece of text that will be added at the start of a message body. If this
+string starts with a / or ~ then it is assumed to be the name of a file
+containing the text to insert.
+.TP
+.B quick_kill_scope
+.TP
+.B quick_kill_expire
+.TP
+.B quick_kill_case
+.TP
+.B quick_kill_header
+.TP
+.B quick_select_scope
+.TP
+.B quick_select_expire
+.TP
+.B quick_select_case
+.TP
+.B quick_select_header
+.TP
+.B x_comment_to
+.TP
+.B news_quote_format
+Identical to the tinrc variable of the same name
+.TP
+.B quote_chars
+Identical to the tinrc variable of the same name
+.TP
+.B ispell
+.PP
+.TP
+Example:
+.RS
+.nf
+# include extra headers
+scope=*
+x_headers=~/.tin/headers
+
+# in *sources* set post process type to shar
+scope=*sources*
+post_proc_type=1
+
+# in *binaries* set post process type to uudecode
+# remove tmp files and set Followup-To: poster
+scope=*binaries*
+post_proc_type=2
+delete_tmp_files=ON
+followup_to=poster
+
+# in fido.* newsgroups change quote_chars
+# and add X-Comment-To: line
+scope=fido.*
+quote_chars=%s>_
+x_comment_to=ON
+
+# in *.test newsgroups, don't append signature
+# and preset Subject
+scope=*.test
+sigfile=--none
+x_headers=Subject: test - ignore - no reply
+.fi
+.RE
 .RE
 .PP
 
@@ -357,20 +507,258 @@ filter file
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR-"$HOME"}/.tin/keymap
-.br
 .IR /etc/tin/keymap
+.br
+.IR ${TIN_HOMEDIR-"$HOME"}/.tin/keymap${${LC_ALL-"${LC_CTYPE-"${LC_MESSAGES-"$LANG"}"}"}:+".${LC_ALL-"${LC_CTYPE-"${LC_MESSAGES-"$LANG"}"}"}"}
+.\" sorry that one got a bit complex ,-)
 .sp
 .RS
-key mappings
+Keymap-file, containing "\fIkeyname\fR \fIvalue\fR" pairs.
+Below is a list of all keynames and their default bindings.
+.sp
+.nf
+.ta \w'GroupSelThdIfUnreadSelected    'u +\w'SPACE'u
+\fBPageDown3\fP	SPACE
+\fBShellEscape\fP	!
+\fBSetRange\fP	#
+\fBLastPage\fP	$
+\fBToggleColor\fP	&
+\fBLastViewed\fP	-
+\fBSearchSubjF\fP	/
+\fBSearchSubjB\fP	?
+\fBSearchAuthB\fP	A
+\fBSearchBody\fP	B
+\fBToggleHelpDisplay\fP	H
+\fBToggleInverseVideo\fP	I
+\fBLookupMessage\fP	L
+\fBOptionMenu\fP	M
+\fBPostponed2\fP	O
+\fBQuitTin\fP	Q
+\fBDisplayPostHist\fP	W
+\fBFirstPage\fP	^
+\fBSearchAuthF\fP	a
+\fBPageUp3\fP	b
+\fBHelp\fP	h
+\fBToggleInfoLastLine\fP	i
+\fBDown2\fP	j
+\fBUp2\fP	k
+\fBQuit\fP	q
+\fBVersion\fP	v
+\fBPost\fP	w
+\fBPipe\fP	|
+\fBPageUp\fP	^B
+\fBPageDown\fP	^D
+\fBPageDown2\fP	^F
+\fBRedrawScr\fP	^L
+\fBDown\fP	^N
+\fBPostponed\fP	^O
+\fBUp\fP	^P
+\fBPageUp2\fP	^U
+.sp
+\fBConfigSelect\fP	^J
+\fBConfigSelect2\fP	^M
+\fBConfigLastPage2\fP	G
+\fBConfigNoSave\fP	Q
+\fBConfigFirstPage2\fP	g
+.sp
+\fBFeedTag\fP	T
+\fBFeedArt\fP	a
+\fBFeedHot\fP	h
+\fBFeedPat\fP	p
+\fBFeedRepost\fP	r
+\fBFeedSupersede\fP	s
+\fBFeedThd\fP	t
+.sp
+\fBFilterEdit\fP	e
+\fBFilterSave\fP	s
+.sp
+\fBGroupAutoSel\fP	^A
+\fBGroupNextUnreadArtOrGrp\fP	TAB
+\fBGroupReadBasenote\fP	^J
+\fBGroupKill\fP	^K
+\fBGroupReadBasenote2\fP	^M
+\fBGroupSelThd\fP	*
+\fBGroupDoAutoSel\fP	+
+\fBGroupToggleThdSel\fP	.
+\fBGroupSelThdIfUnreadSelected\fP	;
+\fBGroupSelPattern\fP	=
+\fBGroupReverseSel\fP	@
+\fBGroupCatchupNextUnread\fP	C
+\fBGroupEditFilter\fP	E
+\fBGroupToggleGetartLimit\fP	G
+\fBGroupMarkThdRead\fP	K
+\fBGroupNextUnreadArt\fP	N
+\fBGroupPrevUnreadArt\fP	P
+\fBGroupBugReport\fP	R
+\fBGroupAutoSaveTagged\fP	S
+\fBGroupTagParts\fP	T
+\fBGroupUntag\fP	U
+\fBGroupMarkUnselArtRead\fP	X
+\fBGroupMarkThdUnread\fP	Z
+\fBGroupQuickAutoSel\fP	[
+\fBGroupQuickKill\fP	]
+\fBGroupCatchup\fP	c
+\fBGroupToggleSubjDisplay\fP	d
+\fBGroupGoto\fP	g
+\fBGroupListThd\fP	l
+\fBGroupMail\fP	m
+\fBGroupNextGroup\fP	n
+\fBGroupPrint\fP	o
+\fBGroupPrevGroup\fP	p
+\fBGroupToggleReadUnread\fP	r
+\fBGroupSave\fP	s
+\fBGroupTag\fP	t
+\fBGroupToggleThreading\fP	u
+\fBGroupRepost\fP	x
+\fBGroupMarkArtUnread\fP	z
+\fBGroupUndoSel\fP	~
+.sp
+\fBHelpLastPage2\fP	G
+\fBHelpFirstPage2\fP	g
+.sp
+\fBNrctblCreate\fP	c
+\fBNrctblDefault\fP	d
+\fBNrctblAlternative\fP	a
+\fBNrctblQuit\fP	q
+.sp
+\fBPageAutoSel\fP	^A
+\fBPageReplyQuoteHeaders\fP	^E
+\fBPagePGPCheckArticle\fP	^G
+\fBPageToggleHeaders\fP	^H
+\fBPageNextUnread\fP	TAB
+\fBPageNextThd\fP	^J
+\fBPageAutoKill\fP	^K
+\fBPageNextThd2\fP	^M
+\fBPageToggleTabs\fP	^T
+\fBPageFollowupQuoteHeaders\fP	^W
+\fBPageToggleTex2iso\fP	"
+\fBPageToggleRot\fP	%
+\fBPageToggleUue\fP	(
+\fBPageReveal\fP	)
+\fBPageSkipIncludedText\fP	:
+\fBPageTopThd\fP	<
+\fBPageBotThd\fP	>
+\fBPageCatchupNextUnread\fP	C
+\fBPageCancel\fP	D
+\fBPageEditFilter\fP	E
+\fBPageFollowup\fP	F
+\fBPageLastPage2\fP	G
+\fBPageKillThd\fP	K
+\fBPageNextUnreadArt\fP	N
+\fBPagePrevUnreadArt\fP	P
+\fBPageReply\fP	R
+\fBPageAutoSaveTagged\fP	S
+\fBPageGroupSel\fP	T
+\fBPageViewUrl\fP	U
+\fBPageViewAttach\fP	V
+\fBPageMarkThdUnread\fP	Z
+\fBPageQuickAutoSel\fP	[
+\fBPageQuickKill\fP	]
+\fBPageToggleHighlight\fP	_
+\fBPageCatchup\fP	c
+\fBPageToggleRot2\fP	d
+\fBPageEditArticle\fP	e
+\fBPageFollowupQuote\fP	f
+\fBPageFirstPage2\fP	g
+\fBPageListThd\fP	l
+\fBPageMail\fP	m
+\fBPageNextArt\fP	n
+\fBPagePrint\fP	o
+\fBPagePrevArt\fP	p
+\fBPageReplyQuote\fP	r
+\fBPageSave\fP	s
+\fBPageTag\fP	t
+\fBPageGotoParent\fP	u
+\fBPageRepost\fP	x
+\fBPageMarkArtUnread\fP	z
+.sp
+\fBPgpEncSign\fP	b
+\fBPgpEncrypt\fP	e
+\fBPgpIncludekey\fP	i
+\fBPgpSign\fP	s
+.sp
+\fBPostCancel\fP	d
+\fBPostEdit\fP	e
+\fBPostPGP\fP	g
+\fBPostIspell\fP	i
+\fBPostContinue\fP	c
+\fBPostAbort\fP	a
+\fBPostIgnore\fP	i
+\fBPostMail\fP	m
+\fBPostPost2\fP	y
+\fBPostPost3\fP	p
+\fBPostSend\fP	s
+\fBPostSend2\fP	y
+\fBPostSupersede\fP	s
+\fBPostPostpone\fP	o
+\fBPostponeOverride\fP	Y
+\fBPostponeAll\fP	A
+.sp
+\fBPromptYes\fP	y
+\fBPromptNo\fP	n
+.sp
+\fBSaveAppendFile\fP	a
+\fBSaveOverwriteFile\fP	o
+.sp
+\fBPProcExtractZip\fP	E
+\fBPProcListZip\fP	L
+\fBPProcExtractZoo\fP	e
+\fBPProcListZoo\fP	l
+\fBPProcShar\fP	s
+\fBPProcUUDecode\fP	u
+\fBPProcNone\fP	n
+.sp
+\fBSelectEnterNextUnreadGrp\fP	TAB
+\fBSelectReadGrp\fP	^J
+\fBSelectReadGrp2\fP	^M
+\fBSelectResetNewsrc\fP	^R
+\fBSelectCatchupNextUnread\fP	C
+\fBSelectNextUnreadGrp\fP	N
+\fBSelectBugReport\fP	R
+\fBSelectSubscribePat\fP	S
+\fBSelectUnsubscribePat\fP	U
+\fBSelectQuitNoWrite\fP	X
+\fBSelectSyncWithActive\fP	Y
+\fBSelectMarkGrpUnread2\fP	Z
+\fBSelectCatchup\fP	c
+\fBSelectToggleDescriptions\fP	d
+\fBSelectGoto\fP	g
+\fBSelectMoveGrp\fP	m
+\fBSelectEnterNextUnreadGrp2\fP	n
+\fBSelectToggleReadDisplay\fP	r
+\fBSelectSubscribe\fP	s
+\fBSelectUnsubscribe\fP	u
+\fBSelectYankActive\fP	y
+\fBSelectMarkGrpUnread\fP	z
+.sp
+\fBThreadReadNextArtOrThread\fP	TAB
+\fBThreadReadArt\fP	^J
+\fBThreadReadArt2\fP	^M
+\fBThreadSelArt\fP	*
+\fBThreadToggleArtSel\fP	.
+\fBThreadReverseSel\fP	@
+\fBThreadCatchupNextUnread\fP	C
+\fBThreadMarkArtRead\fP	K
+\fBThreadBugReport\fP	R
+\fBThreadAutoSaveTagged\fP	S
+\fBThreadUntag\fP	U
+\fBThreadMarkThdUnread\fP	Z
+\fBThreadCatchup\fP	c
+\fBThreadToggleSubjDisplay\fP	d
+\fBThreadMail\fP	m
+\fBThreadSave\fP	s
+\fBThreadTag\fP	t
+\fBThreadMarkArtUnread\fP	z
+\fBThreadUndoSel\fP	~
+.fi
 .RE
 .PP
 
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/newsrctable
 .sp
 .RS
-"\fInntpserver\fP \fInewsrc\fP \fIshortname\fP [...]" pairs to use with
-``\fB-g\fR'' command-line switch.
+"\fInntpserver\fR \fInewsrc\fR \fIshortname\fR [...]" pairs to use with
+``\fB-g\fP'' command-line switch.
 .RE
 .PP
 
@@ -388,25 +776,786 @@ postponed articles
 .RE
 .PP
 
+.\" tin uses inns old (pre 2.x) Path convention.
+.\" as with inn >= 2.2.x getting more and more popular
+.\" we should think about checking for the new Paths
+.\" (described shown below).
+.IR ${TIN_LIBDIR-"/news/etc"}/tinrc
+.br
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/tinrc
 .sp
 .RS
-options
+At startup,
+.BR tin (1)
+reads in the configuration file. This contains a list of
+"\fIvariable\fR=\fIvalue\fR" pairs that can be used to configure the way
+.BR tin (1)
+works. If it exists, the global configuration file,
+\fI${TIN_LIBDIR}-"/news/etc"}/tinrc\fR is read first. After that, the
+users own configuration file \fI${TIN_HOMEDIR-"$HOME"}/.tin/tinrc\fR is read.
+The global file is useful for distributing system-wide defaults to new
+users who have no private tinrc yet (see also \fB/etc/tin/tin.defaults\fP).
+.TP
+.B add_posted_to_filter
+If ON add posted articles to filter for highlighting follow-ups.
+Default is ON.
+.TP
+.B advertising
+Turn ON advertising in header (``User-Agent:''). Default is ON.
+.TP
+.B alternative_handling
+If ON strip multipart/alternative messages automatically.
+.TP
+.B art_marked_deleted
+The character used to show that an article was deleted. Default is 'D'.
+.TP
+.B art_marked_inrange
+The character used to show that an article is in a range. Default is '#'.
+.TP
+.B art_marked_return
+The character used to show that an article will return as an unread article
+when the group is next entered. Default is '-'.
+.TP
+.B art_marked_selected
+The character used to show that an article/thread is auto-selected (hot).
+Default is '*'.
+.TP
+.B art_marked_recent
+The character used to show that an article/thread is recent (not older than
+X days). See also recent_time. Default is 'o'.
+.TP
+.B art_marked_unread
+The character used to show that an article has not been read. Default is
+'+'.
+.TP
+.B art_marked_read
+The character used to show that an article was read. Default is ' '.
+.TP
+.B art_marked_killed
+The character used to show that an article was killed. Default is 'K'.
+\fBkill_level\fP must be set accordingly.
+.TP
+.B art_marked_read_selected
+The character used to show that an article was hot before it was read.
+Default is ':'. \fBkill_level\fP must be set accordingly.
+.TP
+.B ask_for_metamail
+If ON \fBtin\fP will ask before using metamail to display MIME messages.
+This only occurs if 'use_metamail' is also switched ON. Default is ON.
+.TP
+.B auto_bcc
+If ON automatically put your name in the ``Bcc:'' field when mailing an
+article. Default is OFF
+.TP
+.B auto_cc
+If ON automatically put your name in the ``Cc:'' field when mailing an
+article. Default is OFF
+.TP
+.B auto_list_thread
+If ON automatically list thread when entering it using right arrow key.
+Default is ON.
+.TP
+.B auto_save
+If ON articles/threads with ``Archive-name:'' in header will be
+automatically saved with the Archive-name & part/patch no and post processed
+if process type is not set to none. Default is OFF
+.TP
+.B batch_save
+If set ON articles/threads will be saved in batch mode when save
+``\fB-S\fP'' or mail ``\fB-M\fP, \fB-N\fP'' is specified on the command
+line. Default is OFF.
+.TP
+.B beginner_level
+If set ON a mini menu of the most useful commands will be displayed at the
+bottom of the screen for each level. Also a short posting etiquette will be
+displayed after composing an article. Default is ON.
+.TP
+.B cache_overview_files
+If ON, create local copies of NNTP overview files. This can be used to
+considerably speed up accessing large groups when using a slow connection.
+.TP
+.B catchup_read_groups
+If set ON the user is asked when quitting if all groups read during the
+current session should be marked read. Default is OFF.
+.TP
+.B col_back
+Standard background color
+.TP
+.B col_from
+Color of sender (From:)
+.TP
+.B col_head
+Color of header-lines
+.TP
+.B col_help
+Color of help pages
+.TP
+.B col_invers_bg
+Color of background for inverse text
+.TP
+.B col_invers_fg
+Color of foreground for inverse text
+.TP
+.B col_markdash
+Color of words emphasised like _this_. See also \fBword_h_display_marks\fR
+.TP
+.B col_markstar
+Color of words emphasised like *this*. See also \fBword_h_display_marks\fR
+.TP
+.B col_minihelp
+Color of mini help menu
+.TP
+.B col_newsheaders
+Color of actual news header fields
+.TP
+.B col_normal
+Standard foreground color
+.TP
+.B col_quote
+Color of quoted lines
+.TP
+.B col_quote2
+Color of twice quoted lines
+.TP
+.B col_quote3
+Color of >=3 times quoted lines
+.TP
+.B col_response
+Color of response counter. This is the text that says 'Response x of y' in
+the article viewer.
+.TP
+.B col_signature
+Color of signatures
+.TP
+.B col_subject
+Color of article subject
+.TP
+.B col_text
+Color of text-lines
+.TP
+.B col_title
+Color of title text on all the menu screens
+.TP
+.B confirm_action
+Ask for confirmation before executing certain dangerous commands (e.g.,
+`c'atchup). Default is ON.
+.TP
+.B confirm_to_quit
+If ON you will be asked to confirm that you wish to exit tin when you use
+the 'q' command. Default is ON.
+.TP
+.B default_art_search
+.TP
+.B default_author_search
+.TP
+.B default_config_search
+The last article/author/config option that was searched for
+.TP
+.B default_editor_format
+The format string used to create the editor start command with parameters.
+Default is '%E +%N %F' (i.e., /bin/vi +7 .article).
+.\" document %E %F %N
+.TP
+.B default_filter_days
+Default is 28.
+.TP
+.B default_filter_kill_case
+Defaults for quick (1 key) kill filter case. ON = filter case sensitive, OFF
+= ignore case. Default is OFF.
+.TP
+.B default_filter_kill_expire
+Defaults for quick (1 key) kill filter expire. ON = limit to
+'default_filter_days', OFF = don't ever expire. Default is OFF.
+.TP
+.B default_filter_kill_global
+Defaults for quick (1 key) kill filter global. ON=apply to all groups
+OFF=apply to current group. Default is ON.
+.TP
+.B default_filter_kill_header
+Defaults for quick (1 key) kill filter header.
+0,1 = ``Subject:'', 2,3 = ``From:'', 4 = ``Message-Id:'' & full ``References:''
+5 = ``Message-Id:'' & last ``References:'' entry only,
+6 = ``Message-Id:'' entry only, 7 = ``Lines:''
+.TP
+.B default_filter_select_case
+Defaults for quick (1 key) auto-selection filter case. ON=filter case
+sensitive OFF=ignore case. Default is OFF.
+.TP
+.B default_filter_select_expire
+Defaults for quick (1 key) auto-selection filter expire. ON = limit to
+'\fBdefault_filter_days\fR', OFF = don't ever expire. Default is OFF.
+.TP
+.B default_filter_select_global
+Defaults for quick (1 key) auto-selection filter global. ON=apply to all
+groups OFF=apply to current group. Default is ON.
+.TP
+.B default_filter_select_header
+Defaults for quick (1 key) auto-selection filter header.
+0,1 = ``Subject:'', 2,3 = ``From:'', 4 = ``Message-Id:'' & full ``References:''
+5 = ``Message-Id:'' & last ``References:'' entry only,
+6 = ``Message-Id:'' entry only, 7 = ``Lines:''
+.TP
+.B default_goto_group
+.TP
+.B default_group_search
+.TP
+.B default_mail_address
+.TP
+.B default_maildir
+The directory where articles/threads are to be saved in mailbox format. This
+feature is mainly for use with the Elm mail program. It allows the user to
+save articles/threads/groups simply by giving '=' as the filename to save
+to. Default is \fI$HOME/Mail\fP.
+.TP
+.B default_mailer_format
+The format string used to create the mailer command with parameters that is
+used for mailing articles to other people. Default is '%M "%T" < %F' (i.e.,
+/bin/mail "iain" < .article). The flexible format allows other mailers with
+different command line parameters to be used such as 'elm -s "%S" "%T" <
+"%F"' (i.e., elm -s "subject" "iain" < .article) or 'sendmail -oem -t < %F'
+(i.e. sendmail -oem -t < .article).
+.\" document %S %T %M %F...
+.TP
+.B default_move_group
+.TP
+.B default_pipe_command
+.TP
+.B default_post_newsgroups
+.TP
+.B default_post_subject
+.TP
+.B default_printer
+The printer program with options that is to be used to print articles. The
+default is
+.BR lpr (1)
+for BSD machines and
+.BR lp (1)
+for SysV machines. Printing from
+.BR tin (1)
+may have been disabled by the System Administrator.
+.TP
+.B default_range_group
+.TP
+.B default_range_select
+.TP
+.B default_range_thread
+.TP
+.B default_regex_pattern
+.TP
+.B default_repost_group
+.TP
+.B default_save_file
+.TP
+.B default_save_mode
+.TP
+.B default_savedir
+Directory where articles/threads are saved. Default is \fI$HOME/News\fP.
+.TP
+.B default_select_pattern
+.TP
+.B default_shell_command
+.TP
+.B default_sigfile
+The path that specifies the signature file to use when posting, following up
+to or replying to an article. If the path is a directory then the signature
+will be randomly generated from files that are in the specified directory.
+Default is \fI$HOME/.Sig\fP.
+.TP
+.B default_subject_search
+.TP
+.B draw_arrow
+Allows groups/articles to be selected by an arrow '->' if set ON or by an
+highlighted bar if set OFF.
+.TP
+.B force_screen_redraw
+Specifies whether a screen redraw should always be done after certain
+external commands. Default is OFF.
+.TP
+.B full_page_scroll
+If set ON then PageUp and PageDown move the cursor by a full page at a time,
+otherwise movement is half a page at a time. Currently this has no effect in
+the GLOBAL OPTIONS MENU.
+.TP
+.B getart_limit
+If \fBuse_getart_limit\fR is ON and getart_limit is > 0 not more than
+getart_limit articles/group are fetched from the server. If
+\fBuse_getart_limit\fR is ON and getart_limit is < 0
+.BR tin (1)
+will start fetching articles from your first unread minus absolute value of
+getart_limit. Default is 0, which means no limit.
+.TP
+.B recent_time
+If set to 0, this feature is deactivated, otherwise it means the number of
+days. Default is 2.
+.TP
+.B group_catchup_on_exit
+If ON catchup group when leaving with the left arrow key. Default is ON.
+.TP
+.B groupname_max_length
+Maximum length of the names of newsgroups to be displayed so that more of
+the newgroup description can be displayed. Default is 32.
+.TP
+.B hide_uue
+If ON, then sections of uuencoded data will be shown with a single tag line
+showing the size and filename (much the same as a MIME attachment).
+Otherwise the raw uuencoded data is displayed. Default is OFF. This
+behaviour can also be toggled in the article viewer.
+.TP
+.B info_in_last_line
+If ON, show current group description or article subject in the last line
+(not in the pager and global menu) - `i' toggles setting. This facility is
+useful as the full width of the screen is available to display long
+subjects.
+.TP
+.B inverse_okay
+If ON use inverse video for page headers at different levels. Default is ON.
+.TP
+.B keep_dead_articles
+If ON keep all failed postings in \fI$HOME/dead.articles\fP besides keeping
+the last failed posting in \fI$HOME/dead.article\fP. Default is ON.
+.TP
+.B keep_posted_articles
+If ON keep all postings in \fI$HOME/Mail/posted\fP. Default is ON.
+.TP
+.B kill_level
+This option controls the processing and display of articles that are killed.
+There are 3 options: 0 (default) is the 'traditional' behaviour of tin. Only
+unread articles are killed once only by marking them read. Options 1 and 2
+will process all articles in the group and therefore there is a processing
+overhead when using them. Option 1 will thread killed articles as normal but
+they will be marked with a 'K'. Option 2 simply does not display killed
+articles. kill_level was first present is tin-1.2 and has been resurrected
+for 1.4
+.TP
+.B mail_8bit_header
+Allows 8bit characters unencoded in the header of mail message. Default is
+OFF. Turning it ON is effective only if \fBmail_mime_encoding\fR is also set
+to 8bit. Leaving it OFF is safe for most users and compliant to Internet
+Mail Standard (\fBRFC822\fR and \fBRFC2047\fR).
+.TP
+.B mail_address
+User's mail address (and fullname), if not username@host. This is used when
+creating articles, sending mail and when PGP signing.
+.TP
+.B mail_mime_encoding
+MIME encoding of the body in mail message, if necessary (8bit, base64,
+quoted-printable, 7bit) Default is 8bit and no encoding (or charset
+conversion) is performed (i.e., local charset is used as it is). If set to
+7bit, CJK text in 8bit encoding (EUC-CN, EUC-TW, EUC-JP, EUC-KR, Big5,
+Shift_JIS) is supposed to be converted into ISO-2022-KR/JP/CN. Only EUC-KR
+to ISO-2022-KR conversion has been implemented, however. Accordingly,
+setting it to 7bit has no effect on MIME charsets/encodings other than
+EUC-KR (Korean).
+.TP
+.B mail_quote_format
+Format of quote line when replying (via mail) to an article (%A=Address,
+%D=Date, %F=Addr+Name, %G=Groupname, %M=Message-Id, %N=Name). Default is "In
+article %M you wrote:"
+.TP
+.B mark_saved_read
+If ON mark articles that are saved as read. Default is ON.
+.TP
+.B mm_charset
+Charset supported locally, which is also used for MIME header (charset
+parameter and charset name in header encoding) in mail and news posting
+unless local charset/encoding needs to be converted into other
+charset/encoding as in case of EUC-KR which is converted to ISO-2022-KR if
+\fBmail_mime_encoding\fR is set to 7bit. Possible values include ISO-8859-X
+(where X is 1 to 10), EUC-JP, EUC-CN, EUC-KR, EUC-TW, Big5, Shift_JIS, and
+so forth. If \fBMIME_STRICT_CHARSET\fR is defined at the compile time, text
+in charset other than the value of this parameter is considered not
+displayable and represented as '?'. Otherwise, all character sets are
+regarded as compatible with the display. If it's not set, the value of the
+environment variable \fB$MM_CHARSET\fR is used. US-ASCII or compile-time
+default is used in case neither of them is defined.
+.TP
+.B newnews
+These are internal timers used by tin to keep track of new newsgroups. Do
+not change them unless you understand what they are for.
+.TP
+.B news_headers_to_display
+Which news headers you wish to see. If you want to see _all_ the headers,
+place an '*' as this value. This is the only way a wildcard can be used.
+If you enter 'X-' as the value, you will see all headers beginning
+with 'X-' (like X-Alan or X-Pape). You can list more than one by delimiting
+with spaces. Not defining anything turns off this option.
+.TP
+.B news_headers_to_not_display
+Same as \fBnews_headers_to_display\fR except it denotes the opposite. An
+example of using both options might be if you thought X- headers were A Good
+Thing(tm), but thought Alan and Pape were miscreants... well then you would
+do something like this:
+\fInews_headers_to_display=X-\fP
+\fInews_headers_to_not_display=X-Alan X-Pape\fP
+Not defining anything turns off this option.
+.TP
+.B news_quote_format
+Format of quote line when posting/following up an article (%A=Address,
+%D=Date, %F=Addr+Name, %G=Groupname, %M=Message-Id, %N=Name). Default is "%F
+wrote:"
+.TP
+.B pgdn_goto_next
+If ON the Page Down keys will goto the next article when pressed at the end
+of a message
+.TP
+.B pos_first_unread
+If ON put cursor at first unread article in group otherwise at last article.
+Default is ON.
+.TP
+.B post_8bit_header
+Allows 8bit characters unencoded in the header of news article. Default is
+OFF. Only enacted if \fBpost_mime_encoding\fR is also set to 8bit. In a
+number of local hierarchies where 8bit characters are used, using unencoded
+(raw) 8bit characters in header is acceptable and sometimes even recommended
+so that you need to check the convention adopted in the local hierarchy of
+your interest to determine what to do with this and
+\fBpost_mime_encoding\fR.
+.TP
+.B post_mime_encoding
+MIME encoding of the body in news message, if necessary. (8bit, base64,
+quoted-printable, 7bit) Default is 8bit, which leads to no encoding (or
+charset conversion, i.e., local charset is posted as it is). If set to 7bit,
+Chinese and Japanese text (in 8bit encodings such as EUC-CN, EUC-TW, EUC-JP,
+Shift_JIS, Big5) is supposed to be converted into ISO-2022-CN/JP, but it's
+NOT yet implemented. Therefore, currently 7bit has NO effect (i.e.
+equivalent to 8bit) whatever MIME charset/encoding is chosen.
+.TP
+.B post_process_view
+If ON, then tin will start an appropriate viewer program to display any
+files that were post processed and uudecoded. The program is determined
+using the mailcap file.
+.TP
+.B post_process_type
+This specifies the default type of post processing to perform on saved
+articles. The following types of processing are allowed:
+.in +.5i
+.ti -\w'\(em'u
+\(emnone.
+.ti -\w'\(em'u
+\(emunpacking of multi-part shar files (shell archives).
+.ti -\w'\(em'u
+\(emunpacking of multi-part uuencoded files.
+.in -.5i
+.TP
+.B print_header
+If ON, then the full article header is sent to the printer. Otherwise only
+the ``Subject:'' and ``From:'' fields are output. Default is OFF.
+.TP
+.B process_only_unread
+If ON only save/print/pipe/mail unread articles (tagged articles excepted).
+Default is ON.
+.TP
+.B prompt_followupto
+If ON show empty ``Followup-To:'' header when editing an article
+.TP
+.B quote_chars
+The character used in quoting included text to article followups and mail
+replies. The '_' character represents a blank character and is replaced
+with ' ' when read. Default is '>_'.
+.\" FIXME - document %s
+.TP
+.B quote_empty_lines
+If ON quote empty lines, too. Default is ON.
+.TP
+.B quote_regex
+A regular expression that will be applied when reading articles. All
+matching lines are shown in col_quote. If quote_regex is blank, then tin
+uses a builtin default for this.
+.TP
+.B quote_regex2
+A regular expression that will be applied when reading articles. All
+matching lines are shown in col_quote2. If quote_regex2 is blank, then
+.BR tin (1)
+uses a builtin default for this.
+.TP
+.B quote_regex3
+A regular expression that will be applied when reading articles. All
+matching lines are shown in col_quote3. If quote_regex3 is blank, then tin
+uses a builtin default for this.
+.TP
+.B quote_signatures
+If ON quote signatures, too.
+.TP
+.B reread_active_file_secs
+The news active file is reread at regular intervals to show if any new news
+has arrived. Default is 1200. Setting this to 0 will disable this feature.
+.TP
+.B save_to_mmdf_mailbox
+Allows articles to be saved to a MMDF style mailbox instead of mbox format.
+Default is OFF unless reading news on SCO Unix which uses MMDF by default.
+.TP
+.B show_author
+.in +.5i
+.ti -\w'\(em'u
+\(emNone (0) only the ``Subject:'' line will be displayed.
+.ti -\w'\(em'u
+\(emAddr (1) ``Subject:'' line & the address part of the ``From:'' line are
+dis
+.ti -\w'\(em'u
+\(emName (2) ``Subject:'' line & the authors full name part of the ``From:''
+li
+.ti -\w'\(em'u
+\(emBoth (3) ``Subject:'' line & all of the ``From:'' line are displayed.
+.in -.5i
+Default is 2, authors full name.
+.TP
+.B show_description
+If ON show a short group description text after newsgroup name at the group
+selection level. The ``\fB-d\fR'' commandline flag will override the setting
+and turn descriptions off. The text used is taken from the
+\fI$NEWSLIBDIR/newsgroups\fP file. Default is ON.
+.TP
+.B show_last_line_prev_page
+The last line of the previous page will be displayed as the first line of
+next page. Default is OFF.
+.TP
+.B show_lines
+Show number of lines of first unread article in thread listing (ON/OFF).
+.TP
+.B show_only_unread
+If ON show only new/unread articles otherwise show all articles. Default is
+ON.
+.TP
+.B show_only_unread_groups
+If ON show only subscribed to groups that contain unread articles. Default
+is OFF.
+.TP
+.B show_signatures
+If OFF don't show signatures when displaying articles.
+.TP
+.B show_xcommentto
+If ON, the real name in the ``X-Comment-To:'' header is displayed in the
+upper-right corner. Default is OFF.
+.TP
+.B sigdashes
+If ON prepend the signature with sigdashes. Default is ON.
+.TP
+.B signature_repost
+If ON add signature to reposted articles.
+.TP
+.B sort_article_type
+This specifies how articles should be sorted. The following sort
+types are allowed:
+.in +.5i
+.ti -\w'\(em'u
+\(emdon't sort articles (none=0).
+.ti -\w'\(em'u
+\(emsort articles by ``Subject:'' field (descending=1 & ascending=2).
+.ti -\w'\(em'u
+\(emsort articles by ``From:'' field (descending=3 & ascending=4).
+.ti -\w'\(em'u
+\(emsort articles by ``Date:'' field (descending=5 & ascending=6).
+.ti -\w'\(em'u
+\(emsort articles by filtering score (descending=7 & ascending=8).
+.in -.5i
+Sort by ascending Date (6) is the default.
+.TP
+.B spamtrap_warning_addresses
+Set this option to a list of comma-separated strings to be warned if you are
+replying to an article by mail where the e-mail address contains one of
+these strings. The matching is case-insensitive.
+.TP
+.B space_goto_next_unread
+SPACE normally acts as a Page Down key and has no effect at the end of
+an article. If this option is turned ON the SPACE command will goto the next
+unread article when the end of the article is reached (rn-style pager)
+.TP
+.B start_editor_offset
+Set ON if the editor used for posting, follow-ups and bug reports has the
+capability of starting and positioning the cursor at a specified line within
+a file. Default is ON.
+.TP
+.B strip_blanks
+Strips the blanks from the end of each line therefore speeding up the
+display when reading on a slow terminal or via modem. Default is ON.
+.TP
+.B strip_bogus
+Bogus groups are groups that are present in your \fI.newsrc\fP file that
+no longer exist on the news server. There are 3 options. 0 means do
+nothing & always keep bogus groups. 1 means bogus groups will be
+permanently removed. 2 means that bogus groups will appear on the Group
+Selection Menu, prefixed with a 'D'. This allows you to unsubscribe
+from them as and when you wish. Default is 0 (Always Keep).
+.TP
+.B strip_newsrc
+If ON, then unsubscribed groups will be permanently removed from your
+\fI.newsrc\fP file. Default is OFF.
+.TP
+.B tab_after_X_selection
+If enabled will automatically goto the first unread article after having
+selected all hot articles and threads with the  command at group index
+level. Default is OFF.
+.TP
+.B tab_goto_next_unread
+If enabled pressing <TAB> at the article viewer level will goto the next
+unread article immediately instead of first paging through the current one.
+Default is ON.
+.TP
+.B thread_articles
+Defines which threading method to use. The choices are:
+0) Don't thread, 1) Thread on Subject only 2) Thread on References only,
+3) Thread on References then Subject (default).
+It's also possible to set the threading type on a per group basis by setting
+the group attribute variable 'thread_arts' to 0 - 3 in the file
+\fI$HOME/.tin/attributes\fP.
+.TP
+.B thread_catchup_on_exit
+If ON catchup group/thread when leaving with the left arrow key. Default is
+ON.
+.TP
+.B unlink_article
+If ON remove \fI~/.article\fP after posting. Default is ON.
+.TP
+.B use_builtin_inews
+Allows the builtin NNTP inews to be enabled/disabled. This has no effect
+when reading/posting direct to local spool where external
+.BR inews (1)
+will always be used. Default is ON (enabled).
+.TP
+.B use_getart_limit
+If enabled
+.BR tin (1)
+fetches max. \fBgetart_limit\fR articles/group from the server. Default
+is OFF.
+.TP
+.B use_color
+If enabled
+.BR tin (1)
+uses ANSI-colors. Default is OFF.
+.TP
+.B use_mailreader_i
+Interactive mailreader: if ON mailreader will be invoked earlier for reply
+so you can use more of its features (eg. MIME, pgp, ...) this option has to
+suit \fBdefault_mailer_format\fR
+.TP
+.B use_metamail
+If ON metamail can/will be used to display MIME articles. Default is ON.
+This might become obsolete.
+.TP
+.B use_mouse
+Allows the mouse key support in a
+.BR xterm (1x)
+to be enabled/disabled.
+Default is OFF.
+.TP
+.B wildcard
+Allows you to select how
+.BR tin (1)
+matches strings. The default is 0 and uses the wildmat notation, which is
+how this has traditionally been handled. Setting this to 1 allows you to use
+full POSIX regular expressions. You will probably want to update your filter
+file if you use this regularly. NB: Newsgroup names will always be matched
+using the wildmat notation.
+.TP
+.B word_h_display_marks
+Should the leading and ending stars and dashes also be displayed,
+even when they are highlighting marks?
+0 - no    1 - yes, display mark    2 - print a space instead
+3 - print a space, but only in signatures
+.TP
+.B word_highlight
+Enable word highlighting. See \fBword_h_display_marks\fR for the options
+available is this is enabled.
+.TP
+.B xpost_quote_format
+Format is the same as for \fBnews_quote_format\fR, this is used when
+answering to a crossposting to several groups with no ``Followup-To:'' set
 .RE
 .PP
 
 .IR /etc/tin/tin.defaults
 .sp
 .RS
-global configuration
+Yet another global configuration file with "\fIvariable\fR=\fIvalue\fR"
+pairs. This one is for the more general options which usualy can't be
+controlled via \fI${TIN_LIBDIR-"/news/etc"}/tinrc\fR and/or
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/tinrc\fR like resetting (to override the
+build in default) the \fI$newslibdir\fR.
+.TP
+.B domainname
+Sets a global domain name used in From lines
+.TP
+.B organization
+Defines the name of your organization. \fB$ORGANIZATION\fP overrides any
+specified value.
+.TP
+.B newslibdir
+Defines the default place for some configuration files, common values are
+\fI/usr/lib/news\fR, \fI/var/lib/news\fR, \fI/usr/local/lib/news\fR or
+\fI/news/db\fR. \fB$TIN_LIBDIR\fP overrides any specified value.
+.TP
+.B bugaddress
+Defines the email address to which users can send bugreports using tin's
+builtin function. The default points to a developers mailing list located
+at tin.org. You might want to change this address to one of your local
+administration if you want to deal with your lusers problems on your own.
+\fB$BUG_ADDRESS\fP overrides any specified value.
+.TP
+.B inewsdir
+Defines the directory containing of the
+.BR inews (1)
+executable
+.TP
+.B mm_charset
+Default charset to be used in MIME's Content-Type header. \fB$MM_CHARSET\fP
+overrides any specified value.
+.TP
+.B post_mime_encoding
+Default encoding sheme use in MIME articles. 8bit might be the best value.
+.TP
+.B mail_mime_encoding
+Default encoding sheme use in MIME letters. quoted-printable is a good
+choice here.
+.TP
+.B disable_gnksa_domain_check
+Allow unregistered top level domains
+.TP
+.B disable_sender
+Don't generate a  ``Sender:''-header. This has no effect if
+use_builtin_inews is OFF.
+.TP
+.B spooldir
+Base of your newsspool (Bnews, Cnews and INN tradspool style), common values
+are \fI/var/spool/news\fR, \fI/usr/spool/news\fR, \fI/news/spool\fR.
+\fB$TIN_SPOOLDIR\fP overrides any specified value.
+.TP
+.B overviewdir
+Base of your NOV database (tradspool style; might be the same dir as
+\fIspooldir\fR), common values are \fI/var/spool/overview\fR,
+\fI/usr/spool/overview\fR, \fI/news/overview\fR. \fB$TIN_NOVROOTDIR\fP
+overrides any specified value.
+.TP
+.B overviewfile
+Name of a single overview file, common values are \fI.overview\fR,
+\fIover.view\fR.
+.TP
+.B activefile
+Full pathname of your newssystem's active file; usually the active file
+resides in \fInewslibdir\fR and is named \fIactive\fR, so you only have
+to change this setting if your configuration differs. \fB$TIN_ACTIVEFILE\fP
+overrides any specified value.
+.TP
+.B activetimesfile
+Full pathname of your newssystem's active.times file; usually the
+active.times file is \fInewslibdir\fR, so you only have to change this
+setting if your configuration differs.
+.TP
+.B newsgroupsfile
+Full pathname of your newssystem's newsgroups file; usually the newsgroups
+file is in \fInewslibdir\fR, so you only have to change this setting if your
+configuration differs.
+.TP
+.B subscriptionsfile
+Full pathname of your newssystem's subscriptions file; usually the
+subscriptions file is in \fInewslibdir\fR, so you only have to change this
+setting if your configuration differs.
 .RE
 .PP
-
 .IR /usr/local/share/locale/${LC_MESSAGES}/LC_MESSAGES/tin.mo
 .sp
 .RS
-translation into language specified in $\fBLC_ALL\fR, $\fBLC_MESSAGES\fR or
-$\fBLANG\fR
+translation into language specified in \fB$LC_ALL\fP, \fB$LC_MESSAGES\fP or
+\fB$LANG\fP
 .RE
 .PP
 
@@ -414,7 +1563,7 @@ $\fBLANG\fR
 .\" as with inn >= 2.2.x getting more and more popular
 .\" we should think about checking for the new Paths
 .\" (described shown below).
-.IR ${NEWSLIBDIR-/news/db}/active
+.IR ${TIN_ACTIVEFILE-"${TIN_LIBDIR-"/news/db"}/active"}
 .sp
 .RS
 This file lists the newsgroups that the local site receives. Each newsgroup
@@ -427,8 +1576,8 @@ newsgroups are ignored.
 .\" IIRC tin issues a waring in that case
 If no valid newsgroups are specified, the article is rejected.
 .sp
-Each line consists of four space-separated fields "\fIname\fP \fIhimark\fP
-\fIlomark\fP \fIflags\fP".
+Each line consists of four space-separated fields "\fIname\fR \fIhimark\fR
+\fIlomark\fR \fIflags\fR".
 .TP
 .B name
 is the name of the newsgroup
@@ -470,18 +1619,18 @@ articles are locally filed into the ``foo.bar'' group
 only only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,
 .BR tin (1)
-uses the LIST command instead.
+uses the LIST (\fBRFC977\fP) command instead.
 .RE
 .PP
 
-.IR ${NEWSLIBDIR-/news/db}/active.times
+.IR ${TIN_LIBDIR-"/news/db"}/active.times
 .sp
 .RS
 This file provides a chronological record of when newsgroups are created. It
 is normally updated by the local newsserver (i.e
 .BR innd (8))
 whenever a newgroup is created. Each line consist of three space-separated
-fields "\fIname\fP \fItime\fP \fIcreator\fP".
+fields "\fIname\fR \fItime\fR \fIcreator\fR".
 .TP
 .B name
 is the name of the newsgroup
@@ -497,18 +1646,18 @@ is the electronic mail address of the person who created the group.
 only only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,
 .BR tin (1)
-uses the NEWGROUPS command instead.
+uses the NEWGROUPS (\fBRFC977\fP) command instead.
 .RE
 .PP
 
-.IR ${NEWSLIBDIR-/news/db}/newsgroups
+.IR ${TIN_LIBDIR-"/news/db"}/newsgroups
 .sp
 .RS
 This file provides shot descriptions of each newsgroup. It is normally
 updated by the local newsserver (i.e
 .BR innd (8))
 whenever a newgroup is created. Each line consist of two tab-separated
-fields "\fIgroup.name\fP	\fIone-line description\fP".
+fields "\fIgroup.name\fR	\fIone-line description\fR".
 .TP
 .B group.name
 is the name of the newsgroup
@@ -520,11 +1669,11 @@ is a short single-line description of the group
 only only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,
 .BR tin (1)
-uses the LIST NEWSGROUPS command instead.
+uses the LIST NEWSGROUPS (\fBRFC2980\fP) command instead.
 .RE
 .PP
 
-.IR ${NEWSLIBDIR-/news/db}/subscriptions
+.IR ${TIN_LIBDIR-"/news/db"}/subscriptions
 .\" is the Path correct? or is it /news/etc/subscriptions
 .sp
 .RS
@@ -535,18 +1684,24 @@ the newsserver.
 only only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,
 .BR tin (1)
-uses the LIST SUBSCRIPTIONS command instead.
+uses the LIST SUBSCRIPTIONS (\fBRFC2980\fP) command instead.
 
 .SH "SEE ALSO"
 .BR active (5),
+.BR inews (1),
 .BR innd (8),
+.BR lp (1),
+.BR lpr (1),
 .BR mailcap (4),
 .BR system (3),
 .BR tin (1),
+.BR xterm (1x),
+.BR RFC822 ,
 .BR RFC977 ,
 .BR RFC1036 ,
 .BR RFC1524 ,
 .BR RFC2045 ,
 .BR RFC2046 ,
 .BR RFC2047 ,
-.BR RFC2048
+.BR RFC2048 ,
+.BR RFC2980

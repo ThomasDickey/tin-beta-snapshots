@@ -60,12 +60,12 @@ int top_art = 0;				/* # of articles in arts[] */
 /*
  * Local prototypes
  */
-static char *pcPrintDate (time_t lSecs);
-static char *pcPrintFrom (struct t_article *psArt);
+static char *print_date (time_t secs);
+static char *print_from (struct t_article *article);
 static int artnum_comp (t_comptype p1, t_comptype p2);
 static int date_comp (t_comptype p1, t_comptype p2);
 static int from_comp (t_comptype p1, t_comptype p2);
-static int iReadNovFile (struct t_group *group, long min, long max, int *expired);
+static int read_nov_file (struct t_group *group, long min, long max, int *expired);
 static int read_group (struct t_group *group, char *group_path, int *pcount);
 static int score_comp (t_comptype p1, t_comptype p2);
 static int subj_comp (t_comptype p1, t_comptype p2);
@@ -195,7 +195,7 @@ index_group (
 #endif /* PROFILE */
 
 #ifdef DEBUG_NEWSRC
-	debug_print_comment ("Before iReadNovFile");
+	debug_print_comment ("Before read_nov_file");
 	debug_print_bitmap (group, NULL);
 #endif /* DEBUG_NEWSRC */
 
@@ -222,7 +222,7 @@ index_group (
 	/*
 	 * Read in the existing index via XOVER or the index file
 	 */
-	if (iReadNovFile (group, min, max, &expired) == -1)
+	if (read_nov_file (group, min, max, &expired) == -1)
 		return FALSE;	/* user aborted indexing */
 
 #if 0	/* IMHO this is a bit to verbose (urs) */
@@ -268,7 +268,7 @@ index_group (
 	}
 
 	if (expired || modified || tinrc.cache_overview_files)
-		vWriteNovFile (group);
+		write_nov_file (group);
 
 	/*
 	 * Create the reference tree. The msgid and ref ptrs will
@@ -805,7 +805,7 @@ parse_headers (
  *   10.  Archive-name:  (ie. widget/part01)      [optional]
  */
 static int
-iReadNovFile (
+read_nov_file (
 	struct t_group *group,
 	long min,
 	long max,
@@ -834,7 +834,7 @@ iReadNovFile (
 	 */
 	if (tinrc.cache_overview_files && read_news_via_nntp && xover_supported && group->type == GROUP_TYPE_NEWS) {
 		read_news_via_nntp = FALSE;
-		iReadNovFile (group, min, max, expired);
+		read_nov_file (group, min, max, expired);
 		read_news_via_nntp = TRUE;
 		if (last_read_article >= max)
 			return top_art;
@@ -857,7 +857,7 @@ iReadNovFile (
 		}
 
 #ifdef DEBUG
-		debug_nntp ("iReadNovFile", buf);
+		debug_nntp ("read_nov_file", buf);
 #endif /* DEBUG */
 
 		if (top_art >= max_art)
@@ -893,7 +893,7 @@ iReadNovFile (
 		if ((q = strchr (p, '\t')) == (char *) 0) {
 #ifdef DEBUG
 			error_message ("Bad overview record (Artnum) '%s'", buf);
-			debug_nntp ("iReadNovFile", "Bad overview record (Artnum)");
+			debug_nntp ("read_nov_file", "Bad overview record (Artnum)");
 #endif /* DEBUG */
 			continue;
 		} else
@@ -905,7 +905,7 @@ iReadNovFile (
 		if ((q = strchr (p, '\t')) == (char *) 0) {
 #ifdef DEBUG
 			error_message ("Bad overview record (Subject) [%s]", p);
-			debug_nntp ("iReadNovFile", "Bad overview record (Subject)");
+			debug_nntp ("read_nov_file", "Bad overview record (Subject)");
 #endif /* DEBUG */
 			continue;
 		} else
@@ -920,7 +920,7 @@ iReadNovFile (
 		if ((q = strchr (p, '\t')) == (char *) 0) {
 #ifdef DEBUG
 			error_message ("Bad overview record (From) [%s]", p);
-			debug_nntp ("iReadNovFile", "Bad overview record (From)");
+			debug_nntp ("read_nov_file", "Bad overview record (From)");
 #endif /* DEBUG */
 			continue;
 		} else
@@ -939,7 +939,7 @@ iReadNovFile (
 		if ((q = strchr (p, '\t')) == (char *) 0) {
 #ifdef DEBUG
 			error_message ("Bad overview record (Date) [%s]", p);
-			debug_nntp ("iReadNovFile", "Bad overview record (Date)");
+			debug_nntp ("read_nov_file", "Bad overview record (Date)");
 #endif /* DEBUG */
 			continue;
 		} else
@@ -955,7 +955,7 @@ iReadNovFile (
 		if (q == (char *) 0 || p == q) {	/* Empty msgid's */
 #ifdef DEBUG
 			error_message ("Bad overview record (Msg-id) [%s]", p);
-			debug_nntp ("iReadNovFile", "Bad overview record (Msg-id)");
+			debug_nntp ("read_nov_file", "Bad overview record (Msg-id)");
 #endif /* DEBUG */
 			continue;
 		} else
@@ -972,7 +972,7 @@ iReadNovFile (
 		if ((q = strchr (p, '\t')) == (char *) 0) {
 #ifdef DEBUG
 			error_message ("Bad overview record (References) [%s]", p);
-			debug_nntp ("iReadNovFile", "Bad overview record (References)");
+			debug_nntp ("read_nov_file", "Bad overview record (References)");
 #endif /* DEBUG */
 			continue;
 		} else
@@ -988,7 +988,7 @@ iReadNovFile (
 		if ((q = strchr (p, '\t')) == (char *) 0) {
 #ifdef DEBUG
 			error_message ("Bad overview record (Bytes) [%s]", p);
-			debug_nntp ("iReadNovFile", "Bad overview record (Bytes)");
+			debug_nntp ("read_nov_file", "Bad overview record (Bytes)");
 #endif /* DEBUG */
 			continue;
 		} else
@@ -1073,14 +1073,14 @@ iReadNovFile (
  *    9.  Xref: line     (ie. alt.test:389)       [optional]
  */
 void
-vWriteNovFile (
-	struct t_group *psGrp)
+write_nov_file (
+	struct t_group *group)
 {
-	FILE *hFp;
-	char *pcNovFile;
+	FILE *fp;
+	char *nov_file;
 	char tmp[PATH_LEN];
-	int iNum;
-	struct t_article *psArt;
+	int i;
+	struct t_article *article;
 
 	if (no_write)
 		return;
@@ -1101,51 +1101,51 @@ vWriteNovFile (
 	 * than W_OK, since we won't read it anyway.
 	 */
 
-	strcpy(tmp, ((((pcNovFile = pcFindNovFile (psGrp, R_OK)) != 0)) ? pcNovFile : ""));
-	pcNovFile = pcFindNovFile (psGrp, W_OK);
+	STRCPY(tmp, ((((nov_file = find_nov_file (group, R_OK)) != 0)) ? nov_file : ""));
+	nov_file = find_nov_file (group, W_OK);
 
-	if (strcmp(tmp, pcNovFile) != 0)
+	if (strcmp(tmp, nov_file) != 0)
 		return;
 
 #ifdef DEBUG
 	if (debug)
-		error_message ("WRITE file=[%s]", pcNovFile);
+		error_message ("WRITE file=[%s]", nov_file);
 #endif /* DEBUG */
 
-	hFp = open_xover_fp (psGrp, "w", 0L, 0L);
+	fp = open_xover_fp (group, "w", 0L, 0L);
 
-	if (hFp == (FILE *) 0)
-		error_message (_(txt_cannot_write_index), pcNovFile);
+	if (fp == (FILE *) 0)
+		error_message (_(txt_cannot_write_index), nov_file);
 	else {
-		if (psGrp->attribute && psGrp->attribute->sort_art_type != SORT_BY_NOTHING)
+		if (group->attribute && group->attribute->sort_art_type != SORT_BY_NOTHING)
 			SortBy(artnum_comp);
 
 		if (!overview_index_filename)
-			fprintf (hFp, "%s\n", psGrp->name);
+			fprintf (fp, "%s\n", group->name);
 
-		for (iNum = 0; iNum < top_art; iNum++) {
-			psArt = &arts[iNum];
+		for (i = 0; i < top_art; i++) {
+			article = &arts[i];
 
-			if (psArt->thread != ART_EXPIRED && psArt->artnum >= psGrp->xmin) {
-				fprintf (hFp, "%ld\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
-					psArt->artnum,
-					psArt->subject,
-					pcPrintFrom (psArt),
-					pcPrintDate (psArt->date),
-					(psArt->msgid ? psArt->msgid : ""),
-					(psArt->refs ? psArt->refs : ""),
+			if (article->thread != ART_EXPIRED && article->artnum >= group->xmin) {
+				fprintf (fp, "%ld\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
+					article->artnum,
+					article->subject,
+					print_from (article),
+					print_date (article->date),
+					(article->msgid ? article->msgid : ""),
+					(article->refs ? article->refs : ""),
 					0,	/* bytes */
-					psArt->line_count);
+					article->line_count);
 
-				if (psArt->xref)
-					fprintf (hFp, "\tXref: %s", psArt->xref);
+				if (article->xref)
+					fprintf (fp, "\tXref: %s", article->xref);
 
-				fprintf (hFp, "\n");
+				fprintf (fp, "\n");
 			}
 		}
 
-		fclose (hFp);
-		chmod (pcNovFile, (mode_t)(S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH));
+		fclose (fp);
+		chmod (nov_file, (mode_t)(S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH));
 
 	}
 }
@@ -1191,49 +1191,49 @@ vWriteNovFile (
  *  our group. Return pointer to path or NULL if not found.
  */
 char *
-pcFindNovFile (
-	struct t_group *psGrp,
-	int iMode)
+find_nov_file (
+	struct t_group *group,
+	int mode)
 {
-	char *pcPtr;
-	const char *pcDir;
-	char acBuf[PATH_LEN];
-	FILE *hFp;
-	int iNum;
-	static char acNovFile[PATH_LEN];
-	t_bool bHashFileName;
-	unsigned long lHash;
+	char *ptr;
+	const char *dir;
+	char buf[PATH_LEN];
+	FILE *fp;
+	int i;
+	static char nov_file[PATH_LEN];
+	t_bool hash_filename;
+	unsigned long hash;
 
-	if (psGrp == (struct t_group *) 0)
+	if (group == (struct t_group *) 0)
 		return (char *) 0;
 
 	overview_index_filename = FALSE;	/* Write groupname in nov file ? */
 
-	bHashFileName = FALSE;
-	pcDir = "";
+	hash_filename = FALSE;
+	dir = "";
 
-	switch (psGrp->type) {
+	switch (group->type) {
 		case GROUP_TYPE_MAIL:
-			pcDir = index_maildir;
-			bHashFileName = TRUE;
+			dir = index_maildir;
+			hash_filename = TRUE;
 			break;
 		case GROUP_TYPE_SAVE:
-			pcDir = index_savedir;
-			bHashFileName = TRUE;
+			dir = index_savedir;
+			hash_filename = TRUE;
 			break;
 		case GROUP_TYPE_NEWS:
 			if (read_news_via_nntp && xover_supported && ! tinrc.cache_overview_files)
-				sprintf (acNovFile, "%s%d.idx", TMPDIR, (int) process_id);
+				snprintf (nov_file, sizeof(nov_file)-1, "%s%d.idx", TMPDIR, (int) process_id);
 			else {
-				vMakeGrpPath (novrootdir, psGrp->name, acBuf);
-				sprintf (acNovFile, "%s/%s", acBuf, novfilename);
-				if (iMode == R_OK || iMode == W_OK) {
-					if (!access (acNovFile, iMode))
+				make_base_group_path (novrootdir, group->name, buf);
+				snprintf (nov_file, sizeof(nov_file)-1, "%s/%s", buf, novfilename);
+				if (mode == R_OK || mode == W_OK) {
+					if (!access (nov_file, mode))
 						overview_index_filename = TRUE;
 				}
 				if (!overview_index_filename) {
-					pcDir = index_newsdir;
-					bHashFileName = TRUE;
+					dir = index_newsdir;
+					hash_filename = TRUE;
 				}
 			}
 			break;
@@ -1241,37 +1241,37 @@ pcFindNovFile (
 			break;
 	}
 
-	if (bHashFileName) {
-		lHash = hash_groupname (psGrp->name);
+	if (hash_filename) {
+		hash = hash_groupname (group->name);
 
-		for (iNum = 1; ; iNum++) {
+		for (i = 1; ; i++) {
 
-			sprintf (acNovFile, "%s/%lu.%d", pcDir, lHash, iNum);
+			snprintf (nov_file, sizeof(nov_file)-1, "%s/%lu.%d", dir, hash, i);
 
-			if ((hFp = fopen (acNovFile, "r")) == (FILE *) 0)
-				return acNovFile;
+			if ((fp = fopen (nov_file, "r")) == (FILE *) 0)
+				return nov_file;
 
 			/*
 			 * Don't follow, why should a zero length index file
 			 * cause the write to fail ?
 			 */
-			if (fgets (acBuf, (int) sizeof (acBuf), hFp) == (char *) 0) {
-				fclose (hFp);
-				return acNovFile;
+			if (fgets (buf, (int) sizeof (buf), fp) == (char *) 0) {
+				fclose (fp);
+				return nov_file;
 			}
-			fclose (hFp);
+			fclose (fp);
 
-			pcPtr = strrchr (acBuf, '\n');
-			if (pcPtr != (char *) 0)
-				*pcPtr = '\0';
+			ptr = strrchr (buf, '\n');
+			if (ptr != (char *) 0)
+				*ptr = '\0';
 
-			if (STRCMPEQ(acBuf, psGrp->name))
-				return acNovFile;
+			if (STRCMPEQ(buf, group->name))
+				return nov_file;
 
 		}
 	}
 
-	return acNovFile;
+	return nov_file;
 }
 
 
@@ -1285,7 +1285,7 @@ do_update (
 	char group_path[PATH_LEN];
 	register int i, j;
 	time_t beg_epoch;
-	struct t_group *psGrp;
+	struct t_group *group;
 
 	if (verbose)
 		(void) time (&beg_epoch);
@@ -1294,19 +1294,19 @@ do_update (
 	 * loop through groups and update any required index files
 	 */
 	for (i = 0; i < selmenu.max; i++) {
-		psGrp = &active[my_group[i]];
-		make_group_path (psGrp->name, group_path);
+		group = &active[my_group[i]];
+		make_group_path (group->name, group_path);
 
 		if (verbose) {
-			my_printf ("%s %s\n", (catchup ? "Catchup" : "Updating"), psGrp->name);
+			my_printf ("%s %s\n", (catchup ? "Catchup" : "Updating"), group->name);
 			my_flush();
 		}
-		if (!index_group (psGrp))
+		if (!index_group (group))
 			continue;
 
 		if (catchup) {
 			for (j = 0; j < top_art; j++)
-				art_mark_read (psGrp, &arts[j]);
+				art_mark_read (group, &arts[j]);
 		}
 	}
 
@@ -1544,40 +1544,40 @@ print_expired_arts (
 
 
 static char *
-pcPrintDate (
-	time_t lSecs)
+print_date (
+	time_t secs)
 {
-	static char acDate[25];
-	struct tm *psTm;
+	static char date[25];
+	struct tm *tm;
 
 	static const char *const months_a[] = {
 		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
 		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 	};
 
-	psTm = localtime (&lSecs);
-	sprintf(acDate, "%02d %s %04d %02d:%02d:%02d",
-			psTm->tm_mday,
-			months_a[psTm->tm_mon],
-			psTm->tm_year + 1900,
-			psTm->tm_hour, psTm->tm_min, psTm->tm_sec);
+	tm = localtime (&secs);
+	sprintf(date, "%02d %s %04d %02d:%02d:%02d",
+			tm->tm_mday,
+			months_a[tm->tm_mon],
+			tm->tm_year + 1900,
+			tm->tm_hour, tm->tm_min, tm->tm_sec);
 
-	return acDate;
+	return date;
 }
 
 
 static char *
-pcPrintFrom (
-	struct t_article *psArt)
+print_from (
+	struct t_article *article)
 {
-	static char acFrom[PATH_LEN];
+	static char from[PATH_LEN];
 
-	*acFrom = '\0';
+	*from = '\0';
 
-	if (psArt->name != (char *) 0)
-		sprintf (acFrom, "%s <%s>", rfc1522_encode(psArt->name, FALSE), psArt->from);
+	if (article->name != (char *) 0)
+		snprintf (from, sizeof(from)-1, "%s <%s>", rfc1522_encode(article->name, FALSE), article->from);
 	else
-		strcpy (acFrom, psArt->from);
+		STRCPY (from, article->from);
 
-	return acFrom;
+	return from;
 }

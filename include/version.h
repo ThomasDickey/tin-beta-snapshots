@@ -43,10 +43,10 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.5.7"
+#		define VERSION		"1.5.8"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20000929"
-#	define RELEASENAME	"Dust"
+#	define RELEASEDATE	"20001218"
+#	define RELEASENAME	"Paradise Regained"
 #	define TINRC_VERSION	"1.2"
 
 #	ifdef M_AMIGA

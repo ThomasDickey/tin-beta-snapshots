@@ -116,13 +116,13 @@ scroll_page (
 {
 #ifdef USE_CURSES
 	scrollok(stdscr, TRUE);
-#endif	/* USE_CURSES */
+#endif /* USE_CURSES */
 	SetScrollRegion(INDEX_TOP + HDR_ADJUST, ARTLINES + HDR_ADJUST +1);
 	ScrollScreen(i);
 	SetScrollRegion(0, cLINES);
 #ifdef USE_CURSES
 	scrollok(stdscr, FALSE);
-#endif	/* USE_CURSES */
+#endif /* USE_CURSES */
 }
 
 
@@ -534,7 +534,7 @@ page_goto_next_unread:
 
 			case iKeyPageToggleTex2iso:		/* toggle german TeX to ISO latin1 style conversion */
 				if ((tex2iso_supported = !tex2iso_supported))
-					pgart.tex2iso = iIsArtTexEncoded (pgart.raw);
+					pgart.tex2iso = is_art_tex_encoded (pgart.raw);
 
 				resize_article (&pgart);	/* Also recooks it.. */
 				draw_page (group->name, 0);
@@ -637,7 +637,7 @@ page_goto_next_unread:
 				break;
 
 			case iKeyPageEditArticle:		/* edit an article (mailgroup only) */
-				if (iArtEdit (group, &arts[this_resp]))
+				if (art_edit (group, &arts[this_resp]))
 					draw_page (group->name, 0);
 				break;
 
@@ -980,7 +980,7 @@ show_mime_article (
 	EndWin();
 	Raw(FALSE);
 	if ((mime_fp = popen (buf, "w"))) {
-		while (fgets (buf, (int) sizeof(buf), fp) != 0)
+		while (fgets (buf, (int) sizeof(buf), fp) != (char *) 0)
 			fputs (buf, mime_fp);
 
 		fflush (mime_fp);
@@ -1067,7 +1067,7 @@ show_first_header (
 		my_fputs (buf, stdout);
 		strip_address(note_h->ftnto, ftbuf);
 		ftbuf[19] = '\0';
-		Convert2Printable (ftbuf);
+		convert_to_printable (ftbuf);
 		StartInverse ();
 		my_fputs (ftbuf, stdout);
 		EndInverse ();
@@ -1117,7 +1117,7 @@ show_first_header (
 
 	MoveCursor (1, ((pos > n) ? pos : n));
 
-	Convert2Printable (buf);
+	convert_to_printable (buf);
 
 	StartInverse ();
 	my_fputs (buf, stdout);
@@ -1167,7 +1167,7 @@ show_first_header (
 
 	strip_line (buf);
 
-	Convert2Printable (buf);
+	convert_to_printable (buf);
 
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_from);

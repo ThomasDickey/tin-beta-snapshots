@@ -47,6 +47,15 @@
 
 #	undef SYSTEM_NAME
 
+/* compiler, compilerflags, ... */
+#	undef TIN_CC
+#	undef TIN_CFLAGS
+#	undef TIN_CPP
+#	undef TIN_CPPFLAGS
+#	undef TIN_LD
+#	undef TIN_LDFLAGS
+#	undef TIN_LIBS
+
 /*
  * If we're able to run the 'configure' script, it's close enough to UNIX for
  * our purposes. (It's predefined on SCO).
@@ -570,5 +579,4 @@
 #	undef HAVE_CATGETS
 #	undef HAVE_DCGETTEXT
 #	undef HAVE_GETTEXT
-
 #endif /* !TIN_AUTOCONF_H */

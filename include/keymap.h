@@ -40,7 +40,7 @@
 
 #	ifndef MENUKEYS_H
 #		include "menukeys.h"
-#  endif /* !MENUKEYS_H */
+#	endif /* !MENUKEYS_H */
 
 /* TODO permanently move here from tin.h */
 #define ctrl(c)	((c) & 0x1F)

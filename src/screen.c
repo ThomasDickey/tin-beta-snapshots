@@ -228,7 +228,7 @@ center_line (
 	}
 
 	/* protect terminal... */
-	Convert2Printable (buffer);
+	convert_to_printable (buffer);
 
 	if ((int) strlen (buffer) >= cCOLS) {
 		char buf[256];

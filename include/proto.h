@@ -61,7 +61,7 @@ extern void load_newnews_info (char *info);
 extern void read_news_active_file (void);
 
 /* art.c */
-extern char *pcFindNovFile (struct t_group *psGrp, int iMode);
+extern char *find_nov_file (struct t_group *group, int mode);
 extern t_bool index_group (struct t_group *group);
 extern void do_update (t_bool catchup);
 extern void find_base (struct t_group *group);
@@ -69,7 +69,7 @@ extern void make_threads (struct t_group *group, t_bool rethread);
 extern void set_article (struct t_article *art);
 extern void show_art_msg (char *group);
 extern void sort_arts (unsigned int sort_art_type);
-extern void vWriteNovFile (struct t_group *psGrp);
+extern void write_nov_file (struct t_group *group);
 
 /* attrib.c */
 extern void read_attributes_file (const char *file, t_bool global_file);
@@ -81,12 +81,12 @@ extern void write_attributes_file (const char *file);
 #endif /* NNTP_ABLE */
 
 /* charset.c */
-extern t_bool iIsArtTexEncoded (FILE *fp);
-extern void Convert2Printable (char* buf);
-extern void ConvertIso2Asc (char *iso, char *asc, int t);
-extern void ConvertTeX2Iso (char *from, char *to);
+extern t_bool is_art_tex_encoded (FILE *fp);
+extern void convert_to_printable (char* buf);
+extern void convert_iso2asc (char *iso, char *asc, int t);
+extern void convert_tex2iso (char *from, char *to);
 #if 1
-	extern void ConvertBody2Printable (char* buf);
+	extern void convert_body2printable (char* buf);
 #endif /* 1 */
 
 /* color.c */
@@ -258,8 +258,8 @@ extern void build_keymaps (void);
 /* list.c */
 extern char *random_organization (char *in_org);
 extern int find_group_index (const char *group);
-extern struct t_group *psGrpAdd (const char *group);
-extern struct t_group *psGrpFind (const char *pcGrpName);
+extern struct t_group *group_add (const char *group);
+extern struct t_group *group_find (const char *group_name);
 extern unsigned long hash_groupname (const char *group);
 extern void init_group_hash (void);
 #if 0
@@ -270,13 +270,12 @@ extern void init_group_hash (void);
 #endif /* 0 */
 
 /* mail.c */
-extern t_bool iArtEdit (struct t_group *psGrp, struct t_article *psArt);
+extern t_bool art_edit (struct t_group *psGrp, struct t_article *psArt);
 extern void read_newsgroups_file (void);
-extern void vFindArtMaxMin (char *pcGrpPath, long *plArtMax, long *plArtMin);
-extern void vMakeGrpName (char *pcBaseDir, char *pcGrpName, char *pcGrpPath);
-extern void vMakeGrpPath (char *pcBaseDir, char *pcGrpName, char *pcGrpPath);
-extern void vPrintActiveHead (char *pcActiveFile);
-extern void vPrintGrpLine (FILE *hFp, char *pcGrpName, long lArtMax, long lArtMin, char *pcBaseDir);
+extern void find_art_max_min (char *group_path, long *art_max, long *art_min);
+extern void make_base_group_path (char *base_dir, char *group_name, char *group_path);
+extern void print_active_head (char *active_file);
+extern void print_group_line (FILE *fp, char *group_name, long art_max, long art_min, char *base_dir);
 extern void vGrpDelMailArts (struct t_group *psGrp);
 extern void vGrpDelMailArt (struct t_article *psArt);
 #ifdef HAVE_MH_MAIL_HANDLING
@@ -311,6 +310,7 @@ extern void *my_realloc1 (const char *file, int line, char *p, size_t size);
 
 /* misc.c */
 extern char *eat_re (char *s, t_bool eat_was);
+extern char *get_tmpfilename (const char *filename);
 extern char *quote_wild (char *str);
 extern char *quote_wild_whitespace (char *str);
 extern const char *get_val (const char *env, const char *def);
@@ -326,6 +326,7 @@ extern int strfpath (const char *format, char *str, size_t maxsize, struct t_gro
 extern int strfquote (const char *group, int respnum, char *s, size_t maxsize, char *format);
 extern long file_mtime (const char *file);
 extern long file_size (const char *file);
+extern t_bool backup_file (const char *filename, const char *backupname);
 extern t_bool copy_fp (FILE *fp_ip, FILE *fp_op);
 extern t_bool invoke_cmd (const char *nam);
 extern t_bool invoke_editor (const char *filename, int lineno);
@@ -377,7 +378,7 @@ extern void vPrintBugAddress (void);
 /* newsrc.c */
 extern int pos_group_in_newsrc (struct t_group *group, int pos);
 extern signed long int read_newsrc (char *newsrc_file, t_bool allgroups);
-extern signed long int vWriteNewsrc (void);
+extern signed long int write_newsrc (void);
 extern void art_mark_read (struct t_group *group, struct t_article *art);
 extern void art_mark_unread (struct t_group *group, struct t_article *art);
 extern void art_mark_will_return (struct t_group *group, struct t_article *art);
@@ -392,7 +393,7 @@ extern void reset_newsrc (void);
 extern void subscribe (struct t_group *group, int sub_state);
 extern void thd_mark_read (struct t_group *group, long thread);
 extern void thd_mark_unread (struct t_group *group, long thread);
-extern void vSetDefaultBitmap (struct t_group *group);
+extern void set_default_bitmap (struct t_group *group);
 extern void art_mark_deleted (struct t_article *art);
 extern void art_mark_undeleted (struct t_article *art);
 #ifdef DEBUG_NEWSRC
@@ -428,7 +429,7 @@ extern FILE *open_art_header (long art);
 extern int get_respcode (char *);
 extern int get_only_respcode (char *);
 extern int nntp_open (void);
-extern int vGrpGetArtInfo (char *pcSpoolDir, char *pcGrpName, int iGrpType, long *plArtCount, long *plArtMax, long *plArtMin);
+extern int group_get_art_info (char *tin_spooldir, char *groupname, int grouptype, long *art_count, long *art_max, long *art_min);
 extern long setup_hard_base (struct t_group *group, const char *group_path);
 extern t_bool stat_article (long art, const char *group_path);
 extern void nntp_close (void);
@@ -604,6 +605,7 @@ extern RETSIGTYPE (*sigdisp (int sig, RETSIGTYPE (*func)(SIG_ARGS))) (SIG_ARGS);
 extern t_bool set_win_size (int *num_lines, int *num_cols);
 extern void allow_resize(t_bool allow);
 extern void handle_resize (t_bool repaint);
+extern void set_noteslines (int num_lines);
 extern void set_signal_catcher (int flag);
 extern void set_signal_handlers (void);
 #if 0

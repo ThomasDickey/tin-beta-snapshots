@@ -375,7 +375,7 @@ selection_page (
 					/* Bogus groups aren't subscribed to avoid confusion */
 					/* Note that there is no way to remove the group from active[] */
 					sprintf (buf, _(txt_remove_bogus), CURR_GROUP.name);
-					vWriteNewsrc ();					/* save current newsrc */
+					write_newsrc ();					/* save current newsrc */
 					delete_group(CURR_GROUP.name);		/* remove bogus group */
 					read_newsrc(newsrc, TRUE);			/* reload newsrc */
 					toggle_my_groups (tinrc.show_only_unread_groups, "");		/* keep current display-state */
@@ -1106,7 +1106,7 @@ select_done (
 		select_quit();
 	if (!no_write && prompt_yn (cLINES, _(txt_save_config), TRUE) == 1) {
 		write_config_file (local_config_file);
-		vWriteNewsrc ();
+		write_newsrc ();
 	}
 	show_selection_page ();
 }

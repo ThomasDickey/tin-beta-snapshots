@@ -39,9 +39,6 @@
  */
 
 
-#ifndef NNTPLIB_H
-#	include "nntplib.h"
-#endif /* !NNTPLIB_H */
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
@@ -97,16 +94,15 @@ authinfo_generic (
 	if (cookiefd == -1) {
 		char tempfile[BUFSIZ];
 
-		sprintf (tempfile, "%stin_AXXXXXX", TMPDIR);
+		snprintf (tempfile, sizeof(tempfile) - 1, "%stin_AXXXXXX", TMPDIR);
 		if ((cookiefd = (my_mktemp (tempfile))) == -1) {
-			error_message (txt_cannot_create_uniq_name);
+			error_message (_(txt_cannot_create_uniq_name));
 #	ifdef DEBUG
 			debug_nntp ("authorization", txt_cannot_create_uniq_name);
 #	endif /* DEBUG */
 			return FALSE;
-		} else {
+		} else
 			(void) unlink (tempfile);
-		}
 	}
 
 	strcpy (tmpbuf, "AUTHINFO GENERIC ");
@@ -136,8 +132,8 @@ authinfo_generic (
 	setenv ("NNTP_AUTH_FDS", tmpbuf, 1);
 #endif /* HAVE_PUTENV */
 
-		/* TODO - is it possible that we should have drained server here ? */
-		return (builtinauth ? (get_only_respcode(NULL) == OK_AUTH) : (invoke_cmd (authval) ? TRUE : FALSE));
+	/* TODO - is it possible that we should have drained server here ? */
+	return (builtinauth ? (get_only_respcode(NULL) == OK_AUTH) : (invoke_cmd (authval) ? TRUE : FALSE));
 }
 
 
@@ -162,12 +158,12 @@ read_newsauth_file (
 
 	joinpath (line, homedir, ".newsauth");
 
-	if (stat (line, &statbuf) == -1) {
+	if (stat (line, &statbuf) == -1)
 		return FALSE;
-	} else {
+	else {
 		if (S_ISREG(statbuf.st_mode) && (statbuf.st_mode|S_IRUSR|S_IWUSR) != (S_IRUSR|S_IWUSR|S_IFREG)) {
 			/* FIXME: -> lang.c */
-			error_message ("Insecure permissions of %s (%o)", line, statbuf.st_mode);
+			error_message (_("Insecure permissions of %s (%o)"), line, statbuf.st_mode);
 			sleep(2);
 		}
 	}
@@ -266,7 +262,6 @@ do_authinfo_original (
 
 	if ((authpass == (char *) 0) || (*authpass == '\0')) {
 #ifdef DEBUG
-		/* FIXME: -> lang.c */
 		debug_nntp ("authorization", "failed: no password");
 #endif /* DEBUG */
 		error_message (_(txt_nntp_authorization_failed), server);
@@ -365,7 +360,6 @@ authinfo_original (
 
 		if (!prompt_default_string(_(txt_auth_user), authuser, PATH_LEN, authusername, HIST_NONE)) {
 #ifdef DEBUG
-			/* FIXME: -> lang.c */
 			debug_nntp ("authorization", "failed: no username");
 #endif /* DEBUG */
 			return FALSE;

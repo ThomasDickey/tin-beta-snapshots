@@ -8,10 +8,6 @@ o  help screen should show the actual key mapping, not the default
 o  thread_articles=0 lacks score for read arts if show_score=ON and
    kill_level>=1
 
-o  make install_sysdefs overwrites an existing tin.defaults file without
-   making a backup
-   [Urs Janssen <urs@tin.org>]
-
 o  pgp.txt badly out of date
 
 o  batch mode has several bugs
@@ -93,12 +89,12 @@ o  Changes to int/bool tinrc variables in the Option Menu don't propogate
 o  if no INEWSDIR is given INEWSDIR is set to NEWSLIBDIR which is not always
    true (Linux) ... search $NEWSLIBDIR, /usr/bin/,... in that case.
 
-o  if external inews could not be found posting fails but no dead.article
-   is saved :(
-   fall-back to built_in_inews would be good if running in nntp-mode
-
-o  According to 026) in CHANGES, some of the config files can be
-   trashed on a bad write (except .newsrc/tinrc/attributes)
+o  if posting with external inews fails fall-back to built_in_inews would be
+   good if running in nntp-mode
+   [Done. Allerdings ist mir die Logik bzgl. read_news_via_nntp &&
+   !read_saved_news nicht klar. Warum wird das Posten bei
+   read_saved_news ausgeschlossen bzw. über external inews
+   erzwungen?]
 
 o  remove built in path of external commands (metamail, ispell, ...)
    [for metamail/ispell $METAMAIL/$ISPELL could be used to override

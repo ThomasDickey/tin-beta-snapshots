@@ -762,19 +762,19 @@ process_text_body_part(
 		if (tex2iso_supported && art->tex2iso) {
 			char texbuf[LEN];
 			strcpy (texbuf, line);
-			ConvertTeX2Iso (texbuf, line);
+			convert_tex2iso (texbuf, line);
 		}
 
 		if (iso2asc_supported >= 0) {
 			char isobuf[LEN];
 			strcpy (isobuf, line);
-			ConvertIso2Asc (isobuf, line, iso2asc_supported);
+			convert_iso2asc (isobuf, line, iso2asc_supported);
 		}
 
 #if 1
 /* Basically: if (!(my_isprint(*c) || *c==8 || *c==9 || *c==12)) */
 /* How about if !isprint() && !isctrl() - expand_ctrl_chars is done at display time */
-		ConvertBody2Printable (line);
+		convert_body2printable (line);
 #endif /* 1 */
 /* TODO integrate above into expand_ctrl_chars */
 
