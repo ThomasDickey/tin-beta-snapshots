@@ -327,6 +327,7 @@ new_part (
 	parse_params (defparms, ptr);
 	ptr->offset = 0;
 	ptr->lines = 0;
+	ptr->depth = 0;							/* Not an embedded object (yet) */
 	ptr->uue = NULL;
 	ptr->next = NULL;
 
@@ -564,22 +565,27 @@ parse_rfc822_headers(
 
 /*
  * Handles multipart/ article types, write data to a raw stream
+ * artinfo is used for generic article pointers
+ * part contains content info about the attachment we're parsing
+ * depth is the number of levels by which the current part is embedded
  */
 static int
 parse_multipart_article(
 	FILE *infile,
-	t_openartinfo *artinfo)
+	t_openartinfo *artinfo,
+	t_part *part,
+	int depth)
 {
 	char *line;
 	char *boundary;
 	char *ptr;
 	int state = M_SEARCHING;
-	t_part *curr_part = 0;
+	t_part *curr_part = 0;	/* TODO check this out */
 
 	/*
 	 * Get the boundary marker
 	 */
-	if ((boundary = get_param(artinfo->hdr.ext->params, "boundary")) == NULL)
+	if ((boundary = get_param(part->params, "boundary")) == NULL)
 		return -1;
 
 	while ((line = tin_fgets(infile, (state == M_HDR))) != (char *) 0) {
@@ -587,7 +593,10 @@ parse_multipart_article(
 /*fprintf(stderr, "---:%s\n", line);*/
 
 		fprintf(artinfo->raw, "%s\n", line);
-		progress(++artinfo->hdr.ext->lines);
+		progress(++artinfo->hdr.ext->lines);		/* Overall line count */
+
+		if (bnd == BOUND_END)
+			return tin_errno;
 
 		switch (state) {
 			case M_SEARCHING:
@@ -596,10 +605,8 @@ parse_multipart_article(
 						break;				/* Keep looking */
 					case BOUND_START:
 						state = M_HDR;		/* Now parsing headers of a part */
-						curr_part = new_part(artinfo->hdr.ext);
-						break;
-					case BOUND_END:
-						fprintf(stderr, "Huh ? End boundary with no start\n");
+						curr_part = new_part(part);
+						curr_part->depth = depth;
 						break;
 				}
 				break;
@@ -607,10 +614,7 @@ parse_multipart_article(
 			case M_HDR:
 				switch (bnd) {
 					case BOUND_START:
-						fprintf(stderr, "Huh ? Start boundary when reading headers\n");
-						continue;
-					case BOUND_END:			/* A bit premature */
-						state = M_SEARCHING;
+						fprintf(stderr, "MIME parse error:  Start boundary whilst reading headers\n");
 						continue;
 					case BOUND_NONE:
 						break;				/* Correct - No boundary */
@@ -629,9 +633,11 @@ parse_multipart_article(
 				if ((ptr = parse_header (line, "Content-Type", FALSE))) {
 					parse_content_type (ptr, curr_part);
 
-				if (curr_part->type == TYPE_MULTIPART)
-					fprintf(stderr, "Composite Multipart\n");
-					break;
+					if (curr_part->type == TYPE_MULTIPART) {
+/* TODO error recovery */
+/*		if ((ret =*/ parse_multipart_article(infile, artinfo, curr_part, depth+1); /*) != 0)*/
+						break;
+					}
 				}
 				if ((ptr = parse_header (line, "Content-Transfer-Encoding", FALSE))) {
 					curr_part->encoding = parse_content_encoding (ptr);
@@ -651,10 +657,8 @@ parse_multipart_article(
 						break;
 					case BOUND_START:		/* Start new attchment */
 						state = M_HDR;
-						curr_part = new_part(artinfo->hdr.ext);
-						break;
-					case BOUND_END:
-						state = M_SEARCHING;
+						curr_part = new_part(part);
+						curr_part->depth = depth;
 						break;
 				}
 				break;
@@ -715,6 +719,7 @@ dump_art(
 			content_types[ptr->type], ptr->subtype,
 			content_encodings[ptr->encoding]);
 		fprintf(stderr, "	Offset: %ld\n	Lines: %d\n", ptr->offset, ptr->lines);
+		fprintf(stderr, "	Depth: %d\n", ptr->depth);
 		for (pptr=ptr->params; pptr!=NULL; pptr=pptr->next)
 			fprintf(stderr, "	P: %s = %s\n", pptr->name, pptr->value);
 		fseek(art->raw, ptr->offset, SEEK_SET);
@@ -741,7 +746,10 @@ parse_rfc2045_article (
 
 	art_lines = lines;
 
-fprintf(stderr, "PARSE-----------------------------------------------------------------------\n");
+#ifdef DEBUG
+	if (debug == 2)
+		fprintf(stderr, "PARSE-----------------------------------------------------------------------\n");
+#endif /* DEBUG */
 	if ((ret = parse_rfc822_headers(&artinfo->hdr, infile, artinfo->raw)) != 0)
 		goto error;
 
@@ -750,7 +758,13 @@ fprintf(stderr, "PARSE----------------------------------------------------------
 	 * We don't bother to parse all plain text articles
 	 */
 	if (artinfo->hdr.mime && artinfo->hdr.ext->type == TYPE_MULTIPART) {
-		if ((ret = parse_multipart_article(infile, artinfo)) != 0)
+		ret = parse_multipart_article(infile, artinfo, artinfo->hdr.ext, 0);
+
+#ifdef NNTP_ABLE
+		drain_buffer(infile);			/* Syphon off any trailing data */
+#endif /* NNTP_ABLE */
+
+		if (ret != 0)
 			goto error;
 	} else {
 		if ((ret = parse_normal_article(infile, artinfo)) != 0)
@@ -767,7 +781,9 @@ fprintf(stderr, "PARSE----------------------------------------------------------
 
 error:
 	TIN_FCLOSE (infile);
+fprintf(stderr, "ABRT:do art_close()\n");
 	art_close (artinfo);
+fprintf(stderr, "ABRT:done art_close()\n");
 	return ret;
 }
 
@@ -813,7 +829,7 @@ art_open (
 	if ((pgart.tex2iso = (tex2iso_supported ? iIsArtTexEncoded (artinfo->raw) : FALSE)))
 		wait_message (0, _(txt_is_tex_encoded));
 
-	cook_article (artinfo, 8, FALSE);		/* Fix it so if this fails, we default to raw ? */
+	cook_article (artinfo, 8, tinrc.hide_uue);	/* Fix it so if this fails, we default to raw ? */
 
 	/*
 	 * If Newsgroups is empty its a good bet the article is a mail article

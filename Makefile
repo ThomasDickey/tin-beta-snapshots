@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 5
 SVER	= 4
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20000415
+DVER	= 20000419
 EXE	= tin
 MANEXT	= 1
 
@@ -169,6 +169,7 @@ TOL	= \
 	$(TOLDIR)/metamutt \
 	$(TOLDIR)/tinpp \
 	$(TOLDIR)/tinlock \
+	$(TOLDIR)/url_handler.sh \
 	$(TOLDIR)/expand_aliases.tgz
 
 TOP	= \
@@ -399,9 +400,10 @@ chmod:
 	./configure \
 	./install.sh \
 	./mkdirs.sh \
+	$(TOLDIR)/metamutt \
 	$(TOLDIR)/tinpp \
 	$(TOLDIR)/tinlock \
-	$(TOLDIR)/metamutt \
+	$(TOLDIR)/url_handler.sh \
 	$(PCREDIR)/perltest \
 	$(CANDIR)/Build
 

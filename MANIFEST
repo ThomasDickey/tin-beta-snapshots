@@ -1,7 +1,7 @@
-MANIFEST for tin-1.5.4 (Sat Apr 15 19:59:54 CEST 2000)
+MANIFEST for tin-1.5.4 (Wed Apr 19 23:39:44 CEST 2000)
 ----------------------------------------------------
-  12248 ./Makefile
-   6464 ./MANIFEST
+  12304 ./Makefile
+   6495 ./MANIFEST
    1690 ./README
    2209 ./README.VMS
    1534 ./README.WIN
@@ -15,12 +15,12 @@ MANIFEST for tin-1.5.4 (Sat Apr 15 19:59:54 CEST 2000)
   11884 ./makefile.in
     661 ./mkdirs.sh
   11651 ./doc/ABOUT-NLS
-  13927 ./doc/CHANGES
+  14203 ./doc/CHANGES
  153544 ./doc/CHANGES.old
    1469 ./doc/DEBUG_REFS
   27725 ./doc/INSTALL
-  18381 ./doc/TODO
-   1347 ./doc/WHATSNEW
+  18555 ./doc/TODO
+   1958 ./doc/WHATSNEW
    2674 ./doc/art_handling.txt
    3882 ./doc/auth.txt
   10964 ./doc/filtering
@@ -29,30 +29,31 @@ MANIFEST for tin-1.5.4 (Sat Apr 15 19:59:54 CEST 2000)
   35175 ./doc/good-netkeeping-seal
    1840 ./doc/pgp.txt
    6963 ./doc/plp_snprintf.3
-   1181 ./doc/rcvars.txt
+   1192 ./doc/rcvars.txt
    1227 ./doc/reading-mail.txt
    1615 ./doc/umlaute.txt
    1914 ./doc/umlauts.txt
    4643 ./doc/tin.defaults
-  98827 ./doc/tin.1
+  98492 ./doc/tin.1
    3703 ./tools/metamutt
     896 ./tools/tinpp
    1410 ./tools/tinlock
+    963 ./tools/url_handler.sh
    1661 ./tools/expand_aliases.tgz
    2227 ./include/bool.h
    2128 ./include/bugrep.h
    9721 ./include/config.h
-  49218 ./include/extern.h
+  49175 ./include/extern.h
   14178 ./include/menukeys.h
    6450 ./include/nntplib.h
     666 ./include/plp_snprintf.h
    4563 ./include/policy.h
   28138 ./include/proto.h
-   5124 ./include/rfc2045.h
+   5204 ./include/rfc2045.h
    3559 ./include/stpwatch.h
    4091 ./include/tcurses.h
-  59467 ./include/tin.h
-  11528 ./include/tinrc.h
+  59455 ./include/tin.h
+  11397 ./include/tinrc.h
    5486 ./include/tnntp.h
    2397 ./include/trace.h
    2767 ./include/version.h
@@ -62,13 +63,13 @@ MANIFEST for tin-1.5.4 (Sat Apr 15 19:59:54 CEST 2000)
   12409 ./src/auth.c
   10103 ./src/charset.c
    9088 ./src/color.c
-  67431 ./src/config.c
-  16470 ./src/cook.c
+  67042 ./src/config.c
+  17070 ./src/cook.c
   28174 ./src/curses.c
-  12737 ./src/debug.c
+  12728 ./src/debug.c
    3668 ./src/envarg.c
   18998 ./src/feed.c
-  44002 ./src/filter.c
+  43908 ./src/filter.c
   12601 ./src/getline.c
    7458 ./src/global.c
   37692 ./src/group.c
@@ -76,12 +77,12 @@ MANIFEST for tin-1.5.4 (Sat Apr 15 19:59:54 CEST 2000)
    8804 ./src/header.c
   13655 ./src/help.c
   11515 ./src/inews.c
-  33846 ./src/init.c
+  33788 ./src/init.c
    2814 ./src/joinpath.c
-  98451 ./src/lang.c
+  98049 ./src/lang.c
    4365 ./src/list.c
   11673 ./src/mail.c
-   5501 ./src/mailcap.c
+   5672 ./src/mailcap.c
   24254 ./src/main.c
   10266 ./src/makecfg.c
   10921 ./src/memory.c
@@ -90,21 +91,21 @@ MANIFEST for tin-1.5.4 (Sat Apr 15 19:59:54 CEST 2000)
   27301 ./src/nntplib.c
    7318 ./src/nrctbl.c
   25714 ./src/open.c
-  37524 ./src/page.c
+  36059 ./src/page.c
   24248 ./src/parsdate.y
   16937 ./src/plp_snprintf.c
   12050 ./src/pgp.c
-  97792 ./src/post.c
+  97843 ./src/post.c
   13908 ./src/prompt.c
   10272 ./src/read.c
   25031 ./src/refs.c
    3820 ./src/regex.c
    7450 ./src/rfc1521.c
   24179 ./src/rfc1522.c
-  19529 ./src/rfc2045.c
-  39992 ./src/save.c
+  20097 ./src/rfc2045.c
+  40431 ./src/save.c
    7174 ./src/screen.c
-  12468 ./src/search.c
+  12526 ./src/search.c
   30315 ./src/select.c
    7982 ./src/sigfile.c
   12370 ./src/signal.c
@@ -192,7 +193,7 @@ MANIFEST for tin-1.5.4 (Sat Apr 15 19:59:54 CEST 2000)
    2124 ./src/l1_ibm850.tab
    4284 ./src/l1_next.tab
    4284 ./src/next_l1.tab
-   6317 ./src/tincfg.tbl
+   6263 ./src/tincfg.tbl
    8747 ./src/descrip.mms
    5779 ./pcre/pcre.mms
     954 ./libcanlock/Build
@@ -250,4 +251,4 @@ MANIFEST for tin-1.5.4 (Sat Apr 15 19:59:54 CEST 2000)
  110727 ./po/tin.pot
  173255 ./po/de.po
  171288 ./po/et.po
-4137656 total
+4138753 total

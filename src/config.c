@@ -408,12 +408,6 @@ read_config_file (
 			if (match_string (buf, "default_shell_command=", tinrc.default_shell_command, sizeof (tinrc.default_shell_command)))
 				break;
 
-			if (match_boolean (buf, "display_mime_header_asis=", &tinrc.display_mime_header_asis))
-				break;
-
-			if (match_boolean (buf, "display_mime_allheader_asis=", &tinrc.display_mime_allheader_asis))
-				break;
-
 			if (match_boolean (buf, "draw_arrow=", &tinrc.draw_arrow))
 				break;
 
@@ -436,6 +430,12 @@ read_config_file (
 				break;
 
 			if (match_boolean (buf, "group_catchup_on_exit=", &tinrc.group_catchup_on_exit))
+				break;
+
+			break;
+
+		case 'h':
+			if (match_boolean (buf, "hide_uue=", &tinrc.hide_uue))
 				break;
 
 			break;
@@ -996,6 +996,9 @@ write_config_file (
 	fprintf (fp, _(txt_show_signatures.tinrc));
 	fprintf (fp, "show_signatures=%s\n\n", print_boolean(tinrc.show_signatures));
 
+	fprintf (fp, _(txt_hide_uue.tinrc));
+	fprintf (fp, "hide_uue=%s\n\n", print_boolean(tinrc.hide_uue));
+
 	fprintf (fp, _(txt_news_quote_format.tinrc));
 	fprintf (fp, "news_quote_format=%s\n", tinrc.news_quote_format);
 	fprintf (fp, "mail_quote_format=%s\n", tinrc.mail_quote_format);
@@ -1164,12 +1167,6 @@ write_config_file (
 
 	fprintf (fp, _(txt_mail_8bit_header.tinrc));
 	fprintf (fp, "mail_8bit_header=%s\n\n", print_boolean(tinrc.mail_8bit_header));
-
-	fprintf (fp, _(txt_display_mime_header_asis.tinrc));
-	fprintf (fp, "display_mime_header_asis=%s\n\n", print_boolean(tinrc.display_mime_header_asis));
-
-	fprintf (fp, _(txt_display_mime_allheader_asis.tinrc));
-	fprintf (fp, "display_mime_allheader_asis=%s\n\n", print_boolean(tinrc.display_mime_allheader_asis));
 
 #ifdef HAVE_METAMAIL
 	fprintf (fp, _(txt_use_metamail.tinrc));
@@ -1718,6 +1715,7 @@ change_config_file (
 						 * case OPT_SHOW_LAST_LINE_PREV_PAGE:
 						 * case OPT_SHOW_ONLY_UNREAD_GROUPS:
 						 * case OPT_SHOW_XCOMMENTTO:
+						 * case OPT_HIDE_UUE:
 						 * case OPT_SIGDASHES:
 						 * case OPT_SPACE_GOTO_NEXT_UNREAD:
 						 * case OPT_START_EDITOR_OFFSET:
@@ -1731,8 +1729,6 @@ change_config_file (
 #endif
 						 * case OPT_USE_MAILREADER_I:
 						 * case OPT_USE_MOUSE:
-						 * case OPT_DISPLAY_MIME_HEADER_ASIS:
-						 * case OPT_DISPLAY_MIME_ALLHEADER_ASIS:
 #ifdef HAVE_KEYPAD
 						 * case OPT_USE_KEYPAD:
 #endif

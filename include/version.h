@@ -45,7 +45,7 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.5.4"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20000415"
+#	define RELEASEDATE	"20000419"
 #	define RELEASENAME	"1959"
 #	define TINRC_VERSION	"1.2"
 

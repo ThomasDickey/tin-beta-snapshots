@@ -163,7 +163,10 @@ lookup_mailcap(
 				break;
 		}
 	}
-fprintf(stderr, "Best match: (%s) char 0 %d\n", mailcap, mailcap[0]);
+#ifdef DEBUG
+	if (debug == 2)
+		fprintf(stderr, "Best match: (%s) char 0 %d\n", mailcap, mailcap[0]);
+#endif /* DEBUG */
 	fclose (fp);
 
 	if (mailcap[0] != '\0')
@@ -200,9 +203,15 @@ lookup_mimetype (
 
 				if ((i = content_type (strtok(buf, "/"))) != -1) {
 					char *ptr;
-fprintf(stderr, "Matched type %d\n", i);
+#ifdef DEBUG
+					if (debug == 2)
+						fprintf(stderr, "Matched type %d\n", i);
+#endif /* DEBUG */
 					if ((ptr = lookup_mailcap(i, strtok(NULL, "\n"))) != NULL) {
-fprintf(stderr, "looked up %s\n", ptr);
+#ifdef DEBUG
+						if (debug == 2)
+							fprintf(stderr, "looked up %s\n", ptr);
+#endif /* DEBUG */
 						fclose (fp);
 						return ptr;
 					}

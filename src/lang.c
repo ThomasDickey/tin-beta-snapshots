@@ -73,7 +73,8 @@ constext txt_articles_mailed[] = N_("-- %d %s mailed --");
 #ifndef DISABLE_PRINTING
 	constext txt_articles_printed[] = N_("%d %s printed");
 #endif /* !DISABLE_PRINTING */
-constext txt_attach[] = N_("[-- %s/%s, encoding %s, %d lines%s%s --]\n\n");
+constext txt_attach[] = N_("%*s[-- %s/%s, encoding %s, %d lines%s%s --]\n\n");
+constext txt_uue[] = N_("[-- %suuencoded file, %d lines, name: %s --]\n\n");
 constext txt_auth_failed[] = N_("%d Authentication failed");
 constext txt_auth_needed[] = N_("Server expects authentication.\n");
 constext txt_auth_pass[] = N_("    Please enter password: ");
@@ -1291,6 +1292,13 @@ struct opttxt txt_show_signatures = {
 	N_("# If OFF don't show signatures when displaying articles\n")
 };
 
+struct opttxt txt_hide_uue = {
+	N_("Display uuencoded data as tagged attachments. <SPACE> toggles & <CR> sets."),
+	N_("Display uue data as an attachment  : "),
+	N_("# If ON uuencoded data will be condensed to a single tag line showing\n\
+# size and filename, similar to how MIME attachments are displayed\n")
+};
+
 struct opttxt txt_news_headers_to_display = {
 	N_("Space separated list of header fields"),
 	N_("Display these header fields (or *) : "),
@@ -1319,23 +1327,6 @@ struct opttxt txt_show_xcommentto = {
 	N_("# If ON, the realname in the X-Comment-To header is displayed in the\n\
 # upper-right corner. You can use news_headers_to_display=X-Comment-To\n\
 # instead of this\n")
-};
-
-struct opttxt txt_display_mime_header_asis = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Show RFC 2047 header undecoded     : "),
-	N_("# If ON, RFC 1522 (now RFC 2047)-style header fields are displayed\n\
-# without decoding. No effect on header displayed at the top of\n\
-# each page in article mode and summary mode (they are always decoded).\n\
-# default is OFF so that RFC 1522 (RFC 2047)-style headers (designated in\n\
-# news_header_to_display) will be decoded back to 8bit when displayed.\n")
-};
-
-struct opttxt txt_display_mime_allheader_asis = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Show RFC 2047 ^H-header undecoded  : "),
-	N_("# Similar to display_mime_header_asis, but works on CTRL-h (show all headers)\n\
-# instead of news_headers_to_display\n")
 };
 
 struct opttxt txt_alternative_handling = {

@@ -63,13 +63,12 @@
 #define MATCH_REGEX(x,y,z)	(pcre_exec (x.re, x.extra, y, z, 0, 0, NULL, 0) >= 0)
 
 /*
- * This is used globally within this module for access to the context currently
- * being built. It must not leak outside
+ * These are used globally within this module for access to the context currently
+ * being built. They must not leak outside.
  */
-t_openartinfo *art;
-
 int tabwidth;
-t_bool reveal_uue;
+t_bool hide_uue;
+t_openartinfo *art;
 
 /*
  * Rewrite frombuf into tobuf to a maximum length
@@ -94,7 +93,7 @@ expand_ctrl_chars (
 
 			i = q - to;
 			j = ((i+tabwidth)/tabwidth) * tabwidth;
-/*			j = (i|(tabwidth-1)) + 1;*/
+/*			j = (i|(tabwidth-1)) + 1; TODO more efficient ? */
 
 			while (i++ < j)
 				*q++ = ' ';
@@ -306,6 +305,7 @@ process_text_body_part(
 	t_bool decode = TRUE;
 	t_bool in_sig = FALSE;			/* Set when in sig portion */
 	t_bool in_uue = FALSE;			/* Set when in uuencoded section */
+	t_part *curruue = NULL;
 
 	fseek(in, part->offset, SEEK_SET);
 
@@ -318,10 +318,9 @@ process_text_body_part(
 	if (IS_PLAINTEXT(part))
 		decode = FALSE;
 #endif /* !LOCAL_CHARSET */
+
 	if ((charset = get_param(part->params, "charset")) == NULL)
 		decode = FALSE;				/* Impossible in practice, since it defaults */
-
-fprintf(stderr, "decoding %s part\n", content_encodings[part->encoding]);
 
 	if (part->encoding == ENCODING_BASE64)
 		(void) mmdecode(NULL, 'b', 0, NULL, NULL);		/* flush */
@@ -363,29 +362,36 @@ fprintf(stderr, "decoding %s part\n", content_encodings[part->encoding]);
 		if (!in_sig) {
 			if (strcmp (line, SIGDASHES) == 0) {
 				in_sig = TRUE;
-				if (in_uue)
+				if (in_uue) {
 					in_uue = FALSE;
+					put_cooked (C_UUE, txt_uue, "incomplet ", curruue->lines, get_filename(curruue->params));
+				}
 			}
 		}
 
-		if (!reveal_uue) {
+		if (hide_uue) {
 			int offsets[6];
 			int size_offsets = sizeof(offsets)/sizeof(int);
-			t_bool is_uubody = FALSE;
-			t_part *curruue = 0;
+			t_bool is_uubody = FALSE;		/* Set if this line looks like a uuencoded line */
 
+			/*
+			 * Look for the start or the end of a uuencoded section
+			 */
 			if (pcre_exec (uubegin_regex.re, uubegin_regex.extra, line, len, 0, 0, offsets, size_offsets) != PCRE_ERROR_NOMATCH) {
 				in_uue = TRUE;
 				curruue = new_uue(&part, line+offsets[1]);
 				continue;
 			} else if (strncmp (line, "end\n", 4) == 0) {
 				if (in_uue) {
-					put_cooked (C_UUE, "[-- uuencoded file, %d lines, name: %s --]\n\n", curruue->lines, get_filename(curruue->params));
 					in_uue = FALSE;
+					put_cooked (C_UUE, txt_uue, "", curruue->lines, get_filename(curruue->params));
+					continue;				/* To stop 'end' line appearing */
 				}
-				continue;				/* To stop 'end' line appearing */
 			}
 
+			/*
+			 * See if this line looks like a uuencoded line
+			 */
 			if (MATCH_REGEX (uubody_regex, line, len)) {
 				int sum = (((*line) - ' ') & 077) *4/3;		/* uuencode octet checksum */
 
@@ -396,29 +402,38 @@ fprintf(stderr, "decoding %s part\n", content_encodings[part->encoding]);
 					is_uubody = TRUE;
 				else if (len == sum+1+1)
 					is_uubody = TRUE;
-/*fprintf(stderr, "is_uubody=%d, sum = %d, len = %d\n", is_uubody, sum, len);*/
+#ifdef DEBUG
+if (debug == 2)
+	fprintf(stderr, "%s sum=%d len=%d (%s)\n", bool_unparse(is_uubody), sum, len, line);
+#endif /* DEBUG */
 			}
 
 			if (in_uue) {
 				if (is_uubody)
 					curruue->lines++;
 				else {
-					fprintf(stderr, "not a uue line while reading a uue body?\n");
 #if 0
-					put_cooked (C_UUE, "[-- uuencoded file, %d lines, name: %s --]\n\n", curruue->lines, get_filename(curruue->params));
+#	ifdef DEBUG
+		if (debug == 2)
+			fprintf(stderr, "not a uue line while reading a uue body?\n");
+#	endif /* DEBUG */
 					in_uue = FALSE;
-#endif
+					put_cooked (C_UUE, txt_uue, "incomplete ", curruue->lines, get_filename(curruue->params));
+#endif /* 0 */
 				}
 			} else {
+#if 0
 				if (is_uubody) {
-					char name[] = "(partial)";
-fprintf(stderr, "start of headerless uue (%s) len=%d (%s)\n", line, len, line);
+					char name[] = "(missing)";
 					curruue = new_uue(&part, name);
+					curruue->lines++;				/* We never saw a begin line */
 					in_uue = TRUE;
 					continue;
 				}
+#endif /* 0 */
 			}
 		}
+
 		if (in_uue || (in_sig && !tinrc.show_signatures))
 			continue;
 
@@ -441,7 +456,6 @@ fprintf(stderr, "start of headerless uue (%s) len=%d (%s)\n", line, len, line);
 
 		if (MATCH_REGEX (url_regex, line, len))
 			flags |= C_URL;
-
 		if (MATCH_REGEX (mail_regex, line, len))
 			flags |= C_MAIL;
 
@@ -462,13 +476,19 @@ fprintf(stderr, "start of headerless uue (%s) len=%d (%s)\n", line, len, line);
 /* How about if !isprint() && !isctrl() - expand_ctrl_chars is done at display time */
 		ConvertBody2Printable (line);
 #endif /* 0 */
-/* TODO intregrate above into below */
+/* TODO integrate above into expand_ctrl_chars */
 
 		if (expand_ctrl_chars (to, line, sizeof(to)))
 			flags |= C_CTRLF;				/* Line contains form-feed */
 
 		put_cooked (flags, "%s", to);
 	} /* for */
+
+	/*
+	 * Were we reading uue and ran off the end ?
+	 */
+	if (in_uue)
+		put_cooked (C_UUE, txt_uue, "incomplete ", curruue->lines, get_filename(curruue->params));
 }
 
 
@@ -555,11 +575,12 @@ cook_article(
 	t_bool uue)
 {
 	char *line;
+	int header_put = FALSE;
 	struct t_header *hdr = &artinfo->hdr;
 
 	art = artinfo;				/* Global saves lots of passing artinfo around */
 	tabwidth = tabs;
-	reveal_uue = uue;
+	hide_uue = uue;
 
 	if (!(art->cooked = tmpfile()))
 		return FALSE;
@@ -574,15 +595,20 @@ cook_article(
 	while ((line = tin_fgets (artinfo->raw, TRUE)) != (char *) 0) {
 		if (line[0] == '\0') {				/* End of headers ? */
 			if (STRIP_ALTERNATIVE(artinfo)) {
-				if (header_wanted(_(txt_info_x_conversion_note)))
+				if (header_wanted(_(txt_info_x_conversion_note))) {
+					header_put = TRUE;
 					put_cooked (C_HEADER, _(txt_info_x_conversion_note));
+				}
 			}
-			put_cooked (0, "\n");			/* put a newline after headers */
+			if (header_put)
+				put_cooked (0, "\n");		/* put a newline after headers */
 			break;
 		}
 
-		if (header_wanted(line))	/* Put cooked data */
+		if (header_wanted(line)) {	/* Put cooked data */
+			header_put = TRUE;
 			put_cooked (C_HEADER, "%s\n", rfc1522_decode(line));
+		}
 	}
 
 	if (tin_errno != 0)
@@ -605,6 +631,7 @@ cook_article(
 				continue;
 
 			put_cooked (C_ATTACH, _(txt_attach),
+				ptr->depth * 4, "",
 				content_types[ptr->type], ptr->subtype,
 				content_encodings[ptr->encoding], ptr->lines,
 				(name)?", name: ":"", (name)?name:"");
@@ -623,6 +650,7 @@ cook_article(
 			char *name = get_filename(hdr->ext->params);
 
 			put_cooked (C_ATTACH, _(txt_attach),
+					0, "",
 					content_types[hdr->ext->type], hdr->ext->subtype,
 					content_encodings[hdr->ext->encoding], hdr->ext->lines,
 					(name)?", name: ":"", (name)?name:"");

@@ -55,6 +55,7 @@
 #	define ENCODING_7BIT			0
 #	define ENCODING_QP				1
 #	define ENCODING_BASE64			2
+#	define ENCODING_UUE				5
 
 #	define DISP_INLINE				0
 #	define DISP_ATTACH				1
@@ -90,6 +91,7 @@ typedef struct part
 	t_param *params;			/* List of Content-Type parameters */
 	long offset;				/* offset in article of the text of attachment */
 	int lines;					/* # lines in this part */
+	int depth;					/* For multipart within multipart */
 	struct part *uue;			/* UUencoded section information */
 	struct part *next;			/* next part */
 } t_part;

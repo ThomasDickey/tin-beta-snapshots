@@ -151,7 +151,7 @@ debug_print_header (
 			bool_unparse(s->killed),
 			bool_unparse(s->selected));
 		fprintf (fp,"subj=[%-38s]\n", s->subject);
-		fprintf (fp,"date=[%ld]  from=[%s]  name=[%s]\n", s->date, s->from,
+		fprintf (fp,"date=[%ld]  from=[%s]  name=[%s]\n", (long)s->date, s->from,
 			(s->name ? s->name : ""));
 		fprintf (fp,"msgid=[%s]  refs=[%s]\n",
 			(s->msgid ? s->msgid : ""),
@@ -328,7 +328,7 @@ debug_print_filter (
 		the_filter->icase, bool_unparse(bool_not(the_filter->icase)),
 		the_filter->lines_cmp, the_filter->lines_num);
 	fprintf (fp, "       subj=[%s] from=[%s] msgid=[%s]\n",
-		(the_filter->subj  ? the_filter->subj  : ""),
+		BlankIfNull(the_filter->subj),
 		(the_filter->from  ? the_filter->from  : ""),
 		(the_filter->msgid ? the_filter->msgid : ""));
 

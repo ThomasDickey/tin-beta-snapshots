@@ -322,8 +322,6 @@ struct t_config tinrc = {
 	FALSE,		/* catchup_read_groups */
 	TRUE,		/* confirm_action */
 	TRUE,		/* confirm_to_quit */
-	TRUE,		/* display_mime_allheader_asis */
-	FALSE,		/* display_mime_header_asis */
 #ifdef USE_INVERSE_HACK
 	TRUE,		/* draw_arrow */
 #else
@@ -366,6 +364,7 @@ struct t_config tinrc = {
 	FALSE,		/* show_score */
 	TRUE,		/* show_signatures */
 	FALSE,		/* show_xcommentto */
+	FALSE,		/* hide_uue */
 	TRUE,		/* sigdashes */
 	TRUE,		/* signature_repost */
 	FALSE,		/* space_goto_next_unread */
