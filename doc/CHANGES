@@ -1,10 +1,35 @@
--- 1.5.4 release 20000511 "1959" --
+-- 1.5.4 release 20000523 "1959" --
+
+U033) Robert Brady <rwb197@ecs.soton.ac.uk>
+      ADD. english translation
+      FIX. en_GB.po
+
+U032) Toomas Soome <tsoome@ut.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+U031) Kai Bojens <kbojens@herkules.on-luebeck.de>
+      Sven Hartge <hartge@ds9.argh.org>
+      ADD. updated german translation
+      FIX. de.po
+
+ 024) Dirk Nimmich <nimmich@uni-muenster.de>
+      BUG. possible core on empty groups with out of sync overviews
+      FIX. art.c
+
+U030) Dirk Nimmich <nimmich@uni-muenster.de>
+      BUG. last line in qp-encodet arts isn't always displayed
+      FIX. cook.c
 
 U029) Jason Faultless <jason@radar.tele2.co.uk>
       Urs Janssen <urs@tin.org>
       BUG. missing initialization artinfo and hdr
-      ADD. $MAILCAPS parsing and mime.types fallback
-      FIX. Makefile[.in], feed.c, mailcap.c, rfc2045.c
+      ADD. rewrote mailcaps parsing, added $MAILCAPS support and recommended
+           fallbacks, added mime.types fallback
+      ADD. renamed rfc2045[.hc] to rfc2046.[hc], rfc1521.c to rfc2045.c
+           and rfc1522.c to rfc2047.c
+      FIX. Makefile[.in], POTFILES.in, curses.c, feed.c, mailcap.c, rfc1524.c
+           rfc2046.c, mime.types
 
 U028) Jason Faultless <jason@radar.tele2.co.uk>
       BUG. possible errors/crashes when 'q'uitting during article load
@@ -19,7 +44,8 @@ U028) Jason Faultless <jason@radar.tele2.co.uk>
 
  023) Urs Janssen <urs@tin.org>
       BUG. add Sender to FORGERY cancels
-      FIX. post.c
+      BUG. toplevel domains .kh and .zw not recognized
+      FIX. policy.h, post.c
 
  021) Urs Janssen <urs@tin.org>
       BUG. removed unsupported o from TIN_EDIT_KEYS_EXT
@@ -27,7 +53,7 @@ U028) Jason Faultless <jason@radar.tele2.co.uk>
 
 U027) Thomas E. Dickey <dickey@clark.net>
       ADD. several configure cleanups/improvements
-      BUG. 
+      BUG.
       FIX. aclocal.m4, configure[.in], autoconf.h[in], makefile[.in]
            Makefile[.in], extern.h, cook.c, curses.c, lang.c, pgp.c
            rfc2045.c, wildmat.c

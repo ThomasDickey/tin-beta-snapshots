@@ -56,9 +56,9 @@
 #ifndef TIN_POLICY_H
 #	include	"policy.h"
 #endif /* !TIN_POLICY_H */
-#ifndef RFC2045_H
-#	include	"rfc2045.h"
-#endif /* !RFC2045_H */
+#ifndef RFC2046_H
+#	include	"rfc2046.h"
+#endif /* !RFC2046_H */
 
 /*
  * defines to control GNKSA-checks behaviour:

@@ -34,7 +34,7 @@ The main structure consists of pointers to the regular RFC822 headers
 Persistant headers are stored in a simple linked list
 
 Every article has a pointer to an 'ext' structure (of type t_part) which holds
-extended header information. 
+extended header information.
 
 If there are attachments, then the ext structure is the head of a linked
 list of attachments.
@@ -56,7 +56,7 @@ lines		The number of lines of raw text in this attachment. The number of
 			body
 uue			A linked list of uuencoded sections found in the current t_part
 			The uue filename is found in a parameter called 'name'
-		
+
 
 
 The code tries to conform to the following RFC's

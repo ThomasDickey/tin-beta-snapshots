@@ -47,9 +47,9 @@
 #ifndef MENUKEYS_H
 #	include  "menukeys.h"
 #endif /* !MENUKEYS_H */
-#ifndef RFC2045_H
-#	include  "rfc2045.h"
-#endif /* !RFC2045_H */
+#ifndef RFC2046_H
+#	include  "rfc2046.h"
+#endif /* !RFC2046_H */
 
 #define PAGE_HEADER	4
 
@@ -1207,13 +1207,12 @@ load_article(
 	} else
 		goto already_open;
 #endif /* 0 */
-	if (new_respnum == this_resp)
-{
+	if (new_respnum == this_resp) {
 #ifdef DEBUG
 fprintf(stderr, "ART %d already open\n", new_respnum);
 #endif /* DEBUG */
 		goto already_open;
-}
+	}
 
 	art_close (&pgart);			/* close previously opened art in pager */
 

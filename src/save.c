@@ -47,9 +47,9 @@
 #ifndef MENUKEYS_H
 #	include  "menukeys.h"
 #endif /* !MENUKEYS_H */
-#ifndef RFC2045_H
-#	include  "rfc2045.h"
-#endif /* !RFC2045_H */
+#ifndef RFC2046_H
+#	include  "rfc2046.h"
+#endif /* !RFC2046_H */
 
 #ifdef HAVE_UUDEVIEW_H
 #	ifndef __UUDEVIEW_H__
@@ -1581,7 +1581,7 @@ print_art_seperator_line (
 		my_fputc ('\n', fp);
 }
 
-
+#if 0
 static void
 start_viewer(
 	char *app,
@@ -1622,7 +1622,7 @@ start_viewer(
 	wait_message(1, "Starting %s\n", viewer);
 	system(viewer);
 }
-
+#endif /* 0 */
 
 #define HAVE_UUDECODE 1
 #ifdef HAVE_UUDECODE
@@ -1706,17 +1706,20 @@ decode_save_one(
 	fclose(fp);
 
 	sprintf(buf, "View '%s' (%s/%s) ? (y/n): ", savefile, content_types[ptr->type], ptr->subtype);
-	if (prompt_yn (cLINES, buf, FALSE) == 1) {
-		char *app;
+	if (prompt_yn (cLINES, buf, TRUE) == 1) {
+		t_mailcap *foo;
 
-		if ((app = lookup_mailcap (ptr->type, ptr->subtype)) != NULL) {
-			start_viewer (app, savepath);
-			free (app);
-			/* TODO redraw screen if (needstermainal) */
+		foo = get_mailcap_entry(ptr);
+		if (foo != (t_mailcap *) 0) {
+			char buff[LEN];
+			wait_message(2, "Starting: (%s)", foo->command);
+			/* are the () needed if foo->command holds more then one cmd? */
+			snprintf(buff, sizeof(buff) - 1, "(%s)", foo->command);
+			system(foo->command);
+			free_mailcap(foo);
 		} else
 			wait_message (2, "No viewer found for %s/%s\n", content_types[ptr->type], ptr->subtype);
 	}
-
 	sprintf(buf, "Save '%s' (%s/%s) ? (y/n): ", savefile, content_types[ptr->type], ptr->subtype);
 	if (prompt_yn (cLINES, buf, FALSE) != 1)
 		unlink (savepath);
@@ -1762,7 +1765,7 @@ decode_save_mime(
 static void
 uudecode_line(
 	char *buf,
-	FILE *fp) 
+	FILE *fp)
 {
 	char *p = buf;
 	int n;
@@ -1789,7 +1792,7 @@ uudecode_line(
 				ch = DEC (p[1]) << 4 | DEC (p[2]) >> 2;
 				fputc (ch, fp);
 			}
-		}			
+		}
 	}
 	return;
 }

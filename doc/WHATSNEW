@@ -13,7 +13,7 @@ New Features
      UUEncoded sections can optionally be displayed as attachments
         See hide_uue on the manpage/tinrc file
      ^H now switches to view of original 'raw' article
-     
+
 . Searched for strings are highlighted
      'B'ody search goes direct to match in article
 

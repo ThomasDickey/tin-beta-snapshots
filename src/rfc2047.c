@@ -1,6 +1,6 @@
 /*
  *  Project   : tin - a Usenet reader
- *  Module    : rfc1522.c
+ *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : September '95
  *  Updated   : 1998-04-05

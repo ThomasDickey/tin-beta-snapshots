@@ -1,5 +1,8 @@
 Bugs
 ----
+o  thread_articles=0 lacks score for read arts if show_score=ON and
+   kill_level>=1
+
 o  make intsall_sysdefs overwrites an existing tin.defaults file without
    making a backup
 
@@ -149,6 +152,14 @@ o  when enabling the 'cc/bcc on every message that is sent', and
 
 New features
 ------------
+o  check if servers high mark is lower as the one in users newsrc, if so
+   issue a warning and allow the luser to reset the highmark in the newsrc
+   to the servers 'l'ow or the servers 'h'igh mark or 'i'gnore it.
+
+o  check if the articles Subject/From in the pager matches the one on the
+   overview file (if available) - if not issue a warning that the servers
+   overviews seem to be broken. trust the headers, not overviews.
+
 o  check if server supports HEADERS, if so use
    HEADERS - Subject From Date Message-ID References Lines Newsgroups
    instead of OVER or XOVER
@@ -157,7 +168,7 @@ o  make hide_uu a 3 way toggle for the attributes file (not tinrc).
       0 = don't hide uu-parts
       1 = hide full uu-parts incl. begin/end
       2 = hide uu-lines (might have many false positives)
- 
+
 o  add human readable timestamps to connection dates in tinrc
    [Urs Janssen <urs@tin.org>]
 

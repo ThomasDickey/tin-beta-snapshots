@@ -5,6 +5,7 @@ src/auth.c
 src/charset.c
 src/color.c
 src/config.c
+src/cook.c
 src/curses.c
 src/debug.c
 src/envarg.c
@@ -22,6 +23,7 @@ src/joinpath.c
 src/lang.c
 src/list.c
 src/mail.c
+src/mailcap.c
 src/main.c
 src/makecfg.c
 src/memory.c
@@ -38,8 +40,10 @@ src/prompt.c
 src/read.c
 src/refs.c
 src/regex.c
-src/rfc1521.c
-src/rfc1522.c
+src/rfc1524.c
+src/rfc2045.c
+src/rfc2046.c
+src/rfc2047.c
 src/save.c
 src/screen.c
 src/search.c
