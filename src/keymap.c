@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2001-11-10
+ *  Updated   : 2002-12-01
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2002 Dirk Nimmich <nimmich@uni-muenster.de>
@@ -912,9 +912,6 @@ read_keymap_file(
 	char key;
 	int i;
 	t_bool ret = TRUE;
-
-	if (!batch_mode)
-		wait_message(0, _(txt_reading_keymap_file));
 
 	/*
 	 * checks TIN_HOMEDIR/HOME/TIN_DEFAULTS_DIR

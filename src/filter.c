@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2002-07-10
+ *  Updated   : 2002-12-01
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -313,7 +313,7 @@ read_filter_file(
 	if ((fp = fopen(file, "r")) == NULL)
 		return FALSE;
 
-	if (!batch_mode)
+	if (!batch_mode || (batch_mode && verbose))
 		wait_message(0, _(txt_reading_filter_file));
 
 	(void) time(&current_secs);

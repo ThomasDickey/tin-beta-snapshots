@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 1997-12-28
+ *  Updated   : 2002-12-01
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -95,7 +95,7 @@ read_newsrc(
 		newsrc_mode = statbuf.st_mode;
 
 	if ((fp = fopen(newsrc_file, "r")) != NULL) {
-		if (!batch_mode)
+		if (!batch_mode || (batch_mode && verbose))
 			wait_message(0, _(txt_reading_newsrc));
 
 		while ((grp = tin_fgets(fp, FALSE)) != NULL) {
@@ -799,7 +799,7 @@ parse_unread_arts(
 	struct t_group *group)
 {
 	long unread = 0;
- 	long bitmin, bitmax;
+	long bitmin, bitmax;
 	register int i;
 	t_bitmap *newbitmap = (t_bitmap *) 0;
 

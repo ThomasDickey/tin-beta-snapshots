@@ -263,7 +263,22 @@ convert_tex2iso(
 	t_bool ex;
 
 	/* initialize tex_to */
-	if (strcasecmp(tinrc.mm_local_charset, "UTF-8")) {
+	/*
+	 * Charsets which have german umlauts incl. sharp s at the same
+	 * code position as ISO-8859-1
+	 * DEC-MCS, Windows-1252
+	 */
+	if (!strcasecmp(tinrc.mm_local_charset, "ISO-8859-1") ||
+		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-2") ||
+		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-3") ||
+		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-4") ||
+		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-9") ||
+		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-10") ||
+		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-13") ||
+		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-14") ||
+		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-15") ||
+		!strcasecmp(tinrc.mm_local_charset, "ISO-8859-16") ||
+		iso2asc_supported >= 0) {
 		tex_to[1] = tex_to[0] = "\344";	/* auml */
 		tex_to[3] = tex_to[2] = "\366";	/* ouml */
 		tex_to[5] = tex_to[4] = "\374";	/* uuml */
@@ -271,7 +286,7 @@ convert_tex2iso(
 		tex_to[9] = tex_to[8] = "\326";	/* Ouml */
 		tex_to[11] = tex_to[10] = "\334";	/* Uuml */
 		tex_to[14] = tex_to[13] = tex_to[12] = "\337"; /* szlig */
-	} else { /* locale charset is UTF-8 */
+	} else if (!strcasecmp(tinrc.mm_local_charset, "UTF-8")) { /* locale charset is UTF-8 */
 		tex_to[1] = tex_to[0] = "\303\244";	/* auml */
 		tex_to[3] = tex_to[2] = "\303\266";	/* ouml */
 		tex_to[5] = tex_to[4] = "\303\274";	/* uuml */
@@ -279,6 +294,9 @@ convert_tex2iso(
 		tex_to[9] = tex_to[8] = "\303\266";	/* Ouml */
 		tex_to[11] = tex_to[10] = "\303\234";	/* Uuml */
 		tex_to[14] = tex_to[13] = tex_to[12] = "\303\237";	/* szlig */
+	} else {
+		strcpy(to, from);
+		return;
 	}
 
 	*to = '\0';

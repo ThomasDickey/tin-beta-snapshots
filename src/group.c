@@ -1321,7 +1321,7 @@ build_sline(
 			 spaces, tmp_from);
 	}
 
-	wcstombs(buffer, wbuffer, BUFSIZ);
+	wcstombs(buffer, wbuffer, BUFSIZ - 1);
 #else
 	arts_sub[len_subj - 12 + 1] = '\0';
 

@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2001-07-22
+ *  Updated   : 2002-12-04
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2002 Iain Lea <iain@bricbrac.de>
@@ -489,7 +489,6 @@ art_edit(
 {
 	char article_filename[PATH_LEN];
 	char temp_filename[PATH_LEN];
-	t_bool ret = FALSE;
 
 	/*
 	 * Check if news / mail group
@@ -505,13 +504,11 @@ art_edit(
 	if (!backup_file(article_filename, temp_filename))
 		return FALSE;
 
-	if (invoke_editor(temp_filename, 1)) {
-		rename_file(temp_filename, article_filename);
-		ret = TRUE;
-	} else {
+	if (!invoke_editor(temp_filename, 1)) {
 		unlink(temp_filename);
-		ret = FALSE;
-	}
+		return FALSE;
+	} else
+		rename_file(temp_filename, article_filename);
 
-	return ret;
+	return TRUE;
 }

@@ -368,7 +368,7 @@ extern int parse_from(const char *from, char *address, char *realname);
 	extern void buffer_to_network(char *line, int mmnwcharset);
 #endif /* LOCAL_CHARSET || MAC_OS_X || CHARSET_CONVERSION */
 
-extern void process_charsets(char **line, int *max_line_len, const char *network_charset, const char *local_charset);
+extern void process_charsets(char **line, int *max_line_len, const char *network_charset, const char *local_charset, t_bool conv_tex2iso);
 #ifdef HAVE_COLOR
 	extern t_bool toggle_color(void);
 	extern void show_color_status(void);
@@ -561,7 +561,7 @@ extern void unfold_header(char *line);
 
 /* rfc2047.c */
 extern char *rfc1522_decode(const char *s);
-extern char *rfc1522_encode(char *s, struct t_group *group, t_bool ismail);
+extern char *rfc1522_encode(char *s, const char *charset, t_bool ismail);
 extern int mmdecode(const char *what, int encoding, int delimiter, char *where);
 extern void rfc15211522_encode(const char *filename, constext *mime_encoding, struct t_group *group, t_bool allow_8bit_header, t_bool ismail);
 

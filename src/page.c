@@ -950,7 +950,11 @@ print_message_page(
 	int help_level)
 {
 	char *line;
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t wline[LEN];
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	char *p;
+	int bytes;
 	size_t i = begin;
 	t_lineinfo *curr;
 
@@ -964,8 +968,21 @@ print_message_page(
 		if ((line = tin_fgets(file, FALSE)) == NULL)
 			break;	/* ran out of message */
 
-		if ((int) strlen(line) >= cCOLS)
-			line[cCOLS] = '\0';
+		bytes = strlen(line);
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if (mbstowcs(wline, line, ARRAY_SIZE(wline) - 1) != (size_t) -1) {
+			if (wcswidth(wline, ARRAY_SIZE(wline) - 1) >= cCOLS) {
+				int tmp;
+
+				wline[cCOLS] = (wint_t) '\0';
+				if ((tmp = (int) wcstombs(NULL, wline, 0)) > 0)
+					bytes = tmp;
+			}
+		} else
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			if ((int) strlen(line) >= cCOLS)
+				bytes = cCOLS;
+		line[bytes] = '\0';
 
 		/*
 		 * rotN encoding on body and sig data only

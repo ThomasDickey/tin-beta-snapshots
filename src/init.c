@@ -567,7 +567,7 @@ init_selfinfo(
 
 	if (myentry == NULL) {
 		error_message(_(txt_error_passwd_missing));
-		tin_done(EXIT_FAILURE);
+		giveup();
 	}
 	strcpy(userid, myentry->pw_name);
 
@@ -588,14 +588,14 @@ init_selfinfo(
 	/* TODO: get_user_name() uses $USER, not $USERNAME */
 	if ((ptr = getenv("USERNAME")) == NULL) {
 		error_message(_(txt_env_var_not_found), "USERNAME");
-		tin_done(EXIT_FAILURE);
+		giveup();
 	}
 	my_strncpy(userid, ptr, sizeof(userid));
 
 	/* TODO: why not also check for $TIN_HOMEDIR? */
 	if ((ptr = getenv("HOME")) == NULL) {
 		error_message(_(txt_env_var_not_found), "HOME");
-		tin_done(EXIT_FAILURE);
+		giveup();
 	}
 	my_strncpy(homedir, ptr, sizeof(homedir));
 #endif /* !M_AMIGA */
@@ -717,7 +717,11 @@ init_selfinfo(
 	 */
 	if (domain_name[0] == '\0') {
 		error_message(txt_error_no_domain_name);
-		tin_done(EXIT_FAILURE);
+		giveup();
+		/*
+		 * TODO: ask the user to fall into no posting mode (can_post=FALSE)
+		 *       instead of exeting.
+		 */
 	}
 
 	/*

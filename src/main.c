@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-09-28
+ *  Updated   : 2002-12-06
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -228,15 +228,13 @@ main(
 #endif /* DEBUG_NEWSRC */
 
 	/*
-	 * Read user specific keybindings
+	 * Read user specific keybindings and input history
 	 */
-	read_keymap_file();
-
-	/*
-	 * Read input history
-	 */
-	if (!batch_mode)
+	if (!batch_mode) {
+		wait_message(0, _(txt_reading_keymap_file));
+		read_keymap_file();
 		read_input_history_file();
+	}
 
 	/*
 	 * Load the mail & news active files into active[]
@@ -265,10 +263,10 @@ main(
 	/*
 	 * Load the local & global group specific attribute files
 	 */
-	if (!batch_mode /* || (batch_mode && verbose)*/) /* FIXME: NLS support missing */
+	if (!batch_mode || (batch_mode && verbose))
 		wait_message(0, _(txt_reading_attributes_file), _(txt_global));
 	read_attributes_file(TRUE);
-	if (!batch_mode /* || (batch_mode && verbose)*/)
+	if (!batch_mode || (batch_mode && verbose))
 		wait_message(0, _(txt_reading_attributes_file), "");
 	read_attributes_file(FALSE);
 
@@ -325,9 +323,7 @@ main(
 	 * don't read newsrc.
 	 * This makes -Z handle command line newsgroups. Test & document
 	 */
-
 	read_newsrc_lines = read_newsrc(newsrc, FALSE);
-
 	no_write = tmp_no_write; /* restore old value */
 
 	/*
@@ -355,6 +351,12 @@ main(
 	 * Mail any new articles to specified user
 	 * or
 	 * Save any new articles to savedir structure for later reading
+	 *
+	 * FIXME: this currentyl doen't work, see comments in
+	 *        check_start_save_any_news()
+	 * TODO: should we temporarely set
+	 *       getart_limit=-1,thread_arts=0,sort_art_type=0
+	 *       for speed reasons?
 	 */
 	if (mail_news || save_news) {
 		do_update(FALSE);

@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-11-11
+ *  Updated   : 2002-12-05
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -578,16 +578,20 @@ global_look_for_multipart_info(
 	pch = strrchr(subj, start);
 	if (!pch || !isdigit((int) pch[1]))
 		return 0;
+
 	tmp.base_index = aindex; /* This could be confusing because we are actually storing the index into arts, not the base_index. */
 	tmp.subject_compare_len = pch - subj;
 	tmp.part_number = (int) strtol(pch + 1, &pch, 10);
 	if (*pch != '/' && *pch != '|')
 		return 0;
+
 	if (!isdigit((int) pch[1]))
 		return 0;
+
 	tmp.total = (int) strtol(pch + 1, &pch, 10);
 	if (*pch != stop)
 		return 0;
+
 	tmp.subject = subj;
 	*setme = tmp;
 	*offset = pch - subj;
@@ -651,12 +655,10 @@ global_get_multiparts(
 
 		part_index = tmp2.part_number - 1;
 
-		/* skip the "blah (00/102)" info messages... */
-		if (part_index < 0)
-			continue;
-
-		/* skip insane "blah (103/102) subjects... */
-		if (part_index >= tmp.total)
+		/*
+		 * skip "blah (00/102)" or "blah (103/102)" subjects
+		 */
+		if (part_index < 0 || part_index >= tmp.total)
 			continue;
 
 		/* repost check: do we already have this part? */
@@ -704,6 +706,7 @@ thread_by_multipart(
 			if (minfo[j].part_number != -1) {
 				if (threadNum != -1)
 					arts[minfo[j].base_index].thread = threadNum;
+
 				arts[minfo[j].base_index].inthread = TRUE;
 				threadNum = minfo[j].base_index;
 				parent = j;
@@ -897,8 +900,8 @@ parse_headers(
 	char art_trunc_subj[HEADER_LEN];
 	char *hdr, *ptr;
 	const char *s;
-	int lineno = 0;
-	int max_lineno = 25;
+	unsigned int lineno = 0;
+	unsigned int max_lineno = 25;
 	t_bool got_from, got_lines, got_received;
 
 	got_from = got_lines = got_received = FALSE;
@@ -1050,15 +1053,15 @@ parse_headers(
  * return the new value of 'top_art' or -1 if user quit partway.
  *
  * Format:
- * 	 1.  article number (ie. 183)                [mandatory]
- * 	 2.  Subject: line  (ie. Which newsreader?)  [mandatory]
- * 	 3.  From: line     (ie. iain@ecrc.de)       [mandatory]
- * 	 4.  Date: line     (rfc822 format)          [mandatory]
- * 	 5.  MessageID:     (ie. <123@ether.net>)    [mandatory]
- * 	 6.  References:    (ie. <message-id> ....)  [mandatory]
- * 	 7.  Byte count     (Skipped - not used)     [mandatory]
- * 	 8.  Lines: line    (ie. 23)                 [optional]
- * 	 9.  Xref: line     (ie. alt.test:389)       [optional]
+ * 	1.  article number (ie. 183)                [mandatory]
+ * 	2.  Subject: line  (ie. Which newsreader?)  [mandatory]
+ * 	3.  From: line     (ie. iain@ecrc.de)       [mandatory]
+ * 	4.  Date: line     (rfc822 format)          [mandatory]
+ * 	5.  MessageID:     (ie. <123@ether.net>)    [mandatory]
+ * 	6.  References:    (ie. <message-id> ....)  [mandatory]
+ * 	7.  Byte count     (Skipped - not used)     [mandatory]
+ * 	8.  Lines: line    (ie. 23)                 [optional]
+ * 	9.  Xref: line     (ie. alt.test:389)       [optional]
  */
 static int
 read_nov_file(
@@ -1342,6 +1345,24 @@ read_nov_file(
  * 	7. Byte count     (Skipped - not used)     [mandatory]
  * 	8. Lines: line    (ie. 23)                 [mandatory]
  * 	9. Xref: line     (ie. alt.test:389)       [optional]
+ *
+ * TODO: as we don't use the original data, we currently can't store
+ *       the data (from/subject) in the original charset (we don't store
+ *       that info). this has the advantage that we can avoid raw 8bit data
+ *       in our overviews, but the disadvantage that we might store the data
+ *       with a wrong charset and thus lose information. a simmiliar problem
+ *       exists with the data for the from:-line, we don't store it in the
+ *       original format, whenever our from-parser (partially) fails we'll
+ *       lose informations in our overviews (but those couldn't be handeled
+ *       by tin anyway, so this is not a real problem).
+ *       long-term solution: store the original data in the overview
+ *       (tin has to handle raw 8bit data and other ugly stuff in the
+ *       overviews anyway and thus we preserver as much info as possible)
+ *       this would require some changes in read_nov_file() and
+ *       prase_headres(): don't do the decoding/unfolding there, but in a
+ *       second pass right after write_nov_file(), or two additional fields
+ *       which hold the raw data for from/subject. the laster has the
+ *       disadvantage that it costs (much) more memory.
  */
 void
 write_nov_file(
@@ -1362,17 +1383,13 @@ write_nov_file(
 
 	/*
 	 * setup the overview file (local only)
-	 */
-
-	/*
+	 *
 	 * don't write an overview file if R_OK returns a different name
 	 * than W_OK, since we won't read it anyway.
 	 */
-
 	STRCPY(tmp, ((((nov_file = find_nov_file(group, R_OK)) != 0)) ? nov_file : ""));
 	nov_file = find_nov_file(group, W_OK);
-
-	if (strcmp(tmp, nov_file) != 0)
+	if (strcmp(tmp, nov_file))
 		return;
 
 #ifdef DEBUG
@@ -1380,9 +1397,7 @@ write_nov_file(
 		error_message("WRITE file=[%s]", nov_file);
 #endif /* DEBUG */
 
-	fp = open_xover_fp(group, "w", 0L, 0L);
-
-	if (fp == NULL)
+	if ((fp = open_xover_fp(group, "w", 0L, 0L)) == NULL)
 		error_message(_(txt_cannot_write_index), nov_file);
 	else {
 		if (group->attribute && group->attribute->sort_art_type != SORT_ARTICLES_BY_NOTHING)
@@ -1397,7 +1412,17 @@ write_nov_file(
 			if (article->thread != ART_EXPIRED && article->artnum >= group->xmin) {
 				char *p;
 
-				p = rfc1522_encode(article->subject, NULL, FALSE);
+				/*
+				 * TODO: instead of tinrc.mm_local_charset we'd better use UTF-8
+				 *       here and in print_from() in the CHARSET_CONVERSION case.
+				 *       note that this requires something like
+				 *          buffer_to_network(article->subject, "UTF-8");
+				 *       right bfore the rfc1522_encode() call.
+				 *
+				 *       if we would cache the original undecoded data, we could
+				 *       ignore stuff like this.
+				 */
+				p = rfc1522_encode(article->subject, tinrc.mm_local_charset, FALSE);
 				fprintf(fp, "%ld\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
 					article->artnum,
 					tinrc.post_8bit_header ? article->subject : p,
@@ -1903,7 +1928,7 @@ print_from(
 	*from = '\0';
 
 	if (article->name != NULL) {
-		p = rfc1522_encode(article->name, NULL, FALSE);
+		p = rfc1522_encode(article->name, tinrc.mm_local_charset, FALSE);
 		if (strpbrk(article->name, "\".:;<>@[]()\\") != NULL && article->name[0] != '"' && article->name[strlen(article->name)] != '"')
 			snprintf(from, sizeof(from) - 1, "\"%s\" <%s>", tinrc.post_8bit_header ? article->name : p, article->from);
 		else

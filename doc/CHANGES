@@ -1,15 +1,30 @@
--- 1.5.16 release 20021120 "" --
+-- 1.5.16 release 20021204 "" --
+
+U128) Olaf Dietrich <olaf@dtrx.de>
+      BUG. TeX2ISO was done before charset conversion
+      BUG. curses.h was prefered over ncurses[w].h
+      FIX. proto.h, charset.c, cook.c, misc.c, rfc2047.c, aclocal.m4
+
+U127) Michael Bienia <michael@vorlon.ping.de>
+      Urs Janssen <urs@tin.org>
+      ADD. make line wrapping in pager multibyte safe
+      FIX. cook.c, page.c
 
 U126) Andreas Metzler <tin-dev@downhill.at.eu.org>
-      BUG. wrap_column = 0 (cCOLS) wasn't adjusted after on screen resize
+      BUG. wrap_column=0 (cCOLS) wasn't adjusted after on screen resize
       FIX. config.c, cook.c, init.c, tin.1, tin.5
 
 U125) Urs Janssen <urs@tin.org>
       BUG. typo fixed
+      BUG. used tin_done() instead of giveup() in init_selfinfo()
+      BUG. used network_charset in cached oevrviews instead of local_charset
       ADD. autotruncation of Menu items to 35 chars
       ADD. allow negative values for wrap_column
-    [ ADD. make line wrapping in pager multibyte safe ]
-      FIX. config.c, cook.c, lang.c, tin.pot, de.po, et.po. en_GB.po
+      ADD. config.guess, config.sub update
+      ADD. don't read keymap file in batch-mode
+      FIX. proto.h, art.c, config.c, cook.c, inews.c, init.c, keymap.c
+           lang.c, main.c, misc.c, post.c, rfc2047.c, tin.1, tin.pot, de.po
+           et.po, en_GB.po, config.guess, config.sub
 
 U124) Toomas Soome <Toomas.Soome@microlink.ee>
       ADD. updated estonian translation
@@ -19,7 +34,7 @@ U124) Toomas Soome <Toomas.Soome@microlink.ee>
 
 U123) Jason Faultless <jason@altarstone.com>
       Michael Bienia <michael@vorlon.ping.de>
-      ADD. Tidy up range code
+      ADD. tidy up range code
       FIX. proto.h, group.c, init.c, select.c, tags.c, thread.c
 
 U122) Thomas E. Dickey <dickey@invisible-island.net>

@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-09-15
+ *  Updated   : 2002-12-04
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -824,7 +824,11 @@ check_article_to_be_posted(
 				errors++;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 			}
-			p = rfc1522_encode(line, *group, FALSE);
+#ifdef CHARSET_CONVERSION
+			p = rfc1522_encode(line, txt_mime_charsets[(*group)->attribute->mm_network_charset], FALSE);
+#else
+			p = rfc1522_encode(line, tinrc.mm_charset, FALSE);
+#endif /* CHARSET_CONVERSION */
 			if (GNKSA_OK != (i = gnksa_check_from(p + (cp - line) + 1))) {
 				setup_check_article_screen(&init);
 				StartInverse();
@@ -843,7 +847,11 @@ check_article_to_be_posted(
 			char *p;
 
 			found_from_lines++;
-			p = rfc1522_encode(line, *group, FALSE);
+#ifdef CHARSET_CONVERSION
+			p = rfc1522_encode(line, txt_mime_charsets[(*group)->attribute->mm_network_charset], FALSE);
+#else
+			p = rfc1522_encode(line, tinrc.mm_charset, FALSE);
+#endif /* CHARSET_CONVERSION */
 			if (GNKSA_OK != (i = gnksa_check_from(p + (cp - line) + 1))) {
 				setup_check_article_screen(&init);
 				StartInverse();
@@ -861,7 +869,11 @@ check_article_to_be_posted(
 		if (cp - line == 8 && !strncasecmp(line, "Reply-To", 8)) {
 			char *p;
 
-			p = rfc1522_encode(line, *group, FALSE);
+#ifdef CHARSET_CONVERSION
+			p = rfc1522_encode(line, txt_mime_charsets[(*group)->attribute->mm_network_charset], FALSE);
+#else
+			p = rfc1522_encode(line, tinrc.mm_charset, FALSE);
+#endif /* CHARSET_CONVERSION */
 			if (GNKSA_OK != (i = gnksa_check_from(p + (cp - line) + 1))) {
 				setup_check_article_screen(&init);
 				StartInverse();
@@ -3861,7 +3873,11 @@ insert_from_header(
 					 * from submit_mail_file() so the 3rd
 					 * arg should perhaps be TRUE
 					 */
-					p = rfc1522_encode(from_buff, NULL, FALSE);
+#ifdef CHARSET_CONVERSION
+					p = rfc1522_encode(from_buff, txt_mime_charsets[tinrc.mm_network_charset], FALSE);
+#else
+					p = rfc1522_encode(from_buff, tinrc.mm_charset, FALSE);
+#endif /* CHARSET_CONVERSION */
 					if (GNKSA_OK != gnksa_check_from(p)) { /* error in address */
 						error_message(_(txt_invalid_from), from_buff);
 						free(p);
@@ -3877,7 +3893,11 @@ insert_from_header(
 						char *p;
 
 						/* Check the From: line */
-						p = rfc1522_encode(from_name, NULL, FALSE);
+#ifdef CHARSET_CONVERSION
+						p = rfc1522_encode(from_name, txt_mime_charsets[tinrc.mm_network_charset], FALSE);
+#else
+						p = rfc1522_encode(from_name, tinrc.mm_charset, FALSE);
+#endif /* CHARSET_CONVERSION */
 						if (GNKSA_OK != gnksa_check_from(p + 6)) { /* error in address */
 							error_message(_(txt_invalid_from), from_name + 6);
 							free(p);

@@ -128,6 +128,11 @@ o  remove built in path of external commands (metamail, ispell, ...)
 
 o  overview file cacheing code is over-complex and broken in places
    - if cache-dir is removed during the session it's not recreated
+   - cache the original overview info instead of rebuilding it from
+     the processed (decoded etc.) data, no matter if it's broken (i.e.
+     contains raw 8 bit data) as we have to deal with that anyway. if there
+     are no original overviews, cache the original data from the postings
+     headers.
 
 o  tin uses the first sig-isolator as recent one, USEFOR says it should
    use the last. There is no consense that tin should follow this USEFOR
@@ -148,11 +153,6 @@ o  word_h_display_marks=0 doesn't work for the !USE_CUSRSES case
 o  raw mode loses (illegal) chars in multibyte based groups
    [20021006 Michael Bienia <michael@vorlon.ping.de>]
 
-o  long lines are wrapped at tinrc.wrap_column, no matter if we are in the
-   middle of a multibyte sequence.
-   (the new code should avoid that, but there is still a bug in it somewhere)
-   [20021102 Urs Janssen <urs@tin.org>]
-
 o  lines > 1024 bytes will lose at least 1 byte (in multibyte mode it seems
    to depend on the number of multibytesequenes) at the forced wrap after
    1024 bytes.
@@ -163,8 +163,7 @@ Posting Problems
 o  remove Message-IDs with 8bit chars in them when they occur in
    Message-ID or References header
 
-o  repost ('x') ignores ~/.tin/headers & ~/.tin/attributes - bug or
-   feature?!
+o  repost ('x') ignores ~/.tin/attributes - bug or feature?!
 
 o  forged cancelling via Supersedes:/Also-Control:/Control:-header is possible
    if it is supplied by hand (inews_prog=--internal)
@@ -180,6 +179,13 @@ o  with --enable-forgery reposting of an thread reposts only the first
 
 New features
 ------------
+o  instead of exiting when tin fails to get the systems domainname fall
+   into no posting mode (and issuie a warning).
+   [20021125 Urs Janssen <urs@tin.org>]
+
+o  add new cmd-line flag to force 'no_posting' mode
+   [20021125 Urs Janssen <urs@tin.org>]
+
 o  automatically disable TeX2ISO conversion if saving articles _and_
    postprocessing is set to != 'n'
    [20020423 Urs Janssen <urs@tin.org>]
@@ -246,7 +252,7 @@ o  if there are no tagged but hot articles in the group make 'S' work on
    the hot articles instead of complaining about no tagged arts.
    [20010824 Urs Janssen <urs@tin.org>]
 
-o  key to toggle article and thread sorting preferences on the fly
+o  add key to toggle article and thread sorting preferences on the fly
    (like 'u' for threading)
 
 o  add Content-Description evaluation for the part-overview in the
@@ -675,9 +681,6 @@ Docs/online help
 o  add instalation guide (in html)
 
 o  better document keymap feature
-
-o  replace all key references in the manuals by thier names, i.e.
-   'X' -> GroupMarkUnselArtRead
 
 o  man page always needs work
    i.e. 'U', 'V' in pager need better documentation
