@@ -3,7 +3,7 @@
  *  Module    : lock.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1998-07-27
- *  Updated   : 2001-03-11
+ *  Updated   : 2001-04-24
  *  Notes     :
  *
  * Copyright (c) 1997-2001 Urs Janssen <urs@tin.org>
@@ -183,4 +183,68 @@ fd_unlock(
 #endif /* HAVE_FCNTL */
 
 	return rval;	/* file successfully unlocked or no locking available */
+}
+
+
+/*
+ * dot_lock(filename, base_dir)
+ *
+ * try to lock filename via dotfile locking, base_dir must be ob the
+ * same device.
+ *
+ * returncodes:
+ *  TRUE  = file locked successfully
+ *  FALSE = some error occured
+ */
+t_bool dot_lock(
+	const char *filename)
+{
+	char tempfile[PATH_MAX];
+	char lockfile[PATH_MAX];
+	char *base_dir;
+	char *ptr;
+	char *file;
+	int dot_fd = -1;
+	struct stat statbuf;
+	t_bool rval = FALSE;
+
+	/* find base_dir for tmp-file to avoid cross device links */
+	base_dir = my_strdup(filename);
+	file = my_strdup(filename);		/* to lazy to use malloc here */
+	base_name(base_dir, file);
+	if ((ptr = strrstr(base_dir, file)) != (char *) 0) {
+		*ptr = '\0';
+		free(file);
+	} else {
+		free(file);
+		free(base_dir);
+		return rval;
+   }
+
+	if ((dot_fd = my_tmpfile(tempfile, sizeof(tempfile) - 1, TRUE, base_dir)) == -1) {
+		free(base_dir);
+		return rval;
+	}
+
+	free(base_dir);
+
+	snprintf(lockfile, sizeof(lockfile) - 1, "%s.lock", filename);
+
+	if (stat (lockfile, &statbuf)) {				/* lockfile doesn't exist */
+		if (!link(tempfile, lockfile)) {			/* link succsessfull */
+			if (!stat (tempfile, &statbuf)) {	/* tempfile exist */
+				if (statbuf.st_nlink == 2)			/* link count ok */
+					rval = TRUE;
+			}
+		}
+	}
+
+	close(dot_fd);
+	(void) unlink (tempfile);
+
+	if (!stat (lockfile, &statbuf)) {			/* lockfile still here */
+		if (statbuf.st_nlink != 1)					/* link count wrong? */
+			rval = FALSE;								/* shouldn't happen */
+	}
+	return rval;
 }

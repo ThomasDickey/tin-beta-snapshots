@@ -971,7 +971,8 @@ cook_article(
 	dump_cooked();
 #endif /* DEBUG_ART */
 
-	art->cookl = my_realloc ((char *)art->cookl, sizeof(t_lineinfo) * art->cooked_lines);
+	if (art->cooked_lines > 0)
+		art->cookl = my_realloc ((char *)art->cookl, sizeof(t_lineinfo) * art->cooked_lines);
 
 	rewind(art->cooked);
 

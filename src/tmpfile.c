@@ -3,7 +3,7 @@
  *  Module    : tmpfile.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 2001-03-11
- *  Updated   : 2001-03-12
+ *  Updated   : 2001-04-23
  *  Notes     :
  *
  * Copyright (c) 2001 Urs Janssen <urs@tin.org>
@@ -40,57 +40,68 @@
 
 
 /*
- * my_tmpfile(buffer, size)
+ * my_tmpfile(filename, name_size, need_name, base_dir)
  *
  * try to create a uniq tmp-file descriptor
  *
  * returncodes:
  * >0 = file descriptor of tmpfile
-        if we have to unlink the file ourself buffer if set to the
-        name of the file
+ *      if need_name is set to true and/or we have to unlink the file
+ *      ourself buffer if set to the name of the tmp file located in base_dir
  * -1 = some error occured
  */
 int
 my_tmpfile(
-	char *buffer,
-	size_t size)
+	char *filename,
+	size_t name_size,
+	t_bool need_name,
+	const char *base_dir)
 {
 	int fd = -1;
+	char buf[PATH_MAX];
 
 	errno = 0;
 
-	if (buffer != (char *) 0 && size > 0)
+	if (filename != (char *) 0 && name_size > 0) {
 #ifdef HAVE_TMPFILE
-	{
-		FILE *fp = (FILE *) 0;
-		if ((fp = tmpfile()) != (FILE *) 0)
-			fd = fileno(fp);
+		if(!need_name) {
+			FILE *fp = (FILE *) 0;
+			if ((fp = tmpfile()) != (FILE *) 0)
+				fd = fileno(fp);
 #	ifdef DEBUG
-		else
-			wait_message(5, "%s", strerror(errno));
+			else
+				wait_message(5, "HAVE_TMPFILE %s", strerror(errno));
 #	endif /* DEBUG */
-		buffer[0] = '\0';
-	}
+			*filename = '\0';
+			if (fd == -1)
+				error_message (_(txt_cannot_create_uniq_name));
+			return fd;
+		}
+#endif /* HAVE_TMPFILE */
+
+		if (base_dir) {
+			snprintf (buf, MIN(name_size, (sizeof(buf)-1)), "tin-%s-%d-XXXXXX", get_host_name(), process_id);
+			joinpath (filename, base_dir, buf);
+		} else {
+			snprintf (buf, MIN(name_size, (sizeof(buf)-1)), "tin_XXXXXX");
+			joinpath (filename, TMPDIR, buf);
+		}
+#ifdef HAVE_MKSTEMP
+		fd = mkstemp(filename);
+#	ifdef DEBUG
+		if (errno)
+			wait_message(5, "HAVE_MKSTEMP %s: %s", filename, strerror(errno));
+#	endif /* DEBUG */
 #else
-	{
-		snprintf (buffer, size, "%stin_XXXXXX", TMPDIR);
-#	ifdef HAVE_MKSTEMP
-		fd = mkstemp(buffer);
+#	ifdef HAVE_MKTEMP
+		fd = open(mktemp(filename), (O_WRONLY|O_CREAT|O_EXCL), (mode_t)(S_IRUSR|S_IWUSR));
 #		ifdef DEBUG
 		if (errno)
-			wait_message(5, "%s", strerror(errno));
+			wait_message(5, "HAVE_MKTEMP %s: %s", filename, strerror(errno));
 #		endif /* DEBUG */
-#	else
-#		ifdef HAVE_MKTEMP
-		fd = open(mktemp(buffer), (O_WRONLY|O_CREAT|O_EXCL), (mode_t)(S_IRUSR|S_IWUSR));
-#			ifdef DEBUG
-		if (errno)
-			wait_message(5, "%s", strerror(errno));
-#			endif /* DEBUG */
-#		endif /* HAVE_MKTEMP */
-#	endif /* HAVE_MKSTEMP */
-	}
-#endif /* HAVE_TMPFILE */
+#	endif /* HAVE_MKTEMP */
+#endif /* HAVE_MKSTEMP */
+		}
 	if (fd == -1)
 		error_message (_(txt_cannot_create_uniq_name));
 	return fd;

@@ -1,25 +1,25 @@
-MANIFEST for tin-1.5.9 (Mon Mar 12 04:53:50 CET 2001)
+MANIFEST for tin-1.5.9 (Sun May  6 17:24:51 CEST 2001)
 ----------------------------------------------------
   13106 ./Makefile
-   7260 ./MANIFEST
+   7261 ./MANIFEST
    1606 ./README
    2209 ./README.VMS
    1534 ./README.WIN
   89962 ./aclocal.m4
    1001 ./conf-tin
-  39138 ./config.guess
-  27459 ./config.sub
- 324508 ./configure
-  24543 ./configure.in
-   4765 ./install.sh
+  39311 ./config.guess
+  27594 ./config.sub
+ 325257 ./configure
+  24582 ./configure.in
+   5562 ./install.sh
   11929 ./makefile.in
     777 ./mkdirs.sh
   11651 ./doc/ABOUT-NLS
-  28564 ./doc/CHANGES
+  29517 ./doc/CHANGES
  153544 ./doc/CHANGES.old
    1469 ./doc/DEBUG_REFS
-  30011 ./doc/INSTALL
-  21919 ./doc/TODO
+  30726 ./doc/INSTALL
+  22285 ./doc/TODO
    1976 ./doc/WHATSNEW
    2671 ./doc/art_handling.txt
    3863 ./doc/auth.txt
@@ -28,7 +28,7 @@ MANIFEST for tin-1.5.9 (Mon Mar 12 04:53:50 CET 2001)
    3661 ./doc/internals.txt
   23621 ./doc/iso2asc.txt
    4051 ./doc/keymap.sample
-    642 ./doc/mailcap.sample
+    660 ./doc/mailcap.sample
    3365 ./doc/mime.types
    3984 ./doc/pgp.txt
    1192 ./doc/rcvars.txt
@@ -39,8 +39,8 @@ MANIFEST for tin-1.5.9 (Mon Mar 12 04:53:50 CET 2001)
    1888 ./doc/tools.txt
    5890 ./doc/mbox.5
    6963 ./doc/plp_snprintf.3
-  99182 ./doc/tin.1
-  51754 ./doc/tin.5
+  99251 ./doc/tin.1
+  51900 ./doc/tin.5
    2196 ./doc/wildmat.3
     344 ./tools/expiretover
    3815 ./tools/metamutt
@@ -58,28 +58,28 @@ MANIFEST for tin-1.5.9 (Mon Mar 12 04:53:50 CET 2001)
    6567 ./include/nntplib.h
     666 ./include/plp_snprintf.h
   12053 ./include/policy.h
-  28756 ./include/proto.h
+  29102 ./include/proto.h
    5131 ./include/rfc2046.h
    3559 ./include/stpwatch.h
    4170 ./include/tcurses.h
-  61673 ./include/tin.h
+  62482 ./include/tin.h
   11401 ./include/tinrc.h
    5500 ./include/tnntp.h
    2414 ./include/trace.h
    2773 ./include/version.h
   25323 ./src/active.c
-  37804 ./src/art.c
+  39086 ./src/art.c
   25216 ./src/attrib.c
-  12750 ./src/auth.c
+  12828 ./src/auth.c
   10698 ./src/charset.c
    8035 ./src/color.c
   68279 ./src/config.c
-  27667 ./src/cook.c
+  27696 ./src/cook.c
   28703 ./src/curses.c
   12376 ./src/debug.c
    3668 ./src/envarg.c
   21162 ./src/feed.c
-  44685 ./src/filter.c
+  45458 ./src/filter.c
   12601 ./src/getline.c
    7558 ./src/global.c
   37975 ./src/group.c
@@ -87,12 +87,12 @@ MANIFEST for tin-1.5.9 (Mon Mar 12 04:53:50 CET 2001)
    8874 ./src/header.c
   18891 ./src/help.c
   12624 ./src/inews.c
-  32326 ./src/init.c
+  32264 ./src/init.c
    3051 ./src/joinpath.c
   36976 ./src/keymap.c
   96517 ./src/lang.c
    4385 ./src/list.c
-   4792 ./src/lock.c
+   6242 ./src/lock.c
   11872 ./src/mail.c
   25036 ./src/main.c
   10280 ./src/makecfg.c
@@ -106,28 +106,28 @@ MANIFEST for tin-1.5.9 (Mon Mar 12 04:53:50 CET 2001)
   37065 ./src/page.c
   24256 ./src/parsdate.y
   16936 ./src/plp_snprintf.c
-  13141 ./src/pgp.c
- 107462 ./src/post.c
+  13150 ./src/pgp.c
+ 108947 ./src/post.c
   14832 ./src/prompt.c
-  10268 ./src/read.c
+  10420 ./src/read.c
   25020 ./src/refs.c
    4554 ./src/regex.c
   14593 ./src/rfc1524.c
    7481 ./src/rfc2045.c
-  20632 ./src/rfc2046.c
-  24132 ./src/rfc2047.c
-  36385 ./src/save.c
+  21364 ./src/rfc2046.c
+  23201 ./src/rfc2047.c
+  36463 ./src/save.c
    7169 ./src/screen.c
   12618 ./src/search.c
-  28384 ./src/select.c
+  28406 ./src/select.c
    8009 ./src/sigfile.c
   12492 ./src/signal.c
    7143 ./src/strftime.c
-  10887 ./src/string.c
+  11398 ./src/string.c
   13405 ./src/tags.c
   10118 ./src/tcurses.c
-   2869 ./src/tmpfile.c
-  33777 ./src/thread.c
+   3417 ./src/tmpfile.c
+  34140 ./src/thread.c
    2548 ./src/trace.c
    4369 ./src/wildmat.c
    7697 ./src/xref.c
@@ -210,7 +210,7 @@ MANIFEST for tin-1.5.9 (Mon Mar 12 04:53:50 CET 2001)
   35602 ./pcre/testdata/testoutput2
   28632 ./pcre/testdata/testoutput3
    1495 ./pcre/testdata/testoutput4
-  13423 ./include/autoconf.hin
+  13460 ./include/autoconf.hin
    5800 ./pcre/pcre.mms
   16865 ./src/Makefile.in
    2124 ./src/ibm437_l1.tab
@@ -277,4 +277,4 @@ MANIFEST for tin-1.5.9 (Mon Mar 12 04:53:50 CET 2001)
  169333 ./po/de.po
  164032 ./po/et.po
  113059 ./po/en_GB.po
-4596036 total
+4607908 total

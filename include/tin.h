@@ -2086,6 +2086,16 @@ typedef void (*BodyPtr) (char *, FILE *, int);
 #	endif /* HAVE_TMPNAM */
 #endif /* HAVE_TEMPNAM */
 
+#ifndef my_tmpfile_only
+/*
+ * shortcut if we arn't interrested in the tmpfiles filename/location
+ * argument can't be a pointer and if argument is changed on return
+ * we must unlik the tmp-file ourself
+ */
+#	define my_tmpfile_only(a)  my_tmpfile(a, sizeof(a)-1, FALSE, (char *) 0)
+#endif /* !my_tmpfile_only */
+
+
 /* define some standard places to look for a tin.defaults file */
 /*
  * on Amiga only those two locations make sense and maybe PROGDIR:tin.defaults,
@@ -2194,5 +2204,21 @@ extern struct tm *localtime(time_t *);
 #if !defined(EOF)
 #	define EOF -1
 #endif /* !EOF */
+
+/* various filenames used by tin */
+#ifndef VMS	/* TODO: is the VMS case needed? */
+#	define TIN_ARTICLE_NAME	".article"
+#	define TIN_CANCEL_NAME	".cancel"
+#	define TIN_LETTER_NAME	".letter"
+#else
+#	define TIN_ARTICLE_NAME	"article."
+#	define TIN_CANCEL_NAME	"cancel."
+#	define TIN_LETTER_NAME	"letter."
+#endif /* !VMS */
+
+/* THREAD_WEIGHT without THREAD_SUM doesn't make sense */
+#if defined(THREAD_WEIGHT) && !defined(THREAD_SUM)
+#	define THREAD_SUM
+#endif /* THREAD_WEIGHT && !THREAD_SUM */
 
 #endif /* !TIN_H */

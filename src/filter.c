@@ -1197,7 +1197,8 @@ quick_filter (
 t_bool
 quick_filter_select_posted_art (
 	struct t_group *group,
-	const char *subj)	/* return value is always ignored */
+	const char *subj,
+	const char *a_message_id)	/* return value is always ignored */
 {
 	t_bool filtered = FALSE;
 
@@ -1211,12 +1212,6 @@ quick_filter_select_posted_art (
 
 		if (strlen(group->name) > (sizeof(rule.scope) -1)) /* groupname to long? */
 			return FALSE;
-
-		/*
-		 * Setup dummy article with posted articles subject
-		 */
-		set_article (&art);
-		art.subject = my_strdup (subj);
 
 		/*
 		 * Setup rules
@@ -1238,9 +1233,39 @@ quick_filter_select_posted_art (
 
 		strcpy(rule.scope, group->name);
 
-		filtered = bAddFilterRule (group, &art, &rule);
+		/*
+		 * Setup dummy article with posted articles subject
+		 * xor Message-ID
+		 */
+		set_article (&art);
+		if (a_message_id) {
+			/* initialize art->refptr */
+			struct {
+				struct t_msgid *next;
+				struct t_msgid *parent;
+				struct t_msgid *sibling;
+				struct t_msgid *child;
+				int article;
+				char txt[HEADER_LEN];
+			} refptr_dummyart;
 
-		FreeIfNeeded(art.subject);
+			rule.subj_ok = FALSE;
+			rule.msgid_ok = TRUE;
+			refptr_dummyart.next = (struct t_msgid *) 0;
+			refptr_dummyart.parent = (struct t_msgid *) 0;
+			refptr_dummyart.sibling = (struct t_msgid *) 0;
+			refptr_dummyart.child = (struct t_msgid *) 0;
+			refptr_dummyart.article = ART_NORMAL;
+			my_strncpy(refptr_dummyart.txt, a_message_id, HEADER_LEN);
+			/* Hack */
+			art.refptr=(struct t_msgid *) &refptr_dummyart;
+
+			filtered = bAddFilterRule (group, &art, &rule);
+		} else {
+			art.subject = my_strdup (subj);
+			filtered = bAddFilterRule (group, &art, &rule);
+			FreeIfNeeded(art.subject);
+		}
 
 	}
 

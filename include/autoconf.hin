@@ -136,6 +136,7 @@
 #	undef pid_t
 #	undef quad_t
 #	undef size_t
+#	undef ssize_t
 #	undef time_t
 #	undef uid_t
 #	undef RETSIGTYPE
@@ -244,6 +245,7 @@
 #	undef HAVE_STRFTIME
 #	undef HAVE_STRNCASECMP
 #	undef HAVE_STRPBRK
+#	undef HAVE_STRRSTR
 #	undef HAVE_STRSTR
 #	undef HAVE_STRTOL
 #	undef HAVE_TCGETATTR

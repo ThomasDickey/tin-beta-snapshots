@@ -1118,7 +1118,7 @@ select_read_group (
 {
 	struct t_group currgrp;
 
-	if (!selmenu.max) {
+	if (!selmenu.max || selmenu.curr == -1) {
 		info_message (_(txt_no_groups));
 		return;
 	}

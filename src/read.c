@@ -247,10 +247,11 @@ tin_read (
 		}
 
 		/*
-		 * If we're looking for continuation headers, check for whitespace.
-		 * If we find some, mark this as a partial read and skip it ready for
-		 * the next read. Push a space to effectively condense leading whitespace
-		 * to a single ' '
+		 * If we're looking for continuation headers, mark this as a partial
+		 * read and put back a newline. Unfolding (removing of this newline
+		 * and whitespace, if necessary) must be done at a higher level --
+		 * there are headers where whitespace is significant even in folded
+		 * lines.
 		 */
 #ifdef NNTP_ABLE
 		if (check_dot_only_line && i == 1 && buffer[0] == '.') { /* EMPTY */
@@ -262,16 +263,17 @@ tin_read (
 				if (!i) { /* EMPTY */
 					/* Find a header separator, don't check next line. */
 				} else {
-					while ((c = fgetc (get_nntp_fp(fp))) == ' ' || c == '\t')
+					if ((c = fgetc (get_nntp_fp(fp))) == ' ' || c == '\t')
+					{
 						partial_read = TRUE;
-
-					/* Push back the 1st char after the now-skipped whitespace */
-					if (c != EOF) {
-						ungetc(c, get_nntp_fp(fp));
-						/* TODO - is this portable ? Push back a single ' ' to compress the white-space */
-						if (partial_read)
-							ungetc(' ', get_nntp_fp(fp));
+						/* This is safe because we removed at least one char above */
+						buffer[offset++] = '\n';
+						buffer[offset] = '\0';
 					}
+
+					/* Push back the 1st char of next line */
+					if (c != EOF)
+						ungetc(c, get_nntp_fp(fp));
 				}
 			}
 		}
@@ -295,11 +297,13 @@ tin_read (
  * required post-processing of the data will be done such that we look like
  * a local read to the calling function.
  *
- * Header lines:
- *   If header is TRUE, then we assume we're reading a news article header.
- *   In some cases, article headers are split over multiple lines. The rule
- *   is that if the next line starts with \t or ' ', then it will be included
- *   as part of the current line. We condense leading whitespace to a single ' '
+ * Header lines: If header is TRUE, then we assume we're reading a news
+ *   article header.  In some cases, article headers are split over multiple
+ *   lines. The rule is that if the next line starts with \t or ' ', then it
+ *   will be included as part of the current line. Line breaks are NOT
+ *   stripped (but replaced by \n) in continuated lines except the trailing
+ *   one; unfolding MUST be done at a higher level because it may be
+ *   significant or not.
  *
  * Dynamic read code based on code by <emcmanus@gr.osf.org>
  *

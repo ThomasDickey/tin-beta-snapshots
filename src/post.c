@@ -116,13 +116,6 @@
 /* When prompting for subject, display no more than 20 characters */
 #define DISPLAY_SUBJECT_LEN 20
 
-/* tmpname for responses by mail */
-#ifdef VMS
-#	define TIN_LETTER	"letter."
-#else
-#	define TIN_LETTER	".letter"
-#endif /* VMS */
-
 struct t_posted *posted;
 
 extern char article[PATH_LEN];		/* Fixed path of the file holding temp. article */
@@ -159,6 +152,7 @@ static t_bool must_include (const char *id);
 static t_bool pcCopyArtHeader (int iHeader, const char *pcArt, char *result);
 static t_bool repair_article (char *result);
 static t_bool submit_mail_file (const char *file);
+static void add_mid_header (const char *infile, const char *a_message_id);
 static void appendid (char **where, const char **what);
 static void find_reply_to_addr (char *from_addr, t_bool parse, struct t_header *hdr);
 static void join_references (char *buffer, const char *oldrefs, const char *newref);
@@ -289,7 +283,7 @@ repair_article (
 
 
 /*
- * make a backup copy of ~/.article, this is necessary since
+ * make a backup copy of ~/TIN_ARTICLE_NAME, this is necessary since
  * submit_news_file adds headers, does q-p conversion etc
  * TODO: why not use BACKUP_FILE_EXT like in misc.c?
  */
@@ -299,7 +293,7 @@ backup_article_name (
 {
 	static char name[PATH_LEN];
 
-	snprintf(name, sizeof(name)-1, "%s.bak", the_article);
+	snprintf(name, sizeof(name) - 1, "%s.bak", the_article);
 	return name;
 }
 
@@ -583,6 +577,14 @@ append_mail (
 			fclose (fp_in);
 			return rval;
 		}
+		if (!dot_lock(the_mailbox)) {
+			wait_message(5, "Couldn't dotlock %s - article not appended!", the_mailbox);
+			fd_unlock(fd);
+			fclose (fp_out);
+			fclose (fp_in);
+			return rval;
+		}
+
 		fprintf (fp_out, "%sFrom %s %s", (mmdf ? MMDFHDRTXT : ""), addr, ctime (&epoch));
 		while (fgets (buf, (int) sizeof(buf), fp_in) != (char *) 0) {
 			if (!mmdf) { /* moboxo/mboxrd style From_ quoting required */
@@ -606,6 +608,8 @@ append_mail (
 		if (fd_unlock(fd)) {
 			wait_message(4, "Can't unlock %s", the_mailbox);
 		}
+		snprintf(buf, sizeof(buf) -1, "%s.lock", the_mailbox);
+		unlink(buf);
 		fclose (fp_out);
 		rval = TRUE;
 	}
@@ -1394,7 +1398,7 @@ post_article_done:
 			if (tinrc.add_posted_to_filter && (type == POST_QUICK || type == POST_POSTPONED || type == POST_NORMAL)) {
 				if (type != POST_POSTPONED || (type == POST_POSTPONED && !strchr(header.newsgroups, ',') && (psGrp = group_find(header.newsgroups))))
 					/* TODO: log Message-ID if given in a_message_id */
-					quick_filter_select_posted_art (psGrp, header.subj);
+					quick_filter_select_posted_art (psGrp, header.subj, a_message_id);
 			}
 
 			switch (type) {
@@ -1430,16 +1434,16 @@ post_article_done:
 		}
 
 		if (tinrc.keep_posted_articles && type != POST_REPOST) {
-			/* TODO: log Message-ID if given in a_message_id */
 			char a_mailbox[LEN];
+			/* log Message-ID if given in a_message_id */
+			if (*a_message_id)
+				add_mid_header(article, a_message_id);
 			if (!strfpath (posted_msgs_file, a_mailbox, sizeof (a_mailbox), &CURR_GROUP))
 				STRCPY(a_mailbox, posted_msgs_file);
 			if (!append_mail(article, userid, a_mailbox)) {
 				/* TODO: error message */
 			}
-			
 		}
-
 		free_and_init_header (&header);
 	}
 
@@ -2193,7 +2197,7 @@ post_response (
 		ch = prompt_slk_response(iKeyPageMail, &menukeymap.post_mail_fup,
 				_(txt_resp_to_poster),
 				printascii (keymail, map_to_local (iKeyPostMail, &menukeymap.post_mail_fup)),
-				printascii (keypost, map_to_local (iKeyPost, &menukeymap.post_mail_fup)),
+				printascii (keypost, map_to_local (iKeyPostPost3, &menukeymap.post_mail_fup)),
 				printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_mail_fup)));
 		switch (ch) {
 			case iKeyPost:
@@ -2241,7 +2245,7 @@ post_response (
 
 		ch = prompt_slk_response(iKeyPostPost3, &menukeymap.post_ignore_fupto,
 					_(txt_prompt_fup_ignore),
-					printascii (keypost, map_to_local (iKeyPost, &menukeymap.post_ignore_fupto)),
+					printascii (keypost, map_to_local (iKeyPostPost3, &menukeymap.post_ignore_fupto)),
 					printascii (keyignore, map_to_local (iKeyPostIgnore, &menukeymap.post_ignore_fupto)),
 					printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_ignore_fupto)));
 		switch (ch) {
@@ -2437,8 +2441,9 @@ create_mail_headers(
 	msg_init_headers ();
 
 	joinpath (filename, homedir, suffix);
+/* TODO: why do we exclude VMS here but nowhere else? */
 #if defined(APPEND_PID) && !defined (VMS)
-	sprintf (filename+strlen(filename), ".%d", (int) process_id);
+	sprintf (filename + strlen(filename), ".%d", (int) process_id);
 #endif /* APPEND_PID && !VMS */
 
 	if ((fp = fopen (filename, "w")) == NULL) {
@@ -2628,7 +2633,7 @@ mail_to_someone (
 	 * don't add extra headers in the mail_to_someone() case as we include
 	 * the full original headers in the body of the mail
 	 */
-	if ((fp = create_mail_headers(nam, TIN_LETTER, address, subject, NULL)) == NULL)
+	if ((fp = create_mail_headers(nam, TIN_LETTER_NAME, address, subject, NULL)) == NULL)
 		return ret_code;
 
 	rewind (artinfo->raw);
@@ -2833,7 +2838,7 @@ mail_to_author (
     * add extra headers in the mail_to_author() case as we don't include the
     * full original headers in the body of the mail
     */
-	if ((fp = create_mail_headers(nam, TIN_LETTER, from_addr, subject, &note_h)) == NULL)
+	if ((fp = create_mail_headers(nam, TIN_LETTER_NAME, from_addr, subject, &note_h)) == NULL)
 		 return ret_code;
 
 	if (copy_text) {
@@ -3044,7 +3049,7 @@ cancel_article (
 
 	clear_message ();
 
-	joinpath (cancel, homedir, ".cancel");
+	joinpath (cancel, homedir, TIN_CANCEL_NAME);
 #ifdef APPEND_PID
 	sprintf (cancel+strlen(cancel), ".%d", (int) process_id);
 #endif /* APPEND_PID */
@@ -3908,6 +3913,7 @@ pcCopyArtHeader (
 		if (*ptr == '\0')
 			break;
 
+		unfold_header (ptr);
 		switch (iHeader) {
 			case HEADER_TO:
 				if (STRNCASECMPEQ(ptr, "To: ", 4) || STRNCASECMPEQ(ptr, "Cc: ", 4)) {
@@ -4096,3 +4102,51 @@ get_secret (
 	return cancel_secret;
 }
 #endif /* USE_CANLOCK */
+
+
+/*
+ * adds Message-ID Header to infile
+ */
+static void
+add_mid_header (
+	const char *infile,
+	const char *a_message_id)
+{
+	FILE *fp_in;
+	char line[HEADER_LEN];
+	char outfile[PATH_LEN];
+	int fd_out = -1;
+	ssize_t rval = (ssize_t) -1;
+	t_bool inhdrs = TRUE;
+	t_bool addedmid = TRUE;
+
+	if ((fp_in = fopen (infile, "r")) == (FILE *) 0)
+		return;
+
+	if ((fd_out = my_tmpfile(outfile, sizeof(outfile) - 1, TRUE, homedir)) == -1) {
+		fclose (fp_in);
+		return;
+	}
+
+	while ((fgets (line, (int) sizeof(line), fp_in) != (char *) 0) && addedmid) {
+		if (inhdrs) {
+			if (line[0] == '\n') {			/* End of headers */
+				inhdrs = FALSE;
+				snprintf(line, sizeof(line) - 1, "Message-ID: %s\n\n", a_message_id);
+			} else {
+				char *ptr;
+				if ((ptr = parse_header (line, "Message-ID", FALSE))) /* Article already contains a Message-ID Header */
+					addedmid = FALSE;
+			}
+		}
+		if ((rval = write (fd_out, line, strlen(line))) == (ssize_t) -1) /* abort on write errors */
+			addedmid = FALSE;
+	}
+
+	close (fd_out);
+	fclose (fp_in);
+	if (addedmid)
+		rename_file (outfile, infile);
+	else
+		unlink(outfile);
+}

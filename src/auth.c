@@ -108,7 +108,8 @@ authinfo_generic (
 #else /* new code uses tmpfile() if available */
 	if (cookiefd == -1) {
 		char tempfile[PATH_MAX];
-		if ((cookiefd = my_tmpfile(tempfile, sizeof(tempfile) - 1)) == -1) {
+		if ((cookiefd = my_tmpfile_only(tempfile)) == -1) {
+/*		if ((cookiefd = my_tmpfile(tempfile, sizeof(tempfile) - 1, FALSE, (char *) 0)) == -1) { */
 #	ifdef DEBUG
 			debug_nntp ("authorization", txt_cannot_create_uniq_name);
 #	endif /* DEBUG */

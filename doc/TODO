@@ -1,6 +1,7 @@
 Bugs
 ----
 o  'U'RL-view doesn't recognize multiple URLs/line
+   [Urs Janssen <urs@tin.org>]
 
 o  'a'/'A'uthor search in the pagern dosen't work
 
@@ -22,6 +23,8 @@ o  batch mode has several bugs
    - -Z and giving a cmd-line group ends up in a loop
      (filters each group several times)
    - -S/-R seem to be broken again
+   - -M/-N do not remove To:, Cc:, Bcc: headers befor passing article
+     to MTA (would require article parsing *sigh*)
    [Urs Janssen <urs@tin.org>]
 
 o  --with-ncurses --enable-curses has several display problems:
@@ -56,14 +59,6 @@ o  fix check_upgrade() (config.c)
 
 o  add version number to other config-files (i.e. attributes, filter,
    tin.defaults, keymap) and do the same checks as for TINRC_VERSION/tinrc
-   [Urs Janssen <urs@tin.org>]
-
-o  sender-patch
-   If reverse-lookup for Sender: 'fails' put it in the 'real name' part of the
-   Sender:-line nobody@akk.uni-karlsruhe.de (RFC 1413 reverse-lookup not
-   verified)
-   If user ads Sender:-line rename it to X-Unverifiable-Sender and
-   ad a Sender:-line
    [Urs Janssen <urs@tin.org>]
 
 o  'K' is still a bit inconsistent
@@ -128,7 +123,11 @@ Posting Problems
 ----------------
 o  what should be done with 8bit chars References/Message-ID:-headers?
    (for Message-ID: refusing the article should be ok, but in
-   References? mime-encode it? strip it? send it out raw?)
+   References? mime-encode it? strip it? send it out raw? [Urs])
+   (GNKSA could be interpreted to remove it (see #7) if we say it's a
+   damaged message-id in References. MIME-encoding is no option IMO,
+   sending it out neither (USEFOR says msg-id is pure ASCII). -> strip it.
+   [Dirk])
 
 o  repost ('x') ignores ~/.tin/headers & ~/.tin/attributes - bug or
    feature?!
@@ -152,8 +151,13 @@ o  when enabling the 'Cc/Bcc on every message that is sent', and
    twice.  yes, sendmail removes the duplicate ... but it'd
    be better if tin caught this case first.
 
+o  'empty' headers arn't removed from article before appending to
+    keep_posted_articles_file
+
 New features
 ------------
+o  make THREAD_SUM/THREAD_WEIGHT a config/attributes option and document it
+
 o  key to toggle article-sorting preferences on the fly
    (like 'u' for threading)
 
@@ -170,7 +174,7 @@ o  default_mailer_format should be extended to be able to
 o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
    about that part) for different content-types
 
-o  Better integrate saving of MIME/non-MIME articles when not using libuu
+o  better integrate saving of MIME/non-MIME articles when not using libuu
    [Jason Faultless <jason@radar.tele2.co.uk>]
 
 o  allow multiple keys/action in keymap file, i.e.:
@@ -226,7 +230,8 @@ o  add IPv6 support
 
 o  add shortcut(s) to repeat last command (i.e. search again)
 
-o  add unicode/UTF-8/UTF-7 support
+o  add unicode (UTF-16, UTF-8, UTF-7) support (RFC 1641, RFC 2152, RFC 2279,
+   RFC 2781)
    (see <http://www.cl.cam.ac.uk/~mgk25/unicode.html> and
     <http://clisp.cons.org/~haible/>)
 
@@ -248,10 +253,10 @@ o  check if server supports 'LIST MOTD' (i.e. INN >= 2.0) and display
 o  if using "-n" commandline switch you can't subscribe to newsgroups not
    present in your newsrc - a simple check against the server
    [i.e. GROUP $newsgroup] would help - and if the server understands
-    LIST NEWSGROUPS pattern or XGTITLE pattern we could also fetch the
-    description without loosing "-n" speed improvements; if the server
-    understands LIST ACTIVE pattern we could also get group attribute
-    (moderated, etc.)]
+    LIST NEWSGROUPS pattern (don't use XGTITLE, it will become obsolte) we
+    could also fetch the description without loosing "-n" speed improvements;
+    if the server understands LIST ACTIVE pattern we could also get group
+    attribute (moderated, etc.)]
 
 o  item_by_item_etiquette_warnings [compile-time?]
    (i.e. enable x-posts without f'up warning, disable long-sig warning)
@@ -272,7 +277,7 @@ o  MIME-pgp support according to RFC2015 - (should be easy now)
 
 o  pgp-6 support
 
-o  add RFC1468/1922 support
+o  add RFC 1468/2237, RFC 1555, RFC 1922/1842 and RFC 1947 support
 
 o  add counter to post-processing commands (processing file x of y)
    (Is post-processing really that slow? [Jason Faultless
@@ -396,12 +401,6 @@ o  Enhance -w to take newsgroup name as argument and use vGrpGetArtInfo()
 
 Filtering enhancements
 ----------------------
-o  add Message-ID param to quick_filter_select_posted_art() and
-   update_posted_info_file() so we could log the Message-ID in the
-   filter and posting history file if we know it (see inews.c:submit_inews(),
-   and post.c).
-   [Urs Janssen <urs@tin.org>]
-
 o  add used filter-type to filter-file or filter-rule or use different
    filter files for wildmat/regexp
 
@@ -422,6 +421,13 @@ o  allow expiring filter entrys n-days after the last time they matched
 
 Internal Changes
 ----------------
+o  make configure look for strrstr() in libpub/publib.h
+   [Urs Janssen <urs@tin.org>]
+
+o  check for 10-digits unix-timestamp safety (9->10 digits rollover at
+   9.9.2001)
+   [Urs Janssen <urs@tin.org>]
+
 o  join some keys, i.e PostponeYes, PostponeNo -> PromptYes, PromptNo;
    GroupPost, PagePost, SelectPost -> Post
    [Urs Janssen <urs@tin.org>]
@@ -531,6 +537,8 @@ o  tin.defaults could use more documentation on manpage
 
 Not yet classified
 ------------------
+o  update gettext stuff to gettext-0.10.36
+
 o  should the postponed file be in MH-format if tin is running in MH-mode?
    if so we need to extend fetch_postponed_article()
 

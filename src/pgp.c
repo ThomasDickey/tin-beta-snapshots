@@ -433,10 +433,10 @@ pgp_check_article (
 	if (!pgp_available())
 		return FALSE;
 
-	joinpath(artfile, homedir, ".article");
+	joinpath(artfile, homedir, TIN_ARTICLE_NAME);
 
 #	ifdef APPEND_PID
-	snprintf (artfile+strlen(artfile), sizeof(artfile)-1, ".%d", (int) process_id);
+	snprintf (artfile + strlen(artfile), sizeof(artfile) - 1, ".%d", (int)process_id);
 #	endif /* APPEND_PID */
 
 	if ((art = fopen(artfile, "w")) == (FILE *) 0) {

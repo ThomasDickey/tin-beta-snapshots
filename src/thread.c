@@ -152,15 +152,11 @@ bld_tline (
 	}
 
 	if (tinrc.show_score) {
-		char tmp_score[15];
-
 		if (tinrc.show_lines) { /* insert a separator if show lines and score */
 			strcat (buff, ",");
 			rest_of_line--;
 		}
-
-		sprintf (tmp_score, "%6d", art->score);
-		strcat (buff, tmp_score); /* add score */
+		strcat (buff, tin_ltoa(art->score, 6));
 		rest_of_line -= 6;
 	}
 
@@ -950,6 +946,45 @@ num_of_responses (
 
 
 /*
+ * Calculating the score of a thread has been extracted from stat_thread()
+ * because we need it also in art.c to sort base[].
+ * get_score_of_thread expects the number of the first article of a thread.
+ */
+int
+get_score_of_thread (
+	int n)
+{
+	int i;
+	int j = 0;
+	int score = 0;
+
+	for (i = n; i >= 0; i = arts[i].thread)
+		if (arts[i].status == ART_UNREAD) {
+#ifndef THREAD_SUM
+			/* we use the maximum article score for the complete thread */
+			if ((arts[i].score > score) && (arts[i].score > 0))
+				score = arts[i].score;
+			else {
+				if ((arts[i].score < score) && (score <= 0))
+					score = arts[i].score;
+			}
+#else
+			/* sum scores of unread arts and count num. arts */
+			score += arts[i].score;
+			j++;
+#endif /* !THREAD_SUM */
+		}
+#ifdef THREAD_SUM
+#  ifdef THREAD_WEIGHT /* 'weight' thread-score or just sum? */
+	if (j)
+		score /= j;
+#  endif /* THREAD_WEIGHT */
+#endif /* THREAD_SUM */
+	return (score);
+}
+
+
+/*
  * Given an index into base[], return relevant statistics
  */
 int
@@ -958,18 +993,15 @@ stat_thread (
 	struct t_art_stat *sbuf) /* return value is always ignored */
 {
 	int i;
-#ifdef THREAD_SUM
-	int j = 0;
-#endif /* THREAD_SUM */
 
-	sbuf->total  = 0;
+	sbuf->total = 0;
 	sbuf->unread = 0;
-	sbuf->seen   = 0;
+	sbuf->seen = 0;
 	sbuf->deleted = 0;
 	sbuf->inrange = 0;
 	sbuf->selected_total = 0;
 	sbuf->selected_unread= 0;
-	sbuf->selected_seen  = 0;
+	sbuf->selected_seen = 0;
 	sbuf->art_mark = tinrc.art_marked_read;
 	sbuf->score = 0 /*-(SCORE_MAX) */;
 	sbuf->time = 0;
@@ -987,19 +1019,6 @@ stat_thread (
 
 			if (arts[i].date > sbuf->time)
 				sbuf->time = arts[i].date;
-#ifndef THREAD_SUM
-			/* we use the maximum article score for the complete thread */
-			if ((arts[i].score > sbuf->score) && (arts[i].score > 0))
-				sbuf->score = arts[i].score;
-			else {
-				if ((arts[i].score < sbuf->score) && (sbuf->score <= 0))
-					sbuf->score = arts[i].score;
-			}
-#else
-			/* sum scores of unread arts and count num. arts */
-			sbuf->score += arts[i].score;
-			j++;
-#endif /* !THREAD_SUM */
 		} else if (arts[i].status == ART_WILL_RETURN)
 			++sbuf->seen;
 
@@ -1016,10 +1035,7 @@ stat_thread (
 			++sbuf->killed;
 #endif /* 0 */
 	}
-#ifdef THREAD_SUM
-	if (j)
-		sbuf->score /= j;
-#endif /* THREAD_SUM */
+	sbuf->score = get_score_of_thread((int) base[n]);
 	sbuf->art_mark = (sbuf->inrange ? tinrc.art_marked_inrange : (sbuf->deleted ? tinrc.art_marked_deleted : (sbuf->selected_unread ? tinrc.art_marked_selected : (sbuf->unread ? (tinrc.recent_time && (time((time_t) 0) - sbuf->time) < (tinrc.recent_time * DAY)) ? tinrc.art_marked_recent : tinrc.art_marked_unread : (sbuf->seen ? tinrc.art_marked_return : tinrc.art_marked_read)))));
 	return(sbuf->total);
 }
