@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2004-09-05
+ *  Updated   : 2004-12-08
  *  Notes     :
  *
  * Copyright (c) 1997-2004 Urs Janssen <urs@tin.org>
@@ -87,11 +87,11 @@ extern void convert_tex2iso(char *from, char *to);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 /* color.c */
+extern void draw_pager_line(const char *str, int flags, t_bool raw_data);
 #ifdef HAVE_COLOR
 	extern void bcol(int color);
 	extern void fcol(int color);
 #endif /* HAVE_COLOR */
-extern void draw_pager_line(const char *str, int flags, t_bool raw_data);
 
 /* config.c */
 extern char **ulBuildArgv(char *cmd, int *new_argc);
@@ -117,22 +117,11 @@ extern OUTC_RETTYPE outchar(OUTC_ARGS);
 extern int InitScreen(void);
 extern int RawState(void);
 extern int ReadCh(void);
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE) && !defined(USE_CURSES)
-	extern wint_t ReadWch(void);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE && !USE_CURSES */
 extern int get_arrow_key(int prech);
 extern int get_termcaps(void);
-extern void ClearScreen(void);
-extern void CleartoEOLN(void);
-extern void CleartoEOS(void);
-extern void ScrollScreen(int lines_to_scroll);
-extern void SetScrollRegion(int topline, int bottomline);
 extern void EndInverse(void);
 extern void EndWin(void);
 extern void InitWin(void);
-#ifndef USE_CURSES
-	extern void MoveCursor(int row, int col);
-#endif /* USE_CURSES */
 extern void Raw(int state);
 extern void StartInverse(void);
 extern void cursoroff(void);
@@ -144,6 +133,17 @@ extern void set_xclick_off(void);
 extern void set_xclick_on(void);
 extern void setup_screen(void);
 extern void word_highlight_string(int row, int col, int size, int color);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE) && !defined(USE_CURSES)
+	extern wint_t ReadWch(void);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE && !USE_CURSES */
+#ifndef USE_CURSES
+	extern void ClearScreen(void);
+	extern void CleartoEOLN(void);
+	extern void CleartoEOS(void);
+	extern void MoveCursor(int row, int col);
+	extern void ScrollScreen(int lines_to_scroll);
+	extern void SetScrollRegion(int topline, int bottomline);
+#endif /* USE_CURSES */
 #if 0
 	extern void ToggleInverse(void);
 #endif /* 0 */
@@ -197,6 +197,8 @@ extern void top_of_list(void);
 extern void end_of_list(void);
 extern void move_to_item(int n);
 extern void prompt_item_num(int ch, const char *prompt);
+extern void scroll_down(void);
+extern void scroll_up(void);
 extern void set_first_screen_item(void);
 
 /* group.c */
@@ -403,9 +405,6 @@ extern void set_default_bitmap(struct t_group *group);
 #endif /* DEBUG_NEWSRC */
 
 /* nntplib.c */
-#ifdef NNTP_ABLE
-	extern FILE *nntp_command(const char *, int, char *, size_t);
-#endif /* NNTP_ABLE */
 extern FILE *get_nntp_fp(FILE *fp);
 extern FILE *get_nntp_wr_fp(FILE *fp);
 extern char *getserverbyfile(const char *file);
@@ -416,6 +415,9 @@ extern int nntp_open(void);
 extern void nntp_close(void);
 extern void put_server(const char *string);
 extern void u_put_server(const char *string);
+#ifdef NNTP_ABLE
+	extern FILE *nntp_command(const char *, int, char *, size_t);
+#endif /* NNTP_ABLE */
 
 /* nrctbl.c */
 extern int get_newsrcname(char *newsrc_name, const char *nntpserver_name);
@@ -520,6 +522,8 @@ extern t_mailcap *get_mailcap_entry(t_part *part, const char *path);
 extern void free_mailcap(t_mailcap *tmailcap);
 
 /* rfc2045.c */
+extern int read_decoded_base64_line(FILE *file, char **line, int *max_line_len, const int max_lines_to_read, char **rest);
+extern int read_decoded_qp_line(FILE *file, char **line, int *max_line_len, const int max_lines_to_read);
 extern void rfc1521_encode(char *line, FILE *f, int e);
 
 /* rfc2046.c */
@@ -575,6 +579,7 @@ extern int search_active(t_bool forward, t_bool repeat);
 extern int search_article(t_bool forward, t_bool repeat, int start_line, int lines, t_lineinfo *line, int reveal_ctrl_l_lines, FILE *fp);
 extern int search_config(t_bool forward, t_bool repeat, int current, int last);
 extern int search_body(struct t_group *group, int current_art, t_bool repeat);
+extern void reset_srch_offsets(void);
 
 /* select.c */
 extern int add_my_group(const char *group, t_bool add);
@@ -604,15 +609,16 @@ extern char *eat_tab(char *s);
 extern char *fmt_string(const char *fmt, ...);
 extern char *my_strdup(const char *str);
 extern char *str_trim(char *string);
+extern char *strunc(const char *message, int len);
 extern char *tin_ltoa(long value, int digits);
 extern char *tin_strtok(char *str, const char *delim);
-#if !defined(HAVE_STRCASESTR) || defined(DECL_STRCASESTR)
-	extern const char *strcasestr(const char *haystack, const char *needle);
-#endif /* !HAVE_STRCASESTR || DECL_STRCASESTR */
 extern int sh_format(char *dst, size_t len, const char *fmt, ...);
 extern size_t mystrcat(char **t, const char *s);
 extern void my_strncpy(char *p, const char *q, size_t n);
 extern void str_lwr(char *str);
+#if !defined(HAVE_STRCASESTR) || defined(DECL_STRCASESTR)
+	extern const char *strcasestr(const char *haystack, const char *needle);
+#endif /* !HAVE_STRCASESTR || DECL_STRCASESTR */
 #ifndef HAVE_STRPBRK
 	extern char *strpbrk(char *str1, char *str2);
 #endif /* !HAVE_STRPBRK */
@@ -646,10 +652,9 @@ extern void str_lwr(char *str);
 	extern char *wchar_t2char(const wchar_t *wstr);
 	extern wchar_t *char2wchar_t(const char *str);
 	extern wchar_t *wcspart(const wchar_t *wstr, int columns, t_bool pad);
-	extern wchar_t *wstrunc(const wchar_t *wmessage, wchar_t *wbuf, size_t wbuf_len, int len);
+	extern wchar_t *wstrunc(const wchar_t *wmessage, int len);
 	extern wchar_t *my_wcsdup(const wchar_t *wstr);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-extern char *strunc(const char *message, char *buf, size_t buf_len, int len);
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
 	extern char *render_bidi(const char *str, t_bool *is_rtl);
 #endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */

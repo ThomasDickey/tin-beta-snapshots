@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-07-19
+ *  Updated   : 2004-11-16
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -55,6 +55,7 @@ static int select_left(void);
 static int select_right(void);
 static t_bool pos_next_unread_group(t_bool redraw);
 static t_bool yanked_out = TRUE;
+static void build_gline(int i);
 static void catchup_group(struct t_group *group, t_bool goto_next_unread_group);
 static void draw_group_arrow(void);
 static void read_groups(void);
@@ -71,9 +72,11 @@ static void yank_active_file(void);
  * selmenu.curr = index (start at 0) of cursor position on menu,
  *                or -1 when no groups visible on screen
  * selmenu.max = Total # of groups in my_group[]
- * selmenu.first, selmenu.last are static here
+ * selmenu.first is static here
  */
-t_menu selmenu = { 1, 0, 0, 0, show_selection_page, draw_group_arrow };
+t_menu selmenu = { 1, 0, 0, show_selection_page, draw_group_arrow, build_gline };
+
+static int groupname_len;	/* max. group name length */
 
 
 static int
@@ -116,6 +119,7 @@ selection_page(
 	if (num_cmd_line_groups == 1)
 		select_read_group();
 
+	cursoroff();
 	show_selection_page();	/* display group selection page */
 
 	forever {
@@ -175,6 +179,14 @@ selection_page(
 			case iKeyDown:		/* line down */
 			case iKeyDown2:
 				move_down();
+				break;
+
+			case iKeyScrollDown:
+				scroll_down();
+				break;
+
+			case iKeyScrollUp:
+				scroll_up();
 				break;
 
 			case iKeySelectSortActive:	/* Sort active groups */
@@ -248,8 +260,19 @@ selection_page(
 				break;
 
 			case iKeySelectGoto:			/* prompt for a new group name */
-				if ((n = choose_new_group()) >= 0)
-					move_to_item(n);
+				{
+					int oldmax = selmenu.max;
+
+					if ((n = choose_new_group()) >= 0) {
+						/*
+						 * If a new group was added and it is on the actual screen
+						 * draw it. If it is off screen the redraw will handle it.
+						 */
+						if (oldmax != selmenu.max && n >= selmenu.first && n < selmenu.first + NOTESLINES)
+							build_gline(n);
+						move_to_item(n);
+					}
+				}
 				break;
 
 			case iKeyHelp:					/* help */
@@ -302,7 +325,7 @@ selection_page(
 				n = selmenu.curr;
 				selmenu.curr = reposition_group(&active[my_group[n]], n);
 				HpGlitch(erase_arrow());
-				if (selmenu.curr < selmenu.first || selmenu.curr >= selmenu.last || selmenu.curr != n)
+				if (selmenu.curr < selmenu.first || selmenu.curr >= selmenu.first + NOTESLINES - 1 || selmenu.curr != n)
 					show_selection_page();
 				else {
 					i = selmenu.curr;
@@ -515,13 +538,7 @@ show_selection_page(
 	void)
 {
 	char buf[LEN];
-	char tmp[10];
-	char active_name[255];
-	char group_descript[255];
-	char subs;
-	int i, j, n;
-	int blank_len;
-	int len, groupname_len = 0;
+	int i, len;
 
 	signal_context = cSelect;
 	currmenu = &selmenu;
@@ -531,17 +548,12 @@ show_selection_page(
 	else
 		snprintf(buf, sizeof(buf), "%s (%d%s)", _(txt_group_selection), selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
 
-	MoveCursor(0, 0);		/* top left corner */
-	CleartoEOLN();
-	show_title(buf);
-	MoveCursor(1, 0);
-	CleartoEOLN();
-	MoveCursor(INDEX_TOP, 0);
-
 	if (selmenu.curr < 0)
 		selmenu.curr = 0;
 
+	ClearScreen();
 	set_first_screen_item();
+	show_title(buf);
 
 	/*
 	 * calculate max length of groupname field
@@ -574,80 +586,87 @@ show_selection_page(
 	if (groupname_len < 0)
 		groupname_len = 0;
 
-	blank_len = (MIN(cCOLS, (int) sizeof(group_descript)) - (groupname_len + SELECT_MISC_COLS)) + (show_description ? 2 : 4);
+	for (i = selmenu.first; i < selmenu.first + NOTESLINES && i < selmenu.max; i++)
+		build_gline(i);
 
-	for (j = 0, i = selmenu.first; i < selmenu.last; i++, j++) {
-#ifdef USE_CURSES
-		char sptr[BUFSIZ];
-#else
-		char *sptr = screen[j].col;
-#endif /* USE_CURSES */
-		if (active[my_group[i]].inrange)
-			strcpy(tmp, "    #");
-		else if (active[my_group[i]].newsrc.num_unread) {
-			strcpy(tmp, tin_ltoa(active[my_group[i]].newsrc.num_unread, 5));
-		} else
-			strcpy(tmp, "     ");
-
-		n = my_group[i];
-
-		/*
-		 * Display a flag for this group if needed
-		 * . Bogus groups are dumped immediately
-		 * . Normal subscribed groups may be
-		 *   ' ' normal, 'X' not postable, 'M' moderated, '=' renamed
-		 * . Newgroups are 'N'
-		 * . Unsubscribed groups are 'u'
-		 */
-		if (active[n].bogus)					/* Group is not in active list */
-			subs = 'D';
-		else if (active[n].subscribed)			/* Important that this preceeds Newgroup */
-			subs = group_flag(active[n].moderated);
-		else
-			subs = ((active[n].newgroup) ? 'N' : 'u'); /* New (but unsubscribed) group or unsubscribed group */
-
-		strncpy(active_name, active[n].name, groupname_len);
-		active_name[groupname_len] = '\0';
-
-		if (blank_len > (int) (sizeof(group_descript) - 1))
-			blank_len = sizeof(group_descript) - 1;
-
-		if (show_description) {
-			if (active[n].description) {
-				strncpy(group_descript, active[n].description, blank_len);
-				group_descript[blank_len] = '\0';
-				sprintf(sptr, "  %c %s %s  %-*.*s  %-*.*s%s",
-				         subs, tin_ltoa(i + 1, 4), tmp,
-				         groupname_len, groupname_len, active_name,
-				         blank_len, blank_len, group_descript, cCRLF);
-			} else
-				sprintf(sptr, "  %c %s %s  %-*.*s  %s",
-				         subs, tin_ltoa(i + 1, 4), tmp,
-				         (groupname_len + blank_len),
-				         (groupname_len + blank_len), active[n].name, cCRLF);
-		} else {
-			if (tinrc.draw_arrow)
-				sprintf(sptr, "  %c %s %s  %-*.*s%s", subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name, cCRLF);
-			else
-				sprintf(sptr, "  %c %s %s  %-*.*s%*s%s", subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name, blank_len, " ", cCRLF);
-		}
-		if (tinrc.strip_blanks)
-			strcat(strip_line(sptr), cCRLF);
-
-		CleartoEOLN();
-		my_fputs(sptr, stdout);
-	}
-
-	CleartoEOS();
 	show_mini_help(SELECT_LEVEL);
 
 	if (selmenu.max <= 0) {
 		info_message(_(txt_no_groups));
 		return;
-	} else if (selmenu.last == selmenu.max)
-		info_message(_(txt_end_of_groups));
+	}
 
 	draw_group_arrow();
+}
+
+
+static void
+build_gline(
+	int i)
+{
+	char tmp[10];
+	char active_name[255];
+	char group_descript[255];
+	char subs;
+#ifdef USE_CURSES
+	char sptr[BUFSIZ];
+#else
+	char *sptr = screen[INDEX2SNUM(i)].col;
+#endif /* USE_CURSES */
+	int n, blank_len;
+
+	blank_len = (MIN(cCOLS, (int) sizeof(group_descript)) - (groupname_len + SELECT_MISC_COLS)) + (show_description ? 2 : 4);
+
+	if (active[my_group[i]].inrange)
+		strcpy(tmp, "    #");
+	else if (active[my_group[i]].newsrc.num_unread) {
+		strcpy(tmp, tin_ltoa(active[my_group[i]].newsrc.num_unread, 5));
+	} else
+		strcpy(tmp, "     ");
+
+	n = my_group[i];
+
+	/*
+	 * Display a flag for this group if needed
+	 * . Bogus groups are dumped immediately
+	 * . Normal subscribed groups may be
+	 *   ' ' normal, 'X' not postable, 'M' moderated, '=' renamed
+	 * . Newgroups are 'N'
+	 * . Unsubscribed groups are 'u'
+	 */
+	if (active[n].bogus)					/* Group is not in active list */
+		subs = 'D';
+	else if (active[n].subscribed)			/* Important that this preceeds Newgroup */
+		subs = group_flag(active[n].moderated);
+	else
+		subs = ((active[n].newgroup) ? 'N' : 'u'); /* New (but unsubscribed) group or unsubscribed group */
+
+	strncpy(active_name, active[n].name, groupname_len);
+	active_name[groupname_len] = '\0';
+
+	if (show_description) {
+		if (active[n].description) {
+			strncpy(group_descript, active[n].description, blank_len);
+			group_descript[blank_len] = '\0';
+			sprintf(sptr, "  %c %s %s  %-*.*s  %-*.*s%s",
+				 subs, tin_ltoa(i + 1, 4), tmp,
+				 groupname_len, groupname_len, active_name,
+				 blank_len, blank_len, group_descript, cCRLF);
+		} else
+			sprintf(sptr, "  %c %s %s  %-*.*s  %s",
+				 subs, tin_ltoa(i + 1, 4), tmp,
+				 (groupname_len + blank_len),
+				 (groupname_len + blank_len), active[n].name, cCRLF);
+	} else {
+		if (tinrc.draw_arrow)
+			sprintf(sptr, "  %c %s %s  %-*.*s%s", subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name, cCRLF);
+		else
+			sprintf(sptr, "  %c %s %s  %-*.*s%*s%s", subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name, blank_len, " ", cCRLF);
+	}
+	if (tinrc.strip_blanks)
+		strcat(strip_line(sptr), cCRLF);
+
+	WriteLine(INDEX2LNUM(i), sptr);
 }
 
 
@@ -663,6 +682,8 @@ draw_group_arrow(
 			info_message(_(txt_group_aliased), CURR_GROUP.aliasedto);
 		else if (tinrc.info_in_last_line)
 			info_message("%s", CURR_GROUP.description ? CURR_GROUP.description : _(txt_no_description));
+		else if (selmenu.curr == selmenu.max - 1)
+			info_message(_(txt_end_of_groups));
 	}
 }
 

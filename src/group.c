@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-07-19
+ *  Updated   : 2004-11-16
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -76,9 +76,9 @@ static void update_group_page(void);
 /*
  * grpmenu.curr is an index into base[] and so equates to the cursor location
  * (thread number) on group page
- * grpmenu.first, last are static here
+ * grpmenu.first is static here
  */
-t_menu grpmenu = { 0, 0, 0, 0, show_group_page, draw_subject_arrow };
+t_menu grpmenu = { 0, 0, 0, show_group_page, draw_subject_arrow, build_sline };
 
 static void
 show_tagged_lines(
@@ -86,7 +86,7 @@ show_tagged_lines(
 {
 	int i, j;
 
-	for (i = grpmenu.first; i < grpmenu.last; ++i) {
+	for (i = grpmenu.first; i < grpmenu.first + NOTESLINES && i < grpmenu.max; ++i) {
 		if ((i != grpmenu.curr) && (j = line_is_tagged(base[i])))
 			mark_screen(i, MARK_OFFSET - 2, tin_ltoa(j, 3));
 	}
@@ -171,6 +171,8 @@ group_page(
 	 * Position 'grpmenu.curr' accordingly
 	 */
 	pos_first_unread_thread();
+	/* reset grpmenu.first */
+	grpmenu.first = 0;
 
 	clear_note_area();
 
@@ -377,6 +379,14 @@ group_page(
 			case iKeyPageUp2:
 			case iKeyPageUp3:
 				page_up();
+				break;
+
+			case iKeyScrollDown:
+				scroll_down();
+				break;
+
+			case iKeyScrollUp:
+				scroll_up();
 				break;
 
 			case iKeyCatchupLeft:
@@ -892,31 +902,19 @@ show_group_page(
 	signal_context = cGroup;
 	currmenu = &grpmenu;
 
-	MoveCursor(0, 0);
-	CleartoEOLN();
-
+	ClearScreen();
+	set_first_screen_item();
 	show_group_title(FALSE);
 
-	MoveCursor(1, 0);
-	CleartoEOLN();
-	MoveCursor(INDEX_TOP, 0);
-
-	set_first_screen_item();
-
-	if (tinrc.draw_arrow)
-		CleartoEOS();
-
-	for (i = grpmenu.first; i < grpmenu.last; ++i)
+	for (i = grpmenu.first; i < grpmenu.first + NOTESLINES && i < grpmenu.max; ++i)
 		build_sline(i);
 
-	CleartoEOS();
 	show_mini_help(GROUP_LEVEL);
 
 	if (grpmenu.max <= 0) {
 		info_message(_(txt_no_arts));
 		return;
-	} else if (grpmenu.last == grpmenu.max)
-		info_message(_(txt_end_of_arts));
+	}
 
 	draw_subject_arrow();
 }
@@ -930,7 +928,7 @@ update_group_page(
 	char mark[] = { '\0', '\0' };
 	struct t_art_stat sbuf;
 
-	for (i = grpmenu.first; i < grpmenu.last; ++i) {
+	for (i = grpmenu.first; i < grpmenu.first + NOTESLINES && i < grpmenu.max; ++i) {
 		if ((j = line_is_tagged(base[i])))
 			mark_screen(i, MARK_OFFSET - 2, tin_ltoa(j, 3));
 		else {
@@ -961,10 +959,8 @@ draw_subject_arrow(
 
 		stat_thread(grpmenu.curr, &statbuf);
 		info_message("%s", arts[(statbuf.unread ? next_unread(base[grpmenu.curr]) : base[grpmenu.curr])].subject);
-	} else {
-		if (grpmenu.last == grpmenu.max)
-			info_message(_(txt_end_of_arts));
-	}
+	} else if (grpmenu.curr == grpmenu.max - 1)
+		info_message(_(txt_end_of_arts));
 }
 
 
@@ -1271,10 +1267,19 @@ build_sline(
 	if ((tmp_subj2 = char2wchar_t(arts_sub)) != NULL) {
 		tmp_subj = wcspart(tmp_subj2, len_subj - 12, TRUE);
 		free(tmp_subj2);
+	} else {
+		wchar_t wc[1] = {0};
+
+		tmp_subj = wcspart(wc, len_subj - 12, TRUE);
 	}
+
 	if ((tmp_from2 = char2wchar_t(from)) != NULL) {
 		tmp_from = wcspart(tmp_from2, len_from, TRUE);
 		free(tmp_from2);
+	} else {
+		wchar_t wc[1] = {0};
+
+		tmp_from = wcspart(wc, len_from, TRUE);
 	}
 
 	if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH) {
@@ -1321,7 +1326,6 @@ build_sline(
 #endif /* USE_CURSES */
 	if (sbuf.art_mark == tinrc.art_marked_selected)
 		draw_mark_selected(i);
-	MoveCursor(INDEX2LNUM(i) + 1, 0);
 }
 
 

@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2004-08-21
+ *  Updated   : 2004-09-19
  *  Notes     :
  *
  * Copyright (c) 1997-2004 Urs Janssen <urs@tin.org>
@@ -766,42 +766,34 @@ wcspart(
 char *
 strunc(
 	const char *message,
-	char *buf,
-	size_t buf_len,
 	int len)
 {
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	char *tmp;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *wmessage, *wbuf;
-	size_t wbuf_len;
 
 	if ((wmessage = char2wchar_t(message)) != NULL) {
-		wbuf_len = wcslen(wmessage) + 1;
-		wbuf = my_malloc(sizeof(wchar_t) * wbuf_len);
-
-		wstrunc(wmessage, wbuf, wbuf_len, len);
+		wbuf = wstrunc(wmessage, len);
 		free(wmessage);
 
 		if ((tmp = wchar_t2char(wbuf)) != NULL) {
-			strncpy(buf, tmp, buf_len);
-			buf[buf_len - 1] = '\0';
-
 			free(wbuf);
-			free(tmp);
 
-			return buf;
+			return tmp;
 		}
 		free(wbuf);
 	}
 	/* something went wrong using wide-chars, default back to normal chars */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
-	if ((int) strlen(message) <= len && len < (int) buf_len)
-		strcpy(buf, message);
-	else
-		snprintf(buf, buf_len, "%-.*s%s", len - 3, message, TRUNC_TAIL);
+	if ((int) strlen(message) <= len)
+		tmp = my_strdup(message);
+	else {
+		tmp = my_malloc(len + 1);
+		snprintf(tmp, len + 1, "%-.*s%s", len - 3, message, TRUNC_TAIL);
+	}
 
-	return buf;
+	return tmp;
 }
 
 /*
@@ -816,8 +808,6 @@ strunc(
 wchar_t *
 wstrunc(
 	const wchar_t *wmessage,
-	wchar_t *wbuf,
-	size_t wbuf_len,
 	int len)
 {
 	wchar_t *wtmp;
@@ -826,11 +816,9 @@ wstrunc(
 	wtmp = my_wcsdup(wmessage);
 	wconvert_to_printable(wtmp);
 
-	if (wcswidth(wtmp, wcslen(wtmp)) <= len && wcslen(wtmp) < wbuf_len) /* wtmp doesn't need to be truncated */
-		wcscpy(wbuf, wtmp);
-	else {
+	if (wcswidth(wtmp, wcslen(wtmp)) > len) {
 		/* wtmp must be truncated */
-		wchar_t *wtmp2, *format;
+		wchar_t *wtmp2, *tail;
 
 #	ifdef USE_UTF8_HORIZONTAL_ELLIPSIS
 		if (IS_LOCAL_CHARSET("UTF-8")) {
@@ -838,28 +826,21 @@ wstrunc(
 			 * use U+2026 (HORIZONTAL ELLIPSIS) instead of "..."
 			 * we gain two additional screen positions
 			 */
-			format = char2wchar_t("%ls%lc");
-
-			wtmp2 = wcspart(wtmp, MIN(len - 1, (int) wbuf_len - 2), FALSE);
-			swprintf(wbuf, wbuf_len, format, wtmp2, 8230); /* U+2026 */
+			tail = my_malloc(sizeof(wchar_t) * 2);
+			tail[0] = 8230; /* U+2026 */
+			tail[1] = 0;	/* \0 */
 		} else
 #	endif /* USE_UTF8_HORIZONTAL_ELLIPSIS */
-		{
-			wchar_t *tail;
-
 			tail = char2wchar_t(TRUNC_TAIL);
-			format = char2wchar_t("%ls%ls");
 
-			wtmp2 = wcspart(wtmp, MIN(len - 3, (int) wbuf_len - 4), FALSE);
-			swprintf(wbuf, wbuf_len, format, wtmp2, tail);
-			free(tail);
-		}
-		free(format);
-		free(wtmp2);
+		wtmp2 = wcspart(wtmp, len - wcslen(tail), FALSE);
+		free(wtmp);
+		wtmp = my_realloc(wtmp2, sizeof(wchar_t) * (wcslen(wtmp2) + wcslen(tail) + 1));	/* wtmp2 isn't valid snymore and doesn't have to be free()ed */
+		wcscat(wtmp, tail);
+		free(tail);
 	}
-	free(wtmp);
 
-	return wbuf;
+	return wtmp;
 }
 
 

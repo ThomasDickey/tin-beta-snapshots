@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2004-09-05
+ *  Updated   : 2004-11-16
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004 Michael Bienia <michael@vorlon.ping.de>
@@ -57,6 +57,8 @@ static enum option_enum first_option_on_screen, last_option_on_screen;
  */
 static enum option_enum move_cursor(enum option_enum cur_option, t_bool down);
 static enum option_enum next_option(enum option_enum option, t_bool incl_titles);
+static enum option_enum opt_scroll_down(enum option_enum option);
+static enum option_enum opt_scroll_up(enum option_enum option);
 static enum option_enum prev_option(enum option_enum option, t_bool incl_titles);
 static enum option_enum set_option_num(int num);
 static int get_option_num(enum option_enum option);
@@ -138,6 +140,7 @@ option_is_visible(
 	int option)
 {
 	switch (option) {
+#ifdef HAVE_COLOR
 		case OPT_COL_BACK:
 		case OPT_COL_FROM:
 		case OPT_COL_HEAD:
@@ -164,6 +167,7 @@ option_is_visible(
 		case OPT_COL_MARKSLASH:
 		case OPT_COL_MARKSTROKE:
 			return tinrc.word_highlight && tinrc.use_color;
+#endif /* HAVE_COLOR */
 
 		case OPT_WORD_H_DISPLAY_MARKS:
 		case OPT_MONO_MARKSTAR:
@@ -220,46 +224,33 @@ fmt_option_prompt(
 		int num = get_option_num(option);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (wbuf != NULL) {
-			wbuf2 = my_malloc(sizeof(wchar_t) * (option_width + 1));
-			wstrunc(wbuf, wbuf2, option_width + 1, option_width);
-
+			wbuf2 = wstrunc(wbuf, option_width);
 			if ((buf = wchar_t2char(wbuf2)) == NULL) {
 				/* conversion failed, truncate original string */
-				buf = my_malloc(option_width + 1);
-				strunc(_(option_table[option].txt->opt), buf, option_width + 1, option_width);
+				buf = strunc(_(option_table[option].txt->opt), option_width);
 				snprintf(dst, len, "%s %3d. %-*.*s: ", editing ? "->" : "  ", num, (int) option_width, (int) option_width, buf);
-			} else {
+			} else
 				snprintf(dst, len, "%s %3d. %-*.*s: ", editing ? "->" : "  ", num,
 					(int) (strlen(buf) + option_width - wcswidth(wbuf2, option_width + 1)),
 					(int) (strlen(buf) + option_width - wcswidth(wbuf2, option_width + 1)), buf);
-			}
 			free(wbuf2);
 		} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		{
 			/* truncate original string */
-			buf = my_malloc(option_width + 1);
-			strunc(_(option_table[option].txt->opt), buf, option_width + 1, option_width);
+			buf = strunc(_(option_table[option].txt->opt), option_width);
 			snprintf(dst, len, "%s %3d. %-*.*s: ", editing ? "->" : "  ", num, (int) option_width, (int) option_width, buf);
 		}
 	} else {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (wbuf != NULL) {
-			wbuf2 = my_malloc(sizeof(wchar_t) * (cCOLS - 3 + 1));
-			wstrunc(wbuf, wbuf2, cCOLS - 3 + 1, cCOLS - 3);
-			if ((buf = wchar_t2char(wbuf2)) == NULL) {
-				/* conversion failed, truncate original string */
-				buf = my_malloc(cCOLS - 3 + 1);
-				strunc(_(option_table[option].txt->opt), buf, cCOLS - 3 + 1, cCOLS - 3);
-			}
+			wbuf2 = wstrunc(wbuf, cCOLS - 3);
+			if ((buf = wchar_t2char(wbuf2)) == NULL)	/* conversion failed, truncate original string */
+				buf = strunc(_(option_table[option].txt->opt), cCOLS - 3);
 			free(wbuf2);
 		} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-		{
-			/* truncate original string */
-			buf = my_malloc(cCOLS - 3 + 1);
-			strunc(_(option_table[option].txt->opt), buf, cCOLS - 3 + 1, cCOLS - 3);
-		}
+			buf = strunc(_(option_table[option].txt->opt), cCOLS - 3);	/* truncate original string */
 		snprintf(dst, len, "  %s", buf);
 	}
 
@@ -411,6 +402,76 @@ move_cursor(
 
 
 /*
+ * scroll the screen one line down
+ * the selected option is only moved if it is scrolled off the screen
+ */
+static enum option_enum
+opt_scroll_down(
+	enum option_enum option)
+{
+	if (last_option_on_screen < LAST_OPT) {
+		first_option_on_screen = next_option(first_option_on_screen, TRUE);
+		set_last_option_on_screen(first_option_on_screen);
+#ifdef USE_CURSES
+		do_scroll(1);
+		print_any_option(last_option_on_screen);
+		stow_cursor();
+#else
+		show_config_page();
+#endif /* USE_CURSES */
+		if (option < first_option_on_screen) {
+			option = first_option_on_screen;
+			if (option_is_title(option))
+				option = next_option(option, FALSE);
+#ifdef USE_CURSES
+			highlight_option(option);
+#endif /* USE_CURSES */
+		}
+#ifndef USE_CURSES
+		/* in the !USE_CURSES case we must always highlight the option */
+		highlight_option(option);
+#endif /* !USE_CURSES */
+	}
+	return option;
+}
+
+
+/*
+ * scroll the screen one line up
+ * the selected option is only moved if it is scrolled off the screen
+ */
+static enum option_enum
+opt_scroll_up(
+	enum option_enum option)
+{
+	if (first_option_on_screen > 0) {
+		first_option_on_screen = prev_option(first_option_on_screen, TRUE);
+		set_last_option_on_screen(first_option_on_screen);
+#ifdef USE_CURSES
+		do_scroll(-1);
+		print_any_option(first_option_on_screen);
+		stow_cursor();
+#else
+		show_config_page();
+#endif /* USE_CURSES */
+		if (option > last_option_on_screen) {
+			option = last_option_on_screen;
+			if (option_is_title(option))
+				option = prev_option(option, FALSE);
+#ifdef USE_CURSES
+			highlight_option(option);
+#endif /* USE_CURSES */
+		}
+#ifndef USE_CURSES
+		/* in the !USE_CURSES case we must always highlight the option */
+		highlight_option(option);
+#endif /* !USE_CURSES */
+	}
+	return option;
+}
+
+
+/*
  * returns the next visible option
  * if 'incl_titles' is TRUE titles are also returned else they are skipped
  */
@@ -506,7 +567,7 @@ unhighlight_option(
 {
 	/* Astonishing hack */
 	t_menu *savemenu = currmenu;
-	t_menu cfgmenu = { 0, 1, 0, 0, NULL, NULL };
+	t_menu cfgmenu = { 0, 1, 0, NULL, NULL, NULL };
 
 	currmenu = &cfgmenu;
 	currmenu->curr = option_row(option) - INDEX_TOP;
@@ -526,11 +587,10 @@ refresh_config_page(
 	int act_option)
 {
 	static int last_option = 0;
-	t_bool force_redraw = FALSE;
+	/* t_bool force_redraw = FALSE; */
 
-	if (act_option < 0) {
-		/* called by signal handler */
-		force_redraw = TRUE;
+	if (act_option < 0) {	/* called by signal handler */
+		/* force_redraw = TRUE; */
 		act_option = last_option;
 		set_last_option_on_screen(first_option_on_screen); /* terminal size may have changed */
 		if (!option_on_page(last_option)) {
@@ -580,13 +640,12 @@ show_config_page(
 	center_line(0, TRUE, _(txt_options_menu));
 
 	for (i = first_option_on_screen; i <= last_option_on_screen; i++) {
-		while(!option_is_visible(i))
+		while (!option_is_visible(i))
 			i++;
 		if (i > LAST_OPT)
 			break;
 		print_any_option(i);
 	}
-	CleartoEOS();
 
 	show_menu_help(txt_select_config_file_option);
 	my_flush();
@@ -743,7 +802,10 @@ change_config_file(
 					last_option_on_screen = prev_option(first_option_on_screen, TRUE);
 
 				set_first_option_on_screen(last_option_on_screen);
-				option = first_option_on_screen;
+				if (last_option_on_screen == LAST_OPT)
+					option = last_option_on_screen;
+				else
+					option = first_option_on_screen;
 				if (option_is_title(option))
 					option = next_option(option, FALSE);
 				redraw_screen(option);
@@ -754,24 +816,46 @@ change_config_file(
 			case iKeyPageDown2:
 			case iKeyPageDown3:
 				unhighlight_option(option);
-				if (tinrc.scroll_lines == -2 ) {
-					int i = option_lines_per_page / 2;
+				if (option == LAST_OPT) {
+					/* wrap around */
+					first_option_on_screen = 0;
+					option = 0;
+				} else {
+					enum option_enum old_first = first_option_on_screen;
 
-					for (; i > 0; i--) {
-						first_option_on_screen = next_option(first_option_on_screen, TRUE);
-						if (first_option_on_screen == 0)	/* end on wrap_around */
-							break;
-					}
-				} else
-					first_option_on_screen = next_option(last_option_on_screen, TRUE);
+					if (tinrc.scroll_lines == -2) {
+						int i = option_lines_per_page / 2;
+
+						for (; i > 0; i--) {
+							first_option_on_screen = next_option(first_option_on_screen, TRUE);
+							if (first_option_on_screen == 0)	/* end on wrap_around */
+								break;
+						}
+					} else
+						first_option_on_screen = next_option(last_option_on_screen, TRUE);
+
+					if (first_option_on_screen == 0) {
+						first_option_on_screen = old_first;
+						option = LAST_OPT;
+						highlight_option(option);
+						break;
+					} else
+						option = first_option_on_screen;
+				}
 
 				set_last_option_on_screen(first_option_on_screen);
-				option = first_option_on_screen;
 				if (option_is_title(option))
 					option = next_option(option, FALSE);
-
 				redraw_screen(option);
 				/* highlight_option(option); is already done by redraw_screen() */
+				break;
+
+			case iKeyScrollUp:
+				option = opt_scroll_up(option);
+				break;
+
+			case iKeyScrollDown:
+				option = opt_scroll_down(option);
 				break;
 
 			case '1': case '2': case '3': case '4': case '5':
@@ -811,6 +895,7 @@ change_config_file(
 				break;
 
 			case iKeyRedrawScr:	/* redraw screen */
+				set_last_option_on_screen(first_option_on_screen);
 				redraw_screen(option);
 				break;
 

@@ -335,7 +335,7 @@ get_tcp_socket(
 	else
 		strcpy(device, "/dev/tcp");
 
-	if ((s = t_open(device, O_RDWR, (struct t_info *) 0)) < 0){
+	if ((s = t_open(device, O_RDWR, (struct t_info *) 0)) < 0) {
 		t_error(txt_error_topen);
 		return -EPROTO;
 	}
@@ -369,7 +369,7 @@ get_tcp_socket(
 	 * Allocate a t_call structure and initialize it.
 	 * Let t_alloc() initialize the addr structure of the t_call structure.
 	 */
-	if ((callptr = (struct t_call *) t_alloc(s, T_CALL, T_ADDR)) == NULL){
+	if ((callptr = (struct t_call *) t_alloc(s, T_CALL, T_ADDR)) == NULL) {
 		t_error("t_alloc");
 		t_close(s);
 		return -EPROTO;

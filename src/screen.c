@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-09-03
+ *  Updated   : 2004-09-19
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -76,9 +76,8 @@ fmt_message(
 {
 	char *msg;
 #ifdef HAVE_VASPRINTF
-	int n;
 
-	if ((n = vasprintf(&msg, fmt, ap)) == -1)	/* something went wrong */
+	if (vasprintf(&msg, fmt, ap) == -1)	/* something went wrong */
 #endif /* HAVE_VASPRINTF */
 	{
 		size_t size = LEN;
@@ -273,10 +272,11 @@ center_line(
 	}
 
 	if (len >= cCOLS) {
-		char buffer[256];
+		char *buffer;
 
-		strunc(str, buffer, sizeof(buffer), cCOLS - 2);
+		buffer = strunc(str, cCOLS - 2);
 		my_fputs(buffer, stdout);
+		free(buffer);
 	} else
 		my_fputs(str, stdout);
 

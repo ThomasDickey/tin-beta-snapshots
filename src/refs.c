@@ -731,7 +731,6 @@ find_next(
 		 * a sibling if we can find one
 		 */
 		if (ptr->child == NULL && ptr->sibling == NULL) {
-
 			while (ptr != NULL && ptr->sibling == NULL)
 				ptr = ptr->parent;
 
@@ -770,13 +769,10 @@ build_thread(
 	 * Keep working through the thread, updating the ptrs as we go
 	 */
 	while ((newptr = find_next(ptr)) != NULL) {
-
 		arts[newptr->article].prev = ptr->article;
 		arts[ptr->article].thread = newptr->article;
-
 		ptr = newptr;
 	}
-
 }
 
 

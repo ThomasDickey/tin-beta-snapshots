@@ -1,3 +1,45 @@
+-- 1.7.7 release 20041215 "Scalpay" --
+
+ 026) Michael Bienia <michael@vorlon.ping.de>
+      BUG. possible buffer overrun in get_mailcap_entry()
+      FIX. rfc1524.c
+
+U034) Michael Velten <tin@michnet.de>
+      BUG. currmenu->curr off by one error for empty groups
+      BUG. upward scrolling in !USE_CURSES was broken
+      ADD. consistently display "End of ..." message
+      BUG. reused the search offset when switching the context
+      FIX. proto.h, global.c, group.c, page.c, search.c, select.c, thread.c
+
+U033) Matt Anton <tin@syrius.org>
+      ADD. added missing french translations
+      FIX. fr.po
+
+U032) Michael Bienia <michael@vorlon.ping.de>
+      ADD. (w)strunc() now malloc()s the needed space
+      ADD. line-scrolling in select-, group- and thread-level
+      ADD. screen-scrolling iKeyScrollUp ('<'), iKeyScrollDown ('>')
+      ADD. unifiy option-value description formats
+      BUG. missing file truncation in do_rfc15211522_encode()
+      FIX. extern.h, keymap.h, menukeys.h, proto.h, tin.h, cook.c, global.c
+           group.c, help.c, keymap.c, lang.c, options_menu.c, page.c, post.c
+           prompt.c, rfc2045.c, rfc2047.c, screen.c, select.c, string.c
+           thread.c, keymap.sample, tin.1, tin.5
+
+U031) Urs Janssen <urs@tin.org>
+      ADD. keymap-file version number
+      ADD. config.guess, config.sub update
+      ADD. pcre update (4.5 -> 5.0)
+      ADD. configure check for ftruncate(3)
+      ADD. make sscanf(3)s first two args non-constant for backward
+           portability
+      BUG. missing #ifdef in the disable-color case
+      BUG. systemtype detection broken
+      FIX. Makefile.in, extern.h, proto.h, version.h, init.c, keymap.c, lang.c
+           misc.c, newsrc.c, options_menu.c, post.c, version.c, keymap.sample
+           pcre/*, config.guess, config.sub, de.po, en_GB.po, fr.po, tin.1
+           tin.5, configure.in, autoconf.hin
+
 -- 1.7.6 release 20040906 "Baleshare" --
 
 U030) Dennis Grevenstein <dennis@pcde.inka.de>
@@ -44,7 +86,7 @@ U028) Michael Bienia <michael@vorlon.ping.de>
 -- 1.7.5 release 20040615 "Gighay" --
 
  024) Herbert Xu <herbert@gondor.apana.org.au
-      BUG. potential use/fee of unitialized data in get_recipients()
+      BUG. potential use/free of unitialized data in get_recipients()
       FIX. post.c
 
  023) Michael Bienia <michael@vorlon.ping.de>
@@ -201,6 +243,7 @@ U012) Toomas Soome <Toomas.Soome@microlink.ee>
 
 U011) Urs Janssen <urs@tin.org>
       ADD. config.guess, config.sub update
+      ADD. pcre update (4.4 -> 4.5)
       ADD. install.sh update
       ADD. configure check for libidn, idna.h, stringprep.h
       ADD. configure check for nl_item

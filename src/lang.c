@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-09-03
+ *  Updated   : 2004-11-16
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -334,6 +334,8 @@ constext txt_help_global_quit_tin[] = N_("quit tin immediately");
 constext txt_help_global_redraw_screen[] = N_("redraw page");
 constext txt_help_global_save[] = N_("save article/thread/hot/pattern/tagged articles to file");
 constext txt_help_global_auto_save[] = N_("save marked articles automatically without user prompts");
+constext txt_help_global_scroll_down[] = N_("scroll the screen one line down");
+constext txt_help_global_scroll_up[] = N_("scroll the screen one line up");
 constext txt_help_global_search_auth_backwards[] = N_("search for articles by author backwards");
 constext txt_help_global_search_auth_forwards[] = N_("search for articles by author forwards");
 constext txt_help_global_search_body[] = N_("search all articles for a given string (this may take some time)");
@@ -532,11 +534,13 @@ constext txt_no_responses[] = N_("No responses");
 constext txt_no_resps_in_thread[] = N_("No responses to list in current thread");
 constext txt_no_search_string[] = N_("No search string");
 constext txt_no_subject[] = N_("No subject");
-constext txt_no_term_clear_eol[] = N_("%s: Terminal must have clear to end-of-line (ce)\n");
-constext txt_no_term_clear_eos[] = N_("%s: Terminal must have clear to end-of-screen (cd)\n");
-constext txt_no_term_clearscreen[] = N_("%s: Terminal must have clearscreen (cl) capability\n");
-constext txt_no_term_cursor_motion[] = N_("%s: Terminal must have cursor motion (cm)\n");
-constext txt_no_term_set[] = N_("%s: TERM variable must be set to use screen capabilities\n");
+#ifndef USE_CURSES
+	constext txt_no_term_clear_eol[] = N_("%s: Terminal must have clear to end-of-line (ce)\n");
+	constext txt_no_term_clear_eos[] = N_("%s: Terminal must have clear to end-of-screen (cd)\n");
+	constext txt_no_term_clearscreen[] = N_("%s: Terminal must have clearscreen (cl) capability\n");
+	constext txt_no_term_cursor_motion[] = N_("%s: Terminal must have cursor motion (cm)\n");
+	constext txt_no_term_set[] = N_("%s: TERM variable must be set to use screen capabilities\n");
+#endif /* !USE_CURSES */
 constext txt_no_viewer_found[] = N_("No viewer found for %s/%s\n");
 constext txt_not_exist[] = N_("Newsgroup does not exist on this server");
 constext txt_not_in_active_file[] = N_("Group %s not found in active file");
@@ -651,7 +655,9 @@ constext txt_saved_to[] = N_("-- %s saved to %s%s --");
 constext txt_saved_to_range[] = N_("-- %s saved to %s - %s --");
 constext txt_saving[] = N_("Saving...");
 constext txt_screen_init_failed[] = N_("%s: Screen initialization failed");
-constext txt_screen_too_small[] = N_("%s: screen is too small\n");
+#ifndef USE_CURSES
+	constext txt_screen_too_small[] = N_("%s: screen is too small\n");
+#endif /* !USE_CURSES */
 constext txt_screen_too_small_exiting[] = N_("screen is too small, %s is exiting\n");
 constext txt_search_backwards[] = N_("Search backwards [%s]> ");
 constext txt_search_body[] = N_("Search body [%s]> ");
@@ -681,6 +687,7 @@ constext txt_suspended_message[] = N_("\nStopped. Type 'fg' to restart %s\n");
 
 constext txt_time_default_days[] = N_("%d days");
 constext txt_tab[] = N_("<TAB>");
+constext txt_tex[] = N_("TeX ");
 constext txt_tinrc_defaults[] = N_("# Default action/prompt strings\n");
 constext txt_tinrc_filter[] = N_("# Defaults for quick (1 key) kill & auto-selection filters\n\
 # header=NUM  0,1=Subject: 2,3=From: 4=Message-ID: & full References: line\n\
@@ -836,14 +843,26 @@ Warning: Posting is in %s and contains characters which are not\n\
 
 #ifdef HAVE_COLOR
 	constext txt_help_global_toggle_color[] = N_("toggle color");
-	constext txt_tinrc_colors[] = N_("# For color-adjust use the following numbers\n\
-#  0-black       1-red         2-green        3-brown\n\
-#  4-blue        5-pink        6-cyan         7-white\n\
+	constext txt_tinrc_colors[] = N_("# Changing colors of several screen parts\n\
+# Possible values are:\n\
+#  -1 = default (white for foreground and black for background)\n\
+#   0 = black\n\
+#   1 = red\n\
+#   2 = green\n\
+#   3 = brown\n\
+#   4 = blue\n\
+#   5 = pink\n\
+#   6 = cyan\n\
+#   7 = white\n\
 # These are *only* for foreground:\n\
-#  8-gray        9-lightred   10-lightgreen  11-yellow\n\
-# 12-lightblue  13-lightpink  14-lightcyan   15-lightwhite\n\
-# A '-1' is interpreted as default (foreground normally is white, and\n\
-# background black)\n\n");
+#   8 = gray\n\
+#   9 = light red\n\
+#  10 = light green\n\
+#  11 = yellow\n\
+#  12 = light blue\n\
+#  13 = light pink\n\
+#  14 = light cyan\n\
+#  15 = light white\n\n");
 	constext txt_usage_toggle_color[] = N_("  -a       toggle color flag");
 #endif /* HAVE_COLOR */
 
@@ -1012,9 +1031,9 @@ Warning: The \"%s:\" line has spaces in it that SHOULD be removed.\n");
 	constext txt_shell_escape[] = N_("Enter shell command [%s]> ");
 #endif /* !NO_SHELL_ESCAPE */
 
-#if defined(M_UNIX) && !defined(USE_TERMINFO)
+#if !defined(USE_CURSES) && defined(M_UNIX) && !defined(USE_TERMINFO)
 	constext txt_cannot_get_term_entry[] = N_("%s: Can't get entry for TERM\n");
-#endif /* M_UNIX && !USE_TERMINFO */
+#endif /* !USE_CURSES && M_UNIX && !USE_TERMINFO */
 
 #if defined(HAVE_POLL) || defined(HAVE_SELECT)
 	constext txt_group[] = N_("Group %.*s ('q' to quit)...");
@@ -1359,7 +1378,12 @@ struct opttxt txt_show_description = {
 struct opttxt txt_show_author = {
 	N_("Show Subject & From (author) fields in group menu. <SPACE> toggles & <CR> sets."),
 	N_("In group menu, show author by"),
-	N_("# Part of from field to display 0) none 1) address 2) full name 3) both\n")
+	N_("# Part of from field to display\n\
+# Possible values are (the default is marked with *):\n\
+#   0 = none\n\
+#   1 = address\n\
+# * 2 = full name\n\
+#   3 = both\n")
 };
 
 struct opttxt txt_draw_arrow = {
@@ -1377,28 +1401,51 @@ struct opttxt txt_inverse_okay = {
 struct opttxt txt_thread_articles = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Thread articles by"),
-	N_("# Thread articles on 0=(nothing) 1=(Subject) 2=(References) 3=(Both)\n\
-# 4=(Multipart Subject).\n")
+	N_("# Thread articles by ...\n\
+# Possible values are (the default is marked with *):\n\
+#   0 = nothing\n\
+#   1 = Subject\n\
+#   2 = References\n\
+# * 3 = Both (Subject and References)\n\
+#   4 = Multipart Subject\n")
 };
 
 struct opttxt txt_thread_score = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Score of a thread"),
-	N_("# Thread score 0=(Max) 1=(Sum) 2=(Average)\n")
+	N_("# Thread score\n\
+# Possible values are (the default is marked with *):\n\
+# * 0 = max\n\
+#   1 = sum\n\
+#   2 = average\n")
 };
 
 struct opttxt txt_sort_article_type = {
 	N_("Sort articles by Subject, From, Date or Score. <SPACE> toggles & <CR> sets."),
 	N_("Sort articles by"),
-	N_("# Sort articles by 0=(nothing) 1=(Subject descend) 2=(Subject ascend)\n\
-# 3=(From descend) 4=(From ascend) 5=(Date descend) 6=(Date ascend)\n\
-# 7=(Score descend) 8=(Score ascend) 9=(Lines descend) 10=(Lines ascend).\n")
+	N_("# Sort articles by ...\n\
+# Possible values are (the default is marked with *):\n\
+#   0 = nothing\n\
+#   1 = Subject descending\n\
+#   2 = Subject ascending\n\
+#   3 = From descending\n\
+#   4 = From ascending\n\
+#   5 = Date descending\n\
+# * 6 = Date ascending\n\
+#   7 = Score descending\n\
+#   8 = Score ascending\n\
+#   9 = Lines descending\n\
+#  10 = Lines ascending\n")
 };
 
 struct opttxt txt_sort_threads_type = {
 	N_("Sort threads by Nothing or Score. <SPACE> toggles & <CR> sets."),
 	N_("Sort threads by"),
-	N_("# Sort thread by 0=(nothing) 1=(Score descend) 2=(Score ascend)\n")
+	N_("# Sort thread by ...\n\
+# Possible values are (the default is marked with *):\n\
+#   0 = nothing\n\
+# * 1 = Score descending\n\
+#   2 = Score ascending\n")
 };
 
 struct opttxt txt_pos_first_unread = {
@@ -1422,9 +1469,11 @@ struct opttxt txt_show_only_unread_groups = {
 struct opttxt txt_kill_level = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Filter which articles"),
-	N_("# 0=(Only kill unread articles)\n\
-# 1=(Kill all articles and show in threads marked with K)\n\
-# 2=(Kill all articles and never show them).\n")
+	N_("# Filter which articles\n\
+# Possible values are (the default is marked with *):\n\
+# * 0 = only kill unread articles\n\
+#   1 = kill all articles and show in threads marked with K\n\
+#   2 = kill all articles and never show them\n")
 };
 
 struct opttxt txt_tab_goto_next_unread = {
@@ -1526,16 +1575,23 @@ struct opttxt txt_show_info = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Show lines/score in listings"),
 	N_("# What informations should be displayed in article/thread listing\n\
-# 0 = nothing, 1 = lines, 2 = score, 3 = lines & score\n")
+# Possible values are (the default is marked with *):\n\
+#   0 = nothing\n\
+# * 1 = lines\n\
+#   2 = score\n\
+#   3 = lines & score\n")
 };
 
 struct opttxt txt_scroll_lines = {
 	N_("0 = full page scrolling, -1 = show previous last line as first on next page, -2 = half page"),
 	N_("Number of lines to scroll in pager"),
 	N_("# Number of lines that cursor-up/down will scroll in article pager\n\
-# eg, 1+ = line-by-line, 0 = page-by-page (traditional behavior),\n\
-# -1 = the top/bottom line is carried over onto the next page,\n\
-# -2 = half-page scrolling\n")
+# Possible values are (the default is marked with *):\n\
+#  -2 = half-page scrolling\n\
+#  -1 = the top/bottom line is carried over onto the next page\n\
+#   0 = page-by-page (traditional behavior)\n\
+# * 1 = line-by-line\n\
+#   2 or greater = scroll by 2 or more lines (only in the pager)\n")
 };
 
 struct opttxt txt_show_signatures = {
@@ -1548,11 +1604,12 @@ struct opttxt txt_hide_uue = {
 	N_("Display uuencoded data as tagged attachments. <SPACE> toggles & <CR> sets."),
 	N_("Display uue data as an attachment"),
 	N_("# Handling of uuencoded data in the pager\n\
-# 0 = display raw uuencoded data\n\
-# 1 = uuencoded data will be condensed to a single tag line showing\n\
-#     size and filename, similar to how MIME attachments are displayed\n\
-# 2 = as for 1, but any line that looks like uuencoded data will be folded\n\
-#     into a tag line.\n")
+# Possible values are (the default is marked with *):\n\
+# * 0 = no, display raw uuencoded data\n\
+#   1 = yes, uuencoded data will be condensed to a single tag line showing\n\
+#       size and filename, similar to how MIME attachments are displayed\n\
+#   2 = hide all, as for 1, but any line that looks like uuencoded data will\n\
+#       be folded into a tag line.\n")
 };
 
 struct opttxt txt_tex2iso_conv = {
@@ -1744,7 +1801,10 @@ struct opttxt txt_recent_time = {
 struct opttxt txt_wildcard = {
 	N_("WILDMAT for normal wildcards, REGEX for full regular expression matching."),
 	N_("Wildcard matching"),
-	N_("# Wildcard matching 0=(wildmat) 1=(regex)\n")
+	N_("# Wildcard matching\n\
+# Possible values are (the default is marked with *):\n\
+# * 0 = wildmat\n\
+#   1 = regex\n")
 };
 
 struct opttxt txt_score_limit_kill = {
@@ -1790,170 +1850,200 @@ struct opttxt txt_use_color = {
 struct opttxt txt_col_normal = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Standard foreground color"),
-	N_("# Standard foreground color\n")
+	N_("# Standard foreground color\n\
+# Default: -1 (default color)\n")
 };
 
 struct opttxt txt_col_back = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Standard background color"),
-	N_("# Standard-Background-Color\n")
+	N_("# Standard background color\n\
+# Default: -1 (default color)\n")
 };
 
 struct opttxt txt_col_invers_bg = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color for inverse text (background)"),
-	N_("# Color of background for inverse text\n")
+	N_("# Color of background for inverse text\n\
+# Default: 4 (blue)\n")
 };
 
 struct opttxt txt_col_invers_fg = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color for inverse text (foreground)"),
-	N_("# Color of foreground for inverse text\n")
+	N_("# Color of foreground for inverse text\n\
+# Default: 7 (white)\n")
 };
 
 struct opttxt txt_col_text = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of text lines"),
-	N_("# Color of text-lines\n")
+	N_("# Color of text lines\n\
+# Default: -1 (default color)\n")
 };
 
 struct opttxt txt_col_minihelp = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of mini help menu"),
-	N_("# Color of mini help menu\n")
+	N_("# Color of mini help menu\n\
+# Default: 3 (brown)\n")
 };
 
 struct opttxt txt_col_help = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of help text"),
-	N_("# Color of help pages\n")
+	N_("# Color of help pages\n\
+# Default: -1 (default color)\n")
 };
 
 struct opttxt txt_col_message = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of status messages"),
-	N_("# Color of messages in last line\n")
+	N_("# Color of messages in last line\n\
+# Default: 6 (cyan)\n")
 };
 
 struct opttxt txt_col_quote = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of quoted lines"),
-	N_("# Color of quote-lines\n")
+	N_("# Color of quote-lines\n\
+# Default: 2 (green)\n")
 };
 
 struct opttxt txt_col_quote2 = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of twice quoted line"),
-	N_("# Color of twice quoted lines\n")
+	N_("# Color of twice quoted lines\n\
+# Default: 3 (brown)\n")
 };
 
 struct opttxt txt_col_quote3 = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of =>3 times quoted line"),
-	N_("# Color of >=3 times quoted lines\n")
+	N_("# Color of >=3 times quoted lines\n\
+# Default: 4 (blue)\n")
 };
 
 struct opttxt txt_col_head = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of article header lines"),
-	N_("# Color of header-lines\n")
+	N_("# Color of header-lines\n\
+# Default: 2 (green)\n")
 };
 
 struct opttxt txt_col_newsheaders = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of actual news header fields"),
-	N_("# Color of actual news header fields\n")
+	N_("# Color of actual news header fields\n\
+# Default: 9 (light red)\n")
 };
 
 struct opttxt txt_col_subject = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of article subject lines"),
-	N_("# Color of article subject\n")
+	N_("# Color of article subject\n\
+# Default: 6 (cyan)\n")
 };
 
 struct opttxt txt_col_response = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of response counter"),
-	N_("# Color of response counter\n")
+	N_("# Color of response counter\n\
+# Default: 2 (green)\n")
 };
 
 struct opttxt txt_col_from = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of sender (From:)"),
-	N_("# Color of sender (From:)\n")
+	N_("# Color of sender (From:)\n\
+# Default: 2 (green)\n")
 };
 
 struct opttxt txt_col_title = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of help/mail sign"),
-	N_("# Color of Help/Mail-Sign\n")
+	N_("# Color of Help/Mail-Sign\n\
+# Default: 4 (blue)\n")
 };
 
 struct opttxt txt_col_signature = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of signatures"),
-	N_("# Color of signature\n")
+	N_("# Color of signature\n\
+# Default: 4 (blue)\n")
 };
 
 struct opttxt txt_col_urls = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of highlighted URLs"),
-	N_("# Color of highlighted URLs\n")
+	N_("# Color of highlighted URLs\n\
+# Default: -1 (default color)\n")
 };
 
 struct opttxt txt_col_markstar = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of highlighting with *stars*"),
-	N_("# Color of word highlighting. There are four possibilities\n\
-# in articles: *stars*, /slashes/, _underdashes_ and -strokes-.\n")
+	N_("# Color of word highlighting with *stars*\n\
+# Default: 11 (yellow)\n")
 };
 
 struct opttxt txt_col_markdash = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of highlighting with _dash_"),
-	""
+	N_("# Color of word highlighting with _dash_\n\
+# Default: 13 (light pink)\n")
 };
 
 struct opttxt txt_col_markslash = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of highlighting with /slash/"),
-	""
+	N_("# Color of word highlighting with /slash/\n\
+# Default: 14 (light cyan)\n")
 };
 
 struct opttxt txt_col_markstroke = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of highlighting with -stroke-"),
-	""
+	N_("# Color of word highlighting with -stroke-\n\
+# Default: 12 (light blue)\n")
 };
 #endif /* HAVE_COLOR */
 
 struct opttxt txt_mono_markstar = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Attr. of highlighting with *stars*"),
-	N_("# Attribute of word highlighting on mono terminals.\n\
-# There are four possibilities in articles:\n\
-# *stars*, /slashes/, _underdashes_ and -strokes-.\n\
-# The possible values are:\n\
-# 0 - Normal, 1 - Underline, 2 - Best highlighting,\n\
-# 3 - Reverse video, 4 - Blinking, 5 - Half bright, 6 - Bold\n")
+	N_("# Attributes of word highlighting on mono terminals\n\
+# Possible values are:\n\
+#   0 = Normal\n\
+#   1 = Underline\n\
+#   2 = Best highlighting\n\
+#   3 = Reverse video\n\
+#   4 = Blinking\n\
+#   5 = Half bright\n\
+#   6 = Bold\n\n\
+# Attribute of word highlighting with *stars*\n\
+# Default: 6 (bold)\n")
 };
 
 struct opttxt txt_mono_markdash = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Attr. of highlighting with _dash_"),
-	""
+	N_("# Attribute of word highlighting with _dash_\n\
+# Default: 2 (best highlighting)\n")
 };
 
 struct opttxt txt_mono_markslash = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Attr. of highlighting with /slash/"),
-	""
+	N_("# Attribute of word highlighting with /slash/\n\
+# Default: 5 (half bright)\n")
 };
 
 struct opttxt txt_mono_markstroke = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Attr. of highlighting with -stroke-"),
-	""
+	N_("# Attribute of word highlighting with -stroke-\n\
+# Default: 3 (reverse video)\n")
 };
 
 struct opttxt txt_url_highlight = {
@@ -1973,7 +2063,10 @@ struct opttxt txt_word_h_display_marks = {
 	N_("What to display instead of mark"),
 	N_("# Should the leading and ending stars and dashes also be displayed,\n\
 # even when they are highlighting marks?\n\
-# 0 - no    1 - yes, display mark    2 - print a space instead\n")
+# Possible values are (the default is marked with *):\n\
+#   0 = no\n\
+#   1 = yes, display mark\n\
+# * 2 = print a space instead\n")
 };
 
 struct opttxt txt_wrap_column = {
@@ -2032,14 +2125,15 @@ struct opttxt txt_quote_style = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Quoting behavior"),
 	N_("# How quoting should be handled when following up or replying.\n\
-# 0 = Nothing special\n\
-# 1 = Compress quotes\n\
-# 2 = Quote signatures\n\
-# 3 = Compress quotes, quote signatures\n\
-# 4 = Quote empty lines\n\
-# 5 = Compress quotes, quote empty lines\n\
-# 6 = Quote signatures, quote empty lines\n\
-# 7 = Compress quotes, quote signatures, quote empty lines\n")
+# Possible values are (the default is marked with *):\n\
+#   0 = Nothing special\n\
+#   1 = Compress quotes\n\
+#   2 = Quote signatures\n\
+#   3 = Compress quotes, quote signatures\n\
+#   4 = Quote empty lines\n\
+# * 5 = Compress quotes, quote empty lines\n\
+#   6 = Quote signatures, quote empty lines\n\
+#   7 = Compress quotes, quote signatures, quote empty lines\n")
 };
 
 struct opttxt txt_news_quote_format = {
@@ -2218,7 +2312,10 @@ struct opttxt txt_post_process = {
 	N_("Do post processing (eg. extract attachments) for saved articles."),
 	N_("Post process saved articles"),
 	N_("# Perform post processing (saving binary attachments) from saved articles.\n\
-# 0=(no) 1=(yes) 2=(extract shell archives (shar) only)\n")
+# Possible values are (the default is marked with *):\n\
+# * 0 = no\n\
+#   1 = extract shell archives (shar) only\n\
+#   2 = yes\n")
 };
 
 struct opttxt txt_process_only_unread = {
@@ -2279,10 +2376,11 @@ struct opttxt txt_mailer_format = {
 struct opttxt txt_interactive_mailer = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Use interactive mail reader"),
-	N_("# Interactive mailreader:\n\
-# 0 = no interactive mailreader\n\
-# 1 = use interactive mailreader with headers in file\n\
-# 2 = use interactive mailreader without headers in file\n")
+	N_("# Interactive mailreader\n\
+# Possible values are (the default is marked with *):\n\
+# * 0 = no interactive mailreader\n\
+#   1 = use interactive mailreader with headers in file\n\
+#   2 = use interactive mailreader without headers in file\n")
 };
 
 struct opttxt txt_unlink_article = {
@@ -2313,7 +2411,11 @@ struct opttxt txt_strip_newsrc = {
 struct opttxt txt_strip_bogus = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Remove bogus groups from newsrc"),
-	N_("# What to do with bogus groups in newsrc file\n# 0=(Keep) 1=(Remove) 2=(Highlight with D on selection screen).\n")
+	N_("# What to do with bogus groups in newsrc file\n\
+# Possible values are (the default is marked with *):\n\
+# * 0 = keep\n\
+#   1 = remove\n\
+#   2 = highlight with D on selection screen\n")
 };
 
 struct opttxt txt_reread_active_file_secs = {
@@ -2345,7 +2447,12 @@ struct opttxt txt_normalization_form = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Unicode normalization form"),
 	N_("# Unicode normalization form\n\
-# 0 = None, 1 = NFKC, 2 = NFKD, 3 = NFC, 4 = NFD\n")
+# Possible values are (the default is marked with *):\n\
+#   0 = None\n\
+# * 1 = NFKC\n\
+#   2 = NFKD\n\
+#   3 = NFC\n\
+#   4 = NFD\n")
 };
 #endif /* HAVE_UNICODE_NORMALIZATION */
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)

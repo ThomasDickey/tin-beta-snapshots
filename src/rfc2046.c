@@ -1106,7 +1106,7 @@ open_art_fp(
 	struct t_group *group,
 	long art)
 {
-	FILE *art_fp = (FILE *) 0;
+	FILE *art_fp;
 	char buf[NNTP_STRLEN];
 
 #ifdef NNTP_ABLE

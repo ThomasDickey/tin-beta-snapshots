@@ -4,6 +4,14 @@ not read only ,-).
 
 Bugs
 ----
+o  fast/endless reconecction loop after a "200\n\r400\n\r" greeting,
+   see
+   <nntp://news.tin.org/Pine.LNX.4.61.0411190338000.24950@avenger.apcoh.org>
+
+o  rot13-toggle '%' doesn't work in raw '^H' mode (but isn't disabled, so
+   the info message in the last line is wrong).
+   [20041125 Urs Janssen <urs@tin.org>]
+
 o  AFAICS change_config_file() currently has a static return value,
    but some callers do check the return value and in case we did
    change something we should update (global) attributes accordingly.
@@ -45,8 +53,8 @@ o  '-s' cmd-line switch implicitly changes 'savedir' in tinrc
    Might get away with simply setting glob_attributes->savedir
    [Jason Faultless <jason@altarstone.com>]
 
-o  add version number to other config-files (e.g. tin.defaults,
-   keymap) and do the same checks as for TINRC_VERSION/tinrc. for the
+o  add version number to other config-files (e.g. tin.defaults)
+   and do the same checks as for TINRC_VERSION/tinrc. for the
    filter (and attributes) file also store the editor offset (different
    languages do use different headers) and the filter method used
    (wildmat or regexp) and the charset the file is written in (e.g.
@@ -103,8 +111,11 @@ o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
 
 New features
 ------------
+o  add user defined screen layout at different levels
+   [20041025 Urs Janssen <urs@tin.org>]
+
 o  add TLS support
-   (see draft-ietf-nntpext-tls-nntp-01.txt;
+   (see draft-ietf-nntpext-tls-nntp-03.txt;
    <http://www.gnu.org/software/gnutls/> might be useful)
    [20031210 Urs Janssen <urs@tin.org>]
 
@@ -461,6 +472,10 @@ o  suppress hide_uue=2 checking unless first line in an article or following
 
 Internal Changes
 ----------------
+o  replace various occurrence of "US-ASCII" by DEFAULT(_MIME)_CHARSET
+   and define that to "US-ASCII" (to make 'updates' easier).
+   [20040929 Urs Janssen <urs@akk.org>]
+
 o  add configure option for slrnface
    [20030506 Urs Janssen <urs@akk.org>]
 
@@ -631,6 +646,8 @@ o  man page always needs work and proof reading
 
 o  tin.defaults could use more documentation in manpage (tin.5)
 
+o  replace "\\" by "\e" in manpages (portable?)
+
 Not yet classified
 ------------------
 o  there is no command to undo a range ('#') selection
@@ -715,7 +732,8 @@ o  doesn't handle symlinks for .oldnewsrc
    [20020627 Jeff Sheinberg <jeffsh@erols.com>]
 
 o  cleanup main.c/init_selfinfo()
-   ('strace -e trace=file tin' and you know what I mean)
+   ('strace -e trace=file tin' and/or 'ltrace -e getenv tin' and you know
+    what I mean)
    [fixed some of the double/tripple reads, urs]
 
 o  either use libinn(3) where ever it's possible inside the code (if

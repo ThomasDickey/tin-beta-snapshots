@@ -3,7 +3,7 @@
  *  Module    : rfc1524.c
  *  Author    : Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-05-15
- *  Updated   : 2002-08-24
+ *  Updated   : 2004-11-28
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
  * Copyright (c) 2000-2004 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
@@ -70,19 +70,18 @@ get_mailcap_entry(
 	char buf[LEN];
 	char filename[LEN];	/* name of current mailcap file */
 	char mailcap[LEN];	/* full match */
-	char mailcaps[LEN];	/* possible mailcap files */
+	char *mailcaps = NULL;	/* possible mailcap files */
 	char wildcap[LEN];	/* basetype match */
 	t_mailcap *foo = (t_mailcap *) 0;
 
-	mailcaps[0] = '\0';
 	/* build list of mailcap files */
-	if ((ptr = getenv("MAILCAPS")) != NULL) {
-		if (strlen(ptr)) {
-			STRCPY(mailcaps, ptr);
-			strncat(mailcaps, ":", sizeof(mailcaps) - 1);
-		}
-	}
-	strncat(mailcaps, DEFAULT_MAILCAPS, sizeof(mailcaps) - 1);
+	if ((ptr = getenv("MAILCAPS")) != NULL && strlen(ptr))
+			mailcaps = my_strdup(ptr);
+	if (mailcaps != NULL) {
+		mailcaps = my_realloc(mailcaps, strlen(mailcaps) + strlen(DEFAULT_MAILCAPS) + 2);
+		strcat(strcat(mailcaps, ":"), DEFAULT_MAILCAPS);
+	} else
+		mailcaps = my_strdup(DEFAULT_MAILCAPS);
 
 	mailcap[0] = '\0';
 	wildcap[0] = '\0';
@@ -117,6 +116,7 @@ get_mailcap_entry(
 								foo = parse_mailcap_line(mailcap, part, path);
 								if (foo != NULL) {
 									fclose(fp); /* perfect match with test succeded (if given) */
+									free(mailcaps);
 									return foo;
 								}
 							} else {
@@ -133,6 +133,7 @@ get_mailcap_entry(
 					} /* else invalid mailcap line (no /), no action required */
 					if (strlen(wildcap)) {	/* we just had a wildmat match */
 						fclose(fp);
+						free(mailcaps);
 						return foo;
 					}
 				} /* while ((fgets(ptr, ... */
@@ -141,6 +142,7 @@ get_mailcap_entry(
 		} /* else strfpath() failed, no action required */
 		nptr = strtok(NULL, ":"); /* get next filename */
 	}
+	free(mailcaps);
 	foo = (t_mailcap *) 0; /* no match, weed out possible junk */
 	return foo;
 }
@@ -353,7 +355,7 @@ expand_mailcap_meta(
 	int quote = no_quote;
 	size_t linelen, space, olen;
 
-	if ((ptr = strchr(mailcap, '%')) == NULL) /* nothing to expand */
+	if (!(strchr(mailcap, '%'))) /* nothing to expand */
 		return my_strdup(mailcap); /* waste of mem, but simplyfies the frees */
 
 	linelen = LEN * 2;					/* initial maxlen */

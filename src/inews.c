@@ -391,7 +391,7 @@ submit_news_file(
 {
 	char buf[PATH_LEN];
 	char *cp = buf;
-	char *fcc = NULL;
+	char *fcc;
 	t_bool ret_code;
 	t_bool ismail = FALSE;
 

@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2004-09-06
+# Updated: 2004-10-19
 #
 # Copyright (c) 1995-2004 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -51,7 +51,7 @@ x		= @EXEEXT@
 o		= .@OBJEXT@
 
 DEBUG		= @ENABLE_DEBUG@ -DDEBUG #-DDEBUG_NEWSRC -DPROFILE -DDEBUG_REFS
-CANLOCK 	= # -DUSE_CANLOCK # -DEVIL_INSIDE
+CANLOCK		= # -DUSE_CANLOCK # -DEVIL_INSIDE
 
 INTL_CPPFLAGS	= -DLOCALEDIR=\"$(prefix)/@DATADIRNAME@/locale\"
 PCRE_CPPFLAGS	= @PCREDIR_CPPFLAGS@ @PCREDIR_MAKE@ -I$(top_builddir)/pcre -I$(top_srcdir)/pcre
@@ -525,7 +525,8 @@ $(OBJDIR)/init$o :		$(SRCDIR)/init.c $(TIN_DEP) \
 $(OBJDIR)/joinpath$o :		$(SRCDIR)/joinpath.c $(TIN_DEP)
 $(OBJDIR)/keymap$o :		$(SRCDIR)/keymap.c $(TIN_DEP) \
 				$(INCDIR)/keymap.h \
-				$(INCDIR)/menukeys.h
+				$(INCDIR)/menukeys.h \
+				$(INCDIR)/version.h
 $(OBJDIR)/lang$o :		$(SRCDIR)/lang.c $(TIN_DEP)
 $(OBJDIR)/langinfo$o :		$(SRCDIR)/langinfo.c $(TIN_DEP)
 $(OBJDIR)/list$o :		$(SRCDIR)/list.c $(TIN_DEP)

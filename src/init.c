@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-08-20
+ *  Updated   : 2004-09-08
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -512,7 +512,7 @@ init_selfinfo(
 
 #ifdef HAVE_SYS_UTSNAME_H
 #	ifdef HAVE_UNAME
-	if (!uname(&system_info))
+	if (uname(&system_info) != -1)
 		;
 	else
 #	endif /* HAVE_UNAME */

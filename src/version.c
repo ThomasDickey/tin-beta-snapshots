@@ -3,7 +3,7 @@
  *  Module    : version.c
  *  Author    : U. Janssen
  *  Created   : 2003-05-11
- *  Updated   : 2003-08-21
+ *  Updated   : 2004-12-10
  *  Notes     :
  *
  * Copyright (c) 2003-2004 Urs Janssen <urs@tin.org>
@@ -55,6 +55,9 @@
  *         RC_UPGRADE    1st args dotted triple is older than 3rd arg
  *         RC_DOWNGRADE  1st args dotted triple is newer than 3rd arg
  *         RC_ERROR      3rd arg is not a dotted triple (usage error)
+ *
+ * Don't make the arguments to sscanf() consts, as some old systems require
+ * them to writable (but do not change them)
  */
 int
 check_upgrade(
@@ -63,20 +66,28 @@ check_upgrade(
 	const char *version)
 {
 	char *format;
-	const char *fmt = "%d.%d.%d";	/* we are expecting dotted triples */
+	char *lskip = my_strdup(skip);
+	char *lversion = my_strdup(version);
+	char fmt[10];
 	int rc_majorv, rc_minorv, rc_subv; /* version numbers in the file */
 	int c_majorv, c_minorv, c_subv;	/* version numbers we require */
-	size_t len = strlen(skip) + strlen(fmt) + 1; /* format buffer len */
+	size_t len;
 
 	rc_majorv = rc_minorv = rc_subv = c_majorv = c_minorv = c_subv = -1;
+	strcpy(fmt, "%d.%d.%d"); /* we are expecting dotted triples */
+	len = strlen(lskip) + strlen(fmt) + 1; /* format buffer len */
 	format = my_malloc(len + 1);
-	snprintf(format, len, "%s%s", skip, fmt);
+	snprintf(format, len, "%s%s", lskip, fmt);
 	sscanf(line, format, &rc_majorv, &rc_minorv, &rc_subv);
 	free(format);
+	free(lskip);
 
 	/* we can't parse our own version number - should never happen */
-	if (sscanf(version, fmt, &c_majorv, &c_minorv, &c_subv) != 3)
+	if (sscanf(lversion, fmt, &c_majorv, &c_minorv, &c_subv) != 3) {
+		free(lversion);
 		return RC_ERROR;
+	}
+	free(lversion);
 
 	if (c_majorv == rc_majorv && c_minorv == rc_minorv && c_subv == rc_subv)
 		return RC_IGNORE;

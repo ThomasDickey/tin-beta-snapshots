@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-09-04
+ *  Updated   : 2004-10-17
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -518,7 +518,9 @@ search_article(
 {
 	char *pattern, *ptr, *tmp;
 	int i = start_line;
+	int tmp_srch_offsets[2];
 	t_bool wrap = FALSE;
+	t_bool match = FALSE;
 
 	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_art, HIST_ART_SEARCH)))
 		return 0;
@@ -543,6 +545,10 @@ search_article(
 			break;
 
 		tmp = tin_fgets(fp, FALSE);
+		if (!forward && srch_offsets[0] >= 0) {
+			tmp[srch_offsets[0]] = '\0';	/* ignore anything on this line after the last match */
+			srch_offsets[1] = 0;	/* start backwards search at the beginning of the line */
+		}
 
 #ifdef HAVE_UNICODE_NORMALIZATION
 		if (IS_LOCAL_CHARSET("UTF-8"))
@@ -552,8 +558,20 @@ search_article(
 			ptr = my_strdup(tmp);
 
 		if (tinrc.wildcard) {
-			if (pcre_exec(search_regex.re, search_regex.extra, ptr, strlen(ptr), srch_offsets[1], 0,
-								srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
+			while (pcre_exec(search_regex.re, search_regex.extra, ptr, strlen(ptr), srch_offsets[1], 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
+				match = TRUE;
+				if (forward)
+					break;
+				else {
+					tmp_srch_offsets[0] = srch_offsets[0];
+					tmp_srch_offsets[1] = srch_offsets[1];
+				}
+			}
+			if (match) {
+				if (!forward) {
+					srch_offsets[0] = tmp_srch_offsets[0];
+					srch_offsets[1] = tmp_srch_offsets[1];
+				}
 				srch_lineno = i;
 				FreeAndNull(search_regex.re);
 				FreeAndNull(search_regex.extra);
@@ -659,4 +677,16 @@ get_search_vectors(
 	*end = srch_offsets[1];
 	srch_lineno = -1;			/* We can only retrieve this info once */
 	return i;
+}
+
+
+/*
+ * Reset offsets so that the next search starts at the beginning of the line.
+ * This function is needed to access srch_offsets from within other modules.
+ */
+void
+reset_srch_offsets(
+	void)
+{
+	srch_offsets[0] = srch_offsets[1] = 0;
 }

@@ -30,7 +30,7 @@ CPPOPTS = \
 	-DMATCH_LIMIT=10000000 \
 	-DNEWLINE=10 \
 	-DPOSIX_MALLOC_THRESHOLD=10 \
-	@DEFS@ -I. -I. -I../include
+	@DEFS@ -I. -I../include
 
 RANLIB	= @RANLIB@
 RM	= rm

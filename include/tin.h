@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-08-20
+ *  Updated   : 2004-10-01
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -751,7 +751,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  * case insensitive
  */
 #if 1 /* complex */
-#  	define NEWS_REGEX "\\b(?:s?news|nntp):(?:(?:(?://(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?(?=[/])[^()\\^\\[\\]{}\\|\\x00-\\x1f\\x7f\\s\"<>'\\\\:,;]+|$))|[^\\^\\[\\]{}\\|\\x00-\\x1f\\x7f\\s<>\"():,;\\\\'/]+)\\b"
+#	define NEWS_REGEX "\\b(?:s?news|nntp):(?:(?:(?://(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?(?=[/])[^()\\^\\[\\]{}\\|\\x00-\\x1f\\x7f\\s\"<>'\\\\:,;]+|$))|[^\\^\\[\\]{}\\|\\x00-\\x1f\\x7f\\s<>\"():,;\\\\'/]+)\\b"
 #else
 #	if 1 /* less complex */
 #		define NEWS_REGEX	"\\b(?:s?news|nntp):[^\\s\\*@>]+(?(?=[@])[^\\s\\*@<>()\",/]+|[^\\s\\*<>()\":,/]+)\\b"
@@ -1023,9 +1023,9 @@ enum {
 /* Line number (starting at 0) of 1st non-header data on the screen */
 /* ie, size of header */
 #define INDEX_TOP	2
-#define INDEX2LNUM(i)	(INDEX_TOP + (i) % NOTESLINES)
+#define INDEX2LNUM(i)	(INDEX_TOP + (i) - currmenu->first)
 #ifndef USE_CURSES
-#	define INDEX2SNUM(i)	((i) % NOTESLINES)
+#	define INDEX2SNUM(i)	((i) - currmenu->first)
 #endif /* !USE_CURSES */
 
 #define GROUP_MATCH(s1, pat, case)		(wildmat(s1, pat, case))
@@ -1778,9 +1778,9 @@ typedef struct {
 	int curr;					/* Current cursor pos (cur_groupnum, index_point, thread_index_point) */
 	int max;					/* Max # on current menu (group_top, top_base, top_thread) */
 	int first;					/* First # on current menu */
-	int last;					/* Last # on current menu (first,last_*_on_screen) */
 	void (*redraw) (void);		/* Redraw function */
 	void (*draw_arrow) (void);	/* Arrow draw */
+	void (*draw_item) (int item);	/* draw the specified item */
 } t_menu;
 
 

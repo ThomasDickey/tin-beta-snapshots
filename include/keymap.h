@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2003-05-14
+ *  Updated   : 2004-11-16
  *  Notes     :
  *
  * Copyright (c) 1999-2004 Jason Faultless <jason@altarstone.com>
@@ -106,6 +106,8 @@ struct k_global {
 	t_keynode Version;					/* 'v' */
 	t_keynode Post;						/* 'w' */
 	t_keynode Pipe;						/* '|' */
+	t_keynode ScrollUp;					/* '<' */
+	t_keynode ScrollDown;					/* '>' */
 	t_keynode CatchupLeft;				/* special, for internal use only */
 	t_keynode MouseToggle;				/* special, for internal use only */
 	t_keynode null;						/* End of group */

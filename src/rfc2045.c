@@ -3,7 +3,7 @@
  *  Module    : rfc2045.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2003-02-01
+ *  Updated   : 2004-11-04
  *  Notes     : RFC 2045/2047 encoding
  *
  * Copyright (c) 1995-2004 Chris Blum <chris@resolution.de>
@@ -42,7 +42,9 @@
 /*
  * local prototypes
  */
+static int put_rest(char **rest, char **line, int *max_line_len, const int offset);
 static unsigned char bin2hex(unsigned int x);
+static void set_rest(char **rest, const char *ptr);
 
 
 static unsigned char
@@ -211,4 +213,312 @@ rfc1521_encode(
 			xpos = 0;
 	} else if (line)
 		fputs(line, f);
+}
+
+
+/*
+ * Set everything in ptr as the rest of a physical line to be processed
+ * later.
+ */
+static void
+set_rest(
+	char **rest,
+	const char *ptr)
+{
+	char *old_rest = *rest;
+
+	if (ptr == NULL || strlen(ptr) == 0) {
+		FreeAndNull(*rest);
+		return;
+	}
+	*rest = my_strdup(ptr);
+	FreeIfNeeded(old_rest);
+}
+
+
+/*
+ * Copy things that were left over from the last decoding into the new line.
+ * If there's a newline in the rest, copy everything up to and including that
+ * newline into the expected buffer, adjust rest and return. If there's no
+ * newline in the rest, copy all of it to the expected buffer and return.
+ *
+ * Side effects: resizes line if necessary, adjusts max_line_len
+ * accordingly.
+ *
+ * This function returns the number of characters written to the line buffer.
+ */
+static int
+put_rest(
+	char **rest,
+	char **line,
+	int *max_line_len,
+	const int offset)
+{
+	char *my_rest = *rest;
+	char *ptr;
+	char c;
+	int put_chars = offset;
+
+	if ((ptr = my_rest) == NULL)
+		return put_chars;
+	if (strlen(my_rest) == 0) {
+		FreeAndNull(*rest);
+		return put_chars;
+	}
+
+	while ((c = *ptr++) && (c != '\n')) {
+		if ((c == '\r') && (*ptr == '\n'))
+			continue;	/* step over CRLF */
+		/*
+		 * Resize line if necessary. Keep in mind that we add LF and \0 later.
+		 */
+		if (put_chars >= *max_line_len - 2) {
+			if (*max_line_len == 0)
+				*max_line_len = LEN;
+			else
+				*max_line_len <<= 1;
+			*line = my_realloc(*line, *max_line_len);
+		}
+		(*line)[put_chars++] = c;
+	}
+	if (c == '\n') {
+		/*
+		 * FIXME: Adding a newline may be not correct. At least it may
+		 * be not what the author of that article intended.
+		 * Unfortunately, a newline is expected at the end of a line by
+		 * some other code in cook.c and even those functions invoking
+		 * this one rely on it.
+		 */
+		(*line)[put_chars++] = '\n';
+		set_rest(rest, ptr);
+	} else /* c == 0 */
+		/* rest is now empty */
+		FreeAndNull(*rest);
+
+	(*line)[put_chars] = '\0';	/* don't count the termining NULL! */
+	return put_chars;
+}
+
+
+/*
+ * Read a logical base64 encoded line into the specified line buffer.
+ * Logical lines can be split over several physical base64 encoded lines and
+ * a single physical base64 encoded line can contain serveral logical lines.
+ * This function keeps track of all these cases and always copies only one
+ * decoded line to the line buffer.
+ *
+ * Side effects: resizes line if necessary, adjusts max_line_len
+ * accordingly.
+ *
+ * This function returns the number of physical lines read or a negative
+ * value on error.
+ */
+int
+read_decoded_base64_line(
+	FILE *file,
+	char **line,
+	int *max_line_len,
+	const int max_lines_to_read,
+	char **rest)
+{
+	char *buf2;	/* holds the entire decoded line */
+	char *buf;	/* holds the entire encoded line*/
+	int count = 0;
+	int lines_read = 0;
+	int put_chars = 0;
+
+	/*
+	 * First of all, catch everything that is left over from the last decoding.
+	 * If there's a newline in that rest, copy everything up to and including
+	 * that newline in the expected buffer, adjust rest and return. If there's
+	 * no newline in the rest, copy all of it (modulo length of the buffer) to
+	 * the expected buffer and continue as if there was no rest.
+	 */
+	put_chars = put_rest(rest, line, max_line_len, 0);
+	if (put_chars && ((*line)[put_chars - 1] == '\n'))
+		return 0;	/* we didn't read any new lines but filled the line */
+
+	/*
+	 * At this point, either there was no rest or there was no newline in the
+	 * rest. In any case, we need to read further encoded lines and decode
+	 * them until we find a newline or there are no more (encoded or physical)
+	 * lines in this part of the posting. To be sure, now allocate memory for
+	 * the output if it wasn't already done.
+	 */
+	if (*max_line_len == 0) {
+		*max_line_len = LEN;
+		*line = my_malloc(*max_line_len);
+	}
+
+	/*
+	 * max_lines_to_read==0 occurs at end of an encoded part and if there was
+	 * no trailing newline in the encoded text. So we put one there and exit.
+	 * FIXME: Adding a newline may be not correct. At least it may be not
+	 * what the author of that article intended. Unfortunately, a newline is
+	 * expected at the end of a line by some other code in cook.c.
+	 */
+	if (max_lines_to_read <= 0) {
+		if (put_chars) {
+			(*line)[put_chars++] = '\n';
+			(*line)[put_chars] = '\0';
+		}
+		return max_lines_to_read;
+	}
+	/*
+	 * Ok, now read a new line from the original article.
+	 */
+	do {
+		if ((buf = tin_fgets(file, FALSE)) == NULL) {
+			/*
+			 * Premature end of file (or file error), leave loop. To prevent
+			 * re-invoking of this function, set the numbers of read lines to
+			 * the expected maximum that should be read at most.
+			 *
+			 * FIXME: Adding a newline may be not correct. At least it may be
+			 * not what the author of that article intended. Unfortunately, a
+			 * newline is expected at the end of a line by some other code in
+			 * cook.c.
+			 */
+			if (put_chars > *max_line_len - 2) {
+				*max_line_len <<= 1;
+				*line = my_realloc(*line, *max_line_len);
+			}
+			(*line)[put_chars++] = '\n';
+			(*line)[put_chars] = '\0';
+			return max_lines_to_read;
+		}
+		lines_read++;
+		buf2 = my_malloc(strlen(buf) + 1); /* decoded string is always shorter than encoded string, so this is safe */
+		count = mmdecode(buf, 'b', '\0', buf2);
+		buf2[count] = '\0';
+		FreeIfNeeded(*rest);
+		*rest = buf2;
+		put_chars = put_rest(rest, line, max_line_len, put_chars);
+		if (put_chars && ((*line)[put_chars - 1] == '\n')) /* end of logical line reached */
+			return lines_read;
+	} while (lines_read < max_lines_to_read);
+	/*
+	 * FIXME: Adding a newline may be not correct. At least it may be
+	 * not what the author of that article intended. Unfortunately, a
+	 * newline is expected at the end of a line by some other code in
+	 * cook.c.
+	 */
+	if (put_chars > *max_line_len - 2) {
+		*max_line_len <<= 1;
+		*line = my_realloc(*line, *max_line_len);
+	}
+	if ((0 == put_chars) || ('\n' != (*line)[put_chars - 1]))
+			(*line)[put_chars++] = '\n';
+	(*line)[put_chars] = '\0';
+	return lines_read;
+}
+
+
+/*
+ * Read a logical quoted-printable encoded line into the specified line
+ * buffer. Quoted-printable lines can be split over several physical lines,
+ * so this function collects all affected lines, concatenates and decodes
+ * them.
+ *
+ * Side effects: resizes line if necessary, adjusts max_line_len
+ * accordingly.
+ *
+ * This function returns the number of physical lines read or a negative
+ * value on error.
+ */
+int
+read_decoded_qp_line(
+	FILE *file,
+	char **line,					/* where to copy the decoded line */
+	int *max_line_len,				/* (maximum) line length */
+	const int max_lines_to_read)	/* don't read more physical lines than told here */
+{
+	char *buf, *buf2;
+	char *ptr;
+	char c;
+	int buflen = LEN;
+	int count = 0;
+	int lines_read = 0;
+	size_t chars_to_add = 0;
+
+	buf = my_malloc(buflen); /* initial internal line buffer */
+	*buf = '\0';
+	do {
+		if ((buf2 = tin_fgets(file, FALSE)) == NULL) {
+			/*
+			 * Premature end of file (or file error, leave loop. To prevent
+			 * re-invokation of this function, set the numbers of read lines
+			 * to the expected maximum that should be read at most.
+			 */
+			lines_read = max_lines_to_read;
+			break;
+		}
+		lines_read++;
+		if ((chars_to_add = strlen(buf2)) == 0) /* Empty line, leave loop. */
+			break;
+
+		/*
+		 * Strip trailing white space at the end of the line.
+		 * See RFC 2045, section 6.7, #3
+		 */
+		c = buf2[chars_to_add - 1];
+		while ((chars_to_add > 0) && ((c == ' ') || (c == '\t') || (c == '\n') || (c == '\r'))) {
+			--chars_to_add;
+			c = (chars_to_add > 0 ? buf2[chars_to_add - 1] : '\0');
+		}
+
+		/*
+		 * '=' at the end of a line indicates a soft break meaning
+		 * that the following physical line "belongs" to this one.
+		 * (See RFC 2045, section 6.7, #5)
+		 *
+		 * Skip that equal sign now; since c holds this char, the
+		 * loop is not left but the next line is read and concatenated
+		 * with this one while the '=' is overwritten.
+		 */
+		if (c == '=') /* c is 0 when chars_to_add is 0 so this is safe */
+			buf2[--chars_to_add] = '\0';
+
+		/*
+		 * Join physical lines to a logical one; keep in mind that a LF is
+		 * added afterwards.
+		 */
+		if (chars_to_add > buflen - strlen(buf) - 2) {
+			buflen <<= 1;
+			buf = my_realloc(buf, buflen);
+		}
+		strncat(buf, buf2, buflen);
+	} while ((c == '=') && (lines_read < max_lines_to_read));
+	/*
+	 * re-add newline and NULL termination at end of line
+	 * FIXME: Adding a newline may be not correct. At least it may be not
+	 * what the author of that article intended. Unfortunately, a newline is
+	 * expected at the end of a line by some other code in cook.c.
+	 */
+	strcat(buf, "\n");
+
+	/*
+	 * Now decode complete (logical) line from buf to buf2 and copy it to the
+	 * buffer where the invoking function expects it. Don't decode directly
+	 * to the buffer of the other function to prevent buffer overruns and to
+	 * decide if the encoding was ok.
+	 */
+	buf2 = my_malloc(strlen(buf) + 1); /* Don't use realloc here, tin_fgets relies on its internal state! */
+	count = mmdecode(buf, 'q', '\0', buf2);
+
+	if (count >= 0) {
+		buf2[count] = '\0';
+		ptr = buf2;
+	} else	/* error in encoding: copy raw line */
+		ptr = buf;
+
+	if (*max_line_len < (int) strlen(ptr) + 1) {
+		*max_line_len = strlen(ptr) + 1;
+		*line = my_realloc(*line, *max_line_len);
+	}
+	strncpy(*line, ptr, *max_line_len);
+	(*line)[*max_line_len - 1] = '\0'; /* be sure to terminate string */
+	free(buf);
+	free(buf2);
+	return lines_read;
 }

@@ -6,7 +6,7 @@
 # digits for minor numbers less than 10. There are unlikely to be
 # that many releases anyway.
 
-PCRE_MAJOR=4
-PCRE_MINOR=5
-PCRE_DATE=01-December-2003
+PCRE_MAJOR=5
+PCRE_MINOR=0
+PCRE_DATE=13-Sep-2004
 PCRE_VERSION=${PCRE_MAJOR}.${PCRE_MINOR}

@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-09-03
+ *  Updated   : 2004-11-16
  *  Notes     :
  *
  * Copyright (c) 1997-2004 Iain Lea <iain@bricbrac.de>
@@ -473,9 +473,9 @@ extern constext txt_cannot_create[];
 extern constext txt_cannot_create_uniq_name[];
 extern constext txt_cannot_find_base_art[];
 extern constext txt_cannot_get_nntp_server_name[];
-#if defined(M_UNIX) && !defined(USE_TERMINFO)
+#if !defined(USE_CURSES) && defined(M_UNIX) && !defined(USE_TERMINFO)
 	extern constext txt_cannot_get_term_entry[];
-#endif /* M_UNIX && !USE_TERMINFO */
+#endif /* !USE_CURSES && M_UNIX && !USE_TERMINFO */
 extern constext txt_cannot_open[];
 extern constext txt_cannot_open_for_saving[];
 extern constext txt_cannot_post[];
@@ -716,6 +716,8 @@ extern constext txt_help_global_quit_tin[];
 extern constext txt_help_global_redraw_screen[];
 extern constext txt_help_global_save[];
 extern constext txt_help_global_auto_save[];
+extern constext txt_help_global_scroll_down[];
+extern constext txt_help_global_scroll_up[];
 extern constext txt_help_global_search_auth_backwards[];
 extern constext txt_help_global_search_auth_forwards[];
 extern constext txt_help_global_search_body[];
@@ -901,11 +903,13 @@ extern constext txt_no_responses[];
 extern constext txt_no_resps_in_thread[];
 extern constext txt_no_search_string[];
 extern constext txt_no_subject[];
-extern constext txt_no_term_clear_eol[];
-extern constext txt_no_term_clear_eos[];
-extern constext txt_no_term_clearscreen[];
-extern constext txt_no_term_cursor_motion[];
-extern constext txt_no_term_set[];
+#ifndef USE_CURSES
+	extern constext txt_no_term_clear_eol[];
+	extern constext txt_no_term_clear_eos[];
+	extern constext txt_no_term_clearscreen[];
+	extern constext txt_no_term_cursor_motion[];
+	extern constext txt_no_term_set[];
+#endif /* !USE_CURSES */
 extern constext txt_no_viewer_found[];
 extern constext txt_no_xover_support[];
 extern constext txt_not_exist[];
@@ -999,7 +1003,9 @@ extern constext txt_saved_to[];
 extern constext txt_saved_to_range[];
 extern constext txt_saving[];
 extern constext txt_screen_init_failed[];
-extern constext txt_screen_too_small[];
+#ifndef USE_CURSES
+	extern constext txt_screen_too_small[];
+#endif /* !USE_CURSES */
 extern constext txt_screen_too_small_exiting[];
 extern constext txt_search_backwards[];
 extern constext txt_search_body[];
@@ -1041,6 +1047,7 @@ extern constext txt_supersede_group[];
 extern constext txt_superseding_art[];
 extern constext txt_suspended_message[];
 extern constext txt_tab[];
+extern constext txt_tex[];
 extern constext txt_there_is_no_news[];
 extern constext txt_thread_upper[];
 extern constext txt_thread_com[];
@@ -1493,7 +1500,9 @@ extern struct opttxt txt_mono_markstar;
 extern struct opttxt txt_mono_markdash;
 extern struct opttxt txt_mono_markslash;
 extern struct opttxt txt_mono_markstroke;
-extern struct opttxt txt_mm_charset;
+#ifndef CHARSET_CONVERSION
+	extern struct opttxt txt_mm_charset;
+#endif /* CHARSET_CONVERSION */
 extern struct opttxt txt_metamail_prog;
 extern struct opttxt txt_news_headers_to_display;
 extern struct opttxt txt_news_headers_to_not_display;

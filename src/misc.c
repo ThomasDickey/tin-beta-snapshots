@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-08-20
+ *  Updated   : 2004-09-14
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -911,6 +911,8 @@ dir_name(
 
 /*
  * Return TRUE if new mail has arrived
+ *
+ * TODO: why not cache the mailbox_name?
  */
 t_bool
 mail_check(
@@ -3753,6 +3755,8 @@ tin_version_info(
 		wlines++;
 #	endif /* TIN_LIBS */
 #endif /* TIN_LD */
+	fprintf(fp, "\tPCRE     = \"%s\"\n", pcre_version());
+	wlines++;
 
 	fprintf(fp, "Characteristics:\n\t"
 /* TODO: complete list and do some useful grouping */
