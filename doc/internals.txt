@@ -99,8 +99,8 @@ hashstr.c:
 list.c:
 	init_group_hash() clears group_hash[]
 	find_group_index() returns index of group in active[]
-	psGrpFind() returns a pointer to a group in active[]
-	psGrpAdd() adds a group into active[] and hashes it in group_hash[]
+	group_find() returns a pointer to a group in active[]
+	group_add() adds a group into active[] and hashes it in group_hash[]
 	hash_groupname() returns hash key for a group
 		This is also used to hash the actual filenames written
 		in ~/.tin/.news (when not using NNTP)

@@ -3,7 +3,7 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 1998-20-24
+ *  Updated   : 2003-02-06
  *  Notes     :
  *
  * Copyright (c) 1993-2003 Iain Lea <iain@bricbrac.de>
@@ -154,7 +154,6 @@ art_mark_xref_read(
 	char *group;
 	char *ptr, c;
 	long artnum;
-	t_bool artread;
 	struct t_group *psGrp;
 
 #if defined(NNTP_ABLE) && defined(XHDR_XREF)
@@ -214,7 +213,7 @@ art_mark_xref_read(
 
 		if (psGrp && psGrp->newsrc.xbitmap) {
 			if (artnum >= psGrp->newsrc.xmin && artnum <= psGrp->xmax) {
-				if (!(artread = ((NTEST(psGrp->newsrc.xbitmap, artnum - psGrp->newsrc.xmin) == ART_READ) ? TRUE : FALSE))) {
+				if (!((NTEST(psGrp->newsrc.xbitmap, artnum - psGrp->newsrc.xmin) == ART_READ) ? TRUE : FALSE)) {
 					NSET0(psGrp->newsrc.xbitmap, artnum - psGrp->newsrc.xmin);
 					if (psGrp->newsrc.num_unread > 0)
 						psGrp->newsrc.num_unread--;

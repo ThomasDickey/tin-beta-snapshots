@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-01-07
+ *  Updated   : 2003-02-02
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -74,7 +74,6 @@ static void yank_active_file(void);
  */
 t_menu selmenu = { 1, 0, 0, 0, show_selection_page, draw_group_arrow };
 
-/* char i_key_search_last;	*/			/* for repeated search */
 
 static int
 select_left(

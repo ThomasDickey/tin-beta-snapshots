@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-01-21
+ *  Updated   : 2003-02-18
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -115,17 +115,17 @@ find_base(
 
 	if (group->attribute && group->attribute->show_only_unread) {
 		for_each_art(i) {
-			if (IGNORE_ART(i) || arts[i].inthread)
+			if (arts[i].inthread || arts[i].thread == ART_EXPIRED || (arts[i].killed && tinrc.kill_level == KILL_NOTHREAD))
 				continue;
 
 			if (grpmenu.max >= max_art)
 				expand_art();
 
-			if (arts[i].status == ART_UNREAD)
+			if (arts[i].status != ART_READ)
 				base[grpmenu.max++] = i;
 			else {
 				for (j = i; j >= 0; j = arts[j].thread) {
-					if (arts[j].status == ART_UNREAD) {
+					if (arts[j].status != ART_READ) {
 						base[grpmenu.max++] = i;
 						break;
 					}
@@ -134,7 +134,7 @@ find_base(
 		}
 	} else {
 		for_each_art(i) {
-			if (IGNORE_ART(i) || arts[i].inthread)
+			if (arts[i].inthread || arts[i].thread == ART_EXPIRED || (arts[i].killed && tinrc.kill_level == KILL_NOTHREAD))
 				continue;
 
 			if (grpmenu.max >= max_art)
@@ -246,7 +246,7 @@ index_group(
 		return FALSE;	/* user aborted indexing */
 
 	/*
-	 * Do this before calling art_mark_read if you want
+	 * Do this before calling art_mark(,, ART_READ) if you want
 	 * the unread count to be correct.
 	 */
 #ifdef DEBUG_NEWSRC
@@ -268,7 +268,7 @@ index_group(
 #ifdef DEBUG_NEWSRC
 			debug_print_comment("art.c: index_group() purging...");
 #endif /* DEBUG_NEWSRC */
-			art_mark_read(group, &arts[i]);
+			art_mark(group, &arts[i], ART_READ);
 			print_expired_arts(expired);
 		}
 	}
@@ -480,7 +480,7 @@ thread_by_subject(
 	struct t_hashnode *h;
 
 	for_each_art(i) {
-		if (arts[i].thread != ART_NORMAL || IGNORE_ART(i))
+		if (IGNORE_ART_THREAD(i))
 			continue;
 
 		/*
@@ -697,7 +697,7 @@ thread_by_multipart(
 
 	for_each_art(i) {
 
-		if (arts[i].thread != ART_NORMAL || IGNORE_ART(i) || arts[i].inthread || !global_get_multiparts(i, &minfo))
+		if (IGNORE_ART_THREAD(i) || arts[i].inthread || !global_get_multiparts(i, &minfo))
 			continue;
 
 		threadNum = -1;
@@ -922,10 +922,10 @@ parse_headers(
 		unfold_header(ptr);
 		switch (toupper((unsigned char) *ptr)) {
 			case 'A':	/* Archive-name:  optional */
-			   /*
-			    * TODO: this is last match counts, all others are first match
-			    *       counts - why the exception here?
-			    */
+				/*
+				 * TODO: this is last match counts, all others are first match
+				 *       counts - why the exception here?
+				 */
 				if ((hdr = parse_header(ptr + 1, "rchive-name", FALSE))) {
 					/* TODO - what if header of form news/group/name/part01? */
 					if ((s = strrchr(hdr, '/')) != NULL) {
@@ -1612,8 +1612,7 @@ do_update(
 		make_group_path(group->name, group_path);
 
 		if (verbose) {
-			/* TODO: -> lang.c */
-			my_printf("%s %s\n", (catchup ? _("Catchup") : _("Updating")), group->name);
+			my_printf("%s %s\n", (catchup ? _(txt_catchup) : _(txt_updating)), group->name);
 			my_flush();
 		}
 		if (!index_group(group))
@@ -1621,7 +1620,7 @@ do_update(
 
 		if (catchup) {
 			for_each_art(j)
-				art_mark_read(group, &arts[j]);
+				art_mark(group, &arts[j], ART_READ);
 		}
 	}
 
@@ -1844,7 +1843,7 @@ set_article(
 	art->thread = ART_EXPIRED;
 	art->status = ART_UNREAD;
 	art->inthread = FALSE;
-	art->killed = FALSE;
+	art->killed = ART_NOTKILLED;
 	art->tagged = FALSE;
 	art->selected = FALSE;
 	art->zombie = FALSE;

@@ -1,5 +1,10 @@
 Bugs
 ----
+o  in the !LIBUU case save_art_to_file() call decode_save_mime(artinfo, TRUE)
+   which does RFC2045 mime-decoding and part extraction, the later is not
+   desired if the user didn't chosse postprocessing.
+   [20030202 Urs Janssen <urs@tin.org>]
+
 o  changing thread_articles in the thread-level might trigger
    assertion in show_thread_page() -> the thread display code and logic
    needs complete rewriting.
@@ -9,7 +14,7 @@ o  when p'|'ping multiple files ('T'agged) screen is defaced
    [20020305 Urs Janssen <urs@tin.org>]
 
 o  running multiple tins in parallel (each connected to a different
-   server) will trash all newnews=timestamps (and other configchanges)
+   server) will trash all newnews=timestamps (and other config changes)
    except the last form the formerly running tins on quit.
    same problem with .oldnewsrc
    [20020215 Mario Holbe <Mario.Holbe@RZ.TU-Ilmenau.DE>]
@@ -177,6 +182,9 @@ o  with --enable-forgery reposting of a thread reposts only the first
 
 New features
 ------------
+o  update included pcre-3.9 to pcre-4.0
+   [20030219 Urs Janssen <urs@tin.org>]
+
 o  instead of exiting when tin fails to get the systems domainname fall
    into no posting mode (and issue a warning).
    [20021125 Urs Janssen <urs@tin.org>]
@@ -188,13 +196,18 @@ o  automatically disable TeX2ISO conversion if saving articles _and_
    postprocessing is set to != 'n'
    [20020423 Urs Janssen <urs@tin.org>]
 
+o  fetch overview data in chunks (i.e. 100 arts/chunk) to allow
+   faster read interruption.
+   [20020326 Dirk Nimmich <nimmich@muenster.de>]
+
 o  add bold-italic, bold-underline, italic-underline, bold-italic-underline
    word highlightings.
    [20020721 Urs Janssen <urs@tin.org>]
 
-o  fetch overview data in chunks (i.e. 100 arts/chunk) to allow
-   faster read interruption.
-   [20020326 Dirk Nimmich <nimmich@muenster.de>]
+o  allow bold, underline, italic, ... as colour substitution for
+   monochrom terminals (map green=underline, italic= yellow)
+   (see also <20020416202232.A4575@bloatware.reston01.va.comcast.net>)
+   [20030218 Serge Matveev <sm@cl.spb.ru>]
 
 o  hierarchical 'M'enu, i.e. hide all color_* options as long as
    use_color is turned off, put all art_marked_*into a 'submenu', ...
@@ -378,10 +391,11 @@ o  Additions to the thread menu:
      'E' (edit filter)
      'r' (reply to) /* not 'R' cause it conflicts with mail_bugreport */
      ''  r ought to be toggle show all/show only unread
-     'f' (post a followup)
+     'f' (post a followup) (maybe also 'F', '^W', ...)
      'X' (mark all unread articles that have not been selected as read)
      ';' (mark unread arts as hot if >= 1 art in thread is hot)
      '+' (mark thread as hot)
+     '=' (mark pattern as hot)
      'Y' (check for new articles in thead)
      '%' (toggle rot13 encoding)
      keys to go to previous/next thread
@@ -440,7 +454,7 @@ o  when From: only contains "First-name Last-name" tin strips the
 
 o  Bounce duplicate Message-ID's when the headers are read. This will
    make the threading code happier too.
-   Make iReadNovFile more forgiving of errors. If the article # is okay,
+   Make read_nov_file() more forgiving of errors. If the article # is okay,
    then there is no reason to completely hide the article
    [Jason Faultless <jason@radar.tele2.co.uk>]
 
@@ -528,13 +542,13 @@ o  add command to generate filter rules for all curently tagged articles
 
 Internal Changes
 ----------------
-o  change txt_select_comment to something like "Comment (optional) :"
-   (and rename var).
+o  try to get rid of the magic numbers like NUM_MIME_CHARSETS and use
+   a sentinel in the arrays instead (match_list is a showstopper here).
+   [20030203 Urs Janssen <urs@tin.org>]
 
-o  - rename PageFirstPage2 to PageFirstPage and PageLastPage2 to PageLastPage
-   - in page level Up2 ('k') does the same as PageNextUnreadArt ('N'), but
-     Up ('^P') behaves different. shouldn't 'k' be named PageNextUnreadArt2
-     here?
+o  in page level Up2 ('k') does the same as PageNextUnreadArt ('N'), but
+   Up ('^P') behaves different. shouldn't 'k' be named PageNextUnreadArt2
+   here?
    [Urs Janssen <urs@tin.org>]
 
 o  check where joinpath() should be used; check joinpath() for overruns.
@@ -640,10 +654,6 @@ o  what is with NEW_HASH_METHOD in list.c?
 
 Unicode
 -------
-o  add RFC 1468/2237, RFC 1555, RFC 1922/1842 and RFC 1947 support
-   (local_charset<->network_charset should allow this - anything else
-    needed?)
-
 o  add UTF-8 (unicode) support (RFC 2279)
    (see <http://www.cl.cam.ac.uk/~mgk25/unicode.html>)
    if we ever want to add UTF-7 (posting) support (I don't think
@@ -657,8 +667,7 @@ o  add UTF-8 (unicode) support (RFC 2279)
 o  make select/group/thread/page-level multibyte "safe". they all use
    strlen(), strncpy(), strncat(), snprintf() to build the screen - but
    in a multibyte environment (i.e. mm_local_charset=UTF-8) this is a
-   fault. (this might require libutf8 for those systems which don't have
-   wide-char/multibyte functions)
+   fault.
    [partly done for ncursesw 20010904 urs@tin.org]
 
 o  make mm_network_charset an "option_list" to avoid junk input or
@@ -740,9 +749,6 @@ o  what is with DEBUG_NEWSRC_FIXME (not DEBUG_NEWSRC) in newsrc.c?
 
 o  shows up cross-postings multiple times even if read once before getting
    a resync/reread active/newsrc-file
-
-o  numbering of Hot articles is wrong after (post)processing them
-   (6T 0A 0K -5H R)
 
 o  think about group numbering in "only unread" display mode
    (using different numbers in show all/show only unread leads to some

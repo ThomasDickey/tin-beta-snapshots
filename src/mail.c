@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2002-12-04
+ *  Updated   : 2003-02-18
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2003 Iain Lea <iain@bricbrac.de>
@@ -344,10 +344,7 @@ print_active_head(
 		return;
 
 	if ((fp = fopen(active_file, "w")) != NULL) {
-		/* FIXME: -> lang.c */
-		fprintf(fp, _("# [Mail/Save] active file. Format is like news active file:\n"));
-		fprintf(fp, _("#   groupname  max.artnum  min.artnum  /dir\n"));
-		fprintf(fp, _("# The 4th field is the basedir (ie. ~/Mail or ~/News)\n#\n"));
+		fprintf(fp, _(txt_mail_save_active_head));
 		fclose(fp);
 	}
 }
@@ -420,7 +417,7 @@ make_base_group_path(
 
 
 void
-vGrpDelMailArt(
+grp_del_mail_art(
 	struct t_article *article)
 {
 
@@ -435,7 +432,7 @@ vGrpDelMailArt(
 
 
 void
-vGrpDelMailArts(
+grp_del_mail_arts(
 	struct t_group *group)
 {
 	char article_filename[PATH_LEN];

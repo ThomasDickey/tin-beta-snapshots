@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@uni-muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2000-01-22
+ *  Updated   : 2003-02-20
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -155,21 +155,29 @@ read_newsauth_file(
 	char *ptr;
 	char line[PATH_LEN];
 	int found = 0;
+	int fd = -1;
 	struct stat statbuf;
 
 	joinpath(line, homedir, ".newsauth");
 
-	if (stat(line, &statbuf) == -1)
-		return FALSE;
-	else {
-		if (S_ISREG(statbuf.st_mode) && (statbuf.st_mode|S_IRUSR|S_IWUSR) != (S_IRUSR|S_IWUSR|S_IFREG)) {
-			/* FIXME: -> lang.c */
-			error_message(_("Insecure permissions of %s (%o)"), line, statbuf.st_mode);
-			sleep(2);
-		}
-	}
-
 	if ((fp = fopen(line, "r"))) {
+		if ((fd = fileno(fp)) == -1) {
+			fclose(fp);
+			return FALSE;
+		}
+		if (fstat(fd, &statbuf) == -1) {
+			fclose(fp);
+			return FALSE;
+		}
+
+		if (S_ISREG(statbuf.st_mode) && (statbuf.st_mode|S_IRUSR|S_IWUSR) != (S_IRUSR|S_IWUSR|S_IFREG)) {
+			error_message(_(txt_error_insecure_permissions), line, statbuf.st_mode);
+			sleep(2);
+			/*
+			 * TODO: fix permssions?
+			 * fchmod(fd, S_IRUSR|S_IWUSR);
+			 */
+		}
 
 		/*
 		 * Search through authorization file for correct NNTP server

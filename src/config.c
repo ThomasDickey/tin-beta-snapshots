@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-01-27
+ *  Updated   : 2003-02-06
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -506,7 +506,6 @@ read_config_file(
 			if (match_list(buf, "mail_mime_encoding=", txt_mime_encodings, NUM_MIME_ENCODINGS, &tinrc.mail_mime_encoding))
 				break;
 
-			/* option to toggle 8bit char. in header of mail message */
 			if (match_boolean(buf, "mail_8bit_header=", &tinrc.mail_8bit_header)) {
 				if (strcasecmp(txt_mime_encodings[tinrc.mail_mime_encoding], txt_8bit))
 					tinrc.mail_8bit_header = FALSE;
@@ -576,8 +575,8 @@ read_config_file(
 			if (match_list(buf, "post_mime_encoding=", txt_mime_encodings, NUM_MIME_ENCODINGS, &tinrc.post_mime_encoding))
 				break;
 
-			/* option to toggle 8bit char. in header of news message */
 			if (match_boolean(buf, "post_8bit_header=", &tinrc.post_8bit_header)) {
+				/* if post_mime_encoding != 8bit, post_8bit_header is disabled */
 				if (strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_8bit))
 					tinrc.post_8bit_header = FALSE;
 				break;
@@ -733,13 +732,8 @@ read_config_file(
 			break;
 
 		case 't':
-			if (match_integer(buf, "thread_articles=", &tinrc.thread_articles, THREAD_MAX)) {
-#if 0
-				if (upgrade == UPGRADE)
-					tinrc.thread_articles = THREAD_BOTH;
-#endif /* 0 */
+			if (match_integer(buf, "thread_articles=", &tinrc.thread_articles, THREAD_MAX))
 				break;
-			}
 
 			if (match_integer(buf, "thread_score=", &tinrc.thread_score, THREAD_SCORE_WEIGHT))
 				break;
@@ -1887,6 +1881,7 @@ change_config_file(
 							break;
 
 						case OPT_POST_8BIT_HEADER:
+							/* if post_mime_encoding != 8bit, post_8bit_header is disabled */
 							if (strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_8bit)) {
 								tinrc.post_8bit_header = FALSE;
 								print_option(OPT_POST_8BIT_HEADER);
@@ -2032,7 +2027,7 @@ change_config_file(
 						case OPT_MAIL_MIME_ENCODING:
 						case OPT_POST_MIME_ENCODING:
 							mime_encoding = *(option_table[option].variable);
-							/* do not use 8 bit headers if mime encoding is not 8bit; ask J. Shin why */
+							/* do not use 8 bit headers if mime encoding is not 8bit */
 							if (strcasecmp(txt_mime_encodings[mime_encoding], txt_8bit)) {
 								if (option == (int) OPT_POST_MIME_ENCODING) {
 									tinrc.post_8bit_header = FALSE;
@@ -2048,13 +2043,45 @@ change_config_file(
 						case OPT_MM_NETWORK_CHARSET:
 							if (tinrc.mm_network_charset != original_list_value && group != NULL)
 								group->attribute->mm_network_charset = tinrc.mm_network_charset;
-#if 0 /* TODO */
+#	if 0 /* TODO */
 							else
 								glob_attributes->attribute->mm_network_charset = tinrc.mm_network_charset;
-#endif /* 0 */
+#	endif /* 0 */
 #	ifdef NO_LOCALE
 							strcpy(tinrc.mm_local_charset, txt_mime_charsets[tinrc.mm_network_charset]);
 #	endif /* NO_LOCALE */
+#	if 1 /* TODO: usefull? then clean up otherwise nuke */
+							/* check if we have selected a 7bit charset, otherwise update encoding */
+							{
+								int i;
+								if (!strcasecmp(txt_mime_encodings[mime_encoding], txt_7bit)) {
+									t_bool change = TRUE;
+									for (i = 0; *txt_mime_7bit_charsets[i]; i++) {
+										if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], txt_mime_7bit_charsets[i])) {
+											change = FALSE;
+											break;
+										}
+									}
+									if (change) {
+										tinrc.post_mime_encoding = 0; /* 8bit */
+										tinrc.mail_mime_encoding = 2; /* quoted-printable */
+										RepaintOption(OPT_POST_MIME_ENCODING);
+										RepaintOption(OPT_MAIL_MIME_ENCODING);
+									}
+								} else { /* and vice versa, if we have a 7bit chaset but a !7bit encoding, fix that */
+									for (i = 0; *txt_mime_7bit_charsets[i]; i++) {
+										if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], txt_mime_7bit_charsets[i])) {
+											tinrc.mail_mime_encoding = tinrc.post_mime_encoding = 3; /* 7bit */
+											tinrc.mail_8bit_header = tinrc.post_8bit_header = FALSE;
+											RepaintOption(OPT_POST_MIME_ENCODING);
+											RepaintOption(OPT_MAIL_MIME_ENCODING);
+											RepaintOption(OPT_POST_8BIT_HEADER);
+											break;
+										}
+									}
+								}
+							}
+#	endif /* 1 */
 							break;
 #endif /* CHARSET_CONVERSION */
 
@@ -2120,7 +2147,7 @@ change_config_file(
 							prompt_option_string(option);
 							if (news_headers_to_display_array)
 								FreeIfNeeded(*news_headers_to_display_array);
-							FreeIfNeeded((char *) news_headers_to_display_array);
+							FreeIfNeeded(news_headers_to_display_array);
 							news_headers_to_display_array = ulBuildArgv(tinrc.news_headers_to_display, &num_headers_to_display);
 							break;
 
@@ -2128,7 +2155,7 @@ change_config_file(
 							prompt_option_string(option);
 							if (news_headers_to_not_display_array)
 								FreeIfNeeded(*news_headers_to_not_display_array);
-							FreeIfNeeded((char *) news_headers_to_not_display_array);
+							FreeIfNeeded(news_headers_to_not_display_array);
 							news_headers_to_not_display_array = ulBuildArgv(tinrc.news_headers_to_not_display, &num_headers_to_not_display);
 							break;
 

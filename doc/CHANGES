@@ -1,13 +1,26 @@
--- 1.5.17 release 20030201 "" --
+-- 1.5.17 release 20030223 "" --
 
  046) Urs Janssen <urs@tin.org>
-      BUG. comma separate group list in attribute scope didn't work   
+      BUG. comma separated group list in attribute scope didn't work
       FIX. attrib.c
 
 U135) Michael Bienia <michael@vorlon.ping.de>
       ADD. word highlighting for monochrom terminals
-      FIX. extern.h, tin.h, tinrc.h, config.c, curses.c, init.c, lang.c
-           page.c, regex.c, tcurses.c, tincfg.tbl, tin.1, tin.5
+      ADD. renamed some vars
+      ADD. moved several strings to lang.c
+      REM. some hungarian notations
+      ADD. replace art_mark_{unread,read,will_return}() with
+           art_mark(group, art, flag)
+      BUG. if the base article of at thread was killed the entire thread
+           was hidden
+      BUG. count of hot and killed articles in the group page header was
+           wrong
+      FIX. extern.h, menukeys.h, proto.h, tin.h, tinrc.h, active.c, art.c
+           attrib.c, auth.c, config.c, cook.c, curses.c, feed.c, filter.c
+           group.c, help.c, init.c, keymap.c, lang.c, mail.c, main.c, memory.c
+           misc.c, newsrc.c, nntplib.c, page.c, open.c, page.c, post.c
+           prompt.c, refs.c, regex.c, save.c, signal.c, tags.c, tcurses.c
+           thread.c, tincfg.tbl, keymap.sample, tin.1, tin.5
 
 U134) Sebastian Bork
       ADD. manpage update
@@ -16,9 +29,19 @@ U134) Sebastian Bork
 U133) Urs Janssen <urs@tin.org>
       BUG. used fprintf(stderr) instead of error_message()
       BUG. hypothetical use of undefined FOLD_TO_UPPER() macro
-      ADD. commented out some unused code
+      BUG. used PCRE_EXTENDED without quoting #
+      BUG. "." might be resend as last command after a reconnect
+      ADD. minor code cleanup
+      REM. EUC-TW -> ISO-2022-KR autoconversion for 7bit mime_encoding
+      REM. disallow ISO-2022-KR as network charset
+      REM. base64 encoding force for EUC-KR
+      ADD. allow ISO-2022-* 7bit encodings
       ADD. config.guess, config.sub update
-      FIX. curses.c, keymap.c, tcurses.c. proto.h, string.c, config.guess
+      ADD. post_8bit_header=ON now also disables body encoding
+      FIX. attrib.c, auth.c, config.c, curses.c, group.c, inews.c, keymap.c
+           lang.c, misc.c, nntplib.c, post.c, regex.c, rfc2045.c, rfc2047.c
+           save.c, search.c, string.c, tags.c, tcurses.c, xref.c, extern.h
+           proto.h, tin.h, tcurses.h, tin.1, tin.5, de.po, config.guess
            config.sub
 
 -- 1.5.16 release 20030125 "Bubbles" --

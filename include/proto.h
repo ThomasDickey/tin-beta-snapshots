@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2003-01-26
+ *  Updated   : 2003-02-18
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
@@ -290,14 +290,14 @@ extern t_bool dot_unlock(const char *filename);
 #endif /* 0 */
 
 /* mail.c */
-extern t_bool art_edit(struct t_group *psGrp, struct t_article *psArt);
+extern t_bool art_edit(struct t_group *group, struct t_article *article);
 extern void find_art_max_min(char *group_path, long *art_max, long *art_min);
 extern void make_base_group_path(char *base_dir, char *group_name, char *group_path);
 extern void print_active_head(char *active_file);
 extern void print_group_line(FILE *fp, char *group_name, long art_max, long art_min, char *base_dir);
 extern void read_descriptions(t_bool verb);
-extern void vGrpDelMailArts(struct t_group *psGrp);
-extern void vGrpDelMailArt(struct t_article *psArt);
+extern void grp_del_mail_arts(struct t_group *group);
+extern void grp_del_mail_art(struct t_article *article);
 #ifdef HAVE_MH_MAIL_HANDLING
 	extern void read_mail_active_file(void);
 	extern void write_mail_active_file(void);
@@ -382,7 +382,7 @@ extern void process_charsets(char **line, int *max_line_len, const char *network
 	extern void show_color_status(void);
 #endif /* HAVE_COLOR */
 #ifdef HAVE_ISPELL
-	extern t_bool invoke_ispell(const char *nam, struct t_group *psGrp);
+	extern t_bool invoke_ispell(const char *nam, struct t_group *group);
 #endif /* HAVE_ISPELL */
 #ifndef M_UNIX
 	extern void make_post_process_cmd(char *cmd, char *dir, char *file);
@@ -396,14 +396,12 @@ extern void process_charsets(char **line, int *max_line_len, const char *network
 extern int pos_group_in_newsrc(struct t_group *group, int pos);
 extern signed long int read_newsrc(char *newsrc_file, t_bool allgroups);
 extern signed long int write_newsrc(void);
-extern void art_mark_read(struct t_group *group, struct t_article *art);
-extern void art_mark_unread(struct t_group *group, struct t_article *art);
-extern void art_mark_will_return(struct t_group *group, struct t_article *art);
+extern void art_mark(struct t_group *group, struct t_article *art, int flag);
 extern void backup_newsrc(void);
 extern void catchup_newsrc_file(void);
 extern void delete_group(char *group);
 extern void expand_bitmap(struct t_group *group, long min);
-extern void grp_mark_read(struct t_group *group, struct t_article *psArt);
+extern void grp_mark_read(struct t_group *group, struct t_article *art);
 extern void grp_mark_unread(struct t_group *group);
 extern void parse_unread_arts(struct t_group *group);
 extern void reset_newsrc(void);
@@ -441,7 +439,7 @@ extern FILE *open_news_active_fp(void);
 extern FILE *open_newsgroups_fp(void);
 extern FILE *open_overview_fmt_fp(void);
 extern FILE *open_subscription_fp(void);
-extern FILE *open_xover_fp(struct t_group *psGrp, const char *mode, long lMin, long lMax);
+extern FILE *open_xover_fp(struct t_group *group, const char *mode, long min, long max);
 extern FILE *open_art_header(long art);
 extern int get_respcode(char *, size_t);
 extern int get_only_respcode(char *, size_t);
@@ -549,11 +547,6 @@ extern void free_mailcap(t_mailcap *tmailcap);
 
 /* rfc2045.c */
 extern void rfc1521_encode(char *line, FILE *f, int e);
-extern void rfc1557_encode(char *line, FILE *f, int e);
-#if 0
-	extern void rfc1468_encode(char *line, FILE *f, int e);
-	extern void rfc1922_encode(char *line, FILE *f, int e);
-#endif /* 0 */
 
 /* rfc2046.c */
 extern const char *get_param(t_param *list, const char *name);

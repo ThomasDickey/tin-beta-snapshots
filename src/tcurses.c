@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-03-02
- *  Updated   : 2003-01-29
+ *  Updated   : 2003-02-19
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -551,12 +551,14 @@ ReadWch(
 		if (wch < KEY_MIN) {
 			/* read in the multibyte sequence */
 			char *mbs = my_malloc(MB_CUR_MAX + 1);
-			int i;
+			int i, ch;
 
 			mbs[0] = (char) wch;
 			nodelay(stdscr, TRUE);
 			for (i = 1; i < (int) MB_CUR_MAX; i++) {
-				if ((mbs[i] = getch()) == ERR)
+				if ((ch = getch()) != ERR)
+					mbs[i] = (char) ch;
+				else
 					break;
 			}
 			nodelay(stdscr, FALSE);

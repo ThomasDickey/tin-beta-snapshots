@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2003-01-16
+ *  Updated   : 2003-02-08
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2003 Jason Faultless <jason@radar.tele2.co.uk>
@@ -685,6 +685,7 @@ process_text_body_part(
 				in_sig = TRUE;
 				if (in_uue) {
 					in_uue = FALSE;
+					/* TODO -> lang.c */
 					put_cooked(wrap_lines, C_UUE, txt_uue, "incomplete ", curruue->line_count, get_filename(curruue->params));
 				}
 			}
@@ -739,6 +740,7 @@ process_text_body_part(
 						fprintf(stderr, "not a uue line while reading a uue body?\n");
 #endif /* DEBUG_ART */
 						in_uue = FALSE;
+						/* TODO -> lang.c */
 						put_cooked(wrap_lines, C_UUE, txt_uue, "incomplete ", curruue->line_count, get_filename(curruue->params));
 					}
 				}
@@ -798,7 +800,7 @@ process_text_body_part(
 	/*
 	 * Were we reading uue and ran off the end ?
 	 */
-	if (in_uue)
+	if (in_uue) /* TODO -> lang.c */
 		put_cooked(wrap_lines, C_UUE, txt_uue, "incomplete ", curruue->line_count, get_filename(curruue->params));
 
 	free(line);
@@ -949,7 +951,7 @@ cook_article(
 				ptr->depth * 4, "",
 				content_types[ptr->type], ptr->subtype,
 				content_encodings[ptr->encoding], ptr->line_count,
-				(name) ? _(", name: ") : "", (name) ? name : "");	/* FIXME: -> lang.c */
+				(name) ? _(txt_name) : "", (name) ? name : "");
 
 			/* Try to view anything of type text, may need to review this */
 			if (IS_PLAINTEXT(ptr))
@@ -968,7 +970,7 @@ cook_article(
 					0, "",
 					content_types[hdr->ext->type], hdr->ext->subtype,
 					content_encodings[hdr->ext->encoding], hdr->ext->line_count,
-					(name) ? _(", name: ") : "", (name) ? name : "");	/* FIXME: -> lang.c */
+					(name) ? _(txt_name) : "", (name) ? name : "");
 		}
 	}
 

@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-10-01
+ *  Updated   : 2003-02-18
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -264,7 +264,7 @@ fprintf(stderr, "start_save: create_path(%s)\n", tmp);
 						unlink(savefile);
 					}
 					if (catchup)
-						art_mark_read(group, &arts[j]);
+						art_mark(group, &arts[j], ART_READ);
 					break;
 
 				default:
@@ -420,7 +420,7 @@ save_art_to_file(
 	}
 
 	if (fseek(artinfo->raw, 0L, SEEK_SET) == -1)
-		perror_message("fseek() error on [%s]", save[indexnum].artptr->subject); /* FIXME: -> lang.c */
+		perror_message(txt_error_fseek, save[indexnum].artptr->subject);
 
 	if (copy_fp(artinfo->raw, fp))
 		/* Write tailing newline or MMDF-mailbox seperator */
@@ -430,12 +430,16 @@ save_art_to_file(
 
 	save[indexnum].saved = TRUE;
 	if (tinrc.mark_saved_read)
-		art_mark_read(&CURR_GROUP, save[indexnum].artptr);
+		art_mark(&CURR_GROUP, save[indexnum].artptr, ART_READ);
 
 #ifdef USE_CURSES
 	scrollok(stdscr, TRUE);
 #endif /* USE_CURSES */
 #ifndef HAVE_LIBUU		/* libuu decodes base64 internally */
+	/*
+	 * TODO: this also extracts parts from multipart articles
+	 *       even if the user whishes no postprocessing
+	 */
 	decode_save_mime(artinfo, TRUE);
 #endif /* !HAVE_LIBUU */
 #ifdef USE_CURSES
@@ -479,7 +483,7 @@ fprintf(stderr, "save_arts, create_path(%s)\n", save[0].path);
 
 			case ART_UNAVAILABLE:			/* Ignore, just keep going */
 				wait_message(1, _(txt_art_unavailable));
-				art_mark_read(&CURR_GROUP, save[i].artptr);
+				art_mark(&CURR_GROUP, save[i].artptr, ART_READ);
 				continue;
 
 			default:
@@ -496,7 +500,6 @@ fprintf(stderr, "save_arts, create_path(%s)\n", save[0].path);
  * Save everything batched up in save[]
  * Print a message like:
  * -- [Article|Thread|Tagged Articles] saved to [mailbox] [filenames] --
- * TODO => lang.c
  */
 t_bool
 save_batch(
@@ -509,8 +512,8 @@ save_batch(
 	int count;
 
 	if (num_save == 0) {
-		/* TODO maybe print something more context dependent here? -> lang.c */
-		wait_message(1, _("No articles to save"));
+		/* TODO maybe print something more context dependent here? */
+		wait_message(1, _(txt_no_arts_to_save));
 		return FALSE;
 	}
 
@@ -519,22 +522,22 @@ save_batch(
 		return FALSE;
 	}
 
-	if (count != num_save)	/* FIMME: -> lang.c */
-		wait_message(2, _("Warning: Only %d out of %d articles were saved"), count, num_save);
+	if (count != num_save)
+		wait_message(2, _(txt_warn_not_all_arts_saved), count, num_save);
 
 	first = get_first_savefile();
 
-	switch (type) {	/* FIMME: -> lang.c */
+	switch (type) {
 		case iKeyFeedHot:
-			snprintf(what, sizeof(what), _("Hot %s"), PLURAL(count, txt_article));
+			snprintf(what, sizeof(what), _(txt_prefix_hot), PLURAL(count, txt_article));
 			break;
 
 		case iKeyFeedTag:
-			snprintf(what, sizeof(what), _("Tagged %s"), PLURAL(count, txt_article));
+			snprintf(what, sizeof(what), _(txt_prefix_tagged), PLURAL(count, txt_article));
 			break;
 
 		case iKeyFeedThd:
-			STRCPY(what, _("Thread"));
+			STRCPY(what, _(txt_thread));
 			break;
 
 		case iKeyFeedArt:
@@ -546,15 +549,13 @@ save_batch(
 
 	/*
 	 * We report the range of saved-to files for regular saves of > 1 articles
-	 * TODO: "mailbox " -> lang.c
 	 */
 	if (num_save == 1 || save[0].is_mailbox)
-		snprintf(buf, sizeof(buf), _("-- %s saved to %s%s --"),
-			what, (save[0].is_mailbox ? _("mailbox ") : ""), first);
+		snprintf(buf, sizeof(buf), _(txt_saved_to),
+			what, (save[0].is_mailbox ? _(txt_mailbox) : ""), first);
 	else
-		snprintf(buf, sizeof(buf), _("-- %s saved to %s%s - %s --"),
-			what, (save[0].is_mailbox ? _("mailbox ") :  ""),
-			first, get_last_savefile());
+		snprintf(buf, sizeof(buf), _(txt_saved_to_range),
+			what, first, get_last_savefile());
 
 	wait_message((tinrc.beginner_level) ? 2 : 1, buf);
 
@@ -1082,10 +1083,10 @@ sum_and_view(
 {
 	char *ext;
 	t_part *part;
-#	ifndef DONT_HAVE_PIPING
+#	if defined(M_UNIX) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
 	FILE *fp_in;
 	char buf[LEN];
-#	endif /* !DONT_HAVE_PIPING */
+#	endif /* M_UNIX && HAVE SUM && !DONT_HAVE_PIPING */
 
 	/*
 	 * Sum file - TODO why do we bother to do this?

@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2003-01-18
+ *  Updated   : 2003-02-05
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2003 Chris Blum <chris@resolution.de>
@@ -77,7 +77,7 @@ static int quoteflag;
 static int do_b_encode(char *w, char *b, int max_ewsize, t_bool isstruct_head);
 static int rfc1522_do_encode(char *what, char **where, const char *charset, t_bool break_long_line);
 static int sizeofnextword(char *w);
-static int which_encoding(char *w, const char *charset);
+static int which_encoding(char *w);
 static t_bool contains_nonprintables(char *w, t_bool isstruct_head);
 static unsigned hex2bin(int x);
 static void build_base64_rank_table(void);
@@ -219,7 +219,7 @@ rfc1522_decode(
 	 * remove non-ASCII chars if MIME_STRICT_CHARSET is set
 	 * must be changed if UTF-8 becomes default charset for headers:
 	 *
-	 * process_charsets(c, "UTF-8", tinrc.mm_local_charset, FALSE);
+	 * process_charsets(c, len, "UTF-8", tinrc.mm_local_charset, FALSE);
 	 */
 #ifndef CHARSET_CONVERSION
 	process_charsets(&c, &max_len, "US-ASCII", tinrc.mm_local_charset, FALSE);
@@ -342,7 +342,7 @@ do_b_encode(
 	char tmp[60];				/* strings to be B encoded */
 	char *t = tmp;
 	int len8 = 0;				/* the number of trailing 8bit chars, which
-								   should be even(i.e. the first and second byte
+								   should be even (i.e. the first and second byte
 								   of wide_char should NOT be split into two
 								   encoded words) in order to be compatible with
 								   some CJK mail client */
@@ -381,8 +381,7 @@ do_b_encode(
  */
 static int
 which_encoding(
-	char *w,
-	const char *charset)
+	char *w)
 {
 	int chars = 0;
 	int schars = 0;
@@ -401,14 +400,8 @@ which_encoding(
 		w++;
 	}
 	if (nonprint) {
-		/*
-		 * Always use B encoding regardless of the efficiency if charset is
-		 * EUC-KR for backward compatibility with old Korean mail program
-		 */
 		if (chars + 2 * (nonprint + schars) /* QP size */ >
-			 (chars * 4 + 3) / 3		/* B64 size */
-			 || !strcasecmp(charset, "EUC-KR")
-			)
+			 (chars * 4 + 3) / 3		/* B64 size */)
 			return 'B';
 		return 'Q';
 	}
@@ -533,7 +526,7 @@ rfc1522_do_encode(
 	} while (*(++strptr) != 0);
 
 	t = buf;
-	encoding = which_encoding(what, charset);
+	encoding = which_encoding(what);
 	ew_taken_len = strlen(charset) + 7 /* =?c?E?d?= */;
 	while (*what) {
 		if (break_long_line)
@@ -766,9 +759,9 @@ rfc15211522_encode(
 	char *header;
 	char encoding;
 	char buffer[2048];
-	t_bool body_encoding_needed = FALSE;
-	t_bool umlauts = FALSE;
+	t_bool mime_headers_needed = FALSE;
 	BodyPtr body_encode;
+	int i;
 #if defined(LOCAL_CHARSET) || defined(CHARSET_CONVERSION)
 	int mmnwcharset = 0;
 
@@ -823,13 +816,15 @@ rfc15211522_encode(
 		buffer_to_network(buffer, mmnwcharset);
 #endif /* LOCAL_CHARSET || CHARSET_CONVERSION */
 		fputs(buffer, g);
-		/* see if there are any umlauts in the body... */
-		for (c = buffer; *c && !isreturn(*c); c++)
-			if (is_EIGHT_BIT(c)) {
-				umlauts = TRUE;
-				body_encoding_needed = TRUE;
-				break;
+		if (!allow_8bit_header) {
+			/* see if there are any 8bit chars in the body... */
+			for (c = buffer; *c && !isreturn(*c); c++) {
+				if (is_EIGHT_BIT(c)) {
+					mime_headers_needed = TRUE;
+					break;
+				}
 			}
+		}
 	}
 	fclose(f);
 	rewind(g);
@@ -839,102 +834,68 @@ rfc15211522_encode(
 		return;
 	}
 
+	/* copy header */
 	while (fgets(buffer, 2048, g) && !isreturn(buffer[0]))
 		fputs(buffer, f);
 
-	/* now add MIME headers as necessary */
-#if 0	/* RFC1522 does not require MIME headers just because there are encoded header lines */
-	if (quoteflag || umlauts)
-#else
-	if (umlauts)
-#endif /* 0 */
-	{
-		fprintf(f, "MIME-Version: %s\n", MIME_SUPPORTED_VERSION);
-		if (body_encoding_needed) {
-		/* added for CJK charsets like EUC-KR/JP/CN and others */
+	if (!allow_8bit_header) {
+		/*
+		 * 7bit charsets except US-ASCII also need mime headers
+		 */
+		for (i = 1; *txt_mime_7bit_charsets[i]; i++) {
 #ifdef CHARSET_CONVERSION
-			if (!strncasecmp(txt_mime_charsets[mmnwcharset], "EUC-", 4) &&
-				 !strcasecmp(mime_encoding, txt_7bit))
-				fprintf(f, "Content-Type: text/plain; charset=ISO-2022-%s\n", &txt_mime_charsets[mmnwcharset][4]);
-			else
-				fprintf(f, "Content-Type: text/plain; charset=%s\n", txt_mime_charsets[mmnwcharset]);
+			if (!strcasecmp(txt_mime_charsets[mmnwcharset], txt_mime_7bit_charsets[i])) {
+				mime_headers_needed = TRUE;
+				break;
+			}
 #else
-			if (!strncasecmp(tinrc.mm_charset, "EUC-", 4) &&
-				 !strcasecmp(mime_encoding, txt_7bit))
-				fprintf(f, "Content-Type: text/plain; charset=ISO-2022-%s\n", &tinrc.mm_charset[4]);
-			else
-				fprintf(f, "Content-Type: text/plain; charset=%s\n", tinrc.mm_charset);
+			if (!strcasecmp(tinrc.mm_charset, txt_mime_7bit_charsets[i])) {
+				mime_headers_needed = TRUE;
+				break;
+			}
+#endif /* CHARSET_CONVERSION */
+		}
+
+		/*
+		 * now add MIME headers as necessary
+		 */
+		if (mime_headers_needed) {
+			fprintf(f, "MIME-Version: %s\n", MIME_SUPPORTED_VERSION);
+#ifdef CHARSET_CONVERSION
+			fprintf(f, "Content-Type: text/plain; charset=%s\n", txt_mime_charsets[mmnwcharset]);
+#else
+			fprintf(f, "Content-Type: text/plain; charset=%s\n", tinrc.mm_charset);
 #endif /* CHARSET_CONVERSION */
 			fprintf(f, "Content-Transfer-Encoding: %s\n", mime_encoding);
-		} else {
-			fputs("Content-Type: text/plain; charset=US-ASCII\n", f);
-			fputs("Content-Transfer-Encoding: 7bit\n", f);
 		}
 	}
 	fputc('\n', f);
 
-	if (!strcasecmp(mime_encoding, txt_base64))
-		encoding = 'b';
-	else if (!strcasecmp(mime_encoding, txt_quoted_printable))
-		encoding = 'q';
-	else
-		encoding = '8';
-
-	if (!body_encoding_needed)
-		encoding = '8';
-
-/* added for CJK charsets like EUC-KR/JP/CN and others */
-
-	if (!strcasecmp(mime_encoding, txt_7bit)) {
-		encoding = '7';
-
-/* For EUC-KR, 7bit means conversion to ISO-2022-KR specified in RFC 1557 */
-
-#ifdef CHARSET_CONVERSION
-		if (!strcasecmp(txt_mime_charsets[mmnwcharset], "EUC-KR"))
-#else
-		if (!strcasecmp(tinrc.mm_charset, "EUC-KR"))
-#endif /* CHARSET_CONVERSION */
-			body_encode = rfc1557_encode;
-
-#if 0
-/*
- * Not only EUC-JP but also other Japanese charsets such as SJIS might need
- * RFC 1468 encoding. To be confirmed.
- */
-#	ifdef CHARSET_CONVERSION
-		else if (!strcasecmp(txt_mime_charsets[mmnwcharset], "EUC-JP"))
-			body_encode = rfc1468_encode;
-#	else
-		else if (!strcasecmp(tinrc.mm_charset, "EUC-JP"))
-			body_encode = rfc1468_encode;
-#	endif /* CHARSET_CONVERSION */
-
-/*
- * Not only EUC-CN but also other Chinese charsets such as Big5 and EUC-TW
- * might need RFC 1922 encoding. To be confirmed.
- */
-#	ifdef CHARSET_CONVERSION
-		else if (!strcasecmp(txt_mime_charsets[mmnwcharset], "EUC-CN"))
-			body_encode = rfc1922_encode;
-#	else
-		else if (!strcasecmp(tinrc.mm_charset, "EUC-CN"))
-			body_encode = rfc1922_encode;
-#	endif /* CHARSET_CONVERSION */
-#endif /* 0 */
-
-		else {
-			body_encode = rfc1521_encode;
+	if (!allow_8bit_header) {
+		if (!strcasecmp(mime_encoding, txt_base64))
+			encoding = 'b';
+		else if (!strcasecmp(mime_encoding, txt_quoted_printable))
+			encoding = 'q';
+		else if (!strcasecmp(mime_encoding, txt_7bit))
+			encoding = '7';
+		else
 			encoding = '8';
-		}
-	} else
+
+		/* avoid break of long lines for US-ASCII/quoted-printable */
+		if (!mime_headers_needed)
+			encoding = '8';
+
 		body_encode = rfc1521_encode;
 
-	while (fgets(buffer, 2048, g))
-		body_encode(buffer, f, encoding);
+		while (fgets(buffer, 2048, g))
+			body_encode(buffer, f, encoding);
 
-	if (encoding == 'b' || encoding == 'q' || encoding == '7')
-		body_encode(NULL, f, encoding);	/* flush */
+		if (encoding == 'b' || encoding == 'q' || encoding == '7')
+			body_encode(NULL, f, encoding);	/* flush */
+	} else {
+		while (fgets(buffer, 2048, g))
+			fputs(buffer, f);
+	}
 
 	fclose(g);
 	fclose(f);

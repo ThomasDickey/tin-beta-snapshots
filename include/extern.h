@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-01-27
+ *  Updated   : 2003-02-11
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>
@@ -339,6 +339,7 @@ extern char dead_article[PATH_LEN];
 extern char dead_articles[PATH_LEN];
 extern char default_organization[PATH_LEN];
 extern char default_signature[PATH_LEN];
+extern char global_attributes_file[PATH_LEN];
 extern char global_config_file[PATH_LEN];
 extern char homedir[PATH_LEN];
 extern char index_maildir[PATH_LEN];
@@ -400,8 +401,9 @@ extern constext *txt_colors[];
 extern constext *txt_confirm_choices[];
 extern constext *txt_kill_level_type[];
 #ifdef CHARSET_CONVERSION
-	extern constext *txt_mime_charsets[];
+	extern constext *txt_mime_charsets[];	/* supported charsets */
 #endif /* CHARSET_CONVERSION */
+extern constext *txt_mime_7bit_charsets[]; /* 7bit charsets */
 extern constext *txt_mailbox_formats[];
 extern constext *txt_marks[];
 extern constext *txt_mime_encodings[NUM_MIME_ENCODINGS];
@@ -412,7 +414,7 @@ extern constext *txt_show_from[];
 extern constext *txt_sort_a_type[];	/* a=articles */
 extern constext *txt_sort_t_type[];	/* t=threads */
 extern constext *txt_strip_bogus_type[];
-extern constext *txt_thread[];
+extern constext *txt_threading[];
 extern constext *txt_thread_score_type[];
 extern constext *txt_wildcard_type[];
 extern constext txt_1_resp[];
@@ -462,6 +464,8 @@ extern constext txt_bad_article[];
 extern constext txt_bad_attrib[];
 extern constext txt_bad_command[];
 extern constext txt_base64[];
+extern constext txt_base_article[];
+extern constext txt_base_article_range[];
 extern constext txt_batch_update_unavail[];
 extern constext txt_begin_of_art[];
 extern constext txt_cancel_article[];
@@ -470,9 +474,9 @@ extern constext txt_cannot_create[];
 extern constext txt_cannot_create_uniq_name[];
 extern constext txt_cannot_find_base_art[];
 extern constext txt_cannot_get_nntp_server_name[];
-#ifndef USE_CURSES
+#if defined(M_UNIX) && !defined(USE_TERMINFO)
 	extern constext txt_cannot_get_term_entry[];
-#endif /* !USE_CURSES */
+#endif /* M_UNIX && !USE_TERMINFO */
 extern constext txt_cannot_open[];
 extern constext txt_cannot_open_for_saving[];
 extern constext txt_cannot_post[];
@@ -480,6 +484,8 @@ extern constext txt_cannot_post_group[];
 extern constext txt_cannot_retrieve[];
 extern constext txt_cannot_write_index[];
 extern constext txt_cannot_write_to_directory[];
+extern constext txt_catchup[];
+extern constext txt_catchup_group[];
 extern constext txt_catchup_all_read_groups[];
 extern constext txt_catchup_despite_tags[];
 extern constext txt_catchup_update_info[];
@@ -497,6 +503,7 @@ extern constext txt_command_failed[];
 extern constext txt_confirm_select_on_exit[];
 extern constext txt_connecting[];
 extern constext txt_connecting_port[];
+extern constext txt_connection_to[];
 extern constext txt_copyright_notice[];
 extern constext txt_cr[];
 extern constext txt_creating_active[];
@@ -512,6 +519,7 @@ extern constext txt_end_of_thread[];
 extern constext txt_enter_getart_limit[];
 extern constext txt_enter_message_id[];
 extern constext txt_enter_next_thread[];
+extern constext txt_enter_next_unread_group[];
 extern constext txt_enter_option_num[];
 extern constext txt_enter_range[];
 extern constext txt_error_approved[];
@@ -520,8 +528,12 @@ extern constext txt_error_bad_approved[];
 extern constext txt_error_bad_from[];
 extern constext txt_error_bad_replyto[];
 extern constext txt_error_bad_msgidfqdn[];
+extern constext txt_error_cant_unlock[];
 extern constext txt_error_copy_fp[];
 extern constext txt_error_corrupted_file[];
+extern constext txt_error_couldnt_dotlock[];
+extern constext txt_error_couldnt_lock[];
+extern constext txt_error_fseek[];
 extern constext txt_error_gnksa_internal[];
 extern constext txt_error_gnksa_langle[];
 extern constext txt_error_gnksa_lparen[];
@@ -561,6 +573,8 @@ extern constext txt_error_header_line_empty[];
 #endif /* !FOLLOW_USEFOR_DRAFT */
 extern constext txt_error_header_line_missing[];
 extern constext txt_error_header_line_space[];
+extern constext txt_error_insecure_permissions[];
+extern constext txt_error_invalid_response_to_group[];
 extern constext txt_error_no_domain_name[];
 extern constext txt_error_no_enter_permission[];
 extern constext txt_error_no_from[];
@@ -570,8 +584,14 @@ extern constext txt_error_no_write_permission[];
 extern constext txt_error_passwd_missing[];
 extern constext txt_error_plural[];
 extern constext txt_error_sender_in_header_not_allowed[];
+extern constext txt_error_server_unavailable[];
+extern constext txt_error_server_has_no_listed_groups[];
 extern constext txt_error_singular[];
+extern constext txt_error_socket_or_connect_problem[];
+extern constext txt_error_topen[];
 extern constext txt_error_unknown_dlevel[];
+extern constext txt_error_unknown_service[];
+extern constext txt_error_wrong_newsgroupname_in_group_response[];
 extern constext txt_esc[];
 extern constext txt_exiting[];
 extern constext txt_external_mail_done[];
@@ -580,6 +600,7 @@ extern constext txt_failed_to_connect_to_server[];
 extern constext txt_feed_pattern[];
 extern constext txt_filesystem_full[];
 extern constext txt_filesystem_full_backup[];
+extern constext txt_filter_comment[];
 extern constext txt_filter_file[];
 extern constext txt_filter_global_rules[];
 extern constext txt_filter_rule_created[];
@@ -592,6 +613,7 @@ extern constext txt_from_line_only[];
 extern constext txt_from_line_only_case[];
 extern constext txt_full[];
 extern constext txt_gethostbyname[];
+extern constext txt_giving_up[];
 extern constext txt_global[];
 extern constext txt_group[];
 extern constext txt_group_aliased[];
@@ -768,10 +790,15 @@ extern constext txt_help_title_ops[];
 extern constext txt_index_page_com[];
 extern constext txt_info_add_kill[];
 extern constext txt_info_add_select[];
+extern constext txt_info_all_parts_tagged[];
 extern constext txt_info_do_postpone[];
+extern constext txt_info_enter_valid_character[];
+extern constext txt_info_missing_part[];
 extern constext txt_info_nopostponed[];
+extern constext txt_info_not_multipart_message[];
 extern constext txt_info_not_subscribed[];
 extern constext txt_info_no_write[];
+extern constext txt_info_no_previous_expression[];
 extern constext txt_info_postponed[];
 extern constext txt_info_x_conversion_note[];
 extern constext txt_invalid_from[];
@@ -799,12 +826,14 @@ extern constext txt_last[];
 extern constext txt_last_resp[];
 extern constext txt_lines[];
 extern constext txt_mail[];
+extern constext txt_mailbox[];
 extern constext txt_mail_art_to[];
 extern constext txt_mail_log_to[];
 extern constext txt_mail_bug_report[];
 extern constext txt_mail_bug_report_confirm[];
 extern constext txt_mailed[];
 extern constext txt_mailing_to[];
+extern constext txt_mail_save_active_head[];
 extern constext txt_mark_arts_read[];
 extern constext txt_mark_group_read[];
 extern constext txt_mark_thread_read[];
@@ -826,6 +855,7 @@ extern constext txt_mini_thread_2[];
 extern constext txt_more[];
 extern constext txt_moving[];
 extern constext txt_msgid_line_only[];
+extern constext txt_name[];
 extern constext txt_newsgroup[];
 extern constext txt_newsgroup_plural[];
 extern constext txt_newsgroup_position[];
@@ -837,6 +867,7 @@ extern constext txt_next_resp[];
 extern constext txt_nntp_authorization_failed[];
 extern constext txt_no[];
 extern constext txt_no_arts[];
+extern constext txt_no_arts_to_save[];
 extern constext txt_no_arts_posted[];
 extern constext txt_no_description[];
 extern constext txt_no_filename[];
@@ -890,6 +921,8 @@ extern constext txt_post_subject[];
 extern constext txt_posted_info_file[];
 extern constext txt_posting[];
 extern constext txt_postpone_repost[];
+extern constext txt_prefix_hot[];
+extern constext txt_prefix_tagged[];
 extern constext txt_prompt_fup_ignore[];
 extern constext txt_prompt_unchanged_mail[];
 extern constext txt_prompt_see_postponed[];
@@ -943,6 +976,8 @@ extern constext txt_saved_group[];
 extern constext txt_saved_groupname[];
 extern constext txt_saved_nothing[];
 extern constext txt_saved_summary[];
+extern constext txt_saved_to[];
+extern constext txt_saved_to_range[];
 extern constext txt_saving[];
 extern constext txt_screen_init_failed[];
 extern constext txt_screen_too_small[];
@@ -953,7 +988,6 @@ extern constext txt_search_forwards[];
 extern constext txt_searching[];
 extern constext txt_searching_body[];
 extern constext txt_select_art[];
-extern constext txt_select_comment[];
 extern constext txt_select_config_file_option[];
 extern constext txt_select_from[];
 extern constext txt_select_group[];
@@ -966,11 +1000,14 @@ extern constext txt_select_subj[];
 extern constext txt_select_text[];
 extern constext txt_select_thread[];
 extern constext txt_select_time[];
+extern constext txt_send_bugreport[];
 extern constext txt_server_name_in_file_env_var[];
 extern constext txt_servers_active[];
 extern constext txt_skipping_newgroups[];
 extern constext txt_space[];
 extern constext txt_starting_command[];
+extern constext txt_stp_list_thread[];
+extern constext txt_stp_thread[];
 extern constext txt_subj_line_only[];
 extern constext txt_subj_line_only_case[];
 extern constext txt_subscribe_pattern[];
@@ -985,9 +1022,11 @@ extern constext txt_tab[];
 extern constext txt_tagged_art[];
 extern constext txt_tagged_thread[];
 extern constext txt_there_is_no_news[];
+extern constext txt_thread[];
 extern constext txt_thread_com[];
 extern constext txt_thread_marked_as_deselected[];
 extern constext txt_thread_marked_as_selected[];
+extern constext txt_thread_range[];
 extern constext txt_thread_x_of_n[];
 extern constext txt_threading_arts[];
 extern constext txt_time_default_days[];
@@ -1000,6 +1039,9 @@ extern constext txt_toggled_high[];
 extern constext txt_toggled_rot13[];
 extern constext txt_toggled_tex2iso[];
 extern constext txt_toggled_tabwidth[];
+extern constext txt_trying[];
+extern constext txt_trying_dotlock[];
+extern constext txt_trying_lock[];
 extern constext txt_type_h_for_help[];
 extern constext txt_unlimited_time[];
 extern constext txt_unread[];
@@ -1011,8 +1053,52 @@ extern constext txt_untagged_art[];
 extern constext txt_untagged_thread[];
 extern constext txt_unthreading_arts[];
 extern constext txt_updated[];
+extern constext txt_updating[];
 extern constext txt_url_open[];
 extern constext txt_url_done[];
+extern constext txt_usage_catchup[];
+extern constext txt_usage_check_for_unread_news[];
+#ifdef DEBUG
+	extern constext txt_usage_debug[];
+#endif /* DEBUG */
+extern constext txt_usage_dont_check_new_newsgroups[];
+extern constext txt_usage_dont_save_files_on_quit[];
+extern constext txt_usage_dont_show_descriptions[];
+#ifdef NNTP_ABLE
+	extern constext txt_usage_force_authentication[];
+	extern constext txt_usage_newsserver[];
+	extern constext txt_usage_port[];
+#endif /* NNTP_ABLE */
+extern constext txt_usage_getart_limit[];
+extern constext txt_usage_help_information[];
+extern constext txt_usage_help_message[];
+#ifndef NNTP_ONLY
+	extern constext txt_usage_index_newsdir[];
+	extern constext txt_usage_update_index_files[];
+#endif /* !NNTP_ONLY */
+extern constext txt_usage_maildir[];
+extern constext txt_usage_mail_bugreport[];
+extern constext txt_usage_mail_new_news[];
+extern constext txt_usage_mail_new_news_to_user[];
+extern constext txt_usage_newsrc_file[];
+extern constext txt_usage_post_article[];
+extern constext txt_usage_post_postponed_arts[];
+extern constext txt_usage_read_news_remotely[];
+extern constext txt_usage_read_saved_news[];
+extern constext txt_usage_savedir[];
+extern constext txt_usage_save_new_news[];
+extern constext txt_usage_start_if_unread_news[];
+extern constext txt_usage_tin[];
+#ifdef HAVE_COLOR
+	extern constext txt_usage_toggle_color[];
+#endif /* HAVE_COLOR */
+extern constext txt_usage_quickstart[];
+extern constext txt_usage_read_only_subscribed[];
+extern constext txt_usage_use_listgroup[];
+extern constext txt_usage_verbose[];
+extern constext txt_usage_version[];
+extern constext txt_useful_without_batch_mode[];
+extern constext txt_useful_with_batch_mode[];
 extern constext txt_value_out_of_range[];
 extern constext txt_view_attachment[];
 extern constext txt_warn_art_line_too_long[];
@@ -1024,8 +1110,9 @@ extern constext txt_warn_encoding_and_external_inews[];
 	extern constext txt_warn_header_line_comma[];
 	extern constext txt_warn_header_line_groups_contd[];
 #endif /* FOLLOW_USEFOR_DRAFT */
-extern constext txt_warn_newsrc[];
 extern constext txt_warn_multiple_sigs[];
+extern constext txt_warn_newsrc[];
+extern constext txt_warn_not_all_arts_saved[];
 extern constext txt_warn_re_but_no_references[];
 extern constext txt_warn_references_but_no_re[];
 extern constext txt_warn_sig_too_long[];
@@ -1074,6 +1161,7 @@ extern constext txt_uu_success[];
 #endif /* NNTP_ABLE && !NNTP_ONLY */
 
 #ifndef NO_SHELL_ESCAPE
+	extern constext txt_shell_command[];
 	extern constext txt_shell_escape[];
 #endif /* !NO_SHELL_ESCAPE */
 
@@ -1101,8 +1189,6 @@ extern int max_subj;
 extern int need_resize;
 extern int num_active;
 extern int num_newnews;
-extern int num_of_killed_arts;
-extern int num_of_selected_arts;
 extern int num_of_tagged_arts;
 extern int num_save;
 extern int signal_context;
@@ -1166,6 +1252,7 @@ extern t_bool newsrc_active;
 extern t_bool no_write;
 extern t_bool post_article_and_exit;
 extern t_bool post_postponed_and_exit;
+extern t_bool quitting;
 extern t_bool read_local_newsgroups_file;
 extern t_bool read_news_via_nntp;
 extern t_bool read_saved_news;
@@ -1319,6 +1406,7 @@ extern constext txt_processing_saved_arts[];
 
 #ifdef M_AMIGA
 	extern constext txt_env_var_not_found[];
+	extern constext txt_usage_bbs_mode[];
 	extern t_bool tin_bbs_mode;
 #endif /* M_AMIGA */
 

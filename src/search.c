@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-01-07
+ *  Updated   : 2003-02-13
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -56,8 +56,6 @@ static int search_group(t_bool forward, int current_art, char *searchbuff, int (
  * The search function may place error text into mesg
  */
 #define MATCH_MSG	(mesg[0] ? mesg : _(txt_no_match))
-
-/* char i_key_search_last; */				/* for repeated search */
 
 /*
  * Kludge to maintain some internal state for body search
@@ -439,7 +437,7 @@ search_article(
 	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_art, HIST_ART_SEARCH)))
 		return FALSE;
 
-	if (tinrc.wildcard && !(compile_regex(pattern, &srch, PCRE_EXTENDED | PCRE_CASELESS)))
+	if (tinrc.wildcard && !(compile_regex(pattern, &srch, PCRE_CASELESS)))
 		return -1;
 
 	srch_lineno = -1;
@@ -530,7 +528,7 @@ search_body(
 	/*
 	 * Pre-compile if we're using full regex
 	 */
-	if (tinrc.wildcard && !(compile_regex(buf, &srch_regex, PCRE_EXTENDED | PCRE_CASELESS)))
+	if (tinrc.wildcard && !(compile_regex(buf, &srch_regex, PCRE_CASELESS)))
 		return -1;
 
 	srch_lineno = -1;

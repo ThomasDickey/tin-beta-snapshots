@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
  *  Created   : 1996-05-09
- *  Updated   : 1998-01-04
+ *  Updated   : 2003-02-23
  *  Notes     : Cacheing of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -911,7 +911,6 @@ build_references(
 		art = &arts[i];
 
 		if (art->refs) {
-
 			strip_line(art->refs);
 
 			/*
@@ -931,14 +930,13 @@ build_references(
 				*s = '\0';
 			} else {
 				art->refptr = add_msgid(MSGID_REF, art->msgid, add_msgid(REF_REF, art->refs, NULL));
-				free(art->refs);
-				art->refs = (char *) 0;
+				FreeAndNull(art->refs);
 			}
 
 		} else
 			art->refptr = add_msgid(MSGID_REF, art->msgid, NULL);
 
-		free(art->msgid);					/* Now cached - discard this */
+		FreeAndNull(art->msgid);	/* Now cached - discard this */
 	}
 
 	DEBUG_PRINT((dbgfd, "REFS phase\n"));
@@ -961,7 +959,7 @@ build_references(
 		if (art->refptr->parent)
 			add_msgid(REF_REF, art->refptr->parent->txt, refs);
 
-		free(art->refs);
+		FreeAndNull(art->refs);
 	}
 
 #ifdef DEBUG_REFS

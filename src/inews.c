@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2003-01-18
+ *  Updated   : 2003-02-03
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -247,10 +247,13 @@ submit_inews(
 		 * Send Path: (and Sender: if needed) headers
 		 */
 		sprintf(line, "Path: %s", PATHMASTER);
-		put_server(line);
+		u_put_server(line);
+		u_put_server("\r\n");
 
-		if (sender == 1)
-			put_server(sender_hdr);
+		if (sender == 1) {
+			u_put_server(sender_hdr);
+			u_put_server("\r\n");
+		}
 #	endif /* !FORGERY */
 
 		/*
@@ -259,7 +262,8 @@ submit_inews(
 		if (*message_id) {
 			if (!id_in_article) {
 				sprintf(line, "Message-ID: %s", message_id);
-				put_server(line);
+				u_put_server(line);
+				u_put_server("\r\n");
 			}
 #	ifdef USE_CANLOCK
 			if (!can_lock_in_article) {
@@ -270,7 +274,8 @@ submit_inews(
 					if ((lptr = build_canlock(message_id, get_secret())) != NULL) {
 						STRCPY(lock, lptr);
 						sprintf(line, "Cancel-Lock: %s", lock);
-						put_server(line);
+						u_put_server(line);
+						u_put_server("\r\n");
 					}
 				}
 #	endif /* USE_CANLOCK */
@@ -404,14 +409,6 @@ submit_news_file(
 	a_message_id[0] = '\0';
 
 	checknadd_headers(name);
-
-	/* 7bit ISO-2022-KR is NEVER to be used in Korean news posting. */
-#ifdef CHARSET_CONVERSION
-	if (!(strcasecmp(txt_mime_charsets[group ? group->attribute->mm_network_charset : tinrc.mm_network_charset], "EUC-KR") || strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_7bit)))
-#else
-	if (!(strcasecmp(tinrc.mm_charset, "EUC-KR") || strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_7bit)))
-#endif /* CHARSET_CONVERSION */
-		tinrc.post_mime_encoding = 0;	/* FIXME: txt_8bit */
 
 	rfc15211522_encode(name, txt_mime_encodings[tinrc.post_mime_encoding], group, tinrc.post_8bit_header, ismail);
 

@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-01-21
+ *  Updated   : 2003-02-18
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -54,7 +54,6 @@
 #define MAGIC		3
 
 int thread_basenote = 0;				/* Index in base[] of basenote */
-/* char i_key_search_last; */					/* for repeated search */
 static int thread_respnum = 0;			/* Index in arts[] of basenote ie base[thread_basenote] */
 t_bool show_subject;
 
@@ -131,7 +130,7 @@ build_tline(
 		} else if (art->killed && tinrc.kill_level != KILL_NOTHREAD) {
 			mark = tinrc.art_marked_killed;
 		} else {
-			if (/* tinrc.kill_level != KILL_READ && */ art->score >= tinrc.score_select)
+			if (/* tinrc.kill_level != KILL_UNREAD && */ art->score >= tinrc.score_select)
 				mark = tinrc.art_marked_read_selected ; /* read hot chil^H^H^H^H article */
 			else
 				mark = tinrc.art_marked_read;
@@ -439,9 +438,9 @@ thread_page(
 		if (tinrc.pos_first_unread) {
 			if ((i = new_responses(thread_basenote))) {
 				for (n = 0, i = (int) base[thread_basenote]; i >= 0; i = arts[i].thread, n++) {
-					if (arts[i].status == ART_UNREAD) {
+					if (arts[i].status == ART_UNREAD || arts[i].status == ART_WILL_RETURN) {
 						if (arts[i].thread == ART_EXPIRED)
-							art_mark_read(group, &arts[i]);
+							art_mark(group, &arts[i], ART_READ);
 						else
 							thdmenu.curr = n;
 						break;
@@ -589,7 +588,7 @@ thread_page(
 			case iKeyThreadMarkArtRead: /* mark article as read */
 				n = find_response(thread_basenote, thdmenu.curr);
 				if ((arts[n].status == ART_UNREAD) || (arts[n].status == ART_WILL_RETURN)) {
-					art_mark_read(group, &arts[n]);
+					art_mark(group, &arts[n], ART_READ);
 					build_tline(thdmenu.curr, &arts[n]);
 					draw_line(thdmenu.curr, MAGIC);
 				}
@@ -704,7 +703,7 @@ thread_page(
 
 			case iKeyThreadMarkArtUnread:		/* mark article as unread */
 				n = find_response(thread_basenote, thdmenu.curr);
-				art_mark_will_return(group, &arts[n]); /* art_mark_unread(group, &arts[n]); */
+				art_mark(group, &arts[n], ART_WILL_RETURN); /* art_mark(group, &arts[n], ART_UNREAD); */
 				build_tline(thdmenu.curr, &arts[n]);
 				draw_line(thdmenu.curr, MAGIC);
 				info_message(_(txt_marked_as_unread), _("Article"));
@@ -793,10 +792,10 @@ show_thread_page(
 
 	assert(thdmenu.first != 0 || the_index == thread_respnum);
 
-	if (show_subject) /* TODO: -> lang.c */
-		snprintf(mesg, sizeof(mesg) - 1, _("List Thread (%d of %d)"), grpmenu.curr + 1, grpmenu.max);
+	if (show_subject)
+		snprintf(mesg, sizeof(mesg) - 1, _(txt_stp_list_thread), grpmenu.curr + 1, grpmenu.max);
 	else
-		snprintf(mesg, sizeof(mesg) - 1, _("Thread (%.*s)"), cCOLS - 23, arts[thread_respnum].subject);
+		snprintf(mesg, sizeof(mesg) - 1, _(txt_stp_thread), cCOLS - 23, arts[thread_respnum].subject);
 
 	/*
 	 * Slight misuse of the 'mesg' buffer here. We need to clear it so that progress messages
@@ -1059,6 +1058,7 @@ stat_thread(
 	sbuf->selected_total = 0;
 	sbuf->selected_unread= 0;
 	sbuf->selected_seen = 0;
+	sbuf->killed = 0;
 	sbuf->art_mark = tinrc.art_marked_read;
 	sbuf->score = 0 /* -(SCORE_MAX) */;
 	sbuf->time = 0;
@@ -1090,10 +1090,8 @@ stat_thread(
 				++sbuf->selected_seen;
 		}
 
-#if 0
 		if (arts[i].killed)
 			++sbuf->killed;
-#endif /* 0 */
 
 		if ((CURR_GROUP.attribute && CURR_GROUP.attribute->thread_arts == THREAD_MULTI) && global_get_multipart_info(i, &minfo) && (minfo.total >= 1)) {
 			sbuf->multipart_compare_len = minfo.subject_compare_len;
@@ -1103,7 +1101,27 @@ stat_thread(
 	}
 
 	sbuf->score = get_score_of_thread((int) base[n]);
-	sbuf->art_mark = (sbuf->inrange ? tinrc.art_marked_inrange : (sbuf->deleted ? tinrc.art_marked_deleted : (sbuf->selected_unread ? tinrc.art_marked_selected : (sbuf->unread ? (tinrc.recent_time && (time((time_t) 0) - sbuf->time) < (tinrc.recent_time * DAY)) ? tinrc.art_marked_recent : tinrc.art_marked_unread : (sbuf->seen ? tinrc.art_marked_return : tinrc.art_marked_read)))));
+
+	if (sbuf->inrange)
+		sbuf->art_mark = tinrc.art_marked_inrange;
+	else if (sbuf->deleted)
+		sbuf->art_mark = tinrc.art_marked_deleted;
+	else if (sbuf->selected_unread)
+		sbuf->art_mark = tinrc.art_marked_selected;
+	else if (sbuf->unread) {
+		if (tinrc.recent_time && (time((time_t) 0) - sbuf->time) < (tinrc.recent_time * DAY))
+			sbuf->art_mark = tinrc.art_marked_recent;
+		else
+			sbuf->art_mark = tinrc.art_marked_unread;
+	}
+	else if (sbuf->seen)
+		sbuf->art_mark = tinrc.art_marked_return;
+	else if (sbuf->selected_total)
+		sbuf->art_mark = tinrc.art_marked_read_selected;
+	else if (sbuf->killed == sbuf->total)
+		sbuf->art_mark = tinrc.art_marked_killed;
+	else
+		sbuf->art_mark = tinrc.art_marked_read;
 	return sbuf->total;
 }
 
@@ -1225,14 +1243,13 @@ next_unread(
 
 /*
  * Find the previous unread response in this thread
- * TODO: why doesn't this handle ART_WILL_RETURN like next_unread() does?
  */
 int
 prev_unread(
 	int n)
 {
 	while (n >= 0) {
-		if (arts[n].status == ART_UNREAD && arts[n].thread != ART_EXPIRED)
+		if (arts[n].status != ART_READ && arts[n].thread != ART_EXPIRED)
 			return n;
 
 		n = prev_response(n);

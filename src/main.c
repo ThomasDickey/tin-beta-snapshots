@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-12-06
+ *  Updated   : 2003-02-15
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -93,17 +93,17 @@ main(
 
 	/* initialize locale support */
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
-	if (!setlocale(LC_ALL, "")) {
+	if (setlocale(LC_ALL, "")) {
+#	ifdef ENABLE_NLS
+		bindtextdomain(PACKAGE, LOCALEDIR);
+		textdomain(PACKAGE);
+#	endif /* ENABLE_NLS */
+	} else { /* EMPTY */
 	/*
 	 * TODO: issue a warning here like
 	 *       "Can't set the specified locale! Check $LANG, $LC_CTYPE, $LC_ALL"
 	 */
-	 ;
 	}
-#	ifdef ENABLE_NLS
-	bindtextdomain(PACKAGE, LOCALEDIR);
-	textdomain(PACKAGE);
-#	endif /* ENABLE_NLS */
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
 
 	set_signal_handlers();
@@ -169,7 +169,7 @@ main(
 	read_cmd_line_options(argc, argv);
 
 	tmp_no_write = no_write; /* keep no_write */
-	no_write = TRUE;		 /* don't allow any writing back during startup */
+	no_write = TRUE;		/* don't allow any writing back during startup */
 
 	if (!batch_mode) {
 #ifdef M_UNIX
@@ -818,7 +818,7 @@ read_cmd_line_options(
 				"+ENFORCE_RFC1034"
 #else
 				"-ENFORCE_RFC1034"
-#endif /* ENFORCE_RFC1034  */
+#endif /* ENFORCE_RFC1034 */
 				);
 				error_message("\t"
 #ifdef REQUIRE_BRACKETS_IN_DOMAIN_LITERAL
@@ -899,18 +899,17 @@ read_cmd_line_options(
 
 	/*
 	 * Sort out conflicts of options....
-	 * TODO: -> lang.c
 	 */
 	if (verbose && !batch_mode) {
-		wait_message(2, _("%s only useful for batch mode operations\n"), "-v");
+		wait_message(2, _(txt_useful_with_batch_mode), "-v");
 		verbose = FALSE;
 	}
 	if (catchup && !batch_mode) {
-		wait_message(2, _("%s only useful for batch mode operations\n"), "-c");
+		wait_message(2, _(txt_useful_with_batch_mode), "-c");
 		catchup = FALSE;
 	}
 	if (read_saved_news && batch_mode) {
-		wait_message(2, _("%s only useful without batch mode operations\n"), "-R");
+		wait_message(2, _(txt_useful_without_batch_mode), "-R");
 		read_saved_news = FALSE;
 	}
 
@@ -935,101 +934,83 @@ read_cmd_line_options(
 
 /*
  * usage
- *
- * FIXME: move strings to lang.c
  */
 static void
 usage(
 	char *theProgname)
 {
-	error_message(_("A Usenet reader.\n\nUsage: %s [options] [newsgroup[,...]]"), theProgname);
+	error_message(_(txt_usage_tin), theProgname);
 
 #	ifndef M_AMIGA
 #		ifdef HAVE_COLOR
-			error_message(_("  -a       toggle color flag"));
+			error_message(_(txt_usage_toggle_color));
 #		endif /* HAVE_COLOR */
 #		ifdef NNTP_ABLE
-			error_message(_("  -A       force authentication on connect"));
+			error_message(_(txt_usage_force_authentication));
 #		endif /* NNTP_ABLE */
 #	else
-		error_message(_("  -B       BBS mode. File operations limited to home directories."));
+		error_message(_(txt_usage_bbs_mode));
 #	endif /* !M_AMIGA */
 
-	error_message(_("  -c       mark all news as read in subscribed newsgroups (batch mode)"));
-	error_message(_("  -d       don't show newsgroup descriptions"));
+	error_message(_(txt_usage_catchup));
+	error_message(_(txt_usage_dont_show_descriptions));
 
 #	ifdef DEBUG
-		error_message(_("  -D       debug mode 1=NNTP 2=ALL"));
+		error_message(_(txt_usage_debug));
 #	endif /* DEBUG */
 
-	error_message(_("  -f file  subscribed to newsgroups file [default=%s]"), newsrc);
-	error_message(_("  -G limit get only limit articles/group"));
+	error_message(_(txt_usage_newsrc_file), newsrc);
+	error_message(_(txt_usage_getart_limit));
 
 #	ifndef M_AMIGA
 #		ifdef NNTP_ABLE
 			/* FIXME, default should be $NNTPSERVER if set ... */
-			error_message(_("  -g serv  read news from NNTP server serv [default=%s]"), NNTP_DEFAULT_SERVER);
+			error_message(_(txt_usage_newsserver), NNTP_DEFAULT_SERVER);
 #		endif /* NNTP_ABLE */
 #	endif /* !M_AMIGA */
 
-	error_message(_("  -h       this help message"));
-	error_message(_("  -H       help information about %s"), theProgname);
+	error_message(_(txt_usage_help_message));
+	error_message(_(txt_usage_help_information), theProgname);
 
 #	ifndef NNTP_ONLY
-		error_message(_("  -I dir   news index file directory [default=%s]"), index_newsdir);
+		error_message(_(txt_usage_index_newsdir), index_newsdir);
 #	endif /* !NNTP_ONLY */
 
-#	ifdef NNTP_ABLE
-		error_message(_("  -l       use only LISTGROUP instead of GROUP (-n) command"));
-#	else
-		error_message(_("  -l       TODO: document feature"));
-#	endif /* NNTP_ABLE */
-
-	error_message(_("  -m dir   mailbox directory [default=%s]"), tinrc.maildir);
-	error_message(_("  -M user  mail new news to specified user (batch mode)"));
+	error_message(_(txt_usage_use_listgroup));
+	error_message(_(txt_usage_maildir), tinrc.maildir);
+	error_message(_(txt_usage_mail_new_news_to_user));
+	error_message(_(txt_usage_read_only_subscribed));
+	error_message(_(txt_usage_mail_new_news));
+	error_message(_(txt_usage_post_postponed_arts));
 
 #	ifdef NNTP_ABLE
-		error_message(_("  -n       only read subscribed .newsrc groups from NNTP server"));
-#	else
-		error_message(_("  -n       TODO: document feature"));
+		error_message(_(txt_usage_port), nntp_tcp_port);
 #	endif /* NNTP_ABLE */
 
-	error_message(_("  -N       mail new news to your posts (batch mode)"));
-	error_message(_("  -o       post all postponed articles and exit"));
-
-#	ifdef NNTP_ABLE
-		error_message(_("  -p port  use port as NNTP port [default=%d]"), nntp_tcp_port);
-#	endif /* NNTP_ABLE */
-
-	error_message(_("  -q       don't check for new newsgroups"));
-
-#	ifdef NNTP_ABLE
-	error_message(_("  -Q       quick start. Same as -nqd"));
-#	else
-	error_message(_("  -Q       quick start. Same as -qd"));
-#	endif /* NNTP_ABLE */
+	error_message(_(txt_usage_dont_check_new_newsgroups));
+	error_message(_(txt_usage_quickstart));
 
 #	ifdef NNTP_ABLE
 		if (!read_news_via_nntp)
-			error_message(_("  -r       read news remotely from default NNTP server"));
+			error_message(_(txt_usage_read_news_remotely));
 #	endif /* NNTP_ABLE */
 
-	error_message(_("  -R       read news saved by -S option"));
-	error_message(_("  -s dir   save news directory [default=%s]"), tinrc.savedir);
-	error_message(_("  -S       save new news for later reading (batch mode)"));
+	error_message(_(txt_usage_read_saved_news));
+	error_message(_(txt_usage_savedir), tinrc.savedir);
+	error_message(_(txt_usage_save_new_news));
 
 #	ifndef NNTP_ONLY
-		error_message(_("  -u       update index files (batch mode)"));
+		error_message(_(txt_usage_update_index_files));
 #	endif /* !NNTP_ONLY */
 
-	error_message(_("  -v       verbose output for batch mode options"));
-	error_message(_("  -V       print version & date information"));
-	error_message(_("  -w       post an article and exit"));
-	error_message(_("  -X       don't save any files on quit"));
-	error_message(_("  -z       start if any unread news"));
-	error_message(_("  -Z       return status indicating if any unread news (batch mode)"));
+	error_message(_(txt_usage_verbose));
+	error_message(_(txt_usage_version));
+	error_message(_(txt_usage_post_article));
+	error_message(_(txt_usage_dont_save_files_on_quit));
+	error_message(_(txt_usage_start_if_unread_news));
+	error_message(_(txt_usage_check_for_unread_news));
 
-	error_message(_("\nMail bug reports/comments to %s"), bug_addr);
+	error_message(_(txt_usage_mail_bugreport), bug_addr);
 }
 
 

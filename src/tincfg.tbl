@@ -2,7 +2,7 @@
 ;   Module    : tincfg.tbl
 ;   Author    : Thomas E. Dickey
 ;   Created   : 1996-11-01
-;   Updated   : 2003-01-27
+;   Updated   : 2003-02-08
 ;   Notes     : #defines and structs for config.c
 ;
 ; Copyright (c) 1996-2003 Thomas E. Dickey <dickey@invisible-island.net>
@@ -44,7 +44,7 @@
 	show_author			txt_show_from	SHOW_FROM_BOTH+1
 	draw_arrow			OPT_ON_OFF
 	inverse_okay			OPT_ON_OFF
-	thread_articles			txt_thread	THREAD_MAX+1
+	thread_articles			txt_threading	THREAD_MAX+1
 	sort_article_type		txt_sort_a_type	SORT_ARTICLES_BY_LINES_ASCEND+1
 	sort_threads_type		txt_sort_t_type	SORT_THREADS_BY_SCORE_ASCEND+1
 	pos_first_unread		OPT_ON_OFF
