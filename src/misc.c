@@ -118,7 +118,7 @@ asfail (
 	int line,
 	const char *cond)
 {
-	my_fprintf (stderr, _(txt_error_asfail), tin_progname, file, line, cond);
+	my_fprintf (stderr, txt_error_asfail, tin_progname, file, line, cond);
 	my_fflush (stderr);
 
 /*
@@ -544,6 +544,7 @@ tin_done (
 		if (!cmd_line)
 #endif /* HAVE_COLOR */
 		{
+			cursoron();
 			if (!ret)
 				ClearScreen ();
 		}
@@ -865,25 +866,25 @@ set_real_uid_gid (
 
 #	if defined(HAVE_SETEUID) && defined(HAVE_SETEGID)
 	if (seteuid (real_uid) == -1)
-		perror_message (_("Error seteuid(real) failed"));
+		perror_message ("Error seteuid(real) failed");
 
 	if (setegid (real_gid) == -1)
-		perror_message (_("Error setegid(real) failed"));
+		perror_message ("Error setegid(real) failed");
 
 #	else
 #		if defined(HAVE_SETREUID) && defined(HAVE_SETREGID)
 	if (setreuid (-1, real_uid) == -1)
-		perror_message (_("Error setreuid(real) failed"));
+		perror_message ("Error setreuid(real) failed");
 
 	if (setregid (-1, real_gid) == -1)
-		perror_message (_("Error setregid(real) failed"));
+		perror_message ("Error setregid(real) failed");
 
 #		else
 	if (setuid (real_uid) == -1)
-		perror_message (_("Error setuid(real) failed"));
+		perror_message ("Error setuid(real) failed");
 
 	if (setgid (real_gid) == -1)
-		perror_message (_("Error setgid(real) failed"));
+		perror_message ("Error setgid(real) failed");
 
 #		endif /* HAVE_SETREUID && HAVE_SETREGID */
 #	endif /* HAVE_SETEUID && HAVE_SETEGID */
@@ -902,25 +903,25 @@ set_tin_uid_gid (
 
 #	if defined(HAVE_SETEUID) && defined(HAVE_SETEGID)
 	if (seteuid (tin_uid) == -1)
-		perror_message (_("Error seteuid(real) failed"));
+		perror_message ("Error seteuid(real) failed");
 
 	if (setegid (tin_gid) == -1)
-		perror_message (_("Error setegid(real) failed"));
+		perror_message ("Error setegid(real) failed");
 
 #	else
 #		if defined(HAVE_SETREUID) && defined(HAVE_SETREGID)
 	if (setreuid (-1, tin_uid) == -1)
-		perror_message (_("Error setreuid(tin) failed"));
+		perror_message ("Error setreuid(tin) failed");
 
 	if (setregid (-1, tin_gid) == -1)
-		perror_message (_("Error setregid(tin) failed"));
+		perror_message ("Error setregid(tin) failed");
 
 #		else
 	if (setuid (tin_uid) == -1)
-		perror_message (_("Error setuid(tin) failed"));
+		perror_message ("Error setuid(tin) failed");
 
 	if (setgid (tin_gid) == -1)
-		perror_message (_("Error setgid(tin) failed"));
+		perror_message ("Error setgid(tin) failed");
 
 #		endif /* HAVE_SETREUID && HAVE_SETREGID */
 #	endif /* HAVE_SETEUID && HAVE_SETEGID */
@@ -1377,7 +1378,7 @@ create_index_lock_file (
 		if ((fp = fopen (the_lock_file, "r")) != (FILE *) 0) {
 			fgets (buf, (int) sizeof(buf), fp);
 			fclose (fp);
-			error_message (_("\n%s: Already started pid=[%d] on %s"), tin_progname, atoi(buf), buf+8);
+			error_message ("\n%s: Already started pid=[%d] on %s", tin_progname, atoi(buf), buf+8);
 			giveup();
 		}
 	} else {

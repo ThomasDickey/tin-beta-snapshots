@@ -12,7 +12,7 @@ functions.
 
 Written by: Philip Hazel <ph10@cam.ac.uk>
 
-           Copyright (c) 1997-1999 University of Cambridge
+           Copyright (c) 1997-2000 University of Cambridge
 
 -----------------------------------------------------------------------------
 Permission is granted to anyone to use this software for any purpose on any
@@ -46,7 +46,8 @@ restrictions:
 static const char *estring[] = {
   ERR1,  ERR2,  ERR3,  ERR4,  ERR5,  ERR6,  ERR7,  ERR8,  ERR9,  ERR10,
   ERR11, ERR12, ERR13, ERR14, ERR15, ERR16, ERR17, ERR18, ERR19, ERR20,
-  ERR21, ERR22, ERR23, ERR24, ERR25 };
+  ERR21, ERR22, ERR23, ERR24, ERR25, ERR26, ERR27, ERR29, ERR29, ERR30,
+  ERR31 };
 
 static int eint[] = {
   REG_EESCAPE, /* "\\ at end of pattern" */
@@ -76,7 +77,10 @@ static int eint[] = {
   REG_BADPAT,  /* "lookbehind assertion is not fixed length" */
   REG_BADPAT,  /* "malformed number after (?(" */
   REG_BADPAT,  /* "conditional group containe more than two branches" */
-  REG_BADPAT   /* "assertion expected after (?(" */
+  REG_BADPAT,  /* "assertion expected after (?(" */
+  REG_BADPAT,  /* "(?p must be followed by )" */
+  REG_ECTYPE,  /* "unknown POSIX class name" */
+  REG_BADPAT   /* "POSIX collating elements are not supported" */
 };
 
 /* Table of texts corresponding to POSIX error codes */
@@ -211,39 +215,61 @@ return 0;
 *              Match a regular expression        *
 *************************************************/
 
+/* Unfortunately, PCRE requires 3 ints of working space for each captured
+substring, so we have to get and release working store instead of just using
+the POSIX structures as was done in earlier releases when PCRE needed only 2
+ints. */
+
 int
 regexec(regex_t *preg, const char *string, size_t nmatch,
   regmatch_t pmatch[], int eflags)
 {
 int rc;
 int options = 0;
+int *ovector = NULL;
 
 if ((eflags & REG_NOTBOL) != 0) options |= PCRE_NOTBOL;
 if ((eflags & REG_NOTEOL) != 0) options |= PCRE_NOTEOL;
 
 preg->re_erroffset = (size_t)(-1);   /* Only has meaning after compile */
 
+if (nmatch > 0)
+  {
+  ovector = (int *)malloc(sizeof(int) * nmatch * 3);
+  if (ovector == NULL) return REG_ESPACE;
+  }
+
 rc = pcre_exec(preg->re_pcre, NULL, string, (int)strlen(string), 0, options,
-  (int *)pmatch, nmatch * 2);
+  ovector, nmatch * 3);
 
-if (rc == 0) return 0;    /* All pmatch were filled in */
+if (rc == 0) rc = nmatch;    /* All captured slots were filled in */
 
-if (rc > 0)
+if (rc >= 0)
   {
   size_t i;
-  for (i = rc; i < nmatch; i++) pmatch[i].rm_so = pmatch[i].rm_eo = -1;
+  for (i = 0; i < rc; i++)
+    {
+    pmatch[i].rm_so = ovector[i*2];
+    pmatch[i].rm_eo = ovector[i*2+1];
+    }
+  if (ovector != NULL) free(ovector);
+  for (; i < nmatch; i++) pmatch[i].rm_so = pmatch[i].rm_eo = -1;
   return 0;
   }
 
-else switch(rc)
+else
   {
-  case PCRE_ERROR_NOMATCH: return REG_NOMATCH;
-  case PCRE_ERROR_NULL: return REG_INVARG;
-  case PCRE_ERROR_BADOPTION: return REG_INVARG;
-  case PCRE_ERROR_BADMAGIC: return REG_INVARG;
-  case PCRE_ERROR_UNKNOWN_NODE: return REG_ASSERT;
-  case PCRE_ERROR_NOMEMORY: return REG_ESPACE;
-  default: return REG_ASSERT;
+  if (ovector != NULL) free(ovector);
+  switch(rc)
+    {
+    case PCRE_ERROR_NOMATCH: return REG_NOMATCH;
+    case PCRE_ERROR_NULL: return REG_INVARG;
+    case PCRE_ERROR_BADOPTION: return REG_INVARG;
+    case PCRE_ERROR_BADMAGIC: return REG_INVARG;
+    case PCRE_ERROR_UNKNOWN_NODE: return REG_ASSERT;
+    case PCRE_ERROR_NOMEMORY: return REG_ESPACE;
+    default: return REG_ASSERT;
+    }
   }
 }
 

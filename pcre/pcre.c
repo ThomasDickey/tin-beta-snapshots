@@ -9,7 +9,7 @@ the file Tech.Notes for some information on the internals.
 
 Written by: Philip Hazel <ph10@cam.ac.uk>
 
-           Copyright (c) 1997-1999 University of Cambridge
+           Copyright (c) 1997-2000 University of Cambridge
 
 -----------------------------------------------------------------------------
 Permission is granted to anyone to use this software for any purpose on any
@@ -82,7 +82,7 @@ static const char *OP_names[] = {
   "*", "*?", "+", "+?", "?", "??", "{", "{", "{",
   "*", "*?", "+", "+?", "?", "??", "{", "{", "{",
   "*", "*?", "+", "+?", "?", "??", "{", "{",
-  "class", "Ref",
+  "class", "Ref", "Recurse",
   "Alt", "Ket", "KetRmax", "KetRmin", "Assert", "Assert not",
   "AssertB", "AssertB not", "Reverse", "Once", "Cond", "Cref",
   "Brazero", "Braminzero", "Bra"
@@ -107,11 +107,58 @@ static const short int escapes[] = {
     0,      0, -ESC_z                                            /* x - z */
 };
 
+/* Tables of names of POSIX character classes and their lengths. The list is
+terminated by a zero length entry. The first three must be alpha, upper, lower,
+as this is assumed for handling case independence. */
+
+static const char *posix_names[] = {
+  "alpha", "lower", "upper",
+  "alnum", "ascii", "cntrl", "digit", "graph",
+  "print", "punct", "space", "word",  "xdigit" };
+
+static const uschar posix_name_lengths[] = {
+  5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 6, 0 };
+
+/* Table of class bit maps for each POSIX class; up to three may be combined
+to form the class. */
+
+static const int posix_class_maps[] = {
+  cbit_lower, cbit_upper, -1,             /* alpha */
+  cbit_lower, -1,         -1,             /* lower */
+  cbit_upper, -1,         -1,             /* upper */
+  cbit_digit, cbit_lower, cbit_upper,     /* alnum */
+  cbit_print, cbit_cntrl, -1,             /* ascii */
+  cbit_cntrl, -1,         -1,             /* cntrl */
+  cbit_digit, -1,         -1,             /* digit */
+  cbit_graph, -1,         -1,             /* graph */
+  cbit_print, -1,         -1,             /* print */
+  cbit_punct, -1,         -1,             /* punct */
+  cbit_space, -1,         -1,             /* space */
+  cbit_word,  -1,         -1,             /* word */
+  cbit_xdigit,-1,         -1              /* xdigit */
+};
+
+
 /* Definition to allow mutual recursion */
 
 static BOOL
   compile_regex(int, int, int *, uschar **, const uschar **, const char **,
     BOOL, int, int *, int *, compile_data *);
+
+/* Structure for building a chain of data that actually lives on the
+stack, for holding the values of the subject pointer at the start of each
+subpattern, so as to detect when an empty string has been matched by a
+subpattern - to break infinite loops. */
+
+typedef struct eptrblock {
+  struct eptrblock *prev;
+  const uschar *saved_eptr;
+} eptrblock;
+
+/* Flag bits for the match() function */
+
+#define match_condassert   0x01    /* Called to check a condition assertion */
+#define match_isgroup      0x02    /* Set if start of bracketed group */
 
 
 
@@ -161,12 +208,13 @@ return XSTRING(PCRE_MAJOR) "." XSTRING(PCRE_MINOR) " " XSTRING(PCRE_DATE);
 
 
 /*************************************************
-*       Return info about a compiled pattern     *
+* (Obsolete) Return info about compiled pattern  *
 *************************************************/
 
-/* This function picks potentially useful data out of the private
-structure. The public options are passed back in an int - though the
-re->options field has been expanded to a long int, all the public options
+/* This is the original "info" function. It picks potentially useful data out
+of the private structure, but its interface was too rigid. It remains for
+backwards compatibility. The public options are passed back in an int - though
+the re->options field has been expanded to a long int, all the public options
 at the low end of it, and so even on 16-bit systems this will still be OK.
 Therefore, I haven't changed the API for pcre_info().
 
@@ -177,7 +225,7 @@ Arguments:
                 or -1 if multiline and all branches start ^,
                 or -2 otherwise
 
-Returns:        number of identifying extraction brackets
+Returns:        number of capturing subpatterns
                 or negative values on error
 */
 
@@ -194,6 +242,74 @@ if (first_char != NULL)
 return re->top_bracket;
 }
 
+
+
+/*************************************************
+*        Return info about compiled pattern      *
+*************************************************/
+
+/* This is a newer "info" function which has an extensible interface so
+that additional items can be added compatibly.
+
+Arguments:
+  external_re      points to compiled code
+  external_study   points to study data, or NULL
+  what             what information is required
+  where            where to put the information
+
+Returns:           0 if data returned, negative on error
+*/
+
+int
+pcre_fullinfo(const pcre *external_re, const pcre_extra *study_data, int what,
+  void *where)
+{
+const real_pcre *re = (const real_pcre *)external_re;
+const real_pcre_extra *study = (const real_pcre_extra *)study_data;
+
+if (re == NULL || where == NULL) return PCRE_ERROR_NULL;
+if (re->magic_number != MAGIC_NUMBER) return PCRE_ERROR_BADMAGIC;
+
+switch (what)
+  {
+  case PCRE_INFO_OPTIONS:
+  *((unsigned long int *)where) = re->options & PUBLIC_OPTIONS;
+  break;
+
+  case PCRE_INFO_SIZE:
+  *((size_t *)where) = re->size;
+  break;
+
+  case PCRE_INFO_CAPTURECOUNT:
+  *((int *)where) = re->top_bracket;
+  break;
+
+  case PCRE_INFO_BACKREFMAX:
+  *((int *)where) = re->top_backref;
+  break;
+
+  case PCRE_INFO_FIRSTCHAR:
+  *((int *)where) =
+    ((re->options & PCRE_FIRSTSET) != 0)? re->first_char :
+    ((re->options & PCRE_STARTLINE) != 0)? -1 : -2;
+  break;
+
+  case PCRE_INFO_FIRSTTABLE:
+  *((const uschar **)where) =
+    (study != NULL && (study->options & PCRE_STUDY_MAPPED) != 0)?
+      study->start_bits : NULL;
+  break;
+
+  case PCRE_INFO_LASTLITERAL:
+  *((int *)where) =
+    ((re->options & PCRE_REQCHSET) != 0)? re->req_char : -1;
+  break;
+
+  default: return PCRE_ERROR_BADOPTION;
+  }
+
+return 0;
+}
 
 
 
@@ -255,9 +371,9 @@ check_escape(const uschar **ptrptr, const char **errorptr, int bracount,
   int options, BOOL isclass, compile_data *cd)
 {
 const uschar *ptr = *ptrptr;
-int c = *(++ptr) & 255;   /* Ensure > 0 on signed-char systems */
-int i;
+int c, i;
 
+c = *(++ptr) & 255;   /* Ensure > 0 on signed-char systems */
 if (c == 0) *errorptr = ERR1;
 
 /* Digits or letters may have special meaning; all others are literals. */
@@ -622,6 +738,71 @@ for (;;)
 
 
 /*************************************************
+*           Check for POSIX class syntax         *
+*************************************************/
+
+/* This function is called when the sequence "[:" or "[." or "[=" is
+encountered in a character class. It checks whether this is followed by an
+optional ^ and then a sequence of letters, terminated by a matching ":]" or
+".]" or "=]".
+
+Argument:
+  ptr      pointer to the initial [
+  endptr   where to return the end pointer
+  cd       pointer to compile data
+
+Returns:   TRUE or FALSE
+*/
+
+static BOOL
+check_posix_syntax(const uschar *ptr, const uschar **endptr, compile_data *cd)
+{
+int terminator;          /* Don't combine these lines; the Solaris cc */
+terminator = *(++ptr);   /* compiler warns about "non-constant" initializer. */
+if (*(++ptr) == '^') ptr++;
+while ((cd->ctypes[*ptr] & ctype_letter) != 0) ptr++;
+if (*ptr == terminator && ptr[1] == ']')
+  {
+  *endptr = ptr;
+  return TRUE;
+  }
+return FALSE;
+}
+
+
+
+
+/*************************************************
+*          Check POSIX class name                *
+*************************************************/
+
+/* This function is called to check the name given in a POSIX-style class entry
+such as [:alnum:].
+
+Arguments:
+  ptr        points to the first letter
+  len        the length of the name
+
+Returns:     a value representing the name, or -1 if unknown
+*/
+
+static int
+check_posix_name(const uschar *ptr, int len)
+{
+register int yield = 0;
+while (posix_name_lengths[yield] != 0)
+  {
+  if (len == posix_name_lengths[yield] &&
+    strncmp((const char *)ptr, posix_names[yield], len) == 0) return yield;
+  yield++;
+  }
+return -1;
+}
+
+
+
+
+/*************************************************
 *           Compile one branch                   *
 *************************************************/
 
@@ -689,7 +870,9 @@ for (;; ptr++)
     if ((cd->ctypes[c] & ctype_space) != 0) continue;
     if (c == '#')
       {
-      while ((c = *(++ptr)) != 0 && c != '\n');
+      /* The space before the ; is to avoid a warning on a silly compiler
+      on the Macintosh. */
+      while ((c = *(++ptr)) != 0 && c != '\n') ;
       continue;
       }
     }
@@ -764,6 +947,66 @@ for (;; ptr++)
         goto FAILED;
         }
 
+      /* Handle POSIX class names. Perl allows a negation extension of the
+      form [:^name]. A square bracket that doesn't match the syntax is
+      treated as a literal. We also recognize the POSIX constructions
+      [.ch.] and [=ch=] ("collating elements") and fault them, as Perl
+      5.6 does. */
+
+      if (c == '[' &&
+          (ptr[1] == ':' || ptr[1] == '.' || ptr[1] == '=') &&
+          check_posix_syntax(ptr, &tempptr, cd))
+        {
+        BOOL local_negate = FALSE;
+        int posix_class, i;
+        register const uschar *cbits = cd->cbits;
+
+        if (ptr[1] != ':')
+          {
+          *errorptr = ERR31;
+          goto FAILED;
+          }
+
+        ptr += 2;
+        if (*ptr == '^')
+          {
+          local_negate = TRUE;
+          ptr++;
+          }
+
+        posix_class = check_posix_name(ptr, tempptr - ptr);
+        if (posix_class < 0)
+          {
+          *errorptr = ERR30;
+          goto FAILED;
+          }
+
+        /* If matching is caseless, upper and lower are converted to
+        alpha. This relies on the fact that the class table starts with
+        alpha, lower, upper as the first 3 entries. */
+
+        if ((options & PCRE_CASELESS) != 0 && posix_class <= 2)
+          posix_class = 0;
+
+        /* Or into the map we are building up to 3 of the static class
+        tables, or their negations. */
+
+        posix_class *= 3;
+        for (i = 0; i < 3; i++)
+          {
+          int taboffset = posix_class_maps[posix_class + i];
+          if (taboffset < 0) break;
+          if (local_negate)
+            for (c = 0; c < 32; c++) class[c] |= ~cbits[c+taboffset];
+          else
+            for (c = 0; c < 32; c++) class[c] |= cbits[c+taboffset];
+          }
+
+        ptr = tempptr + 1;
+        class_charcount = 10;  /* Set > 1; assumes more than 1 per class */
+        continue;
+        }
+
       /* Backslash may introduce a single character, or it may introduce one
       of the specials, which just set a flag. Escaped items are checked for
       validity in the pre-compiling pass. The sequence \b is a special case.
@@ -791,13 +1034,11 @@ for (;; ptr++)
             continue;
 
             case ESC_w:
-            for (c = 0; c < 32; c++)
-              class[c] |= (cbits[c+cbit_digit] | cbits[c+cbit_word]);
+            for (c = 0; c < 32; c++) class[c] |= cbits[c+cbit_word];
             continue;
 
             case ESC_W:
-            for (c = 0; c < 32; c++)
-              class[c] |= ~(cbits[c+cbit_digit] | cbits[c+cbit_word]);
+            for (c = 0; c < 32; c++) class[c] |= ~cbits[c+cbit_word];
             continue;
 
             case ESC_s:
@@ -1360,6 +1601,11 @@ for (;; ptr++)
         ptr++;
         break;
 
+        case 'R':                 /* Pattern recursion */
+        *code++ = OP_RECURSE;
+        ptr++;
+        continue;
+
         default:                  /* Option setting */
         set = unset = 0;
         optset = &set;
@@ -1566,7 +1812,9 @@ for (;; ptr++)
         if ((cd->ctypes[c] & ctype_space) != 0) continue;
         if (c == '#')
           {
-          while ((c = *(++ptr)) != 0 && c != '\n');
+          /* The space before the ; is to avoid a warning on a silly compiler
+          on the Macintosh. */
+          while ((c = *(++ptr)) != 0 && c != '\n') ;
           if (c == 0) break;
           continue;
           }
@@ -2015,12 +2263,13 @@ pcre_compile(const char *pattern, int options, const char **errorptr,
 real_pcre *re;
 int length = 3;      /* For initial BRA plus length */
 int runlength;
-int c, size, reqchar, countlits;
+int c, reqchar, countlits;
 int bracount = 0;
 int top_backref = 0;
 int branch_extra = 0;
 int branch_newextra;
 unsigned int brastackptr = 0;
+size_t size;
 uschar *code;
 const uschar *ptr;
 compile_data compile_block;
@@ -2083,7 +2332,9 @@ while ((c = *(++ptr)) != 0)
     if ((compile_block.ctypes[c] & ctype_space) != 0) continue;
     if (c == '#')
       {
-      while ((c = *(++ptr)) != 0 && c != '\n');
+      /* The space before the ; is to avoid a warning on a silly compiler
+      on the Macintosh. */
+      while ((c = *(++ptr)) != 0 && c != '\n') ;
       continue;
       }
     }
@@ -2248,6 +2499,19 @@ while ((c = *(++ptr)) != 0)
         ptr += 2;
         break;
 
+        /* A recursive call to the regex is an extension, to provide the
+        facility which can be obtained by $(?p{perl-code}) in Perl 5.6. */
+
+        case 'R':
+        if (ptr[3] != ')')
+          {
+          *errorptr = ERR29;
+          goto PCRE_ERROR_RETURN;
+          }
+        ptr += 3;
+        length += 1;
+        break;
+
         /* Lookbehinds are in Perl from version 5.005 */
 
         case '<':
@@ -2280,8 +2544,8 @@ while ((c = *(++ptr)) != 0)
         else   /* An assertion must follow */
           {
           ptr++;   /* Can treat like ':' as far as spacing is concerned */
-
-          if (ptr[2] != '?' || strchr("=!<", ptr[3]) == NULL)
+          if (ptr[2] != '?' ||
+             (ptr[3] != '=' && ptr[3] != '!' && ptr[3] != '<') )
             {
             ptr += 2;    /* To get right offset in message */
             *errorptr = ERR28;
@@ -2494,7 +2758,9 @@ while ((c = *(++ptr)) != 0)
         if ((compile_block.ctypes[c] & ctype_space) != 0) continue;
         if (c == '#')
           {
-          while ((c = *(++ptr)) != 0 && c != '\n');
+          /* The space before the ; is to avoid a warning on a silly compiler
+          on the Macintosh. */
+          while ((c = *(++ptr)) != 0 && c != '\n') ;
           continue;
           }
         }
@@ -2550,9 +2816,10 @@ if (re == NULL)
   return NULL;
   }
 
-/* Put in the magic number and the options. */
+/* Put in the magic number, and save the size, options, and table pointer */
 
 re->magic_number = MAGIC_NUMBER;
+re->size = size;
 re->options = options;
 re->tables = tables;
 
@@ -2951,18 +3218,36 @@ Arguments:
    offset_top  current top pointer
    md          pointer to "static" info for the match
    ims         current /i, /m, and /s options
-   condassert  TRUE if called to check a condition assertion
-   eptrb       eptr at start of last bracket
+   eptrb       pointer to chain of blocks containing eptr at start of
+                 brackets - for testing for empty matches
+   flags       can contain
+                 match_condassert - this is an assertion condition
+                 match_isgroup - this is the start of a bracketed group
 
 Returns:       TRUE if matched
 */
 
 static BOOL
 match(register const uschar *eptr, register const uschar *ecode,
-  int offset_top, match_data *md, unsigned long int ims, BOOL condassert,
-  const uschar *eptrb)
+  int offset_top, match_data *md, unsigned long int ims, eptrblock *eptrb,
+  int flags)
 {
 unsigned long int original_ims = ims;   /* Save for resetting on ')' */
+eptrblock newptrb;
+
+/* At the start of a bracketed group, add the current subject pointer to the
+stack of such pointers, to be re-instated at the end of the group when we hit
+the closing ket. When match() is called in other circumstances, we don't add to
+the stack. */
+
+if ((flags & match_isgroup) != 0)
+  {
+  newptrb.prev = eptrb;
+  newptrb.saved_eptr = eptr;
+  eptrb = &newptrb;
+  }
+
+/* Now start processing the operations. */
 
 for (;;)
   {
@@ -3008,7 +3293,8 @@ for (;;)
 
       do
         {
-        if (match(eptr, ecode+3, offset_top, md, ims, FALSE, eptr)) return TRUE;
+        if (match(eptr, ecode+3, offset_top, md, ims, eptrb, match_isgroup))
+          return TRUE;
         ecode += (ecode[1] << 8) + ecode[2];
         }
       while (*ecode == OP_ALT);
@@ -3034,7 +3320,8 @@ for (;;)
     DPRINTF(("start bracket 0\n"));
     do
       {
-      if (match(eptr, ecode+3, offset_top, md, ims, FALSE, eptr)) return TRUE;
+      if (match(eptr, ecode+3, offset_top, md, ims, eptrb, match_isgroup))
+        return TRUE;
       ecode += (ecode[1] << 8) + ecode[2];
       }
     while (*ecode == OP_ALT);
@@ -3053,7 +3340,7 @@ for (;;)
       return match(eptr,
         ecode + ((offset < offset_top && md->offset_vector[offset] >= 0)?
           5 : 3 + (ecode[1] << 8) + ecode[2]),
-        offset_top, md, ims, FALSE, eptr);
+        offset_top, md, ims, eptrb, match_isgroup);
       }
 
     /* The condition is an assertion. Call match() to evaluate it - setting
@@ -3061,13 +3348,14 @@ for (;;)
 
     else
       {
-      if (match(eptr, ecode+3, offset_top, md, ims, TRUE, NULL))
+      if (match(eptr, ecode+3, offset_top, md, ims, NULL,
+          match_condassert | match_isgroup))
         {
         ecode += 3 + (ecode[4] << 8) + ecode[5];
         while (*ecode == OP_ALT) ecode += (ecode[1] << 8) + ecode[2];
         }
       else ecode += (ecode[1] << 8) + ecode[2];
-      return match(eptr, ecode+3, offset_top, md, ims, FALSE, eptr);
+      return match(eptr, ecode+3, offset_top, md, ims, eptrb, match_isgroup);
       }
     /* Control never reaches here */
 
@@ -3104,7 +3392,7 @@ for (;;)
     case OP_ASSERTBACK:
     do
       {
-      if (match(eptr, ecode+3, offset_top, md, ims, FALSE, NULL)) break;
+      if (match(eptr, ecode+3, offset_top, md, ims, NULL, match_isgroup)) break;
       ecode += (ecode[1] << 8) + ecode[2];
       }
     while (*ecode == OP_ALT);
@@ -3112,7 +3400,7 @@ for (;;)
 
     /* If checking an assertion for a condition, return TRUE. */
 
-    if (condassert) return TRUE;
+    if ((flags & match_condassert) != 0) return TRUE;
 
     /* Continue from after the assertion, updating the offsets high water
     mark, since extracts may have been taken during the assertion. */
@@ -3128,12 +3416,14 @@ for (;;)
     case OP_ASSERTBACK_NOT:
     do
       {
-      if (match(eptr, ecode+3, offset_top, md, ims, FALSE, NULL)) return FALSE;
+      if (match(eptr, ecode+3, offset_top, md, ims, NULL, match_isgroup))
+        return FALSE;
       ecode += (ecode[1] << 8) + ecode[2];
       }
     while (*ecode == OP_ALT);
 
-    if (condassert) return TRUE;
+    if ((flags & match_condassert) != 0) return TRUE;
+
     ecode += 3;
     continue;
 
@@ -3147,6 +3437,54 @@ for (;;)
     ecode += 3;
     break;
 
+    /* Recursion matches the current regex, nested. If there are any capturing
+    brackets started but not finished, we have to save their starting points
+    and reinstate them after the recursion. However, we don't know how many
+    such there are (offset_top records the completed total) so we just have
+    to save all the potential data. There may be up to 99 such values, which
+    is a bit large to put on the stack, but using malloc for small numbers
+    seems expensive. As a compromise, the stack is used when there are fewer
+    than 16 values to store; otherwise malloc is used. A problem is what to do
+    if the malloc fails ... there is no way of returning to the top level with
+    an error. Save the top 15 values on the stack, and accept that the rest
+    may be wrong. */
+
+    case OP_RECURSE:
+      {
+      BOOL rc;
+      int *save;
+      int stacksave[15];
+
+      c = md->offset_max;
+
+      if (c < 16) save = stacksave; else
+        {
+        save = (int *)(pcre_malloc)((c+1) * sizeof(int));
+        if (save == NULL)
+          {
+          save = stacksave;
+          c = 15;
+          }
+        }
+
+      for (i = 1; i <= c; i++)
+        save[i] = md->offset_vector[md->offset_end - i];
+      rc = match(eptr, md->start_pattern, offset_top, md, ims, eptrb,
+        match_isgroup);
+      for (i = 1; i <= c; i++)
+        md->offset_vector[md->offset_end - i] = save[i];
+      if (save != stacksave) (pcre_free)(save);
+      if (!rc) return FALSE;
+
+      /* In case the recursion has set more capturing values, save the final
+      number, then move along the subject till after the recursive match,
+      and advance one byte in the pattern code. */
+
+      offset_top = md->end_offset_top;
+      eptr = md->end_match_ptr;
+      ecode++;
+      }
+    break;
 
     /* "Once" brackets are like assertion brackets except that after a match,
     the point in the subject string is not moved back. Thus there can never be
@@ -3158,10 +3496,12 @@ for (;;)
     case OP_ONCE:
       {
       const uschar *prev = ecode;
+      const uschar *saved_eptr = eptr;
 
       do
         {
-        if (match(eptr, ecode+3, offset_top, md, ims, FALSE, eptr)) break;
+        if (match(eptr, ecode+3, offset_top, md, ims, eptrb, match_isgroup))
+          break;
         ecode += (ecode[1] << 8) + ecode[2];
         }
       while (*ecode == OP_ALT);
@@ -3184,7 +3524,7 @@ for (;;)
       5.005. If there is an options reset, it will get obeyed in the normal
       course of events. */
 
-      if (*ecode == OP_KET || eptr == eptrb)
+      if (*ecode == OP_KET || eptr == saved_eptr)
         {
         ecode += 3;
         break;
@@ -3203,13 +3543,14 @@ for (;;)
 
       if (*ecode == OP_KETRMIN)
         {
-        if (match(eptr, ecode+3, offset_top, md, ims, FALSE, eptr) ||
-            match(eptr, prev, offset_top, md, ims, FALSE, eptr)) return TRUE;
+        if (match(eptr, ecode+3, offset_top, md, ims, eptrb, 0) ||
+            match(eptr, prev, offset_top, md, ims, eptrb, match_isgroup))
+              return TRUE;
         }
       else  /* OP_KETRMAX */
         {
-        if (match(eptr, prev, offset_top, md, ims, FALSE, eptr) ||
-            match(eptr, ecode+3, offset_top, md, ims, FALSE, eptr)) return TRUE;
+        if (match(eptr, prev, offset_top, md, ims, eptrb, match_isgroup) ||
+            match(eptr, ecode+3, offset_top, md, ims, eptrb, 0)) return TRUE;
         }
       }
     return FALSE;
@@ -3230,7 +3571,8 @@ for (;;)
     case OP_BRAZERO:
       {
       const uschar *next = ecode+1;
-      if (match(eptr, next, offset_top, md, ims, FALSE, eptr)) return TRUE;
+      if (match(eptr, next, offset_top, md, ims, eptrb, match_isgroup))
+        return TRUE;
       do next += (next[1] << 8) + next[2]; while (*next == OP_ALT);
       ecode = next + 3;
       }
@@ -3240,7 +3582,8 @@ for (;;)
       {
       const uschar *next = ecode+1;
       do next += (next[1] << 8) + next[2]; while (*next == OP_ALT);
-      if (match(eptr, next+3, offset_top, md, ims, FALSE, eptr)) return TRUE;
+      if (match(eptr, next+3, offset_top, md, ims, eptrb, match_isgroup))
+        return TRUE;
       ecode++;
       }
     break;
@@ -3255,6 +3598,9 @@ for (;;)
     case OP_KETRMAX:
       {
       const uschar *prev = ecode - (ecode[1] << 8) - ecode[2];
+      const uschar *saved_eptr = eptrb->saved_eptr;
+
+      eptrb = eptrb->prev;    /* Back up the stack of bracket start pointers */
 
       if (*prev == OP_ASSERT || *prev == OP_ASSERT_NOT ||
           *prev == OP_ASSERTBACK || *prev == OP_ASSERTBACK_NOT ||
@@ -3274,7 +3620,10 @@ for (;;)
         int number = *prev - OP_BRA;
         int offset = number << 1;
 
-        DPRINTF(("end bracket %d\n", number));
+#ifdef DEBUG
+        printf("end bracket %d", number);
+        printf("\n");
+#endif
 
         if (number > 0)
           {
@@ -3300,7 +3649,7 @@ for (;;)
       5.005. If there is an options reset, it will get obeyed in the normal
       course of events. */
 
-      if (*ecode == OP_KET || eptr == eptrb)
+      if (*ecode == OP_KET || eptr == saved_eptr)
         {
         ecode += 3;
         break;
@@ -3311,13 +3660,14 @@ for (;;)
 
       if (*ecode == OP_KETRMIN)
         {
-        if (match(eptr, ecode+3, offset_top, md, ims, FALSE, eptr) ||
-            match(eptr, prev, offset_top, md, ims, FALSE, eptr)) return TRUE;
+        if (match(eptr, ecode+3, offset_top, md, ims, eptrb, 0) ||
+            match(eptr, prev, offset_top, md, ims, eptrb, match_isgroup))
+              return TRUE;
         }
       else  /* OP_KETRMAX */
         {
-        if (match(eptr, prev, offset_top, md, ims, FALSE, eptr) ||
-            match(eptr, ecode+3, offset_top, md, ims, FALSE, eptr)) return TRUE;
+        if (match(eptr, prev, offset_top, md, ims, eptrb, match_isgroup) ||
+            match(eptr, ecode+3, offset_top, md, ims, eptrb, 0)) return TRUE;
         }
       }
     return FALSE;
@@ -3528,7 +3878,7 @@ for (;;)
         {
         for (i = min;; i++)
           {
-          if (match(eptr, ecode, offset_top, md, ims, FALSE, eptrb))
+          if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
             return TRUE;
           if (i >= max || !match_ref(offset, eptr, length, md, ims))
             return FALSE;
@@ -3549,7 +3899,7 @@ for (;;)
           }
         while (eptr >= pp)
           {
-          if (match(eptr, ecode, offset_top, md, ims, FALSE, eptrb))
+          if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
             return TRUE;
           eptr -= length;
           }
@@ -3620,7 +3970,7 @@ for (;;)
         {
         for (i = min;; i++)
           {
-          if (match(eptr, ecode, offset_top, md, ims, FALSE, eptrb))
+          if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
             return TRUE;
           if (i >= max || eptr >= md->end_subject) return FALSE;
           c = *eptr++;
@@ -3644,7 +3994,7 @@ for (;;)
           }
 
         while (eptr >= pp)
-          if (match(eptr--, ecode, offset_top, md, ims, FALSE, eptrb))
+          if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
             return TRUE;
         return FALSE;
         }
@@ -3741,7 +4091,7 @@ for (;;)
         {
         for (i = min;; i++)
           {
-          if (match(eptr, ecode, offset_top, md, ims, FALSE, eptrb))
+          if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
             return TRUE;
           if (i >= max || eptr >= md->end_subject ||
               c != md->lcc[*eptr++])
@@ -3758,7 +4108,7 @@ for (;;)
           eptr++;
           }
         while (eptr >= pp)
-          if (match(eptr--, ecode, offset_top, md, ims, FALSE, eptrb))
+          if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
             return TRUE;
         return FALSE;
         }
@@ -3775,7 +4125,7 @@ for (;;)
         {
         for (i = min;; i++)
           {
-          if (match(eptr, ecode, offset_top, md, ims, FALSE, eptrb))
+          if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
             return TRUE;
           if (i >= max || eptr >= md->end_subject || c != *eptr++) return FALSE;
           }
@@ -3790,7 +4140,7 @@ for (;;)
           eptr++;
           }
         while (eptr >= pp)
-         if (match(eptr--, ecode, offset_top, md, ims, FALSE, eptrb))
+         if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
            return TRUE;
         return FALSE;
         }
@@ -3872,7 +4222,7 @@ for (;;)
         {
         for (i = min;; i++)
           {
-          if (match(eptr, ecode, offset_top, md, ims, FALSE, eptrb))
+          if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
             return TRUE;
           if (i >= max || eptr >= md->end_subject ||
               c == md->lcc[*eptr++])
@@ -3889,7 +4239,7 @@ for (;;)
           eptr++;
           }
         while (eptr >= pp)
-          if (match(eptr--, ecode, offset_top, md, ims, FALSE, eptrb))
+          if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
             return TRUE;
         return FALSE;
         }
@@ -3906,7 +4256,7 @@ for (;;)
         {
         for (i = min;; i++)
           {
-          if (match(eptr, ecode, offset_top, md, ims, FALSE, eptrb))
+          if (match(eptr, ecode, offset_top, md, ims, eptrb, 0))
             return TRUE;
           if (i >= max || eptr >= md->end_subject || c == *eptr++) return FALSE;
           }
@@ -3921,7 +4271,7 @@ for (;;)
           eptr++;
           }
         while (eptr >= pp)
-         if (match(eptr--, ecode, offset_top, md, ims, FALSE, eptrb))
+         if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
            return TRUE;
         return FALSE;
         }
@@ -4021,7 +4371,7 @@ for (;;)
       {
       for (i = min;; i++)
         {
-        if (match(eptr, ecode, offset_top, md, ims, FALSE, eptrb)) return TRUE;
+        if (match(eptr, ecode, offset_top, md, ims, eptrb, 0)) return TRUE;
         if (i >= max || eptr >= md->end_subject) return FALSE;
 
         c = *eptr++;
@@ -4140,7 +4490,7 @@ for (;;)
         }
 
       while (eptr >= pp)
-        if (match(eptr--, ecode, offset_top, md, ims, FALSE, eptrb))
+        if (match(eptr--, ecode, offset_top, md, ims, eptrb, 0))
           return TRUE;
       return FALSE;
       }
@@ -4216,6 +4566,7 @@ if (re == NULL || subject == NULL ||
    (offsets == NULL && offsetcount > 0)) return PCRE_ERROR_NULL;
 if (re->magic_number != MAGIC_NUMBER) return PCRE_ERROR_BADMAGIC;
 
+match_block.start_pattern = re->code;
 match_block.start_subject = (const uschar *)subject;
 match_block.end_subject = match_block.start_subject + length;
 end_subject = match_block.end_subject;
@@ -4425,7 +4776,7 @@ do
   if certain parts of the pattern were not used. */
 
   match_block.start_match = start_match;
-  if (!match(start_match, re->code, 2, &match_block, ims, FALSE, start_match))
+  if (!match(start_match, re->code, 2, &match_block, ims, NULL, match_isgroup))
     continue;
 
   /* Copy the offset information from temporary store if necessary */

@@ -130,7 +130,8 @@ scroll_page (
  * Map keypad codes to standard keyboard characters
  */
 static int
-handle_pager_keypad(void)
+handle_pager_keypad(
+	void)
 {
 	int ch = ReadCh ();
 
@@ -634,7 +635,7 @@ fprintf(stderr, "curr_line %d, artlines %d, ARTLINES %d, c+a %d\n", curr_line, a
 			case iKeyPageEditArticle:		/* edit an article (mailgroup only) */
 				if (iArtEdit (group, &arts[this_resp]))
 #if 0
-FIXME - will just a draw_page() do here ?
+					/* FIXME - will just a draw_page() do here ? */
 					goto restart;		/* TODO ehhhhh ? */
 #endif /* 0 */
 				break;
@@ -890,7 +891,7 @@ draw_page (
 		/*
 		 * rotN encoding on body data only
 		 */
-		if (rotate != 0 && curr->flags&C_BODY) {
+		if ((rotate != 0) && (curr->flags&C_BODY)) {
 			char *p = buff;
 
 			for (p=buff; *p; p++) {
@@ -1337,7 +1338,8 @@ process_search(
 
 
 static void
-process_url()
+process_url(
+	void)
 {
 	char buf[LEN];
 	char *ptr;

@@ -1534,11 +1534,11 @@ vNewsrcTestHarness (
 			if ((temp_file = my_tempnam ("","NEWSRC")) != (char *) 0) {
 				if ((fd = open (temp_file, (O_CREAT|O_EXCL), (S_IRUSR|S_IWUSR))) != -1) {
 					if ((fp = fopen (temp_file, "w")) != (FILE *) 0) {
-						my_printf (_("\n%d. PARSE Seq=[%s]\n"), i+1, seq);
+						my_printf ("\n%d. PARSE Seq=[%s]\n", i+1, seq);
 						parse_bitmap_seq (&group, seq);
 						debug_print_newsrc (&group.newsrc, stdout);
 						print_bitmap_seq (fp, &group);
-						my_printf(_("   PRINT Seq=["));
+						my_printf("   PRINT Seq=[");
 						print_bitmap_seq (stdout, &group);
 						fclose(fp);
 					} else
@@ -1554,7 +1554,7 @@ vNewsrcTestHarness (
 		debug_print_newsrc (&group.newsrc, stdout);
 
 		if (!retry)
-			error_message (_(txt_cannot_create_uniq_name));
+			error_message (txt_cannot_create_uniq_name);
 		else {
 			fp = fopen (temp_file, "r");
 			fgets (seq, (int) sizeof(seq), fp);
@@ -1593,7 +1593,7 @@ set_bitmap_range_read (
 		offset = beg - newsrc->xmin;
 		length = end - newsrc->xmin;
 
-my_printf (_("\nRNG Min-Max=[%ld-%ld] Beg-End=[%ld-%ld] OFF=[%ld] LEN=[%ld]\n"),
+my_printf ("\nRNG Min-Max=[%ld-%ld] Beg-End=[%ld-%ld] OFF=[%ld] LEN=[%ld]\n",
 newsrc->xmin, newsrc->xmax, beg, end, offset, length);
 
 		if (beg == end) {
@@ -1617,8 +1617,7 @@ set_bitmap_range_unread (
 		offset = beg - newsrc->xmin;
 		length = end - newsrc->xmin;
 
-my_printf (_("\nRNG Min-Max=[%ld-%ld] Beg-End=[%ld-%ld] OFF=[%ld] LEN=[%ld]\n"),
-newsrc->xmin, newsrc->xmax, beg, end, offset, length);
+my_printf ("\nRNG Min-Max=[%ld-%ld] Beg-End=[%ld-%ld] OFF=[%ld] LEN=[%ld]\n", newsrc->xmin, newsrc->xmax, beg, end, offset, length);
 
 		if (beg == end) {
 			NSET1(newsrc->xbitmap, offset);

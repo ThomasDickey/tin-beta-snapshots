@@ -1,11 +1,11 @@
 dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
-dnl Author    : Thomas E. Dickey <dickey@clark.net>
+dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
 dnl Updated   : 2000-04-14
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2000 Thomas E. Dickey <dickey@clark.net>
+dnl Copyright (c) 1995-2000 Thomas E. Dickey <dickey@herndon4.his.com>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -948,13 +948,10 @@ DMALLOC)
 	;;
 esac
 
-### The 'pcre' library uses non-standard #define's
-test ".$ac_cv_func_strerror" != ".yes" && \
-test ".$cf_cv_have_sys_errlist" = ".yes" && \
-	PCRE_DEFINES="$PCRE_DEFINES -DSTRERROR_FROM_ERRLIST"
-test ".$ac_cv_func_memmove" != ".yes" && \
-test ".$cf_cv_good_bcopy" = ".yes" && \
-	PCRE_DEFINES="$PCRE_DEFINES -DUSE_BCOPY"
+. $srcdir/pcre/version.sh
+AC_SUBST(PCRE_MAJOR)
+AC_SUBST(PCRE_MINOR)
+AC_SUBST(PCRE_DATE)
 AC_SUBST(PCRE_DEFINES)
 
 ### NLS (gettext plus bundled libintl for systems without one)
@@ -975,4 +972,8 @@ fi
 
 ### Finally, build autoconf.h and the makefiles
 CFLAGS="$CFLAGS $EXTRA_CFLAGS"
-AC_OUTPUT(makefile $SUB_MAKEFILE pcre/Makefile src/Makefile)
+AC_OUTPUT(makefile
+	$SUB_MAKEFILE
+	pcre/Makefile
+	pcre/pcre.h:pcre/pcre.in
+	src/Makefile)

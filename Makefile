@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 5
 SVER	= 5
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20000611
+DVER	= 20000613
 EXE	= tin
 MANEXT	= 1
 
@@ -30,7 +30,7 @@ INTLDIR	= ./intl
 HFILES	= \
 	$(INCDIR)/bool.h \
 	$(INCDIR)/bugrep.h \
-	$(INCDIR)/config.h \
+	$(INCDIR)/oldconfig.h \
 	$(INCDIR)/extern.h \
 	$(INCDIR)/keymap.h \
 	$(INCDIR)/menukeys.h \
@@ -197,44 +197,56 @@ TOP	= \
 	$(TOPDIR)/mkdirs.sh
 
 PCRE	= \
+	$(PCREDIR)/AUTHORS \
+	$(PCREDIR)/COPYING \
 	$(PCREDIR)/ChangeLog \
+	$(PCREDIR)/INSTALL \
 	$(PCREDIR)/LICENCE \
 	$(PCREDIR)/Makefile.in \
-	$(PCREDIR)/Makefile.orig \
+	$(PCREDIR)/Makefile.in-old \
+	$(PCREDIR)/NEWS \
+	$(PCREDIR)/NON-UNIX-USE \
 	$(PCREDIR)/README \
 	$(PCREDIR)/RunTest \
-	$(PCREDIR)/Tech.Notes \
-	$(PCREDIR)/pgrep.1 \
-	$(PCREDIR)/pgrep.1.html \
-	$(PCREDIR)/pgrep.1.txt \
-	$(PCREDIR)/pcre.3 \
-	$(PCREDIR)/pcre.3.html \
-	$(PCREDIR)/pcre.3.txt \
-	$(PCREDIR)/pcreposix.3 \
-	$(PCREDIR)/pcreposix.3.html \
-	$(PCREDIR)/pcreposix.3.txt \
+	$(PCREDIR)/config.h \
+	$(PCREDIR)/configure.in \
 	$(PCREDIR)/dftables.c \
+	$(PCREDIR)/dll.mk \
 	$(PCREDIR)/get.c \
-	$(PCREDIR)/maketables.c \
-	$(PCREDIR)/pcre.c \
-	$(PCREDIR)/pcreposix.c \
-	$(PCREDIR)/pgrep.c \
-	$(PCREDIR)/study.c \
 	$(PCREDIR)/internal.h \
-	$(PCREDIR)/pcre.h \
+	$(PCREDIR)/maketables.c \
+	$(PCREDIR)/pcre-config.in \
+	$(PCREDIR)/pcre.c \
+	$(PCREDIR)/pcre.def \
+	$(PCREDIR)/pcre.in \
+	$(PCREDIR)/pcre.mms \
+	$(PCREDIR)/pcreposix.c \
 	$(PCREDIR)/pcreposix.h \
 	$(PCREDIR)/pcretest.c \
 	$(PCREDIR)/perltest \
-	$(PCREDIR)/testinput1 \
-	$(PCREDIR)/testinput2 \
-	$(PCREDIR)/testinput3 \
-	$(PCREDIR)/testinput4 \
-	$(PCREDIR)/testoutput1 \
-	$(PCREDIR)/testoutput2 \
-	$(PCREDIR)/testoutput3 \
-	$(PCREDIR)/testoutput4 \
-	$(PCREDIR)/dll.mk \
-	$(PCREDIR)/pcre.def
+	$(PCREDIR)/pgrep.c \
+	$(PCREDIR)/study.c \
+	$(PCREDIR)/version.sh \
+	$(PCREDIR)/doc/Tech.Notes \
+	$(PCREDIR)/doc/pcre.3 \
+	$(PCREDIR)/doc/pcre.html \
+	$(PCREDIR)/doc/pcre.txt \
+	$(PCREDIR)/doc/pcreposix.3 \
+	$(PCREDIR)/doc/pcreposix.html \
+	$(PCREDIR)/doc/pcreposix.txt \
+	$(PCREDIR)/doc/pcretest.txt \
+	$(PCREDIR)/doc/perltest.txt \
+	$(PCREDIR)/doc/pgrep.1 \
+	$(PCREDIR)/doc/pgrep.html \
+	$(PCREDIR)/doc/pgrep.txt \
+	$(PCREDIR)/testdata/testinput1 \
+	$(PCREDIR)/testdata/testinput2 \
+	$(PCREDIR)/testdata/testinput3 \
+	$(PCREDIR)/testdata/testinput4 \
+	$(PCREDIR)/testdata/testoutput1 \
+	$(PCREDIR)/testdata/testoutput2 \
+	$(PCREDIR)/testdata/testoutput3 \
+	$(PCREDIR)/testdata/testoutput4
 
 CAN	= \
 	$(CANDIR)/Build \
@@ -275,8 +287,7 @@ MISC	= \
 	$(SRCDIR)/l1_next.tab \
 	$(SRCDIR)/next_l1.tab \
 	$(SRCDIR)/tincfg.tbl \
-	$(SRCDIR)/descrip.mms \
-	$(PCREDIR)/pcre.mms
+	$(SRCDIR)/descrip.mms
 
 INTLFILES = \
         $(INTLDIR)/bindtextdom.c \
@@ -314,7 +325,7 @@ POFILES = \
 
 ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(AMIGA) $(VMS) $(PCRE) $(MISC) $(CAN) $(INTLFILES) $(POFILES)
 
-ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(AMGDIR) $(VMSDIR) $(PCREDIR) $(CANDIR) $(CANDIR)/doc $(INTLDIR) $(PODIR)
+ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(AMGDIR) $(VMSDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(CANDIR)/doc $(INTLDIR) $(PODIR)
 
 # standard commands
 CD	= cd
@@ -415,7 +426,9 @@ chmod:
 	$(TOLDIR)/tinlock \
 	$(TOLDIR)/url_handler.sh \
 	$(TOLDIR)/w2r.pl \
+	$(PCREDIR)/RunTest \
 	$(PCREDIR)/perltest \
+	$(PCREDIR)/version.sh \
 	$(CANDIR)/Build
 
 tar:
@@ -484,6 +497,7 @@ distclean:
 	$(INCDIR)/autoconf.h \
 	$(PCREDIR)/chartables.c \
 	$(PCREDIR)/dftables \
+	$(PCREDIR)/pcre.h \
 	$(PCREDIR)/Makefile \
 	$(SRCDIR)/Makefile \
 	$(INTLDIR)/po2tbl.sed \

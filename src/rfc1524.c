@@ -3,7 +3,7 @@
  *  Module    : rfc1524.c
  *  Author    : Urs Janssen <urs@tin.org>, Jason Faultless <jason@radar.tele2.co.uk>
  *  Created   : 2000-05-15
- *  Updated   : 2000-06-09
+ *  Updated   : 2000-06-13
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
  * Copyright (c) 2000 Urs Janssen <urs@tin.org>, Jason Faultless <jason@radar.tele2.co.uk>
@@ -47,13 +47,16 @@
 #define MAILCAPFIELDS 13
 
 /* local prototypes */
-static char *get_mailcap_field (char *mailcap);
 static char *expand_mailcap_meta (const char *mailcap, t_part *part);
+static char *get_mailcap_field (char *mailcap);
 static t_mailcap *parse_mailcap_line (const char *mailcap, t_part *part);
+
 
 /*
  * mainloop, find a mailcap file, look for a matching entry
  * extract fields, expand metas
+ *
+ * TODO: don't used fixed length buffers
  */
 t_mailcap *
 get_mailcap_entry (
@@ -68,7 +71,7 @@ get_mailcap_entry (
 	t_mailcap *foo = (t_mailcap *) 0;
 
 	ptr = (char *) get_val("MAILCAPS", DEFAULT_MAILCAPS);
-	strncpy(mailcaps, ptr, sizeof(mailcaps) - 1);
+	STRCPY (mailcaps, ptr);
 	ptr = strtok(mailcaps, ":");
 	while (ptr != (char *) 0) {
 		/* expand ~ and/or $HOME etc. */
@@ -103,15 +106,15 @@ get_mailcap_entry (
 			if (!strncmp(ptr, content_types[part->type], strlen(ptr) - strlen(ptr2))) {
 				if (!strncmp(ptr + strlen(content_types[part->type]) + 1, part->subtype, strlen(part->subtype))) {
 					/* full match, so parse line and evaluate test if given. */
-					strncpy(mailcap, ptr, sizeof(mailcap) - 1);
-					foo = parse_mailcap_line(mailcap, part);
+					STRCPY (mailcap, ptr);
+					foo = parse_mailcap_line (mailcap, part);
 					if (foo != (t_mailcap *) 0)
 						break; /* perfect match with test succeded (if given) */
 				} else {
 					if ((*(ptr2 + 1) == '*') || (*(ptr2 + 1) == ';')) { /* wildmat match */
-						if (!strlen(wildcap)) { /* we don't ralready have a wildmat match */
-							strncpy(wildcap, buf, sizeof(wildcap) - 1);
-							foo = parse_mailcap_line(wildcap, part);
+						if (!strlen(wildcap)) { /* we don't already have a wildmat match */
+							STRCPY (wildcap, buf);
+							foo = parse_mailcap_line (wildcap, part);
 							if (foo == (t_mailcap *) 0) /* test failed */
 								wildcap[0] = '\0'; /* ignore match */
 						}
@@ -133,9 +136,9 @@ parse_mailcap_line(
 	const char *mailcap,
 	t_part *part)
 {
-	char *ptr;
-	char buf[LEN];
+	char *ptr, *optr, *buf;
 	int i = MAILCAPFIELDS - 2; /* max MAILCAPFIELDS - required fileds */
+	size_t blen;
 	t_mailcap *tmailcap;
 
 	/* malloc and init */
@@ -154,21 +157,23 @@ parse_mailcap_line(
 	tmailcap->print = (char *) 0;
 	tmailcap->x11bitmap = (char *) 0;
 
-	ptr = my_strdup(mailcap);
+	optr = ptr = my_strdup(mailcap);
 
 	/* get required entrys */
+	ptr = get_mailcap_field(ptr);
+	blen = strlen(content_types[part->type]) + strlen(part->subtype) + 2;
+	buf = (char *) my_malloc(sizeof(char) * blen);
+	memset(buf, 0, blen);
+	snprintf (buf, sizeof(buf) - 1, "%s/%s", content_types[part->type], part->subtype);
+	tmailcap->type = buf;
+	ptr += strlen(ptr) + 1;
 	if ((ptr = get_mailcap_field(ptr)) != (char *) 0) {
-		snprintf(buf, sizeof(buf) - 1, "%s/%s", content_types[part->type], part->subtype);
-		tmailcap->type = my_strdup(buf);
+		tmailcap->command = expand_mailcap_meta(ptr, part);
 		ptr += strlen(ptr) + 1;
-		if ((ptr = get_mailcap_field(ptr)) != (char *) 0) {
-			tmailcap->command = expand_mailcap_meta(ptr, part);
-			ptr += strlen(ptr) + 1;
-		}
 	}
 
 	while ((ptr = get_mailcap_field(ptr)) != (char *) 0) {
-		if (i--) /* number of possible fields exhausted */
+		if (i-- <= 0) /* number of possible fields exhausted */
 			break;
 		if (!strncasecmp(ptr, "needsterminal", 13)) {
 			tmailcap->needsterminal = TRUE;
@@ -215,6 +220,9 @@ parse_mailcap_line(
 			ptr += strlen(ptr) + 1;
 		}
 	}
+
+	free (optr);
+
 	if (tmailcap->test != (char *) 0) { /* test field given */
 		/* argh! system() */
 		if (system(tmailcap->test) != 0) { /* test failed ? */
@@ -225,10 +233,12 @@ parse_mailcap_line(
 	return tmailcap;
 }
 
+
 /*
  * extract fields - called from parse_mailcap_line()
+ *
+ * TODO: add handling for signlequotes
  */
-/* TODO: add handling for signlequotes */
 static char *
 get_mailcap_field(
 	char *mailcap)
@@ -257,10 +267,8 @@ get_mailcap_field(
 					*ptr = '\0';
 					return mailcap;
 				}
-				if (backquote && !doublequote) {
-					/* remove \ in \; if not inside "" or '' */
+				if (backquote && !doublequote) /* remove \ in \; if not inside "" or '' */
 					*(ptr-1) = ' ';
-				}
 				backquote = FALSE;
 				break;
 
@@ -276,20 +284,20 @@ get_mailcap_field(
 
 /*
  * expand metas - called from parse_mailcap_line()
+ *
+ * TODO: expand %F, %n, %{...}
  */
-/* TODO: expand %F, %n, %{...} */
 static char *
 expand_mailcap_meta(
 	const char *mailcap,
 	t_part *part)
 {
 	const char *ptr;
-	char *line;
-	char *lptr;
+	char *line, *lptr;
 	t_bool quote = FALSE;
 	t_bool percent = FALSE;
-	struct t_attribute *attr = CURR_GROUP.attribute;
 	size_t linelen, space, olen;
+	struct t_attribute *attr = CURR_GROUP.attribute;
 
  	if ((ptr = strchr(mailcap, '%')) == (char *) 0) /* nothing to expand */
 		return my_strdup(mailcap); /* waste of mem, but simplyfies the frees */
@@ -297,24 +305,23 @@ expand_mailcap_meta(
 	linelen = sizeof(char) * LEN * 2;		/* initial maxlen */
 	space = linelen - 1;							/* available space in string */
 	line = (char *) my_malloc (linelen); 	/* initial malloc */
-	memset(line, 0, linelen);
+	memset (line, 0, linelen);
 	lptr = line;
 
 	ptr = mailcap;
 
 	while (*ptr != '\0') {
-
 		/*
 		 * to avoid reallocs() for the all the single char cases
 		 * we do a check here
 		 */
 		if (space < (sizeof(char) * 10)) { /* 'worst'case are two chars ... */
 			olen = strlen(line);		/* get current legth of string */
+			space += linelen;			/* recalc available space */
 			linelen *= 2;				/* double maxlen */
 			line = (char *) my_realloc((void *) line, linelen);
-			memset(line + olen, 0, linelen - olen); /* weed out junk */
+			memset (line + olen, 0, linelen - olen); /* weed out junk */
 			lptr = line + olen;		/* adjust pointer to current position */
-			space += linelen;			/* recalc available space */
 		}
 
 		switch (*ptr) {
@@ -338,69 +345,65 @@ expand_mailcap_meta(
 					percent = FALSE;
 					break;
 				}
+				/* FALLTHROUGH */
 
 			case 'F':
 				if (percent) {
 					percent = FALSE;
 					break;
 				}
+				/* FALLTHROUGH */
 
 			case 'n':
 				if (percent) {
 					percent = FALSE;
 					break;
 				}
+				/* FALLTHROUGH */
 #endif /* 0 */
 
 			case 's':
 				if (percent) {
-					int off = 0;
 					char *nptr = (char *) 0;
-
-					if (strlen(line))
-						off = -1;
 
 					if ((nptr = get_filename(part->params)) == NULL)
 						nptr = attr->savefile ? attr->savefile : tinrc.default_save_file;
 
-					while (space <= (strlen(attr->savedir) + 1 + strlen(nptr))) { /* not enough space? */
+					while (space <= (strlen(attr->savedir) + 1 + strlen(nptr) + 2)) { /* not enough space? */
 						olen = strlen(line);		/* get current legth of string */
+						space += linelen;			/* recalc available space */
 						linelen *= 2;				/* double maxlen */
 						line = (char *) my_realloc((void *) line, linelen);
 						memset(line + olen, 0, linelen - olen);	/* weed out junk */
-						lptr = line + olen;		/* adjust pointer to current position */
-						space += linelen;			/* recalc available space */
 					}
-					strcat(lptr + off, attr->savedir);
-					strcat(lptr, "/");
-					strcat(lptr, nptr);
-					lptr += (strlen(attr->savedir) + 1 + strlen(nptr));
-					space -= (strlen(attr->savedir) + 1 + strlen(nptr));
+					strcat(line, attr->savedir);
+					strcat(line, "/");
+					strcat(line, nptr);
+					lptr = line + strlen(line);
+					space -= strlen(line);
 					percent = FALSE;
 					break;
 				}
+				/* FALLTHROUGH */
 
 			case 't':
 				if (percent) {
-					int off = 0;
-					if (strlen(lptr))
-						off = -1;
 					while (space <= (strlen(content_types[part->type]) + 1 + strlen(part->subtype))) { /* not enough space? */
 						olen = strlen(line);		/* get current legth of string */
+						space += linelen;       /* recalc available space */
 						linelen *= 2;				/* double maxlen */
 						line = (char *) my_realloc((void *) line, linelen);
 						memset(line + olen, 0, linelen - olen);	/* weed out junk */
-						lptr = line + olen;		/* adjust pointer to current position */
-						space += linelen;			/* recalc available space */
 					}
-					strcat(lptr + off, content_types[part->type]);
-					strcat(lptr, "/");
-					strcat(lptr, part->subtype);
-					lptr += (strlen(content_types[part->type]) + 1 + strlen(part->subtype));
-					space -= (strlen(content_types[part->type]) + 1 + strlen(part->subtype));
+					strcat(line, content_types[part->type]);
+					strcat(line, "/");
+					strcat(line, part->subtype);
+					lptr = line + strlen(line);
+					space -= strlen(line);
 					percent = FALSE;
 					break;
 				}
+				/* FALLTHROUGH */
 
 			default:
 				if (quote) { /* last char was \ */

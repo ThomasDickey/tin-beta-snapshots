@@ -312,12 +312,12 @@ main (
 	 * Load my_groups[] from the .newsrc file. We append these groups to any
 	 * new newsgroups and command line newsgroups already loaded
 	 */
-/*
-TODO
-if (num_cmd_line_groups != 0 && check_any_unread)
-don't read newsrc.
-This makes -Z handle command line newsgroups. Test & document
-*/
+
+	/* TODO:
+	 * if (num_cmd_line_groups != 0 && check_any_unread)
+	 * 	don't read newsrc.
+	 * This makes -Z handle command line newsgroups. Test & document
+	 */
 
 	read_newsrc_lines = read_newsrc (newsrc, FALSE);
 

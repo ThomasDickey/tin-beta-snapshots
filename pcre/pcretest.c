@@ -34,6 +34,7 @@ Makefile. */
 
 static FILE *outfile;
 static int log_store = 0;
+static size_t gotten_store;
 
 
 
@@ -48,7 +49,7 @@ static const char *OP_names[] = {
   "*", "*?", "+", "+?", "?", "??", "{", "{", "{",
   "*", "*?", "+", "+?", "?", "??", "{", "{", "{",
   "*", "*?", "+", "+?", "?", "??", "{", "{",
-  "class", "Ref",
+  "class", "Ref", "Recurse",
   "Alt", "Ket", "KetRmax", "KetRmin", "Assert", "Assert not",
   "AssertB", "AssertB not", "Reverse", "Once", "Cond", "Cref",
   "Brazero", "Braminzero", "Bra"
@@ -281,11 +282,25 @@ compiled re. */
 
 static void *new_malloc(size_t size)
 {
+gotten_store = size;
 if (log_store)
   fprintf(outfile, "Memory allocation (code space): %d\n",
     (int)((int)size - offsetof(real_pcre, code[0])));
 return malloc(size);
 }
+
+
+
+
+/* Get one piece of information from the pcre_fullinfo() function */
+
+static void new_info(pcre *re, pcre_extra *study, int option, void *ptr)
+{
+int rc;
+if ((rc = pcre_fullinfo(re, study, option, ptr)) < 0)
+  fprintf(outfile, "Error %d from pcre_fullinfo(%d)\n", rc, option);
+}
+
 
 
 
@@ -376,6 +391,7 @@ while (!done)
 
 #if !defined NOPOSIX  /* There are still compilers that require no indent */
   regex_t preg;
+  int do_posix = 0;
 #endif
 
   const char *error;
@@ -387,7 +403,6 @@ while (!done)
   int do_g = 0;
   int do_showinfo = showinfo;
   int do_showrest = 0;
-  int do_posix = 0;
   int erroroffset, len, delimiter;
 
   if (infile == stdin) printf("  re> ");
@@ -573,59 +588,90 @@ while (!done)
       goto CONTINUE;
       }
 
-    /* Compilation succeeded; print data if required */
+    /* Compilation succeeded; print data if required. There are now two
+    info-returning functions. The old one has a limited interface and
+    returns only limited data. Check that it agrees with the newer one. */
 
     if (do_showinfo)
       {
-      int first_char, count;
+      int old_first_char, old_options, old_count;
+      int count, backrefmax, first_char, need_char;
+      size_t size;
 
       if (do_debug) print_internals(re);
 
-      count = pcre_info(re, &options, &first_char);
+      new_info(re, NULL, PCRE_INFO_OPTIONS, &options);
+      new_info(re, NULL, PCRE_INFO_SIZE, &size);
+      new_info(re, NULL, PCRE_INFO_CAPTURECOUNT, &count);
+      new_info(re, NULL, PCRE_INFO_BACKREFMAX, &backrefmax);
+      new_info(re, NULL, PCRE_INFO_FIRSTCHAR, &first_char);
+      new_info(re, NULL, PCRE_INFO_LASTLITERAL, &need_char);
+
+      old_count = pcre_info(re, &old_options, &old_first_char);
       if (count < 0) fprintf(outfile,
-        "Error %d while reading info\n", count);
+        "Error %d from pcre_info()\n", count);
       else
         {
-        fprintf(outfile, "Identifying subpattern count = %d\n", count);
-        if (options == 0) fprintf(outfile, "No options\n");
-          else fprintf(outfile, "Options:%s%s%s%s%s%s%s%s\n",
-            ((options & PCRE_ANCHORED) != 0)? " anchored" : "",
-            ((options & PCRE_CASELESS) != 0)? " caseless" : "",
-            ((options & PCRE_EXTENDED) != 0)? " extended" : "",
-            ((options & PCRE_MULTILINE) != 0)? " multiline" : "",
-            ((options & PCRE_DOTALL) != 0)? " dotall" : "",
-            ((options & PCRE_DOLLAR_ENDONLY) != 0)? " dollar_endonly" : "",
-            ((options & PCRE_EXTRA) != 0)? " extra" : "",
-            ((options & PCRE_UNGREEDY) != 0)? " ungreedy" : "");
+        if (old_count != count) fprintf(outfile,
+          "Count disagreement: pcre_fullinfo=%d pcre_info=%d\n", count,
+            old_count);
 
-        if (((((real_pcre *)re)->options) & PCRE_ICHANGED) != 0)
-          fprintf(outfile, "Case state changes\n");
+        if (old_first_char != first_char) fprintf(outfile,
+          "First char disagreement: pcre_fullinfo=%d pcre_info=%d\n",
+            first_char, old_first_char);
 
-        if (first_char == -1)
-          {
-          fprintf(outfile, "First char at start or follows \\n\n");
-          }
-        else if (first_char < 0)
-          {
-          fprintf(outfile, "No first char\n");
-          }
+        if (old_options != options) fprintf(outfile,
+          "Options disagreement: pcre_fullinfo=%d pcre_info=%d\n", options,
+            old_options);
+        }
+
+      if (size != gotten_store) fprintf(outfile,
+        "Size disagreement: pcre_fullinfo=%d call to malloc for %d\n",
+        size, gotten_store);
+
+      fprintf(outfile, "Capturing subpattern count = %d\n", count);
+      if (backrefmax > 0)
+        fprintf(outfile, "Max back reference = %d\n", backrefmax);
+      if (options == 0) fprintf(outfile, "No options\n");
+        else fprintf(outfile, "Options:%s%s%s%s%s%s%s%s\n",
+          ((options & PCRE_ANCHORED) != 0)? " anchored" : "",
+          ((options & PCRE_CASELESS) != 0)? " caseless" : "",
+          ((options & PCRE_EXTENDED) != 0)? " extended" : "",
+          ((options & PCRE_MULTILINE) != 0)? " multiline" : "",
+          ((options & PCRE_DOTALL) != 0)? " dotall" : "",
+          ((options & PCRE_DOLLAR_ENDONLY) != 0)? " dollar_endonly" : "",
+          ((options & PCRE_EXTRA) != 0)? " extra" : "",
+          ((options & PCRE_UNGREEDY) != 0)? " ungreedy" : "");
+
+      if (((((real_pcre *)re)->options) & PCRE_ICHANGED) != 0)
+        fprintf(outfile, "Case state changes\n");
+
+      if (first_char == -1)
+        {
+        fprintf(outfile, "First char at start or follows \\n\n");
+        }
+      else if (first_char < 0)
+        {
+        fprintf(outfile, "No first char\n");
+        }
+      else
+        {
+        if (isprint(first_char))
+          fprintf(outfile, "First char = \'%c\'\n", first_char);
         else
-          {
-          if (isprint(first_char))
-            fprintf(outfile, "First char = \'%c\'\n", first_char);
-          else
-            fprintf(outfile, "First char = %d\n", first_char);
-          }
+          fprintf(outfile, "First char = %d\n", first_char);
+        }
 
-        if (((((real_pcre *)re)->options) & PCRE_REQCHSET) != 0)
-          {
-          int req_char = ((real_pcre *)re)->req_char;
-          if (isprint(req_char))
-            fprintf(outfile, "Req char = \'%c\'\n", req_char);
-          else
-            fprintf(outfile, "Req char = %d\n", req_char);
-          }
-        else fprintf(outfile, "No req char\n");
+      if (need_char < 0)
+        {
+        fprintf(outfile, "No need char\n");
+        }
+      else
+        {
+        if (isprint(need_char))
+          fprintf(outfile, "Need char = \'%c\'\n", need_char);
+        else
+          fprintf(outfile, "Need char = %d\n", need_char);
         }
       }
 
@@ -654,13 +700,11 @@ while (!done)
       else if (extra == NULL)
         fprintf(outfile, "Study returned NULL\n");
 
-      /* This looks at internal information. A bit kludgy to do it this
-      way, but it is useful for testing. */
-
       else if (do_showinfo)
         {
-        real_pcre_extra *xx = (real_pcre_extra *)extra;
-        if ((xx->options & PCRE_STUDY_MAPPED) == 0)
+        uschar *start_bits = NULL;
+        new_info(re, extra, PCRE_INFO_FIRSTTABLE, &start_bits);
+        if (start_bits == NULL)
           fprintf(outfile, "No starting character set\n");
         else
           {
@@ -669,7 +713,7 @@ while (!done)
           fprintf(outfile, "Starting character set: ");
           for (i = 0; i < 256; i++)
             {
-            if ((xx->start_bits[i/8] & (1<<(i%8))) != 0)
+            if ((start_bits[i/8] & (1<<(i%8))) != 0)
               {
               if (c > 75)
                 {
@@ -706,6 +750,7 @@ while (!done)
     int getlist = 0;
     int gmatched = 0;
     int start_offset = 0;
+    int g_notempty = 0;
     int offsets[45];
     int size_offsets = sizeof(offsets)/sizeof(int);
 
@@ -811,12 +856,11 @@ while (!done)
       {
       int rc;
       int eflags = 0;
-      regmatch_t pmatch[30];
+      regmatch_t pmatch[sizeof(offsets)/sizeof(int)];
       if ((options & PCRE_NOTBOL) != 0) eflags |= REG_NOTBOL;
       if ((options & PCRE_NOTEOL) != 0) eflags |= REG_NOTEOL;
 
-      rc = regexec(&preg, (const char *)bptr,
-        sizeof(pmatch)/sizeof(regmatch_t), pmatch, eflags);
+      rc = regexec(&preg, (const char *)bptr, size_offsets, pmatch, eflags);
 
       if (rc != 0)
         {
@@ -826,7 +870,7 @@ while (!done)
       else
         {
         size_t i;
-        for (i = 0; i < sizeof(pmatch)/sizeof(regmatch_t); i++)
+        for (i = 0; i < size_offsets; i++)
           {
           if (pmatch[i].rm_so >= 0)
             {
@@ -859,7 +903,7 @@ while (!done)
         clock_t start_time = clock();
         for (i = 0; i < LOOPREPEAT; i++)
           count = pcre_exec(re, extra, (char *)bptr, len,
-            start_offset, options, offsets, size_offsets);
+            start_offset, options | g_notempty, offsets, size_offsets);
         time_taken = clock() - start_time;
         fprintf(outfile, "Execute time %.3f milliseconds\n",
           ((double)time_taken * 1000.0)/
@@ -867,7 +911,7 @@ while (!done)
         }
 
       count = pcre_exec(re, extra, (char *)bptr, len,
-        start_offset, options, offsets, size_offsets);
+        start_offset, options | g_notempty, offsets, size_offsets);
 
       if (count == 0)
         {
@@ -950,29 +994,47 @@ while (!done)
           }
         }
 
-      /* Failed to match */
+      /* Failed to match. If this is a /g or /G loop and we previously set
+      g_notempty after a null match, this is not necessarily the end.
+      We want to advance the start offset, and continue. Fudge the offset
+      values to achieve this. We won't be at the end of the string - that
+      was checked before setting g_notempty. */
 
       else
         {
-        if (gmatched == 0)
+        if (g_notempty != 0)
           {
-          if (count == -1) fprintf(outfile, "No match\n");
-            else fprintf(outfile, "Error %d\n", count);
+          offsets[0] = start_offset;
+          offsets[1] = start_offset + 1;
           }
-        break;  /* Out of the /g loop */
+        else
+          {
+          if (gmatched == 0)   /* Error if no previous matches */
+            {
+            if (count == -1) fprintf(outfile, "No match\n");
+              else fprintf(outfile, "Error %d\n", count);
+            }
+          break;  /* Out of the /g loop */
+          }
         }
 
       /* If not /g or /G we are done */
 
       if (!do_g && !do_G) break;
 
-      /* If we have matched an empty string, set PCRE_NOTEMPTY for the next
-      match. This mimics what Perl's /g option does. */
+      /* If we have matched an empty string, first check to see if we are at
+      the end of the subject. If so, the /g loop is over. Otherwise, mimic
+      what Perl's /g options does. This turns out to be rather cunning. First
+      we set PCRE_NOTEMPTY and PCRE_ANCHORED and try the match again at the
+      same point. If this fails (picked up above) we advance to the next
+      character. */
 
-      if (offsets[1] == offsets[0])
-        options |= PCRE_NOTEMPTY;
-      else
-        options &= ~PCRE_NOTEMPTY;
+      g_notempty = 0;
+      if (offsets[0] == offsets[1])
+        {
+        if (offsets[0] == len) break;
+        g_notempty = PCRE_NOTEMPTY | PCRE_ANCHORED;
+        }
 
       /* For /g, update the start offset, leaving the rest alone */
 

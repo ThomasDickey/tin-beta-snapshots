@@ -873,7 +873,7 @@ which_thread (
 					if (ptr->parent->article != ART_UNAVAILABLE)
 						val = ptr->parent->article;
 				}
-				fprintf(stderr, _("TEST: which_thread found %d, actual is %d\n"), val, base[i]);
+				fprintf(stderr, "TEST: which_thread found %d, actual is %d\n", val, base[i]);
 
 				return i;
 			}

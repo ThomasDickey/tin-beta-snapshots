@@ -80,7 +80,7 @@ check_upgrade (
 	char foo[60];
 	char bar[120]; /* should be enough */
 
-	my_strncpy(foo, _(txt_tinrc_header), sizeof(foo)-1);
+	my_strncpy(foo, txt_tinrc_header, sizeof(foo)-1);
 	snprintf(bar, sizeof(bar)-1, foo, PRODUCT, TINRC_VERSION);
 
 	if (strncmp(buf, bar, MIN(strlen(bar),strlen(buf))) == 0)
@@ -797,7 +797,7 @@ write_config_file (
 	if (!*tinrc.editor_format)
 		strcpy (tinrc.editor_format, TIN_EDITOR_FMT_ON);
 
-	fprintf (fp, _(txt_tinrc_header), PRODUCT, TINRC_VERSION, tin_progname, VERSION, RELEASEDATE, RELEASENAME);
+	fprintf (fp, txt_tinrc_header, PRODUCT, TINRC_VERSION, tin_progname, VERSION, RELEASEDATE, RELEASENAME);
 
 	fprintf (fp, _(txt_savedir.tinrc));
 	fprintf (fp, "default_savedir=%s\n\n", tinrc.savedir);

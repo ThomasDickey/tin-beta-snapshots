@@ -99,9 +99,9 @@ authinfo_generic (
 
 		sprintf (tempfile, "%stin_AXXXXXX", TMPDIR);
 		if ((cookiefd = (my_mktemp (tempfile))) == -1) {
-			error_message (_(txt_cannot_create_uniq_name));
+			error_message (txt_cannot_create_uniq_name);
 #	ifdef DEBUG
-			debug_nntp ("authorization", _(txt_cannot_create_uniq_name));
+			debug_nntp ("authorization", txt_cannot_create_uniq_name);
 #	endif /* DEBUG */
 			return FALSE;
 		} else {
@@ -419,5 +419,8 @@ authenticate (
 
 #else
 static void no_authenticate (void);			/* proto-type */
-static void no_authenticate (void) { }		/* ANSI C requires non-empty source file */
+static void no_authenticate (					/* ANSI C requires non-empty source file */
+	void)
+{
+}
 #endif /* NNTP_ABLE */
