@@ -1,9 +1,9 @@
 .rn '' }`
-''' $RCSfile: opt-case.pl.1,v $$Revision: 1.1 $$Date: 2001/08/31 15:57:49 $
+''' $RCSfile: opt-case.pl.1,v $$Revision: 1.2 $$Date: 2001/11/09 03:03:52 $
 '''
 ''' $Log: opt-case.pl.1,v $
-''' Revision 1.1  2001/08/31 15:57:49  urs
-''' t20010913
+''' Revision 1.2  2001/11/09 03:03:52  urs
+''' t20011109
 '''
 '''
 .de Sh
@@ -96,7 +96,7 @@
 .nr % 0
 .rr F
 .\}
-.TH OPT-CASE 1 "0.2.1" "23/Aug/2001" "Optimize case insensitive regexp filters for tin"
+.TH OPT-CASE 1 "0.2.1" "31/Aug/2001" "Optimize case insensitive regexp filters for tin"
 .UC
 .if n .hy 0
 .if n .na
@@ -195,16 +195,18 @@ opt-case.pl \- Optimize case insensitive regexp filters for tin
 .SH "SYNOPSIS"
 \fBopt-case.pl\fR < \fIinput\fR [> \fIoutput\fR]
 .SH "DESCRIPTION"
-\fBopt-case.pl\fR reads a \fBtin\fR(1) filter-file (\fBtin\fR(5)) with regexp filters
-on STDIN and turns all case insensitive regexp into case sensitive ones
-whenever possible, as case sensitive regexp are (a bit) faster.
+\fBopt-case.pl\fR reads a \fBtin\fR(1) filter-file (\fBtin\fR(5)) with regexp
+filters on STDIN and turns all case insensitive regexp into case
+sensitive ones whenever possible, as case sensitive regexp are (a
+bit) faster.
 .SH "NOTES"
-The case= line must come before any line with a regexp pattern, (that is the
-order \fBtin\fR(1) saves the filter file, if you created the filter by hand and
-never let \fBtin\fR(1) rewrite the file, you might want to check that first).  
+The case= line must come before any line with a regexp pattern, (that
+is the order \fBtin\fR(1) saves the filter file, if you created the
+filter by hand and never let \fBtin\fR(1) rewrite the file, you might
+want to check that first).
 .PP
-Don't use \fBopt-case.pl\fR on wildmat filerts, transform them into regexp
-filter via \fBw2r.pl\fR(1) before.
+Don't use \fBopt-case.pl\fR on wildmat filerts, transform them into
+regexp filter via \fBw2r.pl\fR(1) first.
 .SH "AUTHOR"
 Urs Janssen <urs@tin.org>
 .SH "SEE ALSO"

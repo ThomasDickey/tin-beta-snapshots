@@ -13,7 +13,7 @@ VPATH		= $(srcdir)
 
 CC	= @CC@
 CFLAGS	= @CFLAGS@ @PCRE_DEFINES@
-CPPOPTS = @DEFS@ -I. -I. -I../include
+CPPOPTS = -DNEWLINE=10 @DEFS@ -I. -I. -I../include
 RANLIB	= @RANLIB@
 RM	= rm
 x	= @PROG_EXT@

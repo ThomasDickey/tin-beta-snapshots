@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 1997-12-31
+ *  Updated   : 2001-11-10
  *  Notes     :
  *
  * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
@@ -303,6 +303,7 @@ static t_help_page thread_help_page[] = {
 	{ txt_help_global_quit_tin, iKeyQuitTin },
 	{ txt_help_global_help, iKeyHelp },
 	{ txt_help_global_toggle_mini_help, iKeyToggleHelpDisplay },
+	{ txt_help_global_option_menu, iKeyOptionMenu },
 	{ txt_help_global_esc, iKeyAbort },
 	{ txt_help_global_redraw_screen, iKeyRedrawScr },
 #ifndef NO_SHELL_ESCAPE

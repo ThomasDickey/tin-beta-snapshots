@@ -1,12 +1,12 @@
 /*
  *  Project   : tin - a Usenet reader
  *  Module    : tcurses.h
- *  Author    : Thomas Dickey <dickey@herndon4.his.com>
+ *  Author    : Thomas Dickey
  *  Created   : 1997-03-02
- *  Updated   : 2001-07-22
+ *  Updated   : 2001-11-10
  *  Notes     : curses #include files, #defines & struct's
  *
- * Copyright (c) 1997-2001 Thomas Dickey <dickey@herndon4.his.com>
+ * Copyright (c) 1997-2001 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,8 @@
 #	ifdef HAVE_XCURSES
 #		include <xcurses.h>
 #		define getattrs(w) (w)->_attrs
+#	elif defined(HAVE_NCURSESW_NCURSES_H)
+#		include <ncursesw/ncurses.h>
 #	elif defined(HAVE_NCURSES_H)
 #		include <ncurses.h>
 #	elif defined(HAVE_NCURSES_NCURSES_H)

@@ -59,7 +59,7 @@
 #	define ADD_CAN_KEY(id) { \
 		char key[1024]; \
 		const char *kptr = (const char *) 0; \
-		key[0] = '\0' ; \
+		key[0] = '\0'; \
 		if ((kptr = build_cankey(id, get_secret())) != (const char *) 0) { \
 			STRCPY(key, kptr); \
 			msg_add_header ("Cancel-Key", key); \
@@ -73,10 +73,10 @@
 	 * user supplied ID by hand) for us!
 	 */
 #	define ADD_CAN_LOCK(id) { \
-		if (!tinrc.use_builtin_inews) { \
+		if (0 != strcasecmp(tinrc.inews_prog, "--internal")) { \
 			char lock[1024]; \
 			const char *lptr = (const char *) 0; \
-			lock[0] = '\0' ; \
+			lock[0] = '\0'; \
 			if ((lptr = build_canlock(id, get_secret())) != (const char *) 0) { \
 				STRCPY(lock, lptr); \
 				msg_add_header ("Cancel-Lock", lock); \
@@ -132,13 +132,16 @@ static struct msg_header {
 /*
  * Local prototypes
  */
+static char **split_address_list (const char *addresses, unsigned int *cnt);
 static char *backup_article_name (const char *the_article);
 static char prompt_rejected (void);
 static char prompt_to_send (const char *subject);
+static int get_recipients (struct t_header *hdr, char *buf, size_t buflen);
 static int msg_add_x_body (FILE *fp_out, const char *body);
 static int msg_write_headers (FILE *fp);
 static int post_loop (int type, struct t_group *psGrp, char ch, const char *posting_msg, int art_type, int offset);
 static size_t skip_id (const char *id);
+static t_bool address_in_list (const char *addresses, const char *address);
 static t_bool append_mail (const char *the_article, const char *addr, const char *the_mailbox);
 static t_bool backup_article (const char *the_article);
 static t_bool check_article_to_be_posted (const char *the_article, int art_type, t_bool art_unchanged);
@@ -147,7 +150,6 @@ static t_bool damaged_id (const char *id);
 static t_bool fetch_postponed_article(const char tmp_file[], char subject[], char newsgroups[]);
 static t_bool is_crosspost (const char *xref);
 static t_bool must_include (const char *id);
-static t_bool pcCopyArtHeader (int iHeader, const char *pcArt, char *result);
 static t_bool repair_article (char *result);
 static t_bool submit_mail_file (const char *file);
 static void add_headers (const char *infile, const char *a_message_id);
@@ -163,7 +165,6 @@ static void postpone_article (const char *the_article);
 static void setup_check_article_screen (int *init);
 static void update_active_after_posting (char *newsgroups);
 static void update_posted_info_file (const char *group, int action, const char *subj, const char *a_message_id);
-static void yank_to_addr (char *orig, char *addr);
 #ifdef FORGERY
 	static void make_path_header (char *line);
 #endif /* FORGERY */
@@ -1064,7 +1065,7 @@ check_article_to_be_posted (
 	 * signature it will not be encoded. We might additionally check if there's
 	 * a file named ~/.signature and skip the warning if it is not present.
 	 */
-	if (((tinrc.post_mime_encoding == MIME_ENCODING_QP) || (tinrc.post_mime_encoding == MIME_ENCODING_BASE64)) && !tinrc.use_builtin_inews)
+	if (((tinrc.post_mime_encoding == MIME_ENCODING_QP) || (tinrc.post_mime_encoding == MIME_ENCODING_BASE64)) && 0 != strcasecmp(tinrc.inews_prog, "--internal"))
 		warnings_catbp |= CA_WARNING_ENCODING_EXTERNAL_INEWS;
 
 	/* give most error messages */
@@ -2519,7 +2520,7 @@ create_mail_headers(
 		char from_buf[HEADER_LEN];
 		char *from_address;
 
-		if (!selmenu.max) /* called from select.c withou any groups ? */
+		if (!selmenu.max) /* called from select.c without any groups? */
 			from_address=tinrc.mail_address;
 		else
 			from_address=CURR_GROUP.attribute->from;
@@ -2538,11 +2539,20 @@ create_mail_headers(
 		if (*reply_to)
 			msg_add_header ("Reply-To", reply_to);
 
-		if (tinrc.auto_cc)
-			msg_add_header ("Cc", strlen(from_address) ? from_address : userid);
+		/*
+		 * Only add own address if it is not already there.
+		 *
+		 * Note: get_recipients() strips out duplicated addresses later, but
+		 * only for displaying; the MTA has to deal with it. They shouldn't be
+		 * put in the file in the first place, so we don't do it.
+		 */
+		if (!address_in_list (to, strlen(from_address) ? from_address : userid)) {
+			if (tinrc.auto_cc)
+				msg_add_header ("Cc", strlen(from_address) ? from_address : userid);
 
-		if (tinrc.auto_bcc)
-			msg_add_header ("Bcc", strlen(from_address) ? from_address : userid);
+			if (tinrc.auto_bcc)
+				msg_add_header ("Bcc", strlen(from_address) ? from_address : userid);
+		}
 
 		if (*default_organization)
 			msg_add_header ("Organization", random_organization(default_organization));
@@ -2582,11 +2592,13 @@ mail_loop(
 	char *subject,
 	const char *prompt)			/* If set, used for final query before posting */
 {
+	FILE *fp;
 #ifdef HAVE_PGP_GPG
 	char mail_to[HEADER_LEN];
 #endif /* HAVE_PGP_GPG */
 	int ret = POSTED_NONE;
 	long artchanged = 0L;
+	struct t_header hdr;
 
 	forever {
 		switch (ch) {
@@ -2601,8 +2613,21 @@ mail_loop(
 					clear_message();
 					return ret;
 				}
-				if (!pcCopyArtHeader (HEADER_SUBJECT, filename, subject))
-					subject[0] = '\0';
+				if (!(fp = fopen (filename, "r")))
+				{
+					/* Oops */
+					clear_message ();
+					return ret;
+				}
+				parse_rfc822_headers (&hdr, fp, NULL);
+				fclose (fp);
+				if (hdr.subj) {
+					strncpy (subject, hdr.subj, HEADER_LEN - 1);
+					subject[HEADER_LEN - 1] = '\0';
+				} else
+					error_message (_(txt_error_header_line_missing), "Subject");
+				if (!hdr.to && !hdr.cc && !hdr.bcc)
+					error_message (_(txt_error_header_line_missing), "To");
 				break;
 
 #ifdef HAVE_ISPELL
@@ -2614,8 +2639,10 @@ mail_loop(
 
 #ifdef HAVE_PGP_GPG
 			case iKeyPostPGP:
-				if (pcCopyArtHeader (HEADER_TO, filename, mail_to) && pcCopyArtHeader (HEADER_SUBJECT, filename, subject))
+				if (get_recipients (&hdr, mail_to, sizeof(mail_to) - 1))
 					invoke_pgp_mail (filename, mail_to);
+				else
+					error_message (_(txt_error_header_line_missing), "To");
 				break;
 #endif /* HAVE_PGP_GPG */
 
@@ -2751,6 +2778,7 @@ mail_bug_report (
 	const char *domain;
 	char buf[LEN], nam[100];
 	char mail_to[HEADER_LEN];
+	char tmesg[LEN];
 	char subject[HEADER_LEN];
 	int ret_code = FALSE;
 	t_bool is_nntp = FALSE, is_nntp_only;
@@ -2841,9 +2869,8 @@ mail_bug_report (
 		if (invoke_cmd (buf))
 			ret_code = TRUE;
 	} else {
-		/* TODO: prompt-message get's "lost" */
-		snprintf (mesg, sizeof(mesg) - 1, _(txt_mail_bug_report_confirm), bug_addr);
-		ret_code = mail_loop (nam, iKeyPostEdit, subject, mesg);
+		snprintf (tmesg, sizeof(tmesg) - 1, _(txt_mail_bug_report_confirm), bug_addr);
+		ret_code = mail_loop (nam, iKeyPostEdit, subject, tmesg);
 	}
 
 	unlink (nam);
@@ -3064,7 +3091,7 @@ cancel_article (
 #endif /* FORGERY */
 	int init = 1;
 	int oldraw;
-	struct t_header note_h = pgart.hdr;
+	struct t_header note_h = pgart.hdr, hdr;
 	t_bool redraw_screen = FALSE;
 
 	msg_init_headers ();
@@ -3229,6 +3256,15 @@ cancel_article (
 	my_fprintf (stderr, "Newsgroups: %s\n", BlankIfNull(note_h.newsgroups));
 	Raw (oldraw);
 
+	if (!(fp = fopen (cancel, "r"))) {
+		/* Oops */
+		unlink (cancel);
+		clear_message ();
+		return redraw_screen;
+	}
+	parse_rfc822_headers (&hdr, fp, NULL);
+	fclose (fp);
+
 	forever {
 		{
 			char buff[LEN];
@@ -3245,14 +3281,24 @@ cancel_article (
 		switch (ch) {
 			case iKeyPostEdit:
 				invoke_editor (cancel, start_line_offset);
+				if (!(fp = fopen (cancel, "r"))) {
+					/* Oops */
+					unlink (cancel);
+					clear_message ();
+					return redraw_screen;
+				}
+				parse_rfc822_headers (&hdr, fp, NULL);
+				fclose (fp);
 				break;
 
 			case iKeyPostCancel:
 				wait_message (1, _(txt_cancelling_art));
 				if (submit_news_file (cancel, a_message_id)) {
 					info_message (_(txt_art_cancel));
-					if (pcCopyArtHeader (HEADER_SUBJECT, cancel, buf))
-						update_posted_info_file (group->name, iKeyPostCancel, buf, a_message_id);
+					if (hdr.subj)
+						update_posted_info_file (group->name, iKeyPostCancel, hdr.subj, a_message_id);
+					else
+						error_message (_(txt_error_header_line_missing), "Subject");
 					unlink (cancel);
 					return redraw_screen;
 				}
@@ -3662,12 +3708,12 @@ insert_from_header (
 	const char *infile)
 {
 	FILE *fp_in, *fp_out;
+	char *line;
 	char from_name[HEADER_LEN];
 #if 0 /* unused */
 	char full_name[128];
 	char user_name[128];
 #endif /* 0 */
-	char line[HEADER_LEN];
 	char outfile[PATH_LEN];
 	t_bool from_found = FALSE;
 	t_bool in_header = TRUE;
@@ -3696,12 +3742,13 @@ insert_from_header (
 				wait_message (2, "insert_from_header [%s]", from_name + 6);
 #	endif /* DEBUG */
 
-			while ((fgets (line, (int) sizeof(line), fp_in) != (char *) 0)) {
+			while ((line = tin_fgets (fp_in, in_header)) != (char *) 0) {
 				if (in_header && !strncasecmp(line, "From: ", 6)) {
 					char from_buff[HEADER_LEN];
 
 					from_found = TRUE;
-					my_strncpy(from_buff, line + 6, HEADER_LEN - 1); /* remove tailing \n */
+					STRCPY(from_buff, line + 6);
+					unfold_header (from_buff);
 
 					/* Check the From: line */
 					if (GNKSA_OK != gnksa_check_from(rfc1522_encode (from_buff, FALSE))) { /* error in address */
@@ -3712,19 +3759,21 @@ insert_from_header (
 						return FALSE;
 					}
 				}
-				if (*line == '\n' && in_header && !from_found) {
-					/* Check the From: line */
-					if (GNKSA_OK != gnksa_check_from(rfc1522_encode (from_name, FALSE) + 6)) { /* error in address */
-						error_message (_(txt_invalid_from), from_name + 6);
-						unlink (outfile);
-						fclose (fp_out);
-						fclose (fp_in);
-						return FALSE;
+				if (*line == '\0' && in_header) {
+					if (!from_found) {
+						/* Check the From: line */
+						if (GNKSA_OK != gnksa_check_from(rfc1522_encode (from_name, FALSE) + 6)) { /* error in address */
+							error_message (_(txt_invalid_from), from_name + 6);
+							unlink (outfile);
+							fclose (fp_out);
+							fclose (fp_in);
+							return FALSE;
+						}
+						fprintf (fp_out, "%s\n", from_name);
 					}
-					fprintf (fp_out, "%s\n", from_name);
 					in_header = FALSE;
 				}
-				fputs (line, fp_out);
+				fprintf (fp_out, "%s\n", line);
 			}
 
 			fclose (fp_out);
@@ -3878,32 +3927,41 @@ static t_bool
 submit_mail_file (
 	const char *file)
 {
+	FILE *fp;
 	char buf[HEADER_LEN];
 	char mail_to[HEADER_LEN];
-	char subject[HEADER_LEN];
+	struct t_header hdr;
 	t_bool mailed = FALSE;
+#ifdef VMS
+	char subject[HEADER_LEN];
+#endif /* VMS */
 
 #ifndef M_AMIGA
 	if (insert_from_header (file))
 #endif /* !M_AMIGA */
 	{
-		if (pcCopyArtHeader (HEADER_TO, file, mail_to) && pcCopyArtHeader (HEADER_SUBJECT, file, subject)) {
-			wait_message (0, _(txt_mailing_to), mail_to);
+		if ((fp = fopen (file, "r"))) {
+			parse_rfc822_headers (&hdr, fp, NULL);
+			fclose (fp);
+			if (get_recipients (&hdr, mail_to, sizeof(mail_to) - 1)) {
+				wait_message (0, _(txt_mailing_to), mail_to);
 
-			rfc15211522_encode (file, txt_mime_encodings[tinrc.mail_mime_encoding], tinrc.mail_8bit_header, TRUE);
+				rfc15211522_encode (file, txt_mime_encodings[tinrc.mail_mime_encoding], tinrc.mail_8bit_header, TRUE);
 
-			strfmailer (mailer, subject, mail_to, file, buf, sizeof (buf), tinrc.mailer_format);
+				strfmailer (mailer, hdr.subj, mail_to, file, buf, sizeof (buf), tinrc.mailer_format);
 
 #ifdef VMS /* quick hack! M.St. 29.01.98 */
-			{
-				char *transport = getenv("MAIL$INTERNET_TRANSPORT");
-				if (!transport)
-					transport = "smtp";
-				sprintf (buf, "mail/subject=\"%s\" %s %s%%\"%s\"", subject, file, transport, mail_to);
-			}
+				{
+					char *transport = getenv("MAIL$INTERNET_TRANSPORT");
+					if (!transport)
+						transport = "smtp";
+					sprintf (buf, "mail/subject=\"%s\" %s %s%%\"%s\"", subject, file, transport, mail_to);
+				}
 #endif /* VMS */
-			if (invoke_cmd (buf))
-				mailed = TRUE;
+				if (invoke_cmd (buf))
+					mailed = TRUE;
+			} else
+				error_message (_(txt_error_header_line_missing), "To");
 		}
 	}
 	return mailed;
@@ -3927,135 +3985,267 @@ make_path_header (
 
 
 /*
- * Used only by pcCopyArtHeader()
- * What is this doing ?!
- * TODO Can't this be junked in favour of parse_from() ?
+ * Splits a list of e-mail addresses according to RFC 2822 into separate
+ * strings containing one address each. Returns an array of pointers to
+ * those strings. Side effects: changes the value of cnt to the number of
+ * addresses found.
+ *
+ * You must free each of the strings separately. You must free the array you
+ * got returned.
  */
-static void
-yank_to_addr (
-	char *orig,
-	char *addr)
+static char **
+split_address_list (
+	const char *addresses,
+	unsigned int *cnt)
 {
-	char *p;
-	int open_parens;
+	char **argv = NULL;
+	char *addr;
+	const char *start, *end, *curr;
+	size_t len = 0, addr_len = 0;
+	unsigned int argc = 0, dquotes = 0, parens = 0;
 
-	for (p = orig; *p; p++)
-		if (((*p) & 0xFF) < ' ')
-			*p = ' ';
+	if (!addresses) {
+		*cnt = 0;
+		return NULL;
+	}
 
-	while (*addr)
-		addr++;
+	len = strlen (addresses);
+	curr = addresses;
 
-	while (*orig) {
-		while (*orig && (*orig == ' ' /* || *orig == '"' */ || *orig == ','))
-			orig++;
-		*addr++ = ' ';
-		while (*orig && (*orig != ' ' && *orig != ',' /* && *orig != '"' */ ))
-			*addr++ = *orig++;
-		while (*orig && (*orig == ' ' /* || *orig == '"' */ || *orig == ','))
-			orig++;
-		if (*orig == '(') {
-			orig++;
-			open_parens = 1;
-			while (*orig && open_parens) {
-				if (*orig == '(')
-					open_parens++;
-				if (*orig == ')')
-					open_parens--;
-				orig++;
+	while (len > 0) {
+		/* skip white space at beginning */
+		while (len && isspace(*curr)) {
+			curr++;
+			len--;
+		}
+		if (len == 0)
+			break;
+
+		/* new address starts here */
+		/*
+		 * Commas are the separator between addresses. But quoted-string areas
+		 * (text between double quotation marks) and comment areas (text
+		 * between braces) have a special meaning where a comma is not to be
+		 * treated as a separator. Inside those areas there may be
+		 * quoted-pairs (backslash followed by a character that now doesn't
+		 * have any special meaning). Comments may be nested, too,
+		 * quoted-strings cannot.
+		 */
+		start = curr;
+		while (len && (*curr != ',')) {
+			switch (*curr) {
+				case '\"':
+					/* quoted-string area */
+					curr++;
+					len--;
+					dquotes++;
+					while (len && dquotes) {
+						switch (*curr) {
+							case '\"':
+								/* end of quoted-string */
+								dquotes--;
+								break;
+							case '\\':
+								/* quoted-pair: ignore next char */
+								if (len > 1) {
+									curr++;
+									len--;
+								}
+								break;
+							default:
+								/* nothing special, just step over it */
+								break;
+						}
+						curr++;
+						len--;
+					}
+					break;
+
+				case '(':
+					/* comment area */
+					curr++;
+					len--;
+					parens++;
+					while (len && parens) {
+						switch (*curr) {
+							case '(':
+								/* comments may be nested */
+								parens++;
+								break;
+							case ')':
+								parens--;
+								break;
+							case '\\':
+								/* quoted-pair: ignore next char */
+								if (len > 1) {
+									curr++;
+									len--;
+								}
+								break;
+							default:
+								/* nothing special, just step over it */
+								break;
+						}
+						curr++;
+						len--;
+					}
+					break;
+
+				default:
+					/* nothing special, just step over it */
+					break;
 			}
-			if (*orig == ')')
-				orig++;
+			if (len > 0) {
+				/* avoid going after end of addresses (may occur in broken address lists) */
+				curr++;
+				len--;
+			}
+		}
+		/* end of address */
+		end = curr;
+		if (end > start) {
+			end--;
+			while ((end > start) && isspace(*end)) end--;	/* skip trailing white space */
+			if (!isspace(*end))
+				end++;
+			addr_len = end - start;
+			if (addr_len > 0) {
+				addr = my_malloc (addr_len + 1);
+				strncpy (addr, start, addr_len);
+				addr[addr_len] = '\0';
+				argc++;
+				argv = (char **) my_realloc ((char *) argv, argc * sizeof(char *));
+				argv[argc - 1] = addr;
+			}
+		}
+		if (len > 0) {
+			curr++;
+			len--;
 		}
 	}
-	*addr = '\0';
+	/* end of buffer, end of addresses. now return array of strings */
+	*cnt = argc;
+	return argv;
 }
 
-
 /*
- * Read a file grabbing the value of the specified mail header line
- * TODO: re-use the article header parse code if possible instead of this
+ * Returns TRUE if address is in addresses, FALSE otherwise. Only e-mail
+ * addresses are of interest here, comments and quoted-strings are ignored.
  */
 static t_bool
-pcCopyArtHeader (
-	int iHeader,
-	const char *pcArt,
-	char *result)
+address_in_list (
+	const char *addresses,
+	const char *address)
 {
-	FILE *fp;
-	char *ptr;
-	char buf2[HEADER_LEN];
-	const char *p;
-	static char header[HEADER_LEN];
+	char **addr_list;
+	char *curr_address = NULL, *this_address = NULL;
+	char realname[HEADER_LEN];
+	int addrtype = 0;
 	t_bool found = FALSE;
-	t_bool was_to = FALSE;
+	unsigned int num_addr = 0, i;
 
-	*header = '\0';
-
-	if ((fp = fopen (pcArt, "r")) == (FILE *) 0) {
-		perror_message (_(txt_cannot_open), pcArt);
+	if ((addresses == NULL) || (address == NULL))
 		return FALSE;
+
+	addr_list = split_address_list (addresses, &num_addr);
+	if (num_addr == 0)
+		return FALSE;
+
+	this_address = my_malloc (strlen(address) + 1);
+	gnksa_split_from (address, this_address, realname, &addrtype);
+
+	for (i = 0; i < num_addr; i++) {
+		curr_address = my_realloc (curr_address, strlen(addr_list[i]) + 1);
+		gnksa_split_from (addr_list[i], curr_address, realname, &addrtype);
+		if (!strcasecmp(curr_address, this_address))
+			found = TRUE;
+		FreeIfNeeded (addr_list[i]);
+	}
+	FreeIfNeeded (addr_list);
+	FreeIfNeeded (curr_address);
+	FreeIfNeeded (this_address);
+
+	return found;
+}
+
+/*
+ * Gets all recipient addresses in header, i.e. contents of To:, Cc: and
+ * Bcc:, but strips out duplicates.  Returns number of recipients found.
+ * Side effects: changes content of buf to space separated list of recipient
+ * addresses
+ */
+static int
+get_recipients (
+	struct t_header *hdr,
+	char *buf,
+	size_t buflen)
+{
+	char **to_addresses, **cc_addresses, **bcc_addresses, **all_addresses;
+	char *dest, *src;
+	char realname[HEADER_LEN];
+	int addrtype = 0;
+	unsigned int num_to = 0, num_cc = 0, num_bcc = 0, num_all = 0, j = 0, i;
+
+	/* get individual e-mail addresses from To, Cc and Bcc headers */
+	to_addresses = split_address_list (hdr->to, &num_to);
+	cc_addresses = split_address_list (hdr->cc, &num_cc);
+	bcc_addresses = split_address_list (hdr->bcc, &num_bcc);
+
+	num_all = num_to + num_cc + num_bcc;
+	if (num_all == 0)
+		return 0;
+
+	all_addresses = my_malloc (num_all * sizeof(char *));
+	for (i = 0; i < num_to; i++, j++) {
+		all_addresses[j] = my_malloc (strlen(to_addresses[i]) + 1);
+		gnksa_split_from (to_addresses[i], all_addresses[j], realname, &addrtype);
+	}
+	for (i = 0; i < num_cc; i++, j++) {
+		all_addresses[j] = my_malloc (strlen(cc_addresses[i]) + 1);
+		gnksa_split_from (cc_addresses[i], all_addresses[j], realname, &addrtype);
+	}
+	for (i = 0; i < num_bcc; i++, j++) {
+		all_addresses[j] = my_malloc (strlen(bcc_addresses[i]) + 1);
+		gnksa_split_from (bcc_addresses[i], all_addresses[j], realname, &addrtype);
 	}
 
-	while ((ptr = tin_fgets (fp, TRUE)) != (char *) 0) {
+	/* strip double addresses */
+	for (i = 0; i < (num_all-1); i++)
+		for (j = i+1; j < num_all; j++)
+			if (!strcasecmp(all_addresses[i], all_addresses[j]))
+				FreeAndNull(all_addresses[j]);
 
-		if (*ptr == '\0')
-			break;
-
-		unfold_header (ptr);
-		switch (iHeader) {
-			case HEADER_TO:
-				if (STRNCASECMPEQ(ptr, "To: ", 4) || STRNCASECMPEQ(ptr, "Cc: ", 4)) {
-					my_strncpy (buf2, &ptr[4], sizeof (buf2));
-					yank_to_addr (buf2, header);
-					was_to = TRUE;
-					found = TRUE;
-				} else if (STRNCASECMPEQ(ptr, "Bcc: ", 5)) {
-					my_strncpy (buf2, &ptr[5], sizeof (buf2));
-					yank_to_addr (buf2, header);
-					was_to = TRUE;
-					found = TRUE;
-				} else if ((*ptr == ' ' || *ptr == '\t') && was_to) {
-					yank_to_addr (ptr, header);
-					found = TRUE;
-				} else
-					was_to = FALSE;
-
-				break;
-
-			case HEADER_SUBJECT:
-				if (STRNCASECMPEQ(ptr, "Subject: ", 9)) {
-					my_strncpy (header, &ptr[9], sizeof (header));
-					found = TRUE;
-				}
-				break;
-
-			default:
-				break;
+	/* build list of space separated e-mail addresses */
+	dest = buf;
+	for (i = 0; i < num_all; i++)
+		if (all_addresses[i]) {
+			for (src = all_addresses[i]; (*src && buflen); src++, dest++) {
+				*dest = *src;
+				buflen--;
+			}
+			if (buflen > 0) {
+				*dest++ = ' ';
+				buflen--;
+			}
 		}
-	}
-	fclose (fp);
+	if (dest > buf)
+		*--dest = '\0';
 
-	if (tin_errno != 0)
-		return FALSE;
+	/* free all allocated memory */
+	for (i = 0; i < num_to; i++)
+		FreeIfNeeded (to_addresses[i]);
+	FreeIfNeeded (to_addresses);
+	for (i = 0; i < num_cc; i++)
+		FreeIfNeeded (cc_addresses[i]);
+	FreeIfNeeded (cc_addresses);
+	for (i = 0; i < num_bcc; i++)
+		FreeIfNeeded (bcc_addresses[i]);
+	FreeIfNeeded (bcc_addresses);
+	for (i = 0; i < num_all; i++)
+		FreeIfNeeded (all_addresses[i]);
+	FreeIfNeeded (all_addresses);
 
-	if (found) {
-		p = ((header[0] == ' ') ? &header[1] : header);
-		(void) strcpy (result, rfc1522_decode (p));
-		return TRUE;
-	}
-	switch (iHeader) {
-		case HEADER_TO:
-			error_message (_(txt_error_header_line_missing), "To:", pcArt);
-			break;
-		case HEADER_SUBJECT:
-			error_message (_(txt_error_header_line_missing), "Subject:", pcArt);
-			break;
-		default:
-			p = "?";
-			break;
-	}
-	return FALSE;
+	return num_all;
 }
 
 

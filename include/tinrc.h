@@ -210,7 +210,7 @@ struct t_config {
 	t_bool tab_goto_next_unread;
 	t_bool thread_catchup_on_exit;		/* catchup thread with left arrow key or not */
 	t_bool unlink_article;
-	t_bool use_builtin_inews;
+	char inews_prog[PATH_LEN];
 	t_bool use_getart_limit;
 	t_bool use_mailreader_i;			/* invoke user's mailreader earlier to use more of its features (i = interactive) */
 	t_bool use_mouse;					/* enables/disables mouse support under xterm */

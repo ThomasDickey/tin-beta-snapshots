@@ -1,12 +1,12 @@
 /*
  *  Project   : tin - a Usenet reader
  *  Module    : autoconf.hin
- *  Author    : Thomas Dickey <dickey@herndon4.his.com>
+ *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2001-07-22
+ *  Updated   : 2001-11-10
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1995-2001 Thomas Dickey <dickey@herndon4.his.com>
+ * Copyright (c) 1995-2001 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -165,12 +165,13 @@
 #	undef HAVE_LIBC_H
 #	undef HAVE_LOCALE_H
 #	undef HAVE_MALLOC_H
+#	undef HAVE_NCURSESW_NCURSES_H
 #	undef HAVE_NCURSES_H		/* obsolete versions of ncurses */
 #	undef HAVE_NCURSES_NCURSES_H
-#	undef HAVE_NET_SOCKET_H		/* __BEOS__ */
 #	undef HAVE_NETDB_H
 #	undef HAVE_NETINET_IN_H
 #	undef HAVE_NETLIB_H
+#	undef HAVE_NET_SOCKET_H		/* __BEOS__ */
 #	undef HAVE_NOMACROS_H		/* ncurses 4.1 */
 #	undef HAVE_PATHS_H
 #	undef HAVE_POLL_H
@@ -383,6 +384,11 @@
 #	undef USE_TRACE
 #	undef XCURSES
 
+/*
+ * Symbols used for wide-character curses
+ */
+#	undef NEED_WCHAR_H
+#	undef WIDEC_CURSES
 /*
  * Define symbols to prototype the function 'outchar()'
  */
@@ -607,4 +613,5 @@
 
 #	undef HAVE_ICONV
 
+#	undef HAVE_GETTIMEOFDAY
 #endif /* !TIN_AUTOCONF_H */

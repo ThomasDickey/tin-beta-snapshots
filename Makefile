@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 5
 SVER	= 10
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20010913
+DVER	= 20011111
 EXE	= tin
 
 # directory structure
@@ -229,6 +229,8 @@ PCRE	= \
 	$(PCREDIR)/pcre.c \
 	$(PCREDIR)/pcre.def \
 	$(PCREDIR)/pcre.in \
+	$(PCREDIR)/pcredemo.c \
+	$(PCREDIR)/pcregrep.c \
 	$(PCREDIR)/pcreposix.c \
 	$(PCREDIR)/pcreposix.h \
 	$(PCREDIR)/pcretest.c \
@@ -240,22 +242,28 @@ PCRE	= \
 	$(PCREDIR)/doc/pcre.3 \
 	$(PCREDIR)/doc/pcre.html \
 	$(PCREDIR)/doc/pcre.txt \
+	$(PCREDIR)/doc/pcregrep.1 \
+	$(PCREDIR)/doc/pcregrep.html \
+	$(PCREDIR)/doc/pcregrep.txt \
 	$(PCREDIR)/doc/pcreposix.3 \
 	$(PCREDIR)/doc/pcreposix.html \
 	$(PCREDIR)/doc/pcreposix.txt \
+	$(PCREDIR)/doc/pcretest.1 \
+	$(PCREDIR)/doc/pcretest.html \
 	$(PCREDIR)/doc/pcretest.txt \
 	$(PCREDIR)/doc/perltest.txt \
-	$(PCREDIR)/doc/pgrep.1 \
-	$(PCREDIR)/doc/pgrep.html \
-	$(PCREDIR)/doc/pgrep.txt \
 	$(PCREDIR)/testdata/testinput1 \
 	$(PCREDIR)/testdata/testinput2 \
 	$(PCREDIR)/testdata/testinput3 \
 	$(PCREDIR)/testdata/testinput4 \
+	$(PCREDIR)/testdata/testinput5 \
+	$(PCREDIR)/testdata/testinput6 \
 	$(PCREDIR)/testdata/testoutput1 \
 	$(PCREDIR)/testdata/testoutput2 \
 	$(PCREDIR)/testdata/testoutput3 \
-	$(PCREDIR)/testdata/testoutput4
+	$(PCREDIR)/testdata/testoutput4 \
+	$(PCREDIR)/testdata/testoutput5 \
+	$(PCREDIR)/testdata/testoutput6
 
 CAN	= \
 	$(CANDIR)/Build \

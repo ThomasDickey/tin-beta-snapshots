@@ -94,9 +94,7 @@ expand_ctrl_chars (
 	t_bool ctrl_L = FALSE;
 
 	for (p = from, q = to; *p && q < &to[length]; p++) {
-		if (*p == '\b' && q > to) {			/* Backspace */
-			q--;
-		} else if (*p == '\t') {			/* Expand tabs */
+		if (*p == '\t') {			/* Expand tabs */
 			int i, j;
 
 			i = q - to;
@@ -518,8 +516,7 @@ read_decoded_qp_line (
 	if (count >= 0) {
 		buf2[count] = '\0';
 		ptr = buf2;
-	} else
-		/* error in encoding or no memory, copy raw line */
+	} else	/* error in encoding or no memory, copy raw line */
 		ptr = buf;
 
 	strncpy(dest, ptr, max_line_len - put_chars - 1);

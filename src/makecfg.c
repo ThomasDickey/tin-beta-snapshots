@@ -1,12 +1,12 @@
 /*
  *  Project   : tin - a Usenet reader
  *  Module    : makecfg.c
- *  Author    : Thomas E. Dickey <dickey@herndon4.his.com>
+ *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 1999-11-22
+ *  Updated   : 2001-11-10
  *  Notes     : #defines and structs for config.c
  *
- * Copyright (c) 1997-2001 Thomas E. Dickey <dickey@herndon4.his.com>
+ * Copyright (c) 1997-2001 Thomas E. Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -174,10 +174,18 @@ index_of(
 }
 
 static int
+is_title(
+	MYDATA *p)
+{
+	return !strcmp(p->type, "OPT_TITLE");
+}
+
+static int
 type_is_int(
 	MYDATA *p)
 {
-	return strcmp(p->type, "OPT_STRING")
+	return strcmp(p->type, "OPT_TITLE")
+	  &&   strcmp(p->type, "OPT_STRING")
 	  &&   strcmp(p->type, "OPT_CHAR")
 	  &&   strcmp(p->type, "OPT_ON_OFF");
 }
@@ -210,6 +218,7 @@ generate_tbl (
 		,"#define LAST_OPT VERY_LAST_OPT - 1"
 		,"#define OPT_ARG_COLUMN	9"
 		,""
+		,"#define OPT_TITLE     0"
 		,"#define OPT_ON_OFF    1"
 		,"#define OPT_LIST      2"
 		,"#define OPT_STRING    3"
@@ -267,7 +276,9 @@ generate_tbl (
 			sprintf (temp, "%s,", is_opt ? p->type : "OPT_LIST");
 			fprintf (ofp, "%-13s", temp);
 
-			if (!is_int) {
+			if (is_title(p)) {
+				fprintf (ofp, "0, NULL, ");
+			} else if (!is_int) {
 				fprintf(ofp, "OINX_%s, 0, ", p->name);
 			} else {
 				fprintf (ofp, "0, &tinrc.%s, ", p->name);
@@ -444,7 +455,7 @@ makecfg (
 
 		if (p->name[0] == '#')
 			continue;
-		if (type_is_int(p))
+		if (type_is_int(p) || is_title(p))
 			continue;
 
 		for (q = all_data; p != q; q = q->link) {

@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 1997-12-31
+ *  Updated   : 2001-11-10
  *  Notes     :
  *
  * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -74,7 +74,6 @@ static int gnksa_check_domain (char *domain);
 static int gnksa_check_domain_literal (char *domain);
 static int gnksa_check_localpart (const char *localpart);
 static int gnksa_dequote_plainphrase (char *realname, char *decoded, int addrtype);
-static int gnksa_split_from (const char *from, char *address, char *realname, int *addrtype);
 static int strfeditor (char *editor, int linenum, const char *filename, char *s, size_t maxsize, char *format);
 static void write_input_history_file (void);
 #ifdef LOCAL_CHARSET
@@ -2667,7 +2666,7 @@ buffer_to_local (
 #		if 0
 				network_charset = local_charset;
 #		else
-				/* no network_charset case allready fixed above */
+				/* no network_charset case already fixed above */
 				;
 #		endif /* 0 */
 			} else
@@ -3441,7 +3440,7 @@ gnksa_check_localpart (
 /*
  * split mail address into realname and address parts
  */
-static int
+int
 gnksa_split_from (
 	const char *from,
 	char *address,
@@ -3456,9 +3455,9 @@ gnksa_split_from (
 	*address = *realname = '\0';
 
 	/* copy raw address into work area */
-	strncpy(work, from, 998);
-	work[998] = '\0';
-	work[999] = '\0';
+	strncpy(work, from, HEADER_LEN - 2);
+	work[HEADER_LEN - 2] = '\0';
+	work[HEADER_LEN - 1] = '\0';
 
 	/* skip trailing whitespace */
 	addr_end = work + strlen(work) - 1;

@@ -378,29 +378,36 @@ submit_news_file (
 	rfc15211522_encode(name, txt_mime_encodings[tinrc.post_mime_encoding], tinrc.post_8bit_header, ismail);
 
 #ifdef NNTP_INEWS
-	if (read_news_via_nntp && !read_saved_news && tinrc.use_builtin_inews) {
+	if (read_news_via_nntp && !read_saved_news && 0 == strcasecmp(tinrc.inews_prog, "--internal")) {
 		ret_code = submit_inews (name, a_message_id);
 	} else
 #endif /* NNTP_INEWS */
 		{
 #ifdef M_UNIX
+		/* use 'inewsdir/inews -h' or tinrc.inews_prog or 'inews -h' */
 		if (*inewsdir) {
 			strcpy (buf, inewsdir);
-			strcat (buf, "/");
-			cp += strlen (cp);
-		}
-		sh_format (cp, sizeof(buf) - (cp - buf), "inews -h < %s", name);
+			strcat (buf, "/inews -h");
+		} else if (0 != strcasecmp(tinrc.inews_prog, "--internal"))
+			strcpy (buf, tinrc.inews_prog);
+		else
+			strcpy (buf, "inews -h");
+
+		cp += strlen (cp);
+
+		sh_format (cp, sizeof(buf) - (cp - buf), " < %s", name);
 #else
 		make_post_cmd (cp, name);
 #endif /* M_UNIX */
 
 		ret_code = invoke_cmd (buf);
 #ifdef NNTP_INEWS
-		if (!ret_code && read_news_via_nntp && !read_saved_news && !tinrc.use_builtin_inews) {
+		if (!ret_code && read_news_via_nntp && !read_saved_news && 0 != strcasecmp(tinrc.inews_prog, "--internal")) {
 			if (prompt_yn(cLINES, _(txt_post_via_builtin_inews), TRUE)) {
 				ret_code = submit_inews (name, a_message_id);
 				if (ret_code) {
-					tinrc.use_builtin_inews = prompt_yn(cLINES, _(txt_post_via_builtin_inews_only), TRUE);
+					if (prompt_yn(cLINES, _(txt_post_via_builtin_inews_only), TRUE)==1)
+						strcpy(tinrc.inews_prog,"--internal");
 				}
 			}
 		}

@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 1997-12-28
+ *  Updated   : 2001-11-10
  *  Notes     :
  *
  * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
@@ -119,7 +119,7 @@ char subscriptions_file[PATH_LEN];
 char txt_help_bug_report[LEN];		/* address to send bug reports to */
 char userid[PATH_LEN];
 
-char proc_ch_default;				/* set in change_config_file () */
+char proc_ch_default;			/* set in change_config_file () */
 
 #ifdef VMS
 	char rcdir_asfile[PATH_LEN];	/* rcdir expressed as dev:[dir]tin.dir, for stat() */
@@ -376,7 +376,7 @@ struct t_config tinrc = {
 	TRUE,		/* tab_goto_next_unread */
 	TRUE,		/* thread_catchup_on_exit */
 	TRUE,		/* unlink_article */
-	TRUE,		/* use_builtin_inews */
+	"",		/* inews_prog */
 	FALSE,		/* use_getart_limit */
 	FALSE,		/* use_mailreader_i */
 	FALSE,		/* use_mouse */
@@ -750,6 +750,9 @@ init_selfinfo (
 		strcpy(tinrc.printer, DEFAULT_BBS_PRINTER);
 #	endif /* M_AMIGA */
 #endif /* !DISABLE_PRINTING */
+#if defined(NNTP_ABLE) || defined(NNTP_ONLY)
+	strcpy (tinrc.inews_prog, DEFAULT_INEWS_PROG);
+#endif /* NNTP_ABLE) || NNTP_ONLY */
 	strcpy (mailer, get_val (ENV_VAR_MAILER, DEFAULT_MAILER));
 	joinpath (article, homedir, TIN_ARTICLE_NAME);
 #ifdef APPEND_PID

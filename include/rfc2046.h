@@ -104,6 +104,8 @@ struct t_header
 {
 	char *from;				/* From: */
 	char *to;				/* To: */
+	char *cc;				/* Cc: */
+	char *bcc;				/* Bcc: */
 	char *date;				/* Date: */
 	char *subj;				/* Subject: */
 	char *org;				/* Organization: */

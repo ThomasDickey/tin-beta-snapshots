@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 1998-10-17
+ *  Updated   : 2001-11-10
  *  Notes     :
  *
  * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
@@ -1062,6 +1062,42 @@ Tin will try to use XHDR XREF instead (slows down things a bit).\n");
 	constext txt_warn_xref_not_supported[] = N_("Your server does not have Xref: in its XOVER information.\n");
 #endif /* XHDR_XREF */
 
+struct opttxt txt_display_options = {
+	NULL,
+	N_("Display Options"),
+	NULL
+};
+
+struct opttxt txt_color_options = {
+	NULL,
+	N_("Color Options"),
+	NULL
+};
+
+struct opttxt txt_getart_limit_options = {
+	NULL,
+	N_("Article-Limiting Options"),
+	NULL
+};
+
+struct opttxt txt_posting_options = {
+	NULL,
+	N_("Posting/Mailing Options"),
+	NULL
+};
+
+struct opttxt txt_saving_options = {
+	NULL,
+	N_("Saving/Printing Options"),
+	NULL
+};
+
+struct opttxt txt_expert_options = {
+	NULL,
+	N_("Expert Options"),
+	NULL
+};
+
 struct opttxt txt_beginner_level = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Show mini menu & posting etiquette : "),
@@ -1663,7 +1699,7 @@ struct opttxt txt_mm_charset = {
 struct opttxt txt_mm_local_charset = {
 	N_("Enter local (display) charset (e.g. US-ASCII, EUC-KR, ...), <CR> to set."),
 	N_("MM_LOCAL_CHARSET                   : "),
-	N_("# Charset supported locally which is used for displayingarticles.\n")
+	N_("# Charset supported locally which is used for displaying articles.\n")
 };
 
 struct opttxt txt_mm_network_charset = {
@@ -1858,10 +1894,10 @@ struct opttxt txt_editor_format = {
 };
 
 #if defined(NNTP_ABLE) || defined(NNTP_ONLY)
-struct opttxt txt_use_builtin_inews = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Use builtin inews                  : "),
-	N_("# If ON use the builtin mini inews for posting via NNTP\n# otherwise use an external inews program\n"),
+struct opttxt txt_inews_prog = {
+	N_("Enter name and options for external-inews, --internal for internal inews"),
+	N_("External inews                     : "),
+	N_("# If --internal use the builtin mini inews for posting via NNTP\n# otherwise use an external inews program\n"),
 };
 #endif /* NNTP_ABLE || NNTP_ONLY */
 

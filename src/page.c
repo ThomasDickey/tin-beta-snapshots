@@ -65,7 +65,7 @@ static t_lineinfo *artline;	/* active 'lineinfo' data */
 
 t_openartinfo pgart =	/* Global context of article open in the pager */
 	{
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, FALSE, 0 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, FALSE, 0 },
 		FALSE, 0,
 		NULL, NULL, NULL, NULL,
 	};

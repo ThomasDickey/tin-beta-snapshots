@@ -78,8 +78,8 @@ static void subscribe_new_group (char *group, char *autosubscribe, char *autouns
 
 
 /*
- *  Get default array size for active[] from environment (AmigaDOS)
- *  or just return the standard default.
+ * Get default array size for active[] from environment (AmigaDOS)
+ * or just return the standard default.
  */
 int
 get_active_num (
@@ -185,8 +185,7 @@ active_add (
 	ptr->glob_filter = &glob_filter;
 	set_default_bitmap (ptr);
 
-	if (moderated[0] == '/')
-	{
+	if (moderated[0] == '/') {
 		ptr->type = GROUP_TYPE_SAVE;
 		ptr->spooldir = my_strdup(moderated);
 	} else {
@@ -445,7 +444,7 @@ read_newsrc_active_file (
 	fclose(fp);
 
 	/*
-	 *  Exit if active file wasn't read correctly or is empty
+	 * Exit if active file wasn't read correctly or is empty
 	 */
 	if (tin_errno || !num_active) {
 		error_message (_(txt_active_file_is_empty), (read_news_via_nntp ? _(txt_servers_active) : news_active_file));
@@ -530,7 +529,7 @@ read_active_file (
 	TIN_FCLOSE (fp);
 
 	/*
-	 *  Exit if active file wasn't read correctly or is empty
+	 * Exit if active file wasn't read correctly or is empty
 	 */
 	if (tin_errno || !num_active) {
 		error_message (_(txt_active_file_is_empty), (read_news_via_nntp ? _(txt_servers_active) : news_active_file));

@@ -396,7 +396,7 @@ This is a simpler way (than --with-ncurses and --enable-curses) to specify the
 screen library.  If you give none of these options, the configure script will
 look for the termcap or terminfo interfaces, and attempt to use the most
 appropriate one that your system supports.  The other screen types which
-you may select are: curses, ncurses, pdcurses.
+you may select are: curses, ncurses, ncursesw, pdcurses.
 
 --with-ncurses
 Define this if you want to link with ncurses instead of termcap.  Note:  This
@@ -623,7 +623,7 @@ i586-pc-linux-gnu           (glibc 2.2.2)  gcc 2.95.3    (1.5.9 release 20010723
 i586-pc-linux-gnu           (glibc 2.0.7)  tcc 4.1.2     (1.4.0 release 19991113)   [3]    <urs@tin.org>
 i586-pc-linux-gnu           (glibc 2.1.1)  lcc 4.27      (1.4.0 release 19991113)   [3][4] <urs@tin.org>
 i586-pc-linux-gnu           (glibc 2.1.1)  fcc 1.0       (1.5.1 release 20000103)          <urs@tin.org>
-i686-pc-linux-gnu           (glibc 2.2.2)  gcc 3.0.1     (1.5.9 release 20010723)          <urs@tin.org>
+i686-pc-linux-gnu           (glibc 2.2.2)  gcc 3.0.2     (1.5.9 release 20010723)          <urs@tin.org>
 ia64-unknown-linux          (glibc 2.2.0)  sgicc 0.01.0  (1.5.8 release 20010221)          <urs@tin.org>
 ia64-unknown-linux          (glibc 2.2.3)  gcc 2.96-ia64 (1.5.8 release 20010221)          <urs@tin.org>
 mipsel-unknown-linux-gnu    (glibc 2.0.7)  gcc 2.7.2     (1.4.0 release 19991113)          <urs@tin.org>

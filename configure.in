@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2001-07-22
+dnl Updated   : 2001-11-10
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2001 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -96,18 +96,8 @@ CF_PROG_EXT
 CF_LIB_PREFIX(LIB_PREFIX)
 AC_PROG_LN_S
 
-### check for cygwin environment
-dnl AC_CYGWIN is new in autoconf 2.13
-AC_CYGWIN
-dnl -DSTATIC needed for pcre
-dnl also add a check for "mode con" here and set
-dnl CFLAGS="$CFLAGS -DLOCAL_CHARSET=" accordingly
-if test "$CYGWIN" = "yes" ; then
-	PCRE_DEFINES="$PCRE_DEFINES -DSTATIC"
-fi
-
-### check for MacOS X, exclude Darwin on ix86
 case "$host_cpu:$host_vendor:$host_os" in
+	# check for MacOS X, exclude Darwin on ix86
 	powerpc:apple:darwin*)  #(vi
 		# replacement for AC_CHECK_LIB()
 		# don't use -f as this might be a link
@@ -116,6 +106,11 @@ case "$host_cpu:$host_vendor:$host_os" in
 				AC_DEFINE(MAC_OS_X)
 				LIBS="/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation $LIBS"])
 		fi
+		;;
+	# check for cygwin enviroment
+	# -DSTATIC is needed for pcre 
+	*:*:*cygwin*)	#(vi
+		PCRE_DEFINES="$PCRE_DEFINES -DSTATIC"
 		;;
 esac
 
@@ -255,6 +250,7 @@ else
 	INEWSPATH="/usr/lib/news"
 fi
 
+## TODO: turn into path + args?
 AC_MSG_CHECKING(for directory containing \"inews\")
 CF_WITH_PATH(inews-dir,
 	[  --with-inews-dir=PATH   directory containing "inews"],
@@ -339,8 +335,9 @@ fi
 AC_MSG_CHECKING(for screen type)
 AC_ARG_WITH(screen,
 [  --with-screen=xxx       specify screen type, which must be one of:
-                          termcap, terminfo, curses, ncurses, pdcurses.
-                          (replaces options --enable-curses and --with-ncurses)],
+                          termcap, terminfo, curses, ncurses, ncursesw, or
+                          pdcurses (replaces options --enable-curses and
+                          --with-ncurses)],
 	[cf_with_screen=$withval],
 	[cf_with_screen=none])
 AC_MSG_RESULT($cf_with_screen)
@@ -355,6 +352,10 @@ curses) #(vi
 	use_curses=yes
 	;;
 ncurses) #(vi
+	use_curses=yes
+	use_ncurses=yes
+	;;
+ncursesw) #(vi
 	use_curses=yes
 	use_ncurses=yes
 	;;
@@ -380,16 +381,23 @@ esac
 
 if test $use_curses != no ; then
 	AC_DEFINE(USE_CURSES)
-	if test $use_ncurses = no ; then
-		if test $cf_with_screen = curses ; then
-			CF_CURSES_CPPFLAGS
-			CF_NCURSES_VERSION
-			CF_CURSES_LIBS
-		fi
-	else
+	case $cf_with_screen in #(vi
+	ncurses) #(vi
 		CF_NCURSES_CPPFLAGS
 		CF_NCURSES_LIBS
-	fi
+		;;
+	ncursesw) #(vi
+		CF_UTF8_LIB
+		CF_NCURSES_CPPFLAGS(ncursesw)
+		CF_NCURSES_LIBS(ncursesw)
+		CF_NCURSES_VERSION
+		;;
+	curses) #(vi
+		CF_CURSES_CPPFLAGS
+		CF_NCURSES_VERSION
+		CF_CURSES_LIBS
+		;;
+	esac
 fi
 
 ## substitute externally-installed PCRE library for our bundled version
@@ -443,9 +451,9 @@ if test "$use_trace" = yes ; then
 	EXTRAOBJS="$EXTRAOBJS trace.o"
 	 if test "$use_ncurses" != no ; then
 		AC_CHECK_FUNC(_tracef,,[
-		AC_CHECK_LIB(ncurses_g,_tracef,
-			[LIBS=`echo "$LIBS" | sed -e s/-lncurses// -e s/-lcurses//`
-			 LIBS="-lncurses_g $LIBS"],
+		AC_CHECK_LIB(${cf_with_screen}_g,_tracef,
+			[LIBS=`echo "$LIBS" | sed -e s/-l${cf_with_screen}// -e s/-lcurses//`
+			 LIBS="-l${cf_with_screen}_g $LIBS"],
 			[EXTRAOBJS="$EXTRAOBJS trace.o"])])
 	 fi
 fi
@@ -845,6 +853,7 @@ AC_CHECK_FUNCS(\
 	fdopen \
 	ftime \
 	getcwd \
+	gettimeofday \
 	inet_aton \
 	is_xterm \
 	isascii \
