@@ -3,10 +3,10 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2004-09-19
+ *  Updated   : 2005-03-30
  *  Notes     :
  *
- * Copyright (c) 1997-2004 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2005 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -448,6 +448,28 @@ strncasecmp(
 }
 #endif /* !HAVE_STRNCASECMP */
 
+#ifndef HAVE_STRSEP
+/*
+ * strsep() is not mandatory in ANSI-C
+ */
+char *strsep(
+	char **stringp,
+	const char *delim)
+{
+	char *s = *stringp;
+	char *p;
+
+	if (!s)
+		return NULL;
+
+	if ((p = strpbrk(s, delim)) != NULL)
+		*p++ = '\0';
+
+	*stringp = p;
+	return s;
+}
+#endif /* !HAVE_STRSEP */
+
 
 /*
  * str_trim - leading and trailing whitespace
@@ -465,6 +487,9 @@ str_trim(
 	char *rp;		/* reading string pointer */
 	char *wp;		/* writing string pointer */
 	char *ls;		/* last space */
+
+	if (string == NULL)
+		return NULL;
 
 	for (rp = wp = ls = string; isspace((int) *rp); rp++)		/* Skip leading space */
 		;

@@ -3,10 +3,10 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2004-08-31
+ *  Updated   : 2005-02-11
  *  Notes     :
  *
- * Copyright (c) 1993-2004 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2005 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -90,14 +90,11 @@ overview_xref_support(
 
 	if ((fp = open_overview_fmt_fp()) != NULL) {
 		while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
-
-			if (STRNCASECMPEQ(ptr, "Xref:full", 9)) {
+#if defined(DEBUG) && defined(NNTP_ABLE)
+			debug_nntp("<<<", ptr);
+#endif /* DEBUG && NNTP_ABLE */
+			if (!supported && STRNCASECMPEQ(ptr, "Xref:full", 9))
 				supported = TRUE;
-#ifdef NNTP_ABLE
-				drain_buffer(fp);
-#endif /* NNTP_ABLE */
-				break;
-			}
 		}
 		TIN_FCLOSE(fp);
 		/*

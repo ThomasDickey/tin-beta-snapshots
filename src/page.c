@@ -3,10 +3,10 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-10-17
+ *  Updated   : 2005-03-14
  *  Notes     :
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,9 +41,9 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 #ifndef RFC2046_H
 #	include "rfc2046.h"
 #endif /* !RFC2046_H */
@@ -97,12 +97,14 @@ static t_bool reveal_ctrl_l;	/* set when ^L hiding is off */
 /*
  * Local prototypes
  */
-static int handle_pager_keypad(t_menukeys *menukeys);
 static int load_article(int new_respnum, struct t_group *group);
 static int prompt_response(int ch, int curr_respnum);
 static int scroll_page(int dir);
 static t_bool deactivate_next_ctrl_l(void);
 static t_bool activate_last_ctrl_l(void);
+static t_function page_left(void);
+static t_function page_right(void);
+static t_function page_mouse_action(t_function (*left_action) (void), t_function (*right_action) (void));
 static void draw_page_header(const char *group);
 static void preprocess_info_message(FILE *info_fh);
 static void print_message_page(FILE *file, t_lineinfo *messageline, size_t messagelines, size_t base_line, size_t begin, size_t end, int help_level);
@@ -177,85 +179,52 @@ scroll_page(
 /*
  * Map keypad codes to standard keyboard characters
  */
-static int
-handle_pager_keypad(
-	t_menukeys *menukeys)
+static t_function
+page_left(
+	void)
 {
-	int ch = ReadCh();
+	return GLOBAL_QUIT;
+}
 
-	switch (ch) {
-		case ESC:
-#	ifdef HAVE_KEY_PREFIX
-		case KEY_PREFIX:
-#	endif /* HAVE_KEY_PREFIX */
-			switch (get_arrow_key(ch)) {
-				case KEYMAP_UP:
-					ch = iKeyUp;
-					break;
 
-				case KEYMAP_DOWN:
-					ch = iKeyDown;
-					break;
+static t_function
+page_right(
+	void)
+{
+	return PAGE_NEXT_UNREAD;
+}
 
-				case KEYMAP_LEFT:
-					ch = iKeyQuit;
-					break;
 
-				case KEYMAP_RIGHT:
-					ch = iKeyPageNextUnread;
-					break;
+static t_function
+page_mouse_action(
+	t_function (*left_action) (void),
+	t_function (*right_action) (void))
+{
+	t_function func = NOT_ASSIGNED;
 
-				case KEYMAP_PAGE_UP:
-					ch = iKeyPageUp;
-					break;
+	switch (xmouse) {
+		case MOUSE_BUTTON_1:
+			if (xrow < PAGE_HEADER || xrow >= cLINES - 1)
+				func = GLOBAL_PAGE_DOWN;
+			else
+				func = right_action();
+			break;
 
-				case KEYMAP_PAGE_DOWN:
-					ch = iKeyPageDown;
-					break;
+		case MOUSE_BUTTON_2:
+			if (xrow < PAGE_HEADER || xrow >= cLINES - 1)
+				func = GLOBAL_PAGE_UP;
+			else
+				func = left_action();
+			break;
 
-				case KEYMAP_HOME:
-					ch = iKeyFirstPage;
-					break;
-
-				case KEYMAP_END:
-					ch = iKeyLastPage;
-					break;
-
-				case KEYMAP_MOUSE:
-					switch (xmouse) {
-						case MOUSE_BUTTON_1:
-							if (xrow < PAGE_HEADER || xrow >= cLINES - 1)
-								ch = iKeyPageDown;
-							else
-								ch = iKeyPageNextUnread;
-							break;
-
-						case MOUSE_BUTTON_2:
-							if (xrow < PAGE_HEADER || xrow >= cLINES - 1)
-								ch = iKeyPageUp;
-							else
-								ch = iKeyQuit;
-							break;
-
-						case MOUSE_BUTTON_3:
-							ch = iKeyMouseToggle;
-							break;
-
-						default:
-							break;
-					}
-					break;
-
-				default:
-					break;
-			}
+		case MOUSE_BUTTON_3:
+			func = SPECIAL_MOUSE_TOGGLE;
 			break;
 
 		default:
-			ch = map_to_default(ch, menukeys);
 			break;
 	}
-	return ch;
+	return func;
 }
 
 
@@ -335,12 +304,13 @@ show_page(
 {
 	char buf[LEN];
 	char key[MAXKEYLEN];
-	int ch, i, n = 0;
+	int i, n = 0;
 	int filter_state = NO_FILTERING;
 	int old_sort_art_type = tinrc.sort_article_type;
 	int art_type = GROUP_TYPE_NEWS;
 	t_bool mouse_click_on = TRUE;
 	t_bool repeat_search;
+	t_function func;
 
 	filtered_articles = FALSE;	/* used in thread level */
 
@@ -363,22 +333,30 @@ show_page(
 	resize_article(TRUE, &pgart);
 
 	forever {
-		if ((ch = handle_pager_keypad(&menukeymap.page_nav)) == iKeySearchRepeat) {
-			ch = i_key_search_last;
+		if ((func = handle_keypad(page_left, page_right, page_mouse_action, page_keys)) == GLOBAL_SEARCH_REPEAT) {
+			func = last_search;
 			repeat_search = TRUE;
 		} else
 			repeat_search = FALSE;
 
-		switch (ch) {
-			case iKeyAbort:       /* Abort */
+		switch (func) {
+			case GLOBAL_ABORT:       /* Abort */
 				break;
 
-			case '0': case '1': case '2': case '3': case '4': case '5':
-			case '6': case '7': case '8': case '9':
+			case DIGIT_0:
+			case DIGIT_1:
+			case DIGIT_2:
+			case DIGIT_3:
+			case DIGIT_4:
+			case DIGIT_5:
+			case DIGIT_6:
+			case DIGIT_7:
+			case DIGIT_8:
+			case DIGIT_9:
 				if (!HAS_FOLLOWUPS(which_thread(this_resp)))
 					info_message(_(txt_no_responses));
 				else {
-					if ((n = prompt_response(ch, this_resp)) != -1) {
+					if ((n = prompt_response(func_to_key(func, page_keys), this_resp)) != -1) {
 						XFACE_CLEAR();
 						if ((i = load_article(n, group)) < 0)
 							return i;
@@ -387,14 +365,14 @@ show_page(
 				break;
 
 #ifndef NO_SHELL_ESCAPE
-			case iKeyShellEscape:
+			case GLOBAL_SHELL_ESCAPE:
 				XFACE_CLEAR();
 				shell_escape();
 				draw_page(group->name, 0);
 				break;
 #endif /* !NO_SHELL_ESCAPE */
 
-			case iKeyMouseToggle:
+			case SPECIAL_MOUSE_TOGGLE:
 				if (mouse_click_on)
 					set_xclick_off();
 				else
@@ -402,9 +380,7 @@ show_page(
 				mouse_click_on = bool_not(mouse_click_on);
 				break;
 
-			case iKeyPageUp:		/* page up */
-			case iKeyPageUp2:
-			case iKeyPageUp3:
+			case GLOBAL_PAGE_UP:
 				if (activate_last_ctrl_l())
 					draw_page(group->name, 0);
 				else {
@@ -417,32 +393,33 @@ show_page(
 				}
 				break;
 
-			case iKeyPageDown:		/* page down or next response */
-			case iKeyPageDown2:
-			case iKeyPageDown3:
-			case iKeyPageNextUnread:
-				if (!((ch == iKeyPageNextUnread) && tinrc.tab_goto_next_unread) && deactivate_next_ctrl_l())
+			case GLOBAL_PAGE_DOWN:		/* page down or next response */
+			case PAGE_NEXT_UNREAD:
+			case PAGE_PAGE_DOWN3:
+				if (!((func == PAGE_NEXT_UNREAD) && tinrc.tab_goto_next_unread) && deactivate_next_ctrl_l())
 					draw_page(group->name, 0);
 				else {
 					if (curr_line + ARTLINES >= artlines) {	/* End is already on screen */
-						switch (ch) {
-							case iKeyPageNextUnread:	/* <TAB> */
+						switch (func) {
+							case PAGE_NEXT_UNREAD:	/* <TAB> */
 								goto page_goto_next_unread;
 
-							case iKeyPageDown:
-							case iKeyPageDown2:
+							case GLOBAL_PAGE_DOWN:
 								if (tinrc.pgdn_goto_next)
 									goto page_goto_next_unread;
 								break;
 
-							case iKeyPageDown3:			/* <SPACE> */
+							case PAGE_PAGE_DOWN3:			/* <SPACE> */
 								if (tinrc.space_goto_next_unread)
 									goto page_goto_next_unread;
+								break;
+
+							default:		/* to keep gcc quiet */
 								break;
 						}
 						info_message(_(txt_end_of_art));
 					} else {
-						if ((ch == iKeyPageNextUnread) && tinrc.tab_goto_next_unread)
+						if ((func == PAGE_NEXT_UNREAD) && tinrc.tab_goto_next_unread)
 							goto page_goto_next_unread;
 
 						curr_line += (tinrc.scroll_lines == -2) ? ARTLINES / 2 : ARTLINES;
@@ -462,8 +439,7 @@ page_goto_next_unread:
 					return i;
 				break;
 
-			case iKeyFirstPage:		/* beginning of article */
-			case iKeyPageFirstPage:
+			case GLOBAL_FIRST_PAGE:		/* beginning of article */
 				if (reveal_ctrl_l_lines > -1 || curr_line != 0) {
 					reveal_ctrl_l_lines = -1;
 					curr_line = 0;
@@ -471,8 +447,7 @@ page_goto_next_unread:
 				}
 				break;
 
-			case iKeyLastPage:		/* end of article */
-			case iKeyPageLastPage:
+			case GLOBAL_LAST_PAGE:		/* end of article */
 				if (reveal_ctrl_l_lines < artlines - 1 || curr_line + ARTLINES != artlines) {
 					reveal_ctrl_l_lines = artlines - 1;
 					/* Display a full last page for neatness */
@@ -481,8 +456,7 @@ page_goto_next_unread:
 				}
 				break;
 
-			case iKeyUp:		/* line up */
-			case iKeyUp2:
+			case GLOBAL_LINE_UP:
 				if (activate_last_ctrl_l())
 					draw_page(group->name, 0);
 				else {
@@ -497,8 +471,7 @@ page_goto_next_unread:
 				}
 				break;
 
-			case iKeyDown:		/* line down */
-			case iKeyDown2:
+			case GLOBAL_LINE_DOWN:
 				if (deactivate_next_ctrl_l())
 					draw_page(group->name, 0);
 				else {
@@ -513,7 +486,7 @@ page_goto_next_unread:
 				}
 				break;
 
-			case iKeyLastViewed:	/* show last viewed article */
+			case GLOBAL_LAST_VIEWED:	/* show last viewed article */
 				if (last_resp < 0 || (which_thread(last_resp) == -1)) {
 					info_message(_(txt_no_last_message));
 					break;
@@ -524,7 +497,7 @@ page_goto_next_unread:
 				}
 				break;
 
-			case iKeyLookupMessage:			/* Goto article by Message-ID */
+			case GLOBAL_LOOKUP_MESSAGEID:			/* Goto article by Message-ID */
 				if ((n = prompt_msgid()) != ART_UNAVAILABLE) {
 					if ((i = load_article(n, group)) < 0) {
 						XFACE_CLEAR();
@@ -533,7 +506,7 @@ page_goto_next_unread:
 				}
 				break;
 
-			case iKeyPageGotoParent:		/* Goto parent of this article */
+			case PAGE_GOTO_PARENT:		/* Goto parent of this article */
 			{
 				struct t_msgid *parent = arts[this_resp].refptr->parent;
 
@@ -560,39 +533,39 @@ page_goto_next_unread:
 				break;
 			}
 
-			case iKeyPipe:		/* pipe article/thread/tagged arts to command */
+			case GLOBAL_PIPE:		/* pipe article/thread/tagged arts to command */
 				XFACE_SUPPRESS();
 				feed_articles(FEED_PIPE, PAGE_LEVEL, group, this_resp);
 				XFACE_SHOW();
 				break;
 
-			case iKeyPageMail:	/* mail article/thread/tagged articles to somebody */
+			case PAGE_MAIL:	/* mail article/thread/tagged articles to somebody */
 				XFACE_SUPPRESS();
 				feed_articles(FEED_MAIL, PAGE_LEVEL, group, this_resp);
 				XFACE_SHOW();
 				break;
 
 #ifndef DISABLE_PRINTING
-			case iKeyPrint:	/* output art/thread/tagged arts to printer */
+			case GLOBAL_PRINT:	/* output art/thread/tagged arts to printer */
 				XFACE_SUPPRESS();
 				feed_articles(FEED_PRINT, PAGE_LEVEL, group, this_resp);
 				XFACE_SHOW();
 				break;
 #endif /* !DISABLE_PRINTING */
 
-			case iKeyPageRepost:	/* repost current article */
+			case PAGE_REPOST:	/* repost current article */
 				XFACE_SUPPRESS();
 				feed_articles(FEED_REPOST, PAGE_LEVEL, group, this_resp);
 				XFACE_SHOW();
 				break;
 
-			case iKeyPageSave:	/* save article/thread/tagged articles */
+			case PAGE_SAVE:	/* save article/thread/tagged articles */
 				XFACE_SUPPRESS();
 				feed_articles(FEED_SAVE, PAGE_LEVEL, group, this_resp);
 				XFACE_SHOW();
 				break;
 
-			case iKeyPageAutoSave:	/* Auto-save articles without prompting */
+			case PAGE_AUTOSAVE:	/* Auto-save articles without prompting */
 				if (grpmenu.curr >= 0) {
 					XFACE_SUPPRESS();
 					feed_articles(FEED_AUTOSAVE, PAGE_LEVEL, group, (int) base[grpmenu.curr]);
@@ -600,19 +573,19 @@ page_goto_next_unread:
 				}
 				break;
 
-			case iKeySearchSubjF:	/* search in article */
-			case iKeySearchSubjB:
-				if ((i = search_article((ch == iKeySearchSubjF), repeat_search, search_line, artlines, artline, reveal_ctrl_l_lines, note_fp)) == -1)
+			case GLOBAL_SEARCH_SUBJECT_FORWARD:	/* search in article */
+			case GLOBAL_SEARCH_SUBJECT_BACKWARD:
+				if ((i = search_article((func == GLOBAL_SEARCH_SUBJECT_FORWARD), repeat_search, search_line, artlines, artline, reveal_ctrl_l_lines, note_fp)) == -1)
 					break;
 
-				if (ch == iKeySearchSubjB && !reveal_ctrl_l) {
+				if (func == GLOBAL_SEARCH_SUBJECT_BACKWARD && !reveal_ctrl_l) {
 					reveal_ctrl_l_lines = curr_line + ARTLINES - 1;
 					draw_page(group->name, 0);
 				}
 				process_search(&curr_line, artlines, ARTLINES, PAGE_LEVEL);
 				break;
 
-			case iKeySearchBody:	/* article body search */
+			case GLOBAL_SEARCH_BODY:	/* article body search */
 				if ((n = search_body(group, this_resp, repeat_search)) != -1) {
 					this_resp = n;			/* Stop load_article() changing context again */
 					if ((i = load_article(n, group)) < 0) {
@@ -623,7 +596,7 @@ page_goto_next_unread:
 				}
 				break;
 
-			case iKeyPageTopThd:	/* first article in current thread */
+			case PAGE_TOP_THREAD:	/* first article in current thread */
 				if (arts[this_resp].prev >= 0) {
 					if ((n = which_thread(this_resp)) >= 0 && base[n] != this_resp) {
 						assert(n < grpmenu.max);
@@ -635,7 +608,7 @@ page_goto_next_unread:
 				}
 				break;
 
-			case iKeyPageBotThd:	/* last article in current thread */
+			case PAGE_BOTTOM_THREAD:	/* last article in current thread */
 				for (i = this_resp; i >= 0; i = arts[i].thread)
 					n = i;
 
@@ -647,8 +620,7 @@ page_goto_next_unread:
 				}
 				break;
 
-			case iKeyPageNextThd:
-			case iKeyPageNextThd2:	/* start of next thread */
+			case PAGE_NEXT_THREAD:	/* start of next thread */
 				XFACE_CLEAR();
 				if ((n = next_thread(this_resp)) == -1)
 					return (which_thread(this_resp));
@@ -657,7 +629,7 @@ page_goto_next_unread:
 				break;
 
 #ifdef HAVE_PGP_GPG
-			case iKeyPagePGPCheckArticle:
+			case PAGE_PGP_CHECK_ARTICLE:
 				XFACE_SUPPRESS();
 				if (pgp_check_article(&pgart))
 					draw_page(group->name, 0);
@@ -665,12 +637,12 @@ page_goto_next_unread:
 				break;
 #endif /* HAVE_PGP_GPG */
 
-			case iKeyPageToggleHeaders:	/* toggle display of whole 'raw' article */
+			case PAGE_TOGGLE_HEADERS:	/* toggle display of whole 'raw' article */
 				XFACE_CLEAR();
 				toggle_raw(group);
 				break;
 
-			case iKeyPageToggleTex2iso:		/* toggle german TeX to ISO latin1 style conversion */
+			case PAGE_TOGGLE_TEX2ISO:		/* toggle german TeX to ISO latin1 style conversion */
 				if (((group->attribute->tex2iso_conv) = !(group->attribute->tex2iso_conv)))
 					pgart.tex2iso = is_art_tex_encoded(pgart.raw);
 				else
@@ -681,14 +653,14 @@ page_goto_next_unread:
 				info_message(_(txt_toggled_tex2iso), txt_onoff[group->attribute->tex2iso_conv != FALSE ? 1 : 0]);
 				break;
 
-			case iKeyPageToggleTabs:		/* toggle tab stops 8 vs 4 */
+			case PAGE_TOGGLE_TABS:		/* toggle tab stops 8 vs 4 */
 				tabwidth = (tabwidth == 8) ? 4 : 8;
 				resize_article(TRUE, &pgart);	/* Also recooks it.. */
 				draw_page(group->name, 0);
 				info_message(_(txt_toggled_tabwidth), tabwidth);
 				break;
 
-			case iKeyPageToggleUue:			/* toggle display of uuencoded sections */
+			case PAGE_TOGGLE_UUE:			/* toggle display of uuencoded sections */
 				hide_uue = (hide_uue + 1) % (UUE_ALL + 1);
 				resize_article(TRUE, &pgart);	/* Also recooks it.. */
 				/*
@@ -701,7 +673,7 @@ page_goto_next_unread:
 				/* TODO: info_message()? */
 				break;
 
-			case iKeyPageReveal:			/* toggle hiding after ^L */
+			case PAGE_REVEAL:			/* toggle hiding after ^L */
 				reveal_ctrl_l = bool_not(reveal_ctrl_l);
 				if (!reveal_ctrl_l) {	/* switched back to active ^L's */
 					reveal_ctrl_l_lines = -1;
@@ -712,25 +684,25 @@ page_goto_next_unread:
 				/* TODO: info_message()? */
 				break;
 
-			case iKeyPageQuickAutoSel:	/* quickly auto-select article */
-			case iKeyPageQuickKill:		/* quickly kill article */
-				if ((filtered_articles = quick_filter((ch == iKeyPageQuickKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[this_resp])))
+			case GLOBAL_QUICK_FILTER_SELECT:	/* quickly auto-select article */
+			case GLOBAL_QUICK_FILTER_KILL:		/* quickly kill article */
+				if ((filtered_articles = quick_filter((func == GLOBAL_QUICK_FILTER_KILL) ? FILTER_KILL : FILTER_SELECT, group, &arts[this_resp])))
 					goto return_to_index;
 
 				draw_page(group->name, 0);
 				break;
 
-			case iKeyPageAutoSel:		/* auto-select article menu */
-			case iKeyPageAutoKill:		/* kill article menu */
+			case GLOBAL_MENU_FILTER_SELECT:		/* auto-select article menu */
+			case GLOBAL_MENU_FILTER_KILL:			/* kill article menu */
 				XFACE_CLEAR();
-				if (filter_menu((ch == iKeyPageAutoKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[this_resp])) {
+				if (filter_menu((func == GLOBAL_MENU_FILTER_KILL) ? FILTER_KILL : FILTER_SELECT, group, &arts[this_resp])) {
 					if ((filtered_articles = filter_articles(group)))
 						goto return_to_index;
 				}
 				draw_page(group->name, 0);
 				break;
 
-			case iKeyPageEditFilter:
+			case GLOBAL_EDIT_FILTER:
 				XFACE_CLEAR();
 				if (!invoke_editor(filter_file, FILTER_FILE_OFFSET))
 					break;
@@ -741,20 +713,20 @@ page_goto_next_unread:
 				draw_page(group->name, 0);
 				break;
 
-			case iKeyRedrawScr:		/* redraw current page of article */
+			case GLOBAL_REDRAW_SCREEN:		/* redraw current page of article */
 				my_retouch();
 				draw_page(group->name, 0);
 				break;
 
-			case iKeyPageToggleRot:	/* toggle rot-13 mode */
+			case PAGE_TOGGLE_ROT13:	/* toggle rot-13 mode */
 				rotate = rotate ? 0 : 13;
 				draw_page(group->name, 0);
 				info_message(_(txt_toggled_rot13));
 				break;
 
-			case iKeySearchAuthF:	/* author search forward */
-			case iKeySearchAuthB:	/* author search backward */
-				if ((n = search(SEARCH_AUTH, this_resp, (ch == iKeySearchAuthF), repeat_search)) < 0)
+			case GLOBAL_SEARCH_AUTHOR_FORWARD:	/* author search forward */
+			case GLOBAL_SEARCH_AUTHOR_BACKWARD:	/* author search backward */
+				if ((n = search(func, this_resp, repeat_search)) < 0)
 					break;
 				if ((i = load_article(n, group)) < 0) {
 					XFACE_CLEAR();
@@ -762,17 +734,17 @@ page_goto_next_unread:
 				}
 				break;
 
-			case iKeyPageCatchup:			/* catchup - mark read, goto next */
-			case iKeyPageCatchupNextUnread:	/* goto next unread */
-				snprintf(buf, sizeof(buf), _(txt_mark_thread_read), (ch == iKeyPageCatchupNextUnread) ? _(txt_enter_next_thread) : "");
-				if ((!TINRC_CONFIRM_ACTION) || prompt_yn(cLINES, buf, TRUE) == 1) {
+			case PAGE_CATCHUP:			/* catchup - mark read, goto next */
+			case PAGE_CATCHUP_NEXT_UNREAD:	/* goto next unread */
+				snprintf(buf, sizeof(buf), _(txt_mark_thread_read), (func == PAGE_CATCHUP_NEXT_UNREAD) ? _(txt_enter_next_thread) : "");
+				if ((!TINRC_CONFIRM_ACTION) || prompt_yn(buf, TRUE) == 1) {
 					thd_mark_read(group, base[which_thread(this_resp)]);
 					XFACE_CLEAR();
-					return (ch == iKeyPageCatchupNextUnread) ? GRP_NEXTUNREAD : GRP_NEXT;
+					return (func == PAGE_CATCHUP_NEXT_UNREAD) ? GRP_NEXTUNREAD : GRP_NEXT;
 				}
 				break;
 
-			case iKeyPageMarkThdUnread:
+			case PAGE_MARK_THREAD_UNREAD:
 				thd_mark_unread(group, base[which_thread(this_resp)]);
 				/*
 				 * FIXME: replace txt_thread by txt_article_upper
@@ -781,7 +753,7 @@ page_goto_next_unread:
 				info_message(_(txt_marked_as_unread), _(txt_thread_upper));
 				break;
 
-			case iKeyPageCancel:			/* cancel an article */
+			case PAGE_CANCEL:			/* cancel an article */
 				if (can_post || art_type != GROUP_TYPE_NEWS) {
 					XFACE_SUPPRESS();
 					if (cancel_article(group, &arts[this_resp], this_resp))
@@ -791,39 +763,39 @@ page_goto_next_unread:
 					info_message(_(txt_cannot_post));
 				break;
 
-			case iKeyPageEditArticle:		/* edit an article (mailgroup only) */
+			case PAGE_EDIT_ARTICLE:		/* edit an article (mailgroup only) */
 				XFACE_SUPPRESS();
 				if (art_edit(group, &arts[this_resp]))
 					draw_page(group->name, 0);
 				XFACE_SHOW();
 				break;
 
-			case iKeyPageFollowupQuote:		/* post a followup to this article */
-			case iKeyPageFollowupQuoteHeaders:
-			case iKeyPageFollowup:
+			case PAGE_FOLLOWUP_QUOTE:		/* post a followup to this article */
+			case PAGE_FOLLOWUP_QUOTE_HEADERS:
+			case PAGE_FOLLOWUP:
 				if (!can_post && art_type == GROUP_TYPE_NEWS) {
 					info_message(_(txt_cannot_post));
 					break;
 				}
 				XFACE_CLEAR();
 				(void) post_response(group->name, this_resp,
-				  (ch == iKeyPageFollowupQuote || ch == iKeyPageFollowupQuoteHeaders) ? TRUE : FALSE,
-				  ch == iKeyPageFollowupQuoteHeaders ? TRUE : FALSE, show_all_headers);
+				  (func == PAGE_FOLLOWUP_QUOTE || func == PAGE_FOLLOWUP_QUOTE_HEADERS) ? TRUE : FALSE,
+				  func == PAGE_FOLLOWUP_QUOTE_HEADERS ? TRUE : FALSE, show_all_headers);
 				draw_page(group->name, 0);
 				break;
 
-			case iKeyHelp:	/* help */
+			case GLOBAL_HELP:	/* help */
 				XFACE_CLEAR();
 				show_help_page(PAGE_LEVEL, _(txt_art_pager_com));
 				draw_page(group->name, 0);
 				break;
 
-			case iKeyToggleHelpDisplay:	/* toggle mini help menu */
+			case GLOBAL_TOGGLE_HELP_DISPLAY:	/* toggle mini help menu */
 				toggle_mini_help(PAGE_LEVEL);
 				draw_page(group->name, 0);
 				break;
 
-			case iKeyQuit:	/* return to index page */
+			case GLOBAL_QUIT:	/* return to index page */
 return_to_index:
 				XFACE_CLEAR();
 				if (filter_state == NO_FILTERING && tinrc.sort_article_type != old_sort_art_type)
@@ -843,14 +815,14 @@ return_to_index:
 				}
 				return i;
 
-			case iKeyToggleInverseVideo:	/* toggle inverse video */
+			case GLOBAL_TOGGLE_INVERSE_VIDEO:	/* toggle inverse video */
 				toggle_inverse_video();
 				draw_page(group->name, 0);
 				show_inverse_video_status();
 				break;
 
 #ifdef HAVE_COLOR
-			case iKeyToggleColor:		/* toggle color */
+			case GLOBAL_TOGGLE_COLOR:		/* toggle color */
 				if (toggle_color()) {
 					draw_page(group->name, 0);
 					show_color_status();
@@ -858,19 +830,19 @@ return_to_index:
 				break;
 #endif /* HAVE_COLOR */
 
-			case iKeyPageListThd:	/* -> thread page that this article is in */
+			case PAGE_LIST_THREAD:	/* -> thread page that this article is in */
 				XFACE_CLEAR();
 				fixup_thread(this_resp, FALSE);
 				return GRP_GOTOTHREAD;
 
-			case iKeyOptionMenu:	/* option menu */
+			case GLOBAL_OPTION_MENU:	/* option menu */
 				XFACE_CLEAR();
 				if (change_config_file(group) == FILTERING)
 					filter_state = FILTERING;
 				draw_page(group->name, 0);
 				break;
 
-			case iKeyPageNextArt:	/* skip to next article */
+			case PAGE_NEXT_ARTICLE:	/* skip to next article */
 				XFACE_CLEAR();
 				if ((n = next_response(this_resp)) == -1)
 					return (which_thread(this_resp));
@@ -879,7 +851,7 @@ return_to_index:
 					return i;
 				break;
 
-			case iKeyPageKillThd:	/* mark rest of thread as read */
+			case PAGE_MARK_THREAD_READ:	/* mark rest of thread as read */
 				thd_mark_read(group, this_resp);
 				if ((n = next_unread(next_response(this_resp))) == -1)
 					goto return_to_index;
@@ -889,10 +861,10 @@ return_to_index:
 				}
 				break;
 
-			case iKeyPageNextUnreadArt:	/* next unread article */
+			case PAGE_NEXT_UNREAD_ARTICLE:	/* next unread article */
 				goto page_goto_next_unread;
 
-			case iKeyPagePrevArt:	/* previous article */
+			case PAGE_PREVIOUS_ARTICLE:	/* previous article */
 				XFACE_CLEAR();
 				if ((n = prev_response(this_resp)) == -1)
 					return this_resp;
@@ -901,7 +873,7 @@ return_to_index:
 					return i;
 				break;
 
-			case iKeyPagePrevUnreadArt:	/* previous unread article */
+			case PAGE_PREVIOUS_UNREAD_ARTICLE:	/* previous unread article */
 				if ((n = prev_unread(prev_response(this_resp))) == -1)
 					info_message(_(txt_no_prev_unread_art));
 				else {
@@ -912,23 +884,23 @@ return_to_index:
 				}
 				break;
 
-			case iKeyQuitTin:	/* quit */
+			case GLOBAL_QUIT_TIN:	/* quit */
 				XFACE_CLEAR();
 				return GRP_QUIT;
 
-			case iKeyPageReplyQuote:	/* reply to author through mail */
-			case iKeyPageReplyQuoteHeaders:
-			case iKeyPageReply:
+			case PAGE_REPLY_QUOTE:	/* reply to author through mail */
+			case PAGE_REPLY_QUOTE_HEADERS:
+			case PAGE_REPLY:
 				XFACE_CLEAR();
-				mail_to_author(group->name, this_resp, (ch == iKeyPageReplyQuote || ch == iKeyPageReplyQuoteHeaders) ? TRUE : FALSE, ch == iKeyPageReplyQuoteHeaders ? TRUE : FALSE, show_all_headers);
+				mail_to_author(group->name, this_resp, (func == PAGE_REPLY_QUOTE || func == PAGE_REPLY_QUOTE_HEADERS) ? TRUE : FALSE, func == PAGE_REPLY_QUOTE_HEADERS ? TRUE : FALSE, show_all_headers);
 				draw_page(group->name, 0);
 				break;
 
-			case iKeyPageTag:	/* tag/untag article for saving */
+			case PAGE_TAG:	/* tag/untag article for saving */
 				tag_article(this_resp);
 				break;
 
-			case iKeyPageGroupSel:	/* return to group selection page */
+			case PAGE_GROUP_SELECT:	/* return to group selection page */
 				if (filter_state == FILTERING) {
 					filter_articles(group);
 					make_threads(group, FALSE);
@@ -936,19 +908,18 @@ return_to_index:
 				XFACE_CLEAR();
 				return GRP_RETSELECT;
 
-			case iKeyVersion:
+			case GLOBAL_VERSION:
 				info_message(cvers);
 				break;
 
-			case iKeyPost:	/* post a basenote */
+			case GLOBAL_POST:	/* post a basenote */
 				XFACE_SUPPRESS();
 				if (post_article(group->name))
 					draw_page(group->name, 0);
 				XFACE_SHOW();
 				break;
 
-			case iKeyPostponed:
-			case iKeyPostponed2:	/* post postponed article */
+			case GLOBAL_POSTPONED:	/* post postponed article */
 				if (can_post || art_type != GROUP_TYPE_NEWS) {
 					XFACE_SUPPRESS();
 					if (pickup_postponed_articles(FALSE, FALSE))
@@ -958,19 +929,19 @@ return_to_index:
 					info_message(_(txt_cannot_post));
 				break;
 
-			case iKeyDisplayPostHist:	/* display messages posted by user */
+			case GLOBAL_DISPLAY_POST_HISTORY:	/* display messages posted by user */
 				XFACE_SUPPRESS();
 				if (user_posted_messages())
 					draw_page(group->name, 0);
 				XFACE_SHOW();
 				break;
 
-			case iKeyPageMarkArtUnread:	/* mark article as unread(to return) */
+			case PAGE_MARK_ARTICLE_UNREAD:	/* mark article as unread(to return) */
 				art_mark(group, &arts[this_resp], ART_WILL_RETURN);
 				info_message(_(txt_marked_as_unread), _(txt_article_upper));
 				break;
 
-			case iKeyPageSkipIncludedText:	/* skip included text */
+			case PAGE_SKIP_INCLUDED_TEXT:	/* skip included text */
 				for (i = curr_line; i < artlines; i++) {
 					if (!(artline[i].flags & (C_QUOTE1 | C_QUOTE2 | C_QUOTE3)))
 						break;
@@ -982,24 +953,24 @@ return_to_index:
 				}
 				break;
 
-			case iKeyToggleInfoLastLine: /* this is _not_ correct, we do not toggle status here */
+			case GLOBAL_TOGGLE_INFO_LAST_LINE: /* this is _not_ correct, we do not toggle status here */
 				info_message("%s", arts[this_resp].subject);
 				break;
 
-			case iKeyPageToggleHighlight:
+			case PAGE_TOGGLE_HIGHLIGHTING:
 				word_highlight = bool_not(word_highlight);
 				draw_page(group->name, 0);
 				info_message(_(txt_toggled_high), txt_onoff[word_highlight != FALSE ? 1 : 0]);
 				break;
 
-			case iKeyPageViewAttach:
+			case PAGE_VIEW_ATTACHMENTS:
 				XFACE_SUPPRESS();
 				decode_save_mime(&pgart, FALSE);
 				draw_page(group->name, 0);
 				XFACE_SHOW();
 				break;
 
-			case iKeyPageViewUrl:
+			case PAGE_VIEW_URL:
 				if (!show_all_headers) { /* cooked mode? */
 					XFACE_SUPPRESS();
 					resize_article(FALSE, &pgart); /* umbreak long lines */
@@ -1011,7 +982,7 @@ return_to_index:
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, map_to_local(iKeyHelp, &menukeymap.page_nav)));
+				info_message(_(txt_bad_command), printascii(key, func_to_key(GLOBAL_HELP, page_keys)));
 		}
 	}
 	/* NOTREACHED */
@@ -1796,7 +1767,7 @@ load_article(
 		return 0;
 
 	if (tinrc.ask_for_metamail) {
-		if (prompt_yn(cLINES, _(txt_use_mime), TRUE) != 1)
+		if (prompt_yn(_(txt_use_mime), TRUE) != 1)
 			return 0;
 	}
 
@@ -2080,8 +2051,8 @@ info_pager(
 	const char *title,
 	t_bool wrap_at_ends)
 {
-	int ch;
 	int offset;
+	t_function func;
 
 	search_line = 0;
 	reset_srch_offsets();
@@ -2093,12 +2064,11 @@ info_pager(
 	display_info_page(0);
 
 	forever {
-		switch (ch = handle_pager_keypad(&menukeymap.info_nav)) {
-			case ESC:	/* common arrow keys */
+		switch (func = handle_keypad(page_left, page_right, page_mouse_action, info_keys)) {
+			case GLOBAL_ABORT:	/* common arrow keys */
 				break;
 
-			case iKeyUp:				/* line up */
-			case iKeyUp2:
+			case GLOBAL_LINE_UP:
 				if (num_info_lines <= NOTESLINES) {
 					info_message(_(txt_begin_of_art));
 					break;
@@ -2117,8 +2087,7 @@ info_pager(
 				display_info_page(offset);
 				break;
 
-			case iKeyDown:				/* line down */
-			case iKeyDown2:
+			case GLOBAL_LINE_DOWN:
 				if (num_info_lines <= NOTESLINES) {
 					info_message(_(txt_end_of_art));
 					break;
@@ -2137,9 +2106,7 @@ info_pager(
 				display_info_page(offset);
 				break;
 
-			case iKeyPageDown:			/* page down */
-			case iKeyPageDown2:
-			case iKeyPageDown3:
+			case GLOBAL_PAGE_DOWN:
 				if (num_info_lines <= NOTESLINES) {
 					info_message(_(txt_end_of_art));
 					break;
@@ -2157,9 +2124,7 @@ info_pager(
 				display_info_page(0);
 				break;
 
-			case iKeyPageUp:			/* page up */
-			case iKeyPageUp2:
-			case iKeyPageUp3:
+			case GLOBAL_PAGE_UP:
 				if (num_info_lines <= NOTESLINES) {
 					info_message(_(txt_begin_of_art));
 					break;
@@ -2177,16 +2142,14 @@ info_pager(
 				display_info_page(0);
 				break;
 
-			case iKeyFirstPage:			/* Home */
-			case iKeyHelpFirstPage2:
+			case GLOBAL_FIRST_PAGE:
 				if (curr_info_line) {
 					curr_info_line = 0;
 					display_info_page(0);
 				}
 				break;
 
-			case iKeyLastPage:			/* End */
-			case iKeyHelpLastPage2:
+			case GLOBAL_LAST_PAGE:
 				if (curr_info_line + NOTESLINES != num_info_lines) {
 					/* Display a full last page for neatness */
 					curr_info_line = num_info_lines - NOTESLINES;
@@ -2194,24 +2157,24 @@ info_pager(
 				}
 				break;
 
-			case iKeyToggleHelpDisplay:
+			case GLOBAL_TOGGLE_HELP_DISPLAY:
 				toggle_mini_help(INFO_PAGER);
 				display_info_page(0);
 				break;
 
-			case iKeySearchSubjF:
-			case iKeySearchSubjB:
-			case iKeySearchRepeat:
-				if (ch == iKeySearchRepeat && i_key_search_last != iKeySearchSubjF && i_key_search_last != iKeySearchSubjB)
+			case GLOBAL_SEARCH_SUBJECT_FORWARD:
+			case GLOBAL_SEARCH_SUBJECT_BACKWARD:
+			case GLOBAL_SEARCH_REPEAT:
+				if (func == GLOBAL_SEARCH_REPEAT && last_search != GLOBAL_SEARCH_SUBJECT_FORWARD && last_search != GLOBAL_SEARCH_SUBJECT_BACKWARD)
 					break;
 
-				if ((search_article((ch == iKeySearchSubjF), (ch == iKeySearchRepeat), search_line, num_info_lines, infoline, num_info_lines - 1, info_file)) == -1)
+				if ((search_article((func == GLOBAL_SEARCH_SUBJECT_FORWARD), (func == GLOBAL_SEARCH_REPEAT), search_line, num_info_lines, infoline, num_info_lines - 1, info_file)) == -1)
 					break;
 
 				process_search(&curr_info_line, num_info_lines, NOTESLINES, INFO_PAGER);
 				break;
 
-			case iKeyQuit:	/* quit */
+			case GLOBAL_QUIT:	/* quit */
 				ClearScreen();
 				return;
 

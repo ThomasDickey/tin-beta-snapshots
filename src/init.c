@@ -3,10 +3,10 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-09-08
+ *  Updated   : 2005-01-30
  *  Notes     :
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,9 +44,9 @@
 #ifndef included_trace_h
 #	include "trace.h"
 #endif /* !included_trace_h */
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 #ifndef VERSION_H
 #	include "version.h"
 #endif /* !VERSION_H */
@@ -124,9 +124,9 @@ char userid[PATH_LEN];
 	char rcdir_asfile[PATH_LEN];	/* rcdir expressed as dev:[dir]tin.dir, for stat() */
 #endif /* VMS */
 
+t_function last_search;	/* for repeated search */
 int hist_last[HIST_MAXNUM + 1];
 int hist_pos[HIST_MAXNUM + 1];
-int i_key_search_last;			/* for repeated search */
 int iso2asc_supported;			/* Convert ISO-Latin1 to Ascii */
 int num_headers_to_display;		/* num headers to display -- swp */
 int num_headers_to_not_display;		/* num headers to not display -- swp */
@@ -275,7 +275,7 @@ struct t_config tinrc = {
 	FILTER_SUBJ_CASE_SENSITIVE,		/* default_filter_kill_header */
 	FILTER_SUBJ_CASE_SENSITIVE,		/* default_filter_select_header */
 	0,		/* default_move_group */
-	iKeySaveAppendFile,		/* default_save_mode */
+	'a',		/* default_save_mode */
 	0,		/* getart_limit */
 	2,		/* recent_time */
 	32,		/* groupname_max_length */
@@ -656,11 +656,6 @@ init_selfinfo(
 	subscriptions_file[0] = '\0';
 
 	/*
-	 * Setup default keymaps
-	 */
-	build_keymaps();
-
-	/*
 	 * read the global site config file to override some default
 	 * values given at compile time
 	 */
@@ -996,6 +991,6 @@ utf8_pcre(
 	(void) pcre_config(PCRE_CONFIG_UTF8, &i);
 #	endif /* PCRE_MAJOR && PCRE_MAJOR >= $*/
 
-	return (i ? TRUE: FALSE);
+	return (i ? TRUE : FALSE);
 }
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */

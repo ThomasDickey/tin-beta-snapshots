@@ -3,10 +3,10 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-09-14
+ *  Updated   : 2005-02-12
  *  Notes     :
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -554,7 +554,7 @@ tin_done(
 			group = &active[my_group[i]];
 			if (group->read_during_session) {
 				if (ask) {
-					if (prompt_yn(cLINES, _(txt_catchup_all_read_groups), FALSE) == 1) {
+					if (prompt_yn(_(txt_catchup_all_read_groups), FALSE) == 1) {
 						ask = FALSE;
 						tinrc.thread_articles = THREAD_NONE;	/* speeds up index loading */
 					} else
@@ -571,7 +571,8 @@ tin_done(
 	 * chance to try again
 	 */
 	if (!no_write) {
-		forever {
+		i = 3; /* max retries */
+		while (i--) {
 			if (((wrote_newsrc_lines = write_newsrc()) >= 0L) && (wrote_newsrc_lines >= read_newsrc_lines)) {
 				if (!batch_mode || verbose)
 					my_fputs(_(txt_newsrc_saved), stdout);
@@ -590,7 +591,7 @@ tin_done(
 			}
 
 			if (!batch_mode) {
-				if (!prompt_yn(cLINES, _(txt_newsrc_again), TRUE))
+				if (prompt_yn(_(txt_newsrc_again), TRUE) <= 0)
 					break;
 			}
 		}
@@ -3577,86 +3578,93 @@ utf8_valid(
 			numc++;
 		} while ((d <<= 1) & 0x80);	/* get sequence length */
 
-		d = *c;
-		e = *(c + 1);
-
-		switch (numc) {
-			case 2:
-				/* out of range or sequences which would also fit into 1 byte */
-				if (d < 0xc2 || d > 0xdf)
-					illegal = TRUE;
-				break;
-
-			case 3:
-				f = *(c + 2);
-				/* out of range or sequences which would also fit into 2 bytes */
-				if (d < 0xe0 || d > 0xef || (d == 0xe0 && e < 0xa0))
-					illegal = TRUE;
-				/* U+D800 ... U+DFFF */
-				if (d == 0xed && e > 0x9f)
-					illegal = TRUE;
-				/* U+FDD0 ... U+FDEF */
-				if (d == 0xef && e == 0xb7 && (f >= 0x90 && f <= 0xaf))
-					illegal = TRUE;
-				/* U+FFFE, U+FFFF */
-				if (d == 0xef && e == 0xbf && (f == 0xbe || f == 0xbf))
-					illegal = TRUE;
-				break;
-
-			case 4:
-				f = *(c + 2);
-				g = *(c + 3);
-				/* out of range or sequences which would also fit into 3 bytes */
-				if (d < 0xf0 || d > 0xf7 || (d == 0xf0 && e < 0x90))
-					illegal = TRUE;
-				/* largest current used sequence */
-				if ((d == 0xf4 && e > 0x8f) || d > 0xf4)
-					illegal = TRUE;
-				/* Unicode 3.1 noncharacters */
-				/* U+1FFFE, U+1FFFF, U+2FFFE, U+2FFFF, U+3FFFE, U+3FFFF; (Unicode 3.1) */
-				if (d == 0xf0 && (e == 0x9f || e == 0xaf || e == 0xbf) && f == 0xbf && (g == 0xbe || g == 0xbf))
-					illegal = TRUE;
-				/* Unicode 3.1 noncharacters */
-				/* U+4FFFE, U+4FFFF, U+5FFFE, U+5FFFF, U+6FFFE, U+6FFFF, U+7FFFE, U+7FFFF */
-				/* U+8FFFE, U+8FFFF, U+9FFFE, U+9FFFF, U+AFFFE, U+AFFFF, U+BFFFE, U+BFFFF */
-				/* U+CFFFE, U+CFFFF, U+DFFFE, U+DFFFF, U+EFFFE, U+EFFFF, U+FFFFE, U+FFFFF */
-				if ((d == 0xf1 || d == 0xf2 || d == 0xf3) && (e == 0x8f || e == 0x9f || e == 0xaf || e == 0xbf) && f == 0xbf && (g == 0xbe || g == 0xbf))
-					illegal = TRUE;
-				/* Unicode 3.1 noncharacters */
-				/* U+10FFFE, U+10FFFF */
-				if (d == 0xf4 && e == 0x8f && f == 0xbf && (g == 0xbe || g == 0xbf))
-					illegal = TRUE;
-				break;
-
-#	if 0	/* currently not used, see also check above */
-			case 5:
-				/* out of range or sequences which would also fit into 4 bytes */
-				if (d < 0xf8 || d > 0xfb || (d == 0xf8 && e < 0x88))
-					illegal = TRUE;
-				break;
-
-			case 6:
-				/* out of range or sequences which would also fit into 5 bytes */
-				if (d < 0xfc || d > 0xfd || (d == 0xfc && e < 0x84))
-					illegal = TRUE;
-				break;
-#	endif /* 0 */
-
-			default:
-				/*
-				 * with the check for plain US-ASCII above all other sequence
-				 * length are illegal.
-				 */
+		d = 1;
+		while (d < numc) {
+			if (*(c + d) == '\0' || *(c + d) == '\n')
 				illegal = TRUE;
-				break;
+			d--;
 		}
 
 		if (!illegal) {
-			for (d = 1; d < numc; d++) {
-				e = *(c + d);
-				if (e < 0x80 || e > 0xbf || *(c + d) == '\0' || *(c + d) == '\n')
+			d = *c;
+			e = *(c + 1);
+
+			switch (numc) {
+				case 2:
+					/* out of range or sequences which would also fit into 1 byte */
+					if (d < 0xc2 || d > 0xdf)
+						illegal = TRUE;
+					break;
+
+				case 3:
+					f = *(c + 2);
+					/* out of range or sequences which would also fit into 2 bytes */
+					if (d < 0xe0 || d > 0xef || (d == 0xe0 && e < 0xa0))
+						illegal = TRUE;
+					/* U+D800 ... U+DFFF */
+					if (d == 0xed && e > 0x9f)
+						illegal = TRUE;
+					/* U+FDD0 ... U+FDEF */
+					if (d == 0xef && e == 0xb7 && (f >= 0x90 && f <= 0xaf))
+						illegal = TRUE;
+					/* U+FFFE, U+FFFF */
+					if (d == 0xef && e == 0xbf && (f == 0xbe || f == 0xbf))
+						illegal = TRUE;
+					break;
+
+				case 4:
+					f = *(c + 2);
+					g = *(c + 3);
+					/* out of range or sequences which would also fit into 3 bytes */
+					if (d < 0xf0 || d > 0xf7 || (d == 0xf0 && e < 0x90))
+						illegal = TRUE;
+					/* largest current used sequence */
+					if ((d == 0xf4 && e > 0x8f) || d > 0xf4)
+						illegal = TRUE;
+					/* Unicode 3.1 noncharacters */
+					/* U+1FFFE, U+1FFFF, U+2FFFE, U+2FFFF, U+3FFFE, U+3FFFF; (Unicode 3.1) */
+					if (d == 0xf0 && (e == 0x9f || e == 0xaf || e == 0xbf) && f == 0xbf && (g == 0xbe || g == 0xbf))
+						illegal = TRUE;
+					/* Unicode 3.1 noncharacters */
+					/* U+4FFFE, U+4FFFF, U+5FFFE, U+5FFFF, U+6FFFE, U+6FFFF, U+7FFFE, U+7FFFF */
+					/* U+8FFFE, U+8FFFF, U+9FFFE, U+9FFFF, U+AFFFE, U+AFFFF, U+BFFFE, U+BFFFF */
+					/* U+CFFFE, U+CFFFF, U+DFFFE, U+DFFFF, U+EFFFE, U+EFFFF, U+FFFFE, U+FFFFF */
+					if ((d == 0xf1 || d == 0xf2 || d == 0xf3) && (e == 0x8f || e == 0x9f || e == 0xaf || e == 0xbf) && f == 0xbf && (g == 0xbe || g == 0xbf))
+						illegal = TRUE;
+					/* Unicode 3.1 noncharacters */
+					/* U+10FFFE, U+10FFFF */
+					if (d == 0xf4 && e == 0x8f && f == 0xbf && (g == 0xbe || g == 0xbf))
+						illegal = TRUE;
+					break;
+
+#	if 0	/* currently not used, see also check above */
+				case 5:
+					/* out of range or sequences which would also fit into 4 bytes */
+					if (d < 0xf8 || d > 0xfb || (d == 0xf8 && e < 0x88))
+						illegal = TRUE;
+					break;
+
+				case 6:
+					/* out of range or sequences which would also fit into 5 bytes */
+					if (d < 0xfc || d > 0xfd || (d == 0xfc && e < 0x84))
+						illegal = TRUE;
+					break;
+#	endif /* 0 */
+
+				default:
+					/*
+					 * with the check for plain US-ASCII above all other sequence
+					 * length are illegal.
+					 */
 					illegal = TRUE;
+					break;
 			}
+		}
+
+		for (d = 1; d < numc && !illegal; d++) {
+			e = *(c + d);
+			if (e < 0x80 || e > 0xbf || e == '\0' || e == '\n')
+				illegal = TRUE;
 		}
 
 		if (!illegal)

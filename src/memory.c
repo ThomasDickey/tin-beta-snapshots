@@ -3,10 +3,10 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-10-12
+ *  Updated   : 2005-02-25
  *  Notes     :
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,15 +43,15 @@
 #endif /* !RFC2046_H */
 
 /*
- * Dynamic arrays maximum & current sizes
+ * Dynamic arrays maximum (initialized in init_alloc()) & current sizes
  * num_* values are one past top of used part of array
  */
-int max_active = 0;
+int max_active;
 int num_active = -1;
-int max_newnews = 0;
+int max_newnews;
 int num_newnews = 0;
-int max_art = 0;
-int max_save = 0;
+int max_art;
+int max_save;
 int num_save = 0;
 
 /*
@@ -204,40 +204,40 @@ free_all_arrays(
 	free_active_arrays();
 	free_global_arrays();
 
-	if (!batch_mode) {
 #ifdef HAVE_COLOR
-		FreeIfNeeded(quote_regex.re);
-		FreeIfNeeded(quote_regex.extra);
-		FreeIfNeeded(quote_regex2.re);
-		FreeIfNeeded(quote_regex2.extra);
-		FreeIfNeeded(quote_regex3.re);
-		FreeIfNeeded(quote_regex3.extra);
+	FreeIfNeeded(quote_regex.re);
+	FreeIfNeeded(quote_regex.extra);
+	FreeIfNeeded(quote_regex2.re);
+	FreeIfNeeded(quote_regex2.extra);
+	FreeIfNeeded(quote_regex3.re);
+	FreeIfNeeded(quote_regex3.extra);
 #endif /* HAVE_COLOR */
-		FreeIfNeeded(slashes_regex.re);
-		FreeIfNeeded(slashes_regex.extra);
-		FreeIfNeeded(stars_regex.re);
-		FreeIfNeeded(stars_regex.extra);
-		FreeIfNeeded(strokes_regex.re);
-		FreeIfNeeded(strokes_regex.extra);
-		FreeIfNeeded(underscores_regex.re);
-		FreeIfNeeded(underscores_regex.extra);
-		FreeIfNeeded(strip_re_regex.re);
-		FreeIfNeeded(strip_re_regex.extra);
-		FreeIfNeeded(strip_was_regex.re);
-		FreeIfNeeded(strip_was_regex.extra);
-		FreeIfNeeded(uubegin_regex.re);
-		FreeIfNeeded(uubegin_regex.extra);
-		FreeIfNeeded(uubody_regex.re);
-		FreeIfNeeded(uubody_regex.extra);
-		FreeIfNeeded(url_regex.re);
-		FreeIfNeeded(url_regex.extra);
-		FreeIfNeeded(mail_regex.re);
-		FreeIfNeeded(mail_regex.extra);
-		FreeIfNeeded(news_regex.re);
-		FreeIfNeeded(news_regex.extra);
-		FreeIfNeeded(shar_regex.re);
-		FreeIfNeeded(shar_regex.extra);
+	FreeIfNeeded(slashes_regex.re);
+	FreeIfNeeded(slashes_regex.extra);
+	FreeIfNeeded(stars_regex.re);
+	FreeIfNeeded(stars_regex.extra);
+	FreeIfNeeded(strokes_regex.re);
+	FreeIfNeeded(strokes_regex.extra);
+	FreeIfNeeded(underscores_regex.re);
+	FreeIfNeeded(underscores_regex.extra);
+	FreeIfNeeded(strip_re_regex.re);
+	FreeIfNeeded(strip_re_regex.extra);
+	FreeIfNeeded(strip_was_regex.re);
+	FreeIfNeeded(strip_was_regex.extra);
+	FreeIfNeeded(uubegin_regex.re);
+	FreeIfNeeded(uubegin_regex.extra);
+	FreeIfNeeded(uubody_regex.re);
+	FreeIfNeeded(uubody_regex.extra);
+	FreeIfNeeded(url_regex.re);
+	FreeIfNeeded(url_regex.extra);
+	FreeIfNeeded(mail_regex.re);
+	FreeIfNeeded(mail_regex.extra);
+	FreeIfNeeded(news_regex.re);
+	FreeIfNeeded(news_regex.extra);
+	FreeIfNeeded(shar_regex.re);
+	FreeIfNeeded(shar_regex.extra);
 
+	if (!batch_mode) {
 		free_keymaps();
 		free_input_history();
 	}

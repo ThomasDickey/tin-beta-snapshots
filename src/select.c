@@ -3,10 +3,10 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-11-16
+ *  Updated   : 2005-03-14
  *  Notes     :
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,18 +41,18 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 
 /*
  * Local prototypes
  */
+static t_function select_left(void);
+static t_function select_right(void);
 static int active_comp(t_comptype p1, t_comptype p2);
 static int reposition_group(struct t_group *group, int default_num);
 static int save_restore_curr_group(t_bool saving);
-static int select_left(void);
-static int select_right(void);
 static t_bool pos_next_unread_group(t_bool redraw);
 static t_bool yanked_out = TRUE;
 static void build_gline(int i);
@@ -79,19 +79,19 @@ t_menu selmenu = { 1, 0, 0, show_selection_page, draw_group_arrow, build_gline }
 static int groupname_len;	/* max. group name length */
 
 
-static int
+static t_function
 select_left(
 	void)
 {
-	return iKeyQuit;
+	return GLOBAL_QUIT;
 }
 
 
-static int
+static t_function
 select_right(
 	void)
 {
-	return iKeySelectReadGrp;
+	return SELECT_ENTER_GROUP;
 }
 
 
@@ -102,7 +102,8 @@ selection_page(
 {
 	char buf[LEN];
 	char key[MAXKEYLEN];
-	int i, n, ch;
+	int i, n;
+	t_function func;
 
 	selmenu.curr = start_groupnum;
 
@@ -133,67 +134,68 @@ selection_page(
 
 		set_xclick_on();
 
-		switch ((ch = handle_keypad(select_left, select_right, &menukeymap.select_nav))) {
-			case iKeyAbort:		/* Abort */
+		switch ((func = handle_keypad(select_left, select_right, global_mouse_action, select_keys))) {
+			case GLOBAL_ABORT:		/* Abort */
 				break;
 
-			case '1': case '2': case '3': case '4': case '5':
-			case '6': case '7': case '8': case '9':
+			case DIGIT_1:
+			case DIGIT_2:
+			case DIGIT_3:
+			case DIGIT_4:
+			case DIGIT_5:
+			case DIGIT_6:
+			case DIGIT_7:
+			case DIGIT_8:
+			case DIGIT_9:
 				if (selmenu.max)
-					prompt_item_num(ch, _(txt_select_group));
+					prompt_item_num(func_to_key(func, select_keys), _(txt_select_group));
 				else
 					info_message(_(txt_no_groups));
 				break;
 
 #ifndef NO_SHELL_ESCAPE
-			case iKeyShellEscape:
+			case GLOBAL_SHELL_ESCAPE:
 				do_shell_escape();
 				break;
 #endif /* !NO_SHELL_ESCAPE */
 
-			case iKeyFirstPage:	/* show first page of groups */
+			case GLOBAL_FIRST_PAGE:		/* show first page of groups */
 				top_of_list();
 				break;
 
-			case iKeyLastPage:	/* show last page of groups */
+			case GLOBAL_LAST_PAGE:		/* show last page of groups */
 				end_of_list();
 				break;
 
-			case iKeyPageUp:		/* page up */
-			case iKeyPageUp2:
-			case iKeyPageUp3:
+			case GLOBAL_PAGE_UP:
 				page_up();
 				break;
 
-			case iKeyPageDown:		/* page down */
-			case iKeyPageDown2:
-			case iKeyPageDown3:
+			case GLOBAL_PAGE_DOWN:
 				page_down();
 				break;
 
-			case iKeyUp:		/* line up */
-			case iKeyUp2:
+			case GLOBAL_LINE_UP:
 				move_up();
 				break;
 
-			case iKeyDown:		/* line down */
-			case iKeyDown2:
+			case GLOBAL_LINE_DOWN:
 				move_down();
 				break;
 
-			case iKeyScrollDown:
+			case GLOBAL_SCROLL_DOWN:
 				scroll_down();
 				break;
 
-			case iKeyScrollUp:
+			case GLOBAL_SCROLL_UP:
 				scroll_up();
 				break;
 
-			case iKeySelectSortActive:	/* Sort active groups */
+			case SELECT_SORT_ACTIVE:	/* sort active groups */
 				sort_active_file();
 				break;
 
-			case iKeySetRange:	/* set range */
+			case GLOBAL_SET_RANGE:
 				if (selmenu.max) {
 					if (set_range(SELECT_LEVEL, 1, selmenu.max, selmenu.curr + 1))
 						show_selection_page();
@@ -201,42 +203,40 @@ selection_page(
 					info_message(_(txt_no_groups));
 				break;
 
-			case iKeySearchSubjF:	/* search forward */
-			case iKeySearchSubjB:	/* search backward */
-			case iKeySearchRepeat:
-				if (ch == iKeySearchRepeat && i_key_search_last != iKeySearchSubjF && i_key_search_last != iKeySearchSubjB)
-					info_message(_(txt_bad_command), printascii(key, map_to_local(iKeyHelp, &menukeymap.select_nav)));
+			case GLOBAL_SEARCH_SUBJECT_FORWARD:
+			case GLOBAL_SEARCH_SUBJECT_BACKWARD:
+			case GLOBAL_SEARCH_REPEAT:
+				if (func == GLOBAL_SEARCH_REPEAT && last_search != GLOBAL_SEARCH_SUBJECT_FORWARD && last_search != GLOBAL_SEARCH_SUBJECT_BACKWARD)
+					info_message(_(txt_bad_command), printascii(key, key_to_func(GLOBAL_HELP, select_keys)));
 				else {
-					if ((i = search_active((ch == iKeySearchSubjF), (ch == iKeySearchRepeat))) != -1) {
+					if ((i = search_active((func == GLOBAL_SEARCH_SUBJECT_FORWARD), (func == GLOBAL_SEARCH_REPEAT))) != -1) {
 						move_to_item(i);
 						clear_message();
 					}
 				}
 				break;
 
-			case iKeySelectReadGrp:	/* go into group */
-			case iKeySelectReadGrp2:
+			case SELECT_ENTER_GROUP:		/* go into group */
 				select_read_group();
 				break;
 
-			case iKeySelectEnterNextUnreadGrp:	/* enter next group containing unread articles */
-			case iKeySelectEnterNextUnreadGrp2:
+			case SELECT_ENTER_NEXT_UNREAD_GROUP:	/* enter next group containing unread articles */
 				if (pos_next_unread_group(FALSE))
 					read_groups();
 				break;							/* Nothing more to do at the moment */
 
-			case iKeyRedrawScr:		/* redraw */
+			case GLOBAL_REDRAW_SCREEN:
 				my_retouch();					/* TODO: not done elsewhere, maybe should be in show_selection_page */
 				set_xclick_off();
 				show_selection_page();
 				break;
 
-			case iKeySelectResetNewsrc:	/* reset .newsrc */
+			case SELECT_RESET_NEWSRC:		/* reset .newsrc */
 				if (no_write) {
 					info_message(_(txt_info_no_write));
 					break;
 				}
-				if (prompt_yn(cLINES, _(txt_reset_newsrc), FALSE) == 1) {
+				if (prompt_yn(_(txt_reset_newsrc), FALSE) == 1) {
 					reset_newsrc();
 					sync_active_file();
 					selmenu.curr = 0;
@@ -244,22 +244,28 @@ selection_page(
 				}
 				break;
 
-			case iKeySelectCatchup:	/* catchup - mark all articles as read */
-			case iKeySelectCatchupNextUnread:	/* and goto next unread group */
+			case SELECT_CATCHUP:			/* catchup - mark all articles as read */
+			case SELECT_CATCHUP_NEXT_UNREAD:	/* and goto next unread group */
 				if (selmenu.max)
-					catchup_group(&CURR_GROUP, (ch == iKeySelectCatchupNextUnread));
+					catchup_group(&CURR_GROUP, (func == SELECT_CATCHUP_NEXT_UNREAD));
 				else
 					info_message(_(txt_no_groups));
 				break;
 
-			case iKeySelectToggleDescriptions:	/* toggle newsgroup descriptions */
+			case GLOBAL_EDIT_FILTER:
+				if (!invoke_editor(filter_file, FILTER_FILE_OFFSET))
+					break;
+				(void) read_filter_file(filter_file);
+				break;
+
+			case SELECT_TOGGLE_DESCRIPTIONS:	/* toggle newsgroup descriptions */
 				show_description = bool_not(show_description);
 				if (show_description)
 					read_descriptions(TRUE);
 				show_selection_page();
 				break;
 
-			case iKeySelectGoto:			/* prompt for a new group name */
+			case SELECT_GOTO:			/* prompt for a new group name */
 				{
 					int oldmax = selmenu.max;
 
@@ -275,24 +281,24 @@ selection_page(
 				}
 				break;
 
-			case iKeyHelp:					/* help */
+			case GLOBAL_HELP:
 				show_help_page(SELECT_LEVEL, _(txt_group_select_com));
 				show_selection_page();
 				break;
 
-			case iKeyToggleHelpDisplay:		/* toggle mini help menu */
+			case GLOBAL_TOGGLE_HELP_DISPLAY:	/* toggle mini help menu */
 				toggle_mini_help(SELECT_LEVEL);
 				show_selection_page();
 				break;
 
-			case iKeyToggleInverseVideo:	/* toggle inverse video */
+			case GLOBAL_TOGGLE_INVERSE_VIDEO:
 				toggle_inverse_video();
 				show_selection_page();
 				show_inverse_video_status();
 				break;
 
 #ifdef HAVE_COLOR
-			case iKeyToggleColor:			/* toggle color */
+			case GLOBAL_TOGGLE_COLOR:
 				if (toggle_color()) {
 					show_selection_page();
 					show_color_status();
@@ -300,12 +306,12 @@ selection_page(
 				break;
 #endif /* HAVE_COLOR */
 
-			case iKeyToggleInfoLastLine:	/* display group description */
+			case GLOBAL_TOGGLE_INFO_LAST_LINE:	/* display group description */
 				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
 				show_selection_page();
 				break;
 
-			case iKeySelectMoveGrp:	/* reposition group within group list */
+			case SELECT_MOVE_GROUP:			/* reposition group within group list */
 				/* TODO: move all this to reposition_group() */
 				if (!selmenu.max) {
 					info_message(_(txt_no_groups));
@@ -337,31 +343,31 @@ selection_page(
 				}
 				break;
 
-			case iKeyOptionMenu:	/* option menu */
+			case GLOBAL_OPTION_MENU:
 				(void) change_config_file(NULL);
 				read_attributes_files();
 				show_selection_page();
 				break;
 
-			case iKeySelectNextUnreadGrp:	/* goto next unread group */
+			case SELECT_NEXT_UNREAD_GROUP:		/* goto next unread group */
 				pos_next_unread_group(TRUE);
 				break;
 
-			case iKeyQuit:	/* quit */
+			case GLOBAL_QUIT:			/* quit */
 				select_done();
 				break;
 
-			case iKeyQuitTin:	/* quit, no ask */
+			case GLOBAL_QUIT_TIN:			/* quit, no ask */
 				select_quit();
 				break;
 
-			case iKeySelectQuitNoWrite:	/* quit, but don't save configuration */
-				if (prompt_yn(cLINES, _(txt_quit_no_write), TRUE) == 1)
+			case SELECT_QUIT_NO_WRITE:		/* quit, but don't save configuration */
+				if (prompt_yn(_(txt_quit_no_write), TRUE) == 1)
 					tin_done(EXIT_SUCCESS);
 				show_selection_page();
 				break;
 
-			case iKeySelectToggleReadDisplay:
+			case SELECT_TOGGLE_READ_DISPLAY:
 				/*
 				 * If in tinrc.show_only_unread_groups mode toggle all
 				 * subscribed to groups and only groups that contain unread
@@ -380,11 +386,11 @@ selection_page(
 					info_message(_(txt_show_unread));
 				break;
 
-			case iKeySelectBugReport:
+			case GLOBAL_BUGREPORT:
 				bug_report();
 				break;
 
-			case iKeySelectSubscribe:	/* subscribe to current group */
+			case SELECT_SUBSCRIBE:			/* subscribe to current group */
 				if (!selmenu.max) {
 					info_message(_(txt_no_groups));
 					break;
@@ -401,7 +407,7 @@ selection_page(
 				}
 				break;
 
-			case iKeySelectSubscribePat:	/* subscribe to groups matching pattern */
+			case SELECT_SUBSCRIBE_PATTERN:		/* subscribe to groups matching pattern */
 				if (no_write) {
 					info_message(_(txt_info_no_write));
 					break;
@@ -409,7 +415,7 @@ selection_page(
 				subscribe_pattern(_(txt_subscribe_pattern), _(txt_subscribing), _(txt_subscribed_num_groups), TRUE);
 				break;
 
-			case iKeySelectUnsubscribe:	/* unsubscribe to current group */
+			case SELECT_UNSUBSCRIBE:		/* unsubscribe to current group */
 				if (!selmenu.max) {
 					info_message(_(txt_no_groups));
 					break;
@@ -436,7 +442,7 @@ selection_page(
 				}
 				break;
 
-			case iKeySelectUnsubscribePat:	/* unsubscribe to groups matching pattern */
+			case SELECT_UNSUBSCRIBE_PATTERN:	/* unsubscribe to groups matching pattern */
 				if (no_write) {
 					info_message(_(txt_info_no_write));
 					break;
@@ -445,11 +451,11 @@ selection_page(
 								_(txt_unsubscribing), _(txt_unsubscribed_num_groups), FALSE);
 				break;
 
-			case iKeyVersion:	/* show tin version */
+			case GLOBAL_VERSION:			/* show tin version */
 				info_message(cvers);
 				break;
 
-			case iKeyPost:	/* post a basenote */
+			case GLOBAL_POST:			/* post a basenote */
 				if (!selmenu.max) {
 					snprintf(buf, sizeof(buf), _(txt_post_newsgroups), tinrc.default_post_newsgroups);
 					if (!prompt_string_default(buf, tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS))
@@ -484,8 +490,7 @@ selection_page(
 					show_selection_page();
 				break;
 
-			case iKeyPostponed:
-			case iKeyPostponed2:	/* post postponed article */
+			case GLOBAL_POSTPONED:			/* post postponed article */
 				if (can_post) {
 					if (pickup_postponed_articles(FALSE, FALSE))
 						show_selection_page();
@@ -493,23 +498,22 @@ selection_page(
 					info_message(_(txt_cannot_post));
 				break;
 
-			case iKeyDisplayPostHist:	/* display messages posted by user */
+			case GLOBAL_DISPLAY_POST_HISTORY:	/* display messages posted by user */
 				if (user_posted_messages())
 					show_selection_page();
 				break;
 
-			case iKeySelectYankActive:	/* yank in/out rest of groups from active */
+			case SELECT_YANK_ACTIVE:		/* yank in/out rest of groups from active */
 				yank_active_file();
 				break;
 
-			case iKeySelectSyncWithActive:	/* Re-read active file to see if any new news */
+			case SELECT_SYNC_WITH_ACTIVE:		/* Re-read active file to see if any new news */
 				sync_active_file();
 				if (!yanked_out)
 					yank_active_file();			/* yank out if yanked in */
 				break;
 
-			case iKeySelectMarkGrpUnread:
-			case iKeySelectMarkGrpUnread2:	/* mark group unread */
+			case SELECT_MARK_GROUP_UNREAD:
 				if (!selmenu.max) {
 					info_message(_(txt_no_groups));
 					break;
@@ -527,7 +531,7 @@ selection_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, map_to_local(iKeyHelp, &menukeymap.select_nav)));
+				info_message(_(txt_bad_command), printascii(key, func_to_key(GLOBAL_HELP, select_keys)));
 		}
 	}
 }
@@ -957,7 +961,7 @@ catchup_group(
 {
 	char *smsg = NULL;
 
-	if ((!TINRC_CONFIRM_ACTION) || prompt_yn(cLINES, sized_message(&smsg, _(txt_mark_group_read), group->name), TRUE) == 1) {
+	if ((!TINRC_CONFIRM_ACTION) || prompt_yn(sized_message(&smsg, _(txt_mark_group_read), group->name), TRUE) == 1) {
 		grp_mark_read(group, NULL);
 		mark_screen(selmenu.curr, 9, "     ");
 
@@ -1227,9 +1231,9 @@ static void
 select_done(
 	void)
 {
-	if (!TINRC_CONFIRM_TO_QUIT || prompt_yn(cLINES, _(txt_quit), TRUE) == 1)
+	if (!TINRC_CONFIRM_TO_QUIT || prompt_yn(_(txt_quit), TRUE) == 1)
 		select_quit();
-	if (!no_write && prompt_yn(cLINES, _(txt_save_config), TRUE) == 1) {
+	if (!no_write && prompt_yn(_(txt_save_config), TRUE) == 1) {
 		write_config_file(local_config_file);
 		write_newsrc();
 	}

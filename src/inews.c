@@ -3,10 +3,10 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2003-10-12
+ *  Updated   : 2005-02-12
  *  Notes     : NNTP built in version of inews
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,6 +83,8 @@
 
 /*
  * Submit an article using the NNTP POST command
+ *
+ * TODO: remove mailheaders (To, Cc, Bcc, ...)?
  */
 #ifdef NNTP_INEWS
 static t_bool
@@ -428,10 +430,10 @@ submit_news_file(
 
 #ifdef NNTP_INEWS
 			if (!ret_code && read_news_via_nntp && !read_saved_news && 0 != strcasecmp(tinrc.inews_prog, INTERNAL_CMD)) {
-				if (prompt_yn(cLINES, _(txt_post_via_builtin_inews), TRUE)) {
+				if (prompt_yn(_(txt_post_via_builtin_inews), TRUE)) {
 					ret_code = submit_inews(name, group, a_message_id);
 					if (ret_code) {
-						if (prompt_yn(cLINES, _(txt_post_via_builtin_inews_only), TRUE) == 1)
+						if (prompt_yn(_(txt_post_via_builtin_inews_only), TRUE) == 1)
 							strcpy(tinrc.inews_prog, INTERNAL_CMD);
 					}
 				}

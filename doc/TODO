@@ -4,6 +4,30 @@ not read only ,-).
 
 Bugs
 ----
+o  the decription in the online 'h'elp for is dublicated (in
+   all levels) if the "same" key is mapped to the same function twice
+   (e.g: GroupReadBasenote	^J	^M)
+   | Group/thread/article operations
+   | -------------------------------
+   | <CR>      read chosen group
+   | <CR>      read chosen group
+   [20050311 Urs Janssen <urs@tin.org>]
+
+o  can 'V'iew mime-parts with (illegal) encoded filename, e.g:
+   | Content-Type: image/jpeg;
+   |  name="=?iso-8859-1?Q?internationales_Zeichen_f=FCr_Ehe.jpg?="
+   | Content-Disposition: attachment;
+   |  filename="=?iso-8859-1?Q?internationales_Zeichen_f=FCr_Ehe.jpg?="
+   as tin treats the leading '=' as mailbox indicator and complains
+   | Save filename for image/jpeg is a mailbox. Attachment not saved
+   [20050203 Urs Janssen <urs@tin.org>]
+
+o  unexpected multiline responses confuse tin, e.g.:
+   | 240 Article posted =?ISO-8859-1?Q?=3C=3D=3Fiso=2D8859=2D1=3Fq=3F=3F=3D87r7k8na?=
+   |   =?ISO-8859-1?Q?vt=2Efsf=40urs=2Did=2Etest=2Eka=2Enu=3E?=
+   (the servers response should be a single line (INN 2.2))
+   [20050207 Urs Janssen <urs@tin.org>]
+
 o  fast/endless reconecction loop after a "200\n\r400\n\r" greeting,
    see
    <nntp://news.tin.org/Pine.LNX.4.61.0411190338000.24950@avenger.apcoh.org>
@@ -72,7 +96,7 @@ o  rewrite code to use INEWS_PATH instead of INEWSDIR
    [20021007 Urs Janssen <urs@tin.org>
 
 o  remove built in path of external commands (metamail, ispell, ...)
-   [for ispell $ISPELL could be used to override systempath and progname]
+   [for ispell $ISPELL can be used to override systempath and progname]
 
 o  overview file cacheing code is over-complex
    - cache the original overview info instead of rebuilding it from
@@ -114,9 +138,11 @@ New features
 o  add user defined screen layout at different levels
    [20041025 Urs Janssen <urs@tin.org>]
 
-o  add TLS support
+o  add TLS, NNTPS support
    (see draft-ietf-nntpext-tls-nntp-03.txt;
-   <http://www.gnu.org/software/gnutls/> might be useful)
+    <http://www.gnu.org/software/gnutls/> might be useful;
+    "stunnel -c -d 1119 -r news.example.org:563; tin -g localhost -p 1119"
+    can be used for NNTPS)
    [20031210 Urs Janssen <urs@tin.org>]
 
 o  make 'GNKSA'-parser RFC2822/USEFOR compliant
@@ -144,7 +170,8 @@ o  add bold-italic, bold-underline, italic-underline, bold-italic-underline
 
 o  allow bold, underline, italic, ... as colour substitution for
    monochrome terminals (map green=underline, italic=yellow)
-   (see also <20020416202232.A4575@bloatware.reston01.va.comcast.net>)
+   (see also
+   <nntp://news.tin.org/20020416202232.A4575@bloatware.reston01.va.comcast.net>)
    [20030218 Serge Matveev <sm@cl.spb.ru>]
 
 o  hierarchical 'M'enu, e.g. put all art_marked_*into a 'submenu', ...
@@ -215,13 +242,6 @@ o  add counter to post-processing commands (processing file x of y)
 
 o  add key to toggle article and thread sorting preferences on the fly
    (like 'u' for threading)
-
-o  rewrite keymap stuff:
-   Define what key should trigger what action and use function names instead
-   of the old key defines. This allows to add more functionality more easily
-   since you just have to add the new function in the code and to define a
-   key in the keymap file that is bound to this function.
-   [20020305 Dirk Nimmich <nimmich@muenster.de>]
 
 o  check if servers high mark is lower than the one in users newsrc, if so
    issue a warning and allow the luser to reset the highmark in the newsrc
@@ -303,11 +323,8 @@ o  add feature show_new_newsgroups_since
 
 o  Additions to the thread menu:
      'D'  (cancel article)
-     ']'  quick kill
-     '['  quick auto-select
-     '^A' auto-select via menu
-     '^K' kill via menu
-     'E'  (edit filter)
+     ']'  QuickFilterKill/GLOBAL_QUICK_FILTER_KILL
+     '['  QuickFilterSelect/GLOBAL_QUICK_FILTER_SELECT
      'r'  (reply to) /* not 'R' cause it conflicts with mail_bugreport */
      ''   r should be toggle show all/show only unread
      'f'  (post a followup) (maybe also 'F', '^W', ...)
@@ -317,7 +334,6 @@ o  Additions to the thread menu:
      '='  (mark pattern as hot)
      'Y'  (check for new articles in thread)
      '%'  (toggle rot13 encoding of screen content)
-     'o'  (print)
      'x'  (repost)
      keys to go to previous/next thread
 
@@ -472,6 +488,18 @@ o  suppress hide_uue=2 checking unless first line in an article or following
 
 Internal Changes
 ----------------
+o  read_overview() calls eat_re() which strips the "Re: " out of the
+   subject. the modified subject ist used for batch_mode opperatios (-N/-M)
+   which might not be what ppl. expect and eat_re() is the only function
+   which needs the 'regex' overhead in batch_mode... (see also the note
+   about "Re: "strpping at "Filtering enhancements").
+   [20050225 Urs Janssen <urs@akk.org>]
+
+o  use new_nntp_command() instead of nntp_command() in the rest of the
+   code (where usefull; if we do a global change, rename it to
+   nntp_command()). see check_extensions() for a sample usage.
+   [20050211 Urs Janssen <urs@akk.org>]
+
 o  replace various occurrence of "US-ASCII" by DEFAULT(_MIME)_CHARSET
    and define that to "US-ASCII" (to make 'updates' easier).
    [20040929 Urs Janssen <urs@akk.org>]
@@ -486,20 +514,6 @@ o  get rid of CURR_GROUP, use t_group instead
 
 o  clean up $AUTOSUBSCRIBE code (the NNTP code path is a mess)
    [20030412 Urs Janssen <urs@akk.org>]
-
-o  the various filter keys are named a bit inconsistent, currently we have
-   iKeyGroupQuickAutoSel, iKeyGroupQuickKill, iKeyPageQuickAutoSel,
-   iKeyPageQuickKill and iKeyGroupKill, iKeyGroupAutoSel, iKeyPageAutoKill,
-   iKeyPageAutoSel. in actual fact iKeyPageAutoKill is a misnomer and
-   should be iKeyPageKill, but the whole naming looks a bit odd.
-   the *Quick* keys do add a filter/scoring entry and the others do call
-   the filter/scoring menu. It would be nice if the name would express
-   that. e.g. rename them to something like *QuickFilter{Kill,Select}
-   and *MenuFilter{Kill,Select}. and as the default values for those
-   keys arn't used anywhere else we could drop their scope prefix which
-   would lead us to something like iKeyQuickFilter{Kill,Select} and
-   iKeyMenuFilter{Kill,Select}
-   [20030303 Urs Janssen <urs@akk.org>]
 
 o  in page level Up2 ('k') does the same as PageNextUnreadArt ('N'), but
    Up ('^P') behaves different. shouldn't 'k' be named PageNextUnreadArt2
@@ -549,8 +563,9 @@ o  close potential security holes:
    - check where my_strncpy() or STRCPY() should be used
      or include OpenBSDs strlcpy(3) (and strlcat(3)) and use it.
    (<ftp://ftp.openbsd.org/pub/OpenBSD/src/lib/libc/string/>)
-   [Urs Janssen <urs@tin.org> - its4 <http://www.rstcorp.com/its4>
-    and rats <http://www.securesw.com/rats/> can locate potential security
+   [Urs Janssen <urs@tin.org> - its4 <http://www.rstcorp.com/its4>, rats
+    <http://www.securesw.com/rats/> and flawfinder
+    <http://www.dwheeler.com/flawfinder/> can locate potential security
     holes]
 
 o  add a _-_ to the local part of the MSGID on a subject-change
@@ -634,6 +649,8 @@ o  add normalization
 
 Docs/online help
 ----------------
+o  review the turkish translation (tr.po)
+
 o  add installation guide (in html)
 
 o  add cross-compilation hints
@@ -642,7 +659,7 @@ o  better document keymap feature
 
 o  man page always needs work and proof reading
    e.g. 'U', 'V' in pager need better documentation, random organization
-   feature isn't documented at all
+   feature isn't documented at all.
 
 o  tin.defaults could use more documentation in manpage (tin.5)
 

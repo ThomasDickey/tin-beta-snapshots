@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2004-03-13
+ *  Updated   : 2005-02-12
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -51,7 +51,8 @@ static TCP *nntp_wr_fp = NULL;
 	static constext *xhdr_cmd = NULL;
 	static constext *xhdr_cmds = "XHDR";
 #	endif /* 0 */
-	static t_bool have_list_extensions = FALSE;
+	enum extension_type { NO, LIST_EXTENSIONS, CAPABILITIES };
+	static int have_list_extensions = NO;
 	/* Set so we don't reconnect just to QUIT */
 	static t_bool quitting = FALSE;
 #endif /* NNTP_ABLE */
@@ -60,6 +61,7 @@ static TCP *nntp_wr_fp = NULL;
  * local prototypes
  */
 #ifdef NNTP_ABLE
+	static int new_nntp_command(const char *command, int success, char *message, size_t mlen);
 	static int reconnect(int retry);
 	static int server_init(char *machine, const char *cservice, int port, char *text, size_t mlen);
 	static void check_extensions(void);
@@ -826,7 +828,7 @@ reconnect(
 	 * Exit tin if the user says no to reconnect. The exit code stops tin from trying
 	 * to disconnect again - the connection is already dead
 	 */
-	if (!tinrc.auto_reconnect && prompt_yn(cLINES, _(txt_reconnect_to_news_server), TRUE) != 1)
+	if (!tinrc.auto_reconnect && prompt_yn(_(txt_reconnect_to_news_server), TRUE) != 1)
 		tin_done(NNTP_ERROR_EXIT);		/* user said no to reconnect */
 
 	clear_message();
@@ -952,14 +954,9 @@ close_server(
 
 #ifdef NNTP_ABLE
 /*
- * Try and use LIST EXTENSIONS here. Get this list before issuing
- * other NNTP commands because the correct methods may be
- * mentioned in the list of extensions.
- * Possible extensions include:
- * - HDR & LIST HEADERS
- * - OVER [MSGID] & LIST OVERVIEW.FMT
- * - LISTGROUP
- * - STARTTLS
+ * Try and use CAPABILITIES/LIST EXTENSIONS here. Get this list before
+ * issuing other NNTP commands because the correct methods may be mentioned
+ * in the list of extensions.
  *
  * Sets up: have_list_extensions, xover_cmd, (xhdr_cmd)
  */
@@ -967,52 +964,112 @@ static void
 check_extensions(
 	void)
 {
-	FILE *fp;
 	char *ptr;
 	int i;
+#	if 0 /* "CAPABILITIES" will replace "LIST EXTENSIONS" */
+	FILE *fp;
 
-	if ((fp = nntp_command("LIST EXTENSIONS", OK_EXTENSIONS, NULL, 0)) == NULL)
-		return;
+	if ((fp = nntp_command("CAPABILITIES", INF_CAPABILITIES, NULL, 0)) != NULL) {
+		int cap_version = -1;
 
-	have_list_extensions = TRUE;
-
-	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
-		/*
-		 * Check for (X)OVER
-		 * XOVER should not be listed in EXTENSIONS (but sometimes is)
-		 * checking for it if OVER is not found does no harm.
-		 */
-		if (!xover_cmd) {
-			for (i = 1; i >= 0; i--) {
-				if (strcmp(ptr, &xover_cmds[i]) == 0) {
-					xover_cmd = &xover_cmds[i];
-					break;
-				}
+		have_list_extensions = CAPABILITIES;
+		while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+#		ifdef DEBUG
+			debug_nntp("<<<", ptr);
+#		endif /* DEBUG */
+			/* look for version number */
+			if (cap_version == -1 && have_list_extensions == CAPABILITIES) {
+				if (!strncasecmp(ptr, "VERSION", 7))
+					cap_version = atoi(ptr + 8);
 			}
-		}
+			/* we currently only support CAPABILITIES VERSION 2 */
+			if (cap_version == 2) {
+				/*
+				 * Check for (X)OVER
+				 * XOVER should not be listed in CAPABILITIES
+				 * but checking for it if OVER is not found does no harm.
+				 */
+				if (!xover_cmd) {
+					for (i = 1; i >= 0; i--) {
+						if (strcasecmp(ptr, &xover_cmds[i]) == 0) {
+							xover_cmd = &xover_cmds[i];
+							break;
+						}
+					}
+				}
 #		if 0 /* currently not used */
-		/*
-		 * Check for (X)HDR
-		 * XHDR should not be listed in EXTENSIONS (but sometimes is)
-		 * checking for it if HDR is not found does no harm.
-		 */
-		if (!xhdr_cmd) {
-			for (i = 1; i >= 0; i--) {
-				if (strcmp(ptr, &xhdr_cmds[i]) == 0) {
-					xhdr_cmd = &xhdr_cmds[i];
-					break;
+				/*
+				 * Check for (X)HDR
+				 * XHDR should not be listed in EXTENSIONS (but sometimes is)
+				 * checking for it if HDR is not found does no harm.
+				 */
+				if (!xhdr_cmd) {
+					for (i = 1; i >= 0; i--) {
+						if (strcasecmp(ptr, &xhdr_cmds[i]) == 0) {
+							xhdr_cmd = &xhdr_cmds[i];
+							break;
+						}
+					}
 				}
+#		endif /* 0 */
+				/*
+				 * LIST, READER, SASL, STARTTLS, STREAMING, AUTHINFO, IHAVE
+				 * IMPLEMENTATION, (MODE-READER)
+				 */
+			} else
+				have_list_extensions = NO;
+		}
+	}
+#	endif /* 0 */
+
+#	if 1
+	/*
+	 * "LIST EXTENSIONS" is somewhat troublesome as there are a lot
+	 * of broken implementations out there and it is a multiline response
+	 */
+	if (have_list_extensions == NO) {
+		char buf[NNTP_STRLEN];
+
+		buf[0] = '\0';
+		i = new_nntp_command("LIST EXTENSIONS", OK_EXTENSIONS, buf, sizeof(buf));
+		switch (i) {
+			case OK_EXTENSIONS:	/* as defined draft-ietf-nntpext-base-24.txt */
+				have_list_extensions = LIST_EXTENSIONS;
+				/* FALLTHROUGH */
+			case 205:	/* M$ Exchange 5.5 */
+			case 215:	/* Netscape-Collabra/3.52 && NetWare-News-Server/5.1*/
+				while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+					if (have_list_extensions == LIST_EXTENSIONS) {
+#		ifdef DEBUG
+						debug_nntp("<<<", ptr);
+#		endif /* DEBUG */
+						/*
+						 * some servers (e.g. Hamster 1.3) have leading spaces in the
+						 * extension list
+						 */
+						str_trim(ptr);
+						/*
+						 * Check for (X)OVER
+						 * XOVER should not be listed in EXTENSIONS (but sometimes is)
+						 * checking for it if OVER is not found does no harm.
+						 */
+						if (!xover_cmd) {
+							for (i = 1; i >= 0; i--) {
+								if (strcasecmp(ptr, &xover_cmds[i]) == 0) {
+									xover_cmd = &xover_cmds[i];
+									break;
+								}
+							}
+						}
+					}
+				}
+				break;
+
+			default:
+				break;
 			}
 		}
-#		endif /* 0 */
-		 /*
-		  * additional checks for
-		  * - LISTGROUP
-		  * - LIST OVERVIEW.FMT
-		  * - LIST HEADERS
-		  * go here whenever they are needed
-		  */
-	}
+#	endif /* 1 */
 	return;
 }
 #endif /* NNTP_ABLE */
@@ -1119,9 +1176,16 @@ nntp_open(
 	}
 
 	/*
+	 * Find out which NNTP extensions are available
+	 * TODO: The authentication method required may be mentioned in the list of
+	 *       extensions. (For details about authentication methods, see
+	 *       draft-newman-nntpext-auth-01.txt).
+	 */
+	check_extensions();
+
+	/*
 	 * Switch INN into NNRP mode with 'mode reader'
 	 */
-
 #	ifdef DEBUG
 	debug_nntp("nntp_open", "mode reader");
 #	endif /* DEBUG */
@@ -1168,14 +1232,6 @@ nntp_open(
 			break;
 
 	}
-
-	/*
-	 * Find out which NNTP extensions are available
-	 * TODO: The authentication method required may be mentioned in the list of
-	 *       extensions. (For details about authentication methods, see
-	 *       draft-newman-nntpext-auth-01.txt).
-	 */
-	check_extensions();
 
 	/*
 	 * If the user wants us to authenticate on connection startup, do it now.
@@ -1261,7 +1317,7 @@ nntp_open(
 	 * (successor of XOVER as of latest NNTP Draft (Jan 2002)
 	 * We have to check that we _don't_ get an ERR_COMMAND
 	 */
-	if (!have_list_extensions) {
+	if (have_list_extensions == NO) {
 		for (i = 0; i < 2; i++) {
 			if (!nntp_command(&xover_cmds[i], ERR_COMMAND, NULL, 0)) {
 				xover_cmd = &xover_cmds[i];
@@ -1506,5 +1562,40 @@ DEBUG_IO((stderr, "nntp_command(%s)\n", command));
 	debug_nntp(command, "OK");
 #	endif /* DEBUG */
 	return FAKE_NNTP_FP;
+}
+
+
+/*
+ * same as above, but with a slightly more usefull returncode.
+ * TODO: use it instead of nntp_command in the rest of the code
+ *       (wherever it is more usefull).
+ */
+static int
+new_nntp_command(
+	const char *command,
+	int success,
+	char *message,
+	size_t mlen)
+{
+	int respcode = 0;
+
+DEBUG_IO((stderr, "nntp_command(%s)\n", command));
+#	ifdef DEBUG
+	debug_nntp("nntp command", command);
+#	endif /* DEBUG */
+	put_server(command);
+
+	if (!bool_equal(dangerous_signal_exit, TRUE)) {
+		if ((respcode = get_respcode(message, mlen)) != success) {
+#	ifdef DEBUG
+			debug_nntp(command, "NOT_OK - Expected: %d, got: %d", success, respcode);
+#	endif /* DEBUG */
+			return respcode;
+		}
+	}
+#	ifdef DEBUG
+	debug_nntp(command, "OK");
+#	endif /* DEBUG */
+	return respcode;
 }
 #endif /* NNTP_ABLE */

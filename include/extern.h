@@ -3,10 +3,10 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-11-16
+ *  Updated   : 2005-03-20
  *  Notes     :
  *
- * Copyright (c) 1997-2004 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1997-2005 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,6 +45,9 @@
 #ifndef RFC2046_H
 #	include <rfc2046.h>
 #endif /* !RFC2046_H */
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 
 /*
  * The prototypes bracketed by DECL_xxxx ifdef's are used to get moderately
@@ -325,7 +328,6 @@ extern char **news_headers_to_display_array;
 extern char **news_headers_to_not_display_array;
 extern char *OPT_CHAR_list[];
 extern char *OPT_STRING_list[];
-extern char *ch_post_process;
 extern char *nntp_server;
 extern char active_times_file[PATH_LEN];
 extern char bug_addr[LEN];
@@ -385,7 +387,9 @@ extern const char base64_alphabet[64];
 extern constext *content_encodings[];
 extern constext *content_types[];
 extern constext *txt_attrs[];
-extern constext *txt_colors[];
+#ifdef HAVE_COLOR
+	extern constext *txt_colors[];
+#endif /* HAVE_COLOR */
 extern constext *txt_confirm_choices[];
 extern constext *txt_hide_uue_type[];
 extern constext *txt_interactive_mailers[];
@@ -491,12 +495,14 @@ extern constext txt_caughtup[];
 extern constext txt_check_article[];
 extern constext txt_checking_for_news[];
 extern constext txt_checking_new_groups[];
-#ifndef HAVE_LIBUU
+#if !defined(HAVE_LIBUU) && defined(M_UNIX) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
 	extern constext txt_checksum_of_file[];
-#endif /* !HAVE_LIBUU */
+#endif /* !HAVE_LIBUU && M_UNIX && HAVE SUM && !DONT_HAVE_PIPING */
 extern constext txt_choose_post_process_type[];
-extern constext txt_color_off[];
-extern constext txt_color_on[];
+#ifdef HAVE_COLOR
+	extern constext txt_color_off[];
+	extern constext txt_color_on[];
+#endif /* HAVE_COLOR */
 extern constext txt_command_failed[];
 extern constext txt_confirm_select_on_exit[];
 #ifdef NNTP_ABLE
@@ -692,6 +698,7 @@ extern constext txt_help_filter_text[];
 extern constext txt_help_filter_text_type[];
 extern constext txt_help_filter_time[];
 extern constext txt_help_global_article_range[];
+extern constext txt_help_global_edit_filter[];
 extern constext txt_help_global_esc[];
 extern constext txt_help_global_help[];
 extern constext txt_help_global_last_art[];
@@ -827,7 +834,10 @@ extern constext txt_keymap_invalid_name[];
 #ifdef DEBUG
 	extern constext txt_keymap_redef[];
 #endif /* DEBUG */
-extern constext txt_keymap_conflict[];
+#if 0 /* ununsed */
+	extern constext txt_keymap_conflict[];
+#endif /* 0 */
+extern constext txt_keymap_upgraded[];
 extern constext txt_kill_from[];
 extern constext txt_kill_lines[];
 extern constext txt_kill_menu[];
@@ -1053,7 +1063,9 @@ extern constext txt_thread_upper[];
 extern constext txt_thread_com[];
 extern constext txt_thread_marked_as_deselected[];
 extern constext txt_thread_marked_as_selected[];
-extern constext txt_thread_plural[];
+#if 0 /* unused */
+	extern constext txt_thread_plural[];
+#endif /* 0 */
 extern constext txt_thread_range[];
 extern constext txt_thread_singular[];
 extern constext txt_thread_x_of_n[];
@@ -1208,7 +1220,6 @@ extern int cCOLS;
 extern int cLINES;
 extern int curr_line;
 extern int debug;
-extern int i_key_search_last;
 extern int input_context;
 extern int iso2asc_supported;
 extern int last_resp;
@@ -1296,6 +1307,8 @@ extern t_bool show_subject;
 extern t_bool batch_mode;
 extern t_bool verbose;
 extern t_bool xref_supported;
+
+extern t_function last_search;
 
 extern t_menu selmenu;
 extern t_menu grpmenu;
@@ -1467,7 +1480,9 @@ extern struct opttxt txt_batch_save;
 extern struct opttxt txt_beginner_level;
 extern struct opttxt txt_cache_overview_files;
 extern struct opttxt txt_catchup_read_groups;
-extern struct opttxt txt_color_options;
+#ifdef HAVE_COLOR
+	extern struct opttxt txt_color_options;
+#endif /* HAVE_COLOR */
 extern struct opttxt txt_confirm_choice;
 extern struct opttxt txt_date_format;
 extern struct opttxt txt_display_options;
@@ -1515,8 +1530,10 @@ extern struct opttxt txt_post_process;
 extern struct opttxt txt_post_process_view;
 extern struct opttxt txt_posted_articles_file;
 extern struct opttxt txt_posting_options;
-extern struct opttxt txt_print_header;
-extern struct opttxt txt_printer;
+#ifndef DISABLE_PRINTING  
+	extern struct opttxt txt_print_header;
+	extern struct opttxt txt_printer;
+#endif /* !DISABLE_PRINTING */
 extern struct opttxt txt_process_only_unread;
 extern struct opttxt txt_prompt_followupto;
 extern struct opttxt txt_quote_chars;

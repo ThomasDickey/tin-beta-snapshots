@@ -3,10 +3,10 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-11-16
+ *  Updated   : 2005-03-16
  *  Notes     :
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,407 +41,399 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 
 
 typedef struct thp {
 	constext *helptext;
-	char key;
+	t_function func;
 } t_help_page;
 
 /*
  * local prototypes
  */
-static void make_help_page(FILE *fp, const t_help_page *helppage, const t_menukeys *menukeys);
+static void make_help_page(FILE *fp, const t_help_page *helppage, const struct keylist keys);
 
 
 static constext txt_help_empty_line[] = "";
 
 static t_help_page select_help_page[] = {
-	{ txt_help_title_navi, 0 },
-	{ txt_help_global_page_down, iKeyPageDown },
-	{ txt_help_global_page_down, iKeyPageDown2 },
-	{ txt_help_global_page_down, iKeyPageDown3 },
-	{ txt_help_global_page_up, iKeyPageUp2 },
-	{ txt_help_global_page_up, iKeyPageUp },
-	{ txt_help_global_page_up, iKeyPageUp3 },
-	{ txt_help_global_line_down, iKeyDown2 },
-	{ txt_help_global_line_down, iKeyDown },
-	{ txt_help_global_line_up, iKeyUp2 },
-	{ txt_help_global_line_up, iKeyUp },
-	{ txt_help_global_scroll_down, iKeyScrollDown },
-	{ txt_help_global_scroll_up, iKeyScrollUp },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_select_first_group, iKeyFirstPage },
-	{ txt_help_select_last_group, iKeyLastPage },
-	{ txt_help_select_group_by_num, 0 },
-	{ txt_help_select_goto_group, iKeySelectGoto },
-	{ txt_help_select_next_unread_group, iKeySelectNextUnreadGrp },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_select_search_group_forwards, iKeySearchSubjF },
-	{ txt_help_select_search_group_backwards, iKeySearchSubjB },
-	{ txt_help_select_search_group_comment, 0 },
-	{ txt_help_global_search_repeat, iKeySearchRepeat },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_title_disp, 0 },
-	{ txt_help_select_toggle_read_groups, iKeySelectToggleReadDisplay },
-	{ txt_help_global_toggle_info_line, iKeyToggleInfoLastLine },
-	{ txt_help_select_toggle_descriptions, iKeySelectToggleDescriptions },
-	{ txt_help_global_toggle_inverse_video, iKeyToggleInverseVideo },
+	{ txt_help_title_navi, NOT_ASSIGNED },
+	{ txt_help_global_page_down, GLOBAL_PAGE_DOWN },
+	{ txt_help_global_page_up, GLOBAL_PAGE_UP },
+	{ txt_help_global_line_down, GLOBAL_LINE_DOWN },
+	{ txt_help_global_line_up, GLOBAL_LINE_UP },
+	{ txt_help_global_scroll_down, GLOBAL_SCROLL_DOWN },
+	{ txt_help_global_scroll_up, GLOBAL_SCROLL_UP },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_select_first_group, GLOBAL_FIRST_PAGE },
+	{ txt_help_select_last_group, GLOBAL_LAST_PAGE },
+	{ txt_help_select_group_by_num, NOT_ASSIGNED },
+	{ txt_help_select_goto_group, SELECT_GOTO },
+	{ txt_help_select_next_unread_group, SELECT_NEXT_UNREAD_GROUP },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_select_search_group_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
+	{ txt_help_select_search_group_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },
+	{ txt_help_select_search_group_comment, NOT_ASSIGNED },
+	{ txt_help_global_search_repeat, GLOBAL_SEARCH_REPEAT },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_disp, NOT_ASSIGNED },
+	{ txt_help_select_toggle_read_groups, SELECT_TOGGLE_READ_DISPLAY },
+	{ txt_help_global_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
+	{ txt_help_select_toggle_descriptions, SELECT_TOGGLE_DESCRIPTIONS },
+	{ txt_help_global_toggle_inverse_video, GLOBAL_TOGGLE_INVERSE_VIDEO },
 #ifdef HAVE_COLOR
-	{ txt_help_global_toggle_color, iKeyToggleColor },
+	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
 #endif /* HAVE_COLOR */
-	{ txt_help_empty_line, 0 },
-	{ txt_help_select_sort_active, iKeySelectSortActive },
-	{ txt_help_select_yank_active, iKeySelectYankActive },
-	{ txt_help_select_sync_with_active, iKeySelectSyncWithActive },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_title_ops, 0 },
-	{ txt_help_select_read_group, iKeySelectReadGrp },
-	{ txt_help_select_next_unread_group, iKeySelectEnterNextUnreadGrp2 },
-	{ txt_help_select_next_unread_group, iKeySelectEnterNextUnreadGrp },
-	{ txt_help_global_post, iKeyPost },
-	{ txt_help_global_post_postponed, iKeyPostponed2 },
-	{ txt_help_global_post_postponed, iKeyPostponed },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_select_group_range, iKeySetRange },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_select_catchup, iKeySelectCatchup },
-	{ txt_help_select_catchup_next_unread, iKeySelectCatchupNextUnread },
-	{ txt_help_select_mark_group_unread, iKeySelectMarkGrpUnread },
-	{ txt_help_select_mark_group_unread, iKeySelectMarkGrpUnread2 },
-	{ txt_help_select_subscribe, iKeySelectSubscribe },
-	{ txt_help_select_unsubscribe, iKeySelectUnsubscribe },
-	{ txt_help_select_subscribe_pattern, iKeySelectSubscribePat },
-	{ txt_help_select_unsubscribe_pattern, iKeySelectUnsubscribePat },
-	{ txt_help_select_move_group, iKeySelectMoveGrp },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_title_misc, 0 },
-	{ txt_help_select_quit, iKeyQuit },
-	{ txt_help_global_quit_tin, iKeyQuitTin },
-	{ txt_help_select_quit_no_write, iKeySelectQuitNoWrite },
-	{ txt_help_global_help, iKeyHelp },
-	{ txt_help_global_toggle_mini_help, iKeyToggleHelpDisplay },
-	{ txt_help_global_option_menu, iKeyOptionMenu },
-	{ txt_help_global_esc, iKeyAbort },
-	{ txt_help_global_redraw_screen, iKeyRedrawScr },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_select_sort_active, SELECT_SORT_ACTIVE },
+	{ txt_help_select_yank_active, SELECT_YANK_ACTIVE },
+	{ txt_help_select_sync_with_active, SELECT_SYNC_WITH_ACTIVE },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_ops, NOT_ASSIGNED },
+	{ txt_help_select_read_group, SELECT_ENTER_GROUP },
+	{ txt_help_select_next_unread_group, SELECT_ENTER_NEXT_UNREAD_GROUP },
+#ifndef NO_POSTING
+	{ txt_help_global_post, GLOBAL_POST },
+	{ txt_help_global_post_postponed, GLOBAL_POSTPONED },
+#endif /* NO_POSTING */
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_select_group_range, GLOBAL_SET_RANGE },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_select_catchup, SELECT_CATCHUP },
+	{ txt_help_select_catchup_next_unread, SELECT_CATCHUP_NEXT_UNREAD },
+	{ txt_help_select_mark_group_unread, SELECT_MARK_GROUP_UNREAD },
+	{ txt_help_select_subscribe, SELECT_SUBSCRIBE },
+	{ txt_help_select_unsubscribe, SELECT_UNSUBSCRIBE },
+	{ txt_help_select_subscribe_pattern, SELECT_SUBSCRIBE_PATTERN },
+	{ txt_help_select_unsubscribe_pattern, SELECT_UNSUBSCRIBE_PATTERN },
+	{ txt_help_select_move_group, SELECT_MOVE_GROUP },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_edit_filter, GLOBAL_EDIT_FILTER},
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_misc, NOT_ASSIGNED },
+	{ txt_help_select_quit, GLOBAL_QUIT },
+	{ txt_help_global_quit_tin, GLOBAL_QUIT_TIN },
+	{ txt_help_select_quit_no_write, SELECT_QUIT_NO_WRITE },
+	{ txt_help_global_help, GLOBAL_HELP },
+	{ txt_help_global_toggle_mini_help, GLOBAL_TOGGLE_HELP_DISPLAY },
+	{ txt_help_global_option_menu, GLOBAL_OPTION_MENU },
+	{ txt_help_global_esc, GLOBAL_ABORT },
+	{ txt_help_global_redraw_screen, GLOBAL_REDRAW_SCREEN },
 #ifndef NO_SHELL_ESCAPE
-	{ txt_help_global_shell_escape, iKeyShellEscape },
+	{ txt_help_global_shell_escape, GLOBAL_SHELL_ESCAPE },
 #endif /* !NO_SHELL_ESCAPE */
-	{ txt_help_global_posting_history, iKeyDisplayPostHist },
-	{ txt_help_select_reset_newsrc, iKeySelectResetNewsrc },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_global_version, iKeyVersion },
-	{ txt_help_bug_report, iKeySelectBugReport },
-	{ NULL, 0 }
+	{ txt_help_global_posting_history, GLOBAL_DISPLAY_POST_HISTORY },
+	{ txt_help_select_reset_newsrc, SELECT_RESET_NEWSRC },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_version, GLOBAL_VERSION },
+	{ txt_help_bug_report, GLOBAL_BUGREPORT },
+	{ NULL, NOT_ASSIGNED }
 };
 
 static t_help_page group_help_page[] = {
-	{ txt_help_title_navi, 0 },
-	{ txt_help_global_page_down, iKeyPageDown },
-	{ txt_help_global_page_down, iKeyPageDown2 },
-	{ txt_help_global_page_down, iKeyPageDown3 },
-	{ txt_help_global_page_up, iKeyPageUp2 },
-	{ txt_help_global_page_up, iKeyPageUp },
-	{ txt_help_global_page_up, iKeyPageUp3 },
-	{ txt_help_global_line_down, iKeyDown2 },
-	{ txt_help_global_line_down, iKeyDown },
-	{ txt_help_global_line_up, iKeyUp2 },
-	{ txt_help_global_line_up, iKeyUp },
-	{ txt_help_global_scroll_down, iKeyScrollDown },
-	{ txt_help_global_scroll_up, iKeyScrollUp },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_group_first_thread, iKeyFirstPage },
-	{ txt_help_group_last_thread, iKeyLastPage },
-	{ txt_help_group_thread_by_num, 0 },
-	{ txt_help_select_goto_group, iKeyGroupGoto },
-	{ txt_help_group_next, iKeyGroupNextGroup },
-	{ txt_help_group_prev, iKeyGroupPrevGroup },
-	{ txt_help_article_next_unread, iKeyGroupNextUnreadArt },
-	{ txt_help_article_prev_unread, iKeyGroupPrevUnreadArt },
-	{ txt_help_global_last_art, iKeyLastViewed },
-	{ txt_help_global_lookup_art, iKeyLookupMessage },
-	{ txt_help_group_list_thread, iKeyGroupListThd },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_global_search_subj_forwards, iKeySearchSubjF },
-	{ txt_help_global_search_subj_backwards, iKeySearchSubjB },
-	{ txt_help_global_search_auth_forwards, iKeySearchAuthF },
-	{ txt_help_global_search_auth_backwards, iKeySearchAuthB },
-	{ txt_help_global_search_body, iKeySearchBody },
-	{ txt_help_global_search_body_comment, 0 },
-	{ txt_help_global_search_repeat, iKeySearchRepeat },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_title_disp, 0 },
-	{ txt_help_group_toggle_read_articles, iKeyGroupToggleReadUnread },
-	{ txt_help_global_toggle_info_line, iKeyToggleInfoLastLine },
-	{ txt_help_global_toggle_subj_display, iKeyGroupToggleSubjDisplay },
-	{ txt_help_global_toggle_inverse_video, iKeyToggleInverseVideo },
+	{ txt_help_title_navi, NOT_ASSIGNED },
+	{ txt_help_global_page_down, GLOBAL_PAGE_DOWN },
+	{ txt_help_global_page_up, GLOBAL_PAGE_UP },
+	{ txt_help_global_line_down, GLOBAL_LINE_DOWN },
+	{ txt_help_global_line_up, GLOBAL_LINE_UP },
+	{ txt_help_global_scroll_down, GLOBAL_SCROLL_DOWN },
+	{ txt_help_global_scroll_up, GLOBAL_SCROLL_UP },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_group_first_thread, GLOBAL_FIRST_PAGE },
+	{ txt_help_group_last_thread, GLOBAL_LAST_PAGE },
+	{ txt_help_group_thread_by_num, NOT_ASSIGNED },
+	{ txt_help_select_goto_group, GROUP_GOTO },
+	{ txt_help_group_next, GROUP_NEXT_GROUP },
+	{ txt_help_group_prev, GROUP_PREVIOUS_GROUP },
+	{ txt_help_article_next_unread, GROUP_NEXT_UNREAD_ARTICLE },
+	{ txt_help_article_prev_unread, GROUP_PREVIOUS_UNREAD_ARTICLE },
+	{ txt_help_global_last_art, GLOBAL_LAST_VIEWED },
+	{ txt_help_global_lookup_art, GLOBAL_LOOKUP_MESSAGEID },
+	{ txt_help_group_list_thread, GROUP_LIST_THREAD },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_search_subj_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
+	{ txt_help_global_search_subj_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },
+	{ txt_help_global_search_auth_forwards, GLOBAL_SEARCH_AUTHOR_FORWARD },
+	{ txt_help_global_search_auth_backwards, GLOBAL_SEARCH_AUTHOR_BACKWARD },
+	{ txt_help_global_search_body, GLOBAL_SEARCH_BODY },
+	{ txt_help_global_search_body_comment, NOT_ASSIGNED },
+	{ txt_help_global_search_repeat, GLOBAL_SEARCH_REPEAT },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_disp, NOT_ASSIGNED },
+	{ txt_help_group_toggle_read_articles, GROUP_TOGGLE_READ_UNREAD },
+	{ txt_help_global_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
+	{ txt_help_select_toggle_descriptions, SELECT_TOGGLE_DESCRIPTIONS },
+	{ txt_help_global_toggle_inverse_video, GLOBAL_TOGGLE_INVERSE_VIDEO },
 #ifdef HAVE_COLOR
-	{ txt_help_global_toggle_color, iKeyToggleColor },
+	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
 #endif /* HAVE_COLOR */
-	{ txt_help_empty_line, 0 },
-	{ txt_help_group_toggle_threading, iKeyGroupToggleThreading },
-	{ txt_help_group_mark_unsel_art_read, iKeyGroupMarkUnselArtRead },
-	{ txt_help_group_toggle_getart_limit, iKeyGroupToggleGetartLimit },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_title_ops, 0 },
-	{ txt_help_thread_read_article, iKeyGroupReadBasenote },
-	{ txt_help_article_next_unread, iKeyGroupNextUnreadArtOrGrp },
-	{ txt_help_global_post, iKeyPost },
-	{ txt_help_global_post_postponed, iKeyPostponed2 },
-	{ txt_help_global_post_postponed, iKeyPostponed },
-	{ txt_help_article_repost, iKeyGroupRepost },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_global_article_range, iKeySetRange },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_global_mail, iKeyGroupMail },
-	{ txt_help_global_save, iKeyGroupSave },
-	{ txt_help_global_auto_save, iKeyGroupAutoSave },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_toggle_subj_display, GROUP_TOGGLE_SUBJECT_DISPLAY},
+	{ txt_help_group_toggle_threading, GROUP_TOGGLE_THREADING },
+	{ txt_help_group_mark_unsel_art_read, GROUP_MARK_UNSELECTED_ARTICLES_READ },
+	{ txt_help_group_toggle_getart_limit, GROUP_TOGGLE_GET_ARTICLES_LIMIT },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_ops, NOT_ASSIGNED },
+	{ txt_help_thread_read_article, GROUP_READ_BASENOTE },
+	{ txt_help_article_next_unread, GROUP_NEXT_UNREAD_ARTICLE_OR_GROUP },
+#ifndef NO_POSTING
+	{ txt_help_global_post, GLOBAL_POST },
+	{ txt_help_global_post_postponed, GLOBAL_POSTPONED },
+	{ txt_help_article_repost, GROUP_REPOST },
+#endif /* NO_POSTING */
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_article_range, GLOBAL_SET_RANGE },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_mail, GROUP_MAIL },
+	{ txt_help_global_save, GROUP_SAVE },
+	{ txt_help_global_auto_save, GROUP_AUTOSAVE },
 #ifndef DONT_HAVE_PIPING
-	{ txt_help_global_pipe, iKeyPipe },
+	{ txt_help_global_pipe, GLOBAL_PIPE },
 #endif /* !DONT_HAVE_PIPING */
 #ifndef DISABLE_PRINTING
-	{ txt_help_global_print, iKeyPrint },
+	{ txt_help_global_print, GLOBAL_PRINT },
 #endif /* !DISABLE_PRINTING */
-	{ txt_help_empty_line, 0 },
-	{ txt_help_global_tag, iKeyGroupTag },
-	{ txt_help_group_tag_parts, iKeyGroupTagParts },
-	{ txt_help_group_untag_thread, iKeyGroupUntag },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_group_mark_thread_read, iKeyGroupMarkThdRead },
-	{ txt_help_group_catchup, iKeyGroupCatchup },
-	{ txt_help_group_catchup_next, iKeyGroupCatchupNextUnread },
-	{ txt_help_group_mark_article_unread, iKeyGroupMarkArtUnread },
-	{ txt_help_group_mark_thread_unread, iKeyGroupMarkThdUnread },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_group_select_all, iKeyGroupDoAutoSel },
-	{ txt_help_group_select_thread, iKeyGroupSelThd },
-	{ txt_help_group_select_thread_pattern, iKeyGroupSelPattern },
-	{ txt_help_group_select_thread_if_unread_selected, iKeyGroupSelThdIfUnreadSelected },
-	{ txt_help_group_toggle_thread_selection, iKeyGroupToggleThdSel },
-	{ txt_help_group_reverse_thread_selection, iKeyGroupReverseSel },
-	{ txt_help_group_undo_thread_selection, iKeyGroupUndoSel },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_article_autoselect, iKeyGroupAutoSel },
-	{ txt_help_article_autokill, iKeyGroupKill },
-	{ txt_help_article_quick_select, iKeyGroupQuickAutoSel },
-	{ txt_help_article_quick_kill, iKeyGroupQuickKill },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_title_misc, 0 },
-	{ txt_help_global_previous_menu, iKeyQuit },
-	{ txt_help_global_quit_tin, iKeyQuitTin },
-	{ txt_help_global_help, iKeyHelp },
-	{ txt_help_global_toggle_mini_help, iKeyToggleHelpDisplay },
-	{ txt_help_global_option_menu, iKeyOptionMenu },
-	{ txt_help_global_esc, iKeyAbort },
-	{ txt_help_global_redraw_screen, iKeyRedrawScr },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_tag, GROUP_TAG },
+	{ txt_help_group_tag_parts, GROUP_TAG_PARTS },
+	{ txt_help_group_untag_thread, GROUP_UNTAG },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_group_mark_thread_read, GROUP_MARK_THREAD_READ },
+	{ txt_help_group_catchup, GROUP_CATCHUP },
+	{ txt_help_group_catchup_next, GROUP_CATCHUP_NEXT_UNREAD },
+	{ txt_help_group_mark_article_unread, GROUP_MARK_ARTICLE_UNREAD },
+	{ txt_help_group_mark_thread_unread, GROUP_MARK_THREAD_UNREAD },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_group_select_all, GROUP_DO_AUTOSELECT },
+	{ txt_help_group_select_thread, GROUP_SELECT_THREAD },
+	{ txt_help_group_select_thread_pattern, GROUP_SELECT_PATTERN },
+	{ txt_help_group_select_thread_if_unread_selected, GROUP_SELECT_THREAD_IF_UNREAD_SELECTED },
+	{ txt_help_group_toggle_thread_selection, GROUP_TOGGLE_SELECT_THREAD },
+	{ txt_help_group_reverse_thread_selection, GROUP_REVERSE_SELECTIONS },
+	{ txt_help_group_undo_thread_selection, GROUP_UNDO_SELECTIONS },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_article_autoselect, GLOBAL_MENU_FILTER_SELECT },
+	{ txt_help_article_autokill, GLOBAL_MENU_FILTER_KILL },
+	{ txt_help_article_quick_select, GLOBAL_QUICK_FILTER_SELECT },
+	{ txt_help_article_quick_kill, GLOBAL_QUICK_FILTER_KILL },
+	{ txt_help_global_edit_filter, GLOBAL_EDIT_FILTER},
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_misc, NOT_ASSIGNED },
+	{ txt_help_global_previous_menu, GLOBAL_QUIT },
+	{ txt_help_global_quit_tin, GLOBAL_QUIT_TIN },
+	{ txt_help_global_help, GLOBAL_HELP },
+	{ txt_help_global_toggle_mini_help, GLOBAL_TOGGLE_HELP_DISPLAY },
+	{ txt_help_global_option_menu, GLOBAL_OPTION_MENU },
+	{ txt_help_global_esc, GLOBAL_ABORT },
+	{ txt_help_global_redraw_screen, GLOBAL_REDRAW_SCREEN },
 #ifndef NO_SHELL_ESCAPE
-	{ txt_help_global_shell_escape, iKeyShellEscape },
+	{ txt_help_global_shell_escape, GLOBAL_SHELL_ESCAPE },
 #endif /* !NO_SHELL_ESCAPE */
-	{ txt_help_global_posting_history, iKeyDisplayPostHist },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_global_version, iKeyVersion },
-	{ txt_help_bug_report, iKeyGroupBugReport },
-	{ NULL, 0 }
+	{ txt_help_global_posting_history, GLOBAL_DISPLAY_POST_HISTORY },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_version, GLOBAL_VERSION },
+	{ txt_help_bug_report, GLOBAL_BUGREPORT },
+	{ NULL, NOT_ASSIGNED }
 };
 
 static t_help_page thread_help_page[] = {
-	{ txt_help_title_navi, 0 },
-	{ txt_help_global_page_down, iKeyPageDown },
-	{ txt_help_global_page_down, iKeyPageDown2 },
-	{ txt_help_global_page_down, iKeyPageDown3 },
-	{ txt_help_global_page_up, iKeyPageUp2 },
-	{ txt_help_global_page_up, iKeyPageUp },
-	{ txt_help_global_page_up, iKeyPageUp3 },
-	{ txt_help_global_line_down, iKeyDown2 },
-	{ txt_help_global_line_down, iKeyDown },
-	{ txt_help_global_line_up, iKeyUp2 },
-	{ txt_help_global_line_up, iKeyUp },
-	{ txt_help_global_scroll_down, iKeyScrollDown },
-	{ txt_help_global_scroll_up, iKeyScrollUp },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_thread_first_article, iKeyFirstPage },
-	{ txt_help_thread_last_article, iKeyLastPage },
-	{ txt_help_thread_article_by_num, 0 },
-	{ txt_help_global_last_art, iKeyLastViewed },
-	{ txt_help_global_lookup_art, iKeyLookupMessage },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_global_search_subj_forwards, iKeySearchSubjF },
-	{ txt_help_global_search_subj_backwards, iKeySearchSubjB },
-	{ txt_help_global_search_auth_forwards, iKeySearchAuthF },
-	{ txt_help_global_search_auth_backwards, iKeySearchAuthB },
-	{ txt_help_global_search_body, iKeySearchBody },
-	{ txt_help_global_search_body_comment, 0 },
-	{ txt_help_global_search_repeat, iKeySearchRepeat },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_title_disp, 0 },
-	{ txt_help_global_toggle_info_line, iKeyToggleInfoLastLine },
-	{ txt_help_global_toggle_subj_display, iKeyThreadToggleSubjDisplay },
-	{ txt_help_global_toggle_inverse_video, iKeyToggleInverseVideo },
+	{ txt_help_title_navi, NOT_ASSIGNED },
+	{ txt_help_global_page_down, GLOBAL_PAGE_DOWN },
+	{ txt_help_global_page_up, GLOBAL_PAGE_UP },
+	{ txt_help_global_line_down, GLOBAL_LINE_DOWN },
+	{ txt_help_global_line_up, GLOBAL_LINE_UP },
+	{ txt_help_global_scroll_down, GLOBAL_SCROLL_DOWN },
+	{ txt_help_global_scroll_up, GLOBAL_SCROLL_UP },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_thread_first_article, GLOBAL_FIRST_PAGE },
+	{ txt_help_thread_last_article, GLOBAL_LAST_PAGE },
+	{ txt_help_thread_article_by_num, NOT_ASSIGNED },
+	{ txt_help_global_last_art, GLOBAL_LAST_VIEWED },
+	{ txt_help_global_lookup_art, GLOBAL_LOOKUP_MESSAGEID },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_search_subj_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
+	{ txt_help_global_search_subj_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },
+	{ txt_help_global_search_auth_forwards, GLOBAL_SEARCH_AUTHOR_FORWARD },
+	{ txt_help_global_search_auth_backwards, GLOBAL_SEARCH_AUTHOR_BACKWARD },
+	{ txt_help_global_search_body, GLOBAL_SEARCH_BODY },
+	{ txt_help_global_search_body_comment, NOT_ASSIGNED },
+	{ txt_help_global_search_repeat, GLOBAL_SEARCH_REPEAT },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_disp, NOT_ASSIGNED },
+	{ txt_help_global_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
+	{ txt_help_global_toggle_subj_display, THREAD_TOGGLE_SUBJECT_DISPLAY},
+	{ txt_help_global_toggle_inverse_video, GLOBAL_TOGGLE_INVERSE_VIDEO },
 #ifdef HAVE_COLOR
-	{ txt_help_global_toggle_color, iKeyToggleColor },
+	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
 #endif /* HAVE_COLOR */
-	{ txt_help_empty_line, 0 },
-	{ txt_help_title_ops, 0 },
-	{ txt_help_thread_read_article, iKeyThreadReadArt },
-	{ txt_help_article_next_unread, iKeyThreadReadNextArtOrThread },
-	{ txt_help_global_post, iKeyPost },
-	{ txt_help_global_post_postponed, iKeyPostponed2 },
-	{ txt_help_global_post_postponed, iKeyPostponed },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_global_article_range, iKeySetRange },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_global_mail, iKeyThreadMail },
-	{ txt_help_global_save, iKeyThreadSave },
-	{ txt_help_global_auto_save, iKeyThreadAutoSave },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_global_tag, iKeyThreadTag },
-	{ txt_help_group_untag_thread, iKeyThreadUntag },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_thread_mark_article_read, iKeyThreadMarkArtRead },
-	{ txt_help_thread_catchup, iKeyThreadCatchup },
-	{ txt_help_thread_catchup_next_unread, iKeyThreadCatchupNextUnread },
-	{ txt_help_group_mark_article_unread, iKeyGroupMarkArtUnread },
-	{ txt_help_group_mark_thread_unread, iKeyGroupMarkThdUnread },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_group_select_thread, iKeyThreadSelArt },
-	{ txt_help_group_toggle_thread_selection, iKeyThreadToggleArtSel },
-	{ txt_help_group_reverse_thread_selection, iKeyThreadReverseSel },
-	{ txt_help_group_undo_thread_selection, iKeyThreadUndoSel },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_title_misc, 0 },
-	{ txt_help_global_previous_menu, iKeyQuit },
-	{ txt_help_global_quit_tin, iKeyQuitTin },
-	{ txt_help_global_help, iKeyHelp },
-	{ txt_help_global_toggle_mini_help, iKeyToggleHelpDisplay },
-	{ txt_help_global_option_menu, iKeyOptionMenu },
-	{ txt_help_global_esc, iKeyAbort },
-	{ txt_help_global_redraw_screen, iKeyRedrawScr },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_ops, NOT_ASSIGNED },
+	{ txt_help_thread_read_article, THREAD_READ_ARTICLE },
+	{ txt_help_article_next_unread, THREAD_READ_NEXT_ARTICLE_OR_THREAD },
+#ifndef NO_POSTING
+	{ txt_help_global_post, GLOBAL_POST },
+	{ txt_help_global_post_postponed, GLOBAL_POSTPONED },
+#endif /* NO_POSTING */
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_article_range, GLOBAL_SET_RANGE },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_mail, THREAD_MAIL },
+	{ txt_help_global_save, THREAD_SAVE },
+	{ txt_help_global_auto_save, THREAD_AUTOSAVE },
+#ifndef DONT_HAVE_PIPING
+	{ txt_help_global_pipe, GLOBAL_PIPE },
+#endif /* !DONT_HAVE_PIPING */
+#ifndef DISABLE_PRINTING
+	{ txt_help_global_print, GLOBAL_PRINT },
+#endif /* !DISABLE_PRINTING */
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_tag, THREAD_TAG },
+	{ txt_help_group_untag_thread, THREAD_UNTAG },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_thread_mark_article_read, THREAD_MARK_ARTICLE_READ },
+	{ txt_help_thread_catchup, THREAD_CATCHUP },
+	{ txt_help_thread_catchup_next_unread, THREAD_CATCHUP_NEXT_UNREAD },
+	{ txt_help_group_mark_article_unread, GROUP_MARK_ARTICLE_UNREAD },
+	{ txt_help_group_mark_thread_unread, GROUP_MARK_THREAD_UNREAD },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_group_select_thread, THREAD_SELECT_ARTICLE },
+	{ txt_help_group_toggle_thread_selection, THREAD_TOGGLE_ARTICLE_SELECTION },
+	{ txt_help_group_reverse_thread_selection, THREAD_REVERSE_SELECTIONS },
+	{ txt_help_group_undo_thread_selection, THREAD_UNDO_SELECTIONS },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_article_autoselect, GLOBAL_MENU_FILTER_SELECT },
+	{ txt_help_article_autokill, GLOBAL_MENU_FILTER_KILL },
+	{ txt_help_global_edit_filter, GLOBAL_EDIT_FILTER },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_misc, NOT_ASSIGNED },
+	{ txt_help_global_previous_menu, GLOBAL_QUIT },
+	{ txt_help_global_quit_tin, GLOBAL_QUIT_TIN },
+	{ txt_help_global_help, GLOBAL_HELP },
+	{ txt_help_global_toggle_mini_help, GLOBAL_TOGGLE_HELP_DISPLAY },
+	{ txt_help_global_option_menu, GLOBAL_OPTION_MENU },
+	{ txt_help_global_esc, GLOBAL_ABORT },
+	{ txt_help_global_redraw_screen, GLOBAL_REDRAW_SCREEN },
 #ifndef NO_SHELL_ESCAPE
-	{ txt_help_global_shell_escape, iKeyShellEscape },
+	{ txt_help_global_shell_escape, GLOBAL_SHELL_ESCAPE },
 #endif /* !NO_SHELL_ESCAPE */
-	{ txt_help_global_posting_history, iKeyDisplayPostHist },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_global_version, iKeyVersion },
-	{ txt_help_bug_report, iKeyThreadBugReport },
-	{ NULL, 0 }
+	{ txt_help_global_posting_history, GLOBAL_DISPLAY_POST_HISTORY },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_version, GLOBAL_VERSION },
+	{ txt_help_bug_report, GLOBAL_BUGREPORT },
+	{ NULL, NOT_ASSIGNED }
 };
 
 static t_help_page page_help_page[] = {
-	{ txt_help_title_navi, 0 },
-	{ txt_help_global_page_down, iKeyPageDown },
-	{ txt_help_global_page_down, iKeyPageDown2 },
-	{ txt_help_global_page_down, iKeyPageDown3 },
-	{ txt_help_global_page_up, iKeyPageUp2 },
-	{ txt_help_global_page_up, iKeyPageUp },
-	{ txt_help_global_page_up, iKeyPageUp3 },
-	{ txt_help_global_line_down, iKeyDown2 },
-	{ txt_help_global_line_down, iKeyDown },
-	{ txt_help_global_line_up, iKeyUp2 },
-	{ txt_help_global_line_up, iKeyUp },
-	{ txt_help_article_first_page, iKeyFirstPage },
-	{ txt_help_article_last_page, iKeyLastPage },
-	{ txt_help_article_first_page, iKeyPageFirstPage },
-	{ txt_help_article_last_page, iKeyPageLastPage },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_article_by_num, 0 },
-	{ txt_help_article_next_thread, iKeyPageNextThd },
-	{ txt_help_article_next_unread, iKeyPageNextUnread },
-	{ txt_help_article_next, iKeyPageNextArt },
-	{ txt_help_article_next_unread, iKeyPageNextUnreadArt },
-	{ txt_help_article_prev, iKeyPagePrevArt },
-	{ txt_help_article_prev_unread, iKeyPagePrevUnreadArt },
-	{ txt_help_article_first_in_thread, iKeyPageTopThd },
-	{ txt_help_article_last_in_thread, iKeyPageBotThd },
-	{ txt_help_global_last_art, iKeyLastViewed },
-	{ txt_help_group_list_thread, iKeyPageListThd },
-	{ txt_help_article_parent, iKeyPageGotoParent },
-	{ txt_help_global_lookup_art, iKeyLookupMessage },
-	{ txt_help_article_quit_to_select_level, iKeyPageGroupSel },
-	{ txt_help_article_skip_quote, iKeyPageSkipIncludedText },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_article_search_forwards, iKeySearchSubjF },
-	{ txt_help_article_search_backwards, iKeySearchSubjB },
-	{ txt_help_global_search_auth_forwards, iKeySearchAuthF },
-	{ txt_help_global_search_auth_backwards, iKeySearchAuthB },
-	{ txt_help_global_search_body, iKeySearchBody },
-	{ txt_help_global_search_body_comment, 0 },
-	{ txt_help_global_search_repeat, iKeySearchRepeat },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_title_disp, 0 },
-	{ txt_help_global_toggle_info_line, iKeyToggleInfoLastLine },
-	{ txt_help_article_toggle_rot13, iKeyPageToggleRot },
-	{ txt_help_global_toggle_inverse_video, iKeyToggleInverseVideo },
-	{ txt_help_article_show_raw, iKeyPageToggleHeaders },
+	{ txt_help_title_navi, NOT_ASSIGNED },
+	{ txt_help_global_page_down, GLOBAL_PAGE_DOWN },
+	{ txt_help_global_page_down, PAGE_PAGE_DOWN3 },
+	{ txt_help_global_page_up, GLOBAL_PAGE_UP },
+	{ txt_help_global_line_down, GLOBAL_LINE_DOWN },
+	{ txt_help_global_line_up, GLOBAL_LINE_UP },
+	{ txt_help_article_first_page, GLOBAL_FIRST_PAGE },
+	{ txt_help_article_last_page, GLOBAL_LAST_PAGE },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_article_by_num, NOT_ASSIGNED },
+	{ txt_help_article_next_thread, PAGE_NEXT_THREAD },
+	{ txt_help_article_next_unread, PAGE_NEXT_UNREAD },
+	{ txt_help_article_next, PAGE_NEXT_ARTICLE },
+	{ txt_help_article_next_unread, PAGE_NEXT_UNREAD_ARTICLE },
+	{ txt_help_article_prev, PAGE_PREVIOUS_ARTICLE },
+	{ txt_help_article_prev_unread, PAGE_PREVIOUS_UNREAD_ARTICLE },
+	{ txt_help_article_first_in_thread, PAGE_TOP_THREAD },
+	{ txt_help_article_last_in_thread, PAGE_BOTTOM_THREAD },
+	{ txt_help_global_last_art, GLOBAL_LAST_VIEWED },
+	{ txt_help_group_list_thread, PAGE_LIST_THREAD },
+	{ txt_help_article_parent, PAGE_GOTO_PARENT },
+	{ txt_help_global_lookup_art, GLOBAL_LOOKUP_MESSAGEID },
+	{ txt_help_article_quit_to_select_level, PAGE_GROUP_SELECT },
+	{ txt_help_article_skip_quote, PAGE_SKIP_INCLUDED_TEXT },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_article_search_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
+	{ txt_help_article_search_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },
+	{ txt_help_global_search_auth_forwards, GLOBAL_SEARCH_AUTHOR_FORWARD },
+	{ txt_help_global_search_auth_backwards, GLOBAL_SEARCH_AUTHOR_BACKWARD },
+	{ txt_help_global_search_body, GLOBAL_SEARCH_BODY },
+	{ txt_help_global_search_body_comment, NOT_ASSIGNED },
+	{ txt_help_global_search_repeat, GLOBAL_SEARCH_REPEAT },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_disp, NOT_ASSIGNED },
+	{ txt_help_global_toggle_info_line, GLOBAL_TOGGLE_INFO_LAST_LINE },
+	{ txt_help_article_toggle_rot13, PAGE_TOGGLE_ROT13 },
+	{ txt_help_global_toggle_inverse_video, GLOBAL_TOGGLE_INVERSE_VIDEO },
+	{ txt_help_article_show_raw, PAGE_TOGGLE_HEADERS },
 #ifdef HAVE_COLOR
-	{ txt_help_global_toggle_color, iKeyToggleColor },
+	{ txt_help_global_toggle_color, GLOBAL_TOGGLE_COLOR },
 #endif /* HAVE_COLOR */
-	{ txt_help_article_toggle_highlight, iKeyPageToggleHighlight },
-	{ txt_help_article_toggle_tex2iso, iKeyPageToggleTex2iso },
-	{ txt_help_article_toggle_tabwidth, iKeyPageToggleTabs },
-	{ txt_help_article_toggle_uue, iKeyPageToggleUue },
-	{ txt_help_article_toggle_formfeed, iKeyPageReveal },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_title_ops, 0 },
-	{ txt_help_global_post, iKeyPost },
-	{ txt_help_global_post_postponed, iKeyPostponed2 },
-	{ txt_help_global_post_postponed, iKeyPostponed },
-	{ txt_help_article_followup, iKeyPageFollowupQuote },
-	{ txt_help_article_followup_no_quote, iKeyPageFollowup },
-	{ txt_help_article_followup_with_header, iKeyPageFollowupQuoteHeaders },
-	{ txt_help_article_repost, iKeyPageRepost },
-	{ txt_help_article_reply, iKeyPageReplyQuote },
-	{ txt_help_article_reply_no_quote, iKeyPageReply },
-	{ txt_help_article_reply_with_header, iKeyPageReplyQuoteHeaders },
-	{ txt_help_article_edit, iKeyPageEditArticle },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_global_mail, iKeyPageMail },
-	{ txt_help_global_save, iKeyPageSave },
-	{ txt_help_global_auto_save, iKeyPageAutoSave },
+	{ txt_help_article_toggle_highlight, PAGE_TOGGLE_HIGHLIGHTING },
+	{ txt_help_article_toggle_tex2iso, PAGE_TOGGLE_TEX2ISO },
+	{ txt_help_article_toggle_tabwidth, PAGE_TOGGLE_TABS },
+	{ txt_help_article_toggle_uue, PAGE_TOGGLE_UUE },
+	{ txt_help_article_toggle_formfeed, PAGE_REVEAL },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_ops, NOT_ASSIGNED },
+#ifndef NO_POSTING
+	{ txt_help_global_post, GLOBAL_POST },
+	{ txt_help_global_post_postponed, GLOBAL_POSTPONED },
+	{ txt_help_article_followup, PAGE_FOLLOWUP_QUOTE },
+	{ txt_help_article_followup_no_quote, PAGE_FOLLOWUP },
+	{ txt_help_article_followup_with_header, PAGE_FOLLOWUP_QUOTE_HEADERS },
+	{ txt_help_article_repost, PAGE_REPOST },
+	{ txt_help_article_cancel, PAGE_CANCEL },
+#endif /* NO_POSTING */
+	{ txt_help_article_reply, PAGE_REPLY_QUOTE },
+	{ txt_help_article_reply_no_quote, PAGE_REPLY },
+	{ txt_help_article_reply_with_header, PAGE_REPLY_QUOTE_HEADERS },
+	{ txt_help_article_edit, PAGE_EDIT_ARTICLE },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_mail, PAGE_MAIL },
+	{ txt_help_global_save, PAGE_SAVE },
+	{ txt_help_global_auto_save, PAGE_AUTOSAVE },
 #ifndef DONT_HAVE_PIPING
-	{ txt_help_global_pipe, iKeyPipe },
+	{ txt_help_global_pipe, GLOBAL_PIPE },
 #endif /* !DONT_HAVE_PIPING */
 #ifndef DISABLE_PRINTING
-	{ txt_help_global_print, iKeyPrint },
+	{ txt_help_global_print, GLOBAL_PRINT },
 #endif /* !DISABLE_PRINTING */
-	{ txt_help_article_view_attachments, iKeyPageViewAttach },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_global_tag, iKeyPageTag },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_article_mark_thread_read, iKeyPageKillThd },
-	{ txt_help_thread_catchup, iKeyPageCatchup },
-	{ txt_help_thread_catchup_next_unread, iKeyPageCatchupNextUnread },
-	{ txt_help_group_mark_article_unread, iKeyGroupMarkArtUnread },
-	{ txt_help_group_mark_thread_unread, iKeyGroupMarkThdUnread },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_article_autoselect, iKeyPageAutoSel },
-	{ txt_help_article_autokill, iKeyPageAutoKill },
-	{ txt_help_article_quick_select, iKeyPageQuickAutoSel },
-	{ txt_help_article_quick_kill, iKeyPageQuickKill },
-	{ txt_help_article_cancel, iKeyPageCancel },
-	{ txt_help_empty_line, 0 },
-	{ txt_help_title_misc, 0 },
-	{ txt_help_article_browse_urls, iKeyPageViewUrl },
-	{ txt_help_global_previous_menu, iKeyQuit },
-	{ txt_help_global_quit_tin, iKeyQuitTin },
-	{ txt_help_global_help, iKeyHelp },
-	{ txt_help_global_toggle_mini_help, iKeyToggleHelpDisplay },
-	{ txt_help_global_option_menu, iKeyOptionMenu },
-	{ txt_help_global_esc, iKeyAbort },
-	{ txt_help_global_redraw_screen, iKeyRedrawScr },
+	{ txt_help_article_view_attachments, PAGE_VIEW_ATTACHMENTS },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_tag, PAGE_TAG },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_article_mark_thread_read, PAGE_MARK_THREAD_READ },
+	{ txt_help_thread_catchup, PAGE_CATCHUP },
+	{ txt_help_thread_catchup_next_unread, PAGE_CATCHUP_NEXT_UNREAD },
+	{ txt_help_group_mark_article_unread, GROUP_MARK_ARTICLE_UNREAD },
+	{ txt_help_group_mark_thread_unread, GROUP_MARK_THREAD_UNREAD },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_article_autoselect, GLOBAL_MENU_FILTER_SELECT },
+	{ txt_help_article_autokill, GLOBAL_MENU_FILTER_KILL },
+	{ txt_help_article_quick_select, GLOBAL_QUICK_FILTER_SELECT },
+	{ txt_help_article_quick_kill, GLOBAL_QUICK_FILTER_KILL },
+	{ txt_help_global_edit_filter, GLOBAL_EDIT_FILTER },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_misc, NOT_ASSIGNED },
+	{ txt_help_article_browse_urls, PAGE_VIEW_URL },
+	{ txt_help_global_previous_menu, GLOBAL_QUIT },
+	{ txt_help_global_quit_tin, GLOBAL_QUIT_TIN },
+	{ txt_help_global_help, GLOBAL_HELP },
+	{ txt_help_global_toggle_mini_help, GLOBAL_TOGGLE_HELP_DISPLAY },
+	{ txt_help_global_option_menu, GLOBAL_OPTION_MENU },
+	{ txt_help_global_esc, GLOBAL_ABORT },
+	{ txt_help_global_redraw_screen, GLOBAL_REDRAW_SCREEN },
 #ifndef NO_SHELL_ESCAPE
-	{ txt_help_global_shell_escape, iKeyShellEscape },
+	{ txt_help_global_shell_escape, GLOBAL_SHELL_ESCAPE },
 #endif /* !NO_SHELL_ESCAPE */
-	{ txt_help_global_posting_history, iKeyDisplayPostHist },
+	{ txt_help_global_posting_history, GLOBAL_DISPLAY_POST_HISTORY },
 #ifdef HAVE_PGP_GPG
-	{ txt_help_empty_line, 0 },
-	{ txt_help_article_pgp, iKeyPagePGPCheckArticle },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_article_pgp, PAGE_PGP_CHECK_ARTICLE },
 #endif /* HAVE_PGP_GPG */
-	{ txt_help_empty_line, 0 },
-	{ txt_help_global_version, iKeyVersion },
-	{ NULL, 0 }
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_version, GLOBAL_VERSION },
+	{ NULL, NOT_ASSIGNED }
 };
 
 
@@ -449,7 +441,7 @@ static void
 make_help_page(
 	FILE *fp,
 	const t_help_page *helppage,
-	const t_menukeys *menukeys)
+	const struct keylist keys)
 {
 	char *buf;
 	char key[MAXKEYLEN];
@@ -465,22 +457,33 @@ make_help_page(
 		return;
 
 	while (helppage->helptext) {
-		/*
-		 * as expand_ctrl_chars() may has shrinked buf
-		 * make sure buf is large enough to contain the helpline
-		 */
-		buf = my_realloc(buf, LEN);
+		if (helppage->func == NOT_ASSIGNED) {
+			/*
+			 * as expand_ctrl_chars() may has shrinked buf
+			 * make sure buf is large enough to contain the helpline
+			 */
+			buf = my_realloc(buf, LEN);
 
-		if (helppage->key == 0) {
 			if (!strlen(helppage->helptext))	/* avoid empty string translations */
 				snprintf(buf, LEN, "%s", helppage->helptext);
 			else
 				snprintf(buf, LEN, "%s", _(helppage->helptext));
-		} else
-			snprintf(buf, LEN, "%s\t  %s", printascii(key, map_to_local(helppage->key, menukeys)), _(helppage->helptext));
-		buf[LEN - 1] = '\0';
-		expand_ctrl_chars(&buf, &length, 8);
-		fprintf(fp, "%s", buf);
+			buf[LEN - 1] = '\0';
+			expand_ctrl_chars(&buf, &length, 8);
+			fprintf(fp, "%s", buf);
+		} else {
+			size_t i;
+
+			for (i = 0; i < keys.used; i++) {
+				if (keys.list[i].function == helppage->func) {
+					buf = my_realloc(buf, LEN);
+					snprintf(buf, LEN, "%s\t  %s", printascii(key, keys.list[i].key), _(helppage->helptext));
+					buf[LEN - 1] = '\0';
+					expand_ctrl_chars(&buf, &length, 8);
+					fprintf(fp, "%s", buf);
+				}
+			}
+		}
 		helppage++;
 	}
 
@@ -500,19 +503,19 @@ show_help_page(
 
 	switch (level) {
 		case SELECT_LEVEL:
-			make_help_page(fp, select_help_page, &menukeymap.select_nav);
+			make_help_page(fp, select_help_page, select_keys);
 			break;
 
 		case GROUP_LEVEL:
-			make_help_page(fp, group_help_page, &menukeymap.group_nav);
+			make_help_page(fp, group_help_page, group_keys);
 			break;
 
 		case THREAD_LEVEL:
-			make_help_page(fp, thread_help_page, &menukeymap.thread_nav);
+			make_help_page(fp, thread_help_page, thread_keys);
 			break;
 
 		case PAGE_LEVEL:
-			make_help_page(fp, page_help_page, &menukeymap.page_nav);
+			make_help_page(fp, page_help_page, page_keys);
 			break;
 
 		case INFO_PAGER:
@@ -550,116 +553,116 @@ show_mini_help(
 	switch (level) {
 		case SELECT_LEVEL:
 			snprintf(buf, bufs, _(txt_mini_select_1),
-				printascii(key[0], map_to_local(iKeySelectEnterNextUnreadGrp, &menukeymap.select_nav)),
-				printascii(key[1], map_to_local(iKeySelectGoto, &menukeymap.select_nav)),
-				printascii(key[2], map_to_local(iKeySearchSubjF, &menukeymap.select_nav)),
-				printascii(key[3], map_to_local(iKeySelectCatchup, &menukeymap.select_nav)));
+				printascii(key[0], func_to_key(SELECT_ENTER_NEXT_UNREAD_GROUP, select_keys)),
+				printascii(key[1], func_to_key(SELECT_GOTO, select_keys)),
+				printascii(key[2], func_to_key(GLOBAL_SEARCH_SUBJECT_FORWARD, select_keys)),
+				printascii(key[3], func_to_key(SELECT_CATCHUP, select_keys)));
 			center_line(line, FALSE, buf);
 			snprintf(buf, bufs, _(txt_mini_select_2),
-				printascii(key[0], map_to_local(iKeyDown2, &menukeymap.select_nav)),
-				printascii(key[1], map_to_local(iKeyUp2, &menukeymap.select_nav)),
-				printascii(key[2], map_to_local(iKeyHelp, &menukeymap.select_nav)),
-				printascii(key[3], map_to_local(iKeySelectMoveGrp, &menukeymap.select_nav)),
-				printascii(key[4], map_to_local(iKeyQuit, &menukeymap.select_nav)),
-				printascii(key[5], map_to_local(iKeySelectToggleReadDisplay, &menukeymap.select_nav)));
+				printascii(key[0], func_to_key(GLOBAL_LINE_DOWN, select_keys)),
+				printascii(key[1], func_to_key(GLOBAL_LINE_UP, select_keys)),
+				printascii(key[2], func_to_key(GLOBAL_HELP, select_keys)),
+				printascii(key[3], func_to_key(SELECT_MOVE_GROUP, select_keys)),
+				printascii(key[4], func_to_key(GLOBAL_QUIT, select_keys)),
+				printascii(key[5], func_to_key(SELECT_TOGGLE_READ_DISPLAY, select_keys)));
 			center_line(line + 1, FALSE, buf);
 			snprintf(buf, bufs, _(txt_mini_select_3),
-				printascii(key[0], map_to_local(iKeySelectSubscribe, &menukeymap.select_nav)),
-				printascii(key[1], map_to_local(iKeySelectSubscribePat, &menukeymap.select_nav)),
-				printascii(key[2], map_to_local(iKeySelectUnsubscribe, &menukeymap.select_nav)),
-				printascii(key[3], map_to_local(iKeySelectUnsubscribePat, &menukeymap.select_nav)),
-				printascii(key[4], map_to_local(iKeySelectYankActive, &menukeymap.select_nav)));
+				printascii(key[0], func_to_key(SELECT_SUBSCRIBE, select_keys)),
+				printascii(key[1], func_to_key(SELECT_SUBSCRIBE_PATTERN, select_keys)),
+				printascii(key[2], func_to_key(SELECT_UNSUBSCRIBE, select_keys)),
+				printascii(key[3], func_to_key(SELECT_UNSUBSCRIBE_PATTERN, select_keys)),
+				printascii(key[4], func_to_key(SELECT_YANK_ACTIVE, select_keys)));
 			center_line(line + 2, FALSE, buf);
 			break;
 
 		case GROUP_LEVEL:
 			snprintf(buf, bufs, _(txt_mini_group_1),
-				printascii(key[0], map_to_local(iKeyGroupNextUnreadArtOrGrp, &menukeymap.group_nav)),
-				printascii(key[1], map_to_local(iKeySearchSubjF, &menukeymap.group_nav)),
-				printascii(key[2], map_to_local(iKeyGroupKill, &menukeymap.group_nav)));
+				printascii(key[0], func_to_key(GROUP_NEXT_UNREAD_ARTICLE_OR_GROUP, group_keys)),
+				printascii(key[1], func_to_key(GLOBAL_SEARCH_SUBJECT_FORWARD, group_keys)),
+				printascii(key[2], func_to_key(GLOBAL_MENU_FILTER_KILL, group_keys)));
 			center_line(line, FALSE, buf);
 			snprintf(buf, bufs, _(txt_mini_group_2),
-				printascii(key[0], map_to_local(iKeySearchAuthF, &menukeymap.group_nav)),
-				printascii(key[1], map_to_local(iKeyGroupCatchup, &menukeymap.group_nav)),
-				printascii(key[2], map_to_local(iKeyDown2, &menukeymap.group_nav)),
-				printascii(key[3], map_to_local(iKeyUp2, &menukeymap.group_nav)),
-				printascii(key[4], map_to_local(iKeyGroupMarkThdRead, &menukeymap.group_nav)),
-				printascii(key[5], map_to_local(iKeyGroupListThd, &menukeymap.group_nav)));
+				printascii(key[0], func_to_key(GLOBAL_SEARCH_AUTHOR_FORWARD, group_keys)),
+				printascii(key[1], func_to_key(GROUP_CATCHUP, group_keys)),
+				printascii(key[2], func_to_key(GLOBAL_LINE_DOWN, group_keys)),
+				printascii(key[3], func_to_key(GLOBAL_LINE_UP, group_keys)),
+				printascii(key[4], func_to_key(GROUP_MARK_THREAD_READ, group_keys)),
+				printascii(key[5], func_to_key(GROUP_LIST_THREAD, group_keys)));
 			center_line(line + 1, FALSE, buf);
 			snprintf(buf, bufs, _(txt_mini_group_3),
 #ifndef DONT_HAVE_PIPING
-				printascii(key[0], map_to_local(iKeyPipe, &menukeymap.group_nav)),
+				printascii(key[0], func_to_key(GLOBAL_PIPE, group_keys)),
 #endif /* !DONT_HAVE_PIPING */
-				printascii(key[1], map_to_local(iKeyGroupMail, &menukeymap.group_nav)),
+				printascii(key[1], func_to_key(GROUP_MAIL, group_keys)),
 #ifndef DISABLE_PRINTING
-				printascii(key[2], map_to_local(iKeyPrint, &menukeymap.group_nav)),
+				printascii(key[2], func_to_key(GLOBAL_PRINT, group_keys)),
 #endif /* !DISABLE_PRINTING */
-				printascii(key[3], map_to_local(iKeyQuit, &menukeymap.group_nav)),
-				printascii(key[4], map_to_local(iKeyGroupToggleReadUnread, &menukeymap.group_nav)),
-				printascii(key[5], map_to_local(iKeyGroupSave, &menukeymap.group_nav)),
-				printascii(key[6], map_to_local(iKeyGroupTag, &menukeymap.group_nav)),
-				printascii(key[7], map_to_local(iKeyPost, &menukeymap.group_nav)));
+				printascii(key[3], func_to_key(GLOBAL_QUIT, group_keys)),
+				printascii(key[4], func_to_key(GROUP_TOGGLE_READ_UNREAD, group_keys)),
+				printascii(key[5], func_to_key(GROUP_SAVE, group_keys)),
+				printascii(key[6], func_to_key(GROUP_TAG, group_keys)),
+				printascii(key[7], func_to_key(GLOBAL_POST, group_keys)));
 			center_line(line + 2, FALSE, buf);
 			break;
 
 		case THREAD_LEVEL:
 			snprintf(buf, bufs, _(txt_mini_thread_1),
-				printascii(key[0], map_to_local(iKeyThreadReadNextArtOrThread, &menukeymap.thread_nav)),
-				printascii(key[1], map_to_local(iKeyThreadCatchup, &menukeymap.thread_nav)),
-				printascii(key[2], map_to_local(iKeyThreadToggleSubjDisplay, &menukeymap.thread_nav)));
+				printascii(key[0], func_to_key(THREAD_READ_NEXT_ARTICLE_OR_THREAD, thread_keys)),
+				printascii(key[1], func_to_key(THREAD_CATCHUP, thread_keys)),
+				printascii(key[2], func_to_key(THREAD_TOGGLE_SUBJECT_DISPLAY, thread_keys)));
 			center_line(line, FALSE, buf);
 			snprintf(buf, bufs, _(txt_mini_thread_2),
-				printascii(key[0], map_to_local(iKeyHelp, &menukeymap.thread_nav)),
-				printascii(key[1], map_to_local(iKeyDown2, &menukeymap.thread_nav)),
-				printascii(key[2], map_to_local(iKeyUp2, &menukeymap.thread_nav)),
-				printascii(key[3], map_to_local(iKeyQuit, &menukeymap.thread_nav)),
-				printascii(key[4], map_to_local(iKeyThreadTag, &menukeymap.thread_nav)),
-				printascii(key[5], map_to_local(iKeyThreadMarkArtUnread, &menukeymap.thread_nav)));
+				printascii(key[0], func_to_key(GLOBAL_HELP, thread_keys)),
+				printascii(key[1], func_to_key(GLOBAL_LINE_DOWN, thread_keys)),
+				printascii(key[2], func_to_key(GLOBAL_LINE_UP, thread_keys)),
+				printascii(key[3], func_to_key(GLOBAL_QUIT, thread_keys)),
+				printascii(key[4], func_to_key(THREAD_TAG, thread_keys)),
+				printascii(key[5], func_to_key(THREAD_MARK_ARTICLE_UNREAD, thread_keys)));
 			center_line(line + 1, FALSE, buf);
 			break;
 
 		case PAGE_LEVEL:
 			snprintf(buf, bufs, _(txt_mini_page_1),
-				printascii(key[0], map_to_local(iKeyPageNextUnread, &menukeymap.page_nav)),
-				printascii(key[1], map_to_local(iKeySearchSubjF, &menukeymap.page_nav)),
-				printascii(key[2], map_to_local(iKeyPageAutoKill, &menukeymap.page_nav)));
+				printascii(key[0], func_to_key(PAGE_NEXT_UNREAD, page_keys)),
+				printascii(key[1], func_to_key(GLOBAL_SEARCH_SUBJECT_FORWARD, page_keys)),
+				printascii(key[2], func_to_key(GLOBAL_MENU_FILTER_KILL, page_keys)));
 			center_line(line, FALSE, buf);
 			snprintf(buf, bufs, _(txt_mini_page_2),
-				printascii(key[0], map_to_local(iKeySearchAuthF, &menukeymap.page_nav)),
-				printascii(key[1], map_to_local(iKeySearchBody, &menukeymap.page_nav)),
-				printascii(key[2], map_to_local(iKeyPageCatchup, &menukeymap.page_nav)),
-				printascii(key[3], map_to_local(iKeyPageFollowupQuote, &menukeymap.page_nav)),
-				printascii(key[4], map_to_local(iKeyPageKillThd, &menukeymap.page_nav)));
+				printascii(key[0], func_to_key(GLOBAL_SEARCH_AUTHOR_FORWARD, page_keys)),
+				printascii(key[1], func_to_key(GLOBAL_SEARCH_BODY, page_keys)),
+				printascii(key[2], func_to_key(PAGE_CATCHUP, page_keys)),
+				printascii(key[3], func_to_key(PAGE_FOLLOWUP_QUOTE, page_keys)),
+				printascii(key[4], func_to_key(PAGE_MARK_THREAD_READ, page_keys)));
 			center_line(line + 1, FALSE, buf);
 			snprintf(buf, bufs, _(txt_mini_page_3),
 #ifndef DONT_HAVE_PIPING
-				printascii(key[0], map_to_local(iKeyPipe, &menukeymap.page_nav)),
+				printascii(key[0], func_to_key(GLOBAL_PIPE, page_keys)),
 #endif /* !DONT_HAVE_PIPING */
-				printascii(key[1], map_to_local(iKeyPageMail, &menukeymap.page_nav)),
+				printascii(key[1], func_to_key(PAGE_MAIL, page_keys)),
 #ifndef DISABLE_PRINTING
-				printascii(key[2], map_to_local(iKeyPrint, &menukeymap.page_nav)),
+				printascii(key[2], func_to_key(GLOBAL_PRINT, page_keys)),
 #endif /* !DISABLE_PRINTING */
-				printascii(key[3], map_to_local(iKeyQuit, &menukeymap.page_nav)),
-				printascii(key[4], map_to_local(iKeyPageReplyQuote, &menukeymap.page_nav)),
-				printascii(key[5], map_to_local(iKeyPageSave, &menukeymap.page_nav)),
-				printascii(key[6], map_to_local(iKeyPageTag, &menukeymap.page_nav)),
-				printascii(key[7], map_to_local(iKeyPost, &menukeymap.page_nav)));
+				printascii(key[3], func_to_key(GLOBAL_QUIT, page_keys)),
+				printascii(key[4], func_to_key(PAGE_REPLY_QUOTE, page_keys)),
+				printascii(key[5], func_to_key(PAGE_SAVE, page_keys)),
+				printascii(key[6], func_to_key(PAGE_TAG, page_keys)),
+				printascii(key[7], func_to_key(GLOBAL_POST, page_keys)));
 			center_line(line + 2, FALSE, buf);
 			break;
 
 		case INFO_PAGER:
 			snprintf(buf, bufs, _(txt_mini_info_1),
-				printascii(key[0], map_to_local(iKeyUp, &menukeymap.info_nav)),
-				printascii(key[1], map_to_local(iKeyDown, &menukeymap.info_nav)),
-				printascii(key[2], map_to_local(iKeyPageUp, &menukeymap.info_nav)),
-				printascii(key[3], map_to_local(iKeyPageDown, &menukeymap.info_nav)),
-				printascii(key[4], map_to_local(iKeyFirstPage, &menukeymap.info_nav)),
-				printascii(key[5], map_to_local(iKeyLastPage, &menukeymap.info_nav)));
+				printascii(key[0], func_to_key(GLOBAL_LINE_UP, info_keys)),
+				printascii(key[1], func_to_key(GLOBAL_LINE_DOWN, info_keys)),
+				printascii(key[2], func_to_key(GLOBAL_PAGE_UP, info_keys)),
+				printascii(key[3], func_to_key(GLOBAL_PAGE_DOWN, info_keys)),
+				printascii(key[4], func_to_key(GLOBAL_FIRST_PAGE, info_keys)),
+				printascii(key[5], func_to_key(GLOBAL_LAST_PAGE, info_keys)));
 			center_line(line, FALSE, buf);
 			snprintf(buf, bufs, _(txt_mini_info_2),
-				printascii(key[0], map_to_local(iKeySearchSubjF, &menukeymap.info_nav)),
-				printascii(key[1], map_to_local(iKeySearchSubjB, &menukeymap.info_nav)),
-				printascii(key[2], map_to_local(iKeyQuit, &menukeymap.info_nav)));
+				printascii(key[0], func_to_key(GLOBAL_SEARCH_SUBJECT_FORWARD, info_keys)),
+				printascii(key[1], func_to_key(GLOBAL_SEARCH_SUBJECT_BACKWARD, info_keys)),
+				printascii(key[2], func_to_key(GLOBAL_QUIT, info_keys)));
 			center_line(line + 1, FALSE, buf);
 			break;
 

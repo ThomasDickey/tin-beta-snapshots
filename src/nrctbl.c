@@ -3,13 +3,13 @@
  *  Module    : nrctbl.c
  *  Author    : Sven Paulus <sven@tin.org>
  *  Created   : 1996-10-06
- *  Updated   : 2003-01-18
+ *  Updated   : 2005-02-02
  *  Notes     : This module does the NNTP server name lookup in
  *              ~/.tin/newsrctable and returns the real hostname
  *              and the name of the newsrc file for a given
  *              alias of the server.
  *
- * Copyright (c) 1996-2004 Sven Paulus <sven@tin.org>
+ * Copyright (c) 1996-2005 Sven Paulus <sven@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,9 +47,9 @@
 #ifndef VERSION_H
 #	include "version.h"
 #endif /* !VERSION_H */
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 
 /*
  * local prototypes
@@ -204,37 +204,37 @@ get_newsrcname(
 				}
 			}
 			if (error) {
-				char ch;
-				char default_ch = map_to_local(iKeyNrctblAlternative, &menukeymap.nrctbl_create);
+				char ch, default_ch = 'a';
 
 				do {
 					/* very ugly code, but curses is not initialized yet */
 					if (error >= 2) {
-						default_ch = map_to_local(iKeyNrctblCreate, &menukeymap.nrctbl_create);
+						default_ch = 'c';
 						printf("%s%c\b", _(txt_nrctbl_create), default_ch);
 					} else
 						printf("%s%c\b", _(txt_nrctbl_default), default_ch);
 
 					if ((ch = (char) ReadCh()) == '\r' || ch == '\n')
 						ch = default_ch;
-				} while (!strchr(menukeymap.nrctbl_create.localkeys, ch));
+				} while (ch != ESC && ch != 'a' && ch != 'c' && ch != 'd' && ch != 'q');
 				printf("%c\n", ch);
 
-				switch (map_to_default(ch, &menukeymap.nrctbl_create)) {
-					case iKeyNrctblCreate:
+				/* NOTE: these keys can not be remapped */
+				switch (ch) {
+					case 'c':
 						/* FIXME this doesn't check if we could create the file */
 						return TRUE;
 
-					case iKeyNrctblDefault:
+					case 'd':
 						joinpath(newsrc_name, homedir, ".newsrc");
 						return TRUE;
 
-					case iKeyNrctblAlternative:
+					case 'a':
 						snprintf(name_found, sizeof(name_found), ".newsrc-%s", nntpserver_name);
 						joinpath(newsrc_name, homedir, name_found);
 						return TRUE;
 
-					case iKeyNrctblQuit:
+					case 'q':
 						exit(EXIT_SUCCESS);
 						/* keep lint quiet: */
 						/* FALLTHROUGH */

@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2004-12-15
+.\" Updated   : 2005-03-14
 .\" Notes     : needs a some work
 .\"
-.TH tin 5 "December 15th, 2004" "1.7.7" "A Usenet newsreader"
+.TH tin 5 "March 12th, 2005" "1.7.8" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -18,11 +18,11 @@ newsreader.
 
 .SH FILES
 .\" TODO: mention
-.\" ${TIN_HOMEDIR-"$HOME"}/dead.article
-.\" ${TIN_HOMEDIR-"$HOME"}/dead.articles
-.\" ${TIN_HOMEDIR-"$HOME"}/.article[.$$]
-.\" ${TIN_HOMEDIR-"$HOME"}/.cancel[.$$]
-.\" ${TIN_HOMEDIR-"$HOME"}/.letter[.$$]
+.\" ${TIN_HOMEDIR\-"$HOME"}/dead.article
+.\" ${TIN_HOMEDIR\-"$HOME"}/dead.articles
+.\" ${TIN_HOMEDIR\-"$HOME"}/.article[.$$]
+.\" ${TIN_HOMEDIR\-"$HOME"}/.cancel[.$$]
+.\" ${TIN_HOMEDIR\-"$HOME"}/.letter[.$$]
 .PP
 .IR $MAILCAPS
 .br
@@ -66,7 +66,7 @@ message. If it contains "%t", those two characters will be replaced by the
 content-type field, including the subtype, if any. If it contains "%{"
 followed by a parameter name and a closing "}", then all those characters
 will be replaced by the value of the named parameter, if any, from the
-Content-Type header. Finally, if the field contains "\\%", those two
+Content\-Type header. Finally, if the field contains "\\%", those two
 characters will be replaced by a single "%" character.
 .\"
 .\" Two special codes can appear in the viewing command for objects of type
@@ -85,16 +85,16 @@ support mail composing agents that support the composition of multiple types
 of mail using external composing agents. As with the view-command, the
 semantics of program execution are operating system dependent. The result of
 the composing program may be data that is not yet suitable for mail
-transport - that is, a Content-Transfer-Encoding may need to be applied to
+transport - that is, a Content\-Transfer\-Encoding may need to be applied to
 the data.
 .TP
 .B composetyped
 The "composetyped" field is similar to the "compose" field, but is to be
-used when the composing program needs to specify the Content-Type header
+used when the composing program needs to specify the Content\-Type header
 field to be applied to the composed data. The "compose" field is simpler,
 and is preferred for use with existing (non-mail-oriented) programs for
 composing data in a given format. The "composetyped" field is necessary when
-the Content-Type information must include auxiliary parameters, and the
+the Content\-Type information must include auxiliary parameters, and the
 composition program must then know enough about mail formats to produce
 output that includes the mail type information.
 .TP
@@ -150,8 +150,8 @@ will be in that form after decoding. In general, this field is needed only
 if there is line-oriented data of some type other than text/* or non-line-
 oriented data that is a subtype of text.
 .TP
-.B x11-bitmap
-The "x11-bitmap" field names a file, in X11 bitmap (xbm) format, which
+.B x11\-bitmap
+The "x11\-bitmap" field names a file, in X11 bitmap (xbm) format, which
 points to an appropriate icon to be used to visually denote the presence of
 this kind of data.
 .TP
@@ -178,7 +178,7 @@ image/*;\\
 .in +.3i
 xv \-8 \-geometry +0 '%s';\\
 .br
-description=%{name} %t-Image;\\
+description=%{name} %t\-Image;\\
 .br
 test=test "$DISPLAY" \\
 .br
@@ -387,7 +387,7 @@ active file of user's saved newsgroups, used by \fBtin \-R\fP.
 .\" tin uses inns old (pre 2.x) Path convention.
 .\" as with inn >= 2.2.x getting more and more popular
 .\" we should think about checking for the new Paths (/news/etc/)
-.\" ${TIN_LIBDIR-/news/etc"}/attributes
+.\" ${TIN_LIBDIR\-/news/etc"}/attributes
 .IR /etc/tin/attributes
 .br
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/attributes
@@ -532,7 +532,7 @@ header and its content.
 .TP
 .B quick_kill_scope
 A comma-separated list of newsgroup patterns (wildmat-style) to which
-groups the filter rule added by \fBGroupQuickKill\fP will be applied.
+groups the filter rule added by \fBQuickFilterKill\fP will be applied.
 If unset the default from the tinrc variable
 \fBdefault_filter_kill_global\fP will be used.
 .TP
@@ -547,7 +547,7 @@ Identical to the tinrc variable \fBdefault_filter_kill_header\fP
 .TP
 .B quick_select_scope
 A comma-separated list of newsgroup patterns (wildmat-style) to which
-groups the filter rule added by \fBGroupQuickAutoSel\fP will be
+groups the filter rule added by \fBQuickFilterSelect\fP will be
 applied. If unset the default from the tinrc variable
 \fBdefault_filter_select_global\fP will be used.
 .TP
@@ -700,17 +700,20 @@ subj=\\b(cd|[rk]?)?tin(d|pre)?[\-.0\-9]*\\b
 .RE
 .PP
 
+.\"
+.\" TODO: mention THREAD_EDIT_FILTER and SELECT_EDIT_FILTER
 .IR /etc/tin/keymap${${LC_ALL\-"${LC_CTYPE\-"${LC_MESSAGES\-"$LANG"}"}"}:+".${LC_ALL\-"${LC_CTYPE\-"${LC_MESSAGES\-"$LANG"}"}"}"}
 .br
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/keymap${${LC_ALL\-"${LC_CTYPE\-"${LC_MESSAGES\-"$LANG"}"}"}:+".${LC_ALL\-"${LC_CTYPE\-"${LC_MESSAGES\-"$LANG"}"}"}"}
 .\" sorry that one got a bit complex ,-)
 .sp
 .RS
-Keymap-file, containing "\fIkeyname\fR \fIvalue\fR" pairs.
-Below is a list of all keynames and their default bindings.
+Keymap-file, containing "\fIkeyname\fR \fIvalue\fR \fI[value]\fR" pairs
+seperated by spaces or tabs.  Below is a list of all rebindable keynames and
+their defaults.
 .sp
 .nf
-.ta \w'GroupSelThdIfUnreadSelected    'u +\w'SPACE'u
+.ta \w'GroupSelThdIfUnreadSelected    'u +\w'SPACE'u +\w'SPACE'u
 \fBPageDown3\fP	SPACE
 \fBShellEscape\fP	!
 \fBSetRange\fP	#
@@ -722,41 +725,41 @@ Below is a list of all keynames and their default bindings.
 \fBSearchAuthB\fP	A
 \fBSearchBody\fP	B
 \fBSearchRepeat\fP	\\
+\fBEditFilter\fP   E
 \fBToggleHelpDisplay\fP	H
 \fBToggleInverseVideo\fP	I
 \fBLookupMessage\fP	L
 \fBOptionMenu\fP	M
-\fBPostponed2\fP	O
+\fBPostponed\fP	O	^O
 \fBQuitTin\fP	Q
 \fBDisplayPostHist\fP	W
 \fBFirstPage\fP	^
 \fBSearchAuthF\fP	a
-\fBPageUp3\fP	b
 \fBHelp\fP	h
 \fBToggleInfoLastLine\fP	i
-\fBDown2\fP	j
-\fBUp2\fP	k
+\fBDown\fP	j	^N
+\fBUp\fP	k	^P
 \fBPrint\fP	o
 \fBQuit\fP	q
 \fBVersion\fP	v
 \fBPost\fP	w
+\fBQuickFilterSelect\fP	[
+\fBQuickFilterKill\fP	]
 \fBPipe\fP	|
 \fBScrollUp\fP	<
 \fBScrollDown\fP	>
-\fBPageUp\fP	^B
-\fBPageDown\fP	^D
-\fBPageDown2\fP	^F
+\fBPageUp\fP	b	^B	^U
+\fBPageDown\fP	^D	^F
 \fBRedrawScr\fP	^L
-\fBDown\fP	^N
 \fBPostponed\fP	^O
-\fBUp\fP	^P
-\fBPageUp2\fP	^U
+\fBMenuFilterSelect\fP	^A
+\fBMenuFilterKill\fP	^K
+
 .sp
-\fBConfigSelect\fP	^J
-\fBConfigSelect2\fP	^M
-\fBConfigLastPage2\fP	G
+\fBConfigSelect\fP	^J	^M
+\fBConfigLastPage\fP	G
 \fBConfigNoSave\fP	Q
-\fBConfigFirstPage2\fP	g
+\fBConfigFirstPage\fP	g
 .sp
 \fBFeedTag\fP	T
 \fBFeedArt\fP	a
@@ -769,11 +772,8 @@ Below is a list of all keynames and their default bindings.
 \fBFilterEdit\fP	e
 \fBFilterSave\fP	s
 .sp
-\fBGroupAutoSel\fP	^A
 \fBGroupNextUnreadArtOrGrp\fP	TAB
-\fBGroupReadBasenote\fP	^J
-\fBGroupKill\fP	^K
-\fBGroupReadBasenote2\fP	^M
+\fBGroupReadBasenote\fP	^J	^M
 \fBGroupSelThd\fP	*
 \fBGroupDoAutoSel\fP	+
 \fBGroupToggleThdSel\fP	.
@@ -781,7 +781,6 @@ Below is a list of all keynames and their default bindings.
 \fBGroupSelPattern\fP	=
 \fBGroupReverseSel\fP	@
 \fBGroupCatchupNextUnread\fP	C
-\fBGroupEditFilter\fP	E
 \fBGroupToggleGetartLimit\fP	G
 \fBGroupMarkThdRead\fP	K
 \fBGroupNextUnreadArt\fP	N
@@ -792,8 +791,6 @@ Below is a list of all keynames and their default bindings.
 \fBGroupUntag\fP	U
 \fBGroupMarkUnselArtRead\fP	X
 \fBGroupMarkThdUnread\fP	Z
-\fBGroupQuickAutoSel\fP	[
-\fBGroupQuickKill\fP	]
 \fBGroupCatchup\fP	c
 \fBGroupToggleSubjDisplay\fP	d
 \fBGroupGoto\fP	g
@@ -809,22 +806,14 @@ Below is a list of all keynames and their default bindings.
 \fBGroupMarkArtUnread\fP	z
 \fBGroupUndoSel\fP	~
 .sp
-\fBHelpLastPage2\fP	G
-\fBHelpFirstPage2\fP	g
+\fBHelpLastPage\fP	G
+\fBHelpFirstPage\fP	g
 .sp
-\fBNrctblCreate\fP	c
-\fBNrctblDefault\fP	d
-\fBNrctblAlternative\fP	a
-\fBNrctblQuit\fP	q
-.sp
-\fBPageAutoSel\fP	^A
 \fBPageReplyQuoteHeaders\fP	^E
 \fBPagePGPCheckArticle\fP	^G
 \fBPageToggleHeaders\fP	^H
 \fBPageNextUnread\fP	TAB
-\fBPageNextThd\fP	^J
-\fBPageAutoKill\fP	^K
-\fBPageNextThd2\fP	^M
+\fBPageNextThd\fP	^J	^M
 \fBPageToggleTabs\fP	^T
 \fBPageFollowupQuoteHeaders\fP	^W
 \fBPageToggleTex2iso\fP	"
@@ -836,7 +825,6 @@ Below is a list of all keynames and their default bindings.
 \fBPageBotThd\fP	>
 \fBPageCatchupNextUnread\fP	C
 \fBPageCancel\fP	D
-\fBPageEditFilter\fP	E
 \fBPageFollowup\fP	F
 \fBPageLastPage\fP	G
 \fBPageKillThd\fP	K
@@ -848,8 +836,6 @@ Below is a list of all keynames and their default bindings.
 \fBPageViewUrl\fP	U
 \fBPageViewAttach\fP	V
 \fBPageMarkThdUnread\fP	Z
-\fBPageQuickAutoSel\fP	[
-\fBPageQuickKill\fP	]
 \fBPageToggleHighlight\fP	_
 \fBPageCatchup\fP	c
 \fBPageEditArticle\fP	e
@@ -880,32 +866,25 @@ Below is a list of all keynames and their default bindings.
 \fBPostIgnore\fP	i
 \fBPostMail\fP	m
 \fBPostPostpone\fP	o
-\fBPostPost3\fP	p
+\fBPostPost\fP	p	y
 \fBPostSupersede\fP	s
-\fBPostSend\fP	s
-\fBPostSend2\fP	y
-\fBPostPost2\fP	y
+\fBPostSend\fP	s	y
 .sp
 \fBPostponeOverride\fP	Y
 \fBPostponeAll\fP	A
 .sp
-\fBPromptYes\fP	y
-\fBPromptNo\fP	n
+\fBPromptYes\fP	y	Y
+\fBPromptNo\fP	n	N
 .sp
 \fBSaveAppendFile\fP	a
 \fBSaveOverwriteFile\fP	o
 .sp
-\fBPProcExtractZip\fP	E
-\fBPProcListZip\fP	L
-\fBPProcExtractZoo\fP	e
-\fBPProcListZoo\fP	l
-\fBPProcShar\fP	s
-\fBPProcUUDecode\fP	u
 \fBPProcNone\fP	n
+\fBPProcShar\fP	s
+\fBPProcYes\fP	y
 .sp
-\fBSelectEnterNextUnreadGrp\fP	TAB
-\fBSelectReadGrp\fP	^J
-\fBSelectReadGrp2\fP	^M
+\fBSelectEnterNextUnreadGrp\fP	TAB	n
+\fBSelectReadGrp\fP	^J	^M
 \fBSelectResetNewsrc\fP	^R
 \fBSelectSortActive\fP	.
 \fBSelectCatchupNextUnread\fP	C
@@ -915,21 +894,18 @@ Below is a list of all keynames and their default bindings.
 \fBSelectUnsubscribePat\fP	U
 \fBSelectQuitNoWrite\fP	X
 \fBSelectSyncWithActive\fP	Y
-\fBSelectMarkGrpUnread2\fP	Z
 \fBSelectCatchup\fP	c
 \fBSelectToggleDescriptions\fP	d
 \fBSelectGoto\fP	g
 \fBSelectMoveGrp\fP	m
-\fBSelectEnterNextUnreadGrp2\fP	n
 \fBSelectToggleReadDisplay\fP	r
 \fBSelectSubscribe\fP	s
 \fBSelectUnsubscribe\fP	u
 \fBSelectYankActive\fP	y
-\fBSelectMarkGrpUnread\fP	z
+\fBSelectMarkGrpUnread\fP	z	Z
 .sp
 \fBThreadReadNextArtOrThread\fP	TAB
-\fBThreadReadArt\fP	^J
-\fBThreadReadArt2\fP	^M
+\fBThreadReadArt\fP	^J	^M
 \fBThreadSelArt\fP	*
 \fBThreadToggleArtSel\fP	.
 \fBThreadReverseSel\fP	@
@@ -1039,7 +1015,7 @@ to keep track of new newsgroups on the server.
 .\" tin uses inns old (pre 2.x) Path convention.
 .\" as with inn >= 2.2.x getting more and more popular
 .\" we should think about checking for the new Paths (/news/etc/)
-.\" .IR ${TIN_LIBDIR-"/news/etc"}/tinrc
+.\" .IR ${TIN_LIBDIR\-"/news/etc"}/tinrc
 .IR /etc/tin/tinrc
 .br
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/tinrc
@@ -1123,7 +1099,7 @@ Reconnect to server automatically. Default is OFF.
 .TP
 .B auto_save
 If ON articles/threads with ''Archive\-name:'' in header will be
-automatically saved with the Archive-name & part/patch no and post
+automatically saved with the Archive\-name & part/patch no and post
 processed if \fBpost_process_type\fP is set to something other than 'No'.
 Default is OFF.
 .TP
@@ -1516,11 +1492,11 @@ for more details about MMDF.
 If ON mark articles that are saved as read. Default is ON.
 .TP
 .B mark_ignore_tags
-When this is ON, the \fBiKeyGroupMarkThdRead\fP,
-\fBiKeyThreadMarkArtRead\fP functions ('\fBK\fP') mark just the
-current article or thread, ignoring other tagged, unread articles.
-When OFF, the same function presents a menu with choices of the
-current thread or article, all tagged, unread articles, or nothing.
+When this is ON, the \fBGroupMarkThdRead\fP, \fBThreadMarkArtRead\fP
+functions ('\fBK\fP') mark just the current article or thread, ignoring
+other tagged, unread articles.  When OFF, the same function presents a menu
+with choices of the current thread or article, all tagged, unread articles,
+or nothing.
 .TP
 .B metamail_prog
 Path, name and options of external
@@ -1635,8 +1611,8 @@ library
 uses to do the normalization. Default is NFKC.
 .TP
 .B pgdn_goto_next
-If ON the Page Down keys will go to the next unread article when pressed at
-the end of a message. Default is ON.
+If ON the \fBPageDown\fP keys will go to the next unread article when
+pressed at the end of a message. Default is ON.
 .TP
 .B pos_first_unread
 If ON put cursor at first unread article in group otherwise at last article.
@@ -1894,10 +1870,10 @@ the default. The following sort types are allowed:
 .RE
 .TP
 .B space_goto_next_unread
-SPACE normally acts as a Page Down key and has no effect at the end of an
-article. If this option is turned ON the SPACE command will go to the next
-unread article when the end of the article is reached (\fBrn\fP (1)-style
-pager).
+SPACE normally acts as a \fBPageDown\fP key and has no effect at the end of
+an article. If this option is turned ON the SPACE command will go to the
+next unread article when the end of the article is reached (\fBrn\fP
+(1)-style pager).
 .TP
 .B spamtrap_warning_addresses
 Set this option to a list of comma-separated strings to be warned if you are

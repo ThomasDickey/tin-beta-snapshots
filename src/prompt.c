@@ -3,10 +3,10 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-09-19
+ *  Updated   : 2005-02-12
  *  Notes     :
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,9 +41,9 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 
 static char *prompt_slk_message;	/* prompt message for prompt_slk_redraw */
 
@@ -153,36 +153,38 @@ prompt_menu_string(
 
 /*
  * prompt_yn
- * prompt user for 'y'es or 'n'o decision. "prompt" will be displayed in line
- * "line" giving the default answer "default_answer".
- * TODO: 'line' is constant - can we remove it ?
+ * prompt user for 'y'es or 'n'o decision. "prompt" will be displayed in the
+ * last line giving the default answer "default_answer".
  * The function returns 1 if the user decided "yes", -1 if the user wanted
- * to escape, or 0 for any other key or decision.
+ * to escape, or 0 for any other decision.
  */
 int
 prompt_yn(
-	int line,
 	const char *prompt,
 	t_bool default_answer)
 {
 	char *keyprompt;
 	char keyno[MAXKEYLEN], keyyes[MAXKEYLEN];
-	int ch = 'y', prompt_ch = 'y'; /* why not iKeyPromptYes? */
+	char yes, no, prompt_ch;
+	int ch;
 	size_t maxlen;
-	t_bool yn_loop = TRUE;
+	t_function func;
 
 /*	fflush(stdin); */		/* Prevent finger trouble from making important decisions */
 
-	(void) printascii(keyyes, (default_answer ? toupper(map_to_local(iKeyPromptYes, &menukeymap.prompt_yn)) : map_to_local(iKeyPromptYes, &menukeymap.prompt_yn)));
-	(void) printascii(keyno, (!default_answer ? toupper(map_to_local(iKeyPromptNo, &menukeymap.prompt_yn)) : map_to_local(iKeyPromptNo, &menukeymap.prompt_yn)));
+	yes = func_to_key(PROMPT_YES, prompt_keys);
+	no = func_to_key(PROMPT_NO, prompt_keys);
+
+	printascii(keyyes, (default_answer ? toupper(yes) : yes));
+	printascii(keyno, (!default_answer ? toupper(no) : no));
 	maxlen = MAX(strlen(keyyes), strlen(keyno));
 
-	while (yn_loop) {
-		prompt_ch = map_to_local((default_answer ? iKeyPromptYes : iKeyPromptNo), &menukeymap.prompt_yn);
+	do {
+		prompt_ch = (default_answer ? yes : no);
 		keyprompt = (default_answer ? keyyes : keyno);
 
 		if (!cmd_line) {
-			MoveCursor(line, 0);
+			MoveCursor(cLINES, 0);
 			CleartoEOLN();
 		}
 		my_printf("%s (%s/%s) %-*s", prompt, keyyes, keyno, (int) maxlen, keyprompt);
@@ -190,12 +192,10 @@ prompt_yn(
 			cursoron();
 		my_flush();
 		if (!cmd_line)
-			MoveCursor(line, (int) strlen(prompt) + strlen(keyyes) + strlen(keyno) + 5);
+			MoveCursor(cLINES, (int) strlen(prompt) + strlen(keyyes) + strlen(keyno) + 5);
 
 		if (((ch = (char) ReadCh()) == '\n') || (ch == '\r'))
 			ch = prompt_ch;
-
-		yn_loop = FALSE; /* normal case: leave loop */
 
 		switch (ch) {
 			case ESC:	/* (ESC) common arrow keys */
@@ -206,11 +206,11 @@ prompt_yn(
 					case KEYMAP_UP:
 					case KEYMAP_DOWN:
 						default_answer = bool_not(default_answer);
-						yn_loop = TRUE; /* don't leave loop */
+						ch = '\0';	/* set to a not bindable key to not leave the loop yet */
 						break;
 
 					case KEYMAP_LEFT:
-						ch = iKeyAbort;
+						ch = ESC;
 						break;
 
 					case KEYMAP_RIGHT:
@@ -225,19 +225,14 @@ prompt_yn(
 			default:
 				break;
 		}
-	}
+		func = key_to_func(ch, prompt_keys);
+	} while (func == NOT_ASSIGNED);
 
 	if (!cmd_line) {
-		if (line == cLINES)
-			clear_message();
-		else {
-			MoveCursor(line, (int) strlen(prompt));
-			my_fputc(((ch == iKeyAbort) ? prompt_ch : ch), stdout);
-		}
-		cursoroff();
+		clear_message();
 		my_flush();
 	}
-	return (tolower((unsigned char) map_to_default(ch, &menukeymap.prompt_yn)) == tolower((unsigned char)iKeyPromptYes)) ? 1 : (ch == iKeyAbort) ? -1 : 0;
+	return (func == PROMPT_YES) ? 1 : (func == GLOBAL_ABORT) ? -1 : 0;
 }
 
 
@@ -612,24 +607,24 @@ sized_message(
  * Implement the Single-Letter-Key mini menus at the bottom of the screen
  * eg, Press a)ppend, o)verwrite, q)uit :
  */
-int
+t_function
 prompt_slk_response(
-	int ch_default,
-	const t_menukeys /* char */ *responses,
+	t_function default_func,
+	const struct keylist keys,
 	const char *fmt,
 	...)
 {
 	va_list ap;
 	char ch;
 	char buf[LEN];
+	t_function func;
 
 	va_start(ap, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
 
 	prompt_slk_message = my_malloc(strlen(buf) + 2);
-	ch_default = map_to_local(ch_default, responses);
-	snprintf(prompt_slk_message, strlen(buf) + 2, "%s%c", buf, ch_default);
+	snprintf(prompt_slk_message, strlen(buf) + 2, "%s%c", buf, func_to_key(default_func, keys));
 
 	input_context = cPromptSLK;
 
@@ -637,7 +632,9 @@ prompt_slk_response(
 		prompt_slk_redraw();		/* draw the prompt */
 
 		if ((ch = ReadCh()) == '\r' || ch == '\n')
-			ch = ch_default;
+			func = default_func;
+		else
+			func = key_to_func(ch, keys);
 
 		/*
 		 * TODO: ignore special-keys which are represented as a
@@ -663,14 +660,13 @@ prompt_slk_response(
 			}
 		}
 #endif /* 0 */
-
-	} while (!strchr(responses->localkeys, ch));
+	} while (func == NOT_ASSIGNED);
 
 	input_context = cNone;
 	FreeAndNull(prompt_slk_message);
 
 	clear_message();
-	return map_to_default(ch, responses);
+	return func;
 }
 
 

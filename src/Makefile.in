@@ -1,9 +1,9 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2004-10-19
+# Updated: 2005-01-30
 #
-# Copyright (c) 1995-2004 Thomas E. Dickey <dickey@invisible-island.net>
+# Copyright (c) 1995-2005 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -120,7 +120,6 @@ HFILES	= \
 	$(INCDIR)/bugrep.h \
 	$(INCDIR)/extern.h \
 	$(INCDIR)/keymap.h \
-	$(INCDIR)/menukeys.h \
 	$(INCDIR)/newsrc.h \
 	$(INCDIR)/nntplib.h \
 	$(INCDIR)/plp_snprintf.h \
@@ -500,32 +499,31 @@ $(OBJDIR)/debug$o :		$(SRCDIR)/debug.c $(TIN_DEP) \
 				$(INCDIR)/newsrc.h
 $(OBJDIR)/envarg$o :		$(SRCDIR)/envarg.c $(TIN_DEP)
 $(OBJDIR)/feed$o :		$(SRCDIR)/feed.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h \
+				$(INCDIR)/keymap.h \
 				$(INCDIR)/rfc2046.h
 $(OBJDIR)/filter$o :		$(SRCDIR)/filter.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h \
+				$(INCDIR)/keymap.h \
 				$(INCDIR)/version.h
 $(OBJDIR)/getline$o :		$(SRCDIR)/getline.c $(TIN_DEP)
 $(OBJDIR)/global$o :		$(SRCDIR)/global.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h
+				$(INCDIR)/keymap.h
 $(OBJDIR)/group$o :		$(SRCDIR)/group.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h
+				$(INCDIR)/keymap.h
 $(OBJDIR)/hashstr$o :		$(SRCDIR)/hashstr.c $(TIN_DEP)
 $(OBJDIR)/header$o :		$(SRCDIR)/header.c $(TIN_DEP) \
 				$(INCDIR)/tnntp.h
 $(OBJDIR)/help$o :		$(SRCDIR)/help.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h
+				$(INCDIR)/keymap.h
 $(OBJDIR)/inews$o :		$(SRCDIR)/inews.c $(TIN_DEP) \
 				$(INCDIR)/tnntp.h
 $(OBJDIR)/init$o :		$(SRCDIR)/init.c $(TIN_DEP) \
 				$(INCDIR)/bugrep.h \
-				$(INCDIR)/menukeys.h \
+				$(INCDIR)/keymap.h \
 				$(INCDIR)/tnntp.h \
 				$(INCDIR)/version.h
 $(OBJDIR)/joinpath$o :		$(SRCDIR)/joinpath.c $(TIN_DEP)
 $(OBJDIR)/keymap$o :		$(SRCDIR)/keymap.c $(TIN_DEP) \
 				$(INCDIR)/keymap.h \
-				$(INCDIR)/menukeys.h \
 				$(INCDIR)/version.h
 $(OBJDIR)/lang$o :		$(SRCDIR)/lang.c $(TIN_DEP)
 $(OBJDIR)/langinfo$o :		$(SRCDIR)/langinfo.c $(TIN_DEP)
@@ -548,27 +546,27 @@ $(OBJDIR)/newsrc$o :		$(SRCDIR)/newsrc.c $(TIN_DEP) \
 $(OBJDIR)/nntplib$o :		$(SRCDIR)/nntplib.c $(TIN_DEP) \
 				$(INCDIR)/tnntp.h
 $(OBJDIR)/nrctbl$o :		$(SRCDIR)/nrctbl.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h \
+				$(INCDIR)/keymap.h \
 				$(INCDIR)/version.h
 $(OBJDIR)/options_menu$o :	$(SRCDIR)/options_menu.c $(TIN_DEP) \
 				tincfg.h \
-				$(INCDIR)/menukeys.h
+				$(INCDIR)/keymap.h
 $(OBJDIR)/page$o :		$(SRCDIR)/page.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h \
+				$(INCDIR)/keymap.h \
 				$(INCDIR)/rfc2046.h
 $(OBJDIR)/parsdate$o :		$(OBJDIR)/parsdate.y $(TIN_DEP)
 $(OBJDIR)/pgp$o :		$(SRCDIR)/pgp.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h
+				$(INCDIR)/keymap.h
 $(OBJDIR)/plp_snprintf$o :	$(SRCDIR)/plp_snprintf.c $(TIN_DEP) \
 				$(INCDIR)/plp_snprintf.h
 $(OBJDIR)/post$o :		$(SRCDIR)/post.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h \
+				$(INCDIR)/keymap.h \
 				$(INCDIR)/rfc2046.h \
 				$(INCDIR)/version.h
 $(OBJDIR)/prompt$o :		$(SRCDIR)/prompt.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h
+				$(INCDIR)/keymap.h
 $(OBJDIR)/read$o :		$(SRCDIR)/read.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h \
+				$(INCDIR)/keymap.h \
 				$(INCDIR)/tnntp.h
 $(OBJDIR)/refs$o :		$(SRCDIR)/refs.c $(TIN_DEP)
 $(OBJDIR)/regex$o :		$(SRCDIR)/regex.c $(TIN_DEP)
@@ -580,13 +578,13 @@ $(OBJDIR)/rfc2046$o :		$(SRCDIR)/rfc2046.c $(TIN_DEP) \
 $(OBJDIR)/rfc2047$o :		$(SRCDIR)/rfc2047.c $(TIN_DEP) \
 				$(INCDIR)/rfc2046.h
 $(OBJDIR)/save$o :		$(SRCDIR)/save.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h \
+				$(INCDIR)/keymap.h \
 				$(INCDIR)/rfc2046.h
 $(OBJDIR)/screen$o :		$(SRCDIR)/screen.c $(TIN_DEP)
 $(OBJDIR)/search$o :		$(SRCDIR)/search.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h
+				$(INCDIR)/keymap.h
 $(OBJDIR)/select$o :		$(SRCDIR)/select.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h
+				$(INCDIR)/keymap.h
 $(OBJDIR)/sigfile$o :		$(SRCDIR)/sigfile.c $(TIN_DEP)
 $(OBJDIR)/signal$o :		$(SRCDIR)/signal.c $(TIN_DEP) \
 				$(INCDIR)/version.h
@@ -596,9 +594,9 @@ $(OBJDIR)/tags$o :		$(SRCDIR)/tags.c $(TIN_DEP)
 $(OBJDIR)/tcurses$o :		$(SRCDIR)/tcurses.c $(TIN_DEP)
 $(OBJDIR)/tmpfile$o :		$(SRCDIR)/tmpfile.c $(TIN_DEP)
 $(OBJDIR)/thread$o :		$(SRCDIR)/thread.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h
+				$(INCDIR)/keymap.h
 $(OBJDIR)/version$o :		$(SRCDIR)/version.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h \
+				$(INCDIR)/keymap.h \
 				$(INCDIR)/version.h
 $(OBJDIR)/wildmat$o :		$(SRCDIR)/wildmat.c $(TIN_DEP)
 $(OBJDIR)/xface$o :		$(SRCDIR)/xface.c $(TIN_DEP)

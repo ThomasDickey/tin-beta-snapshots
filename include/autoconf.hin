@@ -3,10 +3,10 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2004-09-14
+ *  Updated   : 2005-03-20
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1995-2004 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1995-2005 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -284,6 +284,7 @@
 #	undef HAVE_STRNCASECMP
 #	undef HAVE_STRPBRK
 #	undef HAVE_STRRSTR
+#	undef HAVE_STRSEP
 #	undef HAVE_STRSTR
 #	undef HAVE_STRTOL
 #	undef HAVE_TCGETATTR
@@ -314,6 +315,7 @@
 #	undef DECL_GETSERVBYNAME
 #	undef DECL_POPEN
 #	undef DECL_STRCASESTR
+#	undef DECL_STRSEP
 #	undef DECL_SYS_ERRLIST
 #	undef DECL_TGETSTR
 #	undef DECL_TGOTO

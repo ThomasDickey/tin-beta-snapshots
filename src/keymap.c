@@ -3,10 +3,10 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2004-11-16
+ *  Updated   : 2005-03-15
  *  Notes     : This file contains key mapping routines and variables.
  *
- * Copyright (c) 2000-2004 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 2000-2005 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,768 +40,150 @@
 #ifndef KEYMAP_H
 #	include "keymap.h"
 #endif /* !KEYMAP_H */
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
 #ifndef VERSION_H
 #	include "version.h"
 #endif /* !VERSION_H */
 
-static size_t keymapsize(t_keynode *ptr[]);
-static t_bool check_duplicates(t_keynode *keyptr1, t_keynode *keyptr2);
-static t_bool processkey(t_keynode *keyptr, char *kname, char key);
-
-char *ch_post_process;
-
-static struct keymap Key = {
-	{	/* Global keys */
-		{ 0, 0, "" },
-		{ iKeyPageUp, iKeyPageUp, "PageUp" },
-		{ iKeyPageDown, iKeyPageDown, "PageDown" },
-		{ iKeyPageDown2, iKeyPageDown2, "PageDown2" },
-		{ iKeyRedrawScr, iKeyRedrawScr, "RedrawScr" },
-		{ iKeyDown, iKeyDown, "Down" },
-		{ iKeyPostponed, iKeyPostponed, "Postponed" },
-		{ iKeyUp, iKeyUp, "Up" },
-		{ iKeyPageUp2, iKeyPageUp2, "PageUp2" },
-		{ iKeyAbort, iKeyAbort, "" },			/* Was "Abort", but we don't allow rebinding the <ESC> key */
-		{ iKeyPageDown3, iKeyPageDown3, "PageDown3" },
-#ifndef NO_SHELL_ESCAPE
-		{ iKeyShellEscape, iKeyShellEscape, "ShellEscape" },
-#endif /* !NO_SHELL_ESCAPE */
-		{ iKeySetRange, iKeySetRange, "SetRange" },
-		{ iKeyLastPage, iKeyLastPage, "LastPage" },
-#ifdef HAVE_COLOR
-		{ iKeyToggleColor, iKeyToggleColor, "ToggleColor" },
-#endif /* HAVE_COLOR */
-		{ iKeyLastViewed, iKeyLastViewed, "LastViewed" },
-		{ iKeySearchSubjF, iKeySearchSubjF, "SearchSubjF" },
-		{ '0', '0', "" },	/* We don't allow redefinition of digits */
-		{ '1', '1', "" },
-		{ '2', '2', "" },
-		{ '3', '3', "" },
-		{ '4', '4', "" },
-		{ '5', '5', "" },
-		{ '6', '6', "" },
-		{ '7', '7', "" },
-		{ '8', '8', "" },
-		{ '9', '9', "" },
-		{ iKeySearchSubjB, iKeySearchSubjB, "SearchSubjB" },
-		{ iKeySearchRepeat, iKeySearchRepeat, "SearchRepeat" },
-		{ iKeySearchAuthB, iKeySearchAuthB, "SearchAuthB" },
-		{ iKeySearchBody, iKeySearchBody, "SearchBody" },
-		{ iKeyToggleHelpDisplay, iKeyToggleHelpDisplay, "ToggleHelpDisplay" },
-		{ iKeyToggleInverseVideo, iKeyToggleInverseVideo, "ToggleInverseVideo" },
-		{ iKeyLookupMessage, iKeyLookupMessage, "LookupMessage" },
-		{ iKeyOptionMenu, iKeyOptionMenu, "OptionMenu" },
-		{ iKeyPostponed2, iKeyPostponed2, "Postponed2" },
-		{ iKeyQuitTin, iKeyQuitTin, "QuitTin" },
-		{ iKeyDisplayPostHist, iKeyDisplayPostHist, "DisplayPostHist" },
-		{ iKeyFirstPage, iKeyFirstPage, "FirstPage" },
-		{ iKeySearchAuthF, iKeySearchAuthF, "SearchAuthF" },
-		{ iKeyPageUp3, iKeyPageUp3, "PageUp3" },
-		{ iKeyHelp, iKeyHelp, "Help" },
-		{ iKeyToggleInfoLastLine, iKeyToggleInfoLastLine, "ToggleInfoLastLine" },
-		{ iKeyDown2, iKeyDown2, "Down2" },
-		{ iKeyUp2, iKeyUp2, "Up2" },
-#ifndef DISABLE_PRINTING
-		{ iKeyPrint, iKeyPrint, "Print" },
-#endif /* !DISABLE_PRINTING */
-		{ iKeyQuit, iKeyQuit, "Quit" },
-		{ iKeyVersion, iKeyVersion, "Version" },
-		{ iKeyPost, iKeyPost, "Post" },
-		{ iKeyPipe, iKeyPipe, "Pipe" },
-		{ iKeyScrollUp, iKeyScrollUp, "ScrollUp" },
-		{ iKeyScrollDown, iKeyScrollDown, "ScrollDown" },
-		/*
-		 * The following two are "internal" keys that don't have a real
-		 * mapping.
-		 */
-		{ iKeyCatchupLeft, iKeyCatchupLeft, "" },
-		{ iKeyMouseToggle, iKeyMouseToggle, "" },
-		{ 0, 0, NULL }
-	},
-	{
-		{ 0, 0, "Config" },
-		{ iKeyConfigFirstPage2, iKeyConfigFirstPage2, "FirstPage2" },
-		{ iKeyConfigLastPage2, iKeyConfigLastPage2, "LastPage2" },
-		{ iKeyConfigNoSave, iKeyConfigNoSave, "NoSave" },
-		{ iKeyConfigSelect, iKeyConfigSelect, "Select" },
-		{ iKeyConfigSelect2, iKeyConfigSelect2, "Select2" },
-		{ 0, 0, NULL }
-	},
-	{
-		{ 0, 0, "Feed" },
-		{ iKeyFeedArt, iKeyFeedArt, "Art" },
-		{ iKeyFeedHot, iKeyFeedHot, "Hot" },
-		{ iKeyFeedPat, iKeyFeedPat, "Pat" },
-		{ iKeyFeedRepost, iKeyFeedRepost, "Repost" },
-		{ iKeyFeedSupersede, iKeyFeedSupersede, "Supersede" },
-		{ iKeyFeedTag, iKeyFeedTag, "Tag" },
-		{ iKeyFeedThd, iKeyFeedThd, "Thd" },
-		{ 0, 0, NULL }
-	},
-	{
-		{ 0, 0, "Filter" },
-		{ iKeyFilterEdit, iKeyFilterEdit, "Edit" },
-		{ iKeyFilterSave, iKeyFilterSave, "Save" },
-		{ 0, 0, NULL }
-	},
-	{	/* Group keys */
-		{ 0, 0, "Group" },
-		{ iKeyGroupAutoSel, iKeyGroupAutoSel, "AutoSel" },
-		{ iKeyGroupNextUnreadArtOrGrp, iKeyGroupNextUnreadArtOrGrp, "NextUnreadArtOrGrp" },
-		{ iKeyGroupReadBasenote, iKeyGroupReadBasenote, "ReadBasenote" },
-		{ iKeyGroupKill, iKeyGroupKill, "Kill" },
-		{ iKeyGroupReadBasenote2, iKeyGroupReadBasenote2, "ReadBasenote2" },
-		{ iKeyGroupSelThd, iKeyGroupSelThd, "SelThd" },
-		{ iKeyGroupDoAutoSel, iKeyGroupDoAutoSel, "DoAutoSel" },
-		{ iKeyGroupToggleThdSel, iKeyGroupToggleThdSel, "ToggleThdSel" },
-		{ iKeyGroupSelThdIfUnreadSelected, iKeyGroupSelThdIfUnreadSelected, "SelThdIfUnreadSelected" },
-		{ iKeyGroupSelPattern, iKeyGroupSelPattern, "SelPattern" },
-		{ iKeyGroupReverseSel, iKeyGroupReverseSel, "ReverseSel" },
-		{ iKeyGroupCatchupNextUnread, iKeyGroupCatchupNextUnread, "CatchupNextUnread" },
-		{ iKeyGroupEditFilter, iKeyGroupEditFilter, "EditFilter" },
-		{ iKeyGroupToggleGetartLimit, iKeyGroupToggleGetartLimit, "ToggleGetartLimit" },
-		{ iKeyGroupMarkThdRead, iKeyGroupMarkThdRead, "MarkThdRead" },
-		{ iKeyGroupNextUnreadArt, iKeyGroupNextUnreadArt, "NextUnreadArt" },
-		{ iKeyGroupPrevUnreadArt, iKeyGroupPrevUnreadArt, "PrevUnreadArt" },
-		{ iKeyGroupBugReport, iKeyGroupBugReport, "BugReport" },
-		{ iKeyGroupAutoSave, iKeyGroupAutoSave, "AutoSave" },
-		{ iKeyGroupTagParts, iKeyGroupTagParts, "TagParts" },
-		{ iKeyGroupUntag, iKeyGroupUntag, "Untag" },
-		{ iKeyGroupMarkUnselArtRead, iKeyGroupMarkUnselArtRead, "MarkUnselArtRead" },
-		{ iKeyGroupMarkThdUnread, iKeyGroupMarkThdUnread, "MarkThdUnread" },
-		{ iKeyGroupQuickAutoSel, iKeyGroupQuickAutoSel, "QuickAutoSel" },
-		{ iKeyGroupQuickKill, iKeyGroupQuickKill, "QuickKill" },
-		{ iKeyGroupCatchup, iKeyGroupCatchup, "Catchup" },
-		{ iKeyGroupToggleSubjDisplay, iKeyGroupToggleSubjDisplay, "ToggleSubjDisplay" },
-		{ iKeyGroupGoto, iKeyGroupGoto, "Goto" },
-		{ iKeyGroupListThd, iKeyGroupListThd, "ListThd" },
-		{ iKeyGroupMail, iKeyGroupMail, "Mail" },
-		{ iKeyGroupNextGroup, iKeyGroupNextGroup, "NextGroup" },
-		{ iKeyGroupPrevGroup, iKeyGroupPrevGroup, "PrevGroup" },
-		{ iKeyGroupToggleReadUnread, iKeyGroupToggleReadUnread, "ToggleReadUnread" },
-		{ iKeyGroupSave, iKeyGroupSave, "Save" },
-		{ iKeyGroupTag, iKeyGroupTag, "Tag" },
-		{ iKeyGroupToggleThreading, iKeyGroupToggleThreading, "ToggleThreading" },
-		{ iKeyGroupRepost, iKeyGroupRepost, "Repost" },
-		{ iKeyGroupMarkArtUnread, iKeyGroupMarkArtUnread, "MarkArtUnread" },
-		{ iKeyGroupUndoSel, iKeyGroupUndoSel, "UndoSel" },
-		{ 0, 0, NULL }
-	},
-	{
-		{ 0, 0, "Help" },
-		{ iKeyHelpFirstPage2, iKeyHelpFirstPage2, "FirstPage2" },
-		{ iKeyHelpLastPage2, iKeyHelpLastPage2, "LastPage2" },
-		{ 0, 0, NULL }
-	},
-	{
-	{ 0, 0, "MarkRead" },
-		{ iKeyMarkReadTag, iKeyMarkReadTag, "Tag" },
-		{ iKeyMarkReadCur, iKeyMarkReadCur, "Cur" },
-		{ 0, 0, NULL }
-	},
-	{
-		{ 0, 0, "Nrctbl" },
-		{ iKeyNrctblAlternative, iKeyNrctblAlternative, "Alternative" },
-		{ iKeyNrctblCreate, iKeyNrctblCreate, "Create" },
-		{ iKeyNrctblDefault, iKeyNrctblDefault, "Default" },
-		{ iKeyNrctblQuit, iKeyNrctblQuit, "Quit" },
-		{ 0, 0, NULL }
-	},
-	{	/* Page keys */
-		{ 0, 0, "Page" },
-		{ iKeyPageAutoSel, iKeyPageAutoSel, "AutoSel" },
-		{ iKeyPageReplyQuoteHeaders, iKeyPageReplyQuoteHeaders, "ReplyQuoteHeaders" },
-#ifdef HAVE_PGP_GPG
-		{ iKeyPagePGPCheckArticle, iKeyPagePGPCheckArticle, "PGPCheckArticle" },
-#endif /* HAVE_PGP_GPG */
-		{ iKeyPageToggleHeaders, iKeyPageToggleHeaders, "ToggleHeaders" },
-		{ iKeyPageNextUnread, iKeyPageNextUnread, "NextUnread" },
-		{ iKeyPageNextThd, iKeyPageNextThd, "NextThd" },
-		{ iKeyPageAutoKill, iKeyPageAutoKill, "AutoKill" },
-		{ iKeyPageNextThd2, iKeyPageNextThd2, "NextThd2" },
-		{ iKeyPageToggleTabs, iKeyPageToggleTabs, "ToggleTabs" },
-		{ iKeyPageFollowupQuoteHeaders, iKeyPageFollowupQuoteHeaders, "FollowupQuoteHeaders" },
-		{ iKeyPageToggleTex2iso, iKeyPageToggleTex2iso, "ToggleTex2iso" },
-		{ iKeyPageToggleRot, iKeyPageToggleRot, "ToggleRot" },
-		{ iKeyPageToggleUue, iKeyPageToggleUue, "ToggleUue" },
-		{ iKeyPageReveal, iKeyPageReveal, "Reveal" },
-		{ iKeyPageSkipIncludedText, iKeyPageSkipIncludedText, "SkipIncludedText" },
-		{ iKeyPageTopThd, iKeyPageTopThd, "TopThd" },
-		{ iKeyPageBotThd, iKeyPageBotThd, "BotThd" },
-		{ iKeyPageCatchupNextUnread, iKeyPageCatchupNextUnread, "CatchupNextUnread" },
-		{ iKeyPageCancel, iKeyPageCancel, "Cancel" },
-		{ iKeyPageEditFilter, iKeyPageEditFilter, "EditFilter" },
-		{ iKeyPageFollowup, iKeyPageFollowup, "Followup" },
-		{ iKeyPageLastPage, iKeyPageLastPage, "LastPage" },
-		{ iKeyPageKillThd, iKeyPageKillThd, "KillThd" },
-		{ iKeyPageNextUnreadArt, iKeyPageNextUnreadArt, "NextUnreadArt" },
-		{ iKeyPagePrevUnreadArt, iKeyPagePrevUnreadArt, "PrevUnreadArt" },
-		{ iKeyPageReply, iKeyPageReply, "Reply" },
-		{ iKeyPageAutoSave, iKeyPageAutoSave, "AutoSave" },
-		{ iKeyPageGroupSel, iKeyPageGroupSel, "GroupSel" },
-		{ iKeyPageViewUrl, iKeyPageViewUrl, "ViewUrl" },
-		{ iKeyPageViewAttach, iKeyPageViewAttach, "ViewAttach" },
-		{ iKeyPageMarkThdUnread, iKeyPageMarkThdUnread, "MarkThdUnread" },
-		{ iKeyPageQuickAutoSel, iKeyPageQuickAutoSel, "QuickAutoSel" },
-		{ iKeyPageQuickKill, iKeyPageQuickKill, "QuickKill" },
-		{ iKeyPageToggleHighlight, iKeyPageToggleHighlight, "ToggleHighlight" },
-		{ iKeyPageCatchup, iKeyPageCatchup, "Catchup" },
-		{ iKeyPageEditArticle, iKeyPageEditArticle, "EditArticle" },
-		{ iKeyPageFollowupQuote, iKeyPageFollowupQuote, "FollowupQuote" },
-		{ iKeyPageFirstPage, iKeyPageFirstPage, "FirstPage" },
-		{ iKeyPageListThd, iKeyPageListThd, "ListThd" },
-		{ iKeyPageMail, iKeyPageMail, "Mail" },
-		{ iKeyPageNextArt, iKeyPageNextArt, "NextArt" },
-		{ iKeyPagePrevArt, iKeyPagePrevArt, "PrevArt" },
-		{ iKeyPageReplyQuote, iKeyPageReplyQuote, "ReplyQuote" },
-		{ iKeyPageSave, iKeyPageSave, "Save" },
-		{ iKeyPageTag, iKeyPageTag, "Tag" },
-		{ iKeyPageGotoParent, iKeyPageGotoParent, "GotoParent" },
-		{ iKeyPageRepost, iKeyPageRepost, "Repost" },
-		{ iKeyPageMarkArtUnread, iKeyPageMarkArtUnread, "MarkArtUnread" },
-		{ 0, 0, NULL }
-	},
-	{
-		{ 0, 0, "Pgp" },
-		{ iKeyPgpEncSign, iKeyPgpEncSign, "EncSign" },
-		{ iKeyPgpEncrypt, iKeyPgpEncrypt, "Encrypt" },
-		{ iKeyPgpIncludekey, iKeyPgpIncludekey, "Includekey" },
-		{ iKeyPgpSign, iKeyPgpSign, "Sign" },
-		{ 0, 0, NULL }
-	},
-	{ /* Post keys */
-		{ 0, 0, "Post" },
-		{ iKeyPostCancel, iKeyPostCancel, "Cancel" },
-		{ iKeyPostEdit, iKeyPostEdit, "Edit" },
-#ifdef HAVE_PGP_GPG
-		{ iKeyPostPGP, iKeyPostPGP, "PGP" },
-#endif /* HAVE_PGP_GPG */
-#ifdef HAVE_ISPELL
-		{ iKeyPostIspell, iKeyPostIspell, "Ispell" },
-#endif /* HAVE_ISPELL */
-		{ iKeyPostAbort, iKeyPostAbort, "Abort" },
-		{ iKeyPostContinue, iKeyPostContinue, "Continue" },
-		{ iKeyPostIgnore, iKeyPostIgnore, "Ignore" },
-		{ iKeyPostMail, iKeyPostMail, "Mail" },
-		{ iKeyPostPost2, iKeyPostPost2, "Post2" },
-		{ iKeyPostPost3, iKeyPostPost3, "Post3" },
-		{ iKeyPostPostpone, iKeyPostPostpone, "Postpone" },
-		{ iKeyPostSend, iKeyPostSend, "Send" },
-		{ iKeyPostSend2, iKeyPostSend2, "Send2" },
-		{ iKeyPostSupersede, iKeyPostSupersede, "Supersede" },
-		{ 0, 0, NULL }
-	},
-	{
-		{ 0, 0, "Postpone" },
-		{ iKeyPostponeAll, iKeyPostponeAll, "All" },
-		{ iKeyPostponeOverride, iKeyPostponeOverride, "Override" },
-		{ 0, 0, NULL }
-	},
-	{
-		{ 0, 0, "PProc" },
-		{ iKeyPProcNo, iKeyPProcNo, "No" },
-		{ iKeyPProcShar, iKeyPProcShar, "Shar" },
-		{ iKeyPProcYes, iKeyPProcYes, "Yes" },
-		{ 0, 0, NULL }
-	},
-	{
-		{ 0, 0, "Prompt" },
-		{ iKeyPromptNo, iKeyPromptNo, "No" },
-		{ iKeyPromptYes, iKeyPromptYes, "Yes" },
-		{ 0, 0, NULL }
-	},
-	{
-		{ 0, 0, "Save" },
-		{ iKeySaveAppendFile, iKeySaveAppendFile, "AppendFile" },
-		{ iKeySaveOverwriteFile, iKeySaveOverwriteFile, "OverwriteFile" },
-		{ 0, 0, NULL }
-	},
-	{	/* Select keys */
-		{ 0, 0, "Select" },
-		{ iKeySelectEnterNextUnreadGrp, iKeySelectEnterNextUnreadGrp, "EnterNextUnreadGrp" },
-		{ iKeySelectReadGrp, iKeySelectReadGrp, "ReadGrp" },
-		{ iKeySelectReadGrp2, iKeySelectReadGrp2, "ReadGrp2" },
-		{ iKeySelectResetNewsrc, iKeySelectResetNewsrc, "ResetNewsrc" },
-		{ iKeySelectSortActive, iKeySelectSortActive, "SortActive" },
-		{ iKeySelectCatchupNextUnread, iKeySelectCatchupNextUnread, "CatchupNextUnread" },
-		{ iKeySelectNextUnreadGrp, iKeySelectNextUnreadGrp, "NextUnreadGrp" },
-		{ iKeySelectBugReport, iKeySelectBugReport, "BugReport" },
-		{ iKeySelectSubscribePat, iKeySelectSubscribePat, "SubscribePat" },
-		{ iKeySelectUnsubscribePat, iKeySelectUnsubscribePat, "UnsubscribePat" },
-		{ iKeySelectQuitNoWrite, iKeySelectQuitNoWrite, "QuitNoWrite" },
-		{ iKeySelectSyncWithActive, iKeySelectSyncWithActive, "SyncWithActive" },
-		{ iKeySelectMarkGrpUnread2, iKeySelectMarkGrpUnread2, "MarkGrpUnread2" },
-		{ iKeySelectCatchup, iKeySelectCatchup, "Catchup" },
-		{ iKeySelectToggleDescriptions, iKeySelectToggleDescriptions, "ToggleDescriptions" },
-		{ iKeySelectGoto, iKeySelectGoto, "Goto" },
-		{ iKeySelectMoveGrp, iKeySelectMoveGrp, "MoveGrp" },
-		{ iKeySelectEnterNextUnreadGrp2, iKeySelectEnterNextUnreadGrp2, "EnterNextUnreadGrp2" },
-		{ iKeySelectToggleReadDisplay, iKeySelectToggleReadDisplay, "ToggleReadDisplay" },
-		{ iKeySelectSubscribe, iKeySelectSubscribe, "Subscribe" },
-		{ iKeySelectUnsubscribe, iKeySelectUnsubscribe, "Unsubscribe" },
-		{ iKeySelectYankActive, iKeySelectYankActive, "YankActive" },
-		{ iKeySelectMarkGrpUnread, iKeySelectMarkGrpUnread, "MarkGrpUnread" },
-		{ 0, 0, NULL }
-	},
-	{	/* Thread keys */
-		{ 0, 0, "Thread" },
-		{ iKeyThreadReadNextArtOrThread, iKeyThreadReadNextArtOrThread, "ReadNextArtOrThread" },
-		{ iKeyThreadReadArt, iKeyThreadReadArt, "ReadArt" },
-		{ iKeyThreadReadArt2, iKeyThreadReadArt2, "ReadArt2" },
-		{ iKeyThreadSelArt, iKeyThreadSelArt, "SelArt" },
-		{ iKeyThreadToggleArtSel, iKeyThreadToggleArtSel, "ToggleArtSel" },
-		{ iKeyThreadReverseSel, iKeyThreadReverseSel, "ReverseSel" },
-		{ iKeyThreadCatchupNextUnread, iKeyThreadCatchupNextUnread, "CatchupNextUnread" },
-		{ iKeyThreadMarkArtRead, iKeyThreadMarkArtRead, "MarkArtRead" },
-		{ iKeyThreadBugReport, iKeyThreadBugReport, "BugReport" },
-		{ iKeyThreadAutoSave, iKeyThreadAutoSave, "AutoSave" },
-		{ iKeyThreadUntag, iKeyThreadUntag, "Untag" },
-		{ iKeyThreadMarkThdUnread, iKeyThreadMarkThdUnread, "MarkThdUnread" },
-		{ iKeyThreadCatchup, iKeyThreadCatchup, "Catchup" },
-		{ iKeyThreadToggleSubjDisplay, iKeyThreadToggleSubjDisplay, "ToggleSubjDisplay" },
-		{ iKeyThreadMail, iKeyThreadMail, "Mail" },
-		{ iKeyThreadSave, iKeyThreadSave, "Save" },
-		{ iKeyThreadTag, iKeyThreadTag, "Tag" },
-		{ iKeyThreadMarkArtUnread, iKeyThreadMarkArtUnread, "MarkArtUnread" },
-		{ iKeyThreadUndoSel, iKeyThreadUndoSel, "UndoSel" },
-		{ 0, 0, NULL }
-	}
-};
-
-/* NULL terminated list of pointers to the start of all the keygroups */
-static t_keynode *keygroups[] = {
-	&Key.Global.tag,		/* It is important that global be 1st for duplicate checking */
-	&Key.Config.tag,
-	&Key.Feed.tag,
-	&Key.Filter.tag,
-	&Key.Group.tag,
-	&Key.Help.tag,
-	&Key.Nrctbl.tag,
-	&Key.Page.tag,
-	&Key.Pgp.tag,
-	&Key.Post.tag,
-	&Key.Postpone.tag,
-	&Key.PProc.tag,
-	&Key.Prompt.tag,
-	&Key.Save.tag,
-	&Key.Select.tag,
-	&Key.Thread.tag,
-	NULL
-};
-
-/* Keymaps for various menus and screens */
-
-static t_keynode *keys_config_change[] = {
-	&Key.Global.Quit, &Key.Config.NoSave, &Key.Global.Up, &Key.Global.Up2,
-	&Key.Global.Down, &Key.Global.Down2, &Key.Global.FirstPage,
-	&Key.Config.FirstPage2, &Key.Global.LastPage, &Key.Config.LastPage2,
-	&Key.Global.PageUp, &Key.Global.PageUp2, &Key.Global.PageUp3,
-	&Key.Global.PageDown, &Key.Global.PageDown2, &Key.Global.PageDown3,
-	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB, &Key.Global.SearchRepeat, &Key.Config.Select,
-	&Key.Config.Select2, &Key.Global.RedrawScr, &Key.Global.One,
-	&Key.Global.Two, &Key.Global.Three, &Key.Global.Four, &Key.Global.Five,
-	&Key.Global.Six, &Key.Global.Seven, &Key.Global.Eight, &Key.Global.Nine,
-	&Key.Global.ScrollUp, &Key.Global.ScrollDown, NULL };
-
-static t_keynode *keys_feed_art_thread_regex_tag[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.Feed.Art, &Key.Feed.Hot,
-	&Key.Feed.Thd, &Key.Feed.Tag, &Key.Feed.Pat, NULL };
-
 /*
- * WARNING!
- *
- * Don't change the order of these items if you are not fully aware of the
- * side effects! The order from PProc.None onwards corresponds to the
- * enumeration of the post processing types defined in tin.h (POST_PROC_*
- * #defines) which is also used as the index stored in the post_process_type
- * tinrc variable.
- *
- * If you want to add keys that are not used to start any post processing
- * action, insert it before &Key.PProc.None. Change the index of
- * &menukeymap.feed_post_process_type.defaultkeys[] at the end of
- * build_keymaps() so that it always points to the key for no post
- * processing.
- *
- * If you want to add keys that are used for post processing, put them at
- * the end (before the NULL entry).
- *
- * If you want to delete a post processing key and add a new one, have in
- * mind that this will probably confuse users who are upgrading from an
- * older tin because the new action replaces the old one.
+ * local prototypes
  */
-static t_keynode *keys_feed_post_process_type[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.PProc.No, &Key.PProc.Shar,
-	&Key.PProc.Yes,
-	NULL };
+static void add_default_key(struct keylist *keys, char key, t_function func);
+static void add_global_keys(struct keylist *keys);
+static void free_keylist(struct keylist *keys);
+static void upgrade_keymap_file(char *old);
+static void setup_default_keys(void);
+static t_bool add_key(struct keylist *keys, char key, t_function func, t_bool overwrite);
+static t_bool process_keymap_file(void);
+static t_bool process_keys(t_function func, const char *keys, struct keylist *kl);
+static t_bool process_mapping(char *keyname, char *keys);
 
-static t_keynode *keys_feed_supersede_article[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.Feed.Repost, &Key.Feed.Supersede,
-	NULL };
-
-static t_keynode *keys_filter_quit_edit_save[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.Filter.Edit, &Key.Filter.Save,
-	NULL };
-
-static t_keynode *keys_group_nav[] = {
-	&Key.Global.Abort, &Key.Global.One, &Key.Global.Two, &Key.Global.Three,
-	&Key.Global.Four, &Key.Global.Five, &Key.Global.Six, &Key.Global.Seven,
-	&Key.Global.Eight, &Key.Global.Nine,
-#ifndef NO_SHELL_ESCAPE
-	&Key.Global.ShellEscape,
-#endif /* !NO_SHELL_ESCAPE */
-	&Key.Global.FirstPage, &Key.Global.LastPage, &Key.Global.LastViewed,
-	&Key.Global.Pipe, &Key.Group.Mail,
-#ifndef DISABLE_PRINTING
-	&Key.Global.Print,
-#endif /* !DISABLE_PRINTING */
-	&Key.Group.Repost, &Key.Group.Save, &Key.Group.AutoSave,
-	&Key.Global.SetRange, &Key.Global.SearchAuthF, &Key.Global.SearchAuthB,
-	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB, &Key.Global.SearchRepeat, &Key.Global.SearchBody,
-	&Key.Group.ReadBasenote, &Key.Group.ReadBasenote2,
-	&Key.Group.NextUnreadArtOrGrp, &Key.Global.PageDown, &Key.Global.PageDown2,
-	&Key.Global.PageDown3, &Key.Group.AutoSel, &Key.Group.Kill,
-	&Key.Group.EditFilter, &Key.Group.QuickAutoSel, &Key.Group.QuickKill,
-	&Key.Global.RedrawScr, &Key.Global.Down, &Key.Global.Down2,
-	&Key.Global.Up, &Key.Global.Up2, &Key.Global.PageUp, &Key.Global.PageUp2,
-	&Key.Global.PageUp3, &Key.Global.CatchupLeft, &Key.Group.Catchup,
-	&Key.Group.CatchupNextUnread, &Key.Group.ToggleSubjDisplay,
-	&Key.Group.Goto, &Key.Global.Help, &Key.Global.ToggleHelpDisplay,
-	&Key.Global.ToggleInverseVideo,
-#ifdef HAVE_COLOR
-	&Key.Global.ToggleColor,
-#endif /* HAVE_COLOR */
-	&Key.Group.MarkThdRead, &Key.Group.ListThd, &Key.Global.LookupMessage,
-	&Key.Global.OptionMenu, &Key.Group.NextGroup, &Key.Group.NextUnreadArt,
-	&Key.Group.PrevUnreadArt, &Key.Group.PrevGroup, &Key.Global.Quit,
-	&Key.Global.QuitTin, &Key.Group.ToggleReadUnread,
-	&Key.Group.ToggleGetartLimit, &Key.Group.BugReport, &Key.Group.TagParts,
-	&Key.Group.Tag, &Key.Group.ToggleThreading, &Key.Group.Untag,
-	&Key.Global.Version, &Key.Global.Post, &Key.Global.Postponed,
-	&Key.Global.Postponed2, &Key.Global.DisplayPostHist,
-	&Key.Group.MarkArtUnread, &Key.Group.MarkThdUnread, &Key.Group.SelThd,
-	&Key.Group.ToggleThdSel, &Key.Group.ReverseSel, &Key.Group.UndoSel,
-	&Key.Group.SelPattern, &Key.Group.SelThdIfUnreadSelected,
-	&Key.Group.MarkUnselArtRead, &Key.Group.DoAutoSel,
-	&Key.Global.ToggleInfoLastLine, &Key.Global.ScrollUp, &Key.Global.ScrollDown, NULL };
-
-static t_keynode *keys_info_nav[] = {
-	&Key.Global.Abort, &Key.Global.MouseToggle, &Key.Global.Up,
-	&Key.Global.Up2, &Key.Global.Down, &Key.Global.Down2, &Key.Global.PageDown,
-	&Key.Global.PageDown2, &Key.Global.PageDown3, &Key.Global.PageUp,
-	&Key.Global.PageUp2, &Key.Global.PageUp3, &Key.Global.FirstPage,
-	&Key.Help.FirstPage2, &Key.Global.LastPage, &Key.Help.LastPage2,
-	&Key.Global.ToggleHelpDisplay, &Key.Global.SearchSubjF,
-	&Key.Global.SearchSubjB, &Key.Global.SearchRepeat, &Key.Global.Quit, NULL };
-
-static t_keynode *keys_mark_read_tagged_current[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.MarkRead.Tag,
-	&Key.MarkRead.Cur, NULL };
-
-static t_keynode *keys_nrctbl_create[] = {
-	&Key.Global.Abort, &Key.Nrctbl.Quit, &Key.Nrctbl.Alternative,
-	&Key.Nrctbl.Create, &Key.Nrctbl.Default, NULL };
-
-static t_keynode *keys_page_nav[] = {
-	&Key.Global.Abort, &Key.Global.Zero, &Key.Global.One, &Key.Global.Two,
-	&Key.Global.Three, &Key.Global.Four, &Key.Global.Five, &Key.Global.Six,
-	&Key.Global.Seven, &Key.Global.Eight, &Key.Global.Nine,
-#ifndef NO_SHELL_ESCAPE
-	&Key.Global.ShellEscape,
-#endif /* !NO_SHELL_ESCAPE */
-	&Key.Global.MouseToggle, &Key.Global.PageUp, &Key.Global.PageUp2,
-	&Key.Global.PageUp3, &Key.Global.PageDown, &Key.Global.PageDown2,
-	&Key.Global.PageDown3, &Key.Page.NextUnread, &Key.Global.FirstPage,
-	&Key.Page.FirstPage2, &Key.Global.LastPage, &Key.Page.LastPage2,
-	&Key.Global.Up, &Key.Global.Up2, &Key.Global.Down, &Key.Global.Down2,
-	&Key.Global.LastViewed, &Key.Global.LookupMessage, &Key.Page.GotoParent,
-	&Key.Global.Pipe, &Key.Page.Mail,
-#ifndef DISABLE_PRINTING
-	&Key.Global.Print,
-#endif /* !DISABLE_PRINTING */
-	&Key.Page.Repost, &Key.Page.Save, &Key.Page.AutoSave,
-	&Key.Global.SearchAuthF, &Key.Global.SearchAuthB, &Key.Global.SearchSubjF,
-	&Key.Global.SearchSubjB, &Key.Global.SearchRepeat, &Key.Global.SearchBody,
-	&Key.Page.TopThd, &Key.Page.BotThd, &Key.Page.NextThd, &Key.Page.NextThd2,
+struct keylist feed_post_process_keys = { NULL, 0, 0 };
+struct keylist feed_supersede_article_keys = { NULL, 0, 0 };
+struct keylist feed_type_keys = { NULL, 0, 0 };
+struct keylist filter_keys = { NULL, 0, 0 };
+struct keylist group_keys = { NULL, 0, 0 };
+struct keylist info_keys = { NULL, 0, 0 };
+struct keylist mark_read_keys = { NULL, 0, 0 };
+struct keylist option_menu_keys = { NULL, 0, 0 };
+struct keylist page_keys = { NULL, 0, 0 };
 #ifdef HAVE_PGP_GPG
-	&Key.Page.PGPCheckArticle,
+	struct keylist pgp_mail_keys = { NULL, 0, 0 };
+	struct keylist pgp_news_keys = { NULL, 0, 0 };
 #endif /* HAVE_PGP_GPG */
-	&Key.Page.ToggleHeaders, &Key.Page.ToggleTex2iso, &Key.Page.ToggleTabs,
-	&Key.Page.ToggleUue, &Key.Page.Reveal, &Key.Page.QuickAutoSel,
-	&Key.Page.QuickKill, &Key.Page.AutoSel, &Key.Page.AutoKill,
-	&Key.Page.EditFilter, &Key.Global.RedrawScr, &Key.Page.ToggleRot,
-	&Key.Page.Catchup, &Key.Page.CatchupNextUnread, &Key.Page.MarkThdUnread,
-	&Key.Page.Cancel, &Key.Page.EditArticle, &Key.Page.FollowupQuote,
-	&Key.Page.FollowupQuoteHeaders, &Key.Page.Followup, &Key.Global.Help,
-	&Key.Global.ToggleHelpDisplay, &Key.Global.Quit,
-	&Key.Global.ToggleInverseVideo,
-#ifdef HAVE_COLOR
-	&Key.Global.ToggleColor,
-#endif /* HAVE_COLOR */
-	&Key.Page.ListThd, &Key.Global.OptionMenu, &Key.Page.NextArt,
-	&Key.Page.KillThd, &Key.Page.NextUnreadArt, &Key.Page.PrevArt,
-	&Key.Page.PrevUnreadArt, &Key.Global.QuitTin, &Key.Page.ReplyQuote,
-	&Key.Page.ReplyQuoteHeaders, &Key.Page.Reply, &Key.Page.Tag,
-	&Key.Page.GroupSel, &Key.Global.Version, &Key.Global.Post,
-	&Key.Global.Postponed, &Key.Global.Postponed2, &Key.Global.DisplayPostHist,
-	&Key.Page.MarkArtUnread, &Key.Page.SkipIncludedText,
-	&Key.Global.ToggleInfoLastLine,
-	&Key.Page.ToggleHighlight,
-	&Key.Page.ViewAttach, &Key.Page.ViewUrl, NULL };
-
-static t_keynode *keys_pgp_mail[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.Pgp.EncSign, &Key.Pgp.Encrypt,
-	&Key.Pgp.Sign, NULL };
-
-static t_keynode *keys_pgp_news[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.Pgp.Includekey, &Key.Pgp.Sign,
-	NULL };
-
-static t_keynode *keys_post_cancel[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.Post.Cancel, &Key.Post.Edit,
-	NULL };
-
-static t_keynode *keys_post_cont[] = {
-	&Key.Global.Abort, &Key.Post.Abort, &Key.Post.Continue, NULL };
-
-static t_keynode *keys_post_delete[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.Post.Cancel, &Key.Post.Supersede,
-	NULL };
-
-static t_keynode *keys_post_edit[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.Post.Edit, &Key.Post.Postpone,
-	NULL };
-
-static t_keynode *keys_post_edit_ext[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.Post.Edit,
-	&Key.Global.OptionMenu, NULL };
-
-static t_keynode *keys_post_ignore_fupto[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.Post.Ignore, &Key.Global.Post,
-	&Key.Post.Post2, &Key.Post.Post3, NULL };
-
-static t_keynode *keys_post_mail_fup[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.Global.Post, &Key.Post.Post2,
-	&Key.Post.Post3, &Key.Post.Mail, NULL };
-
-static t_keynode *keys_post_post[] = {
-	&Key.Global.Abort, &Key.Global.Quit,
-#ifdef HAVE_PGP_GPG
-	&Key.Post.PGP,
-#endif /* HAVE_PGP_GPG */
-#ifdef HAVE_ISPELL
-	&Key.Post.Ispell,
-#endif /* HAVE_ISPELL */
-	&Key.Post.Edit, &Key.Global.Post, &Key.Post.Post2, &Key.Post.Post3,
-	&Key.Global.OptionMenu,
-	&Key.Post.Postpone, NULL };
-
-static t_keynode *keys_post_postpone[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.Prompt.Yes,
-	&Key.Postpone.All, &Key.Postpone.Override, &Key.Prompt.No, NULL };
-
-static t_keynode *keys_post_send[] = {
-	&Key.Global.Abort, &Key.Global.Quit,
-#ifdef HAVE_PGP_GPG
-	&Key.Post.PGP,
-#endif /* HAVE_PGP_GPG */
-#ifdef HAVE_ISPELL
-	&Key.Post.Ispell,
-#endif /* HAVE_ISPELL */
-	&Key.Post.Edit, &Key.Post.Send, &Key.Post.Send2, NULL };
-
-static t_keynode *keys_prompt_yn[] = {
-	&Key.Global.Abort, &Key.Prompt.Yes, &Key.Prompt.No, NULL };
-
-static t_keynode *keys_save_append_overwrite_quit[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.Save.AppendFile,
-	&Key.Save.OverwriteFile, NULL };
-
-static t_keynode *keys_select_nav[] = {
-	&Key.Global.Abort, &Key.Global.One, &Key.Global.Two, &Key.Global.Three,
-	&Key.Global.Four, &Key.Global.Five, &Key.Global.Six, &Key.Global.Seven,
-	&Key.Global.Eight, &Key.Global.Nine,
-#ifndef NO_SHELL_ESCAPE
-	&Key.Global.ShellEscape,
-#endif /* !NO_SHELL_ESCAPE */
-	&Key.Global.FirstPage, &Key.Global.LastPage, &Key.Global.PageUp,
-	&Key.Global.PageUp2, &Key.Global.PageUp3, &Key.Global.PageDown,
-	&Key.Global.PageDown2, &Key.Global.PageDown3, &Key.Global.Up,
-	&Key.Global.Up2, &Key.Global.Down, &Key.Global.Down2, &Key.Global.SetRange,
-	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB, &Key.Global.SearchRepeat,
-	&Key.Select.ReadGrp, &Key.Select.ReadGrp2, &Key.Select.EnterNextUnreadGrp,
-	&Key.Select.EnterNextUnreadGrp2, &Key.Global.RedrawScr,
-	&Key.Select.ResetNewsrc, &Key.Select.SortActive, &Key.Select.Catchup,
-	&Key.Select.CatchupNextUnread, &Key.Select.ToggleDescriptions,
-	&Key.Select.Goto, &Key.Global.Help, &Key.Global.ToggleHelpDisplay,
-	&Key.Global.ToggleInverseVideo,
-#ifdef HAVE_COLOR
-	&Key.Global.ToggleColor,
-#endif /* HAVE_COLOR */
-	&Key.Global.ToggleInfoLastLine, &Key.Select.MoveGrp,
-	&Key.Global.OptionMenu, &Key.Select.NextUnreadGrp, &Key.Global.Quit,
-	&Key.Global.QuitTin, &Key.Select.QuitNoWrite,
-	&Key.Select.ToggleReadDisplay, &Key.Select.BugReport,
-	&Key.Select.Subscribe, &Key.Select.SubscribePat, &Key.Select.Unsubscribe,
-	&Key.Select.UnsubscribePat, &Key.Global.Version, &Key.Global.Post,
-	&Key.Global.Postponed, &Key.Global.Postponed2, &Key.Global.DisplayPostHist,
-	&Key.Select.YankActive, &Key.Select.SyncWithActive,
-	&Key.Select.MarkGrpUnread, &Key.Select.MarkGrpUnread2,
-	&Key.Global.ScrollUp, &Key.Global.ScrollDown, NULL };
-
-static t_keynode *keys_thread_nav[] = {
-	&Key.Global.Abort, &Key.Global.One, &Key.Global.Two, &Key.Global.Three,
-	&Key.Global.Four, &Key.Global.Five, &Key.Global.Six, &Key.Global.Seven,
-	&Key.Global.Eight, &Key.Global.Nine,
-#ifndef NO_SHELL_ESCAPE
-	&Key.Global.ShellEscape,
-#endif /* !NO_SHELL_ESCAPE */
-	&Key.Global.FirstPage, &Key.Global.LastPage, &Key.Global.LastViewed,
-	&Key.Global.SetRange, &Key.Global.Pipe, &Key.Thread.Mail,
-	&Key.Thread.Save, &Key.Thread.AutoSave, &Key.Thread.ReadArt,
-	&Key.Thread.ReadArt2, &Key.Thread.ReadNextArtOrThread, &Key.Global.Post,
-	&Key.Global.RedrawScr, &Key.Global.Down, &Key.Global.Down2,
-	&Key.Global.Up, &Key.Global.Up2, &Key.Global.PageUp, &Key.Global.PageUp2,
-	&Key.Global.PageUp3, &Key.Global.PageDown, &Key.Global.PageDown2,
-	&Key.Global.PageDown3, &Key.Global.CatchupLeft, &Key.Thread.Catchup,
-	&Key.Thread.CatchupNextUnread, &Key.Thread.MarkArtRead,
-	&Key.Thread.ToggleSubjDisplay, &Key.Global.Help,
-	&Key.Global.LookupMessage, &Key.Global.SearchBody,
-	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB, &Key.Global.SearchRepeat,
-	&Key.Global.SearchAuthF, &Key.Global.SearchAuthB,
-	&Key.Global.ToggleHelpDisplay, &Key.Global.ToggleInverseVideo,
-#ifdef HAVE_COLOR
-	&Key.Global.ToggleColor,
-#endif /* HAVE_COLOR */
-	&Key.Global.OptionMenu,
-	&Key.Global.Quit, &Key.Global.QuitTin, &Key.Thread.Tag,
-	&Key.Thread.BugReport, &Key.Thread.Untag, &Key.Global.Version,
-	&Key.Thread.MarkArtUnread, &Key.Thread.MarkThdUnread, &Key.Thread.SelArt,
-	&Key.Thread.ToggleArtSel, &Key.Thread.ReverseSel, &Key.Thread.UndoSel,
-	&Key.Global.Postponed, &Key.Global.Postponed2, &Key.Global.DisplayPostHist,
-	&Key.Global.ToggleInfoLastLine, &Key.Global.ScrollUp, &Key.Global.ScrollDown, NULL };
-
-t_menukeymap menukeymap = {
-	{ keys_config_change, NULL, NULL },
-	{ keys_feed_art_thread_regex_tag, NULL, NULL },
-	{ keys_feed_post_process_type, NULL, NULL },
-	{ keys_feed_supersede_article, NULL, NULL },
-	{ keys_filter_quit_edit_save, NULL, NULL },
-	{ keys_group_nav, NULL, NULL },
-	{ keys_info_nav, NULL, NULL },
-	{ keys_mark_read_tagged_current, NULL, NULL },
-	{ keys_nrctbl_create, NULL, NULL },
-	{ keys_page_nav, NULL, NULL },
-	{ keys_pgp_mail, NULL, NULL },
-	{ keys_pgp_news, NULL, NULL },
-	{ keys_post_cancel, NULL, NULL },
-	{ keys_post_cont, NULL, NULL },
-	{ keys_post_delete, NULL, NULL },
-	{ keys_post_edit, NULL, NULL },
-	{ keys_post_edit_ext, NULL, NULL },
-	{ keys_post_ignore_fupto, NULL, NULL },
-	{ keys_post_mail_fup, NULL, NULL },
-	{ keys_post_post, NULL, NULL },
-	{ keys_post_postpone, NULL, NULL },
-	{ keys_post_send, NULL, NULL },
-	{ keys_prompt_yn, NULL, NULL },
-	{ keys_save_append_overwrite_quit, NULL, NULL },
-	{ keys_select_nav, NULL, NULL },
-	{ keys_thread_nav, NULL, NULL }
-};
+struct keylist post_cancel_keys = { NULL, 0, 0 };
+struct keylist post_continue_keys = { NULL, 0, 0 };
+struct keylist post_delete_keys = { NULL, 0, 0 };
+struct keylist post_edit_keys = { NULL, 0, 0 };
+struct keylist post_edit_ext_keys = { NULL, 0, 0 };
+struct keylist post_ignore_fupto_keys = { NULL, 0, 0 };
+struct keylist post_mail_fup_keys = { NULL, 0, 0 };
+struct keylist post_post_keys = { NULL, 0, 0 };
+struct keylist post_postpone_keys = { NULL, 0, 0 };
+struct keylist post_send_keys = { NULL, 0, 0 };
+struct keylist prompt_keys = { NULL, 0, 0 };
+struct keylist save_append_overwrite_keys = { NULL, 0, 0 };
+struct keylist select_keys = { NULL, 0, 0 };
+struct keylist thread_keys = { NULL, 0, 0 };
 
 
 /*
- * Return the number of keys in a menu
+ * lookup the associated function to the specified key
  */
-static size_t
-keymapsize(
-	t_keynode *ptr[])
+t_function
+key_to_func(
+	const char key,
+	const struct keylist keys)
 {
-	size_t i = 0;
+	size_t i;
 
-	if (!ptr)
-		return i;
-
-	while (*ptr) {
-		i++;
-		ptr++;
+	for (i = 0; i < keys.used; i++) {
+		if (keys.list[i].key == key)
+			return keys.list[i].function;
 	}
-	return i;
+
+	return NOT_ASSIGNED;
 }
 
 
 /*
- * Compile keymaps for faster access and conversion
+ * lookup the associated key to the specified function
  */
-void
-build_keymaps(
-	void)
+char
+func_to_key(
+	t_function func,
+	const struct keylist keys)
 {
-	char *dkey, *lkey;
-	int cnt = sizeof(menukeymap) / sizeof(t_menukeys);
-	size_t size;
-	t_keynode *keyptr;
-	t_menukeys *menuptr = &menukeymap.config_change;
+	size_t i;
 
-	while (cnt--) {
-		size = keymapsize(menuptr->keys);
-		if (menuptr->defaultkeys)
-			menuptr->defaultkeys = my_realloc(menuptr->defaultkeys, size + 1);
-		else
-			menuptr->defaultkeys = my_malloc(size + 1);
-		if (menuptr->localkeys)
-			menuptr->localkeys = my_realloc(menuptr->localkeys, size + 1);
-		else
-			menuptr->localkeys = my_malloc(size + 1);
-		dkey = menuptr->defaultkeys;
-		lkey = menuptr->localkeys;
-		dkey[size] = '\0';
-		lkey[size] = '\0';
-		while (size--) {
-			keyptr = menuptr->keys[size];
-			dkey[size] = keyptr->defaultkey;
-			lkey[size] = keyptr->localkey;
+	for (i = 0; i < keys.used; i++) {
+		if (keys.list[i].function == func)
+			return keys.list[i].key;
+	}
+
+	return '?';
+}
+
+
+/*
+ * adds a key to a keylist
+ * returns TRUE if the key was succesfully added else FALSE
+ */
+static t_bool
+add_key(
+	struct keylist *keys,
+	char key,
+	t_function func,
+	t_bool overwrite)
+{
+	size_t i;
+	struct keynode *entry = NULL;
+
+	/* is a function already associated with this key */
+	for (i = 0; i < keys->used; i++) {
+		if (keys->list[i].key == key)
+			entry = &keys->list[i];
+	}
+
+	if (entry != NULL) {
+		if (overwrite) {
+			entry->function = func;
+			return TRUE;
+		} else
+			return FALSE;
+	} else {
+		/* add a new entry */
+		if (keys->used >= keys->max) {
+			if (keys->list == NULL) {
+				keys->max = 1;
+				keys->list = my_malloc(keys->max * sizeof(struct keynode));
+			} else {
+				keys->max++;
+				keys->list = my_realloc(keys->list, keys->max * sizeof(struct keynode));
+			}
 		}
-		menuptr++;
+		keys->list[keys->used].key = key;
+		keys->list[keys->used].function = func;
+		keys->used++;
+
+		return TRUE;
 	}
-	ch_post_process = &menukeymap.feed_post_process_type.defaultkeys[2];
 }
 
 
-/*
- * convert a local key to the internal (default) mapping
- */
-int
-map_to_default(
-	const char key,
-	const t_menukeys *menukeys)
+static void
+add_default_key(
+	struct keylist *keys,
+	char key,
+	t_function func)
 {
-	char *ptr = strchr(menukeys->localkeys, key);
-
-	if (ptr)
-		return menukeys->defaultkeys[ptr - menukeys->localkeys];
-
-	return 0;
+	add_key(keys, key, func, FALSE);
 }
 
 
-/*
- * convert an internal (default) key to a local one
- */
-int
-map_to_local(
-	const char key,
-	const t_menukeys *menukeys)
-{
-	char *ptr = strchr(menukeys->defaultkeys, key);
-
-	if (ptr)
-		return menukeys->localkeys[ptr - menukeys->defaultkeys];
-
-	return 0;
+static void
+free_keylist(struct keylist *keys) {
+	FreeAndNull(keys->list);
+	keys->used = keys->max = 0;
 }
 
 
@@ -812,14 +194,33 @@ void
 free_keymaps(
 	void)
 {
-	int cnt = sizeof(menukeymap) / sizeof(t_menukeys);
-	t_menukeys *menuptr = &menukeymap.config_change;
-
-	while (cnt--) {
-		FreeIfNeeded(menuptr->localkeys);
-		FreeIfNeeded(menuptr->defaultkeys);
-		menuptr++;
-	}
+	free_keylist(&select_keys);
+	free_keylist(&group_keys);
+	free_keylist(&thread_keys);
+	free_keylist(&option_menu_keys);
+	free_keylist(&page_keys);
+	free_keylist(&info_keys);
+	free_keylist(&post_send_keys);
+	free_keylist(&post_edit_keys);
+	free_keylist(&post_edit_ext_keys);
+	free_keylist(&post_post_keys);
+	free_keylist(&post_postpone_keys);
+	free_keylist(&post_mail_fup_keys);
+	free_keylist(&post_ignore_fupto_keys);
+	free_keylist(&post_continue_keys);
+	free_keylist(&post_delete_keys);
+	free_keylist(&post_cancel_keys);
+	free_keylist(&filter_keys);
+	free_keylist(&mark_read_keys);
+#ifdef HAVE_PGP_GPG
+	free_keylist(&pgp_mail_keys);
+	free_keylist(&pgp_news_keys);
+#endif /* HAVE_PGP_GPG */
+	free_keylist(&save_append_overwrite_keys);
+	free_keylist(&feed_type_keys);
+	free_keylist(&feed_post_process_keys);
+	free_keylist(&feed_supersede_article_keys);
+	free_keylist(&prompt_keys);
 }
 
 
@@ -855,80 +256,31 @@ printascii(
 
 
 /*
- * Find any key clashes between groups keyptr1 and keyptr2. This is just an
- * ascending brute force search. We need a pointer to the tag node in order
- * to report errors correctly, the pointers start 1 above this on the first
- * key definition. If we are checking against the same keygroup, then ptr2
- * starts at (ptr1+1) else the algorithm doesn't work!
+ * read the keymap file
+ * returns TRUE if the keymap file was read without an error else FALSE
  */
-static t_bool
-check_duplicates(
-	t_keynode *keyptr1,
-	t_keynode *keyptr2)
+t_bool
+read_keymap_file(
+	void)
 {
-	char buf[10];
-	t_keynode *ptr1, *ptr2;
+	t_bool ret;
 
-	for (ptr1 = keyptr1 + 1; ptr1->localkey != '\0'; ++ptr1) {
-		for (ptr2 = (keyptr1 == keyptr2) ? ptr1 + 1 : keyptr2 + 1; ptr2->localkey != '\0'; ++ptr2) {
-			if (ptr1->localkey == ptr2->localkey) {
-				wait_message(0, _(txt_keymap_conflict), printascii(buf, ptr1->localkey), keyptr1->t, ptr1->t, keyptr2->t, ptr2->t);
-				return FALSE;
-			}
-		}
-	}
-	return TRUE;
-}
+	ret = process_keymap_file();
+	setup_default_keys();
 
-
-/*
- * Try and lookup a key description. If found, make the assignment
- */
-static t_bool
-processkey(
-	t_keynode *keyptr,		/* Where in map to start search */
-	char *kname,				/* Keyname we're searching for */
-	char key)					/* Key to assign to keyname if found */
-{
-	char buf[LEN];
-	int i;
-#ifdef DEBUG
-	char was[10], is[10];
-#endif /* DEBUG */
-
-	strcpy(buf, keyptr->t);	/* Preload the groupname for speed */
-	keyptr++;						/* Advance to 1st key */
-	i = strlen(buf);
-
-	for (; keyptr->t != NULL; ++keyptr) {
-		strcpy(buf + i, keyptr->t);
-
-		if (strcasecmp(kname, buf) == 0) {
-#ifdef DEBUG
-			fprintf(stderr, _(txt_keymap_redef), buf, printascii(was, keyptr->localkey), printascii(is, key));
-#endif /* DEBUG */
-			keyptr->localkey = key;
-			return TRUE;
-		}
-	}
-
-	return FALSE;
+	return ret;
 }
 
 
 #define KEYSEPS		" \t\n"
-/* TODO: -> tin.h */
-#define KEYMAP_FILE	"keymap"
 t_bool
-read_keymap_file(
+process_keymap_file(
 	void)
 {
 	FILE *fp = (FILE *) 0;
 	char *line, *keydef, *kname;
 	char *map, *ptr;
 	char buf[LEN], buff[NAME_LEN + 1];
-	char key;
-	int i;
 	int upgrade = RC_CHECK;
 	t_bool ret = TRUE;
 
@@ -971,29 +323,79 @@ read_keymap_file(
 
 	map = my_strdup(buf); /* remember keymap-name */
 
+	/* check if keymap file is uptodate */
+	while ((line = fgets(buf, sizeof(buf), fp)) != NULL) {
+		if (line[0] == '#' && upgrade == RC_CHECK) {
+			if ((upgrade = check_upgrade(line, "# Keymap file V", KEYMAP_VERSION)) == RC_UPGRADE) {
+				fclose(fp);
+				upgrade_keymap_file(map);
+				upgrade = RC_IGNORE;
+				fp = fopen(map, "r");
+			}
+			break;
+		}
+	}
+
 	while ((line = fgets(buf, sizeof(buf), fp)) != NULL) {
 		/*
 		 * Ignore blank and comment lines
 		 */
-		if (line[0] == '#' || line[0] == '\n') {
-			if (upgrade == RC_CHECK)
-				upgrade = check_upgrade(line, "# Keymap file V", KEYMAP_VERSION);
-
+		if (line[0] == '#' || line[0] == '\n')
 			continue;
-		}
 
-		kname = strtok(line, KEYSEPS);
-		keydef = strtok(NULL, KEYSEPS);
+		if ((kname = strsep(&line, KEYSEPS)) != NULL) {
+			keydef = str_trim(line);
+			/*
+			 * Warn about basic syntax errors
+			 */
+			if (keydef == NULL || !strlen(keydef)) {
+				wait_message(0, _(txt_keymap_missing_key), kname);
+				ret = FALSE;
+				continue;
+			}
+		} else
+			continue;
 
 		/*
-		 * Warn about basic syntax errors
+		 * TODO: useful? shared keymaps (NFS-Home) may differ
+		 * depending on the OS (i.e. on tin has color the other has not)
 		 */
-		if (keydef == NULL) {
-			wait_message(0, _(txt_keymap_missing_key), kname);
+		if (!process_mapping(kname, keydef)) {
+			wait_message(0, _(txt_keymap_invalid_name), kname);
+			prompt_continue();
 			ret = FALSE;
 			continue;
 		}
 
+	}
+	fclose(fp);
+	if (upgrade != RC_IGNORE)
+		upgrade_prompt_quit(upgrade, map);
+
+	free(map);
+	return ret;
+}
+
+
+/*
+ * associate the keys with the internal function and add them to the keylist
+ * returns TRUE if all keys could be recognized else FALSE
+ */
+static t_bool
+process_keys(
+	t_function func,
+	const char *keys,
+	struct keylist *kl)
+{
+	char *keydef, *tmp;
+	char key;
+	t_bool error, ret = TRUE;
+
+	tmp = my_strdup(keys);		/* don't change "keys" */
+	keydef = strtok(tmp, KEYSEPS);
+
+	while (keydef != NULL) {
+		error = FALSE;
 		/*
 		 * Parse the key sequence into 'key'
 		 * Special sequences are:
@@ -1001,17 +403,8 @@ read_keymap_file(
 		 * TAB -> ^I
 		 * SPACE -> ' '
 		 */
-		if (strlen(keydef) > 1)
+		if (strlen(keydef) > 1) {
 			switch (keydef[0]) {
-				case '^':
-					if (!(isupper((int)(unsigned char) keydef[1]))) {
-						wait_message(0, _(txt_keymap_invalid_key), keydef);
-						ret = FALSE;
-						continue;
-					}
-					key = ctrl(keydef[1]);
-					break;
-
 				case 'S':		/* Only test 1st char - crude but effective */
 					key = ' ';
 					break;
@@ -1020,53 +413,2130 @@ read_keymap_file(
 					key = ctrl('I');
 					break;
 
+				case '^':
+					if (isupper((int)(unsigned char) keydef[1])) {
+						key = ctrl(keydef[1]);
+						break;
+					}
+					/* FALLTHROUGH */
 				default:
 					wait_message(0, _(txt_keymap_invalid_key), keydef);
 					ret = FALSE;
-					continue;
+					error = TRUE;
+					break;
 			}
-		else
-			key = keydef[0];
-
-		/*
-		 * Try and locate the tagline in each keygroup
-		 */
-		for (i = 0; keygroups[i] != NULL; ++i) {
-			if (processkey(keygroups[i], kname, key))
-				break;
+		} else {
+			if (isdigit(key = keydef[0])) {
+				wait_message(0, _(txt_keymap_invalid_key), keydef);
+				ret = FALSE;
+				error = TRUE;
+			}
 		}
 
-		/*
-		 * TODO: useful? shared keymaps (NFS-Home) may differ
-		 * depending on the OS (i.e. on tin has color the other has not)
-		 */
-		if (keygroups[i] == NULL) {
-			wait_message(0, _(txt_keymap_invalid_name), kname);
-			ret = FALSE;
+		if (!error)
+			add_key(kl, key, func, TRUE);
+
+		keydef = strtok(NULL, KEYSEPS);
+	}
+	free(tmp);
+
+	return ret;
+}
+
+
+/*
+ * map a keyname to the internal function name and assign the keys
+ * returns TRUE if a mapping was found else FALSE
+ */
+static t_bool
+process_mapping(
+	char *keyname,				/* Keyname we're searching for */
+	char *keys)				/* Key to assign to keyname if found */
+{
+	switch (keyname[0]) {
+		case 'C':
+			if (strcmp(keyname, "ConfigFirstPage") == 0) {
+				process_keys(GLOBAL_FIRST_PAGE, keys, &option_menu_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ConfigLastPage") == 0) {
+				process_keys(GLOBAL_LAST_PAGE, keys, &option_menu_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ConfigNoSave") == 0) {
+				process_keys(CONFIG_NO_SAVE, keys, &option_menu_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ConfigSelect") == 0) {
+				process_keys(CONFIG_SELECT, keys, &option_menu_keys);
+
+				return TRUE;
+			}
+			break;
+
+		case 'D':
+			if (strcmp(keyname, "DisplayPostHist") == 0) {
+				process_keys(GLOBAL_DISPLAY_POST_HISTORY, keys, &group_keys);
+				process_keys(GLOBAL_DISPLAY_POST_HISTORY, keys, &page_keys);
+				process_keys(GLOBAL_DISPLAY_POST_HISTORY, keys, &select_keys);
+				process_keys(GLOBAL_DISPLAY_POST_HISTORY, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "Down") == 0) {
+				process_keys(GLOBAL_LINE_DOWN, keys, &group_keys);
+				process_keys(GLOBAL_LINE_DOWN, keys, &info_keys);
+				process_keys(GLOBAL_LINE_DOWN, keys, &option_menu_keys);
+				process_keys(GLOBAL_LINE_DOWN, keys, &page_keys);
+				process_keys(GLOBAL_LINE_DOWN, keys, &select_keys);
+				process_keys(GLOBAL_LINE_DOWN, keys, &thread_keys);
+
+				return TRUE;
+			}
+			break;
+
+		case 'E':
+			if (strcmp(keyname, "EditFilter") == 0) {
+				process_keys(GLOBAL_EDIT_FILTER, keys, &group_keys);
+				process_keys(GLOBAL_EDIT_FILTER, keys, &page_keys);
+				process_keys(GLOBAL_EDIT_FILTER, keys, &select_keys);
+				process_keys(GLOBAL_EDIT_FILTER, keys, &thread_keys);
+
+				return TRUE;
+			}
+			break;
+
+		case 'F':
+			if (strcmp(keyname, "FeedArt") == 0) {
+				process_keys(FEED_ARTICLE, keys, &feed_type_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "FeedHot") == 0) {
+				process_keys(FEED_HOT, keys, &feed_type_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "FeedPat") == 0) {
+				process_keys(FEED_PATTERN, keys, &feed_type_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "FeedRepost") == 0) {
+				process_keys(FEED_KEY_REPOST, keys, &feed_supersede_article_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "FeedSupersede") == 0) {
+				process_keys(FEED_SUPERSEDE, keys, &feed_supersede_article_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "FeedTag") == 0) {
+				process_keys(FEED_TAGGED, keys, &feed_type_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "FeedThd") == 0) {
+				process_keys(FEED_THREAD, keys, &feed_type_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "FilterEdit") == 0) {
+				process_keys(FILTER_EDIT, keys, &filter_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "FilterSave") == 0) {
+				process_keys(FILTER_SAVE, keys, &filter_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "FirstPage") == 0) {
+				process_keys(GLOBAL_FIRST_PAGE, keys, &group_keys);
+				process_keys(GLOBAL_FIRST_PAGE, keys, &info_keys);
+				process_keys(GLOBAL_FIRST_PAGE, keys, &option_menu_keys);
+				process_keys(GLOBAL_FIRST_PAGE, keys, &page_keys);
+				process_keys(GLOBAL_FIRST_PAGE, keys, &select_keys);
+				process_keys(GLOBAL_FIRST_PAGE, keys, &thread_keys);
+
+				return TRUE;
+			}
+			break;
+
+		case 'G':
+			if (strcmp(keyname, "GroupAutoSave") == 0) {
+				process_keys(GROUP_AUTOSAVE, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupBugReport") == 0) {
+				process_keys(GLOBAL_BUGREPORT, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupCatchup") == 0) {
+				process_keys(GROUP_CATCHUP, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupCatchupNextUnread") == 0) {
+				process_keys(GROUP_CATCHUP_NEXT_UNREAD, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupDoAutoSel") == 0) {
+				process_keys(GROUP_DO_AUTOSELECT, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupGoto") == 0) {
+				process_keys(GROUP_GOTO, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupListThd") == 0) {
+				process_keys(GROUP_LIST_THREAD, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupMail") == 0) {
+				process_keys(GROUP_MAIL, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupMarkThdRead") == 0) {
+				process_keys(GROUP_MARK_THREAD_READ, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupMarkArtUnread") == 0) {
+				process_keys(GROUP_MARK_ARTICLE_UNREAD, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupMarkThdUnread") == 0) {
+				process_keys(GROUP_MARK_THREAD_UNREAD, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupMarkUnselArtRead") == 0) {
+				process_keys(GROUP_MARK_UNSELECTED_ARTICLES_READ, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupNextGroup") == 0) {
+				process_keys(GROUP_NEXT_GROUP, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupNextUnreadArt") == 0) {
+				process_keys(GROUP_NEXT_UNREAD_ARTICLE, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupNextUnreadArtOrGrp") == 0) {
+				process_keys(GROUP_NEXT_UNREAD_ARTICLE_OR_GROUP, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupPrevGroup") == 0) {
+				process_keys(GROUP_PREVIOUS_GROUP, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupPrevUnreadArt") == 0) {
+				process_keys(GROUP_PREVIOUS_UNREAD_ARTICLE, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupReadBasenote") == 0) {
+				process_keys(GROUP_READ_BASENOTE, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupRepost") == 0) {
+				process_keys(GROUP_REPOST, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupReverseSel") == 0) {
+				process_keys(GROUP_REVERSE_SELECTIONS, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupSave") == 0) {
+				process_keys(GROUP_SAVE, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupSelPattern") == 0) {
+				process_keys(GROUP_SELECT_PATTERN, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupSelThd") == 0) {
+				process_keys(GROUP_SELECT_THREAD, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupSelThdIfUnreadSelected") == 0) {
+				process_keys(GROUP_SELECT_THREAD_IF_UNREAD_SELECTED, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupTag") == 0) {
+				process_keys(GROUP_TAG, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupTagParts") == 0) {
+				process_keys(GROUP_TAG_PARTS, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupToggleGetartLimit") == 0) {
+				process_keys(GROUP_TOGGLE_GET_ARTICLES_LIMIT, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupToggleReadUnread") == 0) {
+				process_keys(GROUP_TOGGLE_READ_UNREAD, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupToggleSubjDisplay") == 0) {
+				process_keys(GROUP_TOGGLE_SUBJECT_DISPLAY, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupToggleThdSel") == 0) {
+				process_keys(GROUP_TOGGLE_SELECT_THREAD, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupToggleThreading") == 0) {
+				process_keys(GROUP_TOGGLE_THREADING, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupUndoSel") == 0) {
+				process_keys(GROUP_UNDO_SELECTIONS, keys, &group_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "GroupUntag") == 0) {
+				process_keys(GROUP_UNTAG, keys, &group_keys);
+
+				return TRUE;
+			}
+			break;
+
+		case 'H':
+			if (strcmp(keyname, "Help") == 0) {
+				process_keys(GLOBAL_HELP, keys, &group_keys);
+				process_keys(GLOBAL_HELP, keys, &page_keys);
+				process_keys(GLOBAL_HELP, keys, &select_keys);
+				process_keys(GLOBAL_HELP, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "HelpFirstPage") == 0) {
+				process_keys(GLOBAL_FIRST_PAGE, keys, &info_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "HelpLastPage") == 0) {
+				process_keys(GLOBAL_LAST_PAGE, keys, &info_keys);
+
+				return TRUE;
+			}
+			break;
+
+		case 'L':
+			if (strcmp(keyname, "LastPage") == 0) {
+				process_keys(GLOBAL_LAST_PAGE, keys, &group_keys);
+				process_keys(GLOBAL_LAST_PAGE, keys, &info_keys);
+				process_keys(GLOBAL_LAST_PAGE, keys, &option_menu_keys);
+				process_keys(GLOBAL_LAST_PAGE, keys, &page_keys);
+				process_keys(GLOBAL_LAST_PAGE, keys, &select_keys);
+				process_keys(GLOBAL_LAST_PAGE, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "LastViewed") == 0) {
+				process_keys(GLOBAL_LAST_VIEWED, keys, &group_keys);
+				process_keys(GLOBAL_LAST_VIEWED, keys, &page_keys);
+				process_keys(GLOBAL_LAST_VIEWED, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "LookupMessage") == 0) {
+				process_keys(GLOBAL_LOOKUP_MESSAGEID, keys, &group_keys);
+				process_keys(GLOBAL_LOOKUP_MESSAGEID, keys, &page_keys);
+				process_keys(GLOBAL_LOOKUP_MESSAGEID, keys, &thread_keys);
+
+				return TRUE;
+			}
+			break;
+
+		case 'M':
+			if (strcmp(keyname, "MarkReadCur") == 0) {
+				process_keys(MARK_READ_CURRENT, keys, &mark_read_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "MarkReadTag") == 0) {
+				process_keys(MARK_READ_TAGGED, keys, &mark_read_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "MenuFilterKill") == 0) {
+				process_keys(GLOBAL_MENU_FILTER_KILL, keys, &group_keys);
+				process_keys(GLOBAL_MENU_FILTER_KILL, keys, &page_keys);
+				process_keys(GLOBAL_MENU_FILTER_KILL, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "MenuFilterSelect") == 0) {
+				process_keys(GLOBAL_MENU_FILTER_SELECT, keys, &group_keys);
+				process_keys(GLOBAL_MENU_FILTER_SELECT, keys, &page_keys);
+				process_keys(GLOBAL_MENU_FILTER_SELECT, keys, &thread_keys);
+
+				return TRUE;
+			}
+			break;
+
+		case 'O':
+			if (strcmp(keyname, "OptionMenu") == 0) {
+				process_keys(GLOBAL_OPTION_MENU, keys, &group_keys);
+				process_keys(GLOBAL_OPTION_MENU, keys, &page_keys);
+				process_keys(GLOBAL_OPTION_MENU, keys, &post_edit_ext_keys);
+				process_keys(GLOBAL_OPTION_MENU, keys, &post_post_keys);
+				process_keys(GLOBAL_OPTION_MENU, keys, &select_keys);
+				process_keys(GLOBAL_OPTION_MENU, keys, &thread_keys);
+
+				return TRUE;
+			}
+			break;
+
+		case 'P':
+			if (strcmp(keyname, "PageAutoSave") == 0) {
+				process_keys(PAGE_AUTOSAVE, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageBotThd") == 0) {
+				process_keys(PAGE_BOTTOM_THREAD, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageCancel") == 0) {
+				process_keys(PAGE_CANCEL, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageCatchup") == 0) {
+				process_keys(PAGE_CATCHUP, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageCatchupNextUnread") == 0) {
+				process_keys(PAGE_CATCHUP_NEXT_UNREAD, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageDown") == 0) {
+				process_keys(GLOBAL_PAGE_DOWN, keys, &group_keys);
+				process_keys(GLOBAL_PAGE_DOWN, keys, &info_keys);
+				process_keys(GLOBAL_PAGE_DOWN, keys, &option_menu_keys);
+				process_keys(GLOBAL_PAGE_DOWN, keys, &page_keys);
+				process_keys(GLOBAL_PAGE_DOWN, keys, &select_keys);
+				process_keys(GLOBAL_PAGE_DOWN, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageDown3") == 0) {
+				process_keys(GLOBAL_PAGE_DOWN, keys, &group_keys);
+				process_keys(GLOBAL_PAGE_DOWN, keys, &info_keys);
+				process_keys(GLOBAL_PAGE_DOWN, keys, &option_menu_keys);
+				process_keys(GLOBAL_PAGE_DOWN, keys, &select_keys);
+				process_keys(GLOBAL_PAGE_DOWN, keys, &thread_keys);
+				process_keys(PAGE_PAGE_DOWN3, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageEditArticle") == 0) {
+				process_keys(PAGE_EDIT_ARTICLE, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageFirstPage") == 0) {
+				process_keys(GLOBAL_FIRST_PAGE, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageFollowup") == 0) {
+				process_keys(PAGE_FOLLOWUP, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageFollowupQuote") == 0) {
+				process_keys(PAGE_FOLLOWUP_QUOTE, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageFollowupQuoteHeaders") == 0) {
+				process_keys(PAGE_FOLLOWUP_QUOTE_HEADERS, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageGotoParent") == 0) {
+				process_keys(PAGE_GOTO_PARENT, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageGroupSel") == 0) {
+				process_keys(PAGE_GROUP_SELECT, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageLastPage") == 0) {
+				process_keys(GLOBAL_LAST_PAGE, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageListThd") == 0) {
+				process_keys(PAGE_LIST_THREAD, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageKillThd") == 0) {
+				process_keys(PAGE_MARK_THREAD_READ, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageMail") == 0) {
+				process_keys(PAGE_MAIL, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageMarkArtUnread") == 0) {
+				process_keys(PAGE_MARK_ARTICLE_UNREAD, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageMarkThdUnread") == 0) {
+				process_keys(PAGE_MARK_THREAD_UNREAD, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageNextArt") == 0) {
+				process_keys(PAGE_NEXT_ARTICLE, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageNextThd") == 0) {
+				process_keys(PAGE_NEXT_THREAD, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageNextUnread") == 0) {
+				process_keys(PAGE_NEXT_UNREAD, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageNextUnreadArt") == 0) {
+				process_keys(PAGE_NEXT_UNREAD_ARTICLE, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PagePGPCheckArticle") == 0) {
+#ifdef HAVE_PGP_GPG
+				process_keys(PAGE_PGP_CHECK_ARTICLE, keys, &page_keys);
+#endif /* HAVE_PGP_GPG */
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PagePrevArt") == 0) {
+				process_keys(PAGE_PREVIOUS_ARTICLE, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PagePrevUnreadArt") == 0) {
+				process_keys(PAGE_PREVIOUS_UNREAD_ARTICLE, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageReply") == 0) {
+				process_keys(PAGE_REPLY, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageReplyQuote") == 0) {
+				process_keys(PAGE_REPLY_QUOTE, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageReplyQuoteHeaders") == 0) {
+				process_keys(PAGE_REPLY_QUOTE_HEADERS, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageRepost") == 0) {
+				process_keys(PAGE_REPOST, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageReveal") == 0) {
+				process_keys(PAGE_REVEAL, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageSave") == 0) {
+				process_keys(PAGE_SAVE, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageSkipIncludedText") == 0) {
+				process_keys(PAGE_SKIP_INCLUDED_TEXT, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageTag") == 0) {
+				process_keys(PAGE_TAG, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageTopThd") == 0) {
+				process_keys(PAGE_TOP_THREAD, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageToggleHeaders") == 0) {
+				process_keys(PAGE_TOGGLE_HEADERS, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageToggleHighlight") == 0) {
+				process_keys(PAGE_TOGGLE_HIGHLIGHTING, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageToggleRot") == 0) {
+				process_keys(PAGE_TOGGLE_ROT13, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageToggleTabs") == 0) {
+				process_keys(PAGE_TOGGLE_TABS, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageToggleTex2iso") == 0) {
+				process_keys(PAGE_TOGGLE_TEX2ISO, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageToggleUue") == 0) {
+				process_keys(PAGE_TOGGLE_UUE, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageUp") == 0) {
+				process_keys(GLOBAL_PAGE_UP, keys, &group_keys);
+				process_keys(GLOBAL_PAGE_UP, keys, &info_keys);
+				process_keys(GLOBAL_PAGE_UP, keys, &option_menu_keys);
+				process_keys(GLOBAL_PAGE_UP, keys, &page_keys);
+				process_keys(GLOBAL_PAGE_UP, keys, &select_keys);
+				process_keys(GLOBAL_PAGE_UP, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageViewAttach") == 0) {
+				process_keys(PAGE_VIEW_ATTACHMENTS, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PageViewUrl") == 0) {
+				process_keys(PAGE_VIEW_URL, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PgpEncrypt") == 0) {
+#ifdef HAVE_PGP_GPG
+				process_keys(PGP_KEY_ENCRYPT, keys, &pgp_mail_keys);
+#endif /* HAVE_PGP_GPG */
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PgpEncSign") == 0) {
+#ifdef HAVE_PGP_GPG
+				process_keys(PGP_KEY_ENCRYPT_SIGN, keys, &pgp_mail_keys);
+#endif /* HAVE_PGP_GPG */
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PgpIncludekey") == 0) {
+#ifdef HAVE_PGP_GPG
+				process_keys(PGP_INCLUDE_KEY, keys, &pgp_news_keys);
+#endif /* HAVE_PGP_GPG */
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PgpSign") == 0) {
+#ifdef HAVE_PGP_GPG
+				process_keys(PGP_KEY_SIGN, keys, &pgp_news_keys);
+				process_keys(PGP_KEY_SIGN, keys, &pgp_mail_keys);
+#endif /* HAVE_PGP_GPG */
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "Pipe") == 0) {
+				process_keys(GLOBAL_PIPE, keys, &group_keys);
+				process_keys(GLOBAL_PIPE, keys, &page_keys);
+				process_keys(GLOBAL_PIPE, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "Post") == 0) {
+				process_keys(GLOBAL_POST, keys, &group_keys);
+				process_keys(GLOBAL_POST, keys, &page_keys);
+				process_keys(GLOBAL_POST, keys, &post_ignore_fupto_keys);
+				process_keys(GLOBAL_POST, keys, &post_mail_fup_keys);
+				process_keys(GLOBAL_POST, keys, &post_post_keys);
+				process_keys(GLOBAL_POST, keys, &select_keys);
+				process_keys(GLOBAL_POST, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PostAbort") == 0) {
+				process_keys(POST_ABORT, keys, &post_continue_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PostCancel") == 0) {
+				process_keys(POST_CANCEL, keys, &post_cancel_keys);
+				process_keys(POST_CANCEL, keys, &post_delete_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PostContinue") == 0) {
+				process_keys(POST_CONTINUE, keys, &post_continue_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PostEdit") == 0) {
+				process_keys(POST_CANCEL, keys, &post_cancel_keys);
+				process_keys(POST_EDIT, keys, &post_edit_keys);
+				process_keys(POST_EDIT, keys, &post_edit_ext_keys);
+				process_keys(POST_EDIT, keys, &post_post_keys);
+				process_keys(POST_EDIT, keys, &post_send_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PostIgnore") == 0) {
+				process_keys(POST_IGNORE_FUPTO, keys, &post_ignore_fupto_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PostIspell") == 0) {
+#ifdef HAVE_ISPELL
+				process_keys(POST_ISPELL, keys, &post_post_keys);
+				process_keys(POST_ISPELL, keys, &post_send_keys);
+#endif /* HAVE_ISPELL */
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PostMail") == 0) {
+				process_keys(POST_MAIL, keys, &post_mail_fup_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PostPGP") == 0) {
+#ifdef HAVE_PGP_GPG
+				process_keys(POST_PGP, keys, &post_post_keys);
+				process_keys(POST_PGP, keys, &post_send_keys);
+#endif /* HAVE_PGP_GPG */
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PostponeAll") == 0) {
+				process_keys(POSTPONE_ALL, keys, &post_postpone_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "Postponed") == 0) {
+				process_keys(GLOBAL_POSTPONED, keys, &group_keys);
+				process_keys(GLOBAL_POSTPONED, keys, &page_keys);
+				process_keys(GLOBAL_POSTPONED, keys, &select_keys);
+				process_keys(GLOBAL_POSTPONED, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PostponeOverride") == 0) {
+				process_keys(POSTPONE_OVERRIDE, keys, &post_postpone_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PostPost") == 0) {
+				process_keys(GLOBAL_POST, keys, &post_ignore_fupto_keys);
+				process_keys(GLOBAL_POST, keys, &post_mail_fup_keys);
+				process_keys(GLOBAL_POST, keys, &post_post_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PostPostpone") == 0) {
+				process_keys(POST_POSTPONE, keys, &post_edit_keys);
+				process_keys(POST_POSTPONE, keys, &post_post_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PostSend") == 0) {
+				process_keys(POST_SEND, keys, &post_send_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PostSupersede") == 0) {
+				process_keys(POST_SUPERSEDE, keys, &post_delete_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PProcNo") == 0) {
+				process_keys(POSTPROCESS_NO, keys, &feed_post_process_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PProcShar") == 0) {
+				process_keys(POSTPROCESS_SHAR, keys, &feed_post_process_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PProcYes") == 0) {
+				process_keys(POSTPROCESS_YES, keys, &feed_post_process_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "Print") == 0) {
+#ifndef DISABLE_PRINTING
+				process_keys(GLOBAL_PRINT, keys, &group_keys);
+				process_keys(GLOBAL_PRINT, keys, &page_keys);
+				process_keys(GLOBAL_PRINT, keys, &thread_keys);
+#endif /* !DISABLE_PRINTING */
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PromptNo") == 0) {
+				process_keys(PROMPT_NO, keys, &post_postpone_keys);
+				process_keys(PROMPT_NO, keys, &prompt_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "PromptYes") == 0) {
+				process_keys(PROMPT_YES, keys, &post_postpone_keys);
+				process_keys(PROMPT_YES, keys, &prompt_keys);
+
+				return TRUE;
+			}
+			break;
+
+		case 'Q':
+			if (strcmp(keyname, "QuickFilterKill") == 0) {
+				process_keys(GLOBAL_QUICK_FILTER_KILL, keys, &group_keys);
+				process_keys(GLOBAL_QUICK_FILTER_KILL, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "QuickFilterSelect") == 0) {
+				process_keys(GLOBAL_QUICK_FILTER_SELECT, keys, &group_keys);
+				process_keys(GLOBAL_QUICK_FILTER_SELECT, keys, &page_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "Quit") == 0) {
+				process_keys(GLOBAL_QUIT, keys, &feed_post_process_keys);
+				process_keys(GLOBAL_QUIT, keys, &feed_supersede_article_keys);
+				process_keys(GLOBAL_QUIT, keys, &feed_type_keys);
+				process_keys(GLOBAL_QUIT, keys, &filter_keys);
+				process_keys(GLOBAL_QUIT, keys, &group_keys);
+				process_keys(GLOBAL_QUIT, keys, &info_keys);
+				process_keys(GLOBAL_QUIT, keys, &mark_read_keys);
+				process_keys(GLOBAL_QUIT, keys, &option_menu_keys);
+				process_keys(GLOBAL_QUIT, keys, &page_keys);
+#ifdef HAVE_PGP_GPG
+				process_keys(GLOBAL_QUIT, keys, &pgp_mail_keys);
+				process_keys(GLOBAL_QUIT, keys, &pgp_news_keys);
+#endif /* HAVE_PGP_GPG */
+				process_keys(GLOBAL_QUIT, keys, &post_cancel_keys);
+				process_keys(GLOBAL_QUIT, keys, &post_delete_keys);
+				process_keys(GLOBAL_QUIT, keys, &post_edit_keys);
+				process_keys(GLOBAL_QUIT, keys, &post_edit_ext_keys);
+				process_keys(GLOBAL_QUIT, keys, &post_ignore_fupto_keys);
+				process_keys(GLOBAL_QUIT, keys, &post_mail_fup_keys);
+				process_keys(GLOBAL_QUIT, keys, &post_post_keys);
+				process_keys(GLOBAL_QUIT, keys, &post_postpone_keys);
+				process_keys(GLOBAL_QUIT, keys, &post_send_keys);
+				process_keys(GLOBAL_QUIT, keys, &prompt_keys);
+				process_keys(GLOBAL_QUIT, keys, &save_append_overwrite_keys);
+				process_keys(GLOBAL_QUIT, keys, &select_keys);
+				process_keys(GLOBAL_QUIT, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "QuitTin") == 0) {
+				process_keys(GLOBAL_QUIT_TIN, keys, &group_keys);
+				process_keys(GLOBAL_QUIT_TIN, keys, &page_keys);
+				process_keys(GLOBAL_QUIT_TIN, keys, &select_keys);
+				process_keys(GLOBAL_QUIT_TIN, keys, &thread_keys);
+
+				return TRUE;
+			}
+			break;
+
+		case 'R':
+			if (strcmp(keyname, "RedrawScr") == 0) {
+				process_keys(GLOBAL_REDRAW_SCREEN, keys, &group_keys);
+				process_keys(GLOBAL_REDRAW_SCREEN, keys, &option_menu_keys);
+				process_keys(GLOBAL_REDRAW_SCREEN, keys, &page_keys);
+				process_keys(GLOBAL_REDRAW_SCREEN, keys, &select_keys);
+				process_keys(GLOBAL_REDRAW_SCREEN, keys, &thread_keys);
+
+				return TRUE;
+			}
+			break;
+
+		case 'S':
+			if (strcmp(keyname, "SaveAppendFile") == 0) {
+				process_keys(SAVE_APPEND_FILE, keys, &save_append_overwrite_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SaveOverwriteFile") == 0) {
+				process_keys(SAVE_OVERWRITE_FILE, keys, &save_append_overwrite_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ScrollDown") == 0) {
+				process_keys(GLOBAL_SCROLL_DOWN, keys, &group_keys);
+				process_keys(GLOBAL_SCROLL_DOWN, keys, &option_menu_keys);
+				process_keys(GLOBAL_SCROLL_DOWN, keys, &select_keys);
+				process_keys(GLOBAL_SCROLL_DOWN, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ScrollUp") == 0) {
+				process_keys(GLOBAL_SCROLL_UP, keys, &group_keys);
+				process_keys(GLOBAL_SCROLL_UP, keys, &option_menu_keys);
+				process_keys(GLOBAL_SCROLL_UP, keys, &select_keys);
+				process_keys(GLOBAL_SCROLL_UP, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SearchAuthB") == 0) {
+				process_keys(GLOBAL_SEARCH_AUTHOR_BACKWARD, keys, &group_keys);
+				process_keys(GLOBAL_SEARCH_AUTHOR_BACKWARD, keys, &page_keys);
+				process_keys(GLOBAL_SEARCH_AUTHOR_BACKWARD, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SearchAuthF") == 0) {
+				process_keys(GLOBAL_SEARCH_AUTHOR_FORWARD, keys, &group_keys);
+				process_keys(GLOBAL_SEARCH_AUTHOR_FORWARD, keys, &page_keys);
+				process_keys(GLOBAL_SEARCH_AUTHOR_FORWARD, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SearchBody") == 0) {
+				process_keys(GLOBAL_SEARCH_BODY, keys, &group_keys);
+				process_keys(GLOBAL_SEARCH_BODY, keys, &page_keys);
+				process_keys(GLOBAL_SEARCH_BODY, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SearchRepeat") == 0) {
+				process_keys(GLOBAL_SEARCH_REPEAT, keys, &group_keys);
+				process_keys(GLOBAL_SEARCH_REPEAT, keys, &info_keys);
+				process_keys(GLOBAL_SEARCH_REPEAT, keys, &option_menu_keys);
+				process_keys(GLOBAL_SEARCH_REPEAT, keys, &page_keys);
+				process_keys(GLOBAL_SEARCH_REPEAT, keys, &select_keys);
+				process_keys(GLOBAL_SEARCH_REPEAT, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SearchSubjB") == 0) {
+				process_keys(GLOBAL_SEARCH_SUBJECT_BACKWARD, keys, &group_keys);
+				process_keys(GLOBAL_SEARCH_SUBJECT_BACKWARD, keys, &info_keys);
+				process_keys(GLOBAL_SEARCH_SUBJECT_BACKWARD, keys, &option_menu_keys);
+				process_keys(GLOBAL_SEARCH_SUBJECT_BACKWARD, keys, &page_keys);
+				process_keys(GLOBAL_SEARCH_SUBJECT_BACKWARD, keys, &select_keys);
+				process_keys(GLOBAL_SEARCH_SUBJECT_BACKWARD, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SearchSubjF") == 0) {
+				process_keys(GLOBAL_SEARCH_SUBJECT_FORWARD, keys, &group_keys);
+				process_keys(GLOBAL_SEARCH_SUBJECT_FORWARD, keys, &info_keys);
+				process_keys(GLOBAL_SEARCH_SUBJECT_FORWARD, keys, &option_menu_keys);
+				process_keys(GLOBAL_SEARCH_SUBJECT_FORWARD, keys, &page_keys);
+				process_keys(GLOBAL_SEARCH_SUBJECT_FORWARD, keys, &select_keys);
+				process_keys(GLOBAL_SEARCH_SUBJECT_FORWARD, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectBugReport") == 0) {
+				process_keys(GLOBAL_BUGREPORT, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectCatchup") == 0) {
+				process_keys(SELECT_CATCHUP, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectCatchupNextUnread") == 0) {
+				process_keys(SELECT_CATCHUP_NEXT_UNREAD, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectEnterNextUnreadGrp") == 0) {
+				process_keys(SELECT_ENTER_NEXT_UNREAD_GROUP, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectGoto") == 0) {
+				process_keys(SELECT_GOTO, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectMarkGrpUnread") == 0) {
+				process_keys(SELECT_MARK_GROUP_UNREAD, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectMoveGrp") == 0) {
+				process_keys(SELECT_MOVE_GROUP, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectNextUnreadGrp") == 0) {
+				process_keys(SELECT_NEXT_UNREAD_GROUP, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectQuitNoWrite") == 0) {
+				process_keys(SELECT_QUIT_NO_WRITE, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectReadGrp") == 0) {
+				process_keys(SELECT_ENTER_GROUP, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectResetNewsrc") == 0) {
+				process_keys(SELECT_RESET_NEWSRC, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectSortActive") == 0) {
+				process_keys(SELECT_SORT_ACTIVE, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectSubscribe") == 0) {
+				process_keys(SELECT_SUBSCRIBE, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectSubscribePat") == 0) {
+				process_keys(SELECT_SUBSCRIBE_PATTERN, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectSyncWithActive") == 0) {
+				process_keys(SELECT_SYNC_WITH_ACTIVE, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectToggleDescriptions") == 0) {
+				process_keys(SELECT_TOGGLE_DESCRIPTIONS, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectToggleReadDisplay") == 0) {
+				process_keys(SELECT_TOGGLE_READ_DISPLAY, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectUnsubscribe") == 0) {
+				process_keys(SELECT_UNSUBSCRIBE, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectUnsubscribePat") == 0) {
+				process_keys(SELECT_UNSUBSCRIBE_PATTERN, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SelectYankActive") == 0) {
+				process_keys(SELECT_YANK_ACTIVE, keys, &select_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "SetRange") == 0) {
+				process_keys(GLOBAL_SET_RANGE, keys, &group_keys);
+				process_keys(GLOBAL_SET_RANGE, keys, &select_keys);
+				process_keys(GLOBAL_SET_RANGE, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ShellEscape") == 0) {
+#ifndef NO_SHELL_ESCAPE
+				process_keys(GLOBAL_SHELL_ESCAPE, keys, &group_keys);
+				process_keys(GLOBAL_SHELL_ESCAPE, keys, &page_keys);
+				process_keys(GLOBAL_SHELL_ESCAPE, keys, &select_keys);
+				process_keys(GLOBAL_SHELL_ESCAPE, keys, &thread_keys);
+#endif /* !NO_SHELL_ESCAPE */
+
+				return TRUE;
+			}
+			break;
+
+		case 'T':
+			if (strcmp(keyname, "ThreadAutoSave") == 0) {
+				process_keys(THREAD_AUTOSAVE, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadBugReport") == 0) {
+				process_keys(GLOBAL_BUGREPORT, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadCatchup") == 0) {
+				process_keys(THREAD_CATCHUP, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadCatchupNextUnread") == 0) {
+				process_keys(THREAD_CATCHUP_NEXT_UNREAD, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadMail") == 0) {
+				process_keys(THREAD_MAIL, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadMarkArtRead") == 0) {
+				process_keys(THREAD_MARK_ARTICLE_READ, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadMarkArtUnread") == 0) {
+				process_keys(THREAD_MARK_ARTICLE_UNREAD, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadMarkThdUnread") == 0) {
+				process_keys(THREAD_MARK_THREAD_UNREAD, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadReadArt") == 0) {
+				process_keys(THREAD_READ_ARTICLE, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadReadNextArtOrThread") == 0) {
+				process_keys(THREAD_READ_NEXT_ARTICLE_OR_THREAD, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadReverseSel") == 0) {
+				process_keys(THREAD_REVERSE_SELECTIONS, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadSave") == 0) {
+				process_keys(THREAD_SAVE, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadSelArt") == 0) {
+				process_keys(THREAD_SELECT_ARTICLE, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadTag") == 0) {
+				process_keys(THREAD_TAG, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadToggleArtSel") == 0) {
+				process_keys(THREAD_TOGGLE_ARTICLE_SELECTION, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadToggleSubjDisplay") == 0) {
+				process_keys(THREAD_TOGGLE_SUBJECT_DISPLAY, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadUndoSel") == 0) {
+				process_keys(THREAD_UNDO_SELECTIONS, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ThreadUntag") == 0) {
+				process_keys(THREAD_UNTAG, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ToggleColor") == 0) {
+#ifdef HAVE_COLOR
+				process_keys(GLOBAL_TOGGLE_COLOR, keys, &group_keys);
+				process_keys(GLOBAL_TOGGLE_COLOR, keys, &page_keys);
+				process_keys(GLOBAL_TOGGLE_COLOR, keys, &select_keys);
+				process_keys(GLOBAL_TOGGLE_COLOR, keys, &thread_keys);
+#endif /* HAVE_COLOR */
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ToggleHelpDisplay") == 0) {
+				process_keys(GLOBAL_TOGGLE_HELP_DISPLAY, keys, &group_keys);
+				process_keys(GLOBAL_TOGGLE_HELP_DISPLAY, keys, &info_keys);
+				process_keys(GLOBAL_TOGGLE_HELP_DISPLAY, keys, &page_keys);
+				process_keys(GLOBAL_TOGGLE_HELP_DISPLAY, keys, &select_keys);
+				process_keys(GLOBAL_TOGGLE_HELP_DISPLAY, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ToggleInfoLastLine") == 0) {
+				process_keys(GLOBAL_TOGGLE_INFO_LAST_LINE, keys, &group_keys);
+				process_keys(GLOBAL_TOGGLE_INFO_LAST_LINE, keys, &page_keys);
+				process_keys(GLOBAL_TOGGLE_INFO_LAST_LINE, keys, &select_keys);
+				process_keys(GLOBAL_TOGGLE_INFO_LAST_LINE, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ToggleInverseVideo") == 0) {
+				process_keys(GLOBAL_TOGGLE_INVERSE_VIDEO, keys, &group_keys);
+				process_keys(GLOBAL_TOGGLE_INVERSE_VIDEO, keys, &page_keys);
+				process_keys(GLOBAL_TOGGLE_INVERSE_VIDEO, keys, &select_keys);
+				process_keys(GLOBAL_TOGGLE_INVERSE_VIDEO, keys, &thread_keys);
+
+				return TRUE;
+			}
+			break;
+
+		case 'U':
+			if (strcmp(keyname, "Up") == 0) {
+				process_keys(GLOBAL_LINE_UP, keys, &group_keys);
+				process_keys(GLOBAL_LINE_UP, keys, &info_keys);
+				process_keys(GLOBAL_LINE_UP, keys, &option_menu_keys);
+				process_keys(GLOBAL_LINE_UP, keys, &page_keys);
+				process_keys(GLOBAL_LINE_UP, keys, &select_keys);
+				process_keys(GLOBAL_LINE_UP, keys, &thread_keys);
+
+				return TRUE;
+			}
+			break;
+
+		case 'V':
+			if (strcmp(keyname, "Version") == 0) {
+				process_keys(GLOBAL_VERSION, keys, &group_keys);
+				process_keys(GLOBAL_VERSION, keys, &page_keys);
+				process_keys(GLOBAL_VERSION, keys, &select_keys);
+				process_keys(GLOBAL_VERSION, keys, &thread_keys);
+
+				return TRUE;
+			}
+			break;
+
+		default:
+			break;
+	}
+
+	return FALSE;
+}
+
+
+/*
+ * upgrades the keymap file to the current version
+ */
+static void
+upgrade_keymap_file(
+	char *old)
+{
+	FILE *oldfp = (FILE *) 0, *newfp = (FILE *) 0;
+	char *line, *backup;
+	const char *keyname, *keydef;
+	char new[NAME_LEN + 1], buf[LEN];
+	char *config_select[2] = { NULL, NULL };
+	char *edit_filter[2] = { NULL, NULL };
+	char *down[2] = { NULL, NULL };
+	char *groupreadbasenote[2] = { NULL, NULL };
+	char *menu_filter_kill[3] = { NULL, NULL, NULL };
+	char *menu_filter_select[3] = { NULL, NULL, NULL };
+	char *pagedown[2] = { NULL, NULL };
+	char *pagenextthd[2] = { NULL, NULL };
+	char *pageup[3] = { NULL, NULL, NULL };
+	char *postponed[2] = { NULL, NULL };
+	char *postpost[3] = { NULL, NULL, NULL };
+	char *postsend[2] = { NULL, NULL };
+	char *quick_filter_kill[2] = { NULL, NULL };
+	char *quick_filter_select[2] = { NULL, NULL };
+	char *selectentergroup[2] = { NULL, NULL };
+	char *selectmarkgrpunread[2] = { NULL, NULL };
+	char *selectreadgrp[2] = { NULL, NULL };
+	char *threadreadart[2] = { NULL, NULL };
+	char *up[2] = { NULL, NULL };
+
+	if ((oldfp = fopen(old, "r")) == NULL)
+		return;
+
+	snprintf(new, sizeof(new), "%s.%d", old, (int) process_id);
+	if ((newfp = fopen(new, "w")) == NULL) {
+		fclose(oldfp);
+		return;
+	}
+	fprintf(newfp, "# Keymap file V%s for the TIN newsreader\n", KEYMAP_VERSION);
+
+	forever {
+		line = fgets(buf, sizeof(buf), oldfp);
+
+		if (line == NULL || line[0] == '\n') {
+			/*
+			 * we are at the end of a block or file
+			 * write out the merged lines (if available)
+			 */
+			if (config_select[0] || config_select[1]) {
+				fprintf(newfp, "ConfigSelect\t\t");
+				if (config_select[0])
+					fprintf(newfp, "\t%s", config_select[0]);
+				if (config_select[1])
+					fprintf(newfp, "\t%s", config_select[1]);
+				fprintf(newfp, "\n");
+				FreeAndNull(config_select[0]);
+				FreeAndNull(config_select[1]);
+			}
+			if (down[0] || down[1]) {
+				fprintf(newfp, "Down\t\t\t");
+				if (down[0])
+					fprintf(newfp, "\t%s", down[0]);
+				if (down[1])
+					fprintf(newfp, "\t%s", down[1]);
+				fprintf(newfp, "\n");
+				FreeAndNull(down[0]);
+				FreeAndNull(down[1]);
+			}
+			if (groupreadbasenote[0] || groupreadbasenote[1]) {
+				fprintf(newfp, "GroupReadBasenote\t");
+				if (groupreadbasenote[0])
+					fprintf(newfp, "\t%s", groupreadbasenote[0]);
+				if (groupreadbasenote[1])
+					fprintf(newfp, "\t%s", groupreadbasenote[1]);
+				fprintf(newfp, "\n");
+				FreeAndNull(groupreadbasenote[0]);
+				FreeAndNull(groupreadbasenote[1]);
+			}
+			if (pagedown[0] || pagedown[1]) {
+				fprintf(newfp, "PageDown\t\t");
+				if (pagedown[0])
+					fprintf(newfp, "\t%s", pagedown[0]);
+				if (pagedown[1])
+					fprintf(newfp, "\t%s", pagedown[1]);
+				fprintf(newfp, "\n");
+				FreeAndNull(pagedown[0]);
+				FreeAndNull(pagedown[1]);
+			}
+			if (pagenextthd[0] || pagenextthd[1]) {
+				fprintf(newfp, "PageNextThd\t\t");
+				if (pagenextthd[0])
+					fprintf(newfp, "\t%s", pagenextthd[0]);
+				if (pagenextthd[1])
+					fprintf(newfp, "\t%s", pagenextthd[1]);
+				fprintf(newfp, "\n");
+				FreeAndNull(pagenextthd[0]);
+				FreeAndNull(pagenextthd[1]);
+			}
+			if (pageup[0] || pageup[1] || pageup[2]) {
+				fprintf(newfp, "PageUp\t\t\t");
+				if (pageup[0])
+					fprintf(newfp, "\t%s", pageup[0]);
+				if (pageup[1])
+					fprintf(newfp, "\t%s", pageup[1]);
+				if (pageup[2])
+					fprintf(newfp, "\t%s", pageup[2]);
+				fprintf(newfp, "\n");
+				FreeAndNull(pageup[0]);
+				FreeAndNull(pageup[1]);
+				FreeAndNull(pageup[2]);
+			}
+			if (postponed[0] || postponed[1]) {
+				fprintf(newfp, "Postponed\t\t");
+				if (postponed[0])
+					fprintf(newfp, "\t%s", postponed[0]);
+				if (postponed[1])
+					fprintf(newfp, "\t%s", postponed[1]);
+				fprintf(newfp, "\n");
+				FreeAndNull(postponed[0]);
+				FreeAndNull(postponed[1]);
+			}
+			if (postpost[0] || postpost[1] || postpost[2]) {
+				fprintf(newfp, "PostPost\t\t");
+				if (postpost[0])
+					fprintf(newfp, "\t%s", postpost[0]);
+				if (postpost[1])
+					fprintf(newfp, "\t%s", postpost[1]);
+				if (postpost[2])
+					fprintf(newfp, "\t%s", postpost[2]);
+				fprintf(newfp, "\n");
+				FreeAndNull(postpost[0]);
+				FreeAndNull(postpost[1]);
+				FreeAndNull(postpost[2]);
+			}
+			if (postsend[0] || postsend[1]) {
+				fprintf(newfp, "PostSend\t\t");
+				if (postsend[0])
+					fprintf(newfp, "\t%s", postsend[0]);
+				if (postsend[1])
+					fprintf(newfp, "\t%s", postsend[1]);
+				fprintf(newfp, "\n");
+				FreeAndNull(postsend[0]);
+				FreeAndNull(postsend[1]);
+			}
+			if (selectentergroup[0] || selectentergroup[1]) {
+				fprintf(newfp, "SelectEnterNextUnreadGrp");
+				if (selectentergroup[0])
+					fprintf(newfp, "\t%s", selectentergroup[0]);
+				if (selectentergroup[1])
+					fprintf(newfp, "\t%s", selectentergroup[1]);
+				fprintf(newfp, "\n");
+				FreeAndNull(selectentergroup[0]);
+				FreeAndNull(selectentergroup[1]);
+			}
+			if (selectmarkgrpunread[0] || selectmarkgrpunread[1]) {
+				fprintf(newfp, "SelectMarkGrpUnread\t");
+				if (selectmarkgrpunread[0])
+					fprintf(newfp, "\t%s", selectmarkgrpunread[0]);
+				if (selectmarkgrpunread[1])
+					fprintf(newfp, "\t%s", selectmarkgrpunread[1]);
+				fprintf(newfp, "\n");
+				FreeAndNull(selectmarkgrpunread[0]);
+				FreeAndNull(selectmarkgrpunread[1]);
+			}
+			if (selectreadgrp[0] || selectreadgrp[1]) {
+				fprintf(newfp, "SelectReadGrp\t\t");
+				if (selectreadgrp[0])
+					fprintf(newfp, "\t%s", selectreadgrp[0]);
+				if (selectreadgrp[1])
+					fprintf(newfp, "\t%s", selectreadgrp[1]);
+				fprintf(newfp, "\n");
+				FreeAndNull(selectreadgrp[0]);
+				FreeAndNull(selectreadgrp[1]);
+			}
+			if (threadreadart[0] || threadreadart[1]) {
+				fprintf(newfp, "ThreadReadArt\t\t");
+				if (threadreadart[0])
+					fprintf(newfp, "\t%s", threadreadart[0]);
+				if (threadreadart[1])
+					fprintf(newfp, "\t%s", threadreadart[1]);
+				fprintf(newfp, "\n");
+				FreeAndNull(threadreadart[0]);
+				FreeAndNull(threadreadart[1]);
+			}
+			if (up[0] || up[1]) {
+				fprintf(newfp, "Up\t\t\t");
+				if (up[0])
+					fprintf(newfp, "\t%s", up[0]);
+				if (up[1])
+					fprintf(newfp, "\t%s", up[1]);
+				fprintf(newfp, "\n");
+				FreeAndNull(up[0]);
+				FreeAndNull(up[1]);
+			}
+			if (line == NULL)
+				break;	/* jump out of the while loop */
+			else {
+				fprintf(newfp, "\n");
+				continue;
+			}
+		}
+
+		if (line[0] == '#') {
+			if (strncmp(line, "# Keymap file V", strlen("# Keymap file V")) != 0)
+				fprintf(newfp, "%s", line);
 			continue;
 		}
 
-	}
+		backup = my_strdup(line);
 
-	/*
-	 * Check for duplicates in each keygroup and vs. the global group
-	 */
-	for (i = 0; keygroups[i] != NULL; ++i) {
-		if (!(check_duplicates(keygroups[i], keygroups[i])))
-			ret = FALSE;
-		if (i != 0 && !(check_duplicates(keygroups[i], keygroups[0])))
-			ret = FALSE;
-	}
+		if ((keyname = strsep(&line, KEYSEPS)) == NULL) {
+			free(backup);
+			continue;
+		}
+		if ((keydef = str_trim(line)) == NULL)
+			keydef = "";
 
-	fclose(fp);
-	/* TODO: do something usefull */
-	/*
-	if (upgrade != RC_IGNORE) {
-		upgrade_prompt_quit(upgrade, map);
-	}
-	*/
-	free(map);
+		switch (keyname[0]) {
+			case 'C':
+				if (strcmp(keyname, "ConfigFirstPage2") == 0)
+					fprintf(newfp, "ConfigFirstPage\t\t\t%s\n", keydef);
+				else if (strcmp(keyname, "ConfigLastPage2") == 0)
+					fprintf(newfp, "ConfigLastPage\t\t\t%s\n", keydef);
+				else if (strcmp(keyname, "ConfigSelect") == 0)
+					config_select[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "ConfigSelect2") == 0)
+					config_select[1] = my_strdup(keydef);
+				else
+					fprintf(newfp, "%s", backup);
+				break;
 
-	build_keymaps();
-	return ret;
+			case 'D':
+				if (strcmp(keyname, "Down") == 0)
+					down[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "Down2") == 0)
+					down[1] = my_strdup(keydef);
+				else
+					fprintf(newfp, "%s", backup);
+				break;
+
+			case 'G':
+				if (strcmp(keyname, "GroupAutoSel") == 0)
+					menu_filter_select[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "GroupQuickAutoSel") == 0)
+					quick_filter_select[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "GroupQuickKill") == 0)
+					quick_filter_kill[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "GroupKill") == 0)
+					menu_filter_kill[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "GroupReadBasenote") == 0)
+					groupreadbasenote[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "GroupReadBasenote2") == 0)
+					groupreadbasenote[1] = my_strdup(keydef);
+				else if (strcmp(keyname, "GroupEditFilter") == 0)
+					edit_filter[0] = my_strdup(keydef);
+				else
+					fprintf(newfp, "%s", backup);
+				break;
+
+			case 'H':
+				if (strcmp(keyname, "HelpFirstPage2") == 0)
+					fprintf(newfp, "HelpFirstPage\t\t\t%s\n", keydef);
+				else if (strcmp(keyname, "HelpLastPage2") == 0)
+					fprintf(newfp, "HelpLastPage\t\t\t%s\n", keydef);
+				else
+					fprintf(newfp, "%s", backup);
+				break;
+
+			case 'N':
+				/* Nrc* got removed */
+				if (strcmp(keyname, "NrctblCreate") == 0)
+					;
+				else if (strcmp(keyname, "NrctblDefault") == 0)
+					;
+				else if (strcmp(keyname, "NrctblAlternative") == 0)
+					;
+				else if (strcmp(keyname, "NrctblQuit") == 0)
+					;
+				else
+					fprintf(newfp, "%s", backup);
+				break;
+
+			case 'P':
+				if (strcmp(keyname, "PageAutoSel") == 0)
+					menu_filter_select[1] = my_strdup(keydef);
+				else if (strcmp(keyname, "PageQuickAutoSel") == 0)
+					quick_filter_select[1] = my_strdup(keydef);
+				else if (strcmp(keyname, "PageQuickKill") == 0)
+					quick_filter_kill[1] = my_strdup(keydef);
+				else if (strcmp(keyname, "PageAutoKill") == 0)
+					menu_filter_kill[1] = my_strdup(keydef);
+				else if (strcmp(keyname, "PageDown") == 0)
+					pagedown[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "PageDown2") == 0)
+					pagedown[1] = my_strdup(keydef);
+				else if (strcmp(keyname, "PageEditFilter") == 0)
+					edit_filter[1] = my_strdup(keydef);
+				else if (strcmp(keyname, "PageNextThd") == 0)
+					pagenextthd[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "PageNextThd2") == 0)
+					pagenextthd[1] = my_strdup(keydef);
+				else if (strcmp(keyname, "PageUp") == 0)
+					pageup[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "PageUp2") == 0)
+					pageup[1] = my_strdup(keydef);
+				else if (strcmp(keyname, "PageUp3") == 0)
+					pageup[2] = my_strdup(keydef);
+				else if (strcmp(keyname, "Postponed") == 0)
+					postponed[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "Postponed2") == 0)
+					postponed[1] = my_strdup(keydef);
+				else if (strcmp(keyname, "PostPost") == 0)
+					postpost[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "PostPost2") == 0)
+					postpost[1] = my_strdup(keydef);
+				else if (strcmp(keyname, "PostPost3") == 0)
+					postpost[2] = my_strdup(keydef);
+				else if (strcmp(keyname, "PostSend") == 0)
+					postsend[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "PostSend2") == 0)
+					postsend[1] = my_strdup(keydef);
+				else if (strcmp(keyname, "PromptNo") == 0 || strcmp(keyname, "PromptYes") == 0) {
+					if (strlen(keydef) == 1 && islower(keydef[0]))
+						fprintf(newfp, "%s\t\t\t%c\t%c\n", keyname, keydef[0], toupper(keydef[0]));
+					else
+						fprintf(newfp, "%s", backup);
+				} else
+					fprintf(newfp, "%s", backup);
+				break;
+
+			case 'S':
+				if (strcmp(keyname, "SelectEditFilter") == 0)
+					;
+				else if (strcmp(keyname, "SelectEnterNextUnreadGrp") == 0)
+					selectentergroup[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "SelectEnterNextUnreadGrp2") == 0)
+					selectentergroup[1] = my_strdup(keydef);
+				else if (strcmp(keyname, "SelectMarkGrpUnread") == 0)
+					selectmarkgrpunread[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "SelectMarkGrpUnread2") == 0)
+					selectmarkgrpunread[1] = my_strdup(keydef);
+				else if (strcmp(keyname, "SelectReadGrp") == 0)
+					selectreadgrp[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "SelectReadGrp2") == 0)
+					selectreadgrp[1] = my_strdup(keydef);
+				else
+					fprintf(newfp, "%s", backup);
+				break;
+
+			case 'T':
+				if (strcmp(keyname, "ThreadEditFilter") == 0)
+					;
+				else if (strcmp(keyname, "ThreadAutoSel") == 0)
+					menu_filter_select[2] = my_strdup(keydef);
+				else if (strcmp(keyname, "ThreadKill") == 0)
+					menu_filter_kill[2] = my_strdup(keydef);
+				else if (strcmp(keyname, "ThreadReadArt") == 0)
+					threadreadart[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "ThreadReadArt2") == 0)
+					threadreadart[1] = my_strdup(keydef);
+				else
+					fprintf(newfp, "%s", backup);
+				break;
+
+			case 'U':
+				if (strcmp(keyname, "Up") == 0)
+					up[0] = my_strdup(keydef);
+				else if (strcmp(keyname, "Up2") == 0)
+					up[1] = my_strdup(keydef);
+				else
+					fprintf(newfp, "%s", backup);
+				break;
+			default:
+				fprintf(newfp, "%s", backup);
+		}
+		free(backup);
+	}
+	fprintf(newfp, "\n#####\n");
+	/* joined/renamed keys from different sections */
+	if (edit_filter[0] || edit_filter[1]) {
+		fprintf(newfp, "EditFilter\t");
+		if (edit_filter[0])
+			fprintf(newfp, "\t%s", edit_filter[0]);
+		if (edit_filter[1] && edit_filter[0] && strcmp(edit_filter[0], edit_filter[1]))
+			fprintf(newfp, "\t%s", edit_filter[1]);
+		fprintf(newfp, "\n");
+		FreeAndNull(edit_filter[0]);
+		FreeAndNull(edit_filter[1]);
+	}
+	if (menu_filter_kill[0] || menu_filter_kill[1] || menu_filter_kill[2]) {
+		fprintf(newfp, "MenuFilterKill\t");
+		if (menu_filter_kill[0] && menu_filter_kill[1] && !strcmp(menu_filter_kill[0], menu_filter_kill[1]))
+			FreeAndNull(menu_filter_kill[1]);
+		if (menu_filter_kill[0] && menu_filter_kill[2] && !strcmp(menu_filter_kill[0], menu_filter_kill[2]))
+			FreeAndNull(menu_filter_kill[2]);
+		if (menu_filter_kill[1] && menu_filter_kill[2] && !strcmp(menu_filter_kill[1], menu_filter_kill[2]))
+			FreeAndNull(menu_filter_kill[2]);
+		if (menu_filter_kill[0])
+			fprintf(newfp, "\t%s", menu_filter_kill[0]);
+		if (menu_filter_kill[1])
+			fprintf(newfp, "\t%s", menu_filter_kill[1]);
+		if (menu_filter_kill[2])
+			fprintf(newfp, "\t%s", menu_filter_kill[2]);
+		fprintf(newfp, "\n");
+		FreeAndNull(menu_filter_kill[0]);
+		FreeAndNull(menu_filter_kill[1]);
+		FreeAndNull(menu_filter_kill[2]);
+	}
+	if (menu_filter_select[0] || menu_filter_select[1] || menu_filter_select[2]) {
+		fprintf(newfp, "MenuFilterSelect\t");
+		if (menu_filter_select[0] && menu_filter_select[1] && !strcmp(menu_filter_select[0], menu_filter_select[1]))
+			FreeAndNull(menu_filter_select[1]);
+		if (menu_filter_select[0] && menu_filter_select[2] && !strcmp(menu_filter_select[0], menu_filter_select[2]))
+			FreeAndNull(menu_filter_select[2]);
+		if (menu_filter_select[1] && menu_filter_select[2] && !strcmp(menu_filter_select[1], menu_filter_select[2]))
+			FreeAndNull(menu_filter_select[2]);
+		if (menu_filter_select[0])
+			fprintf(newfp, "\t%s", menu_filter_select[0]);
+		if (menu_filter_select[1])
+			fprintf(newfp, "\t%s", menu_filter_select[1]);
+		if (menu_filter_select[2])
+			fprintf(newfp, "\t%s", menu_filter_select[2]);
+		fprintf(newfp, "\n");
+		FreeAndNull(menu_filter_select[0]);
+		FreeAndNull(menu_filter_select[1]);
+		FreeAndNull(menu_filter_select[2]);
+	}
+	if (quick_filter_kill[0] || quick_filter_kill[1]) {
+		fprintf(newfp, "QuickFilterKill\t");
+		if (quick_filter_kill[0])
+			fprintf(newfp, "\t%s", quick_filter_kill[0]);
+		if (quick_filter_kill[1] && quick_filter_kill[0] && strcmp(quick_filter_kill[0], quick_filter_kill[1]))
+			fprintf(newfp, "\t%s", quick_filter_kill[1]);
+		fprintf(newfp, "\n");
+		FreeAndNull(quick_filter_kill[0]);
+		FreeAndNull(quick_filter_kill[1]);
+	}
+	if (quick_filter_select[0] || quick_filter_select[1]) {
+		fprintf(newfp, "QuickFilterSelect\t");
+		if (quick_filter_select[0])
+			fprintf(newfp, "\t%s", quick_filter_select[0]);
+		if (quick_filter_select[1] && quick_filter_select[0] && strcmp(quick_filter_select[0], quick_filter_select[1]))
+			fprintf(newfp, "\t%s", quick_filter_select[1]);
+		fprintf(newfp, "\n");
+		FreeAndNull(quick_filter_select[0]);
+		FreeAndNull(quick_filter_select[1]);
+	}
+	fclose(oldfp);
+	fclose(newfp);
+	rename(new, old);
+	wait_message(0, _(txt_keymap_upgraded), KEYMAP_VERSION);
+	prompt_continue();
+
+	return;
+}
+
+
+/*
+ * add the default key bindings for still free keys
+ */
+static void
+setup_default_keys(
+	void)
+{
+	/* select level */
+	add_global_keys(&select_keys);
+	add_default_key(&select_keys, ctrl('J'), SELECT_ENTER_GROUP);
+	add_default_key(&select_keys, ctrl('M'), SELECT_ENTER_GROUP);
+	add_default_key(&select_keys, ctrl('R'), SELECT_RESET_NEWSRC);
+	add_default_key(&select_keys, 'c', SELECT_CATCHUP);
+	add_default_key(&select_keys, 'd', SELECT_TOGGLE_DESCRIPTIONS);
+	add_default_key(&select_keys, 'g', SELECT_GOTO);
+	add_default_key(&select_keys, 'm', SELECT_MOVE_GROUP);
+	add_default_key(&select_keys, 'n', SELECT_ENTER_NEXT_UNREAD_GROUP);
+	add_default_key(&select_keys, 'r', SELECT_TOGGLE_READ_DISPLAY);
+	add_default_key(&select_keys, 's', SELECT_SUBSCRIBE);
+	add_default_key(&select_keys, 'u', SELECT_UNSUBSCRIBE);
+	add_default_key(&select_keys, 'y', SELECT_YANK_ACTIVE);
+	add_default_key(&select_keys, 'z', SELECT_MARK_GROUP_UNREAD);
+	add_default_key(&select_keys, 'C', SELECT_CATCHUP_NEXT_UNREAD);
+	add_default_key(&select_keys, 'E', GLOBAL_EDIT_FILTER);
+	add_default_key(&select_keys, 'N', SELECT_NEXT_UNREAD_GROUP);
+	add_default_key(&select_keys, 'S', SELECT_SUBSCRIBE_PATTERN);
+	add_default_key(&select_keys, 'U', SELECT_UNSUBSCRIBE_PATTERN);
+	add_default_key(&select_keys, 'X', SELECT_QUIT_NO_WRITE);
+	add_default_key(&select_keys, 'Y', SELECT_SYNC_WITH_ACTIVE);
+	add_default_key(&select_keys, 'Z', SELECT_MARK_GROUP_UNREAD);
+	add_default_key(&select_keys, ' ', GLOBAL_PAGE_DOWN);
+	add_default_key(&select_keys, '.', SELECT_SORT_ACTIVE);
+	add_default_key(&select_keys, '\t', SELECT_ENTER_NEXT_UNREAD_GROUP);
+
+	/* group level */
+	add_global_keys(&group_keys);
+	add_default_key(&group_keys, ctrl('A'), GLOBAL_MENU_FILTER_SELECT);
+	add_default_key(&group_keys, ctrl('J'), GROUP_READ_BASENOTE);
+	add_default_key(&group_keys, ctrl('K'), GLOBAL_MENU_FILTER_KILL);
+	add_default_key(&group_keys, ctrl('M'), GROUP_READ_BASENOTE);
+	add_default_key(&group_keys, 'a', GLOBAL_SEARCH_AUTHOR_FORWARD);
+	add_default_key(&group_keys, 'c', GROUP_CATCHUP);
+	add_default_key(&group_keys, 'd', GROUP_TOGGLE_SUBJECT_DISPLAY);
+	add_default_key(&group_keys, 'g', GROUP_GOTO);
+	add_default_key(&group_keys, 'l', GROUP_LIST_THREAD);
+	add_default_key(&group_keys, 'm', GROUP_MAIL);
+	add_default_key(&group_keys, 'n', GROUP_NEXT_GROUP);
+#ifndef DISABLE_PRINTING
+	add_default_key(&group_keys, 'o', GLOBAL_PRINT);
+#endif /* !DISABLE_PRINTING */
+	add_default_key(&group_keys, 'p', GROUP_PREVIOUS_GROUP);
+	add_default_key(&group_keys, 'r', GROUP_TOGGLE_READ_UNREAD);
+	add_default_key(&group_keys, 's', GROUP_SAVE);
+	add_default_key(&group_keys, 't', GROUP_TAG);
+	add_default_key(&group_keys, 'u', GROUP_TOGGLE_THREADING);
+	add_default_key(&group_keys, 'x', GROUP_REPOST);
+	add_default_key(&group_keys, 'z', GROUP_MARK_ARTICLE_UNREAD);
+	add_default_key(&group_keys, 'A', GLOBAL_SEARCH_AUTHOR_BACKWARD);
+	add_default_key(&group_keys, 'B', GLOBAL_SEARCH_BODY);
+	add_default_key(&group_keys, 'C', GROUP_CATCHUP_NEXT_UNREAD);
+	add_default_key(&group_keys, 'E', GLOBAL_EDIT_FILTER);
+	add_default_key(&group_keys, 'G', GROUP_TOGGLE_GET_ARTICLES_LIMIT);
+	add_default_key(&group_keys, 'K', GROUP_MARK_THREAD_READ);
+	add_default_key(&group_keys, 'L', GLOBAL_LOOKUP_MESSAGEID);
+	add_default_key(&group_keys, 'N', GROUP_NEXT_UNREAD_ARTICLE);
+	add_default_key(&group_keys, 'P', GROUP_PREVIOUS_UNREAD_ARTICLE);
+	add_default_key(&group_keys, 'S', GROUP_AUTOSAVE);
+	add_default_key(&group_keys, 'T', GROUP_TAG_PARTS);
+	add_default_key(&group_keys, 'U', GROUP_UNTAG);
+	add_default_key(&group_keys, 'X', GROUP_MARK_UNSELECTED_ARTICLES_READ);
+	add_default_key(&group_keys, 'Z', GROUP_MARK_THREAD_UNREAD);
+	add_default_key(&group_keys, '\t', GROUP_NEXT_UNREAD_ARTICLE_OR_GROUP);
+	add_default_key(&group_keys, ' ', GLOBAL_PAGE_DOWN);
+	add_default_key(&group_keys, '-', GLOBAL_LAST_VIEWED);
+	add_default_key(&group_keys, '|', GLOBAL_PIPE);
+	add_default_key(&group_keys, '[', GLOBAL_QUICK_FILTER_SELECT);
+	add_default_key(&group_keys, ']', GLOBAL_QUICK_FILTER_KILL);
+	add_default_key(&group_keys, '*', GROUP_SELECT_THREAD);
+	add_default_key(&group_keys, '.', GROUP_TOGGLE_SELECT_THREAD);
+	add_default_key(&group_keys, '@', GROUP_REVERSE_SELECTIONS);
+	add_default_key(&group_keys, '~', GROUP_UNDO_SELECTIONS);
+	add_default_key(&group_keys, '=', GROUP_SELECT_PATTERN);
+	add_default_key(&group_keys, ';', GROUP_SELECT_THREAD_IF_UNREAD_SELECTED);
+	add_default_key(&group_keys, '+', GROUP_DO_AUTOSELECT);
+
+	/* thread keys */
+	add_global_keys(&thread_keys);
+	add_default_key(&thread_keys, ctrl('A'), GLOBAL_MENU_FILTER_SELECT);
+	add_default_key(&thread_keys, ctrl('K'), GLOBAL_MENU_FILTER_KILL);
+	add_default_key(&thread_keys, ctrl('J'), THREAD_READ_ARTICLE);
+	add_default_key(&thread_keys, ctrl('M'), THREAD_READ_ARTICLE);
+	add_default_key(&thread_keys, 'a', GLOBAL_SEARCH_AUTHOR_FORWARD);
+	add_default_key(&thread_keys, 'c', THREAD_CATCHUP);
+	add_default_key(&thread_keys, 'd', THREAD_TOGGLE_SUBJECT_DISPLAY);
+	add_default_key(&thread_keys, 'm', THREAD_MAIL);
+#ifndef DISABLE_PRINTING
+	add_default_key(&thread_keys, 'o', GLOBAL_PRINT);
+#endif /* !DISABLE_PRINTING */
+	add_default_key(&thread_keys, 's', THREAD_SAVE);
+	add_default_key(&thread_keys, 't', THREAD_TAG);
+	add_default_key(&thread_keys, 'z', THREAD_MARK_ARTICLE_UNREAD);
+	add_default_key(&thread_keys, 'A', GLOBAL_SEARCH_AUTHOR_BACKWARD);
+	add_default_key(&thread_keys, 'B', GLOBAL_SEARCH_BODY);
+	add_default_key(&thread_keys, 'C', THREAD_CATCHUP_NEXT_UNREAD);
+	add_default_key(&thread_keys, 'E', GLOBAL_EDIT_FILTER);
+	add_default_key(&thread_keys, 'K', THREAD_MARK_ARTICLE_READ);
+	add_default_key(&thread_keys, 'L', GLOBAL_LOOKUP_MESSAGEID);
+	add_default_key(&thread_keys, 'S', THREAD_AUTOSAVE);
+	add_default_key(&thread_keys, 'U', THREAD_UNTAG);
+	add_default_key(&thread_keys, 'Z', THREAD_MARK_THREAD_UNREAD);
+	add_default_key(&thread_keys, '\t', THREAD_READ_NEXT_ARTICLE_OR_THREAD);
+	add_default_key(&thread_keys, ' ', GLOBAL_PAGE_DOWN);
+	add_default_key(&thread_keys, '-', GLOBAL_LAST_VIEWED);
+	add_default_key(&thread_keys, '|', GLOBAL_PIPE);
+	add_default_key(&thread_keys, '*', THREAD_SELECT_ARTICLE);
+	add_default_key(&thread_keys, '.', THREAD_TOGGLE_ARTICLE_SELECTION);
+	add_default_key(&thread_keys, '@', THREAD_REVERSE_SELECTIONS);
+	add_default_key(&thread_keys, '~', THREAD_UNDO_SELECTIONS);
+
+	/* page level */
+	add_global_keys(&page_keys);
+	add_default_key(&page_keys, ctrl('A'), GLOBAL_MENU_FILTER_SELECT);
+	add_default_key(&page_keys, ctrl('E'), PAGE_REPLY_QUOTE_HEADERS);
+#ifdef HAVE_PGP_GPG
+	add_default_key(&page_keys, ctrl('G'), PAGE_PGP_CHECK_ARTICLE);
+#endif /* HAVE_PGP_GPG */
+	add_default_key(&page_keys, ctrl('H'), PAGE_TOGGLE_HEADERS);
+	add_default_key(&page_keys, ctrl('J'), PAGE_NEXT_THREAD);
+	add_default_key(&page_keys, ctrl('K'), GLOBAL_MENU_FILTER_KILL);
+	add_default_key(&page_keys, ctrl('M'), PAGE_NEXT_THREAD);
+	add_default_key(&page_keys, ctrl('T'), PAGE_TOGGLE_TABS);
+	add_default_key(&page_keys, ctrl('W'), PAGE_FOLLOWUP_QUOTE_HEADERS);
+	add_default_key(&page_keys, 'a', GLOBAL_SEARCH_AUTHOR_FORWARD);
+	add_default_key(&page_keys, 'c', PAGE_CATCHUP);
+	add_default_key(&page_keys, 'e', PAGE_EDIT_ARTICLE);
+	add_default_key(&page_keys, 'f', PAGE_FOLLOWUP_QUOTE);
+	add_default_key(&page_keys, 'g', GLOBAL_FIRST_PAGE);
+	add_default_key(&page_keys, 'l', PAGE_LIST_THREAD);
+	add_default_key(&page_keys, 'm', PAGE_MAIL);
+	add_default_key(&page_keys, 'n', PAGE_NEXT_ARTICLE);
+#ifndef DISABLE_PRINTING
+	add_default_key(&page_keys, 'o', GLOBAL_PRINT);
+#endif /* !DISABLE_PRINTING */
+	add_default_key(&page_keys, 'p', PAGE_PREVIOUS_ARTICLE);
+	add_default_key(&page_keys, 'r', PAGE_REPLY_QUOTE);
+	add_default_key(&page_keys, 's', PAGE_SAVE);
+	add_default_key(&page_keys, 't', PAGE_TAG);
+	add_default_key(&page_keys, 'u', PAGE_GOTO_PARENT);
+	add_default_key(&page_keys, 'x', PAGE_REPOST);
+	add_default_key(&page_keys, 'z', PAGE_MARK_ARTICLE_UNREAD);
+	add_default_key(&page_keys, 'A', GLOBAL_SEARCH_AUTHOR_BACKWARD);
+	add_default_key(&page_keys, 'B', GLOBAL_SEARCH_BODY);
+	add_default_key(&page_keys, 'C', PAGE_CATCHUP_NEXT_UNREAD);
+	add_default_key(&page_keys, 'D', PAGE_CANCEL);
+	add_default_key(&page_keys, 'E', GLOBAL_EDIT_FILTER);
+	add_default_key(&page_keys, 'F', PAGE_FOLLOWUP);
+	add_default_key(&page_keys, 'G', GLOBAL_LAST_PAGE);
+	add_default_key(&page_keys, 'K', PAGE_MARK_THREAD_READ);
+	add_default_key(&page_keys, 'L', GLOBAL_LOOKUP_MESSAGEID);
+	add_default_key(&page_keys, 'N', PAGE_NEXT_UNREAD_ARTICLE);
+	add_default_key(&page_keys, 'P', PAGE_PREVIOUS_UNREAD_ARTICLE);
+	add_default_key(&page_keys, 'R', PAGE_REPLY);
+	add_default_key(&page_keys, 'S', PAGE_AUTOSAVE);
+	add_default_key(&page_keys, 'T', PAGE_GROUP_SELECT);
+	add_default_key(&page_keys, 'U', PAGE_VIEW_URL);
+	add_default_key(&page_keys, 'V', PAGE_VIEW_ATTACHMENTS);
+	add_default_key(&page_keys, 'Z', PAGE_MARK_THREAD_UNREAD);
+	add_default_key(&page_keys, '\t', PAGE_NEXT_UNREAD);
+	add_default_key(&page_keys, ' ', PAGE_PAGE_DOWN3);
+	add_default_key(&page_keys, '-', GLOBAL_LAST_VIEWED);
+	add_default_key(&page_keys, '|', GLOBAL_PIPE);
+	add_default_key(&page_keys, '<', PAGE_TOP_THREAD);
+	add_default_key(&page_keys, '>', PAGE_BOTTOM_THREAD);
+	add_default_key(&page_keys, '"', PAGE_TOGGLE_TEX2ISO);
+	add_default_key(&page_keys, '(', PAGE_TOGGLE_UUE);
+	add_default_key(&page_keys, ')', PAGE_REVEAL);
+	add_default_key(&page_keys, '[', GLOBAL_QUICK_FILTER_SELECT);
+	add_default_key(&page_keys, ']', GLOBAL_QUICK_FILTER_KILL);
+	add_default_key(&page_keys, '%', PAGE_TOGGLE_ROT13);
+	add_default_key(&page_keys, ':', PAGE_SKIP_INCLUDED_TEXT);
+	add_default_key(&page_keys, '_', PAGE_TOGGLE_HIGHLIGHTING);
+
+	/* info pager */
+	add_default_key(&info_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&info_keys, ctrl('B'), GLOBAL_PAGE_UP);
+	add_default_key(&info_keys, ctrl('D'), GLOBAL_PAGE_DOWN);
+	add_default_key(&info_keys, ctrl('F'), GLOBAL_PAGE_DOWN);
+	add_default_key(&info_keys, ctrl('N'), GLOBAL_LINE_DOWN);
+	add_default_key(&info_keys, ctrl('P'), GLOBAL_LINE_UP);
+	add_default_key(&info_keys, ctrl('U'), GLOBAL_PAGE_UP);
+	add_default_key(&info_keys, 'b', GLOBAL_PAGE_UP);
+	add_default_key(&info_keys, 'g', GLOBAL_FIRST_PAGE);
+	add_default_key(&info_keys, 'j', GLOBAL_LINE_DOWN);
+	add_default_key(&info_keys, 'k', GLOBAL_LINE_UP);
+	add_default_key(&info_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&info_keys, 'G', GLOBAL_LAST_PAGE);
+	add_default_key(&info_keys, 'H', GLOBAL_TOGGLE_HELP_DISPLAY);
+	add_default_key(&info_keys, ' ', GLOBAL_PAGE_DOWN);
+	add_default_key(&info_keys, '^', GLOBAL_FIRST_PAGE);
+	add_default_key(&info_keys, '$', GLOBAL_LAST_PAGE);
+	add_default_key(&info_keys, '/', GLOBAL_SEARCH_SUBJECT_FORWARD);
+	add_default_key(&info_keys, '?', GLOBAL_SEARCH_SUBJECT_BACKWARD);
+	add_default_key(&info_keys, '\\', GLOBAL_SEARCH_REPEAT);
+
+	/* options menu */
+	add_default_key(&option_menu_keys, ctrl('B'), GLOBAL_PAGE_UP);
+	add_default_key(&option_menu_keys, ctrl('D'), GLOBAL_PAGE_DOWN);
+	add_default_key(&option_menu_keys, ctrl('F'), GLOBAL_PAGE_DOWN);
+	add_default_key(&option_menu_keys, ctrl('J'), CONFIG_SELECT);
+	add_default_key(&option_menu_keys, ctrl('L'), GLOBAL_REDRAW_SCREEN);
+	add_default_key(&option_menu_keys, ctrl('M'), CONFIG_SELECT);
+	add_default_key(&option_menu_keys, ctrl('N'), GLOBAL_LINE_DOWN);
+	add_default_key(&option_menu_keys, ctrl('P'), GLOBAL_LINE_UP);
+	add_default_key(&option_menu_keys, ctrl('U'), GLOBAL_PAGE_UP);
+	add_default_key(&option_menu_keys, 'b', GLOBAL_PAGE_UP);
+	add_default_key(&option_menu_keys, 'g', GLOBAL_FIRST_PAGE);
+	add_default_key(&option_menu_keys, 'j', GLOBAL_LINE_DOWN);
+	add_default_key(&option_menu_keys, 'k', GLOBAL_LINE_UP);
+	add_default_key(&option_menu_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&option_menu_keys, 'G', GLOBAL_LAST_PAGE);
+	add_default_key(&option_menu_keys, 'Q', CONFIG_NO_SAVE);
+	add_default_key(&option_menu_keys, '^', GLOBAL_FIRST_PAGE);
+	add_default_key(&option_menu_keys, '$', GLOBAL_LAST_PAGE);
+	add_default_key(&option_menu_keys, ' ', GLOBAL_PAGE_DOWN);
+	add_default_key(&option_menu_keys, '>', GLOBAL_SCROLL_DOWN);
+	add_default_key(&option_menu_keys, '<', GLOBAL_SCROLL_UP);
+	add_default_key(&option_menu_keys, '/', GLOBAL_SEARCH_SUBJECT_FORWARD);
+	add_default_key(&option_menu_keys, '?', GLOBAL_SEARCH_SUBJECT_BACKWARD);
+	add_default_key(&option_menu_keys, '\\', GLOBAL_SEARCH_REPEAT);
+
+	/* prompt keys */
+	add_default_key(&prompt_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&prompt_keys, 'n', PROMPT_NO);
+	add_default_key(&prompt_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&prompt_keys, 'y', PROMPT_YES);
+	add_default_key(&prompt_keys, 'N', PROMPT_NO);
+	add_default_key(&prompt_keys, 'Y', PROMPT_YES);
+
+	/* post keys */
+	add_default_key(&post_send_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&post_send_keys, 'e', POST_EDIT);
+#ifdef HAVE_PGP_GPG
+	add_default_key(&post_send_keys, 'g', POST_PGP);
+#endif /* HAVE_PGP_GPG */
+#ifdef HAVE_ISPELL
+	add_default_key(&post_send_keys, 'i', POST_ISPELL);
+#endif /* HAVE_ISPELL */
+	add_default_key(&post_send_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&post_send_keys, 's', POST_SEND);
+
+	add_default_key(&post_edit_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&post_edit_keys, 'e', POST_EDIT);
+	add_default_key(&post_edit_keys, 'o', POST_POSTPONE);
+
+	add_default_key(&post_edit_ext_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&post_edit_ext_keys, 'e', POST_EDIT);
+	add_default_key(&post_edit_ext_keys, 'M', GLOBAL_OPTION_MENU);
+
+	add_default_key(&post_post_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&post_post_keys, 'e', POST_EDIT);
+#ifdef HAVE_PGP_GPG
+	add_default_key(&post_post_keys, 'g', POST_PGP);
+#endif /* HAVE_PGP_GPG */
+#ifdef HAVE_ISPELL
+	add_default_key(&post_post_keys, 'i', POST_ISPELL);
+#endif /* HAVE_ISPELL */
+	add_default_key(&post_post_keys, 'o', POST_POSTPONE);
+	add_default_key(&post_post_keys, 'p', GLOBAL_POST);
+	add_default_key(&post_post_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&post_post_keys, 'M', GLOBAL_OPTION_MENU);
+
+	add_default_key(&post_postpone_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&post_postpone_keys, 'n', PROMPT_NO);
+	add_default_key(&post_postpone_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&post_postpone_keys, 'y', PROMPT_YES);
+	add_default_key(&post_postpone_keys, 'A', POSTPONE_ALL);
+	add_default_key(&post_postpone_keys, 'Y', POSTPONE_OVERRIDE);
+
+	add_default_key(&post_mail_fup_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&post_mail_fup_keys, 'm', POST_MAIL);
+	add_default_key(&post_mail_fup_keys, 'p', GLOBAL_POST);
+	add_default_key(&post_mail_fup_keys, 'q', GLOBAL_QUIT);
+
+	add_default_key(&post_ignore_fupto_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&post_ignore_fupto_keys, 'i', POST_IGNORE_FUPTO);
+	add_default_key(&post_ignore_fupto_keys, 'p', GLOBAL_POST);
+	add_default_key(&post_ignore_fupto_keys, 'q', GLOBAL_QUIT);
+
+	add_default_key(&post_continue_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&post_continue_keys, 'a', POST_ABORT);
+	add_default_key(&post_continue_keys, 'c', POST_CONTINUE);
+	add_default_key(&post_continue_keys, 'q', GLOBAL_QUIT);
+
+	add_default_key(&post_delete_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&post_delete_keys, 'd', POST_CANCEL);
+	add_default_key(&post_delete_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&post_delete_keys, 's', POST_SUPERSEDE);
+
+	add_default_key(&post_cancel_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&post_cancel_keys, 'e', POST_EDIT);
+	add_default_key(&post_cancel_keys, 'd', POST_CANCEL);
+	add_default_key(&post_cancel_keys, 'q', GLOBAL_QUIT);
+
+	/* feed keys */
+	add_default_key(&feed_post_process_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&feed_post_process_keys, 'n', POSTPROCESS_NO);
+	add_default_key(&feed_post_process_keys, 's', POSTPROCESS_SHAR);
+	add_default_key(&feed_post_process_keys, 'y', POSTPROCESS_YES);
+	add_default_key(&feed_post_process_keys, 'q', GLOBAL_QUIT);
+
+	add_default_key(&feed_type_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&feed_type_keys, 'a', FEED_ARTICLE);
+	add_default_key(&feed_type_keys, 'h', FEED_HOT);
+	add_default_key(&feed_type_keys, 'p', FEED_PATTERN);
+	add_default_key(&feed_type_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&feed_type_keys, 't', FEED_THREAD);
+	add_default_key(&feed_type_keys, 'T', FEED_TAGGED);
+
+	add_default_key(&feed_supersede_article_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&feed_supersede_article_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&feed_supersede_article_keys, 'r', FEED_KEY_REPOST);
+	add_default_key(&feed_supersede_article_keys, 's', FEED_SUPERSEDE);
+
+	/* filter keys */
+	add_default_key(&filter_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&filter_keys, 'e', FILTER_EDIT);
+	add_default_key(&filter_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&filter_keys, 's', FILTER_SAVE);
+
+	/* mark read */
+	add_default_key(&mark_read_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&mark_read_keys, 'c', MARK_READ_CURRENT);
+	add_default_key(&mark_read_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&mark_read_keys, 't', MARK_READ_TAGGED);
+
+#ifdef HAVE_PGP_GPG
+	/* pgp mail */
+	add_default_key(&pgp_mail_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&pgp_mail_keys, 'b', PGP_KEY_ENCRYPT_SIGN);
+	add_default_key(&pgp_mail_keys, 'e', PGP_KEY_ENCRYPT);
+	add_default_key(&pgp_mail_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&pgp_mail_keys, 's', PGP_KEY_SIGN);
+
+	/* pgp news */
+	add_default_key(&pgp_news_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&pgp_news_keys, 'b', PGP_KEY_ENCRYPT_SIGN);
+	add_default_key(&pgp_news_keys, 'e', PGP_KEY_ENCRYPT);
+	add_default_key(&pgp_news_keys, 'i', PGP_INCLUDE_KEY);
+	add_default_key(&pgp_news_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&pgp_news_keys, 's', PGP_KEY_SIGN);
+#endif /* HAVE_PGP_GPG */
+
+	/* save */
+	add_default_key(&save_append_overwrite_keys, ESC, GLOBAL_ABORT);
+	add_default_key(&save_append_overwrite_keys, 'a', SAVE_APPEND_FILE);
+	add_default_key(&save_append_overwrite_keys, 'o', SAVE_OVERWRITE_FILE);
+	add_default_key(&save_append_overwrite_keys, 'q', GLOBAL_QUIT);
+}
+
+
+/*
+ * used to add the common keys of SELECT_LEVEL, GROUP_LEVEL, THREAD_LEVEL
+ * and PAGE_LEVEL
+ */
+static void
+add_global_keys(
+	struct keylist *keys)
+{
+	add_default_key(keys, ESC, GLOBAL_ABORT);
+	add_default_key(keys, '0', DIGIT_0);
+	add_default_key(keys, '1', DIGIT_1);
+	add_default_key(keys, '2', DIGIT_2);
+	add_default_key(keys, '3', DIGIT_3);
+	add_default_key(keys, '4', DIGIT_4);
+	add_default_key(keys, '5', DIGIT_5);
+	add_default_key(keys, '6', DIGIT_6);
+	add_default_key(keys, '7', DIGIT_7);
+	add_default_key(keys, '8', DIGIT_8);
+	add_default_key(keys, '9', DIGIT_9);
+	add_default_key(keys, ctrl('B'), GLOBAL_PAGE_UP);
+	add_default_key(keys, ctrl('D'), GLOBAL_PAGE_DOWN);
+	add_default_key(keys, ctrl('F'), GLOBAL_PAGE_DOWN);
+	add_default_key(keys, ctrl('L'), GLOBAL_REDRAW_SCREEN);
+	add_default_key(keys, ctrl('N'), GLOBAL_LINE_DOWN);
+	add_default_key(keys, ctrl('O'), GLOBAL_POSTPONED);
+	add_default_key(keys, ctrl('P'), GLOBAL_LINE_UP);
+	add_default_key(keys, ctrl('U'), GLOBAL_PAGE_UP);
+	add_default_key(keys, 'b', GLOBAL_PAGE_UP);
+	add_default_key(keys, 'h', GLOBAL_HELP);
+	add_default_key(keys, 'i', GLOBAL_TOGGLE_INFO_LAST_LINE);
+	add_default_key(keys, 'j', GLOBAL_LINE_DOWN);
+	add_default_key(keys, 'k', GLOBAL_LINE_UP);
+	add_default_key(keys, 'q', GLOBAL_QUIT);
+	add_default_key(keys, 'v', GLOBAL_VERSION);
+	add_default_key(keys, 'w', GLOBAL_POST);
+	add_default_key(keys, 'H', GLOBAL_TOGGLE_HELP_DISPLAY);
+	add_default_key(keys, 'I', GLOBAL_TOGGLE_INVERSE_VIDEO);
+	add_default_key(keys, 'M', GLOBAL_OPTION_MENU);
+	add_default_key(keys, 'O', GLOBAL_POSTPONED);
+	add_default_key(keys, 'Q', GLOBAL_QUIT_TIN);
+	add_default_key(keys, 'R', GLOBAL_BUGREPORT);
+	add_default_key(keys, 'W', GLOBAL_DISPLAY_POST_HISTORY);
+	add_default_key(keys, '^', GLOBAL_FIRST_PAGE);
+	add_default_key(keys, '$', GLOBAL_LAST_PAGE);
+	add_default_key(keys, '>', GLOBAL_SCROLL_DOWN);
+	add_default_key(keys, '<', GLOBAL_SCROLL_UP);
+	add_default_key(keys, '/', GLOBAL_SEARCH_SUBJECT_FORWARD);
+	add_default_key(keys, '?', GLOBAL_SEARCH_SUBJECT_BACKWARD);
+	add_default_key(keys, '\\', GLOBAL_SEARCH_REPEAT);
+	add_default_key(keys, '#', GLOBAL_SET_RANGE);
+#ifndef NO_SHELL_ESCAPE
+	add_default_key(keys, '!', GLOBAL_SHELL_ESCAPE);
+#endif /* NO_SHELL_ESCAPE */
+#ifdef HAVE_COLOR
+	add_default_key(keys, '&', GLOBAL_TOGGLE_COLOR);
+#endif /* HAVE COLOR */
 }

@@ -1,15 +1,15 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2004-09-14
+# Updated: 2005-03-06
 #
 
 PROJECT	= tin
 LVER	= 1
 PVER	= 7
-SVER	= 7
+SVER	= 8
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20041215
+DVER	= 20050321
 EXE	= tin
 
 # directory structure
@@ -31,7 +31,6 @@ HFILES	= \
 	$(INCDIR)/oldconfig.h \
 	$(INCDIR)/extern.h \
 	$(INCDIR)/keymap.h \
-	$(INCDIR)/menukeys.h \
 	$(INCDIR)/newsrc.h \
 	$(INCDIR)/nntplib.h \
 	$(INCDIR)/plp_snprintf.h \
@@ -337,7 +336,9 @@ POFILES = \
 	$(PODIR)/et.gmo \
 	$(PODIR)/et.po \
 	$(PODIR)/fr.gmo \
-	$(PODIR)/fr.po
+	$(PODIR)/fr.po \
+	$(PODIR)/tr.gmo \
+	$(PODIR)/tr.po
 
 
 ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(VMS) $(PCRE) $(MISC) $(CAN) $(INTLFILES) $(POFILES)

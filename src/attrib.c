@@ -3,10 +3,10 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2004-03-14
+ *  Updated   : 2005-03-15
  *  Notes     : Group attribute routines
  *
- * Copyright (c) 1993-2004 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2005 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -172,10 +172,6 @@ set_default_attributes(
 }
 
 
-/*
- * Load global & local attributes into active[].attribute
- */
-
 #define MATCH_BOOLEAN(pattern, type) \
 	if (match_boolean(line, pattern, &flag)) { \
 		num = (flag != FALSE); \
@@ -203,6 +199,14 @@ set_default_attributes(
 			break; \
 		}
 #endif /* CHARSET_CONVERSION */
+#if !defined(CHARSET_CONVERSION) || !defined(HAVE_ISPELL)
+#	define SKIP_ITEM(pattern) \
+		if (!strncmp(line, pattern, strlen(pattern))) { \
+			found = TRUE; \
+			break; \
+		}
+#endif /* !CHARSET_CONVERSION || !HAVE_ISPELL */
+
 
 /*
  * (re)read global/local attributes file
@@ -287,6 +291,8 @@ read_attributes_file(
 				case 'i':
 #ifdef HAVE_ISPELL
 					MATCH_STRING("ispell=", ATTRIB_ISPELL);
+#else
+					SKIP_ITEM("ispell=");
 #endif /* HAVE_ISPELL */
 					break;
 
@@ -296,7 +302,9 @@ read_attributes_file(
 					MATCH_BOOLEAN("mime_forward=", ATTRIB_MIME_FORWARD);
 					MATCH_STRING("mime_types_to_save=", ATTRIB_MIME_TYPES_TO_SAVE);
 #ifdef CHARSET_CONVERSION
-					MATCH_LIST("mm_network_charset=", ATTRIB_MM_NETWORK_CHARSET,txt_mime_charsets, NUM_MIME_CHARSETS);
+					MATCH_LIST("mm_network_charset=", ATTRIB_MM_NETWORK_CHARSET, txt_mime_charsets, NUM_MIME_CHARSETS);
+#else
+					SKIP_ITEM("mm_network_charset=");
 #endif /* CHARSET_CONVERSION */
 					break;
 
@@ -352,6 +360,8 @@ read_attributes_file(
 				case 'u':
 #ifdef CHARSET_CONVERSION
 					MATCH_STRING("undeclared_charset=", ATTRIB_UNDECLARED_CHARSET);
+#else
+					SKIP_ITEM("undeclared_charset=");
 #endif /* CHARSET_CONVERSION */
 					break;
 

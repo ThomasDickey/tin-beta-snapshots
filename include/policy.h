@@ -6,7 +6,7 @@
  *  Updated   : 2004-01-02
  *  Notes     : #defines and static data for policy configuration
  *
- * Copyright (c) 1999-2004 Ralf Doeblitz <doeblitz@gmx.de>
+ * Copyright (c) 1999-2005 Ralf Doeblitz <doeblitz@gmx.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -205,6 +205,7 @@
  * .dd  former German Democratic Republic, now .de
  * .fx  France, Metropolitan
  * .yd  Democratic Yemen, now .ye
+ * .wg  West Bank and Gaza, now .ps
  * .zr  former Zaire, now .cd
  *
  * user-assigned code elements:

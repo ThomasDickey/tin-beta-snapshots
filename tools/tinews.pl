@@ -4,7 +4,7 @@
 # signs the article and posts it.
 #
 #
-# Copyright (c) 2002-2004 Urs Janssen <urs@tin.org>,
+# Copyright (c) 2002-2005 Urs Janssen <urs@tin.org>,
 #                         Marc Brockschmidt <marc@marcbrockschmidt.de>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,8 @@
 #
 #
 # TODO: - FIXME add debug mode which doesn't delete tmp-files and is verbose
+#         (e.g. warns about missing mime-headers if body contains 8bit
+#          chars)
 #       - add pgp6 support
 #       - check for ~/.newsauth (and ~/.nntpauth?) and use username/password
 #         if found

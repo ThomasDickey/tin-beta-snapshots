@@ -3,10 +3,10 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2004-12-08
+ *  Updated   : 2005-03-20
  *  Notes     :
  *
- * Copyright (c) 1997-2004 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2005 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,10 @@
 
 #ifndef PROTO_H
 #	define PROTO_H 1
+
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 
 /* This fixes ambiguities on platforms that don't distinguish extern case */
 #ifdef CASE_PROBLEM
@@ -151,7 +155,7 @@ extern void word_highlight_string(int row, int col, int size, int color);
 /* debug.c */
 #ifdef DEBUG
 	extern void debug_delete_files(void);
-	extern void debug_nntp(const char *func, const char *line);
+	extern void debug_nntp(const char *func, const char *fmt, ...);
 	extern void debug_print_active(void);
 	extern void debug_print_arts(void);
 	extern void debug_print_filters(void);
@@ -245,7 +249,6 @@ extern void joinpath(char *result, const char *dir, const char *file);
 /* keymap.c */
 extern char *printascii(char *buf, int ch);
 extern t_bool read_keymap_file(void);
-extern void build_keymaps(void);
 extern void free_keymaps(void);
 
 /* langinfo.c */
@@ -475,7 +478,6 @@ extern t_bool user_posted_messages(void);
 extern void init_postinfo(void);
 extern void quick_post_article(t_bool postponed_only);
 #ifdef USE_CANLOCK
-	extern const char *build_cankey(const char *messageid, const char *secret);
 	extern const char *build_canlock(const char *messageid, const char *secret);
 	extern char *get_secret(void);
 #endif /* USE_CANLOCK */
@@ -484,7 +486,7 @@ extern void quick_post_article(t_bool postponed_only);
 extern char *prompt_string_default(const char *prompt, char *def, const char *failtext, int history);
 extern char *sized_message(char **result, const char *format, const char *subject);
 extern int prompt_num(int ch, const char *prompt);
-extern int prompt_yn(int line, const char *prompt, t_bool default_answer);
+extern int prompt_yn(const char *prompt, t_bool default_answer);
 extern int prompt_msgid(void);
 extern t_bool prompt_default_string(const char *prompt, char *buf, int buf_len, char *default_prompt, int which_hist);
 extern t_bool prompt_menu_string(int line, const char *prompt, char *var);
@@ -552,12 +554,13 @@ extern void compose_mail_text_plain(const char *filename, struct t_group *group)
 extern int check_start_save_any_news(int function, t_bool catchup);
 extern t_bool create_path(const char *path);
 extern t_bool expand_save_filename(char *outpath, const char *path);
-extern t_bool post_process_files(int proc_type_ch, t_bool auto_delete);
+extern t_bool post_process_files(t_function proc_type_type, t_bool auto_delete);
 extern t_bool save_and_process_art(t_openartinfo *artinfo, struct t_article *artptr, t_bool is_mailbox, const char *inpath, int max, t_bool post_process);
 extern void decode_save_mime(t_openartinfo *art, t_bool postproc);
 extern void print_art_seperator_line(FILE *fp, t_bool is_mailbox);
 
 /* screen.c */
+extern char *fmt_message(const char *fmt, va_list ap);
 extern void center_line(int line, t_bool inverse, const char *str);
 extern void clear_message(void);
 extern void draw_arrow_mark(int line);
@@ -574,7 +577,7 @@ extern void wait_message(unsigned int sdelay, const char *fmt, ...);
 
 /* search.c */
 extern int get_search_vectors(int *start, int *end);
-extern int search(int key, int current_art, t_bool forward, t_bool repeat);
+extern int search(t_function func, int current_art, t_bool repeat);
 extern int search_active(t_bool forward, t_bool repeat);
 extern int search_article(t_bool forward, t_bool repeat, int start_line, int lines, t_lineinfo *line, int reveal_ctrl_l_lines, FILE *fp);
 extern int search_config(t_bool forward, t_bool repeat, int current, int last);
@@ -593,7 +596,7 @@ extern void toggle_my_groups(const char *group);
 extern void msg_write_signature(FILE *fp, t_bool flag, struct t_group *thisgroup);
 
 /* signal.c */
-extern RETSIGTYPE(*sigdisp (int sig, RETSIGTYPE (*func)(SIG_ARGS))) (SIG_ARGS);
+extern RETSIGTYPE(*sigdisp (int signum, RETSIGTYPE (*func)(SIG_ARGS))) (SIG_ARGS);
 extern t_bool set_win_size(int *num_lines, int *num_cols);
 extern void allow_resize(t_bool allow);
 extern void handle_resize(t_bool repaint);
@@ -619,6 +622,9 @@ extern void str_lwr(char *str);
 #if !defined(HAVE_STRCASESTR) || defined(DECL_STRCASESTR)
 	extern const char *strcasestr(const char *haystack, const char *needle);
 #endif /* !HAVE_STRCASESTR || DECL_STRCASESTR */
+#if !defined(HAVE_STRSEP) || defined(DECL_SEP)
+	extern char *strsep(char **stringp, const char *delim);
+#endif /* !HAVE_STRSEP || DECL_STRSEP */
 #ifndef HAVE_STRPBRK
 	extern char *strpbrk(char *str1, char *str2);
 #endif /* !HAVE_STRPBRK */

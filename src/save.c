@@ -3,10 +3,10 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-06-22
+ *  Updated   : 2005-02-12
  *  Notes     :
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,9 +41,9 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 #ifndef RFC2046_H
 /* #	include "rfc2046.h" */
 #endif /* !RFC2046_H */
@@ -346,8 +346,8 @@ open_save_filename(
 	FILE *fp;
 	char keyappend[MAXKEYLEN], keyoverwrite[MAXKEYLEN], keyquit[MAXKEYLEN];
 	char mode[3];
-	int ch;
 	struct stat st;
+	t_function func;
 
 	strcpy(mode, "a+");
 
@@ -364,27 +364,30 @@ open_save_filename(
 		}
 /* TODO: will this get called every art? Should only be done once/batch */
 /* TODO: or add an option for defaulting on all future queries */
-		ch = prompt_slk_response(tinrc.default_save_mode,
-				&menukeymap.save_append_overwrite_quit,
+		func = prompt_slk_response((tinrc.default_save_mode == 'a' ? SAVE_APPEND_FILE : SAVE_OVERWRITE_FILE),
+				save_append_overwrite_keys,
 				_(txt_append_overwrite_quit), path,
-				printascii(keyappend, map_to_local(iKeySaveAppendFile, &menukeymap.save_append_overwrite_quit)),
-				printascii(keyoverwrite, map_to_local(iKeySaveOverwriteFile, &menukeymap.save_append_overwrite_quit)),
-				printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.save_append_overwrite_quit)));
+				printascii(keyappend, func_to_key(SAVE_APPEND_FILE, save_append_overwrite_keys)),
+				printascii(keyoverwrite, func_to_key(SAVE_OVERWRITE_FILE, save_append_overwrite_keys)),
+				printascii(keyquit, func_to_key(GLOBAL_QUIT, save_append_overwrite_keys)));
 
-		switch (ch) {
-			case iKeySaveOverwriteFile:
+		switch (func) {
+			case SAVE_OVERWRITE_FILE:
 				strcpy(mode, "w");
 				break;
 
-			case iKeyAbort:
-			case iKeyQuit:
+			case GLOBAL_ABORT:
+			case GLOBAL_QUIT:
 				wait_message(1, _(txt_art_not_saved));
 				return NULL;
 
-			default:	/* iKeySaveAppendFile */
+			default:	/* SAVE_APPEND_FILE */
 				break;
 		}
-		tinrc.default_save_mode = ch;
+		if (func == SAVE_OVERWRITE_FILE)
+			tinrc.default_save_mode = 'o';
+		else
+			tinrc.default_save_mode = 'a';
 	}
 
 	if ((fp = fopen(path, mode)) == NULL) {
@@ -648,7 +651,7 @@ expand_save_filename(
  */
 t_bool
 post_process_files(
-	int proc_type_ch,
+	t_function proc_type_func,
 	t_bool auto_delete)
 {
 	if (num_save < 1)
@@ -660,13 +663,13 @@ post_process_files(
 #endif /* USE_CURSES */
 	my_printf("%s%s", _(txt_post_processing), cCRLF);
 
-	switch (proc_type_ch) {
-		case iKeyPProcShar:
+	switch (proc_type_func) {
+		case POSTPROCESS_SHAR:
 			post_process_sh();
 			break;
 
 		/* This is the default, eg, with AUTOSAVE */
-		case iKeyPProcYes:
+		case POSTPROCESS_YES:
 		default:
 			post_process_uud();
 			break;
@@ -1287,7 +1290,7 @@ decode_save_one(
 		}
 	} else {
 		snprintf(buf, sizeof(buf), _(txt_view_attachment), savepath, content_types[part->type], part->subtype);
-		if ((i = prompt_yn(cLINES, buf, TRUE)) == 1)
+		if ((i = prompt_yn(buf, TRUE)) == 1)
 			start_viewer(part, savepath);
 		else if (i == -1) {	/* Skip rest of attachments */
 			unlink(savepath);
@@ -1304,7 +1307,7 @@ decode_save_one(
 	}
 	if (!postproc) {
 		snprintf(buf, sizeof(buf), _(txt_save_attachment), savepath, content_types[part->type], part->subtype);
-		if ((i = prompt_yn(cLINES, buf, FALSE)) != 1) {
+		if ((i = prompt_yn(buf, FALSE)) != 1) {
 			unlink(savepath);
 			if (i == -1)	/* Skip rest of attachments */
 				return FALSE;

@@ -3,10 +3,10 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2004-03-14
+ *  Updated   : 2005-02-12
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,20 +45,20 @@
 #	endif /* !TCURSES_H */
 #endif /* DEBUG */
 
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 
 #ifndef RFC2046_H
 #	include "rfc2046.h"
 #endif /* !RFC2046_H */
 
 
-static char proc_ch;					/* Post-processing type when saving */
 static t_bool confirm;					/* only used for FEED_MAIL */
 static t_bool is_mailbox = FALSE;
 static t_bool redraw_screen = FALSE;
 static t_bool supersede = FALSE;		/* for reposting only */
+static t_function pproc_func;			/* Post-processing type when saving */
 #ifndef DONT_HAVE_PIPING
 	static FILE *pipe_fp = (FILE *) 0;
 #endif /* !DONT_HAVE_PIPING */
@@ -74,10 +74,10 @@ struct t_counters {
  * Local prototypes
  */
 static char *get_save_filename(struct t_group *group, int function, char *filename, int filelen, int respnum);
-static int get_feed_key(int function, int level, struct t_group *group, struct t_art_stat *thread, int respnum);
-static int get_post_proc_type(void);
 static t_bool feed_article(int art, int function, struct t_counters *counter, t_bool use_current, const char *data, struct t_group *group);
-static void print_save_summary(char type, int fed);
+static t_function get_feed_key(int function, int level, struct t_group *group, struct t_art_stat *thread, int respnum);
+static t_function get_post_proc_type(void);
+static void print_save_summary(t_function type, int fed);
 #ifndef DISABLE_PRINTING
 	static t_bool print_file(const char *command, int respnum, t_openartinfo *artinfo);
 #endif /* !DISABLE_PRINTING */
@@ -156,44 +156,57 @@ get_save_filename(
 
 /*
  * Find out what post-processing to perform.
- * This is not used when saving to mailboxes (we don't postprocess mailboxen)
+ * This is not used when saving to mailboxes (we don't postprocess mailboxes)
  * Also not used when using the auto-save feature because a default value is
  * taken from the group attributes
- * Return a post_proc_char or 0 if aborting the save process
+ * Returns POSTPROCESS_{NO,SHAR,YES} or GLOBAL_ABORT if aborting the save process
  */
-static int
+static t_function
 get_post_proc_type(
 	void)
 {
-	char ch;
 	char keyno[MAXKEYLEN], keyyes[MAXKEYLEN], keyquit[MAXKEYLEN];
 	char keyshar[MAXKEYLEN];
+	t_function default_func, func;
 
-	ch = (char) prompt_slk_response(ch_post_process[curr_group->attribute->post_proc_type],
-				&menukeymap.feed_post_process_type,
-				_(txt_choose_post_process_type),
-				printascii(keyno, map_to_local(iKeyPProcNo, &menukeymap.feed_post_process_type)),
-				printascii(keyyes, map_to_local(iKeyPProcYes, &menukeymap.feed_post_process_type)),
-				printascii(keyshar, map_to_local(iKeyPProcShar, &menukeymap.feed_post_process_type)),
-				printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.feed_post_process_type)));
+	switch (curr_group->attribute->post_proc_type) {
+		case POST_PROC_YES:
+			default_func = POSTPROCESS_YES;
+			break;
 
-	if (ch == iKeyQuit || ch == iKeyAbort) {			/* exit */
-		clear_message();
-		return 0;
+		case POST_PROC_SHAR:
+			default_func = POSTPROCESS_SHAR;
+			break;
+
+		case POST_PROC_NO:
+		default:
+			default_func = POSTPROCESS_NO;
+			break;
 	}
-	return ch;
+
+	func = prompt_slk_response(default_func, feed_post_process_keys, _(txt_choose_post_process_type),
+				printascii(keyno, func_to_key(POSTPROCESS_NO, feed_post_process_keys)),
+				printascii(keyyes, func_to_key(POSTPROCESS_YES, feed_post_process_keys)),
+				printascii(keyshar, func_to_key(POSTPROCESS_SHAR, feed_post_process_keys)),
+				printascii(keyquit, func_to_key(GLOBAL_QUIT, feed_post_process_keys)));
+
+	if (func == GLOBAL_QUIT || func == GLOBAL_ABORT) {			/* exit */
+		clear_message();
+		return GLOBAL_ABORT;
+	}
+	return func;
 }
 
 
 /*
- * Return the key mapping for what we are intending to process or 0 if save
- * process is being aborted
+ * Return the key mapping for what we are intending to process or
+ * GLOBAL_ABORT if save process is being aborted
  * Key can be (current) article, (current) thread, tagged articles,
  * hot articles, or articles matching a pattern
  * This is automatic in the various auto-save cases, in other
  * cases this is prompted for based on a chosen default
  */
-static int
+static t_function
 get_feed_key(
 	int function,
 	int level,
@@ -202,7 +215,7 @@ get_feed_key(
 	int respnum)
 {
 	constext *prompt;
-	int ch, ch_default;
+	t_function default_func, func;
 
 	switch (function) {
 		case FEED_MAIL:
@@ -243,11 +256,11 @@ get_feed_key(
 	 * Try and work out what default the user wants
 	 * thread->total = # arts in thread
 	 */
-	ch_default = (num_of_tagged_arts ? iKeyFeedTag :
-					(arts_selected() ? iKeyFeedHot :
-					((level == GROUP_LEVEL && thread->total > 1) ? iKeyFeedThd :
-					(thread->selected_total ? iKeyFeedHot :
-					iKeyFeedArt))));
+	default_func = (num_of_tagged_arts ? FEED_TAGGED :
+					(arts_selected() ? FEED_HOT :
+					((level == GROUP_LEVEL && thread->total > 1) ? FEED_THREAD :
+					(thread->selected_total ? FEED_HOT :
+					FEED_ARTICLE))));
 
 	/*
 	 * Don't bother querying when:
@@ -256,46 +269,48 @@ get_feed_key(
 	 */
 	if ((function == FEED_AUTOSAVE && (num_of_tagged_arts || arts_selected())) ||
 			(group->attribute->auto_save && arts[respnum].archive))
-		ch = ch_default;
+		func = default_func;
 	else {
 		char buf[LEN];
 		char keyart[MAXKEYLEN], keythread[MAXKEYLEN], keyhot[MAXKEYLEN];
 		char keypat[MAXKEYLEN], keytag[MAXKEYLEN], keyquit[MAXKEYLEN];
 
 		snprintf(buf, sizeof(buf), _(txt_art_thread_regex_tag),
-			printascii(keyart, map_to_local(iKeyFeedArt, &menukeymap.feed_art_thread_regex_tag)),
-			printascii(keythread, map_to_local(iKeyFeedThd, &menukeymap.feed_art_thread_regex_tag)),
-			printascii(keyhot, map_to_local(iKeyFeedHot, &menukeymap.feed_art_thread_regex_tag)),
-			printascii(keypat, map_to_local(iKeyFeedPat, &menukeymap.feed_art_thread_regex_tag)),
-			printascii(keytag, map_to_local(iKeyFeedTag, &menukeymap.feed_art_thread_regex_tag)),
-			printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.feed_art_thread_regex_tag)));
+			printascii(keyart, func_to_key(FEED_ARTICLE, feed_type_keys)),
+			printascii(keythread, func_to_key(FEED_THREAD, feed_type_keys)),
+			printascii(keyhot, func_to_key(FEED_HOT, feed_type_keys)),
+			printascii(keypat, func_to_key(FEED_PATTERN, feed_type_keys)),
+			printascii(keytag, func_to_key(FEED_TAGGED, feed_type_keys)),
+			printascii(keyquit, func_to_key(GLOBAL_QUIT, feed_type_keys)));
 
-		ch = prompt_slk_response(ch_default, &menukeymap.feed_art_thread_regex_tag, "%s %s", _(prompt), buf);
+		func = prompt_slk_response(default_func, feed_type_keys, "%s %s", _(prompt), buf);
 	}
 
-	switch (ch) {
-		case iKeyQuit:
-		case iKeyAbort:
-			clear_message();
-			return 0;
-
-		case iKeyFeedPat:
+	switch (func) {
+		case FEED_PATTERN:
 			{
 				char *tmp = fmt_string(_(txt_feed_pattern), tinrc.default_pattern);
 
 				if (!(prompt_string_default(tmp, tinrc.default_pattern, _(txt_no_match), HIST_REGEX_PATTERN))) {
 					free(tmp);
-					return 0;
+					return GLOBAL_ABORT;
 				}
 				free(tmp);
 			}
+			break;
+
+		case GLOBAL_QUIT:
+		case GLOBAL_ABORT:
+			clear_message();
+			return GLOBAL_ABORT;
+			/* NOT REACHED */
 			break;
 
 		default:
 			break;
 	}
 
-	return ch;
+	return func;
 }
 
 
@@ -306,7 +321,7 @@ get_feed_key(
  */
 static void
 print_save_summary(
-	char type,
+	t_function type,
 	int fed)
 {
 	const char *first, *last;
@@ -317,20 +332,20 @@ print_save_summary(
 		wait_message(2, _(txt_warn_not_all_arts_saved), fed, num_save);
 
 	switch (type) {
-		case iKeyFeedHot:
+		case FEED_HOT:
 			snprintf(what, sizeof(what), _(txt_prefix_hot), PLURAL(fed, txt_article));
 			break;
 
-		case iKeyFeedTag:
+		case FEED_TAGGED:
 			snprintf(what, sizeof(what), _(txt_prefix_tagged), PLURAL(fed, txt_article));
 			break;
 
-		case iKeyFeedThd:
+		case FEED_THREAD:
 			STRCPY(what, _(txt_thread_upper));
 			break;
 
-		case iKeyFeedArt:
-		case iKeyFeedPat:
+		case FEED_ARTICLE:
+		case FEED_PATTERN:
 		default:
 			snprintf(what, sizeof(what), "%s", PLURAL(fed, txt_article));
 			break;
@@ -448,7 +463,7 @@ feed_article(
 
 		case FEED_SAVE:
 		case FEED_AUTOSAVE:
-			ok = save_and_process_art(openartptr, &arts[art], is_mailbox, data /*filename*/, counter->max, (proc_ch != iKeyPProcNo));
+			ok = save_and_process_art(openartptr, &arts[art], is_mailbox, data /*filename*/, counter->max, (pproc_func != POSTPROCESS_NO));
 			break;
 
 		case FEED_REPOST:
@@ -509,7 +524,6 @@ feed_articles(
 	char outpath[PATH_LEN];
 	char *prompt;
 	int art;
-	int feed_type;
 	int i;
 	int saved_curr_line = -1;
 	int thread_base;
@@ -518,6 +532,7 @@ feed_articles(
 	t_bool use_current = FALSE;
 	t_bool ret1 = FALSE;
 	t_bool post_processed_ok = FALSE;
+	t_function feed_type;
 
 #ifdef DONT_HAVE_PIPING
 	if (function == FEED_PIPE) {
@@ -538,7 +553,7 @@ feed_articles(
 	thread_base = which_thread(respnum);
 	stat_thread(thread_base, &sbuf);
 
-	if ((feed_type = get_feed_key(function, level, group, &sbuf, respnum)) == 0)
+	if ((feed_type = get_feed_key(function, level, group, &sbuf, respnum)) == GLOBAL_ABORT)
 		return;
 
 	/*
@@ -602,13 +617,26 @@ feed_articles(
 				if (get_save_filename(group, function, savefile, sizeof(savefile), respnum) == NULL)
 					return;
 
-				proc_ch = ch_post_process[curr_group->attribute->post_proc_type];
+				switch (curr_group->attribute->post_proc_type) {
+					case POST_PROC_YES:
+						pproc_func = POSTPROCESS_YES;
+						break;
+
+					case POST_PROC_SHAR:
+						pproc_func = POSTPROCESS_SHAR;
+						break;
+
+					case POST_PROC_NO:
+					default:
+						pproc_func = POSTPROCESS_NO;
+						break;
+				}
 
 				/* We don't postprocess mailboxen */
 				if ((is_mailbox = expand_save_filename(outpath, savefile)) == TRUE)
-					proc_ch = iKeyPProcNo;
+					pproc_func = POSTPROCESS_NO;
 				else {
-					if (function != FEED_AUTOSAVE && (proc_ch = get_post_proc_type()) == 0)
+					if (function != FEED_AUTOSAVE && (pproc_func = get_post_proc_type()) == GLOBAL_ABORT)
 						return;
 				}
 				if (!create_path(outpath))
@@ -628,28 +656,28 @@ feed_articles(
 				if (strstr(from_name, arts[respnum].from)) {
 #endif /* !FORGERY */
 					char *smsg;
-					char option;
 					char buf[LEN];
 					char keyrepost[MAXKEYLEN], keysupersede[MAXKEYLEN];
 					char keyquit[MAXKEYLEN];
+					t_function func;
 
 					/* repost or supersede? */
 					snprintf(buf, sizeof(buf), _(txt_supersede_article),
-							printascii(keyrepost, map_to_local(iKeyFeedRepost, &menukeymap.feed_supersede_article)),
-							printascii(keysupersede, map_to_local(iKeyFeedSupersede, &menukeymap.feed_supersede_article)),
-							printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.feed_supersede_article)));
-					option = (char) prompt_slk_response(iKeyFeedSupersede,
-										&menukeymap.feed_supersede_article, "%s",
-										sized_message(&smsg, buf, arts[respnum].subject));
+							printascii(keyrepost, func_to_key(FEED_KEY_REPOST, feed_supersede_article_keys)),
+							printascii(keysupersede, func_to_key(FEED_SUPERSEDE, feed_supersede_article_keys)),
+							printascii(keyquit, func_to_key(GLOBAL_QUIT, feed_supersede_article_keys)));
+					func = prompt_slk_response(FEED_SUPERSEDE,
+								feed_supersede_article_keys, "%s",
+								sized_message(&smsg, buf, arts[respnum].subject));
 					free(smsg);
 
-					switch (option) {
-						case iKeyFeedSupersede:
+					switch (func) {
+						case FEED_SUPERSEDE:
 							tmp = fmt_string(_(txt_supersede_group), tinrc.default_repost_group);
 							supersede = TRUE;
 							break;
 
-						case iKeyFeedRepost:
+						case FEED_REPOST:
 							tmp = fmt_string(_(txt_repost_group), tinrc.default_repost_group);
 							supersede = FALSE;
 							break;
@@ -683,7 +711,7 @@ feed_articles(
 	 * Performance hack - If we feed a single art from the pager then we can
 	 * re-use the currently open article
 	 */
-	if (level == PAGE_LEVEL && feed_type == iKeyFeedArt) {
+	if (level == PAGE_LEVEL && feed_type == FEED_ARTICLE) {
 		saved_curr_line = curr_line;		/* Save where we were in pager */
 		use_current = TRUE;
 	}
@@ -693,13 +721,13 @@ feed_articles(
 	 * The general idea is to feed_article() for every article to be processed
 	 */
 	switch (feed_type) {
-		case iKeyFeedArt:		/* article */
+		case FEED_ARTICLE:		/* article */
 			counter.max = 1;
 			if (!feed_article(respnum, function, &counter, use_current, outpath, group))
 				handle_SIGPIPE();
 			break;
 
-		case iKeyFeedThd:		/* thread */
+		case FEED_THREAD:		/* thread */
 			/* Get accurate count first */
 			for_each_art_in_thread(art, which_thread(respnum)) {
 				if (!(tinrc.process_only_unread && arts[art].status == ART_READ))
@@ -715,7 +743,7 @@ feed_articles(
 			}
 			break;
 
-		case iKeyFeedTag:		/* tagged articles */
+		case FEED_TAGGED:		/* tagged articles */
 			counter.max = num_of_tagged_arts;
 			for (i = 1; i <= num_of_tagged_arts; i++) {
 				for_each_art(art) {
@@ -730,16 +758,16 @@ feed_articles(
 			untag_all_articles();	/* TODO: this will untag even on partial failure */
 			break;
 
-		case iKeyFeedHot:		/* hot (auto-selected) articles */
-		case iKeyFeedPat:		/* pattern matched articles */
+		case FEED_HOT:		/* hot (auto-selected) articles */
+		case FEED_PATTERN:	/* pattern matched articles */
 			{
 				struct regex_cache cache = { NULL, NULL };
 
-				if ((feed_type == iKeyFeedPat) && tinrc.wildcard && !(compile_regex(tinrc.default_pattern, &cache, PCRE_CASELESS)))
+				if ((feed_type == FEED_PATTERN) && tinrc.wildcard && !(compile_regex(tinrc.default_pattern, &cache, PCRE_CASELESS)))
 					break;
 
 				for_each_art(art) {
-					if (feed_type == iKeyFeedPat) {
+					if (feed_type == FEED_PATTERN) {
 						if (!match_regex(arts[art].subject, tinrc.default_pattern, &cache, TRUE))
 							continue;
 					} else if (!arts[art].selected)
@@ -767,7 +795,7 @@ feed_articles(
 
 					/* Keep going - don't abort on errors */
 					if (feed_article(art, function, &counter, use_current, outpath, group)) {
-						if (feed_type == iKeyFeedHot)
+						if (feed_type == FEED_HOT)
 							arts[art].selected = FALSE;
 					} else
 						handle_SIGPIPE();
@@ -777,7 +805,7 @@ feed_articles(
 
 		default:			/* Should never get here */
 			break;
-	} /* switch (ch) */
+	} /* switch (feed_type) */
 
 	/*
 	 * Invoke post-processing if needed
@@ -810,18 +838,18 @@ got_sig_pipe_while_piping:
 			}
 
 			print_save_summary(feed_type, counter.total);
-			if (proc_ch != iKeyPProcNo) {
+			if (pproc_func != POSTPROCESS_NO) {
 				t_bool delete_post_proc = FALSE;
 
 				if (curr_group->attribute->delete_tmp_files)
 					delete_post_proc = TRUE;
 				else {
 					if (function != FEED_AUTOSAVE) {
-						if (prompt_yn(cLINES, _(txt_delete_processed_files), TRUE) == 1)
+						if (prompt_yn(_(txt_delete_processed_files), TRUE) == 1)
 							delete_post_proc = TRUE;
 					}
 				}
-				post_processed_ok = post_process_files(proc_ch, delete_post_proc);
+				post_processed_ok = post_process_files(pproc_func, delete_post_proc);
 			}
 			free_save_array();		/* NB: This is where num_save etc.. gets purged */
 			break;

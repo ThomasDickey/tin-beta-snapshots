@@ -3,10 +3,10 @@
  *  Module    : version.c
  *  Author    : U. Janssen
  *  Created   : 2003-05-11
- *  Updated   : 2004-12-10
+ *  Updated   : 2005-01-30
  *  Notes     :
  *
- * Copyright (c) 2003-2004 Urs Janssen <urs@tin.org>
+ * Copyright (c) 2003-2005 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,9 +41,9 @@
 #ifndef VERSION_H
 #	include "version.h"
 #endif /* !VERSION_H */
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 
 /*
  * line     is the entire line we should check
@@ -126,11 +126,15 @@ upgrade_prompt_quit(
 	}
 
 	error_message(_(txt_return_key));
-	/* TODO: document, use something unbuffered here */
+
+	/*
+	 * TODO: document, use something unbuffered here
+	 * NOTE: these keys can not be remapped
+	 */
 	switch (getchar()) {
-		case iKeyQuit:
-		case iKeyQuitTin:
-		case iKeyAbort:
+		case 'q':
+		case 'Q':
+		case ESC:
 			giveup();
 			/* NOTREACHED */
 			break;

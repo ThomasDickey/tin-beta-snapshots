@@ -3,10 +3,10 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-07-14
+ *  Updated   : 2005-03-12
  *  Notes     :
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -209,19 +209,20 @@ main(
 	}
 #endif /* DEBUG_NEWSRC */
 
+	/*
+	 * avoid empty regexp, we also need to do this in batch_mode
+	 * as read_overview() calls eat_re() which uses a regexp to
+	 * modify the subject *sigh*
+	 */
+	postinit_regexp();
+
 	if (!(batch_mode || post_postponed_and_exit)) {
 		/*
 		 * Read user specific keybindings and input history
 		 */
 		wait_message(0, _(txt_reading_keymap_file));
-		if (!read_keymap_file())
-			prompt_continue();
+		read_keymap_file();
 		read_input_history_file();
-
-		/*
-		 * avoid empty regexp
-		 */
-		postinit_regexp();
 
 		/*
 		 * Load the mail & news active files into active[]

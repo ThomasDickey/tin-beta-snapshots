@@ -3,10 +3,10 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-10-26
+ *  Updated   : 2005-02-15
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1514,10 +1514,11 @@ match_string(
 	size_t patlen = strlen(pat);
 
 	if (STRNCMPEQ(line, pat, patlen) && (strlen(line) > patlen /* + 1 */)) {
-		strncpy(dst, &line[patlen], dstlen);
-		if ((ptr = strrchr(dst, '\n')) != NULL)
-			*ptr = '\0';
-
+		if (dst != NULL && dstlen >= 1) {
+			strncpy(dst, &line[patlen], dstlen);
+			if ((ptr = strrchr(dst, '\n')) != NULL)
+				*ptr = '\0';
+		}
 		return TRUE;
 	}
 	return FALSE;
@@ -1809,7 +1810,6 @@ read_server_config(
 	char file[PATH_LEN];
 	char newnews_info[LEN];
 	char serverdir[PATH_LEN];
-	char version[LEN];
 	int upgrade = RC_CHECK;
 
 #ifdef NNTP_ABLE
@@ -1830,7 +1830,7 @@ read_server_config(
 			continue;
 
 		if (match_string(line, "last_newnews=", newnews_info, sizeof(newnews_info))) {
-			int tmp_len = strlen(nntp_server) + strlen(newnews_info) + 2;
+			size_t tmp_len = strlen(nntp_server) + strlen(newnews_info) + 2;
 			char *tmp_info = my_malloc(tmp_len);
 
 			snprintf(tmp_info, tmp_len, "%s %s", nntp_server, newnews_info);
@@ -1838,7 +1838,7 @@ read_server_config(
 			free(tmp_info);
 			continue;
 		}
-		if (match_string(line, "version=", version, sizeof(version))) {
+		if (match_string(line, "version=", NULL, 0)) {
 			if (RC_CHECK != upgrade)
 				/* ignore duplicate version lines; last match counts */
 				continue;
