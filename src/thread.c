@@ -645,7 +645,7 @@ thread_page (
 
 			case iKeyThreadMarkArtUnread:		/* mark article as unread */
 				n = find_response (thread_basenote, thdmenu.curr);
-				art_mark_will_return (group, &arts[n]); /*art_mark_unread (group, &arts[n]);*/
+				art_mark_will_return (group, &arts[n]); /* art_mark_unread (group, &arts[n]); */
 				bld_tline (thdmenu.curr, &arts[n]);
 				draw_line (thdmenu.curr, MAGIC);
 				info_message (_(txt_marked_as_unread), _("Article"));

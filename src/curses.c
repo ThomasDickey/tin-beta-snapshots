@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2000-07-19
+ *  Updated   : 2001-07-22
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -235,6 +235,7 @@ setup_screen (void)
 
 #	ifdef USE_TERMINFO
 #		define CAPNAME(a,b)       b
+#		define dCAPNAME(a,b)      strcpy(_terminal, b)
 #		define TGETSTR(b,bufp)    tigetstr(b)
 #		define TGETNUM(b)         tigetnum(b) /* may be tigetint() */
 #		define TGETFLAG(b)        tigetflag(b)
@@ -246,6 +247,7 @@ setup_screen (void)
 #		undef USE_TERMCAP
 #		define USE_TERMCAP 1
 #		define CAPNAME(a,b)       a
+#		define dCAPNAME(a,b)      a
 #		define TGETSTR(a, bufp)   tgetstr(a, bufp)
 #		define TGETNUM(a)         tgetnum(a)
 #		define TGETFLAG(a)        tgetflag(a)
@@ -289,12 +291,14 @@ get_termcaps (void)
 	};
 
 	static char _terminal[1024];		/* Storage for terminal entry */
+
+#	if defined(USE_TERMCAP)
 	static char _capabilities[1024];	/* String for cursor motion */
 	static char *ptr = _capabilities;	/* for buffering */
-
-#	if defined(USE_TERMCAP) && defined(HAVE_EXTERN_TCAP_PC)
+#		if defined(HAVE_EXTERN_TCAP_PC)
 	char *t;
-#	endif /* USE_TERMCAP && HAVE_EXTERN_TCAP_PC */
+#		endif /* HAVE_EXTERN_TCAP_PC */
+#	endif /* USE_TERMCAP */
 
 	char the_termname[40], *p;
 	unsigned n;
@@ -306,24 +310,22 @@ get_termcaps (void)
 
 	my_strncpy(the_termname, p, sizeof(the_termname) - 1);
 
+#if USE_TERMINFO
+	setupterm(the_termname, fileno(stdout), (int *)0);
+#else
 	if (tgetent (_terminal, the_termname) != 1) {
 		my_fprintf (stderr, _(txt_cannot_get_term_entry), tin_progname);
 		return (FALSE);
 	}
+#endif
 
 	/* load in all those pesky values */
 	for (n = 0; n < SIZEOF(table); n++) {
 		*(table[n].value) = TGETSTR(table[n].capname, &ptr);
 	}
-	_lines          = TGETNUM (CAPNAME("li", "lines"));
-	_columns        = TGETNUM (CAPNAME("co", "cols"));
-	_hp_glitch      = TGETFLAG(CAPNAME("xs", "xhp"));
-#	ifdef HAVE_BROKEN_TGETSTR
-	_terminalinit   = "";
-	_terminalend    = "";
-	_keypadlocal    = "";
-	_keypadxmit     = "";
-#	endif /* HAVE_BROKEN_TGETSTR */
+	_lines          = TGETNUM (dCAPNAME("li", "lines"));
+	_columns        = TGETNUM (dCAPNAME("co", "cols"));
+	_hp_glitch      = TGETFLAG(dCAPNAME("xs", "xhp"));
 
 #	if defined(USE_TERMCAP) && defined(HAVE_EXTERN_TCAP_PC)
 	t = TGETSTR(CAPNAME("pc", "pad"), &p);

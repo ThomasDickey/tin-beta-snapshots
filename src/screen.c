@@ -365,13 +365,19 @@ spin_cursor (
 	if (i > 7)
 		i = 0;
 
+#ifdef HAVE_COLOR
+	fcol(tinrc.col_message);
+#endif /* HAVE_COLOR */
 	my_printf ("\b%c", buf[i++]);
 	my_flush();
+#ifdef HAVE_COLOR
+	fcol(tinrc.col_normal);
+#endif /* HAVE_COLOR */
 }
 
 
 /*
- *  progressmeter in %
+ * progressmeter in %
  */
 void
 show_progress (
@@ -383,6 +389,15 @@ show_progress (
 		return;
 
 	MoveCursor(cLINES, 0);
-	my_printf ("%s %3d%%", txt, (int) (count*100/total));
+
+#ifdef HAVE_COLOR
+	fcol(tinrc.col_message);
+#endif /* HAVE_COLOR */
+
+	my_printf ("%s %3d%%", txt, (int) (count * 100 / total));
 	my_flush();
+
+#ifdef HAVE_COLOR
+	fcol(tinrc.col_normal);
+#endif /* HAVE_COLOR */
 }

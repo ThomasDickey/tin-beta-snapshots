@@ -246,7 +246,13 @@ get_user_name (
 	}
 #	else
 	pw = getpwuid (getuid ());
-	strcpy (username, pw->pw_name);
+
+	if (pw != (struct passwd *) 0)
+		strcpy (username, pw->pw_name);
+	else {
+		error_message (_(txt_error_passwd_missing));
+		tin_done (EXIT_FAILURE);
+	}
 #	endif /* M_AMIGA || VMS */
 	return(username);
 }

@@ -990,6 +990,10 @@ read_nov_file (
 			*q = '\0';
 
 		/* TODO is no mesg-id allowed in rfc ? */
+		/*
+		 * draft-ietf-nntpext-base-13.txt, section 9.2.1.1
+		 * comes up with "<0>" - should we use it instead of '\0'?
+		 */
 		arts[top_art].msgid = ((*p) ? (my_strdup (p)) : ((char *) '\0'));
 
 		p = q + 1;

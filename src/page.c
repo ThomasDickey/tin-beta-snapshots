@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 1995-07-26
+ *  Updated   : 2001-07-22
  *  Notes     :
  *
  * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1300,7 +1300,7 @@ process_search(
 	 * Reposition within article if needed, try to get matched line
 	 * in the middle of the screen
 	 */
-	if (i < *lcurr_line || i >= (*lcurr_line + screen_lines)) {
+	if (i < (int)*lcurr_line || i >= (int)(*lcurr_line + screen_lines)) {
 		int ideal_pos = i - (screen_lines / 2);
 
 		if (ideal_pos + screen_lines > message_lines)		/* Off the end */

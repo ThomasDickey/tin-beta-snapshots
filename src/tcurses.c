@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-03-02
- *  Updated   : 1998-04-21
+ *  Updated   : 2001-07-22
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -54,12 +54,29 @@
 
 #	include "trace.h"
 
-#	ifndef attr_get
-#		define attr_get()	getattrs(stdscr)
-#	endif /* !attr_get */
-
 int cLINES;
 int cCOLS;
+
+#ifdef HAVE_XCURSES
+static int vwprintw(WINDOW *w, char *fmt, va_list ap)
+{
+	char buffer[BUFSIZ];	/* FIXME */
+	char *string = buffer;
+	int y, x, code;
+
+	vsprintf(buffer, fmt, ap);
+	getyx(w, y, x);
+	TRACE(("vwprintw[%d/%d,%d/%d]:%s", y, cLINES, x, cCOLS, buffer));
+	while (*string == '\b')
+		string++;
+	code = waddstr(w, string);
+	if (string != buffer) {
+		wmove(w, y, x);
+		refresh();
+	}
+	return code;
+}
+#endif
 
 /*
  * Most of the logic corresponding to the termcap version is done in InitScreen.
@@ -91,6 +108,7 @@ int InitScreen (void)
 	initscr();
 	cCOLS = COLS;
 	cLINES = LINES - 1;
+	TRACE(("screen size %d rows by %d cols", LINES, COLS));
 /*	set_win_size(&cLINES, &cCOLS); */
 /*	raw(); */ /* breaks serial terminal using software flow control and cbreak() below does most of the stuff raw() does */
 	noecho();

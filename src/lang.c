@@ -218,6 +218,7 @@ constext txt_error_no_from[] = N_("\nError: From: line missing.\n");
 constext txt_error_no_read_permission[] = N_("No read permissions for %s\n");
 constext txt_error_no_such_file[] = N_("File %s does not exist\n");
 constext txt_error_no_write_permission[] = N_("No write permissions for %s\n");
+constext txt_error_passwd_missing[] = N_("Can't get user information (/etc/passwd missing?)");
 constext txt_error_plural[] = N_("errors");
 constext txt_error_sender_in_header_not_allowed[] = N_("\nError on line %d: \"Sender:\" header not allowed (it will be added for you)\n");
 constext txt_error_singular[] = N_("error");
@@ -611,7 +612,6 @@ constext txt_posted_info_file[] = N_("# Summary of mailed/posted messages viewab
 constext txt_posting[] = N_("Posting article...");
 constext txt_postpone_repost[] = N_("Post postponed articles [%%.*s]? (%s/%s/%s/%s/%s): ");
 constext txt_prompt_fup_ignore[] = N_("Accept Followup-To? %s=post, %s=ignore, %s=quit: ");
-/* constext txt_prompt_unchanged_art[] = N_("Article unchanged, abort posting?"); */
 constext txt_prompt_unchanged_mail[] = N_("Article unchanged, abort mailing?");
 constext txt_prompt_see_postponed[] = N_("Do you want to see postponed articles (%d)?");
 constext txt_quick_filter_kill[] = N_("Add quick kill filter?");
@@ -895,13 +895,10 @@ constext txt_updated[] = "Updated";
 #ifdef HAVE_METAMAIL
 	constext txt_use_mime[] = N_("Use MIME display program for this message?");
 #endif /* HAVE_METAMAIL */
-#ifndef HAVE_LIBUU
-#if 0
-	constext txt_uudecoding[] = N_("Uudecoding %s");
-#endif /* 0 */
-#endif /* !HAVE_LIBUU */
+
 constext txt_value_out_of_range[] = N_("\n%s%d out of range (0 - %d). Reset to 0");
 constext txt_warn_art_line_too_long[] = N_("\nWarning: posting exceeds %d columns. Line %d is the first long one:\n%-100s\n");
+constext txt_warn_article_unchanged[] = N_("\nWarning: article unchanged after editing\n");
 constext txt_warn_blank_subject[] = N_("\nWarning: \"Subject:\" contains only whitespaces.\n");
 constext txt_warn_re_but_no_references[] = N_("\n\
 Warning: \"Subject:\" begins with \"Re: \" but there are no \"References:\".\n");

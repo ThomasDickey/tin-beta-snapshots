@@ -3,7 +3,7 @@
  *  Module    : trace.c
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-03-22
- *  Updated   : 1997-12-31
+ *  Updated   : 2001-07-22
  *  Notes     : debugging support via TRACE macro.
  *
  * Copyright (c) 1997-2001 Thomas Dickey <dickey@herndon4.his.com>
@@ -48,6 +48,7 @@
 #	include "trace.h"
 #endif /* !included_trace_h */
 
+#ifndef NCURSES_VERSION
 void
 _tracef(
 	const char *fmt,
@@ -73,6 +74,7 @@ _tracef(
 	}
 	va_end(ap);
 }
+#endif /* NCURSES_VERSION */
 
 char *
 tin_tracechar(

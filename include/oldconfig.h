@@ -3,7 +3,7 @@
  *  Module    : config.h
  *  Author    : I.Lea
  *  Created   : 1992-09-03
- *  Updated   : 1995-08-18
+ *  Updated   : 2001-07-22
  *  Notes     : #defines to determine different OS capabilites
  *
  * Copyright (c) 1995-2001 Iain Lea <iain@bricbrac.de>
@@ -370,10 +370,6 @@
 #if defined(sinix)
 #	undef	HAVE_SYS_STREAM_H
 #	undef	HAVE_MKDIR
-#endif
-
-#if defined(supermax)
-#	define HAVE_BROKEN_TGETSTR
 #endif
 
 #if defined(QNX42)

@@ -1,4 +1,18 @@
--- 1.5.9 release 20010630 "" --
+-- 1.5.9 release 20010723 "Chord of Souls" --
+
+U068) Thomas E. Dickey <dickey@herndon4.his.com>
+      REM. top-level makefile.in
+      ADD. configure option --with-shell, to set the DEFAULT_SHELL.
+      ADD. configure option --with-pcre
+      ADD. configure option --with-screen
+      ADD. update doc/INSTALL
+      FIX. Makefile, aclocal.m4, configure[.in], INSTALL, autoconf.h[in]
+           oldconfig.h, tcurses.h, tin.h, trace.h, Makefile[.in], curses.c
+           mail.c, main.c, page.c, signal.c, tcurses.c. trace.c
+
+ 034) Andreas Metzler <tin-dev@downhill.at.eu.org>
+      BUG. gnksa_split_from() didn't treat missing @ as error
+      FIX. misc.c
 
 U069) Enrik Berkhan <enrik@tin.org>
       REM. raw() call
@@ -57,8 +71,9 @@ U063) Dirk Nimmich <nimmich@uni-muenster.de>
 U062) Martin Klaiber <martinkl@zedat.fu-berlin.de>
       ADD. option to sort threads by score (descend/ascend)
       ADD. quick return in case of regex-errors
+      BUG. rotating dash wasn't colorized
       FIX. tin.1, tin.5, extern.h, tin.h, tinrc.h, art.c, attrib.c, config.c
-           filter.c, init.c, lang.c, refs.c, tincfg.tbl
+           filter.c, init.c, lang.c, refs.c, screen.c, tincfg.tbl
 
 U061) Andreas Metzler <tin-dev@downhill.at.eu.org>
       Dirk Nimmich <nimmich@uni-muenster.de>
@@ -87,6 +102,10 @@ U059) Urs Janssen <urs@tin.org>
            all arts read
       BUG. uninitialized string in info-message saving one hot/pattern
            article
+      BUG. right arrow && auto_list_thread=OFF didn't go to first unread
+           article in thread
+      BUG. show_progress() didn't respect col_message
+      BUG. dumped core on missing passwd-file
       ADD. note recipient address in posted_info_file for
            'r'eplys/Followup-To: poster and mailing_lists
       ADD. smarter fall back for missing From: in insert_from_header()
@@ -104,6 +123,7 @@ U059) Urs Janssen <urs@tin.org>
       ADD. made some vars static
       ADD. check for missing/duplictaed From: line befor posting
       ADD. minor code cleanup
+      ADD. $GNUPGHOME support
       REM. "Article unchanged" prompt for postings (not mails, not reposts)
       REM. printer from attributes file
       REM. show_xcommentto code, use news_headers_to_display instead
@@ -116,8 +136,8 @@ U059) Urs Janssen <urs@tin.org>
            global.c, group.c, header.c, help.c, init.c, keymap.c, lang.c
            lock.c, main.c, memory.c, misc.c, newsrc.c, nntplib.c, nrctbl.c
            open.c, page.c, pgp.c, post.c, prompt.c, rfc2046.c, save.c
-           search.c, select.c, sigfile.c, signal.c, string.c, thread.c
-           tmpfile.c, my_tmpfile.c
+           screen.c, search.c, select.c, sigfile.c, signal.c, string.c
+           thread.c, tmpfile.c, my_tmpfile.c
 
 -- 1.5.8 release 20010221 "Blue Water" --
 

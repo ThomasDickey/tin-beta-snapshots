@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 1994-08-11
+ *  Updated   : 2001-07-22
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2001 Iain Lea <iain@bricbrac.de>
@@ -88,7 +88,7 @@ read_mail_active_file (
 		/*
 		 * Update mailgroup info
 		 */
-		if ((ptr = psGrpFind (buf)) != NULL) {
+		if ((ptr = group_find (buf)) != NULL) {
 			if (strcmp(ptr->spooldir, my_spooldir) != 0) {
 				free(ptr->spooldir);
 				ptr->spooldir = my_strdup(my_spooldir);

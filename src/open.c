@@ -345,10 +345,9 @@ DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
 	}
 
 #	if 0 /* TODO */
-	/* if we're using -n, check for XGTITLE */
+	/* if we're using -n, check for LIST NEWSGROUPS <wildmat> */
 	if (newsrc_active && !list_active) { /* -n */
-		if (!nntp_command("XGTITLE", ERR_COMMAND, NULL))
-			xgtitle_supported = TRUE;
+		/* code goes here */
 	}
 #	endif /* 0 */
 
@@ -659,11 +658,11 @@ open_newsgroups_fp (
 			read_local_newsgroups_file = FALSE;
 		}
 #	if 0 /* TODO */
-		if (xgtitle_supported && newsrc_active
+		if (list_newsgroups_wildmat_supported && newsrc_active
 		    && !list_active
 		    && num_active < some_useful_limit) {
 			for (i = 0; i < num_active; i++) {
-				sprintf(buff, "XGTITLE %s", active[i].name);
+				sprintf(buff, "LIST NEWSGROUPS %s", active[i].name);
 				nntp_command(buff, OK_LIST, NULL);
 			}
 		} else

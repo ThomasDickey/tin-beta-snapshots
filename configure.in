@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2001-05-26
+dnl Updated   : 2001-07-22
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2001 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -53,7 +53,7 @@ AC_SUBST(VERSION)
 CF_CHECK_CACHE
 
 CF_WITH_PATH(install-prefix,
-	[  --install-prefix        prefixes actual install location],
+	[  --with-install-prefix   prefixes actual install location],
 	DESTDIR,/)
 case ".$DESTDIR" in # (vi
 ./)	DESTDIR=
@@ -96,8 +96,8 @@ CF_PROG_EXT
 CF_LIB_PREFIX(LIB_PREFIX)
 AC_PROG_LN_S
 
-### check for cygwin enviroment
-dnl AC_CYGWIN is new in actuconf 2.13
+### check for cygwin environment
+dnl AC_CYGWIN is new in autoconf 2.13
 AC_CYGWIN
 dnl -DSTATIC needed for pcre
 dnl also add a check for "mode con" here and set
@@ -153,6 +153,13 @@ if test "$USE_PGP_GPG" = "yes" ; then
 	CF_WITH_PROGRAM(gpg,
 	[  --with-gpg              (default: from system path)])
 fi
+
+## Default shell
+AC_ARG_WITH(shell,
+	[  --with-shell=PROG       default \$SHELL program (default: sh)],
+	[cf_cv_default_shell=$withval],
+	[cf_cv_default_shell=])
+CF_DEFAULT_SHELL($cf_cv_default_shell)
 
 ### check for this early, since it'll override several options
 AC_MSG_CHECKING(if NNTP-support will be used)
@@ -329,26 +336,75 @@ else
 fi
 
 
-### Look for ncurses in the usual places, accommodating compilers that don't
-### search /usr/local by default.
-AC_MSG_CHECKING(if you want ncurses library)
-found_ncurses=no
-AC_ARG_WITH(ncurses,
-	[  --with-ncurses          link with ncurses if available],
-	[found_ncurses=$withval],
-	[found_ncurses=no])
-AC_MSG_RESULT($found_ncurses)
-if test $found_ncurses != no ; then
-	 CF_NCURSES_CPPFLAGS
-	 CF_NCURSES_LIBS
+AC_MSG_CHECKING(for screen type)
+AC_ARG_WITH(screen,
+[  --with-screen=xxx       specify screen type, which must be one of:
+                          termcap, terminfo, curses, ncurses, pdcurses.
+                          (replaces options --enable-curses and --with-ncurses)],
+	[cf_with_screen=$withval],
+	[cf_with_screen=none])
+AC_MSG_RESULT($cf_with_screen)
+
+use_curses=no
+use_ncurses=no
+
+case $cf_with_screen in #(vi
+termcap|terminfo) #(we will determine which it really is
+	;;
+curses) #(vi
+	use_curses=yes
+	;;
+ncurses) #(vi
+	use_curses=yes
+	use_ncurses=yes
+	;;
+pdcurses) #(vi
+	use_curses=yes
+	;;
+none)
+	AC_MSG_CHECKING(if you want to use ncurses library)
+	AC_ARG_WITH(ncurses,
+		[  --with-ncurses          link with ncurses if available],
+		[use_ncurses=$withval],
+		[use_ncurses=no])
+	AC_MSG_RESULT($use_ncurses)
+
+	AC_MSG_CHECKING(if you want curses rather than termcap interface)
+	CF_ARG_ENABLE(curses,
+		[  --enable-curses         use curses interface],
+		[cf_with_screen=curses;  use_curses=$withval],
+		[cf_with_screen=termcap; use_curses=no])
+	AC_MSG_RESULT($enableval)
+	;;
+esac
+
+if test $use_curses != no ; then
+	AC_DEFINE(USE_CURSES)
+	if test $use_ncurses = no ; then
+		if test $cf_with_screen = curses ; then
+			CF_CURSES_CPPFLAGS
+			CF_NCURSES_VERSION
+			CF_CURSES_LIBS
+		fi
+	else
+		CF_NCURSES_CPPFLAGS
+		CF_NCURSES_LIBS
+	fi
 fi
 
-AC_MSG_CHECKING(if you want curses rather than termcap interface)
-CF_ARG_ENABLE(curses,
-	[  --enable-curses         use curses interface],
-	[AC_DEFINE(USE_CURSES)])
-AC_MSG_RESULT($enableval)
-use_curses=$enableval
+## substitute externally-installed PCRE library for our bundled version
+AC_MSG_CHECKING(if you want to use installed version of pcre)
+AC_ARG_WITH(pcre,
+	[  --with-pcre=PATH        use installed pcre versus bundled],
+	[PCRE_HOME=$withval],
+	[PCRE_HOME=no])
+AC_MSG_RESULT($PCRE_HOME)
+CF_BUNDLED_PCRE($PCRE_HOME)
+
+PCRE_MAKEFILE=
+if test "$PCRE_HOME" = "no" ; then
+	PCRE_MAKEFILE="$PCRE_MAKEFILE pcre/Makefile pcre/pcre.h:pcre/pcre.in"
+fi
 
 ## debugging libraries (do this after other libraries)
 AC_MSG_CHECKING(if you want dbmalloc library)
@@ -376,10 +432,13 @@ AC_ARG_WITH(trace,
 AC_MSG_RESULT($use_trace)
 if test "$use_trace" = yes ; then
 	 AC_DEFINE(USE_TRACE)
-	 if test "$found_ncurses" = no ; then
-		 EXTRAOBJS="$EXTRAOBJS trace.o"
-	 else
-		 AC_CHECK_FUNC(_tracef,,[EXTRAOBJS="$EXTRAOBJS trace.o"])
+	EXTRAOBJS="$EXTRAOBJS trace.o"
+	 if test "$use_ncurses" != no ; then
+		AC_CHECK_FUNC(_tracef,,[
+		AC_CHECK_LIB(ncurses_g,_tracef,
+			[LIBS=`echo "$LIBS" | sed -e s/-lncurses// -e s/-lcurses//`
+			 LIBS="-lncurses_g $LIBS"],
+			[EXTRAOBJS="$EXTRAOBJS trace.o"])])
 	 fi
 fi
 AC_SUBST(EXTRAOBJS)
@@ -556,8 +615,7 @@ AC_MSG_RESULT($enableval)
 AC_MSG_CHECKING(whether to send a GROUP command before a LISTGROUP)
 CF_ARG_ENABLE(broken-listgroup-fix,
 	[  --enable-broken-listgroup-fix
-                          send extra GROUP command before LISTGROUP
-                         ],
+                          send extra GROUP command before LISTGROUP],
 	[AC_DEFINE(BROKEN_LISTGROUP)])
 AC_MSG_RESULT($enableval)
 
@@ -709,12 +767,8 @@ AC_CHECK_LIB(uu, UUInitialize,
 	)]
 )
 
-if test $use_curses = yes ; then
-	if test $found_ncurses != yes ; then
-		CF_NCURSES_VERSION
-		CF_CURSES_LIBS
-	fi
-	cf_cv_termlib=curses
+if test $use_curses != no ; then
+	cf_cv_termlib=$cf_with_screen
 else
 	CF_TERMCAP_LIBS
 	# terminfo-based termcap interfaces may be prototyped in <curses.h>,
@@ -734,8 +788,8 @@ make an error
 	AC_MSG_RESULT($cf_result)
 	CFLAGS="$cf_save_CFLAGS"
 	test $cf_result = yes && AC_DEFINE(HAVE_TERMCAP_H)
+	CF_TYPE_OUTCHAR
 fi
-CF_TYPE_OUTCHAR
 
 cf_tc_funcs=
 cf_tc_externs=
@@ -753,7 +807,7 @@ fi
 
 ###	Checks for external-data
 CF_ERRNO
-CF_SYS_ERRLIST
+CF_STRERROR
 
 ###	Checks for library functions.
 AC_CHECK_FUNCS(\
@@ -790,7 +844,6 @@ AC_CHECK_FUNCS(\
 	strchr \
 	strcasecmp \
 	strdup \
-	strerror \
 	strftime \
 	strpbrk \
 	strrstr \
@@ -845,7 +898,11 @@ CF_FUNC_SYSTEM
 
 # Check if we are trying to use curses+color, but cannot
 if test $use_color = yes ; then
-	if test $use_curses = yes ; then
+	if test $use_curses = no ; then
+		AC_DEFINE(HAVE_COLOR)
+	elif test $cf_with_screen = pdcurses ; then
+		AC_DEFINE(HAVE_COLOR)
+	else
 	 	CF_NCURSES_BROKEN
 		CF_COLOR_CURSES
 		if test $cf_cv_color_curses = yes ; then
@@ -853,8 +910,6 @@ if test $use_color = yes ; then
 		else
 			AC_MSG_WARN(This curses library does not support color)
 		fi
-	else
-		AC_DEFINE(HAVE_COLOR)
 	fi
 fi
 
@@ -1003,44 +1058,35 @@ DMALLOC)
 	;;
 esac
 
-. $srcdir/pcre/version.sh
-AC_SUBST(PCRE_MAJOR)
-AC_SUBST(PCRE_MINOR)
-AC_SUBST(PCRE_DATE)
-AC_SUBST(PCRE_DEFINES)
-
 ### NLS (gettext plus bundled libintl for systems without one)
 CF_BUNDLED_INTL
 
+if test "$cf_cv_termlib" = pdcurses ; then
+	CF_PDCURSES_X11
+fi
+
 ### sum up warnings
 if test "$cf_cv_termlib" = none ; then
-	if test "$found_ncurses" != yes; then
-        	echo "Warning: no term-lib found, you might run into trouble later."
-	fi
+	AC_MSG_WARN(no term-lib found, you might run into trouble later.)
 fi
 if test "$YACC" = "" ; then
-	echo "Warning: no yacc-parser found, you might run into trouble later."
+	AC_MSG_WARN(no yacc-parser found, you might run into trouble later.)
 fi
 if test "$RANLIB" = "" ; then
-        echo "Warning: no library archive builder found, you might run into trouble later."
+        AC_MSG_WARN(no library archive builder found, you might run into trouble later.)
 fi
 
 ### Finally, build autoconf.h and the makefiles
 CFLAGS="$CFLAGS $EXTRA_CFLAGS"
 
-AC_DEFINE_UNQUOTED(TIN_CC, "$CC")
-# x_CFLAGS=`echo $CFLAGS|sed -e 's/\\/\\134/g' -e 's/"/\\042/g'`
-# AC_DEFINE_UNQUOTED(TIN_CFLAGS, "$x_CFLAGS")
-AC_DEFINE_UNQUOTED(TIN_CPP, "$CPP")
-# x_CPPFLAGS=`echo $CPPFLAGS|sed -e 's/\\/\\134/g' -e 's/"/\\042/g'`
-# AC_DEFINE_UNQUOTED(TIN_CPPFLAGS, "$x_CPPFLAGS")
-AC_DEFINE_UNQUOTED(TIN_LD, "$CC")
-# x_LDFLAGS=`echo $LDFLAGS|sed -e 's/\\/\\134/g' -e 's/"/\\042/g'`
-# AC_DEFINE_UNQUOTED(TIN_LDFLAGS, "$x_LDFLAGS")
-AC_DEFINE_UNQUOTED(TIN_LIBS, "$LIBS")
+CF_DEFINE_STRING(TIN_CC,       "$CC")
+CF_DEFINE_STRING(TIN_CFLAGS,   "$CFLAGS")
+CF_DEFINE_STRING(TIN_CPP,      "$CPP")
+CF_DEFINE_STRING(TIN_CPPFLAGS, "$CPPFLAGS")
+CF_DEFINE_STRING(TIN_LD,       "$CC")
+CF_DEFINE_STRING(TIN_LDFLAGS,  "$LDFLAGS")
+CF_DEFINE_STRING(TIN_LIBS,     "$LIBS")
 
-AC_OUTPUT(makefile
-	$SUB_MAKEFILE
-	pcre/Makefile
-	pcre/pcre.h:pcre/pcre.in
+AC_OUTPUT($SUB_MAKEFILE
+	$PCRE_MAKEFILE
 	src/Makefile)

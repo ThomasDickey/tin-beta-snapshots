@@ -545,6 +545,7 @@ extern constext txt_error_no_from[];
 extern constext txt_error_no_read_permission[];
 extern constext txt_error_no_such_file[];
 extern constext txt_error_no_write_permission[];
+extern constext txt_error_passwd_missing[];
 extern constext txt_error_plural[];
 extern constext txt_error_sender_in_header_not_allowed[];
 extern constext txt_error_singular[];
@@ -867,7 +868,6 @@ extern constext txt_posted_info_file[];
 extern constext txt_posting[];
 extern constext txt_postpone_repost[];
 extern constext txt_prompt_fup_ignore[];
-/* extern constext txt_prompt_unchanged_art[]; */
 extern constext txt_prompt_unchanged_mail[];
 extern constext txt_prompt_see_postponed[];
 extern constext txt_quick_filter_kill[];
@@ -986,17 +986,13 @@ extern constext txt_untagged_art[];
 extern constext txt_untagged_thread[];
 extern constext txt_unthreading_arts[];
 extern constext txt_updated[];
-#ifndef HAVE_LIBUU
-#if 0
-	extern constext txt_uudecoding[];
-#endif /* 0 */
-#endif /* !HAVE_LIBUU */
 #ifndef HAVE_UUDECODE
 	extern constext txt_uuencode_not_supported[];
 #endif /* !HAVE_UUDECODE */
 extern constext txt_value_out_of_range[];
 extern constext txt_view_attachment[];
 extern constext txt_warn_art_line_too_long[];
+extern constext txt_warn_article_unchanged[];
 extern constext txt_warn_blank_subject[];
 extern constext txt_warn_cancel[];
 extern constext txt_warn_encoding_and_external_inews[];

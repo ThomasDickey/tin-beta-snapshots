@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
 #   Free Software Foundation, Inc.
 
-timestamp='2001-06-27'
+timestamp='2001-07-19'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -639,7 +639,7 @@ EOF
     9000/8??:4.3bsd:*:*)
 	echo hppa1.0-hp-bsd
 	exit 0 ;;
-    *9??*:MPE/iX:*:*)
+    *9??*:MPE/iX:*:* | *3000*:MPE/iX:*:*)
 	echo hppa1.0-hp-mpeix
 	exit 0 ;;
     hp7??:OSF1:*:* | hp8?[79]:OSF1:*:* )
@@ -683,12 +683,13 @@ EOF
 	echo xmp-cray-unicos
         exit 0 ;;
     CRAY*Y-MP:*:*:*)
-	echo ymp-cray-unicos${UNAME_RELEASE}
+	echo ymp-cray-unicos${UNAME_RELEASE} | sed -e 's/\.[^.]*$/.X/'
 	exit 0 ;;
     CRAY*[A-Z]90:*:*:*)
 	echo ${UNAME_MACHINE}-cray-unicos${UNAME_RELEASE} \
 	| sed -e 's/CRAY.*\([A-Z]90\)/\1/' \
-	      -e y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/
+	      -e y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/ \
+	      -e 's/\.[^.]*$/.X/'
 	exit 0 ;;
     CRAY*TS:*:*:*)
 	echo t90-cray-unicos${UNAME_RELEASE} | sed -e 's/\.[^.]*$/.X/'
@@ -775,79 +776,23 @@ EOF
 	esac
 	;;
     ppc:Linux:*:*)
-	# Determine Lib Version
-	cat >$dummy.c <<EOF
-#include <features.h>
-#if defined(__GLIBC__)
-extern char __libc_version[];
-extern char __libc_release[];
-#endif
-main(argc, argv)
-     int argc;
-     char *argv[];
-{
-#if defined(__GLIBC__)
-  printf("%s %s\n", __libc_version, __libc_release);
-#else
-  printf("unknown\n");
-#endif
-  return 0;
-}
-EOF
-	LIBC=""
-	eval $set_cc_for_build
-	$CC_FOR_BUILD $dummy.c -o $dummy 2>/dev/null
-	if test "$?" = 0 ; then
-		./$dummy | grep 1\.99 > /dev/null
-		if test "$?" = 0 ; then LIBC="libc1" ; fi
-	fi
-	rm -f $dummy.c $dummy
-	echo powerpc-unknown-linux-gnu${LIBC}
+	echo powerpc-unknown-linux-gnu
+	exit 0 ;;
+    ppc64:Linux:*:*)
+	echo powerpc64-unknown-linux-gnu
 	exit 0 ;;
     alpha:Linux:*:*)
-	cat <<EOF >$dummy.s
-	  .data
-	  \$Lformat:
-		.byte 37,100,45,37,120,10,0	# "%d-%x\n"
-	   .text
-		.globl main
-		.align 4
-		.ent main
-	    main:
-		.frame \$30,16,\$26,0
-		ldgp \$29,0(\$27)
-		.prologue 1
-		.long 0x47e03d80 # implver \$0
-		lda \$2,-1
-		.long 0x47e20c21 # amask \$2,\$1
-		lda \$16,\$Lformat
-		mov \$0,\$17
-		not \$1,\$18
-		jsr \$26,printf
-		ldgp \$29,0(\$26)
-		mov 0,\$16
-		jsr \$26,exit
-		.end main
-EOF
-	LIBC=""
-	eval $set_cc_for_build
-	$CC_FOR_BUILD $dummy.s -o $dummy 2>/dev/null
-	if test "$?" = 0 ; then
-		case `./$dummy` in
-		0-0)	UNAME_MACHINE="alpha" ;;
-		1-0)	UNAME_MACHINE="alphaev5" ;;
-		1-1)    UNAME_MACHINE="alphaev56" ;;
-		1-101)	UNAME_MACHINE="alphapca56" ;;
-		2-303)	UNAME_MACHINE="alphaev6" ;;
-		2-307)	UNAME_MACHINE="alphaev67" ;;
-		esac
-		objdump --private-headers $dummy | \
-		  grep ld.so.1 > /dev/null
-		if test "$?" = 0 ; then
-			LIBC="libc1"
-		fi
-	fi
-	rm -f $dummy.s $dummy
+	case `sed -n '/^cpu model/s/^.*: \(.*\)/\1/p' < /proc/cpuinfo` in
+	  EV5)   UNAME_MACHINE=alphaev5 ;;
+	  EV56)  UNAME_MACHINE=alphaev56 ;;
+	  PCA56) UNAME_MACHINE=alphapca56 ;;
+	  PCA57) UNAME_MACHINE=alphapca56 ;;
+	  EV6)   UNAME_MACHINE=alphaev6 ;;
+	  EV67)  UNAME_MACHINE=alphaev67 ;;
+	  EV68*) UNAME_MACHINE=alphaev67 ;;
+        esac
+	objdump --private-headers /bin/sh | grep ld.so.1 >/dev/null
+	if test "$?" = 0 ; then LIBC="libc1" ; else LIBC="" ; fi
 	echo ${UNAME_MACHINE}-unknown-linux-gnu${LIBC}
 	exit 0 ;;
     parisc:Linux:*:* | hppa:Linux:*:*)
@@ -929,9 +874,10 @@ EOF
 	rm -f $dummy.c $dummy
 	test x"${TENTATIVE}" != x && echo "${TENTATIVE}" && exit 0
 	;;
-# ptx 4.0 does uname -s correctly, with DYNIX/ptx in there.  earlier versions
-# are messed up and put the nodename in both sysname and nodename.
     i*86:DYNIX/ptx:4*:*)
+	# ptx 4.0 does uname -s correctly, with DYNIX/ptx in there.
+	# earlier versions are messed up and put the nodename in both
+	# sysname and nodename.
 	echo i386-sequent-sysv4
 	exit 0 ;;
     i*86:UNIX_SV:4.2MP:2.*)
@@ -953,7 +899,7 @@ EOF
     i*86:*:5:[78]*)
 	case `/bin/uname -X | grep "^Machine"` in
 	    *486*)	     UNAME_MACHINE=i486 ;;
-	    *Pentium*)	     UNAME_MACHINE=i586 ;;
+	    *Pentium)	     UNAME_MACHINE=i586 ;;
 	    *Pent*|*Celeron) UNAME_MACHINE=i686 ;;
 	esac
 	echo ${UNAME_MACHINE}-unknown-sysv${UNAME_RELEASE}${UNAME_SYSTEM}${UNAME_VERSION}

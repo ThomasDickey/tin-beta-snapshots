@@ -1,9 +1,21 @@
 Bugs
 ----
-o  check_article_to_be_posted() check for a valid From:, Reply-To:,
-   Sender: line seems to be broken (didn't get a error message for
-   i.e "From: foo.bar", but didn't really check the code why...)
-   [20010629 Urs Janssen <urs@tin.org>]
+o  abort bugreport prompt invisible
+   [20010703 Sebastian Bork <sebi@sebi.org>]
+
+o  Scrolling down to the bottom of an article fails, when a spoiler
+   is set in the article. The text below the spoiler cannot be read.
+   [20010701 Martin Klaiber <martinkl@zedat.fu-berlin.de>]
+   (^L handling needs some work - urs)
+
+0  When scrolling up or down in an article by using the arrow keys
+   while the computer is very busy, sometimes this message appears:
+   "Do you want to abort this operation (y/N)?" Pressing 'y' means
+   that one line in the text is missing. It's the line which would
+   have been drawn next at the top or bottom of the screen. Pressing
+   'y' doesn't make sense of course. I just mentioned it in case it
+   may help finding the error.
+   [20010701 Martin Klaiber <martinkl@zedat.fu-berlin.de>]
 
 o  -S, -N and -M cmd-line switches are broken (again)
    [20010628 Urs Janssen <urs@tin.org>]
@@ -33,7 +45,6 @@ o  thread_articles=0 lacks score for read arts if show_score=ON and
 o  batch mode has several bugs
    - -Z and giving a cmd-line group ends up in a loop
      (filters each group several times)
-   - -S/-R seem to be broken again
    - -M/-N do not remove To:, Cc:, Bcc: headers befor passing article
      to MTA (would require article parsing *sigh*)
    [Urs Janssen <urs@tin.org>]

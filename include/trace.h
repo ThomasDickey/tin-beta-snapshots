@@ -3,7 +3,7 @@
  *  Module    : trace.h
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-03-22
- *  Updated   : 1997-03-22
+ *  Updated   : 2001-07-22
  *  Notes     : Interface of trace.c
  *
  * Copyright (c) 1997-2001 Thomas Dickey <dickey@herndon4.his.com>
@@ -50,8 +50,6 @@ extern char *_nc_visbuf(const char *s);
 
 #			define _nc_visbuf(s) s
 
-extern char *tin_tracechar(int c);
-
 extern void	_tracef (const char *, ...)
 #			if defined(__GNUC__)
 	__attribute__ ((format(printf,1,2)))
@@ -60,8 +58,12 @@ extern void	_tracef (const char *, ...)
 #		endif /* NCURSES_VERSION */
 
 #		define TRACE(p) _tracef p
+
+extern char *tin_tracechar(int c);
+
 #	else
 #		define TRACE(p) /* nothing */
+
 #	endif /* USE_TRACE */
 
 #endif /* included_trace_h */

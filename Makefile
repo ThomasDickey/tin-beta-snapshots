@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 5
 SVER	= 9
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20010630
+DVER	= 20010723
 EXE	= tin
 
 # directory structure
@@ -202,7 +202,6 @@ TOP	= \
 	$(TOPDIR)/configure \
 	$(TOPDIR)/configure.in \
 	$(TOPDIR)/install.sh \
-	$(TOPDIR)/makefile.in \
 	$(TOPDIR)/mkdirs.sh
 
 PCRE	= \
@@ -476,9 +475,7 @@ name:
 	$(SED) "s,RELEASEDATE[[:space:]]*\"[[:print:]]*\",RELEASEDATE	\"$$DATE\"," $(INCDIR)/version.h > $(INCDIR)/version.h.tmp && \
 	$(SED) "s, VERSION[[:space:]]*\"[[:print:]]*\", VERSION		\"$(VER)\"," $(INCDIR)/version.h.tmp > $(INCDIR)/version.h && \
 	$(RM) $(INCDIR)/version.h.tmp ;\
-	$(SED) "s,^DVER[[:space:]]*=[[:print:]]*,DVER		= $$DATE," ./makefile.in > ./makefile.in.tmp && \
-	$(MV) ./makefile.in.tmp ./makefile.in
-	@$(MAKE) configure
+	$(MAKE) configure
 
 dist:
 	@$(MAKE) name
@@ -495,7 +492,6 @@ distclean:
 	@-if $(TEST) -r $(PODIR)/Makefile ; then $(CD) $(PODIR) && $(MAKE) distclean ; fi
 	@-if $(TEST) -r $(INTLDIR)/Makefile ; then $(CD) $(INTLDIR) && $(MAKE) distclean ; fi
 	@-$(RM) -f \
-	makefile \
 	config.cache \
 	config.log \
 	config.status \

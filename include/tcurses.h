@@ -3,7 +3,7 @@
  *  Module    : tcurses.h
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-03-02
- *  Updated   : 2000-07-19
+ *  Updated   : 2001-07-22
  *  Notes     : curses #include files, #defines & struct's
  *
  * Copyright (c) 1997-2001 Thomas Dickey <dickey@herndon4.his.com>
@@ -43,7 +43,10 @@
 
 
 #if defined(USE_CURSES) || defined(NEED_CURSES_H)
-#	ifdef HAVE_NCURSES_H
+#	ifdef HAVE_XCURSES
+#		include <xcurses.h>
+#		define getattrs(w) (w)->_attrs
+#	elif defined(HAVE_NCURSES_H)
 #		include <ncurses.h>
 #	elif defined(HAVE_NCURSES_NCURSES_H)
 #		include <ncurses/ncurses.h>
