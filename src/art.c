@@ -672,11 +672,11 @@ sort_base (
 
 /*
  * TODO
- * Seems to be only called when reading local spool and no overview files exist
- * Code reads (max_lineno) lines of article, presumably to catch headers like
- * Archive-name: which are not normally included in XOVER or even the normal
- * block of headers. How this is supposed to be useful when 99% of the time we'll
- * have overview data I don't know...
+ * Seems to be only called when reading local spool and no overview files
+ * exist. Code reads (max_lineno) lines of article, presumably to catch
+ * headers like Archive-name: which are not normally included in XOVER or
+ * even the normal block of headers. How this is supposed to be useful when
+ * 99% of the time we'll have overview data I don't know...
  */
 static t_bool
 parse_headers (
@@ -703,14 +703,14 @@ parse_headers (
 		unfold_header (ptr);
 		switch (toupper((unsigned char)*ptr)) {
 			case 'A':	/* Archive-name:  optional */
-				if ((hdr = parse_header (ptr+1, "rchive-name", FALSE))) {
+				if ((hdr = parse_header (ptr + 1, "rchive-name", FALSE))) {
 					/* TODO - what if header of form news/group/name/part01 ? */
 					if ((s = strrchr (hdr, '/')) != NULL) {
-						if (STRNCASECMPEQ(s+1, "part", 4)) {
-							h->part = my_strdup (s+5);
+						if (STRNCASECMPEQ(s + 1, "part", 4)) {
+							h->part = my_strdup (s + 5);
 							strtok(h->part, "\n");
-						} else if (STRNCASECMPEQ(s+1, "patch", 5)) {
-							h->patch = my_strdup (s+6);
+						} else if (STRNCASECMPEQ(s + 1, "patch", 5)) {
+							h->patch = my_strdup (s + 6);
 							strtok(h->patch, "\n");
 						} else
 							continue;
@@ -722,15 +722,13 @@ parse_headers (
 				break;
 			case 'D':	/* Date:  mandatory */
 				if (!h->date) {
-					if ((hdr = parse_header (ptr+1, "ate", FALSE)))
+					if ((hdr = parse_header (ptr + 1, "ate", FALSE)))
 						h->date = parsedate (hdr, (struct _TIMEINFO *) 0);
 				}
 				break;
 			case 'F':	/* From:  mandatory */
-			case 'T':	/* To:    mandatory (mailbox) */
 				if (!got_from) {
-					if ((hdr = parse_header (ptr+1, "rom", FALSE)) ||
-									(hdr = parse_header (ptr+1, "o", FALSE))) {
+					if ((hdr = parse_header (ptr + 1, "rom", FALSE))) {
 						h->gnksa_code = parse_from (hdr, art_from_addr, art_full_name);
 						h->from = hash_str (art_from_addr);
 						if (*art_full_name)
@@ -741,7 +739,7 @@ parse_headers (
 				break;
 			case 'L':	/* Lines:  optional */
 				if (!got_lines) {
-					if ((hdr = parse_header (ptr+1, "ines", FALSE))) {
+					if ((hdr = parse_header (ptr + 1, "ines", FALSE))) {
 						h->line_count = atoi (hdr);
 						got_lines = TRUE;
 					}
@@ -749,19 +747,19 @@ parse_headers (
 				break;
 			case 'M':	/* Message-ID:  mandatory */
 				if (!h->msgid) {
-					if ((hdr = parse_header (ptr+1, "essage-ID", FALSE)))
+					if ((hdr = parse_header (ptr + 1, "essage-ID", FALSE)))
 						h->msgid = my_strdup (hdr);
 				}
 				break;
 			case 'R':	/* References:  optional */
 				if (!h->refs) {
-					if ((hdr = parse_header (ptr+1, "eferences", FALSE)))
+					if ((hdr = parse_header (ptr + 1, "eferences", FALSE)))
 						h->refs = my_strdup (hdr);
 				}
 
 				/* Received:  If found it's probably a mail article */
 				if (!got_received) {
-					if ((hdr = parse_header (ptr+1, "eceived", FALSE))) {
+					if ((hdr = parse_header (ptr + 1, "eceived", FALSE))) {
 						max_lineno = 50;		/* Get extra lines for some reason */
 						got_received = TRUE;
 					}
@@ -769,7 +767,7 @@ parse_headers (
 				break;
 			case 'S':	/* Subject:  mandatory */
 				if (!h->subject) {
-					if ((hdr = parse_header (ptr+1, "ubject", FALSE))) {
+					if ((hdr = parse_header (ptr + 1, "ubject", FALSE))) {
 						s = eat_re (eat_tab(rfc1522_decode(hdr)), FALSE);
 						h->subject = hash_str (s);
 					}
@@ -777,7 +775,7 @@ parse_headers (
 				break;
 			case 'X':	/* Xref:  optional */
 				if (!h->xref) {
-					if ((hdr = parse_header (ptr+1, "ref", FALSE)))
+					if ((hdr = parse_header (ptr + 1, "ref", FALSE)))
 						h->xref = my_strdup (hdr);
 				}
 				break;

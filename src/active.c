@@ -130,6 +130,10 @@ resync_active_file (
 	write_newsrc ();
 	read_news_active_file ();
 
+#ifdef HAVE_MH_MAIL_HANDLING
+	read_mail_active_file ();
+#endif /* HAVE_MH_MAIL_HANDLING */
+
 	if (read_cmd_line_groups ())
 		command_line = TRUE;
 
@@ -680,7 +684,7 @@ check_for_any_new_groups (
 		sprintf (buf, "%s %lu", new_newnews_host, (unsigned long int) new_newnews_time);
 		load_newnews_info (buf);
 	}
-	my_fputc('\n',stdout);
+	my_fputc('\n', stdout);
 }
 
 

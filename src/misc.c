@@ -2505,7 +2505,7 @@ strip_address (
 	char *start_pos;
 
 	if (strchr(the_address, '@') != (char *) 0) {
-		if ((end_pos = strchr(the_address,'<')) == (char *) 0) {
+		if ((end_pos = strchr(the_address, '<')) == (char *) 0) {
 			if ((start_pos = strchr(the_address, ' ')) == (char *) 0)
 				strcpy (stripped_address, the_address);
 			else {

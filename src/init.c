@@ -560,12 +560,12 @@ init_selfinfo (
 #	ifdef M_OS2
 	strcpy (TMPDIR, get_val ("TMP", "/tmp/"));
 	if ((TMPDIR[strlen(TMPDIR)-1] != '/') && (TMPDIR[strlen(TMPDIR)-1] != '\\'))
-		strcat(TMPDIR,"/");
+		strcat(TMPDIR, "/");
 #	endif /* M_OS2 */
 #	ifdef WIN32
 	strcpy (TMPDIR, get_val ("TMP", "\\tmp\\"));
 	if (TMPDIR[strlen(TMPDIR)-1] != '\\')
-		strcat(TMPDIR,"\\");
+		strcat(TMPDIR, "\\");
 #	endif /* WIN32 */
 	strcpy (userid, myentry->pw_name);
 #	ifdef VMS

@@ -58,7 +58,7 @@ my_tmpfile(
 	const char *base_dir)
 {
 	int fd = -1;
-	char buf[PATH_MAX];
+	char buf[PATH_LEN];
 
 	errno = 0;
 

@@ -48,584 +48,454 @@
 #	include  "menukeys.h"
 #endif /* !MENUKEYS_H */
 
+typedef struct thp {
+	constext *helptext;
+	char key;
+} t_help_page;
+
 const char **info_help;
+static constext txt_help_empty_line[] = "";
 
-static const char *info_title;
-static constext txt_help_empty_line[] = "  ";
-
-static int cur_page;
-static int group_len = 0;
-static int info_type;
-static int max_page;
-static int pos_help;
-
-static int ReadHelpCh (void);
-
-constext *help_select[] = {
-		txt_help_navi,
-		txt_help_navi_,
-	txt_help_ctrl_d,
-	txt_help_ctrl_f,
-	txt_help_b,
-	txt_help_j,
-	txt_help_ctrl_n,
-		txt_help_empty_line,
-	txt_help_g_caret_dollar,
-	txt_help_g_num,
-	txt_help_g,
-	txt_help_n,
-		txt_help_empty_line,
-	txt_help_g_search,
-	txt_help_g_search_,
-		txt_help_empty_line,
-		txt_help_disp,
-		txt_help_disp_,
-	txt_help_g_r,
-	txt_help_i,
-	txt_help_g_d,
-	txt_help_I,
+static t_help_page select_help_page[] = {
+	{ txt_help_title_navi, 0 },
+	{ txt_help_global_page_down, iKeyPageDown },
+	{ txt_help_global_page_down, iKeyPageDown2 },
+	{ txt_help_global_page_down, iKeyPageDown3 },
+	{ txt_help_global_page_up, iKeyPageUp2 },
+	{ txt_help_global_page_up, iKeyPageUp },
+	{ txt_help_global_page_up, iKeyPageUp3 },
+	{ txt_help_global_line_down, iKeyDown2 },
+	{ txt_help_global_line_down, iKeyDown },
+	{ txt_help_global_line_up, iKeyUp2 },
+	{ txt_help_global_line_up, iKeyUp },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_select_first_group, iKeyFirstPage },
+	{ txt_help_select_last_group, iKeyLastPage },
+	{ txt_help_select_group_by_num, 0 },
+	{ txt_help_select_goto_group, iKeySelectGoto },
+	{ txt_help_select_next_unread_group, iKeySelectNextUnreadGrp },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_select_search_group_forwards, iKeySearchSubjF },
+	{ txt_help_select_search_group_backwards, iKeySearchSubjB },
+	{ txt_help_select_search_group_comment, 0 },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_title_disp, 0 },
+	{ txt_help_select_toggle_read_groups, iKeySelectToggleReadDisplay },
+	{ txt_help_global_toggle_info_line, iKeyToggleInfoLastLine },
+	{ txt_help_select_toggle_descriptions, iKeySelectToggleDescriptions },
+	{ txt_help_global_toggle_inverse_video, iKeyToggleInverseVideo },
 #ifdef HAVE_COLOR
-	txt_help_color,
+	{ txt_help_global_toggle_color, iKeyToggleColor },
 #endif /* HAVE_COLOR */
-		txt_help_empty_line,
-	txt_help_g_y,
-	txt_help_y,
-		txt_help_empty_line,
-		txt_help_ops,
-		txt_help_ops_,
-	txt_help_g_cr,
-	txt_help_g_tab,
-	txt_help_w,
-	txt_help_ctrl_o,
-		txt_help_empty_line,
-	txt_help_g_hash,
-		txt_help_empty_line,
-	txt_help_sel_c,
-	txt_help_g_z,
-	txt_help_s,
-	txt_help_S,
-	txt_help_m,
-		txt_help_empty_line,
-		txt_help_misc,
-		txt_help_misc_,
-	txt_help_g_q,
-	txt_help_g_x,
-	txt_help_h,
-	txt_help_M,
-	txt_help_esc,
-	txt_help_ctrl_l,
+	{ txt_help_empty_line, 0 },
+	{ txt_help_select_yank_active, iKeySelectYankActive },
+	{ txt_help_select_sync_with_active, iKeySelectSyncWithActive },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_title_ops, 0 },
+	{ txt_help_select_read_group, iKeySelectReadGrp },
+	{ txt_help_select_next_unread_group, iKeySelectEnterNextUnreadGrp2 },
+	{ txt_help_select_next_unread_group, iKeySelectEnterNextUnreadGrp },
+	{ txt_help_global_post, iKeyPost },
+	{ txt_help_global_post_postponed, iKeyPostponed2 },
+	{ txt_help_global_post_postponed, iKeyPostponed },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_select_group_range, iKeySetRange },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_select_catchup, iKeySelectCatchup },
+	{ txt_help_select_catchup_next_unread, iKeySelectCatchupNextUnread },
+	{ txt_help_select_mark_group_unread, iKeySelectMarkGrpUnread },
+	{ txt_help_select_mark_group_unread, iKeySelectMarkGrpUnread2 },
+	{ txt_help_select_subscribe, iKeySelectSubscribe },
+	{ txt_help_select_unsubscribe, iKeySelectUnsubscribe },
+	{ txt_help_select_subscribe_pattern, iKeySelectSubscribePat },
+	{ txt_help_select_unsubscribe_pattern, iKeySelectUnsubscribePat },
+	{ txt_help_select_move_group, iKeySelectMoveGrp },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_title_misc, 0 },
+	{ txt_help_select_quit, iKeyQuit },
+	{ txt_help_select_quit, iKeyQuitTin },
+	{ txt_help_select_quit_no_write, iKeySelectQuitNoWrite },
+	{ txt_help_global_help, iKeyHelp },
+	{ txt_help_global_toggle_mini_help, iKeyToggleHelpDisplay },
+	{ txt_help_global_option_menu, iKeyOptionMenu },
+	{ txt_help_global_esc, iKeyAbort },
+	{ txt_help_global_redraw_screen, iKeyRedrawScr },
 #ifndef NO_SHELL_ESCAPE
-	txt_help_shell,
+	{ txt_help_global_shell_escape, iKeyShellEscape },
 #endif /* !NO_SHELL_ESCAPE */
-	txt_help_W,
-	txt_help_g_ctrl_r,
-		txt_help_empty_line,
-	txt_help_v,
-	txt_help_bug_report,
-	0
+	{ txt_help_global_posting_history, iKeyDisplayPostHist },
+	{ txt_help_select_reset_newsrc, iKeySelectResetNewsrc },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_global_version, iKeyVersion },
+	{ txt_help_bug_report, iKeySelectBugReport },
+	{ NULL, 0 }
 };
 
-constext *help_group[] = {
-	txt_help_navi,
-	txt_help_navi_,
-	txt_help_ctrl_d,
-	txt_help_ctrl_f,
-	txt_help_b,
-	txt_help_j,
-	txt_help_ctrl_n,
-		txt_help_empty_line,
-	txt_help_i_caret_dollar,
-	txt_help_i_num,
-	txt_help_g,
-	txt_help_i_n,
-	txt_help_i_p,
-	txt_help_dash,
-	txt_help_L,
-	txt_help_l,
-		txt_help_empty_line,
-	txt_help_i_search,
-	txt_help_a,
-	txt_help_B,
-	txt_help_B_,
-		txt_help_empty_line,
-		txt_help_disp,
-		txt_help_disp_,
-	txt_help_r,
-	txt_help_i,
-	txt_help_d,
-	txt_help_I,
+static t_help_page group_help_page[] = {
+	{ txt_help_title_navi, 0 },
+	{ txt_help_global_page_down, iKeyPageDown },
+	{ txt_help_global_page_down, iKeyPageDown2 },
+	{ txt_help_global_page_down, iKeyPageDown3 },
+	{ txt_help_global_page_up, iKeyPageUp2 },
+	{ txt_help_global_page_up, iKeyPageUp },
+	{ txt_help_global_page_up, iKeyPageUp3 },
+	{ txt_help_global_line_down, iKeyDown2 },
+	{ txt_help_global_line_down, iKeyDown },
+	{ txt_help_global_line_up, iKeyUp2 },
+	{ txt_help_global_line_up, iKeyUp },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_group_first_thread, iKeyFirstPage },
+	{ txt_help_group_last_thread, iKeyLastPage },
+	{ txt_help_group_thread_by_num, 0 },
+	{ txt_help_group_goto_group, iKeyGroupGoto },
+	{ txt_help_group_next, iKeyGroupNextGroup },
+	{ txt_help_group_prev, iKeyGroupPrevGroup },
+	{ txt_help_group_next_unread_art, iKeyGroupNextUnreadArt },
+	{ txt_help_group_prev_unread_art, iKeyGroupPrevUnreadArt },
+	{ txt_help_global_last_art, iKeyLastViewed },
+	{ txt_help_global_lookup_art, iKeyLookupMessage },
+	{ txt_help_group_list_thread, iKeyGroupListThd },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_global_search_subj_forwards, iKeySearchSubjF },
+	{ txt_help_global_search_subj_backwards, iKeySearchSubjB },
+	{ txt_help_global_search_auth_forwards, iKeySearchAuthF },
+	{ txt_help_global_search_auth_backwards, iKeySearchAuthB },
+	{ txt_help_global_search_body, iKeySearchBody },
+	{ txt_help_global_search_body_comment, 0 },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_title_disp, 0 },
+	{ txt_help_group_toggle_read_articles, iKeyGroupToggleReadUnread },
+	{ txt_help_global_toggle_info_line, iKeyToggleInfoLastLine },
+	{ txt_help_group_toggle_subj_display, iKeyGroupToggleSubjDisplay },
+	{ txt_help_global_toggle_inverse_video, iKeyToggleInverseVideo },
 #ifdef HAVE_COLOR
-	txt_help_color,
+	{ txt_help_global_toggle_color, iKeyToggleColor },
 #endif /* HAVE_COLOR */
-		txt_help_empty_line,
-	txt_help_u,
-	txt_help_X,
-	txt_help_g_G,
-		txt_help_empty_line,
-		txt_help_ops,
-		txt_help_ops_,
-	txt_help_i_cr,
-	txt_help_i_tab,
-	txt_help_w,
-	txt_help_ctrl_o,
-	txt_help_x,
-		txt_help_empty_line,
-	txt_help_hash,
-		txt_help_empty_line,
-	txt_help_p_m,
-	txt_help_p_s,
-	txt_help_p_S,
+	{ txt_help_empty_line, 0 },
+	{ txt_help_group_toggle_threading, iKeyGroupToggleThreading },
+	{ txt_help_group_mark_unsel_art_read, iKeyGroupMarkUnselArtRead },
+	{ txt_help_group_toggle_getart_limit, iKeyGroupToggleGetartLimit },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_title_ops, 0 },
+	{ txt_help_group_read_article, iKeyGroupReadBasenote },
+	{ txt_help_group_next_unread_article, iKeyGroupNextUnreadArtOrGrp },
+	{ txt_help_global_post, iKeyPost },
+	{ txt_help_global_post_postponed, iKeyPostponed2 },
+	{ txt_help_global_post_postponed, iKeyPostponed },
+	{ txt_help_group_repost, iKeyGroupRepost },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_global_article_range, iKeySetRange },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_global_mail, iKeyGroupMail },
+	{ txt_help_global_save, iKeyGroupSave },
+	{ txt_help_global_save_tagged, iKeyGroupAutoSaveTagged },
 #ifndef DONT_HAVE_PIPING
-	txt_help_pipe,
+	{ txt_help_global_pipe, iKeyPipe },
 #endif /* !DONT_HAVE_PIPING */
 #ifndef DISABLE_PRINTING
-	txt_help_o,
+	{ txt_help_global_print, iKeyPrint },
 #endif /* !DISABLE_PRINTING */
-		txt_help_empty_line,
-	txt_help_t,
-	txt_help_g_T,
-	txt_help_U,
-		txt_help_empty_line,
-	txt_help_K,
-	txt_help_c,
-	txt_help_cC,
-	txt_help_p_z,
-		txt_help_empty_line,
-	txt_help_plus,
-	txt_help_i_star,
-	txt_help_equal,
-	txt_help_semicolon,
-	txt_help_i_dot,
-	txt_help_i_at,
-	txt_help_i_tilda,
-		txt_help_empty_line,
-	txt_help_ctrl_a,
-	txt_help_ctrl_k,
-	txt_help_quick_select,
-	txt_help_quick_kill,
-		txt_help_empty_line,
-		txt_help_misc,
-		txt_help_misc_,
-	txt_help_q,
-	txt_help_Q,
-	txt_help_h,
-	txt_help_M,
-	txt_help_esc,
-	txt_help_ctrl_l,
+	{ txt_help_empty_line, 0 },
+	{ txt_help_global_tag, iKeyGroupTag },
+	{ txt_help_group_tag_parts, iKeyGroupTagParts },
+	{ txt_help_group_untag_thread, iKeyGroupUntag },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_group_mark_thread_read, iKeyGroupMarkThdRead },
+	{ txt_help_group_catchup, iKeyGroupCatchup },
+	{ txt_help_group_catchup_next, iKeyGroupCatchupNextUnread },
+	{ txt_help_group_mark_article_unread, iKeyGroupMarkArtUnread },
+	{ txt_help_group_mark_thread_unread, iKeyGroupMarkThdUnread },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_group_select_all, iKeyGroupDoAutoSel },
+	{ txt_help_group_select_thread, iKeyGroupSelThd },
+	{ txt_help_group_select_thread_pattern, iKeyGroupSelPattern },
+	{ txt_help_group_select_thread_if_unread_selected, iKeyGroupSelThdIfUnreadSelected },
+	{ txt_help_group_toggle_thread_selection, iKeyGroupToggleThdSel },
+	{ txt_help_group_reverse_thread_selection, iKeyGroupReverseSel },
+	{ txt_help_group_undo_thread_selection, iKeyGroupUndoSel },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_article_autoselect, iKeyGroupAutoSel },
+	{ txt_help_article_autokill, iKeyGroupKill },
+	{ txt_help_article_quick_select, iKeyGroupQuickAutoSel },
+	{ txt_help_article_quick_kill, iKeyGroupQuickKill },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_title_misc, 0 },
+	{ txt_help_global_previous_menu, iKeyQuit },
+	{ txt_help_global_quit_tin, iKeyQuitTin },
+	{ txt_help_global_help, iKeyHelp },
+	{ txt_help_global_toggle_mini_help, iKeyToggleHelpDisplay },
+	{ txt_help_global_option_menu, iKeyOptionMenu },
+	{ txt_help_global_esc, iKeyAbort },
+	{ txt_help_global_redraw_screen, iKeyRedrawScr },
 #ifndef NO_SHELL_ESCAPE
-	txt_help_shell,
+	{ txt_help_global_shell_escape, iKeyShellEscape },
 #endif /* !NO_SHELL_ESCAPE */
-	txt_help_W,
-		txt_help_empty_line,
-	txt_help_v,
-	txt_help_bug_report,
-	0
+	{ txt_help_global_posting_history, iKeyDisplayPostHist },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_global_version, iKeyVersion },
+	{ txt_help_bug_report, iKeyGroupBugReport },
+	{ NULL, 0 }
 };
 
-constext *help_thread[] = {
-	txt_help_navi,
-	txt_help_navi_,
-	txt_help_ctrl_d,
-	txt_help_ctrl_f,
-	txt_help_b,
-	txt_help_j,
-	txt_help_ctrl_n,
-		txt_help_empty_line,
-	txt_help_t_caret_dollar,
-	txt_help_t_num,
-	txt_help_dash,
-	txt_help_L,
-		txt_help_empty_line,
-	txt_help_i_search,
-	txt_help_a,
-	txt_help_B,
-	txt_help_B_,
-		txt_help_empty_line,
-		txt_help_disp,
-		txt_help_disp_,
-	txt_help_i,
-	txt_help_d,
-	txt_help_I,
+static t_help_page thread_help_page[] = {
+	{ txt_help_title_navi, 0 },
+	{ txt_help_global_page_down, iKeyPageDown },
+	{ txt_help_global_page_down, iKeyPageDown2 },
+	{ txt_help_global_page_down, iKeyPageDown3 },
+	{ txt_help_global_page_up, iKeyPageUp2 },
+	{ txt_help_global_page_up, iKeyPageUp },
+	{ txt_help_global_page_up, iKeyPageUp3 },
+	{ txt_help_global_line_down, iKeyDown2 },
+	{ txt_help_global_line_down, iKeyDown },
+	{ txt_help_global_line_up, iKeyUp2 },
+	{ txt_help_global_line_up, iKeyUp },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_thread_first_article, iKeyFirstPage },
+	{ txt_help_thread_last_article, iKeyLastPage },
+	{ txt_help_thread_article_by_num, 0 },
+	{ txt_help_global_last_art, iKeyLastViewed },
+	{ txt_help_global_lookup_art, iKeyLookupMessage },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_global_search_subj_forwards, iKeySearchSubjF },
+	{ txt_help_global_search_subj_backwards, iKeySearchSubjB },
+	{ txt_help_global_search_auth_forwards, iKeySearchAuthF },
+	{ txt_help_global_search_auth_backwards, iKeySearchAuthB },
+	{ txt_help_global_search_body, iKeySearchBody },
+	{ txt_help_global_search_body_comment, 0 },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_title_disp, 0 },
+	{ txt_help_global_toggle_info_line, iKeyToggleInfoLastLine },
+	{ txt_help_thread_toggle_subj_display, iKeyThreadToggleSubjDisplay },
+	{ txt_help_global_toggle_inverse_video, iKeyToggleInverseVideo },
 #ifdef HAVE_COLOR
-	txt_help_color,
+	{ txt_help_global_toggle_color, iKeyToggleColor },
 #endif /* HAVE_COLOR */
-		txt_help_empty_line,
-		txt_help_ops,
-		txt_help_ops_,
-	txt_help_t_cr,
-	txt_help_p_tab,
-	txt_help_w,
-	txt_help_ctrl_o,
-		txt_help_empty_line,
-	txt_help_hash,
-		txt_help_empty_line,
-	txt_help_p_m,
-	txt_help_p_s,
-	txt_help_p_S,
-		txt_help_empty_line,
-	txt_help_t,
-	txt_help_U,
-		txt_help_empty_line,
-	txt_help_thd_K,
-	txt_help_thd_c,
-	txt_help_thd_C,
-	txt_help_p_z,
-		txt_help_empty_line,
-	txt_help_i_star,
-	txt_help_i_dot,
-	txt_help_i_at,
-	txt_help_i_tilda,
-		txt_help_empty_line,
-		txt_help_misc,
-		txt_help_misc_,
-	txt_help_q,
-	txt_help_Q,
-	txt_help_h,
-	txt_help_esc,
-	txt_help_ctrl_l,
+	{ txt_help_empty_line, 0 },
+	{ txt_help_title_ops, 0 },
+	{ txt_help_thread_read_article, iKeyThreadReadArt },
+	{ txt_help_article_read_next_unread, iKeyThreadReadNextArtOrThread },
+	{ txt_help_global_post, iKeyPost },
+	{ txt_help_global_post_postponed, iKeyPostponed2 },
+	{ txt_help_global_post_postponed, iKeyPostponed },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_global_article_range, iKeySetRange },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_global_mail, iKeyThreadMail },
+	{ txt_help_global_save, iKeyThreadSave },
+	{ txt_help_global_save_tagged, iKeyThreadAutoSaveTagged },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_global_tag, iKeyThreadTag },
+	{ txt_help_group_untag_thread, iKeyThreadUntag },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_thread_mark_article_read, iKeyThreadMarkArtRead },
+	{ txt_help_thread_catchup, iKeyThreadCatchup },
+	{ txt_help_thread_catchup_next_unread, iKeyThreadCatchupNextUnread },
+	{ txt_help_group_mark_article_unread, iKeyGroupMarkArtUnread },
+	{ txt_help_group_mark_thread_unread, iKeyGroupMarkThdUnread },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_group_select_thread, iKeyThreadSelArt },
+	{ txt_help_group_toggle_thread_selection, iKeyThreadToggleArtSel },
+	{ txt_help_group_reverse_thread_selection, iKeyThreadReverseSel },
+	{ txt_help_group_undo_thread_selection, iKeyThreadUndoSel },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_title_misc, 0 },
+	{ txt_help_global_previous_menu, iKeyQuit },
+	{ txt_help_global_quit_tin, iKeyQuitTin },
+	{ txt_help_global_help, iKeyHelp },
+	{ txt_help_global_toggle_mini_help, iKeyToggleHelpDisplay },
+	{ txt_help_global_esc, iKeyAbort },
+	{ txt_help_global_redraw_screen, iKeyRedrawScr },
 #ifndef NO_SHELL_ESCAPE
-	txt_help_shell,
+	{ txt_help_global_shell_escape, iKeyShellEscape },
 #endif /* !NO_SHELL_ESCAPE */
-	txt_help_W,
-		txt_help_empty_line,
-	txt_help_v,
-	txt_help_bug_report,
-	0
+	{ txt_help_global_posting_history, iKeyDisplayPostHist },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_global_version, iKeyVersion },
+	{ txt_help_bug_report, iKeyThreadBugReport },
+	{ NULL, 0 }
 };
 
-constext *help_page[] = {
-		txt_help_navi,
-		txt_help_navi_,
-	txt_help_ctrl_d,
-	txt_help_ctrl_f,
-	txt_help_b,
-	txt_help_p_caret_dollar,
-	txt_help_p_g,
-		txt_help_empty_line,
-	txt_help_p_num,
-	txt_help_p_cr,
-	txt_help_p_tab,
-	txt_help_p_n,
-	txt_help_p_p,
-	txt_help_thread,
-	txt_help_dash,
-	txt_help_l,
-	txt_help_p_u,
-	txt_help_L,
-	txt_help_T,
-	txt_help_colon,
-		txt_help_empty_line,
-	txt_help_p_search,
-	txt_help_a,
-	txt_help_B,
-	txt_help_B_,
-		txt_help_empty_line,
-		txt_help_disp,
-		txt_help_disp_,
-	txt_help_i,
-	txt_help_p_d,
-	txt_help_I,
+static t_help_page page_help_page[] = {
+	{ txt_help_title_navi, 0 },
+	{ txt_help_global_page_down, iKeyPageDown },
+	{ txt_help_global_page_down, iKeyPageDown2 },
+	{ txt_help_global_page_down, iKeyPageDown3 },
+	{ txt_help_global_page_up, iKeyPageUp2 },
+	{ txt_help_global_page_up, iKeyPageUp },
+	{ txt_help_global_page_up, iKeyPageUp3 },
+	{ txt_help_global_line_down, iKeyDown2 },
+	{ txt_help_global_line_down, iKeyDown },
+	{ txt_help_global_line_up, iKeyUp2 },
+	{ txt_help_global_line_up, iKeyUp },
+	{ txt_help_article_first_page, iKeyFirstPage },
+	{ txt_help_article_last_page, iKeyLastPage },
+	{ txt_help_article_first_page, iKeyPageFirstPage2 },
+	{ txt_help_article_last_page, iKeyPageLastPage2 },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_article_by_num, 0 },
+	{ txt_help_article_next_thread, iKeyPageNextThd },
+	{ txt_help_article_read_next_unread, iKeyPageNextUnread },
+	{ txt_help_article_next, iKeyPageNextArt },
+	{ txt_help_article_next_unread, iKeyPageNextUnreadArt },
+	{ txt_help_article_prev, iKeyPagePrevArt },
+	{ txt_help_article_prev_unread, iKeyPagePrevUnreadArt },
+	{ txt_help_article_first_in_thread, iKeyPageTopThd },
+	{ txt_help_article_last_in_thread, iKeyPageBotThd },
+	{ txt_help_global_last_art, iKeyLastViewed },
+	{ txt_help_group_list_thread, iKeyPageListThd },
+	{ txt_help_article_parent, iKeyPageGotoParent },
+	{ txt_help_global_lookup_art, iKeyLookupMessage },
+	{ txt_help_article_quit_to_select_level, iKeyPageGroupSel },
+	{ txt_help_article_skip_quote, iKeyPageSkipIncludedText },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_article_search_forwards, iKeySearchSubjF },
+	{ txt_help_article_search_backwards, iKeySearchSubjB },
+	{ txt_help_global_search_auth_forwards, iKeySearchAuthF },
+	{ txt_help_global_search_auth_backwards, iKeySearchAuthB },
+	{ txt_help_global_search_body, iKeySearchBody },
+	{ txt_help_global_search_body_comment, 0 },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_title_disp, 0 },
+	{ txt_help_global_toggle_info_line, iKeyToggleInfoLastLine },
+	{ txt_help_article_toggle_rot13, iKeyPageToggleRot },
+	{ txt_help_global_toggle_inverse_video, iKeyToggleInverseVideo },
+	{ txt_help_article_show_raw, iKeyPageToggleHeaders },
 #ifdef HAVE_COLOR
-	txt_help_color,
-	txt_help_ctrl_h,
-	txt_help__,
+	{ txt_help_global_toggle_color, iKeyToggleColor },
+	{ txt_help_article_toggle_highlight, iKeyPageToggleHighlight },
 #endif /* HAVE_COLOR */
-	txt_help_tex,
-	txt_help_ctrl_t,
-	txt_help_p_lb,
-	txt_help_p_rb,
-		txt_help_empty_line,
-		txt_help_ops,
-		txt_help_ops_,
-	txt_help_w,
-	txt_help_ctrl_o,
-	txt_help_p_f,
-	txt_help_p_ctrl_w,
-	txt_help_x,
-	txt_help_p_r,
-	txt_help_p_ctrl_e,
-	txt_help_e,
-		txt_help_empty_line,
-	txt_help_p_m,
-	txt_help_p_s,
-	txt_help_p_S,
+	{ txt_help_article_toggle_tex2iso, iKeyPageToggleTex2iso },
+	{ txt_help_article_toggle_tabwidth, iKeyPageToggleTabs },
+	{ txt_help_article_toggle_uue, iKeyPageToggleUue },
+	{ txt_help_article_toggle_formfeed, iKeyPageReveal },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_title_ops, 0 },
+	{ txt_help_global_post, iKeyPost },
+	{ txt_help_global_post_postponed, iKeyPostponed2 },
+	{ txt_help_global_post_postponed, iKeyPostponed },
+	{ txt_help_article_followup, iKeyPageFollowupQuote },
+	{ txt_help_article_followup_no_quote, iKeyPageFollowup },
+	{ txt_help_article_followup_with_header, iKeyPageFollowupQuoteHeaders },
+	{ txt_help_article_repost, iKeyPageRepost },
+	{ txt_help_article_reply, iKeyPageReplyQuote },
+	{ txt_help_article_reply_no_quote, iKeyPageReply },
+	{ txt_help_article_reply_with_header, iKeyPageReplyQuoteHeaders },
+	{ txt_help_article_edit, iKeyPageEditArticle },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_global_mail, iKeyPageMail },
+	{ txt_help_global_save, iKeyPageSave },
+	{ txt_help_global_save_tagged, iKeyPageAutoSaveTagged },
 #ifndef DONT_HAVE_PIPING
-	txt_help_pipe,
+	{ txt_help_global_pipe, iKeyPipe },
 #endif /* !DONT_HAVE_PIPING */
 #ifndef DISABLE_PRINTING
-	txt_help_o,
-	txt_help_p_V,
+	{ txt_help_global_print, iKeyPrint },
 #endif /* !DISABLE_PRINTING */
-		txt_help_empty_line,
-	txt_help_t,
-		txt_help_empty_line,
-	txt_help_p_k,
-	txt_help_c,
-	txt_help_cC,
-	txt_help_p_z,
-		txt_help_empty_line,
-	txt_help_ctrl_a,
-	txt_help_ctrl_k,
-	txt_help_quick_select,
-	txt_help_quick_kill,
-	txt_help_D,
-		txt_help_empty_line,
-		txt_help_misc,
-		txt_help_misc_,
-	txt_help_p_U,
-	txt_help_q,
-	txt_help_Q,
-	txt_help_h,
-	txt_help_M,
-	txt_help_esc,
-	txt_help_ctrl_l,
+	{ txt_help_article_view_attachments, iKeyPageViewAttach },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_global_tag, iKeyPageTag },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_article_mark_thread_read, iKeyPageKillThd },
+	{ txt_help_group_catchup, iKeyPageCatchup },
+	{ txt_help_group_catchup_next, iKeyPageCatchupNextUnread },
+	{ txt_help_group_mark_article_unread, iKeyGroupMarkArtUnread },
+	{ txt_help_group_mark_thread_unread, iKeyGroupMarkThdUnread },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_article_autoselect, iKeyPageAutoSel },
+	{ txt_help_article_autokill, iKeyPageAutoKill },
+	{ txt_help_article_quick_select, iKeyPageQuickAutoSel },
+	{ txt_help_article_quick_kill, iKeyPageQuickKill },
+	{ txt_help_article_cancel, iKeyPageCancel },
+	{ txt_help_empty_line, 0 },
+	{ txt_help_title_misc, 0 },
+	{ txt_help_article_browse_urls, iKeyPageViewUrl },
+	{ txt_help_global_previous_menu, iKeyQuit },
+	{ txt_help_global_quit_tin, iKeyQuitTin },
+	{ txt_help_global_help, iKeyHelp },
+	{ txt_help_global_toggle_mini_help, iKeyToggleHelpDisplay },
+	{ txt_help_global_option_menu, iKeyOptionMenu },
+	{ txt_help_global_esc, iKeyAbort },
+	{ txt_help_global_redraw_screen, iKeyRedrawScr },
 #ifndef NO_SHELL_ESCAPE
-	txt_help_shell,
+	{ txt_help_global_shell_escape, iKeyShellEscape },
 #endif /* !NO_SHELL_ESCAPE */
-	txt_help_W,
+	{ txt_help_global_posting_history, iKeyDisplayPostHist },
 #ifdef HAVE_PGP_GPG
-		txt_help_empty_line,
-	txt_help_ctrl_g,
+	{ txt_help_empty_line, 0 },
+	{ txt_help_article_pgp, iKeyPagePGPCheckArticle },
 #endif /* HAVE_PGP_GPG */
-		txt_help_empty_line,
-	txt_help_v,
-	0
+	{ txt_help_empty_line, 0 },
+	{ txt_help_global_version, iKeyVersion },
+	{ NULL, 0 }
 };
 
 
-static int
-ReadHelpCh (
-	void)
-{
-	int ch = ReadCh ();
-
-	switch (ch) {
-		case ESC:	/* common arrow keys */
-#ifdef HAVE_KEY_PREFIX
-		case KEY_PREFIX:
-#endif /* HAVE_KEY_PREFIX */
-			switch (get_arrow_key (ch)) {
-				case KEYMAP_LEFT:
-					break;
-
-				case KEYMAP_UP:
-#ifdef USE_CURSES
-					ch = iKeyUp;
-					break;
-#endif /* USE_CURSES */
-
-				case KEYMAP_PAGE_UP:
-					ch = iKeyPageUp;
-					break;
-
-				case KEYMAP_DOWN:
-#ifdef USE_CURSES
-					ch = iKeyDown;
-					break;
-#endif /* USE_CURSES */
-
-				case KEYMAP_RIGHT:
-				case KEYMAP_PAGE_DOWN:
-					ch = iKeyPageDown;
-					break;
-
-				case KEYMAP_HOME:
-					ch = iKeyFirstPage;
-					break;
-
-				case KEYMAP_END:
-					ch = iKeyLastPage;
-					break;
-
-				default:
-					break;
-			}
-			break;
-		default:
-			break;
-	}
-	return ch;
-}
-
-void
-show_info_page (
-	int type,
-	const char *help[],
-	const char *title)
-{
-	int max_line, len, ch;
-	int help_lines;
-	int old_page = 0;
-	int old_help;
-
-	signal_context = cHelp;
-
-	if (NOTESLINES <= 0)
-		return;
-
-	help_lines = (tinrc.beginner_level ? (NOTESLINES + MINI_HELP_LINES - 1) : NOTESLINES);
-
-	cur_page = 1;
-	max_page = 1;
-	pos_help = 0;
-
-	info_help = help;
-	info_type = type;
-	info_title = title;
-
-	/*
-	 *  find how many elements in array
-	 */
-	if (type == HELP_INFO) {
-		for (max_line = 0; help[max_line]; max_line++)
-			continue;
-	} else {
-		for (max_line = 0; posted[max_line].date[0]; max_line++) {
-			len = strlen (posted[max_line].group);
-			if (len > group_len)
-				group_len = len;
-		}
-	}
-
-	max_page = max_line / help_lines;
-	if (max_line % help_lines)
-		max_page++;
-
-	set_xclick_off ();
-#ifdef USE_CURSES
-	ClearScreen();
-#endif /* USE_CURSES */
-	forever {
-		if (cur_page != old_page) {
-#ifdef USE_CURSES
-			display_info_page (FALSE);
-#else
-			display_info_page();
-#endif /* USE_CURSES */
-		}
-
-		old_page = cur_page;
-
-		switch (ch = ReadHelpCh()) {
-			case ESC:	/* common arrow keys */
-				break;
-
-#ifdef USE_CURSES
-			case iKeyUp:				/* line up */
-			case iKeyUp2:
-				if (--pos_help < 0)
-					pos_help = (max_page-1) * help_lines;
-				old_page = -1;
-				cur_page = pos_help / help_lines + 1;
-				break;
-			case iKeyDown:				/* line down */
-			case iKeyDown2:
-				if (++pos_help >= max_line)
-					pos_help = 0;
-				old_page = -1;
-				cur_page = pos_help / help_lines + 1;
-				break;
-#endif /* USE_CURSES */
-			case iKeyPageDown:			/* page down */
-			case iKeyPageDown2:
-			case iKeyPageDown3:
-				if (cur_page < max_page) {
-					pos_help = cur_page * help_lines;
-					cur_page++;
-				} else {
-					pos_help = 0;
-					cur_page = 1;
-				}
-				break;
-
-			case iKeyPageUp:			/* page up */
-			case iKeyPageUp2:
-			case iKeyPageUp3:
-				if (--cur_page <= 0)
-					cur_page = max_page;
-				pos_help = (cur_page-1) * help_lines;
-				break;
-
-			case iKeyFirstPage:			/* Home */
-			case iKeyHelpFirstPage2:
-				if (cur_page != 1) {
-					cur_page = 1;
-					pos_help = 0;
-				}
-				break;
-
-			case iKeyLastPage:			/* End */
-			case iKeyHelpLastPage2:
-				if (cur_page != max_page)
-					cur_page = max_page;
-				pos_help = (max_page-1) * help_lines;
-				break;
-
-			case iKeySearchSubjF:
-			case iKeySearchSubjB:
-				if (type == HELP_INFO) {
-					old_help = pos_help;
-					pos_help = search_help (ch == iKeySearchSubjF, pos_help, max_line-1);
-					cur_page = pos_help / help_lines + 1;
-					if (old_help != pos_help)
-						old_page = -1;
-					break;
-				}
-			/* FALLTHROUGH */
-
-			default:
-				ClearScreen ();
-				return;
-		}
-	}
-}
-
-
-void
-display_info_page (
-#ifdef USE_CURSES
-	t_bool first
-#else
-	void
-#endif /* USE_CURSES */
-)
+static void
+make_help_page (
+	FILE *fp,
+	const t_help_page *helppage,
+	const t_menukeys *menukeys)
 {
 	char buf[LEN];
-	int i, help_lines;
+	char helpline[LEN];
+	char key[MAXKEYLEN];
 
-#ifdef HAVE_COLOR
-	fcol(tinrc.col_help);
-#endif /* HAVE_COLOR */
-#ifdef USE_CURSES
-	if (first)
-#endif /* USE_CURSES */
-		ClearScreen ();
-	sprintf (buf, info_title, cur_page, max_page);
-	center_line (0, TRUE, buf);
-	MoveCursor (INDEX_TOP, 0);
+	if (!helppage)
+		return;
 
-	help_lines = (tinrc.beginner_level ? (NOTESLINES + MINI_HELP_LINES - 1) : NOTESLINES);
-
-	if (info_type == HELP_INFO) {
-		for (i = pos_help; i < (pos_help + help_lines) && info_help[i]; i++)
-			my_printf ("%s" cCRLF, _(info_help[i]));
-	} else {
-		for (i = pos_help; i < (pos_help + help_lines) && posted[i].date[0]; i++) {
-			sprintf (buf, "%8s  %c  %-*s  %s",
-				posted[i].date, posted[i].action,
-				group_len, posted[i].group, posted[i].subj);
-				buf[cCOLS-2] = '\0';
-			my_printf ("%s" cCRLF, buf);
-		}
+	while (helppage->helptext) {
+		if (helppage->key == 0)
+			snprintf (buf, sizeof(buf), "%s", _(helppage->helptext));
+		else
+			snprintf (buf, sizeof(buf), "%s\t  %s",
+				printascii (key, map_to_local (helppage->key, menukeys)),
+				_(helppage->helptext));
+		buf[sizeof(buf)-1] = '\0';
+		expand_ctrl_chars (helpline, buf, sizeof(helpline), 8);
+		fprintf (fp, "%s\n", helpline);
+		helppage++;
 	}
-	CleartoEOS ();
-
-	center_line (cLINES, FALSE, _(txt_hit_space_for_more));
-#ifdef HAVE_COLOR
-	fcol(tinrc.col_normal);
-#endif /* HAVE_COLOR */
 }
 
+void
+show_help_page (
+	const int level,
+	const char *title)
+{
+	FILE *fp;
+
+	/* TODO: avoid tmpfile() _or_ provide a fallback for those systems which don't have it */
+	if (!(fp = tmpfile ()))
+		return;
+
+	switch (level) {
+		case SELECT_LEVEL:
+			make_help_page (fp, select_help_page, &menukeymap.select_nav);
+			break;
+
+		case GROUP_LEVEL:
+			make_help_page (fp, group_help_page, &menukeymap.group_nav);
+			break;
+
+		case THREAD_LEVEL:
+			make_help_page (fp, thread_help_page, &menukeymap.thread_nav);
+			break;
+
+		case PAGE_LEVEL:
+			make_help_page (fp, page_help_page, &menukeymap.page_nav);
+			break;
+
+		case INFO_PAGER:
+		default: /* should not happen */
+			error_message (_("Unknown display level")); /* FIXME: -> lang.c */
+			fclose (fp);
+			return;
+	}
+
+	info_pager (fp, title, TRUE);
+	fclose (fp);
+	return;
+}
 
 void
 show_mini_help (
@@ -742,6 +612,23 @@ show_mini_help (
 				printascii (key[7], map_to_local (iKeyPost, &menukeymap.page_nav)));
 			center_line (line+2, FALSE, buf);
 			break;
+
+		case INFO_PAGER:
+			snprintf (buf, bufs, _(txt_mini_info_1),
+				printascii (key[0], map_to_local (iKeyUp, &menukeymap.info_nav)),
+				printascii (key[1], map_to_local (iKeyDown, &menukeymap.info_nav)),
+				printascii (key[2], map_to_local (iKeyPageUp, &menukeymap.info_nav)),
+				printascii (key[3], map_to_local (iKeyPageDown, &menukeymap.info_nav)),
+				printascii (key[4], map_to_local (iKeyFirstPage, &menukeymap.info_nav)),
+				printascii (key[5], map_to_local (iKeyLastPage, &menukeymap.info_nav)));
+			center_line (line, FALSE, buf);
+			snprintf (buf, bufs, _(txt_mini_info_2),
+				printascii (key[0], map_to_local (iKeySearchSubjF, &menukeymap.info_nav)),
+				printascii (key[1], map_to_local (iKeySearchSubjB, &menukeymap.info_nav)),
+				printascii (key[2], map_to_local (iKeyQuit, &menukeymap.info_nav)));
+			center_line (line+1, FALSE, buf);
+			break;
+
 		default: /* should not happen */
 			error_message (_("Unknown display level")); /* FIXME: -> lang.c */
 			break;

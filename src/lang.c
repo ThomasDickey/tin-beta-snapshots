@@ -54,7 +54,7 @@ constext txt_art_cannot_cancel[] = N_("Article cannot be cancelled (deleted).");
 constext txt_art_newsgroups[] = N_("\nYour article:\n  \"%s\"\nwill be posted to the following %s:\n");
 constext txt_art_not_posted[] = N_("Article not posted!");
 constext txt_art_not_saved[] = N_("Article not saved");
-constext txt_art_pager_com[] = N_("Article Level Commands (page %d of %d)");
+constext txt_art_pager_com[] = N_("Article Level Commands");
 constext txt_art_posted[] = N_("Article posted: %s");
 constext txt_art_rejected[] = N_("Article rejected (saved to %s)");
 constext txt_art_thread_regex_tag[] = N_("%s=article, %s=thread, %s=hot, %s=pattern, %s=tagged articles, %s=quit: ");
@@ -143,6 +143,7 @@ constext txt_connecting_port[] = N_("Connecting to %s:%d...");
 	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2001 Iain Lea & Nigel Ellis.";
 #endif /* WIN32 */
 
+constext txt_cr[] = N_("<CR>");
 constext txt_creating_active[] = N_("Creating active file for saved groups...\n");
 constext txt_creating_newsrc[] = N_("Creating newsrc file...\n");
 constext txt_delete_processed_files[] = N_("Delete saved files that have been post processed?");
@@ -231,6 +232,7 @@ constext txt_error_no_write_permission[] = N_("No write permissions for %s\n");
 constext txt_error_plural[] = N_("errors");
 constext txt_error_sender_in_header_not_allowed[] = N_("\nError on line %d: \"Sender:\" header not allowed (it will be added for you)\n");
 constext txt_error_singular[] = N_("error");
+constext txt_esc[] = N_("<ESC>");
 constext txt_exiting[] = N_("Exiting...");
 constext txt_external_mail_done[] = N_("leaving external mail-reader");
 constext txt_extracting_shar[] = N_("Extracting %s...");
@@ -251,172 +253,168 @@ constext txt_global[] = N_("global ");
 
 constext txt_group_is_moderated[] = N_("Group %s is moderated. Continue?");
 constext txt_group_plural[] = N_("groups");
-constext txt_group_select_com[] = N_("Top Level Commands (page %d of %d)");
+constext txt_group_select_com[] = N_("Top Level Commands");
 constext txt_group_selection[] = N_("Group Selection");
 constext txt_group_singular[] = N_("group");
 
-/* Multi-line strings won't work on help pager */
-constext txt_help_disp[]  = N_("Display properties");
-constext txt_help_disp_[] = N_("------------------");
-constext txt_help_navi[]  = N_("Moving around");
-constext txt_help_navi_[] = N_("-------------");
-constext txt_help_ops[]   = N_("Group/thread/article operations");
-constext txt_help_ops_[]  = N_("-------------------------------");
-constext txt_help_misc [] = N_("Miscellaneous");
-constext txt_help_misc_[] = N_("-------------");
-
-#ifndef NO_SHELL_ESCAPE
-	constext txt_help_shell[] = N_("!\t  shell escape");
-#endif /* !NO_SHELL_ESCAPE */
-
-constext txt_help_B[] = N_("B\t  search all articles for a given string (this may take some time)");
-constext txt_help_B_[] = N_("\t  (searches are case-insensitive and wrap around to all articles)");
-constext txt_help_D[] = N_("D\t  cancel (delete) current article; must have been posted by you");
-constext txt_help_I[] = N_("I\t  toggle inverse video");
-constext txt_help_K[] = N_("K\t  mark current thread as read");
-constext txt_help_L[] = N_("L\t  goto article chosen by Message-ID");
-constext txt_help_M[] = N_("M\t  menu of configurable options");
-constext txt_help_Q[] = N_("Q\t  quit");
-constext txt_help_S[] = N_("S U\t  subscribe (U = unsubscribe) to groups that match pattern");
-constext txt_help_T[] = N_("T\t  return to group selection level");
-constext txt_help_U[] = N_("U\t  untag all tagged threads");
-constext txt_help_W[] = N_("W\t  list articles posted by you (from posted file)");
-constext txt_help_X[] = N_("X\t  toggle display of all/selected articles");
-constext txt_help_p_U[] = N_("U\t  Browse URL's in article");
-constext txt_help_p_V[] = N_("V\t  View/save multimedia attachments");
-
-constext txt_help_a[] = N_("a A\t  search for articles by author (a = forward, A = backward)");
-
-constext txt_help_b[] = N_("<SPACE> b down (b = up) one page");
-constext txt_help_bug[] = N_("R\t  report bug or comment via mail to %s");
-constext txt_help_cC[] = N_("C\t  mark all articles as read and enter next group with unread articles");
-constext txt_help_c[] = N_("c\t  mark all articles as read and return to group selection menu");
-constext txt_help_sel_c[] = N_("c C\t  mark all articles in chosen group read (C = and enter next unread group)");
-constext txt_help_thd_c[] = N_("c\t  mark thread as read and return to group index page");
-constext txt_help_thd_C[] = N_("C\t  mark thread as read and enter next unread thread or group");
-constext txt_help_thd_K[] = N_("K\t  mark article as read and move cursor to next unread article");
-
-#ifdef HAVE_COLOR
-	constext txt_help_color[] = N_("&\t  toggle color");
-#endif /* HAVE_COLOR */
-
-constext txt_help_colon[] = N_(":\t  skip next block of included text");
-constext txt_help_ctrl_a[] = N_("^A\t  auto-select (hot) an article via a menu");
-constext txt_help_ctrl_d[] = N_("^D ^U\t  down (^U = up) one page");
-constext txt_help_ctrl_f[] = N_("^F ^B\t  down (^B = up) one page");
-
+constext txt_help_article_autokill[] = N_("kill an article via a menu");
+constext txt_help_article_autoselect[] = N_("auto-select (hot) an article via a menu");
+constext txt_help_article_browse_urls[] = N_("Browse URLs in article");
+constext txt_help_article_by_num[] = N_("0 - 9\t  display article by number in current thread");
+constext txt_help_article_cancel[] = N_("cancel (delete) current article; must have been posted by you");
+constext txt_help_article_edit[] =  N_("edit article (mail-groups only)");
+constext txt_help_article_first_in_thread[] = N_("display first article in current thread");
+constext txt_help_article_first_page[] = N_("display first page of article");
+constext txt_help_article_followup[] = N_("post followup to current article");
+constext txt_help_article_followup_no_quote[] = N_("post followup (don't copy text) to current article");
+constext txt_help_article_followup_with_header[] = N_("post followup to current article quoting complete headers");
+constext txt_help_article_last_in_thread[] = N_("display last article in current thread");
+constext txt_help_article_last_page[] = N_("display last page of article");
+constext txt_help_article_mark_thread_read[] = N_("mark thread as read and advance to next unread");
+constext txt_help_article_next[] = N_("display next article");
+constext txt_help_article_next_thread[] = N_("display first article in next thread");
+constext txt_help_article_next_unread[] = N_("display next unread article");
+constext txt_help_article_parent[] = N_("goto the article that this one followed up");
 #ifdef HAVE_PGP_GPG
-	constext txt_help_ctrl_g[] = N_("^G\t  perform PGP operations on article");
+	constext txt_help_article_pgp[] = N_("perform PGP operations on article");
 #endif /* HAVE_PGP_GPG */
-
-constext txt_help_ctrl_h[] = N_("^H\t  show article in raw-mode (including all headers)");
-constext txt_help_ctrl_k[] = N_("^K\t  kill an article via a menu");
-constext txt_help_ctrl_l[] = N_("^L\t  redraw page");
-constext txt_help_ctrl_n[] = N_("^N ^P\t  down (^P = up) one line");
-constext txt_help_ctrl_o[] = N_("O ^O\t  post postponed articles");
-constext txt_help_ctrl_t[] = N_("^T\t  toggle tabwidth 4 <-> 8");
-constext txt_help_d[] = N_("d\t  cycle the display of authors email address, real name, both or neither");
-constext txt_help_dash[] = N_("-\t  display last article viewed");
-constext txt_help_e[] =  N_("e\t  edit article (mail-groups only)");
-constext txt_help_equal[] = N_("=\t  select threads that match user specified pattern");
-constext txt_help_esc[] = N_("<ESC>\t  escape from command prompt");
-constext txt_help_g[] = N_("g\t  choose group by name");
-constext txt_help_g_caret_dollar[] = N_("^ $\t  choose first ($ = last) group in list");
-constext txt_help_g_cr[] = N_("<CR>\t  read chosen group");
-constext txt_help_g_G[] = N_("G\t  toggle limit number of articles to get, and reload");
-constext txt_help_g_ctrl_r[] = N_("^R\t  reset .newsrc (all available articles in groups marked unread)");
-constext txt_help_g_d[] = N_("d\t  toggle display of group name only or group name plus description");
-constext txt_help_g_hash[] = N_("#\t  choose range of groups to be affected by next command");
-constext txt_help_g_num[] = N_("0 - 9\t  choose group by number");
-constext txt_help_g_q[] = N_("q Q\t  quit");
-constext txt_help_g_r[] = N_("r\t  toggle display to show all/unread subscribed groups");
-constext txt_help_g_search[] = N_("/ ?\t  search forwards for a group name (? = backwards)");
-constext txt_help_g_search_[] = N_("\t  (all searches are case-insensitive and wrap around)");
-constext txt_help_g_T[] = N_("T\t  tag all parts of current multipart-message in order");
-constext txt_help_g_tab[] = N_("n <TAB>\t  enter next group with unread news");
-constext txt_help_g_x[] = N_("X\t  quit without saving configuration changes");
-constext txt_help_g_y[] = N_("y\t  toggle display to show all/subscribed groups");
-constext txt_help_g_z[] = N_("z Z\t  mark all articles in chosen group unread");
-constext txt_help_h[] = N_("h H\t  get help (H = toggle mini help menu display)");
-constext txt_help_hash[] = N_("#\t  choose range of articles to be affected by next command");
-constext txt_help_i[] = N_("i\t  toggle info message in last line (subject/description)");
-constext txt_help_i_caret_dollar[] = N_("^ $\t  choose first ($ = last) thread in list");
-constext txt_help_i_at[] = N_("@\t  toggle all selections (all articles)");
-constext txt_help_i_cr[] = N_("<CR>\t  read chosen article");
-constext txt_help_i_dot[] = N_(".\t  toggle selection of thread");
-constext txt_help_i_n[] = N_("n p\t  display next (p = previous) group");
-constext txt_help_i_num[] = N_("0 - 9\t  choose thread by number");
-constext txt_help_i_p[] = N_("N P\t  display next (P = previous) unread article");
-constext txt_help_i_search[] = N_("/ ?\t  search for articles by Subject line (/ = forward, ? = backward)");
-constext txt_help_i_star[] = N_("*\t  select thread");
-constext txt_help_i_tab[] = N_("<TAB>\t  display next unread article");
-constext txt_help_i_tilda[] = N_("~\t  undo all selections (all articles)");
-constext txt_help_j[] = N_("j k\t  down (k = up) one line");
-constext txt_help_quick_kill[] = N_("]\t  quickly kill an article using defaults");
-constext txt_help_quick_select[] = N_("[\t  quickly auto-select (hot) an article using defaults");
-constext txt_help_l[] = N_("l\t  list articles within current thread (bring up Thread sub-menu)");
-constext txt_help_m[] = N_("m\t  move chosen group within list");
-constext txt_help_n[] = N_("N\t  choose next group with unread news");
-
-#ifndef DISABLE_PRINTING
-	constext txt_help_o[] = N_("o\t  output article/thread/hot/pattern/tagged articles to printer");
-#endif /* !DISABLE_PRINTING */
-
-constext txt_help_p_caret_dollar[] = N_("^ $\t  display first ($ = last) page of article");
-constext txt_help_p_at[] = N_("@\t  reverse article selections");
-constext txt_help_p_ctrl_e[] = N_("^E\t  reply through mail to author quoting complete headers");
-constext txt_help_p_ctrl_w[] = N_("^W\t  post followup to current article quoting complete headers");
-constext txt_help_p_cr[] = N_("<CR>\t  display first article in next thread");
-constext txt_help_p_d[] = N_("%\t  toggle ROT-13 (basic decode) for current article");
-constext txt_help_p_dot[] = N_(".\t  toggle article selection");
-constext txt_help_p_f[] = N_("f F\t  post followup (F = don't copy text) to current article");
-constext txt_help_p_g[] = N_("g G\t  display first (G = last) page of article");
-/* constext txt_help_p_k[] = N_("k K\t  mark article (K = thread) as read and advance to next unread"); */
-constext txt_help_p_k[] = N_("K\t  mark thread as read and advance to next unread");
-constext txt_help_p_lb[] = N_("(\t  toggle display of uuencoded sections on/off");
-constext txt_help_p_rb[] = N_(")\t  toggle display of sections hidden by a form-feed (^L) on/off");
-constext txt_help_p_m[] = N_("m\t  mail article/thread/hot/pattern/tagged articles to someone");
-constext txt_help_p_n[] = N_("n N\t  display next (N = next unread) article");
-constext txt_help_p_num[] = N_("0 - 9\t  display article by number in current thread");
-constext txt_help_p_p[] = N_("p P\t  display previous (P = previous unread) article");
-constext txt_help_p_r[] = N_("r R\t  reply through mail (R = don't copy text) to author");
-constext txt_help_p_s[] = N_("s\t  save article/thread/hot/pattern/tagged articles to file");
-constext txt_help_p_S[] = N_("S\t  save tagged articles automatically without user prompts");
-constext txt_help_p_search[] = N_("/ ?\t  search forwards within this article (? = backwards)");
-constext txt_help_p_star[] = N_("*\t  select article");
-constext txt_help_p_tab[] = N_("<TAB>\t  display next unread article");
-constext txt_help_p_u[] = N_("u\t  goto the article that this one followed up");
-constext txt_help_p_tilda[] = N_("~\t  undo all selections in thread");
-constext txt_help_p_z[] = N_("z Z\t  mark article (Z = thread) as unread");
-#ifndef DONT_HAVE_PIPING
-	constext txt_help_pipe[] = N_("|\t  pipe article/thread/hot/pattern/tagged articles into command");
-#endif /* !DONT_HAVE_PIPING */
-constext txt_help_plus[] = N_("+\t  select group (make \"hot\")");
-
-constext txt_help_q[] = N_("q\t  return to previous menu");
-
-constext txt_help_r[] = N_("r\t  toggle display of all/unread articles");
-constext txt_help_s[] = N_("s u\t  subscribe (u = unsubscribe) to chosen group");
-constext txt_help_semicolon[] = N_(");\t  select threads if at least one unread article is selected");
-constext txt_help_t[] = N_("t\t  tag current article for reposting/mailing/piping/printing/saving");
-constext txt_help_tex[] = N_("\"\t  toggle german TeX style decoding for current article");
-constext txt_help_t_caret_dollar[] = N_("^ $\t  choose first ($ = last) article in list");
-constext txt_help_t_cr[] = N_("<CR>\t  read chosen article");
-constext txt_help_t_num[] = N_("0 - 9\t  choose article by number");
-constext txt_help_thread[] = N_("< >\t  display first (> = last) article in current thread");
-constext txt_help_u[] = N_("u\t  cycle through threading options available");
-
-constext txt_help_v[] = N_("v\t  show version information");
-constext txt_help_w[] = N_("w\t  post (write) article to current group");
-constext txt_help_x[] = N_("x\t  repost chosen article to another group");
-constext txt_help_y[] = N_("Y\t  reread active file to check for any new news");
-
+constext txt_help_article_prev[] = N_("display previous article");
+constext txt_help_article_prev_unread[] = N_("display previous unread article");
+constext txt_help_article_quick_kill[] = N_("quickly kill an article using defaults");
+constext txt_help_article_quick_select[] = N_("quickly auto-select (hot) an article using defaults");
+constext txt_help_article_quit_to_select_level[] = N_("return to group selection level");
+constext txt_help_article_read_next_unread[] = N_("display next unread article");
+constext txt_help_article_reply[] = N_("reply through mail to author");
+constext txt_help_article_reply_no_quote[] = N_("reply through mail (don't copy text) to author");
+constext txt_help_article_reply_with_header[] = N_("reply through mail to author quoting complete headers");
+constext txt_help_article_repost[] = N_("repost chosen article to another group");
+constext txt_help_article_search_backwards[] = N_("search backwards within this article");
+constext txt_help_article_search_forwards[] = N_("search forwards within this article");
+constext txt_help_article_show_raw[] = N_("show article in raw-mode (including all headers)");
+constext txt_help_article_skip_quote[] = N_("skip next block of included text");
+constext txt_help_article_toggle_formfeed[] = N_("toggle display of sections hidden by a form-feed (^L) on/off");
 #ifdef HAVE_COLOR
-	constext txt_help__[] = N_("_\t  toggle word highlighting on/off");
+	constext txt_help_article_toggle_highlight[] = N_("toggle word highlighting on/off");
 #endif /* HAVE_COLOR */
+constext txt_help_article_toggle_rot13[] = N_("toggle ROT-13 (basic decode) for current article");
+constext txt_help_article_toggle_tabwidth[] = N_("toggle tabwidth 4 <-> 8");
+constext txt_help_article_toggle_tex2iso[] = N_("toggle german TeX style decoding for current article");
+constext txt_help_article_toggle_uue[] = N_("toggle display of uuencoded sections on/off");
+constext txt_help_article_view_attachments[] = N_("View/save multimedia attachmenats");
+constext txt_help_bug[] = N_("report bug or comment via mail to %s");
+constext txt_help_global_article_range[] = N_("choose range of articles to be affected by next command");
+constext txt_help_global_esc[] = N_("escape from command prompt");
+constext txt_help_global_help[] = N_("get help");
+constext txt_help_global_last_art[] = N_("display last article viewed");
+constext txt_help_global_line_down[] = N_("down one line");
+constext txt_help_global_line_up[] = N_("up one line");
+constext txt_help_global_lookup_art[] = N_("goto article chosen by Message-ID");
+constext txt_help_global_mail[] = N_("mail article/thread/hot/pattern/tagged articles to someone");
+constext txt_help_global_option_menu[] = N_("menu of configurable options");
+constext txt_help_global_page_down[] =  N_("down one page");
+constext txt_help_global_page_up[] =  N_("up one page");
+#ifndef DONT_HAVE_PIPING
+	constext txt_help_global_pipe[] = N_("pipe article/thread/hot/pattern/tagged articles into command");
+#endif /* !DONT_HAVE_PIPING */
+constext txt_help_global_post[] = N_("post (write) article to current group");
+constext txt_help_global_post_postponed[] = N_("post postponed articles");
+constext txt_help_global_posting_history[] = N_("list articles posted by you (from posted file)");
+constext txt_help_global_previous_menu[] = N_("return to previous menu");
+#ifndef DISABLE_PRINTING
+	constext txt_help_global_print[] = N_("output article/thread/hot/pattern/tagged articles to printer");
+#endif /* !DISABLE_PRINTING */
+constext txt_help_global_quit_tin[] = N_("quit tin immediately");
+constext txt_help_global_redraw_screen[] = N_("redraw page");
+constext txt_help_global_save[] = N_("save article/thread/hot/pattern/tagged articles to file");
+constext txt_help_global_save_tagged[] = N_("save tagged articles automatically without user prompts");
+constext txt_help_global_search_auth_backwards[] = N_("search for articles by author backwards");
+constext txt_help_global_search_auth_forwards[] = N_("search for articles by author forwards");
+constext txt_help_global_search_body[] = N_("search all articles for a given string (this may take some time)");
+constext txt_help_global_search_body_comment[] = N_("\t  (searches are case-insensitive and wrap around to all articles)");
+constext txt_help_global_search_subj_backwards[] = N_("search for articles by Subject line backwards");
+constext txt_help_global_search_subj_forwards[] = N_("search for articles by Subject line forwards");
+#ifndef NO_SHELL_ESCAPE
+	constext txt_help_global_shell_escape[] = N_("shell escape");
+#endif /* !NO_SHELL_ESCAPE */
+constext txt_help_global_tag[] = N_("tag current article for reposting/mailing/piping/printing/saving");
+#ifdef HAVE_COLOR
+	constext txt_help_global_toggle_color[] = N_("toggle color");
+#endif /* HAVE_COLOR */
+constext txt_help_global_toggle_info_line[] = N_("toggle info message in last line (subject/description)");
+constext txt_help_global_toggle_inverse_video[] = N_("toggle inverse video");
+constext txt_help_global_toggle_mini_help[] = N_("toggle mini help menu display");
+constext txt_help_global_version[] = N_("show version information");
+constext txt_help_group_catchup[] = N_("mark all articles as read and return to group selection menu");
+constext txt_help_group_catchup_next[] = N_("mark all articles as read and enter next group with unread articles");
+constext txt_help_group_first_thread[] = N_("choose first thread in list");
+constext txt_help_group_goto_group[] = N_("choose group by name");
+constext txt_help_group_last_thread[] = N_("choose last) thread in list");
+constext txt_help_group_list_thread[] = N_("list articles within current thread (bring up Thread sub-menu)");
+constext txt_help_group_mark_article_unread[] = N_("mark article as unread");
+constext txt_help_group_mark_thread_read[] = N_("mark current thread as read");
+constext txt_help_group_mark_thread_unread[] = N_("mark thread as unread");
+constext txt_help_group_mark_unsel_art_read[] = N_("toggle display of all/selected articles");
+constext txt_help_group_next[] = N_("display next group");
+constext txt_help_group_next_unread_art[] = N_("display next unread article");
+constext txt_help_group_next_unread_article[] = N_("display next unread article");
+constext txt_help_group_prev[] = N_("display previous group");
+constext txt_help_group_prev_unread_art[] = N_("display previous unread article");
+constext txt_help_group_read_article[] = N_("read chosen article");
+constext txt_help_group_repost[] = N_("repost chosen article to another group");
+constext txt_help_group_reverse_thread_selection[] = N_("toggle all selections (all articles)");
+constext txt_help_group_select_all[] = N_("select group (make \"hot\")");
+constext txt_help_group_select_thread[] = N_("select thread");
+constext txt_help_group_select_thread_if_unread_selected[] = N_("select threads if at least one unread article is selected");
+constext txt_help_group_select_thread_pattern[] = N_("select threads that match user specified pattern");
+constext txt_help_group_tag_parts[] = N_("tag all parts of current multipart-message in order");
+constext txt_help_group_thread_by_num[] = N_("0 - 9\t  choose thread by number");
+constext txt_help_group_toggle_getart_limit[] = N_("toggle limit number of articles to get, and reload");
+constext txt_help_group_toggle_read_articles[] = N_("toggle display of all/unread articles");
+constext txt_help_group_toggle_subj_display[] = N_("cycle the display of authors email address, real name, both or neither");
+constext txt_help_group_toggle_thread_selection[] = N_("toggle selection of thread");
+constext txt_help_group_toggle_threading[] = N_("cycle through threading options available");
+constext txt_help_group_undo_thread_selection[] = N_("undo all selections (all articles)");
+constext txt_help_group_untag_thread[] = N_("untag all tagged threads");
+constext txt_help_select_catchup[] = N_("mark all articles in chosen group read");
+constext txt_help_select_catchup_next_unread[] = N_("mark all articles in chosen group read and enter next unread group");
+constext txt_help_select_first_group[] = N_("choose first group in list");
+constext txt_help_select_goto_group[] = N_("choose group by name");
+constext txt_help_select_group_by_num[] = N_("0 - 9\t  choose group by number");
+constext txt_help_select_group_range[] = N_("choose range of groups to be affected by next command");
+constext txt_help_select_last_group[] = N_("choose last group in list");
+constext txt_help_select_mark_group_unread[] = N_("mark all articles in chosen group unread");
+constext txt_help_select_move_group[] = N_("move chosen group within list");
+constext txt_help_select_next_unread_group[] = N_("choose next group with unread news");
+constext txt_help_select_quit[] = N_("quit");
+constext txt_help_select_quit_no_write[] = N_("quit without saving configuration changes");
+constext txt_help_select_read_group[] = N_("read chosen group");
+constext txt_help_select_reset_newsrc[] = N_("reset .newsrc (all available articles in groups marked unread)");
+constext txt_help_select_search_group_backwards[] = N_("search backwards for a group name");
+constext txt_help_select_search_group_comment[] = N_("\t  (all searches are case-insensitive and wrap around)");
+constext txt_help_select_search_group_forwards[] = N_("search forwards for a group name");
+constext txt_help_select_subscribe[] = N_("subscribe to chosen group");
+constext txt_help_select_subscribe_pattern[] = N_("subscribe to groups that match pattern");
+constext txt_help_select_sync_with_active[] = N_("reread active file to check for any new news");
+constext txt_help_select_toggle_descriptions[] = N_("toggle display of group name only or group name plus description");
+constext txt_help_select_toggle_read_groups[] = N_("toggle display to show all/unread subscribed groups");
+constext txt_help_select_unsubscribe[] = N_("unsubscribe from chosen group");
+constext txt_help_select_unsubscribe_pattern[] = N_("unsubscribe from groups that match pattern");
+constext txt_help_select_yank_active[] = N_("toggle display to show all/subscribed groups");
+constext txt_help_thread_article_by_num[] = N_("0 - 9\t  choose article by number");
+constext txt_help_thread_catchup[] = N_("mark thread as read and return to group index page");
+constext txt_help_thread_catchup_next_unread[] = N_("mark thread as read and enter next unread thread or group");
+constext txt_help_thread_first_article[] = N_("choose first article in list");
+constext txt_help_thread_last_article[] = N_("choose last article in list");
+constext txt_help_thread_mark_article_read[] = N_("mark article as read and move cursor to next unread article");
+constext txt_help_thread_read_article[] = N_("read chosen article");
+constext txt_help_thread_toggle_subj_display[] = N_("cycle the display of authors email address, real name, both or neither");
+constext txt_help_title_disp[]  = N_("Display properties\n------------------");
+constext txt_help_title_misc[] = N_("Miscellaneous\n-------------");
+constext txt_help_title_navi[]  = N_("Moving around\n-------------");
+constext txt_help_title_ops[]   = N_("Group/thread/article operations\n-------------------------------");
 
 constext txt_hit_space_for_more[] = N_("PgDn,End,<SPACE>,^D - page down. PgUp,Home,b,^U - page up. <CR>,q - quit");
-constext txt_index_page_com[] = N_("Group Level Commands (page %d of %d)");
+constext txt_index_page_com[] = N_("Group Level Commands");
 constext txt_info_add_kill[] = N_("Kill filter added");
 constext txt_info_add_select[] = N_("Auto-selection filter added");
 constext txt_info_do_postpone[] = N_("Storing article for later posting");
@@ -484,6 +482,8 @@ constext txt_mark_thread_read[] = N_("Mark thread as read%s?");
 constext txt_matching_cmd_line_groups[] = N_("Matching %s groups...");
 constext txt_mini_group_1[] = N_("<n>=set current to n; %s=next unread; %s=search pattern; %s=kill/select");
 constext txt_mini_group_2[] = N_("%s=author search; %s=catchup; %s=line down; %s=line up; %s=mark read; %s=list thread");
+constext txt_mini_info_1[] = N_("%s=line up; %s=line down; %s=page up; %s=page down; %s=top; %s=bottom");
+constext txt_mini_info_2[] = N_("%s=search forwards; %s=search backwards; %s=quit");
 constext txt_mini_page_1[] = N_("<n>=set current to n; %s=next unread; %s=search pattern; %s=kill/select");
 constext txt_mini_page_2[] = N_("%s=author search; %s=body search; %s=catchup; %s=followup; %s=mark read");
 
@@ -612,7 +612,7 @@ constext txt_post_error_ask_postpone[]=
 N_("An error has occurred while posting the article. If you think that this\n\
 error is temporary or otherwise correctable, you can postpone the article\n\
 and pick it up again with ^O later.\n");
-constext txt_post_history_menu[] = N_("Posted articles history (page %d of %d)");
+constext txt_post_history_menu[] = N_("Posted articles history");
 constext txt_post_newsgroups[] = N_("Post to newsgroup(s) [%s]> ");
 constext txt_post_processing[] = N_("-- post processing started --");
 constext txt_post_processing_finished[] = N_("-- post processing completed --");
@@ -697,7 +697,7 @@ constext txt_servers_active[] = N_("servers active-file");
 	constext txt_shell_escape[] = N_("Enter shell command [%s]> ");
 #endif /* !NO_SHELL_ESCAPE */
 constext txt_skipping_newgroups[] = N_("Cannot move into new newsgroups. Subscribe first...");
-constext txt_space[] = N_("SPACE");
+constext txt_space[] = N_("<SPACE>");
 constext txt_starting_command[] = N_("Starting: (%s)");
 constext txt_subscribe_pattern[] = N_("Enter wildcard subscribe pattern> ");
 constext txt_subscribed_num_groups[] = N_("subscribed to %d groups");
@@ -707,7 +707,7 @@ constext txt_supersede_article[] = N_("Repost or supersede article(s) [%%.*s]? (
 constext txt_supersede_group[] = N_("Supersede article(s) to group(s) [%s]> ");
 constext txt_superseding_art[] = N_("Superseding article ...");
 constext txt_suspended_message[] = N_("\nStopped. Type 'fg' to restart %s\n");
-constext txt_tab[] = N_("TAB");
+constext txt_tab[] = N_("<TAB>");
 constext txt_tagged_art[] = N_("Tagged article");
 constext txt_tagged_thread[] = N_("Tagged thread");
 
@@ -882,7 +882,7 @@ constext txt_at_s[] = N_(" at %s");
 	constext txt_testing_archive[] = N_("Testing %s archive...");
 #endif /* !HAVE_LIBUU */
 constext txt_there_is_no_news[] = N_("There is no news\n");
-constext txt_thread_com[] = N_("Thread Level Commands (page %d of %d)");
+constext txt_thread_com[] = N_("Thread Level Commands");
 constext txt_thread_marked_as_deselected[] = N_("Thread deselected");
 constext txt_thread_marked_as_selected[] = N_("Thread selected");
 constext txt_thread_x_of_n[] = N_("%sThread %4s of %4s%s");
@@ -1112,7 +1112,7 @@ struct opttxt txt_sort_article_type = {
 struct opttxt txt_sort_threads_type = {
 	N_("Sort threads by Nothing or Score. <SPACE> toggles & <CR> sets."),
 	N_("Sort threads by                    : "),
-	N_("# Sort threads by 0=(nothing) 1=(Score descend) 2=(Score ascend).\n")
+	N_("# Sort thread by 0=(nothing) 1=(Score descend) 2=(Score ascend)\n")
 };
 
 struct opttxt txt_pos_first_unread = {

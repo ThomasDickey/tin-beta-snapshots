@@ -44,25 +44,25 @@
 #	define MIME_SUPPORTED_VERSION	1.0
 
 /* These must track the array definitions in lang.c */
-#	define NUM_CONTENT_TYPES		7
+#	define NUM_CONTENT_TYPES	7
 #	define NUM_ENCODINGS			6
 
 #	define TYPE_TEXT				0
-#	define TYPE_MULTIPART			1
+#	define TYPE_MULTIPART		1
 #	define TYPE_APPLICATION		2
 
 
 #	define ENCODING_7BIT			0
-#	define ENCODING_QP				1
-#	define ENCODING_BASE64			2
-#	define ENCODING_UUE				5
+#	define ENCODING_QP			1
+#	define ENCODING_BASE64		2
+#	define ENCODING_UUE			5
 
-#	define DISP_INLINE				0
-#	define DISP_ATTACH				1
+#	define DISP_INLINE			0
+#	define DISP_ATTACH			1
 
-#	define BOUND_NONE	0
+#	define BOUND_NONE		0
 #	define BOUND_START	1
-#	define BOUND_END	2
+#	define BOUND_END		2
 
 
 /*
@@ -90,10 +90,10 @@ typedef struct part
 	char *subtype;				/* Content subtype */
 	t_param *params;			/* List of Content-Type parameters */
 	long offset;				/* offset in article of the text of attachment */
-	int line_count;				/* # lines in this part */
+	int line_count;			/* # lines in this part */
 	int depth;					/* For multipart within multipart */
 	struct part *uue;			/* UUencoded section information */
-	struct part *next;			/* next part */
+	struct part *next;		/* next part */
 } t_part;
 
 
@@ -111,12 +111,12 @@ struct t_header
 	char *messageid;		/* Message-ID: */
 	char *references;		/* References: */
 	char *distrib;			/* Distribution: */
-	char *keywords;			/* Keywords: */
+	char *keywords;		/* Keywords: */
 	char *summary;			/* Summary: */
-	char *followup;			/* Followup-To: */
+	char *followup;		/* Followup-To: */
 	char *ftnto;			/* Old X-Comment-To: (Used by FIDO) */
-	char *authorids;		/* Author-IDs: (USEFOR, 2nd Son of 1036) */
-	t_param *persist;		/* P-ersistent headers (USEFOR, 2nd Son of 1036) */
+	char *authorids;		/* Author-IDs: (USEFOR, 2nd Son of 1036) Obsolete, USEFOR kicked it */
+	t_param *persist;		/* P-ersistent headers (USEFOR, 2nd Son of 1036) Obsolete, USEFOR kicked it */
 	t_bool mime:1;			/* Is Mime-Version: defined */
 	t_part *ext;			/* Extended Mime header information */
 };
@@ -151,7 +151,7 @@ typedef struct lineinfo
 typedef struct openartinfo
 {
 	struct t_header hdr;	/* Structural overview of the article */
-	t_bool tex2iso;			/* TRUE if TeX encoding present */
+	t_bool tex2iso;		/* TRUE if TeX encoding present */
 	int cooked_lines;		/* # lines in cooked t_lineinfo */
 	FILE *raw;				/* the actual data streams */
 	FILE *cooked;

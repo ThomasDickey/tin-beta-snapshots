@@ -111,7 +111,7 @@ read_xref_header (
 		char buf[HEADER_LEN];
 		long artnum = 0L;
 
-		sprintf(buf, "XHDR XREF %ld", art->artnum);
+		snprintf(buf, sizeof(buf) - 1, "XHDR XREF %ld", art->artnum);
 		if ((fp = nntp_command (buf, OK_HEAD, NULL)) == NULL)
 			return;
 

@@ -724,6 +724,9 @@ my_flush ();
 	fflush (fp);
 }
 
+/*
+ * Interactive filter menu
+ */
 
 static int
 get_choice (
@@ -771,6 +774,58 @@ get_choice (
 	return (i);
 }
 
+static const char *ptr_filter_lines;
+static const char *ptr_filter_menu;
+static const char *ptr_filter_scope;
+static const char *ptr_filter_score;
+static const char *ptr_filter_text;
+static const char *ptr_filter_time;
+static const char *ptr_filter_groupname;
+static char text_subj[PATH_LEN];
+static char text_from[PATH_LEN];
+static char text_msgid[PATH_LEN];
+static int filter_context;
+
+static void
+print_filter_menu (
+	void)
+{
+	ClearScreen ();
+
+	center_line (0, TRUE, ptr_filter_menu);
+
+	MoveCursor (INDEX_TOP, 0);
+	my_printf ("%s" cCRLF, ptr_filter_text);
+	my_printf ("%s" cCRLF cCRLF, _(txt_filter_text_type));
+	my_printf ("%s" cCRLF , text_subj);
+	my_printf ("%s" cCRLF , text_from);
+	my_printf ("%s" cCRLF cCRLF, text_msgid);
+	my_printf ("%s" cCRLF , ptr_filter_lines);
+	my_printf ("%s" cCRLF , ptr_filter_score);
+	my_printf ("%s" cCRLF cCRLF, ptr_filter_time);
+	my_printf ("%s%s", ptr_filter_scope, ptr_filter_groupname);
+	my_flush ();
+
+	show_menu_help (_(txt_help_filter_text));
+}
+
+void
+refresh_filter_menu (
+	void)
+{
+	print_filter_menu ();
+
+	/*
+	 * TODO:
+	 * - refresh already entered and accepted information (follow control
+	 *   flow in filter_menu below)
+	 * - refresh help line
+	 * - set cursor into current input field
+	 * - refresh already entered data or selected item in current input field
+	 *   (not everywhere possible yet -- must change getline.c for refreshing
+	 *    string input)
+	 */
+}
 
 /*
  * Interactive filter menu so that the user can dynamically enter parameters.
@@ -783,29 +838,25 @@ filter_menu (
 	struct t_article *art)
 {
 	const char *ptr_filter_from;
-	const char *ptr_filter_lines;
-	const char *ptr_filter_menu;
 	const char *ptr_filter_msgid;
-	const char *ptr_filter_scope;
 	const char *ptr_filter_subj;
-	const char *ptr_filter_text;
-	const char *ptr_filter_time;
 	const char *ptr_filter_help_scope;
 	const char *ptr_filter_quit_edit_save;
-	const char *ptr_filter_score;
 	char *ptr;
 	char argv[4][PATH_LEN];
 	char buf[LEN];
 	char keyedit[MAXKEYLEN], keyquit[MAXKEYLEN], keysave[MAXKEYLEN];
-	char text_from[PATH_LEN];
-	char text_msgid[PATH_LEN];
-	char text_subj[PATH_LEN];
 	char text_time[PATH_LEN];
 	char double_time[PATH_LEN];
 	char quat_time[PATH_LEN];
 	char ch_default = iKeyFilterSave;
 	int ch, i, len;
 	struct t_filter_rule rule;
+
+	signal_context = cFilter;
+
+	signal_context = cFilter;
+	filter_context = 0;
 
 	rule.text[0] = '\0';
 	rule.scope[0] = '\0';
@@ -856,36 +907,25 @@ filter_menu (
 	}
 
 	ptr_filter_score = _(txt_filter_score);
+	ptr_filter_groupname = group->name;
 
 	len = cCOLS - 30;
 
-	sprintf (text_time, _(txt_time_default_days), tinrc.filter_days);
-	sprintf (text_subj, ptr_filter_subj, len, len, art->subject);
+	snprintf (text_time, sizeof(text_time), _(txt_time_default_days), tinrc.filter_days);
+	text_time[sizeof(text_time)-1] = '\0';
+	snprintf (text_subj, sizeof(text_subj), ptr_filter_subj, len, len, art->subject);
+	text_subj[sizeof(text_subj)-1] = '\0';
 
-	strcpy (buf, art->from);
+	STRCPY (buf, art->from);
 
-	sprintf (text_from, ptr_filter_from, len, len, buf);
-	sprintf (text_msgid, ptr_filter_msgid, len-4, len-4, MSGID(art));
+	snprintf (text_from, sizeof(text_from), ptr_filter_from, len, len, buf);
+	text_from[sizeof(text_from)-1] = '\0';
+	snprintf (text_msgid, sizeof(text_msgid), ptr_filter_msgid, len-4, len-4, MSGID(art));
+	text_msgid[sizeof(text_msgid)-1] = '\0';
 
-	ClearScreen ();
+	print_filter_menu ();
 
-	center_line (0, TRUE, ptr_filter_menu);
-
-	MoveCursor (INDEX_TOP, 0);
-	my_printf ("%s" cCRLF, ptr_filter_text);
-	my_printf ("%s" cCRLF cCRLF, txt_filter_text_type);
-	my_printf ("%s" cCRLF , text_subj);
-	my_printf ("%s" cCRLF , text_from);
-	my_printf ("%s" cCRLF cCRLF, text_msgid);
-	my_printf ("%s" cCRLF , ptr_filter_lines);
-	my_printf ("%s" cCRLF , ptr_filter_score);
-	my_printf ("%s" cCRLF cCRLF, ptr_filter_time);
-	my_printf ("%s%s", ptr_filter_scope, group->name);
-	my_flush ();
-
-	show_menu_help (_(txt_help_filter_text));
-
-	if (!prompt_menu_string (INDEX_TOP, (int) strlen (ptr_filter_text), rule.text))
+	if (!prompt_menu_string (INDEX_TOP, ptr_filter_text, rule.text))
 		return FALSE;
 
 	if (*rule.text) {
@@ -992,7 +1032,7 @@ filter_menu (
 
 	buf[0] = '\0';
 
-	if (!prompt_menu_string (INDEX_TOP+7, (int) strlen (ptr_filter_lines), buf))
+	if (!prompt_menu_string (INDEX_TOP+7, ptr_filter_lines, buf))
 		return FALSE;
 
 	/*
@@ -1023,7 +1063,7 @@ filter_menu (
 	buf[0] = '\0';
 	show_menu_help(_(txt_filter_score_help)); /* FIXME: a sprintf() is necessary here */
 
-	if (!prompt_menu_string(INDEX_TOP+8, (int)strlen(ptr_filter_score), buf))
+	if (!prompt_menu_string(INDEX_TOP+8, ptr_filter_score, buf))
 		return FALSE;
 
 	rule.score = atoi(buf);
@@ -1238,7 +1278,7 @@ quick_filter_select_posted_art (
 		 * xor Message-ID
 		 */
 		set_article (&art);
-		if (a_message_id) {
+		if (*a_message_id) {
 			/* initialize art->refptr */
 			struct {
 				struct t_msgid *next;
@@ -1509,13 +1549,17 @@ filter_articles (
 			regex_cache_xref[j].extra = NULL;
 		}
 	}
+	mesg[0] = '\0';				/* Clear system message field */
 
 	/*
 	 * loop thru all arts applying global & local filtering rules
 	 */
-	for (i = 0; i < top_art; i++) {
+	for (i = 0; (i < top_art) && (mesg[0] == '\0'); i++) {
 		arts[i].score = 0;
 
+		/*
+		 * do we really need to 'reset' mesg for every article?
+		 */
 		mesg[0] = '\0';				/* Clear system message field */
 
 		if (tinrc.kill_level == KILL_READ && IS_READ(i)) /* skip only when the article is read */
@@ -1741,16 +1785,17 @@ wait_message (1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].li
 	 * now entering the main filter loop:
 	 * all articles have scored, so do kill & select
 	 */
-
-	for (i = 0; i < top_art; i++) {
-		if (arts[i].score <= SCORE_LIM_KILL) {
-			arts[i].killed = TRUE;
-			num_of_killed_arts++;
-			filtered = TRUE;
-			art_mark_read (group, &arts[i]);
-		} else if (arts[i].score >= SCORE_LIM_SEL) {
-			arts[i].selected = TRUE;
-			num_of_selected_arts++;
+	if (mesg[0] == '\0') {
+		for (i = 0; i < top_art; i++) {
+			if (arts[i].score <= SCORE_LIM_KILL) {
+				arts[i].killed = TRUE;
+				num_of_killed_arts++;
+				filtered = TRUE;
+				art_mark_read (group, &arts[i]);
+			} else if (arts[i].score >= SCORE_LIM_SEL) {
+				arts[i].selected = TRUE;
+				num_of_selected_arts++;
+			}
 		}
 	}
 	return filtered;

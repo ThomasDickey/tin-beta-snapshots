@@ -1,0 +1,72 @@
+.TH NEWSOVERVIEW 5 local "redistributable"
+.DA 21 October 1992
+.SH NAME
+newsoverview \- netnews overview files
+.SH SYNOPSIS
+.BI /usr/spool/news/ group /.overview
+.SH DESCRIPTION
+Each newsgroup directory contains a file named
+.RB ` .overview ',
+containing one-line summaries of articles in that group.
+Fields are separated by tabs,
+and any tabs or newlines in the original articles headers
+have been replaced with spaces.
+The fields are,
+in order:
+article number (file name),
+subject,
+author,
+date,
+message-id,
+references,
+byte count,
+line count,
+and
+optionally other headers,
+as arranged locally
+(none are supplied by the database maintenance software,
+as shipped).
+The line-count and references field may be empty.
+If the optional other headers are present,
+they include their header keyword and colon;
+if they are absent entirely,
+the tab after the line-count field may also be absent.
+.PP
+The file is maintained in numerical order,
+by article number.
+.PP
+At the time of writing
+(late 1992),
+the lines in an overview file are typically 150\-300 characters long,
+and an overview file for a typically busy group
+is often 30,000 bytes to 60,000 bytes long,
+with notable exceptions exceeding 500,000 bytes.
+.SH EXAMPLES
+.\" .ds Tb \ \(==\ 
+.ds Tb \(bv
+A few lines from one overview file,
+with tabs displayed as `\*(Tb' and lines continued after `\e'.
+.RS
+.ft B
+.nf
+8870\*(Tbstrange message id's: <something>QUIT\*(Tbschmitz@scd.hp.com (John Schmitz)\e
+\*(Tb18 Sep 1992 19:57:16 GMT\*(Tb<19dcasINNce@hpscdf.scd.hp.com>\*(Tb\*(Tb821\*(Tb
+8871\*(TbRe: BNF rule for newsgroup names?\*(Tbkris@tpki.toppoint.de (Kristian Koehntopp)\e
+\*(TbFri, 18 Sep 1992 17:51:09 GMT\*(Tb<1992Sep18.175109.21999@tpki.toppoint.de>\e
+\*(Tb<43GQBM4D@cc.swarthmore.edu> <BuLB9y.7Dp@world.std.com>\e
+\& <BuLG5A.xH@cs.psu.edu> <339@blars.UUCP>\*(Tb926\*(Tb\*(TbSupersedes: <1234@foovax>
+.fi
+.ft
+.RE
+.SH FILES
+.BI /usr/spool/news/ group /.overview
+.SH SEE ALSO
+.IR newsdb (5)
+.SH HISTORY
+Written by Geoff Collyer
+as part of the C News project.
+.SH BUGS
+The contents of
+the line-count field
+should not be believed
+and are really pretty worthless yet popular.

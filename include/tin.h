@@ -109,7 +109,7 @@
 
 #include	<signal.h>
 
-enum context { cMain, cArt, cConfig, cGroup, cHelp, cPage, cSelect, cThread };
+enum context { cMain, cArt, cConfig, cFilter, cGroup, cHelp, cInfopager, cPage, cSelect, cThread };
 enum resizer { cNo, cYes, cRedraw };
 
 #ifdef VMS
@@ -1000,6 +1000,7 @@ enum resizer { cNo, cYes, cRedraw };
 #define GROUP_LEVEL	2
 #define THREAD_LEVEL	3
 #define PAGE_LEVEL	4
+#define INFO_PAGER	5
 
 #define MINI_HELP_LINES		5
 
@@ -1048,7 +1049,7 @@ enum resizer { cNo, cYes, cRedraw };
  * used in art.c
  * sort types on arts[] array
  */
-#define SORT_ARTICLES_BY_NOTHING	0
+#define SORT_ARTICLES_BY_NOTHING		0
 #define SORT_ARTICLES_BY_SUBJ_DESCEND	1
 #define SORT_ARTICLES_BY_SUBJ_ASCEND	2
 #define SORT_ARTICLES_BY_FROM_DESCEND	3
@@ -1062,7 +1063,7 @@ enum resizer { cNo, cYes, cRedraw };
  * used in art.c
  * sort types on base[] array
  */
-#define SORT_THREADS_BY_NOTHING		0
+#define SORT_THREADS_BY_NOTHING			0
 #define SORT_THREADS_BY_SCORE_DESCEND	1
 #define SORT_THREADS_BY_SCORE_ASCEND	2
 
@@ -1431,7 +1432,7 @@ struct t_attribute
 						   3=from descend, 4=from ascend,
 						   5=date descend, 6=date ascend,
 						   7=score descend, 8=score ascend */
-	unsigned sort_threads_type:2;		/* 0=none, 1=score descend, 2=score ascend */
+	unsigned sort_threads_type:2;	/* 0=none, 1=score descend, 2=score ascend */
 	unsigned int post_proc_type:2;		/* 0=none, 1=shar, 2=uudecode */
 	unsigned int x_comment_to:1;		/* insert X-Comment-To: in Followup */
 };

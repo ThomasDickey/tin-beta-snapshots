@@ -153,7 +153,7 @@ get_newsrcname (
 						do_cpy = TRUE;
 					}
 
-					if ((line_entry_counter ==1) && ((!strcasecmp(line_entry, "default")) || (!strcmp(line_entry,"*")))) {
+					if ((line_entry_counter == 1) && ((!strcasecmp(line_entry, "default")) || (!strcmp(line_entry, "*")))) {
 						found = 2;
 						do_cpy = TRUE;
 					}

@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 5
 SVER	= 9
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20010522
+DVER	= 20010605
 EXE	= tin
 
 # directory structure
@@ -156,6 +156,7 @@ DOC	= \
 	$(DOCDIR)/WHATSNEW \
 	$(DOCDIR)/art_handling.txt \
 	$(DOCDIR)/auth.txt \
+	$(DOCDIR)/config-anomalies \
 	$(DOCDIR)/filtering \
 	$(DOCDIR)/good-netkeeping-seal \
 	$(DOCDIR)/internals.txt \
@@ -171,6 +172,7 @@ DOC	= \
 	$(DOCDIR)/tin.defaults \
 	$(DOCDIR)/tools.txt \
 	$(DOCDIR)/mbox.5 \
+	$(DOCDIR)/newsoverview.5 \
 	$(DOCDIR)/plp_snprintf.3 \
 	$(DOCDIR)/tin.1 \
 	$(DOCDIR)/tin.5 \

@@ -201,6 +201,7 @@ search_active (
 }
 
 
+#if 0
 /*
  * Called by help.c
  */
@@ -239,6 +240,7 @@ search_help (
 	clear_message ();
 	return result;
 }
+#endif 0
 
 
 /*

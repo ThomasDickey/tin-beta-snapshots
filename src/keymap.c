@@ -476,6 +476,15 @@ t_keynode *keys_group_nav[] = {
 	&Key.Group.MarkUnselArtRead, &Key.Group.DoAutoSel,
 	&Key.Global.ToggleInfoLastLine, NULL };
 
+t_keynode *keys_info_nav[] = {
+	&Key.Global.Abort, &Key.Global.MouseToggle, &Key.Global.Up,
+	&Key.Global.Up2, &Key.Global.Down, &Key.Global.Down2, &Key.Global.PageDown,
+	&Key.Global.PageDown2, &Key.Global.PageDown3, &Key.Global.PageUp,
+	&Key.Global.PageUp2, &Key.Global.PageUp3, &Key.Global.FirstPage,
+	&Key.Help.FirstPage2, &Key.Global.LastPage, &Key.Help.LastPage2,
+	&Key.Global.ToggleHelpDisplay, &Key.Global.SearchSubjF,
+	&Key.Global.SearchSubjB, &Key.Global.Quit, NULL };
+
 t_keynode *keys_nrctbl_create[] = {
    &Key.Global.Abort, &Key.Nrctbl.Quit, &Key.Nrctbl.Alternative,
    &Key.Nrctbl.Create, &Key.Nrctbl.Default, NULL };
@@ -498,8 +507,9 @@ t_keynode *keys_page_nav[] = {
 	&Key.Global.Print,
 #endif /* !DISABLE_PRINTING */
 	&Key.Page.Repost, &Key.Page.Save, &Key.Page.AutoSaveTagged,
-	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB, &Key.Global.SearchBody,
-	&Key.Page.TopThd, &Key.Page.BotThd, &Key.Page.NextThd, &Key.Page.NextThd2,
+	&Key.Global.SearchAuthF, &Key.Global.SearchAuthB, &Key.Global.SearchSubjF,
+	&Key.Global.SearchSubjB, &Key.Global.SearchBody, &Key.Page.TopThd,
+	&Key.Page.BotThd, &Key.Page.NextThd, &Key.Page.NextThd2,
 #ifdef HAVE_PGP_GPG
 	&Key.Page.PGPCheckArticle,
 #endif /* HAVE_PGP_GPG */
@@ -664,6 +674,7 @@ t_menukeymap menukeymap = {
 	{ keys_feed_supersede_article, NULL, NULL },
 	{ keys_filter_quit_edit_save, NULL, NULL },
 	{ keys_group_nav, NULL, NULL },
+	{ keys_info_nav, NULL, NULL },
 	{ keys_nrctbl_create, NULL, NULL },
 	{ keys_page_nav, NULL, NULL },
 	{ keys_pgp_mail, NULL, NULL },
@@ -800,11 +811,15 @@ printascii (
 	char *buf,
 	int ch)
 {
-	if (isgraph(ch)) {			/* Regular printables */
+	if ((ch == 0) || isgraph(ch)) {	/* Regular printables */
 		buf[0] = ch;
 		buf[1] = '\0';
 	} else if (ch == '\t') {	/* TAB */
 		strcpy (buf, _(txt_tab));
+	} else if ((ch == '\n') || (ch == '\r')) {	/* LF, CR */
+		strcpy (buf, _(txt_cr));
+	} else if (ch == ESC) {		/* Escape */
+		strcpy (buf, _(txt_esc));
 	} else if (iscntrl(ch)) {	/* Control keys */
 		buf[0] = '^';
 		buf[1] = (ch & 0xFF) + '@';
@@ -812,7 +827,7 @@ printascii (
 	} else if (ch == ' ')		/* SPACE */
 		strcpy (buf, _(txt_space));
 	else
-		strcpy (buf, "???");	/* Never happen ? */
+		strcpy (buf, "???");	/* Never happens? */
 
 	return buf;
 }

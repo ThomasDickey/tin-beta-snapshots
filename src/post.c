@@ -116,8 +116,6 @@
 /* When prompting for subject, display no more than 20 characters */
 #define DISPLAY_SUBJECT_LEN 20
 
-struct t_posted *posted;
-
 extern char article[PATH_LEN];		/* Fixed path of the file holding temp. article */
 int start_line_offset = 1;		/* used by invoke_editor for line no. */
 
@@ -422,7 +420,8 @@ user_posted_messages (
 	FILE *fp;
 	char buf[LEN];
 	int no_of_lines = 0;
-	size_t i = 0, j, k;
+	size_t group_len = 0, i = 0, j, k;
+	struct t_posted *posted;
 
 	if ((fp = fopen (posted_info_file, "r")) == (FILE *) 0) {
 		clear_message ();
@@ -478,6 +477,8 @@ user_posted_messages (
 			posted[i].group[k++] = '.';
 		}
 		posted[i].group[k] = '\0';
+		if (k > group_len)
+			group_len = k;
 		j++;
 
 		for (k = 0; buf[j] != '\n'; j++) {
@@ -490,9 +491,22 @@ user_posted_messages (
 	posted[i].date[0] = '\0';	/* end-marker for display */
 	fclose (fp);
 
-	show_info_page (POST_INFO, 0, _(txt_post_history_menu));
-
+	if (!(fp = tmpfile()))
+	{
+		FreeAndNull (posted);
+		return FALSE;
+	}
+	for (; i > 0; i--) {
+		snprintf (buf, sizeof(buf) - 1, "%8s  %c  %-*s  %s",
+			posted[i-1].date, posted[i-1].action,
+			group_len, posted[i-1].group, posted[i-1].subj);
+		buf[cCOLS-2] = '\0';
+		fprintf (fp, "%s" cCRLF, buf);
+	}
 	FreeAndNull (posted);
+	info_pager (fp, _(txt_post_history_menu), TRUE);
+	fclose (fp);
+
 	return TRUE;
 }
 
@@ -566,10 +580,9 @@ append_mail (
 		(void) time (&epoch);
 		fd = fileno(fp_out);
 		/* TODO: move the retry/error stuff into a function? */
-		while (retrys-- && fd_lock(fd, FALSE)) {
+		while (retrys-- && fd_lock(fd, FALSE))
+			/* FIXME: -> lang.c */
 			wait_message(1, "%d Trying to lock %s", retrys, the_mailbox);
-			fd_unlock(fd); /* release any successfull 'partial'-locks */
-		}
 		if (retrys < 0) {
 			/* FIXME: -> lang.c */
 			wait_message(5, "Couldn't lock %s - article not appended!", the_mailbox);
@@ -577,7 +590,11 @@ append_mail (
 			fclose (fp_in);
 			return rval;
 		}
-		if (!dot_lock(the_mailbox)) {
+		while (retrys-- && !dot_lock(the_mailbox))
+			/* FIXME: -> lang.c */
+			wait_message(1, "%d Trying to dotlock %s", retrys, the_mailbox);
+		if (retrys < 0) {
+			/* FIXME: -> lang.c */
 			wait_message(5, "Couldn't dotlock %s - article not appended!", the_mailbox);
 			fd_unlock(fd);
 			fclose (fp_out);
@@ -605,11 +622,9 @@ append_mail (
 		print_art_seperator_line (fp_out, mmdf);
 
 		fflush(fp_out);
-		if (fd_unlock(fd)) {
+		if (fd_unlock(fd) || !dot_unlock(the_mailbox))
 			wait_message(4, "Can't unlock %s", the_mailbox);
-		}
-		snprintf(buf, sizeof(buf) -1, "%s.lock", the_mailbox);
-		unlink(buf);
+
 		fclose (fp_out);
 		rval = TRUE;
 	}
@@ -1397,7 +1412,6 @@ post_article_done:
 			 */
 			if (tinrc.add_posted_to_filter && (type == POST_QUICK || type == POST_POSTPONED || type == POST_NORMAL)) {
 				if (type != POST_POSTPONED || (type == POST_POSTPONED && !strchr(header.newsgroups, ',') && (psGrp = group_find(header.newsgroups))))
-					/* TODO: log Message-ID if given in a_message_id */
 					quick_filter_select_posted_art (psGrp, header.subj, a_message_id);
 			}
 
@@ -1436,8 +1450,8 @@ post_article_done:
 		if (tinrc.keep_posted_articles && type != POST_REPOST) {
 			char a_mailbox[LEN];
 			/* log Message-ID if given in a_message_id,
-			 * add Date:, remove empty headers*/
-			add_headers(article, a_message_id);
+			 * add Date:, remove empty headers */
+			add_headers (article, a_message_id);
 			if (!strfpath (posted_msgs_file, a_mailbox, sizeof (a_mailbox), &CURR_GROUP))
 				STRCPY(a_mailbox, posted_msgs_file);
 			if (!append_mail(article, userid, a_mailbox)) {
@@ -1701,7 +1715,7 @@ int
 count_postponed_articles (
 	void)
 {
-	FILE *fp = fopen(postponed_articles_file,"r");
+	FILE *fp = fopen(postponed_articles_file, "r");
 	char line[HEADER_LEN];
 	int count = 0;
 
@@ -2197,7 +2211,7 @@ post_response (
 		ch = prompt_slk_response(iKeyPageMail, &menukeymap.post_mail_fup,
 				_(txt_resp_to_poster),
 				printascii (keymail, map_to_local (iKeyPostMail, &menukeymap.post_mail_fup)),
-				printascii (keypost, map_to_local (iKeyPost, &menukeymap.post_mail_fup)),
+				printascii (keypost, map_to_local (iKeyPostPost3, &menukeymap.post_mail_fup)),
 				printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_mail_fup)));
 		switch (ch) {
 			case iKeyPost:
@@ -2245,7 +2259,7 @@ post_response (
 
 		ch = prompt_slk_response(iKeyPostPost3, &menukeymap.post_ignore_fupto,
 					_(txt_prompt_fup_ignore),
-					printascii (keypost, map_to_local (iKeyPost, &menukeymap.post_ignore_fupto)),
+					printascii (keypost, map_to_local (iKeyPostPost3, &menukeymap.post_ignore_fupto)),
 					printascii (keyignore, map_to_local (iKeyPostIgnore, &menukeymap.post_ignore_fupto)),
 					printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_ignore_fupto)));
 		switch (ch) {
@@ -2396,12 +2410,17 @@ post_response (
 					 * mentioned in news_headers_to_display as article
 					 * cooking 'hides' all other headers
 					 */
-					fseek (pgart.cooked, 0L, SEEK_SET);
+					fseek (pgart.cooked, 0L, SEEK_SET); /* rewind cooked art */
 				} else { /* without headers */
-					int i;
-					for (i = 0; pgart.cookl[i].flags & C_HEADER; ++i)
-						;
-					fseek (pgart.cooked, pgart.cookl[i + 1].offset, SEEK_SET); /* skip headers and header/body separator */
+					int i = 0;
+
+					while (pgart.cookl[i].flags & C_HEADER) /* skip headers in cooked art if any */
+						i++;
+
+					if (i) /* cooked art contained any headers, so skip also the header/body seperator */
+						i++;
+
+					fseek (pgart.cooked, pgart.cookl[i].offset, SEEK_SET); /* skip headers and header/body separator */
 				}
 				copy_body (pgart.cooked, fp,
 							  (psGrp && psGrp->attribute->quote_chars != (char *) 0) ? psGrp->attribute->quote_chars : tinrc.quote_chars,
@@ -2873,11 +2892,13 @@ mail_to_author (
 					 */
 					fseek (pgart.cooked, 0L, SEEK_SET);
 				} else { /* without headers */
-					int i;
+					int i = 0;
 
-					for (i = 0; pgart.cookl[i].flags & C_HEADER; ++i)
-						;
-					fseek (pgart.cooked, pgart.cookl[i + 1].offset, SEEK_SET);	/* skip headers and header/body separator */
+					while (pgart.cookl[i].flags & C_HEADER) /* skip headers in cooked art if any */
+						i++;
+					if (i) /* cooked art contained any headers, so skip also the header/body seperator */
+						i++;
+					fseek (pgart.cooked, pgart.cookl[i].offset, SEEK_SET);
 				}
 				copy_body (pgart.cooked, fp, tinrc.quote_chars, initials, tinrc.quote_signatures);
 			}
@@ -3913,6 +3934,7 @@ pcCopyArtHeader (
 		if (*ptr == '\0')
 			break;
 
+		unfold_header (ptr);
 		switch (iHeader) {
 			case HEADER_TO:
 				if (STRNCASECMPEQ(ptr, "To: ", 4) || STRNCASECMPEQ(ptr, "Cc: ", 4)) {
@@ -4122,7 +4144,7 @@ add_headers (
 
 	if (!(*a_message_id))
 		addmid = FALSE;
-		
+
 	if ((fp_in = fopen (infile, "r")) == (FILE *) 0)
 		return;
 

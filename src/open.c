@@ -921,7 +921,7 @@ setup_hard_base (
 			if (nntp_command(buf, OK_GROUP, line) == NULL)
 				return(-1);
 
-			if (sscanf (line,"%ld %ld %ld", &count, &start, &last) != 3)
+			if (sscanf (line, "%ld %ld %ld", &count, &start, &last) != 3)
 				return(-1);
 
 			total = count;

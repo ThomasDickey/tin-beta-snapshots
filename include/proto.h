@@ -116,6 +116,7 @@ extern void write_config_file (char *file);
 /* cook.c */
 extern const char *get_filename (t_param *ptr);
 extern t_bool cook_article (t_bool wrap_lines, t_openartinfo *artinfo, int tabs, t_bool uue);
+t_bool expand_ctrl_chars (char *to, const char *from, int length, size_t cook_width);
 
 /* curses.c */
 extern OUTC_RETTYPE outchar (OUTC_ARGS);
@@ -178,6 +179,7 @@ extern t_bool quick_filter (int type, struct t_group *group, struct t_article *a
 extern t_bool quick_filter_select_posted_art (struct t_group *group, const char *subj, const char *a_message_id);
 extern t_bool read_filter_file (const char *file);
 extern void free_all_filter_arrays (void);
+extern void refresh_filter_menu (void);
 extern int unfilter_articles (void);
 
 /* getline.c */
@@ -211,13 +213,13 @@ extern void hash_init (void);
 extern void hash_reclaim (void);
 
 /* help.c */
-extern void show_info_page (int type, const char *help[], const char *title);
+extern void show_help_page (const int level, const char *title);
 extern void show_mini_help (int level);
 extern void toggle_mini_help (int level);
 #ifdef USE_CURSES
-	extern void display_info_page (t_bool first);
+	extern void display_help_page (t_bool first);
 #else
-	extern void display_info_page (void);
+	extern void display_help_page (void);
 #endif /* USE_CURSES */
 
 /* header.c */
@@ -274,6 +276,7 @@ extern int fd_lock(int fd, t_bool block);
 extern int test_fd_lock(int fd);
 extern int fd_unlock(int fd);
 extern t_bool dot_lock(const char *filename);
+extern t_bool dot_unlock(const char *filename);
 
 /* mail.c */
 extern t_bool art_edit (struct t_group *psGrp, struct t_article *psArt);
@@ -451,7 +454,9 @@ extern void vGet1GrpArtInfo (struct t_group *grp);
 
 /* page.c */
 extern int show_page (struct t_group *group, int respnum, int *threadnum);
+extern void display_info_page (int part);
 extern void draw_page (const char *group, int part);
+extern void info_pager (FILE *info_fh, const char *title, t_bool wrap_at_ends);
 extern void resize_article (t_bool wrap_lines, t_openartinfo *artinfo);
 extern void toggle_raw (struct t_group *group);
 
@@ -503,7 +508,7 @@ extern int prompt_num (int ch, const char *prompt);
 extern int prompt_yn (int line, const char *prompt, t_bool default_answer);
 extern int prompt_msgid (void);
 extern t_bool prompt_default_string (const char *prompt, char *buf, int buf_len, char *default_prompt, int which_hist);
-extern t_bool prompt_menu_string (int line, int col, char *var);
+extern t_bool prompt_menu_string (int line, const char *prompt, char *var);
 extern t_bool prompt_option_char (int option);
 extern t_bool prompt_option_num (int option);
 extern t_bool prompt_option_string (int option);
@@ -593,7 +598,7 @@ extern int search (int key, int current_art, t_bool forward);
 extern int search_active (t_bool forward);
 extern int search_article (t_bool forward, int start_line, int lines, t_lineinfo *line, t_bool show_ctrl_l, FILE *fp);
 extern int search_config (t_bool forward, int current, int last);
-extern int search_help (t_bool forward, int current, int last);
+/* extern int search_help (t_bool forward, int current, int last); */
 extern int search_body (int current_art);
 
 /* select.c */

@@ -278,12 +278,11 @@ handle_resize (
 		case cConfig:
 			refresh_config_page (-1);
 			break;
-		case cHelp:
-#	ifdef USE_CURSES
-			display_info_page (TRUE);
-#	else
-			display_info_page();
-#	endif /* USE_CURSES*/
+		case cFilter:
+			refresh_filter_menu ();
+			break;
+		case cInfopager:
+			display_info_page (0);
 			break;
 		case cGroup:
 		case cSelect:

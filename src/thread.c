@@ -553,7 +553,7 @@ thread_page (
 				break;
 
 			case iKeyHelp:					/* help */
-				show_info_page (HELP_INFO, help_thread, _(txt_thread_com));
+				show_help_page (THREAD_LEVEL, _(txt_thread_com));
 				show_thread_page ();
 				break;
 
@@ -1211,6 +1211,7 @@ make_prefix (
 	char *buf;
 	int prefix_ptr;
 	int depth = 0;
+	int depth_level = 0;
 	struct t_msgid *ptr;
 
 	for (ptr = art->parent; ptr; ptr = ptr->parent)
@@ -1223,18 +1224,35 @@ make_prefix (
 
 	prefix_ptr = depth * 2 - 1;
 
+	if (prefix_ptr > maxlen - 1 - !(maxlen % 2)) {
+		int odd = !(maxlen % 2);
+
+		prefix_ptr -= maxlen - ++depth_level - 2 - odd;
+
+		while (prefix_ptr > maxlen - 2 - odd) {
+			if (depth_level < maxlen / 5)
+				depth_level++;
+			prefix_ptr -= maxlen - depth_level - 2 - odd;
+			odd = !odd;
+		}
+	}
+
 	if (!(buf = my_malloc (prefix_ptr + 3)))
 		return;	/* out of memory */
 
 	strcpy (&buf[prefix_ptr], "->");
 	buf[--prefix_ptr] = (has_sibling (art) ? '+' : '`');
 
-	for (ptr = art->parent; prefix_ptr != 0; ptr = ptr->parent) {
+	for (ptr = art->parent; prefix_ptr > 1; ptr = ptr->parent) {
 		if (EXPIRED (ptr))
 			continue;
 		buf[--prefix_ptr] = ' ';
 		buf[--prefix_ptr] = (has_sibling (ptr) ? '|' : ' ');
 	}
+
+	while (depth_level)
+		buf[--depth_level] = '>';
+
 	strncpy (prefix, buf, maxlen);
 	prefix[maxlen] = '\0'; /* just in case strlen(buf) > maxlen */
 	free (buf);
