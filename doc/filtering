@@ -198,7 +198,7 @@ code   error description
 code   error description
  200   right hand side (RHS) of address is a single component
  201   RHS has an unknown top level domain (3 or more characters)
- 202   RHS has an malformed top level domain
+ 202   RHS has a malformed top level domain
  203   RHS has an unknown country code as top level domain
  204   illegal character in RHS
  205   leading or trailing dot or two consecutive dots in RHS

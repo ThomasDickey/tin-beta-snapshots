@@ -6,7 +6,7 @@
  *  Updated   : 2002-06-21
  *  Notes     : signal handlers for different modes and window resizing
  *
- * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

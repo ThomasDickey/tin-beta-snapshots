@@ -6,7 +6,7 @@
  *  Updated   : 2002-04-08
  *  Notes     : rfc2046 MIME article definitions
  *
- * Copyright (c) 2000-2002 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 2000-2003 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

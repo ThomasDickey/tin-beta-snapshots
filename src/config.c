@@ -3,10 +3,10 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-11-16
+ *  Updated   : 2002-12-09
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -418,7 +418,7 @@ read_config_file(
 			if (match_string(buf, "default_post_subject=", tinrc.default_post_subject, sizeof(tinrc.default_post_subject)))
 				break;
 
-			if (match_string(buf, "default_regex_pattern=", tinrc.default_regex_pattern, sizeof(tinrc.default_regex_pattern)))
+			if (match_string(buf, "default_pattern=", tinrc.default_pattern, sizeof(tinrc.default_pattern)))
 				break;
 
 			if (match_string(buf, "default_range_group=", tinrc.default_range_group, sizeof(tinrc.default_range_group)))
@@ -1353,7 +1353,7 @@ write_config_file(
 	fprintf(fp, "default_range_group=%s\n", tinrc.default_range_group);
 	fprintf(fp, "default_range_select=%s\n", tinrc.default_range_select);
 	fprintf(fp, "default_range_thread=%s\n", tinrc.default_range_thread);
-	fprintf(fp, "default_regex_pattern=%s\n", tinrc.default_regex_pattern);
+	fprintf(fp, "default_pattern=%s\n", tinrc.default_pattern);
 	fprintf(fp, "default_save_file=%s\n", tinrc.default_save_file);
 	fprintf(fp, "default_select_pattern=%s\n", tinrc.default_select_pattern);
 	fprintf(fp, "default_shell_command=%s\n\n", tinrc.default_shell_command);

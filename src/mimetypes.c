@@ -6,7 +6,7 @@
  *  Updated   : 2000-06-05
  *  Notes     : mime.types handling
  *
- * Copyright (c) 2000-2002 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 2000-2003 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

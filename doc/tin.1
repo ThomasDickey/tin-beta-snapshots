@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2002-11-29
+.\" Updated   : 2002-12-09
 .\" Notes     : still needs some work, i.e.:
 .\"             - document authorization (.newsauth)
 .\"             - postprocess differences when linked against libuu
 .\"
 .\"
-.TH tin 1 "November 29th, 2002" "1.5.16" "A Usenet newsreader"
+.TH tin 1 "December 9th, 2002" "1.5.16" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -1132,7 +1132,7 @@ Edit the filter file and reload it afterwards.
 Post a followup to the current article with a copy of the article included.
 .TP
 .B PageFollowup 'F'
-Post a followup to the current article without including a a copy of the
+Post a followup to the current article without including a copy of the
 article.
 .TP
 .B PageFirstPage2 'g'
@@ -1537,6 +1537,8 @@ different command-line parameters to be used such as 'elm -s "%S" "%T" <
 .TP
 .B default_move_group
 .TP
+.B default_pattern
+.TP
 .B default_pipe_command
 .TP
 .B default_post_newsgroups
@@ -1557,8 +1559,6 @@ System Administrator
 .B default_range_select
 .TP
 .B default_range_thread
-.TP
-.B default_regex_pattern
 .TP
 .B default_repost_group
 .TP

@@ -3,7 +3,7 @@
 # quick and dirty hack which reads an old tinrc-file on STDIN,
 # updates it and returns the result on STDOUT
 #
-# 2002-05-15 <urs@tin.org>
+# 2002-12-09 <urs@tin.org>
 #
 # TODO: - add missing updates (full_page_scroll, show_xcommentto)
 #       - add documentation
@@ -11,10 +11,10 @@
 # NOPS: - word_h_display_marks
 #
 # version Number
-# $VERSION = "0.0.7";
+# $VERSION = "0.0.8";
 
 # current tinrc version number
-my $rc_version="1.3.0";
+my $rc_version="1.3.1";
 
 # rc values to be updated, removed, joined #
 my $use_getart_limit = 0;		# replaced by getart_limit
@@ -36,6 +36,8 @@ my $mailbox_format = "";		# default=MBOXO
 my $thread_articles = -1;		# bool -> int change
 
 my $quote_style = 5;			# default=quote_empty_lines|compress_quotes
+
+my $default_regex_pattern = "";		# misnomer, renamed to default_pattern
 # denioj ,devomer ,detadpu eb ot seulav cr #
 
 while (defined($line = <>)) {
@@ -128,6 +130,12 @@ while (defined($line = <>)) {
 		next;
 	}
 
+	# default_regex_pattern was a misnomer
+	if ($line =~ m/^default_regex_pattern=(.*)/o) {
+		$default_regex_pattern = $1;
+		next;
+	}
+
 	# other lines don't need to be translated
 	print "$line\n";
 }
@@ -177,3 +185,5 @@ if ($mailbox_format ne "") {
 print "thread_articles=".$thread_articles."\n";
 
 print "quote_style=".$quote_style."\n";
+
+print "default_pattern=".$default_regex_pattern."\n";

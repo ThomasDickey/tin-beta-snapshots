@@ -62,7 +62,7 @@ tmpfile(
 #define TRAILER "tmp.XXXXXXXXXX"
         char buf[sizeof(_PATH_TMP) + sizeof(TRAILER)];
 
-        (void )memcpy(buf, _PATH_TMP, sizeof(_PATH_TMP) - 1);
+        (void) memcpy(buf, _PATH_TMP, sizeof(_PATH_TMP) - 1);
         (void) memcpy(buf + sizeof(_PATH_TMP) - 1, TRAILER, sizeof(TRAILER));
 
 /* TODO: use portable signal blocking/unblocking */

@@ -1,4 +1,4 @@
-MANIFEST for tin-1.5.16 (Fri Dec  6 10:14:09 CET 2002)
+MANIFEST for tin-1.5.16 (Sun Dec 29 16:26:16 CET 2002)
 ----------------------------------------------------
   13580 ./Makefile
    8013 ./MANIFEST
@@ -6,27 +6,27 @@ MANIFEST for tin-1.5.16 (Fri Dec  6 10:14:09 CET 2002)
     226 ./README.MAC
    2209 ./README.VMS
    1006 ./README.WIN
- 118690 ./aclocal.m4
+ 119776 ./aclocal.m4
     882 ./conf-tin
-  40969 ./config.guess
+  40932 ./config.guess
   29613 ./config.sub
- 437693 ./configure
+ 441678 ./configure
   29632 ./configure.in
    5555 ./install.sh
     777 ./mkdirs.sh
   18847 ./doc/ABOUT-NLS
-  56710 ./doc/CHANGES
+  57091 ./doc/CHANGES
  153546 ./doc/CHANGES.old
    1469 ./doc/DEBUG_REFS
-  29181 ./doc/INSTALL
-  31802 ./doc/TODO
+  29178 ./doc/INSTALL
+  31803 ./doc/TODO
    2706 ./doc/WHATSNEW
    2671 ./doc/art_handling.txt
-   3863 ./doc/auth.txt
+   3862 ./doc/auth.txt
    4878 ./doc/config-anomalies
-  11328 ./doc/filtering
+  11327 ./doc/filtering
   35037 ./doc/good-netkeeping-seal
-   3662 ./doc/internals.txt
+   3660 ./doc/internals.txt
   23621 ./doc/iso2asc.txt
    4051 ./doc/keymap.sample
     660 ./doc/mailcap.sample
@@ -43,16 +43,16 @@ MANIFEST for tin-1.5.16 (Fri Dec  6 10:14:09 CET 2002)
    4168 ./doc/mmdf.5
    2128 ./doc/newsoverview.5
    6963 ./doc/plp_snprintf.3
- 116097 ./doc/tin.1
-  65036 ./doc/tin.5
+ 116088 ./doc/tin.1
+  65029 ./doc/tin.5
    4729 ./doc/w2r.1
    2196 ./doc/wildmat.3
     344 ./tools/expiretover
    3815 ./tools/metamutt
    2779 ./tools/opt-case.pl
    1410 ./tools/tinlock
-  16469 ./tools/tinews.pl
-   4083 ./tools/tinrcupdate.pl
+  16475 ./tools/tinews.pl
+   4343 ./tools/tinrcupdate.pl
    1533 ./tools/url_handler.sh
    3164 ./tools/w2r.pl
    1661 ./tools/expand_aliases.tgz
@@ -65,12 +65,12 @@ MANIFEST for tin-1.5.16 (Fri Dec  6 10:14:09 CET 2002)
    6465 ./include/nntplib.h
     665 ./include/plp_snprintf.h
   12059 ./include/policy.h
-  29580 ./include/proto.h
+  29703 ./include/proto.h
    5167 ./include/rfc2046.h
    3373 ./include/stpwatch.h
-   4886 ./include/tcurses.h
+   5408 ./include/tcurses.h
   63577 ./include/tin.h
-  12601 ./include/tinrc.h
+  12595 ./include/tinrc.h
    5788 ./include/tnntp.h
    2447 ./include/trace.h
    2528 ./include/version.h
@@ -80,24 +80,24 @@ MANIFEST for tin-1.5.16 (Fri Dec  6 10:14:09 CET 2002)
   12156 ./src/auth.c
   13325 ./src/charset.c
    6095 ./src/color.c
-  76046 ./src/config.c
+  76016 ./src/config.c
   27788 ./src/cook.c
-  28374 ./src/curses.c
+  30167 ./src/curses.c
   10602 ./src/debug.c
    3605 ./src/envarg.c
-  21370 ./src/feed.c
+  21344 ./src/feed.c
   48706 ./src/filter.c
-  12970 ./src/getline.c
+  17857 ./src/getline.c
    7453 ./src/global.c
-  42403 ./src/group.c
+  42402 ./src/group.c
    4158 ./src/hashstr.c
    9094 ./src/header.c
   27570 ./src/help.c
   14440 ./src/inews.c
-  33951 ./src/init.c
+  33945 ./src/init.c
    3048 ./src/joinpath.c
   37526 ./src/keymap.c
- 104996 ./src/lang.c
+ 104987 ./src/lang.c
    4310 ./src/langinfo.c
    7031 ./src/list.c
    6902 ./src/lock.c
@@ -106,8 +106,8 @@ MANIFEST for tin-1.5.16 (Fri Dec  6 10:14:09 CET 2002)
   10422 ./src/makecfg.c
   10038 ./src/memory.c
    3206 ./src/mimetypes.c
-  88747 ./src/misc.c
-  37572 ./src/newsrc.c
+  88746 ./src/misc.c
+  37563 ./src/newsrc.c
   27180 ./src/nntplib.c
    7236 ./src/nrctbl.c
   26297 ./src/open.c
@@ -123,8 +123,8 @@ MANIFEST for tin-1.5.16 (Fri Dec  6 10:14:09 CET 2002)
   14244 ./src/rfc1524.c
    7290 ./src/rfc2045.c
   24009 ./src/rfc2046.c
-  25596 ./src/rfc2047.c
-  36948 ./src/save.c
+  25704 ./src/rfc2047.c
+  36978 ./src/save.c
   10439 ./src/screen.c
   12127 ./src/search.c
   29558 ./src/select.c
@@ -132,8 +132,8 @@ MANIFEST for tin-1.5.16 (Fri Dec  6 10:14:09 CET 2002)
   12536 ./src/signal.c
    7001 ./src/strftime.c
   12076 ./src/string.c
-  13168 ./src/tags.c
-  13270 ./src/tcurses.c
+  13167 ./src/tags.c
+  15052 ./src/tcurses.c
    3551 ./src/tmpfile.c
    3376 ./src/my_tmpfile.c
   36416 ./src/thread.c
@@ -297,11 +297,11 @@ MANIFEST for tin-1.5.16 (Fri Dec  6 10:14:09 CET 2002)
      41 ./intl/VERSION
    4941 ./po/Makefile.inn
     813 ./po/POTFILES.in
- 116937 ./po/tin.pot
- 158678 ./po/de.gmo
- 188587 ./po/de.po
- 152660 ./po/et.gmo
- 181536 ./po/et.po
+ 116926 ./po/tin.pot
+ 158661 ./po/de.gmo
+ 188568 ./po/de.po
+ 152583 ./po/et.gmo
+ 181517 ./po/et.po
    7317 ./po/en_GB.gmo
- 119445 ./po/en_GB.po
-5525443 total
+ 119434 ./po/en_GB.po
+5540104 total

@@ -6,7 +6,7 @@
  *  Updated   : 2002-10-01
  *  Notes     :
  *
- * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -218,7 +218,7 @@ fprintf(stderr, "start_save: create_path(%s)\n", tmp);
 					 *       copy_fp() which badly fails in that case.
 					 */
 					artfp = open_art_fp(group_path, arts[j].artnum);
-					/* FIXME! */
+					/* FIXME! (i.e. use t_openartinfo->raw) */
 					if (artfp == FAKE_NNTP_FP || artfp == NULL)
 						continue;
 

@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2001-07-22
+ *  Updated   : 2002-12-18
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -25,6 +25,9 @@
 #ifdef USE_CURSES
 
 #define ReadCh cmdReadCh
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#	define ReadWch cmdReadWch
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 void my_dummy(void) { }	/* ANSI C requires non-empty file */
 t_bool have_linescroll = TRUE;	/* USE_CURSES always allows line scrolling */
@@ -230,7 +233,8 @@ ScreenSize(
  * get screen size from termcap entry & setup sizes
  */
 void
-setup_screen(void)
+setup_screen(
+	void)
 {
 	_line = 1;
 	ScreenSize(&cLINES, &cCOLS);
@@ -273,7 +277,8 @@ extern char PC;			/* used in 'tputs()' */
 #	endif /* HAVE_EXTERN_TCAP_PC */
 
 int
-get_termcaps(void)
+get_termcaps(
+	void)
 {
 	static struct {
 		char **value;
@@ -390,8 +395,10 @@ get_termcaps(void)
 	return TRUE;
 }
 
+
 int
-InitScreen(void)
+InitScreen(
+	void)
 {
 	InitWin();
 #	ifdef HAVE_COLOR
@@ -403,7 +410,8 @@ InitScreen(void)
 #else	/* !M_UNIX */
 
 int
-InitScreen(void)
+InitScreen(
+	void)
 {
 	char *ptr;
 
@@ -555,7 +563,8 @@ InitScreen(void)
 
 
 void
-InitWin(void)
+InitWin(
+	void)
 {
 	if (_terminalinit) {
 		tputs(_terminalinit, 1, outchar);
@@ -567,7 +576,8 @@ InitWin(void)
 
 
 void
-EndWin(void)
+EndWin(
+	void)
 {
 	if (_terminalend) {
 		tputs(_terminalend, 1, outchar);
@@ -579,7 +589,8 @@ EndWin(void)
 
 
 void
-set_keypad_on(void)
+set_keypad_on(
+	void)
 {
 #	ifdef HAVE_KEYPAD
 	if (tinrc.use_keypad && _keypadxmit) {
@@ -591,7 +602,8 @@ set_keypad_on(void)
 
 
 void
-set_keypad_off(void)
+set_keypad_off(
+	void)
 {
 #	ifdef HAVE_KEYPAD
 	if (tinrc.use_keypad && _keypadlocal) {
@@ -1015,7 +1027,8 @@ xclick(
  * switch on monitoring of mouse buttons
  */
 void
-set_xclick_on(void)
+set_xclick_on(
+	void)
 {
 	if (tinrc.use_mouse)
 		xclick(TRUE);
@@ -1026,7 +1039,8 @@ set_xclick_on(void)
  * switch off monitoring of mouse buttons
  */
 void
-set_xclick_off(void)
+set_xclick_off(
+	void)
 {
 	if (tinrc.use_mouse)
 		xclick(FALSE);
@@ -1034,7 +1048,8 @@ set_xclick_off(void)
 
 
 void
-cursoron(void)
+cursoron(
+	void)
 {
 	if (_cursoron)
 		tputs(_cursoron, 1, outchar);
@@ -1042,7 +1057,8 @@ cursoron(void)
 
 
 void
-cursoroff(void)
+cursoroff(
+	void)
 {
 	if (_cursoroff)
 		tputs(_cursoroff, 1, outchar);
@@ -1361,25 +1377,26 @@ get_arrow_key(
  */
 #ifdef M_UNIX
 int
-ReadCh(void)
+ReadCh(
+	void)
 {
 	register int result;
-#		ifndef READ_CHAR_HACK
+#	ifndef READ_CHAR_HACK
 	char ch;
-#		endif /* READ_CHAR_HACK */
+#	endif /* READ_CHAR_HACK */
 
 	fflush(stdout);
-#		ifdef READ_CHAR_HACK
-#			undef getc
+#	ifdef READ_CHAR_HACK
+#		undef getc
 	while ((result = getc(stdin)) == EOF) {
 		if (feof(stdin))
 			break;
 
-#			ifdef EINTR
+#		ifdef EINTR
 		if (ferror(stdin) && errno != EINTR)
-#			else
+#		else
 		if (ferror(stdin))
-#			endif /* EINTR */
+#		endif /* EINTR */
 			break;
 
 		clearerr(stdin);
@@ -1387,8 +1404,8 @@ ReadCh(void)
 
 	return ((result == EOF) ? EOF : result & 0xFF);
 
-#		else
-#			ifdef EINTR
+#	else
+#		ifdef EINTR
 
 	allow_resize(TRUE);
 	while ((result = read(0, &ch, 1)) < 0 && errno == EINTR) {		/* spin on signal interrupts */
@@ -1398,12 +1415,94 @@ ReadCh(void)
 		}
 	}
 	allow_resize(FALSE);
-#			else
+#		else
 	result = read(0, &ch, 1);
-#			endif /* EINTR */
+#		endif /* EINTR */
 
 	return ((result <= 0) ? EOF : ch & 0xFF);
 
-#		endif /* READ_CHAR_HACK */
+#	endif /* READ_CHAR_HACK */
 }
+
+
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+wint_t
+ReadWch(
+	void)
+{
+	char *mbs = my_malloc(MB_CUR_MAX + 1);
+	int result, offset;
+	wchar_t wch = 0;
+
+	fflush(stdout);
+
+#		ifndef USE_CURSES
+		/* read only the first char */
+#			ifdef EINTR
+	allow_resize(TRUE);
+	while ((result = read(0, mbs, 1)) < 0 && errno == EINTR) { /* spin on signal interrupts */
+		if (need_resize) {
+			handle_resize((need_resize == cRedraw) ? TRUE :  FALSE);
+			need_resize = cNo;
+		}
+	}
+	allow_resize(FALSE);
+#			else
+	result = read(0, mbs, sizeof(mbs));
+#			endif /* EINTR */
+	if (result <= 0) {
+		free(mbs);
+		return WEOF;
+	}
+
+	/* Begin of an ESC-sequence. Let get_arrow_key() figure out which it is */
+	if (mbs[0] == ESC) {
+		free(mbs);
+		return (wint_t) ESC;
+	}
+
+	/* the pressed key can be represented in one byte */
+	if (!input_pending(0)) {
+		char out = mbs[0] & 0xff;
+
+		free(mbs);
+		return (wint_t) out;
+	}
+
+	/* read the rest of the multibyte-sequence */
+	offset = 1;
+#		else
+	/* read the complete input */
+	offset = 0;
+#		endif /* !USE_CURSES */
+
+#		ifdef EINTR
+	allow_resize(TRUE);
+	while ((result = read(0, mbs + offset, MB_CUR_MAX)) < 0 && errno == EINTR) { /* spin on signal interrupts */
+		if (need_resize) {
+			handle_resize((need_resize == cRedraw) ? TRUE :  FALSE);
+			need_resize = cNo;
+		}
+	}
+	allow_resize(FALSE);
+#		else
+	result = read(0, mbs + offset, MB_CUR_MAX);
+#		endif /* EINTR */
+
+	if (result <= 0) {
+		free(mbs);
+		return WEOF;
+	} else {
+		int res;
+
+		mbs[result + offset] = '\0';
+		res = mbtowc(&wch, mbs, MB_CUR_MAX);
+		free(mbs);
+		if (res == -1)
+			return WEOF;
+		else
+			return (wint_t) wch;
+	}
+}
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #endif /* M_UNIX */

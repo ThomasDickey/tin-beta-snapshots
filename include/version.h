@@ -6,7 +6,7 @@
  *  Updated   : 2002-04-26
  *  Notes     :
  *
- * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,9 +42,9 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.5.16"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20021206"
+#	define RELEASEDATE	"20021229"
 #	define RELEASENAME	"Spiders"
-#	define TINRC_VERSION	"1.3.0"
+#	define TINRC_VERSION	"1.3.1"
 
 #	ifdef M_AMIGA
 #		define OSNAME	"AMIGA"

@@ -6,7 +6,7 @@
  *  Updated   : 2002-12-04
  *  Notes     : MIME header encoding/decoding stuff
  *
- * Copyright (c) 1995-2002 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2003 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -801,7 +801,10 @@ rfc15211522_encode(
 			char *p;
 
 #ifdef CHARSET_CONVERSION
-			p = rfc1522_encode(header, txt_mime_charsets[group->attribute->mm_network_charset], ismail);
+			if (group)
+				p = rfc1522_encode(header, txt_mime_charsets[group->attribute->mm_network_charset], ismail);
+			else
+				p = rfc1522_encode(header, txt_mime_charsets[tinrc.mm_network_charset], ismail);
 #else
 			p = rfc1522_encode(header, tinrc.mm_charset, ismail);
 #endif /* CHARSET_CONVERSION */

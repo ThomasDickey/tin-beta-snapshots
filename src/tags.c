@@ -6,7 +6,7 @@
  *  Updated   : 2002-11-11
  *  Notes     : Split out from other modules
  *
- * Copyright (c) 1999-2002 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 1999-2003 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -131,7 +131,7 @@ look_for_multipart_info(
  * @param base_index index pointing to one of the messages in a multipart
  * message.
  * @param malloc_and_setme_info on success, set to a malloced array the
- * parts found.  Untouched on failure.
+ * parts found. Untouched on failure.
  */
 static int
 get_multiparts(
