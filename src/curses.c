@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2003-08-03
+ *  Updated   : 2003-09-19
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -37,10 +37,6 @@ void my_dummy(void) { }	/* ANSI C requires non-empty file */
 t_bool have_linescroll = TRUE;	/* USE_CURSES always allows line scrolling */
 
 #else	/* !USE_CURSES */
-
-#ifdef M_AMIGA
-#	undef BSD
-#endif /* M_AMIGA */
 
 #ifndef ns32000
 #	undef	sinix
@@ -106,7 +102,7 @@ static TTY _raw_tty, _original_tty;
 
 #else	/* FIXME: prune the non-autoconf'd stuff */
 
-#	if (defined(M_AMIGA) && !defined(__SASC)) || defined(COHERENT) || defined(BSD)
+#	if (defined(COHERENT) || defined(BSD)
 #		ifdef BSD4_1
 #			include <termio.h>
 #			define USE_TERMIO 1
@@ -115,7 +111,7 @@ static TTY _raw_tty, _original_tty;
 #			define USE_SGTTY 1
 #		endif /* BSD4_1 */
 #	else
-#		if !defined(SYSV) && !defined(M_AMIGA)
+#		if !defined(SYSV)
 #			ifdef MINIX
 #				include <sgtty.h>
 #				define USE_SGTTY 1
@@ -134,24 +130,22 @@ static TTY _raw_tty, _original_tty;
 #					endif /* sinix */
 #				endif /* !QNX42 */
 #			endif /* MINIX */
-#		endif /* !SYSV && !M_AMIGA */
-#	endif /* (M_AMIGA && !__SASC) || COHERENT || BSD */
+#		endif /* !SYSV */
+#	endif /* COHERENT || BSD */
 
 #	ifndef VMS
-#		if (defined(M_AMIGA) && !defined(__SASC)) || defined(BSD) || defined(MINIX)
+#		if (defined(BSD) || defined(MINIX)
 #			define USE_SGTTY 1
 struct sgttyb _raw_tty, _original_tty;
 #		else
-#			if !defined(M_AMIGA)
-#				if defined(HAVE_TERMIOS_H) || defined(sinix)
-#					define USE_POSIX_TERMIOS 1
+#			if defined(HAVE_TERMIOS_H) || defined(sinix)
+#				define USE_POSIX_TERMIOS 1
 struct termios _raw_tty, _original_tty;
-#				else
-#					define USE_TERMIO 1
+#			else
+#				define USE_TERMIO 1
 struct termio _raw_tty, _original_tty;
-#				endif /* HAVE_TERMIOS_H || sinix */
-#			endif /* !M_AMIGA */
-#		endif /* (M_AMIGA && !__SASC) || BSD || MINIX */
+#			endif /* HAVE_TERMIOS_H || sinix */
+#		endif /* BSD || MINIX */
 #	endif /* !VMS */
 #endif /* HAVE_CONFIG_H */
 
@@ -173,10 +167,6 @@ static char *_clearscreen, *_moveto, *_cleartoeoln, *_cleartoeos,
 			*_terminalinit, *_terminalend, *_keypadlocal, *_keypadxmit,
 			*_scrollregion, *_scrollfwd, *_scrollback,
 			*_reset, *_reversevideo, *_blink, *_dim, *_bold;
-
-#ifdef M_AMIGA
-static char *_getwinsize;
-#endif /* M_AMIGA */
 
 static int _columns, _line, _lines;
 
@@ -213,9 +203,6 @@ static int _columns, _line, _lines;
 static int input_pending(int delay);
 static void ScreenSize(int *num_lines, int *num_columns);
 static void xclick(int state);
-#if !defined(VMS) && defined(M_AMIGA)
-	static int AmiReadCh(int getscrsize);
-#endif /* !VMS && M_AMIGA */
 
 
 /*
@@ -441,14 +428,6 @@ InitScreen(
 	_clearunderline	= "\033[0m";
 	_keypadlocal	= "";
 	_keypadxmit	= "";
-#	ifdef M_AMIGA
-	_terminalinit	= "\033[12{\033[0 p";
-	_terminalend	= "\033[12}\033[ p";
-	_cursoron	= "\033[ p";
-	_cursoroff	= "\033[0 p";
-	_cleartoeos	= "\033[J";
-	_getwinsize	= "\2330 q";
-#	endif /* M_AMIGA */
 #	ifdef VMS
 	_cleartoeos	= "\033[J";
 	_terminalinit	= NULL;
@@ -463,11 +442,6 @@ InitScreen(
 
 	_lines = _columns = -1;
 
-	/*
-	 * Get lines and columns from environment settings - useful when
-	 * you're using something other than an Amiga window
-	 */
-
 	if ((ptr = getenv("LINES")) != 0) {
 		_lines = atol(ptr);
 	}
@@ -478,18 +452,6 @@ InitScreen(
 	/*
 	 * If that failed, try get a response from the console itself
 	 */
-#	ifdef M_AMIGA
-	if (_lines == -1 || _columns == -1) {
-		_lines = DEFAULT_LINES_ON_TERMINAL;
-		_columns = DEFAULT_COLUMNS_ON_TERMINAL;
-	} else {
-		_terminalinit = NULL;		/* don't do fancy things on a non-amiga console */
-		_terminalend = NULL;
-		_cursoroff = NULL;
-		_cursoron = NULL;
-		_getwinsize = NULL;
-	}
-#	endif /* M_AMIGA */
 #	ifdef VMS /* moved from below InitWin() M.St. 22.01.98 */
 	{
 		int input_chan, status;
@@ -856,10 +818,6 @@ Raw(
 		_inraw = 1;
 	}
 #else
-#	if defined(M_AMIGA) && defined(__SASC)
-	_inraw = state;
-	rawcon(state);
-#	else
 	if (!state && _inraw) {
 		SET_TTY(&_original_tty);
 		_inraw = 0;
@@ -869,9 +827,6 @@ Raw(
 #		if USE_SGTTY
 		_raw_tty.sg_flags &= ~(ECHO | CRMOD);	/* echo off */
 		_raw_tty.sg_flags |= CBREAK;		/* raw on */
-#			ifdef M_AMIGA
-		_raw_tty.sg_flags |= RAW; /* Manx-C 5.2 does not support CBREAK */
-#			endif /* M_AMIGA */
 #		else
 #			ifdef __FreeBSD__
 		cfmakeraw(&_raw_tty);
@@ -885,129 +840,9 @@ Raw(
 		SET_TTY(&_raw_tty);
 		_inraw = 1;
 	}
-#	endif /* M_AMIGA && __SASC */
 #endif /* !VMS */
 }
 
-
-/*
- * read a character with Raw mode set!
- */
-
-#ifndef VMS
-#	ifdef M_AMIGA
-#		include <sprof.h>
-
-static int new_lines, new_columns;
-
-static int
-AmiReadCh(
-	int getscrsize)
-{
-	int result;
-	static int buflen = 0, bufp = 0;
-	static unsigned char buf[128];
-	unsigned char ch;
-
-	while (getscrsize || !buflen) {
-PROFILE_OFF();
-		result = read(0, (char *) &buf[buflen], 1);
-PROFILE_ON();
-		if (result <= 0) return EOF;
-		buflen++;
-		if (buf[bufp] == KEY_PREFIX) {
-			do {
-				result = read(0, (char *) &buf[buflen], 1);
-				if (result <= 0) return EOF;
-			} while (buf[buflen++] < 0x40);
-
-			switch (buf[buflen - 1]) {
-				char *ptr;
-				long class;
-
-				case 'r':		/* Window bounds report */
-					ptr = (char *) &buf[bufp + 1];
-					strtol(ptr, &ptr, 10);
-					ptr++;
-					strtol(ptr, &ptr, 10);
-					ptr++;
-					new_lines = strtol(ptr, &ptr, 10);
-					ptr++;
-					new_columns = strtol(ptr, &ptr, 10);
-					buflen = bufp;
-					if (getscrsize)
-						return 0;
-					break;
-
-				case '|':		/* Raw Input Events */
-					ptr = (char *) &buf[bufp + 1];
-					class = strtol(ptr, &ptr, 10);
-					ptr++;
-					switch (class) {
-						int x, y;
-
-						case 12:	/* Window resized */
-							buflen = bufp; /* Must do this before raise() */
-							raise(SIGWINCH);
-							break;
-#			ifdef notdef
-						case 2:	/* Mouse event */
-					/*
-					 * At this point we know what button was pressed
-					 * but we don't really know where the mouse is.
-					 * The <x> and <y> parameters don't help.
-					 * Perhaps looking directly in the window's structure
-					 * is the easiest thing to do (after finding out where
-					 * the window's structure is! Sending an ACTION_INFO
-					 * packet to the handler gives us this. I don't know
-					 * if there is an easier way.
-					 */
-							buflen = bufp;
-							break;
-#			endif /* notdef */
-						default:
-							buflen = bufp;
-							break;
-					}
-					break;
-
-				default:
-					break;
-			}
-		}
-	}
-
-	ch = buf[bufp++];
-	if (bufp >= buflen)
-		buflen = bufp = 0;
-	return ch;
-}
-
-
-int
-ReadCh(
-	void)
-{
-	return AmiReadCh(0);
-}
-
-
-void
-AmiGetWinSize(
-	int *lines,
-	int *columns)
-{
-	if (_getwinsize) {
-		tputs(_getwinsize, 1, outchar);	/* identify yourself */
-		my_flush();
-		AmiReadCh(1);		/* Look for the identification */
-		*lines = new_lines;
-		*columns = new_columns;
-	}
-}
-
-#	endif /* M_AMIGA */
-#endif /* !VMS */
 
 /*
  *  output a character. From tputs... (Note: this CANNOT be a macro!)
@@ -1258,10 +1093,6 @@ input_pending(
 
 #else
 
-#	ifdef M_AMIGA
-	return (WaitForChar(Input(), 1000 * delay) == DOSTRUE) ? TRUE : FALSE;
-#	endif /* M_AMIGA */
-
 #	ifdef HAVE_SELECT
 	int fd = STDIN_FILENO;
 	fd_set fdread;
@@ -1325,10 +1156,6 @@ get_arrow_key(
 		&& i < ((VT_ESCAPE_TIMEOUT * 1000) / SECOND_CHARACTER_DELAY))
 
 #	ifndef VMS
-#		ifdef M_AMIGA
-	if (WaitForChar(Input(), 1000) == DOSTRUE)
-		return prech;
-#		else	/* !M_AMIGA */
 	if (!input_pending(0)) {
 #			ifdef HAVE_USLEEP
 		int i = 0;
@@ -1365,7 +1192,6 @@ get_arrow_key(
 		if (!input_pending(0))
 			return prech;
 	}
-#		endif /* M_AMIGA */
 #	endif /* !VMS */
 	ch = ReadCh();
 	if (ch == '[' || ch == 'O')
@@ -1404,11 +1230,7 @@ get_arrow_key(
 #	ifdef QNX42
 		case 0xA2:
 #	endif /* QNX42 */
-#	ifdef M_AMIGA
-			return KEYMAP_PAGE_DOWN;
-#	else
 			return KEYMAP_PAGE_UP;
-#	endif /* M_AMIGA */
 
 		case 'G':		/* ansi  PgDn */
 		case 'U':		/* at386 PgDn */
@@ -1416,11 +1238,7 @@ get_arrow_key(
 #	ifdef QNX42
 		case 0xAA:
 #	endif /* QNX42 */
-#	ifdef M_AMIGA
-			return KEYMAP_PAGE_UP;
-#	else
 			return KEYMAP_PAGE_DOWN;
-#	endif /* M_AMIGA */
 
 		case 'H':		/* at386 Home */
 #	ifdef QNX42

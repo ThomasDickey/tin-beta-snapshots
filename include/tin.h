@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-09-05
+ *  Updated   : 2003-12-19
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -63,12 +63,6 @@
 #	define INET6
 #endif /* HAVE_GETADDRINFO && HAVE_GAI_STRERROR && ENABLE_IPV6 */
 
-/* Locale support in Mac OS X doesn't work yet, so turn it off */
-#ifdef MAC_OS_X
-#	ifndef NO_LOCALE
-#		define NO_LOCALE 1
-#	endif /* !NO_LOCALE */
-#endif /* MAC_OS_X */
 
 /*
  * Native Language Support.
@@ -99,18 +93,8 @@
 #	define LOCALEDIR "/usr/share/locale"
 #endif /* !LOCALEDIR */
 
-/*
- * Non-autoconf'able definitions for Amiga Developer Environment (gcc 2.7.2,
- * etc).
- */
 #if defined(__amiga__) || defined(__amiga)
 #	define SMALL_MEMORY_MACHINE
-#	if !defined(__GNUC__)
-#		undef M_UNIX
-#		define M_AMIGA
-#		define SIG_ARGS /* nothing, since compiler doesn't handle it */
-#		undef DECL_SIG_CONST
-#	endif /* !__GNUC__ */
 #endif /* __amiga__ || __amiga */
 
 #include	<signal.h>
@@ -200,13 +184,9 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	include <sys/types.h>
 #endif /* HAVE_SYS_TYPES_H */
 
-#ifdef M_AMIGA
-#	include "include:stat.h"	/* FIXME: Problem with AmiTCP-includes, AmiTCP's fstat() needs */
-#else									/* a running TCP-Stack. OTOH fstat() ist used with local spool */
-#	ifdef HAVE_SYS_STAT_H
-#		include <sys/stat.h>
-#	endif /* HAVE_SYS_STAT_H */
-#endif /* M_AMIGA */
+#ifdef HAVE_SYS_STAT_H
+#	include <sys/stat.h>
+#endif /* HAVE_SYS_STAT_H */
 
 #ifdef TIME_WITH_SYS_TIME
 #	include <sys/time.h>
@@ -379,10 +359,6 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #		define DIR_BUF	struct direct
 #	endif /* HAVE_DIRENT_H */
 #else
-#	ifdef M_AMIGA
-#		include "amiga.h"
-#		define DIR_BUF	struct dirent
-#	endif /* M_AMIGA */
 #	ifdef M_XENIX
 #		include <sys/ndir.h>
 #		define DIR_BUF	struct direct
@@ -494,11 +470,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #			ifdef VMS
 #				define NEWSLIBDIR	"NEWSLIB:[000000]"
 #			else
-#				ifdef M_AMIGA
-#					define NEWSLIBDIR	"uulib:news"
-#				else
-#					define NEWSLIBDIR	"/usr/lib/news"
-#				endif /* M_AMIGA */
+#				define NEWSLIBDIR	"/usr/lib/news"
 #			endif /* VMS */
 #		endif /* !NEWSLIBDIR */
 #		ifndef NOVROOTDIR
@@ -517,7 +489,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 /*
  * Determine machine configuration for external programs & directories
  */
-#if defined(BSD) && !defined(M_AMIGA)
+#if defined(BSD)
 /*
  * To catch 4.3 Net2 code base or newer
  * (e.g. FreeBSD 1.x, 4.3/Reno, NetBSD 0.9, 386BSD, BSD/386 1.1 and below).
@@ -561,18 +533,6 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	ifdef linux
 #		define DEFAULT_PRINTER	"/usr/bin/lpr"
 #	endif /* linux */
-#	ifdef M_AMIGA
-#		ifndef DEFAULT_EDITOR
-#			define DEFAULT_EDITOR	"c:ed"
-#		endif /* !DEFAULT_EDITOR */
-#		define DEFAULT_MAILBOX	"uumail:"
-#		define DEFAULT_MAILER	"uucp:c/sendmail"
-#		define DEFAULT_POSTER	"uucp:c/postnews %s"
-#		define DEFAULT_PRINTER	"copy to PRT:"
-#		define DEFAULT_BBS_PRINTER	"copy to NIL:"
-#		define DEFAULT_SHELL	"newshell"	/* Not Yet Implemented */
-#		define DEFAULT_UNSHAR	"unshar %s"
-#	endif /* M_AMIGA */
 #	ifdef VMS
 #		define DEFAULT_EDITOR	"EDIT/TPU"
 #		define DEFAULT_MAILBOX	"SYS$LOGIN:"
@@ -741,6 +701,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define DEFAULT_STRIP_RE_REGEX	"(?:R[eE](?:\\^\\d+|\\[\\d\\])?|A[wW]|Odp|Sv):\\s"
 /* case sensitive */
 #define DEFAULT_STRIP_WAS_REGEX	".\\((?:[Ww]a[rs]|[Bb]y[l³]o):.*\\)\\s*$"
+#define DEFAULT_U8_STRIP_WAS_REGEX	".\\((?:[Ww]a[rs]|[Bb]y[l\\x{0142}]o):.*\\)\\s*$"
 /*
  * overkill regexp for balanced '()':
  * #define DEFAULT_STRIP_WAS_REGEX	".\\((?:[Ww]a[rs]|[Bb]y[l³]o):(?:(?:[^)(])*(?:\\([^)(]*\\))*)+\\)\\s*$"
@@ -763,14 +724,21 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  */
 /*
  * case insensitive
- * split out ftp (only ftp allows username:passwd@, RFC 1738)?
- *
- * NOTE: the "-(?!-)" assertion must be removed when IDN is introduced
+ * TODO: - split out ftp (only ftp allows username:passwd@, RFC 1738)?
+ *       - test IDNA (RFC 3490) case
  */
-#if 0 /* this one is ok for IPv4 */
-#	define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
-#else	/* this one should be IPv6 safe - test me! */
-#	define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:[0-9A-F]{0,4}:){1,7}[0-9A-F]{1,4}|(?:[0-9A-F]{0,4}:){1,3}(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
+#if 0
+#	if 0 /* this one is ok for IPv4 */
+#		define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
+#	else	/* this one should be IPv6 safe - test me! */
+#		define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:[0-9A-F]{0,4}:){1,7}[0-9A-F]{1,4}|(?:[0-9A-F]{0,4}:){1,3}(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
+#	endif /* 0 */
+#else /* the following should be IDN safe */
+#	if 0 /* this one is ok for IPv4 */
+#		define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
+#	else	/* this one should be IPv6 safe - test me! */
+#		define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/\\s]*(?::[^:@/\\s]*)?@)?(?:(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?|xn--[^\\W_](?:-(?!-)|[^\\W_]){1,57}[^\\W_])\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:[0-9A-F]{0,4}:){1,7}[0-9A-F]{1,4}|(?:[0-9A-F]{0,4}:){1,3}(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
+#	endif /* 0 */
 #endif /* 0 */
 /*
  * case insensitive
@@ -840,10 +808,11 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #else
 #	ifdef HAVE_NL_TYPES_H
 #		include <nl_types.h>
-#	else
-		typedef int nl_item;
 #	endif /* HAVE_NL_TYPES_H */
 #endif /* HAVE_LANGINFO_H */
+#ifndef HAVE_NL_ITEM
+	typedef int nl_item;
+#endif /* HAVE_NL_ITEM */
 #ifndef CODESET
 #	define CODESET ((nl_item) 1)
 #endif /* CODESET */
@@ -896,11 +865,11 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  * HEADER_LEN  = max. size of a news/mail header-line
  * NEWSRC_LINE =
  */
-#if defined(VMS) || defined(M_AMIGA)
+#if defined(VMS)
 #	define PATH_LEN	256
 #	define NAME_LEN	14
 #	define LEN	512
-#endif /* VMS || M_AMIGA */
+#endif /* VMS */
 
 #ifdef M_UNIX
 #	ifdef PATH_MAX
@@ -1048,12 +1017,11 @@ enum {
 
 #define GROUP_MATCH(s1, pat, case)		(wildmat(s1, pat, case))
 
-#define REGEX_MATCH(s1, pat, case)	(wildcard_func(s1, pat, case))
 #define REGEX_FMT (tinrc.wildcard ? "%s" : "*%s*")
 
 #define IGNORE_ART(i)	((tinrc.kill_level != KILL_THREAD && arts[i].killed) || (arts[i].thread == ART_EXPIRED))
 /* only used for threading */
-#define IGNORE_ART_THREAD(i)	(arts[i].thread != ART_NORMAL || (tinrc.kill_level == KILL_NOTHREAD && arts[i].killed))
+#define IGNORE_ART_THREAD(i)	(arts[i].thread != ART_UNTHREADED || (tinrc.kill_level == KILL_NOTHREAD && arts[i].killed))
 
 /*
  * Is this part text/plain ?
@@ -1062,7 +1030,7 @@ enum {
 			(x->type == TYPE_TEXT && strcasecmp("plain", x->subtype) == 0)
 
 /* TRUE if basenote has responses */
-#define HAS_FOLLOWUPS(i)	(arts[base[i]].thread != -1)
+#define HAS_FOLLOWUPS(i)	(arts[base[i]].thread >= 0)
 
 /*
  * Only close off our stream when reading on local spool
@@ -1336,10 +1304,15 @@ enum {
 
 
 /*
- * art.thread (Can't ART_NORMAL be better named ?)
+ * art.thread
+ */
+#define ART_UNTHREADED	-1
+#define ART_EXPIRED		-2
+
+/*
+ * Where does this belong ?? It is overloaded
  */
 #define ART_NORMAL		-1
-#define ART_EXPIRED		-2
 
 /*
  * art.status
@@ -1396,97 +1369,48 @@ enum {
 #define FILTER_LINES_GT		3
 
 /*
+ * default date format for display in the page header
+ */
+#define DEFAULT_DATE_FORMAT	"%a, %d %b %Y %H:%M:%S"
+
+/*
+ * unicode normalization
+ */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#	if defined(HAVE_LIBICUUC)
+#		define HAVE_UNICODE_NORMALIZATION 1
+#	else
+#		ifdef HAVE_LIBIDN
+#			define HAVE_UNICODE_NORMALIZATION 2
+#		endif /* HAVE_LIBIDN */
+#	endif /* HAVE_LIBICUUC */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+/*
+ * normalization forms
+ */
+#ifdef HAVE_UNICODE_NORMALIZATION
+enum {
+	NORMALIZE_NONE = 0,
+#	ifdef HAVE_LIBICUUC
+	NORMALIZE_NFKC = 1,
+	NORMALIZE_NFKD = 2,
+	NORMALIZE_NFC = 3,
+	NORMALIZE_NFD = 4
+#	else
+#		ifdef HAVE_LIBIDN
+	NORMALIZE_NFKC = 1
+#		endif /* HAVE_LIBIDN */
+#	endif /* HAVE_LIBICUUC */
+};
+#endif /* HAVE_UNICODE_NORMALIZATION */
+
+/*
  * used in checking article header before posting
  */
 #define NGLIMIT		20	/* Max. num. of crossposted groups before warning */
 #define MAX_COL		78	/* Max. line length before issuing a warning */
 #define MAX_SIG_LINES	4	/* Max. num. of signature lines before warning */
-
-/*
- * The following macros are used to simplify and speed up the
- * manipulation of the bitmaps in memory which record which articles
- * are read or unread in each news group.
- *
- * Data representation:
- *
- * Each bitmap is handled as an array of bytes; the least-significant
- * bit of the 0th byte is the 0th bit; the most significant bit of
- * the 0th byte is the 7th bit. Thus, the most-significant bit of the
- * 128th byte is the 1023rd bit, and in general the mth bit of the nth
- * byte is considered to be bit (n*8)+m of the map as a whole.	Conversely,
- * the position of bit q in the map is the bit (q & 7) of byte (q >> 3).
- * A bitmap of b bits will be allocated as ((b+7) >> 3) bytes.
- *
- * The routines could be changed to operate on a word-oriented bitmap by
- * changing the constants used from 8 to 16, 3 to 4, 7 to 15, etc. and
- * changing the allocate/deallocate routines.
- *
- * In the newsrc context, a 0 bit represents an article which is read
- * or expired; a 1 represents an unread article. The 0th bit corresponds
- * to the minimum article number for this group, and (max-min+7)/8 bytes
- * are allocated to the bitmap.
- *
- * Constants:
- *
- * NBITS   = total number of bits per byte;
- * NMAXBIT = number of bits per byte or word;
- * NBITPOS = number of bit in NMAXBIT;
- * NBITSON = byte/word used to set all bits in byte/word to 1;
- * NBITNEG1 = binary negation of 1, used in constructing masks.
- *
- * Macro naming and use:
- *
- * The NOFFSET and NBITIDX macro construct the byte and bit indexes in
- * the map, given a bit number.
- *
- * The NSET0 macro sets a bit to binary 0
- * The NSET1 macro sets a bit to binary 1
- * The NSETBLK0 macro sets the same bit or bits to binary 0
- * The NSETBLK1 macro sets the same bit or bits to binary 1
- * The NTEST macro tests a single bit.
- * These are used frequently to access the group bitmap.
- *
- * NSETBLK0 and NSETBLK1 operate on whole numbers of bytes, and are
- * mainly useful for initializing complete bitmaps to one state or
- * another. Both use the memset function, which is assumed to be
- * optimized for the target architecture. NSETBLK is currently used to
- * initialize the group bitmap to 1s (unread).
- *
- * NSETRNG0 and NSETRNG1 operate on ranges of bits, from a low bit number
- * to a high bit number (inclusive), and are especially useful for
- * efficiently setting a contiguous range of bits to one state or another.
- * NSETRNG0 is currently used on the group bitmap to mark the ranges the
- * newsrc file says are read or expired.
- *
- * The algorithm is this. If the high number is less than the low, then
- * do nothing (error); if both fall within the same byte, construct a
- * single mask expressing the range and AND or OR it into the byte; else:
- * construct a mask for the byte containing the low bit, AND or OR it in;
- * use memset to fill in the intervening bytes efficiently; then construct
- * a mask for the byte containing the high bit, and AND or OR this mask
- * in. Masks are constructed by left-shift of 0xff (to set high-order bits
- * to 1), negating a left-shift of 0xfe (to set low-order bits to 1), and
- * the various negations and combinations of the same. This procedure is
- * complex, but 1 to 2 orders of magnitude faster than a shift inside a
- * loop for each bit inside a loop for each individual byte.
- *
- */
-#define NBITS		8
-#define NMAXBIT	7
-#define NBITPOS	3
-#define NBITSON	0xff
-#define NBITNEG1	0xfe
-#define NOFFSET(b)	((b) >> NBITPOS)
-#define NBITIDX(b)	((b) & NMAXBIT)
-
-#define NBITMASK(beg,end)	(unsigned char) ~(((1 << (((NMAXBIT - beg) - (NMAXBIT - end)) + 1)) - 1) << (NMAXBIT - end))
-
-#define NSET1(n,b)	(n[NOFFSET(b)] |=  (1 << NBITIDX(b)))
-#define NSET0(n,b)	(n[NOFFSET(b)] &= ~(1 << NBITIDX(b)))
-#define NTEST(n,b)	(n[NOFFSET(b)] &   (1 << NBITIDX(b)))
-
-#define NSETBLK1(n,i)	(memset (n, NBITSON, (size_t) NOFFSET(i)+1))
-#define NSETBLK0(n,i)	(memset (n, 0, (size_t) NOFFSET(i)+1))
 
 typedef unsigned char	t_bitmap;
 
@@ -1526,14 +1450,15 @@ struct t_msgid {
  * struct t_article - article header
  *
  * article.thread:
- *	-1 (ART_NORMAL)  initial default
- *	-2 (ART_EXPIRED) article has expired (wasn't found in search of spool
- *	   directory for the group)
+ *  the next article in thread
+ *	-1  (ART_UNTHREADED) article exists but is not (yet) threaded
+ *	-2  (ART_EXPIRED) article has expired (wasn't found in search of spool
+ *	    directory for the group)
  *	>=0 points to another arts[] (struct t_article)
  *
  * article.prev:
  *	the previous article in thread
- *	-1 (ART_NORMAL) initial default, no previous article
+ *	-1  (ART_NORMAL) initial default, first (no previous) article in thread
  *	>=0 points to the previous arts[] (struct t_article)
  */
 struct t_article {
@@ -1598,7 +1523,8 @@ struct t_attribute {
 	unsigned delete_tmp_files:1;		/* 0=leave, 1=delete */
 	unsigned show_only_unread:1;		/* 0=all, 1=only unread */
 	unsigned thread_arts:3;			/* 0=unthread, 1=subject, 2=refs, 3=both, 4=multipart*/
-	unsigned show_author:4;			/* 0=none, 1=name, 2=addr, 3=both */
+	unsigned show_author:2;			/* 0=none, 1=name, 2=addr, 3=both */
+	unsigned show_info:2;			/* 0=none, 1=lines, 2=score, 3=both */
 	unsigned sort_art_type:4;		/* 0=none, 1=subj descend, 2=subj ascend,
 						   3=from descend, 4=from ascend,
 						   5=date descend, 6=date ascend,
@@ -1607,6 +1533,7 @@ struct t_attribute {
 	unsigned int post_proc_type:2;		/* 0=none, 1=shar, 2=uudecode */
 	unsigned int x_comment_to:1;		/* insert X-Comment-To: in Followup */
 	unsigned int tex2iso_conv:1;		/* Convert TeX2ISO */
+	char *fcc;							/* Fcc folder for mail */
 #ifdef CHARSET_CONVERSION
 	int mm_network_charset;				/* network charset */
 	char *undeclared_charset;			/* charset of articles without MIME charset declaration */
@@ -1795,11 +1722,7 @@ struct t_newnews {
 	time_t time;
 };
 
-#ifdef M_AMIGA
-	typedef const char /*__far*/ constext;
-#else
-	typedef const char constext;
-#endif /* M_AMIGA */
+typedef const char constext;
 
 /*
  * Defines text strings used by a tinrc variable
@@ -1931,19 +1854,6 @@ typedef int (*t_compfunc)(t_comptype, t_comptype);
 
 #define TIN_EDITOR_FMT_OFF		"%E %F"
 
-#ifdef M_AMIGA
-#	define REDIRECT_OUTPUT	"> NIL:"
-#	define REDIRECT_PGP_OUTPUT	"> NIL:"
-#	define ENV_VAR_GROUPS		"TIN_GROUPS"
-#	define ENV_VAR_MAILER		"TIN_MAIL"
-#	define ENV_VAR_POSTER		"TIN_POST"
-#	define ENV_VAR_SHELL		"SHELL"
-#	define TIN_EDITOR_FMT_ON	"%E %F"
-#	define MAILER_FORMAT		"%M <%F -f %U"
-#	define TMPDIR			"T:"
-#	define KEY_PREFIX		0x9b
-#endif /* M_AMIGA */
-
 #ifdef VMS
 #	define REDIRECT_OUTPUT	""
 #	define REDIRECT_PGP_OUTPUT	""
@@ -1996,9 +1906,9 @@ extern void joindir (char *result, const char *dir, const char *file);
 #endif /* !TMPDIR */
 
 #if !defined(S_ISDIR)
-#	if defined(M_UNIX) || defined(VMS) || defined(M_AMIGA)
+#	if defined(M_UNIX) || defined(VMS)
 #		define S_ISDIR(m)	(((m) & S_IFMT) == S_IFDIR)
-#	endif /* M_UNIX || VMS || M_AMIGA */
+#	endif /* M_UNIX || VMS */
 #endif /* !S_ISDIR */
 
 #if !defined(S_ISREG)
@@ -2134,13 +2044,7 @@ extern void joindir (char *result, const char *dir, const char *file);
 #endif /* __STDC__ || __cplusplus */
 
 typedef OUTC_RETTYPE (*OutcPtr) (OUTC_ARGS);
-
-#ifdef M_AMIGA
-	typedef struct __tcpbuf	TCP;
-#	include "amigatcp.h"
-#else
-	typedef FILE TCP;
-#endif /* M_AMIGA */
+typedef FILE TCP;
 
 #ifndef EXTERN_H
 #	include	"extern.h"
@@ -2166,10 +2070,6 @@ typedef void (*BodyPtr) (char *, FILE *, int);
 #ifdef USE_DBMALLOC
 #	undef strchr
 #	undef strrchr
-#	undef NSET1
-#	undef NSET0
-#	define NSET1(n,b) memset(n + NOFFSET(b), n[NOFFSET(b)] | NTEST(n,b), 1)
-#	define NSET0(n,b) memset(n + NOFFSET(b), n[NOFFSET(b)] & ~NTEST(n,b), 1)
 #	include <dbmalloc.h> /* dbmalloc 1.4 */
 #endif /* USE_DBMALLOC */
 
@@ -2216,16 +2116,7 @@ typedef void (*BodyPtr) (char *, FILE *, int);
 
 
 /* define some standard places to look for a tin.defaults file */
-/*
- * on Amiga only those two locations make sense and maybe PROGDIR:tin.defaults,
- * also possible are AmiTCP:db/tin.defaults or UULIB:tin.defaults, but these are
- * no system assigns.
- */
-#ifdef M_AMIGA
-#	define TIN_DEFAULTS_BUILTIN "S:tin.defaults","ENV:tin.defaults",NULL
-#else
-#	define TIN_DEFAULTS_BUILTIN "/etc/opt/tin","/etc/tin","/etc","/usr/local/lib/tin","/usr/local/lib","/usr/local/etc/tin","/usr/local/etc","/usr/lib/tin","/usr/lib",NULL
-#endif /* M_AMIGA */
+#define TIN_DEFAULTS_BUILTIN "/etc/opt/tin","/etc/tin","/etc","/usr/local/lib/tin","/usr/local/lib","/usr/local/etc/tin","/usr/local/etc","/usr/lib/tin","/usr/lib",NULL
 #ifdef TIN_DEFAULTS_DIR
 #	define TIN_DEFAULTS TIN_DEFAULTS_DIR,TIN_DEFAULTS_BUILTIN
 #else
@@ -2280,13 +2171,6 @@ extern struct tm *localtime(time_t *);
 #ifdef USE_CANLOCK
 #	include "../libcanlock/canlock.h"
 #endif /* USE_CANLOCK */
-
-/* FXIME: use autoconf here to detect if stat(2)-structure has st_mtime */
-#ifndef M_AMIGA
-#	define FILE_CHANGED(file)	file_mtime(file)
-#else
-#	define FILE_CHANGED(file)	file_size(file)
-#endif /* M_AMIGA */
 
 /* snprintf(), vsnprintf() */
 #ifndef HAVE_SNPRINTF

@@ -208,7 +208,7 @@
  * .fx  France, Metropolitan
  * .yd  Democratic Yemen, now .ye
  * .zr  former Zaire, now .cd
- * 
+ *
  * user-assigned code elements:
  * .aa, .qm, .qz, .xa, .xz, .zz
  *

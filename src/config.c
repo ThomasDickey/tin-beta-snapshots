@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-22
+ *  Updated   : 2003-12-17
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -263,6 +263,9 @@ read_config_file(
 			if (match_color(buf, "col_signature=", &tinrc.col_signature, MAX_COLOR))
 				break;
 
+			if (match_color(buf, "col_urls=", &tinrc.col_urls, MAX_COLOR))
+				break;
+
 			if (match_color(buf, "col_markstar=", &tinrc.col_markstar, MAX_COLOR))
 				break;
 
@@ -281,6 +284,9 @@ read_config_file(
 			break;
 
 		case 'd':
+			if (match_string(buf, "date_format=", tinrc.date_format, sizeof(tinrc.date_format)))
+				break;
+
 			if (match_string(buf, "default_editor_format=", tinrc.editor_format, sizeof(tinrc.editor_format)))
 				break;
 
@@ -534,6 +540,18 @@ read_config_file(
 			if (match_string(buf, "news_quote_format=", tinrc.news_quote_format, sizeof(tinrc.news_quote_format)))
 				break;
 
+#ifdef HAVE_UNICODE_NORMALIZATION
+#	ifdef HAVE_LIBICUUC
+			if (match_integer(buf, "normalization_form=", &tinrc.normalization_form, NORMALIZE_NFD))
+				break;
+#	else
+#		ifdef HAVE_LIBIDN
+			if (match_integer(buf, "normalization_form=", &tinrc.normalization_form, NORMALIZE_NFKC))
+				break;
+#		endif /* HAVE_LIBIDN */
+#	endif /* HAVE_LIBICUUC */
+#endif /* HAVE_UNICODE_NORMALIZATION */
+
 			break;
 
 		case 'p':
@@ -753,10 +771,8 @@ read_config_file(
 			break;
 
 		case 'w':
-			if (match_integer(buf, "wildcard=", &tinrc.wildcard, 2)) {
-				wildcard_func = (tinrc.wildcard) ? match_regex : wildmat;
+			if (match_integer(buf, "wildcard=", &tinrc.wildcard, 2))
 				break;
-			}
 
 			if (match_boolean(buf, "word_highlight=", &tinrc.word_highlight)) {
 				word_highlight = tinrc.word_highlight;
@@ -1199,6 +1215,9 @@ write_config_file(
 
 	fprintf(fp, _(txt_col_signature.tinrc));
 	fprintf(fp, "col_signature=%d\n\n", tinrc.col_signature);
+
+	fprintf(fp, _(txt_col_urls.tinrc));
+	fprintf(fp, "col_urls=%d\n\n", tinrc.col_urls);
 #endif /* HAVE_COLOR */
 
 #ifdef XFACE_ABLE
@@ -1278,8 +1297,16 @@ write_config_file(
 	fprintf(fp, _(txt_strip_bogus.tinrc));
 	fprintf(fp, "strip_bogus=%d\n\n", tinrc.strip_bogus);
 
+	fprintf(fp, _(txt_date_format.tinrc));
+	fprintf(fp, "date_format=%s\n\n", tinrc.date_format);
+
 	fprintf(fp, _(txt_wildcard.tinrc));
 	fprintf(fp, "wildcard=%d\n\n", tinrc.wildcard);
+
+#ifdef HAVE_UNICODE_NORMALIZATION
+	fprintf(fp, _(txt_normalization_form.tinrc));
+	fprintf(fp, "normalization_form=%d\n\n", tinrc.normalization_form);
+#endif /* HAVE_UNICODE_NORMALIZATION */
 
 	fprintf(fp, _(txt_tinrc_filter));
 	fprintf(fp, "default_filter_kill_header=%d\n", tinrc.default_filter_kill_header);
@@ -1410,18 +1437,80 @@ fmt_option_prompt(
 	t_bool editing,
 	int option)
 {
+	char *buf;
 	int num = get_option_num(option);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	size_t size, wsize;
+	wchar_t *wbuf, *wbuf2;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	/*
 	 * TODO: make the open length (OPTION_WIDTH) cCOLS dependent
 	 *       requries changes in various prompt_*() functions (and lang.c)
 	 */
-	if (num) {
-		snprintf(dst, len, "%s %3d. %.*s: ", editing ? "->" : "  ", num,
-			OPTION_WIDTH, _(option_table[option].txt->opt));
-	} else
-		snprintf(dst, len, "  %.*s", cCOLS - 3, _(option_table[option].txt->opt));
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	/* convert the option text to wchar_t */
+	wsize = mbstowcs(NULL, _(option_table[option].txt->opt), 0);
+	if (wsize != (size_t) (-1)) {
+		wbuf = my_malloc(sizeof(wchar_t) * (wsize + 1));
+		mbstowcs(wbuf, _(option_table[option].txt->opt), wsize + 1);
+	} else
+		wbuf = NULL;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+	if (num) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if (wsize != (size_t) (-1)) {
+			wbuf2 = my_malloc(sizeof(wchar_t) * (wsize + 1));
+			wcspart(wbuf2, wbuf, OPTION_WIDTH, wsize + 1, TRUE);
+			size = wcstombs(NULL, wbuf2, 0);
+			if (size != (size_t) (-1)) {
+				buf = my_malloc(size + 1);
+				wcstombs(buf, wbuf2, size + 1);
+			} else {
+				/* conversion failed, truncate original string */
+				buf = my_malloc(OPTION_WIDTH + 1);
+				snprintf(buf, OPTION_WIDTH + 1, "%.*s", OPTION_WIDTH, _(option_table[option].txt->opt));
+			}
+			free(wbuf2);
+		} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		{
+			/* truncate original string */
+			buf = my_malloc(OPTION_WIDTH + 1);
+			snprintf(buf, OPTION_WIDTH + 1, "%.*s", OPTION_WIDTH, _(option_table[option].txt->opt));
+		}
+		snprintf(dst, len, "%s %3d. %s: ", editing ? "->" : "  ", num, buf);
+	} else {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if (wsize != (size_t) (-1)) {
+			wbuf2 = my_malloc(sizeof(wchar_t) * (wsize + 1));
+			wcspart(wbuf2, wbuf, cCOLS - 3, wsize + 1, FALSE);
+			size = wcstombs(NULL, wbuf2, 0);
+			if (size != (size_t) (-1)) {
+				buf = my_malloc(size + 1);
+				wcstombs(buf, wbuf2, size + 1);
+			} else {
+				/* conversion failed, truncate original string */
+				buf = my_malloc(cCOLS - 3 + 1);
+				snprintf(buf, cCOLS - 3 + 1, "%.*s", cCOLS - 3, _(option_table[option].txt->opt));
+			}
+			free(wbuf2);
+		} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		{
+			/* truncate original string */
+			buf = my_malloc(cCOLS - 3 + 1);
+			snprintf(buf, cCOLS - 3 + 1, "%.*s", cCOLS - 3, _(option_table[option].txt->opt));
+		}
+		snprintf(dst, len, "  %s", buf);
+	}
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	FreeIfNeeded(wbuf);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	free(buf);
 	return dst;
 }
 
@@ -1887,6 +1976,11 @@ change_config_file(
 							break;
 #endif /* XFACE_ABLE */
 
+						/* word_highlight */
+						case OPT_WORD_HIGHLIGHT:
+							word_highlight = tinrc.word_highlight;
+							break;
+
 						/*
 						 * the following are boolean and do not need further action (if I'm right)
 						 *
@@ -1926,7 +2020,6 @@ change_config_file(
 						 * case OPT_USE_KEYPAD:
 #endif
 						 * case OPT_USE_MOUSE:
-						 * case OPT_WORD_HIGHLIGHT_TINRC:
 						 * case OPT_WRAP_ON_NEXT_UNREAD:
 						 */
 
@@ -2000,10 +2093,6 @@ change_config_file(
 						case OPT_SHOW_AUTHOR:
 							if (group != NULL)
 								group->attribute->show_author = tinrc.show_author;
-							break;
-
-						case OPT_WILDCARD:
-							wildcard_func = (tinrc.wildcard) ? match_regex : wildmat;
 							break;
 
 						case OPT_MAIL_MIME_ENCODING:
@@ -2131,6 +2220,8 @@ change_config_file(
 						 * case OPT_DEFAULT_SORT_ART_TYPE:
 						 * case OPT_MAILBOX_FORMAT:
 						 * case OPT_SHOW_INFO:
+						 * case OPT_NORMALIZATION_FORM:
+						 * case OPT_WILDCARD:
 						 *	break;
 						 */
 
@@ -2181,10 +2272,6 @@ change_config_file(
 						case OPT_SAVEDIR:
 						case OPT_SIGFILE:
 						case OPT_POSTED_ARTICLES_FILE:
-#ifdef M_AMIGA
-							if (tin_bbs_mode)
-								break;
-#endif /* M_AMIGA */
 							prompt_option_string(option);
 							expand_rel_abs_pathname(option_row(option),
 								OPT_ARG_COLUMN + OPTION_WIDTH,
@@ -2270,9 +2357,30 @@ change_config_file(
 							prompt_option_string(option);
 							FreeIfNeeded(strip_was_regex.re);
 							FreeIfNeeded(strip_was_regex.extra);
-							if (!strlen(tinrc.strip_was_regex))
-								STRCPY(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX);
+							if (!strlen(tinrc.strip_was_regex)) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+								if (IS_LOCAL_CHARSET("UTF-8")) {
+#	if (defined(PCRE_MAJOR) && PCRE_MAJOR >= 4)
+									int i;
+
+									pcre_config(PCRE_CONFIG_UTF8, &i);
+									if (i)
+										STRCPY(tinrc.strip_was_regex, DEFAULT_U8_STRIP_WAS_REGEX);
+									else
+#	endif /* PCRE_MAJOR && PCRE_MAJOR >=4 */
+										STRCPY(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX);
+								} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+									STRCPY(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX);
+							}
 							compile_regex(tinrc.strip_was_regex, &strip_was_regex, 0);
+							break;
+
+						case OPT_DATE_FORMAT:
+							prompt_option_string(option);
+							if (!strlen(tinrc.date_format)) {
+								STRCPY(tinrc.date_format, DEFAULT_DATE_FORMAT);
+							}
 							break;
 
 						default:
@@ -2656,7 +2764,7 @@ ulBuildArgv(
 	char *buf, *tmp;
 	int i = 0;
 
-	if (!cmd && !*cmd) {
+	if (!cmd || !*cmd) {
 		*new_argc = 0;
 		return NULL;
 	}
@@ -2873,7 +2981,7 @@ read_server_config(
 	else
 #endif /* NNTP_ABLE */
 	{
-		STRCPY(file, nntp_server);
+		STRCPY(file, quote_space_to_dash(nntp_server));
 	}
 	JOINPATH(serverdir, rcdir, file);
 	joinpath(file, serverdir, SERVERCONFIG_FILE);

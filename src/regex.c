@@ -3,7 +3,7 @@
  *  Module    : regex.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-02-21
- *  Updated   : 2003-04-03
+ *  Updated   : 2003-12-17
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
@@ -46,53 +46,56 @@
 /*
  * See if pattern is matched in string. Return TRUE or FALSE
  * if icase=TRUE then ignore case in the compare
+ * if a precompiled regex is provided it will be used instead of pattern
+ *
+ * If you use match_regex() with full regexes within a loop you should always
+ * provide a precompiled error because if the compilation of the regex fails
+ * an error message will be display on each execution of match_regex()
  */
 t_bool
 match_regex(
 	const char *string,
 	char *pattern,
+	struct regex_cache *cache,
 	t_bool icase)
 {
-	const char *errmsg;
 	int error;
-	pcre *re;
-	t_bool ret = FALSE;
+	struct regex_cache tmp_cache = { NULL, NULL };
+	struct regex_cache *ptr_cache;
 
-	mesg[0] = '\0';
+	if (!tinrc.wildcard)	/* wildmat matching */
+		return wildmat(string, pattern, icase);
 
-	/*
-	 * Compile the expression internally.
-	 */
-	if ((re = pcre_compile(pattern, (icase ? PCRE_CASELESS : 0), &errmsg, &error, NULL)) == NULL) {
-		sprintf(mesg, _(txt_pcre_error_at), errmsg, error, pattern);
-		return FALSE;
-	}
-
-	/*
-	 * Since we are running the compare only once,
-	 * we don't need to use pcre_study() to improve
-	 * performance
-	 */
-
-	/*
-	 * Only a single compare is needed to see if a match exists
-	 *
-	 * pcre_exec(precompile pattern, hints pointer, string to match,
-	 *           length of string (string may contain '\0', but not in
-	 *           our case), startoffset, options,
-	 *           vector of offsets to be filled,
-	 *           number of elements in offsets);
-	 *
-	 */
-	if ((error = pcre_exec(re, NULL, string, strlen(string), 0, 0, NULL, 0)) >= 0)
-		ret = TRUE;
+	/* full regexes */
+	if (cache != NULL && cache->re != NULL)
+		ptr_cache = cache;	/* use the provided regex cache */
 	else {
-		if (error != PCRE_ERROR_NOMATCH)
-			sprintf(mesg, _(txt_pcre_error_num), error);
+		/* compile the regex internally */
+		if (!compile_regex(pattern, &tmp_cache, (icase ? PCRE_CASELESS : 0)))
+			return FALSE;
+		ptr_cache = &tmp_cache;
 	}
 
-	free(re);
-	return ret;
+	if ((error = pcre_exec(ptr_cache->re, ptr_cache->extra, string, strlen(string), 0, 0, NULL, 0)) >= 0) {
+		FreeIfNeeded(tmp_cache.re);
+		FreeIfNeeded(tmp_cache.extra);
+
+		return TRUE;
+	}
+
+#if 0
+	/*
+	 * match_regex() is mostly used within loops and we don't want to display
+	 * an error message on each call
+	 */
+	if (error != PCRE_ERROR_NOMATCH)
+		error_message(_(txt_pcre_error_num), error);
+#endif /* 0 */
+
+	FreeIfNeeded(tmp_cache.re);
+	FreeIfNeeded(tmp_cache.extra);
+
+	return FALSE;
 }
 
 
@@ -106,15 +109,27 @@ compile_regex(
 	int options)
 {
 	const char *regex_errmsg = 0;
-	int regex_errpos;
+	int regex_errpos, my_options = options;
 
-	if ((cache->re = pcre_compile(regex, options, &regex_errmsg, &regex_errpos, NULL)) == NULL)
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE) && (defined(PCRE_MAJOR) && PCRE_MAJOR >= 4)
+	if (IS_LOCAL_CHARSET("UTF-8")) {
+		int i;
+
+		pcre_config(PCRE_CONFIG_UTF8, &i);
+		if (i)
+			my_options |= PCRE_UTF8;
+	}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE && PCRE_MAJOR && PCRE_MAJOR >= 4*/
+
+	if ((cache->re = pcre_compile(regex, my_options, &regex_errmsg, &regex_errpos, NULL)) == NULL)
 		error_message(_(txt_pcre_error_at), regex_errmsg, regex_errpos, regex);
 	else {
 		cache->extra = pcre_study(cache->re, 0, &regex_errmsg);
-		if (regex_errmsg != NULL)
+		if (regex_errmsg != NULL) {
+			/* we failed, clean up */
+			FreeAndNull(cache->re);
 			error_message(_(txt_pcre_error_text), regex_errmsg);
-		else
+		} else
 			return TRUE;
 	}
 	return FALSE;

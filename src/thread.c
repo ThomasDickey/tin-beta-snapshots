@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-10
+ *  Updated   : 2003-12-19
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -97,21 +97,31 @@ build_tline(
 	int rest_of_line = cCOLS;
 	int len_from, len_subj;
 	struct t_msgid *ptr;
-#ifdef USE_CURSES
-	char buff[BUFSIZ];
-#else
-	char *buff = screen[INDEX2TNUM(l)].col;
-#endif /* USE_CURSES */
+	char *buffer;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t wtmp[BUFSIZ], wtmp2[BUFSIZ];
 	char tmp[BUFSIZ];
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
+#ifdef USE_CURSES
+	/*
+	 * Allocate line buffer
+	 * make it the same size like in !USE_CURSES case to simplify some code
+	 */
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		buffer = my_malloc(cCOLS * MB_CUR_MAX + 2);
+#	else
+		buffer = my_malloc(cCOLS + 2);
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#else
+	buffer = screen[INDEX2TNUM(l)].col;
+#endif /* USE_CURSES */
+
 	/*
 	 * Start with 2 spaces for ->
 	 * then index number of the message and whitespace (2+4+1 chars)
 	 */
-	sprintf(buff, "  %s ", tin_ltoa(l + 1, 4));
+	sprintf(buffer, "  %s ", tin_ltoa(l + 1, 4));
 	rest_of_line -= 7;
 
 	/*
@@ -119,9 +129,9 @@ build_tline(
 	 */
 	rest_of_line -= 3;
 	if (art->tagged)
-		strcat(buff, tin_ltoa(art->tagged, 3));
+		strcat(buffer, tin_ltoa(art->tagged, 3));
 	else {
-		strcat(buff, "   ");
+		strcat(buffer, "   ");
 		if (art->inrange) {
 			mark = tinrc.art_marked_inrange;
 		} else if (art->status == ART_UNREAD) {
@@ -136,37 +146,37 @@ build_tline(
 			else
 				mark = tinrc.art_marked_read;
 		}
-		buff[MARK_OFFSET] = mark;			/* insert mark */
+		buffer[MARK_OFFSET] = mark;			/* insert mark */
 	}
 
-	strcat(buff, "  ");					/* 2 more spaces */
+	strcat(buffer, "  ");					/* 2 more spaces */
 	rest_of_line -= 2;
 
 	/*
 	 * Add the number of lines and/or the score if enabled
 	 * (inside "[,]", 1+4[+1+6]+1+2 chars total)
 	 */
-	if (tinrc.show_info != SHOW_INFO_NOTHING) { /* add [ */
-		strcat(buff, "[");
+	if (curr_group->attribute->show_info != SHOW_INFO_NOTHING) { /* add [ */
+		strcat(buffer, "[");
 		rest_of_line--;
 	}
 
-	if (tinrc.show_info == SHOW_INFO_LINES || tinrc.show_info == SHOW_INFO_BOTH) { /* add lines */
-		strcat(buff, ((art->line_count != -1) ? tin_ltoa(art->line_count, 4): "   ?"));
+	if (curr_group->attribute->show_info == SHOW_INFO_LINES || curr_group->attribute->show_info == SHOW_INFO_BOTH) { /* add lines */
+		strcat(buffer, ((art->line_count != -1) ? tin_ltoa(art->line_count, 4): "   ?"));
 		rest_of_line -= 4;
 	}
 
-	if (tinrc.show_info == SHOW_INFO_SCORE || tinrc.show_info == SHOW_INFO_BOTH) {
+	if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH) {
 		if (tinrc.show_info == SHOW_INFO_BOTH) { /* insert a separator if show lines and score */
-			strcat(buff, ",");
+			strcat(buffer, ",");
 			rest_of_line--;
 		}
-		strcat(buff, tin_ltoa(art->score, 6));
+		strcat(buffer, tin_ltoa(art->score, 6));
 		rest_of_line -= 6;
 	}
 
-	if (tinrc.show_info != SHOW_INFO_NOTHING) { /* add closing ] and two spaces */
-		strcat(buff, "]  ");
+	if (curr_group->attribute->show_info != SHOW_INFO_NOTHING) { /* add closing ] and two spaces */
+		strcat(buffer, "]  ");
 		rest_of_line -= 3;
 	}
 
@@ -178,12 +188,12 @@ build_tline(
 	 * Add the subject and author information if required
 	 */
 	if (show_subject) {
-		if (CURR_GROUP.attribute->show_author == SHOW_FROM_NONE)
+		if (curr_group->attribute->show_author == SHOW_FROM_NONE)
 				len_from = 0;
 		else {
 			len_from = rest_of_line;
 
-			if (CURR_GROUP.attribute->show_author == SHOW_FROM_BOTH)
+			if (curr_group->attribute->show_author == SHOW_FROM_BOTH)
 				len_from /= 2; /* if SHOW_FROM_BOTH use 50% for author info */
 			else
 				len_from /= 3; /* otherwise use 33% for author info */
@@ -199,12 +209,12 @@ build_tline(
 		 * Insert tree-structure strings "`->", "+->", ...
 		 */
 
-		make_prefix(art->refptr, buff + strlen(buff), len_subj);
+		make_prefix(art->refptr, buffer + strlen(buffer), len_subj);
 
 		/*
 		 * Copy in the subject up to where the author (if any) starts
 		 */
-		gap = cCOLS - strlen(buff) - len_from; /* gap = gap (no. of chars) between tree and author/border of window */
+		gap = cCOLS - strlen(buffer) - len_from; /* gap = gap (no. of chars) between tree and author/border of window */
 
 		if (len_from)	/* Leave gap before author */
 			gap -= 2;
@@ -214,7 +224,8 @@ build_tline(
 		 * Hide subject if same as parent's.
 		 */
 		if (gap > 0) {
-			size_t len = strlen(buff);
+			size_t len = strlen(buffer);
+
 			for (ptr = art->refptr->parent; ptr && EXPIRED(ptr); ptr = ptr->parent)
 				;
 			if (!(ptr && arts[ptr->article].subject == art->subject)) {
@@ -223,17 +234,13 @@ build_tline(
 					wtmp2[ARRAY_SIZE(wtmp2) - 1] = (wchar_t) '\0';
 					wcspart(wtmp, wtmp2, gap, ARRAY_SIZE(wtmp), TRUE);
 					if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
-#	ifdef USE_CURSES
-						strncat(buff, tmp, sizeof(buff) - len - 1);
-#	else
-						strncat(buff, tmp, cCOLS * MB_CUR_MAX - len - 1);
-#	endif /* USE_CURSES */
+						strncat(buffer, tmp, cCOLS * MB_CUR_MAX - len - 1);
 				}
 			}
 #else
-				strncat(buff, art->subject, gap);
+				strncat(buffer, art->subject, gap);
 			}
-			buff[len + gap] = '\0';	/* Just in case */
+			buffer[len + gap] = '\0';	/* Just in case */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		}
 
@@ -242,17 +249,17 @@ build_tline(
 		 */
 		if (len_from) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-			if (mbstowcs(wtmp, buff, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
+			if (mbstowcs(wtmp, buffer, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
 				wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
 				fill = cCOLS - len_from - wcswidth(wtmp, ARRAY_SIZE(wtmp) - 1);
 			} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-				fill = cCOLS - len_from - strlen(buff);
+				fill = cCOLS - len_from - strlen(buffer);
 
-			gap = strlen(buff);
+			gap = strlen(buffer);
 			for (i = 0; i < fill; i++)
-				buff[gap + i] = ' ';
-			buff[gap + fill] = '\0';
+				buffer[gap + i] = ' ';
+			buffer[gap + fill] = '\0';
 
 			/*
 			 * Now add the author info at the end. This will be 0 terminated
@@ -264,14 +271,10 @@ build_tline(
 				wtmp2[ARRAY_SIZE(wtmp2) - 1] = (wchar_t) '\0';
 				wcspart(wtmp, wtmp2, len_from, ARRAY_SIZE(wtmp), TRUE);
 				if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
-#	ifdef USE_CURSES
-					strncat(buff, tmp, sizeof(buff) - strlen(buff) - 1);
-#	else
-					strncat(buff, tmp, cCOLS * MB_CUR_MAX - strlen(buff) - 1);
-#	endif /* USE_CURSES */
+					strncat(buffer, tmp, cCOLS * MB_CUR_MAX - strlen(buffer) - 1);
 			}
 #else
-			get_author(TRUE, art, buff + strlen(buff), len_from);
+			get_author(TRUE, art, buffer + strlen(buffer), len_from);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		}
 
@@ -281,42 +284,42 @@ build_tline(
 
 		if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
 			wtmp2[ARRAY_SIZE(wtmp2) - 1] = (wchar_t) '\0';
-			wcspart(wtmp, wtmp2, cCOLS - strlen(buff), ARRAY_SIZE(wtmp), TRUE);
+			wcspart(wtmp, wtmp2, cCOLS - strlen(buffer), ARRAY_SIZE(wtmp), TRUE);
 			if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
-#	ifdef USE_CURSES
-				strncat(buff, tmp, sizeof(buff) - strlen(buff) - 1);
-#	else
-				strncat(buff, tmp, cCOLS * MB_CUR_MAX - strlen(buff) - 1);
-#	endif /* USE_CURSES */
+				strncat(buffer, tmp, cCOLS * MB_CUR_MAX - strlen(buffer) - 1);
 		}
 #else
-		get_author(TRUE, art, buff + strlen(buff), cCOLS - strlen(buff));
+		get_author(TRUE, art, buffer + strlen(buffer), cCOLS - strlen(buffer));
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	}
 
 	/* protect display from non-displayable characters (e.g., form-feed) */
-	convert_to_printable(buff);
+	convert_to_printable(buffer);
 
 	if (!tinrc.strip_blanks) {
 		/*
 		 * Pad to end of line so that inverse bar looks 'good'
 		 */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if (mbstowcs(wtmp, buff, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
+		if (mbstowcs(wtmp, buffer, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
 			wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
 			fill = cCOLS - wcswidth(wtmp, ARRAY_SIZE(wtmp) - 1);
 		} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-			fill = cCOLS - strlen(buff);
+			fill = cCOLS - strlen(buffer);
 
-		gap = strlen(buff);
+		gap = strlen(buffer);
 		for (i = 0; i < fill; i++)
-			buff[gap + i] = ' ';
+			buffer[gap + i] = ' ';
 
-		buff[gap + fill] = '\0';
+		buffer[gap + fill] = '\0';
 	}
 
-	WriteLine(INDEX2LNUM(l), buff);
+#ifdef USE_CURSES
+	WriteLine(INDEX2LNUM(l), buffer);
+
+	free(buffer);
+#endif /* USE_CURSES */
 }
 
 
@@ -812,7 +815,7 @@ show_thread_page(
 	/*
 	 * If threading by Refs, it helps to see the subject line
 	 */
-	show_subject = ((arts[thread_respnum].archive != NULL) || (CURR_GROUP.attribute->thread_arts == THREAD_REFS) || (CURR_GROUP.attribute->thread_arts == THREAD_BOTH));
+	show_subject = ((arts[thread_respnum].archive != NULL) || (curr_group->attribute->thread_arts == THREAD_REFS) || (curr_group->attribute->thread_arts == THREAD_BOTH));
 
 	if (show_subject)
 		snprintf(mesg, sizeof(mesg), _(txt_stp_list_thread), grpmenu.curr + 1, grpmenu.max);
@@ -1094,7 +1097,7 @@ stat_thread(
 		if (arts[i].killed)
 			++sbuf->killed;
 
-		if ((CURR_GROUP.attribute->thread_arts == THREAD_MULTI) && global_get_multipart_info(i, &minfo) && (minfo.total >= 1)) {
+		if ((curr_group->attribute->thread_arts == THREAD_MULTI) && global_get_multipart_info(i, &minfo) && (minfo.total >= 1)) {
 			sbuf->multipart_compare_len = minfo.subject_compare_len;
 			sbuf->multipart_total = minfo.total;
 			sbuf->multipart_have++;
@@ -1368,7 +1371,7 @@ thread_catchup(
 	if (i != -1) {				/* still unread arts in this thread */
 		snprintf(buf, sizeof(buf), _(txt_mark_thread_read), (ch == iKeyThreadCatchupNextUnread) ? _(txt_enter_next_thread) : "");
 		if ((!TINRC_CONFIRM_ACTION) || (pyn = prompt_yn(cLINES, buf, TRUE)) == 1)
-			thd_mark_read(&CURR_GROUP, base[thread_basenote]);
+			thd_mark_read(curr_group, base[thread_basenote]);
 	}
 
 	switch (ch) {
@@ -1425,7 +1428,7 @@ enter_pager(
 	int i;
 
 again:
-	switch ((i = show_page(&CURR_GROUP, art, &thdmenu.curr))) {
+	switch ((i = show_page(curr_group, art, &thdmenu.curr))) {
 		/* These exit to previous menu level */
 		case GRP_QUIT:				/* 'Q' all the way out */
 		case GRP_RETSELECT:			/* 'T' back to select menu */

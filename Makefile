@@ -1,15 +1,15 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2003-07-22
+# Updated: 2003-11-18
 #
 
 PROJECT	= tin
 LVER	= 1
 PVER	= 7
-SVER	= 1
+SVER	= 3
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20030918
+DVER	= 20031220
 EXE	= tin
 
 # directory structure
@@ -18,7 +18,6 @@ DOCDIR	= ./doc
 INCDIR	= ./include
 OBJDIR	= ./src
 SRCDIR	= ./src
-AMGDIR	= ./amiga
 VMSDIR	= ./vms
 PCREDIR	= ./pcre
 CANDIR	= ./libcanlock
@@ -33,6 +32,7 @@ HFILES	= \
 	$(INCDIR)/extern.h \
 	$(INCDIR)/keymap.h \
 	$(INCDIR)/menukeys.h \
+	$(INCDIR)/newsrc.h \
 	$(INCDIR)/nntplib.h \
 	$(INCDIR)/plp_snprintf.h \
 	$(INCDIR)/policy.h \
@@ -83,7 +83,6 @@ CFILES	= \
 	$(SRCDIR)/newsrc.c\
 	$(SRCDIR)/nntplib.c \
 	$(SRCDIR)/nrctbl.c \
-	$(SRCDIR)/open.c \
 	$(SRCDIR)/page.c \
 	$(SRCDIR)/parsdate.y \
 	$(SRCDIR)/plp_snprintf.c \
@@ -115,16 +114,6 @@ CFILES	= \
 	$(SRCDIR)/wildmat.c \
 	$(SRCDIR)/xface.c \
 	$(SRCDIR)/xref.c
-
-AMIGA	= \
-	$(AMGDIR)/README \
-	$(AMGDIR)/tin.readme \
-	$(AMGDIR)/smakefile \
-	$(AMGDIR)/actived.c \
-	$(AMGDIR)/amiga.c \
-	$(AMGDIR)/amigatcp.c \
-	$(AMGDIR)/amiga.h \
-	$(AMGDIR)/amigatcp.h
 
 VMS	= \
 	$(VMSDIR)/dir.h \
@@ -159,6 +148,7 @@ DOC	= \
 	$(DOCDIR)/TODO \
 	$(DOCDIR)/WHATSNEW \
 	$(DOCDIR)/art_handling.txt \
+	$(DOCDIR)/article.txt \
 	$(DOCDIR)/auth.txt \
 	$(DOCDIR)/config-anomalies \
 	$(DOCDIR)/filtering \
@@ -341,9 +331,9 @@ POFILES = \
 	$(PODIR)/fr.po
 
 
-ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(AMIGA) $(VMS) $(PCRE) $(MISC) $(CAN) $(INTLFILES) $(POFILES)
+ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(VMS) $(PCRE) $(MISC) $(CAN) $(INTLFILES) $(POFILES)
 
-ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(AMGDIR) $(VMSDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(CANDIR)/doc $(INTLDIR) $(PODIR)
+ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(VMSDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(CANDIR)/doc $(INTLDIR) $(PODIR)
 
 # standard commands
 CD	= cd

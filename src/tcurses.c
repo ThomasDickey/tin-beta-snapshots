@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-03-02
- *  Updated   : 2003-08-03
+ *  Updated   : 2003-10-15
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -512,7 +512,12 @@ ReadCh(
 again:
 #	endif /* 0 */
 		allow_resize(TRUE);
+#	ifdef KEY_RESIZE
+		while ((ch = getch()) == KEY_RESIZE)
+			;
+#	else
 		ch = getch();
+#	endif /* KEY_RESIZE */
 		allow_resize(FALSE);
 		if (need_resize) {
 			handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
@@ -548,7 +553,7 @@ ReadWch(
 		wch = cmdReadWch();
 	else {
 		allow_resize(TRUE);
-#		ifdef HAVE_NCURSESW
+#		ifdef HAVE_NCURSESW	/* TODO: catch KEY_RESIZE */
 		res = get_wch(&wch);
 #		else
 		wch = (wint_t) getch();
@@ -675,7 +680,7 @@ my_fputs(
 		} else
 			fputs(str, fp);
 	} else {
-		addstr((char *) str);
+		addstr(str);
 	}
 }
 
@@ -711,6 +716,34 @@ my_fputwc(
 		} else
 			addch('?');
 
+		free(mbs);
+#		endif /* HAVE_NCURSESW */
+	}
+}
+
+
+void
+my_fputws(
+	const wchar_t *wstr,
+	FILE *fp)
+{
+	if (cmd_line) {
+		if (_inraw) {
+			while (*wstr)
+				my_fputwc(*wstr++, fp);
+		} else
+			fputws(wstr, fp);
+	} else {
+#		ifdef HAVE_NCURSESW
+		addwstr(wstr);
+#		else
+		char *mbs;
+		int len;
+
+		len = wcstombs(NULL, wstr, 0) + 1;
+		mbs = my_malloc(len);
+		wcstombs(mbs, wstr, len);
+		addstr(mbs);
 		free(mbs);
 #		endif /* HAVE_NCURSESW */
 	}

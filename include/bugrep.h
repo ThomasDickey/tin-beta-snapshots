@@ -3,7 +3,7 @@
  *  Module    : bugrep.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-07-30
- *  Updated   : 1998-02-01
+ *  Updated   : 2003-09-19
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
@@ -41,10 +41,6 @@
 #	ifdef M_UNIX
 #		define BUG_REPORT_ADDRESS	"tin-bugs@tin.org"
 #	endif /* M_UNIX */
-
-#	ifdef M_AMIGA
-#		define BUG_REPORT_ADDRESS	"obw@amarok.ping.de"
-#	endif /* M_AMIGA */
 
 #	ifdef VMS
 #		define BUG_REPORT_ADDRESS	"stenns@vw.tci.uni-hannover.de"

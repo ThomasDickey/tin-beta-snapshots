@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-04-28
+ *  Updated   : 2003-12-11
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -40,6 +40,9 @@
 #endif /* !TIN_H */
 
 #if defined(DEBUG) || defined(DEBUG_NEWSRC)
+#	ifndef NEWSRC_H
+#		include "newsrc.h"
+#	endif /* !NEWSRC_H */
 #	ifndef TCURSES_H
 #		include "tcurses.h"
 #	endif /* !TCURSES_H */
@@ -158,7 +161,6 @@ debug_print_header(
 				fprintf(fp, "archive.ispart=[%s]\n", bool_unparse(s->archive->ispart));
 		}
 		fprintf(fp,"thread=[%d]  prev=[%d]  status=[%d]\n\n", s->thread, s->prev, s->status);
-/*		fprintf(fp,"thread=[%s]  prev=[%s]  status=[%s]\n", (s->thread == ART_NORMAL ? "ART_NORMAL" : "ART_EXPIRED"), s->prev, bool_unparse(s->status)); */
 		fflush(fp);
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
 		fclose(fp);
@@ -367,9 +369,8 @@ debug_print_bitmap(
 				bool_unparse(art->killed),
 				bool_unparse(art->selected),
 				art->subject);
-			fprintf(fp, "thread=[%s]  prev=[%d]  status=[%s]\n",
-				(art->thread == ART_NORMAL ? "ART_NORMAL" : "ART_EXPIRED"),
-				art->prev,
+			fprintf(fp, "thread=[%d]  prev=[%d]  status=[%s]\n",
+				art->thread, art->prev,
 				(art->status == ART_READ ? "READ" : "UNREAD"));
 		}
 		debug_print_newsrc(&group->newsrc, fp);
@@ -381,22 +382,22 @@ debug_print_bitmap(
 
 void
 debug_print_newsrc(
-	struct t_newsrc *NewSrc,
+	struct t_newsrc *lnewsrc,
 	FILE *fp)
 {
 	int i, j;
 
 	fprintf(fp, "Newsrc: min=[%ld] max=[%ld] bitlen=[%ld] num_unread=[%ld] present=[%d]\n",
-		NewSrc->xmin, NewSrc->xmax, NewSrc->xbitlen,
-		NewSrc->num_unread, NewSrc->present);
+		lnewsrc->xmin, lnewsrc->xmax, lnewsrc->xbitlen,
+		lnewsrc->num_unread, lnewsrc->present);
 
 	fprintf(fp, "bitmap=[");
-	if (NewSrc->xbitlen && NewSrc->xbitmap) {
-		for (j = 0, i = NewSrc->xmin; i <= NewSrc->xmax; i++) {
+	if (lnewsrc->xbitlen && lnewsrc->xbitmap) {
+		for (j = 0, i = lnewsrc->xmin; i <= lnewsrc->xmax; i++) {
 			fprintf(fp, "%d",
-				(NTEST(NewSrc->xbitmap, i - NewSrc->xmin) == ART_READ ?
+				(NTEST(lnewsrc->xbitmap, i - lnewsrc->xmin) == ART_READ ?
 				ART_READ : ART_UNREAD));
-			if ((j++ % 8) == 7 && i < NewSrc->xmax)
+			if ((j++ % 8) == 7 && i < lnewsrc->xmax)
 				fprintf(fp, " ");
 		}
 	}

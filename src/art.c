@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-25
+ *  Updated   : 2003-11-18
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -51,29 +51,32 @@
  */
 #define SortBy(func)	qsort(arts, (size_t) top_art, sizeof(struct t_article), func);
 
-static long last_read_article;
 int top_art = 0;				/* # of articles in arts[] */
+
 
 /*
  * Local prototypes
  */
+static FILE *open_art_header(long art, long *next);
 static FILE *open_xover_fp(struct t_group *group, const char *mode, long min, long max, t_bool local);
 static char *find_nov_file(struct t_group *group, int mode);
 static char *print_date(time_t secs);
 static char *print_from(struct t_article *article);
 static int artnum_comp(t_comptype p1, t_comptype p2);
+static int base_comp(t_comptype p1, t_comptype p2);
 static int date_comp(t_comptype p1, t_comptype p2);
 static int from_comp(t_comptype p1, t_comptype p2);
 static int global_get_multiparts(int aindex, MultiPartInfo **malloc_and_setme_info);
 static int global_look_for_multipart_info(int aindex, MultiPartInfo *setme, char start, char stop, int *offset);
 static int lines_comp(t_comptype p1, t_comptype p2);
-static int read_nov_file(struct t_group *group, long min, long max, int *expired, t_bool local);
-static int read_group(struct t_group *group, int *pcount);
+static int read_art_headers(struct t_group *group, int total, long top);
+static int read_overview(struct t_group *group, long min, long max, long *top, t_bool local);
 static int score_comp(t_comptype p1, t_comptype p2);
 static int score_comp_base(t_comptype p1, t_comptype p2);
 static int subj_comp(t_comptype p1, t_comptype p2);
 static int valid_artnum(long art);
 static long find_first_unread(struct t_group *group);
+static long setup_hard_base(struct t_group *group);
 static t_bool parse_headers(FILE *fp, struct t_article *h);
 static t_compfunc eval_sort_arts_func(unsigned int sort_art_type);
 static void sort_base(unsigned int sort_threads_type);
@@ -95,19 +98,15 @@ show_art_msg(
 
 
 /*
- * Construct the pointers to the base article in each thread.
+ * Construct the pointers to the first (base) article in each thread.
  * If we are showing only unread, then point to the first unread. I have
  * no idea why this should be so, it causes problems elsewhere [which_response]
- * .prev is set on each article that is after the first article in the
- * thread and points to the previous article. Articles which have been expired
- * have their .thread set to ART_EXPIRED
  */
 void
 find_base(
 	struct t_group *group)
 {
-	int i;
-	int j;
+	int i, j;
 
 	grpmenu.max = 0;
 
@@ -115,17 +114,23 @@ find_base(
 	debug_print_arts();
 #endif /* DEBUG */
 
-	if (group->attribute->show_only_unread) {
-		for_each_art(i) {
-			if (arts[i].prev >= 0 || arts[i].thread == ART_EXPIRED || (arts[i].killed && tinrc.kill_level == KILL_NOTHREAD))
-				continue;
+	for_each_art(i) {
+		/*
+		 * .prev will be set on each article that is after the first article in
+		 * the thread. Invalid articles which have been expired will have
+		 * .thread set to ART_EXPIRED
+		 */
+		if (arts[i].prev >= 0 || arts[i].thread == ART_EXPIRED || (arts[i].killed && tinrc.kill_level == KILL_NOTHREAD))
+			continue;
 
-			if (grpmenu.max >= max_art)
-				expand_art();
+		if (grpmenu.max >= max_art)
+			expand_art();
 
+		if (group->attribute->show_only_unread) {
 			if (arts[i].status != ART_READ)
 				base[grpmenu.max++] = i;
 			else {
+				/* Find 1st unread art in thread */
 				for (j = i; j >= 0; j = arts[j].thread) {
 					if (arts[j].status != ART_READ) {
 						base[grpmenu.max++] = i;
@@ -133,21 +138,170 @@ find_base(
 					}
 				}
 			}
-		}
-	} else {
-		for_each_art(i) {
-			if (arts[i].prev >= 0 || arts[i].thread == ART_EXPIRED || (arts[i].killed && tinrc.kill_level == KILL_NOTHREAD))
-				continue;
-
-			if (grpmenu.max >= max_art)
-				expand_art();
-
+		} else
 			base[grpmenu.max++] = i;
-		}
 	}
 	/* sort base[] */
 	if (group->attribute->sort_threads_type > SORT_THREADS_BY_NOTHING)
 		sort_base(group->attribute->sort_threads_type);
+}
+
+
+/*
+ * Longword comparison routine for the qsort()
+ */
+static int
+base_comp(
+	t_comptype p1,
+	t_comptype p2)
+{
+	const long *a = (const long *) p1;
+	const long *b = (const long *) p2;
+
+	if (*a < *b)
+		return -1;
+
+	if (*a > *b)
+		return 1;
+
+	return 0;
+}
+
+
+/*
+ * via NNTP:
+ *   Issue a LISTGROUP command
+ *   Read the article numbers existing in the group into base[]
+ *   If the LISTGROUP failed, issue a GROUP command. Use the results to
+ *   create a less accurate version of base[]
+ *	 This data will already be sorted
+ *
+ * on local spool:
+ *   Read the spool dir to populate base[] as above. Sort it.
+ *
+ * Grow the arts[] and bitmaps as needed.
+ * NB: the output will be sorted on artnum
+ *
+ * grpmenu.max is one past top.
+ * Returns total number of articles in group, or -1 on error
+ */
+static long
+setup_hard_base(
+	struct t_group *group)
+{
+	char buf[NNTP_STRLEN];
+	long art;
+	long total = 0;
+
+	grpmenu.max = 0;
+
+	/*
+	 * If reading with NNTP, issue a LISTGROUP
+	 */
+	if (read_news_via_nntp && group->type == GROUP_TYPE_NEWS) {
+#ifdef NNTP_ABLE
+		FILE *fp;
+
+#	ifdef BROKEN_LISTGROUP
+		/*
+		 * Some nntp servers are broken and need an extra GROUP command
+		 * (reported by reorx@irc.pl). This affects (old?) versions of
+		 * nntpcache and leafnode. Usually this should not be needed.
+		 */
+		snprintf(buf, sizeof(buf), "GROUP %s", group->name);
+		if (nntp_command(buf, OK_GROUP, NULL, 0) == NULL)
+			return -1;
+#	endif /* BROKEN_LISTGROUP */
+
+		/*
+		 * See if LISTGROUP works
+		 */
+		snprintf(buf, sizeof(buf), "LISTGROUP %s", group->name);
+		if ((fp = nntp_command(buf, OK_GROUP, NULL, 0)) != NULL) {
+			char *ptr;
+
+#	ifdef DEBUG
+			debug_nntp("setup_hard_base", buf);
+#	endif /* DEBUG */
+
+			while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+				if (grpmenu.max >= max_art)
+					expand_art();
+				base[grpmenu.max++] = atoi(ptr);
+			}
+
+			if (tin_errno)
+				return -1;
+
+		} else {
+			/*
+			 * LISTGROUP failed, use GROUP command instead
+			 */
+			long start, last, count;
+			char line[NNTP_STRLEN];
+
+			/*
+			 * Handle the obscure case that the user aborted before the LISTGROUP
+			 * had a chance to respond
+			 */
+			if (tin_errno)
+				return -1;
+
+			snprintf(buf, sizeof(buf), "GROUP %s", group->name);
+			if (nntp_command(buf, OK_GROUP, line, sizeof(line)) == NULL)
+				return -1;
+
+			if (sscanf(line, "%ld %ld %ld", &count, &start, &last) != 3)
+				return -1;
+
+			total = count;
+
+			if (last - count > start)
+				count = last - start;
+
+			while (start <= last) {
+				if (grpmenu.max >= max_art)
+					expand_art();
+				base[grpmenu.max++] = start++;
+			}
+		}
+#endif /* NNTP_ABLE */
+	/*
+	 * Reading off local spool, read the directory files
+	 */
+	} else {
+		DIR *d;
+		DIR_BUF *e;
+
+		make_base_group_path(group->spooldir, group->name, buf);
+
+		if (access(buf, R_OK) != 0) {
+			error_message(_(txt_not_exist));
+			return -1;
+		}
+
+		if ((d = opendir(buf)) != NULL) {
+			while ((e = readdir(d)) != NULL) {
+				art = atol(e->d_name);
+				if (art >= 1) {
+					total++;
+					if (grpmenu.max >= max_art)
+						expand_art();
+					base[grpmenu.max++] = art;
+				}
+			}
+			CLOSEDIR(d);
+			qsort((char *) base, (size_t) grpmenu.max, sizeof(long), base_comp);
+		}
+	}
+
+	if (grpmenu.max) {
+		if (base[grpmenu.max - 1] > group->xmax)
+			group->xmax = base[grpmenu.max - 1];
+		expand_bitmap(group, base[0]);
+	}
+
+	return total;
 }
 
 
@@ -165,11 +319,11 @@ index_group(
 	struct t_group *group)
 {
 	int i;
-	int count;
-	int expired;
-	int modified;
-	long min;
-	long max;
+	int changed = 0;				/* Count of articles whose overview has changed */
+	int respnum;
+	int total;
+	long last_read_article;
+	long min, max;
 	t_bool caching_xover;
 	t_bool filtered;
 
@@ -185,13 +339,11 @@ index_group(
 	free_art_array();
 	free_msgids();
 
-	/*
-	 * Load articles within min..max from xover index file if it exists
-	 * and then create base[] article numbers from loaded articles.
-	 * If nov file does not exist then create base[] with setup_hard_base().
-	 */
 	BegStopWatch("setup_hard_base");
 
+	/*
+	 * Get list of valid article numbers
+	 */
 	if (setup_hard_base(group) < 0)
 		return FALSE;
 
@@ -199,7 +351,7 @@ index_group(
 	PrintStopWatch();
 
 #ifdef DEBUG_NEWSRC
-	debug_print_comment("Before read_nov_file");
+	debug_print_comment("Before read_overview");
 	debug_print_bitmap(group, NULL);
 #endif /* DEBUG_NEWSRC */
 
@@ -226,7 +378,7 @@ index_group(
 	last_read_article = 0L;
 
 	/*
-	 * Read in the existing overview
+	 * Read in the existing overview data for min..max
 	 * This read has local=TRUE set if locally caching XOVER records to ensure
 	 * we pull in any private overview caches in preference to using using OVER
 	 *
@@ -234,34 +386,51 @@ index_group(
 	 * cache (if found) otherwise the private overview cache will be read
 	 */
 	caching_xover = (tinrc.cache_overview_files && xover_cmd && group->type == GROUP_TYPE_NEWS);
-
-	if (read_nov_file(group, min, max, &expired, caching_xover) == -1)
+	if ((changed = read_overview(group, min, max, &last_read_article, caching_xover)) == -1)
 		return FALSE;	/* user aborted indexing */
 
 	/*
 	 * Fill in the range last_read_article...max using XOVER
-	 * Only do this if the previous read_nov_file() was against private cache
+	 * Only do this if the previous read_overview() was against private cache
 	 */
 	if ((last_read_article < max) && caching_xover) {
-		if (read_nov_file(group, (last_read_article >= min) ? last_read_article + 1 : min, max, &expired, FALSE) == -1)
+		min = (last_read_article >= min) ? last_read_article + 1 : min;
+
+		if ((changed += read_overview(group, min, max, &last_read_article, FALSE)) == -1)
 			return FALSE;	/* user aborted indexing */
 	} else
 		caching_xover = FALSE;
 
 	/*
-	 * Add any articles to arts[] that are new or were killed
+	 * Mark as UNTHREADED all articles that have been verified as valid
+	 * Get num of new arts to index so the user will have an idea of index time
 	 */
-	if ((modified = read_group(group, &count)) == -1)
-		return FALSE;		/* user aborted indexing */
+	for (i = 0, total = 0; i < grpmenu.max; i++) {
+		if ((respnum = valid_artnum(base[i])) >= 0) {
+			arts[respnum].thread = ART_UNTHREADED;
+			continue;
+		}
+		if (base[i] <= last_read_article)		/* It is vital this test be done last */
+			continue;
+		total++;
+	}
 
 	/*
-	 * Do this before calling art_mark(,, ART_READ) if you want
-	 * the unread count to be correct.
+	 * Add any articles to arts[] that are new or were killed
 	 */
+	if (total > 0) {
+		if ((changed += read_art_headers(group, total, last_read_article)) == -1)
+			return FALSE;		/* user aborted indexing */
+	}
+
 #ifdef DEBUG_NEWSRC
 	debug_print_comment("Before parse_unread_arts()");
 	debug_print_bitmap(group, NULL);
 #endif /* DEBUG_NEWSRC */
+	/*
+	 * Do this before calling art_mark(,, ART_READ) if you want
+	 * the unread count to be correct.
+	 */
 	parse_unread_arts(group);
 #ifdef DEBUG_NEWSRC
 	debug_print_comment("After parse_unread_arts()");
@@ -273,7 +442,7 @@ index_group(
 	 */
 	for_each_art(i) {
 		if (arts[i].thread == ART_EXPIRED) {
-			expired = 1;
+			changed++;
 #ifdef DEBUG_NEWSRC
 			debug_print_comment("art.c: index_group() purging...");
 #endif /* DEBUG_NEWSRC */
@@ -283,9 +452,10 @@ index_group(
 
 	/*
 	 * Only rewrite the index if it has changed
+	 * TODO review the exact logic behind "|| caching_xover"
 	 */
-	if (expired || modified || caching_xover)
-		write_nov_file(group);
+	if (changed || caching_xover)
+		write_overview(group);
 
 	/*
 	 * Create the reference tree. The msgid and ref ptrs will
@@ -300,12 +470,15 @@ index_group(
 
 	BegStopWatch("make_thread");
 
+	/*
+	 * Thread the group
+	 */
 	make_threads(group, FALSE);
 
 	EndStopWatch();
 	PrintStopWatch();
 
-	if ((modified || filtered) && !batch_mode)
+	if ((changed > 0 || filtered) && !batch_mode)
 		clear_message();
 
 	return TRUE;
@@ -333,83 +506,105 @@ find_first_unread(
 
 
 /*
+ * Open an article for reading just the header
+ * 'next' is used/updated with the next article number
+ * to optimise the number of 'HEAD' commands issued on
+ * groups with holes.
+ */
+static FILE *
+open_art_header(
+	long art,
+	long *next)
+{
+	char buf[NNTP_STRLEN];
+#ifdef NNTP_ABLE
+	FILE *fp;
+
+	if (read_news_via_nntp && CURR_GROUP.type == GROUP_TYPE_NEWS) {
+		/*
+		 * Don't bother requesting if we have not got there yet.
+		 * This is a big win if the group has got holes in it (ie. if 000's
+		 * of articles have expired between active files min & max values).
+		 */
+		if (art < *next)
+			return NULL;
+
+		snprintf(buf, sizeof(buf), "HEAD %ld", art);
+		if ((fp = nntp_command(buf, OK_HEAD, NULL, 0)) != NULL)
+			return fp;
+
+		/*
+		 * HEAD failed, try to find NEXT
+		 * Should return "223 artno message-id more text...."
+		 */
+		if (nntp_command("NEXT", OK_NOTEXT, buf, sizeof(buf)))
+			*next = atoi(buf);		/* Set next art number */
+
+		return NULL;
+	} else
+#endif /* NNTP_ABLE */
+	{
+		snprintf(buf, sizeof(buf), "%ld", art);
+		return (fopen(buf, "r"));
+	}
+}
+
+
+/*
  * Called after XOVER/local/private overview databases have been loaded
  * Read and parse in headers for any arts not already found (usually
  * new articles that have not been indexed yet)
- * Already present articles that pass valid_artnum() have their
- * ->thread set to ART_NORMAL, as do any new articles that are added.
+ * Any new articles that are added have ->thread set to ART_UNTHREADED
+ * 'top' is the current highest artnum read
  *
  * Return values are:
- *    1   Additional articles were read in
+ *   >0   Number of additional articles read in
  *    0   No additional (new) articles were found
  *   -1   user aborted during read
- * TODO: think of a function name that sucks less
- * TODO: *pcount isn't used by the caller (index_group)
  */
 static int
-read_group(
+read_art_headers(
 	struct t_group *group,
-	int *pcount)
+	int total,
+	long top)
 {
 	FILE *fp;
-	char buf[PATH_LEN];
+	char dir[PATH_LEN];
 	int i;
-	int count = 0;
-	int respnum, total = 0;
 	int modified = 0;
 	long art;
+	long head_next = -1; /* Reset the next article number index (for when HEAD fails) */
 	t_bool res;
-	static char dir[PATH_LEN] = "";
 
 	/*
 	 * Change to groups spooldir to optimize fopen()'s on local articles
+	 * NB open_art_header() requires this
 	 */
 	if (!read_news_via_nntp || group->type != GROUP_TYPE_NEWS) {
+		char buf[PATH_LEN];
+
 		get_cwd(dir);
 		make_base_group_path(group->spooldir, group->name, buf);
 		my_chdir(buf);
 	}
 
-	/*
-	 * Count num of arts to index so the user has an idea of index time
-	 */
-	for (i = 0; i < grpmenu.max; i++) {
-		if (base[i] <= last_read_article || valid_artnum(base[i]) >= 0)
-			continue;
-
-		total++;
-	}
-
-	/*
-	 * Reset the next article number index (for when HEAD fails)
-	 */
-	head_next = -1;
-
-	for (i = 0; i < grpmenu.max; i++) {	/* for each article # */
+	for (i = 0; i < grpmenu.max; i++) {	/* for each article number */
 		art = base[i];
 
 		/*
-		 * Do we already have this article in our index? Change
-		 * arts[].thread from ART_EXPIRED to ART_NORMAL and skip
-		 * reading the header.
+		 * Skip articles that are below the low water mark or are
+		 * already present
 		 */
-		if ((respnum = valid_artnum(art)) >= 0) {
-			arts[respnum].thread = ART_NORMAL;
+		if (valid_artnum(art) >= 0)
 			continue;
-		}
-		if (art <= last_read_article)
+		if (art <= top)
 			continue;
 
 		/*
 		 * Try and open the article
 		 */
-		if ((fp = open_art_header(art)) == NULL)
+		if ((fp = open_art_header(art, &head_next)) == NULL)
 			continue;
-
-		/*
-		 * we've modified the index so it will need to be re-written
-		 */
-		modified = 1;
 
 		/*
 		 * Add article to arts[]
@@ -419,40 +614,35 @@ read_group(
 
 		set_article(&arts[top_art]);
 		arts[top_art].artnum = art;
-		arts[top_art].thread = ART_NORMAL;
+		arts[top_art].thread = ART_UNTHREADED;
 
 		res = parse_headers(fp, &arts[top_art]);
 
 		TIN_FCLOSE(fp);
 		if (tin_errno) {
-			if (!read_news_via_nntp || group->type != GROUP_TYPE_NEWS)
-				my_chdir(dir);
-
-			return -1;
+			modified = -1;
+			break;
 		}
 
 		if (!res) {
-			snprintf(buf, sizeof(buf), "FAILED parse_headers(%ld)", art);
 #ifdef DEBUG
-			debug_nntp("read_group", buf);
+			char buf[PATH_LEN];
+
+			snprintf(buf, sizeof(buf), "FAILED parse_headers(%ld)", art);
+			debug_nntp("read_art_headers", buf);
 #endif /* DEBUG */
 			continue;
 		}
 
-		last_read_article = arts[top_art].artnum;	/* used if arts are killed */
+		top = arts[top_art].artnum;	/* used if arts are killed */
 		top_art++;
 
-		if (++count % MODULO_COUNT_NUM == 0)
-			show_progress(mesg, count, total);
+		if (++modified % MODULO_COUNT_NUM == 0)
+			show_progress(mesg, modified, total);
 	}
 
 	/*
-	 * Update number of article we 'read'
-	 */
-	*pcount = count;
-
-	/*
-	 * if !nntp change to previous dir before indexing started
+	 * Change back to previous dir before indexing started
 	 */
 	if (!read_news_via_nntp || group->type != GROUP_TYPE_NEWS)
 		my_chdir(dir);
@@ -729,13 +919,14 @@ thread_by_multipart(
  *	THREAD_BOTH		Threads created using References and then Subject
  *	THREAD_MULTI	Threads created using Subject to search for Multiparts
  *
- * Apart from THREAD_NONE, .thread and .prev are used, the
- * first article in a thread should have .prev set to ART_NORMAL, the
- * rest >= 0. Only do unexpired articles we haven't visited yet
- * (arts[].thread == -1 ART_NORMAL).
+ * .thread and .prev are used to hold the threading information, see tin.h for
+ * more information
+ * Only process valid (unexpired) articles we haven't visited yet
+ * (ie arts[].thread == ART_UNTHREADED)
  *
- * The rethread parameter is a misnomer. Its only effect (if set) is
- * to delete all threading information, not to rethread
+ * The rethread parameter is used to force the deletion of existing threading
+ * information before threading which happens anyway expect when using
+ * THREAD_NONE (I don't immediately see how this is useful)
  */
 /* TODO: rewrite that user can easly combine different 'threading'
  *       methods, i.e:
@@ -746,8 +937,6 @@ make_threads(
 	struct t_group *group,
 	t_bool rethread)
 {
-	int i;
-
 	if (!cmd_line && !batch_mode)
 		info_message((group->attribute->thread_arts == THREAD_NONE ? _(txt_unthreading_arts) : _(txt_threading_arts)));
 
@@ -772,12 +961,14 @@ make_threads(
 
 	/*
 	 * The threading pointers need to be reset if re-threading
-	 *	If using ref threading, revector the links back to the articles
+	 * If using ref threading, revector the links back to the articles
 	 */
 	if (rethread || group->attribute->thread_arts) {
+		int i;
+
 		for_each_art(i) {
-			if (arts[i].thread != ART_EXPIRED)
-				arts[i].thread = ART_NORMAL;
+			if (arts[i].thread >= 0)
+				arts[i].thread = ART_UNTHREADED;
 
 			arts[i].prev = ART_NORMAL;
 
@@ -821,8 +1012,13 @@ make_threads(
 		default: /* not reached */
 			break;
 	}
+
+	/*
+	 * Rebuild base[]
+	 */
 	find_base(group);
 }
+
 
 static t_compfunc
 eval_sort_arts_func(
@@ -1006,7 +1202,7 @@ parse_headers(
 			/*
 			 * FIXME: Subject: truncation is a HACK and it's not multibyte safe
 			 *        the core problem are probably fixed length buffers
-			 *        (i.e. in rfc1522_encode() called from write_nov_file()
+			 *        (i.e. in rfc1522_encode() called from write_overview()
 			 *         with the data read in here).
 			 */
 			case 'S':	/* Subject:  mandatory */
@@ -1064,10 +1260,11 @@ parse_headers(
 #endif /* DEBUG */
 /*
  * Read in an overview index file. Fields are separated by TAB.
- * return the new value of 'top_art' or -1 if user quit partway.
- * 'expired' is set to the # of expired arts
- * If 'local' is set then always open local overview cache in
- * preference to using NNTP XOVER
+ * return the number of expired articles encountered or -1 if the user aborted
+ * the read
+ * 'top' is set to the highest artnum read
+ * If 'local' is set then always open local overview cache in preference to
+ * using NNTP XOVER
  *
  * Format (mandatory as far as line count [RFC2980]):
  *	1. article number (ie. 183)                [mandatory]
@@ -1081,11 +1278,11 @@ parse_headers(
  *	9. Xref: line     (ie. alt.test:389)       [optional]
  */
 static int
-read_nov_file(
+read_overview(
 	struct t_group *group,
 	long min,
 	long max,
-	int *expired,
+	long *top,
 	t_bool local)
 {
 	FILE *fp;
@@ -1094,19 +1291,18 @@ read_nov_file(
 	char art_full_name[HEADER_LEN];
 	char art_from_addr[HEADER_LEN];
 	unsigned int count;
+	int expired = 0;
 	long artnum;
 	struct t_article *art;
 #ifdef DEBUG
 	unsigned int oerror = 0;
 #endif /* DEBUG */
 
-	*expired = 0;
-
 	/*
 	 * open the overview file (whether it be local or via nntp)
 	 */
 	if ((fp = open_xover_fp(group, "r", min, max, local)) == NULL)
-		return top_art;
+		return expired;
 
 	if (group->xmax > max)
 		group->xmax = max;
@@ -1116,17 +1312,21 @@ read_nov_file(
 			handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
 			need_resize = cNo;
 		}
-#ifdef DEBUG
-		debug_nntp("read_nov_file", buf);
-#endif /* DEBUG */
+
+		/*
+		 * Read artnum
+		 */
+		if ((ptr = tin_strtok(buf, "\t")) == NULL)
+			continue;
 
 		/*
 		 * read the article number, guaranteed to be the first field
 		 */
-		artnum = atol(buf);
+		artnum = atol(ptr);
 
 		/*
-		 * 1st line of local cached overview is group name
+		 * artnum field invalid/corrupt or is 1st line of local cached overview
+		 * (group name)
 		 */
 		if (artnum <= 0)
 			continue;
@@ -1135,7 +1335,7 @@ read_nov_file(
 		 * Check to make sure article in nov file has not expired in group
 		 */
 		if (artnum < group->xmin) {
-			(*expired)++;
+			expired++;
 			continue;
 		}
 
@@ -1154,15 +1354,12 @@ read_nov_file(
 
 		art = &arts[top_art];
 		set_article(art);
-		art->artnum = last_read_article = artnum;
+		art->artnum = *top = artnum;
 
 		/*
 		 * Note: Fields after line count are not mandatory, use "LIST OVERVIEW.FMT"
 		 *       to check for additions like we do with xref_supported
 		 */
-		if ((ptr = tin_strtok(buf, "\t")) == NULL)		/* Skip past artnum */
-			continue;
-
 		for (count = 1; (ptr = tin_strtok(NULL, "\t")) != NULL; count++) {
 			switch (count) {
 				case 1:		/* Subject */
@@ -1227,7 +1424,7 @@ read_nov_file(
 
 			error_message(_("%d Bad overview record (%d fields) '%s'"), oerror, count, BlankIfNull(ptr)); /* TODO move to lang.c */
 			snprintf(errbuf, sizeof(errbuf), "%d Bad overview record (%d fields)", oerror, count);
-			debug_nntp("read_nov_file", errbuf);
+			debug_nntp("read_overview", errbuf);
 		}
 		debug_print_header(art);
 		oerror = 0;
@@ -1245,7 +1442,7 @@ read_nov_file(
 		if (artnum % MODULO_COUNT_NUM == 0)
 			show_progress(mesg, artnum - min, max - min);
 
-		top_art++;
+		top_art++;				/* Basically this statement commits the article */
 	}
 
 	TIN_FCLOSE(fp);
@@ -1253,7 +1450,7 @@ read_nov_file(
 	if (tin_errno)
 		return -1;
 
-	return top_art;
+	return expired;
 }
 
 
@@ -1283,14 +1480,14 @@ read_nov_file(
  *       long-term solution: store the original data in the overview
  *       (tin has to handle raw 8bit data and other ugly stuff in the
  *       overviews anyway and thus we preserver as much info as possible)
- *       this would require some changes in read_nov_file() and
+ *       this would require some changes in read_overview() and
  *       parse_headers(): don't do the decoding/unfolding there, but in a
- *       second pass right after write_nov_file(), or two additional fields
+ *       second pass right after write_overview(), or two additional fields
  *       which hold the raw data for from/subject. the latter has the
  *       disadvantage that it costs (much) more memory.
  */
 void
-write_nov_file(
+write_overview(
 	struct t_group *group)
 {
 	FILE *fp;
@@ -1819,6 +2016,7 @@ set_article(
 
 /*
  * Do a binary chop to see if 'art' (an article number) exists in arts[]
+ * Naturally arts[] must be sorted on artnum
  * Return index into arts[] or -1
  */
 static int

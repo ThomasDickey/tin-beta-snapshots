@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-07-22
+ *  Updated   : 2003-11-18
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -44,17 +44,6 @@
 #ifndef VERSION_H
 #	include "version.h"
 #endif /* !VERSION_H */
-
-#if defined(M_AMIGA) && defined(__SASC_650)
-	extern int _WBArg;
-	extern char **_WBArgv;
-	char __stdiowin[] = "con:0/12/640/200/TIN " VERSION;
-	char __stdiov37[] = "/AUTO/NOCLOSE";
-#else
-#	ifdef VMS
-	int debug;
-#	endif /* VMS */
-#endif /* M_AMIGA && __SASC_650 */
 
 signed long int read_newsrc_lines = -1;
 
@@ -111,16 +100,6 @@ main(
 	set_signal_handlers();
 
 	debug = 0;	/* debug OFF */
-
-#if defined(M_AMIGA) && defined(__SASC)
-	/* Call tzset() here! */
-	_TZ = "GMT0";
-	tzset();
-	if (argc == 0) { /* we are running from the Workbench */
-		argc = _WBArgc;
-		argv = _WBArgv;
-	}
-#endif /* M_AMIGA && __SASC */
 
 	base_name(argv[0], tin_progname);
 #ifdef VMS
@@ -418,11 +397,7 @@ main(
 /*
  * process command line options
  */
-#ifndef M_AMIGA
-#	define OPTIONS "aAcdD:f:G:g:hHI:lm:M:nNop:qQrRs:SuvVwxXzZ"
-#else
-#	define OPTIONS "BcdD:f:G:hHI:lm:M:nNop:qQrRs:SuvVwxXzZ"
-#endif /* !M_AMIGA */
+#define OPTIONS "aAcdD:f:g:G:hHI:lm:M:nNop:qQrRs:SuvVwxXzZ"
 
 static void
 read_cmd_line_options(
@@ -436,33 +411,27 @@ read_cmd_line_options(
 
 	while ((ch = getopt(argc, argv, OPTIONS)) != -1) {
 		switch (ch) {
-#ifndef M_AMIGA
 			case 'a':
-#	ifdef HAVE_COLOR
+#ifdef HAVE_COLOR
 				use_color = bool_not(use_color);
-#	else
+#else
 				error_message(_(txt_option_not_enabled), "-DHAVE_COLOR");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
-#	endif /* HAVE_COLOR */
+#endif /* HAVE_COLOR */
 				break;
 
 			case 'A':
-#	ifdef NNTP_ABLE
+#ifdef NNTP_ABLE
 				force_auth_on_conn_open = TRUE;
-#	else
+#else
 				error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
-#	endif /* NNTP_ABLE */
+#endif /* NNTP_ABLE */
 				break;
-#else
-			case 'B':
-				tin_bbs_mode = TRUE;
-				break;
-#endif /* !M_AMIGA */
 
 			case 'c':
 				/* TODO: should -c enter batch-mode? */
@@ -494,19 +463,17 @@ read_cmd_line_options(
 				tinrc.getart_limit = atoi(optarg);
 				break;
 
-#ifndef M_AMIGA
 			case 'g':	/* select alternative NNTP-server, implies -r */
-#	ifdef NNTP_ABLE
+#ifdef NNTP_ABLE
 				my_strncpy(cmdline_nntpserver, optarg, sizeof(cmdline_nntpserver) - 1);
 				read_news_via_nntp = TRUE;
-#	else
+#else
 				error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
-#	endif /* NNTP_ABLE */
+#endif /* NNTP_ABLE */
 				break;
-#endif /* !M_AMIGA */
 
 			case 'H':
 				show_intro_page();
@@ -897,12 +864,9 @@ read_cmd_line_options(
 			get_newsrcname(newsrc, uts.nodename);
 #else
 			char nodenamebuf[256]; /* SUSv2 limit; better use HOST_NAME_MAX */
-#	if defined(HAVE_GETHOSTNAME) && !defined(M_AMIGA)
+#ifdef HAVE_GETHOSTNAME
 			(void) gethostname(nodenamebuf, sizeof(nodenamebuf));
-#	else
-			/* TODO: document $NodeName */
-			my_strncpy(nodenamebuf, get_val("NodeName", "PROBLEM_WITH_NODE_NAME"), sizeof(nodenamebuf) - 1);
-#	endif /* HAVE_GETHOSTNAME && !M_AMIGA */
+#endif /* HAVE_GETHOSTNAME */
 			get_newsrcname(newsrc, nodenamebuf);
 #endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
 		}
@@ -952,16 +916,12 @@ usage(
 {
 	error_message(_(txt_usage_tin), theProgname);
 
-#ifndef M_AMIGA
-#	ifdef HAVE_COLOR
+#ifdef HAVE_COLOR
 		error_message(_(txt_usage_toggle_color));
-#	endif /* HAVE_COLOR */
-#	ifdef NNTP_ABLE
+#endif /* HAVE_COLOR */
+#ifdef NNTP_ABLE
 		error_message(_(txt_usage_force_authentication));
-#	endif /* NNTP_ABLE */
-#else
-	error_message(_(txt_usage_bbs_mode));
-#endif /* !M_AMIGA */
+#endif /* NNTP_ABLE */
 
 	error_message(_(txt_usage_catchup));
 	error_message(_(txt_usage_dont_show_descriptions));
@@ -973,11 +933,9 @@ usage(
 	error_message(_(txt_usage_newsrc_file), newsrc);
 	error_message(_(txt_usage_getart_limit));
 
-#ifndef M_AMIGA
-#	ifdef NNTP_ABLE
-		error_message(_(txt_usage_newsserver), get_val("NNTPSERVER", NNTP_DEFAULT_SERVER));
-#	endif /* NNTP_ABLE */
-#endif /* !M_AMIGA */
+#ifdef NNTP_ABLE
+	error_message(_(txt_usage_newsserver), get_val("NNTPSERVER", NNTP_DEFAULT_SERVER));
+#endif /* NNTP_ABLE */
 
 	error_message(_(txt_usage_help_message));
 	error_message(_(txt_usage_help_information), theProgname);

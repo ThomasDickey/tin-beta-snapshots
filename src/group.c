@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-10
+ *  Updated   : 2003-12-19
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -128,7 +128,7 @@ group_right(
 		else {
 			int n = next_unread((int) base[grpmenu.curr]);
 
-			if (grpmenu.curr == which_thread(n) && n >= 0)
+			if (n >= 0 && grpmenu.curr == which_thread(n))
 				return enter_pager(n, TRUE);
 		}
 	}
@@ -806,19 +806,26 @@ group_page(
 			case iKeyGroupSelPattern:	/* select matching patterns */
 				{
 					char pat[128];
+					struct regex_cache cache = { NULL, NULL };
 
-					sprintf(mesg, _(txt_select_pattern), tinrc.default_select_pattern);
+					snprintf(mesg, sizeof(mesg), _(txt_select_pattern), tinrc.default_select_pattern);
 					if (!(prompt_string_default(mesg, tinrc.default_select_pattern, _(txt_info_no_previous_expression), HIST_SELECT_PATTERN)))
 						break;
 
-					if (STRCMPEQ(tinrc.default_select_pattern, "*"))	/* all */
-						strncpy(pat, tinrc.default_select_pattern, sizeof(pat));
-					else
+					if (STRCMPEQ(tinrc.default_select_pattern, "*")) {	/* all */
+						if (tinrc.wildcard)
+							STRCPY(pat, ".*");
+						else
+							strncpy(pat, tinrc.default_select_pattern, sizeof(pat));
+					} else
 						snprintf(pat, sizeof(pat), REGEX_FMT, tinrc.default_select_pattern);
+
+					if (tinrc.wildcard && !(compile_regex(pat, &cache, PCRE_CASELESS)))
+						break;
 
 					flag = FALSE;
 					for (n = 0; n < grpmenu.max; n++) {
-						if (!REGEX_MATCH(arts[base[n]].subject, pat, TRUE))
+						if (!match_regex(arts[base[n]].subject, pat, &cache, TRUE))
 							continue;
 
 						for_each_art_in_thread(i, n)
@@ -830,6 +837,10 @@ group_page(
 					if (flag) {
 						show_group_title(TRUE);
 						update_group_page();
+					}
+					if (tinrc.wildcard) {
+						FreeIfNeeded(cache.re);
+						FreeIfNeeded(cache.extra);
 					}
 					break;
 				}
@@ -986,13 +997,13 @@ toggle_read_unread(
 	int n, i = -1;
 
 	if (force)
-		CURR_GROUP.attribute->show_only_unread = TRUE;	/* Yes - really, we change it in a bit */
+		curr_group->attribute->show_only_unread = TRUE;	/* Yes - really, we change it in a bit */
 
 	wait_message(0, _(txt_reading_arts),
-		(CURR_GROUP.attribute->show_only_unread) ? _(txt_all) : _(txt_unread));
+		(curr_group->attribute->show_only_unread) ? _(txt_all) : _(txt_unread));
 
 	if (grpmenu.curr >= 0) {
-		if (CURR_GROUP.attribute->show_only_unread || new_responses(grpmenu.curr))
+		if (curr_group->attribute->show_only_unread || new_responses(grpmenu.curr))
 			i = base[grpmenu.curr];
 		else if ((n = prev_unread((int) base[grpmenu.curr])) >= 0)
 			i = n;
@@ -1000,9 +1011,9 @@ toggle_read_unread(
 			i = n;
 	}
 
-	CURR_GROUP.attribute->show_only_unread = bool_not(CURR_GROUP.attribute->show_only_unread);
+	curr_group->attribute->show_only_unread = bool_not(curr_group->attribute->show_only_unread);
 
-	find_base(&CURR_GROUP);
+	find_base(curr_group);
 	if (i >= 0 && (n = which_thread(i)) >= 0)
 		grpmenu.curr = n;
 	else if (grpmenu.max > 0)
@@ -1123,11 +1134,11 @@ set_subj_from_size(
 	}
 
 	/* which information should be displayed? */
-	if (tinrc.show_info == SHOW_INFO_NOTHING)
+	if (CURR_GROUP.attribute && CURR_GROUP.attribute->show_info == SHOW_INFO_NOTHING)
 		len_subj += 11;
-	else if (tinrc.show_info == SHOW_INFO_LINES)
+	else if (CURR_GROUP.attribute && CURR_GROUP.attribute->show_info == SHOW_INFO_LINES)
 		len_subj += 6;
-	else if (tinrc.show_info == SHOW_INFO_SCORE)
+	else if (CURR_GROUP.attribute && CURR_GROUP.attribute->show_info == SHOW_INFO_SCORE)
 		len_subj += 5;
 }
 
@@ -1136,8 +1147,8 @@ void
 toggle_subject_from(
 	void)
 {
-	if (++CURR_GROUP.attribute->show_author > SHOW_FROM_BOTH)
-		CURR_GROUP.attribute->show_author = SHOW_FROM_NONE;
+	if (++curr_group->attribute->show_author > SHOW_FROM_BOTH)
+		curr_group->attribute->show_author = SHOW_FROM_NONE;
 
 	set_subj_from_size(cCOLS);
 }
@@ -1191,11 +1202,7 @@ build_sline(
 	int respnum;
 	int n, j;
 	struct t_art_stat sbuf;
-#ifdef USE_CURSES
-	char buffer[BUFSIZ];	/* FIXME: allocate? */
-#else
 	char *buffer;
-#endif /* USE_CURSES */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	size_t len;
 	wchar_t format[32];
@@ -1203,6 +1210,18 @@ build_sline(
 	wchar_t tmp_subj[256], tmp_subj2[256];
 	wchar_t tmp_from[HEADER_LEN], tmp_from2[HEADER_LEN];
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+#ifdef USE_CURSES
+	/*
+	 * Allocate line buffer
+	 * make it the same size like in !USE_CURSES case to simplify the code
+	 */
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		buffer = my_malloc(cCOLS * MB_CUR_MAX + 2);
+#	else
+		buffer = my_malloc(cCOLS + 2);
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#endif /* USE_CURSES */
 
 	from[0] = '\0';
 	respnum = (int) base[i];
@@ -1212,7 +1231,7 @@ build_sline(
 	/*
 	 * n is number of articles in this thread
 	 */
-	n = ((CURR_GROUP.attribute->show_only_unread) ? (sbuf.unread + sbuf.seen) : sbuf.total);
+	n = ((curr_group->attribute->show_only_unread) ? (sbuf.unread + sbuf.seen) : sbuf.total);
 	/*
 	 * if you like to see the number of responses excluding the first
 	 *	art in thread - add the following:
@@ -1229,12 +1248,12 @@ build_sline(
 	 */
 	j = (sbuf.unread) ? next_unread(respnum) : respnum;
 
-	if (tinrc.show_info == SHOW_INFO_LINES || tinrc.show_info == SHOW_INFO_BOTH) {
+	if (curr_group->attribute->show_info == SHOW_INFO_LINES || curr_group->attribute->show_info == SHOW_INFO_BOTH) {
 		if (n > 1) { /* change this to (n > 0) if you do a n-- above */
 			if (arts[j].line_count != -1) {
 				char tmp_buffer[4];
 
-				strcpy(tmp_buffer, tin_ltoa(n, 3));
+				STRCPY(tmp_buffer, tin_ltoa(n, 3));
 				snprintf(art_cnt, sizeof(art_cnt), "%s %s ", tmp_buffer, tin_ltoa(arts[j].line_count, 4));
 			} else
 				snprintf(art_cnt, sizeof(art_cnt), "%s    ? ", tin_ltoa(n, 3));
@@ -1251,7 +1270,7 @@ build_sline(
 			strcpy(art_cnt, "    ");
 	}
 
-	if (CURR_GROUP.attribute->show_author != SHOW_FROM_NONE)
+	if (curr_group->attribute->show_author != SHOW_FROM_NONE)
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		/* ignore len_from for now, we truncate it later */
 		get_author(FALSE, &arts[j], from, sizeof(from) - 1);
@@ -1278,7 +1297,7 @@ build_sline(
 	wcspart(tmp_subj, tmp_subj2, len_subj - 12, ARRAY_SIZE(tmp_subj), TRUE);
 	wcspart(tmp_from, tmp_from2, len_from, ARRAY_SIZE(tmp_from), TRUE);
 
-	if (tinrc.show_info == SHOW_INFO_SCORE || tinrc.show_info == SHOW_INFO_BOTH) {
+	if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH) {
 		mbstowcs(format, "  %s %s %s%6d %-ls%s%-ls", ARRAY_SIZE(format) - 1);
 		swprintf(wbuffer, ARRAY_SIZE(wbuffer) - 1, format,
 			 tin_ltoa(i + 1, 4), new_resps, art_cnt, sbuf.score, tmp_subj,
@@ -1290,23 +1309,19 @@ build_sline(
 			 spaces, tmp_from);
 	}
 
-#	ifdef USE_CURSES
-	if ((len = wcstombs(buffer, wbuffer, BUFSIZ - 1)) == (size_t) -1)
-#	else
 	if ((len = wcstombs(buffer, wbuffer, cCOLS * MB_CUR_MAX)) == (size_t) -1)
-#	endif /* USE_CURSES */
 		len = 0;
 	buffer[len] = '\0';
 #else
 	arts_sub[len_subj - 12 + 1] = '\0';
 
-	if (tinrc.show_info == SHOW_INFO_SCORE || tinrc.show_info == SHOW_INFO_BOTH)
-		sprintf(buffer, "  %s %s %s%6d %-*.*s%s%-*.*s",
+	if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH)
+		snprintf(buffer, cCOLS + 1, "  %s %s %s%6d %-*.*s%s%-*.*s",
 			 tin_ltoa(i + 1, 4), new_resps, art_cnt, sbuf.score,
 			 len_subj - 12, len_subj - 12, arts_sub,
 			 spaces, len_from, len_from, from);
 	else
-		sprintf(buffer, "  %s %s %s%-*.*s%s%-*.*s",
+		snprintf(buffer, cCOLS + 1, "  %s %s %s%-*.*s%s%-*.*s",
 			 tin_ltoa(i + 1, 4), new_resps, art_cnt,
 			 len_subj - 12, len_subj - 12, arts_sub,
 			 spaces, len_from, len_from, from);
@@ -1318,6 +1333,8 @@ build_sline(
 	 * and write line.
 	 */
 	WriteLine(INDEX2LNUM(i), convert_to_printable(buffer));
+
+	free(buffer);
 #endif /* USE_CURSES */
 }
 
@@ -1328,14 +1345,12 @@ show_group_title(
 {
 	char buf[LEN], tmp[LEN];
 	int i, art_cnt = 0, recent_art_cnt = 0, selected_art_cnt = 0, read_selected_art_cnt = 0, killed_art_cnt = 0;
-	struct t_group currgrp;
 
-	currgrp = CURR_GROUP;
 	for_each_art(i) {
 		if (arts[i].thread == ART_EXPIRED)
 			continue;
 
-		if (currgrp.attribute->show_only_unread) {
+		if (curr_group->attribute->show_only_unread) {
 			if (arts[i].status != ART_READ) {
 				art_cnt++;
 				if (tinrc.recent_time && ((time((time_t) 0) - arts[i].date) < (tinrc.recent_time * DAY)))
@@ -1364,23 +1379,23 @@ show_group_title(
 	 */
 	/* group name and thread count */
 	snprintf(buf, sizeof(buf), "%s (%d%c",
-		currgrp.name, grpmenu.max,
-		*txt_threading[currgrp.attribute->thread_arts]);
+		curr_group->name, grpmenu.max,
+		*txt_threading[curr_group->attribute->thread_arts]);
 
 	/* article count */
 	if (tinrc.getart_limit)
 		snprintf(tmp, sizeof(tmp), " %d/%d%c",
 			tinrc.getart_limit, art_cnt,
-			(currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read));
+			(curr_group->attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read));
 	else
 		snprintf(tmp, sizeof(tmp), " %d%c",
 			art_cnt,
-			(currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read));
+			(curr_group->attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read));
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
 		strcat(buf, tmp);
 
 	/* selected articles */
-	if (currgrp.attribute->show_only_unread)
+	if (curr_group->attribute->show_only_unread)
 		snprintf(tmp, sizeof(tmp), " %d%c",
 			selected_art_cnt, tinrc.art_marked_selected);
 	else
@@ -1407,7 +1422,7 @@ show_group_title(
 
 	/* group flag */
 	snprintf(tmp, sizeof(tmp), ") %c",
-		group_flag(currgrp.moderated));
+		group_flag(curr_group->moderated));
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
 		strcat(buf, tmp);
 
@@ -1493,7 +1508,7 @@ enter_thread(
 	}
 
 	forever {
-		switch (i = thread_page(&CURR_GROUP, (int) base[grpmenu.curr], depth, page)) {
+		switch (i = thread_page(curr_group, (int) base[grpmenu.curr], depth, page)) {
 			case GRP_QUIT:						/* 'Q'uit */
 			case GRP_RETSELECT:					/* Back to selection screen */
 				return i;
@@ -1573,8 +1588,8 @@ group_catchup(
 
 	snprintf(buf, sizeof(buf), _(txt_mark_arts_read), (ch == iKeyGroupCatchupNextUnread) ? _(txt_enter_next_unread_group) : "");
 
-	if (!CURR_GROUP.newsrc.num_unread || (!TINRC_CONFIRM_ACTION) || (pyn = prompt_yn(cLINES, buf, TRUE)) == 1)
-		grp_mark_read(&CURR_GROUP, arts);
+	if (!curr_group->newsrc.num_unread || (!TINRC_CONFIRM_ACTION) || (pyn = prompt_yn(cLINES, buf, TRUE)) == 1)
+		grp_mark_read(curr_group, arts);
 
 	switch (ch) {
 		case iKeyGroupCatchup:				/* 'c' */

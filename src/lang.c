@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-12
+ *  Updated   : 2003-12-09
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -39,7 +39,7 @@
 #	include "tin.h"
 #endif /* !TIN_H */
 
-constext txt_1_resp[] = N_("1 Response%s");
+constext txt_1_resp[] = N_("1 Response");
 constext txt_7bit[] = "7bit";
 constext txt_8bit[] = "8bit";
 
@@ -224,6 +224,8 @@ constext txt_filter_rule_created[] = N_("Rule created by: ");
 constext txt_feed_pattern[] = N_("Enter pattern [%s]> ");
 constext txt_followup_newsgroups[] = N_("\nYou requested followups to your article to go to the following %s:\n");
 constext txt_followup_poster[] = N_("  %s\t Answers will be directed to you by mail.\n");
+constext txt_forwarded[] = N_("-- forwarded message --\n");
+constext txt_forwarded_end[] = N_("-- end of forwarded message --\n");
 constext txt_filter_file[] = N_("# Format:\n\
 #   comment=STRING    Optional. Multiple lines allowed. Comments must be placed\n\
 #                     at the beginning of a rule, or they will be moved to the\n\
@@ -256,8 +258,10 @@ constext txt_from_line_only_case[] = N_("From: line (case sensitive)   ");
 constext txt_gethostbyname[] = N_("%s%s: Unknown host.\n");
 constext txt_global[] = N_("global ");
 constext txt_group_aliased[] = N_("Please use %.100s instead");
+constext txt_group_bogus[] = N_("%s is bogus");
 constext txt_group_is_moderated[] = N_("Group %s is moderated. Continue?");
 constext txt_group_plural[] = N_("groups");
+constext txt_group_rereading[] = N_("Rereading %s...");
 constext txt_group_select_com[] = N_("Top Level Commands");
 constext txt_group_selection[] = N_("Group Selection");
 constext txt_group_singular[] = N_("group");
@@ -458,12 +462,12 @@ constext txt_keymap_missing_key[] = N_("Missing definition for %s\n");
 constext txt_keymap_invalid_key[] = N_("Invalid key definition '%s'\n");
 constext txt_keymap_invalid_name[] = N_("Invalid keyname '%s'\n");
 constext txt_keymap_conflict[] = N_("Key '%s' is defined for both %s%s and %s%s\n");
-constext txt_kill_from[] = N_("Kill From:     [%-*.*s] (y/n): ");
+constext txt_kill_from[] = N_("Kill From:     [%s] (y/n): ");
 constext txt_kill_lines[] = N_("Kill Lines: (</>num): ");
 constext txt_kill_menu[] = N_("Kill Article Menu");
-constext txt_kill_msgid[] = N_("Kill Msg-Id:   [%-*.*s] (f/l/o/n): ");
+constext txt_kill_msgid[] = N_("Kill Msg-Id:   [%s] (f/l/o/n): ");
 constext txt_kill_scope[] = N_("Kill pattern scope  : ");
-constext txt_kill_subj[] = N_("Kill Subject:  [%-*.*s] (y/n): ");
+constext txt_kill_subj[] = N_("Kill Subject:  [%s] (y/n): ");
 constext txt_kill_text[] = N_("Kill text pattern   : ");
 constext txt_kill_time[] = N_("Kill time in days   : ");
 
@@ -532,7 +536,6 @@ constext txt_no_newsgroups[] = N_("No newsgroups");
 constext txt_no_next_unread_art[] = N_("No next unread article");
 constext txt_no_prev_group[] = N_("No previous group");
 constext txt_no_prev_unread_art[] = N_("No previous unread article");
-constext txt_no_resp[] = N_("No responses%s");
 constext txt_no_responses[] = N_("No responses");
 constext txt_no_resps_in_thread[] = N_("No responses to list in current thread");
 constext txt_no_search_string[] = N_("No search string");
@@ -620,15 +623,15 @@ constext txt_repost_group[] = N_("Repost article(s) to group(s) [%s]> ");
 constext txt_reset_newsrc[] = N_("Reset newsrc?");
 constext txt_resp_redirect[] = N_("Responses have been directed to the following newsgroups");
 constext txt_resp_to_poster[] = N_("Responses have been directed to poster. %s=mail, %s=post, %s=quit: ");
-constext txt_resp_x_of_n[] = N_("RespNo %4d of %4d%s");
+constext txt_resp_x_of_n[] = N_("RespNo %4d of %4d");
 constext txt_return_key[] = N_("Press <RETURN> to continue...");
 
-constext txt_select_from[] = N_("Select From    [%-*.*s] (y/n): ");
+constext txt_select_from[] = N_("Select From    [%s] (y/n): ");
 constext txt_select_lines[] = N_("Select Lines: (</>num): ");
 constext txt_select_menu[] = N_("Auto-select Article Menu");
-constext txt_select_msgid[] = N_("Select Msg-Id  [%-*.*s] (f/l/o/n): ");
+constext txt_select_msgid[] = N_("Select Msg-Id  [%s] (f/l/o/n): ");
 constext txt_select_scope[] = N_("Select pattern scope: ");
-constext txt_select_subj[] = N_("Select Subject [%-*.*s] (y/n): ");
+constext txt_select_subj[] = N_("Select Subject [%s] (y/n): ");
 constext txt_select_text[] = N_("Select text pattern : ");
 constext txt_select_time[] = N_("Select time in days   : ");
 constext txt_serverconfig_header[] = N_("# %s server configuration file\n\
@@ -707,7 +710,7 @@ constext txt_thread_marked_as_selected[] = N_("Thread selected");
 constext txt_thread_plural[] = N_("threads");
 constext txt_thread_range[] = N_("Thread range");
 constext txt_thread_singular[] = N_("thread");
-constext txt_thread_x_of_n[] = N_("%sThread %4s of %4s");
+constext txt_thread_x_of_n[] = N_("Thread %4s of %4s");
 constext txt_threading_arts[] = N_("Threading articles...");
 constext txt_toggled_high[] = N_("Toggled word highlighting %s");
 constext txt_toggled_rot13[] = N_("Toggled rot13 encoding");
@@ -801,7 +804,7 @@ constext txt_warn_suspicious_mail[] = N_("Warning: this mail address may contain
 constext txt_warn_wrong_sig_format[] = N_("\nWarning: Signatures should start with '-- \\n' not with '--\\n'.\n");
 constext txt_writing_attributes_file[] = N_("Writing attributes file...");
 
-constext txt_x_resp[] = N_("%d Responses%s");
+constext txt_x_resp[] = N_("%d Responses");
 
 constext txt_yanked_groups[] = N_("Added %d %s");
 constext txt_yanked_none[] = N_("No unsubscribed groups to show");
@@ -902,12 +905,6 @@ Warning: Posting is in %s and contains characters which are not\n\
 		constext txt_quit_edit_xpost[] = N_("%s=quit, %s=edit, %s=menu, %s=post, %s=postpone [%%.*s]: ");
 #	endif /* HAVE_ISPELL */
 #endif /* HAVE_PGP_GPG */
-
-#ifdef M_AMIGA
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2003 Iain Lea & Mark Tomlinson.";
-	constext txt_env_var_not_found[] = N_("Environment variable %s not found. Set and retry...");
-	constext txt_usage_bbs_mode[] = N_("  -B       BBS mode. File operations limited to home directories.");
-#endif /* M_AMIGA */
 
 #ifdef M_UNIX
 	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2003 Iain Lea.";
@@ -1291,6 +1288,22 @@ constext *txt_interactive_mailers[] = {
 	N_("with headers"),
 	N_("without headers")
 };
+
+#ifdef HAVE_UNICODE_NORMALIZATION
+constext *txt_normalization_forms[] = {
+	N_("None"),
+#	ifdef HAVE_LIBICUUC
+	N_("NFKC"),
+	N_("NFKD"),
+	N_("NFC"),
+	N_("NFD")
+#	else
+#		ifdef HAVE_LIBIDN
+	N_("NFKC")
+#		endif /* HAVE_LIBIDN */
+#	endif /* HAVE_LIBICUUC */
+};
+#endif /* HAVE_UNICODE_NORMALIZATION */
 
 struct opttxt txt_display_options = {
 	NULL,
@@ -1887,6 +1900,12 @@ struct opttxt txt_col_signature = {
 	N_("# Color of signature\n")
 };
 
+struct opttxt txt_col_urls = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Color of highlighted URLs          :"),
+	N_("# Color of highlighted URLs\n")
+};
+
 struct opttxt txt_col_markstar = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of highlighting with *stars* :"),
@@ -2257,7 +2276,7 @@ struct opttxt txt_mailer_format = {
 	N_("Enter %M for mailer, %S for subject, %T for to, %F for filename, <CR> to set."),
 	N_("Invocation of your mail command    :"),
 	N_("# Format of mailer line including parameters\n\
-# %%M Mailer  %%S Subject  %%T To  %%F Filename  %%U User (AmigaDOS)\n\
+# %%M Mailer  %%S Subject  %%T To  %%F Filename\n\
 # ie. to use elm as your mailer:    elm -s \"%%S\" \"%%T\" < %%F\n\
 # ie. elm interactive          :    elm -i %%F -s \"%%S\" \"%%T\"\n")
 };
@@ -2319,3 +2338,18 @@ struct opttxt txt_cache_overview_files = {
 	N_("Cache NNTP overview files locally  :"),
 	N_("# If ON, create local copies of NNTP overview files.\n")
 };
+
+struct opttxt txt_date_format = {
+	N_("Enter format string. <CR> sets, <ESC> cancels."),
+	N_("Format string for display of dates :"),
+	N_("# Format string for date representation\n")
+};
+
+#ifdef HAVE_UNICODE_NORMALIZATION
+struct opttxt txt_normalization_form = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Unicode normalization form         :"),
+	N_("# Unicode normalization form\n\
+# 0 = None, 1 = NFKC, 2 = NFKD, 3 = NFC, 4 = NFD\n")
+};
+#endif /* HAVE_UNICODE_NORMALIZATION */

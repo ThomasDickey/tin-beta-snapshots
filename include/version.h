@@ -3,7 +3,7 @@
  *  Module    : version.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-12
+ *  Updated   : 2003-09-19
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -40,29 +40,21 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.7.1"
+#		define VERSION		"1.7.3"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20030918"
-#	define RELEASENAME	"Berneray"
+#	define RELEASEDATE	"20031220"
+#	define RELEASENAME	"Taransay"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.7"
-#	define ATTRIBUTES_VERSION	"1.0.0"
+#	define ATTRIBUTES_VERSION	"1.0.2"
 #	define FILTER_VERSION	"1.0.0"
 #	define SERVERCONFIG_VERSION	"1.0.0"
-
-#	ifdef M_AMIGA
-#		define OSNAME	"AMIGA"
-#		define AMIVER	VERSION
-#	endif /* M_AMIGA */
 
 #	ifdef VMS
 #		define OSNAME	"VMS"
 #	endif /* VMS */
 
 #	ifdef M_UNIX
-#		ifdef __amiga
-#			define OSNAME	"AMIGA"
-#		endif /* !__amiga */
 #		ifdef __BEOS__
 #			define OSNAME	"BeOS"
 #		endif /* __BEOS__ */

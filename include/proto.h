@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2003-09-12
+ *  Updated   : 2003-12-17
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
@@ -47,7 +47,6 @@
 /* active.c */
 extern char group_flag(char ch);
 extern int find_newnews_index(const char *cur_newnews_host);
-extern int get_active_num(void);
 extern t_bool match_group_list(const char *group, const char *group_list);
 extern t_bool parse_active_line(char *line, long *max, long *min, char *moderated);
 extern t_bool process_bogus(char *name);
@@ -66,7 +65,7 @@ extern void make_threads(struct t_group *group, t_bool rethread);
 extern void set_article(struct t_article *art);
 extern void show_art_msg(const char *group);
 extern void sort_arts(unsigned /* int */ sort_art_type);
-extern void write_nov_file(struct t_group *group);
+extern void write_overview(struct t_group *group);
 
 /* attrib.c */
 extern void read_attributes_files(void);
@@ -238,7 +237,6 @@ extern void get_from_name(char *from_name, struct t_group *thisgrp);
 extern void get_user_info(char *user_name, char *full_name);
 
 /* init.c */
-extern t_bool(*wildcard_func)(const char *str, char *patt, t_bool icase);		/* Wildcard matching function */
 extern void init_selfinfo(void);
 extern void postinit_regexp(void);
 #ifdef HAVE_COLOR
@@ -255,7 +253,9 @@ extern void build_keymaps(void);
 extern void free_keymaps(void);
 
 /* langinfo.c */
-extern char *tin_nl_langinfo(nl_item item);
+#ifndef NO_LOCALE
+	extern char *tin_nl_langinfo(nl_item item);
+#endif /* !NO_LOCALE */
 
 /* list.c */
 extern char *random_organization(char *in_org);
@@ -316,12 +316,16 @@ extern void *my_realloc1(const char *file, int line, void *p, size_t size);
 #endif /* !USE_CURSES */
 
 /* misc.c */
-extern const char *eat_re(char *s, t_bool eat_was);
 extern char *escape_shell_meta(const char *source, int quote_area);
 extern char *get_tmpfilename(const char *filename);
+extern char *idna_decode(char *in);
 extern char *quote_wild(char *str);
 extern char *quote_wild_whitespace(char *str);
 extern char *strip_line(char *line);
+#if defined(CHARSET_CONVERSION) || defined(HAVE_UNICODE_NORMALIZATION)
+	extern char *utf8_valid(char *line);
+#endif /* CHARSET_CONVERSION || HAVE_UNICODE_NORMALIZATION */
+extern const char *eat_re(char *s, t_bool eat_was);
 extern const char *get_val(const char *env, const char *def);
 extern const char *gnksa_strerror(int errcode);
 extern int gnksa_check_from(char *from);
@@ -380,6 +384,7 @@ extern void toggle_inverse_video(void);
 #endif /* !NO_SHELL_ESCAPE */
 
 /* newsrc.c */
+extern int group_get_art_info(char *tin_spooldir, char *groupname, int grouptype, long *art_count, long *art_max, long *art_min);
 extern signed long int read_newsrc(char *newsrc_file, t_bool allgroups);
 extern signed long int write_newsrc(void);
 extern t_bool pos_group_in_newsrc(struct t_group *group, int pos);
@@ -396,51 +401,28 @@ extern void subscribe(struct t_group *group, int sub_state, t_bool get_info);
 extern void thd_mark_read(struct t_group *group, long thread);
 extern void thd_mark_unread(struct t_group *group, long thread);
 extern void set_default_bitmap(struct t_group *group);
-extern void art_mark_deleted(struct t_article *art);
-extern void art_mark_undeleted(struct t_article *art);
 #ifdef DEBUG_NEWSRC
 	extern void newsrc_test_harness(void);
 #endif /* DEBUG_NEWSRC */
 
 /* nntplib.c */
+#ifdef NNTP_ABLE
+	extern FILE *nntp_command(const char *, int, char *, size_t);
+#endif /* NNTP_ABLE */
 extern FILE *get_nntp_fp(FILE *fp);
 extern FILE *get_nntp_wr_fp(FILE *fp);
 extern char *getserverbyfile(const char *file);
 extern char *get_server(char *string, int size);
-extern int server_init(char *machine, const char *service, int port, char *text, size_t mlen);
-extern void close_server(void);
+extern int get_respcode(char *, size_t);
+extern int get_only_respcode(char *, size_t);
+extern int nntp_open(void);
+extern void nntp_close(void);
 extern void put_server(const char *string);
 extern void u_put_server(const char *string);
-#ifdef DEBUG
-	extern const char *nntp_respcode(int respcode);
-#endif /* DEBUG */
 
 /* nrctbl.c */
 extern int get_newsrcname(char *newsrc_name, const char *nntpserver_name);
 extern void get_nntpserver(char *nntpserver_name, char *nick_name);
-
-/* open.c */
-extern FILE *open_art_fp(struct t_group *group, long art);
-extern FILE *open_newgroups_fp(int the_index);
-extern FILE *open_news_active_fp(void);
-extern FILE *open_newsgroups_fp(void);
-extern FILE *open_overview_fmt_fp(void);
-extern FILE *open_subscription_fp(void);
-extern FILE *open_art_header(long art);
-extern int get_respcode(char *, size_t);
-extern int get_only_respcode(char *, size_t);
-extern int nntp_open(void);
-extern int group_get_art_info(char *tin_spooldir, char *groupname, int grouptype, long *art_count, long *art_max, long *art_min);
-extern long setup_hard_base(struct t_group *group);
-extern void nntp_close(void);
-extern void vGet1GrpArtInfo(struct t_group *grp);
-#ifdef HAVE_MH_MAIL_HANDLING
-	extern FILE *open_mail_active_fp(const char *mode);
-	extern FILE *open_mailgroups_fp(void);
-#endif /* HAVE_MH_MAIL_HANDLING */
-#ifdef NNTP_ABLE
-	extern FILE *nntp_command(const char *, int, char *, size_t);
-#endif /* NNTP_ABLE */
 
 /* page.c */
 extern int show_page(struct t_group *group, int respnum, int *threadnum);
@@ -470,18 +452,18 @@ extern time_t parsedate(char *p, TIMEINFO *now);
 #endif /* !HAVE_VSNPRINTF */
 
 /* post.c */
+extern char *checknadd_headers(const char *infile);
 extern int count_postponed_articles(void);
 extern int mail_to_author(const char *group, int respnum, t_bool copy_text, t_bool with_headers, t_bool raw_data);
 extern int mail_to_someone(const char *address, t_bool confirm_to_mail, t_openartinfo *artinfo, const struct t_group *group);
-extern int post_response(const char *group, int respnum, t_bool copy_text, t_bool with_headers, t_bool raw_data);
-extern int repost_article(const char *group, int respnum, t_bool supersede, t_openartinfo *artinfo);
+extern int post_response(const char *groupname, int respnum, t_bool copy_text, t_bool with_headers, t_bool raw_data);
+extern int repost_article(const char *groupname, int respnum, t_bool supersede, t_openartinfo *artinfo);
 extern t_bool cancel_article(struct t_group *group, struct t_article *art, int respnum);
 extern t_bool mail_bug_report(void);
 extern t_bool pickup_postponed_articles(t_bool ask, t_bool all);
-extern t_bool post_article(const char *group);
+extern t_bool post_article(const char *groupname);
 extern t_bool reread_active_after_posting(void);
 extern t_bool user_posted_messages(void);
-extern void checknadd_headers(const char *infile);
 extern void init_postinfo(void);
 extern void quick_post_article(t_bool postponed_only);
 #ifdef USE_CANLOCK
@@ -523,7 +505,7 @@ extern void thread_by_reference(void);
 
 /* regex.c */
 extern t_bool compile_regex(const char *regex, struct regex_cache *cache, int options);
-extern t_bool match_regex(const char *string, char *pattern, t_bool icase);
+extern t_bool match_regex(const char *string, char *pattern, struct regex_cache *cache, t_bool icase);
 extern void highlight_regexes(int row, struct regex_cache *regex, int color);
 
 /* rfc1524.c */
@@ -534,6 +516,7 @@ extern void free_mailcap(t_mailcap *tmailcap);
 extern void rfc1521_encode(char *line, FILE *f, int e);
 
 /* rfc2046.c */
+extern FILE *open_art_fp(struct t_group *group, long art);
 extern const char *get_param(t_param *list, const char *name);
 extern char *parse_header(char *buf, const char *pat, t_bool decode, t_bool structured);
 extern int art_open(t_bool wrap_lines, struct t_article *art, struct t_group *group, t_openartinfo *artinfo, t_bool show_progress_meter);
@@ -653,10 +636,13 @@ extern void str_lwr(char *str);
 #endif /* !HAVE_STRRSTR */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	extern void wcspart(wchar_t *to, const wchar_t *from, int columns, int size_to, t_bool pad);
-	extern wchar_t *wtrunc(const wchar_t *wmessage, wchar_t *wbuf, size_t wbuf_len, int len);
+	extern wchar_t *wstrunc(const wchar_t *wmessage, wchar_t *wbuf, size_t wbuf_len, int len);
 	extern wchar_t *my_wcsdup(const wchar_t *wstr);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-extern char *trunc(const char *message, char *buf, size_t buf_len, int len);
+extern char *strunc(const char *message, char *buf, size_t buf_len, int len);
+#ifdef HAVE_UNICODE_NORMALIZATION
+	extern char *normalize(const char *str);
+#endif /* HAVE_UNICODE_NORMALIZATION */
 
 /* tags.c */
 extern int line_is_tagged(int n);

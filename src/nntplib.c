@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2003-08-10
+ *  Updated   : 2003-12-11
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -30,7 +30,15 @@
 #endif /* VMS */
 
 /* Copy of last NNTP command sent, so we can retry it if needed */
-char last_put[NNTP_STRLEN];
+static char last_put[NNTP_STRLEN];
+
+char *nntp_server = NULL;
+constext *xover_cmd = NULL;
+#ifdef NO_POSTING
+	t_bool can_post = FALSE;
+#else
+	t_bool can_post = TRUE;
+#endif /* NO_POSTING */
 
 /* Flag to show whether tin did reconnect in last get_server() */
 t_bool reconnected_in_last_get_server = FALSE;
@@ -41,34 +49,37 @@ t_bool quitting = FALSE;
 static TCP *nntp_rd_fp = NULL;
 static TCP *nntp_wr_fp = NULL;
 
+#ifdef NNTP_ABLE
+	static constext *xover_cmds = "XOVER";
+#	if 0 /* currently not used */
+	static constext *xhdr_cmd = NULL;
+	static constext *xhdr_cmds = "XHDR";
+#	endif /* 0 */
+	static t_bool have_list_extensions = FALSE;
+#endif /* NNTP_ABLE */
 
 /*
  * local prototypes
  */
 #ifdef NNTP_ABLE
 	static int reconnect(int retry);
+	static int server_init(char *machine, const char *cservice, int port, char *text, size_t mlen);
+	static void check_extensions(void);
+	static void close_server(void);
 #	ifdef INET6
 		static int get_tcp6_socket(char *machine, unsigned short port);
 #	else
 		static int get_tcp_socket(char *machine, char *service, unsigned short port);
 #	endif /* INET6 */
-#endif /* NNTP_ABLE */
-
-#ifdef NNTP_ABLE
-/* Close the NNTP connection with prejudice */
-#	define NNTP_HARD_CLOSE					\
-		if (nntp_wr_fp)						\
-			s_fclose(nntp_wr_fp);			\
-		if (nntp_rd_fp)						\
-			s_fclose(nntp_rd_fp);			\
-		nntp_rd_fp = nntp_wr_fp = NULL;
+#	ifdef DECNET
+		static int get_dnet_socket(char *machine, char *service);
+#	endif /* DECNET */
 #endif /* NNTP_ABLE */
 
 
 /*
  * Return the actual fd in use for the nntp read-side socket
- * This is a bit of a leak of internal state, but it's use is very
- * localised
+ * This is a leak of internal state and should go away if possible
  */
 FILE *
 get_nntp_fp(
@@ -130,7 +141,7 @@ getserverbyfile(
 		setenv("NNTPSERVER", buf, 1);
 #	else
 #		ifdef HAVE_PUTENV
-		sprintf(tmpbuf, "NNTPSERVER=%s", buf);
+		snprintf(tmpbuf, sizeof(tmpbuf), "NNTPSERVER=%s", buf);
 		new_env = my_strdup(tmpbuf);
 		putenv(new_env);
 		FreeIfNeeded(old_env);
@@ -202,7 +213,7 @@ getserverbyfile(
  *			"text" is updated to contain the rest of response string from server
  */
 #ifdef NNTP_ABLE
-int
+static int
 server_init(
 	char *machine,
 	const char *cservice,	/* usually a literal */
@@ -217,11 +228,6 @@ server_init(
 #	ifndef VMS
 	int sockt_rd, sockt_wr;
 #	endif /* !VMS */
-
-#	ifdef M_AMIGA
-	if (!s_init())		/* some initialisation ... */
-		return -1;
-#	endif /* M_AMIGA */
 
 #	ifdef DECNET
 	char *cp;
@@ -671,7 +677,7 @@ get_tcp6_socket(
  *
  *	Errors:		Printed via nerror.
  */
-int
+static int
 get_dnet_socket(
 	char *machine,
 	char *service)
@@ -731,6 +737,11 @@ get_dnet_socket(
 }
 #endif /* DECNET */
 
+
+/*----------------------------------------------------------------------
+ * Ideally the code after this point should be the only interface to the
+ * NNTP internals...
+ */
 
 /*
  * u_put_server -- send data to the server. Do not flush output.
@@ -796,8 +807,14 @@ reconnect(
 
 	/*
 	 * Tear down current connection
+	 * Close the NNTP connection with prejudice
 	 */
-	NNTP_HARD_CLOSE;
+	if (nntp_wr_fp)
+		s_fclose(nntp_wr_fp);
+	if (nntp_rd_fp)
+		s_fclose(nntp_rd_fp);
+	nntp_rd_fp = nntp_wr_fp = NULL;
+
 	if (!tinrc.auto_reconnect)
 		ring_bell();
 
@@ -820,7 +837,7 @@ reconnect(
 		 */
 		if (curr_group != NULL) {
 			DEBUG_IO((stderr, _("Rejoin current group\n")));
-			sprintf(last_put, "GROUP %s", curr_group->name);
+			snprintf(last_put, sizeof(last_put), "GROUP %s", curr_group->name);
 			put_server(last_put);
 			s_gets(last_put, NNTP_STRLEN, nntp_rd_fp);
 #		ifdef DEBUG
@@ -910,7 +927,7 @@ get_server(
  *       than just "." (i.e. transfer statistics) present it to the user?
  *
  */
-void
+static void
 close_server(
 	void)
 {
@@ -931,254 +948,558 @@ close_server(
 #endif /* !VMS */
 
 
-#ifdef DEBUG
+#ifdef NNTP_ABLE
 /*
- * NNTP strings for get_respcode()
+ * Try and use LIST EXTENSIONS here. Get this list before issuing
+ * other NNTP commands because the correct methods may be
+ * mentioned in the list of extensions.
+ * Possible extensions include:
+ * - HDR & LIST HEADERS
+ * - OVER
+ * - LISTGROUP
+ * - LIST OVERVIEW.FMT
+ * - STARTTLS
+ *
+ * Sets up: have_list_extensions, xover_cmd, (xhdr_cmd)
  */
-const char *
-nntp_respcode(
-	int respcode)
+static void
+check_extensions(
+	void)
 {
-#	ifdef NNTP_ABLE
-	static const char *text;
+	FILE *fp;
+	char *ptr;
+	int i;
 
-	switch (respcode) {
-		case 0:
-			text = "";
-			break;
+	if ((fp = nntp_command("LIST EXTENSIONS", OK_EXTENSIONS, NULL, 0)) == NULL)
+		return;
 
-		case INF_HELP:
-			text = _("100  Help text on way");
-			break;
+	have_list_extensions = TRUE;
 
-		case INF_AUTH:
-			text = _("180  Authorization capabilities");
-			break;
+	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+		/*
+		 * Check for (X)OVER
+		 * XOVER should not be listed in EXTENSIONS (but sometimes is)
+		 * checking for it if OVER is not found does no harm.
+		 */
+		if (!xover_cmd) {
+			for (i = 1; i >= 0; i--) {
+				if (strcmp(ptr, &xover_cmds[i]) == 0) {
+					xover_cmd = &xover_cmds[i];
+					break;
+				}
+			}
+		}
+#		if 0 /* currently not used */
+		/*
+		 * Check for (X)HDR
+		 * XHDR should not be listed in EXTENSIONS (but sometimes is)
+		 * checking for it if HDR is not found does no harm.
+		 */
+		if (!xhdr_cmd) {
+			for (i = 1; i >= 0; i--) {
+				if (strcmp(ptr, &xhdr_cmds[i]) == 0) {
+					xhdr_cmd = &xhdr_cmds[i];
+					break;
+				}
+			}
+		}
+#		endif /* 0 */
+		 /*
+		  * additional checks for
+		  * - LISTGROUP
+		  * - LIST OVERVIEW.FMT
+		  * - LIST HEADERS
+		  * go here whenever they are needed
+		  */
+	}
+	return;
+}
+#endif /* NNTP_ABLE */
 
-		case INF_DEBUG:
-			text = _("199  Debug output");
-			break;
+
+/*
+ * Open a connection to the NNTP server. Authenticate if necessary or
+ * desired, and test if the server supports XOVER.
+ * Returns: 0	success
+ *        > 0	NNTP error response code
+ *        < 0	-errno from system call or similar error
+ */
+int
+nntp_open(
+	void)
+{
+#ifdef NNTP_ABLE
+	char *linep;
+	char line[NNTP_STRLEN];
+	int i, ret;
+	t_bool sec = FALSE;
+	/* It appears that is_reconnect guards code that should be run only once */
+	static t_bool is_reconnect = FALSE;
+
+	if (!read_news_via_nntp)
+		return 0;
+
+#	ifdef DEBUG
+	debug_nntp("nntp_open", "BEGIN");
+#	endif /* DEBUG */
+
+	if (nntp_server == NULL) {
+		error_message(_(txt_cannot_get_nntp_server_name));
+		error_message(_(txt_server_name_in_file_env_var), NNTP_SERVER_FILE);
+		return -EHOSTUNREACH;
+	}
+
+	if (!batch_mode) {
+		if (nntp_tcp_port != IPPORT_NNTP)
+			wait_message(0, _(txt_connecting_port), nntp_server, nntp_tcp_port);
+		else
+			wait_message(0, _(txt_connecting), nntp_server);
+	}
+
+#	ifdef DEBUG
+	debug_nntp("nntp_open", nntp_server);
+#	endif /* DEBUG */
+
+	ret = server_init(nntp_server, NNTP_TCP_NAME, nntp_tcp_port, line, sizeof(line));
+	DEBUG_IO((stderr, "server_init returns %d,%s\n", ret, line));
+
+	if (!batch_mode && ret >= 0 && cmd_line)
+		my_fputc('\n', stdout);
+
+#	ifdef DEBUG
+	debug_nntp("nntp_open", line);
+#	endif /* DEBUG */
+
+	switch (ret) {
+		/*
+		 * ret < 0 : some error from system call
+		 * ret > 0 : NNTP response code
+		 *
+		 * According to the ietf-nntp mailinglist:
+		 *   200 you may (try to) do anything
+		 *   201 you may not POST
+		 *  (202 you may not IHAVE)
+		 *  (203 you may not do EITHER)
+		 *   All unrecognised 200 series codes should be assumed as success.
+		 *   All unrecognised 300 series codes should be assumed as notice to continue.
+		 *   All unrecognised 400 series codes should be assumed as temporary error.
+		 *   All unrecognised 500 series codes should be assumed as error.
+		 */
 
 		case OK_CANPOST:
-			text = _("200  Hello; you can post");
+/*		case OK_NOIHAVE: */
+			can_post = TRUE && !force_no_post;
 			break;
 
 		case OK_NOPOST:
-			text = _("201  Hello; you can't post");
-			break;
-
-		case OK_SLAVE:
-			text = _("202  Slave status noted");
-			break;
-
-		case OK_GOODBYE:
-			text = _("205  Closing connection");
-			break;
-
-		case OK_GROUP:
-			text = _("211  Group selected");
-			break;
-
-		/* case OK_MOTD: */
-		case OK_GROUPS:
-			text = _("215  Newsgroups follow");
-			break;
-
-#if 0 /* obsolete */
-		case OK_XINDEX:
-			text = _("218  Group index file follows");
-			break;
-#endif /* 0 */
-
-		case OK_ARTICLE:
-			text = _("220  Article (head & body) follows");
-			break;
-
-		case OK_HEAD:
-			text = _("221  Head follows");
-			break;
-
-		case OK_BODY:
-			text = _("222  Body follows");
-			break;
-
-		case OK_NOTEXT:
-			text = _("223  No text sent -- stat, next, last");
-			break;
-
-		case OK_NEWNEWS:
-			text = _("230  New articles by message-id follow");
-			break;
-
-		case OK_NEWGROUPS:
-			text = _("231  New newsgroups follow");
-			break;
-
-		case OK_XFERED:
-			text = _("235  Article transferred successfully");
-			break;
-
-		case OK_POSTED:
-			text = _("240  Article posted successfully");
-			break;
-
-		case OK_AUTHSYS:
-			text = _("280  Authorization system ok");
-			break;
-
-		case OK_AUTH:
-			text = _("281  Authorization (user/pass) ok");
-			break;
-
-		case OK_BIN:
-			text = _("282  binary data follows");
-			break;
-
-		case OK_SPLIST:
-			text = _("283  spooldir list follows");
-			break;
-
-		case OK_SPSWITCH:
-			text = _("284  Switching to a different spooldir");
-			break;
-
-		case OK_SPNOCHANGE:
-			text = _("285  Still using same spooldir");
-			break;
-
-		case OK_SPLDIRCUR:
-			text = _("286  Current spooldir");
-			break;
-
-		case OK_SPLDIRAVL:
-			text = _("287  Available spooldir");
-			break;
-
-		case OK_SPLDIRERR:
-			text = _("288  Unavailable spooldir or invalid entry");
-			break;
-
-		case CONT_XFER:
-			text = _("335  Continue to send article");
-			break;
-
-		case CONT_POST:
-			text = _("340  Continue to post article");
-			break;
-
-		case NEED_AUTHINFO:
-			text = _("380  authorization is required");
-			break;
-
-		case NEED_AUTHDATA:
-			text = _("381  <type> authorization data required");
-			break;
-
-		case ERR_GOODBYE:
-			text = _("400  Have to hang up for some reason");
-			break;
-
-		case ERR_NOGROUP:
-			text = _("411  No such newsgroup");
-			break;
-
-		case ERR_NCING:
-			text = _("412  Not currently in newsgroup");
-			break;
-
-		case ERR_XINDEX:
-			text = _("418  No index file for this group");
-			break;
-
-		case ERR_NOCRNT:
-			text = _("420  No current article selected");
-			break;
-
-		case ERR_NONEXT:
-			text = _("421  No next article in this group");
-			break;
-
-		case ERR_NOPREV:
-			text = _("422  No previous article in this group");
-			break;
-
-		case ERR_NOARTIG:
-			text = _("423  No such article in this group");
-			break;
-
-		case ERR_NOART:
-			text = _("430  No such article at all");
-			break;
-
-		case ERR_GOTIT:
-			text = _("435  Already got that article, don't send");
-			break;
-
-		case ERR_XFERFAIL:
-			text = _("436  Transfer failed");
-			break;
-
-		case ERR_XFERRJCT:
-			text = _("437  Article rejected, don't resend");
-			break;
-
-		case ERR_NOPOST:
-			text = _("440  Posting not allowed");
-			break;
-
-		case ERR_POSTFAIL:
-			text = _("441  Posting failed");
-			break;
-
-		case ERR_NOAUTH:
-			text = _("480  authorization required for command");
-			break;
-
-		case ERR_AUTHSYS:
-			text = _("481  Authorization system invalid");
-			break;
-
-		case ERR_AUTHREJ:
-			text = _("482  Authorization data rejected");
-			break;
-
-		case ERR_INVALIAS:
-			text = _("483  Invalid alias on spooldir cmd");
-			break;
-
-		case ERR_INVNOSPDIR:
-			text = _("484  No spooldir file found");
-			break;
-
-		case ERR_COMMAND:
-			text = _("500  Command not recognized");
-			break;
-
-		case ERR_CMDSYN:
-			text = _("501  Command syntax error");
-			break;
-
-		case ERR_ACCESS:
-			text = _("502  Access to server denied");
-			break;
-
-		/* case ERR_MOTD: */
-		case ERR_FAULT:
-			text = _("503  Program fault, command not performed");
-			break;
-
-		case ERR_AUTHBAD:
-			text = _("580  Authorization Failed");
+/*		case OK_NOPOSTIHAVE: */
+			can_post = FALSE;
 			break;
 
 		default:
-			text = _("Unknown NNTP response code");
-			break;
-	}
-	return text;
+			if (ret >= 200 && ret <= 299) {
+				can_post = TRUE && !force_no_post;
+				break;
+			}
+			if (ret < 0)
+				error_message(_(txt_failed_to_connect_to_server), nntp_server);
+			else
+				error_message(line);
 
-#	else
-	return "";
-#	endif /* NNTP_ABLE */
+			return ret;
+	}
+	if (!is_reconnect) {
+		/* remove leading whitespace and save server's initial response */
+		linep = line;
+		while (isspace((int) *linep))
+			linep++;
+
+		STRCPY(bug_nntpserver1, linep);
+	}
+
+	/*
+	 * Switch INN into NNRP mode with 'mode reader'
+	 */
+
+#	ifdef DEBUG
+	debug_nntp("nntp_open", "mode reader");
+#	endif /* DEBUG */
+	DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
+	put_server("MODE READER");
+
+	/*
+	 * According to the latest NNTP draft (Jan 2002), MODE READER may only
+	 * return the following response codes:
+	 *
+	 *   200 (OK_CANPOST)     Hello, you can post
+	 *   201 (OK_NOPOST)      Hello, you can't post
+	 *  (202 (OK_NOIHAVE)     discussed on the itef mailinglist)
+	 *  (203 (OK_NOPOSTIHAVE) discussed on the itef mailinglist)
+	 *   400 (ERR_GOODBYE)    Service temporarily unavailable
+	 *   502 (ERR_ACCESS)     Service unavailable
+	 *
+	 * However, there may be old servers out there that do not implement this
+	 * command and therefore return ERR_COMMAND (500). Unfortunately there
+	 * are some new servers out there (i.e. INN 2.4.0 (20020220 prerelease)
+	 * which do return ERR_COMMAND if they are feed only servers.
+	 */
+
+	switch ((ret = get_respcode(line, sizeof(line)))) {
+		case OK_CANPOST:
+/*		case OK_NOIHAVE: */
+			can_post = TRUE && !force_no_post;
+			sec = TRUE;
+			break;
+
+		case OK_NOPOST:
+/*		case OK_NOPOSTIHAVE: */
+			can_post = FALSE;
+			sec = TRUE;
+			break;
+
+		case ERR_GOODBYE:
+		case ERR_ACCESS:
+			error_message(line);
+			return ret;
+
+		case ERR_COMMAND:
+		default:
+			break;
+
+	}
+
+	/*
+	 * Find out which NNTP extensions are available
+	 * TODO: The authentication method required may be mentioned in the list of
+	 *       extensions. (For details about authentication methods, see
+	 *       draft-newman-nntpext-auth-01.txt).
+	 */
+	check_extensions();
+
+	/*
+	 * If the user wants us to authenticate on connection startup, do it now.
+	 * Some news servers return "201 no posting" first, but after successful
+	 * authentication you get a "200 posting allowed". To find out if we are
+	 * allowed to post after authentication issue a "MODE READER" again and
+	 * interpret the response code.
+	 */
+	if (force_auth_on_conn_open) {
+#	ifdef DEBUG
+		debug_nntp("nntp_open", "authenticate");
+#	endif /* DEBUG */
+		authenticate(nntp_server, userid, TRUE);
+		put_server("MODE READER");
+		switch ((ret = get_respcode(line, sizeof(line)))) {
+			case OK_CANPOST:
+/*			case OK_NOIHAVE: */
+				can_post = TRUE && !force_no_post;
+				sec = TRUE;
+				break;
+
+			case OK_NOPOST:
+/*			case OK_NOPOSTIHAVE: */
+				can_post = FALSE;
+				sec = TRUE;
+				break;
+
+			case ERR_GOODBYE:
+			case ERR_ACCESS:
+				error_message(line);
+				return ret;
+
+			case ERR_COMMAND:	/* Uh-oh ... now we don't know if posting */
+			default:				/* is allowed or not ... so use last 200 */
+				break;			/* or 201 response to decide. */
+
+		}
+	}
+
+	if (!is_reconnect) {
+		/* Inform user if he cannot post */
+		if (!can_post && !batch_mode)
+			wait_message(0, "%s\n", _(txt_cannot_post));
+
+		/* Remove leading white space and save server's second response */
+		linep = line;
+		while (isspace((int) *linep))
+			linep++;
+
+		STRCPY(bug_nntpserver2, linep);
+
+		/*
+		 * Show user last server response line, do some nice formatting if
+		 * response is longer than a screen wide.
+		 *
+		 * TODO: This only breaks the line once, but the response could be
+		 * longer than two lines ...
+		 */
+		if (!batch_mode || verbose) {
+			char *chr1, *chr2;
+			int j;
+
+			j = atoi(get_val("COLUMNS", "80"));
+			chr1 = my_strdup((sec ? bug_nntpserver2 : bug_nntpserver1));
+
+			if (((int) strlen(chr1)) >= j) {
+				chr2 = chr1 + strlen(chr1) - 1;
+				while (chr2 - chr1 >= j)
+					chr2--;
+				while (chr2 > chr1 && *chr2 != ' ')
+					chr2--;
+				if (chr2 != chr1)
+					*chr2 = '\n';
+			}
+
+			wait_message(0, "%s\n", chr1);
+			free(chr1);
+		}
+	}
+
+	/*
+	 * If LIST EXTENSIONS failed, check if NNTP supports XOVER or OVER command
+	 * (successor of XOVER as of latest NNTP Draft (Jan 2002)
+	 * We have to check that we _don't_ get an ERR_COMMAND
+	 */
+	if (!have_list_extensions) {
+		for (i = 0; i < 2; i++) {
+			if (!nntp_command(&xover_cmds[i], ERR_COMMAND, NULL, 0)) {
+				xover_cmd = &xover_cmds[i];
+				break;
+			}
+		}
+	} else {
+		if (!xover_cmd) {
+			/*
+			 * LIST EXTENSIONS didn't mention OVER or XOVER, try
+			 * XOVER
+			 */
+			if (!nntp_command(xover_cmds, ERR_COMMAND, NULL, 0))
+				xover_cmd = xover_cmds;
+		}
+#if 0 /* unused */
+		if (!xhdr_cmd) {
+			/*
+			 * LIST EXTENSIONS didn't mention HDR or XHDR, try
+			 * XHDR
+			 */
+			if (!nntp_command(xhdr_cmds, ERR_COMMAND, NULL, 0))
+				xhdr_cmd = xhdr_cmds;
+		}
+#endif /* 0 */
+	}
+
+	if (!xover_cmd) {
+		if (!is_reconnect && !batch_mode) {
+			wait_message(2, _(txt_no_xover_support));
+
+			if (tinrc.cache_overview_files)
+				wait_message(2, _(txt_caching_on));
+			else
+				wait_message(2, _(txt_caching_off));
+		}
+	} else {
+		/* TODO: issue warning if old index files found? */
+		/*		 in index_newsdir ? */
+	}
+
+#	if 0
+	/*
+	 * TODO: if we're using -n, check for LIST NEWSGROUPS <wildmat> */
+	 * see also comments in open_newsgroups_fp() */
+	 */
+	if (newsrc_active && !list_active) { /* -n */
+		/* code goes here */
+	}
+#	endif /* 0 */
+
+	is_reconnect = TRUE;
+
+#endif /* NNTP_ABLE */
+
+	DEBUG_IO((stderr, "nntp_open okay\n"));
+	return 0;
 }
-#endif /* DEBUG */
+
+
+/*
+ * 'Public' function to shutdown the NNTP connection
+ */
+void
+nntp_close(
+	void)
+{
+#ifdef NNTP_ABLE
+	if (read_news_via_nntp) {
+#	ifdef DEBUG
+		debug_nntp("nntp_close", "END");
+#	endif /* DEBUG */
+		close_server();
+	}
+#endif /* NNTP_ABLE */
+}
+
+
+/*
+ * Get a response code from the server.
+ * Returns:
+ *	+ve NNTP return code
+ *	-1  on an error or user abort. We don't differentiate.
+ * If 'message' is not NULL, then any trailing text after the response
+ * code is copied into it.
+ * Does not perform authentication if required; use get_respcode()
+ * instead.
+ */
+int
+get_only_respcode(
+	char *message,
+	size_t mlen)
+{
+	int respcode = 0;
+#ifdef NNTP_ABLE
+	char *ptr, *end;
+
+	ptr = tin_fgets(FAKE_NNTP_FP, FALSE);
+
+	if (tin_errno || ptr == NULL) {
+#	ifdef DEBUG
+		debug_nntp("<<<", "Error: tin_error<>0 or ptr==NULL in get_only_respcode()");
+#	endif /* DEBUG */
+		return -1;
+	}
+
+#	ifdef DEBUG
+	debug_nntp("<<<", ptr);
+#	endif /* DEBUG */
+	respcode = (int) strtol(ptr, &end, 10);
+	DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
+
+	/* TODO: reconnect on ERR_FAULT? */
+	if ((respcode == ERR_FAULT || respcode == ERR_GOODBYE || respcode == OK_GOODBYE) && last_put[0] != '\0' && strcmp(last_put, "QUIT")) {
+		/*
+		 * Maybe server timed out.
+		 * If so, retrying will force a reconnect.
+		 */
+#	ifdef DEBUG
+		debug_nntp("get_only_respcode", "timeout");
+#	endif /* DEBUG */
+		put_server(last_put);
+		ptr = tin_fgets(FAKE_NNTP_FP, FALSE);
+
+		if (tin_errno) {
+#	ifdef DEBUG
+			debug_nntp("<<<", "Error: tin_errno <> 0");
+#	endif /* DEBUG */
+			return -1;
+		}
+
+#	ifdef DEBUG
+		debug_nntp("<<<", ptr);
+#	endif /* DEBUG */
+		respcode = (int) strtol(ptr, &end, 10);
+		DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
+	}
+	if (message != NULL && mlen > 1)		/* Pass out the rest of the text */
+		my_strncpy(message, end, mlen - 1);
+
+#endif /* NNTP_ABLE */
+	return respcode;
+}
+
+
+/*
+ * Get a response code from the server.
+ * Returns:
+ *	+ve NNTP return code
+ *	-1  on an error
+ * If 'message' is not NULL, then any trailing text after the response
+ *	code is copied into it.
+ * Performs authentication if required and repeats the last command if
+ * necessary after a timeout.
+ */
+int
+get_respcode(
+	char *message,
+	size_t mlen)
+{
+	int respcode = 0;
+#ifdef NNTP_ABLE
+	char savebuf[NNTP_STRLEN];
+	char *ptr, *end;
+
+	respcode = get_only_respcode(message, mlen);
+	if ((respcode == ERR_NOAUTH) || (respcode == NEED_AUTHINFO)) {
+		/*
+		 * Server requires authentication.
+		 */
+#	ifdef DEBUG
+		debug_nntp("get_respcode", "authentication");
+#	endif /* DEBUG */
+		strncpy(savebuf, last_put, sizeof(savebuf) - 1);		/* Take copy, as authenticate() will clobber this */
+
+		if (authenticate(nntp_server, userid, FALSE)) {
+			strcpy(last_put, savebuf);
+
+			put_server(last_put);
+			ptr = tin_fgets(FAKE_NNTP_FP, FALSE);
+
+			if (tin_errno) {
+#	ifdef DEBUG
+				debug_nntp("<<<", "Error: tin_errno <> 0");
+#	endif /* DEBUG */
+				return -1;
+			}
+
+#	ifdef DEBUG
+			debug_nntp("<<<", ptr);
+#	endif /* DEBUG */
+			respcode = (int) strtol(ptr, &end, 10);
+			if (message != NULL && mlen > 1)				/* Pass out the rest of the text */
+				strncpy(message, end, mlen - 1);
+
+		} else {
+			error_message(_(txt_auth_failed), ERR_ACCESS);
+			/*	return -1; */
+			tin_done(EXIT_FAILURE);
+		}
+	}
+#endif /* NNTP_ABLE */
+	return respcode;
+}
+
+
+#ifdef NNTP_ABLE
+/*
+ * Do an NNTP command. Send command to server, and read the reply.
+ * If the reply code matches success, then return an open file stream
+ * Return NULL if we did not see the response we wanted.
+ * If message is not NULL, then the trailing text of the reply string is
+ * copied into it for the caller to process.
+ */
+FILE *
+nntp_command(
+	const char *command,
+	int success,
+	char *message,
+	size_t mlen)
+{
+DEBUG_IO((stderr, "nntp_command(%s)\n", command));
+#	ifdef DEBUG
+	debug_nntp("nntp command", command);
+#	endif /* DEBUG */
+	put_server(command);
+
+	if (!bool_equal(dangerous_signal_exit, TRUE)) {
+		if (get_respcode(message, mlen) != success) {
+#	ifdef DEBUG
+			debug_nntp(command, "NOT_OK");
+#	endif /* DEBUG */
+			/* error_message("%s", message); */
+			return (FILE *) 0;
+		}
+	}
+#	ifdef DEBUG
+	debug_nntp(command, "OK");
+#	endif /* DEBUG */
+	return FAKE_NNTP_FP;
+}
+#endif /* NNTP_ABLE */

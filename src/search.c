@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-09-15
+ *  Updated   : 2003-12-17
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -69,7 +69,7 @@ int srch_lineno = -1;
  */
 static int srch_offsets[6];
 static int srch_offsets_size = ARRAY_SIZE(srch_offsets);
-static struct regex_cache srch_regex;
+static struct regex_cache search_regex = { NULL, NULL };
 
 
 /*
@@ -113,6 +113,17 @@ get_search_pattern(
 
 	stow_cursor();
 
+#ifdef HAVE_UNICODE_NORMALIZATION
+	/* normalize search pattern */
+	if (IS_LOCAL_CHARSET("UTF-8")) {
+		char *tmp;
+
+		tmp = normalize(def);
+		my_strncpy(def, tmp, LEN);
+		free(tmp);
+	}
+#endif /* HAVE_UNICODE_NORMALIZATION */
+
 	if (tinrc.wildcard) {			/* ie, not wildmat() */
 		strcpy(def, quote_wild_whitespace(def));
 		return def;
@@ -137,12 +148,15 @@ search_config(
 	int current,
 	int last)
 {
-	char *buf;
+	char *pattern, *buf;
 	int n;
 	int incr;
 	int result = current;
 
-	if (!(buf = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_config, HIST_CONFIG_SEARCH)))
+	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_config, HIST_CONFIG_SEARCH)))
+		return result;
+
+	if (tinrc.wildcard && !(compile_regex(pattern, &search_regex, PCRE_CASELESS)))
 		return result;
 
 	incr = forward ? 1 : -1;
@@ -156,13 +170,27 @@ search_config(
 			if (n > last)
 				n = 0;
 		}
-		if (REGEX_MATCH(_(option_table[n].txt->opt), buf, TRUE)) {
+#ifdef HAVE_UNICODE_NORMALIZATION
+		if (IS_LOCAL_CHARSET("UTF-8"))
+			buf = normalize(_(option_table[n].txt->opt));
+		else
+#endif /* HAVE_UNICODE_NORMALIZATION */
+			buf = my_strdup(_(option_table[n].txt->opt));
+
+		if (match_regex(buf, pattern, &search_regex, TRUE)) {
 			result = n;
+			free(buf);
 			break;
 		}
+
 		n += incr;
+		free(buf);
 	} while (n != current);
 	clear_message();
+	if (tinrc.wildcard) {
+		FreeAndNull(search_regex.re);
+		FreeAndNull(search_regex.extra);
+	}
 	return result;
 }
 
@@ -190,6 +218,9 @@ search_active(
 	if (!(buf = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_group, HIST_GROUP_SEARCH)))
 		return -1;
 
+	if (tinrc.wildcard && !(compile_regex(buf, &search_regex, PCRE_CASELESS)))
+		return -1;
+
 	i = selmenu.curr;
 
 	do {
@@ -210,11 +241,19 @@ search_active(
 		} else
 			ptr = active[my_group[i]].name;
 
-		if (REGEX_MATCH(ptr, buf, TRUE)) {
+		if (match_regex(ptr, buf, &search_regex, TRUE)) {
+			if (tinrc.wildcard) {
+				FreeAndNull(search_regex.re);
+				FreeAndNull(search_regex.extra);
+			}
 			return i;
 		}
 	} while (i != selmenu.curr);
 
+	if (tinrc.wildcard) {
+		FreeAndNull(search_regex.re);
+		FreeAndNull(search_regex.extra);
+	}
 	info_message(MATCH_MSG);
 	return -1;
 }
@@ -232,7 +271,7 @@ body_search(
 	int i,
 	char *searchbuf)
 {
-	char *line;
+	char *line, *tmp;
 	t_openartinfo artinfo;
 
 	switch (art_open(TRUE, &arts[i], curr_group, &artinfo, FALSE)) {
@@ -256,11 +295,18 @@ body_search(
 	/*
 	 * Now search the body
 	 */
-	sprintf(mesg, _(txt_searching_body), ++curr_cnt, total_cnt);
+	snprintf(mesg, sizeof(mesg), _(txt_searching_body), ++curr_cnt, total_cnt);
 	show_progress(mesg, curr_cnt, total_cnt);
-	while ((line = tin_fgets(artinfo.cooked, FALSE)) != NULL) {
+	while ((tmp = tin_fgets(artinfo.cooked, FALSE)) != NULL) {
+#ifdef HAVE_UNICODE_NORMALIZATION
+		if (IS_LOCAL_CHARSET("UTF-8"))
+			line = normalize(tmp);
+		else
+#endif /* HAVE_UNICODE_NORMALIZATION */
+			line = my_strdup(tmp);
+
 		if (tinrc.wildcard) {
-			if (pcre_exec(srch_regex.re, srch_regex.extra, line, strlen(line), 0, 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
+			if (pcre_exec(search_regex.re, search_regex.extra, line, strlen(line), 0, 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
 				srch_lineno = i;
 				art_close(&pgart);		/* Switch the pager over to matched art */
 				pgart = artinfo;
@@ -268,6 +314,7 @@ body_search(
 				if (debug == 2)
 					fprintf(stderr, "art_switch(%p = %p)\n", (void *) &pgart, (void *) &artinfo);
 #endif /* DEBUG */
+				free(line);
 
 				return 1;
 			}
@@ -276,10 +323,12 @@ body_search(
 				srch_lineno = i;
 				art_close(&pgart);		/* Switch the pager over to matched art */
 				pgart = artinfo;
+				free(line);
 				return 1;
 			}
 		}
 		i++;
+		free(line);
 	}
 
 	if (tin_errno != 0) {			/* User abort */
@@ -302,15 +351,32 @@ author_search(
 	int i,
 	char *searchbuf)
 {
-	char buf[LEN];
-	char *ptr = buf;
+	char *buf, *tmp;
 
 	if (arts[i].name == NULL)
-		ptr = arts[i].from;
-	else
-		snprintf(buf, sizeof(buf), "%s <%s>", arts[i].name, arts[i].from);
+		tmp = my_strdup(arts[i].from);
+	else {
+		size_t len = strlen(arts[i].from) + strlen(arts[i].name) + 4;
 
-	return (REGEX_MATCH(ptr, searchbuf, TRUE)) ? 1 : 0;
+		tmp = my_malloc(len);
+		snprintf(tmp, len, "%s <%s>", arts[i].name, arts[i].from);
+	}
+
+#ifdef HAVE_UNICODE_NORMALIZATION
+	if (IS_LOCAL_CHARSET("UTF-8")) {
+		buf = normalize(tmp);
+		free(tmp);
+	} else
+#endif /* HAVE_UNICODE_NORMALIZATION */
+		buf = tmp;
+
+	if (match_regex(buf, searchbuf, &search_regex, TRUE)) {
+		free(buf);
+		return 1;
+	}
+
+	free(buf);
+	return 0;
 }
 
 
@@ -323,7 +389,22 @@ subject_search(
 	int i,
 	char *searchbuf)
 {
-	return (REGEX_MATCH(arts[i].subject, searchbuf, TRUE)) ? 1 : 0;
+	char *buf;
+
+#ifdef HAVE_UNICODE_NORMALIZATION
+	if (IS_LOCAL_CHARSET("UTF-8")) {
+		buf = normalize(arts[i].subject);
+	} else
+#endif /* HAVE_UNICODE_NORMALIZATION */
+		buf = my_strdup(arts[i].subject);
+
+	if (match_regex(buf, searchbuf, &search_regex, TRUE)) {
+		free(buf);
+		return 1;
+	}
+
+	free(buf);
+	return 0;
 }
 
 
@@ -337,12 +418,18 @@ search_group(
 	char *searchbuff,
 	int (*search_func) (int i, char *searchbuff))
 {
-	int i;
+	int i, ret;
 
 	if (grpmenu.curr < 0) {
 		info_message(_(txt_no_arts));
 		return -1;
 	}
+
+	/*
+	 * precompile if we're using full regex
+	 */
+	if (tinrc.wildcard && !(compile_regex(searchbuff, &search_regex, PCRE_CASELESS)))
+		return -1;
 
 	i = current_art;
 
@@ -359,7 +446,13 @@ search_group(
 		if (CURR_GROUP.attribute->show_only_unread && arts[i].status != ART_UNREAD)
 			continue;
 
-		switch (search_func(i, searchbuff)) {
+		ret = search_func(i, searchbuff);
+		if (tinrc.wildcard && (ret == 1 || ret == -1)) {
+			/* we will exit soon, clean up */
+			FreeAndNull(search_regex.re);
+			FreeAndNull(search_regex.extra);
+		}
+		switch (ret) {
 			case 1:								/* Found */
 				clear_message();
 				return i;
@@ -369,6 +462,10 @@ search_group(
 		}
 	} while (i != current_art);
 
+	if (tinrc.wildcard) {
+		FreeAndNull(search_regex.re);
+		FreeAndNull(search_regex.extra);
+	}
 	info_message(_(txt_no_match));
 	return -1;
 }
@@ -421,27 +518,21 @@ search_article(
 	int reveal_ctrl_l_lines,
 	FILE *fp)
 {
-	char *pattern, *ptr;
-	int i;
-	struct regex_cache srch;
+	char *pattern, *ptr, *tmp;
+	int i = start_line;
+	t_bool wrap = FALSE;
 
 	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_art, HIST_ART_SEARCH)))
 		return FALSE;
 
-	if (tinrc.wildcard && !(compile_regex(pattern, &srch, PCRE_CASELESS)))
+	if (tinrc.wildcard && !(compile_regex(pattern, &search_regex, PCRE_CASELESS)))
 		return -1;
 
 	srch_lineno = -1;
-	i = start_line;
 
 	forever {
-		if (forward) {
-			if (++i == lines)
-				break;
-		} else {
-			if (--i < 0)
-				break;
-		}
+		if (i == start_line && wrap)
+			break;
 
 		/*
 		 * TODO: consider not searching some line types?
@@ -453,23 +544,56 @@ search_article(
 		if ((line[i].flags&C_CTRLL) && i > reveal_ctrl_l_lines)
 			break;
 
-		ptr = tin_fgets(fp, FALSE);
+		tmp = tin_fgets(fp, FALSE);
+
+#ifdef HAVE_UNICODE_NORMALIZATION
+		if (IS_LOCAL_CHARSET("UTF-8"))
+			ptr = normalize(tmp);
+		else
+#endif /* HAVE_UNICODE_NORMALIZATION */
+			ptr = my_strdup(tmp);
 
 		if (tinrc.wildcard) {
-			if (pcre_exec(srch.re, srch.extra, ptr, strlen(ptr), 0, 0,
+			if (pcre_exec(search_regex.re, search_regex.extra, ptr, strlen(ptr), srch_offsets[1], 0,
 								srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
 				srch_lineno = i;
+				FreeAndNull(search_regex.re);
+				FreeAndNull(search_regex.extra);
+				free(ptr);
 				return i;
 			}
 		} else {
 			if (wildmatpos(ptr, pattern, TRUE, srch_offsets, srch_offsets_size)) {
 				srch_lineno = i;
+				free(ptr);
 				return i;
 			}
 		}
+		free(ptr);
+
+		if (forward) {
+			if (i >= lines - 1) {
+				i = 0;
+				wrap = TRUE;
+			} else
+				i++;
+		} else {
+			if (i <= 0) {
+				i = lines - 1;
+				wrap = TRUE;
+			} else
+				i--;
+		}
+
+		/* search at the beginning of the line */
+		srch_offsets[1] = 0;
 	}
 
 	info_message(_(txt_no_match));
+	if (tinrc.wildcard) {
+		FreeAndNull(search_regex.re);
+		FreeAndNull(search_regex.extra);
+	}
 	return -1;
 }
 
@@ -516,12 +640,6 @@ search_body(
 				total_cnt++;
 		}
 	}
-
-	/*
-	 * Pre-compile if we're using full regex
-	 */
-	if (tinrc.wildcard && !(compile_regex(buf, &srch_regex, PCRE_CASELESS)))
-		return -1;
 
 	srch_lineno = -1;
 	return search_group(1, current_art, buf, body_search);

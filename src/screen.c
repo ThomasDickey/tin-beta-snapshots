@@ -220,7 +220,7 @@ center_line(
 
 	len = strlen(buffer);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if (mbstowcs(wbuffer, buffer, ARRAY_SIZE(wbuffer)) != (size_t)(-1)) {
+	if (mbstowcs(wbuffer, buffer, ARRAY_SIZE(wbuffer)) != (size_t) (-1)) {
 		wbuffer[ARRAY_SIZE(wbuffer) - 1] = (wchar_t) '\0';
 		if ((width = wcswidth(wbuffer, ARRAY_SIZE(wbuffer))) > 0)
 			len = width;
@@ -244,7 +244,7 @@ center_line(
 		char *buf;
 
 		buf = my_strdup(buffer);
-		trunc(buf, buffer, sizeof(buffer), cCOLS - 2);
+		strunc(buf, buffer, sizeof(buffer), cCOLS - 2);
 		free(buf);
 	}
 	my_fputs(buffer, stdout);

@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2003-08-12
+ *  Updated   : 2003-12-09
  *  Notes     :
  *
  * Copyright (c) 1999-2003 Jason Faultless <jason@altarstone.com>
@@ -167,6 +167,7 @@ struct t_config {
 		int col_quote3;						/* color of >=3 times quoted lines */
 		int col_response;					/* color of respone counter */
 		int col_signature;					/* color of signature */
+		int col_urls;						/* color of urls highlight */
 		int col_subject;					/* color of article subject */
 		int col_text;						/* color of textlines*/
 		int col_title;						/* color of Help/Mail-Sign */
@@ -247,6 +248,10 @@ struct t_config {
 		t_bool use_slrnface;			/* Use the slrnface programme to display 'X-Face:'s */
 #	endif /* XFACE_ABLE */
 	t_bool default_filter_select_global;
+	char date_format[LEN];			/* format string for the date display in the page header */
+#	ifdef HAVE_UNICODE_NORMALIZATION
+	int normalization_form;
+#	endif /* HAVE_UNICODE_NORMALIZATION */
 };
 
 #endif /* !TINRC_H */

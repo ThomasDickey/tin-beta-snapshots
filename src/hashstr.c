@@ -3,7 +3,7 @@
  *  Module    : hashstr.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 1994-12-01
+ *  Updated   : 2003-09-19
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -55,12 +55,7 @@
  */
 #define HASHNODE_TABLE_SIZE	2411
 
-#ifdef M_AMIGA
-	static struct t_hashnode **table = 0;
-#else
-	static struct t_hashnode *table[HASHNODE_TABLE_SIZE];
-#endif /* M_AMIGA */
-
+static struct t_hashnode *table[HASHNODE_TABLE_SIZE];
 static struct t_hashnode *add_string(const char *s);
 
 char *
@@ -132,11 +127,6 @@ hash_init(
 {
 	int i;
 
-#ifdef M_AMIGA
-	if (!table)
-		table = my_malloc(HASHNODE_TABLE_SIZE * sizeof(void *));
-#endif /* M_AMIGA */
-
 	for (i = 0; i < HASHNODE_TABLE_SIZE; i++)
 		table[i] = (struct t_hashnode *) 0;
 }
@@ -148,11 +138,6 @@ hash_reclaim(
 {
 	int i;
 	struct t_hashnode *p, *next;
-
-#ifdef M_AMIGA
-	if (!table)
-		return;
-#endif /* M_AMIGA */
 
 	for (i = 0; i < HASHNODE_TABLE_SIZE; i++) {
 		if (table[i] != NULL) {

@@ -756,7 +756,7 @@ choose_new_group(
 {
 	int idx;
 
-	sprintf(mesg, _(txt_newsgroup), tinrc.default_goto_group);
+	snprintf(mesg, sizeof(mesg), _(txt_newsgroup), tinrc.default_goto_group);
 
 	if (!(prompt_string_default(mesg, tinrc.default_goto_group, "", HIST_GOTO_GROUP)))
 		return -1;

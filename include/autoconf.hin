@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2003-06-18
+ *  Updated   : 2003-12-09
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2003 Thomas Dickey <dickey@invisible-island.net>
@@ -148,6 +148,7 @@
 #	undef uid_t
 #	undef RETSIGTYPE
 #	undef HAVE_LONG_LONG
+#	undef HAVE_NL_ITEM
 
 /*
  * The following xxx_H definitions are set by the 'configure' script to
@@ -595,6 +596,24 @@
  */
 #	undef HAVE_UUDEVIEW_H
 #	undef HAVE_LIBUU
+
+/*
+ * libidn - used for unicode normalization and
+ *          Internationalized Domain Names
+ */
+#	undef HAVE_IDNA_H
+#	undef HAVE_STRINGPREP_H
+#	undef HAVE_IDNA_TO_UNICODE_LZLZ
+#	undef HAVE_IDNA_USE_STD3_ASCII_RULES
+#	undef HAVE_LIBIDN
+
+/*
+ * ICU - International Components for Unicode
+ *       used for unicode normalization
+ */
+#	undef HAVE_UNICODE_UNORM_H
+#	undef HAVE_UNICODE_USTRING_H
+#	undef HAVE_LIBICUUC
 
 /*
  * Define as const if the declaration of iconv() needs const.

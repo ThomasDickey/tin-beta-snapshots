@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-27
+ *  Updated   : 2003-12-17
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -58,6 +58,9 @@
  * local prototypes
  */
 static int read_site_config(void);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	static t_bool utf8_pcre(void);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #ifdef HAVE_COLOR
 	static void preinit_colors(void);
 #endif /* HAVE_COLOR */
@@ -135,7 +138,6 @@ int xmouse, xrow, xcol;			/* xterm button pressing information */
 mode_t real_umask;
 pid_t process_id;			/* Useful to have around for .suffixes */
 
-t_bool (*wildcard_func) (const char *str, char *patt, t_bool icase);		/* Wildcard matching function */
 t_bool batch_mode;			/* update index files only mode */
 t_bool check_for_new_newsgroups;	/* don't check for new newsgroups */
 t_bool cmd_line;			/* batch / interactive mode */
@@ -318,6 +320,7 @@ struct t_config tinrc = {
 	0,		/* col_quote3 (initialised later) */
 	0,		/* col_response (initialised later) */
 	0,		/* col_signature (initialised later) */
+	0,		/* col_urls (initialised later) */
 	0,		/* col_subject (initialised later) */
 	0,		/* col_text (initialised later) */
 	0,		/* col_title (initialised later) */
@@ -409,7 +412,11 @@ struct t_config tinrc = {
 #ifdef XFACE_ABLE
 	FALSE,		/* use_slrnface */
 #endif /* XFACE_ABLE */
-	TRUE		/* default_filter_select_global */
+	TRUE,		/* default_filter_select_global */
+	DEFAULT_DATE_FORMAT,	/* date_format */
+#ifdef HAVE_UNICODE_NORMALIZATION
+	NORMALIZE_NFKC		/* normalization form */
+#endif /* HAVE_UNICODE_NORMALIZATION */
 };
 
 #ifdef HAVE_COLOR
@@ -441,6 +448,7 @@ static const struct {
 	{ &tinrc.col_quote3,      4 },
 	{ &tinrc.col_response,    2 },
 	{ &tinrc.col_signature,   4 },
+	{ &tinrc.col_urls,       -1 },
 	{ &tinrc.col_subject,     6 },
 	{ &tinrc.col_text,       DFT_FORE },
 	{ &tinrc.col_title,       4 },
@@ -496,23 +504,19 @@ init_selfinfo(
 	const char *cptr;
 	FILE *fp;
 	struct stat sb;
-#ifndef M_AMIGA
 	struct passwd *myentry;
-#endif /* !M_AMIGA */
 
 	host_name[0] = '\0';
 	domain_name[0] = '\0';
 
-#ifndef M_AMIGA /* TODO: why do we exclude M_AMIGA here but not in main.c:read_cmd_line_options() */
-#	if defined(HAVE_SYS_UTSNAME_H) && defined(HAVE_UNAME)
+#if defined(HAVE_SYS_UTSNAME_H) && defined(HAVE_UNAME)
 	if (uname(&system_info) < 0) {
 		strcpy(system_info.sysname, "unknown");
 		*system_info.machine = '\0';
 		*system_info.release = '\0';
 		*system_info.nodename = '\0';
 	}
-#	endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
-#endif /* !M_AMIGA */
+#endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
 
 	if ((cptr = get_host_name()) != NULL)
 		strcpy(host_name, cptr);
@@ -535,46 +539,33 @@ init_selfinfo(
 	real_umask = umask(0);
 	(void) umask(real_umask);
 
-#ifndef M_AMIGA
-#	ifndef VMS
+#ifndef VMS
 	if ((myentry = getpwuid(getuid())) == NULL) {
 		error_message(_(txt_error_passwd_missing));
 		giveup();
 	}
-#	else
+#else
 	if (((ptr = getlogin()) != NULL) && strlen(ptr))
 		myentry = getpwnam(ptr);
 	else {
 		error_message(_(txt_error_passwd_missing));
 		giveup();
 	}
-#	endif /* !VMS */
+#endif /* !VMS */
 
 	strcpy(userid, myentry->pw_name);
 
-#	ifdef VMS
+#ifdef VMS
 	lower(userid);
-#	endif /* VMS */
-
-#else
-	if ((ptr = getenv("USERNAME")) == NULL) {
-		error_message(_(txt_env_var_not_found), "USERNAME");
-		giveup();
-	}
-	my_strncpy(userid, ptr, sizeof(userid) - 1);
-#endif /* !M_AMIGA */
+#endif /* VMS */
 
 	if (((ptr = getenv("TIN_HOMEDIR")) != NULL) && strlen(ptr)) {
 		my_strncpy(homedir, ptr, sizeof(homedir) - 1);
 	} else if (((ptr = getenv("HOME")) != NULL) && strlen(ptr)) {
 		my_strncpy(homedir, ptr, sizeof(homedir) - 1);
-	}
-#ifndef M_AMIGA
-	else if (strlen(myentry->pw_dir)) {
+	} else if (strlen(myentry->pw_dir)) {
 		strncpy(homedir, myentry->pw_dir, sizeof(homedir) - 1);
-	}
-#endif /* !M_AMIGA */
-	else
+	} else
 		strncpy(homedir, TMPDIR, sizeof(homedir) - 1);
 
 	cmdline_nntpserver[0] = '\0';
@@ -605,7 +596,6 @@ init_selfinfo(
 	reread_active_for_posted_arts = TRUE;
 	batch_mode = FALSE;
 	check_for_new_newsgroups = TRUE;
-	wildcard_func = wildmat;
 
 #ifdef HAVE_COLOR
 	preinit_colors();
@@ -619,10 +609,10 @@ init_selfinfo(
 	index_savedir[0] = '\0';
 	newsrc[0] = '\0';
 
-	sprintf(page_header, "%s %s release %s (\"%s\") [%s%s]",
+	snprintf(page_header, sizeof(page_header), "%s %s release %s (\"%s\") [%s%s]",
 		tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME,
 		(iso2asc_supported >= 0 ? " ISO2ASC" : ""));
-	sprintf(cvers, txt_copyright_notice, page_header);
+	snprintf(cvers, sizeof(cvers), txt_copyright_notice, page_header);
 
 	default_organization[0] = '\0';
 	news_headers_to_display_array = ulBuildArgv(tinrc.news_headers_to_display, &num_headers_to_display);
@@ -682,14 +672,6 @@ init_selfinfo(
 		sleep(2);
 		force_no_post = TRUE;
 	}
-
-	/*
-	 * Amiga uses assigns which end in a ':' and won't work with a '/'
-	 * tacked on after them: e.g. we want UULIB:active, and not
-	 * UULIB:/active. For this reason I have changed the sprintf calls
-	 * to joinpath. This is defined to sprintf(result,"%s/%s",dir,file)
-	 * on all UNIX systems.
-	 */
 
 	/*
 	 * only set the following variables if they weren't set from within
@@ -769,10 +751,6 @@ init_selfinfo(
 	my_strncpy(mailer, get_val(ENV_VAR_MAILER, DEFAULT_MAILER), sizeof(mailer) - 1);
 #ifndef DISABLE_PRINTING
 	strcpy(tinrc.printer, DEFAULT_PRINTER);
-#	ifdef M_AMIGA
-	if (tin_bbs_mode)
-		strcpy(tinrc.printer, DEFAULT_BBS_PRINTER);
-#	endif /* M_AMIGA */
 #endif /* !DISABLE_PRINTING */
 	strcpy(tinrc.inews_prog, PATH_INEWS);
 	joinpath(article, homedir, TIN_ARTICLE_NAME);
@@ -836,7 +814,7 @@ init_selfinfo(
 		write_attributes_file(local_attributes_file);
 
 	init_postinfo();
-	sprintf(txt_help_bug_report, _(txt_help_bug), bug_addr);
+	snprintf(txt_help_bug_report, sizeof(txt_help_bug_report), _(txt_help_bug), bug_addr);
 
 #ifdef HAVE_PGP_GPG
 	init_pgp();
@@ -936,8 +914,34 @@ postinit_regexp(
 	if (!strlen(tinrc.strip_re_regex))
 		STRCPY(tinrc.strip_re_regex, DEFAULT_STRIP_RE_REGEX);
 	compile_regex(tinrc.strip_re_regex, &strip_re_regex, PCRE_ANCHORED);
-	if (!strlen(tinrc.strip_was_regex))
-		STRCPY(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX);
+
+	if (strlen(tinrc.strip_was_regex)) {
+		/*
+		 * try to be clever, if we still use the initial default value
+		 * convert it to our needs
+		 *
+		 * TODO: a global soultion
+		 */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			if (IS_LOCAL_CHARSET("UTF-8") && utf8_pcre()) {
+				if (!strcmp(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX))
+					STRCPY(tinrc.strip_was_regex, DEFAULT_U8_STRIP_WAS_REGEX);
+			} else {
+				if (!strcmp(tinrc.strip_was_regex, DEFAULT_U8_STRIP_WAS_REGEX))
+					STRCPY(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX);
+			}
+#else
+			if (!strcmp(tinrc.strip_was_regex, DEFAULT_U8_STRIP_WAS_REGEX))
+				STRCPY(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	} else {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if (IS_LOCAL_CHARSET("UTF-8") && utf8_pcre())
+			STRCPY(tinrc.strip_was_regex, DEFAULT_U8_STRIP_WAS_REGEX);
+		else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			STRCPY(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX);
+	}
 	compile_regex(tinrc.strip_was_regex, &strip_was_regex, 0);
 
 #ifdef HAVE_COLOR
@@ -974,3 +978,19 @@ postinit_regexp(
 
 	compile_regex(SHAR_REGEX, &shar_regex, PCRE_ANCHORED);
 }
+
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+static t_bool
+utf8_pcre(
+	void)
+{
+	int i = 0;
+
+#	if (defined(PCRE_MAJOR) && PCRE_MAJOR >= 4)
+	(void) pcre_config(PCRE_CONFIG_UTF8, &i);
+#	endif /* PCRE_MAJOR && PCRE_MAJOR >= $*/
+
+	return (i ? TRUE: FALSE);
+}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */

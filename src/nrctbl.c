@@ -230,7 +230,7 @@ get_newsrcname(
 						return TRUE;
 
 					case iKeyNrctblAlternative:
-						sprintf(name_found, ".newsrc-%s", nntpserver_name);
+						snprintf(name_found, sizeof(name_found), ".newsrc-%s", nntpserver_name);
 						joinpath(newsrc_name, homedir, name_found);
 						return TRUE;
 

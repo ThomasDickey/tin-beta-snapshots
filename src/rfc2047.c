@@ -539,7 +539,7 @@ rfc1522_do_encode(
 		if (contains_nonprintables(what, isstruct_head) || isbroken_within) {
 			if (encoding == 'Q') {
 				if (!quoting) {
-					sprintf(buf2, "=?%s?%c?", charset, encoding);
+					snprintf(buf2, sizeof(buf2), "=?%s?%c?", charset, encoding);
 					ewsize = mystrcat(&t, buf2);
 					if (break_long_line) {
 						if (word_cnt == 2) {
@@ -563,7 +563,7 @@ rfc1522_do_encode(
 					if (is_EIGHT_BIT(what) || !isalnum((int)(unsigned char) *what))
 #endif /* 0 */
 					{
-						sprintf(buf2, "=%2.2X", *EIGHT_BIT(what));
+						snprintf(buf2, sizeof(buf2), "=%2.2X", *EIGHT_BIT(what));
 						*t++ = buf2[0];
 						*t++ = buf2[1];
 						*t++ = buf2[2];
@@ -608,7 +608,7 @@ rfc1522_do_encode(
 							*t++ = '_';
 							ewsize++;
 						} else {
-							sprintf(buf2, "=%2.2X", *EIGHT_BIT(what));
+							snprintf(buf2, sizeof(buf2), "=%2.2X", *EIGHT_BIT(what));
 							*t++ = buf2[0];
 							*t++ = buf2[1];
 							*t++ = buf2[2];
@@ -626,7 +626,7 @@ rfc1522_do_encode(
 				 * contain_nonprintables used in outer if-clause
 				 */
 				while (*what && (!isbetween(*what, isstruct_head) || rightafter_ew)) {
-					sprintf(buf2, "=?%s?%c?", charset, encoding);
+					snprintf(buf2, sizeof(buf2), "=?%s?%c?", charset, encoding);
 					ewsize = mystrcat(&t, buf2);
 
 					if (word_cnt == 2)

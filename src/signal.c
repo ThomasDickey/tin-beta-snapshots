@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-27
+ *  Updated   : 2003-09-29
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -347,12 +347,10 @@ signal_handler(
 	switch (sig) {
 #ifdef SIGINT
 		case SIGINT:
-#	if !defined(M_AMIGA) && !defined(__SASC)
 			if (!batch_mode) {
 				RESTORE_HANDLER(sig, signal_handler);
 				return;
 			}
-#	endif /* !M_AMIGA && !__SASC */
 			break;
 #endif /* SIGINT */
 
@@ -533,10 +531,6 @@ set_win_size(
 			*num_cols = win.ws_col;
 	}
 #		else
-#			ifdef M_AMIGA
-	AmiGetWinSize(num_lines, num_cols);
-	(*num_lines)--;
-#			endif /* M_AMIGA */
 #		endif /* TIOCGWINSZ */
 #	endif /* TIOCGSIZE */
 
@@ -549,7 +543,6 @@ set_win_size(
 	set_subj_from_size(*num_cols);
 
 	/* FIXME: values do differ for different languages */
-	RIGHT_POS = *num_cols - 20;
 	MORE_POS = *num_cols - 15;
 	set_noteslines(*num_lines);
 	return (*num_lines != old_lines || *num_cols != old_cols);

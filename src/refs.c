@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2003-07-22
+ *  Updated   : 2003-10-03
  *  Notes     : Cacheing of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -646,7 +646,7 @@ dump_msgid_threads(
  */
 #define SKIP_ART(ptr)	\
 	(ptr && (ptr->article == ART_UNAVAILABLE || \
-		(arts[ptr->article].thread != ART_NORMAL || \
+		(arts[ptr->article].thread != ART_UNTHREADED || \
 			(tinrc.kill_level == KILL_NOTHREAD && arts[ptr->article].killed))))
 
 static struct t_msgid *

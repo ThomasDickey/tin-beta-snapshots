@@ -3,7 +3,7 @@
  *  Module    : joinpath.c
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-01-10
- *  Updated   : 1997-01-10
+ *  Updated   : 2003-09-19
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Thomas Dickey <dickey@herndon4.his.com>
@@ -43,36 +43,15 @@
  * Concatenate dir+file, ensuring that we don't introduce extra '/', since some
  * systems (e.g., Apollo) use "//" for special purposes.
  * TODO: ../vms/vmsfile.c defines joinpath, VMS should be guarded here
- * TODO: ../amiga/amiga.c defines a joinpath, plus this section is ifndef AMIGA
- *      so can we junk the #ifdef __amigaos from this code?
  */
-#ifndef M_AMIGA
 void
 joinpath(
 	char *result,
 	const char *dir,
 	const char *file)
 {
-#	ifdef __amigaos
-	int i = 0, tmp = 0, tmp2 = 1;
-#	endif /* __amigaos */
-#	ifdef M_UNIX
 	(void) strcpy(result, dir);
 	if (result[0] == '\0' || result[strlen(result) - 1] != '/')
 		(void) strcat(result, "/");
 	(void) strcat(result, BlankIfNull(file));
-#	endif /* M_UNIX */
-/*
- * JK - horrible hack to convert "/foo/baz/bar" to "foo:baz/bar" (editors bug with *NIX-paths)
- * "foo:baz/bar" -styled paths should always work on Amiga
- */
-#	ifdef __amigaos
-	if (result[0] == '/')
-		while ((result[tmp++] = result[tmp2++]) != 0)
-			;
-	while (result[i] != '/' && result[i] != ':')
-		i++;
-	result[i] = ':';
-#	endif /* __amigaos */
 }
-#endif /* !M_AMIGA */

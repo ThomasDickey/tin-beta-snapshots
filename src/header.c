@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2003-08-16
+ *  Updated   : 2003-09-19
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -56,11 +56,6 @@ get_host_name(
 
 #ifdef HAVE_GETHOSTNAME
 	gethostname(hostname, sizeof(hostname) - 1);
-#else
-#	ifdef M_AMIGA
-	if ((ptr = getenv("NodeName")) != NULL)
-		strncpy(hostname, ptr, sizeof(hostname) - 1);
-#	endif /* M_AMIGA */
 #endif /* HAVE_GETHOSTNAME */
 #ifdef HAVE_SYS_UTSNAME_H
 	if (!*hostname)
@@ -85,7 +80,7 @@ get_host_name(
 /*
  * find domainname - check DOMAIN_NAME
  * TODO: check /etc/defaultdomain as a last resort?
- *       there is M_UNIX/M_AMIGA specific code in here, but no VMS
+ *       there is M_UNIX specific code in here, but no VMS
  *       alternative
  */
 const char *
@@ -97,28 +92,12 @@ get_domain_name(
 	char buff[MAXHOSTNAMELEN + 1];
 	static char domain[8192];
 
-#	ifdef M_AMIGA
-/*
- * Damn compiler bugs...
- * Without this hack, SASC 6.55 produces a TST.B d16(pc),
- * which is illegal on a 68000
- */
-static const char *domain_name_hack = DOMAIN_NAME;
-#		undef DOMAIN_NAME
-#		define DOMAIN_NAME domain_name_hack
-#	endif /* M_AMIGA */
-
 	domain[0] = '\0';
 
 	if (strlen(DOMAIN_NAME))
 		strcpy(domain, DOMAIN_NAME);
 
-#	ifdef M_AMIGA
-	if (strchr(domain, ':')) /* absolute AmigaOS paths contain ':', RFC-hostnames don't */
-#	else
-	if (domain[0] == '/' && domain[1])
-#	endif /* M_AMIGA */
-	{
+	if (domain[0] == '/' && domain[1]) {
 		/* read domainname from specified file */
 		if ((fp = fopen(domain, "r")) != NULL) {
 			while (fgets(buff, (int) sizeof(buff), fp) != NULL) {
@@ -130,11 +109,7 @@ static const char *domain_name_hack = DOMAIN_NAME;
 					strcpy(domain, buff);
 				}
 			}
-#	ifdef M_AMIGA
-			if (strchr(domain, ':'))	/* ':' is not allowed in domainames -> file was empty */
-#	else
 			if (domain[0] == '/')	/* '/' is not allowed in domainames -> file was empty */
-#	endif /* M_AMIGA */
 				domain[0] = '\0';
 
 			fclose(fp);
@@ -255,35 +230,25 @@ get_user_name(
 {
 	static char username[128];
 	struct passwd *pw;
-#if defined(M_AMIGA) || defined(VMS)
+#ifdef VMS
 	char *p;
-#endif /* M_AMIGA  || VMS */
+#endif /* VMS */
 
 	username[0] = '\0';
 
-#	ifdef M_AMIGA
-	if ((p = getenv("USERNAME"))) {
-		STRCPY(username, p);
-	}
-#	else
-#		ifndef VMS
+#ifndef VMS
 	if ((pw = getpwuid(getuid())) != NULL)
 		strcpy(username, pw->pw_name);
 	else
-#		else
+#else
 	if (((p = getlogin()) != NULL) && strlen(p)) {
 		if ((pw = getpwnam(p)) != NULL)
 			strcpy(username, pw->pw_name);
 	}
-#		endif /* !VMS */
-#	endif /* M_AMIGA */
+#endif /* !VMS */
 
 	if (!*username) {
-#	ifndef M_AMIGA
 		error_message(_(txt_error_passwd_missing));
-#	else
-		error_message(_(txt_env_var_not_found), "USERNAME");
-#	endif /* !M_AMIGA */
 		tin_done(EXIT_FAILURE);
 	}
 

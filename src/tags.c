@@ -380,7 +380,7 @@ set_range(
 #if 0
 	error_message("Min=[%d] Max=[%d] Cur=[%d] DefRng=[%s]", min, max, curr, range);
 #endif /* 0 */
-	sprintf(mesg, _(txt_enter_range), range);
+	snprintf(mesg, sizeof(mesg), _(txt_enter_range), range);
 
 	if (!(prompt_string_default(mesg, range, _(txt_range_invalid), HIST_OTHER)))
 		return FALSE;

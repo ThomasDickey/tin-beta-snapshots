@@ -6,3 +6,6 @@ configure needs at least the argument:
 --with-domain-name=<your domain>
 
 Compile tin, install it and run in a ISO-8859-1 terminal.
+
+Instead of using the shell-script url_handler.sh you might want
+to use open(1) as URL-handler.

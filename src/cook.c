@@ -162,11 +162,11 @@ put_cooked(
 	int space;
 	static int overflow = 0;
 	static int saved_flags = 0;
+	va_list ap;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	int bytes;
 	wint_t *wp;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-	va_list ap;
 
 	buf = my_malloc(buf_len + 1);
 
@@ -287,10 +287,7 @@ set_rest(
  * Side effects: resizes line if necessary, adjusts max_line_len
  * accordingly.
  *
- * This function returns the number of character written to the line buffer.
- * The buffer is LF + NULL terminated if a complete line was written. The
- * buffer is NOT neccessarily NULL terminated if there was no newline in the
- * rest. Use the return value to find out how long the string is.
+ * This function returns the number of characters written to the line buffer.
  */
 static int
 put_rest(
@@ -305,10 +302,10 @@ put_rest(
 	int put_chars = offset;
 
 	if ((ptr = my_rest) == NULL)
-		return 0;
+		return put_chars;
 	if (strlen(my_rest) == 0) {
 		FreeAndNull(*rest);
-		return 0;
+		return put_chars;
 	}
 
 	while ((c = *ptr++) && (c != '\n')) {
@@ -335,12 +332,12 @@ put_rest(
 		 * this one rely on it.
 		 */
 		(*line)[put_chars++] = '\n';
-		(*line)[put_chars] = '\0';	/* don't count the termining NULL! */
 		set_rest(rest, ptr);
-	} else
+	} else /* c == 0 */
 		/* rest is now empty */
 		FreeAndNull(*rest);
 
+	(*line)[put_chars] = '\0';	/* don't count the termining NULL! */
 	return put_chars;
 }
 
@@ -444,6 +441,19 @@ read_decoded_base64_line(
 		if (put_chars && ((*line)[put_chars - 1] == '\n')) /* end of logical line reached */
 			return lines_read;
 	} while (lines_read < max_lines_to_read);
+	/*
+	 * FIXME: Adding a newline may be not correct. At least it may be
+	 * not what the author of that article intended. Unfortunately, a
+	 * newline is expected at the end of a line by some other code in
+	 * cook.c.
+	 */
+	if (put_chars > *max_line_len - 2) {
+		*max_line_len <<= 1;
+		*line = my_realloc(*line, *max_line_len);
+	}
+	if ((0 == put_chars) || ('\n' != (*line)[put_chars - 1]))
+			(*line)[put_chars++] = '\n';
+	(*line)[put_chars] = '\0';
 	return lines_read;
 }
 
@@ -473,9 +483,9 @@ read_decoded_qp_line(
 	char *ptr;
 	char c;
 	int buflen = LEN;
-	size_t chars_to_add = 0;
 	int count = 0;
 	int lines_read = 0;
+	size_t chars_to_add = 0;
 
 	buf = my_malloc(buflen); /* initial internal line buffer */
 	*buf = '\0';
@@ -908,8 +918,8 @@ static void
 dump_cooked(
 	void)
 {
-	int i;
 	char *line;
+	int i;
 
 	for (i = 0; i < art->cooked_lines; i++) {
 		fseek(art->cooked, art->cookl[i].offset, SEEK_SET);

@@ -34,7 +34,6 @@ src/my_tmpfile.c
 src/newsrc.c
 src/nntplib.c
 src/nrctbl.c
-src/open.c
 src/page.c
 src/pgp.c
 src/plp_snprintf.c

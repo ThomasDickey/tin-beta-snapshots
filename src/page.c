@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-09-12
+ *  Updated   : 2003-12-17
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -48,6 +48,12 @@
 #	include "rfc2046.h"
 #endif /* !RFC2046_H */
 
+#if defined(HAVE_IDNA_H) && !defined(_IDNA_H)
+#	include <idna.h>
+#endif /* HAVE_IDNA_H && !_IDNA_H */
+#if defined(HAVE_STRINGPREP_H) && !defined(_STRINGPREP_H)
+#	include <stringprep.h>
+#endif /* HAVE_STRINGPREP_H & !_STRINGPREP_H */
 
 /*
  * PAGE_HEADER is the size in lines of the article page header
@@ -69,12 +75,9 @@ t_openartinfo pgart =	/* Global context of article open in the pager */
 	};
 
 int MORE_POS;			/* set in set_win_size() */
-int RIGHT_POS;			/* set in set_win_size() */
 
 int last_resp;			/* previous & current article # in arts[] for '-' command */
 int this_resp;
-
-static int tabwidth = 8;
 
 static struct t_header *note_h = &pgart.hdr;	/* Easy access to article headers */
 
@@ -85,6 +88,7 @@ static int hide_uue;			/* set when uuencoded sections are 'hidden' */
 static int num_info_lines;
 static int reveal_ctrl_l_lines;	/* number of lines (from top) with de-activated ^L */
 static int rotate;				/* 0=normal, 13=rot13 decode */
+static int tabwidth = 8;
 static int scroll_region_top;	/* first screen line for displayed message */
 static int search_line;			/* Line to commence next search from */
 static t_lineinfo *infoline = (t_lineinfo *) 0;
@@ -672,6 +676,8 @@ page_goto_next_unread:
 			case iKeyPageToggleTex2iso:		/* toggle german TeX to ISO latin1 style conversion */
 				if (((group->attribute->tex2iso_conv) = !(group->attribute->tex2iso_conv)))
 					pgart.tex2iso = is_art_tex_encoded(pgart.raw);
+				else
+					pgart.tex2iso = FALSE;
 
 				resize_article(TRUE, &pgart);	/* Also recooks it.. */
 				draw_page(group->name, 0);
@@ -1051,11 +1057,9 @@ print_message_page(
 		if (mbstowcs(wline, line, ARRAY_SIZE(wline) - 1) != (size_t) -1) {
 			wline[ARRAY_SIZE(wline) - 1] = (wchar_t) '\0';
 			if (wcswidth(wline, ARRAY_SIZE(wline) - 1) >= cCOLS) {
-				int tmp;
-
 				wline[cCOLS] = (wint_t) '\0';
-				if ((tmp = (int) wcstombs(NULL, wline, 0)) > 0)
-					bytes = tmp;
+				if ((bytes = (int) wcstombs(NULL, wline, 0)) <= 0)
+					bytes = strlen(line);;
 			}
 		} else
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -1096,13 +1100,25 @@ print_message_page(
 		 */
 		if (tinrc.url_highlight) {
 			if (curr->flags & C_URL)
+#ifdef HAVE_COLOR
+				highlight_regexes(i + scroll_region_top, &url_regex, use_color ? tinrc.col_urls : -1);
+#else
 				highlight_regexes(i + scroll_region_top, &url_regex, -1);
+#endif /* HAVE_COLOR */
 
 			if (curr->flags & C_MAIL)
+#ifdef HAVE_COLOR
+				highlight_regexes(i + scroll_region_top, &mail_regex, use_color ? tinrc.col_urls : -1);
+#else
 				highlight_regexes(i + scroll_region_top, &mail_regex, -1);
+#endif /* HAVE_COLOR */
 
 			if (curr->flags & C_NEWS)
+#ifdef HAVE_COLOR
+				highlight_regexes(i + scroll_region_top, &news_regex, use_color ? tinrc.col_urls : -1);
+#else
 				highlight_regexes(i + scroll_region_top, &news_regex, -1);
+#endif /* HAVE_COLOR */
 		}
 
 		/*
@@ -1196,10 +1212,26 @@ draw_page(
 	 * Print an appropriate footer
 	 */
 	if (curr_line + ARTLINES >= artlines) {
+		char buf[LEN];
+		int len;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		wchar_t wbuf[LEN];
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+		STRCPY(buf, (arts[this_resp].thread != -1) ? _(txt_next_resp) : _(txt_last_resp));
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if (mbstowcs(wbuf, buf, ARRAY_SIZE(wbuf)) != (size_t) (-1)) {
+			wbuf[ARRAY_SIZE(wbuf) - 1] = (wchar_t) '\0';
+			wconvert_to_printable(wbuf);
+			len = wcswidth(wbuf, ARRAY_SIZE(wbuf));
+		} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			len = (int) strlen(buf);
+
 		clear_message();
-		MoveCursor(cLINES, MORE_POS - (5 + BLANK_PAGE_COLS));
+		MoveCursor(cLINES, cCOLS - len - (1 + BLANK_PAGE_COLS));
 		StartInverse();
-		my_fputs(((arts[this_resp].thread != -1) ? _(txt_next_resp) : _(txt_last_resp)), stdout);
+		my_fputs(buf, stdout);
 		my_flush();
 		EndInverse();
 	} else
@@ -1271,240 +1303,495 @@ static void
 draw_page_header(
 	const char *group)
 {
-	char buf[HEADER_LEN];
-	char tmp[LEN]; /* what if cCOLS is > LEN? */
-	int whichresp;
-	int x_resp;
-	int pos, i;
-	int grplen, maxlen, scrlen;
-	int mb_diff;
+	char *buf;
+	int i;
+	int whichresp, x_resp;
+	int right_len, center_pos;
+	size_t len, line_len;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t wtmp[HEADER_LEN];
-	wchar_t wbuf[HEADER_LEN];
+	wchar_t *fmt_resp, *fmt_thread, *line, *wbuf, *wtmp;
+#else
+	char *line, *tmp;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	whichresp = which_response(this_resp);
 	x_resp = num_of_responses(which_thread(this_resp));
 
-	if (!my_strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S",
-							localtime(&arts[this_resp].date)))
-		strcpy(buf, BlankIfNull(note_h->date));
+	line_len = LEN + 1;
+	buf = my_malloc(line_len);
 
-	/*
-	 * Work out how much room we have for group name, allow 1 space before and
-	 * after it
-	 */
-	grplen = strlen(group);
+	if (!my_strftime(buf, line_len, tinrc.date_format, localtime(&arts[this_resp].date))) {
+		strncpy(buf, BlankIfNull(note_h->date), line_len);
+		buf[line_len - 1] = '\0';
+	}
+
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if (mbstowcs(wtmp, buf, ARRAY_SIZE(wtmp)) != (size_t) -1) {
-		wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
-		scrlen = wcswidth(wtmp, ARRAY_SIZE(wtmp));
-	} else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-		scrlen = strlen(buf);
-	maxlen = RIGHT_POS - scrlen - 2;
+	line = my_malloc(line_len * sizeof(wchar_t));
+	wbuf = my_malloc(line_len * sizeof(wchar_t));
+	wtmp = my_malloc(line_len * sizeof(wchar_t));
 
-	if (grplen < maxlen)
-		maxlen = grplen;
+	/* convert to wide-char format strings */
+	len = mbstowcs(NULL, _(txt_thread_x_of_n), 0) + 1;
+	if (len > 0) {
+		fmt_thread = my_malloc(len * sizeof(wchar_t));
+		mbstowcs(fmt_thread, _(txt_thread_x_of_n), len);
+	} else
+		fmt_thread = NULL;
+
+	len = mbstowcs(NULL, _(txt_resp_x_of_n), 0) + 1;
+	if (len > 0) {
+		fmt_resp = my_malloc(len * sizeof(wchar_t));
+		mbstowcs(fmt_resp, _(txt_resp_x_of_n), len);
+	} else
+		fmt_resp = NULL;
 
 	/*
-	 * Aesthetics - Add 3 to compensate for the fact that
-	 * the left hand margin (date) is longer than the right hand margin
-	 * Add also a compensation for multi-byte charsets
+	 * determine the needed space for the text at the right hand margin
+	 * the formating info (%4s) needs 3 positions but we need 4 positions
+	 * on the screen for each counter.
 	 */
-	mb_diff = strlen(buf) - scrlen;
-	pos = 3 + (cCOLS - maxlen) / 2;
+	if (fmt_thread && fmt_resp)
+		right_len = MAX((wcswidth(fmt_thread, wcslen(fmt_thread)) - 6 + 8), (wcswidth(fmt_resp, wcslen(fmt_resp)) - 6 + 8));
+	else if (fmt_thread)
+		right_len = wcswidth(fmt_thread, wcslen(fmt_thread)) - 6 + 8;
+	else if (fmt_resp)
+		right_len = wcswidth(fmt_resp, wcslen(fmt_resp)) - 6 + 8;
+	else
+		right_len = 0;
 
-	for (i = strlen(buf); i < pos + mb_diff; i++)		/* Pad out to left */
-		buf[i] = ' ';
+	/*
+	 * first line
+	 */
+	/* date */
+	if (mbstowcs(wbuf, buf, line_len) == (size_t) (-1))
+		wbuf[0] = (wchar_t) '\0'; /* conversion failed */
+	else
+		wbuf[line_len - 1] = (wchar_t) '\0';
 
-	buf[i] = '\0';
+	wcsncpy(line, wbuf, line_len);
+	line[line_len - 1] = (wchar_t) '\0';
 
-	trunc(group, buf + i, sizeof(buf) - i, maxlen);
+	/*
+	 * determine max len for centered group name
+	 * allow one space before and after group name
+	 */
+	len = cCOLS - 2 * MAX(wcswidth(wbuf, line_len), right_len) - 3;
 
-	for (i = strlen(buf); i < RIGHT_POS + mb_diff; i++)	/* Pad out to right */
-		buf[i] = ' ';
+	/* group name */
+	if (mbstowcs(wbuf, group, line_len) == (size_t) (-1))
+		wbuf[0] = (wchar_t) '\0'; /* conversion failed */
+	else
+		wbuf[line_len - 1] = (wchar_t) '\0';
 
-	buf[i] = '\0';
+	wconvert_to_printable(wbuf);
+	if ((i = wcswidth(wbuf, line_len)) < (int) len)
+		len = i;
 
-#ifdef HAVE_COLOR
+	center_pos = (cCOLS - len) / 2;
+
+	/* pad out to left */
+	wtmp[0] = (wchar_t) ' ';
+	wtmp[1] = (wchar_t) '\0';
+	while (wcswidth(line, line_len) < center_pos && wcslen(line) < line_len - 1)
+		wcscat(line, wtmp);
+
+	wcsncat(line, wstrunc(wbuf, wtmp, line_len, len), line_len - wcslen(line) - 1);
+
+	/* pad out to right */
+	wtmp[0] = (wchar_t) ' ';
+	wtmp[1] = (wchar_t) '\0';
+	while (wcswidth(line, line_len) < cCOLS - right_len - 1 && wcslen(line) < line_len - 1)
+		wcscat(line, wtmp);
+
+	/* thread info */
+	/* can't eval tin_ltoa() more than once in a statement due to statics */
+	if (fmt_thread) {
+		strcpy(buf, tin_ltoa(which_thread(this_resp) + 1, 4));
+		swprintf(wbuf, line_len, fmt_thread, buf, tin_ltoa(grpmenu.max, 4));
+	} else
+		wbuf[0] = (wchar_t) '\0';
+
+	wcsncat(line, wbuf, line_len - wcslen(line) - 1);
+
+#	ifdef HAVE_COLOR
 	fcol(tinrc.col_head);
-#endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
+
+	my_fputws(line, stdout);
+	my_fputs(cCRLF, stdout);
+
+#if 0
+	/* display a ruler for layout checking purposes */
+	my_fputs("....|....3....|....2....|....1....|....0....|....1....|....2....|....3....|....\n", stdout);
+#endif /* 0 */
+
+	/*
+	 * second line
+	 */
+	/* line count */
+	if (arts[this_resp].line_count < 0)
+		strcpy(buf, "?");
+	else
+		snprintf(buf, line_len, "%-4d", arts[this_resp].line_count);
 
 	{
-		char x[5];
+		wchar_t *fmt;
 
-		/* Can't eval tin_ltoa() more than once in a statement due to statics */
-		strcpy(x, tin_ltoa(which_thread(this_resp) + 1, 4));
+		len = mbstowcs(NULL, _(txt_lines), 0) + 1;
+		fmt = my_malloc(len * sizeof(wchar_t));
+		if (mbstowcs(fmt, _(txt_lines), len) == (size_t) (-1))
+			wbuf[0] = (wchar_t) '\0';
+		else {
+			fmt[len - 1] = (wchar_t) '\0';
+			swprintf(wbuf, line_len, fmt, buf);
+		}
 
-		snprintf(tmp, sizeof(tmp), _(txt_thread_x_of_n), buf, x, tin_ltoa(grpmenu.max, 4));
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp)) != (size_t) -1) {
-			wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
-			wcspart(wbuf, wtmp, cCOLS - 1, ARRAY_SIZE(wbuf), FALSE);
-			wcstombs(tmp, wbuf, sizeof(tmp));
-		} else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-			tmp[cCOLS - 1] = '\0'; /* FIXME: see also note in signal.c:set_win_size() */
-		strcat(tmp, cCRLF);
-		my_fputs(tmp, stdout);
+		free(fmt);
 	}
 
-	/*
-	 * An accurate line count will appear in the footer anyway
-	 */
-	if (arts[this_resp].line_count < 0)
-		strcpy(tmp, "?");
-	else
-		snprintf(tmp, sizeof(tmp), "%-4d", arts[this_resp].line_count);
+	len = wcswidth(wbuf, line_len);
 
-#ifdef HAVE_COLOR
+#	ifdef HAVE_COLOR
 	fcol(tinrc.col_head);
-#endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
 
-	snprintf(buf, sizeof(buf), _(txt_lines), tmp);
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if (mbstowcs(wtmp, buf, ARRAY_SIZE(wtmp)) != (size_t) -1) {
-		wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
-		i = wcswidth(wtmp, ARRAY_SIZE(wtmp));
-	} else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-		i = strlen(buf);
-	my_fputs(buf, stdout);
+	my_fputws(wbuf, stdout);
 
-#ifdef HAVE_COLOR
+#	ifdef HAVE_COLOR
 	fcol(tinrc.col_subject);
-#endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
 
-	/*
-	 * TODO: the "TeX "-text is keept in the header even after toggeling
-	 *       tex2iso off
-	 */
+	/* tex2iso */
 	if (pgart.tex2iso) {
-		strcpy(buf, "TeX ");
-		i += strlen(buf);
-		my_fputs(buf, stdout);
+		mbstowcs(wtmp, "TeX ", line_len);
+		len += wcswidth(wtmp, line_len);
+		my_fputws(wtmp, stdout);
 	}
 
+	/* subject */
 	/*
 	 * TODO: why do we fall back to arts[this_resp].subject if !note_h->subj?
 	 *       if !note_h->subj then the article just has no subject, no matter
 	 *       what the overview says.
 	 */
-	strncpy(buf, (note_h->subj ? note_h->subj : arts[this_resp].subject), sizeof(buf) - 1);
+	strncpy(buf, (note_h->subj ? note_h->subj : arts[this_resp].subject), line_len);
+	buf[line_len - 1] = '\0';
+	if (mbstowcs(wtmp, buf, line_len) == (size_t) (-1))
+		wtmp[0] = (wchar_t) '\0';	/* conversion failed */
+	else
+		wtmp[line_len - 1] = (wchar_t) '\0';
+	wconvert_to_printable(wtmp);
+	if (wcswidth(wtmp, line_len) > cCOLS - 2 * right_len - 3)
+		wstrunc(wtmp, wbuf, line_len, cCOLS - 2 * right_len - 3);
+	else
+		wcscpy(wbuf, wtmp);
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if (mbstowcs(wtmp, buf, ARRAY_SIZE(wtmp)) != (size_t) -1) {
-		wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
-		wtrunc(wtmp, wbuf, ARRAY_SIZE(wbuf), RIGHT_POS - 5 - i);
-		scrlen = wcswidth(wbuf, ARRAY_SIZE(wbuf));
-		wcstombs(buf, wbuf, sizeof(wbuf));
-	} else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-	{
-		STRCPY(tmp, buf);
-		trunc(tmp, buf, sizeof(buf), RIGHT_POS - 5 - i);
-		scrlen = (int) strlen(buf);
-	}
+	center_pos = (cCOLS - wcswidth(wbuf, line_len)) / 2;
 
-	pos = ((cCOLS - scrlen) / 2) - 2;
+	/* pad out to left */
+	line[0] = (wchar_t) '\0';
+	wtmp[0] = (wchar_t) ' ';
+	wtmp[1] = (wchar_t) '\0';
+	while (wcswidth(line, line_len) < center_pos - (int) len && wcslen(line) < line_len - 1)
+		wcscat(line, wtmp);
 
-	MoveCursor(1, ((pos > i) ? pos : i));
-
-	convert_to_printable(buf);
+	len += wcswidth(line, line_len);
+	my_fputws(line, stdout);
 
 	StartInverse();
-	my_fputs(buf, stdout);
+	my_fputws(wbuf, stdout);
 	EndInverse();
+	len += wcswidth(wbuf, line_len);
 
-#ifdef HAVE_COLOR
+#	ifdef HAVE_COLOR
 	fcol(tinrc.col_response);
-#endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
 
-	MoveCursor(1, RIGHT_POS);
-	if (whichresp)
-		my_printf(_(txt_resp_x_of_n), whichresp, x_resp, cCRLF);
-	else {
+	/* pad out to right */
+	line[0] = (wchar_t) '\0';
+	wtmp[0] = (wchar_t) ' ';
+	wtmp[1] = (wchar_t) '\0';
+	while (wcswidth(line, line_len) < cCOLS - right_len - (int) len - 1 && wcslen(line) < line_len - 1)
+		wcscat(line, wtmp);
+
+	my_fputws(line, stdout);
+
+	if (whichresp) {
+		if (fmt_resp) {
+			swprintf(line, line_len, fmt_resp, whichresp, x_resp);
+			my_fputws(line, stdout);
+		}
+	} else {
 		if (!x_resp)
-			my_printf(_(txt_no_resp), cCRLF);
+			my_printf(_(txt_no_responses));
 		else if (x_resp == 1)
-			my_printf(_(txt_1_resp), cCRLF);
+			my_printf(_(txt_1_resp));
 		else
-			my_printf(_(txt_x_resp), x_resp, cCRLF);
+			my_printf(_(txt_x_resp), x_resp);
+	}
+	my_fputs(cCRLF, stdout);
+
+	/*
+	 * third line
+	 */
+	/* from */
+	/*
+	 * TODO: don't use arts[this_resp].name/arts[this_resp].from
+	 *       split up note_h->from and use that instead as it might
+	 *       be different _if_ the overviews are broken
+	 */
+	{
+		char *p = idna_decode(arts[this_resp].from);
+
+		if (arts[this_resp].name)
+			snprintf(buf, line_len, "%s <%s>", arts[this_resp].name, p);
+		else {
+			strncpy(buf, p, line_len);
+			buf[line_len - 1] = '\0';
+		}
+		free(p);
 	}
 
-#ifdef HAVE_COLOR
-	fcol(tinrc.col_normal);
-#endif /* HAVE_COLOR */
+	if (mbstowcs(wbuf, buf, line_len) == (size_t) (-1))
+		line[0] = (wchar_t) '\0';
+	wstrunc(wbuf, line, line_len, cCOLS - 1);
 
+	/* organization */
+	if (note_h->org) {
+		snprintf(buf, line_len, _(txt_at_s), note_h->org);
+
+		if (mbstowcs(wbuf, buf, line_len) == (size_t) (-1))
+			wbuf[0] = (wchar_t) '\0';
+		wconvert_to_printable(wbuf);
+
+		if (wcswidth(line, line_len) + wcswidth(wbuf, line_len) >= cCOLS - 1) {
+			wcsncat(line, wbuf, line_len - wcslen(line) - 1);
+			wcscpy(wbuf, line);
+			wstrunc(wbuf, line, line_len, cCOLS - 1);
+		} else {
+			i = cCOLS - 1 - wcswidth(wbuf, line_len);
+
+			wtmp[0] = (wchar_t) ' ';
+			wtmp[1] = (wchar_t) '\0';
+			while(wcswidth(line, line_len) < i && wcslen(line) < line_len - 1)
+				wcscat(line, wtmp);
+			wcsncat(line, wbuf, line_len - wcslen(line) - 1);
+		}
+	}
+
+#	ifdef HAVE_COLOR
+	fcol(tinrc.col_from);
+#	endif /* HAVE_COLOR */
+
+	my_fputws(line, stdout);
+	my_fputs(cCRLF, stdout);
+	my_fputs(cCRLF, stdout);
+
+	/* clean up */
+	free(line);
+	free(wbuf);
+	free(wtmp);
+	FreeIfNeeded(fmt_thread);
+	FreeIfNeeded(fmt_resp);
+
+#else /* !MULTIBYTE_ABLE || NO_LOCALE */
+
+	line = my_malloc(line_len);
+	tmp = my_malloc(line_len);
+
+	/*
+	 * determine the needed space for the text at the right hand margin
+	 * the formating info (%4s) needs 3 positions but we need 4 positions
+	 * on the screen for each counter
+	 */
+	right_len = MAX((strlen(_(txt_thread_x_of_n)) - 6 + 8), (strlen(_(txt_resp_x_of_n)) - 6 + 8));
+
+	/*
+	 * first line
+	 */
+	/* date */
+	strncpy(line, buf, line_len);
+	line[line_len - 1] = '\0';
+
+	/*
+	 * determine max len for centered group name
+	 * allow one space before and after group name
+	 */
+	len = cCOLS - 2 * MAX((int) strlen(buf), right_len) - 3;
+
+	/* group name */
+	if ((i = strlen(group)) < (int) len)
+		len = i;
+
+	center_pos = (cCOLS - len) / 2;
+
+	/* pad out to left */
+	for (i = strlen(line); i < center_pos && i < (int) line_len - 1; i++)
+		line[i] = ' ';
+	line[i] = '\0';
+
+	strunc(group, line + i, line_len - i, len);
+
+	/* pad out to right */
+	for (i = strlen(line); i < cCOLS - right_len - 1 && i < (int) line_len - 1; i++)
+		line[i] = ' ';
+	line[i] = '\0';
+
+	/* thread info */
+	/* can't eval tin_ltoa() more than once in a statement due to statics */
+	strcpy(tmp, tin_ltoa(which_thread(this_resp) + 1, 4));
+	snprintf(buf, line_len, _(txt_thread_x_of_n), tmp, tin_ltoa(grpmenu.max, 4));
+
+	strncat(line, buf, line_len - strlen(line) - 1);
+
+#	ifdef HAVE_COLOR
+	fcol(tinrc.col_head);
+#	endif /* HAVE_COLOR */
+
+	my_fputs(line, stdout);
+	my_fputs(cCRLF, stdout);
+
+#if 0
+	/* display a ruler for layout checking purposes */
+	my_fputs("....|....3....|....2....|....1....|....0....|....1....|....2....|....3....|....\n", stdout);
+#endif /* 0 */
+
+	/*
+	 * second line
+	 */
+	/* line count */
+	/* an accurate line count will appear in the footer anymay */
+	if (arts[this_resp].line_count < 0)
+		strcpy(buf, "?");
+	else
+		snprintf(buf, line_len, "%-4d", arts[this_resp].line_count);
+
+	snprintf(line, line_len, _(txt_lines), buf);
+
+	len = strlen(line);
+
+#	ifdef HAVE_COLOR
+	fcol(tinrc.col_head);
+#	endif /* HAVE_COLOR */
+
+	my_fputs(line, stdout);
+
+#	ifdef HAVE_COLOR
+	fcol(tinrc.col_subject);
+#	endif /* HAVE_COLOR */
+
+	/* tex2iso */
+	if (pgart.tex2iso) {
+		strcpy(buf, "TeX ");
+		len += strlen(buf);
+		my_fputs(buf, stdout);
+	}
+
+	/* subject */
+	/*
+	 * TODO: why do we fall back to arts[this_resp].subject if !note_h->subj?
+	 *       if !note_h->subj then the article just has no subject, no matter
+	 *       what the overview says.
+	 */
+	strncpy(buf, (note_h->subj ? note_h->subj : arts[this_resp].subject), line_len);
+	buf[line_len - 1] = '\0';
+
+	convert_to_printable(buf);
+	if ((int) strlen(buf) > cCOLS - 2 * right_len - 3)
+		strunc(buf, line, line_len, cCOLS - 2 * right_len - 3);
+	else {
+		strncpy(line, buf, line_len);
+		buf[line_len - 1] = '\0';
+	}
+
+	center_pos = (cCOLS - strlen(line)) / 2;
+
+	/* pad out to left */
+	tmp[0] = '\0';
+	for (i = 0; i < center_pos - (int) len && i < (int) line_len - 1; i++)
+		tmp[i] = ' ';
+	tmp[i] = '\0';
+	len += strlen(tmp);
+	my_fputs(tmp, stdout);
+
+	StartInverse();
+	my_fputs(line, stdout);
+	EndInverse();
+	len += strlen(line);
+
+#	ifdef HAVE_COLOR
+	fcol(tinrc.col_response);
+#	endif /* HAVE_COLOR */
+
+	/* pad out to right */
+	tmp[0] = '\0';
+	for (i = 0; i < cCOLS - right_len - (int) len - 1 && i < (int) line_len - 1; i++)
+		tmp[i] = ' ';
+	tmp[i] = '\0';
+
+	my_fputs(tmp, stdout);
+
+	if (whichresp)
+		my_printf(_(txt_resp_x_of_n), whichresp, x_resp);
+	else {
+		if (!x_resp)
+			my_printf(_(txt_no_responses));
+		else if (x_resp == 1)
+			my_printf(_(txt_1_resp));
+		else
+			my_printf(_(txt_x_resp), x_resp);
+	}
+	my_fputs(cCRLF, stdout);
+
+	/*
+	 * third line
+	 */
+	/* from */
 	/*
 	 * TODO: don't use arts[this_resp].name/arts[this_resp].from
 	 *       split up note_h->from and use that instead as it might
 	 *       be different _if_ the overviews are broken
 	 */
 	if (arts[this_resp].name)
-		snprintf(buf, sizeof(buf), "%s <%s>", arts[this_resp].name, arts[this_resp].from);
-	else
-		strncpy(buf, arts[this_resp].from, sizeof(buf));
-
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if (mbstowcs(wtmp, buf, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
-		wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
-		wtrunc(wtmp, wbuf, ARRAY_SIZE(wbuf), cCOLS - 1);
-	} else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-	{
-		STRCPY(tmp, buf);
-		trunc(tmp, buf, sizeof(buf), cCOLS - 1);
+		snprintf(buf, line_len, "%s <%s>", arts[this_resp].name, arts[this_resp].from);
+	else {
+		strncpy(buf, arts[this_resp].from, line_len);
+		buf[line_len - 1] = '\0';
 	}
+
+	strcpy(tmp, buf);
+	strunc(tmp, buf, line_len, cCOLS - 1);
 
 	if (note_h->org) {
-		snprintf(tmp, sizeof(tmp), _(txt_at_s), note_h->org);
+		snprintf(tmp, line_len, _(txt_at_s), note_h->org);
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp)) != (size_t) -1) {
-			wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
-			wconvert_to_printable(wtmp);
-
-			if (wcswidth(wbuf, ARRAY_SIZE(wbuf)) + wcswidth(wtmp, ARRAY_SIZE(wtmp)) >= cCOLS - 1) {
-				wcsncat(wbuf, wtmp, ARRAY_SIZE(wbuf) - wcslen(wbuf) - 1);
-				wcscpy(wtmp, wbuf);
-				wtrunc(wtmp, wbuf, ARRAY_SIZE(wbuf), cCOLS - 1);
-			} else {
-				int j = cCOLS - 1 - wcswidth(wtmp, ARRAY_SIZE(wtmp)) - wcswidth(wbuf, ARRAY_SIZE(wbuf));
-
-				pos = wcslen(wbuf);
-				for (i = 0; i < j; i++)
-					wbuf[pos + i] = (wchar_t) ' ';
-				wbuf[pos + i] = (wchar_t) '\0';
-				wcsncat(wbuf, wtmp, ARRAY_SIZE(wbuf) - wcslen(wbuf) - 1);
-			}
-		} else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-			if ((int) strlen(buf) + (int) strlen(tmp) >= cCOLS - 1) {
-				strncat(buf, tmp, sizeof(buf) - strlen(buf) - 1);
-				STRCPY(tmp, buf);
-				trunc(tmp, buf, sizeof(buf), cCOLS - 1);
-			} else {
-				pos = cCOLS - 1 - (int) strlen(tmp);
-				for (i = strlen(buf); i < pos; i++)
-					buf[i] = ' ';
-				buf[i] = '\0';
-				strncat(buf, tmp, sizeof(buf) - 1);
-			}
+		if ((int) strlen(buf) + (int) strlen(tmp) >= cCOLS - 1) {
+			strncat(buf, tmp, line_len - strlen(buf) - 1);
+			strcpy(tmp, buf);
+			strunc(tmp, buf, line_len, cCOLS - 1);
+		} else {
+			len = cCOLS - 1 - (int) strlen(tmp);
+			for (i = strlen(buf); i < (int) len; i++)
+				buf[i] = ' ';
+			buf[i] = '\0';
+			strncat(buf, tmp, line_len - strlen(buf) - 1);
+		}
 	}
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if (wcslen(wbuf))
-		wcstombs(buf, wbuf, sizeof(buf));
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-
-	convert_to_printable(strip_line(buf));
+	convert_to_printable(buf);
 
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_from);
 #endif /* HAVE_COLOR */
 
-	my_printf("%s%s%s", buf, cCRLF, cCRLF);
+	my_fputs(buf, stdout);
+	my_fputs(cCRLF, stdout);
+	my_fputs(cCRLF, stdout);
+
+	/* clean up */
+	free(line);
+	free(tmp);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	free(buf);
 
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_normal);
@@ -1575,7 +1862,7 @@ load_article(
 	note_fp = pgart.cooked;
 	artline = pgart.cookl;
 	artlines = pgart.cooked_lines;
-	search_line = -1;
+	search_line = 0;
 	rotate = 0;			/* normal mode, not rot13 */
 	reveal_ctrl_l = FALSE;
 	reveal_ctrl_l_lines = -1;	/* all ^L's active */
@@ -1656,7 +1943,7 @@ process_search(
 
 	switch (help_level) {
 		case PAGE_LEVEL:
-			draw_page(CURR_GROUP.name, 0);
+			draw_page(curr_group->name, 0);
 			break;
 
 		case INFO_PAGER:
@@ -1696,6 +1983,7 @@ toggle_raw(
 		if (!pgart.rawl) {			/* Already done this for this article? */
 			char *line;
 			char *p;
+			int num_chars;
 			long offset;
 
 			j = 0;
@@ -1704,10 +1992,9 @@ toggle_raw(
 			offset = ftell(pgart.raw);
 
 			while (NULL != (line = tin_fgets(pgart.raw, FALSE))) {
-				int num_chars;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				int num_bytes;
-				t_bool is_illegal;
+				t_bool is_illegal = TRUE;
 				wchar_t wline[LEN];
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
@@ -1720,7 +2007,6 @@ toggle_raw(
 				}
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				is_illegal = TRUE;
 				if ((size_t) -1 != mbstowcs(wline, line, ARRAY_SIZE(wline) - 1)) {
 					wline[ARRAY_SIZE(wline) - 1] = (wchar_t) '\0';
 					num_chars = wcswidth(wline, ARRAY_SIZE(wline) -1);
@@ -1814,13 +2100,13 @@ static void
 process_url(
 	void)
 {
-	char buf[LEN];
 	char *ptr;
+	char buf[LEN];
+	char ubuf[LEN];
+	char url[LEN];
 	int i;
 	int offsets[6];
 	int offsets_size = ARRAY_SIZE(offsets);
-	char url[LEN];
-	char ubuf[LEN];
 
 	/*
 	 * TODO: handle mailto: and news: (not NNTP) URLs internally
@@ -1897,7 +2183,7 @@ info_pager(
 	int ch;
 	int offset;
 
-	search_line = -1;
+	search_line = 0;
 	info_file = info_fh;
 	info_title = title;
 	curr_info_line = 0;

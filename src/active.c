@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2003-08-16
+ *  Updated   : 2003-09-24
  *  Notes     :
  *
  * Copyright (c) 1992-2003 Iain Lea <iain@bricbrac.de>
@@ -62,6 +62,8 @@ static time_t active_timestamp;	/* time active file read (local) */
 /*
  * Local prototypes
  */
+static FILE *open_newgroups_fp(int idx);
+static FILE *open_news_active_fp(void);
 static void active_add(struct t_group *ptr, long count, long max, long min, const char *moderated);
 static void append_group_line(char *active_file, char *group_path, long art_max, long art_min, char *base_dir);
 static void check_for_any_new_groups(void);
@@ -70,25 +72,6 @@ static void make_group_name(char *base_dir, char *group_name, char *group_path);
 static void read_active_file(void);
 static void read_newsrc_active_file(void);
 static void subscribe_new_group(char *group, char *autosubscribe, char *autounsubscribe);
-
-
-/*
- * Get default array size for active[] from environment (AmigaDOS)
- * or just return the standard default.
- */
-int
-get_active_num(
-	void)
-{
-#ifdef ENV_VAR_GROUPS /* M_AMIGA only */
-	char *ptr;
-	int num;
-
-	if ((ptr = getenv(ENV_VAR_GROUPS)) != NULL)
-		return ((num = atoi(ptr)) ? num : DEFAULT_ACTIVE_NUM);
-#endif /* ENV_VAR_GROUPS */
-	return DEFAULT_ACTIVE_NUM;
-}
 
 
 t_bool
@@ -456,6 +439,22 @@ read_newsrc_active_file(
 
 
 /*
+ * Open the news active file locally or send the LIST command
+ */
+static FILE *
+open_news_active_fp(
+	void)
+{
+#ifdef NNTP_ABLE
+	if (read_news_via_nntp && !read_saved_news)
+		return (nntp_command("LIST", OK_GROUPS, NULL, 0));
+	else
+#endif /* NNTP_ABLE */
+		return (fopen(news_active_file, "r"));
+}
+
+
+/*
  * Load the active file into active[]
  */
 static void
@@ -587,6 +586,41 @@ read_news_active_file(
 	 * finally we have a list of all groups an can set the attributes
 	 */
 	read_attributes_files();
+}
+
+
+/*
+ * Open the active.times file locally or send the NEWGROUPS command
+ *
+ * NEWGROUPS yymmdd hhmmss
+ */
+static FILE *
+open_newgroups_fp(
+	int idx)
+{
+#ifdef NNTP_ABLE
+	char line[NNTP_STRLEN];
+	struct tm *ngtm;
+
+	if (read_news_via_nntp && !read_saved_news) {
+		if (idx == -1)
+			return (FILE *) 0;
+
+		ngtm = localtime(&newnews[idx].time);
+		/*
+		 * in the current draft, NEWGROUPS is allowed to take a 4 digit year
+		 * component - but even with a 2 digit year component it is y2k
+		 * compliant... we should switch over to ngtm->tm_year + 1900
+		 * when most servers can handle the new format
+		 */
+		snprintf(line, sizeof(line), "NEWGROUPS %02d%02d%02d %02d%02d%02d",
+			ngtm->tm_year % 100, ngtm->tm_mon + 1, ngtm->tm_mday,
+			ngtm->tm_hour, ngtm->tm_min, ngtm->tm_sec);
+
+		return (nntp_command(line, OK_NEWGROUPS, NULL, 0));
+	} else
+#endif /* NNTP_ABLE */
+		return (fopen(active_times_file, "r"));
 }
 
 
@@ -752,9 +786,8 @@ match_group_list(
 	char *separator;
 	char pattern[HEADER_LEN];
 	size_t group_len, list_len;
-	t_bool accept, negate;
+	t_bool negate, accept = FALSE;
 
-	accept = FALSE;
 	list_len = strlen(group_list);
 	/*
 	 * walk through comma-separated entries in list
@@ -956,9 +989,7 @@ make_group_list(
 				make_group_list(active_file, base_dir, group_path);
 				find_art_max_min(group_path, &art_max, &art_min);
 				append_group_line(active_file, group_path, art_max, art_min, base_dir);
-
-				ptr = strrchr(group_path, '/'); /* TODO: Unix'ism */
-				if (ptr != NULL)
+				if ((ptr = strrchr(group_path, '/')) != NULL) /* TODO: Unix'ism */
 					*ptr = '\0';
 			}
 		}
