@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2001-11-10
+ *  Updated   : 2002-04-10
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -85,6 +82,7 @@ constext txt_autosubscribing_groups[] = N_("Autosubscribing groups...\n");
 constext txt_autoselecting_articles[] = N_("Autoselecting articles (use '%s' to see all unread) ...");
 constext txt_bad_active_file[] = N_("Active file corrupt - %s");
 constext txt_bad_article[] = N_("Article to be posted resulted in errors/warnings. %s=quit, %s=Menu, %s=edit: ");
+constext txt_bad_attrib[] = N_("Unrecognised attribute: %s");
 constext txt_bad_command[] = N_("Bad command. Type '%s' for help.");
 constext txt_base64[] = "base64";
 constext txt_batch_update_unavail[] = N_("%s: Updating of index files not supported\n");
@@ -104,6 +102,7 @@ constext txt_cannot_open[] = N_("Can't open %s");
 constext txt_cannot_open_for_saving[] = N_("Couldn't open %s for saving");
 constext txt_cannot_post[] = N_("*** Posting not allowed ***");
 constext txt_cannot_post_group[] = N_("Posting is not allowed to %s");
+constext txt_cannot_retrieve[] = N_("Can't retrieve %s");
 constext txt_cannot_write_index[] = N_("Can't write index %s");
 constext txt_cannot_write_to_directory[] = N_("%s is a directory");
 constext txt_catchup_all_read_groups[] = N_("Catchup all groups entered during this session?");
@@ -609,8 +608,10 @@ constext txt_post_newsgroups[] = N_("Post to newsgroup(s) [%s]> ");
 constext txt_post_processing[] = N_("-- post processing started --");
 constext txt_post_processing_finished[] = N_("-- post processing completed --");
 constext txt_post_subject[] = N_("Post subject [%s]> ");
-constext txt_post_via_builtin_inews[] = N_("Posting using external inews failed. Use builtin inews instead?");
-constext txt_post_via_builtin_inews_only[] = N_("It worked! Should I always use my builtin inews from now on?");
+#ifdef NNTP_INEWS
+	constext txt_post_via_builtin_inews[] = N_("Posting using external inews failed. Use builtin inews instead?");
+	constext txt_post_via_builtin_inews_only[] = N_("It worked! Should I always use my builtin inews from now on?");
+#endif /* NNTP_INEWS */
 constext txt_posted_info_file[] = N_("# Summary of mailed/posted messages viewable by 'W' command from within tin.\n");
 constext txt_posting[] = N_("Posting article...");
 constext txt_postpone_repost[] = N_("Post postponed articles [%%.*s]? (%s/%s/%s/%s/%s): ");
@@ -1056,7 +1057,7 @@ constext txt_filter_file[] = N_("# Global & local filter file for the TIN newsre
 #   ...\n\
 # or:\n\
 #   xref=PATTERN      Kill pattern (e.g. alt.flame*)\n\
-#   \n\
+#\n\
 #   time=NUM          time_t value when rule expires\n#\n");
 constext txt_filter_score[] = N_("Enter score for rule (default=100): ");
 constext txt_filter_score_help[] = N_("Enter the score weight (range 0 < score <= 10000)");
@@ -1310,16 +1311,13 @@ struct opttxt txt_show_score = {
 	N_("# Show score of article/thread in listing (ON/OFF)\n")
 };
 
-struct opttxt txt_full_page_scroll = {
-	N_("Scroll half/full page of groups/articles. <SPACE> toggles & <CR> sets."),
-	N_("Scroll full page (OFF=half page)   :"),
-	N_("# If ON scroll full page of groups/articles otherwise half a page\n")
-};
-
-struct opttxt txt_show_last_line_prev_page = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Show last line of previous page    :"),
-	N_("# If ON show the last line of the previous page as first line of next page\n")
+struct opttxt txt_scroll_lines = {
+	N_("0 = full page scrolling, -1 = show previous last line as first on next page, -2 = half page"),
+	N_("Number of lines to scroll in pager :"),
+	N_("# Number of lines that cursor-up/down will scroll in article pager\n\
+# eg, 1+ = line-by-line, 0 = page-by-page (tradional behaviour), -1 = the last\n\
+# line of the previous page will be displayed as the first line of next page,\n\
+# -2 = half-page scrolling\n")
 };
 
 struct opttxt txt_show_signatures = {
@@ -1688,7 +1686,7 @@ struct opttxt txt_news_quote_format = {
 	N_("Quote line when following up       :"),
 	N_("# Format of quote line when mailing/posting/following-up an article\n\
 # %%A Address    %%D Date   %%F Addr+Name   %%G Groupname   %%M Message-Id\n\
-# %%N Full Name  %%C First Name\n")
+# %%N Full Name  %%C First Name   %%I Initials\n")
 };
 
 struct opttxt txt_xpost_quote_format = {
@@ -1723,12 +1721,6 @@ struct opttxt txt_mm_charset = {
 };
 
 #ifdef CHARSET_CONVERSION
-struct opttxt txt_mm_local_charset = {
-	N_("Enter local (display) charset (e.g. US-ASCII, EUC-KR, ...), <CR> to set."),
-	N_("MM_LOCAL_CHARSET                   :"),
-	N_("# Charset supported locally which is used for displaying articles.\n")
-};
-
 struct opttxt txt_mm_network_charset = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("MM_NETWORK_CHARSET                 :"),
@@ -1803,6 +1795,16 @@ struct opttxt txt_strip_blanks = {
 	N_("Strip blanks of end of lines       :"),
 	N_("# If ON strip blanks from end of lines to speedup display on slow terminals\n")
 };
+
+#ifdef HAVE_ICONV_OPEN_TRANSLIT
+struct opttxt txt_translit = {
+	N_("If ON, use transliteration. <SPACE> toggles & <CR> sets."),
+	N_("Transliteration                    :"),
+	N_("# If ON, use //TRANSLIT extension. This means that when a character cannot\n\
+# be represented in the in the target character set, it can be approximated\n\
+# through one or several similarly looking characters.\n")
+};
+#endif /* HAVE_ICONV_OPEN_TRANSLIT */
 
 struct opttxt txt_auto_cc = {
 	N_("Send you a carbon copy automatically. <SPACE> toggles & <CR> sets."),
@@ -1920,13 +1922,13 @@ struct opttxt txt_editor_format = {
 # %%E Editor  %%F Filename  %%N Linenumber\n")
 };
 
-#if defined(NNTP_ABLE) || defined(NNTP_ONLY)
+#ifdef NNTP_ABLE
 struct opttxt txt_inews_prog = {
 	N_("Enter name and options for external-inews, --internal for internal inews"),
 	N_("External inews                     :"),
 	N_("# If --internal use the builtin mini inews for posting via NNTP\n# otherwise use an external inews program\n"),
 };
-#endif /* NNTP_ABLE || NNTP_ONLY */
+#endif /* NNTP_ABLE */
 
 struct opttxt txt_mailer_format = {
 	N_("Enter %M for mailer, %S for subject, %T for to, %F for filename, <CR> to set."),

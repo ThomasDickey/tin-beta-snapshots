@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2001-07-22
+ *  Updated   : 2002-03-26
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea, Rich Skrenta.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -51,11 +48,12 @@
 #	include "rfc2046.h"
 #endif /* !RFC2046_H */
 
-#define PAGE_HEADER	4
 
 /*
- * The number of lines available to display actual article text
+ * PAGE_HEADER is the size in lines of the article page header
+ * ARTLINES is the number of lines available to display actual article text.
  */
+#define PAGE_HEADER	4
 #define ARTLINES	(NOTESLINES-(PAGE_HEADER-INDEX_TOP))
 
 int curr_line;			/* current line in art (indexed from 0) */
@@ -100,27 +98,55 @@ static t_bool hide_uue;			/* set when uuencoded sections are 'hidden' */
 static int handle_pager_keypad (t_menukeys *menukeys);
 static int load_article (int new_respnum);
 static int prompt_response (int ch, int curr_respnum);
+static int scroll_page (int i);
 static t_bool deactivate_next_ctrl_l (void);
 static t_bool activate_last_ctrl_l (void);
 static void preprocess_info_message (FILE *info_fh);
 static void print_message_page (FILE *file, t_lineinfo *messageline, size_t messagelines, size_t lcurr_line, size_t begin, size_t end, int help_level);
 static void process_search (int *lcurr_line, size_t message_lines, size_t screen_lines, int help_level);
 static void process_url (void);
-static void scroll_page (int i);
-static void show_first_header (const char *group);
+static void draw_page_header (const char *group);
 #ifdef HAVE_METAMAIL
 	static void show_mime_article (FILE *fp);
 #endif /* HAVE_METAMAIL */
 
 
 /*
- * Scroll visible article part of display down (+ve) or up (-ve) by 'i'
- * lines.
+ * Scroll visible article part of display down (+ve) or up (-ve)
+ * according to 'dir' (KEYMAP_UP or KEYMAP_DOWN) and tinrc.scroll_lines
+ * >= 1		line count
+ * 0		full page scroll
+ * -1		full page but retain last line of prev page when scrolling
+ * 			down. Obviously only applies when scrolling down.
+ * -2		half page scroll
+ * Return the offset we scrolled by so that redrawing can be done
  */
-static void
+static int
 scroll_page (
-	int i)
+	int dir)
 {
+	int i;
+
+	if (tinrc.scroll_lines >= 1)
+		i = tinrc.scroll_lines;
+	else {
+		i = (signal_context == cPage) ? ARTLINES : NOTESLINES;
+		switch (tinrc.scroll_lines) {
+			case 0:
+				break;
+			case -1:
+				if (dir == KEYMAP_DOWN)
+					i -= 1;
+				break;
+			case -2:
+				i >>= 1;
+				break;
+		}
+	}
+
+	if (dir == KEYMAP_UP)
+		i = -i;
+
 #ifdef USE_CURSES
 	scrollok (stdscr, TRUE);
 #endif /* USE_CURSES */
@@ -130,6 +156,8 @@ scroll_page (
 #ifdef USE_CURSES
 	scrollok (stdscr, FALSE);
 #endif /* USE_CURSES */
+
+	return i;
 }
 
 
@@ -349,7 +377,7 @@ show_page (
 					if (curr_line == 0)
 						info_message (_(txt_begin_of_art));
 					else {
-						curr_line -= (tinrc.full_page_scroll) ? ARTLINES : ARTLINES/2;
+						curr_line -= (tinrc.scroll_lines == -2) ? ARTLINES / 2 : ARTLINES;
 						draw_page (group->name, 0);
 					}
 				}
@@ -383,9 +411,9 @@ show_page (
 						if ((ch == iKeyPageNextUnread) && tinrc.tab_goto_next_unread)
 							goto page_goto_next_unread;
 
-						curr_line += (tinrc.full_page_scroll) ? ARTLINES : ARTLINES/2;
+						curr_line += (tinrc.scroll_lines == -2) ? ARTLINES / 2 : ARTLINES;
 
-						if (tinrc.show_last_line_prev_page)
+						if (tinrc.scroll_lines == -1)		/* formerly show_last_line_prev_page */
 							curr_line--;
 						draw_page (group->name, 0);
 					}
@@ -423,17 +451,16 @@ page_goto_next_unread:
 				if (activate_last_ctrl_l())
 					draw_page (group->name, 0);
 				else {
+					int offset;
+
 					if (curr_line == 0) {
 						info_message (_(txt_begin_of_art));
 						break;
 					}
 
-					curr_line--;
-					if (have_linescroll) {
-						scroll_page (-1);
-						draw_page (group->name, -1);
-					} else
-						draw_page (group->name, 0);
+					offset = scroll_page (KEYMAP_UP);
+					curr_line += offset;
+					draw_page (group->name, offset);
 				}
 				break;
 
@@ -442,17 +469,16 @@ page_goto_next_unread:
 				if (deactivate_next_ctrl_l())
 					draw_page (group->name, 0);
 				else {
+					int offset;
+
 					if (curr_line + ARTLINES >= artlines) {
 						info_message (_(txt_end_of_art));
 						break;
 					}
 
-					curr_line++;
-					if (have_linescroll) {
-						scroll_page (1);
-						draw_page (group->name, 1);
-					} else
-						draw_page (group->name, 0);
+					offset = scroll_page (KEYMAP_DOWN);
+					curr_line += offset;
+					draw_page (group->name, offset);
 				}
 				break;
 
@@ -986,10 +1012,15 @@ draw_page (
 	const char *group,
 	int part)
 {
-	int i;
-	int end;	/* last line to draw */
+	int start, end;	/* 1st, last line to draw */
 
 	signal_context = cPage;
+
+	/*
+	 * Can't do partial draw if term can't scroll properly
+	 */
+	if (part != 0 && !have_linescroll)
+		part = 0;
 
 	/*
 	 * Ensure curr_line is in bounds
@@ -1001,21 +1032,29 @@ draw_page (
 
 	search_line = curr_line;	/* Reset search to start from top of display */
 
-	if (part == 0) {
-		ClearScreen();
-		show_first_header (group);
-	} else
-		MoveCursor (0, 0);
-
 	scroll_region_top = PAGE_HEADER;
 
 	/* Down-scroll, only redraw bottom 'part' lines of screen */
-	i = (part > 0) ? ARTLINES-part : 0;
+	start = (part > 0) ? ARTLINES - part : 0;
+	if (start < 0)
+		start = 0;
 
 	/* Up-scroll, only redraw the top 'part' lines of screen */
 	end = (part < 0) ? -part : ARTLINES;
+	if (end > ARTLINES)
+		end = ARTLINES;
 
-	print_message_page (note_fp, artline, artlines, curr_line, i, end, PAGE_LEVEL);
+	/*
+	 * ncurses doesn't clear the scroll area when you scroll by more than the
+	 * window size - force full redraw
+	 */
+	if ((end-start >= ARTLINES) || (part == 0)) {
+		ClearScreen();
+		draw_page_header (group);
+	} else
+		MoveCursor (0, 0);
+
+	print_message_page (note_fp, artline, artlines, curr_line, start, end, PAGE_LEVEL);
 
 	/*
 	 * Print an appropriate footer
@@ -1024,7 +1063,6 @@ draw_page (
 		clear_message();
 		MoveCursor (cLINES, MORE_POS - (5 + BLANK_PAGE_COLS));
 		StartInverse ();
-
 		my_fputs (((arts[this_resp].thread != -1) ? _(txt_next_resp) : _(txt_last_resp)), stdout);
 		my_flush ();
 		EndInverse ();
@@ -1040,10 +1078,12 @@ static void
 show_mime_article (
 	FILE *fp)
 {
-	FILE *mime_fp;
 	char *mm;
 	char buf[PATH_LEN];
 	long offset;
+#ifndef DONT_HAVE_PIPING
+	FILE *mime_fp;
+#endif /* !DONT_HAVE_PIPING */
 
 	offset = ftell (fp);
 	rewind (fp);
@@ -1060,6 +1100,9 @@ show_mime_article (
 
 	EndWin();
 	Raw(FALSE);
+
+	/* TODO: add DONT_HAVE_PIPING fallback code */
+#ifndef DONT_HAVE_PIPING
 	if ((mime_fp = popen (buf, "w"))) {
 		while (fgets (buf, (int) sizeof(buf), fp) != (char *) 0)
 			fputs (buf, mime_fp);
@@ -1067,6 +1110,7 @@ show_mime_article (
 		fflush (mime_fp);
 		pclose (mime_fp);
 	} else
+#endif /* !DONT_HAVE_PIPING */
 		info_message (_(txt_error_metamail_failed), strerror(errno));
 
 	Raw(TRUE);
@@ -1078,7 +1122,6 @@ show_mime_article (
 
 	MoveCursor (cLINES, MORE_POS - (5 + BLANK_PAGE_COLS));
 	StartInverse ();
-
 	my_flush ();
 	EndInverse ();
 }
@@ -1089,7 +1132,7 @@ show_mime_article (
  * PAGE_HEADER defines the size in lines of this header
  */
 static void
-show_first_header (
+draw_page_header (
 	const char *group)
 {
 	char buf[HEADER_LEN];
@@ -1273,7 +1316,7 @@ load_article(
 
 		make_group_path (CURR_GROUP.name, group_path);
 
-		switch (art_open (TRUE, &arts[new_respnum], group_path, &pgart)) {
+		switch (art_open (TRUE, &arts[new_respnum], group_path, &pgart, TRUE)) {
 
 			case ART_UNAVAILABLE:
 				art_mark_read (&CURR_GROUP, &arts[new_respnum]);
@@ -1517,7 +1560,7 @@ process_url(
 		}
 	}
 	/* TODO: -> lang.c */
-	info_message ("No more URL's");
+	info_message (_("No more URL's"));
 }
 
 
@@ -1560,6 +1603,7 @@ info_pager (
 	set_xclick_off ();
 	display_info_page (0);
 	forever {
+		int offset;
 
 		switch (ch = handle_pager_keypad(&menukeymap.info_nav)) {
 			case ESC:	/* common arrow keys */
@@ -1576,12 +1620,9 @@ info_pager (
 					display_info_page (0);
 					break;
 				}
-				curr_info_line--;
-				if (have_linescroll) {
-					scroll_page (-1);
-					display_info_page (-1);
-				} else
-					display_info_page (0);
+				offset = scroll_page (KEYMAP_UP);
+				curr_info_line += offset;
+				display_info_page (offset);
 				break;
 
 			case iKeyDown:				/* line down */
@@ -1595,12 +1636,9 @@ info_pager (
 					display_info_page (0);
 					break;
 				}
-				curr_info_line++;
-				if (have_linescroll) {
-					scroll_page (1);
-					display_info_page (1);
-				} else
-					display_info_page (0);
+				offset = scroll_page (KEYMAP_DOWN);
+				curr_info_line += offset;
+				display_info_page (offset);
 				break;
 
 			case iKeyPageDown:			/* page down */
@@ -1615,7 +1653,7 @@ info_pager (
 					display_info_page (0);
 					break;
 				}
-				curr_info_line += (tinrc.full_page_scroll) ? NOTESLINES : NOTESLINES/2;
+				curr_info_line += (tinrc.scroll_lines == -2) ? NOTESLINES / 2 : NOTESLINES;
 				display_info_page (0);
 				break;
 
@@ -1631,7 +1669,7 @@ info_pager (
 					display_info_page (0);
 					break;
 				}
-				curr_info_line -= (tinrc.full_page_scroll) ? NOTESLINES : NOTESLINES/2;
+				curr_info_line -= (tinrc.scroll_lines == -2) ? NOTESLINES / 2 : NOTESLINES;
 				display_info_page (0);
 				break;
 
@@ -1678,30 +1716,40 @@ void
 display_info_page (
 	int part)
 {
-	int end, i;
+	int start, end;	/* 1st, last line to draw */
 
 	signal_context = cInfopager;
+
+	/*
+	 * Can't do partial draw if term can't scroll properly
+	 */
+	if (part != 0 && !have_linescroll)
+		part = 0;
 
 	if (curr_info_line < 0)
 		curr_info_line = 0;
 	if (curr_info_line >= num_info_lines)
 		curr_info_line = num_info_lines - 1;
 
-	/* Print titel */
-	if (part == 0) {
+	scroll_region_top = INDEX_TOP;
+
+	/* Down-scroll, only redraw bottom 'part' lines of screen */
+	start = (part > 0) ? NOTESLINES - part : 0;
+	if (start < 0)
+		start = 0;
+
+	/* Up-scroll, only redraw the top 'part' lines of screen */
+	end = (part < 0) ? -part : NOTESLINES;
+	if (end < NOTESLINES)
+		end = NOTESLINES;
+
+	/* Print title */
+	if ((end-start >= ARTLINES) || (part == 0)) {
 		ClearScreen ();
 		center_line (0, TRUE, info_title);
 	}
 
-	scroll_region_top = INDEX_TOP;
-
-	/* Down-scroll, only redraw bottom 'part' lines of screen */
-	i = (part > 0) ? NOTESLINES-part : 0;
-
-	/* Up-scroll, only redraw the top 'part' lines of screen */
-	end = (part < 0) ? -part : NOTESLINES;
-
-	print_message_page (info_file, infoline, num_info_lines, curr_info_line, i, end, INFO_PAGER);
+	print_message_page (info_file, infoline, num_info_lines, curr_info_line, start, end, INFO_PAGER);
 
 	/* print footer */
 	draw_percent_mark (curr_info_line + (curr_info_line + NOTESLINES < num_info_lines ? NOTESLINES : num_info_lines - curr_info_line), num_info_lines);
@@ -1722,7 +1770,7 @@ preprocess_info_message (
 
 	do {
 		infoline[num_info_lines].offset = ftell(info_fh);
-		infoline[num_info_lines].flags  = 0;
+		infoline[num_info_lines].flags = 0;
 		num_info_lines++;
 		if (num_info_lines >= chunk) {
 			chunk += 50;

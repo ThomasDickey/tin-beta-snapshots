@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2001-11-10
+ *  Updated   : 2002-04-10
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea, Rich Skrenta.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -555,12 +552,15 @@ tin_done (
 					(read_newsrc_lines - wrote_newsrc_lines),
 					PLURAL(read_newsrc_lines - wrote_newsrc_lines, txt_group),
 					OLDNEWSRC_FILE);
-				prompt_continue();
+				if (!batch_mode)
+					prompt_continue();
 				break;
 			}
 
-			if (!prompt_yn (cLINES, _(txt_newsrc_again), TRUE))
-				break;
+			if (!batch_mode) {
+				if (!prompt_yn (cLINES, _(txt_newsrc_again), TRUE))
+					break;
+			}
 		}
 
 		write_input_history_file ();
@@ -1173,6 +1173,9 @@ eat_re (
 	int offsets[6];
 	int size_offsets = sizeof(offsets)/sizeof(int);
 
+	if (!s || !*s)
+		return "<No subject>"; /* also used in art.c:parse_headers() */
+
 	do {
 		slen = strlen(s);
 		data = pcre_exec(strip_re_regex.re, strip_re_regex.extra, s, slen, 0, 0, offsets, size_offsets);
@@ -1426,8 +1429,8 @@ strfquote (
 				case 'C':	/* First Name of author */
 					if (arts[respnum].name != (char *) 0) {
 						STRCPY(tbuf, arts[respnum].name);
-						if (strrchr (arts[respnum].name, ' '))
-							*(strrchr (tbuf, ' ')) = '\0';
+						if (strchr (arts[respnum].name, ' '))
+							*(strchr (tbuf, ' ')) = '\0';
 					} else {
 						STRCPY(tbuf, arts[respnum].from);
 					}
@@ -1454,7 +1457,7 @@ strfquote (
 					j = 0;
 					iflag = TRUE;
 					for (i = 0; tbuf[i]; i++) {
-						if (iflag) {
+						if (iflag && tbuf[i] != ' ') {
 							tbuf[j++] = tbuf[i];
 							iflag = FALSE;
 						}
@@ -1638,10 +1641,6 @@ strfpath_cp(
  *
  * Interestingly, %G is not documented as such and apparently unused
  *   ~/News/%G -> $HOME/News/group.name
- *
- * FIXME:	allow =%G expansion
- *			(write all articles to a single file named $HOME/Mail/group.name)
- *			What's with this ? '=' on its own already does this
  *
  * Inputs:
  *   format		The string to be converted
@@ -2209,7 +2208,7 @@ make_post_process_cmd (
 	invoke_cmd (buf);
 	my_chdir (currentdir);
 }
-#endif /*! M_UNIX */
+#endif /* !M_UNIX */
 
 
 /*
@@ -2640,84 +2639,130 @@ buffer_to_local (
 	char *cnetwork_charset;
 
 	/* FIXME: this should default in RFC2046.c to US-ASCII */
-	if (!(network_charset && *network_charset)) {	/* Content-Type: did't had a charset parameter */
-		/*
-		 * defaulting to US-ASCII would be more correct, but $MM_CHARSET
-		 * might be more usefull
-		 */
-		cnetwork_charset = my_strdup(local_charset);
-	} else {
+	if ((network_charset && *network_charset)) {	/* Content-Type: had a charset parameter */
 		cnetwork_charset = my_strdup(network_charset);
+		if (strcasecmp(cnetwork_charset, local_charset) && strcasecmp(cnetwork_charset, "US-ASCII")) {
+			/* different charsets && cnetwork_charset NOT us-ascii */
+			char *clocal_charset;
+			iconv_t cd0, cd1, cd2;
 
-		if (strcasecmp(cnetwork_charset, local_charset)) { /* different charsets? */
-			char * obuf;
-			char * outbuf;
-			const char * inbuf;
-			iconv_t cd;
-			size_t result, osize;
-			size_t inbytesleft, outbytesleft;
+			clocal_charset = my_malloc(strlen(local_charset) + strlen("//TRANSLIT") + 1);
+			strcpy(clocal_charset, local_charset);
+#	ifdef HAVE_ICONV_OPEN_TRANSLIT
+			if (tinrc.translit)
+				strcat(clocal_charset, "//TRANSLIT");
+#	endif /* HAVE_ICONV_OPEN_TRANSLIT && TRANSLIT */
 
-#	ifndef MIME_STRICT_CHARSET
-			if (!strcasecmp(cnetwork_charset, "US-ASCII")) {
-#		if 0
-				free(cnetwork_charset);
-				cnetwork_charset = my_strdup(local_charset);
-#		else
-				/* no network_charset case already fixed above */
-				;
-#		endif /* 0 */
-			} else
-#	endif /* !MIME_STRICT_CHARSET */
-			{
-				if ((cd = iconv_open(local_charset, cnetwork_charset)) != (iconv_t) (-1)) {
-#	ifndef HAVE_WORKING_ICONV /* TODO: write configure check */
-					/* iconv() might crash on broken multibyte sequences so check them */
-					if (!strcasecmp(cnetwork_charset, "UTF-8"))
-						(void) utf8_valid(line);
-#	endif /* HAVE_WORKING_ICONV */
-					{
-						inbuf = (char *) line;
-						inbytesleft = strlen (line);
-						outbytesleft = 1 + inbytesleft * 4;	/* should be enough */
-						osize = outbytesleft;
-						obuf = (char *) my_malloc (osize + 1);
-						outbuf = (char *) obuf;
+			/* iconv() might crash on broken multibyte sequences so check them */
+			if (!strcasecmp(cnetwork_charset, "UTF-8"))
+				(void) utf8_valid(line);
 
-						do {
-							errno = 0;
-							result = iconv (cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
-							if (result == (size_t) (-1)) {
-								switch (errno) {
-									case EILSEQ:
-										**&outbuf = '?';
-										outbuf++;
-										inbuf++;
-										inbytesleft--;
-										break;
+			/*
+			 * TODO: hardcode unknown_ucs4 (0x00 0x00 0x00 0x3f)
+			 *       instead of converting it?
+			 */
+			if ((cd0 = iconv_open("UCS-4", "US-ASCII")) != (iconv_t) (-1) &&
+				(cd1 = iconv_open("UCS-4", cnetwork_charset)) != (iconv_t) (-1) &&
+				(cd2 = iconv_open(clocal_charset, "UCS-4")) != (iconv_t) (-1)) {
+				ICONV_CONST char *inbuf;
+				char unknown = '?';
+				ICONV_CONST char *unknown_ascii = &unknown;
+				char *unknown_ucs4;
+				char unknown_buf[4];
+				char *obuf, *outbuf;
+				char *tmpbuf, *tbuf;
+				size_t inbytesleft;
+				size_t unknown_bytesleft;
+				size_t tmpbytesleft, tsize;
+				size_t outbytesleft, osize;
+				size_t result;
 
-									case E2BIG:
-										obuf = (char *) my_realloc(obuf, osize * 2);
-										outbuf = (char *) (obuf + osize - outbytesleft);
-										outbytesleft += osize;
-										osize <<= 1; /* double size */
-										break;
+				inbytesleft = 1;
+				unknown_bytesleft = 4;
+				unknown_ucs4 = unknown_buf;
 
-									default:
-										inbytesleft = 0;
-								}
-							}
-						} while (inbytesleft > 0);
+				/* convert '?' from ASCII to UCS-4 */
+				iconv (cd0, &unknown_ascii, &inbytesleft, &unknown_ucs4, &unknown_bytesleft);
 
-						**&outbuf = '\0';
-						strcpy(line, obuf); /* FIXME: obuf might be bigger than line! */
-						free(obuf);
-						iconv_close(cd);
+				/* temporarily convert to UCS-4 */
+				inbuf = (ICONV_CONST char *) line;
+				inbytesleft = strlen (line);
+				tmpbytesleft = inbytesleft * 4 + 4;	/* should be enough */
+				tsize = tmpbytesleft;
+				tbuf = (char *) my_malloc (tsize);
+				tmpbuf = (char *) tbuf;
+
+				do {
+					errno = 0;
+					result = iconv (cd1, &inbuf, &inbytesleft, &tmpbuf, &tmpbytesleft);
+					if (result == (size_t) (-1)) {
+						switch (errno) {
+							case EILSEQ:
+								memcpy(tmpbuf, unknown_ucs4, 4);
+								tmpbuf += 4;
+								tmpbytesleft -= 4;
+								inbuf++;
+								inbytesleft--;
+								break;
+
+							case E2BIG:
+								tbuf = (char *) my_realloc(tbuf, tsize * 2);
+								tmpbytesleft += tsize;
+								tsize <<= 1; /* double size */
+								break;
+
+							default:
+								inbytesleft = 0;
+						}
 					}
-				}
+				} while (inbytesleft > 0);
+
+				/* now convert from UCS-4 to local charset */
+				inbuf = (ICONV_CONST char *) tbuf;
+				inbytesleft = tsize - tmpbytesleft;
+				outbytesleft = inbytesleft * 4;	/* should be enough */
+				osize = outbytesleft;
+				obuf = (char *) my_malloc(osize + 1);
+				outbuf = (char *) obuf;
+
+				do {
+					errno = 0;
+					result = iconv (cd2, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
+					if (result == (size_t) (-1)) {
+						switch (errno) {
+							case EILSEQ:
+								**&outbuf = '?';
+								outbuf++;
+								outbytesleft--;
+								inbuf += 4;
+								inbytesleft -= 4;
+								break;
+
+							case E2BIG:
+								obuf = (char *) my_realloc(obuf, osize * 2);
+								outbuf = (char *) (obuf + osize - outbytesleft);
+								outbytesleft += osize;
+								osize <<= 1; /* double size */
+								break;
+
+							default:
+								inbytesleft = 0;
+						}
+					}
+				} while (inbytesleft > 0);
+
+				**&outbuf = '\0';
+				strcpy(line, obuf); /* FIXME: obuf might be bigger than line! */
+				iconv_close(cd2);
+				iconv_close(cd1);
+				iconv_close(cd0);
+				free(obuf);
+				free(tbuf);
 			}
+			free(clocal_charset);
 		}
+		free(cnetwork_charset);
 	}
-	free(cnetwork_charset);
 }
 
 
@@ -2727,7 +2772,7 @@ buffer_to_network (
 {
 	char * obuf;
 	char * outbuf;
-	const char * inbuf;
+	ICONV_CONST char * inbuf;
 	iconv_t cd;
 	size_t result, osize;
 	size_t inbytesleft, outbytesleft;
@@ -2772,6 +2817,64 @@ buffer_to_network (
 	}
 }
 #endif /* CHARSET_CONVERSION */
+
+
+/*
+ * do some character set processing
+ *
+ * this is called for headers, overview data, and article bodies
+ *
+ * to set non-ASCII characters to '?' (only with MIME_STRICT_CHARSET
+ * and without NO_LOCALE): call with network_charset=="us-ascii"
+ */
+void
+process_charsets (
+	char *line,
+	const char *network_charset,
+	const char *local_charset)
+{
+	/* set non-ASCII characters to '?' if required */
+
+#if defined(MIME_STRICT_CHARSET) && !defined(NO_LOCALE)
+#	if !defined(CHARSET_CONVERSION)
+	if (charset && strcasecmp(network_charset, local_charset) || !strcasecmp(network_charset, "us-ascii"))
+		/* different charsets || network charset is US-ASCII (see below) */
+#	else
+	if (!strcasecmp(network_charset, "us-ascii"))
+		/*
+		 * network charset is US-ASCII: calling process_charsets() with 
+		 * network_charset=="US-ASCII" means: set all non-ASCII (8bit)
+		 * characters to '?'
+		 */
+#	endif /* !CHARSET_CONVERSION */
+	{
+		char *c = line;
+		while (*c != '\0') { /* reduce to US-ASCII, other non-prints are filtered later */
+			if ((unsigned char) *c >= 128)
+				*c = '?';
+			c++;
+		}
+	}
+#endif /* MIME_STRICT_CHARSET && !NO_LOCALE */
+
+	/* charset conversion (codepage or iconv(3) version) */
+#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
+	buffer_to_local(line);
+#else
+#	ifdef CHARSET_CONVERSION
+	if (strcasecmp(network_charset, "us-ascii"))	/* network_charset is NOT us-ascii */
+		buffer_to_local(line, network_charset, local_charset);
+#	endif /* CHARSET_CONVERSION */
+#endif /* LOCAL_CHARSET || MAC_OS_X */
+
+
+	/* iso2asc support */
+	if (iso2asc_supported >= 0) {
+		char isobuf[LEN];
+		strcpy (isobuf, line);
+		convert_iso2asc (isobuf, line, iso2asc_supported);
+	}
+}
 
 
 /*
@@ -3544,7 +3647,7 @@ gnksa_split_from (
 		}
 	}
 
-	if (! strchr(address, '@')) /* check for From: without an @ */
+	if (!strchr(address, '@')) /* check for From: without an @ */
 		return GNKSA_ATSIGN_MISSING;
 
 	/* split successful */

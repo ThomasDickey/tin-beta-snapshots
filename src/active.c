@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 1999-11-19
+ *  Updated   : 2002-03-26
  *  Notes     :
  *
  * Copyright (c) 1992-2002 Iain Lea <iain@bricbrac.de>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -51,16 +48,15 @@
  */
 #define ACTIVE_SEP	" \n"
 
-t_bool force_reread_active_file = FALSE;
-
-static time_t active_timestamp;	/* time active file read (local) */
-
 /*
  * if you are using C-News nntpd set NUM_SIMULTANEOUS_GROUP_COMMAND to 1
  */
 #ifdef NNTP_ABLE
 #	define NUM_SIMULTANEOUS_GROUP_COMMAND 50
 #endif /* NNTP_ABLE */
+
+t_bool force_reread_active_file = FALSE;
+static time_t active_timestamp;	/* time active file read (local) */
 
 
 /*
@@ -447,7 +443,10 @@ read_newsrc_active_file (
 	 * Exit if active file wasn't read correctly or is empty
 	 */
 	if (tin_errno || !num_active) {
-		error_message (_(txt_active_file_is_empty), (read_news_via_nntp ? _(txt_servers_active) : news_active_file));
+		if (newsrc_active && !num_active) /* TODO: -> lang.c */
+			error_message (_("Server has non of the groups listed in %s"), newsrc);
+		else
+			error_message (_(txt_active_file_is_empty), (read_news_via_nntp ? _(txt_servers_active) : news_active_file));
 		tin_done (EXIT_FAILURE);
 	}
 
@@ -480,11 +479,11 @@ read_active_file (
 
 #if defined(NNTP_ABLE) || defined(NNTP_ONLY)
 		if (read_news_via_nntp)
-#endif /* NNTP_ABLE || NNTP_ONLY */
-			error_message (_(txt_cannot_open), news_active_file);
-#if defined(NNTP_ABLE) || defined(NNTP_ONLY)
+			error_message (_(txt_cannot_retrieve), ACTIVE_FILE);
 		else
 			error_message (_(txt_cannot_open_active_file), news_active_file, tin_progname);
+#else
+		error_message (_(txt_cannot_open), news_active_file);
 #endif /* NNTP_ABLE || NNTP_ONLY */
 
 		tin_done (EXIT_FAILURE);
@@ -661,8 +660,8 @@ check_for_any_new_groups (
 		TIN_FCLOSE (fp);
 
 		free_attributes_array ();
-		read_attributes_file (global_attributes_file, TRUE);
-		read_attributes_file (local_attributes_file, FALSE);
+		read_attributes_file (TRUE);
+		read_attributes_file (FALSE);
 
 		if (tin_errno)
 			return;				/* Don't update the time if we quit */
@@ -932,12 +931,7 @@ make_group_list (
 	struct stat stat_info;
 	t_bool is_dir;
 
-	if (access (group_path, R_OK))
-		return;
-
-	dir = opendir (group_path);
-
-	if (dir != (DIR *) 0) {
+	if ((dir = opendir (group_path)) != (DIR *) 0) {
 		is_dir = FALSE;
 		while ((direntry = readdir (dir)) != (DIR_BUF *) 0) {
 			STRCPY(filename, direntry->d_name);

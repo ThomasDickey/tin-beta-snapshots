@@ -34,6 +34,9 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+PACKAGE = @PACKAGE@
+VERSION = @VERSION@
+
 SHELL		= /bin/sh
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
@@ -350,8 +353,8 @@ install_helpers: $(DESTDIR)$(INS_BINARY_DIR) $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MA
 	@-if test ! -f $(DESTDIR)$(INS_BINARY_DIR)/metamutt ; then $(INSTALL) -m 755 $(TOLDIR)/metamutt $(DESTDIR)$(INS_BINARY_DIR)/metamutt ; fi
 	@$(INSTALL) -m 755 $(TOLDIR)/w2r.pl $(DESTDIR)$(INS_BINARY_DIR)/w2r.pl
 	@$(INSTALL) -m 755 $(TOLDIR)/opt-case.pl $(DESTDIR)$(INS_BINARY_DIR)/opt-case.pl
-	@$(INSTALL) -m 444 $(DOCDIR)/w2r.pl.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/w2r.pl.$(INS_MANUAL_EXT)
-	@$(INSTALL) -m 444 $(DOCDIR)/opt-case.pl.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/opt-case.pl.$(INS_MANUAL_EXT)
+	@$(INSTALL) -m 444 $(DOCDIR)/w2r.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/w2r.pl.$(INS_MANUAL_EXT)
+	@$(INSTALL) -m 444 $(DOCDIR)/opt-case.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/opt-case.pl.$(INS_MANUAL_EXT)
 
 uninstall_helpers:
 	@$(ECHO) "Removing helper applications ..."
@@ -367,7 +370,7 @@ install: $(DESTDIR)$(INS_BINARY_DIR)
 	@( $(CD) $(DESTDIR)$(INS_BINARY_DIR) && $(RM) -f r$(EXE) && $(LN) $(EXE) r$(EXE) )
 	@$(MAKE) install_helpers
 	@$(MAKE) install_manpage
-	@$(MAKE) install_nls
+@MSG_DIR_MAKE@	@$(MAKE) install_nls
 
 uninstall:
 	@$(ECHO) "Uninstalling $(EXE) in $(DESTDIR)$(INS_BINARY_DIR) ..."
@@ -375,13 +378,13 @@ uninstall:
 	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/r$(EXE)
 	@$(MAKE) uninstall_helpers
 	@$(MAKE) uninstall_manpage
-	@$(MAKE) uninstall_nls
+@MSG_DIR_MAKE@	@$(MAKE) uninstall_nls
 
 install_nls:
-	@-if test -r ../po/Makefile ; then $(ECHO) "Installing NLS-files" ; $(CD) ../po/ && $(MAKE) install ; fi
+@MSG_DIR_MAKE@	@-if test -r ../po/Makefile ; then $(ECHO) "Installing NLS-files" ; $(CD) ../po/ && $(MAKE) install ; fi
 
 uninstall_nls:
-	@-if test -r ../po/Makefile ; then $(ECHO) "Uninstalling NLS-files" ; $(CD) ../po/ && $(MAKE) uninstall ; fi
+@MSG_DIR_MAKE@	@-if test -r ../po/Makefile ; then $(ECHO) "Uninstalling NLS-files" ; $(CD) ../po/ && $(MAKE) uninstall ; fi
 
 tags:
 	@$(ECHO) "Generating tags (results in ./tags) ..."
@@ -545,7 +548,8 @@ $(OBJDIR)/rfc1524.o:		$(SRCDIR)/rfc1524.c $(TIN_DEP) \
 $(OBJDIR)/rfc2045.o:		$(SRCDIR)/rfc2045.c $(TIN_DEP)
 $(OBJDIR)/rfc2046.o:		$(SRCDIR)/rfc2046.c $(TIN_DEP) \
 				$(INCDIR)/rfc2046.h
-$(OBJDIR)/rfc2047.o:		$(SRCDIR)/rfc2047.c $(TIN_DEP)
+$(OBJDIR)/rfc2047.o:		$(SRCDIR)/rfc2047.c $(TIN_DEP) \
+				$(INCDIR)/rfc2046.h
 $(OBJDIR)/save.o:		$(SRCDIR)/save.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h \
 				$(INCDIR)/rfc2046.h

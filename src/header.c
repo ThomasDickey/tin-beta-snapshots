@@ -54,19 +54,19 @@ get_host_name (
 
 	hostname[0] = '\0';
 
-#ifdef HAVE_GETHOSTBYNAME
+#ifdef HAVE_GETHOSTNAME
 	gethostname(hostname, sizeof(hostname));
 #else
 #	if defined(M_AMIGA)
 	if ((ptr = getenv("NodeName")) != (char *) 0)
 		strncpy(hostname, ptr, MAXHOSTNAMELEN);
 #	endif /* M_AMIGA */
-#endif /* HAVE_GETHOSTBYNAME */
+#endif /* HAVE_GETHOSTNAME */
 #ifdef HAVE_SYS_UTSNAME_H
-	if (! *hostname)
+	if (!*hostname)
 		strcpy(hostname, system_info.nodename);
 #endif /* HAVE_SYS_UTSNAME_H */
-	if (! *hostname) {
+	if (!*hostname) {
 		if ((ptr = getenv("HOST")) != (char *) 0)
 			strncpy (hostname, ptr, MAXHOSTNAMELEN);
 		else {
@@ -162,9 +162,12 @@ get_fqdn (
 		if (strchr(host, '.'))
 			return host;
 		(void) strncpy(name, host, MAXHOSTNAMELEN);
-	} else
+	} else {
+#	ifdef HAVE_GETHOSTNAME
 		if (gethostname(name, MAXHOSTNAMELEN))
+#	endif /* HAVE_GETHOSTNAME */
 			return NULL;
+	}
 
 	if ('0' <= *name && *name <= '9') {
 		in.s_addr = inet_addr(name);
@@ -368,8 +371,7 @@ build_sender (
 	sender[0] = '\0';
 
 	if ((ptr = get_full_name()))
-		sprintf (sender, ((strchr(ptr, '.')) ? "\"%s\" " : "%s "), ptr);
-
+		snprintf(sender, sizeof(sender) - 1, ((strpbrk(ptr, "\".:;<>@[]()\\")) ? "\"%s\"" : "%s "), ptr);
 	if ((ptr = get_user_name())) {
 		strcat(sender, "<");
 		strcat(sender, ptr);

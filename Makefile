@@ -1,7 +1,7 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2000-03-22
+# Updated: 2002-03-11
 #
 
 PROJECT	= tin
@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 5
 SVER	= 12
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20020227
+DVER	= 20020410
 EXE	= tin
 
 # directory structure
@@ -166,7 +166,7 @@ DOC	= \
 	$(DOCDIR)/keymap.sample \
 	$(DOCDIR)/mailcap.sample \
 	$(DOCDIR)/mime.types \
-	$(DOCDIR)/opt-case.pl.1 \
+	$(DOCDIR)/opt-case.1 \
 	$(DOCDIR)/pgp.txt \
 	$(DOCDIR)/rcvars.txt \
 	$(DOCDIR)/reading-mail.txt \
@@ -180,7 +180,7 @@ DOC	= \
 	$(DOCDIR)/plp_snprintf.3 \
 	$(DOCDIR)/tin.1 \
 	$(DOCDIR)/tin.5 \
-	$(DOCDIR)/w2r.pl.1 \
+	$(DOCDIR)/w2r.1 \
 	$(DOCDIR)/wildmat.3
 
 TOL	= \
@@ -188,6 +188,7 @@ TOL	= \
 	$(TOLDIR)/metamutt \
 	$(TOLDIR)/opt-case.pl \
 	$(TOLDIR)/tinlock \
+	$(TOLDIR)/tinews.pl \
 	$(TOLDIR)/url_handler.sh \
 	$(TOLDIR)/w2r.pl \
 	$(TOLDIR)/expand_aliases.tgz
@@ -309,36 +310,47 @@ MISC	= \
 	$(SRCDIR)/descrip.mms
 
 INTLFILES = \
-        $(INTLDIR)/bindtextdom.c \
-        $(INTLDIR)/cat-compat.c \
-        $(INTLDIR)/ChangeLog \
-        $(INTLDIR)/dcgettext.c \
-        $(INTLDIR)/dgettext.c \
-        $(INTLDIR)/explodename.c \
-        $(INTLDIR)/finddomain.c \
-        $(INTLDIR)/gettext.c \
-        $(INTLDIR)/gettext.h \
-        $(INTLDIR)/gettextP.h \
-        $(INTLDIR)/hash-string.h \
-        $(INTLDIR)/intl-compat.c \
-        $(INTLDIR)/l10nflist.c \
-        $(INTLDIR)/libgettext.h \
-        $(INTLDIR)/linux-msg.sed \
-        $(INTLDIR)/loadinfo.h \
-        $(INTLDIR)/loadmsgcat.c \
-        $(INTLDIR)/localealias.c \
-        $(INTLDIR)/Makefile.in \
-        $(INTLDIR)/po2tbl.sed.in \
-        $(INTLDIR)/textdomain.c \
-        $(INTLDIR)/VERSION \
-        $(INTLDIR)/xopen-msg.sed
+	$(INTLDIR)/bindtextdom.c \
+	$(INTLDIR)/ChangeLog \
+	$(INTLDIR)/config.charset \
+	$(INTLDIR)/dcgettext.c \
+	$(INTLDIR)/dcigettext.c \
+	$(INTLDIR)/dcngettext.c \
+	$(INTLDIR)/dgettext.c \
+	$(INTLDIR)/dngettext.c \
+	$(INTLDIR)/explodename.c \
+	$(INTLDIR)/finddomain.c \
+	$(INTLDIR)/gettext.c \
+	$(INTLDIR)/gettext.h \
+	$(INTLDIR)/gettextP.h \
+	$(INTLDIR)/hash-string.h \
+	$(INTLDIR)/intl-compat.c \
+	$(INTLDIR)/l10nflist.c \
+	$(INTLDIR)/libgettext.h \
+	$(INTLDIR)/libgnuintl.h \
+	$(INTLDIR)/loadinfo.h \
+	$(INTLDIR)/loadmsgcat.c \
+	$(INTLDIR)/localcharset.c \
+	$(INTLDIR)/locale.alias \
+	$(INTLDIR)/localealias.c \
+	$(INTLDIR)/Makefile.in \
+	$(INTLDIR)/ngettext.c \
+	$(INTLDIR)/plural.c \
+	$(INTLDIR)/plural.y \
+	$(INTLDIR)/ref-add.sin \
+	$(INTLDIR)/ref-del.sin \
+	$(INTLDIR)/textdomain.c \
+	$(INTLDIR)/VERSION
 
 POFILES = \
 	$(PODIR)/Makefile.inn \
 	$(PODIR)/POTFILES.in \
 	$(PODIR)/tin.pot \
+	$(PODIR)/de.gmo \
 	$(PODIR)/de.po \
+	$(PODIR)/et.gmo \
 	$(PODIR)/et.po \
+	$(PODIR)/en_GB.gmo \
 	$(PODIR)/en_GB.po
 
 

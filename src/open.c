@@ -64,8 +64,10 @@ long head_next;
 #endif /* NO_POSTING */
 
 char *nntp_server = (char *)0;
-static char txt_xover_string[] = "XOVER";
-static char *txt_xover = txt_xover_string;
+#ifdef NNTP_ABLE
+	static char txt_xover_string[] = "XOVER";
+	static char *txt_xover = txt_xover_string;
+#endif /* NNTP_ABLE */
 
 
 /*
@@ -132,8 +134,8 @@ nntp_open (
 		 * According to the ietf-nntp mailinglist:
 		 *   200 you may (try to) do anything
 		 *   201 you may not POST
-		 *   202 you may not IHAVE
-		 *   203 you may not do EITHER
+		 *  (202 you may not IHAVE)
+		 *  (203 you may not do EITHER)
 		 *   All unrecognised 200 series codes should be assumed as success.
 		 *   All unrecognised 300 series codes should be assumed as notice to continue.
 		 *   All unrecognised 400 series codes should be assumed as temporary error.
@@ -141,14 +143,14 @@ nntp_open (
 		 */
 
 		case OK_CANPOST:
-		case OK_NOIHAVE:
+/*		case OK_NOIHAVE: */
 #	ifndef NO_POSTING
 			can_post = TRUE;
 #	endif /* !NO_POSTING */
 			break;
 
 		case OK_NOPOST:
-		case OK_NOPOSTIHAVE:
+/*		case OK_NOPOSTIHAVE: */
 			can_post = FALSE;
 			break;
 
@@ -390,7 +392,7 @@ int
 get_only_respcode (
 	char *message)
 {
-	int respcode;
+	int respcode = 0;
 #ifdef NNTP_ABLE
 	char *ptr, *end;
 
@@ -501,7 +503,7 @@ DEBUG_IO((stderr, "nntp_command (%s)\n", command));
 #	endif /* DEBUG */
 	put_server (command);
 
-	if (!bool_equal(dangerous_signal_exit, TRUE))
+	if (!bool_equal(dangerous_signal_exit, TRUE)) {
 		if ((get_respcode (message)) != success) {
 #	ifdef DEBUG
 			debug_nntp (command, "NOT_OK");
@@ -509,7 +511,7 @@ DEBUG_IO((stderr, "nntp_command (%s)\n", command));
 			/* error_message ("%s", message); */
 			return (FILE *) 0;
 		}
-
+	}
 #	ifdef DEBUG
 	debug_nntp (command, "OK");
 #	endif /* DEBUG */
@@ -598,7 +600,12 @@ open_newgroups_fp (
 /*
  * Get a list of default groups to subscribe to
  */
-/* TODO fixme/checkme */
+/* TODO: fixme/checkme
+ *      - logic seems to be wrong, NNTP_ABLE && read_saved_news
+ *        looks for a local subscriptions_file, but read_saved_news
+ *        doesn't require a local server...
+ *        open_newgroups_fp() uses the same logic.
+ */
 FILE *
 open_subscription_fp (
 	void)
@@ -753,9 +760,9 @@ open_art_header (
 
 	if (read_news_via_nntp && CURR_GROUP.type == GROUP_TYPE_NEWS) {
 		/*
-		 *  Don't bother requesting if we have not got there yet.
-		 *  This is a big win if the group has got holes in it (ie. if 000's
-		 *  of articles have expired between active files min & max values).
+		 * Don't bother requesting if we have not got there yet.
+		 * This is a big win if the group has got holes in it (ie. if 000's
+		 * of articles have expired between active files min & max values).
 		 */
 		if (art < head_next)
 			return (FILE *) 0;
@@ -765,7 +772,7 @@ open_art_header (
 			return(fp);
 
 		/*
-		 *  HEAD failed, try to find NEXT
+		 * HEAD failed, try to find NEXT
 		 *	Should return "223 artno message-id more text...."
 		 */
 		if (nntp_command("NEXT", OK_NOTEXT, buf))
@@ -794,13 +801,12 @@ open_art_fp (
 	long art)
 {
 	char buf[NNTP_STRLEN];
-	FILE *art_fp;
+	FILE *art_fp = (FILE *) 0;
 
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && CURR_GROUP.type == GROUP_TYPE_NEWS) {
 		snprintf (buf, sizeof(buf) - 1, "ARTICLE %ld", art);
-		if ((art_fp = nntp_command (buf, OK_ARTICLE, NULL)) == NULL)
-			return (FILE *) 0;
+		art_fp = nntp_command(buf, OK_ARTICLE, NULL);
 	} else {
 #endif /* NNTP_ABLE */
 		joinpath (buf, CURR_GROUP.spooldir, group_path);
@@ -1080,14 +1086,6 @@ group_get_art_info (
 		*art_max = 0;
 
 		make_base_group_path (tin_spooldir, groupname, buf);
-
-/* TODO - Surely this is spurious, the opendir will fail anyway */
-/*		  unless there is some subtle permission check if tin is suid news? */
-/*      errr - suid code has been removed. */
-#	if 0
-		if (access (buf, R_OK) != 0)
-			return(-1);
-#	endif /* 0 */
 
 		if ((dir = opendir (buf)) != (DIR *) 0) {
 			while ((direntry = readdir (dir)) != (DIR_BUF *) 0) {

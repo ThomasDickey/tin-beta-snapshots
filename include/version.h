@@ -45,8 +45,8 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.5.12"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20020227"
-#	define RELEASENAME	"Toxicity"
+#	define RELEASEDATE	"20020410"
+#	define RELEASENAME	"Sugar"
 #	define TINRC_VERSION	"1.2"
 
 #	ifdef M_AMIGA

@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -56,6 +53,9 @@
 #	include "rfc2046.h"
 #endif /* !RFC2046_H */
 
+
+t_bool is_mailbox = FALSE;
+
 /*
  * Post-processing type when saving
  * Set to <0 before post proc type is selected
@@ -63,15 +63,13 @@
  * We do this hackery to honour the "don't postprocess mailboxes" rule
  */
 static signed char proc_ch;
-
+static t_bool confirm;
+static t_bool redraw_screen = FALSE;
+static t_bool supersede = FALSE;			/* for reposting only */
 #ifndef DONT_HAVE_PIPING
 	static FILE *pipe_fp = (FILE *) 0;
 #endif /* !DONT_HAVE_PIPING */
 
-t_bool is_mailbox = FALSE;
-static t_bool confirm;
-static t_bool redraw_screen = FALSE;
-static t_bool supersede = FALSE;			/* for reposting only */
 
 /*
  * Local prototypes
@@ -85,6 +83,7 @@ static t_bool supersede = FALSE;			/* for reposting only */
 #else
 #	define handle_SIGPIPE() /*nothing*/
 #endif /* DONT_HAVE_PIPING */
+
 
 /*
  * 'filename' holds 'filelen' amount of storage in which to place the filename
@@ -205,7 +204,7 @@ feed_article(
 				return FALSE;
 		} else {
 			memset (openartptr, 0, sizeof(t_openartinfo));
-			if (art_open (FALSE, &arts[art], path, openartptr) == ART_UNAVAILABLE)
+			if (art_open (FALSE, &arts[art], path, openartptr, TRUE) == ART_UNAVAILABLE)
 				return FALSE;
 		}
 	}
@@ -219,6 +218,7 @@ feed_article(
 				case POSTED_NONE:
 					ok = FALSE;
 					break;
+
 				case POSTED_OK:
 					break;
 			}
@@ -232,7 +232,7 @@ feed_article(
 			if (max)
 				show_progress (_(txt_piping), (*curr) + 1, max);
 			else
-				wait_message (0, "%s %d", _(txt_piping), (*curr) + 1);
+				wait_message (0, "%s %d\n", _(txt_piping), (*curr) + 1);
 
 			rewind (openartptr->raw);
 			ok = copy_fp (openartptr->raw, pipe_fp);	/* Check for SIGPIPE on return */
@@ -241,10 +241,11 @@ feed_article(
 
 #ifndef DISABLE_PRINTING
 		case FEED_PRINT:
+			/* TODO - looks odd because screen mode is raw */
 			if (max)
 				show_progress (_(txt_printing), (*curr) + 1, max);
 			else
-				wait_message (0, "%s %d", _(txt_printing), (*curr) + 1);
+				wait_message (0, "%s %d\n", _(txt_printing), (*curr) + 1);
 
 			ok = print_file (data /*print_command*/, art, openartptr);
 			break;
@@ -331,26 +332,29 @@ feed_articles (
 	 */
 	ch_default = (num_of_tagged_arts ? iKeyFeedTag :
 					(level == GROUP_LEVEL && HAS_FOLLOWUPS (thread_base) ? iKeyFeedThd :
-						(num_of_selected_arts ? iKeyFeedHot :
-							iKeyFeedArt)));
+						(num_of_selected_arts ? iKeyFeedHot : iKeyFeedArt)));
 
 	switch (function) {
 		case FEED_MAIL:
 			prompt = txt_mail;
 			break;
+
 #ifndef DONT_HAVE_PIPING
 		case FEED_PIPE:
 			prompt = txt_pipe;
 			break;
 #endif /* !DONT_HAVE_PIPING */
+
 #ifndef DISABLE_PRINTING
 		case FEED_PRINT:
 			prompt = txt_print;
 			break;
 #endif /* !DISABLE_PRINTING */
+
 		case FEED_SAVE:
 			prompt = txt_save;
 			break;
+
 		case FEED_REPOST:
 			if (!can_post) {				/* Get this over with before asking any Q's */
 				info_message(_(txt_cannot_post));
@@ -358,6 +362,7 @@ feed_articles (
 			}
 			prompt = txt_repost;
 			break;
+
 		default:
 			prompt = "";
 			break;
@@ -476,10 +481,12 @@ feed_articles (
 						sprintf (mesg, _(txt_supersede_group), tinrc.default_repost_group);
 						supersede = TRUE;
 						break;
+
 					case iKeyFeedRepost:
 						sprintf (mesg, _(txt_repost_group), tinrc.default_repost_group);
 						supersede = FALSE;
 						break;
+
 					default:
 						clear_message ();
 						return;
@@ -543,8 +550,8 @@ feed_articles (
 				handle_SIGPIPE();
 			}
 			if (proc_ch && function == FEED_SAVE) {
-/* Can't see any need for this with real threading */
-/*				sort_save_list ();*/
+				/* Can't see any need for this with real threading */
+				/*	sort_save_list (); */
 				processed_ok = save_batch (ch, group_path);
 			}
 			break;

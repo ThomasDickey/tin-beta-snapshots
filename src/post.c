@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 1997-12-25
+ *  Updated   : 2002-04-08
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -2390,8 +2387,14 @@ post_response (
 #endif /* FORGERY */
 	msg_add_header ("From", from_name);
 
-	snprintf (bigbuf, sizeof(bigbuf), "Re: %s", eat_re (note_h.subj, TRUE));
-	msg_add_header ("Subject", bigbuf);
+	{
+		char *foo;
+
+		foo = my_strdup(note_h.subj);
+		snprintf (bigbuf, sizeof(bigbuf), "Re: %s", eat_re (foo, TRUE));
+		msg_add_header ("Subject", bigbuf);
+		free (foo);
+	}
 
 	if (psGrp && psGrp->attribute->x_comment_to && note_h.from)
 		msg_add_header ("X-Comment-To", note_h.from);
@@ -2669,9 +2672,7 @@ mail_loop(
 					clear_message();
 					return ret;
 				}
-				if (!(fp = fopen (filename, "r")))
-				{
-					/* Oops */
+				if (!(fp = fopen (filename, "r"))) { /* Oops */
 					clear_message ();
 					return ret;
 				}
@@ -2697,6 +2698,12 @@ mail_loop(
 
 #ifdef HAVE_PGP_GPG
 			case iKeyPostPGP:
+				if (!(fp = fopen(filename, "r"))) { /* Oops */
+					clear_message();
+					return ret;
+				}
+				parse_rfc822_headers(&hdr, fp, NULL);
+				fclose(fp);
 				if (get_recipients (&hdr, mail_to, sizeof(mail_to) - 1))
 					invoke_pgp_mail (filename, mail_to);
 				else
@@ -2706,7 +2713,7 @@ mail_loop(
 
 			case iKeyQuit:
 			case iKeyAbort:
-				clear_message ();
+				clear_message();
 				return ret;
 
 			case iKeyPostSend:
@@ -2982,7 +2989,13 @@ mail_to_author (
 		}
 	}
 
-	snprintf (subject, sizeof(subject) - 1, "Re: %s\n", eat_re (note_h.subj, TRUE));
+	{
+		char *foo;
+
+		foo = my_strdup(note_h.subj);
+		snprintf (subject, sizeof(subject) - 1, "Re: %s\n", eat_re (note_h.subj, TRUE));
+		free (foo);
+	}
 
 	/*
     * add extra headers in the mail_to_author() case as we don't include the
@@ -3862,14 +3875,18 @@ find_reply_to_addr (
 	char fname[HEADER_LEN];
 	char *ptr;
 
-	ptr = (hdr->replyto) ? hdr->replyto : hdr->from;
+	/*
+	 * we shouldn't see any articles without a From: (and a Reply-To:) line,
+	 * but for the rare case a fallback to '<>' is better than to crash.
+	 */
+	ptr = (hdr->replyto) ? hdr->replyto : (hdr->from ? hdr->from : "<>");
 
 	/*
 	 * We do this to save a redundant strcpy when we don't want to parse
 	 */
 	if (parse) {
 #if 1
-		/* TODO Return code ignored ? */
+		/* TODO Return code ignored? */
 		parse_from (ptr, from_addr, fname);
 #else
 		/* Or should we decode full_addr? */
@@ -4073,7 +4090,7 @@ split_address_list (
 
 	while (len > 0) {
 		/* skip white space at beginning */
-		while (len && isspace(*curr)) {
+		while (len && isspace((int) *curr)) {
 			curr++;
 			len--;
 		}
@@ -4164,8 +4181,8 @@ split_address_list (
 		end = curr;
 		if (end > start) {
 			end--;
-			while ((end > start) && isspace(*end)) end--;	/* skip trailing white space */
-			if (!isspace(*end))
+			while ((end > start) && isspace((int) *end)) end--;	/* skip trailing white space */
+			if (!isspace((int) *end))
 				end++;
 			addr_len = end - start;
 			if (addr_len > 0) {
@@ -4481,7 +4498,7 @@ add_headers (
 					time_t epoch;
 					struct tm *gmdate;
 					char dateheader[50];
-#ifdef HAVE_SETLOCALE
+#if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 					char *old_lc_all = (char *) 0, *old_lc_time = (char *) 0;
 
 					/* Unlocalized date-header */
@@ -4492,13 +4509,13 @@ add_headers (
 						old_lc_time = my_strdup(setlocale(LC_TIME, (char *) 0));
 						setlocale(LC_TIME, "POSIX");
 					}
-#endif /* HAVE_SETLOCALE */
+#endif /* HAVE_SETLOCALE && !NO_LOCALE */
 
 					(void) time (&epoch);
 					gmdate = gmtime(&epoch); /* my_strftime has no %z or %Z */
 					my_strftime(dateheader, sizeof(dateheader) - 1, "Date: %a, %d %b %Y %H:%M:%S -0000\n", gmdate);
 
-#ifdef HAVE_SETLOCALE
+#if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 					/* change back LC_* */
 					if (old_lc_all != (char*) 0) {
 						setlocale(LC_ALL, old_lc_all);
@@ -4507,7 +4524,7 @@ add_headers (
 						setlocale(LC_TIME, old_lc_time);
 						free(old_lc_time);
 					}
-#endif /* HAVE_SETLOCALE */
+#endif /* HAVE_SETLOCALE && !NO_LOCALE */
 
 					if (write (fd_out, dateheader, strlen(dateheader)) == (ssize_t) -1) /* abort on write errors */ {
 						writesuccess = FALSE;
