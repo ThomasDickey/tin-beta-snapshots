@@ -1566,9 +1566,9 @@ struct opttxt txt_col_markdash = {
 #endif /* HAVE_COLOR */
 
 struct opttxt txt_mail_address = {
-	N_("Enter default mail address. <CR> sets."),
-	N_("Mail address                       : "),
-	N_("# User's mail address, if not username@host\n")
+	N_("Enter default mail address (and fullname). <CR> sets."),
+	N_("Mail address (and fullname)        : "),
+	N_("# User's mail address (and fullname), if not username@host (fullname)\n")
 };
 
 struct opttxt txt_prompt_followupto = {

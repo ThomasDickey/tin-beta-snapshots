@@ -148,6 +148,7 @@ static int msg_add_x_body (FILE *fp_out, const char *body);
 static int msg_write_headers (FILE *fp);
 static int post_loop (int type, struct t_group *psGrp, char ch, const char *posting_msg, int art_type, int offset);
 static size_t skip_id (const char *id);
+static t_bool append_mail (const char *the_article, const char *addr, const char *the_mailbox);
 static t_bool backup_article (const char *the_article);
 static t_bool check_article_to_be_posted (const char *the_article, int art_type);
 static t_bool check_for_spamtrap (const char *addr);
@@ -158,7 +159,6 @@ static t_bool must_include (const char *id);
 static t_bool pcCopyArtHeader (int iHeader, const char *pcArt, char *result);
 static t_bool repair_article (char *result);
 static t_bool submit_mail_file (const char *file);
-static void append_mail (const char *the_article, const char *addr, const char *the_mailbox);
 static void appendid (char **where, const char **what);
 static void find_reply_to_addr (char *from_addr, t_bool parse, struct t_header *hdr);
 static void join_references (char *buffer, const char *oldrefs, const char *newref);
@@ -548,7 +548,7 @@ update_posted_info_file (
  * appends the content of the_article to the_mailbox, with a From_ line of
  * addr, does mboxo/mboxrd From_ line quoting if needed (!MMDF-style mbox)
  */
-static void
+static t_bool
 append_mail (
 	const char *the_article,
 	const char *addr,
@@ -556,17 +556,33 @@ append_mail (
 {
 	FILE *fp_in, *fp_out;
 	char buf[LEN];
+	int fd;
+	int retrys = 10;	/* maximum lock retrys */
 	time_t epoch;
 	t_bool mmdf = ((the_mailbox != postponed_articles_file) && tinrc.save_to_mmdf_mailbox); /* postponed_articles_file is always in mbox format */
+	t_bool rval = FALSE;
 #ifdef HAVE_MBOXRD
 	char *bufp;
 #endif /* HAVE_MBOXRD */
 
 	if ((fp_in = fopen (the_article, "r"))  == (FILE *) 0)
-		return;
+		return rval;
 
 	if ((fp_out = fopen (the_mailbox, "a+")) != (FILE *) 0) {
 		(void) time (&epoch);
+		fd = fileno(fp_out);
+		/* TODO: move the retry/error stuff into a function? */
+		while (retrys-- && fd_lock(fd, FALSE)) {
+			wait_message(1, "%d Trying to lock %s", retrys, the_mailbox);
+			fd_unlock(fd); /* release any successfull 'partial'-locks */
+		}
+		if (retrys < 0) {
+			/* FIXME: -> lang.c */
+			wait_message(5, "Couldn't lock %s - article not appended!", the_mailbox);
+			fclose (fp_out);
+			fclose (fp_in);
+			return rval;
+		}
 		fprintf (fp_out, "%sFrom %s %s", (mmdf ? MMDFHDRTXT : ""), addr, ctime (&epoch));
 		while (fgets (buf, (int) sizeof(buf), fp_in) != (char *) 0) {
 			if (!mmdf) { /* moboxo/mboxrd style From_ quoting required */
@@ -585,9 +601,16 @@ append_mail (
 			fputs (buf, fp_out);
 		}
 		print_art_seperator_line (fp_out, mmdf);
+
+		fflush(fp_out);
+		if (fd_unlock(fd)) {
+			wait_message(4, "Can't unlock %s", the_mailbox);
+		}
 		fclose (fp_out);
+		rval = TRUE;
 	}
 	fclose (fp_in);
+	return rval;
 }
 
 
@@ -1411,7 +1434,10 @@ post_article_done:
 			char a_mailbox[LEN];
 			if (!strfpath (posted_msgs_file, a_mailbox, sizeof (a_mailbox), &CURR_GROUP))
 				STRCPY(a_mailbox, posted_msgs_file);
-			append_mail (article, userid, a_mailbox);
+			if (!append_mail(article, userid, a_mailbox)) {
+				/* TODO: error message */
+			}
+			
 		}
 
 		free_and_init_header (&header);
@@ -1858,7 +1884,9 @@ pickup_postponed_articles (
 			case iKeyPromptNo:
 			case iKeyQuit:
 			case iKeyAbort:
-				append_mail (article, userid, postponed_articles_file);
+				if (!append_mail(article, userid, postponed_articles_file)) {
+					/* TODO : error -message */
+				}
 				unlink(article);
 				if (ch != iKeyPromptNo)
 					return TRUE;
@@ -1873,7 +1901,9 @@ postpone_article (
 	const char *the_article)
 {
 	wait_message(3, _(txt_info_do_postpone));
-	append_mail (the_article, userid, postponed_articles_file);
+	if (!append_mail(the_article, userid, postponed_articles_file)) {
+		/* TODO: error-message */
+	}
 }
 
 
@@ -2195,6 +2225,10 @@ post_response (
 		MoveCursor ((cLINES / 2) + 4, 0);
 
 		my_fputs ("    ", stdout);
+		/*
+		 * TODO: check if any valid groups are in the Followup-To:-line
+		 *       and if not inform the user and use Newsgroups: instead
+		 */
 		ptr = note_h.followup;
 		while (*ptr) {
 			if (*ptr != ',')

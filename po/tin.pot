@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2001-02-04 12:16+0100\n"
+"POT-Creation-Date: 2001-03-12 04:53+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -243,12 +243,12 @@ msgid "# and set Followup-To: poster\n"
 msgstr ""
 
 #. FIXME: -> lang.c
-#: src/auth.c:166
+#: src/auth.c:182
 #, c-format
 msgid "Insecure permissions of %s (%o)"
 msgstr ""
 
-#: src/cook.c:945 src/cook.c:964
+#: src/cook.c:947 src/cook.c:966
 msgid ", name: "
 msgstr ""
 
@@ -4258,15 +4258,15 @@ msgid "Color of highlighting with _dash_  : "
 msgstr ""
 
 #: src/lang.c:1569
-msgid "Enter default mail address. <CR> sets."
+msgid "Enter default mail address (and fullname). <CR> sets."
 msgstr ""
 
 #: src/lang.c:1570
-msgid "Mail address                       : "
+msgid "Mail address (and fullname)        : "
 msgstr ""
 
 #: src/lang.c:1571
-msgid "# User's mail address, if not username@host\n"
+msgid "# User's mail address (and fullname), if not username@host (fullname)\n"
 msgstr ""
 
 #: src/lang.c:1576
@@ -4904,25 +4904,25 @@ msgid ""
 "#\n"
 msgstr ""
 
-#: src/main.c:599
+#: src/main.c:600
 #, c-format
 msgid "Version: %s release %s (\"%s\") %s %s"
 msgstr ""
 
-#: src/main.c:602
+#: src/main.c:603
 #, c-format
 msgid "Version: %s release %s (\"%s\")"
 msgstr ""
 
-#: src/main.c:789
+#: src/main.c:802
 msgid "-v only useful for batch mode operations\n"
 msgstr ""
 
-#: src/main.c:794
+#: src/main.c:807
 msgid "-R only useful without batch mode operations\n"
 msgstr ""
 
-#: src/main.c:829
+#: src/main.c:839
 #, c-format
 msgid ""
 "A Usenet reader.\n"
@@ -4930,159 +4930,159 @@ msgid ""
 "Usage: %s [options] [newsgroup[,...]]"
 msgstr ""
 
-#: src/main.c:833
+#: src/main.c:843
 msgid "  -a       toggle color flag"
 msgstr ""
 
-#: src/main.c:836
+#: src/main.c:846
 msgid "  -A       force authentication on connect"
 msgstr ""
 
-#: src/main.c:839
+#: src/main.c:849
 msgid "  -B       BBS mode. File operations limited to home directories."
 msgstr ""
 
-#: src/main.c:842
+#: src/main.c:852
 msgid "  -c       mark all news as read in subscribed newsgroups (batch mode)"
 msgstr ""
 
-#: src/main.c:843
+#: src/main.c:853
 msgid "  -d       don't show newsgroup descriptions"
 msgstr ""
 
-#: src/main.c:846
+#: src/main.c:856
 msgid "  -D       debug mode 1=NNTP 2=ALL"
 msgstr ""
 
-#: src/main.c:849
+#: src/main.c:859
 #, c-format
 msgid "  -f file  subscribed to newsgroups file [default=%s]"
 msgstr ""
 
-#: src/main.c:850
+#: src/main.c:860
 msgid "  -G limit get only limit articles/group"
 msgstr ""
 
 #. FIXME, default should be $NNTPSERVER if set ...
-#: src/main.c:855
+#: src/main.c:865
 #, c-format
 msgid "  -g serv  read news from NNTP server serv [default=%s]"
 msgstr ""
 
-#: src/main.c:859
+#: src/main.c:869
 msgid "  -h       this help message"
 msgstr ""
 
-#: src/main.c:860
+#: src/main.c:870
 #, c-format
 msgid "  -H       help information about %s"
 msgstr ""
 
-#: src/main.c:863
+#: src/main.c:873
 #, c-format
 msgid "  -I dir   news index file directory [default=%s]"
 msgstr ""
 
-#: src/main.c:867
+#: src/main.c:877
 msgid "  -l       use only LISTGROUP instead of GROUP (-n) command"
 msgstr ""
 
-#: src/main.c:869
+#: src/main.c:879
 msgid "  -l       TODO: document feature"
 msgstr ""
 
-#: src/main.c:872
+#: src/main.c:882
 #, c-format
 msgid "  -m dir   mailbox directory [default=%s]"
 msgstr ""
 
-#: src/main.c:873
+#: src/main.c:883
 msgid "  -M user  mail new news to specified user (batch mode)"
 msgstr ""
 
-#: src/main.c:876
+#: src/main.c:886
 msgid "  -n       only read subscribed .newsrc groups from NNTP server"
 msgstr ""
 
-#: src/main.c:878
+#: src/main.c:888
 msgid "  -n       TODO: document feature"
 msgstr ""
 
-#: src/main.c:881
+#: src/main.c:891
 msgid "  -N       mail new news to your posts (batch mode)"
 msgstr ""
 
-#: src/main.c:882
+#: src/main.c:892
 msgid "  -o       post all postponed articles and exit"
 msgstr ""
 
-#: src/main.c:885
+#: src/main.c:895
 #, c-format
 msgid "  -p port  use port as NNTP port [default=%d]"
 msgstr ""
 
-#: src/main.c:888
+#: src/main.c:898
 msgid "  -q       don't check for new newsgroups"
 msgstr ""
 
-#: src/main.c:891
+#: src/main.c:901
 msgid "  -Q       quick start. Same as -nqd"
 msgstr ""
 
-#: src/main.c:893
+#: src/main.c:903
 msgid "  -Q       quick start. Same as -qd"
 msgstr ""
 
-#: src/main.c:898
+#: src/main.c:908
 msgid "  -r       read news remotely from default NNTP server"
 msgstr ""
 
-#: src/main.c:901
+#: src/main.c:911
 msgid "  -R       read news saved by -S option"
 msgstr ""
 
-#: src/main.c:902
+#: src/main.c:912
 #, c-format
 msgid "  -s dir   save news directory [default=%s]"
 msgstr ""
 
-#: src/main.c:903
+#: src/main.c:913
 msgid "  -S       save new news for later reading (batch mode)"
 msgstr ""
 
-#: src/main.c:906
+#: src/main.c:916
 msgid "  -u       update index files (batch mode)"
 msgstr ""
 
-#: src/main.c:907
+#: src/main.c:917
 msgid "  -U       update index files in the background while reading news"
 msgstr ""
 
-#: src/main.c:910
+#: src/main.c:920
 msgid "  -v       verbose output for batch mode options"
 msgstr ""
 
-#: src/main.c:911
+#: src/main.c:921
 msgid "  -V       print version & date information"
 msgstr ""
 
-#: src/main.c:912
+#: src/main.c:922
 msgid "  -w       post an article and exit"
 msgstr ""
 
-#: src/main.c:913
+#: src/main.c:923
 msgid "  -X       don't save any files on quit"
 msgstr ""
 
-#: src/main.c:914
+#: src/main.c:924
 msgid "  -z       start if any unread news"
 msgstr ""
 
-#: src/main.c:915
+#: src/main.c:925
 msgid "  -Z       return status indicating if any unread news (batch mode)"
 msgstr ""
 
-#: src/main.c:917
+#: src/main.c:927
 #, c-format
 msgid ""
 "\n"
@@ -5393,25 +5393,25 @@ msgid "Unreachable ?\n"
 msgstr ""
 
 #. FIXME: replace 'Thread' by 'Article' if THREAD_NONE
-#: src/page.c:604 src/save.c:526 src/thread.c:664
+#: src/page.c:604 src/save.c:528 src/thread.c:664
 msgid "Thread"
 msgstr ""
 
-#: src/page.c:770 src/save.c:523 src/thread.c:657
+#: src/page.c:770 src/save.c:525 src/thread.c:657
 msgid "Article"
 msgstr ""
 
-#: src/post.c:1447
+#: src/post.c:1495
 #, c-format
 msgid "%s is bogus"
 msgstr ""
 
-#: src/post.c:1449
+#: src/post.c:1497
 #, c-format
 msgid "No attributes for %s"
 msgstr ""
 
-#: src/post.c:1637
+#: src/post.c:1685
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr ""
@@ -5440,35 +5440,35 @@ msgid "[- Unavailable -]"
 msgstr ""
 
 #. TODO maybe print something more context dependent here ?
-#: src/save.c:507
+#: src/save.c:509
 msgid "No articles to save"
 msgstr ""
 
-#: src/save.c:517
+#: src/save.c:519
 #, c-format
 msgid "Warning: Only %d out of %d articles were saved"
 msgstr ""
 
-#: src/save.c:529
+#: src/save.c:531
 #, c-format
 msgid "Tagged %s"
 msgstr ""
 
-#: src/save.c:539
+#: src/save.c:541
 #, c-format
 msgid "-- %s saved to %s%s --"
 msgstr ""
 
-#: src/save.c:540 src/save.c:543
+#: src/save.c:542 src/save.c:545
 msgid "mailbox "
 msgstr ""
 
-#: src/save.c:542
+#: src/save.c:544
 #, c-format
 msgid "-- %s saved to %s%s - %s --"
 msgstr ""
 
-#: src/save.c:1090
+#: src/save.c:1092
 msgid "bytes"
 msgstr ""
 

@@ -690,7 +690,7 @@ show_mini_help (
 #endif /* !DONT_HAVE_PIPING */
 				printascii (key[1], map_to_local (iKeyGroupMail, &menukeymap.group_nav)),
 #ifndef DISABLE_PRINTING
-				printascii (key[2], map_to_local (iKeyGroupPrint, &menukeymap.group_nav)),
+				printascii (key[2], map_to_local (iKeyPrint, &menukeymap.group_nav)),
 #endif /* !DISABLE_PRINTING */
 				printascii (key[3], map_to_local (iKeyQuit, &menukeymap.group_nav)),
 				printascii (key[4], map_to_local (iKeyGroupToggleReadUnread, &menukeymap.group_nav)),
@@ -733,7 +733,7 @@ show_mini_help (
 #endif /* !DONT_HAVE_PIPING */
 				printascii (key[1], map_to_local (iKeyPageMail, &menukeymap.page_nav)),
 #ifndef DISABLE_PRINTING
-				printascii (key[2], map_to_local (iKeyPagePrint, &menukeymap.page_nav)),
+				printascii (key[2], map_to_local (iKeyPrint, &menukeymap.page_nav)),
 #endif /* !DISABLE_PRINTING */
 				printascii (key[3], map_to_local (iKeyQuit, &menukeymap.page_nav)),
 				printascii (key[4], map_to_local (iKeyPageReplyQuote, &menukeymap.page_nav)),

@@ -44,7 +44,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.5.8
+VERSION=1.5.9
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -599,16 +599,19 @@ CF_CHECK_HEADERS(\
 	strings.h \
 	stropts.h \
 	sys/bsdtypes.h \
+	sys/file.h \
 	sys/ioctl.h \
 	sys/param.h \
 	sys/ptem.h \
 	sys/pty.h \
 	sys/select.h \
+	sys/stat.h \
 	sys/stream.h \
 	sys/socket.h \
 	sys/time.h \
 	sys/timeb.h \
 	sys/times.h \
+	sys/types.h \
 	sys/utsname.h \
 	term.h \
 	termio.h \
@@ -705,6 +708,7 @@ AC_CHECK_FUNCS(\
 	atol \
 	bcopy \
 	chmod \
+	fcntl \
 	fdopen \
 	ftime \
 	getcwd \
@@ -712,6 +716,7 @@ AC_CHECK_FUNCS(\
 	is_xterm \
 	isascii \
 	link \
+	lockf \
 	mblen \
 	memcmp \
 	memcpy \
@@ -738,6 +743,7 @@ AC_CHECK_FUNCS(\
 	strstr \
 	strtol \
 	tempnam \
+	tmpfile \
 	tmpnam \
 	tzset \
 	uname \
@@ -746,6 +752,12 @@ AC_CHECK_FUNCS(\
 	usleep \
 	vsnprintf \
 $cf_tc_funcs )
+
+AC_CHECK_FUNC(flock,
+	AC_DEFINE(HAVE_FLOCK),[
+	AC_CHECK_LIB(bsd, flock,
+		AC_DEFINE(HAVE_FLOCK)
+		LIBS="$LIBS -lbsd")])
 
 CF_POSIX_JC
 CF_FUNC_FORK
@@ -961,11 +973,14 @@ fi
 CFLAGS="$CFLAGS $EXTRA_CFLAGS"
 
 AC_DEFINE_UNQUOTED(TIN_CC, "$CC")
-AC_DEFINE_UNQUOTED(TIN_CFLAGS, "$CFLAGS")
+# x_CFLAGS=`echo $CFLAGS|sed -e 's/\\/\\134/g' -e 's/"/\\042/g'`
+# AC_DEFINE_UNQUOTED(TIN_CFLAGS, "$x_CFLAGS")
 AC_DEFINE_UNQUOTED(TIN_CPP, "$CPP")
-AC_DEFINE_UNQUOTED(TIN_CPPFLAGS, "$CPPFLAGS")
+# x_CPPFLAGS=`echo $CPPFLAGS|sed -e 's/\\/\\134/g' -e 's/"/\\042/g'`
+# AC_DEFINE_UNQUOTED(TIN_CPPFLAGS, "$x_CPPFLAGS")
 AC_DEFINE_UNQUOTED(TIN_LD, "$CC")
-AC_DEFINE_UNQUOTED(TIN_LDFLAGS, "$LDFLAGS")
+# x_LDFLAGS=`echo $LDFLAGS|sed -e 's/\\/\\134/g' -e 's/"/\\042/g'`
+# AC_DEFINE_UNQUOTED(TIN_LDFLAGS, "$x_LDFLAGS")
 AC_DEFINE_UNQUOTED(TIN_LIBS, "$LIBS")
 
 AC_OUTPUT(makefile

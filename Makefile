@@ -7,9 +7,9 @@
 PROJECT	= tin
 LVER	= 1
 PVER	= 5
-SVER	= 8
+SVER	= 9
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20010221
+DVER	= 20010312
 EXE	= tin
 
 # directory structure
@@ -72,6 +72,7 @@ CFILES	= \
 	$(SRCDIR)/keymap.c \
 	$(SRCDIR)/lang.c \
 	$(SRCDIR)/list.c \
+	$(SRCDIR)/lock.c \
 	$(SRCDIR)/mail.c \
 	$(SRCDIR)/main.c \
 	$(SRCDIR)/makecfg.c \
@@ -105,6 +106,7 @@ CFILES	= \
 	$(SRCDIR)/string.c \
 	$(SRCDIR)/tags.c \
 	$(SRCDIR)/tcurses.c \
+	$(SRCDIR)/tmpfile.c \
 	$(SRCDIR)/thread.c \
 	$(SRCDIR)/trace.c \
 	$(SRCDIR)/wildmat.c \

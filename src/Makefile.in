@@ -141,6 +141,7 @@ CFILES	= \
 	$(SRCDIR)/keymap.c \
 	$(SRCDIR)/lang.c \
 	$(SRCDIR)/list.c \
+	$(SRCDIR)/lock.c \
 	$(SRCDIR)/mail.c \
 	$(SRCDIR)/main.c \
 	$(SRCDIR)/memory.c \
@@ -173,6 +174,7 @@ CFILES	= \
 	$(SRCDIR)/string.c \
 	$(SRCDIR)/tags.c \
 	$(OBJDIR)/tcurses.c \
+	$(OBJDIR)/tmpfile.c \
 	$(SRCDIR)/thread.c \
 	$(SRCDIR)/wildmat.c \
 	$(SRCDIR)/xref.c
@@ -207,6 +209,7 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/keymap.o \
 	$(OBJDIR)/lang.o \
 	$(OBJDIR)/list.o \
+	$(OBJDIR)/lock.o \
 	$(OBJDIR)/mail.o \
 	$(OBJDIR)/main.o \
 	$(OBJDIR)/memory.o \
@@ -239,6 +242,7 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/string.o \
 	$(OBJDIR)/tags.o \
 	$(OBJDIR)/tcurses.o \
+	$(OBJDIR)/tmpfile.o \
 	$(OBJDIR)/thread.o \
 	$(OBJDIR)/wildmat.o \
 	$(OBJDIR)/xref.o
@@ -462,6 +466,7 @@ $(OBJDIR)/keymap.o:		$(SRCDIR)/keymap.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
 $(OBJDIR)/lang.o:		$(SRCDIR)/lang.c $(TIN_DEP)
 $(OBJDIR)/list.o:		$(SRCDIR)/list.c $(TIN_DEP)
+$(OBJDIR)/lock.o:		$(SRCDIR)/lock.c $(TIN_DEP)
 $(OBJDIR)/mail.o:		$(SRCDIR)/mail.c $(TIN_DEP)
 $(OBJDIR)/main.o:		$(SRCDIR)/main.c $(TIN_DEP) \
 				$(INCDIR)/bugrep.h \
@@ -517,6 +522,7 @@ $(OBJDIR)/strftime.o:		$(SRCDIR)/strftime.c $(TIN_DEP)
 $(OBJDIR)/string.o:		$(SRCDIR)/string.c $(TIN_DEP)
 $(OBJDIR)/tags.o:		$(SRCDIR)/tags.c $(TIN_DEP)
 $(OBJDIR)/tcurses.o:		$(SRCDIR)/tcurses.c $(TIN_DEP)
+$(OBJDIR)/tmpfile.o:		$(SRCDIR)/tmpfile.c $(TIN_DEP)
 $(OBJDIR)/thread.o:		$(SRCDIR)/thread.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
 $(OBJDIR)/wildmat.o:		$(SRCDIR)/wildmat.c $(TIN_DEP)

@@ -136,7 +136,7 @@ mmdecode (
 
 	t = where;
 	encoding = tolower((unsigned char)encoding);
-	if (encoding == 'q') {		  /* quoted-printable */
+	if (encoding == 'q') {		/* quoted-printable */
 		int x;
 		unsigned hi, lo;
 
@@ -175,7 +175,7 @@ mmdecode (
 		unsigned char x;
 
 		build_base64_rank_table();
-		if (!what || !where) {	  /* flush */
+		if (!what || !where) {		/* flush */
 			pattern = bits = 0;
 			return 0;
 		}
@@ -227,7 +227,7 @@ rfc1522_decode (
 				dd = c + 1;
 				while (isspace((unsigned char) *dd))
 					dd++;
-				if (*dd == '=') {	  /* brute hack, makes mistakes under certain circumstances comp. 6.2 */
+				if (*dd == '=') {		/* brute hack, makes mistakes under certain circumstances comp. 6.2 */
 					c++;
 					continue;
 				}
@@ -355,7 +355,7 @@ do_b_encode (
  * find out whether encoding is necessary and which encoding
  * to use if necessary by scanning the whole header field
  * instead of each fragment of it.
- * This will ensure that  either Q or B encoding will be used in a single
+ * This will ensure that either Q or B encoding will be used in a single
  * header (i.e. two encoding won't be mixed in a single header line).
  * Mixing two encodings is not a violation of RFC 2047 but may break
  * some news/mail clients.
@@ -386,7 +386,7 @@ which_encoding (
 		 * EUC-KR for backward compatibility with old Korean mail program
 		 */
 		if (chars + 2 * (nonprint + schars) /* QP size */ >
-			 (chars * 4 + 3) / 3	  /* B64 size */
+			 (chars * 4 + 3) / 3		/* B64 size */
 			 || !strcasecmp(tinrc.mm_charset, "EUC-KR"))
 			return 'B';
 		return 'Q';
@@ -493,7 +493,7 @@ rfc1522_do_encode (
  * in mail messages in accordance with RFC 2047 (RFC 1522).
  * Whether or not long lines are broken up depends on
  * boolean variable break_long_line, instead.
- * break_long_line is  FALSE for news posting unless MIME_BREAK_LONG_LINES
+ * break_long_line is FALSE for news posting unless MIME_BREAK_LONG_LINES
  * is defined, but it's TRUE for mail messages regardless of whether or not
  * MIME_BREAK_LONG_LINES is defined
  */
@@ -579,7 +579,7 @@ rfc1522_do_encode (
 					/* Be sure to encode at least one char, even if
 					 * that overflows the line limit, otherwise, we
 					 * will be stuck in a loop (if this were in the
-					 * while condition above).  (Can only happen in
+					 * while condition above). (Can only happen in
 					 * the first line, if we have a very long
 					 * header keyword, I think).
 					 */
@@ -684,7 +684,7 @@ rfc1522_do_encode (
 					 * (due to a long header keyword), we cannot
 					 * stick to that, since we would break the line
 					 * directly after the keyword's colon, which is
-					 * not allowed.  The same is necessary for a
+					 * not allowed. The same is necessary for a
 					 * continuation line with an unencoded word
 					 * that is too long.
 					 */
@@ -726,7 +726,7 @@ rfc1522_encode (
 	static char buf[2048];
 
 /*
- * break_long_line is  FALSE for news posting unless MIME_BREAK_LONG_LINES
+ * break_long_line is FALSE for news posting unless MIME_BREAK_LONG_LINES
  * is defined, but it's TRUE for mail messages regardless of whether or not
  * MIME_BREAK_LONG_LINES is defined
  */
@@ -875,13 +875,13 @@ rfc15211522_encode (
 #if 0
 /*
  * Not only EUC-JP but also other Japanese charsets such as
- * SJIS  might need RFC 1468 encoding. To be confirmed.
+ * SJIS might need RFC 1468 encoding. To be confirmed.
  */
 		else if (!strcasecmp(tinrc.mm_charset, "euc-jp"))
 			body_encode = rfc1468_encode;
 
 /*
- * Not only  EUC-CN but also other Chinese charsets such as
+ * Not only EUC-CN but also other Chinese charsets such as
  * BIG5 and EUC-TW might need RFC 1922 encoding. To be confirmed.
  */
 		else if (!strcasecmp(tinrc.mm_charset, "euc-cn"))

@@ -100,6 +100,9 @@ struct keymap Key = {
 		{ iKeyToggleInfoLastLine, iKeyToggleInfoLastLine, "ToggleInfoLastLine" },
 		{ iKeyDown2, iKeyDown2, "Down2" },
 		{ iKeyUp2, iKeyUp2, "Up2" },
+#ifndef DISABLE_PRINTING
+		{ iKeyPrint, iKeyPrint, "Print" },
+#endif /* !DISABLE_PRINTING */
 		{ iKeyQuit, iKeyQuit, "Quit" },
 		{ iKeyVersion, iKeyVersion, "Version" },
 		{ iKeyPost, iKeyPost, "Post" },
@@ -171,9 +174,6 @@ struct keymap Key = {
 		{ iKeyGroupListThd, iKeyGroupListThd, "ListThd" },
 		{ iKeyGroupMail, iKeyGroupMail, "Mail" },
 		{ iKeyGroupNextGroup, iKeyGroupNextGroup, "NextGroup" },
-#ifndef DISABLE_PRINTING
-		{ iKeyGroupPrint, iKeyGroupPrint, "Print" },
-#endif /* !DISABLE_PRINTING */
 		{ iKeyGroupPrevGroup, iKeyGroupPrevGroup, "PrevGroup" },
 		{ iKeyGroupToggleReadUnread, iKeyGroupToggleReadUnread, "ToggleReadUnread" },
 		{ iKeyGroupSave, iKeyGroupSave, "Save" },
@@ -245,9 +245,6 @@ struct keymap Key = {
 		{ iKeyPageListThd, iKeyPageListThd, "ListThd" },
 		{ iKeyPageMail, iKeyPageMail, "Mail" },
 		{ iKeyPageNextArt, iKeyPageNextArt, "NextArt" },
-#ifndef DISABLE_PRINTING
-		{ iKeyPagePrint, iKeyPagePrint, "Print" },
-#endif /* !DISABLE_PRINTING */
 		{ iKeyPagePrevArt, iKeyPagePrevArt, "PrevArt" },
 		{ iKeyPageReplyQuote, iKeyPageReplyQuote, "ReplyQuote" },
 		{ iKeyPageSave, iKeyPageSave, "Save" },
@@ -447,7 +444,7 @@ t_keynode *keys_group_nav[] = {
 	&Key.Global.FirstPage, &Key.Global.LastPage, &Key.Global.LastViewed,
 	&Key.Global.Pipe, &Key.Group.Mail,
 #ifndef DISABLE_PRINTING
-	&Key.Group.Print,
+	&Key.Global.Print,
 #endif /* !DISABLE_PRINTING */
 	&Key.Group.Repost, &Key.Group.Save, &Key.Group.AutoSaveTagged,
 	&Key.Global.SetRange, &Key.Global.SearchAuthF, &Key.Global.SearchAuthB,
@@ -498,7 +495,7 @@ t_keynode *keys_page_nav[] = {
 	&Key.Global.LastViewed, &Key.Global.LookupMessage, &Key.Page.GotoParent,
 	&Key.Global.Pipe, &Key.Page.Mail,
 #ifndef DISABLE_PRINTING
-	&Key.Page.Print,
+	&Key.Global.Print,
 #endif /* !DISABLE_PRINTING */
 	&Key.Page.Repost, &Key.Page.Save, &Key.Page.AutoSaveTagged,
 	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB, &Key.Global.SearchBody,
@@ -891,8 +888,8 @@ read_keymap_file (
 {
 	FILE *fp = (FILE *) 0;
 	char *line, *keydef, *kname;
-	char *ptr;
-	const char *ptr2, *map;
+	char *map, *ptr;
+	const char *ptr2;
 	char buf[LEN], buff[LEN];
 	char key;
 	int i;
@@ -910,31 +907,33 @@ read_keymap_file (
 	 */
 	ptr2 = get_val("TIN_HOMEDIR", get_val("HOME", homedir));
 	/* get locale suffix */
-	map = get_val("LC_ALL", get_val("LC_CTYPE", get_val("LC_MESSAGES", get_val("LANG", ""))));
+	map = my_strdup(get_val("LC_ALL", get_val("LC_CTYPE", get_val("LC_MESSAGES", get_val("LANG", "")))));
 	if (strlen(map)) {
 		if ((ptr = strchr (map, '.')))
 				*ptr = '\0';
-		snprintf(buff, sizeof(buf) - 1, "%s/.tin/keymap.%s", ptr2, map);
+		snprintf(buff, sizeof(buff) - 1, "%s/.tin/keymap.%s", ptr2, map);
 		if (strfpath (buff, buf, sizeof(buf), &CURR_GROUP))
 			fp = fopen (buf, "r");
 	}
 	if (!fp) {
-		snprintf(buff, sizeof(buf) - 1, "%s/.tin/keymap", ptr2);
+		snprintf(buff, sizeof(buff) - 1, "%s/.tin/keymap", ptr2);
 		if (strfpath (buff, buf, sizeof(buf), &CURR_GROUP))
 			fp = fopen (buf, "r");
 	}
 #ifdef TIN_DEFAULTS_DIR
 	if (strlen(map) && !fp) {
-		snprintf(buff, sizeof(buf) - 1, "%s/keymap.%s", TIN_DEFAULTS_DIR, map);
+		snprintf(buff, sizeof(buff) - 1, "%s/keymap.%s", TIN_DEFAULTS_DIR, map);
 		if (strfpath (buff, buf, sizeof(buf), &CURR_GROUP))
 			fp = fopen (buf, "r");
 	}
 	if (!fp) {
-		snprintf(buff, sizeof(buf) - 1, "%s/keymap", TIN_DEFAULTS_DIR);
+		snprintf(buff, sizeof(buff) - 1, "%s/keymap", TIN_DEFAULTS_DIR);
 		if (strfpath (buff, buf, sizeof(buf), &CURR_GROUP))
 			fp = fopen (buf, "r");
 	}
 #endif /* TIN_DEFAULTS_DIR */
+
+	FreeIfNeeded(map);
 
 	if (!fp)
 		return FALSE;

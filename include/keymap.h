@@ -98,6 +98,9 @@ struct k_global {
 	t_keynode ToggleInfoLastLine;		/* 'i' */
 	t_keynode Down2;						/* 'j' */
 	t_keynode Up2;							/* 'k' */
+#ifndef DISABLE_PRINTING
+	t_keynode Print;						/* 'o' */
+#endif /* !DISABLE_PRINTING */
 	t_keynode Quit;						/* 'q' */
 	t_keynode Version;					/* 'v' */
 	t_keynode Post;						/* 'w' */
@@ -169,9 +172,6 @@ struct k_group {
 	t_keynode ListThd;					/* 'l' */
 	t_keynode Mail;						/* 'm' */
 	t_keynode NextGroup;					/* 'n' */
-#ifndef DISABLE_PRINTING
-	t_keynode Print;						/* 'o' */
-#endif /* !DISABLE_PRINTING */
 	t_keynode PrevGroup;					/* 'p' */
 	t_keynode ToggleReadUnread;		/* 'r' */
 	t_keynode Save;						/* 's' */
@@ -246,9 +246,6 @@ struct k_page {
 	t_keynode ListThd;					/* 'l' */
 	t_keynode Mail;						/* 'm' */
 	t_keynode NextArt;					/* 'n' */
-#ifndef DISABLE_PRINTING
-	t_keynode Print;						/* 'o' */
-#endif /* !DISABLE_PRINTING */
 	t_keynode PrevArt;					/* 'p' */
 	t_keynode ReplyQuote;				/* 'r' */
 	t_keynode Save;						/* 's' */

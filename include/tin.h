@@ -707,9 +707,13 @@ enum resizer { cNo, cYes, cRedraw };
  */
 /*
  * case insensitive
- * split out ftp (only ftp allows username:passwd@, RFC 1738)
+ * split out ftp (only ftp allows username:passwd@, RFC 1738)?
  */
-#define URL_REGEX "\\b(?:https?|ftp|gopher)://(?:[^:@/]*(?::[^:@/]*)?@)?(?:[^\\W_]+(?:(?:[-.][^\\W_]+)+)?\\.[a-z]{2,5}|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
+#if 0 /* this one is ok for IPv4 */
+#	define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/]*(?::[^:@/]*)?@)?(?:[^\\W_]+(?:(?:[-.][^\\W_]+)+)?\\.[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
+#else	/* this one should be IPv6 safe - test me! */
+#	define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/]*(?::[^:@/]*)?@)?(?:[^\\W_]+(?:(?:[-.][^\\W_]+)+)?\\.[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)|\\[(?:(?:[0-9A-F]{0,4}:){1,7}[0-9A-F]{1,4}|(?:[0-9A-F]{0,4}:){1,3}(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))\\])(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
+#endif /* 0 */
 /*
  * case insensitive
  * check against RFC 2368
@@ -718,7 +722,11 @@ enum resizer { cNo, cYes, cRedraw };
 /*
  * case insensitive
  */
-#define NEWS_REGEX	"\\b(?:s?news|nntp):[^\\s@]+[@.][^\\s@]+(?:$|(?=[\\s.>\"]))\\b"
+#define NEWS_REGEX	"\\b(?:s?news|nntp):[^\\s@]+[@.][^\\s@]+(?:$|(?=[\\s.>\"/]))\\b"
+/*
+ * case insensitive, no implemented
+ */
+#define TELNET_REGEX	"\\btelnet://(?:[^:@/]*(?::[^:@/]*)?@)?(?:[^\\W_]+(?:(?:[-.][^\\W_]+)+)?\\.[a-z]{2,6}\\.?||localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?/?"
 
 
 #define FILTER_FILE	"filter"
@@ -1803,7 +1811,7 @@ extern void joinpath (char *result, char *dir, char *file);
 #	define TIN_EDITOR_FMT_ON		"%E +%N %F"
 #	define MAILER_FORMAT		"%M -t < %F"
 #	define METAMAIL_CMD		"%s -e -p -m \"tin\""
-#	define TMPDIR		"/tmp/"
+#	define TMPDIR	"/tmp/"
 #	ifdef	HAVE_KEY_PREFIX
 #		define KEY_PREFIX		0x8f: case 0x9b
 #	endif /* HAVE_KEY_PREFIX */
@@ -2070,7 +2078,6 @@ typedef void (*BodyPtr) (char *, FILE *, int);
 #	endif /* !ferror */
 #endif /* __DECC */
 
-/* FIXME - check also for tmpfile() and provide fallback functions */
 #ifdef HAVE_TEMPNAM
 #	define my_tempnam(a,b)	tempnam(a,b)
 #else
@@ -2078,13 +2085,6 @@ typedef void (*BodyPtr) (char *, FILE *, int);
 #		define my_tempnam(a,b)	tmpnam((char *)0)
 #	endif /* HAVE_TMPNAM */
 #endif /* HAVE_TEMPNAM */
-#ifdef HAVE_MKSTEMP
-#	define my_mktemp(a)	mkstemp(a)
-#else
-#	ifdef HAVE_MKTEMP
-#		define my_mktemp(a) open(mktemp(a), O_RDWR, (mode_t)(S_IRUSR|S_IWUSR))
-#	endif /* HAVE_MKTEMP */
-#endif /* HAVE_MKSTEMP */
 
 /* define some standard places to look for a tin.defaults file */
 /*
@@ -2181,5 +2181,18 @@ extern struct tm *localtime(time_t *);
 #ifndef MM_CHARSET
 #	define MM_CHARSET "US-ASCII"
 #endif /* !MM_CHARSET */
+
+/* TODO: move up to the 'right' place */
+#ifdef HAVE_SYS_FILE_H
+#	include <sys/file.h>
+#endif /* HAVE_SYS_FILE_H */
+
+#if !defined(SEEK_SET)
+#	define SEEK_SET 0L
+#endif /* !SEEK_SET */
+
+#if !defined(EOF)
+#	define EOF -1
+#endif /* !EOF */
 
 #endif /* !TIN_H */

@@ -3,11 +3,11 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2000-01-10
+.\" Updated   : 2001-03-11
 .\" Notes     : still needs some work (but getting there ;)
 .\"
 .\"
-.TH tin 1 "January 9th, 2001" "1.5.8" "A Usenet newsreader"
+.TH tin 1 "March 11th, 2001" "1.5.9" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -71,11 +71,11 @@ tin, rtin \- A Usenet newsreader
 .\"
 .SH DESCRIPTION
 .B tin
-is a full-screen easy to use Usenet newsreader. It can read news locally (i.e.,
-\fI/var/spool/news\fR) or remotely (\fBrtin\fP or \fBtin -r\fP option) via a
-NNTP (Network News Transport Protocol) server. It will automatically utilize
-NOV (News OVerview) style index files if available locally or via the NNTP
-XOVER command.
+is a full-screen easy to use Usenet newsreader. It can read news locally
+(i.e., \fI/var/spool/news\fR) or remotely (\fBrtin\fP or \fBtin -r\fP option)
+via a NNTP (Network News Transport Protocol) server. It will automatically
+utilize NOV (News OVerview) style index files if available locally or via
+the NNTP XOVER command.
 .PP
 .B tin
 has four separate levels of operation: Group selection level, Group level,
@@ -1589,7 +1589,7 @@ unread articles are killed once only by marking them read. Options 1 and 2
 will process all articles in the group and therefore there is a processing
 overhead when using them. Option 1 will thread killed articles as normal but
 they will be marked with a 'K'. Option 2 simply does not display killed
-articles. kill_level was first present is tin-1.2 and has been resurrected
+articles. kill_level was first present in tin-1.2 and has been resurrected
 for 1.4
 .TP
 .B Use 8bit characters in mail headers (mail_8bit_header)
@@ -2754,6 +2754,10 @@ ftp.tin.org:/pub/news/clients/tin/v1.5/
 ftp.tin.org:/pub/news/clients/tin/v1.5/
 .IP "v1.5.6 (beta) - August 3rd 2000"
 ftp.tin.org:/pub/news/clients/tin/v1.5/
+.IP "v1.5.7 (beta) - November 4th 2000"
+ftp.tin.org:/pub/news/clients/tin/v1.5/
+.IP "v1.5.8 (beta) - February 21st 2001"
+ftp.tin.org:/pub/news/clients/tin/v1.5/
 .\"
 .\"
 .SH CREDITS
@@ -2812,37 +2816,37 @@ Mark Ayzenshteyn, Jens Chr. Bachem, George Baltz, Volker Barthelmann, Kirk
 Bauer, Paul Bauwens, Dieter Becker, Wolfgang Behrens, Fabrice Bellet, Greg
 Berigan, Enrik Berkhan, Juergen Bernau, Dan Berry, Michael Bienia, David
 Binderman, Andrey Blochintsev, Chris Blum, Fokke de Boer, Andreas Borchert,
-Mark Boucher, Robert Brady, Bill Brolik, Herman ten Brugge, Martin Buck,
-Jeremy Buhler, Leila Burrell-Davis, Sean Casey, Peter Castro, Troy Cauble,
-Andrey A. Chernov, Albert Chin-A-Young, Park Chong-Dae, Tan Kwee Chuan,
-Boleslaw Ciesielski, Robert Claeson, Steven Cogswell, Don Costello, Bryan
-Curnutt, Ned Danieley, Lars Dannenberg, Chris Davies, John Davis, Borislav
-Deianov, Thomas E. Dickey, Olaf Dietrich, Theo Van Dinter, Ralf Doeblitz,
-Bryan Dongray, Michael Douglass, Craig Durland, Bernd Eckenfels, Phil Edge,
-Kirk Edson, Nick Efthymiou, Stefan Elf, L. Scott Emmons, Rob Engle, Olle
-Eriksson, Brent Ermlick, Bernd Ernesti, Ragnar Hojland Espinosa, Jason
-Faultless, Michael Faurot, Werner Fleck, John M. Flinchbaugh, Andy Gabor,
-Torsten Gesang, Ruediger Geys, Callum Gibson, Mike Glendinning, Philippe
-Goujard, Dan Greenspan, Karlo Gross, Carl Hage, Paul Halsema, Ed Hanway,
-Scott Hauck, Christian Haul, James Hawtin, Per Headland, Arnold Hendriks,
-Daniel Hermans, Jose Herrero, Dave Hill, Tom Hite, Torsten Homeyer, Ulli
-Horlacher, Keith Howell, Tommy Hsieh, Shih-Kun Huang, Steve Hunt, Jeff
-Hurwitt, Jeon Hyoung-Jo, Pieter Immelman, Jarkko Isokungas, Patrick St.
-Jean, Hal Jespersen, Park Sang Jin, Robbin Johnson, Jarkko Jormanainen,
-Nelson Kading, Geoffrey Keating, Karsten Keil, Charles S. Kerr, Fritz
-Kleeman, Andreas Kies, Janne Kiviluoto, Tomasz Kloczko, Dwarven Knight,
-Thomas Koenig, Karl-Koenig Koenigsson, Martin Kraemer, Thomas Kroener,
-Florian Kuehnert, Bernd Kuemmerlen, Kris Kugel, Manoj Kumar, Dawid Kuroczko,
-Yuri Kuzmenko, Olivier Lacroix, Geoff Lane, Alex Lange, Alain Lasserre,
-Stanislav Latishko, Hannu Laurila, Vincent Lefevre, Alexander Lehmann, Marty
-Leisner, Thomas Leitner, Hakan Lennestal, Kevin Lentin, Chua Choon Leong,
-Chris Lewis, Andreas Ley, David-Michael Lincke, Otto Lind, Richard Lloyd,
-Florian Lohoff, Reinhard Luebke, Clifford Luke, Michael Lupp, David
-MacKenzie, Hugh Mahon, Giuseppe De Marco, Scott Marovich, Dmitri A.
-Martynoff, Kazushi Marukawa, William McBrine, Owen Medd, Philipp
-Mergenthaler, Arkadiusz Miskiewicz, Soren Moller, Bruce Momjian, Sergio
-Morales, Michael Morrell, Klaus Mueller, Mike Muise, Udo Munk, John R.
-Myers, Daniel Naber, Torsten Neumann, Dirk Nimmich, James Nugen, David E.
+Sebastian Bork, Mark Boucher, Robert Brady, Bill Brolik, Herman ten Brugge,
+Martin Buck, Jeremy Buhler, Leila Burrell-Davis, Sean Casey, Peter Castro,
+Troy Cauble, Andrey A. Chernov, Albert Chin-A-Young, Park Chong-Dae, Tan
+Kwee Chuan, Boleslaw Ciesielski, Robert Claeson, Steven Cogswell, Don
+Costello, Bryan Curnutt, Ned Danieley, Lars Dannenberg, Chris Davies, John
+Davis, Borislav Deianov, Thomas E. Dickey, Olaf Dietrich, Theo Van Dinter,
+Ralf Doeblitz, Bryan Dongray, Michael Douglass, Nickolay Dudorov, Craig
+Durland, Bernd Eckenfels, Phil Edge, Kirk Edson, Nick Efthymiou, Stefan Elf,
+L. Scott Emmons, Rob Engle, Olle Eriksson, Brent Ermlick, Bernd Ernesti,
+Ragnar Hojland Espinosa, Jason Faultless, Michael Faurot, Werner Fleck, John
+M. Flinchbaugh, Andy Gabor, Torsten Gesang, Ruediger Geys, Callum Gibson,
+Mike Glendinning, Philippe Goujard, Dan Greenspan, Karlo Gross, Carl Hage,
+Paul Halsema, Ed Hanway, Scott Hauck, Christian Haul, James Hawtin, Per
+Headland, Arnold Hendriks, Daniel Hermans, Jose Herrero, Dave Hill, Tom
+Hite, Torsten Homeyer, Ulli Horlacher, Keith Howell, Tommy Hsieh, Shih-Kun
+Huang, Steve Hunt, Jeff Hurwitt, Jeon Hyoung-Jo, Pieter Immelman, Jarkko
+Isokungas, Patrick St. Jean, Hal Jespersen, Park Sang Jin, Robbin Johnson,
+Jarkko Jormanainen, Nelson Kading, Geoffrey Keating, Karsten Keil, Charles
+S. Kerr, Fritz Kleeman, Andreas Kies, Janne Kiviluoto, Tomasz Kloczko,
+Dwarven Knight, Thomas Koenig, Karl-Koenig Koenigsson, Martin Kraemer,
+Thomas Kroener, Florian Kuehnert, Bernd Kuemmerlen, Kris Kugel, Manoj Kumar,
+Dawid Kuroczko, Yuri Kuzmenko, Olivier Lacroix, Geoff Lane, Alex Lange,
+Alain Lasserre, Stanislav Latishko, Hannu Laurila, Vincent Lefevre,
+Alexander Lehmann, Marty Leisner, Thomas Leitner, Hakan Lennestal, Kevin
+Lentin, Chua Choon Leong, Chris Lewis, Andreas Ley, David-Michael Lincke,
+Otto Lind, Richard Lloyd, Florian Lohoff, Reinhard Luebke, Clifford Luke,
+Michael Lupp, David MacKenzie, Hugh Mahon, Giuseppe De Marco, Scott
+Marovich, Dmitri A. Martynoff, Kazushi Marukawa, William McBrine, Owen Medd,
+Philipp Mergenthaler, Arkadiusz Miskiewicz, Soren Moller, Bruce Momjian,
+Sergio Morales, Michael Morrell, Klaus Mueller, Mike Muise, Udo Munk, John
+R. Myers, Daniel Naber, Torsten Neumann, Dirk Nimmich, James Nugen, David E.
 O'Brien, Michael O'Reilly, Oleg Ohotnikov, Ronald Orr, Julien Oster, Jeb
 Palmer, Neil Parker, Tom Parry, Jim Patterson, Sven Paulus, Walter
 Pelissero, Cameron Perkins, Colin Perkins, Eric Peterson, Tim Pierce, Bill

@@ -438,6 +438,7 @@ read_cmd_line_options (
 				tin_bbs_mode = TRUE;
 				break;
 #	endif /* !M_AMIGA */
+
 			case 'c':
 				catchup = TRUE;
 				batch_mode = TRUE;
@@ -613,26 +614,35 @@ read_cmd_line_options (
 #ifdef TIN_CC
 				error_message("Compiler:");
 				error_message("\tCC       = \"%s\"", TIN_CC);
-#	ifdef TIN_CFLAGS
+#	if 0 /* quoting trouble */
+#		ifdef TIN_CFLAGS
 				error_message("\tCFLAGS   = \"%s\"", TIN_CFLAGS);
-#	endif /* TIN_CFLAGS */
+#		endif /* TIN_CFLAGS */
+#	endif /* 0 */
 #	ifdef	TIN_CPP
 				error_message("\tCPP      = \"%s\"", TIN_CPP);
 #	endif /* TIN_CPP */
-#	ifdef TIN_CPPFLAGS
+#	if 0 /* quoting trouble */
+#		ifdef TIN_CPPFLAGS
 				error_message("\tCPPFLAGS = \"%s\"", TIN_CPPFLAGS);
-#	endif /* TIN_CPPFLAGS */
+#		endif /* TIN_CPPFLAGS */
+#	endif /* 0 */
 #endif /* TIN_CC */
+
 #ifdef TIN_LD
 				error_message("Linker and Libraries:");
 				error_message("\tLD       = \"%s\"", TIN_LD);
-#	ifdef TIN_LDFLAGS
+#	if 0 /* quoting trouble */
+#		ifdef TIN_LDFLAGS
 				error_message("\tLDFLAGS  = \"%s\"", TIN_LDFLAGS);
-#	endif /* TIN_LDFLAGS */
+#		endif /* TIN_LDFLAGS */
+#	endif /* 0 */
+
 #	ifdef TIN_LIBS
 				error_message("\tLIBS     = \"%s\"", TIN_LIBS);
 #	endif /* TIN_LIBS */
 #endif /* TIN_LD */
+
 				error_message("Characteristics:");
 				error_message("\t"
 /* TODO: complete list and do some usefull grouping */
@@ -785,6 +795,9 @@ read_cmd_line_options (
 		}
 	}
 
+	/*
+	 * Sort out conflicts of options....
+	 */
 	if (verbose && !batch_mode) {
 		wait_message(1, _("-v only useful for batch mode operations\n"));
 		verbose = FALSE;
@@ -795,9 +808,6 @@ read_cmd_line_options (
 		read_saved_news = FALSE;
 	}
 
-	/*
-	 * Sort out conflicts of options....
-	 */
 #ifdef NNTP_ABLE
 	/*
 	 * If we're reading from an NNTP server and we've been asked not to look
@@ -946,7 +956,7 @@ static void
 show_intro_page (
 	void)
 {
-	char buf[4096]; /* should be enoght */
+	char buf[4096];
 
 	if (!cmd_line) {
 		ClearScreen ();
@@ -955,7 +965,7 @@ show_intro_page (
 		my_printf("\n");
 	}
 
-	sprintf(buf, _(txt_intro_page), bug_addr);
+	snprintf(buf, sizeof(buf) - 1, _(txt_intro_page), bug_addr);
 
 	my_fputs (buf, stdout);
 	my_flush();
@@ -996,6 +1006,7 @@ read_cmd_line_groups (
 
 	return matched;
 }
+
 
 void
 giveup (

@@ -83,7 +83,7 @@ check_upgrade (
 	char bar[120]; /* should be enough */
 
 	my_strncpy(foo, txt_tinrc_header, sizeof(foo)-1);
-	snprintf(bar, sizeof(bar)-1, foo, PRODUCT, TINRC_VERSION);
+	snprintf(bar, sizeof(bar) - 1, foo, PRODUCT, TINRC_VERSION);
 
 	if (strncmp(buf, bar, MIN(strlen(bar),strlen(buf))) == 0)
 		return(IGNORE);

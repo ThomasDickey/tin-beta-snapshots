@@ -430,7 +430,7 @@ page_goto_next_unread:
 				break;
 
 #ifndef DISABLE_PRINTING
-			case iKeyPagePrint:	/* output art/thread/tagged arts to printer */
+			case iKeyPrint:	/* output art/thread/tagged arts to printer */
 				feed_articles (FEED_PRINT, PAGE_LEVEL, group, this_resp);
 				break;
 #endif /* !DISABLE_PRINTING */
@@ -1376,7 +1376,7 @@ process_url(
 	 *       really use curr_line or better start at top of article?
 	 */
 	for (i = curr_line; i < artlines; ++i) {
-		if (!artline[i].flags & C_URL)
+		if (!(artline[i].flags & (C_URL|C_NEWS|C_MAIL)))
 			continue;
 
 		/*
@@ -1388,25 +1388,32 @@ process_url(
 		/*
 		 * Step through, finding URL's
 		 *
-		 * add MAIL_REGEX/NEWS_REGEX
+		 * TODO: add multiple URLs per line handling
+		 *       handle mailto: and news: (not NNTP) URLs internal
 		 */
-		while (pcre_exec (url_regex.re, url_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) != PCRE_ERROR_NOMATCH) {
+		while (TRUE) {
 			char url[LEN];
 
+			/* any matches left? */
+			if (pcre_exec (url_regex.re, url_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
+				if (pcre_exec (mail_regex.re, mail_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
+					if (pcre_exec (news_regex.re, news_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
+						break;
+
 			*(ptr + offsets[1]) = '\0';
+
 			if (prompt_default_string ("URL:", url, sizeof(url), ptr + offsets[0], HIST_NONE)) {
 				char ubuf[LEN];
 
 				wait_message(2, "Launching %s\n", url);
+				/* TODO make the handler configurable via 'M'enu */
 				strcpy(ubuf, "url_handler.sh ");
 				strncat(ubuf, escape_shell_meta (url, 0), LEN - 16);
 				invoke_cmd (ubuf);
 			}
-
 			ptr += offsets[1];
 		}
 	}
-
 	info_message ("No more URL's");
 }
 

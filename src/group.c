@@ -242,7 +242,7 @@ group_page (
 				break;
 
 #ifndef DISABLE_PRINTING
-			case iKeyGroupPrint:	/* output art/thread/tagged arts to printer */
+			case iKeyPrint:	/* output art/thread/tagged arts to printer */
 				if (grpmenu.curr >= 0)
 					feed_articles (FEED_PRINT, GROUP_LEVEL, &CURR_GROUP, (int) base[grpmenu.curr]);
 				break;
