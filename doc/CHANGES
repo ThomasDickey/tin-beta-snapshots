@@ -1,4 +1,13 @@
--- 1.5.9 release 20010506 "" --
+-- 1.5.9 release 20010522 "" --
+
+U064) Kazushi Marukawa <jam@pobox.com>
+      BUG. error_message() can't handle %s outside the first argument
+      FIX. screen.c
+
+ 032) Herbert Martin Dietze <herbert@spamcop.net> 
+      Urs Janssen <urs@tin.org>
+      BUG. empty random organization file could crash tin
+      FIX. misc.c
 
 U063) Dirk Nimmich <nimmich@uni-muenster.de>
       BUG. article with 0 lines in cooked body quits tin
@@ -6,18 +15,24 @@ U063) Dirk Nimmich <nimmich@uni-muenster.de>
       BUG. posting of folded headers was impossible
       BUG. post key when following up to a posting with Followup-To poster
            set was 'w' instead of 'p'
+      BUG. 'Y'ank didn't toggle show_only_unread_groups setting
       ADD. note about FQDN
       FIX. INSTALL, proto.h, art.c, cook.c, post.c, rfc2046.c, rfc2047.c
-           read.c
+           read.c, select.c
 
 U062) Martin Klaiber <martinkl@zedat.fu-berlin.de>
-      ADD. sort threads by score
-      FIX. art.c, thread.c
+      ADD. option to sort threads by score (descend/ascend)
+      FIX. tin.1, tin.5, extern.h, tin.h, tinrc.h, art.c, attrib.c, config.c
+           init.c, lang.c, refs.c, tincfg.tbl
 
 U061) Andreas Metzler <tin-dev@downhill.at.eu.org>
+      Dirk Nimmich <nimmich@uni-muenster.de>
       ADD. Message-ID (if known) to filter-file
       ADD. Message-ID (if known) to posted_articles_file
-      FIX. proto.h, filter.c, post.c
+      ADD. Date to posted_articles_file
+      ADD. remove emtpy headers from article before appending it to
+           posted_articles_file
+      FIX. TODO, proto.h, filter.c, post.c
 
 U060) Dirk Nimmich <nimmich@uni-muenster.de>
       Nickolay Dudorov <nnd@wint.itfs.nsk.su>

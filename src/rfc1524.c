@@ -353,7 +353,7 @@ expand_mailcap_meta(
 
 	linelen = sizeof(char) * LEN * 2;		/* initial maxlen */
 	space = linelen - 1;							/* available space in string */
-	line = (char *) my_malloc (linelen); 	/* initial malloc */
+	line = (char *) my_malloc (linelen);	/* initial malloc */
 	memset (line, 0, linelen);
 	lptr = line;
 

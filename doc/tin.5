@@ -430,6 +430,9 @@ Identical to the tinrc variable of the same name
 .B sort_art_type
 Identical to the tinrc variable sort_article_type
 .TP
+.B sort_threads_type
+Identical to the tinrc variable sort_threads_type
+.TP
 .B post_proc_type
 Identical to the tinrc variable post_process_type
 .TP
@@ -1363,6 +1366,17 @@ types are allowed:
 \(emsort articles by filtering score (descending=7 & ascending=8).
 .in -.5i
 Sort by ascending Date (6) is the default.
+.TP
+.B sort_threads_type
+This specifies how threads will be sorted. The following sort
+types are allowed:
+.in +.5i
+.ti -\w'\(em'u
+\(emdon't sort articles (none=0).
+.ti -\w'\(em'u
+\(emsort threads by filtering score (descending=1 & ascending=2).
+.in -.5i
+Sort by descending Score (1) is the default.
 .TP
 .B spamtrap_warning_addresses
 Set this option to a list of comma-separated strings to be warned if you are

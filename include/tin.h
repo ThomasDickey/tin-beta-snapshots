@@ -1048,15 +1048,23 @@ enum resizer { cNo, cYes, cRedraw };
  * used in art.c
  * sort types on arts[] array
  */
-#define SORT_BY_NOTHING		0
-#define SORT_BY_SUBJ_DESCEND	1
-#define SORT_BY_SUBJ_ASCEND	2
-#define SORT_BY_FROM_DESCEND	3
-#define SORT_BY_FROM_ASCEND	4
-#define SORT_BY_DATE_DESCEND	5
-#define SORT_BY_DATE_ASCEND	6
-#define SORT_BY_SCORE_DESCEND	7
-#define SORT_BY_SCORE_ASCEND	8
+#define SORT_ARTICLES_BY_NOTHING	0
+#define SORT_ARTICLES_BY_SUBJ_DESCEND	1
+#define SORT_ARTICLES_BY_SUBJ_ASCEND	2
+#define SORT_ARTICLES_BY_FROM_DESCEND	3
+#define SORT_ARTICLES_BY_FROM_ASCEND	4
+#define SORT_ARTICLES_BY_DATE_DESCEND	5
+#define SORT_ARTICLES_BY_DATE_ASCEND	6
+#define SORT_ARTICLES_BY_SCORE_DESCEND	7
+#define SORT_ARTICLES_BY_SCORE_ASCEND	8
+
+/*
+ * used in art.c
+ * sort types on base[] array
+ */
+#define SORT_THREADS_BY_NOTHING		0
+#define SORT_THREADS_BY_SCORE_DESCEND	1
+#define SORT_THREADS_BY_SCORE_ASCEND	2
 
 /*
  * Search keys
@@ -1423,6 +1431,7 @@ struct t_attribute
 						   3=from descend, 4=from ascend,
 						   5=date descend, 6=date ascend,
 						   7=score descend, 8=score ascend */
+	unsigned sort_threads_type:2;		/* 0=none, 1=score descend, 2=score ascend */
 	unsigned int post_proc_type:2;		/* 0=none, 1=shar, 2=uudecode */
 	unsigned int x_comment_to:1;		/* insert X-Comment-To: in Followup */
 };

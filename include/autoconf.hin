@@ -586,6 +586,10 @@
 #	undef HAVE_LOCKF
 #	undef HAVE_FCNTL
 
+#	undef USE_FLOCK
+#	undef USE_LOCKF
+#	undef USE_FCNTL
+
 #	undef HAVE_SYS_FILE_H
 #	undef HAVE_SYS_STAT_H
 #	undef HAVE_SYS_TYPES_H

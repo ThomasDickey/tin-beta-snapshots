@@ -144,7 +144,8 @@ error_message (
 
 	vsprintf (mesg, fmt, ap);
 
-	my_fprintf (stderr, mesg);
+/*	my_fprintf (stderr, mesg); */
+	my_fputs (mesg, stderr);
 	my_fflush (stderr);
 
 	if (cmd_line) {

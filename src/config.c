@@ -621,7 +621,10 @@ read_config_file (
 			if (match_boolean (buf, "start_editor_offset=", &tinrc.start_editor_offset))
 				break;
 
-			if (match_integer (buf, "sort_article_type=", &tinrc.sort_article_type, SORT_BY_SCORE_ASCEND))
+			if (match_integer (buf, "sort_article_type=", &tinrc.sort_article_type, SORT_ARTICLES_BY_SCORE_ASCEND))
+				break;
+
+			if (match_integer (buf, "sort_threads_type=", &tinrc.sort_threads_type, SORT_THREADS_BY_SCORE_ASCEND))
 				break;
 
 			if (match_boolean (buf, "show_last_line_prev_page=", &tinrc.show_last_line_prev_page))
@@ -897,6 +900,9 @@ write_config_file (
 
 	fprintf (fp, _(txt_sort_article_type.tinrc));
 	fprintf (fp, "sort_article_type=%d\n\n", tinrc.sort_article_type);
+
+	fprintf (fp, _(txt_sort_threads_type.tinrc));
+	fprintf (fp, "sort_threads_type=%d\n\n", tinrc.sort_threads_type);
 
 	fprintf (fp, _(txt_maildir.tinrc));
 	fprintf (fp, "default_maildir=%s\n\n", tinrc.maildir);
@@ -1793,6 +1799,18 @@ change_config_file (
 							 */
 							if (tinrc.thread_articles != original_list_value && group != (struct t_group *) 0) {
 								group->attribute->thread_arts = tinrc.thread_articles;
+								make_threads (group, TRUE);
+							}
+							clear_message ();
+							break;
+
+						case OPT_SORT_THREADS_TYPE:
+							/*
+							 * If the sorting strategy of threads has changed, fix things
+							 * so that resorting will occur
+							 */
+							if (tinrc.sort_threads_type != original_list_value && group != (struct t_group *) 0) {
+								group->attribute->sort_threads_type = tinrc.sort_threads_type;
 								make_threads (group, TRUE);
 							}
 							clear_message ();

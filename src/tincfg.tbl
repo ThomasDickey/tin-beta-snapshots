@@ -44,7 +44,8 @@
 	draw_arrow			OPT_ON_OFF
 	inverse_okay			OPT_ON_OFF
 	thread_articles			txt_thread	THREAD_MAX+1
-	sort_article_type		txt_sort_type	SORT_BY_SCORE_ASCEND+1
+	sort_article_type		txt_sort_a_type	SORT_ARTICLES_BY_SCORE_ASCEND+1
+	sort_threads_type		txt_sort_t_type	SORT_THREADS_BY_SCORE_ASCEND+1
 	pos_first_unread		OPT_ON_OFF
 	show_only_unread_arts		OPT_ON_OFF
 	show_only_unread_groups		OPT_ON_OFF

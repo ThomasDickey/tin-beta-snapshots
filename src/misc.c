@@ -2305,6 +2305,11 @@ random_organization (
 	while (fgets(selorg, (int) sizeof(selorg), orgfp))
 		nool++;
 
+	if (!nool) {
+		fclose(orgfp);
+		return selorg;
+	}
+
 	rewind (orgfp);
 	sol = rand () % nool + 1;
 	nool = 0;

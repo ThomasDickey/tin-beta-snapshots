@@ -54,7 +54,8 @@ TIN related:
   --with-socks                     --with-trace
   --enable-ipv6                    --enable-nls
   --with-included-gettext          --with-catgets
-  --enable-included-msgs
+  --enable-included-msgs           --disable-fcntl
+  --enable-lockf                   --enable-flock
 
   DEBUG                            MATCH_TAR_PATTERN
   DEBUG_NEWSRC                     NEW_HASH_METHOD

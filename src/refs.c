@@ -881,14 +881,14 @@ build_references (
 	/*
 	 * The articles are currently unsorted, and are as they were put by setup_hard_base()
 	 */
-	if (group->attribute && group->attribute->sort_art_type != SORT_BY_NOTHING)
+	if (group->attribute && group->attribute->sort_art_type != SORT_ARTICLES_BY_NOTHING)
 		sort_arts (group->attribute->sort_art_type);
 
 	if (group->attribute)
-		sort_ascend = (group->attribute->sort_art_type == SORT_BY_SUBJ_ASCEND ||
-		               group->attribute->sort_art_type == SORT_BY_FROM_ASCEND ||
-		               group->attribute->sort_art_type == SORT_BY_DATE_ASCEND ||
-		               group->attribute->sort_art_type == SORT_BY_SCORE_ASCEND);
+		sort_ascend = (group->attribute->sort_art_type == SORT_ARTICLES_BY_SUBJ_ASCEND ||
+		               group->attribute->sort_art_type == SORT_ARTICLES_BY_FROM_ASCEND ||
+		               group->attribute->sort_art_type == SORT_ARTICLES_BY_DATE_ASCEND ||
+		               group->attribute->sort_art_type == SORT_ARTICLES_BY_SCORE_ASCEND);
 
 #ifdef DEBUG_REFS
 	dbgfd = fopen("Refs.dump", "w");

@@ -5,12 +5,6 @@ o  'U'RL-view doesn't recognize multiple URLs/line
 
 o  'a'/'A'uthor search in the pagern dosen't work
 
-o  'Y'ank in doesn't toggle show_only_unread_groups setting
-   ('y'ank in all groups, 'Y'ank active file, only subscribed groups
-    are shown but show_only_unread_groups isn't set to true so the next
-    time you like to toggle between subscribed/all groups you have to
-    press 'y' several time till it takes effect).
-
 o  referene based filters won't work with long (> 500 chars)
    References: lines
 
@@ -151,14 +145,11 @@ o  when enabling the 'Cc/Bcc on every message that is sent', and
    twice.  yes, sendmail removes the duplicate ... but it'd
    be better if tin caught this case first.
 
-o  'empty' headers arn't removed from article before appending to
-    keep_posted_articles_file
-
 New features
 ------------
 o  make THREAD_SUM/THREAD_WEIGHT a config/attributes option and document it
 
-o  key to toggle article-sorting preferences on the fly
+o  key to toggle article and thread sorting preferences on the fly
    (like 'u' for threading)
 
 o  add Content-Description evaluation for the part-overview in the
@@ -304,7 +295,8 @@ o  Add to the POST_INFO-level:
      '?','/' search
      'h' help-screen
 
-o  Add a commandline switch that prints out all values of cpp-symbols etc.
+o  Add a commandline switch (-V) that prints out all values of cpp-symbols
+   etc. [party done]
 
 o  Reorganize tinrc into related sections for easier editing
    e.g., Display, Posting etc.
@@ -423,6 +415,8 @@ Internal Changes
 ----------------
 o  make configure look for strrstr() in libpub/publib.h
    [Urs Janssen <urs@tin.org>]
+
+o  add configure option to focre a certain locking method
 
 o  check for 10-digits unix-timestamp safety (9->10 digits rollover at
    9.9.2001)
