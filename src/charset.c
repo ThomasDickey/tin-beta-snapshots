@@ -305,14 +305,14 @@ is_art_tex_encoded (
 
 		i--;
 
-		if (!isalnum((unsigned char)line[i]))
+		if (!isalnum((unsigned char) line[i]))
 			continue;	/* quoting char */
 
-		len = strlen (line) - 1;
+		len = strlen(line) - 1;
 		for (i = 1; i < len; i++) {
 			if (((line[i] == '\\') || (line[i] == '\"')) &&
-							(isalnum((unsigned char)line[i-1])) &&
-							(isalnum((unsigned char)line[i+1])))
+							(isalnum((unsigned char) line[i - 1])) &&
+							(isalnum((unsigned char) line[i + 1])))
 				return TRUE;
 		}
 	}

@@ -164,6 +164,7 @@
 #	undef HAVE_NETINET_IN_H
 #	undef HAVE_NETLIB_H
 #	undef HAVE_NOMACROS_H		/* ncurses 4.1 */
+#	undef HAVE_PATHS_H
 #	undef HAVE_POLL_H
 #	undef HAVE_PROTOTYPES_H
 #	undef HAVE_PWD_H

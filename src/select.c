@@ -174,7 +174,7 @@ selection_page (
 				break;
 
 			case iKeySetRange:	/* set range */
-				if (bSetRange (SELECT_LEVEL, 1, selmenu.max, selmenu.curr+1))
+				if (bSetRange (SELECT_LEVEL, 1, selmenu.max, selmenu.curr + 1))
 					show_selection_page ();
 				break;
 
@@ -537,19 +537,19 @@ show_selection_page (
 		if (show_description) {
 			if (active[n].description)
 				sprintf (sptr, "  %c %s %s  %-*.*s  %-*.*s" cCRLF,
-				         subs, tin_ltoa(i+1, 4), tmp,
+				         subs, tin_ltoa(i + 1, 4), tmp,
 				         groupname_len, groupname_len, active_name,
 				         blank_len, blank_len, group_descript);
 			else
 				sprintf (sptr, "  %c %s %s  %-*.*s  " cCRLF,
-				         subs, tin_ltoa(i+1, 4), tmp,
-				         (groupname_len+blank_len),
-				         (groupname_len+blank_len), active[n].name);
+				         subs, tin_ltoa(i + 1, 4), tmp,
+				         (groupname_len + blank_len),
+				         (groupname_len + blank_len), active[n].name);
 		} else {
 			if (tinrc.draw_arrow)
-				sprintf (sptr, "  %c %s %s  %-*.*s" cCRLF, subs, tin_ltoa(i+1, 4), tmp, groupname_len, groupname_len, active_name);
+				sprintf (sptr, "  %c %s %s  %-*.*s" cCRLF, subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name);
 			else
-				sprintf (sptr, "  %c %s %s  %-*.*s%*s" cCRLF, subs, tin_ltoa(i+1, 4), tmp, groupname_len, groupname_len, active_name, blank_len, " ");
+				sprintf (sptr, "  %c %s %s  %-*.*s%*s" cCRLF, subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name, blank_len, " ");
 		}
 		if (tinrc.strip_blanks) {
 			strip_line (sptr);
@@ -791,7 +791,7 @@ reposition_group (
 	if (pos_group_in_newsrc (group, pos_num - newgroups)) {
 		read_newsrc (newsrc, TRUE);
 		tinrc.default_move_group = pos_num;
-		return (pos_num-1);
+		return (pos_num - 1);
 	} else {
 		tinrc.default_move_group = default_num + 1;
 		return (default_num);

@@ -1,13 +1,9 @@
-/*
- *  Project   : tin - a Usenet reader
- *  Module    : tmpfile.c
- *  Author    : Urs Janssen <urs@tin.org>
- *  Created   : 2001-03-11
- *  Updated   : 2001-04-23
- *  Notes     :
+/*-
+ * Copyright (c) 1990, 1993
+ *      The Regents of the University of California.  All rights reserved.
  *
- * Copyright (c) 2001 Urs Janssen <urs@tin.org>
- * All rights reserved.
+ * This code is derived from software contributed to Berkeley by
+ * Chris Torek.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -17,92 +13,90 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the University of
+ *      California, Berkeley and its contributors.
+ * 4. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR `AS IS'' AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  */
 
-#ifndef TIN_H
+#if 0
+#	if defined(LIBC_SCCS) && !defined(lint)
+static char rcsid[] = "$OpenBSD: tmpfile.c,v 1.6 1998/09/18 22:06:49 deraadt Exp $";
+#	endif /* LIBC_SCCS and not lint */
+
+#	include <sys/types.h>
+#	include <sys/stat.h>
+#	include <unistd.h>
+#	include <signal.h>
+#	include <errno.h>
+#	include <stdio.h>
+#	include <string.h>
+#	include <paths.h>
+#else
 #	include "tin.h"
-#endif /* !TIN_H */
+#endif /* 0 */
 
+#ifndef HAVE_TMPFILE
 
-/*
- * my_tmpfile(filename, name_size, need_name, base_dir)
- *
- * try to create a uniq tmp-file descriptor
- *
- * returncodes:
- * >0 = file descriptor of tmpfile
- *      if need_name is set to true and/or we have to unlink the file
- *      ourself buffer if set to the name of the tmp file located in base_dir
- * -1 = some error occured
- */
-int
-my_tmpfile(
-	char *filename,
-	size_t name_size,
-	t_bool need_name,
-	const char *base_dir)
+FILE *
+tmpfile(
+	void)
 {
-	int fd = -1;
-	char buf[PATH_LEN];
+        sigset_t set, oset;
+        FILE *fp;
+        int sverrno, fd = -1;
+#define TRAILER "tmp.XXXXXXXXXX"
+        char buf[sizeof(_PATH_TMP) + sizeof(TRAILER)];
 
-	errno = 0;
+        (void)memcpy(buf, _PATH_TMP, sizeof(_PATH_TMP) - 1);
+        (void)memcpy(buf + sizeof(_PATH_TMP) - 1, TRAILER, sizeof(TRAILER));
 
-	if (filename != (char *) 0 && name_size > 0) {
-#ifdef HAVE_TMPFILE
-		if(!need_name) {
-			FILE *fp = (FILE *) 0;
-			if ((fp = tmpfile()) != (FILE *) 0)
-				fd = fileno(fp);
-#	ifdef DEBUG
-			else
-				wait_message(5, "HAVE_TMPFILE %s", strerror(errno));
-#	endif /* DEBUG */
-			*filename = '\0';
-			if (fd == -1)
-				error_message (_(txt_cannot_create_uniq_name));
-			return fd;
-		}
-#endif /* HAVE_TMPFILE */
+/* TODO: use portable signal blocking/unblocking */
+        sigfillset(&set);
+        (void)sigprocmask(SIG_BLOCK, &set, &oset);
 
-		if (base_dir) {
-			snprintf (buf, MIN(name_size, (sizeof(buf)-1)), "tin-%s-%d-XXXXXX", get_host_name(), process_id);
-			joinpath (filename, base_dir, buf);
-		} else {
-			snprintf (buf, MIN(name_size, (sizeof(buf)-1)), "tin_XXXXXX");
-			joinpath (filename, TMPDIR, buf);
-		}
 #ifdef HAVE_MKSTEMP
-		fd = mkstemp(filename);
-#	ifdef DEBUG
-		if (errno)
-			wait_message(5, "HAVE_MKSTEMP %s: %s", filename, strerror(errno));
-#	endif /* DEBUG */
+        fd = mkstemp(buf);
 #else
 #	ifdef HAVE_MKTEMP
-		fd = open(mktemp(filename), (O_WRONLY|O_CREAT|O_EXCL), (mode_t)(S_IRUSR|S_IWUSR));
-#		ifdef DEBUG
-		if (errno)
-			wait_message(5, "HAVE_MKTEMP %s: %s", filename, strerror(errno));
-#		endif /* DEBUG */
-#	endif /* HAVE_MKTEMP */
+			fd = open(mktemp(buf), (O_WRONLY|O_CREAT|O_EXCL), (mode_t)(S_IRUSR|S_IWUSR));
+#  endif /* HAVE_MKTEMP */
 #endif /* HAVE_MKSTEMP */
-		}
-	if (fd == -1)
-		error_message (_(txt_cannot_create_uniq_name));
-	return fd;
+        if (fd != -1) {
+                mode_t u;
+
+                (void)unlink(buf);
+                u = umask(0);
+                (void)umask(u);
+                (void)fchmod(fd, 0666 & ~u);
+        }
+
+        (void)sigprocmask(SIG_SETMASK, &oset, NULL);
+
+        if (fd == -1)
+                return (NULL);
+
+        if ((fp = fdopen(fd, "w+")) == NULL) {
+                sverrno = errno;
+                (void)close(fd);
+                errno = sverrno;
+                return (NULL);
+        }
+        return (fp);
 }
+#endif /* !HAVE_TMPFILE */

@@ -124,7 +124,7 @@ submit_inews (
 					*ptr = '\0';
 			}
 			if (ptr - line == 10 && !strncasecmp (line, "Message-ID", 10)) {
-				strcpy(message_id, ptr+2);
+				strcpy(message_id, ptr + 2);
 				id_in_article = TRUE;
 				if ((ptr = strchr(message_id, '\n')))
 					*ptr = '\0';

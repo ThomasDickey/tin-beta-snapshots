@@ -82,7 +82,7 @@ check_upgrade (
 	char foo[60];
 	char bar[120]; /* should be enough */
 
-	my_strncpy(foo, txt_tinrc_header, sizeof(foo)-1);
+	my_strncpy(foo, txt_tinrc_header, sizeof(foo) - 1);
 	snprintf(bar, sizeof(bar) - 1, foo, PRODUCT, TINRC_VERSION);
 
 	if (strncmp(buf, bar, MIN(strlen(bar),strlen(buf))) == 0)
@@ -1239,7 +1239,7 @@ write_config_file (
 		char timestring[LEN];
 
 		timestring[0] = '\0';
-		my_strftime(timestring, LEN-1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(newnews[i].time)));
+		my_strftime(timestring, LEN - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(newnews[i].time)));
 		fprintf (fp, "newnews=%s %lu (%s)\n", newnews[i].host,
 								(unsigned long int) newnews[i].time, timestring);
 	}
@@ -1285,7 +1285,7 @@ print_any_option (
 
 	MoveCursor (row, 0);
 
-	snprintf(temp, len, "   %3d. %s ", act_option+1, option_table[act_option].txt->opt);
+	snprintf(temp, len, "   %3d. %s ", act_option + 1, option_table[act_option].txt->opt);
 	ptr = temp + strlen(temp);
 	len -= strlen(temp);
 
@@ -1359,7 +1359,7 @@ static void DoScroll (
 	MoveCursor(INDEX_TOP, 0);
 	SetScrollRegion(INDEX_TOP, INDEX_TOP + option_lines_per_page - 1);
 	ScrollScreen(jump);
-	SetScrollRegion(0, LINES-1);
+	SetScrollRegion(0, LINES - 1);
 }
 #endif /* USE_CURSES */
 
@@ -1370,10 +1370,10 @@ highlight_option (
 {
 	if (!OptionOnPage(option)) {
 #ifdef USE_CURSES
-		if (option > 0 && OptionOnPage(option-1)) {
+		if (option > 0 && OptionOnPage(option - 1)) {
 			DoScroll(1);
 			first_option_on_screen++;
-		} else if (option < LAST_OPT && OptionOnPage(option+1)) {
+		} else if (option < LAST_OPT && OptionOnPage(option + 1)) {
 			DoScroll(-1);
 			first_option_on_screen--;
 		} else
@@ -1430,8 +1430,7 @@ refresh_config_page (
 		ClearScreen ();
 	}
 
-	if ((first_option_on_screen != actual_top_option) || force_redraw)
-	{
+	if ((first_option_on_screen != actual_top_option) || force_redraw) {
 		show_config_page ();
 		actual_top_option = first_option_on_screen;
 	}
@@ -2057,7 +2056,7 @@ expand_rel_abs_pathname (
 		if (strlen (str) == 1)
 			strcpy (str, homedir);
 		else {
-			joinpath (buf, homedir, str+2);
+			joinpath (buf, homedir, str + 2);
 			strcpy (str, buf);
 		}
 	}
@@ -2076,9 +2075,9 @@ void
 show_menu_help (
 	const char *help_message)
 {
-	MoveCursor (cLINES-2, 0);
+	MoveCursor (cLINES - 2, 0);
 	CleartoEOLN ();
-	center_line (cLINES-2, FALSE, help_message);
+	center_line (cLINES - 2, FALSE, help_message);
 }
 
 
@@ -2111,7 +2110,7 @@ match_color (
 
 	if (STRNCMPEQ(line, pat, patlen)) {
 		t_bool found = FALSE;
-		for (n = 0; n < MAX_COLOR+1; n++) {
+		for (n = 0; n < MAX_COLOR + 1; n++) {
 			if (!strcasecmp(&line[patlen], txt_colors[n])) {
 				found = TRUE;
 				*dst = n;
@@ -2379,7 +2378,7 @@ ulBuildArgv (
 				tmp++;
 			}
 			i++;
-			new_argv = (char **) realloc (new_argv, ((i+1) * sizeof (char *)));
+			new_argv = (char **) realloc (new_argv, ((i + 1) * sizeof (char *)));
 			new_argv[i] = NULL;
 		} else
 			tmp++;

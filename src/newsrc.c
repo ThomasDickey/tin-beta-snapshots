@@ -45,7 +45,7 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 
-#define BITS_TO_BYTES(n)	(size_t)((n+NBITS-1)/NBITS)
+#define BITS_TO_BYTES(n)	(size_t)((n + NBITS - 1) / NBITS)
 
 static mode_t newsrc_mode = 0;
 
@@ -622,7 +622,7 @@ parse_bitmap_seq (
 #ifdef DEBUG_NEWSRC
 	{
 		char buf[NEWSRC_LINE];
-		sprintf (buf, "Parsing [%s%c %.*s]", group->name, SUB_CHAR(group->subscribed), (int) (NEWSRC_LINE-strlen(group->name)-20), ptr);
+		sprintf (buf, "Parsing [%s%c %.*s]", group->name, SUB_CHAR(group->subscribed), (int) (NEWSRC_LINE - strlen(group->name) - 20), ptr);
 		debug_print_comment(buf);
 		debug_print_bitmap(group, NULL);
 	}
@@ -846,7 +846,7 @@ parse_unread_arts (
 		group->newsrc.xmax = group->xmax;
 
 	if (group->newsrc.xmax >= bitmin) {
-		newbitmap = (t_bitmap *)my_malloc(BITS_TO_BYTES(group->newsrc.xmax-bitmin+1));
+		newbitmap = (t_bitmap *) my_malloc(BITS_TO_BYTES(group->newsrc.xmax-bitmin + 1));
 		NSETRNG0(newbitmap, 0L, group->newsrc.xmax - bitmin);
 	}
 
@@ -1220,11 +1220,11 @@ expand_bitmap (
 	if (min >= group->newsrc.xmin)
 		first = group->newsrc.xmin;
 	else
-		first = group->newsrc.xmin - ((group->newsrc.xmin - min + (NBITS-1)) & ~(NBITS-1));
+		first = group->newsrc.xmin - ((group->newsrc.xmin - min + (NBITS - 1)) & ~(NBITS - 1));
 
 	/* adjust first */
 	if (first > group->newsrc.xmax + 1)
-		first = first - ((first - (group->newsrc.xmax + 1) + (NBITS-1)) & ~(NBITS-1));
+		first = first - ((first - (group->newsrc.xmax + 1) + (NBITS - 1)) & ~(NBITS - 1));
 
 	/* check first */
 	if (first < 1) {
@@ -1522,7 +1522,7 @@ vNewsrcTestHarness (
 			if ((temp_file = my_tempnam ("", "NEWSRC")) != (char *) 0) {
 				if ((fd = open (temp_file, (O_CREAT|O_EXCL), (S_IRUSR|S_IWUSR))) != -1) {
 					if ((fp = fopen (temp_file, "w")) != (FILE *) 0) {
-						my_printf ("\n%d. PARSE Seq=[%s]\n", i+1, seq);
+						my_printf ("\n%d. PARSE Seq=[%s]\n", i + 1, seq);
 						parse_bitmap_seq (&group, seq);
 						debug_print_newsrc (&group.newsrc, stdout);
 						print_bitmap_seq (fp, &group);
@@ -1546,7 +1546,7 @@ vNewsrcTestHarness (
 		else {
 			fp = fopen (temp_file, "r");
 			fgets (seq, (int) sizeof(seq), fp);
-			seq[strlen(seq)-1] = '\0';
+			seq[strlen(seq) - 1] = '\0';
 			fclose (fp);
 		}
 	}

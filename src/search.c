@@ -240,7 +240,7 @@ search_help (
 	clear_message ();
 	return result;
 }
-#endif 0
+#endif /* 0 */
 
 
 /*
@@ -336,7 +336,7 @@ author_search (
 	if (arts[i].name == (char *) 0)
 		ptr = arts[i].from;
 	else
-		snprintf (buf, sizeof(buf)-1, "%s <%s>", arts[i].name, arts[i].from);
+		snprintf (buf, sizeof(buf) - 1, "%s <%s>", arts[i].name, arts[i].from);
 
 	return (REGEX_MATCH (ptr, searchbuf, TRUE)) ? 1 : 0;
 }

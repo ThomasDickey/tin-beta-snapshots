@@ -106,7 +106,7 @@ bld_tline (
 	 * Start with 2 spaces for ->
 	 * then index number of the message and whitespace (2+4+1 chars)
 	 */
-	sprintf (buff, "  %s ", tin_ltoa(l+1, 4));
+	sprintf (buff, "  %s ", tin_ltoa(l + 1, 4));
 	rest_of_line -= 7;
 
 	/*
@@ -195,7 +195,7 @@ bld_tline (
 		 * Insert tree-structure strings "`->", "+->", ...
 		 */
 
-		make_prefix(art->refptr, buff+strlen(buff), len_subj);
+		make_prefix(art->refptr, buff + strlen(buff), len_subj);
 
 		/*
 		 * Copy in the subject up to where the author (if any) starts
@@ -216,7 +216,7 @@ bld_tline (
 			if (!(ptr && arts[ptr->article].subject == art->subject))
 				strncat(buff, art->subject, gap);
 
-			buff[len+gap] = '\0';	/* Just in case */
+			buff[len + gap] = '\0';	/* Just in case */
 		}
 
 		/*
@@ -233,7 +233,7 @@ bld_tline (
 		}
 
 	} else /* Add the author info. This is always shown if subject is not */
-		get_author (TRUE, art, buff+strlen(buff), cCOLS-strlen(buff));
+		get_author (TRUE, art, buff + strlen(buff), cCOLS - strlen(buff));
 
 	/* protect display from non-displayable characters (e.g., form-feed) */
 	convert_to_printable (buff);
@@ -265,7 +265,7 @@ draw_line (
 	int i,
 	int magic)
 {
-	int startpos = (!magic) ? 0 : (MARK_OFFSET-2);
+	int startpos = (!magic) ? 0 : (MARK_OFFSET - 2);
 	int tlen;
 #ifdef USE_CURSES
 	char buffer[BUFSIZ];
@@ -308,7 +308,7 @@ draw_line (
 		EndInverse();
 #endif /* 0 */
 	}
-	MoveCursor(INDEX2LNUM(i)+1, 0);
+	MoveCursor(INDEX2LNUM(i) + 1, 0);
 	return;
 }
 
@@ -737,9 +737,9 @@ show_thread_page (
 	assert(thdmenu.first != 0 || the_index == thread_respnum);
 
 	if (show_subject)
-		sprintf (mesg, _("List Thread (%d of %d)"), grpmenu.curr+1, grpmenu.max);
+		sprintf (mesg, _("List Thread (%d of %d)"), grpmenu.curr + 1, grpmenu.max);
 	else
-		sprintf (mesg, _("Thread (%.*s)"), cCOLS-23, arts[thread_respnum].subject);
+		sprintf (mesg, _("Thread (%.*s)"), cCOLS - 23, arts[thread_respnum].subject);
 
 	/*
 	 * Slight misuse of the 'mesg' buffer here. We need to clear it so that progress messages
@@ -1096,7 +1096,7 @@ prev_response (
 	resp = which_response (n);
 
 	if (resp > 0)
-		return find_response (which_thread (n), resp-1);
+		return find_response (which_thread (n), resp - 1);
 
 	i = which_thread (n) - 1;
 

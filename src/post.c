@@ -456,7 +456,7 @@ user_posted_messages (
 			return FALSE;
 		}
 		posted[i].date[k] = '\0';
-		posted[i+1].date[0] = '\0';
+		posted[i + 1].date[0] = '\0';
 
 		posted[i].action = buf[++j];
 		j += 2;
@@ -491,16 +491,15 @@ user_posted_messages (
 	posted[i].date[0] = '\0';	/* end-marker for display */
 	fclose (fp);
 
-	if (!(fp = tmpfile()))
-	{
+	if (!(fp = tmpfile())) {
 		FreeAndNull (posted);
 		return FALSE;
 	}
 	for (; i > 0; i--) {
 		snprintf (buf, sizeof(buf) - 1, "%8s  %c  %-*s  %s",
-			posted[i-1].date, posted[i-1].action,
-			group_len, posted[i-1].group, posted[i-1].subj);
-		buf[cCOLS-2] = '\0';
+			posted[i - 1].date, posted[i - 1].action,
+			group_len, posted[i - 1].group, posted[i - 1].subj);
+		buf[cCOLS - 2] = '\0';
 		fprintf (fp, "%s" cCRLF, buf);
 	}
 	FreeAndNull (posted);
@@ -527,8 +526,7 @@ update_posted_info_file (
 		return;
 
 	file_tmp = get_tmpfilename (posted_info_file);
-	if (!backup_file (posted_info_file, file_tmp))
-	{
+	if (!backup_file (posted_info_file, file_tmp)) {
 		error_message (_(txt_filesystem_full_backup), posted_info_file);
 		free (file_tmp);
 		return;
@@ -744,8 +742,8 @@ check_article_to_be_posted (
 		}
 		if (cp - line == 7 && !strncasecmp (line, "Subject", 7)) {
 			found_subject_lines++;
-			strncpy (subject, cp+2, cCOLS-6);
-			subject[cCOLS-6] = '\0';
+			strncpy (subject, cp + 2, cCOLS - 6);
+			subject[cCOLS - 6] = '\0';
 		}
 
 #ifndef FORGERY
@@ -804,7 +802,7 @@ check_article_to_be_posted (
 			}
 		}
 		if (cp - line == 10 && !strncasecmp (line, "Message-Id", 10)) {
-			i = gnksa_check_from (cp+1);
+			i = gnksa_check_from (cp + 1);
 			if ((GNKSA_OK != i) && (GNKSA_LOCALPART_MISSING > i)) {
 				StartInverse();
 				my_fprintf (stderr, _(txt_error_bad_msgidfqdn), i);
@@ -1434,15 +1432,26 @@ post_article_done:
 					break;
 			}
 
-			/* Different logic for followup_to: poster */
-			if ((type == POST_RESPONSE) || (type == POST_POSTPONED && tag == 'f')) {
-				if (header.followup && strcmp (header.followup, "poster") != 0)
-					update_posted_info_file (header.followup, tag, header.subj, a_message_id);
-				else
-					update_posted_info_file (header.newsgroups, tag, header.subj, a_message_id);
-			} else
-				/* Repost_article() uses psGrp->name rather than group here, but this is probably better anyway */
-				update_posted_info_file (header.newsgroups, tag, header.subj, a_message_id);
+			switch (art_type) {
+
+				case GROUP_TYPE_NEWS:
+					if ((type == POST_RESPONSE) || (type == POST_POSTPONED && tag == 'f')) {
+						if (header.followup && strcmp (header.followup, "poster") != 0)
+							update_posted_info_file (header.followup, tag, header.subj, a_message_id);
+						else /* Different logic for ignored followup_to: poster */
+							update_posted_info_file (header.newsgroups, tag, header.subj, "");
+					} else
+						/* Repost_article() uses psGrp->name rather than group here, but this is probably better anyway */
+						update_posted_info_file (header.newsgroups, tag, header.subj, a_message_id);
+					break;
+
+				case GROUP_TYPE_MAIL:
+					update_posted_info_file (header.to, tag, header.subj, "");
+					break;
+
+				default:
+					break;
+			}
 
 			my_strncpy (tinrc.default_post_subject, header.subj, sizeof (tinrc.default_post_subject));
 		}
@@ -1700,7 +1709,7 @@ post_postponed_article (
 		return;
 	}
 
-	sprintf(buf, _("Posting: %.*s ..."), (int)(cCOLS-14), subject);
+	sprintf(buf, _("Posting: %.*s ..."), (int)(cCOLS - 14), subject);
 	post_loop (POST_POSTPONED, NULL, (ask ? iKeyPostEdit : iKeyPostPost3), buf, GROUP_TYPE_NEWS, 0);
 
 	return;
@@ -1892,8 +1901,7 @@ pickup_postponed_articles (
 		if (all)
 			ch = iKeyPostponeOverride;
 
-		switch (ch)
-		{
+		switch (ch) {
 			case iKeyPromptYes:
 			case iKeyPostponeOverride:
 				post_postponed_article(ch == iKeyPromptYes, subject);
@@ -2914,29 +2922,37 @@ mail_to_author (
 #endif /* WIN32 */
 	fclose (fp);
 
-	if (tinrc.use_mailreader_i) {	/* user wants to use his own mailreader for reply */
-		char buf[HEADER_LEN];
+	{
 		char mail_to[HEADER_LEN];
-		char mailreader_subject[sizeof(subject)];	/* for calling external mailreader */
-
-		STRCPY(mailreader_subject, subject);
-		mailreader_subject[strlen(subject) - 1] = '\0';	/* cut trailing '\n' */
 
 		find_reply_to_addr (mail_to, TRUE, &pgart.hdr);
-		strfmailer (mailer, mailreader_subject, mail_to, nam, buf, sizeof (buf), tinrc.mailer_format);
-		if (invoke_cmd (buf))
-			ret_code = POSTED_OK;
-	} else
+
+		if (tinrc.use_mailreader_i) {	/* user wants to use his own mailreader for reply */
+			char buf[HEADER_LEN];
+			char mailreader_subject[sizeof(subject)];	/* for calling external mailreader */
+
+			STRCPY(mailreader_subject, subject);
+			mailreader_subject[strlen(subject) - 1] = '\0';	/* cut trailing '\n' */
+
+			strfmailer (mailer, mailreader_subject, mail_to, nam, buf, sizeof (buf), tinrc.mailer_format);
+			if (invoke_cmd (buf))
+				ret_code = POSTED_OK;
+		} else
 			ret_code = mail_loop(nam, iKeyPostEdit, subject, NULL);
 
-	/*
-	 * If use_mailreader_i=ON and the user changed the subject in his
-	 * mailreader, the entry generated here is wrong, strictly speaking.
-	 * But since we don't have a chance to get the final subject back from
-	 * the mailer I think this is the best solution. -dn, 2000-03-16
-	 */
-	if (ret_code == POSTED_OK)
-		update_posted_info_file (group, 'r', subject, ""); /* TODO update_posted_info_file elsewhere ? */
+		/*
+		 * If use_mailreader_i=ON and the user changed the subject in his
+		 * mailreader, the entry generated here is wrong, strictly speaking.
+		 * But since we don't have a chance to get the final subject back from
+		 * the mailer I think this is the best solution. -dn, 2000-03-16
+		 */
+		/*
+		 * same with mail_to, if user changes To: in the editor tin
+		 * doesn't notice it and logs the original value.
+		 */
+		if (ret_code == POSTED_OK)
+			update_posted_info_file (mail_to, 'r', subject, ""); /* TODO update_posted_info_file elsewhere ? */
+	}
 
 	if (tinrc.unlink_article)
 		unlink (nam);
@@ -3072,7 +3088,7 @@ cancel_article (
 
 	joinpath (cancel, homedir, TIN_CANCEL_NAME);
 #ifdef APPEND_PID
-	sprintf (cancel+strlen(cancel), ".%d", (int) process_id);
+	sprintf (cancel + strlen(cancel), ".%d", (int) process_id);
 #endif /* APPEND_PID */
 
 	if ((fp = fopen (cancel, "w")) == (FILE *) 0) {
@@ -4018,14 +4034,14 @@ build_messageid (
 	static char buf2[1024];
 
 	strip_name(build_sender(), buf2);
-	snprintf(buf, sizeof(buf)-1, "<%lxt%lxi%xn%x%%%s>", seqnum++, time(0), process_id, getuid(), buf2);
+	snprintf(buf, sizeof(buf) - 1, "<%lxt%lxi%xn%x%%%s>", seqnum++, time(0), process_id, getuid(), buf2);
 #	else
 	/*
 	 * Message ID format as suggested in
 	 * draft-ietf-usefor-msg-id-alt-00, 2.1.1
 	 * based on the host's FQDN
 	 */
-	snprintf(buf, sizeof(buf)-1, "<%lxt%xi%xn%x@%s>", seqnum++, time(0), getpid(), getuid(), get_fqdn(get_host_name()));
+	snprintf(buf, sizeof(buf) - 1, "<%lxt%xi%xn%x@%s>", seqnum++, time(0), getpid(), getuid(), get_fqdn(get_host_name()));
 #	endif /* !FORGERY */
 
 	i = gnksa_check_from (buf);
@@ -4209,9 +4225,9 @@ add_headers (
 				if (emptyhdr)
 					continue;
 
-				if (STRNCASECMPEQ(line, "Message-ID: <", sizeof("Message-ID: <")-1 )) /* Article already contains a Message-ID Header */
+				if (STRNCASECMPEQ(line, "Message-ID: <", sizeof("Message-ID: <") - 1)) /* Article already contains a Message-ID Header */
 					addmid = FALSE;
-				else if (STRNCASECMPEQ(line, "Date: ", sizeof("Date: ")-1 )) /* Article already contains a Date Header */
+				else if (STRNCASECMPEQ(line, "Date: ", sizeof("Date: ") - 1)) /* Article already contains a Date Header */
 					adddate = FALSE;
 			}
 		}

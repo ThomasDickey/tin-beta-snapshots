@@ -216,7 +216,7 @@ add_msgid (
 		giveup();
 	}
 
-	h = hash_msgid(msgid+1);				/* Don't hash the initial '<' */
+	h = hash_msgid(msgid + 1);				/* Don't hash the initial '<' */
 
 	DEBUG_PRINT((dbgfd, "---------------- Add %s %s with parent %s\n", (key == MSGID_REF) ? "MSG" : "REF", msgid, (newparent == NULL) ? _("unchanged") : newparent->txt));
 
@@ -322,7 +322,7 @@ find_msgid (
 	unsigned int h;
 	struct t_msgid *i;
 
-	h = hash_msgid(msgid+1);				/* Don't hash the initial '<' */
+	h = hash_msgid(msgid + 1);				/* Don't hash the initial '<' */
 
 	/*
 	 * Look for this message id in the cache.
@@ -401,7 +401,7 @@ _get_references (
 		refs = (char *) my_malloc(HEADER_LEN);
 		len = 0;
 	} else
-		refs = _get_references(refptr->parent, depth+1);
+		refs = _get_references(refptr->parent, depth + 1);
 
 	/*
 	 * Attempt at damage limitation in case of broken Refs fields
@@ -432,7 +432,7 @@ get_references (
 
 	len = strlen(refs);
 
-	refs[len-1] = '\0';
+	refs[len - 1] = '\0';
 
 	refs = (char *) my_realloc(refs, len);
 
@@ -452,7 +452,7 @@ free_msgids (
 
 	msgptr = msgids;				/* first list */
 
-	for (i = MSGID_HASH_SIZE-1; i >= 0; i--) {	/* count down is faster */
+	for (i = MSGID_HASH_SIZE - 1; i >= 0; i--) {	/* count down is faster */
 		ptr = *msgptr;
 		*msgptr++ = NULL;			/* declare list empty */
 
@@ -542,7 +542,7 @@ clear_art_ptrs (
 	int i;
 	struct t_msgid *ptr;
 
-	for (i = MSGID_HASH_SIZE-1; i >= 0; i--) {
+	for (i = MSGID_HASH_SIZE - 1; i >= 0; i--) {
 		for (ptr = msgids[i]; ptr != NULL; ptr = ptr->next)
 			ptr->article = ART_UNAVAILABLE;
 	}
@@ -572,9 +572,9 @@ dump_thread (
 	i = cCOLS - len - 20;
 
 	if (msgid->article >= 0)
-		sprintf(ptr+len, "%-*.*s   %-17.17s", i, i, arts[msgid->article].subject, (arts[msgid->article].name) ? arts[msgid->article].name : arts[msgid->article].from);
+		sprintf(ptr + len, "%-*.*s   %-17.17s", i, i, arts[msgid->article].subject, (arts[msgid->article].name) ? arts[msgid->article].name : arts[msgid->article].from);
 	else
-		sprintf(ptr+len, "%-*.*s", i, i, _("[- Unavailable -]"));
+		sprintf(ptr + len, "%-*.*s", i, i, _("[- Unavailable -]"));
 
 	fprintf(fp, "%s\n", ptr);
 
@@ -597,10 +597,10 @@ dump_msgid_thread (
 	struct t_msgid *ptr,
 	int level)
 {
-	fprintf(dbgfd, "%*s %s (%d)\n", level*3, "   ", ptr->txt, ptr->article);
+	fprintf(dbgfd, "%*s %s (%d)\n", level * 3, "   ", ptr->txt, ptr->article);
 
 	if (ptr->child != NULL)
-		dump_msgid_thread(ptr->child, level+1);
+		dump_msgid_thread(ptr->child, level + 1);
 
 	if (ptr->sibling != NULL)
 		dump_msgid_thread(ptr->sibling, level);
@@ -912,7 +912,7 @@ build_references (
 			 * it again later
 			 * Check for circular references to current article
 			 */
-			while (((s = strrchr(art->refs, ' ')) != NULL) && (!strcmp(art->msgid, s+1))) {
+			while (((s = strrchr(art->refs, ' ')) != NULL) && (!strcmp(art->msgid, s + 1))) {
 				/*
 				 * Remove circular reference to current article
 				 */
@@ -920,7 +920,7 @@ build_references (
 				*s = '\0';
 			}
 			if (s != NULL) {
-				art->refptr = add_msgid(MSGID_REF, art->msgid, add_msgid(REF_REF, s+1, NULL));
+				art->refptr = add_msgid(MSGID_REF, art->msgid, add_msgid(REF_REF, s + 1, NULL));
 				*s = '\0';
 			} else {
 				art->refptr = add_msgid(MSGID_REF, art->msgid, add_msgid(REF_REF, art->refs, NULL));

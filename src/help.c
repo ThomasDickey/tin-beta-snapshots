@@ -450,7 +450,7 @@ make_help_page (
 			snprintf (buf, sizeof(buf), "%s\t  %s",
 				printascii (key, map_to_local (helppage->key, menukeys)),
 				_(helppage->helptext));
-		buf[sizeof(buf)-1] = '\0';
+		buf[sizeof(buf) - 1] = '\0';
 		expand_ctrl_chars (helpline, buf, sizeof(helpline), 8);
 		fprintf (fp, "%s\n", helpline);
 		helppage++;
@@ -531,14 +531,14 @@ show_mini_help (
 				printascii (key[3], map_to_local (iKeySelectMoveGrp, &menukeymap.select_nav)),
 				printascii (key[4], map_to_local (iKeyQuit, &menukeymap.select_nav)),
 				printascii (key[5], map_to_local (iKeySelectToggleReadDisplay, &menukeymap.select_nav)));
-			center_line (line+1, FALSE, buf);
+			center_line (line + 1, FALSE, buf);
 			snprintf (buf, bufs, _(txt_mini_select_3),
 				printascii (key[0], map_to_local (iKeySelectSubscribe, &menukeymap.select_nav)),
 				printascii (key[1], map_to_local (iKeySelectSubscribePat, &menukeymap.select_nav)),
 				printascii (key[2], map_to_local (iKeySelectUnsubscribe, &menukeymap.select_nav)),
 				printascii (key[3], map_to_local (iKeySelectUnsubscribePat, &menukeymap.select_nav)),
 				printascii (key[4], map_to_local (iKeySelectYankActive, &menukeymap.select_nav)));
-			center_line (line+2, FALSE, buf);
+			center_line (line + 2, FALSE, buf);
 			break;
 		case GROUP_LEVEL:
 			snprintf (buf, bufs, _(txt_mini_group_1),
@@ -553,7 +553,7 @@ show_mini_help (
 				printascii (key[3], map_to_local (iKeyUp2, &menukeymap.group_nav)),
 				printascii (key[4], map_to_local (iKeyGroupMarkThdRead, &menukeymap.group_nav)),
 				printascii (key[5], map_to_local (iKeyGroupListThd, &menukeymap.group_nav)));
-			center_line (line+1, FALSE, buf);
+			center_line (line + 1, FALSE, buf);
 			snprintf (buf, bufs, _(txt_mini_group_3),
 #ifndef DONT_HAVE_PIPING
 				printascii (key[0], map_to_local (iKeyPipe, &menukeymap.group_nav)),
@@ -567,7 +567,7 @@ show_mini_help (
 				printascii (key[5], map_to_local (iKeyGroupSave, &menukeymap.group_nav)),
 				printascii (key[6], map_to_local (iKeyGroupTag, &menukeymap.group_nav)),
 				printascii (key[7], map_to_local (iKeyPost, &menukeymap.group_nav)));
-			center_line (line+2, FALSE, buf);
+			center_line (line + 2, FALSE, buf);
 			break;
 		case THREAD_LEVEL:
 			snprintf (buf, bufs, _(txt_mini_thread_1),
@@ -582,7 +582,7 @@ show_mini_help (
 				printascii (key[3], map_to_local (iKeyQuit, &menukeymap.thread_nav)),
 				printascii (key[4], map_to_local (iKeyThreadTag, &menukeymap.thread_nav)),
 				printascii (key[5], map_to_local (iKeyThreadMarkArtUnread, &menukeymap.thread_nav)));
-			center_line (line+1, FALSE, buf);
+			center_line (line + 1, FALSE, buf);
 			break;
 		case PAGE_LEVEL:
 			snprintf (buf, bufs, _(txt_mini_page_1),
@@ -596,7 +596,7 @@ show_mini_help (
 				printascii (key[2], map_to_local (iKeyPageCatchup, &menukeymap.page_nav)),
 				printascii (key[3], map_to_local (iKeyPageFollowupQuote, &menukeymap.page_nav)),
 				printascii (key[4], map_to_local (iKeyPageKillThd, &menukeymap.page_nav)));
-			center_line (line+1, FALSE, buf);
+			center_line (line + 1, FALSE, buf);
 			snprintf (buf, bufs, _(txt_mini_page_3),
 #ifndef DONT_HAVE_PIPING
 				printascii (key[0], map_to_local (iKeyPipe, &menukeymap.page_nav)),
@@ -610,7 +610,7 @@ show_mini_help (
 				printascii (key[5], map_to_local (iKeyPageSave, &menukeymap.page_nav)),
 				printascii (key[6], map_to_local (iKeyPageTag, &menukeymap.page_nav)),
 				printascii (key[7], map_to_local (iKeyPost, &menukeymap.page_nav)));
-			center_line (line+2, FALSE, buf);
+			center_line (line + 2, FALSE, buf);
 			break;
 
 		case INFO_PAGER:
@@ -626,7 +626,7 @@ show_mini_help (
 				printascii (key[0], map_to_local (iKeySearchSubjF, &menukeymap.info_nav)),
 				printascii (key[1], map_to_local (iKeySearchSubjB, &menukeymap.info_nav)),
 				printascii (key[2], map_to_local (iKeyQuit, &menukeymap.info_nav)));
-			center_line (line+1, FALSE, buf);
+			center_line (line + 1, FALSE, buf);
 			break;
 
 		default: /* should not happen */

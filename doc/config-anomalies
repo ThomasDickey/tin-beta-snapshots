@@ -77,7 +77,7 @@ news_headers_to_not_display  *
 sort_article_type              sort_art_type in attributes
 sort_threads_type
 default_maildir                maildir in attributes
-show_xcommentto                should be entirely removed 
+show_xcommentto                should be entirely removed
                                => news_headers_to_display
 print_header                 *
 batch_save
@@ -132,6 +132,3 @@ default_filter_select_expire   quick_select_expire in attributes
 default_save_file              savefile in attributes
 
 *) These variables are not available in attributes yet.
-
-variables to be removed from attributes:
-printer

@@ -465,7 +465,7 @@ fprintf(stderr, "save_arts, create_path(%s)\n", save[0].path);
 
 	for (i = 0 ; i < num_save ; i++) {
 		/* the tailing spaces are needed for the progress-meter */
-		wait_message (0, "%s%d  ", _(txt_saving), i+1);
+		wait_message (0, "%s%d  ", _(txt_saving), i + 1);
 
 		memset (&artinfo, 0, sizeof(t_openartinfo));
 		switch (art_open (FALSE, save[i].artptr, group_path, &artinfo)) {
@@ -571,8 +571,8 @@ create_path (
 
 	for (i = 0, j = 0; i < len; i++, j++) {
 		buf[j] = path[i];
-		if (i+1 < len && path[i+1] == '/') {
-			buf[j+1] = '\0';
+		if (i + 1 < len && path[i + 1] == '/') {
+			buf[j + 1] = '\0';
 			if (stat (buf, &st) == -1) {
 				if (my_mkdir (buf, (mode_t)(S_IRWXU|S_IRUGO|S_IXUGO)) == -1) {
 					if (errno != EEXIST) {
@@ -644,7 +644,7 @@ add_to_save_list (
 {
 	char tmp[PATH_LEN];
 
-	if (num_save == max_save-1)
+	if (num_save == max_save - 1)
 		expand_save ();
 
 	save[num_save].is_mailbox = get_save_filename (tmp, path);
@@ -677,7 +677,7 @@ add_to_save_list (
 		 * Strip off any default filename
 		 */
 		if ((ptr = strrchr(tmp, DIRSEP)) != NULL)
-			*(ptr+1) = '\0';
+			*(ptr + 1) = '\0';
 
 		/* Add on the archive name as a directory */
 		joinpath(archpath, tmp, artptr->archive);
@@ -704,12 +704,12 @@ add_to_save_list (
 			 * clean
 			 */
 			if (num_save == 1) {
-				save[0].path = my_realloc(save[0].path, strlen(save[0].path)+4);
+				save[0].path = my_realloc(save[0].path, strlen(save[0].path) + 4);
 				strcat(save[0].path, ".001");
 				save[0].file = strrchr (save[0].path, DIRSEP) + 1;	/* ptr to filename portion */
 			}
 
-			sprintf (&tmp[strlen(tmp)], "%c%03d", pathsep, num_save+1);
+			sprintf (&tmp[strlen(tmp)], "%c%03d", pathsep, num_save + 1);
 		}
 	}
 
@@ -812,7 +812,7 @@ get_last_savefile (
 	int i;
 	static const char *dummy = "";
 
-	for (i = num_save-1; i >= 0; i--) {
+	for (i = num_save - 1; i >= 0; i--) {
 		if (save[i].saved)
 			return (save[i].is_mailbox ? save[i].path : save[i].file);
 	}
@@ -965,7 +965,7 @@ post_process_uud (
 						/* don't use PATH_LEN - we use an absolute value (128) below  */
 						char name[130];
 
-						if (sscanf (s+6, "%*o %128c\n", name) != 1)     /* Get the real filename */
+						if (sscanf (s + 6, "%*o %128c\n", name) != 1)     /* Get the real filename */
 							name[0] = '\0';
 						else
 							strtok (name, "\n");
@@ -1109,7 +1109,7 @@ sum_and_view (
 	part = new_part(NULL);
 
 	if ((ext = strrchr(file, '.')) != NULL)
-		lookup_mimetype(ext+1, part);				/* Get MIME type/subtype */
+		lookup_mimetype(ext + 1, part);				/* Get MIME type/subtype */
 
 	/*
 	 * Needed for the mime-type processor

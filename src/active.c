@@ -165,7 +165,7 @@ active_add (
 	const char *moderated)
 {
 	/* name - pre-initialised when group is made */
-	ptr->aliasedto = ((moderated[0] == '=') ? my_strdup(moderated+1) : (char *) 0);
+	ptr->aliasedto = ((moderated[0] == '=') ? my_strdup(moderated + 1) : (char *) 0);
 	ptr->description = (char *) 0;
 	/* spool - see below */
 	ptr->moderated = moderated[0];
@@ -990,8 +990,7 @@ append_group_line (
 
 	file_tmp = get_tmpfilename(active_file);
 
-	if (!backup_file (active_file, file_tmp))
-	{
+	if (!backup_file (active_file, file_tmp)) {
 		free (file_tmp);
 		return;
 	}

@@ -103,6 +103,7 @@ typedef struct part
 struct t_header
 {
 	char *from;				/* From: */
+	char *to;				/* To: */
 	char *date;				/* Date: */
 	char *subj;				/* Subject: */
 	char *org;				/* Organization: */

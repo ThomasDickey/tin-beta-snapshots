@@ -111,8 +111,7 @@ main (
 	/* Call tzset() here!*/
 	_TZ = "GMT0";
 	tzset();
-	if (argc == 0) /* we are running from the Workbench */
-	{
+	if (argc == 0) { /* we are running from the Workbench */
 		argc = _WBArgc;
 		argv = _WBArgv;
 	}

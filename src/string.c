@@ -68,10 +68,10 @@ tin_ltoa (
 	}
 
 	if (i) {
-		while (len < (digits-1))
+		while (len < (digits - 1))
 			buffer[len++] = ' ';
 
-		buffer[digits-1] = power[i];
+		buffer[digits - 1] = power[i];
 		buffer[digits] = '\0';
 	} else
 		sprintf (buffer, "%*ld", digits, value);
@@ -287,7 +287,7 @@ atol (
 
 #ifndef HAVE_STRTOL
 /* fix me - put me in tin.h */
-#define DIGIT(x) (isdigit((unsigned char)x) ? ((x)-'0') : (10+tolower((unsigned char)x)-'a'))
+#define DIGIT(x) (isdigit((unsigned char)x) ? ((x) - '0') : (10 + tolower((unsigned char)x) - 'a'))
 #define MBASE 36
 long
 strtol (
@@ -543,7 +543,7 @@ sh_format (
 	}
 	va_end(ap);
 
-	if (result+1 >= (int) len)
+	if (result + 1 >= (int) len)
 		result = -1;
 	else
 		*dst = '\0';

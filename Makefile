@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 5
 SVER	= 9
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20010605
+DVER	= 20010609
 EXE	= tin
 
 # directory structure
@@ -107,6 +107,7 @@ CFILES	= \
 	$(SRCDIR)/tags.c \
 	$(SRCDIR)/tcurses.c \
 	$(SRCDIR)/tmpfile.c \
+	$(SRCDIR)/my_tmpfile.c \
 	$(SRCDIR)/thread.c \
 	$(SRCDIR)/trace.c \
 	$(SRCDIR)/wildmat.c \

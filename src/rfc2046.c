@@ -375,6 +375,7 @@ free_and_init_header(
 	 * Initialise the header struct
 	 */
 	FreeAndNull(hdr->from);
+	FreeAndNull(hdr->to);
 	FreeAndNull(hdr->date);
 	FreeAndNull(hdr->subj);
 	FreeAndNull(hdr->org);
@@ -413,12 +414,12 @@ parse_header (
 	t_bool decode)
 {
 	size_t plen = strlen (pat);
-	char *ptr = buf+plen;
+	char *ptr = buf + plen;
 
 	/*
 	 * Does ': ' follow the header text?
 	 */
-	if (! (*ptr && *(ptr+1) && *ptr == ':' && *(ptr+1) == ' '))
+	if (! (*ptr && *(ptr + 1) && *ptr == ':' && *(ptr + 1) == ' '))
 		return NULL;
 
 	/*
@@ -483,6 +484,10 @@ parse_rfc822_headers(
 		unfold_header (line);
 		if ((ptr = parse_header (line, "From", TRUE))) {
 			hdr->from = my_strdup(ptr);
+			continue;
+		}
+		if ((ptr = parse_header (line, "To", TRUE))) {
+			hdr->to = my_strdup(ptr);
 			continue;
 		}
 		if ((ptr = parse_header (line, "Date", FALSE))) {
@@ -560,7 +565,7 @@ parse_rfc822_headers(
 		 */
 		if ((strncmp (line, "P-", 2) == 0 || strncmp(line, "X-P-", 4) == 0) && (ptr = strstr(line, ": "))) {
 			*ptr = '\0';
-			add_persist (hdr, line, ptr+2);
+			add_persist (hdr, line, ptr + 2);
 			continue;
 		}
 	}
@@ -695,7 +700,7 @@ parse_multipart_article(
 					if (curr_part->type == TYPE_MULTIPART) {	/* Complex mutlipart article */
 						int ret;
 
-						if ((ret = parse_multipart_article(infile, artinfo, curr_part, depth+1)) != 0)
+						if ((ret = parse_multipart_article(infile, artinfo, curr_part, depth + 1)) != 0)
 							return ret;
 						else
 							break;

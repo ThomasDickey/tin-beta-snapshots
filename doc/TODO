@@ -1,7 +1,10 @@
 Bugs
 ----
+o  pager eats last char on lines which are exatly as long as the screen is
+   wide
+
 o  missmatching cached overview data (higher article numbers than on the
-   server cause a crash.
+   server) cause a crash.
 
 o  'U'RL-view doesn't recognize multiple URLs/line
    [Urs Janssen <urs@tin.org>]

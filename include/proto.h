@@ -687,6 +687,11 @@ extern void undo_auto_select_arts (void);
 extern void undo_selections (void);
 
 /* tmpfile.c */
+#ifndef HAVE_TMPFILE
+	extern FILE *tmpfile (void);
+#endif /* !HAVE_TMPFILE */
+
+/* my_tmpfile.c */
 extern int my_tmpfile(char *filename, size_t name_size, t_bool need_name, const char *base_dir);
 
 /* thread.c */

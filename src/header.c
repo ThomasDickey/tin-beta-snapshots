@@ -50,7 +50,7 @@ get_host_name (
 	void)
 {
 	char *ptr;
-	static char hostname[MAXHOSTNAMELEN+1]; /* need space for '\0' */
+	static char hostname[MAXHOSTNAMELEN + 1]; /* need space for '\0' */
 
 	hostname[0] = '\0';
 
@@ -152,8 +152,8 @@ get_fqdn (
 	const char *host)
 {
 	char *domain;
-	char line[MAXLINELEN+1];
-	char name[MAXHOSTNAMELEN+2];
+	char line[MAXLINELEN + 1];
+	char name[MAXHOSTNAMELEN + 2];
 	static char fqdn[1024];
 	struct hostent *hp;
 	struct in_addr in;
@@ -172,7 +172,7 @@ get_fqdn (
 
 	if ('0' <= *name && *name <= '9') {
 		in.s_addr = inet_addr(name);
-		if ((hp = gethostbyaddr((char *)&in.s_addr, 4, AF_INET)))
+		if ((hp = gethostbyaddr((char *) &in.s_addr, 4, AF_INET)))
 			in.s_addr = (*hp->h_addr);
 		return(hp && strchr(hp->h_name, '.') ? hp->h_name : inet_ntoa(in));
 	}
@@ -185,7 +185,7 @@ get_fqdn (
 			? hp->h_name
 			: inet_ntoa(in)
 		: "");
-	if (!*fqdn || (fqdn[strlen(fqdn)-1] <= '9')) {
+	if (!*fqdn || (fqdn[strlen(fqdn) - 1] <= '9')) {
 		FILE *inf;
 
 		*fqdn = '\0';

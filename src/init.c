@@ -130,8 +130,8 @@ char proc_ch_default;				/* set in change_config_file () */
 #endif /* M_OS2 */
 
 int groupname_len = 0;			/* 'runtime' copy of groupname_max_len */
-int hist_last[HIST_MAXNUM+1];
-int hist_pos[HIST_MAXNUM+1];
+int hist_last[HIST_MAXNUM + 1];
+int hist_pos[HIST_MAXNUM + 1];
 int iso2asc_supported;			/* Convert ISO-Latin1 to Ascii */
 int num_headers_to_display;		/* num headers to display -- swp */
 int num_headers_to_not_display;		/* num headers to not display -- swp */
@@ -183,7 +183,7 @@ t_bool xref_supported = TRUE;
 t_menu *currmenu;
 
 /* History entries */
-char *input_history[HIST_MAXNUM+1][HIST_SIZE+1];
+char *input_history[HIST_MAXNUM + 1][HIST_SIZE + 1];
 
 #ifdef HAVE_SYS_UTSNAME_H
 	struct utsname system_info;
@@ -559,12 +559,12 @@ init_selfinfo (
 
 #	ifdef M_OS2
 	strcpy (TMPDIR, get_val ("TMP", "/tmp/"));
-	if ((TMPDIR[strlen(TMPDIR)-1] != '/') && (TMPDIR[strlen(TMPDIR)-1] != '\\'))
+	if ((TMPDIR[strlen(TMPDIR) - 1] != '/') && (TMPDIR[strlen(TMPDIR) - 1] != '\\'))
 		strcat(TMPDIR, "/");
 #	endif /* M_OS2 */
 #	ifdef WIN32
 	strcpy (TMPDIR, get_val ("TMP", "\\tmp\\"));
-	if (TMPDIR[strlen(TMPDIR)-1] != '\\')
+	if (TMPDIR[strlen(TMPDIR) - 1] != '\\')
 		strcat(TMPDIR, "\\");
 #	endif /* WIN32 */
 	strcpy (userid, myentry->pw_name);
@@ -764,7 +764,7 @@ init_selfinfo (
 	strcpy (mailer, get_val (ENV_VAR_MAILER, DEFAULT_MAILER));
 	joinpath (article, homedir, TIN_ARTICLE_NAME);
 #ifdef APPEND_PID
-	sprintf (article+strlen(article), ".%d", (int) process_id);
+	sprintf (article + strlen(article), ".%d", (int) process_id);
 #endif /* APPEND_PID */
 	joinpath (dead_article, homedir, "dead.article");
 	joinpath (dead_articles, homedir, "dead.articles");
@@ -809,7 +809,7 @@ init_selfinfo (
 	joinpath (newsrc, homedir, NEWSRC_FILE);
 	joinpath (newnewsrc, homedir, NEWNEWSRC_FILE);
 #	ifdef APPEND_PID
-	sprintf(newnewsrc+strlen(newnewsrc), "%d", (int) process_id);
+	sprintf(newnewsrc + strlen(newnewsrc), "%d", (int) process_id);
 #	endif /* APPEND_PID */
 #endif /* WIN32 */
 	joinpath (posted_info_file, rcdir, POSTED_FILE);

@@ -204,7 +204,7 @@ index_group (
 #endif /* DEBUG_NEWSRC */
 
 	min = grpmenu.max ? base[0] : group->xmin;
-	max = grpmenu.max ? base[grpmenu.max-1] : min - 1;
+	max = grpmenu.max ? base[grpmenu.max - 1] : min - 1;
 
 	if (tinrc.use_getart_limit) {
 		if (tinrc.getart_limit > 0) {
@@ -1632,7 +1632,7 @@ print_from (
 	*from = '\0';
 
 	if (article->name != (char *) 0)
-		snprintf (from, sizeof(from)-1, "%s <%s>", rfc1522_encode(article->name, FALSE), article->from);
+		snprintf (from, sizeof(from) - 1, "%s <%s>", rfc1522_encode(article->name, FALSE), article->from);
 	else
 		STRCPY (from, article->from);
 

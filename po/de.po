@@ -402,9 +402,8 @@ msgid "Article not saved"
 msgstr "Artikel nicht gespeichert"
 
 #: src/lang.c:57
-# TRANSLATION MISSING
 msgid "Article Level Commands"
-msgstr ""
+msgstr "Artikelbereich Befehle"
 
 #: src/lang.c:58
 #, c-format
@@ -689,7 +688,6 @@ msgid "Connecting to %s:%d..."
 msgstr "Verbinde mit %s:%d..."
 
 #: src/lang.c:146
-# TRANSLATION MISSING
 msgid "<CR>"
 msgstr ""
 
@@ -1125,7 +1123,6 @@ msgid "error"
 msgstr "Fehler"
 
 #: src/lang.c:235
-# TRANSLATION MISSING
 msgid "<ESC>"
 msgstr ""
 
@@ -1205,9 +1202,8 @@ msgid "groups"
 msgstr "Gruppen"
 
 #: src/lang.c:256
-# TRANSLATION MISSING
 msgid "Top Level Commands"
-msgstr ""
+msgstr "Top Level Befehle"
 
 #: src/lang.c:257
 msgid "Group Selection"
@@ -1218,14 +1214,12 @@ msgid "group"
 msgstr "Gruppe"
 
 #: src/lang.c:260
-# TRANSLATION MISSING
 msgid "kill an article via a menu"
-msgstr ""
+msgstr "killt einen Artikel mittels eines Menüs"
 
 #: src/lang.c:261
-# TRANSLATION MISSING
 msgid "auto-select (hot) an article via a menu"
-msgstr ""
+msgstr "markiert (hervorgehoben) einen Artikel via Menü"
 
 #: src/lang.c:262
 # TRANSLATION MISSING
@@ -1237,19 +1231,16 @@ msgid "0 - 9\t  display article by number in current thread"
 msgstr "0 - 9\t  zeigt Artikel nach Nummern sortiert im aktuellen Thread"
 
 #: src/lang.c:264
-# TRANSLATION MISSING
 msgid "cancel (delete) current article; must have been posted by you"
-msgstr ""
+msgstr "cancelt (löscht) den aktuellen Artikel; dieser muß von Ihnen sein"
 
 #: src/lang.c:265
-# TRANSLATION MISSING
 msgid "edit article (mail-groups only)"
-msgstr ""
+msgstr "editiere Artikel (nur bei Mail-Gruppen)"
 
 #: src/lang.c:266
-# TRANSLATION MISSING
 msgid "display first article in current thread"
-msgstr ""
+msgstr "zeigt den ersten Artikel im nächsten Thread an"
 
 #: src/lang.c:267
 # TRANSLATION MISSING
@@ -1257,9 +1248,8 @@ msgid "display first page of article"
 msgstr ""
 
 #: src/lang.c:268
-# TRANSLATION MISSING
 msgid "post followup to current article"
-msgstr ""
+msgstr "Antworten auf den aktuellen Artikel"
 
 #: src/lang.c:269
 # TRANSLATION MISSING
@@ -1267,9 +1257,8 @@ msgid "post followup (don't copy text) to current article"
 msgstr ""
 
 #: src/lang.c:270
-# TRANSLATION MISSING
 msgid "post followup to current article quoting complete headers"
-msgstr ""
+msgstr "Antworten auf den aktuellen Artikel, mit Komplettzitat der Header"
 
 #: src/lang.c:271
 # TRANSLATION MISSING
@@ -1282,9 +1271,8 @@ msgid "display last page of article"
 msgstr ""
 
 #: src/lang.c:273
-# TRANSLATION MISSING
 msgid "mark thread as read and advance to next unread"
-msgstr ""
+msgstr "markiere Thread als gelesen und springe zu nächstem ungelesenen"
 
 #: src/lang.c:274
 # TRANSLATION MISSING
@@ -1292,24 +1280,20 @@ msgid "display next article"
 msgstr ""
 
 #: src/lang.c:275
-# TRANSLATION MISSING
 msgid "display first article in next thread"
-msgstr ""
+msgstr "zeigt den ersten Artikel im nächsten Thread an"
 
 #: src/lang.c:276 src/lang.c:286 src/lang.c:358 src/lang.c:359
-# TRANSLATION MISSING
 msgid "display next unread article"
-msgstr ""
+msgstr "zeige nächsten ungelesenen Artikel an"
 
 #: src/lang.c:277
-# TRANSLATION MISSING
 msgid "goto the article that this one followed up"
-msgstr ""
+msgstr "nächster Artikel, der eine direkte Antwort auf diesen ist"
 
 #: src/lang.c:279
-# TRANSLATION MISSING
 msgid "perform PGP operations on article"
-msgstr ""
+msgstr "wendet PGP auf den Artikel an"
 
 #: src/lang.c:281
 # TRANSLATION MISSING
@@ -1322,24 +1306,20 @@ msgid "display previous unread article"
 msgstr ""
 
 #: src/lang.c:283
-# TRANSLATION MISSING
 msgid "quickly kill an article using defaults"
-msgstr ""
+msgstr "killt einen Artikel schnell und benutzt dabei die Voreinstellungen"
 
 #: src/lang.c:284
-# TRANSLATION MISSING
 msgid "quickly auto-select (hot) an article using defaults"
-msgstr ""
+msgstr "markiert (hervorheben) Artikel und benutzt die Voreinstellungen"
 
 #: src/lang.c:285
-# TRANSLATION MISSING
 msgid "return to group selection level"
-msgstr ""
+msgstr "kehrt zum Gruppenauswahlmenü zurück"
 
 #: src/lang.c:287
-# TRANSLATION MISSING
 msgid "reply through mail to author"
-msgstr ""
+msgstr "antwortet dem Autor"
 
 #: src/lang.c:288
 # TRANSLATION MISSING
@@ -1347,24 +1327,20 @@ msgid "reply through mail (don't copy text) to author"
 msgstr ""
 
 #: src/lang.c:289
-# TRANSLATION MISSING
 msgid "reply through mail to author quoting complete headers"
-msgstr ""
+msgstr "antwortet dem Autor, wobei der komplette Header zitiert wird"
 
 #: src/lang.c:290 src/lang.c:363
-# TRANSLATION MISSING
 msgid "repost chosen article to another group"
-msgstr ""
+msgstr "reposte den gewählten Artikel in eine andere Gruppe"
 
 #: src/lang.c:291
-# TRANSLATION MISSING
 msgid "search backwards within this article"
-msgstr ""
+msgstr "sucht rückwerts innerhalb des Artikels"
 
 #: src/lang.c:292
-# TRANSLATION MISSING
 msgid "search forwards within this article"
-msgstr ""
+msgstr "sucht vorwärts innerhalb des Artikels"
 
 #: src/lang.c:293
 # TRANSLATION MISSING
@@ -1372,70 +1348,57 @@ msgid "show article in raw-mode (including all headers)"
 msgstr ""
 
 #: src/lang.c:294
-# TRANSLATION MISSING
 msgid "skip next block of included text"
-msgstr ""
+msgstr "überspringt den nächsten Zitatblock"
 
 #: src/lang.c:295
-# TRANSLATION MISSING
 msgid "toggle display of sections hidden by a form-feed (^L) on/off"
-msgstr ""
+msgstr "schalte Anzeige von durch Form-Feed (^L) versteckten Teilen ein/aus"
 
 #: src/lang.c:297
-# TRANSLATION MISSING
 msgid "toggle word highlighting on/off"
-msgstr ""
+msgstr "schaltet das Worthervorheben ein/aus"
 
 #: src/lang.c:299
-# TRANSLATION MISSING
 msgid "toggle ROT-13 (basic decode) for current article"
-msgstr ""
+msgstr "(de)aktiviert ROT-13 Dekodierung für den aktuellen Artikel"
 
 #: src/lang.c:300
-# TRANSLATION MISSING
 msgid "toggle tabwidth 4 <-> 8"
-msgstr ""
+msgstr "wechsele Tabulatorweite 4 <-> 8"
 
 #: src/lang.c:301
-# TRANSLATION MISSING
 msgid "toggle german TeX style decoding for current article"
-msgstr ""
+msgstr "(de)aktiviere deutsche TeX-style Dekodierung für aktuellen Artikel"
 
 #: src/lang.c:302
-# TRANSLATION MISSING
 msgid "toggle display of uuencoded sections on/off"
-msgstr ""
+msgstr "schalte Anzeige von UU-kodierten Teilen ein/aus"
 
 #: src/lang.c:303
-# TRANSLATION MISSING
 msgid "View/save multimedia attachmenats"
-msgstr ""
+msgstr "Anzeigen/Speichern von Multimedia-Anhängen"
 
 #: src/lang.c:304
 #, c-format
-# TRANSLATION MISSING
 msgid "report bug or comment via mail to %s"
-msgstr ""
+msgstr "sendet Fehlerbericht oder Kommentar via Mail an %s"
 
 #: src/lang.c:305
-# TRANSLATION MISSING
 msgid "choose range of articles to be affected by next command"
-msgstr ""
+msgstr "Anzahl der Artikel, die vom nächsten Kommando betroffen sind"
 
 #: src/lang.c:306
-# TRANSLATION MISSING
 msgid "escape from command prompt"
-msgstr ""
+msgstr "Verlassen der Kommandozeile"
 
 #: src/lang.c:307
-# TRANSLATION MISSING
 msgid "get help"
-msgstr ""
+msgstr "zeigt die Hilfe"
 
 #: src/lang.c:308
-# TRANSLATION MISSING
 msgid "display last article viewed"
-msgstr ""
+msgstr "zeigt den zuletzt angezeigten Artikel an"
 
 #: src/lang.c:309
 # TRANSLATION MISSING
@@ -1448,19 +1411,16 @@ msgid "up one line"
 msgstr ""
 
 #: src/lang.c:311
-# TRANSLATION MISSING
 msgid "goto article chosen by Message-ID"
-msgstr ""
+msgstr "geht zum Artikel mit dieser Message-ID"
 
 #: src/lang.c:312
-# TRANSLATION MISSING
 msgid "mail article/thread/hot/pattern/tagged articles to someone"
-msgstr ""
+msgstr "Mailt Artikel/Thread/hervorgehobenen/markierten Artikel jemandem"
 
 #: src/lang.c:313
-# TRANSLATION MISSING
 msgid "menu of configurable options"
-msgstr ""
+msgstr "Menü der konfigurierbaren Optionen"
 
 #: src/lang.c:314
 # TRANSLATION MISSING
@@ -1473,34 +1433,28 @@ msgid "up one page"
 msgstr ""
 
 #: src/lang.c:317
-# TRANSLATION MISSING
 msgid "pipe article/thread/hot/pattern/tagged articles into command"
-msgstr ""
+msgstr "pipet Artikel/thread hervorgehoben/muster/markierten Artikel"
 
 #: src/lang.c:319
-# TRANSLATION MISSING
 msgid "post (write) article to current group"
-msgstr ""
+msgstr "poste (schreibe) Artikel in die aktuelle Gruppe"
 
 #: src/lang.c:320
-# TRANSLATION MISSING
 msgid "post postponed articles"
-msgstr ""
+msgstr "poste zurückgestellte Artikel"
 
 #: src/lang.c:321
-# TRANSLATION MISSING
 msgid "list articles posted by you (from posted file)"
-msgstr ""
+msgstr "listet ihre geposteten Artikel auf (aus der 'posted' Datei)"
 
 #: src/lang.c:322
-# TRANSLATION MISSING
 msgid "return to previous menu"
-msgstr ""
+msgstr "kehrt zum vorherigen Menü zurück"
 
 #: src/lang.c:324
-# TRANSLATION MISSING
 msgid "output article/thread/hot/pattern/tagged articles to printer"
-msgstr ""
+msgstr "druckt Artikel/Thread/hervorgehobene/Muster/markierten"
 
 #: src/lang.c:326
 # TRANSLATION MISSING
@@ -1508,93 +1462,76 @@ msgid "quit tin immediately"
 msgstr ""
 
 #: src/lang.c:327
-# TRANSLATION MISSING
 msgid "redraw page"
-msgstr ""
+msgstr "Aktualisiert die Seite"
 
 #: src/lang.c:328
-# TRANSLATION MISSING
 msgid "save article/thread/hot/pattern/tagged articles to file"
-msgstr ""
+msgstr "speichert Artikel/Thread hervorgehoben/muster/markierten Artikel"
 
 #: src/lang.c:329
-# TRANSLATION MISSING
 msgid "save tagged articles automatically without user prompts"
-msgstr ""
+msgstr "speichert markierte Artikel automatisch ohne Nachfrage"
 
 #: src/lang.c:330
-# TRANSLATION MISSING
 msgid "search for articles by author backwards"
-msgstr ""
+msgstr "sucht rückwärts nach Artikeln von Autor"
 
 #: src/lang.c:331
-# TRANSLATION MISSING
 msgid "search for articles by author forwards"
-msgstr ""
+msgstr "sucht vorwärts nach Artikeln von Autor"
 
 #: src/lang.c:332
-# TRANSLATION MISSING
 msgid "search all articles for a given string (this may take some time)"
-msgstr ""
+msgstr "sucht in allen Artikel nach vorgebener Zeichenkette (kann dauern)"
 
 #: src/lang.c:333
 msgid "\t  (searches are case-insensitive and wrap around to all articles)"
 msgstr "\t  (Suchen sind case-insensitive und springen zu den Artikeln)"
 
 #: src/lang.c:334
-# TRANSLATION MISSING
 msgid "search for articles by Subject line backwards"
-msgstr ""
+msgstr "dursucht Artikel rückwärts nach Subject Zeile"
 
 #: src/lang.c:335
-# TRANSLATION MISSING
 msgid "search for articles by Subject line forwards"
-msgstr ""
+msgstr "dursucht Artikel vorwärts nach Subject Zeile"
 
 #: src/lang.c:337
-# TRANSLATION MISSING
 msgid "shell escape"
-msgstr ""
+msgstr "Ausgang zur Shell"
 
 #: src/lang.c:339
-# TRANSLATION MISSING
 msgid "tag current article for reposting/mailing/piping/printing/saving"
-msgstr ""
+msgstr "markiere Artikel für nochmaliiges posten/pipen/drucken/abspeichern"
 
 #: src/lang.c:341
-# TRANSLATION MISSING
 msgid "toggle color"
-msgstr ""
+msgstr "Farben ein/aus"
 
 #: src/lang.c:343
-# TRANSLATION MISSING
 msgid "toggle info message in last line (subject/description)"
-msgstr ""
+msgstr "ändern der Anzeige in der letzten Zeile (Subject/Beschreibung)"
 
 #: src/lang.c:344
-# TRANSLATION MISSING
 msgid "toggle inverse video"
-msgstr ""
+msgstr "(de)aktiviert inverse Darstellung"
 
 #: src/lang.c:345
-# TRANSLATION MISSING
 msgid "toggle mini help menu display"
-msgstr ""
+msgstr "schaltet das Minihilfemenü ein/aus"
 
 #: src/lang.c:346
-# TRANSLATION MISSING
 msgid "show version information"
-msgstr ""
+msgstr "zeige Versionsinformationen"
 
 #: src/lang.c:347
-# TRANSLATION MISSING
 msgid "mark all articles as read and return to group selection menu"
-msgstr ""
+msgstr "markiert alle Artikel als gelesen und kehrt zum Gruppenmenü zurück"
 
 #: src/lang.c:348
-# TRANSLATION MISSING
 msgid "mark all articles as read and enter next group with unread articles"
-msgstr ""
+msgstr "markiere Artikel gelesen; öffne nä. Gruppe mit ungelesenen Artikeln"
 
 #: src/lang.c:349
 # TRANSLATION MISSING
@@ -1602,19 +1539,17 @@ msgid "choose first thread in list"
 msgstr ""
 
 #: src/lang.c:350 src/lang.c:381
-# TRANSLATION MISSING
 msgid "choose group by name"
-msgstr ""
+msgstr "Gruppe anhand des Namen auswählen"
 
 #: src/lang.c:351
 # TRANSLATION MISSING
-msgid "choose last) thread in list"
+msgid "choose last thread in list"
 msgstr ""
 
 #: src/lang.c:352
-# TRANSLATION MISSING
 msgid "list articles within current thread (bring up Thread sub-menu)"
-msgstr ""
+msgstr "listet Artikel im aktuellen Thread (öffnet das Thread Untermenü)"
 
 #: src/lang.c:353
 # TRANSLATION MISSING
@@ -1622,14 +1557,12 @@ msgid "mark article as unread"
 msgstr ""
 
 #: src/lang.c:354
-# TRANSLATION MISSING
 msgid "mark current thread as read"
-msgstr ""
+msgstr "markiert den aktuellen Thread als gelesen"
 
 #: src/lang.c:355
-# TRANSLATION MISSING
 msgid "mark thread as unread"
-msgstr ""
+msgstr "markiert den aktuellen Thread als ungelesen"
 
 #: src/lang.c:356
 # TRANSLATION MISSING
@@ -1647,14 +1580,12 @@ msgid "display previous group"
 msgstr ""
 
 #: src/lang.c:362 src/lang.c:409
-# TRANSLATION MISSING
 msgid "read chosen article"
-msgstr ""
+msgstr "zeige gewählten Artikel"
 
 #: src/lang.c:364
-# TRANSLATION MISSING
 msgid "toggle all selections (all articles)"
-msgstr ""
+msgstr "wechselt alle Auswahlen (alle Artikel)"
 
 #: src/lang.c:365
 # TRANSLATION MISSING
@@ -1662,43 +1593,36 @@ msgid "select group (make \"hot\")"
 msgstr ""
 
 #: src/lang.c:366
-# TRANSLATION MISSING
 msgid "select thread"
-msgstr ""
+msgstr "wählt Thread aus"
 
 #: src/lang.c:367
-# TRANSLATION MISSING
 msgid "select threads if at least one unread article is selected"
-msgstr ""
+msgstr "wähle Threads falls wenigstens ein ungelesener Artikel markiert ist"
 
 #: src/lang.c:368
-# TRANSLATION MISSING
 msgid "select threads that match user specified pattern"
-msgstr ""
+msgstr "wählt Threads, die einem gewählten Muster entsprechen"
 
 #: src/lang.c:369
-# TRANSLATION MISSING
 msgid "tag all parts of current multipart-message in order"
-msgstr ""
+msgstr "markiert alle Teile der multipart-Nachrichten in der Reihenfolge"
 
 #: src/lang.c:370
 msgid "0 - 9\t  choose thread by number"
 msgstr "0 - 9\t  wählt Thread anhand der Nummer"
 
 #: src/lang.c:371
-# TRANSLATION MISSING
 msgid "toggle limit number of articles to get, and reload"
-msgstr ""
+msgstr "Anzahl der zu holenden oder wieder zu ladenden Artikel ändern"
 
 #: src/lang.c:372
-# TRANSLATION MISSING
 msgid "toggle display of all/unread articles"
-msgstr ""
+msgstr "wechselt zwischen der Anzeige aller/ungelesener Artikel"
 
 #: src/lang.c:373 src/lang.c:410
-# TRANSLATION MISSING
 msgid "cycle the display of authors email address, real name, both or neither"
-msgstr ""
+msgstr "Zeigt des Autors EMail Adresse, Realname, beides oder keins an"
 
 #: src/lang.c:374
 # TRANSLATION MISSING
@@ -1706,24 +1630,20 @@ msgid "toggle selection of thread"
 msgstr ""
 
 #: src/lang.c:375
-# TRANSLATION MISSING
 msgid "cycle through threading options available"
-msgstr ""
+msgstr "wechsle durch die verschiedenen Threading-Optionen"
 
 #: src/lang.c:376
-# TRANSLATION MISSING
 msgid "undo all selections (all articles)"
-msgstr ""
+msgstr "nimmt alle Auswahlen zurück (alle Artikel)"
 
 #: src/lang.c:377
-# TRANSLATION MISSING
 msgid "untag all tagged threads"
-msgstr ""
+msgstr "hebt die Markierung der markierten Artikel auf"
 
 #: src/lang.c:378
-# TRANSLATION MISSING
 msgid "mark all articles in chosen group read"
-msgstr ""
+msgstr "markiert alle Artikel der Gruppe als gelesen"
 
 #: src/lang.c:379
 # TRANSLATION MISSING
@@ -1740,9 +1660,8 @@ msgid "0 - 9\t  choose group by number"
 msgstr "0 - 9\t  wählt die Gruppe anhand der Nummer"
 
 #: src/lang.c:383
-# TRANSLATION MISSING
 msgid "choose range of groups to be affected by next command"
-msgstr ""
+msgstr "Anzahl der Gruppen, die vom nächsten Kommando betroffen sind"
 
 #: src/lang.c:384
 # TRANSLATION MISSING
@@ -1750,39 +1669,32 @@ msgid "choose last group in list"
 msgstr ""
 
 #: src/lang.c:385
-# TRANSLATION MISSING
 msgid "mark all articles in chosen group unread"
-msgstr ""
+msgstr "markiert alle Artikel in der gewählten Gruppe als ungelesen"
 
 #: src/lang.c:386
-# TRANSLATION MISSING
 msgid "move chosen group within list"
-msgstr ""
+msgstr "bewegt die gewählte Gruppe innerhalb der Liste"
 
 #: src/lang.c:387
-# TRANSLATION MISSING
 msgid "choose next group with unread news"
-msgstr ""
+msgstr "wählt die nächste Gruppe mit ungelesenen Artikeln"
 
 #: src/lang.c:388
-# TRANSLATION MISSING
 msgid "quit"
-msgstr ""
+msgstr "Beenden"
 
 #: src/lang.c:389
-# TRANSLATION MISSING
 msgid "quit without saving configuration changes"
-msgstr ""
+msgstr "Beenden ohne die Konfigurationsänderungen zu sichern"
 
 #: src/lang.c:390
-# TRANSLATION MISSING
 msgid "read chosen group"
-msgstr ""
+msgstr "liest ausgewählte Gruppe"
 
 #: src/lang.c:391
-# TRANSLATION MISSING
 msgid "reset .newsrc (all available articles in groups marked unread)"
-msgstr ""
+msgstr "setzt die .newsrc zurück (alle Artikel als gelesen markiert)"
 
 #: src/lang.c:392
 # TRANSLATION MISSING
@@ -1809,19 +1721,16 @@ msgid "subscribe to groups that match pattern"
 msgstr ""
 
 #: src/lang.c:397
-# TRANSLATION MISSING
 msgid "reread active file to check for any new news"
-msgstr ""
+msgstr "lies die Datei 'active' neu ein, um nach neuen Artikeln zu suchen"
 
 #: src/lang.c:398
-# TRANSLATION MISSING
 msgid "toggle display of group name only or group name plus description"
-msgstr ""
+msgstr "Anzeige des Gruppennamens mit und ohne Beschreibung"
 
 #: src/lang.c:399
-# TRANSLATION MISSING
 msgid "toggle display to show all/unread subscribed groups"
-msgstr ""
+msgstr "wechselt die Anzeige zwischen allen/ungelesenen abonnierten Gruppen"
 
 #: src/lang.c:400
 # TRANSLATION MISSING
@@ -1834,23 +1743,20 @@ msgid "unsubscribe from groups that match pattern"
 msgstr ""
 
 #: src/lang.c:402
-# TRANSLATION MISSING
 msgid "toggle display to show all/subscribed groups"
-msgstr ""
+msgstr "schaltet um zwischen der Anzeige aller/abonnierten Gruppen"
 
 #: src/lang.c:403
 msgid "0 - 9\t  choose article by number"
 msgstr "0 - 9\t  Wähle Artikel anhand der Nummer"
 
 #: src/lang.c:404
-# TRANSLATION MISSING
 msgid "mark thread as read and return to group index page"
-msgstr ""
+msgstr "markiert den Thread als gelesen und kehrt zum Gruppenindex zurück"
 
 #: src/lang.c:405
-# TRANSLATION MISSING
 msgid "mark thread as read and enter next unread thread or group"
-msgstr ""
+msgstr "markiert Thread als gelesen; nächster ungelesenener Thread/Gruppe"
 
 #: src/lang.c:406
 # TRANSLATION MISSING
@@ -1863,37 +1769,40 @@ msgid "choose last article in list"
 msgstr ""
 
 #: src/lang.c:408
-# TRANSLATION MISSING
 msgid "mark article as read and move cursor to next unread article"
-msgstr ""
+msgstr "markiert Artikel als gelesen geht zum nächsten ungelesenen Artikel"
 
 #: src/lang.c:411
-# TRANSLATION MISSING
 msgid ""
 "Display properties\n"
 "------------------"
 msgstr ""
+"Darstellungsoptionen\n"
+"--------------------"
 
 #: src/lang.c:412
-# TRANSLATION MISSING
 msgid ""
 "Miscellaneous\n"
 "-------------"
 msgstr ""
+"Verschiedenenes\n"
+"---------------"
 
 #: src/lang.c:413
-# TRANSLATION MISSING
 msgid ""
 "Moving around\n"
 "-------------"
 msgstr ""
+"Position ändern\n"
+"---------------"
 
 #: src/lang.c:414
-# TRANSLATION MISSING
 msgid ""
 "Group/thread/article operations\n"
 "-------------------------------"
 msgstr ""
+"Gruppe/Thread/Artikel Kommandos\n"
+"-------------------------------"
 
 #: src/lang.c:416
 msgid ""
@@ -1902,9 +1811,8 @@ msgstr ""
 "PgDn,Ende,<SPACE>,^D - Bild runter. PgUp,Pos1,b,^U - Bild rauf. <CR>,q - Ende"
 
 #: src/lang.c:417
-# TRANSLATION MISSING
 msgid "Group Level Commands"
-msgstr ""
+msgstr "Gruppenlevel Befehle"
 
 #: src/lang.c:418
 msgid "Kill filter added"
@@ -2592,9 +2500,8 @@ msgstr ""
 "den Artikel zurückstellen und später mit ^O wieder hervorholen.\n"
 
 #: src/lang.c:615
-# TRANSLATION MISSING
 msgid "Posted articles history"
-msgstr ""
+msgstr "Übersicht der geposteten Artikel"
 
 #: src/lang.c:616
 #, c-format
@@ -3351,9 +3258,8 @@ msgid "There is no news\n"
 msgstr "Es gibt keine neuen Artikel\n"
 
 #: src/lang.c:885
-# TRANSLATION MISSING
 msgid "Thread Level Commands"
-msgstr ""
+msgstr "Thread Level Kommandos"
 
 #: src/lang.c:886
 msgid "Thread deselected"

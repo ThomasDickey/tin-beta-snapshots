@@ -370,7 +370,7 @@ prompt_option_num (
 
 	show_menu_help (option_table[option].txt->help);
 	MoveCursor (option_row(option), 0);
-	sprintf (&prompt[0], "-> %3d. %s ", option+1, option_table[option].txt->opt);
+	sprintf (&prompt[0], "-> %3d. %s ", option + 1, option_table[option].txt->opt);
 	sprintf (&number[0], "%d", *(option_table[option].variable));
 
 	if ((p = tin_getline (prompt, 2, number, 0, FALSE, HIST_OTHER)) == (char *) 0)
@@ -407,7 +407,7 @@ prompt_option_char (
 
 	show_menu_help (option_table[option].txt->help);
 	MoveCursor (option_row(option), 0);
-	sprintf (&prompt[0], "-> %3d. %s ", option+1, option_table[option].txt->opt);
+	sprintf (&prompt[0], "-> %3d. %s ", option + 1, option_table[option].txt->opt);
 
 	if ((p = tin_getline (prompt, FALSE, p, 1, FALSE, HIST_OTHER)) == (char *) 0)
 		return FALSE;
@@ -464,8 +464,8 @@ prompt_msgid (
 {
 	char buf[LEN];
 
-	if (prompt_string(_(txt_enter_message_id), buf+1, HIST_MESSAGE_ID) && buf[1]) {
-		char *ptr = buf+1;
+	if (prompt_string(_(txt_enter_message_id), buf + 1, HIST_MESSAGE_ID) && buf[1]) {
+		char *ptr = buf + 1;
 		struct t_msgid *msgid;
 
 		/*
@@ -520,7 +520,7 @@ sized_message (
 	int have = cCOLS - strlen (format) + 4 - 1;
 	int want = strlen(subject);
 
-	if (want > 0 && subject[want-1] == '\n')
+	if (want > 0 && subject[want - 1] == '\n')
 		want--;
 	if (have > want)
 		have = want;

@@ -306,7 +306,7 @@ get_mailcap_field(
 					return mailcap;
 				}
 				if (backquote && !doublequote) /* remove \ in \; if not inside "" or '' */
-					*(ptr-1) = ' ';
+					*(ptr - 1) = ' ';
 				backquote = FALSE;
 				break;
 

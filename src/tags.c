@@ -107,12 +107,12 @@ look_for_multipart_info (
 		return 0;
 	tmp.base_index = base_index;
 	tmp.subject_compare_len = pch - subj;
-	tmp.part_number = (int) strtol(pch+1, &pch, 10);
+	tmp.part_number = (int) strtol(pch + 1, &pch, 10);
 	if (*pch != '/' && *pch != '|')
 		return 0;
 	if (!isdigit((int)pch[1]))
 		return 0;
-	tmp.total = (int) strtol (pch+1, &pch, 10);
+	tmp.total = (int) strtol (pch + 1, &pch, 10);
 	if (*pch != stop)
 		return 0;
 	tmp.subject = subj;
@@ -190,9 +190,9 @@ get_multiparts (
 
 	/* see if we got them all. */
 	for (i = 0; i < tmp.total; ++i) {
-		if (info[i].part_number != i+1) {
+		if (info[i].part_number != i + 1) {
 			free (info);
-			return -(i+1); /* missing part #(i+1) */
+			return -(i + 1); /* missing part #(i+1) */
 		}
 	}
 
@@ -394,12 +394,12 @@ bSetRange (
 		switch (iLevel) {
 			case SELECT_LEVEL:
 				vDelRange (iLevel, iNumMax);
-				for (iIndex = iRngMin-1; iIndex < iRngMax; iIndex++)
+				for (iIndex = iRngMin - 1; iIndex < iRngMax; iIndex++)
 					active[my_group[iIndex]].inrange = TRUE;
 				break;
 			case GROUP_LEVEL:
 				vDelRange (iLevel, iNumMax);
-				for (iIndex = iRngMin-1; iIndex < iRngMax; iIndex++) {
+				for (iIndex = iRngMin - 1; iIndex < iRngMax; iIndex++) {
 					for (iNum = (int) base[iIndex]; iNum != -1; iNum = arts[iNum].thread)
 						arts[iNum].inrange = TRUE;
 				}
@@ -486,14 +486,13 @@ vDelRange (
 {
 	int iIndex;
 
-	switch (iLevel)
-	{
+	switch (iLevel) {
 		case SELECT_LEVEL:
-			for (iIndex = 0; iIndex < iNumMax-1; iIndex++)
+			for (iIndex = 0; iIndex < iNumMax - 1; iIndex++)
 				active[iIndex].inrange = FALSE;
 			break;
 		case GROUP_LEVEL:
-			for (iIndex = 0; iIndex < iNumMax-1; iIndex++) {
+			for (iIndex = 0; iIndex < iNumMax - 1; iIndex++) {
 				int iNum;
 
 				for (iNum = (int) base[iIndex]; iNum != -1; iNum = arts[iNum].thread)
@@ -501,7 +500,7 @@ vDelRange (
 			}
 			break;
 		case THREAD_LEVEL:
-			for (iIndex = 0; iIndex < iNumMax-1; iIndex++)
+			for (iIndex = 0; iIndex < iNumMax - 1; iIndex++)
 				arts[iIndex].inrange = FALSE;
 #if 0
 			for (iIndex = base[thread_basenote]; iIndex >= 0; iIndex = arts[iIndex].thread)
