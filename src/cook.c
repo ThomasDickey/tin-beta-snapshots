@@ -46,9 +46,9 @@
 #ifndef MENUKEYS_H
 #	include  "menukeys.h"
 #endif /* !MENUKEYS_H */
-#ifndef RFC2045_H
-#	include  "rfc2045.h"
-#endif /* !RFC2045_H */
+#ifndef RFC2046_H
+#	include  "rfc2046.h"
+#endif /* !RFC2046_H */
 
 /*
  * We malloc() this many t_lineinfo's at a time
@@ -62,9 +62,19 @@
 
 #define MATCH_REGEX(x,y,z)	(pcre_exec (x.re, x.extra, y, z, 0, 0, NULL, 0) >= 0)
 
+static t_bool expand_ctrl_chars (char *to, char *from, int length);
+static void put_cooked (int flags, const char *fmt, ...);
+static void set_rest (char **rest, char *ptr);
+static int put_rest (char **rest, char *dest, int max_line_len);
+static int read_decoded_base64_line (FILE *file, char *line, const int max_line_len, const int max_lines_to_read, const char *charset, char **rest);
+static int read_decoded_qp_line (FILE *file, char *line, const int max_line_len, const int max_lines_to_read, const char *charset, char **rest);
+static t_part *new_uue (t_part **part, char *name);
+static void process_text_body_part (FILE *in, t_part *part);
+static t_bool header_wanted (const char *line);
+
 /*
- * These are used globally within this module for access to the context currently
- * being built. They must not leak outside.
+ * These are used globally within this module for access to the context
+ * currently being built. They must not leak outside.
  */
 int tabwidth;
 t_bool hide_uue;
@@ -186,68 +196,334 @@ put_cooked (
 	va_end (ap);
 }
 
-
 /*
- * Process Q and P encoded text strings
+ * FIXME: should go into rfc1521.c
+ *
+ * Set everything in ptr as the rest of a physical line to be processed
+ * later.
  */
-static char *
-decode_text_line(
-	char *line,
-	int encoding,
-	const char *charset)
+static void
+set_rest (
+	char **rest,
+	char *ptr)
 {
-	char buf[HEADER_LEN];
-	static char buf2[HEADER_LEN];
-	int chs;
-	t_bool last_char_was_cr = FALSE;	/* TODO - needs to be static ?? */
+	char *new_rest;
+	int new_rest_len;
 
-	chs = mmdecode(line, encoding == ENCODING_BASE64 ? 'b' : 'q', '\0', buf2, charset);
-	if (chs >= 0)
-		buf2[chs] = '\0';
-	else
-		strcpy(buf2, line);
-
-	/* TODO reduce the copying around ? */
-	if (encoding == ENCODING_BASE64) {
-		/*
-		 * base64 encoded text has CRLF line endings. Strip off
-		 * all CRs if followed by LF but keep it if not followed
-		 * by LF. (CR not followed by LF may be a part of valid
-		 * encoding for some (multibyte) character sets.)
-		 */
-		char *src = buf2;
-		char *dest = buf;
-		char ch;
-
-		if (last_char_was_cr && (buf2[0] != '\n')) {
-			*dest++ = '\r';	/* keep CR from last loop if not followed by LF */
-			last_char_was_cr = FALSE;
-		}
-
-		while ((ch = *src++)) {
-			if ((ch == '\r') && (*src == '\n'))
-				continue;	/* skip CR if followed by LF */
-			if ((ch == '\r') && (*src == '\0')) {
-				/*
-				 * End of buffer is CR; we don't know what follows
-				 * so remember this CR and leave it to next loop to
-				 * keep it out or not
-				 */
-				last_char_was_cr = TRUE;
-				break;
-			}
-			*dest++ = ch;
-		}
-		*dest = '\0';
-		strcpy (buf2, buf);
-	}
-
-	if (encoding == ENCODING_BASE64 && last_char_was_cr)
-		strcat (buf2, "\r");	/* if one CR was left over, keep it */
-
-	return buf2;
+	new_rest_len = strlen (ptr);
+	if (new_rest_len) {
+		new_rest = my_malloc (new_rest_len + 1);
+		if (new_rest)
+			strcpy (new_rest, ptr);
+		*rest = new_rest;
+	} else
+		*rest = NULL;	/* no rest anymore */
 }
 
+/*
+ * FIXME: should go into rfc1521.c
+ *
+ * Copy things that were left over from the last decoding into the new line.
+ * If there's a newline in the rest, copy everything up to and including
+ * that newline in the expected buffer, adjust rest and return. If there's
+ * no newline in the rest, copy all of it (modulo length of the buffer) to
+ * the expected buffer and return.
+ *
+ * This function returns the number of character written to the line buffer.
+ * The buffer is NULL terminated if a complete line was written or the line
+ * buffer was filled up to its end. The buffer is NOT NULL terminated if
+ * there was no newline in the rest.
+ */
+static int
+put_rest (
+	char **rest,
+	char *dest,
+	int max_line_len)
+{
+	char *my_rest = *rest;
+	char *ptr;
+	int put_chars = 0;
+
+	ptr = my_rest;
+	if (my_rest) {
+		if (strlen (my_rest) > 0) {
+			char c;
+
+			while ((c = *ptr++) && (c != '\n') && (put_chars < (max_line_len - 2))) {
+				if ((c == '\r') && (*ptr == '\n'))
+					continue;	/* step over CRLF */
+				*dest++ = c;
+				put_chars++;
+			}
+			if ((c == '\n') || (put_chars >= max_line_len - 2)) {
+				/*
+				 * FIXME: Adding a newline may be not correct. At least it may
+				 * be not what the author of that article intended.
+				 * Unfortunately, a newline is expected at the end of a line by
+				 * some other code in cook.c and even those functions invoking
+				 * this one rely on it.
+				 */
+				*dest++ = '\n';
+				put_chars++;	/* don't count the termining NULL! */
+				*dest = '\0';
+				if (c != '\n') {
+					/*
+					 * Line buffer was too small -- "ungetc" last character,
+					 * because we didn't put it into the line but left the loop.
+					 */
+					ptr--;
+				}
+				set_rest (rest, ptr);
+				FreeIfNeeded (my_rest);
+			} else {
+				/* rest is now empty */
+				*rest = NULL;
+				FreeIfNeeded (my_rest);
+			}
+		} else {
+			/* empty rest, clean up */
+			free (my_rest);
+			*rest = NULL;
+		}
+	}
+	return put_chars;
+}
+
+/*
+ * FIXME: should go into rfc1521.c
+ *
+ * Read a logical base64 encoded line into the specified line buffer.
+ * Logical lines can be split over several physical base64 encoded lines and
+ * a single physical base64 encoded line can contain serveral logical lines.
+ * This function keeps track of all these cases and always copies only one
+ * decoded line to the line buffer.
+ *
+ * This function returns the number of physical lines read or a negative
+ * value on error.
+ */
+static int
+read_decoded_base64_line (
+	FILE *file,
+	char *line,
+	const int max_line_len,
+	const int max_lines_to_read,
+	const char *charset,
+	char **rest)
+{
+	char *dest = line;
+	char *ptr;
+	char buf2[HEADER_LEN];	/* holds the entire decoded line */
+	char buf[HEADER_LEN];	/* holds the entire encoded line; allowed are 76 char + CRLF (cf. RFC 2045, section 6.8), so "this should be enough for everyone" */
+	int count = 0;
+	int lines_read = 0;
+	int put_chars = 0;
+
+	/*
+	 * First of all, catch everything that is left over from the last decoding.
+	 * If there's a newline in that rest, copy everything up to and including
+	 * that newline in the expected buffer, adjust rest and return. If there's
+	 * no newline in the rest, copy all of it (modulo length of the buffer) to
+	 * the expected buffer and continue as if there was no rest.
+	 */
+	put_chars = put_rest(rest, dest, max_line_len);
+	if (put_chars && (line[put_chars - 1] == '\n'))
+		return 0;	/* we didn't read any new lines but filled the line */
+	dest = &line[put_chars];
+
+	/*
+	 * At this point, either there was no rest or there was no newline in the
+	 * rest. In any case, we need to read further encoded lines and decode
+	 * them until we find a newline or the line buffer is filled up
+	 * completely or there are no more (encoded or physical) lines in this
+	 * part of the posting.
+	 */
+	/*
+	 * max_lines_to_read==0 occurs at end of an encoded part and if there was
+	 * no trailing newline in the encoded text. So we put one there and exit.
+	 * FIXME: Adding a newline may be not correct. At least it may be not
+	 * what the author of that article intended. Unfortunately, a newline is
+	 * expected at the end of a line by some other code in cook.c.
+	 */
+	if (max_lines_to_read <= 0) {
+		if (put_chars) {
+			*dest++ = '\n';
+			*dest++ = '\0';
+		}
+		return max_lines_to_read;
+	}
+	/*
+	 * Ok, now read a new line from the original article.
+	 */
+	do {
+		char c;
+
+		if (fgets(buf, sizeof(buf), file) == NULL) {
+			/*
+			 * Premature end of file (or file error), leave loop. To prevent
+			 * re-invoking of this function, set the numbers of read lines to
+			 * the expected maximum that should be read at most.
+			 *
+			 * FIXME: Adding a newline may be not correct. At least it may be
+			 * not what the author of that article intended. Unfortunately, a
+			 * newline is expected at the end of a line by some other code in
+			 * cook.c.
+			 */
+			*dest++ = '\n';
+			*dest = '\0';
+			return max_lines_to_read;
+		}
+		lines_read++;
+		count = mmdecode (buf, 'b', '\0', buf2, charset);
+		buf2[count] = '\0';
+		ptr = &buf2[0];
+		while ((c = *ptr++) && (c != '\n') && (put_chars < (max_line_len - 2))) {
+			if ((c == '\r') && (*ptr == '\n'))
+				continue;	/* step over CRLF */
+			*dest++ = c;
+			put_chars++;
+		}
+		if ((c == '\n') || (put_chars >= max_line_len - 2)) {
+			if (put_chars && (line[put_chars - 1] == '\r') && (c == '\n'))
+				dest--;	/* remove CR before LF */
+			*dest++ = '\n';
+			*dest = '\0';
+			if (c != '\n')
+				ptr--;
+			set_rest (rest, ptr);
+			return lines_read;
+		}
+	} while ((lines_read < max_lines_to_read) && (put_chars < max_line_len));
+	set_rest (rest, ptr);	/* should not be needed */
+	return lines_read;
+}
+
+/*
+ * FIXME: should go into rfc1521.c
+ *
+ * Read a logical quoted-printable encoded line into the specified line
+ * buffer.  Quoted-printable lines can be split over several physical lines,
+ * so this function collects all affected lines, concatenates and decodes
+ * them.
+ *
+ * This function returns the number of physical lines read or a negative
+ * value on error.
+ */
+static int
+read_decoded_qp_line (
+	FILE *file,
+	char *line,							/* where to copy the decoded line */
+	const int max_line_len,			/* maximum line length  */
+	const int max_lines_to_read,	/* don't read more physical lines than told here */
+	const char *charset,				/* local charset */
+	char **rest)						/* rest of line if line is too small */
+{
+	char *buf, *buf2, *endptr;
+	char *dest = line;
+	char *ptr;
+	char c;
+	int buflen = 0;
+	int count = 0;
+	int lines_read = 0;
+	int max_buf_len = 3 * max_line_len;	/* worst case: every char is qp-encoded (3 chars) */
+	int put_chars = 0;
+
+	/*
+	 * If there was anything left over from the last invokation, put it out
+	 * now.
+	 */
+	put_chars = put_rest (rest, dest, max_line_len);
+	if (put_chars && (line[put_chars - 1] == '\n'))
+		return 0;	/* we didn't read any new lines but filled the line */
+
+	dest = &line[put_chars];
+	if ((max_lines_to_read < 1) || (max_line_len < 2))
+		return max_lines_to_read;
+	if (!(buf = my_malloc (max_buf_len)))
+		return -1;	/* oops, no memory */
+	*buf = '\0';
+	endptr = buf;
+	do {
+
+		if (fgets(endptr, max_buf_len - strlen(buf), file) == NULL)
+		{
+			/*
+			 * Premature end of file (or file error), leave loop. To prevent
+			 * re-invokation of this function, set the numbers of read lines to
+			 * the expected maximum that should be read at most.
+			 */
+#if 1
+			/*
+			 * FIXME: If the last line ended in '=' (soft break), skip that
+			 * character because the QP decoder will happily strip the
+			 * following newline that put_cooked() relies on. This should
+			 * probably be fixed in put_cooked(), not here.
+			 */
+			if (*endptr == '=')
+				endptr--;
+#endif /* 1 */
+			lines_read = max_lines_to_read;
+			break;
+		}
+		lines_read++;
+		if (!(buflen = strlen(buf)))
+		 	/*
+		 	 * Empty line. Should not occur, at least newline should be there.
+		 	 * We'll add it when we left the loop.
+		 	 */
+			break;
+		endptr = &buf[buflen - 1];
+		c = *endptr;
+		/*
+		 * Strip trailing white space at the end of the line.
+		 * See RFC 2045, section 6.7, #3
+		 */
+		while ((buflen > 0) && ((c == ' ') || (c == '\t') || (c == '\n'))) {
+			c = *--endptr;
+			buflen--;
+		}
+		/*
+		 * '=' at the end of a line indicates a soft break meaning
+		 * that the following physical line "belongs" to this one.
+		 * (See RFC 2045, section 6.7, #5)
+		 *
+		 * Skip that equal sign now; since c holds this char, the
+		 * loop is not left but the next line is read and concatenated
+		 * with this one while the '=' is overwritten.
+		 */
+	} while ((c == '=') && (lines_read < max_lines_to_read) && (buflen < max_buf_len));
+	/*
+	 * re-add newline and NULL termination at end of line
+	 * FIXME: Adding a newline may be not correct. At least it may be not
+	 * what the author of that article intended. Unfortunately, a newline is
+	 * expected at the end of a line by some other code in cook.c.
+	 */
+	*++endptr = '\n';
+	*++endptr = '\0';
+
+	/*
+	 * Now decode complete (logical) line from buf to buf2 and copy it to the
+	 * buffer where the invoking function expects it. Don't decode directly
+	 * to the buffer of the other function to prevent buffer overruns.
+	 */
+	buf2 = my_malloc (strlen(buf) + 1);
+	if (buf2)
+		count = mmdecode (buf, 'q', '\0', buf2, charset);
+	else
+		count = -1;
+	if (count >= 0) {
+		buf2[count] = '\0';
+		ptr = buf2;
+	} else
+		/* error in encoding or no memory, copy raw line */
+		ptr = buf;
+	strncpy(dest, ptr, max_line_len - put_chars - 1);
+	line[max_line_len - 1] = '\0'; /* be sure to terminate string */
+	if ((signed int)(strlen(ptr) + put_chars) > max_line_len - 1)
+		set_rest (rest, &ptr[max_line_len - put_chars - 1]);
+	FreeIfNeeded (buf);
+	FreeIfNeeded (buf2);
+	return lines_read;
+}
 
 /*
  * Add a new uuencode attachment description to the current part
@@ -317,8 +593,9 @@ process_text_body_part(
 {
 	const char *charset;
 	char *line;
+	char *rest = NULL;
 	char buf[LEN], to[LEN];
-	int flags, i, len;
+	int flags, len, lines_left;
 	t_bool decode = TRUE;
 	t_bool in_sig = FALSE;			/* Set when in sig portion */
 	t_bool in_uue = FALSE;			/* Set when in uuencoded section */
@@ -326,7 +603,7 @@ process_text_body_part(
 
 	fseek(in, part->offset, SEEK_SET);
 
-#ifndef LOCAL_CHARSET
+#ifdef LOCAL_CHARSET
 	/*
 	 * if we have a different local charset, we also convert articles
 	 * that do not have MIME headers, since e.g. quoted text may contain
@@ -334,7 +611,7 @@ process_text_body_part(
 	 */
 	if (IS_PLAINTEXT(part))
 		decode = FALSE;
-#endif /* !LOCAL_CHARSET */
+#endif /* LOCAL_CHARSET */
 
 	if ((charset = get_param(part->params, "charset")) == NULL)
 		decode = FALSE;				/* Impossible in practice, since it defaults */
@@ -342,32 +619,31 @@ process_text_body_part(
 	if (part->encoding == ENCODING_BASE64)
 		(void) mmdecode(NULL, 'b', 0, NULL, NULL);		/* flush */
 
-	for (i=0; i<part->lines; i++) {
-
-		if ((line = fgets (buf, (int) sizeof (buf), in)) == NULL)
-			break;					/* Premature end of body ? */
-
+	lines_left = part->lines;
+	while ((lines_left > 0) || rest) {
 		switch (part->encoding) {
 			case ENCODING_BASE64:
-			case ENCODING_QP:
-				line = decode_text_line (line, part->encoding, charset);
-#ifdef LOCAL_CHARSET
-				buffer_to_local(line);
-#endif /* LOCAL_CHARSET */
+				lines_left -= read_decoded_base64_line (in, buf, sizeof(buf), lines_left, charset, &rest);
+				line = buf;
 				break;
 
-			default:	/* 7bit, 8bit etc.. */
-#ifdef LOCAL_CHARSET
-				/*
-				 * If we have a different local charset, we also have to convert
-				 * 8bit articles (and we also convert 7bit articles thay may contain
-				 * accented characters due to incorrectly configured newsreaders
-				 */
-				if (decode)
-					buffer_to_local(line);
-#endif /* LOCAL_CHARSET */
+			case ENCODING_QP:
+				lines_left -= read_decoded_qp_line (in, buf, sizeof(buf), lines_left, charset, &rest);
+				line = buf;
+				break;
+
+			default:
+				line = fgets (buf, (int) sizeof (buf), in);
+				lines_left--;
 				break;
 		}
+		if (!(line && strlen(line)))
+			break;	/* premature end of file, file error etc. */
+
+#ifdef LOCAL_CHARSET
+		if (decode)
+			buffer_to_local (line);
+#endif /* LOCAL_CHARSET */
 
 		/*
 		 * Detect and skip signatures if necessary
@@ -429,9 +705,9 @@ fprintf(stderr, "%s sum=%d len=%d (%s)\n", bool_unparse(is_uubody), sum, len, li
 					curruue->lines++;
 				else {
 					if (line[0] == '\n') {		/* Blank line in a uubody - definitely a failure */
-#	ifdef DEBUG_ART
+#ifdef DEBUG_ART
 						fprintf(stderr, "not a uue line while reading a uue body?\n");
-#	endif /* DEBUG_ART */
+#endif /* DEBUG_ART */
 						in_uue = FALSE;
 						put_cooked (C_UUE, txt_uue, "incomplete ", curruue->lines, get_filename(curruue->params));
 					}
@@ -497,7 +773,7 @@ fprintf(stderr, "%s sum=%d len=%d (%s)\n", bool_unparse(is_uubody), sum, len, li
 			flags |= C_CTRLL;				/* Line contains form-feed */
 
 		put_cooked (flags, "%s", to);
-	} /* for */
+	} /* while */
 
 	/*
 	 * Were we reading uue and ran off the end ?
@@ -650,7 +926,7 @@ cook_article(
 				ptr->depth * 4, "",
 				content_types[ptr->type], ptr->subtype,
 				content_encodings[ptr->encoding], ptr->lines,
-				(name)? ", name: " : "", (name) ? name: "");
+				(name) ? _(", name: ") : "", (name) ? name : "");
 
 			/* Try to view anything of type text, may need to review this */
 			if (IS_PLAINTEXT(ptr))
@@ -669,7 +945,7 @@ cook_article(
 					0, "",
 					content_types[hdr->ext->type], hdr->ext->subtype,
 					content_encodings[hdr->ext->encoding], hdr->ext->lines,
-					(name)? ", name: " : "", (name) ? name : "");
+					(name)? _(", name: ") : "", (name) ? name : "");
 		}
 	}
 

@@ -1,10 +1,10 @@
 /*
  *  Project   : tin - a Usenet reader
- *  Module    : rfc2045.h
+ *  Module    : rfc2046.h
  *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
  *  Created   : 18/02/2000
  *  Updated   : 28/02/2000
- *  Notes     : rfc2045 MIME article definitions
+ *  Notes     : rfc2046 MIME article definitions
  *
  * Copyright (c) 2000 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
@@ -37,8 +37,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RFC2045_H
-#	define RFC2045_H 1
+#ifndef RFC2046_H
+#	define RFC2046_H 1
 
 /* The version of MIME we conform to */
 #	define MIME_SUPPORTED_VERSION	1.0
@@ -160,4 +160,4 @@ typedef struct openartinfo
 	t_lineinfo *cookl;
 } t_openartinfo;
 
-#endif /* !RFC2045_H */
+#endif /* !RFC2046_H */

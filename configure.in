@@ -78,10 +78,10 @@ case "$host_os" in
 		;;
 esac
 
-###     Native Language Support
-ALL_LINGUAS="de et"
+### Native Language Support
+ALL_LINGUAS="de et en_GB"
 
-###	Checks for programs.
+### Checks for programs
 save_CFLAGS="$CFLAGS"
 AC_PROG_CC
 AC_PROG_GCC_TRADITIONAL

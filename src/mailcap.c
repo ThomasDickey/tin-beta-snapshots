@@ -47,13 +47,14 @@
 #	ifndef MENUKEYS_H
 #		include  "menukeys.h"
 #	endif /* !MENUKEYS_H */
-#	ifndef RFC2045_H
-#		include  "rfc2045.h"
-#	endif /* !RFC2045_H */
+#	ifndef RFC2046_H
+#		include  "rfc2046.h"
+#	endif /* !RFC2046_H */
 #endif /* 0 */
 
 #define DEFAULT_MAILCAPS "~/.mailcap:/etc/mailcap:/usr/etc/mailcap:/usr/local/etc/mailcap"
 
+#if 0
 /*
  * Parse a mailcap line for matching type and subtype
  * Return 'body' of entry if match or NULL
@@ -117,6 +118,8 @@ lookup_mailcap(
 	/*
 	 * lookup all files given in $MAILCAPS, if $MAILCAPS is unset
 	 * use DEFAULT_MAILCAPS as fallback serachpath
+	 *
+	 * TODO: append DEFAULT_MAILCAPS to $MAILCAPS?
 	 */
 	ptr = get_val("MAILCAPS", DEFAULT_MAILCAPS);
 	strncpy(mailcaps, ptr, sizeof(mailcaps) - 1);
@@ -128,7 +131,7 @@ lookup_mailcap(
 			break;
 		ptr = strtok(NULL, ":");
 	}
-	if (!fp)	/* no mailcaps file */
+	if (!fp)	/* no mailcap file */
 		return NULL;
 
 	mailcap[0] = '\0';
@@ -165,7 +168,7 @@ lookup_mailcap(
 	else
 		return NULL;
 }
-
+#endif /* 0 */
 
 /*
  * Match a filename extension to a content-type / subtype pair in mime.types
@@ -180,7 +183,7 @@ lookup_mimetype (
 	char buf[LEN];
 
 	/*
-	 * check $HOME/.mime.types first, then /etc/mime.types and 
+	 * check $HOME/.mime.types first, then /etc/mime.types and
 	 * TIN_DEFAULTS_DIR/mime.types
 	 */
 	snprintf(buf, sizeof(buf), "%s/.mime.types", homedir);

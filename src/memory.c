@@ -41,9 +41,9 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
-#ifndef RFC2045_H
-#	include "rfc2045.h"
-#endif /* !RFC2045_H */
+#ifndef RFC2046_H
+#	include "rfc2046.h"
+#endif /* !RFC2046_H */
 
 /*
  * Dynamic arrays maximum & current sizes

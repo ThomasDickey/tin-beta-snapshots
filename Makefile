@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 5
 SVER	= 4
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20000511
+DVER	= 20000523
 EXE	= tin
 MANEXT	= 1
 
@@ -37,7 +37,7 @@ HFILES	= \
 	$(INCDIR)/plp_snprintf.h \
 	$(INCDIR)/policy.h \
 	$(INCDIR)/proto.h \
-	$(INCDIR)/rfc2045.h \
+	$(INCDIR)/rfc2046.h \
 	$(INCDIR)/stpwatch.h \
 	$(INCDIR)/tcurses.h \
 	$(INCDIR)/tin.h \
@@ -90,9 +90,10 @@ CFILES	= \
 	$(SRCDIR)/read.c \
 	$(SRCDIR)/refs.c \
 	$(SRCDIR)/regex.c \
-	$(SRCDIR)/rfc1521.c \
-	$(SRCDIR)/rfc1522.c \
+	$(SRCDIR)/rfc1524.c \
 	$(SRCDIR)/rfc2045.c \
+	$(SRCDIR)/rfc2046.c \
+	$(SRCDIR)/rfc2047.c \
 	$(SRCDIR)/save.c \
 	$(SRCDIR)/screen.c \
 	$(SRCDIR)/search.c \

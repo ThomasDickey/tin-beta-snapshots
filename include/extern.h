@@ -45,9 +45,9 @@
  * Library prototypes
  */
 
-#ifndef RFC2045_H
-#	include <rfc2045.h>
-#endif /* !RFC2045_H */
+#ifndef RFC2046_H
+#	include <rfc2046.h>
+#endif /* !RFC2046_H */
 
 /*
  * The prototypes bracketed by DECL_xxxx ifdef's are used to get moderately

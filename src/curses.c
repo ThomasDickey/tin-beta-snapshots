@@ -253,11 +253,11 @@ setup_screen (void)
 #define TFORMAT(fmt, a, b) tparm(fmt, b, a)
 #else
 #define TFORMAT(fmt, a, b) tgoto(fmt, b, a)
-#endif
+#endif /* HAVE_TPARM */
 
-#if HAVE_EXTERN_TCAP_PC
+#ifdef HAVE_EXTERN_TCAP_PC
 extern char PC;			/* used in 'tputs()' */
-#endif
+#endif /* HAVE_EXTERN_TCAP_PC */
 
 int
 get_termcaps (void)
@@ -307,13 +307,13 @@ get_termcaps (void)
 	_cursoron       = TGETSTR ("ve", "cnorm", &ptr);
 	_cursoroff      = TGETSTR ("vi", "civis", &ptr);
 
-#if USE_TERMCAP
-#  if HAVE_EXTERN_TCAP_PC
+#ifdef USE_TERMCAP
+#  ifdef HAVE_EXTERN_TCAP_PC
 	t = TGETSTR("pc", "pad", &p);
 	if (t != 0)
 		PC = *t;
-#  endif
-#endif
+#  endif /* HAVE_EXTERN_TCAP_PC */
+#endif /* USE_TERMCAP */
 
 	if (STRCMPEQ(the_termname, "xterm")) {
 		static char x_init[] = "\033[?9h";

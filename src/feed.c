@@ -52,9 +52,9 @@
 #	include	"menukeys.h"
 #endif /* !MENUKEYS_H */
 
-#ifndef RFC2045_H
-#	include	"rfc2045.h"
-#endif /* !RFC2045_H */
+#ifndef RFC2046_H
+#	include	"rfc2046.h"
+#endif /* !RFC2046_H */
 
 char proc_ch;						/* Used for post-processing save queries */
 

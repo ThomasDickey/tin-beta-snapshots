@@ -38,9 +38,9 @@
 #ifndef PROTO_H
 #	define PROTO_H 1
 
-#	ifndef RFC2045_H
-#		include <rfc2045.h>
-#	endif /* !RFC2045_H */
+#	ifndef RFC2046_H
+#		include <rfc2046.h>
+#	endif /* !RFC2046_H */
 
 /* active.c */
 extern char group_flag (int ch);
@@ -275,7 +275,9 @@ extern void vGrpDelMailArt (struct t_article *psArt);
 #endif /* HAVE_MH_MAIL_HANDLING */
 
 /* mailcap.c */
-extern char *lookup_mailcap (int type, const char *subtype);
+#if 0
+	extern char *lookup_mailcap (int type, const char *subtype);
+#endif /* 0 */
 extern void lookup_mimetype (const char *ext, t_part *part);
 
 /* main.c */
@@ -515,7 +517,11 @@ extern void thread_by_reference (void);
 extern t_bool compile_regex (const char *regex, struct regex_cache *cache, int options);
 extern t_bool match_regex (const char *string, char *pattern, t_bool icase);
 
-/* rfc1521.c */
+/* rfc1524.c */
+extern t_mailcap *get_mailcap_entry (t_part *part);
+extern void free_mailcap (t_mailcap *tmailcap);
+
+/* rfc2045.c */
 extern void rfc1521_encode (char *line, FILE *f, int e);
 extern void rfc1557_encode (char *line, FILE *f, int e);
 #if 0
@@ -523,13 +529,13 @@ extern void rfc1557_encode (char *line, FILE *f, int e);
 	extern void rfc1922_encode (char *line, FILE *f, int e);
 #endif /* 0 */
 
-/* rfc1522.c */
+/* rfc2047.c */
 extern char *rfc1522_decode (const char *s);
 extern char *rfc1522_encode (char *s,t_bool ismail);
 extern int mmdecode (const char *what, int encoding, int delimiter, char *where, const char *charset);
 extern void rfc15211522_encode (const char *filename, constext *mime_encoding, t_bool allow_8bit_header,t_bool ismail);
 
-/* rfc2045.c */
+/* rfc2046.c */
 extern char *get_param (t_param *list, const char *name);
 extern char *parse_header (char *buf, const char *pat, t_bool decode);
 extern int art_open (struct t_article *art, char *group_path, t_bool decode, t_openartinfo *artinfo);
@@ -677,5 +683,6 @@ extern t_bool overview_xref_support (void);
 extern void NSETRNG0 (t_bitmap *bitmap, long low, long high);
 extern void NSETRNG1 (t_bitmap *bitmap, long low, long high);
 extern void art_mark_xref_read (struct t_article *art);
+
 
 #endif /* !PROTO_H */

@@ -1652,10 +1652,32 @@ typedef struct {
  */
 typedef struct _TIMEINFO
 {
-	time_t	time;
-	long	usec;
-	long	tzone;
+	time_t time;
+	long usec;
+	long tzone;
 } TIMEINFO;
+
+
+/*
+ * mailcap fields
+ * the x-token field is missing, we would need something like
+ * struct t_xtoken { char *xtoken; t_xtoken *next; } for that...
+ */
+typedef struct {
+	char *type;		/* content-type, mandatory */
+	char *command;	/* view-command, mandatory */
+	char *compose;
+	char *composetyped;
+	char *description;
+	char *edit;
+	char *nametemplate;
+	char *print;
+	char *test;
+	char *x11bitmap;
+	int textualnewlines;
+	t_bool needsterminal;
+	t_bool copiousoutput;
+} t_mailcap;
 
 
 /*
@@ -2128,5 +2150,6 @@ extern struct tm *localtime(time_t *);
 #ifndef HAVE_VSNPRINTF
 #	define vsnprintf	plp_vsnprintf
 #endif /* HAVE_VSNPRINTF */
+
 
 #endif /* !TIN_H */
