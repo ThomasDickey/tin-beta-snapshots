@@ -403,8 +403,8 @@ DEBUG_IO((stderr, "tin_fgets (%s)\n", (dynbuf) ? dynbuf : "NULL"));
 
 
 /*
- * We can't just stop reading a socket once we are through with it. This drains out any
- * pending data on the NNTP port
+ * We can't just stop reading a socket once we are through with it. This
+ * drains out any pending data on the NNTP port
  */
 #ifdef NNTP_ABLE
 void

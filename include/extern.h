@@ -333,7 +333,6 @@ extern char dead_article[PATH_LEN];
 extern char dead_articles[PATH_LEN];
 extern char default_organization[PATH_LEN];
 extern char default_signature[PATH_LEN];
-extern char global_attributes_file[PATH_LEN];
 extern char global_config_file[PATH_LEN];
 extern char homedir[PATH_LEN];
 extern char index_maildir[PATH_LEN];
@@ -447,6 +446,7 @@ extern constext txt_autosubscribed[];
 extern constext txt_autosubscribing_groups[];
 extern constext txt_bad_active_file[];
 extern constext txt_bad_article[];
+extern constext txt_bad_attrib[];
 extern constext txt_bad_command[];
 extern constext txt_base64[];
 extern constext txt_batch_update_unavail[];
@@ -465,6 +465,7 @@ extern constext txt_cannot_open[];
 extern constext txt_cannot_open_for_saving[];
 extern constext txt_cannot_post[];
 extern constext txt_cannot_post_group[];
+extern constext txt_cannot_retrieve[];
 extern constext txt_cannot_write_index[];
 extern constext txt_cannot_write_to_directory[];
 extern constext txt_catchup_all_read_groups[];
@@ -870,8 +871,10 @@ extern constext txt_post_newsgroups[];
 extern constext txt_post_processing[];
 extern constext txt_post_processing_finished[];
 extern constext txt_post_subject[];
-extern constext txt_post_via_builtin_inews[];
-extern constext txt_post_via_builtin_inews_only[];
+#ifdef NNTP_INEWS
+	extern constext txt_post_via_builtin_inews[];
+	extern constext txt_post_via_builtin_inews_only[];
+#endif /* NNTP_INEWS */
 extern constext txt_posted_info_file[];
 extern constext txt_posting[];
 extern constext txt_postpone_repost[];
@@ -1356,13 +1359,14 @@ extern struct opttxt txt_editor_format;
 extern struct opttxt txt_expert_options;
 extern struct opttxt txt_filter_days;
 extern struct opttxt txt_force_screen_redraw;
-extern struct opttxt txt_full_page_scroll;
 extern struct opttxt txt_getart_limit;
 extern struct opttxt txt_getart_limit_options;
 extern struct opttxt txt_group_catchup_on_exit;
 extern struct opttxt txt_groupname_max_length;
 extern struct opttxt txt_hide_uue;
-extern struct opttxt txt_inews_prog;
+#ifdef NNTP_ABLE
+	extern struct opttxt txt_inews_prog;
+#endif /* NNTP_ABLE */
 extern struct opttxt txt_inverse_okay;
 extern struct opttxt txt_keep_dead_articles;
 extern struct opttxt txt_keep_posted_articles;
@@ -1399,7 +1403,7 @@ extern struct opttxt txt_savedir;
 extern struct opttxt txt_saving_options;
 extern struct opttxt txt_show_author;
 extern struct opttxt txt_show_description;
-extern struct opttxt txt_show_last_line_prev_page;
+extern struct opttxt txt_scroll_lines;
 extern struct opttxt txt_show_lines;
 extern struct opttxt txt_show_only_unread_arts;
 extern struct opttxt txt_show_only_unread_groups;
@@ -1430,7 +1434,6 @@ extern struct opttxt txt_use_mouse;
 extern struct opttxt txt_wildcard;
 extern struct opttxt txt_xpost_quote_format;
 #ifdef CHARSET_CONVERSION
-	extern struct opttxt txt_mm_local_charset;
 	extern struct opttxt txt_mm_network_charset;
 #endif /* CHARSET_CONVERSION */
 extern struct opttxt txt_mailbox_format;
@@ -1462,6 +1465,9 @@ extern struct opttxt txt_mailbox_format;
 	extern struct opttxt txt_col_markstar;
 	extern struct opttxt txt_col_markdash;
 #endif /* HAVE_COLOR */
+#ifdef HAVE_ICONV_OPEN_TRANSLIT
+	extern struct opttxt txt_translit;
+#endif /* HAVE_ICONV_OPEN_TRANSLIT */
 #ifdef HAVE_KEYPAD
 	extern struct opttxt txt_use_keypad;
 #endif /* HAVE_KEYPAD */

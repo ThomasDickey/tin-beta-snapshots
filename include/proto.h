@@ -73,7 +73,7 @@ extern void sort_arts (unsigned /* int */ sort_art_type);
 extern void write_nov_file (struct t_group *group);
 
 /* attrib.c */
-extern void read_attributes_file (const char *file, t_bool global_file);
+extern void read_attributes_file (t_bool global_file);
 extern void write_attributes_file (const char *file);
 
 /* auth.c */
@@ -371,6 +371,7 @@ extern void toggle_inverse_video (void);
 #if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
 	extern void buffer_to_network (char *line);
 #endif /* LOCAL_CHARSET || MAC_OS_X || CHARSET_CONVERSION */
+extern void process_charsets (char *line, const char* network_charset, const char *local_charset);
 #ifdef HAVE_COLOR
 	extern t_bool toggle_color (void);
 	extern void show_color_status (void);
@@ -552,7 +553,7 @@ extern void rfc1557_encode (char *line, FILE *f, int e);
 /* rfc2046.c */
 extern const char *get_param (t_param *list, const char *name);
 extern char *parse_header (char *buf, const char *pat, t_bool decode);
-extern int art_open (t_bool wrap_lines, struct t_article *art, const char *group_path, t_openartinfo *artinfo);
+extern int art_open (t_bool wrap_lines, struct t_article *art, const char *group_path, t_openartinfo *artinfo, t_bool show_progress_meter);
 extern int content_type (char *type);
 extern int parse_rfc822_headers (struct t_header *hdr, FILE *from, FILE *to);
 extern t_part *new_part (t_part *part);
@@ -564,7 +565,7 @@ extern void unfold_header (char *line);
 /* rfc2047.c */
 extern char *rfc1522_decode (const char *s);
 extern char *rfc1522_encode (char *s,t_bool ismail);
-extern int mmdecode (const char *what, int encoding, int delimiter, char *where, const char *charset);
+extern int mmdecode (const char *what, int encoding, int delimiter, char *where);
 extern void rfc15211522_encode (const char *filename, constext *mime_encoding, t_bool allow_8bit_header,t_bool ismail);
 
 /* save.c */

@@ -68,15 +68,14 @@
 	groupname_max_length		OPT_NUM
 	show_lines			OPT_ON_OFF
 	show_score			OPT_ON_OFF
-	full_page_scroll		OPT_ON_OFF
-	show_last_line_prev_page	OPT_ON_OFF
+	scroll_lines			OPT_NUM
 	show_signatures			OPT_ON_OFF
 	news_headers_to_display		OPT_STRING
 	news_headers_to_not_display	OPT_STRING
 	alternative_handling		OPT_ON_OFF
 	hide_uue			OPT_ON_OFF
 	tex2iso_conv			OPT_ON_OFF
-#ifdef	HAVE_METAMAIL
+#ifdef HAVE_METAMAIL
 	use_metamail			OPT_ON_OFF
 	ask_for_metamail		OPT_ON_OFF
 #endif
@@ -86,7 +85,7 @@
 	confirm_action			OPT_ON_OFF
 	confirm_to_quit			OPT_ON_OFF
 	use_mouse			OPT_ON_OFF
-#ifdef	HAVE_KEYPAD
+#ifdef HAVE_KEYPAD
 	use_keypad			OPT_ON_OFF
 #endif
 
@@ -97,7 +96,7 @@
 	recent_time			OPT_NUM
 
 ; colour options
-#ifdef	HAVE_COLOR
+#ifdef HAVE_COLOR
 	color_options			OPT_TITLE
 	use_color			OPT_ON_OFF
 	col_normal			txt_colors	MAX_COLOR+1
@@ -138,13 +137,13 @@
 	xpost_quote_format		OPT_STRING
 	mail_quote_format		OPT_STRING
 	advertising			OPT_ON_OFF
+#ifdef HAVE_ICONV_OPEN_TRANSLIT
+	translit			OPT_ON_OFF
+#endif
 #ifndef CHARSET_CONVERSION
 	mm_charset			OPT_STRING
 #endif
 #ifdef CHARSET_CONVERSION
-#if 0
-	mm_local_charset		OPT_STRING
-#endif
 	mm_network_charset		txt_mime_charsets	NUM_MIME_CHARSETS
 #endif
 	post_mime_encoding		txt_mime_encodings	NUM_MIME_ENCODINGS
@@ -188,7 +187,7 @@
 	force_screen_redraw		OPT_ON_OFF
 	start_editor_offset		OPT_ON_OFF
 	editor_format			OPT_STRING
-#if defined(NNTP_ABLE) || defined(NNTP_ONLY)
+#ifdef NNTP_ABLE
 	inews_prog			OPT_STRING
 #endif
 	mailer_format			OPT_STRING

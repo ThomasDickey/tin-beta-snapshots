@@ -118,7 +118,9 @@ getserverbyfile (
 		FreeIfNeeded (old_env);
 		old_env = new_env;
 #	else
+#		ifdef HAVE_SETENV
 		setenv ("NNTPSERVER", buf, 1);
+#		endif /* HAVE_SETENV */
 #	endif /* HAVE_PUTENV */
 		return (buf);
 	}
@@ -478,8 +480,10 @@ get_tcp_socket (
 
 		memcpy((char *) &sock_in.sin_addr, *cp, hp->h_length);
 
+#			ifdef HAVE_INET_NTOA
 		if (x < 0)
 			my_fprintf (stderr, _("Trying %s"), (char *) inet_ntoa (sock_in.sin_addr)); /* FIXME: -> lang.c */
+#			endif /* HAVE_INET_NTOA */
 
 #			if defined(__hpux) && defined(SVR4)	/* recommended by raj@cup.hp.com */
 #				define HPSOCKSIZE 0x8000
@@ -501,8 +505,10 @@ get_tcp_socket (
 			break;
 
 		save_errno = errno;									/* Keep for later */
+#			ifdef HAVE_INET_NTOA
 		my_fprintf (stderr, _("\nConnection to %s: "), (char *) inet_ntoa (sock_in.sin_addr)); /* FIXME: -> lang.c */
 		perror ("");
+#			endif /* HAVE_INET_NTOA */
 		(void) s_close (s);
 	}
 
@@ -941,9 +947,11 @@ nntp_respcode (
 		case OK_GROUPS:
 			text = _("215  Newsgroups follow");
 			break;
+#if 0 /* obsolete */
 		case OK_XINDEX:
 			text = _("218  Group index file follows");
 			break;
+#endif /* 0 */
 		case OK_ARTICLE:
 			text = _("220  Article (head & body) follows");
 			break;

@@ -126,10 +126,12 @@ authinfo_generic (
 	FreeIfNeeded (old_env);
 	old_env = new_env;
 #else
+#	ifdef HAVE_SETENV
 	sprintf (tmpbuf, "%d.%d.%d",
 			fileno (get_nntp_fp(FAKE_NNTP_FP)),
 			fileno (get_nntp_wr_fp(FAKE_NNTP_FP)), cookiefd);
 	setenv ("NNTP_AUTH_FDS", tmpbuf, 1);
+#	endif /* HAVE_SETENV */
 #endif /* HAVE_PUTENV */
 
 	/* TODO - is it possible that we should have drained server here ? */

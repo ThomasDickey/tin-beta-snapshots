@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2001-11-10
+ *  Updated   : 2002-04-10
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea, Rich Skrenta.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -214,8 +211,20 @@ fprintf(stderr, "start_save: create_path(%s)\n", tmp);
 
 				case MAIL_ANY_NEWS:
 				case SAVE_ANY_NEWS:
+					/*
+					 * TODO: open_art_fp() returns FAKE_NNTP_FP in case of
+					 *       reading via NNTP, artfp later is used in
+					 *       copy_fp() which badly fails in that case.
+					 */
+#if 0
 					if ((artfp = open_art_fp (group_path, arts[j].artnum)) == NULL)
 						continue;
+#else
+					artfp = open_art_fp (group_path, arts[j].artnum);
+					/* FIXME! */
+					if (artfp == FAKE_NNTP_FP || artfp == NULL)
+						continue;
+#endif /* 0 */
 
 					if (function == MAIL_ANY_NEWS)
 						snprintf (savefile, sizeof(savefile) - 1, "%stin.%d", TMPDIR, (int) process_id);
@@ -470,7 +479,7 @@ fprintf(stderr, "save_arts, create_path(%s)\n", save[0].path);
 		wait_message (0, "%s%d  ", _(txt_saving), i + 1);
 
 		memset (&artinfo, 0, sizeof(t_openartinfo));
-		switch (art_open (FALSE, save[i].artptr, group_path, &artinfo)) {
+		switch (art_open (FALSE, save[i].artptr, group_path, &artinfo, TRUE)) {
 
 			case ART_ABORT:					/* User 'q'uit */
 				return count;
@@ -1080,6 +1089,9 @@ sum_and_view (
 	 * Sum file - TODO why do we bother to do this?
 	 */
 	sh_format (buf, sizeof(buf), "%s \"%s\"", DEFAULT_SUM, path);
+
+	/* TODO: add DONT_HAVE_PIPING fallback */
+#ifndef DONT_HAVE_PIPING
 	if ((fp_in = popen (buf, "r")) != (FILE *) 0) {
 		buf[0] = '\0';
 
@@ -1097,7 +1109,9 @@ sum_and_view (
 		my_printf (_(txt_checksum_of_file), file, file_size(path), _("bytes"));
 		my_printf (cCRLF);
 		my_printf ("\t%s%s", buf, cCRLF);
-	} else {
+	} else
+#endif /* !DONT_HAVE_PIPING */
+	{
 		my_printf (_(txt_command_failed), buf);
 		my_printf (cCRLF);
 	}
@@ -1194,7 +1208,7 @@ post_process_sh (
 			if (!invoke_cmd (buf))
 				error_message (_(txt_command_failed), buf);	/* TODO not needed */
 			Raw (TRUE);										/* TODO done in invoke_cmd() ? */
-#endif /* ! M_UNIX */
+#endif /* !M_UNIX */
 			unlink (file_out);
 		}
 	}
@@ -1347,7 +1361,7 @@ decode_save_one(
 	}
 
 	if (part->encoding == ENCODING_BASE64)
-		mmdecode(NULL, 'b', 0, NULL, NULL);				/* flush */
+		mmdecode(NULL, 'b', 0, NULL);				/* flush */
 
 	fseek (rawfp, part->offset, SEEK_SET);
 
@@ -1364,7 +1378,7 @@ decode_save_one(
 
 			case ENCODING_QP:
 			case ENCODING_BASE64:
-				count = mmdecode (buf, part->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2, NULL);
+				count = mmdecode (buf, part->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2);
 				fwrite (buf2, count, 1, fp);
 				break;
 

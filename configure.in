@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2001-11-10
+dnl Updated   : 2002-03-11
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2001 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -37,7 +37,7 @@ dnl SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 dnl
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.13.19990117)
+AC_PREREQ(2.13.20020210)
 AC_INIT(include/tin.h)
 AC_CONFIG_HEADER(include/autoconf.h:include/autoconf.hin)
 AC_PREFIX_DEFAULT(/usr/local)
@@ -548,7 +548,7 @@ AC_MSG_RESULT($enableval)
 
 AC_MSG_CHECKING(for MIME character-set)
 CF_WITH_DFTENV(mime-default-charset,
-	[  --with-mime-default-charset
+	[  --with-mime-default-charset=CHARSET
                           fallback for \$MM_CHARSET],
 	MM_CHARSET,US-ASCII)
 AC_MSG_RESULT($MM_CHARSET)
@@ -564,6 +564,9 @@ CF_ARG_WITH(local-charset,
 	[  --with-local-charset=CHARSET
                           set local charset to convert from/to],
 	LOCAL_CHARSET)
+if test "$LOCAL_CHARSET" != ""; then
+        AC_DEFINE_UNQUOTED(LOCAL_CHARSET, $LOCAL_CHARSET)
+fi
 AC_MSG_RESULT($LOCAL_CHARSET)
 
 AC_MSG_CHECKING(whether to enable locale support)
@@ -869,7 +872,9 @@ AC_CHECK_FUNCS(\
 	rewinddir \
 	resizeterm \
 	select \
+	setenv \
 	setlocale \
+	settz \
 	sigaction \
 	snprintf \
 	stpcpy \
@@ -899,10 +904,22 @@ AC_CHECK_FUNC(flock,
 		AC_DEFINE(HAVE_FLOCK)
 		LIBS="$LIBS -lbsd")])
 
-AC_MSG_CHECKING(if nl_langinfo(CODESET) is working)
-AC_TRY_LINK([#include <langinfo.h>], [char* cs = nl_langinfo(CODESET);],
-	AC_DEFINE(HAVE_WORKING_NL_LANGINFO_CODESET) AC_MSG_RESULT(yes),
-	AC_MSG_RESULT(no)
+AM_LANGINFO_CODESET
+
+AC_MSG_CHECKING(for iconv_open() //TRANSLIT extension)
+AC_TRY_RUN([
+#include <iconv.h>
+#include <stdlib.h>
+int main() {
+	iconv_t cd;
+
+	if ((cd = iconv_open("US-ASCII//TRANSLIT", "ISO-8859-1")) == (iconv_t) (-1))
+		exit(1);
+	exit(0);
+}],
+	AC_DEFINE(HAVE_ICONV_OPEN_TRANSLIT) AC_MSG_RESULT(yes),
+	AC_MSG_RESULT(no),
+	AC_MSG_RESULT(unknown)
 )
 
 CF_POSIX_JC
@@ -923,6 +940,7 @@ AC_FUNC_SETVBUF_REVERSED
 AC_CHECK_FUNCS(\
 	gai_strerror \
 	getaddrinfo \
+	gethostname \
 	gethostbyname \
 	getservbyname \
 	inet_addr \
@@ -1101,8 +1119,29 @@ DMALLOC)
 	;;
 esac
 
-### NLS (gettext plus bundled libintl for systems without one)
-CF_BUNDLED_INTL
+### Use gettext
+AM_GNU_GETTEXT
+if test "$USE_INCLUDED_LIBINTL" = yes ; then
+	CPPFLAGS="-I../intl $CPPFLAGS"
+	INTLDIR_MAKE=""
+	INTL_MAKEFILE="intl/Makefile"
+else
+	INTLDIR_MAKE='#'
+	INTL_MAKEFILE=""
+fi
+AC_SUBST(INTLDIR_MAKE)
+if test "$USE_NLS" = yes ; then
+	MSG_DIR_MAKE=""
+	PO_MAKEFILE="po/Makefile.in:po/Makefile.inn po/Makefile"
+else
+	MSG_DIR_MAKE="#"
+	PO_MAKEFILE=""
+fi
+AC_SUBST(MSG_DIR_MAKE)
+# tin has mkdirs.sh instead of mkinstalldirs, overwrite the result of test
+# in gettext.m4
+MKINSTALLDIRS="\$(top_srcdir)/mkdirs.sh"
+AC_SUBST(MKINSTALLDIRS)
 
 if test "$cf_cv_termlib" = pdcurses ; then
 	CF_PDCURSES_X11
@@ -1130,6 +1169,7 @@ CF_DEFINE_STRING(TIN_LD,       "$CC")
 CF_DEFINE_STRING(TIN_LDFLAGS,  "$LDFLAGS")
 CF_DEFINE_STRING(TIN_LIBS,     "$LIBS")
 
-AC_OUTPUT($SUB_MAKEFILE
-	$PCRE_MAKEFILE
+AC_OUTPUT($PCRE_MAKEFILE
+	$INTL_MAKEFILE
+	$PO_MAKEFILE
 	src/Makefile)

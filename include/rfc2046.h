@@ -2,8 +2,8 @@
  *  Project   : tin - a Usenet reader
  *  Module    : rfc2046.h
  *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
- *  Created   : 18/02/2000
- *  Updated   : 28/02/2000
+ *  Created   : 2000-02-18
+ *  Updated   : 2002-04-08
  *  Notes     : rfc2046 MIME article definitions
  *
  * Copyright (c) 2000-2002 Jason Faultless <jason@radar.tele2.co.uk>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Chris Blum.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -40,8 +37,8 @@
 #ifndef RFC2046_H
 #	define RFC2046_H 1
 
-/* The version of MIME we conform to - currently unused */
-#	define MIME_SUPPORTED_VERSION	1.0
+/* The version of MIME we conform to */
+#	define MIME_SUPPORTED_VERSION	"1.0"
 
 /* These must track the array definitions in lang.c */
 #	define NUM_CONTENT_TYPES	7
@@ -54,6 +51,8 @@
 #	define ENCODING_7BIT			0
 #	define ENCODING_QP			1
 #	define ENCODING_BASE64		2
+#	define ENCODING_8BIT			3
+#	define ENCODING_BINARY		4
 #	define ENCODING_UUE			5
 
 #	define DISP_INLINE			0

@@ -260,14 +260,13 @@ main (
 
 	/*
 	 * Load the local & global group specific attribute files
-	 * FIXME: is global attributes still needed? if so use TIN_DEFAULTS_DIR
 	 */
 	if (!batch_mode /* || (batch_mode && verbose)*/) /* FIXME: NLS support missing */
 		wait_message (0, _(txt_reading_attributes_file), _(txt_global));
-	read_attributes_file (global_attributes_file, TRUE);
+	read_attributes_file (TRUE);
 	if (!batch_mode /* || (batch_mode && verbose)*/)
 		wait_message (0, _(txt_reading_attributes_file), "");
-	read_attributes_file (local_attributes_file, FALSE);
+	read_attributes_file (FALSE);
 
 	/*
 	 * Read in users filter preferences file.
@@ -733,7 +732,7 @@ read_cmd_line_options (
 				"+MIME_STRICT_CHARSET "
 #else
 				"-MIME_STRICT_CHARSET "
-#endif /* MIME_BREAK_LONG_LINES */
+#endif /* MIME_STRICT_CHARSET */
 #ifdef CHARSET_CONVERSION
 				"+CHARSET_CONVERSION "
 #else
@@ -800,12 +799,11 @@ read_cmd_line_options (
 			get_newsrcname(newsrc, uts.nodename);
 #else
 			char nodenamebuf[32];
-#	ifdef M_AMIGA
-			my_strncpy (nodenamebuf, get_val ("NodeName", "PROBLEM_WITH_NODE_NAME"), sizeof (nodenamebuf));
-#	else
-			/* NeXT, Apollo */
+#	if defined(HAVE_GETHOSTNAME) && !defined (M_AMIGA)
 			(void) gethostname(nodenamebuf, sizeof(nodenamebuf));
-#	endif /* M_AMIGA */
+#	else
+			my_strncpy (nodenamebuf, get_val ("NodeName", "PROBLEM_WITH_NODE_NAME"), sizeof (nodenamebuf));
+#	endif /* HAVE_GETHOSTNAME && !M_AMIGA */
 			get_newsrcname(newsrc, nodenamebuf);
 #endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
 		}

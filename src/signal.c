@@ -116,7 +116,10 @@ static void _CDECL signal_handler (SIG_ARGS);
 
 int signal_context = cMain;
 int need_resize = cNo;
-int NOTESLINES;			/* # lines of useable area */
+/*
+ * # lines of non-static data available for display
+ */
+int NOTESLINES;
 
 
 #ifndef __LCLINT__ /* lclint doesn't like it */
@@ -192,7 +195,7 @@ static const struct {
 		return SIG_ERR;
 	return (osa.sa_handler);
 #else
-#	define RESTORE_HANDLER(x, y)  signal (x, y)
+#	define RESTORE_HANDLER(x, y)	signal (x, y)
 	return (signal (signum, func));
 #endif /* HAVE_POSIX_JC */
 }
@@ -497,6 +500,9 @@ set_signal_handlers (
 }
 
 
+/*
+ * Size the display at startup or rescale following a SIGWINCH etc.
+ */
 t_bool
 set_win_size (
 	int *num_lines,

@@ -3,7 +3,7 @@
  *  Module    : nntplib.h
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 1998-07-31
+ *  Updated   : 2002-04-09
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -17,9 +17,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
  * 4. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
@@ -96,14 +93,15 @@
 
 #define	OK_CANPOST		200	/* Hello; you can post */
 #define	OK_NOPOST		201	/* Hello; you can't post */
-#define	OK_NOIHAVE		202	/* Hello; you can't IHAVE */
+#define	OK_NOIHAVE		202	/* Hello; you can't IHAVE; discussed on the IETF-mailinglist */
 #define	OK_SLAVE		202	/* Slave status noted */
-#define	OK_NOPOSTIHAVE	203	/* Hello; you can't POST or IHAVE */
+#define	OK_NOPOSTIHAVE	203	/* Hello; you can't POST or IHAVE; iscussed on the IETF-mailinglist */
 #define	OK_GOODBYE		205	/* Closing connection */
 #define	OK_GROUP		211	/* Group selected */
 #define	OK_GROUPS		215	/* Newsgroups follow */
 #define	OK_MOTD			215	/* News motd follows */
 
+/* obsolete */
 #define	OK_XINDEX		218	/* Tin style index follows */
 
 #define	OK_ARTICLE		220	/* Article (head & body) follows */

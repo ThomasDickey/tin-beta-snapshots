@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 1997-12-31
+ *  Updated   : 2002-04-06
  *  Notes     : NNTP builtin version of inews
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -106,6 +103,10 @@ submit_inews (
 	int sender = 0;
 	t_bool ismail = FALSE;
 #	endif /* !FORGERY */
+#	ifdef USE_CANLOCK
+	t_bool can_lock_added = FALSE;
+#	endif /* USE_CANLOCK */
+
 
 	if ((fp = fopen (name, "r")) == (FILE *) 0) {
 		perror_message (_(txt_cannot_open), name);
@@ -140,7 +141,7 @@ submit_inews (
 		return ret_code;
 	}
 
-#ifndef FORGERY
+#	ifndef FORGERY
 	/*
 	 * we should only skip the gnksa_check_from() test if we are going to post
 	 * a forged cancel, but inews.c doesn't know anything about the message
@@ -153,7 +154,7 @@ submit_inews (
 		fclose (fp);
 		return ret_code;
 	}
-#endif /* !FORGERY */
+#	endif /* !FORGERY */
 
 	do {
 		rewind(fp);
@@ -208,7 +209,6 @@ submit_inews (
 		 * if it's present: use it.
 		 */
 		if (message_id[0] == '\0') {
-
 			/* simple syntax check - locate last '<' */
 			if ((ptr = strrchr (line, '<')) != (char *) 0) {
 				/* search next '>' */
@@ -217,8 +217,7 @@ submit_inews (
 					*++ptr2 = '\0';
 					/* check for @ and no whitespaces */
 					if ((strchr(ptr, '@') != (char *) 0) && (strpbrk(ptr, " \t") == (char *) 0))
-						/* copy Message-ID */
-						strcpy(message_id, ptr);
+						strcpy(message_id, ptr);	/* copy Message-ID */
 				}
 			}
 		}
@@ -253,6 +252,7 @@ submit_inews (
 					STRCPY(lock, lptr);
 					sprintf (line, "Cancel-Lock: %s", lock);
 					put_server (line);
+					can_lock_added = TRUE;
 				}
 			}
 #	endif /* USE_CANLOCK */
@@ -274,8 +274,25 @@ submit_inews (
 			if (line[0] == '.')
 				u_put_server (".");
 
-			u_put_server (line);
-			u_put_server ("\r\n");
+#	ifdef USE_CANLOCK
+			/* avoid dublicated Cancel-Lock: header */
+			if (line[0] == '\n')
+				can_lock_added = FALSE;	/* don't touch the body */
+
+			if (can_lock_added) {
+				ptr = strchr (line, ':');
+				if (ptr - line == 11 && !strncasecmp (line, "Cancel-Lock", 11)) {
+					; /* skip line */
+				} else {
+					u_put_server (line);
+					u_put_server ("\r\n");
+				}
+			} else
+#	endif /* USE_CANLOCK */
+			{
+				u_put_server (line);
+				u_put_server ("\r\n");
+			}
 		}
 
 		put_server (".");
@@ -304,7 +321,7 @@ submit_inews (
 
 	/*
 	 * FIXME: The displayed message may be wrong if authentication has
-	 * failed.  (The message will be sth. like "Authentication required"
+	 * failed. (The message will be sth. like "Authentication required"
 	 * which is not really wrong but misleading. The problem is that
 	 * authenticate() does only return a bool value and not the server
 	 * response.)
@@ -357,7 +374,7 @@ submit_news_file (
 	char *name,
 	char *a_message_id)
 {
-	char buf[LEN];
+	char buf[PATH_LEN];
 	char *cp = buf;
 	t_bool ret_code;
 	t_bool ismail = FALSE;
@@ -377,53 +394,49 @@ submit_news_file (
 	rfc15211522_encode(name, txt_mime_encodings[tinrc.post_mime_encoding], tinrc.post_8bit_header, ismail);
 
 #ifdef NNTP_INEWS
-	if (read_news_via_nntp && !read_saved_news && 0 == strcasecmp(tinrc.inews_prog, "--internal")) {
+	if (read_news_via_nntp && !read_saved_news && 0 == strcasecmp(tinrc.inews_prog, "--internal"))
 		ret_code = submit_inews (name, a_message_id);
-	} else
+	else
 #endif /* NNTP_INEWS */
 		{
 #ifdef M_UNIX
-		/* use 'inewsdir/inews -h' or tinrc.inews_prog or 'inews -h' */
-		if (*inewsdir) {
-			strcpy (buf, inewsdir);
-			strcat (buf, "/inews -h");
-		} else if (0 != strcasecmp(tinrc.inews_prog, "--internal"))
-			strcpy (buf, tinrc.inews_prog);
-		else
-			strcpy (buf, "inews -h");
-
-		cp += strlen (cp);
-
-		sh_format (cp, sizeof(buf) - (cp - buf), " < %s", name);
+			/* use tinrc.inews_prog or 'inewsdir/inews -h' 'inews -h' */
+			if (0 != strcasecmp(tinrc.inews_prog, "--internal"))
+				strncpy (buf, tinrc.inews_prog, sizeof(buf) - 1);
+			else {
+				if (*inewsdir)
+					joinpath(buf, inewsdir, "inews -h");
+				else
+					strcpy (buf, "inews -h");
+			}
+			cp += strlen(cp);
+			sh_format (cp, sizeof(buf) - (cp - buf), " < %s", name);
 #else
-		make_post_cmd (cp, name);
+			make_post_cmd (cp, name);
 #endif /* M_UNIX */
 
-		ret_code = invoke_cmd (buf);
+			ret_code = invoke_cmd (buf);
+
 #ifdef NNTP_INEWS
-		if (!ret_code && read_news_via_nntp && !read_saved_news && 0 != strcasecmp(tinrc.inews_prog, "--internal")) {
-			if (prompt_yn(cLINES, _(txt_post_via_builtin_inews), TRUE)) {
-				ret_code = submit_inews (name, a_message_id);
-				if (ret_code) {
-					if (prompt_yn(cLINES, _(txt_post_via_builtin_inews_only), TRUE) == 1)
-						strcpy(tinrc.inews_prog,"--internal");
+			if (!ret_code && read_news_via_nntp && !read_saved_news && 0 != strcasecmp(tinrc.inews_prog, "--internal")) {
+				if (prompt_yn(cLINES, _(txt_post_via_builtin_inews), TRUE)) {
+					ret_code = submit_inews (name, a_message_id);
+					if (ret_code) {
+						if (prompt_yn(cLINES, _(txt_post_via_builtin_inews_only), TRUE) == 1)
+							strcpy(tinrc.inews_prog,"--internal");
+					}
 				}
 			}
-		}
 #endif /* NNTP_INEWS */
-	}
-
+		}
 	return ret_code;
 }
 
 
 /*
- * FIXME: do _real_ RFC822-parsing - currently this is a quick hack
- *        to cover the most usual cases...
- *
  * returnvalues:  1 = Sender needed
  *                0 = no Sender needed
- *               -1 = error (no '.' and/or '@' in From)
+ *               -1 = error (no '.' and/or '@' in From) [unused]
  *               -2 = error (no '.' and/or '@' in Sender)
  */
 #if defined(NNTP_INEWS) && !defined(FORGERY)

@@ -34,23 +34,24 @@
 #	endif /* !TIN_H */
 #endif /* 0 */
 
-#ifdef CHARSET_CONVERSION
-#	ifndef HAVE_WORKING_NL_LANGINFO_CODESET
-#		define C_CODESET "US-ASCII"     /* Return this as the encoding of the
+#ifndef HAVE_LANGINFO_CODESET
+#	define C_CODESET "US-ASCII"     /* Return this as the encoding of the
 				  * C/POSIX locale. Could as well one day
 				  * become "UTF-8". */
 
-#		define digit(x) ((x) >= '0' && (x) <= '9')
+#	define digit(x) ((x) >= '0' && (x) <= '9')
 
 static char buf[16];
 
-char *tin_nl_langinfo(nl_item item)
+char *
+tin_nl_langinfo(
+	nl_item item)
 {
   char *l, *p;
-  
+
   if (item != CODESET)
     return NULL;
-  
+
   if (((l = getenv("LC_ALL"))   && *l) ||
       ((l = getenv("LC_CTYPE")) && *l) ||
       ((l = getenv("LANG"))     && *l)) {
@@ -107,12 +108,11 @@ char *tin_nl_langinfo(nl_item item)
   }
   return C_CODESET;
 }
-#	else
+#else
 char *
 tin_nl_langinfo(
 	nl_item item)
 {
 	return nl_langinfo(item);
 }
-#	endif /* !HAVE_WORKING_NL_LANGINFO_CODESET */
-#endif /* CHARSET_CONVERSION */
+#endif /* !HAVE_LANGINFO_CODESET */

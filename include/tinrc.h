@@ -92,11 +92,15 @@ struct t_config {
 	char maildir[PATH_LEN];				/* mailbox dir where = saves are stored */
 	int mailbox_format;					/* format of the mailbox (mboxo, mboxrd, mmdf, ...) */
 	char mail_address[HEADER_LEN];				/* user's mail address */
-	char mm_charset[LEN];				/* MIME charset: moved from rfc1522.c */
-#ifdef CHARSET_CONVERSION
-	char mm_local_charset[LEN];	/* local charset for displaying */
-	int mm_network_charset;			/* MIME charset */
-#endif /* CHARSET_CONVERSION */
+#ifndef CHARSET_CONVERSION
+	char mm_charset[LEN];				/* MIME charset */
+#else
+	int mm_network_charset;				/* MIME charset */
+#endif /* !CHARSET_CONVERSION */
+	char mm_local_charset[LEN];		/* display charset, not a rc/Menu-option anymore -> should be moved elsewhere */
+#ifdef HAVE_ICONV_OPEN_TRANSLIT
+	t_bool translit;						/* use //TRANSLIT */
+#endif /* HAVE_ICONV_OPEN_TRANSLIT */
 	char news_headers_to_display[LEN];	/* which headers to display */
 	char news_headers_to_not_display[LEN];	/* which headers to not display */
 	char news_quote_format[LEN];
@@ -125,6 +129,7 @@ struct t_config {
 	int post_mime_encoding;
 	int post_process;					/* type of post processing to be performed */
 	int reread_active_file_secs;		/* reread active file interval in seconds */
+	int scroll_lines;					/* # lines to scroll by in pager */
 	int show_author;					/* show_author value from 'M' menu in tinrc */
 	int sort_article_type;				/* method used to sort arts[] */
 	int sort_threads_type;				/* method used to sort base[] */
@@ -172,7 +177,6 @@ struct t_config {
 	t_bool confirm_to_quit;
 	t_bool draw_arrow;					/* draw -> or highlighted bar */
 	t_bool force_screen_redraw;			/* force screen redraw after external (shell) commands */
-	t_bool full_page_scroll;			/* page half/full screen of articles/groups */
 	t_bool group_catchup_on_exit;		/* catchup group with left arrow key or not */
 	t_bool info_in_last_line;
 	t_bool inverse_okay;
@@ -193,7 +197,6 @@ struct t_config {
 	t_bool quote_empty_lines;			/* quote empty lines, too */
 	t_bool quote_signatures;			/* quote signatures */
 	t_bool show_description;
-	t_bool show_last_line_prev_page;	/* set TRUE to see last line of prev page (ala nn) */
 	t_bool show_lines;
 	t_bool show_only_unread_arts;		/* show only new/unread arts or all arts */
 	t_bool show_only_unread_groups;		/* set TRUE to see only subscribed groups with new news */

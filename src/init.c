@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2001-11-10
+ *  Updated   : 2002-03-26
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -241,11 +238,15 @@ struct t_config tinrc = {
 	"",		/* maildir */
 	0,			/* mailbox_format */
 	"",		/* mail_address */
+#ifndef CHARSET_CONVERSION
 	"",		/* mm_charset, defaults to $MM_CHARSET */
-#ifdef CHARSET_CONVERSION
-	"",		/* mm_local_charset, defaults to mm_charset */
+#else
 	0,			/* mm_network_charset, defaults to US-ASCII */
-#endif /* CHARSET_CONVERSION */
+#endif /* !CHARSET_CONVERSION */
+	"", 		/* mm_local_charset, display charset */
+#ifdef HAVE_ICONV_OPEN_TRANSLIT
+	FALSE,	/* translit */
+#endif /* HAVE_ICONV_OPEN_TRANSLIT */
 	"Newsgroups Followup-To Summary Keywords X-Comment-To",		/* news_headers_to_display */
 	"",		/* news_headers_to_not_display */
 	"%F wrote:",		/* news_quote_format */
@@ -274,6 +275,7 @@ struct t_config tinrc = {
 	MIME_ENCODING_7BIT,		/* post_mime_encoding */
 	POST_PROC_NONE,			/* post_process */
 	REREAD_ACTIVE_FILE_SECS,	/* reread_active_file_secs */
+	1,		/* scroll_lines */
 	SHOW_FROM_NAME,				/* show_author */
 	SORT_ARTICLES_BY_DATE_ASCEND,		/* sort_article_type */
 	SORT_THREADS_BY_SCORE_DESCEND,		/* sort_threads_type */
@@ -325,7 +327,6 @@ struct t_config tinrc = {
 	FALSE,		/* draw_arrow */
 #endif /* USE_INVERSE_HACK */
 	FALSE,		/* force_screen_redraw */
-	TRUE,		/* full_page_scroll */
 	TRUE,		/* group_catchup_on_exit */
 	FALSE,		/* info_in_last_line */
 #ifdef USE_INVERSE_HACK
@@ -350,7 +351,6 @@ struct t_config tinrc = {
 	TRUE,		/* quote_empty_lines */
 	FALSE,		/* quote_signatures */
 	TRUE,		/* show_description */
-	FALSE,		/* show_last_line_prev_page */
 	TRUE,		/* show_lines */
 	TRUE,		/* show_only_unread_arts */
 	FALSE,		/* show_only_unread_groups */
@@ -380,8 +380,8 @@ struct t_config tinrc = {
 	FALSE,		/* use_keypad */
 #endif /* HAVE_KEYPAD */
 #ifdef HAVE_METAMAIL
-	TRUE,		/* ask_for_metamail */
-	TRUE,		/* use_metamail */
+	FALSE,		/* ask_for_metamail */
+	FALSE,		/* use_metamail */
 #endif /* HAVE_METAMAIL */
 	FALSE,		/* default_filter_kill_case */
 	FALSE,		/* default_filter_kill_expire */
@@ -680,7 +680,7 @@ init_selfinfo (
 
 	/*
 	 * the site_confog-file was the last chance to set the domainname
-	 *  if it's still unset exit tin.
+	 * if it's still unset exit tin.
 	 */
 	if (domain_name[0] == '\0') {
 		error_message (txt_error_no_domain_name);
@@ -688,10 +688,10 @@ init_selfinfo (
 	}
 
 	/*
-	 * only set the following variables, if they weren't set from
-	 * within read_site_config()
+	 * only set the following variables if they weren't set from within
+	 * read_site_config()
 	 */
-	if (!*news_active_file)
+	if (!*news_active_file) /* TODO: really prepend libdir here in case of $TIN_ACTIVEFILE is set? */
 		joinpath (news_active_file, libdir, get_val ("TIN_ACTIVEFILE", ACTIVE_FILE));
 	if (!*active_times_file)
 		joinpath (active_times_file, libdir, ACTIVE_TIMES_FILE);
@@ -717,8 +717,23 @@ init_selfinfo (
 	/*
 	 * Formerly get_mm_charset(), read_site_config() may set mm_charset
 	 */
+#ifndef CHARSET_CONVERSION
 	STRCPY(tinrc.mm_charset, get_val("MM_CHARSET", MM_CHARSET));
+#else
+	{
+		char *foo;
+		size_t space = 255;
 
+		foo = my_malloc(space);
+		strcpy (foo, "mm_network_charset=");
+		space -= strlen(foo);
+		strncat(foo, get_val("MM_CHARSET", MM_CHARSET), space);
+		if ((space -= strlen(foo)) > 0) {
+			strncat(foo, "\n", space);
+			match_list(foo, "mm_network_charset=", txt_mime_charsets, NUM_MIME_CHARSETS, &tinrc.mm_network_charset);
+		}
+	}
+#endif /* !CHARSET_CONVERSION */
 	/* read_site_config() might have changed the value of libdir */
 	/* FIXME: we'd better use TIN_DEFAULTS_DIR instead of TIN_LIBDIR here */
 	joinpath (global_attributes_file, libdir, ATTRIBUTES_FILE);
@@ -810,7 +825,7 @@ init_selfinfo (
 #endif /* HAVE_LONG_FILE_NAMES */
 
 #ifdef NNTP_ABLE
-	nntp_tcp_port = (unsigned short) atoi (get_val ("NNTPPORT", NNTP_TCP_PORT));
+	nntp_tcp_port = (unsigned short) atoi(get_val("NNTPPORT", NNTP_TCP_PORT));
 #endif /* NNTP_ABLE */
 
 	if (stat (posted_info_file, &sb) == -1) {
@@ -959,8 +974,13 @@ read_site_config (
 			continue;
 		if (match_string (buf, "organization=", default_organization, sizeof (default_organization)))
 			continue;
+#ifndef CHARSET_CONVERSION
 		if (match_string (buf, "mm_charset=", tinrc.mm_charset, sizeof (tinrc.mm_charset)))
 			continue;
+#else
+		if (match_list (buf, "mm_charset=", txt_mime_charsets, NUM_MIME_CHARSETS, &tinrc.mm_network_charset))
+			continue;
+#endif /* !CHARSET_CONVERSION */
 		if (match_list (buf, "post_mime_encoding=", txt_mime_encodings, NUM_MIME_ENCODINGS, &tinrc.post_mime_encoding))
 			continue;
 		if (match_list (buf, "mail_mime_encoding=", txt_mime_encodings, NUM_MIME_ENCODINGS, &tinrc.mail_mime_encoding))

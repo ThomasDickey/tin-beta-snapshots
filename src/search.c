@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 1997-12-27
+ *  Updated   : 2002-04-03
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea, Rich Skrenta.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -41,11 +38,6 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
-
-/*
- * Hold the last pattern used
- */
-static char tmpbuf[LEN];
 
 /*
  * local prototypes
@@ -84,7 +76,9 @@ get_search_pattern (
 	char *def,
 	int which_hist)
 {
-	sprintf (tmpbuf, (forward ? fwd_msg : bwd_msg), def);
+	static char tmpbuf[LEN];	/* Hold the last pattern used */
+
+	sprintf(tmpbuf, (forward ? fwd_msg : bwd_msg), def);
 
 	if (!prompt_string_default(tmpbuf, def, _(txt_no_search_string), which_hist))
 		return NULL;
@@ -186,7 +180,7 @@ search_active (
 		 * Get the group name & description into buf2
 		 */
 		if (show_description && active[my_group[i]].description) {
-			sprintf (buf2, "%s %s", active[my_group[i]].name, active[my_group[i]].description);
+			snprintf (buf2, sizeof(buf2) - 1, "%s %s", active[my_group[i]].name, active[my_group[i]].description);
 			ptr = buf2;
 		} else
 			ptr = active[my_group[i]].name;
@@ -220,10 +214,8 @@ body_search (
 	if (!read_news_via_nntp || CURR_GROUP.type != GROUP_TYPE_NEWS)
 		make_group_path (CURR_GROUP.name, group_path);
 
-	sprintf(mesg, _(txt_searching_body), ++curr_cnt, total_cnt);
-
 	memset (&artinfo, 0, sizeof(t_openartinfo));
-	switch (art_open (TRUE, &arts[i], group_path, &artinfo)) {
+	switch (art_open (TRUE, &arts[i], group_path, &artinfo, FALSE)) {
 		case ART_ABORT:					/* User 'q'uit */
 			art_close (&artinfo);
 			return -1;
@@ -243,6 +235,8 @@ body_search (
 	/*
 	 * Now search the body
 	 */
+	sprintf(mesg, _(txt_searching_body), ++curr_cnt, total_cnt);
+	show_progress (mesg, curr_cnt, total_cnt);
 	while ((line = tin_fgets (artinfo.cooked, FALSE)) != (char *) 0) {
 		if (tinrc.wildcard) {
 			if (pcre_exec (srch_regex.re, srch_regex.extra, line, strlen(line), 0, 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
@@ -273,7 +267,7 @@ body_search (
 	}
 
 	art_close (&artinfo);
-	info_message (_(txt_no_match));
+/*	info_message (MATCH_MSG); */
 	return 0;
 }
 
@@ -358,7 +352,7 @@ search_group (
 
 	} while (i != current_art);
 
-	info_message (MATCH_MSG);
+	info_message (_(txt_no_match));
 	return -1;
 }
 

@@ -988,13 +988,13 @@ read_keymap_file (
 						ret = FALSE;
 						continue;
 					}
-					key = ctrl (keydef[1]);
+					key = ctrl(keydef[1]);
 					break;
 				case 'S':		/* Only test 1st char - crude but effective */
 					key = ' ';
 					break;
 				case 'T':
-					key = ctrl ('I');
+					key = ctrl('I');
 					break;
 				default:
 					fprintf (stderr, _(txt_keymap_invalid_key), keydef);

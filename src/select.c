@@ -311,8 +311,8 @@ selection_page (
 			case iKeyOptionMenu:	/* option menu */
 				(void) change_config_file(NULL);
 				free_attributes_array ();
-				read_attributes_file (global_attributes_file, TRUE);
-				read_attributes_file (local_attributes_file, FALSE);
+				read_attributes_file (TRUE);
+				read_attributes_file (FALSE);
 				show_selection_page ();
 				break;
 

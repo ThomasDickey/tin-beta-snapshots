@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea, Rich Skrenta.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -65,6 +62,8 @@ static char *print_from (struct t_article *article);
 static int artnum_comp (t_comptype p1, t_comptype p2);
 static int date_comp (t_comptype p1, t_comptype p2);
 static int from_comp (t_comptype p1, t_comptype p2);
+static int global_get_multiparts (int aindex, MultiPartInfo **malloc_and_setme_info);
+static int global_look_for_multipart_info (int aindex, MultiPartInfo* setme, char start, char stop, int *offset);
 static int read_nov_file (struct t_group *group, long min, long max, int *expired);
 static int read_group (struct t_group *group, char *group_path, int *pcount);
 static int score_comp (t_comptype p1, t_comptype p2);
@@ -75,8 +74,6 @@ static t_bool parse_headers (FILE *fp, struct t_article *h);
 static void print_expired_arts (int num_expired);
 static void thread_by_subject (void);
 static void thread_by_multipart (void);
-static int global_look_for_multipart_info (int aindex, MultiPartInfo* setme, char start, char stop, int *offset);
-static int global_get_multiparts (int aindex, MultiPartInfo **malloc_and_setme_info);
 #ifdef THREAD_SUM
 	static void sort_base (unsigned int sort_threads_type);
 	static int score_comp_base (t_comptype p1, t_comptype p2);
@@ -101,7 +98,7 @@ show_art_msg(
  * If we are showing only unread, then point to the first unread. I have
  * no idea why this should be so, it causes problems elsewhere [which_response]
  * .inthread is set on each article that is after the first article in the
- * thread.  Articles which have been expired have their .thread set to
+ * thread. Articles which have been expired have their .thread set to
  * ART_EXPIRED
  */
 void
@@ -218,7 +215,7 @@ index_group (
 	if (tinrc.use_getart_limit) {
 		if (tinrc.getart_limit > 0) {
 			if (grpmenu.max && (grpmenu.max > tinrc.getart_limit))
-				min = base[grpmenu.max-tinrc.getart_limit];
+				min = base[grpmenu.max - tinrc.getart_limit];
 		} else if (tinrc.getart_limit < 0) {
 			long first_unread = find_first_unread(group);
 			if (min - first_unread < tinrc.getart_limit)
@@ -338,7 +335,7 @@ find_first_unread (
 
 
 /*
- * Index a group.  Assumes any existing NOV index has already been loaded.
+ * Index a group. Assumes any existing NOV index has already been loaded.
  * Return values are:
  *    1   loaded index and modified it
  *    0   loaded index but not modified
@@ -370,7 +367,7 @@ read_group (
 	}
 
 	/*
-	 *  Count num of arts to index so the user has an idea of index time
+	 * Count num of arts to index so the user has an idea of index time
 	 */
 	for (i = 0; i < grpmenu.max; i++) {
 		if (base[i] <= last_read_article || valid_artnum (base[i]) >= 0)
@@ -389,9 +386,9 @@ read_group (
 		art = base[i];
 
 		/*
-		 *  Do we already have this article in our index?  Change
-		 *  arts[].thread from ART_EXPIRED to ART_NORMAL and skip
-		 *  reading the header.
+		 * Do we already have this article in our index? Change
+		 * arts[].thread from ART_EXPIRED to ART_NORMAL and skip
+		 * reading the header.
 		 */
 		if ((respnum = valid_artnum (art)) >= 0 || art <= last_read_article) {
 			if (respnum >= 0)
@@ -412,7 +409,7 @@ read_group (
 		modified = 1;
 
 		/*
-		 *  Add article to arts[]
+		 * Add article to arts[]
 		 */
 		if (top_art >= max_art)
 			expand_art();
@@ -518,9 +515,9 @@ thread_by_subject (
 	fprintf(stderr, "%3s %3s %3s %3s : %3s %3s\n", "#", "Par", "Sib", "Chd", "In", "Thd");
 	for (i = 0; i < top_art; i++) {
 		fprintf(stderr, "%3d %3d %3d %3d : %3d %3d : %.50s %s\n", i,
-			(arts[i].refptr->parent)  ? arts[i].refptr->parent->article : -2,
+			(arts[i].refptr->parent) ? arts[i].refptr->parent->article : -2,
 			(arts[i].refptr->sibling) ? arts[i].refptr->sibling->article : -2,
-			(arts[i].refptr->child)   ? arts[i].refptr->child->article : -2,
+			(arts[i].refptr->child) ? arts[i].refptr->child->article : -2,
 			arts[i].inthread, arts[i].thread, arts[i].refptr->txt, arts[i].subject);
 	}
 #endif /* 0 */
@@ -788,9 +785,7 @@ make_threads (
 	 *	If using ref threading, revector the links back to the articles
 	 */
 	if (rethread || (group->attribute && group->attribute->thread_arts)) {
-
 		for (i = 0; i < top_art; i++) {
-
 			if (arts[i].thread != ART_EXPIRED)
 				arts[i].thread = ART_NORMAL;
 
@@ -849,22 +844,27 @@ sort_arts (
 		case SORT_ARTICLES_BY_NOTHING:		/* don't sort at all */
 			SortBy(artnum_comp);
 			break;
+
 		case SORT_ARTICLES_BY_SUBJ_DESCEND:
 		case SORT_ARTICLES_BY_SUBJ_ASCEND:
 			SortBy(subj_comp);
 			break;
+
 		case SORT_ARTICLES_BY_FROM_DESCEND:
 		case SORT_ARTICLES_BY_FROM_ASCEND:
 			SortBy(from_comp);
 			break;
+
 		case SORT_ARTICLES_BY_DATE_DESCEND:
 		case SORT_ARTICLES_BY_DATE_ASCEND:
 			SortBy(date_comp);
 			break;
+
 		case SORT_ARTICLES_BY_SCORE_DESCEND:
 		case SORT_ARTICLES_BY_SCORE_ASCEND:
 			SortBy(score_comp);
 			break;
+
 		default:
 			break;
 	}
@@ -936,12 +936,14 @@ parse_headers (
 					}
 				}
 				break;
+
 			case 'D':	/* Date:  mandatory */
 				if (!h->date) {
 					if ((hdr = parse_header (ptr + 1, "ate", FALSE)))
 						h->date = parsedate (hdr, (struct _TIMEINFO *) 0);
 				}
 				break;
+
 			case 'F':	/* From:  mandatory */
 				if (!got_from) {
 					if ((hdr = parse_header (ptr + 1, "rom", FALSE))) {
@@ -953,6 +955,7 @@ parse_headers (
 					}
 				}
 				break;
+
 			case 'L':	/* Lines:  optional */
 				if (!got_lines) {
 					if ((hdr = parse_header (ptr + 1, "ines", FALSE))) {
@@ -961,12 +964,14 @@ parse_headers (
 					}
 				}
 				break;
+
 			case 'M':	/* Message-ID:  mandatory */
 				if (!h->msgid) {
 					if ((hdr = parse_header (ptr + 1, "essage-ID", FALSE)))
 						h->msgid = my_strdup (hdr);
 				}
 				break;
+
 			case 'R':	/* References:  optional */
 				if (!h->refs) {
 					if ((hdr = parse_header (ptr + 1, "eferences", FALSE)))
@@ -981,20 +986,23 @@ parse_headers (
 					}
 				}
 				break;
+
 			case 'S':	/* Subject:  mandatory */
 				if (!h->subject) {
 					if ((hdr = parse_header (ptr + 1, "ubject", FALSE))) {
-						s = eat_re (eat_tab(rfc1522_decode(hdr)), FALSE);
+						s = eat_re(eat_tab(rfc1522_decode(hdr)), FALSE);
 						h->subject = hash_str (s);
 					}
 				}
 				break;
+
 			case 'X':	/* Xref:  optional */
 				if (!h->xref) {
 					if ((hdr = parse_header (ptr + 1, "ref", FALSE)))
 						h->xref = my_strdup (hdr);
 				}
 				break;
+
 			default:
 				break;
 		} /* switch */
@@ -1028,20 +1036,20 @@ parse_headers (
 
 
 /*
- *  Read in an Nov/Xover index file. Fields are separated by TAB.
- *  return the new value of 'top_art' or -1 if user quit partway.
+ * Read in an Nov/Xover index file. Fields are separated by TAB.
+ * return the new value of 'top_art' or -1 if user quit partway.
  *
- *  Format:
- *    1.  article number (ie. 183)                [mandatory]
- *    2.  Subject: line  (ie. Which newsreader?)  [mandatory]
- *    3.  From: line     (ie. iain@ecrc.de)       [mandatory]
- *    4.  Date: line     (rfc822 format)          [mandatory]
- *    5.  MessageID:     (ie. <123@ether.net>)    [mandatory]
- *    6.  References:    (ie. <message-id> ....)  [mandatory]
- *    7.  Byte count     (Skipped - not used)     [mandatory]
- *    8.  Lines: line    (ie. 23)                 [optional]
- *    9.  Xref: line     (ie. alt.test:389)       [optional]
- *   10.  Archive-name:  (ie. widget/part01)      [optional]
+ * Format:
+ * 	 1.  article number (ie. 183)                [mandatory]
+ * 	 2.  Subject: line  (ie. Which newsreader?)  [mandatory]
+ * 	 3.  From: line     (ie. iain@ecrc.de)       [mandatory]
+ * 	 4.  Date: line     (rfc822 format)          [mandatory]
+ * 	 5.  MessageID:     (ie. <123@ether.net>)    [mandatory]
+ * 	 6.  References:    (ie. <message-id> ....)  [mandatory]
+ * 	 7.  Byte count     (Skipped - not used)     [mandatory]
+ * 	 8.  Lines: line    (ie. 23)                 [optional]
+ * 	 9.  Xref: line     (ie. alt.test:389)       [optional]
+ * 	10.  Archive-name:  (ie. widget/part01)      [optional]
  */
 static int
 read_nov_file (
@@ -1062,14 +1070,14 @@ read_nov_file (
 	*expired = 0;
 
 	/*
-	 *  Call ourself recursively to read the cached overview file, if we are
-	 *  supposed to be doing NNTP caching and we aren't already the recursive
-	 *  instance.  (Turn off read_news_via_nntp while we're recursing so we
-	 *  will know we're recursing while we're doing it.)  If there aren't
-	 *  any new articles, just return, without going on to read the NNTP
-	 *  overview file.  If we're going to read from NNTP, adjust min to the
-	 *  next article past last_read_article; there's no reason to read them
-	 *  from NNTP if they're cached locally.
+	 * Call ourself recursively to read the cached overview file, if we are
+	 * supposed to be doing NNTP caching and we aren't already the recursive
+	 * instance. (Turn off read_news_via_nntp while we're recursing so we
+	 * will know we're recursing while we're doing it.) If there aren't
+	 * any new articles, just return, without going on to read the NNTP
+	 * overview file. If we're going to read from NNTP, adjust min to the
+	 * next article past last_read_article; there's no reason to read them
+	 * from NNTP if they're cached locally.
 	 */
 	if (tinrc.cache_overview_files && read_news_via_nntp && xover_supported && group->type == GROUP_TYPE_NEWS) {
 		read_news_via_nntp = FALSE;
@@ -1307,18 +1315,18 @@ read_nov_file (
 
 
 /*
- *  Write an Nov/Xover index file. Fields are separated by TAB.
+ * Write an Nov/Xover index file. Fields are separated by '\t'.
  *
- *  Format:
- *    1.  article number (ie. 183)                [mandatory]
- *    2.  Subject: line  (ie. Which newsreader?)  [mandatory]
- *    3.  From: line     (ie. iain@ecrc.de)       [mandatory]
- *    4.  Date: line     (rfc822 format)          [mandatory]
- *    5.  MessageID:     (ie. <123@ether.net>)    [optional]
- *    6.  References:    (ie. <message-id> ....)  [mandatory]
- *    7.  Byte count     (Skipped - not used)     [mandatory]
- *    8.  Lines: line    (ie. 23)                 [mandatory]
- *    9.  Xref: line     (ie. alt.test:389)       [optional]
+ * Format:
+ * 	1. article number (ie. 183)                [mandatory]
+ * 	2. Subject: line  (ie. Which newsreader?)  [mandatory]
+ * 	3. From: line     (ie. iain@ecrc.de)       [mandatory]
+ * 	4. Date: line     (rfc822 format)          [mandatory]
+ * 	5. MessageID:     (ie. <123@ether.net>)    [mandatory]
+ * 	6. References:    (ie. <message-id> ....)  [optional]
+ * 	7. Byte count     (Skipped - not used)     [mandatory]
+ * 	8. Lines: line    (ie. 23)                 [mandatory]
+ * 	9. Xref: line     (ie. alt.test:389)       [optional]
  */
 void
 write_nov_file (
@@ -1378,7 +1386,6 @@ write_nov_file (
 				fprintf (fp, "%ld\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
 					article->artnum,
 					tinrc.post_8bit_header ? article->subject : rfc1522_encode(article->subject, FALSE),
-/*					rfc1522_encode(article->subject, FALSE), */
 					print_from (article),
 					print_date (article->date),
 					(article->msgid ? article->msgid : ""),
@@ -1401,15 +1408,15 @@ write_nov_file (
 
 
 /*
- *  A complex little function to determine where to read the index file
- *  from and where to write it.
+ * A complex little function to determine where to read the index file
+ * from and where to write it.
  *
- *  GROUP_TYPE_MAIL index files are read/written in ~/.tin/.mail
+ * GROUP_TYPE_MAIL index files are read/written in ~/.tin/.mail
  *
- *  GROUP_TYPE_SAVE index files are read/written in ~/.tin/.save
+ * GROUP_TYPE_SAVE index files are read/written in ~/.tin/.save
  *
- *  GROUP_TYPE_NEWS index files are a little bit more complex :(
- *  READ:
+ * GROUP_TYPE_NEWS index files are a little bit more complex :(
+ * READ:
  *    if  reading via NNTP
  *       path = TMPDIR/num.idx
  *       hash = FALSE
@@ -1422,7 +1429,7 @@ write_nov_file (
  *       path = ~/.tin/.news
  *       hash = TRUE
  *
- *  WRITE:
+ * WRITE:
  *    if  SPOOLDIR/group/name writable
  *       path = SPOOLDIR/group/name/.overview
  *       hash = FALSE
@@ -1433,11 +1440,11 @@ write_nov_file (
  *       path = ~/.tin/.news
  *       hash = TRUE
  *
- *  If hash = TRUE the index filename will be in format number.number.
- *  Hashing the groupname gets a number. See if that #.1 file exists;
- *  if so, read first line. Is this the group we want? If no, try #.2.
- *  Repeat until no such file or we find an existing file that matches
- *  our group. Return pointer to path or NULL if not found.
+ * If hash = TRUE the index filename will be in format number.number.
+ * Hashing the groupname gets a number. See if that #.1 file exists;
+ * if so, read first line. Is this the group we want? If no, try #.2.
+ * Repeat until no such file or we find an existing file that matches
+ * our group. Return pointer to path or NULL if not found.
  */
 char *
 find_nov_file (
@@ -1466,10 +1473,12 @@ find_nov_file (
 			dir = index_maildir;
 			hash_filename = TRUE;
 			break;
+
 		case GROUP_TYPE_SAVE:
 			dir = index_savedir;
 			hash_filename = TRUE;
 			break;
+
 		case GROUP_TYPE_NEWS:
 			if (read_news_via_nntp && xover_supported && !tinrc.cache_overview_files)
 				snprintf (nov_file, sizeof(nov_file) - 1, "%s%d.idx", TMPDIR, (int) process_id);
@@ -1486,6 +1495,7 @@ find_nov_file (
 				}
 			}
 			break;
+
 		default: /* not reached */
 			break;
 	}
@@ -1525,7 +1535,7 @@ find_nov_file (
 
 
 /*
- *  Run the index file updater only for the groups we've loaded.
+ * Run the index file updater only for the groups we've loaded.
  */
 void
 do_update (
@@ -1852,8 +1862,12 @@ print_from (
 
 	*from = '\0';
 
-	if (article->name != (char *) 0)
-		snprintf (from, sizeof(from) - 1, "%s <%s>", tinrc.post_8bit_header ? article->name : rfc1522_encode(article->name, FALSE), article->from);
+	if (article->name != (char *) 0) {
+		if (strpbrk(article->name, "\".:;<>@[]()\\") != NULL && article->name[0] != '"' && article->name[strlen(article->name)] != '"')
+			snprintf (from, sizeof(from) - 1, "\"%s\" <%s>", tinrc.post_8bit_header ? article->name : rfc1522_encode(article->name, FALSE), article->from);
+		else
+			snprintf (from, sizeof(from) - 1, "%s <%s>", tinrc.post_8bit_header ? article->name : rfc1522_encode(article->name, FALSE), article->from);
+	}
 	else
 		STRCPY (from, article->from);
 

@@ -445,9 +445,12 @@ make_help_page (
 		return;
 
 	while (helppage->helptext) {
-		if (helppage->key == 0)
-			snprintf (buf, sizeof(buf), "%s", _(helppage->helptext));
-		else
+		if (helppage->key == 0) {
+			if (strlen(helppage->helptext))
+				snprintf (buf, sizeof(buf), "%s", _(helppage->helptext));
+			else /* avoid zero length translations */
+				snprintf (buf, sizeof(buf), "%s", helppage->helptext);
+		} else
 			snprintf (buf, sizeof(buf), "%s\t  %s",
 				printascii (key, map_to_local (helppage->key, menukeys)),
 				_(helppage->helptext));
@@ -644,6 +647,6 @@ toggle_mini_help (
 	int level)
 {
 	tinrc.beginner_level = bool_not(tinrc.beginner_level);
-	set_win_size (&cLINES, &cCOLS);
+	set_noteslines (cLINES);
 	show_mini_help (level);
 }

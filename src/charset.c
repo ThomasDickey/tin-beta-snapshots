@@ -335,7 +335,7 @@ convert_to_printable (
 
 	for (c = (unsigned char *) buf; *c; c++) {
 #ifdef ENABLE_MBLEN
-		if (!my_isprint(*c) && (t_len = mblen((const char *)c, MAX(2,MB_CUR_MAX))) <= 1)
+		if (!my_isprint(*c) && (t_len = mblen((const char *) c, MAX(2,MB_CUR_MAX))) <= 1)
 			*c = '?';
 		while (--t_len > 0)
 			c++;
@@ -363,7 +363,7 @@ convert_body2printable (
 
 	for (c = (unsigned char *)buf; *c; c++) {
 #ifdef ENABLE_MBLEN
-		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13) && (t_len = mblen((const char *)c, MAX(2,MB_CUR_MAX))) <= 1)
+		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13) && (t_len = mblen((const char *) c, MAX(2,MB_CUR_MAX))) <= 1)
 			*c = '?';
 		while (--t_len > 0)
 			c++;

@@ -259,7 +259,7 @@ color_fputs (
 
 	for (p = s; *p; p++) {
 		if (*p == '*' || *p == '_') {
-			if (! hilite) {
+			if (!hilite) {
 				if ((p == s || !isgraph((unsigned char)p[-1]))
 						&& check_valid_mark(p)) {
 					hilite = TRUE;

@@ -132,9 +132,9 @@ my_strftime (
 			strcpy(tbuf, days_l[timeptr->tm_wday]);
 			break;
 
-#ifdef SYSV_EXT
+#	ifdef SYSV_EXT
 		case 'h':	/* abbreviated month name */
-#endif /* SYSV_EXT */
+#	endif /* SYSV_EXT */
 		case 'b':	/* abbreviated month name */
 			strcpy(tbuf, months_a[timeptr->tm_mon]);
 			break;
@@ -219,7 +219,7 @@ my_strftime (
 			sprintf(tbuf, "%d", timeptr->tm_year + 1900);
 			break;
 
-#ifdef SYSV_EXT
+#	ifdef SYSV_EXT
 		case 'n':	/* same as \n */
 			tbuf[0] = '\n';
 			tbuf[1] = '\0';
@@ -249,7 +249,7 @@ my_strftime (
 		case 'T':	/* time as %H:%M:%S */
 			my_strftime(tbuf, sizeof tbuf, "%H:%M:%S", timeptr);
 			break;
-#endif /* SYSV_EXT */
+#	endif /* SYSV_EXT */
 
 		default:
 			tbuf[0] = '%';

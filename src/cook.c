@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   :
+ *  Updated   : 2002-04-10
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2002 Jason Faultless <jason@radar.tele2.co.uk>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Jason Faultless
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -62,8 +59,8 @@
 static void put_cooked (t_bool wrap_lines, int flags, const char *fmt, ...);
 static void set_rest (char **rest, const char *ptr);
 static int put_rest (char **rest, char *dest, int max_line_len);
-static int read_decoded_base64_line (FILE *file, char *line, const int max_line_len, const int max_lines_to_read, const char *charset, char **rest);
-static int read_decoded_qp_line (FILE *file, char *line, const int max_line_len, const int max_lines_to_read, const char *charset, char **rest);
+static int read_decoded_base64_line (FILE *file, char *line, const int max_line_len, const int max_lines_to_read, char **rest);
+static int read_decoded_qp_line (FILE *file, char *line, const int max_line_len, const int max_lines_to_read, char **rest);
 static t_part *new_uue (t_part **part, char *name);
 static void process_text_body_part (t_bool wrap_lines, FILE *in, t_part *part);
 static t_bool header_wanted (const char *line);
@@ -306,7 +303,6 @@ read_decoded_base64_line (
 	char *line,
 	const int max_line_len,
 	const int max_lines_to_read,
-	const char *charset,
 	char **rest)
 {
 	char *dest = line;
@@ -371,7 +367,7 @@ read_decoded_base64_line (
 			return max_lines_to_read;
 		}
 		lines_read++;
-		count = mmdecode (buf, 'b', '\0', buf2, charset);
+		count = mmdecode (buf, 'b', '\0', buf2);
 		buf2[count] = '\0';
 		ptr = &buf2[0];
 		while ((c = *ptr++) && (c != '\n') && (put_chars < (max_line_len - 2))) {
@@ -413,7 +409,6 @@ read_decoded_qp_line (
 	char *line,							/* where to copy the decoded line */
 	const int max_line_len,			/* maximum line length  */
 	const int max_lines_to_read,	/* don't read more physical lines than told here */
-	const char *charset,				/* local charset */
 	char **rest)						/* rest of line if line is too small */
 {
 	char *buf, *buf2, *endptr;
@@ -509,7 +504,7 @@ read_decoded_qp_line (
 	 */
 	buf2 = my_malloc (strlen(buf) + 1);
 	if (buf2)
-		count = mmdecode (buf, 'q', '\0', buf2, charset);
+		count = mmdecode (buf, 'q', '\0', buf2);
 	else
 		count = -1;
 
@@ -598,64 +593,41 @@ process_text_body_part(
 	FILE *in,
 	t_part *part)
 {
-	const char *charset;
 	char *line;
 	char *rest = NULL;
 	char buf[LEN], to[LEN];
 	int flags, len, lines_left;
-	t_bool decode = TRUE;
 	t_bool in_sig = FALSE;			/* Set when in sig portion */
 	t_bool in_uue = FALSE;			/* Set when in uuencoded section */
 	t_part *curruue = NULL;
 
 	fseek(in, part->offset, SEEK_SET);
 
-	if ((charset = get_param(part->params, "charset")) == NULL)
-		decode = FALSE;				/* Impossible in practice, since it defaults */
-
 	if (part->encoding == ENCODING_BASE64)
-		(void) mmdecode(NULL, 'b', 0, NULL, NULL);		/* flush */
+		(void) mmdecode(NULL, 'b', 0, NULL);		/* flush */
 
 	lines_left = part->line_count;
 	while ((lines_left > 0) || rest) {
 		switch (part->encoding) {
 			case ENCODING_BASE64:
-				lines_left -= read_decoded_base64_line (in, buf, sizeof(buf), lines_left, charset, &rest);
+				lines_left -= read_decoded_base64_line (in, buf, sizeof(buf), lines_left, &rest);
 				line = buf;
 				break;
 
 			case ENCODING_QP:
-				lines_left -= read_decoded_qp_line (in, buf, sizeof(buf), lines_left, charset, &rest);
+				lines_left -= read_decoded_qp_line (in, buf, sizeof(buf), lines_left, &rest);
 				line = buf;
 				break;
 
 			default:
-				line = fgets (buf, (int) sizeof (buf), in);
+				line = fgets (buf, (int) sizeof(buf), in);
 				lines_left--;
-#if defined(MIME_STRICT_CHARSET) && !defined(CHARSET_CONVERSION)
-				if (charset && strcasecmp(charset, tinrc.mm_charset)) { /* different charsets */
-					char *c = line;
-					while (*c != '\0') {
-						if ((unsigned char) *c >= 128)
-							*c = '?';
-						c++;
-					}
-				}
-#endif /* MIME_STRICT_CHARSET && !CHARSET_CONVERSION */
 				break;
 		}
 		if (!(line && strlen(line)))
 			break;	/* premature end of file, file error etc. */
 
-#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
-		if (decode)
-			buffer_to_local (line);
-#else
-#	ifdef CHARSET_CONVERSION
-		if (decode)
-			 buffer_to_local (line, charset, tinrc.mm_local_charset);
-#	endif /* CHARSET_CONVERSION */
-#endif /* LOCAL_CHARSET || MAC_OS_X */
+		process_charsets (line, get_param(part->params, "charset"), tinrc.mm_local_charset);
 
 		/*
 		 * Detect and skip signatures if necessary
@@ -772,19 +744,13 @@ process_text_body_part(
 			convert_tex2iso (texbuf, line);
 		}
 
-		if (iso2asc_supported >= 0) {
-			char isobuf[LEN];
-			strcpy (isobuf, line);
-			convert_iso2asc (isobuf, line, iso2asc_supported);
-		}
-
-#if 1
-/* Basically: if (!(my_isprint(*c) || *c==8 || *c==9 || *c==12)) */
-/* How about if !isprint() && !isctrl() - expand_ctrl_chars is done at display time */
-		convert_body2printable (line);
-#endif /* 1 */
-/* TODO integrate above into expand_ctrl_chars */
-
+/*
+ * Basically: if (!(my_isprint(*c) || *c==8 || *c==9 || *c==12))
+ * How about if !isprint() && !isctrl() - expand_ctrl_chars is done at
+ * display time.
+ * TODO: integrate into expand_ctrl_chars
+ */
+		convert_body2printable(line);
 		if (expand_ctrl_chars (to, line, sizeof(to), cook_width))
 			flags |= C_CTRLL;				/* Line contains form-feed */
 
@@ -962,7 +928,7 @@ cook_article(
 					0, "",
 					content_types[hdr->ext->type], hdr->ext->subtype,
 					content_encodings[hdr->ext->encoding], hdr->ext->line_count,
-					(name)? _(", name: ") : "", (name) ? name : "");	/* FIXME: -> lang.c */
+					(name) ? _(", name: ") : "", (name) ? name : "");	/* FIXME: -> lang.c */
 		}
 	}
 
@@ -971,7 +937,7 @@ cook_article(
 #endif /* DEBUG_ART */
 
 	if (art->cooked_lines > 0)
-		art->cookl = my_realloc ((char *)art->cookl, sizeof(t_lineinfo) * art->cooked_lines);
+		art->cookl = my_realloc ((char *) art->cookl, sizeof(t_lineinfo) * art->cooked_lines);
 
 	rewind(art->cooked);
 

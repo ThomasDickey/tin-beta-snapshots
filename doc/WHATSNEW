@@ -37,6 +37,8 @@ New Features
 . batch_save (tinrc and attribute) can now be used to control which groups
   are affected by tin -S, -N, -M. See the manpage.
 
+. configurable scrolling via scroll_lines
+
 Changes
 -------
 
@@ -67,3 +69,6 @@ Retired Features
 
 . display_mime_header_asis, display_mime_allheader_asis
   By default the pager decodes headers. Use ^H to toggle to undecoded view
+
+. full_page_scroll and show_last_line_prev_page have been superceded by
+  scroll_lines

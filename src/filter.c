@@ -511,13 +511,13 @@ read_filter_file (
 
 		case 'x':
 			if (match_string (buf + 1, "ref=", xref, sizeof (xref))) {
-				if (arr_ptr && ! expired_time)
+				if (arr_ptr && !expired_time)
 					arr_ptr[i].xref = my_strdup (xref);
 
 				break;
 			}
 			if (match_integer (buf + 1, "ref_max=", &xref_max, 1000)) {
-				if (arr_ptr && ! expired_time)
+				if (arr_ptr && !expired_time)
 					arr_ptr[i].xref_max = xref_max;
 
 				break;
@@ -998,22 +998,22 @@ filter_menu (
 				case 0:
 				case 4:
 					rule.msgid_ok = FALSE;
-					rule.fullref  = FILTER_MSGID;
+					rule.fullref = FILTER_MSGID;
 					break;
 
 				case 1:
 					rule.msgid_ok = TRUE;
-					rule.fullref  = FILTER_MSGID;
+					rule.fullref = FILTER_MSGID;
 					break;
 
 				case 2:
 					rule.msgid_ok = TRUE;
-					rule.fullref  = FILTER_MSGID_LAST;
+					rule.fullref = FILTER_MSGID_LAST;
 					break;
 
 				case 3:
 					rule.msgid_ok = TRUE;
-					rule.fullref  = FILTER_MSGID_ONLY;
+					rule.fullref = FILTER_MSGID_ONLY;
 					break;
 
 				default: /* should not happen */

@@ -1,13 +1,43 @@
--- 1.5.12 release 20020227 "" --
+-- 1.5.12 release 20020410 "Sugar" --
+
+U098) Marc Brockschmidt <marc@marcbrockschmidt.de>
+      Urs Janssen <urs@tin.org>
+      ADD. tinews.pl - external inews replacement which does pgp signing
+      FIX. tinews.pl
+
+U097) Igor Goryachev <rudeboy@pisem.net>
+      BUG. %C (firstname) and %I (initials) couldn't handle surnames
+      FIX. misc.c
+
+U096) Guido Ostkamp <Guido.Ostkamp@t-online.de>
+      BUG. possible buffer overflow in search_active()
+      FIX. search.c
+
+U095) Jason Faultless <jason@radar.tele2.co.uk>
+      ADD. attrib cleanup, error reporting
+      ADD. scroll_lines pager tuning control
+      REM. show_last_line_prev_page, full_page_scroll
+      FIX. tin.1, tin.5, extern.h, proto.h, tinrc.h, active.c, config.c
+           global.c, help.c, init.c, lang.c, main.c, page.c, select.c
+           signal.c, tincfg.tbl
+
+ 038) Urs Janssen <urs@tin.org>
+      ADD. new TLDs .coop and .aero
+      REM. obsolete TLD .zr, .fx, and .uucp
+      BUG. typo fixed
+      BUG. missing Subject caused crashes when followupping
+      FIX. autoconf.h[in], policy.h. misc.c
 
 U094) Dirk Nimmich <nimmich@muenster.de>
       BUG. didn't ignore \r after softbreaks in qp-articles
-      FIX. cook.c
+      BUG. progress meter in group body search was broken
+      FIX. cook.c, feed.c, page.c, rfc2046.c, save.c, search.c
 
 U093) Philip Paeps <philip@paeps.cx>
       Urs Janssen <urs@tin.org>
       ADD. configure check for strcasestr
-      FIX. configure[.in], autoconf.h[in], proto.h, string.c
+      BUG. pgp-actions in mail_loop might crash
+      FIX. configure[.in], autoconf.h[in], proto.h, post.c, string.c
 
 U092) Toomas Soome <tsoome@ut.ee>
       BUG. get_fqdn() might return a domainname with a tailing \n
@@ -20,13 +50,21 @@ U091) Andreas Metzler <tin-dev@downhill.at.eu.org>
       BUG. typo in CA_ERROR_MISSING_NEWSGROUPS error-message
       ADD. some missing german translations
       REM. $SPAMTRAP
-      FIX. inews.c, lang.c, post.c, de.po, en_GB.po, et.po, TODO, tin.1
+      ADD. gettext update (0.10.35 -> 0.10.40)
+      FIX. Makefile, aclocal.m4, configure[.in], autoconf.h[in], inews.c
+           lang.c, post.c, de.po, en_GB.po, et.po, TODO, tin.1, intl/*
 
 U090) Olaf Dietrich <olaf@dtrx.de>
       ADD. ignore MIME_STRICT_CHARSET if iconv(3) is available
       ADD. new ^L-handling
+      ADD. replace untranslatable multibyte chars with one ? instead
+           of one for each byte.
+      ADD. MIME_STRICT_CHARSET + buffer_to_local() cleanup
       BUG. decode_save_one() didn't honor MIME_STRICT_CHARSET
-      FIX. proto.h, cook.c, page.c, rfc2047.c, search.c, tin.1
+      BUG. --with-local-charset= was broken
+      BUG. rfc1522_decode() can't handle multiple charsets/line
+      FIX. configure[.in], proto.h, cook.c, main.c, misc.c, page.c, post.c
+           rfc2046.c, rfc2047.c, save.c, search.c, tin.1
 
 U089) Urs Janssen <urs@tin.org>
       ADD. moved some var-declarations out of loops
@@ -34,11 +72,14 @@ U089) Urs Janssen <urs@tin.org>
       ADD. "No match"-message for unsuccessful-body searches
       ADD. check for sys/pool.h
       ADD. tinrc.mailbox_format
+      ADD. tinrc.translit
       ADD. mmdf(5)-man page
-      ADD. new TLDs .coop and .aero
       ADD. install rtin-man page
       ADD. automatically set mm_local_charset to current local charset
-      REM. obsolete TLD .zr, .fx, and .uucp
+      ADD. made match_item() caseinsensitive
+      ADD. turned default for ask_for_metamail and use_metamail to off
+      ADD. tin(1,5)-man page updates
+      ADD. prefer inews_prog over INEWSDIR/inews -h
       REM. --enable-mmdf-mailer, HAVE_MBOXRD, save_to_mmdf_mailbox
       REM. check for OK_NOIHAVE, OK_NOPOSTIHAVE responses to MODE READER,
            they are no loner mentioned in the draft
@@ -47,12 +88,21 @@ U089) Urs Janssen <urs@tin.org>
            never trust your local guru!)
       BUG. strfpath()-called with uninitialized group-pointer
       BUG. possible bufferoverruns due to missing string-termination
-      FIX. Makefile, Makefile.in, configure[.in], autoconf.h[in], extern.h
-           policy.h, proto.h, tin.h, tinrc.h, art.c, config.c, cook.c, init.c
-           keymap.c, lang.c, langinfo.c, mimetypes.c, misc.c, nrctbl.c, open.c
-           page.c, post.c, refs.c, rfc1524.c, rfc2045.c, rfc2046.c, save.c
-           tags.c, tincfg.tbl, mbox.5, mmdf.5, tin.1, tin.5, config.guess
-           config.sub
+      BUG. sometimes illegal From-fields were written to
+           local cached overviews
+      BUG. missing From caused crashes when replying
+      BUG. match_string() doesn't allow emtpy strings (U048)
+      BUG. dublicated Cancel-Lock in rare cases
+      BUG. eat_re() could modify subject in aborted posts
+      BUG. unknown Content-Transfer-Encodings defaulted to 7bit instead of
+           binary
+      FIX. Makefile, Makefile.in, configure[.in], autoconf.h[in], aclocal.m4
+           extern.h, policy.h, proto.h, rfc2046.h, tin.h, tinrc.h, active.c
+           art.c, config.c, cook.c, header.c, help.c, inews.c, init.c
+           keymap.c, lang.c, langinfo.c, main.c, mimetypes.c, misc.c
+           nntplib.c, nrctbl.c, open.c, page.c, post.c, refs.c, rfc1524.c
+           rfc2045.c, rfc2046.c, save.c, tags.c, tincfg.tbl, mbox.5, mmdf.5
+           tin.1, tin.5, config.guess, config.sub
 
 -- 1.5.11 release 20020130 "Toxicity" --
 
@@ -77,7 +127,7 @@ U085) Andreas Metzler <tin-dev@downhill.at.eu.org>
       ADD. tex2iso_cov menu/tinrc/attributes-item
       BUG. gpg didn't append pub.key
       ADD. allow user specified wildcard-mailcaps to override
-           system wide-exact ones
+           system wide exact ones
       FIX. INSTALL, TODO, tin.1, tin.5, tin.defaults, extern.h, tin.h, tinrc.h
            attrib.c, config.c, cook.c, init.c, lang.c, page.c, pgp.c
            rfc1524.c, rfc2046.c, tincfg.tbl, de.po, en_GB.po, et.po, tin.pot

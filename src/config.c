@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2001-11-10
+ *  Updated   : 2002-03-25
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -98,7 +95,7 @@ check_upgrade (
 
 
 /*
- *  read local & global configuration defaults
+ * read local & global configuration defaults
  */
 t_bool
 read_config_file (
@@ -123,7 +120,7 @@ read_config_file (
 			continue;
 		}
 
-		switch(tolower((unsigned char)buf[0])) {
+		switch(tolower((unsigned char) buf[0])) {
 		case 'a':
 			if (match_boolean (buf, "add_posted_to_filter=", &tinrc.add_posted_to_filter))
 				break;
@@ -419,9 +416,6 @@ read_config_file (
 			if (match_boolean (buf, "force_screen_redraw=", &tinrc.force_screen_redraw))
 				break;
 
-			if (match_boolean (buf, "full_page_scroll=", &tinrc.full_page_scroll))
-				break;
-
 			break;
 
 		case 'g':
@@ -490,18 +484,15 @@ read_config_file (
 				break;
 			}
 
+#ifndef CHARSET_CONVERSION
 			if (match_string (buf, "mm_charset=", tinrc.mm_charset, sizeof (tinrc.mm_charset)))
 				break;
-
-#ifdef CHARSET_CONVERSION
-#	if 0 /* disabled */
-			if (match_string (buf, "mm_local_charset=", tinrc.mm_local_charset, sizeof (tinrc.mm_local_charset)))
+#else
+			if (match_list (buf, "mm_charset=", txt_mime_charsets, NUM_MIME_CHARSETS, &tinrc.mm_network_charset))
 				break;
-#	endif /* 0 */
-
 			if (match_list (buf, "mm_network_charset=", txt_mime_charsets, NUM_MIME_CHARSETS, &tinrc.mm_network_charset))
 				break;
-#endif /* CHARSET_CONVERSION */
+#endif /* !CHARSET_CONVERSION */
 
 			if (match_boolean (buf, "mark_saved_read=", &tinrc.mark_saved_read))
 				break;
@@ -645,7 +636,7 @@ read_config_file (
 			if (match_integer (buf, "sort_threads_type=", &tinrc.sort_threads_type, SORT_THREADS_BY_SCORE_ASCEND))
 				break;
 
-			if (match_boolean (buf, "show_last_line_prev_page=", &tinrc.show_last_line_prev_page))
+			if (match_integer (buf, "scroll_lines=", &tinrc.scroll_lines, 0))
 				break;
 
 			if (match_boolean (buf, "show_lines=" , &tinrc.show_lines))
@@ -697,6 +688,11 @@ read_config_file (
 
 			if (match_boolean (buf, "thread_catchup_on_exit=", &tinrc.thread_catchup_on_exit))
 				break;
+
+#ifdef HAVE_ICONV_OPEN_TRANSLIT
+			if (match_boolean (buf, "translit=", &tinrc.translit))
+				break;
+#endif /* HAVE_ICONV_OPEN_TRANSLIT */
 
 			break;
 
@@ -775,8 +771,12 @@ read_config_file (
 	if (!(tinrc.draw_arrow || tinrc.inverse_okay))
 		tinrc.draw_arrow = TRUE;
 
-#ifdef CHARSET_CONVERSION
+	/*
+	 * determine local charset, or in case of NO_LOCALE use
+	 * mm{_network}_charset
+	 */
 	{
+#ifndef NO_LOCALE
 		char *p;
 
 		if ((p = tin_nl_langinfo(CODESET)) != NULL) {
@@ -785,11 +785,14 @@ read_config_file (
 			else
 				strcpy(tinrc.mm_local_charset, p);
 		} else
-		if (!*tinrc.mm_local_charset)
-			strcpy(tinrc.mm_local_charset, tinrc.mm_charset);
+#endif /* !NO_LOCALE */
+			if (!*tinrc.mm_local_charset)
+#ifndef CHARSET_CONVERSION
+				strcpy(tinrc.mm_local_charset, tinrc.mm_charset);
+#else
+				strcpy(tinrc.mm_local_charset, txt_mime_charsets[tinrc.mm_network_charset]);
+#endif /* !CHARSET_CONVERSION */
 	}
-#endif /* CHARSET_CONVERSION */
-
 	return TRUE;
 }
 
@@ -805,6 +808,11 @@ write_config_file (
 	char *file_tmp;
 	int i;
 
+	/*
+	 * TODO: is logic correct? shouldn't that be:
+	 * if (no_write || post_article_and_exit || post_postponed_and_exit)
+	 * 	return;
+	 */
 	if (no_write && !(post_article_and_exit || post_postponed_and_exit) && file_size (file) != -1L)
 		return;
 
@@ -885,11 +893,8 @@ write_config_file (
 	fprintf (fp, _(txt_tab_after_X_selection.tinrc));
 	fprintf (fp, "tab_after_X_selection=%s\n\n", print_boolean (tinrc.tab_after_X_selection));
 
-	fprintf (fp, _(txt_full_page_scroll.tinrc));
-	fprintf (fp, "full_page_scroll=%s\n\n", print_boolean (tinrc.full_page_scroll));
-
-	fprintf (fp, _(txt_show_last_line_prev_page.tinrc));
-	fprintf (fp, "show_last_line_prev_page=%s\n\n", print_boolean (tinrc.show_last_line_prev_page));
+	fprintf (fp, _(txt_scroll_lines.tinrc));
+	fprintf (fp, "scroll_lines=%d\n\n", tinrc.scroll_lines);
 
 	fprintf (fp, _(txt_catchup_read_groups.tinrc));
 	fprintf (fp, "catchup_read_groups=%s\n\n", print_boolean (tinrc.catchup_read_groups));
@@ -909,13 +914,13 @@ write_config_file (
 
 	fprintf (fp, _(txt_news_headers_to_display.tinrc));
 	fprintf (fp, "news_headers_to_display=");
-	for (i = 0; i<num_headers_to_display; i++)
+	for (i = 0; i < num_headers_to_display; i++)
 		fprintf (fp, "%s ", news_headers_to_display_array[i]);
 	fprintf (fp, "\n\n");
 
 	fprintf (fp, _(txt_news_headers_to_not_display.tinrc));
 	fprintf (fp, "news_headers_to_not_display=");
-	for (i = 0; i<num_headers_to_not_display; i++)
+	for (i = 0; i < num_headers_to_not_display; i++)
 		fprintf (fp, "%s ", news_headers_to_not_display_array[i]);
 	fprintf (fp, "\n\n");
 
@@ -1178,18 +1183,18 @@ write_config_file (
 	fprintf (fp, _(txt_mail_address.tinrc));
 	fprintf (fp, "mail_address=%s\n\n", tinrc.mail_address);
 
+#ifndef CHARSET_CONVERSION
 	fprintf (fp, _(txt_mm_charset.tinrc));
 	fprintf (fp, "mm_charset=%s\n\n", tinrc.mm_charset);
-
-#ifdef CHARSET_CONVERSION
-#	if 0
-	fprintf (fp, _(txt_mm_local_charset.tinrc));
-	fprintf (fp, "mm_local_charset=%s\n\n", tinrc.mm_local_charset);
-#	endif /* 0 */
-
+#else
 	fprintf (fp, _(txt_mm_network_charset.tinrc));
 	fprintf (fp, "mm_network_charset=%s\n\n", txt_mime_charsets[tinrc.mm_network_charset]);
-#endif /* CHARSET_CONVERSION */
+#endif /* !CHARSET_CONVERSION */
+
+#ifdef HAVE_ICONV_OPEN_TRANSLIT
+	fprintf (fp, _(txt_translit.tinrc));
+	fprintf (fp, "translit=%s\n\n", print_boolean(tinrc.translit));
+#endif /* HAVE_ICONV_OPEN_TRANSLIT */
 
 /* Not on Option Menu */
 #ifdef LOCAL_CHARSET
@@ -1382,21 +1387,26 @@ print_any_option (
 		case OPT_ON_OFF:
 			snprintf(ptr, len, "%s", print_boolean(*OPT_ON_OFF_list[option_table[act_option].var_index]));
 			break;
+
 		case OPT_LIST:
 			list = option_table[act_option].opt_list;
 			ptr2 = my_strdup (list[*(option_table[act_option].variable) + ((strcasecmp(_(list[0]), _(txt_default)) == 0) ? 1 : 0)]);
 			snprintf(ptr, len, "%s", _(ptr2));
 			free(ptr2);
 			break;
+
 		case OPT_STRING:
 			snprintf(ptr, len, "%s", OPT_STRING_list[option_table[act_option].var_index]);
 			break;
+
 		case OPT_NUM:
 			snprintf(ptr, len, "%d", *(option_table[act_option].variable));
 			break;
+
 		case OPT_CHAR:
 			snprintf(ptr, len, "%c", *OPT_CHAR_list[option_table[act_option].var_index]);
 			break;
+
 		default:
 			break;
 	}
@@ -1421,7 +1431,7 @@ static void
 print_option (
 	enum option_enum the_option)
 {
-	print_any_option((int)the_option);
+	print_any_option((int) the_option);
 }
 
 
@@ -1667,7 +1677,7 @@ change_config_file (
 					option = 0;
 					first_option_on_screen = 0;
 				} else {
-					first_option_on_screen -= option_lines_per_page;
+					first_option_on_screen -= (tinrc.scroll_lines == -2) ? option_lines_per_page / 2 : option_lines_per_page;
 					ClearScreen ();
 					show_config_page ();
 				}
@@ -1678,7 +1688,7 @@ change_config_file (
 			case iKeyPageDown2:
 			case iKeyPageDown3:
 				unhighlight_option (option);
-				first_option_on_screen += option_lines_per_page;
+				first_option_on_screen += (tinrc.scroll_lines == -2) ? option_lines_per_page / 2 : option_lines_per_page;
 				if (first_option_on_screen > LAST_OPT)
 					first_option_on_screen = 0;
 
@@ -1832,7 +1842,6 @@ change_config_file (
 						 * case OPT_SAVE_TO_MMDF_MAILBOX:
 						 * case OPT_SHOW_LINES:
 						 * case OPT_SHOW_SCORE:
-						 * case OPT_SHOW_LAST_LINE_PREV_PAGE:
 						 * case OPT_SHOW_ONLY_UNREAD_GROUPS:
 						 * case OPT_SHOW_XCOMMENTTO:
 						 * case OPT_HIDE_UUE:
@@ -1857,6 +1866,9 @@ change_config_file (
 						 * case OPT_KEEP_DEAD_ARTICLES:
 #ifdef HAVE_COLOR
 						 * case OPT_WORD_HIGHLIGHT_TINRC:
+#endif
+#ifdef HAVE_ICONV_OPEN_TRANSLIT
+						 * case OPT_TRANSLIT:
 #endif
 						 */
 
@@ -1962,10 +1974,6 @@ change_config_file (
 						case OPT_MAILER_FORMAT:
 #ifndef CHARSET_CONVERSION
 						case OPT_MM_CHARSET:
-#else
-#	if 0 /* we don't need this anymore due to autodetection */
-						case OPT_MM_LOCAL_CHARSET:
-#	endif /* 0 */
 #endif /* !CHARSET_CONVERSION */
 						case OPT_MAIL_QUOTE_FORMAT:
 						case OPT_NEWS_QUOTE_FORMAT:
@@ -2122,6 +2130,7 @@ change_config_file (
 						case OPT_GETART_LIMIT:
 						case OPT_RECENT_TIME:
 						case OPT_GROUPNAME_MAX_LENGTH:
+						case OPT_SCROLL_LINES:
 						case OPT_FILTER_DAYS:
 							prompt_option_num (option);
 							break;
@@ -2347,7 +2356,7 @@ match_string (
 	char *ptr;
 	size_t patlen = strlen (pat);
 
-	if (STRNCMPEQ(line, pat, patlen) && (strlen(line) > patlen + 1)) {
+	if (STRNCMPEQ(line, pat, patlen) && (strlen(line) > patlen /* + 1 */)) {
 		strncpy (dst, &line[patlen], dstlen);
 		if ((ptr = strrchr (dst, '\n')) != (char *) 0)
 			*ptr = '\0';
@@ -2372,7 +2381,7 @@ match_item (
 
 	nline[strlen(nline) -1] = '\0'; /* remove tailing \n */
 
-	if (STRCMPEQ(nline, pat)) {
+	if (!strcasecmp(nline, pat)) {
 		strncpy (dst, &nline[patlen], dstlen);
 		if ((ptr = strrchr (dst, '\n')) != (char *) 0)
 			*ptr = '\0';

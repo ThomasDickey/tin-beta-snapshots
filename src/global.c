@@ -69,7 +69,7 @@ _page_up (
 	if (curslot == 0)
 		return (maxslot - 1);
 
-	scroll_lines = (tinrc.full_page_scroll ? NOTESLINES : NOTESLINES / 2);
+	scroll_lines = (tinrc.scroll_lines == -2) ? NOTESLINES / 2 : NOTESLINES;
 
 	if ((n = curslot % scroll_lines) > 0)
 		curslot -= n;
@@ -93,7 +93,7 @@ _page_down (
 	if (curslot == maxslot - 1)
 		return 0;
 
-	scroll_lines = (tinrc.full_page_scroll ? NOTESLINES : NOTESLINES / 2);
+	scroll_lines = (tinrc.scroll_lines == -2) ? NOTESLINES / 2 : NOTESLINES;
 
 	curslot = ((curslot + scroll_lines) / scroll_lines) * scroll_lines;
 

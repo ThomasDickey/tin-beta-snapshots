@@ -675,6 +675,10 @@ enum resizer { cNo, cYes, cRedraw };
 #define DEFAULT_STRIP_RE_REGEX	"(?:R[eE](?:\\^\\d+|\\[\\d\\])?|A[wW]|Odp|Sv):\\s"
 /* case sensitive */
 #define DEFAULT_STRIP_WAS_REGEX	".\\((?:[Ww]a[rs]|[Bb]y[l³]o):.*\\)\\s*$"
+/*
+ * overkill regexp for balanced '()':
+ * #define DEFAULT_STRIP_WAS_REGEX  ".\\((?:[Ww]a[rs]|[Bb]y[l³]o):(?:(?:[^)(])*(?:\\([^)(]*\\))*)+\\)\\s*$"
+ */
 
 /* case insensitive & ^-anchored */
 #define UUBEGIN_REGEX	"begin\\s+[0-7]{3,4}\\s+"
@@ -694,6 +698,8 @@ enum resizer { cNo, cYes, cRedraw };
 /*
  * case insensitive
  * split out ftp (only ftp allows username:passwd@, RFC 1738)?
+ *
+ * NOTE: the "-(?!-)" assertion must be removed when IDN is introduced
  */
 #if 0 /* this one is ok for IPv4 */
 #	define URL_REGEX	"\\b(?:https?|ftp|gopher)://(?:[^:@/]*(?::[^:@/]*)?@)?(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?\\.)+[a-z]{2,6}\\.?|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
@@ -2117,7 +2123,7 @@ extern struct tm *localtime(time_t *);
 #endif /* __GNUC__ && !__APPLE_CC__ */
 
 /* can we use mblen()? */
-#if defined(HAVE_MBLEN) && defined(HAVE_SETLOCALE) && defined(MB_CUR_MAX) && !defined (NO_LOCALE)
+#if defined(HAVE_MBLEN) && defined(HAVE_SETLOCALE) && defined(MB_CUR_MAX) && !defined(NO_LOCALE)
 #	define ENABLE_MBLEN 1
 #endif /* HAVE_MBLEN && HAVE_SETLOCALE && MB_CUR_MAX && !NO_LOCALE */
 

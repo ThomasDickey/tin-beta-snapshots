@@ -578,7 +578,7 @@ my_strerror (
 	if (n >= 0 && n < sys_nerr)
 		return sys_errlist[n];
 #	endif /* HAVE_SYS_ERRLIST */
-	sprintf(temp, "Errno: %i", n);
+	sprintf(temp, "Errno: %d", n);
 	return temp;
 }
 #endif /* !HAVE_STRERROR */

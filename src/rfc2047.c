@@ -2,8 +2,8 @@
  *  Project   : tin - a Usenet reader
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
- *  Created   : September '95
- *  Updated   : 1998-04-05
+ *  Created   : 1995-09-01
+ *  Updated   : 2002-04-10
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2002 Chris Blum <chris@resolution.de>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Chris Blum.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -41,6 +38,9 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
+#ifndef RFC2046_H
+#	include "rfc2046.h"
+#endif /* !RFC2046_H */
 
 #define isreturn(c) ((c) == '\r' || ((c) == '\n'))
 
@@ -123,16 +123,9 @@ mmdecode (
 	const char *what,
 	int encoding,
 	int delimiter,
-	char *where,
-	const char *charset)
+	char *where)
 {
 	char *t;
-	t_bool decode_gt128 = FALSE;
-
-#if defined(MIME_STRICT_CHARSET) && !defined(CHARSET_CONVERSION)
-	if (charset && !strcasecmp(charset, tinrc.mm_charset))
-#endif /* MIME_STRICT_CHARSET && !CHARSET_CONVERSION*/
-		decode_gt128 = TRUE;
 
 	t = where;
 	encoding = tolower((unsigned char)encoding);
@@ -164,8 +157,6 @@ mmdecode (
 			if (hi == 255 || lo == 255)
 				return -1;
 			x = (hi << 4) + lo;
-			if (x >= 128 && !decode_gt128)
-				x = '?';
 			*EIGHT_BIT(t)++ = x;
 		}
 		return t - where;
@@ -190,8 +181,6 @@ mmdecode (
 			bits += 6;
 			if (bits >= 8) {
 				x = (pattern >> (bits - 8)) & 0xff;
-				if (x >= 128 && !decode_gt128)
-					x = '?';
 				*t++ = x;
 				bits -= 8;
 			}
@@ -221,6 +210,12 @@ rfc1522_decode (
 	charset[0] = '\0';
 	c = s;
 	t = buffer;
+
+	/*
+	 * remove non-ASCII chars if MIME_STRICT_CHARSET is set
+	 * must be changed if UTF-8 becomes default charset for headers
+	 */
+	process_charsets(c, "US-ASCII", tinrc.mm_local_charset);
 
 	while (*c && t - buffer < 2048) {
 		if (*c != '=') {
@@ -252,16 +247,18 @@ rfc1522_decode (
 				c++;
 				encoding = tolower((unsigned char)*c);
 				if (encoding == 'b')
-					(void) mmdecode((char *) 0, 'b', 0, (char *) 0, (char *) 0);		/* flush */
+					(void) mmdecode((char *) 0, 'b', 0, (char *) 0);	/* flush */
 				c++;
 				if (*c == '?') {
 					c++;
 					if ((e = strchr(c, '?'))) {
 						int i;
 
-						i = mmdecode(c, encoding, '?', t, charset);
+						i = mmdecode(c, encoding, '?', t);
 						if (i > 0) {
-							t += i;
+							*(t + i) = '\0';
+							process_charsets(t, charset, tinrc.mm_local_charset);
+							t += strlen(t);
 							e++;
 							if (*e == '=')
 								e++;
@@ -276,14 +273,6 @@ rfc1522_decode (
 			*t++ = *d++;
 	}
 	*t = '\0';
-
-#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
-	buffer_to_local(buffer);
-#else
-#	ifdef CHARSET_CONVERSION
-	buffer_to_local(buffer, charset, tinrc.mm_local_charset);
-#	endif /* CHARSET_CONVERSION */
-#endif /* LOCAL_CHARSET || MAC_OS_X */
 
 	return buffer;
 }
@@ -834,7 +823,7 @@ rfc15211522_encode (
 	if (umlauts)
 #endif /* 0 */
 	{
-		fputs("MIME-Version: 1.0\n", f);
+		fprintf(f, "MIME-Version: %s\n", MIME_SUPPORTED_VERSION);
 		if (body_encoding_needed) {
 		/* added for CJK charsets like EUC-KR/JP/CN and others */
 #ifdef CHARSET_CONVERSION

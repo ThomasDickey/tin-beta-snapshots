@@ -320,7 +320,7 @@ group=de.newusers.questions
 type=0
 case=1
 score=-100
-refs_only=.*[^@\s]+@\S+(?<!akk3\.akk\.uni-karlsruhe\.de)>$
+refs_only=.*<[^@\s]+@\S+(?<!akk3\.akk\.uni-karlsruhe\.de)>$
 
 
 7. TODO

@@ -1,28 +1,29 @@
 Bugs
 ----
-o  running multiple tin in paralell (each connected to a different
+o  when p'|'ping multiple files ('T'agged) screen is defaced
+   [20020305 Urs Janssen <urs@tin.org>]
+
+o  running multiple tins in parallel (each connected to a different
    server) will trash all newnews=timestamps (and other configchanges)
    except the last form the formaly running tins on quit.
    same problem with .oldnewsrc
    [20020215 Mario Holbe <Mario.Holbe@RZ.TU-Ilmenau.DE>]
-   appending $NNTPSERVER (like for the overview-cache) (to .tin-dir)
-   would be a good, a extra field for specifying .tin-dir in rewsrctbl
-   a better solution. [Urs]
+   having $NNTPSERVER[:$NNTPPORT]-subdirs (or something defined via an extra
+   field in newsrctbl) below .tin-dir for each server (and port) would be a
+   good solution.
 
-o  attributes are ignore for mail-actions (except mail_to_author()) cause
+o  $NNTPSERVER is only appended to $TIN_INDEX_NEWSDIR if -g cmd-line
+   option is used, we should change that and always append it to avoid using
+   a wrong cache after changing $NNTPSERVER...
+
+o  attributes are ignored for mail-actions (except mail_to_author()) cause
    mail_loop() doesn't know the group we are in.
    [20020211 Andreas Metzler <tin-dev@downhill.at.eu.org>]
 
 o  posting with --enable-break-long-lines and !7bit chars in From:
    doesn't work if encoded line is > 76 chars (gnksa-check doesn't
    allow \n in From)
-   [20020212 Urs Janﬂen <urs@tin.org>]
-
-o  The percentage indicator shown when searching article bodies uses
-   lines/article not total number of lines or total number of article;
-   not very usefull (and thus "time remaining" indicator isn't very
-   usefull too).
-   [20020203 Sebastian Bork <sebi@sebi.org>]
+   [20020212 Urs Janssen <urs@tin.org>]
 
 o  The "time remaining" is not only updated on the screen when it
    changes, but constantly, leading to a very slow behaviour on a
@@ -30,15 +31,15 @@ o  The "time remaining" is not only updated on the screen when it
    [20020203 Sebastian Bork <sebi@sebi.org>]
 
 o  mailing_list attribute is ignored on no posting servers in select level
-   [Urs Janﬂen <urs@tin.org>]
+   [Urs Janssen <urs@tin.org>]
 
 o  'u' etc.pp. may leed to a 'crash' due to which_thread() returning -1
    if no (unread) articles are left. which_response() exits in that case,
    not very userfriendly.
-   [20010905 Urs Janﬂen <urs@tin.org>]
+   [20010905 Urs Janssen <urs@tin.org>]
 
 o  incorrect nested boundaries in multipart articles hang tin
-   [20010804 Urs Janﬂen <urs@tin.org>]
+   [20010804 Urs Janssen <urs@tin.org>]
 
 o  -S, -N and -M cmd-line switches are broken (again)
    -S doesn't create subdirs, thus saving fails
@@ -49,9 +50,9 @@ o  lines which are exatly cCOLS wide introduce an extra \n in the pager
    [20010628 Urs Janssen <urs@tin.org>]
 
 o  reusing p'o'stponed articles in mailing_list groups doesn't work
-   (difficult to fix, postponed art no longer has a Newsgroups-header
-    and just looking for To: (instead) might give wrong results. besides
-    this it would need a bigger rewrite of the related code)
+   (possible fix: store Newsgroups (and other infos) via msg_add_header()
+    (to overwrite any old values) in X-Tin-Postponed:-header and remove it
+    before posting.)
    [20010623 Urs Janssen <urs@tin.org>]
 
 o  mismatching cached overview data (higher article numbers than on the
@@ -123,15 +124,18 @@ o  Changes to int/bool tinrc variables in the Option Menu don't propogate
    properly in config.c by flashing changes to all affected groups.
 
 o  if no INEWSDIR is given INEWSDIR is set to NEWSLIBDIR which is not always
-   true (Linux) ... search $NEWSLIBDIR, /usr/bin/,... in that case.
+   true (Linux) ... search $NEWSLIBDIR, /usr/bin/,... in that case and/or
+   make INEWSDIR (rename to INEWS_PROG) to hold (path,) name and args of
+   inews. i.e. 'INEWS_PROG=/usr/lib/news/bin/inews -h < %s'?
+   ( what about something like
+     AC_PATH_PROG(INEWS_PATH, inews, --internal,
+     	/news/bin:/usr/lib/news/bin)
+    ?)
 
 o  if posting with external inews fails fall-back to built_in_inews would be
    good if running in nntp-mode
    [Done. But the read_news_via_nntp && !read_saved_news is unclear. Why can't
     you post or must use external inews if you read_saved_news?]
-
-o  make INEWSDIR (rename to INEWS_PROG) to hold (path,) name and args of
-   inews. i.e. 'INEWS_PROG=/usr/lib/news/bin/inews -h < %s'?
 
 o  remove built in path of external commands (metamail, ispell, ...)
    [for metamail/ispell $METAMAIL/$ISPELL could be used to override
@@ -139,9 +143,6 @@ o  remove built in path of external commands (metamail, ispell, ...)
 
 o  overview file cacheing code is over-complex and broken in places
    - if cache-dir is removed during the session it's not recreated
-
-o  full_page_scroll=OFF is not implemented in config.c (option 'M'enu)
-   [is this still needed? we have single-line scrolling now.]
 
 o  tin uses the first sig-isolator as recent one, USEFOR says it should
    use the last. There is no consense that tin should follow this USEFOR
@@ -152,7 +153,7 @@ Pager Problems
 o  word highlighting shouldn't be enabled in signatures, as '*'
    and '_' characters may be used for ASCII art (e.g. '___').
    [Vincent Lefevre <vlefevre@ens-lyon.fr>]
-   There is a hack to not collapse spaces in sigs, is more needed ?
+   There is a hack to not collapse spaces in sigs, is more needed?
    [<jason@radar.tele2.co.uk>]
 
 o  word-highlighting should be rewritten to use regexp, i.e.:
@@ -162,13 +163,8 @@ o  word-highlighting should be rewritten to use regexp, i.e.:
 
 Posting Problems
 ----------------
-o  what should be done with 8bit chars References/Message-ID:-headers?
-   (for Message-ID: refusing the article should be ok, but in
-   References? mime-encode it? strip it? send it out raw? [Urs])
-   (GNKSA could be interpreted to remove it (see #7) if we say it's a
-   damaged message-id in References. MIME-encoding is no option IMO,
-   sending it out neither (USEFOR says msg-id is pure ASCII). -> strip it.
-   [Dirk])
+o  remove Message-IDs with 8bit chars in them when they occur in
+   Message-ID or References header
 
 o  repost ('x') ignores ~/.tin/headers & ~/.tin/attributes - bug or
    feature?!
@@ -187,10 +183,36 @@ o  with --enable-forgery reposting of an thread reposts only the first
 
 New features
 ------------
+o  fetch overview data in chunks (i.e. 100 arts/chunk) to allow
+   faster read interruption.
+   [20020326 Dirk Nimmich <nimmich@muenster.de>]
+
+o  hierarchical 'M'enu, i.e. hide all color_* options as long as
+   use_color is turned off, put all art_marked_*into a 'submenu', ...
+   (currently the Menu is statically build on compile time)
+   [20020322 Urs Janssen <urs@tin.org>]
+
+o  iso2asc conversion is only done for the article-body in the pager but
+   not in the group/thread-level and the status headers in the pager nor
+   for the localized strings in the programm (i.e. 'M'enu-entrys).
+   [20020319 Urs Janssen <urs@tin.org>]
+
+o  add two new sort_article_types: Lines descend and Lines ascend
+   [20020302 Peter Leftwich <Hostmaster@Video2Video.Com>]
+
+o  add a postponed 'browser' (store postponed arts in
+   MH or maildir format to make things easyer?)
+   [20020305 Dirk Nimmich <nimmich@muenster.de>]
+
+o  add postpone option for mail-actions
+   [20020404 Urs Janssen <urs@tin.org>]
+
 o  add base224 (<http://b-news.sf.net/>) and yydecode support (see
    <http://nerv.cx/liyang/download/yydecode/> for readable code,
-   ignore the crap on <http://www.yenc.org/>)
-   [20020216 Urs Janﬂen <urs@tin.org>]
+   ignore the crap on <http://www.yenc.org/>). also check
+   <http://www.exit109.com/~jeremy/news/binaries/> which might replace
+   yenc etc.pp. some day.
+   [20020216 Urs Janssen <urs@tin.org>]
 
 o  add maildir support (besides MBOX{O,RD} and MMDF} and maybe
    MH (not only reading but also writing), mailstore, BABYL, Kendra (MMDF
@@ -198,14 +220,14 @@ o  add maildir support (besides MBOX{O,RD} and MMDF} and maybe
    (see <http://www.ifi.uio.no/~larsi/notes/BABYL> for BABYL,
     <http://www.qmail.org/man/man5/maildir.html> for maildir,
     <http://www.qmail.org/man/man5/mbox.html> for MBOXCL and MBOXCL2)
-   [20020215 Urs Janﬂen <urs@tin.org>]
+   [20020215 Urs Janssen <urs@tin.org>]
 
 o  turn CA_ERROR_SPACE_IN_NEWSGROUPS, CA_ERROR_NEWLINE_IN_NEWSGROUPS,
    CA_ERROR_SPACE_IN_FOLLOWUP_TO, CA_ERROR_NEWLINE_IN_FOLLOWUP_TO into
    CA_WARNING_s (see draft-ietf-usefor-article-06.txt 5.5) and mark them
    for removal in the future.
    [define FOLLOW_USEFOR_DRAFT to turn the mentioned errors into
-    warnings. 20011226 Urs Janﬂen <urs@tin.org>]
+    warnings. 20011226 Urs Janssen <urs@tin.org>]
 
 o  support "Suggested Minimal Digest Format"
    <ftp://rtfm.mit.edu/pub/usenet/news.answers/faqs/minimal-digest-format>
@@ -223,11 +245,10 @@ o  if there are no tagged but hot articles in the group make 'S' work on
    the hot articles instead of complaining about no tagged arts.
    [20010824 Urs Janssen <urs@tin.org>]
 
-o  $NNTPSERVER is only appended to $TIN_INDEX_NEWSDIR if -g cmd-line
-   option is used, we should change that and always append it to avoid using
-   a wrong cache after changing $NNTPSERVER...
-
 o  make THREAD_SUM/THREAD_WEIGHT a config/attributes option and document it
+   (i.e. make tinrc.show_score a 4 way toggle {"off", "current || max",
+    "sum", weight"})
+   [20020301 Urs Janssen <urs@tin.org>]
 
 o  key to toggle article and thread sorting preferences on the fly
    (like 'u' for threading)
@@ -237,9 +258,9 @@ o  add Content-Description evaluation for the part-overview in the
 
 o  default_mailer_format should be extended to be able to
    give the interactive mailer the full article including all
-   headers (usefull for mutt -H). we could differ between
+   headers (useful for mutt -H). we could differ between
    %f (just body, headers must be given with %S, %T, ...)
-   and %F (headers included in the body, usefull for sendmail -t <
+   and %F (headers included in the body, useful for sendmail -t <
    "%F" etc.pp.)
 
 o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
@@ -248,9 +269,12 @@ o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
 o  better integrate saving of MIME/non-MIME articles when not using libuu
    [Jason Faultless <jason@radar.tele2.co.uk>]
 
-o  allow multiple keys/action in keymap file, i.e.:
-         PostPost        p y
-   [Urs Janssen <urs@tin.org>]
+o  rewrite keymap stuff:
+   Define what key should trigger what action and use function names instead
+   of the old key defines. This allows to add more functionality more easily
+   since you just have to add the new function in the code and to define a
+   key in the keymap file that is bound to this function.
+   [20020305 Dirk Nimmich <nimmich@muenster.de>]
 
 o  check if servers high mark is lower as the one in users newsrc, if so
    issue a warning and allow the luser to reset the highmark in the newsrc
@@ -277,11 +301,6 @@ o  join keep_posted_articles & keep_posted_articles_file into one option
    posted_articles_file is unset
    [Urs Janssen <urs@tin.org>]
 
-o  allow =%G expansion in strfpath()
-   [Urs Janssen <urs@tin.org>]
-   Is there still a need for this ? '=' is documented to do this
-   [jason@radar.tele2.co.uk]
-
 o  add new threading method: thread by reference, but split threads on
    subject change
    [Urs Janssen <urs@tin.org>]
@@ -301,7 +320,7 @@ o  add IPv6 support
    currently in tin: when getaddrinfo() is used to get the name/ip of the
    newsserver it always uses DNS (gethostbyname()/gethostbyaddr() checked
    /etc/hosts first) and getaddrinfo() seems to have a (huge) delay in some
-   cases.
+   cases. use getipnodebyname()/getipnodebyaddr() (if available) instead.
 
 o  add shortcut(s) to repeat last command (i.e. search again)
 
@@ -374,17 +393,16 @@ o  Add a commandline switch (-V) that prints out all values of cpp-symbols
 o  Reorganize tinrc into related sections for easier editing
    e.g., Display, Posting etc.
 
-o  A system-wide tinrc configuration file, the $HOME/.tin/tinrc need only
-   store the differences from this.
+o  A system-wide tinrc configuration file (to hold some defaults).
    A key code to reset to the system defaults
-   Maybe a file which could be used to force settings (eg inews & mailer)
-   (tin.defaults [--with-defaults-dir] is a start)
+   Maybe a second file which could be used to force settings (eg
+   inews & mailer) (tin.defaults [--with-defaults-dir] is a start)
 
-o  - think about removing global attributes files (TIN_LIBDIR/attributes)
-   - move global files (TIN_LIBDIR/tinrc, TIN_LIBDIR/attributes) to
-     TIN_DEFAULTS_DIR
+o  think about removing global attributes files (TIN_LIBDIR/attributes)
+   and move global files (TIN_LIBDIR/tinrc, TIN_LIBDIR/attributes) to
+   TIN_DEFAULTS_DIR
 
-o  attributes (still) needs some work, some entrys aren't really usefull
+o  attributes (still) needs some work, some entrys aren't really useful
    on a per group basis but others would (i.e. Reply-To)
    once we have a 'attributes-menu' we could remove most of the
    global 'attributes' set in tinrc and move them to a scope=*
@@ -406,8 +424,9 @@ o  (g)oto group is case sensitive
 	uses  them  anyway; this avoids any possibility of
 	confusion.
 
-o  when From: only contains "First-name Last-name" tin strips the space
-   misc.c:parse_from() ??
+o  when From: only contains "First-name Last-name" tin strips the
+   Last-name in group/thread/page-level
+   [20020319 Urs Janssen <urs@tin.org>]
 
 o  Bounce duplicate Message-ID's when the headers are read. This will
    make the threading code happier too.
@@ -419,8 +438,10 @@ o  Merge the selection code with the range code. Having two similar methods
    of picking articles with similar goals is wasteful.
    [Jason Faultless <jason@radar.tele2.co.uk>]
 
-o  add check for zlib and option to write/read gzipped local overviews
-   zlib might also be be used for post-processing.
+o  add check for libbzip2/zlib (>=1.1.4)
+   (<http://sources.redhat.com/bzip2/>, <http://www.gzip.org/zlib/>) and
+   option to write/read {g,b}zipped local overviews
+   zlib, libbzip2 might also be be used for post-processing.
 
 Posting enhancements
 ----------------------
@@ -597,8 +618,7 @@ o  add RFC 1468/2237, RFC 1555, RFC 1922/1842 and RFC 1947 support
     needed?)
 
 o  add UTF-8 (unicode) support (RFC 2279)
-   (see <http://www.cl.cam.ac.uk/~mgk25/unicode.html> and
-    <http://clisp.cons.org/~haible/>)
+   (see <http://www.cl.cam.ac.uk/~mgk25/unicode.html>)
    if we ever want to add UTF-7 (posting) support (I don't think
    this is needed) we have to encode it ourself (as iconv() might
    encode <, @, > which leads to illegal headers) or split headers
@@ -611,7 +631,7 @@ o  make select/group/thread/page-level multibyte "safe". they all use
    strlen(), strncpy(), strncat(), snprintf() to build the screen - but
    in a multibyte environment (i.e. mm_local_charset=UTF-8) this is a
    fault. (this might require libutf8 for those systems which don't have
-   wide-char/multibyte functions, see <http://clisp.cons.org/~haible/>)
+   wide-char/multibyte functions)
    [20010904 urs@tin.org]
 
 o  make mm_network_charset an "option_list" to avoid junk input or
@@ -619,8 +639,8 @@ o  make mm_network_charset an "option_list" to avoid junk input or
    add configure check for the hardcoded charsets (try iconv_open(x,
    us-ascii) on each...) and disable those not available.
    [done except configure check 20010907 urs@tin.org]
-   be less strict for mm_local_charset (i.e. allow CP{850,1250,...}
-   [missing 20010904 urs@tin.org]
+
+o  add configure chek if 2 arg of iconv is const or not
 
 Docs/online help
 ----------------
@@ -638,11 +658,12 @@ o  tin.defaults could use more documentation on manpage (tin.5)
 Not yet classified
 ------------------
 o  nuke $BUG_ADDRESS
+   [20020226 Urs Janssen <urs@tin.org>]
 
 o  setting TIN_HOMEDIR to a nonexistant dir gives a "Filesystem full"
    error-message (but doesn't abort) instead of creating the dir. bug?
    feature? if the later we should give a more exact error-message.
-   [20011112 urs@tin.org]
+   [20011112 Urs Janssen <urs@tin.org>]
 
 o  check_article_to_be_posted() still need some cleanup
    (avoid setup_check_article_screen(&init);StartInverse();EndInverse();
@@ -678,3 +699,7 @@ o  think about group numbering in "only unread" display mode
 
 o  what is with HAVE_UUDECODE (it's always true, do we need the
    !HAVE_UUDECODE path?)
+   [20020226 Urs Janssen <urs@tin.org>]
+
+o  remove strip_blanks? IMHO it's not needed anymore
+   [20020305 Urs Janssen <urs@tin.org>]

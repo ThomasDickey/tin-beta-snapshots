@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 1997-12-20
+ *  Updated   : 2002-03-24
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2002 Iain Lea <iain@bricbrac.de>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -51,43 +48,44 @@
 /*
  * Defines used in setting attributes switch
  */
-#define ATTRIB_MAILDIR			0
-#define ATTRIB_SAVEDIR			1
-#define ATTRIB_SAVEFILE			2
-#define ATTRIB_ORGANIZATION		3
-#define ATTRIB_FROM			4
-#define ATTRIB_SIGFILE			5
-#define ATTRIB_FOLLOWUP_TO		6
-/* 7 unused */
-#define ATTRIB_AUTO_SELECT		8
-#define ATTRIB_AUTO_SAVE		9
-#define ATTRIB_BATCH_SAVE		10
-#define ATTRIB_DELETE_TMP_FILES		11
-#define ATTRIB_SHOW_ONLY_UNREAD		12
-#define ATTRIB_THREAD_ARTS		13
-#define ATTRIB_SHOW_AUTHOR		14
-#define ATTRIB_SORT_ART_TYPE		15
-#define ATTRIB_POST_PROC_TYPE		16
-#define ATTRIB_QUICK_KILL_HEADER	17
-#define ATTRIB_QUICK_KILL_SCOPE		18
-#define ATTRIB_QUICK_KILL_EXPIRE	19
-#define ATTRIB_QUICK_KILL_CASE		20
-#define ATTRIB_QUICK_SELECT_HEADER	21
-#define ATTRIB_QUICK_SELECT_SCOPE	22
-#define ATTRIB_QUICK_SELECT_EXPIRE	23
-#define ATTRIB_QUICK_SELECT_CASE	24
-#define ATTRIB_MAILING_LIST		25
-#define ATTRIB_X_HEADERS		26
-#define ATTRIB_X_BODY			27
-#define ATTRIB_AUTO_SAVE_MSG		28
-#define ATTRIB_X_COMMENT_TO		29
-#define ATTRIB_NEWS_QUOTE		30
-#define ATTRIB_QUOTE_CHARS		31
+enum {
+	ATTRIB_MAILDIR,
+	ATTRIB_SAVEDIR,
+	ATTRIB_SAVEFILE,
+	ATTRIB_ORGANIZATION,
+	ATTRIB_FROM,
+	ATTRIB_SIGFILE,
+	ATTRIB_FOLLOWUP_TO,
+	ATTRIB_AUTO_SELECT,
+	ATTRIB_AUTO_SAVE,
+	ATTRIB_BATCH_SAVE,
+	ATTRIB_DELETE_TMP_FILES,
+	ATTRIB_SHOW_ONLY_UNREAD,
+	ATTRIB_THREAD_ARTS,
+	ATTRIB_SHOW_AUTHOR,
+	ATTRIB_SORT_ART_TYPE,
+	ATTRIB_POST_PROC_TYPE,
+	ATTRIB_QUICK_KILL_HEADER,
+	ATTRIB_QUICK_KILL_SCOPE,
+	ATTRIB_QUICK_KILL_EXPIRE,
+	ATTRIB_QUICK_KILL_CASE,
+	ATTRIB_QUICK_SELECT_HEADER,
+	ATTRIB_QUICK_SELECT_SCOPE,
+	ATTRIB_QUICK_SELECT_EXPIRE,
+	ATTRIB_QUICK_SELECT_CASE,
+	ATTRIB_MAILING_LIST,
+	ATTRIB_X_HEADERS,
+	ATTRIB_X_BODY,
+	ATTRIB_AUTO_SAVE_MSG,
+	ATTRIB_X_COMMENT_TO,
+	ATTRIB_NEWS_QUOTE,
+	ATTRIB_QUOTE_CHARS,
 #ifdef HAVE_ISPELL
-#	define ATTRIB_ISPELL		32
+		ATTRIB_ISPELL,
 #endif /* HAVE_ISPELL */
-#define ATTRIB_SORT_THREADS_TYPE	33
-#define ATTRIB_TEX2ISO_CONV		34
+	ATTRIB_SORT_THREADS_TYPE,
+	ATTRIB_TEX2ISO_CONV
+};
 
 /*
  * Local prototypes
@@ -106,6 +104,7 @@ static void set_default_attributes (struct t_attribute *attributes);
  * specific attributes.
  */
 static struct t_attribute glob_attributes;
+extern char global_attributes_file[PATH_LEN];
 
 /*
  * Per group attributes. This fills out a basic template of defaults
@@ -162,33 +161,35 @@ set_default_attributes (
 	if (match_boolean (line, pattern, &flag)) { \
 		num = (flag != FALSE); \
 		set_attrib (type, scope, (char *)&num); \
+		found = TRUE; \
 		break; \
 	}
 #define MATCH_INTEGER(pattern, type, maxval) \
 	if (match_integer (line, pattern, &num, maxval)) { \
 		set_attrib (type, scope, (char *)&num); \
+		found = TRUE; \
 		break; \
 	}
-	/* FIXME: the code always modifies 'scope' -- does it ??? */
 #define MATCH_STRING(pattern, type) \
 	if (match_string (line, pattern, buf, sizeof (buf))) { \
 		set_attrib (type, scope, buf); \
+		found = TRUE; \
 		break; \
 	}
 
 
 void
 read_attributes_file (
-	const char *file,
 	t_bool global_file)
 {
 	FILE *fp;
 	char buf[LEN];
 	char line[LEN];
 	char scope[LEN];
+	char *file;
 	int num;
 	register int i;
-	t_bool flag;
+	t_bool flag, found = FALSE;
 
 	/*
 	 * Initialize global attributes even if there is no global file
@@ -197,7 +198,9 @@ read_attributes_file (
 	if (global_file) {
 		set_default_attributes (&glob_attributes);
 		glob_attributes.global = TRUE;
-	}
+		file = global_attributes_file;
+	} else
+		file = local_attributes_file;
 
 	if ((fp = fopen (file, "r")) != (FILE *) 0) {
 		scope[0] = '\0';
@@ -244,27 +247,22 @@ read_attributes_file (
 				break;
 
 			case 'p':
-				MATCH_INTEGER ("post_proc_type=",
-					ATTRIB_POST_PROC_TYPE,
-					POST_PROC_UUDECODE);
+				MATCH_INTEGER ("post_proc_type=", ATTRIB_POST_PROC_TYPE, POST_PROC_UUDECODE);
 				break;
 
 			case 'q':
-				MATCH_INTEGER ("quick_kill_header=",
-					ATTRIB_QUICK_KILL_HEADER,
-					FILTER_LINES);
+				MATCH_INTEGER ("quick_kill_header=", ATTRIB_QUICK_KILL_HEADER, FILTER_LINES);
 				MATCH_STRING ("quick_kill_scope=", ATTRIB_QUICK_KILL_SCOPE);
 				MATCH_BOOLEAN ("quick_kill_case=", ATTRIB_QUICK_KILL_CASE);
 				MATCH_BOOLEAN ("quick_kill_expire=", ATTRIB_QUICK_KILL_EXPIRE);
-				MATCH_INTEGER ("quick_select_header=",
-					ATTRIB_QUICK_SELECT_HEADER,
-					FILTER_LINES);
+				MATCH_INTEGER ("quick_select_header=", ATTRIB_QUICK_SELECT_HEADER, FILTER_LINES);
 				MATCH_STRING ("quick_select_scope=", ATTRIB_QUICK_SELECT_SCOPE);
 				MATCH_BOOLEAN ("quick_select_case=", ATTRIB_QUICK_SELECT_CASE);
 				MATCH_BOOLEAN ("quick_select_expire=", ATTRIB_QUICK_SELECT_EXPIRE);
 				if (match_string (line, "quote_chars=", buf, sizeof (buf))) {
 					quote_dash_to_space (buf);
 					set_attrib (ATTRIB_QUOTE_CHARS, scope, buf);
+					found = TRUE;
 					break;
 				}
 				break;
@@ -272,19 +270,15 @@ read_attributes_file (
 			case 's':
 				MATCH_STRING ("savedir=", ATTRIB_SAVEDIR);
 				MATCH_STRING ("savefile=", ATTRIB_SAVEFILE);
-				if (match_string (line, "scope=", scope, sizeof (scope)))
+				if (match_string (line, "scope=", scope, sizeof (scope))) {
+					found = TRUE;
 					break;
+				}
 				MATCH_STRING ("sigfile=", ATTRIB_SIGFILE);
+				MATCH_INTEGER ("show_author=", ATTRIB_SHOW_AUTHOR, SHOW_FROM_BOTH);
 				MATCH_BOOLEAN ("show_only_unread=", ATTRIB_SHOW_ONLY_UNREAD);
-				MATCH_INTEGER ("sort_art_type=",
-					ATTRIB_SORT_ART_TYPE,
-					SORT_ARTICLES_BY_SCORE_ASCEND);
-				MATCH_INTEGER ("sort_threads_type=",
-					ATTRIB_SORT_THREADS_TYPE,
-					SORT_THREADS_BY_SCORE_DESCEND);
-				MATCH_INTEGER ("show_author=",
-					ATTRIB_SHOW_AUTHOR,
-					SHOW_FROM_BOTH);
+				MATCH_INTEGER ("sort_art_type=", ATTRIB_SORT_ART_TYPE, SORT_ARTICLES_BY_SCORE_ASCEND);
+				MATCH_INTEGER ("sort_threads_type=", ATTRIB_SORT_THREADS_TYPE, SORT_THREADS_BY_SCORE_DESCEND);
 				break;
 
 			case 't':
@@ -293,15 +287,19 @@ read_attributes_file (
 				break;
 
 			case 'x':
-				MATCH_STRING ("x_headers=", ATTRIB_X_HEADERS);
 				MATCH_STRING ("x_body=", ATTRIB_X_BODY);
 				MATCH_BOOLEAN ("x_comment_to=", ATTRIB_X_COMMENT_TO);
+				MATCH_STRING ("x_headers=", ATTRIB_X_HEADERS);
 				break;
 
 			default:
 				break;
 			}
-/* TODO report syntax errors */
+
+			if (found)
+				found = FALSE;
+			else
+				error_message (_(txt_bad_attrib), line);
 		}
 		fclose (fp);
 	}
@@ -335,14 +333,13 @@ set_attrib (
 
 	/*
 	 * Does scope refer to 1 or more than 1 group
-	 * TODO If scope=*  change glob_attributes and just those groups with structs already
 	 */
 	if (!strchr (scope, '*')) {
 		if ((group = group_find (scope)) != (struct t_group *) 0)
 			do_set_attrib (group, type, data);
 	} else {
 		int i;
-
+/* TODO Can we get out of doing this per group for .global case */
 		for (i = 0; i < num_active; i++) {
 			group = &active[i];
 			if (match_group_list (group->name, scope))
@@ -351,6 +348,13 @@ set_attrib (
 	}
 }
 
+
+#define SET_STRING(string) \
+	group->attribute->string = my_strdup (data); \
+	break
+#define SET_INTEGER(integer) \
+	group->attribute->integer = *data; \
+	break
 
 static void
 do_set_attrib (
@@ -371,106 +375,73 @@ do_set_attrib (
 	 */
 	switch (type) {
 		case ATTRIB_MAILDIR:
-			group->attribute->maildir = my_strdup (data);
-			break;
+			SET_STRING(maildir);
 		case ATTRIB_SAVEDIR:
-			group->attribute->savedir = my_strdup (data);
-			break;
+			SET_STRING(savedir);
 		case ATTRIB_SAVEFILE:
-			group->attribute->savefile = my_strdup (data);
-			break;
+			SET_STRING(savefile);
 		case ATTRIB_ORGANIZATION:
-			group->attribute->organization = my_strdup (data);
-			break;
+			SET_STRING(organization);
 		case ATTRIB_FROM:
-			group->attribute->from = my_strdup (data);
-			break;
+			SET_STRING(from);
 		case ATTRIB_SIGFILE:
-			group->attribute->sigfile = my_strdup (data);
-			break;
+			SET_STRING(sigfile);
 		case ATTRIB_FOLLOWUP_TO:
-			group->attribute->followup_to = my_strdup (data);
-			break;
+			SET_STRING(followup_to);
 		case ATTRIB_AUTO_SELECT:
-			group->attribute->auto_select = *data;
-			break;
+			SET_INTEGER(auto_select);
 		case ATTRIB_AUTO_SAVE:
-			group->attribute->auto_save = *data;
-			break;
+			SET_INTEGER(auto_save);
 		case ATTRIB_BATCH_SAVE:
-			group->attribute->batch_save = *data;
-			break;
+			SET_INTEGER(batch_save);
 		case ATTRIB_DELETE_TMP_FILES:
-			group->attribute->delete_tmp_files = *data;
-			break;
+			SET_INTEGER(delete_tmp_files);
 		case ATTRIB_SHOW_ONLY_UNREAD:
-			group->attribute->show_only_unread = *data;
-			break;
+			SET_INTEGER(show_only_unread);
 		case ATTRIB_THREAD_ARTS:
-			group->attribute->thread_arts = *data;
-			break;
+			SET_INTEGER(thread_arts);
 		case ATTRIB_SHOW_AUTHOR:
-			group->attribute->show_author = *data;
-			break;
+			SET_INTEGER(show_author);
 		case ATTRIB_SORT_ART_TYPE:
-			group->attribute->sort_art_type = *data;
-			break;
+			SET_INTEGER(sort_art_type);
 		case ATTRIB_SORT_THREADS_TYPE:
-			group->attribute->sort_threads_type = *data;
-			break;
+			SET_INTEGER(sort_threads_type);
 		case ATTRIB_POST_PROC_TYPE:
-			group->attribute->post_proc_type = *data;
-			break;
+			SET_INTEGER(post_proc_type);
 		case ATTRIB_QUICK_KILL_HEADER:
-			group->attribute->quick_kill_header = *data;
-			break;
+			SET_INTEGER(quick_kill_header);
 		case ATTRIB_QUICK_KILL_SCOPE:
-			group->attribute->quick_kill_scope = my_strdup (data);
-			break;
+			SET_STRING(quick_kill_scope);
 		case ATTRIB_QUICK_KILL_EXPIRE:
-			group->attribute->quick_kill_expire = *data;
-			break;
+			SET_INTEGER(quick_kill_expire);
 		case ATTRIB_QUICK_KILL_CASE:
-			group->attribute->quick_kill_case = *data;
-			break;
+			SET_INTEGER(quick_kill_case);
 		case ATTRIB_QUICK_SELECT_HEADER:
-			group->attribute->quick_select_header = *data;
-			break;
+			SET_INTEGER(quick_select_header);
 		case ATTRIB_QUICK_SELECT_SCOPE:
-			group->attribute->quick_select_scope = my_strdup (data);
-			break;
+			SET_STRING(quick_select_scope);
 		case ATTRIB_QUICK_SELECT_EXPIRE:
-			group->attribute->quick_select_expire = *data;
-			break;
+			SET_INTEGER(quick_select_expire);
 		case ATTRIB_QUICK_SELECT_CASE:
-			group->attribute->quick_select_case = *data;
-			break;
+			SET_INTEGER(quick_select_case);
 		case ATTRIB_MAILING_LIST:
-			group->attribute->mailing_list = my_strdup (data);
-			break;
+			SET_STRING(mailing_list);
 		case ATTRIB_X_HEADERS:
-			group->attribute->x_headers = my_strdup (data);
-			break;
+			SET_STRING(x_headers);
 		case ATTRIB_X_BODY:
-			group->attribute->x_body = my_strdup (data);
-			break;
+			SET_STRING(x_body);
 		case ATTRIB_X_COMMENT_TO:
-			group->attribute->x_comment_to = *data;
-			break;
+			SET_INTEGER(x_comment_to);
 		case ATTRIB_NEWS_QUOTE:
-			group->attribute->news_quote_format = my_strdup (data);
-			break;
+			SET_STRING(news_quote_format);
 		case ATTRIB_QUOTE_CHARS:
-			group->attribute->quote_chars = my_strdup (data);
-			break;
+			SET_STRING(quote_chars);
 #ifdef HAVE_ISPELL
 		case ATTRIB_ISPELL:
-			group->attribute->ispell = my_strdup (data);
-			break;
+			SET_STRING(ispell);
 #endif /* HAVE_ISPELL */
 		case ATTRIB_TEX2ISO_CONV:
-			group->attribute->tex2iso_conv = *data;
-			break;
+			SET_INTEGER(tex2iso_conv);
 		default:
 			break;
 	}

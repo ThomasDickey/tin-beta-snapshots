@@ -2,8 +2,8 @@
  *  Project   : tin - a Usenet reader
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
- *  Created   : 18/02/2000
- *  Updated   : 28/02/2000
+ *  Created   : 2000-02-18
+ *  Updated   : 2002-04-10
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2002 Jason Faultless <jason@radar.tele2.co.uk>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Chris Blum.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -267,16 +264,21 @@ parse_content_encoding(
 	}
 
 	/*
-	 * TODO: check rfc - may need to switch Content-Type to application/octet-steam
-	 * where this header exists but is unparseable
+	 * TODO: check rfc - may need to switch Content-Type to
+	 * application/octet-steam where this header exists but is unparseable.
+	 *
+	 * RFC 2045 6.2:
+	 * Labelling unencoded data containing 8bit characters as "7bit" is not
+	 * allowed, nor is labelling unencoded non-line-oriented data as anything
+	 * other than "binary" allowed.
 	 */
-	return ENCODING_7BIT;			/* RFC default */
+	return ENCODING_BINARY;
 }
 
 
 /*
  * We're only really interested in the filename parameter, which has
- * a higher precedence than the name parameter from Content-Type (RFC1806)
+ * a higher precedence than the name parameter from Content-Type (RFC 1806)
  * Attach the parsed params to the part passed in 'part'
  */
 static void
@@ -322,7 +324,7 @@ new_part (
 {
 	t_part *p;
 	t_part *ptr = my_malloc(sizeof(t_part));
-	char defparms[] = "charset=us-ascii";	/* must be writeable */
+	char defparms[] = "charset=US-ASCII";	/* must be writeable */
 
 	ptr->type = TYPE_TEXT;					/* Defaults per RFC */
 	ptr->subtype = my_strdup ("plain");
@@ -419,7 +421,7 @@ parse_header (
 	/*
 	 * Does ': ' follow the header text?
 	 */
-	if (! (*ptr && *(ptr + 1) && *ptr == ':' && *(ptr + 1) == ' '))
+	if (!(*ptr && *(ptr + 1) && *ptr == ':' && *(ptr + 1) == ' '))
 		return NULL;
 
 	/*
@@ -461,14 +463,6 @@ parse_rfc822_headers(
 	hdr->ext = new_part(NULL);		/* Initialise MIME data */
 
 	while ((line = tin_fgets (from, TRUE)) != (char *) 0) {
-#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
-		buffer_to_local(line);
-#else
-#	ifdef CHARSET_CONVERSION
-	/* headers should be in US-ASCII */
-	buffer_to_local(line, "US-ASCII", tinrc.mm_local_charset);
-#	endif /* CHARSET_CONVERSION */
-#endif /* LOCAL_CHARSET || MAC_OS_X */
 
 		if (to)
 			fprintf(to, "%s\n", line);		/* Put raw data */
@@ -640,7 +634,8 @@ parse_multipart_article(
 	FILE *infile,
 	t_openartinfo *artinfo,
 	t_part *part,
-	int depth)
+	int depth,
+	t_bool show_progress_meter)
 {
 	char *line;
 	char *ptr;
@@ -663,7 +658,8 @@ parse_multipart_article(
 		fprintf(artinfo->raw, "%s\n", line);
 
 		artinfo->hdr.ext->line_count += count_lines (line);
-		progress(artinfo->hdr.ext->line_count);		/* Overall line count */
+		if (show_progress_meter)
+			progress(artinfo->hdr.ext->line_count);		/* Overall line count */
 
 		if (bnd == BOUND_END) {							/* End of this part detected */
 #ifdef NNTP_ABLE
@@ -715,7 +711,7 @@ parse_multipart_article(
 					if (curr_part->type == TYPE_MULTIPART) {	/* Complex mutlipart article */
 						int ret;
 
-						if ((ret = parse_multipart_article(infile, artinfo, curr_part, depth + 1)) != 0)
+						if ((ret = parse_multipart_article(infile, artinfo, curr_part, depth + 1, show_progress_meter)) != 0)
 							return ret;
 						else
 							break;
@@ -760,13 +756,16 @@ parse_multipart_article(
 static int
 parse_normal_article(
 	FILE *in,
-	t_openartinfo *artinfo)
+	t_openartinfo *artinfo,
+	t_bool show_progress_meter)
 {
 	char *line;
 
 	while ((line = tin_fgets (in, FALSE)) != (char *) 0) {
 		fprintf(artinfo->raw, "%s\n", line);
-		progress(++artinfo->hdr.ext->line_count);
+		++artinfo->hdr.ext->line_count;
+		if (show_progress_meter)
+			progress(artinfo->hdr.ext->line_count);
 	}
 	return tin_errno;
 }
@@ -827,7 +826,8 @@ static int
 parse_rfc2045_article (
 	FILE *infile,
 	int line_count,
-	t_openartinfo *artinfo)
+	t_openartinfo *artinfo,
+	t_bool show_progress_meter)
 {
 	int ret;
 
@@ -844,10 +844,10 @@ parse_rfc2045_article (
 	 * We don't bother to parse all plain text articles
 	 */
 	if (artinfo->hdr.mime && artinfo->hdr.ext->type == TYPE_MULTIPART) {
-		if ((ret = parse_multipart_article(infile, artinfo, artinfo->hdr.ext, 0)) != 0)
+		if ((ret = parse_multipart_article(infile, artinfo, artinfo->hdr.ext, 0, show_progress_meter)) != 0)
 			goto error;
 	} else {
-		if ((ret = parse_normal_article(infile, artinfo)) != 0)
+		if ((ret = parse_normal_article(infile, artinfo, show_progress_meter)) != 0)
 			goto error;
 	}
 
@@ -879,7 +879,8 @@ art_open (
 	t_bool wrap_lines,
 	struct t_article *art,
 	const char *group_path,
-	t_openartinfo *artinfo)
+	t_openartinfo *artinfo,
+	t_bool show_progress_meter)
 {
 	char *ptr;
 	FILE *fp;
@@ -891,7 +892,7 @@ art_open (
 	fprintf(stderr, "art_open(%p)\n", artinfo);
 #endif /* DEBUG_ART */
 
-	if (parse_rfc2045_article (fp, art->line_count, artinfo) != 0)
+	if (parse_rfc2045_article (fp, art->line_count, artinfo, show_progress_meter) != 0)
 		return ART_ABORT;
 
 	if ((pgart.tex2iso = ((CURR_GROUP.attribute->tex2iso_conv) ? is_art_tex_encoded (artinfo->raw) : FALSE)))
