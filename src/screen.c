@@ -169,6 +169,7 @@ perror_message (
 	const char *fmt,
 	...)
 {
+	char buf[LEN];
 	int err;
 	va_list ap;
 
@@ -177,20 +178,13 @@ perror_message (
 
 	clear_message ();
 
-	vsprintf (mesg, fmt, ap);
-
-	my_fprintf (stderr, "%s: Error: %s", mesg, strerror(err));
-	errno = 0;
-
-	if (cmd_line) {
-		my_fputc ('\n', stderr);
-		fflush (stderr);
-	} else {
-		stow_cursor();
-		(void) sleep (3);
-	}
+	vsprintf (buf, fmt, ap);
 
 	va_end(ap);
+
+	error_message("%s: Error: %s", buf, strerror(err));
+
+	return;
 }
 
 

@@ -99,7 +99,7 @@ static void free_filter_array (struct t_filters *ptr);
 static void free_filter_item (struct t_filter *ptr);
 static void vSetFilter (struct t_filter *psFilter);
 static void vWriteFilterArray (FILE *fp, struct t_filters *ptr, time_t theTime);
-static void vWriteFilterFile (char *pcFile);
+static void vWriteFilterFile (const char *pcFile);
 
 
 static struct t_filter *
@@ -241,7 +241,7 @@ free_all_filter_arrays (
  */
 t_bool
 read_filter_file (
-	char *file)
+	const char *file)
 {
 	FILE *fp;
 	char *s;
@@ -250,7 +250,7 @@ read_filter_file (
 	char subj[HEADER_LEN];
 	char from[HEADER_LEN];
 	char msgid[HEADER_LEN];
-	char lines[HEADER_LEN];
+	char buffer[HEADER_LEN];
 	char gnksa[HEADER_LEN];
 	char xref[HEADER_LEN];
 	char xref_score[HEADER_LEN];
@@ -330,7 +330,7 @@ if (debug) {
 				subj[0] = '\0';
 				from[0] = '\0';
 				msgid[0] = '\0';
-				lines[0] = '\0';
+				buffer[0] = '\0';
 				xref[0] = '\0';
 				icase = 0;
 				secs = 0L;
@@ -355,17 +355,17 @@ if (debug) {
 		break;
 
 		case 'l':
-			if (match_string (buf+1, "ines=", lines, sizeof (lines))) {
+			if (match_string (buf+1, "ines=", buffer, sizeof (buffer))) {
 				if (arr_ptr && !expired_time) {
-					if (lines[0] == '<') {
+					if (buffer[0] == '<') {
 						arr_ptr[i].lines_cmp = FILTER_LINES_LT;
-						arr_ptr[i].lines_num = atoi (&lines[1]);
-					} else if (lines[0] == '>') {
+						arr_ptr[i].lines_num = atoi (&buffer[1]);
+					} else if (buffer[0] == '>') {
 						arr_ptr[i].lines_cmp = FILTER_LINES_GT;
-						arr_ptr[i].lines_num = atoi (&lines[1]);
+						arr_ptr[i].lines_num = atoi (&buffer[1]);
 					} else {
 						arr_ptr[i].lines_cmp = FILTER_LINES_EQ;
-						arr_ptr[i].lines_num = atoi (lines);
+						arr_ptr[i].lines_num = atoi (buffer);
 					}
 				}
 				break;
@@ -428,7 +428,7 @@ if (debug) {
 				subj[0] = '\0';
 				from[0] = '\0';
 				msgid[0] = '\0';
-				lines[0] = '\0';
+				buffer[0] = '\0';
 				xref[0] = '\0';
 				icase = 0;
 				secs = 0L;
@@ -568,7 +568,7 @@ if (debug) {
 
 static void
 vWriteFilterFile (
-	char *pcFile)
+	const char *pcFile)
 {
 	FILE *hFp;
 
@@ -1185,7 +1185,7 @@ quick_filter (
 t_bool
 quick_filter_select_posted_art (
 	struct t_group *group,
-	char *subj)	/* return value is always ignored */
+	const char *subj)	/* return value is always ignored */
 {
 	t_bool filtered = FALSE;
 
@@ -1562,28 +1562,28 @@ filter_articles (
 				/*
 				 * Filter on Lines: line
 				 */
-				if ((ptr[j].lines_cmp != FILTER_LINES_NO) && (arts[i].lines >= 0)) {
+				if ((ptr[j].lines_cmp != FILTER_LINES_NO) && (arts[i].line_count >= 0)) {
 					switch (ptr[j].lines_cmp) {
 						case FILTER_LINES_EQ:
-							if (arts[i].lines == ptr[j].lines_num) {
+							if (arts[i].line_count == ptr[j].lines_num) {
 /*
-wait_message (1, "FILTERED Lines arts[%d] == [%d]", arts[i].lines, ptr[j].lines_num);
+wait_message (1, "FILTERED Lines arts[%d] == [%d]", arts[i].line_count, ptr[j].lines_num);
 */
 								SET_FILTER(group, i, j);
 							}
 							break;
 						case FILTER_LINES_LT:
-							if (arts[i].lines < ptr[j].lines_num) {
+							if (arts[i].line_count < ptr[j].lines_num) {
 /*
-wait_message (1, "FILTERED Lines arts[%d] < [%d]", arts[i].lines, ptr[j].lines_num);
+wait_message (1, "FILTERED Lines arts[%d] < [%d]", arts[i].line_count, ptr[j].lines_num);
 */
 								SET_FILTER(group, i, j);
 							}
 							break;
 						case FILTER_LINES_GT:
-							if (arts[i].lines > ptr[j].lines_num) {
+							if (arts[i].line_count > ptr[j].lines_num) {
 /*
-wait_message (1, "FILTERED Lines arts[%d] > [%d]", arts[i].lines, ptr[j].lines_num);
+wait_message (1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].lines_num);
 */
 								SET_FILTER(group, i, j);
 							}

@@ -233,24 +233,24 @@ server_init (
 	 */
 
 	if ((nntp_rd_fp = (TCP *) s_fdopen (sockt_rd, "r")) == NULL) {
-		perror ("server_init: fdopen #1"); /* FIXME: -> lang.c */
+		perror ("server_init: fdopen #1");
 		return (-errno);
 	}
 
 	if ((sockt_wr = s_dup (sockt_rd)) < 0) {
-		perror ("server_init: dup"); /* FIXME: -> lang.c */
+		perror ("server_init: dup");
 		return (-errno);
 	}
 
 #		ifdef TLI /* Transport Level Interface */
 	if (t_sync (sockt_rd) < 0) {	/* Sync up new fd with TLI */
-		t_error ("server_init: t_sync"); /* FIXME: -> lang.c */
+		t_error ("server_init: t_sync");
 		nntp_rd_fp = NULL;
 		return (-EPROTO);
 	}
 #		else
 	if ((nntp_wr_fp = (TCP *) s_fdopen (sockt_wr, "w")) == NULL) {
-		perror ("server_init: fdopen #2"); /* FIXME: -> lang.c */
+		perror ("server_init: fdopen #2");
 		nntp_rd_fp = NULL;
 		return (-errno);
 	}
@@ -316,7 +316,7 @@ get_tcp_socket (
 		return (-EPROTO);
 	}
 	if (t_bind (s, (struct t_bind *) 0, (struct t_bind *) 0) < 0) {
-		t_error ("t_bind"); /* FIXME: -> lang.c */
+		t_error ("t_bind");
 		t_close (s);
 		return (-EPROTO);
 	}
@@ -344,7 +344,7 @@ get_tcp_socket (
 	 * Let t_alloc() initialize the addr structure of the t_call structure.
 	 */
 	if ((callptr = (struct t_call *) t_alloc (s, T_CALL, T_ADDR)) == NULL){
-		t_error ("t_alloc"); /* FIXME: -> lang.c */
+		t_error ("t_alloc");
 		t_close (s);
 		return (-EPROTO);
 	}
@@ -363,7 +363,7 @@ get_tcp_socket (
 		if (save_errno == TLOOK)
 			fprintf(stderr, _("Server unavailable\n")); /* FIXME: -> lang.c */
 		else
-			t_error ("t_connect"); /* FIXME: -> lang.c */
+			t_error ("t_connect");
 		t_free((char *)callptr, T_CALL);
 		t_close (s);
 		return (-save_errno);
@@ -378,13 +378,13 @@ get_tcp_socket (
 	t_free((char *)callptr, T_CALL);
 
 	if (ioctl (s,  I_POP,  (char *) 0) < 0) {
-		perror ("I_POP(timod)"); /* FIXME: -> lang.c */
+		perror ("I_POP(timod)");
 		t_close (s);
 		return (-EPROTO);
 	}
 
 	if (ioctl (s, I_PUSH, "tirdwr") < 0) {
-		perror ("I_PUSH(tirdwr)"); /* FIXME: -> lang.c */
+		perror ("I_PUSH(tirdwr)");
 		t_close (s);
 		return (-EPROTO);
 	}
@@ -465,8 +465,12 @@ get_tcp_socket (
 	 * Get a socket and initiate connection -- use multiple addresses
 	 */
 	for (cp = hp->h_addr_list; cp && *cp; cp++) {
+#			if defined(__hpux) && defined(SVR4)
+		unsigned long socksize, socksizelen;
+#			endif /* __hpux && SVR4 */
+
 		if ((s = socket (hp->h_addrtype, SOCK_STREAM, 0)) < 0) {
-			perror ("socket"); /* FIXME: -> lang.c */
+			perror ("socket");
 			return (-errno);
 		}
 
@@ -477,17 +481,17 @@ get_tcp_socket (
 
 #			if defined(__hpux) && defined(SVR4)	/* recommended by raj@cup.hp.com */
 #				define HPSOCKSIZE 0x8000
-		getsockopt(s, SOL_SOCKET, SO_SNDBUF, (caddr_t)&socksize, (caddr_t)&socksizelen);
+		getsockopt(s, SOL_SOCKET, SO_SNDBUF, /* (caddr_t) */ &socksize, /* (caddr_t) */ &socksizelen);
 		if (socksize < HPSOCKSIZE) {
 			socksize = HPSOCKSIZE;
-			setsockopt(s, SOL_SOCKET, SO_SNDBUF, (caddr_t)&socksize, sizeof(socksize));
+			setsockopt(s, SOL_SOCKET, SO_SNDBUF, /* (caddr_t) */ &socksize, sizeof(socksize));
 		}
 		socksize = 0;
 		socksizelen = sizeof(socksize);
-		getsockopt(s, SOL_SOCKET, SO_RCVBUF, (caddr_t)&socksize, (caddr_t)&socksizelen);
+		getsockopt(s, SOL_SOCKET, SO_RCVBUF, /* (caddr_t) */ &socksize, /* (caddr_t) */ &socksizelen);
 		if (socksize < HPSOCKSIZE) {
 			socksize = HPSOCKSIZE;
-			setsockopt(s, SOL_SOCKET, SO_RCVBUF, (caddr_t)&socksize, sizeof(socksize));
+			setsockopt(s, SOL_SOCKET, SO_RCVBUF, /* (caddr_t) */ &socksize, sizeof(socksize));
 		}
 #			endif /* __hpux && SVR4 */
 
@@ -508,7 +512,7 @@ get_tcp_socket (
 
 #			ifdef EXCELAN
 	if ((s = socket (SOCK_STREAM, (struct sockproto *)NULL, &sock_in, SO_KEEPALIVE)) < 0) {
-		perror ("socket"); /* FIXME: -> lang.c */
+		perror ("socket");
 		return (-errno);
 	}
 
@@ -525,14 +529,14 @@ get_tcp_socket (
 	/* And connect */
 	if (connect (s, (struct sockaddr *)&sock_in) < 0) {
 		save_errno = errno;
-		perror ("connect"); /* FIXME: -> lang.c */
+		perror ("connect");
 		(void) s_close (s);
 		return (-save_errno);
 	}
 
 #			else
 	if ((s = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
-		perror ("socket"); /* FIXME: -> lang.c */
+		perror ("socket");
 		return (-errno);
 	}
 
@@ -542,7 +546,7 @@ get_tcp_socket (
 
 	if (connect (s, (struct sockaddr *) &sock_in, sizeof (sock_in)) < 0) {
 		save_errno = errno;
-		perror ("connect"); /* FIXME: -> lang.c */
+		perror ("connect");
 		(void) s_close (s);
 		return (-save_errno);
 	}
@@ -601,7 +605,7 @@ get_tcp6_socket (
 	res0 = (struct addrinfo *) 0;
 	err = getaddrinfo(mymachine, myport, &hints, &res0);
 	if (err != 0) {
-		my_fprintf (stderr, "\ngetaddrinfo: %s\n", gai_strerror(err)); /* FIXME: -> lang.c */
+		my_fprintf (stderr, "\ngetaddrinfo: %s\n", gai_strerror(err));
 		return (-1);
 	}
 	err = -1;
@@ -681,14 +685,14 @@ get_dnet_socket (
 	memcpy(&sdn.sdn_objname[0], "NNTP", sdn.sdn_objnamel);
 
 	if ((s = socket (AF_DECnet, SOCK_STREAM, 0)) < 0) {
-		nerror ("socket"); /* FIXME: -> lang.c */
+		nerror ("socket");
 		return (-1);
 	}
 
 	/* And then connect */
 
 	if (connect (s, (struct sockaddr *) &sdn, sizeof (sdn)) < 0) {
-		nerror ("connect"); /* FIXME: -> lang.c */
+		nerror ("connect");
 		close (s);
 		return (-1);
 	}

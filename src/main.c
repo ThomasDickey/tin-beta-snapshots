@@ -233,7 +233,7 @@ main (
 	 * Load the mail & news active files into active[]
 	 *
 	 * create_save_active_file cannot write to active.save
-	 * if no_write == TRUE, so restore original value temporarily
+	 * if no_write != FALSE, so restore original value temporarily
 	 */
 	no_write = tmp_no_write;
 	if (read_saved_news)
@@ -315,7 +315,7 @@ main (
 
 	/* TODO:
 	 * if (num_cmd_line_groups != 0 && check_any_unread)
-	 * 	don't read newsrc.
+	 * don't read newsrc.
 	 * This makes -Z handle command line newsgroups. Test & document
 	 */
 
@@ -829,21 +829,7 @@ update_index_files (
 				create_index_lock_file (lock_file);
 				process_id = getpid ();
 #	if defined(BSD)							/* FIXME: sort and remove OS dependant ifdefs */
-#		ifdef HAVE_SETSID
-				setsid();
-#		else
-#			ifdef HAVE_SETPGID
-				setpgid (0, 0);
-#			else
-#				ifdef HAVE_SETPGRP
-#					ifdef SETPGRP_VOID
-				setpgrp ();
-#					else
-				setpgrp (0, process_id);	/* reset process group leader to this process */
-#					endif /* SETPGRP_VOID */
-#				endif /* HAVE_SETPGRP */
-#			endif /* HAVE_SETPGID */
-#			ifdef TIOCNOTTY
+#		ifdef TIOCNOTTY
 				{
 					int fd;
 
@@ -852,17 +838,7 @@ update_index_files (
 						close (fd);
 					}
 				}
-#			endif /* TIOCNOTTY */
-#		endif /* HAVE_SETSID */
-#	else
-#		ifdef HAVE_SETPGRP
-#				ifdef SETPGRP_VOID
-				setpgrp ();
-#				else
-				setpgrp (0, process_id);
-#				endif /* SETPGRP_VOID */
-				signal (SIGHUP, SIG_IGN);	/* make immune from process group leader death */
-#		endif /* HAVE_SETPGRP */
+#		endif /* TIOCNOTTY */
 #	endif /* BSD */
 				signal (SIGQUIT, SIG_IGN);	/* stop indexing being interrupted */
 
@@ -913,7 +889,7 @@ show_intro_page (
 
 	if (!cmd_line) {
 		Raw (TRUE);
-		continue_prompt ();
+		prompt_continue ();
 	}
 }
 

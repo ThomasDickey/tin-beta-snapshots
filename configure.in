@@ -655,6 +655,7 @@ AC_CHECK_LIB(uu, UUInitialize,
 
 if test $use_curses = yes ; then
 	if test $found_ncurses != yes ; then
+		CF_NCURSES_VERSION
 		CF_CURSES_LIBS
 	fi
 	cf_cv_termlib=curses
@@ -723,16 +724,7 @@ AC_CHECK_FUNCS(\
 	rewinddir \
 	resizeterm \
 	select \
-	setegid \
-	seteuid \
-	setgid \
 	setlocale \
-	setpgid \
-	setpgrp \
-	setregid \
-	setreuid \
-	setsid \
-	setuid \
 	sigaction \
 	snprintf \
 	stpcpy \
@@ -776,7 +768,6 @@ AC_CHECK_FUNCS(\
 	strncasecmp \
 )
 
-CF_SET_GID_UID
 CF_TYPE_SIGACTION
 CF_TERMIOS
 CF_PW_GECOS
@@ -896,12 +887,7 @@ CF_CHECK_DECL(\
 	rename \
 	rewind \
 	select \
-	setegid \
 	setenv \
-	seteuid \
-	setpgrp \
-	setregid \
-	setreuid \
 	snprintf \
 	sscanf \
 	strcasecmp \

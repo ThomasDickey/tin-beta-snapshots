@@ -750,8 +750,8 @@ subscribe_new_group (
  */
 t_bool
 match_group_list (
-	char *group,
-	char *group_list)
+	const char *group,
+	const char *group_list)
 {
 	char *separator;
 	char pattern[HEADER_LEN];
@@ -834,8 +834,8 @@ load_newnews_info (
 	if ((ptr = strchr (info, ' ')) == (char *) 0)
 		return;
 
+	*ptr++ = '\0';
 	new_time = (time_t) atol (ptr);
-	*ptr = '\0';
 
 	/*
 	 * If this is a new host entry, set it up

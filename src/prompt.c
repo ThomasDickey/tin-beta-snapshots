@@ -81,6 +81,7 @@ prompt_num (
  *  prompt_string
  *  get a string from the user
  *  Return TRUE if a valid string was typed, FALSE otherwise
+ *  TODO no bounds checking on buf size, tin_getline() defaults to 1024
  */
 t_bool
 prompt_string (
@@ -157,6 +158,7 @@ prompt_menu_string (
  * prompt_yn
  * prompt user for 'y'es or 'n'o decision. "prompt" will be displayed in line
  * "line" giving the default answer "default_answer".
+ * TODO 'line' is constant - can we remove it ?
  * The function returns 1 if the user decided "yes", -1 if the user wanted
  * to escape, or 0 for any other key or decision.
  */
@@ -186,7 +188,7 @@ prompt_yn (
 			MoveCursor (line, 0);
 			CleartoEOLN ();
 		}
-		my_printf ("%s (%s/%s) %-*s", prompt, keyyes, keyno, maxlen, keyprompt);
+		my_printf ("%s (%s/%s) %-*s", prompt, keyyes, keyno, (int)maxlen, keyprompt);
 		if (!cmd_line)
 			cursoron ();
 		my_flush ();
@@ -570,6 +572,7 @@ prompt_slk_response (
 
 	} while (!strchr (responses->localkeys, ch));
 
+	clear_message ();
 	return map_to_default (ch, responses);
 }
 
@@ -581,7 +584,7 @@ prompt_slk_response (
  * ii) CTRL, SHIFT etc don't work
  */
 void
-continue_prompt (
+prompt_continue (
 	void)
 {
 	int ch;

@@ -298,7 +298,6 @@
 #	define iKeyPageToggleHighlight '_'
 #endif /* HAVE_COLOR */
 #define iKeyPageCatchup 'c'
-#define iKeyPageToggleRot2 'd'
 #define iKeyPageEditArticle 'e'
 #define iKeyPageFollowupQuote 'f'
 #define iKeyPageFirstPage2 'g'
@@ -355,12 +354,6 @@
 
 #define iKeySaveAppendFile 'a'
 #define iKeySaveOverwriteFile 'o'
-#if 0
-#define iKeyPProcExtractZip 'E'
-#define iKeyPProcListZip 'L'
-#define iKeyPProcExtractZoo 'e'
-#define iKeyPProcListZoo 'l'
-#endif /* 0 */
 #define iKeyPProcShar 's'
 #define iKeyPProcUUDecode 'u'
 #define iKeyPProcNone 'n'

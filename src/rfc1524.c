@@ -3,7 +3,7 @@
  *  Module    : rfc1524.c
  *  Author    : Urs Janssen <urs@tin.org>, Jason Faultless <jason@radar.tele2.co.uk>
  *  Created   : 2000-05-15
- *  Updated   : 2000-06-13
+ *  Updated   : 2000-06-25
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
  * Copyright (c) 2000 Urs Janssen <urs@tin.org>, Jason Faultless <jason@radar.tele2.co.uk>
@@ -41,90 +41,101 @@
 #	include "rfc2046.h"
 #endif /* RFC2046_H */
 
-#define DEFAULT_MAILCAPS "~/.mailcap:/etc/mailcap:/usr/etc/mailcap:/usr/local/etc/mailcap"
+#define DEFAULT_MAILCAPS "~/.mailcap:/etc/mailcap:/usr/etc/mailcap:/usr/local/etc/mailcap:/etc/mail/mailcap"
 
 /* maximum number of mailcap fields */
 #define MAILCAPFIELDS 13
 
 /* local prototypes */
-static char *expand_mailcap_meta (const char *mailcap, t_part *part);
+static char *expand_mailcap_meta (const char *mailcap, t_part *part, char *nametemplate, const char *path);
 static char *get_mailcap_field (char *mailcap);
-static t_mailcap *parse_mailcap_line (const char *mailcap, t_part *part);
+static t_mailcap *parse_mailcap_line (const char *mailcap, t_part *part, const char *path);
 
 
 /*
- * mainloop, find a mailcap file, look for a matching entry
- * extract fields, expand metas
+ * mainloop:
+ * 	scan mailcap file(s), look for a matching entry extract fields,
+ * 	expand metas
  *
  * TODO: don't used fixed length buffers
  */
 t_mailcap *
 get_mailcap_entry (
-	t_part *part)
+	t_part *part,
+	const char *path)
 {
 	FILE *fp = (FILE *) 0;
-	char *ptr, *ptr2;
+	char *ptr, *ptr2, *nptr;
 	char buf[LEN];
+	char filename[LEN];	/* name of current mailcap file */
 	char mailcap[LEN];	/* full match */
 	char mailcaps[LEN];	/* possible mailcap files */
 	char wildcap[LEN];	/* basetype match */
 	t_mailcap *foo = (t_mailcap *) 0;
 
-	ptr = (char *) get_val("MAILCAPS", DEFAULT_MAILCAPS);
-	STRCPY(mailcaps, ptr);
-	ptr = strtok(mailcaps, ":");
-	while (ptr != (char *) 0) {
-		/* expand ~ and/or $HOME etc. */
-		if (strfpath (ptr, mailcap, sizeof (mailcap), homedir, (char *) 0, (char *) 0, (char *) 0)) {
-			if ((fp = fopen(mailcap, "r")) != (FILE *) 0)
-				break;
-			ptr = strtok(NULL, ":");
+	/* build list of mailcap files */
+	if ((ptr = getenv ("MAILCAPS")) != (char *) 0) {
+		if (strlen(ptr)) {
+			STRCPY(mailcaps, ptr);
+			strncat(mailcaps, ":", sizeof(mailcaps) -1);
 		}
 	}
-	if (!fp) /* no mailcaps file */
-		return ((t_mailcap *) 0);
+	strncat(mailcaps, DEFAULT_MAILCAPS, sizeof(mailcaps) -1);
 
-	/* (re)init some vars missued above */
 	mailcap[0] = '\0';
 	wildcap[0] = '\0';
 	ptr = buf;
 
-	while ((fgets (ptr, sizeof(buf) - strlen(buf), fp)) != NULL) {
-		if (*ptr == '#' || *ptr == '\n')		/* skip comments & blank lines */
-			continue;
+	nptr = strtok(mailcaps, ":");
+	while (nptr != (char *) 0) {
+		/* expand ~ and/or $HOME etc. */
+		if (strfpath (nptr, filename, sizeof (filename) - 1, &CURR_GROUP)) {
+			if ((fp = fopen(filename, "r")) != (FILE *) 0) {
+				while ((fgets (ptr, sizeof(buf) - strlen(buf), fp)) != NULL) {
+					if (*ptr == '#' || *ptr == '\n')		/* skip comments & blank lines */
+						continue;
 
-		ptr = buf + strlen(buf) - 1;
+					ptr = buf + strlen(buf) - 1;
 
-		if (*ptr == '\n')		/* remove linebreaks */
-			*ptr-- = '\0';
+					if (*ptr == '\n')		/* remove linebreaks */
+						*ptr-- = '\0';
 
-		if (*ptr == '\\')		/* continuation line */
-			continue;			/* append */
-		else
-			ptr = buf;
+					if (*ptr == '\\')		/* continuation line */
+						continue;			/* append */
+					else
+						ptr = buf;
 
-		if ((ptr2 = strchr(buf, '/')) != (char *) 0) {
-			if (!strncmp(ptr, content_types[part->type], strlen(ptr) - strlen(ptr2))) {
-				if (!strncmp(ptr + strlen(content_types[part->type]) + 1, part->subtype, strlen(part->subtype))) {
-					/* full match, so parse line and evaluate test if given. */
-					STRCPY(mailcap, ptr);
-					foo = parse_mailcap_line (mailcap, part);
-					if (foo != (t_mailcap *) 0)
-						break; /* perfect match with test succeded (if given) */
-				} else {
-					if ((*(ptr2 + 1) == '*') || (*(ptr2 + 1) == ';')) { /* wildmat match */
-						if (!strlen(wildcap)) { /* we don't already have a wildmat match */
-							STRCPY(wildcap, buf);
-							foo = parse_mailcap_line (wildcap, part);
-							if (foo == (t_mailcap *) 0) /* test failed */
-								wildcap[0] = '\0'; /* ignore match */
-						}
-					} /* else subtype missmatch, no action required */
+					if ((ptr2 = strchr(buf, '/')) != (char *) 0) {
+						if (!strncmp(ptr, content_types[part->type], strlen(ptr) - strlen(ptr2))) {
+							if (!strncmp(ptr + strlen(content_types[part->type]) + 1, part->subtype, strlen(part->subtype))) {
+								/* full match, so parse line and evaluate test if given. */
+								STRCPY(mailcap, ptr);
+								foo = parse_mailcap_line (mailcap, part, path);
+								if (foo != (t_mailcap *) 0) {
+									fclose (fp); /* perfect match with test succeded (if given) */
+									return foo;
+								}
+							} else {
+								if ((*(ptr2 + 1) == '*') || (*(ptr2 + 1) == ';')) { /* wildmat match */
+									if (!strlen(wildcap)) { /* we don't already have a wildmat match */
+										STRCPY(wildcap, buf);
+										foo = parse_mailcap_line (wildcap, part, path);
+										if (foo == (t_mailcap *) 0) /* test failed */
+											wildcap[0] = '\0'; /* ignore match */
+									}
+								} /* else subtype missmatch, no action required */
+							}
+						} /* else no match, no action required */
+					} /* else invalid mailcap line (no /), no action required */
 				}
-			} /* else no match, no action required */
-		} /* else invalid mailcap line (no /), no action required */
+				fclose (fp);
+			}
+		} /* else strfpath() failed, no action required */
+		nptr = strtok(NULL, ":"); /* get next filename */
 	}
-	fclose (fp);
+	foo = (t_mailcap *) 0; /* weed out possible junk */
+	if (strlen(wildcap))	/* we had a wildmat match somewhere */
+		foo = parse_mailcap_line (wildcap, part, path);
 	return foo;
 }
 
@@ -135,7 +146,8 @@ get_mailcap_entry (
 static t_mailcap*
 parse_mailcap_line(
 	const char *mailcap,
-	t_part *part)
+	t_part *part,
+	const char *path)
 {
 	char *ptr, *optr, *buf;
 	int i = MAILCAPFIELDS - 2; /* max MAILCAPFIELDS - required fileds */
@@ -169,8 +181,12 @@ parse_mailcap_line(
 	tmailcap->type = buf;
 	ptr += strlen(ptr) + 1;
 	if ((ptr = get_mailcap_field(ptr)) != (char *) 0) {
-		tmailcap->command = expand_mailcap_meta(ptr, part);
+		tmailcap->command = ptr;
 		ptr += strlen(ptr) + 1;
+	} else { /* required filed missing */
+		free (optr);
+		free_mailcap (tmailcap);
+		return ((t_mailcap *) 0);
 	}
 
 	while ((ptr = get_mailcap_field(ptr)) != (char *) 0) {
@@ -185,15 +201,15 @@ parse_mailcap_line(
 			ptr += strlen(ptr) + 1;
 		}
 		if (!strncasecmp(ptr, "description=", 12)) {
-			tmailcap->description = expand_mailcap_meta(ptr + 12, part);
+			tmailcap->description = ptr + 12;
 			ptr += strlen(ptr) + 1;
 		}
 		if (!strncasecmp(ptr, "nametemplate=", 13)) {
-			tmailcap->nametemplate = expand_mailcap_meta(ptr + 13, part);
+			tmailcap->nametemplate = expand_mailcap_meta(ptr + 13, part, (char *) 0, path);
 			ptr += strlen(ptr) + 1;
 		}
 		if (!strncasecmp(ptr, "test=", 5)) {
-			tmailcap->test = expand_mailcap_meta(ptr + 5, part);
+			tmailcap->test = ptr + 5;
 			ptr += strlen(ptr) + 1;
 		}
 		if (!strncasecmp(ptr, "textualnewlines=", 16)) {
@@ -201,31 +217,53 @@ parse_mailcap_line(
 			ptr += strlen(ptr) + 1;
 		}
 		if (!strncasecmp(ptr, "compose=", 8)) {
-			tmailcap->compose = expand_mailcap_meta(ptr + 8, part);
+			tmailcap->compose = ptr + 8;
 			ptr += strlen(ptr) + 1;
 		}
 		if (!strncasecmp(ptr, "composetyped=", 13)) {
-			tmailcap->composetyped = expand_mailcap_meta(ptr + 13, part);
+			tmailcap->composetyped = ptr + 13;
 			ptr += strlen(ptr) + 1;
 		}
 		if (!strncasecmp(ptr, "edit=", 5)) {
-			tmailcap->edit = expand_mailcap_meta(ptr + 5, part);
+			tmailcap->edit = ptr + 5;
 			ptr += strlen(ptr) + 1;
 		}
 		if (!strncasecmp(ptr, "print=", 6)) {
-			tmailcap->print = expand_mailcap_meta(ptr + 6, part);
+			tmailcap->print = ptr + 6;
 			ptr += strlen(ptr) + 1;
 		}
 		if (!strncasecmp(ptr, "x11-bitmap=", 11)) {
-			tmailcap->x11bitmap = expand_mailcap_meta(ptr + 11, part);
+			tmailcap->x11bitmap = ptr + 11;
 			ptr += strlen(ptr) + 1;
 		}
 	}
 
+	/*
+	 * expand metas - we do it in a 2nd pass to be able to honor
+	 * nametemplate
+	 */
+	if (tmailcap->command != (char *) 0)
+		tmailcap->command = expand_mailcap_meta(tmailcap->command, part, tmailcap->nametemplate, path);
+	if (tmailcap->description != (char *) 0)
+		tmailcap->description = expand_mailcap_meta(tmailcap->description, part, tmailcap->nametemplate, path);
+	if (tmailcap->test != (char *) 0)
+		tmailcap->test = expand_mailcap_meta(tmailcap->test, part, tmailcap->nametemplate, path);
+	if (tmailcap->compose != (char *) 0)
+		tmailcap->compose = expand_mailcap_meta(tmailcap->compose, part, tmailcap->nametemplate, path);
+	if (tmailcap->composetyped != (char *) 0)
+		tmailcap->composetyped = expand_mailcap_meta(tmailcap->composetyped, part, tmailcap->nametemplate, path);
+	if (tmailcap->edit != (char *) 0)
+		tmailcap->edit = expand_mailcap_meta(tmailcap->edit, part, tmailcap->nametemplate, path);
+	if (tmailcap->print != (char *) 0)
+		tmailcap->print = expand_mailcap_meta(tmailcap->print, part, tmailcap->nametemplate, path);
+	if (tmailcap->x11bitmap != (char *) 0)
+		tmailcap->x11bitmap = expand_mailcap_meta(tmailcap->x11bitmap, part, tmailcap->nametemplate, path);
+
 	free (optr);
 
 	if (tmailcap->test != (char *) 0) { /* test field given */
-		/* argh! system() */
+		/* TODO: EndWin()/InitWin() around system needed? */
+		/* TODO: use invoke_cmd() ? */
 		if (system(tmailcap->test) != 0) { /* test failed ? */
 			free_mailcap (tmailcap);
 			return ((t_mailcap *) 0);
@@ -285,21 +323,32 @@ get_mailcap_field(
 /*
  * expand metas - called from parse_mailcap_line()
  *
- * TODO: expand %F, %n, %{...}
+ * TODO: expand %F, %n
  */
+#define CHECK_SPACE(minlen) { \
+	while (space <= (minlen)) { /* need more space ? */ \
+		olen = strlen(line); \
+		space += linelen; \
+		linelen *= 2; \
+		line = (char *) my_realloc((void *) line, linelen); \
+		memset(line + olen, 0, linelen - olen); \
+	} \
+}
+		
 static char *
 expand_mailcap_meta(
 	const char *mailcap,
-	t_part *part)
+	t_part *part,
+	char *nametemplate,
+	const char *path)
 {
 	const char *ptr;
 	char *line, *lptr;
 	t_bool quote = FALSE;
 	t_bool percent = FALSE;
 	size_t linelen, space, olen;
-	struct t_attribute *attr = CURR_GROUP.attribute;
 
- 	if ((ptr = strchr(mailcap, '%')) == (char *) 0) /* nothing to expand */
+	if ((ptr = strchr(mailcap, '%')) == (char *) 0) /* nothing to expand */
 		return my_strdup(mailcap); /* waste of mem, but simplyfies the frees */
 
 	linelen = sizeof(char) * LEN * 2;		/* initial maxlen */
@@ -339,14 +388,35 @@ expand_mailcap_meta(
 				}
 				break;
 
-#if 0
 			case '{':
 				if (percent) {
+					char *end;
+
 					percent = FALSE;
-					break;
+					if ((end = strchr (ptr, '}')) != (char *) 0) {
+						if (part->params != (t_param *) 0) {
+							char *parameter;
+							const char *value;
+
+							parameter = (char *) my_malloc (end - ptr + 1);
+							memset (parameter, 0, end - ptr + 1);
+							strncpy (parameter, ptr + 1, end - ptr - 1); /* extract paramter name */
+
+							if ((value = get_param (part->params, parameter)) != (char *) 0) { /* match ? */
+								CHECK_SPACE(strlen(value));
+								strcat (line, value);
+								lptr = line + strlen(line);
+								space -= strlen(line);
+							}
+						free (parameter);
+						}
+						ptr = end;	/* skip past closing } */
+					}
+					break; /* full %{...} */
 				}
 				/* FALLTHROUGH */
 
+#if 0
 			case 'F':
 				if (percent) {
 					percent = FALSE;
@@ -364,21 +434,20 @@ expand_mailcap_meta(
 
 			case 's':
 				if (percent) {
-					char *nptr;
+					char *nptr = '\0';
 
-					if ((nptr = get_filename(part->params)) == (char *) 0)
-						nptr = attr->savefile ? attr->savefile : tinrc.default_save_file;
+					if (nametemplate)
+						nptr = expand_mailcap_meta(nametemplate, part, (char *) 0, path);
 
-					while (space <= (strlen(attr->savedir) + 1 + strlen(nptr) + 2)) { /* not enough space? */
-						olen = strlen(line);		/* get current legth of string */
-						space += linelen;			/* recalc available space */
-						linelen *= 2;				/* double maxlen */
-						line = (char *) my_realloc((void *) line, linelen);
-						memset(line + olen, 0, linelen - olen);	/* weed out junk */
-					}
-					strcat(line, attr->savedir);
-					strcat(line, "/");
+					if (nptr == (char *) 0)
+						nptr = (char *) path;
+
+					CHECK_SPACE(strlen(nptr) + 2);
 					strcat(line, nptr);
+
+					if (nametemplate) /* recursiv expand_mailcap_meta() calls need extra free */
+						free(nptr);
+
 					lptr = line + strlen(line);
 					space -= strlen(line);
 					percent = FALSE;
@@ -388,13 +457,7 @@ expand_mailcap_meta(
 
 			case 't':
 				if (percent) {
-					while (space <= (strlen(content_types[part->type]) + 1 + strlen(part->subtype))) { /* not enough space? */
-						olen = strlen(line);		/* get current legth of string */
-						space += linelen;       /* recalc available space */
-						linelen *= 2;				/* double maxlen */
-						line = (char *) my_realloc((void *) line, linelen);
-						memset(line + olen, 0, linelen - olen);	/* weed out junk */
-					}
+					CHECK_SPACE((strlen(content_types[part->type]) + 1 + strlen(part->subtype)));
 					strcat(line, content_types[part->type]);
 					strcat(line, "/");
 					strcat(line, part->subtype);

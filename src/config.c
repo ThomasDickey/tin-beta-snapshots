@@ -544,7 +544,7 @@ read_config_file (
 				break;
 			}
 
-			if (match_string (buf, "post_process_command=", tinrc.post_process_command, sizeof(tinrc.post_process_command)))
+			if (match_boolean (buf, "post_process_view=", &tinrc.post_process_view))
 				break;
 
 			if (match_boolean (buf, "process_only_unread=", &tinrc.process_only_unread))
@@ -811,8 +811,8 @@ write_config_file (
 	fprintf (fp, _(txt_post_process.tinrc));
 	fprintf (fp, "post_process_type=%d\n\n", tinrc.post_process);
 
-	fprintf (fp, _(txt_tinrc_post_process_command));
-	fprintf (fp, "post_process_command=%s\n\n", tinrc.post_process_command);
+	fprintf (fp, _(txt_post_process_view.tinrc));
+	fprintf (fp, "post_process_view=%s\n\n", print_boolean (tinrc.post_process_view));
 
 	fprintf (fp, _(txt_process_only_unread.tinrc));
 	fprintf (fp, "process_only_unread=%s\n\n", print_boolean (tinrc.process_only_unread));
@@ -1230,8 +1230,14 @@ write_config_file (
 	fprintf (fp, "default_shell_command=%s\n\n", tinrc.default_shell_command);
 
 	fprintf (fp, _(txt_tinrc_newnews));
-	for (i = 0; i < num_newnews; i++)
-		fprintf (fp, "newnews=%s %lu\n", newnews[i].host, (unsigned long int) newnews[i].time);
+	for (i = 0; i < num_newnews; i++) {
+		char timestring[LEN];
+
+		timestring[0] = '\0';
+		my_strftime(timestring, LEN-1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(newnews[i].time)));
+		fprintf (fp, "newnews=%s %lu (%s)\n", newnews[i].host,
+								(unsigned long int) newnews[i].time, timestring);
+	}
 
 	if (ferror (fp) || fclose (fp))
 		error_message (_(txt_filesystem_full), CONFIG_FILE);
@@ -1248,36 +1254,62 @@ write_config_file (
 static int first_option_on_screen;
 static int actual_top_option = 0;
 
+#define TopOfPage(option) option_lines_per_page \
+			* ((option) / option_lines_per_page)
+
+#define OptionInPage(option)	((option) - first_option_on_screen)
+#define OptionIndex(option)	(OptionInPage(option) % option_lines_per_page)
+
+int
+option_row (
+	int option)
+{
+	return (INDEX_TOP + OptionIndex(option));
+}
+
 
 static void
 print_any_option (
 	int act_option)
 {
 	constext **list;
+	char temp[LEN], *ptr;
+	int row = option_row(act_option);
+	int len = sizeof(temp) - 1;
 
-	my_printf("%3d. %s ", act_option+1, option_table[act_option].txt->opt);
+	MoveCursor (row, 0);
+
+	snprintf(temp, len, "   %3d. %s ", act_option+1, option_table[act_option].txt->opt);
+	ptr = temp + strlen(temp);
+	len -= strlen(temp);
+
 	switch (option_table[act_option].var_type) {
 		case OPT_ON_OFF:
-			my_printf("%s ", print_boolean(*OPT_ON_OFF_list[option_table[act_option].var_index]));
+			snprintf(ptr, len, "%s ", print_boolean(*OPT_ON_OFF_list[option_table[act_option].var_index]));
 			break;
 		case OPT_LIST:
 			list = option_table[act_option].opt_list;
-			my_printf("%s", list[*(option_table[act_option].variable) + ((strcasecmp(list[0], _(txt_default)) == 0) ? 1 : 0)]);
+			snprintf(ptr, len, "%s", list[*(option_table[act_option].variable) + ((strcasecmp(list[0], _(txt_default)) == 0) ? 1 : 0)]);
 			break;
 		case OPT_STRING:
-			my_printf("%-.*s", cCOLS - (int) strlen(option_table[act_option].txt->opt) - OPT_ARG_COLUMN - 3, OPT_STRING_list[option_table[act_option].var_index]);
+			snprintf(ptr, len, "%s", OPT_STRING_list[option_table[act_option].var_index]);
 			break;
 		case OPT_NUM:
-			my_printf("%d", *(option_table[act_option].variable));
+			snprintf(ptr, len, "%d", *(option_table[act_option].variable));
 			break;
 		case OPT_CHAR:
-			my_printf("%c", *OPT_CHAR_list[option_table[act_option].var_index]);
+			snprintf(ptr, len, "%c", *OPT_CHAR_list[option_table[act_option].var_index]);
 			break;
 		default:
 			break;
 	}
 #ifdef USE_CURSES
+	my_printf("%.*s", cCOLS, temp);
 	clrtoeol();
+#else
+	my_printf("%.*s", cCOLS - 1, temp);
+	/* draw_arrow_mark() will read this back for repainting */
+	strncpy(screen[row - INDEX_TOP].col, temp, cCOLS);
 #endif /* USE_CURSES */
 }
 
@@ -1299,27 +1331,12 @@ OptionOnPage (
 	return FALSE;
 }
 
-#define TopOfPage(option) option_lines_per_page \
-			* ((option) / option_lines_per_page)
-
-#define OptionInPage(option)	((option) - first_option_on_screen)
-#define OptionIndex(option)	(OptionInPage(option) % option_lines_per_page)
-
-
-int
-option_row (
-	int option)
-{
-	return (INDEX_TOP + OptionIndex(option));
-}
-
 
 static void
 RepaintOption (
 	int option)
 {
 	if (OptionOnPage(option)) {
-		MoveCursor (option_row(option), 3);
 		print_any_option (option);
 	}
 }
@@ -1333,10 +1350,10 @@ static void DoScroll (
 	int y, x;
 	getyx(stdscr, y, x);
 #	endif /* 0 */
-	move(INDEX_TOP, 0);
-	setscrreg(INDEX_TOP, INDEX_TOP + option_lines_per_page - 1);
-	scrl(jump);
-	setscrreg(0, LINES-1);
+	MoveCursor(INDEX_TOP, 0);
+	SetScrollRegion(INDEX_TOP, INDEX_TOP + option_lines_per_page - 1);
+	ScrollScreen(jump);
+	SetScrollRegion(0, LINES-1);
 }
 #endif /* USE_CURSES */
 
@@ -1652,7 +1669,6 @@ change_config_file (
 						case OPT_MAIL_8BIT_HEADER:
 							if (strcasecmp(txt_mime_encodings[tinrc.mail_mime_encoding], txt_8bit)) {
 								tinrc.mail_8bit_header = FALSE;
-								MoveCursor (option_row(OPT_MAIL_8BIT_HEADER), 3);
 								print_option (OPT_MAIL_8BIT_HEADER);
 							}
 							break;
@@ -1660,7 +1676,6 @@ change_config_file (
 						case OPT_POST_8BIT_HEADER:
 							if (strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_8bit)) {
 								tinrc.post_8bit_header = FALSE;
-								MoveCursor (option_row(OPT_POST_8BIT_HEADER), 3);
 								print_option (OPT_POST_8BIT_HEADER);
 							}
 							break;
@@ -2178,8 +2193,7 @@ match_string (
 
 	if (STRNCMPEQ(line, pat, patlen)) {
 		strncpy (dst, &line[patlen], dstlen);
-		ptr = strrchr (dst, '\n');
-		if (ptr != (char *) 0)
+		if ((ptr = strrchr (dst, '\n')) != (char *) 0)
 			*ptr = '\0';
 
 		return TRUE;
@@ -2254,7 +2268,6 @@ show_config_page (
 		lines_to_print = LAST_OPT + 1 - first_option_on_screen;
 
 	for (i = 0; i < lines_to_print;i++) {
-		MoveCursor (INDEX_TOP + i, 3);
 		print_any_option (first_option_on_screen + i);
 	}
 	CleartoEOS ();

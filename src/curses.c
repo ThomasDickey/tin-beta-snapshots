@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2000-04-14
+ *  Updated   : 2000-07-19
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -171,6 +171,8 @@ static int _columns, _line, _lines;
 
 #ifdef M_UNIX
 
+#	undef SET_TTY
+#	undef GET_TTY
 #	if USE_POSIX_TERMIOS
 #		define SET_TTY(arg) tcsetattr (TTYIN, TCSANOW, arg)
 #		define GET_TTY(arg) tcgetattr (TTYIN, arg)
@@ -232,88 +234,101 @@ setup_screen (void)
 
 #ifdef M_UNIX
 
-#ifdef USE_TERMINFO
-#	define TGETSTR(a,b, bufp) tigetstr(b, bufp)
-#	define TGETNUM(a,b)       tigetnum(b) /* may be tigetint() */
-#	define TGETFLAG(a,b)      tigetflag(b)
-#	define NO_CAP(s)           (s == 0 || s == (char *)-1)
-#	if !defined(HAVE_TIGETNUM) && defined(HAVE_TIGETINT)
-#		define tigetnum tigetint
-#	endif /* !HAVE_TIGETNUM && HAVE_TIGETINT */
-#else /* USE_TERMCAP */
-#	undef USE_TERMCAP
-#	define USE_TERMCAP 1
-#	define TGETSTR(a,b, bufp) tgetstr(a, bufp)
-#	define TGETNUM(a,b)       tgetnum(a)
-#	define TGETFLAG(a,b)      tgetflag(a)
-#	define NO_CAP(s)           (s == 0)
-#endif /* USE_TERMINFO */
+#	ifdef USE_TERMINFO
+#		define CAPNAME(a,b)       b
+#		define TGETSTR(b,bufp)    tigetstr(b)
+#		define TGETNUM(b)         tigetnum(b) /* may be tigetint() */
+#		define TGETFLAG(b)        tigetflag(b)
+#		define NO_CAP(s)           (s == 0 || s == (char *)-1)
+#		if !defined(HAVE_TIGETNUM) && defined(HAVE_TIGETINT)
+#			define tigetnum tigetint
+#		endif /* !HAVE_TIGETNUM && HAVE_TIGETINT */
+#	else /* USE_TERMCAP */
+#		undef USE_TERMCAP
+#		define USE_TERMCAP 1
+#		define CAPNAME(a,b)       a
+#		define TGETSTR(a, bufp)   tgetstr(a, bufp)
+#		define TGETNUM(a)         tgetnum(a)
+#		define TGETFLAG(a)        tgetflag(a)
+#		define NO_CAP(s)           (s == 0)
+#	endif /* USE_TERMINFO */
 
-#ifdef HAVE_TPARM
-#define TFORMAT(fmt, a, b) tparm(fmt, b, a)
-#else
-#define TFORMAT(fmt, a, b) tgoto(fmt, b, a)
-#endif /* HAVE_TPARM */
+#	ifdef HAVE_TPARM
+#		define TFORMAT(fmt, a, b) tparm(fmt, b, a)
+#	else
+#		define TFORMAT(fmt, a, b) tgoto(fmt, b, a)
+#	endif /* HAVE_TPARM */
 
-#ifdef HAVE_EXTERN_TCAP_PC
+#	ifdef HAVE_EXTERN_TCAP_PC
 extern char PC;			/* used in 'tputs()' */
-#endif /* HAVE_EXTERN_TCAP_PC */
+#	endif /* HAVE_EXTERN_TCAP_PC */
 
 int
 get_termcaps (void)
 {
+	static struct {
+		char **value;
+		char capname[6];
+	} table[] = {
+		{ &_clearinverse,	CAPNAME("se", "rmso") },
+		{ &_clearscreen,	CAPNAME("cl", "clear") },
+		{ &_cleartoeoln,	CAPNAME("ce", "el") },
+		{ &_cleartoeos,		CAPNAME("cd", "ed") },
+		{ &_clearunderline,	CAPNAME("ue", "rmul") },
+		{ &_cursoroff,		CAPNAME("vi", "civis") },
+		{ &_cursoron,		CAPNAME("ve", "cnorm") },
+		{ &_keypadlocal,	CAPNAME("ke", "rmkx") },
+		{ &_keypadxmit,		CAPNAME("ks", "smkx") },
+		{ &_moveto,		CAPNAME("cm", "cup") },
+		{ &_scrollback,		CAPNAME("sr", "ri") },
+		{ &_scrollfwd,		CAPNAME("sf", "ind") },
+		{ &_scrollregion,	CAPNAME("cs", "csr") },
+		{ &_setinverse,		CAPNAME("so", "smso") },
+		{ &_setunderline,	CAPNAME("us", "smul") },
+		{ &_terminalend,	CAPNAME("te", "rmcup") },
+		{ &_terminalinit,	CAPNAME("ti", "smcup") },
+	};
+
 	static char _terminal[1024];		/* Storage for terminal entry */
 	static char _capabilities[1024];	/* String for cursor motion */
 	static char *ptr = _capabilities;	/* for buffering */
 
 	char the_termname[40], *p;
+	unsigned n;
 
 	if ((p = getenv ("TERM")) == (char *) 0) {
 		my_fprintf (stderr, _(txt_no_term_set), tin_progname);
 		return (FALSE);
 	}
-	STRCPY(the_termname, p);
+
+	my_strncpy(the_termname, p, sizeof(the_termname) - 1);
+
 	if (tgetent (_terminal, the_termname) != 1) {
 		my_fprintf (stderr, _(txt_cannot_get_term_entry), tin_progname);
 		return (FALSE);
 	}
 
 	/* load in all those pesky values */
-	_clearscreen    = TGETSTR ("cl", "clear", &ptr);
-	_moveto         = TGETSTR ("cm", "cup",   &ptr);
-	_cleartoeoln    = TGETSTR ("ce", "el",    &ptr);
-	_cleartoeos     = TGETSTR ("cd", "ed",    &ptr);
-	_lines          = TGETNUM ("li", "lines");
-	_columns        = TGETNUM ("co", "cols");
-	_setinverse     = TGETSTR ("so", "smso",  &ptr);
-	_clearinverse   = TGETSTR ("se", "rmso",  &ptr);
-	_setunderline   = TGETSTR ("us", "smul",  &ptr);
-	_clearunderline = TGETSTR ("ue", "rmul",  &ptr);
-	_scrollregion   = TGETSTR ("cs", "csr",   &ptr);
-	_scrollfwd      = TGETSTR ("sf", "ind",   &ptr);
-	_scrollback     = TGETSTR ("sr", "ri",    &ptr);
-	_hp_glitch      = TGETFLAG("xs", "xhp");
-#ifdef HAVE_BROKEN_TGETSTR
+	for (n = 0; n < SIZEOF(table); n++) {
+		*(table[n].value) = TGETSTR(table[n].capname, &ptr);
+	}
+	_lines          = TGETNUM (CAPNAME("li", "lines"));
+	_columns        = TGETNUM (CAPNAME("co", "cols"));
+	_hp_glitch      = TGETFLAG(CAPNAME("xs", "xhp"));
+#	ifdef HAVE_BROKEN_TGETSTR
 	_terminalinit   = "";
 	_terminalend    = "";
 	_keypadlocal    = "";
 	_keypadxmit     = "";
-#else
-	_terminalinit   = TGETSTR ("ti", "smcup", &ptr);
-	_terminalend    = TGETSTR ("te", "rmcup", &ptr);
-	_keypadlocal    = TGETSTR ("ke", "rmkx",  &ptr);
-	_keypadxmit     = TGETSTR ("ks", "smkx",  &ptr);
-#endif /* HAVE_BROKEN_TGETSTR */
-	_cursoron       = TGETSTR ("ve", "cnorm", &ptr);
-	_cursoroff      = TGETSTR ("vi", "civis", &ptr);
+#	endif /* HAVE_BROKEN_TGETSTR */
 
-#ifdef USE_TERMCAP
-#	ifdef HAVE_EXTERN_TCAP_PC
-	t = TGETSTR("pc", "pad", &p);
+#	ifdef USE_TERMCAP
+#		ifdef HAVE_EXTERN_TCAP_PC
+	t = TGETSTR(CAPNAME("pc", "pad"), &p);
 	if (t != 0)
 		PC = *t;
-#	endif /* HAVE_EXTERN_TCAP_PC */
-#endif /* USE_TERMCAP */
+#		endif /* HAVE_EXTERN_TCAP_PC */
+#	endif /* USE_TERMCAP */
 
 	if (STRCMPEQ(the_termname, "xterm")) {
 		static char x_init[] = "\033[?9h";
@@ -368,9 +383,9 @@ int
 InitScreen (void)
 {
 	InitWin ();
-#ifdef HAVE_COLOR
+#	ifdef HAVE_COLOR
 	postinit_colors();
-#endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
 	return (TRUE);
 }
 
@@ -394,25 +409,25 @@ InitScreen (void)
 	_clearunderline	= "\033[0m";
 	_keypadlocal	= "";
 	_keypadxmit	= "";
-#ifdef M_AMIGA
+#	ifdef M_AMIGA
 	_terminalinit	= "\033[12{\033[0 p";
 	_terminalend	= "\033[12}\033[ p";
 	_cursoron	= "\033[ p";
 	_cursoroff	= "\033[0 p";
 	_cleartoeos	= "\033[J";
 	_getwinsize	= "\2330 q";
-#endif /* M_AMIGA */
-#ifdef M_OS2
+#	endif /* M_AMIGA */
+#	ifdef M_OS2
 	_cleartoeos	= NULL;
 	_terminalinit	= NULL;
 	_terminalend	= "";
 	initscr ();
-#endif /* M_OS2 */
-#ifdef VMS
+#	endif /* M_OS2 */
+#	ifdef VMS
 	_cleartoeos	= "\033[J";
 	_terminalinit	= NULL;
 	_terminalend	= "";
-#endif /* VMS */
+#	endif /* VMS */
 
 	_lines = _columns = -1;
 
@@ -431,7 +446,7 @@ InitScreen (void)
 	/*
 	 * If that failed, try get a response from the console itself
 	 */
-#ifdef M_AMIGA
+#	ifdef M_AMIGA
 	if (_lines == -1 || _columns == -1) {
 		_lines = DEFAULT_LINES_ON_TERMINAL;
 		_columns = DEFAULT_COLUMNS_ON_TERMINAL;
@@ -442,14 +457,14 @@ InitScreen (void)
 		_cursoron = NULL;
 		_getwinsize = NULL;
 	}
-#endif /* M_AMIGA */
-#ifdef M_OS2
+#	endif /* M_AMIGA */
+#	ifdef M_OS2
 	if (_lines == -1 || _columns == -1) {
 		_lines = LINES;
 		_columns = COLS;
 	}
-#endif /* M_OS2 */
-#ifdef VMS /* moved from below InitWin () M.St. 22.01.98 */
+#	endif /* M_OS2 */
+#	ifdef VMS /* moved from below InitWin () M.St. 22.01.98 */
 	{
 		int input_chan, status;
 		int item_code, eightbit;
@@ -501,14 +516,14 @@ InitScreen (void)
 			_keypadlocal = "";
 			_keypadxmit = "";
 		}
-#ifdef HAVE_IS_XTERM
+#		ifdef HAVE_IS_XTERM
 		if (is_xterm()) {
 			xclicks = TRUE;
 			if (!eightbit) {
 				_xclickinit = "\033[?9h";
 				_xclickend  = "\033[?9l";
 			}
-#if 0
+#			if 0
 			else {
 				/*
 				 * These are the settings for a DECterm but the reply can't easily be parsed
@@ -518,11 +533,11 @@ InitScreen (void)
 				_xclickinit = "\2331;2'z";
 				_xclickend = "\2330;0'z";
 			}
-#endif /* 0 */
+#			endif /* 0 */
 		}
-#endif /* HAVE_IS_XTERM */
+#		endif /* HAVE_IS_XTERM */
 	}
-#endif /* VMS */
+#	endif /* VMS */
 
 	if (_lines < MIN_LINES_ON_TERMINAL || _columns < MIN_COLUMNS_ON_TERMINAL) {
 		my_fprintf(stderr, _(txt_screen_too_small), tin_progname);
@@ -670,7 +685,7 @@ CleartoEOS (void)
 static int _topscrregion, _bottomscrregion;
 
 void
-setscrreg (
+SetScrollRegion (
 	int topline,
 	int bottomline)
 {
@@ -688,16 +703,16 @@ setscrreg (
 }
 
 void
-scrl (
-	int lines)
+ScrollScreen (
+	int lines_to_scroll)
 {
 	int i;
 
-	if (!have_linescroll || (lines == 0))
+	if (!have_linescroll || (lines_to_scroll == 0))
 		return;
-	if (lines < 0) {
+	if (lines_to_scroll < 0) {
 		if (_scrollback) {
-			i = lines;
+			i = lines_to_scroll;
 			while (i++) {
 				MoveCursor (_topscrregion, 0);
 				tputs (_scrollback, 1, outchar);
@@ -705,7 +720,7 @@ scrl (
 		}
 	} else
 		if (_scrollfwd) {
-			i = lines;
+			i = lines_to_scroll;
 			while (i--) {
 				MoveCursor (_bottomscrregion, 0);
 				tputs (_scrollfwd, 1, outchar);
@@ -1099,13 +1114,13 @@ highlight_string (
 	char tmp[LEN];
 
 	MoveCursor (row, col);
-	strncpy (tmp, &(screen[row].col[col]), size);	/* TODO: broken in pager - it doesn't use screen[] */
+	my_strncpy (tmp, &(screen[row].col[col]), size);
+
 	StartInverse ();
-#if 0
 	my_fputs (tmp, stdout);
 	my_flush ();
-#endif /* 0 */
 	EndInverse ();
+
 	stow_cursor();
 }
 

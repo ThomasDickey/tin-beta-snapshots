@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2000-04-14
+dnl Updated   : 2000-07-19
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2000 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -415,9 +415,15 @@ AC_DEFUN(AM_WITH_NLS,
     if test "$PACKAGE" = gettext; then
       USE_NLS=yes
       USE_INCLUDED_LIBINTL=yes
-
-      AC_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl)
     fi
+
+    # If we really do not use included intl, suppress the command that
+    # would attempt to symlink the two copies of its header.
+    if test "$USE_INCLUDED_LIBINTL" != yes; then
+      nls_cv_header_libgt=
+      nls_cv_header_intl=
+    fi
+    AC_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl)
 
     AC_OUTPUT_COMMANDS([ #(vi
       case "\$CONFIG_FILES" in
@@ -572,9 +578,10 @@ dnl Restricted form of AC_ARG_WITH that requires user to specify a value
 dnl $1 = option name
 dnl $2 = help message
 dnl $3 = variable to set with the --with value
-dnl $4 = default value, if any
+dnl $4 = default value, if any, must be constant.
+dnl $5 = default value shown for --help if $4 is empty.
 AC_DEFUN([CF_ARG_WITH],
-[AC_ARG_WITH($1,[$2 ](default: ifelse($4,,empty,$4)),,
+[AC_ARG_WITH($1,[$2 ](default: ifelse($4,,ifelse($5,,empty,$5),$4)),,
 ifelse($4,,[withval="${$3}"],[withval="${$3-$4}"]))dnl
 ifelse($4,,[test -n "$withval" && \
 ],[test -z "$withval" && withval=no
@@ -609,6 +616,8 @@ SUB_MAKEFILE=
 CF_OUR_MESSAGES
 if test "$USE_INCLUDED_LIBINTL" = yes ; then
         if test "$nls_cv_force_use_gnu_gettext" = yes ; then
+		SUB_MAKEFILE="intl/$cf_makefile"
+	elif test "$nls_cv_use_gnu_gettext" = yes ; then
 		SUB_MAKEFILE="intl/$cf_makefile"
 	else
 		INTLDIR_MAKE="#"
@@ -760,7 +769,7 @@ AC_CACHE_VAL(cf_cv_dcl_$1,[
 #include <errno.h> ],
     [long x = (long) $1],
     [eval 'cf_cv_dcl_'$1'=yes'],
-    [eval 'cf_cv_dcl_'$1'=no]')
+    [eval 'cf_cv_dcl_'$1'=no'])
 ])
 
 eval 'cf_result=$cf_cv_dcl_'$1
@@ -1010,10 +1019,17 @@ if test ".$ac_cv_func_initscr" != .yes ; then
 	cf_term_lib=""
 	cf_curs_lib=""
 
+	if test ".$cf_cv_ncurses_version" != .no
+	then
+		cf_check_list="ncurses curses cursesX"
+	else
+		cf_check_list="cursesX curses ncurses"
+	fi
+
 	# Check for library containing tgoto.  Do this before curses library
 	# because it may be needed to link the test-case for initscr.
 	AC_CHECK_FUNC(tgoto,[cf_term_lib=predefined],[
-		for cf_term_lib in termcap termlib unknown
+		for cf_term_lib in $cf_check_list termcap termlib unknown
 		do
 			AC_CHECK_LIB($cf_term_lib,tgoto,[break])
 		done
@@ -1021,7 +1037,7 @@ if test ".$ac_cv_func_initscr" != .yes ; then
 
 	# Check for library containing initscr
 	test "$cf_term_lib" != predefined && test "$cf_term_lib" != unknown && LIBS="-l$cf_term_lib $cf_save_LIBS"
-	for cf_curs_lib in cursesX curses ncurses xcurses jcurses unknown
+	for cf_curs_lib in $cf_check_list xcurses jcurses unknown
 	do
 		AC_CHECK_LIB($cf_curs_lib,initscr,[break])
 	done
@@ -1036,6 +1052,8 @@ if test ".$ac_cv_func_initscr" != .yes ; then
 			[cf_result=no])
 		AC_MSG_RESULT($cf_result)
 		test $cf_result = no && AC_ERROR(Cannot link curses library)
+	elif test "$cf_curs_lib" = "$cf_term_lib" ; then
+		:
 	elif test "$cf_term_lib" != predefined ; then
 		AC_MSG_CHECKING(if we need both $cf_curs_lib and $cf_term_lib libraries)
 		AC_TRY_LINK([#include <${cf_cv_ncurses_header-curses.h}>],
@@ -1127,6 +1145,9 @@ both) #(vi
 	;;
 curses.h) #(vi
 	AC_DEFINE_UNQUOTED(NEED_CURSES_H)
+	;;
+term.h) #(vi
+	AC_DEFINE_UNQUOTED(NEED_TERM_H)
 	;;
 termcap.h) #(vi
 	AC_DEFINE_UNQUOTED(NEED_TERMCAP_H)
@@ -2015,8 +2036,8 @@ AC_DEFUN([CF_PATH_EDITOR],
 [
 AC_MSG_CHECKING(for default editor)
 CF_ARG_WITH(editor,
-    [  --with-editor=PROG      specify editor (default: vi)],
-    [DEFAULT_EDITOR])
+    [  --with-editor=PROG      specify editor],
+    [DEFAULT_EDITOR],,vi)
 if test -z "$DEFAULT_EDITOR" ; then
     if test -n "$EDITOR" ; then
     	DEFAULT_EDITOR="$EDITOR"
@@ -2066,7 +2087,7 @@ AC_DEFUN([CF_PATH_MAILER],
 AC_PATH_PROG(DEFAULT_MAILER,sendmail,,$PATH:/usr/sbin:/usr/lib)
 CF_ARG_WITH(mailer,
      [  --with-mailer=PROG      specify default mailer-program],
-     [DEFAULT_MAILER])
+     [DEFAULT_MAILER],,mailx)
 if test -z "$DEFAULT_MAILER" ; then
 AC_PATH_PROG(DEFAULT_MAILER,mailx,,$PATH:/usr/bin)
 fi
@@ -2366,6 +2387,7 @@ dnl Check for definitions & structures needed for window size-changing
 dnl FIXME: check that this works with "snake" (HP-UX 10.x)
 AC_DEFUN([CF_SIZECHANGE],
 [
+AC_REQUIRE([CF_STRUCT_TERMIOS])
 AC_MSG_CHECKING([declaration of size-change])
 AC_CACHE_VAL(cf_cv_sizechange,[
     cf_cv_sizechange=unknown
@@ -2490,6 +2512,40 @@ else
 	AC_DEFINE(getpeername,SOCKSgetpeername)
 	AC_DEFINE(getsockname,SOCKSgetsockname)
 	AC_DEFINE(recvfrom,SOCKSrecvfrom)
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Some machines require _POSIX_SOURCE to completely define struct termios.
+dnl If so, define SVR4_TERMIO
+AC_DEFUN([CF_STRUCT_TERMIOS],[
+AC_CHECK_HEADERS( \
+termio.h \
+termios.h \
+unistd.h \
+)
+if test "$ISC" = yes ; then
+	AC_CHECK_HEADERS( sys/termio.h )
+fi
+if test $ac_cv_header_termios_h = yes ; then
+	case "$CFLAGS" in
+	*-D_POSIX_SOURCE*)
+		termios_bad=dunno ;;
+	*)	termios_bad=maybe ;;
+	esac
+	if test $termios_bad = maybe ; then
+	AC_MSG_CHECKING(whether termios.h needs _POSIX_SOURCE)
+	AC_TRY_COMPILE([#include <termios.h>],
+		[struct termios foo; int x = foo.c_iflag],
+		termios_bad=no, [
+		AC_TRY_COMPILE([
+#define _POSIX_SOURCE
+#include <termios.h>],
+			[struct termios foo; int x = foo.c_iflag],
+			termios_bad=unknown,
+			termios_bad=yes AC_DEFINE(SVR4_TERMIO))
+			])
+	AC_MSG_RESULT($termios_bad)
+	fi
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -2736,7 +2792,7 @@ for P in int void; do
 for Q in int void; do
 for R in int char; do
 for S in "" const; do
-
+	CF_MSG_LOG(loop variables [P:[$]P, Q:[$]Q, R:[$]R, S:[$]S])
 	AC_TRY_COMPILE([$CHECK_DECL_HDRS],
 	[extern $Q OutChar($R);
 	extern $P tputs ($S char *string, int nlines, $Q (*_f)($R));
@@ -2830,7 +2886,7 @@ dnl $1=uppercase($2)
 AC_DEFUN([CF_UPPER],
 [
 changequote(,)dnl
-$1=`echo $2 | tr '[a-z]' '[A-Z]'`
+$1=`echo "$2" | sed y%abcdefghijklmnopqrstuvwxyz./-%ABCDEFGHIJKLMNOPQRSTUVWXYZ___%`
 changequote([,])dnl
 ])dnl
 dnl ---------------------------------------------------------------------------

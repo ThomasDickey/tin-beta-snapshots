@@ -71,7 +71,7 @@ t_lineinfo *artline;	/* active 'lineinfo' data */
 
 t_openartinfo pgart =	/* Global context of article open in the pager */
 	{
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, FALSE, 0 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, FALSE, 0 },
 		FALSE, 0,
 		NULL, NULL, NULL, NULL,
 	};
@@ -100,7 +100,7 @@ static int load_article (int new_respnum);
 static int prompt_response (int ch, int curr_respnum);
 static void process_search (void);
 static void process_url (void);
-static void show_first_header (char *group);
+static void show_first_header (const char *group);
 #ifdef HAVE_METAMAIL
 	static void show_mime_article (FILE *fp);
 #endif /* HAVE_METAMAIL */
@@ -117,9 +117,9 @@ scroll_page (
 #ifdef USE_CURSES
 	scrollok(stdscr, TRUE);
 #endif	/* USE_CURSES */
-	setscrreg(INDEX_TOP+HDR_ADJUST, ARTLINES+HDR_ADJUST+1);
-	scrl(i);
-	setscrreg(0, cLINES);
+	SetScrollRegion(INDEX_TOP+HDR_ADJUST, ARTLINES+HDR_ADJUST+1);
+	ScrollScreen(i);
+	SetScrollRegion(0, cLINES);
 #ifdef USE_CURSES
 	scrollok(stdscr, FALSE);
 #endif	/* USE_CURSES */
@@ -340,9 +340,6 @@ page_goto_next_unread:
 
 			case iKeyLastPage:		/* end of article */
 			case iKeyPageLastPage2:
-#ifdef DEBUG
-fprintf(stderr, "curr_line %d, artlines %d, ARTLINES %d, c+a %d\n", curr_line, artlines, ARTLINES, curr_line+artlines);
-#endif /* DEBUG */
 				if (curr_line + ARTLINES != artlines) {
 					/* Display a full last page for neatness */
 					curr_line = artlines - ARTLINES;
@@ -367,7 +364,7 @@ fprintf(stderr, "curr_line %d, artlines %d, ARTLINES %d, c+a %d\n", curr_line, a
 
 			case iKeyDown:		/* line down */
 			case iKeyDown2:
-				if (curr_line+ARTLINES >= artlines) {
+				if (curr_line + ARTLINES >= artlines) {
 					info_message (_(txt_end_of_art));
 					break;
 				}
@@ -518,16 +515,16 @@ fprintf(stderr, "curr_line %d, artlines %d, ARTLINES %d, c+a %d\n", curr_line, a
 					if (!pgart.rawl) {
 						rewind (pgart.raw);
 						/* Need one extra as the last \n in the file will be accounted too */
-						pgart.rawl = my_malloc(sizeof(t_lineinfo) * (note_h->ext->lines+1));
+						pgart.rawl = my_malloc(sizeof(t_lineinfo) * (note_h->ext->line_count+1));
 						do {
 							pgart.rawl[j].offset = ftell(pgart.raw);
 							pgart.rawl[j].flags = 0;
 							j++;
 						} while ((tin_fgets(pgart.raw, FALSE)) != NULL);
-						pgart.rawl = my_realloc((char *)pgart.rawl, sizeof(t_lineinfo) * note_h->ext->lines);
+						pgart.rawl = my_realloc((char *)pgart.rawl, sizeof(t_lineinfo) * note_h->ext->line_count);
 					}
 					artline = pgart.rawl;
-					artlines = note_h->ext->lines;
+					artlines = note_h->ext->line_count;
 					note_fp = pgart.raw;
 				}
 				curr_line = 0;
@@ -553,6 +550,13 @@ fprintf(stderr, "curr_line %d, artlines %d, ARTLINES %d, c+a %d\n", curr_line, a
 			case iKeyPageToggleUue:			/* toggle display off uuencoded sections */
 				hide_uue = !hide_uue;
 				resize_article (&pgart);	/* Also recooks it.. */
+
+				/*
+				 * If we hid uue and are off the end of the article, reposition to
+				 * show last page for neatness
+				 */
+				if (hide_uue && curr_line + ARTLINES > artlines)
+					curr_line = artlines - ARTLINES;
 				draw_page (group->name, 0);
 				break;
 
@@ -595,8 +599,7 @@ fprintf(stderr, "curr_line %d, artlines %d, ARTLINES %d, c+a %d\n", curr_line, a
 				draw_page (group->name, 0);
 				break;
 
-			case iKeyPageToggleRot:
-			case iKeyPageToggleRot2:	/* toggle rot-13 mode */
+			case iKeyPageToggleRot:	/* toggle rot-13 mode */
 				rotate = (rotate ? 0 : 13);
 				draw_page (group->name, 0);
 				info_message (_(txt_toggled_rot13));
@@ -635,10 +638,7 @@ fprintf(stderr, "curr_line %d, artlines %d, ARTLINES %d, c+a %d\n", curr_line, a
 
 			case iKeyPageEditArticle:		/* edit an article (mailgroup only) */
 				if (iArtEdit (group, &arts[this_resp]))
-#if 0
-					/* FIXME - will just a draw_page() do here ? */
-					goto restart;		/* TODO ehhhhh ? */
-#endif /* 0 */
+					draw_page (group->name, 0);
 				break;
 
 			case iKeyPageFollowupQuote:		/* post a followup to this article */
@@ -821,7 +821,7 @@ return_to_index:
 #endif /* HAVE_COLOR */
 
 			case iKeyPageViewAttach:
-				decode_save_mime (&pgart);
+				decode_save_mime (&pgart, FALSE);
 				break;
 
 			case iKeyPageViewUrl:
@@ -839,13 +839,13 @@ return_to_index:
 
 /*
  * Redraw the current page, curr_line will be the first line displayed
- * The rest of the code just sets curr_line, this function must ensure
- * it is set to something sane
+ * Everything that calls draw_page() just sets curr_line, this function must
+ * ensure it is set to something sane
  * If part is !=0, then only draw the first (-ve) or last (+ve) few lines
  */
 void
 draw_page (
-	char *group,
+	const char *group,
 	int part)
 {
 	char *buff;
@@ -887,12 +887,12 @@ draw_page (
 		curr = &artline[curr_line+i];
 		fseek (note_fp, curr->offset, SEEK_SET);
 
-		buff = fgets (buff, cCOLS+1, note_fp);
+		fgets (buff, cCOLS+1, note_fp);
 
 		/*
-		 * rotN encoding on body data only
+		 * rotN encoding on body and sig data only
 		 */
-		if ((rotate != 0) && (curr->flags&C_BODY)) {
+		if ((rotate != 0) && (curr->flags & (C_BODY | C_SIG))) {
 			char *p = buff;
 
 			for (p=buff; *p; p++) {
@@ -905,22 +905,21 @@ draw_page (
 
 		strip_line(buff);
 
-#ifdef HAVE_COLOR
-#	ifdef USE_CURSES
-		move(i+PAGE_HEADER, 0);
-#	else
+#ifndef USE_CURSES
+		snprintf (screen[i+PAGE_HEADER].col, cCOLS, "%s" cCRLF, buff);
+#endif /* !USE_CURSES */
+
 		MoveCursor (i+PAGE_HEADER, 0);
-#	endif /* USE_CURSES */
-		print_color (i+PAGE_HEADER, buff, curr->flags);
-#else
-#	ifdef USE_CURSES
-		my_fputs(buff, stdout);
-		my_fputs(cCRLF, stdout);
-#	else
-		MoveCursor (i+PAGE_HEADER, 0);
-		my_printf ("%s" cCRLF, buff);
-#	endif /* USE_CURSES */
-#endif /* HAVE_COLOR */
+		draw_pager_line (buff, curr->flags);
+
+		/*
+		 * Highlight URL's and mail addresses
+		 */
+		if (curr->flags & C_URL)
+			highlight_regexes (i+PAGE_HEADER, &url_regex);
+
+		if (curr->flags & C_MAIL)
+			highlight_regexes (i+PAGE_HEADER, &mail_regex);
 
 		/* Blank the screen after a ^L (only occurs when showing cooked) */
 		if (!reveal_ctrl_l && (curr->flags & C_CTRLL)) {
@@ -929,9 +928,9 @@ draw_page (
 		}
 	}
 
-#	ifdef HAVE_COLOR
+#ifdef HAVE_COLOR
 	fcol(tinrc.col_text);
-#	endif /* HAVE_COLOR */
+#endif /* HAVE_COLOR */
 
 	free(buff);
 
@@ -942,14 +941,14 @@ draw_page (
 	 */
 	if (curr_line + ARTLINES >= artlines) {
 		clear_message();
-		MoveCursor (cLINES, MORE_POS-(5+BLANK_PAGE_COLS));
+		MoveCursor (cLINES, MORE_POS - (5 + BLANK_PAGE_COLS));
 		StartInverse ();
 
 		my_fputs (((arts[this_resp].thread != -1) ? _(txt_next_resp) : _(txt_last_resp)), stdout);
 		my_flush ();
 		EndInverse ();
 	} else
-		draw_percent_mark (curr_line+ARTLINES, artlines);
+		draw_percent_mark (curr_line + ARTLINES, artlines);
 
 	stow_cursor();
 }
@@ -971,7 +970,7 @@ show_mime_article (
 	if ((mm = getenv("METAMAIL"))) {
 		if (strcmp (mm, "(internal)") == 0) {	/* Special hack - use internal viewer */
 			draw_page (CURR_GROUP.name, 0);
-			decode_save_mime (&pgart);
+			decode_save_mime (&pgart, FALSE);
 			return;
 		}
 		snprintf (buf, sizeof(buf)-1, mm);
@@ -991,7 +990,7 @@ show_mime_article (
 
 	Raw(TRUE);
 	InitWin ();
-	continue_prompt ();
+	prompt_continue ();
 
 	/* This is redundant, but harmless, unless we are viewing the raw art */
 	fseek (fp, offset, SEEK_SET);	/* goto old position */
@@ -1010,7 +1009,7 @@ show_mime_article (
  */
 static void
 show_first_header (
-	char *group)
+	const char *group)
 {
 	char buf[HEADER_LEN];
 	char tmp[LEN];
@@ -1058,9 +1057,9 @@ show_first_header (
 
 	buf[i] = '\0';
 
-#	ifdef HAVE_COLOR
+#ifdef HAVE_COLOR
 	fcol(tinrc.col_head);
-#	endif /* HAVE_COLOR */
+#endif /* HAVE_COLOR */
 
 	/* Displaying the value of X-Comment-To header in the upper right corner */
 	if (note_h->ftnto && tinrc.show_xcommentto) {
@@ -1084,24 +1083,24 @@ show_first_header (
 	}
 
 	/*
-	 * TODO Consider using note_h->hdr->lines if !MULTIPART
+	 * An accurate line count will appear in the footer anyway
 	 */
-	if (arts[this_resp].lines < 0)
+	if (arts[this_resp].line_count < 0)
 		strcpy (tmp, "?");
 	else
-		sprintf (tmp, "%-4d", arts[this_resp].lines);
+		sprintf (tmp, "%-4d", arts[this_resp].line_count);
 
-#	ifdef HAVE_COLOR
+#ifdef HAVE_COLOR
 	fcol(tinrc.col_head);
-#	endif /* HAVE_COLOR */
+#endif /* HAVE_COLOR */
 
 	sprintf (buf, _(txt_lines), tmp);
 	n = strlen (buf);
 	my_fputs (buf, stdout);
 
-#	ifdef HAVE_COLOR
+#ifdef HAVE_COLOR
 	fcol(tinrc.col_subject);
-#	endif /* HAVE_COLOR */
+#endif /* HAVE_COLOR */
 
 	if (pgart.tex2iso) {
 		*buf = '\0';
@@ -1124,9 +1123,9 @@ show_first_header (
 	my_fputs (buf, stdout);
 	EndInverse ();
 
-#	ifdef HAVE_COLOR
+#ifdef HAVE_COLOR
 	fcol(tinrc.col_response);
-#	endif /* HAVE_COLOR */
+#endif /* HAVE_COLOR */
 
 	MoveCursor (1, RIGHT_POS);
 	if (whichresp)
@@ -1140,9 +1139,9 @@ show_first_header (
 			my_printf (_(txt_x_resp), x_resp, cCRLF);
 	}
 
-#	ifdef HAVE_COLOR
+#ifdef HAVE_COLOR
 	fcol(tinrc.col_normal);
-#	endif /* HAVE_COLOR */
+#endif /* HAVE_COLOR */
 
 	if (arts[this_resp].name)
 		sprintf (buf, "%s <%s>", arts[this_resp].name, arts[this_resp].from);
@@ -1170,15 +1169,15 @@ show_first_header (
 
 	Convert2Printable (buf);
 
-#	ifdef HAVE_COLOR
+#ifdef HAVE_COLOR
 	fcol(tinrc.col_from);
-#	endif /* HAVE_COLOR */
+#endif /* HAVE_COLOR */
 
 	my_printf ("%s" cCRLF cCRLF, buf);
 
-#	ifdef HAVE_COLOR
+#ifdef HAVE_COLOR
 	fcol(tinrc.col_normal);
-#	endif /* HAVE_COLOR */
+#endif /* HAVE_COLOR */
 }
 
 
@@ -1196,23 +1195,12 @@ load_article(
 		wait_message (0, _(txt_reading_article));
 
 #ifdef DEBUG
-	if (debug == 2)
-		fprintf(stderr, "load_art %s(new=%d, curr=%d)\n", (new_respnum == this_resp) ? "ALREADY OPEN!":"", new_respnum, this_resp);
+	fprintf(stderr, "load_art %s(new=%d, curr=%d)\n", (new_respnum == this_resp) ? "ALREADY OPEN!":"", new_respnum, this_resp);
 #endif /* DEBUG */
 
-	/*
-	 * Remember current & previous articles for '-' command
-	 */
-#if 0
-	if (new_respnum != this_resp) {
-		last_resp = this_resp;
-		this_resp = new_respnum;		/* Set new art globally */
-	} else
-		goto already_open;
-#endif /* 0 */
 	if (new_respnum == this_resp) {
 #ifdef DEBUG
-fprintf(stderr, "ART %d already open\n", new_respnum);
+		fprintf(stderr, "ART %d already open\n", new_respnum);
 #endif /* DEBUG */
 		goto already_open;
 	}
@@ -1221,7 +1209,7 @@ fprintf(stderr, "ART %d already open\n", new_respnum);
 
 	make_group_path (CURR_GROUP.name, group_path);
 
-	switch (art_open (&arts[new_respnum], group_path, TRUE, &pgart)) {
+	switch (art_open (&arts[new_respnum], group_path, &pgart)) {
 
 		case ART_UNAVAILABLE:
 			art_mark_read (&CURR_GROUP, &arts[new_respnum]);
@@ -1239,6 +1227,9 @@ fprintf(stderr, "ART %d already open\n", new_respnum);
 				return GRP_ARTFAIL;
 			}
 #endif /* 0 */
+			/*
+			 * Remember current & previous articles for '-' command
+			 */
 			last_resp = this_resp;
 			this_resp = new_respnum;		/* Set new art globally */
 
@@ -1365,12 +1356,12 @@ process_url(
 			char url[LEN];
 
 			*(ptr+offsets[1]) = '\0';
-			if (prompt_default_string ("URL:", url, sizeof(url), ptr+offsets[0], HIST_OTHER)) {
+			if (prompt_default_string ("URL:", url, sizeof(url), ptr+offsets[0], HIST_NONE)) {
 				char ubuf[LEN];
 
 				wait_message(2, "Launching %s\n", url);
 				strcpy(ubuf, "/usr/local/bin/url_handler.sh ");
-				strcat(ubuf, url);
+				strncat(ubuf, url, LEN-32);
 				invoke_cmd (ubuf);
 			}
 

@@ -57,7 +57,6 @@ constext txt_art_not_saved[] = N_("Article not saved");
 constext txt_art_pager_com[] = N_("Article Level Commands (page %d of %d)");
 constext txt_art_posted[] = N_("Article posted");
 constext txt_art_rejected[] = N_("Article rejected (saved to %s)");
-constext txt_art_saved_to[] = N_("Article saved to %s");
 constext txt_art_thread_regex_tag[] = N_("%s=article, %s=thread, %s=hot, %s=pattern, %s=tagged articles, %s=quit: ");
 constext txt_art_unavailable[] = N_("Article unavailable");
 constext txt_art_parent_none[] = N_("Article has no parent");
@@ -92,7 +91,7 @@ constext txt_batch_update_unavail[] = N_("%s: Updating of index files not suppor
 constext txt_batch_update_failed[] = N_("Failed to start background indexing process");
 constext txt_begin_of_art[] = N_("*** Beginning of article ***");
 constext txt_caching_disabled[] = N_("Overview caching not supported; %s is setuid");
-constext txt_cancel_article[] = N_("Cancel (delete) or supersede (overwrite) article [%.*s]? (d/s/q): ");
+constext txt_cancel_article[] = N_("Cancel (delete) or supersede (overwrite) article [%%.*s]? (%s/%s/%s): ");
 constext txt_cancelling_art[] = N_("Cancelling article...");
 constext txt_cannot_create_uniq_name[] = "Can't create unique tempfile-name";
 constext txt_cannot_create[] = N_("Cannot create %s");
@@ -116,7 +115,7 @@ constext txt_check_article[] = N_("Check Prepared Article");
 constext txt_checking_new_groups[] = N_("Checking for new groups... ");
 constext txt_checking_for_news[] = N_("Checking for news...");
 #ifndef HAVE_LIBUU
-	constext txt_checksum_of_file[] = N_("Checksum of %s");
+	constext txt_checksum_of_file[] = N_("\tChecksum of %s (%ld %s)");
 #endif /* !HAVE_LIBUU */
 constext txt_choose_post_process_type[] = N_("Process %s=none, %s=shar, %s=uudecode, %s=quit: ");
 constext txt_color_off[] = N_("ANSI color disabled");
@@ -148,7 +147,7 @@ constext txt_connecting_port[] = N_("Connecting to %s:%d...");
 constext txt_creating_active[] = N_("Creating active file for saved groups...\n");
 constext txt_creating_newsrc[] = N_("Creating newsrc file...\n");
 constext txt_delete_processed_files[] = N_("Delete saved files that have been post processed?");
-constext txt_deleting[] = N_("Deleting...");
+constext txt_deleting[] = N_("Deleting temporary files...");
 constext txt_end_of_art[] = N_("*** End of article ***");
 constext txt_end_of_arts[] = N_("*** End of articles ***");
 constext txt_end_of_groups[] = N_("*** End of groups ***");
@@ -235,9 +234,6 @@ constext txt_error_sender_in_header_not_allowed[] = N_("\nError on line %d: \"Se
 constext txt_error_singular[] = N_("error");
 constext txt_exiting[] = N_("Exiting...");
 constext txt_external_mail_done[] = N_("leaving external mail-reader");
-#ifndef HAVE_LIBUU
-	constext txt_extracting_archive[] = N_("Extracting %s archive...");
-#endif /* !HAVE_LIBUU */
 constext txt_extracting_shar[] = N_("Extracting %s...");
 constext txt_failed_to_connect_to_server[] = N_("Failed to connect to NNTP server %s. Exiting...");
 constext txt_filesystem_full[] = N_("Error writing %s file. Filesystem full? File reset to previous state.");
@@ -389,7 +385,7 @@ constext txt_help_p_at[] = N_("@\t  reverse article selections");
 constext txt_help_p_ctrl_e[] = N_("^E\t  reply through mail to author quoting complete headers");
 constext txt_help_p_ctrl_w[] = N_("^W\t  post followup to current article quoting complete headers");
 constext txt_help_p_cr[] = N_("<CR>\t  display first article in next thread");
-constext txt_help_p_d[] = N_("% d\t  toggle ROT-13 (basic decode) for current article");
+constext txt_help_p_d[] = N_("%\t  toggle ROT-13 (basic decode) for current article");
 constext txt_help_p_dot[] = N_(".\t  toggle article selection");
 constext txt_help_p_f[] = N_("f F\t  post followup (F = don't copy text) to current article");
 constext txt_help_p_g[] = N_("g G\t  display first (G = last) page of article");
@@ -455,6 +451,7 @@ constext txt_info_no_write[] = N_("Operation disabled in no-overwrite mode");
 constext txt_info_x_conversion_note[] = N_("\
 X-Conversion-Note: multipart/alternative contents have been removed.\n\
 \tTo get the whole article, turn alternative handling OFF in the Option Menu\n");
+constext txt_is_mailbox[]= N_("Save filename for %s/%s is a mailbox. Attachment not saved");
 constext txt_is_tex_encoded[]= N_("TeX2Iso encoded article");
 constext txt_intro_page[] = N_("\nWelcome to tin, a full screen threaded Netnews reader. It can read news locally\n\
 (ie. <spool>/news) or remotely (-r option)  from a NNTP (Network News Transport\n\
@@ -487,21 +484,19 @@ constext txt_last_resp[] = N_("-- Last response --");
 
 #ifdef HAVE_LIBUU
 	constext txt_libuu_saved[] = N_("%d files successfully written from %d articles. %d %s occurred.");
-	constext txt_libuu_success[] = N_("%s successfully decoded.");
-	constext txt_libuu_error_decode[] = N_("Error decoding %s : ");
 	constext txt_libuu_error_missing[] = N_("Missing parts.");
 	constext txt_libuu_error_no_begin[] = N_("No beginning.");
-	constext txt_libuu_error_no_end[] = N_("No end.");
 	constext txt_libuu_error_no_data[] = N_("No data.");
 	constext txt_libuu_error_unknown[] = N_("Unknown error.");
 #endif /* HAVE_LIBUU */
+constext txt_uu_error_decode[] = N_("Error decoding %s : %s");
+constext txt_uu_error_no_end[] = N_("No end.");
+constext txt_uu_success[] = N_("%s successfully decoded.");
 
 constext txt_lines[] = N_("Lines %s  ");
-#ifndef HAVE_LIBUU
-	constext txt_listing_archive[] = N_("Listing %s archive...");
-#endif /* !HAVE_LIBUU */
 constext txt_mail[] = "Mail";
 constext txt_mail_art_to[] = N_("Mail article(s) to [%.*s]> ");
+constext txt_mail_log_to[] = N_("Mailing log to %s\n");
 constext txt_mail_bug_report[] = N_("Mail bug report...");
 constext txt_mail_bug_report_confirm[] = N_("Mail BUG REPORT to %s?");
 constext txt_mailed[] = N_("Mailed");
@@ -511,34 +506,34 @@ constext txt_mark_arts_read[] = N_("Mark all articles as read%s?");
 constext txt_mark_group_read[] = N_("Mark group %.*s as read?");
 constext txt_mark_thread_read[] = N_("Mark thread as read%s?");
 constext txt_matching_cmd_line_groups[] = N_("Matching %s groups...");
-constext txt_mini_group_1[] = N_("<n>=set current to n; TAB=next unread; /=search pattern; ^K)ill/select;");
-constext txt_mini_group_2[] = N_("a)uthor search; c)atchup; j=line down; k=line up; K=mark read; l)ist thread;");
-constext txt_mini_page_1[] = N_("<n>=set current to n; TAB=next unread; /=search pattern; ^K)ill/select;");
-constext txt_mini_page_2[] = N_("a)uthor search; B)ody search; c)atchup; f)ollowup; K=mark read;");
+constext txt_mini_group_1[] = N_("<n>=set current to n; %s=next unread; %s=search pattern; %s=kill/select");
+constext txt_mini_group_2[] = N_("%s=author search; %s=catchup; %s=line down; %s=line up; %s=mark read; %s=list thread");
+constext txt_mini_page_1[] = N_("<n>=set current to n; %s=next unread; %s=search pattern; %s=kill/select");
+constext txt_mini_page_2[] = N_("%s=author search; %s=body search; %s=catchup; %s=followup; %s=mark read");
 
 #ifndef DISABLE_PRINTING
 #	ifndef DONT_HAVE_PIPING
-		constext txt_mini_group_3[] = N_("|=pipe; m)ail; o=print; q)uit; r=toggle all/unread; s)ave; t)ag; w=post");
-		constext txt_mini_page_3[] = N_("|=pipe; m)ail; o=print; q)uit; r)eply mail; s)ave; t)ag; w=post");
+		constext txt_mini_group_3[] = N_("%s=pipe; %s=mail; %s=print; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post");
+		constext txt_mini_page_3[] = N_("%s=pipe; %s=mail; %s=print; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post");
 #	else
-		constext txt_mini_group_3[] = N_("m)ail; o=print; q)uit; r=toggle all/unread; s)ave; t)ag; w=post");
-		constext txt_mini_page_3[] = N_("m)ail; o=print; q)uit; r)eply mail; s)ave; t)ag; w=post");
+		constext txt_mini_group_3[] = N_("%s=mail; %s=print; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post");
+		constext txt_mini_page_3[] = N_("%s=mail; %s=print; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post");
 #	endif /* DONT_HAVE_PIPING */
 #else
 #	ifndef DONT_HAVE_PIPING
-		constext txt_mini_group_3[] = N_("|=pipe; m)ail; q)uit; r=toggle all/unread; s)ave; t)ag; w=post");
-		constext txt_mini_page_3[] = N_("|=pipe; m)ail; q)uit; r)eply mail; s)ave; t)ag; w=post");
+		constext txt_mini_group_3[] = N_("%s=pipe; %s=mail; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post");
+		constext txt_mini_page_3[] = N_("%s=pipe; %s=mail; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post");
 #	else
-		constext txt_mini_group_3[] = N_("m)ail; q)uit; r=toggle all/unread; s)ave; t)ag; w=post");
-		constext txt_mini_page_3[] = N_("m)ail; q)uit; r)eply mail; s)ave; t)ag; w=post");
+		constext txt_mini_group_3[] = N_("%s=mail; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post");
+		constext txt_mini_page_3[] = N_("%s=mail; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post");
 #	endif /* DONT_HAVE_PIPING */
 #endif /* DISABLE_PRINTING */
 
-constext txt_mini_select_1[] = N_("<n>=set current to n; TAB=next unread; g,/=search pattern; c)atchup;");
-constext txt_mini_select_2[] = N_("j=line down; k=line up; h)elp; m)ove; q)uit; r=toggle all/unread;");
-constext txt_mini_select_3[] = N_("s)ubscribe; S)ub pattern; u)nsubscribe; U)nsub pattern; y)ank in/out");
-constext txt_mini_thread_1[] = N_("<n>=set current to n; TAB=next unread; c)atchup; d)isplay toggle;");
-constext txt_mini_thread_2[] = N_("h)elp; j=line down; k=line up; q)uit; t)ag; z=mark unread");
+constext txt_mini_select_1[] = N_("<n>=set current to n; %s=next unread; %s,%s=search pattern; %s=catchup");
+constext txt_mini_select_2[] = N_("%s=line down; %s=line up; %s=help; %s=move; %s=quit; %s=toggle all/unread");
+constext txt_mini_select_3[] = N_("%s=subscribe; %s=sub pattern; %s=unsubscribe; %s=unsub pattern; %s=yank in/out");
+constext txt_mini_thread_1[] = N_("<n>=set current to n; %s=next unread; %s=catchup; %s=display toggle");
+constext txt_mini_thread_2[] = N_("%s=help; %s=line down; %s=line up; %s=quit; %s=tag; %s=mark unread");
 constext txt_more[] = N_("--More--");
 constext txt_moving[] = N_("Moving %s...");
 constext txt_newsgroup[] = N_("Goto newsgroup [%s]> ");
@@ -643,13 +638,12 @@ error is temporary or otherwise correctable, you can postpone the article\n\
 and pick it up again with ^O later.\n");
 constext txt_post_history_menu[] = N_("Posted articles history (page %d of %d)");
 constext txt_post_newsgroups[] = N_("Post to newsgroup(s) [%s]> ");
-constext txt_post_processing[] = N_("Post processing...");
-constext txt_post_processing_failed[] = N_("Post processing failed");
+constext txt_post_processing[] = N_("-- post processing started --");
 constext txt_post_processing_finished[] = N_("-- post processing completed --");
 constext txt_post_subject[] = N_("Post subject [%s]> ");
 constext txt_posted_info_file[] = N_("# Summary of mailed/posted messages viewable by 'W' command from within tin.\n");
 constext txt_posting[] = N_("Posting article...");
-constext txt_postpone_repost[] = N_("Post postponed articles [%.*s]? (y/Y/A/n/q): ");
+constext txt_postpone_repost[] = N_("Post postponed articles [%%.*s]? (%s/%s/%s/%s/%s): ");
 constext txt_prompt_fup_ignore[] = N_("Accept Followup-To? %s=post, %s=ignore, %s=quit: ");
 constext txt_prompt_unchanged_art[] = N_("Article unchanged, abort posting?");
 constext txt_prompt_unchanged_mail[] = N_("Article unchanged, abort mailing?");
@@ -657,7 +651,7 @@ constext txt_prompt_see_postponed[] = N_("Do you want to see postponed articles 
 constext txt_quick_filter_kill[] = N_("Add quick kill filter?");
 constext txt_quick_filter_select[] = N_("Add quick selection filter?");
 constext txt_quit[] = N_("Do you really want to quit?");
-constext txt_quit_cancel[] = N_("e)dit cancel message, q)uit, d)elete (cancel) [%.*s]: ");
+constext txt_quit_cancel[] = N_("%s=edit cancel message, %s=quit, %s=delete (cancel) [%%.*s]: ");
 constext txt_quit_despite_tags[] = N_("You have tagged articles in this group - quit anyway?");
 constext txt_quit_edit_postpone[] = N_("%s=quit, %s=edit, %s=postpone: ");
 constext txt_quit_edit_save_kill[] = N_("%s=quit %s=edit %s=save kill description: ");
@@ -699,15 +693,12 @@ constext txt_return_key[] = N_("Press <RETURN> to continue...");
 constext txt_save[] = N_("Save");
 constext txt_save_attachment[] = N_("Save '%s' (%s/%s)?");
 constext txt_save_config[] = N_("Save configuration before continuing?");
-constext txt_save_filename[] = N_("Save filename [%s]> ");
+constext txt_save_filename[] = N_("Save filename> ");
 constext txt_saved[] = N_("Saved");
-constext txt_saved_arts[] = N_("-- %d %s saved --");
 constext txt_saved_group[] = N_("%4d unread (%4d hot) %s in %s\n");
 constext txt_saved_groupname[] = N_("Saved %s...\n");
-constext txt_saved_nothing[] = N_("-- No unread articles: nothing saved! --");
-constext txt_saved_pattern_to[] = N_("-- Saved pattern to %s - %s --");
+constext txt_saved_nothing[] = N_("Nothing was saved");
 constext txt_saved_summary[] = N_("\n%s %d %s from %d %s\n");
-constext txt_saved_to_mailbox[] = N_("-- Saved to mailbox %s --");
 constext txt_saving[] = N_("Saving...");
 constext txt_screen_init_failed[] = N_("%s: Screen initialization failed");
 constext txt_screen_too_small[] = N_("%s: screen is too small\n");
@@ -734,7 +725,7 @@ constext txt_subscribe_pattern[] = N_("Enter wildcard subscribe pattern> ");
 constext txt_subscribed_num_groups[] = N_("subscribed to %d groups");
 constext txt_subscribed_to[] = N_("Subscribed to %s");
 constext txt_subscribing[] = N_("Subscribing... ");
-constext txt_supersede_article[] = N_("Repost or supersede article(s) [%.*s]? (r/s/q): ");
+constext txt_supersede_article[] = N_("Repost or supersede article(s) [%%.*s]? (%s/%s/%s): ");
 constext txt_supersede_group[] = N_("Supersede article(s) to group(s) [%s]> ");
 constext txt_superseding_art[] = N_("Superseding article ...");
 constext txt_suspended_message[] = N_("\nStopped. Type 'fg' to restart %s\n");
@@ -775,7 +766,6 @@ constext txt_tinrc_info_in_last_line[] = N_("# If ON use print current subject o
 #endif /* LOCAL_CHARSET */
 
 constext txt_tinrc_newnews[] = N_("# Host & time info used for detecting new groups (don't touch)\n");
-constext txt_tinrc_post_process_command[] = N_("# If set, command to be run after a successful uudecode\n");
 
 constext txt_unsubscribe_pattern[] = N_("Enter wildcard unsubscribe pattern> ");
 #ifndef HAVE_UUDECODE
@@ -847,22 +837,8 @@ const char *content_types[] = {
 constext *txt_post_process_type[] = {
 		N_("None"),
 		N_("Shell archive"),
-		N_("Uudecode"),
-#ifdef M_AMIGA
-		N_("Uudecode & list lharc archive"),
-		N_("Uudecode & extract lharc archive"),
-#else
-		N_("Uudecode & list zoo archive"),
-		N_("Uudecode & extract zoo archive"),
-#endif /* M_AMIGA */
-		N_("Uudecode & list zip archive"),
-		N_("Uudecode & extract zip archive")
+		N_("Uudecode")
 };
-
-#if 0
-/* moved to keymap.c because they may be localized */
-char ch_post_process[] = { 'n', 's', 'u', 'l', 'e', 'L', 'E' };
-#endif /* 0 */
 
 constext *txt_sort_type[] = {
 		N_("Nothing"),
@@ -898,22 +874,22 @@ constext *txt_kill_level_type[] = {
 #ifdef HAVE_PGP_GPG
 #	ifdef HAVE_ISPELL
 		constext txt_quit_edit_post[] = N_("%s=quit, %s=edit, %s=ispell, %s=pgp, %s=post, %s=postpone: ");
-		constext txt_quit_edit_send[] = N_("q)uit, e)dit, i)spell, g) pgp, s)end [%.*s]: ");
-		constext txt_quit_edit_xpost[] = N_("q)uit, e)dit, i)spell, g) pgp, p)ost, p(o)stpone [%.*s]: ");
+		constext txt_quit_edit_send[] = N_("%s=quit, %s=edit, %s=ispell, %s=pgp, %s=send [%%.*s]: ");
+		constext txt_quit_edit_xpost[] = N_("%s=quit, %s=edit, %s=ispell, %s=pgp, %s=post, %s=postpone [%%.*s]: ");
 #	else
 	constext txt_quit_edit_post[] = N_("%s=quit, %s=edit, %s=pgp, %s=post, %s=postpone: ");
-	constext txt_quit_edit_send[] = N_("q)uit, e)dit, g) pgp, s)end [%.*s]: ");
-	constext txt_quit_edit_xpost[] = N_("q)uit, e)dit, g) pgp, p)ost, p(o)stpone [%.*s]: ");
+	constext txt_quit_edit_send[] = N_("%s=quit, %s=edit, %s=pgp, %s=send [%%.*s]: ");
+	constext txt_quit_edit_xpost[] = N_("%s=quit, %s=edit, %s=pgp, %s=post, %s=postpone [%%.*s]: ");
 #	endif /* HAVE_ISPELL */
 #else
 #	ifdef HAVE_ISPELL
 		constext txt_quit_edit_post[] = N_("%s=quit, %s=edit, %s=ispell, %s=post, %s=postpone: ");
-		constext txt_quit_edit_send[] = N_("q)uit, e)dit, i)spell, s)end [%.*s]: ");
-		constext txt_quit_edit_xpost[] = N_("q)uit, e)dit, i)spell, p)ost, p(o)stpone [%.*s]: ");
+		constext txt_quit_edit_send[] = N_("%s=quit, %s=edit, %s=ispell, %s=send [%%.*s]: ");
+		constext txt_quit_edit_xpost[] = N_("%s=quit, %s=edit, %s=ispell, %s=post, %s=postpone [%%.*s]: ");
 #	else
 		constext txt_quit_edit_post[] = N_("%s=quit, %s=edit, %s=post, %s=postpone: ");
-		constext txt_quit_edit_send[] = N_("q)uit, e)dit, s)end [%.*s]: ");
-		constext txt_quit_edit_xpost[] = N_("q)uit, e)dit, p)ost, p(o)stpone [%.*s]: ");
+		constext txt_quit_edit_send[] = N_("%s=quit, %s=edit, %s=send [%%.*s]: ");
+		constext txt_quit_edit_xpost[] = N_("%s=quit, %s=edit, %s=post, %s=postpone [%%.*s]: ");
 #	endif /* HAVE_ISPELL */
 #endif /* HAVE_PGP_GPG */
 
@@ -925,10 +901,6 @@ constext txt_there_is_no_news[] = N_("There is no news\n");
 constext txt_thread_com[] = N_("Thread Level Commands (page %d of %d)");
 constext txt_thread_marked_as_deselected[] = N_("Thread deselected");
 constext txt_thread_marked_as_selected[] = N_("Thread selected");
-constext txt_thread_not_saved[] = N_("Thread not saved");
-constext txt_thread_page[] = N_("T %d of %d (p %d), %s:  %s");
-constext txt_thread_resp_page[] = N_("T %d of %d, R %d/%d (p %d), %s:  %s");
-constext txt_thread_saved_to_many[] = N_("Thread saved to %s - %s");
 constext txt_thread_x_of_n[] = N_("%sThread %4s of %4s%s");
 constext txt_threading_arts[] = N_("Threading articles...");
 
@@ -952,7 +924,9 @@ constext txt_updated[] = "Updated";
 	constext txt_use_mime[] = N_("Use MIME display program for this message?");
 #endif /* HAVE_METAMAIL */
 #ifndef HAVE_LIBUU
+#if 0
 	constext txt_uudecoding[] = N_("Uudecoding %s");
+#endif /* 0 */
 #endif /* !HAVE_LIBUU */
 constext txt_value_out_of_range[] = N_("\n%s%d out of range (0 - %d). Reset to 0");
 constext txt_warn_art_line_too_long[] = N_("\nWarning: posting exceeds %d columns. Line %d is the first long one:\n%-100s\n");
@@ -1737,6 +1711,12 @@ struct opttxt txt_post_8bit_header = {
 # parameter unless post_mime_encoding is 8bit as well.\n")
 };
 
+struct opttxt txt_post_process_view = {
+	N_("Auto-view post-processed files <SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("View post-processed files          : "),
+	N_("# If set, post processed files will be opened in a viewer\n")
+};
+
 struct opttxt txt_mail_mime_encoding = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("MIME encoding in mail messages     : "),
@@ -1832,15 +1812,8 @@ struct opttxt txt_mark_saved_read = {
 struct opttxt txt_post_process = {
 	N_("Post process (ie. unshar) saved article/thread. <SPACE> toggles & <CR> sets."),
 	N_("Post process saved art/thread with : "),
-#ifdef M_AMIGA
 	N_("# Type of post processing to perform after saving articles.\n\
-# 0=(none) 1=(unshar) 2=(uudecode) 3=(uudecode & list lha)\n\
-# 4=(uud & extract lha) 5=(uud & list zip) 6=(uud & extract zip)\n")
-#else
-	N_("# Type of post processing to perform after saving articles.\n\
-# 0=(none) 1=(unshar) 2=(uudecode) 3=(uudecode & list zoo)\n\
-# 4=(uud & extract zoo) 5=(uud & list zip) 6=(uud & extract zip)\n")
-#endif /* M_AMIGA */
+# 0=(none) 1=(unshar) 2=(uudecode)\n")
 };
 
 struct opttxt txt_process_only_unread = {

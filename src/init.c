@@ -146,10 +146,6 @@ int xmouse, xrow, xcol;			/* xterm button pressing information */
 #endif /* HAVE_COLOR */
 
 pid_t process_id;			/* Useful to have around for .suffixes */
-uid_t real_uid;
-gid_t real_gid;
-gid_t tin_gid;
-uid_t tin_uid;
 mode_t real_umask;
 
 t_bool no_write = FALSE;		/* do not write newsrc on quit (-X cmd-line flag) */
@@ -199,8 +195,10 @@ char *input_history[HIST_MAXNUM+1][HIST_SIZE+1];
 	static struct passwd pwdentry;
 #endif /* !M_AMIGA */
 
-struct regex_cache strip_re_regex, strip_was_regex, uubegin_regex, uubody_regex,
-					url_regex, mail_regex
+struct regex_cache strip_re_regex, strip_was_regex,
+					uubegin_regex, uubody_regex,
+					url_regex, mail_regex,
+					shar_regex
 #ifdef HAVE_COLOR
 		, quote_regex, quote_regex2, quote_regex3
 #endif /* HAVE_COLOR */
@@ -251,7 +249,6 @@ struct t_config tinrc = {
 	"Newsgroups Followup-To Summary Keywords",		/* news_headers_to_display */
 	"",		/* news_headers_to_not_display */
 	"%F wrote:",		/* news_quote_format */
-	"",					/* post_process_command */
 	DEFAULT_COMMENT,	/* quote_chars */
 #ifdef HAVE_COLOR
 	"",		/* quote_regex */
@@ -343,6 +340,7 @@ struct t_config tinrc = {
 	TRUE,		/* pgdn_goto_next */
 	TRUE,		/* pos_first_unread */
 	FALSE,		/* post_8bit_header */
+	TRUE,		/* post_process_view */
 #ifndef DISABLE_PRINTING
 	FALSE,		/* print_header */
 #endif /* !DISABLE_PRINTING */
@@ -512,17 +510,8 @@ init_selfinfo (
 
 	process_id = getpid ();
 
-#if defined(M_AMIGA) || defined(M_OS2)
-	tin_uid = tin_gid = 0;
-	real_uid = real_gid = (getenv ("TIND") ? 1 : 0);
-#else
-	tin_uid = geteuid ();
-	tin_gid = getegid ();
-	real_uid = getuid ();
-	real_gid = getgid ();
 	real_umask = umask (0);
 	(void) umask (real_umask);
-#endif /* M_AMIGA */
 
 #if defined(HAVE_SETLOCALE) && defined(LC_ALL) && !defined(NO_LOCALE)
 	setlocale (LC_ALL, "");
@@ -592,17 +581,7 @@ init_selfinfo (
 		my_strncpy (homedir, myentry->pw_dir, sizeof (homedir));
 #endif /* M_AMIGA */
 
-	/*
-	 * we're setuid, so index in $SPOOLDIR even if user root
-	 * This is quite essential if non local index files are
-	 * to be updated during the night from crontab by root.
-	 */
-	if (tin_uid != real_uid) {
-		local_index = FALSE;
-		set_real_uid_gid ();
-	} else {	/* index in users home directory ~/.tin/.news */
-		local_index = TRUE;
-	}
+	local_index = TRUE;
 
 	cmdline_nntpserver[0] = '\0';
 	created_rcdir = FALSE;
@@ -716,7 +695,7 @@ init_selfinfo (
 	 * the site_confog-file was the last chance to set the domainname
 	 *  if it's still unset exit tin.
 	 */
-	if (domain_name[0]=='\0') {
+	if (domain_name[0] == '\0') {
 		error_message (txt_error_no_domain_name);
 		tin_done(EXIT_FAILURE);
 	}
@@ -795,28 +774,15 @@ init_selfinfo (
 #endif /* APPEND_PID */
 	joinpath (dead_article, homedir, "dead.article");
 	joinpath (dead_articles, homedir, "dead.articles");
-#ifdef VMS
-	joindir (tinrc.maildir, homedir, DEFAULT_MAILDIR);
-	joindir (tinrc.savedir, homedir, DEFAULT_SAVEDIR);
-#else
-	joinpath (tinrc.maildir, homedir, DEFAULT_MAILDIR);
-	joinpath (tinrc.savedir, homedir, DEFAULT_SAVEDIR);
-#endif /* VMS */
+	JOINPATH(tinrc.maildir, homedir, DEFAULT_MAILDIR);
+	JOINPATH(tinrc.savedir, homedir, DEFAULT_SAVEDIR);
 	joinpath (tinrc.sigfile, homedir, ".Sig");
 	joinpath (default_signature, homedir, ".signature");
 
 	if (!index_newsdir[0])
-#ifdef VMS
-		joindir (index_newsdir, get_val ("TIN_INDEX_NEWSDIR", rcdir), INDEX_NEWSDIR);
-#else
-		joinpath (index_newsdir, get_val ("TIN_INDEX_NEWSDIR", rcdir), INDEX_NEWSDIR);
-#endif /* VMS */
+		JOINPATH(index_newsdir, get_val ("TIN_INDEX_NEWSDIR", rcdir), INDEX_NEWSDIR);
 
-#ifdef VMS
-	joindir (index_maildir, get_val ("TIN_INDEX_MAILDIR", rcdir), INDEX_MAILDIR);
-#else
-	joinpath (index_maildir, get_val ("TIN_INDEX_MAILDIR", rcdir), INDEX_MAILDIR);
-#endif /* VMS */
+	JOINPATH(index_maildir, get_val ("TIN_INDEX_MAILDIR", rcdir), INDEX_MAILDIR);
 	if (stat (index_maildir, &sb) == -1)
 		my_mkdir (index_maildir, (mode_t)S_IRWXUGO);
 	joinpath (index_savedir, get_val ("TIN_INDEX_SAVEDIR", rcdir), INDEX_SAVEDIR);
@@ -861,14 +827,6 @@ init_selfinfo (
 	nntp_tcp_port = (unsigned short) atoi (get_val ("NNTPPORT", NNTP_TCP_PORT));
 #endif /* NNTP_ABLE */
 
-	if (tin_uid != real_uid) {
-		joinpath (index_newsdir, get_val ("TIN_INDEX_NEWSDIR", spooldir), INDEX_NEWSDIR);
-		set_tin_uid_gid ();
-		if (stat (index_newsdir, &sb) == -1)
-			my_mkdir (index_newsdir, (mode_t)S_IRWXUGO);
-
-		set_real_uid_gid ();
-	}
 #if 0
 	 else {
 		if (stat (index_newsdir, &sb) == -1)
@@ -895,10 +853,9 @@ init_selfinfo (
 }
 
 /*
- * If we're caching overview files (currently supported for non-setuid
- * Tin only; we don't handle updating of shared cache files!) and the
- * user specified an NNTP server with the '-g' option, make the directory
- * name specific to the NNTP server and make sure the directory exists.
+ * If we're caching overview files and the user specified an NNTP server
+ * with the '-g' option, make the directory name specific to the NNTP server
+ * and make sure the directory exists.
  */
 void
 set_up_private_index_cache (
@@ -948,7 +905,7 @@ create_mail_save_dirs (
 	char path[PATH_LEN];
 	struct stat sb;
 
-	if (!strfpath (tinrc.maildir, path, sizeof (path), homedir, (char *) 0, (char *) 0, (char *) 0))
+	if (!strfpath (tinrc.maildir, path, sizeof (path), &CURR_GROUP))
 		joinpath (path, homedir, DEFAULT_MAILDIR);
 
 	if (stat (path, &sb) == -1) {
@@ -956,7 +913,7 @@ create_mail_save_dirs (
 		created = TRUE;
 	}
 
-	if (!strfpath (tinrc.savedir, path, sizeof (path), homedir, (char *) 0, (char *) 0, (char *) 0))
+	if (!strfpath (tinrc.savedir, path, sizeof (path), &CURR_GROUP))
 		joinpath (path, homedir, DEFAULT_SAVEDIR);
 
 	if (stat (path, &sb) == -1) {
@@ -1075,4 +1032,5 @@ postinit_regexp (
 	compile_regex (UUBODY_REGEX, &uubody_regex, PCRE_ANCHORED);
 	compile_regex (URL_REGEX, &url_regex, PCRE_CASELESS);
 	compile_regex (MAIL_REGEX, &mail_regex, PCRE_CASELESS);
+	compile_regex (SHAR_REGEX, &shar_regex, PCRE_ANCHORED);
 }

@@ -3,7 +3,7 @@
  *  Module    : tcurses.h
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-03-02
- *  Updated   : 1997-03-02
+ *  Updated   : 2000-07-19
  *  Notes     : curses #include files, #defines & struct's
  *
  * Copyright (c) 1997-2000 Thomas Dickey <dickey@herndon4.his.com>
@@ -66,17 +66,13 @@
 #	endif /* HAVE_NOMACROS_H */
 #endif /* USE_TRACE */
 
-#if 0	/* FIXME: this has prototypes, but opens up new problems! */
-#ifdef HAVE_TERM_H
-#	include <term.h>
-#endif /* HAVE_TERM_H */
-#endif /* 0 */
-
 #define cCRLF				"\n"
 #define my_flush()			my_fflush(stdout)
 #define ClearScreen()			my_erase()
 #define CleartoEOLN()			clrtoeol()
 #define CleartoEOS()			clrtobot()
+#define ScrollScreen(lines_to_scroll)	scrl(lines_to_scroll)
+#define SetScrollRegion(top,bottom)	setscrreg(top, bottom)
 #define WriteLine(row,buffer)		write_line(row,buffer)
 
 #define HpGlitch(func)			/*nothing*/
@@ -105,9 +101,14 @@ extern void write_line(int row, char *buffer);
 
 #else	/* !USE_CURSES */
 
-#ifdef HAVE_TERMCAP_H
+#ifdef NEED_TERM_H
+#	include <curses.h>
+#	include <term.h>
+#else
+#	ifdef HAVE_TERMCAP_H
 #	include <termcap.h>
-#endif /* HAVE_TERMCAP_H */
+#	endif /* HAVE_TERMCAP_H */
+#endif /* NEED_TERM_H */
 
 #define cCRLF				"\r\n"
 

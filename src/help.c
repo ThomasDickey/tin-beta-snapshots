@@ -496,12 +496,13 @@ show_info_page (
 	ClearScreen();
 #endif /* USE_CURSES */
 	forever {
-		if (cur_page != old_page)
+		if (cur_page != old_page) {
 #ifdef USE_CURSES
 			display_info_page (FALSE);
 #else
 			display_info_page();
 #endif /* USE_CURSES */
+		}
 
 		old_page = cur_page;
 
@@ -630,12 +631,16 @@ void
 show_mini_help (
 	int level)
 {
+	char buf[LEN];
+	char key[20][MAXKEYLEN];
 	int line;
+	size_t bufs;
 
 	if (!tinrc.beginner_level)
 		return;
 
 	line = NOTESLINES + (MINI_HELP_LINES - 2);
+	bufs = (size_t) MIN((unsigned)cCOLS, (sizeof(buf) - 1));
 
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_minihelp);
@@ -643,26 +648,102 @@ show_mini_help (
 
 	switch (level) {
 		case SELECT_LEVEL:
-			center_line (line, FALSE, _(txt_mini_select_1));
-			center_line (line+1, FALSE, _(txt_mini_select_2));
-			center_line (line+2, FALSE, _(txt_mini_select_3));
+			snprintf (buf, bufs, _(txt_mini_select_1),
+				printascii (key[0], map_to_local (iKeySelectEnterNextUnreadGrp, &menukeymap.select_nav)),
+				printascii (key[1], map_to_local (iKeySelectGoto, &menukeymap.select_nav)),
+				printascii (key[2], map_to_local (iKeySearchSubjF, &menukeymap.select_nav)),
+				printascii (key[3], map_to_local (iKeySelectCatchup, &menukeymap.select_nav)));
+			center_line (line, FALSE, buf);
+			snprintf (buf, bufs, _(txt_mini_select_2),
+				printascii (key[0], map_to_local (iKeyDown2, &menukeymap.select_nav)),
+				printascii (key[1], map_to_local (iKeyUp2, &menukeymap.select_nav)),
+				printascii (key[2], map_to_local (iKeyHelp, &menukeymap.select_nav)),
+				printascii (key[3], map_to_local (iKeySelectMoveGrp, &menukeymap.select_nav)),
+				printascii (key[4], map_to_local (iKeyQuit, &menukeymap.select_nav)),
+				printascii (key[5], map_to_local (iKeySelectToggleReadDisplay, &menukeymap.select_nav)));
+			center_line (line+1, FALSE, buf);
+			snprintf (buf, bufs, _(txt_mini_select_3),
+				printascii (key[0], map_to_local (iKeySelectSubscribe, &menukeymap.select_nav)),
+				printascii (key[1], map_to_local (iKeySelectSubscribePat, &menukeymap.select_nav)),
+				printascii (key[2], map_to_local (iKeySelectUnsubscribe, &menukeymap.select_nav)),
+				printascii (key[3], map_to_local (iKeySelectUnsubscribePat, &menukeymap.select_nav)),
+				printascii (key[4], map_to_local (iKeySelectYankActive, &menukeymap.select_nav)));
+			center_line (line+2, FALSE, buf);
 			break;
 		case GROUP_LEVEL:
-			center_line (line, FALSE, _(txt_mini_group_1));
-			center_line (line+1, FALSE, _(txt_mini_group_2));
-			center_line (line+2, FALSE, _(txt_mini_group_3));
+			snprintf (buf, bufs, _(txt_mini_group_1),
+				printascii (key[0], map_to_local (iKeyGroupNextUnreadArtOrGrp, &menukeymap.group_nav)),
+				printascii (key[1], map_to_local (iKeySearchSubjF, &menukeymap.group_nav)),
+				printascii (key[2], map_to_local (iKeyGroupKill, &menukeymap.group_nav)));
+			center_line (line, FALSE, buf);
+			snprintf (buf, bufs, _(txt_mini_group_2),
+				printascii (key[0], map_to_local (iKeySearchAuthF, &menukeymap.group_nav)),
+				printascii (key[1], map_to_local (iKeyGroupCatchup, &menukeymap.group_nav)),
+				printascii (key[2], map_to_local (iKeyDown2, &menukeymap.group_nav)),
+				printascii (key[3], map_to_local (iKeyUp2, &menukeymap.group_nav)),
+				printascii (key[4], map_to_local (iKeyGroupMarkThdRead, &menukeymap.group_nav)),
+				printascii (key[5], map_to_local (iKeyGroupListThd, &menukeymap.group_nav)));
+			center_line (line+1, FALSE, buf);
+			snprintf (buf, bufs, _(txt_mini_group_3),
+#ifndef DONT_HAVE_PIPING
+				printascii (key[0], map_to_local (iKeyPipe, &menukeymap.group_nav)),
+#endif /* !DONT_HAVE_PIPING */
+				printascii (key[1], map_to_local (iKeyGroupMail, &menukeymap.group_nav)),
+#ifndef DISABLE_PRINTING
+				printascii (key[2], map_to_local (iKeyGroupPrint, &menukeymap.group_nav)),
+#endif /* !DISABLE_PRINTING */
+				printascii (key[3], map_to_local (iKeyQuit, &menukeymap.group_nav)),
+				printascii (key[4], map_to_local (iKeyGroupToggleReadUnread, &menukeymap.group_nav)),
+				printascii (key[5], map_to_local (iKeyGroupSave, &menukeymap.group_nav)),
+				printascii (key[6], map_to_local (iKeyGroupTag, &menukeymap.group_nav)),
+				printascii (key[7], map_to_local (iKeyPost, &menukeymap.group_nav)));
+			center_line (line+2, FALSE, buf);
 			break;
 		case THREAD_LEVEL:
-			center_line (line, FALSE, _(txt_mini_thread_1));
-			center_line (line+1, FALSE, _(txt_mini_thread_2));
+			snprintf (buf, bufs, _(txt_mini_thread_1),
+				printascii (key[0], map_to_local (iKeyThreadReadNextArtOrThread, &menukeymap.thread_nav)),
+				printascii (key[1], map_to_local (iKeyThreadCatchup, &menukeymap.thread_nav)),
+				printascii (key[2], map_to_local (iKeyThreadToggleSubjDisplay, &menukeymap.thread_nav)));
+			center_line (line, FALSE, buf);
+			snprintf (buf, bufs, _(txt_mini_thread_2),
+				printascii (key[0], map_to_local (iKeyHelp, &menukeymap.thread_nav)),
+				printascii (key[1], map_to_local (iKeyDown2, &menukeymap.thread_nav)),
+				printascii (key[2], map_to_local (iKeyUp2, &menukeymap.thread_nav)),
+				printascii (key[3], map_to_local (iKeyQuit, &menukeymap.thread_nav)),
+				printascii (key[4], map_to_local (iKeyThreadTag, &menukeymap.thread_nav)),
+				printascii (key[5], map_to_local (iKeyThreadMarkArtUnread, &menukeymap.thread_nav)));
+			center_line (line+1, FALSE, buf);
 			break;
 		case PAGE_LEVEL:
-			center_line (line, FALSE, _(txt_mini_page_1));
-			center_line (line+1, FALSE, _(txt_mini_page_2));
-			center_line (line+2, FALSE, _(txt_mini_page_3));
+			snprintf (buf, bufs, _(txt_mini_page_1),
+				printascii (key[0], map_to_local (iKeyPageNextUnread, &menukeymap.page_nav)),
+				printascii (key[1], map_to_local (iKeySearchSubjF, &menukeymap.page_nav)),
+				printascii (key[2], map_to_local (iKeyPageAutoKill, &menukeymap.page_nav)));
+			center_line (line, FALSE, buf);
+			snprintf (buf, bufs, _(txt_mini_page_2),
+				printascii (key[0], map_to_local (iKeySearchAuthF, &menukeymap.page_nav)),
+				printascii (key[1], map_to_local (iKeySearchBody, &menukeymap.page_nav)),
+				printascii (key[2], map_to_local (iKeyPageCatchup, &menukeymap.page_nav)),
+				printascii (key[3], map_to_local (iKeyPageFollowupQuote, &menukeymap.page_nav)),
+				printascii (key[4], map_to_local (iKeyPageKillThd, &menukeymap.page_nav)));
+			center_line (line+1, FALSE, buf);
+			snprintf (buf, bufs, _(txt_mini_page_3),
+#ifndef DONT_HAVE_PIPING
+				printascii (key[0], map_to_local (iKeyPipe, &menukeymap.page_nav)),
+#endif /* !DONT_HAVE_PIPING */
+				printascii (key[1], map_to_local (iKeyPageMail, &menukeymap.page_nav)),
+#ifndef DISABLE_PRINTING
+				printascii (key[2], map_to_local (iKeyPagePrint, &menukeymap.page_nav)),
+#endif /* !DISABLE_PRINTING */
+				printascii (key[3], map_to_local (iKeyQuit, &menukeymap.page_nav)),
+				printascii (key[4], map_to_local (iKeyPageReplyQuote, &menukeymap.page_nav)),
+				printascii (key[5], map_to_local (iKeyPageSave, &menukeymap.page_nav)),
+				printascii (key[6], map_to_local (iKeyPageTag, &menukeymap.page_nav)),
+				printascii (key[7], map_to_local (iKeyPost, &menukeymap.page_nav)));
+			center_line (line+2, FALSE, buf);
 			break;
 		default: /* should not happen */
-			error_message ("Unknown display level"); /* FIXME: -> lang.c */
+			error_message (_("Unknown display level")); /* FIXME: -> lang.c */
 			break;
 	}
 #ifdef HAVE_COLOR

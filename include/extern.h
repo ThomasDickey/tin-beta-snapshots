@@ -192,34 +192,11 @@
 #ifdef DECL_SELECT
 	extern int select (int, fd_set *, fd_set *, fd_set *, struct timeval *);
 #endif /* DECL_SELECT */
-#ifdef DECL_SETEGID
-	extern int setegid (gid_t);
-#endif /* DECL_SETEGID */
 #ifndef HAVE_PUTENV
 #	ifdef DECL_SETENV
 		extern int setenv (const char *, const char *, int);
 #	endif /* DECL_SETENV */
 #endif /* !HAVE_PUTENV */
-#ifdef DECL_SETEUID
-	extern int seteuid (uid_t);
-#endif /* DECL_SETEUID */
-#ifdef DECL_SETPGRP
-#	ifdef SETPGRP_VOID
-		extern pid_t setpgrp (void);
-#	else
-		extern int setpgrp (int, int);
-#	endif /* SETPGRP_VOID */
-#endif /* DECL_SETPGRP */
-#ifndef HAVE_SETEGID
-#	ifdef DECL_SETREGID
-		extern int setregid (gid_t, gid_t);
-#	endif /* DECL_SETREGID */
-#endif /* !HAVE_SETEGID */
-#ifndef HAVE_SETEUID
-#	ifdef DECL_SETREUID
-		extern int setreuid (uid_t, uid_t);
-#	endif /* DECL_SETREUID */
-#endif /* !HAVE_SETEUID */
 #ifdef DECL_SOCKET
 	extern int socket (int, int, int);
 #endif /* DECL_SOCKET */
@@ -410,7 +387,6 @@ extern constext txt_art_parent_none[];
 extern constext txt_art_parent_unavail[];
 extern constext txt_art_posted[];
 extern constext txt_art_rejected[];
-extern constext txt_art_saved_to[];
 extern constext txt_art_thread_regex_tag[];
 extern constext txt_art_unavailable[];
 extern constext txt_article_cancelled[];
@@ -720,6 +696,7 @@ extern constext txt_invalid_from[];
 extern constext txt_invalid_sender[];
 extern constext txt_inverse_off[];
 extern constext txt_inverse_on[];
+extern constext txt_is_mailbox[];
 extern constext txt_is_tex_encoded[];
 extern constext txt_keymap_missing_key[];
 extern constext txt_keymap_invalid_key[];
@@ -739,11 +716,9 @@ extern constext txt_kill_time[];
 extern constext txt_last[];
 extern constext txt_last_resp[];
 extern constext txt_lines[];
-#ifndef HAVE_LIBUU
-	extern constext txt_listing_archive[];
-#endif /* !HAVE_LIBUU */
 extern constext txt_mail[];
 extern constext txt_mail_art_to[];
+extern constext txt_mail_log_to[];
 extern constext txt_mail_bug_report[];
 extern constext txt_mail_bug_report_confirm[];
 extern constext txt_mailed[];
@@ -823,7 +798,6 @@ extern constext txt_post_error_ask_postpone[];
 extern constext txt_post_history_menu[];
 extern constext txt_post_newsgroups[];
 extern constext txt_post_processing[];
-extern constext txt_post_processing_failed[];
 extern constext txt_post_processing_finished[];
 extern constext txt_post_subject[];
 extern constext txt_posted_info_file[];
@@ -879,13 +853,10 @@ extern constext txt_save_attachment[];
 extern constext txt_save_config[];
 extern constext txt_save_filename[];
 extern constext txt_saved[];
-extern constext txt_saved_arts[];
 extern constext txt_saved_group[];
 extern constext txt_saved_groupname[];
 extern constext txt_saved_nothing[];
-extern constext txt_saved_pattern_to[];
 extern constext txt_saved_summary[];
-extern constext txt_saved_to_mailbox[];
 extern constext txt_saving[];
 extern constext txt_screen_init_failed[];
 extern constext txt_screen_too_small[];
@@ -926,17 +897,10 @@ extern constext txt_suspended_message[];
 extern constext txt_tab[];
 extern constext txt_tagged_art[];
 extern constext txt_tagged_thread[];
-#ifndef HAVE_LIBUU
-	extern constext txt_testing_archive[];
-#endif /* !HAVE_LIBUU */
 extern constext txt_there_is_no_news[];
 extern constext txt_thread_com[];
 extern constext txt_thread_marked_as_deselected[];
 extern constext txt_thread_marked_as_selected[];
-extern constext txt_thread_not_saved[];
-extern constext txt_thread_page[];
-extern constext txt_thread_resp_page[];
-extern constext txt_thread_saved_to_many[];
 extern constext txt_thread_x_of_n[];
 extern constext txt_threading_arts[];
 extern constext txt_time_default_days[];
@@ -945,7 +909,7 @@ extern constext txt_tinrc_filter[];
 extern constext txt_tinrc_header[];
 extern constext txt_tinrc_info_in_last_line[];
 extern constext txt_tinrc_newnews[];
-extern constext txt_tinrc_post_process_command[];
+extern constext txt_tinrc_post_process_view[];
 extern constext txt_toggled_rot13[];
 extern constext txt_toggled_tex2iso[];
 extern constext txt_type_h_for_help[];
@@ -960,7 +924,9 @@ extern constext txt_untagged_thread[];
 extern constext txt_unthreading_arts[];
 extern constext txt_updated[];
 #ifndef HAVE_LIBUU
+#if 0
 	extern constext txt_uudecoding[];
+#endif /* 0 */
 #endif /* !HAVE_LIBUU */
 #ifndef HAVE_UUDECODE
 	extern constext txt_uuencode_not_supported[];
@@ -1008,13 +974,14 @@ extern constext txt_you_have_mail[];
 #ifdef HAVE_LIBUU
 	extern constext txt_libuu_saved[];
 	extern constext txt_libuu_success[];
-	extern constext txt_libuu_error_decode[];
 	extern constext txt_libuu_error_missing[];
 	extern constext txt_libuu_error_no_begin[];
-	extern constext txt_libuu_error_no_end[];
 	extern constext txt_libuu_error_no_data[];
 	extern constext txt_libuu_error_unknown[];
 #endif /* HAVE_LIBUU */
+extern constext txt_uu_error_decode[];
+extern constext txt_uu_error_no_end[];
+extern constext txt_uu_success[];
 
 #if defined(NNTP_ABLE) || defined(NNTP_ONLY)
 	extern constext txt_cannot_open_active_file[];
@@ -1068,12 +1035,8 @@ extern long head_next;
 
 extern signed long int read_newsrc_lines;
 
-extern gid_t real_gid;
-extern gid_t tin_gid;
 extern mode_t real_umask;
 extern pid_t process_id;
-extern uid_t real_uid;
-extern uid_t tin_uid;
 
 extern struct regex_cache strip_re_regex;
 extern struct regex_cache strip_was_regex;
@@ -1081,6 +1044,7 @@ extern struct regex_cache uubegin_regex;
 extern struct regex_cache uubody_regex;
 extern struct regex_cache url_regex;
 extern struct regex_cache mail_regex;
+extern struct regex_cache shar_regex;
 
 #ifdef HAVE_COLOR
 	extern struct regex_cache quote_regex;
@@ -1104,7 +1068,6 @@ extern t_bool created_rcdir;
 extern t_bool dangerous_signal_exit; /* TRUE if SIGHUP, SIGTERM, SIGUSR1 */
 extern t_bool disable_gnksa_domain_check;
 extern t_bool disable_sender;
-extern t_bool do_rfc1521_decoding;
 extern t_bool force_reread_active_file;
 extern t_bool got_sig_pipe;
 extern t_bool have_linescroll;
@@ -1394,6 +1357,7 @@ extern struct opttxt txt_advertising;
 extern struct opttxt txt_mm_charset;
 extern struct opttxt txt_post_mime_encoding;
 extern struct opttxt txt_post_8bit_header;
+extern struct opttxt txt_post_process_view;
 extern struct opttxt txt_mail_mime_encoding;
 extern struct opttxt txt_mail_8bit_header;
 extern struct opttxt txt_strip_blanks;

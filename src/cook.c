@@ -62,9 +62,9 @@
 
 #define MATCH_REGEX(x,y,z)	(pcre_exec (x.re, x.extra, y, z, 0, 0, NULL, 0) >= 0)
 
-static t_bool expand_ctrl_chars (char *to, char *from, int length);
+static t_bool expand_ctrl_chars (char *to, const char *from, int length);
 static void put_cooked (int flags, const char *fmt, ...);
-static void set_rest (char **rest, char *ptr);
+static void set_rest (char **rest, const char *ptr);
 static int put_rest (char **rest, char *dest, int max_line_len);
 static int read_decoded_base64_line (FILE *file, char *line, const int max_line_len, const int max_lines_to_read, const char *charset, char **rest);
 static int read_decoded_qp_line (FILE *file, char *line, const int max_line_len, const int max_lines_to_read, const char *charset, char **rest);
@@ -89,10 +89,11 @@ t_openartinfo *art;
 static t_bool
 expand_ctrl_chars (
 	char *to,
-	char *from,
+	const char *from,
 	int length)
 {
-	char *p, *q;
+	const char *p;
+	char *q;
 	t_bool ctrl_L = FALSE;
 
 	for (p = from, q = to; *p && q < &to[length]; p++) {
@@ -205,7 +206,7 @@ put_cooked (
 static void
 set_rest (
 	char **rest,
-	char *ptr)
+	const char *ptr)
 {
 	char *new_rest;
 	size_t new_rest_len;
@@ -466,10 +467,10 @@ read_decoded_qp_line (
 		}
 		lines_read++;
 		if (!(buflen = strlen(buf)))
-		 	/*
-		 	 * Empty line. Should not occur, at least newline should be there.
-		 	 * We'll add it when we left the loop.
-		 	 */
+			/*
+			 * Empty line. Should not occur, at least newline should be there.
+			 * We'll add it when we left the loop.
+			 */
 			break;
 		endptr = &buf[buflen - 1];
 		c = *endptr;
@@ -566,17 +567,19 @@ new_uue(
  * 'filename' supersedes Content-Type 'name'. We must also remove path
  * information.
  */
-char *
+const char *
 get_filename(
 	t_param *ptr)
 {
-	char *name, *p;
+	const char *name;
+	char *p;
 
 	if (!(name = get_param(ptr, "filename"))) {
 		if (!(name = get_param(ptr, "name")))
 		return NULL;
 	}
 
+	/* Use basename() ? */
 	if (((p = strrchr(name, '/'))) || ((p = strrchr(name, '\\'))))
 		return p+1;
 
@@ -620,7 +623,7 @@ process_text_body_part(
 	if (part->encoding == ENCODING_BASE64)
 		(void) mmdecode(NULL, 'b', 0, NULL, NULL);		/* flush */
 
-	lines_left = part->lines;
+	lines_left = part->line_count;
 	while ((lines_left > 0) || rest) {
 		switch (part->encoding) {
 			case ENCODING_BASE64:
@@ -658,7 +661,7 @@ process_text_body_part(
 				in_sig = TRUE;
 				if (in_uue) {
 					in_uue = FALSE;
-					put_cooked (C_UUE, txt_uue, "incomplete ", curruue->lines, get_filename(curruue->params));
+					put_cooked (C_UUE, txt_uue, "incomplete ", curruue->line_count, get_filename(curruue->params));
 				}
 			}
 		}
@@ -678,7 +681,8 @@ process_text_body_part(
 			} else if (strncmp (line, "end\n", 4) == 0) {
 				if (in_uue) {
 					in_uue = FALSE;
-					put_cooked (C_UUE, txt_uue, "", curruue->lines, get_filename(curruue->params));
+					/* TODO include type/subtype/encoding in txt_uue as in txt_attach ? */
+					put_cooked (C_UUE, txt_uue, "", curruue->line_count, get_filename(curruue->params));
 					continue;				/* To stop 'end' line appearing */
 				}
 			}
@@ -697,20 +701,21 @@ process_text_body_part(
 				else if (len == sum+1+1)
 					is_uubody = TRUE;
 #ifdef DEBUG_ART
-fprintf(stderr, "%s sum=%d len=%d (%s)\n", bool_unparse(is_uubody), sum, len, line);
+				if (debug == 2)
+					fprintf(stderr, "%s sum=%d len=%d (%s)\n", bool_unparse(is_uubody), sum, len, line);
 #endif /* DEBUG_ART */
 			}
 
 			if (in_uue) {
 				if (is_uubody)
-					curruue->lines++;
+					curruue->line_count++;
 				else {
 					if (line[0] == '\n') {		/* Blank line in a uubody - definitely a failure */
 #ifdef DEBUG_ART
 						fprintf(stderr, "not a uue line while reading a uue body?\n");
 #endif /* DEBUG_ART */
 						in_uue = FALSE;
-						put_cooked (C_UUE, txt_uue, "incomplete ", curruue->lines, get_filename(curruue->params));
+						put_cooked (C_UUE, txt_uue, "incomplete ", curruue->line_count, get_filename(curruue->params));
 					}
 				}
 			} else {
@@ -718,7 +723,7 @@ fprintf(stderr, "%s sum=%d len=%d (%s)\n", bool_unparse(is_uubody), sum, len, li
 				if (is_uubody) {
 					char name[] = "(missing)";
 					curruue = new_uue(&part, name);
-					curruue->lines++;				/* We never saw a begin line */
+					curruue->line_count++;				/* We never saw a begin line */
 					in_uue = TRUE;
 					continue;
 				}
@@ -763,7 +768,7 @@ fprintf(stderr, "%s sum=%d len=%d (%s)\n", bool_unparse(is_uubody), sum, len, li
 			ConvertIso2Asc (isobuf, line, iso2asc_supported);
 		}
 
-#if 0	/* TODO */
+#if 1
 /* Basically: if (!(my_isprint(*c) || *c==8 || *c==9 || *c==12)) */
 /* How about if !isprint() && !isctrl() - expand_ctrl_chars is done at display time */
 		ConvertBody2Printable (line);
@@ -780,7 +785,7 @@ fprintf(stderr, "%s sum=%d len=%d (%s)\n", bool_unparse(is_uubody), sum, len, li
 	 * Were we reading uue and ran off the end ?
 	 */
 	if (in_uue)
-		put_cooked (C_UUE, txt_uue, "incomplete ", curruue->lines, get_filename(curruue->params));
+		put_cooked (C_UUE, txt_uue, "incomplete ", curruue->line_count, get_filename(curruue->params));
 }
 
 
@@ -915,7 +920,7 @@ cook_article(
 		t_part *ptr;
 
 		for (ptr = hdr->ext->next; ptr != NULL; ptr = ptr->next) {
-			char *name = get_filename(ptr->params);
+			const char *name = get_filename(ptr->params);
 
 			/*
 			 * Ignore non text/plain sections with alternative handling
@@ -926,7 +931,7 @@ cook_article(
 			put_cooked (C_ATTACH, _(txt_attach),
 				ptr->depth * 4, "",
 				content_types[ptr->type], ptr->subtype,
-				content_encodings[ptr->encoding], ptr->lines,
+				content_encodings[ptr->encoding], ptr->line_count,
 				(name) ? _(", name: ") : "", (name) ? name : "");	/* FIXME: -> lang.c */
 
 			/* Try to view anything of type text, may need to review this */
@@ -940,12 +945,12 @@ cook_article(
 		if (IS_PLAINTEXT(hdr->ext))
 			process_text_body_part(artinfo->raw, hdr->ext);
 		else {						/* Non-textual main body */
-			char *name = get_filename(hdr->ext->params);
+			const char *name = get_filename(hdr->ext->params);
 
 			put_cooked (C_ATTACH, _(txt_attach),
 					0, "",
 					content_types[hdr->ext->type], hdr->ext->subtype,
-					content_encodings[hdr->ext->encoding], hdr->ext->lines,
+					content_encodings[hdr->ext->encoding], hdr->ext->line_count,
 					(name)? _(", name: ") : "", (name) ? name : "");	/* FIXME: -> lang.c */
 		}
 	}

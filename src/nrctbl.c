@@ -170,8 +170,7 @@ get_newsrcname (
 			char tmp_newsrc[PATH_LEN];
 			int error = 0;
 
-			if (!strfpath (name_found, tmp_newsrc, sizeof (tmp_newsrc),
-				homedir, (char *) 0, (char *) 0, (char *) 0)) {
+			if (!strfpath (name_found, tmp_newsrc, sizeof (tmp_newsrc), &CURR_GROUP)) {
 					my_fprintf (stderr, _("couldn't expand %s\n"), name_found);
 					error = 1;
 			} else {

@@ -56,15 +56,19 @@
 #	include "rfc2046.h"
 #endif /* !RFC2046_H */
 
-char proc_ch;						/* Used for post-processing save queries */
+/*
+ * Post-processing type when saving
+ * Set to <0 before post proc type is selected
+ * Set to 0 if user aborted save process
+ * We do this hackery to honour the "don't postprocess mailboxes" rule
+ */
+char proc_ch;
 
 #ifndef DONT_HAVE_PIPING
 	FILE *pipe_fp = (FILE *) 0;
 #endif /* !DONT_HAVE_PIPING */
 
 t_bool confirm;
-/* Nasty global kluge - needed for postprocessing saved arts */
-t_bool do_rfc1521_decoding = FALSE;
 t_bool is_mailbox = FALSE;
 t_bool redraw_screen = FALSE;
 t_bool supersede = FALSE;			/* for reposting only */
@@ -78,9 +82,8 @@ t_bool supersede = FALSE;			/* for reposting only */
 
 
 /*
- * Return the filename to save to.
- * Sets the global 'is_mailbox' flag.
- * NB: When saving to anything other than a mailbox, the whole path is returned.
+ * 'filename' holds 'filelen' amount of storage in which to place the filename
+ * to save-to. The filename is also returned after basic syntax checking.
  * We default to the global save filename or group specific filename if it exists
  */
 static char *
@@ -90,16 +93,14 @@ get_save_filename(
 	char *filename,
 	int filelen)
 {
-	char save_file[PATH_LEN];
+	char default_savefile[PATH_LEN];
 
 	filename[0] = '\0';
 
-	strcpy (save_file, ((group->attribute->savefile != (char *) 0) ? group->attribute->savefile : tinrc.default_save_file));
+	strcpy (default_savefile, (group->attribute->savefile ? group->attribute->savefile : tinrc.default_save_file));
 
-	if (function != FEED_AUTOSAVE_TAGGED) {
-		sprintf (mesg, _(txt_save_filename), save_file);
-
-		if (!prompt_string (mesg, filename, HIST_SAVE_FILE)) {
+	if (function != FEED_AUTOSAVE_TAGGED) {			/* ie, FEED_SAVE */
+		if (!prompt_default_string (_(txt_save_filename), filename, filelen, default_savefile, HIST_SAVE_FILE)) {
 			clear_message ();
 			return NULL;
 		}
@@ -107,55 +108,26 @@ get_save_filename(
 	}
 
 	if (*filename) {
-		if (group->attribute->savefile != (char *) 0) {
+		if (group->attribute->savefile) {
 			free (group->attribute->savefile);
 			group->attribute->savefile = my_strdup (filename);
 		}
 		my_strncpy (tinrc.default_save_file, filename, sizeof (tinrc.default_save_file));
-	} else {
-		if (*save_file)
-			my_strncpy (filename, save_file, LEN);
-		else {
+	} else {									/* No file was specified, try default */
+		if (*default_savefile)
+			my_strncpy (filename, default_savefile, LEN);
+		else {									/* No default either */
 			info_message (_(txt_no_filename));
 			return NULL;
 		}
 	}
 
+	/*
+	 * Punt invalid expansions
+	 */
 	if ((filename[0] == '~' || filename[0] == '+') && filename[1] == '\0') {
 		info_message (_(txt_no_filename));
 		return NULL;
-	}
-
-	if (function != FEED_AUTOSAVE_TAGGED) {
-		is_mailbox = create_path (filename);
-		if (is_mailbox) {
-			char my_mailbox[PATH_LEN];
-
-			if ((int) strlen (filename) > 1)
-				my_strncpy (my_mailbox, filename+1, sizeof (my_mailbox));
-			else
-				my_strncpy (my_mailbox, group->name, sizeof (my_mailbox));
-			my_strncpy (filename, my_mailbox, filelen);
-		} else {		/* ask for post processing type */
-			char keynone[MAXKEYLEN], keyquit[MAXKEYLEN], keyshar[MAXKEYLEN];
-			char keyuud[MAXKEYLEN];
-
-			proc_ch = (char) prompt_slk_response (proc_ch_default,
-									&menukeymap.feed_post_process_type,
-									_(txt_choose_post_process_type),
-									printascii (keynone, map_to_local(iKeyPProcNone, &menukeymap.feed_post_process_type)),
-									printascii (keyshar, map_to_local(iKeyPProcShar, &menukeymap.feed_post_process_type)),
-									printascii (keyuud, map_to_local(iKeyPProcUUDecode, &menukeymap.feed_post_process_type)),
-									printascii (keyquit, map_to_local(iKeyQuit, &menukeymap.feed_post_process_type)));
-
-			if (proc_ch == iKeyQuit || proc_ch == iKeyAbort) { /* exit */
-				clear_message ();
-				return NULL;
-			}
-			/* FIXME, ugly hack */
-			/* check if rfc1521 decoding is needed */
-			do_rfc1521_decoding = (proc_ch == iKeyPProcNone) ? FALSE : TRUE;
-		}
 	}
 
 	return filename;
@@ -163,10 +135,41 @@ get_save_filename(
 
 
 /*
+ * Find out what post-processing to perform.
+ * This is not used when saving to mailboxes
+ * Also not used when using the auto-save feature as a default value is taken
+ * from the group attributes
+ * Return a post_proc char or 0 if aborting the save process
+ */
+static int
+get_post_proc_type(void)
+{
+	char ch;
+	char keynone[MAXKEYLEN], keyquit[MAXKEYLEN], keyshar[MAXKEYLEN];
+	char keyuud[MAXKEYLEN];
+
+	ch = (char) prompt_slk_response (proc_ch_default,
+				&menukeymap.feed_post_process_type,
+				_(txt_choose_post_process_type),
+				printascii (keynone, map_to_local(iKeyPProcNone, &menukeymap.feed_post_process_type)),
+				printascii (keyshar, map_to_local(iKeyPProcShar, &menukeymap.feed_post_process_type)),
+				printascii (keyuud, map_to_local(iKeyPProcUUDecode, &menukeymap.feed_post_process_type)),
+				printascii (keyquit, map_to_local(iKeyQuit, &menukeymap.feed_post_process_type)));
+
+	if (ch == iKeyQuit || ch == iKeyAbort) {			/* exit */
+		clear_message ();
+		return 0;
+	}
+
+	return ch;
+}
+
+
+/*
  * This is the handler that processes a single article for all the
  * various FEED_ functions. 'art' is the index in arts[]
  * Assumes no article is open when we enter -  opens and closes the art being
- * processed. As a performance hack this is not done if 'use_current'.
+ * processed. As a performance hack this is not done if 'use_current' is set.
  * Returns TRUE if the article was processed okay
  */
 static t_bool
@@ -177,7 +180,7 @@ feed_article(
 	int max,				/* Total # items being processed, if known */
 	t_bool use_current,		/* Use already open pager article */
 	const char *data,		/* Extra data if needed, print command or save filename */
-	char *path)
+	const char *path)
 {
 	t_bool ok = TRUE;		/* Assume success */
 	t_openartinfo openart;
@@ -191,11 +194,12 @@ feed_article(
 		openartptr = &pgart;			/* Use art open in pager */
 	else {
 		if (function == FEED_SAVE || function == FEED_AUTOSAVE_TAGGED) {
+			/* When saving, just check that it exists for now */
 			if (!stat_article (arts[art].artnum, path))
 				return FALSE;
 		} else {
 			memset (openartptr, 0, sizeof(t_openartinfo));
-			if (art_open (&arts[art], path, TRUE, openartptr) == ART_UNAVAILABLE)
+			if (art_open (&arts[art], path, openartptr) == ART_UNAVAILABLE)
 				return FALSE;
 		}
 	}
@@ -240,10 +244,16 @@ feed_article(
 			break;
 #endif /* !DISABLE_PRINTING */
 
+		/* add_to_save_list() is instant, the actual saving happens later */
 		case FEED_SAVE:
+			if (!(is_mailbox = add_to_save_list (&arts[art], data /*filename*/))) {
+				if (proc_ch < 0 && (proc_ch = get_post_proc_type()) == 0)
+					ok = FALSE;
+			}
+			break;
+
 		case FEED_AUTOSAVE_TAGGED:
-			/* This is instant, the actual saving happens later */
-			add_to_save_list (art, is_mailbox, data /*filename*/);
+			add_to_save_list (&arts[art], data /*filename*/);
 			break;
 
 		case FEED_REPOST:
@@ -305,6 +315,8 @@ feed_articles (
 	set_xclick_off ();
 
 	thread_base = which_thread (respnum);
+
+	proc_ch = -1;			/* No selection made yet */
 
 	/*
 	 * try and work out what default the user wants
@@ -387,7 +399,7 @@ feed_articles (
 	switch (function) {
 		/* Setup mail - get address to mail to */
 		case FEED_MAIL:
-			sprintf (mesg, _(txt_mail_art_to), cCOLS-(strlen(_(txt_mail_art_to))+30), tinrc.default_mail_address);
+			sprintf (mesg, _(txt_mail_art_to), cCOLS - (strlen(_(txt_mail_art_to)) + 30), tinrc.default_mail_address);
 			if (!(prompt_string_default(mesg, tinrc.default_mail_address, _(txt_no_mail_address), HIST_MAIL_ADDRESS)))
 				return;
 			break;
@@ -395,7 +407,7 @@ feed_articles (
 #ifndef DONT_HAVE_PIPING
 		/* Setup pipe - get pipe-to command and open the pipe */
 		case FEED_PIPE:
-			sprintf (mesg, _(txt_pipe_to_command), cCOLS-(strlen(_(txt_pipe_to_command))+30), tinrc.default_pipe_command);
+			sprintf (mesg, _(txt_pipe_to_command), cCOLS - (strlen(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);
 			if (!(prompt_string_default (mesg, tinrc.default_pipe_command, _(txt_no_command), HIST_PIPE_COMMAND)))
 				return;
 
@@ -424,12 +436,10 @@ feed_articles (
 
 		case FEED_SAVE:		/* ask user for filename to save to */
 		case FEED_AUTOSAVE_TAGGED:
-			/* TODO test for the attrib instead - also in save.c */
-			if (!(tinrc.auto_save && arts[respnum].archive)) {
+			if (!group->attribute->auto_save || (arts[respnum].archive == NULL)) {
 				if (get_save_filename (group, function, output, sizeof(output)) == NULL)
 					return;
 			}
-			wait_message (0, _(txt_saving));
 			break;
 
 		case FEED_REPOST:	/* repost article */
@@ -441,13 +451,19 @@ feed_articles (
 
 			if (strstr (from_name, arts[respnum].from)) {
 #endif /* !FORGERY */
+				char buf[LEN];
+				char keyrepost[MAXKEYLEN], keysupersede[MAXKEYLEN];
+				char keyquit[MAXKEYLEN];
 				char option;
 
 				/* repost or supersede ? */
+				snprintf (buf, sizeof(buf), _(txt_supersede_article),
+							printascii (keyrepost, map_to_local(iKeyFeedRepost, &menukeymap.feed_supersede_article)),
+							printascii (keysupersede, map_to_local(iKeyFeedSupersede, &menukeymap.feed_supersede_article)),
+							printascii (keyquit, map_to_local(iKeyQuit, &menukeymap.feed_supersede_article)));
 				option = (char) prompt_slk_response (iKeyFeedSupersede,
 										&menukeymap.feed_supersede_article,
-										sized_message(_(txt_supersede_article),
-										arts[respnum].subject));
+										sized_message(buf, arts[respnum].subject));
 
 				switch (option) {
 					case iKeyFeedSupersede:
@@ -481,8 +497,8 @@ feed_articles (
 	clear_message();
 
 	/*
-	 * Performance hack - If we feed a single art from the pager then we re-use
-	 * the currently open article
+	 * Performance hack - If we feed a single art from the pager then we can
+	 * re-use the currently open article
 	 */
 	if (level == PAGE_LEVEL && ch == iKeyFeedArt) {
 		saved_curr_line = curr_line;		/* Save where we were in pager */
@@ -494,20 +510,16 @@ feed_articles (
 			if (!feed_article (respnum, function, &count, 1, use_current, output, group_path)) {
 				if (got_sig_pipe)
 					goto got_sig_pipe_while_piping;
+				/* No point testing proc_ch when handling only a single art */
 				break;
 			}
 
-			if (function == FEED_SAVE) {
-				if (level == PAGE_LEVEL)
-					processed_ok = save_art_to_file (0, FALSE, "", &pgart);
-				else {
-					t_openartinfo openart;
-					memset (&openart, 0, sizeof(t_openartinfo));
-					if (art_open (&arts[respnum], group_path, do_rfc1521_decoding, &openart) != 0)
-						break;
-					processed_ok = save_art_to_file (0, FALSE, "", &openart);
-					art_close(&openart);
-				}
+			if (proc_ch && function == FEED_SAVE) {
+				if (use_current) {
+					if (create_path (save[0].path))
+						processed_ok = save_art_to_file (0, &pgart);
+				} else
+					processed_ok = save_batch (ch, group_path);
 			}
 
 			break;
@@ -520,12 +532,16 @@ feed_articles (
 
 				/* Ignore errors */
 				feed_article (i, function, &count, 0, use_current, output, group_path);
+				if (proc_ch == 0)
+					break;
+
 				if (got_sig_pipe)
 					goto got_sig_pipe_while_piping;
 			}
-			if (function == FEED_SAVE) {
-				sort_save_list ();
-				processed_ok = save_thread_to_file (is_mailbox, group_path);
+			if (proc_ch && function == FEED_SAVE) {
+/* Can't see any need for this with real threading */
+/*				sort_save_list ();*/
+				processed_ok = save_batch (ch, group_path);
 			}
 			break;
 
@@ -535,13 +551,19 @@ feed_articles (
 					if (arts[j].tagged == i) {
 						/* Ignore errors */
 						feed_article(j, function, &count, num_of_tagged_arts, use_current, output, group_path);
+						if (proc_ch == 0) {
+							i=num_of_tagged_arts+1;		/* Force break out of outer-loop */
+							break;
+						}
+
 						if (got_sig_pipe)
 							goto got_sig_pipe_while_piping;
 					}
 				}
 			}
-			if (function == FEED_SAVE || function == FEED_AUTOSAVE_TAGGED)
-				processed_ok = save_regex_arts_to_file (is_mailbox, group_path);
+
+			if (proc_ch && (function == FEED_SAVE || function == FEED_AUTOSAVE_TAGGED))
+				processed_ok = save_batch (ch, group_path);
 
 			untag_all_articles ();
 			break;
@@ -555,22 +577,28 @@ feed_articles (
 							continue;
 					} else if (!arts[j].selected)
 						continue;
+
 					if (tinrc.process_only_unread && arts[j].status == ART_READ)
 						continue;
 
-					if (feed_article(j, function, &count, 0, use_current, output, group_path) && tinrc.mark_saved_read) {
+					if (feed_article(j, function, &count, 0, use_current, output, group_path)) {
 						if (ch == iKeyFeedHot) {
 							arts[j].selected = FALSE;
 							num_of_selected_arts--;
 						}
 					} else {
+						if (proc_ch == 0) {
+							i = grpmenu.max;		/* Force break out of outer-loop */
+							break;
+						}
+
 						if (got_sig_pipe)
 							goto got_sig_pipe_while_piping;
 					}
 				}
 			}
-			if (function == FEED_SAVE)
-				processed_ok = save_regex_arts_to_file (is_mailbox, group_path);
+			if (proc_ch && function == FEED_SAVE)
+				processed_ok = save_batch (ch, group_path);
 
 			break;
 
@@ -597,7 +625,7 @@ got_sig_pipe_while_piping:
 			(void) pclose (pipe_fp);
 			Raw (TRUE);
 			InitWin();
-			continue_prompt ();
+			prompt_continue ();
 			redraw_screen = TRUE;
 			break;
 #endif /* !DONT_HAVE_PIPING */
@@ -606,7 +634,7 @@ got_sig_pipe_while_piping:
 		case FEED_AUTOSAVE_TAGGED:
 			if (proc_ch != 'n' && !is_mailbox && processed_ok)
 				ret2 = post_process_files (proc_ch, (function == FEED_SAVE ? FALSE : TRUE));
-			free_save_array ();
+			free_save_array ();		/* NB: This is where num_save etc.. gets purged */
 			break;
 
 		default:
@@ -626,7 +654,7 @@ got_sig_pipe_while_piping:
 		/*
 		 * If we were using the paged art return to our former position
 		 */
-		if (ch == iKeyFeedArt)
+		if (use_current)
 			curr_line = saved_curr_line;
 
 		if (redraw_screen)
@@ -654,11 +682,8 @@ got_sig_pipe_while_piping:
 			break;
 #endif /* !DISABLE_PRINTING */
 
-		case FEED_SAVE:
+		case FEED_SAVE:		/* Reporting handled by save code */
 		case FEED_AUTOSAVE_TAGGED:
-			if (ch == iKeyFeedArt)
-				info_message (_(txt_saved_arts), count, PLURAL(count, txt_article));
-			break;
 		default:
 			break;
 	}

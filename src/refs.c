@@ -61,10 +61,10 @@ FILE *dbgfd;
  * local prototypes
  */
 static char * _get_references (struct t_msgid *refptr, int depth);
-static struct t_msgid * add_msgid (int key, char *msgid, struct t_msgid *newparent);
-static struct t_msgid * find_next (struct t_msgid *ptr);
-static struct t_msgid * parse_references (char *r);
-static unsigned int hash_msgid (char *key);
+static struct t_msgid *add_msgid (int key, const char *msgid, struct t_msgid *newparent);
+static struct t_msgid *find_next (struct t_msgid *ptr);
+static struct t_msgid *parse_references (char *r);
+static unsigned int hash_msgid (const char *key);
 static void add_to_parent (struct t_msgid *ptr);
 static void build_thread (struct t_msgid *ptr);
 #ifdef DEBUG_REFS
@@ -118,7 +118,7 @@ static struct t_msgid *msgids[MSGID_HASH_SIZE] = {0};
  */
 static unsigned int
 hash_msgid (
-	char *key)
+	const char *key)
 {
 	unsigned int hash = 0;
 
@@ -204,7 +204,7 @@ add_to_parent (
 static struct t_msgid *
 add_msgid (
 	int key,
-	char *msgid,
+	const char *msgid,
 	struct t_msgid *newparent)
 {
 	struct t_msgid *ptr;
@@ -218,7 +218,7 @@ add_msgid (
 
 	h = hash_msgid(msgid+1);				/* Don't hash the initial '<' */
 
-	DEBUG_PRINT((dbgfd, "---------------- Add %s %s with parent %s\n", (key==MSGID_REF)?"MSG":"REF", msgid, (newparent == NULL) ? _("unchanged") : newparent->txt));
+	DEBUG_PRINT((dbgfd, "---------------- Add %s %s with parent %s\n", (key == MSGID_REF) ? "MSG" : "REF", msgid, (newparent == NULL) ? _("unchanged") : newparent->txt));
 
 	/*
 	 * Look for this message id in the cache.
@@ -257,7 +257,7 @@ add_msgid (
 			 */
 			for (ptr = newparent; ptr != NULL; ptr = ptr->parent) {
 				if (ptr == i) {
-					DEBUG_PRINT((dbgfd, "Avoiding circular reference! (%s)\n", (key==MSGID_REF) ? "MSG" : "REF"));
+					DEBUG_PRINT((dbgfd, "Avoiding circular reference! (%s)\n", (key == MSGID_REF) ? "MSG" : "REF"));
 					return(i);
 				}
 			}
@@ -278,7 +278,7 @@ add_msgid (
 		 */
 		if (i->parent != newparent) {
 			DEBUG_PRINT((dbgfd, "Warning: (%s) Ignoring %s -> %s (already %s)\n",
-				(key==MSGID_REF) ? "MSG" : "REF", i->txt,
+				(key == MSGID_REF) ? "MSG" : "REF", i->txt,
 				newparent ? newparent->txt : "None", i->parent->txt));
 
 			return(i);
@@ -317,7 +317,7 @@ add_msgid (
  */
 struct t_msgid *
 find_msgid (
-	char *msgid)
+	const char *msgid)
 {
 	unsigned int h;
 	struct t_msgid *i;

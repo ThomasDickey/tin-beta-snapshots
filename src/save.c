@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 1997-12-31
+ *  Updated   : 2000-07-08
  *  Notes     :
  *
  * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -59,53 +59,31 @@
 
 #undef OFF
 
-#define INITIAL		1
-#define MIDDLE		2
-#define OFF		3
-#define END		4
+enum state { INITIAL, MIDDLE, OFF, END };
 
-#ifndef HAVE_LIBUU
-	/*
-	 * types of archive programs
-	 */
-	static struct archiver_t {
-		constext *name;
-		constext *ext;
-		constext *test;
-		constext *list;
-		constext *extract;
-	} archiver[] = {
-		{ "",		"",		"",		"",		""	},
-		{ "",		"",		"",		"",		""	},
-		{ "",		"",		"",		"",		""	},
-#	ifdef M_AMIGA
-		{ "lha",	"lha",		"t",		"l",		"x" },
-#	else
-		{ "zoo",	"zoo",		"-test",	"-list",	"-extract" },
-#	endif /* M_AMIGA */
-		{ "unzip",	"zip",		"-t",		"-l",		"-o"	},
-		{ (char *) 0,	(char *) 0,	(char *) 0,	(char *) 0,	(char *) 0 }
-	};
-#endif /* !HAVE_LIBUU */
-
+#ifdef VMS
+	const char DIRSEP = ']';		/* Seperator between dir + filename */
+#else
+	const char DIRSEP = '/';
+#endif /* VMS */
 
 /*
  * Local prototypes
  */
+static const char *get_first_savefile (void);
+static const char *get_last_savefile (void);
 static t_bool any_saved_files (void);
-static char *get_first_savefile (void);
-static char *save_filename (int i);
-static char *get_last_savefile (void);
 static void delete_processed_files (t_bool auto_delete);
 static void post_process_sh (t_bool auto_delete);
-static void post_process_uud (
+static void post_process_uud (t_bool auto_delete);
+static void start_viewer(t_part *part, const char *path);
 #ifndef HAVE_LIBUU
-	int pp,
+	static void sum_and_view (const char *path, const char *file);
 #endif /* !HAVE_LIBUU */
-	t_bool auto_delete);
-#ifndef HAVE_LIBUU
-	static void uudecode_file (int pp, char *file_out_dir, char *file_out, char *uudname);
-#endif /* !HAVE_LIBUU */
+#define HAVE_UUDECODE 1
+#ifdef HAVE_UUDECODE
+	static void uudecode_line(const char *buf, FILE *fp);
+#endif /* HAVE_UUDECODE */
 
 
 /*
@@ -131,13 +109,12 @@ check_start_save_any_news (
 {
 	FILE *fp;
 	FILE *fp_log = (FILE *) 0;
-	char *ich;
 	char buf[LEN], logfile[LEN];
 	char group_path[PATH_LEN];
 	char path[PATH_LEN];
 	char savefile[PATH_LEN];
 	char subject[HEADER_LEN];
-	int art_count, hot_count, group_count;
+	int group_count;
 	int i, j;
 	int saved_arts = 0;					/* Total # saved arts */
 	struct t_group *group;
@@ -154,11 +131,11 @@ check_start_save_any_news (
 			break;
 		case MAIL_ANY_NEWS:
 		case SAVE_ANY_NEWS:
-#	ifdef VMS
+#ifdef VMS
 			joinpath (logfile, rcdir, "log.");
-#	else
-			sprintf (logfile, "%s/log", rcdir);
-#	endif /* VMS */
+#else
+			joinpath (logfile, rcdir, "log");
+#endif /* VMS */
 			if (no_write || (fp_log = fopen (logfile, "w" FOPEN_OPTS)) == NULL) {
 				perror_message (_(txt_cannot_open), logfile);
 				fp_log = stdout;
@@ -167,11 +144,8 @@ check_start_save_any_news (
 			}
 			fprintf (fp_log, "To: %s\n", userid);
 			(void) time (&epoch);
-			sprintf (subject, "Subject: NEWS LOG %s", ctime (&epoch));
-			/* Remove trailing \n introduced by ctime() */
-			if ((ich = strrchr(subject, '\n')) != 0)
-				*ich = '\0';
-			fprintf (fp_log, "%s\n\n", subject);
+			snprintf (subject, sizeof(subject) - 1, "Subject: NEWS LOG %s", ctime (&epoch));
+			fprintf (fp_log, "%s\n", subject);	/* ctime() includes a \n too */
 			break;
 		default:
 			break;
@@ -179,7 +153,12 @@ check_start_save_any_news (
 
 	group_count = 0;
 
+	/*
+	 * For each group we subscribe to...
+	 */
 	for (i = 0; i < selmenu.max; i++) {
+		int art_count, hot_count;
+
 		group = &active[my_group[i]];
 		if (!index_group (group))
 			continue;
@@ -193,21 +172,27 @@ check_start_save_any_news (
 				continue;
 
 			group_count++;
-			sprintf (buf, _(txt_saved_groupname), group->name);
+			snprintf (buf, sizeof(buf) - 1, _(txt_saved_groupname), group->name);
 			fprintf (fp_log, buf);
 			if (verbose)
 				wait_message (0, buf);
 
 			if (function == SAVE_ANY_NEWS) {
-#	ifdef VMS
-				sprintf (buf, "[.%s]dummy", group_path);
-#	else
-				sprintf (buf, "%s/dummy", group_path);
-#	endif /* VMS */
-				create_path (buf);
+				char tmp[PATH_LEN];
+
+				if (!strfpath (group->attribute->savedir, buf, sizeof(buf), group))
+					joinpath (buf, homedir, DEFAULT_SAVEDIR);
+				joinpath (tmp, buf, group_path);
+#if 0
+fprintf(stderr, "start_save: create_path(%s)\n", tmp);
+#endif /* 0 */
+				create_path (tmp);
 			}
 		}
 
+		/*
+		 * For each article in this group...
+		 */
 		for (j = 0; j < top_art; j++) {
 			FILE *artfp;
 
@@ -235,15 +220,15 @@ check_start_save_any_news (
 						continue;
 
 					if (function == MAIL_ANY_NEWS)
-						sprintf (savefile, "%stin.%d", TMPDIR, (int) process_id);
+						snprintf (savefile, sizeof(savefile) - 1, "%stin.%d", TMPDIR, (int) process_id);
 					else {
-						if (!strfpath (group->attribute->savedir, path, sizeof (path), homedir, NULL, NULL, group->name))
+						if (!strfpath (group->attribute->savedir, path, sizeof (path), group))
 							joinpath (path, homedir, DEFAULT_SAVEDIR);
-#	ifdef VMS
-						sprintf (savefile, "%s.%s]%ld", path, group_path, arts[j].artnum);
-#	else
-						sprintf (savefile, "%s/%s/%ld", path, group_path, arts[j].artnum);
-#	endif /* VMS */
+#ifdef VMS
+						snprintf (savefile, sizeof(savefile) - 1, "%s.%s]%ld", path, group_path, arts[j].artnum);
+#else
+						snprintf (savefile, sizeof(savefile) - 1, "%s/%s/%ld", path, group_path, arts[j].artnum);
+#endif /* VMS */
 					}
 
 					if ((fp = fopen (savefile, "w" FOPEN_OPTS)) == (FILE *) 0) {
@@ -257,7 +242,7 @@ check_start_save_any_news (
 					if (function == MAIL_ANY_NEWS)
 						fprintf (fp, "To: %s\n", mail_news_user);
 
-					sprintf (buf, "[%5ld]  %s\n", arts[j].artnum, arts[j].subject);
+					snprintf (buf, sizeof(buf) - 1, "[%5ld]  %s\n", arts[j].artnum, arts[j].subject);
 					fprintf (fp_log, "%s", buf);		/* buf may contain % */
 					if (verbose)
 						wait_message (0, buf);
@@ -307,7 +292,7 @@ check_start_save_any_news (
 
 		case MAIL_ANY_NEWS:
 		case SAVE_ANY_NEWS:
-			sprintf (buf, _(txt_saved_summary), (function == MAIL_ANY_NEWS ? _(txt_mailed) : _(txt_saved)),
+			snprintf (buf, sizeof(buf) - 1, _(txt_saved_summary), (function == MAIL_ANY_NEWS ? _(txt_mailed) : _(txt_saved)),
 					PLURAL(saved_arts, txt_article), PLURAL(group_count, txt_group));
 			fprintf (fp_log, "%s", buf);
 			if (verbose)
@@ -316,7 +301,7 @@ check_start_save_any_news (
 			if (log_opened) {
 				fclose (fp_log);
 				if (verbose)
-					wait_message (0, _("Mailing log to %s\n"), (function == MAIL_ANY_NEWS ? mail_news_user : userid)); /* FIXME: -> lang.c */
+					wait_message (0, _(txt_mail_log_to), (function == MAIL_ANY_NEWS ? mail_news_user : userid));
 				strfmailer (mailer, subject, (function == MAIL_ANY_NEWS ? mail_news_user : userid), logfile, buf, sizeof (buf), tinrc.mailer_format);
 				if (invoke_cmd (buf))
 					unlink (logfile);
@@ -332,315 +317,253 @@ check_start_save_any_news (
 
 
 /*
- * All article saves use this function
- * Save the article indexed via i and pointed to by artinfo
- * A non-blank 'filename' seems to force a mailbox save
- * 'indexnum' is index into save[]
+ * Do basic validation of a save-to path, handle append/overwrite semantics
+ * and return an opened file handle or NULL if user aborted etc..
+ */
+static FILE *
+open_save_filename(
+	const char *path,
+	t_bool mbox)
+{
+	FILE *fp;
+	char keyappend[MAXKEYLEN], keyoverwrite[MAXKEYLEN], keyquit[MAXKEYLEN];
+	char mode[3];
+	int ch;
+	struct stat st;
+
+	strcpy (mode, "a+");
+
+	/*
+	 * Mailboxes will always be appended to
+	 */
+	if (!mbox && stat (path, &st) != -1) {
+		/*
+		 * Admittedly a special case hack, but it saves failing later on
+		 */
+		if (S_ISDIR(st.st_mode)) {
+			wait_message (2, _(txt_cannot_write_to_directory), path);
+			return NULL;
+		}
+
+		ch = prompt_slk_response (tinrc.default_save_mode,
+				&menukeymap.save_append_overwrite_quit,
+				_(txt_append_overwrite_quit), path,
+				printascii (keyappend, map_to_local (iKeySaveAppendFile, &menukeymap.save_append_overwrite_quit)),
+				printascii (keyoverwrite, map_to_local (iKeySaveOverwriteFile, &menukeymap.save_append_overwrite_quit)),
+				printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.save_append_overwrite_quit)));
+
+		switch (ch) {
+			case iKeySaveAppendFile:
+/*				strcpy (mode, "a+");*/
+				break;
+
+			case iKeySaveOverwriteFile:
+				strcpy (mode, "w");
+				break;
+
+			case iKeyAbort:
+			case iKeyQuit:
+				wait_message (1, _(txt_art_not_saved));
+				return NULL;
+
+			default:
+				break;
+		}
+		tinrc.default_save_mode = ch;
+	}
+
+	if ((fp = fopen (path, mode)) == (FILE *) 0) {
+		perror_message ("%s (%s)", _(txt_art_not_saved), path);
+		return NULL;
+	}
+
+	return fp;
+}
+
+
+/*
+ * This is where articles are actually copied to disk
+ * All save functions use this function eventually
+ * Save the article opened in 'artinfo'
+ * 'indexnum' is index into save[] for the save path information etc..
  * Returns:
  *     TRUE or FALSE depending on whether article was saved okay.
  */
 t_bool
 save_art_to_file (
 	int indexnum,
-	t_bool the_mailbox,
-	const char *filename,
 	t_openartinfo *artinfo)
 {
 	FILE *fp;
-	char *file;
-	char keyappend[MAXKEYLEN], keyoverwrite[MAXKEYLEN], keyquit[MAXKEYLEN];
-	char mode[3];
-	char save_art_info[LEN];
-	int ch;
-	int i = 0;
-	struct stat st;
-	t_bool is_mailbox = FALSE;
+	char from[HEADER_LEN];
+	time_t epoch;
 
-	if (strlen (filename)) {		/* TODO can this be NULL ? see end of this func */
-		is_mailbox = the_mailbox;
-		i = indexnum;
-	}
-
-	file = save_filename (i);
-	strcpy (mode, "a+");
-
-	if (!save[i].is_mailbox) {
-		if (stat (file, &st) != -1) {
-			if (S_ISDIR(st.st_mode)) {
-				wait_message (2, _(txt_cannot_write_to_directory), file);
-				return FALSE;
-			}
-
-			ch = prompt_slk_response (tinrc.default_save_mode,
-						&menukeymap.save_append_overwrite_quit,
-						_(txt_append_overwrite_quit), file,
-						printascii (keyappend, map_to_local (iKeySaveAppendFile, &menukeymap.save_append_overwrite_quit)),
-						printascii (keyoverwrite, map_to_local (iKeySaveOverwriteFile, &menukeymap.save_append_overwrite_quit)),
-						printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.save_append_overwrite_quit)));
-			switch (ch) {
-				case iKeySaveAppendFile:
-					strcpy (mode, "a+");
-					break;
-
-				case iKeySaveOverwriteFile:
-					strcpy (mode, "w");
-					break;
-
-				case iKeyAbort:
-				case iKeyQuit:
-/*					save[i].saved = FALSE;*/
-					wait_message (1, _(txt_art_not_saved));
-					return FALSE;
-
-				default:
-					break;
-			}
-			tinrc.default_save_mode = ch;
-		}
-	}
-
-#	ifdef DEBUG
-	if (debug == 2)
-		error_message("Save index=[%d] mbox=[%d] filename=[%s] file=[%s] mode=[%s]", indexnum, the_mailbox, filename, file, mode);
-#	endif /* DEBUG */
-
-	if ((fp = fopen (file, mode)) == (FILE *) 0) {
-		info_message (_(txt_art_not_saved));
+	if ((fp = open_save_filename(save[indexnum].path, save[indexnum].is_mailbox)) == NULL)
 		return FALSE;
-	}
 
-	{
-		/*
-		 * place "^From from date" line as mailbox-seperator
-		 * on top of each article
-		 */
-		char from[HEADER_LEN];
-		time_t epoch;
-
-		if (artinfo->hdr.from)
-			strip_name (artinfo->hdr.from, from);
-		(void) time (&epoch);
-		fprintf (fp, "From %s %s", from, ctime (&epoch));
-	}
+	/*
+	 * Add "^From from date" line as mailbox-seperator on top of each article
+	 * We always do this since it is harmless, but we could restrict this to
+	 * mailbox saves only.
+	 */
+	if (artinfo->hdr.from)
+		strip_name (artinfo->hdr.from, from);
+	(void) time (&epoch);
+	fprintf (fp, "From %s %s", from, ctime (&epoch));
 
 	if (fseek (artinfo->raw, 0L, SEEK_SET) == -1)
-		perror_message ("fseek() error on [%s]", save[i].subject); /* FIXME: -> lang.c */
+		perror_message ("fseek() error on [%s]", save[indexnum].artptr->subject); /* FIXME: -> lang.c */
 
 	if (copy_fp (artinfo->raw, fp))
-		print_art_seperator_line (fp, the_mailbox); /* write tailing newline or MDF-mailbox seperator */
+		/* Write tailing newline or MDF-mailbox seperator */
+		print_art_seperator_line (fp, save[indexnum].is_mailbox);
 
 	fclose (fp);
 
-	save[i].saved = TRUE;
+	save[indexnum].saved = TRUE;
 	if (tinrc.mark_saved_read)
-		art_mark_read (&CURR_GROUP, &arts[save[i].index]);
+		art_mark_read (&CURR_GROUP, save[indexnum].artptr);
 
-	if (filename == 0) {
-		char *first_savefile;
+#ifdef USE_CURSES
+	scrollok (stdscr, TRUE);
+#endif /* USE_CURSES */
+#ifndef HAVE_LIBUU		/* libuu decodes base64 internally */
+	decode_save_mime(artinfo, TRUE);
+#endif /* !HAVE_LIBUU */
+#ifdef USE_CURSES
+	scrollok (stdscr, FALSE);
+#endif /* USE_CURSES */
 
-		sprintf (save_art_info, (is_mailbox ? _(txt_saved_to_mailbox) : _(txt_art_saved_to)), first_savefile = get_first_savefile ());
-		FreeIfNeeded(first_savefile);
-		info_message (save_art_info);
-	}
 	return TRUE;
 }
 
 
 /*
- * We return TRUE if any of the articles saved successfully
+ * We return the number of articles saved successfully
  */
-static t_bool
+static int
 save_arts (
-	t_bool is_mailbox,
-	char *group_path)
+	const char *group_path)
 {
-	char file[PATH_LEN];
 	int i;
-	t_bool ret_code = FALSE;
+	int count = 0;
 	t_openartinfo artinfo;
+
+	/*
+	 * Create the path to save the arts into. There is no way that there
+	 * can be different paths in the same batch so we do it once against the
+	 * first pathname
+	 */
+#if 0
+fprintf(stderr, "save_arts, create_path(%s)\n", save[0].path);
+#endif /* 0 */
+	if (!create_path (save[0].path))
+		return count;
 
 	for (i = 0 ; i < num_save ; i++) {
 		/* the tailing spaces are needed for the progress-meter */
 		wait_message (0, "%s%d  ", _(txt_saving), i+1);
 
-/* see the TODO file, this bit decides to write to seperate files or not - make it configurable */
-		if (is_mailbox)
-			file[0] = 0;
-		else {
-#	ifdef HAVE_LONG_FILE_NAMES
-			char tbuf[31]; /* big enough to hold 2^64 + fmt + \0 */
-			size_t mlen;
-
-			sprintf(tbuf, "%d", num_save);
-			mlen = strlen(tbuf);
-			sprintf(tbuf, "%%s.%%0%dd", (int)mlen);
-			sprintf(file, tbuf, save[i].file, i+1);
-#	else
-			sprintf (file, "%s.%03d", save[i].file, i+1);
-#	endif /* HAVE_LONG_FILE_NAMES */
-		}
-
 		memset (&artinfo, 0, sizeof(t_openartinfo));
-		switch (art_open (&arts[save[i].index], group_path, do_rfc1521_decoding, &artinfo)) {
+		switch (art_open (save[i].artptr, group_path, &artinfo)) {
 
 			case ART_ABORT:					/* User 'q'uit */
-				return ret_code;
+				return count;
 
 			case ART_UNAVAILABLE:			/* Ignore, just keep going */
 				wait_message (1, _(txt_art_unavailable));
-				art_mark_read (&CURR_GROUP, &arts[save[i].index]);
+				art_mark_read (&CURR_GROUP, save[i].artptr);
 				continue;
 
 			default:
-				ret_code |= save_art_to_file (i, is_mailbox, file, &artinfo);
+				if (save_art_to_file (i, &artinfo))
+					++count;
 				art_close (&artinfo);
 		}
 	}
 
-	return ret_code;
-}
-
-
-t_bool
-save_thread_to_file (
-	t_bool is_mailbox,
-	char *group_path)
-{
-	char *first_savefile;
-	char buf[LEN];
-	t_bool ret_code;
-
-	if (num_save == 0) {
-		wait_message(2, _(txt_saved_nothing));
-		return FALSE;
-	}
-
-	if ((ret_code = save_arts(is_mailbox, group_path))) {
-		first_savefile = get_first_savefile ();
-		if (first_savefile[0] == '\0')
-			info_message (_(txt_thread_not_saved));
-		else {
-			if (is_mailbox)
-				sprintf (buf, _(txt_saved_to_mailbox), first_savefile);
-			else {
-				if (num_save == 1)
-					sprintf (buf, _(txt_art_saved_to), first_savefile);
-				else {
-					char *last_savefile;
-
-					sprintf (buf, _(txt_thread_saved_to_many), first_savefile, last_savefile = get_last_savefile ());
-					FreeIfNeeded(last_savefile);
-				}
-			}
-			wait_message (2, buf);
-		}
-		FreeIfNeeded(first_savefile);
-	}
-	return ret_code;
-}
-
-
-t_bool
-save_regex_arts_to_file (
-	t_bool is_mailbox,
-	char *group_path)
-{
-	char *first_savefile;
-	char buf[LEN];
-	t_bool ret_code;
-
-	if (num_save == 0) {
-		info_message (_(txt_no_match));
-		return FALSE;
-	}
-
-	if ((ret_code = save_arts(is_mailbox, group_path))) {
-		first_savefile = get_first_savefile ();
-		if (is_mailbox)
-			sprintf (buf, _(txt_saved_to_mailbox), first_savefile);
-		else {
-			char *last_savefile;
-
-			sprintf (buf, _(txt_saved_pattern_to), first_savefile, last_savefile = get_last_savefile ());
-			FreeIfNeeded(last_savefile);
-		}
-
-		wait_message (2, "%s", buf);
-		FreeIfNeeded(first_savefile);
-	}
-	return ret_code;
+	return count;
 }
 
 
 /*
- * Parse and expand the supplied path name. Attempt to create
- * the generated path.
- * Return TRUE if it corresponds to a mailbox
+ * Save everything batched up in save[]
+ * Print a message like:
+ * -- [Article|Thread|Tagged Articles] saved to [mailbox] [filenames] --
+ * TODO => lang.c
+ */
+t_bool
+save_batch (
+	char type,
+	const char *group_path)
+{
+	const char *first;
+	char buf[LEN];
+	char what[LEN];
+	int count;
+
+	if (num_save == 0) {
+		/* TODO maybe print something more context dependent here ? */
+		wait_message (1, _("No articles to save"));
+		return FALSE;
+	}
+
+	if ((count = save_arts(group_path)) == 0) {
+		wait_message (2, _(txt_saved_nothing));
+		return FALSE;
+	}
+
+	if (count != num_save)
+		wait_message (2, _("Warning: Only %d out of %d articles were saved"), count, num_save);
+
+	first = get_first_savefile ();
+
+	switch (type) {
+		case iKeyFeedArt:
+			STRCPY (what, _("Article"));
+			break;
+		case iKeyFeedThd:
+			STRCPY (what, _("Thread"));
+			break;
+		case iKeyFeedTag:
+			snprintf (what, sizeof(what), _("Tagged %s"), PLURAL(count, txt_article));
+			break;
+		default:
+			break;
+	}
+
+	/*
+	 * We report the range of saved-to files for regular saves of > 1 articles
+	 */
+	if (num_save == 1 || save[0].is_mailbox)
+		snprintf (buf, sizeof(buf), _("-- %s saved to %s%s --"),
+			what, (save[0].is_mailbox ? _("mailbox ") : ""), first);
+	else
+		snprintf (buf, sizeof(buf), _("-- %s saved to %s%s - %s --"),
+			what, (save[0].is_mailbox ? _("mailbox ") :  ""),
+			first, get_last_savefile());
+
+	wait_message ((tinrc.beginner_level) ? 2 : 1, buf);
+
+	return (count != 0);
+}
+
+
+/*
+ * Create the supplied path. Create intermediate directories as needed
+ * Don't create the last component (which would be the filename) unless the
+ * path is / terminated.
+ * Return FALSE if it somehow fails.
  */
 t_bool
 create_path (
-	char *path)
+	const char *path)
 {
-	t_bool mbox_format = FALSE;
-	char tmp[PATH_LEN];
 	char buf[PATH_LEN];
 	int i, j, len;
 	struct stat st;
-	struct t_group currgrp;
 
-	currgrp = CURR_GROUP;
-
-	/*
-	 * expand "$var..." first, so variables starting with
-	 * '+', '$' or '=' will be processed correctly later
-	 */
-	if (path[0] == '$') {
-		if (strfpath (path, buf, sizeof (buf), homedir, (char *) 0, (char *) 0, currgrp.name))
-			my_strncpy (path, buf, PATH_LEN);
-	}
-
-	/*
-	 * save in mailbox format to ~/Mail/<group.name> or
-	 * attribute->maildir for current group
-	 */
-	if (path[0] == '=') {
-		mbox_format = TRUE;
-		strcpy (tmp, path);
-		if (!strfpath (currgrp.attribute->maildir, buf, sizeof (buf),
-		    homedir, (char *) 0, (char *) 0, currgrp.name)) {
-#	ifdef VMS
-			joindir (buf, homedir, DEFAULT_MAILDIR);
-#	else
-			joinpath (buf, homedir, DEFAULT_MAILDIR);
-#	endif /* VMS */
-		}
-#	ifdef VMS
-		joinpath (path, buf, "dummy");
-#	else
-		sprintf (path, "%s/dummy", buf);
-#	endif /* VMS */
-	} else {
-		if (!strchr ("~$=+/.", path[0])) {
-			if (!strfpath (currgrp.attribute->savedir, buf, sizeof (buf),
-			    homedir, (char *) 0, (char *) 0, currgrp.name)) {
-#	ifdef VMS
-				joindir (buf, homedir, DEFAULT_SAVEDIR);
-#	else
-				joinpath (buf, homedir, DEFAULT_SAVEDIR);
-#	endif /* VMS */
-			}
-			joinpath (tmp, buf, path);
-			my_strncpy (path, tmp, PATH_LEN);
-		}
-		if (strfpath (path, buf, sizeof (buf), homedir, (char *) 0, currgrp.attribute->savedir, currgrp.name))
-			my_strncpy (path, buf, PATH_LEN);
-	}
-
-#	ifndef VMS			/* no good answer to this yet XXX */
-	/*
-	 *  create any directories, otherwise check
-	 *  errno and give appropiate error message
-	 */
+#ifndef VMS
 	len = (int) strlen (path);
 
 	for (i = 0, j = 0; i < len; i++, j++) {
@@ -657,172 +580,148 @@ create_path (
 			}
 		}
 	}
-#	else
+#else
 	if (my_mkdir (buf, (mode_t)(S_IRWXU|S_IRUGO|S_IXUGO)) == -1) {
 		if (errno != EEXIST) {
 			perror_message (_(txt_cannot_create), buf);
 			return FALSE;
 		}
 	}
-#	endif /* !VMS */
+#endif /* !VMS */
 
-	if (mbox_format)
-		strcpy (path, tmp);
-
-	return mbox_format;
-}
-
-
-static t_bool
-create_sub_dir (
-	int i)
-{
-	char dir[LEN];
-	struct stat st;
-
-	if (!save[i].is_mailbox && save[i].archive) {
-		joinpath (dir, save[i].dir, save[i].archive);
-		if (stat (dir, &st) == -1) {
-			my_mkdir (dir, (mode_t)(S_IRWXU|S_IRUGO|S_IXUGO));
-			return TRUE;
-		}
-		return ((S_ISDIR(st.st_mode)) ? TRUE : FALSE);
-	}
-	return FALSE;
+	return TRUE;
 }
 
 
 /*
- * Add files to be saved to save array
+ * Get a path/filename to save to, using 'path' as input.
+ * The pathname is stored in 'outpath', which should be PATH_LEN in size
+ * Expand metacharacters and use defaults as needed.
+ * Return TRUE if the path is a mailbox, or FALSE otherwise.
  */
-void
+static t_bool
+get_save_filename(
+	char *outpath,
+	const char *path)
+{
+	int ret;
+	struct t_group *group = &CURR_GROUP;
+
+	ret = strfpath (path, outpath, PATH_LEN, group);
+
+	/*
+	 * If no path exists or the above failed in some way, use sensible defaults
+	 * Put the generic path into 'outpath'
+	 */
+	if ((ret == 0) || !(strrchr(outpath, DIRSEP))) {
+		char buf[PATH_LEN];
+
+		if (!strfpath (group->attribute->savedir, buf, sizeof(buf), group))
+			joinpath (buf, homedir, DEFAULT_SAVEDIR);
+		joinpath (outpath, buf, path);
+		return FALSE;
+	} else
+		return (ret == 1);
+}
+
+
+/*
+ * Add a file to be saved to the save[] array
+ * 'artptr' points to the article in arts[]
+ * 'path' is the generic save path/file that was entered/default
+ * Expand the path appropriately, taking account of multiple file
+ * extensions and the auto-save with Archive-Name: headers
+ *
+ * Return TRUE if the generated path is a mailbox, FALSE otherwise.
+ */
+t_bool
 add_to_save_list (
-	int the_index,
-	t_bool is_mailbox,
+	struct t_article *artptr,
 	const char *path)
 {
 	char tmp[PATH_LEN];
-	char dir[PATH_LEN];
-	char file[PATH_LEN];
-	struct t_article *artptr = &arts[the_index];
-
-	dir[0] = '\0';
-	file[0] = '\0';
 
 	if (num_save == max_save-1)
 		expand_save ();
 
-	save[num_save].subject = my_strdup (artptr->subject);
-	save[num_save].dir = NULL;
-	save[num_save].file = NULL;
-	save[num_save].archive = NULL;
-	save[num_save].part = NULL;
-	save[num_save].patch = NULL;
-	save[num_save].index = the_index;
-	save[num_save].saved = FALSE;
-	save[num_save].is_mailbox = is_mailbox;
+	save[num_save].is_mailbox = get_save_filename (tmp, path);
 
-	if (CURR_GROUP.attribute->auto_save && artptr->archive) {
-		save[num_save].archive = my_strdup (artptr->archive);
-		if (artptr->part)
-			save[num_save].part = my_strdup (artptr->part);
-		if (artptr->patch)
-			save[num_save].patch = my_strdup (artptr->patch);
-	}
+	/*
+	 * If using the auto-save feature on an article with Archive-Name
+	 * The path will be: (path+archive)/archive.part<part>
+	 */
+	if (!save[num_save].is_mailbox && CURR_GROUP.attribute->auto_save
+						&& artptr->archive && (artptr->part || artptr->patch)) {
+		/* TODO the Archive-Name code is largely untested */
+		const char *partprefix;
+		char *partname;
+		char *ptr;
+		char archpath[PATH_LEN];
+		char filename[PATH_LEN];
 
-	if (is_mailbox) {
-		my_strncpy (file, ((strlen (path) > 1) ? ((path[0] == '=') ? (path+1) : path) : glob_group), sizeof (file));
-
-		if (!strfpath (CURR_GROUP.attribute->maildir, tmp, sizeof (tmp),
-		    homedir, (char *) 0, (char *) 0, CURR_GROUP.name)) {
-#	ifdef VMS
-			joindir (tmp, homedir, DEFAULT_MAILDIR);
-#	else
-			joinpath (tmp, homedir, DEFAULT_MAILDIR);
-#	endif /* VMS */
+		/*
+		 * We need either a part or a patch number, part takes precedence
+		 */
+		if (artptr->part) {
+			partprefix = LONG_PATH_PART;
+			partname = artptr->part;
+		} else {
+			partprefix = LONG_PATH_PATCH;
+			partname = artptr->patch;
 		}
-		save[num_save].dir = my_strdup (tmp);
-		save[num_save].file = my_strdup (file);
+
+		/*
+		 * Strip off any default filename
+		 */
+		if ((ptr = strrchr(tmp, DIRSEP)) != NULL)
+			*(ptr+1) = '\0';
+
+		/* Add on the archive name as a directory */
+		joinpath(archpath, tmp, artptr->archive);
+
+		/* Generate the filename part and append it */
+		snprintf (filename, sizeof(filename) - 1, "%s.%s%s", artptr->archive, partname, partprefix);
+		joinpath (tmp, archpath, filename);
 	} else {
-		if (*path) {
-#	ifdef VMS
-#	include "parse.h"
-			struct filespec *spec;
+		/*
+		 * Mailbox saves are by definition to a single file
+		 * Otherwise append a .NNN sequence number to the path. We strip this
+		 * later if there is only 1 part
+		 */
+		if (!save[num_save].is_mailbox && (num_save >= 1)) {
+#ifdef VMS
+			const char pathsep = '-';		/* Suffix seperator for .001 type extensions */
+#else
+			const char pathsep = '.';
+#endif /* VMS */
 
-			spec = sysparse(path);
-			sprintf(dir, "%s%s", spec->dev, spec->dir);
-			strcpy(file, spec->filename);
-#	else
-			int i;
-
-			for (i = strlen (path); i; i--) {
-#		ifdef WIN32
-				/*
-				 * Under WIN32, paths can be in form D:\a\b\c\file. Optionally,
-				 * User can override the default, so we need to deal with input in
-				 * Form: D:\a\b\c\F:\x\y\article or D:\a\b\c\\x\y\article.
-				 * In these cases, we want to use F:\x\y\article or \x\y\article
-				 * as the basepath.
-				 */
-				if (path[i] == '\\') {
-					int j;
-					for (j = i - 1; j; j--) {
-						if (path[j] == '\\' && path[j+1] == '\\') {
-							if (i-j-1 == 0)
-								strcpy(dir, "\\");
-							else {
-								strncpy (dir, &path[j+1], (size_t)(i-j-1));
-								dir[i-j-1] = '\0';
-							}
-							break;
-						}
-						else if (path[j] == ':') {
-							strncpy (dir, &path[j-1], (size_t)(i-j+1));
-							dir[i-j+1] = '\0';
-							break;
-						}
-					}
-					strcpy (file, path+i+1);
-					break;
-				}
-#		else
-				if (path[i] == '/') {
-					strncpy (dir, path, (size_t)i);
-					dir[i] = '\0';
-					strcpy (file, path+i+1);
-					break;
-				}
-#		endif /* WIN32 */
+			/*
+			 * If this is the 2nd file we're saving, we must retrospectively
+			 * add the extension to the 1st file. Hackish, but keeps code
+			 * clean
+			 */
+			if (num_save == 1) {
+				save[0].path = my_realloc(save[0].path, strlen(save[0].path)+4);
+				strcat(save[0].path, ".001");
+				save[0].file = strrchr (save[0].path, DIRSEP) + 1;	/* ptr to filename portion */
 			}
-#	endif /* VMS */
+
+			sprintf (&tmp[strlen(tmp)], "%c%03d", pathsep, num_save+1);
 		}
-
-#	ifdef M_AMIGA
-		if (tin_bbs_mode)
-			dir[0] = 0;
-#	endif /* M_AMIGA */
-
-		if (*dir)
-			save[num_save].dir = my_strdup (dir);
-		else {
-			if (!strfpath (CURR_GROUP.attribute->savedir, tmp, sizeof (tmp),
-			    homedir, (char *) 0, (char *) 0, CURR_GROUP.name)) {
-#	ifdef VMS
-				joindir (tmp, homedir, DEFAULT_SAVEDIR);
-#	else
-				joinpath (tmp, homedir, DEFAULT_SAVEDIR);
-#	endif /* VMS */
-			}
-			save[num_save].dir = my_strdup (tmp);
-		}
-
-		save[num_save].file = my_strdup (*file ? file : (*path ? path : save[num_save].archive));
 	}
-/*fprintf(stderr, "Really save in !%s!\n", save[num_save].file);*/
-	num_save++;
+
+	save[num_save].path = my_strdup (tmp);
+	save[num_save].file = strrchr (save[num_save].path, DIRSEP) + 1;	/* ptr to filename portion */
+	save[num_save].artptr = artptr;
+	save[num_save].saved = FALSE;
+#if 0
+fprintf(stderr, "ATSL (%s) (%s)\n", save[num_save].path, save[num_save].file);
+#endif /* 0 */
+	return (save[num_save++].is_mailbox);		/* NB: num_save is bumped here */
 }
 
 
+#if 0
 /*
  *  string comparison routine for the qsort()
  *  ie. qsort(array, 5, 32, save_comp);
@@ -857,9 +756,9 @@ save_comp (
 				return 0;
 		}
 	} else {
-		if (strcmp (s1->subject, s2->subject) < 0)
+		if (strcmp (s1->artptr->subject, s2->artptr->subject) < 0)
 			return -1;
-		if (strcmp (s1->subject, s2->subject) > 0)
+		if (strcmp (s1->artptr->subject, s2->artptr->subject) > 0)
 			return 1;
 	}
 
@@ -879,162 +778,53 @@ sort_save_list (
 	debug_save_comp ();
 #endif /* DEBUG */
 }
+#endif /* 0 */
 
 
 /*
- * Get the full path/filename of corresponding to save[i]
+ * Return the name of the file to be saved from save[i]
+ * The name is used for reporting purposes only, so whatever reads most
+ * usefully is returned. for mailboxes we return the full path.
  */
-static char *
-save_filename (
-	int i)
-{
-	char *p;
-	static char *filename;
-
-	FreeIfNeeded(filename);	/* leak only the last instance */
-#	ifdef DOALLOC
-	if (i < 0)
-		return 0;
-#	endif /* DOALLOC */
-	filename = (char *) my_malloc(PATH_LEN);
-
-	if (save[i].is_mailbox) {
-		joinpath (filename, save[i].dir, save[i].file);
-		return filename;
-	}
-
-	if (!tinrc.auto_save || (!(save[i].part || save[i].patch))) {
-		joinpath (filename, save[i].dir, save[i].file);
-		if (num_save != 1) {
-#	ifdef VMS
-			sprintf (&filename[strlen(filename)], "-%03d", i+1);
-#	else
-#		ifdef HAVE_LONG_FILE_NAMES
-			char tbuf[31]; /* big enough to hold 2^64 + fmt + \0 */
-			size_t mlen;
-
-			sprintf(tbuf, "%d", num_save);
-			mlen = strlen(tbuf);
-			sprintf(tbuf, ".%%0%dd", (int)mlen);
-			sprintf(&filename[strlen(filename)], tbuf, i+1);
-#		else
-			sprintf (&filename[strlen(filename)], ".%03d", i+1);
-#		endif /* HAVE_LONG_FILE_NAMES */
-#	endif /* VMS */
-		}
-	} else if ((p = save[i].part) || (p = save[i].patch)) {
-		joinpath (filename, save[i].dir, save[i].archive);
-		if (create_sub_dir (i)) {
-#	ifdef VMS
-			sprintf (&filename[strlen(filename)], "%s.%s%s", save[i].archive, LONG_PATH_PART, p);
-#	else
-			sprintf (&filename[strlen(filename)], "/%s.%s%s", save[i].archive, LONG_PATH_PART, p);
-#	endif /* VMS */
-		} else {
-#	ifdef VMS
-			sprintf (&filename[strlen(filename)], "%s%s", LONG_PATH_PART, p);
-#	else
-			sprintf (&filename[strlen(filename)], ".%s%s", LONG_PATH_PART, p);
-#	endif /* VMS */
-		}
-	}
-
-	return filename;
-}
-
-
-/*
- * Get the filename portion only of save[i]
- * (for reporting purposes only)
- */
-static char *
-get_save_filename (
-	int i)
-{
-	char *file = (char *) my_malloc(PATH_LEN);
-
-	if (save[i].is_mailbox) {
-#	ifdef VMS
-		joinpath (file, save[i].dir, save[i].file);
-#	else
-		sprintf (file, "%s/%s", save[i].dir, save[i].file);
-#	endif /* VMS */
-		return file;
-	}
-
-	if (save[i].archive && tinrc.auto_save) {
-		if (save[i].part) {
-#	ifdef VMS
-			char fbuf[256];
-			sprintf(fbuf, "%s.%s%s", save[i].archive, LONG_PATH_PART, save[i].part);
-			joinpath(file, save[i].archive, fbuf);
-#	else
-			sprintf (file, "%s/%s.%s%s", save[i].archive, save[i].archive, LONG_PATH_PART, save[i].part);
-#	endif /* VMS */
-		} else {
-#	ifdef VMS
-			char fbuf[256];
-			sprintf(fbuf, "%s.%s%s", save[i].archive, LONG_PATH_PATCH, save[i].patch);
-			joinpath(file, save[i].archive, fbuf);
-#	else
-			sprintf (file, "%s/%s.%s%s", save[i].archive, save[i].archive, LONG_PATH_PATCH, save[i].patch);
-#	endif /* VMS */
-		}
-	} else {
-		if (num_save == 1)
-			sprintf (file, "%s", save[i].file);
-		else {
-#	ifdef VMS
-			sprintf (file, "%s-%03d", save[i].file, i+1);
-#	else
-#		ifdef HAVE_LONG_FILE_NAMES
-			char tbuf[31]; /* big enough to hold 2^64 + fmt + \0 */
-			size_t mlen;
-
-			sprintf(tbuf, "%d", num_save);
-			mlen = strlen(tbuf);
-			sprintf(tbuf, "%%s.%%0%dd", (int)mlen);
-			sprintf(file, tbuf, save[i].file, i+1);
-#		else
-			sprintf (file, "%s.%03d", save[i].file, i+1);
-#		endif /* HAVE_LONG_FILE_NAMES */
-#	endif /* VMS */
-		}
-	}
-	return file;
-}
-
-
-static char *
+static const char *
 get_first_savefile (
 	void)
 {
-	static char empty[] = "";
 	int i;
+	static const char *dummy = "";
 
 	for (i = 0; i < num_save; i++) {
 		if (save[i].saved)
-			return (get_save_filename(i));
+			return (save[i].is_mailbox ? save[i].path : save[i].file);
 	}
-	return empty;
+
+	return dummy;
 }
 
 
-static char *
+static const char *
 get_last_savefile (
 	void)
 {
-	static char empty[] = "";
 	int i;
+	static const char *dummy = "";
 
 	for (i = num_save-1; i >= 0; i--) {
 		if (save[i].saved)
-			return (get_save_filename(i));
+			return (save[i].is_mailbox ? save[i].path : save[i].file);
 	}
-	return empty;
+
+	return dummy;
 }
 
 
+/*
+ * Post process the articles in save[] according to proc_type_ch
+ * auto_delete is set in the AUTOSAVE_TAGGED case
+ * This stage can produce a fair bit of output so we allow it to
+ * scroll up the screen rather than waste time displaying it in the
+ * message bar
+ */
 t_bool
 post_process_files (
 	int proc_type_ch,
@@ -1043,119 +833,67 @@ post_process_files (
 	if (!any_saved_files ())
 		return FALSE;
 
-	wait_message (0, _(txt_post_processing));
+	clear_message();
+#ifdef USE_CURSES
+	scrollok (stdscr, TRUE);
+#endif /* USE_CURSES */
+	my_printf ("%s%s", _(txt_post_processing), cCRLF);
 
 	switch (proc_type_ch) {
 		case iKeyPProcShar:
 			post_process_sh (auto_delete);
 			break;
 
-		case iKeyPProcUUDecode:
-			post_process_uud (
-#	ifndef HAVE_LIBUU
-			POST_PROC_UUDECODE,
-#	endif /* !HAVE_LIBUU */
-			auto_delete);
-			break;
-
-#if 0
-		case iKeyPProcListZoo:
-			post_process_uud (
-#	ifndef HAVE_LIBUU
-			POST_PROC_UUD_LST_ZOO,
-#	endif /* !HAVE_LIBUU */
-			auto_delete);
-			break;
-
-		case iKeyPProcExtractZoo:
-			post_process_uud (
-#	ifndef HAVE_LIBUU
-			POST_PROC_UUD_EXT_ZOO,
-#	endif /* !HAVE_LIBUU */
-			auto_delete);
-			break;
-
-		case iKeyPProcListZip:
-			post_process_uud (
-#	ifndef HAVE_LIBUU
-			POST_PROC_UUD_LST_ZIP,
-#	endif /* !HAVE_LIBUU */
-			auto_delete);
-			break;
-
-		case iKeyPProcExtractZip:
-			post_process_uud (
-#	ifndef HAVE_LIBUU
-			POST_PROC_UUD_EXT_ZIP,
-#	endif /* !HAVE_LIBUU */
-			auto_delete);
-			break;
-#endif /* 0 */
-
+		case iKeyPProcUUDecode:		/* This is the default, eg, with AUTOSAVE_TAGGED */
 		default:
+			post_process_uud (auto_delete);
 			break;
 	}
 
-	wait_message (1, _(txt_post_processing_finished));
+	my_printf ("%s%s%s", _(txt_post_processing_finished), cCRLF, cCRLF);
+	my_flush();
+	prompt_continue ();
+#ifdef USE_CURSES
+	scrollok (stdscr, FALSE);
+#endif /* USE_CURSES */
+
 	return TRUE;
 }
 
 
 static void
 post_process_uud (
-#	ifndef HAVE_LIBUU
-	int pp,
-#	endif /* !HAVE_LIBUU */
 	t_bool auto_delete)
 {
 	FILE *fp_in;
-	char t[LEN], u[LEN];
-	char buf[LEN];
-	char file_out[PATH_LEN];
 	char file_out_dir[PATH_LEN];
 	int i, state;
-	int open_out_file;
-#	ifndef HAVE_LIBUU
+#ifndef HAVE_LIBUU
 	FILE *fp_out = NULL;
-	char s[LEN];
-#	else
+	char *filename = NULL;
+	char path[PATH_LEN];
+	char s[LEN], t[LEN], u[LEN];
+#else
+	int count;
 	int errors = 0;
 	uulist *item;
-#	endif /* !HAVE_LIBUU */
+#endif /* !HAVE_LIBUU */
 
-	t[0] = '\0';
-	u[0] = '\0';
+	/*
+	 * Grab the dirname portion
+	 */
+	my_strncpy (file_out_dir, save[0].path, save[0].file - save[0].path);
 
-	my_strncpy (file_out_dir, save_filename (0), sizeof (file_out_dir));
-	for (i = strlen(file_out_dir); i > 0; i--) {
-#	ifdef VMS
-		if (file_out_dir[i] == ']') {
-			file_out_dir[i+1] = '\0';
-			break;
-		}
-#	else
-		if (file_out_dir[i] == '/') {
-			file_out_dir[i] = '\0';
-			break;
-		}
-#	endif /* VMS */
-	}
-
-#	ifdef HAVE_LIBUU
+#ifdef HAVE_LIBUU
 	UUInitialize();
 
-	/* Blatant unixism here! */
-	sprintf(file_out, "%s/", file_out_dir);
-
-	/* Clumsy, but file_out is already declared, so might as well use it */
-	UUSetOption(UUOPT_SAVEPATH, 0, file_out);
+	UUSetOption(UUOPT_SAVEPATH, 0, file_out_dir);
 	for (i = 0; i < num_save; i++) {
 		if (!save[i].saved)
 			continue;
 
-		my_strncpy (buf, save_filename(i), sizeof (buf));
-		if ((fp_in = fopen (buf, "r")) != (FILE *)NULL) {
-			UULoadFile(buf, NULL, 0);
+		if ((fp_in = fopen (save[i].path, "r")) != (FILE *) 0) {
+			UULoadFile(save[i].path, NULL, 0);
 			fclose(fp_in);
 		}
 	}
@@ -1166,346 +904,271 @@ post_process_uud (
 	UUSmerge (99);
 #	endif /* 0 */
 
-	i = open_out_file = 0;
+	i = count = 0;
 	item = UUGetFileListItem(i);
 	my_printf(cCRLF);
+
 	while (item != NULL) {
-		state = UUDecodeFile(item, NULL);
-		if (state == UURET_OK) {
-			/* open_out_file already declared, might as well use it */
-			open_out_file++;
-			my_printf(_(txt_libuu_success), item->filename);
+		if ((state = UUDecodeFile(item, NULL)) == UURET_OK) {
+			count++;
+			my_printf (_(txt_uu_success), item->filename);
 			my_printf(cCRLF);
-
+			/* TODO - insert viewing code here ? */
 		} else {
-			errors++;
-			if (item->filename == NULL) {
-				my_printf(_(txt_libuu_error_decode), item->subfname);
-				my_printf(cCRLF);
-			}
-			else {
-				my_printf(_(txt_libuu_error_decode), item->filename);
-				my_printf(cCRLF);
-			}
+			const char *eptr;
 
-			if (item->state & UUFILE_MISPART) {
-				my_printf(_(txt_libuu_error_missing));
-				my_printf(cCRLF);
-			} else if (item->state & UUFILE_NOBEGIN) {
-				my_printf(_(txt_libuu_error_no_begin));
-				my_printf(cCRLF);
-			} else if (item->state & UUFILE_NOEND) {
-				my_printf(_(txt_libuu_error_no_end));
-				my_printf(cCRLF);
-			} else if (item->state & UUFILE_NODATA) {
-				my_printf(_(txt_libuu_error_no_data));
-				my_printf(cCRLF);
-			} else {
-				my_printf(_(txt_libuu_error_unknown));
-				my_printf(cCRLF);
-			}
+			errors++;
+
+			if (item->state & UUFILE_MISPART)
+				eptr = _(txt_libuu_error_missing);
+			else if (item->state & UUFILE_NOBEGIN)
+				eptr = _(txt_libuu_error_no_begin);
+			else if (item->state & UUFILE_NOEND)
+				eptr = _(txt_uu_error_no_end);
+			else if (item->state & UUFILE_NODATA)
+				eptr = _(txt_libuu_error_no_data);
+			else
+				eptr = _(txt_libuu_error_unknown);
+
+			my_printf (_(txt_uu_error_decode), (item->filename) ? item->filename : item->subfname, eptr);
+			my_printf(cCRLF);
 		}
 		i++;
 		item = UUGetFileListItem(i);
 		my_flush();
 	}
-	my_printf(_(txt_libuu_saved), open_out_file, num_save, errors, PLURAL(errors, txt_error));
+
+	my_printf(_(txt_libuu_saved), count, num_save, errors, PLURAL(errors, txt_error));
 	my_printf(cCRLF);
 	UUCleanUp();
-	delete_processed_files (auto_delete); /* TRUE = auto-delete files */
-	return;
-#	else
-#		ifdef VMS
-	sprintf (file_out, "%suue.%05d", file_out_dir, (int) process_id);
-#		else
-	sprintf (file_out, "%s/uue%05d", file_out_dir, (int) process_id);
-#		endif /* VMS */
+#else
+	t[0] = '\0';
+	u[0] = '\0';
+
 	state = INITIAL;
-	open_out_file = TRUE;
 
 	for (i = 0; i < num_save; i++) {
-		char realname[130]; /* don't use PATH_LEN if you use an absolut val. below as you can't say that PATH_LEN is big enough */
 
 		if (!save[i].saved)
 			continue;
-		if (open_out_file) {
-			if ((fp_out = fopen (file_out, "w")) == (FILE *) 0) {
-				perror_message (_(txt_cannot_open), file_out);
-				unlink (file_out);
-				return;
-			}
-			open_out_file = FALSE;
-		}
 
-		my_strncpy (buf, save_filename (i), sizeof (buf));
-		if ((fp_in = fopen (buf, "r")) != (FILE *) 0) {
-			if (fgets (s, (int) sizeof(s), fp_in) == 0) {
-				fclose (fp_in);
+		if ((fp_in = fopen (save[i].path, "r")) == (FILE *) 0)
+			continue;
+
+		while (fgets (s, (int) sizeof(s), fp_in) != 0) {
+			switch (state) {
+				case INITIAL:
+					if (strncmp ("begin ", s, 6) == 0) {
+						/* don't use PATH_LEN - we use an absolute value (128) below  */
+						char name[130];
+
+						if (sscanf (s+6, "%*o %128c\n", name) != 1)     /* Get the real filename */
+							name[0] = '\0';
+						else
+							strtok (name, "\n");
+						name[129] = '\0';
+						str_trim(name);
+
+						/* Remove pathname if present, it's dangerous */
+						if ((filename = strrchr(name, DIRSEP)) != NULL)
+							filename++;
+						else
+							filename = name;
+
+						get_save_filename (path, filename);
+						filename = strrchr (path, DIRSEP) + 1;  /* ptr to filename portion */
+						if ((fp_out = fopen (path, "w")) == (FILE *) 0) {
+							perror_message (_(txt_cannot_open), path);
+							return;
+						}
+						state = MIDDLE;
+					}
+					break;
+
+				case MIDDLE:
+					if (s[0] == 'M')
+						uudecode_line (s, fp_out);
+					else if (STRNCMPEQ("end", s, 3)) {
+						state = END;
+						if (u[0] != 'M')
+							uudecode_line (u, fp_out);
+						if (t[0] != 'M')
+							uudecode_line (t, fp_out);
+					} else                                  /* end */
+						state = OFF;            /* OFF => a break in the uuencoded data */
+					break;
+
+				case OFF:
+					if ((s[0] == 'M') && (t[0] == 'M') && (u[0] == 'M')) {
+						uudecode_line (u, fp_out);
+						uudecode_line (t, fp_out);
+						uudecode_line (s, fp_out);
+						state = MIDDLE;         /* Continue output of previously suspended data */
+					} else if (STRNCMPEQ("end", s, 3)) {
+						state = END;
+						if (u[0] != 'M')
+							uudecode_line (u, fp_out);
+						if (t[0] != 'M')
+							uudecode_line (t, fp_out);
+					}
+					break;
+
+				case END:
+				default:
+					break;
+			}	/* switch (state) */
+
+			if (state == END) {
+				fclose (fp_out);
+				fp_out = NULL;
+				my_printf (_(txt_uu_success), filename);
+				my_printf (cCRLF);
+				sum_and_view (path, filename);
+				state = INITIAL;
 				continue;
 			}
-			while (state != END) {
-				switch (state) {
-					case INITIAL:
-						if (!strncmp ("begin ", s, 6)) {
-							if (sscanf (s+6, "%*o %128c\n", realname) != 1)	/* Get the real filename */
-								realname[0] = '\0';
-							else
-								strtok (realname, "\n");
-							realname[129] = '\0';
-							state = MIDDLE;
-							fprintf (fp_out, "%s", s);
-						}
-						break;
 
-					case MIDDLE:
-						if (s[0] == 'M') {
-							fprintf (fp_out, "%s", s);
-						} else if (strncmp("end", s, 3)) {
-							state = OFF;
-						} else { /* end */
-							state = END;
-							if (u[0] != 'M')
-								fprintf (fp_out, "%s", u);
-							if (t[0] != 'M')
-								fprintf (fp_out, "%s", t);
-							fprintf (fp_out, "%s\n", s);
-						}
-						break;
+			strcpy (u, t);	/* Keep tabs on the last two lines, which typically do not start with M */
+			strcpy (t, s);
 
-					case OFF:
-						if ((s[0] == 'M') && (t[0] == 'M') && (u[0] == 'M')) {
-							fprintf (fp_out, "%s", u);
-							fprintf (fp_out, "%s", t);
-							fprintf (fp_out, "%s", s);
-							state = MIDDLE;
-						} else if (STRNCMPEQ("end", s, 3)) {
-							state = END;
-							if (u[0] != 'M')
-								fprintf (fp_out, "%s", u);
-							if (t[0] != 'M')
-								fprintf (fp_out, "%s", t);
-							fprintf (fp_out, "%s\n", s);
-						}
-						break;
+		}	/* while (fgets) ... */
 
-					case END:
-						break;
+		fclose (fp_in);
 
-					default:
-						my_fprintf (stderr, "%s %s", cCRLF, "Error: ASSERT - default state\n"); /* FIXME: -> lang.c */
-						fclose (fp_in);
-						fclose (fp_out);
-						unlink (file_out);
-						return;
-				}
-				strcpy (u, t);
-				strcpy (t, s);
+	} /* for i...num_save */
 
-				/*
-				 *  read next line & if error goto next file in save array
-				 */
-				if (fgets (s, (int) sizeof(s), fp_in) == 0)
-					break;
-			}
-			fclose (fp_in);
-		}
-		if (state == END) {
-			fclose (fp_out);
-			uudecode_file (pp, file_out_dir, file_out, realname);
-			state = INITIAL;
-			open_out_file = TRUE;
-		}
+	/*
+	 * Check if we ran out of data
+	 */
+	if (fp_out) {
+		fclose(fp_out);
+		my_printf (_(txt_uu_error_decode), filename, _(txt_uu_error_no_end));
+		my_printf(cCRLF);
 	}
 
+#endif /* HAVE_LIBUU */
 	delete_processed_files (auto_delete); /* TRUE = auto-delete files */
-	unlink (file_out);
-#	endif /* HAVE_LIBUU */
+	return;
 }
 
 
 /*
- *  uudecode a single file
+ * Do whatever needs doing after a successful uudecode
  */
-#	ifndef HAVE_LIBUU
+#ifndef HAVE_LIBUU
 static void
-uudecode_file (
-	int pp,
-	char *file_out_dir,
-	char *file_out,
-	char *uudname)
+sum_and_view (
+	const char *path,
+	const char *file)
 {
 	FILE *fp_in;
 	char buf[LEN];
+	char *ext;
+	t_part *part;
 
-	wait_message (0, _(txt_uudecoding), file_out);
-
-#		ifndef M_UNIX
-	make_post_process_cmd (DEFAULT_UUDECODE, file_out_dir, file_out);
-#		else
-	chdir (file_out_dir);
-
-/*	sh_format (buf, sizeof(buf), "uudecode %s -o \"%s\"", file_out, uudname);*/
-	sh_format (buf, sizeof(buf), "uudecode %s", file_out);
-	if (!invoke_cmd (buf))
-		return;
-
-	if (uudname[0] == '\0')					/* Unable to determine the file that was uudecoded */
-		return;
-
+#	ifdef M_UNIX
 	/*
-	 *  Sum file
+	 * Sum file - TODO why do we bother to do this?
 	 */
-	sh_format (buf, sizeof(buf), "%s \"%s\"", DEFAULT_SUM, uudname);
+	sh_format (buf, sizeof(buf), "%s \"%s\"", DEFAULT_SUM, path);
 	if ((fp_in = popen (buf, "r")) != (FILE *) 0) {
-		if (fgets (buf, (int) sizeof(buf), fp_in) != 0) {
-			char *ptr = strchr (buf, '\n');
-			if (ptr != 0)
+		buf[0] = '\0';
+
+		/*
+		 * You can't do this with (fgets != NULL)
+		 */
+		while (!feof(fp_in)) {
+			char *ptr;
+
+			fgets (buf, (int) sizeof(buf), fp_in);
+			if ((ptr = strchr (buf, '\n')) != NULL)
 				*ptr = '\0';
 		}
+		fflush (fp_in);
 		pclose (fp_in);
+
+		my_printf (_(txt_checksum_of_file), file, file_size(path), _("bytes"));
 		my_printf (cCRLF);
-		my_printf (_(txt_checksum_of_file), uudname);
+		my_printf ("\t%s%s", buf, cCRLF);
+	} else {
+		my_printf (_(txt_command_failed), buf);
 		my_printf (cCRLF);
-		my_flush ();
-		my_printf ("%s  %10ld %s %s %s", buf, file_size (uudname), _("bytes"), cCRLF, cCRLF);
-	} else
-		my_printf ("%s %s %s", _(txt_command_failed), buf, cCRLF);
+	}
 
 	my_flush ();
 
+#	endif /* M_UNIX */
+
 	/*
 	 * If defined, invoke post processor command
+	 * Create a part structure, with defaults, insert a parameter for the name
 	 */
-	if (*tinrc.post_process_command) {
-		sh_format (buf, sizeof(buf), "%s '%s'", tinrc.post_process_command, uudname);
-		invoke_cmd (buf);
-		(void) sleep (1);
+	part = new_part(NULL);
+
+	if ((ext = strrchr(file, '.')) != NULL)
+		lookup_mimetype(ext+1, part);				/* Get MIME type/subtype */
+
+	/*
+	 * Needed for the mime-type processor
+	 */
+	part->params = my_malloc(sizeof(t_param));
+	part->params->name = my_strdup("name");
+	part->params->value = my_strdup(file);
+	part->params->next = NULL;
+
+	if (tinrc.post_process_view) {
+		start_viewer(part, path);
+		my_printf (cCRLF);
 	}
-#if 0
-	if (pp > POST_PROC_UUDECODE) {
-		int i;
-		/*
-		 *  Test archive integrity
-		 */
-		if (pp > POST_PROC_UUDECODE && archiver[pp].test != 0) {
-			i = (pp == POST_PROC_UUD_LST_ZOO || pp == POST_PROC_UUD_EXT_ZOO ? 3 : 4);
-			sh_format (buf, sizeof(buf), "%s %s \"%s\"", archiver[i].name, archiver[i].test, uudname);
-			my_printf(cCRLF cCRLF);
-			my_printf (_(txt_testing_archive), uudname);
-			my_printf(cCRLF);
-			my_flush ();
-			if (!invoke_cmd (buf))
-				error_message (_(txt_post_processing_failed));
-			(void) sleep (3);
-		}
-		/*
-		 *  List archive
-		 */
-		if (pp == POST_PROC_UUD_LST_ZOO || pp == POST_PROC_UUD_LST_ZIP) {
-			i = (pp == POST_PROC_UUD_LST_ZOO ? 3 : 4);
-			sh_format (buf, sizeof(buf), "%s %s %s", archiver[i].name, archiver[i].list, uudname);
-			my_printf (cCRLF cCRLF);
-			my_printf (_(txt_listing_archive), uudname);
-			my_printf (cCRLF);
-			my_flush ();
-			if (!invoke_cmd (buf))
-				error_message (_(txt_post_processing_failed));
-			(void) sleep (3);
-		}
-		/*
-		 *  Extract archive
-		 */
-		if (pp == POST_PROC_UUD_EXT_ZOO || pp == POST_PROC_UUD_EXT_ZIP) {
-			i = (pp == POST_PROC_UUD_EXT_ZOO ? 3 : 4);
-			sh_format (buf, sizeof(buf), "%s %s %s", archiver[i].name, archiver[i].extract, uudname);
-			my_printf (cCRLF cCRLF);
-			my_printf (_(txt_extracting_archive), uudname);
-			my_printf (cCRLF);
-			my_flush ();
-			if (!invoke_cmd (buf))
-				error_message (_(txt_post_processing_failed));
-			(void) sleep (3);
-		}
-	}
-#endif /* 0 */
-#		endif /* !M_UNIX */
+
+	free_parts(part);
 }
-#	endif /* !HAVE_LIBUU */
+#endif /* !HAVE_LIBUU */
 
 
 /*
- *  Unpack /bin/sh archives
+ * Unpack /bin/sh archives
  */
 static void
 post_process_sh (
 	t_bool auto_delete)
 {
 	FILE *fp_in, *fp_out;
-	char *ptr1, *ptr2, *ptr3;
 	char buf[LEN];
-	char file_in[PATH_LEN];
 	char file_out[PATH_LEN];
 	char file_out_dir[PATH_LEN];
-	char sh_pattern_1[16];
-	char sh_pattern_2[16];
-	char sh_pattern_3[64];
-	int i, j;
+	int i;
 	t_bool found_header;
 
-	strcpy (sh_pattern_1, "# !/bin/sh");
-	strcpy (sh_pattern_2, "#!/bin/sh");
-	strcpy (sh_pattern_3, "# This is a shell archive.");
+	/*
+	 * Grab the dirname portion
+	 */
+	my_strncpy (file_out_dir, save[0].path, save[0].file - save[0].path);
 
-	my_strncpy (file_out_dir, save_filename (0), sizeof (file_out_dir));
-	for (i = strlen(file_out_dir); i > 0; i--) {
-#	ifdef VMS
-		if (file_out_dir[i] == ']') {
-			file_out_dir[i+1] = '\0';
-			break;
-		}
-#	else
-		if (file_out_dir[i] == '/') {
-			file_out_dir[i] = '\0';
-			break;
-		}
-#	endif /* VMS */
-	}
+#ifdef VMS
+	snprintf (file_out, sizeof(file_out) - 1, "%ssh.%05d", file_out_dir, (int) process_id);
+#else
+	snprintf (file_out, sizeof(file_out) - 1, "%ssh%05d", file_out_dir, (int) process_id);
+#endif /* VMS */
 
-#	ifdef VMS
-	sprintf (file_out, "%ssh.%05d", file_out_dir, (int) process_id);
-#	else
-	sprintf (file_out, "%s/sh%05d", file_out_dir, (int) process_id);
-#	endif /* VMS */
-
-	for (j = 0; j < num_save; j++) {
-		if (!save[j].saved)
+	for (i = 0; i < num_save; i++) {
+		if (!save[i].saved)
 			continue;
-		my_strncpy (file_in, save_filename (j), sizeof (file_in));
 
-		my_printf (cCRLF);
-		my_printf (_(txt_extracting_shar), file_in);
-		my_printf (cCRLF);
-		my_flush ();
+		wait_message (1, _(txt_extracting_shar), save[i].path);
 
 		found_header = FALSE;
 
 		if ((fp_out = fopen (file_out, "w" FOPEN_OPTS)) != NULL) {
-			if ((fp_in = fopen (file_in, "r")) != NULL) {
-				ptr1 = sh_pattern_1;
-				ptr2 = sh_pattern_2;
-				ptr3 = sh_pattern_3;
+			if ((fp_in = fopen (save[i].path, "r")) != NULL) {
 
 				while (!feof (fp_in)) {
 					if (fgets (buf, (int) sizeof(buf), fp_in)) {
-						/*
-						 *  find #!/bin/sh or #!/bin/sh pattern
-						 */
-						if (!found_header && (strstr (buf, ptr1) != 0 || strstr (buf, ptr2) != 0 || strstr (buf, ptr3) != 0))
+						/* find #!/bin/sh or #!/bin/sh pattern */
+						if (!found_header && pcre_exec(shar_regex.re, shar_regex.extra, buf, strlen(buf), 0, 0, NULL, 0) >= 0)
 							found_header = TRUE;
 
-						/*
-						 *  Write to temp file
-						 */
+						/* write to temp file */
 						if (found_header)
 							fputs (buf, fp_out);
 					}
@@ -1514,17 +1177,17 @@ post_process_sh (
 			}
 			fclose (fp_out);
 
-#	ifndef M_UNIX
+#ifndef M_UNIX
 			make_post_process_cmd (DEFAULT_UNSHAR, file_out_dir, file_out);
-#	else
+#else
 			sh_format (buf, sizeof(buf), "cd %s; sh %s", file_out_dir, file_out);
 			my_fputs (cCRLF, stdout);
 			my_flush ();
-			Raw (FALSE);
+			Raw (FALSE);									/* TODO done in invoke_cmd() ? */
 			if (!invoke_cmd (buf))
-				error_message (_(txt_command_failed), buf);		/* TODO not needed */
-			Raw (TRUE);
-#	endif /* ! M_UNIX */
+				error_message (_(txt_command_failed), buf);	/* TODO not needed */
+			Raw (TRUE);										/* TODO done in invoke_cmd() ? */
+#endif /* ! M_UNIX */
 			unlink (file_out);
 		}
 	}
@@ -1545,11 +1208,15 @@ delete_processed_files (
 		else if (prompt_yn (cLINES, _(txt_delete_processed_files), TRUE) == 1)
 			delete_it = TRUE;
 
+		my_printf (cCRLF);
+		my_flush();
+
 		if (delete_it) {
-			wait_message (0, "%s%s", _(txt_deleting), cCRLF);
+			my_printf ("%s%s", _(txt_deleting), cCRLF);
+			my_flush();
 
 			for (i = 0; i < num_save; i++)
-				unlink (save_filename (i));
+				unlink (save[i].path);
 		}
 	}
 }
@@ -1578,7 +1245,7 @@ print_art_seperator_line (
 	FILE *fp,
 	t_bool is_mailbox)
 {
-	char sep = '\1';	/* Ctrl-A */
+	const char sep = '\1';	/* Ctrl-A */
 #ifdef DEBUG
 	if (debug == 2)
 		error_message ("Mailbox=[%d]  MMDF=[%d]", is_mailbox, tinrc.save_to_mmdf_mailbox);
@@ -1590,86 +1257,90 @@ print_art_seperator_line (
 		my_fputc ('\n', fp);
 }
 
-#if 0
+
 static void
 start_viewer(
-	char *app,
-	char *path)
+	t_part *part,
+	const char *path)
 {
-	char *ptr, *toptr;
-	char viewer[PATH_LEN];
-	t_bool quote = FALSE;
-	t_bool backquote = FALSE;
-	t_bool percent = FALSE;
+	t_mailcap *foo;
 
-	/*
-	 * Split off the command name - don't split on backquoted ; or ; in " "
-	 * Substitute %s with the filename - again don't substitute if in \ or "
-	 */
-	for (ptr = app, toptr = viewer; *ptr; ptr++) {
-		if (*ptr == '\"')
-			quote = !quote;
-		else if (*ptr == '\\')
-			backquote = TRUE;
-		else if (*ptr == '%' && !backquote && !quote)
-			percent = TRUE;
-		else if (*ptr == ';' && !backquote && !quote)
-			break;
-		else if (*ptr == 's' && percent) {
-			sprintf (toptr-1, "\"%s\"", path);
-			toptr += strlen(path) + 1;
-		} else if (backquote)
-			backquote = FALSE;
-		else if (percent)
-			percent = FALSE;
+	if ((foo = get_mailcap_entry (part, path)) != (t_mailcap *) 0) {
+		char buff[LEN];
 
-		if (!(*ptr == 's' && percent))
-			*toptr++ = *ptr;
-	}
-	*toptr = '\0';
+		if (foo->nametemplate)	/* honor nametemplate */
+			rename_file(path, foo->nametemplate);
 
-	wait_message(1, "Starting %s\n", viewer);
-	system(viewer);
+		wait_message (0, _(txt_starting_command), foo->command);
+
+		/* are the () needed if foo->command holds more than one cmd? */
+		snprintf (buff, sizeof(buff) - 1, "(%s)", foo->command);
+		if (foo->needsterminal) {
+			set_xclick_off();
+			EndWin();
+			Raw(FALSE);
+			fflush(stdout);
+		} else {
+			if (foo->description)
+				info_message(foo->description);
+		}
+		invoke_cmd (foo->command);
+		if (foo->needsterminal) {
+			Raw(TRUE);
+			InitWin();
+			prompt_continue();
+		}
+		if (foo->nametemplate) /* undo nametemplate, needed as 'save'-prompt is done outside start_viewer */
+			rename_file(foo->nametemplate, path);
+		free_mailcap (foo);
+	} else
+		wait_message (0, _(txt_no_viewer_found), content_types[part->type], part->subtype);
 }
-#endif /* 0 */
 
-#define HAVE_UUDECODE 1
-#ifdef HAVE_UUDECODE
-	static void uudecode_line(char *buf, FILE *fp);
-#endif /* HAVE_UUDECODE */
 
+/*
+ * Decode and save the binary object pointed to in 'part'
+ * Optionally launch a viewer for it
+ */
 static void
 decode_save_one(
 	t_part *part,
-	FILE *rawfp)
+	FILE *rawfp,
+	t_bool postproc)
 {
 	char buf[2048], buf2[2048];
 	char savepath[PATH_LEN];
-	char *name;
-	char *savefile;				/* ptr to filename portion of savepath */
+	const char *name;
 	int i;
 	struct t_attribute *attr = CURR_GROUP.attribute;
+	t_bool mbox;
 	FILE *fp;
 
 	/*
-	 * Determine the filename
-	 * FIXME: use joinpath()
-	 *        honor, that tinrc.default_save_file holds the filename
-	 *        _and_ the path (-> no path prepending needed)
+	 * Get the filename to save to in 'savepath'
 	 */
-	strncpy (savepath, attr->savedir, sizeof(savepath) - 1);
-	strcat (savepath, "/");
-	savefile = savepath + strlen(savepath);
 	if ((name = get_filename (part->params)) == NULL)
-		name = attr->savefile ? attr->savefile : tinrc.default_save_file;
-	strncat (savepath, name, sizeof(savepath) - strlen(savepath) - 1);
-	savepath[sizeof(savepath) - 1] = '\0';
+		mbox = get_save_filename(savepath, attr->savefile ? attr->savefile : tinrc.default_save_file);
+	else
+		mbox = get_save_filename(savepath, name);
+
+	/*
+	 * Not a good idea to dump attachments over a mailbox
+	 */
+	if (mbox) {
+		wait_message (2, _(txt_is_mailbox), content_types[part->type], part->subtype);
+		return;
+	}
+
+	if (!(create_path(savepath))) {
+		error_message (_(txt_cannot_open_for_saving), savepath);
+		return;
+	}
 
 	/*
 	 * Decode/save the attachment
 	 */
-/* TODO don't overwrite by default */
-	if ((fp = fopen (savepath, "w")) == NULL) {
+	if ((fp = open_save_filename (savepath, FALSE)) == NULL) {
 		error_message (_(txt_cannot_open_for_saving), savepath);
 		return;
 	}
@@ -1679,7 +1350,7 @@ decode_save_one(
 
 	fseek (rawfp, part->offset, SEEK_SET);
 
-	for (i = 0; i < part->lines ; i++) {
+	for (i = 0; i < part->line_count; i++) {
 		if ((fgets (buf, sizeof(buf), rawfp)) == NULL)
 			break;
 
@@ -1697,6 +1368,7 @@ decode_save_one(
 				break;
 
 			case ENCODING_UUE:
+				/* TODO - if postproc, don't decode these since the traditional uudecoder will get them */
 #ifdef HAVE_UUDECODE
 				/*
 				 * x-uuencode attachments have all the header info etc which we must ignore
@@ -1714,36 +1386,46 @@ decode_save_one(
 	}
 	fclose(fp);
 
-	snprintf (buf, sizeof(buf) - 1, _(txt_view_attachment), savefile, content_types[part->type], part->subtype);
-	if (prompt_yn (cLINES, buf, TRUE) == 1) {
-		t_mailcap *foo;
-
-		foo = get_mailcap_entry (part);
-		if (foo != (t_mailcap *) 0) {
-			char buff[LEN];
-
-			wait_message (2, _(txt_starting_command), foo->command);
-			/* are the () needed if foo->command holds more than one cmd? */
-			snprintf (buff, sizeof(buff) - 1, "(%s)", foo->command);
-			/* FIXME: don't use system()! */
-			system (foo->command);
-			free_mailcap (foo);
-		} else
-			wait_message (2, _(txt_no_viewer_found), content_types[part->type], part->subtype);
+	/*
+	 * View the attachment
+	 */
+	if (postproc && tinrc.post_process_view) {
+		start_viewer (part, savepath);
+		my_printf (cCRLF);
+	} else {
+		snprintf (buf, sizeof(buf) - 1, _(txt_view_attachment), savepath, content_types[part->type], part->subtype);
+		if (prompt_yn (cLINES, buf, TRUE) == 1)
+			start_viewer (part, savepath);
 	}
-	snprintf (buf, sizeof(buf) - 1, _(txt_save_attachment), savefile, content_types[part->type], part->subtype);
-	if (prompt_yn (cLINES, buf, FALSE) != 1)
-		unlink (savepath);
+
+	/*
+	 * Save the attachment
+	 */
+	if (postproc) {
+		my_printf (_(txt_uu_success), savepath);
+		my_printf (cCRLF);
+	} else {
+		snprintf (buf, sizeof(buf) - 1, _(txt_save_attachment), savepath, content_types[part->type], part->subtype);
+		if (prompt_yn (cLINES, buf, FALSE) != 1)
+			unlink (savepath);
+	}
 }
 
 
 /*
- * decode and save a binary MIME attachment
+ * decode and save binary MIME attachments from an open article context
  * optionally locate and launch a viewer application
+ * 'postproc' determines the mode of the operation and will be set to
+ * TRUE when we're saving articles using 's/S' and FALSE otherwise (ie
+ * when just viewing)
+ * When it is FALSE then the view/save options will be queried
+ * Otherwise the view option will depend on post_process_view and the
+ * save is implicit. Feedback will also be printed.
  */
 void
 decode_save_mime(
-	t_openartinfo *art)
+	t_openartinfo *art,
+	t_bool postproc)
 {
 	t_part *ptr;
 
@@ -1755,9 +1437,13 @@ decode_save_mime(
 
 		/*
 		 * Handle uuencoded sections in this message part
+		 * We don't do this when postprocessing as the generic uudecode
+		 * code already handles uuencoded data
 		 */
-		for (uueptr = ptr->uue; uueptr != NULL; uueptr = uueptr->next)
-			decode_save_one (uueptr, art->raw);
+		if (!postproc) {
+			for (uueptr = ptr->uue; uueptr != NULL; uueptr = uueptr->next)
+				decode_save_one (uueptr, art->raw, postproc);
+		}
 
 		/*
 		 * Decode this message part if appropriate
@@ -1765,7 +1451,7 @@ decode_save_mime(
 		if (ptr->type == TYPE_MULTIPART || IS_PLAINTEXT(ptr))
 			continue;
 
-		decode_save_one (ptr, art->raw);
+		decode_save_one (ptr, art->raw, postproc);
 	}
 }
 
@@ -1773,20 +1459,22 @@ decode_save_mime(
 #ifdef HAVE_UUDECODE
 /* Single character decode.  */
 #define DEC(Char) (((Char) - ' ') & 077)
+/*
+ * Decode 'buf' - write the uudecoded output to 'fp'
+ */
 static void
 uudecode_line(
-	char *buf,
+	const char *buf,
 	FILE *fp)
 {
-	char *p = buf;
+	const char *p = buf;
 	int n;
 
 	n = DEC (*p);
-#ifdef DEBUG_ART
-	fprintf(stderr, "check=%2d of:    %s", n, p);
-#endif /* DEBUG_ART */
+
 	for (++p; n > 0; p += 4, n -= 3) {
 		char ch;
+
 		if (n >= 3) {
 			ch = DEC (p[0]) << 2 | DEC (p[1]) >> 4;
 			fputc (ch, fp);

@@ -234,6 +234,8 @@ free_all_arrays (
 	FreeIfNeeded(url_regex.extra);
 	FreeIfNeeded(mail_regex.re);
 	FreeIfNeeded(mail_regex.extra);
+	FreeIfNeeded(shar_regex.re);
+	FreeIfNeeded(shar_regex.extra);
 
 	if (base != (long *) 0) {
 		free ((char *) base);
@@ -397,14 +399,10 @@ free_save_array (
 
 	for (i = 0; i < num_save; i++) {
 
-		FreeAndNull(save[i].subject);
-		FreeAndNull(save[i].dir);
-		FreeAndNull(save[i].file);
-		FreeAndNull(save[i].archive);
-		FreeAndNull(save[i].part);
-		FreeAndNull(save[i].patch);
-
-		save[i].index = -1;
+		FreeAndNull(save[i].path);
+		/* file does NOT need to be freed */
+		save[i].file = NULL;
+		save[i].artptr = NULL;
 		save[i].saved = FALSE;
 		save[i].is_mailbox = FALSE;
 	}

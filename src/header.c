@@ -262,10 +262,10 @@ get_full_name (
 	void)
 {
 	char *p;
-	char buf[128];
-	char tmp[128];
 	static char fullname[128];
 #	if !defined(VMS) && !defined(DONT_HAVE_PW_GECOS)
+	char buf[128];
+	char tmp[128];
 	struct passwd *pw;
 #	endif /* !VMS && !DONT_HAVE_PW_GECOS */
 

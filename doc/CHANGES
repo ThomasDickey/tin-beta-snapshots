@@ -1,21 +1,98 @@
--- 1.5.6 release 20000618 "" --
+-- 1.5.6 release 20000803 "Dust" --
+
+ 028) Urs Janssen <urs@tin.org>
+      BUG. nntp_open() treated unknown 2xx responses as an error
+      ADD. handling for new 202/203 return codes
+      FIX. nntplib.h, open.c
+
+ 027) v9@fakehalo.org
+      Urs Janssen <urs@tin.org>
+      BUG. possible bufferoverflow
+      FIX. curses.c
+
+U047) Scott Marovich <marovich@hpl.hp.com>
+      ADD. removed few casts for a clean compile on HP-UX
+      BUG. missing vars for HPs STREAMS-based network-protocol stack.
+      FIX. nntplib.c
+
+U046) Dirk Nimmich <nimmich@uni-muenster.de>
+      ADD. completed switching menus to "key=action" style
+      ADD. current key mapping in mini help
+      BUG. did not compile with --disable-curses
+      BUG. save backend had no i18n stuff
+      BUG. info line was not cleared after displaying a menu
+      BUG. when writing a new article or superseding an old one there was
+           no cursor in the editor
+      BUG. ignoring followup-to header, aborting posting and trying to
+           followup again on that article could lead to a crash
+      FIX. TODO, feed.c, help.c, lang.c, misc.c, post.c, prompt.c, save.c
+
+U045) Thomas E. Dickey <dickey@herndon4.his.com>
+      ADD. definition NEED_TERM_H to include <term.h> if needed
+      ADD. improved search-order for curses/ncurses libraries
+      ADD. plausible default value for the editor and mailer in configure
+      BUG. correct include-path in src/Makefile.in
+      BUG. fixed logic to remove symbolic link for intl/libintl.h
+      BUG. 'M' screen was not being repainted properly in some cases
+      FIX. aclocal.m4, autoconf.h[in], configure[.in], proto.h, rfc2046.h
+           tcurses.h, tin.h, Makefile[.in], art.c, config.c, cook.c
+           curses.c, filter.c, group.c, help.c, newsrc.c, page.c, post.c
+           rfc2046.c, save.c, string.c, thread.c
+
+U044) Jason Faultless <jason@radar.tele2.co.uk>
+      ADD. URL-highlighting in termcap mode and if compiled without
+           color support
+      ADD. better positioning in article when hiding uuencoded data
+      ADD. human readable connection time-stamp in tinrc
+      ADD. rewrite find_reply_to() mechanism
+      ADD. cleanup of header parsing code when posting
+      ADD. migrate path/filename generation functionality to strfpath()
+      ADD. rewrite save backend, better feedback when saving
+      ADD. post_process_view, use MIME backend for viewing post-processed arts
+      ADD. better feedback when post-processing
+      ADD. big code cleanup
+      REM. post_process_command, tinpp
+      BUG. post-processing only worked on 1st uuencoded section in an article
+      BUG. 'e' EditMailArt broken
+      BUG. tin sometimes hung on multipart articles
+      BUG. singleline scrollin in the pager broken in cusres mode if
+           compiled without color support
+      FIX. tin.1, extern.h, keymap.h, menukeys.h, proto.h, active.c, color.c
+           config.c, cook.c, curses.c, feed.c, group.c, init.c, keymap.c
+           lang.c, mail.c, main.c, misc.c, nrctbl.c, page.c, pgp.c, post.c
+           prompt.c, regex.c, rfc1524.c, rfc2046.c, save.c, search.c
+           sigfile.c
+
+U043) Roland Rosenfeld <roland@spinnaker.de>
+      BUG. ConvertBody2Printable was disabled
+      FIX. proto.h, charset.c, cook.c, page.c
+
+U042) Thomas E. Dickey <dickey@herndon4.his.com>
+      BUG. couple of problems with NLS configuration
+      FIX. aclocal.m4, Makefile[.in]
 
 U041) Dirk Nimmich <nimmich@uni-muenster.de>
       ADD. prompt_yn prints current keybindings for PromptYes/PromptNo
       ADD. switched menus to "key=action" style
       BUG. unbound keys caused actions in several menus
       BUG. PProc* keys could not be remapped
+      BUG. MIME-encoding of some headers broken
       FIX. extern.h, keymap.h, menukeys.h, proto.h, tin.h
-           attrib.c, config.c, feed.c, filter.c, group.c, keymap.c
+           attrib.c, config.c, feed.c, filter.c, group.c, inews.c, keymap.c
            lang.c, page.c, pgp.c, post.c, prompt.c, save.c, select.c
            thread.c, tincfg.tbl
 
 U040) Urs Janssen <urs@tin.org>
+      ADD. mailcap %{parameter}-expansion
       ADD. look for localized keymaps
       ADD. config.guess, config.sub update
       ADD. minor code cleanup
-      FIX. config.guess, config.sub, keymap.h, menukeys.h, proto.h, cook.c
-           header.c, group.c, keymap.c, page.c, post.c, rfc2046.c, select.c
+      ADD. tin.5 manpage
+      REM. seuid/setgid code
+      FIX. mailcap.sample, Makefile[.in], tin.1, tin.5, configure[.in]
+           config.guess, config.sub, keymap.h, menukeys.h, proto.h, tin.h
+           cook.c, header.c, init.c, group.c, keymap.c, memory.c, misc.c
+           page.c, post.c, rfc1524.c, rfc2046.c, save.c, select.c
 
 U039) Roland Rosenfeld <roland@spinnaker.de>
       BUG. problems with keymap and only GPG support
@@ -31,7 +108,7 @@ U037) Thomas E. Dickey <dickey@herndon4.his.com>
            oldconfig.h, tin.h, misc.c, vms/select.h, pcre/*
 
 U036) Toomas Soome <tsoome@ut.ee>
-      ADD. updated estonian translation
+      ADD. updated Estonian translation
       FIX. et.po
 
 U035) Dirk Nimmich <nimmich@uni-muenster.de>

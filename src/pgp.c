@@ -333,9 +333,9 @@ invoke_pgp_mail (
 
 	ch = prompt_slk_response (ch_default, &menukeymap.pgp_mail,
 			_(txt_pgp_mail),
-			printascii (keyencrypt, map_to_local (iKeyPgpSign, &menukeymap.pgp_mail)),
+			printascii (keyencrypt, map_to_local (iKeyPgpEncrypt, &menukeymap.pgp_mail)),
 			printascii (keysign, map_to_local (iKeyPgpSign, &menukeymap.pgp_mail)),
-			printascii (keyboth, map_to_local (iKeyPgpSign, &menukeymap.pgp_mail)),
+			printascii (keyboth, map_to_local (iKeyPgpEncSign, &menukeymap.pgp_mail)),
 			printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.pgp_mail)));
 	switch (ch) {
 		case iKeyAbort:
@@ -477,7 +477,7 @@ pgp_check_article (
 		}
 	}
 
-	continue_prompt ();
+	prompt_continue ();
 	unlink(artfile);
 	return TRUE;
 }

@@ -162,8 +162,10 @@ enum resizer { cNo, cYes, cRedraw };
 #		include <types.h>
 #	endif /* !MULTINET */
 #	define FOPEN_OPTS       , "fop=cif"
+#	define JOINPATH			joindir
 #else
 #	define FOPEN_OPTS
+#	define JOINPATH			joinpath
 #endif /* VMS */
 
 #include <stdio.h>
@@ -504,7 +506,6 @@ enum resizer { cNo, cYes, cRedraw };
 #		define DEFAULT_PRINTER	"copy to PRT:"
 #		define DEFAULT_BBS_PRINTER	"copy to NIL:"
 #		define DEFAULT_SHELL	"newshell"	/* Not Yet Implemented */
-#		define DEFAULT_UUDECODE	"uudecode %s"
 #		define DEFAULT_UNSHAR	"unshar %s"
 #	endif /* M_AMIGA */
 #	ifdef VMS
@@ -514,7 +515,6 @@ enum resizer { cNo, cYes, cRedraw };
 #		define MAILER_FORMAT	"MAIL /SUBJECT=\"%S\" %F MX%%\"%T\""
 #		define DEFAULT_POSTER	"inews %s."
 #		define DEFAULT_PRINTER	"PRINT/DELETE"
-#		define DEFAULT_UUDECODE	"uudecode %s."
 #		define DEFAULT_UNSHAR	"unshar %s."
 #	endif /* VMS */
 #	ifdef M_OS2
@@ -526,7 +526,6 @@ enum resizer { cNo, cYes, cRedraw };
 #		define DEFAULT_POSTER	"postnews %s"
 #		define DEFAULT_PRINTER	"lpt1"
 #		define DEFAULT_SHELL	"cmd.exe"
-#		define DEFAULT_UUDECODE	"uudecode %s"
 #		define DEFAULT_UNSHAR	"unshar %s"
 #	endif /* M_OS2 */
 #	ifdef WIN32
@@ -538,7 +537,6 @@ enum resizer { cNo, cYes, cRedraw };
 #		define DEFAULT_POSTER	"postnews %s"
 #		define DEFAULT_PRINTER	"lpt1"
 #		define DEFAULT_SHELL	"cmd.exe"
-#		define DEFAULT_UUDECODE	"uudecode %s"
 #		define DEFAULT_UNSHAR	"unshar %s"
 #	endif /* WIN32 */
 #	ifdef QNX42
@@ -671,30 +669,35 @@ enum resizer { cNo, cYes, cRedraw };
 #define DEFAULT_SAVEDIR	"News"
 
 
+/*
+ * all regexps are extended -> # must be quoted!
+ */
 #ifdef HAVE_COLOR
 /* case insensitive */
-#	define DEFAULT_QUOTE_REGEX	"^\\s{0,3}([\\]{}>|:)]|\\w{1,3}[>|])(?!-)"
-#	define DEFAULT_QUOTE_REGEX2	"^\\s{0,3}(([\\]{}>|:)]|\\w{1,3}[>|])\\s*){2}(?!-[})>])"
-#	define DEFAULT_QUOTE_REGEX3	"^\\s{0,3}(([\\]{}>|:)]|\\w{1,3}[>|])\\s*){3}"
+#	define DEFAULT_QUOTE_REGEX	"^\\s{0,3}(?:[\\]{}>|:)]|\\w{1,3}[>|])(?!-)"
+#	define DEFAULT_QUOTE_REGEX2	"^\\s{0,3}(?:(?:[\\]{}>|:)]|\\w{1,3}[>|])\\s*){2}(?!-[})>])"
+#	define DEFAULT_QUOTE_REGEX3	"^\\s{0,3}(?:(?:[\\]{}>|:)]|\\w{1,3}[>|])\\s*){3}"
 #endif /* HAVE_COLOR */
 
 /* case sensitive && ^-anchored */
-#define DEFAULT_STRIP_RE_REGEX	"(R[eE](\\^\\d+|\\[\\d\\])?|A[wW]|Odp|Sv):\\s"
+#define DEFAULT_STRIP_RE_REGEX	"(?:R[eE](?:\\^\\d+|\\[\\d\\])?|A[wW]|Odp|Sv):\\s"
 /* case sensitive */
-#define DEFAULT_STRIP_WAS_REGEX	".\\(([Ww]a[rs]|[Bb]y[l³]o):.*\\)\\s*$"
+#define DEFAULT_STRIP_WAS_REGEX	".\\((?:[Ww]a[rs]|[Bb]y[l³]o):.*\\)\\s*$"
 
 /* case insensitive & ^-anchored */
 #define UUBEGIN_REGEX	"begin\\s+[0-7]{3,4}\\s+"
 /* case sensitive & ^-anchored */
-#define UUBODY_REGEX	"(`|.[\\x20-\\x60]{1,61})$"
+#define UUBODY_REGEX	"(?:`|.[\\x20-\\x60]{1,61})$"
 
 /* case insensitive */
 #define URL_REGEX "\\b(?:https?|ftp|gopher)://(?:\\w+:\\w+@)?(?:[^\\W_]+(?:(?:[-.][^\\W_]+)+)?\\.[a-z]{2,5}|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
 /* case insensitive */
 #define MAIL_REGEX	"\\b(?:mailto:(?:(?:[-\\w$.+!*'(),;/?:@&=]|(?:%[\\da-f]{2}))+))"
-
 /* case insensitive - not implemented */
 #define NEWS_REGEX	"\\b(?:s?news|nntp):[^\\s@]+[@.][^\\s@]+(?:$|(?=[\\s.>]))\\b"
+
+/* case sensitive & ^-anchored */
+#define SHAR_REGEX	"\\#(?:!\\s?(?:/usr)?/bin/sh|\\s?(?i)this\\sis\\sa\\sshell\\sarchive)"
 
 
 #define FILTER_FILE	"filter"
@@ -1011,12 +1014,6 @@ enum resizer { cNo, cYes, cRedraw };
 #define POST_PROC_NONE		0
 #define POST_PROC_SHAR		1
 #define POST_PROC_UUDECODE	2
-#if 0
-#define POST_PROC_UUD_LST_ZOO	3
-#define POST_PROC_UUD_EXT_ZOO	4
-#define POST_PROC_UUD_LST_ZIP	5
-#define POST_PROC_UUD_EXT_ZIP	6
-#endif /* 0 */
 
 /*
  * used in art.c
@@ -1338,7 +1335,7 @@ struct t_article
 	char *msgid;			/* Message-ID: unique message identifier */
 	char *refs;			/* References: article reference id's */
 	struct t_msgid *refptr;		/* Pointer to us in the reference tree */
-	int lines;			/* Lines: number of lines in article */
+	int line_count;			/* Lines: number of lines in article */
 	char *archive;			/* Archive-name: line from mail header */
 	char *part;			/* part no. of archive */
 	char *patch;			/* patch no. of archive */
@@ -1397,8 +1394,7 @@ struct t_attribute
 						   3=from descend, 4=from ascend,
 						   5=date descend, 6=date ascend,
 						   7=score descend, 8=score ascend */
-	unsigned int post_proc_type:4;		/* 0=none, 1=shar, 2=uudecode,
-						   3=uud & list zoo, 4=uud & ext zoo*/
+	unsigned int post_proc_type:2;		/* 0=none, 1=shar, 2=uudecode */
 	unsigned int x_comment_to:1;		/* insert X-Comment-To: in Followup */
 };
 
@@ -1536,15 +1532,11 @@ struct regex_cache {
 
 struct t_save
 {
-	char *subject;
-	char *dir;
-	char *file;
-	char *archive;
-	char *part;
-	char *patch;
-	int index;
-	t_bool saved;
-	t_bool is_mailbox;
+	char *path;
+	char *file;					/* => file part of *path */
+	struct t_article *artptr;	/* => article in arts[] */
+	t_bool saved;				/* Set if saved okay */
+	t_bool is_mailbox;			/* Set if path is a mailbox */
 };
 
 #ifndef USE_CURSES

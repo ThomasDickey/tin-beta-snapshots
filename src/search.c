@@ -264,7 +264,7 @@ body_search (
 	sprintf(mesg, _(txt_searching_body), ++curr_cnt, total_cnt);
 
 	memset (&artinfo, 0, sizeof(t_openartinfo));
-	switch (art_open (&arts[i], group_path, TRUE, &artinfo)) {
+	switch (art_open (&arts[i], group_path, &artinfo)) {
 		case ART_ABORT:					/* User 'q'uit */
 			code = -1;
 			goto exit_search;
@@ -452,7 +452,6 @@ search (
  * page.c (search current article body)
  * Return line number that matches or -1
  * If using regex's return vector of character offsets
- * TODO compare ^L treatment with previous version
  */
 int
 search_article (

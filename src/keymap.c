@@ -46,7 +46,7 @@
 
 static int keymapsize (t_keynode *ptr[]);
 static t_bool check_duplicates(t_keynode *keyptr1, t_keynode *keyptr2);
-static t_bool processkey(t_keynode *keyptr, char *keyname, char key);
+static t_bool processkey(t_keynode *keyptr, char *kname, char key);
 
 char *ch_post_process;
 
@@ -113,7 +113,7 @@ struct keymap Key = {
 		{ 0, 0, NULL }
 	},
 	{
-	 	{ 0, 0, "Config" },
+		{ 0, 0, "Config" },
 		{ iKeyConfigFirstPage2, iKeyConfigFirstPage2, "FirstPage2" },
 		{ iKeyConfigLastPage2, iKeyConfigLastPage2, "LastPage2" },
 		{ iKeyConfigNoSave, iKeyConfigNoSave, "NoSave" },
@@ -122,7 +122,7 @@ struct keymap Key = {
 		{ 0, 0, NULL }
 	},
 	{
-	 	{ 0, 0, "Feed" },
+		{ 0, 0, "Feed" },
 		{ iKeyFeedArt, iKeyFeedArt, "Art" },
 		{ iKeyFeedHot, iKeyFeedHot, "Hot" },
 		{ iKeyFeedPat, iKeyFeedPat, "Pat" },
@@ -133,7 +133,7 @@ struct keymap Key = {
 		{ 0, 0, NULL }
 	},
 	{
-	 	{ 0, 0, "Filter" },
+		{ 0, 0, "Filter" },
 		{ iKeyFilterEdit, iKeyFilterEdit, "Edit" },
 		{ iKeyFilterSave, iKeyFilterSave, "Save" },
 		{ 0, 0, NULL }
@@ -185,13 +185,13 @@ struct keymap Key = {
 		{ 0, 0, NULL }
 	},
 	{
-	 	{ 0, 0, "Help" },
+		{ 0, 0, "Help" },
 		{ iKeyHelpFirstPage2, iKeyHelpFirstPage2, "FirstPage2" },
 		{ iKeyHelpLastPage2, iKeyHelpLastPage2, "LastPage2" },
 		{ 0, 0, NULL }
 	},
 	{
-	 	{ 0, 0, "Nrctbl" },
+		{ 0, 0, "Nrctbl" },
 		{ iKeyNrctblAlternative, iKeyNrctblAlternative, "Alternative" },
 		{ iKeyNrctblCreate, iKeyNrctblCreate, "Create" },
 		{ iKeyNrctblDefault, iKeyNrctblDefault, "Default" },
@@ -239,7 +239,6 @@ struct keymap Key = {
 		{ iKeyPageToggleHighlight, iKeyPageToggleHighlight, "ToggleHighlight" },
 #endif /* HAVE_COLOR */
 		{ iKeyPageCatchup, iKeyPageCatchup, "Catchup" },
-		{ iKeyPageToggleRot2, iKeyPageToggleRot2, "ToggleRot2" },
 		{ iKeyPageEditArticle, iKeyPageEditArticle, "EditArticle" },
 		{ iKeyPageFollowupQuote, iKeyPageFollowupQuote, "FollowupQuote" },
 		{ iKeyPageFirstPage2, iKeyPageFirstPage2, "FirstPage2" },
@@ -259,7 +258,7 @@ struct keymap Key = {
 		{ 0, 0, NULL }
 	},
 	{
-	 	{ 0, 0, "Pgp" },
+		{ 0, 0, "Pgp" },
 		{ iKeyPgpEncSign, iKeyPgpEncSign, "EncSign" },
 		{ iKeyPgpEncrypt, iKeyPgpEncrypt, "Encrypt" },
 		{ iKeyPgpIncludekey, iKeyPgpIncludekey, "Includekey" },
@@ -267,8 +266,8 @@ struct keymap Key = {
 		{ 0, 0, NULL }
 	},
 	{ /* Post keys */
-	 	{ 0, 0, "Post" },
-	 	{ iKeyPostCancel, iKeyPostCancel, "Cancel" },
+		{ 0, 0, "Post" },
+		{ iKeyPostCancel, iKeyPostCancel, "Cancel" },
 		{ iKeyPostEdit, iKeyPostEdit, "Edit" },
 #ifdef HAVE_PGP_GPG
 		{ iKeyPostPGP, iKeyPostPGP, "PGP" },
@@ -295,13 +294,7 @@ struct keymap Key = {
 		{ 0, 0, NULL }
 	},
 	{
-	 	{ 0, 0, "PProc" },
-#if 0
-		{ iKeyPProcExtractZip, iKeyPProcExtractZip, "ExtractZip" },
-		{ iKeyPProcExtractZoo, iKeyPProcExtractZoo, "ExtractZoo" },
-		{ iKeyPProcListZip, iKeyPProcListZip, "ListZip" },
-		{ iKeyPProcListZoo, iKeyPProcListZoo, "ListZoo" },
-#endif /* 0 */
+		{ 0, 0, "PProc" },
 		{ iKeyPProcNone, iKeyPProcNone, "None" },
 		{ iKeyPProcShar, iKeyPProcShar, "Shar" },
 		{ iKeyPProcUUDecode, iKeyPProcUUDecode, "UUDecode" },
@@ -314,7 +307,7 @@ struct keymap Key = {
 		{ 0, 0, NULL }
 	},
 	{
-	 	{ 0, 0, "Save" },
+		{ 0, 0, "Save" },
 		{ iKeySaveAppendFile, iKeySaveAppendFile, "AppendFile" },
 		{ iKeySaveOverwriteFile, iKeySaveOverwriteFile, "OverwriteFile" },
 		{ 0, 0, NULL }
@@ -434,10 +427,6 @@ t_keynode *keys_feed_art_thread_regex_tag[] = {
 t_keynode *keys_feed_post_process_type[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.PProc.None, &Key.PProc.Shar,
 	&Key.PProc.UUDecode,
-#if 0
-	&Key.PProc.ListZoo, &Key.PProc.ExtractZoo,
-	&Key.PProc.ListZip, &Key.PProc.ExtractZip,
-#endif /* 0 */
 	NULL };
 
 t_keynode *keys_feed_supersede_article[] = {
@@ -521,7 +510,6 @@ t_keynode *keys_page_nav[] = {
 	&Key.Page.ToggleUue, &Key.Page.Reveal, &Key.Page.QuickAutoSel,
 	&Key.Page.QuickKill, &Key.Page.AutoSel, &Key.Page.AutoKill,
 	&Key.Page.EditFilter, &Key.Global.RedrawScr, &Key.Page.ToggleRot,
-	&Key.Page.ToggleRot2, &Key.Global.SearchAuthF, &Key.Global.SearchAuthB,
 	&Key.Page.Catchup, &Key.Page.CatchupNextUnread, &Key.Page.MarkThdUnread,
 	&Key.Page.Cancel, &Key.Page.EditArticle, &Key.Page.FollowupQuote,
 	&Key.Page.FollowupQuoteHeaders, &Key.Page.Followup, &Key.Global.Help,
@@ -813,7 +801,7 @@ free_keymaps (
 char *
 printascii (
 	char *buf,
-	char ch)
+	int ch)
 {
 	if (isgraph(ch)) {			/* Regular printables */
 		buf[0] = ch;
@@ -867,7 +855,7 @@ check_duplicates(
 static t_bool
 processkey(
 	t_keynode *keyptr,		/* Where in map to start search */
-	char *keyname,				/* Keyname we're searching for */
+	char *kname,				/* Keyname we're searching for */
 	char key)					/* Key to assign to keyname if found */
 {
 	char buf[LEN];
@@ -883,7 +871,7 @@ processkey(
 	for (; keyptr->t != NULL; ++keyptr) {
 		strcpy (buf+i, keyptr->t);
 
-		if (strcasecmp (keyname, buf) == 0) {
+		if (strcasecmp (kname, buf) == 0) {
 #ifdef DEBUG
 			fprintf (stderr, _(txt_keymap_redef), buf, printascii (was, keyptr->localkey), printascii (is, key));
 #endif /* DEBUG */
@@ -902,7 +890,7 @@ read_keymap_file (
 	void)
 {
 	FILE *fp = (FILE *) 0;
-	char *line, *keydef, *keyname;
+	char *line, *keydef, *kname;
 	char *ptr;
 	const char *ptr2, *map;
 	char buf[LEN], buff[LEN];
@@ -926,23 +914,23 @@ read_keymap_file (
 		if ((ptr = strchr (map, '.')))
 				*ptr = '\0';
 		snprintf(buff, sizeof(buf) - 1, "%s/.tin/keymap.%s", ptr2, map);
-		if (strfpath (buff, buf, sizeof(buf), homedir, (char *) 0, (char *) 0, (char *) 0))
+		if (strfpath (buff, buf, sizeof(buf), &CURR_GROUP))
 			fp = fopen (buf, "r");
 	}
 	if (!fp) {
 		snprintf(buff, sizeof(buf) - 1, "%s/.tin/keymap", ptr2);
-		if (strfpath (buff, buf, sizeof(buf), homedir, (char *) 0, (char *) 0, (char *) 0))
+		if (strfpath (buff, buf, sizeof(buf), &CURR_GROUP))
 			fp = fopen (buf, "r");
 	}
 #ifdef TIN_DEFAULTS_DIR
 	if (strlen(map) && !fp) {
 		snprintf(buff, sizeof(buf) - 1, "%s/keymap.%s", TIN_DEFAULTS_DIR, map);
-		if (strfpath (buff, buf, sizeof(buf), homedir, (char *) 0, (char *) 0, (char *) 0))
+		if (strfpath (buff, buf, sizeof(buf), &CURR_GROUP))
 			fp = fopen (buf, "r");
 	}
 	if (!fp) {
 		snprintf(buff, sizeof(buf) - 1, "%s/keymap", TIN_DEFAULTS_DIR);
-		if (strfpath (buff, buf, sizeof(buf), homedir, (char *) 0, (char *) 0, (char *) 0))
+		if (strfpath (buff, buf, sizeof(buf), &CURR_GROUP))
 			fp = fopen (buf, "r");
 	}
 #endif /* TIN_DEFAULTS_DIR */
@@ -957,14 +945,14 @@ read_keymap_file (
 		if (line[0] == '#' || line[0] == '\n')
 			continue;
 
-		keyname = strtok (line, KEYSEPS);
+		kname = strtok (line, KEYSEPS);
 		keydef = strtok (NULL, KEYSEPS);
 
 		/*
 		 * Warn about basic syntax errors
 		 */
 		if (keydef == NULL) {
-			fprintf (stderr, _(txt_keymap_missing_key), keyname);
+			fprintf (stderr, _(txt_keymap_missing_key), kname);
 			ret = FALSE;
 			continue;
 		}
@@ -979,7 +967,7 @@ read_keymap_file (
 		if (strlen (keydef) > 1)
 			switch (keydef[0]) {
 				case '^':
-					if (!(isupper (keydef[1]))) {
+					if (!(isupper ((int)keydef[1]))) {
 						fprintf (stderr, _(txt_keymap_invalid_key), keydef);
 						ret = FALSE;
 						continue;
@@ -1004,7 +992,7 @@ read_keymap_file (
 		 * Try and locate the tagline in each keygroup
 		 */
 		for (i = 0; keygroups[i] != NULL; ++i) {
-			if (processkey (keygroups[i], keyname, key))
+			if (processkey (keygroups[i], kname, key))
 				break;
 		}
 
@@ -1013,7 +1001,7 @@ read_keymap_file (
 		 * depending on the OS (i.e. on tin has colr the other has not)
 		 */
 		if (keygroups[i] == NULL) {
-			fprintf (stderr, _(txt_keymap_invalid_name), keyname);
+			fprintf (stderr, _(txt_keymap_invalid_name), kname);
 			ret = FALSE;
 			continue;
 		}

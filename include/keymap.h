@@ -240,7 +240,6 @@ struct k_page {
 	t_keynode ToggleHighlight;			/* '_' */
 #endif /* HAVE_COLOR */
 	t_keynode Catchup;					/* 'c' */
-	t_keynode ToggleRot2;				/* 'd' */
 	t_keynode EditArticle;				/* 'e' */
 	t_keynode FollowupQuote;			/* 'f' */
 	t_keynode FirstPage2;				/* 'g' */
@@ -301,10 +300,6 @@ struct k_postpone {
 
 struct k_pproc {
 	t_keynode tag;
-	t_keynode ExtractZip;
-	t_keynode ExtractZoo;
-	t_keynode ListZip;
-	t_keynode ListZoo;
 	t_keynode None;
 	t_keynode Shar;
 	t_keynode UUDecode;
