@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2003-12-09
+ *  Updated   : 2004-06-06
  *  Notes     :
  *
  * Copyright (c) 1999-2004 Jason Faultless <jason@altarstone.com>
@@ -252,6 +252,9 @@ struct t_config {
 #	ifdef HAVE_UNICODE_NORMALIZATION
 	int normalization_form;
 #	endif /* HAVE_UNICODE_NORMALIZATION */
+#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
+	t_bool render_bidi;
+#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
 };
 
 #endif /* !TINRC_H */

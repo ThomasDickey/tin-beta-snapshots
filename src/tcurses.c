@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2004-02-28
+ *  Updated   : 2004-06-07
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -50,8 +50,8 @@
 #	endif /* !KEY_MIN */
 
 #	ifndef KEY_CODE_YES
-#		define KEY_CODE_YES (KEY_MIN-1)	/* PDCurses */
-#	endif
+#		define KEY_CODE_YES (KEY_MIN - 1)	/* PDCurses */
+#	endif /* !KEY_CODE_YES */
 
 #	include "trace.h"
 
@@ -379,14 +379,14 @@ highlight_string(
 	 * offsets calculate now the correct starting column
 	 */
 	if (col > 0) {
-		wchar_t wtmp[LEN];
+		wchar_t *wtmp;
 
 		MoveCursor(row, 0);
 		my_innstr(tmp, cCOLS);
 		tmp[col] = '\0';
-		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
-			wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
-			col = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+		if ((wtmp = char2wchar_t(tmp)) != NULL) {
+			col = wcswidth(wtmp, wcslen(wtmp) + 1);
+			free(wtmp);
 		}
 	}
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -427,7 +427,7 @@ word_highlight_string(
 	char tmp[LEN];
 	int wsize = size;
 #		if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t wtmp[LEN];
+	wchar_t *wtmp;
 
 	/*
 	 * In a multibyte locale we get byte offsets instead of character offsets
@@ -437,9 +437,9 @@ word_highlight_string(
 		MoveCursor(row, 0);
 		my_innstr(tmp, cCOLS);
 		tmp[col] = '\0';
-		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
-			wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
-			col = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+		if ((wtmp = char2wchar_t(tmp)) != NULL) {
+			col = wcswidth(wtmp, wcslen(wtmp) + 1);
+			free(wtmp);
 		}
 	}
 #		endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -449,9 +449,9 @@ word_highlight_string(
 
 #		if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	tmp[size] = '\0';
-	if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
-		wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
-		wsize = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+	if ((wtmp = char2wchar_t(tmp)) != NULL) {
+		wsize = wcswidth(wtmp, wcslen(wtmp) + 1);
+		free(wtmp);
 	}
 #		endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
@@ -517,7 +517,11 @@ again:
 #	if defined(KEY_RESIZE) && defined(USE_CURSES)
 		if ((ch = getch()) == KEY_RESIZE)
 			need_resize = cYes;
-#		if 0	/* Don't use it at the moment as it breaks "redrawing" from prompt_slk_response() */
+#		if 0
+		/*
+		 * disable checking for ERR until all callers of ReadCh() doesn't
+		 * depend on ERR for redrawing
+		 */
 		if (ch == ERR)
 			goto again;
 #		endif /* 0 */
@@ -763,13 +767,11 @@ my_fputws(
 		addwstr(wstr);
 #		else
 		char *mbs;
-		int len;
 
-		len = wcstombs(NULL, wstr, 0) + 1;
-		mbs = my_malloc(len);
-		wcstombs(mbs, wstr, len);
-		addstr(mbs);
-		free(mbs);
+		if ((mbs = wchar_t2char(wstr)) != NULL) {
+			addstr(mbs);
+			free(mbs);
+		}
 #		endif /* HAVE_NCURSESW */
 	}
 }

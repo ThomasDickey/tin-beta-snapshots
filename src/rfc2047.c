@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2004-02-28
+ *  Updated   : 2004-03-10
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2004 Chris Blum <chris@resolution.de>
@@ -71,21 +71,33 @@ static unsigned char base64_rank[256];
 static int base64_rank_table_built;
 static t_bool quoteflag;
 
+/* fixed prefix and default part for tin-generated MIME boundaries */
+static const char MIME_BOUNDARY_PREFIX[]       = "=_tin=_";
+static const char MIME_BOUNDARY_DEFAULT_PART[] = "====____====____====____";
+/* required size of a buffer containing a MIME boundary, including the final '\0' */
+enum {
+	MIME_BOUNDARY_SIZE = sizeof(MIME_BOUNDARY_PREFIX) + sizeof(MIME_BOUNDARY_DEFAULT_PART) - 1
+};
+
 /*
  * local prototypes
  */
+static FILE *compose_message_rfc822(FILE *articlefp, t_bool *is_8bit);
+static FILE *compose_multipart_mixed(FILE *textfp, FILE *articlefp);
 static int do_b_encode(char *w, char *b, int max_ewsize, t_bool isstruct_head);
 static int sizeofnextword(char *w);
 static int which_encoding(char *w);
+static t_bool contains_8bit_characters(FILE *fp);
 static t_bool contains_nonprintables(char *w, t_bool isstruct_head);
+static t_bool contains_string(FILE *fp, const char *str);
 static t_bool rfc1522_do_encode(char *what, char **where, const char *charset, t_bool break_long_line);
+static t_bool split_mail(const char *filename, FILE **headerfp, FILE **textfp);
 static unsigned hex2bin(int x);
 static void build_base64_rank_table(void);
-static void str2b64(const char *from, char *to);
 static void do_rfc15211522_encode(FILE *f, constext * mime_encoding, struct t_group *group, t_bool allow_8bit_header, t_bool ismail, t_bool contains_headers);
-static void generate_mime_boundary(char *boundary, size_t len);
-static t_bool split_forwarded_mail(const char *filename, FILE **headerfp, FILE **txt1fp, FILE **articlefp, FILE **txt2fp, t_bool *article_8bit);
-static void compose_forwarded_mail(const char *filename, FILE *headerfp, FILE *txt1fp, FILE *articlefp, FILE *txt2fp, t_bool article_8bit);
+static void generate_mime_boundary(char *boundary, FILE *f, FILE *g);
+static void generate_random_mime_boundary(char *boundary, size_t len);
+static void str2b64(const char *from, char *to);
 
 
 static void
@@ -137,6 +149,9 @@ mmdecode(
 		int x;
 		unsigned hi, lo;
 
+		if (!what || !where) /* should not happen with 'q'-encoding */
+			return -1;
+
 		while (*what != delimiter) {
 			if (*what != '=') {
 				if (!delimiter || *what != '_')
@@ -169,12 +184,14 @@ mmdecode(
 		static int bits = 0;
 		unsigned char x;
 
-		build_base64_rank_table();
 		if (!what || !where) {		/* flush */
 			pattern = 0;
 			bits = 0;
 			return 0;
 		}
+
+		build_base64_rank_table();
+
 		while (*what != delimiter) {
 			x = base64_rank[(int) (*what++)];
 			/* ignore everything not in the alphabet, including '=' */
@@ -921,17 +938,13 @@ rfc15211522_encode(
 
 
 /*
- * Generate a hopefully unique MIME boundary, consisting of len - 1 random
- * characters.
- *
- * TODO: - don't use a randomly generated string but something what does
- *         not occur anywhere else in the body
- *       - add a static part so we can easily recognize tin generated
- *         boundaries
- *
+ * Generate a MIME boundary being unique with high probability, consisting
+ * of len - 1 random characters.
+ * This function is used as a last resort if anything else failed to
+ * generate a truly unique boundary.
  */
 static void
-generate_mime_boundary(
+generate_random_mime_boundary(
 	char *boundary,
 	size_t len)
 {
@@ -945,34 +958,76 @@ generate_mime_boundary(
 
 
 /*
- * Split mail into header and its body parts.
- * If an error is encountered, all files are closed and FALSE is returned.
- * Otherwise, non-NULL file pointers indicate found parts.
+ * Generate a unique MIME boundary.
+ * boundary must have enough space for at least MIME_BOUNDARY_SIZE characters.
+ */
+static void
+generate_mime_boundary(
+	char *boundary,
+	FILE *f,
+	FILE *g)
+{
+	const char nice_chars[] = { '-', '_', '=' };
+	const size_t prefix_len = sizeof(MIME_BOUNDARY_PREFIX) - 1;
+	char *s;
+	size_t i = 0;
+	t_bool unique = FALSE;
+
+	/*
+	 * Choose MIME boundary as follows:
+	 *   - Always start with MIME_BOUNDARY_PREFIX.
+	 *   - Append MIME_BOUNDARY_DEFAULT_PART.
+	 *   - If necessary, change it from right to left, choosing from a set of
+	 *     `nice_chars' characters.
+	 *   - After that, if it is still not unique, replace MIME_BOUNDARY_DEFAULT_PART
+	 *     with random characters and hope the best.
+	 */
+
+	strcpy(boundary, MIME_BOUNDARY_PREFIX);
+	strcat(boundary, MIME_BOUNDARY_DEFAULT_PART);
+
+	s = boundary + MIME_BOUNDARY_SIZE - 2; /* set s to last character before '\0' */
+	do {
+		/*
+		 * Scan for entire boundary in both f and g.
+		 * When found: modify and redo.
+		 */
+		if (contains_string(f, boundary) || contains_string(g, boundary)) {
+			*s = nice_chars[i];
+			if ((i = (i + 1) % sizeof(nice_chars)) == 0)
+				--s;
+		} else
+			unique = TRUE;
+	} while (!unique && s >= boundary + prefix_len);
+
+	if (!unique)
+		generate_random_mime_boundary(boundary + prefix_len, sizeof(MIME_BOUNDARY_DEFAULT_PART));
+}
+
+
+/*
+ * Split mail into header and (optionally) body.
+ *
+ * If textfp is not NULL, everything behind the header is stored in it.
+ * Whenever an error is encountered, all files are closed and FALSE is returned.
  */
 static t_bool
-split_forwarded_mail(
+split_mail(
 	const char *filename,
 	FILE **headerfp,
-	FILE **txt1fp,
-	FILE **articlefp,
-	FILE **txt2fp,
-	t_bool *article_8bit)
+	FILE **textfp)
 {
 	FILE *fp;
 	char *line;
-	char *s;
-	t_bool article = FALSE;
-	t_bool txt1 = FALSE;
-	t_bool txt2 = FALSE;
-
-	*headerfp = *txt1fp = *articlefp = *txt2fp = NULL;
-
-	/* Header */
-	if ((*headerfp = tmpfile()) == NULL)
-		return FALSE;
 
 	if ((fp = fopen(filename, "r")) == NULL)
 		return FALSE;
+
+	/* Header */
+	if ((*headerfp = tmpfile()) == NULL) {
+		fclose(fp);
+		return FALSE;
+	}
 
 	while ((line = tin_fgets(fp, TRUE))) {
 		if (*line == '\0')
@@ -981,309 +1036,233 @@ split_forwarded_mail(
 			fprintf(*headerfp, "%s\n", line);
 	}
 
-	/*
-	 * Body, may consist of:
-	 * - 1st text/plain part (optional)
-	 * - forwarded article (optional, the user could have deleted it)
-	 * - 2nd text/plain part (optional)
-	 *
-	 * We assume that the forwarded article is enclosed between
-	 * txt_forwarded and txt_forwarded_end.
-	 */
-
-	/* Skip blank lines */
-	while ((line = tin_fgets(fp, FALSE)) && *line == '\0')
-		;
-
-	if (!line) {
-		fclose(fp);
-		return TRUE;
-	}
-
-	/*
-	 * Check whether the next non-blank line is txt_forwarded.
-	 * If yes: continue with the forwarded article; if no, txt1 MIME part is
-	 * needed.
-	 */
-	if (strncmp(line, _(txt_forwarded), strlen(_(txt_forwarded)) - 1)) {
-		if ((*txt1fp = tmpfile()) == NULL)
-			goto error;
-
-		txt1 = TRUE;
-
-		/* Copy to txt1 until txt_forwarded or EOF. */
-		fprintf(*txt1fp, "%s\n", line);
-		while ((line = tin_fgets(fp, FALSE))) {
-			if (!strncmp(line, _(txt_forwarded), strlen(_(txt_forwarded)) - 1)) {
-				article = TRUE;
-				break;
-			} else
-				fprintf(*txt1fp, "%s\n", line);
-		}
-	} else
-		article = TRUE;
-
-	/*
-	 * When txt_forwarded has been seen, continue with the article part
-	 * until EOF or txt_forwarded_end.
-	 */
-	if (article) {
-		if ((*articlefp = tmpfile()) == NULL) {
-			article = FALSE;
-			goto error;
+	/* Body */
+	if (textfp != NULL) {
+		if ((*textfp = tmpfile()) == NULL) {
+			fclose(fp);
+			fclose(*headerfp);
+			return FALSE;
 		}
 
-		/* Copy article part, checking for 8bit characters on-the-fly. */
-		while ((line = tin_fgets(fp, FALSE))) {
-			if (!strncmp(line, _(txt_forwarded_end), strlen(_(txt_forwarded_end)) - 1))
-				break;
-			else {
-				if (!*article_8bit) {
-					for (s = line; *s != '\0'; s++) {
-						if (is_EIGHT_BIT(s)) {
-							*article_8bit = TRUE;
-							break;
-						}
-					}
-				}
-				fprintf(*articlefp, "%s\n", line);
-			}
-		}
-
-		/*
-		 * Now look for additional non-blank lines.
-		 * They're all going to txt2.
-		 */
-		while ((line = tin_fgets(fp, FALSE))) {
-			if (*line != '\0') {
-				txt2 = TRUE;
-				break;
-			}
-		}
-
-		if (txt2) {
-			if ((*txt2fp = tmpfile()) == NULL) {
-				txt2 = FALSE;
-				goto error;
-			}
-
-			fprintf(*txt2fp, "%s\n", line);
-			while ((line = tin_fgets(fp, FALSE)))
-				fprintf(*txt2fp, "%s\n", line);
-		}
+		while ((line = tin_fgets(fp, FALSE)))
+			fprintf(*textfp, "%s\n", line);
 	}
 
 	fclose(fp);
 	return TRUE;
+}
 
-error:
+
+/*
+ * Compose a mail consisting of a sole text/plain MIME part.
+ */
+void
+compose_mail_text_plain(
+	const char *filename,
+	struct t_group *group)
+{
+	rfc15211522_encode(filename, txt_mime_encodings[tinrc.mail_mime_encoding], group, tinrc.mail_8bit_header, TRUE);
+}
+
+
+/*
+ * Compose a mail consisting of an optional text/plain and a message/rfc822
+ * part.
+ *
+ * At this point, the file denoted by `filename' contains some common headers
+ * and any text the user entered. The file `articlefp' contains the forwarded
+ * article in raw form.
+ */
+void
+compose_mail_mime_forwarded(
+	const char *filename,
+	FILE *articlefp,
+	t_bool include_text,
+	struct t_group *group)
+{
+	FILE *fp;
+	FILE *headerfp;
+	FILE *textfp = NULL;
+	FILE *entityfp;
+	char *line;
+	constext* encoding = txt_mime_encodings[tinrc.mail_mime_encoding];
+	t_bool allow_8bit_header = tinrc.mail_8bit_header;
+	t_bool _8bit;
+
+	/* Split mail into headers and text */
+	if (!split_mail(filename, &headerfp, include_text ? &textfp : NULL))
+		return;
+
+	/* Encode header and text */
+	rewind(headerfp);
+	do_rfc15211522_encode(headerfp, encoding, group, allow_8bit_header, TRUE, TRUE);
+
+	if (textfp) {
+		rewind(textfp);
+		do_rfc15211522_encode(textfp, encoding, group, allow_8bit_header, TRUE, FALSE);
+	}
+
+	/* Compose top-level MIME entity */
+	if (include_text)
+		entityfp = compose_multipart_mixed(textfp, articlefp);
+	else
+		entityfp = compose_message_rfc822(articlefp, &_8bit);
+
+	if (entityfp == NULL) {
+		fclose(headerfp);
+		if (textfp)
+			fclose(textfp);
+		return;
+	}
+
+	/* Put it all together */
+	if ((fp = fopen(filename, "w")) == NULL)
+		return;
+
+	rewind(headerfp);
+	while ((line = tin_fgets(headerfp, TRUE))) {
+		if (*line != '\0')
+			fprintf(fp, "%s\n", line);
+	}
+	fprintf(fp, "MIME-Version: %s\n", MIME_SUPPORTED_VERSION);
+	rewind(entityfp);
+	copy_fp(entityfp, fp);
+
+	/* Clean up */
 	fclose(fp);
-	fclose(*headerfp);
-	if (txt1)
-		fclose(*txt1fp);
-	if (article)
-		fclose(*articlefp);
-	if (txt2)
-		fclose(*txt2fp);
+	fclose(headerfp);
+	fclose(entityfp);
+	if (textfp)
+		fclose(textfp);
+}
+
+
+/*
+ * Compose a message/rfc822 MIME entity containing articlefp.
+ */
+static FILE *
+compose_message_rfc822(
+	FILE *articlefp,
+	t_bool *is_8bit)
+{
+	FILE *fp;
+
+	if ((fp = tmpfile()) == NULL)
+		return NULL;
+
+	*is_8bit = contains_8bit_characters(articlefp);
+
+	/* Header: CT, CD, CTE */
+	fprintf(fp, "Content-Type: message/rfc822\n");
+	fprintf(fp, "Content-Disposition: inline\n");
+	fprintf(fp, "Content-Transfer-Encoding: %s\n", *is_8bit ? txt_8bit : txt_7bit);
+	fputc('\n', fp);
+
+	/* Body: articlefp */
+	rewind(articlefp);
+	copy_fp(articlefp, fp);
+
+	return fp;
+}
+
+
+/*
+ * Compose a multipart/mixed MIME entity consisting of a text/plain and a
+ * message/rfc822 part.
+ */
+static FILE *
+compose_multipart_mixed(
+	FILE *textfp,
+	FILE *articlefp)
+{
+	FILE *fp;
+	FILE *messagefp;
+	char boundary[MIME_BOUNDARY_SIZE];
+	t_bool requires_8bit;
+
+	if ((fp = tmpfile()) == NULL)
+		return NULL;
+
+	/* First compose message/rfc822 part (needed for choosing the appropriate CTE) */
+	if ((messagefp = compose_message_rfc822(articlefp, &requires_8bit)) == NULL) {
+		fclose(fp);
+		return NULL;
+	}
+
+	requires_8bit = (requires_8bit || contains_8bit_characters(textfp));
+
+	/* Header: CT with multipart boundary, CTE */
+	generate_mime_boundary(boundary, textfp, articlefp);
+	fprintf(fp, "Content-Type: multipart/mixed; boundary=\"%s\"\n", boundary);
+	fprintf(fp, "Content-Transfer-Encoding: %s\n\n", requires_8bit ? txt_8bit : txt_7bit);
+
+	/*
+	 * preamble
+	 * TODO: -> lang.c
+	 */
+	fprintf(fp, _("This message has been composed in the 'multipart/mixed' MIME-format. If you\n\
+are reading this prefix, your mail reader probably has not yet been modified\n\
+to understand the new format, and some of what follows may look strange.\n\n"));
+
+	/*
+	 * Body: boundary+text, message/rfc822 part, closing boundary
+	 */
+	/* text */
+	fprintf(fp, "--%s\n", boundary);
+	rewind(textfp);
+	copy_fp(textfp, fp);
+	fputc('\n', fp);
+
+	/* message/rfc822 part */
+	fprintf(fp, "--%s\n", boundary);
+	rewind(messagefp);
+	copy_fp(messagefp, fp);
+	fputc('\n', fp);
+
+	/* closing boundary */
+	fprintf(fp, "--%s--\n", boundary);
+	/* TODO: insert an epilogue here? */
+
+	return fp;
+}
+
+
+/*
+ * Determines whether the file denoted by fp contains 8bit characters.
+ */
+static t_bool
+contains_8bit_characters(
+	FILE *fp)
+{
+	char *line;
+
+	rewind(fp);
+	while ((line = tin_fgets(fp, FALSE))) {
+		for ( ; *line != '\0'; line++) {
+			if (is_EIGHT_BIT(line))
+				return TRUE;
+		}
+	}
 
 	return FALSE;
 }
 
 
 /*
- * Compose a forwarded mail from its parts.
- * The resulting mail will be written to the file denoted by filename.
+ * Determines whether any line of the file denoted by fp contains str.
  */
-static void
-compose_forwarded_mail(
-	const char *filename,
-	FILE *headerfp,
-	FILE *txt1fp,
-	FILE *articlefp,
-	FILE *txt2fp,
-	t_bool article_8bit)
+static t_bool
+contains_string(
+	FILE *fp,
+	const char *str)
 {
-	FILE *fp;
 	char *line;
-	char boundary[16];
-	enum { TEXTPLAIN, MESSAGERFC822, MULTIPARTMIXED } toplevel_mime_type;
-	t_bool article;
-	t_bool txt1;
-	t_bool txt2;
 
-	/* Determine which parts to use */
-	article = (articlefp != NULL);
-	txt1 = (txt1fp != NULL);
-	txt2 = (txt2fp != NULL);
-
-	/*
-	 * Determine top-level MIME type:
-	 * txt1 article txt2 => type
-	 *  0     0      0   => text/plain or nothing
-	 *  0     0      1   =>   impossible (txt1 catches all text)
-	 *  0     1      0   => message/rfc822
-	 *  0     1      1   => multipart/mixed (message+txt)
-	 *  1     0      0   => text/plain
-	 *  1     0      1   =>   impossible (txt1 catches all text)
-	 *  1     1      0   => multipart/mixed (txt+message)
-	 *  1     1      1   => multipart/mixed (txt+message+txt)
-	 */
-	if (!txt1 && article && !txt2)
-		toplevel_mime_type = MESSAGERFC822;
-	else if ((txt1 || txt2) && article)
-		toplevel_mime_type = MULTIPARTMIXED;
-	else /* default to text/plain as this never hurts */
-		toplevel_mime_type = TEXTPLAIN;
-
-	/*
-	 * Compose the mail
-	 */
-	if ((fp = fopen(filename, "w")) == NULL)
-		return;
-
-	/* Add common headers, exclude the final blank line */
-	rewind(headerfp);
-	while ((line = tin_fgets(headerfp, TRUE))) {
-		if (*line != '\0')
-			fprintf(fp, "%s\n", line);
+	rewind(fp);
+	while ((line = tin_fgets(fp, FALSE))) {
+		if (strstr(line, str))
+			return TRUE;
 	}
 
-	if (article)
-		rewind(articlefp);
-	if (txt1)
-		rewind(txt1fp);
-	if (txt2)
-		rewind(txt2fp);
-
-	switch (toplevel_mime_type) {
-		case MESSAGERFC822:
-			/* Header: MIME-Version, CT, CD, CTE */
-			fprintf(fp, "MIME-Version: %s\n", MIME_SUPPORTED_VERSION);
-			fprintf(fp, "Content-Type: message/rfc822\n");
-			fprintf(fp, "Content-Disposition: inline\n");
-			fprintf(fp, "Content-Transfer-Encoding: %s\n", article_8bit ? txt_8bit : txt_7bit);
-			fputc('\n', fp);
-			/* Body: articlefp */
-			copy_fp(articlefp, fp);
-			break;
-
-		case MULTIPARTMIXED:
-			/* Header: MIME-Version, CT with multipart boundary */
-			fprintf(fp, "MIME-Version: %s\n", MIME_SUPPORTED_VERSION);
-			generate_mime_boundary(boundary, sizeof(boundary));
-			fprintf(fp, "Content-Type: multipart/mixed; boundary=\"%s\"\n", boundary);
-			/* TODO: check if txt_8bit is really required */
-			fprintf(fp, "Content-Transfer-Encoding: %s\n\n", txt_8bit);
-
-			/*
-			 * preamble
-			 * TODO: -> lang.c
-			 */
-			fprintf(fp, _("This message has been composed in the 'multipart/mixed' MIME-format. If you\n\
-are reading this prefix, your mail reader probably has not yet been modified\n\
-to understand the new format, and some of what follows may look strange.\n\n"));
-
-			/*
-			 * Body: boundary+txt1, boundary+rfc822+article, boundary+txt2, closing-boundary
-			 */
-			/* txt1 */
-			if (txt1) {
-				fprintf(fp, "--%s\n", boundary);
-				copy_fp(txt1fp, fp);
-				fputc('\n', fp);
-			}
-
-			/* article */
-			fprintf(fp, "--%s\n", boundary);
-			fprintf(fp, "Content-Type: message/rfc822\n");
-			fprintf(fp, "Content-Disposition: inline\n");
-			fprintf(fp, "Content-Transfer-Encoding: %s\n", article_8bit ? txt_8bit : txt_7bit);
-			fputc('\n', fp);
-			copy_fp(articlefp, fp);
-			fputc('\n', fp);
-
-			/* txt2 */
-			if (txt2) {
-				fprintf(fp, "--%s\n", boundary);
-				copy_fp(txt2fp, fp);
-				fputc('\n', fp);
-			}
-
-			/* closing boundary */
-			fprintf(fp, "--%s--\n", boundary);
-			/* TODO: insert an epilogue here? */
-			break;
-
-		default: /* text/plain */
-			/* Header: if encoding in txt1: add MIME-Version; CT, CTE are already in txt1 */
-			/* Body: txt1 */
-			if (txt1) {
-				if ((line = tin_fgets(txt1fp, FALSE)) && !strncmp(line, "Content-Type:", 13)) {
-					rewind(txt1fp);
-					fprintf(fp, "MIME-Version: %s\n", MIME_SUPPORTED_VERSION);
-				}
-				copy_fp(txt1fp, fp);
-			}
-			break;
-	}
-
-	fclose(fp);
+	return FALSE;
 }
-
-
-/*
- * Special case of rfc15211522_encode(); used to forward articles by mail.
- * If necessary, the article is wrapped into multipart/mixed with a
- * message/rfc822 part.
- */
-void
-rfc15211522_encode_forwarded(
-	const char *filename,
-	constext *mime_encoding,
-	struct t_group *group,
-	t_bool allow_8bit_header)
-{
-	FILE *headerfp;
-	FILE *txt1fp;
-	FILE *articlefp;
-	FILE *txt2fp;
-	t_bool article;
-	t_bool article_8bit;
-	t_bool txt1;
-	t_bool txt2;
-
-	/* Split mail into header and body parts. */
-	if (split_forwarded_mail(filename, &headerfp, &txt1fp, &articlefp, &txt2fp, &article_8bit)) {
-		article = (articlefp != NULL);
-		txt1 = (txt1fp != NULL);
-		txt2 = (txt2fp != NULL);
-	} else
-		return;
-
-	/* Now encode the headers and the (optional) text/plain parts. */
-	rewind(headerfp);
-	do_rfc15211522_encode(headerfp, mime_encoding, group, allow_8bit_header, TRUE, TRUE);
-
-	if (txt1) {
-		rewind(txt1fp);
-		do_rfc15211522_encode(txt1fp, mime_encoding, group, allow_8bit_header, TRUE, FALSE);
-	}
-
-	if (txt2) {
-		rewind(txt2fp);
-		do_rfc15211522_encode(txt2fp, mime_encoding, group, allow_8bit_header, TRUE, FALSE);
-	}
-
-	/* Compose the mail. */
-	compose_forwarded_mail(filename, headerfp, txt1fp, articlefp, txt2fp, article_8bit);
-
-	/* Clean up. */
-	fclose(headerfp);
-	if (txt1)
-		fclose(txt1fp);
-	if (article)
-		fclose(articlefp);
-	if (txt2)
-		fclose(txt2fp);
-}
-

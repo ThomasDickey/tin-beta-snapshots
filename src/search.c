@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-01-05
+ *  Updated   : 2004-03-14
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -55,8 +55,8 @@ static int search_group(t_bool forward, int current_art, char *searchbuff, int (
 /*
  * Kludge to maintain some internal state for body search
  */
-static int total_cnt = 0, curr_cnt = 0;
 int srch_lineno = -1;
+static int total_cnt = 0, curr_cnt = 0;
 
 /*
  * Used by article and body search - this saves passing around large numbers
@@ -87,8 +87,7 @@ get_search_pattern(
 	if (repeat) {
 		*forward = last_forward;
 		my_strncpy(def, last_pattern, LEN);
-	}
-	else {
+	} else {
 		sprintf(tmpbuf, (*forward ? fwd_msg : bwd_msg), def);
 
 		if (!prompt_string_default(tmpbuf, def, _(txt_no_search_string), which_hist))
@@ -181,6 +180,7 @@ search_config(
 		n += incr;
 		free(buf);
 	} while (n != current);
+
 	clear_message();
 	if (tinrc.wildcard) {
 		FreeAndNull(search_regex.re);
@@ -439,7 +439,7 @@ search_group(
 		}
 
 		/* Only search displayed articles */
-		if (CURR_GROUP.attribute->show_only_unread && arts[i].status != ART_UNREAD)
+		if (curr_group->attribute->show_only_unread && arts[i].status != ART_UNREAD)
 			continue;
 
 		ret = search_func(i, searchbuff);
@@ -519,7 +519,7 @@ search_article(
 	t_bool wrap = FALSE;
 
 	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_art, HIST_ART_SEARCH)))
-		return FALSE;
+		return 0;
 
 	if (tinrc.wildcard && !(compile_regex(pattern, &search_regex, PCRE_CASELESS)))
 		return -1;

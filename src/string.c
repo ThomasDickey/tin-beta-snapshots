@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2003-12-28
+ *  Updated   : 2004-06-07
  *  Notes     :
  *
  * Copyright (c) 1997-2004 Urs Janssen <urs@tin.org>
@@ -52,10 +52,24 @@
 #		endif /* HAVE_LIBIDN && HAVE_STRINGPREP_H && !_STRINGPREP_H */
 #	endif /* HAVE_LIBICUUC */
 #endif /* HAVE_UNICODE_NORMALIZATION */
+#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#	if defined(HAVE_UNICODE_UBIDI_H) && !defined(UBIDI_H)
+#		include <unicode/ubidi.h>
+#	endif /* HAVE_UNICODE_UBIDI_H && !UBIDI_H */
+#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && !NO_LOCALE */
 
 /*
  * this file needs some work
  */
+
+/*
+ * local prototypes
+ */
+#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	static UChar *char2UChar(const char *str);
+	static char *UChar2char(const UChar *ustr);
+#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && !NO_LOCALE */
+
 
 /*
  * special ltoa()
@@ -658,6 +672,48 @@ strrstr(
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 /*
+ * convert from char* to wchar_t*
+ */
+wchar_t *
+char2wchar_t(
+	const char *str)
+{
+	size_t len;
+	wchar_t *wstr;
+
+	len = mbstowcs(NULL, str, 0);
+	if (len == (size_t) (-1))
+		return NULL;
+
+	wstr = my_malloc(sizeof(wchar_t) * (len + 1));
+	mbstowcs(wstr, str, len + 1);
+
+	return wstr;
+}
+
+
+/*
+ * convert from wchar_t* to char*
+ */
+char *
+wchar_t2char(
+	const wchar_t *wstr)
+{
+	size_t len;
+	char *str;
+
+	len = wcstombs(NULL, wstr, 0);
+	if (len == (size_t) (-1))
+		return NULL;
+
+	str = my_malloc(len + 1);
+	wcstombs(str, wstr, len + 1);
+
+	return str;
+}
+
+
+/*
  * copy wide-chars from '*from' to '*to' until 'columns' columns are filled
  * pad with spaces if necessary
  */
@@ -711,28 +767,27 @@ strunc(
 	int len)
 {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	char *tmp;
 	wchar_t *wmessage, *wbuf;
-	size_t mesg_len;
+	size_t wbuf_len;
 
-	mesg_len = mbstowcs(NULL, message, 0);
-	if (mesg_len != (size_t) (-1)) {
-		wmessage = my_malloc(sizeof(wchar_t) * (mesg_len + 1));
-		wbuf = my_malloc(sizeof(wchar_t) * (mesg_len + 1));
+	if ((wmessage = char2wchar_t(message)) != NULL) {
+		wbuf_len = wcslen(wmessage) + 1;
+		wbuf = my_malloc(sizeof(wchar_t) * wbuf_len);
 
-		if (mbstowcs(wmessage, message, mesg_len + 1) != (size_t) (-1)) {
-			wstrunc(wmessage, wbuf, mesg_len + 1, len);
-			if (wcstombs(buf, wbuf, buf_len) != (size_t) (-1)) {
-				buf[buf_len - 1] = '\0';
-
-				free(wbuf);
-				free(wmessage);
-
-				return buf;
-			}
-		}
-
-		free(wbuf);
+		wstrunc(wmessage, wbuf, wbuf_len, len);
 		free(wmessage);
+
+		if ((tmp = wchar_t2char(wbuf)) != NULL) {
+			strncpy(buf, tmp, buf_len);
+			buf[buf_len - 1] = '\0';
+
+			free(wbuf);
+			free(tmp);
+
+			return buf;
+		}
+		free(wbuf);
 	}
 	/* something went wrong using wide-chars, default back to normal chars */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -818,6 +873,59 @@ my_wcsdup(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 
+#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+/*
+ * convert from char* (UTF-8) to UChar* (UTF-16)
+ * ICU expects strings as UChar*
+ */
+static UChar *
+char2UChar(
+	const char *str)
+{
+	int32_t needed;
+	UChar *ustr;
+	UErrorCode status = U_ZERO_ERROR;
+
+	u_strFromUTF8(NULL, 0, &needed, str, -1, &status);
+	status = U_ZERO_ERROR;		/* reset status */
+	ustr = my_malloc(sizeof(UChar) * (needed + 1));
+	u_strFromUTF8(ustr, needed + 1, NULL, str, -1, &status);
+
+	if (U_FAILURE(status)) {
+		/* clean up and return NULL */
+		free(ustr);
+		return NULL;
+	}
+	return ustr;
+}
+
+
+/*
+ * convert from UChar* (UTF-16) to char* (UTF-8)
+ */
+static char *
+UChar2char(
+	const UChar *ustr)
+{
+	int32_t needed;
+	char *str;
+	UErrorCode status = U_ZERO_ERROR;
+
+	u_strToUTF8(NULL, 0, &needed, ustr, -1, &status);
+	status = U_ZERO_ERROR;		/* reset status */
+	str = my_malloc(needed + 1);
+	u_strToUTF8(str, needed + 1, NULL, ustr, -1, &status);
+
+	if (U_FAILURE(status)) {
+		/* clean up and return NULL */
+		free(str);
+		return NULL;
+	}
+	return str;
+}
+#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && !NO_LOCALE */
+
+
 #ifdef HAVE_UNICODE_NORMALIZATION
 /*
  * unicode normalization
@@ -834,7 +942,7 @@ normalize(
 {
 	char *buf, *tmp;
 
-	/* make sure str is valid UTF8 */
+	/* make sure str is valid UTF-8 */
 	tmp = my_strdup(str);
 	utf8_valid(tmp);
 
@@ -843,7 +951,7 @@ normalize(
 
 #	ifdef HAVE_LIBICUUC
 	{ /* ICU */
-		int32_t buf_len, ustr_len, needed, norm_len;
+		int32_t needed, norm_len;
 		UChar *ustr, *norm;
 		UErrorCode status = U_ZERO_ERROR;
 		UNormalizationMode mode;
@@ -867,21 +975,13 @@ normalize(
 		}
 
 		/* convert to UTF-16 which is used internally by ICU */
-		u_strFromUTF8(NULL, 0, &needed, tmp, (int32_t) strlen(tmp), &status);
-		status = U_ZERO_ERROR;		/* reset status */
-		ustr_len = needed + 1;
-		ustr = (UChar *) my_malloc(sizeof(UChar) * ustr_len);
-		u_strFromUTF8(ustr, ustr_len, &needed, tmp, (int32_t) strlen(tmp), &status);
-		if (U_FAILURE(status)) {
-			/* something went wrong, return the original string (as valid UTF8) */
-			free(ustr);
+		if ((ustr = char2UChar(tmp)) == NULL) /* something went wrong, return the original string (as valid UTF8) */
 			return tmp;
-		}
 
 		needed = unorm_normalize(ustr, -1, mode, 0 , NULL, 0, &status);
 		status = U_ZERO_ERROR;		/* reset status */
 		norm_len = needed + 1;
-		norm = (UChar *) my_malloc(sizeof(UChar) * norm_len);
+		norm = my_malloc(sizeof(UChar) * norm_len);
 		needed = unorm_normalize(ustr, -1, mode, 0 , norm, norm_len, &status);
 		if (U_FAILURE(status)) {
 			/* something went wrong, return the original string (as valid UTF8) */
@@ -891,16 +991,8 @@ normalize(
 		}
 
 		/* convert back to UTF-8 */
-		u_strToUTF8(NULL, 0, &needed, norm, -1, &status);
-		status = U_ZERO_ERROR;		/* reset status */
-		buf_len = needed + 1;
-		buf = my_malloc(buf_len);
-		u_strToUTF8(buf, buf_len, &needed, norm, -1, &status);
-		if (U_FAILURE(status)) {
-			/* something went wrong, return the original string (as valid UTF8) */
-			free(buf);
+		if ((buf = UChar2char(norm)) == NULL) /* something went wrong, return the original string (as valid UTF8) */
 			buf = tmp;
-		}
 
 		free(ustr);
 		free(norm);
@@ -950,3 +1042,77 @@ fmt_string(
 
 	return str;
 }
+
+
+#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
+/*
+ * prepare a string with bi-directional text for display
+ * (converts from logical order to visual order)
+ *
+ * str: original string (in UTF-8)
+ * is_rtl: pointer to a t_bool where the direction of the resulting string
+ * will be stored (left-to-right = FALSE, right-to-left = TRUE)
+ * returns a pointer to the reordered string.
+ * In case of error NULL is returned and the value of is_rtl indefinite
+ */
+char *
+render_bidi(
+	const char *str,
+	t_bool *is_rtl)
+{
+	int32_t ustr_len;
+	char *tmp;
+	UBiDi *bidi_data;
+	UChar *ustr, *ustr_reordered;
+	UErrorCode status = U_ZERO_ERROR;
+
+	*is_rtl = FALSE;
+
+	/* make sure str is valid UTF-8 */
+	tmp = my_strdup(str);
+	utf8_valid(tmp);
+
+	if ((ustr = char2UChar(tmp)) == NULL) {
+		free(tmp);
+		return NULL;
+	}
+	free(tmp);	/* tmp is not needed anymore */
+
+	bidi_data = ubidi_open();
+	ubidi_setPara(bidi_data, ustr, -1, UBIDI_DEFAULT_LTR, NULL, &status);
+	if (U_FAILURE(status)) {
+		ubidi_close(bidi_data);
+		free(ustr);
+		return NULL;
+	}
+
+	ustr_len = u_strlen(ustr) + 1;
+	ustr_reordered = my_malloc(sizeof(UChar) * ustr_len);
+	ubidi_writeReordered(bidi_data, ustr_reordered, ustr_len, UBIDI_REMOVE_BIDI_CONTROLS|UBIDI_DO_MIRRORING, &status);
+	if (U_FAILURE(status)) {
+		ubidi_close(bidi_data);
+		free(ustr);
+		free(ustr_reordered);
+		return NULL;
+	}
+
+	/*
+	 * determine the direction of the text
+	 * is the bidi level even => left-to-right
+	 * is the bidi level odd  => right-to-left
+	 */
+	*is_rtl = (t_bool) (ubidi_getParaLevel(bidi_data) & 1);
+	ubidi_close(bidi_data);
+
+	/*
+	 * No need to check the return value. In both cases we must clean up
+	 * and return the returned value, will it be a pointer to the
+	 * resulting string or NULL in case of failure.
+	 */
+	tmp = UChar2char(ustr_reordered);
+	free(ustr);
+	free(ustr_reordered);
+
+	return tmp;
+}
+#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */

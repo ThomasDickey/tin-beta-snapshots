@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-03-03
+ *  Updated   : 2004-06-07
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -82,9 +82,6 @@ static void write_input_history_file(void);
 #ifdef CHARSET_CONVERSION
 	static t_bool buffer_to_local(char **line, int *max_line_len, const char *network_charset, const char *local_charset);
 #endif /* CHARSET_CONVERSION */
-#if (defined(MIME_STRICT_CHARSET) && !defined(NO_LOCALE)) || defined(CHARSET_CONVERSION)
-	static void buffer_to_ascii(char *c);
-#endif /* (MIME_STRICT_CHARSET && !NO_LOCALE) || CHARSET_CONVERSION */
 #if 0 /* currently unused */
 	static t_bool stat_article(long art, const char *group_path);
 #endif /* 0 */
@@ -829,7 +826,7 @@ draw_percent_mark(
 	char buf[32]; /* should be big enough */
 	int len;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t wbuf[32];
+	wchar_t *wbuf;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	if (NOTESLINES <= 0)
@@ -841,10 +838,10 @@ draw_percent_mark(
 	clear_message();
 	snprintf(buf, sizeof(buf), "%s(%d%%) [%ld/%ld]", _(txt_more), (int) (cur_num * 100 / max_num), cur_num, max_num);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if (mbstowcs(wbuf, buf, ARRAY_SIZE(wbuf)) != (size_t) (-1)) {
-		wbuf[ARRAY_SIZE(wbuf) - 1] = (wchar_t) '\0';
+	if ((wbuf = char2wchar_t(buf)) != NULL) {
 		wconvert_to_printable(wbuf);
-		len = wcswidth(wbuf, ARRAY_SIZE(wbuf));
+		len = wcswidth(wbuf, wcslen(wbuf) + 1);
+		free(wbuf);
 	} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		len = (int) strlen(buf);
@@ -937,7 +934,7 @@ eat_re(
 	char *s,
 	t_bool eat_was)
 {
-	int data, slen;
+	int data;
 	int offsets[6];
 	int size_offsets = ARRAY_SIZE(offsets);
 
@@ -945,15 +942,13 @@ eat_re(
 		return "<No subject>"; /* also used in art.c:parse_headers() */
 
 	do {
-		slen = strlen(s);
-		data = pcre_exec(strip_re_regex.re, strip_re_regex.extra, s, slen, 0, 0, offsets, size_offsets);
+		data = pcre_exec(strip_re_regex.re, strip_re_regex.extra, s, strlen(s), 0, 0, offsets, size_offsets);
 		if (offsets[0] == 0)
 			s += offsets[1];
 	} while (data > 0);
 
 	if (eat_was) do {
-		slen = strlen(s);
-		data = pcre_exec(strip_was_regex.re, strip_was_regex.extra, s, slen, 0, 0, offsets, size_offsets);
+		data = pcre_exec(strip_was_regex.re, strip_was_regex.extra, s, strlen(s), 0, 0, offsets, size_offsets);
 		if (offsets[0] > 0)
 			s[offsets[0]] = '\0';
 	} while (data > 0);
@@ -1004,7 +999,7 @@ get_author(
 	char *p = idna_decode(art->from);
 	int author;
 
-	author = ((thread && !show_subject) ? SHOW_FROM_BOTH : CURR_GROUP.attribute->show_author);
+	author = ((thread && !show_subject) ? SHOW_FROM_BOTH : curr_group->attribute->show_author);
 
 	switch (author) {
 		case SHOW_FROM_ADDR:
@@ -2438,7 +2433,7 @@ buffer_to_local(
 								 * outbuf was too small
 								 * As some input could be converted successfully
 								 * and we don`t know where the last complete char
-								 * ends, redo the last conversation completely.
+								 * ends, redo the last conversion completely.
 								 */
 								/* resize the output buffer */
 								obuf = my_realloc(obuf, osize * 2 + 1);
@@ -2540,18 +2535,20 @@ buffer_to_network(
 #endif /* CHARSET_CONVERSION */
 
 
-#if (defined(MIME_STRICT_CHARSET) && !defined(NO_LOCALE)) || defined(CHARSET_CONVERSION)
-static void
+char *
 buffer_to_ascii(
 	char *c)
 {
-	while (*c != '\0') { /* reduce to US-ASCII, other non-prints are filtered later */
+	char *a = c;
+
+	while (*c != '\0') {
+		/* reduce to US-ASCII, other non-prints are filtered later */
 		if ((unsigned char) *c >= 128)
 			*c = '?';
 		c++;
 	}
+	return a;
 }
-#endif /* (MIME_STRICT_CHARSET && !NO_LOCALE) || CHARSET_CONVERSION */
 
 
 /*

@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2003-11-18
+ *  Updated   : 2004-03-23
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2004 Iain Lea <iain@bricbrac.de>
@@ -398,7 +398,7 @@ read_groups_descriptions(
 		if (++count % 100 == 0)
 			spin_cursor();
 	}
-	free(groupname);
+	FreeIfNeeded(groupname);
 }
 
 

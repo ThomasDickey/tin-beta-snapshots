@@ -3,7 +3,7 @@
  *  Module    : tags.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-06
- *  Updated   : 2003-12-28
+ *  Updated   : 2004-03-14
  *  Notes     : Split out from other modules
  *
  * Copyright (c) 1999-2004 Jason Faultless <jason@altarstone.com>
@@ -253,7 +253,7 @@ line_is_tagged(
 {
 	int code = 0;
 
-	if (CURR_GROUP.attribute->thread_arts) {
+	if (curr_group->attribute->thread_arts) {
 		int i;
 		for (i = n; i >= 0; i = arts[i].thread) {
 			if (arts[i].tagged > code)
@@ -469,13 +469,13 @@ parse_range(
 	*range_end = -1;
 
 	while (*ptr && state != DONE) {
-		if (isdigit(*ptr)) {
+		if (isdigit((int) *ptr)) {
 			if (state == FINDMAX) {
 				*range_end = atoi(ptr);
 				state = DONE;
 			} else
 				*range_start = atoi(ptr);
-			while (isdigit(*ptr))
+			while (isdigit((int) *ptr))
 				ptr++;
 		} else {
 			switch (*ptr) {
@@ -526,12 +526,12 @@ do_auto_select_arts(
 #	ifdef DEBUG_NEWSRC
 			debug_print_comment("group.c: X command");
 #	endif /* DEBUG_NEWSRC */
-			art_mark(&CURR_GROUP, &arts[i], ART_READ);
+			art_mark(curr_group, &arts[i], ART_READ);
 			arts[i].zombie = TRUE;
 		}
 	}
-	if (CURR_GROUP.attribute->show_only_unread)
-		find_base(&CURR_GROUP);
+	if (curr_group->attribute->show_only_unread)
+		find_base(curr_group);
 
 	grpmenu.curr = 0;
 	show_group_page();
@@ -550,12 +550,12 @@ undo_auto_select_arts(
 #	ifdef DEBUG_NEWSRC
 			debug_print_comment("group.c: + command");
 #	endif /* DEBUG_NEWSRC */
-			art_mark(&CURR_GROUP, &arts[i], ART_UNREAD);
+			art_mark(curr_group, &arts[i], ART_UNREAD);
 			arts[i].zombie = FALSE;
 		}
 	}
-	if (CURR_GROUP.attribute->show_only_unread)
-		find_base(&CURR_GROUP);
+	if (curr_group->attribute->show_only_unread)
+		find_base(curr_group);
 
 	grpmenu.curr = 0;	/* do we want this? */
 	show_group_page();

@@ -106,6 +106,12 @@ o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
 
 New features
 ------------
+o  make kill/hot-menu "Kill/Select pattern scope" walk up the hierarchie
+   level instead of a 3way toggle.
+   (foo.bar.baz.ex.boo -> foo.bar.baz.ex.* -> foo.bar.baz.* foo.bar.* ->
+    foo.bar.* -> foo.* -> *)
+   [20040423 Urs Janssen <urs@tin.org>]
+
 o  add TLS support
    (see draft-ietf-nntpext-tls-nntp-01.txt;
    <http://www.gnu.org/software/gnutls/> might be useful)
@@ -230,11 +236,6 @@ o  check if the articles Subject/From in the pager matches (minus
    if they are higher than the server's high-mark don't trust them (and
    discard the locally cached data).
 
-o  check if server supports HEADERS (if that ever makes into nntp-ext - don't
-   confuse it with LIST HEADERS), if so use
-   "HEADERS - Subject From Date Message-ID References Lines Newsgroups Xref"
-   instead of OVER or XOVER
-
 o  attributes (still) needs some work, some entrys aren't really useful
    on a per group basis but others would (e.g. Reply-To)
    once we have a 'attributes-menu' we could remove most of the
@@ -260,6 +261,8 @@ o  add IPv6 support
    newsserver it always uses DNS (gethostbyname()/gethostbyaddr() checked
    /etc/hosts first) and getaddrinfo() seems to have a (huge) delay in some
    cases. use getipnodebyname()/getipnodebyaddr() (if available) instead.
+   check for gethostbyaddr_r()/gethostbyname_r() and use them instead
+   of gethostbyaddr()/gethostbyname() if available.
 
 o  add cmd-line/tinrc-switch to fetch only headers of unread articles;
    in that case, make 'r' reading the rest of the articles
@@ -640,6 +643,10 @@ o  tin.defaults could use more documentation in manpage (tin.5)
 
 Not yet classified
 ------------------
+o  should 'tin -z foo.bar' only start up if there is any unread news in
+   foo.bar?
+   [20040325 Urs Janssen <urs@tin.org>]
+
 o  trn uses ~/.nntpauth (format is "^server\s+user\s+password"),
    shall we also try ~/.nntpauth if we can't find a matching entry
    in ~/.newsauth?

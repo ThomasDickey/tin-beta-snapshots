@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-02-21
+ *  Updated   : 2004-03-16
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -70,16 +70,16 @@ static int enter_thread(int depth, t_pagerinfo *page);
 static int group_catchup(int ch);
 static int group_left(void);
 static int group_right(void);
-static int tab_pressed(void);
 static int prompt_getart_limit(void);
+static int tab_pressed(void);
 static void build_sline(int i);
+static void build_multipart_header(char *dest, int maxlen, const char *src, int cmplen, int have, int total);
 static void draw_subject_arrow(void);
+static void mark_thd_read(struct t_group *group, t_bool range_active);
 static void show_group_title(t_bool clear_title);
 static void show_tagged_lines(void);
 static void toggle_read_unread(t_bool force);
 static void update_group_page(void);
-static void build_multipart_header(char *dest, int maxlen, const char *src, int cmplen, int have, int total);
-static void mark_thd_read(struct t_group *group, t_bool range_active);
 
 /*
  * grpmenu.curr is an index into base[] and so equates to the cursor location
@@ -149,7 +149,6 @@ group_page(
 	int ch = 0;
 	int i, n, ii;
 	int old_top = 0;
-	int old_group_top;
 	int ret_code = 0;			/* Set to < 0 when it is time to leave this menu */
 	int thread_depth;	/* Starting depth in threads we enter */
 	long old_artnum = 0L;
@@ -202,8 +201,7 @@ group_page(
 		if ((ch = handle_keypad(group_left, group_right, &menukeymap.group_nav)) == iKeySearchRepeat) {
 			ch = i_key_search_last;
 			repeat_search = TRUE;
-		}
-		else
+		} else
 			repeat_search = FALSE;
 
 		switch (ch) {
@@ -279,7 +277,7 @@ group_page(
 				}
 				break;
 
-			case iKeySearchAuthF:	/* author forward/backward  search */
+			case iKeySearchAuthF:	/* author forward/backward search */
 			case iKeySearchAuthB:
 				if ((thread_depth = do_search(SEARCH_AUTH, (ch == iKeySearchAuthF), repeat_search)) != 0)
 					ret_code = enter_thread(thread_depth, NULL);
@@ -404,15 +402,8 @@ group_page(
 				break;
 
 			case iKeyGroupGoto:	/* choose a new group by name */
-				old_group_top = selmenu.max;
 				n = choose_new_group();
 				if (n >= 0 && n != selmenu.curr) {
-					/*
-					 * if we added a group, set the length as appropriate
-					 * for the group selection display
-					 */
-					if (old_group_top != selmenu.max)
-						set_groupname_len(FALSE);
 					selmenu.curr = n;
 					ret_code = GRP_ENTER;
 				}
@@ -561,12 +552,11 @@ group_page(
 
 			case iKeyGroupTagParts: /* tag all in order */
 				if (0 <= grpmenu.curr) {
-					i = tag_multipart(grpmenu.curr);
-					/*
-					 * on success, move the pointer to the next
-					 * untagged article just for ease of use's sake
-					 */
-					if (i != 0) {
+					if (tag_multipart(grpmenu.curr) != 0) {
+						/*
+						 * on success, move the pointer to the next
+						 * untagged article just for ease of use's sake
+						 */
 						n = grpmenu.curr;
 						update_group_page();
 						do {
@@ -679,13 +669,11 @@ group_page(
 				break;
 
 			case iKeyGroupMarkArtUnread:	/* mark base article of thread unread */
-				{
+				if (grpmenu.curr < 0)
+					info_message(_(txt_no_arts));
+				else {
 					const char *ptr;
 
-					if (grpmenu.curr < 0) {
-						info_message(_(txt_no_arts));
-						break;
-					}
 					if (range_active) {
 						/*
 						 * We are tied to following base[] here, not arts[], as we operate on
@@ -712,17 +700,14 @@ group_page(
 					draw_line(grpmenu.curr, MAGIC);
 					draw_subject_arrow();
 					info_message(_(txt_marked_as_unread), ptr);
-					break;
 				}
+				break;
 
 			case iKeyGroupMarkThdUnread:	/* mark whole thread as unread */
-				{
+				if (grpmenu.curr < 0)
+					info_message(_(txt_no_arts));
+				else {
 					const char *ptr;
-
-					if (grpmenu.curr < 0) {
-						info_message(_(txt_no_arts));
-						break;
-					}
 
 					/*
 					 * We process all articles in case the threading changed since
@@ -748,8 +733,8 @@ group_page(
 					draw_line(grpmenu.curr, MAGIC);
 					draw_subject_arrow();
 					info_message(_(txt_marked_as_unread), ptr);
-					break;
 				}
+				break;
 
 			case iKeyGroupSelThd:	/* mark thread as selected */
 			case iKeyGroupToggleThdSel:	/* toggle thread */

@@ -950,35 +950,6 @@ build_references(
 			 *
 			 * TODO: do this in a single pass
 			 */
-
-#if 0 /* overcomplex */
-
-			s = art->refs + strlen (art->refs) - 1;
-
-			/*
-			 * Trim trailing blanks
-			 */
-			while ((s > art->refs) && ((*s == ' ') || (*s == '\t')))
-				*s-- = '\0';
-			/*
-			 * Skip over supposed Message-ID
-			 */
-			while ((s > art->refs) && (*s != ' ') && (*s != '\t'))
-				s--;
-			/*
-			 * Move to Message-ID start
-			 */
-			if ((*s == ' ') || (*s == '\t'))
-				s++;
-
-			if (!strcmp(art->msgid, s)) {
-				/*
-				 * Remove circular reference to current article
-				 */
-				DEBUG_PRINT((dbgfd, "removing circular reference to: %s\n", s));
-				*s = '\0';
-			}
-#else
 			if ((s = strrchr(art->refs, '<')) != NULL) {
 				if (!strcmp(art->msgid, s)) {
 					/*
@@ -988,8 +959,6 @@ build_references(
 					*s = '\0';
 				}
 			}
-#endif /* 0 */
-
 			if (s != NULL) {
 				if (valid_msgid(art->msgid))
 					art->refptr = add_msgid(MSGID_REF, art->msgid, add_msgid(REF_REF, s, NULL));
@@ -1002,7 +971,6 @@ build_references(
 		} else
 			if (valid_msgid(art->msgid))
 				art->refptr = add_msgid(MSGID_REF, art->msgid, NULL);
-
 		FreeAndNull(art->msgid);	/* Now cached - discard this */
 	}
 
@@ -1023,7 +991,7 @@ build_references(
 
 		refs = parse_references(art->refs);
 
-		if (art->refptr->parent && valid_msgid(art->refptr->parent->txt))
+		if (art->refptr && art->refptr->parent && valid_msgid(art->refptr->parent->txt))
 			add_msgid(REF_REF, art->refptr->parent->txt, refs);
 
 		FreeAndNull(art->refs);

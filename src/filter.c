@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2004-01-10
+ *  Updated   : 2004-06-07
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -295,7 +295,7 @@ read_filter_file(
 	FILE *fp;
 	char buf[HEADER_LEN];
 	char scope[HEADER_LEN];
-	char comment_line[LEN];  /* one line of comment */
+	char comment_line[LEN];	/* one line of comment */
 	char subj[HEADER_LEN];
 	char from[HEADER_LEN];
 	char msgid[HEADER_LEN];
@@ -307,8 +307,8 @@ read_filter_file(
 	int icase = 0;
 	int score = 0;
 	long secs = 0L;
-	struct t_filter_comment *comment;
-	struct t_filter *ptr;
+	struct t_filter_comment *comment = NULL;
+	struct t_filter *ptr = NULL;
 	t_bool expired = FALSE;
 	t_bool expired_time = FALSE;
 	time_t current_secs = (time_t) 0;
@@ -329,9 +329,6 @@ read_filter_file(
 	if (!first_read)
 		free_filter_array(&glob_filter);
 
-	ptr = (struct t_filter *) 0;
-	comment = (struct t_filter_comment *) 0;
-
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
 		if (*buf == '#' || *buf == '\n') {
 			if (upgrade == RC_CHECK && first_read) {
@@ -345,287 +342,277 @@ read_filter_file(
 		}
 
 		switch (tolower((unsigned char) buf[0])) {
-		case 'c':
-			if (match_integer(buf + 1, "ase=", &icase, 1)) {
-				if (ptr && !expired_time)
-					ptr[i].icase = (unsigned) icase;
+			case 'c':
+				if (match_integer(buf + 1, "ase=", &icase, 1)) {
+					if (ptr && !expired_time)
+						ptr[i].icase = (unsigned) icase;
 
+					break;
+				}
+				if (match_string(buf + 1, "omment=", comment_line, sizeof(comment_line)))
+					comment = add_filter_comment(comment, comment_line);
 				break;
-			}
-			if (match_string(buf + 1, "omment=", comment_line, sizeof(comment_line))) {
-				comment = add_filter_comment(comment, comment_line);
-				break;
-			}
-			break;
 
-		case 'f':
-			if (match_string(buf + 1, "rom=", from, sizeof(from))) {
-				if (ptr && !expired_time) {
-					if (tinrc.wildcard && ptr[i].from != NULL) {
-						/* merge with already read value */
-						ptr[i].from = my_realloc(ptr[i].from, strlen(ptr[i].from) + strlen(from) + 2);
-						strcat(ptr[i].from, "|");
-						strcat(ptr[i].from, from);
-					} else {
-						FreeIfNeeded(ptr[i].from);
-						ptr[i].from = my_strdup(from);
+			case 'f':
+				if (match_string(buf + 1, "rom=", from, sizeof(from))) {
+					if (ptr && !expired_time) {
+						if (tinrc.wildcard && ptr[i].from != NULL) {
+							/* merge with already read value */
+							ptr[i].from = my_realloc(ptr[i].from, strlen(ptr[i].from) + strlen(from) + 2);
+							strcat(ptr[i].from, "|");
+							strcat(ptr[i].from, from);
+						} else {
+							FreeIfNeeded(ptr[i].from);
+							ptr[i].from = my_strdup(from);
+						}
 					}
 				}
 				break;
-			}
-			break;
 
-		case 'g':
-			if (match_string(buf + 1, "roup=", scope, sizeof(scope))) {
+			case 'g':
+				if (match_string(buf + 1, "roup=", scope, sizeof(scope))) {
 #ifdef DEBUG
-				if (debug) {
-					my_printf("group=[%s] num=[%d]\n", scope, glob_filter.num);
-					my_flush();
-				}
+					if (debug) {
+						my_printf("group=[%s] num=[%d]\n", scope, glob_filter.num);
+						my_flush();
+					}
 #endif /* DEBUG */
-				if (glob_filter.num >= glob_filter.max)
-					expand_filter_array(&glob_filter);
+					if (glob_filter.num >= glob_filter.max)
+						expand_filter_array(&glob_filter);
 
-				ptr = glob_filter.filter;
-				i = glob_filter.num++;
-				set_filter(&ptr[i]);
-				expired_time = FALSE;
-				ptr[i].scope = my_strdup(scope);
-				if (comment != NULL) {
-					ptr[i].comment = copy_filter_comment(comment, ptr[i].comment);
-					comment = free_filter_comment(comment);
+					ptr = glob_filter.filter;
+					i = glob_filter.num++;
+					set_filter(&ptr[i]);
+					expired_time = FALSE;
+					ptr[i].scope = my_strdup(scope);
+					if (comment != NULL) {
+						ptr[i].comment = copy_filter_comment(comment, ptr[i].comment);
+						comment = free_filter_comment(comment);
+					}
+					subj[0] = '\0';
+					from[0] = '\0';
+					msgid[0] = '\0';
+					buffer[0] = '\0';
+					xref[0] = '\0';
+					icase = 0;
+					secs = 0L;
+					break;
 				}
-				subj[0] = '\0';
-				from[0] = '\0';
-				msgid[0] = '\0';
-				buffer[0] = '\0';
-				xref[0] = '\0';
-				icase = 0;
-				secs = 0L;
-				break;
-			}
-			if (match_string(buf + 1, "nksa=", gnksa, sizeof(gnksa))) {
-				if (ptr && !expired_time) {
-					if (gnksa[0] == '<') {
-						ptr[i].gnksa_cmp = FILTER_LINES_LT;
-						ptr[i].gnksa_num = atoi(&gnksa[1]);
-					} else if (gnksa[0] == '>') {
-						ptr[i].gnksa_cmp = FILTER_LINES_GT;
-						ptr[i].gnksa_num = atoi(&gnksa[1]);
-					} else {
-						ptr[i].gnksa_cmp = FILTER_LINES_EQ;
-						ptr[i].gnksa_num = atoi(gnksa);
+				if (match_string(buf + 1, "nksa=", gnksa, sizeof(gnksa))) {
+					if (ptr && !expired_time) {
+						if (gnksa[0] == '<') {
+							ptr[i].gnksa_cmp = FILTER_LINES_LT;
+							ptr[i].gnksa_num = atoi(&gnksa[1]);
+						} else if (gnksa[0] == '>') {
+							ptr[i].gnksa_cmp = FILTER_LINES_GT;
+							ptr[i].gnksa_num = atoi(&gnksa[1]);
+						} else {
+							ptr[i].gnksa_cmp = FILTER_LINES_EQ;
+							ptr[i].gnksa_num = atoi(gnksa);
+						}
 					}
 				}
-				break;
-			}
-		break;
-
-		case 'l':
-			if (match_string(buf + 1, "ines=", buffer, sizeof(buffer))) {
-				if (ptr && !expired_time) {
-					if (buffer[0] == '<') {
-						ptr[i].lines_cmp = FILTER_LINES_LT;
-						ptr[i].lines_num = atoi(&buffer[1]);
-					} else if (buffer[0] == '>') {
-						ptr[i].lines_cmp = FILTER_LINES_GT;
-						ptr[i].lines_num = atoi(&buffer[1]);
-					} else {
-						ptr[i].lines_cmp = FILTER_LINES_EQ;
-						ptr[i].lines_num = atoi(buffer);
-					}
-				}
-				break;
-			}
 			break;
 
-		case 'm':
-			if (match_string(buf + 1, "sgid=", msgid, sizeof(msgid))) {
-				if (ptr && !expired_time) {
-					if (tinrc.wildcard && ptr[i].msgid != NULL && ptr[i].fullref == FILTER_MSGID) {
-						/* merge with already read value */
-						ptr[i].msgid = my_realloc(ptr[i].msgid, strlen(ptr[i].msgid) + strlen(msgid) + 2);
-						strcat(ptr[i].msgid, "|");
-						strcat(ptr[i].msgid, msgid);
-					} else {
-						FreeIfNeeded(ptr[i].msgid);
-						ptr[i].msgid = my_strdup(msgid);
-						ptr[i].fullref = FILTER_MSGID;
+			case 'l':
+				if (match_string(buf + 1, "ines=", buffer, sizeof(buffer))) {
+					if (ptr && !expired_time) {
+						if (buffer[0] == '<') {
+							ptr[i].lines_cmp = FILTER_LINES_LT;
+							ptr[i].lines_num = atoi(&buffer[1]);
+						} else if (buffer[0] == '>') {
+							ptr[i].lines_cmp = FILTER_LINES_GT;
+							ptr[i].lines_num = atoi(&buffer[1]);
+						} else {
+							ptr[i].lines_cmp = FILTER_LINES_EQ;
+							ptr[i].lines_num = atoi(buffer);
+						}
 					}
 				}
 				break;
-			}
-			if (match_string(buf + 1, "sgid_last=", msgid, sizeof(msgid))) {
-				if (ptr && !expired_time) {
-					if (tinrc.wildcard && ptr[i].msgid != NULL && ptr[i].fullref == FILTER_MSGID_LAST) {
-						/* merge with already read value */
-						ptr[i].msgid = my_realloc(ptr[i].msgid, strlen(ptr[i].msgid) + strlen(msgid) + 2);
-						strcat(ptr[i].msgid, "|");
-						strcat(ptr[i].msgid, msgid);
-					} else {
-						FreeIfNeeded(ptr[i].msgid);
-						ptr[i].msgid = my_strdup(msgid);
-						ptr[i].fullref = FILTER_MSGID_LAST;
-					}
-				}
-				break;
-			}
-			if (match_string(buf + 1, "sgid_only=", msgid, sizeof(msgid))) {
-				if (ptr && !expired_time) {
-					if (tinrc.wildcard && ptr[i].msgid != NULL && ptr[i].fullref == FILTER_MSGID_ONLY) {
-						/* merge with already read value */
-						ptr[i].msgid = my_realloc(ptr[i].msgid, strlen(ptr[i].msgid) + strlen(msgid) + 2);
-						strcat(ptr[i].msgid, "|");
-						strcat(ptr[i].msgid, msgid);
-					} else {
-						FreeIfNeeded(ptr[i].msgid);
-						ptr[i].msgid = my_strdup(msgid);
-						ptr[i].fullref = FILTER_MSGID_ONLY;
-					}
-				}
-				break;
-			}
-			break;
 
-		case 'r':
-			if (match_string(buf + 1, "efs_only=", msgid, sizeof(msgid))) {
-				if (ptr && !expired_time) {
-					if (tinrc.wildcard && ptr[i].msgid != NULL && ptr[i].fullref == FILTER_REFS_ONLY) {
-						/* merge with already read value */
-						ptr[i].msgid = my_realloc(ptr[i].msgid, strlen(ptr[i].msgid) + strlen(msgid) + 2);
-						strcat(ptr[i].msgid, "|");
-						strcat(ptr[i].msgid, msgid);
-					} else {
-						FreeIfNeeded(ptr[i].msgid);
-						ptr[i].msgid = my_strdup(msgid);
-						ptr[i].fullref = FILTER_REFS_ONLY;
+			case 'm':
+				if (match_string(buf + 1, "sgid=", msgid, sizeof(msgid))) {
+					if (ptr && !expired_time) {
+						if (tinrc.wildcard && ptr[i].msgid != NULL && ptr[i].fullref == FILTER_MSGID) {
+							/* merge with already read value */
+							ptr[i].msgid = my_realloc(ptr[i].msgid, strlen(ptr[i].msgid) + strlen(msgid) + 2);
+							strcat(ptr[i].msgid, "|");
+							strcat(ptr[i].msgid, msgid);
+						} else {
+							FreeIfNeeded(ptr[i].msgid);
+							ptr[i].msgid = my_strdup(msgid);
+							ptr[i].fullref = FILTER_MSGID;
+						}
+					}
+					break;
+				}
+				if (match_string(buf + 1, "sgid_last=", msgid, sizeof(msgid))) {
+					if (ptr && !expired_time) {
+						if (tinrc.wildcard && ptr[i].msgid != NULL && ptr[i].fullref == FILTER_MSGID_LAST) {
+							/* merge with already read value */
+							ptr[i].msgid = my_realloc(ptr[i].msgid, strlen(ptr[i].msgid) + strlen(msgid) + 2);
+							strcat(ptr[i].msgid, "|");
+							strcat(ptr[i].msgid, msgid);
+						} else {
+							FreeIfNeeded(ptr[i].msgid);
+							ptr[i].msgid = my_strdup(msgid);
+							ptr[i].fullref = FILTER_MSGID_LAST;
+						}
+					}
+					break;
+				}
+				if (match_string(buf + 1, "sgid_only=", msgid, sizeof(msgid))) {
+					if (ptr && !expired_time) {
+						if (tinrc.wildcard && ptr[i].msgid != NULL && ptr[i].fullref == FILTER_MSGID_ONLY) {
+							/* merge with already read value */
+							ptr[i].msgid = my_realloc(ptr[i].msgid, strlen(ptr[i].msgid) + strlen(msgid) + 2);
+							strcat(ptr[i].msgid, "|");
+							strcat(ptr[i].msgid, msgid);
+						} else {
+							FreeIfNeeded(ptr[i].msgid);
+							ptr[i].msgid = my_strdup(msgid);
+							ptr[i].fullref = FILTER_MSGID_ONLY;
+						}
 					}
 				}
 				break;
-			}
-			break;
 
-		case 's':
-			if (match_string(buf + 1, "ubj=", subj, sizeof(subj))) {
-				if (ptr && !expired_time) {
-					if (tinrc.wildcard && ptr[i].subj != NULL) {
-						/* merge with already read value */
-						ptr[i].subj = my_realloc(ptr[i].subj, strlen(ptr[i].subj) + strlen(subj) + 2);
-						strcat(ptr[i].subj, "|");
-						strcat(ptr[i].subj, subj);
-					} else {
-						FreeIfNeeded(ptr[i].subj);
-						ptr[i].subj = my_strdup(subj);
+			case 'r':
+				if (match_string(buf + 1, "efs_only=", msgid, sizeof(msgid))) {
+					if (ptr && !expired_time) {
+						if (tinrc.wildcard && ptr[i].msgid != NULL && ptr[i].fullref == FILTER_REFS_ONLY) {
+							/* merge with already read value */
+							ptr[i].msgid = my_realloc(ptr[i].msgid, strlen(ptr[i].msgid) + strlen(msgid) + 2);
+							strcat(ptr[i].msgid, "|");
+							strcat(ptr[i].msgid, msgid);
+						} else {
+							FreeIfNeeded(ptr[i].msgid);
+							ptr[i].msgid = my_strdup(msgid);
+							ptr[i].fullref = FILTER_REFS_ONLY;
+						}
 					}
 				}
+				break;
+
+			case 's':
+				if (match_string(buf + 1, "ubj=", subj, sizeof(subj))) {
+					if (ptr && !expired_time) {
+						if (tinrc.wildcard && ptr[i].subj != NULL) {
+							/* merge with already read value */
+							ptr[i].subj = my_realloc(ptr[i].subj, strlen(ptr[i].subj) + strlen(subj) + 2);
+							strcat(ptr[i].subj, "|");
+							strcat(ptr[i].subj, subj);
+						} else {
+							FreeIfNeeded(ptr[i].subj);
+							ptr[i].subj = my_strdup(subj);
+						}
+					}
 
 #ifdef DEBUG
-				if (debug) {
-					my_printf("6. buf=[%s]  Gsubj=[%s]\n", ptr[i].subj, glob_filter.filter[i].subj);
-					my_flush();
-				}
+					if (debug) {
+						my_printf("6. buf=[%s]  Gsubj=[%s]\n", ptr[i].subj, glob_filter.filter[i].subj);
+						my_flush();
+					}
 #endif /* DEBUG */
-				break;
-			}
+					break;
+				}
 
-			/*
-			 * read score for rule
-			 */
-			if (match_string(buf + 1, "core=", scbuf, PATH_LEN)) {
-				score = atoi(scbuf);
+				/*
+				 * read score for rule
+				 */
+				if (match_string(buf + 1, "core=", scbuf, PATH_LEN)) {
+					score = atoi(scbuf);
 #ifdef DEBUG
-				if (debug) {
-					my_printf("score=[%d]\n", score);
-					my_flush();
-				}
+					if (debug) {
+						my_printf("score=[%d]\n", score);
+						my_flush();
+					}
 #endif /* DEBUG */
-				if (ptr && !expired_time) {
-					if (score > SCORE_MAX)
-						score = SCORE_MAX;
-					else {
-						if (score < -SCORE_MAX)
-							score = -SCORE_MAX;
+					if (ptr && !expired_time) {
+						if (score > SCORE_MAX)
+							score = SCORE_MAX;
 						else {
-							if (!score) {
-								if (!strncasecmp(scbuf, "kill", 4))
-									score = tinrc.score_kill;
-								else {
-									if (!strncasecmp(scbuf, "hot", 3))
-										score = tinrc.score_select;
+							if (score < -SCORE_MAX)
+								score = -SCORE_MAX;
+							else {
+								if (!score) {
+									if (!strncasecmp(scbuf, "kill", 4))
+										score = tinrc.score_kill;
+									else {
+										if (!strncasecmp(scbuf, "hot", 3))
+											score = tinrc.score_select;
+									}
 								}
 							}
 						}
+						ptr[i].score = score;
 					}
-					ptr[i].score = score;
 				}
 				break;
-			}
-			break;
 
-		case 't':
-			if (match_long(buf + 1, "ime=", &secs)) {
-				if (ptr && !expired_time) {
-					ptr[i].time = (time_t) secs;
-					/* rule expired? */
-					if (secs && current_secs > (time_t) secs) {
+			case 't':
+				if (match_long(buf + 1, "ime=", &secs)) {
+					if (ptr && !expired_time) {
+						ptr[i].time = (time_t) secs;
+						/* rule expired? */
+						if (secs && current_secs > (time_t) secs) {
 #ifdef DEBUG
-						if (debug) {
-							my_printf("EXPIRED  secs=[%lu]  current_secs=[%lu]\n", (unsigned long int) secs, (unsigned long int) current_secs);
-							my_flush();
-						}
+							if (debug) {
+								my_printf("EXPIRED  secs=[%lu]  current_secs=[%lu]\n", (unsigned long int) secs, (unsigned long int) current_secs);
+								my_flush();
+							}
 #endif /* DEBUG */
-						glob_filter.num--;
-						expired_time = TRUE;
-						expired = TRUE;
+							glob_filter.num--;
+							expired_time = TRUE;
+							expired = TRUE;
+						}
 					}
 				}
 				break;
-			}
-			break;
 
-		case 'x':
-			/*
-			 * TODO: fromat has changed in FILTER_VERSION 1.0.0,
-			 *       should we comment out older xref rules like below?
-			 */
-			if (match_string(buf + 1, "ref=", xref, sizeof(xref))) {
-				if (ptr && !expired_time) {
-					if (tinrc.wildcard && ptr[i].xref != NULL) {
-						/* merge with already read value */
-						ptr[i].xref = my_realloc(ptr[i].xref, strlen(ptr[i].xref) + strlen(xref) + 2);
-						strcat(ptr[i].xref, "|");
-						strcat(ptr[i].xref, xref);
-					} else {
-						FreeIfNeeded(ptr[i].xref);
-						ptr[i].xref = my_strdup(xref);
+			case 'x':
+				/*
+				 * TODO: fromat has changed in FILTER_VERSION 1.0.0,
+				 *       should we comment out older xref rules like below?
+				 */
+				if (match_string(buf + 1, "ref=", xref, sizeof(xref))) {
+					if (ptr && !expired_time) {
+						if (tinrc.wildcard && ptr[i].xref != NULL) {
+							/* merge with already read value */
+							ptr[i].xref = my_realloc(ptr[i].xref, strlen(ptr[i].xref) + strlen(xref) + 2);
+							strcat(ptr[i].xref, "|");
+							strcat(ptr[i].xref, xref);
+						} else {
+							FreeIfNeeded(ptr[i].xref);
+							ptr[i].xref = my_strdup(xref);
+						}
+					}
+					break;
+				}
+				if (upgrade == RC_UPGRADE) {
+					char foo[HEADER_LEN];
+
+					if (match_string(buf + 1, "ref_max=", foo, LEN - 1)) {
+						/*
+						 * TODO: add to the right rule, give better explanation, -> lang.c
+						 */
+						snprintf(foo, HEADER_LEN, "%s%s", _("Removed from the previous rule: "), str_trim(buf));
+						comment = add_filter_comment(comment, foo);
+						break;
+					}
+					if (match_string(buf + 1, "ref_score=", foo, LEN - 1)) {
+						/*
+						 * TODO: add to the right rule, give better explanation, -> lang.c
+						 */
+						snprintf(foo, HEADER_LEN, "%s%s", _("Removed from the previous rule: "), str_trim(buf));
+						comment = add_filter_comment(comment, foo);
 					}
 				}
 				break;
-			}
-			if (upgrade == RC_UPGRADE) {
-				char foo[HEADER_LEN];
 
-				if (match_string(buf + 1, "ref_max=", foo, LEN - 1)) {
-					/*
-					 * TODO: add to the right rule, give better explanation, -> lang.c
-					 */
-					snprintf(foo, HEADER_LEN, "%s%s", _("Removed from the previous rule: "), str_trim(buf));
-					comment = (struct t_filter_comment *) add_filter_comment(comment, foo);
-					break;
-				}
-				if (match_string(buf + 1, "ref_score=", foo, LEN - 1)) {
-					/*
-					 * TODO: add to the right rule, give better explanation, -> lang.c
-					 */
-					snprintf(foo, HEADER_LEN, "%s%s", _("Removed from the previous rule: "), str_trim(buf));
-					comment = (struct t_filter_comment *) add_filter_comment(comment, foo);
-					break;
-				}
-			}
-			break;
-
-		default:
-			break;
+			default:
+				break;
 		}
 	}
 	fclose(fp);
@@ -695,7 +682,7 @@ write_filter_array(
 	struct t_filters *ptr)
 {
 	int i;
-	struct t_filter_comment *comment = (struct t_filter_comment *) 0;
+	struct t_filter_comment *comment;
 	time_t theTime = time(NULL);
 
 	if (ptr == NULL)
@@ -852,15 +839,11 @@ get_choice(
 	do {
 		int y;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		size_t wsize;
 		wchar_t *wbuf;
 
-		wsize = mbstowcs(NULL, prompt, 0);
-		if (wsize != (size_t) (-1)) {
-			wbuf = my_malloc(sizeof(wchar_t) * (wsize + 1));
-			mbstowcs(wbuf, prompt, wsize + 1);
+		if ((wbuf = char2wchar_t(prompt)) != NULL) {
 			wconvert_to_printable(wbuf);
-			y = wcswidth(wbuf, wsize + 1);
+			y = wcswidth(wbuf, wcslen(wbuf) + 1);
 			if (y == -1) /* something went wrong, use wcslen() as fallback */
 				y = wcslen(wbuf);
 
@@ -957,21 +940,15 @@ fmt_filter_menu_prompt(
 {
 	char *buf;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	size_t size, wsize;
+	size_t wsize;
 	wchar_t *wbuf, *wbuf2;
 
-	wsize = mbstowcs(NULL, text, 0);
-	if (wsize != (size_t) (-1)) {
-		wbuf = my_malloc(sizeof(wchar_t) * (wsize + 1));
+	if ((wbuf = char2wchar_t(text)) != NULL) {
+		wsize = wcslen(wbuf) + 1;
 		/* make sure there is enough space for padding with ' ' */
-		wbuf2 = my_malloc(sizeof(wchar_t) * (wsize + len + 1));
-		mbstowcs(wbuf, text, wsize + 1);
-		wcspart(wbuf2, wbuf, len, wsize + len + 1, TRUE);
-		size = wcstombs(NULL, wbuf2, 0);
-		if (size != (size_t) (-1)) {
-			buf = my_malloc(size + 1);
-			wcstombs(buf, wbuf2, size + 1);
-		} else {
+		wbuf2 = my_malloc(sizeof(wchar_t) * (wsize + len));
+		wcspart(wbuf2, wbuf, len, wsize + len, TRUE);
+		if ((buf = wchar_t2char(wbuf2)) == NULL) {
 			/* conversion failed, truncate original string */
 			buf = my_malloc(len + 1);
 			snprintf(buf, len + 1, "%-*.*s", len, len, text);
@@ -1825,9 +1802,11 @@ filter_articles(
 						case 1:
 							SET_FILTER(group, i, j);
 							break;
+
 						case -1:
 							error = TRUE;
 							break;
+
 						default:
 							break;
 					}
@@ -2018,9 +1997,9 @@ wait_message(1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].lin
 								*e++ = ',';
 								skip = TRUE;
 							}
-							if (*s != ':' && !isspace(*s) && !skip)
+							if (*s != ':' && !isspace((int) *s) && !skip)
 								*e++ = *s;
-							if (isspace(*s))
+							if (isspace((int) *s))
 								skip = FALSE;
 							s++;
 						}
@@ -2031,9 +2010,11 @@ wait_message(1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].lin
 								case 1:
 									SET_FILTER(group, i, j);
 									break;
+
 								case -1:
 									error = TRUE;
 									break;
+
 								default:
 									break;
 							}

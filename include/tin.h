@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-02-23
+ *  Updated   : 2004-06-06
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -100,7 +100,7 @@
 #include	<signal.h>
 
 enum context { cMain, cArt, cConfig, cFilter, cGroup, cHelp, cInfopager, cPage, cSelect, cThread };
-enum icontext { cNone, cGetline };
+enum icontext { cNone, cGetline, cPromptSLK };
 enum resizer { cNo, cYes, cRedraw };
 enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 
@@ -1378,10 +1378,10 @@ enum {
  * unicode normalization
  */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-#	if defined(HAVE_LIBICUUC)
+#	ifdef HAVE_LIBICUUC
 #		define HAVE_UNICODE_NORMALIZATION 1
 #	else
-#		ifdef HAVE_LIBIDN
+#		if defined(HAVE_LIBIDN) && defined(HAVE_STRINGPREP_H)
 #			define HAVE_UNICODE_NORMALIZATION 2
 #		endif /* HAVE_LIBIDN */
 #	endif /* HAVE_LIBICUUC */
@@ -1534,6 +1534,7 @@ struct t_attribute {
 	unsigned int post_proc_type:2;		/* 0=none, 1=shar, 2=uudecode */
 	unsigned int x_comment_to:1;		/* insert X-Comment-To: in Followup */
 	unsigned int tex2iso_conv:1;		/* Convert TeX2ISO */
+	unsigned int mime_forward:1;		/* forward articles as attachment or inline */
 	char *fcc;							/* Fcc folder for mail */
 #ifdef CHARSET_CONVERSION
 	int mm_network_charset;				/* network charset */

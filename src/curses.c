@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2003-09-19
+ *  Updated   : 2004-06-07
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -941,13 +941,13 @@ highlight_string(
 	 */
 	if (col > 0) {
 		char tmp[LEN];
-		wchar_t wtmp[LEN];
+		wchar_t *wtmp;
 
 		my_strncpy(tmp, &(screen[row].col[0]), sizeof(tmp) - 1);
 		tmp[col] = '\0';
-		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
-			wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
-			col = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+		if ((wtmp = char2wchar_t(tmp)) != NULL) {
+			col = wcswidth(wtmp, wcslen(wtmp) + 1);
+			free(wtmp);
 		}
 	}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -981,7 +981,7 @@ word_highlight_string(
 	int byte_offset = col;
 	int wsize = size;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t wtmp[LEN];
+	wchar_t *wtmp;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	attributes[0] = _reset;	/* Normal */
@@ -1004,14 +1004,14 @@ word_highlight_string(
 		char tmp[LEN];
 		my_strncpy(tmp, &(screen[row].col[0]), sizeof(tmp) - 1);
 		tmp[byte_offset] = '\0';
-		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
-			wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
-			col = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+		if ((wtmp = char2wchar_t(tmp)) != NULL) {
+			col = wcswidth(wtmp, wcslen(wtmp) + 1);
+			free(wtmp);
 		}
 	}
-	if (mbstowcs(wtmp, output, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
-		wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
-		wsize = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+	if ((wtmp = char2wchar_t(output)) != NULL) {
+		wsize = wcswidth(wtmp, wcslen(wtmp) + 1);
+		free(wtmp);
 	}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 

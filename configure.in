@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2004-02-09
+dnl Updated   : 2004-06-06
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2004 Thomas E. Dickey <dickey@invisible-island.net>
@@ -848,6 +848,9 @@ AC_CHECK_HEADER(unicode/unorm.h,[
 			LIBS=$cf_save_LIBS
 		)
 		AC_MSG_RESULT($cf_try_icuuc)
+		AC_CHECK_HEADER(unicode/ubidi.h, [
+			AC_DEFINE(HAVE_UNICODE_UBIDI_H)
+		])
 	])
 ])
 

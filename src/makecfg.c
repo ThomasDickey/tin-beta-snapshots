@@ -3,7 +3,7 @@
  *  Module    : makecfg.c
  *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 2001-11-10
+ *  Updated   : 2004-06-03
  *  Notes     : #defines and structs for config.c
  *
  * Copyright (c) 1997-2004 Thomas E. Dickey <dickey@invisible-island.net>
@@ -213,7 +213,6 @@ generate_tbl(
 		"\tVERY_LAST_OPT };"
 		,""
 		,"#define LAST_OPT VERY_LAST_OPT - 1"
-		,"#define OPT_ARG_COLUMN	9"
 		,""
 		,"#define OPT_TITLE     0"
 		,"#define OPT_ON_OFF    1"

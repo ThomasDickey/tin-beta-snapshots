@@ -42,11 +42,11 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.7.5"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20040306"
-#	define RELEASENAME	"Benbecula"
+#	define RELEASEDATE	"20040615"
+#	define RELEASENAME	"Gighay"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.7"
-#	define ATTRIBUTES_VERSION	"1.0.2"
+#	define ATTRIBUTES_VERSION	"1.0.3"
 #	define FILTER_VERSION	"1.0.0"
 #	define SERVERCONFIG_VERSION	"1.0.0"
 

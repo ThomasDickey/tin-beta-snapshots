@@ -7,7 +7,7 @@
  *              Julien Oster <fuzzy@cu8.cum.de> (word highlighting)
  *              T.Dickey <dickey@invisible-island.net> (curses support)
  *  Created   : 1995-06-02
- *  Updated   : 2004-01-11
+ *  Updated   : 2004-06-07
  *  Notes     : This are the basic function for ansi-color
  *              and word highlighting
  *
@@ -234,9 +234,48 @@ draw_pager_line(
 	}
 
 #endif /* HAVE_COLOR */
-	if (!raw_data)
-		my_fputs(str, stdout);
-	else {
+	if (!raw_data) {
+#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
+		/*
+		 * BiDi support
+		 */
+		/* don't run it on empty lines and lines containing only one char (which must be an ASCII one) */
+		if (tinrc.render_bidi && IS_LOCAL_CHARSET("UTF-8") && strlen(str) > 1) {
+			char *line;
+			t_bool is_rtl;
+
+			if ((line = render_bidi(str, &is_rtl)) != NULL) {
+				if (is_rtl) { /* RTL */
+					/* determine visual length and pad out so that line is right-aligned */
+					wchar_t *wline;
+
+					if ((wline = char2wchar_t(line)) != NULL) {
+						int visual_len;
+
+						wconvert_to_printable(wline);
+						visual_len = wcswidth(wline, wcslen(wline) + 1);
+						free(wline);
+
+						if (visual_len > 0) {
+							int i;
+
+							for (i = 0; i < cCOLS - visual_len - 1; i++)
+								my_fputc(' ', stdout);
+						}
+						my_fputs(line, stdout);
+					} else /* fallback */
+						my_fputs(line, stdout);
+
+				} else	/* LTR */
+					my_fputs(line, stdout);
+
+				free(line);
+			} else
+				my_fputs(str, stdout);
+		} else
+#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
+			my_fputs(str, stdout);
+	} else {
 		/* in RAW-mode (show_all_headers) display non-printable chars as octals */
 		const char *c;
 		char octal[5];

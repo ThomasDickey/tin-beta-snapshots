@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2004-02-16
+ *  Updated   : 2004-03-13
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -790,7 +790,8 @@ put_server(
 		 * remember the last command we wrote to be able to resend it after a
 		 * reconnect. reconnection is handled by get_server()
 		 */
-		strcpy(last_put, string);
+		if (last_put != string)
+			STRCPY(last_put, string);
 	}
 	(void) s_flush(nntp_wr_fp);
 }
@@ -956,9 +957,8 @@ close_server(
  * mentioned in the list of extensions.
  * Possible extensions include:
  * - HDR & LIST HEADERS
- * - OVER
+ * - OVER [MSGID] & LIST OVERVIEW.FMT
  * - LISTGROUP
- * - LIST OVERVIEW.FMT
  * - STARTTLS
  *
  * Sets up: have_list_extensions, xover_cmd, (xhdr_cmd)

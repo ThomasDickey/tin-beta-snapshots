@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2003-09-24
+ *  Updated   : 2004-03-16
  *  Notes     :
  *
  * Copyright (c) 1992-2004 Iain Lea <iain@bricbrac.de>
@@ -121,7 +121,6 @@ resync_active_file(
 		toggle_my_groups(old_group);
 
 	FreeAndNull(old_group);
-	set_groupname_len(FALSE);
 	show_selection_page();
 
 	return TRUE;
@@ -461,7 +460,7 @@ static void
 read_active_file(
 	void)
 {
-	FILE *fp = (FILE *) 0;
+	FILE *fp = NULL;
 	char *ptr;
 	char moderated[PATH_LEN];
 	long count = -1L, min = 1L, max = 0L;
@@ -547,7 +546,7 @@ void
 read_news_active_file(
 	void)
 {
-	FILE *fp = 0;
+	FILE *fp = NULL;
 
 	/*
 	 * Ignore -n if no .newsrc can be found or .newsrc is empty
@@ -797,7 +796,7 @@ match_group_list(
 		 * find end/length of this entry
 		 */
 		separator = strchr(group_list, ',');
-		group_len = ((separator == NULL) ? list_len : (size_t) (separator - group_list));
+		group_len = MIN(((separator == NULL) ? list_len : (size_t) (separator - group_list)), sizeof(pattern) - 1);
 
 		if ((negate = ('!' == *group_list))) {
 			/*

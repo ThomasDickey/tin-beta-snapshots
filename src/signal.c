@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-02-23
+ *  Updated   : 2004-03-14
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -276,25 +276,31 @@ handle_resize(
 			ClearScreen();
 			show_art_msg(curr_group->name);
 			break;
+
 		case cConfig:
 			refresh_config_page(-1);
 			break;
+
 		case cFilter:
 			refresh_filter_menu();
 			break;
+
 		case cInfopager:
 			display_info_page(0);
 			break;
+
 		case cGroup:
 		case cSelect:
 		case cThread:
 			ClearScreen();
 			currmenu->redraw();
 			break;
+
 		case cPage:
 			resize_article(TRUE, &pgart);
 			draw_page(curr_group->name, 0);
 			break;
+
 		case cMain:
 			break;
 	}
@@ -302,6 +308,11 @@ handle_resize(
 		case cGetline:
 			gl_redraw();
 			break;
+
+		case cPromptSLK:
+			prompt_slk_redraw();
+			break;
+
 		default:
 			break;
 	}

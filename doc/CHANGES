@@ -1,18 +1,38 @@
--- 1.7.5 release 20040306 "" --
+-- 1.7.5 release 20040615 "Gighay" --
+
+ 024) Herbert Xu <herbert@gondor.apana.org.au
+      BUG. potential use/fee of unitialized data in get_recipients()
+      FIX. post.c
+
+ 023) Michael Bienia <michael@vorlon.ping.de>
+      BUG. negative tinrc.groupname_max_length set via 'M'enu could lead to
+           a crash
+      FIX. extern.h, proto.h, active.c, config.c, group.c, init.c, select.c
+
+ 022) Urs Janssen <urs@tin.org>
+      BUG. long cmd-line group could overflow a buffer in match_group_list()
+      BUG. empty newsgroups file leads to a crash
+      FIX. active.c, mail.c
 
 U027) Urs Janssen <urs@tin.org>
       BUG. can't link when configured with --with-included-gettext
+      BUG. checknadd_headers() didn't handle folded headers
+      ADD. replace raw 8bit chars in From:-header
+      ADD. remove empty headers before passing article to inews
       ADD. minor code cleanup
-      ADD. config.guess update
-      FIX. intl/loadmsgcat.c, getline.c, refs.c, config.guess
+      ADD. config.guess, config.sub update
+      ADD. configure check for unicode/ubidi.h
+      FIX. intl/loadmsgcat.c, configure.in, proto.h, autoconf.hin, art.c
+           cook.c, getline.c, filter.c, misc.c, nntplib.c, post.c, refs.c
+           config.guess, config.sub, fr.po, et.po
 
 U026) Matt Anton <tin@syrius.org>
       ADD. added a some missing french translations
       FIX. fr.po
 
 U025) Elmar W. Tischhauser <tischhau@rbg.informatik.tu-darmstadt.de>
-      ADD. wrap forwared articles into message/rfc822
-      FIX. proto.h, post.c, rfc2047.c
+      ADD. mime_forward (message/rfc822) attributes option
+      FIX. proto.h, tin.h, attrib.c, post.c, rfc2047.c, tin.5
 
 U024) Thomas E. Dickey <dickey@invisible-island.net>
       BUG. didn't build with pdcurses
@@ -21,7 +41,20 @@ U024) Thomas E. Dickey <dickey@invisible-island.net>
 
 U023) Michael Bienia <michael@vorlon.ping.de>
       BUG. in case of a reconnect unmalloced memory could be freed
-      FIX. select.c
+      BUG. didn't always initialize articles score
+      BUG. expand_rel_abs_pathname() truncated pathnames in tinrc
+      ADD. dynamic Menu option-width.
+      ADD. minimalistic BiDi support (tinrc.render_bidi)
+      ADD. check for valid UTF-8 in process_text_body_part()
+      ADD. minor code cleanup
+      ADD. redrawing support inside prompt_slk_response()
+      ADD. use dash instead hyphen for options in manpages
+      ADD. check for senseless tinrc-values
+      FIX. extern.h, proto.h, tin.h, tinrc.h, art.c, charset.c, color.c
+           config.c, cook.c, curses.c, feed.c, filter.c, getline.c, init.c
+           lang.c, makecfg.c, misc.c, newsrc.c, page.c, prompt.c, save.c
+           screen.c, search.c, select.c, signal.c, string.c, tags.c
+           tcurses.c, tincfg.tbl, tin.1, tin.5, de.po, en_GB.po
 
 -- 1.7.4 release 20040225 "Benbecula" --
 

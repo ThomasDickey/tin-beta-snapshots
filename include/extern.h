@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-02-23
+ *  Updated   : 2004-06-06
  *  Notes     :
  *
  * Copyright (c) 1997-2004 Iain Lea <iain@bricbrac.de>
@@ -1198,7 +1198,6 @@ extern int cCOLS;
 extern int cLINES;
 extern int curr_line;
 extern int debug;
-extern int groupname_len;
 extern int i_key_search_last;
 extern int input_context;
 extern int iso2asc_supported;
@@ -1259,6 +1258,7 @@ extern struct t_newnews *newnews;
 extern struct t_option option_table[];
 extern struct t_save *save;
 
+extern t_bool *OPT_ON_OFF_list[];
 extern t_bool can_post;
 extern t_bool check_for_new_newsgroups;
 extern t_bool cmd_line;
@@ -1600,4 +1600,7 @@ extern struct opttxt txt_xpost_quote_format;
 #ifdef HAVE_UNICODE_NORMALIZATION
 	extern struct opttxt txt_normalization_form;
 #endif /* HAVE_UNICODE_NORMALIZATION */
+#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
+	extern struct opttxt txt_render_bidi;
+#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
 #endif /* !EXTERN_H */

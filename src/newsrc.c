@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-11-21
+ *  Updated   : 2004-03-14
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -404,10 +404,9 @@ group_get_art_info(
 		put_server(buf);
 
 		switch (get_respcode(line, sizeof(line))) {
-
 			case OK_GROUP:
 				if (sscanf(line, "%ld %ld %ld", art_count, art_min, art_max) != 3)
-					error_message(_("Invalid response to GROUP command, %s"), line);
+					error_message(_(txt_error_invalid_response_to_group), line);
 				break;
 
 			case ERR_NOGROUP:
