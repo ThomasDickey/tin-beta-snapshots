@@ -6,7 +6,7 @@
  *  Updated   : 1994-02-28
  *  Notes     : ISO to ascii charset conversion routines
  *
- * Copyright (c) 1993-2000 Markus Kuhn <mgk25@cl.cam.ac.uk>
+ * Copyright (c) 1993-2001 Markus Kuhn <mgk25@cl.cam.ac.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -335,7 +335,6 @@ convert_to_printable (
 
 	for (c = (unsigned char *)buf; *c; c++) {
 #ifdef ENABLE_MBLEN
-/*		if (!my_isprint(*c) && (t_len = mblen(c, MB_CUR_MAX)) <= 0) */
 		if (!my_isprint(*c) && (t_len = mblen(c, MAX(2,MB_CUR_MAX))) <= 1)
 			*c = '?';
 		while (--t_len > 0)
@@ -346,6 +345,7 @@ convert_to_printable (
 #endif /* ENABLE_MBLEN */
 	}
 }
+
 
 #if 1
 /*
@@ -364,7 +364,6 @@ convert_body2printable (
 
 	for (c = (unsigned char *)buf; *c; c++) {
 #	ifdef ENABLE_MBLEN
-/*		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13) && (t_len = mblen(c, MB_CUR_MAX)) <= 0) */
 		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13) && (t_len = mblen(c, MAX(2,MB_CUR_MAX))) <= 1)
 			*c = '?';
 		while (--t_len > 0)

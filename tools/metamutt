@@ -1,11 +1,11 @@
 #! /bin/sh
 #
-# $ Id: metamutt,v 1.15 1999/01/20 13:53:10 roland Exp $
+# $ Id: metamutt,v 1.17 2000/02/23 12:50:41 roland Exp $
 #
 # This should become a replacement of metamail, using the mail reader
 # mutt. The options of metamail are not yet implemented, but it should
 # work as a filter without any problems.
-#
+# 
 # This script was written to use it in combination with the tin news
 # reader, where you have to set the envionment variable
 # METAMAIL=metamutt, but it should work with other programs, too.
@@ -21,16 +21,19 @@
 #     (Feature added by Martin Ramsch <m.ramsch@computer.org>)
 #
 # This script tries to find a working muttrc (which is sourced first)
-# at the following places (descending priority):
+# at the following places (descending priority): 
 # 1) ~/.mutt/metamuttrc
 # 2) ~/.mutt/muttrc
 # 3) ~/.muttrc
 #
-# Most recent version can be found at http://www.rhein.de/~roland/mutt/metamutt
+# Most recent version can be found at http://www.spinnaker.de/mutt/metamutt
+#
+# Many thanks for reporting bugs and introducing new features to
+# Moritz Barsnick, Ulli Horlacher, Urs Janﬂen, and Martin Ramsch.
 #
 ##########################################################################
 #
-#   Copyright (C) 1997-1999  Roland Rosenfeld <roland@spinnaker.rhein.de>
+#   Copyright (C) 1997-2000  Roland Rosenfeld <roland@spinnaker.de>
 #
 #   This program is free software; you can redistribute it and/or
 #   modify it under the terms of the GNU General Public License as
@@ -46,6 +49,7 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
+##########################################################################
 
 umask 077
 
@@ -60,15 +64,15 @@ fmopt=''
 digest='no'
 
 # handle options (ignore most of them at the moment):
-for parameter
+for parameter 
 do
-    case $1 in
+    case $1 in 
         -- ) shift; break;;
         -e|-p ) shift;;
         -m ) shift 2;;
-        -D ) fmopt='-ds cat'
-             digest='yes'
-             shift;;
+	-D ) fmopt='-ds cat'
+	     digest='yes'
+	     shift;;
         * )  break;;
     esac
 done
@@ -81,20 +85,17 @@ cat "$@" | formail $fmopt > $tmpdir/mbox
 #cat $* - | sed 's/^From />From /' >> $tmpdir/mbox
 
 # create special muttrc for metamutt:
-if [ -f ~/.mutt/metamuttrc ]
-then
-    echo 'source ~/.mutt/metamuttrc' > $tmpdir/muttrc
-elif [ -f ~/.mutt/muttrc ]
-then
-    echo 'source ~/.mutt/muttrc' > $tmpdir/muttrc
-elif [ -f ~/.muttrc ]
-then
-    echo 'source ~/.muttrc' > $tmpdir/muttrc
-fi
+for rcsuggestion in $HOME/.mutt/metamuttrc $HOME/.mutt/muttrc $HOME/.muttrc
+do
+    if [ -f $rcsuggestion ]
+    then
+	echo "source $rcsuggestion" > $tmpdir/muttrc
+	break
+    fi
+done
 
 cat >> $tmpdir/muttrc <<EOF
-macro pager g ":set sendmail=$tmpdir/inews dsn_notify='' dsn_return=''<return>:
-my_hdr `formail -X Newsgroups < $tmpdir/mbox`<return>r"
+macro pager g ":set sendmail=$tmpdir/inews dsn_notify='' dsn_return=''<return>:my_hdr `formail -X Newsgroups < $tmpdir/mbox`<return>r"
 EOF
 
 # some additions, if we read exactly one article.
@@ -123,5 +124,4 @@ EOF
 chmod 700 $tmpdir/inews
 
 # run mutt on mbox message with special muttrc:
-mutt -F $tmpdir/muttrc -R -f $tmpdir/mbox </dev/tty >/dev/tty
-
+mutt -F $tmpdir/muttrc -f $tmpdir/mbox </dev/tty >/dev/tty

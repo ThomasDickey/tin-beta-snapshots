@@ -6,7 +6,7 @@
  *  Updated   : 1999-11-04
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -777,7 +777,7 @@ write_config_file (
 	char *file_tmp;
 	int i;
 
-	if (no_write && file_size (file) != -1L)
+	if (no_write && !(post_article_and_exit || post_postponed_and_exit) && file_size (file) != -1L)
 		return;
 
 	/* generate tmp-filename */
@@ -882,13 +882,13 @@ write_config_file (
 
 	fprintf (fp, _(txt_news_headers_to_display.tinrc));
 	fprintf (fp, "news_headers_to_display=");
-	for (i=0; i<num_headers_to_display; i++)
+	for (i = 0; i<num_headers_to_display; i++)
 		fprintf (fp, "%s ", news_headers_to_display_array[i]);
 	fprintf (fp, "\n\n");
 
 	fprintf (fp, _(txt_news_headers_to_not_display.tinrc));
 	fprintf (fp, "news_headers_to_not_display=");
-	for (i=0; i<num_headers_to_not_display; i++)
+	for (i = 0; i<num_headers_to_not_display; i++)
 		fprintf (fp, "%s ", news_headers_to_not_display_array[i]);
 	fprintf (fp, "\n\n");
 
@@ -1259,6 +1259,7 @@ static int actual_top_option = 0;
 #define OptionInPage(option)	((option) - first_option_on_screen)
 #define OptionIndex(option)	(OptionInPage(option) % option_lines_per_page)
 
+
 int
 option_row (
 	int option)
@@ -1390,10 +1391,10 @@ unhighlight_option (
 	t_menu *savemenu = currmenu;
 	t_menu cfgmenu = { 0, 1, 0, 0, NULL, NULL };
 
-	currmenu=&cfgmenu;
-	currmenu->curr = option_row(option)-INDEX_TOP;
+	currmenu = &cfgmenu;
+	currmenu->curr = option_row(option) - INDEX_TOP;
 	erase_arrow();
-	currmenu=savemenu;
+	currmenu = savemenu;
 }
 
 
@@ -1431,6 +1432,7 @@ refresh_config_page (
 	last_option = act_option;
 }
 
+
 static void
 redraw_screen (
 	int option)
@@ -1442,10 +1444,10 @@ redraw_screen (
 	highlight_option (option);
 }
 
-/*
- *  options menu so that the user can dynamically change parameters
- */
 
+/*
+ * options menu so that the user can dynamically change parameters
+ */
 int
 change_config_file (
 	struct t_group *group)

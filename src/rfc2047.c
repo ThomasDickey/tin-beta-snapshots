@@ -6,7 +6,7 @@
  *  Updated   : 1998-04-05
  *  Notes     : MIME header encoding/decoding stuff
  *
- * Copyright (c) 1995-2000 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2001 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -408,11 +408,19 @@ contains_nonprintables (
 		w++;
 
 	/* then check the next word */
-	while (*w && !isbetween(*w, isstruct_head)) {
+	while (!nonprint && *w && !isbetween(*w, isstruct_head)) {
 		if (is_EIGHT_BIT(w))
 			nonprint = TRUE;
-		if (!nonprint && *w == '=' && *(w + 1) == '?')
-			nonprint = TRUE;
+		else if (*w == '=' && *(w + 1) == '?') {
+			/*
+			 * to be exact we must look for ?= in the same word
+			 * not in the whole string and check ?B? or ?Q? in the word...
+			 * best would be using a regexp like
+			 * ^=\?\S+\?[qQbB]\?\S+\?=
+			 */
+			if (strstr(w, "?=") != (char *) 0)
+				nonprint = TRUE;
+		}
 		w++;
 	}
 	return nonprint;

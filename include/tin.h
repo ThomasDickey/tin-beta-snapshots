@@ -6,7 +6,7 @@
  *  Updated   : 1997-12-31
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2000 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -669,6 +669,12 @@ enum resizer { cNo, cYes, cRedraw };
 #define DEFAULT_SAVEDIR	"News"
 
 
+/* MMDF-mailbox seperator */
+#ifndef MMDFHDRTXT
+#	define MMDFHDRTXT "\01\01\01\01\n"
+#endif /* MMDFHDRTXT */
+
+
 /*
  * all regexps are extended -> # must be quoted!
  */
@@ -711,9 +717,8 @@ enum resizer { cNo, cYes, cRedraw };
 #define MAIL_REGEX	"\\b(?:mailto:(?:(?:[-\\w$.+!*'(),;/?:@&=]|(?:%[\\da-f]{2}))+))"
 /*
  * case insensitive
- * not implemented
  */
-#define NEWS_REGEX	"\\b(?:s?news|nntp):[^\\s@]+[@.][^\\s@]+(?:$|(?=[\\s.>]))\\b"
+#define NEWS_REGEX	"\\b(?:s?news|nntp):[^\\s@]+[@.][^\\s@]+(?:$|(?=[\\s.>\"]))\\b"
 
 
 #define FILTER_FILE	"filter"
@@ -748,10 +753,10 @@ enum resizer { cNo, cYes, cRedraw };
 #include	<pcre.h>
 
 #ifndef MAX
-#	define MAX(a,b)	((a > b) ? a : b)
+#	define MAX(a,b)	(((a) > (b)) ? (a) : (b))
 #endif /* !MAX */
 #ifndef MIN
-#	define MIN(a,b)	((a > b) ? b : a)
+#	define MIN(a,b)	(((a) > (b)) ? (b) : (a))
 #endif /* !MIN */
 
 #ifndef forever
@@ -770,8 +775,8 @@ enum resizer { cNo, cYes, cRedraw };
 /* safe strcpy into fixed-legth buffer */
 #define STRCPY(dst, src)	(dst[sizeof(dst) - 1] = '\0', strncpy(dst, src, sizeof(dst) -1))
 
-#define STRCMPEQ(s1, s2)	(/**(s1) == *(s2) && */strcmp((s1), (s2)) == 0)
-#define STRNCMPEQ(s1, s2, n)	(/**(s1) == *(s2) && */strncmp((s1), (s2), n) == 0)
+#define STRCMPEQ(s1, s2)	(strcmp((s1), (s2)) == 0)
+#define STRNCMPEQ(s1, s2, n)	(strncmp((s1), (s2), n) == 0)
 #define STRNCASECMPEQ(s1, s2, n)	(strncasecmp((s1), (s2), n) == 0)
 
 #if defined(VMS) || defined(M_AMIGA)

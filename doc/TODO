@@ -1,14 +1,19 @@
 Bugs
 ----
-o  when modifying long strings in the 'M' screen the following line is not
-   restored
+
+o  'Y'ank in doesn't toggle show_only_unread_groups setting
+   ('y'ank in all groups, 'Y'ank active file, only subscribed groups
+    are shown but show_only_unread_groups isn't set to true so the next
+    time you like to toggle between subscribed/all groups you have to
+    press 'y' several time till it takes effect).
+
+o  referene based filters won't work with long (> 500 chars)
+   References: lines
 
 o  help screen should show the actual key mapping, not the default
 
 o  thread_articles=0 lacks score for read arts if show_score=ON and
    kill_level>=1
-
-o  pgp.txt badly out of date
 
 o  batch mode has several bugs
    - -Z and giving a cmd-line group ends up in a loop
@@ -30,15 +35,6 @@ o  '-s' cmd-line switch implicitly changes 'savedir' in tinrc
    Is -s supposed to affect all save operations? What about attributes?
    Might get away with simply setting glob_attributes->savedir
    [Jason Faultless <jason@radar.tele2.co.uk>]
-
-o  Defaults values etc. changed during quick_post_article() aren't saved
-   due to the no_write logic in main.c
-
-o  with use_builtin_inews=ON && default_sigfile=~/.tin/sig && a existing
-   ~/.signature ~/.signature is used instead of ~/.tin/sig
-   (does not happen if a sigfile is specified via attributes i.e.
-    scope=*.test sigfile=--none [urs])
-   [Stan Brooks <stabro@almatel.net>]
 
 o  commas in real-name might cause problems in mail-replys
    -> rewrite To: before mailing to old-style notation user@dom.in (real-name)
@@ -91,10 +87,13 @@ o  if no INEWSDIR is given INEWSDIR is set to NEWSLIBDIR which is not always
 
 o  if posting with external inews fails fall-back to built_in_inews would be
    good if running in nntp-mode
-   [Done. Allerdings ist mir die Logik bzgl. read_news_via_nntp &&
-   !read_saved_news nicht klar. Warum wird das Posten bei
-   read_saved_news ausgeschlossen bzw. über external inews
-   erzwungen?]
+   [Done. But the read_news_via_nntp && !read_saved_news is unclear. Why can't
+    you post or must use external inews if you read_saved_news?]
+
+o  use_builtin_inews=ON should be renamed to
+   inews_prog and hold the (path, ) name and agruments
+   of the inews programm to be called. if set to --internal
+   (or something like that) tins built in inews is used.
 
 o  remove built in path of external commands (metamail, ispell, ...)
    [for metamail/ispell $METAMAIL/$ISPELL could be used to override
@@ -117,8 +116,17 @@ o  word highlighting shouldn't be enabled in signatures, as '*'
    There is a hack to not collapse spaces in sigs, is more needed ?
    [<jason@radar.tele2.co.uk>]
 
+o  word-highlighting should be rewritten to use regexp, i.e.:
+   (?:^|\s)/[^\s/]+/(?:\s|$)      for /slashes/
+   (?:^|\s)\*[^\s*]+\*(?:\s|$)    for *stars*
+   (?:^|\s)_[^\s_]+_(?:\s|$)      for _underscores_
+
 Posting Problems
 ----------------
+o  what should be done with 8bit chars References/Message-ID:-headers?
+   (for Message-ID: refusing the article should be ok, but in
+   References? mime-encode it? strip it? send it out raw?)
+
 o  repost ('x') ignores ~/.tin/headers & ~/.tin/attributes - bug or
    feature?!
 
@@ -143,8 +151,23 @@ o  when enabling the 'cc/bcc on every message that is sent', and
 
 New features
 ------------
+o  key to toggle article-sorting preferences on the fly
+   (like 'u' for threading)
+
+o  add mail/news-URLs to 'U'RL-viewer (page.c:process_url())
+
+o  add Content-Description evaluation for the part-overview in the
+   pager
+
+o  default_mailer_format should be extended to be able to
+   give the interactive mailer the full article including all
+   headers (usefull for mutt -H). we could differ between
+   %f (just body, headers must be given with %S, %T, ...)
+   and %F (headers included in the body, usefull for sendmail -t <
+   "%F" etc.pp.)
+
 o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
-   about that part) for different contenttypes
+   about that part) for different content-types
 
 o  Better integrate saving of MIME/non-MIME articles when not using libuu
    [Jason Faultless <jason@radar.tele2.co.uk>]
@@ -202,12 +225,9 @@ o  add IPv6 support
 
 o  add shortcut(s) to repeat last command (i.e. search again)
 
-o  add unicode/UTF-8 support
-
-o  lock news/tinrc via flock or lockf or fcntl (one tin) and dotfile-locking
-   (multiple tins running, we don't wan't to keep the file(s) open over the
-    whole session) - and/or document tools/tinlock.
-   [Urs Janssen <urs@tin.org>]
+o  add unicode/UTF-8/UTF-7 support
+   (see <http://www.cl.cam.ac.uk/~mgk25/unicode.html> and
+    <http://clisp.cons.org/~haible/>)
 
 o  add cmd-line/tinrc-switch to fetch only headers of unread articles;
    in that case, make 'r' reading the rest of the articles
@@ -241,9 +261,9 @@ o  Menu/tinrc/attributes entry for TeX2ISO_Conversion=ON/OFF
 o  Rather than cc/bcc, I'd like to see tin simply append the
    message to a mail folder, whose name is given by a setting
    in the (M)enu command, possibly overridden by the current
-   setting of "record" environment variable.  The folder would
+   setting of "record" environment variable. The folder would
    have to be locked using a convention that will hold off
-   the various Unix mailer programs.
+   the various Unix mailer programs (see mbox(5)).
 
 o  MIME-pgp support according to RFC2015 - (should be easy now)
 
@@ -252,7 +272,9 @@ o  pgp-6 support
 o  add RFC1468/1922 support
 
 o  add counter to post-processing commands (processing file x of y)
-   Is post-processing really that slow ? [jason@radar.tele2.co.uk]
+   (Is post-processing really that slow? [Jason Faultless
+   <jason@radar.tele2.co.uk>] no but if you post-process more than a
+   handfull of files it would be usefull [Urs Janssen <urs@tin.org>])
 
 o  add feature Cc:
 
@@ -323,6 +345,9 @@ o  Bounce duplicate Message-ID's when the headers are read. This will
 o  Merge the selection code with the range code. Having two similar methods
    of picking articles with similar goals is wasteful.
    [Jason Faultless <jason@radar.tele2.co.uk>]
+
+o  add check for zlib and option to write/read gziped local overviews
+   zlib might also be be used for post-processing.
 
 Posting enhancements
 ----------------------
@@ -500,6 +525,13 @@ o  tin.defaults could use more documentation on manpage
 
 Not yet classified
 ------------------
+o  should the postponed file be in MH-format if tin is running in MH-mode?
+   if so we need to extend fetch_postponed_article()
+
+o  reusing postponed articles trash '\n' betwwen postponed arts
+
+o  check if fetch_postponed_article is MH seperator "safe"
+
 o  --disable-inverse-video seems to be ignored - do we still need it?
 
 o  tin in batchmode dumps core if getting a SIGINT, useful?

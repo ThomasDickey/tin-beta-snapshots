@@ -6,7 +6,7 @@
  *  Updated   : 1994-12-21
  *  Notes     : signal handlers for different modes and window resizing
  *
- * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -292,7 +292,7 @@ handle_resize (
 			currmenu->redraw();
 			break;
 		case cPage:
-			resize_article (&pgart);
+			resize_article (TRUE, &pgart);
 			draw_page (glob_group, 0);
 			break;
 		case cMain:

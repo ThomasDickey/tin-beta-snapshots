@@ -3,10 +3,10 @@
  *  Module    : policy.h
  *  Author    : Ralf Doeblitz <doeblitz@gmx.de>
  *  Created   : 1999-01-12
- *  Updated   : 2000-12-10
+ *  Updated   : 2001-01-12
  *  Notes     : #defines and static data for policy configuration
  *
- * Copyright (c) 1999-2000 Ralf Doeblitz <doeblitz@gmx.de>
+ * Copyright (c) 1999-2001 Ralf Doeblitz <doeblitz@gmx.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,8 +69,8 @@
  * .bz  Belize
  *
  * .ca  Canada                         .cc  Cocos (Keeling) Islands
- * .cd  Congo (Democratic Republic of the)
- * .cf  Central African Republic       .cg  Congo (Republic of the)
+ * .cd  Congo, Democratic People's Republic
+ * .cf  Central African Republic       .cg  Congo, Republic of
  * .ch  Switzerland                    .ci  Côte d'Ivoire
  * .ck  Cook Islands                   .cl  Chile
  * .cm  Cameroon                       .cn  China
@@ -89,7 +89,7 @@
  * .et  Ethiopia
  *
  * .fi  Finland                        .fj  Fiji
- * .fk  Falkland Islands               .fm  Micronesia
+ * .fk  Falkland Islands (Malvina)     .fm  Micronesia, Federal State of
  * .fo  Faroe Islands                  .fr  France
  * .fx  France, Metropolitan
  *
@@ -105,7 +105,7 @@
  * .gw  Guinea-Bissau                  .gy  Guyana
  *
  * .hk  Hong Kong                      .hm  Heard and McDonald Islands
- * .hn  Honduras                       .hr  Croatia
+ * .hn  Honduras                       .hr  Croatia/Hrvatska
  * .ht  Haiti                          .hu  Hungary
  *
  * .id  Indonesia                      .ie  Ireland
@@ -120,8 +120,8 @@
  * .ke  Kenya                          .kg  Kyrgystan
  * .kh  Cambodia                       .ki  Kiribati
  * .km  Comoros                        .kn  Saint Kitts and Nevis
- * .kp  Korea (Democratic People's Republic of)
- * .kr  Korea (Republic of)            .kw  Kuwait
+ * .kp  Korea, Democratic People's Republic
+ * .kr  Korea, Republic of             .kw  Kuwait
  * .ky  Cayman Islands                 .kz  Kazakhstan
  *
  * .la  Lao (People's Democratic Republic)
@@ -132,7 +132,7 @@
  * .lv  Latvia                         .ly  Libyan Arab Jamahiriya
  *
  * .ma  Morocco                        .mc  Monaco
- * .md  Moldova                        .mg  Madagascar
+ * .md  Moldova, Republic of           .mg  Madagascar
  * .mh  Marshall Islands               .mk  Macedonia
  * .ml  Mali                           .mm  Myanmar
  * .mn  Mongolia                       .mo  Macau
@@ -148,8 +148,7 @@
  * .ng  Nigeria                        .ni  Nicaragua
  * .nl  The Netherlands                .no  Norway
  * .np  Nepal                          .nr  Nauru
- * .nt  Neutral Zone                   .nu  Niue
- * .nz  New Zealand
+ * .nu  Niue                           .nz  New Zealand
  *
  * .om  Oman
  *
@@ -157,14 +156,14 @@
  * .pf  French Polynesia               .pg  Papua New Guinea
  * .ph  Philippines                    .pk  Pakistan
  * .pl  Poland                         .pm  St. Pierre and Miquelon
- * .pn  Pitcairn                       .pr  Puerto Rico
- * .pt  Portugal                       .pw  Palau
- * .py  Paraguay
+ * .pn  Pitcairn Island                .pr  Puerto Rico
+ * .ps  -  Palestinian Territories     .pt  Portugal
+ * .pw  Palau                          .py  Paraguay
  *
  * .qa  Qatar
  *
  * .re  Reunion                        .ro  Romania
- * .ru  Russia                         .rw  Rwanda
+ * .ru  Russian Federation             .rw  Rwanda
  *
  * .sa  Saudi Arabia                   .sb  Solomon Islands
  * .sc  Seychelles                     .sd  Sudan
@@ -197,29 +196,28 @@
  * .vi  Virgin Islands U.S             .vn  Vietnam
  * .vu  Vanuatu
  *
- * .wf  Wallis and Futuna Islands      .ws  Samoa
+ * .wf  Wallis and Futuna Islands      .ws  Western Samoa
  *
  * .ye  Yemen                          .yt  Mayotte
  * .yu  Yugoslavia
  *
  * .za  South Africa                   .zm  Zambia
- * .zw  Zimbabwe
+ * .zr  Zaire (former)                 .zw  Zimbabwe
  *
  *
  * invalid TLDs:
  * .cs  former Czechoslovakia, now: .cz and .sk
- * .zr  former Zaire, now .cg
  *
  * unused TLDs:
  * .nt  Neutral Zone
  *
  * requested new TLDs:
  * .eu  EU
- * .ps  areas under Palestinian authority
  *
  * 'expireing' TLDs:
- * .su  former USSR, now: .ru
  *(.hk  Hong Kong, now: .cn)
+ * .su  former USSR, now: .ru
+ * .zr  former Zaire, now .cg
  */
 
 static char gnksa_country_codes[26*26] = {
@@ -239,7 +237,7 @@ static char gnksa_country_codes[26*26] = {
 /* M */ 1,0,1,1,0, 0,1,1,0,0, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,
 /* N */ 1,0,1,0,1, 1,1,0,1,0, 0,1,0,0,1, 1,0,1,0,0, 1,0,0,0,0,1,
 /* O */ 0,0,0,0,0, 0,0,0,0,0, 0,0,1,0,0, 0,0,0,0,0, 0,0,0,0,0,0,
-/* P */ 1,0,0,0,1, 1,1,1,0,0, 1,1,1,1,0, 0,0,1,0,1, 0,0,1,0,1,0,
+/* P */ 1,0,0,0,1, 1,1,1,0,0, 1,1,1,1,0, 0,0,1,1,1, 0,0,1,0,1,0,
 /* Q */ 1,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0,0,
 /* R */ 0,0,0,0,1, 0,0,0,0,0, 0,0,0,0,1, 0,0,0,0,0, 1,0,1,0,0,0,
 /* S */ 1,1,1,1,1, 0,1,1,1,1, 1,1,1,1,1, 0,0,1,0,1, 1,1,0,0,1,1,
@@ -265,20 +263,20 @@ static const char *gnksa_domain_list[] = {
 	"mil",	/* US Dept of Defense */
 	"net",	/* Networks */
 	"org",	/* Organizations */
-	"arpa",
+	"arpa",	/* Advanced Research Projects Agency */
 	"uucp",
 #	if 0
 	"bitnet",	/* AFAIK .bitnet is dead */
 #	endif /* 0 */
 #	if 0
 	/* the new domain names, not yet valid */
-	"biz",
-	"pro",
-	"aero",
-	"coop",
-	"info",
-	"name",
-	"museum",
+	"biz",	/* Businesses */
+	"pro",	/* Accountants, lawyers, and physicians */
+	"aero",	/* Air-transport industry */
+	"coop",	/* Non-profit cooperatives */
+	"info",	/* Unrestricted use */
+	"name",	/* For registration by individuals */
+	"museum",	/* Museums */
 #	endif /* 0 */
 	/* the next four are defined in RFC 2606 */
 	"invalid",

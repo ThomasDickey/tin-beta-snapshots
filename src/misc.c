@@ -6,7 +6,7 @@
  *  Updated   : 1997-12-31
  *  Notes     :
  *
- * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -72,7 +72,6 @@
 /*
  * Local prototypes
  */
-static char *escape_shell_meta (char *source, int quote_area);
 static int gnksa_check_domain (char *domain);
 static int gnksa_check_domain_literal (char *domain);
 static int gnksa_check_localpart (const char *localpart);
@@ -186,6 +185,7 @@ copy_fp (
 	return TRUE;
 }
 
+
 /*
  * backup file
  * Returns FALSE if backup failed or source file does not exists.
@@ -214,6 +214,7 @@ backup_file (
 	fclose (fp_in);
 	return ret;
 }
+
 
 /*
  * copy the body of articles with given file pointers,
@@ -384,9 +385,9 @@ invoke_ispell (
 #	else
 */
 	if (psGrp && psGrp->attribute->ispell != (char *) 0)
-		strcpy (ispell, psGrp->attribute->ispell);
+		STRCPY(ispell, psGrp->attribute->ispell);
 	else
-		strcpy (ispell, get_val("ISPELL", PATH_ISPELL));
+		STRCPY(ispell, get_val("ISPELL", PATH_ISPELL));
 /*
 #	endif *//* VMS */
 
@@ -394,7 +395,6 @@ invoke_ispell (
 	 * Now seperating the header and body in two different files so that
 	 * the header is not checked by ispell
 	 */
-
 	strncpy (nam_body, nam, 90);
 	strcat (nam_body, ".body");
 
@@ -1221,10 +1221,10 @@ my_isprint (
 #else
 #	ifdef LOCAL_CHARSET
 		/* use some conversation table */
-		return (isprint(c) || (c>=0x80 && c<=0xff));
+		return (isprint(c) || (c >= 0x80 && c <= 0xff));
 #	else
 		/* assume iso-8859-1 */
-		return (isprint(c) || (c>=0xa0 && c<=0xff));
+		return (isprint(c) || (c >= 0xa0 && c <= 0xff));
 #	endif /* LOCAL_CHARSET */
 #endif /* !NO_LOCALE */
 }
@@ -1913,10 +1913,11 @@ strfpath (
 enum quote_enum {
 	no_quote = 0,
 	dbl_quote,
-	sgl_quote };
+	sgl_quote
+};
 
 
-static char *
+char *
 escape_shell_meta (
 	char *source,
 	int quote_area)
@@ -3105,7 +3106,7 @@ gnksa_check_domain_literal (
 {
 	char term;
 	int n;
-	int x1, x2, x3, x4;
+	unsigned int x1, x2, x3, x4;
 
 	/* parse domain literal into ip number */
 	x1 = x2 = x3 = x4 = 666;

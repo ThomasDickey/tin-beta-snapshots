@@ -65,7 +65,5 @@ Retired Features
 
 . 'k' no longer works in the pager. Use 'N' instead
 
-. display_mime_header_asis
-  display_mime_allheader_asis
-
+. display_mime_header_asis, display_mime_allheader_asis
   By default the pager decodes headers. Use ^H to toggle to undecoded view

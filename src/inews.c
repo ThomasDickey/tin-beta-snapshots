@@ -6,7 +6,7 @@
  *  Updated   : 1997-12-31
  *  Notes     : NNTP builtin version of inews
  *
- * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,7 +95,7 @@ submit_inews (
 	char *ptr, *ptr2;
 	char from_name[HEADER_LEN];
 	char message_id[HEADER_LEN];
-	char line[NNTP_STRLEN];
+	char line[HEADER_LEN];
 	int auth_error = 0;
 	int respcode;
 	t_bool leave_loop = FALSE;

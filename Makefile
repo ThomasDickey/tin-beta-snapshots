@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 5
 SVER	= 8
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20001218
+DVER	= 20010221
 EXE	= tin
 
 # directory structure
@@ -168,12 +168,14 @@ DOC	= \
 	$(DOCDIR)/umlauts.txt \
 	$(DOCDIR)/tin.defaults \
 	$(DOCDIR)/tools.txt \
+	$(DOCDIR)/mbox.5 \
 	$(DOCDIR)/plp_snprintf.3 \
 	$(DOCDIR)/tin.1 \
 	$(DOCDIR)/tin.5 \
 	$(DOCDIR)/wildmat.3
 
 TOL	= \
+	$(TOLDIR)/expiretover \
 	$(TOLDIR)/metamutt \
 	$(TOLDIR)/opt-case.pl \
 	$(TOLDIR)/tinlock \
@@ -417,6 +419,7 @@ chmod:
 	./configure \
 	./install.sh \
 	./mkdirs.sh \
+	$(TOLDIR)/expiretover \
 	$(TOLDIR)/metamutt \
 	$(TOLDIR)/opt-case.pl \
 	$(TOLDIR)/tinlock \

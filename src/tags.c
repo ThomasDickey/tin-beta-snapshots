@@ -6,7 +6,7 @@
  *  Updated   : 1999-12-06
  *  Notes     : Split out from other modules
  *
- * Copyright (c) 1999-2000 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 1999-2001 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,7 @@
 /* Local prototypes */
 static int get_multipart_info (int base_index, MultiPartInfo *setme);
 static int get_multiparts (int base_index, MultiPartInfo **malloc_and_setme_info);
-static int look_for_multipart_info (int base_index, MultiPartInfo* setme, char start, char stop);
+static int look_for_multipart_info (int base_index, MultiPartInfo* setme, char start, char stop, int *offset);
 static t_bool bParseRange (char *pcRange, int iNumMin, int iNumMax, int iNumCur, int *piRngMin, int *piRngMax);
 static void vDelRange (int iLevel, int iNumMax);
 
@@ -62,12 +62,21 @@ get_multipart_info (
 	int base_index,
 	MultiPartInfo *setme)
 {
-	int i = look_for_multipart_info(base_index, setme, '[', ']');
+	int i, j, offi, offj;
+	MultiPartInfo setmei, setmej;
 
-	if (i)
+	i = look_for_multipart_info(base_index, &setmei, '[', ']', &offi);
+	j = look_for_multipart_info(base_index, &setmej, '(', ')', &offj);
+
+	/* Ok i hits first */
+	if (offi > offj) {
+		*setme = setmei;
 		return i;
+	}
 
-	return look_for_multipart_info(base_index, setme, '(', ')');
+	/* Its j or they are both the same (which must be zero!) so we don't care */
+	*setme = setmej;
+	return j;
 }
 
 
@@ -76,11 +85,14 @@ look_for_multipart_info (
 	int base_index,
 	MultiPartInfo* setme,
 	char start,
-	char stop)
+	char stop,
+	int *offset)
 {
 	MultiPartInfo tmp;
 	char *subj = (char *) 0;
 	char *pch = (char *) 0;
+
+	*offset = 0;
 
 	/* entry assertions */
 	assert (0 <= base_index && base_index < grpmenu.max && "invalid base_index");
@@ -105,6 +117,7 @@ look_for_multipart_info (
 		return 0;
 	tmp.subject = subj;
 	*setme = tmp;
+	*offset = pch-subj;
 	return 1;
 }
 

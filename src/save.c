@@ -6,7 +6,7 @@
  *  Updated   : 2000-07-08
  *  Notes     :
  *
- * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -388,6 +388,8 @@ open_save_filename(
  * 'indexnum' is index into save[] for the save path information etc..
  * Returns:
  *     TRUE or FALSE depending on whether article was saved okay.
+ *
+ * TODO: use append_mail() here
  */
 t_bool
 save_art_to_file (
@@ -397,6 +399,7 @@ save_art_to_file (
 	FILE *fp;
 	char from[HEADER_LEN];
 	time_t epoch;
+	t_bool mmdf = (save[indexnum].is_mailbox && tinrc.save_to_mmdf_mailbox);
 
 	if ((fp = open_save_filename(save[indexnum].path, save[indexnum].is_mailbox)) == NULL)
 		return FALSE;
@@ -409,13 +412,12 @@ save_art_to_file (
 	if (artinfo->hdr.from)
 		strip_name (artinfo->hdr.from, from);
 	(void) time (&epoch);
-	fprintf (fp, "From %s %s", from, ctime (&epoch));
-
+	fprintf (fp, "%sFrom %s %s", (mmdf ? MMDFHDRTXT : ""), from, ctime (&epoch));
 	if (fseek (artinfo->raw, 0L, SEEK_SET) == -1)
 		perror_message ("fseek() error on [%s]", save[indexnum].artptr->subject); /* FIXME: -> lang.c */
 
 	if (copy_fp (artinfo->raw, fp))
-		/* Write tailing newline or MDF-mailbox seperator */
+		/* Write tailing newline or MMDF-mailbox seperator */
 		print_art_seperator_line (fp, save[indexnum].is_mailbox);
 
 	fclose (fp);
@@ -465,7 +467,7 @@ fprintf(stderr, "save_arts, create_path(%s)\n", save[0].path);
 		wait_message (0, "%s%d  ", _(txt_saving), i+1);
 
 		memset (&artinfo, 0, sizeof(t_openartinfo));
-		switch (art_open (save[i].artptr, group_path, &artinfo)) {
+		switch (art_open (FALSE, save[i].artptr, group_path, &artinfo)) {
 
 			case ART_ABORT:					/* User 'q'uit */
 				return count;
@@ -1238,23 +1240,19 @@ any_saved_files (
 
 
 /*
- * write tailing (MDF)-mailbox seperator
+ * write tailing (MMDF)-mailbox seperator
  */
 void
 print_art_seperator_line (
 	FILE *fp,
 	t_bool is_mailbox)
 {
-	const char sep = '\1';	/* Ctrl-A */
 #ifdef DEBUG
 	if (debug == 2)
 		error_message ("Mailbox=[%d]  MMDF=[%d]", is_mailbox, tinrc.save_to_mmdf_mailbox);
 #endif /* DEBUG */
 
-	if (is_mailbox && tinrc.save_to_mmdf_mailbox)
-		fprintf (fp, "%c%c%c%c\n", sep, sep, sep, sep);
-	else
-		my_fputc ('\n', fp);
+	fprintf (fp, "%s", (is_mailbox && tinrc.save_to_mmdf_mailbox) ? MMDFHDRTXT : "\n");
 }
 
 

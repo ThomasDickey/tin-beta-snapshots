@@ -6,7 +6,7 @@
  *  Updated   : 1998-07-13
  *  Notes     :
  *
- * Copyright (c) 1997-2000 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1997-2001 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1066,6 +1066,7 @@ extern struct regex_cache uubegin_regex;
 extern struct regex_cache uubody_regex;
 extern struct regex_cache url_regex;
 extern struct regex_cache mail_regex;
+extern struct regex_cache news_regex;
 extern struct regex_cache shar_regex;
 
 #ifdef HAVE_COLOR
