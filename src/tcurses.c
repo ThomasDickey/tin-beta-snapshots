@@ -120,7 +120,7 @@ InitScreen(
 	cCOLS = COLS;
 	cLINES = LINES - 1;
 	TRACE(("screen size %d rows by %d cols", LINES, COLS));
-/*	set_win_size(&cLINES, &cCOLS); */
+/*	set_win_size(&cLINES, &cCOLS); */ /* will be done in setup_screen() */
 /*	raw(); */ /* breaks serial terminal using software flow control and cbreak() below does most of the stuff raw() does */
 	noecho();
 	cbreak();

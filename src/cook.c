@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2002-04-15
+ *  Updated   : 2002-09-30
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2002 Jason Faultless <jason@radar.tele2.co.uk>
@@ -73,11 +73,15 @@ static int cook_width;
 static t_bool hide_uue;
 static t_openartinfo *art;
 
+
 /*
  * Rewrite frombuf into tobuf to a maximum length
  * Handle backspace, expand tabs, expand control chars to a literal ^[A-Z]
  * Allows \n through
  * Return TRUE if line contains a ^L (form-feed)
+ * Anything after the (lenght-3)th character in the output string is
+ * dropped, if the resultinglast character is not \n, \n is added
+ * afterwards.
  */
 t_bool
 expand_ctrl_chars(
@@ -86,30 +90,39 @@ expand_ctrl_chars(
 	int length,
 	size_t lcook_width)
 {
-	const char *p;
+	const char *p, *end;
 	char *q;
-	int i, j;
+	int i, j, space;
 	t_bool ctrl_L = FALSE;
 
-	for (p = from, q = to; *p && q < &to[length]; p++) {
+	for (p = from, q = to, end = p, space = length - 3; space && *p; end = p, p++) {
 		if (*p == '\t') {			/* Expand tabs */
 			i = q - to;
 			j = ((i + lcook_width) / lcook_width) * lcook_width;
 /*			j = (i | (tabwidth - 1)) + 1; TODO more efficient? */
 
-			while (i++ < j)
+			while (space && i++ < j) {
 				*q++ = ' ';
+				space--;
+			}
 
 		} else if (((*p) & 0xFF) < ' ' && *p != '\n') {	/* Literal ctrl chars */
 			*q++ = '^';
-			*q++ = ((*p) & 0xFF) + '@';
+			if (--space) {
+				*q++ = ((*p) & 0xFF) + '@';
+				space--;
+			}
 			if (*p == '\f')					/* ^L detected */
 				ctrl_L = TRUE;
-		} else
+		} else {
 			*q++ = *p;
+			space--;
+		}
 	}
-	*q = '\0';
+	if (*end != '\n')
+		*q++ = '\n';	/* Force last char of string to be \n */
 
+	*q = '\0';
 	return ctrl_L;
 }
 

@@ -82,11 +82,11 @@ extern void write_attributes_file(const char *file);
 #endif /* NNTP_ABLE */
 
 /* charset.c */
+extern char *convert_to_printable(char *buf);
 extern t_bool is_art_tex_encoded(FILE *fp);
 extern void convert_body2printable(char* buf);
 extern void convert_iso2asc(char *iso, char **asc_buffer, int *max_line_len, int t);
 extern void convert_tex2iso(char *from, char *to);
-extern void convert_to_printable(char *buf);
 
 /* color.c */
 #ifdef HAVE_COLOR
@@ -325,6 +325,7 @@ extern char *escape_shell_meta(const char *source, int quote_area);
 extern char *get_tmpfilename(const char *filename);
 extern char *quote_wild(char *str);
 extern char *quote_wild_whitespace(char *str);
+extern char *strip_line(char *line);
 extern const char *get_val(const char *env, const char *def);
 extern const char *gnksa_strerror(int errcode);
 extern int gnksa_check_from(char *from);
@@ -358,15 +359,10 @@ extern void read_input_history_file(void);
 extern void rename_file(const char *old_filename, const char *new_filename);
 extern void show_inverse_video_status(void);
 extern void strip_double_ngs(char *ngs_list);
-extern void strip_line(char *line);
 extern void strip_name(char *the_address, char *stripped_address);
 extern void tin_done(int ret);
 extern void toggle_inverse_video(void);
-#if 0
-	extern void parse_from(char *from_line, char *eaddr, char *fname);
-#else
-	extern int parse_from(const char *from, char *address, char *realname);
-#endif /* 0 */
+extern int parse_from(const char *from, char *address, char *realname);
 #if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
 	extern void buffer_to_network(char *line, int mmnwcharset);
 #endif /* LOCAL_CHARSET || MAC_OS_X || CHARSET_CONVERSION */

@@ -82,6 +82,9 @@
 #	endif /* EVIL_INSIDE */
 #else
 #	define ADD_CAN_KEY(id)
+#	ifdef EVIL_INSIDE
+#		define ADD_CAN_LOCK(id)
+#	endif /* EVIL_INSIDE */
 #endif /* USE_CANLOCK */
 
 #ifdef EVIL_INSIDE
@@ -1513,10 +1516,10 @@ post_article_done:
 			 * actually in
 			 * FIXME: This logic is faithful to the original, but awful
 			 */
-			if (tinrc.add_posted_to_filter && (type == POST_QUICK || type == POST_POSTPONED || type == POST_NORMAL)) {
+			if (art_type == GROUP_TYPE_NEWS && tinrc.add_posted_to_filter && (type == POST_QUICK || type == POST_POSTPONED || type == POST_NORMAL)) {
 				if ((psGrp = group_find(header.newsgroups)) && (type != POST_POSTPONED || (type == POST_POSTPONED && !strchr(header.newsgroups, ',')))) {
 					quick_filter_select_posted_art(psGrp, header.subj, a_message_id);
-					if (type == POST_QUICK)
+					if (type == POST_QUICK || (type == POST_POSTPONED && post_postponed_and_exit))
 						write_filter_file(filter_file);
 				}
 			}
@@ -2240,7 +2243,7 @@ join_references(
 	*c = 0;
 
 	/* now see if we need to remove ids */
-	while (strlen(b) > MAXREFSIZE - 14) {	/* 14 = strlen("References: ")+2 */
+	while (strlen(b) > (MAXREFSIZE - strlen("References: ") - 2)) {
 		c = b;
 		c += skip_id(c);	/* keep the first one */
 		while (*c && must_include(c))
@@ -4384,7 +4387,7 @@ build_messageid(
 	 * draft-ietf-usefor-msg-id-alt-00, 2.1.1
 	 * based on the host's FQDN
 	 */
-	snprintf(buf, sizeof(buf) - 1, "<%lxt%xi%xn%x@%s>", seqnum++, time(0), getpid(), getuid(), get_fqdn(get_host_name()));
+	snprintf(buf, sizeof(buf) - 1, "<%lxt%lxi%xn%x@%s>", seqnum++, time(0), getpid(), getuid(), get_fqdn(get_host_name()));
 #	endif /* !FORGERY */
 
 	i = gnksa_check_from(buf);

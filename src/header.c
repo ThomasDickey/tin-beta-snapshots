@@ -210,10 +210,8 @@ get_fqdn(
 					}
 				}
 			}
-			if (domain) {
-				strip_line(domain);
-				sprintf(fqdn, "%s.%s", name, domain);
-			}
+			if (domain)
+				sprintf(fqdn, "%s.%s", name, strip_line(domain));
 
 			fclose(inf);
 		}

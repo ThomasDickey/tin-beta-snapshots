@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2001-07-22
+ *  Updated   : 2002-09-28
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -73,9 +73,9 @@ static t_bool start_any_unread = FALSE;	/* only start if unread news */
  * Local prototypes
  */
 static void read_cmd_line_options(int argc, char *argv[]);
+static void show_intro_page(void);
 static void update_index_files(void);
 static void usage(char *theProgname);
-static void show_intro_page(void);
 
 
 /*
@@ -86,9 +86,9 @@ main(
 	int argc,
 	char *argv[])
 {
+	int count;
 	int num_cmd_line_groups;
 	int start_groupnum = 0;
-	int count;
 	t_bool tmp_no_write;
 
 	/* initialize locale support */
@@ -273,9 +273,8 @@ main(
 	read_attributes_file(FALSE);
 
 	/*
-	 * Read in users filter preferences file.
-	 * This has to be done before quick post
-	 * because the filters will be updated.
+	 * Read in users filter preferences file. This has to be done before
+	 * quick post because the filters might be updated.
 	 */
 	filtered_articles = read_filter_file(filter_file);
 
@@ -323,7 +322,8 @@ main(
 	 * new newsgroups and command line newsgroups already loaded
 	 */
 
-	/* TODO:
+	/*
+	 * TODO:
 	 * if (num_cmd_line_groups != 0 && check_any_unread)
 	 * don't read newsrc.
 	 * This makes -Z handle command line newsgroups. Test & document
@@ -368,7 +368,7 @@ main(
 	/*
 	 * Catchup newsrc file (-c option)
 	 */
-	if (catchup) {
+	if (catchup && batch_mode) {
 		catchup_newsrc_file();
 		tin_done(EXIT_SUCCESS);
 	}
@@ -452,7 +452,6 @@ read_cmd_line_options(
 
 			case 'c':
 				catchup = TRUE;
-				batch_mode = TRUE;
 				break;
 
 			case 'd':
@@ -471,7 +470,7 @@ read_cmd_line_options(
 #endif /* DEBUG */
 				break;
 
-			case 'f':	/* active (tind) / newsrc (tin) file */
+			case 'f':	/* newsrc (tin) file */
 				my_strncpy(newsrc, optarg, sizeof(newsrc));
 				newsrc_set = TRUE;
 				break;
@@ -619,8 +618,8 @@ read_cmd_line_options(
 					VERSION, RELEASEDATE, RELEASENAME);
 #endif /* __DATE__ && __TIME__ */
 /*
- * FIXME: make the rest below a function, so we can also use it
- * inside post.c:mail_bug_report()
+ * FIXME: make the rest below a function (i.e. to fill a struct), so we
+ * can also use it inside post.c:mail_bug_report()
  */
 #ifdef SYSTEM_NAME
 				error_message("Platform:");
@@ -902,14 +901,18 @@ read_cmd_line_options(
 
 	/*
 	 * Sort out conflicts of options....
+	 * TODO: -> lang.c
 	 */
 	if (verbose && !batch_mode) {
-		wait_message(1, _("-v only useful for batch mode operations\n"));
+		wait_message(2, _("%s only useful for batch mode operations\n"), "-v");
 		verbose = FALSE;
 	}
-
+	if (catchup && !batch_mode) {
+		wait_message(2, _("%s only useful for batch mode operations\n"), "-c");
+		catchup = FALSE;
+	}
 	if (read_saved_news && batch_mode) {
-		wait_message(1, _("-R only useful without batch mode operations\n"));
+		wait_message(2, _("%s only useful without batch mode operations\n"), "-R");
 		read_saved_news = FALSE;
 	}
 
@@ -1019,7 +1022,6 @@ usage(
 
 #	ifndef NNTP_ONLY
 		error_message(_("  -u       update index files (batch mode)"));
-		error_message(_("  -U       update index files in the background while reading news"));
 #	endif /* !NNTP_ONLY */
 
 	error_message(_("  -v       verbose output for batch mode options"));
@@ -1092,7 +1094,7 @@ read_cmd_line_groups(
 {
 	int matched = 0;
 	int num;
-	register int i;
+	int i;
 
 	if (num_cmdargs < max_cmdargs) {
 		selmenu.max = skip_newgroups();		/* Reposition after any newgroups */
@@ -1108,7 +1110,6 @@ read_cmd_line_groups(
 			}
 		}
 	}
-
 	return matched;
 }
 

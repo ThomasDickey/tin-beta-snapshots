@@ -155,9 +155,9 @@ group_page(
 	int old_top = 0;
 	int old_group_top;
 	int ret_code = 0;			/* Set to < 0 when it is time to leave this menu */
-	t_bool flag;
 	long old_artnum = 0L;
 	struct t_art_stat sbuf;
+	t_bool flag;
 	t_bool range_active = FALSE;		/* Set if a range is defined */
 	t_bool xflag = FALSE;	/* 'X'-flag */
 
@@ -203,7 +203,6 @@ group_page(
 	while (ret_code >= 0) {
 		set_xclick_on();
 		switch (ch = handle_keypad(group_left, group_right, &menukeymap.group_nav)) {
-
 			case iKeyAbort:		/* Abort */
 				break;
 
@@ -443,14 +442,11 @@ group_page(
 #	endif /* HAVE_COLOR */
 
 			case iKeyGroupMarkThdRead:	/* mark thread as read */
-
 				if (grpmenu.curr < 0) {
 					info_message(_(txt_no_next_unread_art));
 					break;
 				}
-
 				old_selected_arts = num_of_selected_arts;
-
 				/*
 				 * If a range is active, use it.
 				 */
@@ -476,7 +472,6 @@ group_page(
 
 				bld_sline(grpmenu.curr);
 				draw_line(grpmenu.curr, MAGIC);
-
 				/*
 				 * Move cursor to next unread
 				 */
@@ -485,7 +480,6 @@ group_page(
 					info_message(_(txt_no_next_unread_art));
 					break;
 				}
-
 				/*
 				 * If range defined, we have to redraw whole page anyway.
 				 */
@@ -493,7 +487,6 @@ group_page(
 					range_active = FALSE;			/* Range has gone now */
 					show_group_page();
 				}
-
 				if ((n = which_thread(n)) < 0) {
 					error_message("Internal error: which_thread(%d) < 0", n);
 					break;
@@ -513,8 +506,7 @@ group_page(
 			case iKeyOptionMenu:	/* option menu */
 				if (grpmenu.max > 0) {
 					old_top = top_art;
-					n = (int) base[grpmenu.curr];
-					old_artnum = arts[n].artnum;
+					old_artnum = arts[(int) base[grpmenu.curr]].artnum;
 				}
 				n = tinrc.sort_article_type;
 				filter_state = change_config_file(group);
@@ -544,7 +536,6 @@ group_page(
 					info_message(_(txt_no_next_unread_art));
 					break;
 				}
-
 				if ((n = next_unread((int) base[grpmenu.curr])) == -1)
 					info_message(_(txt_no_next_unread_art));
 				else
@@ -557,9 +548,7 @@ group_page(
 					break;
 				}
 
-				n = prev_response((int) base[grpmenu.curr]);
-
-				if ((n = prev_unread(n)) == -1)
+				if ((n = prev_unread(prev_response((int) base[grpmenu.curr]))) == -1)
 					info_message(_(txt_no_prev_unread_art));
 				else
 					ret_code = enter_pager(n, FALSE);
@@ -567,12 +556,10 @@ group_page(
 
 			case iKeyGroupPrevGroup:	/* previous group */
 				clear_message();
-
 				for (i = selmenu.curr - 1; i >= 0; i--) {
 					if (UNREAD_GROUP(i))
 						break;
 				}
-
 				if (i < 0)
 					info_message(_(txt_no_prev_group));
 				else {
@@ -894,7 +881,6 @@ group_page(
 
 					for_each_art_in_thread(i, n)
 						arts[i].selected = TRUE;
-
 				}
 				/* no screen update needed */
 				break;
@@ -1024,9 +1010,9 @@ clear_note_area(
 
 
 /*
- * If in show_only_unread mode or there are unread articles we know this thread
- * will exist after toggle. Otherwise we find the next closest to return to.
- * 'force' can be set to force tin to show all messages
+ * If in show_only_unread mode or there are unread articles we know this
+ * thread will exist after toggle. Otherwise we find the next closest to
+ * return to. 'force' can be set to force tin to show all messages
  */
 static void
 toggle_read_unread(
@@ -1060,10 +1046,9 @@ toggle_read_unread(
 
 
 /*
- * Find new index position after a kill or unkill. Because
- * kill can work on author it is impossible to know which,
- * if any, articles will be left afterwards. So we make a
- * "best attempt" to find a new index point.
+ * Find new index position after a kill or unkill. Because kill can work on
+ * author it is impossible to know which, if any, articles will be left
+ * afterwards. So we make a "best attempt" to find a new index point.
  */
 int
 find_new_pos(
@@ -1083,7 +1068,6 @@ find_new_pos(
 				return pos;
 		}
 	}
-
 	return ((cur_pos < grpmenu.max) ? cur_pos : (grpmenu.max - 1));
 }
 
@@ -1144,7 +1128,7 @@ void
 set_subj_from_size(
 	int num_cols)
 {
-	int size, show_author;
+	int show_author;
 
 	/*
 	 * This function is called early during startup when we only have
@@ -1156,9 +1140,8 @@ set_subj_from_size(
 
 	if (show_author != SHOW_FROM_BOTH) {
 		if (max_from > 25) {
-			size = max_from - 25;
+			max_subj += max_from - 25;
 			max_from = 25;
-			max_subj += size;
 		}
 	}
 
@@ -1316,10 +1299,11 @@ bld_sline(
 			 len_subj - 12, len_subj - 12, arts_sub,
 			 spaces, len_from, len_from, from);
 
-	/* protect display from non-displayable characters (e.g., form-feed) */
-	convert_to_printable(buffer);
-
-	WriteLine(INDEX2LNUM(i), buffer);
+	/*
+	 * protect display from non-displayable characters (e.g., form-feed)
+	 * and write line.
+	 */
+	WriteLine(INDEX2LNUM(i), convert_to_printable(buffer));
 }
 
 
@@ -1327,9 +1311,9 @@ static void
 show_group_title(
 	t_bool clear_title)
 {
-	char buf[PATH_LEN];
-	struct t_group currgrp;
+	char buf[LEN];
 	int i, art_cnt = 0, recent_art_cnt = 0;
+	struct t_group currgrp;
 
 	currgrp = CURR_GROUP;
 	if (currgrp.attribute->show_only_unread) {
@@ -1352,7 +1336,7 @@ show_group_title(
 	 *       really count read_selected into num_of_selected_arts? (kill_level > 1)
 	 */
 	if (tinrc.getart_limit && tinrc.recent_time)
-		sprintf(buf, "%s (%d%c %d/%d%c %d%c %d%c %d%c %c)",
+		snprintf(buf, sizeof(buf) - 1, "%s (%d%c %d/%d%c %d%c %d%c %d%c) %c",
 			currgrp.name, grpmenu.max,
 			*txt_thread[currgrp.attribute->thread_arts],
 			tinrc.getart_limit,
@@ -1362,7 +1346,7 @@ show_group_title(
 			num_of_killed_arts, tinrc.art_marked_killed,
 			group_flag(currgrp.moderated));
 	else if (tinrc.getart_limit)
-		sprintf(buf, "%s (%d%c %d/%d%c %d%c %d%c %c)",
+		snprintf(buf, sizeof(buf) - 1, "%s (%d%c %d/%d%c %d%c %d%c) %c",
 			currgrp.name, grpmenu.max,
 			*txt_thread[currgrp.attribute->thread_arts],
 			tinrc.getart_limit,
@@ -1371,7 +1355,7 @@ show_group_title(
 			num_of_killed_arts, tinrc.art_marked_killed,
 			group_flag(currgrp.moderated));
 	else if (tinrc.recent_time)
-		sprintf(buf, "%s (%d%c %d%c %d%c %d%c %d%c %c)",
+		snprintf(buf, sizeof(buf) - 1, "%s (%d%c %d%c %d%c %d%c %d%c) %c",
 			currgrp.name, grpmenu.max,
 			*txt_thread[currgrp.attribute->thread_arts],
 			art_cnt, (currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read),
@@ -1380,7 +1364,7 @@ show_group_title(
 			num_of_killed_arts, tinrc.art_marked_killed,
 			group_flag(currgrp.moderated));
 	else
-		sprintf(buf, "%s (%d%c %d%c %d%c %d%c %c)",
+		snprintf(buf, sizeof(buf) - 1, "%s (%d%c %d%c %d%c %d%c) %c",
 			currgrp.name, grpmenu.max,
 			*txt_thread[currgrp.attribute->thread_arts],
 			art_cnt, (currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read),
@@ -1392,7 +1376,6 @@ show_group_title(
 		MoveCursor(0, 0);
 		CleartoEOLN();
 	}
-
 	show_title(buf);
 }
 
@@ -1524,8 +1507,7 @@ tab_pressed(
 {
 	int n;
 
-	n = ((grpmenu.curr < 0) ? -1 : next_unread((int) base[grpmenu.curr]));
-	if (n < 0)
+	if ((n = ((grpmenu.curr < 0) ? -1 : next_unread((int) base[grpmenu.curr]))) < 0)
 		return GRP_NEXTUNREAD;			/* => Enter next unread group */
 
 	/* We still have unread arts in the current group ... */

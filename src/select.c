@@ -522,7 +522,7 @@ show_selection_page(
 
 	set_first_screen_item();
 
-	blank_len = (cCOLS - (groupname_len + SELECT_MISC_COLS)) + (show_description ? 2 : 4);
+	blank_len = (MIN(cCOLS, (int) sizeof(group_descript)) - (groupname_len + SELECT_MISC_COLS)) + (show_description ? 2 : 4);
 
 	for (j = 0, i = selmenu.first; i < selmenu.last; i++, j++) {
 #ifdef USE_CURSES
@@ -558,7 +558,6 @@ show_selection_page(
 		active_name[groupname_len] = '\0';
 		if (blank_len > 254)
 			blank_len = 254;
-		/* copy of active[n].description fix some malloc bugs kg */
 		strncpy(group_descript, active[n].description ? active[n].description : " ", blank_len);
 		group_descript[blank_len] = '\0';
 
@@ -579,10 +578,9 @@ show_selection_page(
 			else
 				sprintf(sptr, "  %c %s %s  %-*.*s%*s" cCRLF, subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name, blank_len, " ");
 		}
-		if (tinrc.strip_blanks) {
-			strip_line(sptr);
-			strcat(sptr, cCRLF);
-		}
+		if (tinrc.strip_blanks)
+			strcat(strip_line(sptr), cCRLF);
+
 		CleartoEOLN();
 		my_fputs(sptr, stdout);
 	}

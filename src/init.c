@@ -294,7 +294,7 @@ struct t_config tinrc = {
 	SORT_ARTICLES_BY_DATE_ASCEND,		/* sort_article_type */
 	SORT_THREADS_BY_SCORE_DESCEND,		/* sort_threads_type */
 	BOGUS_SHOW,		/* strip_bogus */
-	THREAD_MAX,		/* thread_articles */
+	THREAD_BOTH,		/* thread_articles */
 	THREAD_SCORE_MAX,	/* thread_score */
 	0,		/* Default to wildmat, not regex */
 	-50,		/* score_limit_kill */
@@ -1071,7 +1071,7 @@ postinit_regexp(
 		STRCPY(tinrc.underscores_regex, DEFAULT_UNDERSCORES_REGEX);
 	compile_regex(tinrc.underscores_regex, &underscores_regex, PCRE_CASELESS);
 
-	compile_regex(UUBEGIN_REGEX, &uubegin_regex, PCRE_CASELESS|PCRE_ANCHORED);
+	compile_regex(UUBEGIN_REGEX, &uubegin_regex, PCRE_ANCHORED);
 	compile_regex(UUBODY_REGEX, &uubody_regex, PCRE_ANCHORED);
 
 	compile_regex(URL_REGEX, &url_regex, PCRE_CASELESS);

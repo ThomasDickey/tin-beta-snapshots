@@ -89,14 +89,14 @@ static int get_choice(int x, const char *help, const char *prompt, const char *o
 static int set_filter_scope(struct t_group *group);
 static t_bool add_filter_rule(struct t_group *group, struct t_article *art, struct t_filter_rule *rule);
 static t_bool test_regex(const char *string, char *regex, t_bool nocase, struct regex_cache *cache);
+static struct t_filter_comment *add_filter_comment(struct t_filter_comment *ptr, char *text);
+static struct t_filter_comment *free_filter_comment(struct t_filter_comment *ptr);
+static struct t_filter_comment *copy_filter_comment(struct t_filter_comment *from, struct t_filter_comment *to);
 static void expand_filter_array(struct t_filters *ptr);
 static void free_filter_item(struct t_filter *ptr);
 static void print_filter_menu(void);
 static void set_filter(struct t_filter *ptr);
 static void write_filter_array(FILE *fp, struct t_filters *ptr, time_t theTime);
-static struct t_filter_comment *add_filter_comment(struct t_filter_comment *ptr, char *text);
-static struct t_filter_comment *free_filter_comment(struct t_filter_comment *ptr);
-static struct t_filter_comment *copy_filter_comment(struct t_filter_comment *from, struct t_filter_comment *to);
 
 
 /*
@@ -277,7 +277,7 @@ free_filter_array(
 
 
 /*
- *  read ~/.tin/filter file contents into filter array
+ * read ~/.tin/filter file contents into filter array
  */
 t_bool
 read_filter_file(
@@ -882,8 +882,8 @@ filter_menu(
 	char quat_time[PATH_LEN];
 	char ch_default = iKeyFilterSave;
 	int ch, i, len;
-	t_bool proceed;
 	struct t_filter_rule rule;
+	t_bool proceed;
 
 	signal_context = cFilter;
 
@@ -1018,7 +1018,6 @@ filter_menu(
 		 * Subject:
 		 */
 		i = get_choice(INDEX_TOP + 5, _(txt_help_filter_subj), text_subj, _(txt_yes), _(txt_no), (char *) 0, (char *) 0, (char *) 0);
-
 		if (i == -1)
 			return FALSE;
 		else
@@ -1028,7 +1027,6 @@ filter_menu(
 		 * From:
 		 */
 		i = get_choice(INDEX_TOP + 6, _(txt_help_filter_from), text_from, (rule.subj_ok ? _(txt_no) : _(txt_yes)), (rule.subj_ok ? _(txt_yes) : _(txt_no)), (char *) 0, (char *) 0, (char *) 0);
-
 		if (i == -1)
 			return FALSE;
 		else
@@ -1304,7 +1302,7 @@ quick_filter(
 /*
  * Quick command to add an auto-select filter to the article that user
  * has just posted. Selects on Subject: line with limited expire time.
- * Don't process if MAILGROUP.
+ * Don't process if GROUP_TYPE_MAIL || GROUP_TYPE_SAVE
  */
 t_bool
 quick_filter_select_posted_art(
@@ -1383,7 +1381,6 @@ quick_filter_select_posted_art(
 			filtered = add_filter_rule(group, &art, &rule);
 			FreeIfNeeded(art.subject);
 		}
-
 	}
 	return filtered;
 }

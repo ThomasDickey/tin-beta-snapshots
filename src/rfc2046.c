@@ -746,7 +746,7 @@ parse_multipart_article(
 			case M_HDR:
 				switch (bnd) {
 					case BOUND_START:
-						fprintf(stderr, "MIME parse error:  Start boundary whilst reading headers\n");
+						fprintf(stderr, "MIME parse error: Start boundary whilst reading headers\n");
 						continue;
 
 					case BOUND_NONE:

@@ -1253,10 +1253,6 @@ extern char *input_history[HIST_MAXNUM+1][HIST_SIZE+1];
 	extern constext txt_pipe_to_command[];
 	extern constext txt_piping[];
 #else
-#	ifdef VMS
-		extern constext txt_pipe_to_command[];
-		extern constext txt_piping[];
-#	endif /* VMS */
 	extern constext txt_piping_not_enabled[];
 #endif /* !DONT_HAVE_PIPING */
 

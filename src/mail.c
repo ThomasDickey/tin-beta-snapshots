@@ -299,7 +299,7 @@ read_groups_descriptions(
 			while ((q = strchr(q, '\t')) != NULL)
 				*q = ' ';
 
-			group->description = my_strdup(p);
+			group->description = convert_to_printable(my_strdup(p));
 
 #	if 0 /* not useful for cache_overview_files */
 			if (group->type == GROUP_TYPE_NEWS) {
