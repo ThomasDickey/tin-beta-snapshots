@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-02-09
+ *  Updated   : 2004-06-12
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -44,6 +44,14 @@
 #ifndef MENUKEYS_H
 #	include "menukeys.h"
 #endif /* !MENUKEYS_H */
+
+static char *prompt_slk_message;	/* prompt message for prompt_slk_redraw */
+
+/*
+ * Local prototypes
+ */
+static int prompt_list(int row, int col, int var, constext *help_text, constext *prompt_text, constext *list[], int size);
+
 
 /*
  *  prompt_num
@@ -168,7 +176,7 @@ prompt_yn(
 {
 	char *keyprompt;
 	char keyno[MAXKEYLEN], keyyes[MAXKEYLEN];
-	int ch = 'y', prompt_ch = 'y';
+	int ch = 'y', prompt_ch = 'y'; /* why not iKeyPromptYes? */
 	size_t maxlen;
 	t_bool yn_loop = TRUE;
 
@@ -251,7 +259,7 @@ prompt_yn(
  * ESC is used to abort any changes, RET saves changes.
  * The new value is returned.
  */
-int
+static int
 prompt_list(
 	int row,
 	int col,
@@ -281,15 +289,11 @@ prompt_list(
 
 	do {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		size_t len;
+		wchar_t *wbuf;
 
-		len = mbstowcs(NULL, _(prompt_text), 0);
-		if (len != (size_t) (-1)) {
-			wchar_t *wbuf = my_malloc(sizeof(wchar_t) * (len + 1));
-
-			mbstowcs(wbuf, _(prompt_text), len + 1);
+		if ((wbuf = char2wchar_t(_(prompt_text))) != NULL) {
 			wconvert_to_printable(wbuf);
-			offset = wcswidth(wbuf, len + 1);
+			offset = wcswidth(wbuf, wcslen(wbuf) + 1);
 			if (offset == -1) {
 				/* something went wrong, use wcslen as fallback */
 				offset = (int) wcslen(wbuf);
@@ -328,20 +332,37 @@ prompt_list(
 
 
 /*
- * Special case of prompt_list() Toggle between ON and OFF
+ * Special case of prompt_option_list() Toggle between ON and OFF
+ * The function returns TRUE, if the value was changed, FALSE otherwise.
  */
-void
-prompt_on_off(
-	int row,
-	int col,
-	t_bool *var,
-	constext *help_text,
-	constext *prompt_text)
+t_bool
+prompt_option_on_off(
+	int option)
 {
-	t_bool ret;
+	char prompt[LEN];
+	t_bool *variable = OPT_ON_OFF_list[option_table[option].var_index];
+	t_bool old_value = *variable;
 
-	ret = prompt_list(row, col, (int) *var, help_text, _(prompt_text), txt_onoff, 2) ? TRUE : FALSE;
-	*var = (ret != 0);
+	fmt_option_prompt(prompt, sizeof(prompt), TRUE, option);
+	*variable = prompt_list(option_row(option), 0, *variable, option_table[option].txt->help, prompt, txt_onoff, 2) ? TRUE: FALSE;
+	return *variable != old_value;
+}
+
+
+/*
+ * The function returns TRUE, if the value was changed, FALSE otherwise.
+ */
+t_bool
+prompt_option_list(
+	int option)
+{
+	char prompt[LEN];
+	int *variable = option_table[option].variable;
+	int old_value = *variable;
+
+	fmt_option_prompt(prompt, sizeof(prompt), TRUE, option);
+	*variable = prompt_list(option_row(option), 0, *variable, option_table[option].txt->help, prompt, option_table[option].opt_list, option_table[option].opt_count);
+	return *variable != old_value;
 }
 
 
@@ -543,15 +564,11 @@ sized_message(
 	int max_len;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t *wformat;
-	size_t format_len;
 
-	format_len = mbstowcs(NULL, format, 0);
-	if (format_len != (size_t) (-1)) {
-		wformat = my_malloc(sizeof(wchar_t) * (format_len + 1));
-		mbstowcs(wformat, format, format_len + 1);
+	if ((wformat = char2wchar_t(format)) != NULL) {
 		wconvert_to_printable(wformat);
 		/* The formatting info (%s) wastes 2 chars, but our prompt needs 1 char */
-		max_len = cCOLS - wcswidth(wformat, format_len + 1) + 2 - 1;
+		max_len = cCOLS - wcswidth(wformat, wcslen(wformat) + 1) + 2 - 1;
 		free(wformat);
 	} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -583,15 +600,17 @@ prompt_slk_response(
 	char buf[LEN];
 
 	va_start(ap, fmt);
-	vsnprintf(buf, sizeof(buf), fmt, ap);	/* We need to do this, else wait_message() will clobber us */
+	vsnprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
 
+	prompt_slk_message = my_malloc(strlen(buf) + 2);
 	ch_default = map_to_local(ch_default, responses);
-	do {
-		wait_message(0, "%s%c", buf, ch_default);
+	snprintf(prompt_slk_message, strlen(buf) + 2, "%s%c", buf, ch_default);
 
-		/* Get the cursor _just_ right */
-		MoveCursor(cLINES, (int) strlen(buf));
+	input_context = cPromptSLK;
+
+	do {
+		prompt_slk_redraw();		/* draw the prompt */
 
 		if ((ch = ReadCh()) == '\r' || ch == '\n')
 			ch = ch_default;
@@ -613,6 +632,7 @@ prompt_slk_response(
 				case KEYMAP_HOME:
 				case KEYMAP_END:
 					ch = '\0';
+					break;
 
 				default:
 					break;
@@ -622,8 +642,36 @@ prompt_slk_response(
 
 	} while (!strchr(responses->localkeys, ch));
 
+	input_context = cNone;
+	FreeAndNull(prompt_slk_message);
+
 	clear_message();
 	return map_to_default(ch, responses);
+}
+
+
+/* (Re)draws the prompt message for prompt_slk_response() */
+void
+prompt_slk_redraw(
+	void)
+{
+	int column;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wtmp;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+	wait_message(0, "%s", prompt_slk_message);
+
+	/* get the cursor _just_ right */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if ((wtmp = char2wchar_t(prompt_slk_message)) != NULL) {
+		wconvert_to_printable(wtmp);
+		column = wcswidth(wtmp, wcslen(wtmp) + 1) - 1;
+		free(wtmp);
+	} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		column = (int) strlen(prompt_slk_message) - 1;
+	MoveCursor(cLINES, column);
 }
 
 

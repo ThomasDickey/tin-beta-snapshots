@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-02-26
+ *  Updated   : 2004-03-16
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -107,7 +107,6 @@ selection_page(
 #endif /* READ_CHAR_HACK */
 
 	ClearScreen();
-	set_groupname_len(FALSE);	/* find longest subscribed to groupname */
 
 	/*
 	 * If user specified only 1 cmd line groupname (eg. tin -r alt.sources)
@@ -244,15 +243,12 @@ selection_page(
 				show_description = bool_not(show_description);
 				if (show_description)
 					read_descriptions(TRUE);
-				set_groupname_len(FALSE);
 				show_selection_page();
 				break;
 
 			case iKeySelectGoto:			/* prompt for a new group name */
-				if ((n = choose_new_group()) >= 0) {
-					set_groupname_len(FALSE);
+				if ((n = choose_new_group()) >= 0)
 					move_to_item(n);
-				}
 				break;
 
 			case iKeyHelp:					/* help */
@@ -348,10 +344,13 @@ selection_page(
 				 * articles
 				 */
 				tinrc.show_only_unread_groups = bool_not(tinrc.show_only_unread_groups);
+				/*
+				 * as we effectively do a yank out on each change, set yanked_out accordingly
+				 */
+				yanked_out = TRUE;
 				wait_message(0, _(txt_reading_groups), (tinrc.show_only_unread_groups) ? _("unread") : _("all"));
 
 				toggle_my_groups(NULL);
-				set_groupname_len(FALSE);
 				show_selection_page();
 				if (tinrc.show_only_unread_groups)
 					info_message(_(txt_show_unread));
@@ -521,6 +520,7 @@ show_selection_page(
 	char subs;
 	int i, j, n;
 	int blank_len;
+	int len, groupname_len = 0;
 
 	signal_context = cSelect;
 	currmenu = &selmenu;
@@ -541,6 +541,37 @@ show_selection_page(
 		selmenu.curr = 0;
 
 	set_first_screen_item();
+
+	/*
+	 * calculate max length of groupname field
+	 * if yanked in (yanked_out == FALSE) check all groups in active file
+	 * otherwise just subscribed to groups
+	 */
+	if (yanked_out) {
+		for (i = 0; i < selmenu.max; i++) {
+			if ((len = strlen(active[my_group[i]].name)) > groupname_len)
+				groupname_len = len;
+			if (show_description && groupname_len > tinrc.groupname_max_length) {
+				/* no need to search further, we have reached max length */
+				groupname_len = tinrc.groupname_max_length;
+				break;
+			}
+		}
+	} else {
+		for_each_group(i) {
+			if ((len = strlen(active[i].name)) > groupname_len)
+				groupname_len = len;
+			if (show_description && groupname_len > tinrc.groupname_max_length) {
+				/* no need to search further, we have reached max length */
+				groupname_len = tinrc.groupname_max_length;
+				break;
+			}
+		}
+	}
+	if (groupname_len >= (cCOLS - SELECT_MISC_COLS))
+		groupname_len = cCOLS - SELECT_MISC_COLS - 1;
+	if (groupname_len < 0)
+		groupname_len = 0;
 
 	blank_len = (MIN(cCOLS, (int) sizeof(group_descript)) - (groupname_len + SELECT_MISC_COLS)) + (show_description ? 2 : 4);
 
@@ -648,36 +679,35 @@ static void
 yank_active_file(
 	void)
 {
-	if (yanked_out) {										/* Yank in */
-		if (selmenu.max == num_active)						/* All groups currently present? */
-			info_message(_(txt_yanked_none));
-		else {
-			int i;
-			int prevmax = selmenu.max;
+	if (yanked_out && selmenu.max == num_active) {			/* All groups currently present? */
+		info_message(_(txt_yanked_none));
+		return;
+	}
 
-			save_restore_curr_group(TRUE);					/* Save group position */
+	if (yanked_out) {						/* Yank in */
+		int i;
+		int prevmax = selmenu.max;
 
-			/*
-			 * Reset counter and load all the groups in active[] into my_group[]
-			 */
-			selmenu.max = 0;
-			for_each_group(i)
-				my_group[selmenu.max++] = i;
+		save_restore_curr_group(TRUE);				/* Save group position */
 
-			selmenu.curr = save_restore_curr_group(FALSE);	/* Restore previous group position */
-			set_groupname_len(yanked_out);
-			show_selection_page();
-			info_message(_(txt_yanked_groups), selmenu.max-prevmax, PLURAL(selmenu.max-prevmax, txt_group));
-		}
-	} else {												/* Yank out */
+		/*
+		 * Reset counter and load all the groups in active[] into my_group[]
+		 */
+		selmenu.max = 0;
+		for_each_group(i)
+			my_group[selmenu.max++] = i;
+
+		selmenu.curr = save_restore_curr_group(FALSE);	/* Restore previous group position */
+		yanked_out = bool_not(yanked_out);
+		show_selection_page();
+		info_message(_(txt_yanked_groups), selmenu.max-prevmax, PLURAL(selmenu.max-prevmax, txt_group));
+	} else {							/* Yank out */
 		toggle_my_groups(NULL);
 		HpGlitch(erase_arrow());
-		set_groupname_len(yanked_out);
+		yanked_out = bool_not(yanked_out);
 		show_selection_page();
 		info_message(_(txt_yanked_sub_groups));
 	}
-
-	yanked_out = bool_not(yanked_out);
 }
 
 
@@ -1013,47 +1043,6 @@ read_groups(
 
 
 /*
- * Calculate max length of groupname field for group selection level.
- * If all_groups is TRUE check all groups in active file otherwise
- * just subscribed to groups.
- */
-void
-set_groupname_len(
-	t_bool all_groups)
-{
-	int len;
-	int i;
-
-	groupname_len = 0;
-
-	if (all_groups) {
-		for_each_group(i) {
-			if ((len = strlen(active[i].name)) > groupname_len)
-				groupname_len = len;
-		}
-	} else {
-		for (i = 0; i < selmenu.max; i++) {
-			if ((len = strlen(active[my_group[i]].name)) > groupname_len)
-				groupname_len = len;
-		}
-	}
-
-	if (groupname_len >= (cCOLS - SELECT_MISC_COLS)) {
-		groupname_len = cCOLS - SELECT_MISC_COLS - 1;
-		if (groupname_len < 0)
-			groupname_len = 0;
-	}
-
-	/*
-	 * If newsgroups descriptions are ON then cut off groupnames
-	 * to specified max. length otherwise display full length
-	 */
-	if (show_description && groupname_len > tinrc.groupname_max_length)
-		groupname_len = tinrc.groupname_max_length;
-}
-
-
-/*
  * Toggle my_group[] between all groups / only unread groups
  * We make a special case for Newgroups (always appear, at the top)
  * and Bogus groups if tinrc.strip_bogus = BOGUS_SHOW
@@ -1193,7 +1182,6 @@ subscribe_pattern(
 
 	if (subscribe_num) {
 		toggle_my_groups(NULL);
-		set_groupname_len(FALSE);
 		show_selection_page();
 		info_message(result, subscribe_num);
 	} else

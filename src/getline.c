@@ -3,7 +3,7 @@
  *  Module    : getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 2004-03-02
+ *  Updated   : 2004-03-14
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -23,7 +23,6 @@
 #endif /* !TCURSES_H */
 
 #define BUF_SIZE	1024
-#define SCROLL		30
 #define TABSIZE		4
 
 #define CTRL_A	'\001'
@@ -540,6 +539,8 @@ gl_fixup(
 	int new_shift;		/* value of shift based on cursor */
 	int extra;		/* adjusts when shift (scroll) happens */
 	int i;
+	/* FIXME: there are some small problems if SCROLL >= gl_width - 2 */
+	int SCROLL = MIN(30, gl_width - 3);
 
 	if (change == -1 && cursor == 0 && gl_buf[0] == 0) {	/* reset */
 		gl_shift = off_right = off_left = 0;
@@ -688,7 +689,7 @@ hist_add(
 
 		tmp = my_malloc(size + 1);
 		if (wcstombs(tmp, gl_buf, size) == (size_t) -1) {
-			/* conversation failed */
+			/* conversion failed */
 			free(tmp);
 			return;
 		} else

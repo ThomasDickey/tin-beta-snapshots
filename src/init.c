@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-01-07
+ *  Updated   : 2004-06-06
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -124,7 +124,6 @@ char userid[PATH_LEN];
 	char rcdir_asfile[PATH_LEN];	/* rcdir expressed as dev:[dir]tin.dir, for stat() */
 #endif /* VMS */
 
-int groupname_len = 0;			/* 'runtime' copy of groupname_max_len */
 int hist_last[HIST_MAXNUM + 1];
 int hist_pos[HIST_MAXNUM + 1];
 int i_key_search_last;			/* for repeated search */
@@ -413,8 +412,11 @@ struct t_config tinrc = {
 	TRUE,		/* default_filter_select_global */
 	DEFAULT_DATE_FORMAT,	/* date_format */
 #ifdef HAVE_UNICODE_NORMALIZATION
-	NORMALIZE_NFKC		/* normalization form */
+	NORMALIZE_NFKC,		/* normalization form */
 #endif /* HAVE_UNICODE_NORMALIZATION */
+#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
+	FALSE		/* render_bidi */
+#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
 };
 
 static mode_t real_umask;

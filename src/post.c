@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-02-28
+ *  Updated   : 2004-06-12
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -139,7 +139,7 @@ static char prompt_to_send(const char *subject);
 static int add_mail_quote(FILE *fp, int respnum);
 static int check_article_to_be_posted(const char *the_article, int art_type, struct t_group **group, t_bool art_unchanged);
 static unsigned int get_recipients(struct t_header *hdr, char *buf, size_t buflen);
-static int mail_loop(const char *filename, char ch, char *subject, const char *groupname, const char *prompt, t_bool mailforward);
+static int mail_loop(const char *filename, char ch, char *subject, const char *groupname, const char *prompt, FILE *articlefp);
 static int msg_add_x_body(FILE *fp_out, const char *body);
 static int msg_write_headers(FILE *fp);
 static int post_loop(int type, struct t_group *psGrp, char ch, const char *posting_msg, int art_type, int offset);
@@ -156,7 +156,7 @@ static t_bool insert_from_header(const char *infile);
 static t_bool is_crosspost(const char *xref);
 static t_bool must_include(const char *id);
 static t_bool repair_article(char *result, struct t_group *group);
-static t_bool submit_mail_file(const char *file, struct t_group *group, t_bool mailforward);
+static t_bool submit_mail_file(const char *file, struct t_group *group, FILE *articlefp, t_bool include_text);
 static void add_headers(const char *infile, const char *a_message_id);
 static void appendid(char **where, const char **what);
 static void find_reply_to_addr(char *from_addr, t_bool parse, struct t_header *hdr);
@@ -1522,7 +1522,7 @@ post_article_loop:
 					if (submit_news_file(article, group, a_message_id))
 						ret_code = POSTED_OK;
 				} else {
-					if (submit_mail_file(article, group, FALSE)) /* mailing_list */
+					if (submit_mail_file(article, group, NULL, FALSE)) /* mailing_list */
 						ret_code = POSTED_OK;
 				}
 
@@ -1948,7 +1948,7 @@ post_postponed_article(
 	if ((p = strchr(ng, ',')) != NULL)
 		*p = '\0';
 
-	snprintf(buf, sizeof(buf), _("Posting: %.*s ..."), (int) (cCOLS - 14), subject); /* TODO: -> lang.c, use strunc() */
+	snprintf(buf, sizeof(buf), _("Posting: %.*s ..."), cCOLS - 14, subject); /* TODO: -> lang.c, use strunc() */
 	post_loop(POST_POSTPONED, group_find(ng), (ask ? iKeyPostEdit : iKeyPostPost3), buf, GROUP_TYPE_NEWS, 0);
 	free(ng);
 	return;
@@ -2335,12 +2335,12 @@ join_references(
 	 */
 	char *b, *c, *d;
 	const char *e;
-	int space;
+	int space = 0;
 
 	b = my_malloc(strlen(oldrefs) + strlen(newref) + 64);
 	c = b;
 	e = oldrefs;
-	space = 0;
+
 	while (*e) {
 		if (*e == ' ') {
 			space++, *c++ = ' ', e++;	/* keep existing spaces */
@@ -2783,16 +2783,17 @@ mail_loop(
 	char *subject,
 	const char *groupname,		/* Newsgroup we are posting from */
 	const char *prompt,			/* If set, used for final query before posting */
-	t_bool mailforward)
+	FILE *articlefp)
 {
 	FILE *fp;
-#ifdef HAVE_PGP_GPG
-	char mail_to[HEADER_LEN];
-#endif /* HAVE_PGP_GPG */
 	int ret = POSTED_NONE;
 	long artchanged = 0L;
 	struct t_header hdr;
 	struct t_group *group = (struct t_group *) 0;
+	t_bool is_changed = FALSE;
+#ifdef HAVE_PGP_GPG
+	char mail_to[HEADER_LEN];
+#endif /* HAVE_PGP_GPG */
 
 	if (groupname)
 		group = group_find(groupname);
@@ -2810,6 +2811,10 @@ mail_loop(
 					clear_message();
 					return ret;
 				}
+
+				if (artchanged != file_mtime(filename))
+					is_changed = TRUE;
+
 				if (!(fp = fopen(filename, "r"))) { /* Oops */
 					clear_message();
 					return ret;
@@ -2863,8 +2868,7 @@ mail_loop(
 							confirm = FALSE;
 					}
 
-					/* TODO: wrap article into message/rfc822? */
-					if (confirm && submit_mail_file(filename, group, mailforward)) {
+					if (confirm && submit_mail_file(filename, group, articlefp, is_changed)) {
 						info_message(_(txt_articles_mailed), 1, _(txt_article_singular));
 						return POSTED_OK;
 					}
@@ -2926,21 +2930,25 @@ mail_to_someone(
 	char subject[HEADER_LEN];
 	int ret_code = POSTED_NONE;
 	struct t_header note_h = artinfo->hdr;
+	t_bool mime_forward = group->attribute->mime_forward;
 
 	clear_message();
 	snprintf(subject, sizeof(subject), "(fwd) %s\n", note_h.subj);
 
 	/*
 	 * don't add extra headers in the mail_to_someone() case as we include
-	 * the full original headers in the body of the mail
+	 * the full original headers in either the body of the mail or a separate
+	 * message/rfc822 MIME part.
 	 */
 	if ((fp = create_mail_headers(nam, TIN_LETTER_NAME, address, subject, NULL)) == NULL)
 		return ret_code;
 
-	rewind(artinfo->raw);
-	fprintf(fp, _(txt_forwarded));
-	copy_fp(artinfo->raw, fp);
-	fprintf(fp, _(txt_forwarded_end));
+	if (!mime_forward || INTERACTIVE_NONE != tinrc.interactive_mailer) {
+		rewind(artinfo->raw);
+		fprintf(fp, _(txt_forwarded));
+		copy_fp(artinfo->raw, fp);
+		fprintf(fp, _(txt_forwarded_end));
+	}
 
 	if (INTERACTIVE_NONE == tinrc.interactive_mailer)
 		msg_write_signature(fp, TRUE, &CURR_GROUP);
@@ -2961,7 +2969,7 @@ mail_to_someone(
 	} else {
 		if (confirm_to_mail)
 			ch = prompt_to_send(subject);
-		ret_code = mail_loop(nam, ch, subject, group ? group->name : NULL, NULL, TRUE);
+		ret_code = mail_loop(nam, ch, subject, group ? group->name : NULL, NULL, mime_forward ? artinfo->raw : NULL);
 	}
 
 	if (tinrc.unlink_article)
@@ -3061,7 +3069,7 @@ mail_bug_report(
 			ret_code = TRUE;
 	} else {
 		snprintf(tmesg, sizeof(tmesg), _(txt_mail_bug_report_confirm), bug_addr);
-		ret_code = mail_loop(nam, iKeyPostEdit, subject, NULL, tmesg, FALSE) ? TRUE : FALSE;
+		ret_code = mail_loop(nam, iKeyPostEdit, subject, NULL, tmesg, NULL) ? TRUE : FALSE;
 	}
 
 	unlink(nam);
@@ -3189,7 +3197,7 @@ mail_to_author(
 			if (invoke_cmd(buf))
 				ret_code = POSTED_OK;
 		} else
-			ret_code = mail_loop(nam, iKeyPostEdit, subject, group, NULL, FALSE);
+			ret_code = mail_loop(nam, iKeyPostEdit, subject, group, NULL, NULL);
 
 		/*
 		 * If interactive_mailer!=NONE and the user changed the subject in his
@@ -3859,10 +3867,11 @@ checknadd_headers(
 {
 	FILE *fp_in, *fp_out;
 	char *fcc = NULL;
+	char *l;
+	char *ptr;
 	char newsgroups[HEADER_LEN];
 	char line[HEADER_LEN];
 	char outfile[PATH_LEN];
-	t_bool inhdrs = TRUE;
 
 	newsgroups[0] = '\0';
 
@@ -3880,56 +3889,58 @@ checknadd_headers(
 		return NULL;
 	}
 
-	while (fgets(line, (int) sizeof(line), fp_in) != NULL) {
-		if (inhdrs) {
-			if (line[0] == '\n') {			/* End of headers */
-				inhdrs = FALSE;
+	while ((l = tin_fgets(fp_in, TRUE)) != NULL) {
+		if (l[0] == '\0') /* end of headers */
+			break;
 
-				if (tinrc.advertising) {	/* Add after other headers */
-					char suffix[HEADER_LEN];
+		if ((ptr = parse_header(l, "Newsgroups", FALSE, FALSE))) {
+			strip_double_ngs(ptr);
+			STRCPY(newsgroups, ptr);
+			snprintf(line, sizeof(line), "Newsgroups: %s\n", newsgroups);
+			fputs(line, fp_out);
+		} else if ((ptr = parse_header(l, "Followup-To", FALSE, FALSE))) {
+			strip_double_ngs(ptr);
+			/*
+			 * Only write followup header if not blank or followups != newsgroups
+			 */
+			if (*ptr && strcasecmp(newsgroups, ptr)) {
+				snprintf(line, sizeof(line), "Followup-To: %s\n", ptr);
+				fputs(line, fp_out);
+			}
+		} else if ((ptr = parse_header(l, "Fcc", FALSE, FALSE))) {
+			fcc = my_strdup(ptr);
+		} else if ((ptr = strchr(l, ':')) != NULL) { /* valid header? */
+			if (strlen(ptr) > 3) /* skip empty headers ": \n\0" */
+				fprintf(fp_out, "%s\n", l);
+		}
+	} /* end of headers */
 
-					suffix[0] = '\0';
+	if (tinrc.advertising) {	/* Add after other headers */
+		char suffix[HEADER_LEN];
+
+		suffix[0] = '\0';
 #ifdef HAVE_SYS_UTSNAME_H
 #	ifdef _AIX
-					snprintf(suffix, sizeof(suffix), " (%s/%s.%s)",
-						system_info.sysname, system_info.version, system_info.release);
+		snprintf(suffix, sizeof(suffix), " (%s/%s.%s)",
+			system_info.sysname, system_info.version, system_info.release);
 #	else
 #		ifdef SEIUX
-					snprintf(suffix, sizeof(suffix), " (%s/%s)",
-							system_info.version, system_info.release);
+			snprintf(suffix, sizeof(suffix), " (%s/%s)",
+				system_info.version, system_info.release);
 #		else
-					snprintf(suffix, sizeof(suffix), " (%s/%s (%s))",
-						system_info.sysname, system_info.release, system_info.machine);
+			snprintf(suffix, sizeof(suffix), " (%s/%s (%s))",
+				system_info.sysname, system_info.release, system_info.machine);
 #		endif /* SEIUX */
 #	endif /* _AIX */
 #endif /* HAVE_SYS_UTSNAME_H */
-					fprintf(fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s)%s\n",
-						PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME, suffix);
-				}
-			} else {
-				char *ptr;
-
-				if ((ptr = parse_header(line, "Newsgroups", FALSE, FALSE))) {
-					strip_double_ngs(ptr);
-					STRCPY(newsgroups, ptr);
-					snprintf(line, sizeof(line), "Newsgroups: %s\n", newsgroups);
-				} else if ((ptr = parse_header(line, "Followup-To", FALSE, FALSE))) {
-					strip_double_ngs(ptr);
-					/*
-					 * Only write followup header if not blank or followups != newsgroups
-					 */
-					if (*ptr && strcasecmp(newsgroups, ptr))
-						snprintf(line, sizeof(line), "Followup-To: %s\n", ptr);
-					else
-						*line = '\0';
-				} else if ((ptr = parse_header(line, "Fcc", FALSE, FALSE))) {
-					fcc = my_strdup(ptr);
-					*line = '\0';	/* don't write Fcc-Header */
-				}
-			}
-		}
-		fputs(line, fp_out);
+		fprintf(fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s)%s\n",
+			PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME, suffix);
 	}
+
+	fputs("\n", fp_out); /* header/body seperator */
+
+	while ((l = tin_fgets(fp_in, FALSE)) != NULL)
+		fprintf(fp_out, "%s\n", l);
 	fclose(fp_out);
 	fclose(fp_in);
 	rename_file(outfile, infile);
@@ -4166,7 +4177,8 @@ static t_bool
 submit_mail_file(
 	const char *file,
 	struct t_group *group,
-	t_bool mailforward)
+	FILE *articlefp,
+	t_bool include_text)
 {
 	FILE *fp;
 	char *fcc = NULL;
@@ -4188,10 +4200,11 @@ submit_mail_file(
 				wait_message(0, _(txt_mailing_to), mail_to);
 
 				/* Use group-attribute for mailing_list */
-				if (mailforward)
-					rfc15211522_encode_forwarded(file, txt_mime_encodings[tinrc.mail_mime_encoding], group, tinrc.mail_8bit_header);
-				else
-					rfc15211522_encode(file, txt_mime_encodings[tinrc.mail_mime_encoding], group, tinrc.mail_8bit_header, TRUE);
+
+				if (articlefp != NULL)
+					compose_mail_mime_forwarded(file, articlefp, include_text, group);
+				else /* text/plain */
+					compose_mail_text_plain(file, group);
 
 				strfmailer(mailer, hdr.subj, mail_to, file, buf, sizeof(buf), tinrc.mailer_format);
 
@@ -4470,7 +4483,11 @@ get_recipients(
 
 	/* strip double addresses */
 	for (i = 0; i < (num_all - 1); i++) {
+		if (!all_addresses[i])
+			continue;
 		for (j = i + 1; j < num_all; j++) {
+			if (!all_addresses[j])
+				continue;
 			if (!strcasecmp(all_addresses[i], all_addresses[j]))
 				FreeAndNull(all_addresses[j]);
 		}

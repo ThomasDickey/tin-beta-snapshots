@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-01-05
+ *  Updated   : 2004-06-07
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -248,7 +248,7 @@ center_line(
 	int len;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	int width;
-	wchar_t wbuffer[256];	/* needs same number of elements as buffer */
+	wchar_t *wbuffer;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	STRCPY(buffer, str);
@@ -258,10 +258,10 @@ center_line(
 
 	len = strlen(buffer);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if (mbstowcs(wbuffer, buffer, ARRAY_SIZE(wbuffer)) != (size_t) (-1)) {
-		wbuffer[ARRAY_SIZE(wbuffer) - 1] = (wchar_t) '\0';
-		if ((width = wcswidth(wbuffer, ARRAY_SIZE(wbuffer))) > 0)
+	if ((wbuffer = char2wchar_t(buffer)) != NULL) {
+		if ((width = wcswidth(wbuffer, wcslen(wbuffer) + 1)) > 0)
 			len = width;
+		free(wbuffer);
 	}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 

@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2004-01-05
+ *  Updated   : 2004-03-14
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -469,7 +469,7 @@ feed_article(
 	 */
 	if (function == FEED_SAVE || function == FEED_AUTOSAVE) {
 		if (ok && tinrc.mark_saved_read)
-			art_mark(&CURR_GROUP, &arts[art], ART_READ);
+			art_mark(curr_group, &arts[art], ART_READ);
 	}
 
 	if (!use_current)
@@ -813,7 +813,7 @@ got_sig_pipe_while_piping:
 			if (proc_ch != iKeyPProcNo) {
 				t_bool delete_post_proc = FALSE;
 
-				if (CURR_GROUP.attribute->delete_tmp_files)
+				if (curr_group->attribute->delete_tmp_files)
 					delete_post_proc = TRUE;
 				else {
 					if (function != FEED_AUTOSAVE) {
@@ -890,8 +890,8 @@ print_file(
 	t_openartinfo *artinfo)
 {
 	FILE *fp;
-	t_bool ok = TRUE;
 	struct t_header *hdr = &artinfo->hdr;
+	t_bool ok;
 #	ifdef DONT_HAVE_PIPING
 	char cmd[PATH_LEN], file[PATH_LEN];
 #	endif /* DONT_HAVE_PIPING */

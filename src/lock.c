@@ -219,16 +219,15 @@ t_bool dot_lock(
 	char tempfile[PATH_LEN];
 	char lockfile[PATH_LEN];
 	char base_dir[PATH_LEN];
-	int dot_fd = -1;
+	int dot_fd;
 	struct stat statbuf;
 	t_bool rval = FALSE;
 
 	dir_name(filename, base_dir);
 	if (!strcmp(filename, base_dir)) /* no filename portion */
 		return rval;
-	if ((dot_fd = my_tmpfile(tempfile, sizeof(tempfile) - 1, TRUE, base_dir)) == -1) {
+	if ((dot_fd = my_tmpfile(tempfile, sizeof(tempfile) - 1, TRUE, base_dir)) == -1)
 		return rval;
-	}
 	snprintf(lockfile, sizeof(lockfile), "%s%s", filename, LOCK_SUFFIX);
 
 #ifdef HAVE_LINK

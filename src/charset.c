@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2003-03-22
+ *  Updated   : 2004-06-07
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2004 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -379,20 +379,19 @@ convert_to_printable(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	char *buffer;
 	wchar_t *wbuffer;
-	size_t len = strlen(buf);
+	size_t len = strlen(buf) + 1;
 
-	buffer = my_malloc(len + 1);
-	wbuffer = my_malloc(sizeof(wchar_t) * (len + 1));
-
-	if (mbstowcs(wbuffer, buf, len) != (size_t) (-1)) {
-		wbuffer[len] = (wchar_t) '\0';
+	if ((wbuffer = char2wchar_t(buf)) != NULL) {
 		wconvert_to_printable(wbuffer);
-		wcstombs(buffer, wbuffer, len);
-		buffer[len] = '\0';
-		strcpy(buf, (const char *) buffer);
+
+		if ((buffer = wchar_t2char(wbuffer)) != NULL) {
+			strncpy(buf, buffer, len);
+			buf[len - 1] = '\0';
+
+			free(buffer);
+		}
+		free(wbuffer);
 	}
-	free(buffer);
-	free(wbuffer);
 #else
 	unsigned char *c;
 
@@ -443,23 +442,21 @@ convert_body2printable(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	char *buffer;
 	wchar_t *wc, *wbuffer;
-	size_t len = strlen(buf);
+	size_t len = strlen(buf) + 1;
 
-	buffer = my_malloc(len + 1);
-	wbuffer = my_malloc(sizeof(wchar_t) * (len + 1));
-
-	if (mbstowcs(wbuffer, buf, len) != (size_t) (-1)) {
-		wbuffer[len] = (wchar_t) '\0';
+	if ((wbuffer = char2wchar_t(buf)) != NULL) {
 		for (wc = wbuffer; *wc; wc++) {
 			if (!(iswprint((wint_t) *wc) || *wc == (wchar_t) 8 || *wc == (wchar_t) 9 || *wc == (wchar_t) 10 || *wc == (wchar_t) 12 || *wc == (wchar_t) 13 || (IS_LOCAL_CHARSET("Big5") && *wc == (wchar_t) 27)))
 				*wc = (wchar_t) '?';
 		}
-		wcstombs(buffer, wbuffer, len);
-		buffer[len] = '\0';
-		strcpy(buf, (const char *) buffer);
+		if ((buffer = wchar_t2char(wbuffer)) != NULL) {
+			strncpy(buf, buffer, len);
+			buffer[len - 1] = '\0';
+
+			free(buffer);
+		}
+		free(wbuffer);
 	}
-	free(buffer);
-	free(wbuffer);
 #else
 	unsigned char *c;
 

@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-02-21
+ *  Updated   : 2004-06-07
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1050,7 +1050,7 @@ print_message_page(
 		 * use the offsets gained while doing line wrapping to
 		 * determine the correct position to truncate the line
 		 */
-		if (base_line + i < messagelines - 1) { 	/* not last line of message*/
+		if (base_line + i < messagelines - 1) {	/* not last line of message */
 			bytes = (curr + 1)->offset - curr->offset;
 			line[bytes] = '\0';
 		}
@@ -1059,7 +1059,6 @@ print_message_page(
 		 * rotN encoding on body and sig data only
 		 */
 		if ((rotate != 0) && (curr->flags & (C_BODY | C_SIG))) {
-			p = line;
 			for (p = line; *p; p++) {
 				if (*p >= 'A' && *p <= 'Z')
 					*p = (*p - 'A' + rotate) % 26 + 'A';
@@ -1197,15 +1196,15 @@ draw_page(
 		char buf[LEN];
 		int len;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		wchar_t wbuf[LEN];
+		wchar_t *wbuf;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 		STRCPY(buf, (arts[this_resp].thread != -1) ? _(txt_next_resp) : _(txt_last_resp));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if (mbstowcs(wbuf, buf, ARRAY_SIZE(wbuf)) != (size_t) (-1)) {
-			wbuf[ARRAY_SIZE(wbuf) - 1] = (wchar_t) '\0';
+		if ((wbuf = char2wchar_t(buf)) != NULL) {
 			wconvert_to_printable(wbuf);
-			len = wcswidth(wbuf, ARRAY_SIZE(wbuf));
+			len = wcswidth(wbuf, wcslen(wbuf) + 1);
+			free(wbuf);
 		} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			len = (int) strlen(buf);
@@ -1314,19 +1313,8 @@ draw_page_header(
 	wtmp = my_malloc(line_len * sizeof(wchar_t));
 
 	/* convert to wide-char format strings */
-	len = mbstowcs(NULL, _(txt_thread_x_of_n), 0) + 1;
-	if (len > 0) {
-		fmt_thread = my_malloc(len * sizeof(wchar_t));
-		mbstowcs(fmt_thread, _(txt_thread_x_of_n), len);
-	} else
-		fmt_thread = NULL;
-
-	len = mbstowcs(NULL, _(txt_resp_x_of_n), 0) + 1;
-	if (len > 0) {
-		fmt_resp = my_malloc(len * sizeof(wchar_t));
-		mbstowcs(fmt_resp, _(txt_resp_x_of_n), len);
-	} else
-		fmt_resp = NULL;
+	fmt_thread = char2wchar_t(_(txt_thread_x_of_n));
+	fmt_resp = char2wchar_t(_(txt_resp_x_of_n));
 
 	/*
 	 * determine the needed space for the text at the right hand margin
@@ -1420,16 +1408,11 @@ draw_page_header(
 	{
 		wchar_t *fmt;
 
-		len = mbstowcs(NULL, _(txt_lines), 0) + 1;
-		fmt = my_malloc(len * sizeof(wchar_t));
-		if (mbstowcs(fmt, _(txt_lines), len) == (size_t) (-1))
-			wbuf[0] = (wchar_t) '\0';
-		else {
-			fmt[len - 1] = (wchar_t) '\0';
+		if ((fmt = char2wchar_t(_(txt_lines))) != NULL) {
 			swprintf(wbuf, line_len, fmt, buf);
-		}
-
-		free(fmt);
+			free(fmt);
+		} else
+			wbuf[0] = (wchar_t) '\0';
 	}
 
 	len = wcswidth(wbuf, line_len);

@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-01-20
+ *  Updated   : 2004-06-06
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -64,7 +64,6 @@ static t_bool match_item(char *line, const char *pat, char *dst, size_t dstlen);
 static t_bool rc_update(FILE *fp);
 static void RepaintOption(int option);
 static void check_score_defaults(void);
-static void expand_rel_abs_pathname(int line, int col, char *str);
 static void highlight_option(int option);
 static void print_any_option(int act_option);
 static void print_option(enum option_enum the_option);
@@ -312,8 +311,11 @@ read_config_file(
 			if (match_string(buf, "default_sigfile=", tinrc.sigfile, sizeof(tinrc.sigfile)))
 				break;
 
-			if (match_integer(buf, "default_filter_days=", &tinrc.filter_days, 0))
+			if (match_integer(buf, "default_filter_days=", &tinrc.filter_days, 0)) {
+				if (tinrc.filter_days <= 0)
+					tinrc.filter_days = 1;
 				break;
+			}
 
 			if (match_integer(buf, "default_filter_kill_header=", &tinrc.default_filter_kill_header, FILTER_LINES))
 				break;
@@ -618,6 +620,11 @@ read_config_file(
 		case 'r':
 			if (match_integer(buf, "recent_time=", &tinrc.recent_time, 16383)) /* use INT_MAX? */
 				break;
+
+#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
+			if (match_boolean(buf, "render_bidi=", &tinrc.render_bidi))
+				break;
+#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
 
 			if (match_integer(buf, "reread_active_file_secs=", &tinrc.reread_active_file_secs, 16383)) /* use INT_MAX? */
 				break;
@@ -1308,6 +1315,11 @@ write_config_file(
 	fprintf(fp, "normalization_form=%d\n\n", tinrc.normalization_form);
 #endif /* HAVE_UNICODE_NORMALIZATION */
 
+#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
+	fprintf(fp, _(txt_render_bidi.tinrc));
+	fprintf(fp, "render_bidi=%s\n\n", print_boolean(tinrc.render_bidi));
+#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
+
 	fprintf(fp, _(txt_tinrc_filter));
 	fprintf(fp, "default_filter_kill_header=%d\n", tinrc.default_filter_kill_header);
 	fprintf(fp, "default_filter_kill_global=%s\n", print_boolean(tinrc.default_filter_kill_global));
@@ -1429,72 +1441,57 @@ set_option_num(
 }
 
 
-#define OPTION_WIDTH 35
 char *
 fmt_option_prompt(
 	char *dst,
-	int len,
+	size_t len,
 	t_bool editing,
 	int option)
 {
 	char *buf;
 	int num = get_option_num(option);
+	size_t option_width = MAX(35, cCOLS / 2 - 9);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	size_t size, wsize;
 	wchar_t *wbuf, *wbuf2;
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
-	/*
-	 * TODO: make the open length (OPTION_WIDTH) cCOLS dependent
-	 *       requries changes in various prompt_*() functions (and lang.c)
-	 */
-
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	/* convert the option text to wchar_t */
-	wsize = mbstowcs(NULL, _(option_table[option].txt->opt), 0);
-	if (wsize != (size_t) (-1)) {
-		wbuf = my_malloc(sizeof(wchar_t) * (wsize + 1));
-		mbstowcs(wbuf, _(option_table[option].txt->opt), wsize + 1);
-	} else
-		wbuf = NULL;
+	wbuf = char2wchar_t(_(option_table[option].txt->opt));
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	if (num) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if (wsize != (size_t) (-1)) {
-			wbuf2 = my_malloc(sizeof(wchar_t) * (wsize + 1));
-			wcspart(wbuf2, wbuf, OPTION_WIDTH, wsize + 1, TRUE);
-			size = wcstombs(NULL, wbuf2, 0);
-			if (size != (size_t) (-1)) {
-				buf = my_malloc(size + 1);
-				wcstombs(buf, wbuf2, size + 1);
-			} else {
+		if (wbuf != NULL) {
+			wbuf2 = my_malloc(sizeof(wchar_t) * (option_width + 1));
+			wstrunc(wbuf, wbuf2, option_width + 1, option_width);
+
+			if ((buf = wchar_t2char(wbuf2)) == NULL) {
 				/* conversion failed, truncate original string */
-				buf = my_malloc(OPTION_WIDTH + 1);
-				snprintf(buf, OPTION_WIDTH + 1, "%.*s", OPTION_WIDTH, _(option_table[option].txt->opt));
+				buf = my_malloc(option_width + 1);
+				strunc(_(option_table[option].txt->opt), buf, option_width + 1, option_width);
+				snprintf(dst, len, "%s %3d. %-*.*s: ", editing ? "->" : "  ", num, option_width, option_width, buf);
+			} else {
+				snprintf(dst, len, "%s %3d. %-*.*s: ", editing ? "->" : "  ", num,
+					strlen(buf) + option_width - wcswidth(wbuf2, option_width + 1),
+					strlen(buf) + option_width - wcswidth(wbuf2, option_width + 1), buf);
 			}
 			free(wbuf2);
 		} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		{
 			/* truncate original string */
-			buf = my_malloc(OPTION_WIDTH + 1);
-			snprintf(buf, OPTION_WIDTH + 1, "%.*s", OPTION_WIDTH, _(option_table[option].txt->opt));
+			buf = my_malloc(option_width + 1);
+			strunc(_(option_table[option].txt->opt), buf, option_width + 1, option_width);
+			snprintf(dst, len, "%s %3d. %-*.*s: ", editing ? "->" : "  ", num, option_width, option_width, buf);
 		}
-		snprintf(dst, len, "%s %3d. %s: ", editing ? "->" : "  ", num, buf);
 	} else {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if (wsize != (size_t) (-1)) {
-			wbuf2 = my_malloc(sizeof(wchar_t) * (wsize + 1));
-			wcspart(wbuf2, wbuf, cCOLS - 3, wsize + 1, FALSE);
-			size = wcstombs(NULL, wbuf2, 0);
-			if (size != (size_t) (-1)) {
-				buf = my_malloc(size + 1);
-				wcstombs(buf, wbuf2, size + 1);
-			} else {
+		if (wbuf != NULL) {
+			wbuf2 = my_malloc(sizeof(wchar_t) * (cCOLS - 3 + 1));
+			wstrunc(wbuf, wbuf2, cCOLS - 3 + 1, cCOLS - 3);
+			if ((buf = wchar_t2char(wbuf2)) == NULL) {
 				/* conversion failed, truncate original string */
 				buf = my_malloc(cCOLS - 3 + 1);
-				snprintf(buf, cCOLS - 3 + 1, "%.*s", cCOLS - 3, _(option_table[option].txt->opt));
+				strunc(_(option_table[option].txt->opt), buf, cCOLS - 3 + 1, cCOLS - 3);
 			}
 			free(wbuf2);
 		} else
@@ -1502,7 +1499,7 @@ fmt_option_prompt(
 		{
 			/* truncate original string */
 			buf = my_malloc(cCOLS - 3 + 1);
-			snprintf(buf, cCOLS - 3 + 1, "%.*s", cCOLS - 3, _(option_table[option].txt->opt));
+			strunc(_(option_table[option].txt->opt), buf, cCOLS - 3 + 1, cCOLS - 3);
 		}
 		snprintf(dst, len, "  %s", buf);
 	}
@@ -1510,7 +1507,7 @@ fmt_option_prompt(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	FreeIfNeeded(wbuf);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-	free(buf);
+	FreeIfNeeded(buf);
 	return dst;
 }
 
@@ -1522,7 +1519,7 @@ print_any_option(
 	constext **list;
 	char temp[LEN], *ptr, *ptr2;
 	int row = option_row(act_option);
-	int len = sizeof(temp) - 1;
+	size_t len = sizeof(temp) - 1;
 
 	MoveCursor(row, 0);
 
@@ -1559,7 +1556,7 @@ print_any_option(
 			break;
 	}
 #ifdef USE_CURSES
-	my_printf("%.*s", cCOLS, temp);
+	my_printf("%.*s", cCOLS - 1, temp);
 	{
 		int y, x;
 
@@ -1637,6 +1634,7 @@ highlight_option(
 
 	refresh_config_page(option);
 	draw_arrow_mark(option_row(option));
+	info_message("%s", _(option_table[option].txt->opt));
 }
 
 
@@ -1652,6 +1650,7 @@ unhighlight_option(
 	currmenu->curr = option_row(option) - INDEX_TOP;
 	erase_arrow();
 	currmenu = savemenu;
+	clear_message();
 }
 
 
@@ -1708,15 +1707,13 @@ change_config_file(
 	struct t_group *group)
 {
 	int ch = 0;
-	int original_list_value;
 	int option, old_option;
 	int ret_code = NO_FILTERING;
 	int mime_encoding = MIME_ENCODING_7BIT;
 	t_bool change_option = FALSE;
-	t_bool original_on_off_value;
 
 	actual_top_option = -1;
-	option = 0;
+	option = 1;
 
 	ClearScreen();
 	set_xclick_off();
@@ -1778,7 +1775,9 @@ change_config_file(
 			case iKeyUp:
 			case iKeyUp2:
 				unhighlight_option(option);
-				if (--option < 0)
+				if (!get_option_num(--option))	/* skip over titles */
+					option--;
+				if (option < 0)
 					option = LAST_OPT;
 				highlight_option(option);
 				break;
@@ -1786,15 +1785,17 @@ change_config_file(
 			case iKeyDown:
 			case iKeyDown2:
 				unhighlight_option(option);
-				if (++option > LAST_OPT)
-					option = 0;
+				if (!get_option_num(++option))	/* skip over titles */
+					option++;
+				if (option > LAST_OPT)
+					option = 1;
 				highlight_option(option);
 				break;
 
 			case iKeyFirstPage:
 			case iKeyConfigFirstPage2:
 				unhighlight_option(option);
-				option = 0;
+				option = 1;
 				highlight_option(option);
 				break;
 
@@ -1817,7 +1818,7 @@ change_config_file(
 					ClearScreen();
 					show_config_page();
 				} else if ((option -= option_lines_per_page) < 0) {
-					option = 0;
+					option = 1;
 					first_option_on_screen = 0;
 				} else {
 					first_option_on_screen -= (tinrc.scroll_lines == -2) ? option_lines_per_page / 2 : option_lines_per_page;
@@ -1884,26 +1885,63 @@ change_config_file(
 		if (change_option) {
 			switch (option_table[option].var_type) {
 				case OPT_ON_OFF:
-					original_on_off_value = *OPT_ON_OFF_list[option_table[option].var_index];
-					prompt_on_off(option_row(option),
-						OPT_ARG_COLUMN,
-						OPT_ON_OFF_list[option_table[option].var_index],
-						option_table[option].txt->help,
-						option_table[option].txt->opt
-						);
-					/*
-					 * some options need further action to take effect
-					 */
 					switch (option) {
+						case OPT_ADD_POSTED_TO_FILTER:
+						case OPT_ADVERTISING:
+						case OPT_ALTERNATIVE_HANDLING:
+						case OPT_ASK_FOR_METAMAIL:
+						case OPT_AUTO_BCC:
+						case OPT_AUTO_CC:
+						case OPT_AUTO_LIST_THREAD:
+						case OPT_AUTO_RECONNECT:
+						case OPT_AUTO_SAVE:
+						case OPT_BATCH_SAVE:
+						case OPT_CACHE_OVERVIEW_FILES:
+						case OPT_CATCHUP_READ_GROUPS:
+						case OPT_FORCE_SCREEN_REDRAW:
+						case OPT_GROUP_CATCHUP_ON_EXIT:
+						case OPT_KEEP_DEAD_ARTICLES:
+						case OPT_MARK_IGNORE_TAGS:
+						case OPT_MARK_SAVED_READ:
+						case OPT_PGDN_GOTO_NEXT:
+						case OPT_POS_FIRST_UNREAD:
+						case OPT_POST_PROCESS_VIEW:
+						case OPT_PRINT_HEADER:
+						case OPT_PROCESS_ONLY_UNREAD:
+						case OPT_PROMPT_FOLLOWUPTO:
+						case OPT_SHOW_ONLY_UNREAD_GROUPS:
+						case OPT_SHOW_SIGNATURES:
+						case OPT_SIGDASHES:
+						case OPT_SIGNATURE_REPOST:
+						case OPT_SPACE_GOTO_NEXT_UNREAD:
+						case OPT_START_EDITOR_OFFSET:
+						case OPT_STRIP_BLANKS:
+						case OPT_STRIP_NEWSRC:
+						case OPT_TAB_GOTO_NEXT_UNREAD:
+						case OPT_TEX2ISO_CONV:
+						case OPT_THREAD_CATCHUP_ON_EXIT:
+#if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
+						case OPT_TRANSLIT:
+#endif /* HAVE_ICONV_OPEN_TRANSLIT && CHARSET_CONVERSION */
+						case OPT_UNLINK_ARTICLE:
+						case OPT_URL_HIGHLIGHT:
+#ifdef HAVE_KEYPAD
+						case OPT_USE_KEYPAD:
+#endif /* HAVE_KEYPAD */
+						case OPT_USE_MOUSE:
+						case OPT_WRAP_ON_NEXT_UNREAD:
+							prompt_option_on_off(option);
+							break;
+
 						/* show mini help menu */
 						case OPT_BEGINNER_LEVEL:
-							if (!bool_equal(tinrc.beginner_level, original_on_off_value))
+							if (prompt_option_on_off(option))
 								set_noteslines(cLINES);
 							break;
 
 						/* show all arts or just new/unread arts */
 						case OPT_SHOW_ONLY_UNREAD_ARTS:
-							if (!bool_equal(tinrc.show_only_unread_arts, original_on_off_value) && group != NULL) {
+							if (prompt_option_on_off(option) && group != NULL) {
 								make_threads(group, TRUE);
 								pos_first_unread_thread();
 							}
@@ -1911,6 +1949,7 @@ change_config_file(
 
 						/* draw -> / highlighted bar */
 						case OPT_DRAW_ARROW:
+							prompt_option_on_off(option);
 							unhighlight_option(option);
 							if (!tinrc.draw_arrow && !tinrc.inverse_okay) {
 								tinrc.inverse_okay = TRUE;
@@ -1921,6 +1960,7 @@ change_config_file(
 						/* draw inversed screen header lines */
 						/* draw inversed group/article/option line if draw_arrow is OFF */
 						case OPT_INVERSE_OKAY:
+							prompt_option_on_off(option);
 							unhighlight_option(option);
 							if (!tinrc.draw_arrow && !tinrc.inverse_okay) {
 								tinrc.draw_arrow = TRUE;	/* we don't want to navigate blindly */
@@ -1929,6 +1969,7 @@ change_config_file(
 							break;
 
 						case OPT_MAIL_8BIT_HEADER:
+							prompt_option_on_off(option);
 							if (strcasecmp(txt_mime_encodings[tinrc.mail_mime_encoding], txt_8bit)) {
 								tinrc.mail_8bit_header = FALSE;
 								print_option(OPT_MAIL_8BIT_HEADER);
@@ -1936,6 +1977,7 @@ change_config_file(
 							break;
 
 						case OPT_POST_8BIT_HEADER:
+							prompt_option_on_off(option);
 							/* if post_mime_encoding != 8bit, post_8bit_header is disabled */
 							if (strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_8bit)) {
 								tinrc.post_8bit_header = FALSE;
@@ -1945,16 +1987,16 @@ change_config_file(
 
 						/* show newsgroup description text next to newsgroups */
 						case OPT_SHOW_DESCRIPTION:
+							prompt_option_on_off(option);
 							show_description = tinrc.show_description;
 							if (show_description)			/* force reread of newgroups file */
 								read_descriptions(FALSE);
-							else
-								set_groupname_len(FALSE);
 							break;
 
 #ifdef HAVE_COLOR
 						/* use ANSI color */
 						case OPT_USE_COLOR:
+							prompt_option_on_off(option);
 #	ifdef USE_CURSES
 							if (!has_colors())
 								use_color = FALSE;
@@ -1967,7 +2009,7 @@ change_config_file(
 #ifdef XFACE_ABLE
 						/* use slrnface */
 						case OPT_USE_SLRNFACE:
-							if (!bool_equal(tinrc.use_slrnface, original_on_off_value)) {
+							if (prompt_option_on_off(option)) {
 								if (!tinrc.use_slrnface)
 									slrnface_stop();
 								else
@@ -1978,50 +2020,15 @@ change_config_file(
 
 						/* word_highlight */
 						case OPT_WORD_HIGHLIGHT:
+							prompt_option_on_off(option);
 							word_highlight = tinrc.word_highlight;
 							break;
 
-						/*
-						 * the following are boolean and do not need further action (if I'm right)
-						 *
-						 * case OPT_ASK_FOR_METAMAIL:
-						 * case OPT_AUTO_BCC:
-						 * case OPT_AUTO_CC:
-						 * case OPT_AUTO_LIST_THREAD:
-						 * case OPT_AUTO_RECONNECT:
-						 * case OPT_AUTO_SAVE:
-						 * case OPT_BATCH_SAVE:
-						 * case OPT_CATCHUP_READ_GROUPS:
-						 * case OPT_FORCE_SCREEN_REDRAW:
-						 * case OPT_FULL_PAGE_SCROLL:
-						 * case OPT_GROUP_CATCHUP_ON_EXIT:
-						 * case OPT_KEEP_DEAD_ARTICLES:
-						 * case OPT_MARK_SAVED_READ:
-						 * case OPT_NO_ADVERTISING:
-						 * case OPT_POS_FIRST_UNREAD:
-						 * case OPT_POSTED_ARTICLES:
-						 * case OPT_PRINT_HEADER:
-						 * case OPT_PROCESS_ONLY_UNREAD:
-						 * case OPT_SHOW_ONLY_UNREAD_GROUPS:
-						 * case OPT_SHOW_XCOMMENTTO:
-						 * case OPT_SIGDASHES:
-						 * case OPT_SPACE_GOTO_NEXT_UNREAD:
-						 * case OPT_START_EDITOR_OFFSET:
-						 * case OPT_STRIP_BLANKS:
-						 * case OPT_TAB_GOTO_NEXT_UNREAD:
-						 * case OPT_TEX2ISO_CONV:
-						 * case OPT_THREAD_CATCHUP_ON_EXIT:
-#if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
-						 * case OPT_TRANSLIT:
-#endif
-						 * case OPT_UNLINK_ARTICLE:
-						 * case OPT_URL_HIGHLIGHT:
-#ifdef HAVE_KEYPAD
-						 * case OPT_USE_KEYPAD:
-#endif
-						 * case OPT_USE_MOUSE:
-						 * case OPT_WRAP_ON_NEXT_UNREAD:
-						 */
+#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
+						case OPT_RENDER_BIDI:
+							prompt_option_on_off(option);
+							break;
+#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
 
 						default:
 							break;
@@ -2029,26 +2036,59 @@ change_config_file(
 					break;
 
 				case OPT_LIST:
-					original_list_value = *(option_table[option].variable);
-					*(option_table[option].variable) = prompt_list(option_row(option),
-								OPT_ARG_COLUMN,
-								*(option_table[option].variable), /* post_process */
-								option_table[option].txt->help,
-								_(option_table[option].txt->opt),
-								option_table[option].opt_list,
-								option_table[option].opt_count
-								);
-
-					/*
-					 * some options need further action to take effect
-					 */
 					switch (option) {
+#ifdef HAVE_COLOR
+						case OPT_COL_BACK:
+						case OPT_COL_FROM:
+						case OPT_COL_HEAD:
+						case OPT_COL_HELP:
+						case OPT_COL_INVERS_BG:
+						case OPT_COL_INVERS_FG:
+						case OPT_COL_MESSAGE:
+						case OPT_COL_MINIHELP:
+						case OPT_COL_NEWSHEADERS:
+						case OPT_COL_NORMAL:
+						case OPT_COL_QUOTE:
+						case OPT_COL_QUOTE2:
+						case OPT_COL_QUOTE3:
+						case OPT_COL_RESPONSE:
+						case OPT_COL_SIGNATURE:
+						case OPT_COL_SUBJECT:
+						case OPT_COL_TEXT:
+						case OPT_COL_TITLE:
+						case OPT_COL_MARKSTAR:
+						case OPT_COL_MARKDASH:
+						case OPT_COL_MARKSLASH:
+						case OPT_COL_MARKSTROKE:
+						case OPT_COL_URLS:
+#endif /* HAVE_COLOR */
+						case OPT_HIDE_UUE:
+						case OPT_INTERACTIVE_MAILER:
+						case OPT_WORD_H_DISPLAY_MARKS:
+						case OPT_MONO_MARKSTAR:
+						case OPT_MONO_MARKDASH:
+						case OPT_MONO_MARKSLASH:
+						case OPT_MONO_MARKSTROKE:
+						case OPT_CONFIRM_CHOICE:
+						case OPT_KILL_LEVEL:
+						case OPT_MAILBOX_FORMAT:
+						case OPT_SHOW_INFO:
+						case OPT_SORT_ARTICLE_TYPE:
+						case OPT_STRIP_BOGUS:
+#ifdef HAVE_UNICODE_NORMALIZATION
+						case OPT_NORMALIZATION_FORM:
+#endif /* HAVE_UNICODE_NORMALIZATION */
+						case OPT_QUOTE_STYLE:
+						case OPT_WILDCARD:
+							prompt_option_list(option);
+							break;
+
 						case OPT_THREAD_ARTICLES:
 							/*
 							 * If the threading strategy has changed, fix things
 							 * so that rethreading will occur
 							 */
-							if (tinrc.thread_articles != original_list_value && group != NULL) {
+							if (prompt_option_list(option) && group != NULL) {
 								int n, old_base_art = base[grpmenu.curr];
 
 								group->attribute->thread_arts = tinrc.thread_articles;
@@ -2067,7 +2107,7 @@ change_config_file(
 							 * If the sorting strategy of threads has changed, fix things
 							 * so that resorting will occur
 							 */
-							if (tinrc.sort_threads_type != original_list_value && group != NULL) {
+							if (prompt_option_list(option) && group != NULL) {
 								group->attribute->sort_threads_type = tinrc.sort_threads_type;
 								make_threads(group, TRUE);
 							}
@@ -2079,24 +2119,27 @@ change_config_file(
 							 * If the scoring of a thread has changed,
 							 * resort base[]
 							 */
-							if (tinrc.thread_score != original_list_value && group != NULL)
+							if (prompt_option_list(option) && group != NULL)
 								find_base(group);
 							clear_message();
 							break;
 
 						case OPT_POST_PROCESS:
+							prompt_option_list(option);
 							glob_attributes.post_proc_type = tinrc.post_process;
 							if (group != NULL)
 								group->attribute->post_proc_type = tinrc.post_process;
 							break;
 
 						case OPT_SHOW_AUTHOR:
+							prompt_option_list(option);
 							if (group != NULL)
 								group->attribute->show_author = tinrc.show_author;
 							break;
 
 						case OPT_MAIL_MIME_ENCODING:
 						case OPT_POST_MIME_ENCODING:
+							prompt_option_list(option);
 							mime_encoding = *(option_table[option].variable);
 							/* do not use 8 bit headers if mime encoding is not 8bit */
 							if (strcasecmp(txt_mime_encodings[mime_encoding], txt_8bit)) {
@@ -2112,7 +2155,7 @@ change_config_file(
 
 #ifdef CHARSET_CONVERSION
 						case OPT_MM_NETWORK_CHARSET:
-							if (tinrc.mm_network_charset != original_list_value) {
+							if (prompt_option_list(option)) {
 								glob_attributes.mm_network_charset = tinrc.mm_network_charset;
 								if (group)
 									group->attribute->mm_network_charset = tinrc.mm_network_charset;
@@ -2185,46 +2228,6 @@ change_config_file(
 							break;
 #endif /* CHARSET_CONVERSION */
 
-						/*
-						 * the following are picklists and don't need any further action
-#ifdef HAVE_COLOR
-						 * case OPT_COL_BACK:
-						 * case OPT_COL_FROM:
-						 * case OPT_COL_HEAD:
-						 * case OPT_COL_HELP:
-						 * case OPT_COL_INVERS:
-						 * case OPT_COL_MESSAGE:
-						 * case OPT_COL_MINIHELP:
-						 * case OPT_COL_NORMAL:
-						 * case OPT_COL_QUOTE:
-						 * case OPT_COL_QUOTE2:
-						 * case OPT_COL_QUOTE3:
-						 * case OPT_COL_RESPONSE:
-						 * case OPT_COL_SIGNATURE:
-						 * case OPT_COL_SUBJECT:
-						 * case OPT_COL_TEXT:
-						 * case OPT_COL_TITLE:
-						 * case OPT_COL_MARKSTAR:
-						 * case OPT_COL_MARKDASH:
-						 * case OPT_COL_MARKSLASH:
-						 * case OPT_COL_MARKSTROKE:
-#endif
-						 * case OPT_HIDE_UUE:
-						 * case OPT_INTERACTIVE_MAILER:
-						 * case OPT_WORD_H_DISPLAY_MARKS:
-						 * case OPT_MONO_MARKSTAR:
-						 * case OPT_MONO_MARKDASH:
-						 * case OPT_MONO_MARKSLASH:
-						 * case OPT_MONO_MARKSTROKE:
-						 * case OPT_CONFIRM_CHOICE:
-						 * case OPT_DEFAULT_SORT_ART_TYPE:
-						 * case OPT_MAILBOX_FORMAT:
-						 * case OPT_SHOW_INFO:
-						 * case OPT_NORMALIZATION_FORM:
-						 * case OPT_WILDCARD:
-						 *	break;
-						 */
-
 						default:
 							break;
 					} /* switch (option) */
@@ -2272,11 +2275,12 @@ change_config_file(
 						case OPT_SAVEDIR:
 						case OPT_SIGFILE:
 						case OPT_POSTED_ARTICLES_FILE:
-							prompt_option_string(option);
-							expand_rel_abs_pathname(option_row(option),
-								OPT_ARG_COLUMN + OPTION_WIDTH,
-								OPT_STRING_list[option_table[option].var_index]
-								);
+							if (prompt_option_string(option)) {
+								char buf[PATH_LEN];
+
+								strfpath(tinrc.posted_articles_file, buf, sizeof(buf), &CURR_GROUP);
+								STRCPY(tinrc.posted_articles_file, buf);
+							}
 							break;
 
 #ifdef HAVE_COLOR
@@ -2391,13 +2395,33 @@ change_config_file(
 
 				case OPT_NUM:
 					switch (option) {
-						case OPT_REREAD_ACTIVE_FILE_SECS:
 						case OPT_GETART_LIMIT:
-						case OPT_RECENT_TIME:
-						case OPT_GROUPNAME_MAX_LENGTH:
 						case OPT_SCROLL_LINES:
+							prompt_option_num(option);
+							break;
+
+						case OPT_REREAD_ACTIVE_FILE_SECS:
+							prompt_option_num(option);
+							if (tinrc.reread_active_file_secs < 0)
+								tinrc.reread_active_file_secs = 0;
+							break;
+
+						case OPT_RECENT_TIME:
+							prompt_option_num(option);
+							if (tinrc.recent_time < 0)
+								tinrc.recent_time = 0;
+							break;
+
+						case OPT_GROUPNAME_MAX_LENGTH:
+							prompt_option_num(option);
+							if (tinrc.groupname_max_length < 0)
+								tinrc.groupname_max_length = 0;
+							break;
+
 						case OPT_FILTER_DAYS:
 							prompt_option_num(option);
+							if (tinrc.filter_days <= 0)
+								tinrc.filter_days = 1;
 							break;
 
 						case OPT_SCORE_LIMIT_KILL:
@@ -2459,26 +2483,6 @@ change_config_file(
 	} /* forever */
 	/* NOTREACHED */
 	return ret_code;
-}
-
-
-/*
- * expand ~/News to /usr/username/News and print to screen
- */
-static void
-expand_rel_abs_pathname(
-	int line,
-	int col,
-	char *str)
-{
-	char buf[PATH_LEN];
-
-	strfpath(str, buf, sizeof(buf), &CURR_GROUP);
-	sprintf(str, "%-.*s", cCOLS - col - 1, buf);
-	MoveCursor(line, col);
-	CleartoEOLN();
-	my_fputs(str, stdout);
-	my_flush();
 }
 
 

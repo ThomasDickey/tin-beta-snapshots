@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-12-28
+ *  Updated   : 2004-05-27
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -541,12 +541,11 @@ open_art_header(
 			*next = atoi(buf);		/* Set next art number */
 
 		return NULL;
-	} else
-#endif /* NNTP_ABLE */
-	{
-		snprintf(buf, sizeof(buf), "%ld", art);
-		return (fopen(buf, "r"));
 	}
+#endif /* NNTP_ABLE */
+
+	snprintf(buf, sizeof(buf), "%ld", art);
+	return (fopen(buf, "r"));
 }
 
 
@@ -759,8 +758,8 @@ global_look_for_multipart_info(
 	char stop,
 	int *offset)
 {
-	char *subj = (char *) 0;
-	char *pch = (char *) 0;
+	char *subj;
+	char *pch;
 	MultiPartInfo tmp;
 
 	*offset = 0;
@@ -815,7 +814,7 @@ global_get_multiparts(
 	int aindex,
 	MultiPartInfo **malloc_and_setme_info)
 {
-	int i = 0;
+	int i;
 	int part_index;
 	MultiPartInfo tmp, tmp2;
 	MultiPartInfo *info = 0;
@@ -1368,7 +1367,8 @@ read_overview(
 		for (count = 1; (ptr = tin_strtok(NULL, "\t")) != NULL; count++) {
 			switch (count) {
 				case 1:		/* Subject */
-					art->subject = hash_str(eat_re(eat_tab(rfc1522_decode(ptr)), FALSE));
+					/* buffer_to_ascii() is correct but might confuse too many ppl. */
+					art->subject = hash_str(eat_re(eat_tab(rfc1522_decode(/*buffer_to_ascii(*/ptr/*)*/)), FALSE));
 					break;
 
 				case 2:		/* From */
@@ -1376,7 +1376,7 @@ read_overview(
 					art->from = hash_str(art_from_addr);
 
 					if (*art_full_name)
-						art->name = hash_str(eat_tab(rfc1522_decode(art_full_name)));
+						art->name = hash_str(eat_tab(rfc1522_decode(buffer_to_ascii(art_full_name))));
 					break;
 
 				case 3:		/* Date */
@@ -2010,6 +2010,7 @@ set_article(
 	art->tagged = FALSE;
 	art->thread = ART_EXPIRED;
 	art->prev = ART_NORMAL;
+	art->score = 0;
 	art->status = ART_UNREAD;
 	art->killed = ART_NOTKILLED;
 	art->zombie = FALSE;
@@ -2125,7 +2126,7 @@ open_xover_fp(
 
 		snprintf(line, sizeof(line), "%s %ld-%ld", xover_cmd, min, max);
 		return (nntp_command(line, OK_XOVER, NULL, 0));
-	} else
+	}
 #endif /* NNTP_ABLE */
 	{
 		FILE *fp;
@@ -2138,6 +2139,6 @@ open_xover_fp(
 			if (*mode != 'r')
 				error_message(_(txt_cannot_open), nov_file);
 		}
-		return NULL;
 	}
+	return NULL;
 }

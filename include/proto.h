@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2004-02-28
+ *  Updated   : 2004-06-12
  *  Notes     :
  *
  * Copyright (c) 1997-2004 Urs Janssen <urs@tin.org>
@@ -95,7 +95,7 @@ extern void draw_pager_line(const char *str, int flags, t_bool raw_data);
 
 /* config.c */
 extern char **ulBuildArgv(char *cmd, int *new_argc);
-extern char *fmt_option_prompt(char *dst, int len, t_bool editing, int option);
+extern char *fmt_option_prompt(char *dst, size_t len, t_bool editing, int option);
 extern char *quote_space_to_dash(char *str);
 extern const char *print_boolean(t_bool value);
 extern int change_config_file(struct t_group *group);
@@ -315,15 +315,13 @@ extern void *my_realloc1(const char *file, int line, void *p, size_t size);
 #endif /* !USE_CURSES */
 
 /* misc.c */
+extern char *buffer_to_ascii(char *c);
 extern char *escape_shell_meta(const char *source, int quote_area);
 extern char *get_tmpfilename(const char *filename);
 extern char *idna_decode(char *in);
 extern char *quote_wild(char *str);
 extern char *quote_wild_whitespace(char *str);
 extern char *strip_line(char *line);
-#if defined(CHARSET_CONVERSION) || defined(HAVE_UNICODE_NORMALIZATION)
-	extern char *utf8_valid(char *line);
-#endif /* CHARSET_CONVERSION || HAVE_UNICODE_NORMALIZATION */
 extern const char *eat_re(char *s, t_bool eat_was);
 extern const char *get_val(const char *env, const char *def);
 extern const char *gnksa_strerror(int errcode);
@@ -364,6 +362,9 @@ extern void show_inverse_video_status(void);
 extern void strip_name(const char *from, char *address);
 extern void tin_done(int ret);
 extern void toggle_inverse_video(void);
+#if defined(CHARSET_CONVERSION) || defined(HAVE_UNICODE_NORMALIZATION)
+	extern char *utf8_valid(char *line);
+#endif /* CHARSET_CONVERSION || HAVE_UNICODE_NORMALIZATION */
 #ifdef CHARSET_CONVERSION
 	extern t_bool buffer_to_network(char *line, int mmnwcharset);
 #endif /* CHARSET_CONVERSION */
@@ -474,18 +475,19 @@ extern void quick_post_article(t_bool postponed_only);
 /* prompt.c */
 extern char *prompt_string_default(const char *prompt, char *def, const char *failtext, int history);
 extern char *sized_message(char **result, const char *format, const char *subject);
-extern int prompt_list(int row, int col, int var, constext *help_text, constext *prompt_text, constext *list[], int size);
 extern int prompt_num(int ch, const char *prompt);
 extern int prompt_yn(int line, const char *prompt, t_bool default_answer);
 extern int prompt_msgid(void);
 extern t_bool prompt_default_string(const char *prompt, char *buf, int buf_len, char *default_prompt, int which_hist);
 extern t_bool prompt_menu_string(int line, const char *prompt, char *var);
 extern t_bool prompt_option_char(int option);
+extern t_bool prompt_option_list(int option);
 extern t_bool prompt_option_num(int option);
+extern t_bool prompt_option_on_off(int option);
 extern t_bool prompt_option_string(int option);
 extern t_bool prompt_string(const char *prompt, char *buf, int which_hist);
 extern void prompt_continue(void);
-extern void prompt_on_off(int row, int col, t_bool *var, constext *help_text, constext *prompt_text);
+extern void prompt_slk_redraw(void);
 
 /* read.c */
 extern char *tin_fgets(FILE *fp, t_bool header);
@@ -533,7 +535,8 @@ extern char *rfc1522_decode(const char *s);
 extern char *rfc1522_encode(char *s, const char *charset, t_bool ismail);
 extern int mmdecode(const char *what, int encoding, int delimiter, char *where);
 extern void rfc15211522_encode(const char *filename, constext *mime_encoding, struct t_group *group, t_bool allow_8bit_header, t_bool ismail);
-extern void rfc15211522_encode_forwarded(const char *filename, constext * mime_encoding, struct t_group *group, t_bool allow_8bit_header);
+extern void compose_mail_mime_forwarded(const char *filename, FILE *articlefp, t_bool include_text, struct t_group *group);
+extern void compose_mail_text_plain(const char *filename, struct t_group *group);
 
 /* save.c */
 extern int check_start_save_any_news(int function, t_bool catchup);
@@ -573,7 +576,6 @@ extern int choose_new_group(void);
 extern int skip_newgroups(void);
 extern void draw_group_arrow(void);
 extern void selection_page(int start_groupnum, int num_cmd_line_groups);
-extern void set_groupname_len(t_bool all_groups);
 extern void show_selection_page(void);
 extern void toggle_my_groups(const char *group);
 
@@ -636,11 +638,16 @@ extern void str_lwr(char *str);
 #	define strrstr(s,p)	my_strrstr(s,p)
 #endif /* !HAVE_STRRSTR */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	extern char *wchar_t2char(const wchar_t *wstr);
 	extern void wcspart(wchar_t *to, const wchar_t *from, int columns, int size_to, t_bool pad);
+	extern wchar_t *char2wchar_t(const char *str);
 	extern wchar_t *wstrunc(const wchar_t *wmessage, wchar_t *wbuf, size_t wbuf_len, int len);
 	extern wchar_t *my_wcsdup(const wchar_t *wstr);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 extern char *strunc(const char *message, char *buf, size_t buf_len, int len);
+#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
+	extern char *render_bidi(const char *str, t_bool *is_rtl);
+#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
 #ifdef HAVE_UNICODE_NORMALIZATION
 	extern char *normalize(const char *str);
 #endif /* HAVE_UNICODE_NORMALIZATION */

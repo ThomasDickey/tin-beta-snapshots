@@ -65,7 +65,7 @@ get_mailcap_entry(
 	t_part *part,
 	const char *path)
 {
-	FILE *fp = (FILE *) 0;
+	FILE *fp = NULL;
 	char *ptr, *ptr2, *nptr;
 	char buf[LEN];
 	char filename[LEN];	/* name of current mailcap file */

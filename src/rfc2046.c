@@ -196,7 +196,7 @@ get_token(
 	char *dest = my_strdup(source);
 	char *ptr = dest;
 
-	while (isascii(*ptr) && isprint(*ptr) && *ptr != ' ' && !strchr(ATTRIBUTE_DELIMS, *ptr))
+	while (isascii((int) *ptr) && isprint((int) *ptr) && *ptr != ' ' && !strchr(ATTRIBUTE_DELIMS, *ptr))
 		ptr++;
 	*ptr = '\0';
 

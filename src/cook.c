@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2003-08-26
+ *  Updated   : 2004-05-27
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2004 Jason Faultless <jason@altarstone.com>
@@ -729,7 +729,12 @@ process_text_body_part(
 			break;	/* premature end of file, file error etc. */
 
 		/* convert network to local charset, tex2iso, iso2asc etc. */
-		process_charsets(&line, &max_line_len, get_param(part->params, "charset"), tinrc.mm_local_charset, CURR_GROUP.attribute->tex2iso_conv && art->tex2iso);
+		process_charsets(&line, &max_line_len, get_param(part->params, "charset"), tinrc.mm_local_charset, curr_group->attribute->tex2iso_conv && art->tex2iso);
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if (IS_LOCAL_CHARSET("UTF-8"))
+			utf8_valid(line);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 		len = (int) strlen(line);
 
@@ -996,7 +1001,7 @@ cook_article(
 			/*
 			 * FIXME: don't decode addr-part of From:/Cc:/ etc.pp.
 			 */
-			put_cooked(LEN, wrap_lines, C_HEADER, "%s\n", rfc1522_decode(line));
+			put_cooked(LEN, wrap_lines, C_HEADER, "%s\n", rfc1522_decode(buffer_to_ascii(line)));
 		}
 	}
 

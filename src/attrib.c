@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2003-12-19
+ *  Updated   : 2004-03-14
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2004 Iain Lea <iain@bricbrac.de>
@@ -86,6 +86,7 @@ enum {
 	ATTRIB_NEWS_QUOTE,
 	ATTRIB_QUOTE_CHARS,
 	ATTRIB_MIME_TYPES_TO_SAVE,
+	ATTRIB_MIME_FORWARD,
 #ifdef HAVE_ISPELL
 		ATTRIB_ISPELL,
 #endif /* HAVE_ISPELL */
@@ -161,8 +162,9 @@ set_default_attributes(
 	attributes->delete_tmp_files = FALSE;
 	attributes->post_proc_type = tinrc.post_process;
 	attributes->x_comment_to = FALSE;
-	attributes->fcc = (char *) 0;
 	attributes->tex2iso_conv = tinrc.tex2iso_conv;
+	attributes->mime_forward = FALSE;
+	attributes->fcc = (char *) 0;
 #ifdef CHARSET_CONVERSION
 	attributes->mm_network_charset = tinrc.mm_network_charset;
 	attributes->undeclared_charset = (char *) 0;
@@ -291,6 +293,7 @@ read_attributes_file(
 				case 'm':
 					MATCH_STRING("maildir=", ATTRIB_MAILDIR);
 					MATCH_STRING("mailing_list=", ATTRIB_MAILING_LIST);
+					MATCH_BOOLEAN("mime_forward=", ATTRIB_MIME_FORWARD);
 					MATCH_STRING("mime_types_to_save=", ATTRIB_MIME_TYPES_TO_SAVE);
 #ifdef CHARSET_CONVERSION
 					MATCH_LIST("mm_network_charset=", ATTRIB_MM_NETWORK_CHARSET,txt_mime_charsets, NUM_MIME_CHARSETS);
@@ -537,6 +540,8 @@ do_set_attrib(
 		case ATTRIB_MIME_TYPES_TO_SAVE:
 			FreeIfNeeded(group->attribute->mime_types_to_save);
 			SET_STRING(mime_types_to_save);
+		case ATTRIB_MIME_FORWARD:
+			SET_INTEGER(mime_forward);
 #ifdef HAVE_ISPELL
 		case ATTRIB_ISPELL:
 			FreeIfNeeded(group->attribute->ispell);
@@ -669,6 +674,7 @@ write_attributes_file(
 	fprintf(fp, _("#  x_comment_to=ON/OFF\n"));
 	fprintf(fp, _("#  fcc=STRING (eg. =mailbox)\n"));
 	fprintf(fp, _("#  tex2iso_conv=ON/OFF\n"));
+	fprintf(fp, _("#  mime_forward=ON/OFF\n"));
 #ifdef CHARSET_CONVERSION
 	fprintf(fp, _("#  mm_network_charset=supported_charset"));
 	for (i = 0; i < NUM_MIME_CHARSETS; i++) {
@@ -777,6 +783,7 @@ write_attributes_file(
 		fprintf(fp, "x_comment_to=%s\n", print_boolean(attr->x_comment_to));
 		fprintf(fp, "fcc=%s\n", attr->fcc);
 		fprintf(fp, "tex2iso_conv=%s\n", print_boolean(attr->tex2iso_conv));
+		fprintf(fp, "mime_forward=%s\n", print_boolean(attr->mime_forward));
 #	ifdef CHARSET_CONVERSION
 		fprintf(fp, "mm_network_charset=%s\n", txt_mime_charsets[attr->mm_network_charset]);
 		fprintf(fp, "undeclared_charset=%s\n", attr->undeclared_charset);
@@ -868,6 +875,7 @@ dump_attributes(
 		fprintf(stderr, "\tx_comment_to=%s\n", print_boolean(group->attribute->x_comment_to));
 		fprintf(stderr, "\tfcc=%s\n", group->attribute->fcc);
 		fprintf(stderr, "\ttex2iso_conv=%s\n", print_boolean(group->attribute->tex2iso_conv));
+		fprintf(stderr, "\tmime_forward=%s\n", print_boolean(group->attribute->mime_forward));
 #		ifdef CHARSET_CONVERSION
 		fprintf(stderr, "\tmm_network_charset=%s\n", txt_mime_charsets[group->attribute->mm_network_charset]);
 		fprintf(stderr, "\tundeclared_charset=%s\n", group->attribute->undeclared_charset);

@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2004-02-09
+ *  Updated   : 2004-06-06
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2004 Thomas Dickey <dickey@invisible-island.net>
@@ -620,6 +620,7 @@
  */
 #	undef HAVE_UNICODE_UNORM_H
 #	undef HAVE_UNICODE_USTRING_H
+#	undef HAVE_UNICODE_UBIDI_H
 #	undef HAVE_LIBICUUC
 
 /*

@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-01-12
+ *  Updated   : 2004-03-14
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -105,7 +105,7 @@ check_start_save_any_news(
 	char path[PATH_LEN];
 	char savefile[PATH_LEN];
 	char subject[HEADER_LEN];
-	int group_count;
+	int group_count = 0;
 	int i, j;
 	int art_count, hot_count;
 	int saved_arts = 0;					/* Total # saved arts */
@@ -147,8 +147,6 @@ check_start_save_any_news(
 		default:
 			break;
 	}
-
-	group_count = 0;
 
 	/*
 	 * For each group we subscribe to...
@@ -439,7 +437,7 @@ save_and_process_art(
 	 * If using the auto-save feature on an article with Archive-Name,
 	 * the path will be: <original-path>/<archive-name>/<part|patch><part#>
 	 */
-	if (!is_mailbox && CURR_GROUP.attribute->auto_save && artptr->archive) {
+	if (!is_mailbox && curr_group->attribute->auto_save && artptr->archive) {
 		const char *partprefix;
 		char *ptr;
 		char archpath[PATH_LEN];
@@ -504,8 +502,7 @@ save_and_process_art(
 		 */
 	}
 
-	if (copy_fp(artinfo->raw, fp))
-		/* Write tailing newline or MMDF-mailbox seperator */
+	if (copy_fp(artinfo->raw, fp)) /* Write tailing newline or MMDF-mailbox seperator */
 		print_art_seperator_line(fp, is_mailbox);
 	else {
 		fclose(fp);
@@ -617,10 +614,7 @@ expand_save_filename(
 	char *outpath,
 	const char *path)
 {
-	int ret;
-	struct t_group *group = &CURR_GROUP;
-
-	ret = strfpath(path, outpath, PATH_LEN, group);
+	int ret = strfpath(path, outpath, PATH_LEN, curr_group);
 
 	/*
 	 * If no path exists or the above failed in some way, use sensible defaults
@@ -629,7 +623,7 @@ expand_save_filename(
 	if ((ret == 0) || !(strrchr(outpath, DIRSEP))) {
 		char buf[PATH_LEN];
 
-		if (!strfpath(group->attribute->savedir, buf, sizeof(buf), group))
+		if (!strfpath(curr_group->attribute->savedir, buf, sizeof(buf), curr_group))
 			joinpath(buf, homedir, DEFAULT_SAVEDIR);
 		joinpath(outpath, buf, path);
 		return FALSE;
@@ -714,8 +708,8 @@ post_process_uud(
 {
 	FILE *fp_in;
 	char file_out_dir[PATH_LEN];
-	int i;
 	const char *eptr;
+	int i;
 	int count;
 	int errors = 0;
 	uulist *item;
@@ -735,13 +729,13 @@ post_process_uud(
 		}
 	}
 
+#	if 0
 	/*
 	 * uudeview's "intelligent" multi-part detection
 	 * From the uudeview docs: This function is a bunch of heuristics, and I
 	 * don't really trust them... should only be called as a last resort on
 	 * explicit user request
 	 */
-#	if 0
 	UUSmerge(0);
 	UUSmerge(1);
 	UUSmerge(99);
@@ -806,13 +800,13 @@ post_process_uud(
 	void)
 {
 	FILE *fp_in;
-	char file_out_dir[PATH_LEN];
-	int i;
 	FILE *fp_out = NULL;
 	char *filename = NULL;
+	char file_out_dir[PATH_LEN];
 	char path[PATH_LEN];
 	char s[LEN], t[LEN], u[LEN];
-	int state;
+	int state = INITIAL;
+	int i;
 	mode_t mode = 0;
 
 	/*
@@ -823,10 +817,7 @@ post_process_uud(
 	t[0] = '\0';
 	u[0] = '\0';
 
-	state = INITIAL;
-
 	for (i = 0; i < num_save; i++) {
-
 		if ((fp_in = fopen(save[i].path, "r")) == NULL)
 			continue;
 
@@ -857,7 +848,7 @@ post_process_uud(
 
 						filename = name;
 						expand_save_filename(path, filename);
-						filename = strrchr(path, DIRSEP) + 1;  /* ptr to filename portion */
+						filename = strrchr(path, DIRSEP) + 1;	/* ptr to filename portion */
 						if ((fp_out = fopen(path, "w")) == NULL) {
 							perror_message(_(txt_cannot_open), path);
 							return;
@@ -1203,7 +1194,8 @@ decode_save_one(
 	/*
 	 * Decode this message part if appropriate
 	 */
-	if (!(check_save_mime_type(part, CURR_GROUP.attribute->mime_types_to_save))) {
+	if (!(check_save_mime_type(part, curr_group->attribute->mime_types_to_save))) {
+		/* TODO: skip message if saving multiple files (e.g. save 't'agged) */
 		wait_message(1, "Skipped %s/%s", content_types[part->type], part->subtype);	/* TODO: better msg */
 		return TRUE;
 	}
@@ -1454,7 +1446,7 @@ decode_save_mime(
 		 * the role of a multipart part. Check to see if we want to
 		 * save text and if not, skip this part.
 		 */
-		if ((ptr->type == TYPE_MULTIPART || ((NULL != ptr->uue) && (!check_save_mime_type(ptr, CURR_GROUP.attribute->mime_types_to_save)))))
+		if ((ptr->type == TYPE_MULTIPART || ((NULL != ptr->uue) && (!check_save_mime_type(ptr, curr_group->attribute->mime_types_to_save)))))
 			continue;
 
 		if (!(decode_save_one(ptr, art->raw, postproc)))
