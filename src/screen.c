@@ -270,6 +270,11 @@ draw_arrow_mark (
 		StartInverse ();
 		my_fputs (s, stdout);
 		EndInverse ();
+		if (s[MARK_OFFSET] == tinrc.art_marked_selected) {
+			MoveCursor (line, MARK_OFFSET);
+			EndInverse ();
+			my_fputc (s[MARK_OFFSET], stdout);
+		}
 	}
 	stow_cursor();
 }
@@ -297,6 +302,12 @@ erase_arrow (
 #endif /* USE_CURSES */
 		EndInverse ();
 		my_fputs (s, stdout);
+		if (s[MARK_OFFSET] == tinrc.art_marked_selected) {
+			MoveCursor (line, MARK_OFFSET);
+			StartInverse ();
+			my_fputc (s[MARK_OFFSET], stdout);
+			EndInverse ();
+		}
 	}
 }
 

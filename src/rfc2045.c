@@ -574,7 +574,7 @@ parse_multipart_article(
 	char *boundary;
 	char *ptr;
 	int state = M_SEARCHING;
-	t_part *curr_part;
+	t_part *curr_part = 0;
 
 	/*
 	 * Get the boundary marker
@@ -788,7 +788,7 @@ int
 art_open (
 	struct t_article *art,
 	char *group_path,
-	t_bool decode,
+	t_bool decode,		/* currently unused */
 	t_openartinfo *artinfo)
 {
 	char *ptr;

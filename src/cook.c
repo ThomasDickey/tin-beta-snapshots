@@ -372,7 +372,7 @@ fprintf(stderr, "decoding %s part\n", content_encodings[part->encoding]);
 			int offsets[6];
 			int size_offsets = sizeof(offsets)/sizeof(int);
 			t_bool is_uubody = FALSE;
-			t_part *curruue;
+			t_part *curruue = 0;
 
 			if (pcre_exec (uubegin_regex.re, uubegin_regex.extra, line, len, 0, 0, offsets, size_offsets) != PCRE_ERROR_NOMATCH) {
 				in_uue = TRUE;

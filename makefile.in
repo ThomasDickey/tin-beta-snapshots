@@ -435,6 +435,7 @@ distclean:
 	@-$(CD) src && $(MAKE) @cf_cv_makeflags@ $@
 @INTLDIR_MAKE@	@-test -f intl/Makefile && $(CD) intl && $(MAKE) @cf_cv_makeflags@ $@
 @MSG_DIR_MAKE@	@-test -f po/Makefile && $(CD) po && $(MAKE) @cf_cv_makeflags@ $@
+	rm -f intl/po2tbl.sed intl/libintl.h
 	$(RM) -f config.cache config.log config.status makefile */Makefile include/autoconf.h td-conf.out
 
 configure: configure.in aclocal.m4

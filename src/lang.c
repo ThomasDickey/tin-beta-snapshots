@@ -97,7 +97,6 @@ constext txt_cannot_create_uniq_name[] = N_("Can't create unique tempfile-name")
 constext txt_cannot_create[] = N_("Cannot create %s");
 constext txt_cannot_find_base_art[] = N_("Can't find base article %d");
 constext txt_cannot_get_nntp_server_name[] = N_("Cannot find NNTP server name");
-constext txt_cannot_get_term[] = N_("%s: Can't get TERM variable\n");
 constext txt_cannot_get_term_entry[] = N_("%s: Can't get entry for TERM\n");
 constext txt_cannot_open[] = N_("Can't open %s");
 #if defined(NNTP_ABLE) || defined(NNTP_ONLY)

@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@clark.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2000-01-20
+dnl Updated   : 2000-04-14
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2000 Thomas E. Dickey <dickey@clark.net>
@@ -292,7 +292,7 @@ if test $found_ncurses != no ; then
 	 CF_NCURSES_LIBS
 fi
 
-AC_MSG_CHECKING(if you want curses, rather than termcap, interface)
+AC_MSG_CHECKING(if you want curses rather than termcap interface)
 CF_ARG_ENABLE(curses,
 	[  --enable-curses         use curses interface],
 	[AC_DEFINE(USE_CURSES)])
@@ -522,234 +522,15 @@ AC_DEFINE_UNQUOTED(TIN_DEFAULTS_DIR,"$TIN_DEFAULTS_DIR")
 
 ### check for ipv6 support
 AC_MSG_CHECKING([whether to enable ipv6])
-AC_ARG_ENABLE(ipv6,
- [  --enable-ipv6           Enable ipv6 (with ipv4) support (default: disabled)],
- [ case "$enableval" in
-   yes)
-        AC_MSG_RESULT(yes)
-        AC_DEFINE(ENABLE_IPV6)
-        ipv6=yes
-        ;;
-   *)
-        AC_MSG_RESULT(no)
-        ipv6=no
-        ;;
-   esac ],
-	ipv6=no
-	AC_MSG_RESULT($ipv6))
-
- ipv6type=unknown
- ipv6lib=none
- ipv6trylibc=no
-
- if test "$ipv6" = "yes"; then
-       AC_MSG_CHECKING([ipv6 stack type])
-       for i in inria kame linux-glibc linux-libinet6 toshiba v6d zeta; do
-               case $i in
-               inria)
-                       dnl http://www.kame.net/
-                       AC_EGREP_CPP(yes, [dnl
- #include <netinet/in.h>
- #ifdef IPV6_INRIA_VERSION
- yes
- #endif],
-                               [ipv6type=$i])
-                       ;;
-               kame)
-                       dnl http://www.kame.net/
-                       AC_EGREP_CPP(yes, [dnl
- #include <netinet/in.h>
- #ifdef __KAME__
- yes
- #endif],
-                               [ipv6type=$i;
-                               ipv6lib=inet6;
-                               ipv6libdir=/usr/local/v6/lib;
-                               ipv6trylibc=yes])
-                       ;;
-               linux-glibc)
-                       dnl http://www.v6.linux.or.jp/
-                       AC_EGREP_CPP(yes, [dnl
- #include <features.h>
- #if defined(__GLIBC__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 1
- yes
- #endif],
-                               [ipv6type=$i])
-                       ;;
-               linux-libinet6)
-                       dnl http://www.v6.linux.or.jp/
-                       if test -d /usr/inet6 -o -f /usr/include/netinet/ip6.h;
-then
-                               ipv6type=$i
-                               ipv6lib=inet6
-                               ipv6libdir=/usr/inet6/lib
-                               ipv6trylibc=yes;
-                               CFLAGS="-I/usr/inet6/include $CFLAGS"
-                       fi
-                       ;;
-               toshiba)
-                       AC_EGREP_CPP(yes, [dnl
- #include <sys/param.h>
- #ifdef _TOSHIBA_INET6
- yes
- #endif],
-                               [ipv6type=$i;
-                               ipv6lib=inet6;
-                               ipv6libdir=/usr/local/v6/lib])
-                       ;;
-               v6d)
-                       AC_EGREP_CPP(yes, [dnl
- #include </usr/local/v6/include/sys/v6config.h>
- #ifdef __V6D__
- yes
- #endif],
-                               [ipv6type=$i;
-                               ipv6lib=v6;
-                               ipv6libdir=/usr/local/v6/lib;
-                               CFLAGS="-I/usr/local/v6/include $CFLAGS"])
-                       ;;
-               zeta)
-                       AC_EGREP_CPP(yes, [dnl
- #include <sys/param.h>
- #ifdef _ZETA_MINAMI_INET6
- yes
- #endif],
-                               [ipv6type=$i;
-                               ipv6lib=inet6;
-                               ipv6libdir=/usr/local/v6/lib])
-                       ;;
-               esac
-               if test "$ipv6type" != "unknown"; then
-                       break
-               fi
-       done
-       AC_MSG_RESULT($ipv6type)
- fi
-
- if test "$ipv6" = "yes" -a "$ipv6lib" != "none"; then
-       if test -d $ipv6libdir -a -f $ipv6libdir/lib$ipv6lib.a; then
-               LIBS="-L$ipv6libdir -l$ipv6lib $LIBS"
-               echo "You have $ipv6lib library, using it"
-       else
-               if test "$ipv6trylibc" = "yes"; then
-                       echo "You do not have $ipv6lib library, using libc"
-               else
-                       echo 'Fatal: no $ipv6lib library found.  cannot continue.'
-                       echo "You need to fetch lib$ipv6lib.a from appropriate"
-                       echo 'ipv6 kit and compile beforehand.'
-                       exit 1
-               fi
-       fi
- fi
-
-
- AC_MSG_CHECKING(working getaddrinfo)
- AC_TRY_RUN([
- #include <sys/types.h>
- #include <netdb.h>
- #include <string.h>
- #include <sys/socket.h>
- #include <netinet/in.h>
-
- main()
- {
-   int passive, gaierr, inet4 = 0, inet6 = 0;
-   struct addrinfo hints, *ai, *aitop;
-   char straddr[INET6_ADDRSTRLEN], strport[16];
-
-   for (passive = 0; passive <= 1; passive++) {
-     memset(&hints, 0, sizeof(hints));
-     hints.ai_family = AF_UNSPEC;
-     hints.ai_flags = passive ? AI_PASSIVE : 0;
-     hints.ai_socktype = SOCK_STREAM;
-     if ((gaierr = getaddrinfo(NULL, "54321", &hints, &aitop)) != 0) {
-       (void)gai_strerror(gaierr);
-       goto bad;
-     }
-     for (ai = aitop; ai; ai = ai->ai_next) {
-       if (ai->ai_addr == NULL ||
-           ai->ai_addrlen == 0 ||
-           getnameinfo(ai->ai_addr, ai->ai_addrlen,
-                       straddr, sizeof(straddr), strport, sizeof(strport),
-                       NI_NUMERICHOST|NI_NUMERICSERV) != 0) {
-         goto bad;
-       }
-       switch (ai->ai_family) {
-       case AF_INET:
-         if (strcmp(strport, "54321") != 0) {
-           goto bad;
-         }
-         if (passive) {
-           if (strcmp(straddr, "0.0.0.0") != 0) {
-             goto bad;
-           }
-         } else {
-           if (strcmp(straddr, "127.0.0.1") != 0) {
-             goto bad;
-           }
-         }
-         inet4++;
-         break;
-       case AF_INET6:
-         if (strcmp(strport, "54321") != 0) {
-           goto bad;
-         }
-         if (passive) {
-           if (strcmp(straddr, "::") != 0) {
-             goto bad;
-           }
-         } else {
-           if (strcmp(straddr, "::1") != 0) {
-             goto bad;
-           }
-         }
-         inet6++;
-         break;
-       case AF_UNSPEC:
-         goto bad;
-         break;
-       default:
-         /* another family support? */
-         break;
-       }
-     }
-   }
-
-   if (inet6 != 2 || inet4 != 2)
-     goto bad;
-
-   if (aitop)
-     freeaddrinfo(aitop);
-   exit(0);
-
-  bad:
-   if (aitop)
-     freeaddrinfo(aitop);
-   exit(1);
- }
- ],
- AC_MSG_RESULT(yes)
- buggygetaddrinfo=no,
- AC_MSG_RESULT(no)
- buggygetaddrinfo=yes,
- AC_MSG_RESULT(no)
- buggygetaddrinfo=yes)
-
- if test "$buggygetaddrinfo" = "yes"; then
-       if test "$ipv6" = "yes" -a "$ipv6type" != "linux"; then
-               echo 'Fatal: You must get working getaddrinfo() function.'
-               echo '       or you can specify "--disable-ipv6"'.
-               exit 1
-       elif test "$ipv6type" = "linux"; then
-               echo 'Warning: getaddrinfo() implementation on your system seems be buggy.'
-               echo '         Better upgreade your system library to newest version'
-               echo '         of GNU C library (aka glibc).'
-       fi
- fi
+CF_ARG_ENABLE(ipv6,
+	[  --enable-ipv6           enable ipv6 (with ipv4) support (default: disabled)],
+[AC_DEFINE(ENABLE_IPV6)])
+AC_MSG_RESULT($enableval)
+if test "$enableval" = "yes"; then
+	CF_CHECK_IPV6
+fi
 AC_REPLACE_FUNCS(getaddrinfo getnameinfo)
 
-
-#
 ### checks for operator characteristics (should be the last option)
 AC_MSG_CHECKING(whether to make a coffee while compiling)
 AC_ARG_WITH(coffee,
@@ -899,14 +680,18 @@ make an error
 fi
 CF_TYPE_OUTCHAR
 
-cf_tc_externs="tgoto tgetstr tputs tgetent tgetflag"
+cf_tc_funcs=
+cf_tc_externs=
 if test ".$cf_cv_termlib" = .terminfo ; then
 	AC_DEFINE(USE_TERMINFO)
-	cf_tc_externs="$cf_tc_externs tigetnum"
+	cf_tc_funcs="tigetint tigetnum tparam tparm"
+	cf_tc_externs="$cf_tc_funcs tgoto tigetstr tputs tigetflag"
 elif test ".$cf_cv_termlib" = .termcap ; then
-	cf_tc_externs="$cf_tc_externs tgetnum"
-else
-	cf_tc_externs=""
+	# BSD 'tputs()' may need 'PC' to be set.
+	AC_TRY_LINK([],[extern char PC; PC = 0],
+		[AC_DEFINE(HAVE_EXTERN_TCAP_PC)])
+	cf_tc_funcs="tgetint tgetnum tparam tparm"
+	cf_tc_externs="$cf_tc_funcs tgoto tgetstr tputs tgetent tgetflag"
 fi
 
 ###	Checks for external-data
@@ -967,7 +752,7 @@ AC_CHECK_FUNCS(\
 	use_default_colors \
 	usleep \
 	vsnprintf \
-)
+$cf_tc_funcs )
 
 CF_POSIX_JC
 CF_FUNC_FORK

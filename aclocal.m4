@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@clark.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2000-01-20
+dnl Updated   : 2000-04-14
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2000 Thomas E. Dickey <dickey@clark.net>
@@ -292,11 +292,14 @@ AC_DEFUN(AM_WITH_NLS,
 
 	   if test "$gt_cv_func_gettext_libc" != "yes"; then
 	     AC_CHECK_LIB(intl, bindtextdomain,
-	       [AC_CACHE_CHECK([for gettext in libintl],
+	       [ gt_save_LIBS="$LIBS"
+		 LIBS="$gt_save_LIBS -lintl"
+	         AC_CACHE_CHECK([for gettext in libintl],
 		 gt_cv_func_gettext_libintl,
 		 [AC_TRY_LINK([], [return (int) gettext ("")],
 		 gt_cv_func_gettext_libintl=yes,
-		 gt_cv_func_gettext_libintl=no)])])
+		 gt_cv_func_gettext_libintl=no)])
+		 LIBS="$gt_save_LIBS"])
 	   fi
 
 	   if test "$gt_cv_func_gettext_libintl" = yes; then
@@ -350,7 +353,7 @@ AC_DEFUN(AM_WITH_NLS,
 		 CATOBJEXT=.cat
 		 INSTOBJEXT=.cat
 		 DATADIRNAME=lib
-		 INTLDEPS='../intl/libintl.a'
+		 INTLDEPS='$(top_builddir)/intl/libintl.a'
 		 INTLLIBS=$INTLDEPS
 		 LIBS=`echo $LIBS | sed -e 's/-lintl//'`
 		 nls_cv_header_intl=intl/libintl.h
@@ -379,7 +382,7 @@ AC_DEFUN(AM_WITH_NLS,
         CATOBJEXT=.gmo
         INSTOBJEXT=.mo
         DATADIRNAME=share
-	INTLDEPS='../intl/libintl.a'
+	INTLDEPS='$(top_builddir)/intl/libintl.a'
 	INTLLIBS=$INTLDEPS
 	LIBS=`echo $LIBS | sed -e 's/-lintl//'`
         nls_cv_header_intl=intl/libintl.h
@@ -409,9 +412,10 @@ AC_DEFUN(AM_WITH_NLS,
 
     # If this is used in GNU gettext we have to set USE_NLS to `yes'
     # because some of the sources are only built for this goal.
-    if test "$PACKAGE" = "gettext" ; then
+    if test "$PACKAGE" = gettext; then
       USE_NLS=yes
       USE_INCLUDED_LIBINTL=yes
+
       AC_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl)
     fi
 
@@ -748,7 +752,7 @@ AC_DEFUN([CF_CHECK_ERRNO],
 AC_MSG_CHECKING(if external $1 is declared)
 AC_CACHE_VAL(cf_cv_dcl_$1,[
     AC_TRY_COMPILE([
-#if HAVE_STDLIB_H
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
 #include <stdio.h>
@@ -795,6 +799,28 @@ if test "$cf_result" = yes ; then
     eval 'cf_result=HAVE_'$1
     CF_UPPER(cf_result,$cf_result)
     AC_DEFINE_UNQUOTED($cf_result)
+fi
+
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check for IPV6 configuration.
+AC_DEFUN([CF_CHECK_IPV6],[
+CF_FIND_IPV6_TYPE
+CF_FIND_IPV6_LIBS
+
+CF_FUNC_GETADDRINFO
+
+if test "$cf_cv_getaddrinfo" != "yes"; then
+	if test "$cf_cv_ipv6type" != "linux"; then
+		AC_MSG_ERROR(
+[You must get working getaddrinfo() function,
+or you can specify "--disable-ipv6"])
+	else
+		AC_MSG_WARN(
+[The getaddrinfo() implementation on your system seems be buggy.
+You should upgrade your system library to the newest version
+of GNU C library (aka glibc).])
+	fi
 fi
 
 ])dnl
@@ -953,7 +979,7 @@ case $host_os in #(vi
 freebsd*) #(vi
 	AC_CHECK_LIB(mytinfo,tgoto,[LIBS="-lmytinfo $LIBS"])
 	;;
-hpux10.*)
+hpux10.*|hpux11.*)
 	AC_CHECK_LIB(cur_colr,initscr,[
 		LIBS="-lcur_colr $LIBS"
 		CFLAGS="-I/usr/include/curses_colr $CFLAGS"
@@ -1165,51 +1191,198 @@ AC_DEFUN([CF_ERRNO],
 CF_CHECK_ERRNO(errno)
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Based on the IPV6 stack type, look for the corresponding library.
+AC_DEFUN([CF_FIND_IPV6_LIBS],[
+AC_REQUIRE([CF_FIND_IPV6_TYPE])
+
+cf_ipv6lib=none
+cf_ipv6dir=none
+
+AC_MSG_CHECKING(for ipv6 library if required)
+case $cf_cv_ipv6type in #(vi
+inria) #(vi
+	;;
+kame) #(vi
+	dnl http://www.kame.net/
+	cf_ipv6lib=inet6
+	cf_ipv6dir=v6
+	;;
+linux-glibc) #(vi
+	;;
+linux-libinet6) #(vi
+	dnl http://www.v6.linux.or.jp/
+	cf_ipv6lib=inet6
+	cf_ipv6dir=inet6
+	;;
+toshiba) #(vi
+	cf_ipv6lib=inet6
+	cf_ipv6dir=v6
+	;;
+v6d) #(vi
+	cf_ipv6lib=v6
+	cf_ipv6dir=v6
+	;;
+zeta)
+	cf_ipv6lib=inet6
+	cf_ipv6dir=v6
+	;;
+esac
+AC_MSG_RESULT($cf_ipv6lib)
+
+if test "$cf_ipv6lib" != "none"; then
+
+	AC_TRY_LINK([
+#include <sys/types.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <netinet/ip6.h>],
+	[getaddrinfo(0, 0, 0, 0)],,[
+	CF_HEADER_PATH(cf_search,$cf_ipv6dir)
+	for cf_incdir in $cf_search
+	do
+		cf_header=$cf_incdir/netinet/ip6.h
+		if test -f $cf_header
+		then
+			CFLAGS="$CFLAGS -I$cf_incdir"
+			test -n "$verbose" && echo "	... found $cf_header" 1>&AC_FD_MSG
+			break
+		fi
+		test -n "$verbose" && echo "	... tested $cf_header" 1>&AC_FD_MSG
+	done
+	])
+
+	CF_FIND_LIBRARY([$cf_ipv6lib],[$cf_ipv6dir],[
+#include <sys/types.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <netinet/ip6.h>],
+	[getaddrinfo(0, 0, 0, 0)],
+	[getaddrinfo],
+	noexit)
+	if test $cf_found_library = no ; then
+		AC_MSG_ERROR(
+[No $cf_ipv6lib library found, cannot continue.  You must fetch lib$cf_ipv6lib.a
+from an appropriate ipv6 kit and compile beforehand.])
+	fi
+fi
+
+])dnl
+dnl ---------------------------------------------------------------------------
+AC_DEFUN([CF_FIND_IPV6_TYPE],[
+AC_CACHE_CHECK(ipv6 stack type, cf_cv_ipv6type, [
+cf_cv_ipv6type=unknown
+for i in inria kame linux-glibc linux-libinet6 toshiba v6d zeta
+do
+	case $i in #(vi
+	inria) #(vi
+		dnl http://www.kame.net/
+		AC_EGREP_CPP(yes, [dnl
+#include <netinet/in.h>
+#ifdef IPV6_INRIA_VERSION
+yes
+#endif],	[cf_cv_ipv6type=$i])
+		;;
+	kame) #(vi
+		dnl http://www.kame.net/
+		AC_EGREP_CPP(yes, [dnl
+#include <netinet/in.h>
+#ifdef __KAME__
+yes
+#endif],	[cf_cv_ipv6type=$i])
+		;;
+	linux-glibc) #(vi
+		dnl http://www.v6.linux.or.jp/
+		AC_EGREP_CPP(yes, [dnl
+#include <features.h>
+#if defined(__GLIBC__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 1
+yes
+#endif],	[cf_cv_ipv6type=$i])
+		;;
+	linux-libinet6) #(vi
+		dnl http://www.v6.linux.or.jp/
+		if test -d /usr/inet6
+		then
+			cf_cv_ipv6type=$i
+		elif test -f /usr/include/netinet/ip6.h
+		then
+			cf_cv_ipv6type=$i
+		fi
+		;;
+	toshiba) #(vi
+		AC_EGREP_CPP(yes, [dnl
+#include <sys/param.h>
+#ifdef _TOSHIBA_INET6
+yes
+#endif],	[cf_cv_ipv6type=$i])
+		;;
+	v6d) #(vi
+		AC_EGREP_CPP(yes, [dnl
+#include </usr/local/v6/include/sys/v6config.h>
+#ifdef __V6D__
+yes
+#endif],	[cf_cv_ipv6type=$i])
+		;;
+	zeta)
+		AC_EGREP_CPP(yes, [dnl
+#include <sys/param.h>
+#ifdef _ZETA_MINAMI_INET6
+yes
+#endif],	[cf_cv_ipv6type=$i])
+		;;
+	esac
+	if test "$cf_cv_ipv6type" != "unknown"; then
+		break
+	fi
+done
+])
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl Look for a non-standard library, given parameters for AC_TRY_LINK.  We
 dnl prefer a standard location, and use -L options only if we do not find the
 dnl library in the standard library location(s).
 dnl	$1 = library name
-dnl	$2 = includes
-dnl	$3 = code fragment to compile/link
-dnl	$4 = corresponding function-name
+dnl	$2 = library class, usually the same as library name
+dnl	$3 = includes
+dnl	$4 = code fragment to compile/link
+dnl	$5 = corresponding function-name
+dnl	$6 = flag, nonnull if failure causes an error-exit
 dnl
 dnl Sets the variable "$cf_libdir" as a side-effect, so we can see if we had
 dnl to use a -L option.
 AC_DEFUN([CF_FIND_LIBRARY],
 [
-	cf_cv_have_lib_$1=no
+	eval 'cf_cv_have_lib_'$1'=no'
 	cf_libdir=""
-	AC_CHECK_FUNC($4,cf_cv_have_lib_$1=yes,[
+	AC_CHECK_FUNC($5,
+		eval 'cf_cv_have_lib_'$1'=yes',[
 		cf_save_LIBS="$LIBS"
-		AC_MSG_CHECKING(for $4 in -l$1)
+		AC_MSG_CHECKING(for $5 in -l$1)
 		LIBS="-l$1 $LIBS"
-		AC_TRY_LINK([$2],[$3],
+		AC_TRY_LINK([$3],[$4],
 			[AC_MSG_RESULT(yes)
-			 cf_cv_have_lib_$1=yes
+			 eval 'cf_cv_have_lib_'$1'=yes'
 			],
 			[AC_MSG_RESULT(no)
-			CF_LIBRARY_PATH(cf_search,$1)
+			CF_LIBRARY_PATH(cf_search,$2)
 			for cf_libdir in $cf_search
 			do
 				AC_MSG_CHECKING(for -l$1 in $cf_libdir)
 				LIBS="-L$cf_libdir -l$1 $cf_save_LIBS"
-				AC_TRY_LINK([$2],[$3],
+				AC_TRY_LINK([$3],[$4],
 					[AC_MSG_RESULT(yes)
-			 		 cf_cv_have_lib_$1=yes
+			 		 eval 'cf_cv_have_lib_'$1'=yes'
 					 break],
 					[AC_MSG_RESULT(no)
 					 LIBS="$cf_save_LIBS"])
 			done
 			])
 		])
-if test $cf_cv_have_lib_$1 = no ; then
+eval 'cf_found_library=[$]cf_cv_have_lib_'$1
+ifelse($6,,[
+if test $cf_found_library = no ; then
 	AC_ERROR(Cannot link $1 library)
 fi
-case $host_os in #(vi
-linux*) # Suse Linux does not follow /usr/lib convention
-	LIBS="$LIBS -L/lib"
-	;;
-esac
+])
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check if 'fork()' is available, and working.  Amiga (and possibly other
@@ -1229,6 +1402,89 @@ int main()
 ])dnl
 AC_MSG_RESULT($cf_cv_func_fork)
 test $cf_cv_func_fork = yes && AC_DEFINE(HAVE_FORK)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Look for a working version of getaddrinfo(), for IPV6 support.
+AC_DEFUN([CF_FUNC_GETADDRINFO],[
+AC_CACHE_CHECK(working getaddrinfo, cf_cv_getaddrinfo,[
+AC_TRY_RUN([
+#include <sys/types.h>
+#include <netdb.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
+#define expect(a,b) if (strcmp(a,b) != 0) goto bad
+
+int main()
+{
+   int passive, gaierr, inet4 = 0, inet6 = 0;
+   struct addrinfo hints, *ai, *aitop;
+   char straddr[INET6_ADDRSTRLEN], strport[16];
+
+   for (passive = 0; passive <= 1; passive++) {
+     memset(&hints, 0, sizeof(hints));
+     hints.ai_family = AF_UNSPEC;
+     hints.ai_flags = passive ? AI_PASSIVE : 0;
+     hints.ai_socktype = SOCK_STREAM;
+     if ((gaierr = getaddrinfo(NULL, "54321", &hints, &aitop)) != 0) {
+       (void)gai_strerror(gaierr);
+       goto bad;
+     }
+     for (ai = aitop; ai; ai = ai->ai_next) {
+       if (ai->ai_addr == NULL ||
+           ai->ai_addrlen == 0 ||
+           getnameinfo(ai->ai_addr, ai->ai_addrlen,
+                       straddr, sizeof(straddr), strport, sizeof(strport),
+                       NI_NUMERICHOST|NI_NUMERICSERV) != 0) {
+         goto bad;
+       }
+       switch (ai->ai_family) {
+       case AF_INET:
+         expect(strport, "54321");
+         if (passive) {
+           expect(straddr, "0.0.0.0");
+         } else {
+           expect(straddr, "127.0.0.1");
+         }
+         inet4++;
+         break;
+       case AF_INET6:
+         expect(strport, "54321");
+         if (passive) {
+           expect(straddr, "::");
+         } else {
+           expect(straddr, "::1");
+         }
+         inet6++;
+         break;
+       case AF_UNSPEC:
+         goto bad;
+         break;
+       default:
+         /* another family support? */
+         break;
+       }
+     }
+   }
+
+   if (inet6 != 2 || inet4 != 2)
+     goto bad;
+
+   if (aitop)
+     freeaddrinfo(aitop);
+   exit(0);
+
+  bad:
+   if (aitop)
+     freeaddrinfo(aitop);
+   exit(1);
+}
+],
+[cf_cv_getaddrinfo=yes],
+[cf_cv_getaddrinfo=no],
+[cf_cv_getaddrinfo=unknown])
+])
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for memmove, or a bcopy that can handle overlapping copy.  If neither
@@ -1361,36 +1617,65 @@ dnl ---------------------------------------------------------------------------
 dnl Construct a search-list for a nonstandard header-file
 AC_DEFUN([CF_HEADER_PATH],
 [$1=""
-if test -d "$includedir"  ; then
-test "$includedir" != NONE       && $1="[$]$1 $includedir $includedir/$2"
-fi
-if test -d "$oldincludedir"  ; then
-test "$oldincludedir" != NONE    && $1="[$]$1 $oldincludedir $oldincludedir/$2"
-fi
-if test -d "$prefix"; then
-test "$prefix" != NONE           && $1="[$]$1 $prefix/include $prefix/include/$2"
-fi
-test "$prefix" != /usr/local     && $1="[$]$1 /usr/local/include /usr/local/include/$2"
-test "$prefix" != /usr           && $1="[$]$1 /usr/include /usr/include/$2"
-test "$prefix" != /opt           && $1="[$]$1 /opt/include /opt/include/$2"
+
+test "$includedir" != NONE && \
+test -d "$includedir" && \
+$1="[$]$1 $includedir $includedir/$2"
+
+test "$oldincludedir" != NONE && \
+test -d "$oldincludedir" && \
+$1="[$]$1 $oldincludedir $oldincludedir/$2"
+
+test "$prefix" != NONE && \
+test -d "$prefix" && \
+$1="[$]$1 $prefix/include $prefix/include/$2 $prefix/$2/include"
+
+test "$prefix" != /usr/local && \
+test -d /usr/local && \
+$1="[$]$1 /usr/local/include /usr/local/include/$2 /usr/local/$2/include"
+
+test "$prefix" != /usr && \
+$1="[$]$1 /usr/include /usr/include/$2 /usr/$2/include"
+
+test "$prefix" != /opt && \
+test -d /opt && \
+$1="[$]$1 /opt/include /opt/include/$2 /opt/$2/include"
+
+$1="[$]$1 [$]HOME/lib [$]HOME/lib/$2 [$]HOME/$2/lib"
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Construct a search-list for a nonstandard library-file
 AC_DEFUN([CF_LIBRARY_PATH],
 [$1=""
-if test -d "$libdir"  ; then
-test "$libdir" != NONE           && $1="[$]$1 $libdir $libdir/$2"
-fi
-if test -d "$exec_prefix"; then
-test "$exec_prefix" != NONE      && $1="[$]$1 $exec_prefix/lib $exec_prefix/lib/$2"
-fi
-if test -d "$prefix"; then
-test "$prefix" != NONE           && \
-test "$prefix" != "$exec_prefix" && $1="[$]$1 $prefix/lib $prefix/lib/$2"
-fi
-test "$prefix" != /usr/local     && $1="[$]$1 /usr/local/lib /usr/local/lib/$2"
-test "$prefix" != /usr           && $1="[$]$1 /usr/lib /usr/lib/$2"
-test "$prefix" != /opt           && $1="[$]$1 /opt/lib /opt/lib/$2"
+
+test "$libdir" != NONE && \
+test -d $libdir && \
+$1="[$]$1 $libdir $libdir/$2"
+
+test "$exec_prefix" != NONE && \
+test -d $exec_prefix && \
+$1="[$]$1 $exec_prefix/lib $exec_prefix/lib/$2"
+
+test "$prefix" != NONE && \
+test "$prefix" != "$exec_prefix" && \
+test -d $prefix && \
+$1="[$]$1 $prefix/lib $prefix/lib/$2 $prefix/$2/lib"
+
+test "$prefix" != /usr/local && \
+test -d /usr/local && \
+$1="[$]$1 /usr/local/lib /usr/local/lib/$2 /usr/local/$2/lib"
+
+test "$prefix" != /usr && \
+$1="[$]$1 /usr/lib /usr/lib/$2 /usr/$2/lib"
+
+test "$prefix" != / && \
+$1="[$]$1 /lib /lib/$2 /$2/lib"
+
+test "$prefix" != /opt && \
+test -d /opt && \
+$1="[$]$1 /opt/lib /opt/lib/$2 /opt/$2/lib"
+
+$1="[$]$1 [$]HOME/lib [$]HOME/lib/$2 [$]HOME/$2/lib"
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Compute the library-prefix for the given host system
@@ -1577,7 +1862,7 @@ freebsd*)
 esac
 
 LIBS="$cf_ncurses_LIBS $LIBS"
-CF_FIND_LIBRARY(ncurses,
+CF_FIND_LIBRARY(ncurses,ncurses,
 	[#include <${cf_cv_ncurses_header-curses.h}>],
 	[initscr()],
 	initscr)
@@ -1793,6 +2078,8 @@ dnl delayed evaluation of those symbols.
 AC_DEFUN([CF_PATH_SYNTAX],[
 case ".[$]$1" in #(vi
 ./*) #(vi
+  ;;
+.[a-zA-Z]:[\\/]*) #(vi OS/2 EMX
   ;;
 .\[$]{*prefix}*) #(vi
   eval $1="[$]$1"

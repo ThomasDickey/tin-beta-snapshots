@@ -303,7 +303,9 @@ ReadCh(
 	if (cmd_line)
 		ch = cmdReadCh();
 	else {
+#if 0
 again:
+#endif /* 0 */
 		allow_resize (TRUE);
 		ch = getch();
 		allow_resize (FALSE);
@@ -314,7 +316,7 @@ again:
 				need_resize = cNo;
 				goto again;				/* Shouldn't fall through if doing resize */
 			}
-#endif
+#endif /* 0 */
 			need_resize = cNo;
 		}
 		if (ch == KEY_BACKSPACE)
@@ -480,7 +482,7 @@ write_line(
 
 int
 get_arrow_key (
-	int prech)
+	int prech) /* unused */
 {
 #	ifdef NCURSES_MOUSE_VERSION
 	MEVENT my_event;

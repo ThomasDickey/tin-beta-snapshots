@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 1994-05-17
+ *  Updated   : 2000-04-14
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -188,10 +188,6 @@ static int _columns, _line, _lines;
 #		endif /* USE_TERMIO */
 #	endif /* USE_POSIX_TERMIOS */
 
-static char _terminal[1024];		/* Storage for terminal entry */
-static char _capabilities[1024];	/* String for cursor motion */
-static char *ptr = _capabilities;	/* for buffering */
-
 #endif /* M_UNIX */
 
 static int in_inverse;			/* 1 when in inverse, 0 otherwise */
@@ -236,52 +232,88 @@ setup_screen (void)
 
 #ifdef M_UNIX
 
+#ifdef USE_TERMINFO
+#  define TGETSTR(a,b, bufp) tigetstr(b, bufp)
+#  define TGETNUM(a,b)       tigetnum(b) /* may be tigetint() */
+#  define TGETFLAG(a,b)      tigetflag(b)
+#  define NO_CAP(s)           (s == 0 || s == (char *)-1)
+#  if !defined(HAVE_TIGETNUM) && defined(HAVE_TIGETINT)
+#    define tigetnum tigetint
+#  endif
+#else /* USE_TERMCAP */
+#  undef USE_TERMCAP
+#  define USE_TERMCAP 1
+#  define TGETSTR(a,b, bufp) tgetstr(a, bufp)
+#  define TGETNUM(a,b)       tgetnum(a)
+#  define TGETFLAG(a,b)      tgetflag(a)
+#  define NO_CAP(s)           (s == 0)
+#endif /* USE_TERMINFO */
+
+#ifdef HAVE_TPARM
+#define TFORMAT(fmt, a, b) tparm(fmt, b, a)
+#else
+#define TFORMAT(fmt, a, b) tgoto(fmt, b, a)
+#endif
+
+#if HAVE_EXTERN_TCAP_PC
+extern char PC;			/* used in 'tputs()' */
+#endif
+
 int
 get_termcaps (void)
 {
+	static char _terminal[1024];		/* Storage for terminal entry */
+	static char _capabilities[1024];	/* String for cursor motion */
+	static char *ptr = _capabilities;	/* for buffering */
+
 	char the_termname[40], *p;
 
 	if ((p = getenv ("TERM")) == (char *) 0) {
 		my_fprintf (stderr, _(txt_no_term_set), tin_progname);
 		return (FALSE);
 	}
-	if (strcpy (the_termname, p) == NULL) {
-		my_fprintf (stderr, _(txt_cannot_get_term), tin_progname);
-		return (FALSE);
-	}
+	STRCPY(the_termname, p);
 	if (tgetent (_terminal, the_termname) != 1) {
 		my_fprintf (stderr, _(txt_cannot_get_term_entry), tin_progname);
 		return (FALSE);
 	}
 
 	/* load in all those pesky values */
-	_clearscreen    = tgetstr ("cl", &ptr);
-	_moveto         = tgetstr ("cm", &ptr);
-	_cleartoeoln    = tgetstr ("ce", &ptr);
-	_cleartoeos     = tgetstr ("cd", &ptr);
-	_lines          = tgetnum ("li");
-	_columns        = tgetnum ("co");
-	_setinverse     = tgetstr ("so", &ptr);
-	_clearinverse   = tgetstr ("se", &ptr);
-	_setunderline   = tgetstr ("us", &ptr);
-	_clearunderline = tgetstr ("ue", &ptr);
-	_scrollregion   = tgetstr ("cs", &ptr);
-	_scrollfwd      = tgetstr ("sf", &ptr);
-	_scrollback     = tgetstr ("sr", &ptr);
-	_hp_glitch      = tgetflag ("xs");
+	_clearscreen    = TGETSTR ("cl", "clear", &ptr);
+	_moveto         = TGETSTR ("cm", "cup",   &ptr);
+	_cleartoeoln    = TGETSTR ("ce", "el",    &ptr);
+	_cleartoeos     = TGETSTR ("cd", "ed",    &ptr);
+	_lines          = TGETNUM ("li", "lines");
+	_columns        = TGETNUM ("co", "cols");
+	_setinverse     = TGETSTR ("so", "smso",  &ptr);
+	_clearinverse   = TGETSTR ("se", "rmso",  &ptr);
+	_setunderline   = TGETSTR ("us", "smul",  &ptr);
+	_clearunderline = TGETSTR ("ue", "rmul",  &ptr);
+	_scrollregion   = TGETSTR ("cs", "csr",   &ptr);
+	_scrollfwd      = TGETSTR ("sf", "ind",   &ptr);
+	_scrollback     = TGETSTR ("sr", "ri",    &ptr);
+	_hp_glitch      = TGETFLAG("xs", "xhp");
 #ifdef HAVE_BROKEN_TGETSTR
 	_terminalinit   = "";
 	_terminalend    = "";
 	_keypadlocal    = "";
 	_keypadxmit     = "";
 #else
-	_terminalinit   = tgetstr ("ti", &ptr);
-	_terminalend    = tgetstr ("te", &ptr);
-	_keypadlocal    = tgetstr ("ke", &ptr);
-	_keypadxmit     = tgetstr ("ks", &ptr);
+	_terminalinit   = TGETSTR ("ti", "smcup", &ptr);
+	_terminalend    = TGETSTR ("te", "rmcup", &ptr);
+	_keypadlocal    = TGETSTR ("ke", "rmkx",  &ptr);
+	_keypadxmit     = TGETSTR ("ks", "smkx",  &ptr);
 #endif /* HAVE_BROKEN_TGETSTR */
-	_cursoron = NULL;
-	_cursoroff = NULL;
+	_cursoron       = TGETSTR ("ve", "cnorm", &ptr);
+	_cursoroff      = TGETSTR ("vi", "civis", &ptr);
+
+#if USE_TERMCAP
+#  if HAVE_EXTERN_TCAP_PC
+	t = TGETSTR("pc", "pad", &p);
+	if (t != 0)
+		PC = *t;
+#  endif
+#endif
 
 	if (STRCMPEQ(the_termname, "xterm")) {
 		static char x_init[] = "\033[?9h";
@@ -291,19 +323,19 @@ get_termcaps (void)
 		_xclickend	= x_end;
 	}
 
-	if (!_clearscreen) {
+	if (NO_CAP(_clearscreen)) {
 		my_fprintf (stderr, _(txt_no_term_clearscreen), tin_progname);
 		return (FALSE);
 	}
-	if (!_moveto) {
+	if (NO_CAP(_moveto)) {
 		my_fprintf (stderr, _(txt_no_term_cursor_motion), tin_progname);
 		return (FALSE);
 	}
-	if (!_cleartoeoln) {
+	if (NO_CAP(_cleartoeoln)) {
 		my_fprintf (stderr, _(txt_no_term_clear_eol), tin_progname);
 		return (FALSE);
 	}
-	if (!_cleartoeos) {
+	if (NO_CAP(_cleartoeos)) {
 		my_fprintf (stderr, _(txt_no_term_clear_eos), tin_progname);
 		return (FALSE);
 	}
@@ -319,13 +351,13 @@ get_termcaps (void)
 	/*
 	 * kludge to workaround no inverse
 	 */
-	if (!_setinverse) {
+	if (NO_CAP(_setinverse)) {
 		_setinverse = _setunderline;
 		_clearinverse = _clearunderline;
-		if (!_setinverse)
+		if (NO_CAP(_setinverse))
 			tinrc.draw_arrow = 1;
 	}
-	if (!_scrollregion || !_scrollfwd || !_scrollback)
+	if (NO_CAP(_scrollregion) || NO_CAP(_scrollfwd) || NO_CAP(_scrollback))
 		have_linescroll = FALSE;
 	else
 		have_linescroll = TRUE;
@@ -581,7 +613,7 @@ MoveCursor (
 {
 	char *stuff;
 
-	stuff = tgoto (_moveto, col, row);
+	stuff = tgoto(_moveto, col, row);
 	tputs (stuff, 1, outchar);
 	my_flush ();
 	_line = row + 1;
@@ -594,7 +626,7 @@ MoveCursor (
 	int row,
 	int col)
 {
-	char stuff[12], *tgoto();
+	char stuff[12];
 
 	if (_moveto) {
 		sprintf (stuff, _moveto, row+1, col+1);
@@ -647,7 +679,7 @@ setscrreg (
 	if (!have_linescroll)
 		return;
 	if (_scrollregion) {
-		stuff = tparm (_scrollregion, topline, bottomline);
+		stuff = TFORMAT(_scrollregion, topline, bottomline);
 		tputs (stuff, 1, outchar);
 		_topscrregion = topline;
 		_bottomscrregion = bottomline;

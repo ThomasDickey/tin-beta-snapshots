@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2000-03-22
+# Updated: 2000-04-14
 #
 # Copyright (c) 1995-2000 Thomas E. Dickey <dickey@clark.net>
 # All rights reserved.
@@ -38,6 +38,7 @@ SHELL		= /bin/sh
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
 top_srcdir	= @top_srcdir@
+top_builddir	= ..
 srcdir		= @srcdir@
 VPATH		= $(srcdir)
 
@@ -57,7 +58,7 @@ LDFLAGS	= @LDFLAGS@
 YACC	= @YACC@
 
 CANLIB	= # -L../libcanlock -lcanlock
-LIBS	= -L../pcre -lpcre $(CANLIB) @LIBS@ @INN_NNTPLIB@ @INTLLIBS@
+LIBS	= -L../pcre -lpcre $(CANLIB) @LIBS@ @INN_NNTPLIB@ @INTLDIR_MAKE@ @INTLLIBS@
 
 # Where do you want the binary & manual page installed?
 DESTDIR	= @DESTDIR@
@@ -175,7 +176,7 @@ CFILES	= \
 
 EXTRAOBJS = @EXTRAOBJS@
 
-EXTRALIBS = ../pcre/$(PRELIB)pcre.a @INTLLIBS@
+EXTRALIBS = ../pcre/$(PRELIB)pcre.a @INTLDIR_MAKE@ @INTLLIBS@
 
 OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/active.o \
@@ -400,8 +401,7 @@ TIN_DEP	= \
 	@$(ECHO) "Building Philip Hazel's Perl regular expressions library..."
 	@$(CD) ../pcre && $(MAKE) @cf_cv_makeflags@ $(PRELIB)pcre.a
 
-#@INTLLIBS@:
-../intl/libintl.a:
+@INTLLIBS@:
 	@$(ECHO) "Building GNU gettext library..."
 	@$(CD) ../intl && $(MAKE) @cf_cv_makeflags@
 

@@ -2029,6 +2029,7 @@ post_response (
 	char initials[64];
 	int art_type = GROUP_TYPE_NEWS;
 	int ret_code = POSTED_NONE;
+	int i;
 	struct t_group *psGrp;
 	struct t_header note_h = pgart.hdr;
 #ifdef FORGERY
@@ -2199,13 +2200,23 @@ post_response (
 			}
 		}
 
-		/* TODO seek start of C_BODY in cooked  - same for other seeks in raw ? */
-		fseek (pgart.raw, (with_headers ? 0L : note_h.ext->offset), SEEK_SET);
-
-		get_initials (respnum, initials, sizeof (initials));
-		copy_body (pgart.raw, fp,
-			   (psGrp && psGrp->attribute->quote_chars != (char *) 0) ? psGrp->attribute->quote_chars : tinrc.quote_chars,
-			   initials, with_headers ? TRUE : tinrc.quote_signatures);
+		if (with_headers) {
+			fseek (pgart.raw, 0L, SEEK_SET);
+			get_initials (respnum, initials, sizeof (initials));
+			copy_body (pgart.raw, fp,
+						  (psGrp && psGrp->attribute->quote_chars != (char *) 0) ? psGrp->attribute->quote_chars : tinrc.quote_chars,
+						  initials, TRUE);
+		} else {
+			/* without headers */
+			resize_article (&pgart);
+			for (i=0; pgart.cookl[i].flags & C_HEADER; ++i)
+				;
+			fseek (pgart.cooked, pgart.cookl[i].offset, SEEK_SET);
+			get_initials (respnum, initials, sizeof (initials));
+			copy_body (pgart.cooked, fp,
+						  (psGrp && psGrp->attribute->quote_chars != (char *) 0) ? psGrp->attribute->quote_chars : tinrc.quote_chars,
+						  initials, tinrc.quote_signatures);
+		}
 	} else
 		fprintf (fp, "\n");	/* add a newline to keep vi from bitching */
 
@@ -2601,6 +2612,7 @@ mail_to_author (
 	int ret_code = POSTED_NONE;
 	struct t_header note_h = pgart.hdr;
 	t_bool spamtrap_found = FALSE;
+	int i;
 
 	wait_message (0, _(txt_reply_to_author));
 
@@ -2637,9 +2649,20 @@ mail_to_author (
 
 	if (copy_text) {
 		start_line_offset += add_mail_quote (fp, respnum);
-		fseek (pgart.raw, (with_headers ? 0L : note_h.ext->offset), SEEK_SET);
-		get_initials (respnum, initials, sizeof (initials));
-		copy_body (pgart.raw, fp, tinrc.quote_chars, initials, with_headers ? TRUE : tinrc.quote_signatures);
+		
+		if (with_headers) {
+			fseek (pgart.raw, 0L, SEEK_SET);
+			get_initials (respnum, initials, sizeof (initials));
+			copy_body (pgart.raw, fp, tinrc.quote_chars, initials, TRUE);
+		} else {
+			/* without headers */
+			resize_article (&pgart);
+			for (i=0; pgart.cookl[i].flags & C_HEADER; ++i)
+				;
+			fseek (pgart.cooked, pgart.cookl[i].offset, SEEK_SET);
+			get_initials (respnum, initials, sizeof (initials));
+			copy_body (pgart.cooked, fp, tinrc.quote_chars, initials, tinrc.quote_signatures);
+		}
 	} else
 		fprintf (fp, "\n");	/* add a newline to keep vi from bitching */
 
