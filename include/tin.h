@@ -1876,9 +1876,11 @@ extern void joindir (char *result, const char *dir, const char *file);
 /* Various function redefinitions */
 #ifdef USE_DBMALLOC
 #	define my_malloc(size)	malloc(size)
+#	define my_calloc(nmemb, size)	calloc(nmemb, size)
 #	define my_realloc(ptr, size)	realloc((ptr), (size))
 #else
 #	define my_malloc(size)	my_malloc1(__FILE__, __LINE__, (size))
+#	define my_calloc(nmemb, size)	my_calloc1(__FILE__, __LINE__, (nmemb), (size))
 #	define my_realloc(ptr, size)	my_realloc1(__FILE__, __LINE__, (ptr), (size))
 #endif /* USE_DBMALLOC */
 

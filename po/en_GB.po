@@ -4,7 +4,7 @@
 #: src/lang.c:595 src/lang.c:596
 msgid	""
 msgstr	"Project-Id-Version: tin 1.5.10\n"
-	"POT-Creation-Date: 2002-04-10 18:35+0200\n"
+	"POT-Creation-Date: 2002-04-17 15:46+0200\n"
 	"PO-Revision-Date: 2001-11-14 04:26+0000\n"
 	"Last-Translator: Robert Brady <rwb197@zepler.org>\n"
 	"Language-Team: \n"
@@ -262,22 +262,22 @@ msgid	", name: "
 msgstr	""
 
 #. FIXME: -> lang.c
-#: src/group.c:1332
+#: src/group.c:1329
 #, c-format
 msgid	"%s (%dT(%c) %dA %dK %dH [%dL]%s%c)"
 msgstr	""
 
-#: src/group.c:1337 src/group.c:1344 src/select.c:504 src/select.c:506
+#: src/group.c:1334 src/group.c:1341 src/select.c:504 src/select.c:506
 msgid	" R"
 msgstr	""
 
-#: src/group.c:1340
+#: src/group.c:1337
 #, c-format
 msgid	"%s (%dT(%c) %dA %dK %dH%s%c)"
 msgstr	""
 
 #. FIXME: -> lang.c
-#: src/group.c:1510
+#: src/group.c:1507
 msgid	" and enter next unread group"
 msgstr	""
 
@@ -3804,10 +3804,8 @@ msgstr	""
 
 #: src/lang.c:1317
 msgid	"# Number of lines that cursor-up/down will scroll in article pager\n"
-	"# eg, 1+ = line-by-line, 0 = page-by-page (tradional behaviour), -1 = the "
-	"last\n"
-	"# line of the previous page will be displayed as the first line of next "
-	"page,\n"
+	"# eg, 1+ = line-by-line, 0 = page-by-page (traditional behaviour),\n"
+	"# -1 = the top/bottom line is carried over onto the next page,\n"
 	"# -2 = half-page scrolling\n"
 msgstr	""
 
@@ -5359,45 +5357,45 @@ msgid	"Unreachable ?\n"
 msgstr	""
 
 #. FIXME: replace 'Thread' by 'Article' if THREAD_NONE
-#: src/page.c:711 src/save.c:543 src/thread.c:663
+#: src/page.c:714 src/save.c:543 src/thread.c:663
 msgid	"Thread"
 msgstr	""
 
-#: src/page.c:877 src/thread.c:656
+#: src/page.c:880 src/thread.c:656
 msgid	"Article"
 msgstr	""
 
 #. TODO: -> lang.c
-#: src/page.c:1563
+#: src/page.c:1566
 msgid	"No more URL's"
 msgstr	""
 
-#: src/post.c:1603
+#: src/post.c:1602
 #, c-format
 msgid	"%s is bogus"
 msgstr	""
 
-#: src/post.c:1605
+#: src/post.c:1604
 #, c-format
 msgid	"No attributes for %s"
 msgstr	""
 
-#: src/post.c:1800
+#: src/post.c:1799
 #, c-format
 msgid	"Posting: %.*s ..."
 msgstr	""
 
 #. fp
 #. Check if okay to read
-#: src/read.c:218
+#: src/read.c:217
 msgid	"Aborting read, please wait..."
 msgstr	""
 
-#: src/read.c:363
+#: src/read.c:362
 msgid	"Aborted read\n"
 msgstr	""
 
-#: src/read.c:419
+#: src/read.c:418
 msgid	"Draining\n"
 msgstr	""
 
@@ -5410,7 +5408,7 @@ msgstr	""
 msgid	"[- Unavailable -]"
 msgstr	""
 
-#. TODO maybe print something more context dependent here ?
+#. TODO maybe print something more context dependent here?
 #: src/save.c:521
 msgid	"No articles to save"
 msgstr	""
@@ -5445,7 +5443,7 @@ msgstr	""
 msgid	"-- %s saved to %s%s - %s --"
 msgstr	""
 
-#: src/save.c:1109
+#: src/save.c:1108
 msgid	"bytes"
 msgstr	""
 

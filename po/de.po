@@ -5,7 +5,7 @@
 #: src/lang.c:595 src/lang.c:596
 msgid	""
 msgstr	"Project-Id-Version: tin 1.5.11\n"
-	"POT-Creation-Date: 2002-04-10 18:35+0200\n"
+	"POT-Creation-Date: 2002-04-17 15:46+0200\n"
 	"PO-Revision-Date: 2002-03-20 14:00+0100\n"
 	"Last-Translator: Sven Hartge <oweh@ds9.argh.org>, Kai Bojens "
 	"<kbojens@on-luebeck.de>\n"
@@ -282,24 +282,24 @@ msgstr	", Name: "
 
 # TRANSLATION MISSING
 #. FIXME: -> lang.c
-#: src/group.c:1332
+#: src/group.c:1329
 #, c-format
 msgid	"%s (%dT(%c) %dA %dK %dH [%dL]%s%c)"
 msgstr	""
 
 # TRANSLATION MISSING
-#: src/group.c:1337 src/group.c:1344 src/select.c:504 src/select.c:506
+#: src/group.c:1334 src/group.c:1341 src/select.c:504 src/select.c:506
 msgid	" R"
 msgstr	""
 
 # TRANSLATION MISSING
-#: src/group.c:1340
+#: src/group.c:1337
 #, c-format
 msgid	"%s (%dT(%c) %dA %dK %dH%s%c)"
 msgstr	""
 
 #. FIXME: -> lang.c
-#: src/group.c:1510
+#: src/group.c:1507
 msgid	" and enter next unread group"
 msgstr	" und betritt nächste Gruppe"
 
@@ -4077,13 +4077,10 @@ msgstr	""
 msgid	"Number of lines to scroll in pager :"
 msgstr	""
 
-# TRANSLATION MISSING
 #: src/lang.c:1317
 msgid	"# Number of lines that cursor-up/down will scroll in article pager\n"
-	"# eg, 1+ = line-by-line, 0 = page-by-page (tradional behaviour), -1 = the "
-	"last\n"
-	"# line of the previous page will be displayed as the first line of next "
-	"page,\n"
+	"# eg, 1+ = line-by-line, 0 = page-by-page (traditional behaviour),\n"
+	"# -1 = the top/bottom line is carried over onto the next page,\n"
 	"# -2 = half-page scrolling\n"
 msgstr	""
 
@@ -5752,45 +5749,45 @@ msgid	"Unreachable ?\n"
 msgstr	"Unerreichbar ?\n"
 
 #. FIXME: replace 'Thread' by 'Article' if THREAD_NONE
-#: src/page.c:711 src/save.c:543 src/thread.c:663
+#: src/page.c:714 src/save.c:543 src/thread.c:663
 msgid	"Thread"
 msgstr	"Thread"
 
-#: src/page.c:877 src/thread.c:656
+#: src/page.c:880 src/thread.c:656
 msgid	"Article"
 msgstr	"Artikel"
 
 #. TODO: -> lang.c
-#: src/page.c:1563
+#: src/page.c:1566
 msgid	"No more URL's"
 msgstr	"Keine URLs mehr vorhanden"
 
-#: src/post.c:1603
+#: src/post.c:1602
 #, c-format
 msgid	"%s is bogus"
 msgstr	"%s ist ungültig"
 
-#: src/post.c:1605
+#: src/post.c:1604
 #, c-format
 msgid	"No attributes for %s"
 msgstr	"Keine Attribute für %s"
 
-#: src/post.c:1800
+#: src/post.c:1799
 #, c-format
 msgid	"Posting: %.*s ..."
 msgstr	"Poste: %.*s ..."
 
 #. fp
 #. Check if okay to read
-#: src/read.c:218
+#: src/read.c:217
 msgid	"Aborting read, please wait..."
 msgstr	"Breche Lesen ab, bitte warten..."
 
-#: src/read.c:363
+#: src/read.c:362
 msgid	"Aborted read\n"
 msgstr	"Lesen abgebrochen\n"
 
-#: src/read.c:419
+#: src/read.c:418
 msgid	"Draining\n"
 msgstr	"Ablassen\n"
 
@@ -5803,7 +5800,7 @@ msgstr	"unverändert"
 msgid	"[- Unavailable -]"
 msgstr	"[- Nicht Verfügbar -]"
 
-#. TODO maybe print something more context dependent here ?
+#. TODO maybe print something more context dependent here?
 #: src/save.c:521
 msgid	"No articles to save"
 msgstr	"Keine Artikel gespeichert"
@@ -5842,7 +5839,7 @@ msgstr	""
 msgid	"-- %s saved to %s%s - %s --"
 msgstr	""
 
-#: src/save.c:1109
+#: src/save.c:1108
 msgid	"bytes"
 msgstr	"Bytes"
 

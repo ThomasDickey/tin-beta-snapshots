@@ -490,7 +490,7 @@ InitScreen (void)
 
 		if (eightbit) { /* if using eightbit then use CSI (octal 233) rather than ESC "[" */
 			_clearscreen = "\2331;1H\233J";
-			_moveto = "\233%d;%dH"; /* not a termcap string !*/
+			_moveto = "\233%d;%dH"; /* not a termcap string! */
 			_cleartoeoln = "\233K";
 			_cleartoeos = "\233J";
 			_setinverse = "\2337m";

@@ -898,7 +898,7 @@ art_open (
 	if ((pgart.tex2iso = ((CURR_GROUP.attribute->tex2iso_conv) ? is_art_tex_encoded (artinfo->raw) : FALSE)))
 		wait_message (0, _(txt_is_tex_encoded));
 
-	/* Maybe fix it so if this fails, we default to raw ? */
+	/* Maybe fix it so if this fails, we default to raw? */
 	if (!cook_article (wrap_lines, artinfo, 8, tinrc.hide_uue))
 		return ART_ABORT;
 
@@ -912,7 +912,7 @@ art_open (
 	if (!artinfo->hdr.newsgroups) {
 		artinfo->hdr.newsgroups = my_strdup (group_path);
 		while ((ptr = strchr (artinfo->hdr.newsgroups, '/')))
-			*ptr = '.';		/* TODO - combine with code to fixup Archive-name ? */
+			*ptr = '.';		/* TODO - combine with code to fixup Archive-name? */
 	}
 
 	return 0;

@@ -308,13 +308,14 @@ extern void free_art_array (void);
 extern void free_attributes_array (void);
 extern void free_save_array (void);
 extern void *my_malloc1 (const char *file, int line, size_t size);
+extern void *my_calloc1 (const char *file, int line, size_t nmemb, size_t size);
 extern void *my_realloc1 (const char *file, int line, char *p, size_t size);
 #ifndef USE_CURSES
 	extern void init_screen_array (t_bool allocate);
 #endif /* !USE_CURSES */
 
 /* misc.c */
-extern char *eat_re (char *s, t_bool eat_was);
+extern const char *eat_re (char *s, t_bool eat_was);
 extern char *escape_shell_meta (char *source, int quote_area);
 extern char *get_tmpfilename (const char *filename);
 extern char *quote_wild (char *str);
@@ -598,7 +599,7 @@ extern void wait_message (int sdelay, const char *fmt, ...);
 extern int get_search_vectors (int *start, int *end);
 extern int search (int key, int current_art, t_bool forward);
 extern int search_active (t_bool forward);
-extern int search_article (t_bool forward, int start_line, int lines, t_lineinfo *line, t_bool show_ctrl_l, int reveal_ctrl_l_lines, FILE *fp);
+extern int search_article (t_bool forward, int start_line, int lines, t_lineinfo *line, int reveal_ctrl_l_lines, FILE *fp);
 extern int search_config (t_bool forward, int current, int last);
 extern int search_body (int current_art);
 

@@ -517,7 +517,7 @@ save_batch (
 	int count;
 
 	if (num_save == 0) {
-		/* TODO maybe print something more context dependent here ? */
+		/* TODO maybe print something more context dependent here? */
 		wait_message (1, _("No articles to save"));
 		return FALSE;
 	}
@@ -741,8 +741,8 @@ fprintf(stderr, "ATSL (%s) (%s)\n", save[num_save].path, save[num_save].file);
 
 #if 0
 /*
- *  string comparison routine for the qsort()
- *  ie. qsort(array, 5, 32, save_comp);
+ * string comparison routine for the qsort()
+ * ie. qsort(array, 5, 32, save_comp);
  */
 static int
 save_comp (
@@ -785,7 +785,7 @@ save_comp (
 
 
 /*
- *  Print save array of files to be saved
+ * Print save array of files to be saved
  */
 void
 sort_save_list (
@@ -885,13 +885,15 @@ post_process_uud (
 {
 	FILE *fp_in;
 	char file_out_dir[PATH_LEN];
-	int i, state;
+	int i;
 #ifndef HAVE_LIBUU
 	FILE *fp_out = NULL;
 	char *filename = NULL;
 	char path[PATH_LEN];
 	char s[LEN], t[LEN], u[LEN];
+	int state;
 #else
+	const char *eptr;
 	int count;
 	int errors = 0;
 	uulist *item;
@@ -927,16 +929,13 @@ post_process_uud (
 	my_printf(cCRLF);
 
 	while (item != NULL) {
-		if ((state = UUDecodeFile(item, NULL)) == UURET_OK) {
+		if (UUDecodeFile(item, NULL) == UURET_OK) {
 			count++;
 			my_printf (_(txt_uu_success), item->filename);
 			my_printf(cCRLF);
-			/* TODO - insert viewing code here ? */
+			/* TODO - insert viewing code here? */
 		} else {
-			const char *eptr;
-
 			errors++;
-
 			if (item->state & UUFILE_MISPART)
 				eptr = _(txt_libuu_error_missing);
 			else if (item->state & UUFILE_NOBEGIN)
@@ -977,7 +976,7 @@ post_process_uud (
 			switch (state) {
 				case INITIAL:
 					if (strncmp ("begin ", s, 6) == 0) {
-						/* don't use PATH_LEN - we use an absolute value (128) below  */
+						/* don't use PATH_LEN - we use an absolute value (128) below */
 						char name[130];
 
 						if (sscanf (s + 6, "%*o %128c\n", name) != 1)     /* Get the real filename */
@@ -1204,10 +1203,10 @@ post_process_sh (
 			sh_format (buf, sizeof(buf), "cd %s; sh %s", file_out_dir, file_out);
 			my_fputs (cCRLF, stdout);
 			my_flush ();
-			Raw (FALSE);									/* TODO done in invoke_cmd() ? */
+			Raw (FALSE);									/* TODO done in invoke_cmd()? */
 			if (!invoke_cmd (buf))
 				error_message (_(txt_command_failed), buf);	/* TODO not needed */
-			Raw (TRUE);										/* TODO done in invoke_cmd() ? */
+			Raw (TRUE);										/* TODO done in invoke_cmd()? */
 #endif /* !M_UNIX */
 			unlink (file_out);
 		}
@@ -1474,7 +1473,7 @@ decode_save_mime(
 
 
 #ifdef HAVE_UUDECODE
-/* Single character decode.  */
+/* Single character decode. */
 #define DEC(Char) (((Char) - ' ') & 077)
 /*
  * Decode 'buf' - write the uudecoded output to 'fp'

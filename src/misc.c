@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-04-10
+ *  Updated   : 2002-04-15
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -708,7 +708,7 @@ my_mkdir (
 	char buf[LEN];
 	struct stat sb;
 
-	sprintf(buf, "mkdir %s", path); /* redirect stderr to /dev/null ? */
+	sprintf(buf, "mkdir %s", path); /* redirect stderr to /dev/null? */
 	if (stat (path, &sb) == -1) {
 		system (buf);
 		return chmod (path, mode);
@@ -1164,7 +1164,7 @@ FATAL:
  *
  *  now also strips trailing (was: ...) (obw)
  */
-char *
+const char *
 eat_re (
 	char *s,
 	t_bool eat_was)
@@ -2842,7 +2842,7 @@ process_charsets (
 #	else
 	if (!strcasecmp(network_charset, "us-ascii"))
 		/*
-		 * network charset is US-ASCII: calling process_charsets() with 
+		 * network charset is US-ASCII: calling process_charsets() with
 		 * network_charset=="US-ASCII" means: set all non-ASCII (8bit)
 		 * characters to '?'
 		 */
@@ -3881,7 +3881,7 @@ utf8_valid(
 					illegal = TRUE;
 				break;
 
-#	if 0	/* currently not used, see also check above  */
+#	if 0	/* currently not used, see also check above */
 			case 5:
 				/* out of range or sequences which would also fit into 4 bytes */
 				if (d < 0xf8 || d > 0xfb || (d == 0xf8 && e < 0x88))

@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2002-04-10
+ *  Updated   : 2002-04-15
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2002 Jason Faultless <jason@radar.tele2.co.uk>
@@ -96,7 +96,7 @@ expand_ctrl_chars (
 
 			i = q - to;
 			j = ((i + lcook_width) / lcook_width) * lcook_width;
-/*			j = (i|(tabwidth - 1)) + 1; TODO more efficient ? */
+/*			j = (i|(tabwidth - 1)) + 1; TODO more efficient? */
 
 			while (i++ < j)
 				*q++ = ' ';
@@ -407,7 +407,7 @@ static int
 read_decoded_qp_line (
 	FILE *file,
 	char *line,							/* where to copy the decoded line */
-	const int max_line_len,			/* maximum line length  */
+	const int max_line_len,			/* maximum line length */
 	const int max_lines_to_read,	/* don't read more physical lines than told here */
 	char **rest)						/* rest of line if line is too small */
 {
@@ -576,7 +576,7 @@ get_filename(
 		return NULL;
 	}
 
-	/* Use basename() ? */
+	/* TODO: Use basename()? */
 	if (((p = strrchr(name, '/'))) || ((p = strrchr(name, '\\'))))
 		return p + 1;
 
@@ -661,7 +661,7 @@ process_text_body_part(
 			} else if (strncmp (line, "end\n", 4) == 0) {
 				if (in_uue) {
 					in_uue = FALSE;
-					/* TODO include type/subtype/encoding in txt_uue as in txt_attach ? */
+					/* TODO include type/subtype/encoding in txt_uue as in txt_attach? */
 					put_cooked (wrap_lines, C_UUE, txt_uue, "", curruue->line_count, get_filename(curruue->params));
 					continue;				/* To stop 'end' line appearing */
 				}
@@ -744,12 +744,12 @@ process_text_body_part(
 			convert_tex2iso (texbuf, line);
 		}
 
-/*
- * Basically: if (!(my_isprint(*c) || *c==8 || *c==9 || *c==12))
- * How about if !isprint() && !isctrl() - expand_ctrl_chars is done at
- * display time.
- * TODO: integrate into expand_ctrl_chars
- */
+		/*
+		 * Basically, c_b2p() does: if (!(my_isprint(*c) || *c==8 || *c==9 || *c==12))
+		 * It is only used here
+		 * How about if !isprint() && !isctrl() - expand_ctrl_chars is done at display time.
+		 * TODO: integrate into expand_ctrl_chars
+		 */
 		convert_body2printable(line);
 		if (expand_ctrl_chars (to, line, sizeof(to), cook_width))
 			flags |= C_CTRLL;				/* Line contains form-feed */
@@ -867,7 +867,7 @@ cook_article(
 	 * Put down just the headers we want
 	 */
 	while ((line = tin_fgets (artinfo->raw, TRUE)) != (char *) 0) {
-		if (line[0] == '\0') {				/* End of headers ? */
+		if (line[0] == '\0') {				/* End of headers? */
 			if (STRIP_ALTERNATIVE(artinfo)) {
 				if (header_wanted(_(txt_info_x_conversion_note))) {
 					header_put = TRUE;

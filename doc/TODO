@@ -41,10 +41,6 @@ o  'u' etc.pp. may leed to a 'crash' due to which_thread() returning -1
 o  incorrect nested boundaries in multipart articles hang tin
    [20010804 Urs Janssen <urs@tin.org>]
 
-o  -S, -N and -M cmd-line switches are broken (again)
-   -S doesn't create subdirs, thus saving fails
-   [20010628 Urs Janssen <urs@tin.org>]
-
 o  lines which are exatly cCOLS wide introduce an extra \n in the pager
    in raw mode (^H)
    [20010628 Urs Janssen <urs@tin.org>]
@@ -69,6 +65,8 @@ o  thread_articles=0 lacks score for read arts if show_score=ON and
    kill_level>=1
 
 o  batch mode has several bugs
+   - -S, -N and -M cmd-line switches are broken (again)
+     -S doesn't create subdirs, thus saving fails
    - -Z and giving a cmd-line group ends up in a loop
      (filters each group several times)
    - -M/-N do not remove To:, Cc:, Bcc: headers befor passing article
@@ -148,6 +146,9 @@ o  tin uses the first sig-isolator as recent one, USEFOR says it should
    use the last. There is no consense that tin should follow this USEFOR
    requirement.
 
+o  iso2asc conversion is missing for 'internal' strings (i.e. 'M'enu)
+   [20020319 Urs Janssen <urs@tin.org>]
+
 Pager Problems
 --------------
 o  word highlighting shouldn't be enabled in signatures, as '*'
@@ -191,11 +192,6 @@ o  hierarchical 'M'enu, i.e. hide all color_* options as long as
    use_color is turned off, put all art_marked_*into a 'submenu', ...
    (currently the Menu is statically build on compile time)
    [20020322 Urs Janssen <urs@tin.org>]
-
-o  iso2asc conversion is only done for the article-body in the pager but
-   not in the group/thread-level and the status headers in the pager nor
-   for the localized strings in the programm (i.e. 'M'enu-entrys).
-   [20020319 Urs Janssen <urs@tin.org>]
 
 o  add two new sort_article_types: Lines descend and Lines ascend
    [20020302 Peter Leftwich <Hostmaster@Video2Video.Com>]
@@ -549,12 +545,11 @@ o  close potential security holes:
                                unlink()/chdir()/fopen()/fstat()/open()/
                                opendir()/t_open()/tmpfile()
    - check getenv() results before using it
-   [Urs Janssen <urs@tin.org> - its4 <http://www.rstcorp.com/its4> can
-    locate potential security holes]
+   [Urs Janssen <urs@tin.org> - its4 <http://www.rstcorp.com/its4>
+    and rats <http://www.securesw.com/rats/> can locate potential security
+    holes]
 
-o  compile-time option: generate own MSGIDs on host with a proper FQDN
-   (EVIL_INSIDE)
-   add a _-_ to the local part of the MSGID on a subject-change
+o  add a _-_ to the local part of the MSGID on a subject-change
 
 o  add to autoconf:
    - determine which network libraries are needed
@@ -587,7 +582,7 @@ o  check where tin_done() or giveup() should be called instead of using
 
 o  check where my_strncpy() or STRCPY() should be used
    or include OpenBSDs strlcpy(3) (and strlcat(3)) and use it.
-   (ftp://ftp.openbsd.org/pub/OpenBSD/src/lib/libc/string/)
+   (<ftp://ftp.openbsd.org/pub/OpenBSD/src/lib/libc/string/>)
 
 o  check code with lclint (<http://www.sds.lcs.mit.edu/lclint/>),
    ccmalloc (<http://www.inf.ethz.ch/personal/biere/projects/ccmalloc/>)

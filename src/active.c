@@ -612,7 +612,7 @@ check_for_any_new_groups (
 		wait_message (0, _(txt_checking_new_groups));
 
 	(void) time (&new_newnews_time);
-	strcpy (new_newnews_host, (read_news_via_nntp ? nntp_server : "local")); /* What if nntp server called local ? */
+	strcpy (new_newnews_host, (read_news_via_nntp ? nntp_server : "local")); /* What if nntp server called local? */
 
 	/*
 	 * find out if we have read news from here before otherwise -1

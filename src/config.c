@@ -671,7 +671,7 @@ read_config_file (
 
 		case 't':
 			if (match_integer (buf, "thread_articles=", &tinrc.thread_articles, THREAD_MAX)) {
-				/* Upgrade changes YES/NO to integer, fix it ! */
+				/* Upgrade changes YES/NO to integer, fix it! */
 				if (upgrade == UPGRADE)
 					tinrc.thread_articles = THREAD_MAX;
 				break;
@@ -2500,7 +2500,7 @@ ulBuildArgv (
 		return (NULL);
 	}
 
-	new_argv = (char **) calloc (1, sizeof (char *));
+	new_argv = (char **) my_calloc (1, sizeof (char *));
 	if (!new_argv) {
 		free (buf);
 		*new_argc = 0;

@@ -298,7 +298,7 @@ auto_subscribe_groups (
 	if (newsrc_mode)
 		chmod (newsrc_file, newsrc_mode);
 
-	/* TODO test me ! */
+	/* TODO test me! */
 	while ((ptr = tin_fgets (fp_subs, FALSE)) != (char *) 0) {
 		if (ptr[0] != '#') {
 			if (group_find (ptr) != 0)

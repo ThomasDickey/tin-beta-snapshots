@@ -555,7 +555,7 @@ undo_auto_select_arts (
 	if (CURR_GROUP.attribute->show_only_unread)
 		find_base (&CURR_GROUP);
 
-	grpmenu.curr = 0;	/* do we want this ? */
+	grpmenu.curr = 0;	/* do we want this? */
 	show_group_page ();
 }
 

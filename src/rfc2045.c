@@ -2,8 +2,8 @@
  *  Project   : tin - a Usenet reader
  *  Module    : rfc2045.c
  *  Author    : Chris Blum <chris@resolution.de>
- *  Created   : September '95
- *  Updated   : 1998-01-03
+ *  Created   : 1995-09-01
+ *  Updated   : 2002-03-19
  *  Notes     : RFC 2045/2047 encoding
  *
  * Copyright (c) 1995-2002 Chris Blum <chris@resolution.de>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Chris Blum.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -87,7 +84,7 @@ rfc1521_encode (
 			b = buffer;
 			*buffer = '\0';
 		}
-		if (!line) {				  /* flush */
+		if (!line) {		/* flush */
 			if (bits) {
 				if (xpos >= 73) {
 					*b++ = '\n';
@@ -178,7 +175,7 @@ rfc1521_encode (
 					}
 					l++;
 				}
-				if (!*l) {			  /* trailing whitespace must be encoded */
+				if (!*l) {		/* trailing whitespace must be encoded */
 					*b++ = '=';
 					*b++ = bin2hex(HI4BITS(line));
 					*b++ = bin2hex(LO4BITS(line));
@@ -199,7 +196,7 @@ rfc1521_encode (
 				line++;
 			}
 			if (xpos > 72 && *line != '\n') {	/* 72 +3 [worst case] + equal sign = 76 :-) */
-				*b++ = '=';			  /* break long lines with a 'soft line break' */
+				*b++ = '=';		/* break long lines with a 'soft line break' */
 				*b++ = '\n';
 				*b++ = '\0';
 				fputs(buffer, f);
@@ -222,15 +219,12 @@ rfc1521_encode (
  * NOT to be used for News posting, which is made certain
  * by setting tinrc.post_mime_encoding to 8bit
  */
-
 #define KSC 1
 #define ASCII 0
 #define isksc(c)	((unsigned char) (c) > (unsigned char) '\240' && \
 						(unsigned char) (c) < (unsigned char) '\377')
 #define SI '\017'
 #define SO '\016'
-
-
 void
 rfc1557_encode (
 	char *line,
@@ -245,21 +239,21 @@ rfc1557_encode (
 		iskorean = FALSE;
 		return;
 	}
-	if (!iskorean) {				  /* search for KS C 5601 character(s) in line */
+	if (!iskorean) {		/* search for KS C 5601 character(s) in line */
 		while (line[i]) {
 			if (isksc(line[i])) {
-				iskorean = TRUE;		  /* found KS C 5601 */
-				fprintf(f, "\033$)C\n");	/* put out the designator */
+				iskorean = TRUE;		/* found KS C 5601 */
+				fprintf(f, "\033$)C\n");		/* put out the designator */
 				break;
 			}
 			i++;
 		}
 	}
-	if (!iskorean) {				  /* KS C 5601 doesn't appear, yet -  no conversion */
+	if (!iskorean) {		/* KS C 5601 doesn't appear, yet -  no conversion */
 		fputs(line, f);
 		return;
 	}
-	i = 0;							  /* back to the beginning of the line */
+	i = 0;		/* back to the beginning of the line */
 	while (line[i] && line[i] != '\n') {
 		if (mode == ASCII && isksc(line[i])) {
 			fputc(SO, f);

@@ -1,6 +1,6 @@
-MANIFEST for tin-1.5.12 (Wed Apr 10 18:39:54 CEST 2002)
+MANIFEST for tin-1.5.12 (Wed Apr 17 16:06:04 CEST 2002)
 ----------------------------------------------------
-  13491 ./Makefile
+  13514 ./Makefile
    7983 ./MANIFEST
    1073 ./README
     226 ./README.MAC
@@ -15,11 +15,11 @@ MANIFEST for tin-1.5.12 (Wed Apr 10 18:39:54 CEST 2002)
    5555 ./install.sh
     777 ./mkdirs.sh
   18847 ./doc/ABOUT-NLS
-  45936 ./doc/CHANGES
+  46248 ./doc/CHANGES
  153546 ./doc/CHANGES.old
    1469 ./doc/DEBUG_REFS
-  36625 ./doc/INSTALL
-  28501 ./doc/TODO
+  36741 ./doc/INSTALL
+  28280 ./doc/TODO
    2107 ./doc/WHATSNEW
    2671 ./doc/art_handling.txt
    3863 ./doc/auth.txt
@@ -43,15 +43,15 @@ MANIFEST for tin-1.5.12 (Wed Apr 10 18:39:54 CEST 2002)
    4168 ./doc/mmdf.5
    2128 ./doc/newsoverview.5
    6963 ./doc/plp_snprintf.3
- 105284 ./doc/tin.1
-  57712 ./doc/tin.5
+ 104865 ./doc/tin.1
+  57683 ./doc/tin.5
    4729 ./doc/w2r.1
    2196 ./doc/wildmat.3
     344 ./tools/expiretover
    3815 ./tools/metamutt
    2779 ./tools/opt-case.pl
    1410 ./tools/tinlock
-  16039 ./tools/tinews.pl
+  15985 ./tools/tinews.pl
    1533 ./tools/url_handler.sh
    3164 ./tools/w2r.pl
    1661 ./tools/expand_aliases.tgz
@@ -64,78 +64,78 @@ MANIFEST for tin-1.5.12 (Wed Apr 10 18:39:54 CEST 2002)
    6465 ./include/nntplib.h
     666 ./include/plp_snprintf.h
   11985 ./include/policy.h
-  29657 ./include/proto.h
+  29724 ./include/proto.h
    5134 ./include/rfc2046.h
    3559 ./include/stpwatch.h
    4376 ./include/tcurses.h
-  60953 ./include/tin.h
+  61085 ./include/tin.h
   11645 ./include/tinrc.h
    5950 ./include/tnntp.h
    2416 ./include/trace.h
    2710 ./include/version.h
-  25126 ./src/active.c
-  45018 ./src/art.c
+  25125 ./src/active.c
+  45026 ./src/art.c
   24415 ./src/attrib.c
-  12293 ./src/auth.c
+  12292 ./src/auth.c
   10709 ./src/charset.c
    8038 ./src/color.c
-  72280 ./src/config.c
-  26668 ./src/cook.c
+  72282 ./src/config.c
+  26716 ./src/cook.c
   27533 ./src/curses.c
   12376 ./src/debug.c
    3675 ./src/envarg.c
-  21254 ./src/feed.c
-  46764 ./src/filter.c
+  21253 ./src/feed.c
+  46762 ./src/filter.c
   12665 ./src/getline.c
    7493 ./src/global.c
-  38947 ./src/group.c
+  38738 ./src/group.c
    4493 ./src/hashstr.c
    9138 ./src/header.c
   27740 ./src/help.c
-  13324 ./src/inews.c
+  13563 ./src/inews.c
   32613 ./src/init.c
    3053 ./src/joinpath.c
   37885 ./src/keymap.c
- 100581 ./src/lang.c
+ 100553 ./src/lang.c
    3997 ./src/langinfo.c
    4388 ./src/list.c
    6954 ./src/lock.c
   12155 ./src/mail.c
   25444 ./src/main.c
   10477 ./src/makecfg.c
-  10853 ./src/memory.c
+  11083 ./src/memory.c
    3190 ./src/mimetypes.c
-  88932 ./src/misc.c
-  38725 ./src/newsrc.c
-  27215 ./src/nntplib.c
+  88935 ./src/misc.c
+  38724 ./src/newsrc.c
+  27214 ./src/nntplib.c
    7423 ./src/nrctbl.c
-  26402 ./src/open.c
-  45857 ./src/page.c
+  26400 ./src/open.c
+  46155 ./src/page.c
   24256 ./src/parsdate.y
   16970 ./src/plp_snprintf.c
   13108 ./src/pgp.c
- 123313 ./src/post.c
+ 123246 ./src/post.c
   14016 ./src/prompt.c
-  10872 ./src/read.c
+  10868 ./src/read.c
   25086 ./src/refs.c
    4558 ./src/regex.c
-  14702 ./src/rfc1524.c
-   7510 ./src/rfc2045.c
-  21953 ./src/rfc2046.c
-  25063 ./src/rfc2047.c
-  37058 ./src/save.c
+  14700 ./src/rfc1524.c
+   7290 ./src/rfc2045.c
+  21951 ./src/rfc2046.c
+  24975 ./src/rfc2047.c
+  37040 ./src/save.c
    9613 ./src/screen.c
-  11970 ./src/search.c
+  11932 ./src/search.c
   28930 ./src/select.c
    8060 ./src/sigfile.c
   13018 ./src/signal.c
    7147 ./src/strftime.c
   11469 ./src/string.c
-  13390 ./src/tags.c
+  13389 ./src/tags.c
   10733 ./src/tcurses.c
    3550 ./src/tmpfile.c
    3448 ./src/my_tmpfile.c
-  35135 ./src/thread.c
+  35134 ./src/thread.c
    2601 ./src/trace.c
    4369 ./src/wildmat.c
    7719 ./src/xref.c
@@ -296,11 +296,11 @@ MANIFEST for tin-1.5.12 (Wed Apr 10 18:39:54 CEST 2002)
      41 ./intl/VERSION
    4942 ./po/Makefile.inn
     813 ./po/POTFILES.in
- 112553 ./po/tin.pot
+ 112519 ./po/tin.pot
  144514 ./po/de.gmo
- 177970 ./po/de.po
+ 177912 ./po/de.po
  144097 ./po/et.gmo
- 173312 ./po/et.po
+ 173254 ./po/et.po
    6543 ./po/en_GB.gmo
- 114690 ./po/en_GB.po
-5367988 total
+ 114654 ./po/en_GB.po
+5367870 total

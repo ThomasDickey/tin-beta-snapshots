@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-04-08
+ *  Updated   : 2002-04-15
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -70,14 +70,12 @@
 	 * user supplied ID by hand) for us!
 	 */
 #	define ADD_CAN_LOCK(id) { \
-		if (0 != strcasecmp(tinrc.inews_prog, "--internal")) { \
-			char lock[1024]; \
-			const char *lptr = (const char *) 0; \
-			lock[0] = '\0'; \
-			if ((lptr = build_canlock(id, get_secret())) != (const char *) 0) { \
-				STRCPY(lock, lptr); \
-				msg_add_header ("Cancel-Lock", lock); \
-			} \
+		char lock[1024]; \
+		const char *lptr = (const char *) 0; \
+		lock[0] = '\0'; \
+		if ((lptr = build_canlock(id, get_secret())) != (const char *) 0) { \
+			STRCPY(lock, lptr); \
+			msg_add_header ("Cancel-Lock", lock); \
 		} \
 	}
 #else
@@ -1484,7 +1482,7 @@ post_article_done:
 		}
 
 		if (header.subj) {
-			char tag = 'w';
+			char tag;
 			/*
 			 * When crossposting postponed articles we currently do not add
 			 * autoselect since we don't know which group the article was
@@ -1497,11 +1495,6 @@ post_article_done:
 			}
 
 			switch (type) {
-				case POST_QUICK:
-				case POST_NORMAL:
-					tag = 'w';
-					break;
-
 				case POST_POSTPONED:
 					tag = (header.references) ? 'f' : 'w';
 					break;
@@ -1512,6 +1505,12 @@ post_article_done:
 
 				case POST_REPOST:
 					tag = 'x';
+					break;
+
+				case POST_NORMAL:
+				case POST_QUICK:
+				default:
+					tag = 'w';
 					break;
 			}
 
@@ -1654,7 +1653,7 @@ create_normal_article_headers(
 	char from_name[HEADER_LEN];
 	char tmp[HEADER_LEN];
 
-	/* TODO combine with other code in tin that does the ... truncation ? */
+	/* TODO combine with other code in tin that does the ... truncation? */
 	/* Get subject for posting article - Limit the display if needed */
 	if (strlen(tinrc.default_post_subject) > DISPLAY_SUBJECT_LEN)
 		sprintf (tmp, "%.*s ...", DISPLAY_SUBJECT_LEN, tinrc.default_post_subject);
@@ -2998,9 +2997,9 @@ mail_to_author (
 	}
 
 	/*
-    * add extra headers in the mail_to_author() case as we don't include the
-    * full original headers in the body of the mail
-    */
+	 * add extra headers in the mail_to_author() case as we don't include the
+	 * full original headers in the body of the mail
+	 */
 	if ((fp = create_mail_headers(nam, TIN_LETTER_NAME, from_addr, subject, &note_h)) == NULL)
 		 return ret_code;
 
@@ -3084,7 +3083,7 @@ mail_to_author (
 		 * doesn't notice it and logs the original value.
 		 */
 		if (ret_code == POSTED_OK)
-			update_posted_info_file (mail_to, 'r', subject, ""); /* TODO update_posted_info_file elsewhere ? */
+			update_posted_info_file (mail_to, 'r', subject, ""); /* TODO update_posted_info_file elsewhere? */
 	}
 
 	if (tinrc.unlink_article)
@@ -3873,7 +3872,7 @@ find_reply_to_addr (
 	struct t_header *hdr)
 {
 	char fname[HEADER_LEN];
-	char *ptr;
+	const char *ptr;
 
 	/*
 	 * we shouldn't see any articles without a From: (and a Reply-To:) line,

@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 1995-04-19
+ *  Updated   : 2002-04-15
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -88,7 +88,7 @@ void
 show_art_msg(
 	char *group)
 {
-/* what if cCOLS < (strlen)+18 ? */
+/* what if cCOLS < (strlen)+18? */
 	wait_message(0, _(txt_group), cCOLS - strlen(_(txt_group)) + 2 - 3, group);
 }
 
@@ -901,7 +901,8 @@ parse_headers (
 {
 	char art_from_addr[HEADER_LEN];
 	char art_full_name[HEADER_LEN];
-	char *hdr, *ptr, *s;
+	char *hdr, *ptr;
+	const char *s;
 	int lineno = 0;
 	int max_lineno = 25;
 	t_bool got_from, got_lines, got_received;
@@ -920,7 +921,7 @@ parse_headers (
 		switch (toupper((unsigned char)*ptr)) {
 			case 'A':	/* Archive-name:  optional */
 				if ((hdr = parse_header (ptr + 1, "rchive-name", FALSE))) {
-					/* TODO - what if header of form news/group/name/part01 ? */
+					/* TODO - what if header of form news/group/name/part01? */
 					if ((s = strrchr (hdr, '/')) != NULL) {
 						if (STRNCASECMPEQ(s + 1, "part", 4)) {
 							h->part = my_strdup (s + 5);
@@ -1213,7 +1214,7 @@ read_nov_file (
 		} else
 			*q = '\0';
 
-		/* TODO is no mesg-id allowed in rfc ? */
+		/* TODO is no mesg-id allowed in rfc? */
 		/*
 		 * draft-ietf-nntpext-base-13.txt, section 9.2.1.1
 		 * comes up with "<0>" - should we use it instead of '\0'?
@@ -1463,7 +1464,7 @@ find_nov_file (
 	if (group == (struct t_group *) 0)
 		return (char *) 0;
 
-	overview_index_filename = FALSE;	/* Write groupname in nov file ? */
+	overview_index_filename = FALSE;	/* Write groupname in nov file? */
 
 	hash_filename = FALSE;
 	dir = "";

@@ -99,7 +99,6 @@ wait_for_input (
 	 * Main loop. Wait for input from keyboard or file or for a timeout.
 	 */
 	forever {
-
 		FD_ZERO(&readfds);
 		FD_SET(STDIN_FILENO, &readfds);
 /*		FD_SET(fileno(NEED_REAL_NNTP_FD_HERE), &readfds); */
@@ -238,17 +237,17 @@ tin_read (
 	ptr = fgets (buffer, len, fp);
 #endif /* NNTP_ABLE */
 
-/* TODO develop this next line ? */
+/* TODO develop this next line? */
 #ifdef DEBUG
 	if (errno)
 		fprintf(stderr, "errno in tin_read %d\n", errno);
 #endif /* DEBUG */
 
-	if (ptr == 0)	/* End of data ? */
+	if (ptr == 0)	/* End of data? */
 		return NULL;
 
 	/*
-	 * Was this only a partial read ?
+	 * Was this only a partial read?
 	 * We strip trailing \r and \n here and here _only_
 	 * 'offset' is the # of chars which we read now
 	 */

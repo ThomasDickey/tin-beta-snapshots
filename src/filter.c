@@ -1140,7 +1140,7 @@ filter_menu (
 
 		case iKeyFilterEdit:
 			bAddFilterRule (group, art, &rule); /* save the rule */
-			if (!invoke_editor (filter_file, 25)) /* FIXME: is 25 correct offset ? */
+			if (!invoke_editor (filter_file, 25)) /* FIXME: is 25 correct offset? */
 				return FALSE;
 			unfilter_articles ();
 			(void) read_filter_file (filter_file);
@@ -1610,7 +1610,7 @@ filter_articles (
  */
 					/* myrefs does not need to be freed */
 
-					/* use full references header or just the last entry ? */
+					/* use full references header or just the last entry? */
 					switch (ptr[j].fullref) {
 						case FILTER_MSGID:
 							myrefs = REFS(art, refs);

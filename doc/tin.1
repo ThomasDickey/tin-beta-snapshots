@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2002-04-10
+.\" Updated   : 2002-04-16
 .\" Notes     : still needs some work, i.e.:
 .\"             - document authorization (.newsauth)
 .\"             - postprocess differences when linked against libuu
 .\"
 .\"
-.TH tin 1 "April 10th, 2002" "1.5.12" "A Usenet newsreader"
+.TH tin 1 "April 16th, 2002" "1.5.12" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -462,7 +462,7 @@ the same effect.
 .PP
 .TP 10
 .B !
-Shell escape. \fB!\fP by itself will launch a shell, \fB!\fP <command> will
+Shell escape. '\fB!\fP' by itself will launch a shell, \fB!\fP <command> will
 run an external <command>.
 This facility may have been disabled by the System Administrator
 .TP
@@ -484,12 +484,21 @@ command sequence instead: reload it with '\fB^O\fP', enter editor with
 \&'\fBy\fP', quit editor, discard posting with '\fBq\fP'. See also
 \&''\fB-o\fP'' command-line switch.
 .TP
+.B h
+Help screen of commands available on the current menu. You can use
+\&'\fB/\fP' and '\fB?\fP' to search on this screen. '\fBq\fP' returns to
+the menu.
+.TP
+.B H
+Toggle the display of help mini menu at the bottom of the screen.
+.TP
 .B O
 Reload postponed article. See also ''\fB-o\fP'' command-line switch.
 .TP
 .B W
 List articles posted by user. The date posted, the newsgroup and the
-subject are listed.
+subject are listed. You can use '\fB/\fP' and '\fB?\fP' to search on this
+screen. '\fBq\fP' returns to the menu.
 .TP
 .B v
 Print \fBtin\fP version information.
@@ -536,13 +545,6 @@ descriptions.
 .B g
 Choose a new group by name. This command can be used to access any group,
 even those not currently yanked in.
-.TP
-.B h
-Help screen of newsgroup selection commands. You can use \fB/\fP and
-\fB?\fP to search on this screen.
-.TP
-.B H
-Toggle the display of help mini menu at the bottom of the screen.
 .TP
 .B i
 Toggle the display of the description of the current newsgroup in the last
@@ -623,7 +625,7 @@ to see if any new news has arrived since starting \fBtin\fP.
 Mark all articles in the current group as unread.
 .TP
 .B Z
-Identical to \fBz\fP.
+Identical to '\fBz\fP'.
 .\"--------------------------------------------------------------------
 .\"
 .SS "GROUP INDEX COMMANDS"
@@ -755,13 +757,6 @@ those not currently yanked in.
 .B G
 Toggle article/group limit.
 .TP
-.B h
-Help screen of group index commands. You can use \fB/\fP and \fB?\fP to
-search on this screen.
-.TP
-.B H
-Toggle the display of help mini menu at the bottom of the screen.
-.TP
 .B i
 Display the subject of the first article in the current thread in the last
 line.
@@ -879,7 +874,7 @@ section "RANGES" for more information.
 .B -
 Re-enter the last message that was viewed.
 .TP
-\fB/\fP
+.B /
 Search forward for a specified subject.
 .TP
 .B ?
@@ -931,13 +926,6 @@ unread news.
 .B d
 Cycle the display of the author through all the possible options for the
 tinrc variable \fBshow_author\fP.
-.TP
-.B h
-Help screen of thread listing commands. You can use \fB/\fP and \fB?\fP
-to search on this screen.
-.TP
-.B H
-Toggle the display of help mini menu at the bottom of the screen.
 .TP
 .B i
 Display the subject of the current article in the last line.
@@ -1034,7 +1022,7 @@ Toggle the TAB width between 4 and 8 characters.
 Post a followup to the current article with a copy of the article with all
 headers included.
 .TP
-\fB"\fP
+.B \&"
 Toggle TeX to ISO decoding for current article. The default behaviour is
 taken from the \fBtex2iso_conv\fP variable in the tinrc file.
 .TP
@@ -1155,13 +1143,6 @@ Goto the start of the article
 .TP
 .B G
 Goto the end of the article
-.TP
-.B h
-Help screen of article pager commands. You can use \fB/\fP and \fB?\fP
-to search on this screen.
-.TP
-.B H
-Toggle the display of the mini help menu at the bottom of the screen.
 .TP
 .B i
 Display the subject of the current article in the last line.
@@ -1842,10 +1823,9 @@ reread at regular intervals to show if any new news has arrived. Default is
 The number of lines that will be scrolled up/down in the article pager when
 using cursor-up/down. The default is 1 (line-by-line). Set to to 0 to get
 traditional tin page-by-page scrolling. Set to -1 to get page-by-page
-scrolling where the last line of the previous page will be displayed as the
-first line of next page. This setting supercedes
-show_last_line_prev_page=ON. Set to -2 to get half-page scrolling. This
-setting supercedes full_page_scroll=OFF.
+scrolling where the top/bottom line is carried over onto the next page.
+This setting supercedes show_last_line_prev_page=ON. Set to -2 to get
+half-page scrolling. This setting supercedes full_page_scroll=OFF.
 .TP
 .B In group menu, show author by (show_author)
 .in +.5i
@@ -2888,7 +2868,7 @@ Kolstad in 1982. For a version overview see
 <HTTP://www.tin.org/history.html>
 .\"
 .\"
-.SS CREDITS
+.SH CREDITS
 .PP
 .IP "Rich Skrenta"
 author of
@@ -2994,17 +2974,17 @@ Springer, Cliff Stanford, Steve Starck, Jason Steiner, Ralf Stephan, Michael
 Stenns, Helmrich Streitmatter, Hans Werner Strube, Dieter Stueken, Ed
 Sznyter, Dean Takemori, Darrell Tangman, Derek Terveer, Carsten Theis,
 Julian Thompson, David Tiller, Andry Timonin, Mark Tomlin, Michael Traub,
-Mark Trumbull, Adri Verhoef, Paul Vickers, Oliver B. Warzecha, Jason Wessel,
-Cary Whitney, Henrik Wist, Greg Woods, Lloyd Wright, Jens Wuepper, Billy Y.,
-Hideaki Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
+Mark Trumbull, Alex Vasylenko, Adri Verhoef, Paul Vickers, Oliver B.
+Warzecha, Jason Wessel, Cary Whitney, Henrik Wist, Greg Woods, Lloyd Wright,
+Jens Wuepper, Billy Y., Hideaki Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
 .\"
 .\"
-.SS AUTHOR
+.SH AUTHOR
 .TP 1i
 Iain Lea <iain@bricbrac.de>
 .\"
 .\"
-.SS MAINTAINER
+.SH MAINTAINER
 .TP 1i
 Urs Janssen <urs@tin.org>
 .\"

@@ -334,12 +334,12 @@ nntp_open (
 	if (!nntp_command(txt_xover_string, ERR_COMMAND, NULL)) {
 		xover_supported = TRUE;
 		txt_xover = txt_xover_string;
-		/* TODO issue warning if old index files found ? */
+		/* TODO issue warning if old index files found? */
 	} else {
 		if (!nntp_command(&txt_xover_string[1], ERR_COMMAND, NULL)) {
 			xover_supported = TRUE;
 			txt_xover = &txt_xover_string[1];
-			/* TODO issue warning if old index files found ? */
+			/* TODO issue warning if old index files found? */
 		} else {
 			if (!is_reconnect) {
 				wait_message(2, _(txt_no_xover_support));
