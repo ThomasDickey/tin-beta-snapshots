@@ -279,34 +279,23 @@ ConvertTeX2Iso (
 }
 
 /*
- * Check for german TeX encoding
+ * Check for german TeX encoding in file open on fp
  */
-
 t_bool
 iIsArtTexEncoded (
-	long art,
-	char *group_path)
+	FILE *fp)
 {
 	char line[LEN];
-	FILE *fp;
 	int i, len;
 	t_bool body = FALSE;
-	t_bool ret = FALSE;
 
-	/*
-	 * TODO: This is a farce! Reread the whole art via NNTP !!
-	 *       should be done as part of cook_article()
-	 */
-	if ((fp = open_art_fp ((char *)group_path, art)) == (FILE *) 0)
-		return FALSE;
+	rewind (fp);
 
 	while (fgets (line, (int) sizeof(line), fp) != (char *) 0) {
-		if (line[0] == '\n' && !body) {
+		if (line[0] == '\n' && !body)
 			body = TRUE;
-		} else {
-			if (!body)
-				continue;
-		}
+		else if (!body)
+			continue;
 
 		i = 0;
 
@@ -321,18 +310,13 @@ iIsArtTexEncoded (
 		len = strlen (line) - 1;
 		for (i = 1; i < len; i++) {
 			if (((line[i] == '\\') || (line[i] == '\"')) &&
-			    (isalnum((unsigned char)line[i-1])) && (isalnum((unsigned char)line[i+1]))) {
-				ret = TRUE;
-#ifdef NNTP_ABLE
-				drain_buffer(fp);
-#endif /* NNTP_ABLE */
-				break;
-			}
+							(isalnum((unsigned char)line[i-1])) &&
+							(isalnum((unsigned char)line[i+1])))
+				return TRUE;
 		}
 	}
-	TIN_FCLOSE (fp);
 
-	return ret;
+	return FALSE;
 }
 
 

@@ -347,31 +347,31 @@ selection_page (
 				show_selection_page ();
 				break;
 
-			case iKeySelectGoto:	/* prompt for a new group name */
+			case iKeySelectGoto:			/* prompt for a new group name */
 				if ((n = choose_new_group ()) >= 0) {
 					set_groupname_len (FALSE);
 					move_to_item (n);
 				}
 				break;
 
-			case iKeySelectHelp:	/* help */
+			case iKeyHelp:					/* help */
 				show_info_page (HELP_INFO, help_select, _(txt_group_select_com));
 				show_selection_page ();
 				break;
 
-			case iKeySelectToggleHelpDisplay:	/* toggle mini help menu */
+			case iKeyToggleHelpDisplay:		/* toggle mini help menu */
 				toggle_mini_help (SELECT_LEVEL);
 				show_selection_page ();
 				break;
 
-			case iKeySelectToggleInverseVideo:	/* toggle inverse video */
+			case iKeyToggleInverseVideo:	/* toggle inverse video */
 				toggle_inverse_video ();
 				show_selection_page ();
 				show_inverse_video_status ();
 				break;
 
 #ifdef HAVE_COLOR
-			case iKeyToggleColor:		/* toggle color */
+			case iKeyToggleColor:			/* toggle color */
 				if (toggle_color ()) {
 					show_selection_page ();
 					show_color_status ();

@@ -196,7 +196,7 @@ rfc1521_encode (
 				xpos += 3;
 				line++;
 			}
-			if (xpos > 73 && *line != '\n') {	/* 73 +3 [worst case] = 76 :-) */
+			if (xpos > 72 && *line != '\n') {	/* 72 +3 [worst case] + equal sign = 76 :-) */
 				*b++ = '=';			  /* break long lines with a 'soft line break' */
 				*b++ = '\n';
 				*b++ = '\0';

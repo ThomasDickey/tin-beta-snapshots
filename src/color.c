@@ -282,6 +282,7 @@ color_fputs (
  */
 void
 print_color (
+	int row,
 	char *str,
 	int flags)
 {
@@ -322,30 +323,51 @@ print_color (
 	 * too much rereading takes place at present since highlight code changes the
 	 * screen layout (by reducing spaces)
 	 */
-	if (flags&C_URL) {
-		char buf[LEN], tmp[LEN];
-		int offsets[6];
-		int offsets_size = sizeof(offsets)/sizeof(int);
-		int x, y;
-		int end = 0;
+	{
+	char buf[LEN];
+	char *ptr;
+	int offsets[6];
+	int offsets_size = sizeof(offsets)/sizeof(int);
 
+
+	if (flags & C_URL) {
 		/* Get contents of line just written */
-		getyx (stdscr, y, x);
-		screen_contents(y, 0, buf);
+#ifdef USE_CURSES
+		screen_contents(row, 0, buf);
+		ptr = buf;
+#else
+		ptr = screen[0].col;
+#endif /* USE_CURSES */
+
+#if 0
+		offsets[0] = 0;
+		offsets[1] = 0;
+#endif
+
+		while (pcre_exec (url_regex.re, url_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) != PCRE_ERROR_NOMATCH) {
+			highlight_string (row, (ptr-buf)+offsets[0], offsets[1]-offsets[0]);
+			ptr += offsets[1];
+		}
+	}
+
+	if (flags & C_MAIL) {
+		/* Get contents of line just written */
+#ifdef USE_CURSES
+		screen_contents(row, 0, buf);
+		ptr = buf;
+#else
+		ptr = screen[0].col;
+#endif /* USE_CURSES */
 
 		offsets[0] = 0;
 		offsets[1] = 0;
 
-		while (pcre_exec (url_regex.re, url_regex.extra, buf+end, strlen(buf)-end, 0, 0, offsets, offsets_size) != PCRE_ERROR_NOMATCH) {
-			MoveCursor (y, end+offsets[0]);
-			innstr (tmp, offsets[1] - offsets[0]);
-			StartInverse ();
-			my_fputs (tmp, stdout);
-			my_flush ();
-			EndInverse ();
-			stow_cursor();
-			end = offsets[1];
+		while (pcre_exec (mail_regex.re, mail_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) != PCRE_ERROR_NOMATCH) {
+			highlight_string (row, (ptr-buf)+offsets[0], offsets[1]-offsets[0]);
+			ptr += offsets[1];
 		}
+	}
+
 	}
 }
 #endif /* HAVE_COLOR */

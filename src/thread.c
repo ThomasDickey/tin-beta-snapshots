@@ -548,7 +548,7 @@ thread_page (
 				}
 				break;
 
-			case iKeyThreadHelp:			/* help */
+			case iKeyHelp:					/* help */
 				show_info_page (HELP_INFO, help_thread, _(txt_thread_com));
 				show_thread_page ();
 				break;
@@ -581,12 +581,12 @@ thread_page (
 				}
 				break;
 
-			case iKeyThreadToggleHelpDisplay:	/* toggle mini help menu */
+			case iKeyToggleHelpDisplay:		/* toggle mini help menu */
 				toggle_mini_help (THREAD_LEVEL);
 				show_thread_page();
 				break;
 
-			case iKeyThreadToggleInverseVideo:	/* toggle inverse video */
+			case iKeyToggleInverseVideo:	/* toggle inverse video */
 				toggle_inverse_video ();
 				show_thread_page ();
 				show_inverse_video_status ();

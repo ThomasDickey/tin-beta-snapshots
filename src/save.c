@@ -209,7 +209,7 @@ check_start_save_any_news (
 		}
 
 		for (j = 0; j < top_art; j++) {
-			t_openartinfo artinfo;
+			FILE *artfp;
 
 			if (arts[j].status != ART_UNREAD)
 				continue;
@@ -231,14 +231,8 @@ check_start_save_any_news (
 
 				case MAIL_ANY_NEWS:
 				case SAVE_ANY_NEWS:
-					switch (art_open (&arts[j], group_path, FALSE, &artinfo)) {
-						case ART_UNAVAILABLE:
-							continue;
-						case ART_ABORT:				/* User 'q'uit */
-							break;				/* Return or something here ? */
-						default:					/* Normal case */
-							break;
-					}
+					if ((artfp = open_art_fp (group_path, arts[j].artnum)) == NULL)
+						continue;
 
 					if (function == MAIL_ANY_NEWS)
 						sprintf (savefile, "%stin.%d", TMPDIR, (int) process_id);
@@ -256,7 +250,7 @@ check_start_save_any_news (
 						fprintf (fp_log, _(txt_cannot_open), savefile);
 						if (verbose)
 							perror_message (_(txt_cannot_open), savefile);
-						art_close (&artinfo);
+						TIN_FCLOSE (artfp);
 						continue;
 					}
 
@@ -264,12 +258,12 @@ check_start_save_any_news (
 						fprintf (fp, "To: %s\n", mail_news_user);
 
 					sprintf (buf, "[%5ld]  %s\n", arts[j].artnum, arts[j].subject);
-					fprintf (fp_log, "%s", buf); /* buf may contain % */
+					fprintf (fp_log, "%s", buf);		/* buf may contain % */
 					if (verbose)
 						wait_message (0, buf);
 
-					copy_fp (artinfo.raw, fp);
-					art_close (&artinfo);
+					copy_fp (artfp, fp);
+					TIN_FCLOSE (artfp);
 					fclose (fp);
 					saved_arts++;
 
@@ -341,7 +335,7 @@ check_start_save_any_news (
 
 /*
  * All article saves use this function
- * Save the article indexed via i and open on note_fp to file.
+ * Save the article indexed via i and pointed to by artinfo
  * A non-blank 'filename' seems to force a mailbox save
  * 'indexnum' is index into save[]
  * Returns:
@@ -1588,4 +1582,86 @@ print_art_seperator_line (
 		fprintf (fp, "%c%c%c%c\n", sep, sep, sep, sep);
 	else
 		my_fputc ('\n', fp);
+}
+
+
+/*
+ * decode and save a binary MIME attachment
+ * optionally locate and launch a viewer application
+ */
+void
+decode_save_mime(
+	t_openartinfo *art)
+{
+	t_part *ptr;
+
+	/*
+	 * Iterate over all the attachments
+	 */
+	for (ptr = art->hdr.ext; ptr != NULL; ptr = ptr->next) {
+		char buf[2048], buf2[2048];
+		char savepath[PATH_LEN];
+		char *name;
+		char *savefile;				/* ptr to filename portion of savepath */
+		int i, count;
+		struct t_attribute *attr = CURR_GROUP.attribute;
+		FILE *fp;
+
+		if (ptr->type == TYPE_MULTIPART || IS_PLAINTEXT(ptr))
+			continue;
+
+		/*
+		 * Determine the filename
+		 */
+		strncpy (savepath, attr->savedir, sizeof(savepath));
+		strcat (savepath, "/");
+		savefile = savepath + strlen(savepath);
+		if ((name = get_filename(ptr->params)) != NULL)
+			strcat (savepath, name);
+		else
+			strcat (savepath, attr->savefile ? attr->savefile : tinrc.default_save_file);
+
+		/*
+		 * Decode/save the attachment
+		 */
+/* TODO don't overwrite by default */
+		if ((fp = fopen (savepath, "w")) == NULL) {
+			error_message ("Couldn't open %s for saving", savepath);
+			return;
+		}
+			
+		mmdecode(NULL, 'b', 0, NULL, NULL);				/* flush */
+		fseek(art->raw, ptr->offset, SEEK_SET);
+
+		for (i = 0; i < ptr->lines ; i++) {
+			if ((fgets(buf, sizeof(buf), art->raw)) == NULL)
+				break;
+
+			/* This should catch cases where people illegally append text etc */
+			if (buf[0] == '\0')
+				break;
+
+			count = mmdecode(buf, ptr->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2, NULL);
+			fwrite(buf2, count, 1, fp);
+		}
+		fclose(fp);
+
+		sprintf(buf, "View '%s' ? (y/n): ", savefile);
+		if (prompt_yn (cLINES, buf, FALSE) == 1) {
+			char *app;
+			if ((app = lookup_mailcap (ptr->type, ptr->subtype)) != NULL) {
+				char viewer[PATH_LEN];
+
+				sprintf(viewer, app, savepath);
+				free (app);
+				wait_message(1, "Starting %s\n", viewer);
+				system(viewer);
+			} else
+				wait_message (2, "No viewer found for %s/%s\n", content_types[ptr->type], ptr->subtype);
+		}
+
+		sprintf(buf, "Save %s/%s as '%s' ? (y/n): ", content_types[ptr->type], ptr->subtype, savefile);
+		if (prompt_yn (cLINES, buf, FALSE) != 1)
+			unlink (savepath);
+	}
 }

@@ -606,10 +606,12 @@ check_for_any_new_groups (
 	time_t old_newnews_time;
 	time_t new_newnews_time;
 
-	if (!check_for_new_newsgroups || !batch_mode)
+	if (!check_for_new_newsgroups /* || !batch_mode */)
 		return;
 
+#if 0
 	if (!batch_mode /* || (batch_mode && verbose) */)
+#endif
 		wait_message (0, _(txt_checking_new_groups));
 
 	(void) time (&new_newnews_time);

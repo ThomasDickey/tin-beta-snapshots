@@ -139,6 +139,7 @@ CFILES	= \
 	$(SRCDIR)/lang.c \
 	$(SRCDIR)/list.c \
 	$(SRCDIR)/mail.c \
+	$(SRCDIR)/mailcap.c \
 	$(SRCDIR)/main.c \
 	$(SRCDIR)/memory.c \
 	$(SRCDIR)/misc.c \
@@ -202,6 +203,7 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/lang.o \
 	$(OBJDIR)/list.o \
 	$(OBJDIR)/mail.o \
+	$(OBJDIR)/mailcap.o \
 	$(OBJDIR)/main.o \
 	$(OBJDIR)/memory.o \
 	$(OBJDIR)/misc.o \
@@ -451,6 +453,7 @@ $(OBJDIR)/joinpath.o:		$(SRCDIR)/joinpath.c $(TIN_DEP)
 $(OBJDIR)/lang.o:		$(SRCDIR)/lang.c $(TIN_DEP)
 $(OBJDIR)/list.o:		$(SRCDIR)/list.c $(TIN_DEP)
 $(OBJDIR)/mail.o:		$(SRCDIR)/mail.c $(TIN_DEP)
+$(OBJDIR)/mailcap.o:		$(SRCDIR)/mail.c $(TIN_DEP)
 $(OBJDIR)/main.o:		$(SRCDIR)/main.c $(TIN_DEP) \
 				$(INCDIR)/bugrep.h \
 				$(INCDIR)/version.h

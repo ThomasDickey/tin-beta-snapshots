@@ -1,7 +1,7 @@
 /*
  *  Project   : tin - a Usenet reader
  *  Module    : cook.c
- *  Author    : I. Lea & R. Skrenta
+ *  Author    : J. Faultless
  *  Created   : 2000-03-08
  *  Updated   :
  *  Notes     : Split from page.c
@@ -68,6 +68,8 @@
  */
 t_openartinfo *art;
 
+int tabwidth;
+t_bool reveal_uue;
 
 /*
  * Rewrite frombuf into tobuf to a maximum length
@@ -271,7 +273,7 @@ new_uue(
  * 'filename' supersedes Content-Type 'name'. We must also remove path
  * information.
  */
-static char *
+char *
 get_filename(
 	t_param *ptr)
 {
@@ -359,19 +361,21 @@ fprintf(stderr, "decoding %s part\n", content_encodings[part->encoding]);
 		len = (int)strlen(line);
 
 		if (!in_sig) {
-			int offsets[6];
-			int size_offsets = sizeof(offsets)/sizeof(int);
-			int sum;
-			t_bool is_uubody;
-			t_part *curruue;
-
 			if (strcmp (line, SIGDASHES) == 0) {
 				in_sig = TRUE;
 				if (in_uue)
 					in_uue = FALSE;
-			} else if (pcre_exec (uubegin_regex.re, uubegin_regex.extra, line, len, 0, 0, offsets, size_offsets) != PCRE_ERROR_NOMATCH) {
+			}
+		}
+
+		if (!reveal_uue) {
+			int offsets[6];
+			int size_offsets = sizeof(offsets)/sizeof(int);
+			t_bool is_uubody = FALSE;
+			t_part *curruue;
+
+			if (pcre_exec (uubegin_regex.re, uubegin_regex.extra, line, len, 0, 0, offsets, size_offsets) != PCRE_ERROR_NOMATCH) {
 				in_uue = TRUE;
-fprintf(stderr, "Start uue with %s\n", line);
 				curruue = new_uue(&part, line+offsets[1]);
 				continue;
 			} else if (strncmp (line, "end\n", 4) == 0) {
@@ -382,23 +386,33 @@ fprintf(stderr, "Start uue with %s\n", line);
 				continue;				/* To stop 'end' line appearing */
 			}
 
-			sum = (((*line) - ' ') & 077) *4/3;		/* uuencode octet checksum */
-			is_uubody = MATCH_REGEX (uubody_regex, line, len);
-/*fprintf(stderr, "regex says %d !%s", is_uubody, line);*/
-			is_uubody = ((sum == 0 || sum+1+1 == len) && is_uubody);	/* +1 for the \n */
+			if (MATCH_REGEX (uubody_regex, line, len)) {
+				int sum = (((*line) - ' ') & 077) *4/3;		/* uuencode octet checksum */
+
+				/*
+				 * sum = 0 in a uubody only on the last line, a single `
+				 */
+				if (sum == 0 && len == 1+1)			/* +1 for the \n */
+					is_uubody = TRUE;
+				else if (len == sum+1+1)
+					is_uubody = TRUE;
+/*fprintf(stderr, "is_uubody=%d, sum = %d, len = %d\n", is_uubody, sum, len);*/
+			}
 
 			if (in_uue) {
 				if (is_uubody)
 					curruue->lines++;
 				else {
 					fprintf(stderr, "not a uue line while reading a uue body?\n");
-/*fprintf(stderr, "sum=%d, len=%d !%s!\n", sum, len, line);*/
+#if 0
+					put_cooked (C_UUE, "[-- uuencoded file, %d lines, name: %s --]\n\n", curruue->lines, get_filename(curruue->params));
 					in_uue = FALSE;
+#endif
 				}
 			} else {
 				if (is_uubody) {
 					char name[] = "(partial)";
-fprintf(stderr, "start of headerless uue (%s)\n", line);
+fprintf(stderr, "start of headerless uue (%s) len=%d (%s)\n", line, len, line);
 					curruue = new_uue(&part, name);
 					in_uue = TRUE;
 					continue;
@@ -410,6 +424,7 @@ fprintf(stderr, "start of headerless uue (%s)\n", line);
 
 		flags = (in_sig) ? C_SIG : C_BODY;
 
+#ifdef HAVE_COLOR
 		if (quote_regex3.re) {
 			if (MATCH_REGEX (quote_regex3, line, len))
 				flags |= C_QUOTE3;
@@ -422,28 +437,33 @@ fprintf(stderr, "start of headerless uue (%s)\n", line);
 				}
 			}
 		}
+#endif /* HAVE_COLOR */
 
 		if (MATCH_REGEX (url_regex, line, len))
 			flags |= C_URL;
 
-#if 0	/* TODO */
-		strip_line (line);		/* breaks things at the moment */
+		if (MATCH_REGEX (mail_regex, line, len))
+			flags |= C_MAIL;
 
-		if (tex2iso_supported && tex2iso_article) {
-			strcpy (buf3, buf2);
-			ConvertTeX2Iso (buf3, buf2);
+		if (tex2iso_supported && art->tex2iso) {
+			char texbuf[LEN];
+			strcpy (texbuf, line);
+			ConvertTeX2Iso (texbuf, line);
 		}
 
 		if (iso2asc_supported >= 0) {
-			strcpy (buf3, buf2);
-			ConvertIso2Asc (buf3, buf2, iso2asc_supported);
+			char isobuf[LEN];
+			strcpy (isobuf, line);
+			ConvertIso2Asc (isobuf, line, iso2asc_supported);
 		}
 
+#if 0	/* TODO */
 /* Basically: if (!(my_isprint(*c) || *c==8 || *c==9 || *c==12)) */
 /* How about if !isprint() && !isctrl() - expand_ctrl_chars is done at display time */
 		ConvertBody2Printable (line);
-#endif
+#endif /* 0 */
 /* TODO intregrate above into below */
+
 		if (expand_ctrl_chars (to, line, sizeof(to)))
 			flags |= C_CTRLF;				/* Line contains form-feed */
 
@@ -491,7 +511,8 @@ header_wanted(
 
 #ifdef DEBUG_ART
 static void
-dump_cooked(void)
+dump_cooked(
+	void)
 {
 	int i;
 
@@ -529,12 +550,16 @@ dump_cooked(void)
  */
 t_bool
 cook_article(
-	t_openartinfo *artinfo)
+	t_openartinfo *artinfo,
+	int tabs,
+	t_bool uue)
 {
 	char *line;
 	struct t_header *hdr = &artinfo->hdr;
 
 	art = artinfo;				/* Global saves lots of passing artinfo around */
+	tabwidth = tabs;
+	reveal_uue = uue;
 
 	if (!(art->cooked = tmpfile()))
 		return FALSE;
@@ -585,35 +610,14 @@ cook_article(
 				(name)?", name: ":"", (name)?name:"");
 
 			/* Try to view anything of type text, may need to review this */
-			if (ptr->type == TYPE_TEXT)
+			if (IS_PLAINTEXT(ptr))
 				process_text_body_part(artinfo->raw, ptr);
-#if 0
-else {	/* Sample hack to extract binary data */
-	char buf[2048], buf2[2048];
-	char *line;
-	int i, j;
-	FILE *fp = fopen(name?name:tinrc.default_save_file, "w");
-	if (fp) {
-		mmdecode(NULL, 'b', 0, NULL, NULL);		/* flush */
-		fseek(artinfo->raw, ptr->offset, SEEK_SET);
-		for (i=0;i<ptr->lines;i++) {
-			if ((line = fgets(buf, sizeof(buf), artinfo->raw)) == NULL)
-				break;
-			if (*line == '\0')	/* Should catch cases where people append text etc where they shouldn't */
-				break;
-			j = mmdecode(line, 'b', '\0', buf2, NULL);
-			fwrite(buf2, j, 1, fp);
-		}
-	fclose(fp);
-	}
-}
-#endif
 		}
 	} else {
 		/*
 		 * A regular single-body article
 		 */
-		if (hdr->ext->type == TYPE_TEXT)
+		if (IS_PLAINTEXT(hdr->ext))
 			process_text_body_part(artinfo->raw, hdr->ext);
 		else {						/* Non-textual main body */
 			char *name = get_filename(hdr->ext->params);

@@ -65,6 +65,7 @@ CFILES	= \
 	$(SRCDIR)/lang.c \
 	$(SRCDIR)/list.c \
 	$(SRCDIR)/mail.c \
+	$(SRCDIR)/mailcap.c \
 	$(SRCDIR)/main.c \
 	$(SRCDIR)/memory.c \
 	$(SRCDIR)/misc.c \

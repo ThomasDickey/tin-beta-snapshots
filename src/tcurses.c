@@ -273,6 +273,27 @@ MoveCursor(
 }
 
 
+/*
+ * Inverse 'size' chars at (row,col)
+ */
+void
+highlight_string (
+	int row,
+	int col,
+	int size)
+{
+	char tmp[LEN];
+
+	MoveCursor (row, col);
+	innstr (tmp, size);
+	StartInverse ();
+	my_fputs (tmp, stdout);
+	my_flush ();
+	EndInverse ();
+	stow_cursor();
+}
+
+
 int
 ReadCh(
 	void)
@@ -288,8 +309,13 @@ again:
 		allow_resize (FALSE);
 		if (need_resize) {
 			handle_resize ((need_resize == cRedraw) ? TRUE : FALSE);
+#if 0
+			if (need_resize == cRedraw) {
+				need_resize = cNo;
+				goto again;				/* Shouldn't fall through if doing resize */
+			}
+#endif
 			need_resize = cNo;
-			goto again;				/* Shouldn't fall through if doing resize */
 		}
 		if (ch == KEY_BACKSPACE)
 			ch = '\010';	/* fix for Ctrl-H - show headers */

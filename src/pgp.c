@@ -242,8 +242,9 @@ do_pgp (
 	 * <mailfrom> is valid only when signing and a local address exists
 	 */
 	if (what & PGP_SIGN) {
-		if ((CURR_GROUP.attribute->from) != (char *) 0) {
+		if ((CURR_GROUP.attribute->from) != (char *) 0)
 			strip_name (CURR_GROUP.attribute->from, mailfrom);
+		if (strlen(mailfrom)) {
 			if (what & PGP_ENCRYPT)
 				sh_format (cmd, sizeof(cmd), DO_BOTH1);
 			else
@@ -399,7 +400,7 @@ invoke_pgp_news (
 
 t_bool
 pgp_check_article (
-	void)
+	t_openartinfo *artinfo)
 {
 	FILE *art;
 	char artfile[PATH_LEN], buf[LEN], cmd[LEN];
@@ -419,16 +420,16 @@ pgp_check_article (
 		info_message(_(txt_cannot_open), artfile);
 		return FALSE;
 	}
-	fseek(note_fp, note_h.hdr->offset, SEEK_SET);	/* -> start of body */
+	fseek(artinfo->raw, artinfo->hdr.ext->offset, SEEK_SET);		/* -> start of body */
 
-	fgets(buf, LEN, note_fp);					/* Copy the body whilst looking for SIG/KEY tags */
-	while (!feof(note_fp)) {
+	fgets(buf, LEN, artinfo->raw);		/* Copy the body whilst looking for SIG/KEY tags */
+	while (!feof(artinfo->raw)) {
 		if (!pgp_signed && strcmp(buf, PGP_SIG_TAG) == 0)
 			pgp_signed = TRUE;
 		if (!pgp_key && strcmp(buf, PGP_KEY_TAG) == 0)
 			pgp_key = TRUE;
 		fputs(buf, art);
-		fgets(buf, LEN, note_fp);
+		fgets(buf, LEN, artinfo->raw);
 	}
 	fclose(art);
 

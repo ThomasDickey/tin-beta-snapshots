@@ -73,6 +73,25 @@ progress(
 
 
 /*
+ * Lookup content type in content_types[] array and return matching
+ * index or -1
+ */
+int
+content_type (
+	char *type)
+{
+	int i;
+
+	for (i = 0; i < NUM_CONTENT_TYPES; ++i) {
+		if (strcasecmp (type, content_types[i]) == 0)
+			return i;
+	}
+
+	return -1;
+}
+
+
+/*
  * check if a line is a MIME boundary
  * returns BOUND_NONE if it is not, BOUND_START if normal boundary and
  * BOUND_END if closing boundary
@@ -200,31 +219,29 @@ parse_content_type(
 	/*
 	 * Split the type/subtype
 	 */
-	if ((type = strtok(type, "/")) == NULL)
+	if ((type = strtok (type, "/")) == NULL)
 		return;
 
 	/* Look up major type */
-	for (i=0; i < NUM_CONTENT_TYPES; ++i) {
-		if (strcasecmp(type, content_types[i]) == 0) {
-			content->type = i;
-			break;
-		}
-	}
 
 	/*
 	 * Unrecognised type, treat according to RFC
 	 */
-	if (i == NUM_CONTENT_TYPES) {
+	if ((i = content_type (type)) == -1) {
 		content->type = TYPE_APPLICATION;
 		free (content->subtype);
-		content->subtype = my_strdup("octet-stream");
+		content->subtype = my_strdup ("octet-stream");
 		return;
-	}
+	} else
+		content->type = i;
 
 	subtype = strtok (NULL, PARAM_SEP);
-	/* Now save subtype */
-	free(content->subtype);				/* Pre-initialised to plain */
-	content->subtype = my_strdup(subtype);
+	/* save new subtype, or use pre-initialised value "plain" */
+	if (subtype != (char *) 0) {				/* check for broken Content-Type: is header without a subtype */
+		free (content->subtype);				/* Pre-initialised to plain */
+		content->subtype = my_strdup (subtype);
+		str_lwr (content->subtype);
+	}
 
 	/*
 	 * Parse any parameters into a list
@@ -232,7 +249,7 @@ parse_content_type(
 	if ((params = strtok (NULL, "\n")) != NULL) {
 		free_list (content->params);
 		content->params = NULL;
-		parse_params(params, content);
+		parse_params (params, content);
 	}
 	return;
 }
@@ -611,8 +628,9 @@ parse_multipart_article(
 /*fprintf(stderr, "HDR:%s\n", line);*/
 				if ((ptr = parse_header (line, "Content-Type", FALSE))) {
 					parse_content_type (ptr, curr_part);
-if (curr_part->type == TYPE_MULTIPART)
-	fprintf(stderr, "Composite Multipart\n");
+
+				if (curr_part->type == TYPE_MULTIPART)
+					fprintf(stderr, "Composite Multipart\n");
 					break;
 				}
 				if ((ptr = parse_header (line, "Content-Transfer-Encoding", FALSE))) {
@@ -709,7 +727,6 @@ dump_art(
 /*
  * Core parser for all article types
  * Return NULL if we couldn't open an output stream
- * TODO reduce the amount of work done when not needed, eg disable cooking
  */
 static int
 parse_rfc2045_article (
@@ -726,10 +743,7 @@ parse_rfc2045_article (
 
 fprintf(stderr, "PARSE-----------------------------------------------------------------------\n");
 	if ((ret = parse_rfc822_headers(&artinfo->hdr, infile, artinfo->raw)) != 0)
-{
-fprintf(stderr, "AB: parse-hdr\n");
 		goto error;
-}
 
 	/*
 	 * Is this a MIME article ?
@@ -737,21 +751,13 @@ fprintf(stderr, "AB: parse-hdr\n");
 	 */
 	if (artinfo->hdr.mime && artinfo->hdr.ext->type == TYPE_MULTIPART) {
 		if ((ret = parse_multipart_article(infile, artinfo)) != 0)
-{
-fprintf(stderr, "AB: parse-mul\n");
 			goto error;
-}
 	} else {
 		if ((ret = parse_normal_article(infile, artinfo)) != 0)
-{
-fprintf(stderr, "AB: parse-norm\n");
 			goto error;
-}
 	}
 
 	TIN_FCLOSE (infile);
-
-	cook_article (artinfo);		/* Fix it so if this fails, we default to raw ? */
 
 #ifdef DEBUG_ART
 	dump_art(artinfo);
@@ -762,7 +768,6 @@ fprintf(stderr, "AB: parse-norm\n");
 error:
 	TIN_FCLOSE (infile);
 	art_close (artinfo);
-fprintf(stderr, "rfc2045 user 'q'uit final exit %d\n", ret);
 	return ret;
 }
 
@@ -790,23 +795,25 @@ art_open (
 	int ret;
 	FILE *fp;
 
-#if 0	/* TODO */
-	if ((tex2iso_article = (tex2iso_supported ? iIsArtTexEncoded (art->artnum, group_path) : FALSE)))
-		wait_message (0, _(txt_is_tex_encoded));
-#endif
-
 	if ((fp = open_art_fp (group_path, art->artnum)) == NULL)
 		return ((tin_errno == 0) ? ART_UNAVAILABLE : ART_ABORT);
 
-fprintf(stderr, "art_open(%p)\n", artinfo);
+#ifdef DEBUG_ART
+	fprintf(stderr, "art_open(%p)\n", artinfo);
+#endif /* DEBUG_ART */
 
 /*	if (decode) */
 		if ((ret = parse_rfc2045_article (fp, art->lines, artinfo)) != 0)
 			return ART_ABORT;
 #if 0
 	else
-		note_fp = fp;	/* TODO shouldn't bother coming here if not decoding ? */
+		???????
 #endif
+
+	if ((pgart.tex2iso = (tex2iso_supported ? iIsArtTexEncoded (artinfo->raw) : FALSE)))
+		wait_message (0, _(txt_is_tex_encoded));
+
+	cook_article (artinfo, 8, FALSE);		/* Fix it so if this fails, we default to raw ? */
 
 	/*
 	 * If Newsgroups is empty its a good bet the article is a mail article
@@ -828,8 +835,13 @@ void
 art_close (
 	t_openartinfo *artinfo)
 {
-fprintf(stderr, "art_close(%p)\n", artinfo);
+#ifdef DEBUG_ART
+	fprintf(stderr, "art_close(%p)\n", artinfo);
+#endif /* DEBUG_ART */
+
 	free_and_init_header (&artinfo->hdr);
+
+	artinfo->tex2iso = FALSE;
 
 	if (artinfo->raw) {
 		fclose (artinfo->raw);

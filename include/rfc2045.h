@@ -128,13 +128,15 @@ struct t_header
 #	define C_SIG		0x004
 #	define C_ATTACH	0x008
 #	define C_UUE		0x010
+
 /* Secondary flags */
 #	define C_QUOTE1	0x020
 #	define C_QUOTE2	0x040
 #	define C_QUOTE3	0x080
 
-#	define C_URL		0x100
-#	define C_CTRLF		0x200
+#	define C_URL		0x100	/* Contains URL */
+#	define C_MAIL		0x200	/* Contains mailto: */
+#	define C_CTRLF		0x400	/* Contains ^F */
 
 typedef struct lineinfo
 {
@@ -145,11 +147,10 @@ typedef struct lineinfo
 /*
  * Oddball collection of information about the open article
  */
-/* TODO - split out 'current' pager info as we only need it static in page.c */
-/*        _not_ in every instance of opening an art */
 typedef struct openartinfo
 {
 	struct t_header hdr;	/* Structural overview of the article */
+	t_bool tex2iso;			/* TRUE if TeX encoding present */
 	int cooked_lines;		/* # lines in cooked t_lineinfo */
 	FILE *raw;				/* the actual data streams */
 	FILE *cooked;

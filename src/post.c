@@ -1253,10 +1253,10 @@ post_article_loop:
 post_article_done:
 	if (ret_code == POSTED_OK) {
 		FILE *art_fp;
-		struct t_header header;
 		int ret;
-fprintf(stderr, "CHECK pers %p\n", header.persist);
-		header.persist = NULL;
+		struct t_header header;
+
+		memset (&header, 0, sizeof(struct t_header));
 
 		if ((art_fp = fopen (article, "r")) == (FILE *) 0)
 			perror_message (_(txt_cannot_open), article);
@@ -1323,8 +1323,6 @@ fprintf(stderr, "CHECK pers %p\n", header.persist);
 
 		free_and_init_header (&header);
 	}
-
-/*	write_config_file (local_config_file); Overkill, I think */
 
 post_article_postponed:
 	if (tinrc.unlink_article)
@@ -2020,7 +2018,7 @@ int /* return code is currently ignored! */
 post_response (
 	char *group,
 	int respnum,
-	int copy_text,
+	t_bool copy_text,
 	t_bool with_headers)
 {
 	FILE *fp;
@@ -2271,9 +2269,8 @@ create_mail_headers(
 		if (tinrc.auto_cc)
 			msg_add_header ("Cc", strlen(from_address) ? from_address : userid);
 
-		if (tinrc.auto_bcc) 
+		if (tinrc.auto_bcc)
 			msg_add_header ("Bcc", strlen(from_address) ? from_address : userid);
-
 
 		if (*default_organization)
 			msg_add_header ("Organization", random_organization(default_organization));
@@ -2431,9 +2428,13 @@ mail_to_someone (
 	struct t_header note_h = artinfo->hdr;
 
 	clear_message ();
-	
+
 	snprintf (subject, sizeof(subject) - 1, "(fwd) %s\n", note_h.subj);
 
+	/*
+	 * don't add extra headers in the mail_to_someone() case as we include
+	 * the full original headers in the body of the mail
+	 */
 	if ((fp = create_mail_headers(nam, TIN_LETTER, address, subject, NULL)) == NULL)
 		return ret_code;
 
@@ -2589,7 +2590,7 @@ int /* return value is always ignored */
 mail_to_author (
 	char *group,
 	int respnum,
-	int copy_text,
+	t_bool copy_text,
 	t_bool with_headers)
 {
 	FILE *fp;
@@ -2627,6 +2628,10 @@ mail_to_author (
 
 	snprintf (subject, sizeof(subject) - 1, "Re: %s\n", eat_re (note_h.subj, TRUE));
 
+	/*
+    * add extra headers in the mail_to_author() case as we don't include the
+    * full original headers in the body of the mail
+    */
 	if ((fp = create_mail_headers(nam, TIN_LETTER, from_addr, subject, &note_h)) == NULL)
 		 return ret_code;
 
@@ -2964,8 +2969,8 @@ cancel_article (
 	if (author)
 		fprintf (fp, _(txt_article_cancelled));
 	else {
-		rewind (note_fp);
-		copy_fp (note_fp, fp);
+		rewind (pgart.raw);
+		copy_fp (pgart.raw, fp);
 	}
 	fclose (fp);
 	invoke_editor (cancel, start_line_offset);

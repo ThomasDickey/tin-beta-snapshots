@@ -285,6 +285,8 @@ constext txt_help_misc_[] = N_("-------------");
 	constext txt_help_BIGU[] = N_("U\t  untag all tagged threads");
 	constext txt_help_BIGW[] = N_("W\t  list articles posted by you (from posted file)");
 	constext txt_help_BIGX[] = N_("X\t  toggle display of all/selected articles");
+	constext txt_help_p_BIGU[] = N_("U\t  Browse URL's in article");
+	constext txt_help_p_BIGV[] = N_("V\t  View/save multimedia attachments");
 #else
 	constext txt_help_B[] = N_("B\t  search all articles for a given string (this may take some time)");
 	constext txt_help_B_[] = N_("\t  (searches are case-insensitive and wrap around to all articles)");
@@ -299,6 +301,8 @@ constext txt_help_misc_[] = N_("-------------");
 	constext txt_help_U[] = N_("U\t  untag all tagged threads");
 	constext txt_help_W[] = N_("W\t  list articles posted by you (from posted file)");
 	constext txt_help_X[] = N_("X\t  toggle display of all/selected articles");
+	constext txt_help_p_U[] = N_("U\t  Browse URL's in article");
+	constext txt_help_p_V[] = N_("V\t  View/save multimedia attachments");
 #endif /* CASE_PROBLEM */
 
 constext txt_help_a[] = N_("a A\t  search for articles by author (a = forward, A = backward)");
@@ -389,6 +393,8 @@ constext txt_help_p_f[] = N_("f F\t  post followup (F = don't copy text) to curr
 constext txt_help_p_g[] = N_("g G\t  display first (G = last) page of article");
 /* constext txt_help_p_k[] = N_("k K\t  mark article (K = thread) as read and advance to next unread"); */
 constext txt_help_p_k[] = N_("K\t  mark thread as read and advance to next unread");
+constext txt_help_p_lb[] = N_("(\t  toggle display of uuencoded sections on/off");
+constext txt_help_p_rb[] = N_(")\t  toggle display of sections hidden by a form-feed (^L) on/off");
 constext txt_help_p_m[] = N_("m\t  mail article/thread/hot/pattern/tagged articles to someone");
 constext txt_help_p_n[] = N_("n N\t  display next (N = next unread) article");
 constext txt_help_p_num[] = N_("0 - 9\t  display article by number in current thread");

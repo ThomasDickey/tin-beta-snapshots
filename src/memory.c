@@ -232,6 +232,8 @@ free_all_arrays (
 	FreeIfNeeded(uubody_regex.extra);
 	FreeIfNeeded(url_regex.re);
 	FreeIfNeeded(url_regex.extra);
+	FreeIfNeeded(mail_regex.re);
+	FreeIfNeeded(mail_regex.extra);
 
 	if (base != (long *) 0) {
 		free ((char *) base);

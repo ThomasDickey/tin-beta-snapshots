@@ -75,7 +75,7 @@ extern void write_attributes_file (char *file);
 #endif /* NNTP_ABLE */
 
 /* charset.c */
-extern t_bool iIsArtTexEncoded (long art, char *group_path);
+extern t_bool iIsArtTexEncoded (FILE *fp);
 extern void Convert2Printable (char* buf);
 extern void ConvertBody2Printable (char* buf);
 extern void ConvertIso2Asc (char *iso, char *asc, int t);
@@ -85,7 +85,7 @@ extern void ConvertTeX2Iso (char *from, char *to);
 extern void bcol (int color);
 extern void color_fputs (const char *s, FILE *stream, int color, t_bool signature);	/* this can be static void color_fputs */
 extern void fcol (int color);
-extern void print_color (char *str, int flags);
+extern void print_color (int row, char *str, int flags);
 
 /* config.c */
 extern char **ulBuildArgv (char *cmd, int *new_argc);
@@ -105,7 +105,8 @@ extern void show_menu_help (const char *help_message);
 extern void write_config_file (char *file);
 
 /* cook.c */
-extern t_bool cook_article (t_openartinfo *artinfo);
+extern char *get_filename (t_param *ptr);
+extern t_bool cook_article (t_openartinfo *artinfo, int tabs, t_bool uue);
 
 /* curses.c */
 extern OUTC_RETTYPE outchar (OUTC_ARGS);
@@ -126,6 +127,11 @@ extern void StartInverse (void);
 extern void ToggleInverse (void);
 extern void cursoroff (void);
 extern void cursoron (void);
+extern void highlight_string (int row, int col, int size);
+#ifndef USE_CURSES
+	extern void scrl (int lines);
+	extern void setscrreg (int topline, int bottomline);
+#endif
 extern void set_keypad_off (void);
 extern void set_keypad_on (void);
 extern void set_xclick_off (void);
@@ -267,6 +273,10 @@ extern void vGrpDelMailArt (struct t_article *psArt);
 	extern void read_mailgroups_file (void);
 	extern void write_mail_active_file (void);
 #endif /* HAVE_MH_MAIL_HANDLING */
+
+/* mailcap.c */
+extern char *lookup_mailcap (int type, const char *subtype);
+extern char *lookup_mimetype (const char *ext);
 
 /* main.c */
 extern int main (int argc, char *argv[]);
@@ -434,7 +444,7 @@ extern time_t parsedate (char *p, TIMEINFO *now);
 
 /* pgp.c */
 #ifdef HAVE_PGP_GPG
-	extern t_bool pgp_check_article (void);
+	extern t_bool pgp_check_article (t_openartinfo *artinfo);
 	extern void init_pgp (void);
 	extern void invoke_pgp_mail (const char *nam, char *mail_to);
 	extern void invoke_pgp_news (char *the_article);
@@ -450,9 +460,9 @@ extern time_t parsedate (char *p, TIMEINFO *now);
 
 /* post.c */
 extern int count_postponed_articles (void);
-extern int mail_to_author (char *group, int respnum, int copy_text, t_bool with_headers);
+extern int mail_to_author (char *group, int respnum, t_bool copy_text, t_bool with_headers);
 extern int mail_to_someone (const char *address, t_bool confirm_to_mail, t_openartinfo *artinfo);
-extern int post_response (char *group, int respnum, int copy_text, t_bool with_headers);
+extern int post_response (char *group, int respnum, t_bool copy_text, t_bool with_headers);
 extern int repost_article (const char *group, int respnum, t_bool supersede, t_openartinfo *artinfo);
 extern t_bool cancel_article (struct t_group *group, struct t_article *art, int respnum);
 extern t_bool mail_bug_report (void);
@@ -523,6 +533,7 @@ extern void rfc15211522_encode (const char *filename, constext *mime_encoding, t
 extern char *get_param (t_param *list, const char *name);
 extern char *parse_header (char *buf, const char *pat, t_bool decode);
 extern int art_open (struct t_article *art, char *group_path, t_bool decode, t_openartinfo *artinfo);
+extern int content_type (char *type);
 extern int parse_rfc822_headers (struct t_header *hdr, FILE *from, FILE *to);
 extern t_part *new_part (t_part *part);
 extern void art_close (t_openartinfo *artinfo);
@@ -536,6 +547,7 @@ extern t_bool save_art_to_file (int indexnum, t_bool the_mailbox, const char *fi
 extern t_bool save_regex_arts_to_file (t_bool is_mailbox, char *group_path);
 extern t_bool save_thread_to_file (t_bool is_mailbox, char *group_path);
 extern void add_to_save_list (int the_index, t_bool is_mailbox, const char *path);
+extern void decode_save_mime (t_openartinfo *art);
 extern void print_art_seperator_line (FILE *fp, t_bool is_mailbox);
 extern void sort_save_list (void);
 

@@ -670,27 +670,32 @@ enum resizer { cNo, cYes, cRedraw };
 #define DEFAULT_MAILDIR	"Mail"
 #define DEFAULT_SAVEDIR	"News"
 
+
 #ifdef HAVE_COLOR
 /* case insensitive */
-#	define DEFAULT_QUOTE_REGEX "^\\s{0,3}([\\]{}>|:)]|\\w{1,3}[>|])(?!-)"
-#	define DEFAULT_QUOTE_REGEX2 "^\\s{0,3}(([\\]{}>|:)]|\\w{1,3}[>|])\\s*){2}(?!-[})>])"
-#	define DEFAULT_QUOTE_REGEX3 "^\\s{0,3}(([\\]{}>|:)]|\\w{1,3}[>|])\\s*){3}"
+#	define DEFAULT_QUOTE_REGEX	"^\\s{0,3}([\\]{}>|:)]|\\w{1,3}[>|])(?!-)"
+#	define DEFAULT_QUOTE_REGEX2	"^\\s{0,3}(([\\]{}>|:)]|\\w{1,3}[>|])\\s*){2}(?!-[})>])"
+#	define DEFAULT_QUOTE_REGEX3	"^\\s{0,3}(([\\]{}>|:)]|\\w{1,3}[>|])\\s*){3}"
 #endif /* HAVE_COLOR */
 
-/* case sensitive && anchored */
-#define DEFAULT_STRIP_RE_REGEX "(R[eE](\\^\\d+|\\[\\d\\])?|A[wW]|Odp|Sv):\\s"
+/* case sensitive && ^-anchored */
+#define DEFAULT_STRIP_RE_REGEX	"(R[eE](\\^\\d+|\\[\\d\\])?|A[wW]|Odp|Sv):\\s"
 /* case sensitive */
-#define DEFAULT_STRIP_WAS_REGEX ".\\(([Ww]a[rs]|[Bb]y[l³]o):.*\\)\\s*$"
+#define DEFAULT_STRIP_WAS_REGEX	".\\(([Ww]a[rs]|[Bb]y[l³]o):.*\\)\\s*$"
 
-/* case insensitive & anchored */
+/* case insensitive & ^-anchored */
 #define UUBEGIN_REGEX	"begin\\s+[0-7]{3,4}\\s+"
-/* case sensitive && anchored */
+/* case sensitive & ^-anchored */
 #define UUBODY_REGEX	"(`|.[\\x20-\\x60]{1,61})$"
 
 /* case insensitive */
-#define URL_REGEX	"(http[s]?|ftp|gopher)://(\\w+:\\w+@)?([a-z\\d][-a-z\\d\\.]*\\.([a-z]){2,5}|localhost|((\\d?\\d|[01]\\d\\d|2[0-4][0-9]|25[0-5])\\.){3}(\\d?\\d|[01]\\d\\d|2[0-4][0-9]|25[0-5]))(:\\d+)?(/[^)>\"\\s]*|$|\\s)"
-/* case insensitive - not implemented, could be optimized */
-#define MAIL_REGEX "mailto:\\S+@[a-z\\d][-a-z\\d\\.]*\\.([a-z]){2,5}"
+#define URL_REGEX "\\b(?:http[s]?|ftp|gopher)://(?:\\w+:\\w+@)?(?:[^\\W_]+(?:(?:[-.][^\\W_]+)+)?\\.[a-z]{2,5}|localhost|(?:(?:\\d?\\d|[01]\\d\\d|2[0-4]\\d|25[0-5])\\.){3}(?:\\d?\\d|[01]\\d\\d|2[0-4]\\d|25[0-5]))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
+
+/* case insensitive - not implemented */
+#define MAIL_REGEX	"\\b(?:mailto:(?:(?:[-\\w$.+!*'(),;/?:@&=]|(?:%[\\da-f]{2}))+))"
+/* case insensitive - not implemented */
+#define NEWS_REGEX	"\\b(?:news|nntp):[^\\s@]+[@.][^\\s@]+(?:$|(?=[\\s.>]))\\b"
+
 
 #define FILTER_FILE	"filter"
 #define GROUP_TIMES_FILE	"group.times"
@@ -746,10 +751,9 @@ enum resizer { cNo, cYes, cRedraw };
 /* safe strcpy into fixed-legth buffer */
 #define STRCPY(dst, src)	(dst[sizeof(dst) - 1] = '\0', strncpy(dst, src, sizeof(dst) -1))
 
-#define STRCMPEQ(s1, s2)	(*(s1) == *(s2) && strcmp((s1), (s2)) == 0)
-#define STRNCMPEQ(s1, s2, n)	(*(s1) == *(s2) && strncmp((s1), (s2), n) == 0)
+#define STRCMPEQ(s1, s2)	(/**(s1) == *(s2) && */strcmp((s1), (s2)) == 0)
+#define STRNCMPEQ(s1, s2, n)	(/**(s1) == *(s2) && */strncmp((s1), (s2), n) == 0)
 #define STRNCASECMPEQ(s1, s2, n)	(strncasecmp((s1), (s2), n) == 0)
-
 
 #if defined(VMS) || defined(M_AMIGA)
 #	define LEN	512

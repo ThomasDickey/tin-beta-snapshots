@@ -185,7 +185,8 @@ feed_article(
 			if (!stat_article (arts[art].artnum, path))
 				return FALSE;
 		} else {
-			if (art_open (&arts[art], path, TRUE, &openart) == ART_UNAVAILABLE)
+			memset (openartptr, 0, sizeof(t_openartinfo));
+			if (art_open (&arts[art], path, TRUE, openartptr) == ART_UNAVAILABLE)
 				return FALSE;
 		}
 	}
@@ -210,7 +211,6 @@ feed_article(
 
 			rewind (openartptr->raw);
 			ok = copy_fp (openartptr->raw, pipe_fp);	/* Check for SIGPIPE on return */
-
 			break;
 #endif /* !DONT_HAVE_PIPING */
 
