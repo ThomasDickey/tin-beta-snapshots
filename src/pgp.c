@@ -44,6 +44,9 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
+#ifndef MENUKEYS_H
+#	include "menukeys.h"
+#endif /* !MENUKEYS_H */
 
 #ifdef HAVE_PGP_GPG
 
@@ -321,18 +324,18 @@ invoke_pgp_mail (
 	const char *nam,
 	char *mail_to)
 {
-	char ch, ch_default = 's';
+	char ch, ch_default = iKeyPgpSign;
 
 	if (!pgp_available())
 		return;
 
-	ch = prompt_slk_response(ch_default, "beqs\033", _(txt_pgp_mail));
+	ch = prompt_slk_response (ch_default, &menukeymap.pgp_mail, _(txt_pgp_mail));
 	switch (ch) {
-		case ESC:
-		case 'q':
+		case iKeyAbort:
+		case iKeyQuit:
 			break;
 
-		case 's':
+		case iKeyPgpSign:
 #ifdef HAVE_PGPK
 			ClearScreen();
 			MoveCursor (cLINES - 7, 0);
@@ -340,7 +343,7 @@ invoke_pgp_mail (
 			do_pgp(PGP_SIGN, nam, NULL);
 			break;
 
-		case 'b':
+		case iKeyPgpEncSign:
 #ifdef HAVE_PGPK
 			ClearScreen();
 			MoveCursor (cLINES - 7, 0);
@@ -348,7 +351,7 @@ invoke_pgp_mail (
 			do_pgp(PGP_SIGN | PGP_ENCRYPT, nam, mail_to);
 			break;
 
-		case 'e':
+		case iKeyPgpEncrypt:
 			do_pgp(PGP_ENCRYPT, nam, mail_to);
 			break;
 
@@ -362,18 +365,18 @@ void
 invoke_pgp_news (
 	char *artfile)
 {
-	char ch, ch_default = 's';
+	char ch, ch_default = iKeyPgpSign;
 
 	if (!pgp_available())
 		return;
 
-	ch = prompt_slk_response(ch_default, "iqs\033", _(txt_pgp_news));
+	ch = prompt_slk_response (ch_default, &menukeymap.pgp_news, _(txt_pgp_news));
 	switch (ch) {
-		case ESC:
-		case 'q':
+		case iKeyAbort:
+		case iKeyQuit:
 			break;
 
-		case 's':
+		case iKeyPgpSign:
 #ifdef HAVE_PGPK
 			info_message (" ");
 			MoveCursor (cLINES - 7, 0);
@@ -382,7 +385,7 @@ invoke_pgp_news (
 			do_pgp(PGP_SIGN, artfile, NULL);
 			break;
 
-		case 'i':
+		case iKeyPgpIncludekey:
 #ifdef HAVE_PGPK
 			info_message (" ");
 			MoveCursor (cLINES - 7, 0);

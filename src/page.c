@@ -142,17 +142,17 @@ handle_pager_keypad(void)
 #	endif /* HAVE_KEY_PREFIX */
 			switch (get_arrow_key (ch)) {
 #endif /* !WIN32 */
-				case KEYMAP_LEFT:
-					ch = iKeyQuit;
-					break;
-				case KEYMAP_RIGHT:
-					ch = iKeyPageNextUnread;
-					break;
 				case KEYMAP_UP:
 					ch = iKeyUp;
 					break;
 				case KEYMAP_DOWN:
 					ch = iKeyDown;
+					break;
+				case KEYMAP_LEFT:
+					ch = iKeyQuit;
+					break;
+				case KEYMAP_RIGHT:
+					ch = iKeyPageNextUnread;
 					break;
 				case KEYMAP_PAGE_UP:
 					ch = iKeyPageUp;
@@ -192,10 +192,11 @@ handle_pager_keypad(void)
 					break;
 			}
 			break;
+#endif /* !WIN32 */
 		default:
+			ch = map_to_default (ch, &menukeymap.page_nav);
 			break;
 	}
-#endif /* !WIN32 */
 	return ch;
 }
 
@@ -577,7 +578,7 @@ fprintf(stderr, "curr_line %d, artlines %d, ARTLINES %d, c+a %d\n", curr_line, a
 				draw_page (group->name, 0);
 				break;
 
-		   case iKeyPageEditFilter:
+			case iKeyPageEditFilter:
 				if (!invoke_editor (filter_file, 25)) /* FIXME: is 25 correct offset? */
 					break;
 				unfilter_articles ();
@@ -635,7 +636,7 @@ fprintf(stderr, "curr_line %d, artlines %d, ARTLINES %d, c+a %d\n", curr_line, a
 #if 0
 FIXME - will just a draw_page() do here ?
 					goto restart;		/* TODO ehhhhh ? */
-#endif
+#endif /* 0 */
 				break;
 
 			case iKeyPageFollowupQuote:		/* post a followup to this article */

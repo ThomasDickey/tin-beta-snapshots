@@ -1,3 +1,22 @@
+-- 1.5.5 release 20000611 "" --
+
+ 025) Bernd Kuemmerlen <bkuemmer@gmx.de>
+      ADD. configure detection for MacOS X
+      FIX. config.guess, config.sub
+
+U035) Dirk Nimmich <nimmich@uni-muenster.de>
+      Jason Faultless <jason@radar.tele2.co.uk>
+      ADD. allow remapping of keys
+      FIX. Makefile[.in], extern.h, keymap.h, menukeys.h, proto.h, config.c
+           feed.c, filter.c, global.c, group.c, init.c, keymap.c, lang.c
+           main.c, nrctbl.c, page.c, pgp.c, post.c, prompt.c, save.c
+           select.c, thread.c
+
+U034) Urs Janssen <urs@tin.org>
+      ADD. made some funcs static, renamed mailcap.c to mimetypes.c
+      ADD. dynamic malloc space for mailcap meta expansion
+      FIX. Makefile[.in], color.c, global.c, misc.c, mimetypes.c, rfc1524.c
+
 -- 1.5.4 release 20000523 "1959" --
 
 U033) Robert Brady <rwb197@ecs.soton.ac.uk>
@@ -216,7 +235,7 @@ U016) Urs Janssen <urs@tin.org>
 -- 1.5.2 release 20000206 "Black Planet" --
 
  015) Urs Janssen <urs@tin.org>
-      ADD. smater check wehen quotes around realnames are needed
+      ADD. smarter check wehen quotes around realnames are needed
       FIX. header.c
 
  011) Urs Janssen <urs@tin.org>

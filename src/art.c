@@ -306,25 +306,9 @@ index_group (
 /*
  * Returns number of first unread article
  */
-#if 0
 static long
 find_first_unread (
-		struct t_group *group)
-{
-	unsigned char *p;
-	unsigned char *end = group->newsrc.xbitmap;
-	long first = group->newsrc.xmin; /* initial value */
-
-	end += group->newsrc.xbitlen / 8;
-
-	for (p = group->newsrc.xbitmap; *p == '\0' && p < end ; p++, first += 8);
-
-	return first;
-}
-#else
-static long
-find_first_unread (
-	struct t_group *group) 
+	struct t_group *group)
 {
 	unsigned char *p;
 	unsigned char *end = group->newsrc.xbitmap;
@@ -336,7 +320,6 @@ find_first_unread (
 	}
 	return first;
 }
-#endif /* 0 */
 
 
 /*

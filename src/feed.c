@@ -137,7 +137,7 @@ get_save_filename(
 				my_strncpy (my_mailbox, group->name, sizeof (my_mailbox));
 			my_strncpy (filename, my_mailbox, filelen);
 		} else {		/* ask for post processing type */
-			proc_ch = (char) prompt_slk_response(proc_ch_default, "eElLnqsu\033", _(txt_choose_post_process_type));
+			proc_ch = (char) prompt_slk_response (proc_ch_default, &menukeymap.feed_post_process_type, _(txt_choose_post_process_type));
 
 			if (proc_ch == iKeyQuit || proc_ch == iKeyAbort) { /* exit */
 				clear_message ();
@@ -145,7 +145,7 @@ get_save_filename(
 			}
 			/* FIXME, ugly hack */
 			/* check if rfc1521 decoding is needed */
-			do_rfc1521_decoding = (proc_ch == 'n') ? FALSE : TRUE;
+			do_rfc1521_decoding = (proc_ch == iKeyPProcNone) ? FALSE : TRUE;
 		}
 	}
 
@@ -342,7 +342,7 @@ feed_articles (
 	 * If not automatic, ask what the user wants to save
 	 */
 	if ((!(group->attribute->auto_save && arts[respnum].archive) || (group->attribute->auto_save && function != FEED_SAVE) || ch_default == iKeyFeedTag) && function != FEED_AUTOSAVE_TAGGED)
-		ch = prompt_slk_response (ch_default, "ahpqtT\033", "%s %s", _(prompt), _(txt_art_thread_regex_tag));
+		ch = prompt_slk_response (ch_default, &menukeymap.feed_art_thread_regex_tag, "%s %s", _(prompt), _(txt_art_thread_regex_tag));
 	else
 		ch = ch_default;
 
@@ -422,7 +422,7 @@ feed_articles (
 				char option;
 
 				/* repost or supersede ? */
-				option = (char) prompt_slk_response (iKeyFeedSupersede, "\033qrs", sized_message(_(txt_supersede_article), arts[respnum].subject));
+				option = (char) prompt_slk_response (iKeyFeedSupersede, &menukeymap.feed_supersede_article, sized_message(_(txt_supersede_article), arts[respnum].subject));
 
 				switch (option) {
 					case iKeyFeedSupersede:
@@ -563,10 +563,10 @@ feed_articles (
 #ifndef DONT_HAVE_PIPING
 		case FEED_PIPE:
 got_sig_pipe_while_piping:
-#if 1
+#	if 1
 			if (got_sig_pipe)
 				perror_message (_(txt_command_failed), tinrc.default_pipe_command);
-#endif
+#	endif /* 1 */
 			got_sig_pipe = FALSE;
 			fflush (pipe_fp);
 			(void) pclose (pipe_fp);

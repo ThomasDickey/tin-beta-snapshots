@@ -1,4 +1,3 @@
-
 Compilation and installation notes for tin - 2000-01-22 (still incomplete!)
 -------------------------------------------------------
 
@@ -521,10 +520,10 @@ using without NNTP), because INN-inews rejects these cancels.
 Compiled & installed on the following machines:
 -----------------------------------------------
 i486-pc-linux-gnulibc1     (libc 5.4.33) gcc 2.7.2.1  (1.4.0 release 19991113)          <urs@tin.org>
-i586-pc-linux-gnu          (glibc 2.0.7) egcs 2.91.60 (1.5.2 release 20000206)          <urs@tin.org>
+i586-pc-linux-gnu          (glibc 2.0.7) egcs 2.91.60 (1.5.4 release 20000523)          <urs@tin.org>
 i586-pc-linux-gnu          (glibc 2.1.1) fcc 1.0      (1.5.1 release 19991113)          <urs@tin.org>
 i586-pc-linux-gnu          (glibc 2.0.7) tcc 4.1.2    (1.4.0 release 19991113)   [3]    <urs@tin.org>
-i686-pc-linux-gnu          (glibc 2.1.1) gcc 2.95.2   (1.5.3 release 20000221)          <urs@tin.org>
+i686-pc-linux-gnu          (glibc 2.1.1) gcc 2.95.2   (1.5.4 release 20000523)          <urs@tin.org>
 i586-pc-linux-gnu          (glibc 2.1.1) lcc 4.27     (1.4.0 release 19991113)   [3][4] <urs@tin.org>
 mipsel-unknown-linux-gnu   (glibc 2.0.7) gcc 2.7.2    (1.4.0 release 19991113)          <urs@tin.org>
 sparc-unknown-linux-gnu    (glibc 2.0.1) gcc 2.7.2.3  (1.4.0 release 19991113)          <urs@tin.org>
@@ -572,6 +571,8 @@ f300-fujitsu-uxpv4.1_ES                  cc 1.04      (pre-1.4 release 19990927)
 
 i586-pc-cygwin             (Cygwin B20)  egcs 2.91.57 (pre-1.4 release 19990927) [2]    <uafr@gmx.de>
 
+powerpc-apple-rhapsody5.6                gcc 2.7.2.3  (1.5.4 release 20000523)   [5]    <bkuemmer@gmx.net>
+
 [1] add extra space at the end of buf[] in src/screen.c:spin_cursor()
     (fixed in the 1.4.0 release)
 [2] see README.WIN
@@ -580,3 +581,5 @@ i586-pc-cygwin             (Cygwin B20)  egcs 2.91.57 (pre-1.4 release 19990927)
     fixed.
 [4] alloca detection fails, remove alloca.o from src/Makefile before
     compiling
+[5] two small patches to config.guess and config.sub needed
+    (fixed in the 1.5.5 release)

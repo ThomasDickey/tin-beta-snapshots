@@ -703,6 +703,11 @@ init_selfinfo (
 	subscriptions_file[0] = '\0';
 
 	/*
+	 * Setup default keymaps
+	 */
+	build_keymaps ();
+
+	/*
 	 * read the global site config file to override some default
 	 * values given at compile time
 	 */
@@ -870,7 +875,7 @@ init_selfinfo (
 		if (stat (index_newsdir, &sb) == -1)
 			my_mkdir (index_newsdir, (mode_t)S_IRWXUGO);
 	}
-#endif
+#endif /* 0 */
 
 	if (stat (posted_info_file, &sb) == -1) {
 		if ((fp = fopen (posted_info_file, "w")) != (FILE *) 0) {

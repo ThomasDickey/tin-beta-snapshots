@@ -219,6 +219,11 @@ main (
 #endif /* DEBUG_NEWSRC */
 
 	/*
+	 * Read user specific keybindings
+	 */
+	read_keymap_file ();
+
+	/*
 	 * Read input history
 	 */
 	if (!batch_mode)

@@ -411,10 +411,10 @@ thread_page (
 
 	while (ret_code >= 0) {
 		set_xclick_on ();
-		switch (ch = handle_keypad(thread_left, thread_right)) {
+		switch (ch = handle_keypad (thread_left, thread_right, &menukeymap.thread_nav)) {
 
 #ifndef WIN32
-			case ESC:			/* Abort */
+			case iKeyAbort:			/* Abort */
 				break;
 #endif /* !WIN32 */
 

@@ -3,7 +3,7 @@
  *  Module    : rfc1524.c
  *  Author    : Urs Janssen <urs@tin.org>, Jason Faultless <jason@radar.tele2.co.uk>
  *  Created   : 2000-05-15
- *  Updated   :
+ *  Updated   : 2000-06-09
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
  * Copyright (c) 2000 Urs Janssen <urs@tin.org>, Jason Faultless <jason@radar.tele2.co.uk>
@@ -139,7 +139,7 @@ parse_mailcap_line(
 	t_mailcap *tmailcap;
 
 	/* malloc and init */
-	tmailcap = (t_mailcap *) malloc (sizeof(t_mailcap));
+	tmailcap = (t_mailcap *) my_malloc (sizeof(t_mailcap));
 	tmailcap->type = (char *) 0;
 	tmailcap->command = (char *) 0;
 	tmailcap->needsterminal = FALSE;
@@ -154,12 +154,12 @@ parse_mailcap_line(
 	tmailcap->print = (char *) 0;
 	tmailcap->x11bitmap = (char *) 0;
 
-	ptr = strdup(mailcap);
+	ptr = my_strdup(mailcap);
 
 	/* get required entrys */
 	if ((ptr = get_mailcap_field(ptr)) != (char *) 0) {
 		snprintf(buf, sizeof(buf) - 1, "%s/%s", content_types[part->type], part->subtype);
-		tmailcap->type = strdup(buf);
+		tmailcap->type = my_strdup(buf);
 		ptr += strlen(ptr) + 1;
 		if ((ptr = get_mailcap_field(ptr)) != (char *) 0) {
 			tmailcap->command = expand_mailcap_meta(ptr, part);
@@ -289,16 +289,34 @@ expand_mailcap_meta(
 	t_bool quote = FALSE;
 	t_bool percent = FALSE;
 	struct t_attribute *attr = CURR_GROUP.attribute;
+	size_t linelen, space, olen;
 
  	if ((ptr = strchr(mailcap, '%')) == (char *) 0) /* nothing to expand */
-		return strdup(mailcap); /* waste of mem, but simplyfies the frees */
+		return my_strdup(mailcap); /* waste of mem, but simplyfies the frees */
 
-	line = (char *) malloc (sizeof(char) * LEN * 2); /* TODO: realloc more space if needed */
-	memset(line, 0, LEN * 2);
+	linelen = sizeof(char) * LEN * 2;		/* initial maxlen */
+	space = linelen - 1;							/* available space in string */
+	line = (char *) my_malloc (linelen); 	/* initial malloc */
+	memset(line, 0, linelen);
 	lptr = line;
+
 	ptr = mailcap;
 
 	while (*ptr != '\0') {
+
+		/*
+		 * to avoid reallocs() for the all the single char cases
+		 * we do a check here
+		 */
+		if (space < (sizeof(char) * 10)) { /* 'worst'case are two chars ... */
+			olen = strlen(line);		/* get current legth of string */
+			linelen *= 2;				/* double maxlen */
+			line = (char *) my_realloc((void *) line, linelen);
+			memset(line + olen, 0, linelen - olen); /* weed out junk */
+			lptr = line + olen;		/* adjust pointer to current position */
+			space += linelen;			/* recalc available space */
+		}
+
 		switch (*ptr) {
 			case '\\':
 				quote = !quote;
@@ -309,6 +327,7 @@ expand_mailcap_meta(
 					percent = TRUE;
 				else {
 					*lptr++ = '%';
+					space -= sizeof(char);
 					quote = FALSE;
 				}
 				break;
@@ -337,14 +356,26 @@ expand_mailcap_meta(
 				if (percent) {
 					int off = 0;
 					char *nptr = (char *) 0;
+
 					if (strlen(line))
 						off = -1;
-					strncat(lptr + off, attr->savedir, sizeof(line) - strlen(line) - strlen(attr->savedir));
-					strncat(lptr, "/", sizeof(line) - strlen(line) - 1);
+
 					if ((nptr = get_filename(part->params)) == NULL)
 						nptr = attr->savefile ? attr->savefile : tinrc.default_save_file;
-					strncat(lptr, nptr, sizeof(line) - strlen(line) - strlen(nptr));
-					lptr += strlen(attr->savedir) + 1 + strlen(nptr);
+
+					while (space <= (strlen(attr->savedir) + 1 + strlen(nptr))) { /* not enough space? */
+						olen = strlen(line);		/* get current legth of string */
+						linelen *= 2;				/* double maxlen */
+						line = (char *) my_realloc((void *) line, linelen);
+						memset(line + olen, 0, linelen - olen);	/* weed out junk */
+						lptr = line + olen;		/* adjust pointer to current position */
+						space += linelen;			/* recalc available space */
+					}
+					strcat(lptr + off, attr->savedir);
+					strcat(lptr, "/");
+					strcat(lptr, nptr);
+					lptr += (strlen(attr->savedir) + 1 + strlen(nptr));
+					space -= (strlen(attr->savedir) + 1 + strlen(nptr));
 					percent = FALSE;
 					break;
 				}
@@ -354,10 +385,19 @@ expand_mailcap_meta(
 					int off = 0;
 					if (strlen(lptr))
 						off = -1;
-					strncat(lptr + off, content_types[part->type], sizeof(line) - strlen(line) - strlen(content_types[part->type]));
-					strncat(lptr, "/", sizeof(line) - strlen(line) - 1);
-					strncat(lptr, part->subtype, sizeof(line) - strlen(line) - strlen(part->subtype));
-					lptr += strlen(content_types[part->type]) + 1 + strlen(part->subtype);
+					while (space <= (strlen(content_types[part->type]) + 1 + strlen(part->subtype))) { /* not enough space? */
+						olen = strlen(line);		/* get current legth of string */
+						linelen *= 2;				/* double maxlen */
+						line = (char *) my_realloc((void *) line, linelen);
+						memset(line + olen, 0, linelen - olen);	/* weed out junk */
+						lptr = line + olen;		/* adjust pointer to current position */
+						space += linelen;			/* recalc available space */
+					}
+					strcat(lptr + off, content_types[part->type]);
+					strcat(lptr, "/");
+					strcat(lptr, part->subtype);
+					lptr += (strlen(content_types[part->type]) + 1 + strlen(part->subtype));
+					space -= (strlen(content_types[part->type]) + 1 + strlen(part->subtype));
 					percent = FALSE;
 					break;
 				}
@@ -366,21 +406,25 @@ expand_mailcap_meta(
 				if (quote) { /* last char was \ */
 					*lptr = '\\';
 					lptr++;
+					space -= sizeof(char);
 					quote = FALSE;
 				}
 				if (percent) { /* unknow %x sequence */
 					*lptr = '%';
 					lptr++;
+					space -= sizeof(char);
 					percent = FALSE;
 					quote = FALSE;
 				}
 				*lptr = *ptr;
 				lptr++;
+				space -= sizeof(char);
 		}
 		ptr++;
 	}
 	return line;
 }
+
 
 /*
  * frees the malloced space

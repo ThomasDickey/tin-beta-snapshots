@@ -172,7 +172,7 @@ prompt_yn (
 /*	fflush(stdin);*/		/* Prevent finger trouble from making important decisions */
 
 	while (yn_loop) {
-		prompt_ch = (default_answer ? iKeyPromptYes : iKeyPromptNo);
+		prompt_ch = map_to_local ((default_answer ? iKeyPromptYes : iKeyPromptNo), &menukeymap.prompt_yn);
 
 		if (!cmd_line) {
 			MoveCursor (line, 0);
@@ -205,7 +205,7 @@ prompt_yn (
 						break;
 
 					case KEYMAP_LEFT:
-						ch = ESC;
+						ch = iKeyAbort;
 						break;
 
 					case KEYMAP_RIGHT:
@@ -227,13 +227,13 @@ prompt_yn (
 			clear_message ();
 		else {
 			MoveCursor (line, (int) strlen (prompt));
-			my_fputc (((ch == ESC) ? prompt_ch : ch), stdout);
+			my_fputc (((ch == iKeyAbort) ? prompt_ch : ch), stdout);
 		}
 		cursoroff ();
 		my_flush ();
 	}
 
-	return (tolower ((unsigned char)ch) == tolower ((unsigned char)iKeyPromptYes)) ? 1 : (ch == ESC) ? -1 : 0;
+	return (tolower ((unsigned char) map_to_default (ch, &menukeymap.prompt_yn)) == tolower ((unsigned char)iKeyPromptYes)) ? 1 : (ch == iKeyAbort) ? -1 : 0;
 }
 
 
@@ -539,7 +539,7 @@ sized_message (
 int
 prompt_slk_response (
 	int ch_default,
-	const char *responses,
+	const t_menukeys /* char */ *responses,
 	const char *fmt, ...)
 {
 	va_list ap;
@@ -550,6 +550,7 @@ prompt_slk_response (
 	vsprintf(buf, fmt, ap);	/* We need to do this, else wait_message() will clobber us */
 	va_end (ap);
 
+	ch_default = map_to_local (ch_default, responses);
 	do {
 		wait_message (0, "%s%c", buf, ch_default);
 
@@ -559,9 +560,9 @@ prompt_slk_response (
 		if ((ch = ReadCh ()) == '\r' || ch == '\n')
 			ch = ch_default;
 
-	} while (!strchr (responses, ch));
+	} while (!strchr (responses->localkeys, ch));
 
-	return(ch);
+	return map_to_default (ch, responses);
 }
 
 

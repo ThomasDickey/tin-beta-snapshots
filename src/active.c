@@ -611,7 +611,7 @@ check_for_any_new_groups (
 
 #if 0
 	if (!batch_mode /* || (batch_mode && verbose) */)
-#endif
+#endif /* 0 */
 		wait_message (0, _(txt_checking_new_groups));
 
 	(void) time (&new_newnews_time);

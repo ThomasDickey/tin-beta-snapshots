@@ -208,22 +208,22 @@ get_newsrcname (
 			}
 			if (error) {
 				char ch;
-				char default_ch = iKeyNrctblAlternative;
+				char default_ch = map_to_local (iKeyNrctblAlternative, &menukeymap.nrctbl_create);
 
 				do {
 					/* very ugly code, but curses is not initialized yet */
 					if (error >= 2) {
-						default_ch = iKeyNrctblCreate;
+						default_ch = map_to_local (iKeyNrctblCreate, &menukeymap.nrctbl_create);
 						printf("%s%c\b", _(txt_nrctbl_create), default_ch);
 					} else
 						printf("%s%c\b", _(txt_nrctbl_default), default_ch);
 
 					if ((ch = (char) ReadCh ()) == '\r' || ch == '\n')
 						ch = default_ch;
-				} while (!strchr ("\033acdq", ch));
+				} while (!strchr (menukeymap.nrctbl_create.localkeys, ch));
 				printf("%c\n", ch);
 
-				switch(ch) {
+				switch (map_to_default (ch, &menukeymap.nrctbl_create)) {
 					case iKeyNrctblCreate:
 						/* FIXME this doesn't check if we could create the file */
 						return TRUE;

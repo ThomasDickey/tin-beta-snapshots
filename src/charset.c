@@ -352,4 +352,4 @@ ConvertBody2Printable (
 			*c = '?';
 	}
 }
-#endif
+#endif /* 0 */

@@ -737,7 +737,7 @@ dump_art(
 		fprintf(stderr, "[%s]\n\n", tin_fgets(art->raw, FALSE));
 	}
 }
-#endif
+#endif /* DEBUG_ART */
 
 
 /*
@@ -829,7 +829,7 @@ art_open (
 #if 0
 	else
 		???????
-#endif
+#endif /* 0 */
 
 	if ((pgart.tex2iso = (tex2iso_supported ? iIsArtTexEncoded (artinfo->raw) : FALSE)))
 		wait_message (0, _(txt_is_tex_encoded));
@@ -838,7 +838,7 @@ art_open (
 
 #ifdef DEBUG_ART
 	dump_art(artinfo);
-#endif
+#endif /* DEBUG_ART */
 
 	/*
 	 * If Newsgroups is empty its a good bet the article is a mail article

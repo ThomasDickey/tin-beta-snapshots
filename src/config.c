@@ -1457,27 +1457,27 @@ change_config_file (
 				switch (get_arrow_key (ch)) {
 #endif /* !WIN32 */
 					case KEYMAP_UP:
-						ch = iKeyUp;
+						ch = map_to_local (iKeyUp, &menukeymap.config_change);
 						break;
 
 					case KEYMAP_DOWN:
-						ch = iKeyDown;
+						ch = map_to_local (iKeyDown, &menukeymap.config_change);
 						break;
 
 					case KEYMAP_HOME:
-						ch = iKeyFirstPage;
+						ch = map_to_local (iKeyFirstPage, &menukeymap.config_change);
 						break;
 
 					case KEYMAP_END:
-						ch = iKeyLastPage;
+						ch = map_to_local (iKeyLastPage, &menukeymap.config_change);
 						break;
 
 					case KEYMAP_PAGE_UP:
-						ch = iKeyPageUp;
+						ch = map_to_local (iKeyPageUp, &menukeymap.config_change);
 						break;
 
 					case KEYMAP_PAGE_DOWN:
-						ch = iKeyPageDown;
+						ch = map_to_local (iKeyPageDown, &menukeymap.config_change);
 						break;
 #ifndef WIN32
 					default:
@@ -1489,7 +1489,7 @@ change_config_file (
 				break;
 		}	/* switch (ch) */
 
-		switch (ch) {
+		switch (map_to_default (ch, &menukeymap.config_change)) {
 			case iKeyQuit:
 				write_config_file (local_config_file);
 				nobreak; /* FALLTHROUGH */

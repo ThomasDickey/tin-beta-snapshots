@@ -1,10 +1,10 @@
 /*
  *  Project   : tin - a Usenet reader
- *  Module    : mailcap.c
+ *  Module    : mimetypes.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-31
- *  Updated   :
- *  Notes     : mailcap and mime.types handling per RFC1524
+ *  Updated   : 2000-06-05
+ *  Notes     : mime.types handling
  *
  * Copyright (c) 2000 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
@@ -40,135 +40,6 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
-#if 0
-#	ifndef TCURSES_H
-#		include "tcurses.h"
-#	endif /* !TCURSES_H */
-#	ifndef MENUKEYS_H
-#		include  "menukeys.h"
-#	endif /* !MENUKEYS_H */
-#	ifndef RFC2046_H
-#		include  "rfc2046.h"
-#	endif /* !RFC2046_H */
-#endif /* 0 */
-
-#define DEFAULT_MAILCAPS "~/.mailcap:/etc/mailcap:/usr/etc/mailcap:/usr/local/etc/mailcap"
-
-#if 0
-/*
- * Parse a mailcap line for matching type and subtype
- * Return 'body' of entry if match or NULL
- * If the match was on a wildcard entry, set wild
- */
-static char *
-parse_line(
-	char *line,
-	int type,
-	const char *subtype,
-	t_bool *wild)
-{
-	char *command;
-	int i;
-
-	strtok (line, ";");
-	command = strtok (NULL, "\n");		/* Get the command info */
-
-	strtok (line, "/");					/* Split the type+subtype */
-
-	if ((i = content_type (line)) == -1)
-		return NULL;					/* Not a known content-type */
-
-	if (i != type)						/* Not the type we're looking for */
-		return NULL;
-
-	/*
-	 * Match on implied wild, or wild, or exact match
-	 */
-	if (((line = strtok(NULL, "\n")) == NULL) || (strcmp(line, "*") == 0)) {
-		*wild = TRUE;
-		return command;
-	}
-
-	if (strcasecmp (line, subtype) == 0) {
-		*wild = FALSE;
-		return command;
-	}
-
-	return NULL;
-}
-
-
-/*
- * Parse the mailcap file to find a matching MIME type/subtype
- * The returned string in on the heap and should be free()d
- */
-char *
-lookup_mailcap(
-	int type,
-	const char *subtype)
-{
-	FILE *fp = (FILE *) 0;
-	char buf[LEN];
-	char mailcap[LEN];
-	char mailcaps[LEN];
-	char *command;
-	char *ptr;
-	t_bool wild;
-
-	/*
-	 * lookup all files given in $MAILCAPS, if $MAILCAPS is unset
-	 * use DEFAULT_MAILCAPS as fallback serachpath
-	 *
-	 * TODO: append DEFAULT_MAILCAPS to $MAILCAPS?
-	 */
-	ptr = get_val("MAILCAPS", DEFAULT_MAILCAPS);
-	strncpy(mailcaps, ptr, sizeof(mailcaps) - 1);
-	ptr = strtok(mailcaps, ":");
-	while (ptr != (char *) 0) {
-		/* expand ~ and/or $HOME etc. */
-		strfpath (ptr, mailcap, sizeof (mailcap), homedir, (char *) 0, (char *) 0, (char *) 0);
-		if ((fp = fopen(mailcap, "r")) != (FILE *) 0)
-			break;
-		ptr = strtok(NULL, ":");
-	}
-	if (!fp)	/* no mailcap file */
-		return NULL;
-
-	mailcap[0] = '\0';
-	ptr = buf;
-
-	while ((fgets (ptr, sizeof(buf) - strlen(buf), fp)) != NULL) {
-
-		if (*ptr == '#' || *ptr == '\n')		/* Skip comments & blank lines */
-			continue;
-
-		ptr = buf + strlen(buf) - 1;
-
-		if (*ptr == '\n')
-			*ptr-- = '\0';
-
-		if (*ptr == '\\')						/* Continuation line */
-			continue;							/* So keep appending */
-		else
-			ptr = buf;
-
-		if ((command = parse_line (ptr, type, subtype, &wild)) != NULL) {
-			strcpy (mailcap, command);
-			if (!wild)							/* Perfect match, exit now */
-				break;
-		}
-	}
-#ifdef DEBUG
-	fprintf(stderr, "Best match: (%s) char 0 %d\n", mailcap, mailcap[0]);
-#endif /* DEBUG */
-	fclose (fp);
-
-	if (mailcap[0] != '\0')
-		return my_strdup(mailcap);
-	else
-		return NULL;
-}
-#endif /* 0 */
 
 /*
  * Match a filename extension to a content-type / subtype pair in mime.types

@@ -255,6 +255,8 @@ free_all_arrays (
 			newnews = (struct t_newnews *) 0;
 		}
 	}
+
+	free_keymaps ();
 }
 
 
