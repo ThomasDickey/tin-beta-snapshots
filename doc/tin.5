@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2002-04-10
+.\" Updated   : 2002-04-18
 .\" Notes     : needs a lot of work
 .\"
-.TH tin 5 "April 10th, 2002" "1.5.12" "A Usenet newsreader"
+.TH tin 5 "April 18th, 2002" "1.5.12" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -454,7 +454,7 @@ SAVING NEW NEWS in
 If this is set to ON, then saved article files that have been post-processed
 will be automatically deleted. If set to OFF, you will be prompted as to
 whether to delete each file in turn. Note that automatic processing of
-Tagged articles using 'S' will also suppress prompting.
+Tagged articles using '\fBS\fP' will also suppress prompting.
 .TP
 .B show_only_unread
 Identical to the tinrc variable of the same name
@@ -1034,12 +1034,12 @@ Color of title text on all the menu screens
 .TP
 .B confirm_action
 Ask for confirmation before executing certain dangerous commands (e.g.,
-\&'c'atchup). Default is ON.
+\&'\fBc\fP'atchup). Default is ON.
 .TP
 .B confirm_to_quit
 If ON you will be asked to confirm that you wish to exit
 .BR tin (1)
-when you use the 'q' command. Default is ON.
+when you use the '\fBq\fP' command. Default is ON.
 .TP
 .B default_art_search
 .TP
@@ -1202,9 +1202,9 @@ NNTP inews), else it is "inews -h". The article is passed to
 .TP
 .B info_in_last_line
 If ON, show current group description or article subject in the last line
-(not in the pager and global menu) - 'i' toggles setting. This facility is
-useful as the full width of the screen is available to display long
-subjects. Default is OFF.
+(not in the pager and global menu) - '\fBi\fP' toggles setting. This
+facility is useful as the full width of the screen is available to display
+long subjects. Default is OFF.
 .TP
 .B inverse_okay
 If ON use inverse video for page headers at different levels. Default is ON.
@@ -1539,8 +1539,8 @@ your \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR file. Default is OFF.
 .TP
 .B tab_after_X_selection
 If enabled will automatically go to the first unread article after having
-selected all hot articles and threads with the 'X' command at group index
-level. Default is OFF.
+selected all hot articles and threads with the '\fBX\fP' command at group
+index level. Default is OFF.
 .TP
 .B tab_goto_next_unread
 If enabled pressing <TAB> at the article viewer level will go to the next
@@ -1550,7 +1550,7 @@ Default is ON.
 .B tex2iso_conv
 Decode German style TeX umlaut codes to ISO
 If ON, show "a as Umlaut-a, etc. Default is OFF. This behaviour can also be
-toggled in the article viewer via '"'.
+toggled in the article viewer via '\fB"\fP'.
 .TP
 .B thread_articles
 Defines which threading method to use. The choices are:
@@ -1576,6 +1576,12 @@ doesn't exist, this option is disabled. Default is OFF.
 .B unlink_article
 If ON remove \fI${TIN_HOMEDIR-"$HOME"}/.article\fR after posting. Default is
 ON.
+.TP
+.B url_handler
+The program that will be run when launching URL's in the article viewer
+using '\fBU\fP'. The actual URL will be appended to this. Default is
+\fBurl_handler.sh %s\fP.
+.TP
 .B use_getart_limit
 If enabled
 .BR tin (1)

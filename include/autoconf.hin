@@ -168,6 +168,7 @@
 #	undef HAVE_NCURSESW_NCURSES_H
 #	undef HAVE_NCURSES_H		/* obsolete versions of ncurses */
 #	undef HAVE_NCURSES_NCURSES_H
+#	undef HAVE_NCURSES_TERM_H
 #	undef HAVE_NETDB_H
 #	undef HAVE_NETINET_IN_H
 #	undef HAVE_NETLIB_H
@@ -229,8 +230,8 @@
 #	undef HAVE_FORK
 #	undef HAVE_FTIME
 #	undef HAVE_GAI_STRERROR
-#	undef HAVE_GETCWD
 #	undef HAVE_GETADDRINFO
+#	undef HAVE_GETCWD
 #	undef HAVE_GETHOSTBYNAME
 #	undef HAVE_GETHOSTNAME
 #	undef HAVE_GETSERVBYNAME
@@ -239,8 +240,8 @@
 #	undef HAVE_INET_ADDR
 #	undef HAVE_INET_ATON
 #	undef HAVE_INET_NTOA
-#	undef HAVE_IS_XTERM
 #	undef HAVE_ISASCII
+#	undef HAVE_IS_XTERM
 #	undef HAVE_LINK
 #	undef HAVE_LOCKF
 #	undef HAVE_MBLEN
@@ -287,6 +288,7 @@
 #	undef HAVE_USE_DEFAULT_COLORS
 #	undef HAVE_USLEEP
 #	undef HAVE_VSNPRINTF
+#	undef HAVE__TRACEF
 
 /*
  * The following are functions/data that we'll have to declare if they're not

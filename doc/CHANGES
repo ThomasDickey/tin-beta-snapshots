@@ -1,4 +1,15 @@
--- 1.5.12 release 20020417 "Sugar" --
+-- 1.5.12 release 20020422 "Sugar" --
+
+U101) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update/resync the macros in aclocal.m4
+      BUG. fix some misuses of const
+      FIX. aclocal.m4, configure[.in], autoconf.h[in], tcurses.h, lock.c
+           misc.c, rfc1524.c, rfc2047.c, string.c, trace.c, intl/gettextP.h
+           intl/localcharset.c
+
+U100) Michael Bienia <michael@vorlon.ping.de>
+      ADD. recent article counter to group header
+      FIX. group.c, tin.1
 
 U099) Alex Vasylenko <lxv@omut.org>
       Urs Janssen <urs@tin.org>
@@ -22,12 +33,14 @@ U096) Guido Ostkamp <Guido.Ostkamp@t-online.de>
 U095) Jason Faultless <jason@radar.tele2.co.uk>
       ADD. attrib cleanup, error reporting
       ADD. scroll_lines pager tuning control
+      ADD. improvements to URL handling, url_handler
       ADD. explicit 'q' to quit info pager, to fix...
       BUG. resizing screen exits info pager
+      BUG. multiple URL's per line not working
       REM. show_last_line_prev_page, full_page_scroll
-      FIX. tin.1, tin.5, extern.h, proto.h, tinrc.h, active.c, art.c, config.c
-           cook.c, global.c, group.c, help.c, init.c, lang.c, main.c misc.c
-           page.c, post.c, select.c, signal.c, tincfg.tbl
+      FIX. tin.1, tin.5, extern.h, proto.h, tin.h, tinrc.h, active.c, art.c
+           config.c, cook.c, global.c, group.c, help.c, init.c, lang.c
+           main.c, misc.c, page.c, post.c, select.c, signal.c, tincfg.tbl
 
  038) Urs Janssen <urs@tin.org>
       ADD. new TLDs .coop and .aero
@@ -104,6 +117,10 @@ U089) Urs Janssen <urs@tin.org>
       BUG. eat_re() could modify subject in aborted posts
       BUG. unknown Content-Transfer-Encodings defaulted to 7bit instead of
            binary
+      BUG. Content-Type header with additional parameters but no charset
+           caused crashes
+      BUG. if included gettext was needed tin doesn't build due to
+           dependencie problems
       FIX. Makefile, Makefile.in, configure[.in], autoconf.h[in], aclocal.m4
            extern.h, policy.h, proto.h, rfc2046.h, tin.h, tinrc.h, active.c
            art.c, config.c, cook.c, header.c, help.c, inews.c, init.c

@@ -654,6 +654,9 @@ enum resizer { cNo, cYes, cRedraw };
 #define DEFAULT_MAILDIR	"Mail"
 #define DEFAULT_SAVEDIR	"News"
 #define DEFAULT_INEWS_PROG "--internal"
+/* #define DEFAULT_URL_HANDLER "url_handler.sh %s" */
+#define DEFAULT_URL_HANDLER "url_handler.sh"
+
 
 /* MMDF-mailbox seperator */
 #ifndef MMDFHDRTXT

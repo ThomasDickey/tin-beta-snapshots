@@ -45,7 +45,7 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.5.12"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20020417"
+#	define RELEASEDATE	"20020422"
 #	define RELEASENAME	"Sugar"
 #	define TINRC_VERSION	"1.2"
 

@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2002-04-16
+.\" Updated   : 2002-04-18
 .\" Notes     : still needs some work, i.e.:
 .\"             - document authorization (.newsauth)
 .\"             - postprocess differences when linked against libuu
 .\"
 .\"
-.TH tin 1 "April 16th, 2002" "1.5.12" "A Usenet newsreader"
+.TH tin 1 "April 18th, 2002" "1.5.12" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -345,28 +345,41 @@ This group has been renamed and you may no longer post to it. If you do,
 then you will receive an error from your newsserver telling you the correct
 group to post to.
 .PP
-At the Group level the title contains the name of the group, the number
-of conversation threads, the threading-method, the total number of articles,
-the number of killed articles and the number of hot articles. I.e.,
-alt.sources (5T(B) 23A 0K 0H).
-It might also contain an 'R' if your are in \fBshow_only_unread_arts\fP mode
-and an 'M' if the group is moderated.
-(The later does not work with the ''\fB-n\fP'' command-line switch!)
-If a thread has unread articles in it it's marked with a '+' in font of the
-total number of articles in the thread.
+At the Group level the title contains the name of the group, the number of
+conversation threads, the threading-method, the limit of articles to get,
+the total number of articles, the number of hot articles, the number of
+recent articles and the number of killed articles. I.e.:
+.PP
+.nf
+.\" FIXME - make this autocenter
+            alt.sources (5B -50/23+ 0* 3o 0K  ).
+.fi
+.PP
+The characters after the numbers are depending to the configuration and if
+your are in \fBshow_only_unread_arts\fP mode or not. Some numbers could be
+missing if the specific option is not enabled. It might also contain an 'M'
+or 'X' (see above; doesn't work with the ''\fB-n\fP'' command-line switch!)
+if the group is moderated or set to no posting.
+.PP
+If a thread has unread articles in it it's marked with a
+\fBart_marked_unread\fP in front of the total number of articles in the
+thread. If there are recent articles within the thread it might be marked
+with \fBart_marked_recent\fP in front of the total number of articles in
+the thread - this is controlled by the \fBrecent_time\fP option.
 If a thread has hot articles in it (see also section "FILTERING ARTICLES")
-it's marked with a '*' in font of the total number of articles in the thread.
+it's marked with \fBart_marked_selected\fP in front of the total number of
+articles in the thread.
 There might also be shown the number of lines of the first (unread) article
 in the thread right before the subject - this is controlled by
 the \fBshow_lines\fP option.
 .PP
 .\" FIXME - make this autoscale
 .nf
-                de.admin.net-abuse.announce (11T(B) 13A 0K 0HM)
+                de.admin.net-abuse.announce (11B 13+ 1* 1o 0K M)
 
 ->   1   +   3  108 bincancels in de.talk.sex        Christopher Lueg <l
      2   +       69 EMP/ECP gecancelt. xynx. BI= 10  Henning Weede <hwee
-     3   +       93 EMP gecancelt. SouthBeach/Palms  Henning Weede <hwee
+     3   o       93 EMP gecancelt. SouthBeach/Palms  Henning Weede <hwee
      4   *      368 <1997-11-12> Fremdcancel-FAQ     Thomas Roessler <ro
 .fi
 .PP
@@ -852,7 +865,8 @@ your own articles.
 Mark all unread articles that have not been selected as read, redraw screen
 to reflect changes and put index at the first thread to begin reading.
 Pressing '\fBX\fP' again will toggle back to the way it was before. See
-\&'\fB~\fP' command for clearing the toggle effect.
+\&'\fB~\fP' command for clearing the toggle effect, leaving the group will
+also clear the toggle effect and make the changes permanent.
 .TP
 .B z
 Mark current article as unread.
@@ -1223,7 +1237,9 @@ Return to group selection level.
 Goto parent article.
 .TP
 .B U
-Browse URLs in article.
+Browse URLs in article. All URL's will be prompted in turn and opened
+using the \fBurl_handler\fP. '\fB<ESC>\fP' or no input will skip the
+URL.
 .TP
 .B V
 View or save multimedia attachments.
@@ -1982,6 +1998,11 @@ doesn't exist, this option is disabled. Default is OFF.
 .TP
 .B Remove ~/.article after posting (unlink_article)
 If ON remove \fI~/.article\fR after posting. Default is ON.
+.TP
+.B Program that opens URL's (url_handler)
+The program that will be run when launching URL's in the article viewer
+using '\fBU\fP'. The actual URL will be appended to this.
+Default is \fBurl_handler.sh %s\fP.
 .TP
 .B Limit number of articles fetched from server (use_getart_limit)
 If enabled \fBtin\fP fetches max. \fBgetart_limit\fP articles/group from the

@@ -243,7 +243,7 @@ struct t_config tinrc = {
 #else
 	0,			/* mm_network_charset, defaults to US-ASCII */
 #endif /* !CHARSET_CONVERSION */
-	"", 		/* mm_local_charset, display charset */
+	"",		/* mm_local_charset, display charset */
 #ifdef HAVE_ICONV_OPEN_TRANSLIT
 	FALSE,	/* translit */
 #endif /* HAVE_ICONV_OPEN_TRANSLIT */
@@ -261,7 +261,8 @@ struct t_config tinrc = {
 	"",		/* strip_was_regex */
 	"",		/* savedir */
 	"",		/* spamtrap_warning_addresses */
-	"In %G %F wrote:",				/* xpost_quote_format */
+	DEFAULT_URL_HANDLER,	/* url_handler */
+	"In %G %F wrote:",			/* xpost_quote_format */
 	DEFAULT_FILTER_DAYS,			/* filter_days */
 	FILTER_SUBJ_CASE_SENSITIVE,		/* default_filter_kill_header */
 	FILTER_SUBJ_CASE_SENSITIVE,		/* default_filter_select_header */

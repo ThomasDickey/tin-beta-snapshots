@@ -917,6 +917,8 @@ constext txt_untagged_art[] = N_("Untagged article");
 constext txt_untagged_thread[] = N_("Untagged thread");
 constext txt_unthreading_arts[] = N_("Unthreading articles...");
 constext txt_updated[] = N_("Updated");
+constext txt_url_open[] = N_("Opening %s\n");
+constext txt_url_done[] = N_("No more URL's in this article");
 
 #ifdef HAVE_METAMAIL
 	constext txt_use_mime[] = N_("Use MIME display program for this message?");
@@ -1450,6 +1452,12 @@ struct opttxt txt_confirm_to_quit = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Confirm before quitting            :"),
 	N_("# If ON confirm with y/n before quitting ('Q' never asks)\n")
+};
+
+struct opttxt txt_url_handler = {
+	N_("Program to run to open URL's, <CR> sets, <ESC> cancels."),
+	N_("Program that opens URL's           :"),
+	N_("# The program used to open URL's. The actual URL will be appended\n")
 };
 
 struct opttxt txt_use_mouse = {

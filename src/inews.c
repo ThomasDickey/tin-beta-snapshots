@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2002-04-06
+ *  Updated   : 2002-04-17
  *  Notes     : NNTP builtin version of inews
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -131,12 +131,8 @@ submit_inews (
 					*ptr = '\0';
 			}
 #	ifdef USE_CANLOCK
-			if (ptr - line == 10 && !strncasecmp (line, "Cancel-Lock", 11)) {
-				strcpy(message_id, ptr + 2);
+			if (ptr - line == 11 && !strncasecmp (line, "Cancel-Lock", 11))
 				can_lock_in_article = TRUE;
-				if ((ptr = strchr(message_id, '\n')))
-					*ptr = '\0';
-			}
 #	endif /* USE_CANLOCK */
 		} else
 			break; /* end of headers */
@@ -281,18 +277,19 @@ submit_inews (
 				u_put_server (".");
 
 #	ifdef USE_CANLOCK
-			if (line[0] == '\n')
+			/* skip any bogus Cancel-Locks */
+			if (!strlen(line))
 				can_lock_in_article = FALSE;	/* don't touch the body */
 
 			if (can_lock_in_article && !id_in_article) {
-				/* skip bogus can-locks */
 				ptr = strchr (line, ':');
-				if (ptr - line == 11 && !strncasecmp (line, "Cancel-Lock", 11)) {
+				if (ptr - line == 11 && !strncasecmp(line, "Cancel-Lock", 11)) {
 					; /* skip line */
 				} else {
 					u_put_server (line);
 					u_put_server ("\r\n");
 				}
+				/* TODO: silently add a new Cancel-Lock if message_id is now known? */
 			} else
 #	endif /* USE_CANLOCK */
 			{

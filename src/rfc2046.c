@@ -56,6 +56,8 @@ static int count_lines (char *line);
 static int art_lines = 0;		/* lines in art on spool */
 
 #define PARAM_SEP		"; \n"
+/* defualt parameters for Content-Type */
+#define CT_DEFPARMS	"charset=US-ASCII"
 
 /*
  * Use the default message if one hasn't been supplied
@@ -245,9 +247,13 @@ parse_content_type(
 	 * Parse any parameters into a list
 	 */
 	if ((params = strtok (NULL, "\n")) != NULL) {
+		char defparms[] = CT_DEFPARMS;	/* must be writeable */
+
 		free_list (content->params);
 		content->params = NULL;
 		parse_params (params, content);
+		if (!get_param(content->params, "charset"))	/* add default charset if needed */
+			parse_params (defparms, content);
 	}
 }
 
@@ -324,7 +330,7 @@ new_part (
 {
 	t_part *p;
 	t_part *ptr = my_malloc(sizeof(t_part));
-	char defparms[] = "charset=US-ASCII";	/* must be writeable */
+	char defparms[] = CT_DEFPARMS;	/* must be writeable */
 
 	ptr->type = TYPE_TEXT;					/* Defaults per RFC */
 	ptr->subtype = my_strdup ("plain");

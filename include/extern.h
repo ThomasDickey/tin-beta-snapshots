@@ -68,9 +68,13 @@
 		extern int bcopy (char *, char *, int);
 #	endif /* DECL_BCOPY */
 #endif /* !HAVE_MEMCPY */
-#ifdef DECL_BZERO /* FD_ZERO() might use this */
-	extern void bzero (char *, int);
-#endif /* DECL_BZERO */
+
+#if 0 /* trouble on Linux/gcc 3.1 */
+#	ifdef DECL_BZERO /* FD_ZERO() might use this */
+		extern void bzero (char *, int);
+#	endif /* DECL_BZERO */
+#endif /* 0 */
+
 #ifdef DECL_CALLOC
 	extern void *calloc (size_t, size_t);
 #endif /* DECL_CALLOC */
@@ -140,11 +144,13 @@
 #ifdef DECL_INET_ADDR
 	extern unsigned long inet_addr (const char *);
 #endif /* DECL_INET_ADDR */
+
 #if 0 /* breaks gcc 3.0 -std=c89 on SuSE 7.1 */
 #	ifdef DECL_INET_ATON
 		extern int inet_aton(const char *, struct in_addr *);
 #	endif /* DECL_INET_ATON */
 #endif /* 0 */
+
 #ifdef DECL_IOCTL
 	extern int ioctl (int, int, void *);
 #endif /* DECL_IOCTL */
@@ -157,13 +163,9 @@
 #ifdef DECL_MALLOC
 	extern void *malloc (size_t);
 #endif /* DECL_MALLOC */
-
-#if 0 /* this breaks egcs 2.91.66/gcc 2.95.1 on SuSE 6.2 */
-#	ifdef DECL_MEMSET
-		extern void *memset (void *, int, size_t);
-#	endif /* DECL_MEMSET */
-#endif /* 0 */
-
+#ifdef DECL_MEMSET
+	extern void *memset (void *, int, size_t);
+#endif /* DECL_MEMSET */
 #ifdef DECL_MKSTEMP
 	extern int mkstemp (char *);
 #endif /* DECL_MKSTEMP */
@@ -278,9 +280,13 @@
 #ifdef DECL_UNGETC
 	extern int ungetc (int, FILE *);
 #endif /* DECL_UNGETC */
-#ifdef DECL_USLEEP
-	extern void usleep(unsigned long);
-#endif /* DECL_USLEEP */
+
+#if 0 /* SUSv2 changed that to "int usleep(unsigned long)" */
+#	ifdef DECL_USLEEP
+		extern void usleep(unsigned long);
+#	endif /* DECL_USLEEP */
+#endif /* 0 */
+
 #ifdef DECL_VSNPRINTF
 	extern int vsnprintf (char *, size_t, const char *, va_list);
 #endif /* DECL_VSNPRINTF */
@@ -997,6 +1003,8 @@ extern constext txt_untagged_art[];
 extern constext txt_untagged_thread[];
 extern constext txt_unthreading_arts[];
 extern constext txt_updated[];
+extern constext txt_url_open[];
+extern constext txt_url_done[];
 #ifndef HAVE_UUDECODE
 	extern constext txt_uuencode_not_supported[];
 #endif /* !HAVE_UUDECODE */
@@ -1428,6 +1436,7 @@ extern struct opttxt txt_tex2iso_conv;
 extern struct opttxt txt_thread_articles;
 extern struct opttxt txt_thread_catchup_on_exit;
 extern struct opttxt txt_unlink_article;
+extern struct opttxt txt_url_handler;
 extern struct opttxt txt_use_getart_limit;
 extern struct opttxt txt_use_mailreader_i;
 extern struct opttxt txt_use_mouse;

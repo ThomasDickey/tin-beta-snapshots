@@ -316,7 +316,7 @@ extern void *my_realloc1 (const char *file, int line, char *p, size_t size);
 
 /* misc.c */
 extern const char *eat_re (char *s, t_bool eat_was);
-extern char *escape_shell_meta (char *source, int quote_area);
+extern char *escape_shell_meta (const char *source, int quote_area);
 extern char *get_tmpfilename (const char *filename);
 extern char *quote_wild (char *str);
 extern char *quote_wild_whitespace (char *str);
@@ -362,13 +362,6 @@ extern void toggle_inverse_video (void);
 #else
 	extern int parse_from (const char *from, char *address, char *realname);
 #endif /* 0 */
-#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
-	extern void buffer_to_local (char *line);
-#else
-#	ifdef CHARSET_CONVERSION
-	 extern void buffer_to_local (char *line, const char* network_charset, const char *local_charset);
-#	endif /* CHARSET_CONVERSION */
-#endif /* LOCAL_CHARSET || MAC_OS_X */
 #if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
 	extern void buffer_to_network (char *line);
 #endif /* LOCAL_CHARSET || MAC_OS_X || CHARSET_CONVERSION */

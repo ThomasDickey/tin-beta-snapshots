@@ -441,17 +441,15 @@ expand_mailcap_meta(
 				if (percent) {
 					char *nptr = (char *) 0;
 
-					if (nametemplate)
-						nptr = expand_mailcap_meta(nametemplate, part, (char *) 0, path);
-
-					if (nptr == (char *) 0)
-						nptr = (char *) path;
-
-					CHECK_SPACE(strlen(nptr) + 2);
-					strcat(line, nptr);
-
-					if (nametemplate) /* recursiv expand_mailcap_meta() calls need extra free */
+					if (nametemplate
+					 && (nptr = expand_mailcap_meta(nametemplate, part, (char *) 0, path)) != 0) {
+						CHECK_SPACE(strlen(nptr) + 2);
+						strcat(line, nptr);
 						free(nptr);
+					} else {
+						CHECK_SPACE(strlen(path) + 2);
+						strcat(line, path);
+					}
 
 					lptr = line + strlen(line);
 					space -= strlen(line);

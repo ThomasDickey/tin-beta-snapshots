@@ -444,7 +444,8 @@ TIN_DEP	= \
 	../include/autoconf.h \
 	$(INCDIR)/extern.h \
 	$(INCDIR)/nntplib.h \
-	$(INCDIR)/proto.h
+	$(INCDIR)/proto.h \
+	$(EXTRA_INTLLIBS)
 
 @PCREDIR_MAKE@../pcre/$(PRELIB)pcre.a:
 @PCREDIR_MAKE@	@$(ECHO) "Building Philip Hazel's Perl regular expressions library ..."

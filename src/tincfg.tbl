@@ -201,3 +201,4 @@
 	reread_active_file_secs		OPT_NUM
 	auto_reconnect			OPT_ON_OFF
 	cache_overview_files		OPT_ON_OFF
+	url_handler			OPT_STRING

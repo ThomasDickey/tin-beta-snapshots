@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2002-04-10
+ *  Updated   : 2002-04-19
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2002 Chris Blum <chris@resolution.de>
@@ -200,7 +200,8 @@ char *
 rfc1522_decode (
 	const char *s)
 {
-	const char *c, *d;
+	char *c, *sc;
+	const char *d;
 	char *t;
 	static char buffer[2048];
 	char charset[1024];
@@ -208,7 +209,7 @@ rfc1522_decode (
 	t_bool adjacentflag = FALSE;
 
 	charset[0] = '\0';
-	c = s;
+	c = sc = my_strdup(s);
 	t = buffer;
 
 	/*
@@ -273,6 +274,7 @@ rfc1522_decode (
 			*t++ = *d++;
 	}
 	*t = '\0';
+	free(sc);
 
 	return buffer;
 }
@@ -319,10 +321,10 @@ do_b_encode (
 	char tmp[60];				/* strings to be B encoded */
 	char *t = tmp;
 	int len8 = 0;				/* the number of trailing 8bit chars, which
-									   should be even(i.e. the first and second byte
-									   of wide_char should NOT be split into two
-									   encoded words) in order to be compatible with
-									   some CJK mail client */
+								   should be even(i.e. the first and second byte
+								   of wide_char should NOT be split into two
+								   encoded words) in order to be compatible with
+								   some CJK mail client */
 
 	int count = max_ewsize / 4 * 3;
 	t_bool isleading_between = TRUE;		/* are we still processing leading space */
@@ -673,11 +675,11 @@ rfc1522_do_encode(
 		column = 0;
 		if (any_quoting_done) {
 			word_cnt = 1;			/*
-										 * note, if the user has typed a continuation
-										 * line, we will consider the initial
-										 * whitespace to be delimiting word one (well,
-										 * just assume an empty word).
-										 */
+									 * note, if the user has typed a continuation
+									 * line, we will consider the initial
+									 * whitespace to be delimiting word one (well,
+									 * just assume an empty word).
+									 */
 			while (*c) {
 				if (isspace((unsigned char) *c)) {
 					/*

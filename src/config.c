@@ -700,6 +700,9 @@ read_config_file (
 			if (match_boolean (buf, "unlink_article=", &tinrc.unlink_article))
 				break;
 
+			if (match_string (buf, "url_handler=", tinrc.url_handler, sizeof (tinrc.url_handler)))
+				break;
+
 			if (match_boolean (buf, "use_getart_limit=", &tinrc.use_getart_limit))
 				break;
 
@@ -994,6 +997,9 @@ write_config_file (
 
 	fprintf (fp, _(txt_spamtrap_warning_addresses.tinrc));
 	fprintf (fp, "spamtrap_warning_addresses=%s\n\n", tinrc.spamtrap_warning_addresses);
+
+	fprintf (fp, _(txt_url_handler.tinrc));
+	fprintf (fp, "url_handler=%s\n\n", tinrc.url_handler);
 
 	fprintf (fp, _(txt_advertising.tinrc));
 	fprintf (fp, "advertising=%s\n\n", print_boolean (tinrc.advertising));
@@ -1981,6 +1987,7 @@ change_config_file (
 						case OPT_XPOST_QUOTE_FORMAT:
 						case OPT_MAIL_ADDRESS:
 						case OPT_SPAMTRAP_WARNING_ADDRESSES:
+						case OPT_URL_HANDLER:
 							prompt_option_string (option);
 							break;
 

@@ -30,7 +30,7 @@
 #	include "langinfo.h"
 #else
 #	ifndef TIN_H
-#  	include "tin.h"
+#		include "tin.h"
 #	endif /* !TIN_H */
 #endif /* 0 */
 

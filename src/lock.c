@@ -231,7 +231,7 @@ t_bool dot_lock(
 		free(file);
 		free(base_dir);
 		return rval;
-   }
+	}
 
 	if ((dot_fd = my_tmpfile(tempfile, sizeof(tempfile) - 1, TRUE, base_dir)) == -1) {
 		free(base_dir);

@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2002-03-11
+dnl Updated   : 2002-04-20
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2001 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -90,6 +90,7 @@ AC_PROG_INSTALL
 AC_PROG_RANLIB
 CF_PROG_YACC
 AC_CHECK_PROGS(LINT, lint alint lclint tdlint, [])
+CF_GNU_SOURCE
 AC_ISC_POSIX
 CF_ANSI_CC_REQD
 CF_PROG_EXT
@@ -447,15 +448,13 @@ AC_ARG_WITH(trace,
 	[use_trace=no])
 AC_MSG_RESULT($use_trace)
 if test "$use_trace" = yes ; then
-	 AC_DEFINE(USE_TRACE)
+	AC_DEFINE(USE_TRACE)
 	EXTRAOBJS="$EXTRAOBJS trace.o"
-	 if test "$use_ncurses" != no ; then
-		AC_CHECK_FUNC(_tracef,,[
-		AC_CHECK_LIB(${cf_with_screen}_g,_tracef,
-			[LIBS=`echo "$LIBS" | sed -e s/-l${cf_with_screen}// -e s/-lcurses//`
-			 LIBS="-l${cf_with_screen}_g $LIBS"],
-			[EXTRAOBJS="$EXTRAOBJS trace.o"])])
-	 fi
+	AC_CHECK_FUNC(_tracef,[AC_DEFINE(HAVE__TRACEF)],[
+	AC_CHECK_LIB(${cf_with_screen}_g,_tracef,
+		[AC_DEFINE(HAVE__TRACEF)
+		 LIBS=`echo "$LIBS" | sed -e s/-l${cf_with_screen}// -e s/-lcurses//`
+		 LIBS="-l${cf_with_screen}_g $LIBS"])])
 fi
 AC_SUBST(EXTRAOBJS)
 

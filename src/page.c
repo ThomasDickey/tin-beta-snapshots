@@ -114,11 +114,11 @@ static void draw_page_header (const char *group);
 /*
  * Scroll visible article part of display down (+ve) or up (-ve)
  * according to 'dir' (KEYMAP_UP or KEYMAP_DOWN) and tinrc.scroll_lines
- * >= 1		line count
- * 0		full page scroll
- * -1		full page but retain last line of prev page when scrolling
- * 			down. Obviously only applies when scrolling down.
- * -2		half page scroll
+ * >= 1  line count
+ * 0     full page scroll
+ * -1    full page but retain last line of prev page when scrolling
+ *       down. Obviously only applies when scrolling down.
+ * -2    half page scroll
  * Return the offset we scrolled by so that redrawing can be done
  */
 static int
@@ -1518,8 +1518,7 @@ process_url(
 	int offsets_size = sizeof(offsets)/sizeof(int);
 
 	/*
-	 * TODO: add MAIL_REGEX/NEWS_REGEX
-	 *       really use curr_line or better start at top of article?
+	 * TODO: handle mailto: and news: (not NNTP) URLs internally
 	 */
 	for (i = curr_line; i < artlines; ++i) {
 		if (!(artline[i].flags & (C_URL|C_NEWS|C_MAIL)))
@@ -1533,9 +1532,6 @@ process_url(
 
 		/*
 		 * Step through, finding URL's
-		 *
-		 * TODO: add multiple URLs per line handling
-		 *       handle mailto: and news: (not NNTP) URLs internal
 		 */
 		forever {
 			char url[LEN];
@@ -1548,22 +1544,20 @@ process_url(
 
 			*(ptr + offsets[1]) = '\0';
 
-			/* TODO: -> lang.c */
 			if (prompt_default_string ("URL:", url, sizeof(url), ptr + offsets[0], HIST_NONE)) {
 				char ubuf[LEN];
 
-				/* TODO: -> lang.c */
-				wait_message(2, "Launching %s\n", url);
-				/* TODO make the handler configurable via 'M'enu */
-				strcpy(ubuf, "url_handler.sh ");
-				strncat(ubuf, escape_shell_meta (url, 0), LEN - 16);
+				if (!*url)			/* Don't try and open nothing */
+					break;
+
+				wait_message(2, _(txt_url_open), url);
+				snprintf(ubuf, sizeof(ubuf) - 1, "%s %s", tinrc.url_handler, escape_shell_meta (url, 0));
 				invoke_cmd (ubuf);
 			}
-			ptr += offsets[1];
+			ptr += offsets[1] + 1;
 		}
 	}
-	/* TODO: -> lang.c */
-	info_message (_("No more URL's"));
+	info_message (_(txt_url_done));
 }
 
 
