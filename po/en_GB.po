@@ -2,8 +2,8 @@
 # Robert Brady <rwb197@ecs.soton.ac.uk>, 2000-2002
 #
 msgid	""
-msgstr	"Project-Id-Version: tin 1.7.0\n"
-	"POT-Creation-Date: 2003-12-20 18:42+0100\n"
+msgstr	"Project-Id-Version: tin 1.7.4\n"
+	"POT-Creation-Date: 2004-01-11 17:07+0100\n"
 	"PO-Revision-Date: 2002-11-15 20:10+0000\n"
 	"Last-Translator: Robert Brady <rwb197@zepler.org>\n"
 	"Language-Team: \n"
@@ -11,7 +11,7 @@ msgstr	"Project-Id-Version: tin 1.7.0\n"
 	"Content-Type: text/plain; charset=ISO-8859-1\n"
 	"Content-Transfer-Encoding: 8bit\n"
 
-#: src/art.c:1425
+#: src/art.c:1430
 #, c-format
 msgid	"%d Bad overview record (%d fields) '%s'"
 msgstr	""
@@ -227,7 +227,7 @@ msgstr	""
 #.
 #. * TODO: add to the right rule, give better explanation, -> lang.c
 #.
-#: src/filter.c:608 src/filter.c:616
+#: src/filter.c:612 src/filter.c:620
 msgid	"Removed from the previous rule: "
 msgstr	""
 
@@ -451,7 +451,7 @@ msgid	"*** Beginning of article ***"
 msgstr	""
 
 #: src/lang.c:97
-msgid	"Cancel (delete) or supersede (overwrite) article [%%.*s]? (%s/%s/%s): "
+msgid	"Cancel (delete) or supersede (overwrite) article [%%s]? (%s/%s/%s): "
 msgstr	""
 
 #: src/lang.c:98
@@ -1918,7 +1918,7 @@ msgstr	""
 
 #: src/lang.c:494
 #, c-format
-msgid	"Mark group %.*s as read?"
+msgid	"Mark group %s as read?"
 msgstr	""
 
 #: src/lang.c:495
@@ -2256,7 +2256,7 @@ msgid	"Posting article..."
 msgstr	""
 
 #: src/lang.c:580
-msgid	"Post postponed articles [%%.*s]? (%s/%s/%s/%s/%s): "
+msgid	"Post postponed articles [%%s]? (%s/%s/%s/%s/%s): "
 msgstr	""
 
 #: src/lang.c:581
@@ -2309,7 +2309,7 @@ msgid	"Do you really want to quit?"
 msgstr	""
 
 #: src/lang.c:593
-msgid	"%s=edit cancel message, %s=quit, %s=delete (cancel) [%%.*s]: "
+msgid	"%s=edit cancel message, %s=quit, %s=delete (cancel) [%%s]: "
 msgstr	""
 
 #: src/lang.c:594
@@ -2677,7 +2677,7 @@ msgid	"Subscribing... "
 msgstr	""
 
 #: src/lang.c:682
-msgid	"Repost or supersede article(s) [%%.*s]? (%s/%s/%s): "
+msgid	"Repost or supersede article(s) [%%s]? (%s/%s/%s): "
 msgstr	""
 
 #: src/lang.c:683
@@ -3314,11 +3314,11 @@ msgid	"%s=quit, %s=edit, %s=ispell, %s=pgp, %s=menu, %s=post, %s=postpone: "
 msgstr	""
 
 #: src/lang.c:890
-msgid	"%s=quit, %s=edit, %s=ispell, %s=pgp, %s=send [%%.*s]: "
+msgid	"%s=quit, %s=edit, %s=ispell, %s=pgp, %s=send [%%s]: "
 msgstr	""
 
 #: src/lang.c:891
-msgid	"%s=quit, %s=edit, %s=ispell, %s=pgp, %s=menu, %s=post, %s=postpone [%%.*s]: "
+msgid	"%s=quit, %s=edit, %s=ispell, %s=pgp, %s=menu, %s=post, %s=postpone [%%s]: "
 msgstr	""
 
 #: src/lang.c:893
@@ -3327,11 +3327,11 @@ msgid	"%s=quit, %s=edit, %s=pgp, %s=menu, %s=post, %s=postpone: "
 msgstr	""
 
 #: src/lang.c:894
-msgid	"%s=quit, %s=edit, %s=pgp, %s=send [%%.*s]: "
+msgid	"%s=quit, %s=edit, %s=pgp, %s=send [%%s]: "
 msgstr	""
 
 #: src/lang.c:895
-msgid	"%s=quit, %s=edit, %s=pgp, %s=menu, %s=post, %s=postpone [%%.*s]: "
+msgid	"%s=quit, %s=edit, %s=pgp, %s=menu, %s=post, %s=postpone [%%s]: "
 msgstr	""
 
 #: src/lang.c:899
@@ -3340,11 +3340,11 @@ msgid	"%s=quit, %s=edit, %s=ispell, %s=menu, %s=post, %s=postpone: "
 msgstr	""
 
 #: src/lang.c:900
-msgid	"%s=quit, %s=edit, %s=ispell, %s=send [%%.*s]: "
+msgid	"%s=quit, %s=edit, %s=ispell, %s=send [%%s]: "
 msgstr	""
 
 #: src/lang.c:901
-msgid	"%s=quit, %s=edit, %s=ispell, %s=menu, %s=post, %s=postpone [%%.*s]: "
+msgid	"%s=quit, %s=edit, %s=ispell, %s=menu, %s=post, %s=postpone [%%s]: "
 msgstr	""
 
 #: src/lang.c:903
@@ -3353,11 +3353,11 @@ msgid	"%s=quit, %s=edit, %s=menu, %s=post, %s=postpone: "
 msgstr	""
 
 #: src/lang.c:904
-msgid	"%s=quit, %s=edit, %s=send [%%.*s]: "
+msgid	"%s=quit, %s=edit, %s=send [%%s]: "
 msgstr	""
 
 #: src/lang.c:905
-msgid	"%s=quit, %s=edit, %s=menu, %s=post, %s=postpone [%%.*s]: "
+msgid	"%s=quit, %s=edit, %s=menu, %s=post, %s=postpone [%%s]: "
 msgstr	""
 
 #: src/lang.c:914
@@ -5622,12 +5622,12 @@ msgid	"# Unicode normalization form\n"
 msgstr	"# Unicode normalisation form\n"
 	"# 0 = None, 1 = NFKC, 2 = NFKD, 3 = NFC, 4 = NFD\n"
 
-#: src/main.c:586
+#: src/main.c:594
 #, c-format
 msgid	"Version: %s release %s (\"%s\") %s %s"
 msgstr	""
 
-#: src/main.c:589
+#: src/main.c:597
 #, c-format
 msgid	"Version: %s release %s (\"%s\")"
 msgstr	""
@@ -5636,22 +5636,22 @@ msgstr	""
 msgid	"Unreachable?\n"
 msgstr	""
 
-#: src/nntplib.c:821
+#: src/nntplib.c:819
 #, c-format
 msgid	"\n"
 	"Server timed out, trying reconnect # %d\n"
 msgstr	""
 
-#: src/nntplib.c:839
+#: src/nntplib.c:837
 msgid	"Rejoin current group\n"
 msgstr	""
 
-#: src/nntplib.c:846
+#: src/nntplib.c:844
 #, c-format
 msgid	"Read (%s)\n"
 msgstr	""
 
-#: src/nntplib.c:848
+#: src/nntplib.c:846
 #, c-format
 msgid	"Resend last command (%s)\n"
 msgstr	""
@@ -5661,7 +5661,7 @@ msgstr	""
 msgid	"couldn't expand %s\n"
 msgstr	""
 
-#: src/post.c:1939
+#: src/post.c:1951
 #, c-format
 msgid	"Posting: %.*s ..."
 msgstr	""
@@ -5701,7 +5701,7 @@ msgstr	""
 msgid	"all"
 msgstr	""
 
-#: src/select.c:525 src/select.c:527
+#: src/select.c:529 src/select.c:531
 msgid	" R"
 msgstr	""
 

@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2003-12-08
+dnl Updated   : 2003-12-22
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2003 Thomas E. Dickey <dickey@herndon4.his.com>
+dnl Copyright (c) 1995-2004 Thomas E. Dickey <dickey@herndon4.his.com>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.7.3
+VERSION=1.7.4
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -954,6 +954,7 @@ AC_CHECK_FUNCS(\
 	unlink \
 	use_default_colors \
 	usleep \
+	vasprintf \
 	vsnprintf \
 	waitpid \
 $cf_tc_funcs )

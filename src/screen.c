@@ -3,10 +3,10 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-09-12
+ *  Updated   : 2004-01-05
  *  Notes     :
  *
- * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,11 +42,15 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 
-char mesg[LEN];
-
 #ifndef USE_CURSES
 	struct t_screen *screen;
 #endif /* !USE_CURSES */
+
+/*
+ * Local prototypes
+ */
+static char *fmt_message(const char *fmt, va_list ap);
+
 
 /*
  * Move the cursor to the lower-left of the screen, where it won't be annoying
@@ -61,6 +65,34 @@ stow_cursor(
 
 
 /*
+ * helper for the varius *_message() functions
+ * returns a pointer to an allocated buffer with the formated message
+ * must be freed if not needed anymore
+ */
+static char *
+fmt_message(
+	const char *fmt,
+	va_list ap)
+{
+	char *msg;
+#ifdef HAVE_VASPRINTF
+	int n;
+
+	if ((n = vasprintf(&msg, fmt, ap)) == -1)	/* something went wrong */
+#endif /* HAVE_VASPRINTF */
+	{
+		size_t size = LEN;
+
+		msg = my_malloc(size);
+		/* TODO: realloc msg if necessary */
+		vsnprintf(msg, size, fmt, ap);
+	}
+
+	return msg;
+}
+
+
+/*
  * Centre a formatted colour message at the bottom of the screen
  */
 void
@@ -68,6 +100,7 @@ info_message(
 	const char *fmt,
 	...)
 {
+	char *buf;
 	va_list ap;
 
 	va_start(ap, fmt);
@@ -77,9 +110,9 @@ info_message(
 	fcol(tinrc.col_message);
 #endif /* HAVE_COLOR */
 
-	vsnprintf(mesg, sizeof(mesg), fmt, ap);
-
-	center_line(cLINES, FALSE, mesg);	/* center the message at screen bottom */
+	buf = fmt_message(fmt, ap);
+	center_line(cLINES, FALSE, buf);	/* center the message at screen bottom */
+	free(buf);
 
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_normal);
@@ -99,6 +132,7 @@ wait_message(
 	const char *fmt,
 	...)
 {
+	char *buf;
 	va_list ap;
 
 	va_start(ap, fmt);
@@ -108,8 +142,9 @@ wait_message(
 	fcol(tinrc.col_message);
 #endif /* HAVE_COLOR */
 
-	vsnprintf(mesg, sizeof(mesg), fmt, ap);
-	my_fputs(mesg, stdout);
+	buf = fmt_message(fmt, ap);
+	my_fputs(buf, stdout);
+	free(buf);
 
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_normal);
@@ -132,16 +167,18 @@ error_message(
 	const char *fmt,
 	...)
 {
+	char *buf;
 	va_list ap;
 
 	va_start(ap, fmt);
 
 	errno = 0;
 	clear_message();
-	vsnprintf(mesg, sizeof(mesg), fmt, ap);
 
-	my_fputs(mesg, stderr);	/* don't use my_fprintf() here due to %format chars */
+	buf = fmt_message(fmt, ap);
+	my_fputs(buf, stderr);	/* don't use my_fprintf() here due to %format chars */
 	my_fflush(stderr);
+	free(buf);
 
 	if (cmd_line) {
 		my_fputc('\n', stderr);
@@ -165,7 +202,7 @@ perror_message(
 	const char *fmt,
 	...)
 {
-	char buf[LEN];
+	char *buf;
 	int err;
 	va_list ap;
 
@@ -174,11 +211,12 @@ perror_message(
 
 	clear_message();
 
-	vsnprintf(buf, sizeof(buf), fmt, ap);
+	if ((buf = fmt_message(fmt, ap)) != NULL) {
+		error_message("%s: Error: %s", buf, strerror(err));
+		free(buf);
+	}
 
 	va_end(ap);
-
-	error_message("%s: Error: %s", buf, strerror(err));
 
 	return;
 }

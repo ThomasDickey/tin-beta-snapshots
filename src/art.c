@@ -3,10 +3,10 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-11-18
+ *  Updated   : 2003-12-28
  *  Notes     :
  *
- * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -570,6 +570,7 @@ read_art_headers(
 {
 	FILE *fp;
 	char dir[PATH_LEN];
+	char *group_msg;
 	int i;
 	int modified = 0;
 	long art;
@@ -588,6 +589,7 @@ read_art_headers(
 		my_chdir(buf);
 	}
 
+	group_msg = fmt_string(_(txt_group), cCOLS - strlen(_(txt_group)) + 2 - 3, group->name);
 	for (i = 0; i < grpmenu.max; i++) {	/* for each article number */
 		art = base[i];
 
@@ -638,8 +640,9 @@ read_art_headers(
 		top_art++;
 
 		if (++modified % MODULO_COUNT_NUM == 0)
-			show_progress(mesg, modified, total);
+			show_progress(group_msg, modified, total);
 	}
+	free(group_msg);
 
 	/*
 	 * Change back to previous dir before indexing started
@@ -1288,6 +1291,7 @@ read_overview(
 	FILE *fp;
 	char *ptr;
 	char *buf;
+	char *group_msg;
 	char art_full_name[HEADER_LEN];
 	char art_from_addr[HEADER_LEN];
 	unsigned int count;
@@ -1307,6 +1311,7 @@ read_overview(
 	if (group->xmax > max)
 		group->xmax = max;
 
+	group_msg = fmt_string(_(txt_group), cCOLS - strlen(_(txt_group)) + 2 - 3, group->name);
 	while ((buf = tin_fgets(fp, FALSE)) != NULL) {
 		if (need_resize) {
 			handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
@@ -1440,10 +1445,11 @@ read_overview(
 
 		/* we might loose accuracy here, but that shouldn't hurt */
 		if (artnum % MODULO_COUNT_NUM == 0)
-			show_progress(mesg, artnum - min, max - min);
+			show_progress(group_msg, artnum - min, max - min);
 
 		top_art++;				/* Basically this statement commits the article */
 	}
+	free(group_msg);
 
 	TIN_FCLOSE(fp);
 

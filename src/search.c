@@ -3,10 +3,10 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-12-17
+ *  Updated   : 2004-01-05
  *  Notes     :
  *
- * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,11 +51,6 @@ static int body_search(int i, char *searchbuf);
 static int subject_search(int i, char *searchbuf);
 static int search_group(t_bool forward, int current_art, char *searchbuff, int (*search_func) (int i, char *searchbuff));
 
-
-/*
- * The search function may place error text into mesg
- */
-#define MATCH_MSG	(mesg[0] ? mesg : _(txt_no_match))
 
 /*
  * Kludge to maintain some internal state for body search
@@ -254,7 +249,7 @@ search_active(
 		FreeAndNull(search_regex.re);
 		FreeAndNull(search_regex.extra);
 	}
-	info_message(MATCH_MSG);
+	info_message(_(txt_no_match));
 	return -1;
 }
 
@@ -271,10 +266,11 @@ body_search(
 	int i,
 	char *searchbuf)
 {
+	static char msg[LEN];	/* show_progress needs a constant message buffer */
 	char *line, *tmp;
 	t_openartinfo artinfo;
 
-	switch (art_open(TRUE, &arts[i], curr_group, &artinfo, FALSE)) {
+	switch (art_open(TRUE, &arts[i], curr_group, &artinfo, FALSE, NULL)) {
 		case ART_ABORT:					/* User 'q'uit */
 			art_close(&artinfo);
 			return -1;
@@ -295,8 +291,8 @@ body_search(
 	/*
 	 * Now search the body
 	 */
-	snprintf(mesg, sizeof(mesg), _(txt_searching_body), ++curr_cnt, total_cnt);
-	show_progress(mesg, curr_cnt, total_cnt);
+	snprintf(msg, sizeof(msg), _(txt_searching_body), ++curr_cnt, total_cnt);
+	show_progress(msg, curr_cnt, total_cnt);
 	while ((tmp = tin_fgets(artinfo.cooked, FALSE)) != NULL) {
 #ifdef HAVE_UNICODE_NORMALIZATION
 		if (IS_LOCAL_CHARSET("UTF-8"))
@@ -337,7 +333,7 @@ body_search(
 	}
 
 	art_close(&artinfo);
-/*	info_message(MATCH_MSG); */
+/*	info_message(_(txt_no_match)); */
 	return 0;
 }
 

@@ -7,11 +7,11 @@
  *              Julien Oster <fuzzy@cu8.cum.de> (word highlighting)
  *              T.Dickey <dickey@herndon4.his.com> (curses support)
  *  Created   : 1995-06-02
- *  Updated   : 2003-05-05
+ *  Updated   : 2004-01-11
  *  Notes     : This are the basic function for ansi-color
  *              and word highlighting
  *
- * Copyright (c) 1995-2003 Roland Rosenfeld <roland@spinnaker.rhein.de>
+ * Copyright (c) 1995-2004 Roland Rosenfeld <roland@spinnaker.rhein.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -211,7 +211,8 @@ bcol(
 void
 draw_pager_line(
 	const char *str,
-	int flags)
+	int flags,
+	t_bool raw_data)
 {
 #ifdef HAVE_COLOR
 
@@ -233,7 +234,51 @@ draw_pager_line(
 	}
 
 #endif /* HAVE_COLOR */
-	my_fputs(str, stdout);
+	if (!raw_data)
+		my_fputs(str, stdout);
+	else {
+		/* in RAW-mode (show_all_headers) display non-printable chars as octals */
+		const char *c;
+		char octal[5];
+
+		c = str;
+		while (*c) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			int num_bytes;
+			wchar_t wc;
+
+			num_bytes = mbtowc(&wc, c, MB_CUR_MAX);
+			if (num_bytes != -1 && iswprint(wc)) {
+				my_fputwc((wint_t) wc, stdout);
+				c += num_bytes;
+			}
+#else
+			if (my_isprint((int) *c)) {
+				my_fputc((int) *c, stdout);
+				c++;
+			}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			else if (IS_LOCAL_CHARSET("Big5") && (unsigned char) *c >= 0xa1 &&(unsigned char) *c <= 0xfe && *(c + 1)) {
+				/*
+				 * Big5: ASCII chars are handled by the normal code
+				 * check only for 2-byte chars
+				 * TODO: should we also check if the second byte is also valid?
+				 */
+				my_fputc((int) *c, stdout);
+				c++;
+				my_fputc((int) *c, stdout);
+				c++;
+			} else {
+				/*
+				 * non-printable char
+				 * print as an octal value
+				 */
+				snprintf(octal, sizeof(octal), "\\%03o", (int) *c & 0xff);
+				my_fputs(octal, stdout);
+				c++;
+			}
+		}
+	}
 
 #ifndef USE_CURSES
 	my_fputs(cCRLF, stdout);

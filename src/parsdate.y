@@ -839,7 +839,7 @@ parsedate(
     yyMonth = tm->tm_mon + 1;
     yyDay = tm->tm_mday;
     yyTimezone = now->tzone;
-    if(tm->tm_isdst)                   /* Correct timezone offset for DST */
+    if (tm->tm_isdst)                   /* Correct timezone offset for DST */
       yyTimezone += DST_OFFSET * 60;
     yyDSTmode = DSTmaybe;
     yyHour = 0;

@@ -3,10 +3,10 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2003-12-17
+ *  Updated   : 2004-01-05
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
- * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -280,9 +280,15 @@ get_feed_key(
 			return 0;
 
 		case iKeyFeedPat:
-			snprintf(mesg, sizeof(mesg), _(txt_feed_pattern), tinrc.default_pattern);
-			if (!(prompt_string_default(mesg, tinrc.default_pattern, _(txt_no_match), HIST_REGEX_PATTERN)))
-				return 0;
+			{
+				char *tmp = fmt_string(_(txt_feed_pattern), tinrc.default_pattern);
+
+				if (!(prompt_string_default(tmp, tinrc.default_pattern, _(txt_no_match), HIST_REGEX_PATTERN))) {
+					free(tmp);
+					return 0;
+				}
+				free(tmp);
+			}
 			break;
 
 		default:
@@ -368,6 +374,7 @@ feed_article(
 	const char *data,		/* Extra data if needed, print command or save filename */
 	struct t_group *group)
 {
+	char *progress_mesg = NULL;
 	t_bool ok = TRUE;		/* Assume success */
 	t_openartinfo openart;
 	t_openartinfo *openartptr = &openart;
@@ -382,29 +389,33 @@ feed_article(
 #ifndef DONT_HAVE_PIPING
 		case FEED_PIPE:
 			/* TODO: looks odd because screen mode is raw */
-			wait_message(0, "%s (%d/%d)", _(txt_piping), counter->total, counter->max);
+			progress_mesg = fmt_string("%s (%d/%d)", _(txt_piping), counter->total, counter->max);
 			break;
 #endif /* !DONT_HAVE_PIPING */
 
 #ifndef DISABLE_PRINTING
 		case FEED_PRINT:
 			/* TODO: looks odd because screen mode is raw */
-			wait_message(0, "%s (%d/%d)", _(txt_printing), counter->total, counter->max);
+			progress_mesg = fmt_string("%s (%d/%d)", _(txt_printing), counter->total, counter->max);
 			break;
 #endif /* !DISABLE_PRINTING */
 
 		case FEED_SAVE:
 		case FEED_AUTOSAVE:
-			wait_message(0, "%s (%d/%d)", _(txt_saving), counter->total, counter->max);
+			progress_mesg = fmt_string("%s (%d/%d)", _(txt_saving), counter->total, counter->max);
 			break;
 	}
 
 	if (use_current)
 		openartptr = &pgart;			/* Use art already open in pager */
 	else {
-		if (art_open(FALSE, &arts[art], group, openartptr, TRUE) < 0)	/* User abort or an error */
+		if (art_open(FALSE, &arts[art], group, openartptr, TRUE, progress_mesg) < 0) {
+			/* User abort or an error */
+			FreeIfNeeded(progress_mesg);
 			return FALSE;
+		}
 	}
+	FreeIfNeeded(progress_mesg);
 
 	switch (function) {
 		case FEED_MAIL:
@@ -496,6 +507,7 @@ feed_articles(
 	int respnum)
 {
 	char outpath[PATH_LEN];
+	char *prompt;
 	int art;
 	int feed_type;
 	int i;
@@ -535,17 +547,23 @@ feed_articles(
 	switch (function) {
 		/* Setup mail - get address to mail to */
 		case FEED_MAIL:
-			snprintf(mesg, sizeof(mesg), _(txt_mail_art_to), cCOLS - (strlen(_(txt_mail_art_to)) + 30), tinrc.default_mail_address);
-			if (!(prompt_string_default(mesg, tinrc.default_mail_address, _(txt_no_mail_address), HIST_MAIL_ADDRESS)))
+			prompt = fmt_string(_(txt_mail_art_to), cCOLS - (strlen(_(txt_mail_art_to)) + 30), tinrc.default_mail_address);
+			if (!(prompt_string_default(prompt, tinrc.default_mail_address, _(txt_no_mail_address), HIST_MAIL_ADDRESS))) {
+				free(prompt);
 				return;
+			}
+			free(prompt);
 			break;
 
 #ifndef DONT_HAVE_PIPING
 		/* Setup pipe - get pipe-to command and open the pipe */
 		case FEED_PIPE:
-			snprintf(mesg, sizeof(mesg), _(txt_pipe_to_command), cCOLS - (strlen(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);
-			if (!(prompt_string_default(mesg, tinrc.default_pipe_command, _(txt_no_command), HIST_PIPE_COMMAND)))
+			prompt = fmt_string(_(txt_pipe_to_command), cCOLS - (strlen(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);
+			if (!(prompt_string_default(prompt, tinrc.default_pipe_command, _(txt_no_command), HIST_PIPE_COMMAND))) {
+				free(prompt);
 				return;
+			}
+			free(prompt);
 
 			got_sig_pipe = FALSE;
 			EndWin(); /* Turn off curses/windowing */
@@ -601,6 +619,7 @@ feed_articles(
 		/* repost (or supersede) article */
 		case FEED_REPOST:
 			{
+				char *tmp;
 #ifndef FORGERY
 				char from_name[PATH_LEN];
 
@@ -608,10 +627,11 @@ feed_articles(
 
 				if (strstr(from_name, arts[respnum].from)) {
 #endif /* !FORGERY */
+					char *smsg;
+					char option;
 					char buf[LEN];
 					char keyrepost[MAXKEYLEN], keysupersede[MAXKEYLEN];
 					char keyquit[MAXKEYLEN];
-					char option;
 
 					/* repost or supersede? */
 					snprintf(buf, sizeof(buf), _(txt_supersede_article),
@@ -620,16 +640,17 @@ feed_articles(
 							printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.feed_supersede_article)));
 					option = (char) prompt_slk_response(iKeyFeedSupersede,
 										&menukeymap.feed_supersede_article, "%s",
-										sized_message(buf, arts[respnum].subject));
+										sized_message(&smsg, buf, arts[respnum].subject));
+					free(smsg);
 
 					switch (option) {
 						case iKeyFeedSupersede:
-							snprintf(mesg, sizeof(mesg), _(txt_supersede_group), tinrc.default_repost_group);
+							tmp = fmt_string(_(txt_supersede_group), tinrc.default_repost_group);
 							supersede = TRUE;
 							break;
 
 						case iKeyFeedRepost:
-							snprintf(mesg, sizeof(mesg), _(txt_repost_group), tinrc.default_repost_group);
+							tmp = fmt_string(_(txt_repost_group), tinrc.default_repost_group);
 							supersede = FALSE;
 							break;
 
@@ -639,12 +660,15 @@ feed_articles(
 					}
 #ifndef FORGERY
 				} else {
-					snprintf(mesg, sizeof(mesg), _(txt_repost_group), tinrc.default_repost_group);
+					tmp = fmt_string(_(txt_repost_group), tinrc.default_repost_group);
 					supersede = FALSE;
 				}
 #endif /* !FORGERY */
-				if (!(prompt_string_default(mesg, tinrc.default_repost_group, _(txt_no_group), HIST_REPOST_GROUP)))
+				if (!(prompt_string_default(tmp, tinrc.default_repost_group, _(txt_no_group), HIST_REPOST_GROUP))) {
+					free(tmp);
 					return;
+				}
+				free(tmp);
 			}
 			break;
 

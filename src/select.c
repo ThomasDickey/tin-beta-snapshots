@@ -3,10 +3,10 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-07-20
+ *  Updated   : 2004-01-05
  *  Notes     :
  *
- * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -492,11 +492,15 @@ selection_page(
 					break;
 				}
 				grp_mark_unread(&CURR_GROUP);
-				if (CURR_GROUP.newsrc.num_unread)
-					strcpy(mesg, tin_ltoa(CURR_GROUP.newsrc.num_unread, 5));
-				else
-					strcpy(mesg, "     ");
-				mark_screen(SELECT_LEVEL, selmenu.curr - selmenu.first, 9, mesg);
+				{
+					char tmp[6];
+
+					if (CURR_GROUP.newsrc.num_unread)
+						STRCPY(tmp, tin_ltoa(CURR_GROUP.newsrc.num_unread, 5));
+					else
+						STRCPY(tmp, "     ");
+					mark_screen(SELECT_LEVEL, selmenu.curr - selmenu.first, 9, tmp);
+				}
 				break;
 
 			default:
@@ -755,11 +759,15 @@ choose_new_group(
 	void)
 {
 	int idx;
+	char *prompt;
 
-	snprintf(mesg, sizeof(mesg), _(txt_newsgroup), tinrc.default_goto_group);
+	prompt = fmt_string(_(txt_newsgroup), tinrc.default_goto_group);
 
-	if (!(prompt_string_default(mesg, tinrc.default_goto_group, "", HIST_GOTO_GROUP)))
+	if (!(prompt_string_default(prompt, tinrc.default_goto_group, "", HIST_GOTO_GROUP))) {
+		free(prompt);
 		return -1;
+	}
+	free(prompt);
 
 	str_trim(tinrc.default_goto_group);
 
@@ -895,7 +903,9 @@ catchup_group(
 	struct t_group *group,
 	t_bool goto_next_unread_group)
 {
-	if ((!TINRC_CONFIRM_ACTION) || prompt_yn(cLINES, sized_message(_(txt_mark_group_read), group->name), TRUE) == 1) {
+	char *smsg;
+
+	if ((!TINRC_CONFIRM_ACTION) || prompt_yn(cLINES, sized_message(&smsg, _(txt_mark_group_read), group->name), TRUE) == 1) {
 		grp_mark_read(group, NULL);
 		mark_screen(SELECT_LEVEL, selmenu.curr - selmenu.first, 9, "     ");
 
@@ -904,6 +914,7 @@ catchup_group(
 		else
 			move_down();
 	}
+	free(smsg);
 }
 
 

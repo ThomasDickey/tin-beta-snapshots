@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2003-12-11
+ *  Updated   : 2004-01-06
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -29,9 +29,6 @@
 #	undef VMS
 #endif /* VMS */
 
-/* Copy of last NNTP command sent, so we can retry it if needed */
-static char last_put[NNTP_STRLEN];
-
 char *nntp_server = NULL;
 constext *xover_cmd = NULL;
 #ifdef NO_POSTING
@@ -43,19 +40,20 @@ constext *xover_cmd = NULL;
 /* Flag to show whether tin did reconnect in last get_server() */
 t_bool reconnected_in_last_get_server = FALSE;
 
-/* Set so we don't reconnect just to QUIT */
-t_bool quitting = FALSE;
-
 static TCP *nntp_rd_fp = NULL;
 static TCP *nntp_wr_fp = NULL;
 
 #ifdef NNTP_ABLE
+	/* Copy of last NNTP command sent, so we can retry it if needed */
+	static char last_put[NNTP_STRLEN];
 	static constext *xover_cmds = "XOVER";
 #	if 0 /* currently not used */
 	static constext *xhdr_cmd = NULL;
 	static constext *xhdr_cmds = "XHDR";
 #	endif /* 0 */
 	static t_bool have_list_extensions = FALSE;
+	/* Set so we don't reconnect just to QUIT */
+	static t_bool quitting = FALSE;
 #endif /* NNTP_ABLE */
 
 /*
@@ -1297,9 +1295,13 @@ nntp_open(
 			else
 				wait_message(2, _(txt_caching_off));
 		}
+#if 0
 	} else {
-		/* TODO: issue warning if old index files found? */
-		/*		 in index_newsdir ? */
+		/*
+		 * TODO: issue warning if old index files found?
+		 *	      in index_newsdir?
+		 */
+#endif /* 0 */
 	}
 
 #	if 0

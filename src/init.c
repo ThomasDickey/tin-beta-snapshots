@@ -3,10 +3,10 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-12-17
+ *  Updated   : 2004-01-07
  *  Notes     :
  *
- * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,7 +82,6 @@ char domain_name[MAXHOSTNAMELEN];
 char global_attributes_file[PATH_LEN];
 char global_config_file[PATH_LEN];
 char homedir[PATH_LEN];
-char host_name[MAXHOSTNAMELEN];
 char index_maildir[PATH_LEN];
 char index_newsdir[PATH_LEN];	/* directory for private overview data */
 char index_savedir[PATH_LEN];
@@ -95,7 +94,6 @@ char local_newsgroups_file[PATH_LEN];	/* local copy of NNTP newsgroups file */
 char local_newsrctable_file[PATH_LEN];
 char lock_file[PATH_LEN];		/* contains name of index lock file */
 char filter_file[PATH_LEN];
-char mail_active_file[PATH_LEN];
 char mail_news_user[LEN];		/* mail new news to this user address */
 char mailbox[PATH_LEN];			/* system mailbox for each user */
 char mailer[PATH_LEN];			/* mail program */
@@ -114,6 +112,7 @@ char tin_progname[PATH_LEN];		/* program name */
 char txt_help_bug_report[LEN];		/* address to send bug reports to */
 char userid[PATH_LEN];
 #ifdef HAVE_MH_MAIL_HANDLING
+	char mail_active_file[PATH_LEN];
 	char mailgroups_file[PATH_LEN];
 #endif /* HAVE_MH_MAIL_HANDLING */
 #ifndef NNTP_ONLY
@@ -135,7 +134,6 @@ int num_headers_to_not_display;		/* num headers to not display -- swp */
 int system_status;
 int xmouse, xrow, xcol;			/* xterm button pressing information */
 
-mode_t real_umask;
 pid_t process_id;			/* Useful to have around for .suffixes */
 
 t_bool batch_mode;			/* update index files only mode */
@@ -419,6 +417,8 @@ struct t_config tinrc = {
 #endif /* HAVE_UNICODE_NORMALIZATION */
 };
 
+static mode_t real_umask;
+
 #ifdef HAVE_COLOR
 
 #	define DFT_FORE -1
@@ -506,7 +506,6 @@ init_selfinfo(
 	struct stat sb;
 	struct passwd *myentry;
 
-	host_name[0] = '\0';
 	domain_name[0] = '\0';
 
 #if defined(HAVE_SYS_UTSNAME_H) && defined(HAVE_UNAME)
@@ -518,9 +517,6 @@ init_selfinfo(
 	}
 #endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
 
-	if ((cptr = get_host_name()) != NULL)
-		strcpy(host_name, cptr);
-
 #ifdef DOMAIN_NAME
 	if ((cptr = get_domain_name()) != NULL)
 		strcpy(domain_name, cptr);
@@ -528,7 +524,7 @@ init_selfinfo(
 
 #ifdef HAVE_GETHOSTBYNAME
 	if (domain_name[0] == '\0') {
-		cptr = ((host_name[0] == '\0') ? get_fqdn((char *) 0) : get_fqdn(host_name));
+		cptr = get_fqdn(get_host_name());
 		if (cptr != (char *) 0)
 			strcpy(domain_name, cptr);
 	}
@@ -778,7 +774,9 @@ init_selfinfo(
 	joinpath(local_input_history_file, rcdir, INPUT_HISTORY_FILE);
 	joinpath(local_newsrctable_file, rcdir, NEWSRCTABLE_FILE);
 	joinpath(local_newsgroups_file, rcdir, NEWSGROUPS_FILE);
+#ifdef HAVE_MH_MAIL_HANDLING
 	joinpath(mail_active_file, rcdir, ACTIVE_MAIL_FILE);
+#endif /* HAVE_MH_MAIL_HANDLING */
 #ifdef VMS
 	joinpath(mailbox, DEFAULT_MAILBOX, "MAIL.TXT");
 #else

@@ -3,10 +3,10 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-12-02
+ *  Updated   : 2004-01-05
  *  Notes     :
  *
- * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,15 +56,16 @@ prompt_num(
 	const char *prompt)
 {
 	char *p;
+	char tmp[LEN];
 	int num;
 
 	clear_message();
 
-	snprintf(mesg, sizeof(mesg), "%c", ch);
+	snprintf(tmp, sizeof(tmp), "%c", ch);
 
-	if ((p = tin_getline(prompt, TRUE, mesg, 0, FALSE, HIST_OTHER)) != NULL) {
-		strcpy(mesg, p);
-		num = atoi(mesg);
+	if ((p = tin_getline(prompt, TRUE, tmp, 0, FALSE, HIST_OTHER)) != NULL) {
+		STRCPY(tmp, p);
+		num = atoi(tmp);
 	} else
 		num = -1;
 
@@ -529,24 +530,40 @@ prompt_msgid(
 /*
  * Format a message such that it'll fit within the screen width
  * Useful for fitting long Subjects and newsgroup names into prompts
- * TODO: maybe add a '...' to the string to show it was truncated.
- *       You can use strunc() for it.
+ * result will contain a pointer to the malloced memory containing the
+ * sized message
  */
 char *
 sized_message(
+	char **result,
 	const char *format,
 	const char *subject)
 {
-	/* The formatting info (%.*s) wastes 4 chars, but our prompt needs 1 char */
-	int have = cCOLS - strlen(format) + 4 - 1;
-	int want = strlen(subject);
+	char *buf;
+	int max_len;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wformat;
+	size_t format_len;
 
-	if (want > 0 && subject[want - 1] == '\n')
-		want--;
-	if (have > want)
-		have = want;
-	snprintf(mesg, sizeof(mesg), format, have, subject);
-	return mesg;
+	format_len = mbstowcs(NULL, format, 0);
+	if (format_len != (size_t) (-1)) {
+		wformat = my_malloc(sizeof(wchar_t) * (format_len + 1));
+		mbstowcs(wformat, format, format_len + 1);
+		wconvert_to_printable(wformat);
+		/* The formatting info (%s) wastes 2 chars, but our prompt needs 1 char */
+		max_len = cCOLS - wcswidth(wformat, format_len + 1) + 2 - 1;
+		free(wformat);
+	} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		max_len = cCOLS - strlen(format) + 2 - 1;	/* The formatting info (%s) wastes 2 chars, but our prompt needs 1 char */
+
+	buf = my_malloc(strlen(subject) + 1);
+	strunc(subject, buf, strlen(subject) + 1, max_len);
+
+	*result = fmt_string(format, buf);
+	free(buf);
+
+	return *result;
 }
 
 

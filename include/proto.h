@@ -3,10 +3,10 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2003-12-17
+ *  Updated   : 2004-01-11
  *  Notes     :
  *
- * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2004 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -91,7 +91,7 @@ extern void convert_tex2iso(char *from, char *to);
 	extern void bcol(int color);
 	extern void fcol(int color);
 #endif /* HAVE_COLOR */
-extern void draw_pager_line(const char *str, int flags);
+extern void draw_pager_line(const char *str, int flags, t_bool raw_data);
 
 /* config.c */
 extern char **ulBuildArgv(char *cmd, int *new_argc);
@@ -474,7 +474,7 @@ extern void quick_post_article(t_bool postponed_only);
 
 /* prompt.c */
 extern char *prompt_string_default(const char *prompt, char *def, const char *failtext, int history);
-extern char *sized_message(const char *format, const char *subject);
+extern char *sized_message(char **result, const char *format, const char *subject);
 extern int prompt_list(int row, int col, int var, constext *help_text, constext *prompt_text, constext *list[], int size);
 extern int prompt_num(int ch, const char *prompt);
 extern int prompt_yn(int line, const char *prompt, t_bool default_answer);
@@ -519,7 +519,7 @@ extern void rfc1521_encode(char *line, FILE *f, int e);
 extern FILE *open_art_fp(struct t_group *group, long art);
 extern const char *get_param(t_param *list, const char *name);
 extern char *parse_header(char *buf, const char *pat, t_bool decode, t_bool structured);
-extern int art_open(t_bool wrap_lines, struct t_article *art, struct t_group *group, t_openartinfo *artinfo, t_bool show_progress_meter);
+extern int art_open(t_bool wrap_lines, struct t_article *art, struct t_group *group, t_openartinfo *artinfo, t_bool show_progress_meter, char *pmesg);
 extern int content_type(char *type);
 extern int parse_rfc822_headers(struct t_header *hdr, FILE *from, FILE *to);
 extern t_part *new_part(t_part *part);
@@ -594,6 +594,7 @@ extern size_t my_strftime(char *s, size_t maxsize, const char *format, struct tm
 
 /* string.c */
 extern char *eat_tab(char *s);
+extern char *fmt_string(const char *fmt, ...);
 extern char *my_strdup(const char *str);
 extern char *str_trim(char *string);
 extern char *tin_ltoa(long value, int digits);

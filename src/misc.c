@@ -3,10 +3,10 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-12-09
+ *  Updated   : 2003-12-28
  *  Notes     :
  *
- * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -473,13 +473,16 @@ void
 shell_escape(
 	void)
 {
-	char *p;
+	char *p, *tmp;
 	char shell[LEN];
 
-	snprintf(mesg, sizeof(mesg), _(txt_shell_escape), tinrc.default_shell_command);
+	tmp = fmt_string(_(txt_shell_escape), tinrc.default_shell_command);
 
-	if (!prompt_string(mesg, shell, HIST_SHELL_COMMAND))
+	if (!prompt_string(tmp, shell, HIST_SHELL_COMMAND)) {
+		free(tmp);
 		return;
+	}
+	free(tmp);
 
 	for (p = shell; *p && isspace((int) *p); p++)
 		continue;
@@ -492,8 +495,9 @@ shell_escape(
 	}
 
 	ClearScreen();
-	snprintf(mesg, sizeof(mesg), _(txt_shell_command), p);
-	center_line(0, TRUE, mesg);
+	tmp = fmt_string(_(txt_shell_command), p);
+	center_line(0, TRUE, tmp);
+	free(tmp);
 	MoveCursor(INDEX_TOP, 0);
 
 	(void) invoke_cmd(p);

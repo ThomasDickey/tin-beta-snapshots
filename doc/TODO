@@ -42,6 +42,7 @@ o  batch mode has several bugs
       statistics nor taken into account for the 'any unread news' status.
    - -cZ does not perform catchup, feature or bug?
    - shall we allow stand alone -c?
+   - -o currently is not a 'batch_mode' option
    [Urs Janssen <urs@tin.org>]
 
 o  '-s' cmd-line switch implicitly changes 'savedir' in tinrc
@@ -88,8 +89,6 @@ o  iso2asc conversion is missing for 'internal' strings (e.g. 'M'enu)
 
 Pager Problems
 --------------
-o  raw mode loses (illegal) chars in multibyte based groups
-   [20021006 Michael Bienia <michael@vorlon.ping.de>]
 
 Posting Problems
 ----------------
@@ -181,6 +180,9 @@ o  add xxencode (<http://www.ctan.org/tex-archive/tools/xxcode/xxdecode.c>),
    check <http://www.exit109.com/~jeremy/news/binaries/> which might
    replace yenc etc.pp. some day.
    [20020216 Urs Janssen <urs@tin.org>]
+
+o  add "Face:" (incompatible "X-Face:"-replacement) support?
+   [20040107 Urs Janssen <urs@tin.org>]
 
 o  turn CA_ERROR_SPACE_IN_NEWSGROUPS, CA_ERROR_NEWLINE_IN_NEWSGROUPS,
    CA_ERROR_SPACE_IN_FOLLOWUP_TO, CA_ERROR_NEWLINE_IN_FOLLOWUP_TO into
@@ -385,7 +387,7 @@ o  add check for GPGME (<http://www.gnupg.org/gpgme.html>) and if found
 o  rewrite/cleanup all the debugging code
 
 Posting enhancements
-----------------------
+--------------------
 o  sort Followup-To:/Newsgroups: after stripping doubled newsgroups and
    before checking if they are identical, if so, strip Followup-To: and
    use unsorted but stripped Newsgroups:-line only
@@ -630,7 +632,6 @@ o  add normalization
    <http://www.gnu.org/software/libidn/>)
    (done for search strings)
    [20031209 Michael Bienia <michael@vorlon.ping.de>]
-
 
 Docs/online help
 ----------------

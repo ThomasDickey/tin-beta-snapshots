@@ -3,10 +3,10 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-11-21
+ *  Updated   : 2004-01-07
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
- * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -184,6 +184,8 @@ static char
 prompt_to_send(
 	const char *subject)
 {
+	char *smsg;
+	char option;
 	char buf[LEN];
 	char keyedit[MAXKEYLEN];
 	char keyquit[MAXKEYLEN];
@@ -206,8 +208,10 @@ prompt_to_send(
 #endif /* HAVE_PGP_GPG */
 					printascii(keysend, map_to_local(iKeyPostSend, &menukeymap.post_send)));
 
-	return prompt_slk_response(iKeyPostSend, &menukeymap.post_send, "%s",
-				sized_message(buf, subject));
+	option = prompt_slk_response(iKeyPostSend, &menukeymap.post_send, "%s",
+				sized_message(&smsg, buf, subject));
+	free(smsg);
+	return option;
 }
 
 
@@ -1577,6 +1581,7 @@ post_article_loop:
 					printascii(keypost, map_to_local(iKeyPostPost3, &menukeymap.post_post)),
 					printascii(keypostpone, map_to_local(iKeyPostPostpone, &menukeymap.post_post)));
 		} else {
+			char *smsg;
 			char buf[LEN];
 			char keyedit[MAXKEYLEN], keypost[MAXKEYLEN];
 			char keypostpone[MAXKEYLEN], keyquit[MAXKEYLEN];
@@ -1603,8 +1608,9 @@ post_article_loop:
 
 			/* Superfluous force_command stuff not used in current code */
 			ch = ( /* force_command ? ch_default : */ prompt_slk_response(ch,
-						&menukeymap.post_post, "%s", sized_message(buf,
+						&menukeymap.post_post, "%s", sized_message(&smsg, buf,
 						"" /* TODO: was note_h.subj */ )));
+			free(smsg);
 		}
 	}
 
@@ -1767,12 +1773,14 @@ check_moderated(
 		}
 
 		if (group->moderated == 'm') {
-			snprintf(mesg, sizeof(mesg), _(txt_group_is_moderated), groupname);
-			if (prompt_yn(cLINES, mesg, TRUE) != 1) {
+			char *prompt = fmt_string(_(txt_group_is_moderated), groupname);
+			if (prompt_yn(cLINES, prompt, TRUE) != 1) {
 /*				Raw(FALSE); */
 				error_message(failmsg);
+				free(prompt);
 				return NULL;
 			}
+			free(prompt);
 		}
 	} while ((groupname = strtok(NULL, ",")) != NULL);
 
@@ -1799,14 +1807,18 @@ create_normal_article_headers(
 	FILE *fp;
 	char from_name[HEADER_LEN];
 	char tmp[HEADER_LEN];
+	char *prompt;
 
 	/* Get subject for posting article - Limit the display if needed */
 	strunc(tinrc.default_post_subject, tmp, sizeof(tmp), DISPLAY_SUBJECT_LEN);
 
-	snprintf(mesg, sizeof(mesg), _(txt_post_subject), tmp);
+	prompt = fmt_string(_(txt_post_subject), tmp);
 
-	if (!(prompt_string_default(mesg, tinrc.default_post_subject, _(txt_no_subject), HIST_POST_SUBJECT)))
+	if (!(prompt_string_default(prompt, tinrc.default_post_subject, _(txt_no_subject), HIST_POST_SUBJECT))) {
+		free(prompt);
 		return FALSE;
+	}
+	free(prompt);
 
 	if ((fp = fopen(article, "w")) == NULL) {
 		perror_message(_(txt_cannot_open), article);
@@ -2102,6 +2114,7 @@ pickup_postponed_articles(
 			return TRUE;
 
 		if (!all) {
+			char *smsg;
 			char buf[LEN];
 			char keyall[MAXKEYLEN], keyno[MAXKEYLEN], keyoverride[MAXKEYLEN];
 			char keyquit[MAXKEYLEN], keyyes[MAXKEYLEN];
@@ -2114,7 +2127,8 @@ pickup_postponed_articles(
 							printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.post_postpone)));
 
 			ch = prompt_slk_response(iKeyPromptYes, &menukeymap.post_postpone,
-					"%s", sized_message(buf, subject));
+					"%s", sized_message(&smsg, buf, subject));
+			free(smsg);
 
 			if (ch == iKeyPostponeAll)
 				all = TRUE;
@@ -2284,12 +2298,12 @@ is_crosspost(
 
 
 /*
- * Widespread news software like INN's nnrpd restricts the size of several
- * headers, notably the references header, to 512 characters. Oh well...
- * guess that's what son of RFC 1036 calls a "desperate last resort" :-/
- * From TIN's point of view, this could be HEADER_LEN.
+ * with folding there would not be a length limit, but currently we don't do
+ * folding and some of our code has a 2048 byte limit.  also there are
+ * several newsservers out there which do have some length limit, so
+ * shortening to 998 is a good idea.
  */
-#define MAXREFSIZE 512
+#define MAXREFSIZE 998
 
 
 /*
@@ -2839,22 +2853,24 @@ mail_loop(
 
 			case iKeyPostSend:
 			case iKeyPostSend2:
-			{
-				t_bool confirm = TRUE;
+				{
+					t_bool confirm = TRUE;
 
-				if (prompt) {
-					clear_message();
-					if (prompt_yn(cLINES, prompt, FALSE) != 1)
-						confirm = FALSE;
-				}
+					if (prompt) {
+						clear_message();
+						if (prompt_yn(cLINES, prompt, FALSE) != 1)
+							confirm = FALSE;
+					}
 
-				/* TODO: wrap article into message/rfc822? */
-				if (confirm && submit_mail_file(filename, group)) {
-					info_message(_(txt_articles_mailed), 1, _(txt_article_singular));
-					return POSTED_OK;
+					/* TODO: wrap article into message/rfc822? */
+					if (confirm && submit_mail_file(filename, group)) {
+						info_message(_(txt_articles_mailed), 1, _(txt_article_singular));
+						return POSTED_OK;
+					}
 				}
-				return ret;
-			}
+			return ret;
+			/* NOTREACHED */
+			break;
 
 			default:
 				break;
@@ -3289,6 +3305,7 @@ cancel_article(
 		return redraw_screen;
 #endif /* FORGERY */
 	} else {
+		char *smsg;
 		char buff[LEN];
 		char keycancel[MAXKEYLEN], keyquit[MAXKEYLEN], keysupersede[MAXKEYLEN];
 
@@ -3298,7 +3315,8 @@ cancel_article(
 					printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.post_delete)));
 
 		option = prompt_slk_response(option_default, &menukeymap.post_delete,
-						"%s", sized_message(buff, art->subject));
+						"%s", sized_message(&smsg, buff, art->subject));
+		free(smsg);
 
 		switch (option) {
 			case iKeyPostCancel:
@@ -3430,6 +3448,7 @@ cancel_article(
 
 	forever {
 		{
+			char *smsg;
 			char buff[LEN];
 			char keycancel[MAXKEYLEN], keyedit[MAXKEYLEN], keyquit[MAXKEYLEN];
 
@@ -3438,7 +3457,8 @@ cancel_article(
 						printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.post_cancel)),
 						printascii(keycancel, map_to_local(iKeyPostCancel, &menukeymap.post_cancel)));
 
-			ch = prompt_slk_response(ch_default, &menukeymap.post_cancel, "%s", sized_message(buff, note_h.subj));
+			ch = prompt_slk_response(ch_default, &menukeymap.post_cancel, "%s", sized_message(&smsg, buff, note_h.subj));
+			free(smsg);
 		}
 
 		switch (ch) {
@@ -3472,6 +3492,8 @@ cancel_article(
 				unlink(cancel);
 				clear_message();
 				return redraw_screen;
+				/* NOTREACHED */
+				break;
 
 			default:
 				break;
@@ -3665,6 +3687,7 @@ repost_article(
 
 	ch = ch_default;
 	if (!force_command) {
+		char *smsg;
 		char buff[LEN];
 		char keyedit[MAXKEYLEN], keypost[MAXKEYLEN];
 		char keypostpone[MAXKEYLEN], keyquit[MAXKEYLEN];
@@ -3690,7 +3713,8 @@ repost_article(
 						printascii(keypostpone, map_to_local(iKeyPostPostpone, &menukeymap.post_post)));
 
 		ch = prompt_slk_response(ch_default, &menukeymap.post_post,
-			"%s", sized_message(buff, note_h.subj));
+			"%s", sized_message(&smsg, buff, note_h.subj));
+		free(smsg);
 	}
 	return (post_loop(POST_REPOST, group, ch, (Superseding ? _(txt_superseding_art) : _(txt_repost_an_article)), art_type, start_line_offset));
 }

@@ -3,10 +3,10 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2003-12-09
+ *  Updated   : 2003-12-28
  *  Notes     :
  *
- * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2004 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -919,3 +919,34 @@ normalize(
 #	endif /* HAVE_LIBICUUC */
 }
 #endif /* HAVE_UNICODE_NORMALIZATION */
+
+
+/*
+ * returns a pointer to allocated buffer containing the formated string
+ * must be freed if not needed anymore
+ */
+char *
+fmt_string(
+	const char *fmt,
+	...) {
+	char *str;
+#ifdef HAVE_VASPRINTF
+	int n;
+#endif /* HAVE_VASPRINTF */
+	va_list ap;
+
+	va_start(ap, fmt);
+#ifdef HAVE_VASPRINTF
+	if ((n = vasprintf(&str, fmt, ap)) == -1)	/* something went wrong */
+#endif /* HAVE_VASPRINTF */
+	{
+		size_t size = LEN;
+
+		str = my_malloc(size);
+		/* TODO: realloc str if necessary */
+		vsnprintf(str, size, fmt, ap);
+	}
+	va_end(ap);
+
+	return str;
+}

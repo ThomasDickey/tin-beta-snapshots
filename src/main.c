@@ -3,10 +3,10 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-11-18
+ *  Updated   : 2004-01-10
  *  Notes     :
  *
- * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -209,7 +209,7 @@ main(
 	}
 #endif /* DEBUG_NEWSRC */
 
-	if (!batch_mode) {
+	if (!(batch_mode || post_postponed_and_exit)) {
 		/*
 		 * Read user specific keybindings and input history
 		 */
@@ -434,7 +434,11 @@ read_cmd_line_options(
 				break;
 
 			case 'c':
-				/* TODO: should -c enter batch-mode? */
+				/*
+				 * TODO: should -c enter batch-mode?
+				 *       this would allow to use -c without -[NMS]
+				 */
+				/* batch_mode = TRUE; */
 				catchup = TRUE;
 				break;
 
@@ -511,6 +515,10 @@ read_cmd_line_options(
 
 			case 'o':	/* post postponed articles & exit */
 #ifndef NO_POSTING
+				/*
+				 * TODO: autoposting currently does some screen output, so we
+				 *       can't set batch_mode
+				 */
 				post_postponed_and_exit = TRUE;
 				check_for_new_newsgroups = FALSE;
 #else

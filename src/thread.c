@@ -3,10 +3,10 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-12-19
+ *  Updated   : 2003-12-28
  *  Notes     :
  *
- * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -230,12 +230,18 @@ build_tline(
 				;
 			if (!(ptr && arts[ptr->article].subject == art->subject)) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				if (mbstowcs(wtmp2, art->subject, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
+				char *buf = my_strdup(art->subject);
+
+				if (IS_LOCAL_CHARSET("UTF-8"))
+					utf8_valid(buf);
+
+				if (mbstowcs(wtmp2, buf, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
 					wtmp2[ARRAY_SIZE(wtmp2) - 1] = (wchar_t) '\0';
 					wcspart(wtmp, wtmp2, gap, ARRAY_SIZE(wtmp), TRUE);
 					if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
 						strncat(buffer, tmp, cCOLS * MB_CUR_MAX - len - 1);
 				}
+				free(buf);
 			}
 #else
 				strncat(buffer, art->subject, gap);
@@ -266,6 +272,9 @@ build_tline(
 			 */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 			get_author(TRUE, art, tmp, sizeof(tmp) - 1);
+
+			if (IS_LOCAL_CHARSET("UTF-8"))
+				utf8_valid(tmp);
 
 			if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
 				wtmp2[ARRAY_SIZE(wtmp2) - 1] = (wchar_t) '\0';
@@ -802,6 +811,7 @@ show_thread_page(
 	void)
 {
 	int i, art;
+	char *title;
 
 	signal_context = cThread;
 	currmenu = &thdmenu;
@@ -818,16 +828,11 @@ show_thread_page(
 	show_subject = ((arts[thread_respnum].archive != NULL) || (curr_group->attribute->thread_arts == THREAD_REFS) || (curr_group->attribute->thread_arts == THREAD_BOTH));
 
 	if (show_subject)
-		snprintf(mesg, sizeof(mesg), _(txt_stp_list_thread), grpmenu.curr + 1, grpmenu.max);
+		title = fmt_string(_(txt_stp_list_thread), grpmenu.curr + 1, grpmenu.max);
 	else
-		snprintf(mesg, sizeof(mesg), _(txt_stp_thread), cCOLS - 23, arts[thread_respnum].subject);
-
-	/*
-	 * Slight misuse of the 'mesg' buffer here. We need to clear it so that progress messages
-	 * are displayed correctly
-	 */
-	show_title(mesg);
-	mesg[0] = '\0';
+		title = fmt_string(_(txt_stp_thread), cCOLS - 23, arts[thread_respnum].subject);
+	show_title(title);
+	free(title);
 
 	MoveCursor(INDEX_TOP, 0);
 
@@ -1549,6 +1554,7 @@ mark_art_read(
 		case iKeyQuit: /* cancel operation */
 		case iKeyAbort:
 			return 0;
+			/* NOTREACHED */
 			break;
 	}
 

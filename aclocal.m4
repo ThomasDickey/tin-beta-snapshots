@@ -5,7 +5,7 @@ dnl Created   : 1995-08-24
 dnl Updated   : 2003-09-13
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2003 Thomas E. Dickey <dickey@herndon4.his.com>
+dnl Copyright (c) 1995-2004 Thomas E. Dickey <dickey@herndon4.his.com>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
