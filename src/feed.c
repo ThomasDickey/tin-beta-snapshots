@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2003-04-25
+ *  Updated   : 2003-05-15
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -73,10 +73,10 @@ struct t_counters {
 /*
  * Local prototypes
  */
-static char *get_save_filename(struct t_group *group, int function, char *filename, int filelen);
+static char *get_save_filename(struct t_group *group, int function, char *filename, int filelen, int respnum);
 static int get_feed_key(int function, int level, struct t_group *group, struct t_art_stat *thread, int respnum);
 static int get_post_proc_type(void);
-static t_bool feed_article(int art, int function, struct t_counters *counter, t_bool use_current, const char *data, const char *path);
+static t_bool feed_article(int art, int function, struct t_counters *counter, t_bool use_current, const char *data, struct t_group *group);
 static void print_save_summary(char type, int fed);
 #ifndef DISABLE_PRINTING
 	static t_bool print_file(const char *command, int respnum, t_openartinfo *artinfo);
@@ -99,7 +99,8 @@ get_save_filename(
 	struct t_group *group,
 	int function,
 	char *filename,
-	int filelen)
+	int filelen,
+	int respnum)
 {
 	char default_savefile[PATH_LEN];
 
@@ -110,7 +111,10 @@ get_save_filename(
 	 */
 	strncpy(default_savefile, (group->attribute->savefile ? group->attribute->savefile : tinrc.default_save_file), sizeof(default_savefile) - 1);
 
-	if (function == FEED_SAVE) {
+	/*
+	 * We don't ask when auto'S'aving or Archive-Name saving with auto_save
+	 */
+	if (!(function == FEED_AUTOSAVE || (group->attribute->auto_save && arts[respnum].archive))) {
 		if (!prompt_default_string(_(txt_save_filename), filename, filelen, default_savefile, HIST_SAVE_FILE)) {
 			clear_message();
 			return NULL;
@@ -165,7 +169,7 @@ get_post_proc_type(
 	char keyno[MAXKEYLEN], keyyes[MAXKEYLEN], keyquit[MAXKEYLEN];
 	char keyshar[MAXKEYLEN];
 
-	ch = (char) prompt_slk_response(proc_ch_default,
+	ch = (char) prompt_slk_response(ch_post_process[curr_group->attribute->post_proc_type],
 				&menukeymap.feed_post_process_type,
 				_(txt_choose_post_process_type),
 				printascii(keyno, map_to_local(iKeyPProcNo, &menukeymap.feed_post_process_type)),
@@ -200,14 +204,6 @@ get_feed_key(
 	constext *prompt;
 	int ch, ch_default;
 
-	/*
-	 * Try and work out what default the user wants
-	 * thread->total = # arts in thread
-	 */
-	ch_default = (num_of_tagged_arts ? iKeyFeedTag :
-					(level == GROUP_LEVEL && thread->total > 1 ? iKeyFeedThd :
-						(thread->selected_total ? iKeyFeedHot : iKeyFeedArt)));
-
 	switch (function) {
 		case FEED_MAIL:
 			prompt = txt_mail;
@@ -225,6 +221,7 @@ get_feed_key(
 			break;
 #endif /* !DISABLE_PRINTING */
 
+		/* FEED_AUTOSAVE doesn't prompt */
 		case FEED_SAVE:
 			prompt = txt_save;
 			break;
@@ -243,20 +240,24 @@ get_feed_key(
 	}
 
 	/*
-	 * TODO: someone please rewrite this in a way that is easily understandable
-	 * We only query for what to feed when:
-	 *	We are NOT auto'S'aving
-	 *  auto_save is set and we did not 's'ave (ie, we're print/pipe/mailing?)
-	 *	?????
+	 * Try and work out what default the user wants
+	 * thread->total = # arts in thread
 	 */
-	if (
-		(
-			!(group->attribute->auto_save && arts[respnum].archive) ||
-			 (group->attribute->auto_save && function != FEED_SAVE) ||
-			  ch_default == iKeyFeedTag
-		)
-			&& function != FEED_AUTOSAVE_TAGGED
-	) {
+	ch_default = (num_of_tagged_arts ? iKeyFeedTag :
+					(arts_selected() ? iKeyFeedHot :
+					((level == GROUP_LEVEL && thread->total > 1) ? iKeyFeedThd :
+					(thread->selected_total ? iKeyFeedHot :
+					iKeyFeedArt))));
+
+	/*
+	 * Don't bother querying when:
+	 *  auto'S'aving and there are tagged or selected(hot) articles
+	 *  using the auto_save feature on Archive postings
+	 */
+	if ((function == FEED_AUTOSAVE && (num_of_tagged_arts || arts_selected())) ||
+			(group->attribute->auto_save && arts[respnum].archive))
+		ch = ch_default;
+	else {
 		char buf[LEN];
 		char keyart[MAXKEYLEN], keythread[MAXKEYLEN], keyhot[MAXKEYLEN];
 		char keypat[MAXKEYLEN], keytag[MAXKEYLEN], keyquit[MAXKEYLEN];
@@ -270,8 +271,7 @@ get_feed_key(
 			printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.feed_art_thread_regex_tag)));
 
 		ch = prompt_slk_response(ch_default, &menukeymap.feed_art_thread_regex_tag, "%s %s", _(prompt), buf);
-	} else
-		ch = ch_default;
+	}
 
 	switch (ch) {
 		case iKeyQuit:
@@ -366,7 +366,7 @@ feed_article(
 	struct t_counters *counter,	/* Accounting */
 	t_bool use_current,		/* Use already open pager article */
 	const char *data,		/* Extra data if needed, print command or save filename */
-	const char *path)
+	struct t_group *group)
 {
 	t_bool ok = TRUE;		/* Assume success */
 	t_openartinfo openart;
@@ -374,10 +374,35 @@ feed_article(
 
 	counter->total++;
 
+	/*
+	 * Update the on-screen progress before art_open(), which is the bottleneck
+	 * timewise
+	 */
+	switch (function) {
+#ifndef DONT_HAVE_PIPING
+		case FEED_PIPE:
+			/* TODO: looks odd because screen mode is raw */
+			wait_message(0, "%s (%d/%d)", _(txt_piping), counter->total, counter->max);
+			break;
+#endif /* !DONT_HAVE_PIPING */
+
+#ifndef DISABLE_PRINTING
+		case FEED_PRINT:
+			/* TODO: looks odd because screen mode is raw */
+			wait_message(0, "%s (%d/%d)", _(txt_printing), counter->total, counter->max);
+			break;
+#endif /* !DISABLE_PRINTING */
+
+		case FEED_SAVE:
+		case FEED_AUTOSAVE:
+			wait_message(0, "%s (%d/%d)", _(txt_saving), counter->total, counter->max);
+			break;
+	}
+
 	if (use_current)
 		openartptr = &pgart;			/* Use art already open in pager */
 	else {
-		if (art_open(FALSE, &arts[art], path, openartptr, TRUE) < 0)	/* User abort or an error */
+		if (art_open(FALSE, &arts[art], group, openartptr, TRUE) < 0)	/* User abort or an error */
 			return FALSE;
 	}
 
@@ -394,15 +419,11 @@ feed_article(
 				case POSTED_OK:
 					break;
 			}
-
 			confirm = bool_not(ok);		/* Only confirm the next one after a failure */
 			break;
 
 #ifndef DONT_HAVE_PIPING
 		case FEED_PIPE:
-			/* TODO: looks odd because screen mode is raw */
-			show_progress(_(txt_piping), counter->success + 1, counter->max);
-
 			rewind(openartptr->raw);
 			ok = copy_fp(openartptr->raw, pipe_fp);	/* Check for SIGPIPE on return */
 			break;
@@ -410,16 +431,12 @@ feed_article(
 
 #ifndef DISABLE_PRINTING
 		case FEED_PRINT:
-			/* TODO: looks odd because screen mode is raw */
-			show_progress(_(txt_printing), counter->success + 1, counter->max);
-
 			ok = print_file(data /*print_command*/, art, openartptr);
 			break;
 #endif /* !DISABLE_PRINTING */
 
 		case FEED_SAVE:
-		case FEED_AUTOSAVE_TAGGED:
-			wait_message(0, "%s %d  ", _(txt_saving), counter->success + 1);
+		case FEED_AUTOSAVE:
 			ok = save_and_process_art(openartptr, &arts[art], is_mailbox, data /*filename*/, counter->max, (proc_ch != iKeyPProcNo));
 			break;
 
@@ -439,7 +456,7 @@ feed_article(
 	/*
 	 * Mark read for the SAVE cases (but not print/pipe etc..)
 	 */
-	if (function == FEED_SAVE || function == FEED_AUTOSAVE_TAGGED) {
+	if (function == FEED_SAVE || function == FEED_AUTOSAVE) {
 		if (ok && tinrc.mark_saved_read)
 			art_mark(&CURR_GROUP, &arts[art], ART_READ);
 	}
@@ -454,7 +471,7 @@ feed_article(
  * Single entry point for 'feed'ing article(s) to a backend
  * Function:
  *	FEED_PIPE, FEED_MAIL, FEED_PRINT, FEED_REPOST
- *	FEED_SAVE, FEED_AUTOSAVE_TAGGED
+ *	FEED_SAVE, FEED_AUTOSAVE
  * Level:
  *	GROUP_LEVEL, THREAD_LEVEL, PAGE_LEVEL
  * Respnum:
@@ -478,7 +495,6 @@ feed_articles(
 	struct t_group *group,
 	int respnum)
 {
-	char group_path[PATH_LEN];
 	char outpath[PATH_LEN];
 	int art;
 	int feed_type;
@@ -499,8 +515,14 @@ feed_articles(
 	}
 #endif /* DONT_HAVE_PIPING */
 
+	if (function == FEED_AUTOSAVE) {
+		if (num_of_tagged_arts == 0 && !arts_selected()) {
+			info_message(_(txt_no_marked_arts));
+			return;
+		}
+	}
+
 	set_xclick_off();		/* TODO: there is no corresponding set_xclick_on()? */
-	make_group_path(group->name, group_path);
 	thread_base = which_thread(respnum);
 	stat_thread(thread_base, &sbuf);
 
@@ -552,29 +574,23 @@ feed_articles(
 		 *	Determine if post processed file deletion required
 		 */
 		case FEED_SAVE:
-		case FEED_AUTOSAVE_TAGGED:
+		case FEED_AUTOSAVE:
 			{
 				char savefile[PATH_LEN];
 
 				/* This will force automatic selection unless changed by user */
 				savefile[0] = '\0';
 
-				/*
-				 * Only explicitly ask in these cases, otherwise generation is
-				 * automatic in expand_save_filename()
-				 */
-				if (!group->attribute->auto_save || (arts[respnum].archive == NULL)) {
-					if (get_save_filename(group, function, savefile, sizeof(savefile)) == NULL)
-						return;
-				}
+				if (get_save_filename(group, function, savefile, sizeof(savefile), respnum) == NULL)
+					return;
 
-				proc_ch = proc_ch_default;
+				proc_ch = ch_post_process[curr_group->attribute->post_proc_type];
 
 				/* We don't postprocess mailboxen */
 				if ((is_mailbox = expand_save_filename(outpath, savefile)) == TRUE)
 					proc_ch = iKeyPProcNo;
 				else {
-					if ((proc_ch = get_post_proc_type()) == 0)
+					if (function != FEED_AUTOSAVE && (proc_ch = get_post_proc_type()) == 0)
 						return;
 				}
 				if (!create_path(outpath))
@@ -655,18 +671,23 @@ feed_articles(
 	switch (feed_type) {
 		case iKeyFeedArt:		/* article */
 			counter.max = 1;
-			if (!feed_article(respnum, function, &counter, use_current, outpath, group_path))
+			if (!feed_article(respnum, function, &counter, use_current, outpath, group))
 				handle_SIGPIPE();
 			break;
 
 		case iKeyFeedThd:		/* thread */
-			counter.max = sbuf.total;
+			/* Get accurate count first */
 			for_each_art_in_thread(art, which_thread(respnum)) {
-				if (tinrc.process_only_unread && arts[art].status == ART_READ)
-					continue;
-				/* Keep going - ignore errors */
-				feed_article(art, function, &counter, use_current, outpath, group_path);
-				handle_SIGPIPE();
+				if (!(tinrc.process_only_unread && arts[art].status == ART_READ))
+					counter.max++;
+			}
+
+			for_each_art_in_thread(art, which_thread(respnum)) {
+				if (!(tinrc.process_only_unread && arts[art].status == ART_READ)) {
+					/* Keep going - don't abort on errors */
+					if (!feed_article(art, function, &counter, use_current, outpath, group))
+						handle_SIGPIPE();
+				}
 			}
 			break;
 
@@ -676,13 +697,12 @@ feed_articles(
 				for_each_art(art) {
 					/* process_only_unread does NOT apply on tagged arts */
 					if (arts[art].tagged == i) {
-						/* Keep going - ignore errors */
-						feed_article(art, function, &counter, use_current, outpath, group_path);
-						handle_SIGPIPE();
+						/* Keep going - don't abort on errors */
+						if (!feed_article(art, function, &counter, use_current, outpath, group))
+							handle_SIGPIPE();
 					}
 				}
 			}
-
 			untag_all_articles();	/* TODO: this will untag even on partial failure */
 			break;
 
@@ -709,7 +729,8 @@ feed_articles(
 						continue;
 					arts[art].matched = FALSE;
 
-					if (feed_article(art, function, &counter, use_current, outpath, group_path)) {
+					/* Keep going - don't abort on errors */
+					if (feed_article(art, function, &counter, use_current, outpath, group)) {
 						if (feed_type == iKeyFeedHot)
 							arts[art].selected = FALSE;
 					} else
@@ -746,7 +767,7 @@ got_sig_pipe_while_piping:
 #endif /* !DONT_HAVE_PIPING */
 
 		case FEED_SAVE:
-		case FEED_AUTOSAVE_TAGGED:
+		case FEED_AUTOSAVE:
 			if (num_save == 0) {
 				wait_message(1, _(txt_saved_nothing));
 				break;
@@ -759,7 +780,7 @@ got_sig_pipe_while_piping:
 				if (CURR_GROUP.attribute->delete_tmp_files)
 					delete_post_proc = TRUE;
 				else {
-					if (function != FEED_AUTOSAVE_TAGGED) {
+					if (function != FEED_AUTOSAVE) {
 						if (prompt_yn(cLINES, _(txt_delete_processed_files), TRUE) == 1)
 							delete_post_proc = TRUE;
 					}
@@ -818,7 +839,7 @@ got_sig_pipe_while_piping:
 #endif /* !DISABLE_PRINTING */
 
 		case FEED_SAVE:		/* Reporting done earlier */
-		case FEED_AUTOSAVE_TAGGED:
+		case FEED_AUTOSAVE:
 		default:
 			break;
 	}

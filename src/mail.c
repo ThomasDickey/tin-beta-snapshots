@@ -149,7 +149,7 @@ write_mail_active_file(
 	FILE *fp;
 	char *file_tmp;
 	char group_path[PATH_LEN];
-	register int i;
+	int i;
 	struct t_group *group;
 
 	if (no_write && file_size(mail_active_file) != -1L)
@@ -242,7 +242,6 @@ read_newsgroups_file(
 		if (!batch_mode && verb)
 			wait_message(0, _(txt_reading_newsgroups_file));
 
-
 		if (read_news_via_nntp && !read_local_newsgroups_file && !no_write)
 			fp_save = fopen(local_newsgroups_file, "w" FOPEN_OPTS);
 
@@ -330,13 +329,6 @@ read_groups_descriptions(
 			 */
 			process_charsets(&r, &r_len, "US-ASCII", tinrc.mm_local_charset, FALSE);
 			group->description = convert_to_printable(r);
-
-#	if 0 /* not useful for cache_overview_files */
-			if (group->type == GROUP_TYPE_NEWS) {
-				if (fp_save != NULL && read_news_via_nntp && !read_local_newsgroups_file)
-					fprintf(fp_save, "%s\n", ptr);
-			}
-#	endif /* 0 */
 		}
 
 		if (++count % 100 == 0)

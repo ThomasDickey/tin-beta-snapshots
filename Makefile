@@ -1,7 +1,7 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2002-04-08
+# Updated: 2002-05-06
 #
 
 PROJECT	= tin
@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 5
 SVER	= 18
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20030425
+DVER	= 20030602
 EXE	= tin
 
 # directory structure
@@ -111,7 +111,9 @@ CFILES	= \
 	$(SRCDIR)/my_tmpfile.c \
 	$(SRCDIR)/thread.c \
 	$(SRCDIR)/trace.c \
+	$(SRCDIR)/version.c \
 	$(SRCDIR)/wildmat.c \
+	$(SRCDIR)/xface.c \
 	$(SRCDIR)/xref.c
 
 AMIGA	= \
@@ -189,7 +191,6 @@ TOL	= \
 	$(TOLDIR)/opt-case.pl \
 	$(TOLDIR)/tinlock \
 	$(TOLDIR)/tinews.pl \
-	$(TOLDIR)/tinrcupdate.pl \
 	$(TOLDIR)/url_handler.sh \
 	$(TOLDIR)/w2r.pl \
 	$(TOLDIR)/expand_aliases.tgz
@@ -435,7 +436,6 @@ chmod:
 	$(TOLDIR)/opt-case.pl \
 	$(TOLDIR)/tinlock \
 	$(TOLDIR)/tinews.pl \
-	$(TOLDIR)/tinrcupdate.pl \
 	$(TOLDIR)/url_handler.sh \
 	$(TOLDIR)/w2r.pl \
 	$(PCREDIR)/perltest \

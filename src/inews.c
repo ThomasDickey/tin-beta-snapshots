@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2003-04-08
+ *  Updated   : 2003-05-01
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -92,10 +92,12 @@ submit_inews(
 	char *a_message_id)
 {
 	FILE *fp;
+	char *line;
 	char *ptr, *ptr2;
+	char buf[HEADER_LEN];
 	char from_name[HEADER_LEN];
 	char message_id[HEADER_LEN];
-	char line[HEADER_LEN];
+	char response[NNTP_STRLEN];
 	int auth_error = 0;
 	int respcode;
 	t_bool leave_loop = FALSE;
@@ -118,26 +120,24 @@ submit_inews(
 	from_name[0] = '\0';
 	message_id[0] = '\0';
 
-	while (fgets(line, (int) sizeof(line), fp) != NULL) {
-		if (line[0] != '\n') {
-			ptr = strchr(line, ':');
-			if (ptr - line == 4 && !strncasecmp(line, "From", 4)) {
-				strcpy(from_name, line);
-				if ((ptr = strchr(from_name, '\n')))
-					*ptr = '\0';
-			}
-			if (ptr - line == 10 && !strncasecmp(line, "Message-ID", 10)) {
-				strcpy(message_id, ptr + 2);
-				id_in_article = TRUE;
-				if ((ptr = strchr(message_id, '\n')))
-					*ptr = '\0';
-			}
+	while ((line = tin_fgets(fp, TRUE)) != NULL) {
+		if (line[0] == '\0') /* end of headers */
+			break;
+
+		ptr = strchr(line, ':');
+		if (ptr - line == 4 && !strncasecmp(line, "From", 4)) {
+			STRCPY(from_name, line);
+		}
+
+		if (ptr - line == 10 && !strncasecmp(line, "Message-ID", 10)) {
+			STRCPY(message_id, ptr + 2);
+			id_in_article = TRUE;
+		}
+
 #	ifdef USE_CANLOCK
-			if (ptr - line == 11 && !strncasecmp(line, "Cancel-Lock", 11))
-				can_lock_in_article = TRUE;
+		if (ptr - line == 11 && !strncasecmp(line, "Cancel-Lock", 11))
+			can_lock_in_article = TRUE;
 #	endif /* USE_CANLOCK */
-		} else
-			break; /* end of headers */
 	}
 
 	if ((from_name[0] == '\0') || (from_name[6] == '\0')) {
@@ -214,20 +214,20 @@ submit_inews(
 		 * Send POST command to NNTP server
 		 * Receive CONT_POST or ERROR response code from NNTP server
 		 */
-		if (nntp_command("POST", CONT_POST, line, sizeof(line)) == NULL) {
-			error_message("%s", line);
+		if (nntp_command("POST", CONT_POST, response, sizeof(response)) == NULL) {
+			error_message("%s", response);
 			fclose(fp);
 			return ret_code;
 		}
 
 		/*
 		 * check article if it contains a Message-ID header
-		 * if not scan line if it contains a Message-ID
+		 * if not scan response line if it contains a Message-ID
 		 * if it's present: use it.
 		 */
 		if (message_id[0] == '\0') {
 			/* simple syntax check - locate last '<' */
-			if ((ptr = strrchr(line, '<')) != NULL) {
+			if ((ptr = strrchr(response, '<')) != NULL) {
 				/* search next '>' */
 				if ((ptr2 = strchr(ptr, '>')) != NULL) {
 					/* terminate string */
@@ -243,8 +243,8 @@ submit_inews(
 		/*
 		 * Send Path: (and Sender: if needed) headers
 		 */
-		sprintf(line, "Path: %s", PATHMASTER);
-		u_put_server(line);
+		snprintf(buf, sizeof(buf), "Path: %s", PATHMASTER);
+		u_put_server(buf);
 		u_put_server("\r\n");
 
 		if (sender == 1) {
@@ -258,8 +258,8 @@ submit_inews(
 		 */
 		if (*message_id) {
 			if (!id_in_article) {
-				sprintf(line, "Message-ID: %s", message_id);
-				u_put_server(line);
+				snprintf(buf, sizeof(buf), "Message-ID: %s", message_id);
+				u_put_server(buf);
 				u_put_server("\r\n");
 			}
 #	ifdef USE_CANLOCK
@@ -270,8 +270,8 @@ submit_inews(
 					lock[0] = '\0';
 					if ((lptr = build_canlock(message_id, get_secret())) != NULL) {
 						STRCPY(lock, lptr);
-						sprintf(line, "Cancel-Lock: %s", lock);
-						u_put_server(line);
+						snprintf(buf, sizeof(buf), "Cancel-Lock: %s", lock);
+						u_put_server(buf);
 						u_put_server("\r\n");
 					}
 				}
@@ -281,13 +281,7 @@ submit_inews(
 		/*
 		 * Send article 1 line at a time ending with "."
 		 */
-		while (fgets(line, (int) sizeof(line), fp) != NULL) {
-			/*
-			 * Remove linefeed from line
-			 */
-			if ((ptr = strrchr(line, '\n')) != NULL)
-				*ptr = '\0';
-
+		while ((line = tin_fgets(fp, FALSE)) != NULL) {
 			/*
 			 * If line starts with a '.' add another '.' to stop truncation
 			 */
@@ -325,7 +319,7 @@ submit_inews(
 		 * recognize if posting has failed due to missing authentication in
 		 * which case the complete posting has to be resent.
 		 */
-		respcode = get_only_respcode(line, sizeof(line));
+		respcode = get_only_respcode(response, sizeof(response));
 		leave_loop = TRUE;
 
 		/*
@@ -347,38 +341,36 @@ submit_inews(
 	 * response.)
 	 */
 	if (respcode != OK_POSTED) {
-		error_message("Posting failed(%s)", line);
+		/* TODO: -> lang.c */
+		error_message("Posting failed (%s)", str_trim(response));
 		return ret_code;
 	}
 
 	/*
 	 * scan line if it contains a Message-ID
 	 */
-	{
-		/* simple syntax check - locate last '<' */
-		if ((ptr = strrchr(line, '<')) != NULL) {
-			/* search next '>' */
-			if ((ptr2 = strchr(ptr, '>')) != NULL) {
-				/* terminate string */
-				*++ptr2 = '\0';
-				/* check for @ and no whitespaces */
-				if ((strchr(ptr, '@') != NULL) && (strpbrk(ptr, " \t") == NULL))
-					/* copy Message-ID */
-					strcpy(a_message_id, ptr);
-			}
+	/* simple syntax check - locate last '<' */
+	if ((ptr = strrchr(response, '<')) != NULL) {
+		/* search next '>' */
+		if ((ptr2 = strchr(response, '>')) != NULL) {
+			/* terminate string */
+			*++ptr2 = '\0';
+			/* check for @ and no whitespaces */
+			if ((strchr(ptr, '@') != NULL) && (strpbrk(ptr, " \t") == NULL))
+				strcpy(a_message_id, ptr); /* copy Message-ID */
 		}
+	}
 
 #if 0
-		if (*message_id && *a_message_id) { /* check if returned ID matches purposed ID */
-			if (strcmp(message_id, a_message_id)) {
-				; /* shouldn't happen - warn user? */
-			}
+	if (*message_id && *a_message_id) { /* check if returned ID matches purposed ID */
+		if (strcmp(message_id, a_message_id)) {
+			; /* shouldn't happen - warn user? */
 		}
+	}
 #endif /* 0 */
 
-		if (*message_id && (id_in_article || !*a_message_id))
-			strcpy(a_message_id, message_id);
-	}
+	if (*message_id && (id_in_article || !*a_message_id))
+		strcpy(a_message_id, message_id);
 
 	ret_code = TRUE;
 
@@ -466,7 +458,6 @@ sender_needed(
 	char *sender_dot_pos;
 	char *p;
 	char from_addr[HEADER_LEN];
-	char from_name[HEADER_LEN];
 	char sender_addr[HEADER_LEN];
 	char sender_line[HEADER_LEN];
 	char sender_name[HEADER_LEN];
@@ -478,9 +469,8 @@ sender_needed(
 	}
 #	endif /* DEBUG */
 
-	/* split From: line into address & comment */
-
-	gnksa_do_check_from(from, from_addr, from_name);
+	/* extract address */
+	strip_name(from, from_addr);
 
 	snprintf(sender_line, sizeof(sender_line), "Sender: %s", sender);
 

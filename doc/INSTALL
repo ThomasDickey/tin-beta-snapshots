@@ -54,6 +54,7 @@ The following configure options and defines are documented in detail:
   FORGERY                                 REQUIRE_BRACKETS_IN_DOMAIN_LITERAL
   HAVE_LIBUU                              SMALL_MEMORY_MACHINE
   HAVE_UUDEVIEW_H                         USE_CANLOCK
+  XFACE_ABLE
 
 
 Not yet documented configure options and defines:
@@ -75,7 +76,8 @@ System related:
   --install-prefix                        --sharedstatedir
   --libdir                                --srcdir
   --libexecdir                            --sysconfdir
-
+  --with-x                                --with-Xaw3d
+  --with-neXtaw                           --with-XawPlus
 
 News machine names
 ------------------
@@ -620,10 +622,12 @@ FOLLOW_USEFOR_DRAFT
 issue a warning instead of an error-message if Newsgroups: or
 Followup-To:-header contains spaces, newlines or tabs.
 
+XFACE_ABLE
+Define if you have slrnface installed and want to use it to show X-Faces
 
 Compiled & installed
 --------------------
 Tin was successfully built and installed on a variety of platforms including
 Linux, FreeBSD, OpenBSD, NetBSD, Darwin, Solaris, IRIX, HP-UX, Ultrix,
-Tru64, AIX, SINIX, UXP/V, QNX, GNU Hurd, DG/UX, SEIUX, Cygwin, AmigaOS and
-VMS. For a detailed list see <http://www.tin.org/builds.html>
+Tru64, AIX, SINIX, UXP/V, QNX, GNU Hurd, DG/UX, SEIUX and Cygwin.
+For a detailed list see <http://www.tin.org/builds.html>

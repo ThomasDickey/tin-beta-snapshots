@@ -3,7 +3,7 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 2003-04-10
+ *  Updated   : 2003-05-07
  *
  * Copyright (c) 1997-2003 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
@@ -73,7 +73,7 @@ static char *tin_read(char *buffer, size_t len, FILE *fp, t_bool header);
  * Used by the I/O read routine to look for keyboard input
  * Returns TRUE if user aborted with 'q' or 'z' (lynx-style)
  *         FALSE otherwise
- * TODO: document 'z' (, and allow it's remapping?)
+ * TODO: document 'z' (, and allow it's remapping?) and 'Q'
  */
 static t_bool
 wait_for_input(
@@ -342,6 +342,10 @@ tin_fgets(
 	partial_read = FALSE;
 
 #if 1
+	if (fp == NULL) {
+		FreeAndNull(dynbuf);
+		return NULL;
+	}
 	/* Allocate initial buffer */
 	if (dynbuf == NULL) {
 		dynbuf = my_malloc(INIT * sizeof(*dynbuf));

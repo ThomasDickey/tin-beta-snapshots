@@ -265,8 +265,10 @@ parse_mailcap_line(
 	free(optr);
 
 	if (tmailcap->test != NULL) { /* test field given */
-		/* TODO: EndWin()/InitWin() around system needed? */
-		/* TODO: use invoke_cmd()? */
+		/*
+		 * TODO: EndWin()/InitWin() around system needed?
+		 *       use invoke_cmd()?
+		 */
 		if (system(tmailcap->test)) { /* test failed? */
 			free_mailcap(tmailcap);
 			return ((t_mailcap *) 0);

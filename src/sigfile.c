@@ -196,11 +196,11 @@ static int
 thrashdir(
 	char *sigdir)
 {
+	DIR *dirp;
+	DIR_BUF *dp;
 	char *cwd;
 	int safeguard, recurse;
-	register DIR *dirp;
-	register DIR_BUF *dp;
-	register int c = 0, numentries, pick;
+	int c = 0, numentries, pick;
 	struct stat st;
 
 	sigfile[0] = '\0';

@@ -3,7 +3,7 @@
  *  Module    : open.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-04-13
+ *  Updated   : 2003-05-15
  *  Notes     : Routines to make reading news locally (ie. /var/spool/news)
  *              or via NNTP transparent
  *
@@ -822,21 +822,24 @@ open_art_header(
  */
 FILE *
 open_art_fp(
-	const char *group_path,
+	struct t_group *group,
 	long art)
 {
 	FILE *art_fp = (FILE *) 0;
 	char buf[NNTP_STRLEN];
-	char pbuf[PATH_LEN];
-	char fbuf[NAME_LEN + 1];
 
 #ifdef NNTP_ABLE
-	if (read_news_via_nntp && CURR_GROUP.type == GROUP_TYPE_NEWS) {
+	if (read_news_via_nntp && group->type == GROUP_TYPE_NEWS) {
 		snprintf(buf, sizeof(buf), "ARTICLE %ld", art);
 		art_fp = nntp_command(buf, OK_ARTICLE, NULL, 0);
 	} else {
 #endif /* NNTP_ABLE */
-		joinpath(buf, CURR_GROUP.spooldir, group_path);
+		char pbuf[PATH_LEN];
+		char fbuf[NAME_LEN + 1];
+		char group_path[PATH_LEN];
+
+		make_group_path(group->name, group_path);
+		joinpath(buf, group->spooldir, group_path);
 		snprintf(fbuf, sizeof(fbuf), "%ld", art);
 		joinpath(pbuf, buf, fbuf);
 

@@ -3,7 +3,7 @@
  *  Module    : bool.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2000-01-03
+ *  Updated   : 2003-05-16
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
@@ -38,15 +38,38 @@
 #ifndef BOOL_H
 #	define BOOL_H 1
 
-#	ifndef FALSE
-#		define FALSE 0
-#	endif /* !FALSE */
+#	if 0 /* TODO: test me */
+#		ifndef __cplusplus
+#			ifdef HAVE_STDBOOL_H
+#				include <stdbool.h>
+#				ifdef _Bool
+	typefdef _Bool t_bool;
+#				endif /* _Bool */
+#			endif /* HAVE_STDBOOL_H */
+#		endif /* __cplusplus */
+#		ifndef FALSE
+#			define FALSE 0
+#		endif /* !FALSE */
+#		ifndef TRUE
+#			define TRUE (!FALSE)
+#		endif /* !TRUE */
+#		ifndef t_bool
+	typedef unsigned t_bool;	/* don't make this a char or short! */
+#		endif /* t_bool */
 
-#	ifndef TRUE
-#		define TRUE (!FALSE)
-#	endif /* !TRUE */
+#	else
+
+#		ifndef FALSE
+#			define FALSE 0
+#		endif /* !FALSE */
+
+#		ifndef TRUE
+#			define TRUE (!FALSE)
+#		endif /* !TRUE */
 
 	typedef unsigned t_bool;	/* don't make this a char or short! */
+
+#	endif /* 0 */
 
 	extern /*@unused@*/ t_bool bool_equal (t_bool, t_bool) /*@*/ ;
 #	define bool_equal(a,b) ((a) ? (b) : !(b))

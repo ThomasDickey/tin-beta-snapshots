@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2003-04-25
+ *  Updated   : 2003-05-16
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
@@ -37,10 +37,6 @@
 
 #ifndef PROTO_H
 #	define PROTO_H 1
-
-#	ifndef RFC2046_H
-#		include <rfc2046.h>
-#	endif /* !RFC2046_H */
 
 /* This fixes ambiguities on platforms that don't distinguish extern case */
 #ifdef CASE_PROBLEM
@@ -119,16 +115,16 @@ extern void write_config_file(char *file);
 /* cook.c */
 extern const char *get_filename(t_param *ptr);
 extern t_bool cook_article(t_bool wrap_lines, t_openartinfo *artinfo, int tabs, int hide_uue);
-extern t_bool expand_ctrl_chars(char *to, const char *from, int length, size_t cook_width);
+extern t_bool expand_ctrl_chars(char **line, int *length, size_t cook_width);
 
 /* curses.c */
 extern OUTC_RETTYPE outchar(OUTC_ARGS);
 extern int InitScreen(void);
 extern int RawState(void);
 extern int ReadCh(void);
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE) && !defined(USE_CURSES)
 	extern wint_t ReadWch(void);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE && !USE_CURSES */
 extern int get_arrow_key(int prech);
 extern int get_termcaps(void);
 extern void ClearScreen(void);
@@ -184,7 +180,7 @@ extern void feed_articles(int function, int level, struct t_group *group, int re
 /* filter.c */
 extern t_bool filter_articles(struct t_group *group);
 extern t_bool filter_menu(int type, struct t_group *group, struct t_article *art);
-extern t_bool quick_filter(int type, struct t_group *group, struct t_article *art);
+extern t_bool quick_filter(int type, struct t_group *group, struct t_article *art, int origin);
 extern t_bool quick_filter_select_posted_art(struct t_group *group, const char *subj, const char *a_message_id);
 extern t_bool read_filter_file(const char *file);
 extern void free_filter_array(struct t_filters *ptr);
@@ -226,11 +222,6 @@ extern void hash_reclaim(void);
 extern void show_help_page(const int level, const char *title);
 extern void show_mini_help(int level);
 extern void toggle_mini_help(int level);
-#ifdef USE_CURSES
-	extern void display_help_page(t_bool first);
-#else
-	extern void display_help_page(void);
-#endif /* USE_CURSES */
 
 /* header.c */
 extern const char *get_domain_name(void);
@@ -247,16 +238,11 @@ extern void get_user_info(char *user_name, char *full_name);
 
 /* init.c */
 extern t_bool(*wildcard_func)(const char *str, char *patt, t_bool icase);		/* Wildcard matching function */
-extern t_bool create_mail_save_dirs(void);
 extern void init_selfinfo(void);
 extern void postinit_regexp(void);
-extern void set_up_private_index_cache(void);
 #ifdef HAVE_COLOR
 	extern void postinit_colors(void);
 #endif /* HAVE_COLOR */
-#ifdef USE_INN_NNTPLIB
-	extern char *GetConfigValue(const char *name);
-#endif /* USE_INN_NNTPLIB */
 
 /* joinpath.c */
 extern void joinpath(char *result, const char *dir, const char *file);
@@ -319,6 +305,7 @@ extern void init_alloc(void);
 extern void free_all_arrays(void);
 extern void free_art_array(void);
 extern void free_attributes_array(void);
+extern void free_if_not_default(char **attrib, char *deflt);
 extern void free_save_array(void);
 extern void *my_malloc1(const char *file, int line, size_t size);
 extern void *my_calloc1(const char *file, int line, size_t nmemb, size_t size);
@@ -344,7 +331,7 @@ extern int my_chdir(char *path);
 extern int my_isprint(int c);
 extern int my_mkdir(char *path, mode_t mode);
 extern int parse_from(const char *from, char *address, char *realname);
-extern int strfmailer(char *the_mailer, char *subject, char *to, const char *filename, char *s, size_t maxsize, char *format);
+extern int strfmailer(const char *mail_prog, char *subject, char *to, const char *filename, char *dest, size_t maxsize, const char *format);
 extern int strfpath(const char *format, char *str, size_t maxsize, struct t_group *group);
 extern int strfquote(const char *group, int respnum, char *s, size_t maxsize, char *format);
 extern long file_mtime(const char *file);
@@ -359,6 +346,8 @@ extern void asfail(const char *file, int line, const char *cond);
 extern void base_name(const char *fullpath, char *program);
 extern void cleanup_tmp_files(void);
 extern void copy_body(FILE *fp_ip, FILE *fp_op, char *prefix, char *initl, t_bool raw_data);
+extern void create_index_lock_file(char *the_lock_file);
+extern void dir_name(const char *fullpath, char *dir);
 extern void draw_percent_mark(long cur_num, long max_num);
 extern void get_author(t_bool thread, struct t_article *art, char *str, size_t len);
 extern void get_cwd(char *buf);
@@ -369,11 +358,11 @@ extern void read_input_history_file(void);
 extern void rename_file(const char *old_filename, const char *new_filename);
 extern void show_inverse_video_status(void);
 extern void strip_double_ngs(char *ngs_list);
-extern void strip_name(char *the_address, char *stripped_address);
+extern void strip_name(const char *from, char *address);
 extern void tin_done(int ret);
 extern void toggle_inverse_video(void);
 #ifdef CHARSET_CONVERSION
-	extern void buffer_to_network(char *line, int mmnwcharset);
+	extern t_bool buffer_to_network(char *line, int mmnwcharset);
 #endif /* CHARSET_CONVERSION */
 #ifdef HAVE_COLOR
 	extern t_bool toggle_color(void);
@@ -389,14 +378,11 @@ extern void toggle_inverse_video(void);
 	extern void shell_escape(void);
 	extern void do_shell_escape(void);
 #endif /* !NO_SHELL_ESCAPE */
-#ifndef NNTP_ONLY
-	extern void create_index_lock_file(char *the_lock_file);
-#endif /* !NNTP_ONLY */
 
 /* newsrc.c */
-extern int pos_group_in_newsrc(struct t_group *group, int pos);
 extern signed long int read_newsrc(char *newsrc_file, t_bool allgroups);
 extern signed long int write_newsrc(void);
+extern t_bool pos_group_in_newsrc(struct t_group *group, int pos);
 extern void art_mark(struct t_group *group, struct t_article *art, int flag);
 extern void backup_newsrc(void);
 extern void catchup_newsrc_file(void);
@@ -434,7 +420,7 @@ extern int get_newsrcname(char *newsrc_name, const char *nntpserver_name);
 extern void get_nntpserver(char *nntpserver_name, char *nick_name);
 
 /* open.c */
-extern FILE *open_art_fp(const char *group_path, long art);
+extern FILE *open_art_fp(struct t_group *group, long art);
 extern FILE *open_newgroups_fp(int the_index);
 extern FILE *open_news_active_fp(void);
 extern FILE *open_newsgroups_fp(void);
@@ -551,7 +537,7 @@ extern void rfc1521_encode(char *line, FILE *f, int e);
 /* rfc2046.c */
 extern const char *get_param(t_param *list, const char *name);
 extern char *parse_header(char *buf, const char *pat, t_bool decode, t_bool structured);
-extern int art_open(t_bool wrap_lines, struct t_article *art, const char *group_path, t_openartinfo *artinfo, t_bool show_progress_meter);
+extern int art_open(t_bool wrap_lines, struct t_article *art, struct t_group *group, t_openartinfo *artinfo, t_bool show_progress_meter);
 extern int content_type(char *type);
 extern int parse_rfc822_headers(struct t_header *hdr, FILE *from, FILE *to);
 extern t_part *new_part(t_part *part);
@@ -568,7 +554,6 @@ extern void rfc15211522_encode(const char *filename, constext *mime_encoding, st
 
 /* save.c */
 extern int check_start_save_any_news(int function, t_bool catchup);
-extern t_bool add_to_save_list(struct t_article *art, const char *path);
 extern t_bool create_path(const char *path);
 extern t_bool expand_save_filename(char *outpath, const char *path);
 extern t_bool post_process_files(int proc_type_ch, t_bool auto_delete);
@@ -597,7 +582,7 @@ extern int search(int key, int current_art, t_bool forward, t_bool repeat);
 extern int search_active(t_bool forward, t_bool repeat);
 extern int search_article(t_bool forward, t_bool repeat, int start_line, int lines, t_lineinfo *line, int reveal_ctrl_l_lines, FILE *fp);
 extern int search_config(t_bool forward, t_bool repeat, int current, int last);
-extern int search_body(int current_art, t_bool repeat);
+extern int search_body(struct t_group *group, int current_art, t_bool repeat);
 
 /* select.c */
 extern int add_my_group(const char *group, t_bool add);
@@ -666,19 +651,22 @@ extern void str_lwr(char *str);
 #	define strrstr(s,p)	my_strrstr(s,p)
 #endif /* !HAVE_STRRSTR */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	extern void wcspart(wchar_t *to, const wchar_t *from, int columns, int size_to);
+	extern void wcspart(wchar_t *to, const wchar_t *from, int columns, int size_to, t_bool pad);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 /* tags.c */
 extern int line_is_tagged(int n);
+extern int mark_tagged_read(struct t_group *group);
 extern int tag_multipart(int base_index);
+extern t_bool arts_selected(void);
+extern t_bool got_tagged_unread_arts(void);
 extern t_bool set_range(int level, int min, int max, int curr);
 extern t_bool tag_article(int art);
 extern t_bool untag_all_articles(void);
 extern void do_auto_select_arts(void);
-extern void remove_tag(long art);
 extern void undo_auto_select_arts(void);
 extern void undo_selections(void);
+extern void untag_article(long art);
 
 /* tmpfile.c */
 #ifndef HAVE_TMPFILE
@@ -705,9 +693,23 @@ extern int thread_page(struct t_group *group, int respnum, int thread_depth, t_p
 extern void draw_line(int i, int magic);
 extern void fixup_thread(int respnum, t_bool redraw);
 
+/* version.c */
+extern int check_upgrade(char *line, const char *skip, const char *version);
+extern void upgrade_prompt_quit(int reason, const char *file);
+
 /* wildmat.c */
 extern t_bool wildmat(const char *text, char *p, t_bool icase);
 extern t_bool wildmatpos(const char *text, char *p, t_bool icase, int *srch_offsets, int srch_offsets_size);
+
+/* xface.c */
+#ifdef XFACE_ABLE
+	extern void slrnface_stop(void);
+	extern void slrnface_start(void);
+	extern void slrnface_display_xface(char *face);
+	extern void slrnface_clear_xface(void);
+	extern void slrnface_suppress_xface(void);
+	extern void slrnface_show_xface(void);
+#endif /* XFACE_ABLE */
 
 /* xref.c */
 extern t_bool overview_xref_support(void);

@@ -1,8 +1,53 @@
--- 1.5.18 release 20030425 "" --
+-- 1.5.18 release 20030602 "Darts" --
+
+U157) Michael Velten <tin@michnet.de>
+      BUG. iKeyThreadMarkArtRead always forced a full screen redraw
+      ADD. iKeyThreadMarkArtRead/iKeyGroupMarkThdRead act on tagged articles
+           (mark all tagged as read).
+      FIX. group.c, keymap.c, lang.c, tags.c, thread.c, extern.h, keymap.h
+           menukeys.h, proto.h
+
+U156) Guido Ostkamp <Guido.Ostkamp@t-online.de>
+      BUG. use real thread root (first Message-ID listed in References)
+           for related quick kill
+      FIX. proto.h, tin.h, filter.c, group.c, page.c
+
+U155) Olaf Dietrich <olaf@dtrx.de>
+      ADD. warn if local charset to network charset conversion
+           loses information
+      BUG. tried to access attributes for new groups which had no
+           attributes assigned
+      FIX. extern.h, proto.h, keymap.c, lang.c, memory.c, misc.c, post.c
+
+U154) Joshua Crawford <mortarn@softhome.net>
+      Drazen Kacar <dave@willfork.com>
+      Urs Janssen <urs@tin.org>
+      ADD. X-Face display support via slrnface if available (-DXFACE_ABLE)
+      FIX. configure[.in], Makefile, Makefile[.in], autoconf.h[in], extern.h
+           proto.h, tin.h, tinrc.h, config.c, init.c, lang.c, main.c, misc.c
+           page.c, xface.c, tincfg.tbl, tin.1, tin.5
+
+U153) Dirk Nimmich <nimmich@muenster.de>
+      Michael Bienia <michael@vorlon.ping.de>
+      BUG. lines >1024 chars lost a char
+      FIX. cook.c
+
+U152) Dirk Nimmich <nimmich@muenster.de>
+      BUG. several checks didn't cope with folded header lines
+      FIX. inews.c, misc.c, post.c
+
+U151) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. version numbers to local configure macros
+      ADD. use WEXITSTATUS/WIFEXITED macros
+      FIX. aclocal.m4, tin.h, misc.c, signal.c
 
 U150) Michael Bienia <michael@vorlon.ping.de>
-      BUG. ReadWch() wasn't multibyte safe
-      FIX. curses.c
+      BUG. ReadWch() and draw_page_header() weren't multibyte safe
+      BUG. plugged some small memory leaks
+      REM. xref_score
+      FIX. attrib.c, curses.c, filter.c, group.c, help.c, lang.c, memory.c
+           page.c, screen.c, string.c, thread.c, extern.h, proto.h, tin.h
+           tin.5
 
 U149) Toomas Soome <Toomas.Soome@microlink.ee>
       ADD. updated estonian translation
@@ -11,19 +56,29 @@ U149) Toomas Soome <Toomas.Soome@microlink.ee>
 U148) Jason Faultless <jason@altarstone.com>
       ADD. don't process main article body as MIME-part
       ADD. rework Archive-name: handling
+      ADD. new 'try harder' hide_uue=2 mode
+      ADD. update attributes-file header
+      ADD. CURR_GROUP-ectomy
+      ADD. auto'S'ave works on selected articles too
+      ADD. menu system always returns to previous level
+      ADD. various cleanups
       BUG. feeding >1 hot/pattern arts saved under wrong filename
       BUG. don't ask to postprocess when nothing was saved
       BUG. Content-Description wasn't indented
+      BUG. description of 'C' at page level was wrong
+      BUG. aborting read of art after <TAB> keep trying to reopen the same art
       FIX. extern.h, proto.h, tin.h, tinrc.h, art.c, attrib.c, config.c
-           cook.c, feed.c, init.c, lang.c, memory.c, page.c, refs.c, save.c
-           tincfg.tbl, tin.1, tin.5
+           cook.c, feed.c, group.c, help.c, init.c, lang.c, main.c, memory.c
+           misc.c, nntplib.c, open.c, page.c, refs.c, rfc2046.c, save.c
+           search.c, select.c, signal.c, tags.c, thread.c, tincfg.tbl, tin.1
+           tin.5
 
 U147) Matt Anton <tin@syrius.org>
       ADD. added a few missing french translations
       FIX. fr.po
 
 U146) Urs Janssen <urs@tin.org>
-      ADD. pcre update (4.1 -> 4.2)
+      ADD. pcre update (4.1 -> 4.3)
       ADD. a few missing german translations
       ADD. tin(5)-man page updates
       ADD. filename extension guessing based on mimetype for unnamed
@@ -32,10 +87,20 @@ U146) Urs Janssen <urs@tin.org>
       ADD. avoid some string concatenations
       ADD. speed up '-Z' without '-v'
       ADD. honor $TMPDIR
+      ADD. allow -u/-I when NNTP_ONLY & overview caching is requested
       ADD. don't create NOV-cache dir if running in NNTP mode and
            caching is not requested or needed
+      ADD. merge back tinrc updates into config.c, warn on downgrades
+      ADD. missing bool.h dependency, check for stdbool.h (not used yet)
+      ADD. version number to attributes and filter file
+      ADD. config.guess, config.sub update
+      REM. tinrcupdate.pl
       REM. --with-local-charset
-      REM. some unnecessary casts
+      REM. some unnecessary casts and unused vars
+      REM. Author-IDs and persistant header support
+      REM. xref_max
+      REM. $BUG_ADDRESS
+      BUG. plugged a few small memory leaks
       BUG. didn't read attributes file when started with '-q' flag
       BUG. parse_rfc822_headers() did also decode the address-part of
            of headers like From/To
@@ -43,12 +108,20 @@ U146) Urs Janssen <urs@tin.org>
       BUG. fixed a few typos in the french translation
       BUG. -S without -n did also save new groups
       BUG. $AUTOSUBSRIBE was broken
-      FIX. Makefile, configure[.in], autoconf.h[in], extern.h, proto.h, tin.h
-           active.c, art.c, attrib.c, config.c, cook.c, curses.c, filter.c
-           inews.c, init.c, lang.c, main.c, memory.c, mimetypes.c, misc.c
+      BUG. mailing_list attribute was ignored on no posting servers at
+           select level
+      BUG. posting from select-level with no groups shown didn't work
+      BUG. automatic update of CTE when changing the network charset
+           was broken
+      FIX. Makefile, Makefile[.in], configure[.in], autoconf.h[in], extern.h
+           keymap.h, menukeys.h, proto.h, rfc2046.h, tin.h, version.h
+           active.c, art.c, attrib.c, auth.c, color.c, config.c, cook.c
+           curses.c, debug.c, filter.c, group.c, help.c, inews.c, init.c
+           keymap.c, lang.c, mail.c, main.c, memory.c, mimetypes.c, misc.c
            newsrc.c, nntplib.c, open.c, page.c, post.c, read.c, refs.c
-           rfc2046.c, rfc2047.c, select.c, save.c, thread.c, tin.1, tin.5
-           de.po, fr.po, tinrcupdate.pl, pcre/*
+           rfc2046.c, rfc2047.c, select.c, save.c, string.c, thread.c
+           version.c, tin.1, tin.5, de.po, fr.po, pcre/*, config.guess
+           config.sub
 
 -- 1.5.17 release 20030407 "Peephole" --
 
@@ -158,7 +231,7 @@ U135) Michael Bienia <michael@vorlon.ping.de>
            tags.c, tcurses.c, thread.c, tincfg.tbl, keymap.sample, tin.1
            tin.5, tinrcupdate.pl
 
-U134) Sebastian Bork
+U134) Sebastian Bork <sebi@sebi.org>
       ADD. manpage update
       FIX. tin.1, tin.5
 
@@ -219,7 +292,7 @@ U130) Thomas E. Dickey <dickey@invisible-island.net>
 
 U129) Michael Bienia <michael@vorlon.ping.de>
       ADD. make tin_getline() multibyte safe
-      BUG. GroupDoAutoSel didn't do anything usefull
+      BUG. GroupDoAutoSel didn't do anything useful
       BUG. memory corruptions when compiled in a multibyte-able environment
            without using ncurses
       FIX. proto.h, tcurses.h, charset.c, curses.c, getline.c, group.c

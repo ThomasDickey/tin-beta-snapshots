@@ -7,7 +7,7 @@
  *              Julien Oster <fuzzy@cu8.cum.de> (word highlighting)
  *              T.Dickey <dickey@herndon4.his.com> (curses support)
  *  Created   : 1995-06-02
- *  Updated   : 1996-12-15
+ *  Updated   : 2003-05-05
  *  Notes     : This are the basic function for ansi-color
  *              and word highlighting
  *
@@ -22,10 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Roland Rosenfeld.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -59,7 +56,9 @@
 int default_fcol = 7;
 int default_bcol = 0;
 
-static int current_fcol = 7;
+#	ifdef USE_CURSES
+	static int current_fcol = 7;
+#	endif /* USE_CURSES */
 static int current_bcol = 0;
 
 
@@ -125,7 +124,7 @@ set_colors(
 			if (found)
 				pair = p->pair;
 			else if (++nextpair < COLOR_PAIRS) {
-				p = my_malloc(sizeof(struct LIST));
+				p = my_malloc(sizeof(struct LIST)); /* TODO: plug mem leak */
 				p->fg = fcolor;
 				p->bg = bcolor;
 				p->pair = pair = nextpair;
@@ -160,6 +159,7 @@ fcol(
 		if (color >= MIN_COLOR && color <= MAX_COLOR) {
 #	ifdef USE_CURSES
 			set_colors(color, current_bcol);
+			current_fcol = color;
 #	else
 			int bold;
 			if (color < 0)
@@ -169,7 +169,6 @@ fcol(
 			if (!bold)
 				bcol(current_bcol);
 #	endif /* USE_CURSES */
-			current_fcol = color;
 		}
 	}
 #	ifdef USE_CURSES

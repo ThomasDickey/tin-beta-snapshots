@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-28
+ *  Updated   : 2003-05-17
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -53,15 +53,17 @@
 /* 3+1+3; width(art_mark) + space + width(unread count) */
 #define MAGIC	7
 
-char *glob_group;
-/* int i_key_search_last; */				/* for repeated search */
-int max_from = 0;
-int max_subj = 0;
+/*
+ * Globally accessible pointer to currently active group
+ * Any functionality accessed from group level or below can use this pointer.
+ * Any code invoked from selection level that requires a group context will
+ * need to manually fix this up
+ */
+struct t_group *curr_group;
 
 static const char *spaces = "XXXX";
 static int len_from;
 static int len_subj;
-static int thread_depth;			/* Starting depth in threads we enter */
 
 /*
  * Local prototypes
@@ -81,6 +83,7 @@ static void show_tagged_lines(void);
 static void toggle_read_unread(t_bool force);
 static void update_group_page(void);
 static void build_multipart_header(char *dest, int maxlen, const char *src, int cmplen, int have, int total);
+static void mark_thd_read(struct t_group *group, t_bool range_active);
 
 /*
  * grpmenu.curr is an index into base[] and so equates to the cursor location
@@ -136,7 +139,7 @@ group_right(
 /*
  * Return Codes:
  * GRP_EXIT			'Normal' return to selection menu
- * GRP_RETURN		We are en route from pager to the selection screen
+ * GRP_RETSELECT	We are en route from pager to the selection screen
  * GRP_QUIT			User has done a 'Q'
  * GRP_NEXT			User wants to move onto next group
  * GRP_NEXTUNREAD	User did a 'C'atchup
@@ -146,15 +149,13 @@ int
 group_page(
 	struct t_group *group)
 {
-	char buf[128];
 	char key[MAXKEYLEN];
-	char pat[128];
 	int ch = 0;
-	int i, n;
-	int filter_state;
+	int i, n, ii;
 	int old_top = 0;
 	int old_group_top;
 	int ret_code = 0;			/* Set to < 0 when it is time to leave this menu */
+	int thread_depth;	/* Starting depth in threads we enter */
 	long old_artnum = 0L;
 	struct t_art_stat sbuf;
 	t_bool flag;
@@ -162,15 +163,12 @@ group_page(
 	t_bool xflag = FALSE;	/* 'X'-flag */
 	t_bool repeat_search = FALSE;
 
-
 	/*
 	 * Set the group attributes
 	 */
 	group->read_during_session = TRUE;
 
-	proc_ch_default = ch_post_process[group->attribute->post_proc_type];
-
-	glob_group = group->name;			/* For global access to the current group */
+	curr_group = group;					/* For global access to the current group */
 	num_of_tagged_arts = 0;
 
 	last_resp = -1;
@@ -180,7 +178,7 @@ group_page(
 	 * update index file. quit group level if user aborts indexing
 	 */
 	if (!index_group(group))
-		return GRP_RETURN;
+		return GRP_RETSELECT;
 
 	/*
 	 * Position 'grpmenu.curr' accordingly
@@ -247,38 +245,34 @@ group_page(
 
 			case iKeyPipe:		/* pipe article/thread/tagged arts to command */
 				if (grpmenu.curr >= 0)
-					feed_articles(FEED_PIPE, GROUP_LEVEL, &CURR_GROUP, (int) base[grpmenu.curr]);
+					feed_articles(FEED_PIPE, GROUP_LEVEL, group, (int) base[grpmenu.curr]);
 				break;
 
 			case iKeyGroupMail:	/* mail article to somebody */
 				if (grpmenu.curr >= 0)
-					feed_articles(FEED_MAIL, GROUP_LEVEL, &CURR_GROUP, (int) base[grpmenu.curr]);
+					feed_articles(FEED_MAIL, GROUP_LEVEL, group, (int) base[grpmenu.curr]);
 				break;
 
 #ifndef DISABLE_PRINTING
 			case iKeyPrint:	/* output art/thread/tagged arts to printer */
 				if (grpmenu.curr >= 0)
-					feed_articles(FEED_PRINT, GROUP_LEVEL, &CURR_GROUP, (int) base[grpmenu.curr]);
+					feed_articles(FEED_PRINT, GROUP_LEVEL, group, (int) base[grpmenu.curr]);
 				break;
 #endif /* !DISABLE_PRINTING */
 
 			case iKeyGroupRepost:	/* repost current article */
 				if (grpmenu.curr >= 0)
-					feed_articles(FEED_REPOST, GROUP_LEVEL, &CURR_GROUP, (int) base[grpmenu.curr]);
+					feed_articles(FEED_REPOST, GROUP_LEVEL, group, (int) base[grpmenu.curr]);
 				break;
 
 			case iKeyGroupSave:	/* save articles with prompting */
 				if (grpmenu.curr >= 0)
-					feed_articles(FEED_SAVE, GROUP_LEVEL, &CURR_GROUP, (int) base[grpmenu.curr]);
+					feed_articles(FEED_SAVE, GROUP_LEVEL, group, (int) base[grpmenu.curr]);
 				break;
 
-			case iKeyGroupAutoSaveTagged:	/* Auto-save tagged articles without prompting */
-				if (grpmenu.curr >= 0) {
-					if (num_of_tagged_arts)
-						feed_articles(FEED_AUTOSAVE_TAGGED, GROUP_LEVEL, &CURR_GROUP, (int) base[grpmenu.curr]);
-					else
-						info_message(_(txt_no_tagged_arts_to_save));
-				}
+			case iKeyGroupAutoSave:	/* Auto-save articles without prompting */
+				if (grpmenu.curr >= 0)
+					feed_articles(FEED_AUTOSAVE, GROUP_LEVEL, group, (int) base[grpmenu.curr]);
 				break;
 
 			case iKeySetRange:	/* set range */
@@ -302,7 +296,7 @@ group_page(
 
 			case iKeySearchBody:	/* search article body */
 				if (grpmenu.curr >= 0) {
-					if ((n = search_body((int) base[grpmenu.curr], repeat_search)) != -1)
+					if ((n = search_body(group, (int) base[grpmenu.curr], repeat_search)) != -1)
 						ret_code = enter_pager(n, FALSE);
 				} else
 					info_message(_(txt_no_arts));
@@ -366,7 +360,7 @@ group_page(
 					old_top = top_art;
 					n = (int) base[grpmenu.curr]; /* should this depend on show_only_unread? */
 					old_artnum = arts[n].artnum;
-					if (quick_filter((ch == iKeyGroupQuickKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[n])) {
+					if (quick_filter((ch == iKeyGroupQuickKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[n], GROUP_LEVEL)) {
 						info_message((ch == iKeyGroupQuickKill) ? _(txt_info_add_kill) : _(txt_info_add_select));
 						if (filter_articles(group)) {
 							make_threads(group, FALSE);
@@ -451,55 +445,10 @@ group_page(
 				break;
 #	endif /* HAVE_COLOR */
 
-			case iKeyGroupMarkThdRead:	/* mark thread as read */
-				if (grpmenu.curr < 0) {
-					info_message(_(txt_no_next_unread_art));
-					break;
-				}
-				/*
-				 * If a range is active, use it.
-				 */
-				if (range_active) {
-					/*
-					 * We check all arts, in case the user did something clever like
-					 * change the threading mode on us since the range was created
-					 */
-					for_each_art(n) {
-						if (arts[n].inrange) {
-							arts[n].inrange = FALSE;	/* Clear the range */
-							art_mark(&CURR_GROUP, &arts[n], ART_READ);
-						}
-					}
-				} else
-					thd_mark_read(&CURR_GROUP, base[grpmenu.curr]);
-
-				/*
-				 * update the header
-				 */
-				show_group_title(TRUE);
-
-				build_sline(grpmenu.curr);
-				draw_line(grpmenu.curr, MAGIC);
-				/*
-				 * Move cursor to next unread
-				 */
-				if ((n = next_unread(next_response((int) base[grpmenu.curr]))) < 0) {
-					draw_subject_arrow();
-					info_message(_(txt_no_next_unread_art));
-					break;
-				}
-				/*
-				 * If range defined, we have to redraw whole page anyway.
-				 */
-				if (range_active) {
-					range_active = FALSE;			/* Range has gone now */
-					show_group_page();
-				}
-				if ((n = which_thread(n)) < 0) {
-					error_message("Internal error: which_thread(%d) < 0", n);
-					break;
-				}
-				move_to_item(n);
+			case iKeyGroupMarkThdRead:	/* mark current thread/range/tagged threads as read */
+				mark_thd_read(group, range_active);
+				if (range_active)
+					range_active = FALSE; /* Range has gone now */
 				break;
 
 			case iKeyGroupListThd:				/* list articles within current thread */
@@ -517,9 +466,8 @@ group_page(
 					old_artnum = arts[(int) base[grpmenu.curr]].artnum;
 				}
 				n = tinrc.sort_article_type;
-				filter_state = change_config_file(group);
-				if (filter_state == NO_FILTERING && n != tinrc.sort_article_type)
-					make_threads(&CURR_GROUP, TRUE);
+				if ((change_config_file(group) == NO_FILTERING) && n != tinrc.sort_article_type)
+					make_threads(group, TRUE);
 				set_subj_from_size(cCOLS);
 				grpmenu.curr = find_new_pos(old_top, old_artnum, grpmenu.curr);
 				show_group_page();
@@ -616,29 +564,28 @@ group_page(
 
 			case iKeyGroupTagParts: /* tag all in order */
 				if (0 <= grpmenu.curr) {
-					int new_tag_qty = tag_multipart(grpmenu.curr);
+					i = tag_multipart(grpmenu.curr);
 					/*
 					 * on success, move the pointer to the next
 					 * untagged article just for ease of use's sake
 					 */
-					if (new_tag_qty != 0) {
-						int k = grpmenu.curr;
+					if (i != 0) {
+						n = grpmenu.curr;
 						update_group_page();
 						do {
-							k++;
-							k %= grpmenu.max;
-							if (arts[base[k]].tagged == 0) {
-								move_to_item(k);
+							n++;
+							n %= grpmenu.max;
+							if (arts[base[n]].tagged == 0) {
+								move_to_item(n);
 								break;
 							}
-						} while (k != grpmenu.curr);
+						} while (n != grpmenu.curr);
 					}
 				}
 				break;
 
 			case iKeyGroupTag:	/* tag/untag threads for mailing/piping/printing/saving */
 				if (grpmenu.curr >= 0) {
-					int ii;
 					t_bool tagged = TRUE;
 
 					n = (int) base[grpmenu.curr];
@@ -668,7 +615,7 @@ group_page(
 						for (ii = n; ii != -1; ii = arts[ii].thread) {
 							if (arts[ii].tagged != 0) {
 								tagged = TRUE;
-								remove_tag(ii);
+								untag_article(ii);
 							}
 						}
 					} else {
@@ -691,11 +638,11 @@ group_page(
 				break;
 
 			case iKeyGroupToggleThreading:	/* Cycle through the threading types */
-				CURR_GROUP.attribute->thread_arts = (CURR_GROUP.attribute->thread_arts + 1) % (THREAD_MAX + 1);
+				group->attribute->thread_arts = (group->attribute->thread_arts + 1) % (THREAD_MAX + 1);
 				if (grpmenu.curr >= 0) {
 					i = base[grpmenu.curr];								/* Save a copy of current thread */
-					make_threads(&CURR_GROUP, TRUE);
-					find_base(&CURR_GROUP);
+					make_threads(group, TRUE);
+					find_base(group);
 					if ((grpmenu.curr = which_thread(i)) < 0)			/* Restore current position in group */
 						grpmenu.curr = 0;
 				}
@@ -733,73 +680,77 @@ group_page(
 				break;
 
 			case iKeyGroupMarkArtUnread:	/* mark base article of thread unread */
-				if (grpmenu.curr < 0) {
-					info_message(_(txt_no_arts));
+				{
+					char *ptr;
+
+					if (grpmenu.curr < 0) {
+						info_message(_(txt_no_arts));
+						break;
+					}
+					if (range_active) {
+						/*
+						 * We are tied to following base[] here, not arts[], as we operate on
+						 * the base articles by definition.
+						 */
+						for (ii = 0; ii < grpmenu.max; ++ii) {
+							if (arts[base[ii]].inrange) {
+								arts[base[ii]].inrange = FALSE;
+								art_mark(group, &arts[base[ii]], ART_WILL_RETURN);
+								for_each_art_in_thread(i, ii)
+									arts[i].inrange = FALSE;
+							}
+						}
+						range_active = FALSE;
+						show_group_page();
+						ptr = _(txt_base_article_range);
+					} else {
+						art_mark(group, &arts[base[grpmenu.curr]], ART_WILL_RETURN);
+						ptr = _(txt_base_article);
+					}
+
+					show_group_title(TRUE);
+					build_sline(grpmenu.curr);
+					draw_line(grpmenu.curr, MAGIC);
+					draw_subject_arrow();
+					info_message(_(txt_marked_as_unread), ptr);
 					break;
 				}
-				if (range_active) {
-					int ii;
-
-					/*
-					 * We are tied to following base[] here, not arts[], as we operate on
-					 * the base articles by definition.
-					 */
-					for (ii = 0; ii < grpmenu.max; ++ii) {
-						if (arts[base[ii]].inrange) {
-							arts[base[ii]].inrange = FALSE;
-							art_mark(&CURR_GROUP, &arts[base[ii]], ART_WILL_RETURN);
-							for_each_art_in_thread(i, ii)
-								arts[i].inrange = FALSE;
-						}
-					}
-					range_active = FALSE;
-					show_group_page();
-					strcpy(buf, _(txt_base_article_range));
-				} else {
-					art_mark(&CURR_GROUP, &arts[base[grpmenu.curr]], ART_WILL_RETURN);
-					strcpy(buf, _(txt_base_article));
-				}
-
-				show_group_title(TRUE);
-				build_sline(grpmenu.curr);
-				draw_line(grpmenu.curr, MAGIC);
-				draw_subject_arrow();
-				info_message(_(txt_marked_as_unread), buf);
-				break;
 
 			case iKeyGroupMarkThdUnread:	/* mark whole thread as unread */
-				if (grpmenu.curr < 0) {
-					info_message(_(txt_no_arts));
+				{
+					char *ptr;
+
+					if (grpmenu.curr < 0) {
+						info_message(_(txt_no_arts));
+						break;
+					}
+
+					/*
+					 * We process all articles in case the threading changed since
+					 * the range was created
+					 */
+					if (range_active) {
+						for_each_art(ii) {
+							if (arts[ii].inrange) {
+								arts[ii].inrange = FALSE;
+								art_mark(group, &arts[ii], ART_WILL_RETURN);
+							}
+						}
+						range_active = FALSE;
+						show_group_page();
+						ptr = _(txt_thread_range);
+					} else {
+						thd_mark_unread(group, base[grpmenu.curr]);
+						ptr = _(txt_thread);
+					}
+
+					show_group_title(TRUE);
+					build_sline(grpmenu.curr);
+					draw_line(grpmenu.curr, MAGIC);
+					draw_subject_arrow();
+					info_message(_(txt_marked_as_unread), ptr);
 					break;
 				}
-
-				/*
-				 * We process all articles in case the threading changed since
-				 * the range was created
-				 */
-				if (range_active) {
-					int ii;
-
-					for_each_art(ii) {
-						if (arts[ii].inrange) {
-							arts[ii].inrange = FALSE;
-							art_mark(&CURR_GROUP, &arts[ii], ART_WILL_RETURN);
-						}
-					}
-					range_active = FALSE;
-					show_group_page();
-					strcpy(buf, _(txt_thread_range));
-				} else {
-					thd_mark_unread(&CURR_GROUP, base[grpmenu.curr]);
-					strcpy(buf, _(txt_thread));
-				}
-
-				show_group_title(TRUE);
-				build_sline(grpmenu.curr);
-				draw_line(grpmenu.curr, MAGIC);
-				draw_subject_arrow();
-				info_message(_(txt_marked_as_unread), buf);
-				break;
 
 			case iKeyGroupSelThd:	/* mark thread as selected */
 			case iKeyGroupToggleThdSel:	/* toggle thread */
@@ -851,40 +802,35 @@ group_page(
 				break;
 
 			case iKeyGroupSelPattern:	/* select matching patterns */
-				sprintf(mesg, _(txt_select_pattern), tinrc.default_select_pattern);
-				if (!prompt_string(mesg, buf, HIST_SELECT_PATTERN))
-					break;
+				{
+					char pat[128];
 
-				if (buf[0] == '\0') {	/* TODO: prompt_string_default? */
-					if (tinrc.default_select_pattern[0] == '\0') {
-						info_message(_(txt_info_no_previous_expression));
+					sprintf(mesg, _(txt_select_pattern), tinrc.default_select_pattern);
+					if (!(prompt_string_default(mesg, tinrc.default_select_pattern, _(txt_info_no_previous_expression), HIST_SELECT_PATTERN)))
 						break;
+
+					if (STRCMPEQ(tinrc.default_select_pattern, "*"))	/* all */
+						strncpy(pat, tinrc.default_select_pattern, sizeof(pat));
+					else
+						snprintf(pat, sizeof(pat), REGEX_FMT, tinrc.default_select_pattern);
+
+					flag = FALSE;
+					for (n = 0; n < grpmenu.max; n++) {
+						if (!REGEX_MATCH(arts[base[n]].subject, pat, TRUE))
+							continue;
+
+						for_each_art_in_thread(i, n)
+							arts[i].selected = TRUE;
+
+						build_sline(n);
+						flag = TRUE;
 					}
-					sprintf(pat, REGEX_FMT, tinrc.default_select_pattern);
-				} else if (STRCMPEQ(buf, "*")) {	/* all */
-					strcpy(pat, buf);
-					strcpy(tinrc.default_select_pattern, pat);
-				} else {
-					strcpy(tinrc.default_select_pattern, buf);
-					sprintf(pat, REGEX_FMT, tinrc.default_select_pattern);
+					if (flag) {
+						show_group_title(TRUE);
+						update_group_page();
+					}
+					break;
 				}
-
-				flag = FALSE;
-				for (n = 0; n < grpmenu.max; n++) {
-					if (!REGEX_MATCH(arts[base[n]].subject, pat, TRUE))
-						continue;
-
-					for_each_art_in_thread(i, n)
-						arts[i].selected = TRUE;
-
-					build_sline(n);
-					flag = TRUE;
-				}
-				if (flag) {
-					show_group_title(TRUE);
-					update_group_page();
-				}
-				break;
 
 			case iKeyGroupSelThdIfUnreadSelected:	/* select all unread arts in thread hot if 1 is hot */
 				for (n = 0; n < grpmenu.max; n++) {
@@ -931,7 +877,7 @@ group_page(
 	set_xclick_off();
 
 	clear_note_area();
-	grp_del_mail_arts(&CURR_GROUP);
+	grp_del_mail_arts(group);
 
 	art_close(&pgart);				/* Close any open art */
 
@@ -985,7 +931,7 @@ static void
 update_group_page(
 	void)
 {
-	register int i;
+	int i;
 
 	for (i = grpmenu.first; i < grpmenu.last; ++i) {
 		build_sline(i);
@@ -1146,6 +1092,8 @@ set_subj_from_size(
 	int num_cols)
 {
 	int show_author;
+	int max_from;
+	int max_subj;
 
 	/*
 	 * This function is called early during startup when we only have
@@ -1322,8 +1270,8 @@ build_sline(
 	mbstowcs(tmp_from2, from, ARRAY_SIZE(tmp_from2) - 1);
 
 	/* format subject and from */
-	wcspart(tmp_subj, tmp_subj2, len_subj - 12, ARRAY_SIZE(tmp_subj));
-	wcspart(tmp_from, tmp_from2, len_from, ARRAY_SIZE(tmp_from));
+	wcspart(tmp_subj, tmp_subj2, len_subj - 12, ARRAY_SIZE(tmp_subj), TRUE);
+	wcspart(tmp_from, tmp_from2, len_from, ARRAY_SIZE(tmp_from), TRUE);
 
 	if (tinrc.show_info == SHOW_INFO_SCORE || tinrc.show_info == SHOW_INFO_BOTH) {
 		mbstowcs(format, "  %s %s %s%6d %-ls%s%-ls", ARRAY_SIZE(format) - 1);
@@ -1405,7 +1353,6 @@ show_group_title(
 				read_selected_art_cnt++;
 		}
 	}
-
 
 	/*
 	 * build the group title
@@ -1543,7 +1490,7 @@ enter_thread(
 	forever {
 		switch (i = thread_page(&CURR_GROUP, (int) base[grpmenu.curr], depth, page)) {
 			case GRP_QUIT:						/* 'Q'uit */
-			case GRP_RETURN:					/* Back to selection screen */
+			case GRP_RETSELECT:					/* Back to selection screen */
 				return i;
 				/* NOTREACHED */
 				break;
@@ -1671,4 +1618,104 @@ prompt_getart_limit(
 
 	clear_message();
 	return num;
+}
+
+
+/*
+ * If there's an active range, use that one.
+ * If there are any tagged and unread articles, prompt user to mark either
+ * all tagged arts/threads as read, or only current thread, or cancel operation.
+ * Otherwise, use current thread.
+ * Finally move to next unread thread.
+ */
+static void
+mark_thd_read(
+	struct t_group *group,
+	t_bool range_active)
+{
+	char keytagged[MAXKEYLEN], keycurrent[MAXKEYLEN], keyquit[MAXKEYLEN];
+	int ch = iKeyMarkReadCur;
+	int n, cnt = 0;
+	int tmp_num_of_tagged_arts = num_of_tagged_arts;
+
+	if (grpmenu.curr < 0) {
+		info_message(_(txt_no_next_unread_art));
+		return;
+	}
+
+	/* Don't prompt if there's an active range */
+	if (!range_active && got_tagged_unread_arts()) {
+		ch = prompt_slk_response(iKeyMarkReadTag,
+				&menukeymap.mark_read_tagged_current,
+				_(txt_mark_thread_read_tagged_current),
+				printascii(keytagged, map_to_local(iKeyMarkReadTag, &menukeymap.mark_read_tagged_current)),
+				printascii(keycurrent, map_to_local(iKeyMarkReadCur, &menukeymap.mark_read_tagged_current)),
+				printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.mark_read_tagged_current)));
+	}
+
+	switch (ch) {
+		case iKeyMarkReadTag: /* mark tagged unread articles/threads as read */
+			cnt = mark_tagged_read(group);
+			break;
+
+		case iKeyMarkReadCur: /* mark current thread/range as read */
+			/*
+			 * If a range is active, use it.
+			 */
+			if (range_active) {
+				/*
+				 * We check all arts, in case the user did something clever like
+				 * change the threading mode on us since the range was created
+				 */
+				for_each_art(n) {
+					if (arts[n].inrange) {
+						arts[n].inrange = FALSE;	/* Clear the range */
+						art_mark(group, &arts[n], ART_READ);
+					}
+				}
+			}
+			else
+				thd_mark_read(group, base[grpmenu.curr]);
+			break;
+
+		case iKeyQuit: /* cancel operation */
+		case iKeyAbort:
+			return;
+			break;
+	}
+
+	/*
+	 * update the header
+	 */
+	show_group_title(TRUE);
+
+	/*
+	 * Refresh current line or, if necessary, whole group page
+	 */
+	if (range_active || ch == iKeyMarkReadTag)
+		show_group_page();
+	else {
+		build_sline(grpmenu.curr);
+		draw_line(grpmenu.curr, MAGIC);
+	}
+
+	/*
+	 * Move cursor to next unread
+	 */
+	if ((n = next_unread(next_response((int) base[grpmenu.curr]))) < 0) {
+		draw_subject_arrow();
+		info_message(_(txt_no_next_unread_art));
+		return;
+	}
+
+	if ((n = which_thread(n)) < 0) {
+		/* TODO: -> lang.c */
+		error_message("Internal error: which_thread(%d) < 0", n);
+		return;
+	}
+
+	move_to_item(n);
+
+	if (ch == iKeyMarkReadTag)
+		info_message(_(txt_marked_tagged_arts_as_read), cnt, tmp_num_of_tagged_arts, PLURAL(tmp_num_of_tagged_arts, txt_article));
 }

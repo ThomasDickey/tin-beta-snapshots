@@ -3,7 +3,7 @@
  *  Module    : tags.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-06
- *  Updated   : 2003-02-18
+ *  Updated   : 2003-05-14
  *  Notes     : Split out from other modules
  *
  * Copyright (c) 1999-2003 Jason Faultless <jason@altarstone.com>
@@ -227,7 +227,7 @@ tag_multipart(
 	 */
 	for (i = 0; i < qty; ++i) {
 		if (arts[base[info[i].base_index]].tagged != 0)
-			remove_tag(base[info[i].base_index]);
+			untag_article(base[info[i].base_index]);
 	}
 
 	/*
@@ -276,7 +276,7 @@ tag_article(
 	int art)
 {
 	if (arts[art].tagged != 0) {
-		remove_tag(art);
+		untag_article(art);
 		info_message(_(txt_untagged_art));
 		return FALSE;
 	} else {
@@ -293,7 +293,7 @@ tag_article(
  * greater than 'tag', fixup counters
  */
 void
-remove_tag(
+untag_article(
 	long art)
 {
 	int i, j;
@@ -566,4 +566,64 @@ undo_selections(
 		arts[i].selected = FALSE;
 		arts[i].zombie = FALSE;
 	}
+}
+
+
+/*
+ * Return TRUE if there are any selected arts
+ */
+t_bool
+arts_selected(
+	void)
+{
+	int i;
+
+	for_each_art(i) {
+		 if (arts[i].selected)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+
+/*
+ * Mark all tagged articles as read.
+ * Return number of articles that have been marked.
+ */
+int
+mark_tagged_read(
+	struct t_group *group)
+{
+	int i, cnt = 0;
+
+	for_each_art(i) {
+		if (arts[i].tagged && (arts[i].status == ART_UNREAD || arts[i].status == ART_WILL_RETURN)) {
+			art_mark(group, &arts[i], ART_READ);
+			cnt++;
+		}
+	}
+	untag_all_articles();
+
+	return cnt;
+}
+
+
+/*
+ * Check if there is at least one tagged _and_ unread article.
+ */
+t_bool
+got_tagged_unread_arts(
+	void)
+{
+	int i;
+
+	if (num_of_tagged_arts > 0) {
+		for_each_art(i) {
+			if (arts[i].tagged && (arts[i].status == ART_UNREAD || arts[i].status == ART_WILL_RETURN))
+				return TRUE;
+		}
+	}
+
+	return FALSE;
 }

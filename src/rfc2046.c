@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2003-04-24
+ *  Updated   : 2003-05-15
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
@@ -52,7 +52,6 @@ static int parse_multipart_article(FILE *infile, t_openartinfo *artinfo, t_part 
 static int parse_normal_article(FILE *in, t_openartinfo *artinfo, t_bool show_progress_meter);
 static int parse_rfc2045_article(FILE *infile, int line_count, t_openartinfo *artinfo, t_bool show_progress_meter);
 static unsigned int parse_content_encoding(const char *encoding);
-static void add_persist(struct t_header *hdr, const char *p_header, char *p_content);
 static void free_list(t_param *list);
 static void parse_content_type(char *type, t_part *content);
 static void parse_content_disposition(char *disp, t_part *part);
@@ -202,7 +201,7 @@ parse_params(
 			eql++;
 			*param = '\0';
 		}
-		ptr->value= my_strdup(rfc1522_decode(eql));
+		ptr->value = my_strdup(rfc1522_decode(eql));
 		ptr->next = content->params;		/* Push onto start of list */
 		content->params = ptr;
 	}
@@ -297,11 +296,11 @@ parse_content_type(
 #ifndef CHARSET_CONVERSION
 			parse_params(defparms, content);
 #else
-			if (CURR_GROUP.attribute->undeclared_charset) {
+			if (curr_group->attribute->undeclared_charset) {
 				char *charsetheader;
 
-				charsetheader = my_malloc(strlen(CURR_GROUP.attribute->undeclared_charset) + 9); /* 9=len('charset=\0') */
-				sprintf(charsetheader, "charset=%s", CURR_GROUP.attribute->undeclared_charset);
+				charsetheader = my_malloc(strlen(curr_group->attribute->undeclared_charset) + 9); /* 9=len('charset=\0') */
+				sprintf(charsetheader, "charset=%s", curr_group->attribute->undeclared_charset);
 				parse_params(charsetheader, content);
 				free(charsetheader);
 			} else {
@@ -359,24 +358,6 @@ parse_content_disposition(
 }
 
 
-static void
-add_persist(
-	struct t_header *hdr,
-	const char *p_header,
-	char *p_content)
-{
-	t_param *ptr;
-
-	ptr = my_malloc(sizeof(t_param));
-	ptr->name = my_strdup(p_header);
-	ptr->value = my_strdup(rfc1522_decode(str_trim(p_content)));
-	ptr->next = hdr->persist;
-	hdr->persist = ptr;
-
-	return;
-}
-
-
 /*
  * Return a freshly allocated and initialised part structure attached to the
  * end of the list of article parts given
@@ -400,11 +381,11 @@ new_part(
 #ifndef CHARSET_CONVERSION
 	parse_params(defparms, ptr);
 #else
-	if (CURR_GROUP.attribute->undeclared_charset) {
+	if (curr_group && curr_group->attribute->undeclared_charset) {
 		char *charsetheader;
 
-		charsetheader = my_malloc(strlen(CURR_GROUP.attribute->undeclared_charset) + 9); /* 9=len('charset=\0') */
-		sprintf(charsetheader, "charset=%s", CURR_GROUP.attribute->undeclared_charset);
+		charsetheader = my_malloc(strlen(curr_group->attribute->undeclared_charset) + 9); /* 9=len('charset=\0') */
+		sprintf(charsetheader, "charset=%s", curr_group->attribute->undeclared_charset);
 		parse_params(charsetheader, ptr);
 		free(charsetheader);
 	} else {
@@ -433,6 +414,8 @@ new_part(
 
 /*
  * Free a linked list of t_part
+ *
+ * TODO: plug mem leak: ptr->uue is not entirely freed
  */
 void
 free_parts(
@@ -474,12 +457,10 @@ free_and_init_header(
 	FreeAndNull(hdr->summary);
 	FreeAndNull(hdr->followup);
 	FreeAndNull(hdr->ftnto);
-	FreeAndNull(hdr->authorids);
+#ifdef XFACE_ABLE
+	FreeAndNull(hdr->xface);
+#endif /* XFACE_ABLE */
 	hdr->mime = FALSE;
-
-	if (hdr->persist)
-		free_list(hdr->persist);
-	hdr->persist = NULL;
 
 	if (hdr->ext)
 		free_parts(hdr->ext);
@@ -488,14 +469,13 @@ free_and_init_header(
 
 
 /*
- * buf:  Article header
- * pat:  Text to match in header
+ * buf:         Article header
+ * pat:         Text to match in header
+ * decode:      RFC2047-decode the header
+ * structured:  extract address-part before decoding the header
+ *
  * Returns:
  *	(decoded) body of header if matched or NULL
- *
- * FIXME: when using decode the full string is decoded which is
- *        plain wrong in some cases (i.e. in headers which contain
- *        mail-addresses, the address-part sould never be decoded)
  */
 char *
 parse_header(
@@ -666,13 +646,13 @@ parse_rfc822_headers(
 			hdr->ftnto = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Author-IDs", TRUE, FALSE)) ||
-			(ptr = parse_header(line, "P-Author-IDs", TRUE, FALSE)) ||
-			(ptr = parse_header(line, "X-P-Author-IDs", TRUE, FALSE))) {
-			FreeIfNeeded(hdr->authorids);
-			hdr->authorids = my_strdup(ptr);
+#ifdef XFACE_ABLE
+		if ((ptr = parse_header(line, "X-Face", FALSE, FALSE))) {
+			FreeIfNeeded(hdr->xface);
+			hdr->xface = my_strdup(ptr);
 			continue;
 		}
+#endif /* XFACE_ABLE */
 		/* TODO: check version */
 		if (parse_header(line, "MIME-Version", FALSE, FALSE)) {
 			hdr->mime = TRUE;
@@ -693,14 +673,6 @@ parse_rfc822_headers(
 		}
 		if ((ptr = parse_header(line, "Content-Disposition", FALSE, FALSE))) {
 			parse_content_disposition(ptr, hdr->ext);
-			continue;
-		}
-		/*
-		 * Persistent headers
-		 */
-		if ((strncmp(line, "P-", 2) == 0 || strncmp(line, "X-P-", 4) == 0) && (ptr = strstr(line, ": "))) {
-			*ptr = '\0';
-			add_persist(hdr, line, ptr + 2);
 			continue;
 		}
 	}
@@ -1037,16 +1009,15 @@ int
 art_open(
 	t_bool wrap_lines,
 	struct t_article *art,
-	const char *group_path,
+	struct t_group *group,
 	t_openartinfo *artinfo,
 	t_bool show_progress_meter)
 {
-	char *ptr;
 	FILE *fp;
 
 	memset(artinfo, 0, sizeof(t_openartinfo));
 
-	if ((fp = open_art_fp(group_path, art->artnum)) == NULL)
+	if ((fp = open_art_fp(group, art->artnum)) == NULL)
 		return ((tin_errno == 0) ? ART_UNAVAILABLE : ART_ABORT);
 
 #ifdef DEBUG_ART
@@ -1056,7 +1027,12 @@ art_open(
 	if (parse_rfc2045_article(fp, art->line_count, artinfo, show_progress_meter) != 0)
 		return ART_ABORT;
 
-	if ((artinfo->tex2iso = ((CURR_GROUP.attribute->tex2iso_conv) ? is_art_tex_encoded(artinfo->raw) : FALSE)))
+	/*
+	 * TODO: compare art->msgid and artinfo->hdr.messageid and issue a
+	 *       warinng (once) about broken overviews if they differ
+	 */
+
+	if ((artinfo->tex2iso = ((group->attribute->tex2iso_conv) ? is_art_tex_encoded(artinfo->raw) : FALSE)))
 		wait_message(0, _(txt_is_tex_encoded));
 
 	/* Maybe fix it so if this fails, we default to raw? */
@@ -1069,13 +1045,10 @@ art_open(
 
 	/*
 	 * If Newsgroups is empty its a good bet the article is a mail article
-	 * TODO: Probably broken. Also: combine with code to fixup Archive-name?
+	 * TODO: Why do this ?
 	 */
-	if (!artinfo->hdr.newsgroups) {
-		artinfo->hdr.newsgroups = my_strdup(group_path);
-		while ((ptr = strchr(artinfo->hdr.newsgroups, '/')))
-			*ptr = '.';
-	}
+	if (!artinfo->hdr.newsgroups)
+		artinfo->hdr.newsgroups = my_strdup(group->name);
 
 	return 0;
 }
@@ -1091,6 +1064,9 @@ art_close(
 #ifdef DEBUG_ART
 	fprintf(stderr, "art_close(%p)\n", (void *) artinfo);
 #endif /* DEBUG_ART */
+
+	if (artinfo == NULL)
+		return;
 
 	free_and_init_header(&artinfo->hdr);
 

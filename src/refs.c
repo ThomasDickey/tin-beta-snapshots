@@ -834,8 +834,8 @@ collate_subjects(
 			 * previous thread
 			 */
 			if (
-					(arts[i].subject == arts[j].subject) ||
-					(arts[i].archive && arts[j].archive && (arts[i].archive->name == arts[j].archive->name))
+					(arts[i].subject == arts[j].subject) /* ||
+					(arts[i].archive && arts[j].archive && (arts[i].archive->name == arts[j].archive->name)) */
 			) {
 /*DEBUG_PRINT((dbgfd, "RES: %d is now previous, at end of %d\n", i, j));*/
 

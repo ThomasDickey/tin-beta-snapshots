@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-28
+ *  Updated   : 2003-05-15
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -233,13 +233,9 @@ body_search(
 	char *searchbuf)
 {
 	char *line;
-	char group_path[PATH_LEN];
 	t_openartinfo artinfo;
 
-	if (!read_news_via_nntp || CURR_GROUP.type != GROUP_TYPE_NEWS)
-		make_group_path(CURR_GROUP.name, group_path);
-
-	switch (art_open(TRUE, &arts[i], group_path, &artinfo, FALSE)) {
+	switch (art_open(TRUE, &arts[i], curr_group, &artinfo, FALSE)) {
 		case ART_ABORT:					/* User 'q'uit */
 			art_close(&artinfo);
 			return -1;
@@ -488,6 +484,7 @@ search_article(
  */
 int
 search_body(
+	struct t_group *group,
 	int current_art,
 	t_bool repeat)
 {
@@ -510,7 +507,7 @@ search_body(
 	/*
 	 * Count up the articles to be processed for the progress meter
 	 */
-	if (CURR_GROUP.attribute->show_only_unread) {
+	if (group->attribute->show_only_unread) {
 		for (i = 0; i < grpmenu.max; i++)
 			total_cnt += new_responses(i);
 	} else {

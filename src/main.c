@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-04-25
+ *  Updated   : 2003-05-11
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -63,6 +63,7 @@ static int num_cmdargs;
 static int max_cmdargs;
 
 static t_bool catchup = FALSE;		/* mark all arts read in all subscribed groups */
+static t_bool update_index = FALSE;		/* update local overviews */
 static t_bool check_any_unread = FALSE;	/* print/return status if any unread */
 static t_bool mail_news = FALSE;		/* mail all arts to specified user */
 static t_bool save_news = FALSE;		/* save all arts to savedir structure */
@@ -72,12 +73,12 @@ static t_bool start_any_unread = FALSE;	/* only start if unread news */
 /*
  * Local prototypes
  */
+static t_bool create_mail_save_dirs(void);
+static t_bool setup_private_overview(void);
 static void read_cmd_line_options(int argc, char *argv[]);
 static void show_intro_page(void);
+static void update_index_files(void);
 static void usage(char *theProgname);
-#ifndef NNTP_ONLY
-	static void update_index_files(void);
-#endif /* !NNTP_ONLY */
 
 
 /*
@@ -159,11 +160,6 @@ main(
 	read_config_file(local_config_file, FALSE);
 
 	/*
-	 * avoid empty regexp
-	 */
-	postinit_regexp();
-
-	/*
 	 * Process envargs & command line options
 	 * These override the configured in values
 	 */
@@ -209,13 +205,22 @@ main(
 			if (nntp_open())
 				giveup();
 		} else { /* set nntp_server if reading via -R as it's used in select.c */
-			nntp_server = getserverbyfile(NNTP_SERVER_FILE);
-			if (nntp_server == NULL)
-				nntp_server = my_strdup("reading saved news"); /* mem-leak ,-) */
+			if ((nntp_server = getserverbyfile(NNTP_SERVER_FILE)) == NULL)
+				nntp_server = my_strdup("reading saved news"); /* mem-leak on exit */
 		}
 	}
 
-	set_up_private_index_cache();
+	/*
+	 * exit early - unfortunately we can't do that in read_cmd_line_options()
+	 * as xover_supported is set in nntp_open()
+	 */
+	if (update_index && read_news_via_nntp && xover_supported && !tinrc.cache_overview_files) {
+		error_message(_(txt_batch_update_unavail), tin_progname);
+		giveup();
+	}
+
+	if (!setup_private_overview())		/* TODO: issue a warning if it fails */
+		fprintf(stderr, "Unable to setup local overview cache\n");
 
 	/*
 	 * Check if overview indexes contain Xref: lines
@@ -233,26 +238,31 @@ main(
 	}
 #endif /* DEBUG_NEWSRC */
 
-	/*
-	 * Read user specific keybindings and input history
-	 */
 	if (!batch_mode) {
+		/*
+		 * Read user specific keybindings and input history
+		 */
 		wait_message(0, _(txt_reading_keymap_file));
 		if (!read_keymap_file())
 			prompt_continue();
 		read_input_history_file();
-	}
 
-	/*
-	 * Load the mail & news active files into active[]
-	 *
-	 * create_save_active_file cannot write to active.save
-	 * if no_write != FALSE, so restore original value temporarily
-	 */
-	if (read_saved_news) {
-		no_write = tmp_no_write;
-		create_save_active_file();
-		no_write = TRUE;
+		/*
+		 * avoid empty regexp
+		 */
+		postinit_regexp();
+
+		/*
+		 * Load the mail & news active files into active[]
+		 *
+		 * create_save_active_file cannot write to active.save
+		 * if no_write != FALSE, so restore original value temporarily
+		 */
+		if (read_saved_news) {
+			no_write = tmp_no_write;
+			create_save_active_file();
+			no_write = TRUE;
+		}
 	}
 
 #ifdef HAVE_MH_MAIL_HANDLING
@@ -270,7 +280,6 @@ main(
 	 */
 	no_write = tmp_no_write;
 	read_news_active_file();
-	no_write = TRUE;
 #ifdef DEBUG
 	debug_print_active();
 #endif /* DEBUG */
@@ -281,6 +290,7 @@ main(
 	 */
 	filtered_articles = read_filter_file(filter_file);
 
+	no_write = TRUE;
 #ifdef DEBUG
 	debug_print_filters();
 #endif /* DEBUG */
@@ -306,6 +316,9 @@ main(
 	if (show_description && !batch_mode)
 		read_descriptions(TRUE);
 
+	/*
+	 * TODO: what has write_config_file() to do with create_mail_save_dirs ()
+	 */
 	if (create_mail_save_dirs())
 		write_config_file(local_config_file);
 
@@ -319,9 +332,10 @@ main(
 
 	/*
 	 * Load my_groups[] from the .newsrc file. We append these groups to any
-	 * new newsgroups and command line newsgroups already loaded
+	 * new newsgroups and command line newsgroups already loaded. Also does
+	 * auto-subscribe to groups specified in /usr/lib/news/subscriptions
+	 * locally or via NNTP if reading news remotely (LIST SUBSCRIPTIONS)
 	 */
-
 	/*
 	 * TODO:
 	 * if (num_cmd_line_groups != 0 && check_any_unread)
@@ -362,7 +376,6 @@ main(
 	 *       for speed reasons?
 	 */
 	if (mail_news || save_news) {
-		do_update(FALSE);
 		check_start_save_any_news(mail_news ? MAIL_ANY_NEWS : SAVE_ANY_NEWS, catchup);
 		tin_done(EXIT_SUCCESS);
 	}
@@ -370,27 +383,31 @@ main(
 	/*
 	 * Catchup newsrc file (-c option)
 	 */
-	if (catchup && batch_mode) {
+	if (batch_mode && catchup && !update_index) {
 		catchup_newsrc_file();
 		tin_done(EXIT_SUCCESS);
 	}
 
-#ifndef NNTP_ONLY
 	/*
-	 * Update index files
-	 * Only the -u batch_mode case will get this far
+	 * Update index files (-u option), also does catchup if requested
 	 */
-	if (batch_mode)
+	if (update_index)
 		update_index_files();
-#endif /* !NNTP_ONLY */
 
 	/*
-	 * If first time print welcome screen and auto-subscribe
-	 * to groups specified in /usr/lib/news/subscribe locally
-	 * or via NNTP if reading news remotely (LIST SUBSCRIBE)
+	 * the code below this point can't be reached in batch mode
 	 */
-	if (created_rcdir && !batch_mode)
+
+	/*
+	 * If first time print welcome screen
+	 */
+	if (created_rcdir)
 		show_intro_page();
+
+#ifdef XFACE_ABLE
+	if (tinrc.use_slrnface && !batch_mode)
+		slrnface_start();
+#endif /* XFACE_ABLE */
 
 #ifdef USE_CURSES
 	/* Turn scrolling off now the startup messages have been displayed */
@@ -401,7 +418,8 @@ main(
 	 * Work loop
 	 */
 	selection_page(start_groupnum, num_cmd_line_groups);
-	return 0; /* not reached */
+	/* NOTREACHED */
+	return 0;
 }
 
 
@@ -455,6 +473,7 @@ read_cmd_line_options(
 #endif /* !M_AMIGA */
 
 			case 'c':
+				/* TODO: should -c enter batch-mode? */
 				catchup = TRUE;
 				break;
 
@@ -504,14 +523,7 @@ read_cmd_line_options(
 				/* FALLTHROUGH */
 
 			case 'I':
-#ifndef NNTP_ONLY
 				my_strncpy(index_newsdir, optarg, sizeof(index_newsdir) - 1);
-#else
-				error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
-				giveup();
-				/* keep lint quiet: */
-				/* NOTREACHED */
-#endif /* !NNTP_ONLY */
 				break;
 
 			case 'l':
@@ -602,15 +614,8 @@ read_cmd_line_options(
 				break;
 
 			case 'u':	/* update index files */
-#ifndef NNTP_ONLY
 				batch_mode = TRUE;
-				show_description = FALSE;
-#else
-				error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
-				giveup();
-				/* keep lint quiet: */
-				/* NOTREACHED */
-#endif /* !NNTP_ONLY */
+				update_index = TRUE;
 				break;
 
 			case 'v':	/* verbose mode */
@@ -905,19 +910,21 @@ read_cmd_line_options(
 	/*
 	 * Sort out conflicts of options....
 	 */
-	if (verbose && !batch_mode) {
-		wait_message(2, _(txt_useful_with_batch_mode), "-v");
-		verbose = FALSE;
+	if (!batch_mode) {
+		if (verbose) {
+			wait_message(2, _(txt_useful_with_batch_mode), "-v");
+			verbose = FALSE;
+		}
+		if (catchup) {
+			wait_message(2, _(txt_useful_with_batch_mode), "-c");
+			catchup = FALSE;
+		}
+	} else {
+		if (read_saved_news) {
+			wait_message(2, _(txt_useful_without_batch_mode), "-R");
+			read_saved_news = FALSE;
+		}
 	}
-	if (catchup && !batch_mode) {
-		wait_message(2, _(txt_useful_with_batch_mode), "-c");
-		catchup = FALSE;
-	}
-	if (read_saved_news && batch_mode) {
-		wait_message(2, _(txt_useful_without_batch_mode), "-R");
-		read_saved_news = FALSE;
-	}
-
 #ifdef NNTP_ABLE
 	/*
 	 * If we're reading from an NNTP server and we've been asked not to look
@@ -930,10 +937,8 @@ read_cmd_line_options(
 	 * If we use neither list_active nor newsrc_active,
 	 * we use both of them.
 	 */
-	if (!list_active && !newsrc_active) {
-		list_active = TRUE;
-		newsrc_active = TRUE;
-	}
+	if (!list_active && !newsrc_active)
+		list_active = newsrc_active = TRUE;
 }
 
 
@@ -975,11 +980,7 @@ usage(
 
 	error_message(_(txt_usage_help_message));
 	error_message(_(txt_usage_help_information), theProgname);
-
-#ifndef NNTP_ONLY
 	error_message(_(txt_usage_index_newsdir), index_newsdir);
-#endif /* !NNTP_ONLY */
-
 	error_message(_(txt_usage_read_only_active));
 	error_message(_(txt_usage_maildir), tinrc.maildir);
 	error_message(_(txt_usage_mail_new_news_to_user));
@@ -1002,11 +1003,7 @@ usage(
 	error_message(_(txt_usage_read_saved_news));
 	error_message(_(txt_usage_savedir), tinrc.savedir);
 	error_message(_(txt_usage_save_new_news));
-
-#ifndef NNTP_ONLY
 	error_message(_(txt_usage_update_index_files));
-#endif /* !NNTP_ONLY */
-
 	error_message(_(txt_usage_verbose));
 	error_message(_(txt_usage_version));
 	error_message(_(txt_usage_post_article));
@@ -1018,7 +1015,6 @@ usage(
 }
 
 
-#ifndef NNTP_ONLY
 /*
  * update index files
  */
@@ -1026,19 +1022,12 @@ static void
 update_index_files(
 	void)
 {
-	if (!catchup && (read_news_via_nntp && xover_supported)) {
-		error_message(_(txt_batch_update_unavail), tin_progname);
-		tin_done(EXIT_FAILURE);
-	}
-
 	cCOLS = 132;							/* set because curses has not started */
-	batch_mode = TRUE;					/* -u handling... */
 	create_index_lock_file(lock_file);
 	tinrc.thread_articles = THREAD_NONE;	/* stop threading to run faster */
 	do_update(catchup);
 	tin_done(EXIT_SUCCESS);
 }
-#endif /* !NNTP_ONLY */
 
 
 /*
@@ -1100,11 +1089,103 @@ read_cmd_line_groups(
 }
 
 
+/*
+ * If we're cacheing overview files and the user specified an NNTP server
+ * with the '-g' option, make the directory name specific to the NNTP server
+ * and make sure the directory exists.
+ * Returns FALSE if we needed to set up the local cache dir but could not
+ */
+static t_bool
+setup_private_overview(
+	void)
+{
+	struct stat sb;
+
+	if (read_news_via_nntp && xover_supported && !tinrc.cache_overview_files)
+		return TRUE;
+
+	/*
+	 * TODO: don't create cache dir if we are reading from local spool,
+	 *       the systems overview data is readable and
+	 *       !tinrc.cache_overview_files
+	 */
+
+	if (cmdline_nntpserver[0] != 0) {	/* this => read_news_via_nntp */
+		char *from;
+		char *to;
+		int c;
+
+		to = index_newsdir + strlen(index_newsdir);
+		*(to++) = '-';
+		for (from = cmdline_nntpserver; (c = *from) != 0; ++from)
+			*(to++) = tolower(c);
+		*to = '\0';
+	}
+
+#	ifdef DEBUG
+	debug_nntp("setup_private_overview", index_newsdir);
+#	endif /* DEBUG */
+
+	if (stat(index_newsdir, &sb) == -1) {
+		if (my_mkdir(index_newsdir, (mode_t) S_IRWXU))
+			return FALSE;
+	} else {
+		if (!S_ISDIR(sb.st_mode))
+			return FALSE;
+	}
+
+	/* TODO why is this only done here ? */
+	joinpath(local_newsgroups_file, index_newsdir, NEWSGROUPS_FILE);
+	return TRUE;
+}
+
+
+/*
+ * Create default mail & save directories if they do not exist
+ * TODO: return code not meaningful ?
+ */
+static t_bool
+create_mail_save_dirs(
+	void)
+{
+	t_bool created = FALSE;
+	char path[PATH_LEN];
+	struct stat sb;
+
+	if (!strfpath(tinrc.maildir, path, sizeof(path), NULL))
+		joinpath(path, homedir, DEFAULT_MAILDIR);
+
+	if (stat(path, &sb) == -1) {
+		my_mkdir(path, (mode_t) (S_IRWXU));
+		created = TRUE;
+	}
+
+	if (!strfpath(tinrc.savedir, path, sizeof(path), NULL))
+		joinpath(path, homedir, DEFAULT_SAVEDIR);
+
+	if (stat(path, &sb) == -1) {
+		my_mkdir(path, (mode_t) (S_IRWXU));
+		created = TRUE;
+	}
+
+	return created;
+}
+
+
+/*
+ * we don't try do free() any previously malloc()ed mem here as exit via
+ * giveup() indicates a serious error and keeping track of what we've
+ * already malloc()ed would be a PITA.
+ */
 void
 giveup(
 	void)
 {
 	static int nested;
+
+#ifdef XFACE_ABLE
+	slrnface_stop();
+#endif /* XFACE_ABLE */
 
 	if (!cmd_line && !nested++) {
 		cursoron();

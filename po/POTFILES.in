@@ -60,5 +60,7 @@ src/tcurses.c
 src/thread.c
 src/tmpfile.c
 src/trace.c
+src/version.c
 src/wildmat.c
+src/xface.c
 src/xref.c

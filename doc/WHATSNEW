@@ -51,6 +51,9 @@ New Features
 
 . '.' sorts the newsgroup list
 
+- tin(5) manpage which describes the format of the various (config) files
+  used
+
 Changes
 -------
 
@@ -60,6 +63,11 @@ Changes
 . tin will no longer re-connect to the news server in order to just disconnect
 
 . Lots of bug fixes
+
+. xref filter rules are now matched against a the reformatted xref line
+  (same format as Newsgroups:, everything except the newsgoup names is
+  stripped, the remaining groups are comma seperated) instead of matching
+  against each group except listed (except the current one) iduvidually
 
 Retired Features
 ----------------
@@ -74,8 +82,7 @@ Retired Features
   or an equivalent instead
 
 . ~/.tin/bug_address is no longer supported. Set a site-wide address either
-  at compile time or set in the tin.defaults file. If you must have a per-user
-  setting, use the BUG_ADDRESS environment variable.
+  at compile time or set in the tin.defaults file.
 
 . 'k' no longer works in the pager. Use 'N' instead
 
@@ -93,3 +100,6 @@ Retired Features
 
 . --with-local-charset as the ports (NeXT, MSDOS) where it was needed
   weren't maintained for several years now.
+
+. filter rules xref_num and xref_score have been removed, the new format
+  of the xref rule should give you nearly the same functionailty

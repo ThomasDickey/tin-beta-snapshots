@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-04-25
+ *  Updated   : 2003-05-15
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -60,7 +60,7 @@ t_bool show_subject;
 /*
  * Local prototypes
  */
-static int enter_pager(int art, t_bool ignore_unavail);
+static int enter_pager(int art, t_bool ignore_unavail, int level);
 static int thread_catchup(int ch);
 static int thread_left(void);
 static int thread_right(void);
@@ -72,6 +72,7 @@ static void draw_thread_arrow(void);
 static void make_prefix(struct t_msgid *art, char *prefix, int maxlen);
 static void show_thread_page(void);
 static void update_thread_page(void);
+static int mark_art_read(struct t_group *group);
 
 
 /*
@@ -219,7 +220,7 @@ build_tline(
 			if (!(ptr && arts[ptr->article].subject == art->subject)) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				if (mbstowcs(wtmp2, art->subject, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
-					wcspart(wtmp, wtmp2, gap, ARRAY_SIZE(wtmp));
+					wcspart(wtmp, wtmp2, gap, ARRAY_SIZE(wtmp), TRUE);
 					if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
 #	ifdef USE_CURSES
 						strncat(buff, tmp, sizeof(buff) - len - 1);
@@ -258,7 +259,7 @@ build_tline(
 			get_author(TRUE, art, tmp, sizeof(tmp) - 1);
 
 			if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
-				wcspart(wtmp, wtmp2, len_from, ARRAY_SIZE(wtmp));
+				wcspart(wtmp, wtmp2, len_from, ARRAY_SIZE(wtmp), TRUE);
 				if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
 #	ifdef USE_CURSES
 					strncat(buff, tmp, sizeof(buff) - strlen(buff) - 1);
@@ -276,7 +277,7 @@ build_tline(
 		get_author(TRUE, art, tmp, sizeof(tmp) - 1);
 
 		if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
-			wcspart(wtmp, wtmp2, cCOLS - strlen(buff), ARRAY_SIZE(wtmp));
+			wcspart(wtmp, wtmp2, cCOLS - strlen(buff), ARRAY_SIZE(wtmp), TRUE);
 			if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
 #	ifdef USE_CURSES
 				strncat(buff, tmp, sizeof(buff) - strlen(buff) - 1);
@@ -393,7 +394,7 @@ thread_right(
  * If threaded on References: or Archive-name: show
  *   <respnum> <subject> <name>
  * Return values:
- *		GRP_RETURN		Return to selection screen
+ *		GRP_RETSELECT	Return to selection screen
  *		GRP_QUIT		'Q'uit all the way out
  *		GRP_NEXT		Catchup goto next group
  *		GRP_NEXTUNREAD	Catchup enter next unread thread
@@ -453,7 +454,7 @@ thread_page(
 	 * See if we're on a direct call from the group menu to the pager
 	 */
 	if (page) {
-		if ((ret_code = enter_pager(page->art, page->ignore_unavail)) != 0)
+		if ((ret_code = enter_pager(page->art, page->ignore_unavail, GROUP_LEVEL)) != 0)
 			return ret_code;
 		/* else fall through to stay in thread level */
 	}
@@ -501,7 +502,7 @@ thread_page(
 					info_message(_(txt_no_last_message));
 					break;
 				}
-				ret_code = enter_pager(this_resp, FALSE);
+				ret_code = enter_pager(this_resp, FALSE, THREAD_LEVEL);
 				break;
 
 			case iKeySetRange:	/* set range */
@@ -511,26 +512,22 @@ thread_page(
 
 			case iKeyPipe:			/* pipe article to command */
 				if (thread_basenote >= 0)
-					feed_articles(FEED_PIPE, THREAD_LEVEL, &CURR_GROUP, find_response(thread_basenote, thdmenu.curr));
+					feed_articles(FEED_PIPE, THREAD_LEVEL, group, find_response(thread_basenote, thdmenu.curr));
 				break;
 
 			case iKeyThreadMail:	/* mail article to somebody */
 				if (thread_basenote >= 0)
-					feed_articles(FEED_MAIL, THREAD_LEVEL, &CURR_GROUP, find_response(thread_basenote, thdmenu.curr));
+					feed_articles(FEED_MAIL, THREAD_LEVEL, group, find_response(thread_basenote, thdmenu.curr));
 				break;
 
 			case iKeyThreadSave:	/* save articles with prompting */
 				if (thread_basenote >= 0)
-					feed_articles(FEED_SAVE, THREAD_LEVEL, &CURR_GROUP, find_response(thread_basenote, thdmenu.curr));
+					feed_articles(FEED_SAVE, THREAD_LEVEL, group, find_response(thread_basenote, thdmenu.curr));
 				break;
 
-			case iKeyThreadAutoSaveTagged:	/* Auto-save tagged articles without prompting */
-				if (thread_basenote >= 0) {
-					if (num_of_tagged_arts)
-						feed_articles(FEED_AUTOSAVE_TAGGED, THREAD_LEVEL, &CURR_GROUP, (int) base[grpmenu.curr]);
-					else
-						info_message(_(txt_no_tagged_arts_to_save));
-				}
+			case iKeyThreadAutoSave:	/* Auto-save articles without prompting */
+				if (thread_basenote >= 0)
+					feed_articles(FEED_AUTOSAVE, THREAD_LEVEL, group, (int) base[grpmenu.curr]);
 				break;
 
 #if 0 /* FIXME: crsr-position after kill */
@@ -552,7 +549,7 @@ thread_page(
 
 			case iKeyThreadReadArt:
 			case iKeyThreadReadArt2:	/* read current article within thread */
-				ret_code = enter_pager(find_response(thread_basenote, thdmenu.curr), FALSE);
+				ret_code = enter_pager(find_response(thread_basenote, thdmenu.curr), FALSE, THREAD_LEVEL);
 				break;
 
 			case iKeyThreadReadNextArtOrThread:
@@ -599,13 +596,7 @@ thread_page(
 				break;
 
 			case iKeyThreadMarkArtRead: /* mark article as read */
-				n = find_response(thread_basenote, thdmenu.curr);
-				if ((arts[n].status == ART_UNREAD) || (arts[n].status == ART_WILL_RETURN))
-					art_mark(group, &arts[n], ART_READ);
-				if ((n = next_unread(n)) == -1)	/* no more unread articles */
-					ret_code = GRP_EXIT;
-				else
-					fixup_thread(n, TRUE);	/* We may be in the next thread now */
+				ret_code = mark_art_read(group);
 				break;
 
 			case iKeyThreadToggleSubjDisplay:	/* toggle display of subject & subj/author */
@@ -641,13 +632,13 @@ thread_page(
 
 			case iKeyLookupMessage:
 				if ((n = prompt_msgid()) != ART_UNAVAILABLE)
-					ret_code = enter_pager(n, FALSE);
+					ret_code = enter_pager(n, FALSE, THREAD_LEVEL);
 				break;
 
 			case iKeySearchBody:			/* search article body */
-				if ((n = search_body(find_response(thread_basenote, thdmenu.curr), repeat_search)) != -1) {
+				if ((n = search_body(group, find_response(thread_basenote, thdmenu.curr), repeat_search)) != -1) {
 					fixup_thread(n, FALSE);
-					ret_code = enter_pager(n, FALSE);
+					ret_code = enter_pager(n, FALSE, THREAD_LEVEL);
 				}
 				break;
 
@@ -848,7 +839,7 @@ static void
 update_thread_page(
 	void)
 {
-	register int i, j, the_index;
+	int i, j, the_index;
 
 	the_index = find_response(thread_basenote, thdmenu.first);
 	assert(thdmenu.first != 0 || the_index == thread_respnum);
@@ -885,13 +876,14 @@ fixup_thread(
 	t_bool redraw)
 {
 	int basenote = which_thread(respnum);
+	int old_thread_basenote = thread_basenote;
 
 	if (basenote >= 0) {
 		thread_basenote = basenote;
 		thdmenu.max = num_of_responses(thread_basenote) + 1;
 		thread_respnum = base[thread_basenote];
 		grpmenu.curr = basenote;
-		if (redraw)
+		if (redraw && basenote != old_thread_basenote)
 			show_thread_page();
 	}
 
@@ -1056,7 +1048,7 @@ stat_thread(
 	sbuf->deleted = 0;
 	sbuf->inrange = 0;
 	sbuf->selected_total = 0;
-	sbuf->selected_unread= 0;
+	sbuf->selected_unread = 0;
 	sbuf->selected_seen = 0;
 	sbuf->killed = 0;
 	sbuf->art_mark = tinrc.art_marked_read;
@@ -1093,7 +1085,7 @@ stat_thread(
 		if (arts[i].killed)
 			++sbuf->killed;
 
-		if ((CURR_GROUP.attribute && CURR_GROUP.attribute->thread_arts == THREAD_MULTI) && global_get_multipart_info(i, &minfo) && (minfo.total >= 1)) {
+		if ((CURR_GROUP.attribute->thread_arts == THREAD_MULTI) && global_get_multipart_info(i, &minfo) && (minfo.total >= 1)) {
 			sbuf->multipart_compare_len = minfo.subject_compare_len;
 			sbuf->multipart_total = minfo.total;
 			sbuf->multipart_have++;
@@ -1176,7 +1168,6 @@ prev_response(
 	int n)
 {
 	int i;
-
 
 	if (arts[n].prev >= 0)
 		return arts[n].prev;
@@ -1403,18 +1394,24 @@ thread_catchup(
 
 /*
  * This is the single entry point into the article pager
- * 'art' is the arts[art] we wish to read
- * ignore_unavail should be set if we wish to keep going after 'article
- * unavailable'.
+ * art
+ *		is the arts[art] we wish to read
+ * ignore_unavail
+ *		should be set if we wish to keep going after article unavailable
+ * level
+ *		is the menu from which we came. This should be only be GROUP or THREAD
+ *		it is used to set the return code to go back to the calling menu when
+ *		not explicitly set
  * Return:
  *	<0 to quit to group menu
  *	 0 to stay in thread menu
- * >0 after normal exit from pager to return to previous menu level
+ *  >0 after normal exit from pager to return to previous menu level
  */
 static int
 enter_pager(
 	int art,
-	t_bool ignore_unavail)
+	t_bool ignore_unavail,
+	int level)
 {
 	int i;
 
@@ -1422,15 +1419,28 @@ again:
 	switch ((i = show_page(&CURR_GROUP, art, &thdmenu.curr))) {
 		/* These exit to previous menu level */
 		case GRP_QUIT:				/* 'Q' all the way out */
-		case GRP_RETURN:			/* 'T' back to select menu */
+		case GRP_RETSELECT:			/* 'T' back to select menu */
 		case GRP_NEXT:				/* 'c' Move to next thread on group menu */
 		case GRP_NEXTUNREAD:		/* 'C' */
 			break;
 
+		case GRP_ARTABORT:			/* user 'q'uit load of article */
+			/* break forces return to group menu */
+			if (level == GROUP_LEVEL)
+				break;
+			/* else stay on thread menu */
+			show_thread_page();
+			return 0;
+
 		/* Keeps us in thread menu */
-		case GRP_ARTFAIL:
+		case GRP_ARTUNAVAIL:
 			if (ignore_unavail && (art = next_unread(art)) != -1)
 				goto again;
+			else if (level == GROUP_LEVEL)
+				return GRP_ARTABORT;
+			/* back to thread menu */
+			show_thread_page();
+			return 0;
 
 		case GRP_GOTOTHREAD:		/* 'l' from pager */
 			show_thread_page();
@@ -1471,11 +1481,72 @@ thread_tab_pressed(
 	 */
 	for (i = n; i != -1; i = arts[i].thread) {
 		if ((arts[i].status == ART_UNREAD) || (arts[i].status == ART_WILL_RETURN))
-			return (enter_pager(i, TRUE));
+			return (enter_pager(i, TRUE, THREAD_LEVEL));
 	}
 
 	/*
 	 * We ran out of thread, tell group.c to enter the next with unread
 	 */
 	return GRP_NEXTUNREAD;
+}
+
+
+/*
+ * If there are any tagged and unread articles, prompt user to mark either
+ * all tagged arts as read, or only current article, or cancel operation.
+ * Otherwise, use current article.
+ * Finally move to next unread article.
+ *
+ * Return GRP_EXIT if there are no more unread articles in this group,
+ * else return 0.
+ */
+static int
+mark_art_read(
+	struct t_group *group)
+{
+	char keytagged[MAXKEYLEN], keycurrent[MAXKEYLEN], keyquit[MAXKEYLEN];
+	int ch = iKeyMarkReadCur;
+	int n = -1, cnt = 0;
+	int tmp_num_of_tagged_arts = num_of_tagged_arts;
+
+	if (got_tagged_unread_arts()) {
+		ch = prompt_slk_response(iKeyMarkReadTag,
+				&menukeymap.mark_read_tagged_current,
+				_(txt_mark_art_read_tagged_current),
+				printascii(keytagged, map_to_local(iKeyMarkReadTag, &menukeymap.mark_read_tagged_current)),
+				printascii(keycurrent, map_to_local(iKeyMarkReadCur, &menukeymap.mark_read_tagged_current)),
+				printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.mark_read_tagged_current)));
+	}
+
+	switch (ch) {
+		case iKeyMarkReadTag: /* mark tagged unread articles as read */
+			cnt = mark_tagged_read(group);
+			show_thread_page();
+			n = find_response(thread_basenote, thdmenu.curr);
+			break;
+
+		case iKeyMarkReadCur: /* mark current article as read */
+			n = find_response(thread_basenote, thdmenu.curr);
+			if ((arts[n].status == ART_UNREAD) || (arts[n].status == ART_WILL_RETURN)) {
+				art_mark(group, &arts[n], ART_READ);
+				build_tline(thdmenu.curr, &arts[n]);
+				draw_line(thdmenu.curr, MAGIC);
+			}
+			break;
+
+		case iKeyQuit: /* cancel operation */
+		case iKeyAbort:
+			return 0;
+			break;
+	}
+
+	if ((n = next_unread(n)) == -1)	/* no more unread articles */
+		return GRP_EXIT;
+	else
+		fixup_thread(n, TRUE);	/* We may be in the next thread now */
+
+	if (ch == iKeyMarkReadTag)
+		info_message(_(txt_marked_tagged_arts_as_read), cnt, tmp_num_of_tagged_arts, PLURAL(tmp_num_of_tagged_arts, txt_article));
+
+	return 0;
 }

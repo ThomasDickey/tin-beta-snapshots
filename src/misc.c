@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-04-25
+ *  Updated   : 2003-05-16
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -581,7 +581,7 @@ tin_done(
 		}
 
 		write_input_history_file();
-#if 0 /* FIXME */
+#if 0
 		write_attributes_file(local_attributes_file);
 #endif /* 0 */
 
@@ -589,6 +589,10 @@ tin_done(
 		write_mail_active_file();
 #endif /* HAVE_MH_MAIL_HANDLING */
 	}
+
+#ifdef XFACE_ABLE
+	slrnface_stop();
+#endif /* XFACE_ABLE */
 
 	/* Do this sometime after we save the newsrc in case this hangs up for any reason */
 	if (ret != NNTP_ERROR_EXIT)
@@ -725,7 +729,7 @@ my_mkdir(
 	char buf[LEN];
 	struct stat sb;
 
-	sprintf(buf, "mkdir %s", path); /* redirect stderr to /dev/null? */
+	sprintf(buf, "mkdir %s", path); /* redirect stderr to /dev/null? use invoke_cmd()? */
 	if (stat(path, &sb) == -1) {
 		system(buf);
 		return chmod(path, mode);
@@ -858,6 +862,7 @@ invoke_cmd(
 {
 	int ret;
 	t_bool save_cmd_line = cmd_line;
+	t_bool success;
 
 	if (!save_cmd_line) {
 		EndWin();
@@ -866,13 +871,15 @@ invoke_cmd(
 	set_signal_catcher(FALSE);
 
 	TRACE(("called system(%s)", _nc_visbuf(nam)));
-#ifdef USE_SYSTEM_STATUS
-	system(nam);
-	ret = system_status;
-#else
 	ret = system(nam);
-#endif /* USE_SYSTEM_STATUS */
-	TRACE(("return %d", ret));
+#ifdef VMS
+	system_status = 0;
+#else
+#	ifndef USE_SYSTEM_STATUS
+	system_status = (ret >= 0 && WIFEXITED(ret)) ? WEXITSTATUS(ret) : 0;
+#	endif /* !USE_SYSTEM_STATUS */
+#endif /* VMS */
+	TRACE(("return %d (%d)", ret, system_status));
 
 	set_signal_catcher(TRUE);
 	if (!save_cmd_line) {
@@ -881,14 +888,16 @@ invoke_cmd(
 		need_resize = cYes;		/* Flag a redraw */
 	}
 
-	if (ret != 0)
+#ifdef VMS
+	success = (ret != 0);
+#else
+	success = (ret == 0);
+#endif /* VMS */
+
+	if (!success || system_status != 0)
 		error_message(_(txt_command_failed), nam);
 
-#ifdef VMS
-	return ret != 0;
-#else
-	return ret == 0;
-#endif /* VMS */
+	return success;
 }
 
 
@@ -916,31 +925,51 @@ draw_percent_mark(
 
 
 /*
- * TODO: add configure check for basename(3)/dirname(3) [SUSv2]
- *       if found use that instead.
+ * grab file portion of fullpath
  */
 void
 base_name(
-	const char *fullpath,		/* eg, argv[0] */
-	char *program)				/* eg, tin_progname is returned */
+	const char *fullpath,		/* /foo/bar/baz */
+	char *file)				/* baz */
 {
 	size_t i;
 #ifdef VMS
 	char *cp;
 #endif /* VMS */
 
-	strcpy(program, fullpath);
+	strcpy(file, fullpath);
 
 	for (i = strlen(fullpath) - 1; i; i--) {
 		if (fullpath[i] == DIRSEP) {
-			strcpy(program, fullpath + i + 1);
+			strcpy(file, fullpath + i + 1);
 			break;
 		}
 	}
 #ifdef VMS
-	if ((cp = strrchr(program, '.')) != 0)
+	if ((cp = strrchr(file, '.')) != 0)
 		*cp = '\0';
 #endif /* VMS */
+}
+
+
+/*
+ * grab dir portion of fullpath
+ */
+void
+dir_name(
+	const char *fullpath,	/* /foo/bar/baz */
+	char *dir)		/* /foo/bar/ */
+{
+	char *d, *f, *p;
+
+	d = my_strdup(fullpath);
+	f = my_strdup(fullpath);
+	base_name(d, f);
+	if ((p = strrstr(d, f)) != NULL)
+		*p = '\0';
+	strcpy(dir, d);
+	free(f);
+	free(d);
 }
 
 
@@ -1162,7 +1191,6 @@ show_color_status(
 #endif /* HAVE_COLOR */
 
 
-#ifndef NNTP_ONLY
 /*
  * Check for lock file to stop multiple copies of tin -u running and if it
  * does not exist create it so this is the only copy running
@@ -1193,7 +1221,6 @@ create_index_lock_file(
 		}
 	}
 }
-#endif /* !NNTP_ONLY */
 
 
 /*
@@ -1816,13 +1843,13 @@ escape_shell_meta(
  */
 int
 strfmailer(
-	char *the_mailer,
-	char *subject,
-	char *to,
+	const char *mail_prog,
+	char *subject,	/* FIXME: should be const char */
+	char *to, /* FIXME: should be const char */
 	const char *filename,
 	char *dest,
 	size_t maxsize,
-	char *format)
+	const char *format)
 {
 	char *endp = dest + maxsize;
 	char *start = dest;
@@ -1898,13 +1925,14 @@ strfmailer(
 		 * - '%' followed by NULL gets '%' and leaves loop
 		 * - '%%' gets '%'
 		 * - '%F' expands to filename
-		 * - '%M' expands to mailer
+		 * - '%M' expands to mailer program
 		 * - '%S' expands to subject of message
 		 * - '%T' expands to recipient(s) of message
 		 * - '%U' expands to userid
 		 * - '%' followed by any other character is copied literally
 		 */
 		if (*format == '%') {
+			char *p;
 			t_bool ismail = TRUE;
 			t_bool escaped = FALSE;
 			switch (*++format) {
@@ -1921,7 +1949,7 @@ strfmailer(
 					break;
 
 				case 'M':	/* Mailer */
-					STRCPY(tbuf, the_mailer);
+					STRCPY(tbuf, mail_prog);
 					break;
 
 				case 'S':	/* Subject */
@@ -1929,8 +1957,6 @@ strfmailer(
 					if (tinrc.use_mailreader_i)
 						strncpy(tbuf, escape_shell_meta(subject, quote_area), sizeof(tbuf) - 1);
 					else {
-						char *p;
-
 #ifdef CHARSET_CONVERSION
 						p = rfc1522_encode(subject, txt_mime_charsets[tinrc.mm_network_charset], ismail);
 #else
@@ -1948,8 +1974,6 @@ strfmailer(
 					if (tinrc.use_mailreader_i)
 						strncpy(tbuf, escape_shell_meta(to, quote_area), sizeof(tbuf) - 1);
 					else {
-						char *p;
-
 #ifdef CHARSET_CONVERSION
 						p = rfc1522_encode(to, txt_mime_charsets[tinrc.mm_network_charset], ismail);
 #else
@@ -1967,8 +1991,6 @@ strfmailer(
 					if (tinrc.use_mailreader_i)
 						strncpy(tbuf, userid, sizeof(tbuf) - 1);
 					else {
-						char *p;
-
 #ifdef CHARSET_CONVERSION
 						p = rfc1522_encode(userid, txt_mime_charsets[tinrc.mm_network_charset], ismail);
 #else
@@ -2115,10 +2137,8 @@ cleanup_tmp_files(
 	if (!tinrc.cache_overview_files)
 		unlink(local_newsgroups_file);
 
-#ifndef NNTP_ONLY
 	if (batch_mode)
 		unlink(lock_file);
-#endif /* !NNTP_ONLY */
 }
 
 
@@ -2383,70 +2403,17 @@ quote_wild_whitespace(
 }
 
 
-#if 0 /* unused */
-/*
- * strip_address() removes the address part from a given e-mail address
- */
-void
-strip_address(
-	char *the_address,
-	char *stripped_address)
-{
-	char *end_pos;
-	char *start_pos;
-
-	if (strchr(the_address, '@') != NULL) {
-		if ((end_pos = strchr(the_address, '<')) == NULL) {
-			if ((start_pos = strchr(the_address, ' ')) == NULL)
-				strcpy(stripped_address, the_address);
-			else {
-				strcpy(stripped_address, start_pos + 2);
-				if (stripped_address[strlen(stripped_address) - 1] == ')')
-					stripped_address[strlen(stripped_address) - 1] = '\0';
-			}
-		} else
-			if (end_pos > the_address)
-				strncpy(stripped_address, the_address, end_pos - the_address - 1);
-			else
-				strcpy(stripped_address, the_address);
-	} else {
-		if (the_address[0] == '(')
-			strcpy(stripped_address, the_address + 1);
-		else
-			strcpy(stripped_address, the_address);
-		if (stripped_address[strlen(stripped_address) - 1] == ')')
-			stripped_address[strlen(stripped_address) - 1] = '\0';
-	}
-}
-#endif /* 0 */
-
-
 /*
  * strip_name() removes the realname part from a given e-mail address
  */
 void
 strip_name(
-	char *the_address,
-	char *stripped_address)
+	const char *from,
+	char *address)
 {
-	char *end_pos;
-	char *start_pos;
+	char name[HEADER_LEN];
 
-	/* skip realname in address */
-	if ((start_pos = strchr(the_address, '<')) == NULL) {
-		/* address in user@domain(realname) syntax or realname is missing */
-		strcpy(stripped_address, the_address);
-		start_pos = stripped_address;
-		if ((end_pos = strchr(start_pos, ' ')) == NULL)
-			end_pos = start_pos + strlen(start_pos);
-	} else {
-		start_pos++; /* skip '<' */
-		strcpy(stripped_address, start_pos);
-		start_pos = stripped_address;
-		if ((end_pos = strchr(start_pos, '>')) == NULL)
-			end_pos = start_pos + strlen(start_pos); /* skip '>' */
-	}
-	*(end_pos) = '\0';
+	gnksa_do_check_from(from, address, name);
 }
 
 
@@ -2597,7 +2564,7 @@ buffer_to_local(
 
 
 /* convert from local_charset to txt_mime_charsets[mmnwcharset] */
-void
+t_bool
 buffer_to_network(
 	char *line,
 	int mmnwcharset)
@@ -2608,6 +2575,7 @@ buffer_to_network(
 	iconv_t cd;
 	size_t result, osize;
 	size_t inbytesleft, outbytesleft;
+	t_bool conv_success = TRUE;
 
 	if ((cd = iconv_open(txt_mime_charsets[mmnwcharset], tinrc.mm_local_charset)) != (iconv_t) (-1)) {
 		inbytesleft = strlen(line);
@@ -2623,10 +2591,12 @@ buffer_to_network(
 			if (result == (size_t) (-1)) {
 				switch (errno) {
 					case EILSEQ:
+						/* TODO: only one '?' for each multibyte sequence ? */
 						**&outbuf = '?';
 						outbuf++;
 						inbuf++;
 						inbytesleft--;
+						conv_success = FALSE;
 						break;
 
 					case E2BIG:
@@ -2638,6 +2608,7 @@ buffer_to_network(
 
 					default:	/* EINVAL */
 						inbytesleft = 0;
+						conv_success = FALSE;
 				}
 			}
 		} while (inbytesleft > 0);
@@ -2647,6 +2618,7 @@ buffer_to_network(
 		free(obuf);
 		iconv_close(cd);
 	}
+	return conv_success;
 }
 #endif /* CHARSET_CONVERSION */
 
@@ -2681,16 +2653,17 @@ process_charsets(
 	const char *local_charset,
 	t_bool conv_tex2iso)
 {
+	char *p;
+
 #ifdef CHARSET_CONVERSION
 	if (strcasecmp(network_charset, "US-ASCII")) {	/* network_charset is NOT US-ASCII */
-		char *clocal_charset;
 		if (iso2asc_supported >= 0)
-			clocal_charset = my_strdup("ISO-8859-1");
+			p = my_strdup("ISO-8859-1");
 		else
-			clocal_charset = my_strdup(local_charset);
-		if (!buffer_to_local(line, max_line_len, network_charset, clocal_charset))
+			p = my_strdup(local_charset);
+		if (!buffer_to_local(line, max_line_len, network_charset, p))
 			buffer_to_ascii(*line);
-		free(clocal_charset);
+		free(p);
 	} else /* set non-ASCII characters to '?' */
 		buffer_to_ascii(*line);
 #else
@@ -2707,10 +2680,9 @@ process_charsets(
 	 * to allow TEX2ISO && ISO2ASC, i.e. "a -> auml -> ae
 	 */
 	if (conv_tex2iso) {
-		char *texbuf;
-		texbuf = my_strdup(*line);
-		convert_tex2iso(texbuf, *line);
-		free(texbuf);
+		p = my_strdup(*line);
+		convert_tex2iso(p, *line);
+		free(p);
 	}
 
 	/* iso2asc support */
@@ -2720,11 +2692,9 @@ process_charsets(
 	if (iso2asc_supported >= 0 && !strcasecmp(network_charset, "ISO-8859-1"))
 #endif /* CHARSET_CONVERSION */
 	{
-		char *isobuf;
-
-		isobuf = my_strdup(*line);
-		convert_iso2asc(isobuf, line, max_line_len, iso2asc_supported);
-		free(isobuf);
+		p = my_strdup(*line);
+		convert_iso2asc(p, line, max_line_len, iso2asc_supported);
+		free(p);
 	}
 }
 
@@ -2825,10 +2795,12 @@ static char gnksa_legal_localpart_chars[256] = {
 
 /*
  * legal realname characters according to son of RFC 1036
+ *
+ * we also allow CR & LF for folding
  */
 static char gnksa_legal_realname_chars[256] = {
 /*         0 1 2 3  4 5 6 7  8 9 a b  c d e f */
-/* 0x00 */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+/* 0x00 */ 0,0,0,0, 0,0,0,0, 0,0,1,0, 0,1,0,0,
 /* 0x10 */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
 /* 0x20 */ 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1,
 /* 0x30 */ 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1,
@@ -3568,7 +3540,7 @@ gnksa_do_check_from(
 			code = result;
 
 		/* restore separator character */
-		*--addr_begin= '@';
+		*--addr_begin = '@';
 	}
 
 #ifdef DEBUG
@@ -3715,7 +3687,7 @@ utf8_valid(
 				if (d < 0xf0 || d > 0xf7 || (d == 0xf0 && e < 0x90))
 					illegal = TRUE;
 				/* largest current used sequence */
-				if (d == 0xf4 && e > 0x8f)
+				if ((d == 0xf4 && e > 0x8f) || d > 0xf4)
 					illegal = TRUE;
 				/* Unicode 3.1 noncharacters */
 				/* U+1FFFE, U+1FFFF, U+2FFFE, U+2FFFF, U+3FFFE, U+3FFFF; (Unicode 3.1) */

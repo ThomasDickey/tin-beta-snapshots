@@ -31,7 +31,6 @@ t_header
 --------
 This builds upon the header structure in tin-1.4
 The main structure consists of pointers to the regular RFC822 headers
-Persistant headers are stored in a simple linked list
 
 Every article has a pointer to an 'ext' structure (of type t_part) which holds
 extended header information.

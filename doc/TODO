@@ -1,18 +1,47 @@
+Items which are showstoppers for the next major release are marked with '!'
+in front of them (feel free to up/downgrade and/or add bugs, this file is
+not read only ,-).
+
 Bugs
 ----
+o  AFAICS change_config_file() currently has a static return value,
+   but some callers do check the return value and in case we did
+   change something we should update (global) attributes accordingly.
+   [20030511 Urs Janssen <urs@tin.org>]
+
+o  Changes to int/bool tinrc variables in the Option Menu don't propogate
+   back to the attributes, not even groups with global attributes.
+   This is because the Option-Menu in {group,page}.c doesn't reread the
+   attributes, whereas select.c does. Fix the problem properly in config.c by
+   flashing changes to all affected groups and remove the reread of the
+   attributes file from select.c
+
+o  single quotes in attachment names aren't escaped
+   (see <nntp://news.tin.org/20030511065405.GA14493@Ado.student.utwente.nl>)
+
+o  'C'atchup in pager is still not correct (we don't ever enter the next group)
+   [20030515 Urs Janssen <urs@tin.org>]
+
+!o  reconnect problem reported in debian bug #188052
+!   <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=188052>
+
+!o  reconnect problem reported in debian bug #143417
+!   <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=143417>
+
+!o  crash after reconnect when saving multiple files reported in
+!   <nntp://news.tin.org/20030219101902.GA20318@preusse-16223.user.cis.dfn.de>
+
+!o  'article loss' reported in
+!   <nntp://news.tin.org/20020915165856.GA1541@martinkl.dialup.fu-berlin.de>
+
+o  piping/printing articles grabbles screen
+   [20030501 Urs Janssen <urs@tin.org>]
+
 o  better integrate saving of MIME/non-MIME articles when not using libuu.
    MIME sections are saved by the 's'ave operations, uuencoded sections
    are saved as part of the postprocess backend
    [mostly done]
    [Jason Faultless <jason@altarstone.com>]
-
-o  add counter to post-processing commands (processing file x of y)
-   (Is post-processing really that slow? [Jason Faultless
-   <jason@altarstone.com>] no but if you post-process more than a
-   handful of files it would be useful [Urs Janssen <urs@tin.org>])
-
-o  when p'|'ping multiple files ('T'agged) screen is defaced
-   [20020305 Urs Janssen <urs@tin.org>]
 
 o  running multiple tins in parallel (each connected to a different
    server) will trash all newnews=timestamps (and other config changes)
@@ -27,17 +56,9 @@ o  $NNTPSERVER is only appended to $TIN_INDEX_NEWSDIR if -g cmd-line
    option is used, we should change that and always append it to avoid using
    a wrong cache after changing $NNTPSERVER...
 
-o  attributes are ignored for mail-actions (except mail_to_author()) cause
-   mail_loop() doesn't know the group we are in.
+o  attributes are ignored for mail-actions (except mail_to_author())
+   cause mail_loop() usualy doesn't know the group we are in.
    [20020211 Andreas Metzler <tin-dev@downhill.at.eu.org>]
-
-o  posting with --enable-break-long-lines and !7bit chars in From:
-   doesn't work if encoded line is > 76 chars (gnksa-check doesn't
-   allow \n in From)
-   [20020212 Urs Janssen <urs@tin.org>]
-
-o  mailing_list attribute is ignored on no posting servers in select level
-   [Urs Janssen <urs@tin.org>]
 
 o  reusing p'o'stponed articles in mailing_list groups doesn't work
    (possible fix: store Newsgroups (and other infos) via msg_add_header()
@@ -70,41 +91,20 @@ o  '-s' cmd-line switch implicitly changes 'savedir' in tinrc
    Might get away with simply setting glob_attributes->savedir
    [Jason Faultless <jason@altarstone.com>]
 
-o  fix check_upgrade() (config.c)
-   - check if TINRC_VERSION is 'older' (mismatch and not newer) as in the
-     config file, give a warning and the possibility to quit without saving
-     config file
-   - check if TINRC_VERSION is 'newer' (already done) and give a warning
-     which mentiones tinrcupdate.pl and the possibillity to quit right now
-     without having the tinrc touched
-   - use a 'config option' in tinrc for version number (e.g. tinrc.version)
-     instead of 'hardcoded' strings
-   [Urs Janssen <urs@tin.org>]
-
-o  add version number to other config-files (e.g. attributes, filter,
-   tin.defaults, keymap) and do the same checks as for TINRC_VERSION/tinrc
-   for the filter-file also store the editor offset and the filter method
-   used (wildmat or regexp) and the charset the file is written in (e.g.
+o  add version number to other config-files (e.g. tin.defaults,
+   keymap) and do the same checks as for TINRC_VERSION/tinrc. for the
+   filter (and attributes) file also store the editor offset (different
+   languages do use different headres) and the filter method used
+   (wildmat or regexp) and the charset the file is written in (e.g.
    ISO-8859-x vs. unicode)
    [Urs Janssen <urs@tin.org>]
 
-o  'K' is still a bit inconsistent
+o  'K' is still a bit inconsistent:
    - in the group and thread menu it marks current item read & jumps to the
      next unread item.
    - in the article pager (page.c) it marks the rest of the current thread
      read and jumps to the next unread article. should we let 'K' behave
      like <TAB> in the pager?
-   - in thread menu 'K' always forces a screen redraw (due to skip to next
-     unread (thread) logic) it would be nice if we could avoid that for the
-     cases where we don't leave the page
-
-o  add 'K' act on tagged articles (mark all tagged as read).
-
-o  Changes to int/bool tinrc variables in the Option Menu don't propogate
-   back to the attributes, not even groups with global attributes.
-   This is because the Option-Menu in {group,page}.c doesn't reread the
-   attributes, whereas select.c does. It might be better to fix the problem
-   properly in config.c by flashing changes to all affected groups.
 
 o  rewrite code to use INEWS_PATH instead of INEWSDIR
    [20021007 Urs Janssen <urs@tin.org>
@@ -129,6 +129,11 @@ o  tin uses the first sig-isolator as recent one, USEFOR says it should
 o  iso2asc conversion is missing for 'internal' strings (e.g. 'M'enu)
    [20020319 Urs Janssen <urs@tin.org>]
 
+o  fix the outstandig mem-leaks, see
+   <nntp://news.tin.org/20030504190113.A21736@akk3.akk.org> and
+   <nntp://news.tin.org/20030504224555.GA18249@akk10.akk.uni-karlsruhe.de>
+   for details [20030504 Urs Janssen <urs@tin.org>]
+
 Pager Problems
 --------------
 o  lines which are exatly cCOLS wide introduce an extra \n in the pager
@@ -140,11 +145,6 @@ o  word_h_display_marks=0 doesn't work for the !USE_CUSRSES case
 
 o  raw mode loses (illegal) chars in multibyte based groups
    [20021006 Michael Bienia <michael@vorlon.ping.de>]
-
-o  lines > 1024 bytes will lose at least 1 byte (in multibyte mode it seems
-   to depend on the number of multibyte-sequenes) at the forced wrap after
-   1024 bytes.
-   [20021102 Urs Janssen <urs@tin.org>]
 
 Posting Problems
 ----------------
@@ -163,16 +163,20 @@ o  when last articles in a newsgroup were cancelled, it shows that there are
 o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
    to 'duplicated'-headers and multiple signatures
 
-o  with -DFORGERY reposting of a thread reposts only the first
-   article ('x' 't' 'r' <group> 'p')
-
 New features
 ------------
+o  add In-Reply-To threading for mailgroups
+   [20030518 Urs Janssen <urs@tin.org>]
+
+o  make auto'S'ave also work for inrange articles/threads(/groups)
+   (unfortunately 'S' at select level is used for something else)
+   [20030508 Urs Janssen <urs@tin.org>]
+
 o  sub-parse message/rfc822 messages (might occur in mail-groups)
    [20030310 Urs Janssen <urs@tin.org>]
 
 o  instead of exiting when tin fails to get the systems domainname fall
-   into no posting mode (and issue a warning).
+   into no posting mode and issue a warning.
    [20021125 Urs Janssen <urs@tin.org>]
 
 o  add new cmd-line flag to force 'no_posting' mode
@@ -245,9 +249,10 @@ o  rewrite thread-method selection that users can easily combine different
    THREAD_MULTI || ...) - see also note in art.c
    [20011117 Urs Janssen <urs@tin.org>]
 
-o  if there are no tagged but hot articles in the group make 'S' work on
-   the hot articles instead of complaining about no tagged arts.
-   [20010824 Urs Janssen <urs@tin.org>]
+o  add counter to post-processing commands (processing file x of y)
+   (Is post-processing really that slow? [Jason Faultless
+   <jason@altarstone.com>] no but if you post-process more than a
+   handful of files it would be useful [Urs Janssen <urs@tin.org>])
 
 o  add key to toggle article and thread sorting preferences on the fly
    (like 'u' for threading)
@@ -273,7 +278,7 @@ o  check if servers high mark is lower as the one in users newsrc, if so
 o  check if the articles Subject/From in the pager matches (minus
    whitespaces) the one on the overview file (if available) - if not
    issue a warning that the servers overviews seem to be broken. trust
-   the headers, not overviews.
+   the headers, not overviews. (see note in rfc2046.c)
    do the same with the article numbers in the (cached) overview
    data (we already do this, but currently this will lead to article "loss").
    if they are higher than the server's high-mark don't trust them (and
@@ -322,7 +327,11 @@ o  Add a trunc() function or something similar for shortening long strings
    we now could use s{w,n}printf() to do that.
 
 o  check if server supports 'LIST MOTD' (e.g. INN >= 2.0) and display
-   it on startup.
+   it on startup. check if server supports 'LIST MODERATORS' and/or
+   'LIST DISTRIB.PATS' and if it does parse the output so it can be shown
+   to the user. (i.e. when he is posting to a moderated group, show the
+   moderators mail-address, but still leave the mailing to the server; if
+   the group has limitied distribution inform the user, ...)
 
 o  if using "-n" commandline switch you can't subscribe to newsgroups not
    present in your newsrc - a simple check against the server
@@ -362,26 +371,27 @@ o  Additions to the thread menu:
      '^K' kill via menu
      'E'  (edit filter)
      'r'  (reply to) /* not 'R' cause it conflicts with mail_bugreport */
-     ''   r ought to be toggle show all/show only unread
+     ''   r should be toggle show all/show only unread
      'f'  (post a followup) (maybe also 'F', '^W', ...)
      'X'  (mark all unread articles that have not been selected as read)
      ';'  (mark unread arts as hot if >= 1 art in thread is hot)
      '+'  (mark thread as hot)
      '='  (mark pattern as hot)
      'Y'  (check for new articles in thead)
-     '%'  (toggle rot13 encoding)
+     '%'  (toggle rot13 encoding of screen content)
      'o'  (print)
      'x'  (repost)
      keys to go to previous/next thread
 
 o  Additions to the group menu:
      'Y'  (check for new articles in group)
-     '%'  (toggle rot13 encoding)
+     '%'  (toggle rot13 encoding of screen content)
 
 o  Additions to the select menu:
-     '%'  (toggle rot13 encoding)
+     '%'  (toggle rot13 encoding of screen content)
 
 o  Add to the 'M'enu:
+     'h'  (help screen)
      DEFAULT_MAILER
 
 o  Add to the POST_INFO-level:
@@ -501,8 +511,6 @@ o  fix kill/hot mechanism so that it is possible to match articles on
 
 o  don't strip "Re: " out of the subject before applying the filter on it
 
-o  cleanup xref-filter (xref_score is no longer needed with score).
-
 o  allow any given amount of days in default_filter_days not only
    {1, 2, 4} * 28 days
 
@@ -520,13 +528,21 @@ o  integrate multi-part tagging with regular tagging, eg.
 
 o  add Content-Language (RFC 3282) analysis
 
+o  suppress hide_uue=2 checking unless first line in an article or following
+   a blank line
+
 Internal Changes
 ----------------
+o  add configure option for slrnface
+   [20030506 Urs Janssen <urs@akk.org>]
+
+o  get rid of CURR_GROUP, use t_group instead
+   create a global t_group *CURR_GROUP instead of the current macro
+   reduce dependencies on my_group[] & selmenu outside of select.c
+   [20030501 Urs Janssen <urs@akk.org>]
+
 o  clean up $AUTOSUBSCRIBE code (the NNTP code path is a mess)
    [20030412 Urs Janssen <urs@akk.org>]
-
-o  add configure check for basename(3) and dirname(3) [SUSv2] and if
-   found use them instead of base_name() and co.
 
 o  the varius filter keys are named a bit inconsistent, currently we have
    iKeyGroupQuickAutoSel, iKeyGroupQuickKill, iKeyPageQuickAutoSel,
@@ -569,7 +585,7 @@ o  make configure look for strrstr() in libpub/publib.h
 o  reorder several structs to avoid padding (see gcc -Wpadded)
    [Urs Janssen <urs@tin.org>]
 
-o  what type is base[]?
+o  what type is base[]? (long, see memory.c:init_alloc()~102)
    There is a lot of confusion internally over how it is used
    compare setup_hard_base() with find_base() etc..
    [Jason Faultless <jason@altarstone.com>]
@@ -618,7 +634,7 @@ o  add check for sizeof char, short, int, long, ...
    make sure that the code works even with 'uncommon' values
    (e.g. char = 1 byte with 32 bit)
 
-o  cleanup (=rewrite) inews.c/header.c/thread.c
+o  cleanup post.c
 
 o  check where my_strncpy() or STRCPY() should be used
    or include OpenBSDs strlcpy(3) (and strlcat(3)) and use it.
@@ -655,8 +671,7 @@ o  add UTF-8 (unicode) support (RFC 2279)
    think this is needed) we have to encode it ourself (as iconv()
    might encode <, @, > which leads to illegal headers) or split
    headers into "encoding part" and "rest" ...
-   [local_charset<-> UTF-8 which needs iconv() is added;
-    UTF-8 as local_charset needs some work, see below.
+   [local_charset <-> UTF-8 which needs iconv() is added;
     20010830 urs@tin.org]
 
 o  make select/group/thread/page-level multibyte "safe". they all use
@@ -677,7 +692,7 @@ o  add installation guide (in html)
 
 o  better document keymap feature
 
-o  man page always needs work
+o  man page always needs work and proof reading
    e.g. 'U', 'V' in pager need better documentation
 
 o  tin.defaults could use more documentation in manpage (tin.5)
@@ -716,9 +731,6 @@ o  commas in real-name might cause problems in mail-replys
    should we try to fix things and quote the realname part?
    [20021007 Urs Janssen <urs@tin.org>]
 
-o  nuke $BUG_ADDRESS
-   [20020226 Urs Janssen <urs@tin.org>]
-
 o  is $METAMAIL tin specific? if so, remove it.
    [20030317 Urs Janssen <urs@tin.org>]
 
@@ -756,10 +768,6 @@ o  think about group numbering in "only unread" display mode
 o  remove tinrc.strip_blanks? IMHO it's not needed anymore
    [20020305 Urs Janssen <urs@tin.org>]
 
-o  what about the INN_NNTPLIB stuff? does this still work or can it be
-   dropped?
-   [20021007 Urs Janssen <urs@tin.org>]
-
 o  doesn't handle symlinks for .oldnewsrc
    (see <20021003021508.GA28021@akk10.akk.uni-karlsruhe.de> for details, urs)
    [20020627 Jeff Sheinberg <jeffsh@erols.com>]
@@ -767,6 +775,10 @@ o  doesn't handle symlinks for .oldnewsrc
 o  cleanup main.c/init_selfinfo()
    ('strace -e trace=file tin' and you know what I mean)
    [fixed some of the double/tripple reads, urs]
+
+o  either use libinn(3) where ever it's possible inside the code (if
+   configured to use that lib) or drop support for it.
+   [20030511 Urs Janssen <urs@tin.org>]
 
 o  detect pcre version and add compatibility macros for old versions
    (interface has changed twice and might do so again)

@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2003-04-25
+ *  Updated   : 2003-05-06
  *  Notes     :
  *
  * Copyright (c) 1999-2003 Jason Faultless <jason@altarstone.com>
@@ -241,6 +241,9 @@ struct t_config {
 	t_bool default_filter_kill_global;
 	t_bool default_filter_select_case;
 	t_bool default_filter_select_expire;
+#	ifdef XFACE_ABLE
+		t_bool use_slrnface;			/* Use the slrnface programme to display 'X-Face:'s */
+#	endif /* XFACE_ABLE */
 	t_bool default_filter_select_global;
 };
 

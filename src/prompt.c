@@ -319,7 +319,7 @@ prompt_on_off(
 {
 	t_bool ret;
 
-	ret = prompt_list(row, col, (int) *var, help_text, _(prompt_text), txt_onoff, 2);
+	ret = prompt_list(row, col, (int) *var, help_text, _(prompt_text), txt_onoff, 2) ? TRUE : FALSE;
 	*var = (ret != 0);
 }
 

@@ -1,13 +1,13 @@
 /*
  *  Project   : tin - a Usenet reader
  *  Module    : auth.c
- *  Author    : Dirk Nimmich <nimmich@uni-muenster.de>
+ *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2003-03-13
+ *  Updated   : 2003-05-09
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
- * Copyright (c) 1997-2003 Dirk Nimmich <nimmich@uni-muenster.de>
+ * Copyright (c) 1997-2003 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -18,10 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Dirk Nimmich.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -75,10 +72,10 @@ authinfo_generic(
 	char tmpbuf[NNTP_STRLEN];
 	static int cookiefd = -1;
 	t_bool builtinauth = FALSE;
-#ifdef HAVE_PUTENV
+#if !defined(HAVE_SETENV) && defined(HAVE_PUTENV)
 	char *new_env;
 	static char *old_env = NULL;
-#endif /* HAVE_PUTENV */
+#endif /* !HAVE_SETENV && HAVE_PUTENV */
 
 #ifdef DEBUG
 	debug_nntp("authorization", "authinfo generic");
@@ -116,22 +113,22 @@ authinfo_generic(
 	}
 	put_server(tmpbuf);
 
-#ifdef HAVE_PUTENV
+#ifdef HAVE_SETENV
+	sprintf(tmpbuf, "%d.%d.%d",
+			fileno(get_nntp_fp(FAKE_NNTP_FP)),
+			fileno(get_nntp_wr_fp(FAKE_NNTP_FP)), cookiefd);
+	setenv("NNTP_AUTH_FDS", tmpbuf, 1);
+#else
+#	ifdef HAVE_PUTENV
 	sprintf(tmpbuf, "NNTP_AUTH_FDS=%d.%d.%d",
 			fileno(get_nntp_fp(FAKE_NNTP_FP)),
 			fileno(get_nntp_wr_fp(FAKE_NNTP_FP)), cookiefd);
 	new_env = my_strdup(tmpbuf);
 	(void) putenv(new_env);
 	FreeIfNeeded(old_env);
-	old_env = new_env;
-#else
-#	ifdef HAVE_SETENV
-	sprintf(tmpbuf, "%d.%d.%d",
-			fileno(get_nntp_fp(FAKE_NNTP_FP)),
-			fileno(get_nntp_wr_fp(FAKE_NNTP_FP)), cookiefd);
-	setenv("NNTP_AUTH_FDS", tmpbuf, 1);
-#	endif /* HAVE_SETENV */
-#endif /* HAVE_PUTENV */
+	old_env = new_env;	/* we are 'leaking' the last malloced mem at exit here */
+#	endif /* HAVE_PUTENV */
+#endif /* HAVE_SETENV */
 
 	/* TODO: is it possible that we should have drained server here? */
 	return (builtinauth ? (get_only_respcode(NULL, 0) == OK_AUTH) : (invoke_cmd(authval) ? TRUE : FALSE));
@@ -282,7 +279,9 @@ do_authinfo_original(
 	debug_nntp("authorization", line);
 #endif /* DEBUG */
 	put_server(line);
-	wait_message(2, (((ret = get_only_respcode(line, sizeof(line))) == OK_AUTH) ? _(txt_authorization_ok) : _(txt_authorization_fail)), authuser);
+	ret = get_only_respcode(line, sizeof(line));
+	if (!batch_mode || verbose || ret != OK_AUTH)
+		wait_message(2, (ret == OK_AUTH ? _(txt_authorization_ok) : _(txt_authorization_fail)), authuser);
 	return ret;
 }
 

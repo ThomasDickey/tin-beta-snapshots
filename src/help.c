@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-05-15
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -57,7 +57,6 @@ typedef struct thp {
 static void make_help_page(FILE *fp, const t_help_page *helppage, const t_menukeys *menukeys);
 
 
-const char **info_help;
 static constext txt_help_empty_line[] = "";
 
 static t_help_page select_help_page[] = {
@@ -195,7 +194,7 @@ static t_help_page group_help_page[] = {
 	{ txt_help_empty_line, 0 },
 	{ txt_help_global_mail, iKeyGroupMail },
 	{ txt_help_global_save, iKeyGroupSave },
-	{ txt_help_global_save_tagged, iKeyGroupAutoSaveTagged },
+	{ txt_help_global_auto_save, iKeyGroupAutoSave },
 #ifndef DONT_HAVE_PIPING
 	{ txt_help_global_pipe, iKeyPipe },
 #endif /* !DONT_HAVE_PIPING */
@@ -290,7 +289,7 @@ static t_help_page thread_help_page[] = {
 	{ txt_help_empty_line, 0 },
 	{ txt_help_global_mail, iKeyThreadMail },
 	{ txt_help_global_save, iKeyThreadSave },
-	{ txt_help_global_save_tagged, iKeyThreadAutoSaveTagged },
+	{ txt_help_global_auto_save, iKeyThreadAutoSave },
 	{ txt_help_empty_line, 0 },
 	{ txt_help_global_tag, iKeyThreadTag },
 	{ txt_help_group_untag_thread, iKeyThreadUntag },
@@ -394,7 +393,7 @@ static t_help_page page_help_page[] = {
 	{ txt_help_empty_line, 0 },
 	{ txt_help_global_mail, iKeyPageMail },
 	{ txt_help_global_save, iKeyPageSave },
-	{ txt_help_global_save_tagged, iKeyPageAutoSaveTagged },
+	{ txt_help_global_auto_save, iKeyPageAutoSave },
 #ifndef DONT_HAVE_PIPING
 	{ txt_help_global_pipe, iKeyPipe },
 #endif /* !DONT_HAVE_PIPING */
@@ -406,8 +405,8 @@ static t_help_page page_help_page[] = {
 	{ txt_help_global_tag, iKeyPageTag },
 	{ txt_help_empty_line, 0 },
 	{ txt_help_article_mark_thread_read, iKeyPageKillThd },
-	{ txt_help_group_catchup, iKeyPageCatchup },
-	{ txt_help_group_catchup_next, iKeyPageCatchupNextUnread },
+	{ txt_help_thread_catchup, iKeyPageCatchup },
+	{ txt_help_thread_catchup_next_unread, iKeyPageCatchupNextUnread },
 	{ txt_help_group_mark_article_unread, iKeyGroupMarkArtUnread },
 	{ txt_help_group_mark_thread_unread, iKeyGroupMarkThdUnread },
 	{ txt_help_empty_line, 0 },
@@ -446,26 +445,40 @@ make_help_page(
 	const t_help_page *helppage,
 	const t_menukeys *menukeys)
 {
-	char buf[LEN];
-	char helpline[LEN];
+	char *buf;
 	char key[MAXKEYLEN];
+	/*
+	 * length is only needed to pass it to expand_ctrl_chars()
+	 * we have no need for the value
+	 */
+	int length;
+
+	buf = my_malloc(LEN);
 
 	if (!helppage)
 		return;
 
 	while (helppage->helptext) {
+		/*
+		 * as expand_ctrl_chars() may has shrinked buf
+		 * make sure buf is large enough to contain the helpline
+		 */
+		buf = my_realloc(buf, LEN);
+
 		if (helppage->key == 0) {
 			if (!strlen(helppage->helptext))	/* avoid empty string translations */
-				snprintf(buf, sizeof(buf), "%s", helppage->helptext);
+				snprintf(buf, LEN, "%s", helppage->helptext);
 			else
-				snprintf(buf, sizeof(buf), "%s", _(helppage->helptext));
+				snprintf(buf, LEN, "%s", _(helppage->helptext));
 		} else
-			snprintf(buf, sizeof(buf), "%s\t  %s", printascii(key, map_to_local(helppage->key, menukeys)), _(helppage->helptext));
-		buf[sizeof(buf) - 1] = '\0';
-		expand_ctrl_chars(helpline, buf, sizeof(helpline) - 1, 8);
-		fprintf(fp, "%s", helpline);
+			snprintf(buf, LEN, "%s\t  %s", printascii(key, map_to_local(helppage->key, menukeys)), _(helppage->helptext));
+		buf[LEN - 1] = '\0';
+		expand_ctrl_chars(&buf, &length, 8);
+		fprintf(fp, "%s", buf);
 		helppage++;
 	}
+
+	free(buf);
 }
 
 

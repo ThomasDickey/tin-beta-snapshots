@@ -245,7 +245,7 @@ NSETRNG1(
 	long low,
 	long high)
 {
-	register long i;
+	long i;
 
 	if (bitmap == NULL) {
 		error_message("NSETRNG1() failed. Bitmap == NULL");
@@ -277,7 +277,7 @@ NSETRNG0(
 	long low,
 	long high)
 {
-	register long i;
+	long i;
 
 	if (bitmap == NULL) {
 		error_message("NSETRNG0() failed. Bitmap == NULL");

@@ -3,7 +3,7 @@
  *  Module    : lock.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1998-07-27
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-05-16
  *  Notes     :
  *
  * Copyright (c) 1998-2003 Urs Janssen <urs@tin.org>
@@ -215,32 +215,17 @@ t_bool dot_lock(
 {
 	char tempfile[PATH_LEN];
 	char lockfile[PATH_LEN];
-	char *base_dir;
-	char *ptr;
-	char *file;
+	char base_dir[PATH_LEN];
 	int dot_fd = -1;
 	struct stat statbuf;
 	t_bool rval = FALSE;
 
-	/* find base_dir for tmp-file to avoid cross device links */
-	base_dir = my_strdup(filename);
-	file = my_strdup(filename);		/* to lazy to use malloc here */
-	base_name(base_dir, file);
-	if ((ptr = strrstr(base_dir, file)) != NULL) {
-		*ptr = '\0';
-		free(file);
-	} else {
-		free(file);
-		free(base_dir);
+	dir_name(filename, base_dir);
+	if (!strcmp(filename, base_dir)) /* no filename portion */
 		return rval;
-	}
-
 	if ((dot_fd = my_tmpfile(tempfile, sizeof(tempfile) - 1, TRUE, base_dir)) == -1) {
-		free(base_dir);
 		return rval;
 	}
-
-	free(base_dir);
 	snprintf(lockfile, sizeof(lockfile), "%s%s", filename, LOCK_SUFFIX);
 
 #ifdef HAVE_LINK

@@ -122,3 +122,12 @@ default_filter_select_expire   quick_select_expire in attributes
 default_save_file              savefile in attributes
 
 *) These variables are not available in attributes yet.
+
+variables with different types in tinrc and attributes:
+default_filter_kill_header (int)     quick_kill_header (unsigned int)
+default_filter_select_header (int)   quick_select_header (unsigned int)
+thread_articles (int)                thread_arts (unsigned int)
+sort_article_type (int)              sort_art_type (unsigned int)
+sort_threads_type (int)              sort_threads_type (unsigned int)
+show_author (int)                    show_author (unsigned int)
+post_process (int)                   post_proc_type (unsigned int)

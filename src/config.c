@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-04-25
+ *  Updated   : 2003-05-15
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -54,11 +54,11 @@
 /*
  * local prototypes
  */
-static int check_upgrade(char *buf);
 static int get_option_num(int act_option);
 static int set_option_num(int option);
 static t_bool OptionOnPage(int option);
 static t_bool match_item(char *line, const char *pat, char *dst, size_t dstlen);
+static t_bool rc_update(FILE *fp);
 static void RepaintOption(int option);
 static void check_score_defaults(void);
 static void expand_rel_abs_pathname(int line, int col, char *str);
@@ -76,51 +76,8 @@ static void unhighlight_option(int option);
 #endif /* USE_CURSES */
 
 
-enum rc_state { IGNORE, CHECK, UPGRADE };
-
 #define DASH_TO_SPACE(mark)	((char) (mark == '_' ? ' ' : mark))
 #define SPACE_TO_DASH(mark)	((char) (mark == ' ' ? '_' : mark))
-
-
-/* FIXME: see doc/TODO and comments in the code */
-/*
- * If we don't find a matching version tag line at the top of the rc file,
- * give the user some upgrade guidance and silently update variables where
- * necessary. We use a simple state mechanism, starting with CHECK for the
- * 1st line, then switch to UPGRADE or IGNORE accordingly.
- */
-static int
-check_upgrade(
-	char *buf)
-{
-	char foo[60];
-	char bar[120]; /* should be enough */
-	int ch;
-
-	my_strncpy(foo, txt_tinrc_header, sizeof(foo) - 1);
-	snprintf(bar, sizeof(bar), foo, PRODUCT, TINRC_VERSION);
-
-	if (strncmp(buf, bar, MIN(strlen(bar), strlen(buf))) == 0)
-		return IGNORE;
-
-	/*
-	 * TODO: update txt_warn_update (include a pointer to
-	 *       tinrcupdate.pl)
-	 */
-	error_message(_(txt_warn_update), VERSION);
-	error_message(_(txt_return_key));
-	/* TODO: document, use something unbuffered here */
-	switch ((ch = getchar())) {
-		case iKeyQuit:
-		case iKeyQuitTin:
-		case iKeyAbort:
-			giveup();
-
-		default:
-			break;
-	}
-	return UPGRADE;
-}
 
 
 /*
@@ -134,7 +91,7 @@ read_config_file(
 	FILE *fp;
 	char newnews_info[PATH_LEN];
 	char buf[LEN];
-	int upgrade = CHECK;
+	int upgrade = RC_CHECK;
 
 	if ((fp = fopen(file, "r")) == NULL)
 		return FALSE;
@@ -146,8 +103,13 @@ read_config_file(
 
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
 		if (buf[0] == '#' || buf[0] == '\n') {
-			if (upgrade == CHECK)
-				upgrade = check_upgrade(buf);
+			if (upgrade == RC_CHECK && !global_file) {
+				upgrade = check_upgrade(buf, "# tin configuration file V", TINRC_VERSION);
+				if (upgrade != RC_IGNORE)
+					upgrade_prompt_quit(upgrade, CONFIG_FILE);
+				if (upgrade == RC_UPGRADE)
+					rc_update(fp);
+			}
 			continue;
 		}
 
@@ -545,12 +507,18 @@ read_config_file(
 
 			/* pick which news headers to display */
 			if (match_string(buf, "news_headers_to_display=", tinrc.news_headers_to_display, sizeof(tinrc.news_headers_to_display))) {
+				if (news_headers_to_display_array)
+					FreeIfNeeded(*news_headers_to_display_array);
+				FreeIfNeeded(news_headers_to_display_array);
 				news_headers_to_display_array = ulBuildArgv(tinrc.news_headers_to_display, &num_headers_to_display);
 				break;
 			}
 
 			/* pick which news headers to NOT display */
 			if (match_string(buf, "news_headers_to_not_display=", tinrc.news_headers_to_not_display, sizeof(tinrc.news_headers_to_not_display))) {
+				if (news_headers_to_not_display_array)
+					FreeIfNeeded(*news_headers_to_not_display_array);
+				FreeIfNeeded(news_headers_to_not_display_array);
 				news_headers_to_not_display_array = ulBuildArgv(tinrc.news_headers_to_not_display, &num_headers_to_not_display);
 				break;
 			}
@@ -579,10 +547,8 @@ read_config_file(
 			if (match_boolean(buf, "pos_first_unread=", &tinrc.pos_first_unread))
 				break;
 
-			if (match_integer(buf, "post_process_type=", &tinrc.post_process, POST_PROC_YES)) {
-				proc_ch_default = ch_post_process[tinrc.post_process];
+			if (match_integer(buf, "post_process_type=", &tinrc.post_process, POST_PROC_YES))
 				break;
-			}
 
 			if (match_boolean(buf, "post_process_view=", &tinrc.post_process_view))
 				break;
@@ -770,6 +736,11 @@ read_config_file(
 				break;
 			}
 #endif /* HAVE_COLOR */
+
+#ifdef XFACE_ABLE
+			if (match_boolean(buf, "use_slrnface=", &tinrc.use_slrnface))
+				break;
+#endif /* XFACE_ABLE */
 
 			break;
 
@@ -1219,6 +1190,11 @@ write_config_file(
 	fprintf(fp, "col_signature=%d\n\n", tinrc.col_signature);
 #endif /* HAVE_COLOR */
 
+#ifdef XFACE_ABLE
+	fprintf(fp, _(txt_use_slrnface.tinrc));
+	fprintf(fp, "use_slrnface=%s\n\n", print_boolean(tinrc.use_slrnface));
+#endif /*XFACE_ABLE */
+
 	fprintf(fp, _(txt_word_highlight.tinrc));
 	fprintf(fp, "word_highlight=%s\n\n", print_boolean(tinrc.word_highlight));
 
@@ -1613,6 +1589,11 @@ redraw_screen(
 
 /*
  * options menu so that the user can dynamically change parameters
+ *
+ * TODO: - why do we use ret_code when we never modify it?  what about calling
+ *         code which checks the return value?
+ *       - when we change something we need to update the related attributes
+ *         as well (see line 2009).
  */
 int
 change_config_file(
@@ -1875,6 +1856,18 @@ change_config_file(
 							break;
 #endif /* HAVE_COLOR */
 
+#ifdef XFACE_ABLE
+						/* use slrnface */
+						case OPT_USE_SLRNFACE:
+							if (!bool_equal(tinrc.use_slrnface, original_on_off_value)) {
+								if (!tinrc.use_slrnface)
+									slrnface_stop();
+								else
+									slrnface_start();
+							}
+							break;
+#endif /* XFACE_ABLE */
+
 						/*
 						 * the following are boolean and do not need further action (if I'm right)
 						 *
@@ -1978,7 +1971,9 @@ change_config_file(
 							break;
 
 						case OPT_POST_PROCESS:
-							proc_ch_default = ch_post_process[tinrc.post_process];
+							glob_attributes.post_proc_type = tinrc.post_process;
+							if (group != NULL)
+								group->attribute->post_proc_type = tinrc.post_process;
 							break;
 
 						case OPT_SHOW_AUTHOR:
@@ -2007,21 +2002,28 @@ change_config_file(
 
 #ifdef CHARSET_CONVERSION
 						case OPT_MM_NETWORK_CHARSET:
-							if (tinrc.mm_network_charset != original_list_value && group != NULL)
-								group->attribute->mm_network_charset = tinrc.mm_network_charset;
-#	if 0 /* TODO: */
-							else
-								glob_attributes->attribute->mm_network_charset = tinrc.mm_network_charset;
-#	endif /* 0 */
+							if (tinrc.mm_network_charset != original_list_value) {
+								glob_attributes.mm_network_charset = tinrc.mm_network_charset;
+								if (group)
+									group->attribute->mm_network_charset = tinrc.mm_network_charset;
 #	ifdef NO_LOCALE
-							strcpy(tinrc.mm_local_charset, txt_mime_charsets[tinrc.mm_network_charset]);
+								strcpy(tinrc.mm_local_charset, txt_mime_charsets[tinrc.mm_network_charset]);
 #	endif /* NO_LOCALE */
-#	if 1 /* TODO: usefull? then clean up otherwise nuke */
-							/* check if we have selected a 7bit charset, otherwise update encoding */
+							}
+							/*
+							 * check if we have selected a 7bit charset, otherwise
+							 * update encoding
+							 * we always do this (even if we did not change the
+							 * charset) to fixup flaws in the tinrc - once we do
+							 * the same while reading the tinrc this can go into
+							 * the != original_list_value case.
+							 */
 							{
 								int i;
-								if (!strcasecmp(txt_mime_encodings[mime_encoding], txt_7bit)) {
-									t_bool change = TRUE;
+								t_bool change;
+
+								if (!strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_7bit)) {
+									change = TRUE;
 									for (i = 0; *txt_mime_7bit_charsets[i]; i++) {
 										if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], txt_mime_7bit_charsets[i])) {
 											change = FALSE;
@@ -2029,15 +2031,38 @@ change_config_file(
 										}
 									}
 									if (change) {
-										tinrc.post_mime_encoding = 0; /* 8bit */
-										tinrc.mail_mime_encoding = 2; /* quoted-printable */
+										tinrc.post_mime_encoding = MIME_ENCODING_8BIT;
 										RepaintOption(OPT_POST_MIME_ENCODING);
+									}
+								} else { /* and vice versa, if we have a 7bit chaset but a !7bit encoding, fix that */
+									for (i = 0; *txt_mime_7bit_charsets[i]; i++) {
+										if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], txt_mime_7bit_charsets[i])) {
+											tinrc.mail_mime_encoding = tinrc.post_mime_encoding = MIME_ENCODING_7BIT;
+											tinrc.mail_8bit_header = tinrc.post_8bit_header = FALSE;
+											RepaintOption(OPT_POST_MIME_ENCODING);
+											RepaintOption(OPT_MAIL_MIME_ENCODING);
+											RepaintOption(OPT_POST_8BIT_HEADER);
+											break;
+										}
+									}
+								}
+
+								if (!strcasecmp(txt_mime_encodings[tinrc.mail_mime_encoding], txt_7bit)) {
+									change = TRUE;
+									for (i = 0; *txt_mime_7bit_charsets[i]; i++) {
+										if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], txt_mime_7bit_charsets[i])) {
+											change = FALSE;
+											break;
+										}
+									}
+									if (change) {
+										tinrc.mail_mime_encoding = MIME_ENCODING_QP;
 										RepaintOption(OPT_MAIL_MIME_ENCODING);
 									}
 								} else { /* and vice versa, if we have a 7bit chaset but a !7bit encoding, fix that */
 									for (i = 0; *txt_mime_7bit_charsets[i]; i++) {
 										if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], txt_mime_7bit_charsets[i])) {
-											tinrc.mail_mime_encoding = tinrc.post_mime_encoding = 3; /* 7bit */
+											tinrc.mail_mime_encoding = tinrc.post_mime_encoding = MIME_ENCODING_7BIT;
 											tinrc.mail_8bit_header = tinrc.post_8bit_header = FALSE;
 											RepaintOption(OPT_POST_MIME_ENCODING);
 											RepaintOption(OPT_MAIL_MIME_ENCODING);
@@ -2047,7 +2072,6 @@ change_config_file(
 									}
 								}
 							}
-#	endif /* 1 */
 							break;
 #endif /* CHARSET_CONVERSION */
 
@@ -2666,4 +2690,138 @@ check_score_defaults(
 
 	if (tinrc.score_select < tinrc.score_limit_select)
 		tinrc.score_select = tinrc.score_limit_select;
+}
+
+
+/*
+ * auto update tinrc
+ */
+static t_bool
+rc_update(
+	FILE *fp)
+{
+	char buf[1024];
+	const char *env;
+	t_bool confirm_to_quit = FALSE;
+	t_bool confirm_action = FALSE;
+	t_bool compress_quotes = FALSE;
+	t_bool hide_uue = FALSE;
+	t_bool keep_posted_articles = FALSE;
+	t_bool quote_empty_lines = FALSE;
+	t_bool quote_signatures = FALSE;
+	t_bool save_to_mmdf_mailbox = FALSE;
+	t_bool show_last_line_prev_page = FALSE;
+	t_bool show_lines = FALSE;
+	t_bool show_score = FALSE;
+	t_bool thread_articles = FALSE;
+	t_bool use_builtin_inews = FALSE;
+	t_bool use_getart_limit = FALSE;
+	t_bool use_metamail = FALSE;
+
+	if (!fp)
+		return FALSE;
+
+	/* rewind(fp); */
+	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
+		if (buf[0] == '#' || buf[0] == '\n')
+			continue;
+
+		switch (tolower((unsigned char) buf[0])) {
+			case 'c':
+				if (match_boolean(buf, "confirm_action=", &confirm_action))
+					break;
+				if (match_boolean(buf, "confirm_to_quit=", &confirm_to_quit))
+					break;
+				if (match_boolean(buf, "compress_quotes=", &compress_quotes))
+					break;
+				break;
+
+			case 'd':
+				/* simple rename */
+				if (match_string(buf, "default_regex_pattern=", tinrc.default_pattern, sizeof(tinrc.default_pattern)))
+					break;
+				break;
+
+			case 'h':
+				if (match_boolean(buf, "hide_uue=", &hide_uue))
+					break;
+				break;
+
+			case 'k':
+				if (match_boolean(buf, "keep_posted_articles=", &keep_posted_articles))
+					break;
+				break;
+
+			case 'q':
+				if (match_boolean(buf, "quote_signatures=" , &quote_signatures))
+					break;
+				if (match_boolean(buf, "quote_empty_lines=" , &quote_empty_lines))
+					break;
+				break;
+
+			case 's':
+				if (match_boolean(buf, "save_to_mmdf_mailbox=", &save_to_mmdf_mailbox))
+					break;
+				if (match_boolean(buf, "show_last_line_prev_page=", &show_last_line_prev_page))
+					break;
+				if (match_boolean(buf, "show_lines=", &show_lines))
+					break;
+				if (match_boolean(buf, "show_score=", &show_score))
+					break;
+				break;
+
+			case 't':
+				if (match_boolean(buf, "thread_articles=", &thread_articles))
+					break;
+				break;
+
+			case 'u':
+				if (match_boolean(buf, "use_builtin_inews=", &use_builtin_inews))
+					break;
+				if (match_boolean(buf, "use_getart_limit=", &use_getart_limit))
+					break;
+				if (match_boolean(buf, "use_metamail=", &use_metamail))
+					break;
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	/* update the values */
+	tinrc.confirm_choice = (confirm_action ? 1 : 0 ) + (confirm_to_quit ? 3 : 0);
+
+	if (!use_getart_limit)
+		tinrc.getart_limit = 0;
+
+	if (hide_uue)
+		tinrc.hide_uue = 1;
+
+	if (keep_posted_articles)
+		strncpy(tinrc.posted_articles_file, "posted", sizeof(tinrc.posted_articles_file) - 1);
+
+	tinrc.quote_style = (compress_quotes ? QUOTE_COMPRESS : 0) + (quote_empty_lines ? QUOTE_EMPTY : 0) + (quote_signatures ? QUOTE_SIGS : 0);
+
+	tinrc.mailbox_format = (save_to_mmdf_mailbox ? 2 : 0);
+
+	tinrc.show_info = (show_lines ? SHOW_INFO_LINES : 0) + (show_score ? SHOW_INFO_SCORE : 0);
+
+	if (show_last_line_prev_page)
+		tinrc.scroll_lines = -1;
+
+	if (thread_articles)
+		tinrc.thread_articles = THREAD_BOTH;
+
+	if (use_builtin_inews)
+		strncpy(tinrc.inews_prog, "--internal", sizeof(tinrc.inews_prog) - 1);
+
+	env = get_val("METAMAIL", "");
+	if (use_metamail || !strcmp(env, "(internal)"))
+		strncpy(tinrc.metamail_prog, "--internal", sizeof(tinrc.metamail_prog) - 1);
+	else
+		my_strncpy(tinrc.metamail_prog, env, sizeof(tinrc.metamail_prog) - 1);
+
+	rewind(fp);
+	return TRUE;
 }

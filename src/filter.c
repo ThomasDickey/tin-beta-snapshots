@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2003-04-25
+ *  Updated   : 2003-05-16
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -38,12 +38,16 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
+#ifndef VERSION_H
+#	include "version.h"
+#endif /* !VERSION_H */
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 #ifndef MENUKEYS_H
 #	include "menukeys.h"
 #endif /* !MENUKEYS_H */
+
 
 #define IS_READ(i)	(arts[i].status == ART_READ)
 #define IS_KILLED(i)	(arts[i].killed)
@@ -90,13 +94,13 @@ static int set_filter_scope(struct t_group *group);
 static struct t_filter_comment *add_filter_comment(struct t_filter_comment *ptr, char *text);
 static struct t_filter_comment *free_filter_comment(struct t_filter_comment *ptr);
 static struct t_filter_comment *copy_filter_comment(struct t_filter_comment *from, struct t_filter_comment *to);
-static t_bool add_filter_rule(struct t_group *group, struct t_article *art, struct t_filter_rule *rule);
+static t_bool add_filter_rule(struct t_group *group, struct t_article *art, struct t_filter_rule *rule, int origin);
 static t_bool test_regex(const char *string, char *regex, t_bool nocase, struct regex_cache *cache);
 static void expand_filter_array(struct t_filters *ptr);
 static void free_filter_item(struct t_filter *ptr);
 static void print_filter_menu(void);
 static void set_filter(struct t_filter *ptr);
-static void write_filter_array(FILE *fp, struct t_filters *ptr, time_t theTime);
+static void write_filter_array(FILE *fp, struct t_filters *ptr);
 
 
 /*
@@ -132,6 +136,7 @@ free_filter_comment(
 	tmp = ptr;
 	while (tmp != NULL) {
 		next = tmp->next;
+		free(tmp->text);
 		free(tmp);
 		tmp = next;
 	}
@@ -230,8 +235,6 @@ set_filter(
 		ptr->gnksa_num = 0;
 		ptr->score = 0;
 		ptr->xref = (char *) 0;
-		ptr->xref_max = 0;
-		ptr->xref_score_cnt = 0;
 		ptr->time = (time_t) 0;
 		ptr->next = (struct t_filter *) 0;
 	}
@@ -282,7 +285,6 @@ read_filter_file(
 	const char *file)
 {
 	FILE *fp;
-	char *s;
 	char buf[HEADER_LEN];
 	char scope[HEADER_LEN];
 	char comment_line[LEN];  /* one line of comment */
@@ -292,21 +294,18 @@ read_filter_file(
 	char buffer[HEADER_LEN];
 	char gnksa[HEADER_LEN];
 	char xref[HEADER_LEN];
-	char xref_score[HEADER_LEN];
 	char scbuf[PATH_LEN];
 	int i = 0;
 	int icase = 0;
 	int score = 0;
-	int xref_max = 0;
-	int xref_score_cnt = 0;
-	int xref_score_value = 0;
 	long secs = 0L;
 	struct t_filter_comment *comment;
 	struct t_filter *ptr;
-	struct t_group *group;
 	t_bool expired = FALSE;
 	t_bool expired_time = FALSE;
 	time_t current_secs = (time_t) 0;
+	static t_bool first_read = TRUE;
+	int upgrade = RC_CHECK;
 
 	if ((fp = fopen(file, "r")) == NULL)
 		return FALSE;
@@ -319,15 +318,23 @@ read_filter_file(
 	/*
 	 * Reset all filter arrays if doing a reread of the active file
 	 */
-	free_filter_array(&glob_filter);
+	if (!first_read)
+		free_filter_array(&glob_filter);
 
-	group = (struct t_group *) 0;
 	ptr = (struct t_filter *) 0;
 	comment = (struct t_filter_comment *) 0;
 
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
-		if (*buf == '#' || *buf == '\n')
+		if (*buf == '#' || *buf == '\n') {
+			if (upgrade == RC_CHECK && first_read) {
+				first_read = FALSE;
+				upgrade = check_upgrade(buf, "# Filter file V", FILTER_VERSION);
+				if (upgrade != RC_IGNORE)
+					upgrade_prompt_quit(upgrade, FILTER_FILE);
+				/* TODO: do something (more) useful here */
+			}
 			continue;
+		}
 
 		switch (tolower((unsigned char) buf[0])) {
 		case 'c':
@@ -345,9 +352,17 @@ read_filter_file(
 
 		case 'f':
 			if (match_string(buf + 1, "rom=", from, sizeof(from))) {
-				if (ptr && !expired_time)
-					ptr[i].from = my_strdup(from);
-
+				if (ptr && !expired_time) {
+					if (tinrc.wildcard && ptr[i].from != NULL) {
+						/* merge with already read value */
+						ptr[i].from = my_realloc(ptr[i].from, strlen(ptr[i].from) + strlen(from) + 2);
+						strcat(ptr[i].from, "|");
+						strcat(ptr[i].from, from);
+					} else {
+						FreeIfNeeded(ptr[i].from);
+						ptr[i].from = my_strdup(from);
+					}
+				}
 				break;
 			}
 			break;
@@ -379,7 +394,6 @@ read_filter_file(
 				xref[0] = '\0';
 				icase = 0;
 				secs = 0L;
-				group = (struct t_group *) 0;		/* fudge for out of order rules */
 				break;
 			}
 			if (match_string(buf + 1, "nksa=", gnksa, sizeof(gnksa))) {
@@ -419,23 +433,47 @@ read_filter_file(
 
 		case 'm':
 			if (match_string(buf + 1, "sgid=", msgid, sizeof(msgid))) {
-				if (ptr) {
-					ptr[i].msgid = my_strdup(msgid);
-					ptr[i].fullref = FILTER_MSGID;
+				if (ptr && !expired_time) {
+					if (tinrc.wildcard && ptr[i].msgid != NULL && ptr[i].fullref == FILTER_MSGID) {
+						/* merge with already read value */
+						ptr[i].msgid = my_realloc(ptr[i].msgid, strlen(ptr[i].msgid) + strlen(msgid) + 2);
+						strcat(ptr[i].msgid, "|");
+						strcat(ptr[i].msgid, msgid);
+					} else {
+						FreeIfNeeded(ptr[i].msgid);
+						ptr[i].msgid = my_strdup(msgid);
+						ptr[i].fullref = FILTER_MSGID;
+					}
 				}
 				break;
 			}
 			if (match_string(buf + 1, "sgid_last=", msgid, sizeof(msgid))) {
-				if (ptr) {
-					ptr[i].msgid = my_strdup(msgid);
-					ptr[i].fullref = FILTER_MSGID_LAST;
+				if (ptr && !expired_time) {
+					if (tinrc.wildcard && ptr[i].msgid != NULL && ptr[i].fullref == FILTER_MSGID_LAST) {
+						/* merge with already read value */
+						ptr[i].msgid = my_realloc(ptr[i].msgid, strlen(ptr[i].msgid) + strlen(msgid) + 2);
+						strcat(ptr[i].msgid, "|");
+						strcat(ptr[i].msgid, msgid);
+					} else {
+						FreeIfNeeded(ptr[i].msgid);
+						ptr[i].msgid = my_strdup(msgid);
+						ptr[i].fullref = FILTER_MSGID_LAST;
+					}
 				}
 				break;
 			}
 			if (match_string(buf + 1, "sgid_only=", msgid, sizeof(msgid))) {
-				if (ptr) {
-					ptr[i].msgid = my_strdup(msgid);
-					ptr[i].fullref = FILTER_MSGID_ONLY;
+				if (ptr && !expired_time) {
+					if (tinrc.wildcard && ptr[i].msgid != NULL && ptr[i].fullref == FILTER_MSGID_ONLY) {
+						/* merge with already read value */
+						ptr[i].msgid = my_realloc(ptr[i].msgid, strlen(ptr[i].msgid) + strlen(msgid) + 2);
+						strcat(ptr[i].msgid, "|");
+						strcat(ptr[i].msgid, msgid);
+					} else {
+						FreeIfNeeded(ptr[i].msgid);
+						ptr[i].msgid = my_strdup(msgid);
+						ptr[i].fullref = FILTER_MSGID_ONLY;
+					}
 				}
 				break;
 			}
@@ -443,9 +481,17 @@ read_filter_file(
 
 		case 'r':
 			if (match_string(buf + 1, "efs_only=", msgid, sizeof(msgid))) {
-				if (ptr) {
-					ptr[i].msgid = my_strdup(msgid);
-					ptr[i].fullref = FILTER_REFS_ONLY;
+				if (ptr && !expired_time) {
+					if (tinrc.wildcard && ptr[i].msgid != NULL && ptr[i].fullref == FILTER_REFS_ONLY) {
+						/* merge with already read value */
+						ptr[i].msgid = my_realloc(ptr[i].msgid, strlen(ptr[i].msgid) + strlen(msgid) + 2);
+						strcat(ptr[i].msgid, "|");
+						strcat(ptr[i].msgid, msgid);
+					} else {
+						FreeIfNeeded(ptr[i].msgid);
+						ptr[i].msgid = my_strdup(msgid);
+						ptr[i].fullref = FILTER_REFS_ONLY;
+					}
 				}
 				break;
 			}
@@ -453,8 +499,17 @@ read_filter_file(
 
 		case 's':
 			if (match_string(buf + 1, "ubj=", subj, sizeof(subj))) {
-				if (ptr && !expired_time)
-					ptr[i].subj = my_strdup(subj);
+				if (ptr && !expired_time) {
+					if (tinrc.wildcard && ptr[i].subj != NULL) {
+						/* merge with already read value */
+						ptr[i].subj = my_realloc(ptr[i].subj, strlen(ptr[i].subj) + strlen(subj) + 2);
+						strcat(ptr[i].subj, "|");
+						strcat(ptr[i].subj, subj);
+					} else {
+						FreeIfNeeded(ptr[i].subj);
+						ptr[i].subj = my_strdup(subj);
+					}
+				}
 
 #ifdef DEBUG
 				if (debug) {
@@ -521,33 +576,43 @@ read_filter_file(
 			break;
 
 		case 'x':
+			/*
+			 * TODO: fromat has changed in FILTER_VERSION 1.0.0,
+			 *       should we comment out older xref rules like below?
+			 */
 			if (match_string(buf + 1, "ref=", xref, sizeof(xref))) {
-				if (ptr && !expired_time)
-					ptr[i].xref = my_strdup(xref);
-
-				break;
-			}
-			if (match_integer(buf + 1, "ref_max=", &xref_max, 1000)) {
-				if (ptr && !expired_time)
-					ptr[i].xref_max = xref_max;
-
-				break;
-			}
-			if (match_string(buf + 1, "ref_score=", xref_score, sizeof(xref_score))) {
 				if (ptr && !expired_time) {
-					if (xref_score_cnt < 10) {
-						if (isdigit((int) xref_score[0])) {
-							xref_score_value = atoi(xref_score);
-							if ((s = strchr(xref_score, ',')))
-								s++;
-							ptr[i].xref_scores[xref_score_cnt] = xref_score_value;
-							ptr[i].xref_score_strings[xref_score_cnt] = (s != 0 ? my_strdup(s) : '\0');
-							ptr[i].xref_score_cnt++;
-							xref_score_cnt++;
-						}
+					if (tinrc.wildcard && ptr[i].xref != NULL) {
+						/* merge with already read value */
+						ptr[i].xref = my_realloc(ptr[i].xref, strlen(ptr[i].xref) + strlen(xref) + 2);
+						strcat(ptr[i].xref, "|");
+						strcat(ptr[i].xref, xref);
+					} else {
+						FreeIfNeeded(ptr[i].xref);
+						ptr[i].xref = my_strdup(xref);
 					}
 				}
 				break;
+			}
+			if (upgrade == RC_UPGRADE) {
+				char foo[HEADER_LEN];
+
+				if (match_string(buf + 1, "ref_max=", foo, LEN - 1)) {
+					/*
+					 * TODO: add to the right rule, give better explanation, -> lang.c
+					 */
+					snprintf(foo, HEADER_LEN, "%s%s", _("Removed from the previous rule: "), str_trim(buf));
+					comment = (struct t_filter_comment *) add_filter_comment(comment, foo);
+					break;
+				}
+				if (match_string(buf + 1, "ref_score=", foo, LEN - 1)) {
+					/*
+					 * TODO: add to the right rule, give better explanation, -> lang.c
+					 */
+					snprintf(foo, HEADER_LEN, "%s%s", _("Removed from the previous rule: "), str_trim(buf));
+					comment = (struct t_filter_comment *) add_filter_comment(comment, foo);
+					break;
+				}
 			}
 			break;
 
@@ -557,8 +622,9 @@ read_filter_file(
 	}
 	fclose(fp);
 
-	if (expired)
+	if (expired || upgrade == RC_UPGRADE) {
 		write_filter_file(file);
+	}
 
 	if (cmd_line && !batch_mode)
 		printf("\r\n");
@@ -595,13 +661,15 @@ write_filter_file(
 	if ((fp = fopen(filename, "w")) == NULL)
 		return;
 
+	/* TODO: -> lang.c */
+	fprintf(fp, "# Filter file V%s for the TIN newsreader\n#\n", FILTER_VERSION);
 	fprintf(fp, _(txt_filter_file));
 	fflush(fp);
 
 	/*
 	 * Save global filters
 	 */
-	write_filter_array(fp, &glob_filter, time(NULL));
+	write_filter_array(fp, &glob_filter);
 
 	if (ferror(fp) || fclose(fp)) {
 		error_message(_(txt_filesystem_full), filename);
@@ -616,12 +684,11 @@ write_filter_file(
 static void
 write_filter_array(
 	FILE *fp,
-	struct t_filters *ptr,
-	time_t theTime)
+	struct t_filters *ptr)
 {
 	int i;
-	int j;
 	struct t_filter_comment *comment = (struct t_filter_comment *) 0;
+	time_t theTime = time(NULL);
 
 	if (ptr == NULL)
 		return;
@@ -629,10 +696,8 @@ write_filter_array(
 	for (i = 0; i < ptr->num; i++) {
 /* my_printf("WRITE i=[%d] subj=[%s] from=[%s]\n", i, BlankIfNull(ptr->filter[i].subj), BlankIfNull(ptr->filter[i].from)); */
 
-		if (theTime && ptr->filter[i].time) {
-			if (theTime > ptr->filter[i].time)
+		if (ptr->filter[i].time && theTime > ptr->filter[i].time)
 				continue;
-		}
 /*
 my_printf("Scope=[%s]" cCRLF, (ptr->filter[i].scope != NULL ? ptr->filter[i].scope : "*"));
 my_flush();
@@ -734,12 +799,6 @@ my_flush();
 		if (ptr->filter[i].xref != NULL)
 			fprintf(fp, "xref=%s\n", ptr->filter[i].xref);
 
-		if (ptr->filter[i].xref_max > 0) {
-			fprintf(fp, "xref_max=%d\n", ptr->filter[i].xref_max);
-
-			for (j = 0; j < ptr->filter[i].xref_score_cnt; j++)
-				fprintf(fp, "xref_score=%d%s%s\n", ptr->filter[i].xref_scores[j], ptr->filter[i].xref_score_strings[j] ? "," : "", ptr->filter[i].xref_score_strings[j]);
-		}
 		if (ptr->filter[i].time) {
 			char timestring[25];
 			if (my_strftime(timestring, sizeof(timestring) - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(ptr->filter[i].time))))
@@ -882,6 +941,7 @@ filter_menu(
 	int ch, i, len;
 	struct t_filter_rule rule;
 	t_bool proceed;
+	t_bool ret;
 
 	signal_context = cFilter;
 
@@ -958,15 +1018,19 @@ filter_menu(
 		rule.comment = add_filter_comment(rule.comment, comment_line);
 		comment_line[0] = '\0';
 	}
-	if (!proceed)
+	if (!proceed) {
+		rule.comment = free_filter_comment(rule.comment);
 		return FALSE;
+	}
 
 	/*
 	 * Text which might be used to filter on subj, from or msgid
 	 */
 	show_menu_help(_(txt_help_filter_text));
-	if (!prompt_menu_string(INDEX_TOP + 2, ptr_filter_text, rule.text))
+	if (!prompt_menu_string(INDEX_TOP + 2, ptr_filter_text, rule.text)) {
+		rule.comment = free_filter_comment(rule.comment);
 		return FALSE;
+	}
 
 	if (*rule.text) {
 		i = get_choice(INDEX_TOP + 3, _(txt_help_filter_text_type),
@@ -976,8 +1040,10 @@ filter_menu(
 			       _(txt_from_line_only_case),
 			       _(txt_from_line_only),
 			       _(txt_msgid_line_only));
-		if (i == -1)
+		if (i == -1) {
+			rule.comment = free_filter_comment(rule.comment);
 			return FALSE;
+		}
 
 		rule.counter = i;
 		switch (i) {
@@ -1007,18 +1073,20 @@ filter_menu(
 		 * Subject:
 		 */
 		i = get_choice(INDEX_TOP + 5, _(txt_help_filter_subj), text_subj, _(txt_yes), _(txt_no), (char *) 0, (char *) 0, (char *) 0);
-		if (i == -1)
+		if (i == -1) {
+			rule.comment = free_filter_comment(rule.comment);
 			return FALSE;
-		else
+		} else
 			rule.subj_ok = (i == 0);
 
 		/*
 		 * From:
 		 */
 		i = get_choice(INDEX_TOP + 6, _(txt_help_filter_from), text_from, (rule.subj_ok ? _(txt_no) : _(txt_yes)), (rule.subj_ok ? _(txt_yes) : _(txt_no)), (char *) 0, (char *) 0, (char *) 0);
-		if (i == -1)
+		if (i == -1) {
+			rule.comment = free_filter_comment(rule.comment);
 			return FALSE;
-		else
+		} else
 			rule.from_ok = rule.subj_ok ? (i != 0) : (i == 0);
 
 		/*
@@ -1029,9 +1097,10 @@ filter_menu(
 		else
 			i = get_choice(INDEX_TOP + 7, _(txt_help_filter_msgid), text_msgid, _(txt_full), _(txt_last), _(txt_only), _(txt_no), (char *) 0);
 
-		if (i == -1)
+		if (i == -1) {
+			rule.comment = free_filter_comment(rule.comment);
 			return FALSE;
-		else {
+		} else {
 			switch ((rule.subj_ok || rule.from_ok) ? i : i + 1) {
 				case 0:
 				case 4:
@@ -1070,8 +1139,10 @@ filter_menu(
 
 	buf[0] = '\0';
 
-	if (!prompt_menu_string(INDEX_TOP + 9, ptr_filter_lines, buf))
+	if (!prompt_menu_string(INDEX_TOP + 9, ptr_filter_lines, buf)) {
+		rule.comment = free_filter_comment(rule.comment);
 		return FALSE;
+	}
 
 	/*
 	 * Get the < > sign if any for the lines rule
@@ -1102,8 +1173,10 @@ filter_menu(
 	show_menu_help(buf);
 
 	buf[0] = '\0';
-	if (!prompt_menu_string(INDEX_TOP + 10, text_score, buf))
+	if (!prompt_menu_string(INDEX_TOP + 10, text_score, buf)) {
+		rule.comment = free_filter_comment(rule.comment);
 		return FALSE;
+	}
 
 	/* check if a score has been entered */
 	if (buf[0] != '\0')
@@ -1117,8 +1190,10 @@ filter_menu(
 			rule.score = tinrc.score_select;
 	}
 
-	if (!rule.score) /* ignore 0 scores */
+	if (!rule.score) { /* ignore 0 scores */
+		rule.comment = free_filter_comment(rule.comment);
 		return FALSE;
+	}
 
 	/*
 	 * assure we are in range
@@ -1140,8 +1215,10 @@ filter_menu(
 	i = get_choice(INDEX_TOP + 11, _(txt_help_filter_time), ptr_filter_time,
 			_(txt_unlimited_time), text_time, double_time, quat_time, (char *) 0);
 
-	if (i == -1)
+	if (i == -1) {
+		rule.comment = free_filter_comment(rule.comment);
 		return FALSE;
+	}
 
 	rule.expire_time = i;
 
@@ -1178,12 +1255,16 @@ filter_menu(
 			       (argv[3][0] ? argv[3] : (char *) 0),
 			       (char *) 0);
 
-		if (i == -1)
+		if (i == -1) {
+			rule.comment = free_filter_comment(rule.comment);
 			return FALSE;
+		}
 
 		strcpy(rule.scope, ((i == 1) ? "*" : argv[i]));
-	} else
+	} else {
+		rule.comment = free_filter_comment(rule.comment);
 		return FALSE;
+	}
 
 	forever {
 		ch = prompt_slk_response(ch_default,
@@ -1193,7 +1274,8 @@ filter_menu(
 		switch (ch) {
 
 		case iKeyFilterEdit:
-			add_filter_rule(group, art, &rule); /* save the rule */
+			add_filter_rule(group, art, &rule, INTERNAL_LEVEL); /* save the rule */
+			rule.comment = free_filter_comment(rule.comment);
 			if (!invoke_editor(filter_file, FILTER_FILE_OFFSET))
 				return FALSE;
 			unfilter_articles();
@@ -1204,6 +1286,7 @@ filter_menu(
 
 		case iKeyQuit:
 		case iKeyAbort:
+			rule.comment = free_filter_comment(rule.comment);
 			return FALSE;
 			/* keep lint quiet: */
 			/* FALLTHROUGH */
@@ -1212,7 +1295,9 @@ filter_menu(
 			/*
 			 * Add the filter rule and save it to the filter file
 			 */
-			return (add_filter_rule(group, art, &rule));
+			ret = add_filter_rule(group, art, &rule, INTERNAL_LEVEL);
+			rule.comment = free_filter_comment(rule.comment);
+			return ret;
 			/* keep lint quiet: */
 			/* FALLTHROUGH */
 
@@ -1232,12 +1317,14 @@ t_bool
 quick_filter(
 	int type,
 	struct t_group *group,
-	struct t_article *art)
+	struct t_article *art,
+    int origin)
 {
 	char *scope;
 	char txt[LEN];
 	int header, expire, icase;
 	struct t_filter_rule rule;
+	t_bool ret;
 
 	if (type == FILTER_KILL) {
 		header = group->attribute->quick_kill_header;
@@ -1284,7 +1371,9 @@ quick_filter(
 	rule.check_string = TRUE;
 	rule.score = (type == FILTER_KILL) ? tinrc.score_kill : tinrc.score_select;
 
-	return (add_filter_rule(group, art, &rule));
+	ret = add_filter_rule(group, art, &rule, origin);
+	rule.comment = free_filter_comment(rule.comment);
+	return ret;
 }
 
 
@@ -1363,12 +1452,13 @@ quick_filter_select_posted_art(
 			/* Hack */
 			art.refptr = (struct t_msgid *) &refptr_dummyart;
 
-			filtered = add_filter_rule(group, &art, &rule);
+			filtered = add_filter_rule(group, &art, &rule, INTERNAL_LEVEL);
 		} else {
 			art.subject = my_strdup(subj);
-			filtered = add_filter_rule(group, &art, &rule);
+			filtered = add_filter_rule(group, &art, &rule, INTERNAL_LEVEL);
 			FreeIfNeeded(art.subject);
 		}
+		rule.comment = free_filter_comment(rule.comment);
 	}
 	return filtered;
 }
@@ -1381,7 +1471,8 @@ static t_bool
 add_filter_rule(
 	struct t_group *group,
 	struct t_article *art,
-	struct t_filter_rule *rule)
+	struct t_filter_rule *rule,
+	int origin)
 {
 	char acBuf[PATH_LEN];
 	char sbuf[(sizeof(acBuf) / 2)]; /* half as big as acBuf so quote_wild(sbuf) fits into acBuf */
@@ -1409,8 +1500,6 @@ add_filter_rule(
 	ptr[i].gnksa_num = 0;
 	ptr[i].score = rule->score;
 	ptr[i].xref = (char *) 0;
-	ptr[i].xref_max = 0;
-	ptr[i].xref_score_cnt = 0;
 
 	if (rule->comment != NULL)
 		ptr[i].comment = copy_filter_comment(rule->comment, ptr[i].comment);
@@ -1490,7 +1579,51 @@ add_filter_rule(
 		 * message-ids should be quoted
 		 */
 		if (rule->msgid_ok) {
-			STRCPY(sbuf, MSGID(art));
+			/*
+			 * If threading by references is set, and a quick kill is applied
+			 * (in group level), it is applied with the data of the root
+			 * article of the thread built by tin.
+			 * In case of threading by references, if tin's root is not the
+			 * *real* root of thread (which is the first entry in references
+			 * field) any applying of filtering for MSGID (or MSGID_LAST)
+			 * doesn't work, because the filter is applied with the data of
+			 * tin's root article which doesn't cover the other articles in
+			 * the thread.
+			 * So the thread remains open (in group level). To overcome this,
+			 * the first msgid from references field is taken in this case.
+			 */
+#if 1	/* This is what I think is more correct, but I did NOT test it! (urs) */
+			if (group->attribute->thread_arts == THREAD_REFS &&
+				(group->attribute->quick_kill_header == FILTER_MSGID ||
+				 group->attribute->quick_kill_header == FILTER_REFS_ONLY) &&
+				 art->refptr->parent != NULL)
+			{
+				/* not real parent, take first references entry as MID */
+				struct t_msgid *xptr;
+
+				for (xptr = art->refptr->parent; xptr->parent != NULL; xptr = xptr->parent)
+					;
+				STRCPY(sbuf, xptr->txt);
+			} else {
+				STRCPY(sbuf, MSGID(art));
+			}
+#else /* original logic by guido */
+			if (group->attribute->thread_arts != THREAD_REFS ||
+				origin != GROUP_LEVEL ||
+				(group->attribute->quick_kill_header != FILTER_MSGID &&
+				group->attribute->quick_kill_header != FILTER_MSGID_LAST)
+				(art->refptr->parent == NULL))
+			{
+				STRCPY(sbuf, MSGID(art));
+			} else {
+				/* not real parent, take first references entry as MID */
+				struct t_msgid *xptr;
+
+				for (xptr = art->refptr->parent; xptr->parent != NULL; xptr = xptr->parent)
+					;
+				STRCPY(sbuf, xptr->txt);
+			}
+#endif /* 1 */
 			sprintf(acBuf, REGEX_FMT, quote_wild(sbuf));
 			ptr[i].msgid = my_strdup(acBuf);
 			ptr[i].fullref = rule->fullref;
@@ -1556,7 +1689,7 @@ filter_articles(
 {
 	char buf[LEN];
 	int num, inscope;
-	int i, j, k;
+	int i, j;
 	struct t_filter *ptr;
 	struct regex_cache *regex_cache_subj = NULL;
 	struct regex_cache *regex_cache_from = NULL;
@@ -1768,11 +1901,15 @@ wait_message(1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].lin
 
 				/*
 				 * Filter on Xref: lines
+				 *
+				 * 	Xref: news.foo.bar foo.bar:666 bar.bar:999
+				 * is turned into
+				 * 	foo.bar,bar.bar
 				 */
-				if (arts[i].xref && *arts[i].xref != '\0') {
-					if (ptr[j].xref_max > 0 || ptr[j].xref != NULL) {
-						char *s, *e;
-						int group_count = 0;
+				if (arts[i].xref && *arts[i].xref) {
+					if (ptr[j].score && ptr[j].xref != NULL) {
+						char *s, *e, *k;
+						t_bool skip = FALSE;
 
 						s = arts[i].xref;
 						while (*s && !isspace((int) *s))
@@ -1780,42 +1917,27 @@ wait_message(1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].lin
 						while (*s && isspace((int) *s))
 							s++;
 
+						/* reformat */
+						k = e = my_malloc(strlen(s));
 						while (*s) {
-							e = s;
-							while (*e && *e != ':' && !isspace((int) *e))
-								e++;
+							if (*s == ':') {
+								*e++ = ',';
+								skip = TRUE;
+							}
+							if (*s != ':' && !isspace(*s) && !skip)
+								*e++ = *s;
+							if (isspace(*s))
+								skip = FALSE;
+							s++;
+						}
+						*--e = '\0';
 
-							if (ptr[j].xref_max > 0) {
-								strncpy(buf, s, e - s);
-								buf[e - s] = '\0';
-								for (k = 0; k < ptr[j].xref_score_cnt; k++) {
-									if (GROUP_MATCH(buf, ptr[j].xref_score_strings[k], TRUE)) {
-										group_count += ptr[j].xref_scores[k];
-										break;
-									}
-								}
-								if (k == ptr[j].xref_score_cnt)
-									group_count++;
+						if (ptr[j].xref != NULL) {
+							if (test_regex(k, ptr[j].xref, ptr[j].icase, &regex_cache_xref[j])) {
+								SET_FILTER(group, i, j);
 							}
-							if (ptr[j].xref != NULL) {
-								strncpy(buf, s, e - s);
-								buf[e - s] = '\0';
-								/* don't filter when we are actually in that group */
-								/* Group names shouldn't be case sensitive in any case. Whatever */
-								if (ptr[j].score > 0 || strcmp(group->name, buf) != 0) {
-									if (test_regex(buf, ptr[j].xref, ptr[j].icase, &regex_cache_xref[j]))
-										group_count = -1;
-								}
-							}
-							s = e;
-							while (*s && !isspace((int) *s))
-								s++;
-							while (*s && isspace((int) *s))
-								s++;
 						}
-						if (group_count == -1 || group_count>ptr[j].xref_max) {
-							SET_FILTER(group, i, j);
-						}
+						free(k);
 					}
 				}
 			}
