@@ -438,7 +438,7 @@ my_malloc1 (
 #endif /* DEBUG */
 
 	if ((p = (char *) malloc (size)) == (char *) 0) {
-		error_message (_(txt_out_of_memory), tin_progname, size, file, line);
+		error_message (txt_out_of_memory, tin_progname, size, file, line);
 		giveup();
 	}
 	return (void *) p;
@@ -460,7 +460,7 @@ my_realloc1 (
 	p = (char *) ((!p) ? (calloc (1, size)) : realloc (p, size));
 
 	if (p == (char *) 0) {
-		error_message (_(txt_out_of_memory), tin_progname, size, file, line);
+		error_message (txt_out_of_memory, tin_progname, size, file, line);
 		giveup();
 	}
 	return (void *) p;

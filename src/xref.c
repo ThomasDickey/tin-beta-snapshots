@@ -206,7 +206,7 @@ art_mark_xref_read (
 
 #ifdef DEBUG
 		if (debug == 3) {
-			sprintf (mesg, _("LOOKUP Xref: [%s:%ld] active=[%s] num_unread=[%ld]"),
+			sprintf (mesg, "LOOKUP Xref: [%s:%ld] active=[%s] num_unread=[%ld]",
 				group, artnum,
 				(psGrp ? psGrp->name : ""),
 				(psGrp ? psGrp->newsrc.num_unread : 0));
@@ -227,7 +227,7 @@ art_mark_xref_read (
 						psGrp->newsrc.num_unread--;
 #ifdef DEBUG
 					if (debug == 3) {
-						sprintf (mesg, _("FOUND!Xref: [%s:%ld] marked READ num_unread=[%ld]"),
+						sprintf (mesg, "FOUND!Xref: [%s:%ld] marked READ num_unread=[%ld]",
 							group, artnum, psGrp->newsrc.num_unread);
 #	ifdef DEBUG_NEWSRC
 						debug_print_comment (mesg);
@@ -256,7 +256,7 @@ NSETRNG1 (
 	register long i;
 
 	if (bitmap == (t_bitmap *) 0) {
-		error_message (_("NSETRNG1() failed. Bitmap == NULL"));
+		error_message ("NSETRNG1() failed. Bitmap == NULL");
 		return;
 	}
 
@@ -288,7 +288,7 @@ NSETRNG0 (
 	register long i;
 
 	if (bitmap == (t_bitmap *) 0) {
-		error_message (_("NSETRNG0() failed. Bitmap == NULL"));
+		error_message ("NSETRNG0() failed. Bitmap == NULL");
 		return;
 	}
 

@@ -395,7 +395,7 @@ save_art_to_file (
 
 #	ifdef DEBUG
 	if (debug == 2)
-		error_message(_("Save index=[%d] mbox=[%d] filename=[%s] file=[%s] mode=[%s]"), indexnum, the_mailbox, filename, file, mode);
+		error_message("Save index=[%d] mbox=[%d] filename=[%s] file=[%s] mode=[%s]", indexnum, the_mailbox, filename, file, mode);
 #	endif /* DEBUG */
 
 	if ((fp = fopen (file, mode)) == (FILE *) 0) {
@@ -418,7 +418,7 @@ save_art_to_file (
 	}
 
 	if (fseek (artinfo->raw, 0L, SEEK_SET) == -1)
-		perror_message (_("fseek() error on [%s]"), save[i].subject); /* FIXME: -> lang.c */
+		perror_message ("fseek() error on [%s]", save[i].subject); /* FIXME: -> lang.c */
 
 	if (copy_fp (artinfo->raw, fp))
 		print_art_seperator_line (fp, the_mailbox); /* write tailing newline or MDF-mailbox seperator */
@@ -1216,7 +1216,7 @@ post_process_uud (
 	open_out_file = TRUE;
 
 	for (i = 0; i < num_save; i++) {
-		char realname[130]; /* don't use PATH_LEN if you use an absolut val. below as you can't say that PATH_LEN is big enought */
+		char realname[130]; /* don't use PATH_LEN if you use an absolut val. below as you can't say that PATH_LEN is big enough */
 
 		if (!save[i].saved)
 			continue;
@@ -1284,7 +1284,7 @@ post_process_uud (
 						break;
 
 					default:
-						my_fprintf (stderr, "%s %s", cCRLF, _("Error: ASSERT - default state\n")); /* FIXME: -> lang.c */
+						my_fprintf (stderr, "%s %s", cCRLF, "Error: ASSERT - default state\n"); /* FIXME: -> lang.c */
 						fclose (fp_in);
 						fclose (fp_out);
 						unlink (file_out);
@@ -1572,7 +1572,7 @@ print_art_seperator_line (
 	char sep = '\1';	/* Ctrl-A */
 #ifdef DEBUG
 	if (debug == 2)
-		error_message (_("Mailbox=[%d]  MMDF=[%d]"), is_mailbox, tinrc.save_to_mmdf_mailbox);
+		error_message ("Mailbox=[%d]  MMDF=[%d]", is_mailbox, tinrc.save_to_mmdf_mailbox);
 #endif /* DEBUG */
 
 	if (is_mailbox && tinrc.save_to_mmdf_mailbox)
@@ -1631,7 +1631,7 @@ start_viewer(
 
 static void
 decode_save_one(
-	t_part *ptr,
+	t_part *part,
 	FILE *rawfp)
 {
 	char buf[2048], buf2[2048];
@@ -1648,79 +1648,81 @@ decode_save_one(
 	 *        honor, that tinrc.default_save_file holds the filename
 	 *        _and_ the path (-> no path prepending needed)
 	 */
-	strncpy (savepath, attr->savedir, sizeof(savepath));
+	strncpy (savepath, attr->savedir, sizeof(savepath) - 1);
 	strcat (savepath, "/");
 	savefile = savepath + strlen(savepath);
-	if ((name = get_filename(ptr->params)) != NULL)
-		strcat (savepath, name);
-	else
-		strcat (savepath, attr->savefile ? attr->savefile : tinrc.default_save_file);
+	if ((name = get_filename (part->params)) == NULL)
+		name = attr->savefile ? attr->savefile : tinrc.default_save_file;
+	strncat (savepath, name, sizeof(savepath) - strlen(savepath) - 1);
+	savepath[sizeof(savepath) - 1] = '\0';
 
 	/*
 	 * Decode/save the attachment
 	 */
 /* TODO don't overwrite by default */
 	if ((fp = fopen (savepath, "w")) == NULL) {
-		error_message ("Couldn't open %s for saving", savepath);
+		error_message (_(txt_cannot_open_for_saving), savepath);
 		return;
 	}
 
-	if (ptr->encoding == ENCODING_BASE64)
+	if (part->encoding == ENCODING_BASE64)
 		mmdecode(NULL, 'b', 0, NULL, NULL);				/* flush */
 
-	fseek(rawfp, ptr->offset, SEEK_SET);
+	fseek (rawfp, part->offset, SEEK_SET);
 
-	for (i = 0; i < ptr->lines ; i++) {
-		if ((fgets(buf, sizeof(buf), rawfp)) == NULL)
+	for (i = 0; i < part->lines ; i++) {
+		if ((fgets (buf, sizeof(buf), rawfp)) == NULL)
 			break;
 
 		/* This should catch cases where people illegally append text etc */
 		if (buf[0] == '\0')
 			break;
 
-		switch (ptr->encoding) {
+		switch (part->encoding) {
 			int count;
 
 			case ENCODING_QP:
 			case ENCODING_BASE64:
-				count = mmdecode(buf, ptr->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2, NULL);
-				fwrite(buf2, count, 1, fp);
+				count = mmdecode (buf, part->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2, NULL);
+				fwrite (buf2, count, 1, fp);
 				break;
 
 			case ENCODING_UUE:
 #ifdef HAVE_UUDECODE
 				/*
-				 * x-uuencode attatchments have all the header info etc which we must ignore
+				 * x-uuencode attachments have all the header info etc which we must ignore
 				 */
 				if (strncmp(buf, "begin ", 6) != 0 && strncmp(buf, "end\n", 4) != 0 && buf[0] != '\n')
 					uudecode_line (buf, fp);
 				break;
 #else
-				wait_message(1, "x-uuencode not supported yet");
+				wait_message (1, _(txt_uuencode_not_supported));
 				/* FALLTHROUGH */
 #endif /* HAVE_UUDECODE */
 			default:
-				fputs(buf, fp);
+				fputs (buf, fp);
 		}
 	}
 	fclose(fp);
 
-	sprintf(buf, "View '%s' (%s/%s) ? (y/n): ", savefile, content_types[ptr->type], ptr->subtype);
+	snprintf (buf, sizeof(buf) - 1, _(txt_view_attachment), savefile, content_types[part->type], part->subtype);
 	if (prompt_yn (cLINES, buf, TRUE) == 1) {
 		t_mailcap *foo;
 
-		foo = get_mailcap_entry(ptr);
+		foo = get_mailcap_entry (part);
 		if (foo != (t_mailcap *) 0) {
 			char buff[LEN];
-			wait_message(2, "Starting: (%s)", foo->command);
-			/* are the () needed if foo->command holds more then one cmd? */
-			snprintf(buff, sizeof(buff) - 1, "(%s)", foo->command);
-			system(foo->command);
-			free_mailcap(foo);
+
+			wait_message (2, _(txt_starting_command), foo->command);
+			/* are the () needed if foo->command holds more than one cmd? */
+			snprintf (buff, sizeof(buff) - 1, "(%s)", foo->command);
+			/* FIXME: don't use system()! */
+			system (foo->command);
+			free_mailcap (foo);
 		} else
-			wait_message (2, "No viewer found for %s/%s\n", content_types[ptr->type], ptr->subtype);
+			wait_message (2, _(txt_no_viewer_found), content_types[part->type], part->subtype);
 	}
-	sprintf(buf, "Save '%s' (%s/%s) ? (y/n): ", savefile, content_types[ptr->type], ptr->subtype);
+	snprintf (buf, sizeof(buf) - 1, _(txt_save_attachment), savefile, content_types[part->type], part->subtype);
 	if (prompt_yn (cLINES, buf, FALSE) != 1)
 		unlink (savepath);
 }

@@ -1,11 +1,11 @@
 dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
-dnl Author    : Thomas E. Dickey <dickey@clark.net>
+dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
 dnl Updated   : 2000-04-14
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2000 Thomas E. Dickey <dickey@clark.net>
+dnl Copyright (c) 1995-2000 Thomas E. Dickey <dickey@herndon4.his.com>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -1200,6 +1200,8 @@ cf_ipv6dir=none
 
 AC_MSG_CHECKING(for ipv6 library if required)
 case $cf_cv_ipv6type in #(vi
+solaris) #(vi
+	;;
 inria) #(vi
 	;;
 kame) #(vi
@@ -1271,9 +1273,18 @@ dnl ---------------------------------------------------------------------------
 AC_DEFUN([CF_FIND_IPV6_TYPE],[
 AC_CACHE_CHECK(ipv6 stack type, cf_cv_ipv6type, [
 cf_cv_ipv6type=unknown
-for i in inria kame linux-glibc linux-libinet6 toshiba v6d zeta
+for i in solaris inria kame linux-glibc linux-libinet6 toshiba v6d zeta
 do
 	case $i in #(vi
+	solaris) #(vi
+		if test "SunOS" = "`uname -s`"
+		then
+		  if test -f /usr/include/netinet/ip6.h
+		  then
+			cf_cv_ipv6type=$i
+		  fi
+		fi
+		;;
 	inria) #(vi
 		dnl http://www.kame.net/
 		AC_EGREP_CPP(yes, [dnl

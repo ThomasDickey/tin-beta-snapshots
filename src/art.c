@@ -81,7 +81,8 @@ static void thread_by_subject (void);
  * Allow for the non-printing %s, and the %-age counter
  */
 void
-show_art_msg(char *group)
+show_art_msg(
+	char *group)
 {
 /* what if cCOLS < (strlen)+18 ? */
 	wait_message(0, _(txt_group), cCOLS - strlen(_(txt_group)) + 2 - 3, group);

@@ -203,7 +203,9 @@
 #	define HAVE_SYS_TIMES_H
 #endif
 
-#define TIME_WITH_SYS_TIME
+#if !defined(VMS)
+#	define TIME_WITH_SYS_TIME
+#endif
 
 #if defined(PTX) || defined(QNX42) || defined(SCO_UNIX)
 #	define HAVE_SYS_SELECT_H

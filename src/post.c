@@ -2974,7 +2974,7 @@ cancel_article (
 
 #ifdef FORGERY
 	if (author)
-		fprintf (fp, _(txt_article_cancelled));
+		fprintf (fp, txt_article_cancelled);
 	else {
 		rewind (pgart.raw);
 		copy_fp (pgart.raw, fp);
@@ -2983,7 +2983,7 @@ cancel_article (
 	invoke_editor (cancel, start_line_offset);
 	redraw_screen = TRUE;
 #else
-	fprintf (fp, _(txt_article_cancelled));
+	fprintf (fp, txt_article_cancelled);
 	fclose (fp);
 #endif /* FORGERY */
 

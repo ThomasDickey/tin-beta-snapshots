@@ -71,7 +71,8 @@ static char * tin_read (char *buffer, size_t len, FILE *fp, t_bool header);
  *         FALSE otherwise
  */
 static t_bool
-wait_for_input (void /*FILE *fd*/)
+wait_for_input (
+	void /*FILE *fd*/)
 {
 #	ifndef HAVE_SELECT
 #		ifdef VMS
@@ -106,7 +107,7 @@ wait_for_input (void /*FILE *fd*/)
 /*DEBUG_IO((stderr, "waiting on %d and %d...", STDIN_FILENO, fileno(fd)));*/
 		if ((nfds = select(STDIN_FILENO+1, &readfds, NULL, NULL, &tv)) == -1) {
 			if (errno != EINTR) {
-				perror_message(_("select() failed"));
+				perror_message("select() failed");
 				giveup();
 			} else
 				return FALSE;
@@ -223,7 +224,7 @@ tin_read (
 /* TODO develop this next line ? */
 #ifdef DEBUG
 	if (errno)
-		fprintf(stderr, _("errno in tin_read %d\n"), errno);
+		fprintf(stderr, "errno in tin_read %d\n", errno);
 #endif /* DEBUG */
 
 	if (ptr == 0)	/* End of data ? */

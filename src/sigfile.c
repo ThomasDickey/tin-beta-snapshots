@@ -110,13 +110,13 @@ msg_write_signature (
 		if ((sigfp = open_random_sig (path)) != (FILE *) 0) {
 #ifdef DEBUG
 			if (debug == 2)
-				error_message (_("USING random sig=[%s]"), sigfile);
+				error_message ("USING random sig=[%s]", sigfile);
 #endif /* DEBUG */
 			fprintf (fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
 			joinpath (pathfixed, path, ".sigfixed");
 #ifdef DEBUG
 			if (debug == 2)
-				error_message (_("TRYING fixed sig=[%s]"), pathfixed);
+				error_message ("TRYING fixed sig=[%s]", pathfixed);
 #endif /* DEBUG */
 			if ((fixfp = fopen (pathfixed, "r")) != (FILE *) 0) {
 				copy_fp (fixfp, fp);
@@ -125,7 +125,7 @@ msg_write_signature (
 				joinpath (pathfixed, homedir, ".sigfixed");
 #ifdef DEBUG
 				if (debug == 2)
-					error_message (_("TRYING fixed sig=[%s]"), pathfixed);
+					error_message ("TRYING fixed sig=[%s]", pathfixed);
 #endif /* DEBUG */
 				if ((fixfp = fopen (pathfixed, "r")) != (FILE *) 0) {
 					copy_fp (fixfp, fp);
@@ -173,13 +173,13 @@ open_random_sig (
 			if (thrashdir (sigdir) || !*sigfile) {
 #ifdef DEBUG
 				if (debug == 2)
-					error_message (_("NO sigfile=[%s]"), sigfile);
+					error_message ("NO sigfile=[%s]", sigfile);
 #endif /* DEBUG */
 				return (FILE *) 0;
 			} else {
 #ifdef DEBUG
 				if (debug == 2)
-					error_message (_("sigfile=[%s]"), sigfile);
+					error_message ("sigfile=[%s]", sigfile);
 #endif /* DEBUG */
 				return fopen (sigfile, "r");
 			}
@@ -236,7 +236,7 @@ thrashdir (
 	for (safeguard = 0, dp = NULL; safeguard < MAXLOOPS && dp == NULL; safeguard++) {
 #ifdef DEBUG
 		if (debug == 2)
-			error_message (_("sig loop=[%d] recurse=[%d]"), safeguard, recurse);
+			error_message ("sig loop=[%d] recurse=[%d]", safeguard, recurse);
 #endif /* DEBUG */
 #ifdef HAVE_REWINDDIR
 		rewinddir (dirp);
@@ -287,7 +287,7 @@ thrashdir (
 					strcat (sigfile, dp->d_name);
 #ifdef DEBUG
 					if (debug == 2)
-						error_message (_("Found a file=[%s]"), sigfile);
+						error_message ("Found a file=[%s]", sigfile);
 #endif /* DEBUG */
 				}
 			}
@@ -296,7 +296,7 @@ thrashdir (
 	free (cwd);
 #ifdef DEBUG
 	if (debug == 2)
-		error_message (_("return 0: sigfile=[%s]"), sigfile);
+		error_message ("return 0: sigfile=[%s]", sigfile);
 #endif /* DEBUG */
 	CLOSEDIR(dirp);
 

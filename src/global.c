@@ -112,7 +112,8 @@ _page_down (
  * based on the current position and the max available
  */
 void
-set_first_screen_item (void)
+set_first_screen_item (
+	void)
 {
 	if (currmenu->curr >= currmenu->max)
 		currmenu->curr = currmenu->max - 1;

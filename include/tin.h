@@ -51,7 +51,7 @@
 #	endif /* !TIN_AUTOCONF_H */
 #else
 #	ifndef HAVE_CONFDEFS_H
-#		include	"config.h"
+#		include	"oldconfig.h"
 #	endif /* !HAVE_CONFDEFS_H */
 #endif /* HAVE_CONFIG_H */
 

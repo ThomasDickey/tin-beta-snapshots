@@ -312,7 +312,7 @@ get_tcp_socket (
 		strcpy(device, "/dev/tcp");
 
 	if ((s = t_open (device, O_RDWR, (struct t_info*) 0)) < 0){
-		t_error (_("t_open: can't t_open /dev/tcp")); /* FIXME: -> lang.c */
+		t_error ("t_open: can't t_open /dev/tcp"); /* FIXME: -> lang.c */
 		return (-EPROTO);
 	}
 	if (t_bind (s, (struct t_bind *) 0, (struct t_bind *) 0) < 0) {
@@ -332,7 +332,7 @@ get_tcp_socket (
 #		endif /* HAVE_INET_ATON */
 	{
 		if ((hp = gethostbyname (machine)) == NULL) {
-			my_fprintf (stderr, _("gethostbyname: %s: host unknown\n"), machine); /* FIXME: -> lang.c */
+			my_fprintf (stderr, "gethostbyname: %s: host unknown\n", machine); /* FIXME: -> lang.c */
 			t_close (s);
 			return (-EHOSTUNREACH);
 		}

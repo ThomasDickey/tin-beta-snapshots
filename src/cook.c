@@ -926,7 +926,7 @@ cook_article(
 				ptr->depth * 4, "",
 				content_types[ptr->type], ptr->subtype,
 				content_encodings[ptr->encoding], ptr->lines,
-				(name) ? _(", name: ") : "", (name) ? name : "");
+				(name) ? _(", name: ") : "", (name) ? name : "");	/* FIXME: -> lang.c */
 
 			/* Try to view anything of type text, may need to review this */
 			if (IS_PLAINTEXT(ptr))
@@ -945,7 +945,7 @@ cook_article(
 					0, "",
 					content_types[hdr->ext->type], hdr->ext->subtype,
 					content_encodings[hdr->ext->encoding], hdr->ext->lines,
-					(name)? _(", name: ") : "", (name) ? name : "");
+					(name)? _(", name: ") : "", (name) ? name : "");	/* FIXME: -> lang.c */
 		}
 	}
 

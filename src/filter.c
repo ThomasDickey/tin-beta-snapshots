@@ -226,7 +226,8 @@ free_filter_array (
 
 
 void
-free_all_filter_arrays (void) /* FIXME: use free_filter_array() instead */
+free_all_filter_arrays (
+	void) /* FIXME: use free_filter_array() instead */
 {
 	/*
 	 * Global filter array
@@ -234,10 +235,10 @@ free_all_filter_arrays (void) /* FIXME: use free_filter_array() instead */
 	free_filter_array (&glob_filter);
 }
 
+
 /*
  *  read ~/.tin/filter file contents into filter array
  */
-
 t_bool
 read_filter_file (
 	char *file)
@@ -1376,7 +1377,8 @@ bAddFilterRule (
  * them as being unread.
  */
 int
-unfilter_articles (void) /* return value is always ignored */
+unfilter_articles (
+	void) /* return value is always ignored */
 {
 	int unkilled = 0;
 	register int i;

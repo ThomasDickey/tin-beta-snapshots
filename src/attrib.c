@@ -690,7 +690,8 @@ debug_print_filter_attributes (
 
 #ifdef DEBUG
 void
-dump_attributes (void)
+dump_attributes (
+	void)
 {
 	int i;
 	struct t_group *psGrp;

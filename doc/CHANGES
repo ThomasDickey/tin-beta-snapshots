@@ -1,21 +1,36 @@
--- 1.5.5 release 20000611 "" --
+-- 1.5.5 release 20000613 "Lucretia" --
 
- 025) Bernd Kuemmerlen <bkuemmer@gmx.de>
-      ADD. configure detection for MacOS X
-      FIX. config.guess, config.sub
+U037) Thomas E. Dickey <dickey@herndon4.his.com>
+      ADD. updated pcre (2.08 -> 3.2)
+      ADD. new config.sub/config.guess versions
+      BUG. missing cursoron() on exit
+      FIX. config.guess, config.sub, configure[.in], mkdirs.sh, autoconf.h[in]
+           oldconfig.h, tin.h, misc.c, vms/select.h, pcre/*
+
+U036) Toomas Soome <tsoome@ut.ee>
+      ADD. updated estonian translation
+      FIX. et.po
 
 U035) Dirk Nimmich <nimmich@uni-muenster.de>
       Jason Faultless <jason@radar.tele2.co.uk>
       ADD. allow remapping of keys
+      BUG. potential buffer overruns when saving attachments
+      ADD. moved some strings to lang.c and added i18n-macros
       FIX. Makefile[.in], extern.h, keymap.h, menukeys.h, proto.h, config.c
            feed.c, filter.c, global.c, group.c, init.c, keymap.c, lang.c
-           main.c, nrctbl.c, page.c, pgp.c, post.c, prompt.c, save.c
-           select.c, thread.c
+           main.c, nrctbl.c, page.c, pgp.c, post.c, prompt.c, rfc1524.c
+           save.c, select.c, thread.c
 
 U034) Urs Janssen <urs@tin.org>
       ADD. made some funcs static, renamed mailcap.c to mimetypes.c
       ADD. dynamic malloc space for mailcap meta expansion
-      FIX. Makefile[.in], color.c, global.c, misc.c, mimetypes.c, rfc1524.c
+      ADD. updated german translation
+      ADD. removed some unused vars
+      ADD. removed translations for low-level error/debug messages
+      FIX. Makefile[.in], extern.h, auth.c, color.c, config.c, global.c
+           lang.c, memory.c, mimetypes.c, misc.c, newsrc.c, nntplib.c, post.c
+           read.c, refs.c, rfc1524.c, rfc2047.c, save.c, sigfile.c, signal.c
+           string.c, tags.c, thread.c, xref.c, de.po
 
 -- 1.5.4 release 20000523 "1959" --
 
@@ -70,7 +85,7 @@ U028) Jason Faultless <jason@radar.tele2.co.uk>
       BUG. removed unsupported o from TIN_EDIT_KEYS_EXT
       FIX. post.c
 
-U027) Thomas E. Dickey <dickey@clark.net>
+U027) Thomas E. Dickey <dickey@herndon4.his.com>
       ADD. several configure cleanups/improvements
       BUG.
       FIX. aclocal.m4, configure[.in], autoconf.h[in], makefile[.in]
@@ -247,7 +262,7 @@ U015) Dirk Nimmich <nimmich@uni-muenster.de>
       ADD. allow interactive authentication on startup if invoked with -A
       FIX. extern.h, auth.c lang.c, nntplib.c
 
-U014) Thomas E. Dickey <dickey@clark.net>
+U014) Thomas E. Dickey <dickey@herndon4.his.com>
       ADD. configure script improvements (NLS, passwd.pw_gecos)
       ADD. uninstall rule to makefiles
       ADD. removed most unbalanced curly braces
@@ -376,7 +391,7 @@ U001) Urs Janssen <urs@tin.org>
       ADD. check for server requested auth type
       FIX. auth.txt, nntplib.h, proto.h, auth.c, inews.c, nntplib.c, open.c
 
- 005) Thomas E. Dickey <dickey@clark.net>
+ 005) Thomas E. Dickey <dickey@herndon4.his.com>
       ADD. configure script improvements
       BUG. screen modes weren't restored before piping to external command
       FIX. aclocal.m4, configure[.in], autoconf.h[in], extern.h, feed.c

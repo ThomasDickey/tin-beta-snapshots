@@ -823,12 +823,14 @@ art_open (
 	fprintf(stderr, "art_open(%p)\n", artinfo);
 #endif /* DEBUG_ART */
 
-/*	if (decode) */
+#if 0
+	if (decode) {
+#endif /* 0 */
 		if ((ret = parse_rfc2045_article (fp, art->lines, artinfo)) != 0)
 			return ART_ABORT;
 #if 0
-	else
-		???????
+	} else
+		/* ???? */;
 #endif /* 0 */
 
 	if ((pgart.tex2iso = (tex2iso_supported ? iIsArtTexEncoded (artinfo->raw) : FALSE)))

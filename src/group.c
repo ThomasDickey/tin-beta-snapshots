@@ -1291,7 +1291,7 @@ show_group_title (
 		}
 	}
 
-	if (tinrc.use_getart_limit)
+	if (tinrc.use_getart_limit)	/* FIXME: -> lang.c */
 		sprintf (buf, _("%s (%dT(%c) %dA %dK %dH [%dL]%s%c)"),
 			currgrp.name, grpmenu.max,
 			*txt_thread[currgrp.attribute->thread_arts],

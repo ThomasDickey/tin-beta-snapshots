@@ -132,8 +132,8 @@ get_multiparts (
 	int i = 0;
 
 	/* entry assertions */
-	assert (0<=base_index && base_index<grpmenu.max && _("Invalid base index"));
-	assert (malloc_and_setme_info!=NULL && _("malloc_and_setme_info must not be NULL"));
+	assert (0<=base_index && base_index<grpmenu.max && "Invalid base index");
+	assert (malloc_and_setme_info!=NULL && "malloc_and_setme_info must not be NULL");
 
 	/* make sure this is a multipart message... */
 	if (!get_multipart_info(base_index, &tmp) || tmp.total < 1)
@@ -167,7 +167,7 @@ get_multiparts (
 
 		/* repost check: do we already have this part? */
 		if (info[part_index].part_number != -1) {
-			assert (info[part_index].part_number == tmp2.part_number && _("bookkeeping error"));
+			assert (info[part_index].part_number == tmp2.part_number && "bookkeeping error");
 			continue;
 		}
 

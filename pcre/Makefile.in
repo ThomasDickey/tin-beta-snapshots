@@ -1,11 +1,8 @@
 # Make file for PCRE (Perl-Compatible Regular Expression) library.
 
-# Use CFLAGS = -DUSE_BCOPY on SunOS4 and any other system that lacks the
-# memmove() function, but has bcopy().
-
-# Use CFLAGS = -DSTRERROR_FROM_ERRLIST on SunOS4 and any other system that
-# lacks the strerror() function, but can provide the equivalent by indexing
-# into errlist.
+# The repeated -I. option is intentional, to work around the use of quoted
+# includes in the pcre source.  Bracketed includes would be more portable
+# for nested include-files.
 
 SHELL		= /bin/sh
 prefix		= @prefix@
@@ -16,7 +13,7 @@ VPATH		= $(srcdir)
 
 CC	= @CC@
 CFLAGS	= @CFLAGS@ @PCRE_DEFINES@
-CPPOPTS = -I.
+CPPOPTS = @DEFS@ -I. -I. -I../include
 RANLIB	= @RANLIB@
 RM	= rm
 x	= @PROG_EXT@
@@ -86,7 +83,7 @@ chartables.c:	dftables$x
 
 dftables$x:	dftables.c maketables.c $(PCR_DEP)
 @SHOW_CC@
-		@ECHO_CC@$(CC) -o $@ $(CFLAGS) $(srcdir)/dftables.c
+		@ECHO_CC@$(CC) -o $@ $(CFLAGS) $(CPPOPTS) $(srcdir)/dftables.c
 
 # We deliberately omit dftables and chartables.c from 'make clean'; once made
 # chartables.c shouldn't change, and if people have edited the tables by hand,
@@ -94,7 +91,7 @@ dftables$x:	dftables.c maketables.c $(PCR_DEP)
 
 clean:;		$(RM) -f *.o *.a pcretest$x pgrep$x
 
-distclean:	clean ; $(RM) -f dftables$x chartables.c
+distclean:	clean ; $(RM) -f pcre.h dftables$x chartables.c
 
 runtest:	all
 		./RunTest

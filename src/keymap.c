@@ -608,9 +608,9 @@ t_keynode *keys_select_nav[] = {
 	&Key.Global.Abort, &Key.Global.One, &Key.Global.Two, &Key.Global.Three,
 	&Key.Global.Four, &Key.Global.Five, &Key.Global.Six, &Key.Global.Seven,
 	&Key.Global.Eight, &Key.Global.Nine,
-#ifndef HAVE_NO_SHELL_ESCAPE
+#ifndef NO_SHELL_ESCAPE
 	&Key.Global.ShellEscape,
-#endif
+#endif /* NO_SHELL_ESCAPE */
 	&Key.Global.FirstPage, &Key.Global.LastPage, &Key.Global.PageUp,
 	&Key.Global.PageUp2, &Key.Global.PageUp3, &Key.Global.PageDown,
 	&Key.Global.PageDown2, &Key.Global.PageDown3, &Key.Global.Up,
@@ -714,7 +714,9 @@ keymapsize (
  * Compile keymaps for faster access and conversion
  */
 void
-build_keymaps (void) {
+build_keymaps (
+	void)
+{
 	char *dkey, *lkey;
 	int cnt = sizeof (menukeymap) / sizeof (t_menukeys);
 	int size;
@@ -781,7 +783,9 @@ map_to_local (
  * Free all memory for keymaps.
  */
 void
-free_keymaps (void) {
+free_keymaps (
+	void)
+{
 	int cnt = sizeof (menukeymap) / sizeof (t_menukeys);
 	t_menukeys *menuptr = &menukeymap.config_change;
 
@@ -887,14 +891,15 @@ processkey(
 #define KEYSEPS		" \t\n"
 
 t_bool
-read_keymap_file (void)
+read_keymap_file (
+	void)
 {
 	FILE *fp;
 	char *line, *keydef, *keyname;
 	char buf[LEN];
 	char key;
 	int i;
-	t_bool ret=TRUE;
+	t_bool ret = TRUE;
 
 	if (!batch_mode)
 		wait_message (0, _(txt_reading_keymap_file));
