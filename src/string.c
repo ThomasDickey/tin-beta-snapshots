@@ -594,19 +594,17 @@ strrstr (
 	size_t slen, plen;
 	const char *ptr;
 
-	if (str == (char *) 0 || pat == (char *) 0)
-		return (char *) 0;
+	if ((str != 0) && (pat != 0)) {
+		slen = strlen(str);
+		plen = strlen(pat);
 
-	slen = strlen(str);
-	plen = strlen(pat);
-
-	if (plen <= slen) {
-		for (ptr = str + (slen - plen); ptr > str; --ptr) {
-			if (*ptr == *pat && strncmp(ptr, pat, plen) == 0)
-				return (char *) ptr;
+		if ((plen != 0) && (plen <= slen)) {
+			for (ptr = str + (slen - plen); ptr > str; --ptr) {
+				if (*ptr == *pat && strncmp(ptr, pat, plen) == 0)
+					return (char *) ptr;
+			}
 		}
 	}
-
-	return (char *) 0;
+	return 0;
 }
 #endif /* HAVE_STRRSTR */

@@ -93,12 +93,12 @@ extern void my_fflush(FILE *stream);
 extern void my_fputc(int ch, FILE *stream);
 extern void my_fputs(const char *str, FILE *stream);
 extern void my_fprintf(FILE *stream, const char *fmt, ...)
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(printf)
 	__attribute__((format(printf,2,3)))
 #endif /* __GNUC__ */
 	;
 extern void my_printf(const char *fmt, ...)
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(printf)
 	__attribute__((format(printf,1,2)))
 #endif /* __GNUC__ */
 	;
@@ -110,7 +110,11 @@ extern void write_line(int row, char *buffer);
 
 #ifdef NEED_TERM_H
 #	include <curses.h>
-#	include <term.h>
+#	ifdef HAVE_NCURSES_TERM_H
+#		include <ncurses/term.h>
+#	else
+#		include <term.h>
+#	endif
 #else
 #	ifdef HAVE_TERMCAP_H
 #	include <termcap.h>

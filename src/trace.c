@@ -48,7 +48,7 @@
 #	include "trace.h"
 #endif /* !included_trace_h */
 
-#ifndef NCURSES_VERSION
+#ifndef HAVE__TRACEF
 void
 _tracef(
 	const char *fmt,
@@ -73,6 +73,12 @@ _tracef(
 		(void)fflush(stderr);
 	}
 	va_end(ap);
+}
+
+char *
+_nc_visbuf(const char *s)
+{
+	return (char *)s;
 }
 #endif /* NCURSES_VERSION */
 

@@ -39,6 +39,8 @@ New Features
 
 . configurable scrolling via scroll_lines
 
+. configurable URL handler via url_handler
+
 Changes
 -------
 

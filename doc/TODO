@@ -55,9 +55,6 @@ o  mismatching cached overview data (higher article numbers than on the
    server) cause a crash.
    [Urs Janssen <urs@tin.org>]
 
-o  'U'RL-view doesn't recognize multiple URLs/line
-   [Urs Janssen <urs@tin.org>]
-
 o  reference based filters won't work with long (> 500 chars)
    References: lines
 
@@ -110,10 +107,6 @@ o  'K' is still a bit inconsistent
    - in the article pager (page.c) it marks the whole current thread as read
      and jumps to the next unread article.
      'c'/'C' already does this better.
-     ('K' would be useless with the group/thread behaviour as the fact we're
-      in the art => it is already read. IMHO we should ditch 'K' in the
-      pager and rebind the existing 'k' to 'K'. 'k' is supposed to be a
-      global Up key)
 
 o  Changes to int/bool tinrc variables in the Option Menu don't propogate
    back to the attributes, not even groups with global attributes.
@@ -184,6 +177,13 @@ o  with --enable-forgery reposting of an thread reposts only the first
 
 New features
 ------------
+o  sort the list of all newsgroups on the server (after [y]ank) on demand
+   [20020419 Andreas Metzler]
+
+o  add underline/bold/... support (i.e. for monochrom terminals
+   as color substitution)
+   [20020326 Serge Matveev <sm@cl.spb.ru>]
+
 o  fetch overview data in chunks (i.e. 100 arts/chunk) to allow
    faster read interruption.
    [20020326 Dirk Nimmich <nimmich@muenster.de>]
@@ -227,6 +227,10 @@ o  turn CA_ERROR_SPACE_IN_NEWSGROUPS, CA_ERROR_NEWLINE_IN_NEWSGROUPS,
 
 o  support "Suggested Minimal Digest Format"
    <ftp://rtfm.mit.edu/pub/usenet/news.answers/faqs/minimal-digest-format>
+
+o  add new threading method: thread by reference, but split threads on
+   subject change
+   [Urs Janssen <urs@tin.org>]
 
 o  rewrite thread-method selection that users can easyly combine different
    threading methods (THREAD_SUBJ + THREAD_MULTI || THREAD_REFS +
@@ -297,10 +301,6 @@ o  join keep_posted_articles & keep_posted_articles_file into one option
    posted_articles_file is unset
    [Urs Janssen <urs@tin.org>]
 
-o  add new threading method: thread by reference, but split threads on
-   subject change
-   [Urs Janssen <urs@tin.org>]
-
 o  detect pcre version and add compatibility macros for old versions
    (interface has changed twice and might do so again)
    (leafnode comes with a (suboptimal) check)
@@ -355,6 +355,8 @@ o  Rather than Cc/Bcc, I'd like to see tin simply append the
    [append_mail() should do the trick]
 
 o  MIME-pgp support according to RFC2015, RFC3156 - (should be easy now)
+   and/or in the format that used by signcontrol/pgpverify (see also
+   tinews.pl)
 
 o  pgp-6 support
 
@@ -367,20 +369,26 @@ o  add feature Cc:
 
 o  add feature show_new_newsgroups_since
 
-o  Additions to the thread menu :
+o  Additions to the thread menu:
      'D' (cancel article)
      'E' (edit filter)
      'r' (reply to) /* not 'R' cause it conflicts with mail_bugreport */
      ''  r ought to be toggle show all/show only unread
      'f' (post a followup)
      'X' (mark all unread articles that have not been selected as read)
+     ';' (mark unread arts as hot if >= 1 art in thread is hot)
+     'Y' (check for new articles in thead)
      keys to go to previous/next thread
+
+o  Additions to the group menu:
+     'Y' (check for new articles in group)
 
 o  Add to the 'M'enu:
      DEFAULT_MAILER
 
 o  Add to the POST_INFO-level:
-     '?','/' search
+     '?','/' search (partly done, currently only the displayed page is
+                     searched which is not that usefull)
      'h' help-screen
 
 o  Add a commandline switch (-V) that prints out all values of cpp-symbols
@@ -644,7 +652,7 @@ o  add instalation guide (in html)
 o  document keymap feature
 
 o  man page always needs work
-   i.e. 'U', 'V' in pager need documenting
+   i.e. 'U', 'V' in pager need better documentation
 
 o  error message when tin -uv and using XOVER is misleading
 

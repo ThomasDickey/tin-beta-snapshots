@@ -71,6 +71,7 @@ static int group_catchup (int ch);
 static int group_left (void);
 static int group_right (void);
 static int tab_pressed (void);
+static int recent_responses (int thread);
 static void bld_sline (int i);
 static void draw_subject_arrow (void);
 static void show_group_title (t_bool clear_title);
@@ -1312,33 +1313,60 @@ show_group_title (
 {
 	char buf[PATH_LEN];
 	struct t_group currgrp;
-	register int i, art_cnt = 0;
+	int i, art_cnt = 0, recent_art_cnt = 0;
 
 	currgrp = CURR_GROUP;
 	if (currgrp.attribute->show_only_unread) {
-		for (i = 0; i < grpmenu.max; i++)
+		for (i = 0; i < grpmenu.max; i++) {
 			art_cnt += new_responses (i);
+			recent_art_cnt += recent_responses (i);
+		}
 	} else {
 		for (i = 0; i < top_art; i++) {
-			if (!IGNORE_ART(i))
+			if (!IGNORE_ART(i)) {
 				++art_cnt;
+				if (tinrc.recent_time && ((time((time_t) 0) - arts[i].date) < (tinrc.recent_time * DAY)))
+					recent_art_cnt++;
+			}
 		}
 	}
 
-	if (tinrc.use_getart_limit)	/* FIXME: -> lang.c */
-		sprintf (buf, _("%s (%dT(%c) %dA %dK %dH [%dL]%s%c)"),
+	/* TODO: clean up, really i8n1? */
+	if (tinrc.use_getart_limit && tinrc.recent_time)
+		sprintf (buf, _("%s (%d%c %d/%d%c %d%c %d%c %d%c %c)"),
 			currgrp.name, grpmenu.max,
 			*txt_thread[currgrp.attribute->thread_arts],
-			art_cnt, num_of_killed_arts, num_of_selected_arts,
 			tinrc.getart_limit,
-			(currgrp.attribute->show_only_unread ? _(" R") : ""),
+			art_cnt, (currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read),
+			num_of_selected_arts, tinrc.art_marked_selected,
+			recent_art_cnt, tinrc.art_marked_recent,
+			num_of_killed_arts, tinrc.art_marked_killed,
+			group_flag(currgrp.moderated));
+	else if (tinrc.use_getart_limit)
+		sprintf (buf, _("%s (%d%c %d/%d%c %d%c %d%c %c)"),
+			currgrp.name, grpmenu.max,
+			*txt_thread[currgrp.attribute->thread_arts],
+			tinrc.getart_limit,
+			art_cnt, (currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read),
+			num_of_selected_arts, tinrc.art_marked_selected,
+			num_of_killed_arts, tinrc.art_marked_killed,
+			group_flag(currgrp.moderated));
+	else if (tinrc.recent_time)
+		sprintf (buf, _("%s (%d%c %d%c %d%c %d%c %d%c %c)"),
+			currgrp.name, grpmenu.max,
+			*txt_thread[currgrp.attribute->thread_arts],
+			art_cnt, (currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read),
+			num_of_selected_arts, tinrc.art_marked_selected,
+			recent_art_cnt, tinrc.art_marked_recent,
+			num_of_killed_arts, tinrc.art_marked_killed,
 			group_flag(currgrp.moderated));
 	else
-		sprintf (buf, _("%s (%dT(%c) %dA %dK %dH%s%c)"),
+		sprintf (buf, _("%s (%d%c %d%c %d%c %d%c %c)"),
 			currgrp.name, grpmenu.max,
 			*txt_thread[currgrp.attribute->thread_arts],
-			art_cnt, num_of_killed_arts, num_of_selected_arts,
-			(currgrp.attribute->show_only_unread ? _(" R") : ""),
+			art_cnt, (currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read),
+			num_of_selected_arts, tinrc.art_marked_selected,
+			num_of_killed_arts, tinrc.art_marked_killed,
 			group_flag(currgrp.moderated));
 
 	if (clear_title) {
@@ -1540,4 +1568,23 @@ group_catchup(
 			break;
 	}
 	return 0;								/* Stay in this menu by default */
+}
+
+
+/*
+ * Return the number of recent articles there are within a thread
+ */
+static int
+recent_responses (
+	int thread)
+{
+	int i;
+	int sum = 0;
+
+	for (i = (int) base[thread]; i >= 0; i = arts[i].thread) {
+		if (tinrc.recent_time && ((time((time_t) 0) - arts[i].date) < (tinrc.recent_time * DAY)) && arts[i].status != ART_READ)
+			sum++;
+	}
+
+	return sum;
 }

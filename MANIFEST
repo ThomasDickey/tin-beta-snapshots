@@ -1,4 +1,4 @@
-MANIFEST for tin-1.5.12 (Wed Apr 17 16:06:04 CEST 2002)
+MANIFEST for tin-1.5.12 (Mon Apr 22 17:07:56 CEST 2002)
 ----------------------------------------------------
   13514 ./Makefile
    7983 ./MANIFEST
@@ -6,21 +6,21 @@ MANIFEST for tin-1.5.12 (Wed Apr 17 16:06:04 CEST 2002)
     226 ./README.MAC
    2209 ./README.VMS
    1006 ./README.WIN
- 110365 ./aclocal.m4
+ 112656 ./aclocal.m4
     915 ./conf-tin
   38468 ./config.guess
   29027 ./config.sub
- 412315 ./configure
-  28777 ./configure.in
+ 419866 ./configure
+  28758 ./configure.in
    5555 ./install.sh
     777 ./mkdirs.sh
   18847 ./doc/ABOUT-NLS
-  46248 ./doc/CHANGES
+  46998 ./doc/CHANGES
  153546 ./doc/CHANGES.old
    1469 ./doc/DEBUG_REFS
   36741 ./doc/INSTALL
-  28280 ./doc/TODO
-   2107 ./doc/WHATSNEW
+  28576 ./doc/TODO
+   2151 ./doc/WHATSNEW
    2671 ./doc/art_handling.txt
    3863 ./doc/auth.txt
    4971 ./doc/config-anomalies
@@ -33,7 +33,7 @@ MANIFEST for tin-1.5.12 (Wed Apr 17 16:06:04 CEST 2002)
    3365 ./doc/mime.types
    5159 ./doc/opt-case.1
    3984 ./doc/pgp.txt
-   1194 ./doc/rcvars.txt
+   1346 ./doc/rcvars.txt
    1227 ./doc/reading-mail.txt
    1615 ./doc/umlaute.txt
    1914 ./doc/umlauts.txt
@@ -43,33 +43,33 @@ MANIFEST for tin-1.5.12 (Wed Apr 17 16:06:04 CEST 2002)
    4168 ./doc/mmdf.5
    2128 ./doc/newsoverview.5
    6963 ./doc/plp_snprintf.3
- 104865 ./doc/tin.1
-  57683 ./doc/tin.5
+ 105826 ./doc/tin.1
+  57908 ./doc/tin.5
    4729 ./doc/w2r.1
    2196 ./doc/wildmat.3
     344 ./tools/expiretover
    3815 ./tools/metamutt
    2779 ./tools/opt-case.pl
    1410 ./tools/tinlock
-  15985 ./tools/tinews.pl
+  16191 ./tools/tinews.pl
    1533 ./tools/url_handler.sh
    3164 ./tools/w2r.pl
    1661 ./tools/expand_aliases.tgz
    2227 ./include/bool.h
    2128 ./include/bugrep.h
    9688 ./include/oldconfig.h
-  52619 ./include/extern.h
+  52782 ./include/extern.h
   11305 ./include/keymap.h
   15828 ./include/menukeys.h
    6465 ./include/nntplib.h
     666 ./include/plp_snprintf.h
   11985 ./include/policy.h
-  29724 ./include/proto.h
+  29434 ./include/proto.h
    5134 ./include/rfc2046.h
    3559 ./include/stpwatch.h
-   4376 ./include/tcurses.h
-  61085 ./include/tin.h
-  11645 ./include/tinrc.h
+   4500 ./include/tcurses.h
+  61185 ./include/tin.h
+  11707 ./include/tinrc.h
    5950 ./include/tnntp.h
    2416 ./include/trace.h
    2710 ./include/version.h
@@ -79,7 +79,7 @@ MANIFEST for tin-1.5.12 (Wed Apr 17 16:06:04 CEST 2002)
   12292 ./src/auth.c
   10709 ./src/charset.c
    8038 ./src/color.c
-  72282 ./src/config.c
+  72510 ./src/config.c
   26716 ./src/cook.c
   27533 ./src/curses.c
   12376 ./src/debug.c
@@ -88,29 +88,29 @@ MANIFEST for tin-1.5.12 (Wed Apr 17 16:06:04 CEST 2002)
   46762 ./src/filter.c
   12665 ./src/getline.c
    7493 ./src/global.c
-  38738 ./src/group.c
+  40442 ./src/group.c
    4493 ./src/hashstr.c
    9138 ./src/header.c
   27740 ./src/help.c
-  13563 ./src/inews.c
-  32613 ./src/init.c
+  13541 ./src/inews.c
+  32651 ./src/init.c
    3053 ./src/joinpath.c
   37885 ./src/keymap.c
- 100553 ./src/lang.c
-   3997 ./src/langinfo.c
+ 100884 ./src/lang.c
+   3996 ./src/langinfo.c
    4388 ./src/list.c
-   6954 ./src/lock.c
+   6952 ./src/lock.c
   12155 ./src/mail.c
   25444 ./src/main.c
   10477 ./src/makecfg.c
   11083 ./src/memory.c
    3190 ./src/mimetypes.c
-  88935 ./src/misc.c
+  89305 ./src/misc.c
   38724 ./src/newsrc.c
   27214 ./src/nntplib.c
    7423 ./src/nrctbl.c
   26400 ./src/open.c
-  46155 ./src/page.c
+  45945 ./src/page.c
   24256 ./src/parsdate.y
   16970 ./src/plp_snprintf.c
   13108 ./src/pgp.c
@@ -119,10 +119,10 @@ MANIFEST for tin-1.5.12 (Wed Apr 17 16:06:04 CEST 2002)
   10868 ./src/read.c
   25086 ./src/refs.c
    4558 ./src/regex.c
-  14700 ./src/rfc1524.c
+  14655 ./src/rfc1524.c
    7290 ./src/rfc2045.c
-  21951 ./src/rfc2046.c
-  24975 ./src/rfc2047.c
+  22202 ./src/rfc2046.c
+  25004 ./src/rfc2047.c
   37040 ./src/save.c
    9613 ./src/screen.c
   11932 ./src/search.c
@@ -130,15 +130,15 @@ MANIFEST for tin-1.5.12 (Wed Apr 17 16:06:04 CEST 2002)
    8060 ./src/sigfile.c
   13018 ./src/signal.c
    7147 ./src/strftime.c
-  11469 ./src/string.c
+  11453 ./src/string.c
   13389 ./src/tags.c
   10733 ./src/tcurses.c
    3550 ./src/tmpfile.c
    3448 ./src/my_tmpfile.c
   35134 ./src/thread.c
-   2601 ./src/trace.c
+   2655 ./src/trace.c
    4369 ./src/wildmat.c
-   7719 ./src/xref.c
+   7720 ./src/xref.c
    4987 ./amiga/README
    5520 ./amiga/tin.readme
    9918 ./amiga/smakefile
@@ -225,16 +225,16 @@ MANIFEST for tin-1.5.12 (Wed Apr 17 16:06:04 CEST 2002)
    1495 ./pcre/testdata/testoutput4
    3874 ./pcre/testdata/testoutput5
    7628 ./pcre/testdata/testoutput6
-  18563 ./include/autoconf.hin
+  18612 ./include/autoconf.hin
    5800 ./pcre/pcre.mms
-  19464 ./src/Makefile.in
+  19485 ./src/Makefile.in
    2124 ./src/ibm437_l1.tab
    2124 ./src/ibm850_l1.tab
    2124 ./src/l1_ibm437.tab
    2124 ./src/l1_ibm850.tab
    4284 ./src/l1_next.tab
    4284 ./src/next_l1.tab
-   6671 ./src/tincfg.tbl
+   6697 ./src/tincfg.tbl
    8747 ./src/descrip.mms
     954 ./libcanlock/Build
     882 ./libcanlock/CHANGES
@@ -275,7 +275,7 @@ MANIFEST for tin-1.5.12 (Wed Apr 17 16:06:04 CEST 2002)
    5736 ./intl/finddomain.c
    1891 ./intl/gettext.c
    3104 ./intl/gettext.h
-   7686 ./intl/gettextP.h
+   7678 ./intl/gettextP.h
    1835 ./intl/hash-string.h
    4763 ./intl/intl-compat.c
   10480 ./intl/l10nflist.c
@@ -283,7 +283,7 @@ MANIFEST for tin-1.5.12 (Wed Apr 17 16:06:04 CEST 2002)
    4397 ./intl/libgnuintl.h
    3380 ./intl/loadinfo.h
   14967 ./intl/loadmsgcat.c
-   6897 ./intl/localcharset.c
+   6905 ./intl/localcharset.c
    2657 ./intl/locale.alias
    9450 ./intl/localealias.c
    9968 ./intl/Makefile.in
@@ -296,11 +296,11 @@ MANIFEST for tin-1.5.12 (Wed Apr 17 16:06:04 CEST 2002)
      41 ./intl/VERSION
    4942 ./po/Makefile.inn
     813 ./po/POTFILES.in
- 112519 ./po/tin.pot
- 144514 ./po/de.gmo
- 177912 ./po/de.po
- 144097 ./po/et.gmo
- 173254 ./po/et.po
+ 112957 ./po/tin.pot
+ 144578 ./po/de.gmo
+ 178445 ./po/de.po
+ 146016 ./po/et.gmo
+ 174452 ./po/et.po
    6543 ./po/en_GB.gmo
- 114654 ./po/en_GB.po
-5367870 total
+ 115101 ./po/en_GB.po
+5387891 total

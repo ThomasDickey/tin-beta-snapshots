@@ -93,6 +93,7 @@ overview_xref_support (
 	return supported;
 }
 
+
 /*
  * read xref reference for current article
  * This enables crosspost marking even if the xref records are not

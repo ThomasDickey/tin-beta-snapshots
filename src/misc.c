@@ -82,6 +82,13 @@ static void write_input_history_file (void);
 	static char *utf8_valid(char *line);
 #	endif /* HAVE_WORKING_ICONV */
 #endif /* CHARSET_CONVERSION */
+#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
+	static void buffer_to_local (char *line);
+#else
+#	ifdef CHARSET_CONVERSION
+	static void buffer_to_local (char *line, const char* network_charset, const char *local_charset);
+#	endif /* CHARSET_CONVERSION */
+#endif /* LOCAL_CHARSET || MAC_OS_X */
 
 
 /*
@@ -1883,9 +1890,12 @@ enum quote_enum {
 };
 
 
+/*
+ * TODO: Properly explain this
+ */
 char *
 escape_shell_meta (
-	char *source,
+	const char *source,
 	int quote_area)
 {
 	static char buf[PATH_LEN];
@@ -2548,7 +2558,7 @@ to_local (
 }
 
 
-void
+static void
 buffer_to_local (
 	char *b)
 {
@@ -2583,7 +2593,7 @@ buffer_to_network (
 
 #else
 #	ifdef MAC_OS_X
-void
+static void
 buffer_to_local (
 	char *b)
 {
@@ -2630,7 +2640,7 @@ buffer_to_network (
 
 
 #ifdef CHARSET_CONVERSION
-void
+static void
 buffer_to_local (
 	char *line,
 	const char *network_charset,
@@ -2837,7 +2847,8 @@ process_charsets (
 
 #if defined(MIME_STRICT_CHARSET) && !defined(NO_LOCALE)
 #	if !defined(CHARSET_CONVERSION)
-	if (charset && strcasecmp(network_charset, local_charset) || !strcasecmp(network_charset, "us-ascii"))
+	if ((local_charset && strcasecmp(network_charset, local_charset))
+	 || !strcasecmp(network_charset, "us-ascii"))
 		/* different charsets || network charset is US-ASCII (see below) */
 #	else
 	if (!strcasecmp(network_charset, "us-ascii"))

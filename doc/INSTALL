@@ -608,8 +608,8 @@ i586-pc-linux-gnu           (glibc 2.2.5)  gcc 2.95.3    (1.5.11 release 2002013
 i586-pc-linux-gnu           (glibc 2.0.7)  tcc 4.1.2     (1.4.0 release 19991113)   [3]    <urs@tin.org>
 i586-pc-linux-gnu           (glibc 2.1.1)  lcc 4.27      (1.4.0 release 19991113)   [3][4] <urs@tin.org>
 i586-pc-linux-gnu           (glibc 2.1.1)  fcc 1.0       (1.5.1 release 20000103)          <urs@tin.org>
-i686-pc-linux-gnu           (glibc 2.2.4)  gcc 3.0.4     (1.5.11 release 20020130)         <urs@tin.org>
-i686-pc-linux-gnu           (glibc 2.2.4)  icc 5.0.1     (1.5.11 release 20020130)         <urs@tin.org>
+i686-pc-linux-gnu           (glibc 2.2.5)  gcc 3.0.4     (1.5.11 release 20020130)         <urs@tin.org>
+i686-pc-linux-gnu           (glibc 2.2.5)  icc 5.0.1     (1.5.11 release 20020130)         <urs@tin.org>
 ia64-unknown-linux          (glibc 2.2.0)  sgicc 0.01.0  (1.5.8 release 20010221)          <urs@tin.org>
 ia64-unknown-linux          (glibc 2.2.2)  gcc 3.0       (1.5.11 release 20020130)         <urs@tin.org>
 ia64-unknown-linux          (glibc 2.2.2)  ecc 5.0.1     (1.5.11 release 20020130)         <urs@tin.org>
@@ -650,7 +650,7 @@ mips-sgi-irix5.3                           cc 3.19       (1.4.3 release 20000502
 mips-sgi-irix6.2                           cc 7.000      (1.4.0 release 19991113)          <andy@tin.org>
 mips-sgi-irix6.2                           gcc 2.7.2.2   (pre-1.4 release 19990927)        <turin@incubus.de>
 mips-sgi-irix6.4            (IRIX64)       cc 7.10       (pre-1.4 release 19990927)        <laura@tin.org>
-mips-sgi-irix6.5                           gcc 2.95.2    (1.4.3 release 20000502)          <sven@tin.org>
+mips-sgi-irix6.5                           gcc 2.95.2    (1.5.11 release 20020130)         <sven@tin.org>
 
 mips-dec-ultrix4.4                         cc            (pre-1.4 release 19990927) [1]    <urs@tin.org>
 mips-dec-ultrix4.5                         gcc 2.95.2    (1.5.9 release 20010723)          <dennis@pcde.inka.de>

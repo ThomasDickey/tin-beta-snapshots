@@ -115,6 +115,7 @@ struct t_config {
 	char strip_was_regex[LEN];			/* regex used to find and remove '(was:.*'-like strings */
 	char savedir[PATH_LEN];				/* directory to save articles to */
 	char spamtrap_warning_addresses[LEN];
+	char url_handler[LEN];				/* Helper app for opening URL's */
 	char xpost_quote_format[LEN];
 	int filter_days;					/* num of days an article filter can be active */
 	int default_filter_kill_header;
