@@ -3,10 +3,10 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-12-19
+ *  Updated   : 2004-01-10
  *  Notes     :
  *
- * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -806,11 +806,15 @@ group_page(
 			case iKeyGroupSelPattern:	/* select matching patterns */
 				{
 					char pat[128];
+					char *prompt;
 					struct regex_cache cache = { NULL, NULL };
 
-					snprintf(mesg, sizeof(mesg), _(txt_select_pattern), tinrc.default_select_pattern);
-					if (!(prompt_string_default(mesg, tinrc.default_select_pattern, _(txt_info_no_previous_expression), HIST_SELECT_PATTERN)))
+					prompt = fmt_string(_(txt_select_pattern), tinrc.default_select_pattern);
+					if (!(prompt_string_default(prompt, tinrc.default_select_pattern, _(txt_info_no_previous_expression), HIST_SELECT_PATTERN))) {
+						free(prompt);
 						break;
+					}
+					free(prompt);
 
 					if (STRCMPEQ(tinrc.default_select_pattern, "*")) {	/* all */
 						if (tinrc.wildcard)
@@ -936,7 +940,6 @@ show_group_page(
 		info_message(_(txt_end_of_arts));
 
 	draw_subject_arrow();
-
 }
 
 
@@ -1134,12 +1137,21 @@ set_subj_from_size(
 	}
 
 	/* which information should be displayed? */
-	if (CURR_GROUP.attribute && CURR_GROUP.attribute->show_info == SHOW_INFO_NOTHING)
-		len_subj += 11;
-	else if (CURR_GROUP.attribute && CURR_GROUP.attribute->show_info == SHOW_INFO_LINES)
-		len_subj += 6;
-	else if (CURR_GROUP.attribute && CURR_GROUP.attribute->show_info == SHOW_INFO_SCORE)
-		len_subj += 5;
+	if (selmenu.max && CURR_GROUP.attribute) {
+		switch (CURR_GROUP.attribute->show_info) {
+			case SHOW_INFO_NOTHING:
+				len_subj += 11;
+				break;
+
+			case SHOW_INFO_LINES:
+				len_subj += 6;
+				break;
+
+			case SHOW_INFO_SCORE:
+				len_subj += 5;
+				break;
+		}
+	}
 }
 
 
@@ -1282,6 +1294,13 @@ build_sline(
 		build_multipart_header(arts_sub, len_subj, arts[j].subject, sbuf.multipart_compare_len, sbuf.multipart_have, sbuf.multipart_total);
 	else
 		strncpy(arts_sub, arts[j].subject, sizeof(arts_sub) - 1);
+
+#if defined(CHARSET_CONVERSION) || defined(HAVE_UNICODE_NORMALIZATION)
+	if (IS_LOCAL_CHARSET("UTF-8")) {
+		utf8_valid(from);
+		utf8_valid(arts_sub);
+	}
+#endif /* CHARSET_CONVERSION || HAVE_UNICODE_NORMALIZATION */
 
 #ifndef USE_CURSES
 	buffer = screen[INDEX2SNUM(i)].col;
@@ -1701,6 +1720,7 @@ mark_thd_read(
 		case iKeyQuit: /* cancel operation */
 		case iKeyAbort:
 			return;
+			/* NOTREACHED */
 			break;
 	}
 

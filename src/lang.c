@@ -3,10 +3,10 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-12-09
+ *  Updated   : 2004-01-05
  *  Notes     :
  *
- * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -94,7 +94,7 @@ constext txt_base_article_range[] = N_("Base article range");
 constext txt_batch_update_unavail[] = N_("%s: Updating of index files not supported\n");
 constext txt_begin_of_art[] = N_("*** Beginning of article ***");
 
-constext txt_cancel_article[] = N_("Cancel (delete) or supersede (overwrite) article [%%.*s]? (%s/%s/%s): ");
+constext txt_cancel_article[] = N_("Cancel (delete) or supersede (overwrite) article [%%s]? (%s/%s/%s): ");
 constext txt_cancelling_art[] = N_("Cancelling article...");
 constext txt_cannot_create_uniq_name[] = "Can't create unique tempfile-name";
 constext txt_cannot_create[] = N_("Cannot create %s");
@@ -491,7 +491,7 @@ constext txt_marked_as_unread[] = N_("%s marked as unread");
 constext txt_marked_tagged_arts_as_read[] = N_("Marked %d of %d tagged %s as read");
 constext txt_mark_arts_read[] = N_("Mark all articles as read%s?");
 constext txt_mark_art_read_tagged_current[] = N_("Mark %s=tagged articles, %s=current article, %s=quit: ");
-constext txt_mark_group_read[] = N_("Mark group %.*s as read?");
+constext txt_mark_group_read[] = N_("Mark group %s as read?");
 constext txt_mark_thread_read[] = N_("Mark thread as read%s?");
 constext txt_mark_thread_read_tagged_current[] = N_("Mark %s=tagged articles/threads, %s=current thread, %s=quit: ");
 constext txt_matching_cmd_line_groups[] = N_("Matching %s groups...");
@@ -577,7 +577,7 @@ constext txt_post_processing_finished[] = N_("-- post processing completed --");
 constext txt_post_subject[] = N_("Post subject [%s]> ");
 constext txt_posted_info_file[] = N_("# Summary of mailed/posted messages viewable by 'W' command from within tin.\n");
 constext txt_posting[] = N_("Posting article...");
-constext txt_postpone_repost[] = N_("Post postponed articles [%%.*s]? (%s/%s/%s/%s/%s): ");
+constext txt_postpone_repost[] = N_("Post postponed articles [%%s]? (%s/%s/%s/%s/%s): ");
 constext txt_prefix_hot[] = N_("Hot %s");
 constext txt_prefix_tagged[] = N_("Tagged %s");
 constext txt_prefix_untagged[] = N_("Untagged %s");
@@ -590,7 +590,7 @@ constext txt_prompt_see_postponed[] = N_("Do you want to see postponed articles 
 constext txt_quick_filter_kill[] = N_("Add quick kill filter?");
 constext txt_quick_filter_select[] = N_("Add quick selection filter?");
 constext txt_quit[] = N_("Do you really want to quit?");
-constext txt_quit_cancel[] = N_("%s=edit cancel message, %s=quit, %s=delete (cancel) [%%.*s]: ");
+constext txt_quit_cancel[] = N_("%s=edit cancel message, %s=quit, %s=delete (cancel) [%%s]: ");
 constext txt_quit_despite_tags[] = N_("You have tagged articles in this group - quit anyway?");
 constext txt_quit_edit_postpone[] = N_("%s=quit, %s=edit, %s=postpone: ");
 constext txt_quit_edit_save_kill[] = N_("%s=quit %s=edit %s=save kill description: ");
@@ -679,7 +679,7 @@ constext txt_subscribe_pattern[] = N_("Enter wildcard subscribe pattern> ");
 constext txt_subscribed_num_groups[] = N_("subscribed to %d groups");
 constext txt_subscribed_to[] = N_("Subscribed to %s");
 constext txt_subscribing[] = N_("Subscribing... ");
-constext txt_supersede_article[] = N_("Repost or supersede article(s) [%%.*s]? (%s/%s/%s): ");
+constext txt_supersede_article[] = N_("Repost or supersede article(s) [%%s]? (%s/%s/%s): ");
 constext txt_supersede_group[] = N_("Supersede article(s) to group(s) [%s]> ");
 constext txt_superseding_art[] = N_("Superseding article ...");
 constext txt_suspended_message[] = N_("\nStopped. Type 'fg' to restart %s\n");
@@ -887,27 +887,27 @@ Warning: Posting is in %s and contains characters which are not\n\
 	constext txt_pgp_nothing[] = N_("Article not signed and no public keys found");
 #	ifdef HAVE_ISPELL
 		constext txt_quit_edit_post[] = N_("%s=quit, %s=edit, %s=ispell, %s=pgp, %s=menu, %s=post, %s=postpone: ");
-		constext txt_quit_edit_send[] = N_("%s=quit, %s=edit, %s=ispell, %s=pgp, %s=send [%%.*s]: ");
-		constext txt_quit_edit_xpost[] = N_("%s=quit, %s=edit, %s=ispell, %s=pgp, %s=menu, %s=post, %s=postpone [%%.*s]: ");
+		constext txt_quit_edit_send[] = N_("%s=quit, %s=edit, %s=ispell, %s=pgp, %s=send [%%s]: ");
+		constext txt_quit_edit_xpost[] = N_("%s=quit, %s=edit, %s=ispell, %s=pgp, %s=menu, %s=post, %s=postpone [%%s]: ");
 #	else
 	constext txt_quit_edit_post[] = N_("%s=quit, %s=edit, %s=pgp, %s=menu, %s=post, %s=postpone: ");
-	constext txt_quit_edit_send[] = N_("%s=quit, %s=edit, %s=pgp, %s=send [%%.*s]: ");
-	constext txt_quit_edit_xpost[] = N_("%s=quit, %s=edit, %s=pgp, %s=menu, %s=post, %s=postpone [%%.*s]: ");
+	constext txt_quit_edit_send[] = N_("%s=quit, %s=edit, %s=pgp, %s=send [%%s]: ");
+	constext txt_quit_edit_xpost[] = N_("%s=quit, %s=edit, %s=pgp, %s=menu, %s=post, %s=postpone [%%s]: ");
 #	endif /* HAVE_ISPELL */
 #else
 #	ifdef HAVE_ISPELL
 		constext txt_quit_edit_post[] = N_("%s=quit, %s=edit, %s=ispell, %s=menu, %s=post, %s=postpone: ");
-		constext txt_quit_edit_send[] = N_("%s=quit, %s=edit, %s=ispell, %s=send [%%.*s]: ");
-		constext txt_quit_edit_xpost[] = N_("%s=quit, %s=edit, %s=ispell, %s=menu, %s=post, %s=postpone [%%.*s]: ");
+		constext txt_quit_edit_send[] = N_("%s=quit, %s=edit, %s=ispell, %s=send [%%s]: ");
+		constext txt_quit_edit_xpost[] = N_("%s=quit, %s=edit, %s=ispell, %s=menu, %s=post, %s=postpone [%%s]: ");
 #	else
 		constext txt_quit_edit_post[] = N_("%s=quit, %s=edit, %s=menu, %s=post, %s=postpone: ");
-		constext txt_quit_edit_send[] = N_("%s=quit, %s=edit, %s=send [%%.*s]: ");
-		constext txt_quit_edit_xpost[] = N_("%s=quit, %s=edit, %s=menu, %s=post, %s=postpone [%%.*s]: ");
+		constext txt_quit_edit_send[] = N_("%s=quit, %s=edit, %s=send [%%s]: ");
+		constext txt_quit_edit_xpost[] = N_("%s=quit, %s=edit, %s=menu, %s=post, %s=postpone [%%s]: ");
 #	endif /* HAVE_ISPELL */
 #endif /* HAVE_PGP_GPG */
 
 #ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2003 Iain Lea.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2004 Iain Lea.";
 #endif /* M_UNIX */
 
 #ifdef NNTP_ABLE
@@ -959,7 +959,7 @@ Tin will try to use XHDR XREF instead (slows down things a bit).\n");
 #endif /* NNTP_INEWS */
 
 #ifdef VMS
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2003 Iain Lea & Tod McQuillin & other.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2004 Iain Lea & Tod McQuillin & other.";
 #endif /* VMS */
 
 #ifndef DISABLE_PRINTING

@@ -3,10 +3,10 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2003-12-04
+ *  Updated   : 2004-01-10
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
- * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,7 +95,7 @@ static struct t_filter_comment *add_filter_comment(struct t_filter_comment *ptr,
 static struct t_filter_comment *free_filter_comment(struct t_filter_comment *ptr);
 static struct t_filter_comment *copy_filter_comment(struct t_filter_comment *from, struct t_filter_comment *to);
 static t_bool add_filter_rule(struct t_group *group, struct t_article *art, struct t_filter_rule *rule, t_bool quick_filter_rule);
-static t_bool test_regex(const char *string, char *regex, t_bool nocase, struct regex_cache *cache);
+static int test_regex(const char *string, char *regex, t_bool nocase, struct regex_cache *cache);
 static void expand_filter_array(struct t_filters *ptr);
 static void fmt_filter_menu_prompt(char *dest, size_t dest_len, const char *fmt_str, int len, const char *text);
 static void free_filter_item(struct t_filter *ptr);
@@ -188,9 +188,11 @@ expand_filter_array(
 /*
  * Looks for a matching filter hit (wildmat or pcre regex) in the supplied string
  * If the cache is not yet initialised, compile and optimise the regex
- * Return TRUE if we hit the rule
+ * Returns 1 if we hit the rule
+ * Returns 0 if we had no match
+ * In case of error prints an error message and returns -1
  */
-static t_bool
+static int
 test_regex(
 	const char *string,
 	char *regex,
@@ -201,19 +203,21 @@ test_regex(
 
 	if (!tinrc.wildcard) {
 		if (wildmat(string, regex, nocase))
-			return TRUE;
+			return 1;
 	} else {
 		if (!cache->re)
 			compile_regex(regex, cache, (nocase ? PCRE_CASELESS : 0));
 		if (cache->re) {
 			regex_errpos = pcre_exec(cache->re, cache->extra, string, strlen(string), 0, 0, NULL, 0);
 			if (regex_errpos >= 0)
-				return TRUE;
-			else if (regex_errpos != PCRE_ERROR_NOMATCH)
-				snprintf(mesg, sizeof(mesg), _(txt_pcre_error_num), regex_errpos);
+				return 1;
+			else if (regex_errpos != PCRE_ERROR_NOMATCH) {
+				error_message(_(txt_pcre_error_num), regex_errpos);
+				return -1;
+			}
 		}
 	}
-	return FALSE;
+	return 0;
 }
 
 
@@ -1750,6 +1754,7 @@ filter_articles(
 	struct regex_cache *regex_cache_msgid = NULL;
 	struct regex_cache *regex_cache_xref = NULL;
 	t_bool filtered = FALSE;
+	t_bool error = FALSE;
 
 	/*
 	 * check if there are any global filter rules
@@ -1793,31 +1798,40 @@ filter_articles(
 			regex_cache_xref[j].extra = NULL;
 		}
 	}
-	mesg[0] = '\0';				/* Clear system message field */
 
 	/*
 	 * loop thru all arts applying global & local filtering rules
 	 */
-	for (i = 0; (i < top_art) && (mesg[0] == '\0'); i++) {
+	for (i = 0; (i < top_art) && !error; i++) {
 		arts[i].score = 0;
-
-		/*
-		 * do we really need to 'reset' mesg for every article?
-		 */
-		mesg[0] = '\0';				/* Clear system message field */
 
 		if (tinrc.kill_level == KILL_UNREAD && IS_READ(i)) /* skip only when the article is read */
 			continue;
 
-		for (j = 0; j < num; j++) {
+		for (j = 0; j < num && !error; j++) {
 			if (ptr[j].inscope) {
 				/*
 				 * Filter on Subject: line
 				 */
 				if (ptr[j].subj != NULL) {
-					if (test_regex(arts[i].subject, ptr[j].subj, ptr[j].icase, &regex_cache_subj[j])) {
-						SET_FILTER(group, i, j);
+					char *tmp = my_strdup(arts[i].subject);
+
+#if defined(CHARSET_CONVERSION) || defined(HAVE_UNICODE_NORMALIZATION)
+					if (IS_LOCAL_CHARSET("UTF-8"))
+						utf8_valid(tmp);
+#endif /* CHARSET_CONVERSION || HAVE_UNICODE_NORMALIZATION */
+
+					switch (test_regex(tmp, ptr[j].subj, ptr[j].icase, &regex_cache_subj[j])) {
+						case 1:
+							SET_FILTER(group, i, j);
+							break;
+						case -1:
+							error = TRUE;
+							break;
+						default:
+							break;
 					}
+					free(tmp);
 				}
 
 				/*
@@ -1828,8 +1842,23 @@ filter_articles(
 						snprintf(buf, sizeof(buf), "%s (%s)", arts[i].from, arts[i].name);
 					else
 						strcpy(buf, arts[i].from);
-					if (test_regex(buf, ptr[j].from, ptr[j].icase, &regex_cache_from[j])) {
-						SET_FILTER(group, i, j);
+
+#if defined(CHARSET_CONVERSION) || defined(HAVE_UNICODE_NORMALIZATION)
+					if (IS_LOCAL_CHARSET("UTF-8"))
+						utf8_valid(buf);
+#endif /* CHARSET_CONVERSION || HAVE_UNICODE_NORMALIZATION */
+
+					switch (test_regex(buf, ptr[j].from, ptr[j].icase, &regex_cache_from[j])) {
+						case 1:
+							SET_FILTER(group, i, j);
+							break;
+
+						case -1:
+							error = TRUE;
+							break;
+
+						default:
+							break;
 					}
 				}
 
@@ -1840,10 +1869,11 @@ filter_articles(
 				 * Case is important here
 				 */
 				if (ptr[j].msgid != NULL) {
-					struct t_article *art = &arts[i];
 					char *refs = NULL;
 					const char *myrefs = NULL;
 					const char *mymsgid = NULL;
+					int x;
+					struct t_article *art = &arts[i];
 					/*
 					 * TODO: nice idea del'd; better apply one rule on all
 					 *       fitting articles, so we can switch to an appropriate
@@ -1881,10 +1911,20 @@ filter_articles(
 							break;
 					}
 
-					if (test_regex(myrefs, ptr[j].msgid, FALSE, &regex_cache_msgid[j])) {
-						SET_FILTER(group, i, j);
-					} else if (test_regex(mymsgid, ptr[j].msgid, FALSE, &regex_cache_msgid[j])) {
-						SET_FILTER(group, i, j);
+					x = test_regex(myrefs, ptr[j].msgid, FALSE, &regex_cache_msgid[j]);
+					if (x == 0) /* no match */
+						x = test_regex(mymsgid, ptr[j].msgid, FALSE, &regex_cache_msgid[j]);
+					switch (x) {
+						case 1:
+							SET_FILTER(group, i, j);
+							break;
+
+						case -1:
+							error = TRUE;
+							break;
+
+						default:
+							break;
 					}
 					FreeIfNeeded(refs);
 				}
@@ -1987,8 +2027,15 @@ wait_message(1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].lin
 						*--e = '\0';
 
 						if (ptr[j].xref != NULL) {
-							if (test_regex(k, ptr[j].xref, ptr[j].icase, &regex_cache_xref[j])) {
-								SET_FILTER(group, i, j);
+							switch (test_regex(k, ptr[j].xref, ptr[j].icase, &regex_cache_xref[j])) {
+								case 1:
+									SET_FILTER(group, i, j);
+									break;
+								case -1:
+									error = TRUE;
+									break;
+								default:
+									break;
 							}
 						}
 						free(k);
@@ -1997,9 +2044,6 @@ wait_message(1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].lin
 			}
 		}
 	}
-
-	if (mesg[0] != '\0')
-		error_message(mesg);
 
 	/*
 	 * throw away the contents of all regex_caches
@@ -2025,7 +2069,7 @@ wait_message(1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].lin
 	 * now entering the main filter loop:
 	 * all articles have scored, so do kill & select
 	 */
-	if (mesg[0] == '\0') {
+	if (!error) {
 		for_each_art(i) {
 			if (arts[i].score <= tinrc.score_limit_kill) {
 				if (arts[i].status == ART_UNREAD)

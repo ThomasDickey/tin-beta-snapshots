@@ -6,7 +6,7 @@
  *  Updated   : 2003-09-19
  *  Notes     :
  *
- * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
 
  * All rights reserved.
  *

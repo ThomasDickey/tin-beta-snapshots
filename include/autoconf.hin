@@ -3,10 +3,10 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2003-12-09
+ *  Updated   : 2003-12-22
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1995-2003 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1995-2004 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -294,6 +294,7 @@
 #	undef HAVE_UNLINK
 #	undef HAVE_USE_DEFAULT_COLORS
 #	undef HAVE_USLEEP
+#	undef HAVE_VASPRINTF
 #	undef HAVE_VSNPRINTF
 #	undef HAVE_WAITPID
 #	undef HAVE__TRACEF

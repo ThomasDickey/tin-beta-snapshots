@@ -3,10 +3,10 @@
  *  Module    : tags.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-06
- *  Updated   : 2003-07-19
+ *  Updated   : 2003-12-28
  *  Notes     : Split out from other modules
  *
- * Copyright (c) 1999-2003 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2004 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -354,6 +354,7 @@ set_range(
 	int curr)
 {
 	char *range;
+	char *prompt;
 	int artnum;
 	int i;
 	int depth;
@@ -380,10 +381,13 @@ set_range(
 #if 0
 	error_message("Min=[%d] Max=[%d] Cur=[%d] DefRng=[%s]", min, max, curr, range);
 #endif /* 0 */
-	snprintf(mesg, sizeof(mesg), _(txt_enter_range), range);
+	prompt = fmt_string(_(txt_enter_range), range);
 
-	if (!(prompt_string_default(mesg, range, _(txt_range_invalid), HIST_OTHER)))
+	if (!(prompt_string_default(prompt, range, _(txt_range_invalid), HIST_OTHER))) {
+		free(prompt);
 		return FALSE;
+	}
+	free(prompt);
 
 	/*
 	 * Parse range string

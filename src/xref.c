@@ -3,10 +3,10 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2003-11-18
+ *  Updated   : 2003-12-28
  *  Notes     :
  *
- * Copyright (c) 1993-2003 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2004 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -171,6 +171,9 @@ art_mark_xref_read(
 	char *ptr, c;
 	long artnum;
 	struct t_group *group;
+#ifdef DEBUG
+	char debug_mesg;
+#endif /* DEBUG */
 
 #if defined(NNTP_ABLE) && defined(XHDR_XREF)
 	/* xref_supported => xref info was already read in xover record */
@@ -217,15 +220,16 @@ art_mark_xref_read(
 
 #ifdef DEBUG
 		if (debug == 3) {
-			snprintf(mesg, sizeof(mesg), "LOOKUP Xref: [%s:%ld] active=[%s] num_unread=[%ld]",
+			debug_mesg = fmt_string("LOOKUP Xref: [%s:%ld] active=[%s] num_unread=[%ld]",
 				groupname, artnum,
 				(group ? group->name : ""),
 				(group ? group->newsrc.num_unread : 0));
 #	ifdef DEBUG_NEWSRC
-			debug_print_comment(mesg);
+			debug_print_comment(debug_mesg);
 			debug_print_bitmap(group, NULL);
 #	endif /* DEBUG_NEWSRC */
-			error_message(mesg);
+			error_message(debug_mesg);
+			free(debug_mesg);
 		}
 #endif /* DEBUG */
 
@@ -237,13 +241,14 @@ art_mark_xref_read(
 						group->newsrc.num_unread--;
 #ifdef DEBUG
 					if (debug == 3) {
-						snprintf(mesg, sizeof(mesg), "FOUND!Xref: [%s:%ld] marked READ num_unread=[%ld]",
+						debug_mesg = fmt_string("FOUND!Xref: [%s:%ld] marked READ num_unread=[%ld]",
 							groupname, artnum, group->newsrc.num_unread);
 #	ifdef DEBUG_NEWSRC
-						debug_print_comment(mesg);
+						debug_print_comment(debug_mesg);
 						debug_print_bitmap(group, NULL);
 #	endif /* DEBUG_NEWSRC */
-						wait_message(2, mesg);
+						wait_message(2, debug_mesg);
+						free(debug_mesg);
 					}
 #endif /* DEBUG */
 				}

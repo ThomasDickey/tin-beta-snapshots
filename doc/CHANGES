@@ -1,3 +1,28 @@
+-- 1.7.4 release 20040111 "" --
+
+ 021) Urs Janssen <urs@tin.org>
+      BUG. did allow unused .eh and .kp TLDs
+      FIX. policy.h
+
+U019) Michael Bienia <michael@vorlon.ping.de>
+      BUG. error_message() clobbers global var mesg
+      ADD. several checks for valid utf-8 data
+      ADD. display non-printable characters as octals in raw-mode
+      FIX. extern.h, proto.h, art.c, color.c, feed.c, filter.c, group.c
+           lang.c, misc.c, page.c, post.c, prompt.c, rfc2046.c, screen.c
+           search.c, select.c, string.c, tags.c, thread.c, wildmat.c, xref.c
+           configure[.in], autoconf.h[in]
+
+U018) Urs Janssen <urs@tin.org>
+      ADD. config.guess, config.sub update
+      ADD. increase MAXREFSIZE to 998
+      ADD. minor manpage update
+      ADD. don't read keymapfile when using -o cmd-line flag
+      BUG. didn't compile on !CHARSET_CONVERSION systems
+      REM. some unused vars
+      FIX. extern.h, filter.c, group.c, init.c, main.c, nntplib.c, post.c
+           pgp.c, tin.1, tin.5, config.guess, config.sub
+
 -- 1.7.3 release 20031220 "Taransay" --
 
 U017) Martin Treusch von Buttlar <martin+tin@t17r.de>

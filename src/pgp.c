@@ -3,10 +3,10 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2003-11-24
+ *  Updated   : 2004-01-07
  *  Notes     : PGP support
  *
- * Copyright (c) 1995-2003 Steven J. Madsen <steve@erinet.com>
+ * Copyright (c) 1995-2004 Steven J. Madsen <steve@erinet.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -280,7 +280,7 @@ pgp_append_public_key(
 	if ((CURR_GROUP.attribute->from) != NULL && strlen(CURR_GROUP.attribute->from))
 		strip_name(CURR_GROUP.attribute->from, buf);
 	else
-		snprintf(buf, sizeof(buf), "%s@%s", userid, host_name);
+		snprintf(buf, sizeof(buf), "%s@%s", userid, BlankIfNull(get_host_name()));
 
 	snprintf(keyfile, sizeof(keyfile), KEYFILE, TMPDIR, process_id);
 

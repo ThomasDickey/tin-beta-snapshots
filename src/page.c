@@ -3,10 +3,10 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-12-17
+ *  Updated   : 2004-01-11
  *  Notes     :
  *
- * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1038,9 +1038,6 @@ print_message_page(
 	int bytes;
 	size_t i = begin;
 	t_lineinfo *curr;
-#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t wline[LEN];
-#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	for (; i < end; i++) {
 		if (base_line + i >= messagelines)		/* ran out of message */
@@ -1052,26 +1049,14 @@ print_message_page(
 		if ((line = tin_fgets(file, FALSE)) == NULL)
 			break;	/* ran out of message */
 
-		bytes = strlen(line);
-#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if (mbstowcs(wline, line, ARRAY_SIZE(wline) - 1) != (size_t) -1) {
-			wline[ARRAY_SIZE(wline) - 1] = (wchar_t) '\0';
-			if (wcswidth(wline, ARRAY_SIZE(wline) - 1) >= cCOLS) {
-				wline[cCOLS] = (wint_t) '\0';
-				if ((bytes = (int) wcstombs(NULL, wline, 0)) <= 0)
-					bytes = strlen(line);;
-			}
-		} else
-#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-		{
-			if (IS_LOCAL_CHARSET("Big5"))
-				bytes = 2 * cCOLS;
-			else {
-				if ((int) strlen(line) >= cCOLS)
-					bytes = cCOLS;
-			}
+		/*
+		 * use the offsets gained while doing line wrapping to
+		 * determine the correct position to truncate the line
+		 */
+		if (base_line + i < messagelines - 1) { 	/* not last line of message*/
+			bytes = (curr + 1)->offset - curr->offset;
+			line[bytes] = '\0';
 		}
-		line[bytes] = '\0';
 
 		/*
 		 * rotN encoding on body and sig data only
@@ -1093,7 +1078,7 @@ print_message_page(
 #endif /* !USE_CURSES */
 
 		MoveCursor(i + scroll_region_top, 0);
-		draw_pager_line(line, curr->flags);
+		draw_pager_line(line, curr->flags, show_all_headers);
 
 		/*
 		 * Highlight URL's and mail addresses
@@ -1476,6 +1461,8 @@ draw_page_header(
 	 */
 	strncpy(buf, (note_h->subj ? note_h->subj : arts[this_resp].subject), line_len);
 	buf[line_len - 1] = '\0';
+	if (IS_LOCAL_CHARSET("UTF-8"))
+		utf8_valid(buf);
 	if (mbstowcs(wtmp, buf, line_len) == (size_t) (-1))
 		wtmp[0] = (wchar_t) '\0';	/* conversion failed */
 	else
@@ -1552,6 +1539,9 @@ draw_page_header(
 		free(p);
 	}
 
+	if (IS_LOCAL_CHARSET("UTF-8"))
+		utf8_valid(buf);
+
 	if (mbstowcs(wbuf, buf, line_len) == (size_t) (-1))
 		line[0] = (wchar_t) '\0';
 	wstrunc(wbuf, line, line_len, cCOLS - 1);
@@ -1573,7 +1563,7 @@ draw_page_header(
 
 			wtmp[0] = (wchar_t) ' ';
 			wtmp[1] = (wchar_t) '\0';
-			while(wcswidth(line, line_len) < i && wcslen(line) < line_len - 1)
+			while (wcswidth(line, line_len) < i && wcslen(line) < line_len - 1)
 				wcscat(line, wtmp);
 			wcsncat(line, wbuf, line_len - wcslen(line) - 1);
 		}
@@ -1810,17 +1800,20 @@ load_article(
 	int new_respnum,
 	struct t_group *group)
 {
-	if (read_news_via_nntp)
-		wait_message(0, _(txt_reading_article));
-
 #ifdef DEBUG
 	fprintf(stderr, "load_art %s(new=%d, curr=%d)\n", (new_respnum == this_resp) ? "ALREADY OPEN!" : "", new_respnum, this_resp);
 #endif /* DEBUG */
 
 	if (new_respnum != this_resp) {
+		char *progress_mesg;
+		int ret;
+
 		art_close(&pgart);			/* close previously opened art in pager */
 
-		switch (art_open(TRUE, &arts[new_respnum], group, &pgart, TRUE)) {
+		progress_mesg = my_strdup(_(txt_reading_article));
+		ret = art_open(TRUE, &arts[new_respnum], group, &pgart, TRUE, progress_mesg);
+		free(progress_mesg);
+		switch (ret) {
 			case ART_UNAVAILABLE:
 				art_mark(group, &arts[new_respnum], ART_READ);
 				wait_message(1, _(txt_art_unavailable));
@@ -1983,7 +1976,6 @@ toggle_raw(
 		if (!pgart.rawl) {			/* Already done this for this article? */
 			char *line;
 			char *p;
-			int num_chars;
 			long offset;
 
 			j = 0;
@@ -1992,10 +1984,10 @@ toggle_raw(
 			offset = ftell(pgart.raw);
 
 			while (NULL != (line = tin_fgets(pgart.raw, FALSE))) {
+				int space;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				int num_bytes;
-				t_bool is_illegal = TRUE;
-				wchar_t wline[LEN];
+				wchar_t wc;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 				pgart.rawl[j].offset = offset;
@@ -2006,61 +1998,46 @@ toggle_raw(
 					pgart.rawl = my_realloc(pgart.rawl, sizeof(t_lineinfo) * chunk);
 				}
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				if ((size_t) -1 != mbstowcs(wline, line, ARRAY_SIZE(wline) - 1)) {
-					wline[ARRAY_SIZE(wline) - 1] = (wchar_t) '\0';
-					num_chars = wcswidth(wline, ARRAY_SIZE(wline) -1);
-					is_illegal = FALSE;
-				} else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-				{
-					if (IS_LOCAL_CHARSET("Big5")) {
-						char c;
-
-						num_chars = 0;
-						p = line;
-						while ((c = *p++)) {
-							num_chars++;
-							if (0 == (c & 0x7f))	/* ASCII char, only 1 byte */
-								continue;
-							if (*p)
-								p++;			/* Big5 char, takes 2 bytes */
-						}
-					} else
-						num_chars = (int) strlen(line);
-				}
-
-				if (num_chars <= cCOLS) {
-					offset = ftell(pgart.raw);
-					continue;	/* line fits on screen, next line */
-				}
-
-				/*
-				 * Line exceeds current column width; we need to split
-				 * over several screen lines
-				 */
 				p = line;
 				while (*p) {
-					int space = cCOLS;
+					space = cCOLS - 1;
 
 					while ((space > 0) && *p) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-						if (!is_illegal) {
-							num_bytes = mbtowc(wline, p, MB_CUR_MAX);
-							if ((space -= wcwidth(wline[0])) < 0)
+						num_bytes = mbtowc(&wc, p, MB_CUR_MAX);
+						if (num_bytes != -1 && iswprint(wc)) {
+							if ((space -= wcwidth(wc)) < 0)
 								break;
 							p += num_bytes;
 							offset += num_bytes;
-						} else
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-						{
+						}
+#else
+						if (my_isprint((int) *p)) {
+							space--;
 							p++;
 							offset++;
-							if (IS_LOCAL_CHARSET("Big5") && ((*p & 0x7f) > 0)) {
-								p++;	/* non-ASCII chars take 2 bytes */
-								offset++;
-							}
+						}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+						else if (IS_LOCAL_CHARSET("Big5") && (unsigned char) *p >= 0xa1 && (unsigned char) *p <= 0xfe && *(p + 1)) {
+							/*
+							 * Big5: ASCII chars are handled by the normal code
+							 * check only for 2-byte chars
+							 * TODO: should we also check if the second byte is
+							 * also valid?
+							 */
+							p += 2;
+							offset += 2;
 							space--;
+						} else {
+							/*
+							 * the current character can't be displayed print it as
+							 * an octal value (needs 4 columns) see also
+							 * color.c:draw_pager_line()
+							 */
+							if ((space -= 4) < 0 )
+								break;
+							offset++;
+							p++;
 						}
 					}
 					/*

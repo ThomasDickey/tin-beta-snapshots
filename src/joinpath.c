@@ -6,7 +6,7 @@
  *  Updated   : 2003-09-19
  *  Notes     :
  *
- * Copyright (c) 1997-2003 Thomas Dickey <dickey@herndon4.his.com>
+ * Copyright (c) 1997-2004 Thomas Dickey <dickey@herndon4.his.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

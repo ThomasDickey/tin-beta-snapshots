@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2003-12-19
+.\" Updated   : 2003-12-26
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "December 19th, 2003" "1.7.3" "A Usenet newsreader"
+.TH tin 1 "December 26th, 2003" "1.7.4" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -1863,13 +1863,15 @@ If ON put cursor at first unread article in group otherwise at last
 article. Default is ON.
 .TP
 .B Use 8bit characters in news headers (post_8bit_header)
-Allows 8bit characters unencoded in the header of a news article.
-Default is OFF. Only enacted if \fBpost_mime_encoding\fP is also set
-to 8bit. In a number of local hierarchies where 8bit characters are
-used, using unencoded (raw) 8bit characters in header is acceptable
-and sometimes even recommended so that you need to check the
-convention adopted in the local hierarchy of your interest to
-determine what to do with this and \fBpost_mime_encoding\fP.
+Allows 8bit characters unencoded in the header of a news article, if
+set this also disables the generation of MIME-headers when they are
+usualy required. Default is OFF. Only enacted if
+\fBpost_mime_encoding\fP is also set to 8bit. In a number of local
+hierarchies where 8bit characters are used, using unencoded (raw)
+8bit characters in header is acceptable and sometimes even
+recommended so that you need to check the convention adopted in the
+local hierarchy of your interest to determine what to do with this
+and \fBpost_mime_encoding\fP.
 .TP
 .B MIME encoding in news messages (post_mime_encoding)
 MIME encoding of the body in news message, if necessary. (8bit,

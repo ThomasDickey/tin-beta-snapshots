@@ -3,10 +3,10 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-12-09
+ *  Updated   : 2004-01-07
  *  Notes     :
  *
- * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1997-2004 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -352,14 +352,13 @@ extern char local_input_history_file[PATH_LEN];
 extern char local_newsgroups_file[PATH_LEN];
 extern char local_newsrctable_file[PATH_LEN];
 extern char lock_file[PATH_LEN];
-extern char mail_active_file[PATH_LEN];
 extern char mail_news_user[LEN];
 extern char mailbox[PATH_LEN];
 extern char mailer[PATH_LEN];
 #ifdef HAVE_MH_MAIL_HANDLING
+	extern char mail_active_file[PATH_LEN];
 	extern char mailgroups_file[PATH_LEN];
 #endif /* HAVE_MH_MAIL_HANDLING */
-extern char mesg[LEN];
 extern char newnewsrc[PATH_LEN];
 extern char news_active_file[PATH_LEN];
 extern char newsgroups_file[PATH_LEN];
@@ -380,7 +379,6 @@ extern char txt_help_bug_report[LEN];
 extern char userid[PATH_LEN];
 
 extern char domain_name[];
-extern char host_name[];
 
 extern const char base64_alphabet[64];
 
@@ -1239,7 +1237,6 @@ extern long *base;
 
 extern signed long int read_newsrc_lines;
 
-extern mode_t real_umask;
 extern pid_t process_id;
 
 extern struct regex_cache strip_re_regex;
@@ -1287,7 +1284,6 @@ extern t_bool newsrc_active;
 extern t_bool no_write;
 extern t_bool post_article_and_exit;
 extern t_bool post_postponed_and_exit;
-extern t_bool quitting;
 extern t_bool read_local_newsgroups_file;
 extern t_bool read_news_via_nntp;
 extern t_bool read_saved_news;

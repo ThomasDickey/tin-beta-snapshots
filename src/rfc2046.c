@@ -3,10 +3,10 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2003-11-18
+ *  Updated   : 2004-01-05
  *  Notes     : RFC 2046 MIME article parsing
  *
- * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2004 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,6 +69,7 @@ static void progress(int line_count);
  * Local variables
  */
 static int art_lines = 0;		/* lines in art on spool */
+static char *progress_mesg = NULL;	/* message progress() should display */
 
 #define PARAM_SEP	"; \n"
 /* default parameters for Content-Type */
@@ -82,8 +83,8 @@ static void
 progress(
 	int line_count)
 {
-	if (line_count && line_count % MODULO_COUNT_NUM == 0)
-		show_progress(mesg, line_count, art_lines);
+	if (progress_mesg != NULL && line_count && line_count % MODULO_COUNT_NUM == 0)
+		show_progress(progress_mesg, line_count, art_lines);
 }
 
 
@@ -1148,7 +1149,8 @@ art_open(
 	struct t_article *art,
 	struct t_group *group,
 	t_openartinfo *artinfo,
-	t_bool show_progress_meter)
+	t_bool show_progress_meter,
+	char *pmesg)
 {
 	FILE *fp;
 
@@ -1161,8 +1163,12 @@ art_open(
 	fprintf(stderr, "art_open(%p)\n", (void *) artinfo);
 #endif /* DEBUG_ART */
 
-	if (parse_rfc2045_article(fp, art->line_count, artinfo, show_progress_meter) != 0)
+	progress_mesg = pmesg;
+	if (parse_rfc2045_article(fp, art->line_count, artinfo, show_progress_meter) != 0) {
+		progress_mesg = NULL;
 		return ART_ABORT;
+	}
+	progress_mesg = NULL;
 
 	/*
 	 * TODO: compare art->msgid and artinfo->hdr.messageid and issue a

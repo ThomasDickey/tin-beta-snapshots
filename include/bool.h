@@ -6,7 +6,7 @@
  *  Updated   : 2003-05-16
  *  Notes     :
  *
- * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2004 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,11 @@
 #ifndef BOOL_H
 #	define BOOL_H 1
 
-#	if 0 /* TODO: test me */
+#	if 0
+/*
+ * This is the correct way, but causes problems on some systems
+ * e.g. SuSE-7.3 (IA-32)
+ */
 #		ifndef __cplusplus
 #			ifdef HAVE_STDBOOL_H
 #				include <stdbool.h>

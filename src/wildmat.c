@@ -143,8 +143,6 @@ wildmat(
 		return TRUE;
 #endif /* OPTIMIZE_JUST_STAR */
 
-	mesg[0] = '\0';
-
 	if (icase) {
 		txt = my_strdup(text);
 		str_lwr(txt);
@@ -191,8 +189,6 @@ wildmatpos(
 		return TRUE;
 	}
 #endif /* OPTIMIZE_JUST_STAR */
-
-	mesg[0] = '\0';
 
 	txt = my_strdup(text);
 	if (icase) {

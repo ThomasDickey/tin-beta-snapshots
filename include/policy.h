@@ -3,10 +3,10 @@
  *  Module    : policy.h
  *  Author    : Ralf Doeblitz <doeblitz@gmx.de>
  *  Created   : 1999-01-12
- *  Updated   : 2003-09-08
+ *  Updated   : 2004-01-02
  *  Notes     : #defines and static data for policy configuration
  *
- * Copyright (c) 1999-2003 Ralf Doeblitz <doeblitz@gmx.de>
+ * Copyright (c) 1999-2004 Ralf Doeblitz <doeblitz@gmx.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -81,9 +81,8 @@
  * .do  Dominican Republic             .dz  Algeria
  *
  * .ec  Ecuador                        .ee  Estonia
- * .eg  Egypt                          .eh  Western Sahara
- * .er  Eritrea                        .es  Spain
- * .et  Ethiopia
+ * .eg  Egypt                          .er  Eritrea
+ * .es  Spain                          .et  Ethiopia
  *
  * .fi  Finland                        .fj  Fiji
  * .fk  Falkland Islands (Malvina)     .fm  Micronesia, Federal State of
@@ -116,7 +115,6 @@
  * .ke  Kenya                          .kg  Kyrgystan
  * .kh  Cambodia                       .ki  Kiribati
  * .km  Comoros                        .kn  Saint Kitts and Nevis
- * .kp  Korea, Democratic People's Republic
  * .kr  Korea, Republic of             .kw  Kuwait
  * .ky  Cayman Islands                 .kz  Kazakhstan
  *
@@ -213,11 +211,13 @@
  * .aa, .qm, .qz, .xa, .xz, .zz
  *
  * unused TLDs:
+ * .eh  Western Sahara
+ * .kp  Korea, Democratic People's Republic
  * .nt  Neutral Zone
  *
  * requested new TLDs:
  * .cs  Serbia and Montenegro
- * .eu  European Union
+ * .eu  European Union (planned for 2004-11)
  *
  * 'expireing' TLDs:
  * .gb  United Kingdom, use .uk
@@ -231,13 +231,13 @@ static char gnksa_country_codes[26*26] = {
 /* B */ 1,1,0,1,1, 1,1,1,1,1, 0,0,1,1,1, 0,0,1,1,1, 0,1,1,0,1,1,
 /* C */ 1,0,1,1,0, 1,1,1,1,0, 1,1,1,1,1, 0,0,1,0,0, 1,1,0,1,1,1,
 /* D */ 0,0,0,0,1, 0,0,0,0,1, 1,0,1,0,1, 0,0,0,0,0, 0,0,0,0,0,1,
-/* E */ 0,0,1,0,1, 0,1,1,0,0, 0,0,0,0,0, 0,0,1,1,1, 0,0,0,0,0,0,
+/* E */ 0,0,1,0,1, 0,1,0,0,0, 0,0,0,0,0, 0,0,1,1,1, 0,0,0,0,0,0,
 /* F */ 0,0,0,0,0, 0,0,0,1,1, 1,0,1,0,1, 0,0,1,0,0, 0,0,0,0,0,0,
 /* G */ 1,1,0,1,1, 1,1,1,1,0, 0,1,1,1,0, 1,1,1,1,1, 1,0,1,0,1,0,
 /* H */ 0,0,0,0,0, 0,0,0,0,0, 1,0,1,1,0, 0,0,1,0,1, 1,0,0,0,0,0,
 /* I */ 0,0,0,1,1, 0,0,0,0,0, 0,1,1,1,1, 0,1,1,1,1, 0,0,0,0,0,0,
 /* J */ 0,0,0,0,1, 0,0,0,0,0, 0,0,1,0,1, 1,0,0,0,0, 0,0,0,0,0,0,
-/* K */ 0,0,0,0,1, 0,1,1,1,0, 0,0,1,1,0, 1,0,1,0,0, 0,0,1,0,1,1,
+/* K */ 0,0,0,0,1, 0,1,1,1,0, 0,0,1,1,0, 0,0,1,0,0, 0,0,1,0,1,1,
 /* L */ 1,1,1,0,0, 0,0,0,1,0, 1,0,0,0,0, 0,0,1,1,1, 1,1,0,0,1,0,
 /* M */ 1,0,1,1,0, 0,1,1,0,0, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,
 /* N */ 1,0,1,0,1, 1,1,0,1,0, 0,1,0,0,1, 1,0,1,0,0, 1,0,0,0,0,1,
@@ -276,7 +276,7 @@ static const char *gnksa_domain_list[] = {
 	"info",	/* Unrestricted use */
 	"name",	/* For registration by individuals */
 	"museum",	/* Museums */
-	/* 3 more gTLDs to come in 2003 (.travel is likely to be one of them) */
+	/* 3 more gTLDs to come in 2004 (.travel is likely to be one of them) */
 #	if 0		/* $DEAD */
 	"uucp",
 	"bitnet",
