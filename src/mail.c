@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2003-02-18
+ *  Updated   : 2003-03-04
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2003 Iain Lea <iain@bricbrac.de>
@@ -63,7 +63,7 @@ read_mail_active_file(
 	FILE *fp;
 	char buf[LEN];
 	char my_spooldir[PATH_LEN];
-	long count = -1L;
+	char buf2[PATH_LEN];
 	long min, max;
 	struct t_group *ptr;
 
@@ -95,7 +95,8 @@ read_mail_active_file(
 		if ((ptr = group_find(buf)) != NULL) {
 			if (strcmp(ptr->spooldir, my_spooldir) != 0) {
 				free(ptr->spooldir);
-				ptr->spooldir = my_strdup(my_spooldir);
+				strfpath(my_spooldir, buf2, sizeof(buf2) - 1, ptr);
+				ptr->spooldir = my_strdup(buf2);
 			}
 			ptr->xmax = max;
 			ptr->xmin = min;
@@ -111,13 +112,12 @@ read_mail_active_file(
 		/*
 		 * Load group info. TODO - integrate with active_add()
 		 */
+		strfpath(my_spooldir, buf2, sizeof(buf2) - 1, ptr);
+		ptr->spooldir = my_strdup(buf2);
+		group_get_art_info(ptr->spooldir, buf, GROUP_TYPE_MAIL, &ptr->count, &ptr->xmax, &ptr->xmin);
 		ptr->aliasedto = (char *) 0;
 		ptr->description = (char *) 0;
-		ptr->spooldir = my_strdup(my_spooldir);
 		ptr->moderated = 'y';
-		ptr->count = count;
-		ptr->xmax = max;
-		ptr->xmin = min;
 		ptr->type = GROUP_TYPE_MAIL;
 		ptr->inrange = FALSE;
 		ptr->read_during_session = FALSE;

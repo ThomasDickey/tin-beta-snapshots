@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-18
+ *  Updated   : 2003-03-06
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -1597,10 +1597,15 @@ post_article_done:
 			my_strncpy(tinrc.default_post_subject, header.subj, sizeof(tinrc.default_post_subject));
 		}
 
-		if (tinrc.keep_posted_articles && type != POST_REPOST) {
+		if (*tinrc.posted_articles_file && type != POST_REPOST) {
 			char a_mailbox[LEN];
-			/* log Message-ID if given in a_message_id,
-			 * add Date:, remove empty headers */
+			char posted_msgs_file[PATH_LEN];
+
+			joinpath(posted_msgs_file, tinrc.maildir, tinrc.posted_articles_file);
+			/*
+			 * log Message-ID if given in a_message_id,
+			 * add Date:, remove empty headers
+			 */
 			add_headers(article, a_message_id);
 			if (!strfpath(posted_msgs_file, a_mailbox, sizeof(a_mailbox), &CURR_GROUP))
 				STRCPY(a_mailbox, posted_msgs_file);

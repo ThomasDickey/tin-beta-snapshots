@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-15
+ *  Updated   : 2003-03-06
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -110,7 +110,6 @@ char newsrc[PATH_LEN];
 #endif /* !NNTP_ONLY */
 char page_header[LEN];			/* page header of pgm name and version */
 char posted_info_file[PATH_LEN];
-char posted_msgs_file[PATH_LEN];
 char postponed_articles_file[PATH_LEN];	/* ~/.tin/postponed.articles file */
 char tin_progname[PATH_LEN];		/* program name */
 char rcdir[PATH_LEN];
@@ -365,8 +364,7 @@ struct t_config tinrc = {
 	TRUE,		/* inverse_okay */
 #endif /* USE_INVERSE_HACK */
 	TRUE,		/* keep_dead_articles */
-	TRUE,		/* keep_posted_articles */
-	POSTED_FILE,	/* keep_posted_articles_file */
+	POSTED_FILE,	/* posted_articles_file */
 	FALSE,		/* mail_8bit_header */
 	TRUE,		/* mark_saved_read */
 	TRUE,		/* pgdn_goto_next */
@@ -380,10 +378,9 @@ struct t_config tinrc = {
 	FALSE,		/* prompt_followupto */
 	QUOTE_COMPRESS|QUOTE_EMPTY,	/* quote_style */
 	TRUE,		/* show_description */
-	TRUE,		/* show_lines */
+	1,		/* show_infos */
 	TRUE,		/* show_only_unread_arts */
 	FALSE,		/* show_only_unread_groups */
-	FALSE,		/* show_score */
 	TRUE,		/* show_signatures */
 	FALSE,		/* hide_uue */
 	TRUE,		/* sigdashes */
@@ -406,6 +403,7 @@ struct t_config tinrc = {
 #ifdef HAVE_KEYPAD
 	FALSE,		/* use_keypad */
 #endif /* HAVE_KEYPAD */
+	TRUE,		/* wrap_on_next_unread */
 #ifdef HAVE_METAMAIL
 	FALSE,		/* ask_for_metamail */
 	FALSE,		/* use_metamail */
@@ -847,7 +845,6 @@ init_selfinfo(
 	sprintf(newnewsrc + strlen(newnewsrc), "%d", (int) process_id);
 #endif /* APPEND_PID */
 	joinpath(posted_info_file, rcdir, POSTED_FILE);
-	joinpath(posted_msgs_file, tinrc.maildir, POSTED_FILE);
 	joinpath(postponed_articles_file, rcdir, POSTPONED_FILE);
 	joinpath(save_active_file, rcdir, ACTIVE_SAVE_FILE);
 

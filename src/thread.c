@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-18
+ *  Updated   : 2003-03-03
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -145,18 +145,18 @@ build_tline(
 	 * Add the number of lines and/or the score if enabled
 	 * (inside "[,]", 1+4[+1+6]+1+2 chars total)
 	 */
-	if (tinrc.show_lines || tinrc.show_score) { /* add [ */
+	if (tinrc.show_info != SHOW_INFO_NOTHING) { /* add [ */
 		strcat(buff, "[");
 		rest_of_line--;
 	}
 
-	if (tinrc.show_lines) { /* add lines */
+	if (tinrc.show_info == SHOW_INFO_LINES || tinrc.show_info == SHOW_INFO_BOTH) { /* add lines */
 		strcat(buff, ((art->line_count != -1) ? tin_ltoa(art->line_count, 4): "   ?"));
 		rest_of_line -= 4;
 	}
 
-	if (tinrc.show_score) {
-		if (tinrc.show_lines) { /* insert a separator if show lines and score */
+	if (tinrc.show_info == SHOW_INFO_SCORE || tinrc.show_info == SHOW_INFO_BOTH) {
+		if (tinrc.show_info == SHOW_INFO_BOTH) { /* insert a separator if show lines and score */
 			strcat(buff, ",");
 			rest_of_line--;
 		}
@@ -164,7 +164,7 @@ build_tline(
 		rest_of_line -= 6;
 	}
 
-	if (tinrc.show_lines || tinrc.show_score) { /* add closing ] and two spaces */
+	if (tinrc.show_info != SHOW_INFO_NOTHING) { /* add closing ] and two spaces */
 		strcat(buff, "]  ");
 		rest_of_line -= 3;
 	}
@@ -537,6 +537,24 @@ thread_page(
 				}
 				break;
 
+#if 0 /* FIXME: crsr-position after kill */
+			case iKeyThreadAutoSel:
+			case iKeyThreadAutoKill:
+				n = find_response(thread_basenote, thdmenu.curr);
+				filter_menu((ch == iKeyThreadAutoKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[n]);
+				if (filter_articles(group)) {
+					make_threads(group, FALSE);
+					if ((n = next_unread(n)) == -1) {
+						ret_code = GRP_EXIT;
+						break;
+					}
+					fixup_thread(n, TRUE);
+					move_to_item(which_response(n));
+				}
+				show_thread_page();
+				break;
+#endif /* 0 */
+
 			case iKeyThreadReadArt:
 			case iKeyThreadReadArt2:	/* read current article within thread */
 				ret_code = enter_pager(find_response(thread_basenote, thdmenu.curr), FALSE);
@@ -614,6 +632,13 @@ thread_page(
 
 			case iKeyHelp:					/* help */
 				show_help_page(THREAD_LEVEL, _(txt_thread_com));
+				show_thread_page();
+				break;
+
+			/* TODO: assign a new key here */
+			case iKeyGroupKill:
+				n = find_response(thread_basenote, thdmenu.curr);
+				filter_menu(FILTER_KILL, group, &arts[n]);
 				show_thread_page();
 				break;
 
@@ -1229,12 +1254,14 @@ next_unread(
 		n = next_response(n);
 	}
 
-	n = base[0];
-	while (n != cur_base_art) {
-		if (((arts[n].status == ART_UNREAD) || (arts[n].status == ART_WILL_RETURN)) && arts[n].thread != ART_EXPIRED)
-			return n;
+	if (tinrc.wrap_on_next_unread) {
+		n = base[0];
+		while (n != cur_base_art) {
+			if (((arts[n].status == ART_UNREAD) || (arts[n].status == ART_WILL_RETURN)) && arts[n].thread != ART_EXPIRED)
+				return n;
 
-		n = next_response(n);
+			n = next_response(n);
+		}
 	}
 
 	return -1;

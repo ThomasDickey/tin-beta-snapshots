@@ -6,7 +6,7 @@
  *  Updated   : 2003-02-08
  *  Notes     : Split from page.c
  *
- * Copyright (c) 2000-2003 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -162,7 +162,7 @@ put_cooked(
 	p = bufp = buf;
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wp = my_malloc ((MB_CUR_MAX + 1) * sizeof(wint_t));
+	wp = my_malloc((MB_CUR_MAX + 1) * sizeof(wint_t));
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	while (*p) {

@@ -1007,7 +1007,7 @@ mail_check(
 /*
  * Return a pointer into s eliminating any leading Re:'s. Example:
  *
- *		Re: Reorganization of misc.jobs
+ * 	Re: Reorganization of misc.jobs
  *		^   ^
  * 	Re^2: Reorganization of misc.jobs
  *

@@ -1,12 +1,12 @@
 /*
  *  Project   : tin - a Usenet reader
  *  Module    : rfc2046.h
- *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
+ *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2002-04-08
+ *  Updated   : 2003-03-05
  *  Notes     : rfc2046 MIME article definitions
  *
- * Copyright (c) 2000-2003 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,16 +42,16 @@
 
 /* These must track the array definitions in lang.c */
 #	define NUM_CONTENT_TYPES	7
-#	define NUM_ENCODINGS			6
+#	define NUM_ENCODINGS		6
 
-#	define TYPE_TEXT				0
+#	define TYPE_TEXT			0
 #	define TYPE_MULTIPART		1
 #	define TYPE_APPLICATION		2
 
-#	define ENCODING_7BIT			0
+#	define ENCODING_7BIT		0
 #	define ENCODING_QP			1
 #	define ENCODING_BASE64		2
-#	define ENCODING_8BIT			3
+#	define ENCODING_8BIT		3
 #	define ENCODING_BINARY		4
 #	define ENCODING_UUE			5
 
@@ -59,13 +59,14 @@
 #	define DISP_ATTACH			1
 
 #	define BOUND_NONE		0
-#	define BOUND_START	1
+#	define BOUND_START		1
 #	define BOUND_END		2
 
 
 /*
  * Linked list of parameter/value pairs
- * Used for params attached to a content line and persistent headers
+ * Used for params attached to a content line, persistent headers and
+ * boundary markers
  */
 typedef struct param
 {
@@ -81,17 +82,17 @@ typedef struct param
  */
 typedef struct part
 {
-	unsigned type:3;			/* Content major type */
-	unsigned encoding:3;		/* Transfer encoding */
+	unsigned type:3;		/* Content major type */
+	unsigned encoding:3;	/* Transfer encoding */
 #	if 0
 	unsigned disposition:1;
 #	endif /* 0 */
-	char *subtype;				/* Content subtype */
-	t_param *params;			/* List of Content-Type parameters */
-	long offset;				/* offset in article of the text of attachment */
+	char *subtype;			/* Content subtype */
+	t_param *params;		/* List of Content-Type parameters */
+	long offset;			/* offset in article of the text of attachment */
 	int line_count;			/* # lines in this part */
-	int depth;					/* For multipart within multipart */
-	struct part *uue;			/* UUencoded section information */
+	int depth;				/* For multipart within multipart */
+	struct part *uue;		/* UUencoded section information */
 	struct part *next;		/* next part */
 } t_part;
 
@@ -113,9 +114,9 @@ struct t_header
 	char *messageid;		/* Message-ID: */
 	char *references;		/* References: */
 	char *distrib;			/* Distribution: */
-	char *keywords;		/* Keywords: */
+	char *keywords;			/* Keywords: */
 	char *summary;			/* Summary: */
-	char *followup;		/* Followup-To: */
+	char *followup;			/* Followup-To: */
 	char *ftnto;			/* Old X-Comment-To: (Used by FIDO) */
 	char *authorids;		/* Author-IDs: (USEFOR, 2nd Son of 1036) Obsolete, USEFOR kicked it */
 	t_param *persist;		/* P-ersistent headers (USEFOR, 2nd Son of 1036) Obsolete, USEFOR kicked it */
@@ -126,10 +127,10 @@ struct t_header
 
 /* flags for lineinfo.flags */
 /* Primary colours */
-#	define C_HEADER	0x001
+#	define C_HEADER		0x001
 #	define C_BODY		0x002
 #	define C_SIG		0x004
-#	define C_ATTACH	0x008
+#	define C_ATTACH		0x008
 #	define C_UUE		0x010
 
 /* Secondary flags */
@@ -139,7 +140,7 @@ struct t_header
 
 #	define C_URL		0x100	/* Contains http|ftp|gopher: */
 #	define C_MAIL		0x200	/* Contains mailto: */
-#	define C_NEWS		0x400 /* Contains news|nntp: */
+#	define C_NEWS		0x400	/* Contains news|nntp: */
 #	define C_CTRLL		0x800	/* Contains ^L */
 
 
@@ -156,7 +157,7 @@ typedef struct lineinfo
 typedef struct openartinfo
 {
 	struct t_header hdr;	/* Structural overview of the article */
-	t_bool tex2iso;		/* TRUE if TeX encoding present */
+	t_bool tex2iso;			/* TRUE if TeX encoding present */
 	int cooked_lines;		/* # lines in cooked t_lineinfo */
 	FILE *raw;				/* the actual data streams */
 	FILE *cooked;

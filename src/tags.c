@@ -1,12 +1,12 @@
 /*
  *  Project   : tin - a Usenet reader
  *  Module    : tags.c
- *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
+ *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-06
  *  Updated   : 2003-02-18
  *  Notes     : Split out from other modules
  *
- * Copyright (c) 1999-2003 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 1999-2003 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -471,10 +471,10 @@ parse_range(
 	while (*ptr && state != DONE) {
 		if (isdigit(*ptr)) {
 			if (state == FINDMAX) {
-				*range_end = atoi (ptr);
+				*range_end = atoi(ptr);
 				state = DONE;
 			} else
-				*range_start = atoi (ptr);
+				*range_start = atoi(ptr);
 			while (isdigit(*ptr))
 				ptr++;
 		} else {

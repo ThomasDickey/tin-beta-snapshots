@@ -3,7 +3,7 @@
  *  Module    : version.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-04-26
+ *  Updated   : 2002-04-27
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -42,9 +42,9 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.5.17"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20030223"
+#	define RELEASEDATE	"20030306"
 #	define RELEASENAME	"Bubbles"
-#	define TINRC_VERSION	"1.3.1"
+#	define TINRC_VERSION	"1.3.3"
 
 #	ifdef M_AMIGA
 #		define OSNAME	"AMIGA"

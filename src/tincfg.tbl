@@ -2,7 +2,7 @@
 ;   Module    : tincfg.tbl
 ;   Author    : Thomas E. Dickey
 ;   Created   : 1996-11-01
-;   Updated   : 2003-02-08
+;   Updated   : 2003-03-05
 ;   Notes     : #defines and structs for config.c
 ;
 ; Copyright (c) 1996-2003 Thomas E. Dickey <dickey@invisible-island.net>
@@ -44,6 +44,7 @@
 	show_author			txt_show_from	SHOW_FROM_BOTH+1
 	draw_arrow			OPT_ON_OFF
 	inverse_okay			OPT_ON_OFF
+	strip_blanks			OPT_ON_OFF
 	thread_articles			txt_threading	THREAD_MAX+1
 	sort_article_type		txt_sort_a_type	SORT_ARTICLES_BY_LINES_ASCEND+1
 	sort_threads_type		txt_sort_t_type	SORT_THREADS_BY_SCORE_ASCEND+1
@@ -55,6 +56,7 @@
 	space_goto_next_unread		OPT_ON_OFF
 	pgdn_goto_next			OPT_ON_OFF
 	auto_list_thread		OPT_ON_OFF
+	wrap_on_next_unread		OPT_ON_OFF
 	art_marked_deleted		OPT_CHAR
 	art_marked_inrange		OPT_CHAR
 	art_marked_return		OPT_CHAR
@@ -65,8 +67,7 @@
 	art_marked_killed		OPT_CHAR
 	art_marked_read_selected	OPT_CHAR
 	groupname_max_length		OPT_NUM
-	show_lines			OPT_ON_OFF
-	show_score			OPT_ON_OFF
+	show_info			txt_show_info_type	SHOW_INFO_BOTH+1
 	thread_score			txt_thread_score_type	THREAD_SCORE_WEIGHT+1
 	scroll_lines			OPT_NUM
 	show_signatures			OPT_ON_OFF
@@ -166,7 +167,6 @@
 	post_8bit_header		OPT_ON_OFF
 	mail_mime_encoding		txt_mime_encodings	NUM_MIME_ENCODINGS
 	mail_8bit_header		OPT_ON_OFF
-	strip_blanks			OPT_ON_OFF
 	auto_cc				OPT_ON_OFF
 	auto_bcc			OPT_ON_OFF
 	spamtrap_warning_addresses	OPT_STRING
@@ -207,8 +207,7 @@
 	mailer_format			OPT_STRING
 	use_mailreader_i		OPT_ON_OFF
 	unlink_article			OPT_ON_OFF
-	keep_posted_articles		OPT_ON_OFF
-	keep_posted_articles_file	OPT_STRING
+	posted_articles_file		OPT_STRING
 	keep_dead_articles		OPT_ON_OFF
 	strip_newsrc			OPT_ON_OFF
 	strip_bogus			txt_strip_bogus_type BOGUS_SHOW+1

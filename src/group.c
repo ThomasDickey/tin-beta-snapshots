@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-20
+ *  Updated   : 2003-03-05
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1171,11 +1171,13 @@ set_subj_from_size(
 		spaces = "";
 	}
 
-	if (!tinrc.show_lines)
+	/* which information should be displayed? */
+	if (tinrc.show_info == SHOW_INFO_NOTHING)
+		len_subj += 11;
+	else if (tinrc.show_info == SHOW_INFO_LINES)
+		len_subj += 6;
+	else if (tinrc.show_info == SHOW_INFO_SCORE)
 		len_subj += 5;
-
-	if (!tinrc.show_score)
-		len_subj += 7;
 }
 
 
@@ -1276,7 +1278,7 @@ build_sline(
 	 */
 	j = (sbuf.unread) ? next_unread(respnum) : respnum;
 
-	if (tinrc.show_lines) {
+	if (tinrc.show_info == SHOW_INFO_LINES || tinrc.show_info == SHOW_INFO_BOTH) {
 		if (n > 1) { /* change this to (n > 0) if you do a n-- above */
 			if (arts[j].line_count != -1) {
 				char tmp_buffer[4];
@@ -1322,7 +1324,7 @@ build_sline(
 	wcspart(tmp_subj, tmp_subj2, len_subj - 12, ARRAY_SIZE(tmp_subj));
 	wcspart(tmp_from, tmp_from2, len_from, ARRAY_SIZE(tmp_from));
 
-	if (tinrc.show_score) {
+	if (tinrc.show_info == SHOW_INFO_SCORE || tinrc.show_info == SHOW_INFO_BOTH) {
 		mbstowcs(format, "  %s %s %s%6d %-ls%s%-ls", ARRAY_SIZE(format) - 1);
 		swprintf(wbuffer, ARRAY_SIZE(wbuffer) - 1, format,
 			 tin_ltoa(i + 1, 4), new_resps, art_cnt, sbuf.score, tmp_subj,
@@ -1344,7 +1346,7 @@ build_sline(
 #else
 	arts_sub[len_subj - 12 + 1] = '\0';
 
-	if (tinrc.show_score)
+	if (tinrc.show_info == SHOW_INFO_SCORE || tinrc.show_info == SHOW_INFO_BOTH)
 		sprintf(buffer, "  %s %s %s%6d %-*.*s%s%-*.*s",
 			 tin_ltoa(i + 1, 4), new_resps, art_cnt, sbuf.score,
 			 len_subj - 12, len_subj - 12, arts_sub,

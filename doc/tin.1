@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2003-02-04
+.\" Updated   : 2003-03-05
 .\" Notes     : still needs some work, i.e.:
 .\"             - document authorization (.newsauth)
 .\"             - postprocess differences when linked against libuu
 .\"
 .\"
-.TH tin 1 "February 4th, 2003" "1.5.17" "A Usenet newsreader"
+.TH tin 1 "March 5th, 2003" "1.5.17" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -381,7 +381,7 @@ hot articles in it (see also section "FILTERING ARTICLES") it's marked with
 \fBart_marked_selected\fP in front of the total number of articles in the
 thread. The number of lines of the first (unread) article in the thread
 might also be shown right before the subject - this is controlled by the
-\fBshow_lines\fP option.
+\fBshow_info\fP option.
 .PP
 .\" FIXME - make this autoscale
 .nf
@@ -1653,15 +1653,6 @@ If ON keep all failed postings in \fI${TIN_HOMEDIR-"$HOME"}/dead.articles\fR
 besides keeping the last failed posting in
 \fI${TIN_HOMEDIR-"$HOME"}/dead.article\fR. Default is ON.
 .TP
-.B Keep posted articles in ~/Mail/file (keep_posted_articles)
-If ON keep all postings in
-\fI${TIN_HOMEDIR-"$HOME"}/Mail/\fBkeep_posted_articles_file\fP\fR.
-Default is ON.
-.TP
-.B Filename for posted articles (keep_posted_articles_file)
-Filename to be used for storing posted articles, see also
-\fBkeep_posted_articles\fP.
-.TP
 .B Handling of killed articles (kill_level)
 This option controls the processing and display of articles that are
 killed. There are 3 options: 0 (default) is the 'traditional'
@@ -1825,6 +1816,12 @@ articles. The following types of processing are allowed:
 \fBUuencode\fP, unpacking of multi-part uuencoded files.
 .RE
 .TP
+.B Filename to be used for storing posted articles (posted_articles_file)
+Keep posted articles in
+\fI${TIN_HOMEDIR-"$HOME"}/Mail/\fBposted_articles_file\fP\fR.
+If no filename is set then postings will not be saved.
+Default is 'posted'.
+.TP
 .B Print all headers when printing (print_header)
 If ON, then the full article header is sent to the printer. Otherwise only
 the ''Subject:'' and ''From:'' fields are output. Default is OFF.
@@ -1921,9 +1918,23 @@ setting and turn descriptions off. The text used is taken from the
 to be build with mh-mail-handling support) from
 \fI${TIN_HOMEDIR-"$HOME"}/.tin/mailgroups\fR for mailgroups. Default is ON.
 .TP
-.B Show no. of lines in thread listing (show_lines)
-Show number of lines of first unread article in thread listing. Default is
-ON.
+.B Show lines/score in listings (show_info)
+Which information about the thread or article should be shown. Default is 1,
+show only the line count.
+.RS +.5i
+.IP 0 3
+\fBNone\fP, no information will be displayed.
+.IP 1
+\fBLines\fP, in article listing the line count of an article will be
+displayed and in thread listing the line count of first (unread) article
+will be displayed.
+.IP 2
+\fBScore\fP, in article listing the score of an article will be displayed
+and in thread listing the score of the thread will be displayed - see also
+\fBthread_score\fP.
+.IP 3
+\fBLines & Score\fP, display line count and score.
+.RE
 .TP
 .B Show only unread articles (show_only_unread_arts)
 If ON show only new/unread articles otherwise show all articles.
@@ -1932,9 +1943,6 @@ Default is ON.
 .B Show only groups with unread arts (show_only_unread_groups)
 If ON show only subscribed to groups that contain unread articles. Default
 is OFF.
-.TP
-.B Show score of article in listing (show_score)
-Default is OFF.
 .TP
 .B Display signatures (show_signatures)
 If OFF don't show signatures when displaying articles.
@@ -2045,6 +2053,11 @@ If \fBstrokes_regex\fP is blank, then \fBtin\fP uses a built in default.
 If enabled pressing \fBPageNextUnread\fP ('\fB<TAB>\fP') at the Article
 level will go to the next unread article immediately instead of first
 paging through the current one. Default is ON.
+.TP
+.B Wrap around threads on next unread (wrap_on_next_unread)
+If enabled a search for the next unread article will wrap around all
+articles to find also previous unread articles. If disabled the search
+stops at the end of the thread list. Default is ON.
 .TP
 .B Display "a as Umlaut-a (tex2iso_conv)
 If ON, show "a as Umlaut-a, etc. Default is OFF. This behaviour can also be
@@ -3174,10 +3187,10 @@ Stenns, Helmrich Streitmatter, Hans Werner Strube, Dieter Stueken, Ed
 Sznyter, Dean Takemori, Darrell Tangman, Derek Terveer, Carsten
 Theis, Julian Thompson, David Tiller, Andry Timonin, Mark Tomlin,
 Michael Traub, Mark Trumbull, Alex Vasylenko, Michael Velten, Adri
-Verhoef, Paul Vickers, Oliver B. Warzecha, Jason Wessel, Cary
-Whitney, Henrik Wist, Greg Woods, Andreas Wrede, Lloyd Wright, Jens
-Wuepper, Billy Y., Hideaki Yoshfuji, Nickolai Zeldovich, Zbigniew
-Zych
+Verhoef, Paul Vickers, Corinna Vinschen, Oliver B. Warzecha, Jason
+Wessel, Cary Whitney, Henrik Wist, Greg Woods, Andreas Wrede, Lloyd
+Wright, Jens Wuepper, Billy Y., Hideaki Yoshfuji, Nickolai Zeldovich,
+Zbigniew Zych
 .\"
 .\"
 .SH AUTHOR

@@ -1,12 +1,12 @@
 /*
  *  Project   : tin - a Usenet reader
  *  Module    : rfc2046.c
- *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
+ *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2002-06-09
+ *  Updated   : 2003-03-05
  *  Notes     : RFC 2046 MIME article parsing
  *
- * Copyright (c) 2000-2003 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@ static int count_lines(char *line);
 static int parse_multipart_article(FILE *infile, t_openartinfo *artinfo, t_part *part, int depth, t_bool show_progress_meter);
 static int parse_normal_article(FILE *in, t_openartinfo *artinfo, t_bool show_progress_meter);
 static int parse_rfc2045_article(FILE *infile, int line_count, t_openartinfo *artinfo, t_bool show_progress_meter);
-static unsigned parse_content_encoding(const char *encoding);
+static unsigned int parse_content_encoding(const char *encoding);
 static void add_persist(struct t_header *hdr, const char *p_header, char *p_content);
 static void free_list(t_param *list);
 static void parse_content_type(char *type, t_part *content);
@@ -114,8 +114,9 @@ boundary_cmp(
 	const char *line,
 	const char *boundary)
 {
-	int blen = strlen(boundary);
-	int len, nl;
+	size_t blen = strlen(boundary);
+	size_t len;
+	int nl;
 
 	if ((len = strlen(line)) == 0)
 		return BOUND_NONE;
@@ -145,6 +146,31 @@ boundary_cmp(
 		return BOUND_END;
 	else
 		return BOUND_NONE;
+}
+
+
+/*
+ * RFC2046 5.1.2 says that we are required to check for all possible
+ * boundaries, not only the one that is expected. Iterate through all
+ * the parts.
+ */
+static int
+boundary_check(
+	const char *line,
+	t_part *part)
+{
+	const char *boundary;
+	int bnd = BOUND_NONE;
+
+	for (; part != NULL; part = part->next) {
+		/* We may not have even parsed a boundary for this part yet */
+		if ((boundary = get_param(part->params, "boundary")) == NULL)
+			continue;
+		if ((bnd = boundary_cmp(line, boundary)) != BOUND_NONE)
+			break;
+	}
+
+	return bnd;
 }
 
 
@@ -289,11 +315,11 @@ parse_content_type(
 }
 
 
-static unsigned
+static unsigned int
 parse_content_encoding(
 	const char *encoding)
 {
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < NUM_ENCODINGS; ++i) {
 		if (strcasecmp(encoding, content_encodings[i]) == 0)
@@ -678,12 +704,15 @@ unfold_header(
 #define M_HDR		2	/* In MIME headers */
 #define M_BODY		3	/* In MIME body */
 
+#define TIN_EOF		0xf00	/* Used internally for error recovery */
+
 /*
  * Handles multipart/ article types, write data to a raw stream
  * artinfo is used for generic article pointers
  * part contains content info about the attachment we're parsing
  * depth is the number of levels by which the current part is embedded
- * Returns a tin_errno value
+ * Returns a tin_errno value which is '&'ed with TIN_EOF if the end of the
+ * article is reached (to prevent broken articles from hanging the NNTP socket)
  */
 static int
 parse_multipart_article(
@@ -695,21 +724,17 @@ parse_multipart_article(
 {
 	char *line;
 	char *ptr;
-	const char *boundary;
 	int bnd;
 	int state = M_SEARCHING;
 	t_part *curr_part = 0;
 
-	/*
-	 * Get the boundary marker
-	 */
-	if ((boundary = get_param(part->params, "boundary")) == NULL)
-		return -1;
-
 	while ((line = tin_fgets(infile, (state == M_HDR))) != NULL) {
-		bnd = boundary_cmp(line, boundary);
+/* fprintf(stderr, "%d---:%s\n", depth, line); */
 
-/* fprintf(stderr, "---:%s\n", line); */
+		/*
+		 * Check current line for boundary markers
+		 */
+		bnd = boundary_check(line, artinfo->hdr.ext);
 
 		fprintf(artinfo->raw, "%s\n", line);
 
@@ -746,7 +771,8 @@ parse_multipart_article(
 			case M_HDR:
 				switch (bnd) {
 					case BOUND_START:
-						fprintf(stderr, "MIME parse error: Start boundary whilst reading headers\n");
+						/* TODO: -> lang.c */
+						error_message(_("MIME parse error: Start boundary whilst reading headers"));
 						continue;
 
 					case BOUND_NONE:
@@ -766,11 +792,11 @@ parse_multipart_article(
 				if ((ptr = parse_header(line, "Content-Type", FALSE))) {
 					parse_content_type(ptr, curr_part);
 
-					if (curr_part->type == TYPE_MULTIPART) {	/* Complex mutlipart article */
+					if (curr_part->type == TYPE_MULTIPART) {	/* Complex multipart article */
 						int ret;
 
 						if ((ret = parse_multipart_article(infile, artinfo, curr_part, depth + 1, show_progress_meter)) != 0)
-							return ret;
+							return ret;							/* User abort or EOF reached */
 						else
 							break;
 					}
@@ -800,12 +826,13 @@ parse_multipart_article(
 				}
 				break;
 		} /* switch (state) */
-	}
+	} /* while() */
 
 	/*
-	 * We only reach this point when we reach the end of the article
+	 * We only reach this point when we (unexpectedly) reach the end of the
+	 * article
 	 */
-	return tin_errno;
+	return tin_errno | TIN_EOF;		/* Flag EOF */
 }
 
 
@@ -902,8 +929,17 @@ parse_rfc2045_article(
 	 * We don't bother to parse all plain text articles
 	 */
 	if (artinfo->hdr.mime && artinfo->hdr.ext->type == TYPE_MULTIPART) {
-		if ((ret = parse_multipart_article(infile, artinfo, artinfo->hdr.ext, 0, show_progress_meter)) != 0)
-			goto error;
+		if ((ret = parse_multipart_article(infile, artinfo, artinfo->hdr.ext, 0, show_progress_meter)) != 0) {
+			/* Strip off EOF condition if present */
+			if (ret & TIN_EOF) {
+				ret ^= TIN_EOF;
+				/* TODO: -> lang.c */
+				error_message(_("MIME parse error: Unexpected end of %s/%s article"), content_types[artinfo->hdr.ext->type], artinfo->hdr.ext->subtype);
+				if (ret != 0)
+					goto error;
+			} else
+				goto error;
+		}
 	} else {
 		if ((ret = parse_normal_article(infile, artinfo, show_progress_meter)) != 0)
 			goto error;

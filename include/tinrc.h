@@ -1,12 +1,12 @@
 /*
  *  Project   : tin - a Usenet reader
  *  Module    : tinrc.h
- *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
+ *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2003-01-27
+ *  Updated   : 2003-03-05
  *  Notes     :
  *
- * Copyright (c) 1999-2003 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 1999-2003 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -201,8 +201,7 @@ struct t_config {
 	t_bool info_in_last_line;
 	t_bool inverse_okay;
 	t_bool keep_dead_articles;			/* keep all dead articles in dead.articles */
-	t_bool keep_posted_articles;		/* keep all posted articles in ~/Mail/posted */
-	char keep_posted_articles_file[LEN];		/* file, to keep posted articles */
+	char posted_articles_file[LEN];		/* if set, file in which to keep posted articles */
 	t_bool mail_8bit_header;			/* allow 8bit chars. in header of mail message */
 	t_bool mark_saved_read;				/* mark saved article/thread as read */
 	t_bool pgdn_goto_next;
@@ -216,10 +215,9 @@ struct t_config {
 	t_bool prompt_followupto;			/* display empty Followup-To header in editor */
 	int quote_style;					/* quoting behaviour */
 	t_bool show_description;
-	t_bool show_lines;
+	int show_info;				/* show lines and/or score (or nothing) */
 	t_bool show_only_unread_arts;		/* show only new/unread arts or all arts */
 	t_bool show_only_unread_groups;		/* set TRUE to see only subscribed groups with new news */
-	t_bool show_score;
 	t_bool show_signatures;				/* show signatures when displaying articles */
 	t_bool hide_uue;					/* set TRUE to treat uuencoded data as an attachment */
 	t_bool sigdashes;					/* set TRUE to prepend every signature with dashes */
@@ -238,6 +236,7 @@ struct t_config {
 #	ifdef HAVE_KEYPAD
 		t_bool use_keypad;
 #	endif /* HAVE_KEYPAD */
+	t_bool wrap_on_next_unread;		/* Wrap around threads when searching next unread article */
 #	ifdef HAVE_METAMAIL
 		t_bool ask_for_metamail;			/* enables/disables the metamail query if a MIME message is going to be displayed */
 		t_bool use_metamail;				/* enables/disables metamail on MIME messages */

@@ -996,7 +996,7 @@ parse_headers(
 
 			/*
 			 * FIXME: Subject: truncation is a HACK and it's not multibyte safe
-			 *        the core problem are probabely fixed length buffers
+			 *        the core problem are probably fixed length buffers
 			 *        (i.e. in rfc1522_encode() called from write_nov_file()
 			 *         with the data read in here).
 			 */
@@ -1053,15 +1053,15 @@ parse_headers(
  * return the new value of 'top_art' or -1 if user quit partway.
  *
  * Format:
- * 	1.  article number (ie. 183)                [mandatory]
- * 	2.  Subject: line  (ie. Which newsreader?)  [mandatory]
- * 	3.  From: line     (ie. iain@ecrc.de)       [mandatory]
- * 	4.  Date: line     (rfc822 format)          [mandatory]
- * 	5.  MessageID:     (ie. <123@ether.net>)    [mandatory]
- * 	6.  References:    (ie. <message-id> ....)  [mandatory]
- * 	7.  Byte count     (Skipped - not used)     [mandatory]
- * 	8.  Lines: line    (ie. 23)                 [optional]
- * 	9.  Xref: line     (ie. alt.test:389)       [optional]
+ * 	1. article number (ie. 183)                [mandatory]
+ * 	2. Subject: line  (ie. Which newsreader?)  [mandatory]
+ * 	3. From: line     (ie. iain@ecrc.de)       [mandatory]
+ * 	4. Date: line     (rfc822 format)          [mandatory]
+ * 	5. MessageID:     (ie. <123@ether.net>)    [mandatory]
+ * 	6. References:    (ie. <message-id> ....)  [optional]
+ * 	7. Byte count     (Skipped - not used)     [mandatory]
+ * 	8. Lines: line    (ie. 23)                 [mandatory]
+ * 	9. Xref: line     (ie. alt.test:389)       [optional]
  */
 static int
 read_nov_file(

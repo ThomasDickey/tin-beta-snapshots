@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-11
+ *  Updated   : 2003-03-06
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>
@@ -373,7 +373,6 @@ extern char newsrc[PATH_LEN];
 #endif /* !NNTP_ONLY */
 extern char page_header[LEN];
 extern char posted_info_file[PATH_LEN];
-extern char posted_msgs_file[PATH_LEN];
 extern char postponed_articles_file[PATH_LEN];
 extern char proc_ch_default;
 extern char tin_progname[PATH_LEN];
@@ -411,6 +410,7 @@ extern constext *txt_onoff[];
 extern constext *txt_post_process_type[];
 extern constext *txt_quote_style_type[];
 extern constext *txt_show_from[];
+extern constext *txt_show_info_type[];
 extern constext *txt_sort_a_type[];	/* a=articles */
 extern constext *txt_sort_t_type[];	/* t=threads */
 extern constext *txt_strip_bogus_type[];
@@ -1462,8 +1462,6 @@ extern struct opttxt txt_hide_uue;
 extern struct opttxt txt_inews_prog;
 extern struct opttxt txt_inverse_okay;
 extern struct opttxt txt_keep_dead_articles;
-extern struct opttxt txt_keep_posted_articles;
-extern struct opttxt txt_keep_posted_articles_file;
 extern struct opttxt txt_kill_level;
 extern struct opttxt txt_mail_8bit_header;
 extern struct opttxt txt_mail_address;
@@ -1487,6 +1485,7 @@ extern struct opttxt txt_post_8bit_header;
 extern struct opttxt txt_post_mime_encoding;
 extern struct opttxt txt_post_process;
 extern struct opttxt txt_post_process_view;
+extern struct opttxt txt_posted_articles_file;
 extern struct opttxt txt_posting_options;
 extern struct opttxt txt_print_header;
 extern struct opttxt txt_printer;
@@ -1505,10 +1504,9 @@ extern struct opttxt txt_score_select;
 extern struct opttxt txt_scroll_lines;
 extern struct opttxt txt_show_author;
 extern struct opttxt txt_show_description;
-extern struct opttxt txt_show_lines;
+extern struct opttxt txt_show_info;
 extern struct opttxt txt_show_only_unread_arts;
 extern struct opttxt txt_show_only_unread_groups;
-extern struct opttxt txt_show_score;
 extern struct opttxt txt_show_signatures;
 extern struct opttxt txt_sigdashes;
 extern struct opttxt txt_sigfile;
@@ -1540,6 +1538,7 @@ extern struct opttxt txt_wildcard;
 extern struct opttxt txt_word_highlight;
 extern struct opttxt txt_word_h_display_marks;
 extern struct opttxt txt_wrap_column;
+extern struct opttxt txt_wrap_on_next_unread;
 extern struct opttxt txt_xpost_quote_format;
 #ifdef CHARSET_CONVERSION
 	extern struct opttxt txt_mm_network_charset;

@@ -722,10 +722,11 @@ my_erase(
 	if (!cmd_line) {
 		erase();
 
-		/* Curses doesn't actually do an erase() until refresh() is
-		 * called.  Ncurses 4.0 (and lower) reset the background color
-		 * when doing an erase().  So the only way to ensure we'll get
-		 * the same background colors is to reset them here.
+		/*
+		 * Curses doesn't actually do an erase() until refresh() is called.
+		 * Ncurses 4.0 (and lower) reset the background color when doing an
+		 * erase(). So the only way to ensure we'll get the same background
+		 * colors is to reset them here.
 		 */
 		refresh();
 #	ifdef HAVE_COLOR

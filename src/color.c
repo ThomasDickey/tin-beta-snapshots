@@ -100,7 +100,8 @@ set_colors(
 
 		TRACE(("set_colors(%d, %d)", fcolor, bcolor));
 
-		/* fcolor/bcolor may be negative, if we're using ncurses
+		/*
+		 * fcolor/bcolor may be negative, if we're using ncurses
 		 * function use_default_colors().
 		 */
 		if (fcolor > COLORS - 1) {
