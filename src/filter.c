@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2003-01-18
+ *  Updated   : 2003-02-18
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -936,7 +936,7 @@ filter_menu(
 		ptr_filter_quit_edit_save = _(txt_quit_edit_save_select);
 	}
 
-	ptr_filter_comment = _(txt_select_comment);
+	ptr_filter_comment = _(txt_filter_comment);
 	ptr_filter_groupname = group->name;
 
 	len = cCOLS - 30;
@@ -1548,7 +1548,7 @@ unfilter_articles(
 	for_each_art(i) {
 		arts[i].score = 0;
 		if (IS_KILLED(i)) {
-			arts[i].killed = FALSE;
+			arts[i].killed = ART_NOTKILLED;
 			arts[i].status = ART_UNREAD;
 			unkilled++;
 		}
@@ -1556,8 +1556,6 @@ unfilter_articles(
 			arts[i].selected = FALSE;
 		}
 	}
-	num_of_killed_arts = 0;
-	num_of_selected_arts = 0;
 
 	return unkilled;
 }
@@ -1583,9 +1581,6 @@ filter_articles(
 	struct regex_cache *regex_cache_msgid = NULL;
 	struct regex_cache *regex_cache_xref = NULL;
 	t_bool filtered = FALSE;
-
-	num_of_killed_arts = 0;
-	num_of_selected_arts = 0;
 
 	/*
 	 * check if there are any global filter rules
@@ -1642,7 +1637,7 @@ filter_articles(
 		 */
 		mesg[0] = '\0';				/* Clear system message field */
 
-		if (tinrc.kill_level == KILL_READ && IS_READ(i)) /* skip only when the article is read */
+		if (tinrc.kill_level == KILL_UNREAD && IS_READ(i)) /* skip only when the article is read */
 			continue;
 
 		for (j = 0; j < num; j++) {
@@ -1875,13 +1870,14 @@ wait_message(1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].lin
 	if (mesg[0] == '\0') {
 		for_each_art(i) {
 			if (arts[i].score <= tinrc.score_limit_kill) {
-				arts[i].killed = TRUE;
-				num_of_killed_arts++;
+				if (arts[i].status == ART_UNREAD)
+					arts[i].killed = ART_KILLED_UNREAD;
+				else
+					arts[i].killed = ART_KILLED;
 				filtered = TRUE;
-				art_mark_read(group, &arts[i]);
+				art_mark(group, &arts[i], ART_READ);
 			} else if (arts[i].score >= tinrc.score_limit_select) {
 				arts[i].selected = TRUE;
-				num_of_selected_arts++;
 			}
 		}
 	}

@@ -3,7 +3,7 @@
  *  Module    : rfc2045.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2002-03-19
+ *  Updated   : 2003-02-01
  *  Notes     : RFC 2045/2047 encoding
  *
  * Copyright (c) 1995-2003 Chris Blum <chris@resolution.de>
@@ -212,92 +212,3 @@ rfc1521_encode(
 	} else if (line)
 		fputs(line, f);
 }
-
-
-/*
- * EUC-KR -> ISO 2022-KR conversion for Korean mail exchange
- * NOT to be used for News posting, which is made certain
- * by setting tinrc.post_mime_encoding to 8bit
- */
-#define KSC 1
-#define ASCII 0
-#define isksc(c)	((unsigned char) (c) > (unsigned char) '\240' && \
-						(unsigned char) (c) < (unsigned char) '\377')
-#define SI '\017'
-#define SO '\016'
-void
-rfc1557_encode(
-	char *line,
-	FILE *f,
-	int UNUSED(e))		/* dummy argument : not used */
-{
-	int i = 0;
-	int mode = ASCII;
-	static t_bool iskorean = FALSE;
-
-	if (!line) {
-		iskorean = FALSE;
-		return;
-	}
-	if (!iskorean) {		/* search for KS C 5601 character(s) in line */
-		while (line[i]) {
-			if (isksc(line[i])) {
-				iskorean = TRUE;		/* found KS C 5601 */
-				fprintf(f, "\033$)C\n");		/* put out the designator */
-				break;
-			}
-			i++;
-		}
-	}
-	if (!iskorean) {		/* KS C 5601 doesn't appear, yet -  no conversion */
-		fputs(line, f);
-		return;
-	}
-	i = 0;		/* back to the beginning of the line */
-	while (line[i] && line[i] != '\n') {
-		if (mode == ASCII && isksc(line[i])) {
-			fputc(SO, f);
-			fputc(0x7f & line[i], f);
-			mode = KSC;
-		} else if (mode == ASCII && !isksc(line[i])) {
-			fputc(line[i], f);
-		} else if (mode == KSC && isksc(line[i])) {
-			fputc(0x7f & line[i], f);
-		} else {
-			fputc(SI, f);
-			fputc(line[i], f);
-			mode = ASCII;
-		}
-		i++;
-	}
-
-	if (mode == KSC)
-		fputc(SI, f);
-	if (line[i] == '\n')
-		fputc('\n', f);
-}
-
-
-#if 0 /* Not yet implemented */
-void
-rfc1468_encode(
-	char *line,
-	FILE *f,
-	int UNUSED(e))		/* dummy argument: not used */
-{
-	if (line)
-		fputs(line, f);
-}
-
-
-/* Not yet implemented */
-void
-rfc1922_encode(
-	char *line,
-	FILE *f,
-	int UNUSED(e))		/* dummy argument: not used */
-{
-	if (line)
-		fputs(line, f);
-}
-#endif /* 0 */

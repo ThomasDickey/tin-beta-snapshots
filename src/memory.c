@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-01-21
+ *  Updated   : 2003-02-15
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -260,7 +260,7 @@ free_art_array(
 		arts[i].thread = ART_EXPIRED;
 		arts[i].inthread = FALSE;
 		arts[i].status = ART_UNREAD;
-		arts[i].killed = FALSE;
+		arts[i].killed = ART_NOTKILLED;
 		arts[i].tagged = 0;
 		arts[i].selected = FALSE;
 		arts[i].date = (time_t) 0;

@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-01-27
+ *  Updated   : 2003-02-18
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -56,7 +56,6 @@
 #define PAGE_HEADER	4
 #define ARTLINES	(NOTESLINES - (PAGE_HEADER - INDEX_TOP))
 
-/* char i_key_search_last;*/			/* for repeated search */
 int curr_line;			/* current line in art (indexed from 0) */
 static FILE *note_fp;			/* active stream (raw or cooked) */
 static int artlines;			/* active # of lines in pager */
@@ -451,7 +450,7 @@ page_goto_next_unread:
 				break;
 
 			case iKeyFirstPage:		/* beginning of article */
-			case iKeyPageFirstPage2:
+			case iKeyPageFirstPage:
 				if (reveal_ctrl_l_lines > -1 || curr_line != 0) {
 					reveal_ctrl_l_lines = -1;
 					curr_line = 0;
@@ -460,7 +459,7 @@ page_goto_next_unread:
 				break;
 
 			case iKeyLastPage:		/* end of article */
-			case iKeyPageLastPage2:
+			case iKeyPageLastPage:
 				if (reveal_ctrl_l_lines < artlines - 1 || curr_line + ARTLINES != artlines) {
 					reveal_ctrl_l_lines = artlines - 1;
 					/* Display a full last page for neatness */
@@ -902,7 +901,7 @@ return_to_index:
 				break;
 
 			case iKeyPageMarkArtUnread:	/* mark article as unread(to return) */
-				art_mark_will_return(group, &arts[this_resp]);
+				art_mark(group, &arts[this_resp], ART_WILL_RETURN);
 				info_message(_(txt_marked_as_unread), _("Article"));
 				break;
 
@@ -1379,7 +1378,7 @@ load_article(
 
 		switch (art_open(TRUE, &arts[new_respnum], group_path, &pgart, TRUE)) {
 			case ART_UNAVAILABLE:
-				art_mark_read(&CURR_GROUP, &arts[new_respnum]);
+				art_mark(&CURR_GROUP, &arts[new_respnum], ART_READ);
 				wait_message(1, _(txt_art_unavailable));
 				/* FALLTHROUGH */
 
@@ -1390,7 +1389,7 @@ load_article(
 #if 0
 				if (prompt_yn(cLINES, "Fake art unavailable ? ", FALSE) == 1) {
 					art_close(&pgart);
-					art_mark_read(&CURR_GROUP, &arts[new_respnum]);
+					art_mark(&CURR_GROUP, &arts[new_respnum], ART_READ);
 					return GRP_ARTFAIL;
 				}
 #endif /* 0 */
@@ -1403,7 +1402,7 @@ load_article(
 		}
 	}
 
-	art_mark_read(&CURR_GROUP, &arts[this_resp]);
+	art_mark(&CURR_GROUP, &arts[this_resp], ART_READ);
 
 	if (pgart.cooked == NULL) { /* harmony corruption */
 		wait_message(1, _(txt_art_unavailable));

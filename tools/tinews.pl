@@ -13,7 +13,7 @@
 #       - check for ~/.newsauth and use username/password if found
 #
 # version Number
-my $version = "1.0.4";
+my $version = "1.0.5";
 
 # TODO: put into a "my %config('NNTPServer' => 'news', ... );" array
 my $NNTPServer	= 'news';		# your NNTP servers name
@@ -307,7 +307,7 @@ sub getpgpcommand {
 		}
 	} elsif ($PGPVersion eq '5') {
 		if ($PathtoPGPPass) {
-			$PGPCommand = "PGPPASSFD=2 ".$pgp."s -u \"".$PGPSigner."\" -t --armor -o ".$pgptmpf.".txt.asc -z -f < ".$pgptmpf.".txt 2<".$PathtoPGPPass;
+			$PGPCommand = "PGPPASSFD=42 ".$pgp."s -u \"".$PGPSigner."\" -t --armor -o ".$pgptmpf.".txt.asc -z -f < ".$pgptmpf.".txt 42<".$PathtoPGPPass;
 		} elsif ($Interactive) {
 			$PGPCommand = $pgp."s -u \"".$PGPSigner."\" -t --armor -o ".$pgptmpf.".txt.asc -z -f < ".$pgptmpf.".txt";
 		} else {
@@ -315,7 +315,7 @@ sub getpgpcommand {
 		}
 	} elsif ($PGPVersion =~ m/GPG/io) {
 		if ($PathtoPGPPass) {
-			$PGPCommand = $pgp." --digest-algo MD5 -a -u \"".$PGPSigner."\" -o ".$pgptmpf.".txt.asc --no-tty --batch --passphrase-fd 2 2<".$PathtoPGPPass." --clearsign ".$pgptmpf.".txt";
+			$PGPCommand = $pgp." --digest-algo MD5 -a -u \"".$PGPSigner."\" -o ".$pgptmpf.".txt.asc --no-tty --batch --passphrase-fd 42 42<".$PathtoPGPPass." --clearsign ".$pgptmpf.".txt";
 		} elsif ($Interactive) {
 			$PGPCommand = $pgp." --digest-algo MD5 -a -u \"".$PGPSigner."\" -o ".$pgptmpf.".txt.asc --no-secmem-warning --no-batch --clearsign ".$pgptmpf.".txt";
 		} else {

@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2003-01-30
+ *  Updated   : 2003-02-08
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2003 Iain Lea <iain@bricbrac.de>
@@ -108,7 +108,6 @@ static void set_default_attributes(struct t_attribute *attributes);
  * specific attributes.
  */
 static struct t_attribute glob_attributes;
-extern char global_attributes_file[PATH_LEN];
 
 /*
  * Per group attributes. This fills out a basic template of defaults
@@ -537,7 +536,7 @@ write_attributes_file(
 	for (i = 0; i <= THREAD_MAX; i++) {
 		if (!(i % 2))
 			fprintf(fp, "\n#    ");
-		fprintf(fp, "%d=%s, ", i, _(txt_thread[i]));
+		fprintf(fp, "%d=%s, ", i, _(txt_threading[i]));
 	}
 	fprintf(fp, "\n");
 	fprintf(fp, _("#  show_author=NUM\n"));

@@ -3,7 +3,7 @@
  *  Module    : nntplib.h
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-04-09
+ *  Updated   : 2003-02-21
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -49,11 +49,13 @@
 #define NNTP_TCP_NAME	"nntp"
 #define NNTP_TCP_PORT	"119"
 
+#if 0 /* unused */
 /*
  * # seconds after which a read from the NNTP will timeout
  * NB: This is different from the NNTP server timing us out due to inactivity
  */
-#define NNTP_READ_TIMEOUT		30
+#	define NNTP_READ_TIMEOUT		30
+#endif /* 0 */
 
 /*
  * # times to try and reconnect to server after timeout
@@ -81,11 +83,13 @@
  *	x3x  Distribution
  *	x4x  Posting
  */
-#define	CHAR_INF		'1'
-#define	CHAR_OK		'2'
-#define	CHAR_CONT		'3'
-#define	CHAR_ERR		'4'
-#define	CHAR_FATAL		'5'
+#if 0 /* unused */
+#	define	CHAR_INF		'1'
+#	define	CHAR_OK		'2'
+#	define	CHAR_CONT		'3'
+#	define	CHAR_ERR		'4'
+#	define	CHAR_FATAL		'5'
+#endif /* 0 */
 
 #define	INF_HELP		100	/* Help text on way */
 #define	INF_AUTH		180	/* Authorization capabilities */

@@ -3,7 +3,7 @@
  *  Module    : open.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-07-10
+ *  Updated   : 2003-02-18
  *  Notes     : Routines to make reading news locally (ie. /var/spool/news)
  *              or via NNTP transparent
  *
@@ -688,29 +688,29 @@ open_newsgroups_fp(
  */
 FILE *
 open_xover_fp(
-	struct t_group *psGrp,
+	struct t_group *group,
 	const char *mode,
-	long lMin,
-	long lMax)
+	long min,
+	long max)
 {
 #ifdef NNTP_ABLE
-	if (read_news_via_nntp && xover_supported && *mode == 'r' && psGrp->type == GROUP_TYPE_NEWS) {
+	if (read_news_via_nntp && xover_supported && *mode == 'r' && group->type == GROUP_TYPE_NEWS) {
 		char line[NNTP_STRLEN];
 
-		sprintf(line, "%s %ld-%ld", txt_xover, lMin, lMax);
+		sprintf(line, "%s %ld-%ld", txt_xover, min, max);
 		return (nntp_command(line, OK_XOVER, NULL, 0));
 	} else
 #endif /* NNTP_ABLE */
 	{
-		char *pcNovFile;
+		char *nov_file;
 
-		pcNovFile = find_nov_file(psGrp, (*mode == 'r' ? R_OK : W_OK));
+		nov_file = find_nov_file(group, (*mode == 'r' ? R_OK : W_OK));
 #ifdef DEBUG
 		if (debug)
-			error_message("READ file=[%s]", pcNovFile);
+			error_message("READ file=[%s]", nov_file);
 #endif /* DEBUG */
-		if (pcNovFile != NULL)
-			return fopen(pcNovFile, mode);
+		if (nov_file != NULL)
+			return fopen(nov_file, mode);
 
 		return (FILE *) 0;
 	}

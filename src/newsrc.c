@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-12-01
+ *  Updated   : 2003-02-18
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -49,9 +49,9 @@ static mode_t newsrc_mode = 0;
 /*
  * Local prototypes
  */
-static char *pcParseNewsrcLine(char *line, int *sub);
-static char *pcParseSubSeq(struct t_group *psGrp, char *pcSeq, long *plLow, long *plHigh, int *piSum);
-static char *pcParseGetSeq(char *pcSeq, long *plLow, long *plHigh);
+static char *parse_newsrc_line(char *line, int *sub);
+static char *parse_subseq(struct t_group *group, char *seq, long *low, long *high, int *sum);
+static char *parse_get_seq(char *seq, long *low, long *high);
 static int write_newsrc_line(FILE *fp, char *line);
 static t_bool create_newsrc(char *newsrc_file);
 static void auto_subscribe_groups(char *newsrc_file);
@@ -99,7 +99,7 @@ read_newsrc(
 			wait_message(0, _(txt_reading_newsrc));
 
 		while ((grp = tin_fgets(fp, FALSE)) != NULL) {
-			seq = pcParseNewsrcLine(grp, &sub);
+			seq = parse_newsrc_line(grp, &sub);
 			line_count++;
 
 			if (sub == SUBSCRIBED) {
@@ -135,9 +135,9 @@ write_newsrc_line(
 {
 	char *seq;
 	int sub;
-	struct t_group *psGrp;
+	struct t_group *group;
 
-	seq = pcParseNewsrcLine(line, &sub);
+	seq = parse_newsrc_line(line, &sub);
 
 	if (line[0] == '\0' || sub == 0)		/* Insurance against blank line */
 		return 0;
@@ -153,18 +153,18 @@ write_newsrc_line(
 	 * are set to auto removal. Also check for bogus flag just in case
 	 * strip_bogus was changed since tin started
 	 */
-	psGrp = group_find(line);
+	group = group_find(line);
 
 	if (tinrc.strip_bogus == BOGUS_REMOVE) {
-		if (psGrp == NULL || psGrp->bogus) { /* group dosen't exist */
+		if (group == NULL || group->bogus) { /* group dosen't exist */
 			wait_message(2, _(txt_remove_bogus), line);
 			return 0;
 		}
 	}
 
-	if ((psGrp && psGrp->newsrc.present) && (psGrp->subscribed || !tinrc.strip_newsrc)) {
-		fprintf(fp, "%s%c ", psGrp->name, SUB_CHAR(psGrp->subscribed));
-		print_bitmap_seq(fp, psGrp);
+	if ((group && group->newsrc.present) && (group->subscribed || !tinrc.strip_newsrc)) {
+		fprintf(fp, "%s%c ", group->name, SUB_CHAR(group->subscribed));
+		print_bitmap_seq(fp, group);
 		return 1;
 	} else {
 		if (sub == SUBSCRIBED || !tinrc.strip_newsrc) {
@@ -356,7 +356,7 @@ subscribe(
 			if (STRNCMPEQ("options ", line, 8))
 				fprintf(newfp, "%s\n", line);
 			else {
-				seq = pcParseNewsrcLine(line, &sub);
+				seq = parse_newsrc_line(line, &sub);
 				if (STRCMPEQ(line, group->name)) {
 					fprintf(newfp, "%s%c %s\n", line, sub_state, seq);
 					group->subscribed = SUB_BOOL(sub_state);
@@ -409,7 +409,7 @@ reset_newsrc(
 
 		if ((fp = fopen(newsrc, "r")) != NULL) {
 			while ((line = tin_fgets(fp, FALSE)) != NULL) {
-				(void) pcParseNewsrcLine(line, &sub);
+				(void) parse_newsrc_line(line, &sub);
 				fprintf(newfp, "%s%c\n", line, sub);
 			}
 			fclose(fp);
@@ -448,7 +448,7 @@ delete_group(
 
 		if ((fp = fopen(newsrc, "r")) != NULL) {
 			while ((line = tin_fgets(fp, FALSE)) != NULL) {
-				seq = pcParseNewsrcLine(line, &sub);
+				seq = parse_newsrc_line(line, &sub);
 
 				if (!STRCMPEQ(line, group))
 					fprintf(newfp, "%s%c %s\n", line, sub, seq);
@@ -468,14 +468,14 @@ delete_group(
 
 /*
  * Mark a group as read
- * If psArt != NULL then we explicitly process each article thus
+ * If art != NULL then we explicitly process each article thus
  * catching crossposts as well, otherwise we simply scrub the
  * bitmap and adjust the highwater mark.
  */
 void
 grp_mark_read(
 	struct t_group *group,
-	struct t_article *psArt)
+	struct t_article *art)
 {
 	register int i;
 
@@ -483,9 +483,9 @@ grp_mark_read(
 	debug_print_comment("c/C command");
 #endif /* DEBUG_NEWSRC */
 
-	if (psArt != NULL) {
+	if (art != NULL) {
 		for_each_art(i)
-			art_mark_read(group, &psArt[i]);
+			art_mark(group, &art[i], ART_READ);
 	}
 
 	FreeAndNull(group->newsrc.xbitmap);
@@ -549,7 +549,7 @@ thd_mark_read(
 #endif /* DEBUG_NEWSRC */
 
 	for (i = (int) thread; i >= 0; i = arts[i].thread)
-		art_mark_read(group, &arts[i]);
+		art_mark(group, &arts[i], ART_READ);
 }
 
 
@@ -565,7 +565,7 @@ thd_mark_unread(
 #endif /* DEBUG_NEWSRC */
 
 	for (i = (int) thread; i >= 0; i = arts[i].thread)
-		art_mark_will_return(group, &arts[i]);
+		art_mark(group, &arts[i], ART_WILL_RETURN);
 }
 
 
@@ -602,7 +602,7 @@ parse_bitmap_seq(
 
 	if (ptr) {
 		gotseq = TRUE;
-		ptr = pcParseGetSeq(ptr, &low, &high);
+		ptr = parse_get_seq(ptr, &low, &high);
 
 		if (high < group->xmin - 1)
 			high = group->xmin - 1;
@@ -638,7 +638,7 @@ parse_bitmap_seq(
 		 * Pick up any additional articles/ranges after the first
 		 */
 		while (*ptr)
-			ptr = pcParseSubSeq(group, ptr, &low, &high, &sum);
+			ptr = parse_subseq(group, ptr, &low, &high, &sum);
 	} else {
 		FreeAndNull(group->newsrc.xbitmap);
 		group->newsrc.xmax = group->xmax;
@@ -681,113 +681,113 @@ wait_message(2, "BITMAP Grp=[%s] MinMax=[%ld-%ld] Len=[%ld]\n",
  *   4th call would parse 97-99 and return NULL
  */
 static char *
-pcParseSubSeq(
-	struct t_group *psGrp,
-	char *pcSeq,
-	long *plLow,
-	long *plHigh,
-	int *piSum)
+parse_subseq(
+	struct t_group *group,
+	char *seq,
+	long *low,
+	long *high,
+	int *sum)
 {
-	long lBitMin;
-	long lBitMax;
-	long lLastHigh;
+	long bitmin;
+	long bitmax;
+	long last_high;
 
-	lLastHigh = *plHigh;
-	pcSeq = pcParseGetSeq(pcSeq, plLow, plHigh);
+	last_high = *high;
+	seq = parse_get_seq(seq, low, high);
 
 	/*
 	 * Bitmap index
 	 */
-	lBitMin = *plLow - psGrp->newsrc.xmin;
+	bitmin = *low - group->newsrc.xmin;
 
 	/*
 	 * check that seq is not out of order
 	 */
-	if (*plLow > lLastHigh)
-		*piSum += (*plLow - lLastHigh) - 1;
+	if (*low > last_high)
+		*sum += (*low - last_high) - 1;
 
-	if (*plHigh == *plLow) {
-		if (lBitMin >= 0) {
-			if (*plHigh > psGrp->newsrc.xmax) {
+	if (*high == *low) {
+		if (bitmin >= 0) {
+			if (*high > group->newsrc.xmax) {
 				/* We trust .newsrc's max. */
 				long bitlen;
 				t_bitmap *newbitmap;
 
-				psGrp->newsrc.xmax = *plHigh;
-				bitlen = psGrp->newsrc.xmax - psGrp->newsrc.xmin + 1;
+				group->newsrc.xmax = *high;
+				bitlen = group->newsrc.xmax - group->newsrc.xmin + 1;
 				newbitmap = my_malloc(BITS_TO_BYTES(bitlen));
 
 				/* Copy over old bitmap */
-				memcpy(newbitmap, psGrp->newsrc.xbitmap, BITS_TO_BYTES(psGrp->newsrc.xbitlen));
+				memcpy(newbitmap, group->newsrc.xbitmap, BITS_TO_BYTES(group->newsrc.xbitlen));
 
 				/* Mark high numbered articles as unread */
-				NSETRNG1(newbitmap, psGrp->newsrc.xbitlen, bitlen - 1);
+				NSETRNG1(newbitmap, group->newsrc.xbitlen, bitlen - 1);
 
-				free(psGrp->newsrc.xbitmap);
-				psGrp->newsrc.xbitmap = newbitmap;
-				psGrp->newsrc.xbitlen = bitlen;
+				free(group->newsrc.xbitmap);
+				group->newsrc.xbitmap = newbitmap;
+				group->newsrc.xbitlen = bitlen;
 			}
-			NSET0(psGrp->newsrc.xbitmap, lBitMin);
+			NSET0(group->newsrc.xbitmap, bitmin);
 		}
-	} else if ((*plLow < *plHigh) && (*plHigh >= psGrp->newsrc.xmin)) {
+	} else if ((*low < *high) && (*high >= group->newsrc.xmin)) {
 		/*
 		 * Restrict the range to min..max
 		 */
-		if (lBitMin < 0)
-			lBitMin = 0;
+		if (bitmin < 0)
+			bitmin = 0;
 
-		lBitMax = *plHigh;
+		bitmax = *high;
 
-		if (lBitMax > psGrp->newsrc.xmax) {
+		if (bitmax > group->newsrc.xmax) {
 			/* We trust .newsrc's max. */
 			long bitlen;
 			t_bitmap *newbitmap;
 
-			psGrp->newsrc.xmax = lBitMax;
-			bitlen = psGrp->newsrc.xmax - psGrp->newsrc.xmin + 1;
+			group->newsrc.xmax = bitmax;
+			bitlen = group->newsrc.xmax - group->newsrc.xmin + 1;
 			newbitmap = my_malloc(BITS_TO_BYTES(bitlen));
 
 			/* Copy over old bitmap */
-			memcpy(newbitmap, psGrp->newsrc.xbitmap, BITS_TO_BYTES(psGrp->newsrc.xbitlen));
+			memcpy(newbitmap, group->newsrc.xbitmap, BITS_TO_BYTES(group->newsrc.xbitlen));
 
 			/* Mark high numbered articles as unread */
-			NSETRNG1(newbitmap, psGrp->newsrc.xbitlen, bitlen - 1);
+			NSETRNG1(newbitmap, group->newsrc.xbitlen, bitlen - 1);
 
-			free(psGrp->newsrc.xbitmap);
-			psGrp->newsrc.xbitmap = newbitmap;
-			psGrp->newsrc.xbitlen = bitlen;
+			free(group->newsrc.xbitmap);
+			group->newsrc.xbitmap = newbitmap;
+			group->newsrc.xbitlen = bitlen;
 		}
 
-		lBitMax -= psGrp->newsrc.xmin;
+		bitmax -= group->newsrc.xmin;
 
 		/*
 		 * Fill in the whole range as read
 		 */
-		NSETRNG0(psGrp->newsrc.xbitmap, lBitMin, lBitMax);
+		NSETRNG0(group->newsrc.xbitmap, bitmin, bitmax);
 	}
 
-	return pcSeq;
+	return seq;
 }
 
 
 static char *
-pcParseGetSeq(
-	char *pcSeq,
-	long *plLow,
-	long *plHigh)
+parse_get_seq(
+	char *seq,
+	long *low,
+	long *high)
 {
-	*plLow = strtol(pcSeq, &pcSeq, 10);
+	*low = strtol(seq, &seq, 10);
 
-	if (*pcSeq == '-') {	/* Range of articles */
-		pcSeq++;
-		*plHigh = strtol(pcSeq, &pcSeq, 10);
+	if (*seq == '-') {	/* Range of articles */
+		seq++;
+		*high = strtol(seq, &seq, 10);
 	} else	/* Single article */
-		*plHigh = *plLow;
+		*high = *low;
 
-	while (*pcSeq && (*pcSeq < '0' || *pcSeq > '9'))
-		pcSeq++;
+	while (*seq && (*seq < '0' || *seq > '9'))
+		seq++;
 
-	return pcSeq;
+	return seq;
 }
 
 
@@ -1141,7 +1141,7 @@ catchup_newsrc_file(
  * just the group name and the subscription flag is copied to sub.
  */
 static char *
-pcParseNewsrcLine(
+parse_newsrc_line(
 	char *line,
 	int *sub)
 {
@@ -1319,88 +1319,53 @@ expand_bitmap(
 
 
 void
-art_mark_read(
+art_mark(
 	struct t_group *group,
-	struct t_article *art)
+	struct t_article *art,
+	int flag)
 {
 	if (art != NULL) {
-		if (group != NULL) {
-			if (art->artnum >= group->newsrc.xmin && art->artnum <= group->newsrc.xmax)
-				NSET0(group->newsrc.xbitmap, art->artnum - group->newsrc.xmin);
+		switch (flag) {
+			case ART_READ:
+				if (group != NULL) {
+					if (art->artnum >= group->newsrc.xmin && art->artnum <= group->newsrc.xmax)
+						NSET0(group->newsrc.xbitmap, art->artnum - group->newsrc.xmin);
 #ifdef DEBUG_NEWSRC
-			debug_print_bitmap(group, art);
+					debug_print_bitmap(group, art);
 #endif /* DEBUG_NEWSRC */
-		}
-		if ((art->status == ART_UNREAD) || (art->status == ART_WILL_RETURN)) {
-			art_mark_xref_read(art);
+				}
+				if ((art->status == ART_UNREAD) || (art->status == ART_WILL_RETURN)) {
+					art_mark_xref_read(art);
 
-			if (group != NULL && group->newsrc.num_unread)
-				group->newsrc.num_unread--;
+					if (group != NULL && group->newsrc.num_unread)
+						group->newsrc.num_unread--;
 
-			if (art->selected && num_of_selected_arts)
-				num_of_selected_arts--;
+					art->status = ART_READ;
+				}
+				break;
 
-			art->status = ART_READ;
-		}
-	}
-}
+			case ART_UNREAD:
+			case ART_WILL_RETURN:
+				if (art->status == ART_READ) {
+					if (group != NULL)
+						group->newsrc.num_unread++;
 
-
-void
-art_mark_unread(
-	struct t_group *group,
-	struct t_article *art)
-{
-	if (art != NULL) {
-		if (art->status == ART_READ) {
-
-			if (group != NULL)
-				group->newsrc.num_unread++;
-
-			if (art->selected)
-				num_of_selected_arts++;
-
-			art->status = ART_UNREAD;
-		}
-		if (group != NULL) {
-			if (art->artnum < group->newsrc.xmin)
-				expand_bitmap(group, art->artnum);
-			else {
-				NSET1(group->newsrc.xbitmap, art->artnum - group->newsrc.xmin);
+					art->status = flag;
+				}
+				if (group != NULL) {
+					if (art->artnum < group->newsrc.xmin)
+						expand_bitmap(group, art->artnum);
+					else {
+						NSET1(group->newsrc.xbitmap, art->artnum - group->newsrc.xmin);
 #ifdef DEBUG_NEWSRC
-				debug_print_bitmap(group, art);
+						debug_print_bitmap(group, art);
 #endif /* DEBUG_NEWSRC */
-			}
-		}
-	}
-}
+					}
+				}
+				break;
 
-
-/*
- * TODO: Make a function art_mark(group, art, FLAG)
- * use instead of art_mark_will_return(), art_mark_unread(),...
- */
-void
-art_mark_will_return(
-	struct t_group *group,
-	struct t_article *art)
-{
-	if (art != NULL) {
-		if (art->status == ART_READ) {
-
-			if (group != NULL)
-				group->newsrc.num_unread++;
-
-			if (art->selected)
-				num_of_selected_arts++;
-
-			art->status = ART_WILL_RETURN;
-		}
-		if (group != NULL) {
-			NSET1(group->newsrc.xbitmap, art->artnum - group->newsrc.xmin);
-#ifdef DEBUG_NEWSRC
-			debug_print_bitmap(group, art);
-#endif /* DEBUG_NEWSRC */
+			default:
+				break;
 		}
 	}
 }

@@ -3,7 +3,7 @@
  *  Module    : tags.c
  *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
  *  Created   : 1999-12-06
- *  Updated   : 2002-11-11
+ *  Updated   : 2003-02-18
  *  Notes     : Split out from other modules
  *
  * Copyright (c) 1999-2003 Jason Faultless <jason@radar.tele2.co.uk>
@@ -216,11 +216,11 @@ tag_multipart(
 
 	/* check for failure... */
 	if (qty == 0) {
-		info_message(_("Not a multi-part message")); /* FIXME: -> lang.c */
+		info_message(_(txt_info_not_multipart_message));
 		return 0;
 	}
 	if (qty < 0) {
-		info_message(_("Missing part #%d"), -qty); /* FIXME: -> lang.c */
+		info_message(_(txt_info_missing_part), -qty);
 		return 0;
 	}
 
@@ -242,7 +242,7 @@ tag_multipart(
 
 	free(info);
 
-	info_message(_("All parts tagged")); /* FIXME -> lang.c */
+	info_message(_(txt_info_all_parts_tagged));
 	return qty;
 }
 
@@ -440,6 +440,7 @@ set_range(
 
 		default:
 			return FALSE;
+			/* NOTREACHED */
 			break;
 	}
 	return TRUE;
@@ -522,7 +523,7 @@ do_auto_select_arts(
 #	ifdef DEBUG_NEWSRC
 			debug_print_comment("group.c: X command");
 #	endif /* DEBUG_NEWSRC */
-			art_mark_read(&CURR_GROUP, &arts[i]);
+			art_mark(&CURR_GROUP, &arts[i], ART_READ);
 			arts[i].zombie = TRUE;
 		}
 	}
@@ -546,7 +547,7 @@ undo_auto_select_arts(
 #	ifdef DEBUG_NEWSRC
 			debug_print_comment("group.c: + command");
 #	endif /* DEBUG_NEWSRC */
-			art_mark_unread(&CURR_GROUP, &arts[i]);
+			art_mark(&CURR_GROUP, &arts[i], ART_UNREAD);
 			arts[i].zombie = FALSE;
 		}
 	}

@@ -157,7 +157,6 @@ parse_mailcap_line(
 {
 	char *ptr, *optr, *buf;
 	int i = MAILCAPFIELDS - 2; /* max MAILCAPFIELDS - required fileds */
-	size_t blen;
 	t_mailcap *tmailcap;
 
 	/* malloc and init */
@@ -180,8 +179,7 @@ parse_mailcap_line(
 
 	/* get required entrys */
 	ptr = get_mailcap_field(ptr);
-	blen = strlen(content_types[part->type]) + strlen(part->subtype) + 2;
-	buf = my_calloc(1, blen);
+	buf = my_calloc(1, strlen(content_types[part->type]) + strlen(part->subtype) + 2);
 	sprintf(buf, "%s/%s", content_types[part->type], part->subtype);
 	tmailcap->type = buf;
 	ptr += strlen(ptr) + 1;

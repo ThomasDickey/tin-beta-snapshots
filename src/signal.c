@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-06-21
+ *  Updated   : 2003-02-08
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -417,8 +417,7 @@ signal_handler(
 #ifdef SIGSEGV
 		case SIGSEGV:
 #endif /* SIGSEGV */
-			/* FIXME: -> lang.c */
-			my_fprintf(stderr, _("%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n"), tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME, bug_addr);
+			my_fprintf(stderr, _(txt_send_bugreport), tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME, bug_addr);
 			my_fflush(stderr);
 			break;
 

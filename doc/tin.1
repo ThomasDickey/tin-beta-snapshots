@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2003-01-27
+.\" Updated   : 2003-02-04
 .\" Notes     : still needs some work, i.e.:
 .\"             - document authorization (.newsauth)
 .\"             - postprocess differences when linked against libuu
 .\"
 .\"
-.TH tin 1 "January 27th, 2003" "1.5.17" "A Usenet newsreader"
+.TH tin 1 "February 4th, 2003" "1.5.17" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -1149,10 +1149,10 @@ Post a followup to the current article with a copy of the article included.
 Post a followup to the current article without including a copy of the
 article.
 .TP
-.B PageFirstPage2 'g'
+.B PageFirstPage 'g'
 Goto the start of the article
 .TP
-.B PageLastPage2 'G'
+.B PageLastPage 'G'
 Goto the end of the article
 .TP
 .B ToggleInfoLastLine 'i'
@@ -1690,12 +1690,7 @@ signing.
 .B MIME encoding in mail messages (mail_mime_encoding)
 MIME encoding of the body in mail message, if necessary (8bit, base64,
 quoted-printable, 7bit) Default is 8bit and no encoding (or charset
-conversion) is performed (i.e., local charset is used as it is). If set to
-7bit, CJK text in 8bit encoding (EUC-CN, EUC-TW, EUC-JP, EUC-KR, Big5,
-Shift_JIS) is supposed to be converted into ISO-2022-KR/JP/CN. Only EUC-KR
-to ISO-2022-KR conversion has been implemented, however. Accordingly,
-setting it to 7bit has no effect on MIME charsets/encodings other than
-EUC-KR (Korean).
+conversion) is performed (i.e., local charset is used as it is).
 .TP
 .B Quote line when mailing (mail_quote_format)
 Format of quote line when replying (via mail) to an article (%A=Address,
@@ -1714,18 +1709,15 @@ for more details about MMDF.
 If ON mark articles that are saved as read. Default is ON.
 .TP
 .B MM_CHARSET (mm_charset)
-Charset supported locally, which is also used for MIME header (charset
-parameter and charset name in header encoding) in mail and news posting
-unless local charset/encoding needs to be converted into other
-charset/encoding as in case of EUC-KR which is converted to ISO-2022-KR if
-\fBmail_mime_encoding\fP is set to 7bit. Possible values include ISO-8859-X
-(where X is 1 to 16), EUC-JP, EUC-CN, EUC-KR, EUC-TW, Big5, Shift_JIS, and
-so forth. If \fBMIME_STRICT_CHARSET\fP is defined at the compile time, text
-in charset other than the value of this parameter is considered not
-displayable and represented as '?'. Otherwise, all character sets are
-regarded as compatible with the display. If it's not set, the value of the
-environment variable $\fBMM_CHARSET\fP is used. US-ASCII or compile-time
-default is used in case neither of them is defined. If your system supports
+Charset supported locally, which is also used for MIME header
+(charset parameter and charset name in header encoding) in mail and
+news posting. If \fBMIME_STRICT_CHARSET\fP is defined at the compile
+time, text in charset other than the value of this parameter is
+considered not displayable and represented as '?'. Otherwise, all
+character sets are regarded as compatible with the display. If it's
+not set, the value of the environment variable $\fBMM_CHARSET\fP is
+used. US-ASCII or compile-time default is used in case neither of
+them is defined. If your system supports
 .BR iconv (3),
 this option is disabled and you should use \fBmm_network_charset\fP instead.
 .TP
@@ -1799,27 +1791,22 @@ If ON the Page Down keys will go to the next unread article when pressed
 at the end of a message. Default is ON.
 .TP
 .B Goto first unread article in group (pos_first_unread)
-If ON put cursor at first unread article in group otherwise at last article.
-Default is ON.
+If ON put cursor at first unread article in group otherwise at last
+article. Default is ON.
 .TP
 .B Use 8bit characters in news headers (post_8bit_header)
-Allows 8bit characters unencoded in the header of news article. Default is
-OFF. Only enacted if \fBpost_mime_encoding\fP is also set to 8bit. In a
-number of local hierarchies where 8bit characters are used, using unencoded
-(raw) 8bit characters in header is acceptable and sometimes even recommended
-so that you need to check the convention adopted in the local hierarchy of
-your interest to determine what to do with this and
-\fBpost_mime_encoding\fP.
+Allows 8bit characters unencoded in the header of news article.
+Default is OFF. Only enacted if \fBpost_mime_encoding\fP is also set
+to 8bit. In a number of local hierarchies where 8bit characters are
+used, using unencoded (raw) 8bit characters in header is acceptable
+and sometimes even recommended so that you need to check the
+convention adopted in the local hierarchy of your interest to
+determine what to do with this and \fBpost_mime_encoding\fP.
 .TP
 .B MIME encoding in news messages (post_mime_encoding)
-MIME encoding of the body in news message, if necessary. (8bit, base64,
-quoted-printable, 7bit) Default is 8bit, which leads to no encoding (or
-charset conversion, i.e., local charset is posted as it is). If set to 7bit,
-Chinese and Japanese text (in 8bit encodings such as EUC-CN, EUC-TW, EUC-JP,
-Shift_JIS, Big5) is supposed to be converted into ISO-2022-CN/JP, but it's
-NOT yet implemented. Therefore, currently 7bit has NO effect (i.e.
-equivalent to 8bit) whatever MIME charset/encoding is chosen. base64 and
-quoted-printable are usualy undesired on usenet.
+MIME encoding of the body in news message, if necessary. (8bit,
+base64, quoted-printable, 7bit) Default is 8bit, which leads to no
+encoding. base64 and quoted-printable are usualy undesired on usenet.
 .TP
 .B View post-processed files (post_process_view)
 If ON, then \fBtin\fP will start an appropriate viewer program to display

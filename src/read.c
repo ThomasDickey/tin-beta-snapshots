@@ -213,7 +213,7 @@ tin_read(
 	partial_read = FALSE;
 
 #ifdef NNTP_ABLE
-	if (wait_for_input(/*fp*/)) {			/* Check if okay to read */
+	if (wait_for_input(/* fp */)) {			/* Check if okay to read */
 		info_message(_("Aborting read, please wait..."));
 		drain_buffer(fp);
 		clear_message();

@@ -42,7 +42,7 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.5.17"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20030201"
+#	define RELEASEDATE	"20030223"
 #	define RELEASENAME	"Bubbles"
 #	define TINRC_VERSION	"1.3.1"
 

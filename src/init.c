@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-01-27
+ *  Updated   : 2003-02-15
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -133,8 +133,6 @@ int i_key_search_last;			/* for repeated search */
 int iso2asc_supported;			/* Convert ISO-Latin1 to Ascii */
 int num_headers_to_display;		/* num headers to display -- swp */
 int num_headers_to_not_display;		/* num headers to not display -- swp */
-int num_of_killed_arts;
-int num_of_selected_arts;		/* num articles marked 'hot' */
 int system_status;
 int xmouse, xrow, xcol;			/* xterm button pressing information */
 
@@ -289,7 +287,7 @@ struct t_config tinrc = {
 	0,		/* getart_limit */
 	2,		/* recent_time */
 	32,		/* groupname_max_length */
-	KILL_READ,		/* kill_level */
+	KILL_UNREAD,		/* kill_level */
 	MIME_ENCODING_7BIT,		/* mail_mime_encoding */
 	MIME_ENCODING_7BIT,		/* post_mime_encoding */
 	POST_PROC_NONE,			/* post_process */
@@ -542,15 +540,14 @@ init_selfinfo(
 	real_umask = umask(0);
 	(void) umask(real_umask);
 
-#if defined(HAVE_SETLOCALE) && defined(LC_ALL) && !defined(NO_LOCALE)
-	if (!setlocale(LC_ALL, "")) {
+#if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
+	if (!setlocale(LC_ALL, "")) { /* EMPTY */
 		/*
 		 * TODO: issue a warning here like
 		 *       "Can't set the specified locale! Check $LANG, $LC_CTYPE, $LC_ALL"
 		 */
-		;
 	}
-#endif /* HAVE_SETLOCALE && LC_ALL && !NO_LOCALE */
+#endif /* HAVE_SETLOCALE && !NO_LOCALE */
 
 /* FIXME: move to get_user_name() [header.c] */
 #ifndef M_AMIGA
@@ -617,8 +614,6 @@ init_selfinfo(
 	newsrc_active = FALSE;
 	num_headers_to_display = 0;
 	num_headers_to_not_display = 0;
-	num_of_selected_arts = 0;
-	num_of_killed_arts = 0;
 	post_article_and_exit = FALSE;
 	post_postponed_and_exit = FALSE;
 	read_local_newsgroups_file = FALSE;

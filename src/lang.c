@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-01-27
+ *  Updated   : 2003-02-08
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -84,6 +84,8 @@ constext txt_bad_article[] = N_("Article to be posted resulted in errors/warning
 constext txt_bad_attrib[] = N_("Unrecognised attribute: %s");
 constext txt_bad_command[] = N_("Bad command. Type '%s' for help.");
 constext txt_base64[] = "base64";
+constext txt_base_article[] = N_("Base article");
+constext txt_base_article_range[] = N_("Base article range");
 constext txt_batch_update_unavail[] = N_("%s: Updating of index files not supported\n");
 constext txt_begin_of_art[] = N_("*** Beginning of article ***");
 constext txt_cancel_article[] = N_("Cancel (delete) or supersede (overwrite) article [%%.*s]? (%s/%s/%s): ");
@@ -92,7 +94,9 @@ constext txt_cannot_create_uniq_name[] = "Can't create unique tempfile-name";
 constext txt_cannot_create[] = N_("Cannot create %s");
 constext txt_cannot_find_base_art[] = N_("Can't find base article %d");
 constext txt_cannot_get_nntp_server_name[] = N_("Cannot find NNTP server name");
-constext txt_cannot_get_term_entry[] = N_("%s: Can't get entry for TERM\n");
+#if defined(M_UNIX) && !defined(USE_TERMINFO)
+	constext txt_cannot_get_term_entry[] = N_("%s: Can't get entry for TERM\n");
+#endif /* M_UNIX && !USE_TERMINFO */
 constext txt_cannot_open[] = N_("Can't open %s");
 #if defined(NNTP_ABLE) && !defined(NNTP_ONLY)
 	constext txt_cannot_open_active_file[] = N_("Can't open %s. Try %s -r to read news via NNTP.\n");
@@ -103,6 +107,8 @@ constext txt_cannot_post_group[] = N_("Posting is not allowed to %s");
 constext txt_cannot_retrieve[] = N_("Can't retrieve %s");
 constext txt_cannot_write_index[] = N_("Can't write index %s");
 constext txt_cannot_write_to_directory[] = N_("%s is a directory");
+constext txt_catchup[] = N_("Catchup");
+constext txt_catchup_group[] = N_("Catchup %s...");
 constext txt_catchup_all_read_groups[] = N_("Catchup all groups entered during this session?");
 constext txt_catchup_despite_tags[] = N_("You have tagged articles in this group - catchup anyway?");
 constext txt_catchup_update_info[] = N_("%s %d %s in %lu seconds\n");
@@ -120,6 +126,7 @@ constext txt_command_failed[] = N_("Command failed: %s");
 constext txt_confirm_select_on_exit[] = N_("Mark not selected articles read?");
 constext txt_connecting[] = N_("Connecting to %s...");
 constext txt_connecting_port[] = N_("Connecting to %s:%d...");
+constext txt_connection_to[] = N_("\nConnection to %s: ");
 
 #ifdef M_AMIGA
 	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2003 Iain Lea & Mark Tomlinson.";
@@ -146,6 +153,7 @@ constext txt_end_of_thread[] = N_("*** End of thread ***");
 constext txt_enter_getart_limit[] = N_("Enter limit of articles to get> ");
 constext txt_enter_message_id[] = N_("Enter Message-ID to go to> ");
 constext txt_enter_next_thread[] = N_(" and enter next unread thread");
+constext txt_enter_next_unread_group[] = N_(" and enter next unread group");
 constext txt_enter_option_num[] = N_("Enter option number> ");
 constext txt_enter_range[] = N_("Enter range [%s]> ");
 constext txt_error_approved[] = N_("\nWarning: Approved: header used.\n");
@@ -154,8 +162,12 @@ constext txt_error_bad_approved[] = N_("\nError: Bad address in Approved: header
 constext txt_error_bad_from[] = N_("\nError: Bad address in From: header.\n");
 constext txt_error_bad_replyto[] = N_("\nError: Bad address in Reply-To: header.\n");
 constext txt_error_bad_msgidfqdn[] = N_("\nError: Bad FQDN in Message-ID: header.\n");
+constext txt_error_cant_unlock[] = N_("Can't unlock %s");
 constext txt_error_copy_fp[] = "copy_fp() failed";
 constext txt_error_corrupted_file[] = N_("Corrupted file %s");
+constext txt_error_couldnt_dotlock[] = N_("Couldn't dotlock %s - article not appended!");
+constext txt_error_couldnt_lock[] = N_("Couldn't lock %s - article not appended!");
+constext txt_error_fseek[] = "fseek() error on [%s]";
 constext txt_error_gnksa_internal[] = N_("Internal error in GNKSA routine - send bug report.\n");
 constext txt_error_gnksa_langle[] = N_("Left angle bracket missing in route address.\n");
 constext txt_error_gnksa_lparen[] = N_("Left parenthese missing in old-style address.\n");
@@ -183,6 +195,7 @@ constext txt_error_gnksa_rn_encsyn[] = N_("Bad syntax in encoded word used in re
 constext txt_error_gnksa_rn_paren[] = N_("Illegal character in realname.\nUnquoted words may not contain '()<>\\' in oldstyle addresses.\n");
 constext txt_error_gnksa_rn_invalid[] = N_("Illegal character in realname.\nControl characters and unencoded 8bit characters > 127 are not allowed.\n");
 constext txt_error_header_and_body_not_separate[] = N_("\nError: No blank line found after header.\n");
+/* TODO: fixme, US-ASCII is not the only 7bit charset we know about */
 constext txt_error_header_line_bad_charset[] = N_("\n\
 Error: Posting contains non-ASCII characters but MM_CHARSET is set to\n\
        US-ASCII  - please change this setting to a suitable value for\n\
@@ -211,6 +224,8 @@ Error: The \"%s:\" line is  continued in  the next line.  Since\n\
 constext txt_error_header_line_missing[] = N_("\nError: The \"%s:\" line is missing from the article header.\n");
 constext txt_error_header_line_space[] = N_("\nError: Header on line %d does not have a space after the colon:\n%s\n");
 constext txt_error_header_duplicate[] = N_("\nError: There are multiple (%d) \"%s:\" lines in the header.\n");
+constext txt_error_insecure_permissions[] = N_("Insecure permissions of %s (%o)");
+constext txt_error_invalid_response_to_group[] = N_("Invalid response to GROUP command, %s");
 #ifdef HAVE_METAMAIL
 	constext txt_error_metamail_failed[] = N_("metamail failed: %s");
 #endif /* HAVE_METAMAIL */
@@ -223,8 +238,14 @@ constext txt_error_no_write_permission[] = N_("No write permissions for %s\n");
 constext txt_error_passwd_missing[] = N_("Can't get user information (/etc/passwd missing?)");
 constext txt_error_plural[] = N_("errors");
 constext txt_error_sender_in_header_not_allowed[] = N_("\nError on line %d: \"Sender:\" header not allowed (it will be added for you)\n");
+constext txt_error_server_unavailable[] = N_("Server unavailable\n");
+constext txt_error_server_has_no_listed_groups[] = N_("Server has non of the groups listed in %s");
 constext txt_error_singular[] = N_("error");
+constext txt_error_socket_or_connect_problem[] = N_("\nsocket or connect problem\n");
+constext txt_error_topen[] = "t_open: can't t_open /dev/tcp";
 constext txt_error_unknown_dlevel[] = N_("Unknown display level");
+constext txt_error_unknown_service[] = N_("%s/tcp: Unknown service.\n");
+constext txt_error_wrong_newsgroupname_in_group_response[] = N_("Wrong newsgroup name in response of GROUP command, %s for %s");
 constext txt_esc[] = N_("<ESC>");
 constext txt_exiting[] = N_("Exiting...");
 constext txt_external_mail_done[] = N_("leaving external mail-reader");
@@ -238,6 +259,7 @@ constext txt_feed_pattern[] = N_("Enter pattern [%s]> ");
 constext txt_followup_newsgroups[] = N_("\nYou requested followups to your article to go to the following %s:\n");
 constext txt_followup_poster[] = N_("  %s\t Answers will be directed to you by mail.\n");
 constext txt_gethostbyname[] = N_("%s%s: Unknown host.\n");
+constext txt_giving_up[] = N_("Giving up...\n");
 constext txt_global[] = N_("global ");
 
 #if defined(HAVE_POLL) || defined(HAVE_SELECT)
@@ -411,12 +433,17 @@ constext txt_help_title_ops[] = N_("Group/thread/article operations\n-----------
 constext txt_index_page_com[] = N_("Group Level Commands");
 constext txt_info_add_kill[] = N_("Kill filter added");
 constext txt_info_add_select[] = N_("Auto-selection filter added");
+constext txt_info_all_parts_tagged[] = N_("All parts tagged");
 constext txt_info_do_postpone[] = N_("Storing article for later posting");
+constext txt_info_enter_valid_character[] = N_("Please enter a valid character");
+constext txt_info_missing_part[] = N_("Missing part #%d");
+constext txt_info_nopostponed[] = N_("*** No postponed articles ***");
+constext txt_info_not_multipart_message[] = N_("Not a multi-part message");
+constext txt_info_not_subscribed[] = N_("You are not subscribed to this group");
+constext txt_info_no_previous_expression[] = N_("No previous expression");
+constext txt_info_no_write[] = N_("Operation disabled in no-overwrite mode");
 /* TODO: replace hardcoded key-name in txt_info_postponed */
 constext txt_info_postponed[] = N_("%d postponed %s, reuse with ^O...\n");
-constext txt_info_nopostponed[] = N_("*** No postponed articles ***");
-constext txt_info_not_subscribed[] = N_("You are not subscribed to this group");
-constext txt_info_no_write[] = N_("Operation disabled in no-overwrite mode");
 constext txt_info_x_conversion_note[] = N_("X-Conversion-Note: multipart/alternative contents have been removed.\n\
   To get the whole article, turn alternative handling OFF in the Option Menu\n");
 constext txt_is_mailbox[] = N_("Save filename for %s/%s is a mailbox. Attachment not saved");
@@ -446,6 +473,7 @@ constext txt_keymap_invalid_key[] = N_("Invalid key definition '%s'\n");
 constext txt_keymap_invalid_name[] = N_("Invalid keyname '%s'\n");
 #ifdef DEBUG
 	constext txt_keymap_redef[] = N_("Redefined key %s '%s' -> '%s'\n");
+	constext txt_usage_debug[] = N_("  -D       debug mode 1=NNTP 2=ALL");
 #endif /* DEBUG */
 constext txt_keymap_conflict[] = N_("Key '%s' is defined for both %s%s and %s%s\n");
 constext txt_last_resp[] = N_("-- Last response --");
@@ -463,12 +491,16 @@ constext txt_uu_success[] = N_("%s successfully decoded.");
 
 constext txt_lines[] = N_("Lines %s  ");
 constext txt_mail[] = "Mail";
+constext txt_mailbox[] = N_("mailbox ");
 constext txt_mail_art_to[] = N_("Mail article(s) to [%.*s]> ");
 constext txt_mail_log_to[] = N_("Mailing log to %s\n");
 constext txt_mail_bug_report[] = N_("Mail bug report...");
 constext txt_mail_bug_report_confirm[] = N_("Mail BUG REPORT to %s?");
 constext txt_mailed[] = N_("Mailed");
 constext txt_mailing_to[] = N_("Mailing to %s...");
+constext txt_mail_save_active_head[] = N_("# [Mail/Save] active file. Format is like news active file:\n\
+#   groupname  max.artnum  min.artnum  /dir\n\
+# The 4th field is the basedir (ie. ~/Mail or ~/News)\n#\n");
 constext txt_marked_as_unread[] = N_("%s marked as unread");
 constext txt_mark_arts_read[] = N_("Mark all articles as read%s?");
 constext txt_mark_group_read[] = N_("Mark group %.*s as read?");
@@ -506,6 +538,7 @@ constext txt_mini_thread_1[] = N_("<n>=set current to n; %s=next unread; %s=catc
 constext txt_mini_thread_2[] = N_("%s=help; %s=line down; %s=line up; %s=quit; %s=tag; %s=mark unread");
 constext txt_more[] = N_("--More--");
 constext txt_moving[] = N_("Moving %s...");
+constext txt_name[] = N_(", name: ");
 constext txt_newsgroup[] = N_("Goto newsgroup [%s]> ");
 constext txt_newsgroup_plural[] = N_("newsgroups");
 constext txt_newsgroup_position[] = N_("Position %s in group list (1,2,..,$) [%d]> ");
@@ -518,10 +551,21 @@ constext txt_nntp_authorization_failed[] = N_("NNTP authorization password not f
 
 #ifdef NNTP_ABLE
 	constext txt_nntp_ok_goodbye[] = N_("205  Closing connection");
+	constext txt_usage_force_authentication[] = N_("  -A       force authentication on connect");
+	constext txt_usage_newsserver[] = N_("  -g serv  read news from NNTP server serv [default=%s]");
+	constext txt_usage_port[] = N_("  -p port  use port as NNTP port [default=%d]");
+	constext txt_usage_quickstart[] = N_("  -Q       quick start. Same as -nqd");
+	constext txt_usage_read_only_subscribed[] = N_("  -n       only read subscribed .newsrc groups from NNTP server");
+	constext txt_usage_use_listgroup[] = N_("  -l       use only LISTGROUP instead of GROUP (-n) command");
+#else
+	constext txt_usage_quickstart[] = N_("  -Q       quick start. Same as -qd");
+	constext txt_usage_read_only_subscribed[] = N_("  -n       TODO: document feature");
+	constext txt_usage_use_listgroup[] = N_("  -l       TODO: document feature");
 #endif /* NNTP_ABLE */
 
 constext txt_no[] = N_("No  ");
 constext txt_no_arts[] = N_("*** No articles ***");
+constext txt_no_arts_to_save[] = N_("No articles to save");
 constext txt_no_arts_posted[] = N_("No articles have been posted");
 
 #ifndef DONT_HAVE_PIPING
@@ -613,6 +657,8 @@ constext txt_post_subject[] = N_("Post subject [%s]> ");
 constext txt_posted_info_file[] = N_("# Summary of mailed/posted messages viewable by 'W' command from within tin.\n");
 constext txt_posting[] = N_("Posting article...");
 constext txt_postpone_repost[] = N_("Post postponed articles [%%.*s]? (%s/%s/%s/%s/%s): ");
+constext txt_prefix_hot[] = N_("Hot %s");
+constext txt_prefix_tagged[] = N_("Tagged %s");
 constext txt_prompt_fup_ignore[] = N_("Accept Followup-To? %s=post, %s=ignore, %s=quit: ");
 constext txt_prompt_unchanged_mail[] = N_("Article unchanged, abort mailing?");
 constext txt_prompt_see_postponed[] = N_("Do you want to see postponed articles (%d)?");
@@ -667,6 +713,8 @@ constext txt_saved_group[] = N_("%4d unread (%4d hot) %s in %s\n");
 constext txt_saved_groupname[] = N_("Saved %s...\n");
 constext txt_saved_nothing[] = N_("Nothing was saved");
 constext txt_saved_summary[] = N_("\n%s %d %s from %d %s\n");
+constext txt_saved_to[] = N_("-- %s saved to %s%s --");
+constext txt_saved_to_range[] = N_("-- %s saved to %s - %s --");
 constext txt_saving[] = N_("Saving...");
 constext txt_screen_init_failed[] = N_("%s: Screen initialization failed");
 constext txt_screen_too_small[] = N_("%s: screen is too small\n");
@@ -681,14 +729,18 @@ constext txt_select_config_file_option[] = N_("Select option number before text 
 constext txt_select_group[] = N_("Select group> ");
 constext txt_select_pattern[] = N_("Enter selection pattern [%s]> ");
 constext txt_select_thread[] = N_("Select thread > ");
+constext txt_send_bugreport[] = N_("%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n");
 constext txt_server_name_in_file_env_var[] = N_("Put the server name in the file %s,\nor set the environment variable NNTPSERVER");
 constext txt_servers_active[] = N_("servers active-file");
 #ifndef NO_SHELL_ESCAPE
+	constext txt_shell_command[] = N_("Shell Command (%s)");
 	constext txt_shell_escape[] = N_("Enter shell command [%s]> ");
 #endif /* !NO_SHELL_ESCAPE */
 constext txt_skipping_newgroups[] = N_("Cannot move into new newsgroups. Subscribe first...");
 constext txt_space[] = N_("<SPACE>");
 constext txt_starting_command[] = N_("Starting: (%s)");
+constext txt_stp_list_thread[] = N_("List Thread (%d of %d)");
+constext txt_stp_thread[] = N_("Thread (%.*s)");
 constext txt_subscribe_pattern[] = N_("Enter wildcard subscribe pattern> ");
 constext txt_subscribed_num_groups[] = N_("subscribed to %d groups");
 constext txt_subscribed_to[] = N_("Subscribed to %s");
@@ -753,7 +805,7 @@ constext *txt_onoff[] = { "OFF", "ON" };
  * NB: All the following arrays must match corresponding ordering in tin.h
  * Threading types
  */
-constext *txt_thread[] = {
+constext *txt_threading[] = {
 	N_("None"),
 	N_("Subject"),
 	N_("References"),
@@ -917,6 +969,7 @@ constext *txt_quote_style_type[] = {
 };
 
 #ifdef CHARSET_CONVERSION
+/* supported charsets */
 constext *txt_mime_charsets[] = {
 	"US-ASCII",
 	"ISO-8859-1", "ISO-8859-2", "ISO-8859-3", "ISO-8859-4", "ISO-8859-5",
@@ -925,11 +978,21 @@ constext *txt_mime_charsets[] = {
 	"KOI8-RU", "KOI8-R", "KOI8-U",
 	"EUC-CN", "EUC-JP", "EUC-KR", "EUC-TW",
 	"ISO-2022-CN", "ISO-2022-CN-EXT", "ISO-2022-JP", "ISO-2022-JP-1",
-	"ISO-2022-JP-2", "ISO-2022-KR",
+	"ISO-2022-JP-2",
 	"Big5",
 	"UTF-8"
 };
 #endif /* CHARSET_CONVERSION */
+
+/* 7bit charsets, US-ASCII must be the first entry */
+constext *txt_mime_7bit_charsets[] = {
+	"US-ASCII",
+	"ISO-2022-CN", "ISO-2022-CN-EXT", "ISO-2022-JP", "ISO-2022-JP-1",
+	"ISO-2022-JP-2", "ISO-2022-KR",
+	"HZ-GB-2312",
+	/* sentinel */
+	""
+};
 
 /* different mailbox formats */
 constext *txt_mailbox_formats[] = {
@@ -967,15 +1030,20 @@ constext *txt_mailbox_formats[] = {
 
 constext txt_at_s[] = N_(" at %s");
 constext txt_there_is_no_news[] = N_("There is no news\n");
+constext txt_thread[] = N_("Thread");
 constext txt_thread_com[] = N_("Thread Level Commands");
 constext txt_thread_marked_as_deselected[] = N_("Thread deselected");
 constext txt_thread_marked_as_selected[] = N_("Thread selected");
+constext txt_thread_range[] = N_("Thread range");
 constext txt_thread_x_of_n[] = N_("%sThread %4s of %4s%s");
 constext txt_threading_arts[] = N_("Threading articles...");
 constext txt_toggled_high[] = N_("Toggled word highlighting %s");
 constext txt_toggled_rot13[] = N_("Toggled rot13 encoding");
 constext txt_toggled_tex2iso[] = N_("Toggled german TeX encoding %s");
 constext txt_toggled_tabwidth[] = N_("Toggled tab-width to %d");
+constext txt_trying[] = N_("Trying %s");
+constext txt_trying_dotlock[] = N_("%d Trying to dotlock %s");
+constext txt_trying_lock[] = N_("%d Trying to lock %s");
 constext txt_type_h_for_help[] = N_("           h=help\n");
 constext txt_unread[] = N_("unread ");
 constext txt_unsubscribed_num_groups[] = N_("unsubscribed from %d groups");
@@ -985,6 +1053,7 @@ constext txt_untagged_art[] = N_("Untagged article");
 constext txt_untagged_thread[] = N_("Untagged thread");
 constext txt_unthreading_arts[] = N_("Unthreading articles...");
 constext txt_updated[] = N_("Updated");
+constext txt_updating[] = N_("Updating");
 constext txt_url_open[] = N_("Opening %s\n");
 constext txt_url_done[] = N_("No more URL's in this article");
 
@@ -992,6 +1061,38 @@ constext txt_url_done[] = N_("No more URL's in this article");
 	constext txt_use_mime[] = N_("Use MIME display program for this message?");
 #endif /* HAVE_METAMAIL */
 
+constext txt_usage_catchup[] = N_("  -c       mark all news as read in subscribed newsgroups (batch mode)");
+constext txt_usage_check_for_unread_news[] = N_("  -Z       return status indicating if any unread news (batch mode)");
+constext txt_usage_dont_check_new_newsgroups[] = N_("  -q       don't check for new newsgroups");
+constext txt_usage_dont_save_files_on_quit[] = N_("  -X       don't save any files on quit");
+constext txt_usage_dont_show_descriptions[] = N_("  -d       don't show newsgroup descriptions");
+constext txt_usage_getart_limit[] = N_("  -G limit get only limit articles/group");
+constext txt_usage_help_information[] = N_("  -H       help information about %s");
+constext txt_usage_help_message[] = N_("  -h       this help message");
+#ifndef NNTP_ONLY
+	constext txt_usage_index_newsdir[] = N_("  -I dir   news index file directory [default=%s]");
+	constext txt_usage_update_index_files[] = N_("  -u       update index files (batch mode)");
+#endif /* !NNTP_ONLY */
+constext txt_usage_maildir[] = N_("  -m dir   mailbox directory [default=%s]");
+constext txt_usage_mail_bugreport[] = N_("\nMail bug reports/comments to %s");
+constext txt_usage_mail_new_news[] = N_("  -N       mail new news to your posts (batch mode)");
+constext txt_usage_mail_new_news_to_user[] = N_("  -M user  mail new news to specified user (batch mode)");
+constext txt_usage_newsrc_file[] = N_("  -f file  subscribed to newsgroups file [default=%s]");
+constext txt_usage_post_article[] = N_("  -w       post an article and exit");
+constext txt_usage_post_postponed_arts[] = N_("  -o       post all postponed articles and exit");
+constext txt_usage_read_news_remotely[] = N_("  -r       read news remotely from default NNTP server");
+constext txt_usage_read_saved_news[] = N_("  -R       read news saved by -S option");
+constext txt_usage_savedir[] = N_("  -s dir   save news directory [default=%s]");
+constext txt_usage_save_new_news[] = N_("  -S       save new news for later reading (batch mode)");
+constext txt_usage_start_if_unread_news[] = N_("  -z       start if any unread news");
+constext txt_usage_tin[] = N_("A Usenet reader.\n\nUsage: %s [options] [newsgroup[,...]]");
+#ifdef HAVE_COLOR
+	constext txt_usage_toggle_color[] = N_("  -a       toggle color flag");
+#endif /* HAVE_COLOR */
+constext txt_usage_verbose[] = N_("  -v       verbose output for batch mode options");
+constext txt_usage_version[] = N_("  -V       print version & date information");
+constext txt_useful_without_batch_mode[] = N_("%s only useful without batch mode operations\n");
+constext txt_useful_with_batch_mode[] = N_("%s only useful for batch mode operations\n");
 constext txt_value_out_of_range[] = N_("\n%s%d out of range (0 - %d). Reset to 0");
 constext txt_warn_art_line_too_long[] = N_("\nWarning: posting exceeds %d columns. Line %d is the first long one:\n%-100s\n");
 constext txt_warn_article_unchanged[] = N_("\nWarning: article unchanged after editing\n");
@@ -1058,6 +1159,7 @@ before you start tin once again!\n");
 #endif /* !NO_ETIQUETTE */
 
 constext txt_warn_multiple_sigs[] = N_("\nWarning: Found %d '-- \\n' lines, this may confuse some people.\n");
+constext txt_warn_not_all_arts_saved[] = N_("Warning: Only %d out of %d articles were saved");
 constext txt_warn_sig_too_long[] = N_("\n\
 Warning: Your signature  is longer than %d lines.  Since signatures usually do\n\
          not  transport any  useful information,  they should be as  short as\n\
@@ -1073,6 +1175,7 @@ constext txt_show_unread[] = N_("Showing unread groups only");
 constext txt_yes[] = N_("Yes ");
 constext txt_you_have_mail[] = N_("    You have mail\n");
 constext txt_all_groups[] = N_("All groups");
+constext txt_filter_comment[] = N_("Comment (optional)  : ");
 constext txt_filter_text_type[] = N_("Apply pattern to    : ");
 constext txt_from_line_only[] = N_("From: line (ignore case)      ");
 constext txt_from_line_only_case[] = N_("From: line (case sensitive)   ");
@@ -1095,7 +1198,6 @@ constext txt_kill_subj[] = N_("Kill Subject:  [%-*.*s] (y/n): ");
 constext txt_kill_text[] = N_("Kill text pattern   : ");
 constext txt_kill_time[] = N_("Kill time in days   : ");
 constext txt_msgid_line_only[] = N_("Message-ID: line              ");
-constext txt_select_comment[] = N_("Select comment : ");
 constext txt_select_from[] = N_("Select From    [%-*.*s] (y/n): ");
 constext txt_select_lines[] = N_("Select Lines: (</>num): ");
 constext txt_select_menu[] = N_("Auto-select Article Menu");
@@ -1149,6 +1251,7 @@ constext txt_processing_saved_arts[] = N_("Processing saved articles marked for 
 
 #ifdef M_AMIGA
 	constext txt_env_var_not_found[] = N_("Environment variable %s not found. Set and retry...");
+	constext txt_usage_bbs_mode[] = N_("  -B       BBS mode. File operations limited to home directories.");
 #endif /* M_AMIGA */
 
 #ifdef HAVE_FASCIST_NEWSADMIN
@@ -1903,9 +2006,7 @@ struct opttxt txt_mm_charset = {
 	N_("Enter charset name for MIME (e.g. US-ASCII, ISO-8859-1, EUC-KR), <CR> to set."),
 	N_("MM_CHARSET                         :"),
 	N_("# Charset supported locally which is also used for MIME header and\n\
-# Content-Type header unless news and mail need to be encoded in other\n\
-# charsets as in case of EUC-KR for Korean which needs to be converted to\n\
-# ISO-2022-KR in mail message.\n\
+# Content-Type header.\n\
 # If not set, the value of the environment variable MM_CHARSET is used.\n\
 # Set to US-ASCII or compile time default if neither of them is defined.\n\
 # If MIME_STRICT_CHARSET is defined at compile-time, charset other than\n\
@@ -1933,21 +2034,7 @@ struct opttxt txt_post_mime_encoding = {
 # for mails and posts, if necessary. QP is efficient for most European\n\
 # character sets (ISO-8859-X) with small fraction of non-US-ASCII chars,\n\
 # while Base64 is more efficient for most 8bit East Asian, Greek, and\n\
-# Russian charsets with a lot of 8bit characters.\n\
-# For EUC-KR, 7bit encoding specifies that EUC charsets be converted\n\
-# to corresponding ISO-2022-KR. The same may be true of EUC-JP/CN.\n\
-# Korean users should set post_mime_encoding to 8bit and mail_mime_encoding\n\
-# to 7bit. With mm_charset to EUC-KR, post_mime_encoding set to 7bit does\n\
-# NOT lead to conversion of EUC-KR into ISO-2022-KR in news-postings since\n\
-# it's never meant to be used for Usenet news. Japanese always use\n\
-# ISO-2022-JP for both news and mail. Automatic conversion of EUC-JP and\n\
-# other 8bit Japanese encodings into ISO-2022-JP (even if 7bit is chosen)\n\
-# is NOT yet implemented. (It may not be necessary at all as Japanese\n\
-# terminal emulators and editors appear to have native support of\n\
-# ISO-2022-JP). In case of Chinese, the situation seems to be more\n\
-# complicated (different newsgroups and hierarchies for Chinese use different\n\
-# MIME charsets and encodings) and no special handling is yet implemented.\n\
-# Summing up 7bit does NOT have any effect on MIME charset other than EUC-KR.\n")
+# Russian charsets with a lot of 8bit characters.\n")
 };
 
 struct opttxt txt_post_8bit_header = {
@@ -1977,8 +2064,8 @@ struct opttxt txt_mail_8bit_header = {
 	N_("# If ON, 8bit characters in mail headers are NOT encoded.\n\
 # default is OFF. Thus 8bit characters are encoded by default.\n\
 # 8bit chars in headers are encoded regardless of the value of this parameter\n\
-# unless mail_mime_encoding is 8bit as well. Note that RFC 1552/1651/1652\n\
-# prohibit 8bit characters in mail headers so that you are advised NOT to\n\
+# unless mail_mime_encoding is 8bit as well. Note that RFC 2822\n\
+# prohibits 8bit characters in mail headers so that you are advised NOT to\n\
 # turn it ON unless you have some compelling reason.\n")
 };
 

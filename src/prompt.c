@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-01-05
+ *  Updated   : 2003-02-08
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -409,7 +409,7 @@ prompt_option_char(
 			return FALSE;
 		}
 		if (!*p)
-			info_message(_("Please enter a valid character")); /* TODO: Use move to lang.c */
+			info_message(_(txt_info_enter_valid_character));
 	} while (!*p);
 
 	*variable = p[0];

@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2002-03-26
+ *  Updated   : 2003-02-08
  *  Notes     :
  *
  * Copyright (c) 1992-2003 Iain Lea <iain@bricbrac.de>
@@ -362,9 +362,9 @@ read_newsrc_active_file(
 							sprintf(fmt, "%%ld %%ld %%ld %%%ds", NNTP_STRLEN);
 
 							if (sscanf(line, fmt, &count, &min, &max, ngname) != 4)
-								error_message(_("Invalid response to GROUP command, %s"), line); /* FIXME: -> lang.c */
+								error_message(_(txt_error_invalid_response_to_group), line);
 							if (strcmp(ngname, ngnames[index_o]) != 0)
-								error_message(_("Wrong newsgroup name in response of GROUP command, %s for %s"), line, ngnames[index_o]); /* FIXME: -> lang.c */
+								error_message(_(txt_error_wrong_newsgroupname_in_group_response), line, ngnames[index_o]);
 							ptr = ngname;
 							free(ngnames[index_o]);
 							index_o = (index_o + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
@@ -444,8 +444,8 @@ read_newsrc_active_file(
 	 * Exit if active file wasn't read correctly or is empty
 	 */
 	if (tin_errno || !num_active) {
-		if (newsrc_active && !num_active) /* TODO: -> lang.c */
-			error_message(_("Server has non of the groups listed in %s"), newsrc);
+		if (newsrc_active && !num_active)
+			error_message(_(txt_error_server_has_no_listed_groups), newsrc);
 		else
 			error_message(_(txt_active_file_is_empty), (read_news_via_nntp ? _(txt_servers_active) : news_active_file));
 		tin_done(EXIT_FAILURE);

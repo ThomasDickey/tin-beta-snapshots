@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-01-21
+ *  Updated   : 2003-02-18
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -82,7 +82,9 @@
 #	endif /* EVIL_INSIDE */
 #else
 #	define ADD_CAN_KEY(id)
-#	define ADD_CAN_LOCK(id)
+#	ifdef EVIL_INSIDE
+#		define ADD_CAN_LOCK(id)
+#	endif /* EVIL_INSIDE */
 #endif /* USE_CANLOCK */
 
 #ifdef EVIL_INSIDE
@@ -584,21 +586,17 @@ append_mail(
 		fd = fileno(fp_out);
 		/* TODO: move the retry/error stuff into a function? */
 		while (retrys-- && fd_lock(fd, FALSE))
-			/* FIXME: -> lang.c */
-			wait_message(1, "%d Trying to lock %s", retrys, the_mailbox);
+			wait_message(1, _(txt_trying_lock), retrys, the_mailbox);
 		if (retrys < 0) {
-			/* FIXME: -> lang.c */
-			wait_message(5, "Couldn't lock %s - article not appended!", the_mailbox);
+			wait_message(5, _(txt_error_couldnt_lock), the_mailbox);
 			fclose(fp_out);
 			fclose(fp_in);
 			return rval;
 		}
 		while (retrys-- && !dot_lock(the_mailbox))
-			/* FIXME: -> lang.c */
-			wait_message(1, "%d Trying to dotlock %s", retrys, the_mailbox);
+			wait_message(1, _(txt_trying_dotlock), retrys, the_mailbox);
 		if (retrys < 0) {
-			/* FIXME: -> lang.c */
-			wait_message(5, "Couldn't dotlock %s - article not appended!", the_mailbox);
+			wait_message(5, _(txt_error_couldnt_dotlock), the_mailbox);
 			fd_unlock(fd);
 			fclose(fp_out);
 			fclose(fp_in);
@@ -635,7 +633,7 @@ append_mail(
 
 		fflush(fp_out);
 		if (fd_unlock(fd) || !dot_unlock(the_mailbox))
-			wait_message(4, "Can't unlock %s", the_mailbox); /* FIXME: -> lang.c */
+			wait_message(4, _(txt_error_cant_unlock), the_mailbox);
 
 		fclose(fp_out);
 		rval = TRUE;
@@ -738,7 +736,7 @@ check_article_to_be_posted(
 	t_bool saw_references = FALSE;
 	t_bool saw_wrong_sig_dashes = FALSE;
 	t_bool mime_7bit = TRUE;
-	t_bool mime_usascii = TRUE;
+	t_bool mime_usascii = FALSE;
 	t_bool contains_8bit = FALSE;
 
 	if ((fp = fopen(the_article, "r")) == NULL) {
@@ -1125,12 +1123,22 @@ check_article_to_be_posted(
 	if (ngcnt)
 		*group = group_find(ngptrs[0]);
 
+	/*
+	 * check for known 7bit charsets
+	 */
+	for (i = 0; *txt_mime_7bit_charsets[i]; i++) {
 #ifdef CHARSET_CONVERSION
-	if (strcasecmp(txt_mime_charsets[*group ? (*group)->attribute->mm_network_charset : tinrc.mm_network_charset], "US-ASCII"))
+		if (!strcasecmp(txt_mime_charsets[*group ? (*group)->attribute->mm_network_charset : tinrc.mm_network_charset], txt_mime_7bit_charsets[i])) {
+			mime_usascii = TRUE;
+			break;
+		}
 #else
-	if (strcasecmp(tinrc.mm_charset, "US-ASCII"))
+		if (!strcasecmp(tinrc.mm_charset, "US-ASCII")) {
+			mime_usascii = TRUE;
+			break;
+		}
 #endif /* CHARSET_CONVERSION */
-		mime_usascii = FALSE;
+	}
 	if (strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], "7bit"))
 		mime_7bit = FALSE;
 	if (contains_8bit && mime_usascii)
@@ -3047,7 +3055,7 @@ mail_to_author(
 	 * full original headers in the body of the mail
 	 */
 	if ((fp = create_mail_headers(nam, TIN_LETTER_NAME, from_addr, subject, &note_h)) == NULL)
-		 return ret_code;
+		return ret_code;
 
 	if (copy_text) {
 		start_line_offset += add_mail_quote(fp, respnum);
@@ -3162,7 +3170,7 @@ check_for_spamtrap(
 			ptr = strchr(tmp, ',');
 			if (ptr != NULL)
 				*ptr = '\0';
-			if (strcasestr(addr, tmp) != NULL) {
+			if (strcasestr(addr, tmp)) {
 				free(env);
 				return TRUE;
 			}
@@ -3208,7 +3216,7 @@ cancel_article(
 	 * Check if news / mail / save group
 	 */
 	if (group->type == GROUP_TYPE_MAIL || group->type == GROUP_TYPE_SAVE) {
-		vGrpDelMailArt(art);
+		grp_del_mail_art(art);
 		return FALSE;
 	}
 	get_from_name(from_name, group);
@@ -3662,10 +3670,10 @@ msg_add_x_headers(
 			}
 		}
 	} else {
-	/*
-	 * without this else a "x_headers=name" without a ':' would be
-	 * treated as a filename in the current dir - IMHO not very useful
-	 */
+		/*
+		 * without this else a "x_headers=name" without a ':' would be
+		 * treated as a filename in the current dir - IMHO not very useful
+		 */
 		if (!strfpath(headers, file, sizeof(file), &CURR_GROUP))
 			strcpy(file, headers);
 

@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2003-01-31
+ *  Updated   : 2003-02-01
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -1114,7 +1114,7 @@ word_highlight_string(
 	/*
 	 * Mapping of the tinrc.mono_mark* values to the corresponding escape sequences
 	 */
-	char *attributes[MAX_ATTR];
+	char *attributes[MAX_ATTR + 1];
 	char tmp[LEN];
 
 	attributes[0] = _reset;	/* Normal */

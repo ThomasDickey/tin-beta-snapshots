@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2003-01-27
+.\" Updated   : 2003-02-04
 .\" Notes     : needs a some work
 .\"
-.TH tin 5 "January 27th, 2003" "1.5.17" "A Usenet newsreader"
+.TH tin 5 "February 4th, 2003" "1.5.17" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -787,7 +787,7 @@ Below is a list of all keynames and their default bindings.
 \fBPageCancel\fP	D
 \fBPageEditFilter\fP	E
 \fBPageFollowup\fP	F
-\fBPageLastPage2\fP	G
+\fBPageLastPage\fP	G
 \fBPageKillThd\fP	K
 \fBPageNextUnreadArt\fP	N
 \fBPagePrevUnreadArt\fP	P
@@ -803,7 +803,7 @@ Below is a list of all keynames and their default bindings.
 \fBPageCatchup\fP	c
 \fBPageEditArticle\fP	e
 \fBPageFollowupQuote\fP	f
-\fBPageFirstPage2\fP	g
+\fBPageFirstPage\fP	g
 \fBPageListThd\fP	l
 \fBPageMail\fP	m
 \fBPageNextArt\fP	n
@@ -1377,12 +1377,7 @@ signing.
 .B mail_mime_encoding
 MIME encoding of the body in mail message, if necessary (8bit, base64,
 quoted-printable, 7bit) Default is 8bit and no encoding (or charset
-conversion) is performed (i.e., local charset is used as it is). If set to
-7bit, CJK text in 8bit encoding (EUC-CN, EUC-TW, EUC-JP, EUC-KR, Big5,
-Shift_JIS) is supposed to be converted into ISO-2022-KR/JP/CN. Only EUC-KR
-to ISO-2022-KR conversion has been implemented, however. Accordingly,
-setting it to 7bit has no effect on MIME charsets/encodings other than
-EUC-KR (Korean).
+conversion) is performed (i.e., local charset is used as it is).
 .TP
 .B mail_quote_format
 Format of quote line when replying (via mail) to an article (%A=Address,
@@ -1401,18 +1396,15 @@ for more details about MMDF.
 If ON mark articles that are saved as read. Default is ON.
 .TP
 .B mm_charset
-Charset supported locally, which is also used for MIME header (charset
-parameter and charset name in header encoding) in mail and news posting
-unless local charset/encoding needs to be converted into other
-charset/encoding as in case of EUC-KR which is converted to ISO-2022-KR if
-\fBmail_mime_encoding\fP is set to 7bit. Possible values include ISO-8859-X
-(where X is 1 to 16), EUC-JP, EUC-CN, EUC-KR, EUC-TW, Big5, Shift_JIS, and
-so forth. If \fBMIME_STRICT_CHARSET\fP is defined at the compile time, text
-in charset other than the value of this parameter is considered not
-displayable and represented as '?'. Otherwise, all character sets are
-regarded as compatible with the display. If it's not set, the value of the
-environment variable \fB$MM_CHARSET\fP is used. US-ASCII or compile-time
-default is used in case neither of them is defined. If your system supports
+Charset supported locally, which is also used for MIME header
+(charset parameter and charset name in header encoding) in mail and
+news posting. If \fBMIME_STRICT_CHARSET\fP is defined at the compile
+time, text in charset other than the value of this parameter is
+considered not displayable and represented as '?'. Otherwise, all
+character sets are regarded as compatible with the display. If it's
+not set, the value of the environment variable \fB$MM_CHARSET\fP is
+used. US-ASCII or compile-time default is used in case neither of
+them is defined. If your system supports
 .BR iconv (3),
 this option is disabled and you should use \fBmm_network_charset\fP instead.
 .TP
@@ -1502,12 +1494,8 @@ your interest to determine what to do with this and
 .TP
 .B post_mime_encoding
 MIME encoding of the body in news message, if necessary. (8bit, base64,
-quoted-printable, 7bit) Default is 8bit, which leads to no encoding (or
-charset conversion, i.e., local charset is posted as it is). If set to 7bit,
-Chinese and Japanese text (in 8bit encodings such as EUC-CN, EUC-TW, EUC-JP,
-Shift_JIS, Big5) is supposed to be converted into ISO-2022-CN/JP, but it's
-NOT yet implemented. Therefore, currently 7bit has NO effect (i.e.
-equivalent to 8bit) whatever MIME charset/encoding is chosen.
+quoted-printable, 7bit) Default is 8bit, which leads to no encoding.
+base64 and quoted-printable are usualy undesired on usenet.
 .TP
 .B post_process_view
 If ON, then

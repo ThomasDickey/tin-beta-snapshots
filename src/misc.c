@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-01-16
+ *  Updated   : 2003-02-18
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -400,15 +400,15 @@ invoke_editor(
 t_bool
 invoke_ispell(
 	const char *nam,
-	struct t_group *psGrp) /* return value is always ignored */
+	struct t_group *group) /* return value is always ignored */
 {
 	FILE *fp_all, *fp_body, *fp_head;
 	char buf[PATH_LEN], nam_body[100], nam_head[100];
 	char ispell[PATH_LEN];
 	t_bool retcode;
 
-	if (psGrp && psGrp->attribute->ispell != NULL)
-		STRCPY(ispell, psGrp->attribute->ispell);
+	if (group && group->attribute->ispell != NULL)
+		STRCPY(ispell, group->attribute->ispell);
 	else
 		STRCPY(ispell, get_val("ISPELL", PATH_ISPELL));
 
@@ -489,7 +489,7 @@ shell_escape(
 	}
 
 	ClearScreen();
-	sprintf(mesg, "Shell Command (%s)", p); /* FIXME: -> lang.c */
+	sprintf(mesg, _(txt_shell_command), p);
 	center_line(0, TRUE, mesg);
 	MoveCursor(INDEX_TOP, 0);
 
@@ -553,7 +553,7 @@ tin_done(
 					} else
 						break;
 				}
-				wait_message(0, _("Catchup %s..."), group->name);	/* FIXME: -> lang.c */
+				wait_message(0, _(txt_catchup_group), group->name);
 				grp_mark_read(group, NULL);
 			}
 		}
@@ -2315,12 +2315,13 @@ quote_wild(
 	for (target = buff; *str != '\0'; str++) {
 		if (tinrc.wildcard) { /* regex */
 			/*
-			 * quote meta characters ()[]{}\^$*+?.
+			 * quote meta characters ()[]{}\^$*+?.#
 			 * replace whitespace with '\s' (pcre)
 			 */
 			if (*str == '(' || *str == ')' || *str == '[' || *str == ']' || *str == '{' || *str == '}'
 			    || *str == '\\' || *str == '^' || *str == '$'
 			    || *str == '*' || *str == '+' || *str == '?' || *str == '.'
+			    || *str == '#'
 			    || *str == ' ' || *str == '\t') {
 				*target++ = '\\';
 				*target++ = ((*str == ' ' || *str == '\t')? 's' : *str);

@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 1997-12-22
+ *  Updated   : 2003-02-23
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -323,7 +323,7 @@ get_tcp_socket(
 		strcpy(device, "/dev/tcp");
 
 	if ((s = t_open(device, O_RDWR, (struct t_info *) 0)) < 0){
-		t_error("t_open: can't t_open /dev/tcp"); /* FIXME: -> lang.c */
+		t_error(txt_error_topen);
 		return -EPROTO;
 	}
 	if (t_bind(s, (struct t_bind *) 0, (struct t_bind *) 0) < 0) {
@@ -374,7 +374,7 @@ get_tcp_socket(
 	if (t_connect(s, callptr, (struct t_call *) 0) < 0) {
 		save_errno = t_errno;
 		if (save_errno == TLOOK)
-			fprintf(stderr, _("Server unavailable\n")); /* FIXME: -> lang.c */
+			fprintf(stderr, _(txt_error_server_unavailable));
 		else
 			t_error("t_connect");
 		t_free((char *) callptr, T_CALL);
@@ -417,7 +417,7 @@ get_tcp_socket(
 
 #			ifdef HAVE_GETSERVBYNAME
 	if ((sp = (struct servent *) getservbyname(service, "tcp")) == NULL) {
-		my_fprintf(stderr, _("%s/tcp: Unknown service.\n"), service); /* FIXME: -> lang.c */
+		my_fprintf(stderr, _(txt_error_unknown_service), service);
 		return -EHOSTUNREACH;
 	}
 #			else
@@ -493,7 +493,7 @@ get_tcp_socket(
 
 #			ifdef HAVE_INET_NTOA
 		if (x < 0)
-			my_fprintf(stderr, _("Trying %s"), (char *) inet_ntoa(sock_in.sin_addr)); /* FIXME: -> lang.c */
+			my_fprintf(stderr, _(txt_trying), (char *) inet_ntoa(sock_in.sin_addr));
 #			endif /* HAVE_INET_NTOA */
 
 #			if defined(__hpux) && defined(SVR4)	/* recommended by raj@cup.hp.com */
@@ -517,14 +517,14 @@ get_tcp_socket(
 
 		save_errno = errno;									/* Keep for later */
 #			ifdef HAVE_INET_NTOA
-		my_fprintf(stderr, _("\nConnection to %s: "), (char *) inet_ntoa(sock_in.sin_addr)); /* FIXME: -> lang.c */
+		my_fprintf(stderr, _(txt_connection_to), (char *) inet_ntoa(sock_in.sin_addr));
 		perror("");
 #			endif /* HAVE_INET_NTOA */
 		(void) s_close(s);
 	}
 
 	if (x < 0) {
-		my_fprintf(stderr, _("Giving up...\n")); /* FIXME: -> lang.c */
+		my_fprintf(stderr, _(txt_giving_up));
 		return -save_errno;					/* Return the last errno we got */
 	}
 #		else
@@ -642,7 +642,7 @@ get_tcp6_socket(
 	if (res0 != NULL)
 		freeaddrinfo(res0);
 	if (err < 0) {
-		my_fprintf(stderr, _("\nsocket or connect problem\n")); /* FIXME: -> lang.c */
+		my_fprintf(stderr, _(txt_error_socket_or_connect_problem));
 		return -1;
 	}
 	return s;
@@ -739,31 +739,36 @@ u_put_server(
 
 
 /*
- * Send 'string' to the NNTP server, terminating it with CR and LF, as per ARPA
- * standard.
+ * Send 'string' to the NNTP server, terminating it with CR and LF, as per
+ * ARPA standard.
  *
  * Returns: Nothing.
  *
- *	Side effects:	Talks to the server.
+ *	Side effects: Talks to the server.
  *			Closes connection if things are not right.
  *
- * Note:	This routine flushes the buffer each time it is called. For large
- *			transmissions (i.e., posting news) don't use it. Instead, do the
- *			fprintf's yourself, and then a final fflush.
+ * Note: This routine flushes the buffer each time it is called. For large
+ *	      transmissions (i.e., posting news) don't use it. Instead, do the
+ *	      fprintf's yourself, and then a final fflush.
+ *       Only cache commands, don't cache data transmissions.
+ *
  */
 void
 put_server(
 	const char *string)
 {
-	/*
-	 * We remember the last thing we wrote, we will need to resend it if
-	 * we have to reconnect. Reconnection is handled by get_server()
-	 */
-	DEBUG_IO((stderr, "put_server(%s)\n", string));
-	strcpy(last_put, string);
-
-	s_puts(string, nntp_wr_fp);
-	s_puts("\r\n", nntp_wr_fp);
+	if (*string && strlen(string)) {
+		/*
+		 * remember the last command we wrote (except ".") to be able
+		 * to resend it after a reconnect. reconnection is handled by
+		 * get_server()
+		 */
+		if (strcmp(last_put, "."))
+			strcpy(last_put, string);
+		DEBUG_IO((stderr, "put_server(%s)\n", string));
+		s_puts(string, nntp_wr_fp);
+		s_puts("\r\n", nntp_wr_fp);
+	}
 	(void) s_flush(nntp_wr_fp);
 }
 

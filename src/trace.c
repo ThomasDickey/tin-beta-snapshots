@@ -79,7 +79,7 @@ _tracef(
 char *
 _nc_visbuf(const char *s)
 {
-	return (char *)s;
+	return (char *) s;
 }
 #endif /* NCURSES_VERSION */
 

@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-01-27
+ *  Updated   : 2003-02-15
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -948,7 +948,7 @@ enum resizer { cNo, cYes, cRedraw };
 #define MIME_ENCODING_7BIT	3
 
 #ifdef CHARSET_CONVERSION			/* can/should do charset conversion via iconv() */
-#	define NUM_MIME_CHARSETS 28	/* # known 'outgoing' charsets */
+#	define NUM_MIME_CHARSETS 27	/* # known 'outgoing' charsets */
 #endif /* CHARSET_CONVERSION */
 
 #define NUM_MAILBOX_FORMATS 3		/* MBOX0, MBOXRD, MMDF */
@@ -985,6 +985,8 @@ enum resizer { cNo, cYes, cRedraw };
 #define REGEX_FMT (tinrc.wildcard ? "%s" : "*%s*")
 
 #define IGNORE_ART(i)	((tinrc.kill_level != KILL_THREAD && arts[i].killed) || (arts[i].thread == ART_EXPIRED))
+/* only used for threading */
+#define IGNORE_ART_THREAD(i)	(arts[i].thread != ART_NORMAL || (tinrc.kill_level == KILL_NOTHREAD && arts[i].killed))
 
 /*
  * Is this part text/plain ?
@@ -1152,7 +1154,7 @@ enum resizer { cNo, cYes, cRedraw };
 /*
  * Different extents to which we can hide killed articles
  */
-#define KILL_READ		0		/* Kill only read articles */
+#define KILL_UNREAD		0		/* Kill only unread articles */
 #define KILL_THREAD		1		/* Kill all articles and show as K */
 #define KILL_NOTHREAD	2		/* Kill all articles, never show them */
 
@@ -1243,6 +1245,13 @@ enum resizer { cNo, cYes, cRedraw };
 #define ART_UNREAD		1
 #define ART_WILL_RETURN		2
 #define ART_UNAVAILABLE		-1 /* Also used by msgid.article */
+
+/*
+ * art.killed
+ */
+#define ART_NOTKILLED		0
+#define ART_KILLED		1
+#define ART_KILLED_UNREAD	2
 
 /*
  * Additionally used for user aborts in art_open()
@@ -1434,7 +1443,7 @@ struct t_article {
 	int thread;
 	int score;			/* score article has reached after filtering */
 	unsigned int status:2;	/* 0 = read, 1 = unread, 2 = will return */
-	unsigned int killed:1;	/* 0 = not killed, 1 = killed */
+	unsigned int killed:2;	/* 0 = not killed, 1 = killed, 2 = killed unread */
 	unsigned int zombie:1;	/* 1 = was alive (unread) before 'X' command */
 	unsigned int delete_it:1;	/* 1 = delete art when leaving group [mail group] */
 	unsigned int inthread:1;	/* 0 = thread head, 1 = thread follower */
@@ -1662,6 +1671,7 @@ struct t_art_stat {
 	int selected_total;	/* total selected count */
 	int selected_unread;	/* selected and unread */
 	int selected_seen;	/* selected and seen */
+	int killed;		/* killed */
 	int score;		/* maximum score */
 	int multipart_total; /* 0=not multipart, >0 = number of articles in the multipart */
 	int multipart_have; /* number of articles we actually have found */

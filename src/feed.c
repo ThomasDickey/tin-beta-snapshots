@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2002-12-09
+ *  Updated   : 2003-02-18
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -286,7 +286,7 @@ feed_article(
 		if (!use_current)
 			art_close(openartptr);
 		if (ok && tinrc.mark_saved_read)
-			art_mark_read(&CURR_GROUP, &arts[art]);
+			art_mark(&CURR_GROUP, &arts[art], ART_READ);
 	}
 	return ok;
 }
@@ -307,6 +307,7 @@ feed_articles(
 	int count = 0;
 	int thread_base;
 	int saved_curr_line = -1;
+	struct t_art_stat sbuf;
 	t_bool use_current = FALSE;
 	t_bool processed_ok = TRUE;
 	t_bool ret1 = FALSE;
@@ -323,17 +324,18 @@ feed_articles(
 	set_xclick_off();
 
 	thread_base = which_thread(respnum);
+	stat_thread(thread_base, &sbuf);
 
 	proc_ch = -1;			/* No selection made yet */
 
 	/*
 	 * try and work out what default the user wants
-	 * This is dumb. If you have _any_ selected arts, then it picks 'h'
-	 * No it's not, that's exactly what you want (in binary groups)
+	 *
+	 * TODO: is sbuf.selected_total correct?
 	 */
 	ch_default = (num_of_tagged_arts ? iKeyFeedTag :
 					(level == GROUP_LEVEL && HAS_FOLLOWUPS(thread_base) ? iKeyFeedThd :
-						(num_of_selected_arts ? iKeyFeedHot : iKeyFeedArt)));
+						(sbuf.selected_total ? iKeyFeedHot : iKeyFeedArt)));
 
 	switch (function) {
 		case FEED_MAIL:
@@ -590,7 +592,6 @@ feed_articles(
 					if (feed_article(j, function, &count, 0, use_current, output, group_path)) {
 						if (ch == iKeyFeedHot) {
 							arts[j].selected = FALSE;
-							num_of_selected_arts--;
 						}
 					} else {
 						if (proc_ch == 0) {
@@ -637,7 +638,7 @@ got_sig_pipe_while_piping:
 			if (proc_ch != 'n' && !is_mailbox && processed_ok) {
 				if (proc_ch < 0) {
 					if (proc_ch_default != 'n')
-					  ret2 = post_process_files(proc_ch_default, (function == FEED_SAVE ? FALSE : TRUE));
+						ret2 = post_process_files(proc_ch_default, (function == FEED_SAVE ? FALSE : TRUE));
 				} else
 					ret2 = post_process_files(proc_ch, (function == FEED_SAVE ? FALSE : TRUE));
 			}

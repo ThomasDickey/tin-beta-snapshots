@@ -3,7 +3,7 @@
  *  Module    : tcurses.h
  *  Author    : Thomas Dickey
  *  Created   : 1997-03-02
- *  Updated   : 2002-12-18
+ *  Updated   : 2003-02-01
  *  Notes     : curses #include files, #defines & struct's
  *
  * Copyright (c) 1997-2003 Thomas Dickey <dickey@invisible-island.net>
@@ -39,63 +39,65 @@
 
 
 #ifndef TCURSES_H
-#define TCURSES_H 1
+#	define TCURSES_H 1
 
 
-#if defined(USE_CURSES) || defined(NEED_CURSES_H)
-#	ifdef HAVE_XCURSES
-#		include <xcurses.h>
-#		define getattrs(w) (w)->_attrs
-#	elif defined(HAVE_NCURSESW_NCURSES_H)
-#		ifndef _XOPEN_SOURCE_EXTENDED
-#			define _XOPEN_SOURCE_EXTENDED 1
-#		endif /* _XOPEN_SOURCE_EXTENDED */
-#		include <ncursesw/ncurses.h>
-#		/* we need a recent ncursesw for wide-char */
-#		if (NCURSES_VERSION_MAJOR >= 5) && (NCURSES_VERSION_MINOR >= 3)
-#			define HAVE_NCURSESW 1
-#		endif /* NCURSES_VERSION_MAJOR >= 5 && NCURSES_VERSION_MINOR >=3 */
-#	elif defined(HAVE_NCURSES_H)
-#		include <ncurses.h>
-#	elif defined(HAVE_NCURSES_NCURSES_H)
-#		include <ncurses/ncurses.h>
-#	else
-#		undef TRUE
-#		undef FALSE
-#		include <curses.h>
-#		ifndef FALSE
-#			define FALSE	0
-#		endif /* !FALSE */
-#		ifndef TRUE
-#			define TRUE	(!FALSE)
-#		endif /* !TRUE */
-#	endif /* HAVE_NCURSES_H */
-#endif /* USE_CURSES || NEED_CURSES_H */
+#	if defined(USE_CURSES) || defined(NEED_CURSES_H)
+#		ifdef HAVE_XCURSES
+#			include <xcurses.h>
+#			define getattrs(w) (w)->_attrs
+#		else
+#			if defined(HAVE_NCURSESW_NCURSES_H)
+#				ifndef _XOPEN_SOURCE_EXTENDED
+#					define _XOPEN_SOURCE_EXTENDED 1
+#				endif /* _XOPEN_SOURCE_EXTENDED */
+#				include <ncursesw/ncurses.h>
+				/* we need a recent ncursesw for wide-char */
+#				if (NCURSES_VERSION_MAJOR >= 5) && (NCURSES_VERSION_MINOR >= 3)
+#					define HAVE_NCURSESW 1
+#				endif /* NCURSES_VERSION_MAJOR >= 5 && NCURSES_VERSION_MINOR >=3 */
+#			else
+#				if defined(HAVE_NCURSES_H)
+#					include <ncurses.h>
+#				else
+#					if defined(HAVE_NCURSES_NCURSES_H)
+#						include <ncurses/ncurses.h>
+#					else
+#						undef TRUE
+#						undef FALSE
+#						include <curses.h>
+#						ifndef FALSE
+#							define FALSE	0
+#						endif /* !FALSE */
+#						ifndef TRUE
+#							define TRUE	(!FALSE)
+#						endif /* !TRUE */
+#					endif /* HAVE_NCURSES_NCURSES_H */
+#				endif /* HAVE_NCURSES_H */
+#			endif /* HAVE_NCURSESW_NCURSES_H */
+#		endif /* HAVE_NCURSES_H */
+#	endif /* USE_CURSES || NEED_CURSES_H */
 
-#ifdef USE_CURSES
+#	ifdef USE_CURSES
 
-#ifdef USE_TRACE
-#	ifdef HAVE_NOMACROS_H
-#		include <nomacros.h>
-#	endif /* HAVE_NOMACROS_H */
-#endif /* USE_TRACE */
+#		ifdef USE_TRACE
+#			ifdef HAVE_NOMACROS_H
+#				include <nomacros.h>
+#			endif /* HAVE_NOMACROS_H */
+#		endif /* USE_TRACE */
 
-#define cCRLF				"\n"
-#define my_flush()			my_fflush(stdout)
-#define ClearScreen()			my_erase()
-#define CleartoEOLN()			clrtoeol()
-#define CleartoEOS()			clrtobot()
-#define ScrollScreen(lines_to_scroll)	scrl(lines_to_scroll)
-#define SetScrollRegion(top,bottom)	setscrreg(top, bottom)
-#define WriteLine(row,buffer)		write_line(row, buffer)
+#		define cCRLF				"\n"
+#		define my_flush()			my_fflush(stdout)
+#		define ClearScreen()			my_erase()
+#		define CleartoEOLN()			clrtoeol()
+#		define CleartoEOS()			clrtobot()
+#		define ScrollScreen(lines_to_scroll)	scrl(lines_to_scroll)
+#		define SetScrollRegion(top,bottom)	setscrreg(top, bottom)
+#		define WriteLine(row,buffer)		write_line(row, buffer)
 
-#define HpGlitch(func)			/*nothing*/
+#		define HpGlitch(func)			/*nothing*/
 
 extern int cmdReadCh(void);
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	extern wint_t cmdReadWch(void);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-
 extern char *screen_contents(int row, int col, char *buffer);
 extern int my_innstr(char *str, int n);
 extern void MoveCursor(int row, int col);
@@ -103,62 +105,63 @@ extern void my_erase(void);
 extern void my_fflush(FILE *stream);
 extern void my_fputc(int ch, FILE *stream);
 extern void my_fputs(const char *str, FILE *stream);
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#		if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	extern void my_fputwc(wint_t wc, FILE *fp);
+	extern wint_t cmdReadWch(void);
 	extern wint_t ReadWch(void);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#		endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 extern void my_fprintf(FILE *stream, const char *fmt, ...)
-#if defined(__GNUC__) && !defined(printf)
+#		if defined(__GNUC__) && !defined(printf)
 	__attribute__((format(printf,2,3)))
-#endif /* __GNUC__ */
+#		endif /* __GNUC__ */
 	;
 extern void my_printf(const char *fmt, ...)
-#if defined(__GNUC__) && !defined(printf)
+#		if defined(__GNUC__) && !defined(printf)
 	__attribute__((format(printf,1,2)))
-#endif /* __GNUC__ */
+#		endif /* __GNUC__ */
 	;
 extern void my_retouch(void);
 extern void refresh_color(void);
 extern void write_line(int row, char *buffer);
 
-#else	/* !USE_CURSES */
+#	else	/* !USE_CURSES */
 
-#ifdef NEED_TERM_H
-#	include <curses.h>
-#	ifdef HAVE_NCURSES_TERM_H
-#		include <ncurses/term.h>
-#	else
-#		include <term.h>
-#	endif /* HAVE_NCURSES_TERM_H */
-#else
-#	ifdef HAVE_TERMCAP_H
-#		include <termcap.h>
-#	endif /* HAVE_TERMCAP_H */
-#endif /* NEED_TERM_H */
+#		ifdef NEED_TERM_H
+#			include <curses.h>
+#			ifdef HAVE_NCURSES_TERM_H
+#				include <ncurses/term.h>
+#			else
+#				include <term.h>
+#			endif /* HAVE_NCURSES_TERM_H */
+#		else
+#			ifdef HAVE_TERMCAP_H
+#				include <termcap.h>
+#			endif /* HAVE_TERMCAP_H */
+#		endif /* NEED_TERM_H */
 
-#define cCRLF				"\r\n"
+#		define cCRLF				"\r\n"
 
-#define my_fputc(ch, stream)		fputc(ch, stream)
-#define my_fputs(str, stream)		fputs(str, stream)
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-#	define my_fputwc(wc, stream)	{ \
-		if (fwide(stream, 0) <= 0) \
-			fprintf(stream, "%lc", wc); \
-		else \
-			fputwc(wc, stream); \
-	}
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#		define my_fputc(ch, stream)		fputc(ch, stream)
+#		define my_fputs(str, stream)		fputs(str, stream)
+#		if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#			define my_fputwc(wc, stream)	{ \
+				if (fwide(stream, 0) <= 0) \
+					fprintf(stream, "%lc", wc); \
+				else \
+					fputwc(wc, stream); \
+			}
+#		endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
-#define my_printf			printf
-#define my_fprintf			fprintf
-#define my_flush()			fflush(stdout)
-#define my_fflush(stream)		fflush(stream)
-#define my_retouch()			ClearScreen()
-#define WriteLine(row,buffer)		/*nothing*/
+#		define my_printf			printf
+#		define my_fprintf			fprintf
+#		define my_flush()			fflush(stdout)
+#		define my_fflush(stream)		fflush(stream)
+#		define my_retouch()			ClearScreen()
+#		define WriteLine(row,buffer)		/*nothing*/
 
-#define HpGlitch(func)			if (_hp_glitch) func
+#		define HpGlitch(func)			if (_hp_glitch) func
 
-#endif /* USE_CURSES/!USE_CURSES */
+#	endif /* USE_CURSES/!USE_CURSES */
 
 extern void my_dummy(void);
 

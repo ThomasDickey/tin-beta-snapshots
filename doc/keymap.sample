@@ -144,7 +144,7 @@ PageCatchupNextUnread		C
 PageCancel			D
 PageEditFilter			E
 PageFollowup			F
-PageLastPage2			G
+PageLastPage			G
 PageKillThd			K
 PageNextUnreadArt		N
 PagePrevUnreadArt		P
@@ -160,7 +160,7 @@ PageToggleHighlight		_
 PageCatchup			c
 PageEditArticle			e
 PageFollowupQuote		f
-PageFirstPage2			g
+PageFirstPage			g
 PageListThd			l
 PageMail			m
 PageNextArt			n

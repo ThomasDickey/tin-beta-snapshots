@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-01-31
+ *  Updated   : 2003-02-20
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -74,7 +74,6 @@ static int group_left(void);
 static int group_right(void);
 static int tab_pressed(void);
 static int prompt_getart_limit(void);
-static int recent_responses(int thread);
 static void build_sline(int i);
 static void draw_subject_arrow(void);
 static void show_group_title(t_bool clear_title);
@@ -153,7 +152,6 @@ group_page(
 	int ch = 0;
 	int i, n;
 	int filter_state;
-	int old_selected_arts;
 	int old_top = 0;
 	int old_group_top;
 	int ret_code = 0;			/* Set to < 0 when it is time to leave this menu */
@@ -457,7 +455,6 @@ group_page(
 					info_message(_(txt_no_next_unread_art));
 					break;
 				}
-				old_selected_arts = num_of_selected_arts;
 				/*
 				 * If a range is active, use it.
 				 */
@@ -469,17 +466,16 @@ group_page(
 					for_each_art(n) {
 						if (arts[n].inrange) {
 							arts[n].inrange = FALSE;	/* Clear the range */
-							art_mark_read(&CURR_GROUP, &arts[n]);
+							art_mark(&CURR_GROUP, &arts[n], ART_READ);
 						}
 					}
 				} else
 					thd_mark_read(&CURR_GROUP, base[grpmenu.curr]);
 
 				/*
-				 * If # of 'hot' articles changed, update the header
+				 * update the header
 				 */
-				if (num_of_selected_arts != old_selected_arts)
-					show_group_title(TRUE);
+				show_group_title(TRUE);
 
 				build_sline(grpmenu.curr);
 				draw_line(grpmenu.curr, MAGIC);
@@ -750,17 +746,17 @@ group_page(
 					for (ii = 0; ii < grpmenu.max; ++ii) {
 						if (arts[base[ii]].inrange) {
 							arts[base[ii]].inrange = FALSE;
-							art_mark_will_return(&CURR_GROUP, &arts[base[ii]]);
+							art_mark(&CURR_GROUP, &arts[base[ii]], ART_WILL_RETURN);
 							for_each_art_in_thread(i, ii)
 								arts[i].inrange = FALSE;
 						}
 					}
 					range_active = FALSE;
 					show_group_page();
-					strcpy(buf, "Base article range"); /* FIXME: -> lang.c */
+					strcpy(buf, _(txt_base_article_range));
 				} else {
-					art_mark_will_return(&CURR_GROUP, &arts[base[grpmenu.curr]]);
-					strcpy(buf, "Base article"); /* FIXME: -> lang.c */
+					art_mark(&CURR_GROUP, &arts[base[grpmenu.curr]], ART_WILL_RETURN);
+					strcpy(buf, _(txt_base_article));
 				}
 
 				show_group_title(TRUE);
@@ -786,15 +782,15 @@ group_page(
 					for_each_art(ii) {
 						if (arts[ii].inrange) {
 							arts[ii].inrange = FALSE;
-							art_mark_will_return(&CURR_GROUP, &arts[ii]);
+							art_mark(&CURR_GROUP, &arts[ii], ART_WILL_RETURN);
 						}
 					}
 					range_active = FALSE;
 					show_group_page();
-					strcpy(buf, "Thread range"); /* FIXME: -> lang.c */
+					strcpy(buf, _(txt_thread_range));
 				} else {
 					thd_mark_unread(&CURR_GROUP, base[grpmenu.curr]);
-					strcpy(buf, "Thread");
+					strcpy(buf, _(txt_thread));
 				}
 
 				show_group_title(TRUE);
@@ -830,6 +826,8 @@ group_page(
 					      ? _(txt_thread_marked_as_selected)
 					      : _(txt_thread_marked_as_deselected));
 
+				show_group_title(TRUE);
+
 				if (grpmenu.curr + 1 < grpmenu.max) {
 					move_down();
 					break;
@@ -841,11 +839,13 @@ group_page(
 				for_each_art(i)
 					arts[i].selected = bool_not(arts[i].selected);
 				update_group_page();
+				show_group_title(TRUE);
 				break;
 
 			case iKeyGroupUndoSel:	/* undo selections */
 				undo_selections();
 				xflag = FALSE;
+				show_group_title(TRUE);
 				update_group_page();
 				break;
 
@@ -856,7 +856,7 @@ group_page(
 
 				if (buf[0] == '\0') {				/* TODO -> prompt_string_default ?? */
 					if (tinrc.default_select_pattern[0] == '\0') {
-						info_message("No previous expression"); /* FIXME: -> lang.c */
+						info_message(_(txt_info_no_previous_expression));
 						break;
 					}
 					sprintf(pat, REGEX_FMT, tinrc.default_select_pattern);
@@ -879,9 +879,10 @@ group_page(
 					build_sline(n);
 					flag = TRUE;
 				}
-				if (flag)
+				if (flag) {
+					show_group_title(TRUE);
 					update_group_page();
-
+				}
 				break;
 
 			case iKeyGroupSelThdIfUnreadSelected:	/* select all unread arts in thread hot if 1 is hot */
@@ -893,7 +894,7 @@ group_page(
 					for_each_art_in_thread(i, n)
 						arts[i].selected = TRUE;
 				}
-				/* no screen update needed */
+				show_group_title(TRUE);
 				break;
 
 			case iKeyGroupMarkUnselArtRead:	/* mark read all unselected arts */
@@ -912,6 +913,7 @@ group_page(
 						arts[i].selected = TRUE;
 				}
 				update_group_page();
+				show_group_title(TRUE);
 				break;
 
 			case iKeyToggleInfoLastLine:
@@ -928,7 +930,7 @@ group_page(
 	set_xclick_off();
 
 	clear_note_area();
-	vGrpDelMailArts(&CURR_GROUP);
+	grp_del_mail_arts(&CURR_GROUP);
 
 	art_close(&pgart);				/* Close any open art */
 
@@ -1368,66 +1370,91 @@ static void
 show_group_title(
 	t_bool clear_title)
 {
-	char buf[LEN];
-	int i, art_cnt = 0, recent_art_cnt = 0;
+	char buf[LEN], tmp[LEN];
+	int i, art_cnt = 0, recent_art_cnt = 0, selected_art_cnt = 0, read_selected_art_cnt = 0, killed_art_cnt = 0;
 	struct t_group currgrp;
 
 	currgrp = CURR_GROUP;
-	if (currgrp.attribute->show_only_unread) {
-		for (i = 0; i < grpmenu.max; i++) {
-			art_cnt += new_responses(i);
-			recent_art_cnt += recent_responses(i);
-		}
-	} else {
-		for_each_art(i) {
-			if (!IGNORE_ART(i)) {
-				++art_cnt;
+	for_each_art(i) {
+		if (arts[i].thread == ART_EXPIRED)
+			continue;
+
+		if (currgrp.attribute->show_only_unread) {
+			if (arts[i].status != ART_READ) {
+				art_cnt++;
 				if (tinrc.recent_time && ((time((time_t) 0) - arts[i].date) < (tinrc.recent_time * DAY)))
 					recent_art_cnt++;
 			}
+			if (arts[i].killed == ART_KILLED_UNREAD)
+				killed_art_cnt++;
+		} else {
+			art_cnt++;
+			if (tinrc.recent_time && ((time((time_t) 0) - arts[i].date) < (tinrc.recent_time * DAY)))
+				recent_art_cnt++;
+
+			if (arts[i].killed)
+				killed_art_cnt++;
+		}
+		if (arts[i].selected) {
+			if (arts[i].status != ART_READ)
+				selected_art_cnt++;
+			else
+				read_selected_art_cnt++;
 		}
 	}
 
+
 	/*
-	 * TODO: clean up
-	 *       really count read_selected into num_of_selected_arts? (kill_level > 1)
+	 * build the group title
 	 */
-	if (tinrc.getart_limit && tinrc.recent_time)
-		snprintf(buf, sizeof(buf) - 1, "%s (%d%c %d/%d%c %d%c %d%c %d%c) %c",
-			currgrp.name, grpmenu.max,
-			*txt_thread[currgrp.attribute->thread_arts],
-			tinrc.getart_limit,
-			art_cnt, (currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read),
-			num_of_selected_arts, tinrc.art_marked_selected,
-			recent_art_cnt, tinrc.art_marked_recent,
-			num_of_killed_arts, tinrc.art_marked_killed,
-			group_flag(currgrp.moderated));
-	else if (tinrc.getart_limit)
-		snprintf(buf, sizeof(buf) - 1, "%s (%d%c %d/%d%c %d%c %d%c) %c",
-			currgrp.name, grpmenu.max,
-			*txt_thread[currgrp.attribute->thread_arts],
-			tinrc.getart_limit,
-			art_cnt, (currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read),
-			num_of_selected_arts, tinrc.art_marked_selected,
-			num_of_killed_arts, tinrc.art_marked_killed,
-			group_flag(currgrp.moderated));
-	else if (tinrc.recent_time)
-		snprintf(buf, sizeof(buf) - 1, "%s (%d%c %d%c %d%c %d%c %d%c) %c",
-			currgrp.name, grpmenu.max,
-			*txt_thread[currgrp.attribute->thread_arts],
-			art_cnt, (currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read),
-			num_of_selected_arts, tinrc.art_marked_selected,
-			recent_art_cnt, tinrc.art_marked_recent,
-			num_of_killed_arts, tinrc.art_marked_killed,
-			group_flag(currgrp.moderated));
+	/* group name and thread count */
+	snprintf(buf, sizeof(buf) - 1, "%s (%d%c",
+		currgrp.name, grpmenu.max,
+		*txt_threading[currgrp.attribute->thread_arts]);
+
+	/* article count */
+	if (tinrc.getart_limit)
+		snprintf(tmp, sizeof(tmp) - 1, " %d/%d%c",
+			tinrc.getart_limit, art_cnt,
+			(currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read));
 	else
-		snprintf(buf, sizeof(buf) - 1, "%s (%d%c %d%c %d%c %d%c) %c",
-			currgrp.name, grpmenu.max,
-			*txt_thread[currgrp.attribute->thread_arts],
-			art_cnt, (currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read),
-			num_of_selected_arts, tinrc.art_marked_selected,
-			num_of_killed_arts, tinrc.art_marked_killed,
-			group_flag(currgrp.moderated));
+		snprintf(tmp, sizeof(tmp) - 1, " %d%c",
+			art_cnt,
+			(currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read));
+	if (sizeof(buf) > strlen(buf) + strlen(tmp))
+		strcat(buf, tmp);
+
+	/* selected articles */
+	if (currgrp.attribute->show_only_unread)
+		snprintf(tmp, sizeof(tmp) - 1, " %d%c",
+			selected_art_cnt, tinrc.art_marked_selected);
+	else
+		snprintf(tmp, sizeof(tmp) - 1, " %d%c %d%c",
+			selected_art_cnt, tinrc.art_marked_selected,
+			read_selected_art_cnt, tinrc.art_marked_read_selected);
+	if (sizeof(buf) > strlen(buf) + strlen(tmp))
+		strcat(buf, tmp);
+
+	/* recent articles */
+	if (tinrc.recent_time) {
+		snprintf(tmp, sizeof(tmp) - 1, " %d%c",
+			recent_art_cnt, tinrc.art_marked_recent);
+
+		if (sizeof(buf) > strlen(buf) + strlen(tmp))
+			strcat(buf, tmp);
+	}
+
+	/* killed articles */
+	snprintf(tmp, sizeof(tmp) - 1, " %d%c",
+		killed_art_cnt, tinrc.art_marked_killed);
+	if (sizeof(buf) > strlen(buf) + strlen(tmp))
+		strcat(buf, tmp);
+
+	/* group flag */
+	snprintf(tmp, sizeof(tmp) - 1, ") %c",
+		group_flag(currgrp.moderated));
+	if (sizeof(buf) > strlen(buf) + strlen(tmp))
+		strcat(buf, tmp);
 
 	if (clear_title) {
 		MoveCursor(0, 0);
@@ -1469,7 +1496,6 @@ do_search(
 
 		show_group_page();
 	}
-
 	return 0;
 }
 
@@ -1590,8 +1616,7 @@ group_catchup(
 	if (num_of_tagged_arts && prompt_yn(cLINES, _(txt_catchup_despite_tags), TRUE) != 1)
 		return 0;
 
-	/* FIXME: -> lang.c */
-	snprintf(buf, sizeof(buf) - 1, _(txt_mark_arts_read), (ch == iKeyGroupCatchupNextUnread) ? _(" and enter next unread group") : "");
+	snprintf(buf, sizeof(buf) - 1, _(txt_mark_arts_read), (ch == iKeyGroupCatchupNextUnread) ? _(txt_enter_next_unread_group) : "");
 
 	if (!CURR_GROUP.newsrc.num_unread || (!TINRC_CONFIRM_ACTION) || (pyn = prompt_yn(cLINES, buf, TRUE)) == 1)
 		grp_mark_read(&CURR_GROUP, arts);
@@ -1627,25 +1652,6 @@ group_catchup(
 			break;
 	}
 	return 0;								/* Stay in this menu by default */
-}
-
-
-/*
- * Return the number of recent articles there are within a thread
- */
-static int
-recent_responses(
-	int thread)
-{
-	int i;
-	int sum = 0;
-
-	for_each_art_in_thread(i, thread) {
-		if (tinrc.recent_time && ((time((time_t) 0) - arts[i].date) < (tinrc.recent_time * DAY)) && arts[i].status != ART_READ)
-			sum++;
-	}
-
-	return sum;
 }
 
 
