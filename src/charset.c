@@ -247,14 +247,12 @@ convert_tex2iso (
 	char *to)
 {
 	int i, ex;
-	int spaces; /* spaces to add */
-	size_t len, col;	/* length of from, col counter */
+	size_t spaces = 0; /* spaces to add */
+	size_t len, col = 0;	/* length of from, col counter */
 	size_t subst_len;
 
 	*to = '\0';
 	len = strlen (from);
-	col = 0;
-	spaces = 0;
 
 	while (col < len) {
 		i = ex = 0;

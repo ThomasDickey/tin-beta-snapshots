@@ -3915,7 +3915,7 @@ reread_active_after_posting (
 	if (reread_active_for_posted_arts) {
 		reread_active_for_posted_arts = FALSE;
 
-		for (i = 0; i < num_active; i++) {
+		for_each_group(i) {
 			psGrp = &active[i];
 			if (psGrp->subscribed && psGrp->art_was_posted) {
 				psGrp->art_was_posted = FALSE;

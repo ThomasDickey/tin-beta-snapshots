@@ -323,6 +323,7 @@ struct k_select {
 	t_keynode ReadGrp;					/* '\n' */
 	t_keynode ReadGrp2;					/* '\r' */
 	t_keynode ResetNewsrc;				/* ctrl('R') */
+	t_keynode SortActive;				/* '.' */
 	t_keynode CatchupNextUnread;		/* 'C' */
 	t_keynode NextUnreadGrp;			/* 'N' */
 	t_keynode BugReport;					/* 'R' */

@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2002-04-19
+ *  Updated   : 2002-04-25
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2002 Chris Blum <chris@resolution.de>
@@ -214,7 +214,9 @@ rfc1522_decode (
 
 	/*
 	 * remove non-ASCII chars if MIME_STRICT_CHARSET is set
-	 * must be changed if UTF-8 becomes default charset for headers
+	 * must be changed if UTF-8 becomes default charset for headers:
+	 *
+	 * process_charsets(c, "UTF-8", tinrc.mm_local_charset);
 	 */
 	process_charsets(c, "US-ASCII", tinrc.mm_local_charset);
 

@@ -1,4 +1,4 @@
--- 1.5.12 release 20020422 "Sugar" --
+-- 1.5.12 release 20020427 "Sugar" --
 
 U101) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. update/resync the macros in aclocal.m4
@@ -31,16 +31,20 @@ U096) Guido Ostkamp <Guido.Ostkamp@t-online.de>
       FIX. search.c
 
 U095) Jason Faultless <jason@radar.tele2.co.uk>
+      ADD. code cleanup
+      ADD. sorting of newsgroups with '.'
       ADD. attrib cleanup, error reporting
       ADD. scroll_lines pager tuning control
-      ADD. improvements to URL handling, url_handler
+      ADD. don't reconnect to server just to issue a QUIT
+      ADD. improvements to URL handling, url_handler, url history
       ADD. explicit 'q' to quit info pager, to fix...
       BUG. resizing screen exits info pager
       BUG. multiple URL's per line not working
-      REM. show_last_line_prev_page, full_page_scroll
-      FIX. tin.1, tin.5, extern.h, proto.h, tin.h, tinrc.h, active.c, art.c
-           config.c, cook.c, global.c, group.c, help.c, init.c, lang.c
-           main.c, misc.c, page.c, post.c, select.c, signal.c, tincfg.tbl
+      REM. show_last_line_prev_page, full_page_scroll, HAVE_UUDECODE
+      FIX. tin.1, tin.5, extern.h, keymap.h, menukeys.h, proto.h, tin.h
+           tinrc.h, active.c, art.c, config.c, cook.c, global.c, group.c
+           help.c, keymap.c, init.c, lang.c, list.c, main.c, misc.c
+           nntplib.c, page.c, post.c, select.c, signal.c, tincfg.tbl
 
  038) Urs Janssen <urs@tin.org>
       ADD. new TLDs .coop and .aero
@@ -77,6 +81,8 @@ U091) Andreas Metzler <tin-dev@downhill.at.eu.org>
 
 U090) Olaf Dietrich <olaf@dtrx.de>
       ADD. ignore MIME_STRICT_CHARSET if iconv(3) is available
+      ADD. with MIME_STRICT_CHARSET and iconv(3) unknown charsets
+           are reduced to us-ascii
       ADD. new ^L-handling
       ADD. replace untranslatable multibyte chars with one ? instead
            of one for each byte.
@@ -123,11 +129,11 @@ U089) Urs Janssen <urs@tin.org>
            dependencie problems
       FIX. Makefile, Makefile.in, configure[.in], autoconf.h[in], aclocal.m4
            extern.h, policy.h, proto.h, rfc2046.h, tin.h, tinrc.h, active.c
-           art.c, config.c, cook.c, header.c, help.c, inews.c, init.c
-           keymap.c, lang.c, langinfo.c, main.c, mimetypes.c, misc.c
-           nntplib.c, nrctbl.c, open.c, page.c, post.c, refs.c, rfc1524.c
-           rfc2045.c, rfc2046.c, save.c, tags.c, tincfg.tbl, mbox.5, mmdf.5
-           tin.1, tin.5, config.guess, config.sub
+           art.c, charset.c, config.c, cook.c, header.c, help.c, inews.c
+           init.c, keymap.c, lang.c, langinfo.c, lock.c, main.c, mimetypes.c
+           misc.c, nntplib.c, nrctbl.c, open.c, page.c, post.c, refs.c
+           rfc1524.c, rfc2045.c, rfc2046.c, save.c, tags.c, thread.c
+           tincfg.tbl, mbox.5, mmdf.5, tin.1, tin.5, config.guess, config.sub
 
 -- 1.5.11 release 20020130 "Toxicity" --
 

@@ -654,7 +654,6 @@ enum resizer { cNo, cYes, cRedraw };
 #define DEFAULT_MAILDIR	"Mail"
 #define DEFAULT_SAVEDIR	"News"
 #define DEFAULT_INEWS_PROG "--internal"
-/* #define DEFAULT_URL_HANDLER "url_handler.sh %s" */
 #define DEFAULT_URL_HANDLER "url_handler.sh"
 
 
@@ -1432,8 +1431,8 @@ struct t_newsrc
 {
 	t_bool present;		/* update newsrc ? */
 	long num_unread;		/* unread articles in group */
-	long xmax;				/* newsrc max */
-	long xmin;				/* newsrc min */
+	long xmax;			/* newsrc max */
+	long xmin;			/* newsrc min */
 	long xbitlen;			/* bitmap length (max-min+1) */
 	t_bitmap *xbitmap;	/* bitmap read/unread (max-min+1+7)/8 */
 };
@@ -1443,23 +1442,23 @@ struct t_newsrc
  */
 struct t_group
 {
-	char *name;				/* newsgroup / mailbox name */
+	char *name;			/* newsgroup / mailbox name */
 	char *aliasedto;		/* =new.group in active file, NULL if not */
 	char *description;	/* text from NEWSLIBDIR/newsgroups file */
 	char *spooldir;		/* groups spool directory */
 	char moderated;		/* state of group moderation */
-	long count;				/* article number count */
-	long xmax;				/* max. article number */
-	long xmin;				/* min. article number */
-	unsigned int type:4;			/* grouptype - newsgroup / mailbox / savebox */
-	t_bool inrange:1;			/* TRUE if group selected via # range command */
-	t_bool read_during_session:1;		/* TRUE if group entered during session */
-	t_bool art_was_posted:1;		/* TRUE if art was posted to group */
-	t_bool subscribed:1;			/* TRUE if subscribed to group */
-	t_bool newgroup:1;				/* TRUE if group was new this session */
-	t_bool bogus:1;					/* TRUE if group is not in active list */
-	int next;				/* next active entry in hash chain */
-	struct t_newsrc newsrc;				/* newsrc bitmap specific info. */
+	long count;			/* article number count */
+	long xmax;			/* max. article number */
+	long xmin;			/* min. article number */
+	unsigned int type:4;		/* grouptype - newsgroup / mailbox / savebox */
+	t_bool inrange:1;		/* TRUE if group selected via # range command */
+	t_bool read_during_session:1;	/* TRUE if group entered during session */
+	t_bool art_was_posted:1;	/* TRUE if art was posted to group */
+	t_bool subscribed:1;		/* TRUE if subscribed to group */
+	t_bool newgroup:1;		/* TRUE if group was new this session */
+	t_bool bogus:1;			/* TRUE if group is not in active list */
+	int next;			/* next active entry in hash chain */
+	struct t_newsrc newsrc;		/* newsrc bitmap specific info. */
 	struct t_attribute *attribute;	/* group specific attributes */
 	struct t_filters *glob_filter;	/* points to filter array */
 };
@@ -1469,8 +1468,8 @@ struct t_group
  */
 struct t_hashnode
 {
-	struct t_hashnode *next;		/* chain for spillover */
-	int aptr;				/* used in subject threading */
+	struct t_hashnode *next;	/* chain for spillover */
+	int aptr;			/* used in subject threading */
 	char txt[1];			/* stub for the string data, \0 terminated */
 };
 
@@ -1900,7 +1899,9 @@ extern void joindir (char *result, const char *dir, const char *file);
 #define BlankIfNull(p)	((p) ? (p) : "")
 
 #define my_group_find(x)	add_my_group(x, FALSE)
-#define my_group_add(x)	add_my_group(x, TRUE)
+#define my_group_add(x)		add_my_group(x, TRUE)
+#define for_each_group(x)	for (x = 0; x < num_active; x++)
+#define for_each_art(x)		for (x = 0; x < top_art; x++)
 
 /*
  * Cast for the (few!) places where we need to examine 8-bit characters w/o

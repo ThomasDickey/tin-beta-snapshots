@@ -77,10 +77,7 @@ static void start_viewer(t_part *part, const char *path);
 #ifndef HAVE_LIBUU
 	static void sum_and_view (const char *path, const char *file);
 #endif /* !HAVE_LIBUU */
-#define HAVE_UUDECODE 1
-#ifdef HAVE_UUDECODE
-	static void uudecode_line(const char *buf, FILE *fp);
-#endif /* HAVE_UUDECODE */
+static void uudecode_line(const char *buf, FILE *fp);
 
 
 /*
@@ -190,7 +187,7 @@ fprintf(stderr, "start_save: create_path(%s)\n", tmp);
 		/*
 		 * For each article in this group...
 		 */
-		for (j = 0; j < top_art; j++) {
+		for_each_art(j) {
 			if (arts[j].status != ART_UNREAD)
 				continue;
 
@@ -886,18 +883,18 @@ post_process_uud (
 	FILE *fp_in;
 	char file_out_dir[PATH_LEN];
 	int i;
-#ifndef HAVE_LIBUU
+#ifdef HAVE_LIBUU
+	const char *eptr;
+	int count;
+	int errors = 0;
+	uulist *item;
+#else
 	FILE *fp_out = NULL;
 	char *filename = NULL;
 	char path[PATH_LEN];
 	char s[LEN], t[LEN], u[LEN];
 	int state;
-#else
-	const char *eptr;
-	int count;
-	int errors = 0;
-	uulist *item;
-#endif /* !HAVE_LIBUU */
+#endif /* HAVE_LIBUU */
 
 	/*
 	 * Grab the dirname portion
@@ -1383,17 +1380,12 @@ decode_save_one(
 
 			case ENCODING_UUE:
 				/* TODO - if postproc, don't decode these since the traditional uudecoder will get them */
-#ifdef HAVE_UUDECODE
 				/*
 				 * x-uuencode attachments have all the header info etc which we must ignore
 				 */
 				if (strncmp(buf, "begin ", 6) != 0 && strncmp(buf, "end\n", 4) != 0 && buf[0] != '\n')
 					uudecode_line (buf, fp);
 				break;
-#else
-				wait_message (1, _(txt_uuencode_not_supported));
-				/* FALLTHROUGH */
-#endif /* HAVE_UUDECODE */
 			default:
 				fputs (buf, fp);
 		}
@@ -1472,7 +1464,6 @@ decode_save_mime(
 }
 
 
-#ifdef HAVE_UUDECODE
 /* Single character decode. */
 #define DEC(Char) (((Char) - ' ') & 077)
 /*
@@ -1510,4 +1501,3 @@ uudecode_line(
 	}
 	return;
 }
-#endif /* HAVE_UUDECODE */

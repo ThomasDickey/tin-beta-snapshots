@@ -669,7 +669,7 @@ open_newsgroups_fp (
 		if (list_newsgroups_wildmat_supported && newsrc_active
 		    && !list_active
 		    && num_active < some_useful_limit) {
-			for (i = 0; i < num_active; i++) {
+			for_each_group(i) {
 				sprintf(buff, "LIST NEWSGROUPS %s", active[i].name);
 				nntp_command(buff, OK_LIST, NULL);
 			}

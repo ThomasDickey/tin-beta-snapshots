@@ -88,6 +88,7 @@ static t_help_page select_help_page[] = {
 	{ txt_help_global_toggle_color, iKeyToggleColor },
 #endif /* HAVE_COLOR */
 	{ txt_help_empty_line, 0 },
+	{ txt_help_select_sort_active, iKeySelectSortActive },
 	{ txt_help_select_yank_active, iKeySelectYankActive },
 	{ txt_help_select_sync_with_active, iKeySelectSyncWithActive },
 	{ txt_help_empty_line, 0 },

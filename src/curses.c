@@ -314,14 +314,14 @@ get_termcaps (void)
 
 	my_strncpy(the_termname, p, sizeof(the_termname) - 1);
 
-#ifdef USE_TERMINFO
+#	ifdef USE_TERMINFO
 	setupterm(the_termname, fileno(stdout), (int *)0);
-#else
+#	else
 	if (tgetent (_terminal, the_termname) != 1) {
 		my_fprintf (stderr, _(txt_cannot_get_term_entry), tin_progname);
 		return (FALSE);
 	}
-#endif /* USE_TERMINFO */
+#	endif /* USE_TERMINFO */
 
 	/* load in all those pesky values */
 	for (n = 0; n < SIZEOF(table); n++) {
@@ -597,25 +597,25 @@ set_keypad_off (void)
 #	endif /* HAVE_KEYPAD */
 }
 
-/*
- *  clear the screen
- */
 
+/*
+ * clear the screen
+ */
 void
-ClearScreen (void)
+ClearScreen(
+	void)
 {
 	tputs (_clearscreen, 1, outchar);
 	my_flush ();		/* clear the output buffer */
 	_line = 1;
 }
 
+
 /*
  *  move cursor to the specified row column on the screen.
  *  0,0 is the top left!
  */
-
 #ifdef M_UNIX
-
 void
 MoveCursor (
 	int row,
@@ -645,24 +645,27 @@ MoveCursor (
 		_line = row + 1;
 	}
 }
-
 #endif /* M_UNIX */
 
+
 /*
- *  clear to end of line
+ * clear to end of line
  */
 void
-CleartoEOLN (void)
+CleartoEOLN (
+	void)
 {
 	tputs (_cleartoeoln, 1, outchar);
 	my_flush ();	/* clear the output buffer */
 }
 
+
 /*
- *  clear to end of screen
+ * clear to end of screen
  */
 void
-CleartoEOS (void)
+CleartoEOS (
+	void)
 {
 	int i;
 
@@ -676,6 +679,7 @@ CleartoEOS (void)
 	}
 	my_flush ();	/* clear the output buffer */
 }
+
 
 static int _topscrregion, _bottomscrregion;
 
@@ -696,6 +700,7 @@ SetScrollRegion (
 	}
 	my_flush ();
 }
+
 
 void
 ScrollScreen (
@@ -726,7 +731,7 @@ ScrollScreen (
 
 
 /*
- *  set inverse video mode
+ * set inverse video mode
  */
 void
 StartInverse (
@@ -750,7 +755,7 @@ StartInverse (
 
 
 /*
- *  compliment of startinverse
+ * compliment of startinverse
  */
 void
 EndInverse (
@@ -774,7 +779,7 @@ EndInverse (
 
 
 /*
- *  toggle inverse video mode
+ * toggle inverse video mode
  */
 void
 ToggleInverse (
@@ -788,7 +793,7 @@ ToggleInverse (
 
 
 /*
- *  returns either 1 or 0, for ON or OFF
+ * returns either 1 or 0, for ON or OFF
  */
 int
 RawState(
@@ -799,7 +804,7 @@ RawState(
 
 
 /*
- *  state is either TRUE or FALSE, as indicated by call
+ * state is either TRUE or FALSE, as indicated by call
  */
 void
 Raw (
@@ -847,8 +852,9 @@ Raw (
 #endif /* !VMS */
 }
 
+
 /*
- *  read a character with Raw mode set!
+ * read a character with Raw mode set!
  */
 
 #ifndef VMS
@@ -980,7 +986,7 @@ OUTC_FUNCTION (
 
 
 /*
- *  setup to monitor mouse buttons if running in a xterm
+ * setup to monitor mouse buttons if running in a xterm
  */
 static void
 xclick (
@@ -1001,7 +1007,7 @@ xclick (
 
 
 /*
- *  switch on monitoring of mouse buttons
+ * switch on monitoring of mouse buttons
  */
 void
 set_xclick_on (void)
@@ -1011,7 +1017,7 @@ set_xclick_on (void)
 
 
 /*
- *  switch off monitoring of mouse buttons
+ * switch off monitoring of mouse buttons
  */
 void
 set_xclick_off (void)
@@ -1297,7 +1303,7 @@ get_arrow_key (
 			return KEYMAP_UNKNOWN;
 	}
 }
-#endif /* !USE_CURSES */
+#endif /* USE_CURSES */
 
 
 /*

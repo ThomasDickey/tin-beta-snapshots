@@ -506,7 +506,7 @@ search_body (
 		for (i = 0; i < grpmenu.max; i++)
 			total_cnt += new_responses (i);
 	} else {
-		for (i = 0; i < top_art; i++) {
+		for_each_art(i) {
 			if (!IGNORE_ART(i))
 				total_cnt++;
 		}

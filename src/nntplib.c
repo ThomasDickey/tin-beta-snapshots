@@ -32,8 +32,11 @@
 /* Copy of last NNTP command sent, so we can retry it if needed */
 char last_put[NNTP_STRLEN];
 
-/* Flag to show whether tin did reconnect in last get_server process */
+/* Flag to show whether tin did reconnect in last get_server() */
 t_bool reconnected_in_last_get_server = FALSE;
+
+/* Set so we don't reconnect just to QUIT */
+t_bool quitting = FALSE;
 
 static TCP *nntp_rd_fp = NULL;
 static TCP *nntp_wr_fp = NULL;
@@ -237,24 +240,24 @@ server_init (
 	 */
 
 	if ((nntp_rd_fp = (TCP *) s_fdopen (sockt_rd, "r")) == NULL) {
-		perror ("server_init: fdopen #1");
+		perror ("server_init: fdopen() #1");
 		return (-errno);
 	}
 
 	if ((sockt_wr = s_dup (sockt_rd)) < 0) {
-		perror ("server_init: dup");
+		perror ("server_init: dup()");
 		return (-errno);
 	}
 
 #		ifdef TLI /* Transport Level Interface */
 	if (t_sync (sockt_rd) < 0) {	/* Sync up new fd with TLI */
-		t_error ("server_init: t_sync");
+		t_error ("server_init: t_sync()");
 		nntp_rd_fp = NULL;
 		return (-EPROTO);
 	}
 #		else
 	if ((nntp_wr_fp = (TCP *) s_fdopen (sockt_wr, "w")) == NULL) {
-		perror ("server_init: fdopen #2");
+		perror ("server_init: fdopen() #2");
 		nntp_rd_fp = NULL;
 		return (-errno);
 	}
@@ -336,7 +339,7 @@ get_tcp_socket (
 #		endif /* HAVE_INET_ATON */
 	{
 		if ((hp = gethostbyname (machine)) == NULL) {
-			my_fprintf (stderr, "gethostbyname: %s: host unknown\n", machine); /* FIXME: -> lang.c */
+			my_fprintf (stderr, txt_gethostbyname, "gethostbyname() ", machine);
 			t_close (s);
 			return (-EHOSTUNREACH);
 		}
@@ -441,7 +444,7 @@ get_tcp_socket (
 	}
 
 	if (hp == NULL) {
-		my_fprintf (stderr, _("\n%s: Unknown host.\n"), machine); /* FIXME: -> lang.c */
+		my_fprintf (stderr, _(txt_gethostbyname), "\n", machine);
 		return (-EHOSTUNREACH);
 	}
 
@@ -530,7 +533,7 @@ get_tcp_socket (
 	sock_in.sin_port = htons (IPPORT_NNTP);
 
 	if ((sock_in.sin_addr.s_addr = rhost (&machine)) == -1) {
-		my_fprintf (stderr, _("\n%s: Unknown host.\n"), machine); /* FIXME: -> lang.c */
+		my_fprintf (stderr, _(txt_gethostbyname), "\n", machine);
 		return (-1);
 	}
 
@@ -679,7 +682,7 @@ get_dnet_socket (
 			break;
 		default:
 			if ((np = getnodebyname (machine)) == NULL) {
-				my_fprintf (stderr, _("%s: Unknown host.\n"), machine); /* FIXME: -> lang.c */
+				my_fprintf (stderr, _(txt_gethostbyname), "", machine);
 				return (-1);
 			} else {
 				memcpy((char *) sdn.sdn_add.a_addr, np->n_addr, np->n_length);
@@ -725,34 +728,28 @@ u_put_server (
 {
 	s_puts(string, nntp_wr_fp);
 }
-#	endif /* NNTP_ABLE */
 
 
 /*
- * put_server -- send a line of text to the server, terminating it
- * with CR and LF, as per ARPA standard.
+ * Send 'string' to the NNTP server, terminating it with CR and LF, as per ARPA
+ * standard.
  *
- *	Parameters:	"string" is the string to be sent to the
- *			server.
- *
- *	Returns:	Nothing.
+ * Returns: Nothing.
  *
  *	Side effects:	Talks to the server.
  *			Closes connection if things are not right.
  *
- *	Note:	This routine flushes the buffer each time
- *			it is called. For large transmissions
- *			(i.e., posting news) don't use it. Instead,
- *			do the fprintf's yourself, and then a final
- *			fflush.
+ * Note:	This routine flushes the buffer each time it is called. For large
+ *			transmissions (i.e., posting news) don't use it. Instead, do the
+ *			fprintf's yourself, and then a final fflush.
  */
-#	ifdef NNTP_ABLE
 void
 put_server (
 	const char *string)
 {
 	/*
-	 * We remember the last thing we wrote, in case we have to do a command retry in the future
+	 * We remember the last thing we wrote, we will need to resend it if
+	 * we have to reconnect. Reconnection is handled by get_server()
 	 */
 	DEBUG_IO((stderr, "put_server(%s)\n", string));
 	strcpy (last_put, string);
@@ -761,14 +758,12 @@ put_server (
 	s_puts ("\r\n", nntp_wr_fp);
 	(void) s_flush (nntp_wr_fp);
 }
-#	endif /* NNTP_ABLE */
 
 
 /*
  * Reconnect to server after a timeout, reissue last command to
  * get us back into the pre-timeout state
  */
-#	ifdef NNTP_ABLE
 static int
 reconnect (
 	int retry)
@@ -784,8 +779,12 @@ reconnect (
 
 	DEBUG_IO((stderr, _("\nServer timed out, trying reconnect # %d\n"), retry));
 
+	/*
+	 * Exit tin if the user says no to reconnect. The exit code stops tin from trying
+	 * to disconnect again - the connection is already dead
+	 */
 	if (!tinrc.auto_reconnect && prompt_yn (cLINES, _(txt_reconnect_to_news_server), TRUE) != 1)
-		tin_done(EXIT_SUCCESS);		/* user said no to reconnect */
+		tin_done(NNTP_ERROR_EXIT);		/* user said no to reconnect */
 
 	clear_message ();
 
@@ -843,8 +842,11 @@ get_server (
 	 */
 	while (nntp_rd_fp == NULL || s_gets (string, size, nntp_rd_fp) == (char *) 0) {
 
+		if (quitting)						/* Don't bother to reconnect */
+			tin_done (NNTP_ERROR_EXIT);		/* And don't try to disconnect again! */
+
 #		ifdef DEBUG
-		if (errno != 0 && errno != EINTR)	/* I'm sure this will only confuse end users */
+		if (errno != 0 && errno != EINTR)	/* Will only confuse end users */
 			perror_message("get_server()");
 #		endif /* DEBUG */
 
@@ -869,22 +871,15 @@ get_server (
 	}
 	return string;
 }
-#	endif /* NNTP_ABLE */
 
 
 /*
- * close_server -- close the connection to the server, after sending
- *		the "QUIT" command.
+ * Send "QUIT" command and close the connection to the server
  *
- *	Parameters:	None.
- *
- *	Returns:	Nothing.
- *
- *	Side effects:	Closes the connection with the server.
- *			You can't use "put_server" or "get_server"
- *			after this routine is called.
+ * Side effects:	Closes the connection to the server.
+ *					You can't use "put_server" or "get_server" after this
+ *					routine is called.
  */
-#	ifdef NNTP_ABLE
 void
 close_server (
 	void)
@@ -892,8 +887,9 @@ close_server (
 	if (nntp_wr_fp == NULL || nntp_rd_fp == NULL)
 		return;
 
-	my_fputs(_("Disconnecting from server...\n"), stdout); /* FIXME: -> lang.c */
+	my_fputs(_(txt_disconnecting), stdout);
 	nntp_command("QUIT", OK_GOODBYE, NULL);
+	quitting = TRUE;										/* Don't reconnect just for this */
 
 	(void) s_fclose (nntp_wr_fp);
 	(void) s_fclose (nntp_rd_fp);

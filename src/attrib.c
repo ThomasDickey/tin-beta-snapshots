@@ -209,91 +209,91 @@ read_attributes_file (
 				continue;
 
 			switch(tolower((unsigned char)line[0])) {
-			case 'a':
-				MATCH_BOOLEAN ("auto_save=", ATTRIB_AUTO_SAVE);
-				MATCH_BOOLEAN ("auto_select=", ATTRIB_AUTO_SELECT);
-				break;
+				case 'a':
+					MATCH_BOOLEAN ("auto_save=", ATTRIB_AUTO_SAVE);
+					MATCH_BOOLEAN ("auto_select=", ATTRIB_AUTO_SELECT);
+					break;
 
-			case 'b':
-				MATCH_BOOLEAN ("batch_save=", ATTRIB_BATCH_SAVE);
-				break;
+				case 'b':
+					MATCH_BOOLEAN ("batch_save=", ATTRIB_BATCH_SAVE);
+					break;
 
-			case 'd':
-				MATCH_BOOLEAN ("delete_tmp_files=", ATTRIB_DELETE_TMP_FILES);
-				break;
+				case 'd':
+					MATCH_BOOLEAN ("delete_tmp_files=", ATTRIB_DELETE_TMP_FILES);
+					break;
 
-			case 'f':
-				MATCH_STRING ("followup_to=", ATTRIB_FOLLOWUP_TO);
-				MATCH_STRING ("from=", ATTRIB_FROM);
-				break;
+				case 'f':
+					MATCH_STRING ("followup_to=", ATTRIB_FOLLOWUP_TO);
+					MATCH_STRING ("from=", ATTRIB_FROM);
+					break;
 
-			case 'i':
+				case 'i':
 #ifdef HAVE_ISPELL
-				MATCH_STRING ("ispell=", ATTRIB_ISPELL);
+					MATCH_STRING ("ispell=", ATTRIB_ISPELL);
 #endif /* HAVE_ISPELL */
-				break;
-
-			case 'm':
-				MATCH_STRING ("maildir=", ATTRIB_MAILDIR);
-				MATCH_STRING ("mailing_list=", ATTRIB_MAILING_LIST);
-				break;
-
-			case 'n':
-				MATCH_STRING ("news_quote_format=", ATTRIB_NEWS_QUOTE);
-				break;
-
-			case 'o':
-				MATCH_STRING ("organization=", ATTRIB_ORGANIZATION);
-				break;
-
-			case 'p':
-				MATCH_INTEGER ("post_proc_type=", ATTRIB_POST_PROC_TYPE, POST_PROC_UUDECODE);
-				break;
-
-			case 'q':
-				MATCH_INTEGER ("quick_kill_header=", ATTRIB_QUICK_KILL_HEADER, FILTER_LINES);
-				MATCH_STRING ("quick_kill_scope=", ATTRIB_QUICK_KILL_SCOPE);
-				MATCH_BOOLEAN ("quick_kill_case=", ATTRIB_QUICK_KILL_CASE);
-				MATCH_BOOLEAN ("quick_kill_expire=", ATTRIB_QUICK_KILL_EXPIRE);
-				MATCH_INTEGER ("quick_select_header=", ATTRIB_QUICK_SELECT_HEADER, FILTER_LINES);
-				MATCH_STRING ("quick_select_scope=", ATTRIB_QUICK_SELECT_SCOPE);
-				MATCH_BOOLEAN ("quick_select_case=", ATTRIB_QUICK_SELECT_CASE);
-				MATCH_BOOLEAN ("quick_select_expire=", ATTRIB_QUICK_SELECT_EXPIRE);
-				if (match_string (line, "quote_chars=", buf, sizeof (buf))) {
-					quote_dash_to_space (buf);
-					set_attrib (ATTRIB_QUOTE_CHARS, scope, buf);
-					found = TRUE;
 					break;
-				}
-				break;
 
-			case 's':
-				MATCH_STRING ("savedir=", ATTRIB_SAVEDIR);
-				MATCH_STRING ("savefile=", ATTRIB_SAVEFILE);
-				if (match_string (line, "scope=", scope, sizeof (scope))) {
-					found = TRUE;
+				case 'm':
+					MATCH_STRING ("maildir=", ATTRIB_MAILDIR);
+					MATCH_STRING ("mailing_list=", ATTRIB_MAILING_LIST);
 					break;
-				}
-				MATCH_STRING ("sigfile=", ATTRIB_SIGFILE);
-				MATCH_INTEGER ("show_author=", ATTRIB_SHOW_AUTHOR, SHOW_FROM_BOTH);
-				MATCH_BOOLEAN ("show_only_unread=", ATTRIB_SHOW_ONLY_UNREAD);
-				MATCH_INTEGER ("sort_art_type=", ATTRIB_SORT_ART_TYPE, SORT_ARTICLES_BY_SCORE_ASCEND);
-				MATCH_INTEGER ("sort_threads_type=", ATTRIB_SORT_THREADS_TYPE, SORT_THREADS_BY_SCORE_DESCEND);
-				break;
 
-			case 't':
-				MATCH_BOOLEAN ("tex2iso_conv=", ATTRIB_TEX2ISO_CONV);
-				MATCH_INTEGER ("thread_arts=", ATTRIB_THREAD_ARTS, THREAD_MAX);
-				break;
+				case 'n':
+					MATCH_STRING ("news_quote_format=", ATTRIB_NEWS_QUOTE);
+					break;
 
-			case 'x':
-				MATCH_STRING ("x_body=", ATTRIB_X_BODY);
-				MATCH_BOOLEAN ("x_comment_to=", ATTRIB_X_COMMENT_TO);
-				MATCH_STRING ("x_headers=", ATTRIB_X_HEADERS);
-				break;
+				case 'o':
+					MATCH_STRING ("organization=", ATTRIB_ORGANIZATION);
+					break;
 
-			default:
-				break;
+				case 'p':
+					MATCH_INTEGER ("post_proc_type=", ATTRIB_POST_PROC_TYPE, POST_PROC_UUDECODE);
+					break;
+
+				case 'q':
+					MATCH_INTEGER ("quick_kill_header=", ATTRIB_QUICK_KILL_HEADER, FILTER_LINES);
+					MATCH_STRING ("quick_kill_scope=", ATTRIB_QUICK_KILL_SCOPE);
+					MATCH_BOOLEAN ("quick_kill_case=", ATTRIB_QUICK_KILL_CASE);
+					MATCH_BOOLEAN ("quick_kill_expire=", ATTRIB_QUICK_KILL_EXPIRE);
+					MATCH_INTEGER ("quick_select_header=", ATTRIB_QUICK_SELECT_HEADER, FILTER_LINES);
+					MATCH_STRING ("quick_select_scope=", ATTRIB_QUICK_SELECT_SCOPE);
+					MATCH_BOOLEAN ("quick_select_case=", ATTRIB_QUICK_SELECT_CASE);
+					MATCH_BOOLEAN ("quick_select_expire=", ATTRIB_QUICK_SELECT_EXPIRE);
+					if (match_string (line, "quote_chars=", buf, sizeof (buf))) {
+						quote_dash_to_space (buf);
+						set_attrib (ATTRIB_QUOTE_CHARS, scope, buf);
+						found = TRUE;
+						break;
+					}
+					break;
+
+				case 's':
+					MATCH_STRING ("savedir=", ATTRIB_SAVEDIR);
+					MATCH_STRING ("savefile=", ATTRIB_SAVEFILE);
+					if (match_string (line, "scope=", scope, sizeof (scope))) {
+						found = TRUE;
+						break;
+					}
+					MATCH_STRING ("sigfile=", ATTRIB_SIGFILE);
+					MATCH_INTEGER ("show_author=", ATTRIB_SHOW_AUTHOR, SHOW_FROM_BOTH);
+					MATCH_BOOLEAN ("show_only_unread=", ATTRIB_SHOW_ONLY_UNREAD);
+					MATCH_INTEGER ("sort_art_type=", ATTRIB_SORT_ART_TYPE, SORT_ARTICLES_BY_SCORE_ASCEND);
+					MATCH_INTEGER ("sort_threads_type=", ATTRIB_SORT_THREADS_TYPE, SORT_THREADS_BY_SCORE_DESCEND);
+					break;
+
+				case 't':
+					MATCH_BOOLEAN ("tex2iso_conv=", ATTRIB_TEX2ISO_CONV);
+					MATCH_INTEGER ("thread_arts=", ATTRIB_THREAD_ARTS, THREAD_MAX);
+					break;
+
+				case 'x':
+					MATCH_STRING ("x_body=", ATTRIB_X_BODY);
+					MATCH_BOOLEAN ("x_comment_to=", ATTRIB_X_COMMENT_TO);
+					MATCH_STRING ("x_headers=", ATTRIB_X_HEADERS);
+					break;
+
+				default:
+					break;
 			}
 
 			if (found)
@@ -308,7 +308,7 @@ read_attributes_file (
 	 * Now setup the rest of the groups to use the default attributes
 	 */
 	if (!global_file) {
-		for (i = 0; i < num_active; i++) {
+		for_each_group(i) {
 			if (!active[i].attribute)
 				active[i].attribute = &glob_attributes;
 		}
@@ -340,7 +340,7 @@ set_attrib (
 	} else {
 		int i;
 /* TODO Can we get out of doing this per group for .global case */
-		for (i = 0; i < num_active; i++) {
+		for_each_group(i) {
 			group = &active[i];
 			if (match_group_list (group->name, scope))
 				do_set_attrib (group, type, data);
@@ -445,7 +445,6 @@ do_set_attrib (
 		default:
 			break;
 	}
-
 }
 
 
@@ -560,7 +559,7 @@ write_attributes_file (
 	fprintf (fp, "followup_to=poster\n\n");
 
 #if 0 /* FIXME */
-	for (i = 0; i < num_active; i++) {
+	for_each_group(i) {
 		group = &active[i];
 		fprintf (fp, "scope=%s\n", group->name);
 		fprintf (fp, "maildir=%s\n", group->attribute->maildir);
@@ -635,7 +634,7 @@ debug_print_filter_attributes (
 
 	my_printf("\nBEG ***\n");
 
-	for (i = 0; i < num_active; i++) {
+	for_each_group(i) {
 		group = &active[i];
 		my_printf ("Grp=[%s] KILL   header=[%d] scope=[%s] case=[%s] expire=[%s]\n",
 			group->name, group->attribute->quick_kill_header,
@@ -665,7 +664,7 @@ dump_attributes (
 
 	fprintf(stderr, "DUMP attributes\n");
 
-	for (i = 0; i < num_active; i++) {
+	for_each_group(i) {
 		group = &active[i];
 		if (!group->attribute)
 			continue;

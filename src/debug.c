@@ -56,13 +56,11 @@ int debug;
  */
 static void debug_print_attributes (struct t_attribute *attr, FILE *fp);
 static void debug_print_filter (FILE *fp, int num, struct t_filter *the_filter);
-#	if 0
-	static void debug_print_active_hash (void);
-#	endif /* 0 */
+
+
 /*
  *  nntp specific debug routines
  */
-
 void
 debug_delete_files (
 	void)
@@ -128,7 +126,7 @@ debug_print_arts (
 	if (debug != 2)
 		return;
 
-	for (i = 0; i < top_art; i++)	/* for each group */
+	for_each_art(i)
 		debug_print_header (&arts[i]);
 }
 
@@ -221,7 +219,7 @@ debug_print_active (
 	sprintf (file, "%sACTIVE", TMPDIR);
 
 	if ((fp = fopen (file, "w")) != (FILE *) 0) {
-		for (i = 0; i < num_active; i++) {	/* for each group */
+		for_each_group(i) {
 			group = &active[i];
 			fprintf (fp, "[%4d]=[%s] type=[%s] spooldir=[%s]\n",
 				i, group->name,
@@ -333,7 +331,6 @@ debug_print_filters (
 	char file[PATH_LEN];
 	FILE *fp;
 	int i, num;
-/* int j; */
 	struct t_filter *the_filter;
 
 	if (debug < 2)
@@ -358,55 +355,6 @@ debug_print_filters (
 		chmod (file, (S_IRUGO|S_IWUGO));
 	}
 }
-
-
-/*
- * Prints out hash distribution of active[]
- */
-#if 0
-static void
-debug_print_active_hash (
-	void)
-{
-	int empty = 0, number;
-	int collisions[32];
-	register i, j;
-
-	for (i = 0; i < 32; i++)
-		collisions[i] = 0;
-
-	for (i = 0; i < TABLE_SIZE; i++) {
-/*
-		my_printf ("HASH[%4d]  ", i);
-*/
-
-		if (group_hash[i] == -1) {
-/*
-			my_printf ("EMPTY\n");
-*/
-			empty++;
-		} else {
-			number = 1;
-			for (j = group_hash[i]; active[j].next >= 0; j = active[j].next)
-				number++;
-			if (number > 31)
-				my_printf ("MEGA HASH COLLISION > 31 HASH[%d]=[%d]!!!\n", i, number);
-			else
-				collisions[number]++;
-		}
-	}
-
-	my_printf ("HashTable Active=[%d] Size=[%d] Filled=[%d] Empty=[%d]\n",
-		num_active, TABLE_SIZE, TABLE_SIZE-empty, empty);
-	my_printf ("01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32\n");
-	my_printf ("-----------------------------------------------------------------------------------------------\n");
-	for (i = 0; i < 32; i++) {
-		if (i)
-			my_printf ("%2d ", collisions[i]);
-	}
-	my_printf ("\n");
-}
-#endif /* 0 */
 #endif /* DEBUG */
 
 #ifdef DEBUG_NEWSRC

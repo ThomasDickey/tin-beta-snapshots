@@ -13,7 +13,7 @@
 #       - check for ~/.newsauth and use username/password if found
 #
 # version Number
-my $version = "1.0.0";
+my $version = "1.0.2";
 
 # TODO: put into a "my %config('NNTPServer' => 'news', ... );" array
 my $NNTPServer	= 'news';		# you NNTP servers name
@@ -86,7 +86,7 @@ foreach ('From', 'Subject') {
 	die "$0: No $_:-header defined." if (!defined($Header{lc($_)}));
 }
 
-$Header{'date'} = "Date: ".getdate()."\n" if (!defined($Header{'date'}) || $Header{'date'} !~ m/^[^\s:]+: .+/);
+$Header{'date'} = "Date: ".getdate()."\n" if (!defined($Header{'date'}) || $Header{'date'} !~ m/^[^\s:]+: .+/o);
 
 if (defined($Header{'user-agent'})) {
 	chomp $Header{'user-agent'};
@@ -115,7 +115,7 @@ if (defined($Header{'newsgroups'}) && !defined($Header{'message-id'})) {
 	$Server->datasend('.');
 	$Server->dataend();
 	$Server->quit();
-	$Header{'message-id'} = "Message-ID: $1\n" if ($ServerMsg =~ m/(<\S+\@\S+>)/);
+	$Header{'message-id'} = "Message-ID: $1\n" if ($ServerMsg =~ m/(<\S+\@\S+>)/o);
 }
 
 if (!defined($Header{'message-id'})) {
@@ -175,12 +175,12 @@ sub readarticle {
 	my $currentheader;
 	while (defined($_ = <>)) {
 		if ($in_header) {
-			if (m/^$/) { #end of header
+			if (m/^$/o) { #end of header
 				$in_header = 0;
 			} elsif (m/^([^\s:]+): (.*)$/s) {
 				$currentheader = lc($1);
 				$$HeaderR{$currentheader} = "$1: $2";
-			} elsif (m/^[ \t]/) {
+			} elsif (m/^[ \t]/o) {
 				$$HeaderR{$currentheader} .= $_;
 			}
 		} else {
@@ -217,7 +217,7 @@ sub getdate {
 	my $year = $time[5] + 1900;
 	my $offset = timelocal(localtime) - timelocal(gmtime);
 	my $sign ="+";
-	if ($offset <= 0) {
+	if ($offset < 0) {
 		$sign ="-";
 		$offset *= -1;
 	}
@@ -306,18 +306,18 @@ sub getpgpcommand {
 			die "$0: Passphrase is unknown!\n";
 		}
 	} elsif ($PGPVersion eq '5') {
-		if (defined($PathtoPGPPass)) {
-			$PGPCommand = "PGPPASSFD=2 ".$pgp."s -u \"".$PGPSigner."\" -t --armor -o ".$pgptmpf.".txt.asc -z -f < ".$pgptmpf.".txt 2< ".$PathtoPGPPass;
+		if ($PathtoPGPPass) {
+			$PGPCommand = "PGPPASSFD=2 ".$pgp."s -u \"".$PGPSigner."\" -t --armor -o ".$pgptmpf.".txt.asc -z -f < ".$pgptmpf.".txt 2 < ".$PathtoPGPPass;
 		} elsif ($Interactive) {
 			$PGPCommand = $pgp."s -u \"".$PGPSigner."\" -t --armor -o ".$pgptmpf.".txt.asc -z -f < ".$pgptmpf.".txt";
 		} else {
 			die "$0: Passphrase is unknown!\n";
 		}
-	} elsif ($PGPVersion eq 'GPG') {
-		if (defined($PathtoPGPPass)) {
-			$PGPCommand = $pgp." -a -u \"$PGPSigner\" -o $pgptmpf.txt.asc --no-tty --batch --passphrase-fd 2 2<$PathtoPGPPass --clearsign $pgptmpf.txt";
+	} elsif ($PGPVersion =~ m/GPG/io) {
+		if ($PathtoPGPPass) {
+			$PGPCommand = $pgp." --digest-algo MD5 -a -u \"".$PGPSigner."\" -o ".$pgptmpf.".txt.asc --no-tty --batch --passphrase-fd 2 2 < ".$PathtoPGPPass." --clearsign ".$pgptmpf.".txt";
 		} elsif ($Interactive) {
-			$PGPCommand = $pgp." -a -u \"$PGPSigner\" -o $pgptmpf.txt.asc --no-secmem-warning --no-batch --clearsign $pgptmpf.txt";
+			$PGPCommand = $pgp." --digest-algo MD5 -a -u \"".$PGPSigner."\" -o ".$pgptmpf.".txt.asc --no-secmem-warning --no-batch --clearsign ".$pgptmpf.".txt";
 		} else {
 			die "$0: Passphrase is unknown!\n";
 		}
@@ -368,7 +368,7 @@ sub signarticle {
 	my (@pgphead, @pgpbody, $pgphead, $pgpbody, $header, $signheaders, @signheaders);
 
 	foreach (@PGPSignHeaders) {
-		if (defined($$HeaderR{lc($_)}) && $$HeaderR{lc($_)} =~ m/^[^\s:]+: .+/) {
+		if (defined($$HeaderR{lc($_)}) && $$HeaderR{lc($_)} =~ m/^[^\s:]+: .+/o) {
 			push @signheaders, $_;
 		}
 	}
@@ -382,13 +382,14 @@ sub signarticle {
 
 	$pgphead = "X-Signed-Headers: $signheaders\n";
 	foreach $header (@signheaders) {
-		if ($$HeaderR{lc($header)} =~ m/^[^\s:]+: (.+)/) {
+		if ($$HeaderR{lc($header)} =~ m/^[^\s:]+: (.+)/o) {
 			$pgphead .= $header.": ".$1."\n";
 		}
 	}
 
 	open(FH, ">" . $pgptmpf . ".txt") or die "$0: can't open $pgptmpf: $!\n";
 	print FH $pgphead, "\n", $pgpbody;
+	print FH "\n" if ($PGPVersion =~ m/GPG/io);	# workaround a pgp/gpg incompatibility - should IMHO be fixed in pgpverify
 	close(FH) or warn "$0: Couldn't close TMP: $!\n";
 
 	# Start PGP, then read the signature;
@@ -397,7 +398,7 @@ sub signarticle {
 	open (FH, "<" . $pgptmpf . ".txt.asc") or die "$0: can't open ".$pgptmpf.".txt.asc: $!\n";
 	$/ = "$pgpbegin\n";
 	$_ = <FH>;
-	unless (m/\Q$pgpbegin\E$/) {
+	unless (m/\Q$pgpbegin\E$/o) {
 		unlink $pgptmpf . ".txt";
 		unlink $pgptmpf . ".txt.asc";
 		die "$0: $pgpbegin not found in ".$pgptmpf.".txt.asc\n"
@@ -406,12 +407,16 @@ sub signarticle {
 
 	$/ = "\n";
 	$_ = <FH>;
-	unless (m/^Version: (\S+)/) {
+	unless (m/^Version: (\S+)(?:\s(\S+))?/o) {
 		unlink $pgptmpf . ".txt";
 		unlink $pgptmpf . ".txt.asc";
 		die "$0: didn't find PGP Version line where expected.\n";
 	}
-	$$HeaderR{$pgpheader} = "$1 $signheaders";
+	if (defined($2)) {
+		$$HeaderR{$pgpheader} = $1."-".$2." ".$signheaders;
+	} else {
+		$$HeaderR{$pgpheader} = $1." ".$signheaders;
+	}
 	do {			# skip other pgp headers like
 		$_ = <FH>;	# "charset:"||"comment:" until empty line
 	} while ! /^$/;

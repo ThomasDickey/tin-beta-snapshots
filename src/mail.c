@@ -163,7 +163,7 @@ write_mail_active_file (
 	print_active_head (mail_active_file);
 
 	if ((fp = open_mail_active_fp ("a+")) != (FILE *) 0) {
-		for (i = 0; i < num_active; i++) {
+		for_each_group(i) {
 			group = &active[i];
 			if (group->type == GROUP_TYPE_MAIL) {
 				make_base_group_path (group->spooldir, group->name, group_path);
@@ -437,7 +437,7 @@ vGrpDelMailArts (
 	if (group->type == GROUP_TYPE_MAIL || group->type == GROUP_TYPE_SAVE) {
 		wait_message (1, (group->type == GROUP_TYPE_MAIL) ? _(txt_processing_mail_arts) : _(txt_processing_saved_arts));
 		make_base_group_path (group->spooldir, group->name, group_path);
-		for (i = 0; i < top_art; i++) {
+		for_each_art(i) {
 			article = &arts[i];
 			if (article->delete_it) {
 				sprintf (article_filename, "%s/%ld", group_path, article->artnum);

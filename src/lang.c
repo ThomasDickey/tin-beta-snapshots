@@ -139,6 +139,7 @@ constext txt_creating_active[] = N_("Creating active file for saved groups...\n"
 constext txt_creating_newsrc[] = N_("Creating newsrc file...\n");
 constext txt_delete_processed_files[] = N_("Delete saved files that have been post processed?");
 constext txt_deleting[] = N_("Deleting temporary files...");
+constext txt_disconnecting[] = N_("Disconnecting from server...\n");
 constext txt_end_of_art[] = N_("*** End of article ***");
 constext txt_end_of_arts[] = N_("*** End of articles ***");
 constext txt_end_of_groups[] = N_("*** End of groups ***");
@@ -235,6 +236,7 @@ constext txt_filter_global_rules[] = N_("Filtering global rules (%d/%d)...");
 constext txt_feed_pattern[] = N_("Enter wildcard pattern [%s]> ");
 constext txt_followup_newsgroups[] = N_("\nYou requested followups to your article to go to the following %s:\n");
 constext txt_followup_poster[] = N_("  %s\t Answers will be directed to you by mail.\n");
+constext txt_gethostbyname[] = N_("%s%s: Unknown host.\n");
 constext txt_global[] = N_("global ");
 
 #if defined(HAVE_POLL) || defined(HAVE_SELECT)
@@ -243,6 +245,7 @@ constext txt_global[] = N_("global ");
 	constext txt_group[] = N_("Group %.*s...");
 #endif /* HAVE_POLL || HAVE_SELECT */
 
+constext txt_group_aliased[] = N_("Please use %.100s instead");
 constext txt_group_is_moderated[] = N_("Group %s is moderated. Continue?");
 constext txt_group_plural[] = N_("groups");
 constext txt_group_select_com[] = N_("Top Level Commands");
@@ -391,6 +394,7 @@ constext txt_help_select_toggle_descriptions[] = N_("toggle display of group nam
 constext txt_help_select_toggle_read_groups[] = N_("toggle display to show all/unread subscribed groups");
 constext txt_help_select_unsubscribe[] = N_("unsubscribe from chosen group");
 constext txt_help_select_unsubscribe_pattern[] = N_("unsubscribe from groups that match pattern");
+constext txt_help_select_sort_active[] = N_("sort the list of groups");
 constext txt_help_select_yank_active[] = N_("toggle display to show all/subscribed groups");
 constext txt_help_thread_article_by_num[] = N_("0 - 9\t  choose article by number");
 constext txt_help_thread_catchup[] = N_("mark thread as read and return to group index page");
@@ -739,9 +743,6 @@ constext txt_tinrc_info_in_last_line[] = N_("# If ON use print current subject o
 constext txt_tinrc_newnews[] = N_("# Host & time info used for detecting new groups (don't touch)\n");
 
 constext txt_unsubscribe_pattern[] = N_("Enter wildcard unsubscribe pattern> ");
-#ifndef HAVE_UUDECODE
-	constext txt_uuencode_not_supported[] = N_("x-uuencode not supported yet");
-#endif /* !HAVE_UUDECODE */
 constext txt_view_attachment[] = N_("View '%s' (%s/%s)?");
 
 /*

@@ -433,8 +433,7 @@ read_decoded_qp_line (
 	dest = &line[put_chars];
 	if ((max_lines_to_read < 1) || (max_line_len < 2))
 		return max_lines_to_read;
-	if (!(buf = my_malloc (max_buf_len)))
-		return -1;	/* oops, no memory */
+	buf = my_malloc ((size_t) max_buf_len);
 	*buf = '\0';
 	endptr = buf;
 	do {

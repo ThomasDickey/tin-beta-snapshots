@@ -1544,7 +1544,7 @@ process_url(
 
 			*(ptr + offsets[1]) = '\0';
 
-			if (prompt_default_string ("URL:", url, sizeof(url), ptr + offsets[0], HIST_NONE)) {
+			if (prompt_default_string ("URL:", url, sizeof(url), ptr + offsets[0], HIST_URL)) {
 				char ubuf[LEN];
 
 				if (!*url)			/* Don't try and open nothing */

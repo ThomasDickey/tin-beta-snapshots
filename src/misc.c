@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-04-15
+ *  Updated   : 2002-04-26
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -86,9 +86,12 @@ static void write_input_history_file (void);
 	static void buffer_to_local (char *line);
 #else
 #	ifdef CHARSET_CONVERSION
-	static void buffer_to_local (char *line, const char* network_charset, const char *local_charset);
+	static t_bool buffer_to_local (char *line, const char* network_charset, const char *local_charset);
 #	endif /* CHARSET_CONVERSION */
 #endif /* LOCAL_CHARSET || MAC_OS_X */
+#ifdef MIME_STRICT_CHARSET
+	static void buffer_to_ascii (char *c);
+#endif /* MIME_STRICT_CHARSET */
 
 
 /*
@@ -2640,7 +2643,7 @@ buffer_to_network (
 
 
 #ifdef CHARSET_CONVERSION
-static void
+static t_bool
 buffer_to_local (
 	char *line,
 	const char *network_charset,
@@ -2651,8 +2654,7 @@ buffer_to_local (
 	/* FIXME: this should default in RFC2046.c to US-ASCII */
 	if ((network_charset && *network_charset)) {	/* Content-Type: had a charset parameter */
 		cnetwork_charset = my_strdup(network_charset);
-		if (strcasecmp(cnetwork_charset, local_charset) && strcasecmp(cnetwork_charset, "US-ASCII")) {
-			/* different charsets && cnetwork_charset NOT us-ascii */
+		if (strcasecmp(cnetwork_charset, local_charset)) { /* different charsets */
 			char *clocal_charset;
 			iconv_t cd0, cd1, cd2;
 
@@ -2768,11 +2770,16 @@ buffer_to_local (
 				iconv_close(cd0);
 				free(obuf);
 				free(tbuf);
+			} else {
+				free(clocal_charset);
+				free(cnetwork_charset);
+				return FALSE;
 			}
 			free(clocal_charset);
 		}
 		free(cnetwork_charset);
 	}
+	return TRUE;
 }
 
 
@@ -2829,13 +2836,27 @@ buffer_to_network (
 #endif /* CHARSET_CONVERSION */
 
 
+#ifdef MIME_STRICT_CHARSET
+void
+buffer_to_ascii (
+	char *c)
+{
+	while (*c != '\0') { /* reduce to US-ASCII, other non-prints are filtered later */
+		if ((unsigned char) *c >= 128)
+			*c = '?';
+		c++;
+	}
+}
+#endif /* MIME_STRICT_CHARSET */
+
+
 /*
  * do some character set processing
  *
  * this is called for headers, overview data, and article bodies
  *
  * to set non-ASCII characters to '?' (only with MIME_STRICT_CHARSET
- * and without NO_LOCALE): call with network_charset=="us-ascii"
+ * and without NO_LOCALE): call with network_charset=="US-ASCII"
  */
 void
 process_charsets (
@@ -2847,25 +2868,17 @@ process_charsets (
 
 #if defined(MIME_STRICT_CHARSET) && !defined(NO_LOCALE)
 #	if !defined(CHARSET_CONVERSION)
-	if ((local_charset && strcasecmp(network_charset, local_charset))
-	 || !strcasecmp(network_charset, "us-ascii"))
+	if ((local_charset && strcasecmp(network_charset, local_charset)) || !strcasecmp(network_charset, "US-ASCII"))
 		/* different charsets || network charset is US-ASCII (see below) */
 #	else
-	if (!strcasecmp(network_charset, "us-ascii"))
+	if (!strcasecmp(network_charset, "US-ASCII"))
 		/*
 		 * network charset is US-ASCII: calling process_charsets() with
 		 * network_charset=="US-ASCII" means: set all non-ASCII (8bit)
 		 * characters to '?'
 		 */
 #	endif /* !CHARSET_CONVERSION */
-	{
-		char *c = line;
-		while (*c != '\0') { /* reduce to US-ASCII, other non-prints are filtered later */
-			if ((unsigned char) *c >= 128)
-				*c = '?';
-			c++;
-		}
-	}
+		buffer_to_ascii(line);
 #endif /* MIME_STRICT_CHARSET && !NO_LOCALE */
 
 	/* charset conversion (codepage or iconv(3) version) */
@@ -2873,15 +2886,20 @@ process_charsets (
 	buffer_to_local(line);
 #else
 #	ifdef CHARSET_CONVERSION
-	if (strcasecmp(network_charset, "us-ascii"))	/* network_charset is NOT us-ascii */
-		buffer_to_local(line, network_charset, local_charset);
+	if (strcasecmp(network_charset, "US-ASCII"))	/* network_charset is NOT US-ASCII */
+#		ifdef MIME_STRICT_CHARSET
+		if (!buffer_to_local(line, network_charset, local_charset))
+			buffer_to_ascii(line);
+#		else
+		(void) buffer_to_local(line, network_charset, local_charset);
+#		endif /* MIME_STRICT_CHARSET */
 #	endif /* CHARSET_CONVERSION */
 #endif /* LOCAL_CHARSET || MAC_OS_X */
-
 
 	/* iso2asc support */
 	if (iso2asc_supported >= 0) {
 		char isobuf[LEN];
+
 		strcpy (isobuf, line);
 		convert_iso2asc (isobuf, line, iso2asc_supported);
 	}
@@ -3677,7 +3695,6 @@ gnksa_do_check_from (
 	char *realname)
 {
 	char *addr_begin;
-	char *aux;
 	char decoded[HEADER_LEN];
 	int result = 0;
 	int code;
@@ -3715,8 +3732,7 @@ gnksa_do_check_from (
 #endif /* DEBUG */
 
 		/* convert FQDN part to lowercase */
-		for (aux = addr_begin; *aux; aux++)
-			*aux = tolower((int) *aux);
+		str_lwr(addr_begin);
 
 		if (GNKSA_OK != (result = gnksa_check_domain(addr_begin))
 		    && (GNKSA_OK == code)) /* error detected */

@@ -558,7 +558,7 @@ feed_articles (
 
 		case iKeyFeedTag:		/* tagged articles */
 			for (i = 1; i <= num_of_tagged_arts; i++) {
-				for (j = 0; j < top_art; j++) {
+				for_each_art(j) {
 					if (arts[j].tagged == i) {
 						/* Ignore errors */
 						feed_article(j, function, &count, num_of_tagged_arts, use_current, output, group_path);

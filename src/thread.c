@@ -1256,9 +1256,7 @@ make_prefix (
 		}
 	}
 
-	if (!(buf = my_malloc (prefix_ptr + 3)))
-		return;	/* out of memory */
-
+	buf = my_malloc (prefix_ptr + 3);
 	strcpy (&buf[prefix_ptr], "->");
 	buf[--prefix_ptr] = (has_sibling (art) ? '+' : '`');
 
