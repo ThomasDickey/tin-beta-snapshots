@@ -52,15 +52,13 @@
 #endif /* !RFC2045_H */
 
 #define FIRST_HEADER	4
-#define CONT_HEADER		2
 
 
 /*
- * size of page header over and above INDEX_TOP, this is 2 for the 1st page, and
- * 0 otherwise
+ * size of page header over and above INDEX_TOP
  * [ Used because NOTESLINES only specifies a 2 line header ]
  */
-#define HDR_ADJUST	((curr_line == 0) ? FIRST_HEADER-INDEX_TOP : CONT_HEADER-INDEX_TOP)
+#define HDR_ADJUST	(FIRST_HEADER-INDEX_TOP)
 
 /*
  * The number of lines available to display actual article text
@@ -94,7 +92,7 @@ static int search_line;			/* Line to commence next search from */
 
 static t_bool show_all_headers;	/* CTRL-H with headers specified */
 static t_bool reveal_ctrl_f;	/* set when ^L hiding is off */
-static t_bool reveal_uue;		/* set when uuencoded sections are shown */
+static t_bool hide_uue;			/* set when uuencoded sections are 'hidden' */
 
 /*
  * Local prototypes
@@ -103,7 +101,6 @@ static int load_article (int new_respnum);
 static int prompt_response (int ch, int curr_respnum);
 static void process_search (void);
 static void process_url (void);
-static void show_cont_header (void);
 static void show_first_header (char *group);
 #ifdef HAVE_METAMAIL
 	static void show_mime_article (FILE *fp);
@@ -121,9 +118,9 @@ scroll_page (
 #ifdef USE_CURSES
 	scrollok(stdscr, TRUE);
 #endif	/* USE_CURSES */
-    setscrreg(INDEX_TOP+HDR_ADJUST, ARTLINES+1);
-    scrl(i);
-    setscrreg(0, cLINES);
+	setscrreg(INDEX_TOP+HDR_ADJUST, ARTLINES+HDR_ADJUST+1);
+	scrl(i);
+	setscrreg(0, cLINES);
 #ifdef USE_CURSES
 	scrollok(stdscr, FALSE);
 #endif	/* USE_CURSES */
@@ -286,7 +283,10 @@ show_page (
 				else
 					set_xclick_on ();
 				mouse_click_on = !mouse_click_on;
-fprintf(stderr, "Mouse toggle %d\n", mouse_click_on);
+#ifdef DEBUG
+				if (debug == 2)
+					fprintf(stderr, "Mouse toggle %d\n", mouse_click_on);
+#endif /* DEBUG */
 				break;
 
 			case iKeyPageUp:		/* page up */
@@ -556,7 +556,7 @@ page_goto_next_unread:
 				break;
 
 			case iKeyPageToggleUue:			/* toggle display off uuencoded sections */
-				reveal_uue = !reveal_uue;
+				hide_uue = !hide_uue;
 				resize_article (&pgart);	/* Also recooks it.. */
 				draw_page (group->name, 0);
 				break;
@@ -882,13 +882,8 @@ draw_page (
 	else
 		MoveCursor (0, 0);
 
-	if (curr_line == 0) {
-		show_first_header (group);
-		top = FIRST_HEADER;
-	} else {
-		show_cont_header ();
-		top = CONT_HEADER;
-	}
+	show_first_header (group);
+	top = FIRST_HEADER;
 
 	/* Down-scroll, only redraw bottom 'part' lines of screen */
 	i = (part > 0) ? ARTLINES-part : 0;
@@ -1200,67 +1195,6 @@ show_first_header (
 
 
 /*
- * CONT_HEADER defines the size in lines of this header
- */
-static void
-show_cont_header (
-	void)
-{
-	char *buf;
-	int maxresp;
-	int whichresp;
-	int whichbase;
-	struct t_article *artptr = &arts[this_resp];
-
-	whichresp = which_response (this_resp);
-	whichbase = which_thread (this_resp);
-	maxresp = num_of_responses (whichbase);
-
-	assert (whichbase < grpmenu.max);
-
-	/*
-	 * the last term in the length of the buffer is mainly to shut
-	 * checker up although we still depend on _(txt_thread_resp_page)
-	 * not being too long
-	 */
-	buf = (char *) my_malloc (strlen((artptr->name ? artptr->name : artptr->from)) + strlen(note_h->subj) + cCOLS + 5*3*sizeof(int));
-	if (whichresp) {
-		sprintf(buf, _(txt_thread_resp_page),
-			whichbase + 1,
-			grpmenu.max,
-			whichresp,
-			maxresp,
-			((curr_line+ARTLINES+1) / ARTLINES) + 1,
-			artptr->name ? artptr->name : artptr->from, note_h->subj);
-	} else {
-		sprintf(buf, _(txt_thread_page),
-			whichbase + 1,
-			grpmenu.max,
-			((curr_line+ARTLINES+1) / ARTLINES) + 1,
-			artptr->name ? artptr->name : artptr->from, note_h->subj);
-	}
-	strip_line (buf);
-
-	if (cCOLS)
-		buf[cCOLS-1] = '\0';
-
-	Convert2Printable (buf);
-
-#	ifdef HAVE_COLOR
-	fcol(tinrc.col_head);
-#	endif /* HAVE_COLOR */
-
-	my_printf("%s" cCRLF cCRLF, buf);
-
-#	ifdef HAVE_COLOR
-	fcol(tinrc.col_normal);
-#	endif /* HAVE_COLOR */
-
-	free(buf);
-}
-
-
-/*
  * Change the pager article context to arts[new_respnum]
  * Return GRP_ARTFAIL if article could not be opened
  */
@@ -1273,7 +1207,10 @@ load_article(
 	if (read_news_via_nntp)
 		wait_message (0, _(txt_reading_article));
 
-fprintf(stderr, "load_art %s(new=%d, curr=%d)\n", (new_respnum == this_resp) ? "ALREADY OPEN!":"", new_respnum, this_resp);
+#ifdef DEBUG
+	if (debug == 2)
+		fprintf(stderr, "load_art %s(new=%d, curr=%d)\n", (new_respnum == this_resp) ? "ALREADY OPEN!":"", new_respnum, this_resp);
+#endif /* DEBUG */
 
 	/*
 	 * Remember current & previous articles for '-' command
@@ -1324,7 +1261,7 @@ already_open:
 
 	rotate = 0;			/* normal mode, not rot13 */
 	reveal_ctrl_f = FALSE;
-	reveal_uue = FALSE;
+	hide_uue = tinrc.hide_uue;
 
 	/* TODO too many draw_page()s here - do it once on entry and then sort it out ? */
 #ifdef HAVE_METAMAIL
@@ -1461,7 +1398,7 @@ resize_article(
 	if (artinfo->cooked)
 		fclose(artinfo->cooked);
 
-	cook_article (artinfo, tabwidth, reveal_uue);
+	cook_article (artinfo, tabwidth, hide_uue);
 
 	show_all_headers = FALSE;
 	artline = pgart.cookl;

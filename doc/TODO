@@ -146,6 +146,11 @@ o  when enabling the 'cc/bcc on every message that is sent', and
 
 New features
 ------------
+o  make hide_uu a 3 way toggle:
+      0 = don't hide uu-parts
+      1 = hide full uu-parts incl. begin/end
+      2 = hide uu-lines (might have many false positives)
+ 
 o  add human readable timestamps to connection dates in tinrc
    [Urs Janssen <urs@tin.org>]
 
@@ -396,7 +401,7 @@ o  add check for sizeof char, short, int, long, ...
 o  join Makefile and makefile (not entirely possible)
    update makefile[.in]
 
-o  cleanup (=rewrite) inews.c/header.c
+o  cleanup (=rewrite) inews.c/header.c/save.c
 
 o  cleanup main.c/init_selfinfo()
    ('strace -e trace=file tin' and you know what I mean)

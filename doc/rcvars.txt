@@ -6,6 +6,7 @@ Adding new tinrc variables:
 . Add an entry for it to the tin.1 manpage under the TINRC variables section
 . Add NAME with the correct type to the master declaration in tinrc.h
 . Add an initial value for NAME in the correct position in t_config tinrc={};
+  in init.c
 . In config.c, add the following:
 
 	In read_config_file(), a match_*() function to read NAME into the
@@ -17,7 +18,6 @@ Adding new tinrc variables:
 	In change_config_file(), you may need an OPT_NAME: switch to do any
 	special post-processing needed when NAME is changed on the Option
 	'M'enu.
-
 
 . Add the following definition to extern.h
 	struct opttxt txt_NAME

@@ -1603,7 +1603,7 @@ decode_save_mime(
 		char savepath[PATH_LEN];
 		char *name;
 		char *savefile;				/* ptr to filename portion of savepath */
-		int i, count;
+		int i;
 		struct t_attribute *attr = CURR_GROUP.attribute;
 		FILE *fp;
 
@@ -1612,6 +1612,9 @@ decode_save_mime(
 
 		/*
 		 * Determine the filename
+		 * FIXME: use joinpath()
+		 *        honor, that tinrc.default_save_file holds the filename
+		 *        _and_ the path (-> no path prepending needed)
 		 */
 		strncpy (savepath, attr->savedir, sizeof(savepath));
 		strcat (savepath, "/");
@@ -1641,12 +1644,24 @@ decode_save_mime(
 			if (buf[0] == '\0')
 				break;
 
-			count = mmdecode(buf, ptr->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2, NULL);
-			fwrite(buf2, count, 1, fp);
+			switch (ptr->encoding) {
+				int count;
+
+				case ENCODING_QP:
+				case ENCODING_BASE64:
+					count = mmdecode(buf, ptr->encoding == ENCODING_QP ? 'q' : 'b', '\0', buf2, NULL);
+					fwrite(buf2, count, 1, fp);
+					break;
+				case ENCODING_UUE:
+					wait_message(1, "x-uuencode not supported yet");
+					/* FALLTHROUGH */
+				default:
+					fputs(buf, fp);
+			}
 		}
 		fclose(fp);
 
-		sprintf(buf, "View '%s' ? (y/n): ", savefile);
+		sprintf(buf, "View '%s' (%s/%s) ? (y/n): ", savefile, content_types[ptr->type], ptr->subtype);
 		if (prompt_yn (cLINES, buf, FALSE) == 1) {
 			char *app;
 			if ((app = lookup_mailcap (ptr->type, ptr->subtype)) != NULL) {
@@ -1660,7 +1675,7 @@ decode_save_mime(
 				wait_message (2, "No viewer found for %s/%s\n", content_types[ptr->type], ptr->subtype);
 		}
 
-		sprintf(buf, "Save %s/%s as '%s' ? (y/n): ", content_types[ptr->type], ptr->subtype, savefile);
+		sprintf(buf, "Save '%s' (%s/%s) ? (y/n): ", savefile, content_types[ptr->type], ptr->subtype);
 		if (prompt_yn (cLINES, buf, FALSE) != 1)
 			unlink (savepath);
 	}

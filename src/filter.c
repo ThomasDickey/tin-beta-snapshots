@@ -604,7 +604,7 @@ vWriteFilterArray (
 
 	for (i = 0; i < ptr->num; i++) {
 
-/* my_printf ("WRITE i=[%d] subj=[%s] from=[%s]\n", i, (ptr->filter[i].subj ? ptr->filter[i].subj : ""), (ptr->filter[i].from ? ptr->filter[i].from : "")); */
+/* my_printf ("WRITE i=[%d] subj=[%s] from=[%s]\n", i, BlankIfNull(ptr->filter[i].subj), BlankIfNull(ptr->filter[i].from)); */
 
 		if (theTime && ptr->filter[i].time) {
 			if (theTime > ptr->filter[i].time)
@@ -1353,11 +1353,11 @@ bAddFilterRule (
 		if (debug)
 			wait_message (2, "inscope=[%s] scope=[%s] typ=[%d] case=[%d] subj=[%s] from=[%s] msgid=[%s] fullref=[%d] line=[%d %d] time=[%lu]",
 				bool_unparse(psPtr[*plNum-1].inscope),
-				(psRule->scope ? psRule->scope : ""),
+				BlankIfNull(psRule->scope),
 				psPtr[*plNum-1].type, psPtr[*plNum-1].icase,
-				(psPtr[*plNum-1].subj ? psPtr[*plNum-1].subj : ""),
-				(psPtr[*plNum-1].from ? psPtr[*plNum-1].from : ""),
-				(psPtr[*plNum-1].msgid ? psPtr[*plNum-1].msgid : ""),
+				BlankIfNull(psPtr[*plNum-1].subj),
+				BlankIfNull(psPtr[*plNum-1].from),
+				BlankIfNull(psPtr[*plNum-1].msgid),
 				psPtr[*plNum-1].fullref, psPtr[*plNum-1].lines_cmp,
 				psPtr[*plNum-1].lines_num, (unsigned long int) psPtr[*plNum-1].time);
 #endif /* DEBUG */

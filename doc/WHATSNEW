@@ -4,6 +4,19 @@ New features and changes in tin-1.5
 New Features
 ------------
 
+. New pager
+     Parses and displays MIME articles
+     Single line scrolling with Up/Down
+     URL's are highlighted
+     URL's can be launched with 'U'
+     Binary attachments can be viewed and saved with 'V'
+     UUEncoded sections can optionally be displayed as attachments
+        See hide_uue on the manpage/tinrc file
+     ^H now switches to view of original 'raw' article
+     
+. Searched for strings are highlighted
+     'B'ody search goes direct to match in article
+
 . GPG support
      PGP/GPG support honours 'from' attribute
 
@@ -50,3 +63,8 @@ Retired Features
 
 . 'k' no longer works in the pager. Use 'N' instead
   (or wait for rebindable keys)
+
+. display_mime_header_asis
+  display_mime_allheader_asis
+
+  By default the pager decodes headers. Use ^H to toggle to undecoded view

@@ -3523,7 +3523,10 @@ find_reply_to_addr (
 	}
 
 	fseek (fp, orig_offset, SEEK_SET);
-fprintf(stderr, "find_reply_to_addr (%s, %s)\n", reply_to, from);
+#ifdef DEBUG
+	if (debug == 2)
+		fprintf(stderr, "find_reply_to_addr (%s, %s)\n", reply_to, from);
+#endif /* DEBUG */
 	/* We do this to save a redundant strcpy when we don't want to parse */
 	if (parse) {
 #	if 1

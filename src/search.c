@@ -289,7 +289,11 @@ body_search (
 				srch_lineno = i;
 				art_close (&pgart);		/* Switch the pager over to matched art */
 				pgart = artinfo;
-fprintf(stderr, "art_switch(%p = %p)\n", &pgart, &artinfo);
+#ifdef DEBUG
+				if (debug == 2)
+					fprintf(stderr, "art_switch(%p = %p)\n", &pgart, &artinfo);
+#endif /* DEBUG */
+
 				return 1;
 			}
 		} else {

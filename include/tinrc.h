@@ -165,8 +165,6 @@ struct t_config {
 	t_bool catchup_read_groups;			/* ask if read groups are to be marked read */
 	t_bool confirm_action;
 	t_bool confirm_to_quit;
-	t_bool display_mime_allheader_asis;	/* rfc 1522/2047 all heades (^H) will not be decoded by default */
-	t_bool display_mime_header_asis;	/* rfc 1522/2047 news_headers_to_display will be decoded by default */
 	t_bool draw_arrow;					/* draw -> or highlighted bar */
 	t_bool force_screen_redraw;			/* force screen redraw after external (shell) commands */
 	t_bool full_page_scroll;			/* page half/full screen of articles/groups */
@@ -197,6 +195,7 @@ struct t_config {
 	t_bool show_score;
 	t_bool show_signatures;				/* show signatures when displaying articles */
 	t_bool show_xcommentto;				/* set TRUE to show X-Comment-To in upper right corner */
+	t_bool hide_uue;					/* set TRUE to treat uuencoded data as an attachment */
 	t_bool sigdashes;					/* set TRUE to prepend every signature with dashes */
 	t_bool signature_repost;			/* set TRUE to add signature when reposting articles */
 	t_bool space_goto_next_unread;

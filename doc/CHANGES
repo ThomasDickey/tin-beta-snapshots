@@ -1,4 +1,4 @@
--- 1.5.4 release 20000415 "1959" --
+-- 1.5.4 release 20000419 "1959" --
 
 U027) Thomas E. Dickey <dickey@clark.net>
       ADD. several configure cleanups/improvements
@@ -8,9 +8,9 @@ U027) Thomas E. Dickey <dickey@clark.net>
            rfc2045.c, wildmat.c
 
 U026) Roland Rosenfeld <roland@spinnaker.de>
-      BUG. f'uping/replying to qp/b64-base encodet arts didn't use the
-           decodet 8bit data, but the 7bit encodet art.
-      BUG. invers art_marked_selected marker might get lost
+      BUG. f'uping/replying to qp/b64-base encoded arts didn't use the
+           decoded 8bit data, but the 7bit encoded art.
+      BUG. inverse art_marked_selected marker might get lost
       FIX. post.c, screen.c
 
  020) Ralf Doeblitz <doeblitz@gmx.de>
@@ -27,7 +27,11 @@ U024) Dirk Nimmich <nimmich@uni-muenster.de>
       BUG. didn't compile with pgp/gpg support turned on
       BUG. upper case Content-Type problem
       ADD. per-line scrolling in the pager for !USE_CURSES configurations
-      FIX. extern.h, proto.h, curses.c, misc.c, page.c, pgp.c, rfc2045.c
+      BUG. empty line at the top of an article if no headers are shown
+      REM. distinction between first and following page screens in article
+           viewer
+      FIX. extern.h, proto.h, cook.c, curses.c, misc.c, page.c, pgp.c
+           rfc2045.c
 
 U023) Jason Faultless <jason@radar.tele2.co.uk>
       ADD. rewrite article handling
@@ -35,6 +39,8 @@ U023) Jason Faultless <jason@radar.tele2.co.uk>
            RFC2045 MIME parsing / display of articles
            per-line scrolling in pager
            '?' backward search to pager
+           'U' browse URL's in pager
+           'V' view/save multipart attachments in pager
            search string and URL highlighting
            'B'ody search at all levels locates string in article
            seperate article contexts reduces # article reloads performed

@@ -1523,17 +1523,6 @@ Default is \fI$HOME/.Sig\fP.
 .TP
 .B default_subject_search
 .TP
-.B Show RFC 2047 ^H-header undecoded (display_mime_allheader_asis)
-Similar to \fBdisplay_mime_header_asis\fR, but works on CTRL-h (show all headers)
-instead of \fBnews_headers_to_display\fR.
-.TP
-.B Show RFC 2047 header undecoded (display_mime_header_asis)
-If ON, RFC 1522 (now RFC 2047)-style header fields are displayed
-without decoding. No effect on header displayed at the top of
-each page in article mode and summary mode (they are always decoded).
-Default is OFF so that RFC 1522 (RFC 2047)-style headers (designated in
-\fBnews_header_to_display\fR) will be decoded back to 8bit when displayed.
-.TP
 .B Draw -> instead of highlighted bar (draw_arrow)
 Allows groups/articles to be selected by an arrow '->' if set ON or
 by an highlighted bar if set OFF.
@@ -1564,6 +1553,11 @@ If ON catchup group when leaving with the left arrow key. Default is ON.
 .B Max. length of group names shown (groupname_max_length)
 Maximum length of the names of newsgroups to be displayed so that more of
 the newgroup description can be displayed. Default is 32.
+.TP
+.B Treat uuencoded sections like an attachment (hide_uue)
+If ON, then sections of uuencoded data will be shown with a single tag
+line showing the size and filename (much the same as a MIME attachment).
+Otherwise the raw uuencoded data is displayed. Default is OFF.
 .TP
 .B info_in_last_line
 If ON, show current group description or article subject in the last line
