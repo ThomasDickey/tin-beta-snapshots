@@ -3,7 +3,7 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2003-08-16
+ *  Updated   : 2003-11-18
  *  Notes     :
  *
  * Copyright (c) 1993-2003 Iain Lea <iain@bricbrac.de>
@@ -38,15 +38,9 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
-
-/* dbmalloc checks memset() parameters, so we'll use it to check the assignments */
-#ifdef USE_DBMALLOC
-#	define BIT_OR(n, b, mask)	memset(n + NOFFSET(b), n[NOFFSET(b)] | (mask), 1)
-#	define BIT_AND(n, b, mask)	memset(n + NOFFSET(b), n[NOFFSET(b)] & (mask), 1)
-#else
-#	define BIT_OR(n, b, mask)	n[NOFFSET(b)] |= mask
-#	define BIT_AND(n, b, mask)	n[NOFFSET(b)] &= mask
-#endif /* USE_DBMALLOC */
+#ifndef NEWSRC_H
+#	include "newsrc.h"
+#endif /* !NEWSRC_H */
 
 /*
  * local prototypes
@@ -54,6 +48,33 @@
 #if defined(NNTP_ABLE) && defined(XHDR_XREF)
 	static void read_xref_header(struct t_article *art);
 #endif /* NNTP_ABLE && XHDR_XREF */
+static FILE *open_overview_fmt_fp(void);
+
+
+/*
+ * Open the NEWSLIBDIR/overview.fmt file locally or send LIST OVERVIEW.FMT
+ */
+static FILE *
+open_overview_fmt_fp(
+	void)
+{
+	char line[NNTP_STRLEN];
+
+#ifdef NNTP_ABLE
+	if (read_news_via_nntp && !read_saved_news) {
+		if (!xover_cmd)
+			return (FILE *) 0;
+
+		snprintf(line, sizeof(line), "LIST %s", OVERVIEW_FMT);
+		return (nntp_command(line, OK_GROUPS, NULL, 0));
+	} else {
+#endif /* NNTP_ABLE */
+		joinpath(line, libdir, OVERVIEW_FMT);
+		return (fopen(line, "r"));
+#ifdef NNTP_ABLE
+	}
+#endif /* NNTP_ABLE */
+}
 
 
 /*
@@ -146,10 +167,10 @@ art_mark_xref_read(
 	struct t_article *art)
 {
 	char *xref_ptr;
-	char *group;
+	char *groupname;
 	char *ptr, c;
 	long artnum;
-	struct t_group *psGrp;
+	struct t_group *group;
 
 #if defined(NNTP_ABLE) && defined(XHDR_XREF)
 	/* xref_supported => xref info was already read in xover record */
@@ -175,7 +196,7 @@ art_mark_xref_read(
 		while (*xref_ptr == ' ')
 			xref_ptr++;
 
-		group = xref_ptr;
+		groupname = xref_ptr;
 		while (*xref_ptr != ':' && *xref_ptr)
 			xref_ptr++;
 
@@ -192,35 +213,35 @@ art_mark_xref_read(
 
 		c = *ptr;
 		*ptr = '\0';
-		psGrp = group_find(group);
+		group = group_find(groupname);
 
 #ifdef DEBUG
 		if (debug == 3) {
-			sprintf(mesg, "LOOKUP Xref: [%s:%ld] active=[%s] num_unread=[%ld]",
-				group, artnum,
-				(psGrp ? psGrp->name : ""),
-				(psGrp ? psGrp->newsrc.num_unread : 0));
+			snprintf(mesg, sizeof(mesg), "LOOKUP Xref: [%s:%ld] active=[%s] num_unread=[%ld]",
+				groupname, artnum,
+				(group ? group->name : ""),
+				(group ? group->newsrc.num_unread : 0));
 #	ifdef DEBUG_NEWSRC
 			debug_print_comment(mesg);
-			debug_print_bitmap(psGrp, NULL);
+			debug_print_bitmap(group, NULL);
 #	endif /* DEBUG_NEWSRC */
 			error_message(mesg);
 		}
 #endif /* DEBUG */
 
-		if (psGrp && psGrp->newsrc.xbitmap) {
-			if (artnum >= psGrp->newsrc.xmin && artnum <= psGrp->xmax) {
-				if (!((NTEST(psGrp->newsrc.xbitmap, artnum - psGrp->newsrc.xmin) == ART_READ) ? TRUE : FALSE)) {
-					NSET0(psGrp->newsrc.xbitmap, artnum - psGrp->newsrc.xmin);
-					if (psGrp->newsrc.num_unread > 0)
-						psGrp->newsrc.num_unread--;
+		if (group && group->newsrc.xbitmap) {
+			if (artnum >= group->newsrc.xmin && artnum <= group->xmax) {
+				if (!((NTEST(group->newsrc.xbitmap, artnum - group->newsrc.xmin) == ART_READ) ? TRUE : FALSE)) {
+					NSET0(group->newsrc.xbitmap, artnum - group->newsrc.xmin);
+					if (group->newsrc.num_unread > 0)
+						group->newsrc.num_unread--;
 #ifdef DEBUG
 					if (debug == 3) {
-						sprintf(mesg, "FOUND!Xref: [%s:%ld] marked READ num_unread=[%ld]",
-							group, artnum, psGrp->newsrc.num_unread);
+						snprintf(mesg, sizeof(mesg), "FOUND!Xref: [%s:%ld] marked READ num_unread=[%ld]",
+							groupname, artnum, group->newsrc.num_unread);
 #	ifdef DEBUG_NEWSRC
 						debug_print_comment(mesg);
-						debug_print_bitmap(psGrp, NULL);
+						debug_print_bitmap(group, NULL);
 #	endif /* DEBUG_NEWSRC */
 						wait_message(2, mesg);
 					}

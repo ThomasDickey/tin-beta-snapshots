@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2003-05-22
+ *  Updated   : 2003-12-19
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2003 Iain Lea <iain@bricbrac.de>
@@ -66,6 +66,7 @@ enum {
 	ATTRIB_SHOW_ONLY_UNREAD,
 	ATTRIB_THREAD_ARTS,
 	ATTRIB_SHOW_AUTHOR,
+	ATTRIB_SHOW_INFO,
 	ATTRIB_SORT_ART_TYPE,
 	ATTRIB_POST_PROC_TYPE,
 	ATTRIB_QUICK_KILL_HEADER,
@@ -81,6 +82,7 @@ enum {
 	ATTRIB_X_BODY,
 	ATTRIB_AUTO_SAVE_MSG,
 	ATTRIB_X_COMMENT_TO,
+	ATTRIB_FCC,
 	ATTRIB_NEWS_QUOTE,
 	ATTRIB_QUOTE_CHARS,
 	ATTRIB_MIME_TYPES_TO_SAVE,
@@ -151,6 +153,7 @@ set_default_attributes(
 	attributes->thread_arts = tinrc.thread_articles;
 	attributes->sort_art_type = tinrc.sort_article_type;
 	attributes->sort_threads_type = tinrc.sort_threads_type;
+	attributes->show_info = tinrc.show_info;
 	attributes->show_author = tinrc.show_author;
 	attributes->auto_save = tinrc.auto_save;
 	attributes->auto_select = FALSE;
@@ -158,6 +161,7 @@ set_default_attributes(
 	attributes->delete_tmp_files = FALSE;
 	attributes->post_proc_type = tinrc.post_process;
 	attributes->x_comment_to = FALSE;
+	attributes->fcc = (char *) 0;
 	attributes->tex2iso_conv = tinrc.tex2iso_conv;
 #ifdef CHARSET_CONVERSION
 	attributes->mm_network_charset = tinrc.mm_network_charset;
@@ -273,6 +277,7 @@ read_attributes_file(
 					break;
 
 				case 'f':
+					MATCH_STRING("fcc=", ATTRIB_FCC);
 					MATCH_STRING("followup_to=", ATTRIB_FOLLOWUP_TO);
 					MATCH_STRING("from=", ATTRIB_FROM);
 					break;
@@ -329,6 +334,7 @@ read_attributes_file(
 						break;
 					}
 					MATCH_INTEGER("show_author=", ATTRIB_SHOW_AUTHOR, SHOW_FROM_BOTH);
+					MATCH_INTEGER("show_info=", ATTRIB_SHOW_INFO, SHOW_INFO_BOTH);
 					MATCH_BOOLEAN("show_only_unread=", ATTRIB_SHOW_ONLY_UNREAD);
 					MATCH_STRING("sigfile=", ATTRIB_SIGFILE);
 					MATCH_INTEGER("sort_art_type=", ATTRIB_SORT_ART_TYPE, SORT_ARTICLES_BY_LINES_ASCEND);
@@ -475,6 +481,8 @@ do_set_attrib(
 			SET_INTEGER(thread_arts);
 		case ATTRIB_SHOW_AUTHOR:
 			SET_INTEGER(show_author);
+		case ATTRIB_SHOW_INFO:
+			SET_INTEGER(show_info);
 		case ATTRIB_SORT_ART_TYPE:
 			SET_INTEGER(sort_art_type);
 		case ATTRIB_SORT_THREADS_TYPE:
@@ -517,6 +525,9 @@ do_set_attrib(
 			SET_STRING(x_body);
 		case ATTRIB_X_COMMENT_TO:
 			SET_INTEGER(x_comment_to);
+		case ATTRIB_FCC:
+			FreeIfNeeded(group->attribute->fcc);
+			SET_STRING(fcc);
 		case ATTRIB_NEWS_QUOTE:
 			free_if_not_default(&group->attribute->news_quote_format, tinrc.news_quote_format);
 			SET_STRING(news_quote_format);
@@ -607,6 +618,12 @@ write_attributes_file(
 		SHOW_FROM_ADDR, _(txt_show_from[SHOW_FROM_ADDR]),
 		SHOW_FROM_NAME, _(txt_show_from[SHOW_FROM_NAME]),
 		SHOW_FROM_BOTH, _(txt_show_from[SHOW_FROM_BOTH]));
+	fprintf(fp, _("#  show_info=NUM\n"));
+	fprintf(fp, "#    %d=%s, %d=%s, %d=%s, %d=%s\n",
+		SHOW_INFO_NOTHING, _(txt_show_info_type[SHOW_INFO_NOTHING]),
+		SHOW_INFO_LINES, _(txt_show_info_type[SHOW_INFO_LINES]),
+		SHOW_INFO_SCORE, _(txt_show_info_type[SHOW_INFO_SCORE]),
+		SHOW_INFO_BOTH, _(txt_show_info_type[SHOW_INFO_BOTH]));
 	fprintf(fp, _("#  sort_art_type=NUM\n"));
 	fprintf(fp, "#    %d=%s,\n",
 		SORT_ARTICLES_BY_NOTHING, _(txt_sort_a_type[SORT_ARTICLES_BY_NOTHING]));
@@ -650,6 +667,7 @@ write_attributes_file(
 	fprintf(fp, _("#    2=from (case sensitive) 3=from (ignore case)\n"));
 	fprintf(fp, _("#    4=msgid 5=lines\n"));
 	fprintf(fp, _("#  x_comment_to=ON/OFF\n"));
+	fprintf(fp, _("#  fcc=STRING (eg. =mailbox)\n"));
 	fprintf(fp, _("#  tex2iso_conv=ON/OFF\n"));
 #ifdef CHARSET_CONVERSION
 	fprintf(fp, _("#  mm_network_charset=supported_charset"));
@@ -746,6 +764,7 @@ write_attributes_file(
 		fprintf(fp, "sort_art_type=%d\n", attr->sort_art_type);
 		fprintf(fp, "sort_threads_type=%d\n", attr->sort_threads_type);
 		fprintf(fp, "show_author=%d\n", attr->show_author);
+		fprintf(fp, "show_info=%d\n", attr->show_info);
 		fprintf(fp, "post_proc_type=%d\n", attr->post_proc_type);
 		fprintf(fp, "quick_kill_scope=%s\n", attr->quick_kill_scope);
 		fprintf(fp, "quick_kill_case=%s\n", print_boolean(attr->quick_kill_case));
@@ -756,6 +775,7 @@ write_attributes_file(
 		fprintf(fp, "quick_select_expire=%s\n", print_boolean(attr->quick_select_expire));
 		fprintf(fp, "quick_select_header=%d\n", attr->quick_select_header);
 		fprintf(fp, "x_comment_to=%s\n", print_boolean(attr->x_comment_to));
+		fprintf(fp, "fcc=%s\n", attr->fcc);
 		fprintf(fp, "tex2iso_conv=%s\n", print_boolean(attr->tex2iso_conv));
 #	ifdef CHARSET_CONVERSION
 		fprintf(fp, "mm_network_charset=%s\n", txt_mime_charsets[attr->mm_network_charset]);
@@ -835,6 +855,7 @@ dump_attributes(
 		fprintf(stderr, "\tsort_art_type=%d\n", group->attribute->sort_art_type);
 		fprintf(stderr, "\tsort_threads_type=%d\n", group->attribute->sort_threads_type);
 		fprintf(stderr, "\tshow_author=%d\n", group->attribute->show_author);
+		fprintf(stderr, "\tshow_info=%d\n", group->attribute->show_info);
 		fprintf(stderr, "\tpost_proc_type=%d\n", group->attribute->post_proc_type);
 		fprintf(stderr, "\tquick_kill_scope=%s\n", group->attribute->quick_kill_scope);
 		fprintf(stderr, "\tquick_kill_case=%s\n", print_boolean(group->attribute->quick_kill_case));
@@ -845,6 +866,7 @@ dump_attributes(
 		fprintf(stderr, "\tquick_select_expire=%s\n", print_boolean(group->attribute->quick_select_expire));
 		fprintf(stderr, "\tquick_select_header=%d\n", group->attribute->quick_select_header);
 		fprintf(stderr, "\tx_comment_to=%s\n", print_boolean(group->attribute->x_comment_to));
+		fprintf(stderr, "\tfcc=%s\n", group->attribute->fcc);
 		fprintf(stderr, "\ttex2iso_conv=%s\n", print_boolean(group->attribute->tex2iso_conv));
 #		ifdef CHARSET_CONVERSION
 		fprintf(stderr, "\tmm_network_charset=%s\n", txt_mime_charsets[group->attribute->mm_network_charset]);

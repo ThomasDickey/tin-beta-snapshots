@@ -3,7 +3,7 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-09-19
  *  Notes     : Generate random signature for posting/mailing etc.
  *
  * Copyright (c) 1992-2003 Mike Gleason
@@ -41,11 +41,7 @@
 
 #define MAXLOOPS 1000
 
-#ifndef M_AMIGA
-#	define CURRENTDIR "."
-#else
-#	define CURRENTDIR ""
-#endif /* !M_AMIGA */
+#define CURRENTDIR "."
 
 static char sigfile[PATH_LEN];
 
@@ -218,12 +214,7 @@ thrashdir(
 	 * consider all entries starting with "." non-entries
 	 */
 	cwd = my_malloc(PATH_LEN);
-#ifndef M_AMIGA
-	if (numentries < 3 || cwd == NULL)
-#else
-	if (numentries == 0 || cwd == NULL)
-#endif /* !M_AMIGA */
-	{
+	if (numentries < 3 || cwd == NULL) {
 		CLOSEDIR(dirp);
 		return -1;
 	}

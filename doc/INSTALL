@@ -49,13 +49,13 @@ The following configure options and defines are documented in detail:
   --prefix                                --with-trace
   --program-prefix
 
-  ENFORCE_RFC1034                         NNTP_INEWS
-  EVIL_INSIDE                             NNTP_SERVER_FILE
-  FOLLOW_USEFOR_DRAFT                     PROFILE
-  FORGERY                                 REQUIRE_BRACKETS_IN_DOMAIN_LITERAL
-  HAVE_LIBUU                              SMALL_MEMORY_MACHINE
-  HAVE_UUDEVIEW_H                         USE_CANLOCK
-  XFACE_ABLE
+  ENFORCE_RFC1034                         HAVE_UUDEVIEW_H
+  EVIL_INSIDE                             NNTP_INEWS
+  FOLLOW_USEFOR_DRAFT                     NNTP_SERVER_FILE
+  FORGERY                                 PROFILE
+  REQUIRE_BRACKETS_IN_DOMAIN_LITERAL      SMALL_MEMORY_MACHINE
+  HAVE_LIBUU                              XFACE_ABLE
+  USE_CANLOCK
 
 
 Not yet documented configure options and defines:
@@ -98,9 +98,8 @@ work properly, configure using --with-domain-name="confusion.com".
 
 General Notes on Building Tin
 -----------------------------
-Tin has been compiled on a wide range of Un*x machines with cc and gcc. It
-has even been ported to other systems like the AmigaOS. A list of these
-machines can be found at the end of this file.
+Tin has been compiled on a wide range of Un*x machines with cc and gcc.
+A list of these machines can be found at the end of this file.
 
 This file is long (so was the yellow brick road) but please read it all
 as it could save you problems later and we don't want an unhappy ending
@@ -194,7 +193,7 @@ Enable if you want to see full display compiling commands during compilation.
 Enable if you want configure to check for various fallback prototype
 declarations.
 
-SMALL_MEMORY_MACHINE (default: not set, except on Amiga)
+SMALL_MEMORY_MACHINE (default: not set)
 Define if you are running a machine with little memory (<4MB). Tin will
 run slightly slower but be more efficient in how memory is allocated and
 reclaimed.
@@ -275,7 +274,7 @@ being configured into the executable.
         --enable-flock          enable flock() locking
 
 NNTP_INEWS (default: set if using VMS, --enable-nntp, or enable-nntp-only;
-                     unset if building an INDEX_DAEMON or not using NNTP)
+                     unset if not using NNTP)
 Define if you want to use the built-in NNTP POST routine so that you no
 longer have to rely on the mini-inews from NNTP to be installed on each
 client machine. Also check that --with-domain-name is correctly set to
@@ -284,7 +283,7 @@ produce a correct From: headers for your site. If defined then the
 The tinrc file is created automatically for each user the first
 time they use tin.
 
-NNTP_SERVER_FILE (default: /etc/nntpserver, on Amiga: uulib:nntpserver)
+NNTP_SERVER_FILE (default: /etc/nntpserver)
 Only define if your NNTP-server file is other than /etc/nntpserver.
 
 
@@ -634,6 +633,6 @@ Define if you have slrnface installed and want to use it to show X-Faces
 Compiled & installed
 --------------------
 Tin was successfully built and installed on a variety of platforms including
-Linux, FreeBSD, OpenBSD, NetBSD, Darwin, Solaris, IRIX, HP-UX, Ultrix,
+Linux, FreeBSD, OpenBSD, NetBSD, BSDi, Darwin, Solaris, IRIX, HP-UX, Ultrix,
 Tru64, AIX, SINIX, UXP/V, QNX, GNU Hurd, DG/UX, SEIUX and Cygwin.
 For a detailed list see <http://www.tin.org/builds.html>

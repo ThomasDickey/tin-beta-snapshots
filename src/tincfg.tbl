@@ -2,7 +2,7 @@
 ;   Module    : tincfg.tbl
 ;   Author    : Thomas E. Dickey
 ;   Created   : 1996-11-01
-;   Updated   : 2003-08-12
+;   Updated   : 2003-12-09
 ;   Notes     : #defines and structs for config.c
 ;
 ; Copyright (c) 1996-2003 Thomas E. Dickey <dickey@invisible-island.net>
@@ -123,6 +123,7 @@
 	col_from			txt_colors	MAX_COLOR+1
 	col_title			txt_colors	MAX_COLOR+1
 	col_signature			txt_colors	MAX_COLOR+1
+	col_urls			txt_colors	MAX_COLOR+1
 #endif
 	url_highlight			OPT_ON_OFF
 	word_highlight			OPT_ON_OFF
@@ -215,3 +216,14 @@
 	use_slrnface			OPT_ON_OFF
 #endif
 	url_handler			OPT_STRING
+	date_format			OPT_STRING
+#ifdef HAVE_UNICODE_NORMALIZATION
+#	ifdef HAVE_LIBICUUC
+		normalization_form		txt_normalization_forms NORMALIZE_NFD+1
+#	else
+#		ifdef HAVE_LIBIDN
+			normalization_form		txt_normalization_forms 2
+		#endif
+#	endif
+#endif
+	

@@ -4,6 +4,10 @@ not read only ,-).
 
 Bugs
 ----
+!o  ReadCh()/ReadWch() need to be KEY_RESIZE safe otherwise one might lose
+!   his article
+!   see <nntp://news.tin.org/20030927141249.GA15157@akk10.akk.uni-karlsruhe.de>
+
 o  AFAICS change_config_file() currently has a static return value,
    but some callers do check the return value and in case we did
    change something we should update (global) attributes accordingly.
@@ -31,17 +35,11 @@ o  better integrate saving of MIME/non-MIME articles when not using libuu.
    [mostly done]
    [Jason Faultless <jason@altarstone.com>]
 
-o  reusing p'o'stponed articles in mailing_list groups doesn't work
-   (possible fix: store Newsgroups (and other infos) via msg_add_header()
-    (to overwrite any old values) in X-Tin-Postponed:-header and remove it
-    before posting.)
-   [20010623 Urs Janssen <urs@tin.org>]
-
 o  batch mode has several bugs
    - -Z and giving a cmd-line group ends up in a loop
-     (filters each group several times, ~25 slower as without a cmd-line
-      group) and the cmd-line group is not displayed in the statistics
-      nor taken inot account for the 'any unread news' status.
+     (filters each group several times, ~25 times slower as without a
+      cmd-line group) and the cmd-line group is not displayed in the
+      statistics nor taken into account for the 'any unread news' status.
    - -cZ does not perform catchup, feature or bug?
    - shall we allow stand alone -c?
    [Urs Janssen <urs@tin.org>]
@@ -112,6 +110,13 @@ o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
 
 New features
 ------------
+o  add TLS support
+   (see draft-ietf-nntpext-tls-nntp-01.txt;
+   <http://www.gnu.org/software/gnutls/> might be useful)
+   [20031210 Urs Janssen <urs@tin.org>]
+
+o  make 'GNKSA'-parser RFC2822/USEFOR compliant
+
 o  add In-Reply-To threading for mailgroups
    [20030518 Urs Janssen <urs@tin.org>]
 
@@ -143,12 +148,16 @@ o  hierarchical 'M'enu, e.g. hide all color_* options as long as
    (currently the menu is statically build on compile time)
    [20020322 Urs Janssen <urs@tin.org>]
 
-o  add a postponed 'browser' (store postponed arts in
-   MH or maildir format to make things easier?)
+o  add a postponed 'browser' (store postponed arts in MH or maildir
+   format to make things easier?)
    [20020305 Dirk Nimmich <nimmich@muenster.de>]
 
-o  add postpone option for mail-actions
-   [20020404 Urs Janssen <urs@tin.org>]
+o  add postpone option for mail-actions;
+   reusing p'o'stponed articles in mailing_list groups doesn't work
+   (possible fix: store Newsgroups (and other infos) via msg_add_header()
+    (to overwrite any old values) in X-Tin-Postponed:-header and remove it
+    before posting.)
+   [20010623 Urs Janssen <urs@tin.org>]
 
 o  should the postponed 'file' (and posted messages 'file') be in
    mailbox_format (even if that's a one file/message format, thus
@@ -207,7 +216,7 @@ o  rewrite keymap stuff:
    key in the keymap file that is bound to this function.
    [20020305 Dirk Nimmich <nimmich@muenster.de>]
 
-o  check if servers high mark is lower as the one in users newsrc, if so
+o  check if servers high mark is lower than the one in users newsrc, if so
    issue a warning and allow the luser to reset the highmark in the newsrc
    to the servers 'l'ow or the servers 'h'igh mark or 'i'gnore it.
 
@@ -259,7 +268,7 @@ o  add cmd-line/tinrc-switch to fetch only headers of unread articles;
 o  check if server supports 'LIST MOTD' (e.g. INN >= 2.0) and display
    it on startup. check if server supports 'LIST MODERATORS' and/or
    'LIST DISTRIB.PATS' and if it does parse the output so it can be shown
-   to the user. (i.e. when he is posting to a moderated group, show the
+   to the user. (e.g. when posting to a moderated group, show the
    moderators mail-address, but still leave the mailing to the server; if
    the group has limitied distribution inform the user, ...)
 
@@ -275,13 +284,8 @@ o  if using "-n" commandline switch you can't subscribe to newsgroups not
 o  item_by_item_etiquette_warnings [compile-time?]
    (e.g. enable x-posts without f'up warning, disable long-sig warning)
 
-o  Rather than Cc/Bcc, I'd like to see tin simply append the
-   message to a mail folder, whose name is given by a setting
-   in the (M)enu command, possibly overridden by the current
-   setting of "record" environment variable. The folder would
-   have to be locked using a convention that will hold off
-   the various Unix mailer programs (see mbox(5), mmdf(5)).
-   [append_mail() should do the trick]
+o  unify Fcc and posted_articles_file
+   [20031012 Dirk Nimmich <nimmich@muenster.de>]
 
 o  MIME-pgp support according to RFC 2015, RFC 3156 - (should be easy now)
    and/or in the format that used by signcontrol/pgpverify (see also
@@ -362,7 +366,7 @@ o  when From: only contains "First-name Last-name" tin strips the
 
 o  Bounce duplicate Message-ID's when the headers are read. This will
    make the threading code happier too.
-   Make read_nov_file() more forgiving of errors. If the article # is okay,
+   Make read_overview() more forgiving of errors. If the article # is okay,
    then there is no reason to completely hide the article
    [Jason Faultless <jason@altarstone.com>]
 
@@ -541,6 +545,9 @@ o  close potential security holes:
                                unlink()/chdir()/fopen()/fstat()/open()/
                                opendir()/t_open()/tmpfile()
    - check getenv() results before using it
+   - check where my_strncpy() or STRCPY() should be used
+     or include OpenBSDs strlcpy(3) (and strlcat(3)) and use it.
+   (<ftp://ftp.openbsd.org/pub/OpenBSD/src/lib/libc/string/>)
    [Urs Janssen <urs@tin.org> - its4 <http://www.rstcorp.com/its4>
     and rats <http://www.securesw.com/rats/> can locate potential security
     holes]
@@ -553,7 +560,7 @@ o  add to autoconf:
 o  clean up architecture independent files, rename several defines,
    remove useless doubled defines
 
-o  split tin.h/proto.h for better dependencies in make
+o  split tin.h/proto.h for better dependencies in Makefile
 
 o  check where int/long/... should be replaced by size_t, uid_t, mode_t,
    off_t, ...
@@ -564,10 +571,6 @@ o  add check for sizeof char, short, int, long, ...
    (e.g. char = 1 byte with 32 bit)
 
 o  cleanup post.c
-
-o  check where my_strncpy() or STRCPY() should be used
-   or include OpenBSDs strlcpy(3) (and strlcat(3)) and use it.
-   (<ftp://ftp.openbsd.org/pub/OpenBSD/src/lib/libc/string/>)
 
 o  check code with Splint (LCLint) <http://www.splint.org/>,
    ccmalloc (<http://www.inf.ethz.ch/personal/biere/projects/ccmalloc/>),
@@ -619,7 +622,15 @@ o  make mm_network_charset an "option_list" to avoid junk input or
 
 o  add IDNA support (RFC 3490ff.)
    (<http://www.gnu.org/software/libidn/> might be usefull)
+   (added minmalistic IDNA decoding support if a recent libidn is found, urs)
    [20030917 Urs Janssen <urs@tin.org>]
+
+o  add normalization
+   (via <http://oss.software.ibm.com/icu/> or
+   <http://www.gnu.org/software/libidn/>)
+   (done for search strings)
+   [20031209 Michael Bienia <michael@vorlon.ping.de>]
+
 
 Docs/online help
 ----------------
@@ -654,9 +665,6 @@ o  what about -a cmd-line flag? is this really neaded? IMHO this can be
    dropped, '&' can be used for runtime color toggling.
    [20021106 Urs Janssen <urs@tin.org>]
 
-o  why are -A and -g disabled on M_AMIGA?
-   [20020928 Urs Janssen <urs@tin.org>]
-
 o  -G doesn't "work" in the !NNTP case, shall we disallow it in that case
    or shall we try to implement it?
    [20030421 Urs Janssen <urs@tin.org>]
@@ -681,7 +689,7 @@ o  check_article_to_be_posted() still need some cleanup
     overhead)
    [20010629 Urs Janssen <urs@tin.org>]
 
-o  update gettext stuff to > gettext-0.11.5
+o  update gettext stuff to > gettext-0.12.1
 
 o  tin in batchmode dumps core if getting a SIGINT, useful?
 

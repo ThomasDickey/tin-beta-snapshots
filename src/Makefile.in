@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2003-07-24
+# Updated: 2003-11-18
 #
 # Copyright (c) 1995-2003 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -112,6 +112,7 @@ HFILES	= \
 	$(INCDIR)/extern.h \
 	$(INCDIR)/keymap.h \
 	$(INCDIR)/menukeys.h \
+	$(INCDIR)/newsrc.h \
 	$(INCDIR)/nntplib.h \
 	$(INCDIR)/plp_snprintf.h \
 	$(INCDIR)/policy.h \
@@ -160,7 +161,6 @@ CFILES	= \
 	$(SRCDIR)/newsrc.c \
 	$(SRCDIR)/nntplib.c \
 	$(SRCDIR)/nrctbl.c \
-	$(SRCDIR)/open.c \
 	$(SRCDIR)/page.c \
 	$(SRCDIR)/parsdate.y \
 	$(SRCDIR)/pgp.c \
@@ -234,7 +234,6 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/newsrc.o \
 	$(OBJDIR)/nntplib.o \
 	$(OBJDIR)/nrctbl.o \
-	$(OBJDIR)/open.o \
 	$(OBJDIR)/page.o \
 	$(OBJDIR)/parsdate.o \
 	$(OBJDIR)/pgp.o \
@@ -482,7 +481,8 @@ $(OBJDIR)/curses.o:		$(SRCDIR)/curses.c $(TIN_DEP) \
 				$(INCDIR)/tnntp.h
 $(OBJDIR)/cook.o:		$(SRCDIR)/cook.c $(TIN_DEP) \
 				$(INCDIR)/rfc2046.h
-$(OBJDIR)/debug.o:		$(SRCDIR)/debug.c $(TIN_DEP)
+$(OBJDIR)/debug.o:		$(SRCDIR)/debug.c $(TIN_DEP) \
+				$(INCDIR)/newsrc.h
 $(OBJDIR)/envarg.o:		$(SRCDIR)/envarg.c $(TIN_DEP)
 $(OBJDIR)/feed.o:		$(SRCDIR)/feed.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h \
@@ -527,14 +527,13 @@ $(OBJDIR)/misc.o:		$(SRCDIR)/misc.c $(TIN_DEP) \
 				$(INCDIR)/rfc2046.h
 $(OBJDIR)/my_tmpfile.o:		$(SRCDIR)/my_tmpfile.c $(TIN_DEP)
 $(OBJDIR)/newsrc.o:		$(SRCDIR)/newsrc.c $(TIN_DEP) \
+				$(INCDIR)/newsrc.h \
 				$(INCDIR)/tnntp.h
 $(OBJDIR)/nntplib.o:		$(SRCDIR)/nntplib.c $(TIN_DEP) \
 				$(INCDIR)/tnntp.h
 $(OBJDIR)/nrctbl.o:		$(SRCDIR)/nrctbl.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h \
 				$(INCDIR)/version.h
-$(OBJDIR)/open.o:		$(SRCDIR)/open.c $(TIN_DEP) \
-				$(INCDIR)/tnntp.h
 $(OBJDIR)/page.o:		$(SRCDIR)/page.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h \
 				$(INCDIR)/rfc2046.h
@@ -584,4 +583,5 @@ $(OBJDIR)/version.o:		$(SRCDIR)/version.c $(TIN_DEP) \
 				$(INCDIR)/version.h
 $(OBJDIR)/wildmat.o:		$(SRCDIR)/wildmat.c $(TIN_DEP)
 $(OBJDIR)/xface.o:		$(SRCDIR)/xface.c $(TIN_DEP)
-$(OBJDIR)/xref.o:		$(SRCDIR)/xref.c $(TIN_DEP)
+$(OBJDIR)/xref.o:		$(SRCDIR)/xref.c $(TIN_DEP) \
+				$(INCDIR)/newsrc.h

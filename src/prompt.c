@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-09-12
+ *  Updated   : 2003-12-02
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -60,7 +60,7 @@ prompt_num(
 
 	clear_message();
 
-	sprintf(mesg, "%c", ch);
+	snprintf(mesg, sizeof(mesg), "%c", ch);
 
 	if ((p = tin_getline(prompt, TRUE, mesg, 0, FALSE, HIST_OTHER)) != NULL) {
 		strcpy(mesg, p);
@@ -261,7 +261,7 @@ prompt_list(
 	int size)
 {
 	int ch, var_orig;
-	int i;
+	int i, offset;
 	int adjust = (strcasecmp(_(list[0]), _(txt_default)) == 0);
 	size_t width = 0;
 
@@ -279,7 +279,27 @@ prompt_list(
 	cursoron();
 
 	do {
-		MoveCursor(row, col + (int) strlen(_(prompt_text)));
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		size_t len;
+
+		len = mbstowcs(NULL, _(prompt_text), 0);
+		if (len != (size_t) (-1)) {
+			wchar_t *wbuf = my_malloc(sizeof(wchar_t) * (len + 1));
+
+			mbstowcs(wbuf, _(prompt_text), len + 1);
+			wconvert_to_printable(wbuf);
+			offset = wcswidth(wbuf, len + 1);
+			if (offset == -1) {
+				/* something went wrong, use wcslen as fallback */
+				offset = (int) wcslen(wbuf);
+			}
+
+			free(wbuf);
+		} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			offset = (int) strlen(_(prompt_text));
+
+		MoveCursor(row, col + offset);
 		if ((ch = (char) ReadCh()) == ' ') {
 
 			/*
@@ -365,12 +385,12 @@ prompt_option_num(
 	show_menu_help(option_table[option].txt->help);
 	MoveCursor(option_row(option), 0);
 	fmt_option_prompt(prompt, sizeof(prompt) - 1, TRUE, option);
-	sprintf(&number[0], "%d", *(option_table[option].variable));
+	snprintf(&number[0], sizeof(number), "%d", *(option_table[option].variable));
 
 	if ((p = tin_getline(prompt, 2, number, 0, FALSE, HIST_OTHER)) == NULL)
 		return FALSE;
 
-	strcpy(number, p);
+	STRCPY(number, p);
 	num = atoi(number);
 	*(option_table[option].variable) = num;
 
@@ -510,7 +530,7 @@ prompt_msgid(
  * Format a message such that it'll fit within the screen width
  * Useful for fitting long Subjects and newsgroup names into prompts
  * TODO: maybe add a '...' to the string to show it was truncated.
- *       You can use trunc() for it.
+ *       You can use strunc() for it.
  */
 char *
 sized_message(
@@ -525,7 +545,7 @@ sized_message(
 		want--;
 	if (have > want)
 		have = want;
-	sprintf(mesg, format, have, subject);
+	snprintf(mesg, sizeof(mesg), format, have, subject);
 	return mesg;
 }
 

@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-24
+ *  Updated   : 2003-12-09
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -51,6 +51,14 @@
 #	include "rfc2046.h"
 #endif /* !RFC2046_H */
 
+#if defined(HAVE_IDNA_H) && !defined(_IDNA_H)
+#	include <idna.h>
+#endif /* HAVE_IDNA_H && !_IDNA_H */
+#if defined(HAVE_STRINGPREP_H) && !defined(_STRINGPREP_H)
+#	include <stringprep.h>
+#endif /* HAVE_STRINGPREP_H & !_STRINGPREP_H */
+
+
 /*
  * defines to control GNKSA-checks behavior:
  * - ENFORCE_RFC1034
@@ -72,12 +80,15 @@ static int gnksa_dequote_plainphrase(char *realname, char *decoded, int addrtype
 static int strfeditor(char *editor, int linenum, const char *filename, char *s, size_t maxsize, char *format);
 static void write_input_history_file(void);
 #ifdef CHARSET_CONVERSION
-	static char *utf8_valid(char *line);
 	static t_bool buffer_to_local(char **line, int *max_line_len, const char *network_charset, const char *local_charset);
 #endif /* CHARSET_CONVERSION */
 #if (defined(MIME_STRICT_CHARSET) && !defined(NO_LOCALE)) || defined(CHARSET_CONVERSION)
 	static void buffer_to_ascii(char *c);
 #endif /* (MIME_STRICT_CHARSET && !NO_LOCALE) || CHARSET_CONVERSION */
+#if 0 /* currently unused */
+	static t_bool stat_article(long art, const char *group_path);
+#endif /* 0 */
+
 
 /*
  * generate tmp-filename
@@ -465,7 +476,7 @@ shell_escape(
 	char *p;
 	char shell[LEN];
 
-	sprintf(mesg, _(txt_shell_escape), tinrc.default_shell_command);
+	snprintf(mesg, sizeof(mesg), _(txt_shell_escape), tinrc.default_shell_command);
 
 	if (!prompt_string(mesg, shell, HIST_SHELL_COMMAND))
 		return;
@@ -481,7 +492,7 @@ shell_escape(
 	}
 
 	ClearScreen();
-	sprintf(mesg, _(txt_shell_command), p);
+	snprintf(mesg, sizeof(mesg), _(txt_shell_command), p);
 	center_line(0, TRUE, mesg);
 	MoveCursor(INDEX_TOP, 0);
 
@@ -757,26 +768,6 @@ rename_file(
 #endif /* VMS */
 
 
-#ifdef M_AMIGA
-/*
- * AmigaOS now has links. Better not to use them as not everybody has new ROMS
- */
-void
-rename_file(
-	char *old_filename,
-	char *new_filename)
-{
-	char buf[1024];
-
-	unlink(new_filename);
-	if (rename(old_filename, new_filename) == EOF)
-		perror_message(_(txt_rename_error), old_filename, new_filename);
-
-	return;
-}
-#endif /* M_AMIGA */
-
-
 /*
  * Note that we exit screen/curses mode when invoking
  * external commands
@@ -832,6 +823,10 @@ draw_percent_mark(
 	long max_num)
 {
 	char buf[32]; /* should be big enough */
+	int len;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t wbuf[32];
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	if (NOTESLINES <= 0)
 		return;
@@ -841,7 +836,15 @@ draw_percent_mark(
 
 	clear_message();
 	snprintf(buf, sizeof(buf), "%s(%d%%) [%ld/%ld]", _(txt_more), (int) (cur_num * 100 / max_num), cur_num, max_num);
-	MoveCursor(cLINES, (cCOLS - (int) strlen(buf)) - (1 + BLANK_PAGE_COLS));
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if (mbstowcs(wbuf, buf, ARRAY_SIZE(wbuf)) != (size_t) (-1)) {
+		wbuf[ARRAY_SIZE(wbuf) - 1]  = (wchar_t) '\0';
+		wconvert_to_printable(wbuf);
+		len = wcswidth(wbuf, ARRAY_SIZE(wbuf));
+	} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		len = (int) strlen(buf);
+	MoveCursor(cLINES, cCOLS - len - (1 + BLANK_PAGE_COLS));
 	StartInverse();
 	my_fputs(buf, stdout);
 	my_flush();
@@ -907,53 +910,11 @@ mail_check(
 {
 	const char *mailbox_name;
 	struct stat buf;
-#ifdef M_AMIGA
-	static long mbox_size = 0;
-#endif /* M_AMIGA */
 
 	mailbox_name = get_val("MAIL", mailbox);
 
-#ifdef M_AMIGA
-	/*
-	 * Since AmigaDOS does not distinguish between atime and mtime
-	 * we have to find some other way to figure out if the mailbox
-	 * was modified (to bad that Iain removed the mail_setup() and
-	 * mail_check() scheme used prior to 1.30 260694 which worked also
-	 * on AmigaDOS). (R. Luebke 10.7.1994)
-	 */
-
-	/* this is only a first try, but it seems to work :) */
-
-	if (mailbox_name != 0) {
-		if (stat(mailbox_name, &buf) >= 0) {
-			if (buf.st_size > 0) {
-				if (buf.st_size > mbox_size) {
-					mbox_size = buf.st_size;
-					return TRUE;
-				} else
-					/*
-					 * at this point we have to calculate how much the
-					 * mailbox has to grow until we say "new mail"
-					 * Unfortunately, some MUAs write status information
-					 * back to the users mailbox. This is a size increase
-					 * and would result in "new mail" if we only look for some
-					 * size increase. The mbox_size calculation below works
-					 * for me for some time now (I use AmigaELM).
-					 * Probably there is a better method, if you know one
-					 * you are welcome... :-)
-					 * I think a constant offset is more accurate today,
-					 * 1k is the average size of mail-headers alone in each
-					 * message I receive. (obw)
-					 */
-					mbox_size = buf.st_size + 1024;
-			} else
-				mbox_size = 0;
-		}
-	}
-#else
 	if (mailbox_name != 0 && stat(mailbox_name, &buf) >= 0 && buf.st_atime < buf.st_mtime && buf.st_size > 0)
 		return TRUE;
-#endif /* M_AMIGA */
 	return FALSE;
 }
 
@@ -1036,24 +997,25 @@ get_author(
 	char *str,
 	size_t len)
 {
+	char *p = idna_decode(art->from);
 	int author;
 
 	author = ((thread && !show_subject) ? SHOW_FROM_BOTH : CURR_GROUP.attribute->show_author);
 
 	switch (author) {
 		case SHOW_FROM_ADDR:
-			strncpy(str, art->from, len);
+			strncpy(str, p, len);
 			break;
 
 		case SHOW_FROM_NAME:
-			strncpy(str, (art->name ? art->name : art->from), len);
+			strncpy(str, (art->name ? art->name : p), len);
 			break;
 
 		case SHOW_FROM_BOTH:
 			if (art->name)
-				snprintf(str, len, "%s <%s>", art->name, art->from);
+				snprintf(str, len, "%s <%s>", art->name, p);
 			else
-				strncpy(str, art->from, len);
+				strncpy(str, p, len);
 			break;
 
 		case SHOW_FROM_NONE:
@@ -1062,6 +1024,7 @@ get_author(
 			break;
 	}
 
+	free(p);
 	*(str + len) = '\0';				/* NULL terminate */
 }
 
@@ -1481,9 +1444,7 @@ _strfpath(
 	char tbuf[PATH_LEN];
 	char *envptr;
 	int i;
-#ifndef M_AMIGA
 	struct passwd *pwd;
-#endif /* !M_AMIGA */
 	t_bool is_mailbox = FALSE;
 
 	if (str == NULL || format == NULL || maxsize == 0)
@@ -1516,7 +1477,6 @@ _strfpath(
 						break;
 
 					default:	/* some other users homedir */
-#ifndef M_AMIGA
 						i = 0;
 						while (*format && *format != '/')
 							tbuf[i++] = *format++;
@@ -1529,11 +1489,6 @@ _strfpath(
 							return 0;
 						} else
 							sprintf(tbuf, "%s/", pwd->pw_dir);
-#else
-						/* Amiga has no other users */
-						return 0;
-						/* NOTREACHED */
-#endif /* !M_AMIGA */
 						break;
 				}
 				if ((str = strfpath_cp(str, tbuf, endp)) == NULL)
@@ -2109,7 +2064,7 @@ file_size(
  * returns mtime
  * -1 in case of an error (file not found, or !S_IFREG)
  */
-long /* we use long (not time_t) here for FILE_CHANGED() macro */
+long /* we use long (not time_t) here */
 file_mtime(
 	const char *file)
 {
@@ -3567,7 +3522,7 @@ strip_line(
 }
 
 
-#ifdef CHARSET_CONVERSION
+#if defined(CHARSET_CONVERSION) || defined(HAVE_UNICODE_NORMALIZATION)
 /*
  * 'check' a given UTF-8 strig and '?'-out illegal sequences
  * TODO: is this check complete?
@@ -3582,7 +3537,7 @@ strip_line(
  * UTF8-4          = %xF0 %x90-BF 2*UTF8-1 / %xF1-F3 3*UTF8-1 /
  *                   %xF4 %x80-8F 2*UTF8-1
  */
-static char *
+char *
 utf8_valid(
 	char *line)
 {
@@ -3703,4 +3658,65 @@ utf8_valid(
 	}
 	return line;
 }
-#endif /* CHARSET_CONVERSION */
+#endif /* CHARSET_CONVERSION || HAVE_UNICODE_NORMALIZATION */
+
+
+char *idna_decode(
+	char *in)
+{
+	char *out = my_strdup(in);
+
+#if defined(HAVE_LIBIDN) && defined(HAVE_IDNA_TO_UNICODE_LZLZ)
+	if (stringprep_check_version("0.3.0")) {
+		char *q, *r = NULL;
+
+		if ((q = strrchr(out, '@')))
+			q++;
+		else
+			q = out;
+#	ifdef HAVE_IDNA_USE_STD3_ASCII_RULES
+		if (!idna_to_unicode_lzlz(q, &r, IDNA_USE_STD3_ASCII_RULES))
+#	else
+		if (!idna_to_unicode_lzlz(q, &r, 0))
+#	endif /* HAVE_IDNA_USE_STD3_ASCII_RULES */
+			strcpy(q, r);
+		FreeIfNeeded(r);
+	}
+#endif /* HAVE_LIBIDN && HAVE_IDNA_TO_UNICODE_LZLZ */
+
+	return out;
+}
+
+
+#if 0
+/*
+ * Stat a mail/news article to see if it still exists
+ */
+static t_bool
+stat_article(
+	long art,
+	const char *group_path)
+{
+	char buf[NNTP_STRLEN];
+	struct t_group currgrp;
+
+	currgrp = CURR_GROUP;
+
+#	ifdef NNTP_ABLE
+	if (read_news_via_nntp && currgrp.type == GROUP_TYPE_NEWS) {
+		snprintf(buf, sizeof(buf), "STAT %ld", art);
+		return (nntp_command(buf, OK_NOTEXT, NULL, 0) != NULL);
+	} else
+#	endif /* NNTP_ABLE */
+	{
+		struct stat sb;
+
+		joinpath(buf, currgrp.spooldir, group_path);
+		snprintf(&buf[strlen(buf)], sizeof(buf), "/%ld", art);
+
+		return (stat(buf, &sb) != -1);
+	}
+}
+#endif /* 0 */
+
+

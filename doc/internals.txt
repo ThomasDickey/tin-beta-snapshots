@@ -90,19 +90,16 @@ The functions that manipulate the above include:
 active.c:
 	read_news_active_file() populates active[] using group_add()
 
-
 art.c:
 	Many of the overview headers are stored with hash_str()
-    base[] is populated by find_base()
+	base[] is populated by find_base()
 
 hashstr.c:
 	hash_str() Hashes text strings
-
 	In the article header, the following text is hashed:
 		From: (including full name if supplied)
 		Archive-name:
 		Subject:
-
 
 list.c:
 	init_group_hash() clears group_hash[]
@@ -118,19 +115,16 @@ list.c:
 main.c:
 	Just the initializers for hashing
 
-
 memory.c:
 	Dynamic array management.
 	hash_reclaim() - free up table[] which holds the
 	text cache
-
 
 refs.c:
 	Handling for msgids[]
 	When threading, each msgid in the hash has a pointer back to
 	its article header in arts[] or ART_UNAVAILABLE if the article is not
 	available
-
 
 select.c:
 	my_group_add() adds a group to my_group[]

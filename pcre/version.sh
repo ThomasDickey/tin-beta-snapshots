@@ -7,6 +7,6 @@
 # that many releases anyway.
 
 PCRE_MAJOR=4
-PCRE_MINOR=4
-PCRE_DATE=21-August-2003
+PCRE_MINOR=5
+PCRE_DATE=01-December-2003
 PCRE_VERSION=${PCRE_MAJOR}.${PCRE_MINOR}

@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2003-03-24
+ *  Updated   : 2003-11-18
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2003 Iain Lea <iain@bricbrac.de>
@@ -45,17 +45,42 @@
 /*
  * local prototypes
  */
+static FILE *open_newsgroups_fp(void);
 static void read_groups_descriptions(FILE *fp, FILE *fp_save);
 static void read_newsgroups_file(t_bool verb);
 #ifdef HAVE_MH_MAIL_HANDLING
+	static FILE *open_mail_active_fp(const char *mode);
+	static FILE *open_mailgroups_fp(void);
 	static void read_mailgroups_file(t_bool verb);
 #endif /* HAVE_MH_MAIL_HANDLING */
+
+
+#ifdef HAVE_MH_MAIL_HANDLING
+/*
+ * Open the mail active file locally
+ */
+static FILE *
+open_mail_active_fp(
+	const char *mode)
+{
+	return fopen(mail_active_file, mode);
+}
+
+
+/*
+ * Open mail groups description file locally
+ */
+static FILE *
+open_mailgroups_fp(
+	void)
+{
+	return fopen(mailgroups_file, "r");
+}
 
 
 /*
  * Load the mail active file into active[]
  */
-#ifdef HAVE_MH_MAIL_HANDLING
 void
 read_mail_active_file(
 	void)
@@ -214,16 +239,41 @@ read_mailgroups_file(
 
 
 /*
- * read group descriptions for news (and mailgroups)
+ * If reading via NNTP the newsgroups file will be saved to ~/.tin/newsgroups
+ * so that any subsequent rereads on the active file will not have to waste
+ * net bandwidth and the local copy of the newsgroups file can be accessed.
  */
-void
-read_descriptions(
-	t_bool verb)
+static FILE *
+open_newsgroups_fp(
+	void)
 {
-#ifdef HAVE_MH_MAIL_HANDLING
-	read_mailgroups_file(verb);
-#endif /* HAVE_MH_MAIL_HANDLING */
-	read_newsgroups_file(verb);
+#ifdef NNTP_ABLE
+	FILE *result;
+
+	if (read_news_via_nntp && !read_saved_news) {
+		if (read_local_newsgroups_file) {
+			result = fopen(local_newsgroups_file, "r");
+			if (result != NULL) {
+#	ifdef DEBUG
+				debug_nntp("open_newsgroups_fp", "Using local copy of newsgroups file");
+#	endif /* DEBUG */
+				return result;
+			}
+			read_local_newsgroups_file = FALSE;
+		}
+#	if 0 /* TODO: */
+		if (list_newsgroups_wildmat_supported && newsrc_active
+		    && !list_active && num_active < some_useful_limit) {
+			for_each_group(i) {
+				snprintf(buff, sizeof(buff), "LIST NEWSGROUPS %s", active[i].name);
+				nntp_command(buff, OK_LIST, NULL, 0);
+			}
+		} else
+#	endif /* 0 */
+		return (nntp_command("LIST NEWSGROUPS", OK_GROUPS, NULL, 0));
+	} else
+#endif /* NNTP_ABLE */
+		return fopen(newsgroups_file, "r");
 }
 
 
@@ -257,6 +307,20 @@ read_newsgroups_file(
 		if (!batch_mode && verb)
 			my_fputs("\n", stdout);
 	}
+}
+
+
+/*
+ * read group descriptions for news (and mailgroups)
+ */
+void
+read_descriptions(
+	t_bool verb)
+{
+#ifdef HAVE_MH_MAIL_HANDLING
+	read_mailgroups_file(verb);
+#endif /* HAVE_MH_MAIL_HANDLING */
+	read_newsgroups_file(verb);
 }
 
 
@@ -403,13 +467,12 @@ grp_del_mail_art(
 	struct t_article *article)
 {
 
-	if (article->delete_it) {
-		art_mark_undeleted(article);
+	if (article->delete_it)
 		info_message(_(txt_art_undeleted));
-	} else {
-		art_mark_deleted(article);
+	else
 		info_message(_(txt_art_deleted));
-	}
+
+	article->delete_it = bool_not(article->delete_it);
 }
 
 
@@ -448,7 +511,7 @@ grp_del_mail_arts(
 #if 0
 /*
  * current tin's build_references() is changed to free msgid and refs,
- * therefore we cannot call write_nov_file after it. I simply commented
+ * therefore we cannot call write_overview after it. I simply commented
  * out this codes, NovFile will update at next time.
  */
 /*
@@ -456,7 +519,7 @@ grp_del_mail_arts(
  * the active[] entry for the group and rewrite the mail.active file
  */
 		if (update_index_file)
-			write_nov_file(group);
+			write_overview(group);
 #endif /* 0 */
 	}
 }

@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2003-08-27
+ *  Updated   : 2003-12-04
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -94,13 +94,17 @@ static int set_filter_scope(struct t_group *group);
 static struct t_filter_comment *add_filter_comment(struct t_filter_comment *ptr, char *text);
 static struct t_filter_comment *free_filter_comment(struct t_filter_comment *ptr);
 static struct t_filter_comment *copy_filter_comment(struct t_filter_comment *from, struct t_filter_comment *to);
-static t_bool add_filter_rule(struct t_group *group, struct t_article *art, struct t_filter_rule *rule);
+static t_bool add_filter_rule(struct t_group *group, struct t_article *art, struct t_filter_rule *rule, t_bool quick_filter_rule);
 static t_bool test_regex(const char *string, char *regex, t_bool nocase, struct regex_cache *cache);
 static void expand_filter_array(struct t_filters *ptr);
+static void fmt_filter_menu_prompt(char *dest, size_t dest_len, const char *fmt_str, int len, const char *text);
 static void free_filter_item(struct t_filter *ptr);
 static void print_filter_menu(void);
 static void set_filter(struct t_filter *ptr);
 static void write_filter_array(FILE *fp, struct t_filters *ptr);
+#if 0 /* currently unused */
+	static FILE *open_xhdr_fp(char *header, long min, long max);
+#endif /* 0 */
 
 
 /*
@@ -206,7 +210,7 @@ test_regex(
 			if (regex_errpos >= 0)
 				return TRUE;
 			else if (regex_errpos != PCRE_ERROR_NOMATCH)
-				sprintf(mesg, _(txt_pcre_error_num), regex_errpos);
+				snprintf(mesg, sizeof(mesg), _(txt_pcre_error_num), regex_errpos);
 		}
 	}
 	return FALSE;
@@ -842,7 +846,26 @@ get_choice(
 		show_menu_help(help);
 
 	do {
-		MoveCursor(x, (int) strlen(prompt));
+		int y;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		size_t wsize;
+		wchar_t *wbuf;
+
+		wsize = mbstowcs(NULL, prompt, 0);
+		if (wsize != (size_t) (-1)) {
+			wbuf = my_malloc(sizeof(wchar_t) * (wsize + 1));
+			mbstowcs(wbuf, prompt, wsize + 1);
+			wconvert_to_printable(wbuf);
+			y = wcswidth(wbuf, wsize + 1);
+			if (y == -1) /* something went wrong, use wcslen() as fallback */
+				y = wcslen(wbuf);
+
+			free(wbuf);
+		} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			y = (int) strlen(prompt);
+
+		MoveCursor(x, y);
 		my_fputs(argv[i], stdout);
 		my_flush();
 		CleartoEOLN();
@@ -911,6 +934,57 @@ refresh_filter_menu(
 	 *   (not everywhere possible yet -- must change getline.c for refreshing
 	 *    string input)
 	 */
+}
+
+
+/*
+ * a help function for filter_menu
+ * formats a menu option in a multibyte-safe way
+ *
+ * this function in closely tight to the way how the filter menu is build
+ */
+static void
+fmt_filter_menu_prompt(
+	char *dest,		/* where to store the resulting string */
+	size_t dest_len,	/* size of dest */
+	const char *fmt_str,	/* format string */
+	int len,		/* maximal len of the include string */
+	const char *text)	/* the include string */
+{
+	char *buf;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	size_t size, wsize;
+	wchar_t *wbuf, *wbuf2;
+
+	wsize = mbstowcs(NULL, text, 0);
+	if (wsize != (size_t) (-1)) {
+		wbuf = my_malloc(sizeof(wchar_t) * (wsize + 1));
+		/* make sure there is enough space for padding with ' ' */
+		wbuf2 = my_malloc(sizeof(wchar_t) * (wsize + len + 1));
+		mbstowcs(wbuf, text, wsize + 1);
+		wcspart(wbuf2, wbuf, len, wsize + len + 1, TRUE);
+		size = wcstombs(NULL, wbuf2, 0);
+		if (size != (size_t) (-1)) {
+			buf = my_malloc(size + 1);
+			wcstombs(buf, wbuf2, size + 1);
+		} else {
+			/* conversion failed, truncate original string */
+			buf = my_malloc(len + 1);
+			snprintf(buf, len + 1, "%-*.*s", len, len, text);
+		}
+
+		free(wbuf);
+		free(wbuf2);
+	} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	{
+		buf = my_malloc(len + 1);
+		snprintf(buf, len + 1, "%-*.*s", len, len, text);
+	}
+	snprintf(dest, dest_len, fmt_str, buf);
+	free(buf);
+
+	return;
 }
 
 
@@ -1000,11 +1074,10 @@ filter_menu(
 	len = cCOLS - 30;
 
 	snprintf(text_time, sizeof(text_time), _(txt_time_default_days), tinrc.filter_days);
-	snprintf(text_subj, sizeof(text_subj), ptr_filter_subj, len, len, art->subject);
+	fmt_filter_menu_prompt(text_subj, sizeof(text_subj), ptr_filter_subj, len, art->subject);
 	snprintf(text_score, sizeof(text_score), _(txt_filter_score), (type == FILTER_KILL ? -tinrc.score_kill : tinrc.score_select));
-	STRCPY(buf, art->from);
-	snprintf(text_from, sizeof(text_from), ptr_filter_from, len, len, buf);
-	snprintf(text_msgid, sizeof(text_msgid), ptr_filter_msgid, len - 4, len - 4, MSGID(art));
+	fmt_filter_menu_prompt(text_from, sizeof(text_from), ptr_filter_from, len, art->from);
+	fmt_filter_menu_prompt(text_msgid, sizeof(text_msgid), ptr_filter_msgid, len - 4, MSGID(art));
 
 	print_filter_menu();
 
@@ -1274,7 +1347,7 @@ filter_menu(
 		switch (ch) {
 
 		case iKeyFilterEdit:
-			add_filter_rule(group, art, &rule); /* save the rule */
+			add_filter_rule(group, art, &rule, FALSE); /* save the rule */
 			rule.comment = free_filter_comment(rule.comment);
 			if (!invoke_editor(filter_file, FILTER_FILE_OFFSET))
 				return FALSE;
@@ -1295,7 +1368,7 @@ filter_menu(
 			/*
 			 * Add the filter rule and save it to the filter file
 			 */
-			ret = add_filter_rule(group, art, &rule);
+			ret = add_filter_rule(group, art, &rule, FALSE);
 			rule.comment = free_filter_comment(rule.comment);
 			return ret;
 			/* keep lint quiet: */
@@ -1370,7 +1443,7 @@ quick_filter(
 	rule.check_string = TRUE;
 	rule.score = (type == FILTER_KILL) ? tinrc.score_kill : tinrc.score_select;
 
-	ret = add_filter_rule(group, art, &rule);
+	ret = add_filter_rule(group, art, &rule, TRUE);
 	rule.comment = free_filter_comment(rule.comment);
 	return ret;
 }
@@ -1451,10 +1524,10 @@ quick_filter_select_posted_art(
 			/* Hack */
 			art.refptr = (struct t_msgid *) &refptr_dummyart;
 
-			filtered = add_filter_rule(group, &art, &rule);
+			filtered = add_filter_rule(group, &art, &rule, FALSE);
 		} else {
 			art.subject = my_strdup(subj);
-			filtered = add_filter_rule(group, &art, &rule);
+			filtered = add_filter_rule(group, &art, &rule, FALSE);
 			FreeIfNeeded(art.subject);
 		}
 		rule.comment = free_filter_comment(rule.comment);
@@ -1470,7 +1543,8 @@ static t_bool
 add_filter_rule(
 	struct t_group *group,
 	struct t_article *art,
-	struct t_filter_rule *rule)
+	struct t_filter_rule *rule,
+	t_bool quick_filter_rule)
 {
 	char acBuf[PATH_LEN];
 	char sbuf[(sizeof(acBuf) / 2)]; /* half as big as acBuf so quote_wild(sbuf) fits into acBuf */
@@ -1590,7 +1664,7 @@ add_filter_rule(
 			 * So the thread remains open (in group level). To overcome this,
 			 * the first msgid from references field is taken in this case.
 			 */
-			if (group->attribute->thread_arts == THREAD_REFS &&
+			if (quick_filter_rule && group->attribute->thread_arts == THREAD_REFS &&
 				(group->attribute->quick_kill_header == FILTER_MSGID ||
 				 group->attribute->quick_kill_header == FILTER_REFS_ONLY) &&
 				 art->refptr->parent != NULL)
@@ -1993,3 +2067,26 @@ set_filter_scope(
 	}
 	return inscope;
 }
+
+
+/*
+ * This will come in useful for filtering on non-overview hdr fields
+ */
+#if 0
+static FILE *
+open_xhdr_fp(
+	char *header,
+	long min,
+	long max)
+{
+#	ifdef NNTP_ABLE
+	if (read_news_via_nntp && !read_saved_news && xhdr_cmd) {
+		char buf[NNTP_STRLEN];
+
+		snprintf(buf, sizeof(buf), "%s %s %ld-%ld", xhdr_cmd, header, min, max);
+		return (nntp_command(buf, OK_HEAD, NULL, 0));
+	} else
+#	endif /* NNTP_ABLE */
+		return (FILE *) 0;		/* Some trick implementation for local spool... */
+}
+#endif /* 0 */

@@ -3,7 +3,7 @@
  *  Module    : tnntp.h
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-03-05
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-09-19
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2003 Thomas Dickey <dickey@herndon4.his.com>
@@ -57,15 +57,12 @@
 #	define s_init()	(1)
 #	define s_end()
 #else
-#	ifdef M_AMIGA
-#		include "amigatcp.h"
-#	else
-#		define s_printf	fprintf
-#		define s_fdopen	fdopen
-#		define s_flush	fflush
-#		define s_fclose	fclose
-#		define s_gets	fgets
-#if 0 /* __BEOS__ port in progress */
+#	define s_printf	fprintf
+#	define s_fdopen	fdopen
+#	define s_flush	fflush
+#	define s_fclose	fclose
+#	define s_gets	fgets
+#	if 0 /* __BEOS__ port in progress */
 #		ifdef HAVE_CLOSESOCKET
 #			define s_close closesocket
 #		else
@@ -76,14 +73,13 @@
 #		else
 #			define s_puts(s,fd)	fputs(s,fd)
 #		endif /* __BEOS__ */
-#else
+#	else
 #		define s_close close
 #		define s_puts	fputs
-#endif /* 0 */
-#		define s_dup		dup
-#		define s_init()	(1)
-#		define s_end()
-#	endif /* M_AMIGA */
+#	endif /* 0 */
+#	define s_dup		dup
+#	define s_init()	(1)
+#	define s_end()
 #endif /* VMS && SOCKETSHR_TCP */
 
 #if defined(NNTP_ABLE) || defined(HAVE_GETHOSTBYNAME)

@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2003-08-12
+ *  Updated   : 2003-12-17
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -280,7 +280,7 @@ get_feed_key(
 			return 0;
 
 		case iKeyFeedPat:
-			sprintf(mesg, _(txt_feed_pattern), tinrc.default_pattern);
+			snprintf(mesg, sizeof(mesg), _(txt_feed_pattern), tinrc.default_pattern);
 			if (!(prompt_string_default(mesg, tinrc.default_pattern, _(txt_no_match), HIST_REGEX_PATTERN)))
 				return 0;
 			break;
@@ -535,7 +535,7 @@ feed_articles(
 	switch (function) {
 		/* Setup mail - get address to mail to */
 		case FEED_MAIL:
-			sprintf(mesg, _(txt_mail_art_to), cCOLS - (strlen(_(txt_mail_art_to)) + 30), tinrc.default_mail_address);
+			snprintf(mesg, sizeof(mesg), _(txt_mail_art_to), cCOLS - (strlen(_(txt_mail_art_to)) + 30), tinrc.default_mail_address);
 			if (!(prompt_string_default(mesg, tinrc.default_mail_address, _(txt_no_mail_address), HIST_MAIL_ADDRESS)))
 				return;
 			break;
@@ -543,7 +543,7 @@ feed_articles(
 #ifndef DONT_HAVE_PIPING
 		/* Setup pipe - get pipe-to command and open the pipe */
 		case FEED_PIPE:
-			sprintf(mesg, _(txt_pipe_to_command), cCOLS - (strlen(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);
+			snprintf(mesg, sizeof(mesg), _(txt_pipe_to_command), cCOLS - (strlen(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);
 			if (!(prompt_string_default(mesg, tinrc.default_pipe_command, _(txt_no_command), HIST_PIPE_COMMAND)))
 				return;
 
@@ -624,12 +624,12 @@ feed_articles(
 
 					switch (option) {
 						case iKeyFeedSupersede:
-							sprintf(mesg, _(txt_supersede_group), tinrc.default_repost_group);
+							snprintf(mesg, sizeof(mesg), _(txt_supersede_group), tinrc.default_repost_group);
 							supersede = TRUE;
 							break;
 
 						case iKeyFeedRepost:
-							sprintf(mesg, _(txt_repost_group), tinrc.default_repost_group);
+							snprintf(mesg, sizeof(mesg), _(txt_repost_group), tinrc.default_repost_group);
 							supersede = FALSE;
 							break;
 
@@ -639,7 +639,7 @@ feed_articles(
 					}
 #ifndef FORGERY
 				} else {
-					sprintf(mesg, _(txt_repost_group), tinrc.default_repost_group);
+					snprintf(mesg, sizeof(mesg), _(txt_repost_group), tinrc.default_repost_group);
 					supersede = FALSE;
 				}
 #endif /* !FORGERY */
@@ -708,18 +708,30 @@ feed_articles(
 
 		case iKeyFeedHot:		/* hot (auto-selected) articles */
 		case iKeyFeedPat:		/* pattern matched articles */
-			for_each_art(art) {
-				if (feed_type == iKeyFeedPat) {
-					if (!REGEX_MATCH(arts[art].subject, tinrc.default_pattern, TRUE))
+			{
+				struct regex_cache cache = { NULL, NULL };
+
+				if ((feed_type == iKeyFeedPat) && tinrc.wildcard && !(compile_regex(tinrc.default_pattern, &cache, PCRE_CASELESS)))
+					break;
+
+				for_each_art(art) {
+					if (feed_type == iKeyFeedPat) {
+						if (!match_regex(arts[art].subject, tinrc.default_pattern, &cache, TRUE))
+							continue;
+					} else if (!arts[art].selected)
 						continue;
-				} else if (!arts[art].selected)
-					continue;
 
-				if (tinrc.process_only_unread && arts[art].status == ART_READ)
-					continue;
+					if (tinrc.process_only_unread && arts[art].status == ART_READ)
+						continue;
 
-				arts[art].matched = TRUE;
-				counter.max++;
+					arts[art].matched = TRUE;
+					counter.max++;
+				}
+
+				if (tinrc.wildcard) {
+					FreeIfNeeded(cache.re);
+					FreeIfNeeded(cache.extra);
+				}
 			}
 
 			/* I think we nest like this to preserve any 'ordering' of the arts */

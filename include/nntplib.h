@@ -3,7 +3,7 @@
  *  Module    : nntplib.h
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-21
+ *  Updated   : 2003-09-19
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -39,11 +39,7 @@
 #define NNTPLIB_H 1
 
 #ifndef NNTP_SERVER_FILE
-#	ifdef M_AMIGA
-#		define NNTP_SERVER_FILE	"uulib:nntpserver"
-#	else
-#		define NNTP_SERVER_FILE	"/etc/nntpserver"
-#	endif /* M_AMIGA */
+#	define NNTP_SERVER_FILE	"/etc/nntpserver"
 #endif /* !NNTP_SERVER_FILE */
 
 #define NNTP_TCP_NAME	"nntp"

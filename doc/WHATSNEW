@@ -2,9 +2,20 @@ New features and changes in tin-1.7
 
 Changes
 -------
-. interactive mailer can now be feed with headers. The old use_mailreader_i
+. interactive mailer can now be fed with headers. The old use_mailreader_i
   config variable is obsolete and superseded by the new interactive_mailer
   variable that can have three values:
   0  no interactive mailreader (old use_mailreader_i=OFF)
   1  interactive mailreader with headers
   2  interactive mailreader without headers (old use_mailreader_i=ON)
+
+New features
+------------
+. You can now specify a mailbox folder to save your sent mails so you
+  possibly don't need auto_cc or auto_bcc anymore. See tin(5).
+
+. x_headers can take a commad which generates the header(s). See tin(5).
+
+Retired Features
+----------------
+. AmigaOS support

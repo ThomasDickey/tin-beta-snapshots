@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2003-09-13
+ *  Updated   : 2003-12-09
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
@@ -38,6 +38,20 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
+#ifdef HAVE_UNICODE_NORMALIZATION
+#	ifdef HAVE_LIBICUUC
+#		if defined(HAVE_UNICODE_UNORM_H) && !defined(UNORM_H)
+#			include <unicode/unorm.h>
+#		endif /* HAVE_UNICODE_UNORM_H && !UNORM_H */
+#		if defined(HAVE_UNICODE_USTRING_H) && !defined(USTRING_H)
+#			include <unicode/ustring.h>
+#		endif /* HAVE_UNICODE_USTRING_H && !USTRING_H */
+#	else
+#		if defined(HAVE_LIBIDN) && defined(HAVE_STRINGPREP_H) && !defined(_STRINGPREP_H)
+#			include <stringprep.h>
+#		endif /* HAVE_LIBIDN && HAVE_STRINGPREP_H && !_STRINGPREP_H */
+#	endif /* HAVE_LIBICUUC */
+#endif /* HAVE_UNICODE_NORMALIZATION */
 
 /*
  * this file needs some work
@@ -59,7 +73,7 @@ tin_ltoa(
 	int len;
 	int i = 0;
 
-	sprintf(buffer, "%ld", value);
+	snprintf(buffer, sizeof(buffer), "%ld", value);
 	len = (int) strlen(buffer);
 
 	while (len > digits) {
@@ -74,7 +88,7 @@ tin_ltoa(
 		buffer[digits - 1] = power[i];
 		buffer[digits] = '\0';
 	} else
-		sprintf(buffer, "%*ld", digits, value);
+		snprintf(buffer, sizeof(buffer), "%*ld", digits, value);
 
 	return buffer;
 }
@@ -546,7 +560,7 @@ sh_format(
 				break;
 
 			case 'd':
-				sprintf(temp, "%d", va_arg(ap, int));
+				snprintf(temp, sizeof(temp), "%d", va_arg(ap, int));
 				src = temp;
 				break;
 
@@ -598,16 +612,6 @@ sh_format(
 
 #ifndef HAVE_STRERROR
 #	ifdef HAVE_SYS_ERRLIST
-#		ifdef M_AMIGA
-#			ifndef sys_errlist
-				extern char *__sys_errlist[];
-#				define sys_errlist	__sys_errlist
-#			endif /* !sys_errlist */
-#		else
-#			ifdef DECL_SYS_ERRLIST
-				extern char *sys_errlist[];
-#			endif /* DECL_SYS_ERRLIST */
-#		endif /* M_AMIGA */
 		extern int sys_nerr;
 #	endif /* HAVE_SYS_ERRLIST */
 char *
@@ -620,7 +624,7 @@ my_strerror(
 	if (n >= 0 && n < sys_nerr)
 		return sys_errlist[n];
 #	endif /* HAVE_SYS_ERRLIST */
-	sprintf(temp, "Errno: %d", n);
+	snprintf(temp, sizeof(temp), "Errno: %d", n);
 	return temp;
 }
 #endif /* !HAVE_STRERROR */
@@ -700,7 +704,7 @@ wcspart(
  * The resulting string is stored in 'buf'.
  */
 char *
-trunc(
+strunc(
 	const char *message,
 	char *buf,
 	size_t buf_len,
@@ -711,13 +715,13 @@ trunc(
 	size_t mesg_len;
 
 	mesg_len = mbstowcs(NULL, message, 0);
-	if (mesg_len != (size_t)(-1)) {
+	if (mesg_len != (size_t) (-1)) {
 		wmessage = my_malloc(sizeof(wchar_t) * (mesg_len + 1));
 		wbuf = my_malloc(sizeof(wchar_t) * (mesg_len + 1));
 
-		if (mbstowcs(wmessage, message, mesg_len + 1) != (size_t)(-1)) {
-			wtrunc(wmessage, wbuf, mesg_len + 1, len);
-			if (wcstombs(buf, wbuf, buf_len) != (size_t)(-1)) {
+		if (mbstowcs(wmessage, message, mesg_len + 1) != (size_t) (-1)) {
+			wstrunc(wmessage, wbuf, mesg_len + 1, len);
+			if (wcstombs(buf, wbuf, buf_len) != (size_t) (-1)) {
 				buf[buf_len - 1] = '\0';
 
 				free(wbuf);
@@ -733,7 +737,11 @@ trunc(
 	/* something went wrong using wide-chars, default back to normal chars */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
-	snprintf(buf, buf_len, "%-.*s%s", len - 3, message, TRUNC_TAIL);
+	if ((int) strlen(message) <= len && len < (int) buf_len)
+		strcpy(buf, message);
+	else
+		snprintf(buf, buf_len, "%-.*s%s", len - 3, message, TRUNC_TAIL);
+
 	return buf;
 }
 
@@ -745,9 +753,9 @@ trunc(
 /* #define USE_UTF8_HORIZONTAL_ELLIPSIS 1 */
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-/* the wide-char equivalent of trunc() */
+/* the wide-char equivalent of strunc() */
 wchar_t *
-wtrunc(
+wstrunc(
 	const wchar_t *wmessage,
 	wchar_t *wbuf,
 	size_t wbuf_len,
@@ -781,8 +789,8 @@ wtrunc(
 			size_t i;
 
 			i = mbstowcs(tail, TRUNC_TAIL, ARRAY_SIZE(tail));
-			tail[3] = (wchar_t)'\0';
-			assert(i != (size_t)(-1));
+			tail[3] = (wchar_t) '\0';
+			assert(i != (size_t) (-1));
 
 			wcspart(wbuf, wtmp, len - 3, wbuf_len - 3, FALSE);
 			wcscat(wbuf, tail);
@@ -807,4 +815,107 @@ my_wcsdup(
 	memcpy(ptr, wstr, sizeof(wchar_t) * len);
 	return (wchar_t *) ptr;
 }
-#endif /* MULTIBYTE_ABLE && !NOLOCALE */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+
+#ifdef HAVE_UNICODE_NORMALIZATION
+/*
+ * unicode normalization
+ *
+ * str: the string to normalize (must be UTF-8)
+ * returns the normalized string
+ * if the normalization failed a copy of the original string will be returned
+ *
+ * don't forget to free() the allocated memory if not needed anymore
+ */
+char *
+normalize(
+	const char *str)
+{
+	char *buf, *tmp;
+
+	/* make sure str is valid UTF8 */
+	tmp = my_strdup(str);
+	utf8_valid(tmp);
+
+	if (tinrc.normalization_form == NORMALIZE_NONE) /* normalization is disabled */
+		return tmp;
+
+#	ifdef HAVE_LIBICUUC
+	{ /* ICU */
+		int32_t buf_len, ustr_len, needed, norm_len;
+		UChar *ustr, *norm;
+		UErrorCode status = U_ZERO_ERROR;
+		UNormalizationMode mode;
+
+		switch (tinrc.normalization_form) {
+			case NORMALIZE_NFD:
+				mode = UNORM_NFD;
+				break;
+
+			case NORMALIZE_NFC:
+				mode = UNORM_NFC;
+				break;
+
+			case NORMALIZE_NFKD:
+				mode = UNORM_NFKD;
+				break;
+
+			case NORMALIZE_NFKC:
+			default:
+				mode = UNORM_NFKC;
+		}
+
+		/* convert to UTF-16 which is used internally by ICU */
+		u_strFromUTF8(NULL, 0, &needed, tmp, (int32_t) strlen(tmp), &status);
+		status = U_ZERO_ERROR;		/* reset status */
+		ustr_len = needed + 1;
+		ustr = (UChar *) my_malloc(sizeof(UChar) * ustr_len);
+		u_strFromUTF8(ustr, ustr_len, &needed, tmp, (int32_t) strlen(tmp), &status);
+		if (U_FAILURE(status)) {
+			/* something went wrong, return the original string (as valid UTF8) */
+			free(ustr);
+			return tmp;
+		}
+
+		needed = unorm_normalize(ustr, -1, mode, 0 , NULL, 0, &status);
+		status = U_ZERO_ERROR;		/* reset status */
+		norm_len = needed + 1;
+		norm = (UChar *) my_malloc(sizeof(UChar) * norm_len);
+		needed = unorm_normalize(ustr, -1, mode, 0 , norm, norm_len, &status);
+		if (U_FAILURE(status)) {
+			/* something went wrong, return the original string (as valid UTF8) */
+			free(ustr);
+			free(norm);
+			return tmp;
+		}
+
+		/* convert back to UTF-8 */
+		u_strToUTF8(NULL, 0, &needed, norm, -1, &status);
+		status = U_ZERO_ERROR;		/* reset status */
+		buf_len = needed + 1;
+		buf = my_malloc(buf_len);
+		u_strToUTF8(buf, buf_len, &needed, norm, -1, &status);
+		if (U_FAILURE(status)) {
+			/* something went wrong, return the original string (as valid UTF8) */
+			free(buf);
+			buf = tmp;
+		}
+
+		free(ustr);
+		free(norm);
+		return buf;
+	}
+#	else
+#		ifdef HAVE_LIBIDN
+	/* libidn */
+
+	buf = stringprep_utf8_nfkc_normalize(tmp, -1);
+	if (buf == NULL) /* normalization failed, return the original string (as valid UTF8) */
+		buf = tmp;
+
+	return buf;
+#		endif /* HAVE_LIBIDN */
+#	endif /* HAVE_LIBICUUC */
+}
+#endif /* HAVE_UNICODE_NORMALIZATION */

@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-10
+ *  Updated   : 2003-10-12
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -87,7 +87,7 @@ init_alloc(
 	/*
 	 * active file arrays
 	 */
-	max_active = get_active_num();
+	max_active = DEFAULT_ACTIVE_NUM;
 	max_newnews = DEFAULT_NEWNEWS_NUM;
 
 	active = my_malloc(sizeof(*active) * max_active);
@@ -325,6 +325,8 @@ free_attributes_array(
 
 			FreeAndNull(group->attribute->followup_to);
 
+			FreeAndNull(group->attribute->fcc);
+
 			FreeAndNull(group->attribute->mailing_list);
 			FreeAndNull(group->attribute->x_headers);
 			FreeAndNull(group->attribute->x_body);
@@ -361,6 +363,8 @@ free_attributes_array(
 	free_if_not_default(&glob_attributes.organization, default_organization);
 
 	FreeAndNull(glob_attributes.followup_to);
+
+	FreeAndNull(glob_attributes.fcc);
 
 	FreeAndNull(glob_attributes.mailing_list);
 	FreeAndNull(glob_attributes.x_headers);

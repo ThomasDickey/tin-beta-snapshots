@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2003-09-13
+dnl Updated   : 2003-12-08
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2003 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.7.1
+VERSION=1.7.3
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -787,6 +787,23 @@ if test $ac_cv_long_long = yes; then
 	AC_DEFINE(HAVE_LONG_LONG)
 fi
 
+dnl test to see if nl_item is defined
+AC_MSG_CHECKING(for nl_item)
+AC_TRY_COMPILE([
+#ifdef HAVE_LANGINFO_H
+#include <langinfo.h>
+#else
+#ifdef HAVE_NL_TYPES_H
+#include <nl_types.h>
+#endif
+#endif
+],[nl_item x; x = 0],
+ac_cv_nl_item=yes, ac_cv_nl_item=no)
+AC_MSG_RESULT($ac_cv_nl_item)
+if test $ac_cv_nl_item = yes; then
+        AC_DEFINE(HAVE_NL_ITEM)
+fi
+
 ###	Checks for libraries.
 # libuu/uudeview
 # only define HAVE_LIBUU and HAVE_UUDEVIEW_H if both are found
@@ -797,6 +814,48 @@ AC_CHECK_LIB(uu, UUInitialize,
 		LIBS="$LIBS -luu"]
 	)]
 )
+
+# libidn - Internationalized Domain Names
+AC_CHECK_LIB(idn, stringprep_check_version,
+	[AC_CHECK_HEADER(stringprep.h,[
+		AC_DEFINE(HAVE_STRINGPREP_H)
+		AC_CHECK_HEADER(idna.h, [
+			AC_DEFINE(HAVE_IDNA_H)
+			AC_CHECK_LIB(idn, idna_to_unicode_lzlz,[
+				AC_DEFINE(HAVE_IDNA_TO_UNICODE_LZLZ)
+				AC_MSG_CHECKING(for IDNA_USE_STD3_ASCII_RULES)
+				AC_EGREP_HEADER(IDNA_USE_STD3_ASCII_RULES, idna.h,[
+					AC_DEFINE(HAVE_IDNA_USE_STD3_ASCII_RULES)
+					AC_MSG_RESULT(yes)],
+					AC_MSG_RESULT(no)
+				)
+			])
+		])
+		AC_DEFINE(HAVE_LIBIDN)
+		LIBS="$LIBS -lidn"]
+	)]
+)
+
+# ICU - International Components for Unicode
+AC_CHECK_HEADER(unicode/unorm.h,[
+	AC_CHECK_HEADER(unicode/ustring.h, [
+		AC_DEFINE(HAVE_UNICODE_UNORM_H)
+		AC_DEFINE(HAVE_UNICODE_USTRING_H)
+		AC_MSG_CHECKING(for unorm_normalize in libicuuc)
+		cf_save_LIBS="$LIBS"
+		cf_try_icuuc="no"
+		LIBS="$LIBS -licuuc"
+		AC_TRY_LINK([#include <unicode/unorm.h>], [
+			int32_t needed, ustr = NULL;
+ 			UErrorCode status;
+			needed = unorm_normalize(ustr, -1, UNORM_DEFAULT, 0, NULL, 0, &status);], [
+			AC_DEFINE(HAVE_LIBICUUC)
+			cf_try_icuuc="yes"],
+			LIBS=$cf_save_LIBS
+		)
+		AC_MSG_RESULT($cf_try_icuuc)
+	])
+])
 
 if test $use_curses != no ; then
 	cf_cv_termlib=$cf_with_screen

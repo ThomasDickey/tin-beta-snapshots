@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2003-09-18
+.\" Updated   : 2003-12-19
 .\" Notes     : needs a some work
 .\"
-.TH tin 5 "September 18th, 2003" "1.7.1" "A Usenet newsreader"
+.TH tin 5 "December 19th, 2003" "1.7.3" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -429,6 +429,10 @@ be asked whether to delete the post-processed files. Automatic
 processing of marked articles using \fBGroupAutoSave\fP
 ('\fBS\fP') will suppress prompting.
 .TP
+.B fcc
+Mailbox to save sent mails. The format of the mailbox is controlled
+via the tinrc \fBmailbox_format\fP variable.
+.TP
 .B followup_to
 Set ''Followup-To:''-header to the specified group(s).
 .TP
@@ -474,6 +478,9 @@ Identical to the tinrc variable \fBdefault_savedir\fP
 .B show_author
 Identical to the tinrc variable of the same name
 .TP
+.B show_info
+Identical to the tinrc variable of the same name
+.TP
 .B show_only_unread
 Identical to the tinrc variable of the same name
 .TP
@@ -503,8 +510,10 @@ Insert ''X-Comment-To:''-header, this is only useful in FIDO groups.
 .B x_headers
 A string including header-name and the contents of the header that will
 be automatically added when posting. If the string starts with a / or ~
-then it is assumed to be the name of a file containing the header and it's
-content to be inserted.
+then it is assumed to be the name of a file containing the header and its
+content to be inserted. If the string starts with a ! then what follows
+is assumed to be the path to a program to be executed to generate the
+header and its content.
 .TP
 .B quick_kill_scope
 A comma-separated list of newsgroup patterns (wildmat-style) to which
@@ -628,7 +637,7 @@ Match against ''Subject:''
 Match against ''From:''.
 .BR tin (1)
 converts the contents of the ''From:''-header to an old style e-mail address,
-i.e. ''some@body.example (John Doe)'' instead
+e.g. ''some@body.example (John Doe)'' instead
 of ''John Doe <some@body.example>'', before trying to match the patterns in
 the filter rule.
 .TP
@@ -654,7 +663,7 @@ Match against ''From:''-address parser return codes.
 .B xref
 Match against ''Xref:''-line. Before any matching is done the line is
 turned into the same format ''Newsgroups:'' has that is it is turned
-into a comma separated newsgoup list with all other informations (i.e
+into a comma separated newsgoup list with all other informations (i.e.
 the article counter) removed.
 .TP
 .B time
@@ -1179,6 +1188,9 @@ the article viewer.
 .B col_signature
 Color of signatures
 .TP
+.B col_urls
+Color of urls highlight
+.TP
 .B col_subject
 Color of article subject
 .TP
@@ -1209,12 +1221,16 @@ Ask for confirmation before marking all not selected (with
 .in -.5i
 Default is commands & quit.
 .TP
-.B mark_ignore_tags
-When this is ON, the \fBiKeyGroupMarkThdRead\fP,
-\fBiKeyThreadMarkArtRead\fB functions ('\fBK\fP') mark just the
-current article or thread, ignoring other tagged, unread articles.
-When OFF, the same function presents a menu with choices of the
-current thread or article, all tagged, unread articles, or nothing.
+.B date_format
+Format string
+used for date representation. A description of the different format options
+can be found at
+.BR strftime (3).
+.BR tin (1).
+uses
+.BR strftime (3)
+when available and supports most format options in his fallback code.
+Default is "%a, %d %b %Y %H:%M:%S".
 .TP
 .B default_art_search
 .TP
@@ -1306,11 +1322,11 @@ by giving '=' as the filename to save to. Default is
 .TP
 .B default_mailer_format
 The format string used to create the mailer command with parameters that is
-used for mailing articles to other people. Default is '%M "%T" < %F' (i.e.,
+used for mailing articles to other people. Default is '%M "%T" < %F' (e.g.,
 /bin/mail "iain" < .article). The flexible format allows other mailers with
 different command line parameters to be used such as 'elm -s "%S" "%T" <
-"%F"' (i.e., elm -s "subject" "iain" < .article) or 'sendmail -oem -t < %F'
-(i.e. sendmail -oem -t < .article).
+"%F"' (e.g., elm -s "subject" "iain" < .article) or 'sendmail -oem -t < %F'
+(e.g. sendmail -oem -t < .article).
 .\" TODO: document %S, %T, %M, %F...
 .TP
 .B default_move_group
@@ -1471,7 +1487,7 @@ Format of quote line when replying (via mail) to an article (%A=Address,
 %D=Date, %F=Fullname+Address, %G=Groupname, %M=Message-ID, %N=Fullname,
 %C=Firstname, %I=Initials). Default is "In article %M you wrote:"
 .TP
-.B Format of the mailbox (mailbox_format)
+.B mailbox_format
 Select one of the following mailbox-formats: MBOXO (default, except on SCO),
 MBOXRD or MMDF (default on SCO). See
 .BR mbox (5)
@@ -1482,7 +1498,14 @@ for more details about MMDF.
 .B mark_saved_read
 If ON mark articles that are saved as read. Default is ON.
 .TP
-.B Viewer program for MIME articles (metamail_prog)
+.B mark_ignore_tags
+When this is ON, the \fBiKeyGroupMarkThdRead\fP,
+\fBiKeyThreadMarkArtRead\fP functions ('\fBK\fP') mark just the
+current article or thread, ignoring other tagged, unread articles.
+When OFF, the same function presents a menu with choices of the
+current thread or article, all tagged, unread articles, or nothing.
+.TP
+.B metamail_prog
 Path, name and options of external
 .BR metamail (1)
 program used to view non-textual parts of articles.
@@ -1573,6 +1596,26 @@ Not defining anything turns off this option.
 Format of quote line when posting/following up an article (%A=Address,
 %D=Date, %F=Fullname+Address, %G=Groupname, %M=Message-ID, %N=Fullname,
 %C=Firstname, %I=Initials). Default is "%F wrote:".
+.TP
+.B normalization_form
+The normalization form which should be used to normalize unicode input.
+The possible values are:
+.RS +.5i
+.IP 0 3
+\fBNone\fP: no normalization
+.IP 1
+\fBNFKC\fP: Compatibility Decomposition, followed by Canonical Composition
+.IP 2
+\fBNFKD\fP: Compatibility Decomposition
+.IP 3
+\fBNFC\fP: Canonical Decomposition, followed by Canonical Composition
+.IP 4
+\fBNFD\fP: Canonical Decomposition
+.RE
+Some normalization modes are only available if they are supported by the
+library
+.BR tin (1)
+uses to do the normalization. Default is NFKC.
 .TP
 .B pgdn_goto_next
 If ON the Page Down keys will go to the next unread article when pressed at
@@ -2182,7 +2225,7 @@ uses the LIST (\fBRFC977\fP) command instead.
 .sp
 .RS
 This file provides a chronological record of when newsgroups are created. It
-is normally updated by the local newsserver (i.e
+is normally updated by the local newsserver (e.g.
 .BR innd (8))
 whenever a new group is created. Each line consist of three space-separated
 fields "\fIname\fR \fItime\fR \fIcreator\fR".
@@ -2209,7 +2252,7 @@ uses the NEWGROUPS (\fBRFC977\fP) command instead.
 .sp
 .RS
 This file provides short descriptions of each newsgroup. It is normally
-updated by the local newsserver (i.e
+updated by the local newsserver (e.g.
 .BR innd (8))
 whenever a new group is created. Each line consist of two tab-separated
 fields "\fIgroup.name\fR	\fIone-line description\fR".
@@ -2290,6 +2333,7 @@ uses the LIST SUBSCRIPTIONS (\fBRFC2980\fP) command instead.
 .BR iconv_open (3),
 .BR nl_langinfo (3),
 .BR pcre (3),
+.BR strftime (3),
 .BR system (3),
 .BR mailcap (4),
 .BR active (5),

@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-12
+ *  Updated   : 2003-12-09
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>
@@ -344,7 +344,6 @@ extern char index_maildir[PATH_LEN];
 extern char index_newsdir[PATH_LEN];
 extern char index_savedir[PATH_LEN];
 extern char inewsdir[PATH_LEN];
-extern char last_put[];
 extern char libdir[PATH_LEN];
 extern char local_attributes_file[PATH_LEN];
 extern char local_config_file[PATH_LEN];
@@ -400,6 +399,9 @@ extern constext *txt_mime_7bit_charsets[]; /* 7bit charsets */
 extern constext *txt_mailbox_formats[];
 extern constext *txt_marks[];
 extern constext *txt_mime_encodings[];
+#ifdef HAVE_UNICODE_NORMALIZATION
+	extern constext *txt_normalization_forms[];
+#endif /* HAVE_UNICODE_NORMALIZATION */
 extern constext *txt_onoff[];
 extern constext *txt_post_process_type[];
 extern constext *txt_quote_style_type[];
@@ -622,6 +624,8 @@ extern constext txt_filter_score_help[];
 extern constext txt_filter_text_type[];
 extern constext txt_followup_newsgroups[];
 extern constext txt_followup_poster[];
+extern constext txt_forwarded[];
+extern constext txt_forwarded_end[];
 extern constext txt_from_line_only[];
 extern constext txt_from_line_only_case[];
 extern constext txt_full[];
@@ -632,8 +636,10 @@ extern constext txt_gethostbyname[];
 extern constext txt_global[];
 extern constext txt_group[];
 extern constext txt_group_aliased[];
+extern constext txt_group_bogus[];
 extern constext txt_group_is_moderated[];
 extern constext txt_group_plural[];
+extern constext txt_group_rereading[];
 extern constext txt_group_select_com[];
 extern constext txt_group_selection[];
 extern constext txt_group_singular[];
@@ -901,7 +907,6 @@ extern constext txt_no_newsgroups[];
 extern constext txt_no_next_unread_art[];
 extern constext txt_no_prev_group[];
 extern constext txt_no_prev_unread_art[];
-extern constext txt_no_resp[];
 extern constext txt_no_responses[];
 extern constext txt_no_resps_in_thread[];
 extern constext txt_no_search_string[];
@@ -1199,7 +1204,6 @@ extern constext txt_uu_success[];
 extern int *my_group;
 extern int MORE_POS;
 extern int NOTESLINES;
-extern int RIGHT_POS;
 extern int _hp_glitch;
 extern int cCOLS;
 extern int cLINES;
@@ -1232,7 +1236,6 @@ extern int xmouse;
 extern int xrow;
 
 extern long *base;
-extern long head_next;
 
 extern signed long int read_newsrc_lines;
 
@@ -1430,12 +1433,6 @@ extern constext txt_processing_saved_arts[];
 	extern constext txt_reading_mailgroups_file[];
 #endif /* HAVE_MH_MAIL_HANDLING */
 
-#ifdef M_AMIGA
-	extern constext txt_env_var_not_found[];
-	extern constext txt_usage_bbs_mode[];
-	extern t_bool tin_bbs_mode;
-#endif /* M_AMIGA */
-
 #ifndef NO_ETIQUETTE
 	extern constext txt_warn_posting_etiquette[];
 #endif /* NO_ETIQUETTE */
@@ -1474,6 +1471,7 @@ extern struct opttxt txt_cache_overview_files;
 extern struct opttxt txt_catchup_read_groups;
 extern struct opttxt txt_color_options;
 extern struct opttxt txt_confirm_choice;
+extern struct opttxt txt_date_format;
 extern struct opttxt txt_display_options;
 extern struct opttxt txt_draw_arrow;
 extern struct opttxt txt_editor_format;
@@ -1596,6 +1594,7 @@ extern struct opttxt txt_xpost_quote_format;
 	extern struct opttxt txt_col_from;
 	extern struct opttxt txt_col_title;
 	extern struct opttxt txt_col_signature;
+	extern struct opttxt txt_col_urls;
 	extern struct opttxt txt_col_markstar;
 	extern struct opttxt txt_col_markdash;
 	extern struct opttxt txt_col_markslash;
@@ -1610,4 +1609,7 @@ extern struct opttxt txt_xpost_quote_format;
 #ifdef XFACE_ABLE
 	extern struct opttxt txt_use_slrnface;
 #endif /* XFACE_ABLE */
+#ifdef HAVE_UNICODE_NORMALIZATION
+	extern struct opttxt txt_normalization_form;
+#endif /* HAVE_UNICODE_NORMALIZATION */
 #endif /* !EXTERN_H */

@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2003-03-13
+ *  Updated   : 2003-11-24
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2003 Steven J. Madsen <steve@erinet.com>
@@ -87,7 +87,7 @@
 #		define CHECK_SIGN	"%s %s --no-batch --decrypt <%s %s"
 #		define ADD_KEY		"%s %s --no-batch --import %s"
 #		define APPEND_KEY	"%s %s --no-batch --armor --output %s --export %s"
-#		define LOCAL_USER	"--local-user %s"
+/* #		define LOCAL_USER	"--local-user %s" */
 #		define DO_ENCRYPT	\
 "%s %s --textmode --armor --no-batch --output %s.asc --recipient %s --encrypt %s", \
 PGPNAME, pgpopts, pt, mailto, pt

@@ -3,7 +3,7 @@
  *  Module    : tcurses.h
  *  Author    : Thomas Dickey
  *  Created   : 1997-03-02
- *  Updated   : 2003-06-27
+ *  Updated   : 2003-09-29
  *  Notes     : curses #include files, #defines & struct's
  *
  * Copyright (c) 1997-2003 Thomas Dickey <dickey@invisible-island.net>
@@ -103,6 +103,7 @@ extern void my_fputc(int ch, FILE *stream);
 extern void my_fputs(const char *str, FILE *stream);
 #		if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	extern void my_fputwc(wint_t wc, FILE *fp);
+	extern void my_fputws(const wchar_t *wstr, FILE *fp);
 	extern wint_t cmdReadWch(void);
 	extern wint_t ReadWch(void);
 #		endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -145,6 +146,12 @@ extern void write_line(int row, char *buffer);
 					fprintf(stream, "%lc", wc); \
 				else \
 					fputwc(wc, stream); \
+			}
+#			define my_fputws(wstr, stream)	{ \
+				if (fwide(stream, 0) <= 0) \
+					fprintf(stream, "%ls", wstr); \
+				else \
+					fputws(wstr, stream); \
 			}
 #		endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 

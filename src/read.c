@@ -3,7 +3,7 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 2003-05-07
+ *  Updated   : 2003-09-19
  *
  * Copyright (c) 1997-2003 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
@@ -171,11 +171,6 @@ wait_for_input(
 
 	}
 #	endif /* !HAVE_SELECT */
-#	ifdef M_AMIGA
-	return FALSE;
-/* work in progress */
-/*	return (WaitForChar(Input(), 0) == DOSTRUE) ? TRUE : FALSE; */
-#	endif /* M_AMIGA */
 /*
  * FIXME: insert !HAVE_SELECT code here - NB: we already have VMS specific
  *        code at the top of this function

@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-06-29
+ *  Updated   : 2003-11-21
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -44,20 +44,23 @@
 #ifndef TNNTP_H
 #	include "tnntp.h"
 #endif /* !TNNTP_H */
-
-#define BITS_TO_BYTES(n)	((size_t) ((n + NBITS - 1) / NBITS))
+#ifndef NEWSRC_H
+#	include "newsrc.h"
+#endif /* !NEWSRC_H */
 
 static mode_t newsrc_mode = 0;
 
 /*
  * Local prototypes
  */
+static FILE *open_subscription_fp(void);
 static char *parse_newsrc_line(char *line, int *sub);
 static char *parse_subseq(struct t_group *group, char *seq, long *low, long *high, int *sum);
 static char *parse_get_seq(char *seq, long *low, long *high);
 static int write_newsrc_line(FILE *fp, char *line);
 static t_bool create_newsrc(char *newsrc_file);
 static void auto_subscribe_groups(char *newsrc_file);
+static void get_subscribe_info(struct t_group *grp);
 static void parse_bitmap_seq(struct t_group *group, char *seq);
 static void print_bitmap_seq(FILE *fp, struct t_group *group);
 
@@ -269,6 +272,30 @@ create_newsrc(
 
 
 /*
+ * Get a list of default groups to subscribe to
+ */
+/* TODO: fixme/checkme
+ *      - logic seems to be wrong, NNTP_ABLE && read_saved_news
+ *        looks for a local subscriptions_file, but read_saved_news doesn't
+ *        require a local server... (a missing subscriptions_file doesn't
+ *        cause any trouble, we just have to bother with the read_saved_news
+ *        and a existing local subscriptions_file file case).
+ *        open_newgroups_fp() uses the same logic.
+ */
+static FILE *
+open_subscription_fp(
+	void)
+{
+#ifdef NNTP_ABLE
+	if (read_news_via_nntp && !read_saved_news)
+		return (nntp_command("LIST SUBSCRIPTIONS", OK_GROUPS, NULL, 0));
+	else
+#endif /* NNTP_ABLE */
+		return (fopen(subscriptions_file, "r"));
+}
+
+
+/*
  * Automatically subscribe user to newsgroups specified in
  * NEWSLIBDIR/subscriptions (locally) or same file but from NNTP
  * server (LIST SUBSCRIPTIONS) and create .newsrc
@@ -331,7 +358,7 @@ backup_newsrc(
 	else
 #endif /* NNTP_ABLE */
 	{
-		STRCPY(filebuf, nntp_server);
+		STRCPY(filebuf, quote_space_to_dash(nntp_server));
 	}
 	JOINPATH(dirbuf, rcdir, filebuf);
 	joinpath(filebuf, dirbuf, OLDNEWSRC_FILE);
@@ -344,6 +371,124 @@ backup_newsrc(
 
 	if (!backup_file(newsrc, filebuf))
 		error_message(_(txt_filesystem_full_backup), NEWSRC_FILE);
+}
+
+
+/*
+ * Find the total, max & min articles number for specified group
+ * Use nntp GROUP command or read local spool
+ * Return 0, or -error
+ */
+int
+group_get_art_info(
+	char *tin_spooldir,
+	char *groupname,
+	int grouptype,
+	long *art_count,
+	long *art_max,
+	long *art_min)
+{
+	DIR *dir;
+	DIR_BUF *direntry;
+	char buf[NNTP_STRLEN];
+	long artnum;
+
+	if (read_news_via_nntp && grouptype == GROUP_TYPE_NEWS) {
+#ifdef NNTP_ABLE
+		char line[NNTP_STRLEN];
+
+		snprintf(buf, sizeof(buf), "GROUP %s", groupname);
+#	ifdef DEBUG
+		debug_nntp("group_get_art_info", buf);
+#	endif /* DEBUG */
+		put_server(buf);
+
+		switch (get_respcode(line, sizeof(line))) {
+
+			case OK_GROUP:
+				if (sscanf(line, "%ld %ld %ld", art_count, art_min, art_max) != 3)
+					error_message(_("Invalid response to GROUP command, %s"), line);
+				break;
+
+			case ERR_NOGROUP:
+				*art_count = 0;
+				*art_min = 1;
+				*art_max = 0;
+				return -ERR_NOGROUP;
+
+			case ERR_ACCESS:
+				error_message("%s%s", cCRLF, line);
+				tin_done(NNTP_ERROR_EXIT);
+				/* keep lint quiet: */
+				/* NOTREACHED */
+				break;
+
+			default:
+#	ifdef DEBUG
+				debug_nntp("NOT_OK", line);
+#	endif /* DEBUG */
+				return -1;
+		}
+#else
+		my_fprintf(stderr, _("Unreachable?\n"));
+		return 0;
+#endif /* NNTP_ABLE */
+	} else {
+		*art_count = 0;
+		*art_min = 1;
+		*art_max = 0;
+
+		make_base_group_path(tin_spooldir, groupname, buf);
+
+		if ((dir = opendir(buf)) != NULL) {
+			while ((direntry = readdir(dir)) != NULL) {
+				artnum = atol(direntry->d_name); /* should be '\0' terminated... */
+				if (artnum >= 1) {
+					if (artnum > *art_max) {
+						*art_max = artnum;
+						if (*art_min == 0)
+							*art_min = artnum;
+					} else if (artnum < *art_min)
+						*art_min = artnum;
+					(*art_count)++;
+				}
+			}
+			CLOSEDIR(dir);
+		} else
+			return -1;
+	}
+
+	return 0;
+}
+
+
+/*
+ * Get and fixup (if needed) the counters for a newly subscribed group
+ */
+static void
+get_subscribe_info(
+	struct t_group *grp)
+{
+	long oldmin = grp->xmin;
+	long oldmax = grp->xmax;
+
+	group_get_art_info(grp->spooldir, grp->name, grp->type, &grp->count, &grp->xmax, &grp->xmin);
+
+	if (grp->newsrc.num_unread > grp->count) {
+#ifdef DEBUG
+		my_printf(cCRLF "Unread WRONG %s unread=[%ld] count=[%ld]", grp->name, grp->newsrc.num_unread, grp->count);
+		my_flush();
+#endif /* DEBUG */
+		grp->newsrc.num_unread = grp->count;
+	}
+
+	if (grp->xmin != oldmin || grp->xmax != oldmax) {
+		expand_bitmap(grp, 0);
+#ifdef DEBUG
+		my_printf(cCRLF "Min/Max DIFF %s old=[%ld-%ld] new=[%ld-%ld]", grp->name, oldmin, oldmax, grp->xmin, grp->xmax);
+		my_flush();
+#endif /* DEBUG */
+	}
 }
 
 
@@ -398,7 +543,7 @@ subscribe(
 			if (sub_state == SUBSCRIBED) {
 				fprintf(newfp, "%s%c ", group->name, sub_state);
 				if (get_info) {
-					vGet1GrpArtInfo(group);
+					get_subscribe_info(group);
 					print_bitmap_seq(newfp, group);
 				} else /* we are not allowed to issue NNTP cmds during AUTOSUBSCRIBE loop */
 					fprintf(newfp, "1\n");
@@ -616,7 +761,8 @@ parse_bitmap_seq(
 #ifdef DEBUG_NEWSRC
 	{
 		char buf[NEWSRC_LINE];
-		sprintf(buf, "Parsing [%s%c %.*s]", group->name, SUB_CHAR(group->subscribed), (int) (NEWSRC_LINE - strlen(group->name) - 20), ptr);
+
+		snprintf(buf, sizeof(buf), "Parsing [%s%c %.*s]", group->name, SUB_CHAR(group->subscribed), (int) (NEWSRC_LINE - strlen(group->name) - 20), ptr);
 		debug_print_comment(buf);
 		debug_print_bitmap(group, NULL);
 	}
@@ -858,7 +1004,7 @@ parse_unread_arts(
 		 * check for wrong article numbers in the overview
 		 *
 		 * TODO: check disabled as we currently catch the artnum > high_mark
-		 *       case in read_nov_file() where we might be able to
+		 *       case in read_overview() where we might be able to
 		 *       fix the broken artnum (via xref:-parsing). currently
 		 *       we just skip the art there.
 		 */
@@ -993,16 +1139,16 @@ pos_group_in_newsrc(
 
 #ifdef VMS
 	joinpath(buf, TMPDIR, "subrc");
-	sprintf(sub, "%s.%d", buf, (int) process_id);
+	snprintf(sub, sizeof(sub), "%s.%d", buf, (int) process_id);
 
 	joinpath(buf, TMPDIR, "unsubrc");
-	sprintf(unsub, "%s.%d", buf, (int) process_id);
+	snprintf(unsub, sizeof(unsub), "%s.%d", buf, (int) process_id);
 #else
 	joinpath(buf, TMPDIR, ".subrc");
-	sprintf(sub, "%s.%d", buf, (int) process_id);
+	snprintf(sub, sizeof(sub), "%s.%d", buf, (int) process_id);
 
 	joinpath(buf, TMPDIR, ".unsubrc");
-	sprintf(unsub, "%s.%d", buf, (int) process_id);
+	snprintf(unsub, sizeof(unsub), "%s.%d", buf, (int) process_id);
 #endif /* !VMS */
 
 	if ((fp_sub = fopen(sub, "w" FOPEN_OPTS)) == NULL)
@@ -1248,16 +1394,15 @@ expand_bitmap(
 		debug_print_comment("expand_bitmap: group->newsrc.xbitmap == NULL");
 #endif /* DEBUG_NEWSRC */
 	} else if (need_full_copy) {
-		t_bitmap *newbitmap;
-		newbitmap = my_malloc(BITS_TO_BYTES(bitlen));
+		t_bitmap *newbitmap = my_malloc(BITS_TO_BYTES(bitlen));
 
 		/* Copy over old bitmap */
 		/* TODO: change to use shift */
 		for (tmp = group->newsrc.xmin; tmp <= group->newsrc.xmax; tmp++) {
-			if (NTEST(group->newsrc.xbitmap, tmp - group->newsrc.xmin))
-				NSET1(newbitmap, tmp - first);
-			else
+			if (NTEST(group->newsrc.xbitmap, tmp - group->newsrc.xmin) == ART_READ)
 				NSET0(newbitmap, tmp - first);
+			else
+				NSET1(newbitmap, tmp - first);
 		}
 
 		/* Mark earlier articles as read, updating num_unread */
@@ -1344,68 +1489,51 @@ art_mark(
 	struct t_article *art,
 	int flag)
 {
-	if (art != NULL) {
-		switch (flag) {
-			case ART_READ:
-				if (group != NULL) {
-					if (art->artnum >= group->newsrc.xmin && art->artnum <= group->newsrc.xmax)
-						NSET0(group->newsrc.xbitmap, art->artnum - group->newsrc.xmin);
+	if (art == NULL)
+		return;
+
+	switch (flag) {
+		case ART_READ:
+			if (group != NULL) {
+				if (art->artnum >= group->newsrc.xmin && art->artnum <= group->newsrc.xmax)
+					NSET0(group->newsrc.xbitmap, art->artnum - group->newsrc.xmin);
+#ifdef DEBUG_NEWSRC
+				debug_print_bitmap(group, art);
+#endif /* DEBUG_NEWSRC */
+			}
+			if ((art->status == ART_UNREAD) || (art->status == ART_WILL_RETURN)) {
+				art_mark_xref_read(art);
+
+				if (group != NULL && group->newsrc.num_unread)
+					group->newsrc.num_unread--;
+
+				art->status = ART_READ;
+			}
+			break;
+
+		case ART_UNREAD:
+		case ART_WILL_RETURN:
+			if (art->status == ART_READ) {
+				if (group != NULL)
+					group->newsrc.num_unread++;
+
+				art->status = flag;
+			}
+			if (group != NULL) {
+				if (art->artnum < group->newsrc.xmin)
+					expand_bitmap(group, art->artnum);
+				else {
+					NSET1(group->newsrc.xbitmap, art->artnum - group->newsrc.xmin);
 #ifdef DEBUG_NEWSRC
 					debug_print_bitmap(group, art);
 #endif /* DEBUG_NEWSRC */
 				}
-				if ((art->status == ART_UNREAD) || (art->status == ART_WILL_RETURN)) {
-					art_mark_xref_read(art);
+			}
+			break;
 
-					if (group != NULL && group->newsrc.num_unread)
-						group->newsrc.num_unread--;
-
-					art->status = ART_READ;
-				}
-				break;
-
-			case ART_UNREAD:
-			case ART_WILL_RETURN:
-				if (art->status == ART_READ) {
-					if (group != NULL)
-						group->newsrc.num_unread++;
-
-					art->status = flag;
-				}
-				if (group != NULL) {
-					if (art->artnum < group->newsrc.xmin)
-						expand_bitmap(group, art->artnum);
-					else {
-						NSET1(group->newsrc.xbitmap, art->artnum - group->newsrc.xmin);
-#ifdef DEBUG_NEWSRC
-						debug_print_bitmap(group, art);
-#endif /* DEBUG_NEWSRC */
-					}
-				}
-				break;
-
-			default:
-				break;
-		}
+		default:
+			break;
 	}
-}
-
-
-void
-art_mark_deleted(
-	struct t_article *art)
-{
-	if (art != NULL)
-		art->delete_it = TRUE;
-}
-
-
-void
-art_mark_undeleted(
-	struct t_article *art)
-{
-	if (art != NULL)
-		art->delete_it = FALSE;
 }
 
 
@@ -1439,8 +1567,8 @@ void
 newsrc_test_harness(
 	void)
 {
+	FILE *fp = NULL;
 	char seq[20000];
-	FILE *fp;
 	int i;
 	int retry = 10; /* max. retrys */
 	long rng_min, rng_max;
@@ -1495,7 +1623,7 @@ newsrc_test_harness(
 
 		debug_print_newsrc(&group.newsrc, stderr);
 
-		if (!retry)
+		if (!retry || !fp)
 			error_message(_(txt_cannot_create_uniq_name));
 		else {
 			fgets(seq, (int) sizeof(seq), fp);
@@ -1556,7 +1684,8 @@ set_bitmap_range_unread(
 		offset = beg - my_newsrc->xmin;
 		length = end - my_newsrc->xmin;
 
-fprintf(stderr, "\nRNG Min-Max=[%ld-%ld] Beg-End=[%ld-%ld] OFF=[%ld] LEN=[%ld]\n", my_newsrc->xmin, my_newsrc->xmax, beg, end, offset, length);
+fprintf(stderr, "\nRNG Min-Max=[%ld-%ld] Beg-End=[%ld-%ld] OFF=[%ld] LEN=[%ld]\n",
+my_newsrc->xmin, my_newsrc->xmax, beg, end, offset, length);
 
 		if (beg == end) {
 			NSET1(my_newsrc->xbitmap, offset);

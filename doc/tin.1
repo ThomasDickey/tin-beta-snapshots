@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2003-09-18
-.\" Notes     : use american english; still needs some work, i.e.:
+.\" Updated   : 2003-12-19
+.\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "September 18th, 2003" "1.7.1" "A Usenet newsreader"
+.TH tin 1 "December 19th, 2003" "1.7.3" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -48,7 +48,7 @@ tin, rtin \- A Usenet newsreader
 .SH DESCRIPTION
 .B tin
 is a full-screen easy to use Usenet newsreader. It can read news locally
-(i.e., \fI/var/spool/news\fR) or remotely (\fBrtin\fP or \fBtin -r\fP
+(e.g., \fI/var/spool/news\fR) or remotely (\fBrtin\fP or \fBtin -r\fP
 option) via a NNTP (Network News Transport Protocol) server. It will
 automatically utilize NOV
 .BR newsoverview (5)
@@ -1426,6 +1426,9 @@ in the article viewer.
 .B Color of signatures (col_signature)
 Color of signatures
 .TP
+.B Color of urls highlight (col_urls)
+Color of urls highlight
+.TP
 .B Color of article subject lines (col_subject)
 Color of article subject
 .TP
@@ -1454,12 +1457,14 @@ Ask for confirmation before marking all not selected (with
 \fBGroupMarkUnselArtRead\fP ('\fBX\fP') command) articles as read.
 .RE
 .TP
-.B 'Mark article read' ignores tags (mark_ignore_tags)
-When this is ON, the \fBiKeyGroupMarkThdRead\fP,
-\fBiKeyThreadMarkArtRead\fB functions ('\fBK\fP') mark just the
-current article or thread, ignoring other tagged, unread articles.
-When OFF, the same function presents a menu with choices of the
-current thread or article, all tagged, unread articles, or nothing.
+.B Format string for display of dates (date_format)
+Format string \fBtin\fP uses for date representation. A description of the
+different format options can be found at
+.BR strftime (3).
+\fBtin\fP uses
+.BR strftime (3)
+when available and supports most format options in his fallback code.
+Default is "%a, %d %b %Y %H:%M:%S".
 .\"
 .\" most of these default_* settings are not available from the menu
 .\" as they are intended for internal use only.
@@ -1555,11 +1560,11 @@ Default is \fI${TIN_HOMEDIR-"$HOME"}/Mail\fR.
 .TP
 .B Invocation of your mail command (default_mailer_format)
 The format string used to create the mailer command with parameters that is
-used for mailing articles to other people. Default is '%M "%T" < %F' (i.e.,
+used for mailing articles to other people. Default is '%M "%T" < %F' (e.g.,
 /bin/mail "iain" < .article). The flexible format allows other mailers with
 different command-line parameters to be used such as 'elm -s "%S" "%T" <
-"%F"' (i.e., elm -s "subject" "iain" < .article) or 'sendmail -oi -oem -t <
-%F' (i.e. sendmail -oi -oem -t < .article).
+"%F"' (e.g., elm -s "subject" "iain" < .article) or 'sendmail -oi -oem -t <
+%F' (e.g. sendmail -oi -oem -t < .article).
 .TP
 .B (default_move_group)
 .TP
@@ -1685,7 +1690,7 @@ There are 3 options:
 .RS +.5i
 .IP 0 3
 \fBKill only unread arts\fP is the 'traditional' behavior of \fBtin\fP. Only
-unread articles are killed once only by marking them read.  As filtering
+unread articles are killed once only by marking them read. As filtering
 only happens on unread articles with \fBkill_level\fP set to 0,
 \fBart_marked_killed\fP and \fBart_marked_read_selected\fP are only shown
 once. When you reenter the group the mark will be gone.
@@ -1730,6 +1735,13 @@ SCO), MBOXRD or MMDF (default on SCO). See
 for more details on MBOXO and MBOXRD and
 .BR mmdf (5)
 for more details about MMDF.
+.TP
+.B 'Mark article read' ignores tags (mark_ignore_tags)
+When this is ON, the \fBiKeyGroupMarkThdRead\fP,
+\fBiKeyThreadMarkArtRead\fP functions ('\fBK\fP') mark just the
+current article or thread, ignoring other tagged, unread articles.
+When OFF, the same function presents a menu with choices of the
+current thread or article, all tagged, unread articles, or nothing.
 .TP
 .B Mark saved articles/threads as read (mark_saved_read)
 If ON mark articles that are saved as read. Default is ON.
@@ -1823,6 +1835,24 @@ Not defining anything turns off this option.
 Format of quote line when posting/following up an article (%A=Address,
 %D=Date, %F=Fullname+Address, %G=Groupname, %M=Message-ID, %N=Fullname,
 %C=Firstname, %I=Initials). Default is "%F wrote:".
+.TP
+.B Unicode normalization form (normalization_form)
+The normalization form \fBtin\fP should use to normalize unicode input.
+The possible values are:
+.RS +.5i
+.IP 0 3
+\fBNone\fP: no normalization
+.IP 1
+\fBNFKC\fP: Compatibility Decomposition, followed by Canonical Composition
+.IP 2
+\fBNFKD\fP: Compatibility Decomposition
+.IP 3
+\fBNFC\fP: Canonical Decomposition, followed by Canonical Composition
+.IP 4
+\fBNFD\fP: Canonical Decomposition
+.RE
+Some normalization modes are only available if they are supported by the
+library \fBtin\fP uses to do the normalization. Default is NFKC.
 .TP
 .B PgDn goes to next unread article (pgdn_goto_next)
 If ON the Page Down keys will go to the next unread article when pressed
@@ -2350,7 +2380,7 @@ again via \fBPostEdit\fP ('\fBe\fP') or send the article to the author via
 .SS "CUSTOMIZING THE ARTICLE QUOTE STRING"
 When posting a followup to an article or replying direct to the author of an
 article via email the text of the article can be quoted. The beginning of
-the quoted text can contain information about the quoted article (i.e., Name
+the quoted text can contain information about the quoted article (e.g., Name
 and the Message-ID of the article). To allow for different situations
 certain information from the article can be used in the quoted string. The
 following variables are expanded if found in the tinrc variables
@@ -2368,7 +2398,7 @@ following variables are expanded if found in the tinrc variables
 \fB%I\fP	Initials of author
 .fi
 .RE
-i.e.,
+e.g.,
 .RS
 .nf
 .ft CW
@@ -2431,7 +2461,7 @@ mailbox with the name of the current newsgroup (eg, alt.sources).
 See \fBdefault_maildir\fP.
 .PP
 To save in savedir/<news.group.name>/<filename> format enter '+<filename>'.
-Environment variables are allowed within a filename (i.e.,
+Environment variables are allowed within a filename (e.g.,
 \fI$SOURCES/dir/filename\fR). See \fBdefault_savedir\fP.
 .PP
 When saving articles you can specify whether the saved files should be
@@ -2828,24 +2858,14 @@ For a detailed description see
 .\" TODO: sort in a useful order, add undocumented env-vars like:
 .\"
 .\" .TP
-.\" .B TIN_POST (VMS, AmigaOS)
-.\"
-.\" .TP
-.\" .B USERNAME (AmigaOS)
-.\" The name of the logged-in user.
-.\"
-.\" .TP
-.\" .B NODENAME (AmigaOS, obsolete?)
-.\"
-.\" .TP
-.\" .B TIN_GROUPS (AmigaOS actived, obsolete)
+.\" .B TIN_POST (VMS)
 .\"
 .\" .TP
 .\" .B TIN_RNG_MIN, TIN_RNG_MAX, TIN_MIN, TIN_MAX, TIN_COUNT, TIN_SEQ
 .\" (all used in vNewsrcTestHarness() (-DDEBUG_NEWSRC))
 .\"
 .\" .TP
-.\" .B SHELL (Unix, AmigaOS)
+.\" .B SHELL (Unix)
 .\"
 .TP
 .B TINRC
@@ -2948,14 +2968,11 @@ for more infos.
 .TP
 .B MAILER
 This variable has precedence over the default mailer that is used in all
-mailing operations within \fBtin\fP. If reading news on AmigaOS use
-$\fBTIN_MAIL\fP, if reading news on VMS use $\fBTIN_MAILER\fP instead.
+mailing operations within \fBtin\fP. If reading news on VMS use
+$\fBTIN_MAILER\fP instead.
 .TP
 .B TIN_MAILER (VMS)
 VMS specific, same as $\fBMAILER\fP on other OSs (see above).
-.TP
-.B TIN_MAIL (AmigaOS)
-AmigaOS specific, same as $\fBMAILER\fP on other OSs (see above).
 .TP
 .B MAIL
 Full path to the users mailbox.
@@ -3056,6 +3073,14 @@ for more information.
 .B LC_MESSAGES
 Formats of informative and diagnostic messages and interactive responses.
 It's value should be of the form
+\fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR][\fI@modifier\fR]. See
+.BR locale (5)
+and
+.BR environ (5)
+for more information.
+.TP
+.B LC_TIME
+Date and time formats. It's value should be of the form
 \fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR][\fI@modifier\fR]. See
 .BR locale (5)
 and
@@ -3192,8 +3217,6 @@ for
 and
 .BR vsnprintf (3)
 fallbacks.
-.IP "Mark Tomlinson"
-for originally porting \fBtin\fP to the AmigaOS operating system.
 .IP "Andrew Greer"
 for originally porting \fBtin\fP to the VAX/VMS operating system.
 .PP
@@ -3230,43 +3253,44 @@ Johnson, Jarkko Jormanainen, Yury July, Nelson Kading, Geoffrey
 Keating, Karsten Keil, Charles S. Kerr, Fritz Kleeman, Andreas Kies,
 Janne Kiviluoto, Tomasz Kloczko, Dwarven Knight, Thomas Koenig,
 Karl-Koenig Koenigsson, Martin Kraemer, Gerald Krause, Thomas
-Kroener, Florian Kuehnert, Bernd Kuemmerlen, Kris Kugel, Stephan
-Kulow, Manoj Kumar, Dawid Kuroczko, Yuri Kuzmenko, Olivier Lacroix,
-Geoff Lane, Alex Lange, Alain Lasserre, Stanislav Latishko, Hannu
-Laurila, Yen-Ming Lee, Vincent Lefevre, Alexander Lehmann, Marty
-Leisner, Thomas Leitner, Hakan Lennestal, Kevin Lentin, Chua Choon
-Leong, Chris Lewis, Andreas Ley, David-Michael Lincke, Otto Lind,
-Richard Lloyd, Florian Lohoff, Reinhard Luebke, Clifford Luke,
-Michael Lupp, David MacKenzie, Hugh Mahon, Giuseppe De Marco, Scott
-Marovich, Dmitri A. Martynoff, Kazushi Marukawa, Timur Maryin,
-William McBrine, Owen Medd, Philipp Mergenthaler, Andreas Metzler,
-Arkadiusz Miskiewicz, Soren Moller, Bruce Momjian, Sergio Morales,
-Michael Morrell, Klaus Mueller, Mike Muise, Udo Munk, John R. Myers,
-Daniel Naber, Torsten Neumann, Dirk Nimmich, James Nugen, David E.
-O'Brien, Michael O'Reilly, Oleg Ohotnikov, Ronald Orr, Julien Oster,
-Guido Ostkamp, Philip Paeps, Jeb Palmer, Neil Parker, Joseph
-Parmelee, Tom Parry, Jim Patterson, Sven Paulus, Walter Pelissero,
-Cameron Perkins, Colin Perkins, Eric Peterson, Tim Pierce, Bill
-Poitras, Scott W. Powers, Wolfgang Prediger, Marc Prud'hommeaux,
-GianPiero Puccioni, Thomas Quinot, Stefan Rapp, Martin Reising, Kyle
-Rhorer, Ted Richards, Steve Robbins, Ollivier Robert, Branden
-Robinson, Jim Robinson, Thomas Roessler, Erik van Roode, Meelis Roos,
-Stephen Roseman, Roland Rosenfeld, Peter Van Rossem, Clifton Royston,
-Juergen Salk, Rich Salz, Gary Sanders, Nickolay Saukh, John Sauter,
-Christopher Sawtell, Holger Schif, Volker Schmidt, John Schmitz,
-Torsten Schneider, Stefan Scholl, Rainer Scholz, Juergen Schroeder,
-Larry Schwimmer, Randy Scott, Bart Sears, Karl-Olav Serrander, Doug
-Sewell, Philip Shearer, Jungshik Shin, Sergey Shkonda, Andreas
-Siegert, Mark Smith, Toomas Soome, Steve Spearman, Helmut Springer,
-Cliff Stanford, Steve Starck, Jason Steiner, Ralf Stephan, Michael
-Stenns, Helmrich Streitmatter, Hans Werner Strube, Dieter Stueken, Ed
-Sznyter, Lech Szychowski, Dean Takemori, Darrell Tangman, Derek
-Terveer, Carsten Theis, Julian Thompson, David Tiller, Andry Timonin,
-Mark Tomlin, Michael Traub, Mark Trumbull, Alex Vasylenko, Michael
-Velten, Adri Verhoef, Paul Vickers, Corinna Vinschen, Oliver B.
-Warzecha, Jason Wessel, Cary Whitney, Henrik Wist, Greg Woods,
-Andreas Wrede, Lloyd Wright, Jens Wuepper, Billy Y., Hideaki
-Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
+Kroener, Piotr Kucharski, Florian Kuehnert, Bernd Kuemmerlen, Kris
+Kugel, Stephan Kulow, Manoj Kumar, Dawid Kuroczko, Yuri Kuzmenko,
+Olivier Lacroix, Geoff Lane, Alex Lange, Alain Lasserre, Stanislav
+Latishko, Hannu Laurila, Yen-Ming Lee, Vincent Lefevre, Alexander
+Lehmann, Marty Leisner, Thomas Leitner, Hakan Lennestal, Kevin
+Lentin, Chua Choon Leong, Chris Lewis, Andreas Ley, David-Michael
+Lincke, Otto Lind, Richard Lloyd, Florian Lohoff, Reinhard Luebke,
+Clifford Luke, Michael Lupp, David MacKenzie, Hugh Mahon, Giuseppe De
+Marco, Scott Marovich, Dmitri A. Martynoff, Kazushi Marukawa, Timur
+Maryin, William McBrine, Geoff McCaughan, Owen Medd, Philipp
+Mergenthaler, Andreas Metzler, Arkadiusz Miskiewicz, Soren Moller,
+Bruce Momjian, Sergio Morales, Michael Morrell, Klaus Mueller, Mike
+Muise, Udo Munk, John R. Myers, Daniel Naber, Torsten Neumann, Dirk
+Nimmich, James Nugen, David E. O'Brien, Michael O'Reilly, Oleg
+Ohotnikov, Ronald Orr, Julien Oster, Guido Ostkamp, Philip Paeps, Jeb
+Palmer, Neil Parker, Joseph Parmelee, Tom Parry, Jim Patterson, Sven
+Paulus, Walter Pelissero, Cameron Perkins, Colin Perkins, Eric
+Peterson, Tim Pierce, Bill Poitras, Scott W. Powers, Wolfgang
+Prediger, Marc Prud'hommeaux, GianPiero Puccioni, Thomas Quinot,
+Stefan Rapp, Martin Reising, Kyle Rhorer, Ted Richards, Steve
+Robbins, Ollivier Robert, Branden Robinson, Jim Robinson, Thomas
+Roessler, Erik van Roode, Meelis Roos, Stephen Roseman, Roland
+Rosenfeld, Peter Van Rossem, Clifton Royston, Juergen Salk, Rich
+Salz, Gary Sanders, Nickolay Saukh, John Sauter, Christopher Sawtell,
+Holger Schif, Volker Schmidt, John Schmitz, Torsten Schneider, Stefan
+Scholl, Rainer Scholz, Juergen Schroeder, Larry Schwimmer, Randy
+Scott, Bart Sears, Karl-Olav Serrander, Doug Sewell, Philip Shearer,
+Jungshik Shin, Sergey Shkonda, Andreas Siegert, Mark Smith, Toomas
+Soome, Steve Spearman, Helmut Springer, Cliff Stanford, Steve Starck,
+Jason Steiner, Ralf Stephan, Michael Stenns, Helmrich Streitmatter,
+Hans Werner Strube, Dieter Stueken, Ed Sznyter, Lech Szychowski, Dean
+Takemori, Darrell Tangman, Derek Terveer, Carsten Theis, Julian
+Thompson, David Tiller, Andry Timonin, Mark Tomlin, Mark Tomlinson,
+Michael Traub, Martin Treusch von Buttlar, Mark Trumbull, Alex
+Vasylenko, Michael Velten, Adri Verhoef, Paul Vickers, Corinna
+Vinschen, Oliver B. Warzecha, Jason Wessel, Cary Whitney, Henrik
+Wist, Greg Woods, Andreas Wrede, Lloyd Wright, Jens Wuepper, Billy
+Y., Hideaki Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
 .\"
 .\"
 .SH AUTHOR
@@ -3308,6 +3332,7 @@ Urs Janssen <urs@tin.org>
 .BR pcre (3),
 .BR pcrepattern (3),
 .BR snprintf (3),
+.BR strftime (3),
 .BR vsnprintf (3),
 .BR wildmat (3),
 .BR environ (5),
