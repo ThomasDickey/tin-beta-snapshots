@@ -1257,6 +1257,8 @@ bAddFilterRule (
 	psPtr[*plNum].msgid = (char *) 0;
 	psPtr[*plNum].lines_cmp = psRule->lines_cmp;
 	psPtr[*plNum].lines_num = psRule->lines_num;
+	psPtr[*plNum].gnksa_cmp = FILTER_LINES_NO;
+	psPtr[*plNum].gnksa_num = 0;
 	psPtr[*plNum].score = psRule->score;
 	psPtr[*plNum].xref = (char *) 0;
 	psPtr[*plNum].xref_max = 0;

@@ -332,6 +332,8 @@ constext *help_page[] = {
 #endif /* HAVE_COLOR */
 	txt_help_tex,
 	txt_help_ctrl_t,
+	txt_help_p_lb,
+	txt_help_p_rb,
 		txt_help_empty_line,
 		txt_help_ops,
 		txt_help_ops_,
@@ -352,6 +354,7 @@ constext *help_page[] = {
 #endif /* !DONT_HAVE_PIPING */
 #ifndef DISABLE_PRINTING
 	txt_help_o,
+	txt_help_p_V,
 #endif /* !DISABLE_PRINTING */
 		txt_help_empty_line,
 	txt_help_t,
@@ -369,6 +372,7 @@ constext *help_page[] = {
 		txt_help_empty_line,
 		txt_help_misc,
 		txt_help_misc_,
+	txt_help_p_U,
 	txt_help_q,
 	txt_help_Q,
 	txt_help_h,

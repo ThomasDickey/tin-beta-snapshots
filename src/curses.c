@@ -23,6 +23,7 @@
 #define ReadCh cmdReadCh
 
 void my_dummy(void) { }	/* ANSI C requires non-empty file */
+t_bool have_linescroll = TRUE;	/* USE_CURSES always allows line scrolling */
 
 #else	/* !USE_CURSES */
 
@@ -52,6 +53,7 @@ int cLINES = DEFAULT_LINES_ON_TERMINAL - 1;
 int cCOLS  = DEFAULT_COLUMNS_ON_TERMINAL;
 static int _inraw = FALSE;	/* are we IN rawmode? */
 int _hp_glitch = FALSE;		/* standout not erased by overwriting on HP terms */
+t_bool have_linescroll = FALSE;
 
 static int xclicks=FALSE;	/* do we have an xterm? */
 
@@ -158,7 +160,8 @@ struct termio _raw_tty, _original_tty;
 static char *_clearscreen, *_moveto, *_cleartoeoln, *_cleartoeos,
 			*_setinverse, *_clearinverse, *_setunderline, *_clearunderline,
 			*_xclickinit, *_xclickend, *_cursoron, *_cursoroff,
-			*_terminalinit, *_terminalend, *_keypadlocal, *_keypadxmit;
+			*_terminalinit, *_terminalend, *_keypadlocal, *_keypadxmit,
+			*_scrollregion, *_scrollfwd, *_scrollback;
 
 #ifdef M_AMIGA
 static char *_getwinsize;
@@ -262,6 +265,9 @@ get_termcaps (void)
 	_clearinverse   = tgetstr ("se", &ptr);
 	_setunderline   = tgetstr ("us", &ptr);
 	_clearunderline = tgetstr ("ue", &ptr);
+	_scrollregion   = tgetstr ("cs", &ptr);
+	_scrollfwd      = tgetstr ("sf", &ptr);
+	_scrollback     = tgetstr ("sr", &ptr);
 	_hp_glitch      = tgetflag ("xs");
 #ifdef HAVE_BROKEN_TGETSTR
 	_terminalinit   = "";
@@ -319,6 +325,10 @@ get_termcaps (void)
 		if (!_setinverse)
 			tinrc.draw_arrow = 1;
 	}
+	if (!_scrollregion || !_scrollfwd || !_scrollback)
+		have_linescroll = FALSE;
+	else
+		have_linescroll = TRUE;
 	return (TRUE);
 }
 
@@ -491,6 +501,7 @@ InitScreen (void)
 
 	Raw (FALSE);
 
+	have_linescroll = FALSE;
 	return (TRUE);
 }
 
@@ -624,12 +635,60 @@ CleartoEOS (void)
 	my_flush ();	/* clear the output buffer */
 }
 
+static int _topscrregion, _bottomscrregion;
+
+void
+setscrreg (
+	int topline,
+	int bottomline)
+{
+	char *stuff;
+
+	if (!have_linescroll)
+		return;
+	if (_scrollregion) {
+		stuff = tparm (_scrollregion, topline, bottomline);
+		tputs (stuff, 1, outchar);
+		_topscrregion = topline;
+		_bottomscrregion = bottomline;
+	}
+	my_flush ();
+}
+
+void
+scrl (
+	int lines)
+{
+	int i;
+
+	if (!have_linescroll || (lines == 0))
+		return;
+	if (lines < 0) {
+		if (_scrollback) {
+			i = lines;
+			while (i++) {
+				MoveCursor (_topscrregion, 0);
+				tputs (_scrollback, 1, outchar);
+			}
+		}
+	} else
+		if (_scrollfwd) {
+			i = lines;
+			while (i--) {
+				MoveCursor (_bottomscrregion, 0);
+				tputs (_scrollfwd, 1, outchar);
+			}
+		}
+	my_flush ();
+}
+
+
 /*
  *  set inverse video mode
  */
-
 void
-StartInverse (void)
+StartInverse (
+	void)
 {
 	in_inverse = 1;
 	if (_setinverse && tinrc.inverse_okay) {
@@ -647,12 +706,13 @@ StartInverse (void)
 	my_flush ();
 }
 
+
 /*
  *  compliment of startinverse
  */
-
 void
-EndInverse (void)
+EndInverse (
+	void)
 {
 	in_inverse = 0;
 	if (_clearinverse && tinrc.inverse_okay) {
@@ -670,12 +730,13 @@ EndInverse (void)
 	my_flush ();
 }
 
+
 /*
  *  toggle inverse video mode
  */
-
 void
-ToggleInverse (void)
+ToggleInverse (
+	void)
 {
 	if (!in_inverse)
 		StartInverse();
@@ -683,20 +744,21 @@ ToggleInverse (void)
 		EndInverse();
 }
 
+
 /*
  *  returns either 1 or 0, for ON or OFF
  */
-
 int
-RawState(void)
+RawState(
+	void)
 {
 	return (_inraw);
 }
 
+
 /*
  *  state is either TRUE or FALSE, as indicated by call
  */
-
 void
 Raw (
 	int state)
@@ -990,6 +1052,29 @@ cursoroff (void)
 {
 	if (_cursoroff)
 		tputs (_cursoroff, 1, outchar);
+}
+
+
+/*
+ * Inverse 'size' chars at (row,col)
+ */
+void
+highlight_string (
+	int row,
+	int col,
+	int size)
+{
+	char tmp[LEN];
+
+	MoveCursor (row, col);
+	strncpy (tmp, &(screen[row].col[col]), size);	/* TODO: broken in pager - it doesn't use screen[] */
+	StartInverse ();
+#if 0
+	my_fputs (tmp, stdout);
+	my_flush ();
+#endif
+	EndInverse ();
+	stow_cursor();
 }
 
 

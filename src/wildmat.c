@@ -131,10 +131,13 @@ wildmat (
 	char *p,
 	t_bool icase)
 {
+	t_bool ret;
+	char * txt;
+
 	/*
 	 * Make sure the pattern is not NULL
 	 */
-	if (p == (char *) 0 || text == (char *)0)
+	if (p == (char *) 0 || text == (char *) 0)
 		return FALSE;
 #ifdef OPTIMIZE_JUST_STAR
 	if (p[0] == '*' && p[1] == '\0')
@@ -142,11 +145,18 @@ wildmat (
 #endif /* OPTIMIZE_JUST_STAR */
 
 	if (icase) {
-		str_lwr(text);
+		txt = my_strdup(text);
+		str_lwr(txt);
 		str_lwr(p);
-	}
+	} else
+		txt = (char *)text;
 
 	mesg[0] = '\0';
 
-	return DoMatch(text, p) == TRUE;
+	ret = (DoMatch(txt, p) == TRUE);
+
+	if (icase)
+		free (txt);
+
+	return ret;
 }

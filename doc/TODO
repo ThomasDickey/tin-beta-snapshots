@@ -1,5 +1,7 @@
 Bugs
 ----
+o  pgp.txt badly out of date
+
 o  batch mode has several bugs
    - -Z and giving a cmd-line group ends up in a loop
      (filters each group several times)
@@ -87,9 +89,6 @@ o  Changes to int/bool tinrc variables in the Option Menu don't propogate
    attributes, whereas select.c does. It might be better to fix the problem
    properly in config.c by flashing changes to all affected groups.
 
-o  with --enable-forgery reposting of an thread reposts only the first
-   article ('x' 't' 'r' <group> 'p')
-
 o  if no INEWSDIR is given INEWSDIR is set to NEWSLIBDIR which is not always
    true (Linux) ... search $NEWSLIBDIR, /usr/bin/,... in that case.
 
@@ -103,13 +102,6 @@ o  According to 026) in CHANGES, some of the config files can be
 o  remove built in path of external commands (metamail, ispell, ...)
    [for metamail/ispell $METAMAIL/$ISPELL could be used to override
     systempath and progname]
-
-o  when enabling the 'cc/bcc on every message that is sent', and
-   then mailing a message to myself, tin will print the message
-   "Mailing to ... gary gary".  a nice touch would be if tin
-   checks the mail_to line, and doesn't add the user's name
-   twice.  yes, sendmail removes the duplicate ... but it'd
-   be better if tin caught this case first.
 
 o  overview file cacheing code is over-complex and broken in places
    - if cache-dir is removed during the session it's not recreated
@@ -141,6 +133,16 @@ o  when last articles in a newsgroup were cancelled, it shows that there are
 
 o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
    to 'duplicated'-headers and multiple signatures
+
+o  with --enable-forgery reposting of an thread reposts only the first
+   article ('x' 't' 'r' <group> 'p')
+
+o  when enabling the 'cc/bcc on every message that is sent', and
+   then mailing a message to myself, tin will print the message
+   "Mailing to ... gary gary".  a nice touch would be if tin
+   checks the mail_to line, and doesn't add the user's name
+   twice.  yes, sendmail removes the duplicate ... but it'd
+   be better if tin caught this case first.
 
 New features
 ------------
@@ -242,17 +244,6 @@ o  add counter to post-processing commands (processing file x of y)
 o  add feature Cc:
 
 o  add feature show_new_newsgroups_since
-
-o  add feature goto using the 'G' key
-   use a general purpose routine for locating regex's in articles
-   Use this to goto:
-   URL's
-   Message-ID's
-
-   Could also be used to better detect (or act upon) :
-   Quoted text
-   uuencode header lines
-   etc...
 
 o  Additions to the pager:
     check for urlview during configure and if found add
@@ -360,7 +351,9 @@ o  Merge the selection code with the range code. Having two similar methods
 
 Internal Changes
 ----------------
-o  any reason to not change base[] to int * ??
+o  what type is base[] ?
+   There is a lot of confusion internally over how it is used
+   compare setup_hard_base() with find_base() etc..
 
 o  see if strip_line() can be universally replaced with str_trim()
 

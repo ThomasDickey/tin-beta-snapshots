@@ -1,14 +1,37 @@
--- 1.5.4 release 20000322 "" --
+-- 1.5.4 release 20000414 "1959" --
+
+ 020) Ralf Doeblitz <doeblitz@gmx.de>
+      BUG. missing gnksa initialization for add_posted_to_filter
+      FIX. filter.c
+
+U025) Urs Janssen <urs@tin.org>
+      BUG. didn't check for new groups
+      BUG. possible crash on articles with broken Content-Type:-header
+      ADD. minor URL_REGEX, MAIL_REGEX, NEWS_REGEX improvements
+      FIX. tin.h, active.c, rfc2045.c
+
+U024) Dirk Nimmich <nimmich@uni-muenster.de>
+      BUG. didn't compile with pgp/gpg support turned on
+      BUG. upper case Content-Type problem
+      ADD. per-line scrolling in the pager for !USE_CURSES configurations
+      FIX. extern.h, proto.h, curses.c, misc.c, page.c, pgp.c, rfc2045.c
 
 U023) Jason Faultless <jason@radar.tele2.co.uk>
-      ADD.
+      ADD. rewrite article handling
+           rewrite pager
+           RFC2045 MIME parsing / display of articles
+           per-line scrolling in pager
+           '?' backward search to pager
+           search string and URL highlighting
+           'B'ody search at all levels locates string in article
+           seperate article contexts reduces # article reloads performed
       FIX. Makefile, INSTALL, TODO, art_handling.txt, tin.1, extern.h
            menukeys.h, proto.h, rfc2045.h, tin.h, Makefile[.in], art.c
-           attrib.c, charset.c, color.c, cook.c, feed.c, filter.c, group.c
-           header.c, init.c, lang.c, memory.c, misc.c, open.c, page.c, pgp.c
-           post.c, regex.c, rfc1521.c, rfc1522.c, rfc2045.c, save.c, screen.c
-           search.c, sigfile.c, signal.c, string.c, tcurses.c, thread.c
-           wildmat.c
+           attrib.c, charset.c, color.c, cook.c, curses.c, feed.c, filter.c
+           group.c, header.c, init.c, lang.c, memory.c, misc.c, open.c, page.c
+           pgp.c, post.c, regex.c, rfc1521.c, rfc1522.c, rfc2045.c, save.c
+           screen.c, search.c, sigfile.c, signal.c, string.c, tcurses.c
+           thread.c, wildmat.c
 
 U022) Toomas Soome <tsoome@ut.ee>
       ADD. estonian translation

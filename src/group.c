@@ -410,17 +410,17 @@ group_page (
 				}
 				break;
 
-			case iKeyGroupHelp:	/* help */
+			case iKeyHelp:					/* help */
 				show_info_page (HELP_INFO, help_group, _(txt_index_page_com));
 				show_group_page ();
 				break;
 
-			case iKeyGroupToggleHelpDisplay:	/* toggle mini help menu */
+			case iKeyToggleHelpDisplay:		/* toggle mini help menu */
 				toggle_mini_help (GROUP_LEVEL);
 				show_group_page ();
 				break;
 
-			case iKeyGroupToggleInverseVideo:	/* toggle inverse video */
+			case iKeyToggleInverseVideo:	/* toggle inverse video */
 				toggle_inverse_video ();
 				show_group_page ();
 				show_inverse_video_status ();
@@ -906,6 +906,7 @@ group_page (
 
 	clear_note_area ();
 	vGrpDelMailArts (&CURR_GROUP);
+
 	art_close (&pgart);				/* Close any open art */
 
 	return (ret_code);

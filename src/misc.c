@@ -174,9 +174,8 @@ copy_fp (
 /*
  * copy the body of articles with given file pointers,
  * prefix (= quote_chars), initials of the articles author
- * and a flag, if the signature should be quoted
+ * with_sig is set if the signature should be quoted
  */
-
 void
 copy_body (
 	FILE *fp_ip,
@@ -838,6 +837,7 @@ draw_percent_mark (
 	if (cur_num <= 0 && max_num <= 0)
 		return;
 
+	clear_message();
 	percent = (int) (cur_num * 100 / max_num);
 	sprintf (buf, "%s(%d%%) [%ld/%ld]", _(txt_more), percent, cur_num, max_num);
 	MoveCursor (cLINES, (cCOLS - (int) strlen (buf))-(1+BLANK_PAGE_COLS));

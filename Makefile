@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 5
 SVER	= 4
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20000322
+DVER	= 20000414
 EXE	= tin
 MANEXT	= 1
 
@@ -72,6 +72,7 @@ CFILES	= \
 	$(SRCDIR)/lang.c \
 	$(SRCDIR)/list.c \
 	$(SRCDIR)/mail.c \
+	$(SRCDIR)/mailcap.c \
 	$(SRCDIR)/main.c \
 	$(SRCDIR)/makecfg.c \
 	$(SRCDIR)/memory.c \

@@ -45,8 +45,8 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.5.4"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20000322"
-#	define RELEASENAME	"For Her Light"
+#	define RELEASEDATE	"20000414"
+#	define RELEASENAME	"1959"
 #	define TINRC_VERSION	"1.2"
 
 #	ifdef M_AMIGA
