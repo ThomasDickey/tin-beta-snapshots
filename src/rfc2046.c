@@ -470,12 +470,8 @@ parse_rfc822_headers(
 #	endif /* CHARSET_CONVERSION */
 #endif /* LOCAL_CHARSET || MAC_OS_X */
 
-		if (to) {
+		if (to)
 			fprintf(to, "%s\n", line);		/* Put raw data */
-
-			hdr->ext->line_count += count_lines (line);
-			progress(hdr->ext->line_count);	/* Should we count header lines ? */
-		}
 
 		/*
 		 * End of headers ?

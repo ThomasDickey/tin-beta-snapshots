@@ -3,11 +3,11 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2001-08-31
+.\" Updated   : 2001-11-17
 .\" Notes     : still needs some work (but getting there ;)
 .\"
 .\"
-.TH tin 1 "August 31st, 2001" "1.5.10" "A Usenet newsreader"
+.TH tin 1 "Novermber 17th, 2001" "1.5.10" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -827,7 +827,8 @@ Automatically tag in order all the parts of the current multi-part message
 .TP
 .B u
 Cycle the threading mode through no threading, threading by subject,
-threading by references, threading on both subject and references.
+threading by references, threading on both subject and references, group
+multipart articles into a thread (Subject: based).
 .TP
 .B U
 Untag all articles that were tagged.
@@ -1921,9 +1922,10 @@ one. Default is ON.
 .B Thread articles by (thread_articles)
 Defines which threading method to use. The choices are:
 0) Don't thread, 1) Thread on Subject only 2) Thread on References only,
-3) Thread on References then Subject (default).
+3) Thread on References then Subject (default)
+4) Thread multipart articles on Subject.
 It's also possible to set the threading type on a per group basis by setting
-the group attribute variable \fBthread_arts\fP to 0 - 3 in the file
+the group attribute variable \fBthread_arts\fP to 0 - 4 in the file
 \fI$HOME/.tin/attributes\fR. (See also GROUP ATTRIBUTES)
 .TP
 .B Catchup thread by using left key (thread_catchup_on_exit)
@@ -3084,9 +3086,9 @@ Steve Spearman, Helmut Springer, Cliff Stanford, Steve Starck, Jason
 Steiner, Ralf Stephan, Michael Stenns, Helmrich Streitmatter, Hans Werner
 Strube, Dieter Stueken, Ed Sznyter, Dean Takemori, Darrell Tangman, Derek
 Terveer, Carsten Theis, Julian Thompson, David Tiller, Andry Timonin, Mark
-Tomlin, Michael Traub, Adri Verhoef, Paul Vickers, Oliver B. Warzecha, Jason
-Wessel, Cary Whitney, Henrik Wist, Greg Woods, Lloyd Wright, Jens Wuepper,
-Billy Y., Hideaki Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
+Tomlin, Michael Traub, Mark Trumbull, Adri Verhoef, Paul Vickers, Oliver B.
+Warzecha, Jason Wessel, Cary Whitney, Henrik Wist, Greg Woods, Lloyd Wright,
+Jens Wuepper, Billy Y., Hideaki Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
 .\"
 .\"
 .SS AUTHOR

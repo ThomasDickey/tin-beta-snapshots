@@ -139,7 +139,7 @@ prompt_menu_string (
 	/*
 	 * clear buffer - this is needed, otherwise a lost
 	 * connection right before a resync_active() call
-	 * would lead to a 'n' answer to the reconect prompt
+	 * would lead to a 'n' answer to the reconnect prompt
 	 */
 	fflush(stdin);
 
@@ -265,7 +265,7 @@ prompt_list (
 {
 	int ch, var_orig;
 	int i;
-	int adjust = (strcasecmp(list[0], _(txt_default)) == 0);
+	int adjust = (strcasecmp(_(list[0]), _(txt_default)) == 0);
 	size_t width = 0;
 
 	var += adjust;
@@ -276,13 +276,13 @@ prompt_list (
 	 * Find the length of longest printable text
 	 */
 	for (i = 0; i < size; i++)
-		width = MAX(width, strlen(list[i]));
+		width = MAX(width, strlen(_(list[i])));
 
 	show_menu_help (help_text);
 	cursoron ();
 
 	do {
-		MoveCursor (row, col + (int) strlen (prompt_text));
+		MoveCursor (row, col + (int) strlen (_(prompt_text)));
 		if ((ch = (char) ReadCh ()) == ' ') {
 
 			/*
@@ -291,7 +291,7 @@ prompt_list (
 			++var;
 			var %= size;
 
-			my_printf("%-*s", (int)width, list[var]);
+			my_printf("%-*s", (int)width, _(list[var]));
 			my_flush ();
 		}
 	} while (ch != '\r' && ch != '\n' && ch != ESC);
@@ -299,7 +299,7 @@ prompt_list (
 	if (ch == ESC) {
 		var = var_orig;
 
-		my_printf("%-*s", (int)width, list[var]);
+		my_printf("%-*s", (int)width, _(list[var]));
 		my_flush ();
 	}
 
@@ -322,7 +322,7 @@ prompt_on_off (
 {
 	t_bool ret;
 
-	ret = prompt_list (row, col, (int)*var, help_text, prompt_text, txt_onoff, 2);
+	ret = prompt_list (row, col, (int)*var, help_text, _(prompt_text), txt_onoff, 2);
 	*var = (ret != 0);
 }
 
@@ -343,8 +343,7 @@ prompt_option_string (
 	char *variable = OPT_STRING_list[option_table[option].var_index];
 
 	show_menu_help (option_table[option].txt->help);
-	sprintf (&prompt[0], "-> %3d. %s ", option + 1, option_table[option].txt->opt);
-
+	fmt_option_prompt (prompt, sizeof(prompt)-1, TRUE, option);
 	return prompt_menu_string (option_row(option), prompt, variable);
 }
 
@@ -368,7 +367,7 @@ prompt_option_num (
 
 	show_menu_help (option_table[option].txt->help);
 	MoveCursor (option_row(option), 0);
-	sprintf (&prompt[0], "-> %3d. %s ", option + 1, option_table[option].txt->opt);
+	fmt_option_prompt (prompt, sizeof(prompt)-1, TRUE, option);
 	sprintf (&number[0], "%d", *(option_table[option].variable));
 
 	if ((p = tin_getline (prompt, 2, number, 0, FALSE, HIST_OTHER)) == (char *) 0)
@@ -405,7 +404,7 @@ prompt_option_char (
 
 	show_menu_help (option_table[option].txt->help);
 	MoveCursor (option_row(option), 0);
-	sprintf (&prompt[0], "-> %3d. %s ", option + 1, option_table[option].txt->opt);
+	fmt_option_prompt (prompt, sizeof(prompt)-1, TRUE, option);
 
 	if ((p = tin_getline (prompt, FALSE, p, 1, FALSE, HIST_OTHER)) == (char *) 0)
 		return FALSE;

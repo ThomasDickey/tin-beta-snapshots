@@ -74,6 +74,9 @@ static long find_first_unread (struct t_group *group);
 static t_bool parse_headers (FILE *fp, struct t_article *h);
 static void print_expired_arts (int num_expired);
 static void thread_by_subject (void);
+static void thread_by_multipart (void);
+static int global_look_for_multipart_info (int aindex, MultiPartInfo* setme, char start, char stop, int *offset);
+static int global_get_multiparts (int aindex, MultiPartInfo **malloc_and_setme_info);
 #ifdef THREAD_SUM
 	static void sort_base (unsigned int sort_threads_type);
 	static int score_comp_base (t_comptype p1, t_comptype p2);
@@ -518,22 +521,222 @@ thread_by_subject (
 
 
 /*
- *  Go through the articles in arts[] and create threads. There are
- *  4 strategies currently defined :
+ * This was brought over from tags.c, however this version doesn't not
+ * opperate on base_index
+ *
+ * Parses a subject header of the type "multipart message subject (01/42)"
+ * into a MultiPartInfo struct, or fails if the message subject isn't in the
+ * right form.
+ *
+ * @return nonzero on success
+ */
+int
+global_get_multipart_info (
+	int aindex,
+	MultiPartInfo *setme)
+{
+	int i, j, offi, offj;
+	MultiPartInfo setmei, setmej;
+
+	i = global_look_for_multipart_info(aindex, &setmei, '[', ']', &offi);
+	j = global_look_for_multipart_info(aindex, &setmej, '(', ')', &offj);
+
+	/* Ok i hits first */
+	if (offi > offj) {
+		*setme = setmei;
+		return i;
+	}
+
+	/* Its j or they are both the same (which must be zero!) so we don't care */
+	*setme = setmej;
+	return j;
+}
+
+
+/*
+ *	Again this was taken from tags.c, but works on global indicies into arts
+ *	rather then on base_index.
+ */
+static int
+global_look_for_multipart_info (
+	int aindex,
+	MultiPartInfo* setme,
+	char start,
+	char stop,
+	int *offset)
+{
+	char *subj = (char *) 0;
+	char *pch = (char *) 0;
+	MultiPartInfo tmp;
+
+	*offset = 0;
+
+	/* entry assertions */
+	assert (0 <= aindex && aindex < top_art && "invalid index");
+	assert (setme != NULL && "setme must not be NULL");
+
+	/* parse the message */
+	subj = arts[aindex].subject;
+	pch = strrchr (subj, start);
+	if (!pch || !isdigit((int) pch[1]))
+		return 0;
+	tmp.base_index = aindex; /* This could be confusing because we are actually storing the index into arts, not the base_index. */
+	tmp.subject_compare_len = pch - subj;
+	tmp.part_number = (int) strtol(pch + 1, &pch, 10);
+	if (*pch != '/' && *pch != '|')
+		return 0;
+	if (!isdigit((int) pch[1]))
+		return 0;
+	tmp.total = (int) strtol (pch + 1, &pch, 10);
+	if (*pch != stop)
+		return 0;
+	tmp.subject = subj;
+	*setme = tmp;
+	*offset = pch - subj;
+	return 1;
+}
+
+
+/*
+ * Taken from tags.c but changed to use indicies into arts[] instead of
+ * base_index. Changed so that even when we don't have all the parts we
+ * return a valid array.
+ *
+ * Tries to find all the parts to the multipart message pointed to by
+ * base_index.
+ *
+ * @return on success, the number of parts found. On failure, zero if not a
+ * multipart or the negative value of the first missing part.
+ * @param base_index index pointing to one of the messages in a multipart
+ * message.
+ * @param malloc_and_setme_info on success, set to a malloced array the
+ * parts found.
+ */
+int
+global_get_multiparts (
+	int aindex,
+	MultiPartInfo **malloc_and_setme_info)
+{
+	int i = 0;
+	MultiPartInfo tmp, tmp2;
+	MultiPartInfo *info = 0;
+
+	/* entry assertions */
+	assert (0 <= aindex && aindex < top_art && "Invalid index");
+	assert (malloc_and_setme_info != NULL && "malloc_and_setme_info must not be NULL");
+
+	/* make sure this is a multipart message... */
+	if (!global_get_multipart_info(aindex, &tmp) || tmp.total < 1)
+		return 0;
+
+	/* make a temporary buffer to hold the multipart info... */
+	info = my_malloc (sizeof(MultiPartInfo) * tmp.total);
+
+	/* zero out part-number for the repost check below */
+	for (i = 0; i < tmp.total; ++i) {
+		info[i].total = tmp.total; /* Added this for thread_by_multipart */
+		info[i].part_number = -1;
+	}
+
+	/* try to find all the multiparts... */
+	for (i = 0; i < top_art; ++i) {
+		int part_index = 0;
+
+		if (strncmp (arts[i].subject, tmp.subject, tmp.subject_compare_len))
+			continue;
+		if (!global_get_multipart_info (i, &tmp2))
+			continue;
+
+		part_index = tmp2.part_number - 1;
+
+		/* skip the "blah (00/102)" info messages... */
+		if (part_index < 0)
+			continue;
+
+		/* skip insane "blah (103/102) subjects... */
+		if (part_index >= tmp.total)
+			continue;
+
+		/* repost check: do we already have this part? */
+		if (info[part_index].part_number != -1) {
+			assert (info[part_index].part_number == tmp2.part_number && "bookkeeping error");
+			continue;
+		}
+
+		/* we have a match, hooray! */
+		info[part_index] = tmp2;
+	}
+
+	/* see if we got them all. */
+	for (i = 0; i < tmp.total; ++i) {
+		if (info[i].part_number != i + 1) {
+			*malloc_and_setme_info = info;
+			return -(i + 1); /* missing part #(i+1) */
+		}
+	}
+
+	/* looks like a success .. */
+	*malloc_and_setme_info = info;
+	return tmp.total;
+}
+
+
+/*
+ *	The algorithm uses the tag multipart searches to thread articles together.
+ */
+static void
+thread_by_multipart (
+	void)
+{
+	int i, j, ret, threadNum, parent;
+	MultiPartInfo *minfo = NULL;
+
+	for (i = 0; i < top_art; i++) {
+
+		if (arts[i].thread != ART_NORMAL || IGNORE_ART(i) || arts[i].inthread || !(ret=global_get_multiparts(i, &minfo)))
+			continue;
+
+		threadNum = -1;
+		parent = -1;
+		for (j = minfo[0].total-1; j >= 0; j--) {
+			if (minfo[j].part_number != -1) {
+				if (threadNum != -1)
+					arts[minfo[j].base_index].thread = threadNum;
+				arts[minfo[j].base_index].inthread = TRUE;
+				threadNum = minfo[j].base_index;
+				parent = j;
+			}
+		}
+
+		/* Thread parent doesn't register as being in a thread */
+		if ((parent != -1) && (minfo[parent].part_number != -1))
+			arts[minfo[parent].base_index].inthread = FALSE;
+	}
+	free(minfo);
+}
+
+
+/*
+ * Go through the articles in arts[] and create threads. There are
+ * 5 strategies currently defined :
  *
  *	THREAD_NONE		No threading
  *	THREAD_SUBJ		Threads are created using like Subject lines
  *	THREAD_REFS		Threads are created using the References headers
  *	THREAD_BOTH		Threads created using References and then Subject
+ *	THREAD_MULTI	Threads created using Subject to search for Multiparts
  *
- *  Apart from THREAD_NONE, .thread and .inthread are used, the
- *  first article in a thread should have .inthread set to FALSE, the
- *  rest TRUE.  Only do unexprired articles we haven't visited yet
- *  (arts[].thread == -1 ART_NORMAL).
+ * Apart from THREAD_NONE, .thread and .inthread are used, the
+ * first article in a thread should have .inthread set to FALSE, the
+ * rest TRUE.  Only do unexprired articles we haven't visited yet
+ * (arts[].thread == -1 ART_NORMAL).
  *
- *  The rethread parameter is a misnomer. Its only effect (if set) is
- *  to delete all threading information, not to rethread
- *
+ * The rethread parameter is a misnomer. Its only effect (if set) is
+ * to delete all threading information, not to rethread
+ */
+/* TODO: rewrite that user can easly combine different 'threading'
+ *       methods, i.e:
+ *       - thread_by_multipart() + collate_subjects()
  */
 void
 make_threads (
@@ -566,7 +769,7 @@ make_threads (
 	clear_art_ptrs();
 
 	/*
-	 *  The threading pointers need to be reset if re-threading
+	 * The threading pointers need to be reset if re-threading
 	 *	If using ref threading, revector the links back to the articles
 	 */
 	if (rethread || (group->attribute && group->attribute->thread_arts)) {
@@ -610,6 +813,10 @@ make_threads (
 		case THREAD_BOTH:
 			thread_by_reference();
 			collate_subjects();
+			break;
+
+		case THREAD_MULTI:
+			thread_by_multipart();
 			break;
 
 		default: /* not reached */

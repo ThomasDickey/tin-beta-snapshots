@@ -107,6 +107,7 @@ rfc1521_encode (
 					xpos++;
 				}
 				pattern = 0;
+				bits = 0;
 			}
 			if (xpos) {
 				*b = 0;

@@ -1271,9 +1271,8 @@ toggle_inverse_video (
 #ifndef USE_INVERSE_HACK
 		tinrc.draw_arrow = FALSE;
 #endif /* !USE_INVERSE_HACK */
-	} else {
+	} else
 		tinrc.draw_arrow = TRUE;
-	}
 }
 
 

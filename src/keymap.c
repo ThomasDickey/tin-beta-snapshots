@@ -660,7 +660,7 @@ static t_keynode *keys_thread_nav[] = {
 #ifdef HAVE_COLOR
 	&Key.Global.ToggleColor,
 #endif /* HAVE_COLOR */
-	&Key.Global.OptionMenu, 
+	&Key.Global.OptionMenu,
 	&Key.Global.Quit, &Key.Global.QuitTin, &Key.Thread.Tag,
 	&Key.Thread.BugReport, &Key.Thread.Untag, &Key.Global.Version,
 	&Key.Thread.MarkArtUnread, &Key.Thread.MarkThdUnread, &Key.Thread.SelArt,

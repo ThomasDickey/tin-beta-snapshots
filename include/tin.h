@@ -706,7 +706,7 @@ enum resizer { cNo, cYes, cRedraw };
 /*
  * case insensitive
  */
-#define NEWS_REGEX	"\\b(?:s?news|nntp):[^\\s@]+[@.][^\\s@]+(?:$|(?=[\\s.>\"/]))\\b"
+#define NEWS_REGEX	"\\b(?:s?news|nntp):[^\\s@]+[@.][^\\s@]+(?:$|(?=[\\s.>,\"/]))\\b"
 /*
  * case insensitive, no implemented
  */
@@ -995,15 +995,14 @@ enum resizer { cNo, cYes, cRedraw };
 
 /*
  * Threading strategies available
- * NB: The ordering is important in that threading methods that don't use
- *     references should be < THREAD_REFS
  */
 #define THREAD_NONE		0
 #define THREAD_SUBJ		1
 #define THREAD_REFS		2
 #define THREAD_BOTH		3
+#define THREAD_MULTI		4
 
-#define THREAD_MAX		THREAD_BOTH
+#define THREAD_MAX		THREAD_MULTI
 
 /*
  * Values for show_author
@@ -1392,7 +1391,7 @@ struct t_attribute
 	unsigned batch_save:1;			/* 0=none, 1=save -S/mail -M */
 	unsigned delete_tmp_files:1;		/* 0=leave, 1=delete */
 	unsigned show_only_unread:1;		/* 0=all, 1=only unread */
-	unsigned thread_arts:2;			/* 0=unthread, 1=subject, 2=refs, 3=both */
+	unsigned thread_arts:3;			/* 0=unthread, 1=subject, 2=refs, 3=both, 4=multipart*/
 	unsigned show_author:4;			/* 0=none, 1=name, 2=addr, 3=both */
 	unsigned sort_art_type:4;		/* 0=none, 1=subj descend, 2=subj ascend,
 						   3=from descend, 4=from ascend,
@@ -1572,6 +1571,9 @@ struct t_art_stat
 	char art_mark;		/* mark to use for this thread - not used for groups */
 	int score;		/* maximum score */
 	time_t time;		/* latest time */
+	int multipart_total; /* 0=not multipart, >0 = number of articles in the multipart */
+	int multipart_have; /* number of articles we actually have found */
+	int multipart_compare_len; /* length of subject which contains non-specific multipart info */
 };
 
 
@@ -1750,7 +1752,6 @@ extern void joindir (char *result, const char *dir, const char *file);
 #	define ENV_VAR_MAILER		"MAILER"
 #	define ENV_VAR_SHELL		"SHELL"
 #	define TIN_EDITOR_FMT_ON		"%E +%N %F"
-/* is -oi in MAILER_FORMAT portable? */
 #	define MAILER_FORMAT		"%M -oi -t < %F"
 #	define METAMAIL_CMD		"%s -e -p -m \"tin\""
 #	define TMPDIR	"/tmp/"

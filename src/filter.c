@@ -807,7 +807,7 @@ print_filter_menu (
 	my_printf ("%s%s", ptr_filter_scope, ptr_filter_groupname);
 	my_flush ();
 
-	show_menu_help (_(txt_help_filter_text));
+	show_menu_help (txt_help_filter_text);
 }
 
 
@@ -1030,7 +1030,7 @@ filter_menu (
 	/*
 	 * Lines:
 	 */
-	show_menu_help (_(txt_help_filter_lines));
+	show_menu_help (txt_help_filter_lines);
 
 	buf[0] = '\0';
 
@@ -1063,7 +1063,7 @@ filter_menu (
 	 * Scoring value
 	 */
 	buf[0] = '\0';
-	show_menu_help(_(txt_filter_score_help)); /* FIXME: a sprintf() is necessary here */
+	show_menu_help(txt_filter_score_help); /* FIXME: a sprintf() is necessary here */
 
 	if (!prompt_menu_string(INDEX_TOP + 8, ptr_filter_score, buf))
 		return FALSE;

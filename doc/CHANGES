@@ -1,4 +1,23 @@
--- 1.5.10 release 20011109 "" --
+-- 1.5.10 release 20011117 "Darkcell" --
+
+U081) Mark Trumbull <mjt@pipedreaminteractive.com>
+      ADD. new threading method: sort by subject but (try to) join
+           multipart arts to a thread.
+      FIX. propto.h, tin.h, art.c, group.c, lang.c, thread.c
+
+U080) Toomas Soome <tsoome@ut.ee>
+      ADD. updated Estonian translation
+      FIX. et.po
+
+U079) Andreas Metzler <tin-dev@downhill.at.eu.org>
+      Thomas E. Dickey <dickey@invisible-island.net>
+      Urs Janssen <urs@tin.org>
+      BUG. missing localization of some 'M'enu items
+      FIX. proto.h, config.c, filter.c, lang.c, prompt.c, de.po
+
+ 036) Dirk Nimmich <nimmich@uni-muenster.de>
+      BUG. base64 encoding was broken
+      FIX. rfc2045.c
 
 U078) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. updated pcre (3.4 -> 3.7)
@@ -21,6 +40,7 @@ U077) Dirk Nimmich <nimmich@uni-muenster.de>
            may lead to unexpected "Do you want to abort" question
       BUG. abort bugreport prompt was invisible -- don't use global
            buffers that may get changed meanwhile!
+      BUG. counted header lines when displaying progress
       FIX. proto.h, rfc2046.h, tin.h, cook.c, misc.c, post.c, read.c
            rfc2046.c
 
@@ -56,6 +76,8 @@ U072) Joseph Parmelee <jparmele@wildbear.com>
       FIX. feed.c, save.c
 
 U071) Urs Janssen <urs@tin.org>
+      ADD. updated German/English translation (still incomplete)
+      ADD. ',' as NEWS_REGEX 'terminator'
       BUG. match_item() didn't look for exact matches, but took the first
            partial match
       BUG. typo in the man-page
@@ -84,7 +106,7 @@ U071) Urs Janssen <urs@tin.org>
            tin.h, tinrc.h, tnntp.h, active.c, art.c, config.c, cook.c
            curses.c, group.c, inews.c, init.c, lang.c, misc.c, plp_snprintf.c
            post.c, rfc2046.c, rfc2047.c, read.c, screen.c, thread.c
-           POTFILES.in
+           POTFILES.in, de.po, en_GB.po
 
 -- 1.5.9 release 20010723 "Chord of Souls" --
 
@@ -235,8 +257,8 @@ U058) Thomas Roessler <roessler@does-not-exist.org>
       FIX. Makefile[.in], mbox.5
 
 U057) Sebastian Bork <sebi@sebi.org>
-      BUG: TIN eats the last "\n" of postponed articles.
-      FIX: save.c
+      BUG. TIN eats the last "\n" of postponed articles.
+      FIX. save.c
 
 U056) Ulli Horlacher <framstag@belwue.de>
       BUG. removed absolute path for url_handler.sh

@@ -1,8 +1,5 @@
 Bugs
 ----
-o  base64 encoding is (sometimes) broken
-   [20011008 Sven Gottwald]
-
 o  'u' etc.pp. may leed to a 'crash' due to which_thread() returning -1
    if no (unread) articles are left. which_response() exits in that case,
    not very userfriendly.
@@ -49,13 +46,9 @@ o  batch mode has several bugs
      to MTA (would require article parsing *sigh*)
    [Urs Janssen <urs@tin.org>]
 
-o  --with-ncurses --enable-curses has several display problems:
-    - if use_color is set:
-      - '^G' (pgp-check article output is garbled)
-
 o  libuu code doesn't start viewer
    include basic library source in tin for uudecoding
-   (http://www.informatik.uni-frankfurt.de/~fp/uudeview/)
+   (http://www.fpx.de/fp/Software/UUDeview/)
    [Urs Janssen <urs@tin.org>]
 
 o  '-s' cmd-line switch implicitly changes 'savedir' in tinrc
@@ -162,6 +155,10 @@ o  with --enable-forgery reposting of an thread reposts only the first
 
 New features
 ------------
+o  join use_getart_limit and getart_limit (getart_limit=0 means
+   use_getart_limit=OFF)
+   [20011114 Urs Janssen <urs@tin.org>]
+
 o  for "mime.types"-lookups use the logest match found, not the first one.
    check all existing/known "mime.types"-files.
    [20011002 Urs Janssen <urs@tin.org>]
@@ -236,6 +233,7 @@ o  add new threading method: thread by reference, but split threads on
 o  detect pcre version and add compatibility macros for old versions
    (interface has changed twice and might do so again)
    (leafnode comes with a (suboptimal) check)
+   (is this still needed with the configure option for extern pcre?)
    [Urs Janssen <urs@tin.org>]
 
 o  add 'make unproto'
@@ -335,7 +333,7 @@ o  - think about removing global attributes files (TIN_LIBDIR/attributes)
      TIN_DEFAULTS_DIR
 
 o  attributes (still) needs some work, some entrys aren't really usefull
-   on a per group basis (i.e. printer) but others would (i.e. Reply-To)
+   on a per group basis but others would (i.e. Reply-To)
    once we have a 'attributes-menu' we could remove most of the
    global 'attributes' set in tinrc and move them to a scope=*
    in attibutes (i.e. From)
@@ -442,10 +440,6 @@ o  make configure look for strrstr() in libpub/publib.h
 o  reorder several structs to avoid padding (see gcc -Wpadding)
    [Urs Janssen <urs@tin.org>]
 
-o  check for 10-digits unix-timestamp safety (9->10 digits rollover at
-   9.9.2001)
-   [didn't see any problems - Urs Janssen <urs@tin.org>]
-
 o  join some keys, i.e PostponeYes, PostponeNo -> PromptYes, PromptNo;
    GroupPost, PagePost, SelectPost -> Post
    [Urs Janssen <urs@tin.org>]
@@ -480,9 +474,7 @@ o  close potential security holes:
 
 o  compile-time option: generate own MSGIDs on host with a proper FQDN
    (EVIL_INSIDE)
-   add a _-_ to the local part of the MSGID on a subject-change; keep
-   MSGIDs of own articles in ~/.tin/posted to be able to detect f'ups to
-   own postings
+   add a _-_ to the local part of the MSGID on a subject-change
 
 o  add to autoconf:
    - determine which network libraries are needed
@@ -591,14 +583,15 @@ o  tin.defaults could use more documentation on manpage (tin.5)
 
 Not yet classified
 ------------------
+o  setting TIN_HOMEDIR to a nonexistant dir gives a "Filesystem full"
+   error-message (but doesn't abort) instead of creating the dir. bug?
+   feature? if the later we should give a more exact error-message.
+   [20011112 urs@tin.org]
+
 o  check_article_to_be_posted() still need some cleanup
    (avoid setup_check_article_screen(&init);StartInverse();EndInverse();
     overhead)
    [20010629 Urs Janssen <urs@tin.org>]
-
-o  sendmail -t && lines containing only a '.' cause trouble, is -oi -t
-   portable?
-   [20010628 Andreas Metzler <ametzler@downhill.at.eu.org>]
 
 o  update gettext stuff to >= gettext-0.10.36
 
