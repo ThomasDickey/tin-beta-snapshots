@@ -3,10 +3,10 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2003-04-07
+ *  Updated   : 2003-05-14
  *  Notes     : This file contains key mapping routines and variables.
  *
- * Copyright (c) 2000-2003 Dirk Nimmich <nimmich@uni-muenster.de>
+ * Copyright (c) 2000-2003 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -162,7 +162,7 @@ static struct keymap Key = {
 		{ iKeyGroupNextUnreadArt, iKeyGroupNextUnreadArt, "NextUnreadArt" },
 		{ iKeyGroupPrevUnreadArt, iKeyGroupPrevUnreadArt, "PrevUnreadArt" },
 		{ iKeyGroupBugReport, iKeyGroupBugReport, "BugReport" },
-		{ iKeyGroupAutoSaveTagged, iKeyGroupAutoSaveTagged, "AutoSaveTagged" },
+		{ iKeyGroupAutoSave, iKeyGroupAutoSave, "AutoSave" },
 		{ iKeyGroupTagParts, iKeyGroupTagParts, "TagParts" },
 		{ iKeyGroupUntag, iKeyGroupUntag, "Untag" },
 		{ iKeyGroupMarkUnselArtRead, iKeyGroupMarkUnselArtRead, "MarkUnselArtRead" },
@@ -189,6 +189,12 @@ static struct keymap Key = {
 		{ 0, 0, "Help" },
 		{ iKeyHelpFirstPage2, iKeyHelpFirstPage2, "FirstPage2" },
 		{ iKeyHelpLastPage2, iKeyHelpLastPage2, "LastPage2" },
+		{ 0, 0, NULL }
+	},
+	{
+	{ 0, 0, "MarkRead" },
+		{ iKeyMarkReadTag, iKeyMarkReadTag, "Tag" },
+		{ iKeyMarkReadCur, iKeyMarkReadCur, "Cur" },
 		{ 0, 0, NULL }
 	},
 	{
@@ -229,7 +235,7 @@ static struct keymap Key = {
 		{ iKeyPageNextUnreadArt, iKeyPageNextUnreadArt, "NextUnreadArt" },
 		{ iKeyPagePrevUnreadArt, iKeyPagePrevUnreadArt, "PrevUnreadArt" },
 		{ iKeyPageReply, iKeyPageReply, "Reply" },
-		{ iKeyPageAutoSaveTagged, iKeyPageAutoSaveTagged, "AutoSaveTagged" },
+		{ iKeyPageAutoSave, iKeyPageAutoSave, "AutoSave" },
 		{ iKeyPageGroupSel, iKeyPageGroupSel, "GroupSel" },
 		{ iKeyPageViewUrl, iKeyPageViewUrl, "ViewUrl" },
 		{ iKeyPageViewAttach, iKeyPageViewAttach, "ViewAttach" },
@@ -346,7 +352,7 @@ static struct keymap Key = {
 		{ iKeyThreadCatchupNextUnread, iKeyThreadCatchupNextUnread, "CatchupNextUnread" },
 		{ iKeyThreadMarkArtRead, iKeyThreadMarkArtRead, "MarkArtRead" },
 		{ iKeyThreadBugReport, iKeyThreadBugReport, "BugReport" },
-		{ iKeyThreadAutoSaveTagged, iKeyThreadAutoSaveTagged, "AutoSaveTagged" },
+		{ iKeyThreadAutoSave, iKeyThreadAutoSave, "AutoSave" },
 		{ iKeyThreadUntag, iKeyThreadUntag, "Untag" },
 		{ iKeyThreadMarkThdUnread, iKeyThreadMarkThdUnread, "MarkThdUnread" },
 		{ iKeyThreadCatchup, iKeyThreadCatchup, "Catchup" },
@@ -446,7 +452,7 @@ static t_keynode *keys_group_nav[] = {
 #ifndef DISABLE_PRINTING
 	&Key.Global.Print,
 #endif /* !DISABLE_PRINTING */
-	&Key.Group.Repost, &Key.Group.Save, &Key.Group.AutoSaveTagged,
+	&Key.Group.Repost, &Key.Group.Save, &Key.Group.AutoSave,
 	&Key.Global.SetRange, &Key.Global.SearchAuthF, &Key.Global.SearchAuthB,
 	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB, &Key.Global.SearchRepeat, &Key.Global.SearchBody,
 	&Key.Group.ReadBasenote, &Key.Group.ReadBasenote2,
@@ -485,6 +491,10 @@ static t_keynode *keys_info_nav[] = {
 	&Key.Global.ToggleHelpDisplay, &Key.Global.SearchSubjF,
 	&Key.Global.SearchSubjB, &Key.Global.SearchRepeat, &Key.Global.Quit, NULL };
 
+static t_keynode *keys_mark_read_tagged_current[] = {
+	&Key.Global.Abort, &Key.Global.Quit, &Key.MarkRead.Tag,
+	&Key.MarkRead.Cur, NULL };
+
 static t_keynode *keys_nrctbl_create[] = {
 	&Key.Global.Abort, &Key.Nrctbl.Quit, &Key.Nrctbl.Alternative,
 	&Key.Nrctbl.Create, &Key.Nrctbl.Default, NULL };
@@ -506,7 +516,7 @@ static t_keynode *keys_page_nav[] = {
 #ifndef DISABLE_PRINTING
 	&Key.Global.Print,
 #endif /* !DISABLE_PRINTING */
-	&Key.Page.Repost, &Key.Page.Save, &Key.Page.AutoSaveTagged,
+	&Key.Page.Repost, &Key.Page.Save, &Key.Page.AutoSave,
 	&Key.Global.SearchAuthF, &Key.Global.SearchAuthB, &Key.Global.SearchSubjF,
 	&Key.Global.SearchSubjB, &Key.Global.SearchRepeat, &Key.Global.SearchBody,
 	&Key.Page.TopThd, &Key.Page.BotThd, &Key.Page.NextThd, &Key.Page.NextThd2,
@@ -580,6 +590,7 @@ static t_keynode *keys_post_post[] = {
 	&Key.Post.Ispell,
 #endif /* HAVE_ISPELL */
 	&Key.Post.Edit, &Key.Global.Post, &Key.Post.Post2, &Key.Post.Post3,
+	&Key.Global.OptionMenu,
 	&Key.Post.Postpone, NULL };
 
 static t_keynode *keys_post_postpone[] = {
@@ -643,7 +654,7 @@ static t_keynode *keys_thread_nav[] = {
 #endif /* !NO_SHELL_ESCAPE */
 	&Key.Global.FirstPage, &Key.Global.LastPage, &Key.Global.LastViewed,
 	&Key.Global.SetRange, &Key.Global.Pipe, &Key.Thread.Mail,
-	&Key.Thread.Save, &Key.Thread.AutoSaveTagged, &Key.Thread.ReadArt,
+	&Key.Thread.Save, &Key.Thread.AutoSave, &Key.Thread.ReadArt,
 	&Key.Thread.ReadArt2, &Key.Thread.ReadNextArtOrThread, &Key.Global.Post,
 	&Key.Global.RedrawScr, &Key.Global.Down, &Key.Global.Down2,
 	&Key.Global.Up, &Key.Global.Up2, &Key.Global.PageUp, &Key.Global.PageUp2,
@@ -674,6 +685,7 @@ t_menukeymap menukeymap = {
 	{ keys_filter_quit_edit_save, NULL, NULL },
 	{ keys_group_nav, NULL, NULL },
 	{ keys_info_nav, NULL, NULL },
+	{ keys_mark_read_tagged_current, NULL, NULL },
 	{ keys_nrctbl_create, NULL, NULL },
 	{ keys_page_nav, NULL, NULL },
 	{ keys_pgp_mail, NULL, NULL },

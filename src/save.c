@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-04-25
+ *  Updated   : 2003-05-15
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -127,6 +127,7 @@ check_start_save_any_news(
 #ifdef APPEND_PID
 			snprintf(savefile + strlen(savefile), sizeof(savefile) - strlen(savefile), ".%d", (int) process_id);
 #endif /* APPEND_PID */
+			/* FALLTHROUGH */
 
 		case SAVE_ANY_NEWS:
 			joinpath(logfile, rcdir, "log");
@@ -214,7 +215,7 @@ check_start_save_any_news(
 
 				case MAIL_ANY_NEWS:
 				case SAVE_ANY_NEWS:
-					if ((artfp = open_art_fp(group_path, arts[j].artnum)) == NULL)
+					if ((artfp = open_art_fp(group, arts[j].artnum)) == NULL)
 						continue;
 
 					if (function == SAVE_ANY_NEWS) {
@@ -441,7 +442,7 @@ save_and_process_art(
 			*(ptr + 1) = '\0';
 
 		/* Add on the archive name as a directory */
-	 	/* TODO: maybe a s!/!.! on archive-name would be better */
+		/* TODO: maybe a s!/!.! on archive-name would be better */
 		joinpath(archpath, path, artptr->archive->name);
 
 		/* Generate the filename part and append it */
@@ -645,7 +646,7 @@ post_process_files(
 			post_process_sh();
 			break;
 
-		/* This is the default, eg, with AUTOSAVE_TAGGED */
+		/* This is the default, eg, with AUTOSAVE */
 		case iKeyPProcYes:
 		default:
 			post_process_uud();
@@ -1268,12 +1269,10 @@ decode_save_one(
 			my_printf(cCRLF);
 		}
 	} else {
-		int resp;
-
 		snprintf(buf, sizeof(buf), _(txt_view_attachment), savepath, content_types[part->type], part->subtype);
-		if ((resp = prompt_yn(cLINES, buf, TRUE)) == 1)
+		if ((i = prompt_yn(cLINES, buf, TRUE)) == 1)
 			start_viewer(part, savepath);
-		else if (resp == -1) {	/* Skip rest of attachments */
+		else if (i == -1) {	/* Skip rest of attachments */
 			unlink(savepath);
 			return FALSE;
 		}
@@ -1287,12 +1286,10 @@ decode_save_one(
 		my_printf(cCRLF);
 	}
 	if (!postproc) {
-		int resp;
-
 		snprintf(buf, sizeof(buf), _(txt_save_attachment), savepath, content_types[part->type], part->subtype);
-		if ((resp = prompt_yn(cLINES, buf, FALSE)) != 1) {
+		if ((i = prompt_yn(cLINES, buf, FALSE)) != 1) {
 			unlink(savepath);
-			if (resp == -1)	/* Skip rest of attachments */
+			if (i == -1)	/* Skip rest of attachments */
 				return FALSE;
 		}
 	}
@@ -1366,9 +1363,10 @@ match_content_type(
 /*
  * See if the mime type of this part matches the list of content types to save
  * or ignore. Return TRUE if there is a match
- * mime_types is a comma seperated list of type/subtype pairs. type and/or
+ * mime_types is a comma separated list of type/subtype pairs. type and/or
  * subtype can be a '*' to match any, and a pair can begin with a ! which
- * will negate the meaning. We eval all pairs, the rightmost match will prevail
+ * will negate the meaning. We eval all pairs, the rightmost match will
+ * prevail
  */
 static t_bool
 check_save_mime_type(
@@ -1389,7 +1387,7 @@ check_save_mime_type(
 
 	while ((pair = strtok(NULL, ",")) != NULL) {
 		if ((found = match_content_type(part, pair)) != NO)
-			retcode=found;
+			retcode = found;
 	}
 
 	free(ptr);

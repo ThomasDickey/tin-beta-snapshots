@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2003-03-30
+ *  Updated   : 2003-05-14
  *  Notes     :
  *
  * Copyright (c) 1999-2003 Jason Faultless <jason@altarstone.com>
@@ -160,7 +160,7 @@ struct k_group {
 	t_keynode NextUnreadArt;			/* 'N' */
 	t_keynode PrevUnreadArt;			/* 'P' */
 	t_keynode BugReport;					/* 'R' */
-	t_keynode AutoSaveTagged;			/* 'S' */
+	t_keynode AutoSave;			/* 'S' */
 	t_keynode TagParts;					/* 'T' */
 	t_keynode Untag;						/* 'U' */
 	t_keynode MarkUnselArtRead;		/* 'X' */
@@ -188,6 +188,13 @@ struct k_help {
 	t_keynode tag;
 	t_keynode FirstPage2;
 	t_keynode LastPage2;
+	t_keynode null;
+};
+
+struct k_markread {
+	t_keynode tag;
+	t_keynode Tag;
+	t_keynode Cur;
 	t_keynode null;
 };
 
@@ -230,7 +237,7 @@ struct k_page {
 	t_keynode NextUnreadArt;			/* 'N' */
 	t_keynode PrevUnreadArt;			/* 'P' */
 	t_keynode Reply;						/* 'R' */
-	t_keynode AutoSaveTagged;			/* 'S' */
+	t_keynode AutoSave;			/* 'S' */
 	t_keynode GroupSel;					/* 'T' */
 	t_keynode ViewUrl;					/* 'U' */
 	t_keynode ViewAttach;				/* 'V' */
@@ -355,7 +362,7 @@ struct k_thread {
 	t_keynode CatchupNextUnread;		/* 'C' */
 	t_keynode MarkArtRead;				/* 'K' */
 	t_keynode BugReport;					/* 'R' */
-	t_keynode AutoSaveTagged;			/* 'S' */
+	t_keynode AutoSave;			/* 'S' */
 	t_keynode Untag;						/* 'U' */
 	t_keynode MarkThdUnread;			/* 'Z' */
 	t_keynode Catchup;					/* 'c' */
@@ -375,6 +382,7 @@ struct keymap {
 	struct k_filter Filter;
 	struct k_group Group;
 	struct k_help Help;
+	struct k_markread MarkRead;
 	struct k_nrctbl Nrctbl;
 	struct k_page Page;
 	struct k_pgp Pgp;

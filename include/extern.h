@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-04-25
+ *  Updated   : 2003-05-15
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>
@@ -55,10 +55,10 @@
 	extern int _flsbuf(int, FILE *);
 #endif /* DECL__FLSBUF */
 #ifdef DECL_ATOI
-	extern int atoi(char *);
+	extern int atoi(const char *);
 #endif /* DECL_ATOI */
 #ifdef DECL_ATOL
-	extern long atol(char *);
+	extern long atol(const char *);
 #endif /* DECL_ATOL */
 #ifndef HAVE_MEMCPY
 #	ifdef DECL_BCOPY
@@ -121,7 +121,7 @@
 	extern struct hostent *gethostbyname(const char *);
 #endif /* DECL_GETHOSTBYNAME */
 #ifdef DECL_GETHOSTNAME
-	extern int gethostname(char *, int);
+	extern int gethostname(char *, size_t);
 #endif /* DECL_GETHOSTNAME */
 #ifdef DECL_GETLOGIN
 	extern char *getlogin(void);
@@ -185,8 +185,7 @@
 	extern int printf(const char *, ...);
 #endif /* DECL_PRINTF */
 #ifdef DECL_PUTENV
-	/* NOTE: SUSv2 removes the const from the prototype */
-	extern int putenv(const char *);
+	extern int putenv(char *);
 #endif /* DECL_PUTENV */
 #ifdef DECL_QSORT
 	extern void qsort(void *, size_t, size_t, int (*)(t_comptype*, t_comptype*));
@@ -234,7 +233,7 @@
 	extern long strtol(const char *, char **, int);
 #endif /* DECL_STRTOL */
 #ifdef DECL_SYSTEM
-	extern int system(char *);
+	extern int system(const char *);
 #endif /* DECL_SYSTEM */
 #ifdef DECL_TEMPNAM
 	extern char *tempnam(const char *, const char *);
@@ -330,7 +329,6 @@ extern char **news_headers_to_not_display_array;
 extern char *OPT_CHAR_list[];
 extern char *OPT_STRING_list[];
 extern char *ch_post_process;
-extern char *glob_group;
 extern char *nntp_server;
 extern char active_times_file[PATH_LEN];
 extern char bug_addr[LEN];
@@ -357,6 +355,7 @@ extern char filter_file[PATH_LEN];
 extern char local_input_history_file[PATH_LEN];
 extern char local_newsgroups_file[PATH_LEN];
 extern char local_newsrctable_file[PATH_LEN];
+extern char lock_file[PATH_LEN];
 extern char mail_active_file[PATH_LEN];
 extern char mail_news_user[LEN];
 extern char mailbox[PATH_LEN];
@@ -370,14 +369,12 @@ extern char news_active_file[PATH_LEN];
 extern char newsgroups_file[PATH_LEN];
 extern char newsrc[PATH_LEN];
 #ifndef NNTP_ONLY
-	extern char lock_file[PATH_LEN];
 	extern char novrootdir[PATH_LEN];
 	extern char novfilename[PATH_LEN];
 #endif /* !NNTP_ONLY */
 extern char page_header[LEN];
 extern char posted_info_file[PATH_LEN];
 extern char postponed_articles_file[PATH_LEN];
-extern char proc_ch_default;
 extern char tin_progname[PATH_LEN];
 extern char rcdir[PATH_LEN];
 extern char save_active_file[PATH_LEN];
@@ -391,13 +388,8 @@ extern char host_name[];
 
 extern const char base64_alphabet[64];
 
-extern const char **info_help;
 extern constext *content_encodings[];
 extern constext *content_types[];
-extern constext *help_group[];
-extern constext *help_page[];
-extern constext *help_select[];
-extern constext *help_thread[];
 extern constext *txt_attrs[];
 extern constext *txt_colors[];
 extern constext *txt_confirm_choices[];
@@ -590,11 +582,15 @@ extern constext txt_error_no_write_permission[];
 extern constext txt_error_passwd_missing[];
 extern constext txt_error_plural[];
 extern constext txt_error_sender_in_header_not_allowed[];
-extern constext txt_error_server_unavailable[];
 extern constext txt_error_server_has_no_listed_groups[];
 extern constext txt_error_singular[];
-extern constext txt_error_socket_or_connect_problem[];
-extern constext txt_error_topen[];
+#if defined(NNTP_ABLE) && defined(INET6)
+	extern constext txt_error_socket_or_connect_problem[];
+#endif /* NNTP_ABLE && INET6 */
+#if defined(NNTP_ABLE) && defined(TLI) && !defined(INET6)
+	extern constext txt_error_server_unavailable[];
+	extern constext txt_error_topen[];
+#endif /* NNTP_ABLE && TLI && !INET6 */
 extern constext txt_error_unknown_dlevel[];
 extern constext txt_error_unknown_service[];
 extern constext txt_error_wrong_newsgroupname_in_group_response[];
@@ -703,7 +699,7 @@ extern constext txt_help_global_previous_menu[];
 extern constext txt_help_global_quit_tin[];
 extern constext txt_help_global_redraw_screen[];
 extern constext txt_help_global_save[];
-extern constext txt_help_global_save_tagged[];
+extern constext txt_help_global_auto_save[];
 extern constext txt_help_global_search_auth_backwards[];
 extern constext txt_help_global_search_auth_forwards[];
 extern constext txt_help_global_search_body[];
@@ -842,9 +838,12 @@ extern constext txt_mailed[];
 extern constext txt_mailing_to[];
 extern constext txt_mail_save_active_head[];
 extern constext txt_mark_arts_read[];
+extern constext txt_mark_art_read_tagged_current[];
 extern constext txt_mark_group_read[];
 extern constext txt_mark_thread_read[];
+extern constext txt_mark_thread_read_tagged_current[];
 extern constext txt_marked_as_unread[];
+extern constext txt_marked_tagged_arts_as_read[];
 extern constext txt_matching_cmd_line_groups[];
 extern constext txt_mini_group_1[];
 extern constext txt_mini_group_2[];
@@ -882,6 +881,7 @@ extern constext txt_no_groups[];
 extern constext txt_no_groups_to_read[];
 extern constext txt_no_last_message[];
 extern constext txt_no_mail_address[];
+extern constext txt_no_marked_arts[];
 extern constext txt_no_match[];
 extern constext txt_no_more_groups[];
 extern constext txt_no_newsgroups[];
@@ -893,7 +893,6 @@ extern constext txt_no_responses[];
 extern constext txt_no_resps_in_thread[];
 extern constext txt_no_search_string[];
 extern constext txt_no_subject[];
-extern constext txt_no_tagged_arts_to_save[];
 extern constext txt_no_term_clear_eol[];
 extern constext txt_no_term_clear_eos[];
 extern constext txt_no_term_clearscreen[];
@@ -1078,10 +1077,8 @@ extern constext txt_usage_dont_show_descriptions[];
 extern constext txt_usage_getart_limit[];
 extern constext txt_usage_help_information[];
 extern constext txt_usage_help_message[];
-#ifndef NNTP_ONLY
-	extern constext txt_usage_index_newsdir[];
-	extern constext txt_usage_update_index_files[];
-#endif /* !NNTP_ONLY */
+extern constext txt_usage_index_newsdir[];
+extern constext txt_usage_update_index_files[];
 extern constext txt_usage_maildir[];
 extern constext txt_usage_mail_bugreport[];
 extern constext txt_usage_mail_new_news[];
@@ -1112,6 +1109,10 @@ extern constext txt_warn_art_line_too_long[];
 extern constext txt_warn_article_unchanged[];
 extern constext txt_warn_blank_subject[];
 extern constext txt_warn_cancel[];
+#ifdef CHARSET_CONVERSION
+	extern constext txt_warn_charset_conversion[];
+#endif /* CHARSET_CONVERSION */
+extern constext txt_warn_downgrade[];
 extern constext txt_warn_encoding_and_external_inews[];
 #ifdef FOLLOW_USEFOR_DRAFT
 	extern constext txt_warn_header_line_comma[];
@@ -1125,6 +1126,7 @@ extern constext txt_warn_references_but_no_re[];
 extern constext txt_warn_sig_too_long[];
 extern constext txt_warn_suspicious_mail[];
 extern constext txt_warn_update[];
+extern constext txt_warn_unrecognized_version[];
 extern constext txt_warn_wrong_sig_format[];
 extern constext txt_warn_xref_not_supported[];
 extern constext txt_writing_attributes_file[];
@@ -1187,12 +1189,10 @@ extern int iso2asc_supported;
 extern int last_resp;
 extern int max_active;
 extern int max_art;
-extern int max_from;
 extern int max_newnews;
 extern int max_save;
 extern int num_headers_to_display;
 extern int num_headers_to_not_display;
-extern int max_subj;
 extern int need_resize;
 extern int num_active;
 extern int num_newnews;
@@ -1236,9 +1236,11 @@ extern struct regex_cache strokes_regex;
 #endif /* HAVE_COLOR */
 
 extern struct t_article *arts;
+extern struct t_attribute glob_attributes;
 extern struct t_config tinrc;
 extern struct t_filters glob_filter;
 extern struct t_group *active;
+extern struct t_group *curr_group;
 extern struct t_newnews *newnews;
 extern struct t_option option_table[];
 extern struct t_save *save;
@@ -1267,7 +1269,6 @@ extern t_bool reconnected_in_last_get_server;
 extern t_bool reread_active_for_posted_arts;
 extern t_bool show_description;
 extern t_bool show_subject;
-extern t_bool tex2iso_supported;
 extern t_bool batch_mode;
 extern t_bool verbose;
 extern t_bool xover_supported;
@@ -1582,5 +1583,7 @@ extern struct opttxt txt_xpost_quote_format;
 #ifdef HAVE_KEYPAD
 	extern struct opttxt txt_use_keypad;
 #endif /* HAVE_KEYPAD */
-
+#ifdef XFACE_ABLE
+	extern struct opttxt txt_use_slrnface;
+#endif /* XFACE_ABLE */
 #endif /* !EXTERN_H */

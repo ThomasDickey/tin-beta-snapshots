@@ -54,7 +54,7 @@
 /*
  * local prototypes
  */
-static int DoMatch(register const char *text, register char *p);
+static int DoMatch(const char *text, char *p);
 
 /*
  *  Match text and p, return 1 (TRUE), 0 (FALSE), or -1 (ABORT).
@@ -62,12 +62,12 @@ static int DoMatch(register const char *text, register char *p);
 
 static int
 DoMatch(
-	register const char *text,
-	register char *p)
+	const char *text,
+	char *p)
 {
-	register int last;
-	register int matched;
-	register int reverse;
+	int last;
+	int matched;
+	int reverse;
 
 	for (; *p; text++, p++) {
 		if (*text == '\0' && *p != '*')

@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-08
+ *  Updated   : 2003-05-15
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -100,12 +100,6 @@ static const char *signal_name(int code);
 #endif /* SIGTSTP */
 static void _CDECL signal_handler(SIG_ARGS);
 
-#ifndef WEXITSTATUS
-#	define WEXITSTATUS(stat_val) ((unsigned) (stat_val) >> 8)
-#endif /* !WEXITSTATUS */
-#ifndef WIFEXITED
-#	define WIFEXITED(stat_val) (((stat_val) & 255) == 0)
-#endif /* !WIFEXITED */
 
 #ifdef SIGTSTP
 	static t_bool do_sigtstp = FALSE;
@@ -279,7 +273,7 @@ handle_resize(
 	switch (signal_context) {
 		case cArt:
 			ClearScreen();
-			show_art_msg(glob_group);
+			show_art_msg(curr_group->name);
 			break;
 		case cConfig:
 			refresh_config_page(-1);
@@ -298,7 +292,7 @@ handle_resize(
 			break;
 		case cPage:
 			resize_article(TRUE, &pgart);
-			draw_page(glob_group, 0);
+			draw_page(curr_group->name, 0);
 			break;
 		case cMain:
 			break;
@@ -366,7 +360,7 @@ signal_handler(
 		case SIGCHLD:
 			wait(&wait_status);
 			RESTORE_HANDLER(sig, signal_handler);	/* death of a child */
-			system_status = WEXITSTATUS(wait_status);
+			system_status = WIFEXITED(wait_status) ? WEXITSTATUS(wait_status) : 0;
 			return;
 #endif /* SIGCHLD */
 

@@ -3,12 +3,12 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2003-04-25
+.\" Updated   : 2003-05-15
 .\" Notes     : use american english; still needs some work, i.e.:
 .\"             - document authorization (.newsauth)
 .\"
 .\"
-.TH tin 1 "April 25th, 2003" "1.5.18" "A Usenet newsreader"
+.TH tin 1 "May 15th, 2003" "1.5.18" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -42,32 +42,6 @@ tin, rtin \- A Usenet newsreader
 .IR port \|]
 .RB [\| \-I
 .IR index_dir \|]\ \|[ newsgroup \|[\|,.\|.\|.\|]\|]\|]
-.br
-.sp
-.B rtin
-.RB [\|[\| \-h \||\| \-H \||\| \-V \|]\ \||
-.RB [\|[\|[\| \-a \|]
-.RB [\| \-dlnq \||\| -Q \|]
-.RB [\| \-AzX \|]\|]
-.RB [\| \-cvZ \|]
-.RB [\|[\| -S \|]
-.RB \|\| \-s
-.IR News_dir \|]
-.RB [\| \-N \||\| -M
-.IR address \|]
-.RB [\| \-o \||\| \-w \|]\|]
-.RB [\| \-D
-.IR debug_level \|]
-.RB [\| \-G
-.IR article_limit \|]
-.RB [\| \-f
-.IR newsrc_file \|]
-.RB [\| \-g
-.IR server \|]
-.RB [\| \-m
-.IR Mail_dir \|]
-.RB [\| \-p
-.IR port \|]\ \|[ newsgroup \|[\|,.\|.\|.\|]\|]\|]
 .\"
 .\"
 .SH DESCRIPTION
@@ -140,7 +114,7 @@ option and mark all articles as read.
 Don't load newsgroup descriptions (interactive mode).
 .TP
 .BI -D " debug-level"
-Enter debug-level (1 = NNTP, 2 = all, 3 = newsrc, 4 = memeory allocation).
+Enter debug-level (1 = NNTP, 2 = all, 3 = newsrc, 4 = memory allocation).
 .TP
 .BI -f " file"
 Use the specified file of subscribed to newsgroups in place of
@@ -162,8 +136,9 @@ started.
 .TP
 .BI -I " dir"
 Directory in which to store newsgroup index files. Default is
-\fI${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}/.news\fR. This option
-is disabled if \fBtin\fP is compiled as reading news via NNTP only.
+\fI${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}/.news\fR.
+This option has no effect if \fBtin\fP retrieves its index files via
+NNTP and \fBcache_overview_files \fP is turned off.
 .TP
 .BI -l
 Get number of articles per group from the
@@ -228,7 +203,7 @@ information read section "AUTOMATIC MAILING AND SAVING NEW NEWS".
 Create/update index files for every group in
 \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR or file specified by the ''\fB-f\fP''
 option. This option is disabled if \fBtin\fP retrieves its index files via a
-NNTP server.
+NNTP server and \fBcache_overview_files \fP is turned off.
 .TP
 .B -v
 Verbose mode for ''\fB-c\fP'', ''\fB-M\fP'', ''\fB-N\fP'', ''\fB-S\fP'',
@@ -836,8 +811,8 @@ Save current article / thread / auto-selected (hot) articles / articles
 matching pattern / tagged articles. See the section "MAILING PIPING PRINTING
 REPOSTING AND SAVING ARTICLES" for more information.
 .TP
-.B GroupAutoSaveTagged 'S'
-Save tagged articles automatically without further prompting.
+.B GroupAutoSave 'S'
+Save marked articles automatically without further prompting.
 .TP
 .B GroupTag 't'
 Toggle tag-status of current article / thread for \fBGroupMail\fP ('\fBm\fP')
@@ -983,8 +958,8 @@ Save current article / thread / auto-selected (hot) articles / articles
 matching pattern / tagged articles. See the section "MAILING PIPING PRINTING
 REPOSTING AND SAVING ARTICLES" for more information.
 .TP
-.B ThreadAutoSaveTagged 'S'
-Save tagged articles automatically without further prompting.
+.B ThreadAutoSave 'S'
+Save marked articles automatically without further prompting.
 .TP
 .B ThreadTag 't'
 Toggle tag status of current article for mailing, piping, printing, saving
@@ -1220,8 +1195,8 @@ Save current article / thread / auto-selected (hot) articles / articles
 matching pattern / tagged articles. See the section "MAILING PIPING PRINTING
 REPOSTING AND SAVING ARTICLES" for more information.
 .TP
-.B PageAutoSaveTagged 'S'
-Save tagged articles automatically without further prompting.
+.B PageAutoSave 'S'
+Save marked articles automatically without further prompting.
 .TP
 .B PageTag 't'
 Toggle tag status of current article for mailing, piping, printing, saving
@@ -1774,7 +1749,7 @@ and \fBword_highlight\fP.
 .TP
 .B Attribute of highlighting with -stroke- (mono_markstroke)
 Character attribute of words emphasized like -this-. It does depend on your
-terminal which attributes are useable. See also \fBword_h_display_marks\fP
+terminal which attributes are usable. See also \fBword_h_display_marks\fP
 and \fBword_highlight\fP.
 .TP
 .B newnews
@@ -2165,6 +2140,16 @@ Allows the mouse key support in a
 to be enabled/disabled.
 Default is OFF.
 .TP
+.B Use slrnface to show ''X-Face:''s (use_slrnface)
+If enabled \fBtin\fP uses
+.BR slrnface (1)
+to interpret the ''X-Face:'' header. For this option to have any effect,
+\fBtin\fP must be running in an
+.BR xterm (1x)
+and
+.BR slrnface (1)
+must be in your $\fBPATH\fP. Default is OFF.
+.TP
 .B Wildcard matching (wildcard)
 Allows you to select how \fBtin\fP matches strings. The default is 0 and
 uses the wildmat notation, which is how this has traditionally been handled.
@@ -2364,12 +2349,12 @@ to represent a space).
 The command interface to \fBGroupMail\fP, \fBPageMail\fP, \fBPostMail\fP or
 \fBThreadMail\fP ('\fBm\fP'), \fBPipe\fP ('\fB|\fP'), \fBPrint\fP ('\fBo\fP'),
 \fBPageRepost\fP or \fBGroupRepost\fP ('\fBx\fP') and \fBGroupSave\fP,
-\fBPageSave\fP or \fBThreadSave\fP ('\fBs\fP' and \fBGroupAutoSaveTagged\fP,
-\fBPageAutoSaveTagged\fP or \fBThreadAutoSaveTagged\fP '\fBS\fP') articles
+\fBPageSave\fP or \fBThreadSave\fP ('\fBs\fP' and \fBGroupAutoSave\fP,
+\fBPageAutoSave\fP or \fBThreadAutoSave\fP '\fBS\fP') articles
 is the same for ease of use.
 .PP
-Auto-saving with \fB*AutoSaveTagged\fP ('\fBS\fP') is a special case and
-operates only on tagged articles. They will processed without any further
+Auto-saving with \fB*AutoSave\fP ('\fBS\fP') is a special case and
+operates only on marked articles. They will processed without any further
 prompting according to the default save parameters defined in tinrc or by
 any attributes set for the current group.
 .PP
@@ -2864,11 +2849,6 @@ variable instead of the system default.
 Set the ISO to ASCII charset decoding table character to use in decoding
 an articles text. Values can range from 0 to 6.
 .TP
-.B BUG_ADDRESS
-Set the address to which bug reports are mailed to to the contents of the
-variable instead of the system default. Its usage is undesired, use
-\fBbugaddress\fP in \fItin.defaults\fR instead.
-.TP
 .B ORGANIZATION
 Set the article header field ''Organization:'' to the contents of the
 variable instead of the system default. If reading news on an Apollo
@@ -3001,7 +2981,7 @@ category for character handling functions. Usually it determines the
 character classes for pattern matching character classification and case
 conversion. Currently this is not true for \fBtin\fP (which temporary
 unsets \fB$LC_CTYPE\fP right before any match is done to avoid confusion).
-It's value should be of the from
+It's value should be of the form
 \fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR][\fI@modifier\fR]. See
 .BR environ (5)
 for more infos.
@@ -3010,7 +2990,7 @@ for more infos.
 .TP
 .B LC_MESSAGES
 Formats of informative and diagnostic messages and interactive responses.
-It's value should be of the from
+It's value should be of the form
 \fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR][\fI@modifier\fR]. See
 .BR locale (5)
 and
@@ -3019,7 +2999,7 @@ for more infos.
 .TP
 .B LC_ALL
 This variable overrides the value of the \fB$LANG\fP variable and any
-other \fB$LC_\fP variable. It's value should be of the from
+other \fB$LC_\fP variable. It's value should be of the form
 \fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR]. See
 .BR locale (5)
 and
@@ -3030,7 +3010,7 @@ for more infos.
 This variable determines the
 .BR locale (5)
 category for any category not specifically selected with a variable
-starting with \fB$LC_\fP. It's value should be of the from
+starting with \fB$LC_\fP. It's value should be of the form
 \fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR]. See
 .BR environ (5)
 for more infos.
@@ -3251,6 +3231,7 @@ Urs Janssen <urs@tin.org>
 .BR rn (1),
 .BR sendmail (1),
 .BR shar (1),
+.BR slrnface (1),
 .BR tass (1),
 .BR unshar (1),
 .BR uudecode (1),

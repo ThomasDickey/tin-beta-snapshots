@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-04-12
+ *  Updated   : 2003-05-15
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -427,21 +427,36 @@ selection_page(
 				break;
 
 			case iKeyPost:	/* post a basenote */
-				if (!can_post) {
-					info_message(_(txt_cannot_post));
-					break;
-				}
 				if (!selmenu.max) {
 					sprintf(buf, _(txt_post_newsgroups), tinrc.default_post_newsgroups);
-					if (!(prompt_string_default(buf, tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS)))
+					if (!prompt_string_default(buf, tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS))
 						break;
-
-					if (group_find(buf) == NULL) {
-						error_message(_(txt_not_in_active_file), buf);
+					if (group_find(tinrc.default_post_newsgroups) == NULL) {
+						error_message(_(txt_not_in_active_file), tinrc.default_post_newsgroups);
 						break;
+					} else {
+						strcpy(buf, tinrc.default_post_newsgroups);
+#if 1 /* TODO: fix the rest of the code so we don't need this anymore */
+						/*
+						 * this is a gross hack to avoid a crash in the
+						 * CHARSET_CONVERSION conversion case in new_part()
+						 * which relies currently relies on CURR_GROUP
+						 */
+						selmenu.curr = my_group_add(buf);
+						/*
+						 * and the next hack to avoid a grabbled selection
+						 * screen after the posting
+						 */
+						toggle_my_groups(NULL);
+						toggle_my_groups(NULL);
+#endif /* 1 */
 					}
 				} else
 					strcpy(buf, CURR_GROUP.name);
+				if (!can_post && !CURR_GROUP.bogus && !CURR_GROUP.attribute->mailing_list) {
+					info_message(_(txt_cannot_post));
+					break;
+				}
 				if (post_article(buf))
 					show_selection_page();
 				break;
@@ -971,7 +986,7 @@ read_groups(
 			case GRP_ENTER:		/* group_page() has already set selmenu.curr */
 				break;
 
-			case GRP_RETURN:
+			case GRP_RETSELECT:
 			case GRP_EXIT:
 			default:
 				done = TRUE;
@@ -996,7 +1011,7 @@ set_groupname_len(
 	t_bool all_groups)
 {
 	int len;
-	register int i;
+	int i;
 
 	groupname_len = 0;
 
@@ -1201,21 +1216,21 @@ static void
 select_read_group(
 	void)
 {
-	struct t_group currgrp;
+	struct t_group *currgrp;
 
 	if (!selmenu.max || selmenu.curr == -1) {
 		info_message(_(txt_no_groups));
 		return;
 	}
 
-	currgrp = CURR_GROUP;
+	currgrp = &CURR_GROUP;
 
-	if (currgrp.bogus) {
+	if (currgrp->bogus) {
 		info_message(_(txt_not_exist));
 		return;
 	}
 
-	if (currgrp.xmax > 0 && (currgrp.xmin <= currgrp.xmax))
+	if (currgrp->xmax > 0 && (currgrp->xmin <= currgrp->xmax))
 		read_groups();
 	else
 		info_message(_(txt_no_arts));

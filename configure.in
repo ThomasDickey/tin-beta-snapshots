@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2003-04-08
+dnl Updated   : 2003-05-16
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2003 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -720,6 +720,7 @@ CF_CHECK_HEADERS(\
 	sgtty.h \
 	socket.h \
 	stdarg.h \
+	stdbool.h \
 	stddef.h \
 	stdlib.h \
 	string.h \
@@ -851,8 +852,10 @@ AC_CHECK_FUNCS(\
 	bcopy \
 	chmod \
 	closesocket \
+	execlp \
 	fcntl \
 	fdopen \
+	fork \
 	ftime \
 	getcwd \
 	gettimeofday \
@@ -867,6 +870,7 @@ AC_CHECK_FUNCS(\
 	memmove \
 	memset \
 	mkdir \
+	mkfifo \
 	mktemp \
 	mkstemp \
 	nl_langinfo \
@@ -899,6 +903,7 @@ AC_CHECK_FUNCS(\
 	use_default_colors \
 	usleep \
 	vsnprintf \
+	waitpid \
 $cf_tc_funcs )
 
 AC_CHECK_FUNC(flock,

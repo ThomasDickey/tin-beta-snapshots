@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2003-03-13
+ *  Updated   : 2003-05-14
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
@@ -93,8 +93,10 @@ my_strdup(
 	size_t len = strlen(str) + 1;
 	void *ptr = my_malloc(len);
 
+#if 0 /* as my_malloc exits on error, ptr can't be NULL */
 	if (ptr == NULL)
 		return NULL;
+#endif /* 0 */
 
 	memcpy(ptr, str, len);
 	return (char *) ptr;
@@ -192,8 +194,8 @@ strpbrk(
 	char *str1,
 	char *str2)
 {
-	register char *ptr1;
-	register char *ptr2;
+	char *ptr1;
+	char *ptr2;
 
 	for (ptr1 = str1; *ptr1 != '\0'; ptr1++) {
 		for (ptr2 = str2; *ptr2 != '\0'; ) {
@@ -214,10 +216,10 @@ strstr(
 	char *text,
 	char *pattern)
 {
-	register unsigned char *p, *t;
-	register int i, j, *delta;
-	register size_t p1;
+	unsigned char *p, *t;
+	int i, j, *delta;
 	int deltaspace[256];
+	size_t p1;
 	size_t textlen;
 	size_t patlen;
 
@@ -608,7 +610,7 @@ strrstr(
 			}
 		}
 	}
-	return 0;
+	return NULL;
 }
 #endif /* HAVE_STRRSTR */
 
@@ -623,7 +625,8 @@ wcspart(
 	wchar_t *to,
 	const wchar_t *from,
 	int columns,
-	int size_to)
+	int size_to,
+	t_bool pad)
 {
 	int n, i = 0;
 	wchar_t *ptr, *wbuf;
@@ -642,10 +645,12 @@ wcspart(
 	}
 
 	/* pad with spaces */
-	n = columns - wcswidth(to, size_to - 1) + (int) wcslen(to);
-	for (; i < MIN(n, size_to - 1); i++)
-		to[i] = (wint_t) ' ';
-	to[i] = (wint_t) '\0';
+	if (pad) {
+		n = columns - wcswidth(to, size_to - 1) + (int) wcslen(to);
+		for (; i < MIN(n, size_to - 1); i++)
+			to[i] = (wint_t) ' ';
+		to[i] = (wint_t) '\0';
+	}
 
 	free(wbuf);
 }

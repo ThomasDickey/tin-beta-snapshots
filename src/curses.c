@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2003-04-24
+ *  Updated   : 2003-05-05
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -203,7 +203,9 @@ static int _columns, _line, _lines;
 #	endif /* USE_POSIX_TERMIOS */
 #endif /* M_UNIX */
 
-static int in_inverse;			/* 1 when in inverse, 0 otherwise */
+#if 0
+	static int in_inverse;			/* 1 when in inverse, 0 otherwise */
+#endif /* 0 */
 
 /*
  * Local prototypes
@@ -770,7 +772,7 @@ void
 StartInverse(
 	void)
 {
-	in_inverse = 1;
+/*	in_inverse = 1; */
 	if (_setinverse && tinrc.inverse_okay) {
 #	ifdef HAVE_COLOR
 		if (use_color) {
@@ -794,7 +796,7 @@ void
 EndInverse(
 	void)
 {
-	in_inverse = 0;
+/*	in_inverse = 0; */
 	if (_clearinverse && tinrc.inverse_okay) {
 #	ifdef HAVE_COLOR
 		if (use_color) {
@@ -1265,7 +1267,7 @@ input_pending(
 #	if defined(HAVE_POLL) && !defined(HAVE_SELECT)
 	static int Timeout;
 	static long nfds = 1;
-	static struct pollfd fds[]= {{ STDIN_FILENO, POLLIN, 0 }};
+	static struct pollfd fds[] = {{ STDIN_FILENO, POLLIN, 0 }};
 
 	Timeout = delay;
 	if (poll(fds, nfds, Timeout) < 0) /* Error on poll */
@@ -1465,7 +1467,7 @@ int
 ReadCh(
 	void)
 {
-	register int result;
+	int result;
 #	ifndef READ_CHAR_HACK
 	char ch;
 #	endif /* READ_CHAR_HACK */

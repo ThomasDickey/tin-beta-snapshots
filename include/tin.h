@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-04-25
+ *  Updated   : 2003-05-15
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -117,6 +117,7 @@
 
 enum context { cMain, cArt, cConfig, cFilter, cGroup, cHelp, cInfopager, cPage, cSelect, cThread };
 enum resizer { cNo, cYes, cRedraw };
+enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 
 #ifdef VMS
 #	ifdef __DECC
@@ -318,8 +319,12 @@ enum resizer { cNo, cYes, cRedraw };
 #endif /* HAVE_SYS_WAIT_H */
 
 #ifndef WEXITSTATUS
-#	define WEXITSTATUS(status)		((int) (((status) >> 8) & 0xFF))
+#	define WEXITSTATUS(status)	((int) (((status) >> 8) & 0xFF))
 #endif /* !WEXITSTATUS */
+
+#ifndef WIFEXITED
+#	define WIFEXITED(status)	((int) (((status) & 0xFF) == 0))
+#endif /* !WIFEXITED */
 
 /*
  * Needed for timeout in user abort of indexing a group (BSD & SYSV variaties)
@@ -632,9 +637,11 @@ enum resizer { cNo, cYes, cRedraw };
 #ifdef HAVE_LONG_FILE_NAMES
 #	define PATH_PART	"part"
 #	define PATH_PATCH	"patch"
+#	define INDEX_LOCK	"%stin.%s.LCK"
 #else
 #	define PATH_PART	""
 #	define PATH_PATCH	"p"
+#	define INDEX_LOCK	"%s%s.LCK"
 #endif /* HAVE_LONG_FILE_NAMES */
 
 /*
@@ -766,7 +773,7 @@ enum resizer { cNo, cYes, cRedraw };
 
 #define FILTER_FILE	"filter"
 /* editor offset for filter-file; TODO: doesn't match for german filter-file */
-#define FILTER_FILE_OFFSET	32
+#define FILTER_FILE_OFFSET	27
 #define INPUT_HISTORY_FILE	".inputhistory"
 #ifdef HAVE_MH_MAIL_HANDLING
 #	define MAILGROUPS_FILE	"mailgroups"
@@ -787,6 +794,7 @@ enum resizer { cNo, cYes, cRedraw };
 
 
 #ifdef USE_INN_NNTPLIB
+#	include <libinn.h> /* TODO: add configure chek for it */
 #	define _CONF_FROMHOST	"fromhost"
 #	define _CONF_ORGANIZATION	"organization"
 #	define _CONF_SERVER	"server"
@@ -801,7 +809,7 @@ enum resizer { cNo, cYes, cRedraw };
 /* Philip Hazel's Perl regular expressions library */
 #include	<pcre.h>
 
-#if defined(HAVE_ICONV)
+#ifdef HAVE_ICONV
 #	define CHARSET_CONVERSION 1
 #	ifdef HAVE_ICONV_H
 #		include <iconv.h>
@@ -981,7 +989,7 @@ enum resizer { cNo, cYes, cRedraw };
  */
 #define NUM_MIME_ENCODINGS	4
 
-#define MIME_ENCODING_8BIT	0	/* not used */
+#define MIME_ENCODING_8BIT	0
 #define MIME_ENCODING_BASE64	1
 #define MIME_ENCODING_QP	2
 #define MIME_ENCODING_7BIT	3
@@ -1094,8 +1102,9 @@ enum resizer { cNo, cYes, cRedraw };
 
 
 /*
- * used by feed_articles() & show_mini_help()
+ * used by feed_articles() & show_mini_help() & quick_filter & add_filter_rule
  */
+#define INTERNAL_LEVEL  0	/* do we need this? see comments in filter.c */
 #define SELECT_LEVEL	1
 #define GROUP_LEVEL	2
 #define THREAD_LEVEL	3
@@ -1108,7 +1117,7 @@ enum resizer { cNo, cYes, cRedraw };
 #define FEED_PIPE		2
 #define FEED_PRINT		3
 #define FEED_SAVE		4
-#define FEED_AUTOSAVE_TAGGED		5
+#define FEED_AUTOSAVE	5
 #define FEED_REPOST		6
 
 #if 0
@@ -1244,15 +1253,18 @@ enum resizer { cNo, cYes, cRedraw };
  * -1 is kind of overloaded as an error from which_thread() and other functions
  * where we wish to return to the next level up
  */
-#define GRP_RETURN		-1	/* Pager 'T' command only -> return to selection screen */
-#define GRP_QUIT		-2	/* Set by 'Q' when coming all the way out */
-#define GRP_NEXTUNREAD	-3	/* (After catchup) goto next unread item */
-#define GRP_NEXT		-4	/* (After catchup) move to next item */
-#define GRP_ARTFAIL		-5	/* show_page() only. Failed to get into the article */
-#define GRP_KILLED		-6	/* ?? Thread was killed at pager level */
-#define GRP_GOTOTHREAD	-7	/* show_page() only. Goto thread menu */
-#define GRP_ENTER		-8	/* New group is set, spin in read_groups() */
-#define GRP_EXIT		-9	/* Normal return to higher level */
+enum {
+	GRP_RETSELECT	= -1,	/* Pager 'T' command only -> return to selection screen */
+	GRP_QUIT		= -2,	/* Set by 'Q' when coming all the way out */
+	GRP_NEXTUNREAD	= -3,	/* (After catchup) goto next unread item */
+	GRP_NEXT		= -4,	/* (After catchup) move to next item */
+	GRP_ARTUNAVAIL	= -5,	/* show_page() Article is unavailable */
+	GRP_ARTABORT	= -6,	/* show_page() User aborted article read */
+	GRP_KILLED		= -7,	/* ?? Thread was killed at pager level */
+	GRP_GOTOTHREAD	= -8,	/* show_page() only. Goto thread menu */
+	GRP_ENTER		= -9,	/* New group is set, spin in read_groups() */
+	GRP_EXIT		= -10	/* Normal return to higher level */
+};
 
 #ifndef EXIT_SUCCESS
 #	define EXIT_SUCCESS	0	/* Successful exit status */
@@ -1662,10 +1674,6 @@ struct t_filter {
 	int  gnksa_num;			/* GNKSA code */
 	int  score;			/* score to give if rule matches */
 	char *xref;			/* groups in xref line */
-	int xref_max;			/* maximal number of groups in newsgroups line */
-	int xref_score_cnt;
-	int xref_scores[10];
-	char *xref_score_strings[10];
 	time_t time;			/* expire time in seconds */
 	struct t_filter *next;		/* next rule valid in group */
 	unsigned int inscope:4;		/* if group matches scope ie. 'comp.os.*' */

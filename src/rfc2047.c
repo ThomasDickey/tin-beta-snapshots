@@ -69,16 +69,16 @@ const char base64_alphabet[64] =
 
 static unsigned char base64_rank[256];
 static int base64_rank_table_built;
-static int quoteflag;
+static t_bool quoteflag;
 
 /*
  * local prototypes
  */
 static int do_b_encode(char *w, char *b, int max_ewsize, t_bool isstruct_head);
-static int rfc1522_do_encode(char *what, char **where, const char *charset, t_bool break_long_line);
 static int sizeofnextword(char *w);
 static int which_encoding(char *w);
 static t_bool contains_nonprintables(char *w, t_bool isstruct_head);
+static t_bool rfc1522_do_encode(char *what, char **where, const char *charset, t_bool break_long_line);
 static unsigned hex2bin(int x);
 static void build_base64_rank_table(void);
 static void str2b64(const char *from, char *to);
@@ -460,7 +460,7 @@ sizeofnextword(
 }
 
 
-static int
+static t_bool
 rfc1522_do_encode(
 	char *what,
 	char **where,
@@ -722,7 +722,7 @@ rfc1522_encode(
 	t_bool ismail)
 {
 	char *b, *buf;
-	int x;
+	t_bool x;
 /*
  * break_long_line is FALSE for news posting unless MIME_BREAK_LONG_LINES is
  * defined, but it's TRUE for mail messages regardless of whether or not
@@ -778,7 +778,7 @@ rfc15211522_encode(
 		return;
 	}
 
-	quoteflag = 0;
+	quoteflag = FALSE;
 
 	while ((header = tin_fgets(f, TRUE))) {
 #ifdef CHARSET_CONVERSION

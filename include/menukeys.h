@@ -3,7 +3,7 @@
  *  Module    : menukeys.h
  *  Author    : S.Robbins
  *  Created   : 1994-08-15
- *  Updated   : 2003-03-29
+ *  Updated   : 2003-05-14
  *  Notes     :
  *
  * Copyright (c) 1994-2003 Steve Robbins <stever@cs.mcgill.ca>
@@ -220,7 +220,7 @@
 #define iKeyGroupNextUnreadArt 'N'
 #define iKeyGroupPrevUnreadArt 'P'
 #define iKeyGroupBugReport 'R'
-#define iKeyGroupAutoSaveTagged 'S'
+#define iKeyGroupAutoSave 'S'
 #define iKeyGroupTagParts 'T'
 #define iKeyGroupUntag 'U'
 #define iKeyGroupMarkUnselArtRead 'X'
@@ -289,7 +289,7 @@
 #define iKeyPageNextUnreadArt 'N'
 #define iKeyPagePrevUnreadArt 'P'
 #define iKeyPageReply 'R'
-#define iKeyPageAutoSaveTagged 'S'
+#define iKeyPageAutoSave 'S'
 #define iKeyPageGroupSel 'T'
 #define iKeyPageViewUrl 'U'
 #define iKeyPageViewAttach 'V'
@@ -393,7 +393,7 @@
 #define iKeyThreadCatchupNextUnread 'C'
 #define iKeyThreadMarkArtRead 'K'
 #define iKeyThreadBugReport 'R'
-#define iKeyThreadAutoSaveTagged 'S'
+#define iKeyThreadAutoSave 'S'
 #define iKeyThreadUntag 'U'
 #define iKeyThreadMarkThdUnread 'Z'
 #define iKeyThreadCatchup 'c'
@@ -403,6 +403,9 @@
 #define iKeyThreadTag 't'
 #define iKeyThreadMarkArtUnread 'z'
 #define iKeyThreadUndoSel '~'
+
+#define iKeyMarkReadTag 't'
+#define iKeyMarkReadCur 'c'
 
 typedef struct kn {
 	const unsigned char defaultkey;	/* The default key definition */
@@ -428,6 +431,7 @@ typedef struct mkm {
 	t_menukeys filter_quit_edit_save;
 	t_menukeys group_nav;
 	t_menukeys info_nav;
+	t_menukeys mark_read_tagged_current;
 	t_menukeys nrctbl_create;
 	t_menukeys page_nav;
 	t_menukeys pgp_mail;

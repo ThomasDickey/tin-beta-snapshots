@@ -47,7 +47,3 @@ expiretover
 	cache_overview_files=ON in your tinrc you might want to run this
 	script reguarly (i.e. once a day from cron) to purge old overview
 	files.
-
-tinrcupdate.pl
-	is a small perl script that cleanly updates older tinrcs to work
-	with the latest tin version.

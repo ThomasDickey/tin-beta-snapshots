@@ -165,9 +165,6 @@ refs_only=pattern   References: line (e.g. <123@ether.net>) without Message-Id:
 lines=num           Lines: ; <num matches less than, >num matches more than.
 gnksa=[<>]?NUM      GNKSA parse_from() return code
 xref=pattern        Xref: ; filter crossposts to groups matching pattern
-xref_max=num                } Xref: ; potentially obsolete, collects
-xref_score=num,pattern      } scores for crossposting in other
-                            } newsgroups
 
 When you are using wildmat pattern-matching, patterns in ~/.tin/filter
 should be delimited with "*", verbatim wildcards in patterns must be
@@ -285,8 +282,7 @@ case=1
 score=-200
 subj=[$*!]{3,}
 lines=<3
-xref_max=10
-
+xref=([^,]+,){10,}
 
 comment= mark own articles and direct replies based on message-id
 comment= use 2*hot as score to unkill otherwise killed articles
@@ -322,4 +318,4 @@ from=@ac\.example\s\(John\sSmith\)$
 - make the time value in the filter file more human readable.
 - rewrite filtering order to get optimal performance
 - filtering on arbitrary header lines
-- throw out "xref*" when it is obsolete for sure
+- move docu to tin.5

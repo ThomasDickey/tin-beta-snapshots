@@ -53,6 +53,7 @@ Adding a new attribute:
   Add code to write out the attribute in the for_each_group() loop
   [ Currently unused, but wise to keep it up to date ]
 . Add code to write out the attribute in dump_attributes()
+. Free up the attribute in memory.c:free_attributes_array() if needed
 
 Where possible try to keep the ordering of the attributes in the various
 functions and structures consistent

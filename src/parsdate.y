@@ -523,11 +523,11 @@ Convert(
 	1972, 1976, 1980, 1984, 1988, 1992, 1996,
 	2000, 2004, 2008, 2012, 2016, 2020, 2024, 2028, 2032, 2036
     };
-    register const int	*yp;
-    register const int	*mp;
-    register time_t	Julian;
-    register int	i;
-    time_t		tod;
+    const int *yp;
+    const int *mp;
+    int i;
+    time_t Julian;
+    time_t tod;
 
     if (Year < 0)
 	Year = -Year;
@@ -602,13 +602,13 @@ RelativeMonth(
 
 static int
 LookupWord(
-    char		*buff,
-    register int	length)
+    char *buff,
+    int length)
 {
-    register char	*p;
-    register const char *q;
-    register const TABLE *tp;
-    register int	c;
+    char	*p;
+    const char *q;
+    const TABLE *tp;
+    int	c;
 
     p = buff;
     c = p[0];
@@ -698,12 +698,12 @@ LookupWord(
 static int
 date_lex(void)
 {
-    register int	c;
-    register char	*p;
+    int	c;
+    char	*p;
     char		buff[20];
-    register int	sign;
-    register int	i;
-    register int	nesting;
+    int	sign;
+    int	i;
+    int	nesting;
 
     forever {
 	/* Get first character after the whitespace. */

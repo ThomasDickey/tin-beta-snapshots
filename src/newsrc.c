@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-04-13
+ *  Updated   : 2003-05-14
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -247,7 +247,7 @@ create_newsrc(
 	char *newsrc_file)
 {
 	FILE *fp;
-	register int i;
+	int i;
 
 	if ((fp = fopen(newsrc_file, "w")) != NULL) {
 		wait_message(0, _(txt_creating_newsrc));
@@ -479,7 +479,7 @@ grp_mark_read(
 	struct t_group *group,
 	struct t_article *art)
 {
-	register int i;
+	int i;
 
 #ifdef DEBUG_NEWSRC
 	debug_print_comment("c/C command");
@@ -544,7 +544,7 @@ thd_mark_read(
 	struct t_group *group,
 	long thread)
 {
-	register int i;
+	int i;
 
 #ifdef DEBUG_NEWSRC
 	debug_print_comment("Mark thread read K command");
@@ -560,7 +560,7 @@ thd_mark_unread(
 	struct t_group *group,
 	long thread)
 {
-	register int i;
+	int i;
 
 #ifdef DEBUG_NEWSRC
 	debug_print_comment("Mark thread unread Z command");
@@ -800,9 +800,9 @@ void
 parse_unread_arts(
 	struct t_group *group)
 {
+	int i;
 	long unread = 0;
 	long bitmin, bitmax;
-	register int i;
 	t_bitmap *newbitmap = (t_bitmap *) 0;
 
 	bitmin = group->newsrc.xmin;
@@ -937,7 +937,7 @@ print_bitmap_seq(
 /*
  * rewrite .newsrc and position group at specifed position
  */
-int
+t_bool
 pos_group_in_newsrc(
 	struct t_group *group,
 	int pos)
@@ -1121,7 +1121,7 @@ void
 catchup_newsrc_file(
 	void)
 {
-	register int i;
+	int i;
 	struct t_group *group;
 
 	for (i = 0; i < selmenu.max; i++) {

@@ -87,7 +87,7 @@ GroupMarkThdRead		K
 GroupNextUnreadArt		N
 GroupPrevUnreadArt		P
 GroupBugReport			R
-GroupAutoSaveTagged		S
+GroupAutoSave		S
 GroupTagParts			T
 GroupUntag			U
 GroupMarkUnselArtRead		X
@@ -149,7 +149,7 @@ PageKillThd			K
 PageNextUnreadArt		N
 PagePrevUnreadArt		P
 PageReply			R
-PageAutoSaveTagged		S
+PageAutoSave		S
 PageGroupSel			T
 PageViewUrl			U
 PageViewAttach			V
@@ -253,7 +253,7 @@ ThreadReverseSel		@
 ThreadCatchupNextUnread		C
 ThreadMarkArtRead		K
 ThreadBugReport			R
-ThreadAutoSaveTagged		S
+ThreadAutoSave		S
 ThreadUntag			U
 ThreadMarkThdUnread		Z
 ThreadCatchup			c

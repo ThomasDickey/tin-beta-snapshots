@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-29
+ *  Updated   : 2003-05-14
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -250,7 +250,7 @@ center_line(
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if (width >= cCOLS) {
-		wcspart(wbuffer2, wbuffer, cCOLS - 6, ARRAY_SIZE(wbuffer2) - 5);
+		wcspart(wbuffer2, wbuffer, cCOLS - 6, ARRAY_SIZE(wbuffer2) - 5, TRUE);
 		mbstowcs(suffix_buf, TRUNC_TAIL, ARRAY_SIZE(suffix_buf) - 1);
 		wcsncat(wbuffer2, suffix_buf, 4);
 		wcstombs(buffer, wbuffer2, sizeof(buffer) - 1);
@@ -413,25 +413,25 @@ show_progress(
 	long count,
 	long total)
 {
+	char display[LEN];
+	int ratio;
+	time_t curr_time;
 	static char last_display[LEN];
 	static const char *last_txt;
 	static int last_length;
 	static int last_ratio;
-	static int last_total;
+	static long last_total;
 	static time_t last_update;
-	char display[LEN];
-	int ratio;
-	time_t curr_time;
 #ifdef HAVE_GETTIMEOFDAY
-	static int last_count;
+	static long last_count;
 	static int average;
 	static int samples;
 	static int sum;
 	static struct timeval last_time;
 	static struct timeval this_time;
 	int time_diff;
-	int count_diff;
 	int secs_left;
+	long count_diff;
 #endif /* HAVE_GETTIMEOFDAY */
 
 	if (batch_mode || count <= 0 || total == 0)

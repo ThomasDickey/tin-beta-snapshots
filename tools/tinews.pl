@@ -39,7 +39,7 @@
 #       - check for ~/.newsauth and use username/password if found
 #
 # version Number
-my $version = "1.0.8";
+my $version = "1.0.9";
 
 # TODO: put into a "my %config('NNTPServer' => 'news', ... );" array
 my $NNTPServer	= 'news';		# your NNTP servers name
@@ -54,7 +54,7 @@ my $PGPVersion	= '2';			# Use 2 for 2.X, 5 for PGP > 2.X and GPG for GPG
 
 my $Interactive = 1;			# allow interactive usage
 
-my $sendmail	= '| /usr/sbin/sendmail -t'; # set to '' to disable mail-actions
+my $sendmail	= '| /usr/sbin/sendmail -i -t'; # set to '' to disable mail-actions
 
 my @PGPSignHeaders = ('From', 'Newsgroups', 'Subject', 'Control',
 	'Supersedes', 'Followup-To', 'Date', 'Sender', 'Approved',
@@ -596,8 +596,8 @@ security is an issue, don't use this script.
 
 =head1 NOTES
 
-B<tinews.pl> is designed to be used with B<pgp>(1)-2.6.3.
-B<pgp>(1)-5 and B<gpg>(1) may also work.
+B<tinews.pl> is designed to be used with B<pgp>(1)-2.6.3,
+B<pgp>(1)-5 and B<gpg>(1).
 
 B<tinews.pl> requires the following standard modules to be installed:
 B<Net::NNTP>(3pm), B<Time::Local>(3pm) and B<Term::Readline>(3pm).

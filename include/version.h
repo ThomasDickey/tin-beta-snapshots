@@ -3,7 +3,7 @@
  *  Module    : version.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-05-09
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -42,9 +42,12 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.5.18"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20030425"
-#	define RELEASENAME	"Peephole"
+#	define RELEASEDATE	"20030602"
+#	define RELEASENAME	"Darts"
+/* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.6"
+#	define ATTRIBUTES_VERSION	"1.0.0"
+#	define FILTER_VERSION	"1.0.0"
 
 #	ifdef M_AMIGA
 #		define OSNAME	"AMIGA"

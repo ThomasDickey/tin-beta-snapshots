@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2003-04-25
+.\" Updated   : 2003-05-15
 .\" Notes     : needs a some work
 .\"
-.TH tin 5 "April 25th, 2003" "1.5.17" "A Usenet newsreader"
+.TH tin 5 "May 15th, 2003" "1.5.18" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -426,11 +426,11 @@ SAVING NEW NEWS in
 If this is set to ON, then saved article files that have been
 post-processed will be automatically deleted, otherwise the user will
 be asked whether to delete the post-processed files. Automatic
-processing of tagged articles using \fBGroupAutoSaveTagged\fP
+processing of marked articles using \fBGroupAutoSave\fP
 ('\fBS\fP') will suppress prompting.
 .TP
 .B followup_to
-Set ''Followup-To:''-header to the specifed group(s).
+Set ''Followup-To:''-header to the specified group(s).
 .TP
 .B from
 Identical to the tinrc variable \fBmail_address\fP
@@ -443,7 +443,7 @@ Used when a group is a mailing list. All responses to the group will be
 directed to this email address instead
 .TP
 .B mime_types_to_save
-A comma seperated list of MIME major/minor Content-Types that will be
+A comma separated list of MIME major/minor Content-Types that will be
 saved when using the view/save and save/autosave features.
 A single * can be used to wildcard the major and/or minor type and
 a ! as the first character in an entry will negate it, eg:
@@ -498,7 +498,7 @@ string starts with a / or ~ then it is assumed to be the name of a file
 containing the text to insert.
 .TP
 .B x_comment_to
-Insert ''X-Comment-To:''-header, this is only usefull in FIDO groups.
+Insert ''X-Comment-To:''-header, this is only useful in FIDO groups.
 .TP
 .B x_headers
 A string including header-name and the contents of the header that will
@@ -651,14 +651,11 @@ Match against ''Lines:'', <num matches less than, >num matches more than.
 .B gnksa
 Match against ''From:''-address parser return codes.
 .TP
-.B xref_max
-Still valid but might be removed in the future.
-.TP
-.B xref_score
-Still valid but might be removed in the future.
-.TP
 .B xref
-Match against ''Xref:''
+Match against ''Xref:''-line. Before any matching is done the line is
+turned into the same format ''Newsgroups:'' has that is it is turned
+into a comma separated newsgoup list with all other informations (i.e
+the article counter) removed.
 .TP
 .B time
 time_t value when rule expires
@@ -764,7 +761,7 @@ Below is a list of all keynames and their default bindings.
 \fBGroupNextUnreadArt\fP	N
 \fBGroupPrevUnreadArt\fP	P
 \fBGroupBugReport\fP	R
-\fBGroupAutoSaveTagged\fP	S
+\fBGroupAutoSave\fP	S
 \fBGroupTagParts\fP	T
 \fBGroupUntag\fP	U
 \fBGroupMarkUnselArtRead\fP	X
@@ -820,7 +817,7 @@ Below is a list of all keynames and their default bindings.
 \fBPageNextUnreadArt\fP	N
 \fBPagePrevUnreadArt\fP	P
 \fBPageReply\fP	R
-\fBPageAutoSaveTagged\fP	S
+\fBPageAutoSave\fP	S
 \fBPageGroupSel\fP	T
 \fBPageViewUrl\fP	U
 \fBPageViewAttach\fP	V
@@ -913,7 +910,7 @@ Below is a list of all keynames and their default bindings.
 \fBThreadCatchupNextUnread\fP	C
 \fBThreadMarkArtRead\fP	K
 \fBThreadBugReport\fP	R
-\fBThreadAutoSaveTagged\fP	S
+\fBThreadAutoSave\fP	S
 \fBThreadUntag\fP	U
 \fBThreadMarkThdUnread\fP	Z
 \fBThreadCatchup\fP	c
@@ -1545,7 +1542,7 @@ Default is ON.
 .B post_process_type
 This specifies whether to perform post processing on saved articles.
 Because the shell archive may contain commands you may not want to
-be executed, be carefull when extracting shell archives.
+be executed, be careful when extracting shell archives.
 The following values are allowed:
 .RS +.8i
 .IP 0 3
@@ -1554,7 +1551,7 @@ The following values are allowed:
 \fBShell archives\fP, unpacking of multi-part
 .BR shar (1)
 files only. Because the shell archive may contain commands you may
-not want to be executed, be carefull with this option.
+not want to be executed, be careful with this option.
 .IP 2
 \fBYes\fP, binary attachments and data will be decoded and saved.
 .RE
@@ -1876,6 +1873,18 @@ Allows the mouse key support in a
 to be enabled/disabled.
 Default is OFF.
 .TP
+.B use_slrnface
+If enabled
+.BR slrnface (1)
+will be used to interpret the ''X-Face:'' header. For this option to have any
+effect,
+.BR tin (1)
+must be running in an
+.BR xterm (1x)
+and
+.BR slrnface (1)
+must be in your $\fBPATH\fP. Default is OFF.
+.TP
 .B wildcard
 Allows you to select how
 .BR tin (1)
@@ -1957,7 +1966,6 @@ Defines the email address to which users can send bug reports using a
 built in function. The default points to a developers mailing list located
 at tin.org. You might want to change this address to one of your local
 administration if you want to deal with your lusers problems on your own.
-\fB$BUG_ADDRESS\fP overrides any specified value.
 .TP
 .B inewsdir
 Defines the directory containing of the
@@ -2199,6 +2207,7 @@ uses the LIST SUBSCRIPTIONS (\fBRFC2980\fP) command instead.
 .BR pgp (1),
 .BR rn (1),
 .BR shar (1),
+.BR slrnface (1),
 .BR tin (1),
 .BR xterm (1x),
 .BR iconv (3),

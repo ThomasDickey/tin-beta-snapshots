@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-04-25
+ *  Updated   : 2003-05-15
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -63,7 +63,7 @@ static t_lineinfo *artline;	/* active 'lineinfo' data */
 
 t_openartinfo pgart =	/* Global context of article open in the pager */
 	{
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, FALSE, 0 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, FALSE, 0 },
 		FALSE, 0,
 		NULL, NULL, NULL, NULL,
 	};
@@ -96,7 +96,7 @@ static t_bool reveal_ctrl_l;	/* set when ^L hiding is off */
  * Local prototypes
  */
 static int handle_pager_keypad(t_menukeys *menukeys);
-static int load_article(int new_respnum);
+static int load_article(int new_respnum, struct t_group *group);
 static int prompt_response(int ch, int curr_respnum);
 static int scroll_page(int dir);
 static t_bool deactivate_next_ctrl_l(void);
@@ -108,6 +108,18 @@ static void process_search(int *lcurr_line, size_t message_lines, size_t screen_
 static void process_url(void);
 static void invoke_metamail(FILE *fp);
 
+#ifdef XFACE_ABLE
+#	define XFACE_SHOW()	if (tinrc.use_slrnface) \
+								slrnface_show_xface()
+#	define XFACE_CLEAR()	if (tinrc.use_slrnface) \
+								slrnface_clear_xface()
+#	define XFACE_SUPPRESS()	if (tinrc.use_slrnface) \
+										slrnface_suppress_xface()
+#else
+#	define XFACE_SHOW()	/*nothing*/
+#	define XFACE_CLEAR()	/*nothing*/
+#	define XFACE_SUPPRESS()	/*nothing*/
+#endif /* XFACE_ABLE */
 
 /*
  * Scroll visible article part of display down (+ve) or up (-ve)
@@ -305,16 +317,17 @@ activate_last_ctrl_l(
  *    >=0	normal exit - return a new base[] note
  *    <0	indicates some unusual condition. See GRP_* in tin.h
  *			GRP_QUIT		User is doing a 'Q'
- *			GRP_RETURN		Back to selection level due to 'T' command
- *			GRP_ARTFAIL		We didn't make it into the art
+ *			GRP_RETSELECT	Back to selection level due to 'T' command
+ *			GRP_ARTUNAVAIL	We didn't make it into the art
  *							don't bother fixing the screen up
+ *			GRP_ARTABORT	User 'q'uit load of article
  *			GRP_GOTOTHREAD	To thread menu due to 'l' command
  *			GRP_NEXT		Catchup with 'c'
  *			GRP_NEXTUNREAD	   "      "  'C'
  */
 int
 show_page(
-	struct t_group *group,	/* A bit useless since it is always CURR_GROUP */
+	struct t_group *group,
 	int start_respnum,		/* index into arts[] */
 	int *threadnum)			/* to allow movement in thread mode */
 {
@@ -339,8 +352,8 @@ show_page(
 	if (srch_lineno != -1)
 		this_resp = start_respnum;
 
-	if (load_article(start_respnum) < 0)
-		return GRP_ARTFAIL;
+	if ((i = load_article(start_respnum, group)) < 0)
+		return i;
 
 	if (srch_lineno != -1)
 		process_search(&curr_line, artlines, ARTLINES, PAGE_LEVEL);
@@ -365,14 +378,16 @@ show_page(
 					info_message(_(txt_no_responses));
 				else {
 					if ((n = prompt_response(ch, this_resp)) != -1) {
-						if (load_article(n) < 0)
-							return GRP_ARTFAIL;
+						XFACE_CLEAR();
+						if ((i = load_article(n, group)) < 0)
+							return i;
 					}
 				}
 				break;
 
 #ifndef NO_SHELL_ESCAPE
 			case iKeyShellEscape:
+				XFACE_CLEAR();
 				shell_escape();
 				draw_page(group->name, 0);
 				break;
@@ -439,10 +454,11 @@ show_page(
 				break;
 
 page_goto_next_unread:
+				XFACE_CLEAR();
 				if ((n = next_unread(next_response(this_resp))) == -1)
 					return (which_thread(this_resp));
-				if (load_article(n) < 0)
-					return GRP_ARTFAIL;
+				if ((i = load_article(n, group)) < 0)
+					return i;
 				break;
 
 			case iKeyFirstPage:		/* beginning of article */
@@ -469,16 +485,14 @@ page_goto_next_unread:
 				if (activate_last_ctrl_l())
 					draw_page(group->name, 0);
 				else {
-					int offset;
-
 					if (curr_line == 0) {
 						info_message(_(txt_begin_of_art));
 						break;
 					}
 
-					offset = scroll_page(KEYMAP_UP);
-					curr_line += offset;
-					draw_page(group->name, offset);
+					i = scroll_page(KEYMAP_UP);
+					curr_line += i;
+					draw_page(group->name, i);
 				}
 				break;
 
@@ -487,16 +501,14 @@ page_goto_next_unread:
 				if (deactivate_next_ctrl_l())
 					draw_page(group->name, 0);
 				else {
-					int offset;
-
 					if (curr_line + ARTLINES >= artlines) {
 						info_message(_(txt_end_of_art));
 						break;
 					}
 
-					offset = scroll_page(KEYMAP_DOWN);
-					curr_line += offset;
-					draw_page(group->name, offset);
+					i = scroll_page(KEYMAP_DOWN);
+					curr_line += i;
+					draw_page(group->name, i);
 				}
 				break;
 
@@ -505,14 +517,18 @@ page_goto_next_unread:
 					info_message(_(txt_no_last_message));
 					break;
 				}
-				if (load_article(last_resp) < 0)
-					return GRP_ARTFAIL;
+				if ((i = load_article(last_resp, group)) < 0) {
+					XFACE_CLEAR();
+					return i;
+				}
 				break;
 
 			case iKeyLookupMessage:			/* Goto article by Message-ID */
-				if ((i = prompt_msgid()) != ART_UNAVAILABLE) {
-					if (load_article(i) < 0)
-						return GRP_ARTFAIL;
+				if ((n = prompt_msgid()) != ART_UNAVAILABLE) {
+					if ((i = load_article(n, group)) < 0) {
+						XFACE_CLEAR();
+						return i;
+					}
 				}
 				break;
 
@@ -535,40 +551,51 @@ page_goto_next_unread:
 					break;
 				}
 
-				if (load_article(parent->article) < 0)
-					return GRP_ARTFAIL;
+				if ((i = load_article(parent->article, group)) < 0) {
+					XFACE_CLEAR();
+					return i;
+				}
 
 				break;
 			}
 
 			case iKeyPipe:		/* pipe article/thread/tagged arts to command */
+				XFACE_SUPPRESS();
 				feed_articles(FEED_PIPE, PAGE_LEVEL, group, this_resp);
+				XFACE_SHOW();
 				break;
 
 			case iKeyPageMail:	/* mail article/thread/tagged articles to somebody */
+				XFACE_SUPPRESS();
 				feed_articles(FEED_MAIL, PAGE_LEVEL, group, this_resp);
+				XFACE_SHOW();
 				break;
 
 #ifndef DISABLE_PRINTING
 			case iKeyPrint:	/* output art/thread/tagged arts to printer */
+				XFACE_SUPPRESS();
 				feed_articles(FEED_PRINT, PAGE_LEVEL, group, this_resp);
+				XFACE_SHOW();
 				break;
 #endif /* !DISABLE_PRINTING */
 
 			case iKeyPageRepost:	/* repost current article */
+				XFACE_SUPPRESS();
 				feed_articles(FEED_REPOST, PAGE_LEVEL, group, this_resp);
+				XFACE_SHOW();
 				break;
 
 			case iKeyPageSave:	/* save article/thread/tagged articles */
+				XFACE_SUPPRESS();
 				feed_articles(FEED_SAVE, PAGE_LEVEL, group, this_resp);
+				XFACE_SHOW();
 				break;
 
-			case iKeyPageAutoSaveTagged:	/* Auto-save tagged articles without prompting */
+			case iKeyPageAutoSave:	/* Auto-save articles without prompting */
 				if (grpmenu.curr >= 0) {
-					if (num_of_tagged_arts)
-						feed_articles(FEED_AUTOSAVE_TAGGED, PAGE_LEVEL, &CURR_GROUP, (int) base[grpmenu.curr]);
-					else
-						info_message(_(txt_no_tagged_arts_to_save));
+					XFACE_SUPPRESS();
+					feed_articles(FEED_AUTOSAVE, PAGE_LEVEL, group, (int) base[grpmenu.curr]);
+					XFACE_SHOW();
 				}
 				break;
 
@@ -585,10 +612,12 @@ page_goto_next_unread:
 				break;
 
 			case iKeySearchBody:	/* article body search */
-				if ((n = search_body(this_resp, repeat_search)) != -1) {
+				if ((n = search_body(group, this_resp, repeat_search)) != -1) {
 					this_resp = n;			/* Stop load_article() changing context again */
-					if (load_article(n) < 0)
-						return GRP_ARTFAIL;
+					if ((i = load_article(n, group)) < 0) {
+						XFACE_CLEAR();
+						return i;
+					}
 					process_search(&curr_line, artlines, ARTLINES, PAGE_LEVEL);
 				}
 				break;
@@ -597,8 +626,10 @@ page_goto_next_unread:
 				if (arts[this_resp].prev >= 0) {
 					if ((n = which_thread(this_resp)) >= 0 && base[n] != this_resp) {
 						assert(n < grpmenu.max);
-						if (load_article(base[n]) < 0)
-							return GRP_ARTFAIL;
+						if ((i = load_article(base[n], group)) < 0) {
+							XFACE_CLEAR();
+							return i;
+						}
 					}
 				}
 				break;
@@ -608,27 +639,33 @@ page_goto_next_unread:
 					n = i;
 
 				if (n != this_resp) {
-					if (load_article(n) < 0)
-						return GRP_ARTFAIL;
+					if ((i = load_article(n, group)) < 0) {
+						XFACE_CLEAR();
+						return i;
+					}
 				}
 				break;
 
 			case iKeyPageNextThd:
 			case iKeyPageNextThd2:	/* start of next thread */
+				XFACE_CLEAR();
 				if ((n = next_thread(this_resp)) == -1)
 					return (which_thread(this_resp));
-				if (load_article(n) < 0)
-					return GRP_ARTFAIL;
+				if ((i = load_article(n, group)) < 0)
+					return i;
 				break;
 
 #ifdef HAVE_PGP_GPG
 			case iKeyPagePGPCheckArticle:
+				XFACE_SUPPRESS();
 				if (pgp_check_article(&pgart))
 					draw_page(group->name, 0);
+				XFACE_SHOW();
 				break;
 #endif /* HAVE_PGP_GPG */
 
 			case iKeyPageToggleHeaders:	/* toggle display of whole 'raw' article */
+				XFACE_CLEAR();
 				toggle_raw(group);
 				break;
 
@@ -674,7 +711,7 @@ page_goto_next_unread:
 
 			case iKeyPageQuickAutoSel:	/* quickly auto-select article */
 			case iKeyPageQuickKill:		/* quickly kill article */
-				if ((filtered_articles = quick_filter((ch == iKeyPageQuickKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[this_resp])))
+				if ((filtered_articles = quick_filter((ch == iKeyPageQuickKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[this_resp], PAGE_LEVEL)))
 					goto return_to_index;
 
 				draw_page(group->name, 0);
@@ -682,6 +719,7 @@ page_goto_next_unread:
 
 			case iKeyPageAutoSel:		/* auto-select article menu */
 			case iKeyPageAutoKill:		/* kill article menu */
+				XFACE_CLEAR();
 				if (filter_menu((ch == iKeyPageAutoKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[this_resp])) {
 					if ((filtered_articles = filter_articles(group)))
 						goto return_to_index;
@@ -690,6 +728,7 @@ page_goto_next_unread:
 				break;
 
 			case iKeyPageEditFilter:
+				XFACE_CLEAR();
 				if (!invoke_editor(filter_file, FILTER_FILE_OFFSET))
 					break;
 				unfilter_articles();
@@ -714,8 +753,10 @@ page_goto_next_unread:
 			case iKeySearchAuthB:	/* author search backward */
 				if ((n = search(SEARCH_AUTH, this_resp, (ch == iKeySearchAuthF), repeat_search)) < 0)
 					break;
-				if (load_article(n) < 0)
-					return GRP_ARTFAIL;
+				if ((i = load_article(n, group)) < 0) {
+					XFACE_CLEAR();
+					return i;
+				}
 				break;
 
 			case iKeyPageCatchup:			/* catchup - mark read, goto next */
@@ -723,6 +764,7 @@ page_goto_next_unread:
 				snprintf(buf, sizeof(buf), _(txt_mark_thread_read), (ch == iKeyPageCatchupNextUnread) ? _(txt_enter_next_thread) : "");
 				if ((!TINRC_CONFIRM_ACTION) || prompt_yn(cLINES, buf, TRUE) == 1) {
 					thd_mark_read(group, base[which_thread(this_resp)]);
+					XFACE_CLEAR();
 					return (ch == iKeyPageCatchupNextUnread) ? GRP_NEXTUNREAD : GRP_NEXT;
 				}
 				break;
@@ -738,15 +780,19 @@ page_goto_next_unread:
 
 			case iKeyPageCancel:			/* cancel an article */
 				if (can_post || art_type != GROUP_TYPE_NEWS) {
+					XFACE_SUPPRESS();
 					if (cancel_article(group, &arts[this_resp], this_resp))
 						draw_page(group->name, 0);
+					XFACE_SHOW();
 				} else
 					info_message(_(txt_cannot_post));
 				break;
 
 			case iKeyPageEditArticle:		/* edit an article (mailgroup only) */
+				XFACE_SUPPRESS();
 				if (art_edit(group, &arts[this_resp]))
 					draw_page(group->name, 0);
+				XFACE_SHOW();
 				break;
 
 			case iKeyPageFollowupQuote:		/* post a followup to this article */
@@ -756,6 +802,7 @@ page_goto_next_unread:
 					info_message(_(txt_cannot_post));
 					break;
 				}
+				XFACE_CLEAR();
 				(void) post_response(group->name, this_resp,
 				  (ch == iKeyPageFollowupQuote || ch == iKeyPageFollowupQuoteHeaders) ? TRUE : FALSE,
 				  ch == iKeyPageFollowupQuoteHeaders ? TRUE : FALSE, show_all_headers);
@@ -763,6 +810,7 @@ page_goto_next_unread:
 				break;
 
 			case iKeyHelp:	/* help */
+				XFACE_CLEAR();
 				show_help_page(PAGE_LEVEL, _(txt_art_pager_com));
 				draw_page(group->name, 0);
 				break;
@@ -774,6 +822,7 @@ page_goto_next_unread:
 
 			case iKeyQuit:	/* return to index page */
 return_to_index:
+				XFACE_CLEAR();
 				if (filter_state == NO_FILTERING && tinrc.sort_article_type != old_sort_art_type)
 					make_threads(group, TRUE);
 
@@ -807,10 +856,12 @@ return_to_index:
 #endif /* HAVE_COLOR */
 
 			case iKeyPageListThd:	/* -> thread page that this article is in */
+				XFACE_CLEAR();
 				fixup_thread(this_resp, FALSE);
 				return GRP_GOTOTHREAD;
 
 			case iKeyOptionMenu:	/* option menu */
+				XFACE_CLEAR();
 				if (change_config_file(group) == FILTERING)
 					filter_state = FILTERING;
 				set_subj_from_size(cCOLS);
@@ -818,47 +869,55 @@ return_to_index:
 				break;
 
 			case iKeyPageNextArt:	/* skip to next article */
+				XFACE_CLEAR();
 				if ((n = next_response(this_resp)) == -1)
 					return (which_thread(this_resp));
 
-				if (load_article(n) < 0)
-					return GRP_ARTFAIL;
+				if ((i = load_article(n, group)) < 0)
+					return i;
 				break;
 
 			case iKeyPageKillThd:	/* mark rest of thread as read */
 				thd_mark_read(group, this_resp);
 				if ((n = next_unread(next_response(this_resp))) == -1)
 					goto return_to_index;
-				if (load_article(n) < 0)
-					return GRP_ARTFAIL;
+				if ((i = load_article(n, group)) < 0) {
+					XFACE_CLEAR();
+					return i;
+				}
 				break;
 
 			case iKeyPageNextUnreadArt:	/* next unread article */
 				goto page_goto_next_unread;
 
 			case iKeyPagePrevArt:	/* previous article */
+				XFACE_CLEAR();
 				if ((n = prev_response(this_resp)) == -1)
 					return this_resp;
 
-				if (load_article(n) < 0)
-					return GRP_ARTFAIL;
+				if ((i = load_article(n, group)) < 0)
+					return i;
 				break;
 
 			case iKeyPagePrevUnreadArt:	/* previous unread article */
 				if ((n = prev_unread(prev_response(this_resp))) == -1)
 					info_message(_(txt_no_prev_unread_art));
 				else {
-					if (load_article(n) < 0)
-						return GRP_ARTFAIL;
+					if ((i = load_article(n, group)) < 0) {
+						XFACE_CLEAR();
+						return i;
+					}
 				}
 				break;
 
 			case iKeyQuitTin:	/* quit */
+				XFACE_CLEAR();
 				return GRP_QUIT;
 
 			case iKeyPageReplyQuote:	/* reply to author through mail */
 			case iKeyPageReplyQuoteHeaders:
 			case iKeyPageReply:
+				XFACE_CLEAR();
 				mail_to_author(group->name, this_resp, (ch == iKeyPageReplyQuote || ch == iKeyPageReplyQuoteHeaders) ? TRUE : FALSE, ch == iKeyPageReplyQuoteHeaders ? TRUE : FALSE, show_all_headers);
 				draw_page(group->name, 0);
 				break;
@@ -872,29 +931,36 @@ return_to_index:
 					filter_articles(group);
 					make_threads(group, FALSE);
 				}
-				return GRP_RETURN;
+				XFACE_CLEAR();
+				return GRP_RETSELECT;
 
 			case iKeyVersion:
 				info_message(cvers);
 				break;
 
 			case iKeyPost:	/* post a basenote */
+				XFACE_SUPPRESS();
 				if (post_article(group->name))
 					draw_page(group->name, 0);
+				XFACE_SHOW();
 				break;
 
 			case iKeyPostponed:
 			case iKeyPostponed2:	/* post postponed article */
 				if (can_post || art_type != GROUP_TYPE_NEWS) {
+					XFACE_SUPPRESS();
 					if (pickup_postponed_articles(FALSE, FALSE))
 						draw_page(group->name, 0);
+					XFACE_SHOW();
 				} else
 					info_message(_(txt_cannot_post));
 				break;
 
 			case iKeyDisplayPostHist:	/* display messages posted by user */
+				XFACE_SUPPRESS();
 				if (user_posted_messages())
 					draw_page(group->name, 0);
+				XFACE_SHOW();
 				break;
 
 			case iKeyPageMarkArtUnread:	/* mark article as unread(to return) */
@@ -925,14 +991,18 @@ return_to_index:
 				break;
 
 			case iKeyPageViewAttach:
+				XFACE_SUPPRESS();
 				decode_save_mime(&pgart, FALSE);
+				XFACE_SHOW();
 				break;
 
 			case iKeyPageViewUrl:
 				if (!show_all_headers) { /* cooked mode? */
+					XFACE_SUPPRESS();
 					resize_article(FALSE, &pgart); /* umbreak long lines */
 					process_url();
 					resize_article(TRUE, &pgart); /* rebreak long lines */
+					XFACE_SHOW();
 				}
 				break;
 
@@ -941,7 +1011,7 @@ return_to_index:
 		}
 	}
 	/* NOTREACHED */
-	return GRP_ARTFAIL;
+	return GRP_ARTUNAVAIL;
 }
 
 
@@ -1130,6 +1200,11 @@ draw_page(
 	} else
 		draw_percent_mark(curr_line + ARTLINES, artlines);
 
+#ifdef XFACE_ABLE
+	if (tinrc.use_slrnface && !show_all_headers)
+		slrnface_display_xface(note_h->xface);
+#endif /* XFACE_ABLE */
+
 	stow_cursor();
 }
 
@@ -1142,10 +1217,10 @@ invoke_metamail(
 	FILE *fp)
 {
 	char *ptr;
-	char buf[LEN];
 	long offset;
 #ifndef DONT_HAVE_PIPING
 	FILE *mime_fp;
+	char buf[LEN];
 #endif /* !DONT_HAVE_PIPING */
 
 	offset = ftell(fp);
@@ -1196,7 +1271,12 @@ draw_page_header(
 	int whichresp;
 	int x_resp;
 	int pos, i;
-	int grplen, maxlen;
+	int grplen, maxlen, scrlen;
+	int mb_diff;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t wtmp[HEADER_LEN];
+	wchar_t wbuf[HEADER_LEN];
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	whichresp = which_response(this_resp);
 	x_resp = num_of_responses(which_thread(this_resp));
@@ -1210,7 +1290,14 @@ draw_page_header(
 	 * after it
 	 */
 	grplen = strlen(group);
-	maxlen = RIGHT_POS - strlen(buf) - 2;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if (mbstowcs(wtmp, buf, ARRAY_SIZE(wtmp)) != (size_t) -1) {
+		wtmp[HEADER_LEN - 1] = (wchar_t) '\0';
+		scrlen = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+	} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		scrlen = strlen(buf);
+	maxlen = RIGHT_POS - scrlen - 2;
 
 	if (grplen < maxlen)
 		maxlen = grplen;
@@ -1218,10 +1305,12 @@ draw_page_header(
 	/*
 	 * Aesthetics - Add 3 to compensate for the fact that
 	 * the left hand margin (date) is longer than the right hand margin
+	 * Add also a compensation for multi-byte charsets
 	 */
+	mb_diff = strlen(buf) - scrlen;
 	pos = 3 + (cCOLS - maxlen) / 2;
 
-	for (i = strlen(buf); i < pos; i++)		/* Pad out to left */
+	for (i = strlen(buf); i < pos + mb_diff; i++)		/* Pad out to left */
 		buf[i] = ' ';
 
 	buf[i] = '\0';
@@ -1232,7 +1321,7 @@ draw_page_header(
 	} else
 		strncat(buf, group, maxlen);
 
-	for (i = strlen(buf); i < RIGHT_POS; i++)	/* Pad out to right */
+	for (i = strlen(buf); i < RIGHT_POS + mb_diff; i++)	/* Pad out to right */
 		buf[i] = ' ';
 
 	buf[i] = '\0';
@@ -1247,8 +1336,16 @@ draw_page_header(
 		/* Can't eval tin_ltoa() more than once in a statement due to statics */
 		strcpy(x, tin_ltoa(which_thread(this_resp) + 1, 4));
 
-		sprintf(tmp, _(txt_thread_x_of_n), buf, x, tin_ltoa(grpmenu.max, 4), cCRLF);
-		tmp[cCOLS] = '\0'; /* FIXME: see also note in signal.c:set_win_size() */
+		sprintf(tmp, _(txt_thread_x_of_n), buf, x, tin_ltoa(grpmenu.max, 4));
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp)) != (size_t) -1) {
+			wtmp[HEADER_LEN - 1] = (wchar_t) '\0';
+			wcspart(wbuf, wtmp, cCOLS - strlen(cCRLF), ARRAY_SIZE(wbuf), FALSE);
+			wcstombs(tmp, wbuf, sizeof(tmp));
+		} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			tmp[cCOLS - strlen(cCRLF)] = '\0'; /* FIXME: see also note in signal.c:set_win_size() */
+		strcat(tmp, cCRLF);
 		my_fputs(tmp, stdout);
 	}
 
@@ -1265,7 +1362,13 @@ draw_page_header(
 #endif /* HAVE_COLOR */
 
 	sprintf(buf, _(txt_lines), tmp);
-	i = strlen(buf);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if (mbstowcs(wtmp, buf, ARRAY_SIZE(wtmp)) != (size_t) -1) {
+		wtmp[HEADER_LEN - 1] = (wchar_t) '\0';
+		i = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+	} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		i = strlen(buf);
 	my_fputs(buf, stdout);
 
 #ifdef HAVE_COLOR
@@ -1282,11 +1385,27 @@ draw_page_header(
 		my_fputs(buf, stdout);
 	}
 
+	/*
+	 * TODO: why do we fall back to arts[this_resp].subject if !note_h->subj?
+	 *       if !note_h->subj then the article just has no subject, no matter
+	 *       what the overview says.
+	 */
 	strncpy(buf, (note_h->subj ? note_h->subj : arts[this_resp].subject), sizeof(buf) - 1);
 
-	buf[RIGHT_POS - 5 - i] = '\0';
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if (mbstowcs(wtmp, buf, ARRAY_SIZE(wtmp)) != (size_t) -1) {
+		wtmp[HEADER_LEN - 1] = (wchar_t) '\0';
+		wcspart(wbuf, wtmp, RIGHT_POS - 5 - i, ARRAY_SIZE(wbuf), FALSE);
+		scrlen = wcswidth(wbuf, ARRAY_SIZE(wbuf));
+		wcstombs(buf, wbuf, sizeof(wbuf));
+	} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	{
+		buf[RIGHT_POS - 5 - i] = '\0';
+		scrlen = (int) strlen(buf);
+	}
 
-	pos = ((cCOLS - (int) strlen(buf)) / 2) - 2;
+	pos = ((cCOLS - scrlen) / 2) - 2;
 
 	MoveCursor(1, ((pos > i) ? pos : i));
 
@@ -1316,26 +1435,62 @@ draw_page_header(
 	fcol(tinrc.col_normal);
 #endif /* HAVE_COLOR */
 
+	/*
+	 * TODO: don't use arts[this_resp].name/arts[this_resp].from
+	 *       split up note_h->from and use that instead as it might
+	 *       be different _if_ the overviews are broken
+	 */
 	if (arts[this_resp].name)
-		sprintf(buf, "%s <%s>", arts[this_resp].name, arts[this_resp].from);
+		snprintf(buf, sizeof(buf), "%s <%s>", arts[this_resp].name, arts[this_resp].from);
 	else
-		strncpy(buf, arts[this_resp].from, cCOLS - 1);
-	buf[cCOLS - 1] = '\0';
+		strncpy(buf, arts[this_resp].from, sizeof(buf));
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if (mbstowcs(wtmp, buf, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
+		wtmp[HEADER_LEN - 1] = (wchar_t) '\0';
+		wcspart(wbuf, wtmp, cCOLS - 1, ARRAY_SIZE(wbuf) - 1, FALSE);
+	} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		buf[cCOLS - 1] = '\0';
 
 	if (note_h->org) {
 		snprintf(tmp, sizeof(tmp), _(txt_at_s), note_h->org);
 
-		if ((int) strlen(buf) + (int) strlen(tmp) >= cCOLS - 1) {
-			strncat(buf, tmp, cCOLS - 1 - strlen(buf));
-			buf[cCOLS - 1] = '\0';
-		} else {
-			pos = cCOLS - 1 - (int) strlen(tmp);
-			for (i = strlen(buf); i < pos; i++)
-				buf[i] = ' ';
-			buf[i] = '\0';
-			strncat(buf, tmp, sizeof(buf) - 1);
-		}
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp)) != (size_t) -1) {
+			wtmp[HEADER_LEN - 1] = (wchar_t) '\0';
+			wconvert_to_printable(wtmp);
+
+			if (wcswidth(wbuf, ARRAY_SIZE(wbuf)) + wcswidth(wtmp, ARRAY_SIZE(wtmp)) >= cCOLS - 1) {
+				wcsncat(wbuf, wtmp, ARRAY_SIZE(wbuf) - wcslen(wbuf) - 1);
+				wcscpy(wtmp, wbuf);
+				wcspart(wbuf, wtmp, cCOLS - 1, ARRAY_SIZE(wbuf) - 1, FALSE);
+			} else {
+				int j = cCOLS - 1 - wcswidth(wtmp, ARRAY_SIZE(wtmp)) - wcswidth(wbuf, ARRAY_SIZE(wbuf));
+
+				pos = wcslen(wbuf);
+				for (i = 0; i < j; i++)
+					wbuf[pos + i] = (wchar_t) ' ';
+				wbuf[pos + i] = (wchar_t) '\0';
+				wcsncat(wbuf, wtmp, ARRAY_SIZE(wbuf) - wcslen(wbuf) - 1);
+			}
+		} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			if ((int) strlen(buf) + (int) strlen(tmp) >= cCOLS - 1) {
+				strncat(buf, tmp, cCOLS - 1 - strlen(buf));
+				buf[cCOLS - 1] = '\0';
+			} else {
+				pos = cCOLS - 1 - (int) strlen(tmp);
+				for (i = strlen(buf); i < pos; i++)
+					buf[i] = ' ';
+				buf[i] = '\0';
+				strncat(buf, tmp, sizeof(buf) - 1);
+			}
 	}
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if (wcslen(wbuf))
+		wcstombs(buf, wbuf, sizeof(buf));
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	convert_to_printable(strip_line(buf));
 
@@ -1353,14 +1508,15 @@ draw_page_header(
 
 /*
  * Change the pager article context to arts[new_respnum]
- * Return GRP_ARTFAIL if article could not be opened
+ * Return GRP_ARTUNAVAIL if article could not be opened
+ * or GRP_ARTABORT if load of article was interrupted
+ * or 0 on success
  */
 static int
 load_article(
-	int new_respnum)
+	int new_respnum,
+	struct t_group *group)
 {
-	char group_path[LEN];
-
 	if (read_news_via_nntp)
 		wait_message(0, _(txt_reading_article));
 
@@ -1369,25 +1525,24 @@ load_article(
 #endif /* DEBUG */
 
 	if (new_respnum != this_resp) {
-		make_group_path(CURR_GROUP.name, group_path);
-
 		art_close(&pgart);			/* close previously opened art in pager */
 
-		switch (art_open(TRUE, &arts[new_respnum], group_path, &pgart, TRUE)) {
+		switch (art_open(TRUE, &arts[new_respnum], group, &pgart, TRUE)) {
 			case ART_UNAVAILABLE:
-				art_mark(&CURR_GROUP, &arts[new_respnum], ART_READ);
+				art_mark(group, &arts[new_respnum], ART_READ);
 				wait_message(1, _(txt_art_unavailable));
-				/* FALLTHROUGH */
+				return GRP_ARTUNAVAIL;
 
 			case ART_ABORT:
-				return GRP_ARTFAIL;	/* special retcode to stop redrawing screen */
+				art_close(&pgart);
+				return GRP_ARTABORT;	/* special retcode to stop redrawing screen */
 
 			default:					/* Normal case */
 #if 0			/* Very useful debugging tool */
 				if (prompt_yn(cLINES, "Fake art unavailable? ", FALSE) == 1) {
 					art_close(&pgart);
-					art_mark(&CURR_GROUP, &arts[new_respnum], ART_READ);
-					return GRP_ARTFAIL;
+					art_mark(group, &arts[new_respnum], ART_READ);
+					return GRP_ARTUNAVAIL;
 				}
 #endif /* 0 */
 				/*
@@ -1399,11 +1554,11 @@ load_article(
 		}
 	}
 
-	art_mark(&CURR_GROUP, &arts[this_resp], ART_READ);
+	art_mark(group, &arts[this_resp], ART_READ);
 
 	if (pgart.cooked == NULL) { /* harmony corruption */
 		wait_message(1, _(txt_art_unavailable));
-		return GRP_ARTFAIL;
+		return GRP_ARTUNAVAIL;
 	}
 
 	/*
@@ -1420,7 +1575,7 @@ load_article(
 	reveal_ctrl_l_lines = -1;	/* all ^L's active */
 	hide_uue = tinrc.hide_uue;
 
-	draw_page(CURR_GROUP.name, 0);
+	draw_page(group->name, 0);
 
 	/*
 	 * Automatically invoke attachment viewing if requested
@@ -1436,10 +1591,12 @@ load_article(
 			return 0;
 	}
 
+	XFACE_SUPPRESS();
 	if (strcmp(tinrc.metamail_prog, INTERNAL_CMD) == 0)	/* Use internal viewer */
 		decode_save_mime(&pgart, FALSE);
 	else
 		invoke_metamail(pgart.raw);
+	XFACE_SHOW();
 	return 0;
 }
 
@@ -1485,12 +1642,11 @@ process_search(
 	 * in the middle of the screen
 	 */
 	if (i < (int) *lcurr_line || i >= (int) (*lcurr_line + screen_lines)) {
-		int ideal_pos = i - (screen_lines / 2);
-
-		if (ideal_pos + screen_lines > message_lines)		/* Off the end */
+		start = i - (screen_lines / 2);
+		if (start + screen_lines > message_lines)		/* Off the end */
 			*lcurr_line = message_lines - screen_lines;
 		else										/* Pos is just fine */
-			*lcurr_line = ideal_pos;
+			*lcurr_line = start;
 	}
 
 	switch (help_level) {
@@ -1821,6 +1977,9 @@ display_info_page(
 }
 
 
+/*
+ * TODO: plug mem leak: malloced mem is not freed on exit
+ */
 static void
 preprocess_info_message(
 	FILE *info_fh)

@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-04-25
+ *  Updated   : 2003-05-16
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -58,7 +58,6 @@
  * local prototypes
  */
 static int read_site_config(void);
-
 #ifdef HAVE_COLOR
 	static void preinit_colors(void);
 #endif /* HAVE_COLOR */
@@ -66,7 +65,6 @@ static int read_site_config(void);
 
 char **news_headers_to_display_array;	/* array of which headers to display */
 char **news_headers_to_not_display_array;	/* array of which headers to not display */
-char proc_ch_default;			/* set in change_config_file() */
 char active_times_file[PATH_LEN];
 char article[PATH_LEN];			/* ~/TIN_ARTICLE_NAME file */
 char bug_nntpserver1[PATH_LEN];		/* welcome message of NNTP server used */
@@ -83,7 +81,7 @@ char global_config_file[PATH_LEN];
 char homedir[PATH_LEN];
 char host_name[MAXHOSTNAMELEN];
 char index_maildir[PATH_LEN];
-char index_newsdir[PATH_LEN];
+char index_newsdir[PATH_LEN];	/* directory for private overview data */
 char index_savedir[PATH_LEN];
 char inewsdir[PATH_LEN];
 char libdir[PATH_LEN];			/* directory where news config files are (ie. active) */
@@ -92,6 +90,7 @@ char local_config_file[PATH_LEN];
 char local_input_history_file[PATH_LEN];
 char local_newsgroups_file[PATH_LEN];	/* local copy of NNTP newsgroups file */
 char local_newsrctable_file[PATH_LEN];
+char lock_file[PATH_LEN];		/* contains name of index lock file */
 char filter_file[PATH_LEN];
 char mail_active_file[PATH_LEN];
 char mail_news_user[LEN];		/* mail new news to this user address */
@@ -115,9 +114,8 @@ char userid[PATH_LEN];
 	char mailgroups_file[PATH_LEN];
 #endif /* HAVE_MH_MAIL_HANDLING */
 #ifndef NNTP_ONLY
-	char lock_file[PATH_LEN];		/* contains name of index lock file */
+	char novfilename[PATH_LEN];		/* file name of a single nov index file */
 	char novrootdir[PATH_LEN];		/* root directory of nov index files */
-	char novfilename[PATH_LEN];		/* file name of a single nov index files */
 #endif /* !NNTP_ONLY */
 
 #ifdef VMS
@@ -134,14 +132,8 @@ int num_headers_to_not_display;		/* num headers to not display -- swp */
 int system_status;
 int xmouse, xrow, xcol;			/* xterm button pressing information */
 
-#ifdef HAVE_COLOR
-	t_bool use_color;		/* enables/disables ansi-color support under linux-console and color-xterm */
-#endif /* HAVE_COLOR */
-
-t_bool word_highlight;		/* word highlighting on/off */
-
-pid_t process_id;			/* Useful to have around for .suffixes */
 mode_t real_umask;
+pid_t process_id;			/* Useful to have around for .suffixes */
 
 t_bool (*wildcard_func) (const char *str, char *patt, t_bool icase);		/* Wildcard matching function */
 t_bool batch_mode;			/* update index files only mode */
@@ -164,8 +156,12 @@ t_bool read_news_via_nntp = FALSE;	/* read news locally or via NNTP */
 t_bool read_saved_news = FALSE;		/* tin -R read saved news from tin -S */
 t_bool show_description = TRUE;		/* current copy of tinrc flag */
 t_bool verbose = FALSE;			/* update index files only mode */
+t_bool word_highlight;		/* word highlighting on/off */
 t_bool xover_supported = FALSE;
 t_bool xref_supported = TRUE;
+#ifdef HAVE_COLOR
+	t_bool use_color;		/* enables/disables ansi-color support under linux-console and color-xterm */
+#endif /* HAVE_COLOR */
 #ifdef NNTP_ABLE
 	t_bool force_auth_on_conn_open = FALSE;	/* authenticate on connection startup */
 	unsigned short nntp_tcp_port;
@@ -180,13 +176,6 @@ char *input_history[HIST_MAXNUM + 1][HIST_SIZE + 1];
 #ifdef HAVE_SYS_UTSNAME_H
 	struct utsname system_info;
 #endif /* HAVE_SYS_UTSNAME_H */
-
-#if 0
-#ifndef M_AMIGA
-	static struct passwd *myentry;
-	static struct passwd pwdentry;
-#endif /* !M_AMIGA */
-#endif /* 0 */
 
 struct regex_cache
 		strip_re_regex, strip_was_regex,
@@ -411,6 +400,9 @@ struct t_config tinrc = {
 	TRUE,		/* default_filter_kill_global */
 	FALSE,		/* default_filter_select_case */
 	FALSE,		/* default_filter_select_expire */
+#ifdef XFACE_ABLE
+	FALSE,		/* use_slrnface */
+#endif /* XFACE_ABLE */
 	TRUE		/* default_filter_select_global */
 };
 
@@ -627,12 +619,10 @@ init_selfinfo(
 	sprintf(cvers, txt_copyright_notice, page_header);
 
 	default_organization[0] = '\0';
-	proc_ch_default = 'n';
 	news_headers_to_display_array = ulBuildArgv(tinrc.news_headers_to_display, &num_headers_to_display);
 	news_headers_to_not_display_array = NULL;
 
-	/* TODO: nuke $BUG_ADDRESS entirely? */
-	strncpy(bug_addr, get_val("BUG_ADDRESS", BUG_REPORT_ADDRESS), sizeof(bug_addr) - 1);
+	strncpy(bug_addr, BUG_REPORT_ADDRESS, sizeof(bug_addr) - 1);
 
 	bug_nntpserver1[0] = '\0';
 	bug_nntpserver2[0] = '\0';
@@ -650,8 +640,7 @@ init_selfinfo(
 #endif /* apollo */
 
 #ifdef USE_INN_NNTPLIB
-	ptr = GetConfigValue(_CONF_ORGANIZATION);
-	if (ptr != NULL)
+	if ((ptr = GetConfigValue(_CONF_ORGANIZATION)) != NULL)
 		my_strncpy(default_organization, ptr, sizeof(default_organization) - 1);
 #endif /* USE_INN_NNTPLIB */
 
@@ -773,11 +762,8 @@ init_selfinfo(
 		created_rcdir = TRUE;
 		my_mkdir(rcdir, (mode_t) (S_IRWXU));
 	}
-#if defined(M_UNIX) || defined(M_AMIGA) || defined(VMS)
 	strcpy(tinrc.mailer_format, MAILER_FORMAT);
-#else
-	strcpy(tinrc.mailer_format, mailer);
-#endif /* M_UNIX || M_AMIGA || VMS */
+	my_strncpy(mailer, get_val(ENV_VAR_MAILER, DEFAULT_MAILER), sizeof(mailer) - 1);
 #ifndef DISABLE_PRINTING
 	strcpy(tinrc.printer, DEFAULT_PRINTER);
 #	ifdef M_AMIGA
@@ -786,7 +772,6 @@ init_selfinfo(
 #	endif /* M_AMIGA */
 #endif /* !DISABLE_PRINTING */
 	strcpy(tinrc.inews_prog, PATH_INEWS);
-	my_strncpy(mailer, get_val(ENV_VAR_MAILER, DEFAULT_MAILER), sizeof(mailer) - 1);
 	joinpath(article, homedir, TIN_ARTICLE_NAME);
 #ifdef APPEND_PID
 	snprintf(article + strlen(article), sizeof(article) - strlen(article), ".%d", (int) process_id);
@@ -830,13 +815,7 @@ init_selfinfo(
 	joinpath(postponed_articles_file, rcdir, POSTPONED_FILE);
 	joinpath(save_active_file, rcdir, ACTIVE_SAVE_FILE);
 
-#ifndef NNTP_ONLY
-#	ifdef HAVE_LONG_FILE_NAMES
-	snprintf(lock_file, sizeof(lock_file), "%stin.%s.LCK", TMPDIR, userid);
-#	else
-	snprintf(lock_file, sizeof(lock_file), "%s%s.LCK", TMPDIR, userid);
-#	endif /* HAVE_LONG_FILE_NAMES */
-#endif /* !NNTP_ONLY */
+	snprintf(lock_file, sizeof(lock_file), INDEX_LOCK, TMPDIR, userid);
 
 #ifdef NNTP_ABLE
 	nntp_tcp_port = (unsigned short) atoi(get_val("NNTPPORT", NNTP_TCP_PORT));
@@ -859,80 +838,6 @@ init_selfinfo(
 #ifdef HAVE_PGP_GPG
 	init_pgp();
 #endif /* HAVE_PGP_GPG */
-}
-
-
-/*
- * If we're caching overview files and the user specified an NNTP server
- * with the '-g' option, make the directory name specific to the NNTP server
- * and make sure the directory exists.
- */
-void
-set_up_private_index_cache(
-	void)
-{
-	struct stat sb;
-
-	if (read_news_via_nntp && xover_supported && !tinrc.cache_overview_files)
-		return;
-
-	/*
-	 * TODO: don't create cache dir if we are reading from local spool,
-	 *       the systems overview data is readable and
-	 *       !tinrc.cache_overview_files
-	 */
-
-	if (cmdline_nntpserver[0] != 0) {
-		char *from;
-		char *to;
-		int c;
-
-		to = index_newsdir + strlen(index_newsdir);
-		*(to++) = '-';
-		for (from = cmdline_nntpserver; (c = *from) != 0; ++from)
-			*(to++) = tolower(c);
-		*to = 0;
-	}
-
-	if (stat(index_newsdir, &sb) == -1)
-		my_mkdir(index_newsdir, (mode_t) S_IRWXU);
-
-#	ifdef DEBUG
-	debug_nntp("set_up_private_index_cache", index_newsdir);
-#	endif /* DEBUG */
-	joinpath(local_newsgroups_file, index_newsdir, NEWSGROUPS_FILE);
-	return;
-}
-
-
-/*
- * Create default mail & save directories if they do not exist
- */
-t_bool
-create_mail_save_dirs(
-	void)
-{
-	t_bool created = FALSE;
-	char path[PATH_LEN];
-	struct stat sb;
-
-	if (!strfpath(tinrc.maildir, path, sizeof(path), NULL))
-		joinpath(path, homedir, DEFAULT_MAILDIR);
-
-	if (stat(path, &sb) == -1) {
-		my_mkdir(path, (mode_t) (S_IRWXU));
-		created = TRUE;
-	}
-
-	if (!strfpath(tinrc.savedir, path, sizeof(path), NULL))
-		joinpath(path, homedir, DEFAULT_SAVEDIR);
-
-	if (stat(path, &sb) == -1) {
-		my_mkdir(path, (mode_t) (S_IRWXU));
-		created = TRUE;
-	}
-
-	return created;
 }
 
 

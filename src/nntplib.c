@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2003-03-17
+ *  Updated   : 2003-05-15
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -109,25 +109,25 @@ getserverbyfile(
 	FILE *fp;
 	char *cp;
 	static char buf[256];
-#	ifdef HAVE_PUTENV
+#	if !defined(HAVE_SETENV) && defined(HAVE_PUTENV)
 	char tmpbuf[256];
 	char *new_env;
 	static char *old_env = NULL;
-#	endif /* HAVE_PUTENV */
+#	endif /* !HAVE_SETENV && HAVE_PUTENV */
 
 	if (cmdline_nntpserver[0] != '\0') {
 		get_nntpserver(buf, cmdline_nntpserver);
-#	ifdef HAVE_PUTENV
+#	ifdef HAVE_SETENV
+		setenv("NNTPSERVER", buf, 1);
+#	else
+#		ifdef HAVE_PUTENV
 		sprintf(tmpbuf, "NNTPSERVER=%s", buf);
 		new_env = my_strdup(tmpbuf);
 		putenv(new_env);
 		FreeIfNeeded(old_env);
-		old_env = new_env;
-#	else
-#		ifdef HAVE_SETENV
-		setenv("NNTPSERVER", buf, 1);
-#		endif /* HAVE_SETENV */
-#	endif /* HAVE_PUTENV */
+		old_env = new_env; /* we are 'leaking' the last malloced mem at exit here */
+#		endif /* HAVE_PUTENV */
+#	endif /* HAVE_SETENV */
 		return buf;
 	}
 
@@ -408,7 +408,7 @@ get_tcp_socket(
 	struct hostent *hp;
 #			ifdef h_addr
 	int x = 0;
-	register char **cp;
+	char **cp;
 	static char *alist[2] = {0, 0};
 #			endif /* h_addr */
 	static struct hostent def;
@@ -809,9 +809,9 @@ reconnect(
 		/*
 		 * Re-establish our current group and resend last command
 		 */
-		if (glob_group != NULL) {
+		if (curr_group != NULL) {
 			DEBUG_IO((stderr, _("Rejoin current group\n")));
-			sprintf(last_put, "GROUP %s", glob_group);
+			sprintf(last_put, "GROUP %s", curr_group->name);
 			put_server(last_put);
 			s_gets(last_put, NNTP_STRLEN, nntp_rd_fp);
 #		ifdef DEBUG

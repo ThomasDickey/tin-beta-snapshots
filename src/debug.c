@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-28
+ *  Updated   : 2003-04-28
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -150,18 +150,13 @@ debug_print_header(
 			BlankIfNull(s->msgid),
 			BlankIfNull(s->refs));
 
-		if (s->archive)
-			fprintf(fp, "arch=[%-38s]  ", s->archive);
-		else
-			fprintf(fp, "arch=[]  ");
-		if (s->part)
-			fprintf(fp, "part=[%s]  ", s->part);
-		else
-			fprintf(fp, "part=[]  ");
-		if (s->patch)
-			fprintf(fp, "patch=[%s]\n", s->patch);
-		else
-			fprintf(fp, "patch=[]\n");
+		if (s->archive) {
+			fprintf(fp, "archive.name=[%-38s]  ", s->archive->name);
+			if (s->archive->partnum)
+				fprintf(fp, "archive.partnum=[%s]  ", s->archive->partnum);
+			if (s->archive->ispart)
+				fprintf(fp, "archive.ispart=[%s]\n", bool_unparse(s->archive->ispart));
+		}
 		fprintf(fp,"thread=[%d]  prev=[%d]  status=[%d]\n\n", s->thread, s->prev, s->status);
 /*		fprintf(fp,"thread=[%s]  prev=[%s]  status=[%s]\n", (s->thread == ART_NORMAL ? "ART_NORMAL" : "ART_EXPIRED"), s->prev, bool_unparse(s->status)); */
 		fflush(fp);
@@ -389,7 +384,7 @@ debug_print_newsrc(
 	struct t_newsrc *NewSrc,
 	FILE *fp)
 {
-	register int i, j;
+	int i, j;
 
 	fprintf(fp, "Newsrc: min=[%ld] max=[%ld] bitlen=[%ld] num_unread=[%ld] present=[%d]\n",
 		NewSrc->xmin, NewSrc->xmax, NewSrc->xbitlen,

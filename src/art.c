@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-04-25
+ *  Updated   : 2003-05-15
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -103,8 +103,8 @@ void
 find_base(
 	struct t_group *group)
 {
-	register int i;
-	register int j;
+	int i;
+	int j;
 
 	grpmenu.max = 0;
 
@@ -161,12 +161,12 @@ t_bool
 index_group(
 	struct t_group *group)
 {
+	int i;
 	int count;
 	int expired;
 	int modified;
 	long min;
 	long max;
-	register int i;
 	t_bool filtered;
 
 	if (group == NULL)
@@ -175,7 +175,7 @@ index_group(
 	if (!batch_mode)
 		show_art_msg(group->name);
 
-	signal_context = cArt;			/* Set this once glob_group is valid */
+	signal_context = cArt;			/* Set this only once curr_group is valid */
 
 	hash_reclaim();
 	free_art_array();
@@ -327,11 +327,11 @@ read_group(
 {
 	FILE *fp;
 	char buf[PATH_LEN];
+	int i;
 	int count = 0;
 	int respnum, total = 0;
 	int modified = 0;
 	long art;
-	register int i;
 	t_bool res;
 	static char dir[PATH_LEN] = "";
 
@@ -418,14 +418,6 @@ read_group(
 
 		if (++count % MODULO_COUNT_NUM == 0)
 			show_progress(mesg, count, total);
-
-#if 0 /* again too verbose */
-		if (batch_mode && verbose) {
-			my_fputc('.', stdout);
-			my_flush();
-		}
-#endif /* 0 */
-
 	}
 
 	/*
@@ -475,8 +467,8 @@ thread_by_subject(
 
 		if (j != -1 && j < i) {
 			if (arts[i].prev == ART_NORMAL &&
-					((arts[i].subject == arts[j].subject) ||
-					 (arts[i].archive && arts[j].archive && (arts[i].archive->name == arts[j].archive->name)))) {
+					((arts[i].subject == arts[j].subject) /* ||
+					 (arts[i].archive && arts[j].archive && (arts[i].archive->name == arts[j].archive->name)) */ )) {
 				arts[j].thread = i;
 				arts[i].prev = j;
 			}
@@ -861,11 +853,11 @@ sort_base(
 
 
 /*
- * This is only called when reading local spool and no overview files
- * exist. Code reads (max_lineno) lines of article, presumably to catch
- * headers like Archive-name: which are not normally included in XOVER or
- * even the normal block of headers. How this is supposed to be useful when
- * 99% of the time we'll have overview data I don't know...
+ * This is only called when no overview files exist. Code reads (max_lineno)
+ * lines of article, presumably to catch headers like Archive-name: which are
+ * not normally included in XOVER or even the normal block of headers.
+ * How this is supposed to be useful when 99% of the time we'll have overview
+ * data I don't know...
  * TODO: move Archive-name: parsing to article body parsing, remove the
  * TODO: max_lineno nonsense and parse just the hdrs. Only parse if
  * TODO: currgrp->auto_save is set, otherwise it is redundant info
@@ -1130,7 +1122,7 @@ read_nov_file(
 		 * artnum in overview data higher than groups high mark
 		 *
 		 * TODO: - warn user about broken overviews?
-		 *       - try to prase the Xref:-line to get the crrect artnum
+		 *       - try to parse the Xref:-line to get the crrect artnum
 		 *       - see also parse_unread_arts()
 		 */
 		if (artnum > group->xmax)
@@ -1219,6 +1211,7 @@ read_nov_file(
 		 * TODO: is no mesg-id allowed in rfc?
 		 *       no, but we might see that in mailgroups as mesg-id is
 		 *       optional in mail
+		 *		 So complain if group->type == GROUP_TYPE_NEWS
 		 *
 		 *       draft-ietf-nntpext-base-13.txt, section 9.2.1.1
 		 *       comes up with "<0>" - should we use it instead of '\0'?
@@ -1347,9 +1340,9 @@ read_nov_file(
  *       (tin has to handle raw 8bit data and other ugly stuff in the
  *       overviews anyway and thus we preserver as much info as possible)
  *       this would require some changes in read_nov_file() and
- *       prase_headres(): don't do the decoding/unfolding there, but in a
+ *       parse_headers(): don't do the decoding/unfolding there, but in a
  *       second pass right after write_nov_file(), or two additional fields
- *       which hold the raw data for from/subject. the laster has the
+ *       which hold the raw data for from/subject. the latter has the
  *       disadvantage that it costs (much) more memory.
  */
 void
@@ -1391,77 +1384,77 @@ write_nov_file(
 		error_message("WRITE file=[%s]", nov_file);
 #endif /* DEBUG */
 
-	if ((fp = open_xover_fp(group, "w", 0L, 0L)) == NULL)
+	if ((fp = open_xover_fp(group, "w", 0L, 0L)) == NULL) {
 		error_message(_(txt_cannot_write_index), nov_file);
-	else {
-		if (group->attribute->sort_art_type != SORT_ARTICLES_BY_NOTHING)
-			SortBy(artnum_comp);
+		return;
+	}
+	if (group->attribute->sort_art_type != SORT_ARTICLES_BY_NOTHING)
+		SortBy(artnum_comp);
 
-		if (!overview_index_filename)
-			fprintf(fp, "%s\n", group->name);
+	if (!overview_index_filename)
+		fprintf(fp, "%s\n", group->name);
 
-		for_each_art(i) {
-			article = &arts[i];
+	for_each_art(i) {
+		article = &arts[i];
 
-			if (article->thread != ART_EXPIRED && article->artnum >= group->xmin) {
-				char *p;
-				char *q = NULL, *ref = NULL;
+		if (article->thread != ART_EXPIRED && article->artnum >= group->xmin) {
+			char *p;
+			char *q = NULL, *ref = NULL;
 
-				/*
-				 * TODO: instead of tinrc.mm_local_charset we'd better use UTF-8
-				 *       here and in print_from() in the CHARSET_CONVERSION case.
-				 *       note that this requires something like
-				 *          buffer_to_network(article->subject, "UTF-8");
-				 *       right bfore the rfc1522_encode() call.
-				 *
-				 *       if we would cache the original undecoded data, we could
-				 *       ignore stuff like this.
-				 */
-				p = rfc1522_encode(article->subject, tinrc.mm_local_charset, FALSE);
+			/*
+			 * TODO: instead of tinrc.mm_local_charset we'd better use UTF-8
+			 *       here and in print_from() in the CHARSET_CONVERSION case.
+			 *       note that this requires something like
+			 *          buffer_to_network(article->subject, "UTF-8");
+			 *       right bfore the rfc1522_encode() call.
+			 *
+			 *       if we would cache the original undecoded data, we could
+			 *       ignore stuff like this.
+			 */
+			p = rfc1522_encode(article->subject, tinrc.mm_local_charset, FALSE);
 
-				/*
-				 * replace any '\t's with ' ' in the references-data
-				 *
-				 * TODO: nntpext-draft might come up with a new scheme:
-				 *       For all fields, the value is processed by first
-				 *       removing all US-ASCII CRLF pairs and then replacing
-				 *       each remaining US-ASCII NUL, TAB, CR, or LF character
-				 *       with a single US-ASCII space (for example, CR LF LF TAB
-				 *       will become two spaces).
-				 */
-				if (article->refs) {
-					ref = q = my_strdup(article->refs);
-					while (*q) {
-						if (*q == '\t')
-							*q = ' ';
-						q++;
-					}
-				}
-
-				fprintf(fp, "%ld\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
-					article->artnum,
-					tinrc.post_8bit_header ? article->subject : p,
-					print_from(article),
-					print_date(article->date),
-					BlankIfNull(article->msgid),
-					BlankIfNull(ref),
-					0,	/* bytes */
-					article->line_count);
-
-				if (article->xref)
-					fprintf(fp, "\tXref: %s", article->xref);
-
-				fprintf(fp, "\n");
-				free(p);
-				if (q != ref) {
-					free(ref);
-					ref = q = NULL;
+			/*
+			 * replace any '\t's with ' ' in the references-data
+			 *
+			 * TODO: nntpext-draft might come up with a new scheme:
+			 *       For all fields, the value is processed by first
+			 *       removing all US-ASCII CRLF pairs and then replacing
+			 *       each remaining US-ASCII NUL, TAB, CR, or LF character
+			 *       with a single US-ASCII space (for example, CR LF LF TAB
+			 *       will become two spaces).
+			 */
+			if (article->refs) {
+				ref = q = my_strdup(article->refs);
+				while (*q) {
+					if (*q == '\t')
+						*q = ' ';
+					q++;
 				}
 			}
+
+			fprintf(fp, "%ld\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
+				article->artnum,
+				tinrc.post_8bit_header ? article->subject : p,
+				print_from(article),
+				print_date(article->date),
+				BlankIfNull(article->msgid),
+				BlankIfNull(ref),
+				0,	/* bytes */
+				article->line_count);
+
+			if (article->xref)
+				fprintf(fp, "\tXref: %s", article->xref);
+
+			fprintf(fp, "\n");
+			free(p);
+			if (q != ref) {
+				free(ref);
+				ref = q = NULL;
+			}
 		}
-		fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH));
-		fclose(fp);
 	}
+	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH));
+	fclose(fp);
 }
 
 
@@ -1509,17 +1502,13 @@ find_nov_file(
 	struct t_group *group,
 	int mode)
 {
-	FILE *fp;
-	char *ptr;
 	const char *dir;
 	char buf[PATH_LEN];
-	int i;
 	static char nov_file[PATH_LEN];
 	t_bool hash_filename;
-	unsigned long hash;
 
 	if (group == NULL)
-		return (char *) 0;
+		return NULL;
 
 	overview_index_filename = FALSE;	/* Write groupname in nov file? (FALSE means write) */
 	hash_filename = FALSE;
@@ -1544,7 +1533,7 @@ find_nov_file(
 #ifndef NNTP_ONLY
 				make_base_group_path(novrootdir, group->name, buf);
 				joinpath(nov_file, buf, novfilename);
-				if (mode == R_OK || mode == W_OK) {
+				if (mode == R_OK || mode == W_OK) {		/* This MUST be true ? */
 					if (!access(nov_file, mode))
 						overview_index_filename = TRUE;
 				}
@@ -1561,7 +1550,10 @@ find_nov_file(
 	}
 
 	if (hash_filename) {
-		hash = hash_groupname(group->name);
+		FILE *fp;
+		char *ptr;
+		int i;
+		unsigned long hash = hash_groupname(group->name);
 
 		for (i = 1; ; i++) {
 			snprintf(buf, sizeof(buf), "%lu.%d", hash, i);
@@ -1580,8 +1572,7 @@ find_nov_file(
 			}
 			fclose(fp);
 
-			ptr = strrchr(buf, '\n');
-			if (ptr != NULL)
+			if ((ptr = strrchr(buf, '\n')) != NULL)
 				*ptr = '\0';
 
 			if (STRCMPEQ(buf, group->name))
@@ -1601,7 +1592,7 @@ void
 do_update(
 	t_bool catchup)
 {
-	int i, j, k =0;
+	int i, j, k = 0;
 	time_t beg_epoch;
 	struct t_group *group;
 

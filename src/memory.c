@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-04-25
+ *  Updated   : 2003-05-10
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -68,8 +68,9 @@ struct t_save *save;			/* sorts articles before saving them */
  * Local prototypes
  */
 static void free_active_arrays(void);
-static void free_if_not_default(char **attrib, char *deflt);
 static void free_newnews_array(void);
+static void free_input_history(void);
+static void free_global_arrays(void);
 
 
 /*
@@ -192,7 +193,8 @@ free_all_arrays(
 	hash_reclaim();
 
 #ifndef USE_CURSES
-	init_screen_array(FALSE);
+	if (!batch_mode)
+		init_screen_array(FALSE);
 #endif /* !USE_CURSES */
 
 	free_art_array();
@@ -200,39 +202,45 @@ free_all_arrays(
 	FreeAndNull(arts);
 	free_filter_array(&glob_filter);
 	free_active_arrays();
+	free_global_arrays();
 
+	if (!batch_mode) {
 #ifdef HAVE_COLOR
-	FreeIfNeeded(quote_regex.re);
-	FreeIfNeeded(quote_regex.extra);
-	FreeIfNeeded(quote_regex2.re);
-	FreeIfNeeded(quote_regex2.extra);
-	FreeIfNeeded(quote_regex3.re);
-	FreeIfNeeded(quote_regex3.extra);
+		FreeIfNeeded(quote_regex.re);
+		FreeIfNeeded(quote_regex.extra);
+		FreeIfNeeded(quote_regex2.re);
+		FreeIfNeeded(quote_regex2.extra);
+		FreeIfNeeded(quote_regex3.re);
+		FreeIfNeeded(quote_regex3.extra);
 #endif /* HAVE_COLOR */
-	FreeIfNeeded(slashes_regex.re);
-	FreeIfNeeded(slashes_regex.extra);
-	FreeIfNeeded(stars_regex.re);
-	FreeIfNeeded(stars_regex.extra);
-	FreeIfNeeded(strokes_regex.re);
-	FreeIfNeeded(strokes_regex.extra);
-	FreeIfNeeded(underscores_regex.re);
-	FreeIfNeeded(underscores_regex.extra);
-	FreeIfNeeded(strip_re_regex.re);
-	FreeIfNeeded(strip_re_regex.extra);
-	FreeIfNeeded(strip_was_regex.re);
-	FreeIfNeeded(strip_was_regex.extra);
-	FreeIfNeeded(uubegin_regex.re);
-	FreeIfNeeded(uubegin_regex.extra);
-	FreeIfNeeded(uubody_regex.re);
-	FreeIfNeeded(uubody_regex.extra);
-	FreeIfNeeded(url_regex.re);
-	FreeIfNeeded(url_regex.extra);
-	FreeIfNeeded(mail_regex.re);
-	FreeIfNeeded(mail_regex.extra);
-	FreeIfNeeded(news_regex.re);
-	FreeIfNeeded(news_regex.extra);
-	FreeIfNeeded(shar_regex.re);
-	FreeIfNeeded(shar_regex.extra);
+		FreeIfNeeded(slashes_regex.re);
+		FreeIfNeeded(slashes_regex.extra);
+		FreeIfNeeded(stars_regex.re);
+		FreeIfNeeded(stars_regex.extra);
+		FreeIfNeeded(strokes_regex.re);
+		FreeIfNeeded(strokes_regex.extra);
+		FreeIfNeeded(underscores_regex.re);
+		FreeIfNeeded(underscores_regex.extra);
+		FreeIfNeeded(strip_re_regex.re);
+		FreeIfNeeded(strip_re_regex.extra);
+		FreeIfNeeded(strip_was_regex.re);
+		FreeIfNeeded(strip_was_regex.extra);
+		FreeIfNeeded(uubegin_regex.re);
+		FreeIfNeeded(uubegin_regex.extra);
+		FreeIfNeeded(uubody_regex.re);
+		FreeIfNeeded(uubody_regex.extra);
+		FreeIfNeeded(url_regex.re);
+		FreeIfNeeded(url_regex.extra);
+		FreeIfNeeded(mail_regex.re);
+		FreeIfNeeded(mail_regex.extra);
+		FreeIfNeeded(news_regex.re);
+		FreeIfNeeded(news_regex.extra);
+		FreeIfNeeded(shar_regex.re);
+		FreeIfNeeded(shar_regex.extra);
+
+		free_keymaps();
+		free_input_history();
+	}
 
 	FreeAndNull(base);
 
@@ -245,7 +253,8 @@ free_all_arrays(
 		free_newnews_array();
 		FreeAndNull(newnews);
 	}
-	free_keymaps();
+
+	tin_fgets(NULL, FALSE);
 }
 
 
@@ -253,7 +262,7 @@ void
 free_art_array(
 	void)
 {
-	register int i;
+	int i;
 
 	for_each_art(i) {
 		arts[i].artnum = 0L;
@@ -283,7 +292,7 @@ free_art_array(
  * Use this only for attributes that have a fixed default of a static string
  * in tinrc
  */
-static void
+void
 free_if_not_default(
 	char **attrib,
 	char *deflt)
@@ -293,45 +302,100 @@ free_if_not_default(
 }
 
 
+/*
+ * TODO: fix the leaks in the global case
+ */
 void
 free_attributes_array(
 	void)
 {
-	register int i;
-	struct t_group *psGrp;
+	int i;
+	struct t_group *group;
 
 	for_each_group(i) {
-		psGrp = &active[i];
-		if (!psGrp->bogus && !psGrp->attribute->global) {
-			free_if_not_default(&psGrp->attribute->maildir, tinrc.maildir);
-			free_if_not_default(&psGrp->attribute->savedir, tinrc.savedir);
+		group = &active[i];
+		if (!group->bogus && group->attribute && !group->attribute->global) {
+			free_if_not_default(&group->attribute->maildir, tinrc.maildir);
+			free_if_not_default(&group->attribute->savedir, tinrc.savedir);
 
-			FreeAndNull(psGrp->attribute->savefile);
+			FreeAndNull(group->attribute->savefile);
 
-			free_if_not_default(&psGrp->attribute->sigfile, tinrc.sigfile);
-			free_if_not_default(&psGrp->attribute->organization, default_organization);
+			free_if_not_default(&group->attribute->sigfile, tinrc.sigfile);
+			free_if_not_default(&group->attribute->organization, default_organization);
 
-			FreeAndNull(psGrp->attribute->followup_to);
+			FreeAndNull(group->attribute->followup_to);
 
-			FreeAndNull(psGrp->attribute->quick_kill_scope);
-			FreeAndNull(psGrp->attribute->quick_select_scope);
+			FreeAndNull(group->attribute->mailing_list);
+			FreeAndNull(group->attribute->x_headers);
+			FreeAndNull(group->attribute->x_body);
 
-			FreeAndNull(psGrp->attribute->mailing_list);
-			FreeAndNull(psGrp->attribute->x_headers);
-			FreeAndNull(psGrp->attribute->x_body);
+			free_if_not_default(&group->attribute->from, tinrc.mail_address);
+			free_if_not_default(&group->attribute->news_quote_format, tinrc.news_quote_format);
+			free_if_not_default(&group->attribute->quote_chars, tinrc.quote_chars);
 
-			free_if_not_default(&psGrp->attribute->from, tinrc.mail_address);
-			free_if_not_default(&psGrp->attribute->news_quote_format, tinrc.news_quote_format);
-			free_if_not_default(&psGrp->attribute->quote_chars, tinrc.quote_chars);
+			FreeAndNull(group->attribute->mime_types_to_save);
 
 #ifdef HAVE_ISPELL
-			FreeAndNull(psGrp->attribute->ispell);
+			FreeAndNull(group->attribute->ispell);
 #endif /* HAVE_ISPELL */
 
-			free(psGrp->attribute);
+			FreeAndNull(group->attribute->quick_kill_scope);
+			FreeAndNull(group->attribute->quick_select_scope);
+
+#ifdef CHARSET_CONVERSION
+			FreeAndNull(group->attribute->undeclared_charset);
+#endif /* CHARSET_CONVERSION */
+
+			free(group->attribute);
 		}
-		psGrp->attribute = (struct t_attribute *) 0;
+		group->attribute = (struct t_attribute *) 0;
 	}
+
+	/* free the global attributes array */
+	free_if_not_default(&glob_attributes.maildir, tinrc.maildir);
+	free_if_not_default(&glob_attributes.savedir, tinrc.savedir);
+
+	FreeAndNull(glob_attributes.savefile);
+
+	free_if_not_default(&glob_attributes.sigfile, tinrc.sigfile);
+	free_if_not_default(&glob_attributes.organization, default_organization);
+
+	FreeAndNull(glob_attributes.followup_to);
+
+	FreeAndNull(glob_attributes.mailing_list);
+	FreeAndNull(glob_attributes.x_headers);
+	FreeAndNull(glob_attributes.x_body);
+
+	free_if_not_default(&glob_attributes.from, tinrc.mail_address);
+	free_if_not_default(&glob_attributes.news_quote_format, tinrc.news_quote_format);
+	free_if_not_default(&glob_attributes.quote_chars, tinrc.quote_chars);
+
+	FreeAndNull(glob_attributes.mime_types_to_save);
+
+#ifdef HAVE_ISPELL
+	FreeAndNull(glob_attributes.ispell);
+#endif /* HAVE_ISPELL */
+
+	FreeAndNull(glob_attributes.quick_kill_scope);
+	FreeAndNull(glob_attributes.quick_select_scope);
+
+#ifdef CHARSET_CONVERSATION
+	FreeAndNull(glob_attributes.undeclared_charset);
+#endif /* CHARSET_CONVERSATION */
+}
+
+
+static void
+free_global_arrays(
+	void)
+{
+	if (news_headers_to_display_array)
+		FreeIfNeeded(*news_headers_to_display_array);
+	FreeAndNull(news_headers_to_display_array);
+
+	if (news_headers_to_not_display_array)
+		FreeIfNeeded(*news_headers_to_not_display_array);
+	FreeAndNull(news_headers_to_not_display_array);
 }
 
 
@@ -339,7 +403,7 @@ static void
 free_active_arrays(
 	void)
 {
-	register int i;
+	int i;
 
 	FreeAndNull(my_group);	/* my_group[] */
 
@@ -386,6 +450,20 @@ free_newnews_array(
 		FreeAndNull(newnews[i].host);
 
 	num_newnews = 0;
+}
+
+
+static void
+free_input_history(
+	void)
+{
+	int his_w, his_e;
+
+	for (his_w = 0; his_w <= HIST_MAXNUM; his_w++) {
+		for (his_e = 0; his_e < HIST_SIZE; his_e++) {
+			FreeIfNeeded(input_history[his_w][his_e]);
+		}
+	}
 }
 
 

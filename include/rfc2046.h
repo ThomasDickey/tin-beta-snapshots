@@ -3,7 +3,7 @@
  *  Module    : rfc2046.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2003-03-31
+ *  Updated   : 2003-05-06
  *  Notes     : rfc2046 MIME article definitions
  *
  * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
@@ -66,7 +66,7 @@
 
 /*
  * Linked list of parameter/value pairs
- * Used for params attached to a content line and persistent headers
+ * Used for params attached to a content line
  */
 typedef struct param
 {
@@ -119,8 +119,7 @@ struct t_header
 	char *summary;			/* Summary: */
 	char *followup;			/* Followup-To: */
 	char *ftnto;			/* Old X-Comment-To: (Used by FIDO) */
-	char *authorids;		/* Author-IDs: (USEFOR, 2nd Son of 1036) Obsolete, USEFOR kicked it */
-	t_param *persist;		/* P-ersistent headers (USEFOR, 2nd Son of 1036) Obsolete, USEFOR kicked it */
+	char *xface;			/* X-Face: */
 	t_bool mime:1;			/* Is Mime-Version: defined - TODO: change to version number */
 	t_part *ext;			/* Extended Mime header information */
 };
