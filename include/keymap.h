@@ -100,7 +100,10 @@ struct k_global {
 	t_keynode Up2;							/* 'k' */
 	t_keynode Quit;						/* 'q' */
 	t_keynode Version;					/* 'v' */
+	t_keynode Post;						/* 'w' */
 	t_keynode Pipe;						/* '|' */
+	t_keynode CatchupLeft;				/* special, for internal use only */
+	t_keynode MouseToggle;				/* special, for internal use only */
 	t_keynode null;						/* End of group */
 };
 
@@ -174,7 +177,6 @@ struct k_group {
 	t_keynode Save;						/* 's' */
 	t_keynode Tag;							/* 't' */
 	t_keynode ToggleThreading;			/* 'u' */
-	t_keynode Post;						/* 'w' */
 	t_keynode Repost;						/* 'x' */
 	t_keynode MarkArtUnread;			/* 'z' */
 	t_keynode UndoSel;					/* '~' */
@@ -201,9 +203,9 @@ struct k_page {
 	t_keynode tag;							/* Stores name of this keygroup */
 	t_keynode AutoSel;					/* ctrl('A') */
 	t_keynode ReplyQuoteHeaders;		/* ctrl('E') */
-#ifdef HAVE_PGP
+#ifdef HAVE_PGP_GPG
 	t_keynode PGPCheckArticle;			/* ctrl('G') */
-#endif /* HAVE_PGP */
+#endif /* HAVE_PGP_GPG */
 	t_keynode ToggleHeaders;			/* ctrl('H') */
 	t_keynode NextUnread;				/* '\t' */
 	t_keynode NextThd;					/* '\n' */
@@ -253,7 +255,6 @@ struct k_page {
 	t_keynode Save;						/* 's' */
 	t_keynode Tag;							/* 't' */
 	t_keynode GotoParent;				/* 'u' */
-	t_keynode Post;						/* 'w' */
 	t_keynode Repost;						/* 'x' */
 	t_keynode MarkArtUnread;			/* 'z' */
 	t_keynode null;						/* End of group */
@@ -282,8 +283,8 @@ struct k_post {
 	t_keynode Continue;
 	t_keynode Ignore;
 	t_keynode Mail;
-	t_keynode Post;
 	t_keynode Post2;
+	t_keynode Post3;
 	t_keynode Postpone;
 	t_keynode Send;
 	t_keynode Send2;
@@ -293,10 +294,8 @@ struct k_post {
 
 struct k_postpone {
 	t_keynode tag;
-	t_keynode No;
-	t_keynode Yes;
-	t_keynode YesAll;
-	t_keynode YesOverride;
+	t_keynode All;
+	t_keynode Override;
 	t_keynode null;
 };
 
@@ -348,7 +347,6 @@ struct k_select {
 	t_keynode ToggleReadDisplay;		/* 'r' */
 	t_keynode Subscribe;					/* 's' */
 	t_keynode Unsubscribe;				/* 'u' */
-	t_keynode Post;						/* 'w' */
 	t_keynode YankActive;				/* 'y' */
 	t_keynode MarkGrpUnread;			/* 'z' */
 	t_keynode null;						/* End of group */
@@ -373,7 +371,6 @@ struct k_thread {
 	t_keynode Mail;						/* 'm' */
 	t_keynode Save;						/* 's' */
 	t_keynode Tag;							/* 't' */
-	t_keynode Post;						/* 'w' */
 	t_keynode MarkArtUnread;			/* 'z' */
 	t_keynode UndoSel;					/* '~' */
 	t_keynode null;						/* End of group */

@@ -95,6 +95,7 @@ selection_page (
 	int num_cmd_line_groups)
 {
 	char buf[LEN];
+	char key[MAXKEYLEN];
 	int i, n, ch;
 
 	selmenu.curr = start_groupnum;
@@ -396,7 +397,7 @@ selection_page (
 				info_message (cvers);
 				break;
 
-			case iKeySelectPost:	/* post a basenote */
+			case iKeyPost:	/* post a basenote */
 				if (!can_post) {
 					info_message(_(txt_cannot_post));
 					break;
@@ -451,7 +452,7 @@ selection_page (
 				break;
 
 			default:
-				info_message(_(txt_bad_command));
+				info_message(_(txt_bad_command), printascii (key, map_to_local (iKeyHelp, &menukeymap.select_nav)));
 		}
 	}
 }

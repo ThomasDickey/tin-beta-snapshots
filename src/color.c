@@ -347,6 +347,10 @@ print_color (
 #endif /* 0 */
 
 		while (pcre_exec (url_regex.re, url_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) != PCRE_ERROR_NOMATCH) {
+			/*
+			 * TODO: what is buf in the !USE_CURSES case ?
+			 *       what is with offsets[0]/offsets[1]
+			 */
 			highlight_string (row, (ptr-buf)+offsets[0], offsets[1]-offsets[0]);
 			ptr += offsets[1];
 		}
@@ -365,6 +369,7 @@ print_color (
 		offsets[1] = 0;
 
 		while (pcre_exec (mail_regex.re, mail_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) != PCRE_ERROR_NOMATCH) {
+			/* TODO: what is buf in the !USE_CURSES case ? */
 			highlight_string (row, (ptr-buf)+offsets[0], offsets[1]-offsets[0]);
 			ptr += offsets[1];
 		}

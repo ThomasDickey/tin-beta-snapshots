@@ -350,6 +350,7 @@ thread_page (
 	int thread_depth,			/* initial depth in thread */
 	t_pagerinfo *page)			/* !NULL if we must go direct to the pager */
 {
+	char key[MAXKEYLEN];
 	int ret_code = 0;			/* Set to < 0 when it is time to leave this menu */
 	int ch = 0;
 	int i, n;
@@ -486,7 +487,7 @@ thread_page (
 				ret_code = thread_tab_pressed();
 				break;
 
-			case iKeyThreadPost:	/* post a basenote */
+			case iKeyPost:	/* post a basenote */
 				if (post_article (group->name))
 					show_thread_page();
 				break;
@@ -703,7 +704,7 @@ thread_page (
 				break;
 
 			default:
-				info_message (_(txt_bad_command));
+				info_message (_(txt_bad_command), printascii (key, map_to_local (iKeyHelp, &menukeymap.thread_nav)));
 		}
 	} /* ret_code >= 0 */
 

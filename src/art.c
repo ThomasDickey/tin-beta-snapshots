@@ -47,7 +47,7 @@
 
 #ifdef PROFILE
 #	ifndef STPWATCH_H
-#		include	"stpwatch.h"
+#		include "stpwatch.h"
 #	endif /* !STPWATCH_H */
 #endif /* PROFILE */
 

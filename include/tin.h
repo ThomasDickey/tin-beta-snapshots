@@ -1011,11 +1011,12 @@ enum resizer { cNo, cYes, cRedraw };
 #define POST_PROC_NONE		0
 #define POST_PROC_SHAR		1
 #define POST_PROC_UUDECODE	2
+#if 0
 #define POST_PROC_UUD_LST_ZOO	3
 #define POST_PROC_UUD_EXT_ZOO	4
 #define POST_PROC_UUD_LST_ZIP	5
 #define POST_PROC_UUD_EXT_ZIP	6
-
+#endif /* 0 */
 
 /*
  * used in art.c

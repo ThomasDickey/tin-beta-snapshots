@@ -121,12 +121,18 @@
  */
 
 /*
+ * Maximum chars (including null byte) needed to print a key name
+ * the longest name will probably something like SPACE
+ */
+#define MAXKEYLEN 10
+
+/*
  * Global keys
  */
 
 /* Internal use only - Need only be an invalid untypable key value */
-#define iKeyCatchupLeft 0	/* These two must be in mutually exclusive menus */
-#define iKeyMouseToggle	0
+#define iKeyCatchupLeft 0x80	/* These two must be in mutually exclusive menus */
+#define iKeyMouseToggle	0x80
 
 #define iKeyAbort ESC
 #define iKeyPageDown3 ' '
@@ -157,6 +163,7 @@
 #define iKeyUp2 'k'
 #define iKeyQuit 'q'
 #define iKeyVersion 'v'
+#define iKeyPost 'w'
 #define iKeyPipe '|'
 #define iKeyPageUp ctrl('B')
 #define iKeyPageDown ctrl('D')
@@ -232,7 +239,6 @@
 #define iKeyGroupSave 's'
 #define iKeyGroupTag 't'
 #define iKeyGroupToggleThreading 'u'
-#define iKeyGroupPost 'w'
 #define iKeyGroupRepost 'x'
 #define iKeyGroupMarkArtUnread 'z'
 #define iKeyGroupUndoSel '~'
@@ -307,7 +313,6 @@
 #define iKeyPageSave 's'
 #define iKeyPageTag 't'
 #define iKeyPageGotoParent 'u'
-#define iKeyPagePost 'w'
 #define iKeyPageRepost 'x'
 #define iKeyPageMarkArtUnread 'z'
 
@@ -332,16 +337,14 @@
 #define iKeyPostAbort 'a'
 #define iKeyPostIgnore 'i'
 #define iKeyPostMail 'm'
-#define iKeyPostPost 'p'
 #define iKeyPostPost2 'y'
+#define iKeyPostPost3 'p'
 #define iKeyPostSend 's'
 #define iKeyPostSend2 'y'
 #define iKeyPostSupersede 's'
 #define iKeyPostPostpone 'o'
-#define iKeyPostponeYes 'y'
-#define iKeyPostponeYesOverride 'Y'
-#define iKeyPostponeYesAll 'A'
-#define iKeyPostponeNo 'n'
+#define iKeyPostponeOverride 'Y'
+#define iKeyPostponeAll 'A'
 
 /* prompt.c */
 
@@ -352,10 +355,12 @@
 
 #define iKeySaveAppendFile 'a'
 #define iKeySaveOverwriteFile 'o'
+#if 0
 #define iKeyPProcExtractZip 'E'
 #define iKeyPProcListZip 'L'
 #define iKeyPProcExtractZoo 'e'
 #define iKeyPProcListZoo 'l'
+#endif /* 0 */
 #define iKeyPProcShar 's'
 #define iKeyPProcUUDecode 'u'
 #define iKeyPProcNone 'n'
@@ -382,7 +387,6 @@
 #define iKeySelectToggleReadDisplay 'r'
 #define iKeySelectSubscribe 's'
 #define iKeySelectUnsubscribe 'u'
-#define iKeySelectPost 'w'
 #define iKeySelectYankActive 'y'
 #define iKeySelectMarkGrpUnread 'z'
 
@@ -406,13 +410,12 @@
 #define iKeyThreadMail 'm'
 #define iKeyThreadSave 's'
 #define iKeyThreadTag 't'
-#define iKeyThreadPost 'w'
 #define iKeyThreadMarkArtUnread 'z'
 #define iKeyThreadUndoSel '~'
 
 typedef struct kn {
-	const char defaultkey;	/* The default key definition */
-	char localkey;				/* The actual key definition */
+	const unsigned char defaultkey;	/* The default key definition */
+	unsigned char localkey;				/* The actual key definition */
 	const char *t;						/* Qualifier string in mapping file */
 } t_keynode;
 

@@ -7,9 +7,9 @@
 PROJECT	= tin
 LVER	= 1
 PVER	= 5
-SVER	= 5
+SVER	= 6
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20000613
+DVER	= 20000618
 EXE	= tin
 MANEXT	= 1
 
@@ -219,7 +219,6 @@ PCRE	= \
 	$(PCREDIR)/pcre.c \
 	$(PCREDIR)/pcre.def \
 	$(PCREDIR)/pcre.in \
-	$(PCREDIR)/pcre.mms \
 	$(PCREDIR)/pcreposix.c \
 	$(PCREDIR)/pcreposix.h \
 	$(PCREDIR)/pcretest.c \
@@ -279,6 +278,7 @@ CAN	= \
 
 MISC	= \
 	$(INCDIR)/autoconf.hin \
+	$(PCREDIR)/pcre.mms \
 	$(SRCDIR)/Makefile.in \
 	$(SRCDIR)/ibm437_l1.tab \
 	$(SRCDIR)/ibm850_l1.tab \
@@ -477,6 +477,7 @@ name:
 
 dist:
 	@$(MAKE) name
+	@-if $(TEST) -r $(PODIR)/Makefile ; then $(CD) $(PODIR) && $(MAKE) ; fi
 	@$(MAKE) manifest
 	@$(MAKE) chmod
 	@$(MAKE) tar

@@ -63,7 +63,7 @@
  * at the end of filter_articles()
  */
 
-#define	SET_FILTER(grp, i, j)	\
+#define SET_FILTER(grp, i, j)	\
 	if (ptr[j].score > 0) { \
 		arts[i].score = (SCORE_MAX - ptr[j].score >= arts[i].score) ? \
 		(arts[i].score + ptr[j].score) : SCORE_MAX ; \
@@ -784,6 +784,7 @@ filter_menu (
 	char *ptr;
 	char argv[4][PATH_LEN];
 	char buf[LEN];
+	char keyedit[MAXKEYLEN], keyquit[MAXKEYLEN], keysave[MAXKEYLEN];
 	char text_from[PATH_LEN];
 	char text_msgid[PATH_LEN];
 	char text_subj[PATH_LEN];
@@ -813,6 +814,10 @@ filter_menu (
 	/*
 	 * setup correct text for user selected menu
 	 */
+
+	(void) printascii (keyedit, map_to_local (iKeyFilterEdit, &menukeymap.filter_quit_edit_save));
+	(void) printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.filter_quit_edit_save));
+	(void) printascii (keysave, map_to_local (iKeyFilterSave, &menukeymap.filter_quit_edit_save));
 
 	if (type == FILTER_KILL) {
 		ptr_filter_from = _(txt_kill_from);
@@ -1026,7 +1031,8 @@ filter_menu (
 	 */
 	sprintf (double_time, "2x %s", text_time);
 	sprintf (quat_time, "4x %s", text_time);
-	i = get_choice (INDEX_TOP+9, _(txt_help_filter_time), ptr_filter_time, _(txt_unlimited_time), text_time, double_time, quat_time, (char *)0);
+	i = get_choice (INDEX_TOP+9, _(txt_help_filter_time), ptr_filter_time,
+			_(txt_unlimited_time), text_time, double_time, quat_time, (char *)0);
 
 	if (i == -1)
 		return FALSE;
@@ -1074,7 +1080,10 @@ filter_menu (
 		return FALSE;
 
 	forever {
-		ch = prompt_slk_response (ch_default, &menukeymap.filter_quit_edit_save, ptr_filter_quit_edit_save);
+		ch = prompt_slk_response (ch_default,
+				&menukeymap.filter_quit_edit_save,
+				ptr_filter_quit_edit_save,
+				keyquit, keyedit, keysave);
 		switch (ch) {
 
 		case iKeyFilterEdit:

@@ -233,20 +233,20 @@ setup_screen (void)
 #ifdef M_UNIX
 
 #ifdef USE_TERMINFO
-#  define TGETSTR(a,b, bufp) tigetstr(b, bufp)
-#  define TGETNUM(a,b)       tigetnum(b) /* may be tigetint() */
-#  define TGETFLAG(a,b)      tigetflag(b)
-#  define NO_CAP(s)           (s == 0 || s == (char *)-1)
-#  if !defined(HAVE_TIGETNUM) && defined(HAVE_TIGETINT)
-#    define tigetnum tigetint
-#  endif /* !HAVE_TIGETNUM && HAVE_TIGETINT */
+#	define TGETSTR(a,b, bufp) tigetstr(b, bufp)
+#	define TGETNUM(a,b)       tigetnum(b) /* may be tigetint() */
+#	define TGETFLAG(a,b)      tigetflag(b)
+#	define NO_CAP(s)           (s == 0 || s == (char *)-1)
+#	if !defined(HAVE_TIGETNUM) && defined(HAVE_TIGETINT)
+#		define tigetnum tigetint
+#	endif /* !HAVE_TIGETNUM && HAVE_TIGETINT */
 #else /* USE_TERMCAP */
-#  undef USE_TERMCAP
-#  define USE_TERMCAP 1
-#  define TGETSTR(a,b, bufp) tgetstr(a, bufp)
-#  define TGETNUM(a,b)       tgetnum(a)
-#  define TGETFLAG(a,b)      tgetflag(a)
-#  define NO_CAP(s)           (s == 0)
+#	undef USE_TERMCAP
+#	define USE_TERMCAP 1
+#	define TGETSTR(a,b, bufp) tgetstr(a, bufp)
+#	define TGETNUM(a,b)       tgetnum(a)
+#	define TGETFLAG(a,b)      tgetflag(a)
+#	define NO_CAP(s)           (s == 0)
 #endif /* USE_TERMINFO */
 
 #ifdef HAVE_TPARM
@@ -308,11 +308,11 @@ get_termcaps (void)
 	_cursoroff      = TGETSTR ("vi", "civis", &ptr);
 
 #ifdef USE_TERMCAP
-#  ifdef HAVE_EXTERN_TCAP_PC
+#	ifdef HAVE_EXTERN_TCAP_PC
 	t = TGETSTR("pc", "pad", &p);
 	if (t != 0)
 		PC = *t;
-#  endif /* HAVE_EXTERN_TCAP_PC */
+#	endif /* HAVE_EXTERN_TCAP_PC */
 #endif /* USE_TERMCAP */
 
 	if (STRCMPEQ(the_termname, "xterm")) {

@@ -43,9 +43,9 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.5.5"
+#		define VERSION		"1.5.6"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20000613"
+#	define RELEASEDATE	"20000618"
 #	define RELEASENAME	"Lucretia"
 #	define TINRC_VERSION	"1.2"
 

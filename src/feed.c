@@ -44,16 +44,16 @@
 
 #ifdef DEBUG
 #	ifndef TCURSES_H
-#		include	"tcurses.h"
+#		include "tcurses.h"
 #	endif /* !TCURSES_H */
 #endif /* DEBUG */
 
 #ifndef MENUKEYS_H
-#	include	"menukeys.h"
+#	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 
 #ifndef RFC2046_H
-#	include	"rfc2046.h"
+#	include "rfc2046.h"
 #endif /* !RFC2046_H */
 
 char proc_ch;						/* Used for post-processing save queries */
@@ -137,7 +137,16 @@ get_save_filename(
 				my_strncpy (my_mailbox, group->name, sizeof (my_mailbox));
 			my_strncpy (filename, my_mailbox, filelen);
 		} else {		/* ask for post processing type */
-			proc_ch = (char) prompt_slk_response (proc_ch_default, &menukeymap.feed_post_process_type, _(txt_choose_post_process_type));
+			char keynone[MAXKEYLEN], keyquit[MAXKEYLEN], keyshar[MAXKEYLEN];
+			char keyuud[MAXKEYLEN];
+
+			proc_ch = (char) prompt_slk_response (proc_ch_default,
+									&menukeymap.feed_post_process_type,
+									_(txt_choose_post_process_type),
+									printascii (keynone, map_to_local(iKeyPProcNone, &menukeymap.feed_post_process_type)),
+									printascii (keyshar, map_to_local(iKeyPProcShar, &menukeymap.feed_post_process_type)),
+									printascii (keyuud, map_to_local(iKeyPProcUUDecode, &menukeymap.feed_post_process_type)),
+									printascii (keyquit, map_to_local(iKeyQuit, &menukeymap.feed_post_process_type)));
 
 			if (proc_ch == iKeyQuit || proc_ch == iKeyAbort) { /* exit */
 				clear_message ();
@@ -341,9 +350,22 @@ feed_articles (
 	/*
 	 * If not automatic, ask what the user wants to save
 	 */
-	if ((!(group->attribute->auto_save && arts[respnum].archive) || (group->attribute->auto_save && function != FEED_SAVE) || ch_default == iKeyFeedTag) && function != FEED_AUTOSAVE_TAGGED)
-		ch = prompt_slk_response (ch_default, &menukeymap.feed_art_thread_regex_tag, "%s %s", _(prompt), _(txt_art_thread_regex_tag));
-	else
+	if ((!(group->attribute->auto_save && arts[respnum].archive) || (group->attribute->auto_save && function != FEED_SAVE) || ch_default == iKeyFeedTag) && function != FEED_AUTOSAVE_TAGGED) {
+		char buf[LEN];
+		char keyart[MAXKEYLEN], keythread[MAXKEYLEN], keyhot[MAXKEYLEN];
+		char keypat[MAXKEYLEN], keytag[MAXKEYLEN], keyquit[MAXKEYLEN];
+
+		snprintf (buf, sizeof(buf) - 1, _(txt_art_thread_regex_tag),
+			printascii (keyart, map_to_local (iKeyFeedArt, &menukeymap.feed_art_thread_regex_tag)),
+			printascii (keythread, map_to_local (iKeyFeedThd, &menukeymap.feed_art_thread_regex_tag)),
+			printascii (keyhot, map_to_local (iKeyFeedHot, &menukeymap.feed_art_thread_regex_tag)),
+			printascii (keypat, map_to_local (iKeyFeedPat, &menukeymap.feed_art_thread_regex_tag)),
+			printascii (keytag, map_to_local (iKeyFeedTag, &menukeymap.feed_art_thread_regex_tag)),
+			printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.feed_art_thread_regex_tag)));
+		ch = prompt_slk_response (ch_default,
+				&menukeymap.feed_art_thread_regex_tag,
+				"%s %s", _(prompt), buf);
+	} else
 		ch = ch_default;
 
 	switch (ch) {
@@ -422,7 +444,10 @@ feed_articles (
 				char option;
 
 				/* repost or supersede ? */
-				option = (char) prompt_slk_response (iKeyFeedSupersede, &menukeymap.feed_supersede_article, sized_message(_(txt_supersede_article), arts[respnum].subject));
+				option = (char) prompt_slk_response (iKeyFeedSupersede,
+										&menukeymap.feed_supersede_article,
+										sized_message(_(txt_supersede_article),
+										arts[respnum].subject));
 
 				switch (option) {
 					case iKeyFeedSupersede:

@@ -1,3 +1,26 @@
+-- 1.5.6 release 20000618 "" --
+
+U041) Dirk Nimmich <nimmich@uni-muenster.de>
+      ADD. prompt_yn prints current keybindings for PromptYes/PromptNo
+      ADD. switched menus to "key=action" style
+      BUG. unbound keys caused actions in several menus
+      BUG. PProc* keys could not be remapped
+      FIX. extern.h, keymap.h, menukeys.h, proto.h, tin.h
+           attrib.c, config.c, feed.c, filter.c, group.c, keymap.c
+           lang.c, page.c, pgp.c, post.c, prompt.c, save.c, select.c
+           thread.c, tincfg.tbl
+
+U040) Urs Janssen <urs@tin.org>
+      ADD. look for localized keymaps
+      ADD. config.guess, config.sub update
+      ADD. minor code cleanup
+      FIX. config.guess, config.sub, keymap.h, menukeys.h, proto.h, cook.c
+           header.c, group.c, keymap.c, page.c, post.c, rfc2046.c, select.c
+
+U039) Roland Rosenfeld <roland@spinnaker.de>
+      BUG. problems with keymap and only GPG support
+      FIX. keymap.h
+
 -- 1.5.5 release 20000613 "Lucretia" --
 
 U037) Thomas E. Dickey <dickey@herndon4.his.com>
@@ -25,8 +48,8 @@ U034) Urs Janssen <urs@tin.org>
       ADD. made some funcs static, renamed mailcap.c to mimetypes.c
       ADD. dynamic malloc space for mailcap meta expansion
       ADD. updated german translation
-      ADD. removed some unused vars
-      ADD. removed translations for low-level error/debug messages
+      REM. unused vars
+      REM. translations for low-level error/debug messages
       FIX. Makefile[.in], extern.h, auth.c, color.c, config.c, global.c
            lang.c, memory.c, mimetypes.c, misc.c, newsrc.c, nntplib.c, post.c
            read.c, refs.c, rfc1524.c, rfc2047.c, save.c, sigfile.c, signal.c
@@ -52,7 +75,7 @@ U031) Kai Bojens <kbojens@herkules.on-luebeck.de>
       FIX. art.c
 
 U030) Dirk Nimmich <nimmich@uni-muenster.de>
-      BUG. last line in qp-encodet arts isn't always displayed
+      BUG. last line in qp-encoded arts isn't always displayed
       FIX. cook.c
 
 U029) Jason Faultless <jason@radar.tele2.co.uk>
@@ -128,7 +151,7 @@ U023) Jason Faultless <jason@radar.tele2.co.uk>
            'V' view/save multipart attachments in pager
            search string and URL highlighting
            'B'ody search at all levels locates string in article
-           seperate article contexts reduces # article reloads performed
+           separate article contexts reduces # article reloads performed
       FIX. Makefile, INSTALL, TODO, art_handling.txt, tin.1, extern.h
            menukeys.h, proto.h, rfc2045.h, tin.h, Makefile[.in], art.c
            attrib.c, charset.c, color.c, cook.c, curses.c, feed.c, filter.c
@@ -140,7 +163,7 @@ U023) Jason Faultless <jason@radar.tele2.co.uk>
 U022) Toomas Soome <tsoome@ut.ee>
       ADD. estonian translation
       ADD. keep_posted_articles_file
-      BUG. serveral _()/N_() macros missing
+      BUG. several _()/N_() macros missing
       FIX. extern.h, tinrc.h, config.c, feed.c, filter.c, group.c, help.c
            init.c, lang.c, main.c, nntplib.c, post.c, save.c, select.c
            thread.c, tincfg.tbl, et.po
@@ -204,12 +227,12 @@ U019) Roland Rosenfeld <roland@spinnaker.de>
       FIX. filter.c
 
 U018) Jason Faultless <jason@radar.tele2.co.uk>
-      ADD. Pipe '|' to thead menu
+      ADD. Pipe '|' to thread menu
       ADD. rewrote feed.c
       ADD. general cleanup
       ADD. inverse highlight on config screen if draw_arrow=FALSE
       ADD. batch_save now does something
-      ADD. auto_save attribute is now honoured
+      ADD. auto_save attribute is now honored
       ADD. more intuitive handling when strip_bogus=KEEP
       BUG. 'ignore art unavailable' broken
       BUG. invalid start_line_offset in mail_bugreport()
@@ -234,7 +257,7 @@ U018) Jason Faultless <jason@radar.tele2.co.uk>
       FIX. art.c, filter.c, init.c, main.c
 
 U017) Hideaki Yoshfuji <yoshfuji@ecei.tohoku.ac.jp>
-      BUG. ensure hostname is terminated with null-charater.
+      BUG. ensure hostname is terminated with null-character.
       FIX. nntplib.c
 
 U016) Urs Janssen <urs@tin.org>
@@ -250,7 +273,7 @@ U016) Urs Janssen <urs@tin.org>
 -- 1.5.2 release 20000206 "Black Planet" --
 
  015) Urs Janssen <urs@tin.org>
-      ADD. smarter check wehen quotes around realnames are needed
+      ADD. smarter check when quotes around realnames are needed
       FIX. header.c
 
  011) Urs Janssen <urs@tin.org>
@@ -267,7 +290,7 @@ U014) Thomas E. Dickey <dickey@herndon4.his.com>
       ADD. uninstall rule to makefiles
       ADD. removed most unbalanced curly braces
       BUG. redundant parenthesis in N_ macro
-      BUG. wrong fallback prototype for mstemp
+      BUG. wrong fallback prototype for mkstemp
       FIX. aclocal.m4, config.guess, config.sub, configure[.in], makefile.in
            autoconf.h[in], extern.h, tin.h, trace.h, Makefile.in, active.c
            art.c, auth.c, color.c, config.c, curses.c, debug.c, global.c
@@ -346,7 +369,7 @@ U007) Michael Bienia <michael@vorlon.ping.de>
 
  008) Jason Faultless <jason@radar.tele2.co.uk>
       Urs Janssen <urs@tin.org>
-      BUG. removed annyoing "Reading attributes file ..."-messages
+      BUG. removed annoying "Reading attributes file ..."-messages
            for each new group
       ADD. speed-up start when there are several new groups on the server
       FIX. active.c, attrib.c, lang.c, main.c
@@ -381,9 +404,9 @@ U002) Dawid Kuroczko <dk@ssw.krakow.pl>
            tincfg.tbl
 
 U001) Urs Janssen <urs@tin.org>
-      ADD. Patrick Powells snrprintf(), vsnrprintf() fallbacks
+      ADD. Patrick Powells snprintf(), vsnprintf() fallbacks
       REM. INDEX_DAEMON-code
-      FIX. configure[.in], autoconf.h[in], plp_snrprintf.c, *.c
+      FIX. configure[.in], autoconf.h[in], plp_snprintf.c, *.c
 
 -- 1.4.1 release 19991201 "Polish" --
 

@@ -125,7 +125,7 @@ rfc1521_encode (
 			 */
 			if ((len > 0) && (line[len-1] == '\n') &&
 					((len == 1) || (line[len-2] != '\r'))) {
-				STRCPY (tmpbuf, line);
+				STRCPY(tmpbuf, line);
 				line_crlf = tmpbuf;
 				line_crlf[len-1] = '\r';
 				line_crlf[len] = '\n';

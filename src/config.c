@@ -42,16 +42,16 @@
 #	include "tin.h"
 #endif /* !TIN_H */
 #ifndef VERSION_H
-#	include	"version.h"
+#	include "version.h"
 #endif /* !VERSION_H */
 #ifndef TINTBL_H
-#	include	"tincfg.h"
+#	include "tincfg.h"
 #endif /* !TINTBL_H */
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 #ifndef MENUKEYS_H
-#	include	"menukeys.h"
+#	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 
 static void expand_rel_abs_pathname (int line, int col, char *str);
@@ -539,7 +539,7 @@ read_config_file (
 			if (match_boolean (buf, "pos_first_unread=", &tinrc.pos_first_unread))
 				break;
 
-			if (match_integer (buf, "post_process_type=", &tinrc.post_process, POST_PROC_UUD_EXT_ZIP)) {
+			if (match_integer (buf, "post_process_type=", &tinrc.post_process, POST_PROC_UUDECODE)) {
 				proc_ch_default = POST_PROC_TYPE (tinrc.post_process);
 				break;
 			}

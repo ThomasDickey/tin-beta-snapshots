@@ -103,7 +103,7 @@
 #	define ADD_MSG_ID_HEADER()
 #endif /* EVIL_INSIDE */
 
-#define	MAX_MSG_HEADERS	20
+#define MAX_MSG_HEADERS	20
 
 /* Different posting types for post_loop() */
 #define POST_QUICK		0
@@ -189,7 +189,8 @@ static char
 prompt_to_send (
 	const char *subject)
 {
-	return (prompt_slk_response (iKeyPostSend, &menukeymap.post_send, sized_message(_(txt_quit_edit_send), subject)));
+	return prompt_slk_response (iKeyPostSend, &menukeymap.post_send,
+				sized_message(_(txt_quit_edit_send), subject));
 }
 
 
@@ -197,13 +198,19 @@ static char
 prompt_rejected (
 	void)
 {
+	char keyedit[MAXKEYLEN], keypostpone[MAXKEYLEN], keyquit[MAXKEYLEN];
+
 /* FIXME (what does this mean?) fix screen pos. */
 	Raw (FALSE);
 	my_fprintf(stderr, "\n\n%s\n\n", _(txt_post_error_ask_postpone));
 	my_fflush(stderr);
 	Raw (TRUE);
 
-	return (prompt_slk_response (iKeyPostEdit, &menukeymap.post_edit, _(txt_quit_edit_postpone)));
+	return prompt_slk_response (iKeyPostEdit, &menukeymap.post_edit,
+				_(txt_quit_edit_postpone),
+				printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_edit)),
+				printascii (keyedit, map_to_local (iKeyPostEdit, &menukeymap.post_edit)),
+				printascii (keypostpone, map_to_local (iKeyPostPostpone, &menukeymap.post_edit)));
 }
 
 
@@ -240,8 +247,14 @@ static t_bool
 repair_article (
 	char *result)
 {
+	char keyedit[MAXKEYLEN], keymenu[MAXKEYLEN], keyquit[MAXKEYLEN];
 	int ch;
-	ch = prompt_slk_response (iKeyPostEdit, &menukeymap.post_edit_ext, _(txt_bad_article));
+
+	ch = prompt_slk_response (iKeyPostEdit, &menukeymap.post_edit_ext,
+				_(txt_bad_article),
+				printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_edit_ext)),
+				printascii (keymenu, map_to_local (iKeyOptionMenu, &menukeymap.post_edit_ext)),
+				printascii (keyedit, map_to_local (iKeyPostEdit, &menukeymap.post_edit_ext)));
 
 	*result = ch;
 	if (ch == iKeyPostEdit) {
@@ -1181,8 +1194,9 @@ post_article_loop:
 				break;
 #endif /* HAVE_PGP_GPG */
 
-			case iKeyPostPost:
+			case iKeyPost:
 			case iKeyPostPost2:
+			case iKeyPostPost3:
 				wait_message (0, posting_msg);
 				backup_article (article);
 
@@ -1224,17 +1238,32 @@ post_article_loop:
 			default:
 				break;
 		}
-		if (type != POST_REPOST)
-			ch = prompt_slk_response(iKeyPostPost, &menukeymap.post_post, _(txt_quit_edit_post));
-		else
+		if (type != POST_REPOST) {
+			char keyedit[MAXKEYLEN], keyispell[MAXKEYLEN], keypgp[MAXKEYLEN];
+			char keypost[MAXKEYLEN], keypostpone[MAXKEYLEN], keyquit[MAXKEYLEN];
+
+			ch = prompt_slk_response(iKeyPostPost3, &menukeymap.post_post,
+					_(txt_quit_edit_post),
+					printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_post)),
+					printascii (keyedit, map_to_local (iKeyPostEdit, &menukeymap.post_post)),
+#ifdef HAVE_ISPELL
+					printascii (keyispell, map_to_local (iKeyPostIspell, &menukeymap.post_post)),
+#endif /* HAVE_ISPELL */
+#ifdef HAVE_PGP_GPG
+					printascii (keypgp, map_to_local (iKeyPostPGP, &menukeymap.post_post)),
+#endif /* HAVE_PGP_GPG */
+					printascii (keypost, map_to_local (iKeyPostPost3, &menukeymap.post_post)),
+					printascii (keypostpone, map_to_local (iKeyPostPostpone, &menukeymap.post_post)));
+		} else
 			/* Superfluous force_command stuff not used in current code */
-			ch = (/*force_command ? ch_default :*/ prompt_slk_response (ch, &menukeymap.post_post, sized_message(_(txt_quit_edit_xpost), ""/* TODOTODOTODO !!!note_h.subj*/)));
+			ch = (/*force_command ? ch_default :*/ prompt_slk_response (ch,
+						&menukeymap.post_post, sized_message(_(txt_quit_edit_xpost),
+						""/* TODOTODOTODO !!!note_h.subj*/)));
 	}
 
 post_article_done:
 	if (ret_code == POSTED_OK) {
 		FILE *art_fp;
-		int ret;
 		struct t_header header;
 
 		memset (&header, 0, sizeof(struct t_header));
@@ -1242,7 +1271,7 @@ post_article_done:
 		if ((art_fp = fopen (article, "r")) == (FILE *) 0)
 			perror_message (_(txt_cannot_open), article);
 		else {
-			ret = parse_rfc822_headers (&header, art_fp, NULL);
+			parse_rfc822_headers (&header, art_fp, NULL);
 			fclose (art_fp);
 		}
 
@@ -1537,7 +1566,7 @@ post_postponed_article (
 	}
 
 	sprintf(buf, _("Posting: %.*s ..."), (int)(cCOLS-14), subject);
-	post_loop (POST_POSTPONED, NULL, (ask ? iKeyPostEdit : iKeyPostPost), buf, GROUP_TYPE_NEWS, 0);
+	post_loop (POST_POSTPONED, NULL, (ask ? iKeyPostEdit : iKeyPostPost3), buf, GROUP_TYPE_NEWS, 0);
 
 	return;
 }
@@ -1715,29 +1744,30 @@ pickup_postponed_articles (
 			return TRUE;
 
 		if (!all) {
-			ch = prompt_slk_response (iKeyPostponeYes, &menukeymap.post_postpone, sized_message(_(txt_postpone_repost), subject));
+			ch = prompt_slk_response (iKeyPromptYes, &menukeymap.post_postpone,
+						sized_message(_(txt_postpone_repost), subject));
 
-			if (ch == iKeyPostponeYesAll)
+			if (ch == iKeyPostponeAll)
 				all = TRUE;
 		}
 
 		/* No else here since all changes in previous if */
 		if (all)
-			ch = iKeyPostponeYesOverride;
+			ch = iKeyPostponeOverride;
 
 		switch (ch)
 		{
-			case iKeyPostponeYes:
-			case iKeyPostponeYesOverride:
-				post_postponed_article(ch == iKeyPostponeYes, subject);
+			case iKeyPromptYes:
+			case iKeyPostponeOverride:
+				post_postponed_article(ch == iKeyPromptYes, subject);
 				Raw(TRUE);
 				break;
-			case iKeyPostponeNo:
+			case iKeyPromptNo:
 			case iKeyQuit:
 			case iKeyAbort:
 				append_postponed_file(article, userid);
 				unlink(article);
-				if (ch != iKeyPostponeNo)
+				if (ch != iKeyPromptNo)
 					return TRUE;
 		}
 	}
@@ -2033,11 +2063,18 @@ post_response (
 		strip_double_ngs (note_h.followup);
 
 	if (note_h.followup && STRCMPEQ(note_h.followup, "poster")) {
+		char keymail[MAXKEYLEN], keypost[MAXKEYLEN], keyquit[MAXKEYLEN];
+
 /*		clear_message (); */
-		ch = prompt_slk_response(iKeyPageMail, &menukeymap.post_mail_fup, _(txt_resp_to_poster));
+		ch = prompt_slk_response(iKeyPageMail, &menukeymap.post_mail_fup,
+				_(txt_resp_to_poster),
+				printascii (keymail, map_to_local (iKeyPostMail, &menukeymap.post_mail_fup)),
+				printascii (keypost, map_to_local (iKeyPost, &menukeymap.post_mail_fup)),
+				printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_mail_fup)));
 		switch (ch) {
-			case iKeyPostPost:
+			case iKeyPost:
 			case iKeyPostPost2:
+			case iKeyPostPost3:
 				break;
 			case iKeyQuit:
 			case iKeyAbort:
@@ -2046,7 +2083,9 @@ post_response (
 				return mail_to_author (group, respnum, copy_text, with_headers);
 		}
 	} else if (note_h.followup && strcmp (note_h.followup, group) != 0
-		   && strcmp (note_h.followup, note_h.newsgroups) != 0) {
+			&& strcmp (note_h.followup, note_h.newsgroups) != 0) {
+		char keyignore[MAXKEYLEN], keypost[MAXKEYLEN], keyquit[MAXKEYLEN];
+
 		/*
 		 * note that comparing newsgroups and followup-to isn't
 		 * really correct, since the order of the newsgroups may be
@@ -2069,7 +2108,11 @@ post_response (
 		}
 		my_flush ();
 
-		ch = prompt_slk_response(iKeyPostPost, &menukeymap.post_ignore_fupto, _(txt_prompt_fup_ignore));
+		ch = prompt_slk_response(iKeyPostPost3, &menukeymap.post_ignore_fupto,
+					_(txt_prompt_fup_ignore),
+					printascii (keypost, map_to_local (iKeyPost, &menukeymap.post_ignore_fupto)),
+					printascii (keyignore, map_to_local (iKeyPostIgnore, &menukeymap.post_ignore_fupto)),
+					printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_ignore_fupto)));
 		switch (ch) {
 			case iKeyQuit:
 			case iKeyAbort:
@@ -2079,8 +2122,9 @@ post_response (
 				FreeAndNull (note_h.followup);
 				break;
 
-			case iKeyPostPost:
+			case iKeyPost:
 			case iKeyPostPost2:
+			case iKeyPostPost3:
 			default:
 				break;
 		}
@@ -2245,13 +2289,10 @@ create_mail_headers(
 		char from_buf[HEADER_LEN];
 		char *from_address = CURR_GROUP.attribute->from;
 
-		if ((from_address != (char *) 0) && strlen(from_address))
-			;
-		else {
+		if ((from_address == (char *) 0) || !strlen(from_address)) {
 			get_from_name (from_buf, (struct t_group *) 0);
 			from_address = &from_buf[0];
-		}
-		/* from_address is now always a valid pointer to a string */
+		} /* from_address is now always a valid pointer to a string */
 
 		if (strlen(from_address))
 			msg_add_header ("From", from_address);
@@ -2600,8 +2641,12 @@ mail_to_author (
 
 	if (spamtrap_found) {
 		char ch;
+		char keyabort[MAXKEYLEN], keycont[MAXKEYLEN];
 
-		ch = prompt_slk_response (iKeyPostContinue, &menukeymap.post_cont, _(txt_warn_suspicious_mail));
+		ch = prompt_slk_response (iKeyPostContinue, &menukeymap.post_cont,
+				_(txt_warn_suspicious_mail),
+				printascii (keycont, map_to_local (iKeyPostContinue, &menukeymap.post_cont)),
+				printascii (keyabort, map_to_local (iKeyPostAbort, &menukeymap.post_cont)));
 		switch (ch) {
 			case iKeyPostAbort:
 			case iKeyAbort:
@@ -2880,7 +2925,8 @@ cancel_article (
 		return redraw_screen;
 #endif /* FORGERY */
 	} else {
-		option = prompt_slk_response (option_default, &menukeymap.post_delete, sized_message(_(txt_cancel_article), art->subject));
+		option = prompt_slk_response (option_default, &menukeymap.post_delete,
+						sized_message(_(txt_cancel_article), art->subject));
 
 		switch (option) {
 			case iKeyPostCancel:
@@ -3005,7 +3051,8 @@ cancel_article (
 	Raw (oldraw);
 
 	forever {
-		ch = prompt_slk_response(ch_default, &menukeymap.post_cancel, sized_message(_(txt_quit_cancel), note_h.subj));
+		ch = prompt_slk_response(ch_default, &menukeymap.post_cancel,
+					sized_message(_(txt_quit_cancel), note_h.subj));
 		switch (ch) {
 			case iKeyPostEdit:
 				invoke_editor (cancel, start_line_offset);
@@ -3060,7 +3107,7 @@ repost_article (
 {
 	FILE *fp;
 	char ch;
-	char ch_default = iKeyPostPost;
+	char ch_default = iKeyPostPost3;
 	char buf[HEADER_LEN];
 	char from_name[HEADER_LEN];
 	char full_name[128];
@@ -3199,14 +3246,18 @@ repost_article (
 	/* on supersede change default-key */
 	/*
 	 * FIXME: this is only useful when entering the editor.
-	 * After leaving the editor it should be iKeyPostPost
+	 * After leaving the editor it should be iKeyPostPost3
 	 */
 	if (Superseding) {
 		ch_default = iKeyPostEdit;
 		force_command = TRUE;
 	}
 
-	ch = (force_command ? ch_default : prompt_slk_response (ch_default, &menukeymap.post_post, sized_message(_(txt_quit_edit_xpost), note_h.subj)));
+	ch = (force_command ?
+				ch_default :
+				prompt_slk_response (ch_default,
+					&menukeymap.post_post,
+					sized_message(_(txt_quit_edit_xpost), note_h.subj)));
 
 	return (post_loop(POST_REPOST, psGrp, ch,
 				(Superseding ? _(txt_superseding_art) : _(txt_repost_an_article)),
