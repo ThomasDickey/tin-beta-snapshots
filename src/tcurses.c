@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2003-10-15
+ *  Updated   : 2004-02-24
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -508,26 +508,27 @@ ReadCh(
 	if (cmd_line)
 		ch = cmdReadCh();
 	else {
-#	if 0
 again:
-#	endif /* 0 */
 		allow_resize(TRUE);
-#	ifdef KEY_RESIZE
-		while ((ch = getch()) == KEY_RESIZE)
-			;
+#	if defined(KEY_RESIZE) && defined(USE_CURSES)
+		if ((ch = getch()) == KEY_RESIZE)
+			need_resize = cYes;
+#		if 0	/* Don't use it at the moment as it breaks "redrawing" from prompt_slk_response() */
+		if (ch == ERR)
+			goto again;
+#		endif /* 0 */
 #	else
 		ch = getch();
-#	endif /* KEY_RESIZE */
+#	endif /* KEY_RESIZE && USE_CURSES */
 		allow_resize(FALSE);
 		if (need_resize) {
 			handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
-#	if 0
-			if (need_resize == cRedraw) {
-				need_resize = cNo;
-				goto again;				/* Shouldn't fall through if doing resize */
-			}
-#	endif /* 0 */
 			need_resize = cNo;
+#	if defined(KEY_RESIZE) && defined(USE_CURSES)
+			if (ch == KEY_RESIZE)
+				goto again;
+#	endif /* KEY_RESIZE && USE_CURSES */
+
 		}
 		if (ch == KEY_BACKSPACE)
 			ch = '\010';	/* fix for Ctrl-H - show headers */
@@ -552,11 +553,22 @@ ReadWch(
 	if (cmd_line)
 		wch = cmdReadWch();
 	else {
+again:
 		allow_resize(TRUE);
-#		ifdef HAVE_NCURSESW	/* TODO: catch KEY_RESIZE */
+#		ifdef HAVE_NCURSESW
+#			if defined(KEY_RESIZE) && defined(USE_CURSES)
+		if ((res = get_wch(&wch)) == KEY_CODE_YES && wch == KEY_RESIZE)
+			need_resize = cYes;
+		if (res == ERR)
+			goto again;
+#			else
 		res = get_wch(&wch);
+#			endif /* KEY_RESIZE && USE_CURSES */
 #		else
 		wch = (wint_t) getch();
+
+		if (wch == (wint_t) ERR)
+			goto again;
 
 		if (wch < KEY_MIN) {
 			/* read in the multibyte sequence */
@@ -580,13 +592,22 @@ ReadWch(
 				return WEOF; /* error */
 			else
 				res = OK;
-		} else
+		} else {
 			res = KEY_CODE_YES;
+#			if defined(KEY_RESIZE) && defined(USE_CURSES)
+			if (wch == KEY_RESIZE)
+				need_resize = cYes;
+#			endif /* KEY_RESIZE && USE_CURSES */
+		}
 #		endif /* HAVE_NCURSESW */
 		allow_resize(FALSE);
 		if (need_resize) {
 			handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
 			need_resize = cNo;
+#		if defined(KEY_RESIZE) && defined(USE_CURSES)
+			if (wch == KEY_RESIZE)
+				goto again;
+#		endif /* KEY_RESIZE && USE_CURSES */
 		}
 		if (wch == KEY_BACKSPACE)
 			wch = (wint_t) '\010';	/* fix for Ctrl-H - show headers */
@@ -620,9 +641,9 @@ my_printf(
 		vprintf(fmt, ap);
 		if (flag)
 			Raw(TRUE);
-	} else {
-		vwprintw(stdscr, (char *) fmt, ap);
-	}
+	} else
+		vwprintw(stdscr, fmt, ap);
+
 	va_end(ap);
 }
 
@@ -644,9 +665,9 @@ my_fprintf(
 		vfprintf(stream, fmt, ap);
 		if (flag)
 			Raw(TRUE);
-	} else {
-		vwprintw(stdscr, (char *) fmt, ap);
-	}
+	} else
+		vwprintw(stdscr, fmt, ap);
+
 	va_end(ap);
 }
 

@@ -3,7 +3,7 @@
  *  Module    : getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 2003-08-03
+ *  Updated   : 2004-02-23
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -66,7 +66,6 @@ static t_bool is_passwd;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 static void gl_del(int loc);
 static void gl_fixup(int change, int cursor);
-static void gl_redraw(void);
 static void gl_newline(int w);
 static void gl_kill(void);
 static void gl_kill_back_word(void);
@@ -99,6 +98,8 @@ tin_getline(
 #else
 	char *buf = gl_buf;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+	input_context = cGetline;
 
 	is_passwd = passwd;
 
@@ -227,6 +228,7 @@ tin_getline(
 							break;
 
 						default:
+							input_context = cNone;
 							return (char *) 0;
 					}
 					break;
@@ -237,6 +239,7 @@ tin_getline(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 					wcstombs(buf, gl_buf, BUF_SIZE - 1);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+					input_context = cNone;
 					return buf;
 
 				case CTRL_A:
@@ -254,6 +257,7 @@ tin_getline(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 						wcstombs(buf, gl_buf, BUF_SIZE - 1);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+						input_context = cNone;
 						return buf;
 					} else
 						gl_del(0);
@@ -314,6 +318,7 @@ tin_getline(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wcstombs(buf, gl_buf, BUF_SIZE - 1);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	input_context = cNone;
 	return buf;
 }
 
@@ -493,15 +498,21 @@ gl_kill_back_word(
 /*
  * emit a newline, reset and redraw prompt and current input line
  */
-static void
+void
 gl_redraw(
 	void)
 {
-	if (gl_init_done == -1) {
+	if (gl_init_done == -1) {	/* terminal */
 		my_fputc('\n', stdout);
 		my_fputs(gl_prompt, stdout);
 		gl_pos = 0;
 		gl_fixup(0, BUF_SIZE);
+	} else if (gl_init_done == 0) {	/* screen */
+		clear_message();
+		my_fputs(gl_prompt, stdout);
+		gl_pos = 0;
+		gl_fixup(0, BUF_SIZE);
+		cursoron();
 	}
 }
 

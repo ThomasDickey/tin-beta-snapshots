@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2004-01-20
+ *  Updated   : 2004-02-23
  *  Notes     :
  *
  * Copyright (c) 1997-2004 Urs Janssen <urs@tin.org>
@@ -190,6 +190,7 @@ extern void write_filter_file(const char *filename);
 
 /* getline.c */
 extern char *tin_getline(const char *prompt, int number_only, const char *str, int max_chars, t_bool passwd, int which_hist);
+extern void gl_redraw(void);
 
 /* global.c */
 extern void bug_report(void);
@@ -209,9 +210,7 @@ extern int group_page(struct t_group *group);
 extern void clear_note_area(void);
 extern void mark_screen(int level, int screen_row, int screen_col, const char *value);
 extern void pos_first_unread_thread(void);
-extern void set_subj_from_size(int num_cols);
 extern void show_group_page(void);
-extern void toggle_subject_from(void);
 
 /* hashstr.c */
 extern char *hash_str(const char *s);

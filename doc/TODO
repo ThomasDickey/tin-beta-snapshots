@@ -4,10 +4,6 @@ not read only ,-).
 
 Bugs
 ----
-!o  ReadCh()/ReadWch() need to be KEY_RESIZE safe otherwise one might lose
-!   his article
-!   see <nntp://news.tin.org/20030927141249.GA15157@akk10.akk.uni-karlsruhe.de>
-
 o  AFAICS change_config_file() currently has a static return value,
    but some callers do check the return value and in case we did
    change something we should update (global) attributes accordingly.
@@ -494,14 +490,6 @@ o  the various filter keys are named a bit inconsistent, currently we have
    would lead us to something like iKeyQuickFilter{Kill,Select} and
    iKeyMenuFilter{Kill,Select}
    [20030303 Urs Janssen <urs@akk.org>]
-
-o  reduce the number of duplicated strings in lang.c
-   txt_help_select_goto_group, txt_help_group_goto_group;
-   txt_help_group_toggle_subj_display, txt_help_thread_toggle_subj_display;
-   txt_help_article_prev_unread, txt_help_group_prev_unread_art;
-   txt_help_article_repost, txt_help_group_repost;
-   txt_help_article_next_unread, txt_help_article_read_next_unread,
-   txt_help_group_next_unread_art, txt_help_group_next_unread_article
 
 o  in page level Up2 ('k') does the same as PageNextUnreadArt ('N'), but
    Up ('^P') behaves different. shouldn't 'k' be named PageNextUnreadArt2

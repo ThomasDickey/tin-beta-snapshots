@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-12-28
+ *  Updated   : 2004-02-21
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -617,7 +617,8 @@ thread_page(
 
 			case iKeyThreadToggleSubjDisplay:	/* toggle display of subject & subj/author */
 				if (show_subject) {
-					toggle_subject_from();
+					if (++curr_group->attribute->show_author > SHOW_FROM_BOTH)
+						curr_group->attribute->show_author = SHOW_FROM_NONE;
 					show_thread_page();
 				}
 				break;

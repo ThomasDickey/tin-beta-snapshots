@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-09-29
+ *  Updated   : 2004-02-23
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -106,6 +106,7 @@ static void _CDECL signal_handler(SIG_ARGS);
 #endif /* SIGTSTP */
 
 int signal_context = cMain;
+int input_context = cNone;
 int need_resize = cNo;
 /*
  * # lines of non-static data available for display
@@ -157,9 +158,9 @@ static const struct {
 #	ifdef SIGTERM
 	{ SIGTERM,	"SIGTERM" },	/* termination */
 #	endif /* SIGTERM */
-#	ifdef SIGWINCH
+#	if defined(SIGWINCH) && !(defined(USE_CURSES) && defined(KEY_RESIZE))
 	{ SIGWINCH,	"SIGWINCH" },	/* window-size change */
-#	endif /* SIGWINCH */
+#	endif /* SIGWINCH && !(USE_CURSES && KEY_RESIZE) */
 };
 #endif /* !__LCLINT__ */
 
@@ -209,9 +210,9 @@ allow_resize(
 	if (!allow)
 		sa.sa_flags |= SA_RESTART;
 #	endif /* SA_RESTART */
-#	ifdef SIGWINCH
+#	if defined(SIGWINCH) && !(defined(USE_CURSES) && defined(KEY_RESIZE))
 	sigaction(SIGWINCH, &sa, &osa);
-#	endif /* SIGWINCH */
+#	endif /* SIGWINCH && !(USE_CURSES && KEY_RESIZE) */
 #	ifdef SIGTSTP
 	sigaction(SIGTSTP, &sa, &osa);
 #	endif /* SIGTSTP */
@@ -295,6 +296,13 @@ handle_resize(
 			draw_page(curr_group->name, 0);
 			break;
 		case cMain:
+			break;
+	}
+	switch (input_context) {
+		case cGetline:
+			gl_redraw();
+			break;
+		default:
 			break;
 	}
 	my_fflush(stdout);
@@ -446,9 +454,9 @@ set_signal_catcher(
 		sigdisp(SIGTSTP, flag ? signal_handler : SIG_DFL);
 #endif /* SIGTSTP */
 
-#ifdef SIGWINCH
+#if defined(SIGWINCH) && !(defined(USE_CURSES) && defined(KEY_RESIZE))
 	sigdisp(SIGWINCH, flag ? signal_handler : SIG_DFL);
-#endif /* SIGWINCH */
+#endif /* SIGWINCH && !(USE_CURSES && KEY_RESIZE) */
 }
 
 
@@ -540,10 +548,6 @@ set_win_size(
 
 #endif /* HAVE_XCURSES */
 
-	set_subj_from_size(*num_cols);
-
-	/* FIXME: values do differ for different languages */
-	MORE_POS = *num_cols - 15;
 	set_noteslines(*num_lines);
 	return (*num_lines != old_lines || *num_cols != old_cols);
 }

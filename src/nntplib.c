@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2004-01-06
+ *  Updated   : 2004-02-16
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -221,7 +221,7 @@ server_init(
 {
 #	ifndef INET6
 	char temp[256];
-	char *service = strncpy(temp, cservice, 255); /* ...calls non-const funcs */
+	char *service = strncpy(temp, cservice, sizeof(temp) - 1); /* ...calls non-const funcs */
 #	endif /* !INET6 */
 #	ifndef VMS
 	int sockt_rd, sockt_wr;
@@ -612,7 +612,7 @@ get_tcp6_socket(
 {
 	char mymachine[MAXHOSTNAMELEN + 1];
 	char myport[12];
-	int s = -1, err = -1;
+	int c = -1, s = -1, err = -1;
 	struct addrinfo hints, *res, *res0;
 
 	snprintf(mymachine, sizeof(mymachine), "%s", machine);
@@ -643,7 +643,7 @@ get_tcp6_socket(
 	for (res = res0; res; res = res->ai_next) {
 		if ((s = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0)
 			continue;
-		if (connect(s, res->ai_addr, res->ai_addrlen) < 0)
+		if ((c = connect(s, res->ai_addr, res->ai_addrlen)) < 0)
 			close(s);
 		else {
 			err = 0;
@@ -653,6 +653,9 @@ get_tcp6_socket(
 	if (res0 != NULL)
 		freeaddrinfo(res0);
 	if (err < 0) {
+		/*
+		 * TODO: issue a more usefull error-message
+		 */
 		my_fprintf(stderr, _(txt_error_socket_or_connect_problem));
 		return -1;
 	}

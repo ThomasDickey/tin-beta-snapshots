@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-01-07
+ *  Updated   : 2004-02-23
  *  Notes     :
  *
  * Copyright (c) 1997-2004 Iain Lea <iain@bricbrac.de>
@@ -667,7 +667,6 @@ extern constext txt_help_article_prev_unread[];
 extern constext txt_help_article_quick_kill[];
 extern constext txt_help_article_quick_select[];
 extern constext txt_help_article_quit_to_select_level[];
-extern constext txt_help_article_read_next_unread[];
 extern constext txt_help_article_reply[];
 extern constext txt_help_article_reply_no_quote[];
 extern constext txt_help_article_reply_with_header[];
@@ -734,11 +733,11 @@ extern constext txt_help_global_tag[];
 extern constext txt_help_global_toggle_info_line[];
 extern constext txt_help_global_toggle_inverse_video[];
 extern constext txt_help_global_toggle_mini_help[];
+extern constext txt_help_global_toggle_subj_display[];
 extern constext txt_help_global_version[];
 extern constext txt_help_group_catchup[];
 extern constext txt_help_group_catchup_next[];
 extern constext txt_help_group_first_thread[];
-extern constext txt_help_group_goto_group[];
 extern constext txt_help_group_last_thread[];
 extern constext txt_help_group_list_thread[];
 extern constext txt_help_group_mark_article_unread[];
@@ -746,12 +745,7 @@ extern constext txt_help_group_mark_thread_read[];
 extern constext txt_help_group_mark_thread_unread[];
 extern constext txt_help_group_mark_unsel_art_read[];
 extern constext txt_help_group_next[];
-extern constext txt_help_group_next_unread_art[];
-extern constext txt_help_group_next_unread_article[];
 extern constext txt_help_group_prev[];
-extern constext txt_help_group_prev_unread_art[];
-extern constext txt_help_group_read_article[];
-extern constext txt_help_group_repost[];
 extern constext txt_help_group_reverse_thread_selection[];
 extern constext txt_help_group_select_all[];
 extern constext txt_help_group_select_thread[];
@@ -761,7 +755,6 @@ extern constext txt_help_group_tag_parts[];
 extern constext txt_help_group_thread_by_num[];
 extern constext txt_help_group_toggle_getart_limit[];
 extern constext txt_help_group_toggle_read_articles[];
-extern constext txt_help_group_toggle_subj_display[];
 extern constext txt_help_group_toggle_thread_selection[];
 extern constext txt_help_group_toggle_threading[];
 extern constext txt_help_group_undo_thread_selection[];
@@ -801,7 +794,6 @@ extern constext txt_help_thread_first_article[];
 extern constext txt_help_thread_last_article[];
 extern constext txt_help_thread_mark_article_read[];
 extern constext txt_help_thread_read_article[];
-extern constext txt_help_thread_toggle_subj_display[];
 extern constext txt_help_title_disp[];
 extern constext txt_help_title_misc[];
 extern constext txt_help_title_navi[];
@@ -1200,7 +1192,6 @@ extern constext txt_uu_success[];
 #endif /* !NO_SHELL_ESCAPE */
 
 extern int *my_group;
-extern int MORE_POS;
 extern int NOTESLINES;
 extern int _hp_glitch;
 extern int cCOLS;
@@ -1209,6 +1200,7 @@ extern int curr_line;
 extern int debug;
 extern int groupname_len;
 extern int i_key_search_last;
+extern int input_context;
 extern int iso2asc_supported;
 extern int last_resp;
 extern int max_active;

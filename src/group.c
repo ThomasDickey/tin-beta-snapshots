@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-01-10
+ *  Updated   : 2004-02-21
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -60,10 +60,6 @@
  * need to manually fix this up
  */
 struct t_group *curr_group;
-
-static const char *spaces = "XXXX";
-static int len_from;
-static int len_subj;
 
 /*
  * Local prototypes
@@ -177,15 +173,16 @@ group_page(
 	/*
 	 * update index file. quit group level if user aborts indexing
 	 */
-	if (!index_group(group))
+	if (!index_group(group)) {
+		curr_group = NULL;
 		return GRP_RETSELECT;
+	}
 
 	/*
 	 * Position 'grpmenu.curr' accordingly
 	 */
 	pos_first_unread_thread();
 
-	set_subj_from_size(cCOLS);
 	clear_note_area();
 
 	if (group->attribute->auto_select) {
@@ -401,7 +398,8 @@ group_page(
 				break;
 
 			case iKeyGroupToggleSubjDisplay:	/* toggle display of subject & subj/author */
-				toggle_subject_from();
+				if (++curr_group->attribute->show_author > SHOW_FROM_BOTH)
+					curr_group->attribute->show_author = SHOW_FROM_NONE;
 				show_group_page();
 				break;
 
@@ -468,7 +466,6 @@ group_page(
 				n = tinrc.sort_article_type;
 				if ((change_config_file(group) == NO_FILTERING) && n != tinrc.sort_article_type)
 					make_threads(group, TRUE);
-				set_subj_from_size(cCOLS);
 				grpmenu.curr = find_new_pos(old_top, old_artnum, grpmenu.curr);
 				show_group_page();
 				break;
@@ -898,6 +895,8 @@ group_page(
 
 	art_close(&pgart);				/* Close any open art */
 
+	curr_group = NULL;
+
 	return ret_code;
 }
 
@@ -1103,69 +1102,6 @@ mark_screen(
 }
 
 
-void
-set_subj_from_size(
-	int num_cols)
-{
-	int show_author;
-	int max_from;
-	int max_subj;
-
-	/*
-	 * This function is called early during startup when we only have
-	 * very limited information loaded.
-	 */
-	show_author = ((selmenu.max && CURR_GROUP.attribute) ? CURR_GROUP.attribute->show_author : tinrc.show_author);
-	max_subj = ((show_author == SHOW_FROM_BOTH) ? ((num_cols / 2) - 4): ((num_cols / 2) + 3));
-	max_from = (num_cols - max_subj) - 17;
-
-	if (show_author != SHOW_FROM_BOTH) {
-		if (max_from > 25) {
-			max_subj += max_from - 25;
-			max_from = 25;
-		}
-	}
-
-	if (show_author != SHOW_FROM_NONE) {
-		len_from = max_from - BLANK_GROUP_COLS;
-		len_subj = max_subj;
-		spaces = "  ";
-	} else {
-		len_from = 0;
-		len_subj = (max_subj + max_from + 2) - BLANK_GROUP_COLS;
-		spaces = "";
-	}
-
-	/* which information should be displayed? */
-	if (selmenu.max && CURR_GROUP.attribute) {
-		switch (CURR_GROUP.attribute->show_info) {
-			case SHOW_INFO_NOTHING:
-				len_subj += 11;
-				break;
-
-			case SHOW_INFO_LINES:
-				len_subj += 6;
-				break;
-
-			case SHOW_INFO_SCORE:
-				len_subj += 5;
-				break;
-		}
-	}
-}
-
-
-void
-toggle_subject_from(
-	void)
-{
-	if (++curr_group->attribute->show_author > SHOW_FROM_BOTH)
-		curr_group->attribute->show_author = SHOW_FROM_NONE;
-
-	set_subj_from_size(cCOLS);
-}
-
-
 /*
  *	Builds the correct header for multipart messages when sorting via
  *	THREAD_MULTI.
@@ -1207,12 +1143,15 @@ static void
 build_sline(
 	int i)
 {
+	const char *spaces = "XXXX";
 	char from[HEADER_LEN];
 	char new_resps[8];
 	char art_cnt[10];
 	char arts_sub[255];
 	int respnum;
 	int n, j;
+	int len_from;
+	int len_subj;
 	struct t_art_stat sbuf;
 	char *buffer;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -1222,6 +1161,48 @@ build_sline(
 	wchar_t tmp_subj[256], tmp_subj2[256];
 	wchar_t tmp_from[HEADER_LEN], tmp_from2[HEADER_LEN];
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+	/* set len_from and len_subj */
+	{
+		int max_from;
+		int max_subj;
+		int num_cols = cCOLS - 1;
+
+		max_subj = ((curr_group->attribute->show_author == SHOW_FROM_BOTH) ? ((num_cols / 2) - 4): ((num_cols / 2) + 3));
+		max_from = (num_cols - max_subj) - 17;
+
+		if (curr_group->attribute->show_author != SHOW_FROM_BOTH) {
+			if (max_from > 25) {
+				max_subj += max_from - 25;
+				max_from = 25;
+			}
+		}
+
+		if (curr_group->attribute->show_author != SHOW_FROM_NONE) {
+			len_from = max_from - BLANK_GROUP_COLS;
+			len_subj = max_subj;
+			spaces = "  ";
+		} else {
+			len_from = 0;
+			len_subj = (max_subj + max_from + 2) - BLANK_GROUP_COLS;
+			spaces = "";
+		}
+
+		/* which information should be displayed? */
+		switch (curr_group->attribute->show_info) {
+			case SHOW_INFO_NOTHING:
+				len_subj += 11;
+				break;
+
+			case SHOW_INFO_LINES:
+				len_subj += 6;
+				break;
+
+			case SHOW_INFO_SCORE:
+				len_subj += 5;
+				break;
+		}
+	}
 
 #ifdef USE_CURSES
 	/*

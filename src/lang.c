@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-01-13
+ *  Updated   : 2004-02-21
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -299,7 +299,6 @@ constext txt_help_article_prev_unread[] = N_("display previous unread article");
 constext txt_help_article_quick_kill[] = N_("quickly kill an article using defaults");
 constext txt_help_article_quick_select[] = N_("quickly auto-select (hot) an article using defaults");
 constext txt_help_article_quit_to_select_level[] = N_("return to group selection level");
-constext txt_help_article_read_next_unread[] = N_("display next unread article");
 constext txt_help_article_reply[] = N_("reply through mail to author");
 constext txt_help_article_reply_no_quote[] = N_("reply through mail (don't copy text) to author");
 constext txt_help_article_reply_with_header[] = N_("reply through mail to author quoting complete headers");
@@ -346,11 +345,11 @@ constext txt_help_global_tag[] = N_("tag current article for reposting/mailing/p
 constext txt_help_global_toggle_info_line[] = N_("toggle info message in last line (subject/description)");
 constext txt_help_global_toggle_inverse_video[] = N_("toggle inverse video");
 constext txt_help_global_toggle_mini_help[] = N_("toggle mini help menu display");
+constext txt_help_global_toggle_subj_display[] = N_("cycle the display of authors email address, real name, both or neither");
 constext txt_help_global_version[] = N_("show version information");
 constext txt_help_group_catchup[] = N_("mark all articles as read and return to group selection menu");
 constext txt_help_group_catchup_next[] = N_("mark all articles as read and enter next group with unread articles");
 constext txt_help_group_first_thread[] = N_("choose first thread in list");
-constext txt_help_group_goto_group[] = N_("choose group by name");
 constext txt_help_group_last_thread[] = N_("choose last thread in list");
 constext txt_help_group_list_thread[] = N_("list articles within current thread (bring up Thread sub-menu)");
 constext txt_help_group_mark_article_unread[] = N_("mark article as unread");
@@ -358,12 +357,7 @@ constext txt_help_group_mark_thread_read[] = N_("mark current thread or tagged t
 constext txt_help_group_mark_thread_unread[] = N_("mark thread as unread");
 constext txt_help_group_mark_unsel_art_read[] = N_("toggle display of all/selected articles");
 constext txt_help_group_next[] = N_("display next group");
-constext txt_help_group_next_unread_art[] = N_("display next unread article");
-constext txt_help_group_next_unread_article[] = N_("display next unread article");
 constext txt_help_group_prev[] = N_("display previous group");
-constext txt_help_group_prev_unread_art[] = N_("display previous unread article");
-constext txt_help_group_read_article[] = N_("read chosen article");
-constext txt_help_group_repost[] = N_("repost chosen article to another group");
 constext txt_help_group_reverse_thread_selection[] = N_("toggle all selections (all articles)");
 constext txt_help_group_select_all[] = N_("select group (make \"hot\")");
 constext txt_help_group_select_thread[] = N_("select thread");
@@ -373,7 +367,6 @@ constext txt_help_group_tag_parts[] = N_("tag all parts of current multipart-mes
 constext txt_help_group_thread_by_num[] = N_("0 - 9\t  choose thread by number");
 constext txt_help_group_toggle_getart_limit[] = N_("toggle limit number of articles to get, and reload");
 constext txt_help_group_toggle_read_articles[] = N_("toggle display of all/unread articles");
-constext txt_help_group_toggle_subj_display[] = N_("cycle the display of authors email address, real name, both or neither");
 constext txt_help_group_toggle_thread_selection[] = N_("toggle selection of thread");
 constext txt_help_group_toggle_threading[] = N_("cycle through threading options available");
 constext txt_help_group_undo_thread_selection[] = N_("undo all selections (all articles)");
@@ -411,7 +404,6 @@ constext txt_help_thread_first_article[] = N_("choose first article in list");
 constext txt_help_thread_last_article[] = N_("choose last article in list");
 constext txt_help_thread_mark_article_read[] = N_("mark article or tagged articles as read and move cursor to next unread article");
 constext txt_help_thread_read_article[] = N_("read chosen article");
-constext txt_help_thread_toggle_subj_display[] = N_("cycle the display of authors email address, real name, both or neither");
 constext txt_help_title_disp[] = N_("Display properties\n------------------");
 constext txt_help_title_misc[] = N_("Miscellaneous\n-------------");
 constext txt_help_title_navi[] = N_("Moving around\n-------------");
