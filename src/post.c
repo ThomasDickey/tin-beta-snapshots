@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-01-07
+ *  Updated   : 2004-02-28
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -139,7 +139,7 @@ static char prompt_to_send(const char *subject);
 static int add_mail_quote(FILE *fp, int respnum);
 static int check_article_to_be_posted(const char *the_article, int art_type, struct t_group **group, t_bool art_unchanged);
 static unsigned int get_recipients(struct t_header *hdr, char *buf, size_t buflen);
-static int mail_loop(const char *filename, char ch, char *subject, const char *groupname, const char *prompt);
+static int mail_loop(const char *filename, char ch, char *subject, const char *groupname, const char *prompt, t_bool mailforward);
 static int msg_add_x_body(FILE *fp_out, const char *body);
 static int msg_write_headers(FILE *fp);
 static int post_loop(int type, struct t_group *psGrp, char ch, const char *posting_msg, int art_type, int offset);
@@ -156,7 +156,7 @@ static t_bool insert_from_header(const char *infile);
 static t_bool is_crosspost(const char *xref);
 static t_bool must_include(const char *id);
 static t_bool repair_article(char *result, struct t_group *group);
-static t_bool submit_mail_file(const char *file, struct t_group *group);
+static t_bool submit_mail_file(const char *file, struct t_group *group, t_bool mailforward);
 static void add_headers(const char *infile, const char *a_message_id);
 static void appendid(char **where, const char **what);
 static void find_reply_to_addr(char *from_addr, t_bool parse, struct t_header *hdr);
@@ -1522,7 +1522,7 @@ post_article_loop:
 					if (submit_news_file(article, group, a_message_id))
 						ret_code = POSTED_OK;
 				} else {
-					if (submit_mail_file(article, group)) /* mailing_list */
+					if (submit_mail_file(article, group, FALSE)) /* mailing_list */
 						ret_code = POSTED_OK;
 				}
 
@@ -2782,7 +2782,8 @@ mail_loop(
 	char ch,					/* default prompt char */
 	char *subject,
 	const char *groupname,		/* Newsgroup we are posting from */
-	const char *prompt)			/* If set, used for final query before posting */
+	const char *prompt,			/* If set, used for final query before posting */
+	t_bool mailforward)
 {
 	FILE *fp;
 #ifdef HAVE_PGP_GPG
@@ -2863,7 +2864,7 @@ mail_loop(
 					}
 
 					/* TODO: wrap article into message/rfc822? */
-					if (confirm && submit_mail_file(filename, group)) {
+					if (confirm && submit_mail_file(filename, group, mailforward)) {
 						info_message(_(txt_articles_mailed), 1, _(txt_article_singular));
 						return POSTED_OK;
 					}
@@ -2960,7 +2961,7 @@ mail_to_someone(
 	} else {
 		if (confirm_to_mail)
 			ch = prompt_to_send(subject);
-		ret_code = mail_loop(nam, ch, subject, group ? group->name : NULL, NULL);
+		ret_code = mail_loop(nam, ch, subject, group ? group->name : NULL, NULL, TRUE);
 	}
 
 	if (tinrc.unlink_article)
@@ -3060,7 +3061,7 @@ mail_bug_report(
 			ret_code = TRUE;
 	} else {
 		snprintf(tmesg, sizeof(tmesg), _(txt_mail_bug_report_confirm), bug_addr);
-		ret_code = mail_loop(nam, iKeyPostEdit, subject, NULL, tmesg) ? TRUE : FALSE;
+		ret_code = mail_loop(nam, iKeyPostEdit, subject, NULL, tmesg, FALSE) ? TRUE : FALSE;
 	}
 
 	unlink(nam);
@@ -3188,7 +3189,7 @@ mail_to_author(
 			if (invoke_cmd(buf))
 				ret_code = POSTED_OK;
 		} else
-			ret_code = mail_loop(nam, iKeyPostEdit, subject, group, NULL);
+			ret_code = mail_loop(nam, iKeyPostEdit, subject, group, NULL, FALSE);
 
 		/*
 		 * If interactive_mailer!=NONE and the user changed the subject in his
@@ -4164,7 +4165,8 @@ update_active_after_posting(
 static t_bool
 submit_mail_file(
 	const char *file,
-	struct t_group *group)
+	struct t_group *group,
+	t_bool mailforward)
 {
 	FILE *fp;
 	char *fcc = NULL;
@@ -4186,7 +4188,10 @@ submit_mail_file(
 				wait_message(0, _(txt_mailing_to), mail_to);
 
 				/* Use group-attribute for mailing_list */
-				rfc15211522_encode(file, txt_mime_encodings[tinrc.mail_mime_encoding], group, tinrc.mail_8bit_header, TRUE);
+				if (mailforward)
+					rfc15211522_encode_forwarded(file, txt_mime_encodings[tinrc.mail_mime_encoding], group, tinrc.mail_8bit_header);
+				else
+					rfc15211522_encode(file, txt_mime_encodings[tinrc.mail_mime_encoding], group, tinrc.mail_8bit_header, TRUE);
 
 				strfmailer(mailer, hdr.subj, mail_to, file, buf, sizeof(buf), tinrc.mailer_format);
 

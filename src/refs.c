@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2004-02-10
+ *  Updated   : 2004-03-01
  *  Notes     : Cacheing of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -279,7 +279,6 @@ add_msgid(
 		 *         Change parent from null -> not-null & update ptrs
 		 */
 		if (i->parent == NULL) {
-
 			/*
 			 * Detect & ignore circular reference paths by looking for the
 			 * new parent in this thread
@@ -952,6 +951,8 @@ build_references(
 			 * TODO: do this in a single pass
 			 */
 
+#if 0 /* overcomplex */
+
 			s = art->refs + strlen (art->refs) - 1;
 
 			/*
@@ -977,6 +978,17 @@ build_references(
 				DEBUG_PRINT((dbgfd, "removing circular reference to: %s\n", s));
 				*s = '\0';
 			}
+#else
+			if ((s = strrchr(art->refs, '<')) != NULL) {
+				if (!strcmp(art->msgid, s)) {
+					/*
+					 * Remove circular reference to current article
+					 */
+					DEBUG_PRINT((dbgfd, "removing circular reference to: %s\n", s));
+					*s = '\0';
+				}
+			}
+#endif /* 0 */
 
 			if (s != NULL) {
 				if (valid_msgid(art->msgid))

@@ -3,7 +3,7 @@
  *  Module    : getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 2004-02-23
+ *  Updated   : 2004-03-02
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -678,24 +678,27 @@ hist_add(
 {
 	char *p;
 	char *tmp;
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	int size = wcstombs(NULL, gl_buf, 0);
-
-	tmp = my_malloc(size + 1);
-	if (wcstombs(tmp, gl_buf, size) == (size_t) -1) {
-		/* conversation failed */
-		free(tmp);
-		return;
-	} else
-		tmp[size] = '\0';
-#else
-	tmp = my_strdup(gl_buf);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-	p = tmp;
 
 	if (w == HIST_NONE)
 		return;
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	{
+		int size = wcstombs(NULL, gl_buf, 0);
+
+		tmp = my_malloc(size + 1);
+		if (wcstombs(tmp, gl_buf, size) == (size_t) -1) {
+			/* conversation failed */
+			free(tmp);
+			return;
+		} else
+			tmp[size] = '\0';
+	}
+#else
+	tmp = my_strdup(gl_buf);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+	p = tmp;
 	while (*p == ' ' || *p == '\t')		/* only save nonblank line */
 		p++;
 

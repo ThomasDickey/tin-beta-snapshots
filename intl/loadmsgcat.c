@@ -27,6 +27,8 @@
 # include <autoconf.h>
 #endif
 
+#undef freea
+
 /* see AC_FUNC_ALLOCA macro */
 #ifdef __GNUC__
 # define alloca __builtin_alloca
@@ -43,10 +45,16 @@
 #   else
 #    ifndef alloca /* predefined by HP cc +Olibcalls */
 char *alloca ();
+#    else
+#     define freea(n) free(n)
 #    endif
 #   endif
 #  endif
 # endif
+#endif
+
+#ifndef freea
+#define freea(n) /* nothing */
 #endif
 
 #include <ctype.h>

@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2004-01-19
+dnl Updated   : 2004-02-28
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2004 Thomas E. Dickey <dickey@invisible-island.net>
@@ -61,7 +61,7 @@ AC_DEFUN([AC_ISC_POSIX],
   ]
 )
 dnl ---------------------------------------------------------------------------
-dnl AM_GNU_GETTEXT version: 10 updated: 2002/11/17 17:25:28
+dnl AM_GNU_GETTEXT version: 11 updated: 2004/01/26 20:58:40
 dnl --------------
 dnl Usage: Just like AM_WITH_NLS, which see.
 AC_DEFUN([AM_GNU_GETTEXT],
@@ -126,12 +126,18 @@ strdup strtoul tsearch __argz_count __argz_stringify __argz_next])
    dnl find the mkinstalldirs script in another subdir but ($top_srcdir).
    dnl Try to locate it.
    dnl changed mkinstalldirs to mkdirs.sh for Lynx /je spath 1998-Aug-21
+   dnl added check for separate locations of scripts -mirabile 2004-Jan-18
    MKINSTALLDIRS=
    if test -n "$ac_aux_dir"; then
      MKINSTALLDIRS="$ac_aux_dir/mkdirs.sh"
    fi
    if test -z "$MKINSTALLDIRS"; then
      MKINSTALLDIRS="\$(top_srcdir)/mkdirs.sh"
+   fi
+   if test -n "$GNUSYSTEM_AUX_DIR" ; then
+     if test -e "${GNUSYSTEM_AUX_DIR}/mkinstalldirs"; then
+       MKINSTALLDIRS="${GNUSYSTEM_AUX_DIR}/mkinstalldirs"
+     fi
    fi
    AC_SUBST(MKINSTALLDIRS)
 
@@ -407,7 +413,7 @@ fi
 AC_SUBST($1)dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl AM_WITH_NLS version: 15 updated: 2002/11/09 16:19:53
+dnl AM_WITH_NLS version: 17 updated: 2004/01/23 19:52:21
 dnl -----------
 dnl Inserted as requested by gettext 0.10.40
 dnl File from /usr/share/aclocal
@@ -563,6 +569,9 @@ return (int) gettext ("")]ifelse([$2], need-ngettext, [ + (int) ngettext ("", ""
       fi
 
       if test "$nls_cv_use_gnu_gettext" = "yes"; then
+        if test ! -d $srcdir/intl ; then
+	  AC_MSG_ERROR(no NLS library is packaged with this application)
+	fi
         dnl Mark actions used to generate GNU NLS library.
         INTLOBJS="\$(GETTOBJS)"
         AM_PATH_PROG_WITH_TEST(MSGFMT, msgfmt,
@@ -659,6 +668,7 @@ return (int) gettext ("")]ifelse([$2], need-ngettext, [ + (int) ngettext ("", ""
     dnl files or have a broken "make" program, hence the plural.c rule will
     dnl sometimes fire. To avoid an error, defines BISON to ":" if it is not
     dnl present or too old.
+    if test "$nls_cv_use_gnu_gettext" = "yes"; then
     AC_CHECK_PROGS([INTLBISON], [bison])
     if test -z "$INTLBISON"; then
       ac_verc_fail=yes
@@ -678,6 +688,7 @@ changequote([,])dnl
     fi
     if test $ac_verc_fail = yes; then
       INTLBISON=:
+    fi
     fi
 
     dnl These rules are solely for the distribution goal.  While doing this
@@ -921,7 +932,7 @@ esac
 $3="$withval"
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_BUILD_CC version: 2 updated: 2004/01/19 16:20:54
+dnl CF_BUILD_CC version: 3 updated: 2004/02/17 20:55:59
 dnl -----------
 dnl If we're cross-compiling, allow the user to override the tools and their
 dnl options.  The configure script is oriented toward identifying the host
@@ -931,17 +942,25 @@ dnl
 dnl $1 = default for $CPPFLAGS
 dnl $2 = default for $LIBS
 AC_DEFUN([CF_BUILD_CC],[
+AC_REQUIRE([CF_PROG_EXT])
 if test "$cross_compiling" = yes ; then
+	# defaults that we might want to override
 	: ${BUILD_CC:='$(CC)'}
+	: ${BUILD_CPP:='$(CC) -E'}
 	: ${BUILD_CFLAGS:=''}
 	: ${BUILD_CPPFLAGS:='ifelse([$1],,,[$1])'}
 	: ${BUILD_LDFLAGS:=''}
 	: ${BUILD_LIBS:='ifelse([$2],,,[$2])'}
 	: ${BUILD_EXEEXT:='$x'}
+	: ${BUILD_OBJEXT:='o'}
 	AC_ARG_WITH(build-cc,
 		[  --with-build-cc=XXX     the build C compiler ($BUILD_CC)],
 		[BUILD_CC="$withval"],
 		[AC_CHECK_PROGS(BUILD_CC, $CC gcc cc)])
+	AC_ARG_WITH(build-cpp,
+		[  --with-build-cpp=XXX    the build C preprocessor ($BUILD_CPP)],
+		[BUILD_CPP="$withval"],
+		[BUILD_CPP='$(CC) -E'])
 	AC_ARG_WITH(build-cflags,
 		[  --with-build-cflags=XXX the build C compiler-flags],
 		[BUILD_CFLAGS="$withval"])
@@ -954,22 +973,28 @@ if test "$cross_compiling" = yes ; then
 	AC_ARG_WITH(build-libs,
 		[  --with-build-libs=XXX   the build libraries],
 		[BUILD_LIBS="$withval"])
+	# this assumes we're on Unix.
 	BUILD_EXEEXT=
+	BUILD_OBJEXT=o
 else
 	: ${BUILD_CC:='$(CC)'}
+	: ${BUILD_CPP:='$(CPP)'}
 	: ${BUILD_CFLAGS:='$(CFLAGS)'}
 	: ${BUILD_CPPFLAGS:='$(CPPFLAGS)'}
 	: ${BUILD_LDFLAGS:='$(LDFLAGS)'}
 	: ${BUILD_LIBS:='$(LIBS)'}
 	: ${BUILD_EXEEXT:='$x'}
+	: ${BUILD_OBJEXT:='o'}
 fi
 
 AC_SUBST(BUILD_CC)
+AC_SUBST(BUILD_CPP)
 AC_SUBST(BUILD_CFLAGS)
 AC_SUBST(BUILD_CPPFLAGS)
 AC_SUBST(BUILD_LDFLAGS)
 AC_SUBST(BUILD_LIBS)
 AC_SUBST(BUILD_EXEEXT)
+AC_SUBST(BUILD_OBJEXT)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_BUNDLED_INTL version: 10 updated: 2003/09/14 18:49:13
@@ -1163,7 +1188,7 @@ AC_MSG_RESULT($cf_result)
 test $cf_result = yes && AC_DEFINE_UNQUOTED(DECL_$2)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CHECK_CACHE version: 7 updated: 2001/12/19 00:50:10
+dnl CF_CHECK_CACHE version: 9 updated: 2004/01/30 15:59:13
 dnl --------------
 dnl Check if we're accidentally using a cache from a different machine.
 dnl Derive the system name, as a check for reusing the autoconf cache.
@@ -1172,6 +1197,9 @@ dnl If we've packaged config.guess and config.sub, run that (since it does a
 dnl better job than uname).  Normally we'll use AC_CANONICAL_HOST, but allow
 dnl an extra parameter that we may override, e.g., for AC_CANONICAL_SYSTEM
 dnl which is useful in cross-compiles.
+dnl
+dnl Note: we would use $ac_config_sub, but that is one of the places where
+dnl autoconf 2.5x broke compatibility with autoconf 2.13
 AC_DEFUN([CF_CHECK_CACHE],
 [
 if test -f $srcdir/config.guess ; then
@@ -1306,7 +1334,7 @@ fi
 done
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CHECK_IPV6 version: 2 updated: 2000/04/13 21:38:04
+dnl CF_CHECK_IPV6 version: 3 updated: 2004/01/22 17:38:22
 dnl -------------
 dnl Check for IPV6 configuration.
 AC_DEFUN([CF_CHECK_IPV6],[
@@ -1317,7 +1345,7 @@ CF_FUNC_GETADDRINFO
 
 if test "$cf_cv_getaddrinfo" != "yes"; then
 	if test "$cf_cv_ipv6type" != "linux"; then
-		AC_MSG_ERROR(
+		AC_MSG_WARN(
 [You must get working getaddrinfo() function,
 or you can specify "--disable-ipv6"])
 	else
@@ -4110,7 +4138,7 @@ AC_ARG_WITH(curses-dir,
 	[cf_cv_curses_dir=no])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_DBMALLOC version: 3 updated: 2004/01/19 13:06:01
+dnl CF_WITH_DBMALLOC version: 4 updated: 2004/02/28 05:49:27
 dnl ----------------
 dnl Configure-option for dbmalloc.  The optional parameter is used to override
 dnl the updating of $LIBS, e.g., to avoid conflict with subsequent tests.
@@ -4121,10 +4149,9 @@ AC_ARG_WITH(dbmalloc,
 	[with_dbmalloc=$withval],
 	[with_dbmalloc=no])
 AC_MSG_RESULT($with_dbmalloc)
-if test $with_dbmalloc = yes ; then
+if test "$with_dbmalloc" = yes ; then
 	AC_CHECK_HEADER(dbmalloc.h,
-		[AC_CHECK_LIB(dbmalloc,debug_malloc
-			ifelse($1,,[],[,$1]))])
+		[AC_CHECK_LIB(dbmalloc,[debug_malloc]ifelse($1,,[],[,$1]))])
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -4148,7 +4175,7 @@ $3="$withval"
 AC_DEFINE_UNQUOTED($3,"[$]$3")dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_DMALLOC version: 3 updated: 2004/01/19 13:06:01
+dnl CF_WITH_DMALLOC version: 4 updated: 2004/02/28 05:49:27
 dnl ---------------
 dnl Configure-option for dmalloc.  The optional parameter is used to override
 dnl the updating of $LIBS, e.g., to avoid conflict with subsequent tests.
@@ -4159,10 +4186,9 @@ AC_ARG_WITH(dmalloc,
 	[with_dmalloc=$withval],
 	[with_dmalloc=no])
 AC_MSG_RESULT($with_dmalloc)
-if test $with_dmalloc = yes ; then
+if test "$with_dmalloc" = yes ; then
 	AC_CHECK_HEADER(dmalloc.h,
-		[AC_CHECK_LIB(dmalloc,dmalloc_debug
-			ifelse($1,,[],[,$1]))])
+		[AC_CHECK_LIB(dmalloc,[dmalloc_debug]ifelse($1,,[],[,$1]))])
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------

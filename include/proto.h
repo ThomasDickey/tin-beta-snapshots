@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2004-02-23
+ *  Updated   : 2004-02-28
  *  Notes     :
  *
  * Copyright (c) 1997-2004 Urs Janssen <urs@tin.org>
@@ -533,6 +533,7 @@ extern char *rfc1522_decode(const char *s);
 extern char *rfc1522_encode(char *s, const char *charset, t_bool ismail);
 extern int mmdecode(const char *what, int encoding, int delimiter, char *where);
 extern void rfc15211522_encode(const char *filename, constext *mime_encoding, struct t_group *group, t_bool allow_8bit_header, t_bool ismail);
+extern void rfc15211522_encode_forwarded(const char *filename, constext * mime_encoding, struct t_group *group, t_bool allow_8bit_header);
 
 /* save.c */
 extern int check_start_save_any_news(int function, t_bool catchup);

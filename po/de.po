@@ -6,7 +6,7 @@
 #
 msgid	""
 msgstr	"Project-Id-Version: tin 1.7.4\n"
-	"POT-Creation-Date: 2004-02-25 10:33+0100\n"
+	"POT-Creation-Date: 2004-03-06 11:31+0100\n"
 	"PO-Revision-Date: 2003-03-13 04:15+0200\n"
 	"Last-Translator: Sven Hartge <oweh@ds9.argh.org>, Kai Bojens "
 	"<kbojens@on-luebeck.de>\n"
@@ -3964,7 +3964,7 @@ msgstr	"Terminal unterstützt keine Farben"
 msgid	"Trying %s"
 msgstr	"Versuche %s"
 
-#: src/lang.c:1066 src/lang.c:1091 src/lang.c:1107 src/lang.c:1286 src/refs.c:297
+#: src/lang.c:1066 src/lang.c:1091 src/lang.c:1107 src/lang.c:1286 src/refs.c:296
 msgid	"None"
 msgstr	"Nichts"
 
@@ -6143,9 +6143,20 @@ msgstr	"Ablassen\n"
 msgid	"unchanged"
 msgstr	"unverändert"
 
-#: src/refs.c:610
+#: src/refs.c:609
 msgid	"[- Unavailable -]"
 msgstr	"[- Nicht Verfügbar -]"
+
+#.
+#. * preamble
+#. * TODO: -> lang.c
+#.
+#: src/rfc2047.c:1182
+msgid	"This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
+	"are reading this prefix, your mail reader probably has not yet been modified\n"
+	"to understand the new format, and some of what follows may look strange.\n"
+	"\n"
+msgstr	""
 
 #: src/save.c:976
 msgid	"bytes"
