@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2003-08-10
+.\" Updated   : 2003-09-18
 .\" Notes     : needs a some work
 .\"
-.TH tin 5 "August 10th, 2003" "1.7.0" "A Usenet newsreader"
+.TH tin 5 "September 18th, 2003" "1.7.1" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -1411,6 +1411,12 @@ If ON, show current group description or article subject in the last line
 toggles setting). This facility is useful as the full width of the screen is
 available to display long subjects. Default is OFF.
 .TP
+.B interactive_mailer
+If greater than 0 your mailreader will be invoked earlier for reply so you can
+use more of its features (e.g. MIME, pgp, ...). 1 means include headers, 2
+means don't include headers (old use_mailreader_i=ON option). 0 turns off
+usage. This option has to suit \fBdefault_mailer_format\fP. Default is 0.
+.TP
 .B inverse_okay
 If ON use inverse video for page headers and URL highlighting.
 Default is ON.
@@ -1926,6 +1932,9 @@ The program that will be run when launching URLs in the article viewer
 using \fBPageViewUrl\fP ('\fBU\fP'). The actual URL will be appended to
 this. Default is \fBurl_handler.sh %s\fP.
 .TP
+.B url_highlight
+Enable highlighting URLs in message body. Default is ON.
+.TP
 .B use_color
 If enabled
 .BR tin (1)
@@ -1933,11 +1942,6 @@ uses ANSI-colors. Default is OFF.
 .TP
 .B use_keypad
 Use scroll keys on keypad. Default is OFF.
-.TP
-.B use_mailreader_i
-Interactive mailreader: if ON mailreader will be invoked earlier for reply
-so you can use more of its features (e.g. MIME, pgp, ...) this option has to
-suit \fBdefault_mailer_format\fP.
 .TP
 .B use_mouse
 Allows the mouse key support in a

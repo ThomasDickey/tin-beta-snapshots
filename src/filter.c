@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2003-05-16
+ *  Updated   : 2003-08-27
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -883,7 +883,7 @@ print_filter_menu(
 	MoveCursor(INDEX_TOP, 0);
 	my_printf("%s%s%s", ptr_filter_comment, cCRLF, cCRLF);
 	my_printf("%s%s", ptr_filter_text, cCRLF);
-	my_printf("%s%s%s",  _(txt_filter_text_type), cCRLF, cCRLF);
+	my_printf("%s%s%s", _(txt_filter_text_type), cCRLF, cCRLF);
 	my_printf("%s%s", text_subj, cCRLF);
 	my_printf("%s%s", text_from, cCRLF);
 	my_printf("%s%s%s", text_msgid, cCRLF, cCRLF);
@@ -1210,8 +1210,8 @@ filter_menu(
 	/*
 	 * Expire time
 	 */
-	sprintf(double_time, "2x %s", text_time);
-	sprintf(quat_time, "4x %s", text_time);
+	snprintf(double_time, sizeof(double_time), "2x %s", text_time);
+	snprintf(quat_time, sizeof(double_time), "4x %s", text_time);
 	i = get_choice(INDEX_TOP + 11, _(txt_help_filter_time), ptr_filter_time,
 			_(txt_unlimited_time), text_time, double_time, quat_time, (char *) 0);
 
@@ -1530,7 +1530,7 @@ add_filter_rule(
 
 	ptr[i].icase = rule->icase;
 	if (*rule->text) {
-		sprintf(acBuf, REGEX_FMT, quote_wild_whitespace(rule->text));
+		snprintf(acBuf, sizeof(acBuf), REGEX_FMT, quote_wild_whitespace(rule->text));
 
 		switch (rule->counter) {
 			case FILTER_SUBJ_CASE_IGNORE:
@@ -1565,12 +1565,12 @@ add_filter_rule(
 		 */
 		if (rule->subj_ok) {
 			STRCPY(sbuf, art->subject);
-			sprintf(acBuf, REGEX_FMT, (rule->check_string ? quote_wild(sbuf) : sbuf));
+			snprintf(acBuf, sizeof(acBuf), REGEX_FMT, (rule->check_string ? quote_wild(sbuf) : sbuf));
 			ptr[i].subj = my_strdup(acBuf);
 		}
 		if (rule->from_ok) {
 			STRCPY(sbuf, art->from);
-			sprintf(acBuf, REGEX_FMT, quote_wild(sbuf));
+			snprintf(acBuf, sizeof(acBuf), REGEX_FMT, quote_wild(sbuf));
 			ptr[i].from = my_strdup(acBuf);
 		}
 		/*
@@ -1590,7 +1590,6 @@ add_filter_rule(
 			 * So the thread remains open (in group level). To overcome this,
 			 * the first msgid from references field is taken in this case.
 			 */
-#if 1	/* This is what I think is more correct, but I did NOT test it! (urs) */
 			if (group->attribute->thread_arts == THREAD_REFS &&
 				(group->attribute->quick_kill_header == FILTER_MSGID ||
 				 group->attribute->quick_kill_header == FILTER_REFS_ONLY) &&
@@ -1605,24 +1604,7 @@ add_filter_rule(
 			} else {
 				STRCPY(sbuf, MSGID(art));
 			}
-#else /* original logic by guido */
-			if (group->attribute->thread_arts != THREAD_REFS ||
-				origin != GROUP_LEVEL ||
-				(group->attribute->quick_kill_header != FILTER_MSGID &&
-				group->attribute->quick_kill_header != FILTER_MSGID_LAST)
-				(art->refptr->parent == NULL))
-			{
-				STRCPY(sbuf, MSGID(art));
-			} else {
-				/* not real parent, take first references entry as MID */
-				struct t_msgid *xptr;
-
-				for (xptr = art->refptr->parent; xptr->parent != NULL; xptr = xptr->parent)
-					;
-				STRCPY(sbuf, xptr->txt);
-			}
-#endif /* 1 */
-			sprintf(acBuf, REGEX_FMT, quote_wild(sbuf));
+			snprintf(acBuf, sizeof(acBuf), REGEX_FMT, quote_wild(sbuf));
 			ptr[i].msgid = my_strdup(acBuf);
 			ptr[i].fullref = rule->fullref;
 		}
@@ -1769,7 +1751,7 @@ filter_articles(
 				 */
 				if (ptr[j].from != NULL) {
 					if (arts[i].name != NULL)
-						sprintf(buf, "%s (%s)", arts[i].from, arts[i].name);
+						snprintf(buf, sizeof(buf), "%s (%s)", arts[i].from, arts[i].name);
 					else
 						strcpy(buf, arts[i].from);
 					if (test_regex(buf, ptr[j].from, ptr[j].icase, &regex_cache_from[j])) {

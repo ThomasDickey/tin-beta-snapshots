@@ -226,7 +226,7 @@ main(
 
 		joinpath(file, TMPDIR, "BITMAP");
 		unlink(file);
-		/* vNewsrcTestHarness(); */
+		/* newsrc_test_harness(); */
 	}
 #endif /* DEBUG_NEWSRC */
 
@@ -422,7 +422,7 @@ main(
 #	define OPTIONS "aAcdD:f:G:g:hHI:lm:M:nNop:qQrRs:SuvVwxXzZ"
 #else
 #	define OPTIONS "BcdD:f:G:hHI:lm:M:nNop:qQrRs:SuvVwxXzZ"
-#endif /* M_AMIGA */
+#endif /* !M_AMIGA */
 
 static void
 read_cmd_line_options(
@@ -551,7 +551,7 @@ read_cmd_line_options(
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
-#endif /* NO_POSTING */
+#endif /* !NO_POSTING */
 				break;
 
 			case 'p': /* implies -r */
@@ -852,7 +852,7 @@ read_cmd_line_options(
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
-#endif /* NO_POSTING */
+#endif /* !NO_POSTING */
 				break;
 
 #if 0

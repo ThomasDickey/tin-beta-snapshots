@@ -66,9 +66,9 @@ TIN related:
 
   DEBUG                                   MATCH_TAR_PATTERN
   DEBUG_NEWSRC                            NEW_HASH_METHOD
-  DEBUG_NEWSRC_FIXME                      OPTIMIZE_JUST_STAR
-  DEBUG_REFS (see doc/DEBUG_REFS)         REREAD_ACTIVE_FILE_SECS
-  JUST_TESTING
+  DEBUG_REFS (see doc/DEBUG_REFS)         OPTIMIZE_JUST_STAR
+  JUST_TESTING                            REREAD_ACTIVE_FILE_SECS
+  USE_UTF8_HORIZONTAL_ELLIPSIS
 
 System related:
   --datadir                               --localstatedir

@@ -3,7 +3,7 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-08-16
  *  Notes     :
  *
  * Copyright (c) 1993-2003 Iain Lea <iain@bricbrac.de>
@@ -102,40 +102,35 @@ static void
 read_xref_header(
 	struct t_article *art)
 {
-	/* xref_supported means already supported in xover record */
-	if (!xref_supported && read_news_via_nntp && art && !art->xref) {
-		FILE *fp;
-		char *ptr, *q;
-		char buf[HEADER_LEN];
-		long artnum = 0L;
+	FILE *fp;
+	char *ptr, *q;
+	char buf[HEADER_LEN];
+	long artnum = 0L;
 
-		snprintf(buf, sizeof(buf), "XHDR XREF %ld", art->artnum);
-		if ((fp = nntp_command(buf, OK_HEAD, NULL, 0)) == NULL)
-			return;
+	snprintf(buf, sizeof(buf), "XHDR XREF %ld", art->artnum);
+	if ((fp = nntp_command(buf, OK_HEAD, NULL, 0)) == NULL)
+		return;
 
-		while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+		while (*ptr && isspace((int) *ptr))
+			ptr++;
+		if (*ptr == '.')
+			break;
+		/*
+		 * read the article number
+		 */
+		artnum = atol(ptr);
+		if ((artnum == art->artnum) && !art->xref && !strstr(ptr, "(none)")) {
+			if ((q = strchr(ptr, ' ')) == NULL)	/* skip article number */
+				continue;
+			ptr = q;
 			while (*ptr && isspace((int) *ptr))
 				ptr++;
-			if (*ptr == '.')
-				break;
-			/*
-			 * read the article number
-			 */
-			artnum = atol(ptr);
-			if ((artnum == art->artnum) && !art->xref && !strstr(ptr, "(none)")) {
-				q = strchr(ptr, ' ');	/* skip article number */
-				if (q == NULL)
-					continue;
-				ptr = q;
-				while (*ptr && isspace((int) *ptr))
-					ptr++;
-				q = strchr(ptr, '\n');
-				if (q)
-					*q = '\0';
-				art->xref = my_strdup(ptr);
-			}
+			q = strchr(ptr, '\n');
+			if (q)
+				*q = '\0';
+			art->xref = my_strdup(ptr);
 		}
-
 	}
 	return;
 }
@@ -157,7 +152,9 @@ art_mark_xref_read(
 	struct t_group *psGrp;
 
 #if defined(NNTP_ABLE) && defined(XHDR_XREF)
-	read_xref_header(art);
+	/* xref_supported => xref info was already read in xover record */
+	if (!xref_supported && read_news_via_nntp && art && !art->xref)
+		read_xref_header(art);
 #endif /* NNTP_ABLE && XHDR_XREF */
 
 	if (art->xref == NULL)

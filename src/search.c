@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-15
+ *  Updated   : 2003-09-15
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -490,7 +490,7 @@ search_body(
 {
 	char *buf;
 	int i;
-	t_bool forward_fake;
+	t_bool forward_fake = TRUE;
 
 	if (!(buf = get_search_pattern(
 			&forward_fake,				/* we pass a dummy var since body search has no `forward' */

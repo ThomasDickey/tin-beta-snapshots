@@ -478,6 +478,7 @@ parse_range(
 				case '-':
 					state = FINDMAX;
 					break;
+
 				case '.':
 					if (state == FINDMAX) {
 						*range_end = curr;
@@ -485,12 +486,14 @@ parse_range(
 					} else
 						*range_start = curr;
 					break;
+
 				case '$':
 					if (state == FINDMAX) {
 						*range_end = max;
 						state = DONE;
 					}
 					break;
+
 				default:
 					break;
 			}
@@ -578,7 +581,7 @@ arts_selected(
 	int i;
 
 	for_each_art(i) {
-		 if (arts[i].selected)
+		if (arts[i].selected)
 			return TRUE;
 	}
 

@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-06-29
+ *  Updated   : 2003-08-25
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -42,11 +42,9 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 
-#ifdef PROFILE
-#	ifndef STPWATCH_H
-#		include "stpwatch.h"
-#	endif /* !STPWATCH_H */
-#endif /* PROFILE */
+#ifndef STPWATCH_H
+#	include "stpwatch.h"
+#endif /* !STPWATCH_H */
 
 /*
  * TODO: fixup to remove CURR_GROUP dependency in all sort funcs
@@ -192,17 +190,13 @@ index_group(
 	 * and then create base[] article numbers from loaded articles.
 	 * If nov file does not exist then create base[] with setup_hard_base().
 	 */
-#ifdef PROFILE
 	BegStopWatch("setup_hard_base");
-#endif /* PROFILE */
 
 	if (setup_hard_base(group) < 0)
 		return FALSE;
 
-#ifdef PROFILE
 	EndStopWatch();
 	PrintStopWatch();
-#endif /* PROFILE */
 
 #ifdef DEBUG_NEWSRC
 	debug_print_comment("Before read_nov_file");
@@ -304,16 +298,12 @@ index_group(
 	 */
 	filtered = filter_articles(group);
 
-#ifdef PROFILE
 	BegStopWatch("make_thread");
-#endif /* PROFILE */
 
 	make_threads(group, FALSE);
 
-#ifdef PROFILE
 	EndStopWatch();
 	PrintStopWatch();
-#endif /* PROFILE */
 
 	if ((modified || filtered) && !batch_mode)
 		clear_message();
@@ -403,12 +393,12 @@ read_group(
 		 * arts[].thread from ART_EXPIRED to ART_NORMAL and skip
 		 * reading the header.
 		 */
-		if ((respnum = valid_artnum(art)) >= 0 || art <= last_read_article) {
-			if (respnum >= 0)
-				arts[respnum].thread = ART_NORMAL;
-
+		if ((respnum = valid_artnum(art)) >= 0) {
+			arts[respnum].thread = ART_NORMAL;
 			continue;
 		}
+		if (art <= last_read_article)
+			continue;
 
 		/*
 		 * Try and open the article
@@ -442,7 +432,7 @@ read_group(
 		}
 
 		if (!res) {
-			sprintf(buf, "FAILED parse_headers(%ld)", art);
+			snprintf(buf, sizeof(buf), "FAILED parse_headers(%ld)", art);
 #ifdef DEBUG
 			debug_nntp("read_group", buf);
 #endif /* DEBUG */
@@ -1067,24 +1057,28 @@ parse_headers(
 }
 
 
+#ifdef DEBUG
+#	define handle_overview_fmt_error()	else oerror += 1<<count
+#else
+#	define handle_overview_fmt_error()
+#endif /* DEBUG */
 /*
- * Read in an Nov/Xover index file. Fields are separated by TAB.
+ * Read in an overview index file. Fields are separated by TAB.
  * return the new value of 'top_art' or -1 if user quit partway.
- * TODO: rewrite parser using strtok() or some other separator
- *       based function
+ * 'expired' is set to the # of expired arts
  * If 'local' is set then always open local overview cache in
- * preference to NNTP XOVER
+ * preference to using NNTP XOVER
  *
- * Format:
- * 	1. article number (ie. 183)                [mandatory]
- * 	2. Subject: line  (ie. Which newsreader?)  [mandatory]
- * 	3. From: line     (ie. iain@ecrc.de)       [mandatory]
- * 	4. Date: line     (rfc822 format)          [mandatory]
- * 	5. MessageID:     (ie. <123@ether.net>)    [mandatory]
- * 	6. References:    (ie. <message-id> ....)  [optional]
- * 	7. Byte count     (Skipped - not used)     [mandatory]
- * 	8. Lines: line    (ie. 23)                 [mandatory]
- * 	9. Xref: line     (ie. alt.test:389)       [optional]
+ * Format (mandatory as far as line count [RFC2980]):
+ *	1. article number (ie. 183)                [mandatory]
+ *	2. Subject: line  (ie. Which newsreader?)  [mandatory]
+ *	3. From: line     (ie. iain@ecrc.de)       [mandatory]
+ *	4. Date: line     (rfc822 format)          [mandatory]
+ *	5. MessageID:     (ie. <123@ether.net>)    [mandatory]
+ *	6. References:    (ie. <message-id> ....)  [optional]
+ *	7. Byte count     (Skipped - not used)     [mandatory]
+ *	8. Lines: line    (ie. 23)                 [mandatory]
+ *	9. Xref: line     (ie. alt.test:389)       [optional]
  */
 static int
 read_nov_file(
@@ -1095,11 +1089,16 @@ read_nov_file(
 	t_bool local)
 {
 	FILE *fp;
-	char *p, *q;
+	char *ptr;
 	char *buf;
 	char art_full_name[HEADER_LEN];
 	char art_from_addr[HEADER_LEN];
+	unsigned int count;
 	long artnum;
+	struct t_article *art;
+#ifdef DEBUG
+	unsigned int oerror = 0;
+#endif /* DEBUG */
 
 	*expired = 0;
 
@@ -1117,23 +1116,18 @@ read_nov_file(
 			handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
 			need_resize = cNo;
 		}
-
 #ifdef DEBUG
 		debug_nntp("read_nov_file", buf);
 #endif /* DEBUG */
 
-		if (top_art >= max_art)
-			expand_art();
-
-		p = buf;
-
 		/*
 		 * read the article number, guaranteed to be the first field
 		 */
-		artnum = atol(p);
+		artnum = atol(buf);
 
-		/* catches case of 1st line being groupname (i.e. local cached overviews) */
-		/* TODO: so test the group name properly then ? */
+		/*
+		 * 1st line of local cached overview is group name
+		 */
 		if (artnum <= 0)
 			continue;
 
@@ -1155,174 +1149,97 @@ read_nov_file(
 		if (artnum > group->xmax)
 			continue;
 
-		set_article(&arts[top_art]);
-		arts[top_art].artnum = last_read_article = artnum;
+		if (top_art >= max_art)
+			expand_art();
 
-		if ((q = strchr(p, '\t')) == NULL) {
-#ifdef DEBUG
-			error_message("Bad overview record (Artnum) '%s'", buf);
-			debug_nntp("read_nov_file", "Bad overview record (Artnum)");
-#endif /* DEBUG */
+		art = &arts[top_art];
+		set_article(art);
+		art->artnum = last_read_article = artnum;
+
+		/*
+		 * Note: Fields after line count are not mandatory, use "LIST OVERVIEW.FMT"
+		 *       to check for additions like we do with xref_supported
+		 */
+		if ((ptr = tin_strtok(buf, "\t")) == NULL)		/* Skip past artnum */
 			continue;
-		} else
-			p = q + 1;
 
-		/*
-		 * TODO: rewrite the code below as the field order is not fixed,
-		 *       but defined in "LIST OVERVIEW.FMT"
-		 */
+		for (count = 1; (ptr = tin_strtok(NULL, "\t")) != NULL; count++) {
+			switch (count) {
+				case 1:		/* Subject */
+					art->subject = hash_str(eat_re(eat_tab(rfc1522_decode(ptr)), FALSE));
+					break;
 
-		/*
-		 * read Subject
-		 */
-		if ((q = strchr(p, '\t')) == NULL) {
+				case 2:		/* From */
+					art->gnksa_code = parse_from(ptr, art_from_addr, art_full_name);
+					art->from = hash_str(art_from_addr);
+
+					if (*art_full_name)
+						art->name = hash_str(eat_tab(rfc1522_decode(art_full_name)));
+					break;
+
+				case 3:		/* Date */
+					art->date = parsedate(ptr, (TIMEINFO *) 0);
 #ifdef DEBUG
-			error_message("Bad overview record (Subject) [%s]", p);
-			debug_nntp("read_nov_file", "Bad overview record (Subject)");
+					if (art->date == (time_t) -1)
+						oerror += 1<<count;
 #endif /* DEBUG */
-			continue;
-		} else
-			*q = '\0';
+					break;
 
-		arts[top_art].subject = hash_str(eat_re(eat_tab(rfc1522_decode(p)), FALSE));
-		p = q + 1;
+				case 4:		/* Message-ID */
+					if (*ptr)
+						art->msgid = my_strdup(ptr);
+					handle_overview_fmt_error();
+					break;
 
-		/*
-		 * read From
-		 */
-		if ((q = strchr(p, '\t')) == NULL) {
+				case 5:		/* References */
+					if (*ptr)
+						art->refs = my_strdup(ptr);
+					break;
+
+				case 6:		/* Bytes */
 #ifdef DEBUG
-			error_message("Bad overview record (From) [%s]", p);
-			debug_nntp("read_nov_file", "Bad overview record (From)");
+					if (!isdigit((unsigned char) *ptr))
+						oerror += 1<<count;
 #endif /* DEBUG */
-			continue;
-		} else
-			*q = '\0';
+					break;
 
-		arts[top_art].gnksa_code = parse_from(p, art_from_addr, art_full_name);
-		arts[top_art].from = hash_str(art_from_addr);
+				case 7:		/* Lines */
+					if (isdigit((unsigned char) *ptr))
+						art->line_count = atoi(ptr);
+					handle_overview_fmt_error();
+					break;
 
-		if (*art_full_name)
-			arts[top_art].name = hash_str(eat_tab(rfc1522_decode(art_full_name)));
-
-		p = q + 1;
-		/*
-		 * read Date
-		 */
-		if ((q = strchr(p, '\t')) == NULL) {
-#ifdef DEBUG
-			error_message("Bad overview record (Date) [%s]", p);
-			debug_nntp("read_nov_file", "Bad overview record (Date)");
-#endif /* DEBUG */
-			continue;
-		} else
-			*q = '\0';
-
-		arts[top_art].date = parsedate(p, (TIMEINFO *) 0);
-		p = q + 1;
-
-		/*
-		 * read Message-ID
-		 */
-		q = strchr(p, '\t');
-		if (q == NULL || p == q) {	/* Empty msgid's */
-#ifdef DEBUG
-			error_message("Bad overview record (Msg-id) [%s]", p);
-			debug_nntp("read_nov_file", "Bad overview record (Msg-id)");
-#endif /* DEBUG */
-			continue;
-		} else
-			*q = '\0';
-
-		/*
-		 * TODO: is no mesg-id allowed in rfc?
-		 *       no, but we might see that in mailgroups as mesg-id is
-		 *       optional in mail
-		 *		 So complain if group->type == GROUP_TYPE_NEWS
-		 *
-		 *       draft-ietf-nntpext-base-13.txt, section 9.2.1.1
-		 *       comes up with "<0>" - should we use it instead of '\0'?
-		 */
-		arts[top_art].msgid = (*p ? my_strdup(p) : '\0');
-
-		p = q + 1;
-
-		/*
-		 * read References
-		 */
-		if ((q = strchr(p, '\t')) == NULL) {
-#ifdef DEBUG
-			error_message("Bad overview record (References) [%s]", p);
-			debug_nntp("read_nov_file", "Bad overview record (References)");
-#endif /* DEBUG */
-			continue;
-		} else
-			*q = '\0';
-
-		arts[top_art].refs = (*p ? my_strdup(p) : '\0');
-
-		p = q + 1;
-
-		/*
-		 * skip Bytes
-		 */
-		if ((q = strchr(p, '\t')) == NULL) {
-#ifdef DEBUG
-			error_message("Bad overview record (Bytes) [%s]", p);
-			debug_nntp("read_nov_file", "Bad overview record (Bytes)");
-#endif /* DEBUG */
-			continue;
-		} else
-			*q = '\0';
-
-		p = (q == NULL ? (char *) 0 : q + 1);
-
-		/*
-		 * read Lines
-		 */
-		if (p != NULL) {
-			if ((q = strchr(p, '\t')) != NULL)
-				*q = '\0';
-
-			if (isdigit((unsigned char) *p))
-				arts[top_art].line_count = atoi(p);
-
-			p = (q == NULL ? (char *) 0 : q + 1);
-		}
-
-		/*
-		 * read Xref
-		 */
-		if (p != NULL && xref_supported) {
-			if ((q = strstr(p, "Xref: ")) == NULL)
-				q = strstr(p, "xref: ");
-
-			if (q != NULL) {
-				p = q + 6;
-				q = p;
-				while (*q && *q != '\t')
-					q++;
-
-				*q = '\0';
-				q = strrchr(p, '\n');
-				if (q != NULL)
-					*q = '\0';
-
-				q = p;
-				while (*q && *q == ' ')
-					q++;
-
-				arts[top_art].xref = my_strdup(q);
-				/* TODO: crosscheck artnum against Xref:-line (if Xref:full) */
+				case 8:		/* Xref: */
+					if (!xref_supported)
+						continue;
+					/* TODO: crosscheck artnum against Xref:-line (if Xref:full) */
+					if ((ptr = parse_header(ptr, "Xref", FALSE, FALSE)) != NULL)
+						art->xref = my_strdup(ptr);
+					handle_overview_fmt_error();
+					break;
 			}
 		}
 
-		/*
-		 * end of overview line processing
-		 */
 #ifdef DEBUG
-		debug_print_header(&arts[top_art]);
+		/* Complain if incorrect # of fields */
+		if (count < (xref_supported ? 8 : 7) || oerror) {
+			char errbuf[LEN];
+
+			error_message(_("%d Bad overview record (%d fields) '%s'"), oerror, count, BlankIfNull(ptr)); /* TODO move to lang.c */
+			snprintf(errbuf, sizeof(errbuf), "%d Bad overview record (%d fields)", oerror, count);
+			debug_nntp("read_nov_file", errbuf);
+		}
+		debug_print_header(art);
+		oerror = 0;
 #endif /* DEBUG */
+
+		/*
+		 * RFC says Message-ID is mandatory in newsgroups (but not in
+		 * mailgroups etc..) NB. a NULL Message-ID would abort if we ever do
+		 * threading in mailgroups
+		 */
+		if (!art->msgid && group->type == GROUP_TYPE_NEWS)
+			continue;
 
 		/* we might loose accuracy here, but that shouldn't hurt */
 		if (artnum % MODULO_COUNT_NUM == 0)
@@ -1344,15 +1261,15 @@ read_nov_file(
  * Write an Nov/Xover index file. Fields are separated by '\t'.
  *
  * Format:
- * 	1. article number (ie. 183)                [mandatory]
- * 	2. Subject: line  (ie. Which newsreader?)  [mandatory]
- * 	3. From: line     (ie. iain@ecrc.de)       [mandatory]
- * 	4. Date: line     (rfc822 format)          [mandatory]
- * 	5. MessageID:     (ie. <123@ether.net>)    [mandatory]
- * 	6. References:    (ie. <message-id> ....)  [optional]
- * 	7. Byte count     (Skipped - not used)     [mandatory]
- * 	8. Lines: line    (ie. 23)                 [mandatory]
- * 	9. Xref: line     (ie. alt.test:389)       [optional]
+ *	1. article number (ie. 183)                [mandatory]
+ *	2. Subject: line  (ie. Which newsreader?)  [mandatory]
+ *	3. From: line     (ie. iain@ecrc.de)       [mandatory]
+ *	4. Date: line     (rfc822 format)          [mandatory]
+ *	5. MessageID:     (ie. <123@ether.net>)    [mandatory]
+ *	6. References:    (ie. <message-id> ....)  [optional]
+ *	7. Byte count     (Skipped - not used)     [mandatory]
+ *	8. Lines: line    (ie. 23)                 [mandatory]
+ *	9. Xref: line     (ie. alt.test:389)       [optional]
  *
  * TODO: as we don't use the original data, we currently can't store
  *       the data (from/subject) in the original charset (we don't store
@@ -1415,6 +1332,8 @@ write_nov_file(
 			 *       ignore stuff like this.
 			 */
 			p = rfc1522_encode(article->subject, tinrc.mm_local_charset, FALSE);
+			/* as the subject might now be folded we have to unfold it */
+			unfold_header(p);
 
 			/*
 			 * replace any '\t's with ' ' in the references-data
@@ -1534,7 +1453,7 @@ find_nov_file(
 						return NULL;			/* Don't write cache in this case */
 				}
 			}
-#endif /* NNTP_ONLY */
+#endif /* !NNTP_ONLY */
 
 			/*
 			 * We only get here when private overviews are going to be used
@@ -1619,7 +1538,7 @@ find_nov_file(
 		if ((ptr = strrchr(buf, '\n')) != NULL)
 			*ptr = '\0';
 
-		if (STRCMPEQ(buf, group->name))
+		if (strcmp(buf, group->name) == 0)
 			return nov_file;
 
 	}
@@ -1875,16 +1794,16 @@ void
 set_article(
 	struct t_article *art)
 {
-	art->subject = (char *) 0;
-	art->from = (char *) 0;
-	art->name = (char *) 0;
+	art->subject = NULL;
+	art->from = NULL;
+	art->name = NULL;
 	art->date = (time_t) 0;
-	art->xref = (char *) 0;
-	art->msgid = (char *) 0;
-	art->refs = (char *) 0;
-	art->refptr = (struct t_msgid *) 0;
+	art->xref = NULL;
+	art->msgid = NULL;
+	art->refs = NULL;
+	art->refptr = NULL;
 	art->line_count = -1;
-	art->archive = (struct t_archive *) 0;
+	art->archive = NULL;
 	art->tagged = FALSE;
 	art->thread = ART_EXPIRED;
 	art->prev = ART_NORMAL;
@@ -1942,14 +1861,13 @@ print_date(
 {
 	static char date[25];
 	struct tm *tm;
-
 	static const char *const months_a[] = {
 		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
 		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 	};
 
 	tm = gmtime(&secs);
-	sprintf(date, "%02d %s %04d %02d:%02d:%02d GMT",
+	snprintf(date, sizeof(date), "%02d %s %04d %02d:%02d:%02d GMT",
 			tm->tm_mday,
 			months_a[tm->tm_mon],
 			tm->tm_year + 1900,
@@ -1970,6 +1888,7 @@ print_from(
 
 	if (article->name != NULL) {
 		p = rfc1522_encode(article->name, tinrc.mm_local_charset, FALSE);
+		unfold_header(p);
 		if (strpbrk(article->name, "\".:;<>@[]()\\") != NULL && article->name[0] != '"' && article->name[strlen(article->name)] != '"')
 			snprintf(from, sizeof(from), "\"%s\" <%s>", tinrc.post_8bit_header ? article->name : p, article->from);
 		else
@@ -2000,7 +1919,7 @@ open_xover_fp(
 	if (!local && xover_cmd && *mode == 'r' && group->type == GROUP_TYPE_NEWS) {
 		char line[NNTP_STRLEN];
 
-		sprintf(line, "%s %ld-%ld", xover_cmd, min, max);
+		snprintf(line, sizeof(line), "%s %ld-%ld", xover_cmd, min, max);
 		return (nntp_command(line, OK_XOVER, NULL, 0));
 	} else
 #endif /* NNTP_ABLE */

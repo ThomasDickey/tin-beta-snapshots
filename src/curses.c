@@ -674,7 +674,7 @@ MoveCursor(
 	char stuff[12];
 
 	if (_moveto) {
-		sprintf(stuff, _moveto, row + 1, col + 1);
+		snprintf(stuff, sizeof(stuff), _moveto, row + 1, col + 1);
 		tputs(stuff, 1, outchar);
 		my_flush();
 		_line = row + 1;
@@ -1491,7 +1491,7 @@ ReadCh(
 	int result;
 #	ifndef READ_CHAR_HACK
 	char ch;
-#	endif /* READ_CHAR_HACK */
+#	endif /* !READ_CHAR_HACK */
 
 	fflush(stdout);
 #	ifdef READ_CHAR_HACK

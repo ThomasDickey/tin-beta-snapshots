@@ -2,7 +2,7 @@
 ;   Module    : tincfg.tbl
 ;   Author    : Thomas E. Dickey
 ;   Created   : 1996-11-01
-;   Updated   : 2003-08-10
+;   Updated   : 2003-08-12
 ;   Notes     : #defines and structs for config.c
 ;
 ; Copyright (c) 1996-2003 Thomas E. Dickey <dickey@invisible-island.net>
@@ -124,6 +124,7 @@
 	col_title			txt_colors	MAX_COLOR+1
 	col_signature			txt_colors	MAX_COLOR+1
 #endif
+	url_highlight			OPT_ON_OFF
 	word_highlight			OPT_ON_OFF
 	word_h_display_marks		txt_marks	MAX_MARK+1
 #ifdef HAVE_COLOR
@@ -201,7 +202,7 @@
 	editor_format			OPT_STRING
 	inews_prog			OPT_STRING
 	mailer_format			OPT_STRING
-	use_mailreader_i		OPT_ON_OFF
+	interactive_mailer		txt_interactive_mailers NUM_INTERACTIVE_MAILERS
 	unlink_article			OPT_ON_OFF
 	posted_articles_file		OPT_STRING
 	keep_dead_articles		OPT_ON_OFF

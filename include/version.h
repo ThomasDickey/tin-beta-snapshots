@@ -3,7 +3,7 @@
  *  Module    : version.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-06-29
+ *  Updated   : 2003-08-12
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -40,12 +40,12 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.7.0"
+#		define VERSION		"1.7.1"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20030810"
-#	define RELEASENAME	"Sandray"
+#	define RELEASEDATE	"20030918"
+#	define RELEASENAME	"Berneray"
 /* config-file versions - must by dotted triples */
-#	define TINRC_VERSION	"1.3.6"
+#	define TINRC_VERSION	"1.3.7"
 #	define ATTRIBUTES_VERSION	"1.0.0"
 #	define FILTER_VERSION	"1.0.0"
 #	define SERVERCONFIG_VERSION	"1.0.0"

@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2003-08-10
+ *  Updated   : 2003-09-12
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
@@ -162,7 +162,7 @@ extern void word_highlight_string(int row, int col, int size, int color);
 	extern void debug_print_arts(void);
 	extern void debug_print_filters(void);
 	extern void debug_print_header(struct t_article *s);
-	extern void vDbgPrintMalloc(int iIsMalloc, const char *pcFile, int iLine, size_t iSize);
+	extern void debug_print_malloc(int is_malloc, const char *xfile, int line, size_t size);
 #endif /* DEBUG */
 #ifdef DEBUG_NEWSRC
 	extern void debug_print_newsrc(struct t_newsrc *NewSrc, FILE *fp);
@@ -399,7 +399,7 @@ extern void set_default_bitmap(struct t_group *group);
 extern void art_mark_deleted(struct t_article *art);
 extern void art_mark_undeleted(struct t_article *art);
 #ifdef DEBUG_NEWSRC
-	extern void vNewsrcTestHarness(void);
+	extern void newsrc_test_harness(void);
 #endif /* DEBUG_NEWSRC */
 
 /* nntplib.c */
@@ -542,6 +542,7 @@ extern int parse_rfc822_headers(struct t_header *hdr, FILE *from, FILE *to);
 extern t_part *new_part(t_part *part);
 extern void art_close(t_openartinfo *artinfo);
 extern void free_and_init_header(struct t_header *hdr);
+extern void free_list(t_param *list);
 extern void free_parts(t_part *ptr);
 extern void unfold_header(char *line);
 
@@ -613,6 +614,7 @@ extern char *eat_tab(char *s);
 extern char *my_strdup(const char *str);
 extern char *str_trim(char *string);
 extern char *tin_ltoa(long value, int digits);
+extern char *tin_strtok(char *str, const char *delim);
 #if !defined(HAVE_STRCASESTR) || defined(DECL_STRCASESTR)
 	extern const char *strcasestr(const char *haystack, const char *needle);
 #endif /* !HAVE_STRCASESTR || DECL_STRCASESTR */
@@ -651,7 +653,10 @@ extern void str_lwr(char *str);
 #endif /* !HAVE_STRRSTR */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	extern void wcspart(wchar_t *to, const wchar_t *from, int columns, int size_to, t_bool pad);
+	extern wchar_t *wtrunc(const wchar_t *wmessage, wchar_t *wbuf, size_t wbuf_len, int len);
+	extern wchar_t *my_wcsdup(const wchar_t *wstr);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+extern char *trunc(const char *message, char *buf, size_t buf_len, int len);
 
 /* tags.c */
 extern int line_is_tagged(int n);

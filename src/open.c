@@ -3,7 +3,7 @@
  *  Module    : open.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-07-22
+ *  Updated   : 2003-08-16
  *  Notes     : Routines to make reading news locally (ie. /var/spool/news)
  *              or via NNTP transparent
  *
@@ -51,25 +51,100 @@
  * local prototypes
  */
 static int base_comp(t_comptype p1, t_comptype p2);
+#ifdef NNTP_ABLE
+	static void check_extensions(void);
+#endif /* NNTP_ABLE */
 #if 0 /* currently unused */
 	static FILE *open_xhdr_fp(char *header, long min, long max);
 	static t_bool stat_article(long art, const char *group_path);
 #endif /* 0 */
 
 
+char *nntp_server = NULL;
+constext *xover_cmd = NULL;
 long head_next;
-
 #ifdef NO_POSTING
 	t_bool can_post = FALSE;
 #else
 	t_bool can_post = TRUE;
 #endif /* NO_POSTING */
-
-char *nntp_server = NULL;
-char *xover_cmd = NULL;
 #ifdef NNTP_ABLE
-	static char txt_xover_buff[] = "XOVER";
+	static constext *xover_cmds = "XOVER";
+#	if 0 /* currently not used */
+	static constext *xhdr_cmd = NULL;
+	static constext *xhdr_cmds = "XHDR";
+#	endif /* 0 */
+	static t_bool have_list_extensions = FALSE;
 #endif /* NNTP_ABLE */
+
+
+#ifdef NNTP_ABLE
+/*
+ * Try and use LIST EXTENSIONS here. Get this list before issuing
+ * other NNTP commands because the correct methods may be
+ * mentioned in the list of extensions.
+ * Possible extensions include:
+ * - HDR & LIST HEADERS
+ * - OVER
+ * - LISTGROUP
+ * - LIST OVERVIEW.FMT
+ *
+ * Sets up: have_list_extensions, xover_cmd, (xhdr_cmd)
+ */
+static void
+check_extensions(
+	void)
+{
+	FILE *fp;
+	char *ptr;
+	int i;
+
+	if ((fp = nntp_command("LIST EXTENSIONS", OK_EXTENSIONS, NULL, 0)) == NULL)
+		return;
+
+	have_list_extensions = TRUE;
+
+	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+		/*
+		 * Check for (X)OVER
+		 * XOVER should not be listed in EXTENSIONS (only OVER), but
+		 * checking for it if OVER is not found does no harm.
+		 */
+		if (!xover_cmd) {
+			for (i = 1; i >= 0; i--) {
+				if (strcmp(ptr, &xover_cmds[i]) == 0) {
+					xover_cmd = &xover_cmds[i];
+					break;
+				}
+			}
+		}
+#	if 0 /* currently not used */
+		/*
+		 * Check for (X)HDR
+		 * XHDR should not be listed in EXTENSIONS (only HDR), but
+		 * checking for it if HDR is not found does no harm.
+		 */
+		if (!xhdr_cmd) {
+			for (i = 1; i >= 0; i--) {
+				if (strcmp(ptr, &xhdr_cmds[i]) == 0) {
+					xhdr_cmd = &xhdr_cmds[i];
+					break;
+				}
+			}
+		}
+#	endif /* 0 */
+		/*
+		 * additional checks for
+		 * - LISTGROUP
+		 * - LIST OVERVIEW.FMT
+		 * - LIST HEADERS
+		 * go here whenever they are needed
+		 */
+	}
+	return;
+}
+#endif /* NNTP_ABLE */
+
 
 /*
  * Open a connection to the NNTP server. Authenticate if necessary or
@@ -223,14 +298,12 @@ nntp_open(
 	}
 
 	/*
-	 * NOTE: Latest NNTP draft (Jan 2002) states that LIST EXTENSIONS should
-	 *       be used to find out what commands are supported.
-	 *
-	 * TODO: Implement LIST EXTENSIONS here. Get this list before issuing
-	 *       authentication because the authentication method required may be
-	 *       mentioned in the list of extensions. (For details about
-	 *       authentication methods, see draft-newman-nntpext-auth-01.txt.)
+	 * Find out which NNTP extensions are available
+	 * TODO: The authentication method required may be mentioned in the list of
+	 *       extensions. (For details about authentication methods, see
+	 *       draft-newman-nntpext-auth-01.txt).
 	 */
+	check_extensions();
 
 	/*
 	 * If the user wants us to authenticate on connection startup, do it now.
@@ -239,7 +312,6 @@ nntp_open(
 	 * allowed to post after authentication issue a "MODE READER" again and
 	 * interpret the response code.
 	 */
-
 	if (force_auth_on_conn_open) {
 #	ifdef DEBUG
 		debug_nntp("nntp_open", "authenticate");
@@ -313,20 +385,39 @@ nntp_open(
 	}
 
 	/*
-	 * Check if NNTP supports XOVER or OVER command (successor of XOVER as of
-	 * latest NNTP Draft (Jan 2002); ie, we _don't_ get an ERR_COMMAND
-	 * Could use (i=1;i>=0;i--) to give OVER higher priority than XOVER
-	 *
-	 * TODO: Don't try (X)OVER if listed in LIST EXTENSIONS.
+	 * If LIST EXTENSIONS failed, check if NNTP supports XOVER or OVER command
+	 * (successor of XOVER as of latest NNTP Draft (Jan 2002)
+	 * We have to check that we _don't_ get an ERR_COMMAND
 	 */
-	for (i = 0; i < 2; i++) {
-		xover_cmd = &txt_xover_buff[i];
-		if (!nntp_command(xover_cmd, ERR_COMMAND, NULL, 0))
-			break;
+	if (!have_list_extensions) {
+		for (i = 0; i < 2; i++) {
+			if (!nntp_command(&xover_cmds[i], ERR_COMMAND, NULL, 0)) {
+				xover_cmd = &xover_cmds[i];
+				break;
+			}
+		}
+	} else {
+		if (!xover_cmd) {
+			/*
+			 * LIST EXTENSIONS didn't mention OVER or XOVER, try
+			 * XOVER
+			 */
+			if (!nntp_command(xover_cmds, ERR_COMMAND, NULL, 0))
+				xover_cmd = xover_cmds;
+		}
+#if 0 /* unused */
+		if (!xhdr_cmd) {
+			/*
+			 * LIST EXTENSIONS didn't mention HDR or XHDR, try
+			 * XHDR
+			 */
+			if (!nntp_command(xhdr_cmds, ERR_COMMAND, NULL, 0))
+				xhdr_cmd = xhdr_cmds;
+		}
+#endif /* 0 */
 	}
 
-	if (i == 2)	{	/* ie XOVER and OVER gave ERR_COMMAND */
-		xover_cmd = NULL;
+	if (!xover_cmd) {
 		if (!is_reconnect && !batch_mode) {
 			wait_message(2, _(txt_no_xover_support));
 
@@ -340,8 +431,11 @@ nntp_open(
 		/*		 in index_newsdir ? */
 	}
 
-#	if 0 /* TODO: */
-	/* if we're using -n, check for LIST NEWSGROUPS <wildmat> */
+#	if 0
+	/*
+	 * TODO: if we're using -n, check for LIST NEWSGROUPS <wildmat>
+	 * see also comments in open_newsgroups_fp()
+	 */
 	if (newsrc_active && !list_active) { /* -n */
 		/* code goes here */
 	}
@@ -374,8 +468,8 @@ nntp_close(
 /*
  * Get a response code from the server.
  * Returns:
- * 	+ve NNTP return code
- * 	-1  on an error or user abort. We don't differentiate.
+ *	+ve NNTP return code
+ *	-1  on an error or user abort. We don't differentiate.
  * If 'message' is not NULL, then any trailing text after the response
  * code is copied into it.
  * Does not perform authentication if required; use get_respcode()
@@ -406,7 +500,7 @@ get_only_respcode(
 	DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
 
 	/* TODO: reconnect on ERR_FAULT? */
-	if ((respcode == ERR_FAULT || respcode == ERR_GOODBYE) && last_put[0] != '\0') {
+	if ((respcode == ERR_FAULT || respcode == ERR_GOODBYE || respcode == OK_GOODBYE) && last_put[0] != '\0' && strcmp(last_put, "QUIT")) {
 		/*
 		 * Maybe server timed out.
 		 * If so, retrying will force a reconnect.
@@ -441,8 +535,8 @@ get_only_respcode(
 /*
  * Get a response code from the server.
  * Returns:
- * 	+ve NNTP return code
- * 	-1  on an error
+ *	+ve NNTP return code
+ *	-1  on an error
  * If 'message' is not NULL, then any trailing text after the response
  *	code is copied into it.
  * Performs authentication if required and repeats the last command if
@@ -567,7 +661,7 @@ open_overview_fmt_fp(
 		if (!xover_cmd)
 			return (FILE *) 0;
 
-		sprintf(line, "LIST %s", OVERVIEW_FMT);
+		snprintf(line, sizeof(line), "LIST %s", OVERVIEW_FMT);
 		return (nntp_command(line, OK_GROUPS, NULL, 0));
 	} else {
 #endif /* NNTP_ABLE */
@@ -597,12 +691,12 @@ open_newgroups_fp(
 			return (FILE *) 0;
 
 		ngtm = localtime(&newnews[idx].time);
-	/*
-	 * in the current draft NEWGROUPS is allowed to take a 4 digit year
-	 * componennt - but even with a 2 digit year componennt it is y2k
-	 * compilant... we should switch over to ngtm->tm_year + 1900
-	 * after most of the server could handle the new format
-	 */
+		/*
+		 * in the current draft, NEWGROUPS is allowed to take a 4 digit year
+		 * component - but even with a 2 digit year component it is y2k
+		 * compliant... we should switch over to ngtm->tm_year + 1900
+		 * when most servers can handle the new format
+		 */
 		snprintf(line, sizeof(line), "NEWGROUPS %02d%02d%02d %02d%02d%02d",
 			ngtm->tm_year % 100, ngtm->tm_mon + 1, ngtm->tm_mday,
 			ngtm->tm_hour, ngtm->tm_min, ngtm->tm_sec);
@@ -673,6 +767,7 @@ open_newsgroups_fp(
 {
 #ifdef NNTP_ABLE
 	FILE *result;
+
 	if (read_news_via_nntp && !read_saved_news) {
 		if (read_local_newsgroups_file) {
 			result = fopen(local_newsgroups_file, "r");
@@ -686,8 +781,7 @@ open_newsgroups_fp(
 		}
 #	if 0 /* TODO: */
 		if (list_newsgroups_wildmat_supported && newsrc_active
-		    && !list_active
-		    && num_active < some_useful_limit) {
+		    && !list_active && num_active < some_useful_limit) {
 			for_each_group(i) {
 				sprintf(buff, "LIST NEWSGROUPS %s", active[i].name);
 				nntp_command(buff, OK_LIST, NULL, 0);
@@ -834,6 +928,7 @@ setup_hard_base(
 	 */
 	if (read_news_via_nntp && group->type == GROUP_TYPE_NEWS) {
 #ifdef NNTP_ABLE
+		FILE *fp;
 
 #	ifdef BROKEN_LISTGROUP
 		/*
@@ -841,7 +936,7 @@ setup_hard_base(
 		 * (reported by reorx@irc.pl). This affects (old?) versions of
 		 * nntpcache and leafnode. Usually this should not be needed.
 		 */
-		sprintf(buf, "GROUP %s", group->name);
+		snprintf(buf, sizeof(buf), "GROUP %s", group->name);
 		if (nntp_command(buf, OK_GROUP, NULL, 0) == NULL)
 			return -1;
 #	endif /* BROKEN_LISTGROUP */
@@ -849,18 +944,17 @@ setup_hard_base(
 		/*
 		 * See if LISTGROUP works
 		 */
-		sprintf(buf, "LISTGROUP %s", group->name);
-		if (nntp_command(buf, OK_GROUP, NULL, 0) != NULL) {
+		snprintf(buf, sizeof(buf), "LISTGROUP %s", group->name);
+		if ((fp = nntp_command(buf, OK_GROUP, NULL, 0)) != NULL) {
 			char *ptr;
 
 #	ifdef DEBUG
 			debug_nntp("setup_hard_base", buf);
 #	endif /* DEBUG */
 
-			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+			while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
 				if (grpmenu.max >= max_art)
 					expand_art();
-
 				base[grpmenu.max++] = atoi(ptr);
 			}
 
@@ -868,6 +962,9 @@ setup_hard_base(
 				return -1;
 
 		} else {
+			/*
+			 * LISTGROUP failed, use GROUP command instead
+			 */
 			long start, last, count;
 			char line[NNTP_STRLEN];
 
@@ -878,10 +975,7 @@ setup_hard_base(
 			if (tin_errno)
 				return -1;
 
-			/*
-			 * LISTGROUP failed, try a GROUP command instead
-			 */
-			sprintf(buf, "GROUP %s", group->name);
+			snprintf(buf, sizeof(buf), "GROUP %s", group->name);
 			if (nntp_command(buf, OK_GROUP, line, sizeof(line)) == NULL)
 				return -1;
 
@@ -985,18 +1079,15 @@ group_get_art_info(
 	char buf[NNTP_STRLEN];
 	long artnum;
 #ifdef M_AMIGA
-	long artmin;
-	long artmax;
-
-	artmin = *art_min;
-	artmax = *art_max;
+	long artmin = *art_min;
+	long artmax = *art_max;
 #endif /* M_AMIGA */
 
 	if (read_news_via_nntp && grouptype == GROUP_TYPE_NEWS) {
 #ifdef NNTP_ABLE
 		char line[NNTP_STRLEN];
 
-		sprintf(buf, "GROUP %s", groupname);
+		snprintf(buf, sizeof(buf), "GROUP %s", groupname);
 #	ifdef DEBUG
 		debug_nntp("group_get_art_info", buf);
 #	endif /* DEBUG */
@@ -1100,7 +1191,9 @@ stat_article(
 #endif /* 0 */
 
 
-/* This will come in useful for filtering on non-overview hdr fields */
+/*
+ * This will come in useful for filtering on non-overview hdr fields
+ */
 #if 0
 static FILE *
 open_xhdr_fp(
@@ -1109,10 +1202,10 @@ open_xhdr_fp(
 	long max)
 {
 #	ifdef NNTP_ABLE
-	if (read_news_via_nntp && !read_saved_news) {
+	if (read_news_via_nntp && !read_saved_news && xhdr_cmd) {
 		char buf[NNTP_STRLEN];
 
-		sprintf(buf, "XHDR %s %ld-%ld", header, min, max);
+		snprintf(buf, sizeof(buf), "%s %s %ld-%ld", xhdr_cmd, header, min, max);
 		return (nntp_command(buf, OK_HEAD, NULL, 0));
 	} else
 #	endif /* NNTP_ABLE */

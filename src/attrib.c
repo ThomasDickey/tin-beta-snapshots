@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2003-05-10
+ *  Updated   : 2003-05-22
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2003 Iain Lea <iain@bricbrac.de>
@@ -184,7 +184,7 @@ set_default_attributes(
 		break; \
 	}
 #define MATCH_STRING(pattern, type) \
-	if (match_string(line, pattern, buf, sizeof(buf))) { \
+	if (match_string(line, pattern, buf, sizeof(buf) - strlen(pattern))) { \
 		set_attrib(type, scope, buf); \
 		found = TRUE; \
 		break; \

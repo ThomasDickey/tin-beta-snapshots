@@ -3,7 +3,7 @@
  *  Module    : mimetypes.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-31
- *  Updated   : 2003-04-10
+ *  Updated   : 2003-08-26
  *  Notes     : mime.types handling
  *
  * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
@@ -77,6 +77,7 @@ _lookup_mimetype(
 				if ((i = content_type(strtok(buf, "/"))) != -1) {
 					if ((ptr = strtok(NULL, "\n")) != NULL) {
 						part->type = i;
+						FreeIfNeeded(part->subtype);
 						part->subtype = my_strdup(ptr);
 						fclose(fp);
 						return TRUE;

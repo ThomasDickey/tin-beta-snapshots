@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-10
+ *  Updated   : 2003-08-22
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -93,8 +93,7 @@ read_config_file(
 	t_bool global_file) /* return value is always ignored */
 {
 	FILE *fp;
-	char newnews_info[PATH_LEN];
-	char buf[LEN];
+	char buf[LEN], tmp[LEN];
 	int upgrade = RC_CHECK;
 
 	if ((fp = fopen(file, "r")) == NULL)
@@ -128,48 +127,48 @@ read_config_file(
 			if (match_boolean(buf, "alternative_handling=", &tinrc.alternative_handling))
 				break;
 
-			if (match_string(buf, "art_marked_deleted=", buf, sizeof(buf))) {
-				tinrc.art_marked_deleted = !buf[0] ? ART_MARK_DELETED : DASH_TO_SPACE(buf[0]);
+			if (match_string(buf, "art_marked_deleted=", tmp, sizeof(tmp))) {
+				tinrc.art_marked_deleted = !tmp[0] ? ART_MARK_DELETED : DASH_TO_SPACE(tmp[0]);
 				break;
 			}
 
-			if (match_string(buf, "art_marked_inrange=", buf, sizeof(buf))) {
-				tinrc.art_marked_inrange = !buf[0] ? MARK_INRANGE : DASH_TO_SPACE(buf[0]);
+			if (match_string(buf, "art_marked_inrange=", tmp, sizeof(tmp))) {
+				tinrc.art_marked_inrange = !tmp[0] ? MARK_INRANGE : DASH_TO_SPACE(tmp[0]);
 				break;
 			}
 
-			if (match_string(buf, "art_marked_killed=", buf, sizeof(buf))) {
-				tinrc.art_marked_killed = !buf[0] ? ART_MARK_KILLED : DASH_TO_SPACE(buf[0]);
+			if (match_string(buf, "art_marked_killed=", tmp, sizeof(tmp))) {
+				tinrc.art_marked_killed = !tmp[0] ? ART_MARK_KILLED : DASH_TO_SPACE(tmp[0]);
 				break;
 			}
 
-			if (match_string(buf, "art_marked_read=", buf, sizeof(buf))) {
-				tinrc.art_marked_read = !buf[0] ? ART_MARK_READ : DASH_TO_SPACE(buf[0]);
+			if (match_string(buf, "art_marked_read=", tmp, sizeof(tmp))) {
+				tinrc.art_marked_read = !tmp[0] ? ART_MARK_READ : DASH_TO_SPACE(tmp[0]);
 				break;
 			}
 
-			if (match_string(buf, "art_marked_read_selected=", buf, sizeof(buf))) {
-				tinrc.art_marked_read_selected = !buf[0] ? ART_MARK_READ_SELECTED : DASH_TO_SPACE(buf[0]);
+			if (match_string(buf, "art_marked_read_selected=", tmp, sizeof(tmp))) {
+				tinrc.art_marked_read_selected = !tmp[0] ? ART_MARK_READ_SELECTED : DASH_TO_SPACE(tmp[0]);
 				break;
 			}
 
-			if (match_string(buf, "art_marked_recent=", buf, sizeof(buf))) {
-				tinrc.art_marked_recent = !buf[0] ? ART_MARK_RECENT : DASH_TO_SPACE(buf[0]);
+			if (match_string(buf, "art_marked_recent=", tmp, sizeof(tmp))) {
+				tinrc.art_marked_recent = !tmp[0] ? ART_MARK_RECENT : DASH_TO_SPACE(tmp[0]);
 				break;
 			}
 
-			if (match_string(buf, "art_marked_return=", buf, sizeof(buf))) {
-				tinrc.art_marked_return = !buf[0] ? ART_MARK_RETURN : DASH_TO_SPACE(buf[0]);
+			if (match_string(buf, "art_marked_return=", tmp, sizeof(tmp))) {
+				tinrc.art_marked_return = !tmp[0] ? ART_MARK_RETURN : DASH_TO_SPACE(tmp[0]);
 				break;
 			}
 
-			if (match_string(buf, "art_marked_selected=", buf, sizeof(buf))) {
-				tinrc.art_marked_selected = !buf[0] ? ART_MARK_SELECTED : DASH_TO_SPACE(buf[0]);
+			if (match_string(buf, "art_marked_selected=", tmp, sizeof(tmp))) {
+				tinrc.art_marked_selected = !tmp[0] ? ART_MARK_SELECTED : DASH_TO_SPACE(tmp[0]);
 				break;
 			}
 
-			if (match_string(buf, "art_marked_unread=", buf, sizeof(buf))) {
-				tinrc.art_marked_unread = !buf[0] ? ART_MARK_UNREAD : DASH_TO_SPACE(buf[0]);
+			if (match_string(buf, "art_marked_unread=", tmp, sizeof(tmp))) {
+				tinrc.art_marked_unread = !tmp[0] ? ART_MARK_UNREAD : DASH_TO_SPACE(tmp[0]);
 				break;
 			}
 
@@ -340,8 +339,8 @@ read_config_file(
 			if (match_boolean(buf, "default_filter_select_expire=", &tinrc.default_filter_select_expire))
 				break;
 
-			if (match_string(buf, "default_save_mode=", buf, sizeof(buf))) {
-				tinrc.default_save_mode = buf[0];
+			if (match_string(buf, "default_save_mode=", tmp, sizeof(tmp))) {
+				tinrc.default_save_mode = tmp[0];
 				break;
 			}
 
@@ -375,7 +374,7 @@ read_config_file(
 #ifndef DONT_HAVE_PIPING
 			if (match_string(buf, "default_pipe_command=", tinrc.default_pipe_command, sizeof(tinrc.default_pipe_command)))
 				break;
-#endif /* DONT_HAVE_PIPING */
+#endif /* !DONT_HAVE_PIPING */
 
 			if (match_string(buf, "default_post_newsgroups=", tinrc.default_post_newsgroups, sizeof(tinrc.default_post_newsgroups)))
 				break;
@@ -443,6 +442,8 @@ read_config_file(
 			if (match_string(buf, "inews_prog=", tinrc.inews_prog, sizeof(tinrc.inews_prog)))
 				break;
 
+			if (match_integer(buf, "interactive_mailer=", &tinrc.interactive_mailer, INTERACTIVE_NONE))
+				break;
 			break;
 
 		case 'k':
@@ -507,8 +508,8 @@ read_config_file(
 			break;
 
 		case 'n':
-			if (match_string(buf, "newnews=", newnews_info, sizeof(newnews_info))) {
-				load_newnews_info(newnews_info);
+			if (match_string(buf, "newnews=", tmp, sizeof(tmp))) {
+				load_newnews_info(tmp);
 				break;
 			}
 
@@ -726,7 +727,7 @@ read_config_file(
 			if (match_string(buf, "url_handler=", tinrc.url_handler, sizeof(tinrc.url_handler)))
 				break;
 
-			if (match_boolean(buf, "use_mailreader_i=", &tinrc.use_mailreader_i))
+			if (match_boolean(buf, "url_highlight=", &tinrc.url_highlight))
 				break;
 
 			if (match_boolean(buf, "use_mouse=", &tinrc.use_mouse))
@@ -973,8 +974,8 @@ write_config_file(
 	fprintf(fp, _(txt_mailer_format.tinrc));
 	fprintf(fp, "default_mailer_format=%s\n\n", tinrc.mailer_format);
 
-	fprintf(fp, _(txt_use_mailreader_i.tinrc));
-	fprintf(fp, "use_mailreader_i=%s\n\n", print_boolean(tinrc.use_mailreader_i));
+	fprintf(fp, _(txt_interactive_mailer.tinrc));
+	fprintf(fp, "interactive_mailer=%d\n\n", tinrc.interactive_mailer);
 
 	fprintf(fp, _(txt_show_info.tinrc));
 	fprintf(fp, "show_info=%d\n\n", tinrc.show_info);
@@ -1205,6 +1206,9 @@ write_config_file(
 	fprintf(fp, "use_slrnface=%s\n\n", print_boolean(tinrc.use_slrnface));
 #endif /*XFACE_ABLE */
 
+	fprintf(fp, _(txt_url_highlight.tinrc));
+	fprintf(fp, "url_highlight=%s\n\n", print_boolean(tinrc.url_highlight));
+
 	fprintf(fp, _(txt_word_highlight.tinrc));
 	fprintf(fp, "word_highlight=%s\n\n", print_boolean(tinrc.word_highlight));
 
@@ -1302,7 +1306,7 @@ write_config_file(
 	fprintf(fp, "default_move_group=%d\n", tinrc.default_move_group);
 #ifndef DONT_HAVE_PIPING
 	fprintf(fp, "default_pipe_command=%s\n", tinrc.default_pipe_command);
-#endif /* DONT_HAVE_PIPING */
+#endif /* !DONT_HAVE_PIPING */
 	fprintf(fp, "default_post_newsgroups=%s\n", tinrc.default_post_newsgroups);
 	fprintf(fp, "default_post_subject=%s\n", tinrc.default_post_subject);
 	fprintf(fp, "default_range_group=%s\n", tinrc.default_range_group);
@@ -1886,6 +1890,7 @@ change_config_file(
 						/*
 						 * the following are boolean and do not need further action (if I'm right)
 						 *
+						 * case OPT_ASK_FOR_METAMAIL:
 						 * case OPT_AUTO_BCC:
 						 * case OPT_AUTO_CC:
 						 * case OPT_AUTO_LIST_THREAD:
@@ -1912,18 +1917,17 @@ change_config_file(
 						 * case OPT_TAB_GOTO_NEXT_UNREAD:
 						 * case OPT_TEX2ISO_CONV:
 						 * case OPT_THREAD_CATCHUP_ON_EXIT:
-						 * case OPT_UNLINK_ARTICLE:
-						 * case OPT_USE_MAILREADER_I:
-						 * case OPT_USE_MOUSE:
-						 * case OPT_WORD_HIGHLIGHT_TINRC:
-						 * case OPT_WRAP_ON_NEXT_UNREAD:
-#ifdef HAVE_KEYPAD
-						 * case OPT_USE_KEYPAD:
-#endif
-						 * case OPT_ASK_FOR_METAMAIL:
 #if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
 						 * case OPT_TRANSLIT:
 #endif
+						 * case OPT_UNLINK_ARTICLE:
+						 * case OPT_URL_HIGHLIGHT:
+#ifdef HAVE_KEYPAD
+						 * case OPT_USE_KEYPAD:
+#endif
+						 * case OPT_USE_MOUSE:
+						 * case OPT_WORD_HIGHLIGHT_TINRC:
+						 * case OPT_WRAP_ON_NEXT_UNREAD:
 						 */
 
 						default:
@@ -2117,6 +2121,7 @@ change_config_file(
 						 * case OPT_COL_MARKSTROKE:
 #endif
 						 * case OPT_HIDE_UUE:
+						 * case OPT_INTERACTIVE_MAILER:
 						 * case OPT_WORD_H_DISPLAY_MARKS:
 						 * case OPT_MONO_MARKSTAR:
 						 * case OPT_MONO_MARKDASH:
@@ -2733,6 +2738,7 @@ rc_update(
 	t_bool thread_articles = FALSE;
 	t_bool use_builtin_inews = FALSE;
 	t_bool use_getart_limit = FALSE;
+	t_bool use_mailreader_i = FALSE;
 	t_bool use_metamail = FALSE;
 
 	if (!fp)
@@ -2797,6 +2803,8 @@ rc_update(
 					break;
 				if (match_boolean(buf, "use_getart_limit=", &use_getart_limit))
 					break;
+				if (match_boolean(buf, "use_mailreader_i=", &use_mailreader_i))
+					break;
 				if (match_boolean(buf, "use_metamail=", &use_metamail))
 					break;
 				break;
@@ -2832,6 +2840,9 @@ rc_update(
 
 	if (use_builtin_inews)
 		strncpy(tinrc.inews_prog, INTERNAL_CMD, sizeof(tinrc.inews_prog) - 1);
+
+	if (use_mailreader_i)
+		tinrc.interactive_mailer = INTERACTIVE_WITHOUT_HEADERS;
 
 	env = getenv("NOMETAMAIL");
 	if (!use_metamail || (NULL == env))
@@ -2880,19 +2891,19 @@ read_server_config(
 			snprintf(tmp_info, tmp_len, "%s %s", nntp_server, newnews_info);
 			load_newnews_info(tmp_info);
 			free(tmp_info);
-			break;
+			continue;
 		}
 		if (match_string(line, "version=", version, sizeof(version))) {
 			if (RC_CHECK != upgrade)
-				/* ignore duplicate version lines; first match counts */
-				break;
+				/* ignore duplicate version lines; last match counts */
+				continue;
 			upgrade = check_upgrade(line, "version=", SERVERCONFIG_VERSION);
 			if (RC_IGNORE == upgrade)
 				/* Expected version number; nothing to do -> continue */
-				break;
+				continue;
 
 			/* Nothing to do yet for RC_UPGRADE and RC_DOWNGRADE */
-			break;
+			continue;
 		}
 	}
 	fclose(fp);

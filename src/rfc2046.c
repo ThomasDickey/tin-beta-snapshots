@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2003-06-09
+ *  Updated   : 2003-08-26
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
@@ -46,13 +46,16 @@
 /*
  * local prototypes
  */
+static char *get_quoted_string(char *source, char **dest);
+static char *get_token(const char *source);
+static char *skip_equal_sign(char *source);
+static char *skip_space(char *source);
 static int boundary_cmp(const char *line, const char *boundary);
 static int count_lines(char *line);
 static int parse_multipart_article(FILE *infile, t_openartinfo *artinfo, t_part *part, int depth, t_bool show_progress_meter);
 static int parse_normal_article(FILE *in, t_openartinfo *artinfo, t_bool show_progress_meter);
 static int parse_rfc2045_article(FILE *infile, int line_count, t_openartinfo *artinfo, t_bool show_progress_meter);
 static unsigned int parse_content_encoding(const char *encoding);
-static void free_list(t_param *list);
 static void parse_content_type(char *type, t_part *content);
 static void parse_content_disposition(char *disp, t_part *part);
 static void parse_params(char *params, t_part *content);
@@ -173,6 +176,79 @@ boundary_check(
 }
 
 
+#define ATTRIBUTE_DELIMS "()<>@,;:\\\"/[]?="
+
+static char *
+skip_space(
+	char *source)
+{
+	while ((*source) && ((' ' == *source) || ('\t' == *source)))
+		source++;
+	return *source ? source : NULL;
+}
+
+
+static char *
+get_token(
+	const char *source)
+{
+	char *dest = my_strdup(source);
+	char *ptr = dest;
+
+	while (isascii(*ptr) && isprint(*ptr) && *ptr != ' ' && !strchr(ATTRIBUTE_DELIMS, *ptr))
+		ptr++;
+	*ptr = '\0';
+
+	return my_realloc(dest, strlen(dest) + 1);
+}
+
+
+static char *
+get_quoted_string(
+	char *source,
+	char **dest)
+{
+	char *ptr;
+	t_bool quote = FALSE;
+
+	*dest = my_malloc(strlen(source));
+	ptr = *dest;
+	source++; /* skip over double quote */
+	while (*source) {
+		if ('\\' == *source) {
+			quote = TRUE;	/* next char as-is */
+			source++;
+			continue;
+		}
+		if (('"' == *source) && !quote)
+			break;	/* end of quoted-string */
+		*ptr++ = *source++;
+		quote = FALSE;
+	}
+	*ptr = '\0';
+	*dest = my_realloc(*dest, strlen(*dest) + 1);
+	return *source ? source++ : source;
+}
+
+
+/*
+ * Skip equal sign and (non compliant) white space around it
+ */
+static char *
+skip_equal_sign(
+	char *source)
+{
+	if (!(source = skip_space(source)))
+		return NULL;
+
+	if ('=' != *source++)
+		/* no equal sign, invalid header, stop parsing here */
+		return NULL;
+
+	return skip_space(source);
+}
+
+
 /*
  * Parse a Content-* parameter list into a linked list
  * Ensure the ->params element is correctly initialised before calling
@@ -183,27 +259,49 @@ parse_params(
 	char *params,
 	t_part *content)
 {
-	char *eql, *param;
+	char *name, *param, *value;
 	t_param *ptr;
 
-	for (param = strtok(params, ";"); param; param = strtok(NULL, PARAM_SEP)) {
-		if ((eql = strchr(param, '=')) == NULL)
-			continue;						/* No =, Malformed param */
+	param = params;
+	while (*param) {
+		/* Skip over white space */
+		if (!(param = skip_space(param)))
+			break;
 
-		*eql++ = '\0';						/* Split at = */
+		/* catch parameter name */
+		name = get_token(param);
+		param += strlen(name);
+		if (!*param) {
+			/* Nothing follows, invalid, stop here */
+			FreeIfNeeded(name);
+			break;
+		}
+
+		if (!(param = skip_equal_sign(param))) {
+			FreeIfNeeded(name);
+			break;
+		}
+
+		/* catch parameter value; may be surrounded by double quotes */
+		if ('"' == *param)	/* parse quoted-string */
+			param = get_quoted_string(param, &value);
+		else {
+			/* parse token */
+			value = get_token(param);
+			param += strlen(value);
+		}
 
 		ptr = my_malloc(sizeof(t_param));
-		str_trim(param);
-		ptr->name = my_strdup(param);
-
-		str_trim(eql);						/* See if in "" */
-		if (*eql == '"' && (param = strrchr(eql, '"')) != NULL) {
-			eql++;
-			*param = '\0';
-		}
-		ptr->value = my_strdup(rfc1522_decode(eql));
+		ptr->name = name;
+		ptr->value = value;	/* TODO don't RFC1522 decode, parameter encoding is per RFC2231 (not implemented yet) */
 		ptr->next = content->params;		/* Push onto start of list */
 		content->params = ptr;
+
+		/* advance pointer to next parameter */
+		while ((*param) && (';' != *param))
+			param++;
+		if (';' == *param)
+			param++;
 	}
 }
 
@@ -211,7 +309,7 @@ parse_params(
 /*
  * Free up a generic list object
  */
-static void
+void
 free_list(
 	t_param *list)
 {
@@ -414,8 +512,6 @@ new_part(
 
 /*
  * Free a linked list of t_part
- *
- * TODO: plug mem leak: ptr->uue is not entirely freed
  */
 void
 free_parts(
@@ -445,6 +541,8 @@ free_and_init_header(
 	 */
 	FreeAndNull(hdr->from);
 	FreeAndNull(hdr->to);
+	FreeAndNull(hdr->cc);
+	FreeAndNull(hdr->bcc);
 	FreeAndNull(hdr->date);
 	FreeAndNull(hdr->subj);
 	FreeAndNull(hdr->org);

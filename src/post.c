@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-10
+ *  Updated   : 2003-09-13
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -1201,7 +1201,7 @@ check_article_to_be_posted(
 		errors_catbp |= CA_ERROR_BAD_CHARSET;
 #else /* we catch this case later on again */
 		warnings_catbp |= CA_WARNING_CHARSET_CONVERSION;
-#endif /* CHARSET_CONVERSION */
+#endif /* !CHARSET_CONVERSION */
 
 	if (contains_8bit && mime_7bit)
 		errors_catbp |= CA_ERROR_BAD_ENCODING;
@@ -1746,7 +1746,7 @@ check_moderated(
 		 * Generally only bogus groups should have no attributes
 		 */
 		if (psGrp->bogus) {
-			error_message(_("%s is bogus"), group);
+			error_message(_("%s is bogus"), group); /* TODO: -> lang.c */
 			return NULL;
 		}
 
@@ -1797,12 +1797,8 @@ create_normal_article_headers(
 	char from_name[HEADER_LEN];
 	char tmp[HEADER_LEN];
 
-	/* TODO: combine with other code in tin that does the ... truncation? */
 	/* Get subject for posting article - Limit the display if needed */
-	if (strlen(tinrc.default_post_subject) > DISPLAY_SUBJECT_LEN)
-		sprintf(tmp, "%.*s ...", DISPLAY_SUBJECT_LEN, tinrc.default_post_subject);
-	else
-		strncpy(tmp, tinrc.default_post_subject, sizeof(tmp) - 1);
+	trunc(tinrc.default_post_subject, tmp, sizeof(tmp), DISPLAY_SUBJECT_LEN);
 
 	snprintf(mesg, sizeof(mesg), _(txt_post_subject), tmp);
 
@@ -1893,7 +1889,7 @@ quick_post_article(
 	/*
 	 * Get groupname
 	 */
-	sprintf(buf, _(txt_post_newsgroups), tinrc.default_post_newsgroups);
+	snprintf(buf, sizeof(buf), _(txt_post_newsgroups), tinrc.default_post_newsgroups);
 	if (!(prompt_string_default(buf, tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS)))
 		return;
 
@@ -1937,7 +1933,7 @@ post_postponed_article(
 	if ((p = strchr(ng, ',')) != NULL)
 		*p = '\0';
 
-	sprintf(buf, _("Posting: %.*s ..."), (int) (cCOLS - 14), subject);
+	snprintf(buf, sizeof(buf), _("Posting: %.*s ..."), (int) (cCOLS - 14), subject); /* TODO: -> lang.c */
 	post_loop(POST_POSTPONED, group_find(ng), (ask ? iKeyPostEdit : iKeyPostPost3), buf, GROUP_TYPE_NEWS, 0);
 	free(ng);
 	return;
@@ -2691,7 +2687,7 @@ create_mail_headers(
 
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
 
-	if (!tinrc.use_mailreader_i) {	/* tin should start editor */
+	if ((INTERACTIVE_NONE == tinrc.interactive_mailer) || (INTERACTIVE_WITH_HEADERS == tinrc.interactive_mailer)) {	/* tin should include headers for editing */
 		char from_buf[HEADER_LEN];
 		char *from_address;
 
@@ -2925,12 +2921,12 @@ mail_to_someone(
 	/* TODO: -> lang.c */
 	fprintf(fp, "-- end of forwarded message --\n");
 
-	if (!tinrc.use_mailreader_i)
+	if (INTERACTIVE_NONE == tinrc.interactive_mailer)
 		msg_write_signature(fp, TRUE, &CURR_GROUP);
 
 	fclose(fp);
 
-	if (tinrc.use_mailreader_i) {	/* user wants to use his own mailreader */
+	if (INTERACTIVE_NONE != tinrc.interactive_mailer) {	/* user wants to use his own mailreader */
 		char buf[HEADER_LEN];
 		char *p;
 
@@ -2967,7 +2963,7 @@ mail_bug_report(
 	t_bool is_nntp = FALSE, is_nntp_only;
 
 	wait_message(0, _(txt_mail_bug_report));
-	sprintf(subject, "BUG REPORT %s\n", page_header);
+	snprintf(subject, sizeof(subject), "BUG REPORT %s\n", page_header);
 
 	if ((fp = create_mail_headers(nam, ".bugreport", bug_addr, subject, NULL)) == NULL)
 		return FALSE;
@@ -3032,12 +3028,12 @@ mail_bug_report(
 	fprintf(fp, "\nPlease enter _detailed_ bug report, gripe or comment:\n\n");
 	start_line_offset += 2;
 
-	if (!tinrc.use_mailreader_i)
+	if (INTERACTIVE_NONE == tinrc.interactive_mailer)
 		msg_write_signature(fp, TRUE, (selmenu.curr == -1) ? NULL : &CURR_GROUP);
 
 	fclose(fp);
 
-	if (tinrc.use_mailreader_i) {	/* user wants to use his own mailreader */
+	if (INTERACTIVE_NONE != tinrc.interactive_mailer) {	/* user wants to use his own mailreader */
 		subject[strlen(subject) - 1] = '\0';	/* cut trailing '\n' */
 		strfmailer(mailer, subject, bug_addr, nam, buf, sizeof(buf), tinrc.mailer_format);
 		if (invoke_cmd(buf))
@@ -3154,7 +3150,7 @@ mail_to_author(
 	} else /* !copy_text */
 		fprintf(fp, "\n");	/* add a newline to keep vi from bitching */
 
-	if (!tinrc.use_mailreader_i)
+	if (INTERACTIVE_NONE == tinrc.interactive_mailer)
 		msg_write_signature(fp, TRUE, &CURR_GROUP);
 
 	fclose(fp);
@@ -3164,7 +3160,7 @@ mail_to_author(
 
 		find_reply_to_addr(mail_to, TRUE, &pgart.hdr);
 
-		if (tinrc.use_mailreader_i) {	/* user wants to use his own mailreader for reply */
+		if (INTERACTIVE_NONE != tinrc.interactive_mailer) {	/* user wants to use his own mailreader for reply */
 			char buf[HEADER_LEN];
 
 			subject[strlen(subject) - 1] = '\0'; /* cut trailing '\n' */
@@ -3175,7 +3171,7 @@ mail_to_author(
 			ret_code = mail_loop(nam, iKeyPostEdit, subject, group, NULL);
 
 		/*
-		 * If use_mailreader_i=ON and the user changed the subject in his
+		 * If interactive_mailer!=NONE and the user changed the subject in his
 		 * mailreader, the entry generated here is wrong, strictly speaking.
 		 * But since we don't have a chance to get the final subject back from
 		 * the mailer I think this is the best solution. -dn, 2000-03-16
@@ -3330,11 +3326,11 @@ cancel_article(
 	if (!author) {
 		char line2[HEADER_LEN];
 
-		sprintf(line2, "cyberspam!%s", line);
+		snprintf(line2, sizeof(line2), "cyberspam!%s", line);
 		msg_add_header("Path", line2);
 		msg_add_header("From", from_name);
 		msg_add_header("Sender", note_h.from);
-		sprintf(line, "<cancel.%s", note_h.messageid + 1);
+		snprintf(line, sizeof(line), "<cancel.%s", note_h.messageid + 1);
 		msg_add_header("Message-ID", line);
 		msg_add_header("X-Cancelled-By", from_name);
 		/*
@@ -3345,9 +3341,9 @@ cancel_article(
 	} else {
 		msg_add_header("Path", line);
 		if (art->name)
-			sprintf(line, "%s <%s>", art->name, art->from);
+			snprintf(line, sizeof(line), "%s <%s>", art->name, art->from);
 		else
-			sprintf(line, "<%s>", art->from);
+			snprintf(line, sizeof(line), "<%s>", art->from);
 		msg_add_header("From", line);
 		ADD_CAN_KEY(note_h.messageid);
 	}
@@ -3356,7 +3352,7 @@ cancel_article(
 	ADD_MSG_ID_HEADER();
 	ADD_CAN_KEY(note_h.messageid);
 #endif /* FORGERY */
-	sprintf(buf, "cmsg cancel %s", note_h.messageid);
+	snprintf(buf, sizeof(buf), "cmsg cancel %s", note_h.messageid);
 	msg_add_header("Subject", buf);
 
 	/*
@@ -3366,7 +3362,7 @@ cancel_article(
 	msg_add_header("Newsgroups", note_h.newsgroups);
 	if (tinrc.prompt_followupto)
 		msg_add_header("Followup-To", "");
-	sprintf(buf, "cancel %s", note_h.messageid);
+	snprintf(buf, sizeof(buf), "cancel %s", note_h.messageid);
 	msg_add_header("Control", buf);
 
 	/* TODO: does this catch x-posts to moderated groups? */
@@ -3558,7 +3554,7 @@ repost_article(
 			if (note_h.org)
 				msg_add_header("Organization", note_h.org);
 
-			sprintf(line, "<supersede.%s", note_h.messageid + 1);
+			snprintf(line, sizeof(line), "<supersede.%s", note_h.messageid + 1);
 			msg_add_header("Message-ID", line);
 			/* ADD_CAN_KEY(note_h.messageid); */ /* should we add key here? */
 #	else
@@ -3811,9 +3807,9 @@ checknadd_headers(
 		return;
 
 #ifdef VMS
-	sprintf(outfile, "%s-%d", infile, (int) process_id);
+	snprintf(outfile, sizeof(outfile), "%s-%d", infile, (int) process_id);
 #else
-	sprintf(outfile, "%s.%d", infile, (int) process_id);
+	snprintf(outfile, sizeof(outfile), "%s.%d", infile, (int) process_id);
 #endif /* VMS */
 
 	if ((fp_out = fopen(outfile, "w")) == NULL) {
@@ -3854,7 +3850,7 @@ checknadd_headers(
 				if ((ptr = parse_header(line, "Newsgroups", FALSE, FALSE))) {
 					strip_double_ngs(ptr);
 					strcpy(newsgroups, ptr);
-					sprintf(line, "Newsgroups: %s\n", newsgroups);
+					snprintf(line, sizeof(line), "Newsgroups: %s\n", newsgroups);
 				} else {
 					if ((ptr = parse_header(line, "Followup-To", FALSE, FALSE))) {
 						strip_double_ngs(ptr);
@@ -3862,7 +3858,7 @@ checknadd_headers(
 						 * Only write followup header if not blank or followups != newsgroups
 						 */
 						if (*ptr && strcasecmp(newsgroups, ptr))
-							sprintf(line, "Followup-To: %s\n", ptr);
+							snprintf(line, sizeof(line), "Followup-To: %s\n", ptr);
 						else
 							*line = '\0';
 					}
@@ -3892,9 +3888,9 @@ insert_from_header(
 
 	if ((fp_in = fopen(infile, "r")) != NULL) {
 #	ifdef VMS
-		sprintf(outfile, "%s-%d", infile, (int) process_id);
+		snprintf(outfile, sizeof(outfile), "%s-%d", infile, (int) process_id);
 #	else
-		sprintf(outfile, "%s.%d", infile, (int) process_id);
+		snprintf(outfile, sizeof(outfile), "%s.%d", infile, (int) process_id);
 #	endif /* VMS */
 		if ((fp_out = fopen(outfile, "w")) != NULL) {
 			strcpy(from_name, "From: ");
@@ -3922,11 +3918,11 @@ insert_from_header(
 					 * from submit_mail_file() so the 3rd
 					 * arg should perhaps be TRUE
 					 */
-#ifdef CHARSET_CONVERSION
+#	ifdef CHARSET_CONVERSION
 					p = rfc1522_encode(from_buff, txt_mime_charsets[tinrc.mm_network_charset], FALSE);
-#else
+#	else
 					p = rfc1522_encode(from_buff, tinrc.mm_charset, FALSE);
-#endif /* CHARSET_CONVERSION */
+#	endif /* CHARSET_CONVERSION */
 					if (GNKSA_OK != gnksa_check_from(p)) { /* error in address */
 						error_message(_(txt_invalid_from), from_buff);
 						free(p);
@@ -3940,11 +3936,11 @@ insert_from_header(
 				if (*line == '\0' && in_header) {
 					if (!from_found) {
 						/* Check the From: line */
-#ifdef CHARSET_CONVERSION
+#	ifdef CHARSET_CONVERSION
 						p = rfc1522_encode(from_name, txt_mime_charsets[tinrc.mm_network_charset], FALSE);
-#else
+#	else
 						p = rfc1522_encode(from_name, tinrc.mm_charset, FALSE);
-#endif /* CHARSET_CONVERSION */
+#	endif /* CHARSET_CONVERSION */
 						if (GNKSA_OK != gnksa_check_from(p + 6)) { /* error in address */
 							error_message(_(txt_invalid_from), from_name + 6);
 							free(p);
@@ -4141,9 +4137,8 @@ submit_mail_file(
 					char *transport;
 
 					/* TODO: document env var */
-					if ((transport = getenv("MAIL$INTERNET_TRANSPORT")) == NULL)
-						transport = "smtp";
-					sprintf(buf, "mail/subject=\"%s\" %s %s%%\"%s\"", subject, file, transport, mail_to);
+					transport = getenv("MAIL$INTERNET_TRANSPORT");
+					snprintf(buf, sizeof(buf), "mail/subject=\"%s\" %s %s%%\"%s\"", subject, file, *transport ? transport : "smtp", mail_to);
 				}
 #endif /* VMS */
 				if (invoke_cmd(buf))

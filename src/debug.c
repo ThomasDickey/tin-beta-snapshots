@@ -240,25 +240,25 @@ debug_print_attributes(
 
 
 void
-vDbgPrintMalloc(
-	int iIsMalloc,
-	const char *pcFile,
-	int iLine,
-	size_t iSize)
+debug_print_malloc(
+	int is_malloc,
+	const char *xfile,
+	int line,
+	size_t size)
 {
 	FILE *fp;
 	char file[PATH_LEN];
-	static int iTotal = 0;
+	static int total = 0;
 
 	if (debug == 4) {
 		joinpath(file, TMPDIR, "MALLOC");
 		if ((fp = fopen(file, "a+")) != NULL) {
-			iTotal += iSize;
+			total += size;
 			/* sometimes size_t is long */
-			if (iIsMalloc)
-				fprintf(fp, "%10s:%-4d Malloc  %6ld. Total %d\n", pcFile, iLine, (long) iSize, iTotal);
+			if (is_malloc)
+				fprintf(fp, "%10s:%-4d Malloc  %6ld. Total %d\n", xfile, line, (long) size, total);
 			else
-				fprintf(fp, "%10s:%-4d Realloc %6ld. Total %d\n", pcFile, iLine, (long) iSize, iTotal);
+				fprintf(fp, "%10s:%-4d Realloc %6ld. Total %d\n", xfile, line, (long) size, total);
 			fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
 			fclose(fp);
 		}

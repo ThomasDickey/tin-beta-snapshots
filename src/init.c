@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-10
+ *  Updated   : 2003-08-27
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -328,6 +328,7 @@ struct t_config tinrc = {
 	5,		/* mono_markslash */
 	3,		/* mono_markstroke */
 	TRUE,		/* word_highlight */
+	TRUE,		/* url_highlight */
 	0,		/* wrap_column */
 #ifdef HAVE_COLOR
 	FALSE,		/* use_color */
@@ -393,7 +394,7 @@ struct t_config tinrc = {
 	TRUE,		/* thread_catchup_on_exit */
 	TRUE,		/* unlink_article */
 	"",		/* inews_prog */
-	FALSE,		/* use_mailreader_i */
+	INTERACTIVE_NONE,		/* interactive_mailer */
 	FALSE,		/* use_mouse */
 #ifdef HAVE_KEYPAD
 	FALSE,		/* use_keypad */
@@ -573,7 +574,7 @@ init_selfinfo(
 		strncpy(homedir, myentry->pw_dir, sizeof(homedir) - 1);
 	}
 #endif /* !M_AMIGA */
-	 else
+	else
 		strncpy(homedir, TMPDIR, sizeof(homedir) - 1);
 
 	cmdline_nntpserver[0] = '\0';
@@ -674,10 +675,11 @@ init_selfinfo(
 
 	/*
 	 * the site_config-file was the last chance to set the domainname
-	 * if it's still unset exit tin.
+	 * if it's still unset fall into no posting mode.
 	 */
 	if (domain_name[0] == '\0') {
 		error_message(_(txt_error_no_domain_name));
+		sleep(2);
 		force_no_post = TRUE;
 	}
 

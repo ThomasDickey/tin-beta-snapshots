@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-08
+ *  Updated   : 2003-09-12
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -510,7 +510,7 @@ prompt_msgid(
  * Format a message such that it'll fit within the screen width
  * Useful for fitting long Subjects and newsgroup names into prompts
  * TODO: maybe add a '...' to the string to show it was truncated.
- *       See center_line()
+ *       You can use trunc() for it.
  */
 char *
 sized_message(

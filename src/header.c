@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2003-03-27
+ *  Updated   : 2003-08-16
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -189,7 +189,7 @@ get_fqdn(
 		if ((hp = gethostbyaddr(hp->h_addr, hp->h_length, hp->h_addrtype)))
 			in.s_addr = (*hp->h_addr);
 
-	sprintf(fqdn, "%s", hp
+	snprintf(fqdn, sizeof(fqdn), "%s", hp
 		? strchr(hp->h_name, '.')
 			? hp->h_name : inet_ntoa(in)
 		: "");
@@ -219,7 +219,7 @@ get_fqdn(
 				}
 			}
 			if (domain)
-				sprintf(fqdn, "%s.%s", name, strip_line(domain));
+				snprintf(fqdn, sizeof(fqdn), "%s.%s", name, strip_line(domain));
 
 			fclose(inf);
 		}

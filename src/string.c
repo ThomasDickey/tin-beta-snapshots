@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2003-05-14
+ *  Updated   : 2003-09-13
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
@@ -100,6 +100,43 @@ my_strdup(
 
 	memcpy(ptr, str, len);
 	return (char *) ptr;
+}
+
+
+/*
+ * strtok that understands empty tokens
+ * ie 2 adjacent delims count as two delims around a \0
+ */
+char *
+tin_strtok(
+	char *str,
+	const char *delim)
+{
+	static char *buff;
+	char *oldbuff, *ptr;
+
+	/*
+	 * First call, setup static ptr
+	 */
+	if (str)
+		buff = str;
+
+	/*
+	 * If not at end of string find ptr to next token
+	 * If delim found, break off token
+	 */
+	if (buff && (ptr = strpbrk(buff, delim)) != NULL)
+		*ptr++ = '\0';
+	else
+		ptr = NULL;
+
+	/*
+	 * Advance position in string to next token
+	 * return current token
+	 */
+	oldbuff = buff;
+	buff = ptr;
+	return oldbuff;
 }
 
 
@@ -612,7 +649,7 @@ strrstr(
 	}
 	return NULL;
 }
-#endif /* HAVE_STRRSTR */
+#endif /* !HAVE_STRRSTR */
 
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -632,9 +669,7 @@ wcspart(
 	wchar_t *ptr, *wbuf;
 
 	/* make sure all characters in from are printable */
-	wbuf = my_malloc(size_to * sizeof(wchar_t));
-	wcsncpy(wbuf, from, size_to);
-	wbuf[size_to - 1] = (wchar_t) '\0';
+	wbuf = my_wcsdup(from);
 	ptr = wconvert_to_printable(wbuf);
 
 	to[0] = (wint_t) '\0';
@@ -653,5 +688,123 @@ wcspart(
 	}
 
 	free(wbuf);
+}
+#endif /* MULTIBYTE_ABLE && !NOLOCALE */
+
+
+#define TRUNC_TAIL	"..."
+/*
+ * shortens 'mesg' that it occupies at most 'len' screen positions.
+ * If it was nessary to truncate 'mesg', " ..." is appended to the
+ * resulting string (still 'len' screen positions wide).
+ * The resulting string is stored in 'buf'.
+ */
+char *
+trunc(
+	const char *message,
+	char *buf,
+	size_t buf_len,
+	int len)
+{
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wmessage, *wbuf;
+	size_t mesg_len;
+
+	mesg_len = mbstowcs(NULL, message, 0);
+	if (mesg_len != (size_t)(-1)) {
+		wmessage = my_malloc(sizeof(wchar_t) * (mesg_len + 1));
+		wbuf = my_malloc(sizeof(wchar_t) * (mesg_len + 1));
+
+		if (mbstowcs(wmessage, message, mesg_len + 1) != (size_t)(-1)) {
+			wtrunc(wmessage, wbuf, mesg_len + 1, len);
+			if (wcstombs(buf, wbuf, buf_len) != (size_t)(-1)) {
+				buf[buf_len - 1] = '\0';
+
+				free(wbuf);
+				free(wmessage);
+
+				return buf;
+			}
+		}
+
+		free(wbuf);
+		free(wmessage);
+	}
+	/* something went wrong using wide-chars, default back to normal chars */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+	snprintf(buf, buf_len, "%-.*s%s", len - 3, message, TRUNC_TAIL);
+	return buf;
+}
+
+/*
+ * if you use UTF-8 as local charset and want to use
+ * U+2026 (HORIZONTAL_ELLIPSIS) instead of "..." uncomment
+ * the following define
+ */
+/* #define USE_UTF8_HORIZONTAL_ELLIPSIS 1 */
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+/* the wide-char equivalent of trunc() */
+wchar_t *
+wtrunc(
+	const wchar_t *wmessage,
+	wchar_t *wbuf,
+	size_t wbuf_len,
+	int len)
+{
+	wchar_t *wtmp;
+
+	/* make sure all characters are printable */
+	wtmp = my_wcsdup(wmessage);
+	wconvert_to_printable(wtmp);
+
+	if (wcswidth(wtmp, wcslen(wtmp)) <= len && wcslen(wtmp) < wbuf_len) {
+		/* wtmp doesn't need to be truncated */
+		wcscpy(wbuf, wtmp);
+	} else {
+		/* wtmp must be truncated */
+#	ifdef USE_UTF8_HORIZONTAL_ELLIPSIS
+		if (IS_LOCAL_CHARSET("UTF-8")) {
+			/*
+			 * use U+2026 (HORIZONTAL ELLIPSIS) instead of "..."
+			 * we gain two additional screen positions
+			 */
+			wchar_t wtail[2] = {8230, 0};	/* \0-terminated U+2026 */
+
+			wcspart(wbuf, wtmp, len - 1, wbuf_len - 1, FALSE);
+			wcscat(wbuf, wtail);
+		} else
+#	endif /* USE_UTF8_HORIZONTAL_ELLIPSIS */
+		{
+			wchar_t tail[4];
+			size_t i;
+
+			i = mbstowcs(tail, TRUNC_TAIL, ARRAY_SIZE(tail));
+			tail[3] = (wchar_t)'\0';
+			assert(i != (size_t)(-1));
+
+			wcspart(wbuf, wtmp, len - 3, wbuf_len - 3, FALSE);
+			wcscat(wbuf, tail);
+		}
+	}
+	free(wtmp);
+
+	return wbuf;
+}
+
+
+/*
+ * duplicates a wide-char string
+ */
+wchar_t *
+my_wcsdup(
+	const wchar_t *wstr)
+{
+	size_t len = wcslen(wstr) + 1;
+	void *ptr = my_malloc(sizeof(wchar_t) * len);
+
+	memcpy(ptr, wstr, sizeof(wchar_t) * len);
+	return (wchar_t *) ptr;
 }
 #endif /* MULTIBYTE_ABLE && !NOLOCALE */

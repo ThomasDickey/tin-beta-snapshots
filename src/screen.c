@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-03
+ *  Updated   : 2003-09-12
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -199,7 +199,6 @@ clear_message(
 }
 
 
-#define TRUNC_TAIL	" ..."
 void
 center_line(
 	int line,
@@ -212,8 +211,6 @@ center_line(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	int width;
 	wchar_t wbuffer[256];	/* needs same number of elements as buffer */
-	wchar_t wbuffer2[256];
-	wchar_t suffix_buf[6];	/* space for TRUNC_TAIL */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	STRCPY(buffer, str);
@@ -221,25 +218,18 @@ center_line(
 	/* protect terminal... */
 	convert_to_printable(buffer);
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if ((len = mbstowcs(wbuffer, buffer, ARRAY_SIZE(wbuffer) - 1)) <= 0)
-		len = strlen(buffer);
-	else
-		wbuffer[ARRAY_SIZE(wbuffer) - 1] = (wchar_t) '\0';
-	if ((width = wcswidth(wbuffer, ARRAY_SIZE(wbuffer) - 1)) <= 0)
-		width = len;
-#else
 	len = strlen(buffer);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if (mbstowcs(wbuffer, buffer, ARRAY_SIZE(wbuffer)) != (size_t)(-1)) {
+		wbuffer[ARRAY_SIZE(wbuffer) - 1] = (wchar_t) '\0';
+		if ((width = wcswidth(wbuffer, ARRAY_SIZE(wbuffer))) > 0)
+			len = width;
+	}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	if (!cmd_line) {
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if (cCOLS >= width)
-			pos = (cCOLS - width) / 2;
-#else
 		if (cCOLS >= len)
 			pos = (cCOLS - len) / 2;
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		else
 			pos = 1;
 
@@ -250,22 +240,13 @@ center_line(
 		}
 	}
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if (width >= cCOLS) {
-		wcspart(wbuffer2, wbuffer, cCOLS - 6, ARRAY_SIZE(wbuffer2) - 5, TRUE);
-		mbstowcs(suffix_buf, TRUNC_TAIL, ARRAY_SIZE(suffix_buf) - 1);
-		wcsncat(wbuffer2, suffix_buf, 4);
-		wcstombs(buffer, wbuffer2, sizeof(buffer) - 1);
-	}
-#else
 	if (len >= cCOLS) {
 		char *buf;
 
 		buf = my_strdup(buffer);
-		snprintf(buffer, sizeof(buffer), "%-.*s%s", cCOLS - 6, buf, TRUNC_TAIL);
+		trunc(buf, buffer, sizeof(buffer), cCOLS - 2);
 		free(buf);
 	}
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	my_fputs(buffer, stdout);
 
 	if (cmd_line)

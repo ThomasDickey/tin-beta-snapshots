@@ -78,7 +78,7 @@ _nc_visbuf(const char *s)
 {
 	return (char *) s;
 }
-#endif /* NCURSES_VERSION */
+#endif /* !HAVE__TRACEF */
 
 char *
 tin_tracechar(

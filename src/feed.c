@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2003-08-10
+ *  Updated   : 2003-08-12
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -86,7 +86,7 @@ static void print_save_summary(char type, int fed);
 #	define handle_SIGPIPE()	if (got_sig_pipe) goto got_sig_pipe_while_piping
 #else
 #	define handle_SIGPIPE() /*nothing*/
-#endif /* DONT_HAVE_PIPING */
+#endif /* !DONT_HAVE_PIPING */
 
 /*
  * 'filename' holds 'filelen' amount of storage in which to place the
@@ -563,7 +563,7 @@ feed_articles(
 #ifndef DISABLE_PRINTING
 		/* Setup printing - get print command line */
 		case FEED_PRINT:
-			sprintf(outpath, "%s %s", tinrc.printer, REDIRECT_OUTPUT);
+			snprintf(outpath, sizeof(outpath), "%s %s", tinrc.printer, REDIRECT_OUTPUT);
 			break;
 #endif /* !DISABLE_PRINTING */
 
@@ -747,7 +747,7 @@ feed_articles(
 	 * Invoke post-processing if needed
 	 * Work out what (if anything) needs to be redrawn
 	 */
-	if (!tinrc.use_mailreader_i)
+	if (INTERACTIVE_NONE == tinrc.interactive_mailer)
 		redraw_screen |= mail_check();	/* in case of sending to oneself */
 
 	switch (function) {
@@ -826,7 +826,7 @@ got_sig_pipe_while_piping:
 	 */
 	switch (function) {
 		case FEED_MAIL:
-			if (tinrc.use_mailreader_i)
+			if (INTERACTIVE_NONE != tinrc.interactive_mailer)
 				info_message(_(txt_external_mail_done));
 			else
 				info_message(_(txt_articles_mailed), counter.success, PLURAL(counter.success, txt_article));

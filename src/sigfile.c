@@ -80,6 +80,7 @@ msg_write_signature(
 			FILE *pipe_fp;
 			char *sigcmd;
 			char cmd[PATH_LEN];
+
 			fprintf(fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
 			sigcmd = my_malloc(strlen(thisgroup->attribute->sigfile + 1) + strlen(thisgroup->name) + 4);
 			sprintf(sigcmd, "%s \"%s\"", thisgroup->attribute->sigfile + 1, thisgroup->name);

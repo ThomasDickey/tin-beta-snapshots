@@ -143,7 +143,7 @@ my_strftime(
 			break;
 
 		case 'c':	/* appropriate date and time representation */
-			sprintf(tbuf, "%s %s %2d %02d:%02d:%02d %d",
+			snprintf(tbuf, sizeof(tbuf), "%s %s %2d %02d:%02d:%02d %d",
 				days_a[timeptr->tm_wday],
 				months_a[timeptr->tm_mon],
 				timeptr->tm_mday,
@@ -154,11 +154,11 @@ my_strftime(
 			break;
 
 		case 'd':	/* day of the month, 01 - 31 */
-			sprintf(tbuf, "%02d", timeptr->tm_mday);
+			snprintf(tbuf, sizeof(tbuf), "%02d", timeptr->tm_mday);
 			break;
 
 		case 'H':	/* hour, 24-hour clock, 00 - 23 */
-			sprintf(tbuf, "%02d", timeptr->tm_hour);
+			snprintf(tbuf, sizeof(tbuf), "%02d", timeptr->tm_hour);
 			break;
 
 		case 'I':	/* hour, 12-hour clock, 01 - 12 */
@@ -167,19 +167,19 @@ my_strftime(
 				i = 12;
 			else if (i > 12)
 				i -= 12;
-			sprintf(tbuf, "%02d", i);
+			snprintf(tbuf, sizeof(tbuf), "%02d", i);
 			break;
 
 		case 'j':	/* day of the year, 001 - 366 */
-			sprintf(tbuf, "%03d", timeptr->tm_yday + 1);
+			snprintf(tbuf, sizeof(tbuf), "%03d", timeptr->tm_yday + 1);
 			break;
 
 		case 'm':	/* month, 01 - 12 */
-			sprintf(tbuf, "%02d", timeptr->tm_mon + 1);
+			snprintf(tbuf, sizeof(tbuf), "%02d", timeptr->tm_mon + 1);
 			break;
 
 		case 'M':	/* minute, 00 - 59 */
-			sprintf(tbuf, "%02d", timeptr->tm_min);
+			snprintf(tbuf, sizeof(tbuf), "%02d", timeptr->tm_min);
 			break;
 
 		case 'p':	/* am or pm based on 12-hour clock */
@@ -187,15 +187,15 @@ my_strftime(
 			break;
 
 		case 'S':	/* second, 00 - 61 */
-			sprintf(tbuf, "%02d", timeptr->tm_sec);
+			snprintf(tbuf, sizeof(tbuf), "%02d", timeptr->tm_sec);
 			break;
 
 		case 'w':	/* weekday, Sunday == 0, 0 - 6 */
-			sprintf(tbuf, "%d", timeptr->tm_wday);
+			snprintf(tbuf, sizeof(tbuf), "%d", timeptr->tm_wday);
 			break;
 
 		case 'x':	/* appropriate date representation */
-			sprintf(tbuf, "%s %s %2d %d",
+			snprintf(tbuf, sizeof(tbuf), "%s %s %2d %d",
 				days_a[timeptr->tm_wday],
 				months_a[timeptr->tm_mon],
 				timeptr->tm_mday,
@@ -203,7 +203,7 @@ my_strftime(
 			break;
 
 		case 'X':	/* appropriate time representation */
-			sprintf(tbuf, "%02d:%02d:%02d",
+			snprintf(tbuf, sizeof(tbuf), "%02d:%02d:%02d",
 				timeptr->tm_hour,
 				timeptr->tm_min,
 				timeptr->tm_sec);
@@ -211,11 +211,11 @@ my_strftime(
 
 		case 'y':	/* year without a century, 00 - 99 */
 			i = timeptr->tm_year % 100;
-			sprintf(tbuf, "%d", i);
+			snprintf(tbuf, sizeof(tbuf), "%d", i);
 			break;
 
 		case 'Y':	/* year with century */
-			sprintf(tbuf, "%d", timeptr->tm_year + 1900);
+			snprintf(tbuf, sizeof(tbuf), "%d", timeptr->tm_year + 1900);
 			break;
 
 #	ifdef SYSV_EXT
@@ -230,23 +230,23 @@ my_strftime(
 			break;
 
 		case 'D':	/* date as %m/%d/%y */
-			my_strftime(tbuf, sizeof tbuf, "%m/%d/%y", timeptr);
+			my_strftime(tbuf, sizeof(tbuf), "%m/%d/%y", timeptr);
 			break;
 
 		case 'e':	/* day of month, blank padded */
-			sprintf(tbuf, "%2d", timeptr->tm_mday);
+			snprintf(tbuf, sizeof(tbuf), "%2d", timeptr->tm_mday);
 			break;
 
 		case 'r':	/* time as %I:%M:%S %p */
-			my_strftime(tbuf, sizeof tbuf, "%I:%M:%S %p", timeptr);
+			my_strftime(tbuf, sizeof(tbuf), "%I:%M:%S %p", timeptr);
 			break;
 
 		case 'R':	/* time as %H:%M */
-			my_strftime(tbuf, sizeof tbuf, "%H:%M", timeptr);
+			my_strftime(tbuf, sizeof(tbuf), "%H:%M", timeptr);
 			break;
 
 		case 'T':	/* time as %H:%M:%S */
-			my_strftime(tbuf, sizeof tbuf, "%H:%M:%S", timeptr);
+			my_strftime(tbuf, sizeof(tbuf), "%H:%M:%S", timeptr);
 			break;
 #	endif /* SYSV_EXT */
 

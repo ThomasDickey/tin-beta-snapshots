@@ -1,3 +1,68 @@
+-- 1.7.1 release 20030918 "Berneray" --
+
+U005) Michael Bienia <michael@vorlon.ping.de>
+      REM. DEBUG_NEWSRC_FIXME
+      ADD. cleanup newsrc_test_harness()
+      ADD. trunc(), wtrunc() and my_wcsdup()
+      FIX. configure[.in], autoconf.h[in], extern.h, proto.h, tin.h, main.c
+           newsrc.c, page.c, prompt.c, screen.c, string.c
+
+ 013) Joshua Crawford <mortarn@softhome.net>
+      BUG. thinko in read_server_config()
+      FIX. config.c
+
+ 012) Urs Janssen <urs@tin.org>
+      BUG. overview data wasn't unfolded before storing it
+      BUG. mem-leak in free_and_init_header()
+      BUG. "domainname missing" warning was displayed too short
+      BUG. allowed spaces in username/password portion of URLs
+      FIX. tin.h art.c, init.c, lang.c, rfc2046.c
+
+U004) Dirk Nimmich <nimmich@muenster.de>
+      BUG. art.c didn't compile with DEBUG on
+
+ 011) Dirk Nimmich <nimmich@muenster.de>
+      BUG. 'V' didn't work with one multimedia part only
+      BUG. possible buffer overrun in escape_shell_meta()
+      BUG. mailcap command expansion didn't take shell meta characters into
+           account
+      BUG. mailcap nametemplate expansion took place twice
+      BUG. MIME Content-Type parameters parsed incorrectly
+      BUG. didn't refresh screen after viewing files and URLs
+      BUG. mem-leak in _lookup_mimetype
+      BUG. mem-leak in new_uu()
+      FIX. proto.h, tin.h, cook.c, mimetypes.c, misc.c, page.c, rfc1524.c
+           rfc2046.c, save.c
+
+ 010) Michael Bienia <michael@vorlon.ping.de>
+      BUG. source and destination overlap in strncpy
+      FIX. config.c
+
+U003) Urs Janssen <urs@tin.org>
+      ADD. don't rely on the output of LIST EXTENSIONS
+      ADD. replaced some sprintf() by snprintf() calls
+      ADD. config.guess, config.sub update
+      ADD. pcre update (4.3 -> 4.4)
+      FIX. active.c, art.c, config.c, header.c, open.c, page.c, post.c
+           version.c, config.guess, config.sub, pcre/*
+
+ 009) Dirk Nimmich <nimmich@muenster.de>
+      BUG. doesn't try to reconnect after a 205 response
+      FIX. open.c
+
+U002) Jason Faultless <jason@altarstone.com>
+      ADD. LIST EXTENSIONS
+      ADD. rewrite overview-parser
+      FIX. extern.h, nntplib.h, proto.h, tin.h, art.c, open.c, string.c
+           xref.c
+
+U001) Dirk Nimmich <nimmich@muenster.de>
+      BUG. don't feed headers to interactive mailreader and using -M/-N
+      ADD. allow interactive mailer to get headers
+      ADD. tinrc variable to control URL highlighting
+      FIX. extern.h, tin.h, tinrc.h, config.c, feed.c, init.c, lang.c, misc.c
+           page.c, post.c, save.c, tincfg.tbl, tin.1, tin.5
+
 -- 1.7.0 release 20030810 "Sandray" --
 
  008) Darrell Tangman <dgtangman@acm.org>
@@ -18,7 +83,7 @@
  005) Dirk Nimmich <nimmich@muenster.de>
       BUG. make install_sysdefs didn't honor $DESTDIR
       BUG. filter on References didn't work on deep threads
-      BUG. upgrading from use_metamail=ON could lead to 
+      BUG. upgrading from use_metamail=ON could lead to
            metamail_prog=--internal
       BUG. lines that were exactly cCOLS bytes long introduced an extra line in
            raw mode

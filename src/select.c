@@ -403,7 +403,7 @@ selection_page(
 				} else if (CURR_GROUP.bogus && tinrc.strip_bogus == BOGUS_SHOW) {
 					/* Bogus groups aren't subscribed to avoid confusion */
 					/* Note that there is no way to remove the group from active[] */
-					sprintf(buf, _(txt_remove_bogus), CURR_GROUP.name);
+					snprintf(buf, sizeof(buf), _(txt_remove_bogus), CURR_GROUP.name);
 					write_newsrc();					/* save current newsrc */
 					delete_group(CURR_GROUP.name);		/* remove bogus group */
 					read_newsrc(newsrc, TRUE);			/* reload newsrc */
@@ -428,7 +428,7 @@ selection_page(
 
 			case iKeyPost:	/* post a basenote */
 				if (!selmenu.max) {
-					sprintf(buf, _(txt_post_newsgroups), tinrc.default_post_newsgroups);
+					snprintf(buf, sizeof(buf), _(txt_post_newsgroups), tinrc.default_post_newsgroups);
 					if (!prompt_string_default(buf, tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS))
 						break;
 					if (group_find(tinrc.default_post_newsgroups) == NULL) {
@@ -837,7 +837,7 @@ reposition_group(
 
 	/* Have already trapped no_write at this point */
 
-	sprintf(buf, _(txt_newsgroup_position), group->name,
+	snprintf(buf, sizeof(buf), _(txt_newsgroup_position), group->name,
 		(tinrc.default_move_group ? tinrc.default_move_group : default_num + 1));
 
 	if (!prompt_string(buf, pos, HIST_MOVE_GROUP))

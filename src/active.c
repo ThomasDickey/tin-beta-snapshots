@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2003-06-29
+ *  Updated   : 2003-08-16
  *  Notes     :
  *
  * Copyright (c) 1992-2003 Iain Lea <iain@bricbrac.de>
@@ -317,7 +317,7 @@ read_newsrc_active_file(
 			char line[NNTP_STRLEN];
 			if (window < NUM_SIMULTANEOUS_GROUP_COMMAND && ptr) {
 				ngnames[index_i] = my_strdup(ptr);
-				sprintf(buf, "GROUP %s", ngnames[index_i]);
+				snprintf(buf, sizeof(buf), "GROUP %s", ngnames[index_i]);
 #	ifdef DEBUG
 				debug_nntp("read_newsrc_active_file", buf);
 #	endif /* DEBUG */
@@ -338,7 +338,7 @@ read_newsrc_active_file(
 					int i;
 					int j = index_o;
 					for (i = 0; i < window - 1; i++) {
-						sprintf(buf, "GROUP %s", ngnames[j]);
+						snprintf(buf, sizeof(buf), "GROUP %s", ngnames[j]);
 #	ifdef DEBUG
 						debug_nntp("read_newsrc_active_file", buf);
 #	endif /* DEBUG */
@@ -359,8 +359,7 @@ read_newsrc_active_file(
 						{
 							char fmt[20];
 
-							sprintf(fmt, "%%ld %%ld %%ld %%%ds", NNTP_STRLEN);
-
+							snprintf(fmt, sizeof(fmt), "%%ld %%ld %%ld %%%ds", NNTP_STRLEN);
 							if (sscanf(line, fmt, &count, &min, &max, ngname) != 4)
 								error_message(_(txt_error_invalid_response_to_group), line);
 							if (strcmp(ngname, ngnames[index_o]) != 0)
@@ -483,7 +482,7 @@ read_active_file(
 #	ifndef NNTP_ONLY
 		else
 			error_message(_(txt_cannot_open_active_file), news_active_file, tin_progname);
-#	endif /* NNTP_ONLY */
+#	endif /* !NNTP_ONLY */
 #else
 		error_message(_(txt_cannot_open), news_active_file);
 #endif /* NNTP_ABLE */
@@ -670,7 +669,7 @@ check_for_any_new_groups(
 	if (newnews_index >= 0)
 		newnews[newnews_index].time = new_newnews_time;
 	else {
-		sprintf(buf, "%s %lu", nntp_server, (unsigned long int) new_newnews_time);
+		snprintf(buf, sizeof(buf), "%s %lu", nntp_server, (unsigned long int) new_newnews_time);
 		load_newnews_info(buf);
 	}
 }

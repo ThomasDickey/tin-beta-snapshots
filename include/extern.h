@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-10
+ *  Updated   : 2003-08-12
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>
@@ -235,9 +235,6 @@
 #ifdef DECL_SYSTEM
 	extern int system(const char *);
 #endif /* DECL_SYSTEM */
-#ifdef DECL_TEMPNAM
-	extern char *tempnam(const char *, const char *);
-#endif /* DECL_TEMPNAM */
 #ifdef DECL_TGETENT
 	extern int tgetent(char *, char *);
 #endif /* DECL_TGETENT */
@@ -330,7 +327,6 @@ extern char *OPT_CHAR_list[];
 extern char *OPT_STRING_list[];
 extern char *ch_post_process;
 extern char *nntp_server;
-extern char *xover_cmd;
 extern char active_times_file[PATH_LEN];
 extern char bug_addr[LEN];
 extern char bug_nntpserver1[PATH_LEN];
@@ -395,6 +391,7 @@ extern constext *txt_attrs[];
 extern constext *txt_colors[];
 extern constext *txt_confirm_choices[];
 extern constext *txt_hide_uue_type[];
+extern constext *txt_interactive_mailers[];
 extern constext *txt_kill_level_type[];
 #ifdef CHARSET_CONVERSION
 	extern constext *txt_mime_charsets[];	/* supported charsets */
@@ -1161,6 +1158,8 @@ extern constext txt_show_unread[];
 extern constext txt_yes[];
 extern constext txt_you_have_mail[];
 
+extern constext *xover_cmd;
+
 #ifndef DISABLE_PRINTING
 	extern constext txt_print[];
 	extern constext txt_printing[];
@@ -1488,6 +1487,7 @@ extern struct opttxt txt_group_catchup_on_exit;
 extern struct opttxt txt_groupname_max_length;
 extern struct opttxt txt_hide_uue;
 extern struct opttxt txt_inews_prog;
+extern struct opttxt txt_interactive_mailer;
 extern struct opttxt txt_inverse_okay;
 extern struct opttxt txt_keep_dead_articles;
 extern struct opttxt txt_kill_level;
@@ -1562,7 +1562,7 @@ extern struct opttxt txt_thread_score;
 extern struct opttxt txt_underscores_regex;
 extern struct opttxt txt_unlink_article;
 extern struct opttxt txt_url_handler;
-extern struct opttxt txt_use_mailreader_i;
+extern struct opttxt txt_url_highlight;
 extern struct opttxt txt_use_mouse;
 extern struct opttxt txt_wildcard;
 extern struct opttxt txt_word_highlight;

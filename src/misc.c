@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-06-17
+ *  Updated   : 2003-08-24
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -277,7 +277,7 @@ copy_body(
 	 */
 	if (tinrc.quote_style & QUOTE_COMPRESS) {
 		if (strstr(prefix, "%s"))
-			sprintf(prefixbuf, prefix, initl);
+			snprintf(prefixbuf, sizeof(prefixbuf), prefix, initl);
 		else {
 			/* strip tailing space from quote-char for quoting quoted lines */
 			strcpy(prefixbuf, prefix);
@@ -285,7 +285,7 @@ copy_body(
 				prefixbuf[strlen(prefixbuf) - 1] = '\0';
 		}
 	} else
-		sprintf(prefixbuf, prefix, initl);
+		snprintf(prefixbuf, sizeof(prefixbuf), prefix, initl);
 
 	/*
 	 * if raw_data is true, the signature is exceptionally quoted, even if
@@ -654,7 +654,7 @@ my_mkdir(
 	char buf[LEN];
 	struct stat sb;
 
-	sprintf(buf, "mkdir %s", path); /* redirect stderr to /dev/null? use invoke_cmd()? */
+	snprintf(buf, sizeof(buf), "mkdir %s", path); /* redirect stderr to /dev/null? use invoke_cmd()? */
 	if (stat(path, &sb) == -1) {
 		system(buf);
 		return chmod(path, mode);
@@ -1697,12 +1697,6 @@ strfpath(
 }
 
 
-enum quote_enum {
-	no_quote = 0,
-	dbl_quote,
-	sgl_quote
-};
-
 
 /*
  * TODO: Properly explain this
@@ -1714,37 +1708,46 @@ escape_shell_meta(
 {
 	static char buf[PATH_LEN];
 	char *dest = buf;
+	int space = sizeof(buf) - 2;
 
 	switch (quote_area) {
 		case no_quote:
-			while (*source) {
+			while (*source && (space > 0)) {
 				if (*source == '\'' || *source == '\\' || *source == '"' ||
 					*source == '$' || *source == '`' || *source == '*' ||
 					*source == '&' || *source == '|' || *source == '<' ||
 					*source == '>' || *source == ';' || *source == '(' ||
-					*source == ')')
+					*source == ')') {
 					*dest++ = '\\';
+					space--;
+				}
 				*dest++ = *source++;
+				space--;
 			}
 			break;
 
 		case dbl_quote:
-			while (*source) {
+			while (*source && (space > 0)) {
 				if (*source == '\\' || *source == '"' || *source == '$' ||
-					*source == '`')
+					*source == '`') {
 					*dest++ = '\\';
+					space--;
+				}
 				*dest++ = *source++;
+				space--;
 			}
 			break;
 
 		case sgl_quote:
-			while (*source) {
+			while (*source && (space > 4)) {
 				if (*source == '\'') {
 					*dest++ = '\'';
 					*dest++ = '\\';
 					*dest++ = '\'';
+					space -= 3;
 				}
 				*dest++ = *source++;
+				space--;
 			}
 			break;
 
@@ -1879,7 +1882,7 @@ strfmailer(
 
 				case 'S':	/* Subject */
 					/* don't MIME encode Subject if using external mail client */
-					if (tinrc.use_mailreader_i)
+					if (INTERACTIVE_NONE != tinrc.interactive_mailer)
 						strncpy(tbuf, escape_shell_meta(subject, quote_area), sizeof(tbuf) - 1);
 					else {
 #ifdef CHARSET_CONVERSION
@@ -1896,7 +1899,7 @@ strfmailer(
 
 				case 'T':	/* To */
 					/* don't MIME encode To if using external mail client */
-					if (tinrc.use_mailreader_i)
+					if (INTERACTIVE_NONE != tinrc.interactive_mailer)
 						strncpy(tbuf, escape_shell_meta(to, quote_area), sizeof(tbuf) - 1);
 					else {
 #ifdef CHARSET_CONVERSION
@@ -1913,7 +1916,7 @@ strfmailer(
 
 				case 'U':	/* User */
 					/* don't MIME encode User if using external mail client */
-					if (tinrc.use_mailreader_i)
+					if (INTERACTIVE_NONE != tinrc.interactive_mailer)
 						strncpy(tbuf, userid, sizeof(tbuf) - 1);
 					else {
 #ifdef CHARSET_CONVERSION
@@ -2056,7 +2059,7 @@ cleanup_tmp_files(
 	char acNovFile[PATH_LEN];
 
 	if (xover_cmd && !tinrc.cache_overview_files) {
-		sprintf(acNovFile, "%s%d.idx", TMPDIR, (int) process_id);
+		snprintf(acNovFile, sizeof(acNovFile), "%s%d.idx", TMPDIR, (int) process_id);
 		unlink(acNovFile);
 	}
 #endif /* 0 */
