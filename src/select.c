@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 1994-12-21
+ *  Updated   : 2002-11-11
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -184,7 +184,7 @@ selection_page(
 
 			case iKeySetRange:	/* set range */
 				if (selmenu.max) {
-					if (bSetRange(SELECT_LEVEL, 1, selmenu.max, selmenu.curr + 1))
+					if (set_range(SELECT_LEVEL, 1, selmenu.max, selmenu.curr + 1))
 						show_selection_page();
 				} else
 					info_message(_(txt_no_groups));
@@ -1186,7 +1186,7 @@ static void
 select_done(
 	void)
 {
-	if ( (!TINRC_CONFIRM_TO_QUIT) || prompt_yn(cLINES, _(txt_quit), TRUE) == 1)
+	if (!TINRC_CONFIRM_TO_QUIT || prompt_yn(cLINES, _(txt_quit), TRUE) == 1)
 		select_quit();
 	if (!no_write && prompt_yn(cLINES, _(txt_save_config), TRUE) == 1) {
 		write_config_file(local_config_file);

@@ -51,7 +51,7 @@
  * in unstructured headers like Subject, Keyword and Summary
  * c.f. RFC 2047
  */
-#define isbetween(c, s) (isspace((unsigned char)c) || ((s) && ((c) == '(' || (c) == ')' || (c) == '"')))
+#define isbetween(c, s) (isspace((unsigned char) c) || ((s) && ((c) == '(' || (c) == ')' || (c) == '"')))
 
 #define NOT_RANKED 255
 
@@ -128,7 +128,7 @@ mmdecode(
 	char *t;
 
 	t = where;
-	encoding = tolower((unsigned char)encoding);
+	encoding = tolower((unsigned char) encoding);
 	if (encoding == 'q') {		/* quoted-printable */
 		int x;
 		unsigned hi, lo;

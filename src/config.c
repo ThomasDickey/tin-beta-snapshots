@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-09-10
+ *  Updated   : 2002-11-16
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -798,11 +798,8 @@ read_config_file(
 				break;
 			}
 
-			if (match_integer(buf, "wrap_column=", &tinrc.wrap_column, 0)) {
-				if (tinrc.wrap_column <= 0)
-					(tinrc.wrap_column = cCOLS) >= 0 ? cCOLS : 80;
+			if (match_integer(buf, "wrap_column=", &tinrc.wrap_column, 0))
 				break;
-			}
 
 #ifdef HAVE_COLOR
 			if (match_integer(buf, "word_h_display_marks=", &tinrc.word_h_display_marks, MAX_MARK))
@@ -1435,6 +1432,7 @@ set_option_num(
 }
 
 
+#define OPTION_WIDTH 35
 char *
 fmt_option_prompt(
 	char *dst,
@@ -1444,12 +1442,15 @@ fmt_option_prompt(
 {
 	int num = get_option_num(option);
 
+	/*
+	 * TODO: make the open length (OPTION_WIDTH) cCOLS dependent
+	 *       requries changes in various prompt_*() functions (and lang.c)
+	 */
 	if (num) {
-		snprintf(dst, len, "%s %3d. %s ",
-			editing ? "->" : "  ", num,
-			_(option_table[option].txt->opt));
+		snprintf(dst, len, "%s %3d. %-*.*s: ", editing ? "->" : "  ", num,
+			OPTION_WIDTH, OPTION_WIDTH, _(option_table[option].txt->opt));
 	} else
-		snprintf(dst, len, "  %s", _(option_table[option].txt->opt));
+		snprintf(dst, len, "  %-*.*s", OPTION_WIDTH, OPTION_WIDTH, _(option_table[option].txt->opt));
 
 	return dst;
 }
@@ -2128,7 +2129,7 @@ change_config_file(
 #endif /* M_AMIGA */
 							prompt_option_string(option);
 							expand_rel_abs_pathname(option_row(option),
-								OPT_ARG_COLUMN + (int) strlen(option_table[option].txt->opt),
+								OPT_ARG_COLUMN + OPTION_WIDTH,
 								OPT_STRING_list[option_table[option].var_index]
 								);
 							joinpath(posted_msgs_file, tinrc.maildir, *tinrc.keep_posted_articles_file ? tinrc.keep_posted_articles_file : POSTED_FILE);
@@ -2251,9 +2252,6 @@ change_config_file(
 
 						case OPT_WRAP_COLUMN:
 							prompt_option_num(option);
-							if (tinrc.wrap_column <= 0)
-								(tinrc.wrap_column = cCOLS) >= 0 ? cCOLS: 80;
-
 							/* recook if in an article is open */
 							if (pgart.raw)
 								resize_article(TRUE, &pgart);

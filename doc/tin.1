@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2002-11-06
+.\" Updated   : 2002-11-16
 .\" Notes     : still needs some work, i.e.:
 .\"             - document authorization (.newsauth)
 .\"             - postprocess differences when linked against libuu
 .\"
 .\"
-.TH tin 1 "November 6th, 2002" "1.5.14" "A Usenet newsreader"
+.TH tin 1 "November 16th, 2002" "1.5.16" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -82,17 +82,18 @@ style index files if available locally or via the NNTP [X]OVER command
 (\fBRFC2980\fB).
 .PP
 .B tin
-has four separate levels of operation: Group selection level, Group level,
-Thread level and Article level. Use the \fBHelp\fP ('\fBh\fP') command to
-view a list of the commands available at a particular level.
+has four separate levels of operation: Group selection level, Group
+level, Thread level and Article level. Use the \fBHelp\fP ('\fBh\fP')
+command to view a list of the commands available at a particular
+level.
 .PP
 On startup \fBtin\fP will show a list of the newsgroups found in
-\fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR. An arrow '->' or highlighted bar will
-point to the first newsgroup. Move to a group by using the terminal arrow
-keys (terminal dependent) or \fBDown2\fP ('\fBj\fP') and \fBUp2\fP
-('\fBk\fP'). Use PgUp/PgDn (terminal dependent) or \fBPageUp2\fP
-('\fB^U\fP') (CTRL-U) and \fBPageDown\fP ('\fB^D\fP') (CTRL-D) to page
-up/down. Enter a newsgroup by pressing '\fB<CR>\fP'.
+\fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR. An arrow '->' or highlighted
+bar will point to the first newsgroup. Move to a group by using the
+terminal arrow keys (terminal dependent) or \fBDown2\fP ('\fBj\fP')
+and \fBUp2\fP ('\fBk\fP'). Use PgUp/PgDn (terminal dependent) or
+\fBPageUp2\fP ('\fB^U\fP') (CTRL-U) and \fBPageDown\fP ('\fB^D\fP')
+(CTRL-D) to page up/down. Enter a newsgroup by pressing '\fB<CR>\fP'.
 .PP
 The \fBGroupNextUnreadArtOrGrp\fP ('\fB<TAB>\fP') key enters the next
 newsgroup with unread articles.
@@ -1296,7 +1297,7 @@ The character used to show that an article was deleted. Default is 'D'.
 .B Character to show inrange articles (art_marked_inrange)
 The character used to show that an article is in a range. Default is '#'.
 .TP
-.B Character to show articles that will be marked unread (art_marked_return)
+.B Character to show returning arts (art_marked_return)
 The character used to show that an article will return as an unread article
 when the group is next entered. Default is '-'.
 .TP
@@ -1319,7 +1320,7 @@ The character used to show that an article was read. Default is ' '.
 The character used to show that an article was killed. Default is 'K'.
 \fBkill_level\fP must be set accordingly.
 .TP
-.B Character to show read selected articles (art_marked_read_selected)
+.B Character to show readselected arts (art_marked_read_selected)
 The character used to show that an article was hot before it was read.
 Default is ':'. \fBkill_level\fP must be set accordingly.
 .TP
@@ -1362,7 +1363,7 @@ displayed after composing an article. Default is ON.
 .B Cache NNTP overview files locally (cache_overview_files)
 If ON, create local copies of NNTP overview files. This can be used to
 considerably speed up accessing large groups when using a slow connection.
-Default is OFF.
+See also "INDEX FILES". Default is OFF.
 .TP
 .B Catchup read groups when quitting (catchup_read_groups)
 If set ON the user is asked when quitting if all groups read during the
@@ -1382,22 +1383,22 @@ Color of header-lines
 .B col_help
 Color of help pages
 .TP
-.B col_invers_bg
+.B Color for inverse text (background) (col_invers_bg)
 Color of background for inverse text
 .TP
-.B col_invers_fg
+.B Color for inverse text (foreground) (col_invers_fg)
 Color of foreground for inverse text
 .TP
-.B col_markdash
+.B Color of highlighting with _dash_ (col_markdash)
 Color of words emphasised like _this_. See also \fBword_h_display_marks\fP
 .TP
-.B col_markslash
+.B Color of highlighting with /slash/ (col_markslash)
 Color of words emphasised like /this/. See also \fBword_h_display_marks\fP
 .TP
-.B col_markstar
+.B Color of highlighting with *stars* (col_markstar)
 Color of words emphasised like *this*. See also \fBword_h_display_marks\fP
 .TP
-.B col_markstroke
+.B Color of highlighting with -stroke- (col_markstroke)
 Color of words emphasised like -this-. See also \fBword_h_display_marks\fP
 .TP
 .B col_minihelp
@@ -1406,29 +1407,29 @@ Color of mini help menu
 .B col_newsheaders
 Color of actual news header fields
 .TP
-.B col_normal
+.B Standard foreground color (col_normal)
 Standard foreground color
 .TP
-.B col_quote
+.B Color of quoted lines (col_quote)
 Color of quoted lines
 .TP
-.B col_quote2
+.B Color of twice quoted line (col_quote2)
 Color of twice quoted lines
 .TP
-.B col_quote3
+.B Color of =>3 times quoted line (col_quote3)
 Color of >=3 times quoted lines
 .TP
-.B col_response
+.B Color of response counter (col_response)
 Color of response counter. This is the text that says "Response x of y"
 in the article viewer.
 .TP
-.B col_signature
+.B Color of signatures (col_signature)
 Color of signatures
 .TP
-.B col_subject
+.B Color of article subject lines (col_subject)
 Color of article subject
 .TP
-.B col_text
+.B Color of text lines (col_text)
 Color of text-lines
 .TP
 .B col_title
@@ -1564,7 +1565,7 @@ System Administrator
 .TP
 .B default_save_mode
 .TP
-.B Directory to save articles/threads in (default_savedir)
+.B Directory to save arts/threads in (default_savedir)
 Directory where articles/threads are saved. Default is
 \fI${TIN_HOMEDIR-"$HOME"}/News\fR.
 .TP
@@ -1588,13 +1589,13 @@ by an highlighted bar if set OFF. Default is OFF.
 Specifies whether a screen redraw should always be done after certain
 external commands. Default is OFF.
 .TP
-.B Number of articles per group to get (getart_limit)
+.B Number of articles to get (getart_limit)
 If \fBgetart_limit\fP is > 0 not more than \fBgetart_limit\fP articles/group
 are fetched from the server. If \fBgetart_limit\fP is < 0 \fBtin\fP will start
 fetching articles from your first unread minus absolute value of
 \fBgetart_limit\fP. Default is 0, which means no limit.
 .TP
-.B Number of days during which article is considered recent (recent_time)
+.B Article recentness time limit (recent_time)
 If set to 0, this feature is deactivated, otherwise it means the number of
 days. Default is 2.
 .TP
@@ -1605,7 +1606,7 @@ If ON catchup group when leaving with the left arrow key. Default is ON.
 Maximum length of the names of newsgroups to be displayed so that more of
 the newgroup description can be displayed. Default is 32.
 .TP
-.B Treat uuencoded sections like an attachment (hide_uue)
+.B Display uue data as an attachment (hide_uue)
 If ON, then sections of uuencoded data will be shown with a single tag line
 showing the size and filename (much the same as a MIME attachment).
 Otherwise the raw uuencoded data is displayed. Default is OFF. This
@@ -1619,6 +1620,7 @@ NNTP inews), else it is "inews -h". The article is passed to
 \fBinews_prog\fP on STDIN via '< article'.
 .TP
 .B info_in_last_line
+.\" this is missing from the Menu
 If ON, show current group description or article subject in the last line
 (not in the pager and global menu) - \fBToggleInfoLastLine\fP ('\fBi\fP')
 toggles setting. This facility is useful as the full width of the screen is
@@ -1627,14 +1629,19 @@ available to display long subjects. Default is OFF.
 .B Use inverse video for page headers (inverse_okay)
 If ON use inverse video for page headers at different levels. Default is ON.
 .TP
-.B Keep failed articles in ~/dead.articles (keep_dead_articles)
+.B Keep failed arts in ~/dead.articles (keep_dead_articles)
 If ON keep all failed postings in \fI${TIN_HOMEDIR-"$HOME"}/dead.articles\fR
 besides keeping the last failed posting in
 \fI${TIN_HOMEDIR-"$HOME"}/dead.article\fR. Default is ON.
 .TP
-.B Keep posted articles in ~/Mail/posted (keep_posted_articles)
-If ON keep all postings in \fI${TIN_HOMEDIR-"$HOME"}/Mail/posted\fR.
+.B Keep posted articles in ~/Mail/file (keep_posted_articles)
+If ON keep all postings in
+\fI${TIN_HOMEDIR-"$HOME"}/Mail/\fBkeep_posted_articles_file\fP\fR.
 Default is ON.
+.TP
+.B Filename for posted articles (keep_posted_articles_file)
+Filename to be used for storing posted articles, see also
+\fBkeep_posted_articles\fP.
 .TP
 .B Handling of killed articles (kill_level)
 This option controls the processing and display of articles that are killed.
@@ -1748,7 +1755,7 @@ Format of quote line when posting/following up an article (%A=Address,
 %D=Date, %F=Fullname+Address, %G=Groupname, %M=Message-ID, %N=Fullname,
 %C=Firstname, %I=Initials). Default is "%F wrote:"
 .TP
-.B PgDn goes to next unread article at end of article (pgdn_goto_next)
+.B PgDn goes to next unread article (pgdn_goto_next)
 If ON the Page Down keys will go to the next unread article when pressed
 at the end of a message. Default is ON.
 .TP
@@ -1775,7 +1782,7 @@ NOT yet implemented. Therefore, currently 7bit has NO effect (i.e.
 equivalent to 8bit) whatever MIME charset/encoding is chosen. base64 and
 quoted-printable are usualy undesired on usenet.
 .TP
-.B post_process_view
+.B View post-processed files (post_process_view)
 If ON, then \fBtin\fP will start an appropriate viewer program to display
 any files that were post processed and uudecoded. The program is determined
 using the mailcap file. Default is ON.
@@ -1818,17 +1825,17 @@ is to compress quotes, and to quote empty lines.
 When you are viewing an article in raw mode ('\fB^H\fP'), and follow up or
 reply to it, the signature will be quoted even if it would otherwise not be.
 .TP
-.B Expression for highlighting quoted text (quote_regex)
+.B Regex used to show quoted lines (quote_regex)
 A regular expression that will be applied when reading articles. All
 matching lines are shown in \fBcol_quote\fP. If \fBquote_regex\fP is
 blank, then \fBtin\fP uses a built in default for this.
 .TP
-.B Expression for highlighting twice quoted text (quote_regex2)
+.B Regex used to show twice quoted l. (quote_regex2)
 A regular expression that will be applied when reading articles. All
 matching lines are shown in \fBcol_quote2\fP. If \fBquote_regex2\fP is
 blank, then \fBtin\fP uses a built in default for this.
 .TP
-.B Expression for highlighting =>3 times quoted text (quote_regex3)
+.B Regex used to show >= 3 times q.l. (quote_regex3)
 A regular expression that will be applied when reading articles. All
 matching lines are shown in \fBcol_quote3\fP. If \fBquote_regex3\fP is
 blank, then \fBtin\fP uses a built in default for this.
@@ -1838,11 +1845,11 @@ The news \fI${TIN_LIBDIR-NEWSLIBDIR}"/"${TIN_ACTIVEFILE-active}\fR file is
 reread at regular intervals to show if any new news has arrived. Default is
 1200. Setting this to 0 will disable this feature.
 .TP
-.B Maximum negative score before an article is marked killed (score_limit_kill)
+.B Score limit (kill) (score_limit_kill)
 If the score of an article is below or equal this value the article gets
 marked as killed.
 .TP
-.B Maximum positive score before an article is marked hot (score_limit_select)
+.B Score limit (select) (score_limit_select)
 If the score of an article is above or equal this value the article gets
 marked as hot.
 .TP
@@ -1854,7 +1861,7 @@ Score of an article which should be killed, this must be <=
 Score of an article which should be marked hot, this must be >=
 \fBscore_limit_select\fP.
 .TP
-.B Number of lines to scroll in article pager (scroll_lines)
+.B Number of lines to scroll in pager (scroll_lines)
 The number of lines that will be scrolled up/down in the article pager when
 using cursor-up/down. The default is 1 (line-by-line). Set to 0 to get
 traditional tin page-by-page scrolling. Set to -1 to get page-by-page
@@ -1896,7 +1903,7 @@ ON.
 If ON show only new/unread articles otherwise show all articles.
 Default is ON.
 .TP
-.B Show only groups with unread articles (show_only_unread_groups)
+.B Show only groups with unread arts (show_only_unread_groups)
 If ON show only subscribed to groups that contain unread articles. Default
 is OFF.
 .TP
@@ -1913,7 +1920,7 @@ If ON prepend the signature with sigdashes. Default is ON.
 .B Add signature when reposting (signature_repost)
 If ON add signature to reposted articles. Default is ON.
 .TP
-.B Expression for highlighting /words/ (slashes_regex)
+.B Regex used to highlight /slashes/ (slashes_regex)
 A regular expression that will be applied when reading articles. All
 matching words are shown in \fBcol_markslash\fP. If \fBslashes_regex\fP is
 blank, then \fBtin\fP uses a built in default for this.
@@ -1974,7 +1981,7 @@ article. If this option is turned ON the <SPACE> command will go to the next
 unread article when the end of the article is reached (rn-style pager).
 Default is OFF.
 .TP
-.B Expression for highlighting *words* (stars_regex)
+.B Regex used to highlight *stars* (stars_regex)
 A regular expression that will be applied when reading articles. All
 matching words are shown in \fBcol_markstar\fP. If \fBstars_regex\fP is
 blank, then \fBtin\fP uses a built in default for this.
@@ -2003,7 +2010,7 @@ Keep).
 If ON, then unsubscribed groups will be permanently removed from your
 \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR file. Default is OFF.
 .TP
-.B Expression for highlighting -words- (strokes_regex)
+.B Regex used to highlight -strokes- (strokes_regex)
 A regular expression that will be applied when reading articles. All
 matching words are shown in \fBcol_markstroke\fP. If \fBstrokes_regex\fP is
 blank, then \fBtin\fP uses a built in default for this.
@@ -2018,7 +2025,7 @@ If enabled pressing \fBPageNextUnread\fP ('\fB<TAB>\fP') at the Article
 level will go to the next unread article immediately instead of first
 paging through the current one. Default is ON.
 .TP
-.B Decode German style TeX umlaut codes to ISO (tex2iso_conv)
+.B Display "a as Umlaut-a (tex2iso_conv)
 If ON, show "a as Umlaut-a, etc. Default is OFF. This behaviour can also be
 toggled in the article viewer via \fBPageToggleTex2iso\fP ('\fB"\fP').
 .TP
@@ -2067,7 +2074,7 @@ represented in the target character set, it can be approximated through one
 or several similarly looking characters. On systems where this extension
 doesn't exist, this option is disabled. Default is OFF.
 .TP
-.B Expression for highlighting _words_ (underscores_regex)
+.B Regex used to highlight _underline_ (underscores_regex)
 A regular expression that will be applied when reading articles. All
 matching words are shown in \fBcol_markdash\fP. If \fBunderscores_regex\fP is
 blank, then \fBtin\fP uses a built in default for this.
@@ -2126,19 +2133,25 @@ print a \fBspace\fP instead
 .RE
 .TP
 .B Word highlighting in message body (word_highlight)
-Enable word highlighting. See \fBword_h_display_marks\fP for the options
-available is this and \fBuse_color\fP is enabled. Default is ON.
+Enable word highlighting. See \fBword_h_display_marks\fP for the
+options available is this and \fBuse_color\fP is enabled. Default is
+ON.
 .TP
 .B Page line wrap column (wrap_column)
-Sets the column at which a displayed article body should be wrapped. If
-this value is smaller or equal to 0, it defaults to the current screen
-width. If this value is greater than your current screen width the part
-off-screen is not displayed. Setting this option to a large value, this
-option can be used to disable wrapping. Default is 80.
+Sets the column at which a displayed article body should be wrapped.
+If this value is equal to 0, it defaults to the current screen width.
+If this value is greater than your current screen width the part
+off-screen is not displayed. Thus setting this option to a large
+value can be used to disable wrapping. If this value is negative the
+wrap margin is the current screen width plus the given value (as long
+as the result is still positive, otherwise it will fall back to the
+current screen width). Default is 0, wrapping at the current screen
+width.
 .TP
 .B Quote line when cross-posting (xpost_quote_format)
 Format is the same as for \fBnews_quote_format\fP, this is used when
-answering to a crossposting to several groups with no ''Followup-To:'' set
+answering to a crossposting to several groups with no ''Followup-To:''
+set.
 .\"
 .\"
 .SS "GROUP ATTRIBUTES"
@@ -2949,8 +2962,8 @@ for more infos.
 .B LANG
 This variable determines the
 .BR locale (5)
-category for any category not specifically selected with a variable starting
-with \fB$LC_\fP. It's value should be of the from
+category for any category not specifically selected with a variable
+starting with \fB$LC_\fP. It's value should be of the from
 \fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR]. See
 .BR environ (5)
 for more infos.

@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2002-11-03
+dnl Updated   : 2002-11-12
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2001 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -44,7 +44,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.5.15
+VERSION=1.5.16
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -359,6 +359,10 @@ AC_MSG_RESULT($cf_with_screen)
 use_curses=no
 use_ncurses=no
 
+AC_MSG_CHECKING(if you specified curses install-directory)
+CF_WITH_CURSES_DIR($cf_with_screen)
+AC_MSG_RESULT($cf_cv_curses_dir)
+
 case $cf_with_screen in #(vi
 termcap|terminfo) #(we will determine which it really is
 	;;
@@ -401,15 +405,19 @@ if test $use_curses != no ; then
 		CF_NCURSES_LIBS
 		;;
 	ncursesw) #(vi
-		CF_UTF8_LIB
+		CF_CHECK_HEADERS(stdlib.h wchar.h wctype.h)
+		AM_MULTIBYTE_ABLE
 		CF_NCURSES_CPPFLAGS(ncursesw)
 		CF_NCURSES_LIBS(ncursesw)
 		CF_NCURSES_VERSION
+		CF_XOPEN_CURSES
+		test "$cf_cv_need_xopen_extension" = unknown && AC_ERROR(X/Open curses not found)
 		;;
 	curses) #(vi
 		CF_CURSES_CPPFLAGS
-		CF_NCURSES_VERSION
 		CF_CURSES_LIBS
+		CF_NCURSES_VERSION
+		CF_XOPEN_CURSES
 		;;
 	esac
 fi

@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2002-01-29
+ *  Updated   : 2002-11-11
  *  Notes     :
  *
  * Copyright (c) 1997-2002 Urs Janssen <urs@tin.org>
@@ -666,13 +666,13 @@ extern void str_lwr(char *str);
 #	define strrstr(s,p)	my_strrstr(s,p)
 #endif /* !HAVE_STRRSTR */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	extern void wcspart (wchar_t *to, const wchar_t *from, int columns, int size_to);
+	extern void wcspart(wchar_t *to, const wchar_t *from, int columns, int size_to);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 /* tags.c */
 extern int line_is_tagged(int n);
 extern int tag_multipart(int base_index);
-extern t_bool bSetRange(int iLevel, int iNumMin, int iNumMax, int iNumCur);
+extern t_bool set_range(int level, int min, int max, int curr);
 extern t_bool tag_article(int art);
 extern t_bool untag_all_articles(void);
 extern void do_auto_select_arts(void);

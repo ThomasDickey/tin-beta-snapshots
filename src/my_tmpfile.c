@@ -47,7 +47,7 @@
  * returncodes:
  * >0 = file descriptor of tmpfile
  *      if need_name is set to true and/or we have to unlink the file
- *      ourself. filename if set to the name of the tmp file located in
+ *      ourself. filename is set to the name of the tmp file located in
  *      base_dir
  * -1 = some error occured
  */

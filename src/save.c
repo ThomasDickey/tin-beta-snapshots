@@ -217,15 +217,10 @@ fprintf(stderr, "start_save: create_path(%s)\n", tmp);
 					 *       reading via NNTP, artfp later is used in
 					 *       copy_fp() which badly fails in that case.
 					 */
-#if 0
-					if ((artfp = open_art_fp(group_path, arts[j].artnum)) == NULL)
-						continue;
-#else
 					artfp = open_art_fp(group_path, arts[j].artnum);
 					/* FIXME! */
 					if (artfp == FAKE_NNTP_FP || artfp == NULL)
 						continue;
-#endif /* 0 */
 
 					if (function == MAIL_ANY_NEWS)
 						snprintf(savefile, sizeof(savefile) - 1, "%stin.%d", TMPDIR, (int) process_id);

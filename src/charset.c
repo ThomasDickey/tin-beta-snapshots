@@ -411,7 +411,7 @@ convert_body2printable(
 
 	if (mbstowcs(wbuffer, buf, LEN - 1) != (size_t) (-1)) {
 		for (wc = wbuffer; *wc; wc++) {
-			if(!(iswprint((wint_t) *wc) || *wc == (wchar_t) 8 || *wc == (wchar_t) 9 || *wc == (wchar_t) 10 || *wc == (wchar_t) 12 || *wc == (wchar_t) 13))
+			if (!(iswprint((wint_t) *wc) || *wc == (wchar_t) 8 || *wc == (wchar_t) 9 || *wc == (wchar_t) 10 || *wc == (wchar_t) 12 || *wc == (wchar_t) 13))
 				*wc = (wchar_t) '?';
 		}
 		wc++;
@@ -424,7 +424,7 @@ convert_body2printable(
 #else
 	unsigned char *c;
 
-	for (c = (unsigned char *)buf; *c; c++) {
+	for (c = (unsigned char *) buf; *c; c++) {
 		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13))
 			*c = '?';
 	}

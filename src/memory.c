@@ -90,7 +90,7 @@ init_alloc(
 	max_newnews = DEFAULT_NEWNEWS_NUM;
 
 	active = my_malloc(sizeof(*active) * max_active);
-	newnews =  my_malloc(sizeof(*newnews) * max_newnews);
+	newnews = my_malloc(sizeof(*newnews) * max_newnews);
 	my_group = my_calloc(1, sizeof(int) * max_active);
 
 	/*

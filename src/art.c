@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-11-05
+ *  Updated   : 2002-11-11
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -908,12 +908,21 @@ parse_headers(
 		 * Look for the end of information which tin wants to get.
 		 * Applies when reading local spool and via NNTP.
 		 */
+
+		/*
+		 * as Archive-name: is placed in the body it's safe to exit
+		 * the loop if it was found.
+		 */
 		if (lineno++ > max_lineno || h->archive)
 			break;
 
 		unfold_header(ptr);
-		switch (toupper((unsigned char)*ptr)) {
+		switch (toupper((unsigned char) *ptr)) {
 			case 'A':	/* Archive-name:  optional */
+			   /*
+			    * TODO: this is last match counts, all others are first match
+			    *       counts - why the exception here?
+			    */
 				if ((hdr = parse_header(ptr + 1, "rchive-name", FALSE))) {
 					/* TODO - what if header of form news/group/name/part01? */
 					if ((s = strrchr(hdr, '/')) != NULL) {
@@ -924,7 +933,7 @@ parse_headers(
 							h->patch = my_strdup(s + 6);
 							strtok(h->patch, "\n");
 						} else
-							continue;
+							continue;	/* TODO: why not use the header in this case? */
 
 						strtok(hdr, "/");
 						h->archive = hash_str(hdr);
@@ -1050,7 +1059,6 @@ parse_headers(
  * 	 7.  Byte count     (Skipped - not used)     [mandatory]
  * 	 8.  Lines: line    (ie. 23)                 [optional]
  * 	 9.  Xref: line     (ie. alt.test:389)       [optional]
- * 	10.  Archive-name:  (ie. widget/part01)      [optional]
  */
 static int
 read_nov_file(

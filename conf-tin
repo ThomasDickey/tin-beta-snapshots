@@ -34,10 +34,9 @@ echo "Making with $CC $CFLAGS"
 CFLAGS="$CFLAGS" \
 CC="$CC" \
 ./configure --verbose \
-	--enable-nntp-only \
-	--enable-prototypes \
 	--disable-echo \
-	--disable-mime-strict-charset \
+	--enable-prototypes \
+	--enable-nntp-only \
 	--with-domain-name=/etc/NNTP_INEWS_DOMAIN \
 	--with-coffee \
         $OPTS $* 2>&1 |tee -a $OUT

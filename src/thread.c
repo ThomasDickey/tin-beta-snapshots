@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2001-11-10
+ *  Updated   : 2002-11-11
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -493,7 +493,7 @@ thread_page(
 				break;
 
 			case iKeySetRange:	/* set range */
-				if (bSetRange(THREAD_LEVEL, 0, thdmenu.max, thdmenu.curr))
+				if (set_range(THREAD_LEVEL, 1, thdmenu.max, thdmenu.curr + 1))
 					show_thread_page();
 				break;
 

@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-04-15
+ *  Updated   : 2002-11-11
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -273,7 +273,7 @@ group_page(
 				break;
 
 			case iKeySetRange:	/* set range */
-				if (bSetRange(GROUP_LEVEL, 1, grpmenu.max, grpmenu.curr + 1)) {
+				if (set_range(GROUP_LEVEL, 1, grpmenu.max, grpmenu.curr + 1)) {
 					range_active = TRUE;
 					show_group_page();
 				}

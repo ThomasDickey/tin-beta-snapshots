@@ -3,7 +3,7 @@
  *  Module    : tags.c
  *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
  *  Created   : 1999-12-06
- *  Updated   : 1999-12-06
+ *  Updated   : 2002-11-11
  *  Notes     : Split out from other modules
  *
  * Copyright (c) 1999-2002 Jason Faultless <jason@radar.tele2.co.uk>
@@ -45,8 +45,7 @@
 static int get_multipart_info(int base_index, MultiPartInfo *setme);
 static int get_multiparts(int base_index, MultiPartInfo **malloc_and_setme_info);
 static int look_for_multipart_info(int base_index, MultiPartInfo *setme, char start, char stop, int *offset);
-static t_bool bParseRange(char *pcRange, int iNumMin, int iNumMax, int iNumCur, int *piRngMin, int *piRngMax);
-static void vDelRange(int iLevel, int iNumMax);
+static t_bool parse_range(char *range, int min, int max, int curr, int *range_start, int *range_end);
 
 int num_of_tagged_arts = 0;
 
@@ -100,7 +99,7 @@ look_for_multipart_info(
 
 	/* parse the message */
 	subj = arts[base[base_index]].subject;
-	if(!(pch = strrchr(subj, start)))
+	if (!(pch = strrchr(subj, start)))
 		return 0;
 	if (!isdigit((int) pch[1]))
 		return 0;
@@ -116,7 +115,7 @@ look_for_multipart_info(
 		return 0;
 	tmp.subject = subj;
 	*setme = tmp;
-	*offset = pch-subj;
+	*offset = pch - subj;
 	return 1;
 }
 
@@ -248,6 +247,10 @@ tag_multipart(
 }
 
 
+/*
+ * Return the highest tag number of any article in thread
+ * rooted at base[n]
+ */
 int
 line_is_tagged(
 	int n)
@@ -337,6 +340,9 @@ untag_all_articles(
 /*
  * Allows user to specify an group/article range that a followup
  * command will operate on (eg. catchup articles 1-56) # 1-56 K
+ * min/max/curr are the lowest/highest and current positions on the
+ * menu from which this was called; used as defaults if needed
+ * Return TRUE if a range was successfully read, parsed and set
  *
  * Allowed syntax is 0123456789-.$ (blanks are ignored):
  *   1-23    mark grp/art 1 thru 23
@@ -345,176 +351,160 @@ untag_all_articles(
  *   .-$     mark grp/art current thru last
  */
 t_bool
-bSetRange(
-	int iLevel,
-	int iNumMin,
-	int iNumMax,
-	int iNumCur)
+set_range(
+	int level,
+	int min,
+	int max,
+	int curr)
 {
-	char *pcPtr;
-	int iIndex;
-	int iNum;
-	int iRngMin;
-	int iRngMax;
-	t_bool bRetCode = FALSE;
+	char *range;
+	int artnum;
+	int i;
+	int depth;
+	int range_min;
+	int range_max;
 
-	switch (iLevel) {
+	switch (level) {
 		case SELECT_LEVEL:
-			pcPtr = tinrc.default_range_select;
+			range = tinrc.default_range_select;
 			break;
 
 		case GROUP_LEVEL:
-			pcPtr = tinrc.default_range_group;
+			range = tinrc.default_range_group;
 			break;
 
 		case THREAD_LEVEL:
-			pcPtr = tinrc.default_range_thread;
+			range = tinrc.default_range_thread;
 			break;
 
 		default:
-			return bRetCode;
+			return FALSE;
 	}
 
 #if 0
-	error_message("Min=[%d] Max=[%d] Cur=[%d] DefRng=[%s]", iNumMin, iNumMax, iNumCur, pcPtr);
+	error_message("Min=[%d] Max=[%d] Cur=[%d] DefRng=[%s]", min, max, curr, range);
 #endif /* 0 */
-	sprintf(mesg, _(txt_enter_range), pcPtr);
+	sprintf(mesg, _(txt_enter_range), range);
 
-	if (!(prompt_string_default(mesg, pcPtr, _(txt_range_invalid), HIST_OTHER)))
-		return bRetCode;
+	if (!(prompt_string_default(mesg, range, _(txt_range_invalid), HIST_OTHER)))
+		return FALSE;
 
 	/*
 	 * Parse range string
 	 */
-	if (!bParseRange(pcPtr, iNumMin, iNumMax, iNumCur, &iRngMin, &iRngMax))
+	if (!parse_range(range, min, max, curr, &range_min, &range_max)) {
 		info_message(_(txt_range_invalid));
-	else {
-		bRetCode = TRUE;
-		switch (iLevel) {
-			case SELECT_LEVEL:
-				vDelRange(iLevel, iNumMax);
-				for (iIndex = iRngMin - 1; iIndex < iRngMax; iIndex++)
-					active[my_group[iIndex]].inrange = TRUE;
-				break;
-
-			case GROUP_LEVEL:
-				vDelRange(iLevel, iNumMax);
-				for (iIndex = iRngMin - 1; iIndex < iRngMax; iIndex++) {
-					for_each_art_in_thread(iNum, iIndex)
-						arts[iNum].inrange = TRUE;
-				}
-				break;
-
-			case THREAD_LEVEL:
-				vDelRange(iLevel, selmenu.max);
-				for (iNum = 0, iIndex = base[thread_basenote]; iIndex >= 0; iIndex = arts[iIndex].thread, iNum++) {
-					if (iNum >= iRngMin && iNum <= iRngMax)
-						arts[iIndex].inrange = TRUE;
-				}
-				break;
-
-			default:
-				bRetCode = FALSE;
-				break;
-		}
-	}
-	return bRetCode;
-}
-
-
-static t_bool
-bParseRange(
-	char *pcRange,
-	int iNumMin,
-	int iNumMax,
-	int iNumCur,
-	int *piRngMin,
-	int *piRngMax)
-{
-	char *pcPtr;
-	t_bool bRetCode = FALSE;
-	t_bool bSetMax = FALSE;
-	t_bool bDone = FALSE;
-
-	pcPtr = pcRange;
-	*piRngMin = -1;
-	*piRngMax = -1;
-
-	while (*pcPtr && !bDone) {
-		if (*pcPtr >= '0' && *pcPtr <= '9') {
-			if (bSetMax) {
-				*piRngMax = atoi(pcPtr);
-				bDone = TRUE;
-			} else
-				*piRngMin = atoi(pcPtr);
-			while (*pcPtr >= '0' && *pcPtr <= '9')
-				pcPtr++;
-		} else {
-			switch (*pcPtr) {
-				case '-':
-					bSetMax = TRUE;
-					break;
-
-				case '.':
-					if (bSetMax) {
-						*piRngMax = iNumCur;
-						bDone = TRUE;
-					} else
-						*piRngMin = iNumCur;
-					break;
-
-				case '$':
-					if (bSetMax) {
-						*piRngMax = iNumMax;
-						bDone = TRUE;
-					}
-					break;
-
-				default:
-					break;
-			}
-			pcPtr++;
-		}
+		return FALSE;
 	}
 
-	if (*piRngMin >= iNumMin && *piRngMax > iNumMin && *piRngMax <= iNumMax)
-		bRetCode = TRUE;
-
-	return bRetCode;
-}
-
-
-static void
-vDelRange(
-	int iLevel,
-	int iNumMax)
-{
-	int iIndex;
-
-	switch (iLevel) {
+	switch (level) {
 		case SELECT_LEVEL:
-			for (iIndex = 0; iIndex < iNumMax - 1; iIndex++)
-				active[iIndex].inrange = FALSE;
+			for (i = 0; i < max; i++)			/* Clear existing range */
+				active[my_group[i]].inrange = FALSE;
+
+			for (i = range_min - 1; i < range_max; i++)
+				active[my_group[i]].inrange = TRUE;
 			break;
 
 		case GROUP_LEVEL:
-			{
-				int iNum;
-				for (iIndex = 0; iIndex < iNumMax - 1; iIndex++) {
-					for_each_art_in_thread(iNum, iIndex)
-						arts[iNum].inrange = FALSE;
-				}
+			for (i = 0; i < max; i++) {			/* Clear existing range */
+				for_each_art_in_thread(artnum, i)
+					arts[artnum].inrange = FALSE;
+			}
+
+			for (i = range_min - 1; i < range_max; i++) {
+				for_each_art_in_thread(artnum, i)
+					arts[artnum].inrange = TRUE;
 			}
 			break;
 
 		case THREAD_LEVEL:
-			for (iIndex = 0; iIndex < iNumMax - 1; iIndex++)
-				arts[iIndex].inrange = FALSE;
+			/*
+			 * Debatably should clear all of arts[] depending on how you
+			 * interpret the (non)spec
+			 */
+			for (i = 0; i < grpmenu.max; i++) {			/* Clear existing range */
+				for_each_art_in_thread(artnum, i)
+					arts[artnum].inrange = FALSE;
+			}
+
+			depth = 1;
+			for_each_art_in_thread(artnum, thread_basenote) {
+				if (depth > range_max)
+					break;
+				if (depth >= range_min)
+					arts[artnum].inrange = TRUE;
+				depth++;
+			}
 			break;
 
 		default:
+			return FALSE;
 			break;
 	}
+	return TRUE;
+}
+
+
+/*
+ * Parse 'range', return the range start and end values in range_start and range_end
+ * min/max/curr are used to select defaults when n explicit start/end are given
+ */
+static t_bool
+parse_range(
+	char *range,
+	int min,
+	int max,
+	int curr,
+	int *range_start,
+	int *range_end)
+{
+	char *ptr = range;
+	enum states { FINDMIN, FINDMAX, DONE };
+	int state = FINDMIN;
+	t_bool ret = FALSE;
+
+	*range_start = -1;
+	*range_end = -1;
+
+	while (*ptr && state != DONE) {
+		if (isdigit(*ptr)) {
+			if (state == FINDMAX) {
+				*range_end = atoi (ptr);
+				state = DONE;
+			} else
+				*range_start = atoi (ptr);
+			while (isdigit(*ptr))
+				ptr++;
+		} else {
+			switch (*ptr) {
+				case '-':
+					state = FINDMAX;
+					break;
+				case '.':
+					if (state == FINDMAX) {
+						*range_end = curr;
+						state = DONE;
+					} else
+						*range_start = curr;
+					break;
+				case '$':
+					if (state == FINDMAX) {
+						*range_end = max;
+						state = DONE;
+					}
+					break;
+				default:
+					break;
+			}
+			ptr++;
+		}
+	}
+
+	if (*range_start >= min && *range_end >= *range_start && *range_end <= max)
+		ret = TRUE;
+
+	return ret;
 }
 
 

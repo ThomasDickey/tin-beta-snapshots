@@ -49,7 +49,7 @@
 static int boundary_cmp(const char *line, const char *boundary);
 static int count_lines(char *line);
 static int parse_multipart_article(FILE *infile, t_openartinfo *artinfo, t_part *part, int depth, t_bool show_progress_meter);
-static int parse_normal_article( FILE *in, t_openartinfo *artinfo, t_bool show_progress_meter);
+static int parse_normal_article(FILE *in, t_openartinfo *artinfo, t_bool show_progress_meter);
 static int parse_rfc2045_article(FILE *infile, int line_count, t_openartinfo *artinfo, t_bool show_progress_meter);
 static unsigned parse_content_encoding(const char *encoding);
 static void add_persist(struct t_header *hdr, const char *p_header, char *p_content);

@@ -115,7 +115,7 @@ enum resizer { cNo, cYes, cRedraw };
 #	ifdef __DECC
 #		include <unixio.h>
 #	else
-#		ifndef __VMS_VER  /* assume old types.h */
+#		ifndef __VMS_VER	/* assume old types.h */
 			typedef unsigned short mode_t;
 #			undef HAVE_STRFTIME
 #		endif /* !__VMS_VER */
@@ -160,11 +160,11 @@ enum resizer { cNo, cYes, cRedraw };
 #		endif /* VAXC */
 #		include <types.h>
 #	endif /* !MULTINET */
-#	define FOPEN_OPTS       , "fop=cif"
-#	define JOINPATH			joindir
+#	define FOPEN_OPTS		, "fop=cif"
+#	define JOINPATH		joindir
 #else
 #	define FOPEN_OPTS
-#	define JOINPATH			joinpath
+#	define JOINPATH		joinpath
 #endif /* VMS */
 
 #include <stdio.h>
@@ -703,7 +703,7 @@ enum resizer { cNo, cYes, cRedraw };
 #define DEFAULT_STRIP_WAS_REGEX	".\\((?:[Ww]a[rs]|[Bb]y[l³]o):.*\\)\\s*$"
 /*
  * overkill regexp for balanced '()':
- * #define DEFAULT_STRIP_WAS_REGEX  ".\\((?:[Ww]a[rs]|[Bb]y[l³]o):(?:(?:[^)(])*(?:\\([^)(]*\\))*)+\\)\\s*$"
+ * #define DEFAULT_STRIP_WAS_REGEX	".\\((?:[Ww]a[rs]|[Bb]y[l³]o):(?:(?:[^)(])*(?:\\([^)(]*\\))*)+\\)\\s*$"
  */
 
 /* case sensitive & ^-anchored */
@@ -804,6 +804,11 @@ enum resizer { cNo, cYes, cRedraw };
 #ifndef CODESET
 #	define CODESET ((nl_item) 1)
 #endif /* CODESET */
+
+/* TODO: move up to the 'right' place */
+#ifdef HAVE_SYS_FILE_H
+#	include <sys/file.h>
+#endif /* HAVE_SYS_FILE_H */
 
 #ifdef HAVE_LIBUTF8_H
 #	include <libutf8.h>
@@ -956,9 +961,9 @@ enum resizer { cNo, cYes, cRedraw };
 /* ie, size of header */
 #define INDEX_TOP	2
 
-#define GROUP_MATCH(s1, pat, case)		(wildmat (s1, pat, case))
+#define GROUP_MATCH(s1, pat, case)		(wildmat(s1, pat, case))
 
-#define REGEX_MATCH(s1, pat, case)	(wildcard_func (s1, pat, case))
+#define REGEX_MATCH(s1, pat, case)	(wildcard_func(s1, pat, case))
 #define REGEX_FMT (tinrc.wildcard ? "%s" : "*%s*")
 
 #define IGNORE_ART(i)	((tinrc.kill_level != KILL_THREAD && arts[i].killed) || (arts[i].thread == ART_EXPIRED))
@@ -1410,13 +1415,13 @@ struct t_article {
 	int tagged;			/* 0 = not tagged, >0 = tagged */
 	int thread;
 	int score;			/* score article has reached after filtering */
-	unsigned int status:2;     /* 0 = read, 1 = unread, 2 = will return */
-	unsigned int killed:1;     /* 0 = not killed, 1 = killed */
-	unsigned int zombie:1;     /* 1 = was alive (unread) before 'X' command */
-	unsigned int delete_it:1;  /* 1 = delete art when leaving group [mail group] */
-	unsigned int inthread:1;   /* 0 = thread head, 1 = thread follower */
-	t_bool selected:1;   /* FALSE = not selected, TRUE = selected */
-	t_bool inrange:1;    /* TRUE = article selected via # range command */
+	unsigned int status:2;	/* 0 = read, 1 = unread, 2 = will return */
+	unsigned int killed:1;	/* 0 = not killed, 1 = killed */
+	unsigned int zombie:1;	/* 1 = was alive (unread) before 'X' command */
+	unsigned int delete_it:1;	/* 1 = delete art when leaving group [mail group] */
+	unsigned int inthread:1;	/* 0 = thread head, 1 = thread follower */
+	t_bool selected:1;	/* FALSE = not selected, TRUE = selected */
+	t_bool inrange:1;	/* TRUE = article selected via # range command */
 };
 
 /*
@@ -2081,7 +2086,7 @@ typedef void (*BodyPtr) (char *, FILE *, int);
  * argument can't be a pointer and if argument is changed on return
  * we must unlik the tmp-file ourself
  */
-#	define my_tmpfile_only(a)  my_tmpfile(a, sizeof(a) - 1, FALSE, (char *) 0)
+#	define my_tmpfile_only(a)	my_tmpfile(a, sizeof(a) - 1, FALSE, (char *) 0)
 #endif /* !my_tmpfile_only */
 
 
@@ -2104,7 +2109,7 @@ typedef void (*BodyPtr) (char *, FILE *, int);
 
 /*
  * We force this include-ordering since socks.h contains redefinitions of
- * functions that probably are prototyped via other includes.  The socks.h
+ * functions that probably are prototyped via other includes. The socks.h
  * definitions have to be included everywhere, since they're making wrappers
  * for the stdio functions as well as the network functions.
  */
@@ -2153,9 +2158,9 @@ extern struct tm *localtime(time_t *);
 
 /* FXIME: use autoconf here to detect if stat(2)-structure has st_mtime */
 #ifndef M_AMIGA
-#	define FILE_CHANGED(file)  file_mtime(file)
+#	define FILE_CHANGED(file)	file_mtime(file)
 #else
-#	define FILE_CHANGED(file)  file_size(file)
+#	define FILE_CHANGED(file)	file_size(file)
 #endif /* M_AMIGA */
 
 /* snprintf(), vsnprintf() */
@@ -2166,23 +2171,18 @@ extern struct tm *localtime(time_t *);
 #	define vsnprintf	plp_vsnprintf
 #endif /* HAVE_VSNPRINTF */
 
-/* GCC-specific attributes */
-#if defined(__GNUC__) && !defined(__APPLE_CC__)
+/* gcc-specific attributes */
+#if defined(__GNUC__) && !defined(__cplusplus) && !defined(__APPLE_CC__)
 #	define UNUSED(x) x __attribute__((unused))
 #else
 #	define UNUSED(x) x
-#endif /* __GNUC__ && !__APPLE_CC__ */
-
+#endif /* __GNUC__ && !__cplusplus && !__APPLE_CC__ */
 
 /* init_selfinfo() needs MM_CHARSET */
 #ifndef MM_CHARSET
 #	define MM_CHARSET "US-ASCII"
 #endif /* !MM_CHARSET */
 
-/* TODO: move up to the 'right' place */
-#ifdef HAVE_SYS_FILE_H
-#	include <sys/file.h>
-#endif /* HAVE_SYS_FILE_H */
 
 #if !defined(SEEK_SET)
 #	define SEEK_SET 0L

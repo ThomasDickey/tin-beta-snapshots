@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2002-11-08 14:37+0100\n"
+"POT-Creation-Date: 2002-11-20 03:52+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,11 +30,11 @@ msgid "Server has non of the groups listed in %s"
 msgstr ""
 
 #. TODO: -> lang.c
-#: src/art.c:1569
+#: src/art.c:1577
 msgid "Catchup"
 msgstr ""
 
-#: src/art.c:1569
+#: src/art.c:1577
 msgid "Updating"
 msgstr ""
 
@@ -248,12 +248,12 @@ msgstr ""
 msgid "Insecure permissions of %s (%o)"
 msgstr ""
 
-#: src/cook.c:934 src/cook.c:953
+#: src/cook.c:945 src/cook.c:964
 msgid ", name: "
 msgstr ""
 
 #. FIXME: -> lang.c
-#: src/group.c:1583
+#: src/group.c:1574
 msgid " and enter next unread group"
 msgstr ""
 
@@ -1313,7 +1313,7 @@ msgid "search all articles for a given string (this may take some time)"
 msgstr ""
 
 #: src/lang.c:327
-msgid "\t  (searches are case-insensitive and wrap around to all articles)"
+msgid " \t  (searches are case-insensitive and wrap around to all articles)"
 msgstr ""
 
 #: src/lang.c:328
@@ -1517,7 +1517,7 @@ msgid "search backwards for a group name"
 msgstr ""
 
 #: src/lang.c:387
-msgid "\t  (all searches are case-insensitive and wrap around)"
+msgid " \t  (all searches are case-insensitive and wrap around)"
 msgstr ""
 
 #: src/lang.c:388
@@ -3175,7 +3175,7 @@ msgid ""
 "\n"
 "Warning: You are using a non-plain transfer encoding (such as base64 or\n"
 "         quoted-printable) and an external inews program to submit your\n"
-"         article.  If a signature is appended by that inews program it will\n"
+"         article. If a signature is appended by that inews program it will\n"
 "         not be encoded properly.\n"
 msgstr ""
 
@@ -3644,20 +3644,20 @@ msgid "Filtering Options"
 msgstr ""
 
 #: src/lang.c:1196 src/lang.c:1222 src/lang.c:1228 src/lang.c:1235
-#: src/lang.c:1267 src/lang.c:1273 src/lang.c:1281 src/lang.c:1287
-#: src/lang.c:1294 src/lang.c:1301 src/lang.c:1307 src/lang.c:1382
-#: src/lang.c:1388 src/lang.c:1523 src/lang.c:1529 src/lang.c:1543
-#: src/lang.c:1549 src/lang.c:1555 src/lang.c:1567 src/lang.c:1574
-#: src/lang.c:1625 src/lang.c:1631 src/lang.c:1637 src/lang.c:1643
-#: src/lang.c:1649 src/lang.c:1655 src/lang.c:1661 src/lang.c:1667
-#: src/lang.c:1673 src/lang.c:1679 src/lang.c:1685 src/lang.c:1691
-#: src/lang.c:1697 src/lang.c:1703 src/lang.c:1709 src/lang.c:1715
-#: src/lang.c:1721 src/lang.c:1727 src/lang.c:1733 src/lang.c:1739
-#: src/lang.c:1747 src/lang.c:1753 src/lang.c:1758 src/lang.c:1763
-#: src/lang.c:1770 src/lang.c:1788 src/lang.c:1822 src/lang.c:1876
-#: src/lang.c:1883 src/lang.c:1889 src/lang.c:1928 src/lang.c:1945
-#: src/lang.c:1998 src/lang.c:2031 src/lang.c:2051 src/lang.c:2086
-#: src/lang.c:2094 src/lang.c:2124 src/lang.c:2136
+#: src/lang.c:1267 src/lang.c:1273 src/lang.c:1281 src/lang.c:1301
+#: src/lang.c:1307 src/lang.c:1382 src/lang.c:1388 src/lang.c:1523
+#: src/lang.c:1529 src/lang.c:1543 src/lang.c:1549 src/lang.c:1555
+#: src/lang.c:1567 src/lang.c:1574 src/lang.c:1625 src/lang.c:1631
+#: src/lang.c:1637 src/lang.c:1643 src/lang.c:1649 src/lang.c:1655
+#: src/lang.c:1661 src/lang.c:1667 src/lang.c:1673 src/lang.c:1679
+#: src/lang.c:1685 src/lang.c:1691 src/lang.c:1697 src/lang.c:1703
+#: src/lang.c:1709 src/lang.c:1715 src/lang.c:1721 src/lang.c:1727
+#: src/lang.c:1733 src/lang.c:1739 src/lang.c:1747 src/lang.c:1753
+#: src/lang.c:1758 src/lang.c:1763 src/lang.c:1770 src/lang.c:1788
+#: src/lang.c:1822 src/lang.c:1876 src/lang.c:1883 src/lang.c:1889
+#: src/lang.c:1928 src/lang.c:1945 src/lang.c:1998 src/lang.c:2031
+#: src/lang.c:2051 src/lang.c:2086 src/lang.c:2094 src/lang.c:2124
+#: src/lang.c:2136
 msgid "<SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr ""
 
@@ -3744,7 +3744,7 @@ msgid ""
 msgstr ""
 
 #: src/lang.c:1242
-msgid "Sort article by                    :"
+msgid "Sort articles by                   :"
 msgstr ""
 
 #: src/lang.c:1243
@@ -3820,6 +3820,11 @@ msgid ""
 "level\n"
 msgstr ""
 
+#: src/lang.c:1287
+msgid ""
+"Scrolling with <SPACE> past the end of an art. jumps to the next unread one."
+msgstr ""
+
 #: src/lang.c:1288
 msgid "Space goes to next unread article  :"
 msgstr ""
@@ -3830,8 +3835,13 @@ msgid ""
 "# level when the end of the article is reached (rn-style pager)\n"
 msgstr ""
 
+#: src/lang.c:1294
+msgid ""
+"Scrolling with <PGDN>/<DOWN> past the end of an art. jumps to the unread one."
+msgstr ""
+
 #: src/lang.c:1295
-msgid "PgDn goes to next article at EOF   :"
+msgid "PgDn goes to next unread article   :"
 msgstr ""
 
 #: src/lang.c:1296
@@ -4391,7 +4401,7 @@ msgid "Enter default score to kill articles. <CR> sets."
 msgstr ""
 
 #: src/lang.c:1607
-msgid "Score (kill)                       :"
+msgid "Default score to kill articles     :"
 msgstr ""
 
 #: src/lang.c:1608
@@ -4415,7 +4425,7 @@ msgid "Enter default score to select articles. <CR> sets."
 msgstr ""
 
 #: src/lang.c:1619
-msgid "Score (select)                     :"
+msgid "Default score to select articles   :"
 msgstr ""
 
 #: src/lang.c:1620
@@ -5748,7 +5758,7 @@ msgid "Unreachable ?\n"
 msgstr ""
 
 #. FIXME: replace 'Thread' by 'Article' if THREAD_NONE
-#: src/page.c:730 src/save.c:542 src/thread.c:701
+#: src/page.c:730 src/save.c:537 src/thread.c:701
 msgid "Thread"
 msgstr ""
 
@@ -5795,41 +5805,41 @@ msgid "[- Unavailable -]"
 msgstr ""
 
 #. TODO maybe print something more context dependent here? -> lang.c
-#: src/save.c:518
+#: src/save.c:513
 msgid "No articles to save"
 msgstr ""
 
 #. FIMME: -> lang.c
-#: src/save.c:528
+#: src/save.c:523
 #, c-format
 msgid "Warning: Only %d out of %d articles were saved"
 msgstr ""
 
-#: src/save.c:534
+#: src/save.c:529
 #, c-format
 msgid "Hot %s"
 msgstr ""
 
-#: src/save.c:538
+#: src/save.c:533
 #, c-format
 msgid "Tagged %s"
 msgstr ""
 
-#: src/save.c:557
+#: src/save.c:552
 #, c-format
 msgid "-- %s saved to %s%s --"
 msgstr ""
 
-#: src/save.c:558 src/save.c:561
+#: src/save.c:553 src/save.c:556
 msgid "mailbox "
 msgstr ""
 
-#: src/save.c:560
+#: src/save.c:555
 #, c-format
 msgid "-- %s saved to %s%s - %s --"
 msgstr ""
 
-#: src/save.c:1115
+#: src/save.c:1110
 msgid "bytes"
 msgstr ""
 
@@ -5851,16 +5861,16 @@ msgstr ""
 msgid "%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n"
 msgstr ""
 
-#: src/tags.c:220
+#: src/tags.c:219
 msgid "Not a multi-part message"
 msgstr ""
 
-#: src/tags.c:224
+#: src/tags.c:223
 #, c-format
 msgid "Missing part #%d"
 msgstr ""
 
-#: src/tags.c:246
+#: src/tags.c:245
 msgid "All parts tagged"
 msgstr ""
 
