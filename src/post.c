@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-04-24
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -186,14 +186,14 @@ prompt_to_send(
 {
 	char buf[LEN];
 	char keyedit[MAXKEYLEN];
+	char keyquit[MAXKEYLEN];
+	char keysend[MAXKEYLEN];
 #ifdef HAVE_ISPELL
 	char keyispell[MAXKEYLEN];
 #endif /* HAVE_ISPELL */
 #ifdef HAVE_PGP_GPG
 	char keypgp[MAXKEYLEN];
 #endif /* HAVE_PGP_GPG */
-	char keyquit[MAXKEYLEN];
-	char keysend[MAXKEYLEN];
 
 	snprintf(buf, sizeof(buf), _(txt_quit_edit_send),
 					printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.post_send)),
@@ -506,7 +506,7 @@ user_posted_messages(
 			posted[i - 1].date, posted[i - 1].action,
 			(int) group_len, posted[i - 1].group, posted[i - 1].subj);
 		buf[cCOLS - 2] = '\0';
-		fprintf(fp, "%s" cCRLF, buf);
+		fprintf(fp, "%s%s", buf, cCRLF);
 	}
 	FreeAndNull(posted);
 	info_pager(fp, _(txt_post_history_menu), TRUE);
@@ -542,9 +542,9 @@ update_posted_info_file(
 		(void) time(&epoch);
 		pitm = localtime(&epoch);
 		if (*a_message_id)
-			fprintf(fp, "%02d-%02d-%02d|%c|%s|%s|%s\n", pitm->tm_mday, pitm->tm_mon + 1, pitm->tm_year % 100, action, group, subj, a_message_id);
+			fprintf(fp, "%02d-%02d-%02d|%c|%s|%s|%s\n", pitm->tm_mday, pitm->tm_mon + 1, pitm->tm_year % 100, action, BlankIfNull(group), BlankIfNull(subj), a_message_id);
 		else
-			fprintf(fp, "%02d-%02d-%02d|%c|%s|%s\n", pitm->tm_mday, pitm->tm_mon + 1, pitm->tm_year % 100, action, group, subj);
+			fprintf(fp, "%02d-%02d-%02d|%c|%s|%s\n", pitm->tm_mday, pitm->tm_mon + 1, pitm->tm_year % 100, action, BlankIfNull(group), BlankIfNull(subj));
 		if (ferror(fp) || fclose(fp)) {
 			error_message(_(txt_filesystem_full), posted_info_file);
 			rename_file(file_tmp, posted_info_file);
@@ -700,7 +700,7 @@ append_mail(
 #	define CA_WARNING_NEWLINE_IN_FOLLOWUP_TO 0x000400
 #endif /* FOLLOW_USEFOR_DRAFT */
 /*
- * TODO: - cleanup
+ * TODO: cleanup
  */
 static t_bool
 check_article_to_be_posted(
@@ -1022,10 +1022,9 @@ check_article_to_be_posted(
 				char *s = subject;
 				t_bool was_found = FALSE;
 
-				while (!was_found && (s = strchr(s, '('))) {
-					s++;
-					was_found =(strncmp(s, "was:", 4) == 0);
-				}
+				while (!was_found && (s = strchr(s, '(')))
+					was_found = (strncmp(++s, "was:", 4) == 0);
+
 				if (!was_found)
 					warnings_catbp |= CA_WARNING_REFERENCES_WITHOUT_RE;
 			}
@@ -1068,16 +1067,18 @@ check_article_to_be_posted(
 			sig_lines++;
 
 		/* SIGDASHES excluding the terminating \n as we removed it from line right above */
-		if (!strncmp(line, SIGDASHES, 3)) {
+		if (strlen(line)==3 && !strncmp(line, SIGDASHES, 3)) {
 			saw_wrong_sig_dashes = FALSE;
 			saw_sig_dashes++;
 			sig_lines = 0;
 		}
-		/* SIGDASHES excluding the taling SAPCE (and '\n', see comment above) */
-		if (!strncmp(line, SIGDASHES, 2) && !saw_sig_dashes) {
+
+		/* SIGDASHES excluding the tailing SAPCE (and '\n', see comment above) */
+		if (strlen(line)==2 && !strncmp(line, SIGDASHES, 2) && !saw_sig_dashes) {
 			saw_wrong_sig_dashes = TRUE;
 			sig_lines = 0;
 		}
+
 		col = 0;
 		for (cp = line; *cp; cp++) {
 			if (!contains_8bit && !isascii(*cp))
@@ -1130,16 +1131,14 @@ check_article_to_be_posted(
 	 */
 	for (i = 0; *txt_mime_7bit_charsets[i]; i++) {
 #ifdef CHARSET_CONVERSION
-		if (!strcasecmp(txt_mime_charsets[*group ? (*group)->attribute->mm_network_charset : tinrc.mm_network_charset], txt_mime_7bit_charsets[i])) {
-			mime_usascii = TRUE;
-			break;
-		}
+		if (!strcasecmp(txt_mime_charsets[*group ? (*group)->attribute->mm_network_charset : tinrc.mm_network_charset], txt_mime_7bit_charsets[i]))
 #else
-		if (!strcasecmp(tinrc.mm_charset, "US-ASCII")) {
+		if (!strcasecmp(tinrc.mm_charset, "US-ASCII"))
+#endif /* CHARSET_CONVERSION */
+		{
 			mime_usascii = TRUE;
 			break;
 		}
-#endif /* CHARSET_CONVERSION */
 	}
 	if (strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], "7bit"))
 		mime_7bit = FALSE;
@@ -1226,7 +1225,7 @@ check_article_to_be_posted(
 		if (warnings_catbp & CA_WARNING_REFERENCES_WITHOUT_RE)
 			my_fprintf(stderr, _(txt_warn_references_but_no_re));
 
-#ifdef FOLLOW_USEFOR_DRAFT /* TODO give useful warning */
+#ifdef FOLLOW_USEFOR_DRAFT /* TODO: give useful warning */
 		if (warnings_catbp & CA_WARNING_SPACE_IN_NEWSGROUPS)
 			my_fprintf(stderr, _(txt_warn_header_line_comma), "Newsgroups");
 		if (warnings_catbp & CA_WARNING_SPACE_IN_FOLLOWUP_TO)
@@ -1515,7 +1514,7 @@ post_article_loop:
 			/* Superfluous force_command stuff not used in current code */
 			ch = ( /* force_command ? ch_default : */ prompt_slk_response(ch,
 						&menukeymap.post_post, "%s", sized_message(buf,
-						"" /* TODO was note_h.subj */ )));
+						"" /* TODO: was note_h.subj */ )));
 		}
 	}
 
@@ -1579,13 +1578,7 @@ post_article_done:
 
 			switch (art_type) {
 				case GROUP_TYPE_NEWS:
-					if ((type == POST_RESPONSE) || (type == POST_POSTPONED && tag == 'f')) {
-						if (header.followup && !strcmp(header.followup, "poster"))
-							update_posted_info_file(header.to, tag, header.subj, "");
-						else
-							update_posted_info_file(header.newsgroups, tag, header.subj, a_message_id);
-					} else
-						update_posted_info_file(header.newsgroups, tag, header.subj, a_message_id);
+					update_posted_info_file(header.newsgroups, tag, header.subj, a_message_id);
 					break;
 
 				case GROUP_TYPE_MAIL:
@@ -1664,11 +1657,8 @@ check_moderated(
 		 * Testing for !attribute here is a useful check for other brokenness
 		 * Generally only bogus groups should have no attributes
 		 */
-		if (!psGrp->attribute || psGrp->bogus) {
-			if (psGrp->bogus)
-				error_message(_("%s is bogus"), group);
-			if (!psGrp->attribute)
-				error_message(_("No attributes for %s"), group);
+		if (psGrp->bogus) {
+			error_message(_("%s is bogus"), group);
 			return NULL;
 		}
 
@@ -1719,7 +1709,7 @@ create_normal_article_headers(
 	char from_name[HEADER_LEN];
 	char tmp[HEADER_LEN];
 
-	/* TODO combine with other code in tin that does the ... truncation? */
+	/* TODO: combine with other code in tin that does the ... truncation? */
 	/* Get subject for posting article - Limit the display if needed */
 	if (strlen(tinrc.default_post_subject) > DISPLAY_SUBJECT_LEN)
 		sprintf(tmp, "%.*s ...", DISPLAY_SUBJECT_LEN, tinrc.default_post_subject);
@@ -2058,7 +2048,7 @@ pickup_postponed_articles(
 			case iKeyQuit:
 			case iKeyAbort:
 				if (!append_mail(article, userid, postponed_articles_file)) {
-					/* TODO : error -message */
+					/* TODO: : error -message */
 				}
 				unlink(article);
 				if (ch != iKeyPromptNo)
@@ -2216,8 +2206,8 @@ is_crosspost(
 
 
 /*
- * TODO - if we have the art[x] that we are following up to, then
- *        get_references(art[x].refptr) will give us the new refs line
+ * TODO: if we have the art[x] that we are following up to, then
+ *       get_references(art[x].refptr) will give us the new refs line
  */
 static void
 join_references(
@@ -2405,8 +2395,10 @@ post_response(
 		while (*ptr) {
 			if (*ptr != ',')
 				my_fputc(*ptr, stdout);
-			else
-				my_fputs(cCRLF "    ", stdout);
+			else {
+				my_fputs(cCRLF, stdout);
+				my_fputs("    ", stdout);
+			}
 			ptr++;
 		}
 		my_flush();
@@ -2623,7 +2615,7 @@ create_mail_headers(
 
 	/* TODO: why do we exclude VMS here but nowhere else? */
 #if defined(APPEND_PID) && !defined(VMS)
-	snprintf(filename + strlen(filename), PATH_LEN - 1, ".%d", (int) process_id);
+	snprintf(filename + strlen(filename), PATH_LEN - strlen(filename), ".%d", (int) process_id);
 #endif /* APPEND_PID && !VMS */
 
 	if ((fp = fopen(filename, "w")) == NULL) {
@@ -2754,7 +2746,7 @@ mail_loop(
 				if (groupname)
 					group = group_find(groupname);
 				invoke_ispell(filename, group);
-/*				ret = POSTED_REDRAW; TODO is this needed, not that REDRAW does not imply OK */
+/*				ret = POSTED_REDRAW; TODO: is this needed, not that REDRAW does not imply OK */
 				break;
 #endif /* HAVE_ISPELL */
 
@@ -2789,6 +2781,7 @@ mail_loop(
 						confirm = FALSE;
 				}
 
+				/* TODO: wrap article into message/rfc822? */
 				if (confirm && submit_mail_file(filename, NULL)) {
 					info_message(_(txt_articles_mailed), 1, _(txt_article_singular));
 					return POSTED_OK;
@@ -3142,7 +3135,7 @@ mail_to_author(
 		 * doesn't notice it and logs the original value.
 		 */
 		if (ret_code == POSTED_OK)
-			update_posted_info_file(mail_to, 'r', subject, ""); /* TODO update_posted_info_file elsewhere? */
+			update_posted_info_file(mail_to, 'r', subject, ""); /* TODO: update_posted_info_file elsewhere? */
 	}
 
 	if (tinrc.unlink_article)
@@ -3272,9 +3265,8 @@ cancel_article(
 
 	joinpath(cancel, homedir, TIN_CANCEL_NAME);
 #ifdef APPEND_PID
-	snprintf(cancel + strlen(cancel), sizeof(cancel) - 1, ".%d", (int) process_id);
+	snprintf(cancel + strlen(cancel), sizeof(cancel) - strlen(cancel), ".%d", (int) process_id);
 #endif /* APPEND_PID */
-
 	if ((fp = fopen(cancel, "w")) == NULL) {
 		perror_message(_(txt_cannot_open), cancel);
 		return redraw_screen;
@@ -3441,7 +3433,7 @@ cancel_article(
 
 #ifndef FORGERY
 #	define FromSameUser	(strcasestr(from_name, arts[respnum].from))
-#	define NotSuperseding	(!supersede || (supersede && (!FromSameUser)))
+#	define NotSuperseding	(!supersede || (!FromSameUser))
 #	define Superseding	(supersede && FromSameUser)
 #else
 #	define NotSuperseding	(!supersede)
@@ -3800,13 +3792,13 @@ checknadd_headers(
 			} else {
 				char *ptr;
 
-				if ((ptr = parse_header(line, "Newsgroups", FALSE))) {
+				if ((ptr = parse_header(line, "Newsgroups", FALSE, FALSE))) {
 					strip_double_ngs(ptr);
 					strcpy(newsgroups, ptr);
 					sprintf(line, "Newsgroups: %s\n", newsgroups);
 				}
 
-				if ((ptr = parse_header(line, "Followup-To", FALSE))) {
+				if ((ptr = parse_header(line, "Followup-To", FALSE, FALSE))) {
 					strip_double_ngs(ptr);
 					/*
 					 * Only write followup header if not blank, no newsgroups header or
@@ -3963,7 +3955,7 @@ find_reply_to_addr(
 	 */
 	if (parse) {
 #if 1
-		/* TODO Return code ignored? */
+		/* TODO: Return code ignored? */
 		parse_from(ptr, from_addr, fname);
 #else
 		/* Or should we decode full_addr? */

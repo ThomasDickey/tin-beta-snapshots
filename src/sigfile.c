@@ -88,7 +88,7 @@ msg_write_signature(
 				while (fgets(cmd, PATH_LEN, pipe_fp))
 					fputs(cmd, fp);
 				pclose(pipe_fp);
-			}
+			} /* else issue an error-message? */
 			free(sigcmd);
 
 			return;
@@ -216,7 +216,7 @@ thrashdir(
 	 * consider "." and ".." non-entries
 	 * consider all entries starting with "." non-entries
 	 */
-	cwd = my_malloc(PATH_LEN + 1);
+	cwd = my_malloc(PATH_LEN);
 #ifndef M_AMIGA
 	if (numentries < 3 || cwd == NULL)
 #else

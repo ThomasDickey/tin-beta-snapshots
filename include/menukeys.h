@@ -3,7 +3,7 @@
  *  Module    : menukeys.h
  *  Author    : S.Robbins
  *  Created   : 1994-08-15
- *  Updated   : 2003-01-07
+ *  Updated   : 2003-03-29
  *  Notes     :
  *
  * Copyright (c) 1994-2003 Steve Robbins <stever@cs.mcgill.ca>
@@ -351,9 +351,9 @@
 
 #define iKeySaveAppendFile 'a'
 #define iKeySaveOverwriteFile 'o'
+#define iKeyPProcNo 'n'
 #define iKeyPProcShar 's'
-#define iKeyPProcUUDecode 'u'
-#define iKeyPProcNone 'n'
+#define iKeyPProcYes 'y'
 
 /* select.c */
 
@@ -448,10 +448,10 @@ typedef struct mkm {
 	t_menukeys thread_nav;
 } t_menukeymap;
 
-extern int handle_keypad (int (*left_action) (void), int (*right_action) (void), const t_menukeys *menukeys);
-extern int prompt_slk_response (int ch_default, const t_menukeys *responses, const char *fmt, ...);
-extern int map_to_local (const char key, const t_menukeys *menukeys);
-extern int map_to_default (const char key, const t_menukeys *menukeys);
+extern int handle_keypad(int (*left_action) (void), int (*right_action) (void), const t_menukeys *menukeys);
+extern int prompt_slk_response(int ch_default, const t_menukeys *responses, const char *fmt, ...);
+extern int map_to_local(const char key, const t_menukeys *menukeys);
+extern int map_to_default(const char key, const t_menukeys *menukeys);
 extern t_menukeymap menukeymap;
 
 #endif /* !MENUKEYS_H */

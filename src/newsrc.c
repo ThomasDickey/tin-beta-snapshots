@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-18
+ *  Updated   : 2003-04-13
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -95,7 +95,7 @@ read_newsrc(
 		newsrc_mode = statbuf.st_mode;
 
 	if ((fp = fopen(newsrc_file, "r")) != NULL) {
-		if (!batch_mode || (batch_mode && verbose))
+		if (!batch_mode || verbose)
 			wait_message(0, _(txt_reading_newsrc));
 
 		while ((grp = tin_fgets(fp, FALSE)) != NULL) {
@@ -285,7 +285,8 @@ auto_subscribe_groups(
 	if ((fp_subs = open_subscription_fp()) == NULL)
 		return;
 
-	wait_message(0, _(txt_autosubscribing_groups));
+	if (!batch_mode)
+		wait_message(0, _(txt_autosubscribing_groups));
 
 	if ((fp_newsrc = fopen(newsrc_file, "w" FOPEN_OPTS)) == NULL)
 		return;
@@ -293,7 +294,7 @@ auto_subscribe_groups(
 	if (newsrc_mode)
 		fchmod(fileno(fp_newsrc), newsrc_mode);
 
-	/* TODO test me! */
+	/* TODO: test me! */
 	while ((ptr = tin_fgets(fp_subs, FALSE)) != NULL) {
 		if (ptr[0] != '#') {
 			if (group_find(ptr) != 0)
@@ -329,11 +330,13 @@ backup_newsrc(
 /*
  * Subscribe/unsubscribe to a group in .newsrc.
  * This involves rewriting the .newsrc with the new info
+ * If get_info is set we are allowed to issue NNTP commands if needed
  */
 void
 subscribe(
 	struct t_group *group,
-	int sub_state)
+	int sub_state,
+	t_bool get_info)
 {
 	FILE *fp;
 	FILE *newfp;
@@ -353,22 +356,18 @@ subscribe(
 
 	if ((fp = fopen(newsrc, "r")) != NULL) {
 		while ((line = tin_fgets(fp, FALSE)) != NULL) {
-			if (STRNCMPEQ("options ", line, 8))
-				fprintf(newfp, "%s\n", line);
-			else {
-				seq = parse_newsrc_line(line, &sub);
-				if (STRCMPEQ(line, group->name)) {
-					fprintf(newfp, "%s%c %s\n", line, sub_state, seq);
-					group->subscribed = SUB_BOOL(sub_state);
+			seq = parse_newsrc_line(line, &sub);
+			if (STRCMPEQ(line, group->name)) {
+				fprintf(newfp, "%s%c %s\n", line, sub_state, seq);
+				group->subscribed = SUB_BOOL(sub_state);
 
-					/* If previously subscribed to in .newsrc, load up any existing information */
-					if (sub_state == SUBSCRIBED)
-						parse_bitmap_seq(group, seq);
+				/* If previously subscribed to in .newsrc, load up any existing information */
+				if (sub_state == SUBSCRIBED)
+					parse_bitmap_seq(group, seq);
 
-					found = TRUE;
-				} else
-					fprintf(newfp, "%s%c %s\n", line, sub, seq);
-			}
+				found = TRUE;
+			} else
+				fprintf(newfp, "%s%c %s\n", line, sub, seq);
 		}
 
 		fclose(fp);
@@ -377,9 +376,12 @@ subscribe(
 			wait_message(0, _(txt_subscribing));
 			group->subscribed = SUB_BOOL(sub_state);
 			if (sub_state == SUBSCRIBED) {
-				vGet1GrpArtInfo(group);
 				fprintf(newfp, "%s%c ", group->name, sub_state);
-				print_bitmap_seq(newfp, group);
+				if (get_info) {
+					vGet1GrpArtInfo(group);
+					print_bitmap_seq(newfp, group);
+				} else /* we are not allowed to issue NNTP cmds during AUTOSUBSCRIBE loop */
+					fprintf(newfp, "1\n");
 			} else
 				fprintf(newfp, "%s%c\n", group->name, sub_state);
 		}
@@ -1488,7 +1490,7 @@ vNewsrcTestHarness(
 		debug_print_newsrc(&group.newsrc, stdout);
 
 		if (!retry)
-			error_message(txt_cannot_create_uniq_name);
+			error_message(_(txt_cannot_create_uniq_name));
 		else {
 			fp = fopen(temp_file, "r");
 			fgets(seq, (int) sizeof(seq), fp);

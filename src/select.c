@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-15
+ *  Updated   : 2003-04-12
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -214,7 +214,7 @@ selection_page(
 				break;							/* Nothing more to do at the moment */
 
 			case iKeyRedrawScr:		/* redraw */
-				my_retouch();					/* TODO not done elsewhere, maybe should be in show_selection_page */
+				my_retouch();					/* TODO: not done elsewhere, maybe should be in show_selection_page */
 				set_xclick_off();
 				show_selection_page();
 				break;
@@ -286,7 +286,7 @@ selection_page(
 				break;
 
 			case iKeySelectMoveGrp:	/* reposition group within group list */
-				/* TODO move all this to reposition_group() */
+				/* TODO: move all this to reposition_group() */
 				if (!selmenu.max) {
 					info_message(_(txt_no_groups));
 					break;
@@ -319,9 +319,7 @@ selection_page(
 
 			case iKeyOptionMenu:	/* option menu */
 				(void) change_config_file(NULL);
-				free_attributes_array();
-				read_attributes_file(TRUE);
-				read_attributes_file(FALSE);
+				read_attributes_files();
 				show_selection_page();
 				break;
 
@@ -373,7 +371,7 @@ selection_page(
 					break;
 				}
 				if (!CURR_GROUP.subscribed && !CURR_GROUP.bogus) {
-					subscribe(&CURR_GROUP, SUBSCRIBED);
+					subscribe(&CURR_GROUP, SUBSCRIBED, TRUE);
 					show_selection_page();
 					info_message(_(txt_subscribed_to), CURR_GROUP.name);
 					move_down();
@@ -399,7 +397,7 @@ selection_page(
 				}
 				if (CURR_GROUP.subscribed) {
 					mark_screen(SELECT_LEVEL, selmenu.curr - selmenu.first, 2, CURR_GROUP.newgroup ? "N" : "u");
-					subscribe(&CURR_GROUP, UNSUBSCRIBED);
+					subscribe(&CURR_GROUP, UNSUBSCRIBED, TRUE);
 					info_message(_(txt_unsubscribed_to), CURR_GROUP.name);
 					move_down();
 				} else if (CURR_GROUP.bogus && tinrc.strip_bogus == BOGUS_SHOW) {
@@ -567,20 +565,20 @@ show_selection_page(
 			if (active[n].description) {
 				strncpy(group_descript, active[n].description, blank_len);
 				group_descript[blank_len] = '\0';
-				sprintf(sptr, "  %c %s %s  %-*.*s  %-*.*s" cCRLF,
+				sprintf(sptr, "  %c %s %s  %-*.*s  %-*.*s%s",
 				         subs, tin_ltoa(i + 1, 4), tmp,
 				         groupname_len, groupname_len, active_name,
-				         blank_len, blank_len, group_descript);
+				         blank_len, blank_len, group_descript, cCRLF);
 			} else
-				sprintf(sptr, "  %c %s %s  %-*.*s  " cCRLF,
+				sprintf(sptr, "  %c %s %s  %-*.*s  %s",
 				         subs, tin_ltoa(i + 1, 4), tmp,
 				         (groupname_len + blank_len),
-				         (groupname_len + blank_len), active[n].name);
+				         (groupname_len + blank_len), active[n].name, cCRLF);
 		} else {
 			if (tinrc.draw_arrow)
-				sprintf(sptr, "  %c %s %s  %-*.*s" cCRLF, subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name);
+				sprintf(sptr, "  %c %s %s  %-*.*s%s", subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name, cCRLF);
 			else
-				sprintf(sptr, "  %c %s %s  %-*.*s%*s" cCRLF, subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name, blank_len, " ");
+				sprintf(sptr, "  %c %s %s  %-*.*s%*s%s", subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name, blank_len, " ", cCRLF);
 		}
 		if (tinrc.strip_blanks)
 			strcat(strip_line(sptr), cCRLF);
@@ -632,7 +630,7 @@ yank_active_file(
 	void)
 {
 	if (yanked_out) {										/* Yank in */
-		if (selmenu.max == num_active)						/* All groups currently present ? */
+		if (selmenu.max == num_active)						/* All groups currently present? */
 			info_message(_(txt_yanked_none));
 		else {
 			int i;
@@ -1133,13 +1131,13 @@ subscribe_pattern(
 	wait_message(0, message);
 
 	/*
-	 * TODO why do we do a pass over my_group[] before another one over active[] ?
+	 * TODO: why do we do a pass over my_group[] before another one over active[] ?
 	 */
 	for (subscribe_num = 0, i = 0; i < selmenu.max; i++) {
 		if (match_group_list(active[my_group[i]].name, buf)) {
 			if (active[my_group[i]].subscribed != (state != FALSE)) {
 				spin_cursor();
-				subscribe(&active[my_group[i]], SUB_CHAR(state));
+				subscribe(&active[my_group[i]], SUB_CHAR(state), TRUE);
 				subscribe_num++;
 			}
 		}
@@ -1151,10 +1149,10 @@ subscribe_pattern(
 				if (active[i].subscribed != (state != FALSE)) {
 					spin_cursor();
 					/* If found and group is not subscribed add it to end of my_group[]. */
-					subscribe(&active[i], SUB_CHAR(state));
+					subscribe(&active[i], SUB_CHAR(state), TRUE);
 					if (state) {
 						my_group_add(active[i].name);
-/* TODO grp_mark_unread() or something needs to do a GrpGetArtInfo to get initial count right */
+/* TODO: grp_mark_unread() or something needs to do a GrpGetArtInfo to get initial count right */
 						grp_mark_unread(&active[i]);
 					}
 					subscribe_num++;

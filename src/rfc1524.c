@@ -324,7 +324,7 @@ get_mailcap_field(
 
 
 #define CHECK_SPACE(minlen) { \
-	while (space <= (minlen)) { /* need more space ? */ \
+	while (space <= (minlen)) { /* need more space? */ \
 		olen = strlen(line); \
 		space += linelen; \
 		linelen <<= 1; \
@@ -417,7 +417,7 @@ expand_mailcap_meta(
 				}
 				/* FALLTHROUGH */
 
-#if 0 /* TODO */
+#if 0 /* TODO: */
 			case 'F':
 				if (percent) {
 					percent = FALSE;

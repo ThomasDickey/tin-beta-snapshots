@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2002-01-07
+ *  Updated   : 2003-03-30
  *  Notes     :
  *
  * Copyright (c) 1999-2003 Jason Faultless <jason@altarstone.com>
@@ -42,7 +42,7 @@
 #		include "menukeys.h"
 #	endif /* !MENUKEYS_H */
 
-/* TODO permanently move here from tin.h */
+/* TODO: permanently move here from tin.h */
 #define ctrl(c)	((c) & 0x1F)
 #define ESC		27
 
@@ -296,9 +296,9 @@ struct k_postpone {
 
 struct k_pproc {
 	t_keynode tag;
-	t_keynode None;
+	t_keynode No;
 	t_keynode Shar;
-	t_keynode UUDecode;
+	t_keynode Yes;
 	t_keynode null;
 };
 

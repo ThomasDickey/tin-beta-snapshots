@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-04-25
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>
@@ -185,6 +185,7 @@
 	extern int printf(const char *, ...);
 #endif /* DECL_PRINTF */
 #ifdef DECL_PUTENV
+	/* NOTE: SUSv2 removes the const from the prototype */
 	extern int putenv(const char *);
 #endif /* DECL_PUTENV */
 #ifdef DECL_QSORT
@@ -356,7 +357,6 @@ extern char filter_file[PATH_LEN];
 extern char local_input_history_file[PATH_LEN];
 extern char local_newsgroups_file[PATH_LEN];
 extern char local_newsrctable_file[PATH_LEN];
-extern char lock_file[PATH_LEN];
 extern char mail_active_file[PATH_LEN];
 extern char mail_news_user[LEN];
 extern char mailbox[PATH_LEN];
@@ -370,6 +370,7 @@ extern char news_active_file[PATH_LEN];
 extern char newsgroups_file[PATH_LEN];
 extern char newsrc[PATH_LEN];
 #ifndef NNTP_ONLY
+	extern char lock_file[PATH_LEN];
 	extern char novrootdir[PATH_LEN];
 	extern char novfilename[PATH_LEN];
 #endif /* !NNTP_ONLY */
@@ -400,6 +401,7 @@ extern constext *help_thread[];
 extern constext *txt_attrs[];
 extern constext *txt_colors[];
 extern constext *txt_confirm_choices[];
+extern constext *txt_hide_uue_type[];
 extern constext *txt_kill_level_type[];
 #ifdef CHARSET_CONVERSION
 	extern constext *txt_mime_charsets[];	/* supported charsets */
@@ -407,7 +409,7 @@ extern constext *txt_kill_level_type[];
 extern constext *txt_mime_7bit_charsets[]; /* 7bit charsets */
 extern constext *txt_mailbox_formats[];
 extern constext *txt_marks[];
-extern constext *txt_mime_encodings[NUM_MIME_ENCODINGS];
+extern constext *txt_mime_encodings[];
 extern constext *txt_onoff[];
 extern constext *txt_post_process_type[];
 extern constext *txt_quote_style_type[];
@@ -449,6 +451,8 @@ extern constext txt_articles_mailed[];
 	extern constext txt_articles_printed[];
 #endif /* !DISABLE_PRINTING */
 extern constext txt_attach[];
+extern constext txt_attach_charset[];
+extern constext txt_attach_description[];
 extern constext txt_uue[];
 extern constext txt_at_s[];
 extern constext txt_auth_failed[];
@@ -870,7 +874,6 @@ extern constext txt_next_resp[];
 extern constext txt_nntp_authorization_failed[];
 extern constext txt_no[];
 extern constext txt_no_arts[];
-extern constext txt_no_arts_to_save[];
 extern constext txt_no_arts_posted[];
 extern constext txt_no_description[];
 extern constext txt_no_filename[];
@@ -1097,7 +1100,7 @@ extern constext txt_usage_tin[];
 #endif /* HAVE_COLOR */
 extern constext txt_usage_quickstart[];
 extern constext txt_usage_read_only_subscribed[];
-extern constext txt_usage_use_listgroup[];
+extern constext txt_usage_read_only_active[];
 extern constext txt_usage_verbose[];
 extern constext txt_usage_version[];
 extern constext txt_useful_without_batch_mode[];
@@ -1375,9 +1378,6 @@ extern t_bool word_highlight;
 	extern constext txt_error_not_valid_newsgroup[];
 #endif /* HAVE_FASCIST_NEWSADMIN */
 
-#ifdef HAVE_METAMAIL
-	extern constext txt_error_metamail_failed[];
-#endif /* HAVE_METAMAIL */
 
 #ifndef FOLLOW_USEFOR_DRAFT
 	extern constext txt_error_header_line_comma[];
@@ -1406,11 +1406,6 @@ extern constext txt_processing_saved_arts[];
 	extern constext txt_reading_mail_active_file[];
 	extern constext txt_reading_mailgroups_file[];
 #endif /* HAVE_MH_MAIL_HANDLING */
-
-#ifdef LOCAL_CHARSET
-	extern constext txt_tinrc_local_charset[];
-	extern t_bool use_local_charset;
-#endif /* LOCAL_CHARSET */
 
 #ifdef M_AMIGA
 	extern constext txt_env_var_not_found[];

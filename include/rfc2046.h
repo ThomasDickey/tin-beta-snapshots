@@ -3,7 +3,7 @@
  *  Module    : rfc2046.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2003-03-10
+ *  Updated   : 2003-03-31
  *  Notes     : rfc2046 MIME article definitions
  *
  * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
@@ -47,6 +47,7 @@
 #	define TYPE_TEXT			0
 #	define TYPE_MULTIPART		1
 #	define TYPE_APPLICATION		2
+#	define TYPE_MESSAGE			3
 
 #	define ENCODING_7BIT		0
 #	define ENCODING_QP			1
@@ -87,6 +88,7 @@ typedef struct part
 	unsigned disposition:1;
 #	endif /* 0 */
 	char *subtype;			/* Content subtype */
+	char *description;		/* Content-Description */
 	t_param *params;		/* List of Content-Type parameters */
 	long offset;			/* offset in article of the text of attachment */
 	int line_count;			/* # lines in this part */

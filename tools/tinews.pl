@@ -39,7 +39,7 @@
 #       - check for ~/.newsauth and use username/password if found
 #
 # version Number
-my $version = "1.0.6";
+my $version = "1.0.8";
 
 # TODO: put into a "my %config('NNTPServer' => 'news', ... );" array
 my $NNTPServer	= 'news';		# your NNTP servers name
@@ -58,8 +58,8 @@ my $sendmail	= '| /usr/sbin/sendmail -t'; # set to '' to disable mail-actions
 
 my @PGPSignHeaders = ('From', 'Newsgroups', 'Subject', 'Control',
 	'Supersedes', 'Followup-To', 'Date', 'Sender', 'Approved',
-	'Message-ID', 'Reply-To', 'Cancel-Lock', 'Cancel-Key',
-	'Also-Control', 'Distribution');
+	'Message-ID', 'Reply-To', 'Cancel-Key', 'Also-Control',
+	'Distribution');
 my @PGPorderheaders = ('from', 'newsgroups', 'subject', 'control',
 	'supersedes', 'followup-To', 'date', 'organization', 'lines',
 	'sender', 'approved', 'distribution', 'message-id',
@@ -208,6 +208,9 @@ sub readarticle {
 				$$HeaderR{$currentheader} = "$1: $2";
 			} elsif (m/^[ \t]/o) {
 				$$HeaderR{$currentheader} .= $_;
+			} else {
+				chomp($_);
+				die ("'$_' is not a correct header-line");
 			}
 		} else {
 			push @$BodyR, $_;

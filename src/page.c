@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-04-25
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -81,6 +81,7 @@ static struct t_header *note_h = &pgart.hdr;	/* Easy access to article headers *
 static FILE *info_file;
 static const char *info_title;
 static int curr_info_line;
+static int hide_uue;			/* set when uuencoded sections are 'hidden' */
 static int num_info_lines;
 static int reveal_ctrl_l_lines;	/* number of lines (from top) with de-activated ^L */
 static int rotate;				/* 0=normal, 13=rot13 decode */
@@ -90,7 +91,6 @@ static t_lineinfo *infoline = (t_lineinfo *) 0;
 
 static t_bool show_all_headers;	/* CTRL-H with headers specified */
 static t_bool reveal_ctrl_l;	/* set when ^L hiding is off */
-static t_bool hide_uue;			/* set when uuencoded sections are 'hidden' */
 
 /*
  * Local prototypes
@@ -106,9 +106,7 @@ static void preprocess_info_message(FILE *info_fh);
 static void print_message_page(FILE *file, t_lineinfo *messageline, size_t messagelines, size_t base_line, size_t begin, size_t end, int help_level);
 static void process_search(int *lcurr_line, size_t message_lines, size_t screen_lines, int help_level);
 static void process_url(void);
-#ifdef HAVE_METAMAIL
-	static void invoke_metamail(FILE *fp);
-#endif /* HAVE_METAMAIL */
+static void invoke_metamail(FILE *fp);
 
 
 /*
@@ -596,7 +594,7 @@ page_goto_next_unread:
 				break;
 
 			case iKeyPageTopThd:	/* first article in current thread */
-				if (arts[this_resp].inthread) {
+				if (arts[this_resp].prev >= 0) {
 					if ((n = which_thread(this_resp)) >= 0 && base[n] != this_resp) {
 						assert(n < grpmenu.max);
 						if (load_article(base[n]) < 0)
@@ -650,8 +648,8 @@ page_goto_next_unread:
 				info_message(_(txt_toggled_tabwidth), tabwidth);
 				break;
 
-			case iKeyPageToggleUue:			/* toggle display off uuencoded sections */
-				hide_uue = bool_not(hide_uue);
+			case iKeyPageToggleUue:			/* toggle display of uuencoded sections */
+				hide_uue = (hide_uue + 1) % (UUE_ALL + 1);
 				resize_article(TRUE, &pgart);	/* Also recooks it.. */
 				/*
 				 * If we hid uue and are off the end of the article, reposition to
@@ -676,9 +674,7 @@ page_goto_next_unread:
 
 			case iKeyPageQuickAutoSel:	/* quickly auto-select article */
 			case iKeyPageQuickKill:		/* quickly kill article */
-				if ((filtered_articles = quick_filter(
-						(ch == iKeyPageQuickKill) ? FILTER_KILL : FILTER_SELECT,
-						group, &arts[this_resp])))
+				if ((filtered_articles = quick_filter((ch == iKeyPageQuickKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[this_resp])))
 					goto return_to_index;
 
 				draw_page(group->name, 0);
@@ -1141,7 +1137,6 @@ draw_page(
 /*
  * Start external metamail program
  */
-#ifdef HAVE_METAMAIL
 static void
 invoke_metamail(
 	FILE *fp)
@@ -1159,6 +1154,7 @@ invoke_metamail(
 	EndWin();
 	Raw(FALSE);
 
+	/* $METAMAIL seems to be tin specific, if it really is: kick it */
 	if ((ptr = getenv("METAMAIL")) == NULL)
 		ptr = tinrc.metamail_prog;
 
@@ -1172,7 +1168,7 @@ invoke_metamail(
 		pclose(mime_fp);
 	} else
 #endif /* !DONT_HAVE_PIPING */
-		info_message(_(txt_error_metamail_failed), strerror(errno));
+		perror_message(_(txt_command_failed), ptr);
 
 	Raw(TRUE);
 	InitWin();
@@ -1186,7 +1182,6 @@ invoke_metamail(
 	my_flush();
 	EndInverse();
 }
-#endif /* HAVE_METAMAIL */
 
 
 /*
@@ -1253,6 +1248,7 @@ draw_page_header(
 		strcpy(x, tin_ltoa(which_thread(this_resp) + 1, 4));
 
 		sprintf(tmp, _(txt_thread_x_of_n), buf, x, tin_ltoa(grpmenu.max, 4), cCRLF);
+		tmp[cCOLS] = '\0'; /* FIXME: see also note in signal.c:set_win_size() */
 		my_fputs(tmp, stdout);
 	}
 
@@ -1276,8 +1272,11 @@ draw_page_header(
 	fcol(tinrc.col_subject);
 #endif /* HAVE_COLOR */
 
+	/*
+	 * TODO: the "TeX "-text is keept in the header even after toggeling
+	 *       tex2iso off
+	 */
 	if (pgart.tex2iso) {
-		*buf = '\0';
 		strcpy(buf, "TeX ");
 		i += strlen(buf);
 		my_fputs(buf, stdout);
@@ -1324,8 +1323,7 @@ draw_page_header(
 	buf[cCOLS - 1] = '\0';
 
 	if (note_h->org) {
-		sprintf(tmp, _(txt_at_s), note_h->org);
-		tmp[sizeof(tmp) - 1] = '\0';
+		snprintf(tmp, sizeof(tmp), _(txt_at_s), note_h->org);
 
 		if ((int) strlen(buf) + (int) strlen(tmp) >= cCOLS - 1) {
 			strncat(buf, tmp, cCOLS - 1 - strlen(buf));
@@ -1335,7 +1333,7 @@ draw_page_header(
 			for (i = strlen(buf); i < pos; i++)
 				buf[i] = ' ';
 			buf[i] = '\0';
-			strcat(buf, tmp);
+			strncat(buf, tmp, sizeof(buf) - 1);
 		}
 	}
 
@@ -1345,7 +1343,7 @@ draw_page_header(
 	fcol(tinrc.col_from);
 #endif /* HAVE_COLOR */
 
-	my_printf("%s" cCRLF cCRLF, buf);
+	my_printf("%s%s%s", buf, cCRLF, cCRLF);
 
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_normal);
@@ -1371,9 +1369,9 @@ load_article(
 #endif /* DEBUG */
 
 	if (new_respnum != this_resp) {
-		art_close(&pgart);			/* close previously opened art in pager */
-
 		make_group_path(CURR_GROUP.name, group_path);
+
+		art_close(&pgart);			/* close previously opened art in pager */
 
 		switch (art_open(TRUE, &arts[new_respnum], group_path, &pgart, TRUE)) {
 			case ART_UNAVAILABLE:
@@ -1386,7 +1384,7 @@ load_article(
 
 			default:					/* Normal case */
 #if 0			/* Very useful debugging tool */
-				if (prompt_yn(cLINES, "Fake art unavailable ? ", FALSE) == 1) {
+				if (prompt_yn(cLINES, "Fake art unavailable? ", FALSE) == 1) {
 					art_close(&pgart);
 					art_mark(&CURR_GROUP, &arts[new_respnum], ART_READ);
 					return GRP_ARTFAIL;
@@ -1430,28 +1428,18 @@ load_article(
 	if (!note_h->mime || IS_PLAINTEXT(note_h->ext))		/* Text only article */
 		return 0;
 
-	if (*tinrc.metamail_prog == '\0')					/* Viewer turned off */
+	if (*tinrc.metamail_prog == '\0' || getenv("NOMETAMAIL") != NULL)	/* Viewer turned off */
 		return 0;
 
-	if (getenv("NOMETAMAIL") != NULL)
-		return 0;
-
-	if (strcmp(tinrc.metamail_prog, INTERNAL_CMD) == 0) {	/* Use internal viewer */
-		if (tinrc.ask_for_metamail) {
-			if (prompt_yn(cLINES, _(txt_use_mime), TRUE) != 1)
-				return 0;
-		}
-		decode_save_mime(&pgart, FALSE);
-		return 0;
-	}
-
-#ifdef HAVE_METAMAIL
 	if (tinrc.ask_for_metamail) {
 		if (prompt_yn(cLINES, _(txt_use_mime), TRUE) != 1)
 			return 0;
 	}
-	invoke_metamail(pgart.raw);
-#endif /* HAVE_METAMAIL */
+
+	if (strcmp(tinrc.metamail_prog, INTERNAL_CMD) == 0)	/* Use internal viewer */
+		decode_save_mime(&pgart, FALSE);
+	else
+		invoke_metamail(pgart.raw);
 	return 0;
 }
 

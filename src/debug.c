@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 1994-12-24
+ *  Updated   : 2003-03-28
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -65,21 +65,21 @@ debug_delete_files(
 	char file[PATH_LEN];
 
 	if (debug) {
-		sprintf(file, "%sNNTP", TMPDIR);
+		joinpath(file, TMPDIR, "NNTP");
 		unlink(file);
-		sprintf(file, "%sARTS", TMPDIR);
+		joinpath(file, TMPDIR, "ARTS");
 		unlink(file);
-		sprintf(file, "%sSAVE_COMP", TMPDIR);
+		joinpath(file, TMPDIR, "SAVE_COMP");
 		unlink(file);
-		sprintf(file, "%sBASE", TMPDIR);
+		joinpath(file, TMPDIR, "BASE");
 		unlink(file);
-		sprintf(file, "%sACTIVE", TMPDIR);
+		joinpath(file, TMPDIR, "ACTIVE");
 		unlink(file);
-		sprintf(file, "%sBITMAP", TMPDIR);
+		joinpath(file, TMPDIR, "BITMAP");
 		unlink(file);
-		sprintf(file, "%sMALLOC", TMPDIR);
+		joinpath(file, TMPDIR, "MALLOC");
 		unlink(file);
-		sprintf(file, "%sFILTER", TMPDIR);
+		joinpath(file, TMPDIR, "FILTER");
 		unlink(file);
 	}
 }
@@ -99,7 +99,7 @@ debug_nntp(
 	if (!debug)
 		return;
 
-	sprintf(file, "%sNNTP", TMPDIR);
+	joinpath(file, TMPDIR, "NNTP");
 
 	if ((fp = fopen(file, "a+")) != NULL) {
 		fprintf(fp,"%s: %s\n", func, line);
@@ -136,7 +136,7 @@ debug_print_header(
 	if (debug != 2)
 		return;
 
-	sprintf(file, "%sARTS", TMPDIR);
+	joinpath(file, TMPDIR, "ARTS");
 
 	if ((fp = fopen(file, "a+")) != NULL) {
 		fprintf(fp,"art=[%5ld] tag=[%s] kill=[%s] selected=[%s]\n", s->artnum,
@@ -162,37 +162,8 @@ debug_print_header(
 			fprintf(fp, "patch=[%s]\n", s->patch);
 		else
 			fprintf(fp, "patch=[]\n");
-		fprintf(fp,"thread=[%d]  inthread=[%d]  status=[%d]\n\n", s->thread, s->inthread, s->status);
-/*		fprintf(fp,"thread=[%s]  inthread=[%s]  status=[%s]\n", (s->thread == ART_NORMAL ? "ART_NORMAL" : "ART_EXPIRED"), bool_unparse(s->inthread), bool_unparse(s->status)); */
-		fflush(fp);
-		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
-		fclose(fp);
-	}
-}
-
-
-void
-debug_save_comp(
-	void)
-{
-	char file[PATH_LEN];
-	FILE *fp;
-	int i;
-
-	if (debug != 2)
-		return;
-
-	sprintf(file, "%sSAVE_COMP", TMPDIR);
-
-	if ((fp = fopen(file, "a+")) != NULL) {
-		for (i = 0; i < num_save; i++) {
-
-			fprintf(fp, "path=[%s]\n", save[i].path);
-			fprintf(fp, "file=[%s]\n", save[i].file);
-			fprintf(fp, "art=[%p]  saved=[%s]  mailbox=[%s]\n\n",
-				(void *) save[i].artptr, bool_unparse(save[i].saved),
-				bool_unparse(save[i].is_mailbox));
-		}
+		fprintf(fp,"thread=[%d]  prev=[%d]  status=[%d]\n\n", s->thread, s->prev, s->status);
+/*		fprintf(fp,"thread=[%s]  prev=[%s]  status=[%s]\n", (s->thread == ART_NORMAL ? "ART_NORMAL" : "ART_EXPIRED"), s->prev, bool_unparse(s->status)); */
 		fflush(fp);
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
 		fclose(fp);
@@ -212,7 +183,7 @@ debug_print_active(
 	if (debug != 2)
 		return;
 
-	sprintf(file, "%sACTIVE", TMPDIR);
+	joinpath(file, TMPDIR, "ACTIVE");
 
 	if ((fp = fopen(file, "w")) != NULL) {
 		for_each_group(i) {
@@ -243,6 +214,7 @@ debug_print_attributes(
 {
 	if (attr == 0)
 		return;
+
 	fprintf(fp, "global=[%d] show=[%d] thread=[%d] sort=[%d] author=[%d] auto_select=[%d] auto_save=[%d] batch_save=[%d] process=[%d]\n",
 		attr->global,
 		attr->show_only_unread,
@@ -284,7 +256,7 @@ vDbgPrintMalloc(
 	static int iTotal = 0;
 
 	if (debug == 4) {
-		sprintf(file, "%sMALLOC", TMPDIR);
+		joinpath(file, TMPDIR, "MALLOC");
 		if ((fp = fopen(file, "a+")) != NULL) {
 			iTotal += iSize;
 			/* sometimes size_t is long */
@@ -305,11 +277,11 @@ debug_print_filter(
 	int num,
 	struct t_filter *the_filter)
 {
-	fprintf(fp, "[%3d]  group=[%s] inscope=[%s] score=[%d] case=[%d][%s] lines=[%d %d]\n",
+	fprintf(fp, "[%3d]  group=[%s] inscope=[%s] score=[%d] case=[%d] lines=[%d %d]\n",
 		num, BlankIfNull(the_filter->scope),
 		(the_filter->inscope ? "TRUE" : "FILTER"),
 		the_filter->score,
-		the_filter->icase, bool_unparse(bool_not(the_filter->icase)),
+		the_filter->icase,
 		the_filter->lines_cmp, the_filter->lines_num);
 
 	fprintf(fp, "       subj=[%s] from=[%s] msgid=[%s]\n",
@@ -334,7 +306,7 @@ debug_print_filters(
 	if (debug < 2)
 		return;
 
-	sprintf(file, "%sFILTER", TMPDIR);
+	joinpath(file, TMPDIR, "FILTER");
 
 	if ((fp = fopen(file, "w")) != NULL) {
 		/*
@@ -366,7 +338,7 @@ debug_print_comment(
 	if (debug < 2)
 		return;
 
-	sprintf(file, "%sBITMAP", TMPDIR);
+	joinpath(file, TMPDIR, "BITMAP");
 
 	if ((fp = fopen(file, "a+")) != NULL) {
 		fprintf(fp,"\n%s\n", comment);
@@ -387,8 +359,7 @@ debug_print_bitmap(
 	if (debug != 3)
 		return;
 
-	sprintf(file, "%sBITMAP", TMPDIR);
-
+	joinpath(file, TMPDIR, "BITMAP");
 	if ((fp = fopen(file, "a+")) != NULL) {
 		fprintf(fp, "\nActive: Group=[%s] sub=[%c] min=[%ld] max=[%ld] count=[%ld] num_unread=[%ld]\n",
 			group->name, SUB_CHAR(group->subscribed),
@@ -401,9 +372,9 @@ debug_print_bitmap(
 				bool_unparse(art->killed),
 				bool_unparse(art->selected),
 				art->subject);
-			fprintf(fp, "thread=[%s]  inthread=[%s]  status=[%s]\n",
+			fprintf(fp, "thread=[%s]  prev=[%d]  status=[%s]\n",
 				(art->thread == ART_NORMAL ? "ART_NORMAL" : "ART_EXPIRED"),
-				bool_unparse(art->inthread),
+				art->prev,
 				(art->status == ART_READ ? "READ" : "UNREAD"));
 		}
 		debug_print_newsrc(&group->newsrc, fp);

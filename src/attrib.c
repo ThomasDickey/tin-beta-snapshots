@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2003-02-08
+ *  Updated   : 2003-04-25
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2003 Iain Lea <iain@bricbrac.de>
@@ -80,6 +80,7 @@ enum {
 	ATTRIB_X_COMMENT_TO,
 	ATTRIB_NEWS_QUOTE,
 	ATTRIB_QUOTE_CHARS,
+	ATTRIB_MIME_TYPES_TO_SAVE,
 #ifdef HAVE_ISPELL
 		ATTRIB_ISPELL,
 #endif /* HAVE_ISPELL */
@@ -95,6 +96,7 @@ enum {
  * Local prototypes
  */
 static void do_set_attrib(struct t_group *group, int type, const char *data);
+static void read_attributes_file(t_bool global_file);
 static void set_attrib(int type, const char *scope, const char *data);
 static void set_default_attributes(struct t_attribute *attributes);
 #if 0 /* unused */
@@ -130,6 +132,7 @@ set_default_attributes(
 	attributes->from = tinrc.mail_address;
 	attributes->news_quote_format = tinrc.news_quote_format;
 	attributes->quote_chars = tinrc.quote_chars;
+	attributes->mime_types_to_save = my_strdup("*/*");
 #ifdef HAVE_ISPELL
 	attributes->ispell = (char *) 0;
 #endif /* HAVE_ISPELL */
@@ -192,17 +195,42 @@ set_default_attributes(
 		}
 #endif /* CHARSET_CONVERSION */
 
+/*
+ * (re)read global/local attributes file
+ */
 void
+read_attributes_files(
+	void)
+{
+	static t_bool startup = TRUE;
+
+	if (!startup) { /* reinit attributes */
+		free_attributes_array();
+		read_attributes_file(TRUE);
+		read_attributes_file(FALSE);
+	} else {
+		startup = FALSE;
+		if (!batch_mode || verbose)
+			wait_message(0, _(txt_reading_attributes_file), _(txt_global));
+		read_attributes_file(TRUE);
+		if (!batch_mode || verbose)
+			wait_message(0, _(txt_reading_attributes_file), "");
+		read_attributes_file(FALSE);
+	}
+}
+
+
+static void
 read_attributes_file(
 	t_bool global_file)
 {
 	FILE *fp;
+	char *file;
 	char buf[LEN];
 	char line[LEN];
 	char scope[LEN];
-	char *file;
 	int num;
-	register int i;
+	int i;
 	t_bool flag, found = FALSE;
 
 	/*
@@ -250,6 +278,7 @@ read_attributes_file(
 				case 'm':
 					MATCH_STRING("maildir=", ATTRIB_MAILDIR);
 					MATCH_STRING("mailing_list=", ATTRIB_MAILING_LIST);
+					MATCH_STRING("mime_types_to_save=", ATTRIB_MIME_TYPES_TO_SAVE);
 #ifdef CHARSET_CONVERSION
 					MATCH_LIST("mm_network_charset=", ATTRIB_MM_NETWORK_CHARSET,txt_mime_charsets, NUM_MIME_CHARSETS);
 #endif /* CHARSET_CONVERSION */
@@ -264,18 +293,18 @@ read_attributes_file(
 					break;
 
 				case 'p':
-					MATCH_INTEGER("post_proc_type=", ATTRIB_POST_PROC_TYPE, POST_PROC_UUDECODE);
+					MATCH_INTEGER("post_proc_type=", ATTRIB_POST_PROC_TYPE, POST_PROC_YES);
 					break;
 
 				case 'q':
-					MATCH_INTEGER("quick_kill_header=", ATTRIB_QUICK_KILL_HEADER, FILTER_LINES);
-					MATCH_STRING("quick_kill_scope=", ATTRIB_QUICK_KILL_SCOPE);
 					MATCH_BOOLEAN("quick_kill_case=", ATTRIB_QUICK_KILL_CASE);
 					MATCH_BOOLEAN("quick_kill_expire=", ATTRIB_QUICK_KILL_EXPIRE);
-					MATCH_INTEGER("quick_select_header=", ATTRIB_QUICK_SELECT_HEADER, FILTER_LINES);
-					MATCH_STRING("quick_select_scope=", ATTRIB_QUICK_SELECT_SCOPE);
+					MATCH_INTEGER("quick_kill_header=", ATTRIB_QUICK_KILL_HEADER, FILTER_LINES);
+					MATCH_STRING("quick_kill_scope=", ATTRIB_QUICK_KILL_SCOPE);
 					MATCH_BOOLEAN("quick_select_case=", ATTRIB_QUICK_SELECT_CASE);
 					MATCH_BOOLEAN("quick_select_expire=", ATTRIB_QUICK_SELECT_EXPIRE);
+					MATCH_INTEGER("quick_select_header=", ATTRIB_QUICK_SELECT_HEADER, FILTER_LINES);
+					MATCH_STRING("quick_select_scope=", ATTRIB_QUICK_SELECT_SCOPE);
 					if (match_string(line, "quote_chars=", buf, sizeof(buf))) {
 						quote_dash_to_space(buf);
 						set_attrib(ATTRIB_QUOTE_CHARS, scope, buf);
@@ -291,9 +320,9 @@ read_attributes_file(
 						found = TRUE;
 						break;
 					}
-					MATCH_STRING("sigfile=", ATTRIB_SIGFILE);
 					MATCH_INTEGER("show_author=", ATTRIB_SHOW_AUTHOR, SHOW_FROM_BOTH);
 					MATCH_BOOLEAN("show_only_unread=", ATTRIB_SHOW_ONLY_UNREAD);
+					MATCH_STRING("sigfile=", ATTRIB_SIGFILE);
 					MATCH_INTEGER("sort_art_type=", ATTRIB_SORT_ART_TYPE, SORT_ARTICLES_BY_LINES_ASCEND);
 					MATCH_INTEGER("sort_threads_type=", ATTRIB_SORT_THREADS_TYPE, SORT_THREADS_BY_SCORE_DESCEND);
 					break;
@@ -321,7 +350,7 @@ read_attributes_file(
 
 			if (found)
 				found = FALSE;
-			else
+			else /* TODO: surpress error messages on non intial reads? */
 				error_message(_(txt_bad_attrib), line);
 		}
 		fclose(fp);
@@ -434,6 +463,7 @@ do_set_attrib(
 		case ATTRIB_QUICK_KILL_HEADER:
 			SET_INTEGER(quick_kill_header);
 		case ATTRIB_QUICK_KILL_SCOPE:
+			FreeIfNeeded(group->attribute->quick_kill_scope);
 			SET_STRING(quick_kill_scope);
 		case ATTRIB_QUICK_KILL_EXPIRE:
 			SET_INTEGER(quick_kill_expire);
@@ -442,6 +472,7 @@ do_set_attrib(
 		case ATTRIB_QUICK_SELECT_HEADER:
 			SET_INTEGER(quick_select_header);
 		case ATTRIB_QUICK_SELECT_SCOPE:
+			FreeIfNeeded(group->attribute->quick_select_scope);
 			SET_STRING(quick_select_scope);
 		case ATTRIB_QUICK_SELECT_EXPIRE:
 			SET_INTEGER(quick_select_expire);
@@ -465,6 +496,9 @@ do_set_attrib(
 			SET_STRING(news_quote_format);
 		case ATTRIB_QUOTE_CHARS:
 			SET_STRING(quote_chars);
+		case ATTRIB_MIME_TYPES_TO_SAVE:
+			FreeIfNeeded(group->attribute->mime_types_to_save);
+			SET_STRING(mime_types_to_save);
 #ifdef HAVE_ISPELL
 		case ATTRIB_ISPELL:
 			SET_STRING(ispell);
@@ -518,12 +552,13 @@ write_attributes_file(
 	fprintf(fp, _("#  sigfile=STRING (ie. $var/sig)\n"));
 	fprintf(fp, _("#  organization=STRING (if beginning with '/' read from file)\n"));
 	fprintf(fp, _("#  followup_to=STRING\n"));
-	fprintf(fp, _("#  mailing_list=STRING (ie. majordomo@list.org)\n"));
+	fprintf(fp, _("#  mailing_list=STRING (ie. majordomo@example.org)\n"));
 	fprintf(fp, _("#  x_headers=STRING (ie. ~/.tin/extra-headers)\n"));
 	fprintf(fp, _("#  x_body=STRING (ie. ~/.tin/extra-body-text)\n"));
 	fprintf(fp, _("#  from=STRING (just append wanted From:-line, don't use quotes)\n"));
 	fprintf(fp, _("#  news_quote_format=STRING\n"));
 	fprintf(fp, _("#  quote_chars=STRING (%%s, %%S for initials)\n"));
+	fprintf(fp, _("#  mime_types_to_save=STRING (eg. image/*,!image/bmp)\n"));
 #ifdef HAVE_ISPELL
 	fprintf(fp, _("#  ispell=STRING\n"));
 #endif /* HAVE_ISPELL */
@@ -570,9 +605,9 @@ write_attributes_file(
 		SORT_THREADS_BY_SCORE_ASCEND, _(txt_sort_t_type[SORT_THREADS_BY_SCORE_ASCEND]));
 	fprintf(fp, _("#  post_proc_type=NUM\n"));
 	fprintf(fp, "#    %d=%s, %d=%s, %d=%s\n",
-		POST_PROC_NONE, _(txt_post_process_type[POST_PROC_NONE]),
+		POST_PROC_NO, _(txt_post_process_type[POST_PROC_NO]),
 		POST_PROC_SHAR, _(txt_post_process_type[POST_PROC_SHAR]),
-		POST_PROC_UUDECODE, _(txt_post_process_type[POST_PROC_UUDECODE]));
+		POST_PROC_YES, _(txt_post_process_type[POST_PROC_YES]));
 	fprintf(fp, _("#  quick_kill_scope=STRING (ie. talk.*)\n"));
 	fprintf(fp, _("#  quick_kill_expire=ON/OFF\n"));
 	fprintf(fp, _("#  quick_kill_case=ON/OFF\n"));
@@ -603,9 +638,9 @@ write_attributes_file(
 	fprintf(fp, _("# entries first followed by group specific entries.\n#\n"));
 	fprintf(fp, _("############################################################################\n\n"));
 
-/*
- * some useful defaults
- */
+	/*
+	 * some useful defaults
+	 */
 	fprintf(fp, _("# include extra headers\n"));
 	fprintf(fp, "scope=*\n");
 	/*
@@ -614,14 +649,14 @@ write_attributes_file(
 	 */
 	fprintf(fp, "x_headers=~/.tin/headers\n\n");
 
-	fprintf(fp, _("# in *sources* set post process type to shar\n"));
+	fprintf(fp, _("# in *sources* set post process type to shar only\n"));
 	fprintf(fp, "scope=*sources*\n");
-	fprintf(fp, "post_proc_type=1\n\n");
+	fprintf(fp, "post_proc_type=%d\n\n", POST_PROC_SHAR);
 
-	fprintf(fp, _("# in *binaries* set post process type to uudecode, remove tmp files\n"));
+	fprintf(fp, _("# in *binaries* do full post processing, remove tmp files\n"));
 	fprintf(fp, _("# and set Followup-To: poster\n"));
 	fprintf(fp, "scope=*binaries*\n");
-	fprintf(fp, "post_proc_type=2\n");
+	fprintf(fp, "post_proc_type=%d\n", POST_PROC_YES);
 	fprintf(fp, "delete_tmp_files=ON\n");
 	fprintf(fp, "followup_to=poster\n\n");
 
@@ -642,6 +677,7 @@ write_attributes_file(
 		fprintf(fp, "news_quote_format=%s\n", group->attribute->news_quote_format);
 		fprintf(fp, "quote_chars=%s\n",
 			quote_space_to_dash(group->attribute->quote_chars));
+		fprintf(fp, "mime_types_to_save=%s\n", group->attribute->mime_types_to_save);
 #	ifdef HAVE_ISPELL
 		fprintf(fp, "ispell=%s\n", group->attribute->ispell);
 #	endif /* HAVE_ISPELL */
@@ -752,6 +788,7 @@ dump_attributes(
 		fprintf(stderr, "\tfrom=%s\n", group->attribute->from);
 		fprintf(stderr, "\tnews_quote_format=%s\n", group->attribute->news_quote_format);
 		fprintf(stderr, "\tquote_chars=%s\n", quote_space_to_dash(group->attribute->quote_chars));
+		fprintf(stderr, "\tmime_types_to_save=%s\n", group->attribute->mime_types_to_save);
 #		ifdef HAVE_ISPELL
 		fprintf(stderr, "\tispell=%s\n", group->attribute->ispell);
 #		endif /* HAVE_ISPELL */

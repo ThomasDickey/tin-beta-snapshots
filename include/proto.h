@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-04-25
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
@@ -73,7 +73,7 @@ extern void sort_arts(unsigned /* int */ sort_art_type);
 extern void write_nov_file(struct t_group *group);
 
 /* attrib.c */
-extern void read_attributes_file(t_bool global_file);
+extern void read_attributes_files(void);
 extern void write_attributes_file(const char *file);
 
 /* auth.c */
@@ -118,7 +118,7 @@ extern void write_config_file(char *file);
 
 /* cook.c */
 extern const char *get_filename(t_param *ptr);
-extern t_bool cook_article(t_bool wrap_lines, t_openartinfo *artinfo, int tabs, t_bool uue);
+extern t_bool cook_article(t_bool wrap_lines, t_openartinfo *artinfo, int tabs, int hide_uue);
 extern t_bool expand_ctrl_chars(char *to, const char *from, int length, size_t cook_width);
 
 /* curses.c */
@@ -165,7 +165,6 @@ extern void word_highlight_string(int row, int col, int size, int color);
 	extern void debug_print_arts(void);
 	extern void debug_print_filters(void);
 	extern void debug_print_header(struct t_article *s);
-	extern void debug_save_comp(void);
 	extern void vDbgPrintMalloc(int iIsMalloc, const char *pcFile, int iLine, size_t iSize);
 #endif /* DEBUG */
 #ifdef DEBUG_NEWSRC
@@ -183,7 +182,6 @@ extern void envargs(int *Pargc, char ***Pargv, const char *envstr);
 extern void feed_articles(int function, int level, struct t_group *group, int respnum);
 
 /* filter.c */
-extern int unfilter_articles(void);
 extern t_bool filter_articles(struct t_group *group);
 extern t_bool filter_menu(int type, struct t_group *group, struct t_article *art);
 extern t_bool quick_filter(int type, struct t_group *group, struct t_article *art);
@@ -191,6 +189,7 @@ extern t_bool quick_filter_select_posted_art(struct t_group *group, const char *
 extern t_bool read_filter_file(const char *file);
 extern void free_filter_array(struct t_filters *ptr);
 extern void refresh_filter_menu(void);
+extern void unfilter_articles(void);
 extern void write_filter_file(const char *filename);
 
 /* getline.c */
@@ -304,6 +303,7 @@ extern void grp_del_mail_art(struct t_article *article);
 
 /* mimetypes.c */
 extern void lookup_mimetype(const char *ext, t_part *part);
+extern t_bool lookup_extension(char *extension, size_t ext_len, const char *major, const char *minor);
 
 /* main.c */
 extern int main(int argc, char *argv[]);
@@ -343,6 +343,7 @@ extern int gnksa_do_check_from(const char *from, char *address, char *realname);
 extern int my_chdir(char *path);
 extern int my_isprint(int c);
 extern int my_mkdir(char *path, mode_t mode);
+extern int parse_from(const char *from, char *address, char *realname);
 extern int strfmailer(char *the_mailer, char *subject, char *to, const char *filename, char *s, size_t maxsize, char *format);
 extern int strfpath(const char *format, char *str, size_t maxsize, struct t_group *group);
 extern int strfquote(const char *group, int respnum, char *s, size_t maxsize, char *format);
@@ -355,15 +356,15 @@ extern t_bool invoke_editor(const char *filename, int lineno);
 extern t_bool mail_check(void);
 extern void append_file(char *old_filename, char *new_filename);
 extern void asfail(const char *file, int line, const char *cond);
-extern void base_name(char *fullpath, char *program);
+extern void base_name(const char *fullpath, char *program);
 extern void cleanup_tmp_files(void);
 extern void copy_body(FILE *fp_ip, FILE *fp_op, char *prefix, char *initl, t_bool raw_data);
-extern void create_index_lock_file(char *the_lock_file);
 extern void draw_percent_mark(long cur_num, long max_num);
 extern void get_author(t_bool thread, struct t_article *art, char *str, size_t len);
 extern void get_cwd(char *buf);
 extern void make_base_group_path(const char *base_dir, const char *group_name, char *group_path);
 extern void make_group_path(const char *name, char *path);
+extern void process_charsets(char **line, int *max_line_len, const char *network_charset, const char *local_charset, t_bool conv_tex2iso);
 extern void read_input_history_file(void);
 extern void rename_file(const char *old_filename, const char *new_filename);
 extern void show_inverse_video_status(void);
@@ -371,12 +372,9 @@ extern void strip_double_ngs(char *ngs_list);
 extern void strip_name(char *the_address, char *stripped_address);
 extern void tin_done(int ret);
 extern void toggle_inverse_video(void);
-extern int parse_from(const char *from, char *address, char *realname);
-#if defined(LOCAL_CHARSET) || defined(CHARSET_CONVERSION)
+#ifdef CHARSET_CONVERSION
 	extern void buffer_to_network(char *line, int mmnwcharset);
-#endif /* LOCAL_CHARSET || CHARSET_CONVERSION */
-
-extern void process_charsets(char **line, int *max_line_len, const char *network_charset, const char *local_charset, t_bool conv_tex2iso);
+#endif /* CHARSET_CONVERSION */
 #ifdef HAVE_COLOR
 	extern t_bool toggle_color(void);
 	extern void show_color_status(void);
@@ -391,6 +389,9 @@ extern void process_charsets(char **line, int *max_line_len, const char *network
 	extern void shell_escape(void);
 	extern void do_shell_escape(void);
 #endif /* !NO_SHELL_ESCAPE */
+#ifndef NNTP_ONLY
+	extern void create_index_lock_file(char *the_lock_file);
+#endif /* !NNTP_ONLY */
 
 /* newsrc.c */
 extern int pos_group_in_newsrc(struct t_group *group, int pos);
@@ -405,7 +406,7 @@ extern void grp_mark_read(struct t_group *group, struct t_article *art);
 extern void grp_mark_unread(struct t_group *group);
 extern void parse_unread_arts(struct t_group *group);
 extern void reset_newsrc(void);
-extern void subscribe(struct t_group *group, int sub_state);
+extern void subscribe(struct t_group *group, int sub_state, t_bool get_info);
 extern void thd_mark_read(struct t_group *group, long thread);
 extern void thd_mark_unread(struct t_group *group, long thread);
 extern void set_default_bitmap(struct t_group *group);
@@ -446,7 +447,6 @@ extern int get_only_respcode(char *, size_t);
 extern int nntp_open(void);
 extern int group_get_art_info(char *tin_spooldir, char *groupname, int grouptype, long *art_count, long *art_max, long *art_min);
 extern long setup_hard_base(struct t_group *group);
-extern t_bool stat_article(long art, const char *group_path);
 extern void nntp_close(void);
 extern void vGet1GrpArtInfo(struct t_group *grp);
 #ifdef HAVE_MH_MAIL_HANDLING
@@ -550,7 +550,7 @@ extern void rfc1521_encode(char *line, FILE *f, int e);
 
 /* rfc2046.c */
 extern const char *get_param(t_param *list, const char *name);
-extern char *parse_header(char *buf, const char *pat, t_bool decode);
+extern char *parse_header(char *buf, const char *pat, t_bool decode, t_bool structured);
 extern int art_open(t_bool wrap_lines, struct t_article *art, const char *group_path, t_openartinfo *artinfo, t_bool show_progress_meter);
 extern int content_type(char *type);
 extern int parse_rfc822_headers(struct t_header *hdr, FILE *from, FILE *to);
@@ -570,12 +570,11 @@ extern void rfc15211522_encode(const char *filename, constext *mime_encoding, st
 extern int check_start_save_any_news(int function, t_bool catchup);
 extern t_bool add_to_save_list(struct t_article *art, const char *path);
 extern t_bool create_path(const char *path);
+extern t_bool expand_save_filename(char *outpath, const char *path);
 extern t_bool post_process_files(int proc_type_ch, t_bool auto_delete);
-extern t_bool save_art_to_file(int indexnum, t_openartinfo *artinfo);
-extern t_bool save_batch(char type, const char *group_path);
+extern t_bool save_and_process_art(t_openartinfo *artinfo, struct t_article *artptr, t_bool is_mailbox, const char *inpath, int max, t_bool post_process);
 extern void decode_save_mime(t_openartinfo *art, t_bool postproc);
 extern void print_art_seperator_line(FILE *fp, t_bool is_mailbox);
-extern void sort_save_list(void);
 
 /* screen.c */
 extern void center_line(int line, t_bool inverse, const char *str);

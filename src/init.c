@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-04-25
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -92,7 +92,6 @@ char local_config_file[PATH_LEN];
 char local_input_history_file[PATH_LEN];
 char local_newsgroups_file[PATH_LEN];	/* local copy of NNTP newsgroups file */
 char local_newsrctable_file[PATH_LEN];
-char lock_file[PATH_LEN];		/* contains name of index lock file */
 char filter_file[PATH_LEN];
 char mail_active_file[PATH_LEN];
 char mail_news_user[LEN];		/* mail new news to this user address */
@@ -116,6 +115,7 @@ char userid[PATH_LEN];
 	char mailgroups_file[PATH_LEN];
 #endif /* HAVE_MH_MAIL_HANDLING */
 #ifndef NNTP_ONLY
+	char lock_file[PATH_LEN];		/* contains name of index lock file */
 	char novrootdir[PATH_LEN];		/* root directory of nov index files */
 	char novfilename[PATH_LEN];		/* file name of a single nov index files */
 #endif /* !NNTP_ONLY */
@@ -166,9 +166,6 @@ t_bool show_description = TRUE;		/* current copy of tinrc flag */
 t_bool verbose = FALSE;			/* update index files only mode */
 t_bool xover_supported = FALSE;
 t_bool xref_supported = TRUE;
-#ifdef LOCAL_CHARSET
-	t_bool use_local_charset = TRUE;
-#endif /* LOCAL_CHARSET */
 #ifdef NNTP_ABLE
 	t_bool force_auth_on_conn_open = FALSE;	/* authenticate on connection startup */
 	unsigned short nntp_tcp_port;
@@ -290,10 +287,11 @@ struct t_config tinrc = {
 	0,		/* getart_limit */
 	2,		/* recent_time */
 	32,		/* groupname_max_length */
+	UUE_NO,	/* hide_uue */
 	KILL_UNREAD,		/* kill_level */
 	MIME_ENCODING_7BIT,		/* mail_mime_encoding */
 	MIME_ENCODING_7BIT,		/* post_mime_encoding */
-	POST_PROC_NONE,			/* post_process */
+	POST_PROC_NO,			/* post_process */
 	REREAD_ACTIVE_FILE_SECS,	/* reread_active_file_secs */
 	1,		/* scroll_lines */
 	SHOW_FROM_NAME,				/* show_author */
@@ -386,7 +384,6 @@ struct t_config tinrc = {
 	TRUE,		/* show_only_unread_arts */
 	FALSE,		/* show_only_unread_groups */
 	TRUE,		/* show_signatures */
-	FALSE,		/* hide_uue */
 	TRUE,		/* sigdashes */
 	TRUE,		/* signature_repost */
 	FALSE,		/* space_goto_next_unread */
@@ -508,14 +505,15 @@ init_selfinfo(
 	host_name[0] = '\0';
 	domain_name[0] = '\0';
 
-#ifndef M_AMIGA
-#	ifdef HAVE_SYS_UTSNAME_H
+#ifndef M_AMIGA /* TODO: why do we exclude M_AMIGA here but not in main.c:read_cmd_line_options() */
+#	if defined(HAVE_SYS_UTSNAME_H) && defined(HAVE_UNAME)
 	if (uname(&system_info) < 0) {
 		strcpy(system_info.sysname, "unknown");
 		*system_info.machine = '\0';
 		*system_info.release = '\0';
+		*system_info.nodename = '\0';
 	}
-#	endif /* HAVE_SYS_UTSNAME_H */
+#	endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
 #endif /* !M_AMIGA */
 
 	if ((cptr = get_host_name()) != NULL)
@@ -539,7 +537,6 @@ init_selfinfo(
 	real_umask = umask(0);
 	(void) umask(real_umask);
 
-/* FIXME: move to get_user_name() [header.c] */
 #ifndef M_AMIGA
 #	ifndef VMS
 	if ((myentry = getpwuid(getuid())) == NULL) {
@@ -561,30 +558,26 @@ init_selfinfo(
 	lower(userid);
 #	endif /* VMS */
 
-	if ((ptr = getenv("TIN_HOMEDIR")) != NULL) {
-		my_strncpy(homedir, ptr, sizeof(homedir) - 1);
-	} else if ((ptr = getenv("HOME")) != NULL) {
-		my_strncpy(homedir, ptr, sizeof(homedir) - 1);
-	} else if (!myentry) {
-		strncpy(homedir, "/tmp", sizeof(homedir) - 1); /* FIXME: Unix'ism, what about VMS? */
-	} else
-		strncpy(homedir, myentry->pw_dir, sizeof(homedir) - 1);
-
 #else
-	/* TODO: get_user_name() uses $USER, not $USERNAME */
 	if ((ptr = getenv("USERNAME")) == NULL) {
 		error_message(_(txt_env_var_not_found), "USERNAME");
 		giveup();
 	}
 	my_strncpy(userid, ptr, sizeof(userid) - 1);
-
-	/* TODO: why not also check for $TIN_HOMEDIR? */
-	if ((ptr = getenv("HOME")) == NULL) {
-		error_message(_(txt_env_var_not_found), "HOME");
-		giveup();
-	}
-	my_strncpy(homedir, ptr, sizeof(homedir) - 1);
 #endif /* !M_AMIGA */
+
+	if (((ptr = getenv("TIN_HOMEDIR")) != NULL) && strlen(ptr)) {
+		my_strncpy(homedir, ptr, sizeof(homedir) - 1);
+	} else if (((ptr = getenv("HOME")) != NULL) && strlen(ptr)) {
+		my_strncpy(homedir, ptr, sizeof(homedir) - 1);
+	}
+#ifndef M_AMIGA
+	else if (strlen(myentry->pw_dir)) {
+		strncpy(homedir, myentry->pw_dir, sizeof(homedir) - 1);
+	}
+#endif /* !M_AMIGA */
+	 else
+		strncpy(homedir, TMPDIR, sizeof(homedir) - 1);
 
 	cmdline_nntpserver[0] = '\0';
 	created_rcdir = FALSE;
@@ -690,7 +683,7 @@ init_selfinfo(
 	 * if it's still unset exit tin.
 	 */
 	if (domain_name[0] == '\0') {
-		error_message(txt_error_no_domain_name);
+		error_message(_(txt_error_no_domain_name));
 		giveup();
 		/*
 		 * TODO: ask the user to fall into no posting mode (can_post=FALSE)
@@ -796,7 +789,7 @@ init_selfinfo(
 	my_strncpy(mailer, get_val(ENV_VAR_MAILER, DEFAULT_MAILER), sizeof(mailer) - 1);
 	joinpath(article, homedir, TIN_ARTICLE_NAME);
 #ifdef APPEND_PID
-	snprintf(article + strlen(article), sizeof(article) - 1, ".%d", (int) process_id);
+	snprintf(article + strlen(article), sizeof(article) - strlen(article), ".%d", (int) process_id);
 #endif /* APPEND_PID */
 	joinpath(dead_article, homedir, "dead.article");
 	joinpath(dead_articles, homedir, "dead.articles");
@@ -831,17 +824,19 @@ init_selfinfo(
 	joinpath(newsrc, homedir, NEWSRC_FILE);
 	joinpath(newnewsrc, homedir, NEWNEWSRC_FILE);
 #ifdef APPEND_PID
-	snprintf(newnewsrc + strlen(newnewsrc), sizeof(newnewsrc) - 1, ".%d", (int) process_id);
+	snprintf(newnewsrc + strlen(newnewsrc), sizeof(newnewsrc) - strlen(newnewsrc), ".%d", (int) process_id);
 #endif /* APPEND_PID */
 	joinpath(posted_info_file, rcdir, POSTED_FILE);
 	joinpath(postponed_articles_file, rcdir, POSTPONED_FILE);
 	joinpath(save_active_file, rcdir, ACTIVE_SAVE_FILE);
 
-#ifdef HAVE_LONG_FILE_NAMES
+#ifndef NNTP_ONLY
+#	ifdef HAVE_LONG_FILE_NAMES
 	snprintf(lock_file, sizeof(lock_file), "%stin.%s.LCK", TMPDIR, userid);
-#else
+#	else
 	snprintf(lock_file, sizeof(lock_file), "%s%s.LCK", TMPDIR, userid);
-#endif /* HAVE_LONG_FILE_NAMES */
+#	endif /* HAVE_LONG_FILE_NAMES */
+#endif /* !NNTP_ONLY */
 
 #ifdef NNTP_ABLE
 	nntp_tcp_port = (unsigned short) atoi(get_val("NNTPPORT", NNTP_TCP_PORT));
@@ -849,7 +844,7 @@ init_selfinfo(
 
 	if (stat(posted_info_file, &sb) == -1) {
 		if ((fp = fopen(posted_info_file, "w")) != NULL) {
-			fprintf(fp, txt_posted_info_file);
+			fprintf(fp, _(txt_posted_info_file));
 			fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
 			fclose(fp);
 		}
@@ -878,8 +873,14 @@ set_up_private_index_cache(
 {
 	struct stat sb;
 
-	if (xover_supported && !tinrc.cache_overview_files)
+	if (read_news_via_nntp && xover_supported && !tinrc.cache_overview_files)
 		return;
+
+	/*
+	 * TODO: don't create cache dir if we are reading from local spool,
+	 *       the systems overview data is readable and
+	 *       !tinrc.cache_overview_files
+	 */
 
 	if (cmdline_nntpserver[0] != 0) {
 		char *from;

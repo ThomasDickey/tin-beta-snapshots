@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-04-25
  *  Notes     :
  *
  * Copyright (c) 1999-2003 Jason Faultless <jason@altarstone.com>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Jason Faultless.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -132,6 +129,7 @@ struct t_config {
 	int getart_limit;					/* number of article to get */
 	int recent_time;				/* Time limit when article is "fresh" */
 	int groupname_max_length;			/* max len of group names to display on screen */
+	int hide_uue;						/* treatment of uuencoded data in pager */
 	int kill_level;						/* Define how killed articles are shown */
 	int mail_mime_encoding;
 	int post_mime_encoding;
@@ -220,7 +218,6 @@ struct t_config {
 	t_bool show_only_unread_arts;		/* show only new/unread arts or all arts */
 	t_bool show_only_unread_groups;		/* set TRUE to see only subscribed groups with new news */
 	t_bool show_signatures;				/* show signatures when displaying articles */
-	t_bool hide_uue;					/* set TRUE to treat uuencoded data as an attachment */
 	t_bool sigdashes;					/* set TRUE to prepend every signature with dashes */
 	t_bool signature_repost;			/* set TRUE to add signature when reposting articles */
 	t_bool space_goto_next_unread;

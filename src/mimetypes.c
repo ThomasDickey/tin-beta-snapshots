@@ -3,7 +3,7 @@
  *  Module    : mimetypes.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-31
- *  Updated   : 2003-03-12
+ *  Updated   : 2003-04-10
  *  Notes     : mime.types handling
  *
  * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Jason Faultless
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -41,40 +38,33 @@
 #	include "tin.h"
 #endif /* !TIN_H */
 
+
+/*
+ * local prototypes
+ */
+static t_bool _lookup_mimetype(const char *file, const char *ext, t_part *part);
+static t_bool _lookup_extension(char *extension, size_t ext_len, const char *file, const char *type);
+
+
 /*
  * Match a filename extension to a content-type / subtype pair in mime.types
  * Update the passed-in attachment structure with type/subtype if found
+ * Return TRUE if found
  */
-void
-lookup_mimetype(
+static t_bool
+_lookup_mimetype(
+	const char *file,
 	const char *ext,
 	t_part *part)
 {
-	FILE *fp = (FILE *) 0;
+	FILE *fp;
 	char *exts;
 	char *ptr;
-	char buf[LEN];
+	char buf[PATH_LEN];
 	int i;
 
-	/*
-	 * check $HOME/.mime.types first, then /etc/mime.types and
-	 * TIN_DEFAULTS_DIR/mime.types
-	 */
-	joinpath(buf, homedir, ".mime.types");
-	fp = fopen(buf, "r");
-#ifdef M_UNIX
-	if (!fp)
-		fp = fopen("/etc/mime.types", "r");
-#endif /* M_UNIX */
-#ifdef TIN_DEFAULTS_DIR
-	if (!fp) {
-		joinpath(buf, TIN_DEFAULTS_DIR, "mime.types");
-		fp = fopen(buf, "r");
-	}
-#endif /* TIN_DEFAULTS_DIR */
-
-	if (!fp)
-		return;
+	if ((fp = fopen(file, "r")) == NULL)
+		return FALSE;
 
 	while ((fgets(buf, sizeof(buf), fp)) != NULL) {
 		if (buf[0] == '#' || buf[0] == '\n')		/* Skip comments & blank lines */
@@ -89,7 +79,7 @@ lookup_mimetype(
 						part->type = i;
 						part->subtype = my_strdup(ptr);
 						fclose(fp);
-						return;
+						return TRUE;
 					}
 				}
 			}
@@ -97,5 +87,123 @@ lookup_mimetype(
 	}
 
 	fclose(fp);
+	return FALSE;
+}
+
+
+/*
+ * Check:
+ *	$HOME/.mime.types
+ *	/etc/mime.types
+ *	TIN_DEFAULTS_DIR/mime.types
+ */
+void
+lookup_mimetype(
+	const char *ext,
+	t_part *part)
+{
+	char buf[PATH_LEN];
+
+	joinpath(buf, homedir, ".mime.types");
+	if (_lookup_mimetype(buf, ext, part))
+		return;
+
+#ifdef M_UNIX	/* TODO: what about VMS etc.pp? */
+	if (_lookup_mimetype("/etc/mime.types", ext, part))
+		return;
+#endif /* M_UNIX */
+
+#ifdef TIN_DEFAULTS_DIR
+	joinpath(buf, TIN_DEFAULTS_DIR, "mime.types");
+	_lookup_mimetype(buf, ext, part);
+#endif /* TIN_DEFAULTS_DIR */
+
 	return;
+}
+
+
+/*
+ * look for a filename extension in file for the specified
+ * type ("major/minor"), the result is stored in extension
+ */
+static t_bool
+_lookup_extension(
+	char *extension,
+	size_t ext_len,
+	const char *file,
+	const char *type)
+{
+	FILE *fp;
+	char *p;
+	char buf[8192];
+
+	if ((fp = fopen(file, "r")) == NULL)
+		return FALSE;
+	while ((fgets(buf, sizeof(buf), fp)) != NULL) {
+		if (buf[0] == '#' || buf[0] == '\n' || strncmp(buf, type, strlen(type)))
+			continue;
+		if (strlen((p = strtok(buf, " \t\n"))) != strlen(type))
+			continue;
+		if ((p = strtok(NULL, " \t\n")) != NULL) {
+			my_strncpy(extension, p, ext_len - 1);
+			fclose(fp);
+			return TRUE;
+		}
+	}
+	fclose(fp);
+	return FALSE;
+}
+
+
+/*
+ * look for a filename extension for the specified
+ * major minor, the result is stored in extension
+ * files checked are:
+ *	$HOME/.mime.types
+ *	/etc/mime.types
+ *	TIN_DEFAULTS_DIR/mime.types
+ */
+t_bool
+lookup_extension(
+	char *extension,
+	size_t ext_len,
+	const char *major,
+	const char *minor)
+{
+	char *type;
+	char buf[PATH_LEN];
+
+	if (!major || !minor) {
+		*extension = '\0';
+		return FALSE;
+	}
+
+	type = my_malloc(strlen(major) + 1 + strlen(minor) + 1);
+	strcpy(type, major);
+	strcat(type, "/");
+	strcat(type, minor);
+
+	joinpath(buf, homedir, ".mime.types");
+	if (_lookup_extension(extension, ext_len, buf, type)) {
+		free(type);
+		return TRUE;
+	}
+
+#ifdef M_UNIX	/* TODO: what about VMS etc.pp? */
+	if (_lookup_extension(extension, ext_len, "/etc/mime.types", type)) {
+		free(type);
+		return TRUE;
+	}
+#endif /* M_UNIX */
+
+#ifdef TIN_DEFAULTS_DIR
+	joinpath(buf, TIN_DEFAULTS_DIR, "mime.types");
+	if (_lookup_extension(extension, ext_len, buf, type)) {
+		free(type);
+		return TRUE;
+	}
+#endif /* TIN_DEFAULTS_DIR */
+	free(type);
+	my_strncpy(extension, minor, ext_len - 1);
+	return FALSE;
 }

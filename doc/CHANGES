@@ -1,4 +1,64 @@
--- 1.5.17 release 20030314 "" --
+-- 1.5.18 release 20030425 "" --
+
+U150) Michael Bienia <michael@vorlon.ping.de>
+      BUG. ReadWch() wasn't multibyte safe
+      FIX. curses.c
+
+U149) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+U148) Jason Faultless <jason@altarstone.com>
+      ADD. don't process main article body as MIME-part
+      ADD. rework Archive-name: handling
+      BUG. feeding >1 hot/pattern arts saved under wrong filename
+      BUG. don't ask to postprocess when nothing was saved
+      BUG. Content-Description wasn't indented
+      FIX. extern.h, proto.h, tin.h, tinrc.h, art.c, attrib.c, config.c
+           cook.c, feed.c, init.c, lang.c, memory.c, page.c, refs.c, save.c
+           tincfg.tbl, tin.1, tin.5
+
+U147) Matt Anton <tin@syrius.org>
+      ADD. added a few missing french translations
+      FIX. fr.po
+
+U146) Urs Janssen <urs@tin.org>
+      ADD. pcre update (4.1 -> 4.2)
+      ADD. a few missing german translations
+      ADD. tin(5)-man page updates
+      ADD. filename extension guessing based on mimetype for unnamed
+           attachments
+      ADD. documented -l/-n for !NNTP mode
+      ADD. avoid some string concatenations
+      ADD. speed up '-Z' without '-v'
+      ADD. honor $TMPDIR
+      ADD. don't create NOV-cache dir if running in NNTP mode and
+           caching is not requested or needed
+      REM. --with-local-charset
+      REM. some unnecessary casts
+      BUG. didn't read attributes file when started with '-q' flag
+      BUG. parse_rfc822_headers() did also decode the address-part of
+           of headers like From/To
+      BUG. removed some hardcoded keys
+      BUG. fixed a few typos in the french translation
+      BUG. -S without -n did also save new groups
+      BUG. $AUTOSUBSRIBE was broken
+      FIX. Makefile, configure[.in], autoconf.h[in], extern.h, proto.h, tin.h
+           active.c, art.c, attrib.c, config.c, cook.c, curses.c, filter.c
+           inews.c, init.c, lang.c, main.c, memory.c, mimetypes.c, misc.c
+           newsrc.c, nntplib.c, open.c, page.c, post.c, read.c, refs.c
+           rfc2046.c, rfc2047.c, select.c, save.c, thread.c, tin.1, tin.5
+           de.po, fr.po, tinrcupdate.pl, pcre/*
+
+-- 1.5.17 release 20030407 "Peephole" --
+
+U145) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. pcre update (3.9 -> 4.1)
+      FIX. aclocal.m4, configure[.in], autoconf.h[in], pcre/*
+
+U144) Lech Szychowski <lech7@pse.pl>
+      BUG. SIGDASHES check was broken
+      FIX. post.c
 
  048) Darrell Tangman <dgtangman@acm.org>
       BUG. malloc() mem. could be free()ed twice
@@ -14,19 +74,30 @@ U142) Matt Anton <tin@syrius.org>
 
 U141) Christian Garbs <tin-dev@cgarbs.de>
       ADD. updated MH mailgroups documentation
-      FIX. reading-mail.txt
+      ADD. some german translations
+      FIX. reading-mail.txt, de.po
 
 U140) Jason Faultless <jason@altarstone.com>
       BUG. incorrectly nested multipart articles sometimes hung tin
       BUG. -S did not create subdirs
       BUG. -S was broken in reading news via NNTP
+      BUG. unnamed binary attachments clobbered save temp files.
+           Unique filename now generated based on MIME subtype
       ADD. tinrc.posted_articles_file (replaces tinrc.keep_posted_articles &
            tinrc.keep_posted_articles_file)
+      ADD. parsing for Content-Description header
+      ADD. mime_types_to_save attribute for selective viewing/saving
       ADD. cleanup MIME-viewing code
-      FIX. extern.h, proto.h, rfc2046.h, tin.h, tinrc.h, art.c, config.c
-           inews.c, init.c, lang.c, mail.c, misc.c, open.c, page.c, post.c
-           rfc2046.c, rfc2047.c, save.c, screen.c, search.c, sigfile.c
-           tincfg.tbl, tin.1, tin.5
+      ADD. renamed use_metamail to metamail_prog
+      ADD. indent uue attachment. Show MIME type/subtype on tagline
+      ADD. mime.types lookup searches all possible files for a match
+      ADD. cleanup save code, make post processing more uniform with LIBUU
+      ADD. post process viewing when using LIBUU
+      FIX. extern.h, menukeys.h, proto.h, rfc2046.h, tin.h, tinrc.h, art.c
+           attrib.c, config.c, cook.c, debug.c, feed.c, group.c, inews.c
+           init.c, keymap.c, lang.c, mail.c, memory.c, mimetypes.c, misc.c
+           open.c, page.c, post.c, rfc2046.c, rfc2047.c, save.c, screen.c
+           search.c, sigfile.c, tincfg.tbl, tin.1, tin.5
 
 U139) Olaf Dietrich <olaf@dtrx.de>
       ADD. allow PageGotoParent for killed parents if kill_level==KILL_THREAD
@@ -35,12 +106,12 @@ U139) Olaf Dietrich <olaf@dtrx.de>
 U138) Dirk Nimmich <nimmich@muenster.de>
       BUG. "time remaining" was updated constantly, so it was unusable on a
            modem link
-      BUG. raw multipart article didn't contain epilog after last boundary
+      BUG. raw multipart article didn't contain epilogue after last boundary
       BUG. highlighting in multibyte charset environment without USE_CURSES
            was broken
       ADD. more NNTP debug output
       NOP. revised TODO
-      FIX. curses.c, nntplib.c, open.c, rfc2046.c, screen.c, TODO
+      FIX. curses.c, mail.c, nntplib.c, open.c, rfc2046.c, screen.c, TODO
 
 U137) Toomas Soome <Toomas.Soome@microlink.ee>
       ADD. updated estonian translation
@@ -54,30 +125,36 @@ U136) Corinna Vinschen <corinna@vinschen.de>
  046) Urs Janssen <urs@tin.org>
       BUG. comma separated group list in attribute scope didn't work
       BUG. "." might be resent as last command after a reconnect
-      BUG. part of the threading code aussumed that References are always
+      BUG. part of the threading code assumed that References are always
            space separated
-      BUG. fixed some possible bufferoverflows
+      BUG. fixed some possible buffer overflows
       ADD. allow .pro-TLD
       FIX. policy.h, attrib.c, config.c, feed.c, header.c, inews.c, init.c
            main.c, misc.c, nntplib.c, post.c, refs.c, save.c, select.c
 
 U135) Michael Bienia <michael@vorlon.ping.de>
-      ADD. word highlighting for monochrom terminals
+      ADD. word highlighting for monochrome terminals
       ADD. renamed some vars
       ADD. moved several strings to lang.c
       ADD. tinrc.show_info (replaces tinrc.show_lines and tinrc.show_score)
+      ADD. freshly killed arts (ART_KILLED_UNREAD) now count into the thread
+           score
       REM. some hungarian notations
+      ADD. replaced art->inthread by art->prev which holds a pointer to the
+           previous article in the thread
       ADD. replace art_mark_{unread,read,will_return}() with
            art_mark(group, art, flag)
       BUG. if the base article of at thread was killed the entire thread
            was hidden
       BUG. count of hot and killed articles in the group page header was
            wrong
+      BUG. in the MULTIBYTE_ABLE case convert_body2printable() could crash
+           on long lines
       FIX. extern.h, menukeys.h, proto.h, tin.h, tinrc.h, version.h, active.c
-           art.c, attrib.c, auth.c, config.c, cook.c, curses.c, feed.c
-           filter.c, group.c, help.c, init.c, keymap.c, lang.c, mail.c
-           main.c, memory.c, misc.c, newsrc.c, nntplib.c, page.c, open.c
-           page.c, post.c, prompt.c, refs.c, regex.c, save.c, signal.c
+           art.c, attrib.c, auth.c, charset.c, config.c, cook.c, curses.c
+           debug.c, feed.c filter.c, group.c, help.c, init.c, keymap.c
+           lang.c, mail.c, main.c, memory.c, misc.c, newsrc.c, nntplib.c
+           open.c, page.c, post.c, prompt.c, refs.c, regex.c, save.c, signal.c
            tags.c, tcurses.c, thread.c, tincfg.tbl, keymap.sample, tin.1
            tin.5, tinrcupdate.pl
 
@@ -89,6 +166,10 @@ U133) Urs Janssen <urs@tin.org>
       BUG. used fprintf(stderr) instead of error_message()
       BUG. hypothetical use of undefined FOLD_TO_UPPER() macro
       BUG. used PCRE_EXTENDED without quoting #
+      BUG. update_posted_info_file() called with wrong args if article
+           has Followup-To: poster
+      BUG. on startup (global) attributes file was read twice
+      BUG. two small attribute memory leaks
       ADD. minor code cleanup
       REM. EUC-TW -> ISO-2022-KR autoconversion for 7bit mime_encoding
       REM. disallow ISO-2022-KR as network charset
@@ -97,14 +178,15 @@ U133) Urs Janssen <urs@tin.org>
       ADD. allow ISO-2022-* 7bit encodings
       ADD. config.guess, config.sub update
       ADD. post_8bit_header=ON now also disables body encoding
-      ADD. expand path-names in 4th filed of the active.mail file
+      ADD. expand path-names in 4th field of the active.mail file
       ADD. moved a few strings to lang.c
-      FIX. active.c, art.c, attrib.c, auth.c, config.c, cook.c, curses.c
-           group.c, inews.c, init.c, keymap.c, lang.c, mail.c, main.c
-           mimetypes.c, misc.c, nntplib.c, page.c, post.c, regex.c, rfc2045.c
-           rfc2046.c, rfc2047.c, save.c, search.c, string.c, tags.c, tcurses.c
-           thread.c, xref.c, extern.h, proto.h, tin.h, tcurses.h, tin.1, tin.5
-           de.po, en_GB.po, config.guess, config.sub, tinrcupdate.pl
+      FIX. Makefile, active.c, art.c, attrib.c, auth.c, config.c, cook.c
+           curses.c, debug.c, feed.c, group.c, inews.c, init.c, keymap.c
+           lang.c, mail.c, main.c, mimetypes.c, misc.c, nntplib.c, page.c
+           post.c, regex.c, rfc2045.c, rfc2046.c, rfc2047.c, save.c, search.c
+           string.c, tags.c, tcurses.c, thread.c, xref.c, extern.h, proto.h
+           tin.h, tcurses.h, tin.1, tin.5, de.po, en_GB.po, config.guess
+           config.sub, tinrcupdate.pl
 
 -- 1.5.16 release 20030125 "Bubbles" --
 

@@ -90,3 +90,6 @@ Retired Features
 
 . tab_after_X_selection as it was broken for several years and nobody
   complained about it
+
+. --with-local-charset as the ports (NeXT, MSDOS) where it was needed
+  weren't maintained for several years now.

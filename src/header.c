@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-03-27
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -76,7 +76,7 @@ get_host_name(
 				hostname[0] = '\0';
 		}
 	}
-	hostname[MAXHOSTNAMELEN + 1] = '\0';
+	hostname[MAXHOSTNAMELEN] = '\0';
 	return hostname;
 }
 
@@ -92,9 +92,9 @@ const char *
 get_domain_name(
 	void)
 {
+	FILE *fp;
 	char *ptr;
 	char buff[MAXHOSTNAMELEN + 1];
-	FILE *fp;
 	static char domain[8192];
 
 #	ifdef M_AMIGA
@@ -164,7 +164,7 @@ get_fqdn(
 
 	*fqdn = '\0';
 	domain = NULL;
-	name[MAXHOSTNAMELEN + 1] = '\0';
+	name[MAXHOSTNAMELEN] = '\0';
 
 	if (host) {
 		if (strchr(host, '.'))
@@ -253,28 +253,44 @@ static const char *
 get_user_name(
 	void)
 {
-#	if defined(M_AMIGA) || defined(VMS)
-	char *p;
-#	endif /* M_AMIGA || VMS */
 	static char username[128];
 	struct passwd *pw;
+#if defined(M_AMIGA) || defined(VMS)
+	char *p;
+#endif /* M_AMIGA  || VMS */
 
 	username[0] = '\0';
-#	if defined(M_AMIGA) || defined(VMS)
-	if ((p = getenv("USER"))) {
+
+#	ifdef M_AMIGA
+	if ((p = getenv("USERNAME"))) {
 		STRCPY(username, p);
-#		ifdef VMS
-		lower(username);
-#		endif /* VMS */
 	}
 #	else
+#		ifndef VMS
 	if ((pw = getpwuid(getuid())) != NULL)
 		strcpy(username, pw->pw_name);
-	else {
+	else
+#		else
+	if (((p = getlogin()) != NULL) && strlen(p)) {
+		if ((pw = getpwnam(p)) != NULL)
+			strcpy(username, pw->pw_name);
+	}
+#		endif /* !VMS */
+#	endif /* M_AMIGA */
+
+	if (!*username) {
+#	ifndef M_AMIGA
 		error_message(_(txt_error_passwd_missing));
+#	else
+		error_message(_(txt_env_var_not_found), "USERNAME");
+#	endif /* !M_AMIGA */
 		tin_done(EXIT_FAILURE);
 	}
-#	endif /* M_AMIGA || VMS */
+
+#	ifdef VMS
+	lower(username);
+#	endif /* VMS */
+
 	return username;
 }
 

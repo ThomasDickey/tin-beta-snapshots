@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2003-01-22
+ *  Updated   : 2003-04-08
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2003 Thomas Dickey <dickey@invisible-island.net>
@@ -94,7 +94,6 @@
 #	undef INEWSDIR
 #	undef PATH_INEWS
 #	undef INN_NNTPLIB
-#	undef LOCAL_CHARSET
 #	undef MIME_BREAK_LONG_LINES
 #	undef MIME_STRICT_CHARSET
 #	undef MM_CHARSET
@@ -609,6 +608,13 @@
  */
 #	undef MULTIBYTE_ABLE
 #	undef HAVE_LIBUTF8_H
+
+/*
+ * Definition used in PCRE:
+ */
+#	if defined(MULTIBYTE_ABLE) || defined(HAVE_LIBUTF8_H)
+#		define SUPPORT_UTF8 1
+#	endif /* MULTIBYTE_ABLE || HAVE_LIBUTF8_H */
 
 /*
  * Define if you have <langinfo.h> and nl_langinfo(CODESET).

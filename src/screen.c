@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-03-29
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -174,7 +174,7 @@ perror_message(
 
 	clear_message();
 
-	vsnprintf(buf, sizeof(LEN) - 1, fmt, ap);
+	vsnprintf(buf, sizeof(buf), fmt, ap);
 
 	va_end(ap);
 
@@ -384,7 +384,7 @@ void
 spin_cursor(
 	void)
 {
-	static const char buf[] = "|/-\\|/-\\ "; /* don't remove the taling sapce! */
+	static const char buf[] = "|/-\\|/-\\ "; /* don't remove the tailing space! */
 	static unsigned short int i = 0;
 
 	if (batch_mode)

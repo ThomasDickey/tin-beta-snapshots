@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-03-28
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -168,7 +168,7 @@ group_page(
 	 */
 	group->read_during_session = TRUE;
 
-	proc_ch_default = POST_PROC_TYPE(group->attribute->post_proc_type);
+	proc_ch_default = ch_post_process[group->attribute->post_proc_type];
 
 	glob_group = group->name;			/* For global access to the current group */
 	num_of_tagged_arts = 0;
@@ -364,12 +364,13 @@ group_page(
 				}
 				if ((!TINRC_CONFIRM_ACTION) || prompt_yn(cLINES, (ch == iKeyGroupQuickKill) ? _(txt_quick_filter_kill) : _(txt_quick_filter_select), TRUE) == 1) {
 					old_top = top_art;
-					n = (int) base[grpmenu.curr];
+					n = (int) base[grpmenu.curr]; /* should this depend on show_only_unread? */
 					old_artnum = arts[n].artnum;
 					if (quick_filter((ch == iKeyGroupQuickKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[n])) {
 						info_message((ch == iKeyGroupQuickKill) ? _(txt_info_add_kill) : _(txt_info_add_select));
 						if (filter_articles(group)) {
 							make_threads(group, FALSE);
+							/* TODO: position is wrong after quick killing a thread */
 							grpmenu.curr = find_new_pos(old_top, old_artnum, grpmenu.curr);
 						}
 					}
@@ -529,7 +530,7 @@ group_page(
 				if (selmenu.curr + 1 >= selmenu.max)
 					info_message(_(txt_no_more_groups));
 				else {
-					if (xflag && TINRC_CONFIRM_SELECT && (prompt_yn(cLINES, txt_confirm_select_on_exit, FALSE) != 1)) {
+					if (xflag && TINRC_CONFIRM_SELECT && (prompt_yn(cLINES, _(txt_confirm_select_on_exit), FALSE) != 1)) {
 						undo_auto_select_arts();
 						xflag = FALSE;
 					}
@@ -570,7 +571,7 @@ group_page(
 				if (i < 0)
 					info_message(_(txt_no_prev_group));
 				else {
-					if (xflag && TINRC_CONFIRM_SELECT && (prompt_yn(cLINES, txt_confirm_select_on_exit, FALSE) != 1)) {
+					if (xflag && TINRC_CONFIRM_SELECT && (prompt_yn(cLINES, _(txt_confirm_select_on_exit), FALSE) != 1)) {
 						undo_auto_select_arts();
 						xflag = FALSE;
 					}
@@ -582,7 +583,7 @@ group_page(
 			case iKeyQuit:	/* return to group selection page */
 				if (num_of_tagged_arts && prompt_yn(cLINES, _(txt_quit_despite_tags), TRUE) != 1)
 					break;
-				if (xflag && TINRC_CONFIRM_SELECT && (prompt_yn(cLINES, txt_confirm_select_on_exit, FALSE) != 1)) {
+				if (xflag && TINRC_CONFIRM_SELECT && (prompt_yn(cLINES, _(txt_confirm_select_on_exit), FALSE) != 1)) {
 					undo_auto_select_arts();
 					xflag = FALSE;
 				}
@@ -592,7 +593,7 @@ group_page(
 			case iKeyQuitTin:		/* quit */
 				if (num_of_tagged_arts && prompt_yn(cLINES, _(txt_quit_despite_tags), TRUE) != 1)
 					break;
-				if (xflag && TINRC_CONFIRM_SELECT && (prompt_yn(cLINES, txt_confirm_select_on_exit, FALSE) != 1)) {
+				if (xflag && TINRC_CONFIRM_SELECT && (prompt_yn(cLINES, _(txt_confirm_select_on_exit), FALSE) != 1)) {
 					undo_auto_select_arts();
 					xflag = FALSE;
 				}
@@ -1111,7 +1112,7 @@ pos_first_unread_thread(
 
 void
 mark_screen(
-	int level,	/* Always SELECT_LEVEL - TODO move to select.c or use this everywhere */
+	int level,	/* Always SELECT_LEVEL - TODO: move to select.c or use this everywhere */
 	int screen_row,
 	int screen_col,
 	const char *value)

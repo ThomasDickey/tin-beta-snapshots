@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-13
+ *  Updated   : 2003-04-25
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -103,7 +103,7 @@ main(
 		textdomain(PACKAGE);
 #	endif /* ENABLE_NLS */
 	} else {
-		error_message(_(txt_error_locale));
+		error_message(txt_error_locale);
 		sleep(2);
 	}
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
@@ -198,10 +198,8 @@ main(
 		setup_screen();
 	}
 
-	if (!batch_mode || (batch_mode && verbose))
+	if (!batch_mode || verbose)
 		wait_message(0, "%s\n", cvers);
-
-	set_up_private_index_cache();
 
 	/*
 	 * Connect to nntp server?
@@ -217,6 +215,8 @@ main(
 		}
 	}
 
+	set_up_private_index_cache();
+
 	/*
 	 * Check if overview indexes contain Xref: lines
 	 */
@@ -224,8 +224,13 @@ main(
 		xref_supported = overview_xref_support();
 
 #ifdef DEBUG_NEWSRC
-	unlink("/tmp/BITMAP");
-/*	vNewsrcTestHarness(); */
+	{
+		char file[PATH_LEN];
+
+		joinpath(file, TMPDIR, "BITMAP");
+		unlink(file);
+		/* vNewsrcTestHarness(); */
+	}
 #endif /* DEBUG_NEWSRC */
 
 	/*
@@ -233,7 +238,8 @@ main(
 	 */
 	if (!batch_mode) {
 		wait_message(0, _(txt_reading_keymap_file));
-		read_keymap_file();
+		if (!read_keymap_file())
+			prompt_continue();
 		read_input_history_file();
 	}
 
@@ -255,22 +261,19 @@ main(
 
 	/*
 	 * Initialise active[] and add new newsgroups to start of my_group[]
+	 * also reads attributes
 	 */
 	selmenu.max = 0;
+	/*
+	 * we need to restore the original no_write mode to be able to handle
+	 * $AUTOSUBSCRIBE groups
+	 */
+	no_write = tmp_no_write;
 	read_news_active_file();
+	no_write = TRUE;
 #ifdef DEBUG
 	debug_print_active();
 #endif /* DEBUG */
-
-	/*
-	 * Load the local & global group specific attribute files
-	 */
-	if (!batch_mode || (batch_mode && verbose))
-		wait_message(0, _(txt_reading_attributes_file), _(txt_global));
-	read_attributes_file(TRUE);
-	if (!batch_mode || (batch_mode && verbose))
-		wait_message(0, _(txt_reading_attributes_file), "");
-	read_attributes_file(FALSE);
 
 	/*
 	 * Read in users filter preferences file. This has to be done before
@@ -423,33 +426,33 @@ read_cmd_line_options(
 
 	while ((ch = getopt(argc, argv, OPTIONS)) != -1) {
 		switch (ch) {
-#	ifndef M_AMIGA
+#ifndef M_AMIGA
 			case 'a':
-#		ifdef HAVE_COLOR
+#	ifdef HAVE_COLOR
 				use_color = bool_not(use_color);
-#		else
+#	else
 				error_message(_(txt_option_not_enabled), "-DHAVE_COLOR");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
-#		endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
 				break;
 
 			case 'A':
-#		ifdef NNTP_ABLE
+#	ifdef NNTP_ABLE
 				force_auth_on_conn_open = TRUE;
-#		else
+#	else
 				error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
-#		endif /* NNTP_ABLE */
+#	endif /* NNTP_ABLE */
 				break;
-#	else
+#else
 			case 'B':
 				tin_bbs_mode = TRUE;
 				break;
-#	endif /* !M_AMIGA */
+#endif /* !M_AMIGA */
 
 			case 'c':
 				catchup = TRUE;
@@ -459,7 +462,7 @@ read_cmd_line_options(
 				show_description = FALSE;
 				break;
 
-			case 'D':		/* debug mode 1=NNTP 2=ALL */
+			case 'D':		/* debug mode 1=NNTP, 2=ALL, 3=newsrc, 4=malloc */
 #ifdef DEBUG
 				debug = atoi(optarg);
 				debug_delete_files();
@@ -471,7 +474,7 @@ read_cmd_line_options(
 #endif /* DEBUG */
 				break;
 
-			case 'f':	/* newsrc (tin) file */
+			case 'f':	/* newsrc file */
 				my_strncpy(newsrc, optarg, sizeof(newsrc) - 1);
 				newsrc_set = TRUE;
 				break;
@@ -480,19 +483,19 @@ read_cmd_line_options(
 				tinrc.getart_limit = atoi(optarg);
 				break;
 
-#	ifndef M_AMIGA
+#ifndef M_AMIGA
 			case 'g':	/* select alternative NNTP-server, implies -r */
-#		ifdef NNTP_ABLE
+#	ifdef NNTP_ABLE
 				my_strncpy(cmdline_nntpserver, optarg, sizeof(cmdline_nntpserver) - 1);
 				read_news_via_nntp = TRUE;
-#		else
+#	else
 				error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
-#		endif /* NNTP_ABLE */
+#	endif /* NNTP_ABLE */
 				break;
-#	endif /* !M_AMIGA */
+#endif /* !M_AMIGA */
 
 			case 'H':
 				show_intro_page();
@@ -530,7 +533,7 @@ read_cmd_line_options(
 				break;
 
 			case 'N':	/* mail new news to your posts */
-				my_strncpy(mail_news_user, userid, sizeof(userid));
+				my_strncpy(mail_news_user, userid, sizeof(mail_news_user) - 1);
 				mail_news = TRUE;
 				batch_mode = TRUE;
 				break;
@@ -547,13 +550,18 @@ read_cmd_line_options(
 #endif /* NO_POSTING */
 				break;
 
-#ifdef NNTP_ABLE
 			case 'p': /* implies -r */
+#ifdef NNTP_ABLE
 				read_news_via_nntp = TRUE;
 				if (atoi(optarg) != 0)
 					nntp_tcp_port = (unsigned short) atoi(optarg);
-				break;
+#else
+				error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
+				giveup();
+				/* keep lint quiet: */
+				/* NOTREACHED */
 #endif /* NNTP_ABLE */
+				break;
 
 			case 'q':
 				check_for_new_newsgroups = FALSE;
@@ -566,14 +574,14 @@ read_cmd_line_options(
 				break;
 
 			case 'r':	/* read news remotely from default NNTP server */
-#	ifdef NNTP_ABLE
+#ifdef NNTP_ABLE
 				read_news_via_nntp = TRUE;
-#	else
+#else
 				error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
-#	endif /* NNTP_ABLE */
+#endif /* NNTP_ABLE */
 				break;
 
 			case 'R':	/* read news saved by -S option */
@@ -594,15 +602,15 @@ read_cmd_line_options(
 				break;
 
 			case 'u':	/* update index files */
-#	ifndef NNTP_ONLY
+#ifndef NNTP_ONLY
 				batch_mode = TRUE;
 				show_description = FALSE;
-#	else
+#else
 				error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
-#	endif /* !NNTP_ONLY */
+#endif /* !NNTP_ONLY */
 				break;
 
 			case 'v':	/* verbose mode */
@@ -628,23 +636,23 @@ read_cmd_line_options(
 #ifdef TIN_CC
 				error_message("Compiler:");
 				error_message("\tCC       = \"%s\"", TIN_CC);
-#		ifdef TIN_CFLAGS
+#	ifdef TIN_CFLAGS
 				error_message("\tCFLAGS   = \"%s\"", TIN_CFLAGS);
-#		endif /* TIN_CFLAGS */
+#	endif /* TIN_CFLAGS */
 #	ifdef TIN_CPP
 				error_message("\tCPP      = \"%s\"", TIN_CPP);
 #	endif /* TIN_CPP */
-#		ifdef TIN_CPPFLAGS
+#	ifdef TIN_CPPFLAGS
 				error_message("\tCPPFLAGS = \"%s\"", TIN_CPPFLAGS);
-#		endif /* TIN_CPPFLAGS */
+#	endif /* TIN_CPPFLAGS */
 #endif /* TIN_CC */
 
 #ifdef TIN_LD
 				error_message("Linker and Libraries:");
 				error_message("\tLD       = \"%s\"", TIN_LD);
-#		ifdef TIN_LDFLAGS
+#	ifdef TIN_LDFLAGS
 				error_message("\tLDFLAGS  = \"%s\"", TIN_LDFLAGS);
-#		endif /* TIN_LDFLAGS */
+#	endif /* TIN_LDFLAGS */
 
 #	ifdef TIN_LIBS
 				error_message("\tLIBS     = \"%s\"", TIN_LIBS);
@@ -785,11 +793,6 @@ read_cmd_line_options(
 				"-CHARSET_CONVERSION "
 #endif /* CHARSET_CONVERSION */
 				"\n\t"
-#ifdef LOCAL_CHARSET
-				"+LOCAL_CHARSET "
-#else
-				"-LOCAL_CHARSET "
-#endif /* LOCAL_CHARSET */
 #ifdef NO_LOCALE
 				"+NO_LOCALE "
 #else
@@ -943,66 +946,66 @@ usage(
 {
 	error_message(_(txt_usage_tin), theProgname);
 
-#	ifndef M_AMIGA
-#		ifdef HAVE_COLOR
-			error_message(_(txt_usage_toggle_color));
-#		endif /* HAVE_COLOR */
-#		ifdef NNTP_ABLE
-			error_message(_(txt_usage_force_authentication));
-#		endif /* NNTP_ABLE */
-#	else
-		error_message(_(txt_usage_bbs_mode));
-#	endif /* !M_AMIGA */
+#ifndef M_AMIGA
+#	ifdef HAVE_COLOR
+		error_message(_(txt_usage_toggle_color));
+#	endif /* HAVE_COLOR */
+#	ifdef NNTP_ABLE
+		error_message(_(txt_usage_force_authentication));
+#	endif /* NNTP_ABLE */
+#else
+	error_message(_(txt_usage_bbs_mode));
+#endif /* !M_AMIGA */
 
 	error_message(_(txt_usage_catchup));
 	error_message(_(txt_usage_dont_show_descriptions));
 
-#	ifdef DEBUG
-		error_message(_(txt_usage_debug));
-#	endif /* DEBUG */
+#ifdef DEBUG
+	error_message(_(txt_usage_debug));
+#endif /* DEBUG */
 
 	error_message(_(txt_usage_newsrc_file), newsrc);
 	error_message(_(txt_usage_getart_limit));
 
-#	ifndef M_AMIGA
-#		ifdef NNTP_ABLE
-			error_message(_(txt_usage_newsserver), get_val("NNTPSERVER", NNTP_DEFAULT_SERVER));
-#		endif /* NNTP_ABLE */
-#	endif /* !M_AMIGA */
+#ifndef M_AMIGA
+#	ifdef NNTP_ABLE
+		error_message(_(txt_usage_newsserver), get_val("NNTPSERVER", NNTP_DEFAULT_SERVER));
+#	endif /* NNTP_ABLE */
+#endif /* !M_AMIGA */
 
 	error_message(_(txt_usage_help_message));
 	error_message(_(txt_usage_help_information), theProgname);
 
-#	ifndef NNTP_ONLY
-		error_message(_(txt_usage_index_newsdir), index_newsdir);
-#	endif /* !NNTP_ONLY */
+#ifndef NNTP_ONLY
+	error_message(_(txt_usage_index_newsdir), index_newsdir);
+#endif /* !NNTP_ONLY */
 
-	error_message(_(txt_usage_use_listgroup));
+	error_message(_(txt_usage_read_only_active));
 	error_message(_(txt_usage_maildir), tinrc.maildir);
 	error_message(_(txt_usage_mail_new_news_to_user));
 	error_message(_(txt_usage_read_only_subscribed));
 	error_message(_(txt_usage_mail_new_news));
 	error_message(_(txt_usage_post_postponed_arts));
 
-#	ifdef NNTP_ABLE
-		error_message(_(txt_usage_port), nntp_tcp_port);
-#	endif /* NNTP_ABLE */
+#ifdef NNTP_ABLE
+	error_message(_(txt_usage_port), nntp_tcp_port);
+#endif /* NNTP_ABLE */
 
 	error_message(_(txt_usage_dont_check_new_newsgroups));
 	error_message(_(txt_usage_quickstart));
 
-#	ifdef NNTP_ABLE
-		if (!read_news_via_nntp)
-			error_message(_(txt_usage_read_news_remotely));
-#	endif /* NNTP_ABLE */
+#ifdef NNTP_ABLE
+	if (!read_news_via_nntp)
+		error_message(_(txt_usage_read_news_remotely));
+#endif /* NNTP_ABLE */
 
 	error_message(_(txt_usage_read_saved_news));
 	error_message(_(txt_usage_savedir), tinrc.savedir);
 	error_message(_(txt_usage_save_new_news));
 
-#	ifndef NNTP_ONLY
-		error_message(_(txt_usage_update_index_files));
-#	endif /* !NNTP_ONLY */
+#ifndef NNTP_ONLY
+	error_message(_(txt_usage_update_index_files));
+#endif /* !NNTP_ONLY */
 
 	error_message(_(txt_usage_verbose));
 	error_message(_(txt_usage_version));
@@ -1082,7 +1085,8 @@ read_cmd_line_groups(
 		selmenu.max = skip_newgroups();		/* Reposition after any newgroups */
 
 		for (num = num_cmdargs; num < max_cmdargs; num++) {
-			wait_message(0, _(txt_matching_cmd_line_groups), cmdargs[num]);
+			if (!batch_mode)
+				wait_message(0, _(txt_matching_cmd_line_groups), cmdargs[num]);
 
 			for_each_group(i) {
 				if (match_group_list(active[i].name, cmdargs[num])) {

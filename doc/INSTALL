@@ -26,7 +26,7 @@ The following configure options and defines are documented in detail:
   --enable-echo                           --with-iso-to-ascii
   --enable-etiquette                      --with-ispell
   --enable-fascist-newsadmin              --with-libdir
-  --enable-flock                          --with-local-charset
+  --enable-flock                          --with-curses-dir
   --enable-inverse-video                  --with-mailbox
   --enable-locale                         --with-mailer
   --enable-lockf                          --with-metamail
@@ -46,7 +46,7 @@ The following configure options and defines are documented in detail:
   --prefix                                --exec-prefix
   --bindir                                --mandir
   --program-prefix                        --program-suffix
-  --program-transform-name                --with-curses-dir
+  --program-transform-name
 
   ENFORCE_RFC1034                         NNTP_INEWS
   EVIL_INSIDE                             NNTP_SERVER_FILE
@@ -356,7 +356,7 @@ one of the following 7 conversion tables for different languages
         3  replace 8-bit letters by 7-bit ISO 646 characters
            (mostly for Danish, Finnish, Norwegian and Swedish)
         4  convert 8-bit characters according to RFC 1345
-        5  build 8-bit characters by combining serveral 7-bit chars and
+        5  build 8-bit characters by combining several 7-bit chars and
            using backspace (useful for printers)
         6  ???
 
@@ -366,19 +366,9 @@ in german language newsgroups. For more detailed info read the file
 means no conversion at all. Users can override this value by setting an
 environment variable ISO2ASC.
 
---with-local-charset=identifier
-Define if you want charset conversions. You only need this if you compile
-tin for a Microsoft or NeXT operating system. Set identifier to one of the
-following values:
-
-        437     ibm437<->iso-8859-1 conversion
-        850     ibm850<->iso-8859-1 conversion
-        1       next<->iso-8859-1 conversion
-        unset   no conversion (default)
-
 --with-curses-dir=dir (default: empty)
-If (n)curses is not installed installed in a standard location (i.e below
-/usr) you can specifyit's installation directory here.
+If (n)curses is not installed in a standard location (i.e below /usr) you
+can specify it's installation directory here.
 
 --with-screen=type (default: termcap)
 This is a simpler way (than --with-ncurses and --enable-curses) to specify
@@ -531,9 +521,11 @@ incorrect frees, etc.
 
 --enable-debug (default: off)
 Define if you want tin to log debug information to files in /tmp. Activated
-by tin -Dn where n is 1 for NNTP only debug logging and n is 2 for logging
-all debug info. Debug files written to /tmp are ARTS, ACTIVE, BASE and
-NNTP.
+by tin -Dn where n is 1 for NNTP only debug logging, n is 2 for logging
+most debug info, n is 3 for newsrc debugging and n is 4 for malloc debug
+logging. Debug files written to /tmp are ARTS, ACTIVE, BASE, NNTP, SAVE_COMP,
+BITMAP, MALLOC and FILTER. Depending on the debuglevel some files may not be
+generated. newsrc debugging also needs DEBUG_NEWSRC defined.
 
 --with-trace (default: off)
 Trace data which is formatted and written to the screen. Use this to debug
@@ -544,7 +536,7 @@ Link with Gray Watson's dmalloc library, used to check for memory leaks,
 incorrect frees, etc.
 
 PROFILE
-profile time consuming opperations
+profile time consuming operations
 
 
 Miscellaneous options
@@ -631,7 +623,7 @@ Followup-To:-header contains spaces, newlines or tabs.
 
 Compiled & installed
 --------------------
-Tin was successfully build and installed on a varity of platforms including
+Tin was successfully built and installed on a variety of platforms including
 Linux, FreeBSD, OpenBSD, NetBSD, Darwin, Solaris, IRIX, HP-UX, Ultrix,
-Tru64, AIX, SINIX, UXP/V, QNX, GNU Hurd, DG/UX, Cygwin, AmigaOS and VMS. For
-a detailed list see <http://www.tin.org/builds.html>
+Tru64, AIX, SINIX, UXP/V, QNX, GNU Hurd, DG/UX, SEIUX, Cygwin, AmigaOS and
+VMS. For a detailed list see <http://www.tin.org/builds.html>

@@ -3,7 +3,7 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 1998-07-04
+ *  Updated   : 2003-04-10
  *
  * Copyright (c) 1997-2003 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
@@ -16,10 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Jason Faultless.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -43,6 +40,10 @@
 #ifndef TNNTP_H
 #	include "tnntp.h"
 #endif /* !TNNTP_H */
+#ifndef MENUKEYS_H
+#	include "menukeys.h"
+#endif /* !MENUKEYS_H */
+
 
 /*
  * The initial and expansion sizes to use for allocating read data
@@ -72,6 +73,7 @@ static char *tin_read(char *buffer, size_t len, FILE *fp, t_bool header);
  * Used by the I/O read routine to look for keyboard input
  * Returns TRUE if user aborted with 'q' or 'z' (lynx-style)
  *         FALSE otherwise
+ * TODO: document 'z' (, and allow it's remapping?)
  */
 static t_bool
 wait_for_input(
@@ -81,11 +83,11 @@ wait_for_input(
 #		ifdef VMS
 	int ch = ReadChNowait();
 
-	if (ch == 'q' || ch == 'z' || ch == ESC) {
+	if (ch == iKeyQuit || ch == 'z' || ch == iKeyAbort) {
 		if (prompt_yn(cLINES, _(txt_read_abort), FALSE) == 1)
 			return TRUE;
 	}
-	if (ch == 'Q') {
+	if (ch == iKeyQuitTin) {
 		if (prompt_yn(cLINES, _(txt_read_exit), FALSE) == 1)
 			tin_done(EXIT_SUCCESS);
 	}
@@ -139,19 +141,19 @@ wait_for_input(
 				 * must first see if it was really an ESC or a keymap key before
 				 * asking the user if he wants to abort.
 				 */
-				if (ch == ESC) {
+				if (ch == iKeyAbort) {
 					int keymap_ch = get_arrow_key(ch);
 
 					if (keymap_ch != KEYMAP_UNKNOWN)
 						ch = keymap_ch;
 				}
 
-				if (ch == 'q' || ch == 'z' || ch == ESC) {
+				if (ch == iKeyQuit || ch == 'z' || ch == iKeyAbort) {
 					if (prompt_yn(cLINES, _(txt_read_abort), FALSE) == 1)
 						return TRUE;
 				}
 
-				if (ch == 'Q') {
+				if (ch == iKeyQuitTin) {
 					if (prompt_yn(cLINES, _(txt_read_exit), FALSE) == 1)
 						tin_done(EXIT_SUCCESS);
 				}
@@ -237,7 +239,7 @@ tin_read(
 	ptr = fgets(buffer, len, fp);
 #endif /* NNTP_ABLE */
 
-/* TODO develop this next line? */
+/* TODO: develop this next line? */
 #ifdef DEBUG
 	if (errno)
 		fprintf(stderr, "errno in tin_read %d\n", errno);
@@ -368,7 +370,7 @@ tin_fgets(
 			size = next + CHUNK;
 		temp = my_realloc(dynbuf, size * sizeof(*dynbuf));
 		dynbuf = temp;
-		temp = tin_read(dynbuf + next, size - next, fp, header); /* What if == 0 ?? */
+		temp = tin_read(dynbuf + next, size - next, fp, header); /* What if == 0? */
 		next += offset;
 
 		if (tin_errno != 0)

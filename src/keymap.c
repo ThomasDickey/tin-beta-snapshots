@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2003-01-26
+ *  Updated   : 2003-04-07
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2003 Dirk Nimmich <nimmich@uni-muenster.de>
@@ -291,9 +291,9 @@ static struct keymap Key = {
 	},
 	{
 		{ 0, 0, "PProc" },
-		{ iKeyPProcNone, iKeyPProcNone, "None" },
+		{ iKeyPProcNo, iKeyPProcNo, "No" },
 		{ iKeyPProcShar, iKeyPProcShar, "Shar" },
-		{ iKeyPProcUUDecode, iKeyPProcUUDecode, "UUDecode" },
+		{ iKeyPProcYes, iKeyPProcYes, "Yes" },
 		{ 0, 0, NULL }
 	},
 	{
@@ -422,8 +422,8 @@ static t_keynode *keys_feed_art_thread_regex_tag[] = {
  * older tin because the new action replaces the old one.
  */
 static t_keynode *keys_feed_post_process_type[] = {
-	&Key.Global.Abort, &Key.Global.Quit, &Key.PProc.None, &Key.PProc.Shar,
-	&Key.PProc.UUDecode,
+	&Key.Global.Abort, &Key.Global.Quit, &Key.PProc.No, &Key.PProc.Shar,
+	&Key.PProc.Yes,
 	NULL };
 
 static t_keynode *keys_feed_supersede_article[] = {
@@ -486,8 +486,8 @@ static t_keynode *keys_info_nav[] = {
 	&Key.Global.SearchSubjB, &Key.Global.SearchRepeat, &Key.Global.Quit, NULL };
 
 static t_keynode *keys_nrctbl_create[] = {
-   &Key.Global.Abort, &Key.Nrctbl.Quit, &Key.Nrctbl.Alternative,
-   &Key.Nrctbl.Create, &Key.Nrctbl.Default, NULL };
+	&Key.Global.Abort, &Key.Nrctbl.Quit, &Key.Nrctbl.Alternative,
+	&Key.Nrctbl.Create, &Key.Nrctbl.Default, NULL };
 
 static t_keynode *keys_page_nav[] = {
 	&Key.Global.Abort, &Key.Global.Zero, &Key.Global.One, &Key.Global.Two,
@@ -854,7 +854,7 @@ check_duplicates(
 	for (ptr1 = keyptr1 + 1; ptr1->localkey != '\0'; ++ptr1) {
 		for (ptr2 = (keyptr1 == keyptr2) ? ptr1 + 1 : keyptr2 + 1; ptr2->localkey != '\0'; ++ptr2) {
 			if (ptr1->localkey == ptr2->localkey) {
-				error_message(_(txt_keymap_conflict), printascii(buf, ptr1->localkey), keyptr1->t, ptr1->t, keyptr2->t, ptr2->t);
+				wait_message(0, _(txt_keymap_conflict), printascii(buf, ptr1->localkey), keyptr1->t, ptr1->t, keyptr2->t, ptr2->t);
 				return FALSE;
 			}
 		}
@@ -899,7 +899,7 @@ processkey(
 
 
 #define KEYSEPS		" \t\n"
-/* TODO -> tin.h */
+/* TODO: -> tin.h */
 #define KEYMAP_FILE	"keymap"
 t_bool
 read_keymap_file(
@@ -908,7 +908,7 @@ read_keymap_file(
 	FILE *fp = (FILE *) 0;
 	char *line, *keydef, *kname;
 	char *map, *ptr;
-	char buf[LEN], buff[LEN];
+	char buf[LEN], buff[NAME_LEN + 1];
 	char key;
 	int i;
 	t_bool ret = TRUE;
@@ -948,7 +948,7 @@ read_keymap_file(
 	FreeIfNeeded(map);
 
 	if (!fp)
-		return FALSE;
+		return TRUE; /* no keymap file is not an error */
 
 	while ((line = fgets(buf, sizeof(buf), fp)) != NULL) {
 		/*
@@ -964,7 +964,7 @@ read_keymap_file(
 		 * Warn about basic syntax errors
 		 */
 		if (keydef == NULL) {
-			fprintf(stderr, _(txt_keymap_missing_key), kname);
+			wait_message(0, _(txt_keymap_missing_key), kname);
 			ret = FALSE;
 			continue;
 		}
@@ -980,20 +980,23 @@ read_keymap_file(
 			switch (keydef[0]) {
 				case '^':
 					if (!(isupper((int)(unsigned char) keydef[1]))) {
-						fprintf(stderr, _(txt_keymap_invalid_key), keydef);
+						wait_message(0, _(txt_keymap_invalid_key), keydef);
 						ret = FALSE;
 						continue;
 					}
 					key = ctrl(keydef[1]);
 					break;
+
 				case 'S':		/* Only test 1st char - crude but effective */
 					key = ' ';
 					break;
+
 				case 'T':
 					key = ctrl('I');
 					break;
+
 				default:
-					fprintf(stderr, _(txt_keymap_invalid_key), keydef);
+					wait_message(0, _(txt_keymap_invalid_key), keydef);
 					ret = FALSE;
 					continue;
 			}
@@ -1010,10 +1013,10 @@ read_keymap_file(
 
 		/*
 		 * TODO: useful? shared keymaps (NFS-Home) may differ
-		 * depending on the OS (i.e. on tin has colr the other has not)
+		 * depending on the OS (i.e. on tin has color the other has not)
 		 */
 		if (keygroups[i] == NULL) {
-			fprintf(stderr, _(txt_keymap_invalid_name), kname);
+			wait_message(0, _(txt_keymap_invalid_name), kname);
 			ret = FALSE;
 			continue;
 		}

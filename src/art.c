@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-04-25
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -73,7 +73,6 @@ static int subj_comp(t_comptype p1, t_comptype p2);
 static int valid_artnum(long art);
 static long find_first_unread(struct t_group *group);
 static t_bool parse_headers(FILE *fp, struct t_article *h);
-static void print_expired_arts(int num_expired);
 static void sort_base(unsigned int sort_threads_type);
 static void thread_by_subject(void);
 static void thread_by_multipart(void);
@@ -96,9 +95,9 @@ show_art_msg(
  * Construct the pointers to the base article in each thread.
  * If we are showing only unread, then point to the first unread. I have
  * no idea why this should be so, it causes problems elsewhere [which_response]
- * .inthread is set on each article that is after the first article in the
- * thread. Articles which have been expired have their .thread set to
- * ART_EXPIRED
+ * .prev is set on each article that is after the first article in the
+ * thread and points to the previous article. Articles which have been expired
+ * have their .thread set to ART_EXPIRED
  */
 void
 find_base(
@@ -113,9 +112,9 @@ find_base(
 	debug_print_arts();
 #endif /* DEBUG */
 
-	if (group->attribute && group->attribute->show_only_unread) {
+	if (group->attribute->show_only_unread) {
 		for_each_art(i) {
-			if (arts[i].inthread || arts[i].thread == ART_EXPIRED || (arts[i].killed && tinrc.kill_level == KILL_NOTHREAD))
+			if (arts[i].prev >= 0 || arts[i].thread == ART_EXPIRED || (arts[i].killed && tinrc.kill_level == KILL_NOTHREAD))
 				continue;
 
 			if (grpmenu.max >= max_art)
@@ -134,7 +133,7 @@ find_base(
 		}
 	} else {
 		for_each_art(i) {
-			if (arts[i].inthread || arts[i].thread == ART_EXPIRED || (arts[i].killed && tinrc.kill_level == KILL_NOTHREAD))
+			if (arts[i].prev >= 0 || arts[i].thread == ART_EXPIRED || (arts[i].killed && tinrc.kill_level == KILL_NOTHREAD))
 				continue;
 
 			if (grpmenu.max >= max_art)
@@ -144,7 +143,7 @@ find_base(
 		}
 	}
 	/* sort base[] */
-	if (group->attribute && group->attribute->sort_threads_type > SORT_THREADS_BY_NOTHING)
+	if (group->attribute->sort_threads_type > SORT_THREADS_BY_NOTHING)
 		sort_base(group->attribute->sort_threads_type);
 }
 
@@ -229,14 +228,6 @@ index_group(
 	if (read_nov_file(group, min, max, &expired) == -1)
 		return FALSE;	/* user aborted indexing */
 
-#if 0	/* IMHO this is a bit to verbose (urs) */
-	/*
-	 * Prints 'P' for each expired article if verbose
-	 */
-	if (expired)
-		print_expired_arts(expired);
-#endif /* 0 */
-
 	/*
 	 * Add any articles to arts[] that are new or were killed
 	 */
@@ -267,7 +258,6 @@ index_group(
 			debug_print_comment("art.c: index_group() purging...");
 #endif /* DEBUG_NEWSRC */
 			art_mark(group, &arts[i], ART_READ);
-			print_expired_arts(expired);
 		}
 	}
 
@@ -284,11 +274,6 @@ index_group(
 	 * Needs access to the reference tree
 	 */
 	filtered = filter_articles(group);
-
-	if ((expired || count) && cmd_line && verbose) {
-		my_fputc('\n', stdout);
-		my_flush();
-	}
 
 #ifdef PROFILE
 	BegStopWatch("make_thread");
@@ -421,7 +406,7 @@ read_group(
 		}
 
 		if (!res) {
-			sprintf(buf, "FAILED parse_header(%ld)", art);
+			sprintf(buf, "FAILED parse_headers(%ld)", art);
 #ifdef DEBUG
 			debug_nntp("read_group", buf);
 #endif /* DEBUG */
@@ -468,6 +453,7 @@ read_group(
  * . One of the following is true:
  *    1) The subject lines are the same
  *    2) Both are part of the same archive (name's match and arch bit set)
+ * IMHO the tests for archive name are redundant and have been for years
  */
 static void
 thread_by_subject(
@@ -488,9 +474,11 @@ thread_by_subject(
 		j = h->aptr;
 
 		if (j != -1 && j < i) {
-			if (!arts[i].inthread && ((arts[i].subject == arts[j].subject) || ((arts[i].part || arts[i].patch) && arts[i].archive == arts[j].archive))) {
+			if (arts[i].prev == ART_NORMAL &&
+					((arts[i].subject == arts[j].subject) ||
+					 (arts[i].archive && arts[j].archive && (arts[i].archive->name == arts[j].archive->name)))) {
 				arts[j].thread = i;
-				arts[i].inthread = TRUE;
+				arts[i].prev = j;
 			}
 		}
 
@@ -509,7 +497,7 @@ thread_by_subject(
 			(arts[i].refptr->parent) ? arts[i].refptr->parent->article : -2,
 			(arts[i].refptr->sibling) ? arts[i].refptr->sibling->article : -2,
 			(arts[i].refptr->child) ? arts[i].refptr->child->article : -2,
-			arts[i].inthread, arts[i].thread, arts[i].refptr->txt, arts[i].subject);
+			arts[i].prev, arts[i].thread, arts[i].refptr->txt, arts[i].subject);
 	}
 #endif /* 0 */
 }
@@ -689,30 +677,25 @@ static void
 thread_by_multipart(
 	void)
 {
-	int i, j, threadNum, parent;
+	int i, j, threadNum;
 	MultiPartInfo *minfo = NULL;
 
 	for_each_art(i) {
 
-		if (IGNORE_ART_THREAD(i) || arts[i].inthread || !global_get_multiparts(i, &minfo))
+		if (IGNORE_ART_THREAD(i) || arts[i].prev >= 0 || !global_get_multiparts(i, &minfo))
 			continue;
 
 		threadNum = -1;
-		parent = -1;
 		for (j = minfo[0].total - 1; j >= 0; j--) {
 			if (minfo[j].part_number != -1) {
-				if (threadNum != -1)
+				if (threadNum != -1) {
 					arts[minfo[j].base_index].thread = threadNum;
+					arts[threadNum].prev = minfo[j].base_index;
+				}
 
-				arts[minfo[j].base_index].inthread = TRUE;
 				threadNum = minfo[j].base_index;
-				parent = j;
 			}
 		}
-
-		/* Thread parent doesn't register as being in a thread */
-		if ((parent != -1) && (minfo[parent].part_number != -1))
-			arts[minfo[parent].base_index].inthread = FALSE;
 	}
 	free(minfo);
 }
@@ -728,9 +711,9 @@ thread_by_multipart(
  *	THREAD_BOTH		Threads created using References and then Subject
  *	THREAD_MULTI	Threads created using Subject to search for Multiparts
  *
- * Apart from THREAD_NONE, .thread and .inthread are used, the
- * first article in a thread should have .inthread set to FALSE, the
- * rest TRUE. Only do unexprired articles we haven't visited yet
+ * Apart from THREAD_NONE, .thread and .prev are used, the
+ * first article in a thread should have .prev set to ART_NORMAL, the
+ * rest >= 0. Only do unexprired articles we haven't visited yet
  * (arts[].thread == -1 ART_NORMAL).
  *
  * The rethread parameter is a misnomer. Its only effect (if set) is
@@ -748,7 +731,7 @@ make_threads(
 	int i;
 
 	if (!cmd_line && !batch_mode)
-		info_message(((group->attribute && group->attribute->thread_arts == THREAD_NONE) ? _(txt_unthreading_arts) : _(txt_threading_arts)));
+		info_message((group->attribute->thread_arts == THREAD_NONE ? _(txt_unthreading_arts) : _(txt_threading_arts)));
 
 #ifdef DEBUG
 	if (debug == 2)
@@ -762,8 +745,7 @@ make_threads(
 	 * on arts[] and so the base messages under all threading systems
 	 * will be sorted in this way.
 	 */
-	if (group->attribute)
-		sort_arts(group->attribute->sort_art_type);
+	sort_arts(group->attribute->sort_art_type);
 
 	/*
 	 * Reset all the ptrs to articles following the above sort
@@ -774,12 +756,12 @@ make_threads(
 	 * The threading pointers need to be reset if re-threading
 	 *	If using ref threading, revector the links back to the articles
 	 */
-	if (rethread || (group->attribute && group->attribute->thread_arts)) {
+	if (rethread || group->attribute->thread_arts) {
 		for_each_art(i) {
 			if (arts[i].thread != ART_EXPIRED)
 				arts[i].thread = ART_NORMAL;
 
-			arts[i].inthread = FALSE;
+			arts[i].prev = ART_NORMAL;
 
 			/* Should never happen if tree is built properly */
 			if (arts[i].refptr == 0) {
@@ -797,7 +779,6 @@ make_threads(
 	/*
 	 * Do the right thing according to the threading strategy
 	 */
-	if (group->attribute)
 	switch (group->attribute->thread_arts) {
 		case THREAD_NONE:
 			break;
@@ -880,12 +861,14 @@ sort_base(
 
 
 /*
- * TODO
- * Seems to be only called when reading local spool and no overview files
+ * This is only called when reading local spool and no overview files
  * exist. Code reads (max_lineno) lines of article, presumably to catch
  * headers like Archive-name: which are not normally included in XOVER or
  * even the normal block of headers. How this is supposed to be useful when
  * 99% of the time we'll have overview data I don't know...
+ * TODO: move Archive-name: parsing to article body parsing, remove the
+ * TODO: max_lineno nonsense and parse just the hdrs. Only parse if
+ * TODO: currgrp->auto_save is set, otherwise it is redundant info
  */
 static t_bool
 parse_headers(
@@ -896,7 +879,6 @@ parse_headers(
 	char art_full_name[HEADER_LEN];
 	char art_trunc_subj[HEADER_LEN];
 	char *hdr, *ptr;
-	const char *s;
 	unsigned int lineno = 0;
 	unsigned int max_lineno = 25;
 	t_bool got_from, got_lines, got_received;
@@ -920,37 +902,43 @@ parse_headers(
 		switch (toupper((unsigned char) *ptr)) {
 			case 'A':	/* Archive-name:  optional */
 				/*
-				 * TODO: this is last match counts, all others are first match
-				 *       counts - why the exception here?
+				 * Archive-name: {name}/{part|patch}{number}
+				 * eg, acorn/faq/part01
 				 */
-				if ((hdr = parse_header(ptr + 1, "rchive-name", FALSE))) {
-					/* TODO - what if header of form news/group/name/part01? */
-					if ((s = strrchr(hdr, '/')) != NULL) {
-						if (STRNCASECMPEQ(s + 1, "part", 4)) {
-							h->part = my_strdup(s + 5);
-							strtok(h->part, "\n");
-						} else if (STRNCASECMPEQ(s + 1, "patch", 5)) {
-							h->patch = my_strdup(s + 6);
-							strtok(h->patch, "\n");
-						} else
-							continue;	/* TODO: why not use the header in this case? */
+				if ((hdr = parse_header(ptr + 1, "rchive-name", FALSE, FALSE))) {
+					char *s;
 
-						strtok(hdr, "/");
-						h->archive = hash_str(hdr);
+					if ((s = strrchr(hdr, '/')) != NULL) {
+						struct t_archive *archptr = my_malloc(sizeof(struct t_article));
+
+						if (STRNCASECMPEQ(s + 1, "part", 4)) {
+							archptr->partnum = my_strdup(s + 5);
+							archptr->ispart = TRUE;
+						} else if (STRNCASECMPEQ(s + 1, "patch", 5)) {
+							archptr->partnum = my_strdup(s + 6);
+							archptr->ispart = FALSE;
+						} else {		/* part or patch must be present */
+							free(archptr);
+							continue;
+						}
+						strtok(archptr->partnum, "\n");
+						*s = '\0';
+						archptr->name = hash_str(hdr);
+						h->archive = archptr;
 					}
 				}
 				break;
 
 			case 'D':	/* Date:  mandatory */
 				if (!h->date) {
-					if ((hdr = parse_header(ptr + 1, "ate", FALSE)))
+					if ((hdr = parse_header(ptr + 1, "ate", FALSE, FALSE)))
 						h->date = parsedate(hdr, (struct _TIMEINFO *) 0);
 				}
 				break;
 
 			case 'F':	/* From:  mandatory */
 				if (!got_from) {
-					if ((hdr = parse_header(ptr + 1, "rom", FALSE))) {
+					if ((hdr = parse_header(ptr + 1, "rom", FALSE, FALSE))) {
 						h->gnksa_code = parse_from(hdr, art_from_addr, art_full_name);
 						h->from = hash_str(art_from_addr);
 						if (*art_full_name)
@@ -962,7 +950,7 @@ parse_headers(
 
 			case 'L':	/* Lines:  optional */
 				if (!got_lines) {
-					if ((hdr = parse_header(ptr + 1, "ines", FALSE))) {
+					if ((hdr = parse_header(ptr + 1, "ines", FALSE, FALSE))) {
 						h->line_count = atoi(hdr);
 						got_lines = TRUE;
 					}
@@ -971,20 +959,20 @@ parse_headers(
 
 			case 'M':	/* Message-ID:  mandatory */
 				if (!h->msgid) {
-					if ((hdr = parse_header(ptr + 1, "essage-ID", FALSE)))
+					if ((hdr = parse_header(ptr + 1, "essage-ID", FALSE, FALSE)))
 						h->msgid = my_strdup(hdr);
 				}
 				break;
 
 			case 'R':	/* References:  optional */
 				if (!h->refs) {
-					if ((hdr = parse_header(ptr + 1, "eferences", FALSE)))
+					if ((hdr = parse_header(ptr + 1, "eferences", FALSE, FALSE)))
 						h->refs = my_strdup(hdr);
 				}
 
 				/* Received:  If found it's probably a mail article */
 				if (!got_received) {
-					if ((hdr = parse_header(ptr + 1, "eceived", FALSE))) {
+					if ((hdr = parse_header(ptr + 1, "eceived", FALSE, FALSE))) {
 						max_lineno <<= 1;		/* double the max number of line to read for mails */
 						got_received = TRUE;
 					}
@@ -999,7 +987,7 @@ parse_headers(
 			 */
 			case 'S':	/* Subject:  mandatory */
 				if (!h->subject) {
-					if ((hdr = parse_header(ptr + 1, "ubject", FALSE))) {
+					if ((hdr = parse_header(ptr + 1, "ubject", FALSE, FALSE))) {
 						strncpy(art_trunc_subj, eat_re(eat_tab(rfc1522_decode(hdr)), FALSE), sizeof(art_trunc_subj) - 1);
 						h->subject = hash_str(art_trunc_subj);
 					}
@@ -1008,7 +996,7 @@ parse_headers(
 
 			case 'X':	/* Xref:  optional */
 				if (!h->xref) {
-					if ((hdr = parse_header(ptr + 1, "ref", FALSE)))
+					if ((hdr = parse_header(ptr + 1, "ref", FALSE, FALSE)))
 						h->xref = my_strdup(hdr);
 				}
 				break;
@@ -1378,8 +1366,14 @@ write_nov_file(
 	 * Don't write local index if we have XOVER, unless the user has
 	 * asked for caching.
 	 */
-	if (no_write || (xover_supported && !tinrc.cache_overview_files))
+	if (no_write || (read_news_via_nntp && xover_supported && !tinrc.cache_overview_files))
 		return;
+
+	/*
+	 * TODO: don't write cached overviews if:
+	 *       !read_news_via_nntp && !tinrc.cache_overview_files &&
+	 *       data in novrootdir are correct overviews
+	 */
 
 	/*
 	 * setup the overview file (local only)
@@ -1400,7 +1394,7 @@ write_nov_file(
 	if ((fp = open_xover_fp(group, "w", 0L, 0L)) == NULL)
 		error_message(_(txt_cannot_write_index), nov_file);
 	else {
-		if (group->attribute && group->attribute->sort_art_type != SORT_ARTICLES_BY_NOTHING)
+		if (group->attribute->sort_art_type != SORT_ARTICLES_BY_NOTHING)
 			SortBy(artnum_comp);
 
 		if (!overview_index_filename)
@@ -1425,7 +1419,16 @@ write_nov_file(
 				 */
 				p = rfc1522_encode(article->subject, tinrc.mm_local_charset, FALSE);
 
-				/* replace any '\t's with ' ' in the references-data */
+				/*
+				 * replace any '\t's with ' ' in the references-data
+				 *
+				 * TODO: nntpext-draft might come up with a new scheme:
+				 *       For all fields, the value is processed by first
+				 *       removing all US-ASCII CRLF pairs and then replacing
+				 *       each remaining US-ASCII NUL, TAB, CR, or LF character
+				 *       with a single US-ASCII space (for example, CR LF LF TAB
+				 *       will become two spaces).
+				 */
 				if (article->refs) {
 					ref = q = my_strdup(article->refs);
 					while (*q) {
@@ -1535,6 +1538,7 @@ find_nov_file(
 
 		case GROUP_TYPE_NEWS:
 			if (read_news_via_nntp && xover_supported && !tinrc.cache_overview_files)
+				/* what is this good for? */
 				snprintf(nov_file, sizeof(nov_file), "%s%d.idx", TMPDIR, (int) process_id);
 			else {
 #ifndef NNTP_ONLY
@@ -1597,7 +1601,7 @@ void
 do_update(
 	t_bool catchup)
 {
-	register int i, j;
+	int i, j, k =0;
 	time_t beg_epoch;
 	struct t_group *group;
 
@@ -1610,12 +1614,18 @@ do_update(
 	for (i = 0; i < selmenu.max; i++) {
 		group = &active[my_group[i]];
 
+		if (group->bogus || !group->subscribed)
+			continue;
+
+		if (!index_group(group))
+			continue;
+
+		k++;
+
 		if (verbose) {
 			my_printf("%s %s\n", (catchup ? _(txt_catchup) : _(txt_updating)), group->name);
 			my_flush();
 		}
-		if (!index_group(group))
-			continue;
 
 		if (catchup) {
 			for_each_art(j)
@@ -1625,7 +1635,7 @@ do_update(
 
 	if (verbose) {
 		wait_message(0, _(txt_catchup_update_info),
-			(catchup ? _(txt_caughtup) : _(txt_updated)), selmenu.max,
+			(catchup ? _(txt_caughtup) : _(txt_updated)), k,
 			PLURAL(selmenu.max, txt_group), (unsigned long int) (time(NULL) - beg_epoch));
 	}
 }
@@ -1836,18 +1846,17 @@ set_article(
 	art->refs = (char *) 0;
 	art->refptr = (struct t_msgid *) 0;
 	art->line_count = -1;
-	art->archive = (char *) 0;
-	art->part = (char *) 0;
-	art->patch = (char *) 0;
-	art->thread = ART_EXPIRED;
-	art->status = ART_UNREAD;
-	art->inthread = FALSE;
-	art->killed = ART_NOTKILLED;
+	art->archive = (struct t_archive *) 0;
 	art->tagged = FALSE;
-	art->selected = FALSE;
+	art->thread = ART_EXPIRED;
+	art->prev = ART_NORMAL;
+	art->status = ART_UNREAD;
+	art->killed = ART_NOTKILLED;
 	art->zombie = FALSE;
 	art->delete_it = FALSE;
+	art->selected = FALSE;
 	art->inrange = FALSE;
+	art->matched = FALSE;
 }
 
 
@@ -1884,26 +1893,6 @@ valid_artnum(
 		range >>= 1;
 	}
 	return -1;
-}
-
-
-static void
-print_expired_arts(
-	int num_expired)
-{
-	int i;
-
-	if (cmd_line && verbose) {
-#ifdef DEBUG
-		if (debug)
-			my_printf("Expired Index Arts=[%d]", num_expired);
-#endif /* DEBUG */
-		for (i = 0; i < num_expired; i++)
-			my_fputc('P', stdout);
-
-		if (num_expired)
-			my_flush();
-	}
 }
 
 

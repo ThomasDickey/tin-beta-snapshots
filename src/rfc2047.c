@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-04-08
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2003 Chris Blum <chris@resolution.de>
@@ -762,16 +762,14 @@ rfc15211522_encode(
 	t_bool mime_headers_needed = FALSE;
 	BodyPtr body_encode;
 	int i;
-#if defined(LOCAL_CHARSET) || defined(CHARSET_CONVERSION)
+#ifdef CHARSET_CONVERSION
 	int mmnwcharset = 0;
 
-#	ifdef CHARSET_CONVERSION
 	if (group) /* Posting */
 		mmnwcharset = group->attribute->mm_network_charset;
 	else /* E-Mail */
 		mmnwcharset = tinrc.mm_network_charset;
-#	endif /* CHARSET_CONVERSION */
-#endif /* LOCAL_CHARSET || CHARSET_CONVERSION */
+#endif /* CHARSET_CONVERSION */
 
 	if ((g = tmpfile()) == NULL)
 		return;
@@ -783,9 +781,9 @@ rfc15211522_encode(
 	quoteflag = 0;
 
 	while ((header = tin_fgets(f, TRUE))) {
-#if defined(LOCAL_CHARSET) || defined(CHARSET_CONVERSION)
+#ifdef CHARSET_CONVERSION
 		buffer_to_network(header, mmnwcharset);
-#endif /* LOCAL_CHARSET || CHARSET_CONVERSION */
+#endif /* CHARSET_CONVERSION */
 		if (*header == '\0')
 			break;
 
@@ -795,10 +793,7 @@ rfc15211522_encode(
 			char *p;
 
 #ifdef CHARSET_CONVERSION
-			if (group)
-				p = rfc1522_encode(header, txt_mime_charsets[group->attribute->mm_network_charset], ismail);
-			else
-				p = rfc1522_encode(header, txt_mime_charsets[tinrc.mm_network_charset], ismail);
+			p = rfc1522_encode(header, txt_mime_charsets[mmnwcharset], ismail);
 #else
 			p = rfc1522_encode(header, tinrc.mm_charset, ismail);
 #endif /* CHARSET_CONVERSION */
@@ -812,9 +807,9 @@ rfc15211522_encode(
 	fputc('\n', g);
 
 	while (fgets(buffer, 2048, f)) {
-#if defined(LOCAL_CHARSET) || defined(CHARSET_CONVERSION)
+#ifdef CHARSET_CONVERSION
 		buffer_to_network(buffer, mmnwcharset);
-#endif /* LOCAL_CHARSET || CHARSET_CONVERSION */
+#endif /* CHARSET_CONVERSION */
 		fputs(buffer, g);
 		if (!allow_8bit_header) {
 			/* see if there are any 8bit chars in the body... */

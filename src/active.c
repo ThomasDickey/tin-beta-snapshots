@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2003-03-12
+ *  Updated   : 2003-04-22
  *  Notes     :
  *
  * Copyright (c) 1992-2003 Iain Lea <iain@bricbrac.de>
@@ -235,9 +235,9 @@ parse_active_line(
 		return FALSE;
 
 	(void) strtok(line, ACTIVE_SEP);		/* skip group name */
-	p = strtok((char *) 0, ACTIVE_SEP);	/* group max count */
-	q = strtok((char *) 0, ACTIVE_SEP);	/* group min count */
-	r = strtok((char *) 0, ACTIVE_SEP);	/* mod status or path to mailgroup */
+	p = strtok(NULL, ACTIVE_SEP);	/* group max count */
+	q = strtok(NULL, ACTIVE_SEP);	/* group min count */
+	r = strtok(NULL, ACTIVE_SEP);	/* mod status or path to mailgroup */
 
 	if (!p || !q || !r) {
 		error_message(_(txt_bad_active_file), line);
@@ -380,7 +380,7 @@ read_newsrc_active_file(
 						continue;
 
 					case ERR_ACCESS:
-						error_message(cCRLF "%s", line);
+						error_message("%s%s", cCRLF, line);
 						tin_done(NNTP_ERROR_EXIT);
 						/* keep lint quiet: */
 						/* FALLTHROUGH */
@@ -559,12 +559,12 @@ read_news_active_file(
 		if ((fp = fopen(newsrc, "r")) == NULL) {
 			list_active = TRUE;
 			newsrc_active = FALSE;
-		} else
+		} else {
 			fclose(fp);
-
-		if (file_size(newsrc) <= 0L) {
-			list_active = TRUE;
-			newsrc_active = FALSE;
+			if (file_size(newsrc) <= 0L) {
+				list_active = TRUE;
+				newsrc_active = FALSE;
+			}
 		}
 	}
 
@@ -579,7 +579,16 @@ read_news_active_file(
 	(void) time(&active_timestamp);
 	force_reread_active_file = FALSE;
 
-	check_for_any_new_groups();
+	/*
+	 * check_for_any_new_groups() also does $AUTOSUBSCRIBE
+	 */
+	if (check_for_new_newsgroups)
+		check_for_any_new_groups();
+
+	/*
+	 * finally we have a list of all groups an can set the attributes
+	 */
+	read_attributes_files();
 }
 
 
@@ -605,12 +614,7 @@ check_for_any_new_groups(
 	time_t old_newnews_time;
 	time_t new_newnews_time;
 
-	if (!check_for_new_newsgroups /* || !batch_mode */)
-		return;
-
-#if 0
-	if (!batch_mode /* || (batch_mode && verbose) */)
-#endif /* 0 */
+	if (!batch_mode /* || verbose */)
 		wait_message(0, _(txt_checking_new_groups));
 
 	(void) time(&new_newnews_time);
@@ -657,10 +661,6 @@ check_for_any_new_groups(
 		}
 		TIN_FCLOSE(fp);
 
-		free_attributes_array();		/* TODO: wtf is this doing here? */
-		read_attributes_file(TRUE);
-		read_attributes_file(FALSE);
-
 		if (tin_errno)
 			return;				/* Don't update the time if we quit */
 	}
@@ -676,7 +676,6 @@ check_for_any_new_groups(
 		sprintf(buf, "%s %lu", new_newnews_host, (unsigned long int) new_newnews_time);
 		load_newnews_info(buf);
 	}
-	my_fputc('\n', stdout);
 }
 
 
@@ -724,9 +723,15 @@ subscribe_new_group(
 	}
 
 	if (!no_write && (autosubscribe != NULL) && match_group_list(group, autosubscribe)) {
-		my_printf(_(txt_autosubscribed), group);
+		if (!batch_mode || verbose)
+			my_printf(_(txt_autosubscribed), group);
 
-		subscribe(&active[my_group[idx]], SUBSCRIBED);
+		/*
+		 * as subscribe_new_group() is called from check_for_any_new_groups()
+		 * which has pending data on the socket if reading via NNTP we are not
+		 * allowed to issue any NNTP comands yet
+		 */
+		subscribe(&active[my_group[idx]], SUBSCRIBED, bool_not(read_news_via_nntp));
 		/*
 		 * Bad kluge to stop group later appearing in New newsgroups. This
 		 * effectively loses the group, and it has now been subscribed to and
@@ -873,6 +878,9 @@ find_newnews_index(
 /*
  * Get a single status char from the moderated field. Used on selection screen
  * and in header of group screen
+ *
+ * TODO: what about 'j' groups? active(5) says:
+ *       "local postings to that group should not be generated"
  */
 char
 group_flag(
@@ -989,8 +997,7 @@ append_group_line(
 		make_group_name(base_dir, group_name, group_path);
 		my_printf("Appending=[%s %ld %ld %s]\n", group_name, art_max, art_min, base_dir);
 		print_group_line(fp, group_name, art_max, art_min, base_dir);
-		if (ferror(fp) || fclose(fp))
-			/* TODO: issue warning? */
+		if (ferror(fp) || fclose(fp)) /* TODO: issue warning? */
 			rename(file_tmp, active_file);
 	}
 	unlink(file_tmp);

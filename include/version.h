@@ -40,11 +40,11 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.5.17"
+#		define VERSION		"1.5.18"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20030314"
-#	define RELEASENAME	"Bubbles"
-#	define TINRC_VERSION	"1.3.4"
+#	define RELEASEDATE	"20030425"
+#	define RELEASENAME	"Peephole"
+#	define TINRC_VERSION	"1.3.6"
 
 #	ifdef M_AMIGA
 #		define OSNAME	"AMIGA"

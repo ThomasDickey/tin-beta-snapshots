@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2003-03-13
+ *  Updated   : 2003-04-24
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -21,13 +21,17 @@
 #	include "tnntp.h"
 #endif /* !TNNTP_H */
 
+/* local prototype */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE) && defined(M_UNIX)
+	static wint_t convert_c2wc (const char *input);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE && M_UNIX */
 
 #ifdef USE_CURSES
 
 #define ReadCh cmdReadCh
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE) && defined(M_UNIX)
 #	define ReadWch cmdReadWch
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE && M_UNIX */
 
 void my_dummy(void) { }	/* ANSI C requires non-empty file */
 t_bool have_linescroll = TRUE;	/* USE_CURSES always allows line scrolling */
@@ -90,8 +94,10 @@ t_bool have_linescroll = FALSE;
 #				include <sgtty.h>
 #				define USE_SGTTY 1
 #				define TTY struct sgttyb
-#			else
-#				error "No termios.h, termio.h or sgtty.h found"
+/*
+	#			else
+	#				error "No termios.h, termio.h or sgtty.h found"
+*/
 #			endif /* HAVE_SGTTY_H */
 #		endif /* HAVE_TERMIO_H */
 #	endif /* HAVE_TERMIOS_H && HAVE_TCGETATTR && HAVE_TCSETATTR */
@@ -175,7 +181,6 @@ static char *_getwinsize;
 static int _columns, _line, _lines;
 
 #ifdef M_UNIX
-
 #	undef SET_TTY
 #	undef GET_TTY
 #	if USE_POSIX_TERMIOS
@@ -189,12 +194,13 @@ static int _columns, _line, _lines;
 #			if USE_SGTTY
 #				define SET_TTY(arg) stty(TTYIN, arg)
 #				define GET_TTY(arg) gtty(TTYIN, arg)
-#			else
-#				error "No termios.h, termio.h or sgtty.h found"
+/*
+	#			else
+	#				error "No termios.h, termio.h or sgtty.h found"
+*/
 #			endif /* USE_SGTTY */
 #		endif /* USE_TERMIO */
 #	endif /* USE_POSIX_TERMIOS */
-
 #endif /* M_UNIX */
 
 static int in_inverse;			/* 1 when in inverse, 0 otherwise */
@@ -1091,7 +1097,7 @@ highlight_string(
 
 	my_strncpy(output, &(screen[row].col[col]), size);
 
-	#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	/*
 	 * In a multibyte locale we get byte offsets instead of character
 	 * offsets; calculate now the correct starting column
@@ -1505,19 +1511,41 @@ ReadCh(
 
 
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+/*
+ * A helper function for ReadWch()
+ * converts the read input to a wide-char
+ */
+static wint_t
+convert_c2wc(
+	const char *input)
+{
+	int res;
+	wchar_t wc;
+
+	res = mbtowc(&wc, input, MB_CUR_MAX);
+	if (res == -1)
+		return WEOF;
+	else
+		return (wint_t) wc;
+}
+
+
 wint_t
 ReadWch(
 	void)
 {
 	char *mbs = my_malloc(MB_CUR_MAX + 1);
-	int result, offset;
+	int result, to_read;
 	wchar_t wch = 0;
 
 	fflush(stdout);
 
-#		ifndef USE_CURSES
-		/* read only the first char */
-#			ifdef EINTR
+	/*
+	 * Independent of the pressed key and the used charset we have to
+	 * read at least one byte. The further processing is depending of
+	 * the read byte and the used charset.
+	 */
+#		ifdef EINTR
 	allow_resize(TRUE);
 	while ((result = read(0, mbs, 1)) < 0 && errno == EINTR) { /* spin on signal interrupts */
 		if (need_resize) {
@@ -1526,9 +1554,10 @@ ReadWch(
 		}
 	}
 	allow_resize(FALSE);
-#			else
-	result = read(0, mbs, sizeof(mbs));
-#			endif /* EINTR */
+#		else
+	result = read(0, mbs, 1);
+#		endif /* EINTR */
+
 	if (result <= 0) {
 		free(mbs);
 		return WEOF;
@@ -1540,48 +1569,78 @@ ReadWch(
 		return (wint_t) ESC;
 	}
 
-	/* the pressed key can be represented in one byte */
-	if (!input_pending(0)) {
-		char out = mbs[0] & 0xff;
-
+	/*
+	 * In an one-byte charset we don't need to read further chars but
+	 * we still need to convert the char to a correct wide-char
+	 */
+	if (MB_CUR_MAX == 1) {
+		mbs[1] = '\0';
+		wch = convert_c2wc(mbs);
 		free(mbs);
-		return (wint_t) out;
+
+		return (wint_t) wch;
 	}
 
-	/* read the rest of the multibyte-sequence */
-	offset = 1;
-#		else
-	/* read the complete input */
-	offset = 0;
-#		endif /* !USE_CURSES */
+	/*
+	 * we use a multi-byte charset
+	 */
 
-#		ifdef EINTR
-	allow_resize(TRUE);
-	while ((result = read(0, mbs + offset, MB_CUR_MAX)) < 0 && errno == EINTR) { /* spin on signal interrupts */
-		if (need_resize) {
-			handle_resize((need_resize == cRedraw) ? TRUE :  FALSE);
-			need_resize = cNo;
-		}
-	}
-	allow_resize(FALSE);
-#		else
-	result = read(0, mbs + offset, MB_CUR_MAX);
-#		endif /* EINTR */
+	/*
+	 * UTF-8
+	 */
+	if (!strcasecmp(tinrc.mm_local_charset, "UTF-8")) {
+		int ch = mbs[0] & 0xFF;
 
-	if (result <= 0) {
-		free(mbs);
-		return WEOF;
-	} else {
-		int res;
-
-		mbs[result + offset] = '\0';
-		res = mbtowc(&wch, mbs, MB_CUR_MAX);
-		free(mbs);
-		if (res == -1)
+		/* determine the count of bytes we have still have to read */
+		if (ch <= 0x7F) {
+			/* ASCII char */
+			to_read = 0;
+		} else if (ch >= 0xC2 && ch <= 0xDF) {
+			/* 2-byte sequence */
+			to_read = 1;
+		} else if (ch >= 0xE0 && ch <= 0xEF) {
+			/* 3-byte sequence */
+			to_read = 2;
+		} else if (ch >= 0xF0 && ch <= 0xF4) {
+			/* 4-byte sequence */
+			to_read = 3;
+		} else {
+			/* invalid sequence */
+			free(mbs);
 			return WEOF;
-		else
-			return (wint_t) wch;
+		}
+
+		/* read the missing bytes of the multi-byte sequence */
+		if (to_read > 0) {
+#		ifdef EINTR
+			allow_resize(TRUE);
+			while ((result = read(0, mbs + 1, to_read)) < 0 && errno == EINTR) { /* spin on signal interrupts */
+				if (need_resize) {
+					handle_resize((need_resize == cRedraw) ? TRUE :  FALSE);
+					need_resize = cNo;
+				}
+			}
+			allow_resize(FALSE);
+#		else
+			result = read(0, mbs + 1, to_read);
+#		endif /* EINTR */
+			if (result < 0) {
+				free(mbs);
+
+				return WEOF;
+			}
+		}
+		mbs[to_read + 1] = '\0';
+		wch = convert_c2wc(mbs);
+		free (mbs);
+
+		return (wint_t) wch;
+
 	}
+
+	/* FIXME: add support for other multi-byte charsets */
+
+	return WEOF;
 }
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #endif /* M_UNIX */

@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-15
+ *  Updated   : 2003-04-25
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -257,21 +257,24 @@ free_art_array(
 
 	for_each_art(i) {
 		arts[i].artnum = 0L;
-		arts[i].thread = ART_EXPIRED;
-		arts[i].inthread = FALSE;
-		arts[i].status = ART_UNREAD;
-		arts[i].killed = ART_NOTKILLED;
-		arts[i].tagged = 0;
-		arts[i].selected = FALSE;
 		arts[i].date = (time_t) 0;
-
-		FreeAndNull(arts[i].part);
-		FreeAndNull(arts[i].patch);
 		FreeAndNull(arts[i].xref);
 
-		/* .refs & .msgid are cleared in build_references() */
+		/* .refs & .msgid are free()d in build_references() */
 		arts[i].refs = (char *) '\0';
 		arts[i].msgid = (char *) '\0';
+
+		if (arts[i].archive) {
+			/* ->name is hashed */
+			FreeAndNull(arts[i].archive->partnum);
+			FreeAndNull(arts[i].archive);
+		}
+		arts[i].tagged = 0;
+		arts[i].thread = ART_EXPIRED;
+		arts[i].prev = ART_NORMAL;
+		arts[i].status = ART_UNREAD;
+		arts[i].killed = ART_NOTKILLED;
+		arts[i].selected = FALSE;
 	}
 }
 
@@ -299,7 +302,7 @@ free_attributes_array(
 
 	for_each_group(i) {
 		psGrp = &active[i];
-		if (psGrp->attribute && !psGrp->attribute->global) {
+		if (!psGrp->bogus && !psGrp->attribute->global) {
 			free_if_not_default(&psGrp->attribute->maildir, tinrc.maildir);
 			free_if_not_default(&psGrp->attribute->savedir, tinrc.savedir);
 
@@ -367,9 +370,7 @@ free_save_array(
 		FreeAndNull(save[i].path);
 		/* file does NOT need to be freed */
 		save[i].file = NULL;
-		save[i].artptr = NULL;
-		save[i].saved = FALSE;
-		save[i].is_mailbox = FALSE;
+		save[i].mailbox = FALSE;
 	}
 	num_save = 0;
 }

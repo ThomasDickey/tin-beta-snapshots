@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-04-25
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -64,6 +64,7 @@ static void check_score_defaults(void);
 static void expand_rel_abs_pathname(int line, int col, char *str);
 static void highlight_option(int option);
 static void print_any_option(int act_option);
+static void print_option(enum option_enum the_option);
 static void redraw_screen(int option);
 static void show_config_page(void);
 static void unhighlight_option(int option);
@@ -101,25 +102,24 @@ check_upgrade(
 
 	if (strncmp(buf, bar, MIN(strlen(bar), strlen(buf))) == 0)
 		return IGNORE;
-	else {
-		/*
-		 * TODO: update txt_warn_update (include a pointer to
-		 *       tinrcupdate.pl)
-		 */
-		error_message(_(txt_warn_update), VERSION);
-		error_message(_(txt_return_key));
-		/* TODO: document, use something unbuffered here */
-		switch ((ch = getchar())) {
-			case iKeyQuit:
-			case iKeyQuitTin:
-			case iKeyAbort:
-				giveup();
 
-			default:
-				break;
-		}
-		return UPGRADE;
+	/*
+	 * TODO: update txt_warn_update (include a pointer to
+	 *       tinrcupdate.pl)
+	 */
+	error_message(_(txt_warn_update), VERSION);
+	error_message(_(txt_return_key));
+	/* TODO: document, use something unbuffered here */
+	switch ((ch = getchar())) {
+		case iKeyQuit:
+		case iKeyQuitTin:
+		case iKeyAbort:
+			giveup();
+
+		default:
+			break;
 	}
+	return UPGRADE;
 }
 
 
@@ -139,7 +139,9 @@ read_config_file(
 	if ((fp = fopen(file, "r")) == NULL)
 		return FALSE;
 
+#if 0 /* batch_mode is not set at this stage, so checking for it is useless */
 	if (!batch_mode)
+#endif /* 0 */
 		wait_message(0, _(txt_reading_config_file), (global_file) ? _(txt_global) : "");
 
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
@@ -460,7 +462,7 @@ read_config_file(
 			break;
 
 		case 'h':
-			if (match_boolean(buf, "hide_uue=", &tinrc.hide_uue))
+			if (match_integer(buf, "hide_uue=", &tinrc.hide_uue, UUE_ALL))
 				break;
 
 			break;
@@ -483,14 +485,6 @@ read_config_file(
 
 			if (match_integer(buf, "kill_level=", &tinrc.kill_level, KILL_NOTHREAD))
 				break;
-
-			break;
-
-		case 'l':
-#ifdef LOCAL_CHARSET
-			if (match_boolean(buf, "local_charset=", &use_local_charset))
-				break;
-#endif /* LOCAL_CHARSET */
 
 			break;
 
@@ -585,8 +579,8 @@ read_config_file(
 			if (match_boolean(buf, "pos_first_unread=", &tinrc.pos_first_unread))
 				break;
 
-			if (match_integer(buf, "post_process_type=", &tinrc.post_process, POST_PROC_UUDECODE)) {
-				proc_ch_default = POST_PROC_TYPE(tinrc.post_process);
+			if (match_integer(buf, "post_process_type=", &tinrc.post_process, POST_PROC_YES)) {
+				proc_ch_default = ch_post_process[tinrc.post_process];
 				break;
 			}
 
@@ -1076,7 +1070,7 @@ write_config_file(
 	fprintf(fp, "tex2iso_conv=%s\n\n", print_boolean(tinrc.tex2iso_conv));
 
 	fprintf(fp, _(txt_hide_uue.tinrc));
-	fprintf(fp, "hide_uue=%s\n\n", print_boolean(tinrc.hide_uue));
+	fprintf(fp, "hide_uue=%d\n\n", tinrc.hide_uue);
 
 	fprintf(fp, _(txt_news_quote_format.tinrc));
 	fprintf(fp, "news_quote_format=%s\n", tinrc.news_quote_format);
@@ -1264,12 +1258,6 @@ write_config_file(
 #	endif /* HAVE_ICONV_OPEN_TRANSLIT */
 #endif /* !CHARSET_CONVERSION */
 
-/* Not on Option Menu */
-#ifdef LOCAL_CHARSET
-	fprintf(fp, _(txt_tinrc_local_charset));
-	fprintf(fp, "local_charset=%s\n\n", print_boolean(use_local_charset));
-#endif /* LOCAL_CHARSET */
-
 	fprintf(fp, _(txt_post_mime_encoding.tinrc));
 	fprintf(fp, "post_mime_encoding=%s\n", txt_mime_encodings[tinrc.post_mime_encoding]);
 	fprintf(fp, "mail_mime_encoding=%s\n\n", txt_mime_encodings[tinrc.mail_mime_encoding]);
@@ -1428,10 +1416,10 @@ fmt_option_prompt(
 	 *       requries changes in various prompt_*() functions (and lang.c)
 	 */
 	if (num) {
-		snprintf(dst, len, "%s %3d. %-*.*s: ", editing ? "->" : "  ", num,
-			OPTION_WIDTH, OPTION_WIDTH, _(option_table[option].txt->opt));
+		snprintf(dst, len, "%s %3d. %.*s: ", editing ? "->" : "  ", num,
+			OPTION_WIDTH, _(option_table[option].txt->opt));
 	} else
-		snprintf(dst, len, "  %-*.*s", OPTION_WIDTH, OPTION_WIDTH, _(option_table[option].txt->opt));
+		snprintf(dst, len, "  %.*s", cCOLS - 3, _(option_table[option].txt->opt));
 
 	return dst;
 }
@@ -1900,7 +1888,6 @@ change_config_file(
 						 * case OPT_FORCE_SCREEN_REDRAW:
 						 * case OPT_FULL_PAGE_SCROLL:
 						 * case OPT_GROUP_CATCHUP_ON_EXIT:
-						 * case OPT_HIDE_UUE:
 						 * case OPT_KEEP_DEAD_ARTICLES:
 						 * case OPT_MARK_SAVED_READ:
 						 * case OPT_NO_ADVERTISING:
@@ -1957,8 +1944,13 @@ change_config_file(
 							 * so that rethreading will occur
 							 */
 							if (tinrc.thread_articles != original_list_value && group != NULL) {
+								int n, old_base_art = base[grpmenu.curr];
+
 								group->attribute->thread_arts = tinrc.thread_articles;
 								make_threads(group, TRUE);
+								/* update cursor position */
+								if ((n = which_thread(old_base_art)) >= 0)
+									grpmenu.curr = n;
 							}
 							clear_message();
 							break;
@@ -1986,7 +1978,7 @@ change_config_file(
 							break;
 
 						case OPT_POST_PROCESS:
-							proc_ch_default = POST_PROC_TYPE(tinrc.post_process);
+							proc_ch_default = ch_post_process[tinrc.post_process];
 							break;
 
 						case OPT_SHOW_AUTHOR:
@@ -2017,7 +2009,7 @@ change_config_file(
 						case OPT_MM_NETWORK_CHARSET:
 							if (tinrc.mm_network_charset != original_list_value && group != NULL)
 								group->attribute->mm_network_charset = tinrc.mm_network_charset;
-#	if 0 /* TODO */
+#	if 0 /* TODO: */
 							else
 								glob_attributes->attribute->mm_network_charset = tinrc.mm_network_charset;
 #	endif /* 0 */
@@ -2083,6 +2075,7 @@ change_config_file(
 						 * case OPT_COL_MARKSLASH:
 						 * case OPT_COL_MARKSTROKE:
 #endif
+						 * case OPT_HIDE_UUE:
 						 * case OPT_WORD_H_DISPLAY_MARKS:
 						 * case OPT_MONO_MARKSTAR:
 						 * case OPT_MONO_MARKDASH:
@@ -2317,8 +2310,6 @@ change_config_file(
 
 /*
  * expand ~/News to /usr/username/News and print to screen
- *
- * TODO: fix the bug mentioned below
  */
 static void
 expand_rel_abs_pathname(
@@ -2326,28 +2317,13 @@ expand_rel_abs_pathname(
 	int col,
 	char *str)
 {
-	char buf[LEN];
+	char buf[PATH_LEN];
 
-	/* TODO: handle ~user/foo - use strfpath()? */
-	if (str[0] == '~') {
-		switch (str[1]) {
-			case '\0':
-				strcpy(str, homedir);
-				break;
-
-			case SEPDIR:
-				joinpath(buf, homedir, str + 2);
-				strcpy(str, buf);
-				break;
-
-			default:		/* TODO: handle ~foo */
-				break;
-		}
-	}
-	sprintf(buf, "%-.*s", cCOLS - col - 1, str);
+	strfpath(str, buf, sizeof(buf), &CURR_GROUP);
+	sprintf(str, "%-.*s", cCOLS - col - 1, buf);
 	MoveCursor(line, col);
 	CleartoEOLN();
-	my_fputs(buf, stdout);
+	my_fputs(str, stdout);
 	my_flush();
 }
 

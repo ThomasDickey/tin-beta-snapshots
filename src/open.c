@@ -3,7 +3,7 @@
  *  Module    : open.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-13
+ *  Updated   : 2003-04-13
  *  Notes     : Routines to make reading news locally (ie. /var/spool/news)
  *              or via NNTP transparent
  *
@@ -284,7 +284,7 @@ nntp_open(
 
 	if (!is_reconnect) {
 		/* Inform user if he cannot post */
-		if (!can_post)
+		if (!can_post && !batch_mode)
 			wait_message(0, "%s\n", _(txt_cannot_post));
 
 		/* Remove leading white space and save server's second response */
@@ -301,7 +301,7 @@ nntp_open(
 		 * TODO: This only breaks the line once, but the response could be
 		 * longer than two lines ...
 		 */
-		{
+		if (!batch_mode || verbose) {
 			char *chr1, *chr2;
 			int j;
 
@@ -333,19 +333,19 @@ nntp_open(
 	if (!nntp_command(txt_xover_string, ERR_COMMAND, NULL, 0)) {
 		xover_supported = TRUE;
 		txt_xover = txt_xover_string;
-		/* TODO issue warning if old index files found? */
+		/* TODO: issue warning if old index files found? */
 	} else {
 		if (!nntp_command(&txt_xover_string[1], ERR_COMMAND, NULL, 0)) {
 			xover_supported = TRUE;
 			txt_xover = &txt_xover_string[1];
-			/* TODO issue warning if old index files found? */
+			/* TODO: issue warning if old index files found? */
 		} else {
-			if (!is_reconnect)
+			if (!is_reconnect && !batch_mode)
 				wait_message(2, _(txt_no_xover_support));
 		}
 	}
 
-#	if 0 /* TODO */
+#	if 0 /* TODO: */
 	/* if we're using -n, check for LIST NEWSGROUPS <wildmat> */
 	if (newsrc_active && !list_active) { /* -n */
 		/* code goes here */
@@ -435,7 +435,7 @@ get_only_respcode(
 		respcode = (int) strtol(ptr, &end, 10);
 		DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
 	}
-	if (message != NULL)		/* Pass out the rest of the text */
+	if (message != NULL && mlen > 1)		/* Pass out the rest of the text */
 		my_strncpy(message, end, mlen - 1);
 
 #endif /* NNTP_ABLE */
@@ -490,8 +490,8 @@ get_respcode(
 			debug_nntp("<<<", ptr);
 #	endif /* DEBUG */
 			respcode = (int) strtol(ptr, &end, 10);
-			if (message != NULL)				/* Pass out the rest of the text */
-				strcpy(message, end);
+			if (message != NULL && mlen > 1)				/* Pass out the rest of the text */
+				strncpy(message, end, mlen - 1);
 
 		} else {
 			error_message(_(txt_auth_failed), ERR_ACCESS);
@@ -608,7 +608,7 @@ open_newgroups_fp(
 	 * compilant... we should switch over to ngtm->tm_year + 1900
 	 * after most of the server could handle the new format
 	 */
-		sprintf(line, "NEWGROUPS %02d%02d%02d %02d%02d%02d",
+		snprintf(line, sizeof(line), "NEWGROUPS %02d%02d%02d %02d%02d%02d",
 			ngtm->tm_year % 100, ngtm->tm_mon + 1, ngtm->tm_mday,
 			ngtm->tm_hour, ngtm->tm_min, ngtm->tm_sec);
 
@@ -624,8 +624,10 @@ open_newgroups_fp(
  */
 /* TODO: fixme/checkme
  *      - logic seems to be wrong, NNTP_ABLE && read_saved_news
- *        looks for a local subscriptions_file, but read_saved_news
- *        doesn't require a local server...
+ *        looks for a local subscriptions_file, but read_saved_news doesn't
+ *        require a local server... (a missing subscriptions_file doesn't
+ *        cause any trouble, we just have to bother with the read_saved_news
+ *        and a existing local subscriptions_file file case).
  *        open_newgroups_fp() uses the same logic.
  */
 FILE *
@@ -654,7 +656,7 @@ open_mail_active_fp(
 
 
 /*
- *  Open mail groups description file locally
+ * Open mail groups description file locally
  */
 FILE *
 open_mailgroups_fp(
@@ -687,7 +689,7 @@ open_newsgroups_fp(
 			}
 			read_local_newsgroups_file = FALSE;
 		}
-#	if 0 /* TODO */
+#	if 0 /* TODO: */
 		if (list_newsgroups_wildmat_supported && newsrc_active
 		    && !list_active
 		    && num_active < some_useful_limit) {
@@ -738,6 +740,7 @@ open_xover_fp(
 }
 
 
+#if 0
 /*
  * Stat a mail/news article to see if it still exists
  */
@@ -751,12 +754,12 @@ stat_article(
 
 	currgrp = CURR_GROUP;
 
-#ifdef NNTP_ABLE
+#	ifdef NNTP_ABLE
 	if (read_news_via_nntp && currgrp.type == GROUP_TYPE_NEWS) {
 		sprintf(buf, "STAT %ld", art);
 		return (nntp_command(buf, OK_NOTEXT, NULL, 0) != NULL);
 	} else
-#endif /* NNTP_ABLE */
+#	endif /* NNTP_ABLE */
 	{
 		struct stat sb;
 
@@ -766,6 +769,7 @@ stat_article(
 		return (stat(buf, &sb) != -1);
 	}
 }
+#endif /* 0 */
 
 
 /*
@@ -821,8 +825,10 @@ open_art_fp(
 	const char *group_path,
 	long art)
 {
-	char buf[NNTP_STRLEN];
 	FILE *art_fp = (FILE *) 0;
+	char buf[NNTP_STRLEN];
+	char pbuf[PATH_LEN];
+	char fbuf[NAME_LEN + 1];
 
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && CURR_GROUP.type == GROUP_TYPE_NEWS) {
@@ -831,9 +837,10 @@ open_art_fp(
 	} else {
 #endif /* NNTP_ABLE */
 		joinpath(buf, CURR_GROUP.spooldir, group_path);
-		sprintf(&buf[strlen(buf)], "/%ld", art);
+		snprintf(fbuf, sizeof(fbuf), "%ld", art);
+		joinpath(pbuf, buf, fbuf);
 
-		art_fp = fopen(buf, "r");
+		art_fp = fopen(pbuf, "r");
 #ifdef NNTP_ABLE
 	}
 #endif /* NNTP_ABLE */
@@ -1077,7 +1084,7 @@ group_get_art_info(
 				return -ERR_NOGROUP;
 
 			case ERR_ACCESS:
-				error_message(cCRLF "%s", line);
+				error_message("%s%s", cCRLF, line);
 				tin_done(NNTP_ERROR_EXIT);
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -1090,7 +1097,7 @@ group_get_art_info(
 				return -1;
 		}
 #else
-		my_fprintf(stderr, _("Unreachable ?\n"));
+		my_fprintf(stderr, _("Unreachable?\n"));
 		return 0;
 #endif /* NNTP_ABLE */
 	} else {

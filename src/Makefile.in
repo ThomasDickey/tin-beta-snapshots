@@ -543,6 +543,7 @@ $(OBJDIR)/post.o:		$(SRCDIR)/post.c $(TIN_DEP) \
 $(OBJDIR)/prompt.o:		$(SRCDIR)/prompt.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
 $(OBJDIR)/read.o:		$(SRCDIR)/read.c $(TIN_DEP) \
+				$(INCDIR)/menukeys.h \
 				$(INCDIR)/tnntp.h
 $(OBJDIR)/refs.o:		$(SRCDIR)/refs.c $(TIN_DEP)
 $(OBJDIR)/regex.o:		$(SRCDIR)/regex.c $(TIN_DEP)

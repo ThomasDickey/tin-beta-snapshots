@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-04-25
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -113,9 +113,9 @@ add_filter_comment(
 		ptr->text = my_strdup(text);
 		ptr->next = (struct t_filter_comment *) 0;
 	} else
-		ptr->next = (struct t_filter_comment *) add_filter_comment((struct t_filter_comment *) ptr->next, (char *) text);
+		ptr->next = add_filter_comment(ptr->next, text);
 
-	return (struct t_filter_comment *) ptr;
+	return ptr;
 }
 
 
@@ -136,7 +136,7 @@ free_filter_comment(
 		tmp = next;
 	}
 
-	return (struct t_filter_comment *) tmp;
+	return tmp;
 }
 
 
@@ -151,12 +151,10 @@ copy_filter_comment(
 	if (from != NULL) {
 		to = my_malloc(sizeof(struct t_filter_comment));
 		to->text = my_strdup(from->text);
-		/* don't know if the next line is necessary, but it doesn't harm */
-		to->next = (struct t_filter_comment *) 0;
-		to->next = (struct t_filter_comment *) copy_filter_comment(from->next, to->next);
+		to->next = copy_filter_comment(from->next, NULL);
 	}
 
-	return (struct t_filter_comment *) to;
+	return to;
 }
 
 
@@ -313,7 +311,7 @@ read_filter_file(
 	if ((fp = fopen(file, "r")) == NULL)
 		return FALSE;
 
-	if (!batch_mode || (batch_mode && verbose))
+	if (!batch_mode || verbose)
 		wait_message(0, _(txt_reading_filter_file));
 
 	(void) time(&current_secs);
@@ -340,7 +338,7 @@ read_filter_file(
 				break;
 			}
 			if (match_string(buf + 1, "omment=", comment_line, sizeof(comment_line))) {
-				comment = (struct t_filter_comment *) add_filter_comment(comment, comment_line);
+				comment = add_filter_comment(comment, comment_line);
 				break;
 			}
 			break;
@@ -371,8 +369,8 @@ read_filter_file(
 				expired_time = FALSE;
 				ptr[i].scope = my_strdup(scope);
 				if (comment != NULL) {
-					ptr[i].comment = (struct t_filter_comment *) copy_filter_comment(comment, ptr[i].comment);
-					comment = (struct t_filter_comment *) free_filter_comment(comment);
+					ptr[i].comment = copy_filter_comment(comment, ptr[i].comment);
+					comment = free_filter_comment(comment);
 				}
 				subj[0] = '\0';
 				from[0] = '\0';
@@ -562,7 +560,7 @@ read_filter_file(
 	if (expired)
 		write_filter_file(file);
 
-	if (cmd_line)
+	if (cmd_line && !batch_mode)
 		printf("\r\n");
 
 	if (!batch_mode)
@@ -793,9 +791,9 @@ get_choice(
 			continue;
 		if (++i == n)
 			i = 0;
-	} while (ch != '\n' && ch != '\r' && ch != ESC);
+	} while (ch != '\n' && ch != '\r' && ch != iKeyAbort); /* TODO: replace hardcoded keynames */
 
-	if (ch == ESC)
+	if (ch == iKeyAbort)
 		return -1;
 
 	return i;
@@ -824,15 +822,15 @@ print_filter_menu(
 	center_line(0, TRUE, ptr_filter_menu);
 
 	MoveCursor(INDEX_TOP, 0);
-	my_printf("%s" cCRLF cCRLF, ptr_filter_comment);
-	my_printf("%s" cCRLF, ptr_filter_text);
-	my_printf("%s" cCRLF cCRLF, _(txt_filter_text_type));
-	my_printf("%s" cCRLF, text_subj);
-	my_printf("%s" cCRLF, text_from);
-	my_printf("%s" cCRLF cCRLF, text_msgid);
-	my_printf("%s" cCRLF, ptr_filter_lines);
-	my_printf("%s" cCRLF, text_score);
-	my_printf("%s" cCRLF cCRLF, ptr_filter_time);
+	my_printf("%s%s%s", ptr_filter_comment, cCRLF, cCRLF);
+	my_printf("%s%s", ptr_filter_text, cCRLF);
+	my_printf("%s%s%s",  _(txt_filter_text_type), cCRLF, cCRLF);
+	my_printf("%s%s", text_subj, cCRLF);
+	my_printf("%s%s", text_from, cCRLF);
+	my_printf("%s%s%s", text_msgid, cCRLF, cCRLF);
+	my_printf("%s%s", ptr_filter_lines, cCRLF);
+	my_printf("%s%s", text_score, cCRLF);
+	my_printf("%s%s%s", ptr_filter_time, cCRLF, cCRLF);
 	my_printf("%s%s", ptr_filter_scope, ptr_filter_groupname);
 	my_flush();
 }
@@ -957,7 +955,7 @@ filter_menu(
 	 */
 	show_menu_help(_(txt_help_filter_comment));
 	while ((proceed = prompt_menu_string(INDEX_TOP, ptr_filter_comment, comment_line)) && comment_line[0] != '\0') {
-		rule.comment = (struct t_filter_comment *) add_filter_comment(rule.comment, comment_line);
+		rule.comment = add_filter_comment(rule.comment, comment_line);
 		comment_line[0] = '\0';
 	}
 	if (!proceed)
@@ -1274,12 +1272,11 @@ quick_filter(
 	rule.subj_ok = (header == FILTER_SUBJ_CASE_SENSITIVE || header == FILTER_SUBJ_CASE_IGNORE);
 
 	/* create an auto-comment. */
-	rule.comment = (struct t_filter_comment *) 0;	/* needs to be NULL, or add_filter_comment() will fail to create the first entry. */
 	if (type == FILTER_KILL)
 		snprintf(txt, sizeof(txt), "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", iKeyGroupQuickKill, "' (", _(txt_help_article_quick_kill), ").");
 	else
 		snprintf(txt, sizeof(txt), "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", iKeyGroupQuickAutoSel, "' (", _(txt_help_article_quick_select), ").");
-	rule.comment = (struct t_filter_comment *) add_filter_comment (rule.comment, (char *) txt);
+	rule.comment = add_filter_comment(NULL, txt);
 
 	rule.text[0] = '\0';
 	rule.icase = icase;
@@ -1336,9 +1333,8 @@ quick_filter_select_posted_art(
 		strcpy(rule.scope, group->name);
 
 		/* create an auto-comment. */
-		rule.comment = (struct t_filter_comment *) 0;	/* needs to be NULL, or add_filter_comment() will fail to create the first entry. */
 		snprintf(txt, sizeof(txt), "%s%s", _(txt_filter_rule_created), "add_posted_to_filter=ON.");
-		rule.comment = (struct t_filter_comment *) add_filter_comment(rule.comment, txt);
+		rule.comment = add_filter_comment(NULL, txt);
 
 		/*
 		 * Setup dummy article with posted articles subject
@@ -1417,7 +1413,7 @@ add_filter_rule(
 	ptr[i].xref_score_cnt = 0;
 
 	if (rule->comment != NULL)
-		ptr[i].comment = (struct t_filter_comment *) copy_filter_comment(rule->comment, ptr[i].comment);
+		ptr[i].comment = copy_filter_comment(rule->comment, ptr[i].comment);
 
 	if (rule->scope[0] == '\0') /* replace empty scope with current group name */
 		ptr[i].scope = my_strdup(group->name);
@@ -1530,11 +1526,10 @@ add_filter_rule(
  * tagged as being read BECAUSE they were killed. So, we retag
  * them as being unread. Selected articles will be un"select"ed.
  */
-int
+void
 unfilter_articles(
-	void) /* return value is always ignored */
+	void)
 {
-	int unkilled = 0;
 	int i;
 
 	for_each_art(i) {
@@ -1542,14 +1537,10 @@ unfilter_articles(
 		if (IS_KILLED(i)) {
 			arts[i].killed = ART_NOTKILLED;
 			arts[i].status = ART_UNREAD;
-			unkilled++;
 		}
-		if (IS_SELECTED(i)) {
+		if (IS_SELECTED(i))
 			arts[i].selected = FALSE;
-		}
 	}
-
-	return unkilled;
 }
 
 
@@ -1565,9 +1556,8 @@ filter_articles(
 {
 	char buf[LEN];
 	int num, inscope;
-/*	int score; */
 	int i, j, k;
-	struct t_filter *ptr; /*, *curr; */
+	struct t_filter *ptr;
 	struct regex_cache *regex_cache_subj = NULL;
 	struct regex_cache *regex_cache_from = NULL;
 	struct regex_cache *regex_cache_msgid = NULL;

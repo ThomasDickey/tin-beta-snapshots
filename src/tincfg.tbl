@@ -2,7 +2,7 @@
 ;   Module    : tincfg.tbl
 ;   Author    : Thomas E. Dickey
 ;   Created   : 1996-11-01
-;   Updated   : 2003-03-14
+;   Updated   : 2003-04-25
 ;   Notes     : #defines and structs for config.c
 ;
 ; Copyright (c) 1996-2003 Thomas E. Dickey <dickey@invisible-island.net>
@@ -74,7 +74,7 @@
 	news_headers_to_display		OPT_STRING
 	news_headers_to_not_display	OPT_STRING
 	alternative_handling		OPT_ON_OFF
-	hide_uue			OPT_ON_OFF
+	hide_uue			txt_hide_uue_type	UUE_ALL+1
 	tex2iso_conv			OPT_ON_OFF
 	metamail_prog			OPT_STRING
 	ask_for_metamail		OPT_ON_OFF
@@ -177,7 +177,7 @@
 	savedir				OPT_STRING
 	auto_save			OPT_ON_OFF
 	mark_saved_read			OPT_ON_OFF
-	post_process			txt_post_process_type	POST_PROC_UUDECODE+1
+	post_process			txt_post_process_type	POST_PROC_YES+1
 	post_process_view		OPT_ON_OFF
 	process_only_unread		OPT_ON_OFF
 #ifndef DISABLE_PRINTING

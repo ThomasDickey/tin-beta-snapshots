@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2003-01-16
+ *  Updated   : 2003-03-22
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2003 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -371,26 +371,28 @@ is_art_tex_encoded(
 
 /*
  * Replace all non printable characters by '?'
- *
- * NOTES: don't make wc a wint_t as libutf8 (at least version 0.8)
- *        sometimes fails to propper convert (wchar_t) 0 to (wint_t) 0
- *        and thus loop termination fails.
  */
 char *
 convert_to_printable(
 	char *buf)
 {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t wbuffer[LEN];
-	char buffer[LEN];
+	char *buffer;
+	wchar_t *wbuffer;
+	size_t len = strlen(buf);
 
-	if (mbstowcs(wbuffer, buf, LEN - 1) != (size_t) (-1)) {
+	buffer = my_malloc(len + 1);
+	wbuffer = my_malloc(sizeof(wchar_t) * (len + 1));
+
+	if (mbstowcs(wbuffer, buf, len) != (size_t) (-1)) {
+		wbuffer[len] = (wchar_t) '\0';
 		wconvert_to_printable(wbuffer);
-
-		wcstombs(buffer, wbuffer, LEN - 1);
-		buffer[LEN - 1] = '\0';
+		wcstombs(buffer, wbuffer, len);
+		buffer[len] = '\0';
 		strcpy(buf, (const char *) buffer);
 	}
+	free(buffer);
+	free(wbuffer);
 #else
 	unsigned char *c;
 
@@ -404,6 +406,11 @@ convert_to_printable(
 
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+/*
+ * NOTES: don't make wc a wint_t as libutf8 (at least version 0.8)
+ *        sometimes fails to propper convert (wchar_t) 0 to (wint_t) 0
+ *        and thus loop termination fails.
+ */
 wchar_t *
 wconvert_to_printable(
 	wchar_t *wbuf)
@@ -434,20 +441,25 @@ convert_body2printable(
 	char *buf)
 {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	char buffer[LEN];
-	wchar_t *wc;
-	wchar_t wbuffer[LEN];
+	char *buffer;
+	wchar_t *wc, *wbuffer;
+	size_t len = strlen(buf);
 
-	if (mbstowcs(wbuffer, buf, LEN - 1) != (size_t) (-1)) {
+	buffer = my_malloc(len + 1);
+	wbuffer = my_malloc(sizeof(wchar_t) * (len + 1));
+
+	if (mbstowcs(wbuffer, buf, len) != (size_t) (-1)) {
+		wbuffer[len] = (wchar_t) '\0';
 		for (wc = wbuffer; *wc; wc++) {
 			if (!(iswprint((wint_t) *wc) || *wc == (wchar_t) 8 || *wc == (wchar_t) 9 || *wc == (wchar_t) 10 || *wc == (wchar_t) 12 || *wc == (wchar_t) 13 || (IS_LOCAL_CHARSET("Big5") && *wc == (wchar_t) 27)))
 				*wc = (wchar_t) '?';
 		}
-
-		wcstombs(buffer, wbuffer, LEN - 1);
-		buffer[LEN - 1] = '\0';
+		wcstombs(buffer, wbuffer, len);
+		buffer[len] = '\0';
 		strcpy(buf, (const char *) buffer);
 	}
+	free(buffer);
+	free(wbuffer);
 #else
 	unsigned char *c;
 

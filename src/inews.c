@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-04-08
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -188,19 +188,16 @@ submit_inews(
 
 				case 1:	/* insert Sender */
 					snprintf(sender_hdr, sizeof(sender_hdr), "Sender: %s", ptr);
-#		ifdef LOCAL_CHARSET
-					buffer_to_network(sender_hdr, 0);
-#		endif /* LOCAL_CHARSET */
 #		ifdef CHARSET_CONVERSION
 					buffer_to_network(sender_hdr, group ? group->attribute->mm_network_charset : tinrc.mm_network_charset);
 #		endif /* CHARSET_CONVERSION */
 					if (!tinrc.post_8bit_header) {
 						char *p;
-#ifdef CHARSET_CONVERSION
+#		ifdef CHARSET_CONVERSION
 						p = rfc1522_encode(sender_hdr, group ? txt_mime_charsets[group->attribute->mm_network_charset] : txt_mime_charsets[tinrc.mm_network_charset], ismail);
-#else
+#		else
 						p = rfc1522_encode(sender_hdr, tinrc.mm_charset, ismail);
-#endif /* CHARSET_CONVERSION */
+#		endif /* CHARSET_CONVERSION */
 						STRCPY(sender_hdr, p);
 						free(p);
 					}

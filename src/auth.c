@@ -133,7 +133,7 @@ authinfo_generic(
 #	endif /* HAVE_SETENV */
 #endif /* HAVE_PUTENV */
 
-	/* TODO - is it possible that we should have drained server here? */
+	/* TODO: is it possible that we should have drained server here? */
 	return (builtinauth ? (get_only_respcode(NULL, 0) == OK_AUTH) : (invoke_cmd(authval) ? TRUE : FALSE));
 }
 
