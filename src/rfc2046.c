@@ -463,6 +463,11 @@ parse_rfc822_headers(
 	while ((line = tin_fgets (from, TRUE)) != (char *) 0) {
 #if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
 		buffer_to_local(line);
+#else
+#	ifdef CHARSET_CONVERSION
+	/* headers should be in US-ASCII */
+	buffer_to_local(line, "US-ASCII", tinrc.mm_local_charset);
+#	endif /* CHARSET_CONVERSION */
 #endif /* LOCAL_CHARSET || MAC_OS_X */
 
 		if (to) {

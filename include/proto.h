@@ -49,7 +49,7 @@
 #endif /* CASE_PROBLEM */
 
 /* active.c */
-extern char group_flag (int ch);
+extern char group_flag (char ch);
 extern int get_active_num (void);
 extern t_bool match_group_list (const char *group, const char *group_list);
 extern t_bool parse_active_line (char *line, long *max, long *min, char *moderated);
@@ -365,9 +365,15 @@ extern void toggle_inverse_video (void);
 	extern int parse_from (const char *from, char *address, char *realname);
 #endif /* 0 */
 #if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
-	extern void buffer_to_local (char *b);
-	extern void buffer_to_network (char *b);
+	extern void buffer_to_local (char *line);
+#else
+#	ifdef CHARSET_CONVERSION
+	 extern void buffer_to_local (char *line, const char* network_charset, const char *local_charset);
+#	endif /* CHARSET_CONVERSION */
 #endif /* LOCAL_CHARSET || MAC_OS_X */
+#if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
+	extern void buffer_to_network (char *line);
+#endif /* LOCAL_CHARSET || MAC_OS_X || CHARSET_CONVERSION */
 #ifdef HAVE_COLOR
 	extern t_bool toggle_color (void);
 	extern void show_color_status (void);
@@ -588,7 +594,7 @@ extern void show_progress (const char *txt, long count, long total);
 extern void show_title (char *title);
 extern void spin_cursor (void);
 extern void stow_cursor (void);
-extern void wait_message (int delay, const char *fmt, ...);
+extern void wait_message (int sdelay, const char *fmt, ...);
 
 /* search.c */
 extern int get_search_vectors (int *start, int *end);

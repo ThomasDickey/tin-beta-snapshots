@@ -205,7 +205,7 @@ thrashdir (
 	sigfile[0] = '\0';
 
 	if ((dirp = opendir (CURRENTDIR)) == NULL)
-		return (1);
+		return 1;
 
 	numentries = 0;
 	while ((dp = readdir (dirp)) != NULL)
@@ -223,7 +223,7 @@ thrashdir (
 #endif /* !M_AMIGA */
 	{
 		CLOSEDIR(dirp);
-		return (-1);
+		return -1;
 	}
 
 	get_cwd (cwd);
@@ -244,7 +244,7 @@ thrashdir (
 #else
 		CLOSEDIR(dirp);
 		if ((dirp = opendir (CURRENTDIR)) == NULL)
-			return (1);
+			return 1;
 #endif /* HAVE_REWINDDIR */
 		pick = rand () % numentries + 1;
 		while (--pick >= 0) {
@@ -257,7 +257,7 @@ thrashdir (
 			else {	/* if we have a non-dot entry */
 				if (stat (dp->d_name, &st) == -1) {
 					CLOSEDIR(dirp);
-					return (1);
+					return 1;
 				}
 				if (S_ISDIR(st.st_mode)) {
 					if (recurse) {
@@ -266,7 +266,7 @@ thrashdir (
 						 */
 						if ((my_chdir (dp->d_name) < 0) || ((c = thrashdir (sigdir)) == 1)) {
 							CLOSEDIR(dirp);
-							return (1);
+							return 1;
 						}
 						if (c == -1) {
 							/*

@@ -1,5 +1,13 @@
 Bugs
 ----
+o  'u' etc.pp. may leed to a 'crash' due to which_thread() returning -1
+   if no (unread) articles are left. which_response() exits in that case,
+   not very userfriendly.
+   [20010905 Urs Janﬂen <urs@tin.org>]
+
+o  incorrect nested boundaries in multipart articles hang tin
+   [20010804 Urs Janﬂen <urs@tin.org>]
+
 o  abort bugreport prompt invisible
    [20010703 Sebastian Bork <sebi@sebi.org>]
 
@@ -31,7 +39,8 @@ o  reusing p'o'stponed artices in mailing_list groups doesn't work
    [20010623 Urs Janssen <urs@tin.org>]
 
 o  missmatching cached overview data (higher article numbers than on the
-   server) cause a crash. [Urs Janssen <urs@tin.org>]
+   server) cause a crash.
+   [Urs Janssen <urs@tin.org>]
 
 o  'U'RL-view doesn't recognize multiple URLs/line
    [Urs Janssen <urs@tin.org>]
@@ -111,7 +120,7 @@ o  if posting with external inews fails fall-back to built_in_inews would be
     you post or must use external inews if you read_saved_news?]
 
 o  use_builtin_inews=ON should be renamed to
-   inews_prog and hold the (path, ) name and agruments
+   inews_prog and hold the (path,) name and agruments
    of the inews programm to be called. if set to --internal
    (or something like that) tins built in inews is used.
 
@@ -175,6 +184,10 @@ o  when enabling the 'Cc/Bcc on every message that is sent', and
 
 New features
 ------------
+o  if there are no tagged but hot articles in the group make 'S' work on
+   the hot articles instead of complaining about no tagged arts.
+   [20010824 Urs Janssen <urs@tin.org>]
+
 o  $NNTPSERVER is only appended to $TIN_INDEX_NEWSDIR if -g cmd-line
    option is used, we should change that and always append it to avoid using
    a wrong cache after changing $NNTPSERVER...
@@ -216,7 +229,7 @@ o  check if the articles Subject/From in the pager matches the one on the
    them (and discard the locally cached data).
 
 o  check if server supports HEADERS, if so use
-   HEADERS - Subject From Date Message-ID References Lines Newsgroups
+   "HEADERS - Subject From Date Message-ID References Lines Newsgroups"
    instead of OVER or XOVER
 
 o  make hide_uu a 3 way toggle for the attributes file (not tinrc).
@@ -255,11 +268,6 @@ o  add IPv6 support
    cases.
 
 o  add shortcut(s) to repeat last command (i.e. search again)
-
-o  add unicode (UTF-16, UTF-8, UTF-7) support (RFC 1641, RFC 2152, RFC 2279,
-   RFC 2781)
-   (see <http://www.cl.cam.ac.uk/~mgk25/unicode.html> and
-    <http://clisp.cons.org/~haible/>)
 
 o  add cmd-line/tinrc-switch to fetch only headers of unread articles;
    in that case, make 'r' reading the rest of the articles
@@ -303,8 +311,6 @@ o  MIME-pgp support according to RFC2015 - (should be easy now)
 
 o  pgp-6 support
 
-o  add RFC 1468/2237, RFC 1555, RFC 1922/1842 and RFC 1947 support
-
 o  add counter to post-processing commands (processing file x of y)
    (Is post-processing really that slow? [Jason Faultless
    <jason@radar.tele2.co.uk>] no but if you post-process more than a
@@ -321,6 +327,7 @@ o  Additions to the thread menu :
      'r' (reply to) /* not 'R' cause it conflicts with mail_bugreport */
      ''  r ought to be toggle show all/show only unread
      'f' (post a followup)
+     'X' (mark all unread articles that have not been selected as read)
      keys to goto previous/next thread
 
 o  Add to the 'M'enu:
@@ -456,7 +463,7 @@ o  reorder several structs to avoid padding (see gcc -Wpadding)
 
 o  check for 10-digits unix-timestamp safety (9->10 digits rollover at
    9.9.2001)
-   [Urs Janssen <urs@tin.org>]
+   [didn't see any problems - Urs Janssen <urs@tin.org>]
 
 o  join some keys, i.e PostponeYes, PostponeNo -> PromptYes, PromptNo;
    GroupPost, PagePost, SelectPost -> Post
@@ -552,8 +559,46 @@ o  When reading local spool, assign the filehandle of the on-spool
 
 o  what is with NEW_HASH_METHOD in list.c?
 
+Unocode
+-------
+o  add RFC 1468/2237, RFC 1555, RFC 1922/1842 and RFC 1947 support
+   (local_charset<->network_charset should allow this - anything else
+    needed?)
+
+o  add UTF-8 (unicode) support (RFC 2279)
+   (see <http://www.cl.cam.ac.uk/~mgk25/unicode.html> and
+    <http://clisp.cons.org/~haible/>)
+   if we ever want to add UTF-7 (posting) support (I don't think
+   this is needed) we have to encode it ourself (as iconv() might
+   encode <, @, > which leads to illegal headers) or split headers
+   into "encoding part" and "rest" ...
+   [local_charset<-> UTF-8 which needs iconv() is added;
+    UTF-8 as local_charset needs _much more_ work, see below.
+    20010830 urs@tin.org]
+
+o  make select/group/thread/page-level multibyte "safe". they all use
+   strlen(), strncpy(), strncat(), snprintf() to build the screen - but
+   in a multibyte environment (i.e. mm_local_charset=UTF-8) this is a
+   fault. (this might require libutf8 for those syste which don't have
+   wide-char/multibyte functions, see <http://clisp.cons.org/~haible/>)
+   [20010904 urs@tin.org]
+
+o  when superse'D'ing an UTF-8/qp article you'll get the raw (not RFC-2045
+   decoded) article in the editor.
+   [20010905 urs@tin.org]
+
+o  make mm_network_charset an "option_list" to avoid junk input or
+   undesired (UTF-1, UTF-7, UTF-16*, UTF-32*, UCS-2, UCS-4, ...) encodings.
+   add configure check for the hardcoded charsets (try iconv_open(x,
+   us-ascii) on each...) and disable those not available.
+   [done except configure check 20010907 urs@tin.org]
+   be less strict for mm_local_charset (i.e. allow CP{850,1250,...}
+   [missing 20010904 urs@tin.org]
+
 Docs/online help
 ----------------
+o  add instalation guide (in html)
+
 o  document keymap feature
 
 o  man page always needs work
@@ -561,7 +606,7 @@ o  man page always needs work
 
 o  error message when tin -uv and using xover is misleading
 
-o  tin.defaults could use more documentation on manpage
+o  tin.defaults could use more documentation on manpage (tin.5)
 
 Not yet classified
 ------------------
@@ -574,7 +619,7 @@ o  sendmail -t && lines containing only a '.' cause trouble, is -oi -t
    portable?
    [20010628 Andreas Metzler <ametzler@downhill.at.eu.org>]
 
-o  update gettext stuff to gettext-0.10.36
+o  update gettext stuff to >= gettext-0.10.36
 
 o  should the postponed file be in MH-format if tin is running in MH-mode?
    if so we need to extend fetch_postponed_article()

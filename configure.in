@@ -44,7 +44,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.5.9
+VERSION=1.5.10
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -406,6 +406,14 @@ if test "$PCRE_HOME" = "no" ; then
 	PCRE_MAKEFILE="$PCRE_MAKEFILE pcre/Makefile pcre/pcre.h:pcre/pcre.in"
 fi
 
+## iconv
+AC_CHECK_LIB(iconv, iconv,[
+	AC_DEFINE(HAVE_ICONV)
+	LIBS="$LIBS -liconv"],[
+	AC_CHECK_FUNC(iconv,
+		AC_DEFINE(HAVE_ICONV))
+	])
+
 ## debugging libraries (do this after other libraries)
 AC_MSG_CHECKING(if you want dbmalloc library)
 debug_malloc=none
@@ -687,10 +695,12 @@ CF_CHECK_HEADERS(\
 	errno.h \
 	fcntl.h \
 	getopt.h \
+	iconv.h \
 	ioctl.h \
 	libc.h \
 	locale.h \
 	malloc.h \
+	net/socket.h \
 	netdb.h \
 	netinet/in.h \
 	netlib.h \
@@ -740,13 +750,28 @@ AC_CHECK_TYPE(gid_t, int)
 AC_TYPE_MODE_T
 AC_TYPE_OFF_T
 AC_TYPE_PID_T
-AC_CHECK_TYPE(quad_t, NONE)
 AC_TYPE_SIZE_T
 AC_CHECK_TYPE(ssize_t, int)
 AC_CHECK_TYPE(time_t, long)
 AC_TYPE_UID_T
+
+dnl test to see if quad_t is defined
+AC_MSG_CHECKING(for quad_t)
+AC_TRY_COMPILE([
+#include <sys/types.h>
+#if 0
+#include <stdlib.h>
+#include <stddef.h>
+#endif /* 0 */
+],[quad_t x; x = 0],
+ac_cv_quad_t=yes, ac_cv_quad_t=no)
+AC_MSG_RESULT($ac_cv_quad_t)
+if test $ac_cv_quad_t = yes; then
+	AC_DEFINE(HAVE_QUAD_T)
+fi
+
 dnl test to see if long long is defined
-AC_MSG_CHECKING(checking for long long)
+AC_MSG_CHECKING(for long long)
 AC_TRY_COMPILE([
 #include <sys/types.h>
 ],[long long x; x = 0],
@@ -815,6 +840,7 @@ AC_CHECK_FUNCS(\
 	atol \
 	bcopy \
 	chmod \
+	closesocket \
 	fcntl \
 	fdopen \
 	ftime \

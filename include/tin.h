@@ -234,14 +234,25 @@ enum resizer { cNo, cYes, cRedraw };
 #	include <getopt.h>
 #endif /* HAVE_GETOPT_H */
 
-/* prefer string.h because it's Posix */
-#ifdef HAVE_STRING_H
-#	include <string.h>
+/*
+ * FIXME: make this autoconf
+ */
+#ifndef __QNX__
+#	ifdef HAVE_STRING_H
+#		include <string.h>
+#	else
+#		ifdef HAVE_STRINGS_H
+#			include <strings.h>
+#		endif /* HAVE_STRINGS_H */
+#	endif /* HAVE_STRING_H */
 #else
+#	ifdef HAVE_STRING_H
+#		include <string.h>
+#	endif /* HAVE_STRING_H */
 #	ifdef HAVE_STRINGS_H
 #		include <strings.h>
 #	endif /* HAVE_STRINGS_H */
-#endif /* HAVE_STRING_H */
+#endif /* !__QNX__ */
 
 #ifdef HAVE_FCNTL_H
 #	include <fcntl.h>
@@ -293,6 +304,10 @@ enum resizer { cNo, cYes, cRedraw };
 #ifdef HAVE_SYS_WAIT_H
 #	include <sys/wait.h>
 #endif /* HAVE_SYS_WAIT_H */
+
+#ifndef WEXITSTATUS
+#	define WEXITSTATUS(status)		((int) (((status) >> 8) & 0xFF))
+#endif /* !WEXITSTATUS */
 
 /*
  * Needed for timeout in user abort of indexing a group (BSD & SYSV variaties)
@@ -729,6 +744,13 @@ enum resizer { cNo, cYes, cRedraw };
 /* Philip Hazel's Perl regular expressions library */
 #include	<pcre.h>
 
+#if defined(HAVE_ICONV) && !defined(LOCAL_CHARSET)
+#	define CHARSET_CONVERSION 1
+#	ifdef HAVE_ICONV_H
+#		include <iconv.h>
+#	endif /* HAVE_ICONV_H */
+#endif /* HAVE_ICONV && !LOCAL_CHARSET */
+
 #ifndef MAX
 #	define MAX(a,b)	(((a) > (b)) ? (a) : (b))
 #endif /* !MAX */
@@ -846,6 +868,10 @@ enum resizer { cNo, cYes, cRedraw };
 #define MIME_ENCODING_BASE64	1
 #define MIME_ENCODING_QP	2
 #define MIME_ENCODING_7BIT	3
+
+#ifdef CHARSET_CONVERSION			/* can/should do charset conversion via iconv() */
+#	define NUM_MIME_CHARSETS 29	/* # known 'outgoing' charsets */
+#endif /* CHARSET_CONVERSION */
 
 /*
  * Number of charset-traslation tables (iso2asci)
@@ -1841,11 +1867,11 @@ extern void joindir (char *result, const char *dir, const char *file);
 
 #define SIZEOF(array)	((int)(sizeof array / sizeof array[0]))
 
-#define FreeIfNeeded(p)	if (p != (char *)0) free((char *)p)
-
 #if 0
+#	define FreeIfNeeded(p)	if (p != (char *)0) free((char *)p)
 #	define FreeAndNull(p)	if (p != (char *)0) { free((char *)p); p = (char *)0; }
 #else
+#	define FreeIfNeeded(p)	if (p != NULL) free((void *)p)
 #	define FreeAndNull(p)	if (p != NULL) { free((void *)p); p = NULL; }
 #endif /* 0 */
 
@@ -2000,9 +2026,9 @@ typedef void (*BodyPtr) (char *, FILE *, int);
  * no system assigns.
  */
 #ifdef M_AMIGA
-#define TIN_DEFAULTS_BUILTIN "S:tin.defaults","ENV:tin.defaults",NULL
+#	define TIN_DEFAULTS_BUILTIN "S:tin.defaults","ENV:tin.defaults",NULL
 #else
-#define TIN_DEFAULTS_BUILTIN "/etc/opt/tin","/etc/tin","/etc","/usr/local/lib/tin","/usr/local/lib","/usr/local/etc/tin","/usr/local/etc","/usr/lib/tin","/usr/lib",NULL
+#	define TIN_DEFAULTS_BUILTIN "/etc/opt/tin","/etc/tin","/etc","/usr/local/lib/tin","/usr/local/lib","/usr/local/etc/tin","/usr/local/etc","/usr/lib/tin","/usr/lib",NULL
 #endif /* M_AMIGA */
 #ifdef TIN_DEFAULTS_DIR
 #	define TIN_DEFAULTS TIN_DEFAULTS_DIR,TIN_DEFAULTS_BUILTIN
@@ -2117,5 +2143,6 @@ extern struct tm *localtime(time_t *);
 #if defined(THREAD_WEIGHT) && !defined(THREAD_SUM)
 #	define THREAD_SUM
 #endif /* THREAD_WEIGHT && !THREAD_SUM */
+
 
 #endif /* !TIN_H */

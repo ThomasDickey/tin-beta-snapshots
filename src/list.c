@@ -96,7 +96,7 @@ my_printf ("hash=[%s] [%ld]\n", group, val);
 	}
 	hash_value %= TABLE_SIZE;
 
-	return (hash_value);
+	return hash_value;
 #endif /* NEW_HASH_METHOD */
 }
 
@@ -177,5 +177,5 @@ group_add (
 
 	active[num_active].name = my_strdup(group);
 
-	return(&active[num_active++]);
+	return &active[num_active++];
 }

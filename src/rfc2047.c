@@ -130,7 +130,7 @@ mmdecode (
 	t_bool decode_gt128 = FALSE;
 
 #ifdef MIME_STRICT_CHARSET
-	if (charset && !strcasecmp(charset, tinrc.mm_charset))
+	if (charset && !strcasecmp(charset, tinrc.mm_local_charset))
 #endif /* MIME_STRICT_CHARSET */
 		decode_gt128 = TRUE;
 
@@ -276,6 +276,10 @@ rfc1522_decode (
 
 #if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
 	buffer_to_local(buffer);
+#else
+#	ifdef CHARSET_CONVERSION
+	buffer_to_local(buffer, charset, tinrc.mm_local_charset);
+#	endif /* CHARSET_CONVERSION */
 #endif /* LOCAL_CHARSET || MAC_OS_X */
 
 	return buffer;
@@ -387,7 +391,12 @@ which_encoding (
 		 */
 		if (chars + 2 * (nonprint + schars) /* QP size */ >
 			 (chars * 4 + 3) / 3		/* B64 size */
-			 || !strcasecmp(tinrc.mm_charset, "EUC-KR"))
+#ifdef CHARSET_CONVERSION
+			 || !strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-KR")
+#else
+			 || !strcasecmp(tinrc.mm_charset, "EUC-KR")
+#endif /* CHARSET_CONVERSION */
+			)
 			return 'B';
 		return 'Q';
 	}
@@ -447,7 +456,7 @@ sizeofnextword (
 
 
 static int
-rfc1522_do_encode (
+rfc1522_do_encode(
 	char *what,
 	char **where,
 	t_bool break_long_line)
@@ -511,8 +520,11 @@ rfc1522_do_encode (
 
 	t = buf;
 	encoding = which_encoding(what);
+#ifdef CHARSET_CONVERSION
+	ew_taken_len = strlen(txt_mime_charsets[tinrc.mm_network_charset]) + 7;
+#else
 	ew_taken_len = strlen(tinrc.mm_charset) + 7;		/* the minimum encoded word length without any encoded text */
-
+#endif /* CHARSET_CONVERSION */
 	while (*what) {
 		if (break_long_line)
 			word_cnt++;
@@ -524,7 +536,11 @@ rfc1522_do_encode (
 		if (contains_nonprintables(what, isstruct_head) || isbroken_within) {
 			if (encoding == 'Q') {
 				if (!quoting) {
+#ifdef CHARSET_CONVERSION
+					sprintf(buf2, "=?%s?%c?", txt_mime_charsets[tinrc.mm_network_charset], encoding);
+#else
 					sprintf(buf2, "=?%s?%c?", tinrc.mm_charset, encoding);
+#endif /* CHARSET_CONVERSION */
 					ewsize = mystrcat(&t, buf2);
 					if (break_long_line) {
 						if (word_cnt == 2) {
@@ -569,7 +585,12 @@ rfc1522_do_encode (
 						break;
 					}
 				}
-				if (!contains_nonprintables(what, isstruct_head) || ewsize >= 70 - strlen(tinrc.mm_charset)) {
+#ifdef CHARSET_CONVERSION
+				if (!contains_nonprintables(what, isstruct_head) || ewsize >= 70 - strlen(txt_mime_charsets[tinrc.mm_network_charset]))
+#else
+				if (!contains_nonprintables(what, isstruct_head) || ewsize >= 70 - strlen(tinrc.mm_charset))
+#endif /* CHARSET_CONVERSION */
+				{
 					/* next word is 'clean', close encoding */
 					*t++ = '?';
 					*t++ = '=';
@@ -579,7 +600,12 @@ rfc1522_do_encode (
  * after the point where it's split should be encoded (i.e. even if
  * they are made of only 7bit chars)
  */
-					if (ewsize >= 70 - strlen(tinrc.mm_charset) && (contains_nonprintables(what, isstruct_head) || isbroken_within)) {
+#ifdef CHARSET_CONVERSION
+					if (ewsize >= 70 - strlen(txt_mime_charsets[tinrc.mm_network_charset]) && (contains_nonprintables(what, isstruct_head) || isbroken_within))
+#else
+					if (ewsize >= 70 - strlen(tinrc.mm_charset) && (contains_nonprintables(what, isstruct_head) || isbroken_within))
+#endif /* CHARSET_CONVERSION */
+					{
 						*t++ = ' ';
 						ewsize++;
 					}
@@ -608,8 +634,11 @@ rfc1522_do_encode (
 				 * as they're already excluded with contain_nonprintables used in outer if-clause
 				 */
 				while (*what && (!isbetween(*what, isstruct_head) || rightafter_ew)) {
-
+#ifdef CHARSET_CONVERSION
+					sprintf(buf2, "=?%s?%c?", txt_mime_charsets[tinrc.mm_network_charset], encoding);
+#else
 					sprintf(buf2, "=?%s?%c?", tinrc.mm_charset, encoding);
+#endif /* CHARSET_CONVERSION */
 					ewsize = mystrcat(&t, buf2);
 
 					if (word_cnt == 2)
@@ -761,9 +790,9 @@ rfc15211522_encode (
 	}
 	quoteflag = 0;
 	while ((header = tin_fgets(f, TRUE))) {
-#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
+#if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
 		buffer_to_network(header);
-#endif /* LOCAL_CHARSET || MAC_OS_X */
+#endif /* LOCAL_CHARSET || MAC_OS_X || defined(CHARSET_CONVERSION) */
 		if (*header == '\0')
 			break;
 		if (allow_8bit_header)
@@ -774,9 +803,9 @@ rfc15211522_encode (
 	}
 	fputc('\n', g);
 	while (fgets(buffer, 2048, f)) {
-#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
+#if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
 		buffer_to_network(buffer);
-#endif /* LOCAL_CHARSET || MAC_OS_X */
+#endif /* LOCAL_CHARSET || MAC_OS_X || defined(CHARSET_CONVERSION) */
 		fputs(buffer, g);
 		/* see if there are any umlauts in the body... */
 		for (c = buffer; *c && !isreturn(*c); c++)
@@ -809,11 +838,22 @@ rfc15211522_encode (
 
 		/* added for CJK charsets like EUC-KR/JP/CN and others */
 
-			if (!strncasecmp(tinrc.mm_charset, "euc-", 4) &&
+#ifdef CHARSET_CONVERSION
+			if (!strncasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-", 4) &&
+				 !strcasecmp(mime_encoding, txt_7bit))
+				fprintf(f, "Content-Type: text/plain; charset=ISO-2022-%s\n", &txt_mime_charsets[tinrc.mm_network_charset][4]);
+#else
+			if (!strncasecmp(tinrc.mm_charset, "EUC-", 4) &&
 				 !strcasecmp(mime_encoding, txt_7bit))
 				fprintf(f, "Content-Type: text/plain; charset=ISO-2022-%s\n", &tinrc.mm_charset[4]);
-			else
+#endif /* CHARSET_CONVERSION */
+			else {
+#ifdef CHARSET_CONVERSION
+				fprintf(f, "Content-Type: text/plain; charset=%s\n", txt_mime_charsets[tinrc.mm_network_charset]);
+#else
 				fprintf(f, "Content-Type: text/plain; charset=%s\n", tinrc.mm_charset);
+#endif /* CHARSET_CONVERSION */
+			}
 			fprintf(f, "Content-Transfer-Encoding: %s\n", mime_encoding);
 		} else {
 			fputs("Content-Type: text/plain; charset=US-ASCII\n", f);
@@ -839,7 +879,11 @@ rfc15211522_encode (
 
 /* For EUC-KR, 7bit means conversion to ISO-2022-KR specified in RFC 1557 */
 
-		if (!strcasecmp(tinrc.mm_charset, "euc-kr"))
+#ifdef CHARSET_CONVERSION
+		if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-KR"))
+#else
+		if (!strcasecmp(tinrc.mm_charset, "EUC-KR"))
+#endif /* CHARSET_CONVERSION */
 			body_encode = rfc1557_encode;
 
 #if 0
@@ -847,14 +891,22 @@ rfc15211522_encode (
  * Not only EUC-JP but also other Japanese charsets such as
  * SJIS might need RFC 1468 encoding. To be confirmed.
  */
-		else if (!strcasecmp(tinrc.mm_charset, "euc-jp"))
+#	ifdef CHARSET_CONVERSION
+		else if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-JP"))
+#	else
+		else if (!strcasecmp(tinrc.mm_charset, "EUC-JP"))
+#	endif /* CHARSET_CONVERSION */
 			body_encode = rfc1468_encode;
 
 /*
  * Not only EUC-CN but also other Chinese charsets such as
  * BIG5 and EUC-TW might need RFC 1922 encoding. To be confirmed.
  */
-		else if (!strcasecmp(tinrc.mm_charset, "euc-cn"))
+#ifdef CHARSET_CONVERSION
+		else if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-CN"))
+#else
+		else if (!strcasecmp(tinrc.mm_charset, "EUC-CN"))
+#endif /* CHARSET_CONVERSION */
 			body_encode = rfc1922_encode;
 #endif /* 0 */
 		else {

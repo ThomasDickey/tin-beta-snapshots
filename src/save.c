@@ -724,7 +724,7 @@ add_to_save_list (
 #if 0
 fprintf(stderr, "ATSL (%s) (%s)\n", save[num_save].path, save[num_save].file);
 #endif /* 0 */
-	return (save[num_save++].is_mailbox);		/* NB: num_save is bumped here */
+	return save[num_save++].is_mailbox;		/* NB: num_save is bumped here */
 }
 
 
@@ -1210,9 +1210,7 @@ delete_processed_files (
 	t_bool delete_it = FALSE;
 
 	if (any_saved_files ()) {
-		if (CURR_GROUP.attribute->delete_tmp_files || auto_delete)
-			delete_it = TRUE;
-		else if (prompt_yn (cLINES, _(txt_delete_processed_files), TRUE) == 1)
+		if (CURR_GROUP.attribute->delete_tmp_files && (auto_delete || prompt_yn(cLINES, _(txt_delete_processed_files), TRUE) == 1))
 			delete_it = TRUE;
 
 		my_printf (cCRLF);
@@ -1392,9 +1390,11 @@ decode_save_one(
 	/*
 	 * View the attachment
 	 */
-	if (postproc && tinrc.post_process_view) {
-		start_viewer (part, savepath);
-		my_printf (cCRLF);
+	if (postproc) {
+		if (tinrc.post_process_view) {
+			start_viewer (part, savepath);
+			my_printf (cCRLF);
+		}
 	} else {
 		snprintf (buf, sizeof(buf) - 1, _(txt_view_attachment), savepath, content_types[part->type], part->subtype);
 		if (prompt_yn (cLINES, buf, TRUE) == 1)
@@ -1404,10 +1404,11 @@ decode_save_one(
 	/*
 	 * Save the attachment
 	 */
-	if (postproc) {
+	if (postproc && tinrc.post_process_view) {
 		my_printf (_(txt_uu_success), savepath);
 		my_printf (cCRLF);
-	} else {
+	}
+	if (!postproc) {
 		snprintf (buf, sizeof(buf) - 1, _(txt_save_attachment), savepath, content_types[part->type], part->subtype);
 		if (prompt_yn (cLINES, buf, FALSE) != 1)
 			unlink (savepath);

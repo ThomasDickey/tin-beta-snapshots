@@ -81,6 +81,11 @@ static void write_input_history_file (void);
 	static int to_local (int c);
 	static int to_network (int c);
 #endif /* LOCAL_CHARSET */
+#ifdef CHARSET_CONVERSION
+#	ifndef HAVE_WORKING_ICONV /* TODO: write configure check */
+	static char *utf8_valid(char *line);
+#	endif /* HAVE_WORKING_ICONV */
+#endif /* CHARSET_CONVERSION */
 
 
 /*
@@ -1227,7 +1232,8 @@ void
 get_author (
 	t_bool thread,
 	struct t_article *art,
-	char *str, size_t len)
+	char *str,
+	size_t len)
 {
 	int author;
 
@@ -2419,7 +2425,7 @@ quote_wild (
 		}
 	}
 	*target = '\0';
-	return (buff);
+	return buff;
 }
 
 
@@ -2447,7 +2453,7 @@ quote_wild_whitespace (
 			*target++ = *str;
 	}
 	*target = '\0';
-	return (buff);
+	return buff;
 }
 
 
@@ -2522,10 +2528,8 @@ strip_name (
 /*
  * convert between local and network charset (e.g. NeXT and latin1)
  */
-
 #	define CHARNUM 256
 #	define BAD (-1)
-
 /* use the appropriate conversion tables */
 #	if LOCAL_CHARSET == 437
 #		include "l1_ibm437.tab"
@@ -2539,7 +2543,6 @@ strip_name (
 #			include "next_l1.tab"
 #		endif /* 850 */
 #	endif /* 437 */
-
 static int
 to_local (
 	int c)
@@ -2554,6 +2557,7 @@ to_local (
 		return c;
 }
 
+
 void
 buffer_to_local (
 	char *b)
@@ -2561,6 +2565,7 @@ buffer_to_local (
 	for(; *b; b++)
 		*b = to_local(*b);
 }
+
 
 static int
 to_network (
@@ -2576,6 +2581,7 @@ to_network (
 		return c;
 }
 
+
 void
 buffer_to_network (
 	char *b)
@@ -2583,6 +2589,7 @@ buffer_to_network (
 	for(; *b; b++)
 		*b = to_network(*b);
 }
+
 
 #else
 #	ifdef MAC_OS_X
@@ -2630,6 +2637,144 @@ buffer_to_network (
 }
 #	endif /* MAC_OS_X */
 #endif /* LOCAL_CHARSET && !MAC_OS_X */
+
+
+#ifdef CHARSET_CONVERSION
+void
+buffer_to_local (
+	char *line,
+	const char *network_charset,
+	const char *local_charset)
+{
+	/* FIXME: this should default in RFC2046.c to US-ASCII */
+	if (!(network_charset && *network_charset)) {	/* Content-Type: did't had a charset parameter */
+		/*
+		 * defaulting to US-ASCII would be more correct, but $MM_CHARSET
+		 * might be more usefull
+		 */
+		network_charset = local_charset;
+	} else {
+		if (strcasecmp(network_charset, local_charset)) { /* different charsets? */
+			char * obuf;
+			char * outbuf;
+			const char * inbuf;
+			iconv_t cd;
+			size_t result, osize;
+			size_t inbytesleft, outbytesleft;
+
+#	ifndef MIME_STRICT_CHARSET
+			if (!strcasecmp(network_charset, "US-ASCII")) {
+#		if 0
+				network_charset = local_charset;
+#		else
+				/* no network_charset case allready fixed above */
+				;
+#		endif /* 0 */
+			} else
+#	endif /* !MIME_STRICT_CHARSET */
+			{
+				if ((cd = iconv_open(local_charset, network_charset)) != (iconv_t) (-1)) {
+#	ifndef HAVE_WORKING_ICONV /* TODO: write configure check */
+					/* iconv() might crash on broken multibyte sequences so check them */
+					if (!strcasecmp(network_charset, "UTF-8"))
+						utf8_valid(line);
+#	endif /* HAVE_WORKING_ICONV */
+					{
+						inbuf = (char *) line;
+						inbytesleft = strlen (line);
+						outbytesleft = 1 + inbytesleft * 4;	/* should be enough */
+						osize = outbytesleft;
+						obuf = (char *) my_malloc (osize + 1);
+						outbuf = (char *) obuf;
+
+						do {
+							errno = 0;
+							result = iconv (cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
+							if (result == (size_t) (-1)) {
+								switch (errno) {
+									case EILSEQ:
+										**&outbuf = '?';
+										outbuf++;
+										inbuf++;
+										inbytesleft--;
+										break;
+
+									case E2BIG:
+										obuf = (char *) my_realloc(obuf, osize * 2);
+										outbuf = (char *) (obuf + osize - outbytesleft);
+										outbytesleft += osize;
+										osize += osize;
+										break;
+
+									default:
+										inbytesleft = 0;
+								}
+							}
+						} while (inbytesleft > 0);
+
+						**&outbuf = '\0';
+						strcpy(line, obuf); /* FIXME: obuf might be bigger than line! */
+						free(obuf);
+						iconv_close(cd);
+					}
+				}
+			}
+		}
+	}
+}
+
+
+void
+buffer_to_network (
+	char *line)
+{
+	char * obuf;
+	char * outbuf;
+	const char * inbuf;
+	iconv_t cd;
+	size_t result, osize;
+	size_t inbytesleft, outbytesleft;
+
+	if ((cd = iconv_open(txt_mime_charsets[tinrc.mm_network_charset], tinrc.mm_local_charset)) != (iconv_t) (-1)) {
+		inbytesleft = strlen (line);
+		inbuf = (char *) line;
+		outbytesleft = 1 + inbytesleft * 4;
+		osize = outbytesleft;
+		obuf = (char *) my_malloc (osize + 1);
+		outbuf = (char *) obuf;
+
+		do {
+			errno = 0;
+			result = iconv (cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
+			if (result == (size_t) (-1)) {
+				switch (errno) {
+					case EILSEQ:
+						**&outbuf = '?';
+						outbuf++;
+						inbuf++;
+						inbytesleft--;
+						break;
+
+					case E2BIG:
+						obuf = (char *) my_realloc(obuf, osize * 2);
+						outbuf = (char *) (obuf + osize - outbytesleft);
+						outbytesleft += osize;
+						osize += osize;
+						break;
+
+					default:	/* EINVAL */
+						inbytesleft = 0;
+				}
+			}
+		} while (inbytesleft > 0);
+
+		**&outbuf = '\0';
+		strcpy(line, obuf); /* FIXME: here we assume that line is big enough to hold obuf */
+		free(obuf);
+		iconv_close(cd);
+	}
+}
+#endif /* CHARSET_CONVERSION */
 
 
 /*
@@ -3543,3 +3688,138 @@ strip_line (
 
 	*++ptr = '\0';
 }
+
+#ifdef CHARSET_CONVERSION
+#	ifndef HAVE_WORKING_ICONV /* TODO: write configure check */
+/*
+ * 'check' a given UTF-8 strig and '?'-out illegal sequences
+ * TODO: is this check check complete?
+ */
+static char *
+utf8_valid(
+	char *line)
+{
+	char *c;
+	unsigned char d, e, f, g;
+	int numc;
+	t_bool illegal;
+
+	c = line;
+
+	while (*c != '\0' && *c != '\n') {
+		if (!(*c & 0x80)) { /* plain US-ASCII ?*/
+			c++;
+			continue;
+		}
+
+		numc = 0;
+		illegal = FALSE;
+		d = (*c & 0x7c);	/* remove bits 7,1,0 */
+
+		do {
+			numc++;
+		} while ((d <<= 1) & 0x80);	/* get sequence length */
+
+		d = *c;
+		e = *(c+1);
+
+		switch (numc) {
+			case 2:
+				/* out of range or sequences which would also fit into 1 byte */
+				if (d < 0xc2 || d > 0xdf)
+					illegal = TRUE;
+				break;
+
+			case 3:
+				f = *(c+2);
+				/* out of range or sequences which would also fit into 2 bytes */
+				if (d < 0xe0 || d > 0xef || (d == 0xe0 && e < 0xa0))
+					illegal = TRUE;
+				/* Unicode 3.0 noncharacters */
+				/* U+FDD0 ... U+FDEF */
+				if (d == 0xef && e == 0xb7 && (f >= 0x90 && f <= 0xaf))
+					illegal = TRUE;
+				/* Unicode 3.0 noncharacters */
+				/* U+FFFE, U+FFFF */
+				if (d == 0xef && e == 0xbf && (f == 0xbe || f == 0xbf))
+					illegal = TRUE;
+#	if 0 /* do need to take care about these? */
+				/* UTF-16 surrogates */
+				if (d == 0xed && (e == 0xa0 || e == 0xae || e == 0xb0 || e == 0xbe) && f == 0x80)
+					illegal = TRUE;
+				/* UTF-16 surrogates */
+				if (d == 0xed && (e == 0xad || e == 0xaf || e == 0xbf) && f == 0xbf)
+					illegal = TRUE;
+#	endif /* 0 */
+				break;
+
+			case 4:
+				f = *(c+2);
+				g = *(c+3);
+				/* out of range or sequences which would also fit into 3 bytes */
+				if (d < 0xf0 || d > 0xf7 || (d == 0xf0 && e < 0x90))
+					illegal = TRUE;
+				/* largest current used sequence */
+				if (d == 0xf4 && e > 0x8f)
+					illegal = TRUE;
+				/* Unicode 3.1 noncharacters */
+				/* U+1FFFE, U+1FFFF, U+2FFFE, U+2FFFF, U+3FFFE, U+3FFFF; (Unicode 3.1) */
+				if (d == 0xf0 && (e == 0x9f || e == 0xaf || e == 0xbf) && f == 0xbf && (g == 0xbe || g ==0xbf))
+					illegal = TRUE;
+				/* Unicode 3.1 noncharacters */
+				/* U+4FFFE, U+4FFFF, U+5FFFE, U+5FFFF, U+6FFFE, U+6FFFF, U+7FFFE, U+7FFFF */
+				/* U+8FFFE, U+8FFFF, U+9FFFE, U+9FFFF, U+AFFFE, U+AFFFF, U+BFFFE, U+BFFFF */
+				/* U+CFFFE, U+CFFFF, U+DFFFE, U+DFFFF, U+EFFFE, U+EFFFF, U+FFFFE, U+FFFFF */
+				if ((d == 0xf1 || d == 0xf2 || d == 0xf3 ) && (e == 0x8f || e == 0x9f || e == 0xaf || e == 0xbf) && f == 0xbf && (g == 0xbe || g == 0xbf))
+					illegal = TRUE;
+				/* Unicode 3.1 noncharacters */
+				/* U+10FFFE, U+10FFFF */
+				if (d == 0xf4 && e == 0x8f && f == 0xbf && (g == 0xbe || g == 0xbf))
+					illegal = TRUE;
+				break;
+
+#	if 0	/* currently not used, see also check above  */
+			case 5:
+				/* out of range or sequences which would also fit into 4 bytes */
+				if (d < 0xf8 || d > 0xfb || (d == 0xf8 && e < 0x88))
+					illegal = TRUE;
+				break;
+
+			case 6:
+				/* out of range or sequences which would also fit into 5 bytes */
+				if (d < 0xfc || d > 0xfd || (d == 0xfc && e < 0x84))
+					illegal = TRUE;
+				break;
+#	endif /* 0 */
+
+			default:
+				/*
+				 * with the check for plain US-ASCII above
+				 * all other sequence length are illegal.
+				 */
+				illegal = TRUE;
+				break;
+		}
+
+		for (d = 1; d < numc; d++) {
+			e = *(c+d);
+			if (e < 0x80 || e > 0xbf || *(c+d) == '\0' || *(c+d) == '\n')
+				illegal = TRUE;
+		}
+
+		if (!illegal)
+			c += numc; /* skip over valid sequence */
+		else {
+			while (numc--) {
+				if (*c & 0x80)	/* replace 'dangerous' bytes */
+					*c = '?';
+				if (*c == '\0' || *c == '\n')
+					break;
+				c++;
+			}
+		}
+	}
+	return line;
+}
+#	endif /* HAVE_WORKING_ICONV */
+#endif /* CHARSET_CONVERSION */

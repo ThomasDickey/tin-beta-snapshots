@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2001-07-18
+.\" Updated   : 2001-08-30
 .\" Notes     : needs a lot of work
 .\"
-.TH tin 5 "July 18th, 2001" "1.5.9" "A Usenet newsreader"
+.TH tin 5 "August 30th, 2001" "1.5.10" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -21,13 +21,15 @@ newsreader.
 .PP
 .IR $MAILCAPS
 .br
-.IR $HOME/.mailcap
+.IR ${TIN_HOMEDIR-"$HOME"}/.mailcap
 .br
 .IR /etc/mailcap
 .br
 .IR /usr/etc/mailcap
 .br
 .IR /usr/local/etc/mailcap
+.br
+.IR /etc/mail/mailcap
 .sp
 .RS
 .BR mailcap (4)
@@ -200,30 +202,13 @@ needsterminal
 .RE
 .PP
 
-.IR $HOME/.mime.types
-.br
-.IR /etc/mime.types
-.br
-.IR /etc/tin/mime.types
+.IR /etc/nntpserver
 .sp
 .RS
-mime type / filename extension pairs
-.RE
-.PP
-
-.IR $HOME/.signature
-.br
-.IR $HOME/.Sig
-.sp
-.RS
-signature
-.RE
-.PP
-
-.IR $HOME/.sigfixed
-.sp
-.RS
-fixed part of a randomly generated signature
+default NNTP-server to read news from if not reading from the local spool.
+'\fB-g\fP \fIserver\fR', \fB$NNTPSERVER\fP and a given default at compile
+time have higher priority (in that order) and override any server
+specified \fI/etc/nntpserver\fR.
 .RE
 .PP
 
@@ -231,6 +216,17 @@ fixed part of a randomly generated signature
 .sp
 .RS
 secret to be used for canlocks
+.RE
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.mime.types
+.br
+.IR /etc/mime.types
+.br
+.IR /etc/tin/mime.types
+.sp
+.RS
+mime type / filename extension pairs
 .RE
 .PP
 
@@ -295,6 +291,22 @@ news.software.readers: 1-19567,19571-19597
 .sp
 .RS
 backup of \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR
+.RE
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.signature
+.br
+.IR ${TIN_HOMEDIR-"$HOME"}/.Sig
+.sp
+.RS
+signature
+.RE
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.sigfixed
+.sp
+.RS
+fixed part of a randomly generated signature
 .RE
 .PP
 
@@ -370,7 +382,8 @@ active file of user's saved newsgroups, used by \fBtin -R\fP.
 .\" tin uses inns old (pre 2.x) Path convention.
 .\" as with inn >= 2.2.x getting more and more popular
 .\" we should think about checking for the new Paths
-.\" (described shown below).
+.\" (described shown below) and/or place tin only related global
+.\" config files to TIN_DEFAULTS_DIR (/etc/tin/)
 .IR ${TIN_LIBDIR-"/news/etc"}/attributes
 .sp
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/attributes
@@ -393,10 +406,10 @@ applied. See the section NEWSGROUP LISTS & WILDCARDS in
 for the types of pattern that can be used here.
 .TP
 .B maildir
-Identical to the tinrc variable default_maildir
+Identical to the tinrc variable \fBdefault_maildir\fP
 .TP
 .B savedir
-Identical to the tinrc variable default_savedir
+Identical to the tinrc variable \fBdefault_savedir\fP
 .TP
 .B savefile
 .TP
@@ -408,7 +421,7 @@ Apollo DomainOS). Note that some newsserver might still overwrite the
 ''Organization:''-header.
 .TP
 .B from
-Identical to the tinrc variable mail_address
+Identical to the tinrc variable \fBmail_address\fP
 .TP
 .B sigfile
 The path that specifies the signature file to use when posting, following
@@ -430,8 +443,7 @@ Identical to the tinrc variable of the same name
 Can be used to override the global setting in tinrc on a
 per group basis. For more information read section AUTOMATIC MAILING AND
 SAVING NEW NEWS in
-.BR tin (1)
-.
+.BR tin (1).
 .TP
 .B delete_tmp_files
 If this is set to ON, then saved article files that have been post-processed
@@ -443,19 +455,19 @@ Tagged articles using 'S' will also suppress promting.
 Identical to the tinrc variable of the same name
 .TP
 .B thread_arts
-Identical to the tinrc variable thread_articles
+Identical to the tinrc variable \fBthread_articles\fP
 .TP
 .B show_author
 Identical to the tinrc variable of the same name
 .TP
 .B sort_art_type
-Identical to the tinrc variable sort_article_type
+Identical to the tinrc variable \fBsort_article_type\fP
 .TP
 .B sort_threads_type
-Identical to the tinrc variable sort_threads_type
+Identical to the tinrc variable \fBsort_threads_type\fP
 .TP
 .B post_proc_type
-Identical to the tinrc variable post_process_type
+Identical to the tinrc variable \fBpost_process_type\fP
 .TP
 .B mailing_list
 Used when a group is a mailing list. All responses to the group will be
@@ -785,8 +797,26 @@ Below is a list of all keynames and their default bindings.
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/newsrctable
 .sp
 .RS
-"\fInntpserver\fR \fInewsrc\fR \fIshortname\fR [...]" pairs to use with
-''\fB-g\fP'' command-line switch.
+"\fInntpserver\fR \fInewsrc\fR [\fIshortname\fR [\fI...\fR]]"
+pairs to use with the ''\fB-g\fP'' command-line switch.
+.TP
+.B nntpserver
+full qualified domain name of the newsserver.
+.TP
+.B newsrc
+related newsrc.
+.TP
+.B shortname
+nickname(s) for the nntpserver.
+.TP
+Example:
+.RS
+# sample newsrctable file
+.br
+news.tin.org .newsrc-tin.org tinorg
+.br
+news.ka.nu /tmp/nrc-nu kanu nu
+.RE
 .RE
 .PP
 
@@ -809,7 +839,8 @@ format.
 .\" tin uses inns old (pre 2.x) Path convention.
 .\" as with inn >= 2.2.x getting more and more popular
 .\" we should think about checking for the new Paths
-.\" (described shown below).
+.\" (described shown below) and/or place tin only related global
+.\" config files to TIN_DEFAULTS_DIR (/etc/tin/)
 .IR ${TIN_LIBDIR-"/news/etc"}/tinrc
 .br
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/tinrc
@@ -852,11 +883,11 @@ Default is '*'.
 .TP
 .B art_marked_recent
 The character used to show that an article/thread is recent (not older than
-X days). See also recent_time. Default is 'o'.
+X days). See also \fBrecent_time\fP. Default is 'o'.
 .TP
 .B art_marked_unread
-The character used to show that an article has not been read. Default is
-'+'.
+The character used to show that an article has not been read.
+Default is '+'.
 .TP
 .B art_marked_read
 The character used to show that an article was read. Default is ' '.
@@ -872,8 +903,10 @@ Default is ':'. \fBkill_level\fP must be set accordingly.
 .B ask_for_metamail
 If ON
 .BR tin (1)
-will ask before using metamail to display MIME messages. This only occurs if
-'use_metamail' is also switched ON. Default is ON.
+will ask before using
+.BR metamail (1)
+to display MIME messages. This only occurs if \fBuse_metamail\fP is also
+switched ON. Default is ON.
 .TP
 .B auto_bcc
 If ON automatically put your name in the ''Bcc:'' field when mailing an
@@ -890,7 +923,7 @@ Default is ON.
 .B auto_save
 If ON articles/threads with ''Archive-name:'' in header will be
 automatically saved with the Archive-name & part/patch no and post processed
-if process type is not set to none. Default is OFF
+if \fBpost_proc_type\fP is not set to none (0). Default is OFF
 .TP
 .B batch_save
 If set ON articles/threads will be saved in batch mode when save
@@ -997,8 +1030,8 @@ Defaults for quick (1 key) kill filter case. ON = filter case sensitive, OFF
 = ignore case. Default is OFF.
 .TP
 .B default_filter_kill_expire
-Defaults for quick (1 key) kill filter expire. ON = limit to
-'\fBdefault_filter_days\fP', OFF = don't ever expire. Default is OFF.
+Defaults for quick (1 key) kill filter expire. ON = limit
+to '\fBdefault_filter_days\fP', OFF = don't ever expire. Default is OFF.
 .TP
 .B default_filter_kill_global
 Defaults for quick (1 key) kill filter global. ON=apply to all groups
@@ -1015,8 +1048,8 @@ Defaults for quick (1 key) auto-selection filter case. ON=filter case
 sensitive OFF=ignore case. Default is OFF.
 .TP
 .B default_filter_select_expire
-Defaults for quick (1 key) auto-selection filter expire. ON = limit to
-'\fBdefault_filter_days\fP', OFF = don't ever expire. Default is OFF.
+Defaults for quick (1 key) auto-selection filter expire. ON = limit
+to '\fBdefault_filter_days\fP', OFF = don't ever expire. Default is OFF.
 .TP
 .B default_filter_select_global
 Defaults for quick (1 key) auto-selection filter global. ON=apply to all
@@ -1035,10 +1068,12 @@ Defaults for quick (1 key) auto-selection filter header.
 .B default_mail_address
 .TP
 .B default_maildir
-The directory where articles/threads are to be saved in mailbox format. This
-feature is mainly for use with the Elm mail program. It allows the user to
-save articles/threads/groups simply by giving '=' as the filename to save
-to. Default is \fI$HOME/Mail\fR.
+The directory where articles/threads are to be saved in
+.BR mbox (5)
+format. This feature is mainly for use with the
+.BR elm (1)
+mail program. It allows the user to save articles/threads/groups simply
+by giving '=' as the filename to save to. Default is \fI$HOME/Mail\fR.
 .TP
 .B default_mailer_format
 The format string used to create the mailer command with parameters that is
@@ -1153,8 +1188,8 @@ If ON keep all postings in \fI$HOME/Mail/posted\fR. Default is ON.
 .B kill_level
 This option controls the processing and display of articles that are killed.
 There are 3 options: 0 (default) is the 'traditional' behaviour of
-.BR tin (1)
-. Only unread articles are killed once only by marking them read. Options 1
+.BR tin (1).
+Only unread articles are killed once only by marking them read. Options 1
 and 2 will process all articles in the group and therefore there is a
 processing overhead when using them. Option 1 will thread killed articles as
 normal but they will be marked with a 'K'. Option 2 simply does not display
@@ -1194,13 +1229,27 @@ parameter and charset name in header encoding) in mail and news posting
 unless local charset/encoding needs to be converted into other
 charset/encoding as in case of EUC-KR which is converted to ISO-2022-KR if
 \fBmail_mime_encoding\fP is set to 7bit. Possible values include ISO-8859-X
-(where X is 1 to 10), EUC-JP, EUC-CN, EUC-KR, EUC-TW, Big5, Shift_JIS, and
+(where X is 1 to 16), EUC-JP, EUC-CN, EUC-KR, EUC-TW, Big5, Shift_JIS, and
 so forth. If \fBMIME_STRICT_CHARSET\fP is defined at the compile time, text
 in charset other than the value of this parameter is considered not
 displayable and represented as '?'. Otherwise, all character sets are
 regarded as compatible with the display. If it's not set, the value of the
 environment variable \fB$MM_CHARSET\fP is used. US-ASCII or compile-time
 default is used in case neither of them is defined.
+.TP
+.B mm_local_charset
+Charset used for reading and displaying articles; replaces \fBmm_charset\fP.
+Conversion between \fBmm_local_charset\fP and \fBmm_network_charset\fP is
+done via
+.BR iconv (3),
+if this function is not available on your system this option is disabled.
+.TP
+.B mm_network_charset
+Charset used for posting and MIME headers; replaces \fBmm_charset\fP.
+Conversion between \fBmm_network_charset\fP and \fBmm_local_charset\fP is
+done via
+.BR iconv (3),
+if this function is not available on your system this option is disabled.
 .TP
 .B newnews
 These are internal timers used by
@@ -1295,19 +1344,22 @@ If ON quote empty lines, too. Default is ON.
 .TP
 .B quote_regex
 A regular expression that will be applied when reading articles. All
-matching lines are shown in col_quote. If quote_regex is blank, then
+matching lines are shown in \fBcol_quote\fR. If \fBquote_regex\fR is blank,
+then
 .BR tin (1)
 uses a builtin default for this.
 .TP
 .B quote_regex2
 A regular expression that will be applied when reading articles. All
-matching lines are shown in col_quote2. If quote_regex2 is blank, then
+matching lines are shown in \fBcol_quote2\fR. If \fBquote_regex2\fR is
+blank, then
 .BR tin (1)
 uses a builtin default for this.
 .TP
 .B quote_regex3
 A regular expression that will be applied when reading articles. All
-matching lines are shown in col_quote3. If quote_regex3 is blank, then
+matching lines are shown in \fBcol_quote3\fR. If \fBquote_regex3\fR is blank,
+then
 .BR tin (1)
 uses a builtin default for this.
 .TP
@@ -1319,7 +1371,9 @@ The news active file is reread at regular intervals to show if any new news
 has arrived. Default is 1200. Setting this to 0 will disable this feature.
 .TP
 .B save_to_mmdf_mailbox
-Allows articles to be saved to a MMDF style mailbox instead of mbox format.
+Allows articles to be saved to a MMDF style mailbox instead of
+.BR mbox (5)
+format.
 Default is OFF unless reading news on SCO Unix which uses MMDF by default.
 .TP
 .B show_author
@@ -1401,9 +1455,10 @@ replying to an article by mail where the e-mail address contains one of
 these strings. The matching is case-insensitive.
 .TP
 .B space_goto_next_unread
-SPACE normally acts as a Page Down key and has no effect at the end of
-an article. If this option is turned ON the SPACE command will goto the next
-unread article when the end of the article is reached (rn-style pager)
+SPACE normally acts as a Page Down key and has no effect at the end of an
+article. If this option is turned ON the SPACE command will goto the next
+unread article when the end of the article is reached (\fBrn\fP (1)-style
+pager).
 .TP
 .B start_editor_offset
 Set ON if the editor used for posting, follow-ups and bug reports has the
@@ -1423,8 +1478,8 @@ Selection Menu, prefixed with a 'D'. This allows you to unsubscribe
 from them as and when you wish. Default is 0 (Always Keep).
 .TP
 .B strip_newsrc
-If ON, then unsubscribed groups will be permanently removed from your
-\fI.newsrc\fR file. Default is OFF.
+If ON, then unsubscribed groups will be permanently removed from
+your \fI.newsrc\fR file. Default is OFF.
 .TP
 .B tab_after_X_selection
 If enabled will automatically goto the first unread article after having
@@ -1441,7 +1496,7 @@ Defines which threading method to use. The choices are:
 0) Don't thread, 1) Thread on Subject only 2) Thread on References only,
 3) Thread on References then Subject (default).
 It's also possible to set the threading type on a per group basis by setting
-the group attribute variable 'thread_arts' to 0 - 3 in the file
+the group attribute variable \fBthread_arts\fR to 0 - 3 in the file
 \fI$HOME/.tin/attributes\fR.
 .TP
 .B thread_catchup_on_exit
@@ -1488,7 +1543,10 @@ Allows you to select how
 .BR tin (1)
 matches strings. The default is 0 and uses the wildmat notation, which is
 how this has traditionally been handled. Setting this to 1 allows you to use
-full POSIX regular expressions. You will probably want to update your filter
+.BR perl (1)
+compatible regular expressions
+.BR pcre (3).
+You will probably want to update your filter
 file if you use this regularly. NB: Newsgroup names will always be matched
 using the wildmat notation.
 .TP
@@ -1565,7 +1623,7 @@ Allow unregistered top level domains
 .TP
 .B disable_sender
 Don't generate a ''Sender:''-header. This has no effect if
-use_builtin_inews is OFF.
+\fBuse_builtin_inews\fP is OFF.
 .TP
 .B spooldir
 Base of your newsspool (Bnews, Cnews and INN tradspool style), common values
@@ -1685,7 +1743,7 @@ uses the LIST (\fBRFC977\fP) command instead.
 This file provides a chronological record of when newsgroups are created. It
 is normally updated by the local newsserver (i.e
 .BR innd (8))
-whenever a newgroup is created. Each line consist of three space-separated
+whenever a new group is created. Each line consist of three space-separated
 fields "\fIname\fR \fItime\fR \fIcreator\fR".
 .TP
 .B name
@@ -1712,7 +1770,7 @@ uses the NEWGROUPS (\fBRFC977\fP) command instead.
 This file provides shot descriptions of each newsgroup. It is normally
 updated by the local newsserver (i.e
 .BR innd (8))
-whenever a newgroup is created. Each line consist of two tab-separated
+whenever a new group is created. Each line consist of two tab-separated
 fields "\fIgroup.name\fR	\fIone-line description\fR".
 .TP
 .B group.name
@@ -1729,6 +1787,27 @@ uses the LIST NEWSGROUPS (\fBRFC2980\fP) command instead.
 .RE
 .PP
 
+.IR ${TIN_LIBDIR-"/news/db"}/overview.fmt
+.\" is the Path correct? or is it /news/etc/overview.fmt
+.sp
+.RS
+This file specifies the organization of the news overview database (see
+also
+.BR newsoverview (5)).
+The order of lines in this file is important; it determines the order in
+which the fields will appear in the database.
+.BR tin (1)
+currently only understands the order specified in \fBRFC2980\fP. See also
+.BR overview.fmt (5).
+.BR tin (1)
+only tries to read the file if you read directly from the local spool,
+if you read news via NNTP,
+.BR tin (1)
+uses the LIST OVERVIEW.FMT (\fBRFC2980\fP) command instead.
+.RE
+.PP
+
+
 .IR ${TIN_LIBDIR-"/news/db"}/subscriptions
 .\" is the Path correct? or is it /news/etc/subscriptions
 .sp
@@ -1741,19 +1820,28 @@ only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,
 .BR tin (1)
 uses the LIST SUBSCRIPTIONS (\fBRFC2980\fP) command instead.
+.RE
+.PP
 
 .SH "SEE ALSO"
-.BR active (5),
+.BR elm (1),
 .BR inews (1),
-.BR innd (8),
 .BR lp (1),
 .BR lpr (1),
-.BR mailcap (4),
-.BR mbox (5),
-.BR newsoverview (5),
-.BR system (3),
+.BR metamail (1)
+.BR perl (1),
+.BR rn (1),
 .BR tin (1),
 .BR xterm (1x),
+.BR iconv (3),
+.BR pcre (3),
+.BR system (3),
+.BR mailcap (4),
+.BR active (5),
+.BR mbox (5),
+.BR newsoverview (5),
+.BR overview.fmt (5),
+.BR innd (8),
 .BR RFC977 ,
 .BR RFC1036 ,
 .BR RFC1524 ,

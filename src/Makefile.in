@@ -51,7 +51,7 @@ PRELIB	= @LIB_PREFIX@
 DEBUG	= @ENABLE_DEBUG@ -DDEBUG #-DDEBUG_NEWSRC -DPROFILE -DDEBUG_REFS
 CANLOCK = # -DUSE_CANLOCK # -DEVIL_INSIDE
 
-INTL_CPPFLAGS	= @INTLDIR_MAKE@ -DLOCALEDIR=\"$(prefix)/@DATADIRNAME@/locale\"
+INTL_CPPFLAGS	= -DLOCALEDIR=\"$(prefix)/@DATADIRNAME@/locale\"
 PCRE_CPPFLAGS	= @PCREDIR_CPPFLAGS@ @PCREDIR_MAKE@ -I$(top_builddir)/pcre -I$(top_srcdir)/pcre
 
 CPPOPTS	= @DEFS@ -I. -I../include $(PCRE_CPPFLAGS) $(INTL_CPPFLAGS) -I$(INCDIR) $(DEBUG) $(CANLOCK) @CPPFLAGS@
@@ -85,6 +85,7 @@ INCDIR	= $(top_srcdir)/include
 BINDIR	= .
 OBJDIR	= .
 SRCDIR	= $(srcdir)
+TOLDIR	= $(top_srcdir)/tools
 
 # standard commands
 CD	= cd
@@ -257,7 +258,6 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/wildmat.o \
 	$(OBJDIR)/xref.o
 
-
 ALL_FILES = $(HFILES) $(CFILES) $(NNTP)
 
 LINTFLAGS = -a -c -h -n -x $(CPPOPTS) -I/usr/local/include/ \
@@ -279,19 +279,19 @@ all: $(BINDIR)/$(EXE)
 
 # explicit rules to allow running lint, and to accommodate older 'make' programs
 $(OBJDIR)/parsdate.o: $(SRCDIR)/parsdate.y
-	@$(ECHO) "expect 6 shift/reduce conflicts..."
+	@$(ECHO) "expect 6 shift/reduce conflicts ..."
 	$(YACC) $(SRCDIR)/parsdate.y
 	$(MV) y.tab.c $(OBJDIR)/parsdate.c
 @SHOW_CC@
 	@ECHO_CC@$(CC) $(CPPOPTS) $(CFLAGS) -c $(OBJDIR)/parsdate.c
 
 $(OBJDIR)/parsdate.c: $(SRCDIR)/parsdate.y
-	@$(ECHO) "expect 6 shift/reduce conflicts..."
+	@$(ECHO) "expect 6 shift/reduce conflicts ..."
 	$(YACC) $(SRCDIR)/parsdate.y
 	$(MV) y.tab.c $(OBJDIR)/parsdate.c
 
 $(BINDIR)/$(EXE): $(OFILES) $(EXTRALIBS)
-	@$(ECHO) "Linking $(EXE) v$(VER)..."
+	@$(ECHO) "Linking $(EXE) v$(VER) ..."
 	$(LD) $(LDFLAGS) -o $(BINDIR)/$(EXE) $(OFILES) $(NNTPLIB) $(NETLIBS) $(LIBS) $(DEBUG)
 	@$(LS) $(BINDIR)/$(EXE)
 
@@ -315,42 +315,60 @@ $(DESTDIR)$(INS_BINARY_DIR) \
 $(INS_SYSDEF_DIR) :
 	$(top_srcdir)/mkdirs.sh $@
 
-install_manpage: $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)
-	@$(ECHO) "Installing $(PROJECT) manual pages to $(DESTDIR)$(INS_MANUAL_DIR)..."
+install_manpage: $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT) $(DESTDIR)$(INS_MANUAL_DIR)5
+	@$(ECHO) "Installing $(PROJECT) manual pages to $(DESTDIR)$(INS_MANUAL_DIR) ..."
 	@$(INSTALL) -m 444 $(DOCDIR)/tin.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(PROJECT).$(INS_MANUAL_EXT)
 	@$(INSTALL) -m 444 $(DOCDIR)/tin.5 $(DESTDIR)$(INS_MANUAL_DIR)5/$(PROJECT).5
-#	@$(INSTALL) -m 444 $(DOCDIR)/mbox.5 $(DESTDIR)$(INS_MANUAL_DIR)5/mbox.5
+	@-if test ! -f $(DESTDIR)$(INS_MANUAL_DIR)5/mbox.5 ; then $(INSTALL) -m 444 $(DOCDIR)/mbox.5 $(DESTDIR)$(INS_MANUAL_DIR)5/mbox.5 ; fi
 
 uninstall_manpage:
-	@$(ECHO) "Uninstalling $(PROJECT) manual page in $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)..."
+	@$(ECHO) "Uninstalling $(PROJECT) manual page in $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT) ..."
 	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(PROJECT).$(INS_MANUAL_EXT)
 	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)5/$(PROJECT).5
 #	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)5/mbox.5
 
 install_sysdefs: $(INS_SYSDEF_DIR)
-	@$(ECHO) "Installing system-wide defaults to $(INS_SYSDEF_DIR)..."
+	@$(ECHO) "Installing system-wide defaults to $(INS_SYSDEF_DIR) ..."
 	@-if test -f $(INS_SYSDEF_DIR)/tin.defaults ; then $(ECHO) "  ... backing up existing tin.defaults file to tin.defaults.$(INS_OLD_SUFFIX)" ; $(MV) $(INS_SYSDEF_DIR)/tin.defaults $(INS_SYSDEF_DIR)/tin.defaults.$(INS_OLD_SUFFIX) ; fi
 	@-if test -f $(INS_SYSDEF_DIR)/mime.types ; then $(ECHO) "  ... backing up existing mime.types file to mime.types.$(INS_OLD_SUFFIX)" ; $(MV) $(INS_SYSDEF_DIR)/mime.types $(INS_SYSDEF_DIR)/mime.types.$(INS_OLD_SUFFIX) ; fi
 	@$(INSTALL) -m 644 $(DOCDIR)/tin.defaults $(INS_SYSDEF_DIR)/tin.defaults
 	@$(INSTALL) -m 644 $(DOCDIR)/mime.types $(INS_SYSDEF_DIR)/mime.types
 
 uninstall_sysdefs:
-	@$(ECHO) "Uninstalling system-wide defaults in $(INS_SYSDEF_DIR)..."
+	@$(ECHO) "Uninstalling system-wide defaults in $(INS_SYSDEF_DIR) ..."
 	@-$(RM) -f $(INS_SYSDEF_DIR)/tin.defaults
 	@-$(RM) -f $(INS_SYSDEF_DIR)/mime.types
 
+install_helpers: $(DESTDIR)$(INS_BINARY_DIR) $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)
+	@$(ECHO) "Installing helper applications ..."
+	@-if test ! -f $(DESTDIR)$(INS_BINARY_DIR)/url_handler.sh ; then $(INSTALL) -m 755 $(TOLDIR)/url_handler.sh $(DESTDIR)$(INS_BINARY_DIR)/url_handler.sh ; fi
+	@-if test ! -f $(DESTDIR)$(INS_BINARY_DIR)/metamutt ; then $(INSTALL) -m 755 $(TOLDIR)/metamutt $(DESTDIR)$(INS_BINARY_DIR)/metamutt ; fi
+	@$(INSTALL) -m 755 $(TOLDIR)/w2r.pl $(DESTDIR)$(INS_BINARY_DIR)/w2r.pl
+	@$(INSTALL) -m 755 $(TOLDIR)/opt-case.pl $(DESTDIR)$(INS_BINARY_DIR)/opt-case.pl
+	@$(INSTALL) -m 444 $(DOCDIR)/w2r.pl.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/w2r.pl.$(INS_MANUAL_EXT)
+	@$(INSTALL) -m 444 $(DOCDIR)/opt-case.pl.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/opt-case.pl.$(INS_MANUAL_EXT)
+
+uninstall_helpers:
+	@$(ECHO) "Removing helper applications ..."
+	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/w2r.pl
+	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/opt-case.pl
+	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/w2r.pl.$(INS_MANUAL_EXT)
+	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/opt-case.pl.$(INS_MANUAL_EXT)
+
 install: $(DESTDIR)$(INS_BINARY_DIR)
 	@$(MAKE) all
-	@$(ECHO) "Installing $(EXE) v$(VER) to $(DESTDIR)$(INS_BINARY_DIR)..."
+	@$(ECHO) "Installing $(EXE) v$(VER) to $(DESTDIR)$(INS_BINARY_DIR) ..."
 	@$(INSTALL) -s $(BINDIR)/$(EXE) $(DESTDIR)$(INS_BINARY_DIR)/$(EXE)
 	@( $(CD) $(DESTDIR)$(INS_BINARY_DIR) && $(RM) -f r$(EXE) && $(LN) $(EXE) r$(EXE) )
+	@$(MAKE) install_helpers
 	@$(MAKE) install_manpage
 	@$(MAKE) install_nls
 
 uninstall:
-	@$(ECHO) "Uninstalling $(EXE) in $(DESTDIR)$(INS_BINARY_DIR)..."
+	@$(ECHO) "Uninstalling $(EXE) in $(DESTDIR)$(INS_BINARY_DIR) ..."
 	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/$(EXE)
 	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/r$(EXE)
+	@$(MAKE) uninstall_helpers
 	@$(MAKE) uninstall_manpage
 	@$(MAKE) uninstall_nls
 
@@ -361,28 +379,28 @@ uninstall_nls:
 	@-if test -r ../po/Makefile ; then $(ECHO) "Uninstalling NLS-files" ; $(CD) ../po/ && $(MAKE) uninstall ; fi
 
 tags:
-	@$(ECHO) "Generating tags (results in ./tags)..."
+	@$(ECHO) "Generating tags (results in ./tags) ..."
 	@-$(RM) -f tags
 	@$(TAGS) $(HFILES) $(CFILES)
 
 TAGS:
-	@$(ECHO) "Generating emacs tags (results in ./TAGS)..."
+	@$(ECHO) "Generating emacs tags (results in ./TAGS) ..."
 	@-$(RM) -f TAGS
 	@$(ETAGS) $(HFILES) $(CFILES)
 
 lint:	$(CFILES) $(OBJDIR)/parsdate.c tincfg.h
-	@$(ECHO) "Linting source (results in ./LINT)..."
+	@$(ECHO) "Linting source (results in ./LINT) ..."
 	@$(LINT) $(LINTFLAGS) -DNNTP_ABLE `/bin/ls $(CFILES)|sed -e 's/\.y/.c/'` $(LIBS) > LINT
 
 clean:
-	@$(ECHO) "Cleaning..."
+	@$(ECHO) "Cleaning ..."
 	@-$(RM) -f $(OFILES)
 	@-$(RM) -f $(OBJDIR)/parsdate.c
 	@-$(RM) -f LINT *.ln *.out
 	@-$(RM) -f makecfg$(EXEEXT) makecfg.o tincfg.h
 	@-$(RM) -f core *~
 	@-$(RM) -f $(EXE)
-@PCREDIR_MAKE@	@-if test -r ../pcre/Makefile ; then $(CD) ../pcre && $(ECHO) "Cleaning Philip Hazel's Perl-compatible regular expressions library..." && $(MAKE) @cf_cv_makeflags@ clean ; fi
+@PCREDIR_MAKE@	@-if test -r ../pcre/Makefile ; then $(CD) ../pcre && $(ECHO) "Cleaning Philip Hazel's Perl-compatible regular expressions library ..." && $(MAKE) @cf_cv_makeflags@ clean ; fi
 @MSG_DIR_MAKE@	@-if test -r ../po/Makefile ; then $(CD) ../po && $(MAKE) @cf_cv_makeflags@ $@ ; fi
 @INTLDIR_MAKE@	@-if test -r ../intl/Makefile ; then $(CD) ../intl && $(MAKE) @cf_cv_makeflags@ $@ ; fi
 
@@ -392,7 +410,7 @@ dirty:
 
 distclean \
 clobber :: clean
-	@$(ECHO) "Clobbering..."
+	@$(ECHO) "Clobbering ..."
 	@-$(RM) -f $(OFILES) $(BINDIR)/$(EXE) tags TAGS LINT cflow.$(PROJECT)
 
 distclean ::
@@ -400,15 +418,15 @@ distclean ::
 @MSG_DIR_MAKE@	@-$(CD) ../po && $(MAKE) @cf_cv_makeflags@ $@
 
 cflow:
-	@$(ECHO) "Creating cflow for $(PROJECT)..."
+	@$(ECHO) "Creating cflow for $(PROJECT) ..."
 @PCREDIR_MAKE@	@$(CFLOW) -I$(INCDIR) -I$(SRCDIR) -I../pcre $(CFILES) > cflow.$(PROJECT)
 
 cscope:
-	@$(ECHO) "Creating cscope database $(PROJECT)..."
+	@$(ECHO) "Creating cscope database $(PROJECT) ..."
 	@$(CSCOPE) $(ALL_FILES)
 
 canlock:
-	@$(ECHO) "Building libcanlock..."
+	@$(ECHO) "Building libcanlock ..."
 	@$(CD) ../libcanlock && ./Build
 
 TIN_DEP	= \
@@ -420,13 +438,12 @@ TIN_DEP	= \
 	$(INCDIR)/nntplib.h \
 	$(INCDIR)/proto.h
 
-
 @PCREDIR_MAKE@../pcre/$(PRELIB)pcre.a:
-@PCREDIR_MAKE@	@$(ECHO) "Building Philip Hazel's Perl regular expressions library..."
+@PCREDIR_MAKE@	@$(ECHO) "Building Philip Hazel's Perl regular expressions library ..."
 @PCREDIR_MAKE@	@$(CD) ../pcre && $(MAKE) @cf_cv_makeflags@ $(PRELIB)pcre.a
 
 @INTLDIR_MAKE@@INTLLIBS@:
-@INTLDIR_MAKE@	@$(ECHO) "Building GNU gettext library..."
+@INTLDIR_MAKE@	@$(ECHO) "Building GNU gettext library ..."
 @INTLDIR_MAKE@	@$(CD) ../intl && $(MAKE) @cf_cv_makeflags@
 
 tincfg.h:			$(SRCDIR)/tincfg.tbl \
@@ -447,7 +464,8 @@ $(OBJDIR)/config.o:		$(SRCDIR)/config.c $(TIN_DEP) \
 				tincfg.h \
 				$(INCDIR)/menukeys.h \
 				$(INCDIR)/version.h
-$(OBJDIR)/curses.o:		$(SRCDIR)/curses.c $(TIN_DEP)
+$(OBJDIR)/curses.o:		$(SRCDIR)/curses.c $(TIN_DEP) \
+				$(INCDIR)/tnntp.h
 $(OBJDIR)/cook.o:		$(SRCDIR)/cook.c $(TIN_DEP) \
 				$(INCDIR)/rfc2046.h
 $(OBJDIR)/debug.o:		$(SRCDIR)/debug.c $(TIN_DEP)
@@ -459,7 +477,7 @@ $(OBJDIR)/filter.o:		$(SRCDIR)/filter.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
 $(OBJDIR)/getline.o:		$(SRCDIR)/getline.c $(TIN_DEP)
 $(OBJDIR)/global.o:		$(SRCDIR)/global.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h	
+				$(INCDIR)/menukeys.h
 $(OBJDIR)/group.o:		$(SRCDIR)/group.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
 $(OBJDIR)/hashstr.o:		$(SRCDIR)/hashstr.c $(TIN_DEP)
@@ -512,7 +530,8 @@ $(OBJDIR)/post.o:		$(SRCDIR)/post.c $(TIN_DEP) \
 				$(INCDIR)/version.h
 $(OBJDIR)/prompt.o:		$(SRCDIR)/prompt.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
-$(OBJDIR)/read.o:		$(SRCDIR)/read.c $(TIN_DEP)
+$(OBJDIR)/read.o:		$(SRCDIR)/read.c $(TIN_DEP) \
+				$(INCDIR)/tnntp.h
 $(OBJDIR)/refs.o:		$(SRCDIR)/refs.c $(TIN_DEP)
 $(OBJDIR)/regex.o:		$(SRCDIR)/regex.c $(TIN_DEP)
 $(OBJDIR)/rfc1524.o:		$(SRCDIR)/rfc1524.c $(TIN_DEP) \

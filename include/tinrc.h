@@ -92,6 +92,10 @@ struct t_config {
 	char maildir[PATH_LEN];				/* mailbox dir where = saves are stored */
 	char mail_address[HEADER_LEN];				/* user's mail address */
 	char mm_charset[LEN];				/* MIME charset: moved from rfc1522.c */
+#ifdef CHARSET_CONVERSION
+	char mm_local_charset[LEN];	/* local charset for displaying */
+	int mm_network_charset;			/* MIME charset */
+#endif /* CHARSET_CONVERSION */
 	char news_headers_to_display[LEN];	/* which headers to display */
 	char news_headers_to_not_display[LEN];	/* which headers to not display */
 	char news_quote_format[LEN];
@@ -226,4 +230,3 @@ struct t_config {
 };
 
 #endif /* !TINRC_H */
-

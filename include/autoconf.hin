@@ -160,12 +160,14 @@
 #	undef HAVE_ERRNO_H
 #	undef HAVE_FCNTL_H
 #	undef HAVE_GETOPT_H
+#	undef HAVE_ICONV_H
 #	undef HAVE_IOCTL_H
 #	undef HAVE_LIBC_H
 #	undef HAVE_LOCALE_H
 #	undef HAVE_MALLOC_H
 #	undef HAVE_NCURSES_H		/* obsolete versions of ncurses */
 #	undef HAVE_NCURSES_NCURSES_H
+#	undef HAVE_NET_SOCKET_H		/* __BEOS__ */
 #	undef HAVE_NETDB_H
 #	undef HAVE_NETINET_IN_H
 #	undef HAVE_NETLIB_H
@@ -215,6 +217,7 @@
 #	undef HAVE_ATOL
 #	undef HAVE_BCOPY
 #	undef HAVE_CHMOD
+#	undef HAVE_CLOSESOCKET		/* __BEOS__ */
 #	undef HAVE_FDOPEN
 #	undef HAVE_FORK
 #	undef HAVE_FTIME
@@ -601,5 +604,7 @@
 #	undef HAVE_SYS_TYPES_H
 
 #	undef HAVE_TMPFILE
+
+#	undef HAVE_ICONV
 
 #endif /* !TIN_AUTOCONF_H */

@@ -311,10 +311,10 @@ read_filter_file (
 		case 'g':
 			if (match_string (buf + 1, "roup=", scope, sizeof (scope))) {
 #ifdef DEBUG
-if (debug) {
-	my_printf ("scope=[%s] num=[%d]\n", scope, glob_filter.num);
-	my_flush ();
-}
+				if (debug) {
+					my_printf ("scope=[%s] num=[%d]\n", scope, glob_filter.num);
+					my_flush ();
+				}
 #endif /* DEBUG */
 				arr_num = &glob_filter.num;
 				arr_max = &glob_filter.max;
@@ -408,10 +408,10 @@ if (debug) {
 		case 's':
 			if (match_string (buf + 1, "cope=", scope, sizeof (scope))) {
 #ifdef DEBUG
-if (debug) {
-	my_printf ("scope=[%s] num=[%d]\n", scope, glob_filter.num);
-	my_flush ();
-}
+				if (debug) {
+					my_printf ("scope=[%s] num=[%d]\n", scope, glob_filter.num);
+					my_flush ();
+				}
 #endif /* DEBUG */
 				arr_num = &glob_filter.num;
 				arr_max = &glob_filter.max;
@@ -438,10 +438,10 @@ if (debug) {
 					arr_ptr[i].subj = my_strdup (subj);
 
 #ifdef DEBUG
-if (debug) {
-	my_printf ("6. buf=[%s]  Gsubj=[%s]\n", arr_ptr[i].subj, glob_filter.filter[i].subj);
-	my_flush ();
-}
+				if (debug) {
+					my_printf ("6. buf=[%s]  Gsubj=[%s]\n", arr_ptr[i].subj, glob_filter.filter[i].subj);
+					my_flush ();
+				}
 #endif /* DEBUG */
 				break;
 			}
@@ -452,10 +452,10 @@ if (debug) {
 			if (match_string (buf + 1, "core=", scbuf, PATH_LEN)) {
 				score = atoi(scbuf);
 #ifdef DEBUG
-if (debug) {
-	my_printf ("score=[%d]\n", score);
-	my_flush();
-}
+				if (debug) {
+					my_printf ("score=[%d]\n", score);
+					my_flush();
+				}
 #endif /* DEBUG */
 				if (arr_ptr && !expired_time) {
 					if (score > SCORE_MAX)
@@ -479,10 +479,10 @@ if (debug) {
 		case 't':
 			if (match_integer (buf + 1, "ype=", &type, 1)) {
 #ifdef DEBUG
-if (debug) {
-	my_printf ("type=[%d][%s]\n", type, (!type ? "KILL" : "SELECT"));
-	my_flush ();
-}
+				if (debug) {
+					my_printf ("type=[%d][%s]\n", type, (!type ? "KILL" : "SELECT"));
+					my_flush ();
+				}
 #endif /* DEBUG */
 				if (arr_ptr) {
 					arr_ptr[i].type = (unsigned) type;
@@ -495,10 +495,10 @@ if (debug) {
 					arr_ptr[i].time = (time_t) secs;
 					if (secs && current_secs > (time_t) secs) {
 #ifdef DEBUG
-if (debug) {
-	my_printf ("EXPIRED  secs=[%lu]  current_secs=[%lu]\n", (unsigned long int) secs, (unsigned long int) current_secs);
-	my_flush ();
-}
+						if (debug) {
+							my_printf ("EXPIRED  secs=[%lu]  current_secs=[%lu]\n", (unsigned long int) secs, (unsigned long int) current_secs);
+							my_flush ();
+						}
 #endif /* DEBUG */
 						(*arr_num)--;
 						expired_time = TRUE;
@@ -769,9 +769,9 @@ get_choice (
 	} while (ch != '\n' && ch != '\r' && ch != ESC);
 
 	if (ch == ESC)
-		return (-1);
+		return -1;
 
-	return (i);
+	return i;
 }
 
 static const char *ptr_filter_lines;

@@ -57,6 +57,7 @@ static TCP *nntp_wr_fp = NULL;
 		s_fclose (nntp_rd_fp);			\
 	nntp_rd_fp = nntp_wr_fp = NULL;
 
+
 /*
  * Return the actual fd in use for the nntp read-side socket
  * This is a bit of a leak of internal state, but it's use is very
@@ -69,12 +70,14 @@ get_nntp_fp (
 	return (fp == FAKE_NNTP_FP ? nntp_rd_fp : fp);
 }
 
+
 FILE *
 get_nntp_wr_fp (
 	FILE *fp)
 {
 	return (fp == FAKE_NNTP_FP ? nntp_wr_fp : fp);
 }
+
 
 /*
  * getserverbyfile(file)
@@ -91,7 +94,6 @@ get_nntp_wr_fp (
  *
  *	Side effects: None.
  */
-
 char *
 getserverbyfile (
 	const char *file)
@@ -166,6 +168,7 @@ getserverbyfile (
 	return (char *) 0;	/* No entry */
 }
 
+
 /*
  * server_init  Get a connection to the remote server.
  *
@@ -181,7 +184,6 @@ getserverbyfile (
  *			for reading and writing to server.
  *			"text" is updated to contain the rest of response string from server
  */
-
 #ifdef NNTP_ABLE
 int
 server_init (
@@ -227,7 +229,7 @@ server_init (
 #	ifndef VMS
 	/*
 	 * Now we'll make file pointers (i.e., buffered I/O) out of
-	 * the socket file descriptor.  Note that we can't just
+	 * the socket file descriptor. Note that we can't just
 	 * open a fp for reading and writing -- we have to open
 	 * up two separate fp's, one for reading, one for writing.
 	 */
@@ -377,7 +379,7 @@ get_tcp_socket (
 
 	t_free((char *)callptr, T_CALL);
 
-	if (ioctl (s,  I_POP,  (char *) 0) < 0) {
+	if (ioctl (s, I_POP, (char *) 0) < 0) {
 		perror ("I_POP(timod)");
 		t_close (s);
 		return (-EPROTO);
@@ -403,7 +405,7 @@ get_tcp_socket (
 	static char namebuf[256];
 
 #			ifdef HAVE_GETSERVBYNAME
-	if ((sp = (struct servent *) getservbyname (service, "tcp")) ==  NULL) {
+	if ((sp = (struct servent *) getservbyname (service, "tcp")) == NULL) {
 		my_fprintf (stderr, _("%s/tcp: Unknown service.\n"), service); /* FIXME: -> lang.c */
 		return (-EHOSTUNREACH);
 	}
@@ -451,9 +453,9 @@ get_tcp_socket (
 #		endif /* !EXCELAN */
 
 	/*
-	 * The following is kinda gross.  The name server under 4.3
+	 * The following is kinda gross. The name server under 4.3
 	 * returns a list of addresses, each of which should be tried
-	 * in turn if the previous one fails.  However, 4.2 hostent
+	 * in turn if the previous one fails. However, 4.2 hostent
 	 * structure doesn't have this list of addresses.
 	 * Under 4.3, h_addr is a #define to h_addr_list[0].
 	 * We use this to figure out whether to include the NS specific
@@ -554,9 +556,10 @@ get_tcp_socket (
 #			endif /* !EXCELAN */
 #		endif /* !h_addr */
 #	endif /* !TLI */
-	return (s);
+	return s;
 }
 #endif /* NNTP_ABLE && !INET6 */
+
 
 #if defined(NNTP_ABLE) && defined(INET6)
 /*
@@ -623,9 +626,9 @@ get_tcp6_socket (
 		freeaddrinfo(res0);
 	if (err < 0) {
 		my_fprintf (stderr, _("\nsocket or connect problem\n")); /* FIXME: -> lang.c */
-		return (-1);
+		return -1;
 	}
-	return(s);
+	return s;
 }
 #endif /* NNTP_ABLE && INET6 */
 
@@ -660,7 +663,7 @@ get_dnet_socket (
 		case 1:
 			node = area;
 			area = 0;
-			/* FALLTHROUGH  */
+			/* FALLTHROUGH */
 		case 2:
 			node += area*1024;
 			sdn.sdn_add.a_len = 2;
@@ -694,12 +697,12 @@ get_dnet_socket (
 	if (connect (s, (struct sockaddr *) &sdn, sizeof (sdn)) < 0) {
 		nerror ("connect");
 		close (s);
-		return (-1);
+		return -1;
 	}
 
-	return (s);
+	return s;
 #	else
-	return (-1);
+	return -1;
 #	endif /* NNTP_ABLE */
 }
 #endif /* DECNET */
@@ -708,7 +711,6 @@ get_dnet_socket (
 /*
  * u_put_server -- send data to the server. Do not flush output.
  */
-
 #ifndef VMS
 #	ifdef NNTP_ABLE
 void
@@ -733,8 +735,8 @@ u_put_server (
  *			Closes connection if things are not right.
  *
  *	Note:	This routine flushes the buffer each time
- *			it is called.  For large transmissions
- *			(i.e., posting news) don't use it.  Instead,
+ *			it is called. For large transmissions
+ *			(i.e., posting news) don't use it. Instead,
  *			do the fprintf's yourself, and then a final
  *			fflush.
  */
@@ -754,6 +756,7 @@ put_server (
 	(void) s_flush (nntp_wr_fp);
 }
 #	endif /* NNTP_ABLE */
+
 
 /*
  * Reconnect to server after a timeout, reissue last command to
@@ -893,6 +896,7 @@ close_server (
 }
 #	endif /* NNTP_ABLE */
 #endif /* !VMS */
+
 
 #ifdef DEBUG
 /*

@@ -57,8 +57,12 @@
 int cLINES;
 int cCOLS;
 
-#ifdef HAVE_XCURSES
-static int vwprintw(WINDOW *w, char *fmt, va_list ap)
+
+#	ifdef HAVE_XCURSES
+static int vwprintw(
+	WINDOW *w,
+	char *fmt,
+	va_list ap)
 {
 	char buffer[BUFSIZ];	/* FIXME */
 	char *string = buffer;
@@ -76,24 +80,28 @@ static int vwprintw(WINDOW *w, char *fmt, va_list ap)
 	}
 	return code;
 }
-#endif
+#	endif /* HAVE_XCURSES */
+
 
 /*
  * Most of the logic corresponding to the termcap version is done in InitScreen.
  */
-void setup_screen (void)
+void setup_screen (
+	void)
 {
 	cmd_line = FALSE;
-#ifdef HAVE_COLOR
+#	ifdef HAVE_COLOR
 	bcol(tinrc.col_back);
-#endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
 	scrollok(stdscr, TRUE);
 	set_win_size (&cLINES, &cCOLS);
 }
 
+
 /*
  */
-int InitScreen (void)
+int InitScreen (
+	void)
 {
 #	ifdef NCURSES_VERSION
 #		ifdef USE_TRACE
@@ -138,7 +146,8 @@ int InitScreen (void)
 
 /*
  */
-void InitWin(void)
+void InitWin(
+	void)
 {
 	TRACE(("InitWin"));
 	Raw(TRUE);
@@ -146,9 +155,11 @@ void InitWin(void)
 	set_keypad_on();
 }
 
+
 /*
  */
-void EndWin(void)
+void EndWin(
+	void)
 {
 	TRACE(("EndWin (%d)", cmd_line));
 	if (!cmd_line) {
@@ -157,6 +168,7 @@ void EndWin(void)
 		cmd_line = TRUE;
 	}
 }
+
 
 static int _inraw;
 
@@ -176,9 +188,11 @@ void Raw(
 	}
 }
 
+
 /*
  */
-int RawState(void)
+int RawState(
+	void)
 {
 	return _inraw;
 }
@@ -186,38 +200,43 @@ int RawState(void)
 
 /*
  */
-void StartInverse(void)
+void StartInverse(
+	void)
 {
 	if (tinrc.inverse_okay) {
-#ifdef HAVE_COLOR
+#	ifdef HAVE_COLOR
 		if (use_color) {
 			bcol(tinrc.col_invers_bg);
 			fcol(tinrc.col_invers_fg);
 		} else
-#endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
 		{
 			attrset(A_REVERSE);
 		}
 	}
 }
 
-static int isInverse(void)
+
+static int isInverse(
+	void)
 {
-#ifdef HAVE_COLOR
+#	ifdef HAVE_COLOR
 	if (use_color) {
 		short pair = PAIR_NUMBER(getattrs(stdscr));
 		short fg, bg;
 		pair_content(pair, &fg, &bg);
 		return (fg == tinrc.col_invers_fg) && (bg == tinrc.col_invers_bg);
 	}
-#endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
 
 	return (getattrs(stdscr) & A_REVERSE);
 }
 
+
 /*
  */
-void ToggleInverse(void)
+void ToggleInverse(
+	void)
 {
 	if (isInverse())
 		EndInverse();
@@ -225,15 +244,17 @@ void ToggleInverse(void)
 		StartInverse();
 }
 
+
 /*
  */
-void EndInverse(void)
+void EndInverse(
+	void)
 {
 	if (tinrc.inverse_okay && !cmd_line) {
-#ifdef HAVE_COLOR
+#	ifdef HAVE_COLOR
 		fcol(tinrc.col_normal);
 		bcol(tinrc.col_back);
-#endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
 		attroff(A_REVERSE);
 	}
 }
@@ -241,20 +262,42 @@ void EndInverse(void)
 
 /*
  */
-void cursoron (void) { if (!cmd_line) curs_set(1); }
+void cursoron (
+	void)
+{
+	if (!cmd_line)
+		curs_set(1);
+}
+
 
 /*
  */
-void cursoroff (void) { if (!cmd_line) curs_set(0); }
+void cursoroff (
+	void)
+{
+	if (!cmd_line)
+		curs_set(0);
+}
 
 
 /*
  */
-void set_keypad_on (void) { if (!cmd_line) keypad(stdscr, TRUE); }
+void set_keypad_on (
+	void)
+{
+	if (!cmd_line)
+		keypad(stdscr, TRUE);
+}
+
 
 /*
  */
-void set_keypad_off (void) { if (!cmd_line) keypad(stdscr, FALSE); }
+void set_keypad_off (
+	void)
+{
+	if (!cmd_line)
+		keypad(stdscr, FALSE);
+}
 
 
 /*
@@ -262,7 +305,8 @@ void set_keypad_off (void) { if (!cmd_line) keypad(stdscr, FALSE); }
  * as well as when we enable/disable the mousemask.
  */
 void
-set_xclick_on (void)
+set_xclick_on (
+	void)
 {
 #	ifdef NCURSES_MOUSE_VERSION
 	if (tinrc.use_mouse)
@@ -272,15 +316,18 @@ set_xclick_on (void)
 #	endif /* NCURSES_MOUSE_VERSION */
 }
 
+
 /*
  */
 void
-set_xclick_off (void)
+set_xclick_off (
+	void)
 {
 #	ifdef NCURSES_MOUSE_VERSION
 	(void) mousemask(0, (mmask_t *)0);
 #	endif /* NCURSES_MOUSE_VERSION */
 }
+
 
 void
 MoveCursor(
@@ -323,20 +370,20 @@ ReadCh(
 	if (cmd_line)
 		ch = cmdReadCh();
 	else {
-#if 0
+#	if 0
 again:
-#endif /* 0 */
+#	endif /* 0 */
 		allow_resize (TRUE);
 		ch = getch();
 		allow_resize (FALSE);
 		if (need_resize) {
 			handle_resize ((need_resize == cRedraw) ? TRUE : FALSE);
-#if 0
+#	if 0
 			if (need_resize == cRedraw) {
 				need_resize = cNo;
 				goto again;				/* Shouldn't fall through if doing resize */
 			}
-#endif /* 0 */
+#	endif /* 0 */
 			need_resize = cNo;
 		}
 		if (ch == KEY_BACKSPACE)
@@ -349,6 +396,7 @@ again:
 	TRACE(("ReadCh(%s)", tin_tracechar(ch)));
 	return ch;
 }
+
 
 void
 my_printf(
@@ -369,6 +417,7 @@ my_printf(
 	}
 	va_end(ap);
 }
+
 
 void
 my_fprintf(
@@ -392,6 +441,7 @@ my_fprintf(
 	va_end(ap);
 }
 
+
 void
 my_fputc(
 	int ch,
@@ -406,6 +456,7 @@ my_fputc(
 		addch ((unsigned char) ch);
 	}
 }
+
 
 void
 my_fputs(
@@ -424,7 +475,9 @@ my_fputs(
 	}
 }
 
-void my_erase(void)
+
+void my_erase(
+	void)
 {
 	TRACE(("my_erase"));
 
@@ -437,11 +490,12 @@ void my_erase(void)
 		 * the same background colors is to reset them here.
 		 */
 		refresh();
-#ifdef HAVE_COLOR
+#	ifdef HAVE_COLOR
 		refresh_color();
-#endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
 	}
 }
+
 
 void
 my_fflush(
@@ -455,17 +509,20 @@ my_fflush(
 	}
 }
 
+
 /*
  * Needed if non-curses output has corrupted curses understanding of the screen
  */
 void
-my_retouch(void)
+my_retouch(
+	void)
 {
 	TRACE(("my_retouch"));
 	if (!cmd_line) {
 		wrefresh(curscr);
 	}
 }
+
 
 char *
 screen_contents(
@@ -484,6 +541,7 @@ screen_contents(
 	TRACE(("...screen_contents(%d,%d) %s", y, x, _nc_visbuf(buffer)));
 	return buffer;
 }
+
 
 void
 write_line(

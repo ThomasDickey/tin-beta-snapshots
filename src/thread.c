@@ -823,7 +823,7 @@ fixup_thread (
 
 
 /*
- *  Return the number of unread articles there are within a thread
+ * Return the number of unread articles there are within a thread
  */
 int
 new_responses (
@@ -842,16 +842,16 @@ new_responses (
 
 
 /*
- *  Which base note (an index into base[]) does a respnum
- *  (an index into arts[]) correspond to?
+ * Which base note (an index into base[]) does a respnum (an index into
+ * arts[]) correspond to?
  *
- *  In other words, base[] points to an entry in arts[] which is
- *  the head of a thread, linked with arts[].thread.  For any q: arts[q],
- *  find i such that base[i]->arts[n]->arts[o]->...->arts[q]
+ * In other words, base[] points to an entry in arts[] which is the head of
+ * a thread, linked with arts[].thread. For any q: arts[q], find i such that
+ * base[i]->arts[n]->arts[o]->...->arts[q]
  *
- *  Note that which_thread() can return -1 if in show_read_only mode and
- *  the article of interest has been read as well as all other articles in
- *  the thread,  thus resulting in no base[] entry for it.
+ * Note that which_thread() can return -1 if in show_read_only mode and the
+ * article of interest has been read as well as all other articles in the
+ * thread, thus resulting in no base[] entry for it.
  */
 int
 which_thread (
@@ -864,9 +864,10 @@ which_thread (
 			if (j == n)
 #ifdef JUST_TESTING
 			{
-				/* We can much more rapidly locate the topmost available parent than
-				 * the brute force method above. This is definitely the Right Way to
-				 * go in 1.5
+				/*
+				 * We can much more rapidly locate the topmost available parent
+				 * than the brute force method above. This is definitely the
+				 * Right Way to go in 1.5
 				 */
 				int val = n;
 				struct t_msgid *ptr;
@@ -892,7 +893,7 @@ which_thread (
 
 
 /*
- *  Find how deep in its' thread arts[n] is.  Start counting at zero
+ * Find how deep in its' thread arts[n] is. Start counting at zero
  */
 int
 which_response (
@@ -916,8 +917,8 @@ which_response (
 
 
 /*
- *  Given an index into base[], find the number of responses for
- *  that basenote
+ * Given an index into base[], find the number of responses for
+ * that basenote
  */
 int
 num_of_responses (
@@ -982,7 +983,7 @@ get_score_of_thread (
 		score /= j;
 #  endif /* THREAD_WEIGHT */
 #endif /* THREAD_SUM */
-	return (score);
+	return score;
 }
 
 
@@ -1039,13 +1040,13 @@ stat_thread (
 	}
 	sbuf->score = get_score_of_thread((int) base[n]);
 	sbuf->art_mark = (sbuf->inrange ? tinrc.art_marked_inrange : (sbuf->deleted ? tinrc.art_marked_deleted : (sbuf->selected_unread ? tinrc.art_marked_selected : (sbuf->unread ? (tinrc.recent_time && (time((time_t) 0) - sbuf->time) < (tinrc.recent_time * DAY)) ? tinrc.art_marked_recent : tinrc.art_marked_unread : (sbuf->seen ? tinrc.art_marked_return : tinrc.art_marked_read)))));
-	return(sbuf->total);
+	return sbuf->total;
 }
 
 
 /*
- *  Find the next response to arts[n].  Go to the next basenote if there
- *  are no more responses in this thread
+ * Find the next response to arts[n]. Go to the next basenote if there
+ * are no more responses in this thread
  */
 int
 next_response (
@@ -1066,8 +1067,8 @@ next_response (
 
 
 /*
- *  Given a respnum (index into arts[]), find the respnum of the
- *  next basenote
+ * Given a respnum (index into arts[]), find the respnum of the
+ * next basenote
  */
 int
 next_thread (
@@ -1084,9 +1085,9 @@ next_thread (
 
 
 /*
- *  Find the previous response.  Go to the last response in the previous
- *  thread if we go past the beginning of this thread.
- *  Return -1 if we are are the start of the group
+ * Find the previous response. Go to the last response in the previous
+ * thread if we go past the beginning of this thread.
+ * Return -1 if we are are the start of the group
  */
 int
 prev_response (
@@ -1129,9 +1130,9 @@ find_response (
 
 
 /*
- *  Find the next unread response to art[n] in this group. If no response is found
- *  from current point to the end restart from beginning of articles. If no more
- *  responses can be found, return -1
+ * Find the next unread response to art[n] in this group. If no response is
+ * found from current point to the end restart from beginning of articles.
+ * If no more responses can be found, return -1
  */
 int
 next_unread (
@@ -1159,7 +1160,7 @@ next_unread (
 
 
 /*
- *  Find the previous unread response in this thread
+ * Find the previous unread response in this thread
  */
 int
 prev_unread (
@@ -1199,8 +1200,8 @@ has_sibling (
 
 /*
  * mutt-like subject according. by sjpark@sparcs.kaist.ac.kr
- * string in prefix will be overwritten up to length len
- * prefix will always be terminated with \0
+ * string in prefix will be overwritten up to length len prefix will always
+ * be terminated with \0
  * make sure prefix is at least len+1 bytes long (to hold the terminating
  * null byte)
  */
@@ -1275,7 +1276,7 @@ thread_catchup(
 {
 	char buf[LEN];
 	int i, n;
-	int yn = 1;
+	int pyn = 1;
 
 	/* Find first unread art in this thread */
 	n = ((thdmenu.curr == 0) ? thread_respnum : find_response (thread_basenote, 0));
@@ -1287,23 +1288,23 @@ thread_catchup(
 /* FIXME do some NLS/snprintf work here - see equivalent code in group_catchup() */
 	if (i != -1) {				/* still unread arts in this thread */
 		sprintf(buf, _(txt_mark_thread_read), (ch == iKeyThreadCatchupNextUnread) ? _(txt_enter_next_thread) : "");
-		if (!tinrc.confirm_action || (tinrc.confirm_action && (yn = prompt_yn (cLINES, buf, TRUE)) == 1))
+		if (!tinrc.confirm_action || (tinrc.confirm_action && (pyn = prompt_yn (cLINES, buf, TRUE)) == 1))
 			thd_mark_read (&CURR_GROUP, base[thread_basenote]);
 	}
 
 	switch (ch) {
 		case iKeyThreadCatchup:				/* 'c' */
-			if (yn == 1)
+			if (pyn == 1)
 				return GRP_NEXT;
 			break;
 
 		case iKeyThreadCatchupNextUnread:	/* 'C' */
-			if (yn == 1)
+			if (pyn == 1)
 				return GRP_NEXTUNREAD;
 			break;
 
 		case iKeyCatchupLeft:			/* <- thread catchup on exit */
-			switch (yn) {
+			switch (pyn) {
 				case -1:				/* ESC from prompt, stay in group */
 					break;
 				case 1:					/* We caught up - advance group */
@@ -1327,7 +1328,7 @@ thread_catchup(
  * Return:
  *	<0 to quit to group menu
  *	 0 to stay in thread menu
- *  >0 after normal exit from pager to return to previous menu level
+ * >0 after normal exit from pager to return to previous menu level
  */
 static int
 enter_pager(

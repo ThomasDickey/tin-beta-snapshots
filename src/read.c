@@ -40,6 +40,9 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
+#ifndef TNNTP_H
+#	include "tnntp.h"
+#endif /* !TNNTP_H */
 
 /*
  * The initial and expansion sizes to use for allocating read data
@@ -203,7 +206,7 @@ tin_read (
 		clear_message();
 		tin_errno = TIN_ABORT;
 		fflush(stdin);
-		return(NULL);
+		return NULL;
 	}
 
 	errno = 0;		/* To check errno after read, clear it here */
@@ -228,7 +231,7 @@ tin_read (
 #endif /* DEBUG */
 
 	if (ptr == 0)	/* End of data ? */
-		return(NULL);
+		return NULL;
 
 	/*
 	 * Was this only a partial read ?
@@ -281,7 +284,7 @@ tin_read (
 		offset = i;
 	}
 
-	return(buffer);
+	return buffer;
 }
 
 
@@ -344,7 +347,7 @@ tin_fgets (
 
 	if (tin_errno != 0) {
 		DEBUG_IO((stderr, _("Aborted read\n")));
-		return(NULL);
+		return NULL;
 	}
 
 	next = offset;
@@ -358,7 +361,7 @@ tin_fgets (
 		next += offset;
 
 		if (tin_errno != 0)
-			return(NULL);
+			return NULL;
 	}
 
 	/*
@@ -371,7 +374,7 @@ tin_fgets (
 		if (dynbuf[0] == '.') {			/* reduce leading .'s */
 			if (dynbuf[1] == '\0') {
 				DEBUG_IO((stderr, "tin_fgets (NULL)\n"));
-				return (NULL);
+				return NULL;
 			}
 			DEBUG_IO((stderr, "tin_fgets (%s)\n", dynbuf + 1));
 			return (dynbuf + 1);
@@ -381,7 +384,7 @@ tin_fgets (
 
 DEBUG_IO((stderr, "tin_fgets (%s)\n", (dynbuf) ? dynbuf : "NULL"));
 
-	return (dynbuf);
+	return dynbuf;
 }
 
 

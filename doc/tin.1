@@ -3,11 +3,11 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2001-07-18
+.\" Updated   : 2001-08-31
 .\" Notes     : still needs some work (but getting there ;)
 .\"
 .\"
-.TH tin 1 "July 18th, 2001" "1.5.9" "A Usenet newsreader"
+.TH tin 1 "August 31st, 2001" "1.5.10" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -90,6 +90,27 @@ dependent) or 'j' and 'k'. Use PgUp/PgDn (terminal dependent) or Ctrl-U and
 Ctrl-D to page up/down. Enter a newsgroup by pressing <RETURN>.
 .PP
 The <TAB> key enters the next newsgroup with unread articles.
+.\"
+.\"
+.SH "EXIT STATUS"
+Interactive mode:
+.TP 12
+.B 0
+Successful program execution.
+.TP
+.B 1
+Usage, syntax, configuration file or network error.
+.PP
+Batch mode (-Z):
+.TP 12
+.B 0
+No unread news
+.TP
+.B 1
+Usage, syntax, configuration file or network error.
+.TP
+.B 2
+Unread news
 .\"
 .\"
 .SH OPTIONS
@@ -216,8 +237,10 @@ is printed. An exit code 0 indicates no news, 1 that an error occurred and
 2 that new/unread news exists. Useful for writing scripts.
 .PP
 \fBtin\fP can also dynamically change its options by the 'M' menu command.
-Any changes are written to \fI$HOME/.tin/tinrc\fR. For more information see
-section GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES.
+Any changes are written to \fI${TIN_HOMEDIR-"$HOME"}/.tin/tinrc\fR. For
+more information see section GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE
+VARIABLES and
+.BR tin (5).
 .PP
 A list of groups can be specified after the other command line options. This
 can be useful if you wish to yank in or subscribe to a hand-picked subset of
@@ -235,10 +258,14 @@ read/unread status, then the command line groups will be gone. You can use
 .PP
 NB: With the ''\fB-n\fP'' flag, only unsubscribed groups in the
 \fI$HOME/.newsrc\fR file (or the newsrc-file given by the ''\fB-f\fP''
-command-line switch or via \fI$HOME/.tin/newsrctable\fR) can be matched.
+command-line switch or via \fI${TIN_HOMEDIR-"$HOME"}/.tin/newsrctable\fR)
+can be matched.
 .\"
 .\"
-.SH "NEWS ADMINISTRATION"
+.SH USAGE
+.\"
+.\"
+.SS "NEWS ADMINISTRATION"
 Maintaining Netnews on large networks of machines can be a pretty time
 consuming job as I discovered when I was given the job of maintaining our
 news system and news users.
@@ -252,7 +279,7 @@ must support the LIST SUBSCRIPTIONS command. It is part of the Common NNTP
 Extensions and all modern servers should understand it.
 .\"
 .\"
-.SH "SCREEN FORMAT"
+.SS "SCREEN FORMAT"
 \fBtin\fP has four separate levels of operation: Selection level,
 Group level, Thread level and Article level.
 .PP
@@ -277,18 +304,18 @@ This group is unsubscribed. To see only your subscribed groups use the 'r'
 or 'y' toggle keys.
 .TP
 .B M
-This is a moderated group. Any posts you make will have to be approved by the
-group administrator before it will be made public. \fBtin\fP will ask for
-confirmation before you post to a moderated group.
+This is a moderated group. Any posts you make will have to be approved by
+the group administrator before it will be made public. \fBtin\fP will ask
+for confirmation before you post to a moderated group.
 .TP
 .B N
 This is a new newsgroup which has been created since you last used
 \fBtin\fP. New newsgroups are not subscribed to by default (However, see
-the $\fBAUTOSUBSCRIBE\fP / $\fBAUTOUNSUBSCRIBE\fP environment variables). Subscribe to it
-in the normal way if you wish the group to continue to appear in your
-Selection Menu. Simply ignore new newsgroups and they will be gone the next
-time you start \fBtin\fP. You will have to yank in all the groups to find
-them in a later session.
+the $\fBAUTOSUBSCRIBE\fP / $\fBAUTOUNSUBSCRIBE\fP environment variables).
+Subscribe to it in the normal way if you wish the group to continue to
+appear in your Selection Menu. Simply ignore new newsgroups and they will be
+gone the next time you start \fBtin\fP. You will have to yank in all the
+groups to find them in a later session.
 .TP
 .B D
 This group no longer exists. If you no longer wish to see this group then
@@ -300,17 +327,17 @@ You may no longer make posts to this group. Often a group will be superseded
 by a more appropriately named one.
 .TP
 .B =
-This group has been renamed and you may no longer post to it. If you do, then
-you will receive an error from your newsserver telling you the correct group
-to post to.
+This group has been renamed and you may no longer post to it. If you do,
+then you will receive an error from your newsserver telling you the correct
+group to post to.
 .PP
 At the Group level the title contains the name of the group, the number
 of conversation threads, the threading-method, the total number of articles,
 the number of killed articles and the number of hot articles. i.e.,
 alt.sources (5T(B) 23A 0K 0H).
-It might also contain an R if your are in \fBshow_only_unread\fB mode and an M
-if the group is moderated. (The later does not work with the ''\fB-n\fP''
-command-line switch!).
+It might also contain an 'R' if your are in \fBshow_only_unread\fP mode and
+an 'M' if the group is moderated.
+(The later does not work with the ''\fB-n\fP'' command-line switch!).
 If a thread has unread articles in it it's marked with a '+' in font of the
 total number of articles in the thread.
 If a thread has hot articles in it (see also section FILTERING ARTICLES)
@@ -355,7 +382,7 @@ article-body
 .fi
 .\"
 .\"
-.SH "COMMON MOVING KEYS"
+.SS "COMMON MOVING KEYS"
 This table shows the common keys used for moving around all levels
 within \fBtin\fP.
 .RS
@@ -370,9 +397,10 @@ Line Up	\fBUp arrow\fP	\fBk\fP or \fB^P\fP
 Line Down	\fBDown arrow\fP	\fBj\fP or \fB^N\fP
 (1) also \fBg\fP in the article, config and help menus
 (2) also \fBG\fP in the article, config and help menus
-(3) When viewing the last page of an article, PgDn and SPACE will
-    optionally move to the next article. See the tinrc variables
-    \fBpgdn_goto_next\fP and \fBspace_goto_next_unread\fP for more information.
+(3) When viewing the last page of an article, PgDn and SPACE
+    will optionally move to the next article. See the tinrc
+    variables \fBpgdn_goto_next\fP and \fBspace_goto_next_unread\fP
+    for more information.
 .fi
 .RE
 .\"
@@ -981,7 +1009,9 @@ Reply through mail to the author of the current article with a copy of the
 article with all headers included.
 .TP
 .B ^G
-Perform PGP operations on article.
+Perform
+.BR pgp (1)
+operations on article.
 .TP
 .B ^H
 Toggles the display mode (raw including all headers vs. cooked)
@@ -1224,21 +1254,24 @@ Mark article as unread.
 Mark the current thread as unread.
 .\"--------------------------------------------------------------------
 .\"
-.SH "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES"
+.SS "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES"
 .\" FIXME - add missing descriptions
-At startup, \fBtin\fP reads in the configuration file. This contains a list
-of variables that can be used to configure the way \fBtin\fP works. If it
-exists, the global configuration file, \fI/usr/lib/news/tinrc\fR is read.
-After that, the users own configuration file is read from
-\fI$HOME/.tin/tinrc\fR. The global file is useful for distributing
-system-wide defaults to new users who have no private tinrc yet.
+At startup, \fBtin\fP reads in the configuration files (see also
+.BR tin (5)).
+They contain a list of variables that can be used to configure the way
+\fBtin\fP works. If it exists, the global configuration file,
+\fI${TIN_LIBDIR-"/usr/lib/news"}/tinrc\fR is read. After that, the users
+own configuration file is read from \fI${TIN_HOMEDIR-"$HOME"}/.tin/tinrc\fR.
+The global file is useful for distributing system-wide defaults to new users
+who have no private tinrc yet.
 .PP
 The variables are user configurable by editing
-\fI$HOME/.tin/tinrc\fR directly. Most of them can also be set in the
-GLOBAL OPTIONS MENU which is accessed by pressing 'M' at all
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/tinrc\fR directly. Most of them can also be
+set in the GLOBAL OPTIONS MENU which is accessed by pressing 'M' at all
 levels. It allows the user to customize the behaviour of \fBtin\fP. The
-options are saved to the file \fI$HOME/.tin/tinrc\fR when you exit \fBtin\fP
-so don't edit the file directly whilst \fBtin\fP is running.
+options are saved to the file \fI${TIN_HOMEDIR-"$HOME"}/.tin/tinrc\fR when
+you exit \fBtin\fP so don't edit the file directly whilst \fBtin\fP is
+running.
 .PP
 In the OPTIONS menu use the cursor keys in the usual way to move around.
 Use <CR> to 'open' the option you wish to change. You will need to enter
@@ -1251,7 +1284,8 @@ Use '\fBq\fP' to exit the OPTIONS menu and keep your changes.
 Use '\fBQ\fP' to exit without keeping your changes.
 .PP
 Here is a full list of all the available variables. The name in braces is
-the name of the corresponding setting in \fI$HOME/.tin/tinrc\fR.
+the name of the corresponding setting in
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/tinrc\fR.
 .TP 4
 .B Add posted articles to filter (add_posted_to_filter)
 If ON add posted articles to filter for highlighting follow-ups.
@@ -1630,7 +1664,7 @@ parameter and charset name in header encoding) in mail and news posting
 unless local charset/encoding needs to be converted into other
 charset/encoding as in case of EUC-KR which is converted to ISO-2022-KR if
 \fBmail_mime_encoding\fP is set to 7bit. Possible values include ISO-8859-X
-(where X is 1 to 10), EUC-JP, EUC-CN, EUC-KR, EUC-TW, Big5, Shift_JIS, and
+(where X is 1 to 16), EUC-JP, EUC-CN, EUC-KR, EUC-TW, Big5, Shift_JIS, and
 so forth.
 If \fBMIME_STRICT_CHARSET\fP is defined at the compile time, text in
 charset other than the value of this parameter is considered
@@ -1638,6 +1672,20 @@ not displayable and represented as '?'. Otherwise, all character
 sets are regarded as compatible with the display. If it's not set,
 the value of the environment variable $\fBMM_CHARSET\fP is used. US-ASCII
 or compile-time default is used in case neither of them is defined.
+.TP
+.B MM_LOCAL_CHARSET (mm_local_charset)
+Charset used for reading and displaying articles; replaces \fBmm_charset\fP.
+Conversion between \fBmm_local_charset\fP and \fBmm_network_charset\fP is
+done via
+.BR iconv (3),
+if this function is not available on your system this option is disabled.
+.TP
+.B MM_NETWORK_CHARSET (mm_network_charset)
+Charset used for posting and MIME headers; replaces \fBmm_charset\fP.
+Conversion between \fBmm_network_charset\fP and \fBmm_local_charset\fP is
+done via
+.BR iconv (3),
+if this function is not available on your system this option is disabled.
 .TP
 .B newnews
 These are internal timers used by \fBtin\fP to keep track of new newsgroups.
@@ -1917,8 +1965,13 @@ Default is OFF.
 .B Wildcard matching (wildcard)
 Allows you to select how \fBtin\fP matches strings. The default is 0 and
 uses the wildmat notation, which is how this has traditionally been handled.
-Setting this to 1 allows you to use full POSIX regular expressions. You
-will probably want to update your filter file if you use this regularly.
+Setting this to 1 allows you to use
+.BR perl (1)
+compatible regular expressions
+.BR pcre (3)
+(see also
+.BR perlre (1)).
+You will probably want to update your filter file if you use this regularly.
 NB: Newsgroup names will always be matched using the wildmat notation.
 .TP
 .B What to display instead of mark (word_h_display_marks)
@@ -1941,7 +1994,9 @@ answering to a crossposting to several groups with no ''Followup-To:'' set
 .SS "GROUP ATTRIBUTES"
 .\" FIXME - add missing descriptions
 \fBtin\fP allows certain attributes to be set on a per group basis. These
-group attributes are read from the file \fI$HOME/.tin/attributes\fR.
+group attributes are read from the file \fI$HOME/.tin/attributes\fR (see
+also
+.BR tin (5)).
 A later version will provide a menu interface to set all the attributes.
 At present you will have to edit the file with your editor.
 .PP
@@ -2086,7 +2141,7 @@ x_headers=Subject: test - ignore - no reply
 .RE
 .\"
 .\"
-.SH "FILTERING ARTICLES"
+.SS "FILTERING ARTICLES"
 .\" FIXME - add scoring description
 When there is a subject or an author which you are either very
 interested in, or find completely uninteresting, you can easily
@@ -2094,9 +2149,11 @@ instruct \fBtin\fP to \fIauto-select\fR or \fIauto-kill\fR articles
 that match \fIrules\fR that you specify. This can be anything from the name
 of the author to the number of lines in an article.
 .PP
-When \fBtin\fP starts up the user's killfile \fI$HOME/.tin/filter\fR is read.
-Each time a newsgroup is entered the rules are applied and articles killed
-or selected when they meet certain criteria.
+When \fBtin\fP starts up the user's killfile \fI$HOME/.tin/filter\fR /see
+also
+.BR tin (5))
+is read. Each time a newsgroup is entered the rules are applied and articles
+killed or selected when they meet certain criteria.
 .PP
 The degree to which rules are applied depend on the \fBkill_level\fP tinrc
 setting. By default killed articles will only be marked read. Adjust
@@ -2125,7 +2182,7 @@ abort the command and not save the kill description, edit the kill file
 or save the kill description.
 .\"
 .\"
-.SH "POSTING ARTICLES"
+.SS "POSTING ARTICLES"
 \fBtin\fP allows posting of articles, follow-up to already posted articles
 and replying direct through mail to the author of an article.
 .PP
@@ -2202,7 +2259,7 @@ to '>_'. The default can be changed by setting the tinrc variable
 to represent a space).
 .\"
 .\"
-.SH "MAILING PIPING PRINTING REPOSTING AND SAVING ARTICLES"
+.SS "MAILING PIPING PRINTING REPOSTING AND SAVING ARTICLES"
 The command interface to mail ('m'), pipe ('|'), print ('o'),
 repost ('x') and save ('s' and 'S') articles is the same for ease of use.
 .PP
@@ -2292,10 +2349,10 @@ Currently the only commands that understand ranges are 'K', 'z' and 'Z' at
 the Group level.
 .PP
 .SS "NEWSGROUP LISTS & WILDCARDS"
-Several places in \fBtin\fP allow you to specify a list of newsgroups. These include
-command line groups, (un)subscribe groups, the AUTO[UN]SUBSCRIBE mechanism.
-The scope= attributes file tag and the filter file group= tag also use the
-same syntax.
+Several places in \fBtin\fP allow you to specify a list of newsgroups. These
+include command line groups, (un)subscribe groups, the AUTO[UN]SUBSCRIBE
+mechanism. The scope= attributes file tag and the filter file group= tag
+also use the same syntax.
 \fBtin\fP interprets this variable similarly to
 .BR rn(1).
 It contains a list of patterns, separated by commas and possibly prefixed
@@ -2307,7 +2364,9 @@ Some examples:
 .sp
 Matches alt.config and everything in the 'news' hierarchy except news.test
 .PP
-See the explanation for the AUTOSUBSCRIBE variables for further examples.
+See the explanation for the $\fBAUTOSUBSCRIBE\fP variables for further
+examples.
+.\"
 .\"
 .SS SIGNATURES
 \fBtin\fP will recognize a signature in either \fI$HOME/.signature\fR or
@@ -2342,10 +2401,10 @@ your name, address etc. followed by the random sig. The fixed part of the
 random sig is read from the file \fI$HOME/.sigfixed\fR.
 .\"
 .\"
-.SH "TIPS AND TRICKS"
-\fBtin\fP can be pretty much be navigated by using the four cursor keys. The left
-arrow key goes up a level, the right arrow key goes down a level, the up arrow
-key goes up a line and the down arrow key goes down a line.
+.SS "TIPS AND TRICKS"
+\fBtin\fP can be pretty much be navigated by using the four cursor keys.
+The left arrow key goes up a level, the right arrow key goes down a level,
+the up arrow key goes up a line and the down arrow key goes down a line.
 .PP
 The following newsgroups provide useful information concerning news software:
 .in +.5i
@@ -2400,8 +2459,7 @@ clicked outside the list of articles.
 In the group selection menu, if the mouse is pointing at a group then:
 .TP 10
 left button
-moves to and selects the group pointed at,
-just like <CR>.
+moves to and selects the group pointed at, just like <CR>.
 .TP
 centre button
 quits the program, just like 'q'.
@@ -2412,8 +2470,7 @@ moves to the group pointed at.
 In the article menu, if the mouse is pointing at an article (or thread) then:
 .TP 10
 left button
-reads the article pointed at, just like <CR>,
-or the thread, just like 'l'.
+reads the article pointed at, just like <CR>, or the thread, just like 'l'.
 .TP
 centre button
 exits the menu, catching up on the group
@@ -2442,7 +2499,7 @@ and paste of
 but after one click of any button.
 .\"
 .\"
-.SH "INDEX FILES"
+.SS "INDEX FILES"
 If your news server supports NOV index files
 .BR newsoverview (5)
 (most modern installations will), then this section can be ignored.
@@ -2450,9 +2507,9 @@ If your news server supports NOV index files
 If your news server doesn't support NOV index files, \fBtin\fP will maintain
 an index for each newsgroup. Each user creates/updates his/her own index
 files that are stored in \fI$HOME/.tin/.news\fR. A good way to keep index
-files updated is by doing a \fBtin -U\fP that will update index files in
-the background while you are reading news in the foreground. You can also
-update index files via the system batcher cron with the ''\fB-u\fP'' option:
+files updated is by doing a \fBtin -U\fP that will update index files in the
+background while you are reading news in the foreground. You can also update
+index files via the system batcher cron with the ''\fB-u\fP'' option:
 .PP
 .RS
 .nf
@@ -2472,7 +2529,122 @@ If reading news remotely and updating index files locally, operation will be
 somewhat slower because the articles must be retrieved from the NNTP server.
 .\"
 .\"
-.SH "ENVIRONMENT VARIABLES"
+.SH FILES
+.\" TODO: mention .article[.$$], .cancel[.$$], .letter[.$$]?
+For a detailed description see
+.BR tin (5).
+.PP
+.IR $MAILCAPS
+.br
+.IR ${TIN_HOMEDIR-"$HOME"}/.mailcap
+.br
+.IR /etc/mailcap
+.br
+.IR /usr/etc/mailcap
+.br
+.IR /usr/local/etc/mailcap
+.br
+.IR /etc/mail/mailcap
+.PP
+
+.IR /etc/nntpserver
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.cancelsecret
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.mime.types
+.br
+.IR /etc/mime.types
+.br
+.IR /etc/tin/mime.types
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.newsauth
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.newsrc
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.oldnewsrc
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.signature
+.br
+.IR ${TIN_HOMEDIR-"$HOME"}/.Sig
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.sigfixed
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.tin/.inputhistory
+.PP
+
+.IR ${TIN_INDEX_MAILDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}/.mail/
+.PP
+
+.IR ${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}/.news/
+.PP
+
+.IR ${TIN_INDEX_SAVEDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}/.save/
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.tin/active.mail
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.tin/active.save
+.PP
+
+.IR ${TIN_LIBDIR-"/news/etc"}/attributes
+.br
+.IR ${TIN_HOMEDIR-"$HOME"}/.tin/attributes
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.tin/filter
+.PP
+
+.IR /etc/tin/keymap
+.br
+.IR ${TIN_HOMEDIR-"$HOME"}/.tin/keymap${${LC_ALL-"${LC_CTYPE-"${LC_MESSAGES-"$LANG"}"}"}:+".${LC_ALL-"${LC_CTYPE-"${LC_MESSAGES-"$LANG"}"}"}"}
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.tin/newsrctable
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.tin/posted
+.PP
+
+.IR ${TIN_HOMEDIR-"$HOME"}/.tin/postponed.articles
+.PP
+
+.IR ${TIN_LIBDIR-"/news/etc"}/tinrc
+.br
+.IR ${TIN_HOMEDIR-"$HOME"}/.tin/tinrc
+.PP
+
+.IR /etc/tin/tin.defaults
+.PP
+
+.IR /usr/local/share/locale/${LC_MESSAGES}/LC_MESSAGES/tin.mo
+.PP
+
+.IR ${TIN_ACTIVEFILE-"${TIN_LIBDIR-"/news/db"}/active"}
+.PP
+
+.IR ${TIN_LIBDIR-"/news/db"}/active.times
+.PP
+
+.IR ${TIN_LIBDIR-"/news/db"}/newsgroups
+.PP
+
+.IR ${TIN_LIBDIR-"/news/db"}/overview.fmt
+.PP
+
+.IR ${TIN_LIBDIR-"/news/db"}/subscriptions
+.PP
+.\"
+.\"
+.SH ENVIRONMENT
 .\" TODO: sort in a usefull order
 .TP
 .B TINRC
@@ -2503,25 +2675,26 @@ Define this variable if you do not want the \fI.save\fR directory in
 in \fI/tmp/.save\fR you would set $\fBTIN_INDEX_SAVEDIR\fP to \fI/tmp\fR.
 .TP
 .B TIN_LIBDIR
-Define this variable if you want to override the \fBNEWSLIBDIR\fP path that was compiled
-into the \fBtin\fP binary via the Makefile.
+Define this variable if you want to override the \fBNEWSLIBDIR\fP path that
+was compiled into the \fBtin\fP binary via the Makefile.
 .TP
 .B TIN_SPOOLDIR
-Define this variable if you want to override the \fBSPOOLDIR\fP path that was
-compiled into the \fBtin\fP binary via the Makefile.
+Define this variable if you want to override the \fBSPOOLDIR\fP path that
+was compiled into the \fBtin\fP binary via the Makefile.
 .TP
 .B TIN_NOVROOTDIR
-Define this variable if you want to override the \fBNOVROOTDIR\fP path that was
-compiled into the \fBtin\fP binary via the Makefile.
+Define this variable if you want to override the \fBNOVROOTDIR\fP path that
+was compiled into the \fBtin\fP binary via the Makefile.
 .TP
 .B TIN_ACTIVEFILE
-Define this variable if you want to override the \fBNEWSLIBDIR/active\fP path that was
-compiled into the \fBtin\fP binary via the Makefile.
+Define this variable if you want to override the \fBNEWSLIBDIR/active\fP
+path that was compiled into the \fBtin\fP binary via the Makefile.
 .TP
 .B NNTPSERVER
 The default NNTP server to remotely read news from. This variable only
 needs to be set if the ''\fB-r\fP'' command line option is specified and
-the file \fI/etc/nntpserver\fR does not exist.
+the file \fI/etc/nntpserver\fR does not exist. The ''\fB-g\fP'' command
+line option overrides $\fBNNTPSERVER\fP.
 .TP
 .B NNTPPORT
 The NNTP tcp port to read news from. This variable only
@@ -2561,6 +2734,11 @@ different address.
 Overrides the fullname given in the gecos-files in \fI/etc/passwd\fR, see
 also \fBmail_address\fP.
 .TP
+.B HOME
+Pathname of the user's home directory. See
+.BR environ (5)
+for more infos.
+.TP
 .B MAILER
 This variable has precedence over the default mailer that is used in all
 mailing operations within \fBtin\fP. If reading news on Amiga OS use
@@ -2568,24 +2746,26 @@ $\fBTIN_MAIL\fP, if reading news on VMS use \fBTIN_MAILER\fP instead.
 .TP
 .B EDITOR
 This variable has precedence over the default editor (i.e.,
-.BR vi (1)
-) that
-is used in all editing operations within \fBtin\fP (i.e., posting 'w',
-replying 'r', follow-ups 'f', ...).
+.BR vi (1))
+that is used in all editing operations within \fBtin\fP (i.e., posting 'w',
+replying 'r', follow-ups 'f', ...). See
+.BR environ (5)
+for more infos.
 .TP
 .B VISUAL
 If $\fBEDITOR\fP is unset, then this variable is looked up for a default
 editor. If $\fBEDITOR\fP and $\fBVISUAL\fP are both unset, \fBtin\fP will
 uses the systems default editor (i.e.
 .BR vi (1)
-on UNIX-systems).
+on UNIX-systems). See
+.BR environ (5)
+for more infos.
 .TP
 .B AUTOSUBSCRIBE
 A new group is checked against the list of patterns; if it matches,
 \fBtin\fP subscribes the user to the group without further query.
 See the section NEWSGROUP LISTS & WILDCARDS for an explanation of the valid
-syntax.
-For example, setting
+syntax. For example, setting
 .sp
 \fIAUTOSUBSCRIBE=comp.os.unix.*,talk.*,!talk.politics.*\fR
 .sp
@@ -2594,7 +2774,7 @@ hierarchy, and all talk groups other than talk.politics groups (which will
 be queried for as usual).
 .TP
 .B AUTOUNSUBSCRIBE
-Is handled like the \fBAUTOSUBSCRIBE\fP variable, but groups matching the
+Is handled like the $\fBAUTOSUBSCRIBE\fP variable, but groups matching the
 list are unsubscribed from without further query. For example, setting
 .sp
 \fIAUTOUNSUBSCRIBE=alt.flame.*,u*,!uk.*\fR
@@ -2612,7 +2792,8 @@ these strings. The matching is case-insensitive. Example:
 .TP
 .B MAILCAPS
 This variable can be used to override the default path search for mailcap
-files.
+files. See also
+.BR tin (5).
 .TP
 .B METAMAIL
 Set this variable to point to
@@ -2637,134 +2818,95 @@ program
 .B PGPPATH
 Override the name of the
 .BR pgp (1)
-directory in \fI$HOME/\fR that holds your keys etc..
+directory in \fB$HOME\fP that holds your keys etc..
 .TP
 .B GNUPGHOME
 Override the name of the
 .BR gpg (1)
-directory in \fI$HOME/\fR that holds your keys etc..
+directory in \fB$HOME\fP that holds your keys etc..
 .TP
 .B LC_CTYPE
 This variable determines the
 .BR locale (5)
-category for character handling
-functions. Usualy it determines the character classes for pattern
-matching character classification and case conversion. Currently this
-is not true for \fBtin\fP (which temporary unsets \fI$LC_CTYPE\fR right
-before any match is done to avoid confusion).
+category for character handling functions. Usualy it determines the
+character classes for pattern matching character classification and case
+conversion. Currently this is not true for \fBtin\fP (which temporary
+unsets \fB$LC_CTYPE\fP right before any match is done to avoid confusion).
+It's value should be of the from
+\fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR][\fI@modifier\fR]. See
+.BR environ (5)
+for more infos.
 .\" document LC_CTYPEs influence on
 .\" ~/.tin/keymap.*, 8bit char display, ...
 .TP
 .B LC_MESSAGES
 Formats of informative and diagnostic messages and interactive responses.
-See
+It's value should be of the from
+\fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR][\fI@modifier\fR]. See
 .BR locale (5)
+and
+.BR environ (5)
 for more infos.
 .TP
 .B LC_ALL
-This variable overrides the value of the \fI$LANG\fR variable and any
-other \fI$LC_\fR variable. See
+This variable overrides the value of the \fB$LANG\fP variable and any
+other \fB$LC_\fP variable. It's value should be of the from
+\fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR]. See
 .BR locale (5)
+and
+.BR environ (5)
 for more infos.
 .TP
 .B LANG
 This variable determines the
 .BR locale (5)
 category for any category not specifically selected with a variable starting
-with \fI$LC_\fR.
+with \fB$LC_\fP. It's value should be of the from
+\fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR]. See
+.BR environ (5)
+for more infos.
 .TP
 .B COLUMNS
-The number of columns for this terminal session.
+A decimal integer > 0 used to indicate the user's preferred width in column
+positions for the terminal screen or window. If this variable is unset or
+null, the implementation determines the number of columns, appropriate for
+the terminal or window. When \fB$COLUMNS\fP is set, any terminal-width
+information implied by \fB$TERM\fP will be overridden. Users and portable
+applications should not set \fB$COLUMNS\fP unless they wish to override the
+system selection and produce output unrelated to the terminal
+characteristics.
 .TP
 .B LINES
-The number of lines for this terminal session.
+A decimal integer > 0 used to indicate the user's preferred number of lines
+on a page or the vertical screen or window size in lines. A line in this
+case is a vertical measure large enough to hold the tallest character in the
+character set being displayed. If this variable is unset or null, the
+implementation determines the number of lines, appropriate for the terminal
+or window. When \fB$LINES\fP is set, any terminal-height information implied
+by \fB$TERM\fP will be overridden. Users and portable applications should
+not set \fB$LINES\fP unless they wish to override the system selection.
 .TP
 .B TERM
 The type of terminal in use. This is used when looking up termcap sequences.
+See
+.BR environ (5)
+for more infos.
 .\"
 .\"
-.SH FILES
-.\" TODO: mention .article[.$$], .cancel[.$$], .letter[.$$]?
-For a more detailed description see
-.BR tin (5)
-.
-.TP 2i
-\fI$HOME/.newsrc\fR
-subscribed to newsgroups.
-.TP
-\fI$HOME/.newsauth\fR
-"\fInntpserver\fR \fIpassword\fR [\fIuser\fR]" pairs for NNTP servers
-that require authorization.
-.TP
-\fI$HOME/.tin/tinrc\fR
-options.
-.TP
-\fI$HOME/.tin/attributes\fR
-contains user specified group attributes.
-.TP
-\fI$HOME/.tin/.news\fR
-newsgroups index files directory.
-.TP
-\fI$HOME/.tin/.mail\fR
-mailgroups index files directory.
-.TP
-\fI$HOME/.tin/.save\fR
-saved newsgroups index files directory.
-.TP
-\fI$HOME/.tin/active.mail\fR
-active file of user's mailgroups.
-.TP
-\fI$HOME/.tin/active.save\fR
-active file of user's saved newsgroups.
-.TP
-\fI$HOME/.tin/filter\fR
-filtering file for article killing and auto-selection.
-.TP
-\fI$HOME/.tin/posted\fR
-history of articles posted by user.
-.TP
-\fI$HOME/.tin/newsrctable\fR
-"\fInntpserver\fR \fInewsrc\fR \fIshortname\fR [...]" pairs to use with ''\fB-g\fP'' command-line
-switch.
-.TP
-\fI$HOME/.tin/.inputhistory\fR
-history of last used strings.
-.TP
-\fI$HOME/.tin/postponed.articles\fR
-postponed articles from the 'o' command, reuse via ''\fB-o\fP''
-command-line switch or via CTRL-O from within \fBtin\fP.
-.TP
-\fI$HOME/.signature\fR
-signature. If you are not using \fBuse_builtin_inews\fP,
-.BR inews (1)
-automatically appends this file to your article after composing it (you
-won't see your signature in the $\fBEDITOR\fP). See also section SIGNATURES.
-.TP
-\fI$HOME/.Sig\fR
-signature. Same as above, but
-.BR inews (1)
-won't include it.
-.TP
-\fI$HOME/.sigfixed\fR
-fixed part of a randomly generated signature.
-.TP
-\fI/usr/lib/news/tinrc\fR
-Global configuration file.
-.TP
-\fI/etc/tin/tin.defaults\fR
-Global configuration file.
-.TP
-\fI/var/lib/news/active.times\fR
-Contains list of new newsgroups as they are added to the news history file.
-This file is only present on the news-server.
-.TP
-\fI/var/lib/news/newsgroups\fR
-Short description of all newsgroups.
-This file is only present on the news-server.
-.TP
-\fI/var/lib/news/subscriptions\fR
-List of newsgroups to subscribe first time user to.
-This file is only present on the news-server.
+.\" .SH DIAGNOSTICS
+.\" give an overview of the most common error messages and how to cope with
+.\" them.
+.\"
+.\"
+.\" .SH SECURITY
+.\" add a note about clear text passwords used by nntp and in ~/.newsauth
+.\"
+.\"
+.\" .SH "CONFORMING TO"
+.\" - XBD specification, Utility Conventions
+.\"   (Utility Argument Syntax, Utility Syntax Guidelines)
+.\" - RFC 977, RFC 1036, RFC 2045, RFC 2047, RFC 2980, RFC 2822
+.\" or whatever
 .\"
 .\"
 .SH NOTES
@@ -2779,10 +2921,10 @@ ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/
 .SH BUGS
 \fBCNews\fP NNTPd and
 .BR noffle (1)
-(<= V1.0-pre5) can't handle simultaneous
-GROUP commands. If you run into trouble with any of the mentioned servers
-define NUM_SIMULTANEOUS_GROUP_COMMAND to 1 in active.c and recompile. See
-also the TODO-file which comes with the source.
+(<= V1.0-pre5) can't handle simultaneous GROUP commands. If you run into
+trouble with any of the mentioned servers define
+NUM_SIMULTANEOUS_GROUP_COMMAND to 1 in active.c and recompile. See also
+the TODO-file which comes with the source.
 .\"
 .\"
 .SH HISTORY
@@ -2833,6 +2975,8 @@ ftp.tin.org:/pub/news/clients/tin/v1.5/
 ftp.tin.org:/pub/news/clients/tin/v1.5/
 .IP "v1.5.8 (beta) - February 21st 2001"
 ftp.tin.org:/pub/news/clients/tin/v1.5/
+.IP "v1.5.9 (beta) - July 23rd 2001"
+ftp.tin.org:/pub/news/clients/tin/v1.5/
 .\"
 .\"
 .SS CREDITS
@@ -2861,14 +3005,6 @@ mailreader.
 author of getline.c
 .BR emacs (1)
 style editing routine.
-.IP "Mark Tomlinson"
-for originally porting \fBtin\fP to the AmigaOS operating system.
-.IP "Andreas Wrede"
-for porting \fBtin\fP to the OS/2 operating system.
-.IP "Nigel Ellis & Piers Haken"
-for originally porting \fBtin\fP to the Windows/NT operating system.
-.IP "Andrew Greer"
-for originally porting \fBtin\fP to the VAX/VMS operating system.
 .IP "Steven Madsen"
 for adding
 .BR pgp (1)
@@ -2883,6 +3019,14 @@ for
 and
 .BR vsnprintf (3)
 fallbacks.
+.IP "Mark Tomlinson"
+for originally porting \fBtin\fP to the AmigaOS operating system.
+.IP "Andreas Wrede"
+for originally porting \fBtin\fP to the OS/2 operating system.
+.IP "Nigel Ellis & Piers Haken"
+for originally porting \fBtin\fP to the Windows/NT operating system.
+.IP "Andrew Greer"
+for originally porting \fBtin\fP to the VAX/VMS operating system.
 .PP
 I wish to thank the following people for supplying patches:
 .PP
@@ -2909,39 +3053,40 @@ Hendriks, Daniel Hermans, Jose Herrero, Dave Hill, Tom Hite, Torsten
 Homeyer, Ulli Horlacher, Keith Howell, Tommy Hsieh, Shih-Kun Huang, Steve
 Hunt, Jeff Hurwitt, Jeon Hyoung-Jo, Pieter Immelman, Jarkko Isokungas,
 Patrick St. Jean, Hal Jespersen, Park Sang Jin, Robbin Johnson, Jarkko
-Jormanainen, Nelson Kading, Geoffrey Keating, Karsten Keil, Charles S. Kerr,
+Jormanainen, Yury July, Nelson Kading, Geoffrey Keating, Karsten Keil, Charles S. Kerr,
 Fritz Kleeman, Andreas Kies, Janne Kiviluoto, Tomasz Kloczko, Dwarven
-Knight, Thomas Koenig, Karl-Koenig Koenigsson, Martin Kraemer, Thomas
-Kroener, Florian Kuehnert, Bernd Kuemmerlen, Kris Kugel, Manoj Kumar, Dawid
-Kuroczko, Yuri Kuzmenko, Olivier Lacroix, Geoff Lane, Alex Lange, Alain
-Lasserre, Stanislav Latishko, Hannu Laurila, Vincent Lefevre, Alexander
-Lehmann, Marty Leisner, Thomas Leitner, Hakan Lennestal, Kevin Lentin, Chua
-Choon Leong, Chris Lewis, Andreas Ley, David-Michael Lincke, Otto Lind,
-Richard Lloyd, Florian Lohoff, Reinhard Luebke, Clifford Luke, Michael Lupp,
-David MacKenzie, Hugh Mahon, Giuseppe De Marco, Scott Marovich, Dmitri A.
-Martynoff, Kazushi Marukawa, William McBrine, Owen Medd, Philipp
-Mergenthaler, Andreas Metzler, Arkadiusz Miskiewicz, Soren Moller, Bruce
-Momjian, Sergio Morales, Michael Morrell, Klaus Mueller, Mike Muise, Udo
-Munk, John R. Myers, Daniel Naber, Torsten Neumann, Dirk Nimmich, James
-Nugen, David E. O'Brien, Michael O'Reilly, Oleg Ohotnikov, Ronald Orr,
-Julien Oster, Jeb Palmer, Neil Parker, Tom Parry, Jim Patterson, Sven
-Paulus, Walter Pelissero, Cameron Perkins, Colin Perkins, Eric Peterson, Tim
-Pierce, Bill Poitras, Scott W. Powers, Wolfgang Prediger, GianPiero
-Puccioni, Thomas Quinot, Stefan Rapp, Martin Reising, Kyle Rhorer, Ted
-Richards, Steve Robbins, Ollivier Robert, Branden Robinson, Jim Robinson,
-Thomas Roessler, Erik van Roode, Meelis Roos, Stephen Roseman, Roland
-Rosenfeld, Peter Van Rossem, Clifton Royston, Rich Salz, Gary Sanders,
-Nickolay Saukh, John Sauter, Christopher Sawtell, Holger Schif, Volker
-Schmidt, John Schmitz, Torsten Schneider, Stefan Scholl, Rainer Scholz,
-Juergen Schroeder, Larry Schwimmer, Bart Sears, Karl-Olav Serrander, Doug
-Sewell, Philip Shearer, Jungshik Shin, Sergey Shkonda, Andreas Siegert, Mark
-Smith, Toomas Soome, Steve Spearman, Helmut Springer, Cliff Stanford, Steve
-Starck, Jason Steiner, Ralf Stephan, Michael Stenns, Helmrich Streitmatter,
-Hans Werner Strube, Dieter Stueken, Ed Sznyter, Dean Takemori, Darrell
-Tangman, Derek Terveer, Carsten Theis, Julian Thompson, David Tiller, Andry
-Timonin, Mark Tomlin, Michael Traub, Adri Verhoef, Paul Vickers, Oliver B.
-Warzecha, Jason Wessel, Cary Whitney, Henrik Wist, Greg Woods, Lloyd Wright,
-Jens Wuepper, Billy Y., Hideaki Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
+Knight, Thomas Koenig, Karl-Koenig Koenigsson, Martin Kraemer, Gerald
+Krause, Thomas Kroener, Florian Kuehnert, Bernd Kuemmerlen, Kris Kugel,
+Stephan Kulow, Manoj Kumar, Dawid Kuroczko, Yuri Kuzmenko, Olivier Lacroix,
+Geoff Lane, Alex Lange, Alain Lasserre, Stanislav Latishko, Hannu Laurila,
+Vincent Lefevre, Alexander Lehmann, Marty Leisner, Thomas Leitner, Hakan
+Lennestal, Kevin Lentin, Chua Choon Leong, Chris Lewis, Andreas Ley,
+David-Michael Lincke, Otto Lind, Richard Lloyd, Florian Lohoff, Reinhard
+Luebke, Clifford Luke, Michael Lupp, David MacKenzie, Hugh Mahon, Giuseppe
+De Marco, Scott Marovich, Dmitri A. Martynoff, Kazushi Marukawa, Timur
+Maryin, William McBrine, Owen Medd, Philipp Mergenthaler, Andreas Metzler,
+Arkadiusz Miskiewicz, Soren Moller, Bruce Momjian, Sergio Morales, Michael
+Morrell, Klaus Mueller, Mike Muise, Udo Munk, John R. Myers, Daniel Naber,
+Torsten Neumann, Dirk Nimmich, James Nugen, David E. O'Brien, Michael
+O'Reilly, Oleg Ohotnikov, Ronald Orr, Julien Oster, Jeb Palmer, Neil Parker,
+Joseph Parmelee, Tom Parry, Jim Patterson, Sven Paulus, Walter Pelissero,
+Cameron Perkins, Colin Perkins, Eric Peterson, Tim Pierce, Bill Poitras,
+Scott W. Powers, Wolfgang Prediger, GianPiero Puccioni, Thomas Quinot,
+Stefan Rapp, Martin Reising, Kyle Rhorer, Ted Richards, Steve Robbins,
+Ollivier Robert, Branden Robinson, Jim Robinson, Thomas Roessler, Erik van
+Roode, Meelis Roos, Stephen Roseman, Roland Rosenfeld, Peter Van Rossem,
+Clifton Royston, Rich Salz, Gary Sanders, Nickolay Saukh, John Sauter,
+Christopher Sawtell, Holger Schif, Volker Schmidt, John Schmitz, Torsten
+Schneider, Stefan Scholl, Rainer Scholz, Juergen Schroeder, Larry Schwimmer,
+Bart Sears, Karl-Olav Serrander, Doug Sewell, Philip Shearer, Jungshik Shin,
+Sergey Shkonda, Andreas Siegert, Mark Smith, Toomas Soome, Steve Spearman,
+Helmut Springer, Cliff Stanford, Steve Starck, Jason Steiner, Ralf Stephan,
+Michael Stenns, Helmrich Streitmatter, Hans Werner Strube, Dieter Stueken,
+Ed Sznyter, Dean Takemori, Darrell Tangman, Derek Terveer, Carsten Theis,
+Julian Thompson, David Tiller, Andry Timonin, Mark Tomlin, Michael Traub,
+Adri Verhoef, Paul Vickers, Oliver B. Warzecha, Jason Wessel, Cary Whitney,
+Henrik Wist, Greg Woods, Lloyd Wright, Jens Wuepper, Billy Y., Hideaki
+Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
 .\"
 .\"
 .SS AUTHOR
@@ -2960,26 +3105,30 @@ Urs Janssen <urs@tin.org>
 .BR gpg (1),
 .BR inews (1),
 .BR ispell (1),
-.BR locale (5),
 .BR lp (1),
 .BR lpr (1),
-.BR mbox (5),
 .BR metamail (1),
-.BR newsoverview (5),
 .BR noffle (1),
-.BR pcre (3),
+.BR perl (1),
+.BR perlre (1),
 .BR pgp (1),
 .BR rn (1),
 .BR sendmail (1),
-.BR snprintf (3),
 .BR tass (1),
 .BR unshar (1),
 .BR uudecode (1),
 .BR tin (5),
 .BR vi (1),
+.BR xterm (1x),
+.BR iconv (3),
+.BR pcre (3),
+.BR snprintf (3),
 .BR vsnprintf (3),
 .BR wildmat (3),
-.BR xterm (1x),
+.BR environ (5),
+.BR locale (5),
+.BR mbox (5),
+.BR newsoverview (5),
 .BR RFC977 ,
 .BR RFC1036 ,
 .BR RFC1524 ,

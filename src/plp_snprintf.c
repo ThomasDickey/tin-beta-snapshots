@@ -149,7 +149,7 @@ static const char *_id = "plp_snprintf V1999.02.20 Copyright Patrick Powell 1988
 #	ifdef HAVE_VARARGS_H
 #		include <varargs.h>
 #		undef HAVE_STDARGS
-# 		define VA_LOCAL_DECL   va_list ap;
+#		define VA_LOCAL_DECL   va_list ap;
 #		define VA_START(f)     va_start(ap)		/* f is ignored! */
 #		define VA_SHIFT(v,t)	v = va_arg(ap,t)
 #		define VA_END		va_end(ap)
@@ -158,6 +158,7 @@ XX ** NO VARARGS ** XX
 #	endif /* HAVE_VARARGS_H */
 #endif /* HAVE_STDARG_H */
 
+#if 0
 /* the dreaded QUAD_T strikes again... */
 #ifndef HAVE_QUAD_T
 #	if defined(quad_t) && qaud_t == NONE
@@ -166,16 +167,18 @@ XX ** NO VARARGS ** XX
 #		define HAVE_QUAD_T 1
 #	endif /* quad_t && qaud_t== NONE */
 #endif /* HAVE_QUAD_T */
-#if HAVE_QUAD_T==1 && !defined(HAVE_LONG_LONG)
+#endif /* 0 */
+
+#if defined(HAVE_QUAD_T) && !defined(HAVE_LONG_LONG)
   ERROR you need long long
 #endif
-#if HAVE_QUAD_T==1
+#ifdef HAVE_QUAD_T
    /* suspender and belts on this one */
    const union { quad_t t; long long v; } x;
 #endif
 
 union value {
-#if HAVE_QUAD_T==1 || defined(HAVE_LONG_LONG)
+#if defined(HAVE_QUAD_T) || defined(HAVE_LONG_LONG)
 	long long value;
 #else
 	long value;

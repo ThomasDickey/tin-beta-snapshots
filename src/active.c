@@ -797,7 +797,7 @@ match_group_list (
 		group_list += group_len;
 		list_len -= group_len;
 	}
-	return (accept);
+	return accept;
 }
 
 
@@ -867,7 +867,7 @@ find_newnews_index (
 
 	for (i = 0; i < num_newnews; i++) {
 		if (STRCMPEQ(cur_newnews_host, newnews[i].host))
-			return(i);
+			return i;
 	}
 
 	return -1;
@@ -880,7 +880,7 @@ find_newnews_index (
  */
 char
 group_flag (
-	int ch)
+	char ch)
 {
 	switch (ch) {
 		case 'm':

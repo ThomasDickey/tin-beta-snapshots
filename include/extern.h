@@ -388,6 +388,9 @@ extern constext *help_select[];
 extern constext *help_thread[];
 extern constext *txt_colors[];
 extern constext *txt_kill_level_type[];
+#ifdef CHARSET_CONVERSION
+	extern constext *txt_mime_charsets[];
+#endif /* CHARSET_CONVERSION */
 extern constext *txt_marks[];
 extern constext *txt_mime_encodings[NUM_MIME_ENCODINGS];
 extern constext *txt_onoff[];
@@ -1374,6 +1377,10 @@ extern struct opttxt txt_xpost_quote_format;
 extern struct opttxt txt_mail_quote_format;
 extern struct opttxt txt_advertising;
 extern struct opttxt txt_mm_charset;
+#ifdef CHARSET_CONVERSION
+	extern struct opttxt txt_mm_local_charset;
+	extern struct opttxt txt_mm_network_charset;
+#endif /* CHARSET_CONVERSION */
 extern struct opttxt txt_post_mime_encoding;
 extern struct opttxt txt_post_8bit_header;
 extern struct opttxt txt_post_process_view;

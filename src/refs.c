@@ -129,7 +129,7 @@ hash_msgid (
 
 	hash %= MSGID_HASH_SIZE;
 
-	return(hash);
+	return hash;
 }
 
 /*
@@ -234,7 +234,7 @@ add_msgid (
 		 */
 		if (newparent == NULL) {
 			DEBUG_PRINT((dbgfd, "nop: %s No parent specified\n", i->txt));
-			return(i);
+			return i;
 		}
 
 		/*
@@ -242,7 +242,7 @@ add_msgid (
 		 */
 		if (newparent == i->parent) {
 			DEBUG_PRINT((dbgfd, "dup: %s -> %s (no change)\n", i->txt, i->parent ? i->parent->txt : "NULL"));
-			return(i);
+			return i;
 		}
 
 		/*
@@ -258,7 +258,7 @@ add_msgid (
 			for (ptr = newparent; ptr != NULL; ptr = ptr->parent) {
 				if (ptr == i) {
 					DEBUG_PRINT((dbgfd, "Avoiding circular reference! (%s)\n", (key == MSGID_REF) ? "MSG" : "REF"));
-					return(i);
+					return i;
 				}
 			}
 
@@ -266,7 +266,7 @@ add_msgid (
 			add_to_parent(i);
 
 			DEBUG_PRINT((dbgfd, "set: %s -> %s\n", i->txt, newparent ? newparent->txt : _("None")));
-			return(i);
+			return i;
 		}
 
 		/*
@@ -281,11 +281,11 @@ add_msgid (
 				(key == MSGID_REF) ? "MSG" : "REF", i->txt,
 				newparent ? newparent->txt : "None", i->parent->txt));
 
-			return(i);
+			return i;
 		}
 
 		error_message("Error: Impossible combination of conditions !\n");
-		return(i);
+		return i;
 	}
 
 	DEBUG_PRINT((dbgfd, "new: %s -> %s\n", msgid, (newparent)?newparent->txt:"None"));
@@ -308,7 +308,7 @@ add_msgid (
 	ptr->next = msgids[h];
 	msgids[h] = ptr;
 
-	return(ptr);
+	return ptr;
 }
 
 /*
@@ -330,10 +330,10 @@ find_msgid (
 	 */
 	for (i = msgids[h]; i != NULL; i = i->next) {
 		if (strcasecmp(i->txt, msgid) == 0)				/* Found it */
-			return(i);
+			return i;
 	}
 
-	return(NULL);
+	return NULL;
 }
 
 /*
@@ -353,7 +353,7 @@ parse_references (
 	struct t_msgid *parent, *current;
 
 	if (!r)
-		return(NULL);
+		return NULL;
 
 	DEBUG_PRINT((dbgfd, "parse_references: %s\n", r));
 
@@ -362,7 +362,7 @@ parse_references (
 	 * A msgid can't contain a space, right ?
 	 */
 	if ((ptr = strtok(r, REF_SEP)) == NULL)
-		return(NULL);
+		return NULL;
 
 	/*
 	 * By definition, the head of the thread has no parent
@@ -375,7 +375,7 @@ parse_references (
 		current = add_msgid(REF_REF, ptr, parent);
 	}
 
-	return(current);
+	return current;
 }
 
 /*
@@ -411,7 +411,7 @@ _get_references (
 		len = strlen(refs);
 	}
 
-	return (refs);
+	return refs;
 }
 
 /*
@@ -426,7 +426,7 @@ get_references (
 	size_t len;
 
 	if (refptr == NULL)
-		return(NULL);
+		return NULL;
 
 	refs = _get_references(refptr, 1);
 
@@ -436,7 +436,7 @@ get_references (
 
 	refs = (char *) my_realloc(refs, len);
 
-	return(refs);
+	return refs;
 }
 
 /*
@@ -711,7 +711,7 @@ find_next (
 		}
 	}
 
-	return(ptr);
+	return ptr;
 }
 
 /*

@@ -86,12 +86,12 @@ check_upgrade (
 	snprintf(bar, sizeof(bar) - 1, foo, PRODUCT, TINRC_VERSION);
 
 	if (strncmp(buf, bar, MIN(strlen(bar),strlen(buf))) == 0)
-		return(IGNORE);
+		return IGNORE;
 	else {
 		error_message (_(txt_warn_update), VERSION);
 		error_message (_(txt_return_key));
 		ReadCh();
-		return(UPGRADE);
+		return UPGRADE;
 	}
 }
 
@@ -488,6 +488,14 @@ read_config_file (
 			if (match_string (buf, "mm_charset=", tinrc.mm_charset, sizeof (tinrc.mm_charset)))
 				break;
 
+#ifdef CHARSET_CONVERSION
+			if (match_string (buf, "mm_local_charset=", tinrc.mm_local_charset, sizeof (tinrc.mm_local_charset)))
+				break;
+
+			if (match_list (buf, "mm_network_charset=", txt_mime_charsets, NUM_MIME_CHARSETS, &tinrc.mm_network_charset))
+				break;
+#endif /* CHARSET_CONVERSION */
+
 			if (match_boolean (buf, "mark_saved_read=", &tinrc.mark_saved_read))
 				break;
 
@@ -761,6 +769,11 @@ read_config_file (
 	/* nobody likes to navigate blind */
 	if (!(tinrc.draw_arrow || tinrc.inverse_okay))
 		tinrc.draw_arrow = TRUE;
+
+#ifdef CHARSET_CONVERSION
+	if (!*tinrc.mm_local_charset)
+		strcpy(tinrc.mm_local_charset, tinrc.mm_charset);
+#endif /* CHARSET_CONVERSION */
 
 	return TRUE;
 }
@@ -1151,6 +1164,14 @@ write_config_file (
 	fprintf (fp, _(txt_mm_charset.tinrc));
 	fprintf (fp, "mm_charset=%s\n\n", tinrc.mm_charset);
 
+#ifdef CHARSET_CONVERSION
+	fprintf (fp, _(txt_mm_local_charset.tinrc));
+	fprintf (fp, "mm_local_charset=%s\n\n", tinrc.mm_local_charset);
+
+	fprintf (fp, _(txt_mm_network_charset.tinrc));
+	fprintf (fp, "mm_network_charset=%s\n\n", txt_mime_charsets[tinrc.mm_network_charset]);
+#endif /* CHARSET_CONVERSION */
+
 /* Not on Option Menu */
 #ifdef LOCAL_CHARSET
 	fprintf (fp, _(txt_tinrc_local_charset));
@@ -1456,6 +1477,7 @@ change_config_file (
 	int option, old_option;
 	int ret_code = NO_FILTERING;
 	int mime_encoding = MIME_ENCODING_7BIT;
+	int mime_charset = 0;
 	t_bool change_option = FALSE;
 	t_bool original_on_off_value;
 
@@ -1859,6 +1881,9 @@ change_config_file (
 						case OPT_EDITOR_FORMAT:
 						case OPT_MAILER_FORMAT:
 						case OPT_MM_CHARSET:
+#ifdef CHARSET_CONVERSION
+						case OPT_MM_LOCAL_CHARSET:
+#endif /* CHARSET_CONVERSION */
 						case OPT_MAIL_QUOTE_FORMAT:
 						case OPT_NEWS_QUOTE_FORMAT:
 						case OPT_QUOTE_CHARS:
@@ -1902,6 +1927,21 @@ change_config_file (
 								);
 							joinpath (posted_msgs_file, tinrc.maildir, *tinrc.keep_posted_articles_file ? tinrc.keep_posted_articles_file : POSTED_FILE);
 							break;
+
+#ifdef CHARSET_CONVERSION
+						case OPT_MM_NETWORK_CHARSET:
+							mime_charset = *(option_table[option].variable);
+							mime_charset = prompt_list (option_row(option),
+										OPT_ARG_COLUMN,
+										mime_charset,
+										option_table[option].txt->help,
+										option_table[option].txt->opt,
+										option_table[option].opt_list,
+										option_table[option].opt_count
+										);
+							*(option_table[option].variable) = mime_charset;
+							break;
+#endif /* CHARSET_CONVERSION */
 
 						case OPT_MAIL_MIME_ENCODING:
 						case OPT_POST_MIME_ENCODING:

@@ -72,7 +72,7 @@ match_regex (
 	 */
 	if ((re = pcre_compile(pattern, flags, &errmsg, &error, NULL)) == NULL) {
 		sprintf(mesg, _(txt_pcre_error_at), errmsg, error);
-		return(FALSE);
+		return FALSE;
 	}
 
 	/*
@@ -100,7 +100,7 @@ match_regex (
 		sprintf(mesg, _(txt_pcre_error_num), error);
 
 	free(re);
-	return(ret);
+	return ret;
 }
 
 
