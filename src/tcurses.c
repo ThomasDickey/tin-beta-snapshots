@@ -282,12 +282,14 @@ ReadCh(
 	if (cmd_line)
 		ch = cmdReadCh();
 	else {
+again:
 		allow_resize (TRUE);
 		ch = getch();
 		allow_resize (FALSE);
 		if (need_resize) {
 			handle_resize ((need_resize == cRedraw) ? TRUE : FALSE);
 			need_resize = cNo;
+			goto again;				/* Shouldn't fall through if doing resize */
 		}
 		if (ch == KEY_BACKSPACE)
 			ch = '\010';	/* fix for Ctrl-H - show headers */

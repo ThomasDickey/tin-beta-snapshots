@@ -115,6 +115,8 @@ static void _CDECL signal_handler (SIG_ARGS);
 int signal_context = cMain;
 int need_resize = cNo;
 
+int NOTESLINES;			/* # lines of useable area */
+
 static const struct {
 	int code;
 	const char *name;
@@ -260,6 +262,7 @@ handle_resize (
 #	ifdef USE_CURSES
 #		ifdef HAVE_RESIZETERM
 	resizeterm(cLINES+1, cCOLS);
+	my_retouch();					/* seems necessary if win size unchanged */
 #		else
 	my_retouch();
 #		endif /* HAVE_RESIZETERM */
@@ -267,6 +270,7 @@ handle_resize (
 
 	switch (signal_context) {
 		case cArt:
+			ClearScreen ();
 			show_art_msg (glob_group);
 			break;
 		case cConfig:
@@ -286,8 +290,8 @@ handle_resize (
 			currmenu->redraw();
 			break;
 		case cPage:
-			ClearScreen ();
-			redraw_page (glob_group, glob_respnum);
+			resize_article (&pgart);
+			draw_page (glob_group, 0);
 			break;
 		case cMain:
 			break;

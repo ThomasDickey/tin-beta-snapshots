@@ -180,7 +180,7 @@ group_page (
 	clear_note_area ();
 
 	if (group->attribute->auto_select) {
-		error_message (txt_autoselecting_articles);
+		error_message (_(txt_autoselecting_articles));
 		do_auto_select_arts();						/* 'X' command */
 		xflag = TRUE;
 	}
@@ -203,7 +203,7 @@ group_page (
 			case '1': case '2': case '3': case '4': case '5':
 			case '6': case '7': case '8': case '9':
 				if (grpmenu.max)
-					prompt_item_num (ch, txt_select_thread);
+					prompt_item_num (ch, _(txt_select_thread));
 				break;
 
 #	ifndef NO_SHELL_ESCAPE
@@ -225,7 +225,7 @@ group_page (
 				 * If the last art is no longer in a thread then we can't display it
 				 */
 				if (this_resp < 0 || (which_thread(this_resp) == -1))
-					info_message (txt_no_last_message);
+					info_message (_(txt_no_last_message));
 				else
 					ret_code = enter_pager (this_resp, FALSE);
 				break;
@@ -262,7 +262,7 @@ group_page (
 					if (num_of_tagged_arts)
 						feed_articles (FEED_AUTOSAVE_TAGGED, GROUP_LEVEL, &CURR_GROUP, (int) base[grpmenu.curr]);
 					else
-						info_message (txt_no_tagged_arts_to_save);
+						info_message (_(txt_no_tagged_arts_to_save));
 				}
 				break;
 
@@ -290,7 +290,7 @@ group_page (
 					if ((n = search_body ((int) base[grpmenu.curr])) != -1)
 						ret_code = enter_pager(n, FALSE);
 				} else
-					info_message (txt_no_arts);
+					info_message (_(txt_no_arts));
 				break;
 
 			case iKeyGroupReadBasenote:
@@ -298,7 +298,7 @@ group_page (
 				if (grpmenu.curr >= 0)
 					ret_code = enter_pager ((int) base[grpmenu.curr], TRUE);
 				else
-					info_message(txt_no_arts);
+					info_message(_(txt_no_arts));
 				break;
 
 			case iKeyGroupNextUnreadArtOrGrp:	/* goto next unread article/group */
@@ -314,7 +314,7 @@ group_page (
 			case iKeyGroupAutoSel:		/* auto-select article menu */
 			case iKeyGroupKill:		/* kill article menu */
 				if (grpmenu.curr < 0) {
-					info_message (txt_no_arts);
+					info_message (_(txt_no_arts));
 					break;
 				}
 				old_top = top_art;
@@ -330,10 +330,10 @@ group_page (
 				break;
 
 		   case iKeyGroupEditFilter:
-				if (!invoke_editor (local_filter_file, 25)) /* FIXME: is 25 correct offset ? */
+				if (!invoke_editor (filter_file, 25)) /* FIXME: is 25 correct offset ? */
 					break;
 				unfilter_articles ();
-				(void) read_filter_file (local_filter_file, FALSE);
+				(void) read_filter_file (filter_file);
 				if (filter_articles (group)) {
 					make_threads (group, FALSE);
 					grpmenu.curr = find_new_pos (old_top, old_artnum, grpmenu.curr);
@@ -344,15 +344,15 @@ group_page (
 			case iKeyGroupQuickAutoSel:		/* quickly auto-select article */
 			case iKeyGroupQuickKill:		/* quickly kill article */
 				if (grpmenu.curr < 0) {
-					info_message (txt_no_arts);
+					info_message (_(txt_no_arts));
 					break;
 				}
-				if (!tinrc.confirm_action || prompt_yn (cLINES, (ch == iKeyGroupQuickKill) ? txt_quick_filter_kill : txt_quick_filter_select, TRUE) == 1) {
+				if (!tinrc.confirm_action || prompt_yn (cLINES, (ch == iKeyGroupQuickKill) ? _(txt_quick_filter_kill) : _(txt_quick_filter_select), TRUE) == 1) {
 					old_top = top_art;
 					n = (int) base[grpmenu.curr];
 					old_artnum = arts[n].artnum;
 					if (quick_filter ((ch == iKeyGroupQuickKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[n])) {
-						info_message ((ch == iKeyGroupQuickKill) ? txt_info_add_kill : txt_info_add_select);
+						info_message ((ch == iKeyGroupQuickKill) ? _(txt_info_add_kill) : _(txt_info_add_select));
 						if (filter_articles (group)) {
 							make_threads (group, FALSE);
 							grpmenu.curr = find_new_pos (old_top, old_artnum, grpmenu.curr);
@@ -411,7 +411,7 @@ group_page (
 				break;
 
 			case iKeyGroupHelp:	/* help */
-				show_info_page (HELP_INFO, help_group, txt_index_page_com);
+				show_info_page (HELP_INFO, help_group, _(txt_index_page_com));
 				show_group_page ();
 				break;
 
@@ -438,7 +438,7 @@ group_page (
 			case iKeyGroupMarkThdRead:	/* mark thread as read */
 
 				if (grpmenu.curr < 0) {
-					info_message (txt_no_next_unread_art);
+					info_message (_(txt_no_next_unread_art));
 					break;
 				}
 
@@ -474,7 +474,7 @@ group_page (
 				 */
 				if ((n = next_unread (next_response ((int) base[grpmenu.curr]))) < 0) {
 					draw_subject_arrow ();
-					info_message (txt_no_next_unread_art);
+					info_message (_(txt_no_next_unread_art));
 					break;
 				}
 
@@ -520,7 +520,7 @@ group_page (
 			case iKeyGroupNextGroup:	/* goto next group */
 				clear_message ();
 				if (selmenu.curr + 1 >= selmenu.max)
-					info_message (txt_no_more_groups);
+					info_message (_(txt_no_more_groups));
 				else {
 					selmenu.curr++;
 					ret_code = GRP_NEXTUNREAD;
@@ -529,26 +529,26 @@ group_page (
 
 			case iKeyGroupNextUnreadArt:	/* goto next unread article */
 				if (grpmenu.curr < 0) {
-					info_message(txt_no_next_unread_art);
+					info_message(_(txt_no_next_unread_art));
 					break;
 				}
 
 				if ((n = next_unread ((int) base[grpmenu.curr])) == -1)
-					info_message (txt_no_next_unread_art);
+					info_message (_(txt_no_next_unread_art));
 				else
 					ret_code = enter_pager (n, FALSE);
 				break;
 
 			case iKeyGroupPrevUnreadArt:	/* go to previous unread article */
 				if (grpmenu.curr < 0) {
-					info_message(txt_no_prev_unread_art);
+					info_message(_(txt_no_prev_unread_art));
 					break;
 				}
 
 				n = prev_response ((int) base[grpmenu.curr]);
 
 				if ((n = prev_unread (n)) == -1)
-					info_message(txt_no_prev_unread_art);
+					info_message(_(txt_no_prev_unread_art));
 				else
 					ret_code = enter_pager(n, FALSE);
 				break;
@@ -562,7 +562,7 @@ group_page (
 				}
 
 				if (i < 0)
-					info_message(txt_no_prev_group);
+					info_message(_(txt_no_prev_group));
 				else {
 					selmenu.curr = i;
 					ret_code = GRP_NEXTUNREAD;
@@ -570,13 +570,13 @@ group_page (
 				break;
 
 			case iKeyQuit:	/* return to group selection page */
-				if (num_of_tagged_arts && prompt_yn (cLINES, txt_quit_despite_tags, TRUE) != 1)
+				if (num_of_tagged_arts && prompt_yn (cLINES, _(txt_quit_despite_tags), TRUE) != 1)
 					break;
 				ret_code = GRP_EXIT;
 				break;
 
 			case iKeyQuitTin:		/* quit */
-				if (num_of_tagged_arts && prompt_yn (cLINES, txt_quit_despite_tags, TRUE) != 1)
+				if (num_of_tagged_arts && prompt_yn (cLINES, _(txt_quit_despite_tags), TRUE) != 1)
 					break;
 				ret_code = GRP_QUIT;
 				break;
@@ -646,7 +646,7 @@ group_page (
 						 * to leave the choice of tagged/untagged
 						 * determination politic in the previous lines.
 						 */
-						info_message (txt_untagged_thread);
+						info_message (_(txt_untagged_thread));
 						for (ii = n; ii != -1; ii = arts[ii].thread) {
 							if (arts[ii].tagged != 0) {
 								tagged = TRUE;
@@ -654,7 +654,7 @@ group_page (
 							}
 						}
 					} else {
-						info_message (txt_tagged_thread);
+						info_message (_(txt_tagged_thread));
 						for (ii = n; ii != -1; ii = arts[ii].thread) {
 							if (arts[ii].tagged == 0)
 								arts[ii].tagged = ++num_of_tagged_arts;
@@ -706,7 +706,7 @@ group_page (
 					if (pickup_postponed_articles(FALSE, FALSE))
 						show_group_page ();
 				} else
-					info_message(txt_cannot_post);
+					info_message(_(txt_cannot_post));
 				break;
 
 			case iKeyDisplayPostHist:	/* display messages posted by user */
@@ -716,7 +716,7 @@ group_page (
 
 			case iKeyGroupMarkArtUnread:	/* mark base article of thread unread */
 				if (grpmenu.curr < 0) {
-					info_message (txt_no_arts);
+					info_message (_(txt_no_arts));
 					break;
 				}
 				if (range_active) {
@@ -746,12 +746,12 @@ group_page (
 				bld_sline(grpmenu.curr);
 				draw_line (grpmenu.curr, MAGIC);
 				draw_subject_arrow();
-				info_message (txt_marked_as_unread, buf);
+				info_message (_(txt_marked_as_unread), buf);
 				break;
 
 			case iKeyGroupMarkThdUnread:	/* mark whole thread as unread */
 				if (grpmenu.curr < 0) {
-					info_message (txt_no_arts);
+					info_message (_(txt_no_arts));
 					break;
 				}
 
@@ -780,13 +780,13 @@ group_page (
 				bld_sline(grpmenu.curr);
 				draw_line (grpmenu.curr, MAGIC);
 				draw_subject_arrow();
-				info_message (txt_marked_as_unread, buf);
+				info_message (_(txt_marked_as_unread), buf);
 				break;
 
 			case iKeyGroupSelThd:	/* mark thread as selected */
 			case iKeyGroupToggleThdSel:	/* toggle thread */
 				if (grpmenu.curr < 0) {
-					info_message (txt_no_arts);
+					info_message (_(txt_no_arts));
 					break;
 				}
 
@@ -806,8 +806,8 @@ group_page (
 				draw_line (grpmenu.curr, MAGIC);
 
 				info_message (flag
-					      ? txt_thread_marked_as_selected
-					      : txt_thread_marked_as_deselected);
+					      ? _(txt_thread_marked_as_selected)
+					      : _(txt_thread_marked_as_deselected));
 
 				if (grpmenu.curr + 1 < grpmenu.max) {
 					move_down();
@@ -829,7 +829,7 @@ group_page (
 				break;
 
 			case iKeyGroupSelPattern:	/* select matching patterns */
-				sprintf (mesg, txt_select_pattern, tinrc.default_select_pattern);
+				sprintf (mesg, _(txt_select_pattern), tinrc.default_select_pattern);
 				if (!prompt_string (mesg, buf, HIST_SELECT_PATTERN))
 					break;
 
@@ -897,7 +897,7 @@ group_page (
 				break;
 
 			default:
-				info_message (txt_bad_command);
+				info_message (_(txt_bad_command));
 				break;
 		} /* switch(ch) */
 	} /* ret_code >= 0 */
@@ -906,6 +906,7 @@ group_page (
 
 	clear_note_area ();
 	vGrpDelMailArts (&CURR_GROUP);
+	art_close (&pgart);				/* Close any open art */
 
 	return (ret_code);
 }
@@ -943,10 +944,10 @@ show_group_page (
 	show_mini_help (GROUP_LEVEL);
 
 	if (grpmenu.max <= 0) {
-		info_message (txt_no_arts);
+		info_message (_(txt_no_arts));
 		return;
 	} else if (grpmenu.last == grpmenu.max)
-		info_message(txt_end_of_arts);
+		info_message(_(txt_end_of_arts));
 
 	draw_subject_arrow();
 
@@ -984,7 +985,7 @@ draw_subject_arrow (
 		info_message ("%s", arts[(statbuf.unread ? next_unread(base[grpmenu.curr]) : base[grpmenu.curr])].subject);
 	} else {
 		if (grpmenu.last == grpmenu.max)
-			info_message(txt_end_of_arts);
+			info_message(_(txt_end_of_arts));
 	}
 }
 
@@ -1011,7 +1012,8 @@ toggle_read_unread (
 	if (force)
 		CURR_GROUP.attribute->show_only_unread = TRUE;	/* Yes - really, we change it in a bit */
 
-	wait_message (0, txt_reading_arts, (CURR_GROUP.attribute->show_only_unread) ? "all " : "unread ");
+	wait_message (0, _(txt_reading_arts),
+		(CURR_GROUP.attribute->show_only_unread) ? _(txt_all) : _(txt_unread));
 
 	i = -1;
 
@@ -1289,19 +1291,19 @@ show_group_title (
 	}
 
 	if (tinrc.use_getart_limit)
-		sprintf (buf, "%s (%dT(%c) %dA %dK %dH [%dL]%s%c)",
+		sprintf (buf, _("%s (%dT(%c) %dA %dK %dH [%dL]%s%c)"),
 			currgrp.name, grpmenu.max,
 			*txt_thread[currgrp.attribute->thread_arts],
 			art_cnt, num_of_killed_arts, num_of_selected_arts,
 			tinrc.getart_limit,
-			(currgrp.attribute->show_only_unread ? " R" : ""),
+			(currgrp.attribute->show_only_unread ? _(" R") : ""),
 			group_flag(currgrp.moderated));
 	else
-		sprintf (buf, "%s (%dT(%c) %dA %dK %dH%s%c)",
+		sprintf (buf, _("%s (%dT(%c) %dA %dK %dH%s%c)"),
 			currgrp.name, grpmenu.max,
 			*txt_thread[currgrp.attribute->thread_arts],
 			art_cnt, num_of_killed_arts, num_of_selected_arts,
-			(currgrp.attribute->show_only_unread ? " R" : ""),
+			(currgrp.attribute->show_only_unread ? _(" R") : ""),
 			group_flag(currgrp.moderated));
 
 	if (clear_title) {
@@ -1382,7 +1384,7 @@ enter_thread (
 	int i, n;
 
 	if (grpmenu.curr < 0) {
-		info_message (txt_no_arts);
+		info_message (_(txt_no_arts));
 		return 0;
 	}
 
@@ -1461,11 +1463,11 @@ group_catchup(
 	char buf[LEN];
 	int yn = 1;
 
-	if (num_of_tagged_arts && prompt_yn (cLINES, txt_catchup_despite_tags, TRUE) != 1)
+	if (num_of_tagged_arts && prompt_yn (cLINES, _(txt_catchup_despite_tags), TRUE) != 1)
 		return 0;
 
 	/* FIXME: -> lang.c */
-	snprintf(buf, sizeof(buf)-1, txt_mark_arts_read, (ch == iKeyGroupCatchupNextUnread) ? " and enter next unread group" : "");
+	snprintf(buf, sizeof(buf)-1, _(txt_mark_arts_read), (ch == iKeyGroupCatchupNextUnread) ? _(" and enter next unread group") : "");
 
 	if (!CURR_GROUP.newsrc.num_unread || !tinrc.confirm_action || (yn = prompt_yn (cLINES, buf, TRUE)) == 1)
 		grp_mark_read (&CURR_GROUP, arts);

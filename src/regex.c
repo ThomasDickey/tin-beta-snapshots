@@ -106,7 +106,7 @@ match_regex (
  */
 t_bool
 compile_regex(
-	char *regex,
+	const char *regex,
 	struct regex_cache *cache,
 	int options)
 {

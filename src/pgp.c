@@ -242,7 +242,7 @@ do_pgp (
 	 * <mailfrom> is valid only when signing and a local address exists
 	 */
 	if (what & PGP_SIGN) {
-		if (*(CURR_GROUP.attribute->from) != '\0') {
+		if ((CURR_GROUP.attribute->from) != (char *) 0) {
 			strip_name (CURR_GROUP.attribute->from, mailfrom);
 			if (what & PGP_ENCRYPT)
 				sh_format (cmd, sizeof(cmd), DO_BOTH1);
@@ -270,7 +270,7 @@ pgp_append_public_key (
 	FILE *fp, *key;
 	char keyfile[PATH_LEN], cmd[LEN], buf[LEN];
 
-	if (*(CURR_GROUP.attribute->from) != '\0')
+	if ((CURR_GROUP.attribute->from) != (char *) 0)
 		strip_name (CURR_GROUP.attribute->from, buf);
 	else
 		snprintf(buf, sizeof(buf)-1, "%s@%s", userid, host_name);
@@ -419,7 +419,7 @@ pgp_check_article (
 		info_message(_(txt_cannot_open), artfile);
 		return FALSE;
 	}
-	fseek(note_fp, mark_body, SEEK_SET);		/* -> start of body */
+	fseek(note_fp, note_h.hdr->offset, SEEK_SET);	/* -> start of body */
 
 	fgets(buf, LEN, note_fp);					/* Copy the body whilst looking for SIG/KEY tags */
 	while (!feof(note_fp)) {

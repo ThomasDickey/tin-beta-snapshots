@@ -1,9 +1,80 @@
+-- 1.5.4 release 20000322 "" --
+
+U023) Jason Faultless <jason@radar.tele2.co.uk>
+      ADD.
+      FIX. Makefile, INSTALL, TODO, art_handling.txt, tin.1, extern.h
+           menukeys.h, proto.h, rfc2045.h, tin.h, Makefile[.in], art.c
+           attrib.c, charset.c, color.c, cook.c, feed.c, filter.c, group.c
+           header.c, init.c, lang.c, memory.c, misc.c, open.c, page.c, pgp.c
+           post.c, regex.c, rfc1521.c, rfc1522.c, rfc2045.c, save.c, screen.c
+           search.c, sigfile.c, signal.c, string.c, tcurses.c, thread.c
+           wildmat.c
+
+U022) Toomas Soome <tsoome@ut.ee>
+      ADD. estonian translation
+      ADD. keep_posted_articles_file
+      BUG. serveral _()/N_() macros missing
+      FIX. extern.h, tinrc.h, config.c, feed.c, filter.c, group.c, help.c
+           init.c, lang.c, main.c, nntplib.c, post.c, save.c, select.c
+           thread.c, tincfg.tbl, et.po
+
+U021) Dirk Nimmich <nimmich@uni-muenster.de>
+      BUG. decide posting type (base article (w) or followup (f)) based on
+           References: (don't rely on "Re: " in Subject:)
+      BUG. 'F'ollowup with Followup-To: poster quoted text when 'm'ailing
+      BUG. '^W' (followup with header) did not include header when
+           Followup-To: poster was set and 'm'ailing the answer
+      BUG. empty From:/Cc:/Bcc: line when mailing and no mail_address set
+      ADD. spamtrap warning even with use_mailreader_i=ON
+      ADD. honor unlink_article when mailing, too
+      ADD. warn if Subject: begins with "Re: " but there are no References:
+      ADD. warn if there are References: but Subject: does not begin with
+           "Re: " and does not contain "(was:"
+      ADD. make translations of plurals easier
+      ADD. moved some more strings to lang.c
+      FIX. TODO, extern.h, proto.h, art.c, config.c, feed.c, group.c, lang.c
+           main.c, misc.c, page.c, post.c, save.c, select.c
+
+ 019) Dirk Nimmich <nimmich@uni-muenster.de>
+      BUG. don't MIME encode headers when using external mail client
+           (use_mailreader_i)
+      BUG. close several potential security holes (buffer overruns) in
+           strfmailer()
+      BUG. "\x" sequences (x != '\0', 'n') in default_mailer_format got
+           replaced by "%x"
+      FIX. TODO, misc.c
+
+ 018) Park Chong-Dae <cdpark@jupiter.kaist.ac.kr>
+      Urs Janssen <urs@tin.org>
+      BUG. Do not GNKSA-test From: for FORGERY cancels
+      FIX. inews.c, post.c
+
+U020) Jason Faultless <jason@radar.tele2.co.uk>
+      Urs Janssen <urs@tin.org>
+      BUG. --disable-nls creates libintl.h-link
+      ADD. x-headers (via attributes) support to mails if not using
+           use_mailreader_i
+      ADD. minor code cleanup
+      ADD. extended DEFAULT_STRIP_RE_REGEX for danish prefixes, changed
+           quote_signatures default to false
+      FIX. aclocal.m4, proto.h, tin.h, art.c, init.c, lang.c, misc.c, post.c
+           save.c, screen.c, search.c
+
+ 017) Roland Rosenfeld <roland@spinnaker.de>
+      BUG. under special conditions filter entries got duplicated
+      REM. global filter
+      FIX. extern.h, proto.h, filter.c, group.c, init.c, lang.c, main.c
+           page.c
+
 -- 1.5.3 release 20000221 "For Her Light" --
 
 U019) Roland Rosenfeld <roland@spinnaker.de>
       ADD. editing the filter file in select and page menu ('E').
-      BUG. change line offset when editing filter from 22 to 25.
       FIX. select.c, page.c, menukeys.h, proto.h, filter.c, tin.1
+
+ 016) Roland Rosenfeld <roland@spinnaker.de>
+      BUG. change line offset when editing filter from 22 to 25.
+      FIX. filter.c
 
 U018) Jason Faultless <jason@radar.tele2.co.uk>
       ADD. Pipe '|' to thead menu
@@ -25,7 +96,8 @@ U018) Jason Faultless <jason@radar.tele2.co.uk>
 
  014) Jason Faultless <jason@radar.tele2.co.uk>
       BUG. Sender: errors on posting hung NNTP socket
-      FIX. inews.c
+      BUG. possible buffer overrun in the wildmat code
+      FIX. inews.c, wildmat.c
 
  013) Urs Janssen <urs@tin.org>
       BUG. terminal mode wasn't restored after -Z

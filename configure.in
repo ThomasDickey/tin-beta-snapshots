@@ -44,7 +44,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.5.3
+VERSION=1.5.4
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -79,7 +79,7 @@ case "$host_os" in
 esac
 
 ###     Native Language Support
-ALL_LINGUAS="de"
+ALL_LINGUAS="de et"
 
 ###	Checks for programs.
 save_CFLAGS="$CFLAGS"
@@ -101,7 +101,7 @@ dnl AC_CYGWIN is new in actuconf 2.13
 AC_CYGWIN
 dnl -DSTATIC needed for pcre
 dnl also add a check for "mode con" here and set
-dln CFLAGS="$CFLAGS -DLOCAL_CHARSET=" accordingly
+dnl CFLAGS="$CFLAGS -DLOCAL_CHARSET=" accordingly
 if test "$CYGWIN" = "yes" ; then
 	PCRE_DEFINES="$PCRE_DEFINES -DSTATIC"
 fi

@@ -724,6 +724,10 @@ stat_article (
 	}
 }
 
+
+/*
+ * Open an article for reading just the header
+ */
 FILE *
 open_art_header (
 	long art)
@@ -762,152 +766,37 @@ open_art_header (
 #endif /* NNTP_ABLE */
 }
 
-#ifdef NNTP_ABLE
-/*
- * Copies an article from the nntp socket and writes it to a temp file.
- * Returns open descriptor to this file. We have to do this in order
- * to do header and MIME parsing, and other functions that use seek()
- */
-static FILE *
-get_article (
-	FILE *art_fp,
-	int lines)
-{
-	FILE *fp;
-	char *ptr;
-	char tempfile[PATH_LEN];
-	int count = 0;
-#	if defined(HAVE_FDOPEN) && defined(HAVE_MKSTEMP)
-	int fd = -1;
-#	endif /* HAVE_FDOPEN && HAVE_MKSTEMP */
-	struct stat sb;
-
-	sprintf (tempfile, "%stin_nntpXXXXXX", TMPDIR);
-#	if defined(HAVE_FDOPEN) && defined(HAVE_MKSTEMP)
-	if ((fd = my_mktemp (tempfile)) == -1) {
-		perror_message (_(txt_cannot_create_uniq_name));
-		return (FILE *) 0;
-	}
-	if ((fp = fdopen (fd, "w")) == (FILE *) 0)
-#	else
-	mktemp (tempfile);
-	if ((fp = fopen (tempfile, "w")) == (FILE *) 0)
-#	endif /* HAVE_FDOPEN && HAVE_MKSTEMP */
-	{
-		perror_message (_(txt_article_cannot_open), tempfile);
-		return (FILE *) 0;
-	}
-
-	while ((ptr = tin_fgets(art_fp, FALSE)) != NULL) {
-		fputs (ptr, fp);
-		fputs ("\n", fp);		/* The one case where we do need the \n */
-								/* as rfc1521_decode() still expects this */
-		/*
-		 * Use the default message if one hasn't been supplied
-		 * Body search is currently the only function that has a different message
-		 */
-		if (lines && ++count % MODULO_COUNT_NUM == 0)
-			show_progress((*mesg=='\0') ? _(txt_reading_article) : mesg, count, lines);
-
-	}
-
-	if (ferror(fp) || tin_errno) {
-		fclose(fp);
-		if (!tin_errno) {
-			tin_errno = 1;
-			error_message(_(txt_filesystem_full), tempfile);
-		}
-#	if defined(M_AMIGA) || defined(WIN32)
-		log_unlink(fp, tempfile);
-#	else
-		unlink (tempfile);
-#	endif /* M_AMIGA || WIN32 */
-		return (FILE *) 0;
-	}
-
-	fclose(fp);
-
-	/*
-	 * Grab the correct filesize now that it's been closed
-	 */
-	note_size = ((stat (tempfile, &sb) < 0) ? 0 : sb.st_size);
-
-	if ((fp = fopen (tempfile, "r")) == (FILE *) 0) {	/* Reopen for just reading */
-		perror_message (_(txt_article_cannot_reopen), tempfile);
-		return (FILE *) 0;
-	}
-
-
-	/*
-	 * It is impossible to delete an open file on the Amiga or Win32. So we keep a
-	 * copy of the file name and delete it when finished instead.
-	 */
-#	if defined(M_AMIGA) || defined(WIN32)
-	log_unlink(fp, tempfile);
-#	else
-	unlink (tempfile);
-#	endif /* M_AMIGA || WIN32 */
-
-	return fp;
-}
-#endif /* NNTP_ABLE */
 
 /*
- * Open a mail/news article. If via NNTP, despool it to local disk. We need the
- * article local for later. Run it through RFC1521 decode.
- * If lines != 0 then show progress meter.
+ * Open a mail/news article. Do MIME decoding if necessary.
  * Return:
  *		A pointer to the open postprocessed file
  *		NULL pointer if article read fails in some way
  */
-
 FILE *
 open_art_fp (
 	char *group_path,
-	long art,
-	int lines,
-	t_bool rfc1521decode)
+	long art)
 {
 	char buf[NNTP_STRLEN];
-	struct stat sb;
-	FILE *fp, *art_fp;
+	FILE *art_fp;
 
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && CURR_GROUP.type == GROUP_TYPE_NEWS) {
-		FILE *nntp_fp;
-
-		sprintf (buf, "ARTICLE %ld", art);
-		if ((nntp_fp = nntp_command (buf, OK_ARTICLE, NULL)) == NULL)
+		snprintf (buf, sizeof(buf)-1, "ARTICLE %ld", art);
+		if ((art_fp = nntp_command (buf, OK_ARTICLE, NULL)) == NULL)
 			return (FILE *) 0;
-
-		art_fp = get_article (nntp_fp, lines);
 	} else {
 #endif /* NNTP_ABLE */
 		joinpath (buf, CURR_GROUP.spooldir, group_path);
 		sprintf (&buf[strlen (buf)], "/%ld", art);
-		/*
-		 * Get the correct file size. This is done in get_article() for
-		 * the NNTP case. TODO - fix this
-		 */
-		note_size = ((stat (buf, &sb) == -1) ? 0 : sb.st_size);
 
 		art_fp = fopen (buf, "r");
 #ifdef NNTP_ABLE
 	}
 #endif /* NNTP_ABLE */
 
-	/*
-	 * Do a bit of 1521 decoding, if appropriate.
-	 * If art_fp=NULL, then it returns NULL
-	 */
-	if (rfc1521decode) {
-		fp = rfc1521_decode(art_fp);
-		if (fp != art_fp)
-			note_size = 0;
-	} else
-		fp = art_fp;
-
-	return fp;
+	return art_fp;
 }
 
 

@@ -43,9 +43,9 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.5.3"
+#		define VERSION		"1.5.4"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20000221"
+#	define RELEASEDATE	"20000322"
 #	define RELEASENAME	"For Her Light"
 #	define TINRC_VERSION	"1.2"
 

@@ -38,6 +38,10 @@
 #ifndef PROTO_H
 #	define PROTO_H 1
 
+#	ifndef RFC2045_H
+#		include <rfc2045.h>
+#	endif /* !RFC2045_H */
+
 /* active.c */
 extern char group_flag (int ch);
 extern int get_active_num (void);
@@ -79,8 +83,9 @@ extern void ConvertTeX2Iso (char *from, char *to);
 
 /* color.c */
 extern void bcol (int color);
+extern void color_fputs (const char *s, FILE *stream, int color, t_bool signature);	/* this can be static void color_fputs */
 extern void fcol (int color);
-extern void print_color (char *str, t_bool signature);
+extern void print_color (char *str, int flags);
 
 /* config.c */
 extern char **ulBuildArgv (char *cmd, int *new_argc);
@@ -98,6 +103,9 @@ extern void quote_dash_to_space (char *str);
 extern void refresh_config_page (int act_option);
 extern void show_menu_help (const char *help_message);
 extern void write_config_file (char *file);
+
+/* cook.c */
+extern t_bool cook_article (t_openartinfo *artinfo);
 
 /* curses.c */
 extern OUTC_RETTYPE outchar (OUTC_ARGS);
@@ -155,7 +163,7 @@ extern t_bool filter_articles (struct t_group *group);
 extern t_bool filter_menu (int type, struct t_group *group, struct t_article *art);
 extern t_bool quick_filter (int type, struct t_group *group, struct t_article *art);
 extern t_bool quick_filter_select_posted_art (struct t_group *group, char *subj);
-extern t_bool read_filter_file (char *file, t_bool global_file);
+extern t_bool read_filter_file (char *file);
 extern void free_all_filter_arrays (void);
 extern int unfilter_articles (void);
 
@@ -293,14 +301,14 @@ extern int gnksa_do_check_from(char *from, char *address, char *realname);
 extern int my_chdir (char *path);
 extern int my_isprint (int c);
 extern int my_mkdir (char *path, mode_t mode);
-extern int peek_char (FILE *fp);
+extern int peek_char (FILE *fp);	/* this can be static int peek_char */
 extern int strfmailer (char *the_mailer, char *subject, char *to, const char *filename, char *s, size_t maxsize, char *format);
 extern int strfpath (char *format, char *str, size_t maxsize, char *the_homedir, char *maildir, char *savedir, char *group);
 extern int strfquote (char *group, int respnum, char *s, size_t maxsize, char *format);
 extern long file_mtime (const char *file);
 extern long file_size (const char *file);
 extern t_bool copy_fp (FILE *fp_ip, FILE *fp_op);
-extern t_bool invoke_cmd (char *nam);
+extern t_bool invoke_cmd (const char *nam);
 extern t_bool invoke_editor (const char *filename, int lineno);
 extern t_bool mail_check (void);
 extern void append_file (char *old_filename, char *new_filename);
@@ -392,7 +400,7 @@ extern int get_newsrcname (char *newsrc_name, const char *nntpserver_name);
 extern void get_nntpserver (char *nntpserver_name, char *nick_name);
 
 /* open.c */
-extern FILE *open_art_fp (char *group_path, long art, int lines, t_bool rfc1521decode);
+extern FILE *open_art_fp (char *group_path, long art);
 extern FILE *open_newgroups_fp (int the_index);
 extern FILE *open_news_active_fp (void);
 extern FILE *open_newsgroups_fp (void);
@@ -417,12 +425,9 @@ extern void vGet1GrpArtInfo (struct t_group *grp);
 #endif /* NNTP_ABLE */
 
 /* page.c */
-extern int art_open (struct t_article *art, char *group_path, t_bool rfc1521decode);
 extern int show_page (struct t_group *group, int respnum, int *threadnum);
-extern t_bool match_header (char *buf, const char *pat, char *body, char *nodec_body, size_t len);
-extern void art_close (void);
-extern void redraw_page (char *group, int respnum);
-extern void show_note_page (char *group, int respnum);
+extern void draw_page (char *group, int part);
+extern void resize_article (t_openartinfo *artinfo);
 
 /* parsdate.y */
 extern time_t parsedate (char *p, TIMEINFO *now);
@@ -446,9 +451,9 @@ extern time_t parsedate (char *p, TIMEINFO *now);
 /* post.c */
 extern int count_postponed_articles (void);
 extern int mail_to_author (char *group, int respnum, int copy_text, t_bool with_headers);
-extern int mail_to_someone (int respnum, const char *address, t_bool mail_to_poster, t_bool confirm_to_mail);
+extern int mail_to_someone (const char *address, t_bool confirm_to_mail, t_openartinfo *artinfo);
 extern int post_response (char *group, int respnum, int copy_text, t_bool with_headers);
-extern int repost_article (const char *group, int respnum, t_bool supersede);
+extern int repost_article (const char *group, int respnum, t_bool supersede, t_openartinfo *artinfo);
 extern t_bool cancel_article (struct t_group *group, struct t_article *art, int respnum);
 extern t_bool mail_bug_report (void);
 extern t_bool pickup_postponed_articles (t_bool ask, t_bool all);
@@ -497,11 +502,10 @@ extern void free_msgids (void);
 extern void thread_by_reference (void);
 
 /* regex.c */
-extern t_bool compile_regex (char *regex, struct regex_cache *cache, int options);
+extern t_bool compile_regex (const char *regex, struct regex_cache *cache, int options);
 extern t_bool match_regex (const char *string, char *pattern, t_bool icase);
 
 /* rfc1521.c */
-extern FILE *rfc1521_decode (FILE *infile);
 extern void rfc1521_encode (char *line, FILE *f, int e);
 extern void rfc1557_encode (char *line, FILE *f, int e);
 #if 0
@@ -513,14 +517,22 @@ extern void rfc1557_encode (char *line, FILE *f, int e);
 extern char *rfc1522_decode (const char *s);
 extern char *rfc1522_encode (char *s,t_bool ismail);
 extern int mmdecode (const char *what, int encoding, int delimiter, char *where, const char *charset);
-extern void get_mm_charset (void);
 extern void rfc15211522_encode (const char *filename, constext *mime_encoding, t_bool allow_8bit_header,t_bool ismail);
+
+/* rfc2045.c */
+extern char *get_param (t_param *list, const char *name);
+extern char *parse_header (char *buf, const char *pat, t_bool decode);
+extern int art_open (struct t_article *art, char *group_path, t_bool decode, t_openartinfo *artinfo);
+extern int parse_rfc822_headers (struct t_header *hdr, FILE *from, FILE *to);
+extern t_part *new_part (t_part *part);
+extern void art_close (t_openartinfo *artinfo);
+extern void free_and_init_header (struct t_header *hdr);
 
 /* save.c */
 extern int check_start_save_any_news (int function, t_bool catchup);
 extern t_bool post_process_files (int proc_type_ch, t_bool auto_delete);
 extern t_bool create_path (char *path);
-extern t_bool save_art_to_file (int indexnum, t_bool the_mailbox, const char *filename);
+extern t_bool save_art_to_file (int indexnum, t_bool the_mailbox, const char *filename, t_openartinfo *artinfo);
 extern t_bool save_regex_arts_to_file (t_bool is_mailbox, char *group_path);
 extern t_bool save_thread_to_file (t_bool is_mailbox, char *group_path);
 extern void add_to_save_list (int the_index, t_bool is_mailbox, const char *path);
@@ -536,19 +548,20 @@ extern void error_message (const char *fmt, ...);
 extern void info_message (const char *fmt, ...);
 extern void perror_message (const char *fmt, ...);
 extern void ring_bell (void);
-extern void show_progress (const char *txt, int count, int total);
+extern void show_progress (const char *txt, long count, long total);
 extern void show_title (char *title);
 extern void spin_cursor (void);
 extern void stow_cursor (void);
 extern void wait_message (int delay, const char *fmt, ...);
 
 /* search.c */
+extern int get_search_vectors (int *start, int *end);
 extern int search (int key, int current_art, t_bool forward);
 extern int search_active (t_bool forward);
+extern int search_article (t_bool forward, int start_line, int lines, t_lineinfo *line, FILE *fp);
 extern int search_config (t_bool forward, int current, int last);
 extern int search_help (t_bool forward, int current, int last);
 extern int search_body (int current_art);
-extern t_bool search_article (t_bool forward);
 
 /* select.c */
 extern int add_my_group (const char *group, t_bool add);
@@ -589,10 +602,8 @@ extern char *strcasestr (char *haystack, const char *needle);
 extern char *tin_ltoa (long value, int digits);
 extern int sh_format (char *dst, size_t len, const char *fmt, ...);
 extern size_t mystrcat (char **t, const char *s);
-extern void modifiedstrncpy (char *target, const char *source, size_t size, int decode);
 extern void my_strncpy (char *p, const char *q, size_t n);
-extern void str_lwr (char *dst, const char *src);
-extern void strcpynl (char *to, const char *from);
+extern void str_lwr (char *str);
 #ifndef HAVE_STRPBRK
 	extern char *strpbrk (char *str1, char *str2);
 #endif /* !HAVE_STRPBRK */

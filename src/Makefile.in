@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 1999-12-16
+# Updated: 2000-03-22
 #
 # Copyright (c) 1995-2000 Thomas E. Dickey <dickey@clark.net>
 # All rights reserved.
@@ -106,6 +106,7 @@ HFILES	= \
 	$(INCDIR)/plp_snprintf.h \
 	$(INCDIR)/policy.h \
 	$(INCDIR)/proto.h \
+	$(INCDIR)/rfc2045.h \
 	$(INCDIR)/stpwatch.h \
 	$(INCDIR)/tin.h \
 	$(INCDIR)/tinrc.h \
@@ -121,6 +122,7 @@ CFILES	= \
 	$(SRCDIR)/charset.c \
 	$(SRCDIR)/color.c \
 	$(SRCDIR)/config.c \
+	$(SRCDIR)/cook.c \
 	$(SRCDIR)/curses.c \
 	$(SRCDIR)/debug.c \
 	$(SRCDIR)/envarg.c \
@@ -155,6 +157,7 @@ CFILES	= \
 	$(SRCDIR)/regex.c \
 	$(SRCDIR)/rfc1521.c \
 	$(SRCDIR)/rfc1522.c \
+	$(SRCDIR)/rfc2045.c \
 	$(SRCDIR)/save.c \
 	$(SRCDIR)/screen.c \
 	$(SRCDIR)/search.c \
@@ -164,6 +167,7 @@ CFILES	= \
 	$(SRCDIR)/strftime.c \
 	$(SRCDIR)/string.c \
 	$(SRCDIR)/tags.c \
+	$(OBJDIR)/tcurses.c \
 	$(SRCDIR)/thread.c \
 	$(SRCDIR)/wildmat.c \
 	$(SRCDIR)/xref.c
@@ -180,6 +184,7 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/charset.o \
 	$(OBJDIR)/color.o \
 	$(OBJDIR)/config.o \
+	$(OBJDIR)/cook.o \
 	$(OBJDIR)/curses.o \
 	$(OBJDIR)/debug.o \
 	$(OBJDIR)/envarg.o \
@@ -215,6 +220,7 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/regex.o \
 	$(OBJDIR)/rfc1521.o \
 	$(OBJDIR)/rfc1522.o \
+	$(OBJDIR)/rfc2045.o \
 	$(OBJDIR)/save.o \
 	$(OBJDIR)/screen.o \
 	$(OBJDIR)/search.o \
@@ -416,10 +422,13 @@ $(OBJDIR)/config.o:		$(SRCDIR)/config.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h \
 				$(INCDIR)/version.h
 $(OBJDIR)/curses.o:		$(SRCDIR)/curses.c $(TIN_DEP)
+$(OBJDIR)/cook.o:		$(SRCDIR)/cook.c $(TIN_DEP) \
+				$(INCDIR)/rfc2045.h
 $(OBJDIR)/debug.o:		$(SRCDIR)/debug.c $(TIN_DEP)
 $(OBJDIR)/envarg.o:		$(SRCDIR)/envarg.c $(TIN_DEP)
 $(OBJDIR)/feed.o:		$(SRCDIR)/feed.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h
+				$(INCDIR)/menukeys.h \
+				$(INCDIR)/rfc2045.h
 $(OBJDIR)/filter.o:		$(SRCDIR)/filter.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
 $(OBJDIR)/getline.o:		$(SRCDIR)/getline.c $(TIN_DEP)
@@ -443,14 +452,15 @@ $(OBJDIR)/lang.o:		$(SRCDIR)/lang.c $(TIN_DEP)
 $(OBJDIR)/list.o:		$(SRCDIR)/list.c $(TIN_DEP)
 $(OBJDIR)/mail.o:		$(SRCDIR)/mail.c $(TIN_DEP)
 $(OBJDIR)/main.o:		$(SRCDIR)/main.c $(TIN_DEP) \
-				$(INCDIR)/version.h \
-				$(INCDIR)/bugrep.h
+				$(INCDIR)/bugrep.h \
+				$(INCDIR)/version.h
 $(OBJDIR)/makecfg.o:		$(SRCDIR)/makecfg.c $(TIN_DEP)
 $(OBJDIR)/memory.o:		$(SRCDIR)/memory.c $(TIN_DEP)
 $(OBJDIR)/misc.o:		$(SRCDIR)/misc.c $(TIN_DEP) \
-				$(INCDIR)/version.h \
 				$(INCDIR)/bugrep.h \
-				$(INCDIR)/policy.h
+				$(INCDIR)/policy.h \
+				$(INCDIR)/rfc2045.h \
+				$(INCDIR)/version.h
 $(OBJDIR)/newsrc.o:		$(SRCDIR)/newsrc.c $(TIN_DEP)
 $(OBJDIR)/nntplib.o:		$(SRCDIR)/nntplib.c $(TIN_DEP) \
 				$(INCDIR)/tnntp.h
@@ -460,13 +470,15 @@ $(OBJDIR)/nrctbl.o:		$(SRCDIR)/nrctbl.c $(TIN_DEP) \
 $(OBJDIR)/open.o:		$(SRCDIR)/open.c $(TIN_DEP) \
 				$(INCDIR)/version.h
 $(OBJDIR)/page.o:		$(SRCDIR)/page.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h
+				$(INCDIR)/menukeys.h \
+				$(INCDIR)/rfc2045.h
 $(OBJDIR)/parsdate.o:		$(OBJDIR)/parsdate.y $(TIN_DEP)
 $(OBJDIR)/pgp.o:		$(SRCDIR)/pgp.c $(TIN_DEP)
 $(OBJDIR)/plp_snprintf.o:	$(SRCDIR)/plp_snprintf.c $(TIN_DEP) \
 				$(INCDIR)/plp_snprintf.h
 $(OBJDIR)/post.o:		$(SRCDIR)/post.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h \
+				$(INCDIR)/rfc2045.h \
 				$(INCDIR)/version.h
 $(OBJDIR)/prompt.o:		$(SRCDIR)/prompt.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
@@ -475,8 +487,11 @@ $(OBJDIR)/refs.o:		$(SRCDIR)/refs.c $(TIN_DEP)
 $(OBJDIR)/regex.o:		$(SRCDIR)/regex.c $(TIN_DEP)
 $(OBJDIR)/rfc1521.o:		$(SRCDIR)/rfc1521.c $(TIN_DEP)
 $(OBJDIR)/rfc1522.o:		$(SRCDIR)/rfc1522.c $(TIN_DEP)
+$(OBJDIR)/rfc2045.o:		$(SRCDIR)/rfc2045.c $(TIN_DEP) \
+				$(INCDIR)/rfc2045.h
 $(OBJDIR)/save.o:		$(SRCDIR)/save.c $(TIN_DEP) \
-				$(INCDIR)/menukeys.h
+				$(INCDIR)/menukeys.h \
+				$(INCDIR)/rfc2045.h
 $(OBJDIR)/screen.o:		$(SRCDIR)/screen.c $(TIN_DEP)
 $(OBJDIR)/search.o:		$(SRCDIR)/search.c $(TIN_DEP)
 $(OBJDIR)/select.o:		$(SRCDIR)/select.c $(TIN_DEP) \

@@ -42,6 +42,9 @@
 #	include "tin.h"
 #endif /* !TIN_H */
 
+/*
+ * Hold the last pattern used
+ */
 static char tmpbuf[LEN];
 
 /*
@@ -55,9 +58,18 @@ static char *get_search_pattern (t_bool forward, const char *fwd_msg, const char
 #define MATCH_MSG	(mesg[0] ? mesg : _(txt_no_match))
 
 /*
- * Kludge to maintain counters for body search
+ * Kludge to maintain some internal state for body search
  */
 static int total_cnt = 0, curr_cnt = 0;
+int srch_lineno = -1;
+
+/*
+ * Used by article and body search - this saves passing around large numbers
+ * of parameters all the time
+ */
+static int srch_offsets[6];
+static int srch_offsets_size = sizeof(srch_offsets)/sizeof(int);
+struct regex_cache srch_regex;
 
 
 /*
@@ -78,6 +90,7 @@ get_search_pattern (
 		return (NULL);
 
 	wait_message (0, _(txt_searching));
+
 	stow_cursor();
 
 	if (tinrc.wildcard) {			/* ie, not wildmat() */
@@ -240,48 +253,54 @@ body_search (
 	int i,
 	char *searchbuf)
 {
-	FILE *fp;
 	char *line;
 	char group_path[PATH_LEN];
 	int  code;
-	struct t_article *art = &arts[i];
+	t_openartinfo artinfo;
 
 	if (!read_news_via_nntp || CURR_GROUP.type != GROUP_TYPE_NEWS)
 		make_group_path (CURR_GROUP.name, group_path);
 
-	/*
-	 * open_art_fp() will display 'mesg' if not null instead of the default progress counter
-	 */
 	sprintf(mesg, _(txt_searching_body), ++curr_cnt, total_cnt);
 
-#if 1 /* see also screen.c show_progress ()*/
-	if ((fp = open_art_fp (group_path, art->artnum, -art->lines, TRUE)) == (FILE *) 0)
-#else
-	if ((fp = open_art_fp (group_path, art->artnum, art->lines, TRUE)) == (FILE *) 0)
-#endif /* 1 */
-		return ((tin_errno != 0) ? -1 : 0);
+	memset (&artinfo, 0, sizeof(t_openartinfo));
+	switch (art_open (&arts[i], group_path, TRUE, &artinfo)) {
+		case ART_ABORT:					/* User 'q'uit */
+			code = -1;
+			goto exit_search;
+		case ART_UNAVAILABLE:
+			code =  0;					/* Treat as string not present */
+			goto exit_search;
+	}
 
 	/*
-	 * Skip the header
+	 * Skip the header - is this right ?
 	 */
-	while ((line = tin_fgets (fp, TRUE)) != (char *) 0) {
-		if (*line == '\0')
-			break;
-	}
-
-	if (tin_errno != 0) {			/* User aborted search */
-		code = -1;
-		goto exit_search;
-	}
+	for (i=0; artinfo.cookl[i].flags & C_HEADER; ++i)
+		;
+	fseek (artinfo.cooked, artinfo.cookl[i].offset, SEEK_SET);
 
 	/*
 	 * Now search the body
 	 */
-	while ((line = tin_fgets (fp, FALSE)) != (char *) 0) {
-		if (REGEX_MATCH (line, searchbuf, TRUE)) {
-			code = 1;
-			goto exit_search;
+	while ((line = tin_fgets (artinfo.cooked, FALSE)) != (char *) 0) {
+		if (tinrc.wildcard) {
+			if (pcre_exec (srch_regex.re, srch_regex.extra, line, strlen(line), 0, 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
+				srch_lineno = i;
+				art_close (&pgart);		/* Switch the pager over to matched art */
+				pgart = artinfo;
+fprintf(stderr, "art_switch(%p = %p)\n", &pgart, &artinfo);
+				return 1;
+			}
+		} else {
+			if (REGEX_MATCH (line, searchbuf, TRUE)) {
+				srch_lineno = i;
+				art_close (&pgart);		/* Switch the pager over to matched art */
+				pgart = artinfo;
+				return 1;
+			}
 		}
+		i++;
 	}
 
 	if (tin_errno != 0) {			/* User abort */
@@ -291,7 +310,7 @@ body_search (
 
 	code = 0;						/* Didn't find it */
 exit_search:
-	fclose (fp);					/* open_art_fp() returns a real fd */
+	art_close (&artinfo);
 	return code;
 }
 
@@ -311,7 +330,7 @@ author_search (
 	if (arts[i].name == (char *) 0)
 		ptr = arts[i].from;
 	else
-		sprintf (buf, "%s <%s>", arts[i].name, arts[i].from);
+		snprintf (buf, sizeof(buf)-1, "%s <%s>", arts[i].name, arts[i].from);
 
 	return (REGEX_MATCH (ptr, searchbuf, TRUE)) ? 1 : 0;
 }
@@ -345,7 +364,7 @@ search_group (
 
 	if (grpmenu.curr < 0) {
 		info_message (_(txt_no_arts));
-		return 0;
+		return -1;
 	}
 
 	if (!read_news_via_nntp || CURR_GROUP.type != GROUP_TYPE_NEWS)
@@ -427,20 +446,21 @@ search (
 
 /*
  * page.c (search current article body)
- * TODO - highlight located text ?
+ * Return line number that matches or -1
+ * If using regex's return vector of character offsets
+ * TODO compare ^L treatment with previous version
  */
-t_bool
+int
 search_article (
-	t_bool forward)
+	t_bool forward,
+	int start_line,
+	int lines,
+	t_lineinfo *line,
+	FILE *fp)
 {
-	char *pattern;
-	char *p, *q;
-	char buf[LEN];
-	char buf2[LEN];
-	int i, j;
-	int local_note_page = note_page; /* copy current position in article */
-	t_bool ctrl_L;
-	t_bool local_note_end = note_end;
+	char *pattern, *ptr;
+	struct regex_cache srch;
+	int i;
 
 	if (!(pattern = get_search_pattern(
 				forward,
@@ -450,66 +470,52 @@ search_article (
 				HIST_ART_SEARCH
 	))) return FALSE;
 
-	while (!local_note_end) {
-		ctrl_L = FALSE;
-		note_line = (local_note_page < 1) ? 5 : 3;
+	if (tinrc.wildcard && !(compile_regex (pattern, &srch, PCRE_EXTENDED | PCRE_CASELESS)))
+		return -1;
 
-		while (note_line < cLINES) {
-			if (fgets (buf, (int) sizeof(buf), note_fp) == NULL) {
-				local_note_end = TRUE;
+	srch_lineno = -1;
+	i = start_line;
+
+	forever {
+		if (forward) {
+			i++;
+			if (i == lines)
 				break;
-			}
-			buf[LEN-1] = '\0';
-			/*
-			 * Build the string to search in buf2. Preprocess in the following ways:
-			 * ignore backspaces
-			 * expand pagefeed into a literal '^L'
-			 * expand tabs
-			 * maps control chars to '^char'
-			 */
-			for (p = buf, q = buf2;	*p && *p != '\n' && q<&buf2[LEN]; p++) {
-				if (*p == '\b' && q > buf2)
-					q--;
-				else if (*p == '\f') {		/* ^L */
-					*q++ = '^';
-					*q++ = 'L';
-					ctrl_L = TRUE;
-				} else if (*p == '\t') {
-					i = q - buf2;
-					j = (i|7) + 1;
-					while (i++ < j)
-						*q++ = ' ';
-
-				} else if (((*p) & 0xFF) < ' ') {
-					*q++ = '^';
-					*q++ = ((*p) & 0xFF) + '@';
-				} else
-					*q++ = *p;
-			}
-			*q = '\0';
-
-			if (REGEX_MATCH (buf2, pattern, TRUE)) {
-				fseek (note_fp, note_mark[local_note_page], SEEK_SET);
-				return TRUE;
-			}
-
-			note_line += ((int) strlen(buf2) / cCOLS) + 1;
-
-			if (ctrl_L)
+		} else {
+			i--;
+			if (i < 0)
 				break;
 		}
-		if (!local_note_end)
-			note_mark[++local_note_page] = ftell (note_fp);
+/* TODO consider not searching some line types ? - body search skips hdrs */
+		fseek (fp, line[i].offset, SEEK_SET);
+		ptr = tin_fgets(fp, FALSE);
+
+		if (tinrc.wildcard) {
+			if (pcre_exec (srch.re, srch.extra, ptr, strlen(ptr), 0, 0,
+								srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
+				srch_lineno = i;
+				return i;
+			}
+		} else {
+			if (REGEX_MATCH (ptr, pattern, TRUE)) {
+				srch_lineno = i;
+				return i;
+			}
+		}
 	}
 
-	fseek (note_fp, note_mark[note_page], SEEK_SET);
-	info_message (MATCH_MSG);
-	return FALSE;
+	wait_message (0, _(txt_no_match));
+	return -1;
 }
 
 
 /*
  * Search the bodies of all the articles in current group
+ * Start the search at the current article
+ * A match will replace the context of the article open in the pager
+ * Save the line # that matched (and the start/end vector for regex)
+ * for later retrieval
+ * Return index in arts[] of article that matched or -1
  */
 int
 search_body (
@@ -518,8 +524,13 @@ search_body (
 	char *buf;
 	int i;
 
-	if (!(buf = get_search_pattern(TRUE, _(txt_search_body), _(txt_search_body), tinrc.default_search_art, HIST_ART_SEARCH)))
-		return -1;
+	if (!(buf = get_search_pattern(
+			TRUE,
+			_(txt_search_body),
+			_(txt_search_body),
+			tinrc.default_search_art,
+			HIST_ART_SEARCH
+	))) return -1;
 
 	total_cnt = curr_cnt = 0;			/* Reset global counter of articles done */
 
@@ -535,5 +546,31 @@ search_body (
 				total_cnt++;
 		}
 	}
-	return (search_group (1, current_art, buf, body_search));
+
+	/*
+	 * Pre-compile if we're using full regex
+	 */
+	if (tinrc.wildcard && !(compile_regex (buf, &srch_regex, PCRE_EXTENDED | PCRE_CASELESS)))
+		return -1;
+
+	srch_lineno = -1;
+	return search_group (1, current_art, buf, body_search);
+}
+
+
+/*
+ * Return the saved line & start/end info from previous successful
+ * regex search
+ */
+int
+get_search_vectors(
+	int *start,
+	int *end)
+{
+	int i = srch_lineno;
+
+	*start = srch_offsets[0];
+	*end = srch_offsets[1];
+	srch_lineno = -1;			/* We can only retrieve this info once */
+	return i;
 }

@@ -180,6 +180,7 @@
 	use_mailreader_i		OPT_ON_OFF
 	unlink_article			OPT_ON_OFF
 	keep_posted_articles		OPT_ON_OFF
+	keep_posted_articles_file	OPT_STRING
 	keep_dead_articles		OPT_ON_OFF
 	strip_newsrc			OPT_ON_OFF
 	strip_bogus			txt_strip_bogus_type BOGUS_ASK+1

@@ -1,15 +1,15 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 1999-11-16
+# Updated: 2000-03-22
 #
 
 PROJECT	= tin
 LVER	= 1
 PVER	= 5
-SVER	= 3
+SVER	= 4
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20000221
+DVER	= 20000322
 EXE	= tin
 MANEXT	= 1
 
@@ -37,6 +37,7 @@ HFILES	= \
 	$(INCDIR)/plp_snprintf.h \
 	$(INCDIR)/policy.h \
 	$(INCDIR)/proto.h \
+	$(INCDIR)/rfc2045.h \
 	$(INCDIR)/stpwatch.h \
 	$(INCDIR)/tcurses.h \
 	$(INCDIR)/tin.h \
@@ -53,6 +54,7 @@ CFILES	= \
 	$(SRCDIR)/charset.c \
 	$(SRCDIR)/color.c \
 	$(SRCDIR)/config.c \
+	$(SRCDIR)/cook.c \
 	$(SRCDIR)/curses.c \
 	$(SRCDIR)/debug.c\
 	$(SRCDIR)/envarg.c \
@@ -89,6 +91,7 @@ CFILES	= \
 	$(SRCDIR)/regex.c \
 	$(SRCDIR)/rfc1521.c \
 	$(SRCDIR)/rfc1522.c \
+	$(SRCDIR)/rfc2045.c \
 	$(SRCDIR)/save.c \
 	$(SRCDIR)/screen.c \
 	$(SRCDIR)/search.c \
@@ -146,6 +149,7 @@ DOC	= \
 	$(DOCDIR)/INSTALL \
 	$(DOCDIR)/TODO \
 	$(DOCDIR)/WHATSNEW \
+	$(DOCDIR)/art_handling.txt \
 	$(DOCDIR)/auth.txt \
 	$(DOCDIR)/filtering \
 	$(DOCDIR)/internals.txt \
@@ -293,7 +297,8 @@ POFILES = \
 	$(PODIR)/Makefile.inn \
 	$(PODIR)/POTFILES.in \
 	$(PODIR)/tin.pot \
-	$(PODIR)/de.po
+	$(PODIR)/de.po \
+	$(PODIR)/et.po
 
 
 ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(AMIGA) $(VMS) $(PCRE) $(MISC) $(CAN) $(INTLFILES) $(POFILES)
@@ -449,7 +454,7 @@ dist:
 	@$(MAKE) chmod
 	@$(MAKE) tar
 
-version :
+version:
 	@$(ECHO) "$(PROJECT)-$(VER)"
 
 distclean:
@@ -467,6 +472,7 @@ distclean:
 	$(PCREDIR)/dftables \
 	$(PCREDIR)/Makefile \
 	$(SRCDIR)/Makefile \
+	$(INTLDIR)/po2tbl.sed \
 	$(CANDIR)/*.[oa] \
 	$(CANDIR)/endian.h \
 	$(CANDIR)/canlocktest \

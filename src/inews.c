@@ -138,9 +138,14 @@ submit_inews (
 		fclose (fp);
 		return ret_code;
 	}
+
+#ifndef FORGERY
 	/*
-	 * check for valid From: line
+	 * we should only skip the gnksa_check_from() test if we are going to post
+	 * a forged cancel, but inews.c doesn't know anything about the message
+	 * type, so we skip the test if FORGERY is set
 	 *
+	 * check for valid From: line
 	 * this will be done once again in sender_needed!?!
 	 */
 	if (GNKSA_OK != gnksa_check_from(rfc1522_encode(from_name, FALSE))) { /* error in address */
@@ -148,6 +153,7 @@ submit_inews (
 		fclose (fp);
 		return ret_code;
 	}
+#endif /* !FORGERY */
 
 	do {
 		rewind(fp);

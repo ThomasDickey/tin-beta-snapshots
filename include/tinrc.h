@@ -175,6 +175,7 @@ struct t_config {
 	t_bool inverse_okay;
 	t_bool keep_dead_articles;			/* keep all dead articles in dead.articles */
 	t_bool keep_posted_articles;		/* keep all posted articles in ~/Mail/posted */
+	char keep_posted_articles_file[LEN];		/* file, to keep posted articles */
 	t_bool mail_8bit_header;			/* allow 8bit chars. in header of mail message */
 	t_bool mark_saved_read;				/* mark saved article/thread as read */
 	t_bool pgdn_goto_next;

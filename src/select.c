@@ -250,7 +250,7 @@ selection_page (
 			case '1': case '2': case '3': case '4': case '5':
 			case '6': case '7': case '8': case '9':
 				if (selmenu.max)
-					prompt_item_num (ch, txt_select_group);
+					prompt_item_num (ch, _(txt_select_group));
 				break;
 
 #ifndef NO_SHELL_ESCAPE
@@ -594,9 +594,9 @@ show_selection_page (
 	CleartoEOLN ();
 
 	if (read_news_via_nntp)
-		sprintf (buf, "%s (%s  %d%s)", _(txt_group_selection), nntp_server, selmenu.max, (tinrc.show_only_unread_groups ? " R" : ""));
+		sprintf (buf, "%s (%s  %d%s)", _(txt_group_selection), nntp_server, selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
 	else
-		sprintf (buf, "%s (%d%s)", _(txt_group_selection), selmenu.max, (tinrc.show_only_unread_groups ? " R" : ""));
+		sprintf (buf, "%s (%d%s)", _(txt_group_selection), selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
 
 	show_title (buf);
 	MoveCursor (1, 0);
@@ -741,7 +741,7 @@ yank_active_file (
 				selmenu.curr = my_group_add (oldgroup);
 			set_groupname_len (yank_in_active_file);
 			show_selection_page ();
-			info_message (_(txt_added_groups), selmenu.max - oldmax, (selmenu.max - oldmax) == 1 ? "" : _(txt_plural));
+			info_message (_(txt_added_groups), selmenu.max - oldmax, (selmenu.max - oldmax) == 1 ? _(txt_group_singular) : _(txt_group_plural));
 		} else
 			info_message (_(txt_no_groups_to_yank_in));
 	} else {												/* Yank out */

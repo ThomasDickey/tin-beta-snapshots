@@ -360,28 +360,18 @@ spin_cursor (
 
 
 /*
- *  show how many items we've processed.  Allow
- *  four digits for each number, with the possibility that it will be
- *  wider.
+ *  progressmeter in %
  */
-
 void
 show_progress (
 	const char *txt,
-	int count,
-	int total)
+	long count,
+	long total)
 {
-/* if (batch_mode) */
-if (batch_mode || count <= 0 || total == 0)
+	if (batch_mode || count <= 0 || total == 0)
 		return;
 
 	MoveCursor(cLINES, 0);
-#if 1 /* see also search.c search_art_body () */
-	if (total < 0)
-		my_printf ("%s", txt);
-	else
-#endif /* 1 */
-/*		my_printf ("%s%6d/%-6d", txt, count, total);*/
-		my_printf ("%s %d%%", txt, count*100/total);
+	my_printf ("%s %3d%%", txt, (int) (count*100/total));
 	my_flush();
 }

@@ -47,6 +47,9 @@
 #ifndef MENUKEYS_H
 #	include  "menukeys.h"
 #endif /* !MENUKEYS_H */
+#ifndef RFC2045_H
+#	include  "rfc2045.h"
+#endif /* !RFC2045_H */
 
 #ifdef HAVE_UUDEVIEW_H
 #	ifndef __UUDEVIEW_H__
@@ -190,7 +193,7 @@ check_start_save_any_news (
 				continue;
 
 			group_count++;
-			sprintf (buf, _(txt_saved), group->name);
+			sprintf (buf, _(txt_saved_groupname), group->name);
 			fprintf (fp_log, buf);
 			if (verbose)
 				wait_message (0, buf);
@@ -206,6 +209,8 @@ check_start_save_any_news (
 		}
 
 		for (j = 0; j < top_art; j++) {
+			t_openartinfo artinfo;
+
 			if (arts[j].status != ART_UNREAD)
 				continue;
 
@@ -226,7 +231,7 @@ check_start_save_any_news (
 
 				case MAIL_ANY_NEWS:
 				case SAVE_ANY_NEWS:
-					switch (art_open (&arts[j], group_path, do_rfc1521_decoding)) {
+					switch (art_open (&arts[j], group_path, FALSE, &artinfo)) {
 						case ART_UNAVAILABLE:
 							continue;
 						case ART_ABORT:				/* User 'q'uit */
@@ -251,6 +256,7 @@ check_start_save_any_news (
 						fprintf (fp_log, _(txt_cannot_open), savefile);
 						if (verbose)
 							perror_message (_(txt_cannot_open), savefile);
+						art_close (&artinfo);
 						continue;
 					}
 
@@ -262,9 +268,8 @@ check_start_save_any_news (
 					if (verbose)
 						wait_message (0, buf);
 
-					rewind (note_fp);
-					copy_fp (note_fp, fp);
-					art_close ();
+					copy_fp (artinfo.raw, fp);
+					art_close (&artinfo);
 					fclose (fp);
 					saved_arts++;
 
@@ -284,7 +289,9 @@ check_start_save_any_news (
 
 		if (art_count) {
 			if (verbose)
-				wait_message (0, _(txt_saved_group), art_count, hot_count, IS_PLURAL(art_count), group->name);
+				wait_message (0, _(txt_saved_group), art_count, hot_count,
+					(art_count > 1 ? _(txt_article_plural) : _(txt_article_singular)),
+					group->name);
 			unread_news = TRUE;
 		}
 	}
@@ -307,9 +314,9 @@ check_start_save_any_news (
 
 		case MAIL_ANY_NEWS:
 		case SAVE_ANY_NEWS:
-			sprintf (buf, _(txt_saved_summary), (function == MAIL_ANY_NEWS ? _("Mailed") : _("Saved")),
-					saved_arts, IS_PLURAL(saved_arts),
-					group_count, IS_PLURAL(group_count));
+			sprintf (buf, _(txt_saved_summary), (function == MAIL_ANY_NEWS ? _(txt_mailed) : _(txt_saved)),
+					saved_arts, (saved_arts > 1 ? _(txt_article_plural) : _(txt_article_singular)),
+					group_count, (group_count > 1 ? _(txt_group_plural) : _(txt_group_singular)));
 			fprintf (fp_log, "%s", buf);
 			if (verbose)
 				wait_message (0, buf);
@@ -344,7 +351,8 @@ t_bool
 save_art_to_file (
 	int indexnum,
 	t_bool the_mailbox,
-	const char *filename)
+	const char *filename,
+	t_openartinfo *artinfo)
 {
 	FILE *fp;
 	char *file;
@@ -411,19 +419,19 @@ save_art_to_file (
 		char from[HEADER_LEN];
 		time_t epoch;
 
-		strip_name (note_h.from, from);
+		if (artinfo->hdr.from)
+			strip_name (artinfo->hdr.from, from);
 		(void) time (&epoch);
 		fprintf (fp, "From %s %s", from, ctime (&epoch));
 	}
 
-	if (fseek (note_fp, 0L, SEEK_SET) == -1)
+	if (fseek (artinfo->raw, 0L, SEEK_SET) == -1)
 		perror_message (_("fseek() error on [%s]"), save[i].subject); /* FIXME: -> lang.c */
 
-	if (copy_fp (note_fp, fp))
+	if (copy_fp (artinfo->raw, fp))
 		print_art_seperator_line (fp, the_mailbox); /* write tailing newline or MDF-mailbox seperator */
 
 	fclose (fp);
-	fseek (note_fp, note_mark[note_page], SEEK_SET);
 
 	save[i].saved = TRUE;
 	if (tinrc.mark_saved_read)
@@ -451,6 +459,7 @@ save_arts (
 	char file[PATH_LEN];
 	int i;
 	t_bool ret_code = FALSE;
+	t_openartinfo artinfo;
 
 	for (i = 0 ; i < num_save ; i++) {
 		/* the tailing spaces are needed for the progress-meter */
@@ -473,7 +482,8 @@ save_arts (
 #	endif /* HAVE_LONG_FILE_NAMES */
 		}
 
-		switch (art_open (&arts[save[i].index], group_path, do_rfc1521_decoding)) {
+		memset (&artinfo, 0, sizeof(t_openartinfo));
+		switch (art_open (&arts[save[i].index], group_path, do_rfc1521_decoding, &artinfo)) {
 
 			case ART_ABORT:					/* User 'q'uit */
 				return ret_code;
@@ -484,8 +494,8 @@ save_arts (
 				continue;
 
 			default:
-				ret_code |= save_art_to_file (i, is_mailbox, file);
-				art_close ();
+				ret_code |= save_art_to_file (i, is_mailbox, file, &artinfo);
+				art_close (&artinfo);
 		}
 	}
 
@@ -1165,29 +1175,43 @@ post_process_uud (
 			/* open_out_file already declared, might as well use it */
 			open_out_file++;
 			my_printf(_(txt_libuu_success), item->filename);
+			my_printf(cCRLF);
+
 		} else {
 			errors++;
-			if (item->filename == NULL)
+			if (item->filename == NULL) {
 				my_printf(_(txt_libuu_error_decode), item->subfname);
-			else
+				my_printf(cCRLF);
+			}
+			else {
 				my_printf(_(txt_libuu_error_decode), item->filename);
+				my_printf(cCRLF);
+			}
 
 			if (item->state & UUFILE_MISPART) {
 				my_printf(_(txt_libuu_error_missing));
+				my_printf(cCRLF);
 			} else if (item->state & UUFILE_NOBEGIN) {
 				my_printf(_(txt_libuu_error_no_begin));
+				my_printf(cCRLF);
 			} else if (item->state & UUFILE_NOEND) {
 				my_printf(_(txt_libuu_error_no_end));
+				my_printf(cCRLF);
 			} else if (item->state & UUFILE_NODATA) {
 				my_printf(_(txt_libuu_error_no_data));
-			} else
+				my_printf(cCRLF);
+			} else {
 				my_printf(_(txt_libuu_error_unknown));
+				my_printf(cCRLF);
+			}
 		}
 		i++;
 		item = UUGetFileListItem(i);
 		my_flush();
 	}
-	my_printf(_(txt_libuu_saved), open_out_file, num_save, errors, IS_PLURAL(errors));
+	my_printf(_(txt_libuu_saved), open_out_file, num_save, errors,
+		(errors > 1 ? _(txt_error_plural) : _(txt_error_singular)));
+	my_printf(cCRLF);
 	UUCleanUp();
 	delete_processed_files (auto_delete); /* TRUE = auto-delete files */
 	return;
@@ -1224,7 +1248,7 @@ post_process_uud (
 				switch (state) {
 					case INITIAL:
 						if (!strncmp ("begin ", s, 6)) {
-							if (sscanf (s+6, "%*d %128c\n", realname) != 1)	/* Get the real filename */
+							if (sscanf (s+6, "%*o %128c\n", realname) != 1)	/* Get the real filename */
 								realname[0] = '\0';
 							else
 								strtok (realname, "\n");
@@ -1340,7 +1364,9 @@ uudecode_file (
 				*ptr = '\0';
 		}
 		pclose (fp_in);
+		my_printf (cCRLF);
 		my_printf (_(txt_checksum_of_file), uudname);
+		my_printf (cCRLF);
 		my_flush ();
 		my_printf ("%s  %10ld %s %s %s", buf, file_size (uudname), _("bytes"), cCRLF, cCRLF);
 	} else
@@ -1365,7 +1391,9 @@ uudecode_file (
 		if (pp > POST_PROC_UUDECODE && archiver[pp].test != 0) {
 			i = (pp == POST_PROC_UUD_LST_ZOO || pp == POST_PROC_UUD_EXT_ZOO ? 3 : 4);
 			sh_format (buf, sizeof(buf), "%s %s \"%s\"", archiver[i].name, archiver[i].test, uudname);
+			my_printf(cCRLF cCRLF);
 			my_printf (_(txt_testing_archive), uudname);
+			my_printf(cCRLF);
 			my_flush ();
 			if (!invoke_cmd (buf))
 				error_message (_(txt_post_processing_failed));
@@ -1377,7 +1405,9 @@ uudecode_file (
 		if (pp == POST_PROC_UUD_LST_ZOO || pp == POST_PROC_UUD_LST_ZIP) {
 			i = (pp == POST_PROC_UUD_LST_ZOO ? 3 : 4);
 			sh_format (buf, sizeof(buf), "%s %s %s", archiver[i].name, archiver[i].list, uudname);
+			my_printf (cCRLF cCRLF);
 			my_printf (_(txt_listing_archive), uudname);
+			my_printf (cCRLF);
 			my_flush ();
 			if (!invoke_cmd (buf))
 				error_message (_(txt_post_processing_failed));
@@ -1389,7 +1419,9 @@ uudecode_file (
 		if (pp == POST_PROC_UUD_EXT_ZOO || pp == POST_PROC_UUD_EXT_ZIP) {
 			i = (pp == POST_PROC_UUD_EXT_ZOO ? 3 : 4);
 			sh_format (buf, sizeof(buf), "%s %s %s", archiver[i].name, archiver[i].extract, uudname);
+			my_printf (cCRLF cCRLF);
 			my_printf (_(txt_extracting_archive), uudname);
+			my_printf (cCRLF);
 			my_flush ();
 			if (!invoke_cmd (buf))
 				error_message (_(txt_post_processing_failed));
@@ -1450,7 +1482,9 @@ post_process_sh (
 			continue;
 		my_strncpy (file_in, save_filename (j), sizeof (file_in));
 
+		my_printf (cCRLF);
 		my_printf (_(txt_extracting_shar), file_in);
+		my_printf (cCRLF);
 		my_flush ();
 
 		found_header = FALSE;

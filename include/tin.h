@@ -678,9 +678,19 @@ enum resizer { cNo, cYes, cRedraw };
 #endif /* HAVE_COLOR */
 
 /* case sensitive && anchored */
-#define DEFAULT_STRIP_RE_REGEX "(R[eE](\\^\\d+|\\[\\d\\])?|A[wW]|Odp):\\s"
+#define DEFAULT_STRIP_RE_REGEX "(R[eE](\\^\\d+|\\[\\d\\])?|A[wW]|Odp|Sv):\\s"
 /* case sensitive */
 #define DEFAULT_STRIP_WAS_REGEX ".\\(([Ww]a[rs]|[Bb]y[l³]o):.*\\)\\s*$"
+
+/* case insensitive & anchored */
+#define UUBEGIN_REGEX	"begin\\s+[0-7]{3,4}\\s+"
+/* case sensitive && anchored */
+#define UUBODY_REGEX	"(`|.[\\x20-\\x60]{1,61})$"
+
+/* case insensitive */
+#define URL_REGEX	"(http[s]?|ftp|gopher)://(\\w+:\\w+@)?([a-z\\d][-a-z\\d\\.]*\\.([a-z]){2,5}|localhost|((\\d?\\d|[01]\\d\\d|2[0-4][0-9]|25[0-5])\\.){3}(\\d?\\d|[01]\\d\\d|2[0-4][0-9]|25[0-5]))(:\\d+)?(/[^)>\"\\s]*|$|\\s)"
+/* case insensitive - not implemented, could be optimized */
+#define MAIL_REGEX "mailto:\\S+@[a-z\\d][-a-z\\d\\.]*\\.([a-z]){2,5}"
 
 #define FILTER_FILE	"filter"
 #define GROUP_TIMES_FILE	"group.times"
@@ -703,6 +713,8 @@ enum resizer { cNo, cYes, cRedraw };
 #define _CONF_FROMHOST	"fromhost"
 #define _CONF_ORGANIZATION	"organization"
 #define _CONF_SERVER	"server"
+
+#define SIGDASHES "-- \n"
 
 #ifndef BOOL_H
 #	include "bool.h"
@@ -852,6 +864,7 @@ enum resizer { cNo, cYes, cRedraw };
 #define MAX_MARK		3
 
 /* Line number (starting at 0) of 1st non-header data on the screen */
+/* ie, size of header */
 #define INDEX_TOP	2
 
 #define GROUP_MATCH(s1, pat, case)		(wildmat (s1, pat, case))
@@ -860,6 +873,12 @@ enum resizer { cNo, cYes, cRedraw };
 #define REGEX_FMT (tinrc.wildcard ? "%s" : "*%s*")
 
 #define IGNORE_ART(i)	((tinrc.kill_level != KILL_THREAD && arts[i].killed) || (arts[i].thread == ART_EXPIRED))
+
+/*
+ * Is this part text/plain ?
+ */
+#define IS_PLAINTEXT(x) \
+			(x->type == TYPE_TEXT && strcmp("plain", x->subtype) == 0)
 
 /* TRUE if basenote has responses */
 #define HAS_FOLLOWUPS(i)	(arts[base[i]].thread != -1)
@@ -1505,35 +1524,6 @@ struct regex_cache {
 	pcre_extra *extra;
 };
 
-struct t_header_list
-{
-	char header[HEADER_LEN];
-	char content[HEADER_LEN];
-	struct t_header_list *next;
-};
-
-struct t_header
-{
-	char from[HEADER_LEN];		/* From: */
-	char path[HEADER_LEN];		/* Path: */
-	char date[HEADER_LEN];		/* Date: */
-	char subj[HEADER_LEN];		/* Subject: */
-	char org[HEADER_LEN];		/* Organization: */
-	char newsgroups[HEADER_LEN];	/* Newsgroups: */
-	char messageid[HEADER_LEN];	/* Message-ID: */
-	char references[HEADER_LEN];	/* References: */
-	char distrib[HEADER_LEN];	/* Distribution: */
-	char keywords[HEADER_LEN];	/* Keywords: */
-	char summary[HEADER_LEN];	/* Summary: */
-	char followup[HEADER_LEN];	/* Followup-To: */
-	char mimeversion[HEADER_LEN];	/* Mime-Version: */
-	char contenttype[HEADER_LEN];	/* Content-Type: */
-	char contentenc[HEADER_LEN];	/* Content-Transfer-Encoding: */
-	char ftnto[HEADER_LEN];		/* Old X-Comment-To: (Used by FIDO) */
-	char authorids[HEADER_LEN];	/* Author-IDs: (USEFOR, 2nd Son of 1036) */
-	struct t_header_list *persist;	/* P-ersistent headers (USEFOR, 2nd Son of 1036) */
-};
-
 struct t_save
 {
 	char *subject;
@@ -1889,7 +1879,14 @@ extern void joinpath (char *result, char *dir, char *file);
 #define SIZEOF(array)	((int)(sizeof array / sizeof array[0]))
 
 #define FreeIfNeeded(p)	if (p != (char *)0) free((char *)p)
-#define FreeAndNull(p)	if (p != (char *)0) { free((char *)p); p = (char *)0; }
+
+#if 0
+#	define FreeAndNull(p)	if (p != (char *)0) { free((char *)p); p = (char *)0; }
+#else
+#	define FreeAndNull(p)	if (p != NULL) { free((void *)p); p = NULL; }
+#endif /* 0 */
+
+#define BlankIfNull(p)	((p) ? (p) : "")
 
 #define my_group_find(x)	add_my_group(x, FALSE)
 #define my_group_add(x)	add_my_group(x, TRUE)
@@ -2027,8 +2024,6 @@ typedef void (*BodyPtr) (char *, FILE *, int);
 #		define EndWin		EndWind
 #	endif /* !ferror */
 #endif /* __DECC */
-
-#define IS_PLURAL(x)	(x != 1 ? txt_plural : "")
 
 /* FIXME - check also for tmpfile() and provide fallback functions */
 #ifdef HAVE_TEMPNAM

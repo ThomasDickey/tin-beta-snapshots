@@ -142,8 +142,8 @@ wildmat (
 #endif /* OPTIMIZE_JUST_STAR */
 
 	if (icase) {
-		str_lwr((char *)text, text);
-		str_lwr(p, p);
+		str_lwr(text);
+		str_lwr(p);
 	}
 
 	mesg[0] = '\0';

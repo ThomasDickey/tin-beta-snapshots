@@ -68,7 +68,6 @@ static int current_bcol = 0;
  */
 static t_bool check_valid_mark (const char *s);
 static void put_mark_char (int c, FILE *stream, t_bool signature);
-static void color_fputs (const char *s, FILE *stream, int color, t_bool signature);
 
 #ifdef USE_CURSES
 static void
@@ -245,7 +244,7 @@ put_mark_char (
 /*
  * Like fputs(), but highlights words denoted by * and _ in colour
  */
-static void
+void
 color_fputs (
 	const char *s,
 	FILE *stream,
@@ -253,10 +252,9 @@ color_fputs (
 	t_bool signature)
 {
 	const char *p;
-	const char* eos = strchr(s, '\0');
 	t_bool hilite = FALSE;
 
-	for (p = s; p < eos; p++) {
+	for (p = s; *p; p++) {
 		if (*p == '*' || *p == '_') {
 			if (! hilite) {
 				if ((p == s || !isgraph((unsigned char)p[-1]))
@@ -277,51 +275,77 @@ color_fputs (
 	}
 }
 
+
 /*
  * Output a line of text to the screen with colour if needed
- * word highlights, signatures and 'quote' lines will be coloured
+ * word highlights, signatures etc will be highlighted
  */
 void
 print_color (
 	char *str,
-	t_bool signature)
+	int flags)
 {
 	int color = tinrc.col_text;
 
 	if (use_color) {
-		if (signature) {
+		if (flags & C_SIG) {
 			fcol (tinrc.col_signature);
 			color = tinrc.col_signature;
-		} else if (in_headers) {
+		} else if (flags & (C_HEADER|C_ATTACH|C_UUE)) {
 			color = tinrc.col_newsheaders;
 			fcol (tinrc.col_newsheaders);
 		} else {
-			if (quote_regex3.re) {
-				if (pcre_exec (quote_regex3.re, quote_regex3.extra, str, strlen(str), 0, 0, NULL, 0) >= 0) {
-					fcol (tinrc.col_quote3);
-					color = tinrc.col_quote3;
-				} else if (quote_regex2.re) {
-					if (pcre_exec (quote_regex2.re, quote_regex2.extra, str, strlen(str), 0, 0, NULL, 0) >= 0) {
-						fcol (tinrc.col_quote2);
-						color = tinrc.col_quote2;
-					} else if (quote_regex.re) {
-						if (pcre_exec (quote_regex.re, quote_regex.extra, str, strlen(str), 0, 0, NULL, 0) >= 0) {
-							fcol (tinrc.col_quote);
-							color = tinrc.col_quote;
-						} else
-							fcol (tinrc.col_text);
-					}
-				}
-			}
+			if (flags & C_QUOTE3) {
+				fcol (tinrc.col_quote3);
+				color = tinrc.col_quote3;
+			} else if (flags & C_QUOTE2) {
+				fcol (tinrc.col_quote2);
+				color = tinrc.col_quote2;
+			} else if (flags & C_QUOTE1) {
+				fcol (tinrc.col_quote);
+				color = tinrc.col_quote;
+			} else
+				fcol (tinrc.col_text);
 		}
 	}
 
 	if (word_highlight && use_color)
-		color_fputs(str, stdout, color, signature);
+		color_fputs(str, stdout, color, (flags&C_SIG));
 	else
 		my_fputs(str, stdout);
 #	ifndef USE_CURSES
 	my_fputs(cCRLF, stdout);
 #	endif /* !USE_CURSES */
+
+	/*
+	 * Highlight URL'S if present - should rewrite highlight code and integrate this
+	 * too much rereading takes place at present since highlight code changes the
+	 * screen layout (by reducing spaces)
+	 */
+	if (flags&C_URL) {
+		char buf[LEN], tmp[LEN];
+		int offsets[6];
+		int offsets_size = sizeof(offsets)/sizeof(int);
+		int x, y;
+		int end = 0;
+
+		/* Get contents of line just written */
+		getyx (stdscr, y, x);
+		screen_contents(y, 0, buf);
+
+		offsets[0] = 0;
+		offsets[1] = 0;
+
+		while (pcre_exec (url_regex.re, url_regex.extra, buf+end, strlen(buf)-end, 0, 0, offsets, offsets_size) != PCRE_ERROR_NOMATCH) {
+			MoveCursor (y, end+offsets[0]);
+			innstr (tmp, offsets[1] - offsets[0]);
+			StartInverse ();
+			my_fputs (tmp, stdout);
+			my_flush ();
+			EndInverse ();
+			stow_cursor();
+			end = offsets[1];
+		}
+	}
 }
 #endif /* HAVE_COLOR */
