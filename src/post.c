@@ -5,11 +5,36 @@
  *  Created   : 1991-04-01
  *  Updated   : 1997-12-25
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
- *  Copyright : (c) Copyright 1991-99 by Iain Lea
- *              You may  freely  copy or  redistribute  this software,
- *              so  long as there is no profit made from its use, sale
- *              trade or  reproduction.  You may not change this copy-
- *              right notice, and it must be included in any copy made
+ *
+ * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Iain Lea.
+ * 4. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 
@@ -88,7 +113,7 @@
 #define DISPLAY_SUBJECT_LEN 20
 
 /* which keys are allowed for posting/sending? */
-#ifdef HAVE_PGP
+#ifdef HAVE_PGP_GPG
 #	ifdef HAVE_ISPELL
 #		define TIN_POST_KEYS	"\033egiopyq"
 #		define TIN_SEND_KEYS	"\033egiqsy"
@@ -104,7 +129,7 @@
 #		define TIN_POST_KEYS	"\033eopyq"
 #		define TIN_SEND_KEYS	"\033eqsy"
 #	endif /* HAVE_ISPELL */
-#endif /* HAVE_PGP */
+#endif /* HAVE_PGP_GPG */
 #define TIN_EDIT_KEYS	"\033eoq"
 #define TIN_EDIT_KEYS_EXT	"\033eoqM"
 #define TIN_CONT_KEYS	"\033ac"
@@ -1108,11 +1133,11 @@ post_article_loop:
 				break;
 #endif /* HAVE_ISPELL */
 
-#ifdef HAVE_PGP
+#ifdef HAVE_PGP_GPG
 			case iKeyPostPGP:
 				invoke_pgp_news (article);
 				break;
-#endif /* HAVE_PGP */
+#endif /* HAVE_PGP_GPG */
 
 			case iKeyPostPost:
 			case iKeyPostPost2:
@@ -2224,13 +2249,13 @@ mail_loop(
 				break;
 #endif /* HAVE_ISPELL */
 
-#ifdef HAVE_PGP
+#ifdef HAVE_PGP_GPG
 			case iKeyPostPGP:
 				my_strncpy (mail_to, arts[respnum].from, sizeof (mail_to));
 				if (pcCopyArtHeader (HEADER_TO, filename, mail_to) && pcCopyArtHeader (HEADER_SUBJECT, filename, subject))
 					invoke_pgp_mail (filename, mail_to);
 				break;
-#endif /* HAVE_PGP */
+#endif /* HAVE_PGP_GPG */
 
 			case iKeyQuit:
 			case iKeyAbort:
@@ -2354,11 +2379,11 @@ mail_to_someone (
 				break;
 #endif /* HAVE_ISPELL */
 
-#ifdef HAVE_PGP
+#ifdef HAVE_PGP_GPG
 			case iKeyPostPGP:
 				invoke_pgp_mail (nam, mail_to);
 				break;
-#endif /* HAVE_PGP */
+#endif /* HAVE_PGP_GPG */
 
 			case iKeyQuit:
 			case iKeyAbort:
@@ -2513,11 +2538,11 @@ mail_bug_report (
 				break;
 #endif /* HAVE_ISPELL */
 
-#ifdef HAVE_PGP
+#ifdef HAVE_PGP_GPG
 			case iKeyPostPGP:
 				invoke_pgp_mail (nam, mail_to);
 				break;
-#endif /* HAVE_PGP */
+#endif /* HAVE_PGP_GPG */
 
 			case iKeyQuit:
 			case iKeyAbort:
@@ -2700,13 +2725,13 @@ mail_to_author (
 				break;
 #endif /* HAVE_ISPELL */
 
-#ifdef HAVE_PGP
+#ifdef HAVE_PGP_GPG
 			case iKeyPostPGP:
 				my_strncpy (mail_to, arts[respnum].from, sizeof (mail_to));
 				if (pcCopyArtHeader (HEADER_TO, nam, mail_to) && pcCopyArtHeader (HEADER_SUBJECT, nam, subject))
 					invoke_pgp_mail (nam, mail_to);
 				break;
-#endif /* HAVE_PGP */
+#endif /* HAVE_PGP_GPG */
 
 			case iKeyQuit:
 			case iKeyAbort:
@@ -3439,7 +3464,7 @@ checknadd_headers (
 }
 
 
-#if !defined(M_AMIGA)
+#ifndef M_AMIGA
 static t_bool
 insert_from_header (
 	char *infile)
@@ -3699,7 +3724,7 @@ submit_mail_file (
 	char subject[HEADER_LEN];
 	t_bool mailed = FALSE;
 
-#if !defined(M_AMIGA)
+#ifndef M_AMIGA
 	if (insert_from_header (file))
 #endif /* !M_AMIGA */
 	{
@@ -3783,7 +3808,7 @@ yank_to_addr (
 }
 
 
-#if defined(EVIL_INSIDE)
+#ifdef EVIL_INSIDE
 /*
  * build_messageid()
  * returns *(<Message-ID>)
@@ -3823,7 +3848,7 @@ build_messageid (
 
 
 /* TODO: move to canlock.c */
-#if defined(USE_CANLOCK)
+#ifdef USE_CANLOCK
 /*
  * build_canlock(messageid, secret)
  * returns *(cancel-lock) or NULL

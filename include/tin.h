@@ -5,12 +5,38 @@
  *  Created   : 1991-04-01
  *  Updated   : 1997-12-31
  *  Notes     : #include files, #defines & struct's
- *  Copyright : (c) Copyright 1991-99 by Iain Lea & Rich Skrenta
- *              You may  freely  copy or  redistribute  this software,
- *              so  long as there is no profit made from its use, sale
- *              trade or  reproduction.  You may not change this copy-
- *              right notice, and it must be included in any copy made
+ *
+ * Copyright (c) 1997-2000 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Iain Lea, Rich Skrenta.
+ * 4. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 
 /*
  * OS specific doda's
@@ -36,9 +62,9 @@
  * nntplib.c
  */
 /* IPv6 support */
-#if defined(HAVE_GETADDRINFO) && defined(HAVE_GAI_STRERROR) && (ENABLE_IPV6)
+#if defined(HAVE_GETADDRINFO) && defined(HAVE_GAI_STRERROR) && defined(ENABLE_IPV6)
 #	define INET6
-#endif /* HAVE_GETADDRINFO && HAVE_GAI_STRERROR */
+#endif /* HAVE_GETADDRINFO && HAVE_GAI_STRERROR && ENABLE_IPV6 */
 
 /*
  * Native Language Support.
@@ -344,6 +370,15 @@ enum resizer { cNo, cYes, cRedraw };
 #if !defined(HAVE_ISASCII) && !defined(isascii)
 #	define isascii(c) (!((c) & ~0177))
 #endif /* !HAVE_ISASCII && !isascii */
+
+
+/*
+ * any pgp/gpp support possible and wanted
+ */
+#if defined(HAVE_PGP) || defined(HAVE_PGPK) || defined(HAVE_GPG)
+#	define HAVE_PGP_GPG 1
+#endif /* HAVE_PGP || HAVE_PGPK || HAVE_GPG */
+
 
 /*
  * Setup support for reading from NNTP
@@ -1020,14 +1055,15 @@ enum resizer { cNo, cYes, cRedraw };
  * -1 is kind of overloaded as an error from which_thread() and other functions
  * where we wish to return to the next level up
  */
-#define GRP_RETURN		-1	/* Stop reading group ('T' command) -> return to selection screen */
+#define GRP_RETURN		-1	/* Pager 'T' command only -> return to selection screen */
 #define GRP_QUIT		-2	/* Set by 'Q' when coming all the way out */
-#define GRP_NEXTUNREAD		-3	/* goto next unread group */
-#define GRP_NEXT		-4	/* (catchup) & goto next group */
+#define GRP_NEXTUNREAD	-3	/* (After catchup) goto next unread item */
+#define GRP_NEXT		-4	/* (After catchup) move to next item */
 #define GRP_ARTFAIL		-5	/* show_page() only. Failed to get into the article */
-#define GRP_KILLED		-6	/* Thread was killed at pager level */
-#define GRP_GOTOTHREAD	-7	/* show_page() only. Enter thread menu */
+#define GRP_KILLED		-6	/* ?? Thread was killed at pager level */
+#define GRP_GOTOTHREAD	-7	/* show_page() only. Goto thread menu */
 #define GRP_ENTER		-8	/* New group is set, spin in read_groups() */
+#define GRP_EXIT		-9	/* Normal return to higher level */
 
 #ifndef EXIT_SUCCESS
 #	define EXIT_SUCCESS	0	/* Successful exit status */
@@ -1593,9 +1629,18 @@ typedef struct {
 	int first;					/* First # on current menu */
 	int last;					/* Last # on current menu (first,last_*_on_screen) */
 	void (*redraw) (void);		/* Redraw function */
-	void (*erase_arrow) (void);	/* Arrow erase */
 	void (*draw_arrow) (void);	/* Arrow draw */
 } t_menu;
+
+
+/*
+ * Packet of data needed to enter pager
+ */
+typedef struct {
+	int art;
+	t_bool ignore_unavail;
+} t_pagerinfo;
+
 
 /*
  * Time functions.

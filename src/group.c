@@ -5,12 +5,38 @@
  *  Created   : 1991-04-01
  *  Updated   : 1997-12-31
  *  Notes     :
- *  Copyright : (c) Copyright 1991-99 by Iain Lea & Rich Skrenta
- *              You may  freely  copy or  redistribute  this software,
- *              so  long as there is no profit made from its use, sale
- *              trade or  reproduction.  You may not change this copy-
- *              right notice, and it must be included in any copy made
+ *
+ * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Iain Lea, Rich Skrenta
+ * 4. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 
 #ifndef TIN_H
 #	include "tin.h"
@@ -24,9 +50,6 @@
 
 #define INDEX2SNUM(i)	((i) % NOTESLINES)
 #define INDEX2LNUM(i)	(INDEX_TOP + INDEX2SNUM(i))
-
-/* Need only be an invalid key value */
-#define iKeyCatchupLeft		0
 
 char *glob_group;
 
@@ -42,17 +65,15 @@ static int thread_depth;			/* Starting depth in threads we enter */
  * Local prototypes
  */
 static int do_search(int type, t_bool forward);
+static int enter_pager (int art, t_bool ignore_unavail);
+static int enter_thread (int depth, t_pagerinfo *page);
+static int group_catchup (int ch);
 static int group_left (void);
 static int group_right (void);
-static int handle_keypad (void);
-static t_bool enter_pager (int art, t_bool ignore_unavail);
-static t_bool enter_thread (int depth);
-static t_bool group_catchup (int ch);
-static t_bool tab_pressed (void);
+static int tab_pressed (void);
 static void bld_sline (int i);
 static void draw_sline (int i, t_bool full);
 static void draw_subject_arrow (void);
-static void erase_subject_arrow (void);
 static void show_group_title (t_bool clear_title);
 static void show_tagged_lines (void);
 static void toggle_read_unread (t_bool force);
@@ -63,7 +84,7 @@ static void update_group_page (void);
  * (thread number) on group page
  * grpmenu.first, last are static here
  */
-t_menu grpmenu = { 0, 0, 0, 0, show_group_page, erase_subject_arrow, draw_subject_arrow };
+t_menu grpmenu = { 0, 0, 0, 0, show_group_page, draw_subject_arrow };
 
 static void
 show_tagged_lines (
@@ -101,64 +122,9 @@ group_right (
 }
 
 
-static int
-handle_keypad (
-	void)
-{
-	int ch = ReadCh ();
-/* fprintf(stderr, "PLOK %d\n", ch); */
-	switch (ch) {
-#ifndef WIN32
-		case ESC:	/* common arrow keys */
-#	ifdef HAVE_KEY_PREFIX
-		case KEY_PREFIX:
-#	endif /* HAVE_KEY_PREFIX */
-			switch (get_arrow_key (ch)) {
-#endif /* !WIN32 */
-				case KEYMAP_UP:
-					ch = iKeyUp;
-					break;
-				case KEYMAP_DOWN:
-					ch = iKeyDown;
-					break;
-				case KEYMAP_LEFT:
-					ch = group_left();
-					break;
-				case KEYMAP_RIGHT:
-					ch = group_right();
-					break;
-				case KEYMAP_PAGE_UP:
-					ch = iKeyPageUp;
-					break;
-				case KEYMAP_PAGE_DOWN:
-					ch = iKeyPageDown;
-					break;
-				case KEYMAP_HOME:
-					ch = iKeyFirstPage;
-					break;
-				case KEYMAP_END:
-					ch = iKeyLastPage;
-					break;
-#ifndef WIN32
-				case KEYMAP_MOUSE:
-/* fprintf(stderr, "MouSe\n"); */
-					ch = mouse_action(ch, group_left, group_right);
-					break;
-				default:
-					break;
-				}
-			break;
-		default:
-			break;
-	}
-#endif /* !WIN32 */
-	return ch;
-}
-
-
 /*
- * grpmenu.curr is overloaded internally as a return code
- * >= 0				'Normal'
+ * Return Codes:
+ * GRP_EXIT			'Normal' return to selection menu
  * GRP_RETURN		We are en route from pager to the selection screen
  * GRP_QUIT			User has done a 'Q'
  * GRP_NEXT			User wants to move onto next group
@@ -177,11 +143,12 @@ group_page (
 	int old_selected_arts;
 	int old_top = 0;
 	int old_group_top;
+	int ret_code = 0;			/* Set to < 0 when it is time to leave this menu */
 	unsigned int flag;
 	long old_artnum = 0L;
 	struct t_art_stat sbuf;
-	t_bool group_done = FALSE;			/* Set when it is time to leave */
 	t_bool range_active = FALSE;		/* Set if a range is defined */
+	t_bool xflag = FALSE;      /* 'X'-flag */
 
 	/*
 	 * Set the group attributes
@@ -213,6 +180,7 @@ group_page (
 	if (group->attribute->auto_select) {
 		error_message (txt_autoselecting_articles);
 		do_auto_select_arts();						/* 'X' command */
+		xflag = TRUE;
 	}
 
 	show_group_page ();
@@ -221,12 +189,12 @@ group_page (
 	debug_print_bitmap (group, NULL);
 #	endif /* DEBUG_NEWSRC */
 
-	while (!group_done) {
+	while (ret_code >= 0) {
 		set_xclick_on ();
-		switch (ch = handle_keypad()) {
+		switch (ch = handle_keypad(group_left, group_right)) {
 
 #ifndef WIN32
-			case ESC:		/* common arrow keys */
+			case ESC:		/* Abort */
 				break;
 #endif /* !WIN32 */
 
@@ -238,8 +206,7 @@ group_page (
 
 #	ifndef NO_SHELL_ESCAPE
 			case iKeyShellEscape:
-				shell_escape ();
-				show_group_page ();
+				do_shell_escape ();
 				break;
 #	endif /* !NO_SHELL_ESCAPE */
 
@@ -258,7 +225,7 @@ group_page (
 				if (this_resp < 0 || (which_thread(this_resp) == -1))
 					info_message (txt_no_last_message);
 				else
-					group_done = enter_pager (this_resp, FALSE);
+					ret_code = enter_pager (this_resp, FALSE);
 				break;
 
 			case iKeyGroupPipe:	/* pipe article/thread/tagged arts to command */
@@ -307,37 +274,33 @@ group_page (
 			case iKeySearchAuthF:	/* author forward/backward  search */
 			case iKeySearchAuthB:
 				if ((thread_depth = do_search (SEARCH_AUTH, (ch == iKeySearchAuthF))) != 0)
-					group_done = enter_thread (thread_depth);
+					ret_code = enter_thread (thread_depth, NULL);
 				break;
 
 			case iKeySearchSubjF:	/* subject forward/backward search */
 			case iKeySearchSubjB:
 				if ((thread_depth = do_search (SEARCH_SUBJ, (ch == iKeySearchSubjF))) != 0)
-					group_done = enter_thread (thread_depth);
+					ret_code = enter_thread (thread_depth, NULL);
 				break;
 
 			case iKeySearchBody:	/* search article body */
-				if (grpmenu.curr < 0) {
+				if (grpmenu.curr >= 0) {
+					if ((n = search_body ((int) base[grpmenu.curr])) != -1)
+						ret_code = enter_pager(n, FALSE);
+				} else
 					info_message (txt_no_arts);
-					break;
-				}
-
-				if ((n = search_body ((int) base[grpmenu.curr])) != -1)
-					group_done = enter_pager(n, FALSE);
 				break;
 
 			case iKeyGroupReadBasenote:
 			case iKeyGroupReadBasenote2:	/* read current basenote */
-				if (grpmenu.curr < 0) {
+				if (grpmenu.curr >= 0)
+					ret_code = enter_pager ((int) base[grpmenu.curr], TRUE);
+				else
 					info_message(txt_no_arts);
-					break;
-				}
-
-				group_done = enter_pager ((int) base[grpmenu.curr], TRUE);
 				break;
 
 			case iKeyGroupNextUnreadArtOrGrp:	/* goto next unread article/group */
-				group_done = tab_pressed();
+				ret_code = tab_pressed();
 				break;
 
 			case iKeyPageDown:		/* page down */
@@ -407,10 +370,10 @@ group_page (
 				page_up();
 				break;
 
+			case iKeyCatchupLeft:
 			case iKeyGroupCatchup:
 			case iKeyGroupCatchupNextUnread:
-			case iKeyCatchupLeft:
-				group_done = group_catchup(ch);
+				ret_code = group_catchup(ch);
 				break;
 
 			case iKeyGroupToggleSubjDisplay:	/* toggle display of subject & subj/author */
@@ -429,8 +392,7 @@ group_page (
 					if (old_group_top != selmenu.max)
 						set_groupname_len(FALSE);
 					selmenu.curr = n;
-					grpmenu.curr = GRP_ENTER;
-					group_done = TRUE;
+					ret_code = GRP_ENTER;
 				}
 				break;
 
@@ -518,12 +480,12 @@ group_page (
 				break;
 
 			case iKeyGroupListThd:				/* list articles within current thread */
-				group_done = enter_thread (0);	/* Enter thread at the top */
+				ret_code = enter_thread (0, NULL);	/* Enter thread at the top */
 				break;
 
 			case iKeyLookupMessage:
 				if ((i = prompt_msgid ()) != ART_UNAVAILABLE)
-					group_done = enter_pager(i, FALSE);
+					ret_code = enter_pager(i, FALSE);
 				break;
 
 			case iKeyOptionMenu:	/* option menu */
@@ -547,8 +509,7 @@ group_page (
 					info_message (txt_no_more_groups);
 				else {
 					selmenu.curr++;
-					grpmenu.curr = GRP_NEXTUNREAD;
-					group_done = TRUE;
+					ret_code = GRP_NEXTUNREAD;
 				}
 				break;
 
@@ -561,7 +522,7 @@ group_page (
 				if ((n = next_unread ((int) base[grpmenu.curr])) == -1)
 					info_message (txt_no_next_unread_art);
 				else
-					group_done = enter_pager (n, FALSE);
+					ret_code = enter_pager (n, FALSE);
 				break;
 
 			case iKeyGroupPrevUnreadArt:	/* go to previous unread article */
@@ -575,7 +536,7 @@ group_page (
 				if ((n = prev_unread (n)) == -1)
 					info_message(txt_no_prev_unread_art);
 				else
-					group_done = enter_pager(n, FALSE);
+					ret_code = enter_pager(n, FALSE);
 				break;
 
 			case iKeyGroupPrevGroup:	/* previous group */
@@ -590,22 +551,20 @@ group_page (
 					info_message(txt_no_prev_group);
 				else {
 					selmenu.curr = i;
-					grpmenu.curr = GRP_NEXTUNREAD;
-					group_done = TRUE;
+					ret_code = GRP_NEXTUNREAD;
 				}
 				break;
 
 			case iKeyQuit:	/* return to group selection page */
 				if (num_of_tagged_arts && prompt_yn (cLINES, txt_quit_despite_tags, TRUE) != 1)
 					break;
-				group_done = TRUE;
+				ret_code = GRP_EXIT;
 				break;
 
 			case iKeyQuitTin:		/* quit */
 				if (num_of_tagged_arts && prompt_yn (cLINES, txt_quit_despite_tags, TRUE) != 1)
 					break;
-				grpmenu.curr = GRP_QUIT;
-				group_done = TRUE;
+				ret_code = GRP_QUIT;
 				break;
 
 			case iKeyGroupToggleReadUnread:
@@ -616,8 +575,7 @@ group_page (
 			case iKeyGroupToggleGetartLimit:
 				clear_message ();
 				tinrc.use_getart_limit = !tinrc.use_getart_limit;
-				grpmenu.curr = GRP_NEXTUNREAD;
-				group_done = TRUE;
+				ret_code = GRP_NEXTUNREAD;
 				break;
 
 			case iKeyGroupBugReport:
@@ -764,17 +722,17 @@ group_page (
 					}
 					range_active = FALSE;
 					show_group_page();
-					strcpy(mesg, "Base article range"); /* FIXME: -> lang.c */
+					strcpy(buf, "Base article range"); /* FIXME: -> lang.c */
 				} else {
 					art_mark_will_return (&CURR_GROUP, &arts[base[grpmenu.curr]]);
-					strcpy(mesg, "Base article"); /* FIXME: -> lang.c */
+					strcpy(buf, "Base article"); /* FIXME: -> lang.c */
 				}
 
 				show_group_title (TRUE);
 				bld_sline(grpmenu.curr);
 				draw_sline (grpmenu.curr, FALSE);
 				draw_subject_arrow();
-				info_message (txt_marked_as_unread, mesg);
+				info_message (txt_marked_as_unread, buf);
 				break;
 
 			case iKeyGroupMarkThdUnread:	/* mark whole thread as unread */
@@ -798,17 +756,17 @@ group_page (
 					}
 					range_active = FALSE;
 					show_group_page();
-					strcpy(mesg, "Thread range"); /* FIXME: -> lang.c */
+					strcpy(buf, "Thread range"); /* FIXME: -> lang.c */
 				} else {
 					thd_mark_unread (&CURR_GROUP, base[grpmenu.curr]);
-					strcpy(mesg, "Thread");
+					strcpy(buf, "Thread");
 				}
 
 				show_group_title (TRUE);
 				bld_sline(grpmenu.curr);
 				draw_sline (grpmenu.curr, FALSE);
 				draw_subject_arrow();
-				info_message (txt_marked_as_unread, mesg);
+				info_message (txt_marked_as_unread, buf);
 				break;
 
 			case iKeyGroupSelThd:	/* mark thread as selected */
@@ -852,6 +810,7 @@ group_page (
 
 			case iKeyGroupUndoSel:	/* undo selections */
 				undo_selections();
+				xflag = FALSE;
 				update_group_page();
 				break;
 
@@ -904,11 +863,18 @@ group_page (
 				break;
 
 			case iKeyGroupMarkUnselArtRead:	/* mark read all unselected arts */
-				do_auto_select_arts();
+				if (!xflag) {
+					do_auto_select_arts();
+					xflag = TRUE;
+				} else {
+					undo_auto_select_arts();
+					xflag = FALSE;
+				}
 				break;
 
 			case iKeyGroupDoAutoSel:		/* perform auto-selection on group */
 				undo_auto_select_arts();
+				xflag = FALSE;
 				break;
 
 			case iKeyToggleInfoLastLine:
@@ -918,18 +884,16 @@ group_page (
 
 			default:
 				info_message (txt_bad_command);
+				break;
 		} /* switch(ch) */
-	} /* !group_done */
-
-	/* leaving group: clear xflag */
-	xflag = FALSE;
+	} /* ret_code >= 0 */
 
 	set_xclick_off ();
 
 	clear_note_area ();
 	vGrpDelMailArts (&CURR_GROUP);
 
-	return (grpmenu.curr);
+	return (ret_code);
 }
 
 
@@ -997,16 +961,8 @@ static void
 draw_subject_arrow (
 	void)
 {
-	MoveCursor (INDEX2LNUM(grpmenu.curr), 0);
+	draw_arrow_mark (INDEX_TOP + grpmenu.curr - grpmenu.first);
 
-	if (tinrc.draw_arrow) {
-		my_fputs ("->", stdout);
-		my_flush ();
-	} else {
-		StartInverse();
-		draw_sline (grpmenu.curr, TRUE);
-		EndInverse();
-	}
 	if (tinrc.info_in_last_line) {
 		struct t_art_stat statbuf;
 
@@ -1016,23 +972,6 @@ draw_subject_arrow (
 		if (grpmenu.last == grpmenu.max)
 			info_message(txt_end_of_arts);
 	}
-	stow_cursor();
-}
-
-
-static void
-erase_subject_arrow (
-	void)
-{
-	MoveCursor (INDEX2LNUM(grpmenu.curr), 0);
-
-	if (tinrc.draw_arrow)
-		my_fputs ("  ", stdout);
-	else {
-		HpGlitch(EndInverse ());
-		draw_sline (grpmenu.curr, TRUE);
-	}
-	my_flush ();
 }
 
 
@@ -1133,7 +1072,7 @@ pos_first_unread_thread (
 
 void
 mark_screen (
-	int level,		/* Always SELECT_LEVEL - TODO move to select.c or use this everywhere */
+	int level,	/* Always SELECT_LEVEL - TODO move to select.c or use this everywhere */
 	int screen_row,
 	int screen_col,
 	const char *value)
@@ -1334,8 +1273,7 @@ draw_sline (
 	t_bool full)
 {
 	int tlen;
-	int x = full ? 0 : 6;
-	int k = MARK_OFFSET;
+	int x = full ? 0 : (MARK_OFFSET-2);
 #	ifdef USE_CURSES
 	char buffer[BUFSIZ];
 	char *s = screen_contents(INDEX2LNUM(i), x, buffer);
@@ -1350,7 +1288,7 @@ draw_sline (
 		}
 		tlen = strlen (s);	/* notes new line length */
 	} else
-		tlen = 12; /* ??? */
+		tlen = 3+1+3;		/* width(art_mark) + space + width(unread count) */
 
 	MoveCursor (INDEX2LNUM(i), x);
 	if (tlen)
@@ -1360,10 +1298,10 @@ draw_sline (
 	 * it is somewhat less efficient to go back and redo that art mark
 	 * if selected, but it is quite readable as to what is happening
 	 */
-	if (s[k-x] == tinrc.art_marked_selected) {
-		MoveCursor (INDEX2LNUM(i), k);
+	if (s[MARK_OFFSET-x] == tinrc.art_marked_selected) {
+		MoveCursor (INDEX2LNUM(i), MARK_OFFSET);
 		ToggleInverse ();
-		my_fputc (s[k-x], stdout);
+		my_fputc (s[MARK_OFFSET-x], stdout);
 		ToggleInverse ();
 	}
 
@@ -1451,100 +1389,63 @@ do_search(
 
 
 /*
- * This is the main way to page articles, at this point
+ * We don't directly invoke the pager, but pass through the thread menu
+ * to keep navigation sane.
  * 'art' is the arts[art] we wish to read
  * ignore_unavail should be set if we wish to 'keep going' after 'article unavailable'
- * Return TRUE if we must exit the group menu on return
+ * Return a -ve ret_code if we must exit the group menu on return
  */
-static t_bool
+static int
 enter_pager(
 	int art,
 	t_bool ignore_unavail)
 {
-	int i;
+	t_pagerinfo page;
 
-	if ((i = show_page (&CURR_GROUP, art, 0)) >= 0) {
-		grpmenu.curr = i;
-		clear_note_area ();
-		show_group_page ();
-		return FALSE;
-	}
+	page.art = art;
+	page.ignore_unavail = ignore_unavail;
 
-	/*
-	 * In some cases, we wish to keep going after an ARTFAIL
-	 */
-	if (ignore_unavail && i == GRP_ARTFAIL)
-		i = GRP_NEXTUNREAD;
-
-	switch (i) {
-		case GRP_QUIT:				/* 'Q' */
-			grpmenu.curr = GRP_QUIT;
-			return TRUE;
-
-		case GRP_RETURN:
-			grpmenu.curr = GRP_RETURN;
-			return TRUE;
-
-		case GRP_ARTFAIL:			 /* Failed to open art - get a valid grpmenu.curr and continue */
-			clear_message ();
-			break;
-
-		case GRP_GOTOTHREAD:		/* Enter thread menu, at the top */
-			return enter_thread (which_response(this_resp));		/* TODO recursion ? */
-			break;
-
-		case GRP_NEXT:				/* Thread was 'c'aught up */
-			show_group_page ();
-			move_down();
-			break;
-
-		case GRP_NEXTUNREAD:		/* Thread was 'C'aught up - enter next unread thread */
-			return tab_pressed();
-
-		default:
-			return TRUE;		/* All other cases -> return to selection menu */
-	}
-
-	return FALSE;
+	return enter_thread (0, &page);
 }
 
 
 /*
  * Handle entry/exit with the thread menu
- * Return TRUE if we must exit the group menu on return
+ * Return -ve ret_code if we must exit the group menu on return
  */
-static t_bool
+static int
 enter_thread (
-	int depth)
+	int depth,
+	t_pagerinfo *page)
 {
-	int n;
+	int i, n;
 
 	if (grpmenu.curr < 0) {
 		info_message (txt_no_arts);
-		return FALSE;
+		return 0;
 	}
 
 	forever {
-		switch (thread_page (&CURR_GROUP, (int) base[grpmenu.curr], depth)) {
+		switch (i = thread_page (&CURR_GROUP, (int) base[grpmenu.curr], depth, page)) {
 			case GRP_QUIT:						/* 'Q'uit */
-				grpmenu.curr = GRP_QUIT;
-				return TRUE;
-
 			case GRP_RETURN:					/* Back to selection screen */
-				grpmenu.curr = GRP_RETURN;
-				return TRUE;
+				return i;
+				/* NOTREACHED */
+				break;
 
 			case GRP_NEXT:						/* 'c'atchup */
 				show_group_page ();
 				move_down();
-				return FALSE;
+				return 0;
+				/* NOTREACHED */
+				break;
 
 			case GRP_NEXTUNREAD:				/* 'C'atchup */
 				if ((n = next_unread ((int) base[grpmenu.curr])) >= 0) {
 					if ((n = which_thread (n)) >= 0) {
 						grpmenu.curr = n;
 						depth = 0;
-						break;		/* Keep cycling through threads */
+						break;		/* Drop into next thread with unread */
 					}
 				}
 				/* No more unread threads in this group */
@@ -1554,29 +1455,31 @@ enter_thread (
 				grpmenu.curr = 0;
 				/* FALLTHROUGH */
 
-			default:		/* ie, >= 0 (normal exit from thread menu) */
+			case GRP_EXIT:
+			/* case GRP_GOTOTHREAD will never make it up this far */
+			default:		/* ie >= 0 Shouldn't happen any more ? */
 				clear_note_area ();
 				show_group_page ();
-				return FALSE;
+				return 0;
+				/* NOTREACHED */
+				break;
 		}
 	}
 }
 
 
 /*
- *
+ * Return a ret_code
  */
-static t_bool
+static int
 tab_pressed (
 	void)
 {
 	int n;
 
 	n = ((grpmenu.curr < 0) ? -1 : next_unread ((int) base[grpmenu.curr]));
-	if (n < 0) {
-		grpmenu.curr = GRP_NEXTUNREAD;	/* => Enter next unread group */
-		return TRUE;
-	}
+	if (n < 0)
+		return GRP_NEXTUNREAD;			/* => Enter next unread group */
 
 	/* We still have unread arts in the current group ... */
 	return enter_pager (n, TRUE);
@@ -1588,9 +1491,9 @@ tab_pressed (
  * catchup & return to group menu
  * catchup & go to next group with unread articles
  * group exit via left arrow if auto-catchup is set
- * Return TRUE if we're done with the group menu
+ * Return a -ve ret_code if we're done with the group menu
  */
-static t_bool
+static int
 group_catchup(
 	int ch)
 {
@@ -1598,7 +1501,7 @@ group_catchup(
 	int yn = 1;
 
 	if (num_of_tagged_arts && prompt_yn (cLINES, txt_catchup_despite_tags, TRUE) != 1)
-		return FALSE;
+		return 0;
 
 	snprintf(buf, sizeof(buf)-1, txt_mark_arts_read, (ch == iKeyGroupCatchupNextUnread) ? " and enter next unread group" : "");
 
@@ -1606,16 +1509,14 @@ group_catchup(
 		grp_mark_read (&CURR_GROUP, arts);
 
 	switch (ch) {
-		case iKeyGroupCatchup:				/* Return to menu */
-			if (yn == 1) {
-				grpmenu.curr = GRP_NEXT;
-				return TRUE;
-			}
+		case iKeyGroupCatchup:				/* 'c' */
+			if (yn == 1)
+				return GRP_NEXT;
 			break;
 
-		case iKeyGroupCatchupNextUnread:
+		case iKeyGroupCatchupNextUnread:	/* 'C' */
 			if (yn == 1)
-				return tab_pressed();
+				return GRP_NEXTUNREAD;
 			break;
 
 		case iKeyCatchupLeft:				/* <- group catchup on exit */
@@ -1623,13 +1524,16 @@ group_catchup(
 				case -1:					/* ESCAPE - do nothing */
 					break;
 				case 1:						/* We caught up - advance group */
-					grpmenu.curr = GRP_NEXT;
-					nobreak;	/* FALLTHROUGH */
+					return GRP_NEXT;
+					/* NOTREACHED */
+					break;
 				default:					/* Just leave the group */
-					return TRUE;
+					return GRP_EXIT;
+					/* NOTREACHED */
+					break;
 			}
 		default:							/* Should not be here */
 			break;
 	}
-	return FALSE;
+	return 0;								/* Stay in this menu by default */
 }

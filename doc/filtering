@@ -27,7 +27,7 @@ and the final score of the article decides if it is regular, marked hot
 or killed.
 
 The standard "kill" and standard "select" already in your filter-file have
-the score SCORE_KILL and SCORE_SELECT respectively (See section 4). 
+the score SCORE_KILL and SCORE_SELECT respectively (See section 4).
 
 
 2. Changes to the filter-file format
@@ -161,7 +161,10 @@ case=num    num: 0=casesensitive, 1=caseinsensitive
 score=num   num: score value of rule, can now also be one of the magic words
                  "kill" or "hot", which are equivalent to
                  SCORE_KILL and SCORE_SELECT respectively.
-time=num    num: time_t value; when rule expires.
+time=num    num: time_t value; when rule expires. When tin writes the filter
+                 file it adds the time in human readable form as a comment in
+                 parentheses after the numeric value. When reading the file
+                 tin uses _only_ the numeric value, not the human readable form.
 
 matches:            matched to:
 
@@ -172,6 +175,7 @@ msgid_last=pattern  Message-Id: and last last Reference:s entry only
 msgid_only=pattern  Message-Id:
 refs_only=pattern   References: line (e.g. <123@ether.net>) without Message-Id:
 lines=num           Lines: ; <num matches less than, >num matches more than.
+gnksa=[<>]?NUM      GNKSA parse_from() return code
 xref=pattern        Xref: ; filter crossposts to groups matching pattern
 xref_max=num                } Xref: ; potentially obsolete, collects
 xref_score=num,pattern      } scores for crossposting in other
@@ -183,6 +187,54 @@ escaped with "\". When using the built-in filter-file functions, tin tries
 to take care of it for itself, except when you are entering text in the
 builtin kill/hot-menu. Then you have to quote manually because tin
 doesn't know if e.g. "\[" is already quoted or not.
+
+GNKSA return codes: these are the return codes of the From:-address
+parser, enabling you to filter on certain kinds of syntactical and
+semantical errors present in that header. For an up-to-date list see the
+definitions in extern.h and the parser source code in misc.c, the
+following is just a short introduction.
+
+   0-99: internal codes
+code   error description
+   0   no error, valid address
+   1   internal error, should not happen (blame me)
+
+   100-199: general syntactical errors
+code   error description
+ 100   left angle bracket ("<") missing in route address
+ 101   left parenthesis ("(") missing in oldstyle address (realname comment)
+ 102   right parenthesis (")") missing in oldstyle address (realname comment)
+ 103   at-sign ("@") missing in mail address
+
+   200-299: right hand side (FQDN part) of address, syntax and semantics
+code   error description
+ 200   right hand side (RHS) of address is a single component
+ 201   RHS has an unknown top level domain (3 or more characters)
+ 202   RHS has an malformed top level domain
+ 203   RHS has an unknown country code as top level domain
+ 204   illegal character in RHS
+ 205   leading or trailing dot or two consecutive dots in RHS
+ 206   RHS has a component longer than 63 characters
+ 207   RHS has a component with leading or trailing hyphen ("-")
+ 208   RHS has a component starting with a digit (with ENFORCE_RFC1034 only)
+ 209   RHS is not a valid IP address
+ 210   RHS is an IP address from private IP space (see RFC1918) or loopback
+ 211   brackets ("[", "]") around IP address missing in RHS
+
+   300-399: syntactical errors left hand side (localpart) of address
+code   error description
+ 300   there was no localpart found at all in address
+ 301   localpart contains illegal characters
+ 302   localpart has leading, trailing or consecutive dots
+
+   400-499: syntactical errors in realname part
+code   error description
+ 400   illegal character in unquoted word in realname part
+ 401   illegal character in quoted word in realname part
+ 402   illegal character in encoded word in realname part
+ 403   bad syntax in encoded word in realname part
+ 404   illegal character in oldstyle realname part (one of "()<>\")
+ 405   illegal character in realname part
 
 
 6. EXAMPLES

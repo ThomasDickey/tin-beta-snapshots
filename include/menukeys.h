@@ -5,12 +5,35 @@
  *  Created   : 1994-08-15
  *  Updated   : 1995-12-21
  *  Notes     :
- *  Copyright : (c) Copyright 1991-99 by Steve Robbins & Iain Lea
- *              You may  freely  copy or  redistribute  this software,
- *              so  long as there is no profit made from its use, sale
- *              trade or  reproduction.  You may not change this copy-
- *              right notice, and it must be included in any copy made
+ *
+ * Copyright (c) 1994-2000 Steve Robbins <stever@cs.mcgill.ca>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 
 #ifndef MENUKEYS_H
 #	define MENUKEYS_H 1
@@ -102,6 +125,8 @@
  * Global keys
  */
 
+/* Internal use only - Need only be an invalid untypable key value */
+#define iKeyCatchupLeft 0
 #define iKeyAbort ESC
 #define iKeyPageDown3 ' '
 #ifndef NO_SHELL_ESCAPE
@@ -227,9 +252,9 @@
 
 #define iKeyPageAutoSel ctrl('A')
 #define iKeyPageReplyQuoteHeaders ctrl('E')
-#ifdef HAVE_PGP
+#ifdef HAVE_PGP_GPG
 #	define iKeyPagePGPCheckArticle ctrl('G')
-#endif /* HAVE_PGP */
+#endif /* HAVE_PGP_GPG */
 #define iKeyPageToggleHeaders ctrl('H')
 #define iKeyPageNextUnread '\t'
 #define iKeyPageNextThd '\n'
@@ -260,6 +285,8 @@
 #define iKeyPageAutoSaveTagged 'S'
 #define iKeyPageGroupSel 'T'
 #define iKeyPageMarkThdUnread 'Z'
+#define iKeyPageQuickAutoSel '['		/* Merge with same keys in Group ? */
+#define iKeyPageQuickKill ']'
 #define iKeyPageCatchup 'c'
 #define iKeyPageToggleRot2 'd'
 #define iKeyPageEdit 'e'
@@ -287,9 +314,9 @@
 
 #define iKeyPostCancel 'd'
 #define iKeyPostEdit 'e'
-#ifdef HAVE_PGP
+#ifdef HAVE_PGP_GPG
 #	define iKeyPostPGP 'g'
-#endif /* HAVE_PGP */
+#endif /* HAVE_PGP_GPG */
 #ifdef HAVE_ISPELL
 #	define iKeyPostIspell 'i'
 #endif /* HAVE_ISPELL */
@@ -373,8 +400,6 @@
 #define iKeyThreadAutoSaveTagged 'S'
 #define iKeyThreadUntag 'U'
 #define iKeyThreadMarkThdUnread 'Z'
-#define iKeyThreadQuickAutoSel '['		/* Merge with same keys in Group ? */
-#define iKeyThreadQuickKill ']'
 #define iKeyThreadCatchup 'c'
 #define iKeyThreadToggleSubjDisplay 'd'
 #define iKeyThreadHelp 'h'

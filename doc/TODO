@@ -1,7 +1,7 @@
 Bugs
 ----
-o  xflag is not always reset to FALSE before entering a group, thus
-   you might have to press 'X' twice to weed out all !selected arts
+o  saving multiple arts to a device where you don't have write permissions
+   should give an error/warning for each file, but it doesn't.
 
 o  --with-ncurses --enable-curses has several display problems:
     - if use_color is set:
@@ -84,6 +84,13 @@ o  'K' is still a bit inconsistent
      next unread item.
    - in the article pager (page.c) it marks the whole current thread as read
      and jumps to the next unread article.
+     'c'/'C' already does this better.
+     ('K' would be useless with the group/thread behaviour as the fact we're
+      in the art => it is already read. IMHO we should ditch 'K' in the pager
+      and rebind the existing 'k' to 'K'. 'k' is supposed to be a global Up key)
+
+o  'C' in the pager doesn't match the manpage when no unread arts remain
+   in the group. In this case it is the manpage which is inconsistent.
 
 o  In cases where a tinrc variable is stored in group->attributes
    (ie on a per-group basis) then changes in the config menu won't always
@@ -150,15 +157,19 @@ o  word highlighting shouldn't be enabled in signatures, as '*'
 
 New features
 ------------
-o  nuke index-daemon code
+o  allow =%G expansion in strfpath()
 
-o  detect pcre version and add compatibility marcos for old versions
-   (interface has changed twice)
+o  add new threading method: thread by reference, but split threads on
+   subject change
+
+o  detect pcre version and add compatibility macros for old versions
+   (interface has changed twice and might do so again)
+   (leafnode comes with a (suboptimal) check)
 
 o  add 'make unproto'
 
 o  add IPv6 support
-   (add portocoll independent wrappers which use IPv6 (functions)
+   (add protocol independent wrappers which use IPv6 (functions)
     whenever possible).
    there are two small problems with the minimalistic IPv6 support which is
    currently in tin: when getaddrinfo() is used to get the name/ip of the
@@ -190,9 +201,10 @@ o  Add a trunc() function or something similar for shortening long strings
    for embedding into status messages.
    Maybe somehow merge with sized_message(), then you can use
    message(txt, trunc(group, 20)) etc.
+   we now could use snprintf() to do that.
 
-o  check if server supports 'LIST MOTD' (i.e. INN 2.0) and display it
-   on startup.
+o  check if server supports 'LIST MOTD' (i.e. INN >= 2.0) and display
+   it on startup.
 
 o  if using "-n" commandline switch you can't subscribe to newsgroups not
    present in your newsrc - a simple check against the server
@@ -221,9 +233,9 @@ o  Rather than cc/bcc, I'd like to see tin simply append the
    have to be locked using a convention that will hold off
    the various Unix mailer programs.
 
-o  add check/support for gpg
-
 o  MIME-pgp support according to RFC2015
+
+o  pgp-6 support
 
 o  add RFC1468/1922 support
 
@@ -367,16 +379,17 @@ o  compile-time option: generate own MSGIDs on host with a proper FQDN
    MSGIDs of own articles in ~/.tin/posted to be able to detect f'ups to
    own postings
 
-o  add
-   to autoconf; determine which network libraries are needed; eradicate
-   platform/compiler ifdefs
+o  add to autoconf:
+   - determine which network libraries are needed
+   - eradicate platform/compiler ifdefs
 
 o  clean up architecture independent files, rename several defines,
    remove useless doubled defines
 
 o  split tin.h/proto.h for better dependencies in make
 
-o  check where int/long/... should be replaced by size_t/uid_t/mode_t/off_t/...
+o  check where int/long/... should be replaced by size_t, uid_t, mode_t,
+   off_t, ...
 
 o  add check for sizeof char, short, int, long, ...
    make sure that the code works even with 'uncommon' values
@@ -406,7 +419,7 @@ o  check code with lclint (http://www.sds.lcs.mit.edu/lclint/),
    ccmalloc (http://iseran.ira.uka.de/~armin/ccmalloc/) and MSS
    (http://hem1.passagen.se/blizzar/mss/)
 
-o  Rewrite the tag code so that arts[].tagged becomes index in arts[]
+o  rewrite the tag code so that arts[].tagged becomes index in arts[]
    of next tagged article. num_of_tagged_arts becomes index of first
    tagged art. Traversing tagged arts becomes much easier & faster.
 
@@ -507,7 +520,7 @@ o  if postings fails tin rereads the article numbers for the group you
    tried to post in to sync with your new article which does not exist,
    useless!
 
-o  Colors are not reset when tin is suspended with ^Z (signal.c)
+o  colors are not reset when tin is suspended with ^Z (signal.c)
    Other tty characteristics (eg echo) are not reset after a fatal signal
 
 o  looks like DEFAULT_EDITOR (fall-back if neither $EDITOR nor $VISUAL is set)

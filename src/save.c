@@ -5,12 +5,38 @@
  *  Created   : 1991-04-01
  *  Updated   : 1997-12-31
  *  Notes     :
- *  Copyright : (c) Copyright 1991-99 by Iain Lea & Rich Skrenta
- *	             You may  freely  copy or  redistribute this  software,
- *	             so  long as there is no profit made from its use, sale
- *	             trade or  reproduction.  You may not change this copy-
- *	             right notice, and it must be included in any copy made
+ *
+ * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Iain Lea, Rich Skrenta.
+ * 4. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 
 #ifndef TIN_H
 #	include "tin.h"
@@ -92,6 +118,11 @@ static void post_process_uud (
  *  or
  *  Mail any new articles to specified user and mark arts read and mail
  *  user and inform how many arts in which groups were mailed.
+ *  Return codes:
+ *  CHECK_ANY_NEWS	- code to pass to exit() - see manpage for list
+ *  START_ANY_NEWS	- index in my_group of first group with unread news or -1
+ *  MAIL_ANY_NEWS	- not checked
+ *  SAVE_ANY_NEWS	- not checked
  */
 int
 check_start_save_any_news (
@@ -1259,7 +1290,7 @@ uudecode_file (
 
 	wait_message (0, _(txt_uudecoding), file_out);
 
-#		if !defined(M_UNIX)
+#		ifndef M_UNIX
 	make_post_process_cmd (DEFAULT_UUDECODE, file_out_dir, file_out);
 #		else
 	chdir (file_out_dir);
@@ -1339,7 +1370,7 @@ uudecode_file (
 			(void) sleep (3);
 		}
 	}
-#		endif /* M_UNIX */
+#		endif /* ! M_UNIX */
 }
 #	endif /* !HAVE_LIBUU */
 
@@ -1421,7 +1452,7 @@ post_process_sh (
 			}
 			fclose (fp_out);
 
-#	if !defined(M_UNIX)
+#	ifndef M_UNIX
 			make_post_process_cmd (DEFAULT_UNSHAR, file_out_dir, file_out);
 #	else
 			sh_format (buf, sizeof(buf), "cd %s; sh %s", file_out_dir, file_out);
@@ -1431,7 +1462,7 @@ post_process_sh (
 			if (!invoke_cmd (buf))
 				error_message (_(txt_command_failed), buf);		/* TODO not needed */
 			Raw (TRUE);
-#	endif /* M_UNIX */
+#	endif /* ! M_UNIX */
 			unlink (file_out);
 		}
 	}

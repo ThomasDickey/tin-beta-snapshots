@@ -5,11 +5,35 @@ dnl Created   : 1995-08-24
 dnl Updated   : 1999-11-22
 dnl Notes     :
 dnl
-dnl Copyright 1996,1997,1998,1999 by Thomas Dickey
-dnl             You may  freely  copy or  redistribute  this software,
-dnl             so  long as there is no profit made from its use, sale
-dnl             trade or  reproduction.  You may not change this copy-
-dnl             right notice, and it must be included in any copy made
+dnl Copyright (c) 1995-2000 Thomas E. Dickey <dickey@clark.net>
+dnl All rights reserved.
+dnl
+dnl Redistribution and use in source and binary forms, with or without
+dnl modification, are permitted provided that the following conditions
+dnl are met:
+dnl 1. Redistributions of source code must retain the above copyright
+dnl    notice, this list of conditions and the following disclaimer.
+dnl 2. Redistributions in binary form must reproduce the above copyright
+dnl    notice, this list of conditions and the following disclaimer in the
+dnl    documentation and/or other materials provided with the distribution.
+dnl 3. All advertising materials mentioning features or use of this software
+dnl    must display the following acknowledgement:
+dnl	This product includes software developed by Thomas E. Dickey.
+dnl 4. The name of the author may not be used to endorse or promote
+dnl    products derived from this software without specific prior written
+dnl    permission.
+dnl
+dnl THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+dnl OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+dnl WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+dnl ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+dnl DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+dnl DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+dnl GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+dnl INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+dnl WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+dnl NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+dnl SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 dnl
 dnl Process this file with autoconf to produce a configure script.
 
@@ -20,12 +44,12 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.5.1
+VERSION=1.5.2
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
-					
+
 CF_CHECK_CACHE
 
 CF_WITH_PATH(install-prefix,
@@ -55,7 +79,7 @@ case "$host_os" in
 esac
 
 ###     Native Language Support
-ALL_LINGUAS=""
+ALL_LINGUAS="de"
 
 ###	Checks for programs.
 save_CFLAGS="$CFLAGS"
@@ -86,28 +110,24 @@ CF_PATH_MAILER
 CF_PATH_MAILBOX
 
 ## PGP Support
-AC_MSG_CHECKING(if you want PGP-Support)
-CF_ARG_DISABLE(pgp,
-	[  --disable-pgp           disable PGP Support],
-	[USE_PGP=no],
-	[USE_PGP=yes])
+AC_MSG_CHECKING(if you want PGP/GPG-Support)
+CF_ARG_DISABLE(pgp-gpg,
+	[  --disable-pgp-gpg       disable PGP/GPG Support],
+	[USE_PGP_GPG=no],
+	[USE_PGP_GPG=yes])
 AC_MSG_RESULT($enableval)
+if test "$USE_PGP_GPG" = "yes" ; then
+	CF_WITH_PROGRAM(pgp,
+	[  --with-pgp              (default: from system path)])
+	# FIXME: check if pgp is pgp2 or pgp6
 
-if test "$USE_PGP" = "yes" ; then
-AC_PATH_PROG(PGPK, pgpk, no)
-if test $PGPK != no ; then
-	AC_DEFINE(HAVE_PGP)
-	AC_DEFINE(HAVE_PGP_5)
-else
-	AC_PATH_PROG(PGP, pgp, no)
-	if test $PGP != no; then
-		AC_DEFINE(HAVE_PGP)
-	fi
-fi
-fi
+	CF_WITH_PROGRAM(pgpk,
+	[  --with-pgpk             (default: from system path)])
+	# FIXME: remove tailing k
 
-CF_WITH_PROGRAM(gpg,
-[  --with-gpg              (default: from system path)])
+	CF_WITH_PROGRAM(gpg,
+	[  --with-gpg              (default: from system path)])
+fi
 
 ### check for this early, since it'll override several options
 AC_MSG_CHECKING(if NNTP-support will be used)
@@ -901,9 +921,11 @@ AC_CHECK_FUNCS(\
 	seteuid \
 	setgid \
 	setlocale \
+	setpgid \
 	setpgrp \
 	setregid \
 	setreuid \
+	setsid \
 	setuid \
 	sigaction \
 	snprintf \
@@ -1130,7 +1152,7 @@ AC_SUBST(PCRE_DEFINES)
 
 ### NLS macro
 AM_GNU_GETTEXT
-test $nls_cv_use_gnu_gettext = yes && CPPFLAGS="$CPPFLAGS -I../intl"
+test "$nls_cv_use_gnu_gettext" = "yes" && CPPFLAGS="$CPPFLAGS -I../intl"
 
 ### sum up warnings
 if test "$cf_cv_termlib" = none ; then

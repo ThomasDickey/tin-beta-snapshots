@@ -5,11 +5,36 @@ dnl Created   : 1995-08-24
 dnl Updated   : 1999-09-08
 dnl Notes     :
 dnl
-dnl Copyright 1996,1997,1998,1999 by Thomas Dickey
-dnl             You may  freely  copy or  redistribute  this software,
-dnl             so  long as there is no profit made from its use, sale
-dnl             trade or  reproduction.  You may not change this copy-
-dnl             right notice, and it must be included in any copy made
+dnl Copyright (c) 1995-2000 Thomas E. Dickey <dickey@clark.net>
+dnl All rights reserved.
+dnl
+dnl Redistribution and use in source and binary forms, with or without
+dnl modification, are permitted provided that the following conditions
+dnl are met:
+dnl 1. Redistributions of source code must retain the above copyright
+dnl    notice, this list of conditions and the following disclaimer.
+dnl 2. Redistributions in binary form must reproduce the above copyright
+dnl    notice, this list of conditions and the following disclaimer in the
+dnl    documentation and/or other materials provided with the distribution.
+dnl 3. All advertising materials mentioning features or use of this software
+dnl    must display the following acknowledgement:
+dnl	This product includes software developed by Thomas E. Dickey.
+dnl 4. The name of the author may not be used to endorse or promote
+dnl    products derived from this software without specific prior written
+dnl    permission.
+dnl
+dnl THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+dnl OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+dnl WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+dnl ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+dnl DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+dnl DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+dnl GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+dnl INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+dnl WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+dnl NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+dnl SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+dnl
 dnl
 dnl Macros used in TIN auto-configuration script.
 dnl
@@ -2090,6 +2115,7 @@ AC_ARG_WITH($1,[$2],ifelse($3,,
    # user supplied option-value for "--with-$1=path"
    AC_MSG_CHECKING(for $1)
    ac_cv_path_]cf_path_name[="$withval"
+   AC_DEFINE_UNQUOTED(cf_path_name,"$withval")dnl
    AC_DEFINE(cf_have_name)dnl
    AC_MSG_RESULT($withval)
    ;;
@@ -2163,13 +2189,15 @@ AC_DEFUN(AM_WITH_NLS,
 
 	   if test "$gt_cv_func_gettext_libc" != "yes"; then
 	     AC_CHECK_LIB(intl, bindtextdomain,
-	       [AC_CACHE_CHECK([for gettext in libintl],
-		 gt_cv_func_gettext_libintl,
-		 [AC_CHECK_LIB(intl, gettext,
-		  gt_cv_func_gettext_libintl=yes,
-		  gt_cv_func_gettext_libintl=no)],
-		 gt_cv_func_gettext_libintl=no)])
+		[AC_CHECK_LIB(intl, gettext,
+			gt_cv_func_gettext_libintl=yes,
+			gt_cv_func_gettext_libintl=no)])
 	   fi
+
+          if test "$gt_cv_func_gettext_libintl" = yes; then
+            LIBS="$LIBS -lintl"
+          fi
+
 
 	   if test "$gt_cv_func_gettext_libc" = "yes" \
 	      || test "$gt_cv_func_gettext_libintl" = "yes"; then
@@ -2401,13 +2429,13 @@ strdup __argz_count __argz_stringify __argz_next])
    dnl If the AC_CONFIG_AUX_DIR macro for autoconf is used we possibly
    dnl find the mkinstalldirs script in another subdir but ($top_srcdir).
    dnl Try to locate is.
-   MKINSTALLDIRS=
-   if test -n "$ac_aux_dir"; then
-     MKINSTALLDIRS="$ac_aux_dir/mkinstalldirs"
-   fi
-   if test -z "$MKINSTALLDIRS"; then
-     MKINSTALLDIRS="\$(top_srcdir)/mkinstalldirs"
-   fi
+   MKINSTALLDIRS="mkdirs.sh"
+#   if test -n "$ac_aux_dir"; then
+#     MKINSTALLDIRS="$ac_aux_dir/mkinstalldirs"
+#   fi
+#   if test -z "$MKINSTALLDIRS"; then
+#     MKINSTALLDIRS="\$(top_srcdir)/mkinstalldirs"
+#   fi
    AC_SUBST(MKINSTALLDIRS)
 
    dnl *** For now the libtool support in intl/Makefile is not for real.

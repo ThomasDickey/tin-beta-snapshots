@@ -5,12 +5,38 @@
  *  Created   : 1991-04-01
  *  Updated   : 1997-12-31
  *  Notes     :
- *  Copyright : (c) Copyright 1991-99 by Iain Lea & Rich Skrenta
- *              You may  freely  copy or  redistribute  this software,
- *              so  long as there is no profit made from its use, sale
- *              trade or  reproduction.  You may not change this copy-
- *              right notice, and it must be included in any copy made
+ *
+ * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Iain Lea, Rich Skrenta.
+ * 4. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 
 #ifndef TIN_H
 #	include "tin.h"
@@ -406,6 +432,18 @@ shell_escape (
 	if (tinrc.draw_arrow)
 		ClearScreen ();
 }
+
+
+/*
+ * shell out, if supported
+ */
+void
+do_shell_escape (
+	void)
+{
+	shell_escape();
+	currmenu->redraw();
+}
 #endif /* !NO_SHELL_ESCAPE */
 
 
@@ -470,7 +508,7 @@ tin_done (
 		write_attributes_file (local_attributes_file);
 #endif /* 0 */
 
-#if defined(HAVE_MH_MAIL_HANDLING)
+#ifdef HAVE_MH_MAIL_HANDLING
 		write_mail_active_file ();
 #endif /* HAVE_MH_MAIL_HANDLING */
 	}
@@ -1379,6 +1417,8 @@ strfquote (
 				case '\0':
 					*s++ = '\\';
 					goto out;
+					/* NOTREACHED */
+					break;
 				case 'n':	/* linefeed */
 					strcpy (tbuf, "\n");
 					break;
@@ -1405,6 +1445,8 @@ strfquote (
 				case '\0':
 					*s++ = '%';
 					goto out;
+					/* NOTREACHED */
+					break;
 				case '%':
 					*s++ = '%';
 					continue;
@@ -1517,6 +1559,8 @@ strfeditor (
 				case '\0':
 					*s++ = '\\';
 					goto out;
+					/* NOTREACHED */
+					break;
 				case 'n':	/* linefeed */
 					strcpy (tbuf, "\n");
 					break;
@@ -1545,6 +1589,8 @@ strfeditor (
 				case '\0':
 					*s++ = '%';
 					goto out;
+					/* NOTREACHED */
+					break;
 				case '%':
 					*s++ = '%';
 					continue;
@@ -1590,6 +1636,9 @@ out:
  *   =file     -> $HOME/Mail/file
  *   +file     -> tinrc.default_savedir/group.name/file
  *   ~/News/%G -> $HOME/News/group.name
+ *
+ * FIXME: allow =%G expansion (write all articles to a single file
+ *                             named $HOME/Mail/group.name)
  *
  * Inputs:
  *   format		The string to be converted
@@ -1669,6 +1718,7 @@ strfpath (
 #else
 						/* Amiga has no other users */
 						return 0;
+						/* NOTREACHED */
 #endif /* !M_AMIGA */
 						break;
 				}
@@ -1931,6 +1981,8 @@ strfmailer (
 				case '\0':
 					*s++ = '\\';
 					goto out;
+					/* NOTREACHED */
+					break;
 				case 'n':	/* linefeed */
 					strcpy (tbuf, "\n");
 					break;
@@ -2089,7 +2141,7 @@ cleanup_tmp_files (
 		unlink (lock_file);
 }
 
-#if !defined(M_UNIX)
+#ifndef M_UNIX
 void
 make_post_process_cmd (
 	char *cmd,

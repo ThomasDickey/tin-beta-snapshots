@@ -695,7 +695,7 @@ You can abort the search using 'q'.
 .TP
 .B c
 Mark all articles as read [after confirmation] then return to the
-group selection list.
+group selection list. Move cursor to next group.
 .TP
 .B C
 Mark all articles as read [after confirmation] and enter the next group
@@ -855,36 +855,6 @@ Reverse article selections.
 .B ~
 Undo all selections on current thread.
 .TP
-.B [
-Auto select article(s) with a single key. The defaults used for selection
-are set based upon the following four tinrc config variables:
-.in +.3i
-.nf
-default_filter_select_case
-default_filter_select_expire
-default_filter_select_global
-default_filter_select_header
-.fi
-.in -.3i
-Read the section GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES for
-a full explanation of these variables and FILTERING ARTICLES for more
-information on filtering.
-.TP
-.B ]
-Kill article(s) with a single key. The defaults used for killing
-are based upon the following four tinrc config variables:
-.in +.3i
-.nf
-default_filter_kill_case
-default_filter_kill_expire
-default_filter_kill_global
-default_filter_kill_header
-.fi
-.in -.3i
-Read the section GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES for
-a full explanation of these variables and FILTERING ARTICLES for more
-information on filtering.
-.TP
 .B <CR>
 Read current article within thread.
 .TP
@@ -906,6 +876,7 @@ You can abort the search using 'q'.
 .TP
 .B c
 Mark thread as read [after confirmation] and return to the group index page.
+Move cursor to next thread.
 .TP
 .B C
 Mark thread as read [after confirmation] and enter the next thread containing
@@ -929,7 +900,7 @@ Display the subject of the current article in the last line.
 Toggle inverse video.
 .TP
 .B K
-Mark thread as read.
+Mark article as read and move onto the next unread article.
 .TP
 .B L
 Look up article by ``Message:-ID:''.
@@ -1048,6 +1019,36 @@ articles matching pattern / tagged articles into command.
 See the section MAILING PIPING PRINTING REPOSTING AND SAVING ARTICLES for
 more information.
 .TP
+.B [
+Auto select article(s) with a single key. The defaults used for selection
+are set based upon the following four tinrc config variables:
+.in +.3i
+.nf
+default_filter_select_case
+default_filter_select_expire
+default_filter_select_global
+default_filter_select_header
+.fi
+.in -.3i
+Read the section GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES for
+a full explanation of these variables and FILTERING ARTICLES for more
+information on filtering.
+.TP
+.B ]
+Kill article(s) with a single key. The defaults used for killing
+are based upon the following four tinrc config variables:
+.in +.3i
+.nf
+default_filter_kill_case
+default_filter_kill_expire
+default_filter_kill_global
+default_filter_kill_header
+.fi
+.in -.3i
+Read the section GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES for
+a full explanation of these variables and FILTERING ARTICLES for more
+information on filtering.
+.TP
 .B <CR>
 Goto next base article.
 .TP
@@ -1066,7 +1067,7 @@ You can abort the search using 'q'.
 .TP
 .B c
 Mark the current thread as read [after confirmation] and return to
-the group index page.
+the previous menu. Move cursor to next item.
 .TP
 .B C
 Mark the rest of the current thread as read [after confirmation] and enter the
@@ -1249,7 +1250,7 @@ Default is '*'.
 .TP
 .B Character to show recent articles (art_marked_recent)
 The character used to show that an article/thread is recent (not older
-than X days).  See also recent_time.
+than X days). See also recent_time.
 Default is 'o'.
 .TP
 .B Character to show unread articles (art_marked_unread)
@@ -1501,10 +1502,10 @@ by an highlighted bar if set OFF.
 Specifies whether a screen redraw should always be done after certain
 external commands. Default is OFF.
 .TP
-.B Scroll full page (OFF=half page) (full_page_scroll)
-If set ON scrolling of groups will be a full page at a time,
-otherwise half a page at a time. Currently this is not implemented in the
-pager and in the GLOBAL OPTIONS MENU.
+.B Scroll full page (full_page_scroll)
+If set ON then PageUp and PageDown move the cursor by a full page at a time,
+otherwise movement is half a page at a time. Currently this has no effect in the
+pager and the GLOBAL OPTIONS MENU.
 .TP
 .B Number of articles per group to get (getart_limit)
 If \fBuse_getart_limit\fR is ON and getart_limit is > 0 not more than
@@ -1515,7 +1516,7 @@ means no limit.
 .TP
 .B Number of days during which article is considered recent (recent_time)
 If set to 0, this feature is deactivated, otherwise it means the
-number of days.  Default is 2.
+number of days. Default is 2.
 .TP
 .B Catchup group using left key (group_catchup_on_exit)
 If ON catchup group when leaving with the left arrow key. Default is ON.
@@ -2736,56 +2737,56 @@ I wish to thank the following people for supplying patches:
 David Abbott, Earle Ake, Orbby S. Arka, Joachim Astel, Anton Aylward,
 Mark Ayzenshteyn, Jens Chr. Bachem, George Baltz, Volker Barthelmann, Kirk
 Bauer, Paul Bauwens, Dieter Becker, Wolfgang Behrens, Fabrice Bellet, Greg
-Berigan, Enrik Berkhan, Juergen Bernau, Dan Berry, David Binderman, Andrey
-Blochintsev, Chris Blum, Fokke de Boer, Andreas Borchert, Mark Boucher, Bill
-Brolik, Herman ten Brugge, Martin Buck, Jeremy Buhler, Leila Burrell-Davis,
-Sean Casey, Peter Castro, Troy Cauble, Andrey A. Chernov, Albert
-Chin-A-Young, Tan Kwee Chuan, Boleslaw Ciesielski, Robert Claeson, Steven
-Cogswell, Don Costello, Bryan Curnutt, Ned Danieley, Lars Dannenberg, Chris
-Davies, John Davis, Borislav Deianov, Thomas E. Dickey, Olaf Dietrich, Theo
-Van Dinter, Ralf Doeblitz, Bryan Dongray, Michael Douglass, Craig Durland,
-Bernd Eckenfels, Phil Edge, Kirk Edson, Nick Efthymiou, Stefan Elf, Rob
-Engle, Olle Eriksson, Brent Ermlick, Bernd Ernesti, Ragnar Hojland Espinosa,
-Jason Faultless, Michael Faurot, Werner Fleck, John M. Flinchbaugh, Andy
-Gabor, Torsten Gesang, Ruediger Geys, Callum Gibson, Mike Glendinning,
-Philippe Goujard, Dan Greenspan, Karlo Gross, Carl Hage, Paul Halsema, Ed
-Hanway, Scott Hauck, Christian Haul, Per Headland, Arnold Hendriks, Daniel
-Hermans, Jose Herrero, Dave Hill, Tom Hite, Torsten Homeyer, Ulli Horlacher,
-Keith Howell, Tommy Hsieh, Shih-Kun Huang, Steve Hunt, Jeff Hurwitt, Jeon
-Hyoung-Jo, Pieter Immelman, Jarkko Isokungas, Patrick St. Jean, Hal
-Jespersen, Park Sang Jin, Robbin Johnson, Jarkko Jormanainen, Nelson Kading,
-Geoffrey Keating, Karsten Keil, Charles S. Kerr, Fritz Kleeman, Andreas
-Kies, Janne Kiviluoto, Tomasz Kloczko, Dwarven Knight, Thomas Koenig,
-Karl-Koenig Koenigsson, Martin Kraemer, Thomas Kroener, Florian Kuehnert,
-Kris Kugel, Manoj Kumar, Dawid Kuroczko, Yuri Kuzmenko, Olivier Lacroix,
-Geoff Lane, Alex Lange, Alain Lasserre, Stanislav Latishko, Hannu Laurila,
-Vincent Lefevre, Alexander Lehmann, Marty Leisner, Thomas Leitner, Hakan
-Lennestal, Kevin Lentin, Chua Choon Leong, Chris Lewis, Andreas Ley,
-David-Michael Lincke, Otto Lind, Richard Lloyd, Florian Lohoff, Reinhard
-Luebke, Clifford Luke, Michael Lupp, David MacKenzie, Hugh Mahon, Giuseppe
-De Marco, Dmitri A. Martynoff, Kazushi Marukawa, William McBrine, Owen Medd,
-Philipp Mergenthaler, Arkadiusz Miskiewicz, Soren Moller, Bruce Momjian,
-Sergio Morales, Michael Morrell, Klaus Mueller, Mike Muise, Udo Munk, John
-R. Myers, Daniel Naber, Torsten Neumann, Dirk Nimmich, James Nugen, David E.
-O'Brien, Michael O'Reilly, Oleg Ohotnikov, Ronald Orr, Julien Oster, Jeb
-Palmer, Neil Parker, Tom Parry, Jim Patterson, Sven Paulus, Walter
-Pelissero, Cameron Perkins, Colin Perkins, Eric Peterson, Tim Pierce, Bill
-Poitras, Scott W. Powers, Wolfgang Prediger, GianPiero Puccioni, Thomas
-Quinot, Stefan Rapp, Martin Reising, Kyle Rhorer, Ted Richards, Steve
-Robbins, Ollivier Robert, Branden Robinson, Jim Robinson, Erik van Roode,
-Meelis Roos, Stephen Roseman, Roland Rosenfeld, Peter Van Rossem, Clifton
-Royston, Rich Salz, Gary Sanders, Nickolay Saukh, John Sauter, Christopher
-Sawtell, Holger Schif, Volker Schmidt, John Schmitz, Torsten Schneider,
-Stefan Scholl, Rainer Scholz, Juergen Schroeder, Larry Schwimmer, Bart
-Sears, Karl-Olav Serrander, Doug Sewell, Philip Shearer, Jungshik Shin,
-Sergey Shkonda, Andreas Siegert, Mark Smith, Steve Spearman, Helmut
-Springer, Cliff Stanford, Steve Starck, Jason Steiner, Ralf Stephan, Michael
-Stenns, Helmrich Streitmatter, Hans Werner Strube, Dieter Stueken, Ed
-Sznyter, Dean Takemori, Darrell Tangman, Derek Terveer, Carsten Theis,
-Julian Thompson, David Tiller, Andry Timonin, Mark Tomlin, Michael Traub,
-Adri Verhoef, Paul Vickers, Oliver B. Warzecha, Jason Wessel, Cary Whitney,
-Henrik Wist, Greg Woods, Lloyd Wright, Jens Wuepper, Billy Y., Nickolai
-Zeldovich, Zbigniew Zych
+Berigan, Enrik Berkhan, Juergen Bernau, Dan Berry, Michael Bienia, David
+Binderman, Andrey Blochintsev, Chris Blum, Fokke de Boer, Andreas Borchert,
+Mark Boucher, Bill Brolik, Herman ten Brugge, Martin Buck, Jeremy Buhler,
+Leila Burrell-Davis, Sean Casey, Peter Castro, Troy Cauble, Andrey A.
+Chernov, Albert Chin-A-Young, Tan Kwee Chuan, Boleslaw Ciesielski, Robert
+Claeson, Steven Cogswell, Don Costello, Bryan Curnutt, Ned Danieley, Lars
+Dannenberg, Chris Davies, John Davis, Borislav Deianov, Thomas E. Dickey,
+Olaf Dietrich, Theo Van Dinter, Ralf Doeblitz, Bryan Dongray, Michael
+Douglass, Craig Durland, Bernd Eckenfels, Phil Edge, Kirk Edson, Nick
+Efthymiou, Stefan Elf, Rob Engle, Olle Eriksson, Brent Ermlick, Bernd
+Ernesti, Ragnar Hojland Espinosa, Jason Faultless, Michael Faurot, Werner
+Fleck, John M. Flinchbaugh, Andy Gabor, Torsten Gesang, Ruediger Geys,
+Callum Gibson, Mike Glendinning, Philippe Goujard, Dan Greenspan, Karlo
+Gross, Carl Hage, Paul Halsema, Ed Hanway, Scott Hauck, Christian Haul, Per
+Headland, Arnold Hendriks, Daniel Hermans, Jose Herrero, Dave Hill, Tom
+Hite, Torsten Homeyer, Ulli Horlacher, Keith Howell, Tommy Hsieh, Shih-Kun
+Huang, Steve Hunt, Jeff Hurwitt, Jeon Hyoung-Jo, Pieter Immelman, Jarkko
+Isokungas, Patrick St. Jean, Hal Jespersen, Park Sang Jin, Robbin Johnson,
+Jarkko Jormanainen, Nelson Kading, Geoffrey Keating, Karsten Keil, Charles
+S. Kerr, Fritz Kleeman, Andreas Kies, Janne Kiviluoto, Tomasz Kloczko,
+Dwarven Knight, Thomas Koenig, Karl-Koenig Koenigsson, Martin Kraemer,
+Thomas Kroener, Florian Kuehnert, Kris Kugel, Manoj Kumar, Dawid Kuroczko,
+Yuri Kuzmenko, Olivier Lacroix, Geoff Lane, Alex Lange, Alain Lasserre,
+Stanislav Latishko, Hannu Laurila, Vincent Lefevre, Alexander Lehmann, Marty
+Leisner, Thomas Leitner, Hakan Lennestal, Kevin Lentin, Chua Choon Leong,
+Chris Lewis, Andreas Ley, David-Michael Lincke, Otto Lind, Richard Lloyd,
+Florian Lohoff, Reinhard Luebke, Clifford Luke, Michael Lupp, David
+MacKenzie, Hugh Mahon, Giuseppe De Marco, Dmitri A. Martynoff, Kazushi
+Marukawa, William McBrine, Owen Medd, Philipp Mergenthaler, Arkadiusz
+Miskiewicz, Soren Moller, Bruce Momjian, Sergio Morales, Michael Morrell,
+Klaus Mueller, Mike Muise, Udo Munk, John R. Myers, Daniel Naber, Torsten
+Neumann, Dirk Nimmich, James Nugen, David E. O'Brien, Michael O'Reilly, Oleg
+Ohotnikov, Ronald Orr, Julien Oster, Jeb Palmer, Neil Parker, Tom Parry, Jim
+Patterson, Sven Paulus, Walter Pelissero, Cameron Perkins, Colin Perkins,
+Eric Peterson, Tim Pierce, Bill Poitras, Scott W. Powers, Wolfgang Prediger,
+GianPiero Puccioni, Thomas Quinot, Stefan Rapp, Martin Reising, Kyle Rhorer,
+Ted Richards, Steve Robbins, Ollivier Robert, Branden Robinson, Jim
+Robinson, Erik van Roode, Meelis Roos, Stephen Roseman, Roland Rosenfeld,
+Peter Van Rossem, Clifton Royston, Rich Salz, Gary Sanders, Nickolay Saukh,
+John Sauter, Christopher Sawtell, Holger Schif, Volker Schmidt, John
+Schmitz, Torsten Schneider, Stefan Scholl, Rainer Scholz, Juergen Schroeder,
+Larry Schwimmer, Bart Sears, Karl-Olav Serrander, Doug Sewell, Philip
+Shearer, Jungshik Shin, Sergey Shkonda, Andreas Siegert, Mark Smith, Steve
+Spearman, Helmut Springer, Cliff Stanford, Steve Starck, Jason Steiner, Ralf
+Stephan, Michael Stenns, Helmrich Streitmatter, Hans Werner Strube, Dieter
+Stueken, Ed Sznyter, Dean Takemori, Darrell Tangman, Derek Terveer, Carsten
+Theis, Julian Thompson, David Tiller, Andry Timonin, Mark Tomlin, Michael
+Traub, Adri Verhoef, Paul Vickers, Oliver B. Warzecha, Jason Wessel, Cary
+Whitney, Henrik Wist, Greg Woods, Lloyd Wright, Jens Wuepper, Billy Y.,
+Nickolai Zeldovich, Zbigniew Zych
 .\"
 .\"
 .SH AUTHOR

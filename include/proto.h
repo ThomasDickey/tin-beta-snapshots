@@ -1,9 +1,46 @@
+/*
+ *  Project   : tin - a Usenet reader
+ *  Module    : proto.h
+ *  Author    : Urs Janssen <urs@tin.org>
+ *  Created   :
+ *  Updated   : 2000-01-03
+ *  Notes     :
+ *
+ * Copyright (c) 1997-2000 Urs Janssen <urs@tin.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+
 #ifndef PROTO_H
 #	define PROTO_H 1
 
 /* active.c */
-extern int get_active_num (void);
 extern char group_flag (int ch);
+extern int get_active_num (void);
 extern t_bool match_group_list (char *group, char *group_list);
 extern t_bool parse_active_line (char *line, long *max, long *min, char *moderated);
 extern t_bool process_bogus (char *name);
@@ -29,7 +66,7 @@ extern void read_attributes_file (char *file, t_bool global_file);
 extern void write_attributes_file (char *file);
 
 /* auth.c */
-#if defined (NNTP_ABLE)
+#ifdef NNTP_ABLE
 	extern t_bool authenticate (char *server, char *user, t_bool startup);
 #endif /* NNTP_ABLE */
 
@@ -101,7 +138,7 @@ extern void setup_screen (void);
 #ifdef DEBUG_NEWSRC
 	extern void debug_print_newsrc (struct t_newsrc *NewSrc, FILE *fp);
 #endif /* DEBUG_NEWSRC */
-#if defined(DEBUG) || defined (DEBUG_NEWSRC)
+#if defined(DEBUG) || defined(DEBUG_NEWSRC)
 	extern void debug_print_bitmap (struct t_group *group, struct t_article *art);
 	extern void debug_print_comment (const char *comment);
 #endif /* DEBUG || DEBUG_NEWSRC */
@@ -118,13 +155,14 @@ extern t_bool filter_articles (struct t_group *group);
 extern t_bool filter_menu (int type, struct t_group *group, struct t_article *art);
 extern t_bool quick_filter (int type, struct t_group *group, struct t_article *art);
 extern t_bool quick_filter_select_posted_art (struct t_group *group, char *subj);
-extern void free_all_filter_arrays (void);
 extern t_bool read_filter_file (char *file, t_bool global_file);
+extern void free_all_filter_arrays (void);
 
 /* getline.c */
 extern char *tin_getline (const char *prompt, int number_only, char *str, int max_chars, t_bool passwd, int which_hist);
 
 /* global.c */
+extern int handle_keypad (int (*left_action) (void), int (*right_action) (void));
 extern int mouse_action (int ch, int (*left_action) (void), int (*right_action) (void));
 extern void bug_report (void);
 extern void move_up (void);
@@ -138,14 +176,14 @@ extern void prompt_item_num (int ch, const char *prompt);
 extern void set_first_screen_item (void);
 
 /* group.c */
+extern int find_new_pos (int old_top, long old_artnum, int cur_pos);
+extern int group_page (struct t_group *group);
 extern void clear_note_area (void);
 extern void mark_screen (int level, int screen_row, int screen_col, const char *value);
 extern void pos_first_unread_thread (void);
 extern void set_subj_from_size (int num_cols);
 extern void show_group_page (void);
 extern void toggle_subject_from (void);
-extern int find_new_pos (int old_top, long old_artnum, int cur_pos);
-extern int group_page (struct t_group *group);
 
 /* hashstr.c */
 extern char *hash_str (const char *s);
@@ -177,13 +215,13 @@ extern void get_user_info (char *user_name, char *full_name);
 
 /* init.c */
 extern t_bool (*wildcard_func)(const char *str, char *patt, t_bool icase);		/* Wildcard matching function */
+extern t_bool create_mail_save_dirs (void);
 extern void init_selfinfo (void);
 extern void postinit_regexp (void);
+extern void set_up_private_index_cache (void);
 #ifdef HAVE_COLOR
 	extern void postinit_colors (void);
 #endif /* HAVE_COLOR */
-extern t_bool create_mail_save_dirs (void);
-extern void set_up_private_index_cache (void);
 #ifdef USE_INN_NNTPLIB
 	extern char *GetConfigValue (const char *name);
 #endif /* USE_INN_NNTPLIB */
@@ -192,12 +230,12 @@ extern void set_up_private_index_cache (void);
 extern void joinpath (char *result, const char *dir, const char *file);
 
 /* list.c */
+extern char *random_organization (char *in_org);
 extern int find_group_index (const char *group);
 extern struct t_group *psGrpAdd (char *group);
 extern struct t_group *psGrpFind (char *pcGrpName);
 extern unsigned long hash_groupname (const char *group);
 extern void init_group_hash (void);
-extern char *random_organization (char *in_org);
 #if 0
 	extern struct t_group *psGrpFirst (void);
 	extern struct t_group *psGrpLast (void);
@@ -215,7 +253,7 @@ extern void vPrintActiveHead (char *pcActiveFile);
 extern void vPrintGrpLine (FILE *hFp, char *pcGrpName, long lArtMax, long lArtMin, char *pcBaseDir);
 extern void vGrpDelMailArts (struct t_group *psGrp);
 extern void vGrpDelMailArt (struct t_article *psArt);
-#if defined(HAVE_MH_MAIL_HANDLING)
+#ifdef HAVE_MH_MAIL_HANDLING
 	extern void read_mail_active_file (void);
 	extern void read_mailgroups_file (void);
 	extern void write_mail_active_file (void);
@@ -232,21 +270,23 @@ extern void expand_art (void);
 extern void expand_newnews (void);
 extern void expand_save (void);
 extern void init_alloc (void);
-#ifndef USE_CURSES
-	extern void init_screen_array (t_bool allocate);
-#endif /* !USE_CURSES */
 extern void free_all_arrays (void);
 extern void free_art_array (void);
 extern void free_attributes_array (void);
 extern void free_save_array (void);
 extern void *my_malloc1 (const char *file, int line, size_t size);
 extern void *my_realloc1 (const char *file, int line, char *p, size_t size);
+#ifndef USE_CURSES
+	extern void init_screen_array (t_bool allocate);
+#endif /* !USE_CURSES */
 
 /* misc.c */
 extern char *eat_re (char *s, t_bool eat_was);
 extern char *quote_wild (char *str);
 extern char *quote_wild_whitespace (char *str);
 extern const char *get_val (const char *env, const char *def);
+extern const char *gnksa_strerror (int errcode);
+extern int gnksa_check_from (char *from);
 extern int get_initials (int respnum, char *s, int maxsize);
 extern int gnksa_do_check_from(char *from, char *address, char *realname);
 extern int my_chdir (char *path);
@@ -272,9 +312,6 @@ extern void draw_percent_mark (long cur_num, long max_num);
 extern void get_author (t_bool thread, struct t_article *art, char *str, size_t len);
 extern void get_cwd (char *buf);
 extern void make_group_path (char *name, char *path);
-#if 0
-	extern void parse_from (char *from_line, char *eaddr, char *fname);
-#endif /* 0 */
 extern void read_input_history_file (void);
 extern void rename_file (char *old_filename, char *new_filename);
 extern void set_real_uid_gid (void);
@@ -287,15 +324,15 @@ extern void strip_name (char *the_address, char *stripped_address);
 extern void tin_done (int ret);
 extern void toggle_inverse_video (void);
 extern void vPrintBugAddress (void);
+#if 0
+	extern void parse_from (char *from_line, char *eaddr, char *fname);
+#else
+	extern int parse_from (char *from, char *address, char *realname);
+#endif /* 0 */
 #ifdef LOCAL_CHARSET
 	extern void buffer_to_local (char *b);
 	extern void buffer_to_network (char *b);
 #endif /* LOCAL_CHARSET */
-extern const char *gnksa_strerror (int errcode);
-extern int gnksa_check_from (char *from);
-#if 1
-	extern int parse_from (char *from, char *address, char *realname);
-#endif /* 1 */
 #ifdef HAVE_COLOR
 	extern t_bool toggle_color (void);
 	extern void show_color_status (void);
@@ -308,6 +345,7 @@ extern int gnksa_check_from (char *from);
 #endif /* !M_UNIX */
 #ifndef NO_SHELL_ESCAPE
 	extern void shell_escape (void);
+	extern void do_shell_escape (void);
 #endif /* !NO_SHELL_ESCAPE */
 
 /* newsrc.c */
@@ -353,9 +391,6 @@ extern int get_newsrcname (char *newsrc_name, const char *nntpserver_name);
 extern void get_nntpserver (char *nntpserver_name, char *nick_name);
 
 /* open.c */
-#ifdef NNTP_ABLE
-	extern FILE *nntp_command (const char *, int, char *);
-#endif /* NNTP_ABLE */
 extern FILE *open_art_fp (char *group_path, long art, int lines, t_bool rfc1521decode);
 extern FILE *open_newgroups_fp (int the_index);
 extern FILE *open_news_active_fp (void);
@@ -376,25 +411,28 @@ extern void vGet1GrpArtInfo (struct t_group *grp);
 	extern FILE *open_mail_active_fp (const char *mode);
 	extern FILE *open_mailgroups_fp (void);
 #endif /* HAVE_MH_MAIL_HANDLING */
+#ifdef NNTP_ABLE
+	extern FILE *nntp_command (const char *, int, char *);
+#endif /* NNTP_ABLE */
 
 /* page.c */
+extern int art_open (struct t_article *art, char *group_path, t_bool rfc1521decode);
+extern int show_page (struct t_group *group, int respnum, int *threadnum);
 extern t_bool match_header (char *buf, const char *pat, char *body, char *nodec_body, size_t len);
 extern void art_close (void);
 extern void redraw_page (char *group, int respnum);
-extern int art_open (struct t_article *art, char *group_path, t_bool rfc1521decode);
-extern int show_page (struct t_group *group, int respnum, int *threadnum);
 extern void show_note_page (char *group, int respnum);
 
 /* parsdate.y */
 extern time_t parsedate (char *p, TIMEINFO *now);
 
 /* pgp.c */
-#ifdef HAVE_PGP
+#ifdef HAVE_PGP_GPG
 	extern t_bool pgp_check_article (void);
 	extern void init_pgp (void);
 	extern void invoke_pgp_mail (char *nam, char *mail_to);
 	extern void invoke_pgp_news (char *the_article);
-#endif /* HAVE_PGP */
+#endif /* HAVE_PGP_GPG */
 
 /* plp_snprintf.c */
 #ifndef HAVE_SNPRINTF
@@ -407,6 +445,8 @@ extern time_t parsedate (char *p, TIMEINFO *now);
 /* post.c */
 extern int count_postponed_articles (void);
 extern int post_response (char *group, int respnum, int copy_text, t_bool with_headers);
+extern int repost_article (const char *group, int respnum, t_bool supersede);
+extern t_bool cancel_article (struct t_group *group, struct t_article *art, int respnum);
 extern t_bool mail_bug_report (void);
 extern t_bool mail_to_author (char *group, int respnum, int copy_text, t_bool with_headers);
 extern t_bool mail_to_someone (int respnum, const char *address, t_bool mail_to_poster, t_bool confirm_to_mail, t_bool *mailed_ok);
@@ -415,10 +455,8 @@ extern t_bool post_article (const char *group);
 extern t_bool reread_active_after_posting (void);
 extern t_bool user_posted_messages (void);
 extern void checknadd_headers (char *infile);
-extern int repost_article (const char *group, int respnum, t_bool supersede);
-extern t_bool cancel_article (struct t_group *group, struct t_article *art, int respnum);
 extern void quick_post_article (t_bool postponed_only);
-#if defined(USE_CANLOCK)
+#ifdef USE_CANLOCK
 	extern const char *build_cankey(const char *messageid, const char *secret);
 	extern const char *build_canlock(const char *messageid, const char *secret);
 	extern char *get_secret(void);
@@ -465,8 +503,8 @@ extern FILE *rfc1521_decode (FILE *infile);
 extern void rfc1521_encode (char *line, FILE *f, int e);
 extern void rfc1557_encode (char *line, FILE *f, int e);
 #if 0
-extern void rfc1468_encode (char *line, FILE *f, int e);
-extern void rfc1922_encode (char *line, FILE *f, int e);
+	extern void rfc1468_encode (char *line, FILE *f, int e);
+	extern void rfc1922_encode (char *line, FILE *f, int e);
 #endif /* 0 */
 
 /* rfc1522.c */
@@ -479,19 +517,19 @@ extern void rfc15211522_encode (char *filename, constext *mime_encoding, t_bool 
 /* save.c */
 extern int check_start_save_any_news (int check_start_save);
 extern t_bool post_process_files (int proc_type_ch, t_bool auto_delete);
-extern void print_art_seperator_line (FILE *fp, t_bool is_mailbox);
-extern void sort_save_list (void);
 extern t_bool create_path (char *path);
 extern t_bool save_art_to_file (int indexnum, t_bool the_mailbox, const char *filename);
 extern t_bool save_regex_arts_to_file (t_bool is_mailbox, char *group_path);
 extern t_bool save_thread_to_file (t_bool is_mailbox, char *group_path);
 extern void add_to_save_list (int the_index, t_bool is_mailbox, int archive_save, char *path);
+extern void print_art_seperator_line (FILE *fp, t_bool is_mailbox);
+extern void sort_save_list (void);
 
 /* screen.c */
 extern void center_line (int line, t_bool inverse, const char *str);
 extern void clear_message (void);
 extern void draw_arrow_mark (int line);
-extern void erase_arrow_mark (int line);
+extern void erase_arrow (void);
 extern void error_message (const char *fmt, ...);
 extern void info_message (const char *fmt, ...);
 extern void perror_message (const char *fmt, ...);
@@ -507,8 +545,8 @@ extern int search (int key, int current_art, t_bool forward);
 extern int search_active (t_bool forward);
 extern int search_config (t_bool forward, int current, int last);
 extern int search_help (t_bool forward, int current, int last);
-extern t_bool search_article (t_bool forward);
 extern int search_body (int current_art);
+extern t_bool search_article (t_bool forward);
 
 /* select.c */
 extern int add_my_group (const char *group, t_bool add);
@@ -602,9 +640,9 @@ extern int prev_unread (int n);
 extern int stat_thread (int n, struct t_art_stat *sbuf);
 extern int which_response (int n);
 extern int which_thread (int n);
-extern void show_thread_page (void);
-extern int thread_page (struct t_group *group, int respnum, int thread_depth);
+extern int thread_page (struct t_group *group, int respnum, int thread_depth, t_pagerinfo *page);
 extern void fixup_thread (int respnum, t_bool redraw);
+extern void show_thread_page (void);
 
 /* wildmat.c */
 extern t_bool wildmat (const char *text, char *p, t_bool icase);

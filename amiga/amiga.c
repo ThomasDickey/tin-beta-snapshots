@@ -5,36 +5,64 @@
  *  Created   : 01-04-91
  *  Updated   : 17-07-95
  *  Notes     : Extra functions for Amiga port
- *  Copyright : (c) Copyright 1991-94 by Mark Tomlinson & Iain Lea
- *              You may  freely  copy or  redistribute  this software,
- *              so  long as there is no profit made from its use, sale
- *              trade or  reproduction.  You may not change this copy-
- *              right notice, and it must be included in any copy made
+ *
+ * Copyright (c) 1991-2000:
+ * Reinhard Luebke <reinhard.luebke@erl9.siemens.de>
+ * Mark Tomlinson <notmandm@pond.com>
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Reinhard Luebke, Mark Tomlinson.
+ * 4. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include        "tin.h"
-#include        "version.h"
+#include "tin.h"
+#include "version.h"
 
 #if defined(M_AMIGA)
 
-#include        <exec/libraries.h>
-#include        <exec/memory.h>
-#include        <libraries/dos.h>
-#include        <dos/exall.h>
-#ifdef __SASC
-#       include <proto/dos.h>
-#       include <proto/exec.h>
-#else
-#       include <clib/dos_protos.h>
-#       include <clib/exec_protos.h>
-#       include <pragmas/dos_lib.h>
-#       include <pragmas/exec_lib.h>
-#endif
+#include <exec/libraries.h>
+#include <exec/memory.h>
+#include <libraries/dos.h>
+#include <dos/exall.h>
+#	ifdef __SASC
+#		include <proto/dos.h>
+#		include <proto/exec.h>
+#	else
+#		include <clib/dos_protos.h>
+#		include <clib/exec_protos.h>
+#		include <pragmas/dos_lib.h>
+#		include <pragmas/exec_lib.h>
+#	endif /* __SASC */
 
-#include        <ctype.h>
-#include        <fcntl.h>
-#include        <ios1.h>
-#include        <error.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <ios1.h>
+#include <error.h>
 
 #define BUFSIZE 1000
 
@@ -43,23 +71,23 @@ static LONG dopkt(struct MsgPort *pid, LONG action, LONG args[], LONG nargs);
 extern struct DosLibrary *DOSBase;
 extern int errno;
 #ifdef __SASC
-extern unsigned long __fmask;
+	extern unsigned long __fmask;
 #endif /* __SASC */
 
 /*
-** something for the AmigaDOS Version command
-** AMIVER is defined in ../include/version.h
-** __AMIGADATE__ is defined by the SC 6.55 preprocessor
-*/
+ * something for the AmigaDOS Version command
+ * AMIVER is defined in ../include/version.h
+ * __AMIGADATE__ is defined by the SC 6.55 preprocessor
+ */
 static const char verstag[] = "$VER: tin " AMIVER " " __AMIGADATE__ "\0";
 
 int optind = 1;
 char *optarg;
 
 #if 0
-#ifdef __SASC
-long __stack = 40000;   /* TIN requires lots of stack */
-#endif
+	#ifdef __SASC
+		long __stack = 40000;   /* TIN requires lots of stack */
+	#endif /* __SASC */
 #endif /* 0 */
 
 static APTR old_windowptr;
@@ -98,7 +126,7 @@ void __interrupt __chkabort (void)
                 raise(SIGINT);
         }
 }
-#endif
+#endif /* __SASC */
 
 int
 chmod (const char *file, int mode)
@@ -487,7 +515,7 @@ int stat (char *name, struct stat *buf)
         free (inf);
         return 0;
 }
-#endif
+#endif /* !__SASC */
 
 /*
  * This getenv and setenv will use the WB2.0 calls if you have the new

@@ -5,12 +5,38 @@
  *  Created   : 1995-05-12
  *  Updated   : 1999-12-02
  *  Notes     : PGP support
- *  Copyright : (c) 1995-99 by Steven J. Madsen
- *              You may  freely  copy or  redistribute  this software,
- *              so  long as there is no profit made from its use, sale
- *              trade or  reproduction.  You may not change this copy-
- *              right notice, and it must be included in any copy made
+ *
+ * Copyright (c) 1995-2000 Steven J. Madsen <steve@erinet.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Steven J. Madsen.
+ * 4. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 
 #ifndef TIN_H
 #	include "tin.h"
@@ -19,59 +45,65 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 
-#ifdef HAVE_PGP
-
-/* TODO - fix configure and remove this */
-#ifndef HAVE_PGP_5
-#	ifndef HAVE_GPG
-#		define HAVE_PGP_2
-#	endif /* !HAVE_GPG */
-#endif /* !HAVE_PGP_5 */
+#ifdef HAVE_PGP_GPG
 
 /*
- * This option is valid for all supported packages. It may only be
- * be used when signing articles
+ * The first two args are typically the PGP command name and then $PGPOPTS
+ * NB: The '1' variations on DO_{SIGN,BOTH} are used when local-user name is
+ * used and are valid only when signing
  */
-#	define LOCAL_USER		"-u %s"
-
-/* TODO - avoid redefinitions */
-/*
- * The first two args are the PGP command name and then $PGPOPTS
- */
-#	ifdef HAVE_PGP_2
-#		define PGPNAME		"pgp"
+#	ifdef HAVE_PGP	/* pgp-2 */
+#		define PGPNAME		PATH_PGP
 #		define PGPDIR		".pgp"
 #		define PGP_PUBRING	"pubring.pgp"
 #		define CHECK_SIGN	"%s %s -f <%s %s"
 #		define ADD_KEY		"%s %s -ka %s"
 #		define APPEND_KEY	"%s %s -kxa %s %s"
-#		define DO_ENCRYPT	"%s %s -ate %s %s"
-#		define DO_SIGN		"%s %s -ats %s %s"
-#		define DO_BOTH		"%s %s -ates %s %s"
-#	endif /* HAVE_PGP_2 */
+#		define DO_ENCRYPT	"%s %s -ate %s %s", PGPNAME, pgpopts, pt, mailto
+#		define DO_SIGN		"%s %s -ats %s %s", PGPNAME, pgpopts, pt, mailto
+#		define DO_SIGN1		"%s %s -ats %s %s -u %s", PGPNAME, pgpopts, pt, mailto, mailfrom
+#		define DO_BOTH		"%s %s -ates %s %s", PGPNAME, pgpopts, pt, mailto
+#		define DO_BOTH1		"%s %s -ates %s %s -u %s", PGPNAME, pgpopts, pt, mailto, mailfrom
+#	endif /* HAVE_PGP */
 
-#	ifdef HAVE_PGP_5
-#		define PGPNAME		"pgp"
+#	ifdef HAVE_PGPK	/* pgp-5 */
+#		define PGPNAME		"pgp"	/* FIXME: this is AFAIK not PATH_PGPK */
 #		define PGPDIR		".pgp"
 #		define PGP_PUBRING	"pubring.pkr"
 #		define CHECK_SIGN	"%sv %s -f <%s %s"
 #		define ADD_KEY		"%sk %s -a %s"
 #		define APPEND_KEY	"%sk %s -xa %s -o %s"
-#		define DO_ENCRYPT	"%se %s -at %s %s"
-#		define DO_SIGN		"%ss %s -at %s %s"
-#		define DO_BOTH		"%se %s -ats %s %s"
-#	endif /* HAVE_PGP_5 */
+#		define DO_ENCRYPT	"%se %s -at %s %s", PGPNAME, pgpopts, pt, mailto
+#		define DO_SIGN		"%ss %s -at %s %s", PGPNAME, pgpopts, pt, mailto
+#		define DO_SIGN1		"%ss %s -at %s %s -u %s", PGPNAME, pgpopts, pt, mailto, mailfrom
+#		define DO_BOTH		"%se %s -ats %s %s", PGPNAME, pgpopts, pt, mailto
+#		define DO_BOTH1		"%se %s -ats %s %s -u %s", PGPNAME, pgpopts, pt, mailto, mailfrom
+#	endif /* HAVE_PGPK */
 
-#	ifdef HAVE_GPG
+#	ifdef HAVE_GPG	/* gpg */
 #		define PGPNAME		PATH_GPG
 #		define PGPDIR		".gnupg"
 #		define PGP_PUBRING	"pubring.gpg"
 #		define CHECK_SIGN	"%s %s --no-batch --decrypt <%s %s"
 #		define ADD_KEY		"%s %s --no-batch --import %s"
+/* TODO check that re-org from: 'user pt' -> '--export --output pt user' is okay */
 #		define APPEND_KEY	"%s %s --no-batch --armor --export %s --output %s"
-#		define DO_ENCRYPT	"%s %s --no-batch --armor --textmode --output %s.asc --encrypt %s --recipient %s"
-#		define DO_SIGN		"%s %s --no-batch --armor --textmode --output %s.asc --escape-from --clearsign %s"
-#		define DO_BOTH		"%s %s --no-batch --armor --textmode --output %s.asc --sign --encrypt %s --recipient %s"
+#		define LOCAL_USER	"--local-user %s"
+#		define DO_ENCRYPT	\
+"%s %s --textmode --armor --no-batch --output %s.asc --recipient %s --encrypt %s", \
+PGPNAME, pgpopts, pt, mailto, pt
+#		define DO_SIGN		\
+"%s %s --textmode --armor --no-batch --output %s.asc --escape-from --clearsign %s", \
+PGPNAME, pgpopts, pt, pt
+#		define DO_SIGN1		\
+"%s %s --textmode --armor --no-batch --local-user %s --output %s.asc --escape-from --clearsign %s", \
+PGPNAME, pgpopts, mailfrom, pt, pt
+#		define DO_BOTH		\
+"%s %s --textmode --armor --no-batch --output %s.asc --recipient %s --sign --encrypt %s", \
+PGPNAME, pgpopts, pt, mailto, pt
+#		define DO_BOTH1		\
+"%s %s --textmode --armor --no-batch --output %s.asc --recipient %s --local-user %s --sign --encrypt %s", \
+PGPNAME, pgpopts, pt, mailto, mailfrom, pt
 #	endif /* HAVE_GPG */
 
 #	define PGP_SIG_TAG "-----BEGIN PGP SIGNED MESSAGE-----\n"
@@ -200,36 +232,32 @@ do_pgp (
 	const char *file,
 	const char *mail_to)
 {
-	char address[LEN];
 	char cmd[LEN];
+	char mailfrom[LEN] = "";
 	const char *mailto = (mail_to) ? mail_to : "";
 
 	split_file(file);
 
 	/*
-	 * -u <from addr> is valid only when signing
+	 * <mailfrom> is valid only when signing and a local address exists
 	 */
-	if (*tinrc.mail_address)
-		strip_name (tinrc.mail_address, address);
-
-	if (what & PGP_SIGN && *address != '\0') {
-		char formatbuf[80];
-
-		sprintf(formatbuf, "%s %s", (what & PGP_ENCRYPT) ? DO_BOTH : DO_SIGN, LOCAL_USER);
-fprintf(stderr, "FMT: !%s!\n", formatbuf);
-		sh_format (cmd, sizeof(cmd), formatbuf, PGPNAME, pgpopts, pt,
-#ifdef HAVE_GPG
-							pt,
-#endif /* HAVE_GPG */
-							mailto, address);
+	if (what & PGP_SIGN) {
+		if (*(CURR_GROUP.attribute->from) != '\0') {
+			strip_name (CURR_GROUP.attribute->from, mailfrom);
+			if (what & PGP_ENCRYPT)
+				sh_format (cmd, sizeof(cmd), DO_BOTH1);
+			else
+				sh_format (cmd, sizeof(cmd), DO_SIGN1);
+		} else {
+			if (what & PGP_ENCRYPT)
+				sh_format (cmd, sizeof(cmd), DO_BOTH);
+			else
+				sh_format (cmd, sizeof(cmd), DO_SIGN);
+		}
 	} else
-		sh_format (cmd, sizeof(cmd), DO_ENCRYPT, PGPNAME, pgpopts, pt,
-#ifdef HAVE_GPG
-							pt,
-#endif /* HAVE_GPG */
-							mailto);
+		sh_format (cmd, sizeof(cmd), DO_ENCRYPT);
 
-fprintf(stderr, "PLOK: !%s!\n", cmd);
+/*fprintf(stderr, "CHECK: !%s!\n", cmd);*/
 	invoke_cmd(cmd);
 	join_files(file);
 }
@@ -242,8 +270,8 @@ pgp_append_public_key (
 	FILE *fp, *key;
 	char keyfile[PATH_LEN], cmd[LEN], buf[LEN];
 
-	if (*tinrc.mail_address)
-		strip_name (tinrc.mail_address, buf);
+	if (*(CURR_GROUP.attribute->from) != '\0')
+		strip_name (CURR_GROUP.attribute->from, buf);
 	else
 		snprintf(buf, sizeof(buf)-1, "%s@%s", userid, host_name);
 
@@ -304,18 +332,18 @@ invoke_pgp_mail (
 			break;
 
 		case 's':
-#ifdef HAVE_PGP_5
+#ifdef HAVE_PGPK
 			ClearScreen();
 			MoveCursor (cLINES - 7, 0);
-#endif /* HAVE_PGP_5 */
+#endif /* HAVE_PGPK */
 			do_pgp(PGP_SIGN, nam, NULL);
 			break;
 
 		case 'b':
-#ifdef HAVE_PGP_5
+#ifdef HAVE_PGPK
 			ClearScreen();
 			MoveCursor (cLINES - 7, 0);
-#endif /* HAVE_PGP_5 */
+#endif /* HAVE_PGPK */
 			do_pgp(PGP_SIGN | PGP_ENCRYPT, nam, mail_to);
 			break;
 
@@ -345,20 +373,20 @@ invoke_pgp_news (
 			break;
 
 		case 's':
-#ifdef HAVE_PGP_5
+#ifdef HAVE_PGPK
 			info_message (" ");
 			MoveCursor (cLINES - 7, 0);
 			my_printf("\n");
-#endif /* HAVE_PGP_5 */
+#endif /* HAVE_PGPK */
 			do_pgp(PGP_SIGN, artfile, NULL);
 			break;
 
 		case 'i':
-#ifdef HAVE_PGP_5
+#ifdef HAVE_PGPK
 			info_message (" ");
 			MoveCursor (cLINES - 7, 0);
 			my_printf("\n");
-#endif /* HAVE_PGP_5 */
+#endif /* HAVE_PGPK */
 			do_pgp(PGP_SIGN, artfile, NULL);
 			pgp_append_public_key(artfile);
 			break;
@@ -413,7 +441,10 @@ pgp_check_article (
 	if (pgp_signed) {
 		Raw(FALSE);
 
-		sh_format (cmd, sizeof(cmd), CHECK_SIGN, PGPNAME, pgpopts, artfile, REDIRECT_PGP_OUTPUT);
+		/*
+		 * We don't use sh_format here else the redirection get misquoted
+		 */
+		snprintf (cmd, sizeof(cmd)-1, CHECK_SIGN, PGPNAME, pgpopts, artfile, REDIRECT_PGP_OUTPUT);
 		invoke_cmd(cmd);
 		my_printf("\n");
 		Raw(TRUE);
@@ -434,4 +465,4 @@ pgp_check_article (
 	unlink(artfile);
 	return TRUE;
 }
-#endif /* HAVE_PGP */
+#endif /* HAVE_PGP_GPG */

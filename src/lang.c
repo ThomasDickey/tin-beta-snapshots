@@ -5,12 +5,38 @@
  *  Created   : 1991-04-01
  *  Updated   : 1998-10-17
  *  Notes     :
- *  Copyright : (c) Copyright 1991-99 by Iain Lea
- *              You may  freely  copy or  redistribute  this software,
- *              so  long as there is no profit made from its use, sale
- *              trade or  reproduction.  You may not change this copy-
- *              right notice, and it must be included in any copy made
+ *
+ * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *    This product includes software developed by Iain Lea.
+ * 4. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 
 #ifndef TIN_H
 #	include "tin.h"
@@ -290,9 +316,9 @@ constext txt_help_ctrl_a[] = N_("^A\t  auto-select (hot) an article via a menu" 
 constext txt_help_ctrl_d[] = N_("^D ^U\t  down (^U = up) one page" cCRLF);
 constext txt_help_ctrl_f[] = N_("^F ^B\t  down (^B = up) one page" cCRLF);
 
-#ifdef HAVE_PGP
+#ifdef HAVE_PGP_GPG
 	constext txt_help_ctrl_g[] = N_("^G\t  perform PGP operations on article" cCRLF);
-#endif /* HAVE_PGP */
+#endif /* HAVE_PGP_GPG */
 
 constext txt_help_ctrl_h[] = N_("^H\t  show article headers" cCRLF);
 constext txt_help_ctrl_k[] = N_("^K\t  kill an article via a menu" cCRLF);
@@ -546,13 +572,13 @@ constext txt_pcre_error_at[] = N_("Error in regex: %s at pos. %d");
 constext txt_pcre_error_num[] = N_("Error in regex: pcre internal error %d");
 constext txt_pcre_error_text[] = N_("Error in regex: study - pcre internal error %s");
 
-#ifdef HAVE_PGP
+#ifdef HAVE_PGP_GPG
 	constext txt_pgp_add[] = N_("Add key(s) to public keyring? ");
 	constext txt_pgp_mail[] = N_("e)ncrypt, s)ign, b)oth, q)uit: ");
 	constext txt_pgp_news[] = N_("s)ign, i) sign & include public key, q)uit: ");
 	constext txt_pgp_not_avail[] = N_("PGP has not been set up (can't open %s)");
 	constext txt_pgp_nothing[] = N_("Article not signed and no public keys found");
-#endif /* HAVE_PGP */
+#endif /* HAVE_PGP_GPG */
 
 #ifndef DONT_HAVE_PIPING
 	constext txt_pipe[] = N_("Pipe");
@@ -750,7 +776,7 @@ constext txt_quit_no_write[] = N_("Do you really want to quit without saving you
 	constext txt_printing[] = N_("Printing...");
 #endif /* !DISABLE_PRINTING */
 
-#ifdef HAVE_PGP
+#ifdef HAVE_PGP_GPG
 #	ifdef HAVE_ISPELL
 		constext txt_quit_edit_post[] = N_("q)uit, e)dit, i)spell, g) pgp, p)ost, p(o)stpone: ");
 		constext txt_quit_edit_send[] = N_("q)uit, e)dit, i)spell, g) pgp, s)end [%.*s]: ");
@@ -770,7 +796,7 @@ constext txt_quit_no_write[] = N_("Do you really want to quit without saving you
 		constext txt_quit_edit_send[] = N_("q)uit, e)dit, s)end [%.*s]: ");
 		constext txt_quit_edit_xpost[] = N_("q)uit, e)dit, p)ost, p(o)stpone [%.*s]: ");
 #	endif /* HAVE_ISPELL */
-#endif /* HAVE_PGP */
+#endif /* HAVE_PGP_GPG */
 
 constext txt_quit_edit_postpone[] = N_("q)uit, e)dit, p(o)stpone: ");
 constext txt_catchup_despite_tags[] = N_("You have tagged articles in this group - catchup anyway? (y/n): ");
@@ -1025,7 +1051,7 @@ struct opttxt txt_beginner_level = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Show mini menu & posting etiquette : "),
 	N_("# If ON show a mini menu of useful commands at each level\n\
-# and posting etiquette after composing a article\n")
+# and posting etiquette after composing an article\n")
 };
 
 struct opttxt txt_show_description = {
