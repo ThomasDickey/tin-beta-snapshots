@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-01-11
+ *  Updated   : 2004-02-21
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -73,8 +73,6 @@ t_openartinfo pgart =	/* Global context of article open in the pager */
 		FALSE, 0,
 		NULL, NULL, NULL, NULL,
 	};
-
-int MORE_POS;			/* set in set_win_size() */
 
 int last_resp;			/* previous & current article # in arts[] for '-' command */
 int this_resp;
@@ -870,7 +868,6 @@ return_to_index:
 				XFACE_CLEAR();
 				if (change_config_file(group) == FILTERING)
 					filter_state = FILTERING;
-				set_subj_from_size(cCOLS);
 				draw_page(group->name, 0);
 				break;
 
@@ -1274,7 +1271,8 @@ invoke_metamail(
 	/* This is needed if we are viewing the raw art */
 	fseek(fp, offset, SEEK_SET);	/* goto old position */
 
-	MoveCursor(cLINES, MORE_POS - (5 + BLANK_PAGE_COLS));
+	/* FIXME: values do differ for different languages */
+	MoveCursor(cLINES, cCOLS - 20 - BLANK_PAGE_COLS);
 	StartInverse();
 	my_flush();
 	EndInverse();

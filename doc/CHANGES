@@ -1,4 +1,4 @@
--- 1.7.4 release 20040211 "" --
+-- 1.7.4 release 20040225 "Benbecula" --
 
 U022) Lech Szychowski <lech7@pse.pl>
       BUG. didn't check if message-ids taken from the References:-header are
@@ -24,11 +24,16 @@ U020) Thomas E. Dickey <dickey@invisible-island.net>
 
 U019) Michael Bienia <michael@vorlon.ping.de>
       BUG. error_message() clobbers global var mesg
+      BUG. didn't catch KEY_RESIZE in USE_CURSES wide-char mode thus a
+           windows-resize was taken a keypress
       ADD. several checks for valid utf-8 data
       ADD. display non-printable characters as octals in raw-mode
-      FIX. extern.h, proto.h, art.c, color.c, feed.c, filter.c, group.c
-           lang.c, misc.c, page.c, post.c, prompt.c, rfc2046.c, screen.c
-           search.c, select.c, string.c, tags.c, thread.c, wildmat.c, xref.c
+      ADD, redraw tin_getline()-prompt after window-resizing
+      ADD. minor code cleanup cleanup
+      FIX. extern.h, proto.h, tin.h, art.c, color.c, feed.c, filter.c
+           getline.c, group.c, help.c, lang.c, misc.c, page.c, post.c
+           prompt.c, rfc2046.c, screen.c, search.c, select.c, signal.c
+           string.c, tags.c, tcurses.c, thread.c, wildmat.c, xref.c
            configure[.in], autoconf.h[in]
 
 U018) Urs Janssen <urs@tin.org>

@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 7
 SVER	= 4
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20040212
+DVER	= 20040225
 EXE	= tin
 
 # directory structure
@@ -143,6 +143,7 @@ DOC	= \
 	$(DOCDIR)/ABOUT-NLS \
 	$(DOCDIR)/CHANGES \
 	$(DOCDIR)/CHANGES.old \
+	$(DOCDIR)/CREDITS \
 	$(DOCDIR)/DEBUG_REFS \
 	$(DOCDIR)/INSTALL \
 	$(DOCDIR)/TODO \

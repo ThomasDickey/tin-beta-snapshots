@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-15
+ *  Updated   : 2004-02-21
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -152,11 +152,11 @@ static t_help_page group_help_page[] = {
 	{ txt_help_group_first_thread, iKeyFirstPage },
 	{ txt_help_group_last_thread, iKeyLastPage },
 	{ txt_help_group_thread_by_num, 0 },
-	{ txt_help_group_goto_group, iKeyGroupGoto },
+	{ txt_help_select_goto_group, iKeyGroupGoto },
 	{ txt_help_group_next, iKeyGroupNextGroup },
 	{ txt_help_group_prev, iKeyGroupPrevGroup },
-	{ txt_help_group_next_unread_art, iKeyGroupNextUnreadArt },
-	{ txt_help_group_prev_unread_art, iKeyGroupPrevUnreadArt },
+	{ txt_help_article_next_unread, iKeyGroupNextUnreadArt },
+	{ txt_help_article_prev_unread, iKeyGroupPrevUnreadArt },
 	{ txt_help_global_last_art, iKeyLastViewed },
 	{ txt_help_global_lookup_art, iKeyLookupMessage },
 	{ txt_help_group_list_thread, iKeyGroupListThd },
@@ -172,7 +172,7 @@ static t_help_page group_help_page[] = {
 	{ txt_help_title_disp, 0 },
 	{ txt_help_group_toggle_read_articles, iKeyGroupToggleReadUnread },
 	{ txt_help_global_toggle_info_line, iKeyToggleInfoLastLine },
-	{ txt_help_group_toggle_subj_display, iKeyGroupToggleSubjDisplay },
+	{ txt_help_global_toggle_subj_display, iKeyGroupToggleSubjDisplay },
 	{ txt_help_global_toggle_inverse_video, iKeyToggleInverseVideo },
 #ifdef HAVE_COLOR
 	{ txt_help_global_toggle_color, iKeyToggleColor },
@@ -183,12 +183,12 @@ static t_help_page group_help_page[] = {
 	{ txt_help_group_toggle_getart_limit, iKeyGroupToggleGetartLimit },
 	{ txt_help_empty_line, 0 },
 	{ txt_help_title_ops, 0 },
-	{ txt_help_group_read_article, iKeyGroupReadBasenote },
-	{ txt_help_group_next_unread_article, iKeyGroupNextUnreadArtOrGrp },
+	{ txt_help_thread_read_article, iKeyGroupReadBasenote },
+	{ txt_help_article_next_unread, iKeyGroupNextUnreadArtOrGrp },
 	{ txt_help_global_post, iKeyPost },
 	{ txt_help_global_post_postponed, iKeyPostponed2 },
 	{ txt_help_global_post_postponed, iKeyPostponed },
-	{ txt_help_group_repost, iKeyGroupRepost },
+	{ txt_help_article_repost, iKeyGroupRepost },
 	{ txt_help_empty_line, 0 },
 	{ txt_help_global_article_range, iKeySetRange },
 	{ txt_help_empty_line, 0 },
@@ -272,7 +272,7 @@ static t_help_page thread_help_page[] = {
 	{ txt_help_empty_line, 0 },
 	{ txt_help_title_disp, 0 },
 	{ txt_help_global_toggle_info_line, iKeyToggleInfoLastLine },
-	{ txt_help_thread_toggle_subj_display, iKeyThreadToggleSubjDisplay },
+	{ txt_help_global_toggle_subj_display, iKeyThreadToggleSubjDisplay },
 	{ txt_help_global_toggle_inverse_video, iKeyToggleInverseVideo },
 #ifdef HAVE_COLOR
 	{ txt_help_global_toggle_color, iKeyToggleColor },
@@ -280,7 +280,7 @@ static t_help_page thread_help_page[] = {
 	{ txt_help_empty_line, 0 },
 	{ txt_help_title_ops, 0 },
 	{ txt_help_thread_read_article, iKeyThreadReadArt },
-	{ txt_help_article_read_next_unread, iKeyThreadReadNextArtOrThread },
+	{ txt_help_article_next_unread, iKeyThreadReadNextArtOrThread },
 	{ txt_help_global_post, iKeyPost },
 	{ txt_help_global_post_postponed, iKeyPostponed2 },
 	{ txt_help_global_post_postponed, iKeyPostponed },
@@ -342,7 +342,7 @@ static t_help_page page_help_page[] = {
 	{ txt_help_empty_line, 0 },
 	{ txt_help_article_by_num, 0 },
 	{ txt_help_article_next_thread, iKeyPageNextThd },
-	{ txt_help_article_read_next_unread, iKeyPageNextUnread },
+	{ txt_help_article_next_unread, iKeyPageNextUnread },
 	{ txt_help_article_next, iKeyPageNextArt },
 	{ txt_help_article_next_unread, iKeyPageNextUnreadArt },
 	{ txt_help_article_prev, iKeyPagePrevArt },
