@@ -45,14 +45,15 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 #ifndef MENUKEYS_H
-#	include  "menukeys.h"
+#	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 #ifndef RFC2046_H
-#	include  "rfc2046.h"
+#	include "rfc2046.h"
 #endif /* !RFC2046_H */
 #ifndef VERSION_H
-#	include  "version.h"
+#	include "version.h"
 #endif /* !VERSION_H */
+
 
 #ifdef USE_CANLOCK
 #	define ADD_CAN_KEY(id) { \
@@ -147,6 +148,7 @@ static int msg_add_x_body (FILE *fp_out, const char *body);
 static int msg_write_headers (FILE *fp);
 static int post_loop (int type, struct t_group *psGrp, char ch, const char *posting_msg, int art_type, int offset);
 static size_t skip_id (const char *id);
+static t_bool backup_article (const char *the_article);
 static t_bool check_article_to_be_posted (const char *the_article, int art_type);
 static t_bool check_for_spamtrap (const char *addr);
 static t_bool damaged_id (const char *id);
@@ -158,7 +160,6 @@ static t_bool repair_article (char *result);
 static t_bool submit_mail_file (const char *file);
 static void append_postponed_file (const char *file, const char *addr);
 static void appendid (char **where, const char **what);
-static void backup_article (const char *the_article);
 static void find_reply_to_addr (char *from_addr, t_bool parse, struct t_header *hdr);
 static void join_references (char *buffer, const char *oldrefs, const char *newref);
 static void msg_add_header (const char *name, const char *text);
@@ -304,27 +305,11 @@ backup_article_name (
 }
 
 
-static void
+static t_bool
 backup_article (
 	const char *the_article)
 {
-	FILE *in, *out;
-	char line[LEN];
-
-	if ((in = fopen(the_article, "r")) == NULL)
-		return;
-
-	if ((out = fopen(backup_article_name(the_article), "w")) == NULL) {
-		fclose(in);
-		return;
-	}
-
-	/* Why not use copy_fp() here - it should be more efficient */
-	while (fgets(line, (int) sizeof(line), in) != NULL)
-		fputs(line, out);
-
-	fclose(in);
-	fclose(out);
+	return backup_file(the_article, backup_article_name(the_article));
 }
 
 
@@ -523,11 +508,20 @@ update_posted_info_file (
 	const char *a_message_id)
 {
 	FILE *fp;
+	char *file_tmp;
 	struct tm *pitm;
 	time_t epoch;
 
 	if (no_write)
 		return;
+
+	file_tmp = get_tmpfilename (posted_info_file);
+	if (!backup_file (posted_info_file, file_tmp))
+	{
+		error_message (_(txt_filesystem_full_backup), posted_info_file);
+		free (file_tmp);
+		return;
+	}
 
 	if ((fp = fopen (posted_info_file, "a+")) != NULL) {
 		(void) time (&epoch);
@@ -536,8 +530,14 @@ update_posted_info_file (
 			fprintf (fp, "%02d-%02d-%02d|%c|%s|%s|%s\n", pitm->tm_mday, pitm->tm_mon + 1, pitm->tm_year % 100, action, group, subj, a_message_id);
 		else
 			fprintf (fp, "%02d-%02d-%02d|%c|%s|%s\n", pitm->tm_mday, pitm->tm_mon + 1, pitm->tm_year % 100, action, group, subj);
-		fclose (fp);
-	}
+		if (ferror (fp) || fclose (fp)) {
+			error_message (_(txt_filesystem_full), posted_info_file);
+			rename (file_tmp, posted_info_file);
+		} else
+			unlink (file_tmp);
+	} else
+		rename (file_tmp, posted_info_file);
+	free (file_tmp);
 }
 
 
@@ -783,9 +783,9 @@ check_article_to_be_posted (
 					ngptrs[ngcnt] = (char *) my_malloc (nglens[ngcnt] + 1);
 					if (!ngptrs[ngcnt]) {
 						for (i = 0; i < ngcnt; i++)
-							FreeIfNeeded (ngptrs[i]);
+							FreeIfNeeded(ngptrs[i]);
 						for (i = 0; i < ftngcnt; i++)
-							FreeIfNeeded (ftngptrs[i]);
+							FreeIfNeeded(ftngptrs[i]);
 						Raw (oldraw);
 						return TRUE;
 					}
@@ -1058,7 +1058,7 @@ check_article_to_be_posted (
 		my_fprintf (stderr, _(txt_art_newsgroups), subject, PLURAL(ngcnt, txt_newsgroup));
 		my_fflush (stderr);
 		for (i = 0; i < ngcnt; i++) {
-			psGrp = psGrpFind (ngptrs[i]);
+			psGrp = group_find (ngptrs[i]);
 			if (psGrp) {
 				my_fprintf (stderr, "  %s\t %s\n", ngptrs[i], (psGrp->description ? psGrp->description : ""));
 				my_fflush (stderr);
@@ -1101,7 +1101,7 @@ check_article_to_be_posted (
 			if (!errors) {
 				my_fprintf (stderr, _(txt_followup_newsgroups), PLURAL(ftngcnt, txt_newsgroup));
 				for (i = 0; i < ftngcnt; i++) {
-					psGrp = psGrpFind (ftngptrs[i]);
+					psGrp = group_find (ftngptrs[i]);
 					if (psGrp) {
 						my_fprintf (stderr, "  %s\t %s\n", ftngptrs[i], (psGrp->description ? psGrp->description : ""));
 						my_fflush (stderr);
@@ -1347,7 +1347,7 @@ post_article_done:
 			 * FIXME: This logic is faithful to the original, but awful
 			 */
 			if (tinrc.add_posted_to_filter && (type == POST_QUICK || type == POST_POSTPONED || type == POST_NORMAL)) {
-				if (type != POST_POSTPONED || (type == POST_POSTPONED && !strchr(header.newsgroups, ',') && (psGrp = psGrpFind(header.newsgroups))))
+				if (type != POST_POSTPONED || (type == POST_POSTPONED && !strchr(header.newsgroups, ',') && (psGrp = group_find(header.newsgroups))))
 					/* TODO: log Message-ID if given in a_message_id */
 					quick_filter_select_posted_art (psGrp, header.subj);
 			}
@@ -1426,7 +1426,7 @@ check_moderated (
 
 		vnum++; /* number of newsgroups */
 
-		if (!(psGrp = psGrpFind (group))) {
+		if (!(psGrp = group_find (group))) {
 			bnum++;	/* number of bogus groups */
 			continue;
 		}
@@ -2216,7 +2216,7 @@ post_response (
 	}
 	chmod (article, (mode_t)(S_IRUSR|S_IWUSR));
 
-	psGrp = psGrpFind (group);
+	psGrp = group_find (group);
 	get_from_name(from_name, psGrp);
 #ifdef FORGERY
 	make_path_header (line);
@@ -3594,7 +3594,7 @@ reread_active_after_posting (
 					wait_message (0, "Rereading %s...", psGrp->name);
 					lMinOld = psGrp->xmin;
 					lMaxOld = psGrp->xmax;
-					vGrpGetArtInfo (
+					group_get_art_info (
 						psGrp->spooldir,
 						psGrp->name,
 						psGrp->type,
@@ -3656,7 +3656,7 @@ update_active_after_posting (
 		src++;
 		if (*dst == ',' || *dst == '\0') {
 			*dst = '\0';
-			psGrp = psGrpFind (group);
+			psGrp = group_find (group);
 			if (psGrp != (struct t_group *) 0 && psGrp->subscribed) {
 				reread_active_for_posted_arts = TRUE;
 				psGrp->art_was_posted = TRUE;

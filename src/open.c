@@ -153,9 +153,9 @@ DEBUG_IO((stderr, "server_init returns %d,%s\n", ret, line));
 
 		default:
 			if (ret >= 200 && ret <= 299) {
-#  ifndef NO_POSTING
+#	ifndef NO_POSTING
 				can_post = TRUE;
-#  endif /* !NO_POSTING */
+#	endif /* !NO_POSTING */
 				break;
 			}
 			if (ret < 0) {
@@ -695,7 +695,7 @@ open_xover_fp (
 #endif /* NNTP_ABLE */
 		char *pcNovFile;
 
-		pcNovFile = pcFindNovFile (psGrp, (*pcMode == 'r' ? R_OK : W_OK));
+		pcNovFile = find_nov_file (psGrp, (*pcMode == 'r' ? R_OK : W_OK));
 #ifdef DEBUG
 		if (debug)
 			error_message ("READ file=[%s]", pcNovFile);
@@ -982,7 +982,7 @@ vGet1GrpArtInfo (
 	long lMinOld = grp->xmin;
 	long lMaxOld = grp->xmax;
 
-	vGrpGetArtInfo (grp->spooldir, grp->name, grp->type, &grp->count, &grp->xmax, &grp->xmin);
+	group_get_art_info (grp->spooldir, grp->name, grp->type, &grp->count, &grp->xmax, &grp->xmin);
 
 	if (grp->newsrc.num_unread > grp->count) {
 #ifdef DEBUG
@@ -1008,57 +1008,59 @@ vGet1GrpArtInfo (
  *  Return 0, or -error
  */
 int
-vGrpGetArtInfo (
-	char *pcSpoolDir,
-	char *pcGrpName,
-	int iGrpType,
-	long *plArtCount,
-	long *plArtMax,
-	long *plArtMin)
+group_get_art_info (
+	char *tin_spooldir,
+	char *groupname,
+	int grouptype,
+	long *art_count,
+	long *art_max,
+	long *art_min)
 {
-	DIR *tDirFile;
-	DIR_BUF *tFile;
-	char acBuf[NNTP_STRLEN];
-	long lArtNum;
+	DIR *dir;
+	DIR_BUF *direntry;
+	char buf[NNTP_STRLEN];
+	long artnum;
 #ifdef M_AMIGA
-	long lArtMin;
-	long lArtMax;
+	long artmin;
+	long artmax;
 
-	lArtMin = *plArtMin;
-	lArtMax = *plArtMax;
+	artmin = *art_min;
+	artmax = *art_max;
 #endif /* M_AMIGA */
 
-	if (read_news_via_nntp && iGrpType == GROUP_TYPE_NEWS) {
+	if (read_news_via_nntp && grouptype == GROUP_TYPE_NEWS) {
 #ifdef NNTP_ABLE
-		char acLine[NNTP_STRLEN];
+		char line[NNTP_STRLEN];
 
-		sprintf (acBuf, "GROUP %s", pcGrpName);
+		sprintf (buf, "GROUP %s", groupname);
 #	ifdef DEBUG
-		debug_nntp ("vGrpGetArtInfo", acBuf);
+		debug_nntp ("group_get_art_info", buf);
 #	endif /* DEBUG */
-		put_server (acBuf);
+		put_server (buf);
 
-		switch (get_respcode(acLine)) {
+		switch (get_respcode(line)) {
 
 			case OK_GROUP:
-				if (sscanf (acLine, "%ld %ld %ld", plArtCount, plArtMin, plArtMax) != 3)
-					error_message(_("Invalid response to GROUP command, %s"), acLine);
+				if (sscanf (line, "%ld %ld %ld", art_count, art_min, art_max) != 3)
+					error_message(_("Invalid response to GROUP command, %s"), line);
 				break;
 
 			case ERR_NOGROUP:
-				*plArtCount = 0;
-				*plArtMin = 1;
-				*plArtMax = 0;
+				*art_count = 0;
+				*art_min = 1;
+				*art_max = 0;
 				return(-ERR_NOGROUP);
 
 			case ERR_ACCESS:
-				error_message (cCRLF "%s", acLine);
+				error_message (cCRLF "%s", line);
 				tin_done (NNTP_ERROR_EXIT);
 				/* keep lint quiet: */
-				/* FALLTHROUGH */
+				/* NOTREACHED */
+				break;
+
 			default:
 #	ifdef DEBUG
-				debug_nntp ("NOT_OK", acLine);
+				debug_nntp ("NOT_OK", line);
 #	endif /* DEBUG */
 				return(-1);
 		}
@@ -1068,38 +1070,39 @@ vGrpGetArtInfo (
 #endif /* NNTP_ABLE */
 	} else {
 #ifdef M_AMIGA
-		if (!lArtMin)
-			*plArtMin = 1;
-		*plArtMax = lArtMax;
-		*plArtCount = lArtMax - *plArtMin + 1;
+		if (!artmin)
+			*art_min = 1;
+		*art_max = artmax;
+		*art_count = artmax - *art_min + 1;
 #else
-		*plArtCount = 0;
-		*plArtMin = 1;
-		*plArtMax = 0;
+		*art_count = 0;
+		*art_min = 1;
+		*art_max = 0;
 
-		vMakeGrpPath (pcSpoolDir, pcGrpName, acBuf);
+		make_base_group_path (tin_spooldir, groupname, buf);
 
 /* TODO - Surely this is spurious, the opendir will fail anyway */
 /*		  unless there is some subtle permission check if tin is suid news? */
+/*      errr - suid code has been removed. */
 #	if 0
-		if (access (acBuf, R_OK) != 0)
+		if (access (buf, R_OK) != 0)
 			return(-1);
 #	endif /* 0 */
 
-		if ((tDirFile = opendir (acBuf)) != (DIR *) 0) {
-			while ((tFile = readdir (tDirFile)) != (DIR_BUF *) 0) {
-				lArtNum = atol(tFile->d_name); /* should be '\0' terminated... */
-				if (lArtNum >= 1) {
-					if (lArtNum > *plArtMax) {
-						*plArtMax = lArtNum;
-						if (*plArtMin == 0)
-							*plArtMin = lArtNum;
-					} else if (lArtNum < *plArtMin)
-						*plArtMin = lArtNum;
-					(*plArtCount)++;
+		if ((dir = opendir (buf)) != (DIR *) 0) {
+			while ((direntry = readdir (dir)) != (DIR_BUF *) 0) {
+				artnum = atol(direntry->d_name); /* should be '\0' terminated... */
+				if (artnum >= 1) {
+					if (artnum > *art_max) {
+						*art_max = artnum;
+						if (*art_min == 0)
+							*art_min = artnum;
+					} else if (artnum < *art_min)
+						*art_min = artnum;
+					(*art_count)++;
 				}
 			}
-			CLOSEDIR(tDirFile);
+			CLOSEDIR(dir);
 		} else
 			return(-1);
 #endif /* M_AMIGA */

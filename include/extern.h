@@ -820,6 +820,8 @@ extern constext txt_post_newsgroups[];
 extern constext txt_post_processing[];
 extern constext txt_post_processing_finished[];
 extern constext txt_post_subject[];
+extern constext txt_post_via_builtin_inews[];
+extern constext txt_post_via_builtin_inews_only[];
 extern constext txt_posted_info_file[];
 extern constext txt_posting[];
 extern constext txt_postpone_repost[];

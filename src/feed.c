@@ -62,7 +62,7 @@
  * Set to 0 if user aborted save process
  * We do this hackery to honour the "don't postprocess mailboxes" rule
  */
-char proc_ch;
+signed char proc_ch;
 
 #ifndef DONT_HAVE_PIPING
 	FILE *pipe_fp = (FILE *) 0;
@@ -705,7 +705,7 @@ print_file (
 #	endif /* DONT_HAVE_PIPING */
 
 #	ifdef DONT_HAVE_PIPING
-	sprintf(file, TIN_PRINTFILE, respnum);
+	snprintf(file, sizeof(file) - 1, TIN_PRINTFILE, respnum);
 	if ((fp = fopen(file,"w")) == (FILE *) 0)
 #	else
 	if ((fp = popen (command, "w")) == (FILE *) 0)
@@ -737,7 +737,8 @@ print_file (
 	fclose(fp);
 	strncpy(cmd, command, sizeof(cmd));
 	strcat(cmd, " ");
-	strcat(cmd, file);
+	strncat(cmd, file, sizeof(cmd) - strlen(cmd) - 1);
+	cmd[254] = '\0';
 	invoke_cmd(cmd);
 	unlink(file);
 #	else

@@ -86,6 +86,23 @@ static void write_input_history_file (void);
 #endif /* LOCAL_CHARSET */
 
 /*
+ * generate tmp-filename
+ */
+char *
+get_tmpfilename (
+	const char *filename)
+{
+	char *file_tmp;
+
+	/* alloc memory for tmp-filename */
+	file_tmp = (char *) my_malloc (strlen (filename)+5);
+
+	/* generate tmp-filename */
+	sprintf (file_tmp, "%s.tmp", filename);
+	return file_tmp;
+}
+
+/*
  * append_file instead of rename_file
  * minimum error trapping
  */
@@ -169,11 +186,41 @@ copy_fp (
 	return TRUE;
 }
 
+/*
+ * backup file
+ * Returns FALSE if backup failed or source file does not exists.
+ */
+t_bool
+backup_file (
+	const char *filename,
+	const char *backupname)
+{
+	FILE *fp_in, *fp_out;
+	t_bool ret = FALSE;
+
+	if ((fp_in = fopen (filename, "r")) == (FILE *) 0)
+		return ret;
+
+	/* don't follow links when writing backup files */
+	unlink (backupname);
+	if ((fp_out = fopen (backupname, "w")) == (FILE *) 0) {
+		fclose (fp_in);
+		return ret;
+	}
+
+	ret = copy_fp (fp_in, fp_out);
+
+	fclose (fp_out);
+	fclose (fp_in);
+	return ret;
+}
 
 /*
  * copy the body of articles with given file pointers,
  * prefix (= quote_chars), initials of the articles author
  * with_sig is set if the signature should be quoted
+ *
+ * TODO: rewrite from scratch, the code is awfull
  */
 void
 copy_body (
@@ -244,10 +291,9 @@ copy_body (
 			} else	/* line is empty */
 					retcode = fprintf (fp_op, "%s\n", (tinrc.quote_empty_lines ? prefixbuf : ""));
 		} else {		/* no initials in quote_string, just copy */
-			if ((buf[0] != '\n') || tinrc.quote_empty_lines) {
-				/* use blank-stripped quote string if line is already quoted */
-					retcode = fprintf (fp_op, "%s%s", ((buf[0] == '>') ? prefixbuf : prefix), buf);
-			} else
+			if ((buf[0] != '\n') || tinrc.quote_empty_lines)
+				retcode = fprintf (fp_op, "%s%s", ((buf[0] == '>' || buf[0] == ' ') ? prefixbuf : prefix), buf);  /* use blank-stripped quote string if line is already quoted or beginns with a space */
+			else
 				retcode = fprintf (fp_op, "\n");
 		}
 		if (retcode == EOF) {
@@ -295,11 +341,11 @@ invoke_editor (
 	if (first) {
 		my_editor = getenv ("EDITOR");
 
-		strcpy (editor, my_editor != NULL ? my_editor : get_val ("VISUAL", DEFAULT_EDITOR));
+		my_strncpy (editor, my_editor != NULL ? my_editor : get_val ("VISUAL", DEFAULT_EDITOR), sizeof(editor) - 1);
 		first = FALSE;
 	}
 
-	strcpy (editor_format, (*tinrc.editor_format ? tinrc.editor_format : (tinrc.start_editor_offset ? TIN_EDITOR_FMT_ON : TIN_EDITOR_FMT_OFF)));
+	my_strncpy (editor_format, (*tinrc.editor_format ? tinrc.editor_format : (tinrc.start_editor_offset ? TIN_EDITOR_FMT_ON : TIN_EDITOR_FMT_OFF)), sizeof(editor_format) - 1);
 
 	if (!strfeditor (editor, lineno, filename, buf, sizeof(buf), editor_format))
 		sh_format (buf, sizeof(buf), "%s %s", editor, filename);
@@ -500,7 +546,7 @@ tin_done (
 	 */
 	if (!no_write) {
 		forever {
-			if (((wrote_newsrc_lines = vWriteNewsrc ()) >= 0L) && (wrote_newsrc_lines >= read_newsrc_lines)) {
+			if (((wrote_newsrc_lines = write_newsrc ()) >= 0L) && (wrote_newsrc_lines >= read_newsrc_lines)) {
 				my_fputs(_(txt_newsrc_saved), stdout);
 				break;
 			}
@@ -1309,8 +1355,10 @@ create_index_lock_file (
 		if ((fp = fopen (the_lock_file, "w")) != (FILE *) 0) {
 			(void) time (&epoch);
 			fprintf (fp, "%6d  %s\n", (int) process_id, ctime (&epoch));
-			fclose (fp);
-			chmod (the_lock_file, (mode_t)(S_IRUSR|S_IWUSR));
+			if (ferror (fp) || fclose (fp))
+				error_message (_(txt_filesystem_full), the_lock_file);
+			else
+				chmod (the_lock_file, (mode_t)(S_IRUSR|S_IWUSR));
 		}
 	}
 }
@@ -2330,6 +2378,7 @@ write_input_history_file (
 {
 	FILE *fp;
 	char *chr;
+	char *file_tmp;
 	int his_w, his_e;
 	mode_t mask;
 
@@ -2338,7 +2387,13 @@ write_input_history_file (
 
 	mask = umask((mode_t) (S_IRWXO|S_IRWXG));
 
-	if ((fp = fopen(local_input_history_file, "w")) == NULL) {
+	/* generate tmp-filename */
+	file_tmp = get_tmpfilename (local_input_history_file);
+
+	if ((fp = fopen(file_tmp, "w")) == NULL) {
+		error_message (_(txt_filesystem_full_backup), local_input_history_file);
+		/* free memory for tmp-filename */
+		free (file_tmp);
 		umask(mask);
 		return;
 	}
@@ -2356,10 +2411,15 @@ write_input_history_file (
 		}
 	}
 
-	fclose(fp);
+	if (ferror (fp) || fclose (fp))
+		error_message (_(txt_filesystem_full), local_input_history_file);
+	else
+		rename_file (file_tmp, local_input_history_file);
 	umask(mask);
 	/* fix modes for all pre 1.4.1 local_input_history_file files */
 	chmod (local_input_history_file, (mode_t)(S_IRUSR|S_IWUSR));
+	/* free memory for tmp-filename */
+	free (file_tmp);
 }
 
 

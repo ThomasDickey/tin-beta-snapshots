@@ -202,7 +202,7 @@ art_mark_xref_read (
 		c = *ptr;
 		*ptr = '\0';
 
-		psGrp = psGrpFind (group);
+		psGrp = group_find (group);
 
 #ifdef DEBUG
 		if (debug == 3) {

@@ -129,12 +129,12 @@ find_group_index (
  *  Find group name in active[] array and return pointer to element
  */
 struct t_group *
-psGrpFind (
-	const char *pcGrpName)
+group_find (
+	const char *group_name)
 {
 	int i;
 
-	if ((i = find_group_index(pcGrpName)) != -1)
+	if ((i = find_group_index(group_name)) != -1)
 		return &active[i];
 
 	return (struct t_group *) 0;
@@ -146,7 +146,7 @@ psGrpFind (
  * Return pointer to next free active slot or NULL if duplicate
  */
 struct t_group *
-psGrpAdd (
+group_add (
 	const char *group)
 {
 	unsigned long h;

@@ -1,4 +1,30 @@
--- 1.5.7 release 20000929 "" --
+-- 1.5.8 release 20001218 "" --
+
+U053) Dirk Nimmich <nimmich@uni-muenster.de>
+      BUG. existing tin.defaults and mime.types were not backed up when doing
+           make install_sysdefs
+      BUG. some config files could be trashed on a bad write
+      ADD. if reading via NNTP fall back to internal inews if posting via
+           external inews failed
+      ADD. code cleanup
+      REM. initialization of unused variables in active.c
+      REM. hungarian notation (in parts)
+      BUG. if pgp and gpg are both installed you get tons of warnings because
+           of redefined preprocessor variables (must have worked before, just
+           removed comments; pgp is preferred over gpg, useful?)
+      FIX. Makefile.in, extern.h, inews.c, lang.c, pgp.c
+
+ 031) Dirk Nimmich <nimmich@uni-muenster.de>
+      BUG. empty news_headers_to_[not_]display_array could cause a SIGSEGV
+      BUG. changing beginner_level or show_description from the options menu
+           messed up the screen
+      FIX. proto.h, config.c, signal.c
+
+U052) Urs Janssen <urs@tin.org>
+      BUG. didn't compile on MacOS X with apples gcc-port
+      FIX. tin.h
+
+-- 1.5.7 release 20001104 "Paradise Regained" --
 
 U051) Thomas E. Dickey <dickey@herndon4.his.com>
       BUG. won't compile on termcap systems
@@ -6,7 +32,7 @@ U051) Thomas E. Dickey <dickey@herndon4.his.com>
       ADD. updated some configure script macros
       BUG. vms/parsdate.c required alloca(), regeneraed with byacc
       FIX. aclocal.m4, extern.h, proto.h, trace.h, cook.c, curses.c
-           feed.c, lang.c, tcurses.c, trace.c, pcre/*
+           feed.c, lang.c, signal.c, tcurses.c, trace.c, pcre/*
 
 U050) L. Scott Emmons <scotte@center.uscs.com>
       BUG. gpg keyname must be last option
@@ -23,10 +49,11 @@ U048) Urs Janssen <urs@tin.org>
       ADD. URL_REGEX update
       ADD. config.guess, config.sub update
       ADD. turned some vsprintf calls into vsnprintf ones
+      ADD. made -V a bit more verbose
       REM. -U option
-      FIX. config.guess, config.sub, proto.h, tin.h, parsdate.y, config.c
-           cook.c, inews.c, init.c, lang.c, post.c, rfc2045.c, screen.c
-           tin.1, tin.5
+      FIX. configure[.in], config.guess, config.sub, autoconf.h[in], proto.h
+           tin.h, parsdate.y, config.c, cook.c, feed.c, inews.c, init.c
+           lang.c, main.c, post.c, rfc2045.c, screen.c, tin.1, tin.5
 
  029) Urs Janssen <urs@tin.org>
       BUG. possible buffer overrun in read_groups_descriptions() on very

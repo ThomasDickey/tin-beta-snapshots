@@ -3,11 +3,11 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2000-08-24
+.\" Updated   : 2000-10-28
 .\" Notes     : still needs some work (but getting there ;)
 .\"
 .\"
-.TH tin 1 "August 24th, 2000" "1.5.6" "A Usenet newsreader"
+.TH tin 1 "October 28th, 2000" "1.5.7" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -983,7 +983,7 @@ article with all headers included.
 Perform PGP operations on article.
 .TP
 .B ^H
-Toggles the display of all the header fields.
+Toggles the display mode (raw including all headers vs. cooked)
 .TP
 .B ^K
 Kill article(s) using a menu. Read the section FILTERING ARTICLES for
@@ -2449,7 +2449,7 @@ If reading news remotely and updating index files locally, operation will be
 somewhat slower because the articles must be retrieved from the NNTP server.
 .\"
 .\"
-ku.SH "ENVIRONMENT VARIABLES"
+.SH "ENVIRONMENT VARIABLES"
 .TP
 .B TINRC
 Define this variable if you want to specify command line options that \fBtin\fR
@@ -2881,4 +2881,5 @@ Urs Janssen <urs@tin.org>
 .BR RFC2045 ,
 .BR RFC2046 ,
 .BR RFC2047 ,
-.BR RFC2048
+.BR RFC2048 ,
+.BR RFC2980

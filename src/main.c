@@ -601,7 +601,135 @@ read_cmd_line_options (
 #else
 				error_message (_("Version: %s release %s (\"%s\")"),
 					VERSION, RELEASEDATE, RELEASENAME);
-#endif /* __DATE__  && __TIME__ */
+#endif /* __DATE__ && __TIME__ */
+/*
+ * FIXME: make the rest below a function, so we can also use it
+ * inside post.c:mail_bug_report()
+ */
+#ifdef SYSTEM_NAME
+				error_message("Platform:");
+				error_message("\tOS-Name  = \"%s\"", SYSTEM_NAME);
+#endif /* SYSTEM_NAME */
+#ifdef TIN_CC
+				error_message("Compiler:");
+				error_message("\tCC       = \"%s\"", TIN_CC);
+#	ifdef TIN_CFLAGS
+				error_message("\tCFLAGS   = \"%s\"", TIN_CFLAGS);
+#	endif /* TIN_CFLAGS */
+#	ifdef	TIN_CPP
+				error_message("\tCPP      = \"%s\"", TIN_CPP);
+#	endif /* TIN_CPP */
+#	ifdef TIN_CPPFLAGS
+				error_message("\tCPPFLAGS = \"%s\"", TIN_CPPFLAGS);
+#	endif /* TIN_CPPFLAGS */
+#endif /* TIN_CC */
+#ifdef TIN_LD
+				error_message("Linker and Libraries:");
+				error_message("\tLD       = \"%s\"", TIN_LD);
+#	ifdef TIN_LDFLAGS
+				error_message("\tLDFLAGS  = \"%s\"", TIN_LDFLAGS);
+#	endif /* TIN_LDFLAGS */
+#	ifdef TIN_LIBS
+				error_message("\tLIBS     = \"%s\"", TIN_LIBS);
+#	endif /* TIN_LIBS */
+#endif /* TIN_LD */
+				error_message("Characteristics:");
+				error_message("\t"
+/* TODO: complete list and do some usefull grouping */
+#ifdef NNTP_ONLY
+				"+NNTP_ONLY "
+#else
+#	ifdef NNTP_ABLE
+				"+NNTP_ABLE "
+#	else
+				"-NNTP_ABLE "
+#	endif /* NNTP_ABLE */
+#endif /* NNTP_ONLY */
+#ifdef NO_POSTING
+				"+NO_POSTING "
+#else
+				"-NO_POSTING "
+#endif /* NO_POSTING */
+#ifdef HAVE_FASCIST_NEWSADMIN
+				"+HAVE_FASCIST_NEWSADMIN "
+#else
+				"-HAVE_FASCIST_NEWSADMIN "
+#endif /* HAVE_FASCIST_NEWSADMIN */
+#ifdef ENABLE_IPV6
+				"+ENABLE_IPV6"
+#else
+				"-ENABLE_IPV6"
+#endif /* ENABLE_IPV6 */
+				"\n\t"
+#ifdef NO_SHELL_ESCAPE
+				"+NO_SHELL_ESCAPE "
+#else
+				"-NO_SHELL_ESCAPE "
+#endif /* NO_SHELL_ESCAPE */
+#ifdef DISABLE_PRINTING
+				"+DISABLE_PRINTING "
+#else
+				"-DISABLE_PRINTING "
+#endif /* DISABLE_PRINTING */
+#ifdef DONT_HAVE_PIPING
+				"+DONT_HAVE_PIPING "
+#else
+				"-DONT_HAVE_PIPING "
+#endif /* DONT_HAVE_PIPING */
+#ifdef NO_ETIQUETTE
+				"+NO_ETIQUETTE"
+#else
+				"-NO_ETIQUETTE"
+#endif /* NO_ETIQUETTE */
+				"\n\t"
+#ifdef HAVE_LONG_FILE_NAMES
+				"+HAVE_LONG_FILE_NAMES "
+#else
+				"-HAVE_LONG_FILE_NAMES "
+#endif /* HAVE_LONG_FILE_NAMES */
+#ifdef APPEND_PID
+				"+APPEND_PID"
+#else
+				"-APPEND_PID"
+#endif /* APPEND_PID */
+				"\n\t"
+#ifdef HAVE_COLOR
+				"+HAVE_COLOR "
+#else
+				"-HAVE_COLOR "
+#endif /* HAVE_COLOR */
+#ifdef HAVE_PGP
+				"+HAVE_PGP "
+#else
+				"-HAVE_PGP "
+#endif /* HAVE_PGP */
+#ifdef HAVE_PGPK
+				"+HAVE_PGPK "
+#else
+				"-HAVE_PGPK "
+#endif /* HAVE_PGPK */
+#ifdef HAVE_GPG
+				"+HAVE_GPG "
+#else
+				"-HAVE_GPG "
+#endif /* HAVE_GPG */
+				"\n\t"
+#ifdef MIME_BREAK_LONG_LINES
+				"+MIME_BREAK_LONG_LINES "
+#else
+				"-MIME_BREAK_LONG_LINES "
+#endif /* MIME_BREAK_LONG_LINES */
+#ifdef MIME_STRICT_CHARSET
+				"+MIME_STRICT_CHARSET "
+#else
+				"-MIME_STRICT_CHARSET "
+#endif /* MIME_BREAK_LONG_LINES */
+#ifdef NO_LOCALE
+				"+NO_LOCALE "
+#else
+				"-NO_LOCALE "
+#endif /* NO_LOCALE */
+				);
 				exit (EXIT_SUCCESS);
 				/* keep lint quiet: */
 				/* FALLTHROUGH */
@@ -746,7 +874,7 @@ usage (
 
 #	ifdef NNTP_ABLE
 		error_message (_("  -n       only read subscribed .newsrc groups from NNTP server"));
-#  else
+#	else
 		error_message (_("  -n       TODO: document feature"));
 #	endif /* NNTP_ABLE */
 

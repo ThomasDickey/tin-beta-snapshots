@@ -1,5 +1,5 @@
 #
-# TIN 1.4 - a threaded newsreader
+# TIN 1.5 - a threaded newsreader
 #
 # tin.defaults - set some machine specified options
 #                and override compile time defaults
@@ -118,21 +118,21 @@
 
 # activefile - the full pathname of your newssystem's active file
 #
-# usually the active file is newslibdir, so you only have
+# usually the active file is in newslibdir, so you only have
 # to change this setting if your configuration differs
 #
 #activefile=/usr/lib/news/active
 
 # activetimesfile - the full pathname of your newssystem's active.times file
 #
-# usually the active file is newslibdir, so you only have
+# usually the active.times file is in newslibdir, so you only have
 # to change this setting if your configuration differs
 #
 #activetimesfile=/usr/lib/news/active.times
 
 # newsgroupsfile - the full pathname of your newssystem's newsgroups file
 #
-# usually the newsgroups file is newslibdir, so you only have
+# usually the newsgroups file is in newslibdir, so you only have
 # to change this setting if your configuration differs
 #
 #newsgroupsfile=/usr/lib/news/newsgroups
@@ -140,7 +140,7 @@
 # subscriptionsfile - the full pathname of your newssystem's
 #                     subscriptions file
 #
-# usually the newsgroups file is newslibdir, so you only have
+# usually the newsgroups file is in newslibdir, so you only have
 # to change this setting if your configuration differs
 #
 #subscriptionsfile=/usr/lib/news/subscriptions

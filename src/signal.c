@@ -208,15 +208,17 @@ allow_resize (
 	sa.sa_handler = signal_handler;
 	sigemptyset (&sa.sa_mask);
 	sa.sa_flags = 0;
-#	ifdef SA_RESTART
+#		ifdef SA_RESTART
 	if (!allow)
 		sa.sa_flags |= SA_RESTART;
-#	endif /* SA_RESTART */
-#	ifdef SIGWINCH
+#		endif /* SA_RESTART */
+#		ifdef SIGWINCH
 	sigaction(SIGWINCH, &sa, &osa);
-#	endif /* SIGWINCH */
+#		endif /* SIGWINCH */
+#		ifdef SIGTSTP
 	sigaction(SIGTSTP, &sa, &osa);
-#endif /* HAVE_POSIX_JC */
+#		endif /* SIGTSTP */
+#	endif /* HAVE_POSIX_JC */
 }
 
 static const char *
@@ -239,11 +241,11 @@ signal_name (
  * the current context
  * This should NOT be called from an interrupt context
  */
-#if defined(SIGWINCH) || defined(SIGTSTP)
 void
 handle_resize (
 	t_bool repaint)
 {
+#if defined(SIGWINCH) || defined(SIGTSTP)
 #	ifdef SIGWINCH
 	repaint |= set_win_size (&cLINES, &cCOLS);
 #	endif /* SIGWINCH */
@@ -297,8 +299,8 @@ handle_resize (
 			break;
 	}
 	my_fflush(stdout);
-}
 #endif /* SIGWINCH || SIGTSTP */
+}
 
 #ifdef SIGTSTP
 static void
@@ -529,9 +531,15 @@ set_win_size (
 
 	RIGHT_POS = *num_cols - 20;
 	MORE_POS  = *num_cols - 15;
-	NOTESLINES = *num_lines - INDEX_TOP - (tinrc.beginner_level ? MINI_HELP_LINES : 1);
+	set_noteslines (*num_lines);
+	return (*num_lines != old_lines || *num_cols != old_cols);
+}
+
+void
+set_noteslines (
+	int num_lines)
+{
+	NOTESLINES = num_lines - INDEX_TOP - (tinrc.beginner_level ? MINI_HELP_LINES : 1);
 	if (NOTESLINES <= 0)
 		NOTESLINES = 1;
-
-	return (*num_lines != old_lines || *num_cols != old_cols);
 }

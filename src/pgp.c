@@ -83,7 +83,7 @@
 #		define DO_BOTH1		"%se %s -ats %s %s -u %s", PGPNAME, pgpopts, pt, mailto, mailfrom
 #	endif /* HAVE_PGPK */
 
-#	if defined(HAVE_GPG) /* && !defined(PGPNAME) */ /* gpg */
+#	if defined(HAVE_GPG) && !defined(PGPNAME) /* gpg */
 #		define PGPNAME		PATH_GPG
 #		define PGPDIR		".gnupg"
 #		define PGP_PUBRING	"pubring.gpg"
@@ -284,7 +284,7 @@ pgp_append_public_key (
 #	ifdef HAVE_GPG
 	/*
 	 * FIXME: reoder !gpg opts (if possible) and make this obsolete
-	 *        we can't reoder the gpg opts as --export must be the last one 
+	 *        we can't reoder the gpg opts as --export must be the last one
 	 */
 		sh_format (cmd, sizeof(cmd), APPEND_KEY, PGPNAME, pgpopts, buf, keyfile);
 #	else

@@ -98,8 +98,8 @@ static t_bool bAddFilterRule (struct t_group *psGrp, struct t_article *psArt, st
 static void free_filter_array (struct t_filters *ptr);
 static void free_filter_item (struct t_filter *ptr);
 static void vSetFilter (struct t_filter *psFilter);
-static void vWriteFilterArray (FILE *fp, struct t_filters *ptr, time_t theTime);
-static void vWriteFilterFile (const char *pcFile);
+static void write_filter_array (FILE *fp, struct t_filters *ptr, time_t theTime);
+static void write_filter_file (const char *filename);
 
 
 static struct t_filter *
@@ -265,7 +265,6 @@ read_filter_file (
 	struct t_group *psGrp;
 	t_bool expired = FALSE;
 	t_bool expired_time = FALSE;
-	t_bool global = TRUE;
 	time_t current_secs = (time_t) 0;
 
 	if ((fp = fopen (file, "r")) == (FILE *) 0)
@@ -414,7 +413,6 @@ if (debug) {
 	my_flush ();
 }
 #endif /* DEBUG */
-				global = TRUE;
 				arr_num = &glob_filter.num;
 				arr_max = &glob_filter.max;
 				if (*arr_num >= (*arr_max - 1))
@@ -441,11 +439,9 @@ if (debug) {
 
 #ifdef DEBUG
 if (debug) {
-	if (global) {
-		my_printf ("6. buf=[%s]  Gsubj=[%s]\n", arr_ptr[i].subj, glob_filter.filter[i].subj);
-		my_flush ();
-	}
-} /* FIXME: Only global filters now */
+	my_printf ("6. buf=[%s]  Gsubj=[%s]\n", arr_ptr[i].subj, glob_filter.filter[i].subj);
+	my_flush ();
+}
 #endif /* DEBUG */
 				break;
 			}
@@ -551,7 +547,7 @@ if (debug) {
 	fclose (fp);
 
 	if (expired)
-		vWriteFilterFile (file);
+		write_filter_file (file);
 
 	if (cmd_line)
 		printf ("\r\n");
@@ -567,31 +563,47 @@ if (debug) {
  */
 
 static void
-vWriteFilterFile (
-	const char *pcFile)
+write_filter_file (
+	const char *filename)
 {
-	FILE *hFp;
+	FILE *fp;
+	char *file_tmp;
 
 	if (no_write)
 		return;
 
-	if ((hFp = fopen (pcFile, "w")) == (FILE *) 0)
+	/* generate tmp-filename */
+	file_tmp = get_tmpfilename(filename);
+
+	if (!backup_file (filename, file_tmp))
+	{
+		error_message (_(txt_filesystem_full_backup), filename);
+		free (file_tmp);
+		return;
+	}
+
+	if ((fp = fopen (filename, "w")) == (FILE *) 0)
 		return;
 
-	fprintf (hFp, _(txt_filter_file), tinrc.filter_days);
-	fflush (hFp);
+	fprintf (fp, _(txt_filter_file));
+	fflush (fp);
 
 	/*
 	 * Save global filters
 	 */
-	vWriteFilterArray (hFp, &glob_filter, time(NULL));
+	write_filter_array (fp, &glob_filter, time(NULL));
 
-	fclose (hFp);
-	chmod (pcFile, (mode_t)(S_IRUSR|S_IWUSR));
+	if (ferror(fp) || fclose (fp)) {
+		error_message (_(txt_filesystem_full), filename);
+		rename (file_tmp, filename);
+	} else
+		unlink (file_tmp);
+	chmod (filename, (mode_t)(S_IRUSR|S_IWUSR));
+	free (file_tmp);
 }
 
 static void
-vWriteFilterArray (
+write_filter_array (
 	FILE *fp,
 	struct t_filters *ptr,
 	time_t theTime)
@@ -1289,10 +1301,10 @@ bAddFilterRule (
 			psPtr[*plNum].time = lCurTime + (time_t) (tinrc.filter_days * DAY);
 			break;
 		case 2:
-			psPtr[*plNum].time = lCurTime + (time_t) (tinrc.filter_days * DAY*2);
+			psPtr[*plNum].time = lCurTime + (time_t) (tinrc.filter_days * DAY * 2);
 			break;
 		case 3:
-			psPtr[*plNum].time = lCurTime + (time_t) (tinrc.filter_days * DAY*4);
+			psPtr[*plNum].time = lCurTime + (time_t) (tinrc.filter_days * DAY * 4);
 			break;
 		default:
 			psPtr[*plNum].time = (time_t) 0;
@@ -1373,7 +1385,7 @@ bAddFilterRule (
 				psPtr[*plNum-1].lines_num, (unsigned long int) psPtr[*plNum-1].time);
 #endif /* DEBUG */
 
-		vWriteFilterFile (filter_file);
+		write_filter_file (filter_file);
 	}
 
 	return bFiltered;

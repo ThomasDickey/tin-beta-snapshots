@@ -1267,7 +1267,7 @@ bld_sline (
 			 spaces, len_from, len_from, from);
 
 	/* protect display from non-displayable characters (e.g., form-feed) */
-	Convert2Printable (buffer);
+	convert_to_printable (buffer);
 
 	WriteLine(INDEX2LNUM(i), buffer);
 }

@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2000-09-28
+dnl Updated   : 2000-11-03
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2000 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -209,6 +209,7 @@ dnl AM_PATH_PROG_WITH_TEST(VARIABLE, PROG-TO-CHECK-FOR,
 dnl   TEST-PERFORMED-ON-FOUND_PROGRAM [, VALUE-IF-NOT-FOUND [, PATH]])
 AC_DEFUN(AM_PATH_PROG_WITH_TEST,
 [# Extract the first word of "$2", so it can be a program name with args.
+AC_REQUIRE([CF_PATHSEP])
 set dummy $2; ac_word=[$]2
 AC_MSG_CHECKING([for $ac_word])
 AC_CACHE_VAL(ac_cv_path_$1,
@@ -217,7 +218,7 @@ AC_CACHE_VAL(ac_cv_path_$1,
   ac_cv_path_$1="[$]$1" # Let the user override the test with a path.
   ;;
   *)
-  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:"
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}${PATHSEP}"
   for ac_dir in ifelse([$5], , $PATH, [$5]); do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
@@ -716,11 +717,13 @@ dnl Check if we're accidentally using a cache from a different machine.
 dnl Derive the system name, as a check for reusing the autoconf cache.
 dnl
 dnl If we've packaged config.guess and config.sub, run that (since it does a
-dnl better job than uname).
+dnl better job than uname).  Normally we'll use AC_CANONICAL_HOST, but allow
+dnl an extra parameter that we may override, e.g., for AC_CANONICAL_SYSTEM
+dnl which is useful in cross-compiles.
 AC_DEFUN([CF_CHECK_CACHE],
 [
 if test -f $srcdir/config.guess ; then
-	AC_CANONICAL_HOST
+	ifelse([$1],,[AC_CANONICAL_HOST],[$1])
 	system_name="$host_os"
 else
 	system_name="`(uname -s -r) 2>/dev/null`"
@@ -810,6 +813,27 @@ if test "$cf_result" = yes ; then
     AC_DEFINE_UNQUOTED($cf_result)
 fi
 
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl AC_CHECK_HEADERS(sys/socket.h) fails on OS/2 EMX because it demands that
+dnl <sys/types.h> be included first.
+dnl
+dnl Also <sys/dir.h> and <sys/dirent.h> and <sys/stat.h>, but we normally do
+dnl not do our own tests via AC_CHECK_HEADERS for those.
+AC_DEFUN([CF_CHECK_HEADERS],[
+for cf_hdr in $1
+do
+	AC_MSG_CHECKING(for $cf_hdr)
+	AC_TRY_CPP([
+#include <sys/types.h>
+#include <$cf_hdr>
+],[cf_found=yes],[cf_found=no])
+AC_MSG_RESULT($cf_found)
+if test $cf_found = yes ; then
+	CF_UPPER(cf_tr_hdr,$cf_hdr)
+	AC_DEFINE_UNQUOTED(HAVE_${cf_tr_hdr})
+fi
+done
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for IPV6 configuration.
@@ -1623,7 +1647,7 @@ dnl	-pedantic
 dnl
 AC_DEFUN([CF_GCC_WARNINGS],
 [
-if test -n "$GCC"
+if test "$GCC" = yes
 then
 	changequote(,)dnl
 	cat > conftest.$ac_ext <<EOF
@@ -1730,6 +1754,7 @@ dnl $1 = variable to set
 AC_DEFUN([CF_LIB_PREFIX],
 [
 	case $cf_cv_system_name in
+	OS/2*)	LIB_PREFIX=''     ;;
 	os2)	LIB_PREFIX=''     ;;
 	*)	LIB_PREFIX='lib'  ;;
 	esac
@@ -2046,6 +2071,17 @@ test $use_our_messages = yes && USE_OUR_MESSAGES=
 AC_SUBST(USE_OUR_MESSAGES)
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Provide a value for the $PATH and similar separator
+AC_DEFUN([CF_PATHSEP],
+[
+	case $cf_cv_system_name in
+	os2)	PATHSEP=';'  ;;
+	*)	PATHSEP=':'  ;;
+	esac
+ifelse($1,,,[$1=$PATHSEP])
+	AC_SUBST(PATHSEP)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl Look for the default editor (vi)
 AC_DEFUN([CF_PATH_EDITOR],
 [
@@ -2126,7 +2162,9 @@ AC_DEFUN([CF_PATH_SYNTAX],[
 case ".[$]$1" in #(vi
 ./*) #(vi
   ;;
+changequote(,)dnl
 .[a-zA-Z]:[\\/]*) #(vi OS/2 EMX
+changequote([,])dnl
   ;;
 .\[$]{*prefix}*) #(vi
   eval $1="[$]$1"
@@ -2140,7 +2178,7 @@ case ".[$]$1" in #(vi
   $1=`echo [$]$1 | sed -e s@NONE@$ac_default_prefix@`
   ;;
 *)
-  AC_ERROR(expected a pathname)
+  AC_ERROR(expected a pathname, not "[$]$1")
   ;;
 esac
 ])dnl
@@ -2311,7 +2349,7 @@ AC_CHECK_LIB($2,$1,[
 	CF_UPPER(cf_tr_func,$1)
 	AC_DEFINE_UNQUOTED(HAVE_$cf_tr_func)
 	ac_cv_func_$1=yes
-	$3="-l$2 [$]$3"],[
+	if test "$cf_used_lib_$2" != yes ; then cf_used_lib_$2=yes; $3="-l$2 [$]$3"; fi],[
 	ac_cv_func_$1=unknown
 	unset ac_cv_func_$1 2>/dev/null
 	$4],
@@ -2413,14 +2451,14 @@ do
     CFLAGS="$cf_save_CFLAGS"
     test -n "$cf_opts" && CFLAGS="$CFLAGS -D$cf_opts"
     AC_TRY_COMPILE([#include <sys/types.h>
-#if HAVE_TERMIOS_H
+#ifdef HAVE_TERMIOS_H
 #include <termios.h>
 #else
-#if HAVE_TERMIO_H
+#ifdef HAVE_TERMIO_H
 #include <termio.h>
 #endif
 #endif
-#if NEED_PTEM_H
+#ifdef NEED_PTEM_H
 /* This is a workaround for SCO:  they neglected to define struct winsize in
  * termios.h -- it's only in termio.h and ptem.h
  */

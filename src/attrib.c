@@ -92,9 +92,9 @@
 /*
  * Local prototypes
  */
-static void do_set_attrib (struct t_group *psGrp, int type, const char *data);
+static void do_set_attrib (struct t_group *group, int type, const char *data);
 static void set_attrib (int type, const char *scope, const char *data);
-static void set_default_attributes (struct t_attribute *psAttrib);
+static void set_default_attributes (struct t_attribute *attributes);
 
 /*
  * Global attributes. This is attached to all groups that have no
@@ -108,45 +108,45 @@ static struct t_attribute glob_attributes;
  */
 static void
 set_default_attributes (
-	struct t_attribute *psAttrib)
+	struct t_attribute *attributes)
 {
-	psAttrib->global = FALSE;	/* global/group specific */
-	psAttrib->maildir = tinrc.maildir;
-	psAttrib->savedir = tinrc.savedir;
-	psAttrib->savefile = (char *) 0;
-	psAttrib->sigfile = tinrc.sigfile;
-	psAttrib->organization = (*default_organization ? default_organization : (char *) 0);
-	psAttrib->followup_to = (char *) 0;
+	attributes->global = FALSE;	/* global/group specific */
+	attributes->maildir = tinrc.maildir;
+	attributes->savedir = tinrc.savedir;
+	attributes->savefile = (char *) 0;
+	attributes->sigfile = tinrc.sigfile;
+	attributes->organization = (*default_organization ? default_organization : (char *) 0);
+	attributes->followup_to = (char *) 0;
 #ifndef DISABLE_PRINTING
-	psAttrib->printer = tinrc.printer;
+	attributes->printer = tinrc.printer;
 #endif /* !DISABLE_PRINTING */
-	psAttrib->mailing_list = (char *) 0;
-	psAttrib->x_headers = (char *) 0;
-	psAttrib->x_body = (char *) 0;
-	psAttrib->from = tinrc.mail_address;
-	psAttrib->news_quote_format = tinrc.news_quote_format;
-	psAttrib->quote_chars = tinrc.quote_chars;
+	attributes->mailing_list = (char *) 0;
+	attributes->x_headers = (char *) 0;
+	attributes->x_body = (char *) 0;
+	attributes->from = tinrc.mail_address;
+	attributes->news_quote_format = tinrc.news_quote_format;
+	attributes->quote_chars = tinrc.quote_chars;
 #ifdef HAVE_ISPELL
-	psAttrib->ispell = (char *) 0;
+	attributes->ispell = (char *) 0;
 #endif /* HAVE_ISPELL */
-	psAttrib->quick_kill_scope = (tinrc.default_filter_kill_global ? my_strdup("*") : (char *) 0);
-	psAttrib->quick_kill_header = tinrc.default_filter_kill_header;
-	psAttrib->quick_kill_case = tinrc.default_filter_kill_case;
-	psAttrib->quick_kill_expire = tinrc.default_filter_kill_expire;
-	psAttrib->quick_select_scope = (tinrc.default_filter_select_global ? my_strdup("*") : (char *) 0);
-	psAttrib->quick_select_header = tinrc.default_filter_select_header;
-	psAttrib->quick_select_case = tinrc.default_filter_select_case;
-	psAttrib->quick_select_expire = tinrc.default_filter_select_expire;
-	psAttrib->show_only_unread = tinrc.show_only_unread_arts;
-	psAttrib->thread_arts = tinrc.thread_articles;
-	psAttrib->sort_art_type = tinrc.sort_article_type;
-	psAttrib->show_author = tinrc.show_author;
-	psAttrib->auto_save = tinrc.auto_save;
-	psAttrib->auto_select = FALSE;
-	psAttrib->batch_save = tinrc.batch_save;
-	psAttrib->delete_tmp_files = FALSE;
-	psAttrib->post_proc_type = tinrc.post_process;
-	psAttrib->x_comment_to = FALSE;
+	attributes->quick_kill_scope = (tinrc.default_filter_kill_global ? my_strdup("*") : (char *) 0);
+	attributes->quick_kill_header = tinrc.default_filter_kill_header;
+	attributes->quick_kill_case = tinrc.default_filter_kill_case;
+	attributes->quick_kill_expire = tinrc.default_filter_kill_expire;
+	attributes->quick_select_scope = (tinrc.default_filter_select_global ? my_strdup("*") : (char *) 0);
+	attributes->quick_select_header = tinrc.default_filter_select_header;
+	attributes->quick_select_case = tinrc.default_filter_select_case;
+	attributes->quick_select_expire = tinrc.default_filter_select_expire;
+	attributes->show_only_unread = tinrc.show_only_unread_arts;
+	attributes->thread_arts = tinrc.thread_articles;
+	attributes->sort_art_type = tinrc.sort_article_type;
+	attributes->show_author = tinrc.show_author;
+	attributes->auto_save = tinrc.auto_save;
+	attributes->auto_select = FALSE;
+	attributes->batch_save = tinrc.batch_save;
+	attributes->delete_tmp_files = FALSE;
+	attributes->post_proc_type = tinrc.post_process;
+	attributes->x_comment_to = FALSE;
 }
 
 
@@ -320,7 +320,7 @@ set_attrib (
 	const char *scope,
 	const char *data)
 {
-	struct t_group *psGrp;
+	struct t_group *group;
 
 	if (scope == (char *) 0 || *scope == '\0')	/* No active scope set yet */
 		return;
@@ -333,15 +333,15 @@ set_attrib (
 	 * TODO If scope=*  change glob_attributes and just those groups with structs already
 	 */
 	if (!strchr (scope, '*')) {
-		if ((psGrp = psGrpFind (scope)) != (struct t_group *) 0)
-			do_set_attrib (psGrp, type, data);
+		if ((group = group_find (scope)) != (struct t_group *) 0)
+			do_set_attrib (group, type, data);
 	} else {
 		int i;
 
 		for (i = 0; i < num_active; i++) {
-			psGrp = &active[i];
-			if (match_group_list (psGrp->name, scope))
-				do_set_attrib (psGrp, type, data);
+			group = &active[i];
+			if (match_group_list (group->name, scope))
+				do_set_attrib (group, type, data);
 		}
 	}
 }
@@ -349,16 +349,16 @@ set_attrib (
 
 static void
 do_set_attrib (
-	struct t_group *psGrp,
+	struct t_group *group,
 	int type,
 	const char *data)
 {
 	/*
 	 * Setup default attributes for this group if none already set
 	 */
-	if (psGrp->attribute == (struct t_attribute *) 0) {
-		psGrp->attribute = (struct t_attribute *) my_malloc (sizeof (struct t_attribute));
-		set_default_attributes (psGrp->attribute);
+	if (group->attribute == (struct t_attribute *) 0) {
+		group->attribute = (struct t_attribute *) my_malloc (sizeof (struct t_attribute));
+		set_default_attributes (group->attribute);
 	}
 
 	/*
@@ -366,103 +366,103 @@ do_set_attrib (
 	 */
 	switch (type) {
 		case ATTRIB_MAILDIR:
-			psGrp->attribute->maildir = my_strdup (data);
+			group->attribute->maildir = my_strdup (data);
 			break;
 		case ATTRIB_SAVEDIR:
-			psGrp->attribute->savedir = my_strdup (data);
+			group->attribute->savedir = my_strdup (data);
 			break;
 		case ATTRIB_SAVEFILE:
-			psGrp->attribute->savefile = my_strdup (data);
+			group->attribute->savefile = my_strdup (data);
 			break;
 		case ATTRIB_ORGANIZATION:
-			psGrp->attribute->organization = my_strdup (data);
+			group->attribute->organization = my_strdup (data);
 			break;
 		case ATTRIB_FROM:
-			psGrp->attribute->from = my_strdup (data);
+			group->attribute->from = my_strdup (data);
 			break;
 		case ATTRIB_SIGFILE:
-			psGrp->attribute->sigfile = my_strdup (data);
+			group->attribute->sigfile = my_strdup (data);
 			break;
 		case ATTRIB_FOLLOWUP_TO:
-			psGrp->attribute->followup_to = my_strdup (data);
+			group->attribute->followup_to = my_strdup (data);
 			break;
 #ifndef DISABLE_PRINTING
 		case ATTRIB_PRINTER:
-			psGrp->attribute->printer = my_strdup (data);
+			group->attribute->printer = my_strdup (data);
 			break;
 #endif /* !DISABLE_PRINTING */
 		case ATTRIB_AUTO_SELECT:
-			psGrp->attribute->auto_select = *data;
+			group->attribute->auto_select = *data;
 			break;
 		case ATTRIB_AUTO_SAVE:
-			psGrp->attribute->auto_save = *data;
+			group->attribute->auto_save = *data;
 			break;
 		case ATTRIB_BATCH_SAVE:
-			psGrp->attribute->batch_save = *data;
+			group->attribute->batch_save = *data;
 			break;
 		case ATTRIB_DELETE_TMP_FILES:
-			psGrp->attribute->delete_tmp_files = *data;
+			group->attribute->delete_tmp_files = *data;
 			break;
 		case ATTRIB_SHOW_ONLY_UNREAD:
-			psGrp->attribute->show_only_unread = *data;
+			group->attribute->show_only_unread = *data;
 			break;
 		case ATTRIB_THREAD_ARTS:
-			psGrp->attribute->thread_arts = *data;
+			group->attribute->thread_arts = *data;
 			break;
 		case ATTRIB_SHOW_AUTHOR:
-			psGrp->attribute->show_author = *data;
+			group->attribute->show_author = *data;
 			break;
 		case ATTRIB_SORT_ART_TYPE:
-			psGrp->attribute->sort_art_type = *data;
+			group->attribute->sort_art_type = *data;
 			break;
 		case ATTRIB_POST_PROC_TYPE:
-			psGrp->attribute->post_proc_type = *data;
+			group->attribute->post_proc_type = *data;
 			break;
 		case ATTRIB_QUICK_KILL_HEADER:
-			psGrp->attribute->quick_kill_header = *data;
+			group->attribute->quick_kill_header = *data;
 			break;
 		case ATTRIB_QUICK_KILL_SCOPE:
-			psGrp->attribute->quick_kill_scope = my_strdup (data);
+			group->attribute->quick_kill_scope = my_strdup (data);
 			break;
 		case ATTRIB_QUICK_KILL_EXPIRE:
-			psGrp->attribute->quick_kill_expire = *data;
+			group->attribute->quick_kill_expire = *data;
 			break;
 		case ATTRIB_QUICK_KILL_CASE:
-			psGrp->attribute->quick_kill_case = *data;
+			group->attribute->quick_kill_case = *data;
 			break;
 		case ATTRIB_QUICK_SELECT_HEADER:
-			psGrp->attribute->quick_select_header = *data;
+			group->attribute->quick_select_header = *data;
 			break;
 		case ATTRIB_QUICK_SELECT_SCOPE:
-			psGrp->attribute->quick_select_scope = my_strdup (data);
+			group->attribute->quick_select_scope = my_strdup (data);
 			break;
 		case ATTRIB_QUICK_SELECT_EXPIRE:
-			psGrp->attribute->quick_select_expire = *data;
+			group->attribute->quick_select_expire = *data;
 			break;
 		case ATTRIB_QUICK_SELECT_CASE:
-			psGrp->attribute->quick_select_case = *data;
+			group->attribute->quick_select_case = *data;
 			break;
 		case ATTRIB_MAILING_LIST:
-			psGrp->attribute->mailing_list = my_strdup (data);
+			group->attribute->mailing_list = my_strdup (data);
 			break;
 		case ATTRIB_X_HEADERS:
-			psGrp->attribute->x_headers = my_strdup (data);
+			group->attribute->x_headers = my_strdup (data);
 			break;
 		case ATTRIB_X_BODY:
-			psGrp->attribute->x_body = my_strdup (data);
+			group->attribute->x_body = my_strdup (data);
 			break;
 		case ATTRIB_X_COMMENT_TO:
-			psGrp->attribute->x_comment_to = *data;
+			group->attribute->x_comment_to = *data;
 			break;
 		case ATTRIB_NEWS_QUOTE:
-			psGrp->attribute->news_quote_format = my_strdup (data);
+			group->attribute->news_quote_format = my_strdup (data);
 			break;
 		case ATTRIB_QUOTE_CHARS:
-			psGrp->attribute->quote_chars = my_strdup (data);
+			group->attribute->quote_chars = my_strdup (data);
 			break;
 #ifdef HAVE_ISPELL
 		case ATTRIB_ISPELL:
-			psGrp->attribute->ispell = my_strdup (data);
+			group->attribute->ispell = my_strdup (data);
 			break;
 #endif /* HAVE_ISPELL */
 		default:
@@ -483,17 +483,14 @@ write_attributes_file (
 	char *file_tmp;
 #	if 0
 	register int i;
-	struct t_group *psGrp;
+	struct t_group *group;
 #	endif /* 0 */
 
-	if (no_write && file_size (file) != -1)
+	if (no_write && file_size (file) != -1L)
 		return;
 
-	/* alloc memory for tmp-filename */
-	file_tmp = (char *) my_malloc (strlen (file)+5);
-
 	/* generate tmp-filename */
-	sprintf (file_tmp, "%s.tmp", file);
+	file_tmp = get_tmpfilename(file);
 
 	if ((fp = fopen (file_tmp, "w" FOPEN_OPTS)) == (FILE *) 0) {
 		error_message (_(txt_filesystem_full_backup), ATTRIBUTES_FILE);
@@ -505,65 +502,65 @@ write_attributes_file (
 		wait_message (0, _(txt_writing_attributes_file));
 
 	/* FIXME - move strings to lang.c */
-	fprintf (fp, "# Group attributes file for the TIN newsreader\n#\n");
-	fprintf (fp, "#  scope=STRING (ie. alt.sources, alt.*,!alt.bin* etc..) [mandatory]\n");
-	fprintf (fp, "#  maildir=STRING (ie. ~/Mail)\n");
-	fprintf (fp, "#  savedir=STRING (ie. ~user/News)\n");
-	fprintf (fp, "#  savefile=STRING (ie. =linux)\n");
-	fprintf (fp, "#  sigfile=STRING (ie. $var/sig)\n");
-	fprintf (fp, "#  organization=STRING (if beginning with '/' read from file)\n");
-	fprintf (fp, "#  followup_to=STRING\n");
+	fprintf (fp, _("# Group attributes file for the TIN newsreader\n#\n"));
+	fprintf (fp, _("#  scope=STRING (ie. alt.sources, alt.*,!alt.bin* etc..) [mandatory]\n"));
+	fprintf (fp, _("#  maildir=STRING (ie. ~/Mail)\n"));
+	fprintf (fp, _("#  savedir=STRING (ie. ~user/News)\n"));
+	fprintf (fp, _("#  savefile=STRING (ie. =linux)\n"));
+	fprintf (fp, _("#  sigfile=STRING (ie. $var/sig)\n"));
+	fprintf (fp, _("#  organization=STRING (if beginning with '/' read from file)\n"));
+	fprintf (fp, _("#  followup_to=STRING\n"));
 #ifndef DISABLE_PRINTING
-	fprintf (fp, "#  printer=STRING\n");
+	fprintf (fp, _("#  printer=STRING\n"));
 #endif /* !DISABLE_PRINTING */
-	fprintf (fp, "#  mailing_list=STRING (ie. majordomo@list.org)\n");
-	fprintf (fp, "#  x_headers=STRING (ie. ~/.tin/extra-headers)\n");
-	fprintf (fp, "#  x_body=STRING (ie. ~/.tin/extra-body-text)\n");
-	fprintf (fp, "#  from=STRING (just append wanted From:-line, don't use quotes)\n");
-	fprintf (fp, "#  news_quote_format=STRING\n");
-	fprintf (fp, "#  quote_chars=STRING (%%s, %%S for initials)\n");
+	fprintf (fp, _("#  mailing_list=STRING (ie. majordomo@list.org)\n"));
+	fprintf (fp, _("#  x_headers=STRING (ie. ~/.tin/extra-headers)\n"));
+	fprintf (fp, _("#  x_body=STRING (ie. ~/.tin/extra-body-text)\n"));
+	fprintf (fp, _("#  from=STRING (just append wanted From:-line, don't use quotes)\n"));
+	fprintf (fp, _("#  news_quote_format=STRING\n"));
+	fprintf (fp, _("#  quote_chars=STRING (%%s, %%S for initials)\n"));
 #ifdef HAVE_ISPELL
-	fprintf (fp, "#  ispell = STRING\n");
+	fprintf (fp, _("#  ispell = STRING\n"));
 #endif /* HAVE_ISPELL */
-	fprintf (fp, "#  auto_select=ON/OFF\n");
-	fprintf (fp, "#  auto_save=ON/OFF\n");
-	fprintf (fp, "#  batch_save=ON/OFF\n");
-	fprintf (fp, "#  delete_tmp_files=ON/OFF\n");
-	fprintf (fp, "#  show_only_unread=ON/OFF\n");
-	fprintf (fp, "#  thread_arts=NUM\n");
-	fprintf (fp, "#    0=none, 1=subj, 2=refs, 3=both\n");
-	fprintf (fp, "#  show_author=NUM\n");
-	fprintf (fp, "#    0=none, 1=name, 2=addr, 3=both\n");
-	fprintf (fp, "#  sort_art_type=NUM\n");
-	fprintf (fp, "#    0=none, 1=subj descend, 2=subj ascend,\n");
-	fprintf (fp, "#    3=from descend, 4=from ascend,\n");
-	fprintf (fp, "#    5=date descend, 6=date ascend\n");
-	fprintf (fp, "#    7=score descend, 8=score ascend\n");
-	fprintf (fp, "#  post_proc_type=NUM\n");
-	fprintf (fp, "#    0=none, 1=unshar, 2=uudecode\n");
-	fprintf (fp, "#  quick_kill_scope=STRING (ie. talk.*)\n");
-	fprintf (fp, "#  quick_kill_expire=ON/OFF\n");
-	fprintf (fp, "#  quick_kill_case=ON/OFF\n");
-	fprintf (fp, "#  quick_kill_header=NUM\n");
-	fprintf (fp, "#    0=subj (case sensitive) 1=subj (ignore case)\n");
-	fprintf (fp, "#    2=from (case sensitive) 3=from (ignore case)\n");
-	fprintf (fp, "#    4=msgid 5=lines\n");
-	fprintf (fp, "#  quick_select_scope=STRING\n");
-	fprintf (fp, "#  quick_select_expire=ON/OFF\n");
-	fprintf (fp, "#  quick_select_case=ON/OFF\n");
-	fprintf (fp, "#  quick_select_header=NUM\n");
-	fprintf (fp, "#    0=subj (case sensitive) 1=subj (ignore case)\n");
-	fprintf (fp, "#    2=from (case sensitive) 3=from (ignore case)\n");
-	fprintf (fp, "#    4=msgid 5=lines\n");
-	fprintf (fp, "#  x_comment_to=ON/OFF\n");
-	fprintf (fp, "#\n# Note that it is best to put general (global scoping)\n");
-	fprintf (fp, "# entries first followed by group specific entries.\n#\n");
-	fprintf (fp, "############################################################################\n\n");
+	fprintf (fp, _("#  auto_select=ON/OFF\n"));
+	fprintf (fp, _("#  auto_save=ON/OFF\n"));
+	fprintf (fp, _("#  batch_save=ON/OFF\n"));
+	fprintf (fp, _("#  delete_tmp_files=ON/OFF\n"));
+	fprintf (fp, _("#  show_only_unread=ON/OFF\n"));
+	fprintf (fp, _("#  thread_arts=NUM\n"));
+	fprintf (fp, _("#    0=none, 1=subj, 2=refs, 3=both\n"));
+	fprintf (fp, _("#  show_author=NUM\n"));
+	fprintf (fp, _("#    0=none, 1=name, 2=addr, 3=both\n"));
+	fprintf (fp, _("#  sort_art_type=NUM\n"));
+	fprintf (fp, _("#    0=none, 1=subj descend, 2=subj ascend,\n"));
+	fprintf (fp, _("#    3=from descend, 4=from ascend,\n"));
+	fprintf (fp, _("#    5=date descend, 6=date ascend\n"));
+	fprintf (fp, _("#    7=score descend, 8=score ascend\n"));
+	fprintf (fp, _("#  post_proc_type=NUM\n"));
+	fprintf (fp, _("#    0=none, 1=unshar, 2=uudecode\n"));
+	fprintf (fp, _("#  quick_kill_scope=STRING (ie. talk.*)\n"));
+	fprintf (fp, _("#  quick_kill_expire=ON/OFF\n"));
+	fprintf (fp, _("#  quick_kill_case=ON/OFF\n"));
+	fprintf (fp, _("#  quick_kill_header=NUM\n"));
+	fprintf (fp, _("#    0=subj (case sensitive) 1=subj (ignore case)\n"));
+	fprintf (fp, _("#    2=from (case sensitive) 3=from (ignore case)\n"));
+	fprintf (fp, _("#    4=msgid 5=lines\n"));
+	fprintf (fp, _("#  quick_select_scope=STRING\n"));
+	fprintf (fp, _("#  quick_select_expire=ON/OFF\n"));
+	fprintf (fp, _("#  quick_select_case=ON/OFF\n"));
+	fprintf (fp, _("#  quick_select_header=NUM\n"));
+	fprintf (fp, _("#    0=subj (case sensitive) 1=subj (ignore case)\n"));
+	fprintf (fp, _("#    2=from (case sensitive) 3=from (ignore case)\n"));
+	fprintf (fp, _("#    4=msgid 5=lines\n"));
+	fprintf (fp, _("#  x_comment_to=ON/OFF\n"));
+	fprintf (fp, _("#\n# Note that it is best to put general (global scoping)\n"));
+	fprintf (fp, _("# entries first followed by group specific entries.\n#\n"));
+	fprintf (fp, _("############################################################################\n\n"));
 
 /*
  * some useful defaults
  */
-	fprintf (fp, "# include extra headers\n");
+	fprintf (fp, _("# include extra headers\n"));
 	fprintf (fp, "scope=*\n");
 	/*
 	 * ${TIN_HOMEDIR-HOME} would be correct, but tin doesn't expand it,
@@ -571,12 +568,12 @@ write_attributes_file (
 	 */
 	fprintf (fp, "x_headers=~/.tin/headers\n\n");
 
-	fprintf (fp, "# in *sources* set post process type to shar\n");
+	fprintf (fp, _("# in *sources* set post process type to shar\n"));
 	fprintf (fp, "scope=*sources*\n");
 	fprintf (fp, "post_proc_type=1\n\n");
 
-	fprintf (fp, "# in *binaries* set post process type to uudecode, remove tmp files\n");
-	fprintf (fp, "# and set Followup-To: poster\n");
+	fprintf (fp, _("# in *binaries* set post process type to uudecode, remove tmp files\n"));
+	fprintf (fp, _("# and set Followup-To: poster\n"));
 	fprintf (fp, "scope=*binaries*\n");
 	fprintf (fp, "post_proc_type=2\n");
 	fprintf (fp, "delete_tmp_files=ON\n");
@@ -584,57 +581,57 @@ write_attributes_file (
 
 #	if 0 /* FIXME */
 	for (i = 0; i < num_active; i++) {
-		psGrp = &active[i];
-		fprintf (fp, "scope=%s\n", psGrp->name);
-		fprintf (fp, "maildir=%s\n", psGrp->attribute->maildir);
-		fprintf (fp, "savedir=%s\n", psGrp->attribute->savedir);
-		fprintf (fp, "savefile=%s\n", psGrp->attribute->savefile);
-		fprintf (fp, "sigfile=%s\n", psGrp->attribute->sigfile);
-		fprintf (fp, "organization=%s\n", psGrp->attribute->organization);
-		fprintf (fp, "followup_to=%s\n", psGrp->attribute->followup_to);
+		group = &active[i];
+		fprintf (fp, "scope=%s\n", group->name);
+		fprintf (fp, "maildir=%s\n", group->attribute->maildir);
+		fprintf (fp, "savedir=%s\n", group->attribute->savedir);
+		fprintf (fp, "savefile=%s\n", group->attribute->savefile);
+		fprintf (fp, "sigfile=%s\n", group->attribute->sigfile);
+		fprintf (fp, "organization=%s\n", group->attribute->organization);
+		fprintf (fp, "followup_to=%s\n", group->attribute->followup_to);
 #ifndef DISABLE_PRINTING
-		fprintf (fp, "printer=%s\n", psGrp->attribute->printer);
+		fprintf (fp, "printer=%s\n", group->attribute->printer);
 #endif /* !DISABLE_PRINTING */
-		fprintf (fp, "mailing_list=%s\n", psGrp->attribute->mailing_list);
-		fprintf (fp, "x_headers=%s\n", psGrp->attribute->x_headers);
-		fprintf (fp, "x_body=%s\n", psGrp->attribute->x_body);
-		fprintf (fp, "from=%s\n", psGrp->attribute->from);
-		fprintf (fp, "news_quote_format=%s\n", psGrp->attribute->news_quote_format);
+		fprintf (fp, "mailing_list=%s\n", group->attribute->mailing_list);
+		fprintf (fp, "x_headers=%s\n", group->attribute->x_headers);
+		fprintf (fp, "x_body=%s\n", group->attribute->x_body);
+		fprintf (fp, "from=%s\n", group->attribute->from);
+		fprintf (fp, "news_quote_format=%s\n", group->attribute->news_quote_format);
 		fprintf (fp, "quote_chars=%s\n",
-			quote_space_to_dash (psGrp->attribute->quote_chars));
+			quote_space_to_dash (group->attribute->quote_chars));
 #ifdef HAVE_ISPELL
-		fprintf (fp, "ispell=%s\n", psGrp->attribute->ispell);
+		fprintf (fp, "ispell=%s\n", group->attribute->ispell);
 #endif /* HAVE_ISPELL */
 		fprintf (fp, "show_only_unread=%s\n",
-			print_boolean (psGrp->attribute->show_only_unread));
-		fprintf (fp, "thread_arts=%d\n", psGrp->attribute->thread_arts);
+			print_boolean (group->attribute->show_only_unread));
+		fprintf (fp, "thread_arts=%d\n", group->attribute->thread_arts);
 		fprintf (fp, "auto_select=%s\n",
-			print_boolean (psGrp->attribute->auto_select));
+			print_boolean (group->attribute->auto_select));
 		fprintf (fp, "auto_save=%s\n",
-			print_boolean (psGrp->attribute->auto_save));
+			print_boolean (group->attribute->auto_save));
 		fprintf (fp, "batch_save=%s\n",
-			print_boolean (psGrp->attribute->batch_save));
+			print_boolean (group->attribute->batch_save));
 		fprintf (fp, "delete_tmp_files=%s\n",
-			print_boolean (psGrp->attribute->delete_tmp_files));
-		fprintf (fp, "sort_art_type=%d\n", psGrp->attribute->sort_art_type);
-		fprintf (fp, "show_author=%d\n", psGrp->attribute->show_author);
-		fprintf (fp, "post_proc_type=%d\n", psGrp->attribute->post_proc_type);
+			print_boolean (group->attribute->delete_tmp_files));
+		fprintf (fp, "sort_art_type=%d\n", group->attribute->sort_art_type);
+		fprintf (fp, "show_author=%d\n", group->attribute->show_author);
+		fprintf (fp, "post_proc_type=%d\n", group->attribute->post_proc_type);
 		fprintf (fp, "quick_kill_scope=%s\n",
-			psGrp->attribute->quick_kill_scope);
+			group->attribute->quick_kill_scope);
 		fprintf (fp, "quick_kill_case=%s\n",
-			print_boolean (psGrp->attribute->quick_kill_case));
+			print_boolean (group->attribute->quick_kill_case));
 		fprintf (fp, "quick_kill_expire=%s\n",
-			print_boolean (psGrp->attribute->quick_kill_expire));
-		fprintf (fp, "quick_kill_header=%d\n", psGrp->attribute->quick_kill_header);
+			print_boolean (group->attribute->quick_kill_expire));
+		fprintf (fp, "quick_kill_header=%d\n", group->attribute->quick_kill_header);
 		fprintf (fp, "quick_select_scope=%s\n",
-			psGrp->attribute->quick_select_scope);
+			group->attribute->quick_select_scope);
 		fprintf (fp, "quick_select_case=%s\n",
-			print_boolean (psGrp->attribute->quick_select_case));
+			print_boolean (group->attribute->quick_select_case));
 		fprintf (fp, "quick_select_expire=%s\n",
-			print_boolean (psGrp->attribute->quick_select_expire));
-		fprintf (fp, "quick_select_header=%d\n\n", psGrp->attribute->quick_select_header);
+			print_boolean (group->attribute->quick_select_expire));
+		fprintf (fp, "quick_select_header=%d\n\n", group->attribute->quick_select_header);
 		fprintf (fp, "x_comment_to=%s\n",
-			print_boolean (psGrp->attribute->x_comment_to));
+			print_boolean (group->attribute->x_comment_to));
 	}
 #	endif /* 0 */
 
@@ -654,24 +651,24 @@ debug_print_filter_attributes (
 	void)
 {
 	register int i;
-	struct t_group *psGrp;
+	struct t_group *group;
 
 	my_printf("\nBEG ***\n");
 
 	for (i = 0; i < num_active; i++) {
-		psGrp = &active[i];
+		group = &active[i];
 		my_printf ("Grp=[%s] KILL   header=[%d] scope=[%s] case=[%s] expire=[%s]\n",
-			psGrp->name, psGrp->attribute->quick_kill_header,
-			(psGrp->attribute->quick_kill_scope ?
-				psGrp->attribute->quick_kill_scope : ""),
-			(psGrp->attribute->quick_kill_case ? "ON" : "OFF"),
-			(psGrp->attribute->quick_kill_expire ? "ON" : "OFF"));
+			group->name, group->attribute->quick_kill_header,
+			(group->attribute->quick_kill_scope ?
+				group->attribute->quick_kill_scope : ""),
+			(group->attribute->quick_kill_case ? "ON" : "OFF"),
+			(group->attribute->quick_kill_expire ? "ON" : "OFF"));
 		my_printf ("Grp=[%s] SELECT header=[%d] scope=[%s] case=[%s] expire=[%s]\n",
-			psGrp->name, psGrp->attribute->quick_select_header,
-			(psGrp->attribute->quick_select_scope ?
-				psGrp->attribute->quick_select_scope: ""),
-			(psGrp->attribute->quick_select_case ? "ON" : "OFF"),
-			(psGrp->attribute->quick_select_expire ? "ON" : "OFF"));
+			group->name, group->attribute->quick_select_header,
+			(group->attribute->quick_select_scope ?
+				group->attribute->quick_select_scope: ""),
+			(group->attribute->quick_select_case ? "ON" : "OFF"),
+			(group->attribute->quick_select_expire ? "ON" : "OFF"));
 	}
 
 	my_printf("END ***\n");
@@ -685,65 +682,65 @@ dump_attributes (
 	void)
 {
 	int i;
-	struct t_group *psGrp;
+	struct t_group *group;
 
 	fprintf(stderr, "DUMP attributes\n");
 
 	for (i = 0; i < num_active; i++) {
-		psGrp = &active[i];
-		if (!psGrp->attribute)
+		group = &active[i];
+		if (!group->attribute)
 			continue;
-		fprintf (stderr, "scope=%s\n", psGrp->name);
-		fprintf (stderr, "Global=%d\n", psGrp->attribute->global);
-		fprintf (stderr, "maildir=%s\n", psGrp->attribute->maildir);
-		fprintf (stderr, "savedir=%s\n", psGrp->attribute->savedir);
-		fprintf (stderr, "savefile=%s\n", psGrp->attribute->savefile);
-		fprintf (stderr, "sigfile=%s\n", psGrp->attribute->sigfile);
-		fprintf (stderr, "organization=%s\n", psGrp->attribute->organization);
-		fprintf (stderr, "followup_to=%s\n", psGrp->attribute->followup_to);
+		fprintf (stderr, "scope=%s\n", group->name);
+		fprintf (stderr, "Global=%d\n", group->attribute->global);
+		fprintf (stderr, "maildir=%s\n", group->attribute->maildir);
+		fprintf (stderr, "savedir=%s\n", group->attribute->savedir);
+		fprintf (stderr, "savefile=%s\n", group->attribute->savefile);
+		fprintf (stderr, "sigfile=%s\n", group->attribute->sigfile);
+		fprintf (stderr, "organization=%s\n", group->attribute->organization);
+		fprintf (stderr, "followup_to=%s\n", group->attribute->followup_to);
 #ifndef DISABLE_PRINTING
-		fprintf (stderr, "printer=%s\n", psGrp->attribute->printer);
+		fprintf (stderr, "printer=%s\n", group->attribute->printer);
 #endif /* !DISABLE_PRINTING */
-		fprintf (stderr, "mailing_list=%s\n", psGrp->attribute->mailing_list);
-		fprintf (stderr, "x_headers=%s\n", psGrp->attribute->x_headers);
-		fprintf (stderr, "x_body=%s\n", psGrp->attribute->x_body);
-		fprintf (stderr, "from=%s\n", psGrp->attribute->from);
-		fprintf (stderr, "news_quote_format=%s\n", psGrp->attribute->news_quote_format);
+		fprintf (stderr, "mailing_list=%s\n", group->attribute->mailing_list);
+		fprintf (stderr, "x_headers=%s\n", group->attribute->x_headers);
+		fprintf (stderr, "x_body=%s\n", group->attribute->x_body);
+		fprintf (stderr, "from=%s\n", group->attribute->from);
+		fprintf (stderr, "news_quote_format=%s\n", group->attribute->news_quote_format);
 		fprintf (stderr, "quote_chars=%s\n",
-			quote_space_to_dash (psGrp->attribute->quote_chars));
+			quote_space_to_dash (group->attribute->quote_chars));
 #ifdef HAVE_ISPELL
-		fprintf (stderr, "ispell=%s\n", psGrp->attribute->ispell);
+		fprintf (stderr, "ispell=%s\n", group->attribute->ispell);
 #endif /* HAVE_ISPELL */
 		fprintf (stderr, "show_only_unread=%s\n",
-			print_boolean (psGrp->attribute->show_only_unread));
-		fprintf (stderr, "thread_arts=%d\n", psGrp->attribute->thread_arts);
+			print_boolean (group->attribute->show_only_unread));
+		fprintf (stderr, "thread_arts=%d\n", group->attribute->thread_arts);
 		fprintf (stderr, "auto_select=%s\n",
-			print_boolean (psGrp->attribute->auto_select));
+			print_boolean (group->attribute->auto_select));
 		fprintf (stderr, "auto_save=%s\n",
-			print_boolean (psGrp->attribute->auto_save));
+			print_boolean (group->attribute->auto_save));
 		fprintf (stderr, "batch_save=%s\n",
-			print_boolean (psGrp->attribute->batch_save));
+			print_boolean (group->attribute->batch_save));
 		fprintf (stderr, "delete_tmp_files=%s\n",
-			print_boolean (psGrp->attribute->delete_tmp_files));
-		fprintf (stderr, "sort_art_type=%d\n", psGrp->attribute->sort_art_type);
-		fprintf (stderr, "show_author=%d\n", psGrp->attribute->show_author);
-		fprintf (stderr, "post_proc_type=%d\n", psGrp->attribute->post_proc_type);
+			print_boolean (group->attribute->delete_tmp_files));
+		fprintf (stderr, "sort_art_type=%d\n", group->attribute->sort_art_type);
+		fprintf (stderr, "show_author=%d\n", group->attribute->show_author);
+		fprintf (stderr, "post_proc_type=%d\n", group->attribute->post_proc_type);
 		fprintf (stderr, "quick_kill_scope=%s\n",
-			psGrp->attribute->quick_kill_scope);
+			group->attribute->quick_kill_scope);
 		fprintf (stderr, "quick_kill_case=%s\n",
-			print_boolean (psGrp->attribute->quick_kill_case));
+			print_boolean (group->attribute->quick_kill_case));
 		fprintf (stderr, "quick_kill_expire=%s\n",
-			print_boolean (psGrp->attribute->quick_kill_expire));
-		fprintf (stderr, "quick_kill_header=%d\n", psGrp->attribute->quick_kill_header);
+			print_boolean (group->attribute->quick_kill_expire));
+		fprintf (stderr, "quick_kill_header=%d\n", group->attribute->quick_kill_header);
 		fprintf (stderr, "quick_select_scope=%s\n",
-			psGrp->attribute->quick_select_scope);
+			group->attribute->quick_select_scope);
 		fprintf (stderr, "quick_select_case=%s\n",
-			print_boolean (psGrp->attribute->quick_select_case));
+			print_boolean (group->attribute->quick_select_case));
 		fprintf (stderr, "quick_select_expire=%s\n",
-			print_boolean (psGrp->attribute->quick_select_expire));
-		fprintf (stderr, "quick_select_header=%d\n", psGrp->attribute->quick_select_header);
+			print_boolean (group->attribute->quick_select_expire));
+		fprintf (stderr, "quick_select_header=%d\n", group->attribute->quick_select_header);
 		fprintf (stderr, "x_comment_to=%s\n\n",
-			print_boolean (psGrp->attribute->x_comment_to));
+			print_boolean (group->attribute->x_comment_to));
 	}
 }
 #endif /* DEBUG */

@@ -157,7 +157,7 @@ iWriteNewsrcLine (
 	 * are set to auto removal. Also check for bogus flag just in case
 	 * strip_bogus was changed since tin started
 	 */
-	psGrp = psGrpFind (line);
+	psGrp = group_find (line);
 
 	if (tinrc.strip_bogus == BOGUS_REMOVE) {
 		if (psGrp == NULL || psGrp->bogus) { /* group dosen't exist */
@@ -189,7 +189,7 @@ iWriteNewsrcLine (
  *         >=0 number of lines written
  */
 signed long int
-vWriteNewsrc (
+write_newsrc (
 	void)
 {
 	FILE *fp_ip;
@@ -301,7 +301,7 @@ auto_subscribe_groups (
 /* TODO test me ! */
 	while ((ptr = tin_fgets (fp_subs, FALSE)) != (char *) 0) {
 		if (ptr[0] != '#') {
-			if (psGrpFind (ptr) != 0)
+			if (group_find (ptr) != 0)
 				fprintf (fp_newsrc, "%s:\n", ptr);
 		}
 	}
@@ -322,31 +322,19 @@ void
 backup_newsrc (
 	void)
 {
-	FILE *fp_ip, *fp_op;
-	char *line;
 	char buf[HEADER_LEN];
 
-	if ((fp_ip = fopen (newsrc, "r")) != (FILE *) 0) {
 #	ifdef WIN32
-		joinpath (buf, rcdir, OLDNEWSRC_FILE);
+	joinpath (buf, rcdir, OLDNEWSRC_FILE);
 #	else
-		joinpath (buf, homedir, OLDNEWSRC_FILE);
+	joinpath (buf, homedir, OLDNEWSRC_FILE);
 #	endif /* WIN32 */
-		unlink (buf);	/* because rn makes a link of .newsrc -> .oldnewsrc */
 
-		if ((fp_op = fopen (buf, "w" FOPEN_OPTS)) != (FILE *) 0) {
-			if (newsrc_mode)
-				chmod (buf, newsrc_mode);
+	if (!backup_file (newsrc, buf))
+		error_message (_(txt_filesystem_full_backup), NEWSRC_FILE);
 
-			while ((line = tin_fgets (fp_ip, FALSE)) != (char *) 0)
-				fprintf (fp_op, "%s\n", line);
-
-			if (ferror (fp_op) || fclose (fp_op))
-				error_message (_(txt_filesystem_full_backup), NEWSRC_FILE);
-
-		}
-		fclose (fp_ip);
-	}
+	if (newsrc_mode)
+		chmod (buf, newsrc_mode);
 }
 
 
@@ -450,7 +438,7 @@ reset_newsrc (
 	}
 
 	for (i = 0; i < selmenu.max; i++)
-		vSetDefaultBitmap (&active[my_group[i]]);
+		set_default_bitmap (&active[my_group[i]]);
 }
 
 
@@ -540,7 +528,7 @@ grp_mark_unread (
 	debug_print_comment ("Z command");
 #endif /* DEBUG_NEWSRC */
 
-	vGrpGetArtInfo (
+	group_get_art_info (
 		group->spooldir,
 		group->name,
 		group->type,
@@ -1460,7 +1448,7 @@ art_mark_undeleted (
 
 
 void
-vSetDefaultBitmap (
+set_default_bitmap (
 	struct t_group *group)
 {
 	if (group != (struct t_group *) 0) {
@@ -1512,7 +1500,7 @@ vNewsrcTestHarness (
 	group.type = GROUP_TYPE_NEWS;
 	group.subscribed = TRUE;
 	group.newsrc.xbitmap = (t_bitmap *) 0;
-	vSetDefaultBitmap (&group);
+	set_default_bitmap (&group);
 
 	strcpy (seq, get_val ("TIN_SEQ", ""));
 

@@ -88,7 +88,7 @@ read_mail_active_file (
 		/*
 		 * Load mailgroup into group hash table
 		 */
-		if ((ptr = psGrpAdd (buf)) == NULL)
+		if ((ptr = group_add (buf)) == NULL)
 			continue;
 
 		/*
@@ -112,7 +112,7 @@ read_mail_active_file (
 		ptr->newsrc.xbitmap = (t_bitmap *) 0;
 		ptr->attribute = (struct t_attribute *) 0;
 		ptr->glob_filter = &glob_filter;
-		vSetDefaultBitmap (ptr);
+		set_default_bitmap (ptr);
 	}
 	fclose (fp);
 
@@ -130,26 +130,44 @@ write_mail_active_file (
 	void)
 {
 	FILE *fp;
-	char acGrpPath[PATH_LEN];
+	char *file_tmp;
+	char group_path[PATH_LEN];
 	register int i;
-	struct t_group *psGrp;
+	struct t_group *group;
 
-	if (no_write && file_size (mail_active_file) != -1)
+	if (no_write && file_size (mail_active_file) != -1L)
 		return;
 
-	vPrintActiveHead (mail_active_file);
+	/* generate tmp-filename */
+	file_tmp = get_tmpfilename(mail_active_file);
+
+	if (!backup_file (mail_active_file, file_tmp)) {
+		error_message (_(txt_filesystem_full_backup), mail_active_file);
+		/* free memory for tmp-filename */
+		free (file_tmp);
+		return;
+	}
+
+	print_active_head (mail_active_file);
 
 	if ((fp = open_mail_active_fp ("a+")) != (FILE *) 0) {
 		for (i = 0; i < num_active; i++) {
-			psGrp = &active[i];
-			if (psGrp->type == GROUP_TYPE_MAIL) {
-				vMakeGrpPath (psGrp->spooldir, psGrp->name, acGrpPath);
-				vFindArtMaxMin (acGrpPath, &psGrp->xmax, &psGrp->xmin);
-				vPrintGrpLine (fp, psGrp->name, psGrp->xmax, psGrp->xmin, psGrp->spooldir);
+			group = &active[i];
+			if (group->type == GROUP_TYPE_MAIL) {
+				make_base_group_path (group->spooldir, group->name, group_path);
+				find_art_max_min (group_path, &group->xmax, &group->xmin);
+				print_group_line (fp, group->name, group->xmax, group->xmin, group->spooldir);
 			}
 		}
-		fclose (fp);
+		if (ferror (fp) || fclose (fp)) {
+			error_message (_(txt_filesystem_full), mail_active_file);
+			rename (file_tmp, mail_active_file);
+		} else
+			unlink (file_tmp);
 	}
+
+	/* free memory for tmp-filename */
+	free (file_tmp);
 }
 
 
@@ -225,10 +243,10 @@ read_groups_descriptions (
 	FILE *fp_save)
 {
 	char *p, *q, *ptr;
-	char *group = (char *) 0;
+	char *groupname = (char *) 0;
 	int count = 0;
 	size_t space = 0;
-	struct t_group *psGrp;
+	struct t_group *group;
 
 	while ((ptr = tin_fgets (fp, FALSE)) != (char *) 0) {
 		if (*ptr == '#' || *ptr == '\0')
@@ -246,15 +264,15 @@ read_groups_descriptions (
 
 		if (!space) { /* initial malloc */
 			space = strlen(ptr) + 1;
-			group = my_malloc(space);
+			groupname = my_malloc(space);
 		} else {
 			while (strlen(ptr) > space) { /* realloc needed? */
 				space *= 2;
-				group = (char *) my_realloc((void *) group, space);
+				groupname = (char *) my_realloc((void *) groupname, space);
 			}
 		}
 
-		for (p = ptr, q = group ; *p && *p != ' ' && *p != '\t' ; p++, q++)
+		for (p = ptr, q = groupname ; *p && *p != ' ' && *p != '\t' ; p++, q++)
 			*q = *p;
 
 		*q = '\0';
@@ -262,17 +280,17 @@ read_groups_descriptions (
 		while (*p == '\t' || *p == ' ')
 			p++;
 
-		psGrp = psGrpFind (group);
+		group = group_find (groupname);
 
-		if (psGrp != (struct t_group *) 0 && psGrp->description == (char *) 0) {
+		if (group != (struct t_group *) 0 && group->description == (char *) 0) {
 			q = p;
 			while ((q = strchr (q, '\t')) != (char *) 0)
 				*q = ' ';
 
-			psGrp->description = my_strdup (p);
+			group->description = my_strdup (p);
 
 #	if 0 /* not useful for cache_overview_files */
-			if (psGrp->type == GROUP_TYPE_NEWS) {
+			if (group->type == GROUP_TYPE_NEWS) {
 				if (fp_save != (FILE *) 0 && read_news_via_nntp && !read_local_newsgroups_file)
 					fprintf (fp_save, "%s\n", ptr);
 			}
@@ -282,76 +300,76 @@ read_groups_descriptions (
 		if (++count % 100 == 0)
 			spin_cursor ();
 	}
-	free(group);
+	free(groupname);
 }
 
 
 void
-vPrintActiveHead (
-	char *pcActiveFile)
+print_active_head (
+	char *active_file)
 {
-	FILE *hFp;
+	FILE *fp;
 
-	if (no_write && file_size (pcActiveFile) != -1)
+	if (no_write && file_size (active_file) != -1L)
 		return;
 
-	if ((hFp = fopen (pcActiveFile, "w")) != (FILE *) 0) {
+	if ((fp = fopen (active_file, "w")) != (FILE *) 0) {
 		/* FIXME: -> lang.c */
-		fprintf (hFp, _("# [Mail/Save] active file. Format is like news active file:\n"));
-		fprintf (hFp, _("#   groupname  max.artnum  min.artnum  /dir\n"));
-		fprintf (hFp, _("# The 4th field is the basedir (ie. ~/Mail or ~/News)\n#\n"));
-		fclose (hFp);
+		fprintf (fp, _("# [Mail/Save] active file. Format is like news active file:\n"));
+		fprintf (fp, _("#   groupname  max.artnum  min.artnum  /dir\n"));
+		fprintf (fp, _("# The 4th field is the basedir (ie. ~/Mail or ~/News)\n#\n"));
+		fclose (fp);
 	}
 }
 
 
 void
-vFindArtMaxMin (
-	char *pcGrpPath,
-	long *plArtMax,
-	long *plArtMin)
+find_art_max_min (
+	char *group_path,
+	long *art_max,
+	long *art_min)
 {
-	DIR *tDirFile;
-	DIR_BUF *tFile;
-	long lArtNum;
+	DIR *dir;
+	DIR_BUF *direntry;
+	long art_num;
 
-	*plArtMin = *plArtMax = 0L;
+	*art_min = *art_max = 0L;
 
-	if (access (pcGrpPath, R_OK) != 0) {
-		*plArtMin = 1L;
+	if (access (group_path, R_OK) != 0) {
+		*art_min = 1L;
 		return;
 	}
 
-	tDirFile = opendir (pcGrpPath);
-	if (tDirFile != (DIR *) 0) {
-		while ((tFile = readdir (tDirFile)) != (DIR_BUF *) 0) {
-			lArtNum = atol (tFile->d_name);
-			if (lArtNum >= 1) {
-				if (lArtNum > *plArtMax) {
-					*plArtMax = lArtNum;
-					if (*plArtMin == 0)
-						*plArtMin = lArtNum;
-				} else if (lArtNum < *plArtMin)
-					*plArtMin = lArtNum;
+	dir = opendir (group_path);
+	if (dir != (DIR *) 0) {
+		while ((direntry = readdir (dir)) != (DIR_BUF *) 0) {
+			art_num = atol (direntry->d_name);
+			if (art_num >= 1) {
+				if (art_num > *art_max) {
+					*art_max = art_num;
+					if (*art_min == 0)
+						*art_min = art_num;
+				} else if (art_num < *art_min)
+					*art_min = art_num;
 			}
 		}
-		CLOSEDIR(tDirFile);
+		CLOSEDIR(dir);
 	}
-	if (*plArtMin == 0)
-		*plArtMin = 1;
+	if (*art_min == 0)
+		*art_min = 1;
 }
 
 
 void
-vPrintGrpLine (
-	FILE *hFp,
-	char *pcGrpName,
-	long lArtMax,
-	long lArtMin,
-	char *pcBaseDir)
+print_group_line (
+	FILE *fp,
+	char *group_name,
+	long art_max,
+	long art_min,
+	char *base_dir)
 {
-	fprintf (hFp, "%s %05ld %05ld %s\n",
-		pcGrpName, lArtMax, lArtMin, pcBaseDir);
+	fprintf (fp, "%s %05ld %05ld %s\n",
+		group_name, art_max, art_min, base_dir);
 }
 
 
@@ -362,62 +380,31 @@ vPrintGrpLine (
  * absolute path = /usr/spool/news/alt/sources
  */
 void
-vMakeGrpPath (
-	char *pcBaseDir,
-	char *pcGrpName,
-	char *pcGrpPath)
+make_base_group_path (
+	char *base_dir,
+	char *group_name,
+	char *group_path)
 {
-	char *pcPtr;
+	char *ptr;
 
-	joinpath (pcGrpPath, pcBaseDir, pcGrpName);
+	joinpath (group_path, base_dir, group_name);
 
-	pcPtr = pcGrpPath + strlen (pcBaseDir);
-	while ((pcPtr = strchr (pcPtr, '.')) != (char *) 0)
-		*pcPtr = '/';
-}
-
-
-/*
- * Given an absolute pathname & a base pathname build a newsgroup name
- * base = /usr/spool/news
- * absolute path = /usr/spool/news/alt/sources
- * newsgroup = alt.sources
- */
-void
-vMakeGrpName (
-	char *pcBaseDir,
-	char *pcGrpName,
-	char *pcGrpPath)
-{
-	char *pcPtrBase;
-	char *pcPtrName;
-	char *pcPtrPath;
-
-	pcPtrBase = pcBaseDir;
-	pcPtrPath = pcGrpPath;
-
-	while (*pcPtrBase && (*pcPtrBase == *pcPtrPath)) {
-		pcPtrBase++;
-		pcPtrPath++;
-	}
-	strcpy (pcGrpName, ++pcPtrPath);
-
-	pcPtrName = pcGrpName;
-	while ((pcPtrName = strchr (pcPtrName, '/')) != (char *) 0)
-		*pcPtrName = '.';
+	ptr = group_path + strlen (base_dir);
+	while ((ptr = strchr (ptr, '.')) != (char *) 0)
+		*ptr = '/';
 }
 
 
 void
 vGrpDelMailArt (
-	struct t_article *psArt)
+	struct t_article *article)
 {
 
-	if (psArt->delete_it) {
-		art_mark_undeleted (psArt);
+	if (article->delete_it) {
+		art_mark_undeleted (article);
 		info_message (_(txt_art_undeleted));
 	} else {
-		art_mark_deleted (psArt);
+		art_mark_deleted (article);
 		info_message (_(txt_art_deleted));
 	}
 }
@@ -425,27 +412,27 @@ vGrpDelMailArt (
 
 void
 vGrpDelMailArts (
-	struct t_group *psGrp)
+	struct t_group *group)
 {
-	char acArtFile[PATH_LEN];
-	char acGrpPath[PATH_LEN];
-	int iNum;
-	struct t_article *psArt;
+	char article_filename[PATH_LEN];
+	char group_path[PATH_LEN];
+	int i;
+	struct t_article *article;
 #if 0 /* see comment below */
-	t_bool bUpdateIndexFile = FALSE;
+	t_bool update_index_file = FALSE;
 #endif /* 0 */
 
-	if (psGrp->type == GROUP_TYPE_MAIL || psGrp->type == GROUP_TYPE_SAVE) {
-		wait_message (1, (psGrp->type == GROUP_TYPE_MAIL) ? _(txt_processing_mail_arts) : _(txt_processing_saved_arts));
-		vMakeGrpPath (psGrp->spooldir, psGrp->name, acGrpPath);
-		for (iNum = 0; iNum < top_art; iNum++) {
-			psArt = &arts[iNum];
-			if (psArt->delete_it) {
-				sprintf (acArtFile, "%s/%ld", acGrpPath, psArt->artnum);
-				unlink (acArtFile);
-				psArt->thread = ART_EXPIRED;
+	if (group->type == GROUP_TYPE_MAIL || group->type == GROUP_TYPE_SAVE) {
+		wait_message (1, (group->type == GROUP_TYPE_MAIL) ? _(txt_processing_mail_arts) : _(txt_processing_saved_arts));
+		make_base_group_path (group->spooldir, group->name, group_path);
+		for (i = 0; i < top_art; i++) {
+			article = &arts[i];
+			if (article->delete_it) {
+				sprintf (article_filename, "%s/%ld", group_path, article->artnum);
+				unlink (article_filename);
+				article->thread = ART_EXPIRED;
 #if 0 /* see comment below */
-				bUpdateIndexFile = TRUE;
+				update_index_file = TRUE;
 #endif /* 0 */
 			}
 		}
@@ -453,56 +440,47 @@ vGrpDelMailArts (
 #if 0
 /*
  * current tin's build_references() is changed to free msgid and refs,
- * therefore we cannot call vWriteNovFile after it. I simply commented
+ * therefore we cannot call write_nov_file after it. I simply commented
  * out this codes, NovFile will update at next time.
  */
 /*
  * MAYBE also check if min / max article was deleted. If so then update
  * the active[] entry for the group and rewrite the mail.active file
  */
-		if (bUpdateIndexFile)
-			vWriteNovFile (psGrp);
+		if (update_index_file)
+			write_nov_file (group);
 #endif /* 0 */
 	}
 }
 
 
 t_bool
-iArtEdit (
-	struct t_group *psGrp,
-	struct t_article *psArt)
+art_edit (
+	struct t_group *group,
+	struct t_article *article)
 {
-	FILE *fpin, *fpout;
-	char acArtFile[PATH_LEN];
-	char acTmpFile[PATH_LEN];
+	char article_filename[PATH_LEN];
+	char temp_filename[PATH_LEN];
 	t_bool ret = FALSE;
 
 	/*
 	 * Check if news / mail group
 	 */
-	if (psGrp->type == GROUP_TYPE_NEWS)
+	if (group->type == GROUP_TYPE_NEWS)
 		return FALSE;
 
-	vMakeGrpPath (psGrp->spooldir, psGrp->name, acTmpFile);
-	sprintf (acArtFile, "%s/%ld", acTmpFile, psArt->artnum);
-	sprintf (acTmpFile, "%s%d.art", TMPDIR, (int) process_id);
+	make_base_group_path (group->spooldir, group->name, temp_filename);
+	snprintf (article_filename, sizeof(article_filename) - 1, "%s/%ld", temp_filename, article->artnum);
+	snprintf (temp_filename, sizeof(temp_filename) - 1, "%s%d.art", TMPDIR, (int) process_id);
 
-	if ((fpin = fopen (acArtFile, "r")) != NULL) {
-		if ((fpout = fopen (acTmpFile, "w")) != NULL) {
-			ret = copy_fp (fpin, fpout);
-			fclose(fpout);
-		}
-		fclose(fpin);
-	}
-
-	if (!ret)
+	if (!backup_file (article_filename, temp_filename))
 		return FALSE;
 
-	if (invoke_editor (acTmpFile, 1)) {
-		rename_file (acTmpFile, acArtFile);
+	if (invoke_editor (temp_filename, 1)) {
+		rename_file (temp_filename, article_filename);
 		ret = TRUE;
 	} else {
-		unlink (acTmpFile);
+		unlink (temp_filename);
 		ret = FALSE;
 	}
 

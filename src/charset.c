@@ -157,7 +157,7 @@ static const char *const tex_to[TEX_SUBST] =
  */
 
 void
-ConvertIso2Asc (
+convert_iso2asc (
 	char *iso,
 	char *asc,
 	int t)
@@ -242,7 +242,7 @@ ConvertIso2Asc (
 
 
 void
-ConvertTeX2Iso (
+convert_tex2iso (
 	char *from,
 	char *to)
 {
@@ -283,7 +283,7 @@ ConvertTeX2Iso (
  * Check for german TeX encoding in file open on fp
  */
 t_bool
-iIsArtTexEncoded (
+is_art_tex_encoded (
 	FILE *fp)
 {
 	char line[LEN];
@@ -325,7 +325,7 @@ iIsArtTexEncoded (
  * Replace all non printable characters by '?'
  */
 void
-Convert2Printable (
+convert_to_printable (
 	char *buf)
 {
 	unsigned char *c;
@@ -349,12 +349,12 @@ Convert2Printable (
 
 #if 1
 /*
- * Same as Convert2Printable() but allows Backspace (ASCII 8), TAB (ASCII 9),
- * and LineFeed (ASCII 12) according to son of RFC 1036 section 4.4
- * FIXME: ASCII 12 == FormFeed - what is correct ??
+ * Same as convert_to_printable() but allows Backspace (ASCII 8), TAB (ASCII
+ * 9), and FormFeed (ASCII 12) according to son of RFC 1036 section 4.4;
+ * LineFeed (ASCII 10) and CarriageReturn (ASCII 13) are allowed, too.
  */
 void
-ConvertBody2Printable (
+convert_body2printable (
 	char *buf)
 {
 	unsigned char *c;
@@ -367,8 +367,8 @@ ConvertBody2Printable (
 /*		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13) && (t_len = mblen(c, MB_CUR_MAX)) <= 0) */
 		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13) && (t_len = mblen(c, MAX(2,MB_CUR_MAX))) <= 1)
 			*c = '?';
-			while (--t_len > 0)
-				c++;
+		while (--t_len > 0)
+			c++;
 #	else
 		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13))
 			*c = '?';
