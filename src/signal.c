@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 1994-12-21
+ *  Updated   : 2001-07-22
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
@@ -511,6 +511,11 @@ set_win_size (
 	old_lines = *num_lines;
 	old_cols = *num_cols;
 
+#ifdef HAVE_XCURSES
+	*num_lines = LINES - 1;		/* FIXME */
+	*num_cols = COLS;
+#else	/* curses/ncurses */
+
 #ifndef USE_CURSES
 	init_screen_array (FALSE);		/* deallocate screen array */
 #endif /* !USE_CURSES */
@@ -541,6 +546,8 @@ set_win_size (
 #ifndef USE_CURSES
 	init_screen_array (TRUE);		/* allocate screen array for resize */
 #endif /* !USE_CURSES */
+
+#endif /* HAVE_XCURSES */
 
 	set_subj_from_size (*num_cols);
 

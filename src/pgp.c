@@ -149,10 +149,17 @@ init_pgp (
 
 	pgpopts = get_val("PGPOPTS", "");
 
-	if ((ptr = getenv("PGPPATH")) != (char *) 0)
+#ifdef HAVE_GPG
+	if ((ptr = getenv("GNUPGHOME")) != (char *) 0)
 		my_strncpy (pgp_data, ptr, sizeof(pgp_data));
 	else
-		joinpath (pgp_data, homedir, PGPDIR);
+#endif /* HAVE_GPG */
+	{
+		if ((ptr = getenv("PGPPATH")) != (char *) 0)
+			my_strncpy (pgp_data, ptr, sizeof(pgp_data));
+		else
+			joinpath (pgp_data, homedir, PGPDIR);
+	}
 }
 
 

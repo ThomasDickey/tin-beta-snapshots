@@ -2590,11 +2590,21 @@ void
 buffer_to_local (
 	char *b)
 {
-	CFStringRef convertedString;
+	CFStringRef convb;
+	char *oldb = my_strdup(b);
 
-	convertedString = CFStringCreateWithCString(NULL, b, kCFStringEncodingISOLatin9);
-	CFStringGetCString(convertedString, b, strlen(b)+1, CFStringGetSystemEncoding());
-	CFRelease(convertedString);
+	if (!oldb)
+		return;
+
+	convb = CFStringCreateWithCString(NULL, b, kCFStringEncodingISOLatin9);
+
+	if (convb) {
+		CFStringGetCString(convb, b, strlen(b) + 1, CFStringGetSystemEncoding());
+		CFRelease(convb);
+		if (!strlen(b))
+			strcpy(b, oldb);
+	}
+	free(oldb);
 }
 
 
@@ -2602,11 +2612,21 @@ void
 buffer_to_network (
 	char *b)
 {
-	CFStringRef convertedString;
+	CFStringRef convb;
+	char *oldb = my_strdup(b);
 
-	convertedString = CFStringCreateWithCString(NULL, b, CFStringGetSystemEncoding());
-	CFStringGetCString(convertedString, b, strlen(b)+1, kCFStringEncodingISOLatin9);
-	CFRelease(convertedString);
+	if (!oldb)
+		return;
+
+	convb = CFStringCreateWithCString(NULL, b, CFStringGetSystemEncoding());
+
+	if (convb) {
+		CFStringGetCString(convb, b, strlen(b) + 1, kCFStringEncodingISOLatin9);
+		CFRelease(convb);
+		if (!strlen(b))
+			strcpy(b, oldb);
+	}
+	free(oldb);
 }
 #	endif /* MAC_OS_X */
 #endif /* LOCAL_CHARSET && !MAC_OS_X */
@@ -3381,6 +3401,9 @@ gnksa_split_from (
 			strcpy(realname, addr_begin + 1);
 		}
 	}
+
+	if (! strchr(address, '@')) /* check for From: without an @ */
+		return GNKSA_ATSIGN_MISSING;
 
 	/* split successful */
 	return GNKSA_OK;

@@ -1,7 +1,7 @@
 #! /bin/sh
 # Remove the files created by this script before running it.
 #rm -f config.cache config.status config.log
-rm -f makefile src/Makefile include/autoconf.h
+rm -f src/Makefile include/autoconf.h
 
 if test ! -f configure
 then
@@ -41,6 +41,3 @@ CC="$CC" \
 	--with-domain-name=/etc/NNTP_INEWS_DOMAIN \
 	--with-coffee \
         $OPTS $* 2>&1 |tee -a $OUT
-
-# makefile.in is somewhat outdated, but Makefile is uptodate
-rm -f makefile

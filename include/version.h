@@ -45,8 +45,8 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.5.9"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20010630"
-#	define RELEASENAME	"Blue Water"
+#	define RELEASEDATE	"20010723"
+#	define RELEASENAME	"Chord of Souls"
 #	define TINRC_VERSION	"1.2"
 
 #	ifdef M_AMIGA

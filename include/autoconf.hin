@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1995-08-24
- *  Updated   : 2000-07-19
+ *  Updated   : 2001-07-22
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2001 Thomas Dickey <dickey@herndon4.his.com>
@@ -88,6 +88,7 @@
 #	endif /* !HAVE_COLOR */
 
 #	undef DEFAULT_ISO2ASC
+#	undef DEFAULT_SHELL
 #	undef DOMAIN_NAME
 #	undef HAVE_FASCIST_NEWSADMIN
 #	undef HAVE_MMDF_MAILER
@@ -371,11 +372,13 @@
  * Define a symbol to control whether we use curses, or the termcap/terminfo
  * interface
  */
+#	undef HAVE_XCURSES
+#	undef NEED_CURSES_H
+#	undef NEED_TERMCAP_H
+#	undef NEED_TERM_H
 #	undef USE_CURSES
 #	undef USE_TRACE
-#	undef NEED_CURSES_H
-#	undef NEED_TERM_H
-#	undef NEED_TERMCAP_H
+#	undef XCURSES
 
 /*
  * Define symbols to prototype the function 'outchar()'
@@ -507,12 +510,6 @@
  */
 #	undef HAVE_SYS_ERRLIST
 
-#	if 0 /* FIXME: test-not-impl */
-#		if defined(supermax)
-#			define HAVE_BROKEN_TGETSTR
-#		endif /* supermax */
-#	endif /* 0 */
-
 #	undef USE_SYSTEM_STATUS
 
 /*
@@ -533,7 +530,7 @@
 #	undef TIN_DEFAULTS_DIR
 
 /*
- * define if second and thrid argument of setvbuf() are swaped
+ * define if second and thrid argument of setvbuf() are swapped
  * (System V before Release 3)
  */
 #	undef SETVBUF_REVERSED
@@ -604,6 +601,5 @@
 #	undef HAVE_SYS_TYPES_H
 
 #	undef HAVE_TMPFILE
-#	undef MAC_OS_X
 
 #endif /* !TIN_AUTOCONF_H */

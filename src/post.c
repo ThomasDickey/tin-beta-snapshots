@@ -236,14 +236,14 @@ init_postinfo (
 	char *ptr;
 
 	/*
-	 *  check enviroment for REPLYTO
+	 * check enviroment for REPLYTO
 	 */
 	reply_to[0] = '\0';
 	if ((ptr = getenv ("REPLYTO")) != (char *) 0)
 		my_strncpy (reply_to, ptr, sizeof (reply_to));
 
 	/*
-	 *  check enviroment for DISTRIBUTION
+	 * check enviroment for DISTRIBUTION
 	 */
 	my_distribution[0] = '\0';
 	if ((ptr = getenv ("DISTRIBUTION")) != (char *) 0)
@@ -653,43 +653,33 @@ append_mail (
  *     headers are uniq
  * 13. Display an 'are you sure' message before posting article
  */
+#define CA_ERROR_HEADER_LINE_BLANK      0x000001
+#define CA_ERROR_MISSING_BODY_SEPERATOT 0x000002
+#define CA_ERROR_MISSING_FROM           0x000004
+#define CA_ERROR_DUPLICATED_FROM        0x000008
+#define CA_ERROR_MISSING_SUBJECT        0x000010
+#define CA_ERROR_DUPLICATED_SUBJECT     0x000020
+#define CA_ERROR_EMPTY_SUBJECT          0x000040
+#define CA_ERROR_MISSING_NEWSGROUPS     0x000080
+#define CA_ERROR_DUPLICATED_NEWSGROUPS  0x000100
+#define CA_ERROR_EMPTY_NEWSGROUPS       0x000200
+#define CA_ERROR_SPACE_IN_NEWSGROUPS    0x000400
+#define CA_ERROR_NEWLINE_IN_NEWSGROUPS  0x000800
+#define CA_ERROR_DUPLICATED_FOLLOWUP_TO 0x001000
+#define CA_ERROR_SPACE_IN_FOLLOWUP_TO   0x002000
+#define CA_ERROR_NEWLINE_IN_FOLLOWUP_TO 0x004000
+#define CA_ERROR_BAD_CHARSET            0x008000
+#define CA_ERROR_BAD_ENCODING           0x010000
+#define CA_WARNING_SPACES_ONLY_SUBJECT     0x000001
+#define CA_WARNING_RE_WITHOUT_REFERENCES   0x000002
+#define CA_WARNING_REFERENCES_WITHOUT_RE   0x000004
+#define CA_WARNING_MULTIPLE_SIGDASHES      0x000008
+#define CA_WARNING_WRONG_SIGDASHES         0x000010
+#define CA_WARNING_LONG_SIGNATURE          0x000020
+#define CA_WARNING_ENCODING_EXTERNAL_INEWS 0x000040
 /*
  * TODO: - cleanup
  */
-/* erros */
-#define E_CATBP_HBL 0x000001 /* header line blank */
-#define E_CATBP_HBM 0x000002 /* no header/body sperator */
-
-#define E_CATBP_MFR 0x000004 /* Missing From: */
-#define E_CATBP_DFR 0x000008 /* Duplicated From: */
-
-#define E_CATBP_MSU 0x000010 /* Missing Subject: */
-#define E_CATBP_DSU 0x000020 /* Duplicated Subject: */
-#define E_CATBP_ESU 0x000040 /* Empty Subject: */
-
-#define E_CATBP_MNG 0x000080 /* Missing Newsgroups: */
-#define E_CATBP_DNG 0x000100 /* Duplicated Newsgroups: */
-#define E_CATBP_ENG 0x000200 /* Empty Newsgroups: */
-#define E_CATBP_SNG 0x000400 /* Space in Newsgroups: */
-#define E_CATBP_CNG 0x000800 /* Newline in Newsgroups: */
-
-#define E_CATBP_DFT 0x001000 /* Duplicated Followup-To: */
-#define E_CATBP_SFT 0x002000 /* Space in Followup-To: */
-#define E_CATBP_CFT 0x004000 /* Newline in Followup-To: */
-
-#define E_CATBP_BCS 0x008000 /* bad charset */
-#define E_CATBP_BEC 0x010000 /* bad encoding */
-
-/* warnings */
-#define W_CATBP_BSU 0x000001 /* only spaces in Subject: */
-#define W_CATBP_RSU 0x000002 /* Re: in Subject: but no References: */
-#define W_CATBP_SRE 0x000004 /* References: but no Re: or was: in Subject: */
-
-#define W_CATBP_MSD 0x000008 /* multiple sigdashes */
-#define W_CATBP_WSD 0x000010 /* wrongs sigdashes */
-#define W_CATBP_LS  0x000020 /* signature too long */
-  
-#define W_CATBP_EIN 0x000040 /* encoding && external inews */
 static t_bool
 check_article_to_be_posted (
 	const char *the_article,
@@ -714,8 +704,8 @@ check_article_to_be_posted (
 	int found_from_lines = 0;
 	int found_newsgroups_lines = 0;
 	int found_subject_lines = 0;
-	int e_catbp = 0; /* sum of error-codes */
-	int w_catbp = 0; /* sum of warning-codes */
+	int errors_catbp = 0; /* sum of error-codes */
+	int warnings_catbp = 0; /* sum of warning-codes */
 	t_bool end_of_header = FALSE;
 	t_bool got_long_line = FALSE;
 	t_bool saw_references = FALSE;
@@ -740,7 +730,7 @@ check_article_to_be_posted (
 				line[--len] = 0;
 		}
 		if ((cnt == 1) && (len == 0)) {
-			e_catbp |= E_CATBP_HBL;
+			errors_catbp |= CA_ERROR_HEADER_LINE_BLANK;
 			end_of_header = TRUE;
 			break;
 		}
@@ -843,7 +833,7 @@ check_article_to_be_posted (
 				EndInverse();
 #ifndef FORGERY
 				errors++;
-#endif /* !FORGERY */            
+#endif /* !FORGERY */
 			}
 		}
 
@@ -874,7 +864,7 @@ check_article_to_be_posted (
 			for (cp = line + 11; *cp == ' '; cp++)
 				;
 			if (strchr (cp, ' '))
-				e_catbp |= E_CATBP_SNG;
+				errors_catbp |= CA_ERROR_SPACE_IN_NEWSGROUPS;
 			strip_double_ngs (cp);
 			while (*cp) {
 				if (!(cp2 = strchr (cp, ',')))
@@ -898,11 +888,11 @@ check_article_to_be_posted (
 				cp = cp2;
 			}
 			if (!ngcnt)
-				e_catbp |= E_CATBP_ENG;
+				errors_catbp |= CA_ERROR_EMPTY_NEWSGROUPS;
 			if ((c = fgetc(fp)) != EOF) {
 				ungetc(c, fp);
 				if (isspace (c) && c != '\n') {
-					e_catbp |= E_CATBP_CNG;
+					errors_catbp |= CA_ERROR_NEWLINE_IN_NEWSGROUPS;
 					continue;
 				}
 			}
@@ -915,7 +905,7 @@ check_article_to_be_posted (
 				found_followup_to_lines++;
 			strip_double_ngs (cp);
 			if (strchr (cp, ' '))
-				e_catbp |= E_CATBP_SFT;
+				errors_catbp |= CA_ERROR_SPACE_IN_FOLLOWUP_TO;
 			while (*cp) {
 				if (!(cp2 = strchr (cp, ',')))
 					cp2 = cp + strlen (cp);
@@ -941,7 +931,7 @@ check_article_to_be_posted (
 			if ((c = fgetc(fp)) != EOF) {
 				ungetc(c, fp);
 				if (isspace(c) && c != '\n') {
-					e_catbp |= E_CATBP_CFT;
+					errors_catbp |= CA_ERROR_NEWLINE_IN_FOLLOWUP_TO;
 					continue;
 				}
 			}
@@ -949,16 +939,16 @@ check_article_to_be_posted (
 	}
 
 	if (subject[0] == '\0')
-		e_catbp |= E_CATBP_ESU;
+		errors_catbp |= CA_ERROR_EMPTY_SUBJECT;
 	else {
 		char foo[HEADER_LEN];
 		strcpy(foo, subject);
 		if (!strtok(foo, " \t")) /* only blanks in Subject? */
-			w_catbp |= W_CATBP_BSU;
+			warnings_catbp |= CA_WARNING_SPACES_ONLY_SUBJECT;
 		else {
 			/* Warn if Subject: begins with "Re: " but there are no References: */
 			if (!strncmp (subject, "Re: ", 4) && !saw_references)
-				w_catbp |= W_CATBP_RSU;
+				warnings_catbp |= CA_WARNING_RE_WITHOUT_REFERENCES;
 			/*
 			 * Warn if there are References: but no "Re: " at the beginning of
 			 * and no "(was:" in the Subject.
@@ -972,31 +962,31 @@ check_article_to_be_posted (
 					was_found = (strncmp (s, "was:", 4) == 0);
 				}
 				if (!was_found)
-					w_catbp |= W_CATBP_SRE;
+					warnings_catbp |= CA_WARNING_REFERENCES_WITHOUT_RE;
 			}
 		}
 	}
 
 	if (!found_from_lines)
-		e_catbp |= E_CATBP_MFR;
-		
+		errors_catbp |= CA_ERROR_MISSING_FROM;
+
 	if (found_from_lines > 1)
-		e_catbp |= E_CATBP_DFR;
+		errors_catbp |= CA_ERROR_DUPLICATED_FROM;
 
 	if (!found_newsgroups_lines && art_type == GROUP_TYPE_NEWS)
-		e_catbp |= E_CATBP_MNG;
+		errors_catbp |= CA_ERROR_MISSING_NEWSGROUPS;
 
 	if (found_newsgroups_lines > 1)
-		e_catbp |= E_CATBP_DNG;
+		errors_catbp |= CA_ERROR_DUPLICATED_NEWSGROUPS;
 
 	if (!found_subject_lines)
-		e_catbp |= E_CATBP_MSU;
+		errors_catbp |= CA_ERROR_MISSING_SUBJECT;
 
 	if (found_subject_lines > 1)
-		e_catbp |= E_CATBP_DSU;
+		errors_catbp |= CA_ERROR_DUPLICATED_SUBJECT;
 
 	if (found_followup_to_lines > 1)
-		e_catbp |= E_CATBP_DFT;
+		errors_catbp |= CA_ERROR_DUPLICATED_FOLLOWUP_TO;
 
 	/*
 	 * Check the body of the article for long lines
@@ -1039,20 +1029,20 @@ check_article_to_be_posted (
 	}
 
 	if (saw_sig_dashes >= 2)
-		w_catbp |= W_CATBP_MSD;
+		warnings_catbp |= CA_WARNING_MULTIPLE_SIGDASHES;
 
 	if (saw_wrong_sig_dashes)
-		w_catbp |= W_CATBP_WSD;
+		warnings_catbp |= CA_WARNING_WRONG_SIGDASHES;
 
 	if (sig_lines > MAX_SIG_LINES) {
-		w_catbp |= W_CATBP_LS;
+		warnings_catbp |= CA_WARNING_LONG_SIGNATURE;
 #ifdef HAVE_FASCIST_NEWSADMIN
 		errors++;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 	}
 
 	if (!end_of_header)
-		e_catbp |= E_CATBP_HBM;
+		errors_catbp |= CA_ERROR_MISSING_BODY_SEPERATOT;
 
 	/* check for MIME Content-Type and Content-Transfer-Encoding */
 	if (strcasecmp (tinrc.mm_charset, "US-ASCII"))
@@ -1060,9 +1050,9 @@ check_article_to_be_posted (
 	if (strcasecmp (txt_mime_encodings[tinrc.post_mime_encoding], "7bit"))
 		mime_7bit = FALSE;
 	if (contains_8bit && mime_usascii)
-		e_catbp |=E_CATBP_BCS;
+		errors_catbp |= CA_ERROR_BAD_CHARSET;
 	if (contains_8bit && mime_7bit)
-		e_catbp |=E_CATBP_BEC;
+		errors_catbp |= CA_ERROR_BAD_ENCODING;
 
 	/*
 	 * Warn when poster is using a non-plain encoding such as quoted-printable
@@ -1071,83 +1061,83 @@ check_article_to_be_posted (
 	 * a file named ~/.signature and skip the warning if it is not present.
 	 */
 	if (((tinrc.post_mime_encoding == MIME_ENCODING_QP) || (tinrc.post_mime_encoding == MIME_ENCODING_BASE64)) && !tinrc.use_builtin_inews)
-		w_catbp |= W_CATBP_EIN;
+		warnings_catbp |= CA_WARNING_ENCODING_EXTERNAL_INEWS;
 
 	/* give most error messages */
-	if (e_catbp) {
+	if (errors_catbp) {
 		setup_check_article_screen (&init);
 		StartInverse();
 
 		/* missing headers */
-		if (e_catbp & E_CATBP_HBL)
+		if (errors_catbp & CA_ERROR_HEADER_LINE_BLANK)
 			my_fprintf (stderr, _(txt_error_header_line_blank));
-		if (e_catbp & E_CATBP_HBM)
+		if (errors_catbp & CA_ERROR_MISSING_BODY_SEPERATOT)
 			my_fprintf (stderr, _(txt_error_header_and_body_not_separate));
-		if (e_catbp & E_CATBP_MFR)
+		if (errors_catbp & CA_ERROR_MISSING_FROM)
 			my_fprintf (stderr, _(txt_error_header_line_missing), "From");
-		if (e_catbp & E_CATBP_MSU)
+		if (errors_catbp & CA_ERROR_MISSING_SUBJECT)
 			my_fprintf (stderr, _(txt_error_header_line_missing), "Subject");
-		if (e_catbp & E_CATBP_MNG)
+		if (errors_catbp & CA_ERROR_MISSING_NEWSGROUPS)
 			my_fprintf (stderr, _(txt_error_header_line_missing), "Newsgrops");
 
 		/* dublicated headers */
-		if (e_catbp & E_CATBP_DFR)
+		if (errors_catbp & CA_ERROR_DUPLICATED_FROM)
 			my_fprintf (stderr, _(txt_error_header_duplicate), found_from_lines, "From");
-		if (e_catbp & E_CATBP_DSU)
+		if (errors_catbp & CA_ERROR_DUPLICATED_SUBJECT)
 			my_fprintf (stderr, _(txt_error_header_duplicate), found_subject_lines, "Subject");
-		if (e_catbp & E_CATBP_DNG)
+		if (errors_catbp & CA_ERROR_DUPLICATED_NEWSGROUPS)
 			my_fprintf (stderr, _(txt_error_header_duplicate), found_newsgroups_lines, "Newsgroups");
-		if (e_catbp & E_CATBP_DFT)
+		if (errors_catbp & CA_ERROR_DUPLICATED_FOLLOWUP_TO)
 			my_fprintf (stderr, _(txt_error_header_duplicate), found_followup_to_lines, "Followup-To");
 
 		/* empty headers */
-		if (e_catbp & E_CATBP_ESU)
+		if (errors_catbp & CA_ERROR_EMPTY_SUBJECT)
 			my_fprintf (stderr, _(txt_error_header_line_empty), "Subject");
-		if (e_catbp & E_CATBP_ENG)
+		if (errors_catbp & CA_ERROR_EMPTY_NEWSGROUPS)
 			my_fprintf (stderr, _(txt_error_header_line_empty), "Newsgroups");
 
 		/* illegal space in headers */
-		if (e_catbp & E_CATBP_SNG)
+		if (errors_catbp & CA_ERROR_SPACE_IN_NEWSGROUPS)
 			my_fprintf (stderr, _(txt_error_header_line_comma), "Newsgroups");
-		if (e_catbp & E_CATBP_SFT)
+		if (errors_catbp & CA_ERROR_SPACE_IN_FOLLOWUP_TO)
 			my_fprintf (stderr, _(txt_error_header_line_comma), "Followup-To");
 
 		/* illegal newline in headers */
-		if (e_catbp & E_CATBP_CNG)
+		if (errors_catbp & CA_ERROR_NEWLINE_IN_NEWSGROUPS)
 			my_fprintf (stderr, _(txt_error_header_line_groups_contd), "Newsgroups");
-		if (e_catbp & E_CATBP_CFT)
+		if (errors_catbp & CA_ERROR_NEWLINE_IN_FOLLOWUP_TO)
 			my_fprintf (stderr, _(txt_error_header_line_groups_contd), "Followup-To");
 
 		/* encoding/charset trouble */
-		if (e_catbp & E_CATBP_BCS)
+		if (errors_catbp & CA_ERROR_BAD_CHARSET)
 			my_fprintf (stderr, _(txt_error_header_line_bad_charset));
-		if (e_catbp & E_CATBP_BEC)
+		if (errors_catbp & CA_ERROR_BAD_ENCODING)
 			my_fprintf (stderr, _(txt_error_header_line_bad_encoding));
 
 		my_fflush (stderr);
 		EndInverse();
-		errors += e_catbp;
+		errors += errors_catbp;
 	}
 
 	/* give most warnings */
-	if (w_catbp) {
+	if (warnings_catbp) {
 		setup_check_article_screen (&init);
 
-		if (w_catbp & W_CATBP_BSU)
+		if (warnings_catbp & CA_WARNING_SPACES_ONLY_SUBJECT)
 			my_fprintf (stderr, _(txt_warn_blank_subject));
-		if (w_catbp & W_CATBP_RSU)
+		if (warnings_catbp & CA_WARNING_RE_WITHOUT_REFERENCES)
 			my_fprintf (stderr, _(txt_warn_re_but_no_references));
-		if (w_catbp & W_CATBP_SRE)
+		if (warnings_catbp & CA_WARNING_REFERENCES_WITHOUT_RE)
 			my_fprintf (stderr, _(txt_warn_references_but_no_re));
 
-		if (w_catbp & W_CATBP_MSD)
+		if (warnings_catbp & CA_WARNING_MULTIPLE_SIGDASHES)
 			my_fprintf (stderr, _(txt_warn_multiple_sigs), saw_sig_dashes);
-		if (w_catbp & W_CATBP_WSD)
+		if (warnings_catbp & CA_WARNING_WRONG_SIGDASHES)
 			my_fprintf (stderr, _(txt_warn_wrong_sig_format));
-		if (w_catbp & W_CATBP_LS)
+		if (warnings_catbp & CA_WARNING_LONG_SIGNATURE)
 			my_fprintf (stderr, _(txt_warn_sig_too_long), MAX_SIG_LINES);
 
-		if (w_catbp & W_CATBP_EIN)
+		if (warnings_catbp & CA_WARNING_ENCODING_EXTERNAL_INEWS)
 			my_fprintf (stderr, _(txt_warn_encoding_and_external_inews));
 
 		my_fflush (stderr);
@@ -1158,10 +1148,8 @@ check_article_to_be_posted (
 		 * Print a note about each newsgroup
 		 */
 		setup_check_article_screen (&init);
-		if (art_unchanged) {
-			/* FIXME: -> lang.c */
-			my_fprintf (stderr, "\nWarning: Article unchanged - default key changed to p'o'stpone\n");
-		}
+		if (art_unchanged)
+			my_fprintf (stderr, _(txt_warn_article_unchanged));
 		my_fprintf (stderr, _(txt_art_newsgroups), subject, PLURAL(ngcnt, txt_newsgroup));
 		for (i = 0; i < ngcnt; i++) {
 			psGrp = group_find (ngptrs[i]);
@@ -1584,7 +1572,7 @@ check_moderated (
 		}
 
 		if (psGrp->moderated == 'm') {
-			sprintf (mesg, _(txt_group_is_moderated), group);
+			snprintf (mesg, sizeof(mesg) - 1, _(txt_group_is_moderated), group);
 			if (prompt_yn (cLINES, mesg, TRUE) != 1) {
 /*				Raw (FALSE);*/
 				error_message (failmsg);
@@ -1625,7 +1613,7 @@ create_normal_article_headers(
 	else
 		strncpy(tmp, tinrc.default_post_subject, sizeof(tmp));
 
-	sprintf (mesg, _(txt_post_subject), tmp);
+	snprintf (mesg, sizeof(mesg) - 1, _(txt_post_subject), tmp);
 
 	if (!(prompt_string_default (mesg, tinrc.default_post_subject, _(txt_no_subject), HIST_POST_SUBJECT)))
 		return FALSE;
@@ -2639,8 +2627,11 @@ mail_loop(
 				t_bool confirm = TRUE;
 
 				checknadd_headers (filename);
-				if (prompt && prompt_yn (cLINES, prompt, FALSE) != 1)
-					confirm = FALSE;
+				if (prompt) {
+					clear_message();
+					if (prompt_yn (cLINES, prompt, FALSE) != 1)
+						confirm = FALSE;
+				}
 
 				if (confirm && submit_mail_file (filename)) {
 					info_message (_(txt_articles_mailed), 1, _(txt_article_singular));
@@ -2847,7 +2838,8 @@ mail_bug_report (
 		if (invoke_cmd (buf))
 			ret_code = TRUE;
 	} else {
-		sprintf (mesg, _(txt_mail_bug_report_confirm), bug_addr);
+		/* TODO: prompt-message get's "lost" */
+		snprintf (mesg, sizeof(mesg) - 1, _(txt_mail_bug_report_confirm), bug_addr);
 		ret_code = mail_loop (nam, iKeyPostEdit, subject, mesg);
 	}
 
@@ -4235,7 +4227,7 @@ add_headers (
 					time_t epoch;
 					struct tm *gmdate;
 					char dateheader[50];
-					char *old_lc_all = (char *)0, *old_lc_time = (char *)0;
+					char *old_lc_all = (char *) 0, *old_lc_time = (char *) 0;
 
 					/* Unlocalized date-header */
 					if (getenv("LC_ALL") != (char*) 0) {
@@ -4246,7 +4238,7 @@ add_headers (
 						setlocale(LC_TIME, "POSIX");
 					}
 					(void) time (&epoch);
-					gmdate=gmtime(&epoch); /*my_strftime has no %z or %Z */
+					gmdate=gmtime(&epoch); /* my_strftime has no %z or %Z */
 					my_strftime(dateheader, sizeof(dateheader) - 1, "Date: %a, %d %b %Y %H:%M:%S -0000\n", gmdate);
 					/* change back LC_* */
 					if (old_lc_all != (char*) 0)
@@ -4262,13 +4254,14 @@ add_headers (
 				char *cp;
 				t_bool emptyhdr = TRUE;
 
-				/* check_article_to_be_posted takes care that we have at
+				/*
+				 * check_article_to_be_posted takes care that we have at
 				 * least ": " in and "\n" at the end of every (unfolded) header
 				 * line
 				 */
 				for (cp = strchr (line, ':'), cp++; *cp; cp++) {
 					if (!isspace(*cp)) {
-						emptyhdr=FALSE;
+						emptyhdr = FALSE;
 						break;
 					}
 				}

@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 1997-12-28
+ *  Updated   : 2001-07-22
  *  Notes     :
  *
  * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -610,29 +610,23 @@ read_cmd_line_options (
 #ifdef TIN_CC
 				error_message("Compiler:");
 				error_message("\tCC       = \"%s\"", TIN_CC);
-#	if 0 /* quoting trouble */
 #		ifdef TIN_CFLAGS
 				error_message("\tCFLAGS   = \"%s\"", TIN_CFLAGS);
 #		endif /* TIN_CFLAGS */
-#	endif /* 0 */
 #	ifdef TIN_CPP
 				error_message("\tCPP      = \"%s\"", TIN_CPP);
 #	endif /* TIN_CPP */
-#	if 0 /* quoting trouble */
 #		ifdef TIN_CPPFLAGS
 				error_message("\tCPPFLAGS = \"%s\"", TIN_CPPFLAGS);
 #		endif /* TIN_CPPFLAGS */
-#	endif /* 0 */
 #endif /* TIN_CC */
 
 #ifdef TIN_LD
 				error_message("Linker and Libraries:");
 				error_message("\tLD       = \"%s\"", TIN_LD);
-#	if 0 /* quoting trouble */
 #		ifdef TIN_LDFLAGS
 				error_message("\tLDFLAGS  = \"%s\"", TIN_LDFLAGS);
 #		endif /* TIN_LDFLAGS */
-#	endif /* 0 */
 
 #	ifdef TIN_LIBS
 				error_message("\tLIBS     = \"%s\"", TIN_LIBS);

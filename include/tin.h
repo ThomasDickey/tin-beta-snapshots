@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 1997-12-31
+ *  Updated   : 2001-07-22
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -480,7 +480,6 @@ enum resizer { cNo, cYes, cRedraw };
 #		define strchr(str, ch)	index(str, ch)
 #		define strrchr(str, ch)	rindex(str, ch)
 #	endif /* !HAVE_STRCHR */
-#	define DEFAULT_SHELL	"/bin/csh"
 #	if defined(__386BSD__) || defined(__bsdi__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #		define DEFAULT_PRINTER	"/usr/bin/lpr"
 #		define DEFAULT_SUM	"/usr/bin/cksum -o 1 <" /* use tailing <, otherwise get filename output too */
@@ -541,16 +540,6 @@ enum resizer { cNo, cYes, cRedraw };
 #		define DEFAULT_MAILER	"/bin/rmail"
 #	endif /* UNIXPC */
 
-/* HP-UX >= 10 defines __STDC_EXT__ (ANSI) || __CLASSIC_C__ (K&R) */
-#	if defined (__hpux)
-#		if defined (__STDC_EXT__) || defined (__CLASSIC_C__)
-#			define DEFAULT_SHELL "/usr/bin/sh"
-#		endif /* __STDC_EXT__ || __CLASSIC_C__ */
-#	endif /* __hpux */
-
-#	ifndef DEFAULT_SHELL
-#		define DEFAULT_SHELL	"/bin/sh"
-#	endif /* !DEFAULT_SHELL */
 #	ifndef DEFAULT_PRINTER
 #		define DEFAULT_PRINTER	"/usr/bin/lp"
 #	endif /* !DEFAULT_PRINTER */
@@ -1701,9 +1690,9 @@ typedef struct {
 #define MOUSE_BUTTON_3		2
 
 #define TIN_EDITOR_FMT_OFF		"%E %F"
+#define NEWSGROUPS_FILE		"newsgroups"
 
 #ifdef M_AMIGA
-#	define NEWSGROUPS_FILE	"newsgroups"
 #	define REDIRECT_OUTPUT	"> NIL:"
 #	define REDIRECT_PGP_OUTPUT	"> NIL:"
 #	define ENV_VAR_GROUPS		"TIN_GROUPS"
@@ -1718,7 +1707,6 @@ typedef struct {
 extern void joinpath (char *result, const char *dir, const char *file);
 #endif /* M_AMIGA */
 #ifdef VMS
-#	define NEWSGROUPS_FILE	"newsgroups"
 #	define REDIRECT_OUTPUT	""
 #	define REDIRECT_PGP_OUTPUT	""
 #	define ENV_VAR_MAILER		"TIN_MAILER"
@@ -1735,14 +1723,13 @@ extern void joindir (char *result, const char *dir, const char *file);
 #endif /* VMS */
 
 #ifdef M_UNIX
-#	define NEWSGROUPS_FILE		"newsgroups"
 #	define REDIRECT_OUTPUT		"> /dev/null 2>&1"
 #	define REDIRECT_PGP_OUTPUT		"> /dev/null"
 #	define ENV_VAR_MAILER		"MAILER"
 #	define ENV_VAR_SHELL		"SHELL"
 #	define TIN_EDITOR_FMT_ON		"%E +%N %F"
-/* is -oi in MAILER_FORMAT portable? if yes, we should include it! */
-#	define MAILER_FORMAT		"%M -t < %F"
+/* is -oi in MAILER_FORMAT portable? */
+#	define MAILER_FORMAT		"%M -oi -t < %F"
 #	define METAMAIL_CMD		"%s -e -p -m \"tin\""
 #	define TMPDIR	"/tmp/"
 #	ifdef	HAVE_KEY_PREFIX
@@ -1752,9 +1739,6 @@ extern void joindir (char *result, const char *dir, const char *file);
 
 /* fallback values */
 /* FIXME! */
-#ifndef NEWSGROUPS_FILE
-#	define NEWSGROUPS_FILE		""
-#endif /* !NEWSGROUPS_FILE */
 #ifndef REDIRECT_OUTPUT
 #	define REDIRECT_OUTPUT		""
 #endif /* !REDIRECT_OUTPUT */

@@ -513,39 +513,26 @@ init_selfinfo (
 	setlocale (LC_ALL, "");
 #endif /* HAVE_SETLOCALE && LC_ALL && !NO_LOCALE */
 
+
 /* FIXME: move to get_user_name() [header.c] */
-#ifdef M_AMIGA
-	if ((ptr = getenv ("USERNAME")) != (char *) 0) {
-		my_strncpy (userid, ptr, sizeof (userid));
-	} else {
-		error_message (txt_env_var_not_found, "USERNAME");
-		tin_done (EXIT_FAILURE);
-	}
-	if ((ptr = getenv ("HOME")) != (char *) 0) {
-		my_strncpy (homedir, ptr, sizeof (homedir));
-	} else {
-		error_message (txt_env_var_not_found, "HOME");
-		tin_done (EXIT_FAILURE);
-	}
-#else
-	myentry = (struct passwd *) 0;
-
-	if (myentry == (struct passwd *) 0)
-		myentry = getpwuid (getuid ());
-
-	if (myentry != (struct passwd *) 0) {
+#ifndef M_AMIGA
+	if ((myentry = getpwuid (getuid ())) != (struct passwd *) 0) {
 		memcpy (&pwdentry, myentry, sizeof (struct passwd));
 		myentry = &pwdentry;
 	}
-
-/* we might add a check for $LOGNAME here */
-
 #	ifdef VMS
+	/* TODO: get_user_name() entirely reles on $USER */
 	if (((ptr = getlogin ()) != (char *) 0) && strlen (ptr))
 		myentry = getpwnam (ptr);
 #	endif /* VMS */
 
-	strcpy (userid, myentry->pw_name);
+	if (myentry != (struct passwd *) 0)
+		strcpy (userid, myentry->pw_name);
+	else {
+		error_message (_(txt_error_passwd_missing));
+		tin_done (EXIT_FAILURE);
+	}
+
 #	ifdef VMS
 	lower (userid);
 #	endif /* VMS */
@@ -558,7 +545,23 @@ init_selfinfo (
 		strcpy (homedir, "/tmp");
 	} else
 		my_strncpy (homedir, myentry->pw_dir, sizeof (homedir));
-#endif /* M_AMIGA */
+
+#else
+	/* TODO: get_user_name() uses $USER, not $USERNAME */
+	if ((ptr = getenv ("USERNAME")) != (char *) 0) {
+		my_strncpy (userid, ptr, sizeof (userid));
+	} else {
+		error_message (_(txt_env_var_not_found), "USERNAME");
+		tin_done (EXIT_FAILURE);
+	}
+	/* TODO: why not also check for TIN_HOME? */
+	if ((ptr = getenv ("HOME")) != (char *) 0) {
+		my_strncpy (homedir, ptr, sizeof (homedir));
+	} else {
+		error_message (_(txt_env_var_not_found), "HOME");
+		tin_done (EXIT_FAILURE);
+	}
+#endif /* !M_AMIGA */
 
 	cmdline_nntpserver[0] = '\0';
 	created_rcdir = FALSE;

@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2001-05-27
+dnl Updated   : 2001-07-21
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2001 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -697,6 +697,40 @@ if test "$USE_INCLUDED_LIBINTL" = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Top-level macro for configuring an application with a bundled copy of
+dnl the pcre library.
+dnl
+dnl $1 specifies the top of the directory containing PCRE's include, lib dirs.
+AC_DEFUN([CF_BUNDLED_PCRE],
+[
+cf_pcre_home=$1
+PCREDIR_MAKE=
+PCREDIR_LIBS=
+PCREDIR_CPPFLAGS=
+case .$cf_pcre_home in #(vi
+.no) #(vi
+	# setup to compile the bundled PCRE:
+	. $srcdir/pcre/version.sh
+	AC_SUBST(PCRE_MAJOR)
+	AC_SUBST(PCRE_MINOR)
+	AC_SUBST(PCRE_DATE)
+	AC_SUBST(PCRE_DEFINES)
+	;;
+.yes) #(vi
+	PCREDIR_MAKE='#'
+	;;
+.*)
+	CF_PATH_SYNTAX(cf_pcre_home)
+	PCREDIR_MAKE='#'
+	PCREDIR_LIBS="-L${cf_pcre_home}/lib -lpcre"
+	PCREDIR_CPPFLAGS="-I${cf_pcre_home}/include"
+	;;
+esac
+AC_SUBST(PCREDIR_MAKE)
+AC_SUBST(PCREDIR_LIBS)
+AC_SUBST(PCREDIR_CPPFLAGS)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl Check for missing declarations in the system headers (adapted from vile).
 dnl
 dnl CHECK_DECL_FLAG and CHECK_DECL_HDRS must be set in configure.in
@@ -717,7 +751,7 @@ extern struct zowie *$1();
 [
 ],
 [if test -n "$CHECK_DECL_HDRS" ; then
-# try to workaround system headers which are infested with non-standard syntax
+# try to work around system headers which are infested with non-standard syntax
 CF_UPPER(cf_1_up,$1)
 AC_TRY_COMPILE([
 #define DECL_${cf_1_up}
@@ -1028,6 +1062,44 @@ AC_MSG_RESULT($cf_cv_cpp_expands)
 test $cf_cv_cpp_expands = yes && AC_DEFINE(CPP_DOES_EXPAND)
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Look for the curses headers.
+AC_DEFUN([CF_CURSES_CPPFLAGS],[
+
+AC_CACHE_CHECK(for extra include directories,cf_cv_curses_incdir,[
+cf_cv_curses_incdir=no
+case $host_os in #(vi
+hpux10.*|hpux11.*) #(vi
+	test -d /usr/include/curses_colr && \
+	cf_cv_curses_incdir="-I/usr/include/curses_colr"
+	;;
+sunos3*|sunos4*)
+	test -d /usr/5lib && \
+	test -d /usr/5include && \
+	cf_cv_curses_incdir="-I/usr/5include"
+	;;
+esac
+])
+test "$cf_cv_curses_incdir" != no && CPPFLAGS="$CPPFLAGS $cf_cv_curses_incdir"
+
+AC_CACHE_CHECK(if we have identified curses headers,cf_cv_ncurses_header,[
+cf_cv_ncurses_header=curses.h
+for cf_header in \
+	curses.h \
+	ncurses.h \
+	ncurses/curses.h \
+	ncurses/ncurses.h
+do
+AC_TRY_COMPILE([#include <${cf_header}>],
+	[initscr(); tgoto("?", 0,0)],
+	[cf_cv_ncurses_header=$cf_header; break],[])
+done
+])
+
+# cheat, to get the right #define's for HAVE_NCURSES_H, etc.
+AC_CHECK_HEADERS($cf_cv_ncurses_header)
+
+])
+dnl ---------------------------------------------------------------------------
 dnl Look for the curses libraries.  Older curses implementations may require
 dnl termcap/termlib to be linked as well.  Call CF_CURSES_CPPFLAGS first.
 AC_DEFUN([CF_CURSES_LIBS],[
@@ -1226,6 +1298,74 @@ AC_CACHE_VAL(cf_cv_have_term_h,[
 	])
 AC_MSG_RESULT($cf_cv_have_term_h)
 test $cf_cv_have_term_h = yes && AC_DEFINE(HAVE_TERM_H)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Look for a Bourne-shell compatible program from a list that we know about:
+dnl	ash	Almquist Shell (sh based; NetBSD)
+dnl	bash	Bourne Again Shell (sh, ksh based)
+dnl	jsh	Job Control Shell (sh based; Solaris)
+dnl	keysh 	Key Shell (ksh based; HP-UX)
+dnl	ksh	Korn Shell (sh based)
+dnl	pdksh	Public-domain ksh
+dnl	sh	Bourne Shell or POSIX Shell
+dnl	zsh	Z Shell (sh, ksh based)
+AC_DEFUN([CF_DEFAULT_SHELL],
+[
+AC_MSG_CHECKING(for the default shell program)
+cf_shell_progs="ifelse($1,,sh,[$1])"
+if test -z "$cf_shell_progs" ; then
+	cf_shell_progs="sh ksh bash zsh pdksh ash jsh keysh"
+	# TIN preferred default shell for BSD systems is csh.  Others are sh.
+	AC_TRY_COMPILE([
+#include <sys/params.h>],[
+#if (defined(BSD) && (BSD >= 199103))
+#else
+make an error
+#endif
+],[$cf_shell_progs="csh $cf_shell_progs"])
+fi
+CF_MSG_LOG(paths of shell programs: $cf_shell_progs)
+if test -f /etc/shells ; then
+	CF_MSG_LOG(/etc/shells)
+	for cf_prog in $cf_shell_progs
+	do
+		cf_path=`egrep '/'$cf_prog'$' /etc/shells 2>/dev/null`
+		if test -n "$cf_path"
+		then
+			if test -f "$cf_path"
+			then
+				DEFAULT_SHELL="$cf_path"
+				break
+			fi
+		fi
+	done
+	AC_MSG_RESULT($DEFAULT_SHELL)
+else
+	CF_MSG_LOG($PATH)
+AC_PATH_PROGS(DEFAULT_SHELL,
+	$cf_shell_progs,,
+	$PATH:/bin:/usr/bin:/usr/xpg4/bin:/usr/local/bin)
+fi
+if test -z "$DEFAULT_SHELL" ; then
+	AC_MSG_WARN(
+Cannot find the default shell you specified: $cf_shell_progs)
+	if test -f /bin/false ; then
+		AC_MSG_WARN(Using /bin/false instead)
+		DEFAULT_SHELL=/bin/false
+	else
+		AC_MSG_ERROR(Cannot use /bin/false because it does not exist)
+	fi
+fi
+AC_DEFINE_UNQUOTED(DEFAULT_SHELL,"$DEFAULT_SHELL")
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Define a string which may contain escaped quotes or backslashes
+dnl $1 = symbol to define
+dnl $2 = the information we want to quote
+AC_DEFUN([CF_DEFINE_STRING],
+[
+cf_define=`echo $2|sed -e 's/\\\\/\\\\134/g' -e 's/^[[ 	]]\\+//' -e 's/[[ 	]]\\+$//' -e 's/"/\\\\042/g'`
+AC_DEFINE_UNQUOTED($1, "$cf_define")
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl "dirname" is not portable, so we fake it with a shell script.
@@ -1880,8 +2020,8 @@ done
 dnl ---------------------------------------------------------------------------
 dnl Some 'make' programs support $(MAKEFLAGS), some $(MFLAGS), to pass 'make'
 dnl options to lower-levels.  It's very useful for "make -n" -- if we have it.
-dnl (GNU 'make' does both, something like POSIX 'make', which happens to make
-dnl the $(MAKEFLAGS) variable incompatible because it adds the assignments :-)
+dnl (GNU 'make' does both, something POSIX 'make', which happens to make the
+dnl $(MAKEFLAGS) variable incompatible because it adds the assignments :-)
 AC_DEFUN([CF_MAKEFLAGS],
 [
 AC_MSG_CHECKING([for makeflags variable])
@@ -2102,8 +2242,10 @@ AC_DEFUN([CF_NCURSES_VERSION],
 AC_CACHE_CHECK(for ncurses version, cf_cv_ncurses_version,[
 	cf_cv_ncurses_version=no
 	cf_tempfile=out$$
+	rm -f $cf_tempfile
 	AC_TRY_RUN([
 #include <${cf_cv_ncurses_header-curses.h}>
+#include <stdio.h>
 int main()
 {
 	FILE *fp = fopen("$cf_tempfile", "w");
@@ -2122,8 +2264,7 @@ int main()
 #endif
 	exit(0);
 }],[
-	cf_cv_ncurses_version=`cat $cf_tempfile`
-	rm -f $cf_tempfile],,[
+	cf_cv_ncurses_version=`cat $cf_tempfile`],,[
 
 	# This will not work if the preprocessor splits the line after the
 	# Autoconf token.  The 'unproto' program does that.
@@ -2146,7 +2287,9 @@ EOF
 		test -n "$cf_out" && cf_cv_ncurses_version="$cf_out"
 		rm -f conftest.out
 	fi
-])])
+])
+	rm -f $cf_tempfile
+])
 test "$cf_cv_ncurses_version" = no || AC_DEFINE(NCURSES)
 ])
 dnl ---------------------------------------------------------------------------
@@ -2296,11 +2439,11 @@ AC_MSG_RESULT($DEFAULT_MAILER)
 dnl ---------------------------------------------------------------------------
 dnl Check the argument to see that it looks like a pathname.  Rewrite it if it
 dnl begins with one of the prefix/exec_prefix variables, and then again if the
-dnl result begins with 'NONE'.  This is necessary to workaround autoconf's
+dnl result begins with 'NONE'.  This is necessary to work around autoconf's
 dnl delayed evaluation of those symbols.
 AC_DEFUN([CF_PATH_SYNTAX],[
 case ".[$]$1" in #(vi
-./*) #(vi
+..|./*) #(vi
   ;;
 .[[a-zA-Z]]:[[\\/]]*) #(vi OS/2 EMX
   ;;
@@ -2316,10 +2459,36 @@ case ".[$]$1" in #(vi
   $1=`echo [$]$1 | sed -e s@NONE@$ac_default_prefix@`
   ;;
 *)
-  AC_ERROR(expected a pathname, not "[$]$1")
+  AC_ERROR([expected a pathname, not \"[$]$1\"])
   ;;
 esac
 ])dnl
+dnl ---------------------------------------------------------------------------
+dnl Configure for PDCurses' X11 library
+AC_DEFUN([CF_PDCURSES_X11],[
+AC_REQUIRE([CF_X_ATHENA])
+LDFLAGS="$LDFLAGS $X_LIBS"
+CF_ADD_CFLAGS($X_CFLAGS)
+AC_CHECK_LIB(X11,XOpenDisplay,
+	[LIBS="-lX11 $LIBS"],,
+	[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+AC_CACHE_CHECK(for XCurses library,cf_cv_lib_XCurses,[
+LIBS="-lXCurses $LIBS"
+AC_TRY_LINK([
+#include <xcurses.h>
+char *XCursesProgramName = "test";
+],[XCursesExit();],
+[cf_cv_lib_XCurses=yes],
+[cf_cv_lib_XCurses=no])
+])
+if test $cf_cv_lib_XCurses = yes ; then
+	AC_DEFINE(UNIX)
+	AC_DEFINE(XCURSES)
+	AC_DEFINE(HAVE_XCURSES)
+else
+	AC_ERROR(Cannot link with XCurses)
+fi
+])
 dnl ---------------------------------------------------------------------------
 dnl Check if we have POSIX-style job control (i.e., sigaction), or if we must
 dnl use the signal functions.  Use AC_CHECK_FUNCS(sigaction) first.
@@ -2379,6 +2548,7 @@ cygwin*)
     ;;
 esac
 AC_SUBST(PROG_EXT)
+test -n "$PROG_EXT" && AC_DEFINE_UNQUOTED(PROG_EXT,"$PROG_EXT")
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl See if sum can take -r
@@ -2738,6 +2908,12 @@ AC_TRY_COMPILE([
 	[cf_use_socks5p_h=no])
 AC_MSG_RESULT($cf_use_socks5p_h)
 test "$cf_use_socks5p_h" = yes && AC_DEFINE(INCLUDE_PROTOTYPES)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check for strerror(), or it is not found, for the related data.  POSIX
+dnl requires strerror(), so only old systems such as SunOS lack it.
+AC_DEFUN([CF_STRERROR],[
+AC_CHECK_FUNCS(strerror, AC_DEFINE(HAVE_STRERROR),[CF_SYS_ERRLIST])
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Some machines require _POSIX_SOURCE to completely define struct termios.
@@ -3190,10 +3366,8 @@ dnl $3 = caller-supplied default if no --with option is given.  If this is
 dnl      blank, the macro uses AC_PATH_PROG.
 AC_DEFUN([CF_WITH_PROGRAM],
 [dnl
-changequote(<<,>>)dnl
-define(<<cf_path_name>>, PATH_<<>>translit($1, [a-z], [A-Z]))dnl
-define(<<cf_have_name>>, HAVE_<<>>translit($1, [a-z], [A-Z]))dnl
-changequote([,])dnl
+define([cf_path_name], PATH_[]translit($1, [a-z], [A-Z]))dnl
+define([cf_have_name], HAVE_[]translit($1, [a-z], [A-Z]))dnl
 AC_ARG_WITH($1,[$2],ifelse($3,,
 [case "$withval" in #(vi
   yes[)]
@@ -3229,4 +3403,154 @@ dnl $4 = default value, if any.
 AC_DEFUN([CF_WITH_VALUE],
 [CF_ARG_WITH($1,[$2],[$3],[$4])
  AC_DEFINE_UNQUOTED($3,"$withval")dnl
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check for Xaw (Athena) libraries
+dnl
+AC_DEFUN([CF_X_ATHENA],
+[AC_REQUIRE([CF_X_TOOLKIT])
+cf_x_athena=${cf_x_athena-Xaw}
+
+AC_ARG_WITH(Xaw3d,
+	[  --with-Xaw3d            link with Xaw 3d library],
+	[cf_x_athena=Xaw3d])
+
+AC_ARG_WITH(neXtaw,
+	[  --with-neXtaw           link with neXT Athena library],
+	[cf_x_athena=neXtaw])
+
+
+AC_CHECK_LIB(Xext,XextCreateExtension,
+	[LIBS="-lXext $LIBS"])
+
+cf_x_athena_include=""
+cf_x_athena_lib=""
+
+for cf_path in default \
+	/usr/contrib/X11R6 \
+	/usr/contrib/X11R5 \
+	/usr/lib/X11R5 \
+	/usr/local
+do
+
+	if test -z "$cf_x_athena_include" ; then
+		cf_save="$CPPFLAGS"
+		cf_test=X11/$cf_x_athena/SimpleMenu.h
+		if test $cf_path != default ; then
+			CPPFLAGS="-I$cf_path/include $cf_save"
+			AC_MSG_CHECKING(for $cf_test in $cf_path)
+		else
+			AC_MSG_CHECKING(for $cf_test)
+		fi
+		AC_TRY_COMPILE([
+#include <X11/Intrinsic.h>
+#include <$cf_test>],[],
+			[cf_result=yes],
+			[cf_result=no])
+		AC_MSG_RESULT($cf_result)
+		if test "$cf_result" = yes ; then
+			cf_x_athena_include=$cf_path
+		else
+			CPPFLAGS="$cf_save"
+		fi
+	fi
+
+	for cf_lib in "-l$cf_x_athena -lXmu" "-l${cf_x_athena}_s -lXmu_s"
+	do
+		if test -z "$cf_x_athena_lib" ; then
+			cf_save="$LIBS"
+			cf_test=XawSimpleMenuAddGlobalActions
+			if test $cf_path != default ; then
+				LIBS="-L$cf_path/lib $cf_lib $LIBS"
+				AC_MSG_CHECKING(for $cf_lib in $cf_path)
+			else
+				LIBS="$cf_lib $LIBS"
+				AC_MSG_CHECKING(for $cf_test in $cf_lib)
+			fi
+			AC_TRY_LINK([],[$cf_test()],
+				[cf_result=yes],
+				[cf_result=no],
+				[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+			AC_MSG_RESULT($cf_result)
+			if test "$cf_result" = yes ; then
+				cf_x_athena_lib="$cf_lib"
+			else
+				LIBS="$cf_save"
+			fi
+		fi
+	done
+done
+
+if test -z "$cf_x_athena_include" ; then
+	AC_MSG_WARN(
+[Unable to successfully find Athena header files with test program])
+fi
+
+if test -z "$cf_x_athena_lib" ; then
+	AC_ERROR(
+[Unable to successfully link Athena library (-l$cf_x_athena) with test program])
+fi
+
+CF_UPPER(CF_X_ATHENA_LIBS,HAVE_LIB_$cf_x_athena)
+AC_DEFINE_UNQUOTED($CF_X_ATHENA_LIBS)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check for X Toolkit libraries
+dnl
+AC_DEFUN([CF_X_TOOLKIT],
+[
+AC_REQUIRE([CF_CHECK_CACHE])
+# We need to check for -lsocket and -lnsl here in order to work around an
+# autoconf bug.  autoconf-2.12 is not checking for these prior to checking for
+# the X11R6 -lSM and -lICE libraries.  The resultant failures cascade...
+# 	(tested on Solaris 2.5 w/ X11R6)
+SYSTEM_NAME=`echo "$cf_cv_system_name"|tr ' ' -`
+cf_have_X_LIBS=no
+case $SYSTEM_NAME in
+irix[[56]]*) ;;
+clix*)
+	# FIXME: modify the library lookup in autoconf to
+	# allow _s.a suffix ahead of .a
+	AC_CHECK_LIB(c_s,open,
+		[LIBS="-lc_s $LIBS"
+	AC_CHECK_LIB(bsd,gethostname,
+		[LIBS="-lbsd $LIBS"
+	AC_CHECK_LIB(nsl_s,gethostname,
+		[LIBS="-lnsl_s $LIBS"
+	AC_CHECK_LIB(X11_s,XOpenDisplay,
+		[LIBS="-lX11_s $LIBS"
+	AC_CHECK_LIB(Xt_s,XtAppInitialize,
+		[LIBS="-lXt_s $LIBS"
+		 cf_have_X_LIBS=Xt
+		]) ]) ]) ]) ])
+	;;
+*)
+	AC_CHECK_LIB(socket,socket)
+	AC_CHECK_LIB(nsl,gethostname)
+	;;
+esac
+
+if test $cf_have_X_LIBS = no ; then
+	AC_PATH_XTRA
+	LDFLAGS="$LDFLAGS $X_LIBS"
+	CF_ADD_CFLAGS($X_CFLAGS)
+	AC_CHECK_LIB(X11,XOpenDisplay,
+		[LIBS="-lX11 $LIBS"],,
+		[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+	AC_CHECK_LIB(Xt, XtAppInitialize,
+		[AC_DEFINE(HAVE_LIBXT)
+		 cf_have_X_LIBS=Xt
+		 LIBS="-lXt $X_PRE_LIBS $LIBS"],,
+		[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+else
+	LDFLAGS="$LDFLAGS $X_LIBS"
+	CF_ADD_CFLAGS($X_CFLAGS)
+fi
+
+if test $cf_have_X_LIBS = no ; then
+	AC_WARN(
+[Unable to successfully link X Toolkit library (-lXt) with
+test program.  You will have to check and add the proper libraries by hand
+to makefile.])
+fi
 ])dnl

@@ -613,16 +613,6 @@ process_text_body_part(
 
 	fseek(in, part->offset, SEEK_SET);
 
-#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
-	/*
-	 * if we have a different local charset, we also convert articles
-	 * that do not have MIME headers, since e.g. quoted text may contain
-	 * accented chars on non-MIME newsreaders.
-	 */
-	if (IS_PLAINTEXT(part))
-		decode = FALSE;
-#endif /* LOCAL_CHARSET || MAC_OS_X */
-
 	if ((charset = get_param(part->params, "charset")) == NULL)
 		decode = FALSE;				/* Impossible in practice, since it defaults */
 

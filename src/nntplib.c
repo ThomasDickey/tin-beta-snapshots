@@ -396,7 +396,7 @@ get_tcp_socket (
 #			ifdef h_addr
 	int x = 0;
 	register char **cp;
-	static char *alist[2] = {0,0};
+	static char *alist[2] = {0, 0};
 #			endif /* h_addr */
 	static struct hostent def;
 	static struct in_addr defaddr;

@@ -113,14 +113,22 @@ group_left (
 		return iKeyQuit;
 }
 
+
 static int
 group_right (
 	void)
 {
-	if (tinrc.auto_list_thread && grpmenu.curr >= 0 && HAS_FOLLOWUPS (grpmenu.curr))
-		return iKeyGroupListThd;
-	else
-		return iKeyGroupReadBasenote;
+	if (grpmenu.curr >= 0 && HAS_FOLLOWUPS (grpmenu.curr)) {
+		if (tinrc.auto_list_thread)
+			return iKeyGroupListThd;
+		else {
+			int n = next_unread ((int) base[grpmenu.curr]);
+
+			if (n >= 0)
+				return enter_pager (n, TRUE);
+		}
+	}
+	return iKeyGroupReadBasenote;
 }
 
 

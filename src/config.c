@@ -2307,7 +2307,7 @@ show_config_page (
 	if (first_option_on_screen + option_lines_per_page > LAST_OPT)
 		lines_to_print = LAST_OPT + 1 - first_option_on_screen;
 
-	for (i = 0; i < lines_to_print;i++) {
+	for (i = 0; i < lines_to_print; i++) {
 		print_any_option (first_option_on_screen + i);
 	}
 	CleartoEOS ();

@@ -706,7 +706,7 @@ print_file (
 
 #	ifdef DONT_HAVE_PIPING
 	snprintf(file, sizeof(file) - 1, TIN_PRINTFILE, respnum);
-	if ((fp = fopen(file,"w")) == (FILE *) 0)
+	if ((fp = fopen(file, "w")) == (FILE *) 0)
 #	else
 	if ((fp = popen (command, "w")) == (FILE *) 0)
 #	endif /* DONT_HAVE_PIPING */
