@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-07-22
+ *  Updated   : 2002-11-06
  *  Notes     :
  *
  * Copyright (c) 1997-2002 Iain Lea <iain@bricbrac.de>
@@ -1206,12 +1206,12 @@ enum {
 };
 /* must always be the same as the highest HIST_ value except HIST_NONE */
 #define HIST_MAXNUM		HIST_URL
-#define HIST_NONE		(HIST_MAXNUM+1)
+#define HIST_NONE		(HIST_MAXNUM + 1)
 #define HIST_SIZE		15	/* # items in each history */
 
-extern int hist_last[HIST_MAXNUM+1];
-extern int hist_pos[HIST_MAXNUM+1];
-extern char *input_history[HIST_MAXNUM+1][HIST_SIZE+1];
+extern int hist_last[HIST_MAXNUM + 1];
+extern int hist_pos[HIST_MAXNUM + 1];
+extern char *input_history[HIST_MAXNUM + 1][HIST_SIZE + 1];
 
 
 /* defines for GNKSA checking */

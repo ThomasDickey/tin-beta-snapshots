@@ -1,4 +1,30 @@
--- 1.5.15 release 20021108 "" --
+-- 1.5.16 release 20021120 "" --
+
+U126) Andreas Metzler <tin-dev@downhill.at.eu.org>
+      BUG. wrap_column = 0 (cCOLS) wasn't adjusted after on screen resize
+      FIX. config.c, cook.c, init.c, tin.1, tin.5
+
+U125) Urs Janssen <urs@tin.org>
+      BUG. typo fixed
+      ADD. autotruncation of Menu items to 35 chars
+      ADD. allow negative values for wrap_column
+    [ ADD. make line wrapping in pager multibyte safe ]
+      FIX. config.c, cook.c, lang.c, tin.pot, de.po, et.po. en_GB.po
+
+U124) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+-- 1.5.15 release 20021115 "Spiders" --
+
+U123) Jason Faultless <jason@altarstone.com>
+      Michael Bienia <michael@vorlon.ping.de>
+      ADD. Tidy up range code
+      FIX. proto.h, group.c, init.c, select.c, tags.c, thread.c
+
+U122) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. new configure option --with-curses-dir
+      FIX. aclocal.m4, configure[.in], trace.h
 
 U121) Michael Bienia <michael@vorlon.ping.de>
       BUG. possible reuse of already freed mem
@@ -29,7 +55,10 @@ U118) Philip Paeps <philip@paeps.cx>
 
 U117) Andreas Metzler <tin-dev@downhill.at.eu.org>
       BUG. possible overrun while expanding \t
-      FIX. cook.c
+      BUG. typos in the german translation
+      BUG. wrong help-page entrys
+      ADD. from=filter exemplification
+      FIX. cook.c, lang.c, tin.5, filtering, de.po
 
 U116) Sebastian Bork <sebi@sebi.org>
       ADD. cosmetics
@@ -61,13 +90,14 @@ U114) Urs Janssen <urs@tin.org>
       ADD. use THREAD_BOTH instead of THREAD_MAX as initial threading
       ADD. manpage updates
       ADD. smarter check for inews
-      ADD. config.guess update
+      ADD. config.guess, config.sub update
       ADD. ignore leading/taling whitespaces in input at prompt_msgid()
       FIX. extern.h, proto.h, tin.h, art.c, charset.c, config.c, cook.c
            filter.c, group.c, header.c, help.c, inews.c, init.c, lang.c
-           mail.c, main.c, misc.c, nrctbl.c, page.c, pgp.c, post.c, prompt.c
-           rfc2047.c, select.c, Makefile, Makefile[.in], configure[.in], tin.1
-           tin.5, de.po, en_GB.po, config.guess
+           mail.c, main.c, misc.c, newsrc.c, nrctbl.c, page.c, pgp.c, post.c
+           prompt.c, rfc2047.c, select.c, Makefile, Makefile[.in]
+           configure[.in], tin.1, tin.5, de.po, en_GB.po, config.guess
+           config.sub
 
 -- 1.5.14 release 20020926 "Soil" --
 

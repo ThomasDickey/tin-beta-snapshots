@@ -2,7 +2,7 @@
 ;   Module    : tincfg.tbl
 ;   Author    : Thomas E. Dickey
 ;   Created   : 1996-11-01
-;   Updated   : 2001-11-10
+;   Updated   : 2002-11-06
 ;   Notes     : #defines and structs for config.c
 ;
 ; Copyright (c) 1996-2002 Thomas E. Dickey <dickey@invisible-island.net>
@@ -102,6 +102,8 @@
 	score_kill			OPT_NUM
 	score_limit_select		OPT_NUM
 	score_select			OPT_NUM
+	filter_days			OPT_NUM
+	add_posted_to_filter		OPT_ON_OFF
 
 ; colour options
 #ifdef HAVE_COLOR
@@ -143,7 +145,7 @@
 	sigdashes			OPT_ON_OFF
 	signature_repost		OPT_ON_OFF
 	quote_chars			OPT_STRING
-	quote_style			txt_quote_style_type (QUOTE_COMPRESS|QUOTE_SIGS|QUOTE_EMPTY)+1	
+	quote_style			txt_quote_style_type (QUOTE_COMPRESS|QUOTE_SIGS|QUOTE_EMPTY)+1
 	news_quote_format		OPT_STRING
 	xpost_quote_format		OPT_STRING
 	mail_quote_format		OPT_STRING
@@ -165,8 +167,6 @@
 	auto_cc				OPT_ON_OFF
 	auto_bcc			OPT_ON_OFF
 	spamtrap_warning_addresses	OPT_STRING
-	filter_days			OPT_NUM
-	add_posted_to_filter		OPT_ON_OFF
 
 ; saving/printing options
 	saving_options			OPT_TITLE
@@ -197,7 +197,6 @@
 	underscores_regex		OPT_STRING
 	strip_re_regex			OPT_STRING
 	strip_was_regex			OPT_STRING
-
 	force_screen_redraw		OPT_ON_OFF
 	start_editor_offset		OPT_ON_OFF
 	editor_format			OPT_STRING

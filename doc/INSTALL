@@ -46,7 +46,7 @@ The following configure options and defines are documented in detail:
   --prefix                                --exec-prefix
   --bindir                                --mandir
   --program-prefix                        --program-suffix
-  --program-transform-name
+  --program-transform-name                --with-curses-dir
 
   ENFORCE_RFC1034                         NNTP_INEWS
   EVIL_INSIDE                             NNTP_SERVER_FILE
@@ -376,27 +376,31 @@ following values:
         1       next<->iso-8859-1 conversion
         unset   no conversion (default)
 
+--with-curses-dir=dir (default: empty)
+If (n)curses is not installed installed in a standard location (i.e below
+/usr) you can specifyit's installation directory here.
+
 --with-screen=type (default: termcap)
-This is a simpler way (than --with-ncurses and --enable-curses) to specify the
-screen library. If you give none of these options, the configure script will
-look for the termcap or terminfo interfaces, and attempt to use the most
-appropriate one that your system supports. The other screen types which
+This is a simpler way (than --with-ncurses and --enable-curses) to specify
+the screen library. If you give none of these options, the configure script
+will look for the termcap or terminfo interfaces, and attempt to use the
+most appropriate one that your system supports. The other screen types which
 you may select are: curses, ncurses, ncursesw, pdcurses.
 
 --with-ncurses
 Define this if you want to link with ncurses instead of termcap. Note: This
 is required on some Linux distributions (i.e., SuSE) where there is either a
-curses or termcap library which is not ncurses. If ncurses is installed as the
-curses library, this option is usually not needed.
+curses or termcap library which is not ncurses. If ncurses is installed as
+the curses library, this option is usually not needed.
 
 --enable-curses (default: off)
 Enable this if you wish to use the curses screen optimizing rather than
 termcap. This has been tested well starting with ncurses 4.1; it should work
-(except for mouse support and screen resizing) with SVr4 curses (Solaris
-2.5 is known to have a bug in libc which prevents use of curses, ncurses
-works well on that platform). To build with ncurses screen optimizing,
-you must give both the --with-ncurses and --enable-curses options or
-give the --with-screen=ncurses option.
+(except for mouse support and screen resizing) with SVr4 curses (Solaris 2.5
+is known to have a bug in libc which prevents use of curses, ncurses works
+well on that platform). To build with ncurses screen optimizing, you must
+give both the --with-ncurses and --enable-curses options or give the
+--with-screen=ncurses option.
 
 --enable-inverse-video (default: on)
 Disable if you want inverse video and highlighted bar disabled by default.

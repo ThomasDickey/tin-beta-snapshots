@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-09-05
+ *  Updated   : 2002-11-12
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -324,7 +324,7 @@ constext txt_help_global_save_tagged[] = N_("save tagged articles automatically 
 constext txt_help_global_search_auth_backwards[] = N_("search for articles by author backwards");
 constext txt_help_global_search_auth_forwards[] = N_("search for articles by author forwards");
 constext txt_help_global_search_body[] = N_("search all articles for a given string (this may take some time)");
-constext txt_help_global_search_body_comment[] = N_("\t  (searches are case-insensitive and wrap around to all articles)");
+constext txt_help_global_search_body_comment[] = N_(" \t  (searches are case-insensitive and wrap around to all articles)");
 constext txt_help_global_search_subj_backwards[] = N_("search for articles by Subject line backwards");
 constext txt_help_global_search_subj_forwards[] = N_("search for articles by Subject line forwards");
 #ifndef NO_SHELL_ESCAPE
@@ -384,7 +384,7 @@ constext txt_help_select_quit_no_write[] = N_("quit without saving configuration
 constext txt_help_select_read_group[] = N_("read chosen group");
 constext txt_help_select_reset_newsrc[] = N_("reset .newsrc (all available articles in groups marked unread)");
 constext txt_help_select_search_group_backwards[] = N_("search backwards for a group name");
-constext txt_help_select_search_group_comment[] = N_("\t  (all searches are case-insensitive and wrap around)");
+constext txt_help_select_search_group_comment[] = N_(" \t  (all searches are case-insensitive and wrap around)");
 constext txt_help_select_search_group_forwards[] = N_("search forwards for a group name");
 constext txt_help_select_subscribe[] = N_("subscribe to chosen group");
 constext txt_help_select_subscribe_pattern[] = N_("subscribe to groups that match pattern");
@@ -403,10 +403,10 @@ constext txt_help_thread_last_article[] = N_("choose last article in list");
 constext txt_help_thread_mark_article_read[] = N_("mark article as read and move cursor to next unread article");
 constext txt_help_thread_read_article[] = N_("read chosen article");
 constext txt_help_thread_toggle_subj_display[] = N_("cycle the display of authors email address, real name, both or neither");
-constext txt_help_title_disp[]  = N_("Display properties\n------------------");
+constext txt_help_title_disp[] = N_("Display properties\n------------------");
 constext txt_help_title_misc[] = N_("Miscellaneous\n-------------");
-constext txt_help_title_navi[]  = N_("Moving around\n-------------");
-constext txt_help_title_ops[]   = N_("Group/thread/article operations\n-------------------------------");
+constext txt_help_title_navi[] = N_("Moving around\n-------------");
+constext txt_help_title_ops[] = N_("Group/thread/article operations\n-------------------------------");
 constext txt_index_page_com[] = N_("Group Level Commands");
 constext txt_info_add_kill[] = N_("Kill filter added");
 constext txt_info_add_select[] = N_("Auto-selection filter added");
@@ -994,7 +994,7 @@ constext txt_warn_cancel[] = N_("Read carefully!\n\n\
 constext txt_warn_encoding_and_external_inews[] = N_("\n\
 Warning: You are using a non-plain transfer encoding (such as base64 or\n\
          quoted-printable) and an external inews program to submit your\n\
-         article.  If a signature is appended by that inews program it will\n\
+         article. If a signature is appended by that inews program it will\n\
          not be encoded properly.\n");
 
 #ifdef FOLLOW_USEFOR_DRAFT
@@ -1239,7 +1239,7 @@ struct opttxt txt_thread_score = {
 
 struct opttxt txt_sort_article_type = {
 	N_("Sort articles by Subject, From, Date or Score. <SPACE> toggles & <CR> sets."),
-	N_("Sort article by                    :"),
+	N_("Sort articles by                   :"),
 	N_("# Sort articles by 0=(nothing) 1=(Subject descend) 2=(Subject ascend)\n\
 # 3=(From descend) 4=(From ascend) 5=(Date descend) 6=(Date ascend)\n\
 # 7=(Score descend) 8=(Score ascend) 9=(Lines descend) 10=(Lines ascend).\n")
@@ -1284,15 +1284,15 @@ struct opttxt txt_tab_goto_next_unread = {
 };
 
 struct opttxt txt_space_goto_next_unread = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Scrolling with <SPACE> past the end of an art. jumps to the next unread one."),
 	N_("Space goes to next unread article  :"),
 	N_("# If ON the SPACE command will go to next unread article at article viewer\n\
 # level when the end of the article is reached (rn-style pager)\n")
 };
 
 struct opttxt txt_pgdn_goto_next = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("PgDn goes to next article at EOF   :"),
+	N_("Scrolling with <PGDN>/<DOWN> past the end of an art. jumps to the unread one."),
+	N_("PgDn goes to next unread article   :"),
 	N_("# If ON the PGDN or DOWN command will go to next unread article when\n\
 # pressed at end of message\n")
 };
@@ -1603,9 +1603,9 @@ struct opttxt txt_score_limit_kill = {
 };
 
 struct opttxt txt_score_kill = {
-       N_("Enter default score to kill articles. <CR> sets."),
-       N_("Score (kill)                       :"),
-       N_("# Default score to kill articles\n")
+	N_("Enter default score to kill articles. <CR> sets."),
+	N_("Default score to kill articles     :"),
+	N_("# Default score to kill articles\n")
 };
 
 struct opttxt txt_score_limit_select = {
@@ -1615,9 +1615,9 @@ struct opttxt txt_score_limit_select = {
 };
 
 struct opttxt txt_score_select = {
-       N_("Enter default score to select articles. <CR> sets."),
-       N_("Score (select)                     :"),
-       N_("# Default score to select articles\n")
+	N_("Enter default score to select articles. <CR> sets."),
+	N_("Default score to select articles   :"),
+	N_("# Default score to select articles\n")
 };
 
 #ifdef HAVE_COLOR

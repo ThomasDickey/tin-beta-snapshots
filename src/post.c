@@ -579,7 +579,7 @@ append_mail(
 	if (!strcasecmp(txt_mailbox_formats[tinrc.mailbox_format], "MMDF") && the_mailbox != postponed_articles_file)
 		mmdf = TRUE;
 
-	if ((fp_in = fopen(the_article, "r"))  == NULL)
+	if ((fp_in = fopen(the_article, "r")) == NULL)
 		return rval;
 
 	if ((fp_out = fopen(the_mailbox, "a+")) != NULL) {

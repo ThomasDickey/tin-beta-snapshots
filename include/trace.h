@@ -3,7 +3,7 @@
  *  Module    : trace.h
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-03-22
- *  Updated   : 2001-07-22
+ *  Updated   : 2002-11-10
  *  Notes     : Interface of trace.c
  *
  * Copyright (c) 1997-2002 Thomas Dickey <dickey@herndon4.his.com>
@@ -51,9 +51,9 @@ extern char *_nc_visbuf(const char *s);
 #			define _nc_visbuf(s) s
 
 extern void	_tracef (const char *, ...)
-#			if defined(__GNUC__)
+#			if defined(__GNUC__) && !defined(printf)
 	__attribute__ ((format(printf,1,2)))
-#			endif /* __GNUC__ */
+#			endif /* __GNUC__ && !printf */
 	;
 #		endif /* NCURSES_VERSION */
 

@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2001-04-24
+ *  Updated   : 2002-10-25
  *  Notes     :
  *
  * Copyright (c) 1997-2002 Urs Janssen <urs@tin.org>

@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2002-11-02
+ *  Updated   : 2002-11-20
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2002 Jason Faultless <jason@radar.tele2.co.uk>
@@ -132,10 +132,8 @@ expand_ctrl_chars(
  * Update the line count and the array of line offsets
  * Extend the lineoffset array as needed in CHUNK amounts.
  * flags are 'hints' to the pager about line content
- *
- * TODO: make wrapping multibyte safe.
- *       do word wrap of long lines.
  */
+#if 1	/* this code should be multibyte safe (but it still has a bug somewhere) */
 static void
 put_cooked(
 	t_bool wrap_lines,
@@ -145,6 +143,107 @@ put_cooked(
 {
 	char *p, *bufp;
 	char buf[LEN];
+	int wrap_column;
+ 	int space;
+	static int overflow = 0;
+	static int saved_flags = 0;
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	int b;
+	wint_t *wp;
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
+
+	if (tinrc.wrap_column < 0)
+		wrap_column = ((tinrc.wrap_column > -cCOLS) ? cCOLS + tinrc.wrap_column : cCOLS);
+	else
+		wrap_column = ((tinrc.wrap_column > 0) ? tinrc.wrap_column : cCOLS);
+
+	p = bufp = buf;
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wp = my_malloc ((MB_CUR_MAX + 1) * sizeof(wint_t));
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+         
+	while (*p) {
+		if (wrap_lines) {
+			space = wrap_column;
+			while (space > 0 && *p && *p != '\n') {
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				if ((b = mbtowc((wchar_t *) wp, p, MB_CUR_MAX)) > 0) {
+					if ((space -= wcwidth(*wp)) < 0)
+						break;
+					p += b;
+				} else
+					p++;
+#	else
+				p++;
+				space--;
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			}
+		} else {
+			while (*p && *p != '\n')
+				p++;
+		}
+		fwrite(bufp, 1, p - bufp, art->cooked);
+		fputs("\n", art->cooked);
+		if (*p == '\n')
+			p++;
+		bufp = p;
+		overflow = 0;
+
+		if (art->cooked_lines == 0) {
+			art->cookl = my_malloc(sizeof(t_lineinfo) * CHUNK);
+			art->cookl[0].offset = 0;
+		}
+
+		/*
+		 * Pick up flags from a previous partial write
+		 */
+		art->cookl[art->cooked_lines].flags = flags | saved_flags;
+		saved_flags = 0;
+		art->cooked_lines++;
+
+		/*
+		 * Grow the array of lines if needed - we resize it properly at the end
+		 */
+		if (art->cooked_lines % CHUNK == 0)
+			art->cookl = my_realloc(art->cookl, sizeof(t_lineinfo) * CHUNK * ((art->cooked_lines / CHUNK) + 1));
+
+		art->cookl[art->cooked_lines].offset = ftell(art->cooked);
+	}
+
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	free(wp);
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+	/*
+	 * If there is anything left over, then it must be a non \n terminated
+	 * partial line from base64 decoding etc.. Dump it now and the rest of
+	 * the line (with the \n) will fill in the t_lineinfo
+	 * We must save the flags now as the rest of the line may not have the same properties
+	 * We need to keep the length for accounting purposes
+	 */
+	if (*bufp != '\0') {
+		fputs(bufp, art->cooked);
+		saved_flags = flags;
+		overflow += strlen(bufp);
+	}
+
+	va_end(ap);
+}
+#else /* this code is not multibyte safe */
+static void
+put_cooked(
+	t_bool wrap_lines,
+	int flags,
+	const char *fmt,
+	...)
+{
+	char *p, *bufp;
+	char buf[LEN];
+	int wrap_column;
 	static int overflow = 0;
 	static int saved_flags = 0;
 	va_list ap;
@@ -154,8 +253,18 @@ put_cooked(
 
 	bufp = buf;
 
+	if (tinrc.wrap_column < 0)
+		wrap_column = ((tinrc.wrap_column > -cCOLS) ? cCOLS + tinrc.wrap_column : cCOLS);
+	else
+		wrap_column = ((tinrc.wrap_column > 0) ? tinrc.wrap_column : cCOLS);
+
+	/*
+	 * TODO: make multibyte safe:
+	 *       don't wrap in the middle of a multibyte char
+	 *       don't compare byte-length but wcswidth() with wrap_column
+	 */
 	for (p = bufp; *p; p++) {
-		if (*p == '\n' || ((overflow + p - bufp >= tinrc.wrap_column) && wrap_lines)) {
+		if (*p == '\n' || (wrap_lines && (overflow + p - bufp >= wrap_column))) {
 			fwrite(bufp, p - bufp, 1, art->cooked);
 
 			fputs("\n", art->cooked);
@@ -203,6 +312,7 @@ put_cooked(
 
 	va_end(ap);
 }
+#endif /* 1 */
 
 
 /*

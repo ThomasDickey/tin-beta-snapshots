@@ -3,7 +3,7 @@
  *  Module    : policy.h
  *  Author    : Ralf Doeblitz <doeblitz@gmx.de>
  *  Created   : 1999-01-12
- *  Updated   : 2002-02-19
+ *  Updated   : 2002-11-13
  *  Notes     : #defines and static data for policy configuration
  *
  * Copyright (c) 1999-2002 Ralf Doeblitz <doeblitz@gmx.de>
@@ -272,6 +272,7 @@ static const char *gnksa_domain_list[] = {
 	"museum",	/* Museums */
 #	if 0		/* not yet valid */
 	"pro",	/* Accountants, lawyers, and physicians */
+	/* 3 more gTLDs to come in 2003 (.travel is likely to be one of them) */
 #	endif /* 0 */
 #	if 0		/* $DEAD */
 	"uucp",

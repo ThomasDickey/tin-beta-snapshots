@@ -377,7 +377,7 @@ highlight_string(
 		MoveCursor(row, 0);
 		my_innstr(tmp, cCOLS);
 		tmp[col] = '\0';
-		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) - 1)
+		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
 			col = wcswidth(wtmp, ARRAY_SIZE(wtmp));
 	}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -417,7 +417,7 @@ word_highlight_string(
 		MoveCursor(row, 0);
 		my_innstr(tmp, cCOLS);
 		tmp[col] = '\0';
-		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) - 1)
+		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
 			col = wcswidth(wtmp, ARRAY_SIZE(wtmp));
 	}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -427,7 +427,7 @@ word_highlight_string(
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	tmp[size] = '\0';
-	if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) - 1)
+	if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
 		wsize = wcswidth(wtmp, ARRAY_SIZE(wtmp));
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 

@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-09-12
+ *  Updated   : 2002-11-16
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -232,7 +232,7 @@ struct t_config tinrc = {
 #endif /* !DISABLE_PRINTING */
 	"1-.",	/* default_range_group */
 	"1-.",	/* default_range_select */
-	"0-.",	/* default_range_thread */
+	"1-.",	/* default_range_thread */
 	"",		/* default_regex_pattern */
 	"",		/* default_repost_group */
 	"savefile.tin",		/* default_save_file */
@@ -331,7 +331,7 @@ struct t_config tinrc = {
 	2,		/* word_h_display_marks */
 #endif /* HAVE_COLOR */
 	TRUE,		/* word_highlight */
-	80,		/* wrap column */
+	0,		/* wrap_column */
 #ifdef HAVE_COLOR
 	FALSE,		/* use_color */
 #endif /* HAVE_COLOR */
@@ -473,9 +473,11 @@ postinit_colors(
 				case DFT_FORE:
 					*(our_colors[n].colorp) = default_fcol;
 					break;
+
 				case DFT_BACK:
 					*(our_colors[n].colorp) = default_bcol;
 					break;
+
 				default:
 					*(our_colors[n].colorp) = our_colors[n].color_dft;
 					break;

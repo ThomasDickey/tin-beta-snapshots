@@ -552,7 +552,7 @@ set_win_size(
 	set_subj_from_size(*num_cols);
 
 	RIGHT_POS = *num_cols - 20;
-	MORE_POS  = *num_cols - 15;
+	MORE_POS = *num_cols - 15;
 	set_noteslines(*num_lines);
 	return (*num_lines != old_lines || *num_cols != old_cols);
 }

@@ -2,8 +2,8 @@
  *  Project   : tin - a Usenet reader
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
- *  Created   :
- *  Updated   : 2000-01-03
+ *  Created   : 1999-04-13
+ *  Updated   : 2002-11-06
  *  Notes     :
  *
  * Copyright (c) 1999-2002 Jason Faultless <jason@radar.tele2.co.uk>
@@ -45,6 +45,8 @@
  * FIXME: most default_* could/should be stored in the .inputhistory
  *        and could be nuked if tin comes with a prefilled .inputhistory
  *        which is installed automatically if no .inputhistory is found.
+ *
+ * TODO:  sort in a usefull order (also needs reoerdering in init.c)
  */
 
 #ifndef TINRC_H
@@ -67,14 +69,14 @@ struct t_config {
 	char default_goto_group[HEADER_LEN];		/* default for the 'g' command */
 	char default_mail_address[HEADER_LEN];
 	char mailer_format[PATH_LEN];		/* mailer + parameters  %M %S %T %F */
-#ifndef DONT_HAVE_PIPING
-	char default_pipe_command[LEN];
-#endif /* DONT_HAVE_PIPING */
+#	ifndef DONT_HAVE_PIPING
+		char default_pipe_command[LEN];
+#	endif /* DONT_HAVE_PIPING */
 	char default_post_newsgroups[HEADER_LEN];	/* default newsgroups to post to */
 	char default_post_subject[LEN];	/* default subject when posting */
-#ifndef DISABLE_PRINTING
-	char printer[LEN];					/* printer program specified from tinrc */
-#endif /* !DISABLE_PRINTING */
+#	ifndef DISABLE_PRINTING
+		char printer[LEN];					/* printer program specified from tinrc */
+#	endif /* !DISABLE_PRINTING */
 	char default_range_group[LEN];
 	char default_range_select[LEN];
 	char default_range_thread[LEN];
@@ -92,24 +94,24 @@ struct t_config {
 	char maildir[PATH_LEN];				/* mailbox dir where = saves are stored */
 	int mailbox_format;					/* format of the mailbox (mboxo, mboxrd, mmdf, ...) */
 	char mail_address[HEADER_LEN];				/* user's mail address */
-#ifndef CHARSET_CONVERSION
-	char mm_charset[LEN];				/* MIME charset */
-#else
-	int mm_network_charset;				/* MIME charset */
-#endif /* !CHARSET_CONVERSION */
+#	ifndef CHARSET_CONVERSION
+		char mm_charset[LEN];				/* MIME charset */
+#	else
+		int mm_network_charset;				/* MIME charset */
+#	endif /* !CHARSET_CONVERSION */
 	char mm_local_charset[LEN];		/* display charset, not a rc/Menu-option anymore -> should be moved elsewhere */
-#ifdef HAVE_ICONV_OPEN_TRANSLIT
-	t_bool translit;						/* use //TRANSLIT */
-#endif /* HAVE_ICONV_OPEN_TRANSLIT */
+#	ifdef HAVE_ICONV_OPEN_TRANSLIT
+		t_bool translit;						/* use //TRANSLIT */
+#	endif /* HAVE_ICONV_OPEN_TRANSLIT */
 	char news_headers_to_display[LEN];	/* which headers to display */
 	char news_headers_to_not_display[LEN];	/* which headers to not display */
 	char news_quote_format[LEN];
 	char quote_chars[LEN];			/* quote chars for posting/mails ": " (size matches prefixbuf in copy_body() */
-#ifdef HAVE_COLOR
-	char quote_regex[LEN];				/* regex used to determine quoted lines */
-	char quote_regex2[LEN];				/* regex used to determine twice quoted lines */
-	char quote_regex3[LEN];				/* regex used to determine >=3 times quoted lines */
-#endif /* HAVE_COLOR */
+#	ifdef HAVE_COLOR
+		char quote_regex[LEN];				/* regex used to determine quoted lines */
+		char quote_regex2[LEN];				/* regex used to determine twice quoted lines */
+		char quote_regex3[LEN];				/* regex used to determine >=3 times quoted lines */
+#	endif /* HAVE_COLOR */
 	char slashes_regex[LEN];			/* regex used to highlight /slashes/ */
 	char stars_regex[LEN];				/* regex used to highlight *stars* */
 	char underscores_regex[LEN];			/* regex used to highlight _underscores_ */
@@ -146,36 +148,36 @@ struct t_config {
 	int score_limit_select;					/* score limit to select articles */
 	int score_kill;						/* default score for "kill" filter rules */
 	int score_select;					/* default score for "hot" filter rules */
-#ifdef HAVE_COLOR
-	int col_back;						/* standard background color */
-	int col_from;						/* color of sender (From:) */
-	int col_head;						/* color of headerlines */
-	int col_help;						/* color of help pages */
-	int col_invers_bg;					/* color of inverse text (background) */
-	int col_invers_fg;					/* color of inverse text (foreground) */
-	int col_minihelp;					/* color of mini help menu*/
-	int col_normal;						/* standard foreground color */
-	int col_markdash;					/* text highlighting with _underdashes_ */
-	int col_markstar;					/* text highlighting with *stars* */
-	int col_markslash;					/* text highlighting with /slashes/ */
-	int col_markstroke;					/* text highlighting with -strokes- */
-	int col_message;					/* color of message lines at bottom */
-	int col_newsheaders;				/* color of actual news header fields */
-	int col_quote;						/* color of quotelines */
-	int col_quote2;						/* color of twice quoted lines */
-	int col_quote3;						/* color of >=3 times quoted lines */
-	int col_response;					/* color of respone counter */
-	int col_signature;					/* color of signature */
-	int col_subject;					/* color of article subject */
-	int col_text;						/* color of textlines*/
-	int col_title;						/* color of Help/Mail-Sign */
-	int word_h_display_marks;			/* display * or _ when highlighting or space or nothing*/
-#endif /* HAVE_COLOR */
+#	ifdef HAVE_COLOR
+		int col_back;						/* standard background color */
+		int col_from;						/* color of sender (From:) */
+		int col_head;						/* color of headerlines */
+		int col_help;						/* color of help pages */
+		int col_invers_bg;					/* color of inverse text (background) */
+		int col_invers_fg;					/* color of inverse text (foreground) */
+		int col_minihelp;					/* color of mini help menu*/
+		int col_normal;						/* standard foreground color */
+		int col_markdash;					/* text highlighting with _underdashes_ */
+		int col_markstar;					/* text highlighting with *stars* */
+		int col_markslash;					/* text highlighting with /slashes/ */
+		int col_markstroke;					/* text highlighting with -strokes- */
+		int col_message;					/* color of message lines at bottom */
+		int col_newsheaders;				/* color of actual news header fields */
+		int col_quote;						/* color of quotelines */
+		int col_quote2;						/* color of twice quoted lines */
+		int col_quote3;						/* color of >=3 times quoted lines */
+		int col_response;					/* color of respone counter */
+		int col_signature;					/* color of signature */
+		int col_subject;					/* color of article subject */
+		int col_text;						/* color of textlines*/
+		int col_title;						/* color of Help/Mail-Sign */
+		int word_h_display_marks;			/* display * or _ when highlighting or space or nothing*/
+#	endif /* HAVE_COLOR */
 	t_bool word_highlight;				/* like word_highlight but stored in tinrc */
 	int wrap_column;				/* screen column to wrap of text messages */
-#ifdef HAVE_COLOR
-	t_bool use_color;					/* like use_color but stored in tinrc */
-#endif /* HAVE_COLOR */
+#	ifdef HAVE_COLOR
+		t_bool use_color;					/* like use_color but stored in tinrc */
+#	endif /* HAVE_COLOR */
 	t_bool add_posted_to_filter;
 	t_bool advertising;
 	t_bool alternative_handling;
@@ -203,9 +205,9 @@ struct t_config {
 	t_bool pos_first_unread;			/* position cursor at first/last unread article */
 	t_bool post_8bit_header;			/* allow 8bit chars. in header when posting to newsgroup */
 	t_bool post_process_view;			/* set TRUE to invoke mailcap viewer app */
-#ifndef DISABLE_PRINTING
-	t_bool print_header;				/* print all of mail header or just Subject: & From lines */
-#endif /* !DISABLE_PRINTING */
+#	ifndef DISABLE_PRINTING
+		t_bool print_header;				/* print all of mail header or just Subject: & From lines */
+#	endif /* !DISABLE_PRINTING */
 	t_bool process_only_unread;			/* save/print//mail/pipe unread/all articles */
 	t_bool prompt_followupto;			/* display empty Followup-To header in editor */
 	int quote_style;					/* quoting behaviour */
@@ -230,13 +232,13 @@ struct t_config {
 	char inews_prog[PATH_LEN];
 	t_bool use_mailreader_i;			/* invoke user's mailreader earlier to use more of its features (i = interactive) */
 	t_bool use_mouse;					/* enables/disables mouse support under xterm */
-#ifdef HAVE_KEYPAD
-	t_bool use_keypad;
-#endif /* HAVE_KEYPAD */
-#ifdef HAVE_METAMAIL
-	t_bool ask_for_metamail;			/* enables/disables the metamail query if a MIME message is going to be displayed */
-	t_bool use_metamail;				/* enables/disables metamail on MIME messages */
-#endif /* HAVE_METAMAIL */
+#	ifdef HAVE_KEYPAD
+		t_bool use_keypad;
+#	endif /* HAVE_KEYPAD */
+#	ifdef HAVE_METAMAIL
+		t_bool ask_for_metamail;			/* enables/disables the metamail query if a MIME message is going to be displayed */
+		t_bool use_metamail;				/* enables/disables metamail on MIME messages */
+#	endif /* HAVE_METAMAIL */
 	t_bool default_filter_kill_case;
 	t_bool default_filter_kill_expire;
 	t_bool default_filter_kill_global;

@@ -148,8 +148,9 @@ o  word_h_display_marks=0 doesn't work for the !USE_CUSRSES case
 o  raw mode loses (illegal) chars in multibyte based groups
    [20021006 Michael Bienia <michael@vorlon.ping.de>]
 
-o  long lines are wrapped at cCOLS, no matter if we are in the middle of
-   a multibyte sequence.
+o  long lines are wrapped at tinrc.wrap_column, no matter if we are in the
+   middle of a multibyte sequence.
+   (the new code should avoid that, but there is still a bug in it somewhere)
    [20021102 Urs Janssen <urs@tin.org>]
 
 o  lines > 1024 bytes will lose at least 1 byte (in multibyte mode it seems
@@ -527,6 +528,9 @@ o  allow expiring filter entrys n-days after the last time they matched
 
 Internal Changes
 ----------------
+o  change txt_select_comment to something like "Comment (optional) :"
+   (and rename var).
+
 o  - rename PageFirstPage2 to PageFirstPage and PageLastPage2 to PageLastPage
    - in page level Up2 ('k') does the same as PageNextUnreadArt ('N'), but
      Up ('^P') behaves different. shouldn't 'k' be named PageNextUnreadArt2
@@ -762,3 +766,8 @@ o  AFAIK the 'hardcoded' local charset stuff (--with-local-charset) is
 o  doesn't handle symlinks for .oldnewsrc
    (see <20021003021508.GA28021@akk10.akk.uni-karlsruhe.de> for details, urs)
    [20020627 Jeff Sheinberg <jeffsh@erols.com>]
+
+o  figure out what the -l and -n cmd-line flags are good for if not
+   running in nntp-mode and document it - if they have no meaning at all
+   disallow them if tin is not nntp_able at all.
+   [20021117 Urs Janssen <urs@tin.org>]

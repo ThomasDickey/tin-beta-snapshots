@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2002-11-05
+.\" Updated   : 2002-11-16
 .\" Notes     : needs a some work
 .\"
-.TH tin 5 "November 5th, 2002" "1.5.15" "A Usenet newsreader"
+.TH tin 5 "November 16th, 2002" "1.5.16" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -603,7 +603,9 @@ Score value of the rule; can also be one of the magic words "kill" or "hot".
 Match against ''Subject:''
 .TP
 .B from
-Match against ''From:''
+Match against ''From:''. Tin converts the contents of the From-header to an
+old style e-mail address, i.e. ''some@body.example (John Doe)'' instead of ''John
+Doe <some@body.example>'', before trying to match the patterns in the filter rule.
 .TP
 .B msgid
 Match against ''Message-ID:'' and full ''References:''
@@ -1332,8 +1334,13 @@ besides keeping the last failed posting in
 \fI${TIN_HOMEDIR-"$HOME"}/dead.article\fR. Default is ON.
 .TP
 .B keep_posted_articles
-If ON keep all postings in \fI${TIN_HOMEDIR-"$HOME"}/Mail/posted\fR.
+If ON keep all postings in
+\fI${TIN_HOMEDIR-"$HOME"}/Mail/\fBkeep_posted_articles_file\fP\fR.
 Default is ON.
+.TP
+.B keep_posted_articles_file
+Filename to be used for storing posted articles, see also
+\fBkeep_posted_articles\fP.
 .TP
 .B kill_level
 This option controls the processing and display of articles that are killed.
@@ -1826,19 +1833,24 @@ print a \fBspace\fP instead
 .RE
 .TP
 .B word_highlight
-Enable word highlighting. See \fBword_h_display_marks\fP for the options
-available if this and \fBuse_color\fP is enabled.
+Enable word highlighting. See \fBword_h_display_marks\fP for the
+options available if this and \fBuse_color\fP is enabled.
 .TP
 .B wrap_column
-Sets the column at which a displayed article body should be wrapped. If
-this value is smaller or equal to 0, it defaults to the current screen
-width. If this value is greater than your current screen width the part
-off-screen is not displayed. Setting this option to a large value, this
-option can be used to disable wrapping. Default is 80.
+Sets the column at which a displayed article body should be wrapped.
+If this value is equal to 0, it defaults to the current screen width.
+If this value is greater than your current screen width the part
+off-screen is not displayed. Thus setting this option to a large
+value can be used to disable wrapping. If this value is negative the
+wrap margin is the current screen width plus the given value (as long
+as the result is still positive, otherwise it will fall back to the
+current screen width). Default is 0, wrapping at the current screen
+width.
 .TP
 .B xpost_quote_format
 Format is the same as for \fBnews_quote_format\fP, this is used when
-answering to a crossposting to several groups with no ''Followup-To:'' set
+answering to a crossposting to several groups with no ''Followup-To:''
+set.
 .RE
 .PP
 
