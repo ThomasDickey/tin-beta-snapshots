@@ -45,10 +45,6 @@
  * Library prototypes
  */
 
-#ifdef USE_TERMINFO
-#	define tigetnum(s) tgetnum(s)
-#endif /* USE_TERMINFO */
-
 #ifndef RFC2045_H
 #	include <rfc2045.h>
 #endif /* !RFC2045_H */
@@ -261,7 +257,7 @@
 #ifdef DECL_TGETFLAG
 	extern int tgetflag (char *);
 #endif /* DECL_TGETFLAG */
-#if defined(DECL_TGETNUM) || defined(DECL_TIGETNUM)
+#if defined(DECL_TGETNUM)
 	extern int tgetnum (char *);
 #endif /* DECL_TGETNUM */
 #ifdef DECL_TGETSTR
@@ -270,6 +266,15 @@
 #ifdef DECL_TGOTO
 	extern char *tgoto (char *, int, int);
 #endif /* DECL_TGOTO */
+#ifdef DECL_TIGETFLAG
+	extern int tigetflag (char *);
+#endif /* DECL_TIGETFLAG */
+#if defined(DECL_TIGETNUM)
+	extern int tigetnum (char *);
+#endif /* DECL_TGETNUM */
+#ifdef DECL_TIGETSTR
+	extern char *tigetstr (char *, char **);
+#endif /* DECL_TIGETSTR */
 #ifdef DECL_TIME
 	extern time_t time (time_t *);
 #endif /* DECL_TIME */
@@ -279,6 +284,9 @@
 #if defined(DECL_TOUPPER) && !defined(toupper)
 	extern int toupper (int);
 #endif /* DECL_TOUPPER && !toupper */
+#ifdef DECL_TPARM
+	extern char *tparm (const char *, ...);
+#endif /* DECL_TPARM */
 #ifdef DECL_TPUTS
 	extern int tputs (char *, int, OutcPtr);
 #endif /* DECL_TPUTS */
@@ -442,7 +450,6 @@ extern constext txt_cannot_create[];
 extern constext txt_cannot_create_uniq_name[];
 extern constext txt_cannot_find_base_art[];
 extern constext txt_cannot_get_nntp_server_name[];
-extern constext txt_cannot_get_term[];
 extern constext txt_cannot_get_term_entry[];
 extern constext txt_cannot_open[];
 extern constext txt_cannot_post[];

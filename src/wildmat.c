@@ -144,19 +144,17 @@ wildmat (
 		return TRUE;
 #endif /* OPTIMIZE_JUST_STAR */
 
+	mesg[0] = '\0';
+
 	if (icase) {
 		txt = my_strdup(text);
 		str_lwr(txt);
 		str_lwr(p);
-	} else
-		txt = (char *)text;
-
-	mesg[0] = '\0';
-
-	ret = (DoMatch(txt, p) == TRUE);
-
-	if (icase)
+		ret = (DoMatch(txt, p) == TRUE);
 		free (txt);
+	} else {
+		ret = (DoMatch(text, p) == TRUE);
+	}
 
 	return ret;
 }

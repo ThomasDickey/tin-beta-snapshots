@@ -52,7 +52,7 @@
  * NB: The '1' variations on DO_{SIGN,BOTH} are used when local-user name is
  * used and are valid only when signing
  */
-#	ifdef HAVE_PGP	/* pgp-2 */
+#	if defined(HAVE_PGP) && !defined(PGPNAME)	/* pgp-2 */
 #		define PGPNAME		PATH_PGP
 #		define PGPDIR		".pgp"
 #		define PGP_PUBRING	"pubring.pgp"
@@ -66,7 +66,7 @@
 #		define DO_BOTH1		"%s %s -ates %s %s -u %s", PGPNAME, pgpopts, pt, mailto, mailfrom
 #	endif /* HAVE_PGP */
 
-#	ifdef HAVE_PGPK	/* pgp-5 */
+#	if defined(HAVE_PGPK) && !defined(PGPNAME)	/* pgp-5 */
 #		define PGPNAME		"pgp"	/* FIXME: this is AFAIK not PATH_PGPK */
 #		define PGPDIR		".pgp"
 #		define PGP_PUBRING	"pubring.pkr"
@@ -80,7 +80,7 @@
 #		define DO_BOTH1		"%se %s -ats %s %s -u %s", PGPNAME, pgpopts, pt, mailto, mailfrom
 #	endif /* HAVE_PGPK */
 
-#	ifdef HAVE_GPG	/* gpg */
+#	if defined(HAVE_GPG) && !defined(PGPNAME)	/* gpg */
 #		define PGPNAME		PATH_GPG
 #		define PGPDIR		".gnupg"
 #		define PGP_PUBRING	"pubring.gpg"

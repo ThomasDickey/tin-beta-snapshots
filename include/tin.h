@@ -689,12 +689,12 @@ enum resizer { cNo, cYes, cRedraw };
 #define UUBODY_REGEX	"(`|.[\\x20-\\x60]{1,61})$"
 
 /* case insensitive */
-#define URL_REGEX "\\b(?:http[s]?|ftp|gopher)://(?:\\w+:\\w+@)?(?:[^\\W_]+(?:(?:[-.][^\\W_]+)+)?\\.[a-z]{2,5}|localhost|(?:(?:\\d?\\d|[01]\\d\\d|2[0-4]\\d|25[0-5])\\.){3}(?:\\d?\\d|[01]\\d\\d|2[0-4]\\d|25[0-5]))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
+#define URL_REGEX "\\b(?:https?|ftp|gopher)://(?:\\w+:\\w+@)?(?:[^\\W_]+(?:(?:[-.][^\\W_]+)+)?\\.[a-z]{2,5}|localhost|(?:(?:\\d?\\d|[01]\\d\\d|2[0-4]\\d|25[0-5])\\.){3}(?:\\d?\\d|[01]\\d\\d|2[0-4]\\d|25[0-5]))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
+/* case insensitive */
+#define MAIL_REGEX	"\\b(?:mailto:(?:(?:[-\\w$.+!*'(),;/?:@&=]|(?:%[\\da-f]{2}))+))"
 
 /* case insensitive - not implemented */
-#define MAIL_REGEX	"\\b(?:mailto:(?:(?:[-\\w$.+!*'(),;/?:@&=]|(?:%[\\da-f]{2}))+))"
-/* case insensitive - not implemented */
-#define NEWS_REGEX	"\\b(?:news|nntp):[^\\s@]+[@.][^\\s@]+(?:$|(?=[\\s.>]))\\b"
+#define NEWS_REGEX	"\\b(?:s?news|nntp):[^\\s@]+[@.][^\\s@]+(?:$|(?=[\\s.>]))\\b"
 
 
 #define FILTER_FILE	"filter"

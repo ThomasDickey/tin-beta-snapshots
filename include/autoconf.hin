@@ -246,6 +246,8 @@
 #	undef HAVE_TCGETATTR
 #	undef HAVE_TCSETATTR
 #	undef HAVE_TEMPNAM
+#	undef HAVE_TIGETINT
+#	undef HAVE_TIGETNUM
 #	undef HAVE_TMPNAM
 #	undef HAVE_TZSET
 #	undef HAVE_UNAME
@@ -269,6 +271,7 @@
 #	undef DECL_SYS_ERRLIST
 #	undef DECL_TGETSTR
 #	undef DECL_TGOTO
+#	undef DECL_TIGETSTR
 
 /*
  * The following are functions that we'll optionally prototype (to stifle
@@ -332,6 +335,7 @@
 #	undef DECL_TGETENT
 #	undef DECL_TGETFLAG
 #	undef DECL_TGETNUM
+#	undef DECL_TIGETFLAG
 #	undef DECL_TIGETNUM
 #	undef DECL_TIME
 #	undef DECL_TOLOWER
@@ -368,6 +372,11 @@
 #	undef USE_TERMINFO
 #	undef OUTC_RETURN
 #	undef OUTC_ARGS
+
+/*
+ * Miscelleneous terminfo/termcap definitions
+ */
+#undef	HAVE_EXTERN_TCAP_PC
 
 /*
  * Define a symbol for the prototype arguments of a signal handler

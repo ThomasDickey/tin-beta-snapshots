@@ -1,4 +1,17 @@
--- 1.5.4 release 20000414 "1959" --
+-- 1.5.4 release 20000415 "1959" --
+
+U027) Thomas E. Dickey <dickey@clark.net>
+      ADD. several configure cleanups/improvements
+      BUG. 
+      FIX. aclocal.m4, configure[.in], autoconf.h[in], makefile[.in]
+           Makefile[.in], extern.h, cook.c, curses.c, lang.c, pgp.c
+           rfc2045.c, wildmat.c
+
+U026) Roland Rosenfeld <roland@spinnaker.de>
+      BUG. f'uping/replying to qp/b64-base encodet arts didn't use the
+           decodet 8bit data, but the 7bit encodet art.
+      BUG. invers art_marked_selected marker might get lost
+      FIX. post.c, screen.c
 
  020) Ralf Doeblitz <doeblitz@gmx.de>
       BUG. missing gnksa initialization for add_posted_to_filter

@@ -1,21 +1,21 @@
-MANIFEST for tin-1.5.4 (Fri Apr 14 02:11:56 CEST 2000)
+MANIFEST for tin-1.5.4 (Sat Apr 15 19:59:54 CEST 2000)
 ----------------------------------------------------
   12248 ./Makefile
    6464 ./MANIFEST
    1690 ./README
    2209 ./README.VMS
    1534 ./README.WIN
-  80094 ./aclocal.m4
+  86333 ./aclocal.m4
     998 ./conf-tin
   27587 ./config.guess
   20343 ./config.sub
- 309055 ./configure
-  30354 ./configure.in
+ 314715 ./configure
+  24189 ./configure.in
    4765 ./install.sh
-  11846 ./makefile.in
+  11884 ./makefile.in
     661 ./mkdirs.sh
   11651 ./doc/ABOUT-NLS
-  13391 ./doc/CHANGES
+  13927 ./doc/CHANGES
  153544 ./doc/CHANGES.old
    1469 ./doc/DEBUG_REFS
   27725 ./doc/INSTALL
@@ -42,7 +42,7 @@ MANIFEST for tin-1.5.4 (Fri Apr 14 02:11:56 CEST 2000)
    2227 ./include/bool.h
    2128 ./include/bugrep.h
    9721 ./include/config.h
-  49023 ./include/extern.h
+  49218 ./include/extern.h
   14178 ./include/menukeys.h
    6450 ./include/nntplib.h
     666 ./include/plp_snprintf.h
@@ -51,7 +51,7 @@ MANIFEST for tin-1.5.4 (Fri Apr 14 02:11:56 CEST 2000)
    5124 ./include/rfc2045.h
    3559 ./include/stpwatch.h
    4091 ./include/tcurses.h
-  59485 ./include/tin.h
+  59467 ./include/tin.h
   11528 ./include/tinrc.h
    5486 ./include/tnntp.h
    2397 ./include/trace.h
@@ -63,8 +63,8 @@ MANIFEST for tin-1.5.4 (Fri Apr 14 02:11:56 CEST 2000)
   10103 ./src/charset.c
    9088 ./src/color.c
   67431 ./src/config.c
-  16466 ./src/cook.c
-  27099 ./src/curses.c
+  16470 ./src/cook.c
+  28174 ./src/curses.c
   12737 ./src/debug.c
    3668 ./src/envarg.c
   18998 ./src/feed.c
@@ -78,7 +78,7 @@ MANIFEST for tin-1.5.4 (Fri Apr 14 02:11:56 CEST 2000)
   11515 ./src/inews.c
   33846 ./src/init.c
    2814 ./src/joinpath.c
-  98521 ./src/lang.c
+  98451 ./src/lang.c
    4365 ./src/list.c
   11673 ./src/mail.c
    5501 ./src/mailcap.c
@@ -93,17 +93,17 @@ MANIFEST for tin-1.5.4 (Fri Apr 14 02:11:56 CEST 2000)
   37524 ./src/page.c
   24248 ./src/parsdate.y
   16937 ./src/plp_snprintf.c
-  11969 ./src/pgp.c
-  97198 ./src/post.c
+  12050 ./src/pgp.c
+  97792 ./src/post.c
   13908 ./src/prompt.c
   10272 ./src/read.c
   25031 ./src/refs.c
    3820 ./src/regex.c
    7450 ./src/rfc1521.c
   24179 ./src/rfc1522.c
-  19501 ./src/rfc2045.c
+  19529 ./src/rfc2045.c
   39992 ./src/save.c
-   6858 ./src/screen.c
+   7174 ./src/screen.c
   12468 ./src/search.c
   30315 ./src/select.c
    7982 ./src/sigfile.c
@@ -111,10 +111,10 @@ MANIFEST for tin-1.5.4 (Fri Apr 14 02:11:56 CEST 2000)
    7143 ./src/strftime.c
   10881 ./src/string.c
   13121 ./src/tags.c
-  10056 ./src/tcurses.c
+  10098 ./src/tcurses.c
   33481 ./src/thread.c
    2531 ./src/trace.c
-   4363 ./src/wildmat.c
+   4369 ./src/wildmat.c
    7708 ./src/xref.c
    4987 ./amiga/README
    5520 ./amiga/tin.readme
@@ -184,8 +184,8 @@ MANIFEST for tin-1.5.4 (Fri Apr 14 02:11:56 CEST 2000)
    1476 ./pcre/testoutput4
    1975 ./pcre/dll.mk
     212 ./pcre/pcre.def
-  13253 ./include/autoconf.hin
-  15725 ./src/Makefile.in
+  13423 ./include/autoconf.hin
+  15753 ./src/Makefile.in
    2124 ./src/ibm437_l1.tab
    2124 ./src/ibm850_l1.tab
    2124 ./src/l1_ibm437.tab
@@ -250,4 +250,4 @@ MANIFEST for tin-1.5.4 (Fri Apr 14 02:11:56 CEST 2000)
  110727 ./po/tin.pot
  173255 ./po/de.po
  171288 ./po/et.po
-4128897 total
+4137656 total
