@@ -74,8 +74,9 @@ tin, rtin \- A Usenet newsreader
 is a full-screen easy to use Usenet newsreader. It can read news locally
 (i.e., \fI/var/spool/news\fR) or remotely (\fBrtin\fP or \fBtin -r\fP option)
 via a NNTP (Network News Transport Protocol) server. It will automatically
-utilize NOV (News OVerview) style index files if available locally or via
-the NNTP XOVER command.
+utilize NOV
+.BR newsoverview (5)
+style index files if available locally or via the NNTP XOVER command.
 .PP
 .B tin
 has four separate levels of operation: Group selection level, Group level,
@@ -1596,7 +1597,7 @@ for 1.4
 Allows 8bit characters unencoded in the header of mail message. Default is
 OFF. Turning it ON is effective only if \fBmail_mime_encoding\fP is also set
 to 8bit. Leaving it OFF is safe for most users and compliant to Internet
-Mail Standard (STD 11/RFC 822 and RFC 2047).
+Mail Standard (\fBRFC2822\fP and \fBRFC2047\fP).
 .TP
 .B Mail address (mail_address)
 User's mail address (and fullname), if not username@host. This is used when
@@ -2439,8 +2440,9 @@ but after one click of any button.
 .\"
 .\"
 .SH "INDEX FILES"
-If your news server supports NOV index files (most modern installations
-will), then this section can be ignored.
+If your news server supports NOV index files
+.BR newsoverview (5)
+(most modern installations will), then this section can be ignored.
 .PP
 If your news server doesn't support NOV index files, \fBtin\fP will maintain
 an index for each newsgroup. Each user creates/updates his/her own index
@@ -2829,61 +2831,61 @@ fallbacks.
 I wish to thank the following people for supplying patches:
 .PP
 David Abbott, Earle Ake, Orbby S. Arka, Joachim Astel, Anton Aylward,
-Mark Ayzenshteyn, Jens Chr. Bachem, George Baltz, Volker Barthelmann, Kirk
-Bauer, Paul Bauwens, Dieter Becker, Wolfgang Behrens, Fabrice Bellet, Greg
-Berigan, Enrik Berkhan, Juergen Bernau, Dan Berry, Michael Bienia, David
-Binderman, Andrey Blochintsev, Chris Blum, Fokke de Boer, Andreas Borchert,
-Sebastian Bork, Mark Boucher, Robert Brady, Bill Brolik, Herman ten Brugge,
-Martin Buck, Jeremy Buhler, Leila Burrell-Davis, Sean Casey, Peter Castro,
-Troy Cauble, Andrey A. Chernov, Albert Chin-A-Young, Park Chong-Dae, Tan
-Kwee Chuan, Boleslaw Ciesielski, Robert Claeson, Steven Cogswell, Don
-Costello, Bryan Curnutt, Ned Danieley, Lars Dannenberg, Chris Davies, John
-Davis, Borislav Deianov, Thomas E. Dickey, Olaf Dietrich, Herbert Martin
-Dietze, Theo Van Dinter, Ralf Doeblitz, Bryan Dongray, Michael Douglass,
-Nickolay Dudorov, Craig Durland, Bernd Eckenfels, Phil Edge, Kirk Edson,
-Nick Efthymiou, Stefan Elf, L. Scott Emmons, Rob Engle, Olle Eriksson, Brent
-Ermlick, Bernd Ernesti, Ragnar Hojland Espinosa, Jason Faultless, Michael
-Faurot, Werner Fleck, John M. Flinchbaugh, Andy Gabor, Torsten Gesang,
-Ruediger Geys, Callum Gibson, Mike Glendinning, Philippe Goujard, Dan
-Greenspan, Karlo Gross, Carl Hage, Paul Halsema, Ed Hanway, Scott Hauck,
-Christian Haul, James Hawtin, Per Headland, Arnold Hendriks, Daniel Hermans,
-Jose Herrero, Dave Hill, Tom Hite, Torsten Homeyer, Ulli Horlacher, Keith
-Howell, Tommy Hsieh, Shih-Kun Huang, Steve Hunt, Jeff Hurwitt, Jeon
-Hyoung-Jo, Pieter Immelman, Jarkko Isokungas, Patrick St. Jean, Hal
-Jespersen, Park Sang Jin, Robbin Johnson, Jarkko Jormanainen, Nelson Kading,
-Geoffrey Keating, Karsten Keil, Charles S. Kerr, Fritz Kleeman, Andreas
-Kies, Janne Kiviluoto, Tomasz Kloczko, Dwarven Knight, Thomas Koenig,
-Karl-Koenig Koenigsson, Martin Kraemer, Thomas Kroener, Florian Kuehnert,
-Bernd Kuemmerlen, Kris Kugel, Manoj Kumar, Dawid Kuroczko, Yuri Kuzmenko,
-Olivier Lacroix, Geoff Lane, Alex Lange, Alain Lasserre, Stanislav Latishko,
-Hannu Laurila, Vincent Lefevre, Alexander Lehmann, Marty Leisner, Thomas
-Leitner, Hakan Lennestal, Kevin Lentin, Chua Choon Leong, Chris Lewis,
-Andreas Ley, David-Michael Lincke, Otto Lind, Richard Lloyd, Florian Lohoff,
-Reinhard Luebke, Clifford Luke, Michael Lupp, David MacKenzie, Hugh Mahon,
-Giuseppe De Marco, Scott Marovich, Dmitri A. Martynoff, Kazushi Marukawa,
-William McBrine, Owen Medd, Philipp Mergenthaler, Andreas Metzler, Arkadiusz
-Miskiewicz, Soren Moller, Bruce Momjian, Sergio Morales, Michael Morrell,
-Klaus Mueller, Mike Muise, Udo Munk, John R. Myers, Daniel Naber, Torsten
-Neumann, Dirk Nimmich, James Nugen, David E. O'Brien, Michael O'Reilly, Oleg
-Ohotnikov, Ronald Orr, Julien Oster, Jeb Palmer, Neil Parker, Tom Parry, Jim
-Patterson, Sven Paulus, Walter Pelissero, Cameron Perkins, Colin Perkins,
-Eric Peterson, Tim Pierce, Bill Poitras, Scott W. Powers, Wolfgang Prediger,
-GianPiero Puccioni, Thomas Quinot, Stefan Rapp, Martin Reising, Kyle Rhorer,
-Ted Richards, Steve Robbins, Ollivier Robert, Branden Robinson, Jim
-Robinson, Thomas Roessler, Erik van Roode, Meelis Roos, Stephen Roseman,
-Roland Rosenfeld, Peter Van Rossem, Clifton Royston, Rich Salz, Gary
-Sanders, Nickolay Saukh, John Sauter, Christopher Sawtell, Holger Schif,
-Volker Schmidt, John Schmitz, Torsten Schneider, Stefan Scholl, Rainer
-Scholz, Juergen Schroeder, Larry Schwimmer, Bart Sears, Karl-Olav Serrander,
-Doug Sewell, Philip Shearer, Jungshik Shin, Sergey Shkonda, Andreas Siegert,
-Mark Smith, Toomas Soome, Steve Spearman, Helmut Springer, Cliff Stanford,
-Steve Starck, Jason Steiner, Ralf Stephan, Michael Stenns, Helmrich
-Streitmatter, Hans Werner Strube, Dieter Stueken, Ed Sznyter, Dean Takemori,
-Darrell Tangman, Derek Terveer, Carsten Theis, Julian Thompson, David
-Tiller, Andry Timonin, Mark Tomlin, Michael Traub, Adri Verhoef, Paul
-Vickers, Oliver B. Warzecha, Jason Wessel, Cary Whitney, Henrik Wist, Greg
-Woods, Lloyd Wright, Jens Wuepper, Billy Y., Hideaki Yoshfuji, Nickolai
-Zeldovich, Zbigniew Zych
+Mark Ayzenshteyn, Jens Chr. Bachem, George Baltz, Dieter Baron, Volker
+Barthelmann, Kirk Bauer, Paul Bauwens, Dieter Becker, Wolfgang Behrens,
+Fabrice Bellet, Greg Berigan, Enrik Berkhan, Juergen Bernau, Dan Berry,
+Michael Bienia, David Binderman, Andrey Blochintsev, Chris Blum, Fokke de
+Boer, Andreas Borchert, Sebastian Bork, Mark Boucher, Robert Brady, Bill
+Brolik, Herman ten Brugge, Martin Buck, Jeremy Buhler, Leila Burrell-Davis,
+Sean Casey, Peter Castro, Troy Cauble, Andrey A. Chernov, Albert
+Chin-A-Young, Park Chong-Dae, Tan Kwee Chuan, Boleslaw Ciesielski, Robert
+Claeson, Steven Cogswell, Don Costello, Bryan Curnutt, Ned Danieley, Lars
+Dannenberg, Chris Davies, John Davis, Borislav Deianov, Thomas E. Dickey,
+Olaf Dietrich, Herbert Martin Dietze, Theo Van Dinter, Ralf Doeblitz, Bryan
+Dongray, Michael Douglass, Nickolay Dudorov, Craig Durland, Bernd Eckenfels,
+Phil Edge, Kirk Edson, Nick Efthymiou, Stefan Elf, L. Scott Emmons, Rob
+Engle, Olle Eriksson, Brent Ermlick, Bernd Ernesti, Ragnar Hojland Espinosa,
+Jason Faultless, Michael Faurot, Werner Fleck, John M. Flinchbaugh, Andy
+Gabor, Torsten Gesang, Ruediger Geys, Callum Gibson, Mike Glendinning,
+Philippe Goujard, Dan Greenspan, Karlo Gross, Carl Hage, Paul Halsema, Ed
+Hanway, Scott Hauck, Christian Haul, James Hawtin, Per Headland, Arnold
+Hendriks, Daniel Hermans, Jose Herrero, Dave Hill, Tom Hite, Torsten
+Homeyer, Ulli Horlacher, Keith Howell, Tommy Hsieh, Shih-Kun Huang, Steve
+Hunt, Jeff Hurwitt, Jeon Hyoung-Jo, Pieter Immelman, Jarkko Isokungas,
+Patrick St. Jean, Hal Jespersen, Park Sang Jin, Robbin Johnson, Jarkko
+Jormanainen, Nelson Kading, Geoffrey Keating, Karsten Keil, Charles S. Kerr,
+Fritz Kleeman, Andreas Kies, Janne Kiviluoto, Tomasz Kloczko, Dwarven
+Knight, Thomas Koenig, Karl-Koenig Koenigsson, Martin Kraemer, Thomas
+Kroener, Florian Kuehnert, Bernd Kuemmerlen, Kris Kugel, Manoj Kumar, Dawid
+Kuroczko, Yuri Kuzmenko, Olivier Lacroix, Geoff Lane, Alex Lange, Alain
+Lasserre, Stanislav Latishko, Hannu Laurila, Vincent Lefevre, Alexander
+Lehmann, Marty Leisner, Thomas Leitner, Hakan Lennestal, Kevin Lentin, Chua
+Choon Leong, Chris Lewis, Andreas Ley, David-Michael Lincke, Otto Lind,
+Richard Lloyd, Florian Lohoff, Reinhard Luebke, Clifford Luke, Michael Lupp,
+David MacKenzie, Hugh Mahon, Giuseppe De Marco, Scott Marovich, Dmitri A.
+Martynoff, Kazushi Marukawa, William McBrine, Owen Medd, Philipp
+Mergenthaler, Andreas Metzler, Arkadiusz Miskiewicz, Soren Moller, Bruce
+Momjian, Sergio Morales, Michael Morrell, Klaus Mueller, Mike Muise, Udo
+Munk, John R. Myers, Daniel Naber, Torsten Neumann, Dirk Nimmich, James
+Nugen, David E. O'Brien, Michael O'Reilly, Oleg Ohotnikov, Ronald Orr,
+Julien Oster, Jeb Palmer, Neil Parker, Tom Parry, Jim Patterson, Sven
+Paulus, Walter Pelissero, Cameron Perkins, Colin Perkins, Eric Peterson, Tim
+Pierce, Bill Poitras, Scott W. Powers, Wolfgang Prediger, GianPiero
+Puccioni, Thomas Quinot, Stefan Rapp, Martin Reising, Kyle Rhorer, Ted
+Richards, Steve Robbins, Ollivier Robert, Branden Robinson, Jim Robinson,
+Thomas Roessler, Erik van Roode, Meelis Roos, Stephen Roseman, Roland
+Rosenfeld, Peter Van Rossem, Clifton Royston, Rich Salz, Gary Sanders,
+Nickolay Saukh, John Sauter, Christopher Sawtell, Holger Schif, Volker
+Schmidt, John Schmitz, Torsten Schneider, Stefan Scholl, Rainer Scholz,
+Juergen Schroeder, Larry Schwimmer, Bart Sears, Karl-Olav Serrander, Doug
+Sewell, Philip Shearer, Jungshik Shin, Sergey Shkonda, Andreas Siegert, Mark
+Smith, Toomas Soome, Steve Spearman, Helmut Springer, Cliff Stanford, Steve
+Starck, Jason Steiner, Ralf Stephan, Michael Stenns, Helmrich Streitmatter,
+Hans Werner Strube, Dieter Stueken, Ed Sznyter, Dean Takemori, Darrell
+Tangman, Derek Terveer, Carsten Theis, Julian Thompson, David Tiller, Andry
+Timonin, Mark Tomlin, Michael Traub, Adri Verhoef, Paul Vickers, Oliver B.
+Warzecha, Jason Wessel, Cary Whitney, Henrik Wist, Greg Woods, Lloyd Wright,
+Jens Wuepper, Billy Y., Hideaki Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
 .\"
 .\"
 .SH AUTHOR
@@ -2907,6 +2909,7 @@ Urs Janssen <urs@tin.org>
 .BR lpr (1),
 .BR mbox (5),
 .BR metamail (1),
+.BR newsoverview (5),
 .BR noffle (1),
 .BR pcre (3),
 .BR pgp (1),
@@ -2926,4 +2929,5 @@ Urs Janssen <urs@tin.org>
 .BR RFC2046 ,
 .BR RFC2047 ,
 .BR RFC2048 ,
+.BR RFC2822 ,
 .BR RFC2980

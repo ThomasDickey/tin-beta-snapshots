@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2001-05-22 20:15+0200\n"
+"POT-Creation-Date: 2001-06-04 23:56+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,12 +15,12 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: ENCODING\n"
 
-#: src/active.c:370 src/open.c:1045
+#: src/active.c:374 src/open.c:1045
 #, c-format
 msgid "Invalid response to GROUP command, %s"
 msgstr ""
 
-#: src/active.c:372
+#: src/active.c:376
 #, c-format
 msgid "Wrong newsgroup name in response of GROUP command, %s for %s"
 msgstr ""
@@ -256,7 +256,7 @@ msgstr ""
 msgid "Insecure permissions of %s (%o)"
 msgstr ""
 
-#: src/cook.c:947 src/cook.c:966
+#: src/cook.c:948 src/cook.c:967
 msgid ", name: "
 msgstr ""
 
@@ -281,7 +281,7 @@ msgid " and enter next unread group"
 msgstr ""
 
 #. should not happen
-#: src/help.c:746
+#: src/help.c:490 src/help.c:633
 msgid "Unknown display level"
 msgstr ""
 
@@ -337,8 +337,7 @@ msgid "Article not saved"
 msgstr ""
 
 #: src/lang.c:57
-#, c-format
-msgid "Article Level Commands (page %d of %d)"
+msgid "Article Level Commands"
 msgstr ""
 
 #: src/lang.c:58
@@ -615,217 +614,221 @@ msgid "Connecting to %s:%d..."
 msgstr ""
 
 #: src/lang.c:146
-msgid "Creating active file for saved groups...\n"
+msgid "<CR>"
 msgstr ""
 
 #: src/lang.c:147
-msgid "Creating newsrc file...\n"
+msgid "Creating active file for saved groups...\n"
 msgstr ""
 
 #: src/lang.c:148
-msgid "Delete saved files that have been post processed?"
+msgid "Creating newsrc file...\n"
 msgstr ""
 
 #: src/lang.c:149
-msgid "Deleting temporary files..."
+msgid "Delete saved files that have been post processed?"
 msgstr ""
 
 #: src/lang.c:150
-msgid "*** End of article ***"
+msgid "Deleting temporary files..."
 msgstr ""
 
 #: src/lang.c:151
-msgid "*** End of articles ***"
+msgid "*** End of article ***"
 msgstr ""
 
 #: src/lang.c:152
-msgid "*** End of groups ***"
+msgid "*** End of articles ***"
 msgstr ""
 
 #: src/lang.c:153
-msgid "*** End of thread ***"
+msgid "*** End of groups ***"
 msgstr ""
 
 #: src/lang.c:154
-msgid "Enter Message-ID to goto> "
+msgid "*** End of thread ***"
 msgstr ""
 
 #: src/lang.c:155
-msgid " and enter next unread thread"
+msgid "Enter Message-ID to goto> "
 msgstr ""
 
 #: src/lang.c:156
-msgid "Enter option number> "
+msgid " and enter next unread thread"
 msgstr ""
 
 #: src/lang.c:157
+msgid "Enter option number> "
+msgstr ""
+
+#: src/lang.c:158
 #, c-format
 msgid "Enter range [%s]> "
 msgstr ""
 
-#: src/lang.c:158
+#: src/lang.c:159
 msgid ""
 "\n"
 "Warning: Approved: header used.\n"
 msgstr ""
 
-#: src/lang.c:160
+#: src/lang.c:161
 msgid ""
 "\n"
 "Error: Bad address in Approved: header.\n"
 msgstr ""
 
-#: src/lang.c:161
+#: src/lang.c:162
 msgid ""
 "\n"
 "Error: Bad address in From: header.\n"
 msgstr ""
 
-#: src/lang.c:162
+#: src/lang.c:163
 msgid ""
 "\n"
 "Error: Bad address in Reply-To: header.\n"
 msgstr ""
 
-#: src/lang.c:163
+#: src/lang.c:164
 msgid ""
 "\n"
 "Error: Bad FQDN in Message-ID: header.\n"
 msgstr ""
 
-#: src/lang.c:165
+#: src/lang.c:166
 #, c-format
 msgid "Corrupted file %s"
 msgstr ""
 
-#: src/lang.c:166
+#: src/lang.c:167
 msgid "Internal error in GNKSA routine - send bug report.\n"
 msgstr ""
 
-#: src/lang.c:167
+#: src/lang.c:168
 msgid "Left angle bracket missing in route address.\n"
 msgstr ""
 
-#: src/lang.c:168
+#: src/lang.c:169
 msgid "Left parenthese missing in old-style address.\n"
 msgstr ""
 
-#: src/lang.c:169
+#: src/lang.c:170
 msgid "Right parenthese missing in old-style address.\n"
 msgstr ""
 
-#: src/lang.c:170
+#: src/lang.c:171
 msgid "At-sign missing in mail address.\n"
 msgstr ""
 
-#: src/lang.c:171
+#: src/lang.c:172
 msgid "Single component FQDN is not allowed. Add your domain.\n"
 msgstr ""
 
-#: src/lang.c:172
+#: src/lang.c:173
 msgid ""
 "Invalid domain. Send bug report if your top level domain really exists.\n"
 "Use .invalid as top level domain for munged addresses.\n"
 msgstr ""
 
-#: src/lang.c:173
+#: src/lang.c:174
 msgid ""
 "Illegal domain. Send bug report if your top level domain really exists.\n"
 "Use .invalid as top level domain for munged addresses.\n"
 msgstr ""
 
-#: src/lang.c:174
+#: src/lang.c:175
 msgid ""
 "Unknown domain. Send bug report if your top level domain really exists.\n"
 "Use .invalid as top level domain for munged addresses.\n"
 msgstr ""
 
-#: src/lang.c:175
+#: src/lang.c:176
 msgid "Illegal character in FQDN.\n"
 msgstr ""
 
-#: src/lang.c:176
+#: src/lang.c:177
 msgid "Zero length FQDN component not allowed.\n"
 msgstr ""
 
-#: src/lang.c:177
+#: src/lang.c:178
 msgid "FQDN component exceeds maximum allowed length (63 chars).\n"
 msgstr ""
 
-#: src/lang.c:178
+#: src/lang.c:179
 msgid "FQDN component may not start or end with hyphen.\n"
 msgstr ""
 
-#: src/lang.c:179
+#: src/lang.c:180
 msgid "FQDN component may not start with digit.\n"
 msgstr ""
 
-#: src/lang.c:180
+#: src/lang.c:181
 msgid "Domain literal has impossible numeric value.\n"
 msgstr ""
 
-#: src/lang.c:181
+#: src/lang.c:182
 msgid ""
 "Domain literal is for private use only and not allowed for global use.\n"
 msgstr ""
 
-#: src/lang.c:182
+#: src/lang.c:183
 msgid "Right bracket missing in domain literal.\n"
 msgstr ""
 
-#: src/lang.c:183
+#: src/lang.c:184
 msgid "Missing localpart of mail address.\n"
 msgstr ""
 
-#: src/lang.c:184
+#: src/lang.c:185
 msgid "Illegal character in localpart of mail address.\n"
 msgstr ""
 
-#: src/lang.c:185
-msgid "Zero length localpart component not allowed.\n"
-msgstr ""
-
 #: src/lang.c:186
-msgid ""
-"Illegal character in realname.\n"
-"Unquoted words may not contain '!()<>@,;:\\.[]' in route addresses.\n"
+msgid "Zero length localpart component not allowed.\n"
 msgstr ""
 
 #: src/lang.c:187
 msgid ""
 "Illegal character in realname.\n"
-"Quoted words may not contain '()<>\\'.\n"
+"Unquoted words may not contain '!()<>@,;:\\.[]' in route addresses.\n"
 msgstr ""
 
 #: src/lang.c:188
 msgid ""
 "Illegal character in realname.\n"
-"Encoded words may not contain '!()<>@,;:\"\\.[]/=' in parameter.\n"
+"Quoted words may not contain '()<>\\'.\n"
 msgstr ""
 
 #: src/lang.c:189
-msgid "Bad syntax in encoded word used in realname.\n"
+msgid ""
+"Illegal character in realname.\n"
+"Encoded words may not contain '!()<>@,;:\"\\.[]/=' in parameter.\n"
 msgstr ""
 
 #: src/lang.c:190
-msgid ""
-"Illegal character in realname.\n"
-"Unquoted words may not contain '()<>\\' in oldstyle addresses.\n"
+msgid "Bad syntax in encoded word used in realname.\n"
 msgstr ""
 
 #: src/lang.c:191
 msgid ""
 "Illegal character in realname.\n"
-"Control characters and unencoded 8bit characters > 127 are not allowed.\n"
+"Unquoted words may not contain '()<>\\' in oldstyle addresses.\n"
 msgstr ""
 
 #: src/lang.c:192
+msgid ""
+"Illegal character in realname.\n"
+"Control characters and unencoded 8bit characters > 127 are not allowed.\n"
+msgstr ""
+
+#: src/lang.c:193
 msgid ""
 "\n"
 "Error: No blank line found after header.\n"
 msgstr ""
 
-#: src/lang.c:193
+#: src/lang.c:194
 msgid ""
 "\n"
 "Error: Posting contains non-ASCII characters but MM_CHARSET is set to\n"
@@ -834,7 +837,7 @@ msgid ""
 "       editing tinrc.\n"
 msgstr ""
 
-#: src/lang.c:198
+#: src/lang.c:199
 msgid ""
 "\n"
 "Error: Posting contains  non-ASCII characters  but the  MIME encoding\n"
@@ -844,13 +847,13 @@ msgid ""
 "       using the M)enu of configurable options or by editing tinrc.\n"
 msgstr ""
 
-#: src/lang.c:204
+#: src/lang.c:205
 msgid ""
 "\n"
 "Error: Article starts with blank line instead of header\n"
 msgstr ""
 
-#: src/lang.c:205
+#: src/lang.c:206
 #, c-format
 msgid ""
 "\n"
@@ -858,7 +861,7 @@ msgid ""
 "%s\n"
 msgstr ""
 
-#: src/lang.c:206
+#: src/lang.c:207
 #, c-format
 msgid ""
 "\n"
@@ -868,19 +871,19 @@ msgid ""
 "       newsgroup names.\n"
 msgstr ""
 
-#: src/lang.c:211
+#: src/lang.c:212
 msgid ""
 "\n"
 "Error: the \"Subject:\" line is empty.\n"
 msgstr ""
 
-#: src/lang.c:212
+#: src/lang.c:213
 msgid ""
 "\n"
 "Error: the \"Newsgroups:\" line lists no newsgroups.\n"
 msgstr ""
 
-#: src/lang.c:213
+#: src/lang.c:214
 #, c-format
 msgid ""
 "\n"
@@ -889,25 +892,25 @@ msgid ""
 "       Please write all newsgroups into a single line.\n"
 msgstr ""
 
-#: src/lang.c:217
+#: src/lang.c:218
 msgid ""
 "\n"
 "Error: the \"Newsgroups:\" line is missing from the article header.\n"
 msgstr ""
 
-#: src/lang.c:218
+#: src/lang.c:219
 msgid ""
 "\n"
 "Error: the \"Subject:\" line is missing from the article header.\n"
 msgstr ""
 
-#: src/lang.c:219
+#: src/lang.c:220
 msgid ""
 "\n"
 "Error: the \"To:\" line is missing from the article header.\n"
 msgstr ""
 
-#: src/lang.c:220
+#: src/lang.c:221
 #, c-format
 msgid ""
 "\n"
@@ -915,724 +918,756 @@ msgid ""
 "%s\n"
 msgstr ""
 
-#: src/lang.c:221
+#: src/lang.c:222
 #, c-format
 msgid ""
 "\n"
 "Error: there are multiple (%d) \"%s\" lines in the header.\n"
 msgstr ""
 
-#: src/lang.c:223
+#: src/lang.c:224
 #, c-format
 msgid "metamail failed: %s"
 msgstr ""
 
-#: src/lang.c:225
+#: src/lang.c:226
 msgid "Can't get a (fully-qualified) domain-name!\n"
 msgstr ""
 
-#: src/lang.c:226
+#: src/lang.c:227
 #, c-format
 msgid "No permissions to go into %s\n"
 msgstr ""
 
-#: src/lang.c:227
+#: src/lang.c:228
 msgid ""
 "\n"
 "Error: From: line missing.\n"
 msgstr ""
 
-#: src/lang.c:228
+#: src/lang.c:229
 #, c-format
 msgid "No read permissions for %s\n"
 msgstr ""
 
-#: src/lang.c:229
+#: src/lang.c:230
 #, c-format
 msgid "File %s does not exist\n"
 msgstr ""
 
-#: src/lang.c:230
+#: src/lang.c:231
 #, c-format
 msgid "No write permissions for %s\n"
 msgstr ""
 
-#: src/lang.c:231
+#: src/lang.c:232
 msgid "errors"
 msgstr ""
 
-#: src/lang.c:232
+#: src/lang.c:233
 #, c-format
 msgid ""
 "\n"
 "Error on line %d: \"Sender:\" header not allowed (it will be added for you)\n"
 msgstr ""
 
-#: src/lang.c:233
+#: src/lang.c:234
 msgid "error"
 msgstr ""
 
-#: src/lang.c:234
-msgid "Exiting..."
-msgstr ""
-
 #: src/lang.c:235
-msgid "leaving external mail-reader"
+msgid "<ESC>"
 msgstr ""
 
 #: src/lang.c:236
-#, c-format
-msgid "Extracting %s..."
+msgid "Exiting..."
 msgstr ""
 
 #: src/lang.c:237
-#, c-format
-msgid "Failed to connect to NNTP server %s. Exiting..."
+msgid "leaving external mail-reader"
 msgstr ""
 
 #: src/lang.c:238
 #, c-format
-msgid "Error writing %s file. Filesystem full? File reset to previous state."
+msgid "Extracting %s..."
 msgstr ""
 
 #: src/lang.c:239
 #, c-format
-msgid "Error making backup of %s file. Filesystem full?"
+msgid "Failed to connect to NNTP server %s. Exiting..."
 msgstr ""
 
 #: src/lang.c:240
 #, c-format
-msgid "Filtering global rules (%d/%d)..."
+msgid "Error writing %s file. Filesystem full? File reset to previous state."
 msgstr ""
 
 #: src/lang.c:241
 #, c-format
-msgid "Enter wildcard pattern [%s]> "
+msgid "Error making backup of %s file. Filesystem full?"
 msgstr ""
 
 #: src/lang.c:242
+#, c-format
+msgid "Filtering global rules (%d/%d)..."
+msgstr ""
+
+#: src/lang.c:243
+#, c-format
+msgid "Enter wildcard pattern [%s]> "
+msgstr ""
+
+#: src/lang.c:244
 #, c-format
 msgid ""
 "\n"
 "You requested followups to your article to go to the following %s:\n"
 msgstr ""
 
-#: src/lang.c:243
+#: src/lang.c:245
 #, c-format
 msgid "  %s\t Answers will be directed to you by mail.\n"
 msgstr ""
 
-#: src/lang.c:244
+#: src/lang.c:246
 msgid "global "
-msgstr ""
-
-#: src/lang.c:247
-#, c-format
-msgid "Group %.*s ('q' to quit)..."
 msgstr ""
 
 #: src/lang.c:249
 #, c-format
-msgid "Group %.*s..."
+msgid "Group %.*s ('q' to quit)..."
 msgstr ""
 
-#: src/lang.c:252
+#: src/lang.c:251
 #, c-format
-msgid "Group %s is moderated. Continue?"
-msgstr ""
-
-#: src/lang.c:253
-msgid "groups"
+msgid "Group %.*s..."
 msgstr ""
 
 #: src/lang.c:254
 #, c-format
-msgid "Top Level Commands (page %d of %d)"
+msgid "Group %s is moderated. Continue?"
 msgstr ""
 
 #: src/lang.c:255
-msgid "Group Selection"
+msgid "groups"
 msgstr ""
 
 #: src/lang.c:256
+msgid "Top Level Commands"
+msgstr ""
+
+#: src/lang.c:257
+msgid "Group Selection"
+msgstr ""
+
+#: src/lang.c:258
 msgid "group"
 msgstr ""
 
-#. Multi-line strings won't work on help pager
-#: src/lang.c:259
-msgid "Display properties"
-msgstr ""
-
 #: src/lang.c:260
-msgid "------------------"
+msgid "kill an article via a menu"
 msgstr ""
 
 #: src/lang.c:261
-msgid "Moving around"
+msgid "auto-select (hot) an article via a menu"
 msgstr ""
 
-#: src/lang.c:262 src/lang.c:266
-msgid "-------------"
+#: src/lang.c:262
+msgid "Browse URLs in article"
 msgstr ""
 
 #: src/lang.c:263
-msgid "Group/thread/article operations"
-msgstr ""
-
-#: src/lang.c:264
-msgid "-------------------------------"
-msgstr ""
-
-#: src/lang.c:265
-msgid "Miscellaneous"
-msgstr ""
-
-#: src/lang.c:269
-msgid "!\t  shell escape"
-msgstr ""
-
-#: src/lang.c:272
-msgid "B\t  search all articles for a given string (this may take some time)"
-msgstr ""
-
-#: src/lang.c:273
-msgid "\t  (searches are case-insensitive and wrap around to all articles)"
-msgstr ""
-
-#: src/lang.c:274
-msgid "D\t  cancel (delete) current article; must have been posted by you"
-msgstr ""
-
-#: src/lang.c:275
-msgid "I\t  toggle inverse video"
-msgstr ""
-
-#: src/lang.c:276
-msgid "K\t  mark current thread as read"
-msgstr ""
-
-#: src/lang.c:277
-msgid "L\t  goto article chosen by Message-ID"
-msgstr ""
-
-#: src/lang.c:278
-msgid "M\t  menu of configurable options"
-msgstr ""
-
-#: src/lang.c:279
-msgid "Q\t  quit"
-msgstr ""
-
-#: src/lang.c:280
-msgid "S U\t  subscribe (U = unsubscribe) to groups that match pattern"
-msgstr ""
-
-#: src/lang.c:281
-msgid "T\t  return to group selection level"
-msgstr ""
-
-#: src/lang.c:282
-msgid "U\t  untag all tagged threads"
-msgstr ""
-
-#: src/lang.c:283
-msgid "W\t  list articles posted by you (from posted file)"
-msgstr ""
-
-#: src/lang.c:284
-msgid "X\t  toggle display of all/selected articles"
-msgstr ""
-
-#: src/lang.c:285
-msgid "U\t  Browse URL's in article"
-msgstr ""
-
-#: src/lang.c:286
-msgid "V\t  View/save multimedia attachments"
-msgstr ""
-
-#: src/lang.c:288
-msgid "a A\t  search for articles by author (a = forward, A = backward)"
-msgstr ""
-
-#: src/lang.c:290
-msgid "<SPACE> b down (b = up) one page"
-msgstr ""
-
-#: src/lang.c:291
-#, c-format
-msgid "R\t  report bug or comment via mail to %s"
-msgstr ""
-
-#: src/lang.c:292
-msgid ""
-"C\t  mark all articles as read and enter next group with unread articles"
-msgstr ""
-
-#: src/lang.c:293
-msgid "c\t  mark all articles as read and return to group selection menu"
-msgstr ""
-
-#: src/lang.c:294
-msgid ""
-"c C\t  mark all articles in chosen group read (C = and enter next unread "
-"group)"
-msgstr ""
-
-#: src/lang.c:295
-msgid "c\t  mark thread as read and return to group index page"
-msgstr ""
-
-#: src/lang.c:296
-msgid "C\t  mark thread as read and enter next unread thread or group"
-msgstr ""
-
-#: src/lang.c:297
-msgid "K\t  mark article as read and move cursor to next unread article"
-msgstr ""
-
-#: src/lang.c:300
-msgid "&\t  toggle color"
-msgstr ""
-
-#: src/lang.c:303
-msgid ":\t  skip next block of included text"
-msgstr ""
-
-#: src/lang.c:304
-msgid "^A\t  auto-select (hot) an article via a menu"
-msgstr ""
-
-#: src/lang.c:305
-msgid "^D ^U\t  down (^U = up) one page"
-msgstr ""
-
-#: src/lang.c:306
-msgid "^F ^B\t  down (^B = up) one page"
-msgstr ""
-
-#: src/lang.c:309
-msgid "^G\t  perform PGP operations on article"
-msgstr ""
-
-#: src/lang.c:312
-msgid "^H\t  show article in raw-mode (including all headers)"
-msgstr ""
-
-#: src/lang.c:313
-msgid "^K\t  kill an article via a menu"
-msgstr ""
-
-#: src/lang.c:314
-msgid "^L\t  redraw page"
-msgstr ""
-
-#: src/lang.c:315
-msgid "^N ^P\t  down (^P = up) one line"
-msgstr ""
-
-#: src/lang.c:316
-msgid "O ^O\t  post postponed articles"
-msgstr ""
-
-#: src/lang.c:317
-msgid "^T\t  toggle tabwidth 4 <-> 8"
-msgstr ""
-
-#: src/lang.c:318
-msgid ""
-"d\t  cycle the display of authors email address, real name, both or neither"
-msgstr ""
-
-#: src/lang.c:319
-msgid "-\t  display last article viewed"
-msgstr ""
-
-#: src/lang.c:320
-msgid "e\t  edit article (mail-groups only)"
-msgstr ""
-
-#: src/lang.c:321
-msgid "=\t  select threads that match user specified pattern"
-msgstr ""
-
-#: src/lang.c:322
-msgid "<ESC>\t  escape from command prompt"
-msgstr ""
-
-#: src/lang.c:323
-msgid "g\t  choose group by name"
-msgstr ""
-
-#: src/lang.c:324
-msgid "^ $\t  choose first ($ = last) group in list"
-msgstr ""
-
-#: src/lang.c:325
-msgid "<CR>\t  read chosen group"
-msgstr ""
-
-#: src/lang.c:326
-msgid "G\t  toggle limit number of articles to get, and reload"
-msgstr ""
-
-#: src/lang.c:327
-msgid "^R\t  reset .newsrc (all available articles in groups marked unread)"
-msgstr ""
-
-#: src/lang.c:328
-msgid "d\t  toggle display of group name only or group name plus description"
-msgstr ""
-
-#: src/lang.c:329
-msgid "#\t  choose range of groups to be affected by next command"
-msgstr ""
-
-#: src/lang.c:330
-msgid "0 - 9\t  choose group by number"
-msgstr ""
-
-#: src/lang.c:331
-msgid "q Q\t  quit"
-msgstr ""
-
-#: src/lang.c:332
-msgid "r\t  toggle display to show all/unread subscribed groups"
-msgstr ""
-
-#: src/lang.c:333
-msgid "/ ?\t  search forwards for a group name (? = backwards)"
-msgstr ""
-
-#: src/lang.c:334
-msgid "\t  (all searches are case-insensitive and wrap around)"
-msgstr ""
-
-#: src/lang.c:335
-msgid "T\t  tag all parts of current multipart-message in order"
-msgstr ""
-
-#: src/lang.c:336
-msgid "n <TAB>\t  enter next group with unread news"
-msgstr ""
-
-#: src/lang.c:337
-msgid "X\t  quit without saving configuration changes"
-msgstr ""
-
-#: src/lang.c:338
-msgid "y\t  toggle display to show all/subscribed groups"
-msgstr ""
-
-#: src/lang.c:339
-msgid "z Z\t  mark all articles in chosen group unread"
-msgstr ""
-
-#: src/lang.c:340
-msgid "h H\t  get help (H = toggle mini help menu display)"
-msgstr ""
-
-#: src/lang.c:341
-msgid "#\t  choose range of articles to be affected by next command"
-msgstr ""
-
-#: src/lang.c:342
-msgid "i\t  toggle info message in last line (subject/description)"
-msgstr ""
-
-#: src/lang.c:343
-msgid "^ $\t  choose first ($ = last) thread in list"
-msgstr ""
-
-#: src/lang.c:344
-msgid "@\t  toggle all selections (all articles)"
-msgstr ""
-
-#: src/lang.c:345 src/lang.c:404
-msgid "<CR>\t  read chosen article"
-msgstr ""
-
-#: src/lang.c:346
-msgid ".\t  toggle selection of thread"
-msgstr ""
-
-#: src/lang.c:347
-msgid "n p\t  display next (p = previous) group"
-msgstr ""
-
-#: src/lang.c:348
-msgid "0 - 9\t  choose thread by number"
-msgstr ""
-
-#: src/lang.c:349
-msgid "N P\t  display next (P = previous) unread article"
-msgstr ""
-
-#: src/lang.c:350
-msgid "/ ?\t  search for articles by Subject line (/ = forward, ? = backward)"
-msgstr ""
-
-#: src/lang.c:351
-msgid "*\t  select thread"
-msgstr ""
-
-#: src/lang.c:352 src/lang.c:387
-msgid "<TAB>\t  display next unread article"
-msgstr ""
-
-#: src/lang.c:353
-msgid "~\t  undo all selections (all articles)"
-msgstr ""
-
-#: src/lang.c:354
-msgid "j k\t  down (k = up) one line"
-msgstr ""
-
-#: src/lang.c:355
-msgid "]\t  quickly kill an article using defaults"
-msgstr ""
-
-#: src/lang.c:356
-msgid "[\t  quickly auto-select (hot) an article using defaults"
-msgstr ""
-
-#: src/lang.c:357
-msgid "l\t  list articles within current thread (bring up Thread sub-menu)"
-msgstr ""
-
-#: src/lang.c:358
-msgid "m\t  move chosen group within list"
-msgstr ""
-
-#: src/lang.c:359
-msgid "N\t  choose next group with unread news"
-msgstr ""
-
-#: src/lang.c:362
-msgid "o\t  output article/thread/hot/pattern/tagged articles to printer"
-msgstr ""
-
-#: src/lang.c:365
-msgid "^ $\t  display first ($ = last) page of article"
-msgstr ""
-
-#: src/lang.c:366
-msgid "@\t  reverse article selections"
-msgstr ""
-
-#: src/lang.c:367
-msgid "^E\t  reply through mail to author quoting complete headers"
-msgstr ""
-
-#: src/lang.c:368
-msgid "^W\t  post followup to current article quoting complete headers"
-msgstr ""
-
-#: src/lang.c:369
-msgid "<CR>\t  display first article in next thread"
-msgstr ""
-
-#: src/lang.c:370
-msgid "%\t  toggle ROT-13 (basic decode) for current article"
-msgstr ""
-
-#: src/lang.c:371
-msgid ".\t  toggle article selection"
-msgstr ""
-
-#: src/lang.c:372
-msgid "f F\t  post followup (F = don't copy text) to current article"
-msgstr ""
-
-#: src/lang.c:373
-msgid "g G\t  display first (G = last) page of article"
-msgstr ""
-
-#. constext txt_help_p_k[] = N_("k K\t  mark article (K = thread) as read and advance to next unread");
-#: src/lang.c:375
-msgid "K\t  mark thread as read and advance to next unread"
-msgstr ""
-
-#: src/lang.c:376
-msgid "(\t  toggle display of uuencoded sections on/off"
-msgstr ""
-
-#: src/lang.c:377
-msgid ")\t  toggle display of sections hidden by a form-feed (^L) on/off"
-msgstr ""
-
-#: src/lang.c:378
-msgid "m\t  mail article/thread/hot/pattern/tagged articles to someone"
-msgstr ""
-
-#: src/lang.c:379
-msgid "n N\t  display next (N = next unread) article"
-msgstr ""
-
-#: src/lang.c:380
 msgid "0 - 9\t  display article by number in current thread"
 msgstr ""
 
-#: src/lang.c:381
-msgid "p P\t  display previous (P = previous unread) article"
+#: src/lang.c:264
+msgid "cancel (delete) current article; must have been posted by you"
+msgstr ""
+
+#: src/lang.c:265
+msgid "edit article (mail-groups only)"
+msgstr ""
+
+#: src/lang.c:266
+msgid "display first article in current thread"
+msgstr ""
+
+#: src/lang.c:267
+msgid "display first page of article"
+msgstr ""
+
+#: src/lang.c:268
+msgid "post followup to current article"
+msgstr ""
+
+#: src/lang.c:269
+msgid "post followup (don't copy text) to current article"
+msgstr ""
+
+#: src/lang.c:270
+msgid "post followup to current article quoting complete headers"
+msgstr ""
+
+#: src/lang.c:271
+msgid "display last article in current thread"
+msgstr ""
+
+#: src/lang.c:272
+msgid "display last page of article"
+msgstr ""
+
+#: src/lang.c:273
+msgid "mark thread as read and advance to next unread"
+msgstr ""
+
+#: src/lang.c:274
+msgid "display next article"
+msgstr ""
+
+#: src/lang.c:275
+msgid "display first article in next thread"
+msgstr ""
+
+#: src/lang.c:276 src/lang.c:286 src/lang.c:358 src/lang.c:359
+msgid "display next unread article"
+msgstr ""
+
+#: src/lang.c:277
+msgid "goto the article that this one followed up"
+msgstr ""
+
+#: src/lang.c:279
+msgid "perform PGP operations on article"
+msgstr ""
+
+#: src/lang.c:281
+msgid "display previous article"
+msgstr ""
+
+#: src/lang.c:282 src/lang.c:361
+msgid "display previous unread article"
+msgstr ""
+
+#: src/lang.c:283
+msgid "quickly kill an article using defaults"
+msgstr ""
+
+#: src/lang.c:284
+msgid "quickly auto-select (hot) an article using defaults"
+msgstr ""
+
+#: src/lang.c:285
+msgid "return to group selection level"
+msgstr ""
+
+#: src/lang.c:287
+msgid "reply through mail to author"
+msgstr ""
+
+#: src/lang.c:288
+msgid "reply through mail (don't copy text) to author"
+msgstr ""
+
+#: src/lang.c:289
+msgid "reply through mail to author quoting complete headers"
+msgstr ""
+
+#: src/lang.c:290 src/lang.c:363
+msgid "repost chosen article to another group"
+msgstr ""
+
+#: src/lang.c:291
+msgid "search backwards within this article"
+msgstr ""
+
+#: src/lang.c:292
+msgid "search forwards within this article"
+msgstr ""
+
+#: src/lang.c:293
+msgid "show article in raw-mode (including all headers)"
+msgstr ""
+
+#: src/lang.c:294
+msgid "skip next block of included text"
+msgstr ""
+
+#: src/lang.c:295
+msgid "toggle display of sections hidden by a form-feed (^L) on/off"
+msgstr ""
+
+#: src/lang.c:297
+msgid "toggle word highlighting on/off"
+msgstr ""
+
+#: src/lang.c:299
+msgid "toggle ROT-13 (basic decode) for current article"
+msgstr ""
+
+#: src/lang.c:300
+msgid "toggle tabwidth 4 <-> 8"
+msgstr ""
+
+#: src/lang.c:301
+msgid "toggle german TeX style decoding for current article"
+msgstr ""
+
+#: src/lang.c:302
+msgid "toggle display of uuencoded sections on/off"
+msgstr ""
+
+#: src/lang.c:303
+msgid "View/save multimedia attachmenats"
+msgstr ""
+
+#: src/lang.c:304
+#, c-format
+msgid "report bug or comment via mail to %s"
+msgstr ""
+
+#: src/lang.c:305
+msgid "choose range of articles to be affected by next command"
+msgstr ""
+
+#: src/lang.c:306
+msgid "escape from command prompt"
+msgstr ""
+
+#: src/lang.c:307
+msgid "get help"
+msgstr ""
+
+#: src/lang.c:308
+msgid "display last article viewed"
+msgstr ""
+
+#: src/lang.c:309
+msgid "down one line"
+msgstr ""
+
+#: src/lang.c:310
+msgid "up one line"
+msgstr ""
+
+#: src/lang.c:311
+msgid "goto article chosen by Message-ID"
+msgstr ""
+
+#: src/lang.c:312
+msgid "mail article/thread/hot/pattern/tagged articles to someone"
+msgstr ""
+
+#: src/lang.c:313
+msgid "menu of configurable options"
+msgstr ""
+
+#: src/lang.c:314
+msgid "down one page"
+msgstr ""
+
+#: src/lang.c:315
+msgid "up one page"
+msgstr ""
+
+#: src/lang.c:317
+msgid "pipe article/thread/hot/pattern/tagged articles into command"
+msgstr ""
+
+#: src/lang.c:319
+msgid "post (write) article to current group"
+msgstr ""
+
+#: src/lang.c:320
+msgid "post postponed articles"
+msgstr ""
+
+#: src/lang.c:321
+msgid "list articles posted by you (from posted file)"
+msgstr ""
+
+#: src/lang.c:322
+msgid "return to previous menu"
+msgstr ""
+
+#: src/lang.c:324
+msgid "output article/thread/hot/pattern/tagged articles to printer"
+msgstr ""
+
+#: src/lang.c:326
+msgid "quit tin immediately"
+msgstr ""
+
+#: src/lang.c:327
+msgid "redraw page"
+msgstr ""
+
+#: src/lang.c:328
+msgid "save article/thread/hot/pattern/tagged articles to file"
+msgstr ""
+
+#: src/lang.c:329
+msgid "save tagged articles automatically without user prompts"
+msgstr ""
+
+#: src/lang.c:330
+msgid "search for articles by author backwards"
+msgstr ""
+
+#: src/lang.c:331
+msgid "search for articles by author forwards"
+msgstr ""
+
+#: src/lang.c:332
+msgid "search all articles for a given string (this may take some time)"
+msgstr ""
+
+#: src/lang.c:333
+msgid "\t  (searches are case-insensitive and wrap around to all articles)"
+msgstr ""
+
+#: src/lang.c:334
+msgid "search for articles by Subject line backwards"
+msgstr ""
+
+#: src/lang.c:335
+msgid "search for articles by Subject line forwards"
+msgstr ""
+
+#: src/lang.c:337
+msgid "shell escape"
+msgstr ""
+
+#: src/lang.c:339
+msgid "tag current article for reposting/mailing/piping/printing/saving"
+msgstr ""
+
+#: src/lang.c:341
+msgid "toggle color"
+msgstr ""
+
+#: src/lang.c:343
+msgid "toggle info message in last line (subject/description)"
+msgstr ""
+
+#: src/lang.c:344
+msgid "toggle inverse video"
+msgstr ""
+
+#: src/lang.c:345
+msgid "toggle mini help menu display"
+msgstr ""
+
+#: src/lang.c:346
+msgid "show version information"
+msgstr ""
+
+#: src/lang.c:347
+msgid "mark all articles as read and return to group selection menu"
+msgstr ""
+
+#: src/lang.c:348
+msgid "mark all articles as read and enter next group with unread articles"
+msgstr ""
+
+#: src/lang.c:349
+msgid "choose first thread in list"
+msgstr ""
+
+#: src/lang.c:350 src/lang.c:381
+msgid "choose group by name"
+msgstr ""
+
+#: src/lang.c:351
+msgid "choose last) thread in list"
+msgstr ""
+
+#: src/lang.c:352
+msgid "list articles within current thread (bring up Thread sub-menu)"
+msgstr ""
+
+#: src/lang.c:353
+msgid "mark article as unread"
+msgstr ""
+
+#: src/lang.c:354
+msgid "mark current thread as read"
+msgstr ""
+
+#: src/lang.c:355
+msgid "mark thread as unread"
+msgstr ""
+
+#: src/lang.c:356
+msgid "toggle display of all/selected articles"
+msgstr ""
+
+#: src/lang.c:357
+msgid "display next group"
+msgstr ""
+
+#: src/lang.c:360
+msgid "display previous group"
+msgstr ""
+
+#: src/lang.c:362 src/lang.c:409
+msgid "read chosen article"
+msgstr ""
+
+#: src/lang.c:364
+msgid "toggle all selections (all articles)"
+msgstr ""
+
+#: src/lang.c:365
+msgid "select group (make \"hot\")"
+msgstr ""
+
+#: src/lang.c:366
+msgid "select thread"
+msgstr ""
+
+#: src/lang.c:367
+msgid "select threads if at least one unread article is selected"
+msgstr ""
+
+#: src/lang.c:368
+msgid "select threads that match user specified pattern"
+msgstr ""
+
+#: src/lang.c:369
+msgid "tag all parts of current multipart-message in order"
+msgstr ""
+
+#: src/lang.c:370
+msgid "0 - 9\t  choose thread by number"
+msgstr ""
+
+#: src/lang.c:371
+msgid "toggle limit number of articles to get, and reload"
+msgstr ""
+
+#: src/lang.c:372
+msgid "toggle display of all/unread articles"
+msgstr ""
+
+#: src/lang.c:373 src/lang.c:410
+msgid "cycle the display of authors email address, real name, both or neither"
+msgstr ""
+
+#: src/lang.c:374
+msgid "toggle selection of thread"
+msgstr ""
+
+#: src/lang.c:375
+msgid "cycle through threading options available"
+msgstr ""
+
+#: src/lang.c:376
+msgid "undo all selections (all articles)"
+msgstr ""
+
+#: src/lang.c:377
+msgid "untag all tagged threads"
+msgstr ""
+
+#: src/lang.c:378
+msgid "mark all articles in chosen group read"
+msgstr ""
+
+#: src/lang.c:379
+msgid "mark all articles in chosen group read and enter next unread group"
+msgstr ""
+
+#: src/lang.c:380
+msgid "choose first group in list"
 msgstr ""
 
 #: src/lang.c:382
-msgid "r R\t  reply through mail (R = don't copy text) to author"
+msgid "0 - 9\t  choose group by number"
 msgstr ""
 
 #: src/lang.c:383
-msgid "s\t  save article/thread/hot/pattern/tagged articles to file"
+msgid "choose range of groups to be affected by next command"
 msgstr ""
 
 #: src/lang.c:384
-msgid "S\t  save tagged articles automatically without user prompts"
+msgid "choose last group in list"
 msgstr ""
 
 #: src/lang.c:385
-msgid "/ ?\t  search forwards within this article (? = backwards)"
+msgid "mark all articles in chosen group unread"
 msgstr ""
 
 #: src/lang.c:386
-msgid "*\t  select article"
+msgid "move chosen group within list"
+msgstr ""
+
+#: src/lang.c:387
+msgid "choose next group with unread news"
 msgstr ""
 
 #: src/lang.c:388
-msgid "u\t  goto the article that this one followed up"
+msgid "quit"
 msgstr ""
 
 #: src/lang.c:389
-msgid "~\t  undo all selections in thread"
+msgid "quit without saving configuration changes"
 msgstr ""
 
 #: src/lang.c:390
-msgid "z Z\t  mark article (Z = thread) as unread"
+msgid "read chosen group"
+msgstr ""
+
+#: src/lang.c:391
+msgid "reset .newsrc (all available articles in groups marked unread)"
 msgstr ""
 
 #: src/lang.c:392
-msgid "|\t  pipe article/thread/hot/pattern/tagged articles into command"
+msgid "search backwards for a group name"
+msgstr ""
+
+#: src/lang.c:393
+msgid "\t  (all searches are case-insensitive and wrap around)"
 msgstr ""
 
 #: src/lang.c:394
-msgid "+\t  select group (make \"hot\")"
+msgid "search forwards for a group name"
+msgstr ""
+
+#: src/lang.c:395
+msgid "subscribe to chosen group"
 msgstr ""
 
 #: src/lang.c:396
-msgid "q\t  return to previous menu"
+msgid "subscribe to groups that match pattern"
+msgstr ""
+
+#: src/lang.c:397
+msgid "reread active file to check for any new news"
 msgstr ""
 
 #: src/lang.c:398
-msgid "r\t  toggle display of all/unread articles"
+msgid "toggle display of group name only or group name plus description"
 msgstr ""
 
 #: src/lang.c:399
-msgid "s u\t  subscribe (u = unsubscribe) to chosen group"
+msgid "toggle display to show all/unread subscribed groups"
 msgstr ""
 
 #: src/lang.c:400
-msgid ");\t  select threads if at least one unread article is selected"
+msgid "unsubscribe from chosen group"
 msgstr ""
 
 #: src/lang.c:401
-msgid "t\t  tag current article for reposting/mailing/piping/printing/saving"
+msgid "unsubscribe from groups that match pattern"
 msgstr ""
 
 #: src/lang.c:402
-msgid "\"\t  toggle german TeX style decoding for current article"
+msgid "toggle display to show all/subscribed groups"
 msgstr ""
 
 #: src/lang.c:403
-msgid "^ $\t  choose first ($ = last) article in list"
-msgstr ""
-
-#: src/lang.c:405
 msgid "0 - 9\t  choose article by number"
 msgstr ""
 
+#: src/lang.c:404
+msgid "mark thread as read and return to group index page"
+msgstr ""
+
+#: src/lang.c:405
+msgid "mark thread as read and enter next unread thread or group"
+msgstr ""
+
 #: src/lang.c:406
-msgid "< >\t  display first (> = last) article in current thread"
+msgid "choose first article in list"
 msgstr ""
 
 #: src/lang.c:407
-msgid "u\t  cycle through threading options available"
+msgid "choose last article in list"
 msgstr ""
 
-#: src/lang.c:409
-msgid "v\t  show version information"
-msgstr ""
-
-#: src/lang.c:410
-msgid "w\t  post (write) article to current group"
+#: src/lang.c:408
+msgid "mark article as read and move cursor to next unread article"
 msgstr ""
 
 #: src/lang.c:411
-msgid "x\t  repost chosen article to another group"
+msgid ""
+"Display properties\n"
+"------------------"
 msgstr ""
 
 #: src/lang.c:412
-msgid "Y\t  reread active file to check for any new news"
+msgid ""
+"Miscellaneous\n"
+"-------------"
 msgstr ""
 
-#: src/lang.c:415
-msgid "_\t  toggle word highlighting on/off"
+#: src/lang.c:413
+msgid ""
+"Moving around\n"
+"-------------"
 msgstr ""
 
-#: src/lang.c:418
+#: src/lang.c:414
+msgid ""
+"Group/thread/article operations\n"
+"-------------------------------"
+msgstr ""
+
+#: src/lang.c:416
 msgid ""
 "PgDn,End,<SPACE>,^D - page down. PgUp,Home,b,^U - page up. <CR>,q - quit"
 msgstr ""
 
-#: src/lang.c:419
-#, c-format
-msgid "Group Level Commands (page %d of %d)"
+#: src/lang.c:417
+msgid "Group Level Commands"
 msgstr ""
 
-#: src/lang.c:420
+#: src/lang.c:418
 msgid "Kill filter added"
 msgstr ""
 
-#: src/lang.c:421
+#: src/lang.c:419
 msgid "Auto-selection filter added"
 msgstr ""
 
-#: src/lang.c:422
+#: src/lang.c:420
 msgid "Storing article for later posting"
 msgstr ""
 
-#: src/lang.c:423
+#: src/lang.c:421
 #, c-format
 msgid "%d postponed %s, reuse with ^O...\n"
 msgstr ""
 
-#: src/lang.c:424
+#: src/lang.c:422
 msgid "*** No postponed articles ***"
 msgstr ""
 
-#: src/lang.c:425
+#: src/lang.c:423
 msgid "You are not subscribed to this group"
 msgstr ""
 
-#: src/lang.c:426
+#: src/lang.c:424
 msgid "Operation disabled in no-overwrite mode"
 msgstr ""
 
-#: src/lang.c:427
+#: src/lang.c:425
 msgid ""
 "X-Conversion-Note: multipart/alternative contents have been removed.\n"
 "\tTo get the whole article, turn alternative handling OFF in the Option "
 "Menu\n"
 msgstr ""
 
-#: src/lang.c:430
+#: src/lang.c:428
 #, c-format
 msgid "Save filename for %s/%s is a mailbox. Attachment not saved"
 msgstr ""
 
-#: src/lang.c:431
+#: src/lang.c:429
 msgid "TeX2Iso encoded article"
 msgstr ""
 
-#: src/lang.c:432
+#: src/lang.c:430
 #, c-format
 msgid ""
 "\n"
@@ -1670,156 +1705,166 @@ msgid ""
 "Please send bug-reports/comments to %s with the 'R' command.\n"
 msgstr ""
 
-#: src/lang.c:448
+#: src/lang.c:446
 #, c-format
 msgid "Invalid  From: %s  line. Read the INSTALL file again."
 msgstr ""
 
-#: src/lang.c:449
+#: src/lang.c:447
 #, c-format
 msgid "Invalid  Sender:-header %s"
 msgstr ""
 
-#: src/lang.c:450
+#: src/lang.c:448
 msgid "Inverse video disabled"
 msgstr ""
 
-#: src/lang.c:451
+#: src/lang.c:449
 msgid "Inverse video enabled"
 msgstr ""
 
-#: src/lang.c:452
+#: src/lang.c:450
 #, c-format
 msgid "Missing definition for %s\n"
 msgstr ""
 
-#: src/lang.c:453
+#: src/lang.c:451
 #, c-format
 msgid "Invalid key definition '%s'\n"
 msgstr ""
 
-#: src/lang.c:454
+#: src/lang.c:452
 #, c-format
 msgid "Invalid keyname '%s'\n"
 msgstr ""
 
-#: src/lang.c:456
+#: src/lang.c:454
 #, c-format
 msgid "Redefined key %s '%s' -> '%s'\n"
 msgstr ""
 
-#: src/lang.c:458
+#: src/lang.c:456
 #, c-format
 msgid "Key '%s' is defined for both %s%s and %s%s\n"
 msgstr ""
 
-#: src/lang.c:459
+#: src/lang.c:457
 msgid "-- Last response --"
 msgstr ""
 
-#: src/lang.c:462
+#: src/lang.c:460
 #, c-format
 msgid "%d files successfully written from %d articles. %d %s occurred."
 msgstr ""
 
-#: src/lang.c:463
+#: src/lang.c:461
 msgid "Missing parts."
 msgstr ""
 
-#: src/lang.c:464
+#: src/lang.c:462
 msgid "No beginning."
 msgstr ""
 
-#: src/lang.c:465
+#: src/lang.c:463
 msgid "No data."
 msgstr ""
 
-#: src/lang.c:466
+#: src/lang.c:464
 msgid "Unknown error."
 msgstr ""
 
-#: src/lang.c:468
+#: src/lang.c:466
 #, c-format
 msgid "Error decoding %s : %s"
 msgstr ""
 
-#: src/lang.c:469
+#: src/lang.c:467
 msgid "No end."
 msgstr ""
 
-#: src/lang.c:470
+#: src/lang.c:468
 #, c-format
 msgid "%s successfully decoded."
 msgstr ""
 
-#: src/lang.c:472
+#: src/lang.c:470
 #, c-format
 msgid "Lines %s  "
 msgstr ""
 
-#: src/lang.c:474
+#: src/lang.c:472
 #, c-format
 msgid "Mail article(s) to [%.*s]> "
 msgstr ""
 
-#: src/lang.c:475
+#: src/lang.c:473
 #, c-format
 msgid "Mailing log to %s\n"
 msgstr ""
 
-#: src/lang.c:476
+#: src/lang.c:474
 msgid "Mail bug report..."
 msgstr ""
 
-#: src/lang.c:477
+#: src/lang.c:475
 #, c-format
 msgid "Mail BUG REPORT to %s?"
 msgstr ""
 
-#: src/lang.c:478
+#: src/lang.c:476
 msgid "Mailed"
 msgstr ""
 
-#: src/lang.c:479
+#: src/lang.c:477
 #, c-format
 msgid "Mailing to %s..."
 msgstr ""
 
-#: src/lang.c:480
+#: src/lang.c:478
 #, c-format
 msgid "%s marked as unread"
 msgstr ""
 
-#: src/lang.c:481
+#: src/lang.c:479
 #, c-format
 msgid "Mark all articles as read%s?"
 msgstr ""
 
-#: src/lang.c:482
+#: src/lang.c:480
 #, c-format
 msgid "Mark group %.*s as read?"
 msgstr ""
 
-#: src/lang.c:483
+#: src/lang.c:481
 #, c-format
 msgid "Mark thread as read%s?"
 msgstr ""
 
-#: src/lang.c:484
+#: src/lang.c:482
 #, c-format
 msgid "Matching %s groups..."
 msgstr ""
 
-#: src/lang.c:485 src/lang.c:487
+#: src/lang.c:483 src/lang.c:487
 #, c-format
 msgid "<n>=set current to n; %s=next unread; %s=search pattern; %s=kill/select"
 msgstr ""
 
-#: src/lang.c:486
+#: src/lang.c:484
 #, c-format
 msgid ""
 "%s=author search; %s=catchup; %s=line down; %s=line up; %s=mark read; "
 "%s=list thread"
+msgstr ""
+
+#: src/lang.c:485
+#, c-format
+msgid "%s=line up; %s=line down; %s=page up; %s=page down; %s=top; %s=bottom"
+msgstr ""
+
+#: src/lang.c:486
+#, c-format
+msgid "%s=search forwards; %s=search backwards; %s=quit"
 msgstr ""
 
 #: src/lang.c:488
@@ -2199,8 +2244,7 @@ msgid ""
 msgstr ""
 
 #: src/lang.c:615
-#, c-format
-msgid "Posted articles history (page %d of %d)"
+msgid "Posted articles history"
 msgstr ""
 
 #: src/lang.c:616
@@ -2557,7 +2601,7 @@ msgid "Cannot move into new newsgroups. Subscribe first..."
 msgstr ""
 
 #: src/lang.c:700
-msgid "SPACE"
+msgid "<SPACE>"
 msgstr ""
 
 #: src/lang.c:701
@@ -2604,7 +2648,7 @@ msgid ""
 msgstr ""
 
 #: src/lang.c:710
-msgid "TAB"
+msgid "<TAB>"
 msgstr ""
 
 #: src/lang.c:711
@@ -2905,8 +2949,7 @@ msgid "There is no news\n"
 msgstr ""
 
 #: src/lang.c:885
-#, c-format
-msgid "Thread Level Commands (page %d of %d)"
+msgid "Thread Level Commands"
 msgstr ""
 
 #: src/lang.c:886
@@ -3545,7 +3588,7 @@ msgid "Sort threads by                    : "
 msgstr ""
 
 #: src/lang.c:1115
-msgid "# Sort threads by 0=(nothing) 1=(Score descend) 2=(Score ascend).\n"
+msgid "# Sort thread by 0=(nothing) 1=(Score descend) 2=(Score ascend)\n"
 msgstr ""
 
 #: src/lang.c:1119
@@ -4910,15 +4953,15 @@ msgid "# If ON, create local copies of NNTP overview files.\n"
 msgstr ""
 
 #. FIXME: -> lang.c
-#: src/mail.c:318
+#: src/mail.c:331
 msgid "# [Mail/Save] active file. Format is like news active file:\n"
 msgstr ""
 
-#: src/mail.c:319
+#: src/mail.c:332
 msgid "#   groupname  max.artnum  min.artnum  /dir\n"
 msgstr ""
 
-#: src/mail.c:320
+#: src/mail.c:333
 msgid ""
 "# The 4th field is the basedir (ie. ~/Mail or ~/News)\n"
 "#\n"
@@ -5413,25 +5456,25 @@ msgid "Unreachable ?\n"
 msgstr ""
 
 #. FIXME: replace 'Thread' by 'Article' if THREAD_NONE
-#: src/page.c:604 src/save.c:529 src/thread.c:660
+#: src/page.c:608 src/save.c:529 src/thread.c:660
 msgid "Thread"
 msgstr ""
 
-#: src/page.c:770 src/save.c:526 src/thread.c:653
+#: src/page.c:774 src/save.c:526 src/thread.c:653
 msgid "Article"
 msgstr ""
 
-#: src/post.c:1499
+#: src/post.c:1513
 #, c-format
 msgid "%s is bogus"
 msgstr ""
 
-#: src/post.c:1501
+#: src/post.c:1515
 #, c-format
 msgid "No attributes for %s"
 msgstr ""
 
-#: src/post.c:1689
+#: src/post.c:1703
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr ""

@@ -131,7 +131,7 @@ prompt_default_string (
 t_bool
 prompt_menu_string (
 	int line,
-	int col,
+	const char *prompt,
 	char *var)
 {
 	char *p;
@@ -143,9 +143,9 @@ prompt_menu_string (
 	 */
 	fflush(stdin);
 
-	MoveCursor (line, col);
+	MoveCursor (line, 0);
 
-	if ((p = tin_getline ("", FALSE, var, 0, FALSE, HIST_OTHER)) == (char *) 0)
+	if ((p = tin_getline (prompt, FALSE, var, 0, FALSE, HIST_OTHER)) == (char *) 0)
 		return FALSE;
 
 	strcpy (var, p);
@@ -333,10 +333,8 @@ prompt_on_off (
  * Displays option text and actual option value for string based options in
  * one line, help text for that option near the bottom of the screen. Allows
  * change of the old value by normal editing; history function of tin_getline()
- * will be used properly so that editing won't leave the actual line. Note
- * that "option" is the number the user will see, which is not the same as
- * the array position for this option in option_table (since the latter
- * starts counting with zero instead of one).
+ * will be used properly so that editing won't leave the actual line.
+ *
  * The function returns TRUE, if the value was changed, FALSE otherwise.
  */
 t_bool
@@ -344,30 +342,21 @@ prompt_option_string (
 	int option) /* return value is always ignored */
 {
 	char prompt[LEN];
-	char *p;
 	char *variable = OPT_STRING_list[option_table[option].var_index];
 
 	show_menu_help (option_table[option].txt->help);
-	MoveCursor (option_row(option), 0);
-	sprintf (&prompt[0], "-> %3d. %s ", option+1, option_table[option].txt->opt);
+	sprintf (&prompt[0], "-> %3d. %s ", option + 1, option_table[option].txt->opt);
 
-	if ((p = tin_getline (prompt, FALSE, variable, 0, FALSE, HIST_OTHER)) == (char *) 0)
-		return FALSE;
-
-	strcpy (variable, p);
-
-	return TRUE;
+	return prompt_menu_string (option_row(option), prompt, variable);
 }
 
 
 /*
- * Displays option text and actual option value for number based options in
+ * Displays option text and current option value for number based options in
  * one line, help text for that option near the bottom of the screen. Allows
  * change of the old value by normal editing; history function of tin_getline()
- * will be used properly so that editing won't leave the actual line. Note
- * that "option" is the number the user will see, which is not the same as
- * the array position for this option in option_table (since the latter
- * starts counting with zero instead of one).
+ * will be used properly so that editing won't leave the current line.
+ *
  * The function returns TRUE if the value was changed, FALSE otherwise.
  */
 t_bool
@@ -400,10 +389,8 @@ prompt_option_num (
 /*
  * Displays option text and actual option value for character based options
  * in one line, help text for that option near the bottom of the screen.
- * Allows change of the old value by normal editing. Note that "option" is
- * the number the user will see, which is not the same as the array position
- * for this option in option_table (since the latter starts counting with
- * zero instead of one).
+ * Allows change of the old value by normal editing.
+ *
  * The function returns TRUE if the value was changed, FALSE otherwise.
  */
 t_bool

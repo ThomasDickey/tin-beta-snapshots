@@ -45,6 +45,8 @@
 #if defined(USE_CURSES) || defined(NEED_CURSES_H)
 #	ifdef HAVE_NCURSES_H
 #		include <ncurses.h>
+#	elif defined(HAVE_NCURSES_NCURSES_H)
+#		include <ncurses/ncurses.h>
 #	else
 #		undef TRUE
 #		undef FALSE

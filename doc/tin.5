@@ -1143,7 +1143,7 @@ killed articles.
 Allows 8bit characters unencoded in the header of mail message. Default is
 OFF. Turning it ON is effective only if \fBmail_mime_encoding\fP is also set
 to 8bit. Leaving it OFF is safe for most users and compliant to Internet
-Mail Standard (\fBRFC822\fP and \fBRFC2047\fP).
+Mail Standard (\fBRFC2822\fP and \fBRFC2047\fP).
 .TP
 .B mail_address
 User's mail address (and fullname), if not username@host. This is used when
@@ -1556,7 +1556,9 @@ are \fI/var/spool/news\fR, \fI/usr/spool/news\fR, \fI/news/spool\fR.
 \fB$TIN_SPOOLDIR\fP overrides any specified value.
 .TP
 .B overviewdir
-Base of your NOV database (tradspool style; might be the same dir as
+Base of your NOV database
+.BR newsoverview (5)
+(tradspool style; might be the same dir as
 \fIspooldir\fR), common values are \fI/var/spool/overview\fR,
 \fI/usr/spool/overview\fR, \fI/news/overview\fR. \fB$TIN_NOVROOTDIR\fP
 overrides any specified value.
@@ -1731,10 +1733,10 @@ uses the LIST SUBSCRIPTIONS (\fBRFC2980\fP) command instead.
 .BR lpr (1),
 .BR mailcap (4),
 .BR mbox (5),
+.BR newsoverview (5),
 .BR system (3),
 .BR tin (1),
 .BR xterm (1x),
-.BR RFC822 ,
 .BR RFC977 ,
 .BR RFC1036 ,
 .BR RFC1524 ,
@@ -1742,4 +1744,5 @@ uses the LIST SUBSCRIPTIONS (\fBRFC2980\fP) command instead.
 .BR RFC2046 ,
 .BR RFC2047 ,
 .BR RFC2048 ,
+.BR RFC2822 ,
 .BR RFC2980

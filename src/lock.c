@@ -3,10 +3,10 @@
  *  Module    : lock.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1998-07-27
- *  Updated   : 2001-05-22
+ *  Updated   : 2001-06-01
  *  Notes     :
  *
- * Copyright (c) 1997-2001 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1998-2001 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,11 +52,12 @@
 #	endif /* HAVE_FCNTL */
 #endif /* !USE_FLOCK && !USE_LOCKF && !USE_FCNTL */
 
+#define LOCK_SUFFIX ".lock"
+
 /*
  * fd_lock(fd, block)
  *
- * try to lock a file descriptor with fcntl(), flock() and lockf()
- * or a subset if OS doesn't support all of them.
+ * try to lock a file descriptor with fcntl(), flock() or lockf()
  *
  * returncodes:
  *  0 = file locked successfully
@@ -97,8 +98,8 @@ fd_lock(
 /*
  * test_fd_lock(fd)
  *
- * check for a existing lock on file descriptor with fcntl(), flock()
- * and lockf() or a subset if OS doesn't support all of them.
+ * check for a existing lock on file descriptor with fcntl(), lockf()
+ * or flock()
  *
  * returncodes:
  *  0 = file is not locked
@@ -159,9 +160,7 @@ test_fd_lock(
 /*
  * fd_unlock(fd)
  *
- * try to unlock a file descriptor with lockf(), flock() and fcntl()
- * or a subset (reverse order of fd_lock()) if OS doesn't support
- * all of them.
+ * try to unlock a file descriptor with fcntl(), lockf() or flock()
  *
  * returncodes:
  *  0 = file unlocked successfully
@@ -201,10 +200,9 @@ fd_unlock(
 
 
 /*
- * dot_lock(filename, base_dir)
+ * dot_lock(filename)
  *
- * try to lock filename via dotfile locking, base_dir must be ob the
- * same device.
+ * try to lock filename via dotfile locking
  *
  * returncodes:
  *  TRUE  = file locked successfully
@@ -213,8 +211,8 @@ fd_unlock(
 t_bool dot_lock(
 	const char *filename)
 {
-	char tempfile[PATH_MAX];
-	char lockfile[PATH_MAX];
+	char tempfile[PATH_LEN];
+	char lockfile[PATH_LEN];
 	char *base_dir;
 	char *ptr;
 	char *file;
@@ -242,8 +240,9 @@ t_bool dot_lock(
 
 	free(base_dir);
 
-	snprintf(lockfile, sizeof(lockfile) - 1, "%s.lock", filename);
+	snprintf(lockfile, sizeof(lockfile) - 1, "%s%s", filename, LOCK_SUFFIX);
 
+#ifdef HAVE_LINK
 	if (stat (lockfile, &statbuf)) {				/* lockfile doesn't exist */
 		if (!link(tempfile, lockfile)) {			/* link succsessfull */
 			if (!stat (tempfile, &statbuf)) {	/* tempfile exist */
@@ -252,6 +251,7 @@ t_bool dot_lock(
 			}
 		}
 	}
+#endif /* HAVE_LINK */
 
 	close(dot_fd);
 	(void) unlink (tempfile);
@@ -259,6 +259,30 @@ t_bool dot_lock(
 	if (!stat (lockfile, &statbuf)) {			/* lockfile still here */
 		if (statbuf.st_nlink != 1)					/* link count wrong? */
 			rval = FALSE;								/* shouldn't happen */
+	}
+	return rval;
+}
+
+
+/*
+ * try to remove a dotlock for filename
+ *
+ * returncodes:
+ *  TRUE  = file unlocked successfully
+ *  FALSE = some error occured
+ */
+t_bool dot_unlock(
+   const char *filename)
+{
+	char *lockfile = (char *) 0;
+	t_bool rval = FALSE;
+
+	if ((lockfile = (char *) my_malloc (sizeof(char) * (strlen(filename) + strlen(LOCK_SUFFIX) + 2))) != (char *) 0) {
+		strcpy(lockfile, filename);
+		strcat(lockfile, LOCK_SUFFIX);
+		if (!unlink(lockfile))
+			rval = TRUE;
+		free(lockfile);
 	}
 	return rval;
 }

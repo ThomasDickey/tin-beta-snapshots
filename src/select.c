@@ -239,7 +239,7 @@ selection_page (
 				break;
 
 			case iKeyHelp:					/* help */
-				show_info_page (HELP_INFO, help_select, _(txt_group_select_com));
+				show_help_page (SELECT_LEVEL, _(txt_group_select_com));
 				show_selection_page ();
 				break;
 
@@ -595,7 +595,6 @@ sync_active_file (
 	force_reread_active_file = TRUE;
 	resync_active_file ();
 }
-
 
 static void
 yank_active_file (

@@ -412,7 +412,7 @@ group_page (
 				break;
 
 			case iKeyHelp:					/* help */
-				show_info_page (HELP_INFO, help_group, _(txt_index_page_com));
+				show_help_page (GROUP_LEVEL, _(txt_index_page_com));
 				show_group_page ();
 				break;
 

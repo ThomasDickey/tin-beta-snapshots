@@ -1,10 +1,29 @@
--- 1.5.9 release 20010522 "" --
+-- 1.5.9 release 20010604 "" --
+
+U067) Thomas E. Dickey <dickey@herndon4.his.com>
+      ADD. C preprocessor flags configure check update
+      ADD. smarter locking scheme configure check
+      FIX. aclocal.m4, configure[.in], autoconf.h[in], tcurses.h, tin.pot
+           auth.c, lock.c, tmpfile.c
+
+U066) Toomas Soome <tsoome@ut.ee>
+      ADD. updated Estonian translation
+      FIX. et.po
+
+U065) Dawid Kuroczko <dk@ssw.krakow.pl>
+      ADD. 'collaps' deep thread trees
+      FIX. thread.c
+
+ 033) Dieter Baron <dillo@danbala.ifoer.tuwien.ac.at>
+      BUG. 'Y' didn't check for new messages in mailgroups
+      BUG. parse_headers() might use To: header as originator
+      FIX. active.c, art.c, mail.c
 
 U064) Kazushi Marukawa <jam@pobox.com>
       BUG. error_message() can't handle %s outside the first argument
       FIX. screen.c
 
- 032) Herbert Martin Dietze <herbert@spamcop.net> 
+ 032) Herbert Martin Dietze <herbert@spamcop.net>
       Urs Janssen <urs@tin.org>
       BUG. empty random organization file could crash tin
       FIX. misc.c
@@ -16,14 +35,20 @@ U063) Dirk Nimmich <nimmich@uni-muenster.de>
       BUG. post key when following up to a posting with Followup-To poster
            set was 'w' instead of 'p'
       BUG. 'Y'ank didn't toggle show_only_unread_groups setting
+      BUG. 'a'uthor search was disabled in pager
       ADD. note about FQDN
-      FIX. INSTALL, proto.h, art.c, cook.c, post.c, rfc2046.c, rfc2047.c
-           read.c, select.c
+      ADD. more general pager for just viewing files (not articles)
+      ADD. clean up help/posting history
+      ADD. highlight found strings in help
+      ADD. search in posting history
+      FIX. INSTALL, extern.h, proto.h, art.c, cook.c, help.c, info.c
+           keymap.c, lang.c post.c, rfc2046.c, rfc2047.c, read.c, select.c
 
 U062) Martin Klaiber <martinkl@zedat.fu-berlin.de>
       ADD. option to sort threads by score (descend/ascend)
+      ADD. quick return in case of regex-errors
       FIX. tin.1, tin.5, extern.h, tin.h, tinrc.h, art.c, attrib.c, config.c
-           init.c, lang.c, refs.c, tincfg.tbl
+           filter.c, init.c, lang.c, refs.c, tincfg.tbl
 
 U061) Andreas Metzler <tin-dev@downhill.at.eu.org>
       Dirk Nimmich <nimmich@uni-muenster.de>
@@ -40,6 +65,8 @@ U060) Dirk Nimmich <nimmich@uni-muenster.de>
       FIX. keymap.c
 
 U059) Urs Janssen <urs@tin.org>
+      BUG. off by one quoting error in cooked mode with no headers shown
+           in followups/replys
       BUG. backup_file() treated missing sourcefiles as an error
       BUG. if a nntp:-url only contained the name of a group but didn't
            specify a article the last groupname component wasn't recognized.
@@ -56,10 +83,11 @@ U059) Urs Janssen <urs@tin.org>
       ADD. THREAD_WEIGHT
       ADD. strrstr() fallback
       FIX. config.guess, config.sub, configure[.in], install.sh
-           url_handler.sh, de.po, keymap.sample, mailcap.sample, tin.5
-           Makefile[.in], autoconf.h[in], keymap.h, menukeys.h, tin.h, auth.c
-           group.c, help.c, init.c, keymap.c, lang.c, lock.c, misc.c, page.c
-           pgp.c, post.c, select.c, string.c, thread.c, tmpfile.c
+           url_handler.sh, de.po, keymap.sample, mailcap.sample
+           newsoverview.5, tin.5, Makefile[.in], autoconf.h[in], keymap.h
+           menukeys.h, tin.h, auth.c, group.c, help.c, init.c, keymap.c
+           lang.c, lock.c, misc.c, page.c, pgp.c, post.c, select.c, string.c
+           thread.c, tmpfile.c
 
 -- 1.5.8 release 20010221 "Blue Water" --
 

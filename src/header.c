@@ -180,7 +180,7 @@ get_fqdn (
 		if ((hp = gethostbyaddr(hp->h_addr, hp->h_length, hp->h_addrtype)))
 			in.s_addr = (*hp->h_addr);
 
-	sprintf(fqdn,"%s", hp
+	sprintf(fqdn, "%s", hp
 		? strchr(hp->h_name, '.')
 			? hp->h_name
 			: inet_ntoa(in)

@@ -159,6 +159,7 @@
 #	undef HAVE_LOCALE_H
 #	undef HAVE_MALLOC_H
 #	undef HAVE_NCURSES_H		/* obsolete versions of ncurses */
+#	undef HAVE_NCURSES_NCURSES_H
 #	undef HAVE_NETDB_H
 #	undef HAVE_NETINET_IN_H
 #	undef HAVE_NETLIB_H
@@ -582,13 +583,13 @@
 #	undef HAVE_DCGETTEXT
 #	undef HAVE_GETTEXT
 
+#	undef HAVE_FCNTL
 #	undef HAVE_FLOCK
 #	undef HAVE_LOCKF
-#	undef HAVE_FCNTL
 
+#	undef USE_FCNTL
 #	undef USE_FLOCK
 #	undef USE_LOCKF
-#	undef USE_FCNTL
 
 #	undef HAVE_SYS_FILE_H
 #	undef HAVE_SYS_STAT_H

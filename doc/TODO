@@ -1,14 +1,13 @@
 Bugs
 ----
+o  missmatching cached overview data (higher article numbers than on the
+   server cause a crash.
+
 o  'U'RL-view doesn't recognize multiple URLs/line
    [Urs Janssen <urs@tin.org>]
 
-o  'a'/'A'uthor search in the pagern dosen't work
-
-o  referene based filters won't work with long (> 500 chars)
+o  reference based filters won't work with long (> 500 chars)
    References: lines
-
-o  help screen should show the actual key mapping, not the default
 
 o  thread_articles=0 lacks score for read arts if show_score=ON and
    kill_level>=1
@@ -147,6 +146,10 @@ o  when enabling the 'Cc/Bcc on every message that is sent', and
 
 New features
 ------------
+o  $NNTPSERVER is only appended to $TIN_INDEX_NEWSDIR if -g cmd-line
+   option is used, we should change that and always append it to avoid using
+   a wrong cache after changing $NNTPSERVER...
+
 o  make THREAD_SUM/THREAD_WEIGHT a config/attributes option and document it
 
 o  key to toggle article and thread sorting preferences on the fly
@@ -179,6 +182,9 @@ o  check if servers high mark is lower as the one in users newsrc, if so
 o  check if the articles Subject/From in the pager matches the one on the
    overview file (if available) - if not issue a warning that the servers
    overviews seem to be broken. trust the headers, not overviews.
+   do the same with the article numbers in the (cached) overview
+   data. if they are higher then the servers high-mark don't trust
+   them (and discard the locally cached data).
 
 o  check if server supports HEADERS, if so use
    HEADERS - Subject From Date Message-ID References Lines Newsgroups
@@ -415,8 +421,6 @@ Internal Changes
 ----------------
 o  make configure look for strrstr() in libpub/publib.h
    [Urs Janssen <urs@tin.org>]
-
-o  add configure option to focre a certain locking method
 
 o  check for 10-digits unix-timestamp safety (9->10 digits rollover at
    9.9.2001)

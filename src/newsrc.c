@@ -1519,7 +1519,7 @@ vNewsrcTestHarness (
 		while (retry) {
 		/* FIXME - this is secure now, but doesn't write any debug output */
 		/* (it didn't before too) */
-			if ((temp_file = my_tempnam ("","NEWSRC")) != (char *) 0) {
+			if ((temp_file = my_tempnam ("", "NEWSRC")) != (char *) 0) {
 				if ((fd = open (temp_file, (O_CREAT|O_EXCL), (S_IRUSR|S_IWUSR))) != -1) {
 					if ((fp = fopen (temp_file, "w")) != (FILE *) 0) {
 						my_printf ("\n%d. PARSE Seq=[%s]\n", i+1, seq);

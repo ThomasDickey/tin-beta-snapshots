@@ -54,15 +54,9 @@
 #define PAGE_HEADER	4
 
 /*
- * size of page header over and above INDEX_TOP
- * [ Used because NOTESLINES only specifies a 2 line header ]
- */
-#define HDR_ADJUST	(PAGE_HEADER-INDEX_TOP)
-
-/*
  * The number of lines available to display actual article text
  */
-#define ARTLINES	(NOTESLINES-HDR_ADJUST)
+#define ARTLINES	(NOTESLINES-(PAGE_HEADER-INDEX_TOP))
 
 FILE *note_fp;			/* active stream (raw or cooked) */
 int artlines;			/* active # of lines in pager */
@@ -87,7 +81,13 @@ int tabwidth = 8;
 struct t_header *note_h = &pgart.hdr;	/* Easy access to article headers */
 
 static int rotate;				/* 0=normal, 13=rot13 decode */
+static int scroll_region_top;	/* first screen line for displayed message */
 static int search_line;			/* Line to commence next search from */
+static FILE *info_file;
+static const char *info_title;
+static int curr_info_line;
+static int num_info_lines;
+static t_lineinfo *infoline;
 
 static t_bool show_all_headers;	/* CTRL-H with headers specified */
 static t_bool reveal_ctrl_l;	/* set when ^L hiding is off */
@@ -96,10 +96,14 @@ static t_bool hide_uue;			/* set when uuencoded sections are 'hidden' */
 /*
  * Local prototypes
  */
+static int handle_pager_keypad (t_menukeys *menukeys);
 static int load_article (int new_respnum);
 static int prompt_response (int ch, int curr_respnum);
-static void process_search (void);
+static void preprocess_info_message (FILE *info_fh);
+static void print_message_page (FILE *file, t_lineinfo *messageline, size_t messagelines, size_t lcurr_line, size_t begin, size_t end, int help_level);
+static void process_search (int *lcurr_line, size_t message_lines, size_t screen_lines, int help_level);
 static void process_url (void);
+static void scroll_page (int i);
 static void show_first_header (const char *group);
 #ifdef HAVE_METAMAIL
 	static void show_mime_article (FILE *fp);
@@ -115,13 +119,13 @@ scroll_page (
 	int i)
 {
 #ifdef USE_CURSES
-	scrollok(stdscr, TRUE);
+	scrollok (stdscr, TRUE);
 #endif /* USE_CURSES */
-	SetScrollRegion(INDEX_TOP + HDR_ADJUST, ARTLINES + HDR_ADJUST +1);
-	ScrollScreen(i);
-	SetScrollRegion(0, cLINES);
+	SetScrollRegion (scroll_region_top, NOTESLINES + 1);
+	ScrollScreen (i);
+	SetScrollRegion (0, cLINES);
 #ifdef USE_CURSES
-	scrollok(stdscr, FALSE);
+	scrollok (stdscr, FALSE);
 #endif /* USE_CURSES */
 }
 
@@ -131,7 +135,7 @@ scroll_page (
  */
 static int
 handle_pager_keypad(
-	void)
+	t_menukeys *menukeys)
 {
 	int ch = ReadCh ();
 
@@ -195,7 +199,7 @@ handle_pager_keypad(
 			break;
 #endif /* !WIN32 */
 		default:
-			ch = map_to_default (ch, &menukeymap.page_nav);
+			ch = map_to_default (ch, menukeys);
 			break;
 	}
 	return ch;
@@ -243,12 +247,12 @@ show_page (
 		return GRP_ARTFAIL;
 
 	if (srch_lineno != -1)
-		process_search();
+		process_search(&curr_line, artlines, ARTLINES, PAGE_LEVEL);
 
 	resize_article (TRUE, &pgart);
 
 	forever {
-		switch ((ch = handle_pager_keypad())) {
+		switch ((ch = handle_pager_keypad(&menukeymap.page_nav))) {
 #ifndef WIN32
 			case ESC:       /* Abort */
 				break;
@@ -457,7 +461,7 @@ page_goto_next_unread:
 				if ((i = search_article ((ch == iKeySearchSubjF), search_line, artlines, artline, reveal_ctrl_l, note_fp)) == -1)
 					break;
 
-				process_search();
+				process_search(&curr_line, artlines, ARTLINES, PAGE_LEVEL);
 				break;
 
 			case iKeySearchBody:	/* article body search */
@@ -465,7 +469,7 @@ page_goto_next_unread:
 					this_resp = n;			/* Stop load_article() changing context again */
 					if (load_article(n) < 0)
 						return GRP_ARTFAIL;
-					process_search();
+					process_search(&curr_line, artlines, ARTLINES, PAGE_LEVEL);
 				}
 				break;
 
@@ -631,7 +635,7 @@ page_goto_next_unread:
 				break;
 
 			case iKeyHelp:	/* help */
-				show_info_page (HELP_INFO, help_page, _(txt_art_pager_com));
+				show_help_page (PAGE_LEVEL, _(txt_art_pager_com));
 				draw_page (group->name, 0);
 				break;
 
@@ -816,6 +820,81 @@ return_to_index:
 	return GRP_ARTFAIL; /* default-value - I don't think we should get here */
 }
 
+static void
+print_message_page (
+	FILE *file,
+	t_lineinfo *messageline,
+	size_t messagelines,
+	size_t lcurr_line,
+	size_t begin,
+	size_t end,
+	int help_level)
+{
+	size_t i = begin;
+
+	for (; i < end; i++) {
+		t_lineinfo *curr;
+		char *line;
+
+		if (lcurr_line + i >= messagelines)		/* ran out of message */
+			break;
+
+		curr = &messageline[lcurr_line + i];
+		fseek (file, curr->offset, SEEK_SET);
+		if ((line = tin_fgets (file, FALSE)) == NULL)
+			break;	/* ran out of message */
+		if (strlen(line) >= cCOLS)
+			line[cCOLS - 1] = '\0';
+
+		/*
+		 * rotN encoding on body and sig data only
+		 */
+		if ((rotate != 0) && (curr->flags & (C_BODY | C_SIG))) {
+			char *p = line;
+
+			for (p = line; *p; p++) {
+				if (*p >= 'A' && *p <= 'Z')
+					*p = (*p - 'A' + rotate) % 26 + 'A';
+				else if (*p >= 'a' && *p <= 'z')
+					*p = (*p - 'a' + rotate) % 26 + 'a';
+			}
+		}
+
+		strip_line(line);
+
+#ifndef USE_CURSES
+		snprintf (screen[i+scroll_region_top].col, cCOLS, "%s" cCRLF, line);
+#endif /* !USE_CURSES */
+
+		MoveCursor (i + scroll_region_top, 0);
+		draw_pager_line (line, curr->flags);
+
+		/*
+		 * Highlight URL's and mail addresses
+		 */
+		if (curr->flags & C_URL)
+			highlight_regexes (i + scroll_region_top, &url_regex);
+
+		if (curr->flags & C_MAIL)
+			highlight_regexes (i + scroll_region_top, &mail_regex);
+
+		if (curr->flags & C_NEWS)
+			highlight_regexes (i + scroll_region_top, &news_regex);
+
+		/* Blank the screen after a ^L (only occurs when showing cooked) */
+		if (!reveal_ctrl_l && (curr->flags & C_CTRLL)) {
+			CleartoEOS();
+			break;
+		}
+	}
+
+#ifdef HAVE_COLOR
+	fcol(tinrc.col_text);
+#endif /* HAVE_COLOR */
+
+	show_mini_help (help_level);
+}
+
 
 /*
  * Redraw the current page, curr_line will be the first line displayed
@@ -852,72 +931,15 @@ draw_page (
 	} else
 		MoveCursor (0, 0);
 
+	scroll_region_top = PAGE_HEADER;
+
 	/* Down-scroll, only redraw bottom 'part' lines of screen */
 	i = (part > 0) ? ARTLINES-part : 0;
 
 	/* Up-scroll, only redraw the top 'part' lines of screen */
 	end = (part < 0) ? -part : ARTLINES;
 
-	for (; i < end; i++) {
-		t_lineinfo *curr;
-
-		if (curr_line + i >= artlines)		/* ran out of article */
-			break;
-
-		curr = &artline[curr_line+i];
-		fseek (note_fp, curr->offset, SEEK_SET);
-
-		fgets (buff, cCOLS+1, note_fp);
-
-		/*
-		 * rotN encoding on body and sig data only
-		 */
-		if ((rotate != 0) && (curr->flags & (C_BODY | C_SIG))) {
-			char *p = buff;
-
-			for (p = buff; *p; p++) {
-				if (*p >= 'A' && *p <= 'Z')
-					*p = (*p - 'A' + rotate) % 26 + 'A';
-				else if (*p >= 'a' && *p <= 'z')
-					*p = (*p - 'a' + rotate) % 26 + 'a';
-			}
-		}
-
-		strip_line(buff);
-
-#ifndef USE_CURSES
-		snprintf (screen[i+PAGE_HEADER].col, cCOLS, "%s" cCRLF, buff);
-#endif /* !USE_CURSES */
-
-		MoveCursor (i+PAGE_HEADER, 0);
-		draw_pager_line (buff, curr->flags);
-
-		/*
-		 * Highlight URL's and mail addresses
-		 */
-		if (curr->flags & C_URL)
-			highlight_regexes (i+PAGE_HEADER, &url_regex);
-
-		if (curr->flags & C_MAIL)
-			highlight_regexes (i+PAGE_HEADER, &mail_regex);
-
-		if (curr->flags & C_NEWS)
-			highlight_regexes (i+PAGE_HEADER, &news_regex);
-
-		/* Blank the screen after a ^L (only occurs when showing cooked) */
-		if (!reveal_ctrl_l && (curr->flags & C_CTRLL)) {
-			CleartoEOS();
-			break;
-		}
-	}
-
-#ifdef HAVE_COLOR
-	fcol(tinrc.col_text);
-#endif /* HAVE_COLOR */
-
-	free(buff);
-
-	show_mini_help (PAGE_LEVEL);
+	print_message_page (note_fp, artline, artlines, curr_line, i, end, PAGE_LEVEL);
 
 	/*
 	 * Print an appropriate footer
@@ -1273,13 +1295,16 @@ prompt_response (
 
 
 /*
- * Reposition within art as needed, highlight searched string
+ * Reposition within message as needed, highlight searched string
  * This is tied quite closely to the information stored by
  * get_search_vectors()
  */
 static void
 process_search(
-	void)
+	int *lcurr_line,
+	size_t message_lines,
+	size_t screen_lines,
+	int help_level)
 {
 	int i, start, end;
 
@@ -1287,26 +1312,35 @@ process_search(
 		return;
 
 	/*
-	 * Is matching line off the current view ?
+	 * Is matching line off the current view?
 	 * Reposition within article if needed, try to get matched line
 	 * in the middle of the screen
 	 */
-	if (i < curr_line || i >= curr_line+ARTLINES) {
-		int ideal_pos = i - (ARTLINES / 2);
+	if (i < *lcurr_line || i >= *lcurr_line + screen_lines) {
+		int ideal_pos = i - (screen_lines / 2);
 
-		if (ideal_pos + ARTLINES > artlines)		/* Off the end */
-			curr_line = artlines - ARTLINES;
+		if (ideal_pos + screen_lines > message_lines)		/* Off the end */
+			*lcurr_line = message_lines - screen_lines;
 		else										/* Pos is just fine */
-			curr_line = ideal_pos;
+			*lcurr_line = ideal_pos;
 	}
 
-	draw_page (CURR_GROUP.name, 0);
+	switch (help_level) {
+		case PAGE_LEVEL:
+			draw_page (CURR_GROUP.name, 0);
+			break;
+		case INFO_PAGER:
+			display_info_page (0);
+			break;
+		default:
+			break;
+	}
 	search_line = i;								/* draw_page() resets this to 0 */
 
 	/*
 	 * Highlight found string
 	 */
-	highlight_string (i - curr_line + HDR_ADJUST + 2, start, end - start);
+	highlight_string (i - *lcurr_line + scroll_region_top, start, end - start);
 }
 
 
@@ -1436,4 +1470,198 @@ resize_article(
 	artline = pgart.cookl;
 	artlines = pgart.cooked_lines;
 	note_fp = pgart.cooked;
+}
+
+
+/*
+ * Infopager: simply page files
+ */
+
+void
+info_pager (
+	FILE *info_fh,
+	const char *title,
+	t_bool wrap_at_ends)
+{
+	int ch;
+
+	info_file = info_fh;
+	info_title = title;
+	curr_info_line = 0;
+	preprocess_info_message (info_fh);
+	set_xclick_off ();
+	display_info_page (0);
+	forever {
+
+		switch (ch = handle_pager_keypad(&menukeymap.info_nav)) {
+			case ESC:	/* common arrow keys */
+				break;
+
+			case iKeyUp:				/* line up */
+			case iKeyUp2:
+				if (curr_info_line == 0) {
+					if (!wrap_at_ends)
+					{
+						info_message (_(txt_begin_of_art));
+						break;
+					}
+					curr_info_line = num_info_lines - NOTESLINES;
+					display_info_page (0);
+					break;
+				}
+				curr_info_line--;
+				if (have_linescroll) {
+					scroll_page (-1);
+					display_info_page (-1);
+				} else
+					display_info_page (0);
+				break;
+
+			case iKeyDown:				/* line down */
+			case iKeyDown2:
+				if (curr_info_line + NOTESLINES >= num_info_lines) {
+					if (!wrap_at_ends)
+					{
+						info_message (_(txt_end_of_art));
+						break;
+					}
+					curr_info_line = 0;
+					display_info_page (0);
+					break;
+				}
+				curr_info_line++;
+				if (have_linescroll) {
+					scroll_page (1);
+					display_info_page (1);
+				} else
+					display_info_page (0);
+				break;
+
+			case iKeyPageDown:			/* page down */
+			case iKeyPageDown2:
+			case iKeyPageDown3:
+				if (curr_info_line + NOTESLINES >= num_info_lines) {	/* End is already on screen */
+					if (!wrap_at_ends) {
+						info_message (_(txt_end_of_art));
+						break;
+					}
+					curr_info_line = 0;
+					display_info_page (0);
+					break;
+				}
+				curr_info_line += (tinrc.full_page_scroll) ? NOTESLINES : NOTESLINES/2;
+				display_info_page (0);
+				break;
+
+			case iKeyPageUp:			/* page up */
+			case iKeyPageUp2:
+			case iKeyPageUp3:
+				if (curr_info_line == 0) {
+					if (!wrap_at_ends) {
+						info_message (_(txt_begin_of_art));
+						break;
+					}
+					curr_info_line = num_info_lines - NOTESLINES;
+					display_info_page (0);
+					break;
+				}
+				curr_info_line -= (tinrc.full_page_scroll) ? NOTESLINES : NOTESLINES/2;
+				display_info_page (0);
+				break;
+
+			case iKeyFirstPage:			/* Home */
+			case iKeyHelpFirstPage2:
+				if (curr_info_line != 0) {
+					curr_info_line = 0;
+					display_info_page (0);
+				}
+				break;
+
+			case iKeyLastPage:			/* End */
+			case iKeyHelpLastPage2:
+				if (curr_info_line + NOTESLINES != num_info_lines) {
+					/* Display a full last page for neatness */
+					curr_info_line = num_info_lines - NOTESLINES;
+					display_info_page (0);
+				}
+				break;
+
+			case iKeyToggleHelpDisplay:
+				toggle_mini_help (INFO_PAGER);
+				display_info_page (0);
+				break;
+
+			case iKeySearchSubjF:
+			case iKeySearchSubjB:
+				if ((search_article ((ch == iKeySearchSubjF), search_line, num_info_lines, infoline, TRUE, info_file)) == -1)
+					break;
+
+				process_search (&curr_info_line, num_info_lines, NOTESLINES, INFO_PAGER);
+				break;
+
+			default:
+				/* any other key quits pager; useful? */
+				ClearScreen ();
+				return;
+		}
+	}
+}
+
+void
+display_info_page (
+	int part)
+{
+	int end, i;
+
+	signal_context = cInfopager;
+
+	if (curr_info_line < 0)
+		curr_info_line = 0;
+	if (curr_info_line >= num_info_lines)
+		curr_info_line = num_info_lines - 1;
+
+	/* Print titel */
+	if (part == 0) {
+		ClearScreen ();
+		center_line (0, TRUE, info_title);
+	}
+
+	scroll_region_top = INDEX_TOP;
+
+	/* Down-scroll, only redraw bottom 'part' lines of screen */
+	i = (part > 0) ? NOTESLINES-part : 0;
+
+	/* Up-scroll, only redraw the top 'part' lines of screen */
+	end = (part < 0) ? -part : NOTESLINES;
+
+	print_message_page (info_file, infoline, num_info_lines, curr_info_line, i, end, INFO_PAGER);
+
+	/* print footer */
+	draw_percent_mark (curr_info_line + (curr_info_line + NOTESLINES < num_info_lines ? NOTESLINES : num_info_lines - curr_info_line), num_info_lines);
+	stow_cursor ();
+}
+
+static void
+preprocess_info_message (
+	FILE *info_fh)
+{
+	char *line;
+	int chunk = 50;
+
+	rewind (info_fh);
+	FreeIfNeeded ((char *)infoline);
+	infoline = my_malloc (sizeof(t_lineinfo) * chunk);
+	num_info_lines = 0;
+	do {
+		infoline[num_info_lines].offset = ftell(info_fh);
+		infoline[num_info_lines].flags  = 0;
+		num_info_lines++;
+		if (num_info_lines >= chunk) {
+			chunk += 50;
+			infoline = my_realloc((char *)infoline, sizeof(t_lineinfo) * chunk);
+		}
+	} while ((line = tin_fgets(info_fh, FALSE)) != NULL);
+
+	num_info_lines--;
+	infoline = my_realloc((char *)infoline, sizeof(t_lineinfo) * num_info_lines);
 }

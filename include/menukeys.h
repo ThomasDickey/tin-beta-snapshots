@@ -427,6 +427,7 @@ typedef struct mkm {
 	t_menukeys feed_supersede_article;
 	t_menukeys filter_quit_edit_save;
 	t_menukeys group_nav;
+	t_menukeys info_nav;
 	t_menukeys nrctbl_create;
 	t_menukeys page_nav;
 	t_menukeys pgp_mail;

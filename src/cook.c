@@ -62,7 +62,6 @@
 
 #define MATCH_REGEX(x,y,z)	(pcre_exec (x.re, x.extra, y, z, 0, 0, NULL, 0) >= 0)
 
-static t_bool expand_ctrl_chars (char *to, const char *from, int length);
 static void put_cooked (t_bool wrap_lines, int flags, const char *fmt, ...);
 static void set_rest (char **rest, const char *ptr);
 static int put_rest (char **rest, char *dest, int max_line_len);
@@ -86,11 +85,12 @@ t_openartinfo *art;
  * Allows \n through
  * Return TRUE if line contains a ^L (form-feed)
  */
-static t_bool
+t_bool
 expand_ctrl_chars (
 	char *to,
 	const char *from,
-	int length)
+	int length,
+	size_t lcook_width)
 {
 	const char *p;
 	char *q;
@@ -103,8 +103,8 @@ expand_ctrl_chars (
 			int i, j;
 
 			i = q - to;
-			j = ((i+cook_width)/cook_width) * cook_width;
-/*			j = (i|(tabwidth-1)) + 1; TODO more efficient ? */
+			j = ((i + lcook_width) / lcook_width) * lcook_width;
+/*			j = (i|(tabwidth - 1)) + 1; TODO more efficient ? */
 
 			while (i++ < j)
 				*q++ = ' ';
@@ -786,7 +786,7 @@ process_text_body_part(
 #endif /* 1 */
 /* TODO integrate above into expand_ctrl_chars */
 
-		if (expand_ctrl_chars (to, line, sizeof(to)))
+		if (expand_ctrl_chars (to, line, sizeof(to), cook_width))
 			flags |= C_CTRLL;				/* Line contains form-feed */
 
 		put_cooked (wrap_lines, flags, "%s", to);
@@ -892,6 +892,7 @@ cook_article(
 	cook_width = tabs;
 	hide_uue = uue;
 
+	/* TODO: avoid tmpfile() _or_ provide a fallback for those systems which don't have it */
 	if (!(art->cooked = tmpfile()))
 		return FALSE;
 
