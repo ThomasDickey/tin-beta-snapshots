@@ -50,7 +50,7 @@
  * because text with ,,cCRLF'' macro is ungettextable !!!
  */
 
-constext txt_1_resp[] = N_("1 Response" cCRLF);
+constext txt_1_resp[] = N_("1 Response%s");
 constext txt_7bit[] = "7bit";
 constext txt_8bit[] = "8bit";
 constext txt_active_file_is_empty[] = N_("\n%s contains no newsgroups. Exiting.");
@@ -65,7 +65,7 @@ constext txt_art_pager_com[] = N_("Article Level Commands (page %d of %d)");
 constext txt_art_posted[] = N_("Article posted");
 constext txt_art_rejected[] = N_("Article rejected (saved to %s)");
 constext txt_art_saved_to[] = N_("Article saved to %s");
-constext txt_art_thread_regex_tag[] = N_(" a)rticle, t)hread, h)ot, p)attern, T)agged articles, q)uit: ");
+constext txt_art_thread_regex_tag[] = N_("a)rticle, t)hread, h)ot, p)attern, T)agged articles, q)uit: ");
 constext txt_art_unavailable[] = N_("Article unavailable");
 constext txt_art_parent_none[] = N_("Article has no parent");
 constext txt_art_parent_killed[] = N_("Parent article has been killed");
@@ -92,7 +92,7 @@ constext txt_base64[] = N_("base64");
 constext txt_batch_update_unavail[] = N_("%s: Updating of index files not supported\n");
 constext txt_batch_update_failed[] = N_("Failed to start background indexing process");
 constext txt_begin_of_art[] = N_("*** Beginning of article ***");
-constext txt_caching_disabled[] = N_("Overview caching not supported; Tin is setuid");
+constext txt_caching_disabled[] = N_("Overview caching not supported; %s is setuid");
 constext txt_cannot_create_uniq_name[] = N_("Can't create unique tempfile-name");
 constext txt_cannot_create[] = N_("Cannot create %s");
 constext txt_cannot_find_base_art[] = N_("Can't find base article %d");
@@ -122,23 +122,23 @@ constext txt_connecting_port[] = N_("Connecting to %s:%d...");
 constext txt_continue[] = N_("Continue? (y/n): ");
 
 #ifdef M_AMIGA
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-99 Iain Lea & Mark Tomlinson.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2000 Iain Lea & Mark Tomlinson.";
 #endif /* M_AMIGA */
 
 #ifdef M_OS2
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-99 Iain Lea & Andreas Wrede.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2000 Iain Lea & Andreas Wrede.";
 #endif /* M_OS2 */
 
 #ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-99 Iain Lea.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2000 Iain Lea.";
 #endif /* M_UNIX */
 
 #ifdef VMS
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-99 Iain Lea & Tod McQuillin & other.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2000 Iain Lea & Tod McQuillin & other.";
 #endif /* VMS */
 
 #ifdef WIN32
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-99 Iain Lea & Nigel Ellis.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2000 Iain Lea & Nigel Ellis.";
 #endif /* WIN32 */
 
 constext txt_cancel_article[] = N_("Cancel (delete) or supersede (overwrite) article [%.*s]? (d/s/q): ");
@@ -147,6 +147,7 @@ constext txt_creating_active[] = N_("Creating active file for saved groups...\n"
 constext txt_creating_newsrc[] = N_("Creating newsrc file...\n");
 constext txt_delete_processed_files[] = N_("Delete saved files that have been post processed? (y/n): ");
 constext txt_deleting[] = N_("Deleting...");
+constext txt_disconnecting[] = N_("Disconnecting from server...\n");
 constext txt_end_of_arts[] = N_("*** End of articles ***");
 constext txt_end_of_groups[] = N_("*** End of groups ***");
 constext txt_end_of_thread[] = N_("*** End of thread ***");
@@ -458,7 +459,7 @@ of tin to be configured via a menu.\n\n\
 For more information read the manual page, README, INSTALL, TODO and FTP files.\n\
 Please send bug-reports/comments to %s with the 'R' command.\n");
 constext txt_invalid_from[] = N_("Invalid  From: %s  line. Read the INSTALL file again.");
-constext txt_invalid_sender[] = N_("Invalid  Sender: %s");
+constext txt_invalid_sender[] = N_("Invalid  Sender:-header %s");
 constext txt_inverse_off[] = N_("Inverse video disabled");
 constext txt_inverse_on[] = N_("Inverse video enabled");
 constext txt_last_resp[] = N_("-- Last response --");
@@ -505,7 +506,6 @@ constext txt_mini_thread_1[] = N_("<n>=set current to n; TAB=next unread; c)atch
 constext txt_mini_thread_2[] = N_("h)elp; j=line down; k=line up; q)uit; t)ag; z=mark unread");
 constext txt_more[] = N_("--More--");
 constext txt_moving[] = N_("Moving %s...");
-constext txt_msg_headers_file[] = N_("# Add extra header lines to mail/news messages.\n# ie.  Organization: Bits & Bobs Inc.\n\n");
 constext txt_newsgroup[] = N_("Goto newsgroup [%s]> ");
 constext txt_newsgroup_position[] = N_("Position %s in group list (1,2,..,$) [%d]> ");
 constext txt_newsrc_again[] = N_("Try and save newsrc file again? (y/n): ");
@@ -513,9 +513,15 @@ constext txt_newsrc_nogroups[] = N_("Warning: No newsgroups were written to your
 constext txt_newsrc_saved[] = N_("newsrc file saved successfully.\n");
 constext txt_next_resp[] = N_("-- Next response --");
 constext txt_nntp_authorization_failed[] = N_("NNTP authorization password not found for %s");
+
+#ifdef NNTP_ABLE
+	constext txt_nntp_ok_goodbye[] = N_("205  Closing connection");
+#endif /* NNTP_ABLE */
+
 constext txt_no[] = N_("No ");
 constext txt_no_arts[] = N_("*** No articles ***");
 constext txt_no_arts_posted[] = N_("No articles have been posted");
+
 #ifndef DONT_HAVE_PIPING
 	constext txt_no_command[] = N_("No command");
 #endif /* !DONT_HAVE_PIPING */
@@ -540,7 +546,7 @@ constext txt_no_newsgroups[] = N_("No newsgroups");
 constext txt_no_next_unread_art[] = N_("No next unread article");
 constext txt_no_prev_group[] = N_("No previous group");
 constext txt_no_prev_unread_art[] = N_("No previous unread article");
-constext txt_no_resp[] = N_("No responses" cCRLF);
+constext txt_no_resp[] = N_("No responses%s");
 constext txt_no_responses[] = N_("No responses");
 constext txt_no_resps_in_thread[] = N_("No responses to list in current thread");
 constext txt_no_search_string[] = N_("No search string");
@@ -596,7 +602,7 @@ constext txt_plural[] = N_("s");
 constext txt_posted_info_file[] = N_("# Summary of mailed/posted messages viewable by 'W' command from within tin.\n");
 constext txt_prompt_fup_ignore[] = N_("Accept Followup-To? (p/i/q) ");
 constext txt_prompt_unchanged_art[] = N_("Article unchanged, abort posting? (Y/n) ");
-constext txt_prompt_unchanged_bug[] = N_("Bugreport unchanged, abort sending? (Y/n) ");
+constext txt_prompt_unchanged_mail[] = N_("Article unchanged, abort mailing? (Y/n) ");
 constext txt_prompt_see_postponed[] = N_("Do you want to see postponed articles (%d)? ");
 constext txt_repost[] = N_("Repost");
 
@@ -612,7 +618,7 @@ constext txt_repost[] = N_("Repost");
 #endif /* HAVE_LIBUU */
 
 constext txt_screen_too_small[] = N_("%s: screen is too small\n");
-constext txt_screen_too_small_exiting[] = N_("screen is too small, tin is exiting\n");
+constext txt_screen_too_small_exiting[] = N_("screen is too small, %s is exiting\n");
 
 #ifdef HAVE_COLOR
 	constext txt_tinrc_colors[] = N_("# For color-adjust use the following numbers\n\
@@ -680,7 +686,7 @@ constext *txt_show_from[] = { "None", "Address", "Full Name", "Address and Name"
 	 * Which colors can be used.
 	 */
 	constext *txt_colors[] = {
-	txt_default,
+	N_("Default"),
 	N_("Black"),      N_("Red"),        N_("Green"),       N_("Brown"),
 	N_("Blue"),       N_("Pink"),       N_("Cyan"),        N_("White"),
 	N_("Gray"),       N_("Light Red"),  N_("Light Green"), N_("Yellow"),
@@ -767,7 +773,7 @@ constext txt_postpone_repost[] = N_("Post postponed articles [%.*s]? (y/Y/A/n/q)
 constext txt_quick_filter_kill[] = N_("Add quick kill filter (y/n): ");
 constext txt_quick_filter_select[] = N_("Add quick selection filter (y/n): ");
 constext txt_quit[] = N_("Do you really want to quit? (y/n): ");
-constext txt_quit_cancel[] = N_("e)dit cancel message, q)uit, d)elete [%.*s]: ");
+constext txt_quit_cancel[] = N_("e)dit cancel message, q)uit, d)elete (cancel) [%.*s]: ");
 constext txt_quit_no_write[] = N_("Do you really want to quit without saving your configuration? (y/n): ");
 
 #ifndef DISABLE_PRINTING
@@ -806,7 +812,7 @@ constext txt_range_invalid[] = N_("Invalid range - valid are '0-9.$' eg. 1-$");
 constext txt_read_abort[] = N_("Do you want to abort this operation? (y/n): ");
 constext txt_read_exit[] = N_("Do you want to exit tin immediately ? (y/n): ");
 constext txt_read_resp[] = N_("Read response> ");
-constext txt_reading_article[] = N_("Reading ('q' to quit)... ");
+constext txt_reading_article[] = N_("Reading ('q' to quit)...");
 constext txt_reading_arts[] = N_("Reading %sarticles...");
 constext txt_reading_attributes_file[] = N_("Reading %sattributes file...\n");
 constext txt_reading_config_file[] = N_("Reading %sconfig file...\n");
@@ -832,15 +838,17 @@ constext txt_repost_group[] = N_("Repost article(s) to group(s) [%s]> ");
 constext txt_reset_newsrc[] = N_("Reset newsrc? (y/n): ");
 constext txt_resp_redirect[] = N_("Responses have been directed to the following newsgroups");
 constext txt_resp_to_poster[] = N_("Responses have been directed to poster. Mail/Post/Quit (m/p/q): ");
-constext txt_resp_x_of_n[] = N_("RespNo %3d of %3d" cCRLF);
+constext txt_resp_x_of_n[] = N_("RespNo %3d of %3d%s");
 constext txt_at_s[] = N_(" at %s");
 constext txt_save[] = N_("Save");
-constext txt_saved[] = N_("Saved %s...\n");
 constext txt_save_config[] = N_("Save configuration before continuing? (y/n): ");
 constext txt_save_filename[] = N_("Save filename [%s]> ");
+constext txt_saved[] = N_("Saved %s...\n");
 constext txt_saved_arts[] = N_("-- %d Article%s saved --");
+constext txt_saved_group[] = N_("%4d unread (%4d hot) article%s in %s\n");
 constext txt_saved_nothing[] = N_("-- No unread articles: nothing saved! --");
 constext txt_saved_pattern_to[] = N_("-- Saved pattern to %s - %s --");
+constext txt_saved_summary[] = N_("\n%s %d article%s from %d group%s\n");
 constext txt_saved_to_mailbox[] = N_("-- Saved to mailbox %s --");
 constext txt_saving[] = N_("Saving...");
 constext txt_screen_init_failed[] = N_("%s: Screen initialization failed");
@@ -864,7 +872,7 @@ constext txt_subscribed_to[] = N_("Subscribed to %s");
 constext txt_subscribing[] = N_("Subscribing... ");
 constext txt_supersede_article[] = N_("Repost or supersede article(s) [%.*s]? (r/s/q): ");
 constext txt_supersede_group[] = N_("Supersede article(s) to group(s) [%s]> ");
-constext txt_suspended_message[] = N_("\nStopped. Type 'fg' to restart TIN\n");
+constext txt_suspended_message[] = N_("\nStopped. Type 'fg' to restart %s\n");
 constext txt_tagged_art[] = N_("Tagged article");
 constext txt_tagged_thread[] = N_("Tagged thread");
 constext txt_testing_archive[] = N_(cCRLF cCRLF "Testing %s archive..." cCRLF);
@@ -876,7 +884,7 @@ constext txt_thread_not_saved[] = N_("Thread not saved");
 constext txt_thread_page[] = N_("T %d of %d (p %d), %s:  %s");
 constext txt_thread_resp_page[] = N_("T %d of %d, R %d/%d (p %d), %s:  %s");
 constext txt_thread_saved_to_many[] = N_("Thread saved to %s - %s");
-constext txt_thread_x_of_n[] = N_("%sThread %4s of %4s" cCRLF);
+constext txt_thread_x_of_n[] = N_("%sThread %4s of %4s%s");
 constext txt_threading_arts[] = N_("Threading articles...");
 
 #ifdef HAVE_COLOR
@@ -913,7 +921,7 @@ Warning: You are using a non-plain transfer encoding (such as base64 or\n\
 constext txt_warn_update[] = N_("\n\nYou are upgrading to tin %s from an earlier version.\n\
 Some values in your configuration file have changed!\nRead WHATSNEW, etc...\n");
 
-constext txt_warn_newsrc[] = N_("Warning: tin wrote less groups to your %s\n\
+constext txt_warn_newsrc[] = N_("Warning: tin wrote fewer groups to your\n\t%s\n\
 than it read at startup. If you didn't unsubscribe from %ld group%s during\n\
 this session this indicates an error and you should backup your %s\n\
 before you start tin once again!\n");
@@ -956,7 +964,7 @@ Warning: Your signature  is longer than %d lines.  Since signatures usually do\n
 constext txt_warn_multiple_sigs[] = N_("\nWarning: Found %d '-- \\n' lines, this may confuse some people.\n");
 constext txt_warn_wrong_sig_format[] = N_("\nWarning: Signatures should start with '-- \\n' not with '--\\n'.\n");
 constext txt_writing_attributes_file[] = N_("Writing attributes file...");
-constext txt_x_resp[] = N_("%d Responses" cCRLF);
+constext txt_x_resp[] = N_("%d Responses%s");
 constext txt_yanking_all_groups[] = N_("Yanking in all groups...");
 constext txt_yanking_sub_groups[] = N_("Yanking in subscribed to groups...");
 constext txt_yes[] = N_("Yes");
@@ -1154,37 +1162,64 @@ struct opttxt txt_tab_after_X_selection = {
 struct opttxt txt_art_marked_deleted = {
 	N_("Enter character to indicate deleted articles. <CR> sets, <ESC> cancels."),
 	N_("Character to show deleted articles : "),
-	N_("# Character used to show that an art was deleted (default 'D')\n")
+	N_("# Character used to show that an art was deleted (default 'D')\n\
+# _ is turned into ' '\n")
 };
 
 struct opttxt txt_art_marked_inrange = {
-	N_("Enter character to indicate articles in range. <CR> sets, <ESC> cancels."),
+	N_("Enter character to indicate articles in a range. <CR> sets, <ESC> cancels."),
 	N_("Character to show inrange articles : "),
-	N_("# Character used to show that an art is in a range (default '#')\n")
+	N_("# Character used to show that an art is in a range (default '#')\n\
+# _ is turned into ' '\n")
 };
 
 struct opttxt txt_art_marked_return = {
 	N_("Enter character to indicate that article will return. <CR> sets, <ESC> cancels."),
 	N_("Character to show returning arts   : "),
-	N_("# Character used to show that an art will return (default '-')\n")
+	N_("# Character used to show that an art will return (default '-')\n\
+# _ is turned into ' '\n")
 };
 
 struct opttxt txt_art_marked_selected = {
 	N_("Enter character to indicate selected articles. <CR> sets, <ESC> cancels."),
 	N_("Character to show selected articles: "),
-	N_("# Character used to show that an art was auto-selected (default '*')\n")
+	N_("# Character used to show that an art was auto-selected (default '*')\n\
+# _ is turned into ' '\n")
 };
 
 struct opttxt txt_art_marked_recent = {
 	N_("Enter character to indicate recent articles. <CR> sets, <ESC> cancels."),
 	N_("Character to show recent articles  : "),
-	N_("# Character used to show that an art is recent (default 'o')\n")
+	N_("# Character used to show that an art is recent (default 'o')\n\
+# _ is turned into ' '\n")
 };
 
 struct opttxt txt_art_marked_unread = {
 	N_("Enter character to indicate unread articles. <CR> sets, <ESC> cancels."),
 	N_("Character to show unread articles  : "),
-	N_("# Character used to show that an art was unread (default '+')\n")
+	N_("# Character used to show that an art is unread (default '+')\n\
+# _ is turned into ' '\n")
+};
+
+struct opttxt txt_art_marked_read = {
+	N_("Enter character to indicate read articles. <CR> sets, <ESC> cancels."),
+	N_("Character to show read articles    : "),
+	N_("# Character used to show that an art was read (default ' ')\n\
+# _ is turned into ' '\n")
+};
+
+struct opttxt txt_art_marked_killed = {
+	N_("Enter character to indicate killed articles. <CR> sets, <ESC> cancels."),
+	N_("Character to show killed articles  : "),
+	N_("# Character used to show that an art was killed (default 'K')\n\
+# kill_level must be set accordingly, _ is turned into ' '\n")
+};
+
+struct opttxt txt_art_marked_read_selected = {
+	N_("Enter character to indicate read selected articles. <CR> sets, <ESC> cancels."),
+	N_("Character to show readselected arts: "),
+	N_("# Character used to show that an art was selected before read (default ':')\n\
+# kill_level must be set accordingly, _ is turned into ' '\n")
 };
 
 struct opttxt txt_groupname_max_length = {
@@ -1732,7 +1767,7 @@ struct opttxt txt_batch_save = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Save articles in batch mode (-S)   : "),
 	N_("# If ON articles/threads will be saved in batch mode when save -S\n\
-# or mail -M is specified on the command line\n")
+# or mail (-M/-N) is specified on the command line\n")
 };
 
 struct opttxt txt_savedir = {
@@ -1769,7 +1804,6 @@ struct opttxt txt_post_process = {
 };
 
 struct opttxt txt_process_only_unread = {
-
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Process only unread articles       : "),
 	N_("# If ON only save/print/pipe/mail unread articles (tagged articles excepted)\n")

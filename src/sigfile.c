@@ -218,10 +218,11 @@ thrashdir (
 	 */
 	cwd = (char *) my_malloc (PATH_LEN + 1);
 #ifndef M_AMIGA
-	if (numentries < 3 || cwd == (char *) 0) {
+	if (numentries < 3 || cwd == (char *) 0)
 #else
-	if (numentries == 0 || cwd == (char *) 0) {
+	if (numentries == 0 || cwd == (char *) 0)
 #endif /* !M_AMIGA */
+	{
 		CLOSEDIR(dirp);
 		return (-1);
 	}

@@ -104,11 +104,17 @@ static const char *gnksa_domain_list[] = {
 	"info",
 	"shop",
 #	endif /* 0 */
+	/* the next four are defined in RFC 2606 */
+	"invalid",
+#	if 0
+	/* but three of them shoudn't be used on usenet */
+	"test",
+	"example",
+	"localhost",
+#	endif /* 0 */
 #	ifdef TINC_DNS
 	"bofh",
 #	endif /* TINC_DNS */
-	/* for forged addresses */
-	"invalid",
 	/* sentinel */
 	""
 };

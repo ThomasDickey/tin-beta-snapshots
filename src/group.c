@@ -51,6 +51,9 @@
 #define INDEX2SNUM(i)	((i) % NOTESLINES)
 #define INDEX2LNUM(i)	(INDEX_TOP + INDEX2SNUM(i))
 
+/* 3+1+3; width(art_mark) + space + width(unread count) */
+#define MAGIC	7
+
 char *glob_group;
 
 int max_from = 0;
@@ -72,7 +75,6 @@ static int group_left (void);
 static int group_right (void);
 static int tab_pressed (void);
 static void bld_sline (int i);
-static void draw_sline (int i, t_bool full);
 static void draw_subject_arrow (void);
 static void show_group_title (t_bool clear_title);
 static void show_tagged_lines (void);
@@ -95,7 +97,7 @@ show_tagged_lines (
 	for (i = grpmenu.first; i < grpmenu.last; ++i) {
 		if ((i != grpmenu.curr) && line_is_tagged(base[i])) {
 			bld_sline (i);
-			draw_sline (i, FALSE);
+			draw_line (i, MAGIC);
 		}
 	}
 }
@@ -155,7 +157,7 @@ group_page (
 	 */
 	group->read_during_session = TRUE;
 
-	proc_ch_default = get_post_proc_type (group->attribute->post_proc_type);
+	proc_ch_default = POST_PROC_TYPE (group->attribute->post_proc_type);
 
 	glob_group = group->name;			/* For global access to the current group */
 	num_of_tagged_arts = 0;
@@ -218,7 +220,7 @@ group_page (
 				end_of_list();
 				break;
 
-			case iKeyGroupLastViewed:	/* go to last viewed article */
+			case iKeyLastViewed:	/* go to last viewed article */
 				/*
 				 * If the last art is no longer in a thread then we can't display it
 				 */
@@ -228,7 +230,7 @@ group_page (
 					ret_code = enter_pager (this_resp, FALSE);
 				break;
 
-			case iKeyGroupPipe:	/* pipe article/thread/tagged arts to command */
+			case iKeyPipe:		/* pipe article/thread/tagged arts to command */
 				if (grpmenu.curr >= 0)
 					feed_articles (FEED_PIPE, GROUP_LEVEL, &CURR_GROUP, (int) base[grpmenu.curr]);
 				break;
@@ -323,6 +325,18 @@ group_page (
 						make_threads (group, FALSE);
 						grpmenu.curr = find_new_pos (old_top, old_artnum, grpmenu.curr);
 					}
+				}
+				show_group_page ();
+				break;
+
+		   case iKeyGroupEditFilter:
+				if (!invoke_editor (local_filter_file, 25)) /* FIXME: is 25 correct offset ? */
+					break;
+				unfilter_articles ();
+				(void) read_filter_file (local_filter_file, FALSE);
+				if (filter_articles (group)) {
+					make_threads (group, FALSE);
+					grpmenu.curr = find_new_pos (old_top, old_artnum, grpmenu.curr);
 				}
 				show_group_page ();
 				break;
@@ -453,7 +467,7 @@ group_page (
 					show_group_title (TRUE);
 
 				bld_sline (grpmenu.curr);
-				draw_sline (grpmenu.curr, FALSE);
+				draw_line (grpmenu.curr, MAGIC);
 
 				/*
 				 * Move cursor to next unread
@@ -647,7 +661,7 @@ group_page (
 						}
 					}
 					bld_sline (grpmenu.curr);
-					draw_sline (grpmenu.curr, FALSE);
+					draw_line (grpmenu.curr, MAGIC);
 					if (tagged)
 						show_tagged_lines ();
 					if (grpmenu.curr + 1 < grpmenu.max) {
@@ -730,7 +744,7 @@ group_page (
 
 				show_group_title (TRUE);
 				bld_sline(grpmenu.curr);
-				draw_sline (grpmenu.curr, FALSE);
+				draw_line (grpmenu.curr, MAGIC);
 				draw_subject_arrow();
 				info_message (txt_marked_as_unread, buf);
 				break;
@@ -764,7 +778,7 @@ group_page (
 
 				show_group_title (TRUE);
 				bld_sline(grpmenu.curr);
-				draw_sline (grpmenu.curr, FALSE);
+				draw_line (grpmenu.curr, MAGIC);
 				draw_subject_arrow();
 				info_message (txt_marked_as_unread, buf);
 				break;
@@ -789,7 +803,7 @@ group_page (
 				}
 				assert (n > 0);
 				bld_sline(grpmenu.curr);
-				draw_sline (grpmenu.curr, FALSE);
+				draw_line (grpmenu.curr, MAGIC);
 
 				info_message (flag
 					      ? txt_thread_marked_as_selected
@@ -922,7 +936,7 @@ show_group_page (
 
 	for (i = grpmenu.first; i < grpmenu.last; ++i) {
 		bld_sline(i);
-		draw_sline (i, TRUE);
+		draw_line (i, 0);
 	}
 
 	CleartoEOS ();
@@ -947,7 +961,7 @@ update_group_page (
 
 	for (i = grpmenu.first; i < grpmenu.last; ++i) {
 		bld_sline (i);
-		draw_sline (i, FALSE);
+		draw_line (i, MAGIC);
 	}
 
 	if (grpmenu.max <= 0)
@@ -1086,7 +1100,7 @@ mark_screen (
 #ifdef USE_CURSES
 		int y, x;
 		getyx(stdscr, y, x);
-		mvaddstr(INDEX_TOP + screen_row, screen_col, value);
+		mvaddstr(INDEX_TOP + screen_row, screen_col, (char *)value);
 		move(y, x);
 #else
 		int i;
@@ -1155,8 +1169,8 @@ toggle_subject_from (
 /*
  * Build subject line given an index into base[].
  *
- * WARNING: the routine is tightly coupled with draw_sline() in the sense
- * that draw_sline() expects bld_sline() to place the article mark
+ * WARNING: the routine is tightly coupled with draw_line() in the sense
+ * that draw_line() expects bld_sline() to place the article mark
  * (ART_MARK_READ, ART_MARK_SELECTED, etc) at MARK_OFFSET in the
  * screen[].col.
  * So, if you change the format used in this routine, be sure to check
@@ -1255,68 +1269,15 @@ bld_sline (
 }
 
 
-/*
- * Draw subject line given an index into base[].
- *
- * WARNING: this routine is tightly coupled with bld_sline(); see the warning
- * associated with that routine for details. (C++ would be handy here.)
- *
- * NOTE: the 2nd argument is used to control whether the full line is
- * redrawn or just the the parts of it that can be changed by a
- * command; i.e., the unread art count and the art mark. This will result
- * in a slightly more efficient update, though at the price of increased
- * code complexity and readability.
- */
-static void
-draw_sline (
-	int i,
-	t_bool full)
-{
-	int tlen;
-	int x = full ? 0 : (MARK_OFFSET-2);
-#	ifdef USE_CURSES
-	char buffer[BUFSIZ];
-	char *s = screen_contents(INDEX2LNUM(i), x, buffer);
-#	else
-	char *s = &(screen[INDEX2SNUM(i)].col[x]);
-#	endif /* USE_CURSES */
-
-	if (full) {
-		if (tinrc.strip_blanks) {
-			strip_line (s);
-			CleartoEOLN ();
-		}
-		tlen = strlen (s);	/* notes new line length */
-	} else
-		tlen = 3+1+3;		/* width(art_mark) + space + width(unread count) */
-
-	MoveCursor (INDEX2LNUM(i), x);
-	if (tlen)
-		my_printf("%.*s", tlen, s);
-
-	/*
-	 * it is somewhat less efficient to go back and redo that art mark
-	 * if selected, but it is quite readable as to what is happening
-	 */
-	if (s[MARK_OFFSET-x] == tinrc.art_marked_selected) {
-		MoveCursor (INDEX2LNUM(i), MARK_OFFSET);
-		ToggleInverse ();
-		my_fputc (s[MARK_OFFSET-x], stdout);
-		ToggleInverse ();
-	}
-
-	MoveCursor(INDEX2LNUM(i)+1, 0);
-}
-
-
 static void
 show_group_title (
 	t_bool clear_title)
 {
 	char buf[PATH_LEN];
-	struct t_group currgrp = CURR_GROUP;
+	struct t_group currgrp;
 	register int i, art_cnt = 0;
 
+	currgrp = CURR_GROUP;
 	if (currgrp.attribute->show_only_unread) {
 		for (i = 0; i < grpmenu.max; i++)
 			art_cnt += new_responses (i);
@@ -1503,6 +1464,7 @@ group_catchup(
 	if (num_of_tagged_arts && prompt_yn (cLINES, txt_catchup_despite_tags, TRUE) != 1)
 		return 0;
 
+	/* FIXME: -> lang.c */
 	snprintf(buf, sizeof(buf)-1, txt_mark_arts_read, (ch == iKeyGroupCatchupNextUnread) ? " and enter next unread group" : "");
 
 	if (!CURR_GROUP.newsrc.num_unread || !tinrc.confirm_action || (yn = prompt_yn (cLINES, buf, TRUE)) == 1)
@@ -1532,6 +1494,7 @@ group_catchup(
 					/* NOTREACHED */
 					break;
 			}
+			/* FALLTHROUGH */
 		default:							/* Should not be here */
 			break;
 	}

@@ -338,8 +338,8 @@ prompt_option_string (
 	char *variable = OPT_STRING_list[option_table[option].var_index];
 
 	show_menu_help (option_table[option].txt->help);
-	MoveCursor (option_row(option), 0);
-	sprintf (&prompt[0], "-> %3d. %s ", option+1, option_table[option].txt->opt);
+	MoveCursor (option_row(option), 3);	/* past the -> location */
+	sprintf (&prompt[0], "%3d. %s ", option+1, option_table[option].txt->opt);
 
 	if ((p = tin_getline (prompt, FALSE, variable, 0, FALSE, HIST_OTHER)) == (char *) 0)
 		return FALSE;

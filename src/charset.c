@@ -349,7 +349,7 @@ Convert2Printable (
 
 /*
  *  Same as Convert2Printable() but allows Backspace (ASCII 8), TAB (ASCII 9),
- *  and LineFeed (ASCII 12) according to son-of-rfc 1036 section 4.4
+ *  and LineFeed (ASCII 12) according to son of RFC 1036 section 4.4
  */
 void
 ConvertBody2Printable (

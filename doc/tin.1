@@ -225,12 +225,8 @@ section GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES.
 .PP
 A list of groups can be specified after the other command line options. This
 can be useful if you wish to yank in or subscribe to a hand-picked subset of
-the active newsgroups. The list may include the usual newsgroup wildcard
-characters. It can be comma or space separated, eg:
-.PP
-.RS
-alt.config news.*,!news.test
-.RE
+the active newsgroups. See the section NEWSGROUP LISTS & WILDCARDS for the
+types of pattern that \fBtin\fR understands.
 .PP
 If you specify a single group-name, or a wildcard that matches a single
 group, then you will automatically enter that group. Otherwise the normal
@@ -364,18 +360,20 @@ article-body
 .\"
 .\"
 .SH "COMMON MOVING KEYS"
-This table shows the common keys used for moving around at all four levels
+This table shows the common keys used for moving around all levels
 within \fBtin\fR.
 .RS
 .nf
 .ta \w'Beg. of list/article  'u +\w'ANSI/vt100  'u
 	ANSI/vt100	Other Terminals
-Beg. of list/article	\fBHome\fR	\fB^\fR (also \fBg\fR at article level)
-End of list/article	\fBEnd\fR	\fB$\fR (also \fBG\fR at article level)
+Beg. of list/article	\fBHome\fR	\fB^\fR (1)
+End of list/article	\fBEnd\fR	\fB$\fR (2)
 Page Up	\fBPgUp\fR	\fB^U\fR or \fB^B\fR or \fBb\fR
 Page Down	\fBPgDn\fR	\fB^D\fR or \fB^F\fR or \fB<SPACE>\fR
 Line Up	\fBUp arrow\fR	\fBk\fR or \fB^P\fR (not at article level)
 Line Down	\fBDown arrow\fR	\fBj\fR or \fB^N\fR (not at article level)
+(1) also \fBg\fR in the article, config and help menus
+(2) also \fBG\fR in the article, config and help menus
 .fi
 .RE
 .\"
@@ -547,6 +545,8 @@ Subscribe to current group.
 .TP
 .B S
 Subscribe to groups matching user specified pattern.
+See the section NEWSGROUP LISTS & WILDCARDS for the types of pattern that \fBtin\fR
+understands.
 .TP
 .B u
 Unsubscribe to current group. This can be used to remove bogus groups.
@@ -555,6 +555,8 @@ section.
 .TP
 .B U
 Unsubscribe to groups matching user specified pattern.
+See the section NEWSGROUP LISTS & WILDCARDS for the types of pattern that \fBtin\fR
+understands.
 .TP
 .B w
 Post an article to current group. If posting fails for some reason, you'll
@@ -705,6 +707,9 @@ with unread news.
 Cycle the display of the author through all the possible options
 for the tinrc variable 'show_author'.
 .TP
+.B E
+Edit the filter file and reload it afterwards.
+.TP
 .B g
 Choose a new group by name. This command can be used to access any group, even
 those not currently yanked in.
@@ -854,6 +859,12 @@ Reverse article selections.
 .TP
 .B ~
 Undo all selections on current thread.
+.TP
+.B |
+Pipe current article / thread / auto-selected (hot) articles /
+articles matching pattern / tagged articles into command.
+See the section MAILING PIPING PRINTING REPOSTING AND SAVING ARTICLES for
+more information.
 .TP
 .B <CR>
 Read current article within thread.
@@ -1084,6 +1095,9 @@ cancel message can be seen in the newsgroup 'control' or 'control.cancel'.
 .B e
 Edit the current article. Only available when in a mailgroup.
 .TP
+.B E
+Edit the filter file and reload it afterwards.
+.TP
 .B f
 Post a followup to the current article with a copy of the article included.
 .TP
@@ -1211,22 +1225,32 @@ After that, the users own configuration file is read from
 \fI$HOME/.tin/tinrc\fP. The global file is useful for distributing
 system-wide defaults to new users who have no private tinrc yet.
 .PP
-The following variables are user configurable by editing
-\fI$HOME/.tin/tinrc\fP directly. Most of them can be set in the
-GLOBAL OPTIONS MENU which is could be accessed by pressing `M' at all
+The variables are user configurable by editing
+\fI$HOME/.tin/tinrc\fP directly. Most of them can also be set in the
+GLOBAL OPTIONS MENU which is accessed by pressing `M' at all
 levels. It allows the user to customize the behaviour of \fBtin\fR. The
-options are saved to the file \fI$HOME/.tin/tinrc\fP. Use <SPACE> to toggle
-the required option and <CR> to set. Use `\fB/\fR' and `\fB?\fR' to search
-for a specific option. The name in braces is the name of the corresponding
-setting in \fI$HOME/.tin/tinrc\fP.
+options are saved to the file \fI$HOME/.tin/tinrc\fP when you exit tin
+so don't edit the file directly whilst \fBtin\fR is running.
+.PP
+In the OPTIONS menu use the cursor keys in the usual way to move around.
+Use <CR> to 'open' the option you wish to change. You will need to enter
+a new value or use <SPACE> to toggle the available options. <CR> will save
+the new value, <ESCAPE> will abort without saving changes.
+.PP
+As with the other menus, `\fB^L\fR' will redraw the screen.
+You can use `\fB/\fR' and `\fB?\fR' to search for a specific option.
+Use '\fBq\fR' to exit the OPTIONS menu and keep your changes.
+Use '\fBQ\fR' to exit without keeping your changes.
+.PP
+Here is a full list of all the available variables. The name in braces is
+the name of the corresponding setting in \fI$HOME/.tin/tinrc\fP.
 .TP 4
 .B Add posted articles to filter (add_posted_to_filter)
 If ON add posted articles to filter for highlighting follow-ups.
 Default is ON.
 .TP
 .B Insert 'User-Agent:'-header (advertising)
-Turn ON advertising in header (``User-Agent:'').
-Default is ON.
+Turn ON advertising in header (``User-Agent:'').  Default is ON.
 .TP
 .B Skip multipart/alternative parts (alternative_handling)
 If ON strip multipart/alternative messages automatically.
@@ -1257,9 +1281,21 @@ Default is 'o'.
 The character used to show that an article has not been read.
 Default is '+'.
 .TP
+.B Character to show read articles (art_marked_read)
+The character used to show that an article was read.
+Default is ' '.
+.TP
+.B Character to show read articles (art_marked_killed)
+The character used to show that an article was killed.
+Default is 'K'. \fBkill_level\fR must be set accordingly.
+.TP
+.B Character to show read selected articles (art_marked_read_selected)
+The character used to show that an article was hot before it was read.
+Default is ':'. \fBkill_level\fR must be set accordingly.
+.TP
 .B Ask before using metamail (ask_for_metamail)
-If ON \fBtin\fR will ask before using metamail to display MIME messages. This only
-occurs, if 'use_metamail' is also switched ON.
+If ON \fBtin\fR will ask before using metamail to display MIME messages.
+This only occurs if 'use_metamail' is also switched ON.
 Default is ON.
 .TP
 .B Send you a blind cc automatically (auto_bcc)
@@ -1279,9 +1315,9 @@ If ON articles/threads with ``Archive-name:'' in header will be
 automatically saved with the Archive-name & part/patch no and
 post processed if process type is not set to none. Default is OFF
 .TP
-.B Save articles in batch mode (-S) (batch_save)
+.B Save articles in batch mode (batch_save)
 If set ON articles/threads will be saved in batch mode when save
-``\fB-S\fR'' or mail ``\fB-M\fR'' is specified on the command line.
+``\fB-S\fR'' or mail ``\fB-M\fR, \fB-N\fR'' is specified on the command line.
 Default is OFF.
 .TP
 .B Show mini menu & posting etiquette (beginner_level)
@@ -1319,10 +1355,10 @@ Color of background for inverse text
 Color of foreground for inverse text
 .TP
 .B col_markdash
-Color of words emphasised like _this_. See also word_h_display_marks
+Color of words emphasised like _this_. See also \fBword_h_display_marks\fR
 .TP
 .B col_markstar
-Color of words emphasised like *this*. See also word_h_display_marks
+Color of words emphasised like *this*. See also \fBword_h_display_marks\fR
 .TP
 .B col_minihelp
 Color of mini help menu
@@ -1559,7 +1595,8 @@ to 8bit. Leaving it OFF is safe for most users and compliant to Internet
 Mail Standard (STD 11/RFC 822 and RFC 2047).
 .TP
 .B Mail address (mail_address)
-User's mail address (and fullname), if not username@host.
+User's mail address (and fullname), if not username@host. This is used when
+creating articles, sending mail and when PGP signing.
 .TP
 .B MIME encoding in mail messages (mail_mime_encoding)
 MIME encoding of the body in mail message, if necessary (8bit, base64,
@@ -1935,14 +1972,18 @@ group attributes are read from the file \fI$HOME/.tin/attributes\fP.
 A later version will provide a menu interface to set all the attributes.
 At present you will have to edit the file with your editor.
 .PP
-Note that the \fIscope=<groupname>\fP line has to be specified before the
-attributes are specified for that group. All attributes are set to a
+Note that the \fIscope=<grouplist>\fP line has to be specified before the
+attributes are specified for that list. All attributes are set to a
 reasonable default so you only have to specify the attribute that you want
 to change (i.e., savedir). All toggle attributes are set by specifying
 ON/OFF. Otherwise, these function exactly the same as their global
 equivalents. The following group attributes are available:
 .TP 4
 \fBscope
+This changes the list of groups to which the attributes that follow will be
+applied.
+See the section NEWSGROUP LISTS & WILDCARDS for the types of pattern that can
+be used here.
 .TP
 .B maildir
 Identical to the tinrc variable default_maildir
@@ -1955,6 +1996,7 @@ Identical to the tinrc variable default_savedir
 .B organization
 .TP
 .B from
+Identical to the tinrc variable mail_address
 .TP
 .B sigfile
 .TP
@@ -1965,8 +2007,12 @@ Identical to the tinrc variable default_savedir
 .B auto_select
 .TP
 .B auto_save
+Identical to the tinrc variable of the same name
 .TP
 .B batch_save
+Can be used to override the global setting in tinrc on a
+per group basis. For more information read section AUTOMATIC MAILING AND
+SAVING NEW NEWS.
 .TP
 .B delete_tmp_files
 .TP
@@ -1987,7 +2033,7 @@ Identical to the tinrc variable post_process_type
 .TP
 .B mailing_list
 Used when a group is a mailing list. All responses to the group will be
-directed to this email address.
+directed to this email address instead
 .TP
 .B x_headers
 A list of headers that will be automatically added when posting
@@ -2027,6 +2073,10 @@ Examples:
 .RS
 .nf
 .ft CW
+
+# include extra headers
+scope=*
+x_headers=~/.tin/headers
 
 # in *sources* set post process type to shar
 scope=*sources*
@@ -2189,15 +2239,16 @@ If a regex pattern is selected you are asked to enter a pattern
 (i.e., to match all articles subject lines containing 'net News' you enter
 "net News").
 Any articles that match the entered expression will be mailed, piped etc.
-See also the wildcard= tinrc variable for advanced pattern matching options.
+See also the wildcard tinrc variable for advanced pattern matching options.
 .PP
-To save articles to a mailbox with the name of the current newsgroup
-(i.e., Alt.sources) enter '=' or '=<mailbox name>' when asked for the
-save filename.
+To save articles to a mailbox enter '=<mailbox name>' when asked for the
+save filename. If you enter just '=' then articles will be saved to a
+mailbox with the name of the current newsgroup (eg, alt.sources).
+See default_maildir.
 .PP
-To save in <news.group.name>/<filename> format enter '+<filename>'.
+To save in savedir/<news.group.name>/<filename> format enter '+<filename>'.
 Environment variables are allowed within a filename (i.e.,
-\fI$SOURCES/dir/filename\fP).
+\fI$SOURCES/dir/filename\fP). See default_savedir.
 .PP
 When saving articles you can specify whether the saved files should be
 post processed (i.e., \fBunshar\fR(1) shell archive, \fBuudecode\fR(1)
@@ -2215,10 +2266,14 @@ which articles were mailed/saved from which newsgroups and the total number
 of articles mailed/saved. Articles are saved in a private news structure
 under your <savedir> directory (default is \fI$HOME/News\fP). Be careful of
 using this option if you read a lot of groups because you could overflow
-your file system. If you only want to save a few groups it would be best to
-backup your full \fI$HOME/.newsrc\fP and create a new one that only contains
-the newsgroups you want to mail/save. Saved news can be read later by
-\fBtin -R\fR.
+your file system.
+.PP
+If you only want to save some of your groups use the batch_save tinrc variable.
+Set to ON or OFF in tinrc to enable/disable saving of all groups and then
+use the batch_save attribute to fine tune which groups you want to have
+saved. For example, if you want to save most of your groups, then set
+batch_save to ON in tinrc and selectively turn off the ones you don't want
+using attributes.
 .PP
 .TP 2i
 .B tin -M iain -c -f newsrc.mail
@@ -2246,6 +2301,22 @@ can be used to mean the highest number available.
 Currently the only commands that understand ranges are 'K', 'z' and 'Z' at
 the Group level.
 .PP
+.SH NEWSGROUP LISTS & WILDCARDS
+Several places in tin allow you to specify a list of newsgroups. These include
+command line groups, (un)subscribe groups, the AUTO[UN]SUBSCRIBE mechanism.
+The scope= attributes file tag and the filter file group= tag also use the
+same syntax.
+\fBtin\fR interprets this variable similarly to rn. It contains a list of
+patterns, separated by commas and possibly prefixed with exclamation points.
+An exclamation point negates the meaning of a match on this pattern, and can be
+used to cancel certain matches.
+Some examples:
+.sp
+\fIalt.config news.*,!news.test\fP
+.sp
+Matches alt.config and everything in the 'news' hierarchy except news.test
+.PP
+See the explanation for the AUTOSUBSCRIBE variables for further examples.
 .\"
 .SH SIGNATURES
 \fBtin\fR will recognize a signature in either \fI$HOME/.signature\fP or
@@ -2424,9 +2495,6 @@ should be started with to save typing them each time it is started. The
 contents of the environment variable are added to the front of the command
 line options before it is parsed therefore allowing an option specified on
 the command line to override the same option specified in the environment.
-Note that environment variables that are used to set message header lines
-can also be set by adding the header name and value to the
-\fI$HOME/.tin/headers\fP file.
 .TP
 .B TIN_HOMEDIR
 Define this variable if you do not want the \fI.tin\fP directory in
@@ -2487,6 +2555,11 @@ with $\fBISO2ASC\fR.
 Set the ISO to ASCII charset decoding table character to use in decoding
 an articles text. Values can range from 0 to 6.
 .TP
+.B BUG_ADDRESS
+Set the address to which bugreports are mailto to the contents of the
+variable instead of the system default. Its usage is undesired, use
+\fBbugaddress\fR in \fItin.defaults\fP instead.
+.TP
 .B ORGANIZATION
 Set the article header field ``Organization:'' to the contents of the
 variable instead of the system default. If reading news on an Apollo
@@ -2518,29 +2591,27 @@ editor. If $\fBEDITOR\fP and $\fBVISUAL\fR are both unset, tin will uses the
 systems default editor (i.e. \fBvi\fR(1) on UNIX-systems).
 .TP
 .B AUTOSUBSCRIBE
-\fBtin\fR interprets this variable similarly to rn. It contains a list of
-patterns, separated by commas and possibly prefixed with exclamation points.
 A new group is checked against the list of patterns; if it matches,
-\fBtin\fR subscribes the user to the group without further query. An
-exclamation point negates the meaning of a match on this pattern, and can be
-used to cancel certain matches. For example, setting
+\fBtin\fR subscribes the user to the group without further query.
+See the section NEWSGROUP LISTS & WILDCARDS for an explanation of the valid
+syntax.
+For example, setting
 .sp
 \fIAUTOSUBSCRIBE=comp.os.unix.*,talk.*,!talk.politics.*\fP
 .sp
 will automatically subscribe the user to all new groups in the comp.os.unix
 hierarchy, and all talk groups other than talk.politics groups (which will
-be queried for as usual.)
+be queried for as usual).
 .TP
 .B AUTOUNSUBSCRIBE
-\fBtin\fR interprets this variable similarly to rn. It is handled like the
-$\fBAUTOSUBSCRIBE\fP variable, but groups matching the list are unsubscribed
-from without further query. For example, setting
+Is handled like the \fBAUTOSUBSCRIBE\fP variable, but groups matching the
+list are unsubscribed from without further query. For example, setting
 .sp
 \fIAUTOUNSUBSCRIBE=alt.flame.*,u*,!uk.*\fP
 .sp
 will automatically unsubscribe the user from all new alt.flame groups
 and all groups starting with u (university groups) other than UK groups (which
-will be queried for as usual.)
+will be queried for as usual).
 .TP
 .B SPAMTRAP
 Set this variable to a list of comma-separated strings to be warned if you
@@ -2597,9 +2668,6 @@ active file of user's saved newsgroups.
 .TP
 \fI$HOME/.tin/filter\fP
 filtering file for article killing and auto-selection.
-.TP
-\fI$HOME/.tin/headers\fP
-extra header lines to be added to each article to be posted.
 .TP
 \fI$HOME/.tin/posted\fP
 history of articles posted by user.
@@ -2786,7 +2854,7 @@ Stueken, Ed Sznyter, Dean Takemori, Darrell Tangman, Derek Terveer, Carsten
 Theis, Julian Thompson, David Tiller, Andry Timonin, Mark Tomlin, Michael
 Traub, Adri Verhoef, Paul Vickers, Oliver B. Warzecha, Jason Wessel, Cary
 Whitney, Henrik Wist, Greg Woods, Lloyd Wright, Jens Wuepper, Billy Y.,
-Nickolai Zeldovich, Zbigniew Zych
+Hideaki Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
 .\"
 .\"
 .SH AUTHOR

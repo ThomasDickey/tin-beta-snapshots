@@ -333,7 +333,7 @@ atol (
 
 #ifndef HAVE_STRTOL
 /* fix me - put me in tin.h */
-#define DIGIT(x) (isdigit((unsigned char)x)? ((x)-'0'): (10+tolower((unsigned char)x)-'a'))
+#define DIGIT(x) (isdigit((unsigned char)x) ? ((x)-'0') : (10+tolower((unsigned char)x)-'a'))
 #define MBASE 36
 long
 strtol (
@@ -427,6 +427,8 @@ strncasecmp (
 
 
 /*
+ * FIXME - this is broken if string is all whitespace
+ *
  * str_trim - substitute multiple white spaces with one space
  *            and delete heading and trailing whitespace
  *

@@ -63,7 +63,7 @@ read_mail_active_file (
 	long min, max;
 	struct t_group *ptr;
 
-	if (INTERACTIVE)
+	if (!batch_mode)
 		wait_message (0, _(txt_reading_mail_active_file));
 
 	/*
@@ -116,7 +116,7 @@ read_mail_active_file (
 	}
 	fclose (fp);
 
-	if (INTERACTIVE)
+	if (!batch_mode)
 		my_fputs("\n", stdout);
 }
 
@@ -163,18 +163,15 @@ read_mailgroups_file (
 {
 	FILE *fp;
 
-	if (!show_description || save_news || catchup)
-		return;
-
 	if ((fp = open_mailgroups_fp ()) != (FILE *) 0) {
-		if (INTERACTIVE)
+		if (!batch_mode)
 			wait_message (0, _(txt_reading_mailgroups_file));
 
 		read_groups_descriptions (fp, (FILE *) 0);
 
 		fclose (fp);
 
-		if (INTERACTIVE)
+		if (!batch_mode)
 			my_fputs("\n", stdout);
 	}
 }
@@ -192,11 +189,8 @@ read_newsgroups_file (
 	FILE *fp;
 	FILE *fp_save = (FILE *) 0;
 
-	if (!show_description || save_news || catchup)
-		return;
-
 	if ((fp = open_newsgroups_fp ()) != (FILE *) 0) {
-		if (INTERACTIVE)
+		if (!batch_mode)
 			wait_message (0, _(txt_reading_newsgroups_file));
 
 
@@ -212,7 +206,7 @@ read_newsgroups_file (
 
 		TIN_FCLOSE (fp);
 
-		if (INTERACTIVE)
+		if (!batch_mode)
 			my_fputs("\n", stdout);
 	}
 }

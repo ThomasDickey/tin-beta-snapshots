@@ -62,13 +62,13 @@ int top_art = 0;				/* # of articles in arts[] */
  */
 static char *pcPrintDate (time_t lSecs);
 static char *pcPrintFrom (struct t_article *psArt);
-static int artnum_comp (t_comptype *p1, t_comptype *p2);
-static int date_comp (t_comptype *p1, t_comptype *p2);
-static int from_comp (t_comptype *p1, t_comptype *p2);
+static int artnum_comp (t_comptype p1, t_comptype p2);
+static int date_comp (t_comptype p1, t_comptype p2);
+static int from_comp (t_comptype p1, t_comptype p2);
 static int iReadNovFile (struct t_group *group, long min, long max, int *expired);
 static int read_group (struct t_group *group, char *group_path, int *pcount);
-static int score_comp (t_comptype *p1, t_comptype *p2);
-static int subj_comp (t_comptype *p1, t_comptype *p2);
+static int score_comp (t_comptype p1, t_comptype p2);
+static int subj_comp (t_comptype p1, t_comptype p2);
 static int valid_artnum (long art);
 static long find_first_unread (struct t_group *group);
 static t_bool parse_headers (FILE *fp, struct t_article *h);
@@ -178,7 +178,7 @@ index_group (
 	if (cCOLS < i)
 		i = 0;
 
-	if (INTERACTIVE)
+	if (!batch_mode)
 		wait_message (0, _(txt_group), cCOLS - i, group->name);
 
 	make_group_path (group->name, group_path);
@@ -236,12 +236,13 @@ index_group (
 	if (iReadNovFile (group, min, max, &expired) == -1)
 		return FALSE;	/* user aborted indexing */
 
-
+#if 0	/* IMHO this is a bit to verbose (urs) */
 	/*
 	 * Prints 'P' for each expired article if verbose
 	 */
 	if (expired)
 		print_expired_arts (expired);
+#endif /* 0 */
 
 	/*
 	 * Add any articles to arts[] that are new or were killed
@@ -424,7 +425,7 @@ read_group (
 			if (!read_news_via_nntp || group->type != GROUP_TYPE_NEWS)
 				my_chdir (dir);
 
-			return(-1);
+			return -1;
 		}
 
 		if (!res) {
@@ -441,10 +442,12 @@ read_group (
 		if (++count % MODULO_COUNT_NUM == 0)
 			show_progress (mesg, count, total);
 
+#if 0 /* again too verbose */
 		if (batch_mode && verbose) {
 			my_fputc ('.', stdout);
 			my_flush();
 		}
+#endif /* 0 */
 
 	}
 
@@ -494,14 +497,7 @@ thread_by_subject (
 		j = h->aptr;
 
 		if (j != -1 && j < i) {
-
-			/*
-			 * Surely the test for IGNORE_ART() was done 12 lines ago ??
-			 */
-			if (/*!IGNORE_ART(i) &&*/ !arts[i].inthread &&
-						   ((arts[i].subject == arts[j].subject) ||
-						   ((arts[i].part || arts[i].patch) &&
-							 arts[i].archive == arts[j].archive))) {
+			if (!arts[i].inthread && ((arts[i].subject == arts[j].subject) || ((arts[i].part || arts[i].patch) && arts[i].archive == arts[j].archive))) {
 				arts[j].thread = i;
 				arts[i].inthread = TRUE;
 			}
@@ -553,7 +549,7 @@ make_threads (
 {
 	int i;
 
-	if (!cmd_line)
+	if (!cmd_line && !batch_mode)
 		info_message (((group->attribute && group->attribute->thread_arts == THREAD_NONE) ? _(txt_unthreading_arts) : _(txt_threading_arts)));
 
 #ifdef DEBUG
@@ -661,6 +657,14 @@ sort_arts (
 }
 
 
+/*
+ * TODO
+ * Seems to be only called when reading local spool and no overview files exist
+ * Code reads (max_lineno) lines of article, presumably to catch headers like
+ * Archive-name: which are not normally included in XOVER or even the normal
+ * block of headers. How this is supposed to be useful when 99% of the time we'll
+ * have overview data I don't know...
+ */
 static t_bool
 parse_headers (
 	FILE *fp,
@@ -683,35 +687,28 @@ parse_headers (
 		 * Look for the end of informations which tin want to get.
 		 * Applies when reading local spool and via NNTP.
 		 */
-		if (lineno > max_lineno || got_archive)
+		if (lineno > max_lineno /*|| got_archive*/)
 			break;
 
-		lineno++;		/* TODO Why is this needed ? */
+		lineno++;
 
 		switch (toupper((unsigned char)*ptr)) {
 			case 'A':	/* Archive-name:  optional */
 				if (match_header (ptr+1, "rchive-name", (char*)0, buf, HEADER_LEN) && *buf != '\0') {
-					if ((s = strchr (buf, '/')) != (char *) 0) {
-						if (STRNCMPEQ(s+1, "part", 4) || STRNCMPEQ(s+1, "Part", 4)) {
+					/* TODO - what if header of form news/group/name/part01 ? */
+					if ((s = strrchr (buf, '/')) != NULL) {
+						if (STRNCASECMPEQ(s+1, "part", 4)) {
 							h->part = my_strdup (s+5);
-							s = strrchr (h->part, '\n');
-							if (s != (char *) 0)
-								*s = '\0';
-						} else if (STRNCMPEQ(s+1, "patch", 5) || STRNCMPEQ(s+1, "Patch", 5)) {
+							strtok(h->part, "\n");
+						} else if (STRNCASECMPEQ(s+1, "patch", 5)) {
 							h->patch = my_strdup (s+6);
-							s = strrchr (h->patch, '\n');
-							if (s != (char *) 0)
-								*s = '\0';
-						}
-						if (h->part || h->patch) {
-							s = buf;
-							while (*s && *s != '/')
-								s++;
-							*s = '\0';
-							s = buf;
-							h->archive = hash_str (s);
-							got_archive = TRUE;
-						}
+							strtok(h->patch, "\n");
+						} else
+							continue;
+
+						strtok(buf, "/");
+						h->archive = hash_str (buf);
+						got_archive = TRUE;
 					}
 				}
 				break;
@@ -801,7 +798,7 @@ parse_headers (
 		return FALSE;
 
 	/*
-	 * The sonofRFC1036 states that the following hdrs are
+	 * The son of RFC 1036 states that the following hdrs are
 	 * mandatory. It also states that Subject, Newsgroups
 	 * and Path are too. Ho hum.
 	 */
@@ -852,16 +849,17 @@ iReadNovFile (
 	top_art = 0;
 	last_read_article = 0L;
 	*expired = 0;
-/*
- *  Call ourself recursively to read the cached overview file, if we are
- *  supposed to be doing NNTP caching and we aren't already the recursive
- *  instance.  (Turn off read_news_via_nntp while we're recursing so we
- *  will know we're recursing while we're doing it.)  If there aren't
- *  any new articles, just return, without going on to read the NNTP
- *  overview file.  If we're going to read from NNTP, adjust min to the
- *  next article past last_read_article; there's no reason to read them
- *  from NNTP if they're cached locally.
- */
+
+	/*
+	 *  Call ourself recursively to read the cached overview file, if we are
+	 *  supposed to be doing NNTP caching and we aren't already the recursive
+	 *  instance.  (Turn off read_news_via_nntp while we're recursing so we
+	 *  will know we're recursing while we're doing it.)  If there aren't
+	 *  any new articles, just return, without going on to read the NNTP
+	 *  overview file.  If we're going to read from NNTP, adjust min to the
+	 *  next article past last_read_article; there's no reason to read them
+	 *  from NNTP if they're cached locally.
+	 */
 	if (tinrc.cache_overview_files && read_news_via_nntp && xover_supported && group->type == GROUP_TYPE_NEWS) {
 		read_news_via_nntp = FALSE;
 		iReadNovFile (group, min, max, expired);
@@ -1072,8 +1070,9 @@ iReadNovFile (
 		debug_print_header (&arts[top_art]);
 #endif /* DEBUG */
 
+		/* we might loose accuracy here, but that shouldn't hurt */
 		if (artnum % MODULO_COUNT_NUM == 0)
-			show_progress(mesg, (int) artnum, (int) max); /* we might loose accuracy here, but that shouldn't hurt */
+			show_progress(mesg, (int) (artnum-min), (int) (max-min));
 
 		top_art++;
 	}
@@ -1118,7 +1117,7 @@ vWriteNovFile (
 	 * Don't write local index if we have XOVER, unless the user has
 	 * asked for caching.
 	 */
-	if (xover_supported && ! tinrc.cache_overview_files)
+	if (xover_supported && !tinrc.cache_overview_files)
 		return;
 
 	set_tin_uid_gid ();
@@ -1313,7 +1312,7 @@ pcFindNovFile (
  */
 void
 do_update (
-	void)
+	t_bool catchup)
 {
 	char group_path[PATH_LEN];
 	register int i, j;
@@ -1352,8 +1351,8 @@ do_update (
 
 static int
 artnum_comp (
-	t_comptype *p1,
-	t_comptype *p2)
+	t_comptype p1,
+	t_comptype p2)
 {
 	const struct t_article *s1 = (const struct t_article *) p1;
 	const struct t_article *s2 = (const struct t_article *) p2;
@@ -1376,8 +1375,8 @@ artnum_comp (
 
 static int
 subj_comp (
-	t_comptype *p1,
-	t_comptype *p2)
+	t_comptype p1,
+	t_comptype p2)
 {
 	int retval;
 	const struct t_article *s1 = (const struct t_article *) p1;
@@ -1396,8 +1395,8 @@ subj_comp (
 
 static int
 from_comp (
-	t_comptype *p1,
-	t_comptype *p2)
+	t_comptype p1,
+	t_comptype p2)
 {
 	int retval;
 	const struct t_article *s1 = (const struct t_article *) p1;
@@ -1425,8 +1424,8 @@ from_comp (
  */
 static int
 date_comp (
-	t_comptype *p1,
-	t_comptype *p2)
+	t_comptype p1,
+	t_comptype p2)
 {
 	const struct t_article *s1 = (const struct t_article *) p1;
 	const struct t_article *s2 = (const struct t_article *) p2;
@@ -1467,8 +1466,8 @@ date_comp (
  */
 static int
 score_comp (
-	t_comptype *p1,
-	t_comptype *p2)
+	t_comptype p1,
+	t_comptype p2)
 {
 	const struct t_article *s1 = (const struct t_article *) p1;
 	const struct t_article *s2 = (const struct t_article *) p2;
@@ -1544,14 +1543,13 @@ valid_artnum (
 		prev = cur;
 		cur += (arts[cur].artnum < art) ? range : -range;
 		if (prev == cur)
-			return -1;
+			break;
 
 		if (cur >= top_art)
 			cur = top_art - 1;
 
 		range /= 2;
 	}
-	/* NOTREACHED */
 	return -1;
 }
 

@@ -114,10 +114,11 @@ static const char *domain_name_hack = DOMAIN_NAME;
 		strcpy(domain, DOMAIN_NAME);
 
 #	ifdef M_AMIGA
-	if (strchr(domain, ':')) { /* absolute AmigaOS paths contain one, RFC-hostnames don't */
+	if (strchr(domain, ':')) /* absolute AmigaOS paths contain one, RFC-hostnames don't */
 #	else
-	if (domain[0] == '/' && domain[1]) {
+	if (domain[0] == '/' && domain[1])
 #	endif /* M_AMIGA */
+	{
 		/* If 1st letter is '/' read domainname from specified file */
 		if ((fp = fopen (domain, "r")) != (FILE *) 0) {
 			while (fgets (buff, (int) sizeof (buff), fp) != (char *) 0) {
@@ -284,6 +285,7 @@ get_full_name (
 #	ifdef VMS
 	strncpy (fullname, fix_fullname(get_uaf_fullname()), sizeof (fullname));
 #	else
+#		ifndef DONT_HAVE_PW_GECOS
 	pw = getpwuid (getuid ());
 	strncpy (buf, pw->pw_gecos, sizeof (fullname));
 	if ((p = strchr (buf, ',')))
@@ -291,11 +293,12 @@ get_full_name (
 	if ((p = strchr (buf, '&'))) {
 		*p++ = '\0';
 		strcpy (tmp, pw->pw_name);
-		if (*tmp && *tmp >= 'a' && *tmp <= 'z')
-			*tmp = *tmp - 32;
+		if (*tmp && isalpha((int)*tmp) && islower((int)*tmp))
+			*tmp = toupper((int)*tmp);
 		sprintf (fullname, "%s%s%s", buf, tmp, p);
 	} else
 		strcpy (fullname, buf);
+#		endif /* !DONT_HAVE_PW_GECOS */
 #	endif /* VMS */
 	return (fullname);
 }
@@ -326,18 +329,9 @@ get_from_name (
 		strcpy(from_name, thisgrp->attribute->from);
 		return;
 	}
-#	if 0
-	if (*tinrc.mail_address) {
-		strcpy(from_name, tinrc.mail_address);
-		return;
-	}
-#	endif /* 0 */
 
-#	if 0
-	sprintf (from_name, ((strchr(get_full_name(), '.')) ? "\"%s\" <%s@%s>" : "%s <%s@%s>"), get_full_name(), get_user_name(), fromhost);
-#	else
 	sprintf (from_name, ((strpbrk(get_full_name(), "!()<>@,;:\\\".[]")) ? "\"%s\" <%s@%s>" : "%s <%s@%s>"), get_full_name(), get_user_name(), fromhost);
-#	endif /* 0 */
+
 #	ifdef DEBUG
 	if (debug == 2)
 		error_message ("FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", from_name, get_user_name(), domain_name, get_full_name());

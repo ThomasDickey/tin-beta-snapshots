@@ -317,7 +317,7 @@ pgp_available (
 
 void
 invoke_pgp_mail (
-	char *nam,
+	const char *nam,
 	char *mail_to)
 {
 	char ch, ch_default = 's';

@@ -60,6 +60,9 @@
 	art_marked_selected		OPT_CHAR
 	art_marked_recent		OPT_CHAR
 	art_marked_unread		OPT_CHAR
+	art_marked_read			OPT_CHAR
+	art_marked_killed		OPT_CHAR
+	art_marked_read_selected	OPT_CHAR
 	groupname_max_length		OPT_NUM
 	show_lines			OPT_ON_OFF
 	show_score			OPT_ON_OFF

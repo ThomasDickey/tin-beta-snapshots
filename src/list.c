@@ -72,7 +72,7 @@ hash_groupname (
 
 	for (p = group; *p; p++) {
 		hash = (hash << 4) + *p;
-		if (g = hash & 0xf0000000) {
+		if ((g = hash & 0xf0000000) != 0) {
 			hash ^= g >> 24;
 			hash ^= g;
 		}

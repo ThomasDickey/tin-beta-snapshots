@@ -60,6 +60,9 @@ struct t_config {
 	char art_marked_selected;
 	char art_marked_recent;
 	char art_marked_unread;
+	char art_marked_read;
+	char art_marked_killed;
+	char art_marked_read_selected;
 	char editor_format[PATH_LEN];		/* editor + parameters  %E +%N %F */
 	char default_goto_group[HEADER_LEN];		/* default for the 'g' command */
 	char default_mail_address[HEADER_LEN];

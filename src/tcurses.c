@@ -87,7 +87,7 @@ int InitScreen (void)
 #			endif /* TRACE_CCALLS */
 #		endif /* USE_TRACE */
 #	endif /* NCURSES_VERSION */
-	TRACE(("InitScreen"))
+	TRACE(("InitScreen"));
 	initscr();
 	cCOLS = COLS;
 	cLINES = LINES - 1;
@@ -120,7 +120,7 @@ int InitScreen (void)
  */
 void InitWin(void)
 {
-	TRACE(("InitWin"))
+	TRACE(("InitWin"));
 	Raw(TRUE);
 	cmd_line = FALSE;
 	set_keypad_on();
@@ -130,7 +130,7 @@ void InitWin(void)
  */
 void EndWin(void)
 {
-	TRACE(("EndWin (%d)", cmd_line))
+	TRACE(("EndWin (%d)", cmd_line));
 	if (!cmd_line) {
 		Raw(FALSE);
 		endwin();
@@ -146,11 +146,11 @@ void Raw(
 	int state)
 {
 	if (state && !_inraw) {
-		TRACE(("reset_prog_mode"))
+		TRACE(("reset_prog_mode"));
 		reset_prog_mode();
 		_inraw = TRUE;
 	} else if (!state && _inraw) {
-		TRACE(("reset_shell_mode"))
+		TRACE(("reset_shell_mode"));
 		reset_shell_mode();
 		_inraw = FALSE;
 	}
@@ -267,7 +267,7 @@ MoveCursor(
 	int row,
 	int col)
 {
-	TRACE(("MoveCursor %d,%d", row, col))
+	TRACE(("MoveCursor %d,%d", row, col));
 	if (!cmd_line)
 		move(row, col);
 }
@@ -296,7 +296,7 @@ ReadCh(
 			ch = ESC;
 		}
 	}
-	TRACE(("ReadCh(%s)", _tracechar(ch)))
+	TRACE(("ReadCh(%s)", _tracechar(ch)));
 	return ch;
 }
 
@@ -328,7 +328,7 @@ my_fprintf(
 {
 	va_list ap;
 	va_start(ap, fmt);
-	TRACE(("my_fprintf(%s)", fmt))
+	TRACE(("my_fprintf(%s)", fmt));
 	if (cmd_line) {
 		int flag = _inraw && isatty(fileno(stream));
 		if (flag)
@@ -347,7 +347,7 @@ my_fputc(
 	int ch,
 	FILE *fp)
 {
-	TRACE(("my_fputc(%s)", _tracechar(ch)))
+	TRACE(("my_fputc(%s)", _tracechar(ch)));
 	if (cmd_line) {
 		if (_inraw && ch == '\n')
 			fputc ('\r', fp);
@@ -362,7 +362,7 @@ my_fputs(
 	const char *str,
 	FILE *fp)
 {
-	TRACE(("my_fputs(%s)", _nc_visbuf(str)))
+	TRACE(("my_fputs(%s)", _nc_visbuf(str)));
 	if (cmd_line) {
 		if (_inraw) {
 			while (*str)
@@ -370,13 +370,13 @@ my_fputs(
 		} else
 			fputs (str, fp);
 	} else {
-		addstr(str);
+		addstr((char *)str);
 	}
 }
 
 void my_erase(void)
 {
-	TRACE(("my_erase"))
+	TRACE(("my_erase"));
 
 	if (!cmd_line) {
 		erase();
@@ -400,7 +400,7 @@ my_fflush(
 	if (cmd_line)
 		fflush(stream);
 	else {
-		TRACE(("my_fflush"))
+		TRACE(("my_fflush"));
 		refresh();
 	}
 }
@@ -411,7 +411,7 @@ my_fflush(
 void
 my_retouch(void)
 {
-	TRACE(("my_retouch"))
+	TRACE(("my_retouch"));
 	if (!cmd_line) {
 		wrefresh(curscr);
 	}
@@ -427,11 +427,11 @@ screen_contents(
 	int len = COLS - col;
 	getyx(stdscr, y, x);
 	move(row, col);
-	TRACE(("screen_contents(%d,%d)", row, col))
+	TRACE(("screen_contents(%d,%d)", row, col));
 	if (innstr(buffer, len) == ERR)
 		len = 0;
 	buffer[len] = '\0';
-	TRACE(("...screen_contents(%d,%d) %s", y, x, _nc_visbuf(buffer)))
+	TRACE(("...screen_contents(%d,%d) %s", y, x, _nc_visbuf(buffer)));
 	return buffer;
 }
 

@@ -1,4 +1,3 @@
-
 #include <descrip.h>
 #include <iodef.h>
 #include <ssdef.h>
@@ -8,9 +7,9 @@
 #include <X11/Xlib.h>
 
 #ifndef TRUE
-#define TRUE 1
-#define FALSE 0
-#endif
+#	define TRUE 1
+#	define FALSE 0
+#endif /* TRUE */
 
 is_xterm()
 {
@@ -26,6 +25,5 @@ is_xterm()
     return TRUE;
 #else
     return FALSE;
-#endif
+#endif /* __alpha */
 }
-

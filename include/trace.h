@@ -59,7 +59,7 @@ extern void	_tracef (const char *, ...)
 	;
 #		endif /* NCURSES_VERSION */
 
-#		define TRACE(p) _tracef p;
+#		define TRACE(p) _tracef p
 #	else
 #		define TRACE(p) /* nothing */
 #	endif /* USE_TRACE */

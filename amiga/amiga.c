@@ -277,17 +277,19 @@ t_bool tin_bbs_mode = FALSE;
 void
 joinpath (char *str, const char *dir, const char *file)
 {
-        char c, *p;
+	char c, *p;
 
-        if (tin_bbs_mode) {
-                if (p = strrchr(file,':')) file = p;
-                while (*file == '/') file++;
-        } else {
-                if (strchr(file,':')) {
-                        strcpy(str, file);
-                        return;
-                }
-        }
+   if (tin_bbs_mode) {
+		if ((p = strrchr(file,':')))
+      	file = p;
+      while (*file == '/')
+      	file++;
+	} else {
+		if (strchr(file,':')) {
+				strcpy(str, file);
+				return;
+		}
+	}
 
         if (strlen (dir) == 0) {
                 strcpy (str, file);

@@ -131,9 +131,6 @@ wildmat (
 	char *p,
 	t_bool icase)
 {
-	char tbuff[LEN];
-	char pbuff[LEN];
-
 	/*
 	 * Make sure the pattern is not NULL
 	 */
@@ -145,11 +142,11 @@ wildmat (
 #endif /* OPTIMIZE_JUST_STAR */
 
 	if (icase) {
-		str_lwr(tbuff, text);
-		str_lwr(pbuff, p);
+		str_lwr((char *)text, text);
+		str_lwr(p, p);
 	}
 
 	mesg[0] = '\0';
 
-	return DoMatch((icase) ? tbuff : text, (icase) ? pbuff : p) == TRUE;
+	return DoMatch(text, p) == TRUE;
 }

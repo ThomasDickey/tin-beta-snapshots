@@ -72,7 +72,7 @@ char *
 tin_getline (
 	const char *prompt,
 	int number_only,	/* 1=positive numbers only, 2=negative too */
-	char *str,
+	const char *str,
 	int max_chars,
 	t_bool passwd,
 	int which_hist)

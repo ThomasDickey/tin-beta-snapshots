@@ -70,7 +70,7 @@ static void print_bitmap_seq (FILE *fp, struct t_group *group);
  * Any bogus groups will be handled accordingly. Bogus groups will _not_
  * be subscribed to as a design principle.
  *
- * Returns the numer of lines read (usefull for a check newsrc >= oldnewsrc)
+ * Returns the numer of lines read (useful for a check newsrc >= oldnewsrc)
  *    < 0 error
  *    >=0 number of lines read
  */
@@ -99,7 +99,7 @@ read_newsrc (
 		newsrc_mode = (mode_t) statbuf.st_mode;
 
 	if ((fp = fopen (newsrc_file, "r")) != (FILE *) 0) {
-		if (INTERACTIVE)
+		if (!batch_mode)
 			wait_message (0, _(txt_reading_newsrc));
 
 		while ((grp = tin_fgets (fp, FALSE)) != (char *) 0) {
@@ -352,7 +352,7 @@ backup_newsrc (
 
 /*
  * Subscribe/unsubscribe to a group in .newsrc.
- *	This involves rewriting the .newsrc with the new info
+ * This involves rewriting the .newsrc with the new info
  */
 void
 subscribe (
@@ -1008,7 +1008,7 @@ pos_group_in_newsrc (
 	joinpath (buf, TMPDIR, "unsubrc");
 	sprintf (unsub, "%s.%d", buf, (int) process_id);
 
-#else /* !VMS */
+#else
 	joinpath (buf, TMPDIR, ".subrc");
 	sprintf (sub, "%s.%d", buf, (int) process_id);
 
@@ -1154,9 +1154,6 @@ catchup_newsrc_file (
 	register int i;
 	struct t_group *group;
 
-	if (!catchup)
-		return;
-
 	for (i = 0; i < selmenu.max; i++) {
 		group = &active[my_group[i]];
 		group->newsrc.present = TRUE;
@@ -1170,8 +1167,6 @@ catchup_newsrc_file (
 		group->newsrc.num_unread = 0;
 		group->newsrc.xbitlen = 0;
 	}
-
-	tin_done (EXIT_SUCCESS);
 }
 
 

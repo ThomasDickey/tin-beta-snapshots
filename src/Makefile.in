@@ -60,7 +60,7 @@ CANLIB	= # -L../libcanlock -lcanlock
 LIBS	= -L../pcre -lpcre $(CANLIB) @LIBS@ @INN_NNTPLIB@ @INTLLIBS@
 
 # Where do you want the binary & manual page installed?
-INSTALL_PREFIX	= @INSTALL_PREFIX@
+DESTDIR	= @DESTDIR@
 INS_BINARY_DIR	= @bindir@
 INS_MANUAL_DIR	= @mandir@/man
 INS_SYSDEF_DIR	= @TIN_DEFAULTS_DIR@
@@ -73,7 +73,7 @@ VER	= @VERSION@
 MANEXT	= 1
 
 # directory structure
-DOCDIR	= $(srcdir)/../doc
+DOCDIR	= $(top_srcdir)/doc
 INCDIR	= $(top_srcdir)/include
 BINDIR	= .
 OBJDIR	= .
@@ -87,7 +87,7 @@ CP	= cp
 CSCOPE	= cscope
 ECHO	= echo
 LINT	= @LINT@
-LN	= ln
+LN	= @LN_S@
 LS	= ls -l
 MV	= mv -f
 RM	= rm
@@ -109,6 +109,7 @@ HFILES	= \
 	$(INCDIR)/stpwatch.h \
 	$(INCDIR)/tin.h \
 	$(INCDIR)/tinrc.h \
+	$(INCDIR)/tnntp.h \
 	$(INCDIR)/version.h
 #	$(INCDIR)/config.h
 
@@ -272,46 +273,59 @@ help:
 	@$(ECHO) "    make [all]           [ Build the binary for your OS ]"
 	@$(ECHO) "    make clean           [ Delete all object files ]"
 	@$(ECHO) "    make install         [ Install the binary & the manual page ]"
+	@$(ECHO) "    make uninstall       [ Uninstall the binary & the manual page ]"
 	@$(ECHO) "    make install_setuid  [ Install the binary setuid & the manual page ]"
 	@$(ECHO) "    make install_manpage [ Install the manual page ]"
 	@$(ECHO) "    make install_sysdefs [ Install the system-wide-defaults file ]"
 	@$(ECHO) "    make help            [ Show this text ]"
 	@$(ECHO) " "
 
-$(INSTALL_PREFIX)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT) \
-$(INSTALL_PREFIX)$(INS_BINARY_DIR) \
+$(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT) \
+$(DESTDIR)$(INS_BINARY_DIR) \
 $(INS_SYSDEF_DIR) :
-	$(srcdir)/../mkdirs.sh $@
+	$(top_srcdir)/mkdirs.sh $@
 
-install_manpage: $(INSTALL_PREFIX)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)
-	@$(ECHO) "Installing $(EXE) manual page to $(INSTALL_PREFIX)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)..."
-	@$(INSTALL) -m 444 $(DOCDIR)/tin.1 $(INSTALL_PREFIX)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(EXE).$(INS_MANUAL_EXT)
+install_manpage: $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)
+	@$(ECHO) "Installing $(EXE) manual page to $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)..."
+	@$(INSTALL) -m 444 $(DOCDIR)/tin.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(EXE).$(INS_MANUAL_EXT)
+
+uninstall_manpage:
+	@$(ECHO) "Uninstalling $(EXE) manual page in $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)..."
+	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(EXE).$(INS_MANUAL_EXT)
 
 install_sysdefs: $(INS_SYSDEF_DIR)
 	@$(ECHO) "Installing system-wide defaults file to $(INS_SYSDEF_DIR)..."
 	@$(INSTALL) -m 644 $(DOCDIR)/tin.defaults $(INS_SYSDEF_DIR)/tin.defaults
 
-install: $(INSTALL_PREFIX)$(INS_BINARY_DIR)
+install: $(DESTDIR)$(INS_BINARY_DIR)
 	@$(MAKE) all
-	@$(ECHO) "Installing $(EXE) v$(VER) to $(INSTALL_PREFIX)$(INS_BINARY_DIR)..."
-	@$(INSTALL) -s $(BINDIR)/$(EXE) $(INSTALL_PREFIX)$(INS_BINARY_DIR)/$(EXE)
-	@$(CD) $(INSTALL_PREFIX)$(INS_BINARY_DIR) && $(RM) -f r$(EXE)
-	@$(LN) $(INSTALL_PREFIX)$(INS_BINARY_DIR)/$(EXE) $(INSTALL_PREFIX)$(INS_BINARY_DIR)/r$(EXE)
+	@$(ECHO) "Installing $(EXE) v$(VER) to $(DESTDIR)$(INS_BINARY_DIR)..."
+	@$(INSTALL) -s $(BINDIR)/$(EXE) $(DESTDIR)$(INS_BINARY_DIR)/$(EXE)
+	@( $(CD) $(DESTDIR)$(INS_BINARY_DIR) && $(RM) -f r$(EXE) && $(LN) $(EXE) r$(EXE) )
 	@$(MAKE) install_manpage
 	@$(MAKE) install_nls
 
+uninstall:
+	@$(ECHO) "Uninstalling $(EXE) in $(DESTDIR)$(INS_BINARY_DIR)..."
+	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/$(EXE)
+	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/r$(EXE)
+	@$(MAKE) uninstall_manpage
+	@$(MAKE) uninstall_nls
+
 install_setuid:
 	@$(MAKE) all
-	@$(ECHO) "Installing SETUID $(EXE) v$(VER) to $(INSTALL_PREFIX)$(INS_BINARY_DIR)..."
-	@$(INSTALL) -s -o news -g news -m 6755 $(BINDIR)/$(EXE) $(INSTALL_PREFIX)$(INS_BINARY_DIR)/$(EXE)
-	@$(CD) $(INSTALL_PREFIX)$(INS_BINARY_DIR) && $(RM) -f r$(EXE)
-	@$(LN) $(INSTALL_PREFIX)$(INS_BINARY_DIR)/$(EXE) $(INSTALL_PREFIX)$(INS_BINARY_DIR)/r$(EXE)
+	@$(ECHO) "Installing SETUID $(EXE) v$(VER) to $(DESTDIR)$(INS_BINARY_DIR)..."
+	@$(INSTALL) -s -o news -g news -m 6755 $(BINDIR)/$(EXE) $(DESTDIR)$(INS_BINARY_DIR)/$(EXE)
+	@$(CD) $(DESTDIR)$(INS_BINARY_DIR) && $(RM) -f r$(EXE)
+	@$(LN) $(DESTDIR)$(INS_BINARY_DIR)/$(EXE) $(DESTDIR)$(INS_BINARY_DIR)/r$(EXE)
 	@$(MAKE) install_manpage
 	@$(MAKE) install_nls
 
 install_nls:
-	@$(ECHO) "Installing NLS-files"
-	@-if test ../po/Makefile ; then $(CD) ../po/ && $(MAKE) install ; fi
+	@-if test -r ../po/Makefile ; then $(ECHO) "Installing NLS-files" ; $(CD) ../po/ && $(MAKE) install ; fi
+
+uninstall_nls:
+	@-if test -r ../po/Makefile ; then $(ECHO) "Uninstalling NLS-files" ; $(CD) ../po/ && $(MAKE) uninstall ; fi
 
 tags:
 	@$(ECHO) "Generating tags (results in ./tags)..."
@@ -335,18 +349,22 @@ clean:
 	@-$(RM) -f makecfg$x makecfg.o tincfg.h
 	@-$(RM) -f core *~
 	@-$(RM) -f $(EXE)
-	@-if test -f ../intl/Makefile ; then $(CD) ../intl && $(ECHO) "Cleaning GNU gettext files..." && $(MAKE) @cf_cv_makeflags@ clean ; fi
-	@-if test -f ../po/Makefile ; then $(CD) ../po && $(MAKE) @cf_cv_makeflags@ clean ; fi
-	@-if test -f ../pcre/Makefile ; then $(CD) ../pcre && $(ECHO) "Cleaning Philip Hazel's Perl-compatible regular expressions library..." && $(MAKE) @cf_cv_makeflags@ clean ; fi
+	@-if test -r ../pcre/Makefile ; then $(CD) ../pcre && $(ECHO) "Cleaning Philip Hazel's Perl-compatible regular expressions library..." && $(MAKE) @cf_cv_makeflags@ clean ; fi
+@MSG_DIR_MAKE@	@-if test -r ../po/Makefile ; then $(CD) ../po && $(MAKE) @cf_cv_makeflags@ $@ ; fi
+@INTLDIR_MAKE@	@-if test -r ../intl/Makefile ; then $(CD) ../intl && $(MAKE) @cf_cv_makeflags@ $@ ; fi
 
 laundry \
 dirty:
 	@$(ECHO) "I'm sorry, this is not supported yet ..."
 
 distclean \
-clobber: clean
+clobber :: clean
 	@$(ECHO) "Clobbering..."
 	@-$(RM) -f $(OFILES) $(BINDIR)/$(EXE) tags TAGS LINT cflow.$(PROJECT)
+
+distclean ::
+@INTLDIR_MAKE@	@-$(CD) ../intl && $(MAKE) @cf_cv_makeflags@ $@
+@MSG_DIR_MAKE@	@-$(CD) ../po && $(MAKE) @cf_cv_makeflags@ $@
 
 cflow:
 	@$(ECHO) "Creating cflow for $(PROJECT)..."
@@ -377,7 +395,7 @@ TIN_DEP	= \
 #@INTLLIBS@:
 ../intl/libintl.a:
 	@$(ECHO) "Building GNU gettext library..."
-	@$(CD) $(top_srcdir)/intl && $(MAKE) @cf_cv_makeflags@
+	@$(CD) ../intl && $(MAKE) @cf_cv_makeflags@
 
 tincfg.h:			$(SRCDIR)/tincfg.tbl \
 				makecfg$x
@@ -409,14 +427,17 @@ $(OBJDIR)/global.o:		$(SRCDIR)/getline.c $(TIN_DEP)
 $(OBJDIR)/group.o:		$(SRCDIR)/group.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
 $(OBJDIR)/hashstr.o:		$(SRCDIR)/hashstr.c $(TIN_DEP)
-$(OBJDIR)/header.o:		$(SRCDIR)/header.c $(TIN_DEP)
+$(OBJDIR)/header.o:		$(SRCDIR)/header.c $(TIN_DEP) \
+				$(INCDIR)/tnntp.h
 $(OBJDIR)/help.o:		$(SRCDIR)/help.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
-$(OBJDIR)/inews.o:		$(SRCDIR)/inews.c $(TIN_DEP)
+$(OBJDIR)/inews.o:		$(SRCDIR)/inews.c $(TIN_DEP) \
+				$(INCDIR)/tnntp.h
 $(OBJDIR)/init.o:		$(SRCDIR)/init.c $(TIN_DEP) \
+				$(INCDIR)/bugrep.h \
 				$(INCDIR)/menukeys.h \
-				$(INCDIR)/version.h \
-				$(INCDIR)/bugrep.h
+				$(INCDIR)/tnntp.h \
+				$(INCDIR)/version.h
 $(OBJDIR)/joinpath.o:		$(SRCDIR)/joinpath.c $(TIN_DEP)
 $(OBJDIR)/lang.o:		$(SRCDIR)/lang.c $(TIN_DEP)
 $(OBJDIR)/list.o:		$(SRCDIR)/list.c $(TIN_DEP)
@@ -431,7 +452,8 @@ $(OBJDIR)/misc.o:		$(SRCDIR)/misc.c $(TIN_DEP) \
 				$(INCDIR)/bugrep.h \
 				$(INCDIR)/policy.h
 $(OBJDIR)/newsrc.o:		$(SRCDIR)/newsrc.c $(TIN_DEP)
-$(OBJDIR)/nntplib.o:		$(SRCDIR)/nntplib.c $(TIN_DEP)
+$(OBJDIR)/nntplib.o:		$(SRCDIR)/nntplib.c $(TIN_DEP) \
+				$(INCDIR)/tnntp.h
 $(OBJDIR)/nrctbl.o:		$(SRCDIR)/nrctbl.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h \
 				$(INCDIR)/version.h

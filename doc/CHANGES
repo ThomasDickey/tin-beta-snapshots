@@ -1,4 +1,87 @@
--- 1.5.2 release 20000118 "" --
+-- 1.5.3 release 20000221 "For Her Light" --
+
+U019) Roland Rosenfeld <roland@spinnaker.de>
+      ADD. editing the filter file in select and page menu ('E').
+      BUG. change line offset when editing filter from 22 to 25.
+      FIX. select.c, page.c, menukeys.h, proto.h, filter.c, tin.1
+
+U018) Jason Faultless <jason@radar.tele2.co.uk>
+      ADD. Pipe '|' to thead menu
+      ADD. rewrote feed.c
+      ADD. general cleanup
+      ADD. inverse highlight on config screen if draw_arrow=FALSE
+      ADD. batch_save now does something
+      ADD. auto_save attribute is now honoured
+      ADD. more intuitive handling when strip_bogus=KEEP
+      BUG. 'ignore art unavailable' broken
+      BUG. invalid start_line_offset in mail_bugreport()
+      BUG. batch operations don't need curses init
+      BUG. articles were marked read before they were really saved
+      FIX. CHANGES, TODO, WHATSNEW, tin.1, menukeys.h, proto.h, tin.h
+           attrib.c, config.c, filter.c, getline.c, group.c, header.c
+           help.c, init.c, lang.c, main.c, memory.c, misc.c, page.c
+           post.c, prompt.c, rfc1522.c, save.c, screen.c, select.c
+           string.c, thread.c
+
+ 014) Jason Faultless <jason@radar.tele2.co.uk>
+      BUG. Sender: errors on posting hung NNTP socket
+      FIX. inews.c
+
+ 013) Urs Janssen <urs@tin.org>
+      BUG. terminal mode wasn't restored after -Z
+      BUG. tin -v -Z was a bit too verbose
+      ADD. changed default of quote_empty_lines to ON
+      ADD. changed default of batch_save to ON
+      FIX. art.c, filter.c, init.c, main.c
+
+U017) Hideaki Yoshfuji <yoshfuji@ecei.tohoku.ac.jp>
+      BUG. ensure hostname is terminated with null-charater.
+      FIX. nntplib.c
+
+U016) Urs Janssen <urs@tin.org>
+      BUG. redefinition of VERSION
+      ADD. moved ~/.tin/headers support to attributes
+      ADD. removed ~/.tin/bug_report support
+      ADD. ART_MARKED_READ, ART_MARKED_KILLED, ART_MARKED_READ_SELECTED
+           configurable via 'M'enu and tinrc
+      REM. highlighting of ART_MARKED_READ_SELECTED in KILL_THREAD
+      FIX. extern.h, tinrc.h, version.h, attrib.c, config.c, init.c, lang.c
+           main.c, misc.c, post.c, thread.c, tin.1, tincfg.tbl
+
+-- 1.5.2 release 20000206 "Black Planet" --
+
+ 015) Urs Janssen <urs@tin.org>
+      ADD. smater check wehen quotes around realnames are needed
+      FIX. header.c
+
+ 011) Urs Janssen <urs@tin.org>
+      ADD. number of hot arts/group to verbose -Z output
+      FIX. save.c
+
+U015) Dirk Nimmich <nimmich@uni-muenster.de>
+      BUG. reconnect on QUIT is not necessary
+      ADD. allow interactive authentication on startup if invoked with -A
+      FIX. extern.h, auth.c lang.c, nntplib.c
+
+U014) Thomas E. Dickey <dickey@clark.net>
+      ADD. configure script improvements (NLS, passwd.pw_gecos)
+      ADD. uninstall rule to makefiles
+      ADD. removed most unbalanced curly braces
+      BUG. redundant parenthesis in N_ macro
+      BUG. wrong fallback prototype for mstemp
+      FIX. aclocal.m4, config.guess, config.sub, configure[.in], makefile.in
+           autoconf.h[in], extern.h, tin.h, trace.h, Makefile.in, active.c
+           art.c, auth.c, color.c, config.c, curses.c, debug.c, global.c
+           group.c, header.c, init.c, joinpath.c, list.c, misc.c, nntplib.c
+           open.c, post.c, rfc1522.c, save.c, select.c, sigfile.c, signal.c
+           tcurses.c, thread.c, plp_snprintf.c, parsdate.y, Makefile.inn
+           tin.pot
+
+U013) Sven Hartge <hartge@ds9.argh.org>
+      Kai Bojens <kbojens@on-luebeck.de>
+      Urs Janssen <urs@tin.org>
+      ADD. (basic) german translation
+      FIX. de.po
 
 U012) Jason Faultless <jason@radar.tele2.co.uk>
       ADD. better PGP/GPG support
@@ -6,20 +89,22 @@ U012) Jason Faultless <jason@radar.tele2.co.uk>
       ADD. proper return code handling to group menu
       ADD. generic keymap/mouse handling
       ADD. cleanup draw/erase arrow routines
+      ADD. cleanup attribute code
+      ADD. big cleanup of mailing code
       ADD. made 'K' on thread menu more consistent with group menu
       ADD. use 'from' attribute for PGP signing if set
       ADD. updated WHATSNEW
       BUG. catchup handling in thread menu inconsistent
       BUG. silly typo in menu handling
-      BUG. -z did not restore terminal modes
       BUG. group 'z' and 'Z' unread message corrupt
-      BUG. manpage had '[' and ']' in thread section instead of pager
-      FIX. tin.1, menukeys.h, proto.h, tin.h, global.c, group.c, page.c
-           pgp.c, select.c, thread.c
+      BUG. not all attributes were free()d
+      FIX. tin.1, menukeys.h, proto.h, tin.h, attrib.c, global.c, group.c
+           page.c, pgp.c, select.c, thread.c
 
  009) Jason Faultless <jason@radar.tele2.co.uk>
-      BUG. -z did not restore terminal modes   
-      FIX. main.c
+      BUG. -z did not restore terminal modes
+      BUG. manpage had '[' and ']' in thread section instead of pager
+      FIX. tin.1, menukeys.h, main.c, page.c
 
 U011) Ralf Doeblitz <doeblitz@gmx.de>
       ADD. human readable time-stamp in filters
@@ -29,7 +114,10 @@ U011) Ralf Doeblitz <doeblitz@gmx.de>
 U010) Urs Janssen <urs@tin.org>
       ADD. BSD-license
       ADD. minor Makefile/configure cleanup
-      FIX. Makefile, Makefile[.in], include/*.h, src/*.c
+      ADD. use mail_address for Cc/Bcc
+      ADD. ART_MARK_READ_SELECTED to KILL_NOTHREAD
+      FIX. Makefile, Makefile[.in], aclocal.m4, configure[.in], include/*.h
+           src/*.c
 
 U009) Arkadiusz Miskiewicz <misiek@misiek.eu.org>
       BUG. missing freeaddrinfo()
@@ -45,7 +133,6 @@ U008) Urs Janssen <urs@tin.org>
       ADD. check for gpg
       ADD. -DTHREAD_SUM
       ADD. code cleanup
-      ADD. speed-up start when there are several new groups on the server
       REM. patch 006
       FIX. configure[.in], autoconf.h[in], tin.h, parsedate.y, active.c
            config.c, group.c, nntplib.c, pgp.c, post.c, select.c, tags.c
@@ -62,6 +149,7 @@ U007) Michael Bienia <michael@vorlon.ping.de>
       Urs Janssen <urs@tin.org>
       BUG. removed annyoing "Reading attributes file ..."-messages
            for each new group
+      ADD. speed-up start when there are several new groups on the server
       FIX. active.c, attrib.c, lang.c, main.c
 
 U006) Sebastian Bork <sebi@sebi.org>

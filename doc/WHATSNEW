@@ -1,19 +1,52 @@
 New features and changes in tin-1.5
-(Information correct as of Jan 16th 2000)
+(Information correct as of Feb 06th 2000)
 
-. Pager 'k', 'K', 'c' schism ?
+New Features
+------------
 
 . GPG support
      PGP/GPG support honours 'from' attribute
 
 . NLS support
 
-. 'K' on the thread menu will now skip threads
-  similar to 'K' on the group menu
-
 . Human readable time-stamp (as a comment) in filter file
 
 . Indicator for articles newer than n-days
   See manpage for new tinrc variables: recent_time and art_marked_recent
 
+. art_mark_read, art_mark_killed, art_mark_selected are now configurable
+  in the usual ways. See the manpage for details.
+
+. Piping '|' now works on the thread menu
+
+. batch_save (tinrc and attribute) can now be used to control which groups
+  are affected by tin -S, -N, -M. See the manpage.
+
+Changes
+-------
+
+. 'K' on the thread menu will now skip threads
+  similar to 'K' on the group menu
+
+. tin will no longer re-connect to the news server in order to just disconnect
+
+. Lots of bug fixes
+
+Retired Features
+----------------
+
 . INDEX_DAEMON is no longer supported
+
+. ~/.tin/headers file is no longer directly supported. Use:
+
+  scope=*
+  x_headers=~/.tin/headers
+
+  or an equivalent instead
+
+. ~/.tin/bug_address is no longer supported. Set a site-wide address either
+  at compile time or set in the tin.defaults file. If you must have a per-user
+  setting, use the BUG_ADDRESS environment variable.
+
+. 'k' no longer works in the pager. Use 'N' instead
+  (or wait for rebindable keys)

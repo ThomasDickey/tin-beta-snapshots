@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey <dickey@clark.net>
  *  Created   : 1995-08-24
- *  Updated   : 1998-04-21
+ *  Updated   : 2000-01-20
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2000 Thomas Dickey <dickey@clark.net>
@@ -38,7 +38,7 @@
  */
 
 
-#ifndef	TIN_AUTOCONF_H
+#ifndef TIN_AUTOCONF_H
 #	define TIN_AUTOCONF_H
 
 /* Package and version */
@@ -51,7 +51,7 @@
  * If we're able to run the 'configure' script, it's close enough to UNIX for
  * our purposes. (It's predefined on SCO).
  */
-#	ifndef	M_UNIX
+#	ifndef M_UNIX
 #		define M_UNIX
 #	endif /* !M_UNIX */
 
@@ -157,6 +157,8 @@
 #	undef HAVE_PROTOTYPES_H
 #	undef HAVE_PWD_H
 #	undef HAVE_SGTTY_H
+#	undef HAVE_SOCKET_H
+#	undef HAVE_STDARG_H
 #	undef HAVE_STDDEF_H
 #	undef HAVE_STDLIB_H
 #	undef HAVE_STRINGS_H
@@ -183,6 +185,7 @@
 #	undef HAVE_TERM_H
 #	undef HAVE_TIME_H
 #	undef HAVE_UNISTD_H
+#	undef HAVE_VARARGS_H
 #	undef STDC_HEADERS
 #	undef TIME_WITH_SYS_TIME
 
@@ -472,6 +475,11 @@
 #	undef DISABLE_PRINTING
 
 /*
+ * Used in get_full_name()
+ */
+#	undef DONT_HAVE_PW_GECOS
+
+/*
  * Used in parsedate.y
  */
 #	undef DONT_HAVE_TM_GMTOFF
@@ -551,10 +559,6 @@
 #	endif /* _AIX && !USE_SOCKS5 */
 
 /* FIXME: move things below to right place above */
-
-/* [v]snprintf() */
-#	undef HAVE_STDARG_H
-#	undef HAVE_VARARGS_H
 
 /* GNU gettext */
 /* Define to 1 if NLS is requested.  */

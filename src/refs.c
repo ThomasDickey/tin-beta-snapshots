@@ -508,7 +508,7 @@ dump_msgids (
  * . The References: field should not be truncated, though in practice
  *   this will happen, often in badly broken ways.
  *
- * This is simplistic, so check out RFC1036 & son of RFC1036 for full
+ * This is simplistic, so check out RFC 1036 & son of RFC 1036 for full
  * details from the posting point of view.
  *
  * We attempt to maintain 3 pointers in each message-id to handle threading
@@ -862,7 +862,7 @@ collate_subjects (
  * 1) Sort the article base. This will ensure that articles and their
  *    siblings are inserted in the correct order.
  * 2) Add each Message-ID header and its direct reference ('reliable info')
- *    to the cache. Son of RFC1036 mandates that if References headers must
+ *    to the cache. Son of RFC 1036 mandates that if References headers must
  *    be trimmed, then at least the (1st three and) last reference should be
  *    maintained.
  * 3) Add rest of References header to the cache. This information is less

@@ -68,11 +68,17 @@ static char **cmdargs;
 static int num_cmdargs;
 static int max_cmdargs;
 
+t_bool catchup = FALSE;			/* mark all arts read in all subscribed groups */
+t_bool check_any_unread = FALSE;/* print/return status if any unread */
+t_bool mail_news = FALSE;		/* mail all arts to specified user */
+t_bool save_news = FALSE;		/* save all arts to savedir structure */
+t_bool start_any_unread = FALSE;/* only start if unread news */
+t_bool update_fork = FALSE;     /* update index files by forked tin -U */
+
+
 /*
  * Local prototypes
  */
-static int check_for_any_new_news (t_bool CheckAnyUnread, t_bool StartAnyUnread);
-static void save_or_mail_new_news (void);
 static void read_cmd_line_options (int argc, char *argv[]);
 static void update_index_files (void);
 static void usage (char *theProgname);
@@ -163,34 +169,33 @@ main (
 	tmp_no_write = no_write; /* keep no_write */
 	no_write = TRUE;		 /* don't allow any writing back during startup */
 
+	if (!batch_mode) {
 #ifdef M_UNIX
 #	ifndef USE_CURSES
-	if (INTERACTIVE) {
 		if (!get_termcaps ()) {
 			error_message (_(txt_screen_init_failed), tin_progname);
 			giveup();
 		}
-/*		EndInverse ();*/
-	}
 #	endif /* !USE_CURSES */
 #endif /* M_UNIX */
 
-	/*
-	 * Init curses emulation
-	 */
-	if (!InitScreen ()) {
-		error_message (_(txt_screen_init_failed), tin_progname);
-		giveup();
+		/*
+		 * Init curses emulation
+		 */
+		if (!InitScreen ()) {
+			error_message (_(txt_screen_init_failed), tin_progname);
+			giveup();
+		}
+
+		EndInverse ();
+
+		/*
+		 * This depends on various things in tinrc
+		 */
+		setup_screen ();
 	}
 
-	EndInverse ();
-
-	/*
-	 * This depends on various things in tinrc
-	 */
-	setup_screen ();
-
-	if (INTERACTIVE || (batch_mode && verbose))
+	if (!batch_mode || (batch_mode && verbose))
 		wait_message (0, "%s\n", cvers);
 
 	set_up_private_index_cache ();
@@ -247,11 +252,11 @@ main (
 	 * Load the local & global group specific attribute files
 	 * FIXME: is global attributes still needed? if so use TIN_DEFAULTS_DIR
 	 */
-/*	if (INTERACTIVE) */ /* FIXME: NLS support missing */
-	wait_message (0, txt_reading_attributes_file, "global ");
+	if (!batch_mode /* || (batch_mode && verbose)*/) /* FIXME: NLS support missing */
+		wait_message (0, txt_reading_attributes_file, "global ");
 	read_attributes_file (global_attributes_file, TRUE);
-/*	if (INTERACTIVE) */
-	wait_message (0, txt_reading_attributes_file, "");
+	if (!batch_mode /* || (batch_mode && verbose)*/)
+		wait_message (0, txt_reading_attributes_file, "");
 	read_attributes_file (local_attributes_file, FALSE);
 
 	/*
@@ -281,10 +286,12 @@ main (
 	/*
 	 * Read text descriptions for mail and/or news groups
 	 */
+	if (show_description && !batch_mode) {
 #ifdef HAVE_MH_MAIL_HANDLING
-	read_mailgroups_file ();
+		read_mailgroups_file ();
 #endif /* HAVE_MH_MAIL_HANDLING */
-	read_newsgroups_file ();
+		read_newsgroups_file ();
+	}
 
 	if (create_mail_save_dirs ())
 		write_config_file (local_config_file);
@@ -301,6 +308,13 @@ main (
 	 * Load my_groups[] from the .newsrc file. We append these groups to any
 	 * new newsgroups and command line newsgroups already loaded
 	 */
+/*
+TODO
+if (num_cmd_line_groups != 0 && check_any_unread)
+don't read newsrc.
+This makes -Z handle command line newsgroups. Test & document
+*/
+
 	read_newsrc_lines = read_newsrc (newsrc, FALSE);
 
 	no_write = tmp_no_write; /* restore old value */
@@ -316,24 +330,41 @@ main (
 	/*
 	 * Check/start if any new/unread articles
 	 */
-	start_groupnum = check_for_any_new_news (check_any_unread, start_any_unread);
+	if (check_any_unread)
+		exit (check_start_save_any_news (CHECK_ANY_NEWS, catchup));
+
+	if (start_any_unread) {
+		batch_mode = TRUE;			/* Suppress some unwanted on-screen garbage */
+		if ((start_groupnum = check_start_save_any_news (START_ANY_NEWS, catchup)) == -1)
+			giveup();				/* No new/unread news so exit */
+		batch_mode = FALSE;
+	}
 
 	/*
 	 * Mail any new articles to specified user
 	 * or
 	 * Save any new articles to savedir structure for later reading
 	 */
-	save_or_mail_new_news ();
+	if (mail_news || save_news) {
+		do_update (FALSE);
+		check_start_save_any_news (mail_news ? MAIL_ANY_NEWS : SAVE_ANY_NEWS, catchup);
+		tin_done (EXIT_SUCCESS);
+	}
 
 	/*
 	 * Catchup newsrc file (-c option)
 	 */
-	catchup_newsrc_file ();
+	if (catchup) {
+		catchup_newsrc_file ();
+		tin_done (EXIT_SUCCESS);
+	}
 
 	/*
 	 * Update index files
+	 * Only the -u batch_mode case will get this far
 	 */
-	update_index_files ();
+	if (batch_mode || update_fork)
+		update_index_files ();
 
 	/*
 	 * If first time print welcome screen and auto-subscribe
@@ -460,7 +491,7 @@ read_cmd_line_options (
 			case 'I':
 #ifndef NNTP_ONLY
 				my_strncpy (index_newsdir, optarg, sizeof (index_newsdir));
-				my_mkdir (index_newsdir, (mode_t)S_IRWXUGO);
+/*				my_mkdir (index_newsdir, (mode_t)S_IRWXUGO);*/
 #else
 				error_message (_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
@@ -558,7 +589,7 @@ read_cmd_line_options (
 			case 'U':	/* update index files in background */
 #	ifndef NNTP_ONLY
 				update_fork = TRUE;
-				batch_mode = TRUE;
+/*				batch_mode = FALSE    _NOTE_ only the child goes batch_mode */
 #	else
 				error_message (_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
@@ -625,7 +656,8 @@ read_cmd_line_options (
 			char nodenamebuf[32];
 #	ifdef M_AMIGA
 			my_strncpy (nodenamebuf, get_val ("NodeName", "PROBLEM_WITH_NODE_NAME"), sizeof (nodenamebuf));
-#	else /* NeXT, Apollo */
+#	else
+			/* NeXT, Apollo */
 			(void) gethostname(nodenamebuf, sizeof(nodenamebuf));
 #	endif /* M_AMIGA */
 			get_newsrcname(newsrc, nodenamebuf);
@@ -713,6 +745,8 @@ usage (
 
 #	ifdef NNTP_ABLE
 		error_message (_("  -l       use only LISTGROUP instead of GROUP (-n) command"));
+#	else
+		error_message (_("  -l       TODO: document feature"));
 #	endif /* NNTP_ABLE */
 
 	error_message (_("  -m dir   mailbox directory [default=%s]"), tinrc.maildir);
@@ -720,9 +754,11 @@ usage (
 
 #	ifdef NNTP_ABLE
 		error_message (_("  -n       only read subscribed .newsrc groups from NNTP server"));
+#  else
+		error_message (_("  -n       TODO: document feature"));
 #	endif /* NNTP_ABLE */
 
-	error_message (_("  -N       mail new news to your posts"));
+	error_message (_("  -N       mail new news to your posts (batch mode)"));
 	error_message (_("  -o       post all postponed articles and exit"));
 
 #	ifdef NNTP_ABLE
@@ -758,53 +794,7 @@ usage (
 	error_message (_("  -z       start if any unread news"));
 	error_message (_("  -Z       return status indicating if any unread news (batch mode)"));
 
-	error_message (_("\nMail bug reports/comments to %s"), BUG_REPORT_ADDRESS);
-}
-
-
-/*
- * check/start if any new/unread articles
- */
-static int
-check_for_any_new_news (
-	t_bool CheckAnyUnread,
-	t_bool StartAnyUnread)
-{
-	int i = 0;
-
-	if (CheckAnyUnread) {
-		i = check_start_save_any_news (CHECK_ANY_NEWS);
-		exit (i);
-	}
-
-	if (StartAnyUnread) {
-		batch_mode = TRUE;			/* Suppress some unwanted on-screen garbage */
-		if ((i = check_start_save_any_news (START_ANY_NEWS)) == -1)
-			giveup();				/* No new/unread news so exit */
-		batch_mode = FALSE;
-	}
-
-	return (i);
-}
-
-
-/*
- * mail any new articles to specified user
- * or
- * save any new articles to savedir structure for later reading
- */
-static void
-save_or_mail_new_news (
-	void)
-{
-	if (mail_news || save_news) {
-		t_bool i = catchup;
-		catchup = FALSE;	/* set catchup to FALSE */
-		do_update ();
-		catchup = i;		/* set catchup to previous value */
-		check_start_save_any_news (mail_news ? MAIL_ANY_NEWS : SAVE_ANY_NEWS);
-		tin_done (EXIT_SUCCESS);
-	}
+	error_message (_("\nMail bug reports/comments to %s"), bug_addr);
 }
 
 
@@ -815,81 +805,82 @@ static void
 update_index_files (
 	void)
 {
-	if (batch_mode || update_fork) {
-		if (!catchup && (read_news_via_nntp && xover_supported)) {
-			error_message (txt_batch_update_unavail, tin_progname);
-			tin_done (EXIT_FAILURE);
-		}
+	if (!catchup && (read_news_via_nntp && xover_supported)) {
+		error_message (txt_batch_update_unavail, tin_progname);
+		tin_done (EXIT_FAILURE);
+	}
 
-		cCOLS = 132;				/* set because curses has not started */
+	cCOLS = 132;							/* set because curses has not started */
 #ifdef HAVE_FORK
-		if (update_fork) {
-			catchup = FALSE;		/* turn off msgs when running forked */
-			verbose = FALSE;
-			switch ((int) fork ()) {		/* fork child to update indexes in background */
-				case -1:			/* error forking */
-					perror_message (txt_batch_update_failed);
-					break;
-				case 0:				/* child process */
-					create_index_lock_file (lock_file);
-					process_id = getpid ();
-#	if defined(BSD) /* FIXME: sort and remove OS depending ifdefs */
+	if (update_fork) {
+		catchup = FALSE;					/* turn off msgs when running forked */
+		verbose = FALSE;
+		switch ((int) fork ()) {			/* fork child to update indexes in background */
+			case -1:						/* error forking */
+				perror_message (txt_batch_update_failed);
+				break;
+			case 0:							/* child process */
+				batch_mode = TRUE;			/* put child into batch */
+				create_index_lock_file (lock_file);
+				process_id = getpid ();
+#	if defined(BSD)							/* FIXME: sort and remove OS dependant ifdefs */
 #		ifdef HAVE_SETSID
-					setsid();
+				setsid();
 #		else
 #			ifdef HAVE_SETPGID
-					setpgid (0, 0);
+				setpgid (0, 0);
 #			else
 #				ifdef HAVE_SETPGRP
 #					ifdef SETPGRP_VOID
-						setpgrp ();
+				setpgrp ();
 #					else
-						setpgrp (0, process_id);	/* reset process group leader to this process */
+				setpgrp (0, process_id);	/* reset process group leader to this process */
 #					endif /* SETPGRP_VOID */
 #				endif /* HAVE_SETPGRP */
 #			endif /* HAVE_SETPGID */
 #			ifdef TIOCNOTTY
-					{
-						int fd;
+				{
+					int fd;
 
-						if ((fd = open ("/dev/tty", O_RDWR)) >= 0) {
-							ioctl (fd, TIOCNOTTY, (char *) NULL);
-							close (fd);
-						}
+					if ((fd = open ("/dev/tty", O_RDWR)) >= 0) {
+						ioctl (fd, TIOCNOTTY, (char *) NULL);
+						close (fd);
 					}
+				}
 #			endif /* TIOCNOTTY */
 #		endif /* HAVE_SETSID */
 #	else
 #		ifdef HAVE_SETPGRP
 #				ifdef SETPGRP_VOID
-						setpgrp ();
+				setpgrp ();
 #				else
-						setpgrp (0, process_id);
+				setpgrp (0, process_id);
 #				endif /* SETPGRP_VOID */
-					signal (SIGHUP, SIG_IGN);	/* make immune from process group leader death */
+				signal (SIGHUP, SIG_IGN);	/* make immune from process group leader death */
 #		endif /* HAVE_SETPGRP */
 #	endif /* BSD */
-					signal (SIGQUIT, SIG_IGN);	/* stop indexing being interrupted */
+				signal (SIGQUIT, SIG_IGN);	/* stop indexing being interrupted */
 
-					if (nntp_open () != 0)				/* connect server if we are using nntp */
-						tin_done (EXIT_SUCCESS);
-
-					tinrc.thread_articles = THREAD_NONE;	/* stop threading to run faster */
-					do_update ();
+				if (nntp_open () != 0)		/* connect server if we are using NNTP */
 					tin_done (EXIT_SUCCESS);
-					break;
-				default:						/* parent process*/
-					break;
-			}
-			batch_mode = FALSE;
-		} else
+
+				/* stop threading to run faster */
+				tinrc.thread_articles = THREAD_NONE;
+				do_update (catchup);
+				tin_done (EXIT_SUCCESS);	/* child exits... */
+				break;
+			default:						/* parent process*/
+				break;
+		}	/* switch */
+		batch_mode = FALSE;					/* Other cases drop back to 'normal' reading mode */
+	} else
 #endif /* HAVE_FORK */
-		{
-			create_index_lock_file (lock_file);
-			tinrc.thread_articles = THREAD_NONE;	/* stop threading to run faster */
-			do_update ();
-			tin_done (EXIT_SUCCESS);
-		}
+	{	/* This block is also called if fork() is not available */
+		batch_mode = TRUE;						/* -u handling... */
+		create_index_lock_file (lock_file);
+		tinrc.thread_articles = THREAD_NONE;	/* stop threading to run faster */
+		do_update (catchup);
+		tin_done (EXIT_SUCCESS);
 	}
 }
 
@@ -910,7 +901,7 @@ show_intro_page (
 		my_printf("\n");
 	}
 
-	sprintf(buf, _(txt_intro_page), BUG_REPORT_ADDRESS);
+	sprintf(buf, _(txt_intro_page), bug_addr);
 
 	my_fputs (buf, stdout);
 	my_flush();

@@ -53,7 +53,7 @@ extern void read_news_active_file (void);
 /* art.c */
 extern char *pcFindNovFile (struct t_group *psGrp, int iMode);
 extern t_bool index_group (struct t_group *group);
-extern void do_update (void);
+extern void do_update (t_bool catchup);
 extern void find_base (struct t_group *group);
 extern void make_threads (struct t_group *group, t_bool rethread);
 extern void set_article (struct t_article *art);
@@ -89,7 +89,7 @@ extern const char *print_boolean (t_bool value);
 extern int change_config_file (struct t_group *group);
 extern int option_row (int option);
 extern t_bool match_boolean (char *line, const char *pat, t_bool *dst);
-extern t_bool match_integer (char *line, const char *pat, int *dst, int maxlen);
+extern t_bool match_integer (char *line, const char *pat, int *dst, int maxval);
 extern t_bool match_long (char *line, const char *pat, long *dst);
 extern t_bool match_list (char *line, constext *pat, constext *const *table, size_t tablelen, int *dst);
 extern t_bool match_string (char *line, const char *pat, char *dst, size_t dstlen);
@@ -157,9 +157,10 @@ extern t_bool quick_filter (int type, struct t_group *group, struct t_article *a
 extern t_bool quick_filter_select_posted_art (struct t_group *group, char *subj);
 extern t_bool read_filter_file (char *file, t_bool global_file);
 extern void free_all_filter_arrays (void);
+extern int unfilter_articles (void);
 
 /* getline.c */
-extern char *tin_getline (const char *prompt, int number_only, char *str, int max_chars, t_bool passwd, int which_hist);
+extern char *tin_getline (const char *prompt, int number_only, const char *str, int max_chars, t_bool passwd, int which_hist);
 
 /* global.c */
 extern int handle_keypad (int (*left_action) (void), int (*right_action) (void));
@@ -293,14 +294,14 @@ extern int my_chdir (char *path);
 extern int my_isprint (int c);
 extern int my_mkdir (char *path, mode_t mode);
 extern int peek_char (FILE *fp);
-extern int strfmailer (char *the_mailer, char *subject, char *to, char *filename, char *s, size_t maxsize, char *format);
+extern int strfmailer (char *the_mailer, char *subject, char *to, const char *filename, char *s, size_t maxsize, char *format);
 extern int strfpath (char *format, char *str, size_t maxsize, char *the_homedir, char *maildir, char *savedir, char *group);
 extern int strfquote (char *group, int respnum, char *s, size_t maxsize, char *format);
-extern long file_mtime (char *file);
-extern long file_size (char *file);
+extern long file_mtime (const char *file);
+extern long file_size (const char *file);
 extern t_bool copy_fp (FILE *fp_ip, FILE *fp_op);
 extern t_bool invoke_cmd (char *nam);
-extern t_bool invoke_editor (char *filename, int lineno);
+extern t_bool invoke_editor (const char *filename, int lineno);
 extern t_bool mail_check (void);
 extern void append_file (char *old_filename, char *new_filename);
 extern void asfail (const char *file, int line, const char *cond);
@@ -313,7 +314,7 @@ extern void get_author (t_bool thread, struct t_article *art, char *str, size_t 
 extern void get_cwd (char *buf);
 extern void make_group_path (char *name, char *path);
 extern void read_input_history_file (void);
-extern void rename_file (char *old_filename, char *new_filename);
+extern void rename_file (const char *old_filename, const char *new_filename);
 extern void set_real_uid_gid (void);
 extern void set_tin_uid_gid (void);
 extern void show_inverse_video_status (void);
@@ -338,7 +339,7 @@ extern void vPrintBugAddress (void);
 	extern void show_color_status (void);
 #endif /* HAVE_COLOR */
 #ifdef HAVE_ISPELL
-	extern t_bool invoke_ispell (char *nam, struct t_group *psGrp );
+	extern t_bool invoke_ispell (const char *nam, struct t_group *psGrp );
 #endif /* HAVE_ISPELL */
 #ifndef M_UNIX
 	extern void make_post_process_cmd (char *cmd, char *dir, char *file);
@@ -430,7 +431,7 @@ extern time_t parsedate (char *p, TIMEINFO *now);
 #ifdef HAVE_PGP_GPG
 	extern t_bool pgp_check_article (void);
 	extern void init_pgp (void);
-	extern void invoke_pgp_mail (char *nam, char *mail_to);
+	extern void invoke_pgp_mail (const char *nam, char *mail_to);
 	extern void invoke_pgp_news (char *the_article);
 #endif /* HAVE_PGP_GPG */
 
@@ -444,17 +445,18 @@ extern time_t parsedate (char *p, TIMEINFO *now);
 
 /* post.c */
 extern int count_postponed_articles (void);
+extern int mail_to_author (char *group, int respnum, int copy_text, t_bool with_headers);
+extern int mail_to_someone (int respnum, const char *address, t_bool mail_to_poster, t_bool confirm_to_mail);
 extern int post_response (char *group, int respnum, int copy_text, t_bool with_headers);
 extern int repost_article (const char *group, int respnum, t_bool supersede);
 extern t_bool cancel_article (struct t_group *group, struct t_article *art, int respnum);
 extern t_bool mail_bug_report (void);
-extern t_bool mail_to_author (char *group, int respnum, int copy_text, t_bool with_headers);
-extern t_bool mail_to_someone (int respnum, const char *address, t_bool mail_to_poster, t_bool confirm_to_mail, t_bool *mailed_ok);
 extern t_bool pickup_postponed_articles (t_bool ask, t_bool all);
 extern t_bool post_article (const char *group);
 extern t_bool reread_active_after_posting (void);
 extern t_bool user_posted_messages (void);
-extern void checknadd_headers (char *infile);
+extern void checknadd_headers (const char *infile);
+extern void init_postinfo (void);
 extern void quick_post_article (t_bool postponed_only);
 #ifdef USE_CANLOCK
 	extern const char *build_cankey(const char *messageid, const char *secret);
@@ -512,16 +514,16 @@ extern char *rfc1522_decode (const char *s);
 extern char *rfc1522_encode (char *s,t_bool ismail);
 extern int mmdecode (const char *what, int encoding, int delimiter, char *where, const char *charset);
 extern void get_mm_charset (void);
-extern void rfc15211522_encode (char *filename, constext *mime_encoding, t_bool allow_8bit_header,t_bool ismail);
+extern void rfc15211522_encode (const char *filename, constext *mime_encoding, t_bool allow_8bit_header,t_bool ismail);
 
 /* save.c */
-extern int check_start_save_any_news (int check_start_save);
+extern int check_start_save_any_news (int function, t_bool catchup);
 extern t_bool post_process_files (int proc_type_ch, t_bool auto_delete);
 extern t_bool create_path (char *path);
 extern t_bool save_art_to_file (int indexnum, t_bool the_mailbox, const char *filename);
 extern t_bool save_regex_arts_to_file (t_bool is_mailbox, char *group_path);
 extern t_bool save_thread_to_file (t_bool is_mailbox, char *group_path);
-extern void add_to_save_list (int the_index, t_bool is_mailbox, int archive_save, char *path);
+extern void add_to_save_list (int the_index, t_bool is_mailbox, const char *path);
 extern void print_art_seperator_line (FILE *fp, t_bool is_mailbox);
 extern void sort_save_list (void);
 
@@ -641,8 +643,8 @@ extern int stat_thread (int n, struct t_art_stat *sbuf);
 extern int which_response (int n);
 extern int which_thread (int n);
 extern int thread_page (struct t_group *group, int respnum, int thread_depth, t_pagerinfo *page);
+extern void draw_line (int i, int magic);
 extern void fixup_thread (int respnum, t_bool redraw);
-extern void show_thread_page (void);
 
 /* wildmat.c */
 extern t_bool wildmat (const char *text, char *p, t_bool icase);

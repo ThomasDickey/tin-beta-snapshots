@@ -389,7 +389,7 @@ get_tcp_socket (
 		return (-EPROTO);
 	}
 
-#	else /* not TLI */
+#	else
 #		ifndef EXCELAN
 	struct servent *sp;
 	struct hostent *hp;
@@ -415,10 +415,11 @@ get_tcp_socket (
 	/* If not a raw ip address, try nameserver */
 	if (!isdigit((unsigned char)*machine) ||
 #			ifdef HAVE_INET_ATON
-	    !inet_aton(machine, &defaddr))
+	    !inet_aton(machine, &defaddr)
 #			else
-	    (long)(defaddr.s_addr = (long) inet_addr (machine)) == -1)
+	    (long)(defaddr.s_addr = (long) inet_addr (machine)) == -1
 #			endif /* HAVE_INET_ATON */
+	    )
 	{
 		hp = gethostbyname (machine);
 	} else {
@@ -503,7 +504,7 @@ get_tcp_socket (
 		my_fprintf (stderr, _("Giving up...\n")); /* FIXME: -> lang.c */
 		return (-save_errno);					/* Return the last errno we got */
 	}
-#		else	/* no name server */
+#		else
 
 #			ifdef EXCELAN
 	if ((s = socket (SOCK_STREAM, (struct sockproto *)NULL, &sock_in, SO_KEEPALIVE)) < 0) {
@@ -529,7 +530,7 @@ get_tcp_socket (
 		return (-save_errno);
 	}
 
-#			else /* not EXCELAN */
+#			else
 	if ((s = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
 		perror ("socket"); /* FIXME: -> lang.c */
 		return (-errno);
@@ -579,6 +580,8 @@ get_tcp6_socket (
 
 	snprintf(mymachine, sizeof(mymachine)-1, "%s", machine);
 	snprintf(myport, sizeof(myport)-1, "%d", port);
+	mymachine[sizeof(mymachine)-1] = '\0';
+	myport[sizeof(myport)-1] = '\0';
 
 /* just in case */
 #	ifdef AF_UNSPEC
@@ -653,6 +656,7 @@ get_dnet_socket (
 		case 1:
 			node = area;
 			area = 0;
+			/* FALLTHROUGH  */
 		case 2:
 			node += area*1024;
 			sdn.sdn_add.a_len = 2;
@@ -832,10 +836,26 @@ get_server (
 		if (errno != 0 && errno != EINTR)	/*	I'm sure this will only confuse end users*/
 			perror_message("get_server()");
 #		endif /* DEBUG */
-		retry = reconnect(retry);			/* Will abort when out of tries */
-		reconnected_in_last_get_server = TRUE;
-	}
 
+		/*
+		 * Reconnect only if command was not "QUIT" anyway (in which case a
+		 * reconnection would be useless because the connection will be
+		 * closed immediately). Also prevents tin from asking to reconnect
+		 * when user is quitting tin if tinrc.auto_reconnect is false.
+		 */
+		if (strncmp(last_put, "QUIT", 4)) {
+			retry = reconnect(retry);		/* Will abort when out of tries */
+			reconnected_in_last_get_server = TRUE;
+		} else {
+			/*
+			 * Use standard NNTP closing message and response code if user is
+			 * quitting tin and leave loop.
+			 */
+			strncpy(string, txt_nntp_ok_goodbye, size - 2);
+			strcat(string, cCRLF);		/* tin_fgets() needs CRLF */
+			break;
+		}
+	}
 	return string;
 }
 #	endif /* NNTP_ABLE */

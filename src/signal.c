@@ -248,11 +248,11 @@ handle_resize (
 
 	if (cLINES < MIN_LINES_ON_TERMINAL || cCOLS < MIN_COLUMNS_ON_TERMINAL) {
 		ring_bell ();
-		wait_message(3, _(txt_screen_too_small_exiting));
+		wait_message(3, _(txt_screen_too_small_exiting), tin_progname);
 		tin_done (EXIT_FAILURE);
 	}
 
-	TRACE(("handle_resize(%d:%d)", signal_context, repaint))
+	TRACE(("handle_resize(%d:%d)", signal_context, repaint));
 
 	if (!repaint)
 		return;
@@ -301,14 +301,14 @@ static void
 handle_suspend (
 	void)
 {
-	TRACE(("handle_suspend(%d)", signal_context))
+	TRACE(("handle_suspend(%d)", signal_context));
 
 	set_keypad_off ();
 	if (!cmd_line)
 		set_xclick_off ();
 
 	Raw (FALSE);
-	wait_message (0, _(txt_suspended_message));
+	wait_message (0, _(txt_suspended_message), tin_progname);
 
 	kill (0, SIGSTOP);				/* Put ourselves to sleep */
 

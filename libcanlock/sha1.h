@@ -8,8 +8,9 @@
 
 #include "endian.h"
 
-/* #define SHA1HANDSOFF /* Copies data before messing with it. */
-
+#if 0
+#define SHA1HANDSOFF		/* Copies data before messing with it. */
+#endif /* 0 */
 
 #define SHA1_BLOCK	64
 #define SHA1_LENGTH	20

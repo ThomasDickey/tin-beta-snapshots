@@ -42,9 +42,11 @@
 #	define VERSION_H	1
 
 #	define PRODUCT		"tin"
-#	define VERSION		"1.5.2"
-#	define RELEASEDATE	"20000119"
-#	define RELEASENAME	"Sumerland"
+#	ifndef TIN_AUTOCONF_H
+#		define VERSION		"1.5.3"
+#	endif /* !TIN_AUTOCONF_H */
+#	define RELEASEDATE	"20000221"
+#	define RELEASENAME	"For Her Light"
 #	define TINRC_VERSION	"1.2"
 
 #	ifdef M_AMIGA
@@ -56,17 +58,26 @@
 #		define OSNAME	"OS/2"
 #	endif /* M_OS2 */
 
+#	ifdef VMS
+#		define OSNAME	"VMS"
+#	endif /* VMS */
+
 #	ifdef M_UNIX
-#		if !defined(__amiga)
-#			define OSNAME	"UNIX"
-#		else
+#		ifdef __amiga
 #			define OSNAME	"AMIGA"
 #		endif /* !__amiga */
+#		ifdef __BEOS__
+#			define OSNAME	"BeOS"
+#		endif /* __BEOS__ */
+#		ifdef __CYGWIN__
+#			ifdef __WINNT__ /* also defined on Win95 *sigh* */
+#				define OSNAME	"Windows/NT"
+#			endif /*__WINNT__ */
+#		endif /* __CYGWIN__ */
+#		ifndef OSNAME
+#			define OSNAME	"UNIX"
+#		endif /* !OSNAME */
 #	endif /* M_UNIX */
-
-#	ifdef WIN32
-#		define OSNAME	"Windows/NT"
-#	endif /* WIN32 */
 
 #	ifndef OSNAME
 #		define OSNAME	"Unknown"

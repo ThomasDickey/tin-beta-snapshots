@@ -371,7 +371,8 @@ show_progress (
 	int count,
 	int total)
 {
-	if (batch_mode)
+/* if (batch_mode) */
+if (batch_mode || count <= 0 || total == 0)
 		return;
 
 	MoveCursor(cLINES, 0);
@@ -380,6 +381,7 @@ show_progress (
 		my_printf ("%s", txt);
 	else
 #endif /* 1 */
-		my_printf ("%s%6d/%-6d", txt, count, total);
+/*		my_printf ("%s%6d/%-6d", txt, count, total);*/
+		my_printf ("%s %d%%", txt, count*100/total);
 	my_flush();
 }
