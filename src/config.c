@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-15
+ *  Updated   : 2003-07-02
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -50,6 +50,9 @@
 #ifndef MENUKEYS_H
 #	include "menukeys.h"
 #endif /* !MENUKEYS_H */
+#ifndef TNNTP_H
+#	include "tnntp.h"
+#endif /* TNNTP_H */
 
 /*
  * local prototypes
@@ -68,6 +71,7 @@ static void print_option(enum option_enum the_option);
 static void redraw_screen(int option);
 static void show_config_page(void);
 static void unhighlight_option(int option);
+static void write_server_config(void);
 #ifdef HAVE_COLOR
 	static t_bool match_color(char *line, const char *pat, int *dst, int max);
 #endif /* HAVE_COLOR */
@@ -1306,8 +1310,18 @@ write_config_file(
 	fprintf(fp, _(txt_tinrc_newnews));
 	{
 		char timestring[30];
+		int j = find_newnews_index(nntp_server);
 
+		/*
+		 * Newnews timestamps in tinrc are bogus as of tin 1.5.19 because they
+		 * are now stored in a separate file to prevent overwriting them from
+		 * another instance running concurrently. Except for the current server,
+		 * however, we must remember them because otherwise we would lose them
+		 * after the first start of a tin 1.5.19 (or later) version.
+		 */
 		for (i = 0; i < num_newnews; i++) {
+			if (i == j)
+				continue;
 			if (my_strftime(timestring, sizeof(timestring) - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(newnews[i].time))))
 				fprintf(fp, "newnews=%s %lu (%s)\n", newnews[i].host, (unsigned long int) newnews[i].time, timestring);
 		}
@@ -1321,6 +1335,7 @@ write_config_file(
 		rename_file(file_tmp, file);
 
 	free(file_tmp);
+	write_server_config();
 }
 
 
@@ -1543,14 +1558,8 @@ unhighlight_option(
 
 /*
  * Refresh the config page which holds the actual option. If act_option is
- * zero fall back on the last given option; if even that is not present,
- * use 1 (first option) as fall back value. Note that act_option is the
- * number shown on the screen, not the index in option_table (which is
- * one smaller). Set force_redraw to TRUE if you want to enforce a refresh,
- * and to FALSE if you want to refresh the screen only when necessary
- * (needed by signal.c: config_resize(); the resizing could result in
- * first_option_on_page == actual_top_option even if there are now more/less
- * options on the screen than before).
+ * smaller zero fall back on the last given option (first option if there was
+ * no last option) and refresh the screen.
  */
 void
 refresh_config_page(
@@ -1941,9 +1950,11 @@ change_config_file(
 
 								group->attribute->thread_arts = tinrc.thread_articles;
 								make_threads(group, TRUE);
-								/* update cursor position */
-								if ((n = which_thread(old_base_art)) >= 0)
-									grpmenu.curr = n;
+								/* in non-empty groups update cursor position */
+								if (grpmenu.max > 0) {
+									if ((n = which_thread(old_base_art)) >= 0)
+										grpmenu.curr = n;
+								}
 							}
 							clear_message();
 							break;
@@ -2824,4 +2835,121 @@ rc_update(
 
 	rewind(fp);
 	return TRUE;
+}
+
+
+void
+read_server_config(
+	void)
+{
+	FILE *fp;
+	char *line;
+	char file[PATH_LEN];
+	char newnews_info[LEN];
+	char serverdir[PATH_LEN];
+	char version[LEN];
+	int upgrade = RC_CHECK;
+
+#ifdef NNTP_ABLE
+	if (read_news_via_nntp && !read_saved_news && nntp_tcp_port != IPPORT_NNTP)
+		snprintf(file, sizeof(file), "%s:%d", nntp_server, nntp_tcp_port);
+	else
+#endif /* NNTP_ABLE */
+	{
+		STRCPY(file, nntp_server);
+	}
+	JOINPATH(serverdir, rcdir, file);
+	joinpath(file, serverdir, SERVERCONFIG_FILE);
+
+	if ((fp = fopen(file, "r")) == NULL)
+		return;
+	while (NULL != (line = tin_fgets(fp, FALSE))) {
+		if (('#' == *line) || ('\0' == *line))
+			continue;
+
+		if (match_string(line, "last_newnews=", newnews_info, sizeof(newnews_info))) {
+			int tmp_len = strlen(nntp_server) + strlen(newnews_info) + 2;
+			char *tmp_info = my_malloc(tmp_len);
+
+			snprintf(tmp_info, tmp_len, "%s %s", nntp_server, newnews_info);
+			load_newnews_info(tmp_info);
+			free(tmp_info);
+			break;
+		}
+		if (match_string(line, "version=", version, sizeof(version))) {
+			if (RC_CHECK != upgrade)
+				/* ignore duplicate version lines; first match counts */
+				break;
+			upgrade = check_upgrade(line, "version=", SERVERCONFIG_VERSION);
+			if (RC_IGNORE == upgrade)
+				/* Expected version number; nothing to do -> continue */
+				break;
+
+			/* Nothing to do yet for RC_UPGRADE and RC_DOWNGRADE */
+			break;
+		}
+	}
+	fclose(fp);
+}
+
+
+static void
+write_server_config(
+	void)
+{
+	FILE *fp;
+	char *file_tmp;
+	char file[PATH_LEN];
+	char timestring[30];
+	char serverdir[PATH_LEN];
+	int i;
+	struct stat statbuf;
+
+	if (read_saved_news)
+		/* don't update server files while reading locally stored articles */
+		return;
+#ifdef NNTP_ABLE
+	if (read_news_via_nntp && nntp_tcp_port != IPPORT_NNTP)
+		snprintf(file, sizeof(file), "%s:%d", nntp_server, nntp_tcp_port);
+	else
+#endif /* NNTP_ABLE */
+	{
+		STRCPY(file, nntp_server);
+	}
+	JOINPATH(serverdir, rcdir, file);
+	joinpath(file, serverdir, SERVERCONFIG_FILE);
+
+	if ((no_write || post_article_and_exit || post_postponed_and_exit) && file_size(file) != -1L)
+		return;
+
+	if (-1 == stat(serverdir, &statbuf)) {
+		if (-1 == my_mkdir(serverdir, (mode_t) (S_IRWXU)))
+			/* Can't create directory TODO: Add error handling */
+			return;
+	}
+
+	/* generate tmp-filename */
+	file_tmp = get_tmpfilename(file);
+
+	if ((fp = fopen(file_tmp, "w")) == NULL) {
+		error_message(_(txt_filesystem_full_backup), SERVERCONFIG_FILE);
+		free(file_tmp);
+		return;
+	}
+
+	fprintf(fp, _(txt_serverconfig_header), PRODUCT, tin_progname, VERSION, RELEASEDATE, RELEASENAME, PRODUCT, PRODUCT);
+	fprintf(fp, "version=%s\n", SERVERCONFIG_VERSION);
+
+	if ((i = find_newnews_index(nntp_server)) >= 0)
+		if (my_strftime(timestring, sizeof(timestring) - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(newnews[i].time))))
+			fprintf(fp, "last_newnews=%lu (%s)\n", (unsigned long int) newnews[i].time, timestring);
+
+	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR)); /* rename_file() preserves mode */
+
+	if (ferror(fp) || fclose(fp))
+		error_message(_(txt_filesystem_full), SERVERCONFIG_FILE);
+	else
+		rename_file(file_tmp, file);
+
+	free(file_tmp);
 }

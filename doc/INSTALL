@@ -15,38 +15,39 @@ Note: The section 'News machine names' is now at the beginning as it
 
 The following configure options and defines are documented in detail:
 ---------------------------------------------------------------------
-  --disable-fcntl                         --with-dbmalloc
-  --enable-8bit-keys                      --with-defaults-dir
-  --enable-append-pid                     --with-dmalloc
-  --enable-break-long-lines               --with-domain-name
-  --enable-broken-listgroup-fix           --with-editor
-  --enable-color                          --with-gpg
-  --enable-curses                         --with-inews-dir
-  --enable-debug                          --with-inn-nntplib
-  --enable-echo                           --with-iso-to-ascii
-  --enable-etiquette                      --with-ispell
-  --enable-fascist-newsadmin              --with-libdir
-  --enable-flock                          --with-curses-dir
-  --enable-inverse-video                  --with-mailbox
-  --enable-locale                         --with-mailer
-  --enable-lockf                          --with-metamail
-  --enable-mh-mail-handling               --with-mime-default-charset
-  --enable-mime-strict-charset            --with-ncurses
-  --enable-nntp                           --with-nntp-default-server
-  --enable-nntp-only                      --with-nov-dir
-  --enable-pgp-gpg                        --with-nov-fname
-  --enable-piping                         --with-pcre
-  --enable-posting                        --with-pgp
-  --enable-printing                       --with-pgpk
-  --enable-prototypes                     --with-screen
-  --enable-shell-escape                   --with-shell
-  --enable-warnings                       --with-spooldir
-  --enable-xhdr-xref                      --with-trace
-  --enable-nls                            --with-included-gettext
-  --prefix                                --exec-prefix
-  --bindir                                --mandir
-  --program-prefix                        --program-suffix
-  --program-transform-name
+  --disable-fcntl                         --program-suffix
+  --disable-included-msgs                 --program-transform-name
+  --enable-8bit-keys                      --with-coffee
+  --enable-append-pid                     --with-curses-dir
+  --enable-break-long-lines               --with-dbmalloc
+  --enable-broken-listgroup-fix           --with-defaults-dir
+  --enable-color                          --with-dmalloc
+  --enable-curses                         --with-domain-name
+  --enable-debug                          --with-editor
+  --enable-echo                           --with-gpg
+  --enable-etiquette                      --with-included-gettext
+  --enable-fascist-newsadmin              --with-inews-dir
+  --enable-flock                          --with-inn-nntplib
+  --enable-inverse-video                  --with-iso-to-ascii
+  --enable-locale                         --with-ispell
+  --enable-lockf                          --with-libdir
+  --enable-mh-mail-handling               --with-libiconv-prefix
+  --enable-mime-strict-charset            --with-mailbox
+  --enable-nls                            --with-mailer
+  --enable-nntp                           --with-metamail
+  --enable-nntp-only                      --with-mime-default-charset
+  --enable-pgp-gpg                        --with-ncurses
+  --enable-piping                         --with-nntp-default-server
+  --enable-posting                        --with-nov-dir
+  --enable-printing                       --with-nov-fname
+  --enable-prototypes                     --with-pcre
+  --enable-shell-escape                   --with-pgp
+  --enable-warnings                       --with-pgpk
+  --enable-xhdr-xref                      --with-screen
+  --exec-prefix                           --with-shell
+  --mandir                                --with-spooldir
+  --prefix                                --with-trace
+  --program-prefix
 
   ENFORCE_RFC1034                         NNTP_INEWS
   EVIL_INSIDE                             NNTP_SERVER_FILE
@@ -505,6 +506,11 @@ Support is enabled by default, the --disable-nls option disables NLS.
 --with-included-gettext  (default:off)
 If NLS is enabled, the --with-included-gettext option causes the build
 procedure to prefer its copy of GNU gettext.
+
+--disable-included-msgs  (default:off)
+If NLS is enabled, the --disable-included-msgs option causes the build
+procedure to assume message libraries are already installed, and to
+not build them.
 
 HAVE_LIBUU (default: set automatically)
 HAVE_UUDEVIEW_H (default: set automatically)

@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-16
+ *  Updated   : 2003-06-06
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -157,7 +157,6 @@ t_bool read_saved_news = FALSE;		/* tin -R read saved news from tin -S */
 t_bool show_description = TRUE;		/* current copy of tinrc flag */
 t_bool verbose = FALSE;			/* update index files only mode */
 t_bool word_highlight;		/* word highlighting on/off */
-t_bool xover_supported = FALSE;
 t_bool xref_supported = TRUE;
 #ifdef HAVE_COLOR
 	t_bool use_color;		/* enables/disables ansi-color support under linux-console and color-xterm */

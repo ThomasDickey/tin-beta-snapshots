@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2003-05-16
+dnl Updated   : 2003-06-18
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2003 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -44,7 +44,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.5.18
+VERSION=1.6.0
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -99,19 +99,17 @@ AC_PROG_LN_S
 
 case "$host_cpu:$host_vendor:$host_os" in
 	# check for MacOS X, exclude Darwin on ix86
-	powerpc:apple:darwin*)  #(vi
-		# replacement for AC_CHECK_LIB()
-		# don't use -f as this might be a link
-		if test -e "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation"; then
-			AC_CHECK_HEADER(CoreFoundation/CoreFoundation.h, [
-				AC_DEFINE(MAC_OS_X)
-				LIBS="/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation $LIBS"])
-		fi
+	powerpc:apple:darwin*)  #
+		AC_DEFINE(MAC_OS_X)
 		;;
 	# check for cygwin enviroment
 	# -DSTATIC is needed for pcre
 	*:*:*cygwin*)	#(vi
 		PCRE_DEFINES="$PCRE_DEFINES -DSTATIC"
+		;;
+	# SEIUX doesn't have any usefull preprocessor symbol
+	mips:sei:seiux*)
+		AC_DEFINE(SEIUX)
 		;;
 esac
 
@@ -1114,27 +1112,10 @@ DMALLOC)
 esac
 
 ### Use gettext
-### this also calles AM_LANGINFO_CODESET and AM_ICONV
-### so we don't need to do the tests ourself
-AM_GNU_GETTEXT
+### this also calls AM_LANGINFO_CODESET and AM_ICONV
+### so we don't need to do the tests ourselves.
+CF_BUNDLED_INTL
 LIBS="$LIBS $LIBICONV"
-if test "$USE_INCLUDED_LIBINTL" = yes ; then
-	CPPFLAGS="-I../intl $CPPFLAGS"
-	INTLDIR_MAKE=""
-	INTL_MAKEFILE="intl/Makefile"
-else
-	INTLDIR_MAKE='#'
-	INTL_MAKEFILE=""
-fi
-AC_SUBST(INTLDIR_MAKE)
-if test "$USE_NLS" = yes ; then
-	MSG_DIR_MAKE=""
-	PO_MAKEFILE="po/Makefile.in:po/Makefile.inn po/Makefile"
-else
-	MSG_DIR_MAKE="#"
-	PO_MAKEFILE=""
-fi
-AC_SUBST(MSG_DIR_MAKE)
 
 CF_CHECK_HEADERS(iconv.h)
 AC_MSG_CHECKING(for iconv_open() //TRANSLIT extension)
@@ -1190,6 +1171,5 @@ CF_DEFINE_STRING(TIN_LDFLAGS,  "$LDFLAGS")
 CF_DEFINE_STRING(TIN_LIBS,     "$LIBS")
 
 AC_OUTPUT($PCRE_MAKEFILE
-	$INTL_MAKEFILE
-	$PO_MAKEFILE
+	$SUB_MAKEFILE
 	src/Makefile)

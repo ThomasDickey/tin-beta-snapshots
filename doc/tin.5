@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2003-05-15
+.\" Updated   : 2003-06-29
 .\" Notes     : needs a some work
 .\"
-.TH tin 5 "May 15th, 2003" "1.5.18" "A Usenet newsreader"
+.TH tin 5 "June 29th, 2003" "1.6.0" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -211,7 +211,7 @@ needsterminal
 .sp
 .RS
 default NNTP-server to read news from if not reading from the local spool.
-\&'\fB-g\fP \fIserver\fR', \fB$NNTPSERVER\fP and a given default at compile
+\&'\fB-g\fP \fIserver\fR', $\fBNNTPSERVER\fP and a given default at compile
 time have higher priority (in that order) and override any server
 specified \fI/etc/nntpserver\fR.
 .RE
@@ -292,7 +292,7 @@ news.software.readers: 1-19567,19571-19597
 .RE
 .PP
 
-.IR ${TIN_HOMEDIR-"$HOME"}/.oldnewsrc
+.IR ${TIN_HOMEDIR-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT+":$NNTPPORT"}/.oldnewsrc
 .sp
 .RS
 backup of \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR
@@ -387,7 +387,7 @@ active file of user's saved newsgroups, used by \fBtin -R\fP.
 .\" tin uses inns old (pre 2.x) Path convention.
 .\" as with inn >= 2.2.x getting more and more popular
 .\" we should think about checking for the new Paths (/news/etc/)
-.\" ${TIN_LIBDIR-"/news/etc"}/attributes
+.\" ${TIN_LIBDIR-/news/etc"}/attributes
 .IR /etc/tin/attributes
 .br
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/attributes
@@ -455,7 +455,7 @@ Identical to the tinrc variable of the same name
 .B organization
 This can be used to set the article header field ''Organization:''. It
 overrides the setting (if any) of organization in
-\fI/etc/tin/tin.defaults\fR and \fB$ORGANIZATION\fP (or \fB$NEWSORG\fP on
+\fI/etc/tin/tin.defaults\fR and $\fBORGANIZATION\fP (or $\fBNEWSORG\fP on
 Apollo DomainOS). Note that some newsserver might still overwrite the
 \&''Organization:''-header.
 .TP
@@ -992,6 +992,24 @@ format.
 .RE
 .PP
 
+.IR ${TIN_HOMEDIR-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT+":$NNTPPORT"}/serverrc
+.sp
+.RS
+File to store $\fBNNTPSERVER\fP and $\fBNNTPPORT\fP related
+data via a list of "\fIvariable\fR=\fIvalue\fR" pairs. Currently
+there are only two variables, both are not meant to be changed by the
+user.
+.TP
+.B version
+Internal version number.
+.TP
+.B last_newnews
+Internal timestamp used by
+.BR tin (1)
+to keep track of new newsgroups on the server.
+.RE
+.PP
+
 .\" tin uses inns old (pre 2.x) Path convention.
 .\" as with inn >= 2.2.x getting more and more popular
 .\" we should think about checking for the new Paths (/news/etc/)
@@ -1007,7 +1025,7 @@ reads in the configuration file. This contains a list of
 "\fIvariable\fR=\fIvalue\fR" pairs that can be used to configure the way
 .BR tin (1)
 works. If it exists, the global configuration file,
-\fI${TIN_LIBDIR}-"/news/etc"}/tinrc\fR is read first. After that, the
+\fI${TIN_LIBDIR}-NEWSLIBDIR}/tinrc\fR is read first. After that, the
 users own configuration file \fI${TIN_HOMEDIR-"$HOME"}/.tin/tinrc\fR is read.
 The global file is useful for distributing system-wide defaults to new
 users who have no private tinrc yet (see also \fB/etc/tin/tin.defaults\fP).
@@ -1168,14 +1186,15 @@ Color of article subject
 Color of text-lines
 .TP
 .B col_title
-Color of title text on all the menu screens
+Color of help/main sign
 .TP
 .B confirm_choice
-Tin can ask for manual confirmation to protect the user. Available choices:
+.BR tin (1)
+can ask for manual confirmation to protect the user. Available choices:
 .in +.5i
 .B commands:
 Ask for confirmation before executing certain dangerous commands (e.g.,
-\fBSelectCatchupfP ('\fBc\fP')). Commands that this affects are marked in
+\fBSelectCatchup\fP ('\fBc\fP')). Commands that this affects are marked in
 this manual with '[after confirmation]'.
 .\" TODO: check if all affected commands are marked [after confirmation]
 .sp
@@ -1186,7 +1205,7 @@ when you use the \fBQuit\fP ('\fBq\fP') command.
 .sp
 .B select:
 Ask for confirmation before marking all not selected (with
-\fBGroupMarkUnselArtRead\fB ('\fBX\fP') command) articles as read.
+\fBGroupMarkUnselArtRead\fP ('\fBX\fP') command) articles as read.
 .in -.5i
 Default is commands & quit.
 .TP
@@ -1195,51 +1214,73 @@ Default is commands & quit.
 .B default_author_search
 .TP
 .B default_config_search
-The last article/author/config option that was searched for
+The last article/author/config option that was searched for.
 .TP
 .B default_editor_format
 The format string used to create the editor start command with parameters.
-Default is '%E +%N %F' (i.e., /bin/vi +7 .article).
+Default is '%E +%N %F' (e.g., /bin/vi +7 .article).
 .\" TODO: document %E, %F, %N
 .TP
 .B default_filter_days
 Default is 28.
 .TP
 .B default_filter_kill_case
-Defaults for quick (1 key) kill filter case. ON = filter case sensitive, OFF
+Default for quick (1 key) kill filter case. ON = filter case sensitive, OFF
 = ignore case. Default is OFF.
 .TP
 .B default_filter_kill_expire
-Defaults for quick (1 key) kill filter expire. ON = limit
+Default for quick (1 key) kill filter expire. ON = limit
 to '\fBdefault_filter_days\fP', OFF = don't ever expire. Default is OFF.
 .TP
 .B default_filter_kill_global
-Defaults for quick (1 key) kill filter global. ON=apply to all groups
+Default for quick (1 key) kill filter global. ON=apply to all groups,
 OFF=apply to current group. Default is ON.
 .TP
 .B default_filter_kill_header
-Defaults for quick (1 key) kill filter header.
-0,1 = ''Subject:'', 2,3 = ''From:'', 4 = ''Message-ID:'' & full ''References:''
-5 = ''Message-ID:'' & last ''References:'' entry only,
-6 = ''Message-ID:'' entry only, 7 = ''Lines:''
+Default for quick (1 key) kill filter header.
+.RS +.5i
+.IP 0,1 4
+ ''Subject:''
+.IP 2,3
+ ''From:''
+.IP 4
+ ''Message-ID:'' & full ''References:'' line
+.IP 5
+ ''Message-ID:'' & last ''References:'' entry only
+.IP 6
+ ''Message-ID:'' entry only
+.IP 7
+ ''Lines:''
+.RE
 .TP
 .B default_filter_select_case
-Defaults for quick (1 key) auto-selection filter case. ON=filter case
-sensitive OFF=ignore case. Default is OFF.
+Default for quick (1 key) auto-selection filter case. ON=filter case
+sensitive, OFF=ignore case. Default is OFF.
 .TP
 .B default_filter_select_expire
-Defaults for quick (1 key) auto-selection filter expire. ON = limit
+Default for quick (1 key) auto-selection filter expire. ON = limit
 to '\fBdefault_filter_days\fP', OFF = don't ever expire. Default is OFF.
 .TP
 .B default_filter_select_global
-Defaults for quick (1 key) auto-selection filter global. ON=apply to all
-groups OFF=apply to current group. Default is ON.
+Default for quick (1 key) auto-selection filter global. ON=apply to all
+groups, OFF=apply to current group. Default is ON.
 .TP
 .B default_filter_select_header
-Defaults for quick (1 key) auto-selection filter header.
-0,1 = ''Subject:'', 2,3 = ''From:'', 4 = ''Message-ID:'' & full ''References:''
-5 = ''Message-ID:'' & last ''References:'' entry only,
-6 = ''Message-ID:'' entry only, 7 = ''Lines:''
+Default for quick (1 key) auto-selection filter header.
+.RS +.5i
+.IP 0,1 4
+ ''Subject:''
+.IP 2,3
+ ''From:''
+.IP 4
+ ''Message-ID:'' & full ''References:'' line
+.IP 5
+ ''Message-ID:'' & last ''References:'' entry only
+.IP 6
+ ''Message-ID:'' entry only
+.IP 7
+ ''Lines:''
+.RE
 .TP
 .B default_goto_group
 .TP
@@ -1310,9 +1351,10 @@ The path that specifies the signature file to use when posting, following
 up to or replying to an article. If the path is a directory then the
 signature will be randomly generated from files that are in the specified
 directory. If the path starts with a ! the program the path points to will
-be executed to generate a signature. Tin will pass the name of the
-current newsgroup as argument to the program. --none will suppress any
-signature.
+be executed to generate a signature.
+.BR tin (1)
+will pass the name of the current newsgroup as argument to the
+program. --none will suppress any signature.
 Default is \fI${TIN_HOMEDIR-"$HOME"}/.Sig\fR.
 .TP
 .B default_subject_search
@@ -1340,25 +1382,26 @@ Maximum length of the names of newsgroups to be displayed so that more of
 the newsgroup description can be displayed. Default is 32.
 .TP
 .B hide_uue
-By default (OFF) raw uuencoded data is displayed.
-If ON, then sections of uuencoded data will be shown with a single tag line
+If set to 'No' then raw uuencoded data is displayed. If set to 'Yes'
+then sections of uuencoded data will be shown with a single tag line
 showing the size and filename (much the same as a MIME attachment).
-If set to ALL then any line that looks like uuencoded data will be folded
-into a tag line. This is useful when uuencoded data is split across
-more than one article but can also lead to false positives.
-This setting can also be toggled in the article viewer.
+If set to 'Hide all' then any line that looks like uuencoded data
+will be folded into a tag line. This is useful when uuencoded data is
+split across more than one article but can also lead to false
+positives. This setting can also be toggled in the article viewer.
+Default is 'No'.
 .TP
 .B inews_prog
 Path, name and options of external
-.BR inews (1)
-If you are reading via NNTP the default value is "--internal" (use built in
+.BR inews (1).
+If you are reading via NNTP the default value is "--internal" (use built-in
 NNTP inews), else it is "inews -h". The article is passed to
 \fBinews_prog\fP on STDIN via '< article'.
 .TP
 .B info_in_last_line
 If ON, show current group description or article subject in the last line
 (not in the pager and global menu) - \fBToggleInfoLastLine\fP ('\fBi\fP'
-toggles setting. This facility is useful as the full width of the screen is
+toggles setting). This facility is useful as the full width of the screen is
 available to display long subjects. Default is OFF.
 .TP
 .B inverse_okay
@@ -1372,18 +1415,26 @@ besides keeping the last failed posting in
 .TP
 .B kill_level
 This option controls the processing and display of articles that are
-killed. There are 3 options: 0 (default) is the 'traditional'
-behavior of
+killed. There are 3 options:
+.RS +.5i
+.IP 0 3
+\fBKill only unread arts\fP is the 'traditional' behavior of
 .BR tin (1).
 Only unread articles are killed once only by marking them read. As
 filtering only happens on unread articles with \fBkill_level\fP set
 to 0, \fBart_marked_killed\fP and \fBart_marked_read_selected\fP are
 only shown once. When you reenter the group the mark will be gone.
-Options 1 and 2 will process all articles in the group and therefore
-there is a processing overhead when using them. Option 1 will thread
-killed articles as normal but they will be marked with
-\fBart_marked_killed\fP. Option 2 simply does not display killed
-articles at all.
+.IP 1
+\fBKill all arts & show with K\fP will process all articles in the
+group and therefore there is a processing overhead when using this
+option. Killed articles are threaded as normal but they will be
+marked with \fBart_marked_killed\fP.
+.IP 2
+\fBKill all arts and never show\fP will process all articles in the
+group and therefore there is a processing overhead when using this
+option. Killed articles simply does not get displayed at all.
+.RE
+Default is 0 (\fBKill only unread arts\fP).
 .TP
 .B mail_8bit_header
 Allows 8bit characters unencoded in the header of mail message. Default is
@@ -1399,7 +1450,7 @@ signing.
 .TP
 .B mail_mime_encoding
 MIME encoding of the body in mail message, if necessary (8bit, base64,
-quoted-printable, 7bit) Default is 8bit and no encoding (or charset
+quoted-printable, 7bit). Default is 8bit and no encoding (or charset
 conversion) is performed (i.e., local charset is used as it is).
 .TP
 .B mail_quote_format
@@ -1433,11 +1484,11 @@ used to manually view any attachments. See also
 .B mm_charset
 Charset supported locally, which is also used for MIME header
 (charset parameter and charset name in header encoding) in mail and
-news posting. If \fBMIME_STRICT_CHARSET\fP is defined at the compile
+news postings. If \fBMIME_STRICT_CHARSET\fP is defined at the compile
 time, text in charset other than the value of this parameter is
 considered not displayable and represented as '?'. Otherwise, all
 character sets are regarded as compatible with the display. If it's
-not set, the value of the environment variable \fB$MM_CHARSET\fP is
+not set, the value of the environment variable $\fBMM_CHARSET\fP is
 used. US-ASCII or compile-time default is used in case neither of
 them is defined. If your system supports
 .BR iconv (3),
@@ -1460,7 +1511,7 @@ EUC-{CN,JP,KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2}, Big5, UTF-8
 Not all values might work on your system, see
 .BR iconv_open (3)
 for more details. If it's not set, the value of the environment variable
-\fB$MM_CHARSET\fP is used. US-ASCII or compile-time default is used in
+$\fBMM_CHARSET\fP is used. US-ASCII or compile-time default is used in
 case neither of them is defined.
 .TP
 .B mono_markdash
@@ -1508,7 +1559,7 @@ Not defining anything turns off this option.
 .B news_quote_format
 Format of quote line when posting/following up an article (%A=Address,
 %D=Date, %F=Fullname+Address, %G=Groupname, %M=Message-ID, %N=Fullname,
-%C=Firstname, %I=Initials). Default is "%F wrote:"
+%C=Firstname, %I=Initials). Default is "%F wrote:".
 .TP
 .B pgdn_goto_next
 If ON the Page Down keys will go to the next unread article when pressed at
@@ -1519,7 +1570,7 @@ If ON put cursor at first unread article in group otherwise at last article.
 Default is ON.
 .TP
 .B post_8bit_header
-Allows 8bit characters unencoded in the header of news article. Default is
+Allows 8bit characters unencoded in the header of a news article. Default is
 OFF. Only enacted if \fBpost_mime_encoding\fP is also set to 8bit. In a
 number of local hierarchies where 8bit characters are used, using unencoded
 (raw) 8bit characters in header is acceptable and sometimes even recommended
@@ -1586,7 +1637,7 @@ following up or replying to them. Any of the following options can be
 combined by adding all relevant values. Default is 5, which means that quote
 characters are compressed and empty lines are quoted.
 .RS +.5i
-.IP 0 3
+.IP 1 3
 \fBCompress quotes\fP Compress quote characters together when quoting
 multiple times (for example, '> > >' will be turned into '>>>'). This
 option is on by default.
@@ -1604,21 +1655,21 @@ A regular expression that will be applied when reading articles. All
 matching lines are shown in \fBcol_quote\fP. If \fBquote_regex\fP is blank,
 then
 .BR tin (1)
-uses a built in default.
+uses a built-in default.
 .TP
 .B quote_regex2
 A regular expression that will be applied when reading articles. All
 matching lines are shown in \fBcol_quote2\fP. If \fBquote_regex2\fP is
 blank, then
 .BR tin (1)
-uses a built in default.
+uses a built-in default.
 .TP
 .B quote_regex3
 A regular expression that will be applied when reading articles. All
 matching lines are shown in \fBcol_quote3\fP. If \fBquote_regex3\fP is blank,
 then
 .BR tin (1)
-uses a built in default.
+uses a built-in default.
 .TP
 .B recent_time
 If set to 0, this feature is deactivated, otherwise it means the number of
@@ -1654,19 +1705,21 @@ This setting supersedes show_last_line_prev_page=ON. Set to -2 to get
 half-page scrolling. This setting supersedes full_page_scroll=OFF.
 .TP
 .B show_author
-.in +.5i
-.ti -\w'\(em'u
-\(emNone (0) only the ''Subject:'' line will be displayed.
-.ti -\w'\(em'u
-\(emAddr (1) ''Subject:'' line & the address part of the ''From:'' line are
+Which information about the author should be shown. Default is 2, authors
+full name.
+.RS +.5i
+.IP 0 3
+\fBNone\fP, only the ''Subject:'' line will be displayed.
+.IP 1
+\fBAddress\fP, ''Subject:'' line & the address part of the ''From:'' line
+are displayed.
+.IP 2
+\fBFull Name\fP, ''Subject:'' line & the authors full name part of the
+\&''From:'' line are displayed (default).
+.IP 3
+\fBAddress and Name\fP, ''Subject:'' line & all of the ''From:'' line are
 displayed.
-.ti -\w'\(em'u
-\(emName (2) ''Subject:'' line & the authors full name part of the ''From:''
-line are displayed.
-.ti -\w'\(em'u
-\(emBoth (3) ''Subject:'' line & all of the ''From:'' line are displayed.
-.in -.5i
-Default is 2, authors full name.
+.RE
 .TP
 .B show_description
 If ON show a short group description text after newsgroup name at the group
@@ -1700,7 +1753,7 @@ If ON show only new/unread articles otherwise show all articles. Default is
 ON.
 .TP
 .B show_only_unread_groups
-If ON show only subscribed to groups that contain unread articles. Default
+If ON show only subscribed groups that contain unread articles. Default
 is OFF.
 .TP
 .B show_signatures
@@ -1717,37 +1770,49 @@ A regular expression that will be applied when reading articles. All
 matching words are shown in \fBcol_markslash\fP or \fBmono_markslash\fP. If
 \fBslashes_regex\fP is blank, then
 .BR tin (1)
-uses a built in default.
+uses a built-in default.
 .TP
 .B sort_article_type
-This specifies how articles should be sorted. The following sort
-types are allowed:
-.in +.5i
-.ti -\w'\(em'u
-\(emdon't sort articles (none=0).
-.ti -\w'\(em'u
-\(emsort articles by ''Subject:'' field (descending=1 & ascending=2).
-.ti -\w'\(em'u
-\(emsort articles by ''From:'' field (descending=3 & ascending=4).
-.ti -\w'\(em'u
-\(emsort articles by ''Date:'' field (descending=5 & ascending=6).
-.ti -\w'\(em'u
-\(emsort articles by filtering score (descending=7 & ascending=8).
-.ti -\w'\(em'u
-\(emsort articles by ''Lines:'' field (descending=9 & ascending=10).
-.in -.5i
-Sort by ascending Date (6) is the default.
+This specifies how articles should be sorted.Sort by ascending Date (6) is
+the default. The following sort types are allowed:
+.RS +.5i
+.IP 0 3
+\fBNothing\fP, don't sort articles.
+.IP 1
+\fBSubject: (descending)\fP, sort articles by ''Subject:'' field descending.
+.IP 2
+\fBSubject: (ascending)\fP, sort articles by ''Subject:'' field ascending.
+.IP 3
+\fBFrom: (descending)\fP, sort articles by ''From:'' field descending.
+.IP 4
+\fBFrom: (ascending)\fP, sort articles by ''From:'' field ascending.
+.IP 5
+\fBDate: (descending)\fP, sort articles by ''Date:'' field descending.
+.IP 6
+\fBDate: (ascending)\fP, sort articles by ''Date:'' field ascending
+(default).
+.IP 7
+\fBScore (descending)\fP, sort articles by filtering score descending.
+.IP 8
+\fBScore (ascending)\fP, sort articles by filtering score ascending.
+.IP 9
+\fBLines: (descending)\fP, sort articles by ''Lines:'' field descending.
+.IP 10
+\fBLines: (ascending)\fP, sort articles by ''Lines:'' field ascending.
+.RE
 .TP
 .B sort_threads_type
-This specifies how threads will be sorted. The following sort
-types are allowed:
-.in +.5i
-.ti -\w'\(em'u
-\(emdon't sort threads (none=0).
-.ti -\w'\(em'u
-\(emsort threads by filtering score (descending=1 & ascending=2).
-.in -.5i
-Sort by descending Score (1) is the default.
+This specifies how threads will be sorted. Sort by descending Score (1) is
+the default. The following sort types are allowed:
+.RS +.5i
+.IP 0 3
+\fBNothing\fP, don't sort threads.
+.IP 1
+\fBScore (descending)\fP, sort threads by filtering score descending
+(default).
+.IP 2
+\fBScore (ascending)\fP, sort threads by filtering score ascending.
+.RE
 .TP
 .B space_goto_next_unread
 SPACE normally acts as a Page Down key and has no effect at the end of an
@@ -1765,7 +1830,7 @@ A regular expression that will be applied when reading articles. All
 matching words are shown in \fBcol_markstar\fP or \fBmono_markstar\fP. If
 \fBstars_regex\fP is blank, then
 .BR tin (1)
-uses a built in default.
+uses a built-in default.
 .TP
 .B start_editor_offset
 Set ON if the editor used for posting, follow-ups and bug reports has the
@@ -1793,7 +1858,7 @@ A regular expression that will be applied when reading articles. All
 matching words are shown in \fBcol_markstroke\fP or \fBmono_markstroke\fP.
 If \fBstrokes_regex\fP is blank, then
 .BR tin (1)
-uses a built in default.
+uses a built-in default.
 .TP
 .B tab_goto_next_unread
 If enabled pressing \fBPageNextUnread\fP ('\fB<TAB>\fP') at the article viewer
@@ -1843,7 +1908,7 @@ A regular expression that will be applied when reading articles. All
 matching words are shown in \fBcol_markdash\fP or \fBmono_markdash\fP. If
 \fBundescores_regex\fP is blank, then
 .BR tin (1)
-uses a built in default.
+uses a built-in default.
 .TP
 .B unlink_article
 If ON remove \fI${TIN_HOMEDIR-"$HOME"}/.article\fR after posting. Default is
@@ -1865,7 +1930,7 @@ Use scroll keys on keypad. Default is OFF.
 .B use_mailreader_i
 Interactive mailreader: if ON mailreader will be invoked earlier for reply
 so you can use more of its features (e.g. MIME, pgp, ...) this option has to
-suit \fBdefault_mailer_format\fP
+suit \fBdefault_mailer_format\fP.
 .TP
 .B use_mouse
 Allows the mouse key support in a
@@ -1945,25 +2010,25 @@ set.
 .RS
 Yet another global configuration file with "\fIvariable\fR=\fIvalue\fR"
 pairs. This one is for the more general options which usually can't be
-controlled via \fI${TIN_LIBDIR-"/news/etc"}/tinrc\fR and/or
+controlled via \fI${TIN_LIBDIR-NEWSLIBDIR}/tinrc\fR and/or
 \fI${TIN_HOMEDIR-"$HOME"}/.tin/tinrc\fR like resetting (to override the
-build in default) the \fInewslibdir\fR.
+built-in default) the \fInewslibdir\fR.
 .TP
 .B domainname
 Sets a global domain name used in From lines
 .TP
 .B organization
-Defines the name of your organization. \fB$ORGANIZATION\fP overrides any
+Defines the name of your organization. $\fBORGANIZATION\fP overrides any
 specified value.
 .TP
 .B newslibdir
 Defines the default place for some configuration files, common values are
 \fI/usr/lib/news\fR, \fI/var/lib/news\fR, \fI/usr/local/lib/news\fR or
-\fI/news/db\fR. \fB$TIN_LIBDIR\fP overrides any specified value.
+\fI/news/db\fR. $\fBTIN_LIBDIR\fP overrides any specified value.
 .TP
 .B bugaddress
 Defines the email address to which users can send bug reports using a
-built in function. The default points to a developers mailing list located
+built-in function. The default points to a developers mailing list located
 at tin.org. You might want to change this address to one of your local
 administration if you want to deal with your lusers problems on your own.
 .TP
@@ -1973,7 +2038,7 @@ Defines the directory containing of the
 executable
 .TP
 .B mm_charset
-Default charset to be used in MIME's Content-Type header. \fB$MM_CHARSET\fP
+Default charset to be used in MIME's Content-Type header. $\fBMM_CHARSET\fP
 overrides any specified value.
 .TP
 .B post_mime_encoding
@@ -1993,14 +2058,14 @@ Don't generate a ''Sender:''-header. This has no effect if
 .B spooldir
 Base of your newsspool (Bnews, Cnews and INN traditional spool style), common
 values are \fI/var/spool/news\fR, \fI/usr/spool/news\fR, \fI/news/spool\fR.
-\fB$TIN_SPOOLDIR\fP overrides any specified value.
+$\fBTIN_SPOOLDIR\fP overrides any specified value.
 .TP
 .B overviewdir
 Base of your NOV database
 .BR newsoverview (5)
 (tradspool style; might be the same dir as
 \fIspooldir\fR), common values are \fI/var/spool/overview\fR,
-\fI/usr/spool/overview\fR, \fI/news/overview\fR. \fB$TIN_NOVROOTDIR\fP
+\fI/usr/spool/overview\fR, \fI/news/overview\fR. $\fBTIN_NOVROOTDIR\fP
 overrides any specified value.
 .TP
 .B overviewfile
@@ -2010,7 +2075,7 @@ Name of a single overview file, common values are \fI.overview\fR,
 .B activefile
 Full pathname of your newssystem's active file; usually the active file
 resides in \fInewslibdir\fR and is named \fIactive\fR, so you only have
-to change this setting if your configuration differs. \fB$TIN_ACTIVEFILE\fP
+to change this setting if your configuration differs. $\fBTIN_ACTIVEFILE\fP
 overrides any specified value.
 .TP
 .B activetimesfile
@@ -2033,8 +2098,8 @@ setting if your configuration differs.
 .IR /usr/local/share/locale/${LC_MESSAGES}/LC_MESSAGES/tin.mo
 .sp
 .RS
-translation into language specified in \fB$LC_ALL\fP, \fB$LC_MESSAGES\fP or
-\fB$LANG\fP
+translation into language specified in $\fBLC_ALL\fP, $\fBLC_MESSAGES\fP or
+$\fBLANG\fP
 .RE
 .PP
 
@@ -2042,7 +2107,7 @@ translation into language specified in \fB$LC_ALL\fP, \fB$LC_MESSAGES\fP or
 .\" as with inn >= 2.2.x getting more and more popular
 .\" we should think about checking for the new Paths
 .\" (described shown below).
-.IR ${TIN_LIBDIR-"/news/db"}"/"${TIN_ACTIVEFILE-active}
+.IR ${TIN_LIBDIR-NEWSLIBDIR}"/"${TIN_ACTIVEFILE-active}
 .sp
 .RS
 This file lists the newsgroups that the local site receives. Each newsgroup
@@ -2102,7 +2167,7 @@ uses the LIST (\fBRFC977\fP) command instead.
 .RE
 .PP
 
-.IR ${TIN_LIBDIR-"/news/db"}/active.times
+.IR ${TIN_LIBDIR-NEWSLIBDIR}/active.times
 .sp
 .RS
 This file provides a chronological record of when newsgroups are created. It
@@ -2129,7 +2194,7 @@ uses the NEWGROUPS (\fBRFC977\fP) command instead.
 .RE
 .PP
 
-.IR ${TIN_LIBDIR-"/news/db"}/newsgroups
+.IR ${TIN_LIBDIR-NEWSLIBDIR}/newsgroups
 .sp
 .RS
 This file provides short descriptions of each newsgroup. It is normally
@@ -2152,7 +2217,7 @@ uses the LIST NEWSGROUPS (\fBRFC2980\fP) command instead.
 .RE
 .PP
 
-.IR ${TIN_LIBDIR-"/news/db"}/organization
+.IR ${TIN_LIBDIR-NEWSLIBDIR}/organization
 .sp
 .RS
 This file specifies might hold a default organization to be used
@@ -2161,7 +2226,7 @@ if set.
 .RE
 .PP
 
-.IR ${TIN_LIBDIR-"/news/db"}/overview.fmt
+.IR ${TIN_LIBDIR-NEWSLIBDIR}/overview.fmt
 .\" is the Path correct? or is it /news/etc/overview.fmt
 .sp
 .RS
@@ -2181,7 +2246,7 @@ uses the LIST OVERVIEW.FMT (\fBRFC2980\fP) command instead.
 .RE
 .PP
 
-.IR ${TIN_LIBDIR-"/news/db"}/subscriptions
+.IR ${TIN_LIBDIR-NEWSLIBDIR}/subscriptions
 .\" is the Path correct? or is it /news/etc/subscriptions
 .sp
 .RS

@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-17
+ *  Updated   : 2003-06-18
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -167,6 +167,7 @@ static void msg_init_headers(void);
 static void post_postponed_article(int ask, const char *subject, const char *newsgroups);
 static void postpone_article(const char *the_article);
 static void setup_check_article_screen(int *init);
+static void strip_double_ngs(char *ngs_list);
 static void update_active_after_posting(char *newsgroups);
 static void update_posted_info_file(const char *group, int action, const char *subj, const char *a_message_id);
 #ifdef FORGERY
@@ -781,7 +782,8 @@ check_article_to_be_posted(
 #ifdef CHARSET_CONVERSION
 		/* are all characters in article contained in network_charset? */
 		if (strcmp(tinrc.mm_local_charset, txt_mime_charsets[mmnwcharset]) && !charset_conversion_fails) { /* local_charset != network_charset */
-			cp = my_strdup(line);
+			cp = my_malloc(strlen(line) * 4);
+			strcpy(cp, line);
 			charset_conversion_fails = !buffer_to_network(cp, mmnwcharset);
 			free(cp);
 		}
@@ -1089,7 +1091,8 @@ check_article_to_be_posted(
 #ifdef CHARSET_CONVERSION
 		/* are all characters in article contained in network_charset? */
 		if (strcmp(tinrc.mm_local_charset, txt_mime_charsets[mmnwcharset]) && !charset_conversion_fails) { /* local_charset != network_charset */
-			cp = my_strdup(line);
+			cp = my_malloc(strlen(line) * 4);
+			strcpy(cp, line);
 			charset_conversion_fails = !buffer_to_network(cp, mmnwcharset);
 			free(cp);
 		}
@@ -1111,6 +1114,35 @@ check_article_to_be_posted(
 			got_long_line = TRUE;
 			warnings++;
 		}
+#if 0 /* disabled till 1.7.x */
+/*
+ * TODO: cleanup, test me, move to the right location (after testing the
+ *       whole body for 8bit chars), adjust and translate warings, ...
+ */
+		if (strlen(line) > 998 && strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_base64)) {
+			setup_check_article_screen(&init);
+#	ifdef MIME_BREAK_LONG_LINES
+			if (contains_8bit) { /* we only know if the body contained 8bits till this line, that is not 100% correct */
+				if (strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_quoted_printable)) {
+					my_fprintf(stderr, "Line %d is longer than 998 octets and should be folded, but\n", cnt);
+					my_fprintf(stderr, "encoding is neither set to %s nor to %s\n", txt_quoted_printable, txt_base64);
+				}
+			} else
+#	endif /* MIME_BREAK_LONG_LINES */
+			{
+				if (!strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_quoted_printable)) {
+					my_fprintf(stderr, "Line %d is longer than 998 octets, and should be folded, but\n", cnt);
+					my_fprintf(stderr, "encoding is set to %s without enabling MIME_BREAK_LONG_LINES or\n", txt_quoted_printable);
+					my_fprintf(stderr, "posting doesn't contain any 8bit chars and thus folding won't happen\n");
+				} else {
+					my_fprintf(stderr, "Line %d is longer than 998 octets, and should be folded, but\n", cnt);
+					my_fprintf(stderr, "encoding is not set to %s\n", txt_base64);
+				}
+			}
+		my_fflush(stderr);
+		warnings++;
+		}
+#endif /* 0 */
 	}
 
 	if (saw_sig_dashes > 1)
@@ -1443,8 +1475,13 @@ post_article_loop:
 
 			case iKeyQuit:
 			case iKeyAbort:
-				if (tinrc.unlink_article)
+				if (tinrc.unlink_article) {
+#if 0 /* usefull */
+					if (tinrc.keep_dead_articles)
+						 append_file(dead_articles, dead_article);
+#endif /* 0 */
 					unlink(article);
+				}
 				clear_message();
 				return ret_code;
 
@@ -2939,16 +2976,11 @@ mail_bug_report(
 #	ifdef _AIX
 	fprintf(fp, "BOX1 : %s %s.%s", system_info.sysname, system_info.version, system_info.release);
 #	else
-#		ifdef __mips__
-	/*
-	 * SEIUX (__mips__ only) needs special handling but hasn't any usefull
-	 * preprocessor macros
-	 */
-	if (!strcmp(system_info.version, "SEIUX"))
-		fprintf(fp, "BOX1 : %s %s", system_info.version, system_info.release);
-	else
-#		endif /* __mips__ */
+#		ifdef SEIUX
+	fprintf(fp, "BOX1 : %s %s", system_info.version, system_info.release);
+#		else
 	fprintf(fp, "BOX1 : %s %s (%s)", system_info.sysname, system_info.release, system_info.machine);
+#		endif /* SEIUX */
 #	endif /* _AIX */
 #else
 	fprintf(fp, "BOX1 : Please enter the following information: Machine+OS");
@@ -2982,7 +3014,7 @@ mail_bug_report(
 	fprintf(fp, "CFG2 : nntp=%s, nntp_only=%s, nntp_xover=%s\n",
 		bool_unparse(is_nntp),
 		bool_unparse(is_nntp_only),
-		bool_unparse(xover_supported));
+		bool_unparse(xover_cmd != NULL));
 	fprintf(fp, "CFG3 : debug=%d, threading=%d\n", debug, tinrc.thread_articles);
 	fprintf(fp, "CFG4 : domain=[%s]\n", BlankIfNull(domain));
 	start_line_offset += 6;
@@ -3330,7 +3362,6 @@ cancel_article(
 	 * remove duplicates from Newsgroups header
 	 */
 	strip_double_ngs(note_h.newsgroups);
-
 	msg_add_header("Newsgroups", note_h.newsgroups);
 	if (tinrc.prompt_followupto)
 		msg_add_header("Followup-To", "");
@@ -3636,6 +3667,7 @@ repost_article(
 		char buff[LEN];
 		char keyedit[MAXKEYLEN], keypost[MAXKEYLEN];
 		char keypostpone[MAXKEYLEN], keyquit[MAXKEYLEN];
+		char keymenu[MAXKEYLEN];
 #ifdef HAVE_ISPELL
 		char keyispell[MAXKEYLEN];
 #endif /* HAVE_ISPELL */
@@ -3652,6 +3684,7 @@ repost_article(
 #ifdef HAVE_PGP_GPG
 						printascii(keypgp, map_to_local(iKeyPostPGP, &menukeymap.post_post)),
 #endif /* HAVE_PGP_GPG */
+						printascii(keymenu, map_to_local(iKeyOptionMenu, &menukeymap.post_post)),
 						printascii(keypost, map_to_local(iKeyPostPost3, &menukeymap.post_post)),
 						printascii(keypostpone, map_to_local(iKeyPostPostpone, &menukeymap.post_post)));
 
@@ -3799,20 +3832,15 @@ checknadd_headers(
 						PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME,
 						system_info.sysname, system_info.version, system_info.release);
 #	else
-#		ifdef __mips__
-					/*
-					 * SEIUX (__mips__ only) needs special handling but hasn't any usefull
-					 * preprocessor macros
-					 */
-					if (!strcmp(system_info.version, "SEIUX"))
+#		ifdef SEIUX
 						fprintf(fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s) (%s/%s)\n",
 							PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME,
 							system_info.version, system_info.release);
-					else
-#		endif /* __mips__ */
+#		else
 					fprintf(fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s) (%s/%s (%s))\n",
 						PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME,
 						system_info.sysname, system_info.release, system_info.machine);
+#		endif /* SEIUX */
 #	endif /* _AIX */
 #else
 					fprintf(fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s)\n",
@@ -3826,25 +3854,22 @@ checknadd_headers(
 					strip_double_ngs(ptr);
 					strcpy(newsgroups, ptr);
 					sprintf(line, "Newsgroups: %s\n", newsgroups);
-				}
-
-				if ((ptr = parse_header(line, "Followup-To", FALSE, FALSE))) {
-					strip_double_ngs(ptr);
-					/*
-					 * Only write followup header if not blank, no newsgroups header or
-					 * followups != newsgroups
-					 */
-					if (*ptr && (/* (*newsgroups == '\0') ||*/ (strcasecmp(newsgroups, ptr))))
-						sprintf(line, "Followup-To: %s\n", ptr);
-					else
-						*line = '\0';
+				} else {
+					if ((ptr = parse_header(line, "Followup-To", FALSE, FALSE))) {
+						strip_double_ngs(ptr);
+						/*
+						 * Only write followup header if not blank or followups != newsgroups
+						 */
+						if (*ptr && strcasecmp(newsgroups, ptr))
+							sprintf(line, "Followup-To: %s\n", ptr);
+						else
+							*line = '\0';
+					}
 				}
 			}
 		}
-
 		fputs(line, fp_out);
 	}
-
 	fclose(fp_out);
 	fclose(fp_in);
 	rename_file(outfile, infile);
@@ -4690,3 +4715,74 @@ radix32(
 	return ++ptr;
 }
 #endif /* EVIL_INSIDE */
+
+
+/*
+ * Strip duplicate newsgroups from within a given list of comma separated
+ * groups
+ * 14-Jun-'96 Sven Paulus <sven@oops.sub.de>
+ */
+static void
+strip_double_ngs(
+	char *ngs_list)
+{
+	char *ptr;			/* start of next (outer) newsgroup */
+	char *ptr2;			/* temporary pointer */
+	char ngroup1[HEADER_LEN];	/* outer newsgroup to compare */
+	char ngroup2[HEADER_LEN];	/* inner newsgroup to compare */
+	char cmplist[HEADER_LEN];	/* last loops output */
+	char newlist[HEADER_LEN];	/* the newly generated list without */
+										/* any duplicates of the first nwsg */
+	int ncnt1;			/* counter for the first newsgroup */
+	int ncnt2;			/* counter for the second newsgroup */
+	t_bool over1;		/* TRUE when the outer loop is over */
+	t_bool over2;		/* TRUE when the inner loop is over */
+
+	/* shortcut, check if there is only 1 group */
+	if (strchr(ngs_list, ',') != NULL) {
+		over1 = FALSE;
+		ncnt1 = 0;
+		strcpy(newlist, ngs_list);		/* make a "working copy" */
+		ptr = newlist;						/* the next outer newsg. is the 1st */
+
+		while (!over1) {
+			ncnt1++;							/* inc. outer counter */
+			strcpy(cmplist, newlist);	/* duplicate groups for inner loop */
+			ptr2 = strchr(ptr, ',');	/* search "," ... */
+			if (ptr2 != NULL) {	/* if found ... */
+				*ptr2 = '\0';
+				strcpy(ngroup1, ptr);	/* chop off first outer newsgroup */
+				ptr = ptr2 + 1;			/* pointer points to next newsgr. */
+			} else {							/* ... if not: last group */
+				over1 = TRUE;				/* wow, everything is done after . */
+				strcpy(ngroup1, ptr);	/* ... this last outer newsgroup */
+			}
+
+			over2 = FALSE;
+			ncnt2 = 0;
+
+			/*
+			 * now compare with each inner newsgroup on the list,
+			 * which is behind the momentary outer newsgroup
+			 * if it is different from the outer newsgroup, append
+			 * to list, strip double-commas
+			 */
+			while (!over2) {
+				ncnt2++;
+				strcpy(ngroup2, cmplist);
+				ptr2 = strchr(ngroup2, ',');
+				if (ptr2 != NULL) {
+					strcpy(cmplist, ptr2 + 1);
+					*ptr2 = '\0';
+				} else
+					over2 = TRUE;
+
+				if ((ncnt2 > ncnt1) && (strcasecmp(ngroup1, ngroup2)) && (strlen(ngroup2) != 0)) {
+					strcat(newlist, ",");
+					strcat(newlist, ngroup2);
+				}
+			}
+		}
+		strcpy(ngs_list, newlist);	/* move string to its real location */
+	}
+}

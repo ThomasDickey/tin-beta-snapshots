@@ -3,7 +3,7 @@
  *  Module    : xface.c
  *  Author    : Joshua Crawford & Drazen Kacar
  *  Created   : 2003-04-27
- *  Updated   : 2003-05-07
+ *  Updated   : 2003-06-27
  *  Notes     :
  *
  * Copyright (c) Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
@@ -139,9 +139,20 @@ slrnface_start(
 			break;
 
 		case 0:
+			/*
+			 * TODO: allow positioning, coloring, ...
+			 *       execlp("slrnface", "slrnface",
+			 *              "-xOffsetChar", tinrc.xfacex,
+			 *              "-yOffsetChar", tinrc.xfacey,
+			 *              "-ink", tinrc.xfacefg,
+			 *              "-paper", tinrc.xfacebg,
+			 *              fifo, (char *) 0);
+			 */
 			execlp("slrnface", "slrnface", fifo, (char *) 0);
 			/* This is child, exit on error. */
 			giveup();
+			/* NOTREACHED */
+			break;
 
 		default:
 			do {

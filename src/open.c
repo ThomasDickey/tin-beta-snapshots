@@ -3,7 +3,7 @@
  *  Module    : open.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-15
+ *  Updated   : 2003-06-29
  *  Notes     : Routines to make reading news locally (ie. /var/spool/news)
  *              or via NNTP transparent
  *
@@ -52,7 +52,8 @@
  */
 static int base_comp(t_comptype p1, t_comptype p2);
 #if 0 /* currently unused */
-	static FILE * open_xhdr_fp(char *header, long min, long max);
+	static FILE *open_xhdr_fp(char *header, long min, long max);
+	static t_bool stat_article(long art, const char *group_path);
 #endif /* 0 */
 
 
@@ -64,12 +65,11 @@ long head_next;
 	t_bool can_post = TRUE;
 #endif /* NO_POSTING */
 
-char *nntp_server = (char *) 0;
+char *nntp_server = NULL;
+char *xover_cmd = NULL;
 #ifdef NNTP_ABLE
-	static char txt_xover_string[] = "XOVER";
-	static char *txt_xover = txt_xover_string;
+	static char txt_xover_buff[] = "XOVER";
 #endif /* NNTP_ABLE */
-
 
 /*
  * Open a connection to the NNTP server. Authenticate if necessary or
@@ -85,8 +85,9 @@ nntp_open(
 #ifdef NNTP_ABLE
 	char *linep;
 	char line[NNTP_STRLEN];
-	int ret;
+	int i, ret;
 	t_bool sec = FALSE;
+	/* It appears that is_reconnect guards code that should be run only once */
 	static t_bool is_reconnect = FALSE;
 
 	if (!read_news_via_nntp)
@@ -95,10 +96,6 @@ nntp_open(
 #	ifdef DEBUG
 	debug_nntp("nntp_open", "BEGIN");
 #	endif /* DEBUG */
-
-	/* do this only once at start-up */
-	if (!is_reconnect)
-		nntp_server = getserverbyfile(NNTP_SERVER_FILE);
 
 	if (nntp_server == NULL) {
 		error_message(_(txt_cannot_get_nntp_server_name));
@@ -324,25 +321,31 @@ nntp_open(
 	}
 
 	/*
-	 * Check if NNTP supports XOVER or OVER (successor of XOVER as of latest
-	 * NNTP Draft (Jan 2002) command; ie, we _don't_ get an ERR_COMMAND
+	 * Check if NNTP supports XOVER or OVER command (successor of XOVER as of
+	 * latest NNTP Draft (Jan 2002); ie, we _don't_ get an ERR_COMMAND
+	 * Could use (i=1;i>=0;i--) to give OVER higher priority than XOVER
 	 *
 	 * TODO: Don't try (X)OVER if listed in LIST EXTENSIONS.
 	 */
+	for (i = 0; i < 2; i++) {
+		xover_cmd = &txt_xover_buff[i];
+		if (!nntp_command(xover_cmd, ERR_COMMAND, NULL, 0))
+			break;
+	}
 
-	if (!nntp_command(txt_xover_string, ERR_COMMAND, NULL, 0)) {
-		xover_supported = TRUE;
-		txt_xover = txt_xover_string;
-		/* TODO: issue warning if old index files found? */
-	} else {
-		if (!nntp_command(&txt_xover_string[1], ERR_COMMAND, NULL, 0)) {
-			xover_supported = TRUE;
-			txt_xover = &txt_xover_string[1];
-			/* TODO: issue warning if old index files found? */
-		} else {
-			if (!is_reconnect && !batch_mode)
-				wait_message(2, _(txt_no_xover_support));
+	if (i == 2)	{	/* ie XOVER and OVER gave ERR_COMMAND */
+		xover_cmd = NULL;
+		if (!is_reconnect && !batch_mode) {
+			wait_message(2, _(txt_no_xover_support));
+
+			if (tinrc.cache_overview_files)
+				wait_message(2, _(txt_caching_on));
+			else
+				wait_message(2, _(txt_caching_off));
 		}
+	} else {
+		/* TODO: issue warning if old index files found? */
+		/*		 in index_newsdir ? */
 	}
 
 #	if 0 /* TODO: */
@@ -569,7 +572,7 @@ open_overview_fmt_fp(
 
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && !read_saved_news) {
-		if (!xover_supported)
+		if (!xover_cmd)
 			return (FILE *) 0;
 
 		sprintf(line, "LIST %s", OVERVIEW_FMT);
@@ -704,72 +707,6 @@ open_newsgroups_fp(
 #endif /* NNTP_ABLE */
 		return fopen(newsgroups_file, "r");
 }
-
-
-/*
- * Open a group NOV/XOVER file
- */
-FILE *
-open_xover_fp(
-	struct t_group *group,
-	const char *mode,
-	long min,
-	long max)
-{
-#ifdef NNTP_ABLE
-	if (read_news_via_nntp && xover_supported && *mode == 'r' && group->type == GROUP_TYPE_NEWS) {
-		char line[NNTP_STRLEN];
-
-		sprintf(line, "%s %ld-%ld", txt_xover, min, max);
-		return (nntp_command(line, OK_XOVER, NULL, 0));
-	} else
-#endif /* NNTP_ABLE */
-	{
-		char *nov_file;
-
-		nov_file = find_nov_file(group, (*mode == 'r' ? R_OK : W_OK));
-#ifdef DEBUG
-		if (debug)
-			error_message("READ file=[%s]", nov_file);
-#endif /* DEBUG */
-		if (nov_file != NULL)
-			return fopen(nov_file, mode);
-
-		return (FILE *) 0;
-	}
-}
-
-
-#if 0
-/*
- * Stat a mail/news article to see if it still exists
- */
-t_bool
-stat_article(
-	long art,
-	const char *group_path)
-{
-	char buf[NNTP_STRLEN];
-	struct t_group currgrp;
-
-	currgrp = CURR_GROUP;
-
-#	ifdef NNTP_ABLE
-	if (read_news_via_nntp && currgrp.type == GROUP_TYPE_NEWS) {
-		sprintf(buf, "STAT %ld", art);
-		return (nntp_command(buf, OK_NOTEXT, NULL, 0) != NULL);
-	} else
-#	endif /* NNTP_ABLE */
-	{
-		struct stat sb;
-
-		joinpath(buf, currgrp.spooldir, group_path);
-		sprintf(&buf[strlen(buf)], "/%ld", art);
-
-		return (stat(buf, &sb) != -1);
-	}
-}
-#endif /* 0 */
 
 
 /*
@@ -925,7 +862,7 @@ setup_hard_base(
 			char *ptr;
 
 #	ifdef DEBUG
-			debug_nntp("setup_base", buf);
+			debug_nntp("setup_hard_base", buf);
 #	endif /* DEBUG */
 
 			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
@@ -1137,6 +1074,38 @@ group_get_art_info(
 
 	return 0;
 }
+
+
+#if 0
+/*
+ * Stat a mail/news article to see if it still exists
+ */
+static t_bool
+stat_article(
+	long art,
+	const char *group_path)
+{
+	char buf[NNTP_STRLEN];
+	struct t_group currgrp;
+
+	currgrp = CURR_GROUP;
+
+#	ifdef NNTP_ABLE
+	if (read_news_via_nntp && currgrp.type == GROUP_TYPE_NEWS) {
+		sprintf(buf, "STAT %ld", art);
+		return (nntp_command(buf, OK_NOTEXT, NULL, 0) != NULL);
+	} else
+#	endif /* NNTP_ABLE */
+	{
+		struct stat sb;
+
+		joinpath(buf, currgrp.spooldir, group_path);
+		sprintf(&buf[strlen(buf)], "/%ld", art);
+
+		return (stat(buf, &sb) != -1);
+	}
+}
+#endif /* 0 */
 
 
 /* This will come in useful for filtering on non-overview hdr fields */

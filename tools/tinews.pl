@@ -39,7 +39,7 @@
 #       - check for ~/.newsauth and use username/password if found
 #
 # version Number
-my $version = "1.0.9";
+my $version = "1.1.0";
 
 # TODO: put into a "my %config('NNTPServer' => 'news', ... );" array
 my $NNTPServer	= 'news';		# your NNTP servers name
@@ -500,7 +500,7 @@ tinews.pl - Post and sign an article via NNTP
 
 =head1 SYNOPSIS
 
-B<tinews.pl> < I<input>
+B<tinews.pl> E<lt> I<input>
 
 =head1 DESCRIPTION
 
@@ -521,11 +521,11 @@ The following exit values are returned:
 
 =over 4
 
-=item 0
+=item S< 0> 
 
 Successful completion.
 
-=item >0
+=item S<!=0>
 
 An error occurred.
 

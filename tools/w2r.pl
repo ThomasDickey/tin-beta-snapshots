@@ -18,7 +18,7 @@
 require 5.004;
 
 # version Number
-# $VERSION = "0.2.5";
+# $VERSION = "0.2.6";
 
 while (defined($line = <>)) {
 	chomp $line;
@@ -122,7 +122,7 @@ w2r.pl - Convert tin wildmat filters to tin regexp filters
 
 =head1 SYNOPSIS
 
-B<w2r.pl> < I<input> [> I<output>]
+B<w2r.pl> E<lt> I<input> [E<gt> I<output>]
 
 =head1 DESCRIPTION
 

@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2003-05-15
+ *  Updated   : 2003-06-29
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -105,16 +105,25 @@ char *
 getserverbyfile(
 	const char *file)
 {
+	static char buf[256];
 #ifdef NNTP_ABLE
 	FILE *fp;
 	char *cp;
-	static char buf[256];
 #	if !defined(HAVE_SETENV) && defined(HAVE_PUTENV)
 	char tmpbuf[256];
 	char *new_env;
 	static char *old_env = NULL;
 #	endif /* !HAVE_SETENV && HAVE_PUTENV */
-
+#endif
+	if (!read_news_via_nntp) {
+		STRCPY(buf, "local");	/* what if a server is named "local"? */
+		return buf;
+	}
+	if (read_saved_news) {
+		STRCPY(buf, "reading saved news");
+		return buf;
+	}
+#ifdef NNTP_ABLE
 	if (cmdline_nntpserver[0] != '\0') {
 		get_nntpserver(buf, cmdline_nntpserver);
 #	ifdef HAVE_SETENV

@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-15
+ *  Updated   : 2003-06-29
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -444,6 +444,13 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	ifndef NNTP_INEWS
 #		define NNTP_INEWS	1
 #	endif /* !NNTP_INEWS */
+#else
+#	ifdef XHDR_XREF
+#		undef XHDR_XREF
+#	endif /* XHDR_XREF */
+#	ifdef BROKEN_LISTGROUP
+#		undef BROKEN_LISTGROUP
+#	endif /* BROKEN_LISTGROUP */
 #endif /* NNTP_ABLE || NNTP_ONLY */
 
 #define FAKE_NNTP_FP		(FILE *) 9999
@@ -682,6 +689,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define ACTIVE_TIMES_FILE	"active.times"
 #define ATTRIBUTES_FILE	"attributes"
 #define CONFIG_FILE	"tinrc"
+#define SERVERCONFIG_FILE	"serverrc"
 #define DEFAULT_MAILDIR	"Mail"
 #define DEFAULT_SAVEDIR	"News"
 #define DEFAULT_URL_HANDLER "url_handler.sh"
@@ -908,7 +916,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #			endif /* _POSIX_NAME_MAX */
 #		endif /* NAME_MAX */
 #	else
-#  	define NAME_LEN	14
+#		define NAME_LEN	14
 #	endif /* HAVE_LONG_FILE_NAMES */
 #	define LEN	1024
 #endif /* M_UNIX */
@@ -1871,6 +1879,9 @@ typedef struct {
 		typedef char *t_comptype;
 #	endif /* HAVE_COMPTYPE_CHAR */
 #endif /* HAVE_COMPTYPE_VOID */
+
+/* Define a matching function pointer type */
+typedef int (*t_compfunc)(t_comptype, t_comptype);
 
 #define _CDECL
 

@@ -1,0 +1,31 @@
+Regressions used to test NOV caching:
+
+All the following with OVER configured on the NNTP server (where used)
+and a system wide local .overview type file
+
+caching = OFF, read local spool        => should use system wide nov file
+                                          should not read or write private cache
+
+caching = OFF, read via NNTP           => should read via OVER only
+                                          should not read or write private cache
+
+caching = ON, read local spool         => should use system wide nov file
+                                          should not read or write private cache
+caching = ON, read via NNTP
+        private cache not present      => OVER info used to create private cache
+        private cache is present       => private cache read and used
+        partial private cache(*)       => private cache read and used, completed
+                                          using OVER and written back
+
+The following with local .overview nov files NOT present...
+caching = OFF, read local spool        => no cache read or written
+
+caching = ON, read local spool
+        private cache not present      => private cache created as best as
+                                          possible from headers
+        private cache is present       => private cache read and used
+        partial private cache          => private cache updated with missing
+                                          header info
+
+(*) partial = end missing - There is certainly no way at present for 'holes'
+    to be filled

@@ -3,7 +3,7 @@
  *  Module    : version.c
  *  Author    : U. Janssen
  *  Created   : 2003-05-11
- *  Updated   :
+ *  Updated   : 2003-06-27
  *  Notes     :
  *
  * Copyright (c) 2003 Urs Janssen <urs@tin.org>
@@ -107,6 +107,8 @@ upgrade_prompt_quit(
 		case RC_ERROR: /* can't parse internal version string, should not happen */
 			error_message(txt_warn_unrecognized_version);
 			giveup();
+			/* NOTREACHED */
+			break;
 
 		default:	/* should no happen */
 			return;

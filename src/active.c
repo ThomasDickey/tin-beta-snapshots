@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2003-04-22
+ *  Updated   : 2003-06-29
  *  Notes     :
  *
  * Copyright (c) 1992-2003 Iain Lea <iain@bricbrac.de>
@@ -62,7 +62,6 @@ static time_t active_timestamp;	/* time active file read (local) */
 /*
  * Local prototypes
  */
-static int find_newnews_index(char *cur_newnews_host);
 static void active_add(struct t_group *ptr, long count, long max, long min, const char *moderated);
 static void append_group_line(char *active_file, char *group_path, long art_max, long art_min, char *base_dir);
 static void check_for_any_new_groups(void);
@@ -609,7 +608,6 @@ check_for_any_new_groups(
 	char *autosubscribe, *autounsubscribe;
 	char *ptr, *line, buf[NNTP_STRLEN];
 	char old_newnews_host[PATH_LEN];
-	char new_newnews_host[PATH_LEN];
 	int newnews_index;
 	time_t old_newnews_time;
 	time_t new_newnews_time;
@@ -618,16 +616,15 @@ check_for_any_new_groups(
 		wait_message(0, _(txt_checking_new_groups));
 
 	(void) time(&new_newnews_time);
-	strcpy(new_newnews_host, (read_news_via_nntp ? nntp_server : "local")); /* What if nntp server called local? */
 
 	/*
 	 * find out if we have read news from here before otherwise -1
 	 */
-	if ((newnews_index = find_newnews_index(new_newnews_host)) >= 0) {
-		strcpy(old_newnews_host, newnews[newnews_index].host);
+	if ((newnews_index = find_newnews_index(nntp_server)) >= 0) {
+		STRCPY(old_newnews_host, newnews[newnews_index].host);
 		old_newnews_time = newnews[newnews_index].time;
 	} else {
-		strcpy(old_newnews_host, "UNKNOWN");
+		STRCPY(old_newnews_host, "UNKNOWN");
 		old_newnews_time = (time_t) 0;
 	}
 
@@ -673,7 +670,7 @@ check_for_any_new_groups(
 	if (newnews_index >= 0)
 		newnews[newnews_index].time = new_newnews_time;
 	else {
-		sprintf(buf, "%s %lu", new_newnews_host, (unsigned long int) new_newnews_time);
+		sprintf(buf, "%s %lu", nntp_server, (unsigned long int) new_newnews_time);
 		load_newnews_info(buf);
 	}
 }
@@ -860,9 +857,9 @@ load_newnews_info(
 /*
  * Return the index of cur_newnews_host in newnews[] or -1 if not found
  */
-static int
+int
 find_newnews_index(
-	char *cur_newnews_host)
+	const char *cur_newnews_host)
 {
 	int i;
 

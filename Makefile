@@ -1,15 +1,15 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2002-05-06
+# Updated: 2003-06-26
 #
 
 PROJECT	= tin
 LVER	= 1
-PVER	= 5
-SVER	= 18
+PVER	= 6
+SVER	= 0
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20030602
+DVER	= 20030714
 EXE	= tin
 
 # directory structure
@@ -168,6 +168,7 @@ DOC	= \
 	$(DOCDIR)/keymap.sample \
 	$(DOCDIR)/mailcap.sample \
 	$(DOCDIR)/mime.types \
+	$(DOCDIR)/nov_tests \
 	$(DOCDIR)/opt-case.1 \
 	$(DOCDIR)/pgp.txt \
 	$(DOCDIR)/rcvars.txt \
@@ -175,6 +176,7 @@ DOC	= \
 	$(DOCDIR)/umlaute.txt \
 	$(DOCDIR)/umlauts.txt \
 	$(DOCDIR)/tin.defaults \
+	$(DOCDIR)/tinews.1 \
 	$(DOCDIR)/tools.txt \
 	$(DOCDIR)/mbox.5 \
 	$(DOCDIR)/mmdf.5 \

@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2003-04-26
+dnl Updated   : 2003-06-04
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2003 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -921,6 +921,91 @@ esac
 $3="$withval"
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_BUNDLED_INTL version: 6 updated: 2003/06/06 00:48:41
+dnl ---------------
+dnl Top-level macro for configuring an application with a bundled copy of
+dnl the intl and po directories for gettext.
+dnl
+dnl $1 specifies either Makefile or makefile, defaulting to the former.
+dnl $2 if nonempty sets the option to --enable-nls rather than to --disable-nls
+dnl
+dnl Sets variables which can be used to substitute in makefiles:
+dnl	INTLDIR_MAKE - to make ./intl directory
+dnl	MSG_DIR_MAKE - to make ./po directory
+dnl	SUB_MAKEFILE - list of makefiles in ./intl, ./po directories
+dnl Defines
+dnl	HAVE_LIBGETTEXT_H if we're using ./intl
+dnl
+AC_DEFUN([CF_BUNDLED_INTL],[
+cf_makefile=ifelse($1,,Makefile,$1)
+
+dnl Set of available languages (based on source distribution).  Note that
+dnl setting $LINGUAS overrides $ALL_LINGUAS.  Some environments set $LINGUAS
+dnl rather than $LC_ALL
+test -z "$ALL_LINGUAS" && ALL_LINGUAS=`test -d $srcdir/po && cd $srcdir/po && echo *.po|sed -e 's/\.po//g' -e 's/*//'`
+
+AM_GNU_GETTEXT(,,,[$2])
+
+INTLDIR_MAKE=
+MSG_DIR_MAKE=
+SUB_MAKEFILE=
+
+dnl this updates SUB_MAKEFILE and MSG_DIR_MAKE:
+CF_OUR_MESSAGES($1)
+
+if test "$USE_INCLUDED_LIBINTL" = yes ; then
+        if test "$nls_cv_force_use_gnu_gettext" = yes ; then
+		SUB_MAKEFILE="$SUB_MAKEFILE intl/$cf_makefile"
+	elif test "$nls_cv_use_gnu_gettext" = yes ; then
+		SUB_MAKEFILE="$SUB_MAKEFILE intl/$cf_makefile"
+	else
+		INTLDIR_MAKE="#"
+	fi
+	if test -z "$INTLDIR_MAKE"; then
+		AC_DEFINE(HAVE_LIBGETTEXT_H)
+	fi
+else
+	INTLDIR_MAKE="#"
+	if test "$USE_NLS" = yes ; then
+		AC_CHECK_HEADERS(libintl.h)
+	fi
+fi
+
+if test -z "$INTLDIR_MAKE" ; then
+	CPPFLAGS="-I../intl $CPPFLAGS"
+fi
+
+dnl FIXME:  we use this in lynx (the alternative is a spurious dependency upon
+dnl GNU make)
+if test "$BUILD_INCLUDED_LIBINTL" = yes ; then
+	GT_YES="#"
+	GT_NO=
+else
+	GT_YES=
+	GT_NO="#"
+fi
+
+AC_SUBST(INTLDIR_MAKE)
+AC_SUBST(MSG_DIR_MAKE)
+AC_SUBST(GT_YES)
+AC_SUBST(GT_NO)
+
+dnl FIXME:  the underlying AM_GNU_GETTEXT macro either needs some fixes or a
+dnl little documentation.  It doesn't define anything so that we can ifdef our
+dnl own code, except ENABLE_NLS, which is too vague to be of any use.
+
+if test "$USE_INCLUDED_LIBINTL" = yes ; then
+	if test "$nls_cv_force_use_gnu_gettext" = yes ; then
+		AC_DEFINE(HAVE_GETTEXT)
+	elif test "$nls_cv_use_gnu_gettext" = yes ; then
+		AC_DEFINE(HAVE_GETTEXT)
+	fi
+	if test -n "$nls_cv_header_intl" ; then
+		AC_DEFINE(HAVE_LIBINTL_H)
+	fi
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_BUNDLED_PCRE version: 3 updated: 2002/04/17 21:09:56
 dnl ---------------
 dnl Top-level macro for configuring an application with a bundled copy of
@@ -1325,7 +1410,7 @@ AC_MSG_RESULT($cf_cv_cpp_expands)
 test $cf_cv_cpp_expands = yes && AC_DEFINE(CPP_DOES_EXPAND)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_CPPFLAGS version: 6 updated: 2002/10/27 18:21:42
+dnl CF_CURSES_CPPFLAGS version: 7 updated: 2003/06/06 00:48:41
 dnl ------------------
 dnl Look for the curses headers.
 AC_DEFUN([CF_CURSES_CPPFLAGS],[
@@ -1344,7 +1429,7 @@ sunos3*|sunos4*)
 	;;
 esac
 ])
-test "$cf_cv_curses_incdir" != no && CPPFLAGS="$CPPFLAGS $cf_cv_curses_incdir"
+test "$cf_cv_curses_incdir" != no && CPPFLAGS="$cf_cv_curses_incdir $CPPFLAGS"
 
 AC_CACHE_CHECK(if we have identified curses headers,cf_cv_ncurses_header,[
 cf_cv_ncurses_header=none
@@ -2147,7 +2232,21 @@ AC_MSG_RESULT($cf_cv_system_status)
 test $cf_cv_system_status = no && AC_DEFINE(USE_SYSTEM_STATUS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_WARNINGS version: 12 updated: 2002/11/23 16:02:49
+dnl CF_GCC_VERSION version: 2 updated: 2003/05/24 15:01:41
+dnl --------------
+dnl Find version of gcc
+AC_DEFUN([CF_GCC_VERSION],[
+AC_REQUIRE([AC_PROG_CC])
+GCC_VERSION=none
+if test "$GCC" = yes ; then
+	AC_MSG_CHECKING(version of $CC)
+	GCC_VERSION="`${CC} --version|head -1 | sed -e 's/^[[^0-9.]]*//' -e 's/[[^0-9.]].*//'`"
+	test -z "$GCC_VERSION" && GCC_VERSION=unknown
+	AC_MSG_RESULT($GCC_VERSION)
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_GCC_WARNINGS version: 14 updated: 2003/05/24 15:03:15
 dnl ---------------
 dnl Check if the compiler supports useful warning options.  There's a few that
 dnl we don't use, simply because they're too noisy:
@@ -2155,11 +2254,13 @@ dnl
 dnl	-Wconversion (useful in older versions of gcc, but not in gcc 2.7.x)
 dnl	-Wredundant-decls (system headers make this too noisy)
 dnl	-Wtraditional (combines too many unrelated messages, only a few useful)
-dnl	-Wwrite-strings (too noisy, but should review occasionally)
+dnl	-Wwrite-strings (too noisy, but should review occasionally).  This
+dnl		is enabled for ncurses using "--enable-const".
 dnl	-pedantic
 dnl
 AC_DEFUN([CF_GCC_WARNINGS],
 [
+AC_REQUIRE([CF_GCC_VERSION])
 if ( test "$GCC" = yes || test "$GXX" = yes )
 then
 	cat > conftest.$ac_ext <<EOF
@@ -2187,8 +2288,19 @@ EOF
 		CFLAGS="$cf_save_CFLAGS $EXTRA_CFLAGS -$cf_opt"
 		if AC_TRY_EVAL(ac_compile); then
 			test -n "$verbose" && AC_MSG_RESULT(... -$cf_opt)
+			case $cf_opt in #(vi
+			Wcast-qual) #(vi
+				CPPFLAGS="$CPPFLAGS -DXTSTRINGDEFINES"
+				;;
+			Winline) #(vi
+				case $GCC_VERSION in
+				3.3*)
+					CF_VERBOSE(feature is broken in gcc $GCC_VERSION)
+					continue;;
+				esac
+				;;
+			esac
 			EXTRA_CFLAGS="$EXTRA_CFLAGS -$cf_opt"
-			test "$cf_opt" = Wcast-qual && EXTRA_CFLAGS="$EXTRA_CFLAGS -DXTSTRINGDEFINES"
 		fi
 	done
 	rm -f conftest*
@@ -2253,70 +2365,6 @@ dnl ---------------
 dnl Construct a search-list for a nonstandard library-file
 AC_DEFUN([CF_LIBRARY_PATH],
 [CF_SUBDIR_PATH($1,$2,lib)])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_SUBDIR_PATH version: 3 updated: 2002/12/29 18:30:46
-dnl --------------
-dnl Construct a search-list for a nonstandard header/lib-file
-dnl	$1 = the variable to return as result
-dnl	$2 = the package name
-dnl	$3 = the subdirectory, e.g., bin, include or lib
-AC_DEFUN([CF_SUBDIR_PATH],
-[$1=""
-
-test -d [$]HOME && {
-	test -n "$verbose" && echo "	... testing $3-directories under [$]HOME"
-	test -d [$]HOME/$3 &&          $1="[$]$1 [$]HOME/$3"
-	test -d [$]HOME/$3/$2 &&       $1="[$]$1 [$]HOME/$3/$2"
-	test -d [$]HOME/$3/$2/$3 &&    $1="[$]$1 [$]HOME/$3/$2/$3"
-}
-
-# For other stuff under the home directory, it should be sufficient to put
-# a symbolic link for $HOME/$2 to the actual package location:
-test -d [$]HOME/$2 && {
-	test -n "$verbose" && echo "	... testing $3-directories under [$]HOME/$2"
-	test -d [$]HOME/$2/$3 &&       $1="[$]$1 [$]HOME/$2/$3"
-	test -d [$]HOME/$2/$3/$2 &&    $1="[$]$1 [$]HOME/$2/$3/$2"
-}
-
-test "$prefix" != /usr/local && \
-test -d /usr/local && {
-	test -n "$verbose" && echo "	... testing $3-directories under /usr/local"
-	test -d /usr/local/$3 &&       $1="[$]$1 /usr/local/$3"
-	test -d /usr/local/$3/$2 &&    $1="[$]$1 /usr/local/$3/$2"
-	test -d /usr/local/$3/$2/$3 && $1="[$]$1 /usr/local/$3/$2/$3"
-	test -d /usr/local/$2/$3 &&    $1="[$]$1 /usr/local/$2/$3"
-	test -d /usr/local/$2/$3/$2 && $1="[$]$1 /usr/local/$2/$3/$2"
-}
-
-test "$prefix" != NONE && \
-test -d $prefix && {
-	test -n "$verbose" && echo "	... testing $3-directories under $prefix"
-	test -d $prefix/$3 &&          $1="[$]$1 $prefix/$3"
-	test -d $prefix/$3/$2 &&       $1="[$]$1 $prefix/$3/$2"
-	test -d $prefix/$3/$2/$3 &&    $1="[$]$1 $prefix/$3/$2/$3"
-	test -d $prefix/$2/$3 &&       $1="[$]$1 $prefix/$2/$3"
-	test -d $prefix/$2/$3/$2 &&    $1="[$]$1 $prefix/$2/$3/$2"
-}
-
-test "$prefix" != /opt && \
-test -d /opt && {
-	test -n "$verbose" && echo "	... testing $3-directories under /opt"
-	test -d /opt/$3 &&             $1="[$]$1 /opt/$3"
-	test -d /opt/$3/$2 &&          $1="[$]$1 /opt/$3/$2"
-	test -d /opt/$3/$2/$3 &&       $1="[$]$1 /opt/$3/$2/$3"
-	test -d /opt/$2/$3 &&          $1="[$]$1 /opt/$2/$3"
-	test -d /opt/$2/$3/$2 &&       $1="[$]$1 /opt/$2/$3/$2"
-}
-
-test "$prefix" != /usr && \
-test -d /usr && {
-	test -n "$verbose" && echo "	... testing $3-directories under /usr"
-	test -d /usr/$3 &&             $1="[$]$1 /usr/$3"
-	test -d /usr/$3/$2 &&          $1="[$]$1 /usr/$3/$2"
-	test -d /usr/$3/$2/$3 &&       $1="[$]$1 /usr/$3/$2/$3"
-	test -d /usr/$2/$3 &&          $1="[$]$1 /usr/$2/$3"
-}
-])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_LIB_PREFIX version: 7 updated: 2001/01/12 01:23:48
 dnl -------------
@@ -2793,6 +2841,43 @@ AC_CHECK_FUNCS(strcasecmp,,[
 ])
 LIBS="$LIBS $cf_cv_netlibs"
 test $cf_test_netlibs = no && echo "$cf_cv_netlibs" >&AC_FD_MSG
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_OUR_MESSAGES version: 4 updated: 2003/06/06 00:48:41
+dnl ---------------
+dnl Check if we use the messages included with this program
+dnl
+dnl $1 specifies either Makefile or makefile, defaulting to the former.
+dnl
+dnl Sets variables which can be used to substitute in makefiles:
+dnl	MSG_DIR_MAKE - to make ./po directory
+dnl	SUB_MAKEFILE - makefile in ./po directory (see CF_BUNDLED_INTL)
+dnl
+AC_DEFUN([CF_OUR_MESSAGES],
+[
+cf_makefile=ifelse($1,,Makefile,$1)
+
+use_our_messages=no
+if test "$USE_NLS" = yes ; then
+if test -d $srcdir/po ; then
+AC_MSG_CHECKING(if we should use included message-library)
+	AC_ARG_ENABLE(included-msgs,
+	[  --enable-included-msgs  use included messages, for i18n support],
+	[use_our_messages=$enableval],
+	[use_our_messages=yes])
+fi
+AC_MSG_RESULT($use_our_messages)
+fi
+
+MSG_DIR_MAKE="#"
+if test "$use_our_messages" = yes
+then
+	SUB_MAKEFILE="$SUB_MAKEFILE po/$cf_makefile.in:po/$cf_makefile.inn"
+	MSG_DIR_MAKE=
+fi
+
+AC_SUBST(MSG_DIR_MAKE)
+AC_SUBST(SUB_MAKEFILE)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_PATHSEP version: 3 updated: 2001/01/12 01:23:53
@@ -3433,6 +3518,70 @@ if test "$ac_cv_header_termios_h" = yes ; then
 	AC_MSG_RESULT($termios_bad)
 	fi
 fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_SUBDIR_PATH version: 3 updated: 2002/12/29 18:30:46
+dnl --------------
+dnl Construct a search-list for a nonstandard header/lib-file
+dnl	$1 = the variable to return as result
+dnl	$2 = the package name
+dnl	$3 = the subdirectory, e.g., bin, include or lib
+AC_DEFUN([CF_SUBDIR_PATH],
+[$1=""
+
+test -d [$]HOME && {
+	test -n "$verbose" && echo "	... testing $3-directories under [$]HOME"
+	test -d [$]HOME/$3 &&          $1="[$]$1 [$]HOME/$3"
+	test -d [$]HOME/$3/$2 &&       $1="[$]$1 [$]HOME/$3/$2"
+	test -d [$]HOME/$3/$2/$3 &&    $1="[$]$1 [$]HOME/$3/$2/$3"
+}
+
+# For other stuff under the home directory, it should be sufficient to put
+# a symbolic link for $HOME/$2 to the actual package location:
+test -d [$]HOME/$2 && {
+	test -n "$verbose" && echo "	... testing $3-directories under [$]HOME/$2"
+	test -d [$]HOME/$2/$3 &&       $1="[$]$1 [$]HOME/$2/$3"
+	test -d [$]HOME/$2/$3/$2 &&    $1="[$]$1 [$]HOME/$2/$3/$2"
+}
+
+test "$prefix" != /usr/local && \
+test -d /usr/local && {
+	test -n "$verbose" && echo "	... testing $3-directories under /usr/local"
+	test -d /usr/local/$3 &&       $1="[$]$1 /usr/local/$3"
+	test -d /usr/local/$3/$2 &&    $1="[$]$1 /usr/local/$3/$2"
+	test -d /usr/local/$3/$2/$3 && $1="[$]$1 /usr/local/$3/$2/$3"
+	test -d /usr/local/$2/$3 &&    $1="[$]$1 /usr/local/$2/$3"
+	test -d /usr/local/$2/$3/$2 && $1="[$]$1 /usr/local/$2/$3/$2"
+}
+
+test "$prefix" != NONE && \
+test -d $prefix && {
+	test -n "$verbose" && echo "	... testing $3-directories under $prefix"
+	test -d $prefix/$3 &&          $1="[$]$1 $prefix/$3"
+	test -d $prefix/$3/$2 &&       $1="[$]$1 $prefix/$3/$2"
+	test -d $prefix/$3/$2/$3 &&    $1="[$]$1 $prefix/$3/$2/$3"
+	test -d $prefix/$2/$3 &&       $1="[$]$1 $prefix/$2/$3"
+	test -d $prefix/$2/$3/$2 &&    $1="[$]$1 $prefix/$2/$3/$2"
+}
+
+test "$prefix" != /opt && \
+test -d /opt && {
+	test -n "$verbose" && echo "	... testing $3-directories under /opt"
+	test -d /opt/$3 &&             $1="[$]$1 /opt/$3"
+	test -d /opt/$3/$2 &&          $1="[$]$1 /opt/$3/$2"
+	test -d /opt/$3/$2/$3 &&       $1="[$]$1 /opt/$3/$2/$3"
+	test -d /opt/$2/$3 &&          $1="[$]$1 /opt/$2/$3"
+	test -d /opt/$2/$3/$2 &&       $1="[$]$1 /opt/$2/$3/$2"
+}
+
+test "$prefix" != /usr && \
+test -d /usr && {
+	test -n "$verbose" && echo "	... testing $3-directories under /usr"
+	test -d /usr/$3 &&             $1="[$]$1 /usr/$3"
+	test -d /usr/$3/$2 &&          $1="[$]$1 /usr/$3/$2"
+	test -d /usr/$3/$2/$3 &&       $1="[$]$1 /usr/$3/$2/$3"
+	test -d /usr/$2/$3 &&          $1="[$]$1 /usr/$2/$3"
+}
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_SYS_ERRLIST version: 6 updated: 2001/12/30 13:03:23

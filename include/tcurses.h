@@ -3,7 +3,7 @@
  *  Module    : tcurses.h
  *  Author    : Thomas Dickey
  *  Created   : 1997-03-02
- *  Updated   : 2003-02-01
+ *  Updated   : 2003-06-27
  *  Notes     : curses #include files, #defines & struct's
  *
  * Copyright (c) 1997-2003 Thomas Dickey <dickey@invisible-island.net>
@@ -96,7 +96,6 @@
 
 extern int cmdReadCh(void);
 extern char *screen_contents(int row, int col, char *buffer);
-extern int my_innstr(char *str, int n);
 extern void MoveCursor(int row, int col);
 extern void my_erase(void);
 extern void my_fflush(FILE *stream);

@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2003-05-16
+ *  Updated   : 2003-06-29
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
@@ -46,6 +46,7 @@
 
 /* active.c */
 extern char group_flag(char ch);
+extern int find_newnews_index(const char *cur_newnews_host);
 extern int get_active_num(void);
 extern t_bool match_group_list(const char *group, const char *group_list);
 extern t_bool parse_active_line(char *line, long *max, long *min, char *moderated);
@@ -57,7 +58,6 @@ extern void load_newnews_info(char *info);
 extern void read_news_active_file(void);
 
 /* art.c */
-extern char *find_nov_file(struct t_group *group, int mode);
 extern int global_get_multipart_info(int aindex, MultiPartInfo *setme);
 extern t_bool index_group(struct t_group *group);
 extern void do_update(t_bool catchup);
@@ -108,6 +108,7 @@ extern t_bool match_long(char *line, const char *pat, long *dst);
 extern t_bool match_string(char *line, const char *pat, char *dst, size_t dstlen);
 extern t_bool read_config_file(char *file, t_bool global_file);
 extern void quote_dash_to_space(char *str);
+extern void read_server_config(void);
 extern void refresh_config_page(int act_option);
 extern void show_menu_help(const char *help_message);
 extern void write_config_file(char *file);
@@ -357,7 +358,6 @@ extern void process_charsets(char **line, int *max_line_len, const char *network
 extern void read_input_history_file(void);
 extern void rename_file(const char *old_filename, const char *new_filename);
 extern void show_inverse_video_status(void);
-extern void strip_double_ngs(char *ngs_list);
 extern void strip_name(const char *from, char *address);
 extern void tin_done(int ret);
 extern void toggle_inverse_video(void);
@@ -426,7 +426,6 @@ extern FILE *open_news_active_fp(void);
 extern FILE *open_newsgroups_fp(void);
 extern FILE *open_overview_fmt_fp(void);
 extern FILE *open_subscription_fp(void);
-extern FILE *open_xover_fp(struct t_group *group, const char *mode, long min, long max);
 extern FILE *open_art_header(long art);
 extern int get_respcode(char *, size_t);
 extern int get_only_respcode(char *, size_t);

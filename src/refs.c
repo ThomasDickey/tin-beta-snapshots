@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2003-04-25
+ *  Updated   : 2003-06-06
  *  Notes     : Cacheing of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -84,7 +84,7 @@ static t_bool sort_ascend;
 static struct t_msgid *msgids[MSGID_HASH_SIZE] = {0};
 
 /*
- * This part of the code deals with the cacheing and retrieval
+ * This part of the code deals with the caching and retrieval
  * of Message-ID and References headers
  *
  * Rationale:
@@ -93,7 +93,7 @@ static struct t_msgid *msgids[MSGID_HASH_SIZE] = {0};
  *    period increases, so does the redundancy of data.
  *    At the time of writing, comp.os.ms-windows.advocacy held ~850
  *    articles. The references fields contained 192k of text, of which
- *    169k was saved using the new cacheing.
+ *    169k was saved using the new caching.
  *
  *    When threading on Refs, a much better view of the original thread
  *    can be built up using this data, and threading is much faster
