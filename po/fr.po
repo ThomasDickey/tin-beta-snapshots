@@ -1,10 +1,10 @@
 # French translation for tin
-# Matt Anton <tin@syrius.org>, 2003
+# Matt Anton <tin@syrius.org>, 2003-2004
 #
 msgid	""
 msgstr	"Project-Id-Version: 1.7.4\n"
-	"POT-Creation-Date: 2004-01-11 17:07+0100\n"
-	"PO-Revision-Date: 2003-07-04 04:15+0200\n"
+	"POT-Creation-Date: 2004-02-12 10:42+0100\n"
+	"PO-Revision-Date: 2004-01-28 09:50+0100\n"
 	"Last-Translator: Matt Anton <tin@syrius.org\n"
 	"Language-Team: French <tin@syrius.org>\n"
 	"MIME-Version: 1.0\n"
@@ -14,7 +14,7 @@ msgstr	"Project-Id-Version: 1.7.4\n"
 #: src/art.c:1430
 #, c-format
 msgid	"%d Bad overview record (%d fields) '%s'"
-msgstr	""
+msgstr	"%d Mauvais overview (%d champs) '%s'"
 
 #: src/attrib.c:585
 msgid	"# Do not edit this comment block\n"
@@ -548,7 +548,7 @@ msgstr	"Vérification de articles..."
 #: src/lang.c:117
 #, c-format
 msgid	"Post-process %s=no, %s=yes, %s=shar, %s=quit: "
-msgstr	"Traiter %s=aucun, %s=oui, %s=shar, %s=quitter : "
+msgstr	"Traiter %s=non, %s=oui, %s=shar, %s=quitter : "
 
 #: src/lang.c:118
 msgid	"ANSI color disabled"
@@ -924,7 +924,7 @@ msgstr	"Pas la permission d'aller dans %s\n"
 msgid	"\n"
 	"Error: From: line missing.\n"
 msgstr	"\n"
-	"Erreur : Ligne De: manquante.\n"
+	"Erreur : Ligne From: manquante.\n"
 
 #: src/lang.c:206
 #, c-format
@@ -1058,17 +1058,45 @@ msgid	"# Format:\n"
 	"#   xref=PATTERN      Optional. Kill pattern (e.g. alt.flame*)\n"
 	"#   time=NUM          Optional. time_t value when rule expires\n"
 	"#\n"
-msgstr	""
+msgstr	"# Format :\n"
+	"#   comment=TERME\tFacultatif. Plusieurs lignes acceptées.\n"
+	"#\t\t\tLes commentaires doivent êtres placés au\n"
+	"#\t\t\tdébut de la règle, sinon ils seront déplacés\n"
+	"#\t\t\tà la règle suivante. '#' n'est pas un mot-clé\n"
+	"#\t\t\tvalide pour un commentaire !\n"
+	"#   group=TERME\tOgligatoire. Liste de groupe (pe. fr.comp.*,!*sources*).\n"
+	"#   case=NUM\t\tOgligatoire. Casse sensible=0 / casse insensible=1.\n"
+	"#   score=NUM|TERME\tObligatoire. Score à attribuer. Soit :\n"
+	"#     score=NUM\t- Un numéro (pe. 70). Ou :\n"
+	"#     score=TERME\t- Un des deux mots-clé suivants : 'hot' ou 'kill'.\n"
+	"#   subj=TERME\t\tFacultatif. Ligne Subject: (pe. Comment devenir un "
+	"gourou).\n"
+	"#   from=TERME\t\tFacultatif. Ligne From: (pe. *Craig Shergold*).\n"
+	"#   msgid=TERME\tFacultatif. Ligne Message-ID: (pe. <123@ether.net>) avec\n"
+	"#\t\t\tréférence complète.\n"
+	"#   msgid_last=TERME\tFacultatif. Comme ci-dessus mais avec juste le dernier "
+	"MID.\n"
+	"#   msgid_only=TERME\tFacultatif. Comme ci-dessus mais sans les références.\n"
+	"#   refs_only=TERME\tFacultatif. Ligne References: (pe. <123@ether.net>) "
+	"sans\n"
+	"#\t\t\tla ligne Message-ID:\n"
+	"#   lines=[<>]?NUM\tFacultatif. Ligne Lines:. '<' ou '>' sont optionnels.\n"
+	"#   gnksa=[<>]?NUM\tFacultatif. Résultat du 'parse_from' du GNKSA. '<' ou "
+	"'>'\n"
+	"#\t\t\tsont optionnels.\n"
+	"#   xref=CHAÎNE\tFacultatif. Chaîne à filtrer (pe. alt.flame*)\n"
+	"#   time=NUM\t\tFacultatif. Valeur de time_t indique la durée de la règle.\n"
+	"#\n"
 
 #: src/lang.c:250
 #, c-format
 msgid	"Enter score for rule (default=%d): "
-msgstr	""
+msgstr	"Entrez le score de cette règle (défaut=%d) : "
 
 #: src/lang.c:251
 #, c-format
 msgid	"Enter the score weight (range 0 < score <= %d)"
-msgstr	""
+msgstr	"Entrez la valeur du score (0 < score <= %d)"
 
 #. SCORE_MAX
 #: src/lang.c:252
@@ -1085,11 +1113,11 @@ msgstr	"Appliquer le réglage à  : "
 
 #: src/lang.c:255
 msgid	"From: line (ignore case)      "
-msgstr	"Ligne De : (ignorer la casse) "
+msgstr	"Ligne From: (ignorer la casse) "
 
 #: src/lang.c:256
 msgid	"From: line (case sensitive)   "
-msgstr	"Ligne De : (casse sensible)   "
+msgstr	"Ligne From: (casse sensible)   "
 
 #: src/lang.c:258
 #, c-format
@@ -1122,7 +1150,7 @@ msgstr	"groupes"
 #: src/lang.c:264
 #, c-format
 msgid	"Rereading %s..."
-msgstr	""
+msgstr	"Relecture de %s..."
 
 #: src/lang.c:265
 msgid	"Top Level Commands"
@@ -1130,7 +1158,7 @@ msgstr	"Commandes niveau supérieur"
 
 #: src/lang.c:266
 msgid	"Group Selection"
-msgstr	"Sélection de groupe"
+msgstr	"Sélection du groupe"
 
 #: src/lang.c:267
 msgid	"group"
@@ -1194,8 +1222,8 @@ msgid	"0 - 9\t  display article by number in current thread"
 msgstr	"0 - 9\t affiche les articles par numéro du fil actuel"
 
 #: src/lang.c:283
-msgid	"cancel (delete) current article; must have been posted by you"
-msgstr	"annuler (effacer) l'article actuel; a dû être posté par vous"
+msgid	"cancel (delete) or supersede (overwrite) current article"
+msgstr	"annuler (effacer) ou remplacer (écraser) l'article actuel"
 
 #: src/lang.c:284
 msgid	"edit article (mail-groups only)"
@@ -1323,7 +1351,7 @@ msgstr	"(dés)activer le décodage de type TeX allemand pour l'article actuel"
 
 #: src/lang.c:316
 msgid	"toggle display of uuencoded sections"
-msgstr	""
+msgstr	"(dés)activer l'affichage des sections uuencodées"
 
 #: src/lang.c:317
 msgid	"View/save multimedia attachments"
@@ -1344,7 +1372,7 @@ msgstr	"quitter le prompt"
 
 #: src/lang.c:321
 msgid	"get help"
-msgstr	"avoir de l'aide"
+msgstr	"voir l'aide"
 
 #: src/lang.c:322
 msgid	"display last article viewed"
@@ -1733,7 +1761,7 @@ msgstr	"Toutes les parties sont marquées"
 
 #: src/lang.c:424
 msgid	"Storing article for later posting"
-msgstr	"Stockage de l'article afin de la poster plus tard"
+msgstr	"Stockage de l'article afin de le poster plus tard"
 
 #: src/lang.c:425
 msgid	"Please enter a valid character"
@@ -1827,7 +1855,7 @@ msgid	"\n"
 	"files.\n"
 	"Please send bug-reports/comments to %s with the 'R' command.\n"
 msgstr	"\n"
-	"Bienvenue dans %s, un lecteur de forums UseNet. Pouvant également lire un "
+	"Bienvenue dans %s, un lecteur de groupes UseNet. Pouvant également lire un "
 	"spool local\n"
 	"(p.e. <spool>/news) ou depuis un serveur NNTP (Network News Transport "
 	"Protocol) distant (avec l'option -r). L'option -h liste les options "
@@ -2606,7 +2634,13 @@ msgid	"# %s server configuration file\n"
 	"# Do not edit at all if you don't know what you do.\n"
 	"############################################################################\n"
 	"\n"
-msgstr	""
+msgstr	"# Fichier de configuration serveur de %s\n"
+	"# Ce fichier a été automatiquement enregistré par %s %s %s (\"%s\")\n"
+	"#\n"
+	"# N'éditez pas ce fichier lorsque %s est ouvert, car tout changement apporté\n"
+	"# sera écrasé lorsque vous quitterez %s.\n"
+	"# Enfin, ne touchez pas à ce fichier si vous ne savez pas quoi y faire.\n"
+	"############################################################################\n"
 
 #: src/lang.c:643
 msgid	"Showing unread groups only"
@@ -2614,11 +2648,11 @@ msgstr	"Afficher uniquement les groupes non lus"
 
 #: src/lang.c:644
 msgid	"Subject: line (ignore case)   "
-msgstr	"Ligne Sujet: (casse insensible)"
+msgstr	"Ligne Subject: (casse insensible)"
 
 #: src/lang.c:645
 msgid	"Subject: line (case sensitive)"
-msgstr	"Ligne Sujet: (casse sensible)  "
+msgstr	"Ligne Subject: (casse sensible)  "
 
 #: src/lang.c:646
 msgid	"Save"
@@ -3909,7 +3943,7 @@ msgstr	"Terminal ne supporte pas les couleurs"
 msgid	"Trying %s"
 msgstr	"Essai %s"
 
-#: src/lang.c:1074 src/lang.c:1099 src/lang.c:1115 src/lang.c:1294 src/refs.c:266
+#: src/lang.c:1074 src/lang.c:1099 src/lang.c:1115 src/lang.c:1294 src/refs.c:297
 msgid	"None"
 msgstr	"Aucun"
 
@@ -5876,12 +5910,12 @@ msgid	"# Unicode normalization form\n"
 	"# 0 = None, 1 = NFKC, 2 = NFKD, 3 = NFC, 4 = NFD\n"
 msgstr	""
 
-#: src/main.c:594
+#: src/main.c:590
 #, c-format
 msgid	"Version: %s release %s (\"%s\") %s %s"
 msgstr	"Version : %s release %s (\"%s\") %s %s"
 
-#: src/main.c:597
+#: src/main.c:593
 #, c-format
 msgid	"Version: %s release %s (\"%s\")"
 msgstr	"Version : %s release %s (\"%s\")"
@@ -5936,15 +5970,15 @@ msgid	"Draining\n"
 msgstr	"Purge\n"
 
 #. Don't hash the initial '<'
-#: src/refs.c:220
+#: src/refs.c:251
 msgid	"unchanged"
 msgstr	"non changé"
 
-#: src/refs.c:573
+#: src/refs.c:610
 msgid	"[- Unavailable -]"
 msgstr	"[- Indisponible -]"
 
-#: src/save.c:975
+#: src/save.c:976
 msgid	"bytes"
 msgstr	"octets"
 

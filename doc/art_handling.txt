@@ -7,7 +7,7 @@ art_close() is not implied anywhere - you must call it when you need to.
 t_openartinfo
 -------------
 This is basically an 'open article context'. You can pass these around or do
-anything with them independantly of the rest of the program.
+anything with them independently of the rest of the program.
 
 This structure contains open file pointers, one to the raw article,
 the other to the cooked article. There is no file related to these streams.
@@ -48,7 +48,7 @@ Content-* headers if present will then supercede this information.
 The other fields are:
 params		A linked list of parameters associated with the Content-Type and
 			Content-Disposition headers
-offset		The byte offset of this attachent. The offset of header->ext is
+offset		The byte offset of this attachment. The offset of header->ext is
 			the offset of the 822 body
 lines		The number of lines of raw text in this attachment. The number of
 			lines in header->ext is the total number of lines in the article

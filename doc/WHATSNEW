@@ -14,7 +14,7 @@ New features
 . You can now specify a mailbox folder to save your sent mails so you
   possibly don't need auto_cc or auto_bcc anymore. See tin(5).
 
-. x_headers can take a commad which generates the header(s). See tin(5).
+. x_headers can take a command which generates the header(s). See tin(5).
 
 Retired Features
 ----------------

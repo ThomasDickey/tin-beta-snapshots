@@ -3,7 +3,7 @@
 #
 msgid	""
 msgstr	"Project-Id-Version: tin 1.7.4\n"
-	"POT-Creation-Date: 2004-01-11 17:07+0100\n"
+	"POT-Creation-Date: 2004-02-12 10:42+0100\n"
 	"PO-Revision-Date: 2002-11-15 20:10+0000\n"
 	"Last-Translator: Robert Brady <rwb197@zepler.org>\n"
 	"Language-Team: \n"
@@ -1141,7 +1141,7 @@ msgid	"0 - 9\t  display article by number in current thread"
 msgstr	""
 
 #: src/lang.c:283
-msgid	"cancel (delete) current article; must have been posted by you"
+msgid	"cancel (delete) or supersede (overwrite) current article"
 msgstr	""
 
 #: src/lang.c:284
@@ -3670,7 +3670,7 @@ msgstr	"Terminal does not support colour"
 msgid	"Trying %s"
 msgstr	""
 
-#: src/lang.c:1074 src/lang.c:1099 src/lang.c:1115 src/lang.c:1294 src/refs.c:266
+#: src/lang.c:1074 src/lang.c:1099 src/lang.c:1115 src/lang.c:1294 src/refs.c:297
 msgid	"None"
 msgstr	""
 
@@ -5622,12 +5622,12 @@ msgid	"# Unicode normalization form\n"
 msgstr	"# Unicode normalisation form\n"
 	"# 0 = None, 1 = NFKC, 2 = NFKD, 3 = NFC, 4 = NFD\n"
 
-#: src/main.c:594
+#: src/main.c:590
 #, c-format
 msgid	"Version: %s release %s (\"%s\") %s %s"
 msgstr	""
 
-#: src/main.c:597
+#: src/main.c:593
 #, c-format
 msgid	"Version: %s release %s (\"%s\")"
 msgstr	""
@@ -5681,15 +5681,15 @@ msgid	"Draining\n"
 msgstr	""
 
 #. Don't hash the initial '<'
-#: src/refs.c:220
+#: src/refs.c:251
 msgid	"unchanged"
 msgstr	""
 
-#: src/refs.c:573
+#: src/refs.c:610
 msgid	"[- Unavailable -]"
 msgstr	""
 
-#: src/save.c:975
+#: src/save.c:976
 msgid	"bytes"
 msgstr	""
 

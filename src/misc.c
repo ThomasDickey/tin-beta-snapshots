@@ -1751,6 +1751,13 @@ strfmailer(
 	if (dest == NULL || format == NULL || maxsize == 0)
 		return 0;
 
+	/*
+	 * TODO: shouldn't we better check for no % OR format > maxsize?
+	 *       as no replacemnt doesn't make sense (hardcoded To, Subject
+	 *       and filename) and the resulting string usuly is longer after
+	 *       replacemnts were done (nobody uses enough %% to make the
+	 *       result shorter than the input).
+	 */
 	if (strchr(format, '%') == NULL && strlen(format) + 1 >= maxsize)
 		return 0;
 

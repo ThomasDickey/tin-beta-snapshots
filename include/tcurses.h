@@ -3,7 +3,7 @@
  *  Module    : tcurses.h
  *  Author    : Thomas Dickey
  *  Created   : 1997-03-02
- *  Updated   : 2003-09-29
+ *  Updated   : 2004-01-20
  *  Notes     : curses #include files, #defines & struct's
  *
  * Copyright (c) 1997-2004 Thomas Dickey <dickey@invisible-island.net>
@@ -125,11 +125,15 @@ extern void write_line(int row, char *buffer);
 
 #		ifdef NEED_TERM_H
 #			include <curses.h>
-#			ifdef HAVE_NCURSES_TERM_H
-#				include <ncurses/term.h>
+#			ifdef HAVE_NCURSESW_TERM_H
+#				include <ncursesw/term.h>
 #			else
-#				include <term.h>
-#			endif /* HAVE_NCURSES_TERM_H */
+#				ifdef HAVE_NCURSES_TERM_H
+#					include <ncurses/term.h>
+#				else
+#					include <term.h>
+#				endif /* HAVE_NCURSES_TERM_H */
+#			endif /* HAVE_NCURSESW_TERM_H */
 #		else
 #			ifdef HAVE_TERMCAP_H
 #				include <termcap.h>

@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-01-05
+ *  Updated   : 2004-02-09
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -595,6 +595,30 @@ prompt_slk_response(
 
 		if ((ch = ReadCh()) == '\r' || ch == '\n')
 			ch = ch_default;
+
+		/*
+		 * TODO: ignore special-keys which are represented as a
+		 *       multibyte ESC-seq to avoid interpreting them as 'ESC' only
+		 *       like it's done in the ugly code below.
+		 */
+#if 0
+		if (ch == ESC) {
+			switch (get_arrow_key(ch)) {
+				case KEYMAP_UP:
+				case KEYMAP_DOWN:
+				case KEYMAP_LEFT:
+				case KEYMAP_RIGHT:
+				case KEYMAP_PAGE_DOWN:
+				case KEYMAP_PAGE_UP:
+				case KEYMAP_HOME:
+				case KEYMAP_END:
+					ch = '\0';
+
+				default:
+					break;
+			}
+		}
+#endif /* 0 */
 
 	} while (!strchr(responses->localkeys, ch));
 

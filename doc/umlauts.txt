@@ -5,7 +5,7 @@ Umlauts when reading
 --------------------
 
 After reading a posting from the newsserver tin checks if a charset has been
-declared in the header. If not, tin assumes the appropiate entry of a
+declared in the header. If not, tin assumes the appropriate entry of a
 corresponding undeclared_charset variable in the attributes file. If there
 still is no match, tin assumes US-ASCII as the charset for this posting.
 
@@ -63,7 +63,7 @@ scope=*
 undeclared_charset=Windows-1252
 
 This tells tin to assume the Windows-1252 charset. Since most people use
-Windows nowadays and this charset is default for North Amerika and Western
+Windows nowadays and this charset is default for North America and Western
 Europe, and this charset is mostly compatible with the widespread ISO 8859-1
 charset, this should cover many postings. For special newsgroups this
 configuration should be improved by setting up another charset in a

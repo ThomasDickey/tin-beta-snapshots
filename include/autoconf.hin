@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2003-12-22
+ *  Updated   : 2004-02-09
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2004 Thomas Dickey <dickey@invisible-island.net>
@@ -169,6 +169,7 @@
 #	undef HAVE_LOCALE_H
 #	undef HAVE_MALLOC_H
 #	undef HAVE_NCURSESW_NCURSES_H
+#	undef HAVE_NCURSESW_TERM_H
 #	undef HAVE_NCURSES_H		/* obsolete versions of ncurses */
 #	undef HAVE_NCURSES_NCURSES_H
 #	undef HAVE_NCURSES_TERM_H
@@ -582,6 +583,11 @@
  * define if closedir() does not return a status
  */
 #	undef CLOSEDIR_VOID
+
+/*
+ * define if gettimeofday() takes the timezone as 2nd argument
+ */
+#	undef	GETTIMEOFDAY_2ARGS
 
 /*
  * define if your NNTP server needs an extra GROUP command before

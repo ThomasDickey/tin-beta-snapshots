@@ -1,5 +1,12 @@
 short descriptions of files in the tools-directory
 
+tinews.pl
+        a perl script that can be used as a inews replacement if posting via
+        NNTP. the main purpose of this script is to automatically sign
+        posted/mailed articles via pgp or gpg. besides the autosigning
+        feature it takes care about Cc: and Bcc: lines in news-postings
+        and adds a Posted-And-Mailed: header if necessary.
+
 w2r.pl
 	is a small perl script that turns a wildmat filter file
 	into a regexp filter file (don't forget to set wildmat= in tinrc
@@ -25,16 +32,17 @@ tinlock
 	tinlock [tin-cmdline-args]
 
 metamutt
-	is a small shell script to replace metamail, set METAMAIL=metamutt
-	before starting tin and till will pass multipart MIME-articles to
-	metamutt instead of metamail. metamutt will pass the article to mutt
-	(a mail client with an excellent MIME-parser). this might become
-	obsolete as tin now has a small (and unfinished) built in
-	MIME-parser, set METAMAIL=(internal) to use the built in version.
+	is a small shell script to replace metamail, set
+	metamail_prog=metamutt in tin and till will pass multipart
+	MIME-articles to metamutt instead of metamail. metamutt will pass
+	the article to mutt (a mail client with an excellent MIME-parser).
+	this might become obsolete as tin now has a small (and unfinished)
+	built in MIME-parser, set metamail_prog=--internal to use the built
+	in version.
 
 url_handler.sh
 	is a shell script (need to be placed in /usr/local/bin/) which
-	passes the URL selected by the 'U' command into a related
+	passes the URL selected by the 'U' command to a related
 	viewer/application. this one is very basic.
 
 expand_aliases.tgz
@@ -45,5 +53,5 @@ expand_aliases.tgz
 expiretover
 	is a small shell script to expire old tin overview files. if you use
 	cache_overview_files=ON in your tinrc you might want to run this
-	script reguarly (i.e. once a day from cron) to purge old overview
+	script regularly (e.g. once a day from cron) to purge old overview
 	files.

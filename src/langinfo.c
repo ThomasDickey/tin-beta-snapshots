@@ -51,7 +51,7 @@
 
 static char buf[16];
 
-char *
+const char *
 tin_nl_langinfo(
 	nl_item item)
 {
@@ -117,7 +117,7 @@ tin_nl_langinfo(
   return C_CODESET;
 }
 #	else
-char *
+const char *
 tin_nl_langinfo(
 	nl_item item)
 {

@@ -27,26 +27,39 @@
 # include <autoconf.h>
 #endif
 
-#include <ctype.h>
-#include <stdio.h>
-#include <sys/types.h>
+#undef freea
 
+/* see AC_FUNC_ALLOCA macro */
 #ifdef __GNUC__
 # define alloca __builtin_alloca
-# define HAVE_ALLOCA 1
 #else
-# if defined HAVE_ALLOCA_H || defined _LIBC
-#  include <alloca.h>
+# ifdef _MSC_VER
+#  include <malloc.h>
+#  define alloca _alloca
 # else
-#  ifdef _AIX
- #pragma alloca
+#  if HAVE_ALLOCA_H
+#   include <alloca.h>
 #  else
-#   ifndef alloca
+#   ifdef _AIX
+ #pragma alloca
+#   else
+#    ifndef alloca /* predefined by HP cc +Olibcalls */
 char *alloca ();
+#    else
+#     define freea(n) free(n)
+#    endif
 #   endif
 #  endif
 # endif
 #endif
+
+#ifndef freea
+#define freea(n) /* nothing */
+#endif
+
+#include <ctype.h>
+#include <stdio.h>
+#include <sys/types.h>
 
 #include <stdlib.h>
 
@@ -80,15 +93,6 @@ __libc_lock_define_initialized (static, lock);
 
 #ifndef internal_function
 # define internal_function
-#endif
-
-/* For those losing systems which don't have `alloca' we have to add
-   some additional code emulating it.  */
-#ifdef HAVE_ALLOCA
-# define freea(p) /* nothing */
-#else
-# define alloca(n) malloc (n)
-# define freea(p) free (p)
 #endif
 
 #if defined _LIBC_REENTRANT || defined HAVE_FGETS_UNLOCKED

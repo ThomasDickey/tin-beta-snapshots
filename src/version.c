@@ -46,15 +46,15 @@
 #endif /* !MENUKEYS_H */
 
 /*
- * line    is the entire line we should check
- * skip    must be the leading portion of the version line not including the
- *         version number (which must be a dotted triple)
- * verson  is the version number (dotted triple) we expect to match
+ * line     is the entire line we should check
+ * skip     must be the leading portion of the version line not including the
+ *          version number (which must be a dotted triple)
+ * version  is the version number (dotted triple) we expect to match
  *
  * returns RC_IGNORE     1st args dotted triple matches 3rd arg
  *         RC_UPGRADE    1st args dotted triple is older than 3rd arg
  *         RC_DOWNGRADE  1st args dotted triple is newer than 3rd arg
- *         RC_ERROR      3rd args is not a dotted triple (usage error)
+ *         RC_ERROR      3rd arg is not a dotted triple (usage error)
  */
 int
 check_upgrade(

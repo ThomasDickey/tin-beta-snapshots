@@ -213,9 +213,9 @@ SaveOverwriteFile		o
 
 #####
 
+PProcNo				n
 PProcShar			s
-PProcUUDecode			u
-PProcNone			n
+PProcYes			y
 
 #####
 

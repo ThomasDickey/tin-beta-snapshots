@@ -42,7 +42,7 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.7.4"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20040111"
+#	define RELEASEDATE	"20040212"
 #	define RELEASENAME	"Taransay"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.7"

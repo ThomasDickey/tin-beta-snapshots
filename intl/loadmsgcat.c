@@ -27,28 +27,33 @@
 # include <autoconf.h>
 #endif
 
+/* see AC_FUNC_ALLOCA macro */
+#ifdef __GNUC__
+# define alloca __builtin_alloca
+#else
+# ifdef _MSC_VER
+#  include <malloc.h>
+#  define alloca _alloca
+# else
+#  if HAVE_ALLOCA_H
+#   include <alloca.h>
+#  else
+#   ifdef _AIX
+ #pragma alloca
+#   else
+#    ifndef alloca /* predefined by HP cc +Olibcalls */
+char *alloca ();
+#    endif
+#   endif
+#  endif
+# endif
+#endif
+
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
-#ifdef __GNUC__
-# define alloca __builtin_alloca
-# define HAVE_ALLOCA 1
-#else
-# if defined HAVE_ALLOCA_H || defined _LIBC
-#  include <alloca.h>
-# else
-#  ifdef _AIX
- #pragma alloca
-#  else
-#   ifndef alloca
-char *alloca ();
-#   endif
-#  endif
-# endif
-#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -99,15 +104,6 @@ char *alloca ();
 # define PLURAL_PARSE __gettextparse
 #else
 # define PLURAL_PARSE gettextparse__
-#endif
-
-/* For those losing systems which don't have `alloca' we have to add
-   some additional code emulating it.  */
-#ifdef HAVE_ALLOCA
-# define freea(p) /* nothing */
-#else
-# define alloca(n) malloc (n)
-# define freea(p) free (p)
 #endif
 
 /* For systems that distinguish between text and binary I/O.
@@ -223,7 +219,7 @@ _nl_init_domain_conv (domain_file, domain, domainbinding)
 #ifdef _LIBC
   domain->conv = (__gconv_t) -1;
 #else
-# if HAVE_ICONV
+# ifdef HAVE_ICONV
   domain->conv = (iconv_t) -1;
 # endif
 #endif
@@ -234,7 +230,7 @@ _nl_init_domain_conv (domain_file, domain, domainbinding)
 
   if (nullentry != NULL)
     {
-#if defined _LIBC || HAVE_ICONV
+#if defined _LIBC || defined HAVE_ICONV
       const char *charsetstr;
 
       charsetstr = strstr (nullentry, "charset=");
@@ -326,7 +322,7 @@ _nl_free_domain_conv (domain)
   if (domain->conv != (__gconv_t) -1)
     __gconv_close (domain->conv);
 #else
-# if HAVE_ICONV
+# ifdef HAVE_ICONV
   if (domain->conv != (iconv_t) -1)
     iconv_close (domain->conv);
 # endif
@@ -379,7 +375,7 @@ _nl_load_domain (domain_file, domainbinding)
 #else
       __builtin_expect (fstat (fd, &st) != 0, 0)
 #endif
-      || __builtin_expect ((size = (size_t) st.st_size) != st.st_size, 0)
+      || __builtin_expect ((size = (size_t) st.st_size) != (size_t) st.st_size, 0)
       || __builtin_expect (size < sizeof (struct mo_file_header), 0))
     {
       /* Something went wrong.  */

@@ -27,24 +27,29 @@
 # include <autoconf.h>
 #endif
 
-#include <sys/types.h>
-
+/* see AC_FUNC_ALLOCA macro */
 #ifdef __GNUC__
 # define alloca __builtin_alloca
-# define HAVE_ALLOCA 1
 #else
-# if defined HAVE_ALLOCA_H || defined _LIBC
-#  include <alloca.h>
+# ifdef _MSC_VER
+#  include <malloc.h>
+#  define alloca _alloca
 # else
-#  ifdef _AIX
- #pragma alloca
+#  if HAVE_ALLOCA_H
+#   include <alloca.h>
 #  else
-#   ifndef alloca
+#   ifdef _AIX
+ #pragma alloca
+#   else
+#    ifndef alloca /* predefined by HP cc +Olibcalls */
 char *alloca ();
+#    endif
 #   endif
 #  endif
 # endif
 #endif
+
+#include <sys/types.h>
 
 #include <errno.h>
 #ifndef errno
@@ -766,7 +771,7 @@ _nl_find_msg (domain_file, domainbinding, msgid, lengthp)
 	    + W (domain->must_swap, domain->trans_tab[act].offset));
   resultlen = W (domain->must_swap, domain->trans_tab[act].length) + 1;
 
-#if defined _LIBC || HAVE_ICONV
+#if defined _LIBC || defined HAVE_ICONV
   if (domain->codeset_cntr
       != (domainbinding != NULL ? domainbinding->codeset_cntr : 0))
     {
@@ -781,7 +786,7 @@ _nl_find_msg (domain_file, domainbinding, msgid, lengthp)
 # ifdef _LIBC
       domain->conv != (__gconv_t) -1
 # else
-#  if HAVE_ICONV
+#  ifdef HAVE_ICONV
       domain->conv != (iconv_t) -1
 #  endif
 # endif
@@ -859,7 +864,7 @@ _nl_find_msg (domain_file, domainbinding, msgid, lengthp)
 
 	      inbuf = result;
 # else
-#  if HAVE_ICONV
+#  ifdef HAVE_ICONV
 	      const char *inptr = (const char *) inbuf;
 	      size_t inleft = resultlen;
 	      char *outptr = (char *) outbuf;

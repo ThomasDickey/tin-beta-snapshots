@@ -216,6 +216,7 @@
  * .nt  Neutral Zone
  *
  * requested new TLDs:
+ * .ax  Aaland-Islands (Finnish)
  * .cs  Serbia and Montenegro
  * .eu  European Union (planned for 2004-11)
  *
@@ -223,6 +224,7 @@
  * .gb  United Kingdom, use .uk
  *(.hk  Hong Kong, now .cn)
  * .su  former USSR, now .ru
+ *(.yu  former Yugoslavia)
  */
 
 static char gnksa_country_codes[26*26] = {

@@ -1,6 +1,7 @@
 From: Jeroen Scheerder <js@phil.uu.nl>
 Newsgroups: news.software.readers,comp.os.msdos.mail-news,comp.os.os2.mail-news,comp.sys.mac.comm,comp.os.ms-windows.apps.comm,comp.os.ms-windows.apps.winsock.news,alt.usenet.offline-reader,alt.answers,comp.answers,news.answers
 Subject: Good Net-Keeping Seal of Approval 2.0 (GNKSA 2.0) for Usenet Software
+Approved: news-answers-request@MIT.EDU
 Followup-To: news.software.readers
 Summary: Guidelines for writers of Usenet reading and posting programs.
   If you follow these guidelines,  you'll  make your users and the rest
@@ -9,11 +10,12 @@ X-Note: This is an updated and revised descendant of Ron Newman's GNKSA 1.2
 
 Archive-name: usenet/software/good-netkeeping-seal
 Posting-Frequency: monthly (first Sunday)
-Last-modified: Apr 23 2001
-X-Version: 2.08 (@Id: gnksa.hdr,v 1.5 2001/04/23 09:36:42 js Exp @)
-URL: <http://www.xs4all.nl/%7Ejs/gnksa/>
-Maintainer: Jeroen Scheerder <js@phil.uu.nl>
+Last-modified: Oct 29 2003
+X-Version: 2.09 (@Id: gnksa.hdr,v 1.8 2003/10/29 07:31:42 js Exp @)
+URL: <http://www.gnksa.org/>
+Maintainer: Jeroen Scheerder <js@gnksa.org>
 
+-----BEGIN PGP SIGNED MESSAGE-----
 
             GNKSA * The Good Net-Keeping Seal of Approval
             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -35,10 +37,9 @@ Online or Delphi.
 I believe most of this anger is misdirected.  The new users aren't
 really that different from the old-timers.  What _is_ different is that
 many of the old-timers are using relatively well-behaved software,
-typically `rn' or one of its offspring, while many of the newbies are
-using `tin', `uqwk', `AOL', or various PC newsreaders.  Unfortunately,
-these programs frequently violate assumptions that come naturally to
-people used to well-behaved readers:
+while many of the newbies are using various PC newsreaders that frequently
+violate assumptions that come naturally to people used to well-behaved
+readers:
 
   - The user can see the essential header fields, including "Newsgroups"
     and "Followup-To".
@@ -222,9 +223,9 @@ as an editable field in a form will meet the requirement.
 Rationale: Topics drift as a discussion progresses, and users need the
 ability to change the Subject header to reflect the drift. Similarly, a
 user may determine that the discussion no longer belongs in some of the
-places that it started, or that its continuation needs to go elsewhere.
+places that it started, or that its continuation needs to go elsewhere. 
 The software must not impede the user's ability to make these
-judgments, possibly during the composition of her followup article.
+judgments, possibly during the composition of her followup article.  
 It's not acceptable to have users who respond to "Please direct
 followups appropriately" with "I can't; the software won't let me."
 
@@ -253,7 +254,7 @@ software by replacing non-standard prefixes (such as "Re^2: ", "Re(2):
 prefix "Re: ".
 
 Rationale: These things should be obvious, but many authors of news
-software don't seem to understand the relevant sections of RFC 1036.
+software don't seem to understand the relevant sections of RFC 1036. 
 Truncated "Subject: " headers, especially when gratuitous non-ASCII
 characters are also thrown in, are a major annoyance for users and can
 make threading difficult or impossible.
@@ -470,7 +471,7 @@ such as "delete".  Similarly, in English software, the text of the
 supersede command SHOULD include the word "supersede".
 
 Rationale: People make mistakes and need the ability to revoke or
-correct them; both `cancel' and `supersede' exist for good reasons.
+correct them; both `cancel' and `supersede' exist for good reasons. 
 However, software should not encourage users to abuse the net, either
 intentionally or accidentally, by sending unauthorized (`rogue') cancels
 or supersedes.  The supersede option is essential: due (a.o.) to
@@ -753,3 +754,13 @@ reading programs.
 
 The kind folks of news.software.readers (you know who you are) that
 have helped discussing the issues that pertain to the GNSKA cause.
+
+-----BEGIN PGP SIGNATURE-----
+Version: PGP 6.5.8
+
+iQCVAwUBP59sFihIY6bIQPMpAQGv2QQAhD1M2vo6ASncrrVitDfVuyLY4WuFc607
+24G73/uxY41/6PdzLkTe3+9Lb8RUjHhgNZvMJDc42H3veV177jHkOMOnkAHL3Nvl
+936CzXPxAsnn3YSmrCFT+cRrepvdYVoxPKu3wbhpJNTDcoyI5OcUFyOYhwKRpg31
+sVBe/csBC9g=
+=Typt
+-----END PGP SIGNATURE-----

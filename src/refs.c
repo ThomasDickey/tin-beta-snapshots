@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2003-10-03
+ *  Updated   : 2004-02-10
  *  Notes     : Cacheing of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -61,6 +61,7 @@ static char *_get_references(struct t_msgid *refptr, int depth);
 static struct t_msgid *add_msgid(int key, const char *msgid, struct t_msgid *newparent);
 static struct t_msgid *find_next(struct t_msgid *ptr);
 static struct t_msgid *parse_references(char *r);
+static t_bool valid_msgid(const char *msgid);
 static unsigned int hash_msgid(const char *key);
 static void add_to_parent(struct t_msgid *ptr);
 static void build_thread(struct t_msgid *ptr);
@@ -173,6 +174,36 @@ add_to_parent(
 /*		ptr->sibling is already NULL */
 		p->sibling = ptr;
 	}
+}
+
+
+/*
+ * Checks if Message-ID has valid format
+ * Returns TRUE if it does, FALSE if it does not
+ *
+ * TODO: combine with post.c:damaged_id()?
+ */
+static t_bool
+valid_msgid(
+	const char *msgid)
+{
+	size_t mlen = 0;
+	t_bool at_present = 0;
+
+	if (!msgid || *msgid != '<')
+		return FALSE;
+
+	while (isascii((unsigned char) *msgid) && isgraph((unsigned char) *msgid) && !iscntrl((unsigned char) *msgid) && *msgid != '>') {
+		if (*msgid == '@')
+			at_present = TRUE;
+		mlen++;
+		msgid++;
+	}
+
+	if (!at_present || (*msgid != '>') || mlen <= 2 || *(msgid + 1))
+		return FALSE;
+
+	return TRUE;
 }
 
 
@@ -367,11 +398,17 @@ parse_references(
 	 * By definition, the head of the thread has no parent
 	 */
 	parent = NULL;
+
+	if (!valid_msgid(ptr))
+		return NULL;
+
 	current = add_msgid(REF_REF, ptr, parent);
 
 	while ((ptr = strtok(NULL, REF_SEP)) != NULL) {
-		parent = current;
-		current = add_msgid(REF_REF, ptr, parent);
+		if (valid_msgid(ptr)) {
+			parent = current;
+			current = add_msgid(REF_REF, ptr, parent);
+		}
 	}
 
 	return current;
@@ -874,7 +911,7 @@ void
 build_references(
 	struct t_group *group)
 {
-	char *s, *t;
+	char *s;
 	int i;
 	struct t_article *art;
 	struct t_msgid *refs;
@@ -914,32 +951,45 @@ build_references(
 			 *
 			 * TODO: do this in a single pass
 			 */
-			while (((s = strrchr(art->refs, ' ')) != NULL) && (!strcmp(art->msgid, s + 1))) {
+
+			s = art->refs + strlen (art->refs) - 1;
+
+			/*
+			 * Trim trailing blanks
+			 */
+			while ((s > art->refs) && ((*s == ' ') || (*s == '\t')))
+				*s-- = '\0';
+			/*
+			 * Skip over supposed Message-ID
+			 */
+			while ((s > art->refs) && (*s != ' ') && (*s != '\t'))
+				s--;
+			/*
+			 * Move to Message-ID start
+			 */
+			if ((*s == ' ') || (*s == '\t'))
+				s++;
+
+			if (!strcmp(art->msgid, s)) {
 				/*
 				 * Remove circular reference to current article
 				 */
-				DEBUG_PRINT((dbgfd, "removing circular reference to%s\n", s));
+				DEBUG_PRINT((dbgfd, "removing circular reference to: %s\n", s));
 				*s = '\0';
 			}
-			while (((t = strrchr(art->refs, '\t')) != NULL) && (!strcmp(art->msgid, t + 1))) {
-				/*
-				 * Remove circular reference to current article
-				 */
-				DEBUG_PRINT((dbgfd, "removing circular reference to%s\n", t));
-				*t = '\0';
-			}
-			if (t > s)
-				s = t;
 
 			if (s != NULL) {
-				art->refptr = add_msgid(MSGID_REF, art->msgid, add_msgid(REF_REF, s + 1, NULL));
+				if (valid_msgid(art->msgid))
+					art->refptr = add_msgid(MSGID_REF, art->msgid, add_msgid(REF_REF, s, NULL));
 				*s = '\0';
 			} else {
-				art->refptr = add_msgid(MSGID_REF, art->msgid, add_msgid(REF_REF, art->refs, NULL));
+				if (valid_msgid(art->msgid))
+					art->refptr = add_msgid(MSGID_REF, art->msgid, add_msgid(REF_REF, art->refs, NULL));
 				FreeAndNull(art->refs);
 			}
 		} else
-			art->refptr = add_msgid(MSGID_REF, art->msgid, NULL);
+			if (valid_msgid(art->msgid))
+				art->refptr = add_msgid(MSGID_REF, art->msgid, NULL);
 
 		FreeAndNull(art->msgid);	/* Now cached - discard this */
 	}
@@ -961,7 +1011,7 @@ build_references(
 
 		refs = parse_references(art->refs);
 
-		if (art->refptr->parent)
+		if (art->refptr->parent && valid_msgid(art->refptr->parent->txt))
 			add_msgid(REF_REF, art->refptr->parent->txt, refs);
 
 		FreeAndNull(art->refs);

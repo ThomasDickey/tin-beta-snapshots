@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2003-12-26
+.\" Updated   : 2003-01-12
 .\" Notes     : needs a some work
 .\"
-.TH tin 5 "December 26th, 2003" "1.7.4" "A Usenet newsreader"
+.TH tin 5 "January 12th, 2004" "1.7.4" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -211,9 +211,9 @@ needsterminal
 .sp
 .RS
 default NNTP-server to read news from if not reading from the local spool.
-\&'\fB-g\fP \fIserver\fR', $\fBNNTPSERVER\fP and a given default at compile
-time have higher priority (in that order) and override any server
-specified \fI/etc/nntpserver\fR.
+\&'\fB-g\fP \fIserver\fR', $\fBNNTPSERVER\fP have higher priority (in
+that order), the default server given at compile time has lower
+priority.
 .RE
 .PP
 
@@ -1327,7 +1327,7 @@ used for mailing articles to other people. Default is '%M "%T" < %F' (e.g.,
 different command line parameters to be used such as 'elm -s "%S" "%T" <
 "%F"' (e.g., elm -s "subject" "iain" < .article) or 'sendmail -oem -t < %F'
 (e.g. sendmail -oem -t < .article).
-.\" TODO: document %S, %T, %M, %F...
+.\" TODO: document %S, %T, %M, %F, %U ...
 .TP
 .B default_move_group
 .TP

@@ -1,36 +1,36 @@
-MANIFEST for tin-1.7.4 (Sun Jan 11 17:17:14 CET 2004)
+MANIFEST for tin-1.7.4 (Thu Feb 12 10:44:27 CET 2004)
 ----------------------------------------------------
   12887 ./Makefile
    7358 ./MANIFEST
    1440 ./README
-    313 ./README.MAC
+    564 ./README.MAC
    2209 ./README.VMS
    1006 ./README.WIN
- 133038 ./aclocal.m4
+ 137915 ./aclocal.m4
     882 ./conf-tin
-  42854 ./config.guess
-  30880 ./config.sub
- 458271 ./configure
-  30083 ./configure.in
+  43040 ./config.guess
+  30990 ./config.sub
+ 472592 ./configure
+  30339 ./configure.in
    7123 ./install.sh
     777 ./mkdirs.sh
    1505 ./tin.spec
   18847 ./doc/ABOUT-NLS
-  11082 ./doc/CHANGES
+  12106 ./doc/CHANGES
  226345 ./doc/CHANGES.old
    1469 ./doc/DEBUG_REFS
-  29301 ./doc/INSTALL
-  30242 ./doc/TODO
-    698 ./doc/WHATSNEW
-   2617 ./doc/art_handling.txt
+  29542 ./doc/INSTALL
+  30552 ./doc/TODO
+    699 ./doc/WHATSNEW
+   2618 ./doc/art_handling.txt
    1700 ./doc/article.txt
    3862 ./doc/auth.txt
    5346 ./doc/config-anomalies
   11237 ./doc/filtering
-  35037 ./doc/good-netkeeping-seal
+  35304 ./doc/good-netkeeping-seal
    3803 ./doc/internals.txt
   23621 ./doc/iso2asc.txt
-   4048 ./doc/keymap.sample
+   4042 ./doc/keymap.sample
     660 ./doc/mailcap.sample
    3365 ./doc/mime.types
    1541 ./doc/nov_tests
@@ -39,23 +39,23 @@ MANIFEST for tin-1.7.4 (Sun Jan 11 17:17:14 CET 2004)
    2711 ./doc/rcvars.txt
    1525 ./doc/reading-mail.txt
    4947 ./doc/umlaute.txt
-   4245 ./doc/umlauts.txt
+   4246 ./doc/umlauts.txt
    4675 ./doc/tin.defaults
-   7379 ./doc/tinews.1
-   1879 ./doc/tools.txt
+  11541 ./doc/tinews.1
+   2237 ./doc/tools.txt
    5870 ./doc/mbox.5
    4168 ./doc/mmdf.5
    2128 ./doc/newsoverview.5
    6963 ./doc/plp_snprintf.3
- 121409 ./doc/tin.1
-  71277 ./doc/tin.5
+ 121443 ./doc/tin.1
+  71250 ./doc/tin.5
    4733 ./doc/w2r.1
    2196 ./doc/wildmat.3
     344 ./tools/expiretover
    3815 ./tools/metamutt
    2787 ./tools/opt-case.pl
    1410 ./tools/tinlock
-  17984 ./tools/tinews.pl
+  24930 ./tools/tinews.pl
    1561 ./tools/url_handler.sh
    3172 ./tools/w2r.pl
    1661 ./tools/expand_aliases.tgz
@@ -68,23 +68,23 @@ MANIFEST for tin-1.7.4 (Sun Jan 11 17:17:14 CET 2004)
    6340 ./include/newsrc.h
    6507 ./include/nntplib.h
     665 ./include/plp_snprintf.h
-  12102 ./include/policy.h
-  29731 ./include/proto.h
+  12162 ./include/policy.h
+  29737 ./include/proto.h
    5047 ./include/rfc2046.h
    3373 ./include/stpwatch.h
-   5609 ./include/tcurses.h
-  61820 ./include/tin.h
+   5722 ./include/tcurses.h
+  62040 ./include/tin.h
   13059 ./include/tinrc.h
-   5662 ./include/tnntp.h
-   2256 ./include/trace.h
+   5670 ./include/tnntp.h
+   2264 ./include/trace.h
    2530 ./include/version.h
   25935 ./src/active.c
   53864 ./src/art.c
   31065 ./src/attrib.c
   12365 ./src/auth.c
   13846 ./src/charset.c
-   7082 ./src/color.c
-  89271 ./src/config.c
+   7086 ./src/color.c
+  89277 ./src/config.c
   29572 ./src/cook.c
   30644 ./src/curses.c
    9791 ./src/debug.c
@@ -99,18 +99,18 @@ MANIFEST for tin-1.7.4 (Sun Jan 11 17:17:14 CET 2004)
   27952 ./src/help.c
   13862 ./src/inews.c
   32564 ./src/init.c
-   2208 ./src/joinpath.c
+   2216 ./src/joinpath.c
   38018 ./src/keymap.c
- 114930 ./src/lang.c
-   4474 ./src/langinfo.c
+ 114925 ./src/lang.c
+   4486 ./src/langinfo.c
    7033 ./src/list.c
    6672 ./src/lock.c
   13362 ./src/mail.c
-  25998 ./src/main.c
+  25885 ./src/main.c
   10227 ./src/makecfg.c
   12294 ./src/memory.c
    5257 ./src/mimetypes.c
-  84132 ./src/misc.c
+  84456 ./src/misc.c
   40354 ./src/newsrc.c
   37078 ./src/nntplib.c
    7291 ./src/nrctbl.c
@@ -119,15 +119,15 @@ MANIFEST for tin-1.7.4 (Sun Jan 11 17:17:14 CET 2004)
   16966 ./src/plp_snprintf.c
   12695 ./src/pgp.c
  132690 ./src/post.c
-  14953 ./src/prompt.c
+  15448 ./src/prompt.c
   10680 ./src/read.c
-  24980 ./src/refs.c
+  25868 ./src/refs.c
    5276 ./src/regex.c
   14488 ./src/rfc1524.c
    5553 ./src/rfc2045.c
   29612 ./src/rfc2046.c
   23826 ./src/rfc2047.c
-  37008 ./src/save.c
+  37040 ./src/save.c
   11460 ./src/screen.c
   15404 ./src/search.c
   30742 ./src/select.c
@@ -136,12 +136,12 @@ MANIFEST for tin-1.7.4 (Sun Jan 11 17:17:14 CET 2004)
    7215 ./src/strftime.c
   19287 ./src/string.c
   13875 ./src/tags.c
-  16381 ./src/tcurses.c
+  16389 ./src/tcurses.c
    3058 ./src/tmpfile.c
    3376 ./src/my_tmpfile.c
   40267 ./src/thread.c
-   2464 ./src/trace.c
-   4114 ./src/version.c
+   2472 ./src/trace.c
+   4117 ./src/version.c
    5453 ./src/wildmat.c
    7139 ./src/xface.c
    7746 ./src/xref.c
@@ -172,7 +172,7 @@ MANIFEST for tin-1.7.4 (Sun Jan 11 17:17:14 CET 2004)
   64875 ./pcre/ChangeLog
    8049 ./pcre/INSTALL
    2218 ./pcre/LICENCE
-   2404 ./pcre/Makefile.in
+   2643 ./pcre/Makefile.in
   12558 ./pcre/Makefile.in-old
    6142 ./pcre/NEWS
    5381 ./pcre/NON-UNIX-USE
@@ -209,9 +209,9 @@ MANIFEST for tin-1.7.4 (Sun Jan 11 17:17:14 CET 2004)
    1528 ./pcre/testdata/testoutput3
   14786 ./pcre/testdata/testoutput4
   22706 ./pcre/testdata/testoutput5
-  19506 ./include/autoconf.hin
+  19633 ./include/autoconf.hin
    5800 ./pcre/pcre.mms
-  20127 ./src/Makefile.in
+  20816 ./src/Makefile.in
    7493 ./src/tincfg.tbl
    8747 ./src/descrip.mms
     954 ./libcanlock/Build
@@ -245,7 +245,7 @@ MANIFEST for tin-1.7.4 (Sun Jan 11 17:17:14 CET 2004)
      72 ./intl/ChangeLog
   13325 ./intl/config.charset
    1820 ./intl/dcgettext.c
-  34038 ./intl/dcigettext.c
+  34160 ./intl/dcigettext.c
    1895 ./intl/dcngettext.c
    1792 ./intl/dgettext.c
    1927 ./intl/dngettext.c
@@ -253,18 +253,18 @@ MANIFEST for tin-1.7.4 (Sun Jan 11 17:17:14 CET 2004)
    5736 ./intl/finddomain.c
    1891 ./intl/gettext.c
    3104 ./intl/gettext.h
-   7678 ./intl/gettextP.h
+   7686 ./intl/gettextP.h
    1835 ./intl/hash-string.h
    4763 ./intl/intl-compat.c
   10480 ./intl/l10nflist.c
    1932 ./intl/libgettext.h
    4397 ./intl/libgnuintl.h
    3380 ./intl/loadinfo.h
-  14967 ./intl/loadmsgcat.c
+  14865 ./intl/loadmsgcat.c
    6905 ./intl/localcharset.c
    2657 ./intl/locale.alias
-   9450 ./intl/localealias.c
-   9968 ./intl/Makefile.in
+   9432 ./intl/localealias.c
+  10014 ./intl/Makefile.in
    2001 ./intl/ngettext.c
   38981 ./intl/plural.c
    8376 ./intl/plural.y
@@ -274,13 +274,13 @@ MANIFEST for tin-1.7.4 (Sun Jan 11 17:17:14 CET 2004)
      41 ./intl/VERSION
    4962 ./po/Makefile.inn
     828 ./po/POTFILES.in
- 117990 ./po/tin.pot
- 160890 ./po/de.gmo
- 190990 ./po/de.po
+ 117985 ./po/tin.pot
+ 160871 ./po/de.gmo
+ 190971 ./po/de.po
    7027 ./po/en_GB.gmo
- 120374 ./po/en_GB.po
- 153363 ./po/et.gmo
- 182972 ./po/et.po
-  99582 ./po/fr.gmo
- 160757 ./po/fr.po
-5922765 total
+ 120369 ./po/en_GB.po
+ 153223 ./po/et.gmo
+ 182928 ./po/et.po
+ 103524 ./po/fr.gmo
+ 162893 ./po/fr.po
+5965120 total

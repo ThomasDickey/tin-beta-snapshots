@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-08-26
+ *  Updated   : 2004-01-12
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -203,10 +203,8 @@ check_start_save_any_news(
 					art_count++;
 					if (arts[j].score >= tinrc.score_select)
 						hot_count++;
-#if 0 /* is "-cZ" usefull? */
 					if (catchup)
 						art_mark(group, &arts[j], ART_READ);
-#endif /* 0 */
 					break;
 
 				case START_ANY_NEWS:
@@ -288,7 +286,10 @@ check_start_save_any_news(
 
 	switch (function) {
 		case CHECK_ANY_NEWS:
-			if (unread_news)
+			/*
+			 * TODO: shall we return 2 or 0 in the -cZ case?
+			 */
+			if (unread_news && !catchup)
 				return 2;
 			else {
 				if (verbose)

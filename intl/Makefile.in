@@ -44,12 +44,15 @@ mkinstalldirs = $(SHELL) `case "$(MKINSTALLDIRS)" in /*) echo "$(MKINSTALLDIRS)"
 
 l = @INTL_LIBTOOL_SUFFIX_PREFIX@
 
-AR = ar
+ARCHIVE = @AR@ @AR_OPTS@
 CC = @CC@
 LIBTOOL = @LIBTOOL@
 RANLIB = @RANLIB@
 YACC = @INTLBISON@ -y -d
 YFLAGS = --name-prefix=__gettext
+
+x = @EXEEXT@
+o = .@OBJEXT@
 
 DEFS = -DLOCALEDIR=\"$(localedir)\" -DLOCALE_ALIAS_PATH=\"$(aliaspath)\" \
 -DLIBDIR=\"$(libdir)\" @DEFS@
@@ -88,8 +91,8 @@ LTV_REVISION=1
 LTV_AGE=0
 
 .SUFFIXES:
-.SUFFIXES: .c .y .o .lo .sin .sed
-.c.o:
+.SUFFIXES: .c .y $o .lo .sin .sed
+.c$o:
 	$(COMPILE) $<
 .c.lo:
 	$(LIBTOOL) --mode=compile $(COMPILE) $<
@@ -112,7 +115,7 @@ all-no-no:
 
 libintl.a libgnuintl.a: $(OBJECTS)
 	rm -f $@
-	$(AR) cru $@ $(OBJECTS)
+	$(ARCHIVE) $@ $(OBJECTS)
 	$(RANLIB) $@
 
 libintl.la libgnuintl.la: $(OBJECTS)
@@ -269,7 +272,7 @@ ID: $(HEADERS) $(SOURCES)
 
 
 mostlyclean:
-	rm -f *.a *.la *.o *.lo core core.*
+	rm -f *.a *.la *$o *.lo core core.*
 	rm -f libintl.h charset.alias ref-add.sed ref-del.sed
 	rm -f -r .libs _libs
 

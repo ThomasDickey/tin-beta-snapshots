@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-12-17
+ *  Updated   : 2004-01-20
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -816,7 +816,7 @@ read_config_file(
 	 */
 	{
 #ifndef NO_LOCALE
-		char *p;
+		const char *p;
 
 		if ((p = tin_nl_langinfo(CODESET)) != NULL) {
 			if (!strcmp(p, "ANSI_X3.4-1968"))
