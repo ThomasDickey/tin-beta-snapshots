@@ -385,7 +385,8 @@ extern constext *txt_mime_encodings[NUM_MIME_ENCODINGS];
 extern constext *txt_onoff[];
 extern constext *txt_post_process_type[];
 extern constext *txt_show_from[];
-extern constext *txt_sort_type[];
+extern constext *txt_sort_a_type[]; /* a=articles */
+extern constext *txt_sort_t_type[]; /* t=threads */
 extern constext *txt_strip_bogus_type[];
 extern constext *txt_thread[];
 extern constext *txt_wildcard_type[];
@@ -1289,6 +1290,7 @@ extern struct opttxt txt_draw_arrow;
 extern struct opttxt txt_inverse_okay;
 extern struct opttxt txt_thread_articles;
 extern struct opttxt txt_sort_article_type;
+extern struct opttxt txt_sort_threads_type;
 extern struct opttxt txt_pos_first_unread;
 extern struct opttxt txt_show_only_unread_arts;
 extern struct opttxt txt_show_only_unread_groups;

@@ -152,7 +152,7 @@ static t_bool must_include (const char *id);
 static t_bool pcCopyArtHeader (int iHeader, const char *pcArt, char *result);
 static t_bool repair_article (char *result);
 static t_bool submit_mail_file (const char *file);
-static void add_mid_header (const char *infile, const char *a_message_id);
+static void add_headers (const char *infile, const char *a_message_id);
 static void appendid (char **where, const char **what);
 static void find_reply_to_addr (char *from_addr, t_bool parse, struct t_header *hdr);
 static void join_references (char *buffer, const char *oldrefs, const char *newref);
@@ -1435,9 +1435,9 @@ post_article_done:
 
 		if (tinrc.keep_posted_articles && type != POST_REPOST) {
 			char a_mailbox[LEN];
-			/* log Message-ID if given in a_message_id */
-			if (*a_message_id)
-				add_mid_header(article, a_message_id);
+			/* log Message-ID if given in a_message_id,
+			 * add Date:, remove empty headers*/
+			add_headers(article, a_message_id);
 			if (!strfpath (posted_msgs_file, a_mailbox, sizeof (a_mailbox), &CURR_GROUP))
 				STRCPY(a_mailbox, posted_msgs_file);
 			if (!append_mail(article, userid, a_mailbox)) {
@@ -2197,7 +2197,7 @@ post_response (
 		ch = prompt_slk_response(iKeyPageMail, &menukeymap.post_mail_fup,
 				_(txt_resp_to_poster),
 				printascii (keymail, map_to_local (iKeyPostMail, &menukeymap.post_mail_fup)),
-				printascii (keypost, map_to_local (iKeyPostPost3, &menukeymap.post_mail_fup)),
+				printascii (keypost, map_to_local (iKeyPost, &menukeymap.post_mail_fup)),
 				printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_mail_fup)));
 		switch (ch) {
 			case iKeyPost:
@@ -2245,7 +2245,7 @@ post_response (
 
 		ch = prompt_slk_response(iKeyPostPost3, &menukeymap.post_ignore_fupto,
 					_(txt_prompt_fup_ignore),
-					printascii (keypost, map_to_local (iKeyPostPost3, &menukeymap.post_ignore_fupto)),
+					printascii (keypost, map_to_local (iKeyPost, &menukeymap.post_ignore_fupto)),
 					printascii (keyignore, map_to_local (iKeyPostIgnore, &menukeymap.post_ignore_fupto)),
 					printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_ignore_fupto)));
 		switch (ch) {
@@ -3913,7 +3913,6 @@ pcCopyArtHeader (
 		if (*ptr == '\0')
 			break;
 
-		unfold_header (ptr);
 		switch (iHeader) {
 			case HEADER_TO:
 				if (STRNCASECMPEQ(ptr, "To: ", 4) || STRNCASECMPEQ(ptr, "Cc: ", 4)) {
@@ -4105,21 +4104,25 @@ get_secret (
 
 
 /*
- * adds Message-ID Header to infile
+ * adds Message-ID- and Date-Header to infile, removes empty headers
  */
 static void
-add_mid_header (
+add_headers (
 	const char *infile,
 	const char *a_message_id)
 {
 	FILE *fp_in;
-	char line[HEADER_LEN];
+	char *line;
 	char outfile[PATH_LEN];
 	int fd_out = -1;
 	ssize_t rval = (ssize_t) -1;
-	t_bool inhdrs = TRUE;
-	t_bool addedmid = TRUE;
+	t_bool inhdrs = TRUE, writesuccess = TRUE;
+	t_bool addmid = TRUE;
+	t_bool adddate = TRUE;
 
+	if (!(*a_message_id))
+		addmid = FALSE;
+		
 	if ((fp_in = fopen (infile, "r")) == (FILE *) 0)
 		return;
 
@@ -4128,24 +4131,77 @@ add_mid_header (
 		return;
 	}
 
-	while ((fgets (line, (int) sizeof(line), fp_in) != (char *) 0) && addedmid) {
+	while ((line = tin_fgets(fp_in, inhdrs)) != (char *) 0) {
 		if (inhdrs) {
-			if (line[0] == '\n') {			/* End of headers */
+			if (strlen(line) == 0) {			/* End of headers */
 				inhdrs = FALSE;
-				snprintf(line, sizeof(line) - 1, "Message-ID: %s\n\n", a_message_id);
+				if (addmid) {
+					char msgidbuf[HEADER_LEN];
+					snprintf(msgidbuf, sizeof(msgidbuf) - 1, "Message-ID: %s\n", a_message_id);
+					if ((rval = write (fd_out, msgidbuf, strlen(msgidbuf))) == (ssize_t) -1) /* abort on write errors */ {
+						writesuccess = FALSE;
+						break;
+					}
+				}
+				if (adddate) {
+					time_t epoch;
+					struct tm *gmdate;
+					char dateheader[50];
+					char *old_lc_all = (char *)0, *old_lc_time = (char *)0;
+
+					/* Unlocalized date-header */
+					if (getenv("LC_ALL") != (char*) 0) {
+						old_lc_all = setlocale(LC_ALL, (char *) 0);
+						setlocale(LC_ALL, "POSIX");
+					} else {
+						old_lc_time = setlocale(LC_TIME, (char *) 0);
+						setlocale(LC_TIME, "POSIX");
+					}
+					(void) time (&epoch);
+					gmdate=gmtime(&epoch); /*my_strftime has no %z or %Z */
+					my_strftime(dateheader, sizeof(dateheader) - 1, "Date: %a, %d %b %Y %H:%M:%S -0000\n", gmdate);
+					/* change back LC_* */
+					if (old_lc_all != (char*) 0)
+						setlocale(LC_ALL, old_lc_all);
+					else if (old_lc_time != (char*) 0)
+						setlocale(LC_TIME, old_lc_time);
+					if ((rval = write (fd_out, dateheader, strlen(dateheader))) == (ssize_t) -1) /* abort on write errors */ {
+						writesuccess = FALSE;
+						break;
+					}
+				}
 			} else {
-				char *ptr;
-				if ((ptr = parse_header (line, "Message-ID", FALSE))) /* Article already contains a Message-ID Header */
-					addedmid = FALSE;
+				char *cp;
+				t_bool emptyhdr = TRUE;
+
+				/* check_article_to_be_posted takes care that we have at
+				 * least ": " in and "\n" at the end of every (unfolded) header
+				 * line
+				 */
+				for (cp = strchr (line, ':'), cp++; *cp; cp++) {
+					if (!isspace(*cp)) {
+						emptyhdr=FALSE;
+						break;
+					}
+				}
+				if (emptyhdr)
+					continue;
+
+				if (STRNCASECMPEQ(line, "Message-ID: <", sizeof("Message-ID: <")-1 )) /* Article already contains a Message-ID Header */
+					addmid = FALSE;
+				else if (STRNCASECMPEQ(line, "Date: ", sizeof("Date: ")-1 )) /* Article already contains a Date Header */
+					adddate = FALSE;
 			}
 		}
-		if ((rval = write (fd_out, line, strlen(line))) == (ssize_t) -1) /* abort on write errors */
-			addedmid = FALSE;
+		if (((rval = write (fd_out, line, strlen(line))) == (ssize_t) -1) || ((rval = write (fd_out, "\n", 1)) == (ssize_t) -1)) /* abort on write errors */ {
+			writesuccess = FALSE;
+			break;
+		}
 	}
 
 	close (fd_out);
 	fclose (fp_in);
-	if (addedmid)
+	if (writesuccess)
 		rename_file (outfile, infile);
 	else
 		unlink(outfile);

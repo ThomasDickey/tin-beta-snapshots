@@ -122,6 +122,7 @@ struct t_config {
 	int reread_active_file_secs;		/* reread active file interval in seconds */
 	int show_author;					/* show_author value from 'M' menu in tinrc */
 	int sort_article_type;				/* method used to sort arts[] */
+	int sort_threads_type;				/* method used to sort base[] */
 	int strip_bogus;
 	int thread_articles;				/* threading system for viewing articles */
 	int wildcard;						/* 0=wildmat, 1=regex */

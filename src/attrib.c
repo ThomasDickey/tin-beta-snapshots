@@ -88,6 +88,7 @@
 #ifdef HAVE_ISPELL
 #	define ATTRIB_ISPELL		32
 #endif /* HAVE_ISPELL */
+#define ATTRIB_SORT_THREADS_TYPE	33
 
 /*
  * Local prototypes
@@ -145,6 +146,7 @@ set_default_attributes (
 	attributes->show_only_unread = tinrc.show_only_unread_arts;
 	attributes->thread_arts = tinrc.thread_articles;
 	attributes->sort_art_type = tinrc.sort_article_type;
+	attributes->sort_threads_type = tinrc.sort_threads_type;
 	attributes->show_author = tinrc.show_author;
 	attributes->auto_save = tinrc.auto_save;
 	attributes->auto_select = FALSE;
@@ -282,7 +284,10 @@ read_attributes_file (
 				MATCH_BOOLEAN ("show_only_unread=", ATTRIB_SHOW_ONLY_UNREAD);
 				MATCH_INTEGER ("sort_art_type=",
 					ATTRIB_SORT_ART_TYPE,
-					SORT_BY_SCORE_ASCEND);
+					SORT_ARTICLES_BY_SCORE_ASCEND);
+				MATCH_INTEGER ("sort_threads_type=",
+					ATTRIB_SORT_THREADS_TYPE,
+					SORT_THREADS_BY_SCORE_DESCEND);
 				MATCH_INTEGER ("show_author=",
 					ATTRIB_SHOW_AUTHOR,
 					SHOW_FROM_BOTH);
@@ -420,6 +425,9 @@ do_set_attrib (
 		case ATTRIB_SORT_ART_TYPE:
 			group->attribute->sort_art_type = *data;
 			break;
+		case ATTRIB_SORT_THREADS_TYPE:
+			group->attribute->sort_threads_type = *data;
+			break;
 		case ATTRIB_POST_PROC_TYPE:
 			group->attribute->post_proc_type = *data;
 			break;
@@ -541,6 +549,8 @@ write_attributes_file (
 	fprintf (fp, _("#    3=from descend, 4=from ascend,\n"));
 	fprintf (fp, _("#    5=date descend, 6=date ascend\n"));
 	fprintf (fp, _("#    7=score descend, 8=score ascend\n"));
+	fprintf (fp, _("#  sort_threads_type=NUM\n"));
+	fprintf (fp, _("#    0=none, 1=score descend, 2=score ascend\n"));
 	fprintf (fp, _("#  post_proc_type=NUM\n"));
 	fprintf (fp, _("#    0=none, 1=unshar, 2=uudecode\n"));
 	fprintf (fp, _("#  quick_kill_scope=STRING (ie. talk.*)\n"));
@@ -619,6 +629,7 @@ write_attributes_file (
 		fprintf (fp, "delete_tmp_files=%s\n",
 			print_boolean (group->attribute->delete_tmp_files));
 		fprintf (fp, "sort_art_type=%d\n", group->attribute->sort_art_type);
+		fprintf (fp, "sort_threads_type=%d\n", group->attribute->sort_threads_type);
 		fprintf (fp, "show_author=%d\n", group->attribute->show_author);
 		fprintf (fp, "post_proc_type=%d\n", group->attribute->post_proc_type);
 		fprintf (fp, "quick_kill_scope=%s\n",
@@ -727,6 +738,7 @@ dump_attributes (
 		fprintf (stderr, "delete_tmp_files=%s\n",
 			print_boolean (group->attribute->delete_tmp_files));
 		fprintf (stderr, "sort_art_type=%d\n", group->attribute->sort_art_type);
+		fprintf (stderr, "sort_threads_type=%d\n", group->attribute->sort_threads_type);
 		fprintf (stderr, "show_author=%d\n", group->attribute->show_author);
 		fprintf (stderr, "post_proc_type=%d\n", group->attribute->post_proc_type);
 		fprintf (stderr, "quick_kill_scope=%s\n",

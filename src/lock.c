@@ -3,7 +3,7 @@
  *  Module    : lock.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1998-07-27
- *  Updated   : 2001-04-24
+ *  Updated   : 2001-05-22
  *  Notes     :
  *
  * Copyright (c) 1997-2001 Urs Janssen <urs@tin.org>
@@ -38,6 +38,19 @@
 #	include "tin.h"
 #endif /* !TIN_H */
 
+#if !defined(USE_FLOCK) && !defined(USE_LOCKF) && !defined(USE_FCNTL)
+#	ifdef HAVE_FCNTL
+#		define USE_FCNTL
+#	else
+#		ifdef HAVE_LOCKF
+#			define USE_LOCKF
+#		else
+#			ifdef HAVE_FLOCK
+#				define USE_FLOCK
+#			endif /* HAVE_FLOCK */
+#		endif /* HAVE_LOCKF */
+#	endif /* HAVE_FCNTL */
+#endif /* !USE_FLOCK && !USE_LOCKF && !USE_FCNTL */
 
 /*
  * fd_lock(fd, block)
@@ -56,7 +69,7 @@ fd_lock(
 {
 	int rval = -1; /* assume an error */
 
-#ifdef HAVE_FCNTL
+#ifdef USE_FCNTL
 	struct flock flk;
 
 	flk.l_type = F_WRLCK;
@@ -65,17 +78,17 @@ fd_lock(
 	flk.l_len = 0;
 	if ((rval = fcntl(fd, block ? F_SETLKW : F_SETLK, &flk)))
 		return rval; /* fcntl locking failed */
-#endif /* HAVE_FCNTL */
-
-#ifdef HAVE_FLOCK
-	if ((rval = flock(fd, block ? LOCK_EX : (LOCK_EX | LOCK_NB))))
-		return rval; /* flock locking failed */
-#endif /* HAVE_FLOCK */
-
-#ifdef HAVE_LOCKF
+#else
+#	ifdef USE_LOCKF
 	if ((rval = lockf(fd, block ? F_LOCK : F_TLOCK, 0L)))
 		return rval; /* lockf locking failed */
-#endif /* HAVE_LOCKF */
+#	else
+#		ifdef USE_FLOCK
+	if ((rval = flock(fd, block ? LOCK_EX : (LOCK_EX | LOCK_NB))))
+		return rval; /* flock locking failed */
+#		endif /* USE_FLOCK */
+#	endif /* USE_LOCKF */
+#endif /* USE_FCNTL */
 
 	return rval;	/* all available locks successfully applied or no locking available */
 }
@@ -99,7 +112,7 @@ test_fd_lock(
 	int rval = -1; /* assume an error */
 
 	errno = 0;
-#ifdef HAVE_FCNTL
+#ifdef USE_FCNTL
 	{
 		struct flock flk;
 
@@ -116,19 +129,8 @@ test_fd_lock(
 				rval = 0; /* file is not fcntl locked */
 		}
 	}
-#endif /* HAVE_FCNTL */
-
-#ifdef HAVE_FLOCK
-	if (flock(fd, (LOCK_EX|LOCK_NB))) {
-		if (errno == EWOULDBLOCK)
-			return 1;	/* file is locked */
-		else
-			return -1;	/* some error occured */
-	} else
-		rval = 0; /* file is not flock locked */
-#endif /* HAVE_FLOCK */
-
-#ifdef HAVE_LOCKF
+#else
+#	ifdef USE_LOCKF
 	if (lockf(fd, F_TEST, 0L)) {
 		if (errno == EACCES)
 			return 1;	/* file is locked */
@@ -136,7 +138,19 @@ test_fd_lock(
 			return -1;	/* some error occured */
 	} else
 		rval = 0;	/* file is not lockf locked */
-#endif /* HAVE_LOCKF */
+#	else
+#		ifdef USE_FLOCK
+	if (flock(fd, (LOCK_EX|LOCK_NB))) {
+		if (errno == EWOULDBLOCK)
+			return 1;	/* file is locked */
+		else
+			return -1;	/* some error occured */
+	} else
+		rval = 0; /* file is not flock locked */
+
+#		endif /* USE_FLOCK */
+#	endif /* USE_LOCKF */
+#endif /* USE_FCNTL */
 
 	return rval;	/* file wasn't locked or no locking available */
 }
@@ -159,17 +173,7 @@ fd_unlock(
 {
 	int rval = -1; /* assume an error */
 
-#ifdef HAVE_LOCKF
-	if ((rval = lockf(fd, F_ULOCK, 0L)))
-		return rval; /* couldn't release lockf lock */
-#endif /* HAVE_LOCKF */
-
-#ifdef HAVE_FLOCK
-	if ((rval = flock(fd, LOCK_UN)))
-		return rval; /* couldn't release flock lock */
-#endif /* HAVE_FLOCK */
-
-#ifdef HAVE_FCNTL
+#ifdef USE_FCNTL
 	{
 		struct flock flk;
 
@@ -180,7 +184,17 @@ fd_unlock(
 		if ((rval = fcntl(fd, F_SETLK, &flk)))
 			return rval; /* couldn't release fcntl lock */
 	}
-#endif /* HAVE_FCNTL */
+#else
+#	ifdef USE_LOCKF
+	if ((rval = lockf(fd, F_ULOCK, 0L)))
+		return rval; /* couldn't release lockf lock */
+#	else
+#		ifdef USE_FLOCK
+	if ((rval = flock(fd, LOCK_UN)))
+		return rval; /* couldn't release flock lock */
+#		endif /* USE_FLOCK */
+#	endif /* USE_LOCKF */
+#endif /* USE_FCNTL */
 
 	return rval;	/* file successfully unlocked or no locking available */
 }

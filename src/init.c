@@ -275,7 +275,8 @@ struct t_config tinrc = {
 	POST_PROC_NONE,			/* post_process */
 	REREAD_ACTIVE_FILE_SECS,	/* reread_active_file_secs */
 	SHOW_FROM_NAME,				/* show_author */
-	SORT_BY_DATE_ASCEND,		/* sort_article_type */
+	SORT_ARTICLES_BY_DATE_ASCEND,		/* sort_article_type */
+	SORT_THREADS_BY_SCORE_DESCEND,		/* sort_threads_type */
 	BOGUS_ASK,		/* strip_bogus */
 	THREAD_MAX,		/* thread_articles */
 	0,		/* Default to wildmat, not regex */

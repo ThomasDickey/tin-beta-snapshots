@@ -818,7 +818,7 @@ constext *txt_post_process_type[] = {
 		N_("Uudecode")
 };
 
-constext *txt_sort_type[] = {
+constext *txt_sort_a_type[] = {
 		N_("Nothing"),
 		N_("Subject: field (descending)"),
 		N_("Subject: field (ascending)"),
@@ -826,6 +826,12 @@ constext *txt_sort_type[] = {
 		N_("From: field (ascending)"),
 		N_("Date: field (descending)"),
 		N_("Date: field (ascending)"),
+		N_("Score (descending)"),
+		N_("Score (ascending)")
+};
+
+constext *txt_sort_t_type[] = {
+		N_("Nothing"),
 		N_("Score (descending)"),
 		N_("Score (ascending)")
 };
@@ -1101,6 +1107,12 @@ struct opttxt txt_sort_article_type = {
 	N_("# Sort articles by 0=(nothing) 1=(Subject descend) 2=(Subject ascend)\n\
 # 3=(From descend) 4=(From ascend) 5=(Date descend) 6=(Date ascend)\n\
 # 7=(Score descend) 8=(Score ascend).\n")
+};
+
+struct opttxt txt_sort_threads_type = {
+	N_("Sort threads by Nothing or Score. <SPACE> toggles & <CR> sets."),
+	N_("Sort threads by                    : "),
+	N_("# Sort threads by 0=(nothing) 1=(Score descend) 2=(Score ascend).\n")
 };
 
 struct opttxt txt_pos_first_unread = {

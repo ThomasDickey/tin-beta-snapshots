@@ -619,8 +619,8 @@ make_threads (
 	find_base (group);
 #ifdef THREAD_SUM
 	/* sort base[] */
-	if (group->attribute && group->attribute->sort_art_type > SORT_BY_NOTHING && group->attribute->thread_arts > THREAD_NONE)
-		sort_base (group->attribute->sort_art_type);
+	if (group->attribute && group->attribute->sort_threads_type > SORT_THREADS_BY_NOTHING /* && group->attribute->thread_arts > THREAD_NONE*/ )
+		sort_base (group->attribute->sort_threads_type);
 #endif /* THREAD_SUM */
 }
 
@@ -630,23 +630,23 @@ sort_arts (
 	unsigned int sort_art_type)
 {
 	switch (sort_art_type) {
-		case SORT_BY_NOTHING:		/* don't sort at all */
+		case SORT_ARTICLES_BY_NOTHING:		/* don't sort at all */
 			SortBy(artnum_comp);
 			break;
-		case SORT_BY_SUBJ_DESCEND:
-		case SORT_BY_SUBJ_ASCEND:
+		case SORT_ARTICLES_BY_SUBJ_DESCEND:
+		case SORT_ARTICLES_BY_SUBJ_ASCEND:
 			SortBy(subj_comp);
 			break;
-		case SORT_BY_FROM_DESCEND:
-		case SORT_BY_FROM_ASCEND:
+		case SORT_ARTICLES_BY_FROM_DESCEND:
+		case SORT_ARTICLES_BY_FROM_ASCEND:
 			SortBy(from_comp);
 			break;
-		case SORT_BY_DATE_DESCEND:
-		case SORT_BY_DATE_ASCEND:
+		case SORT_ARTICLES_BY_DATE_DESCEND:
+		case SORT_ARTICLES_BY_DATE_ASCEND:
 			SortBy(date_comp);
 			break;
-		case SORT_BY_SCORE_DESCEND:
-		case SORT_BY_SCORE_ASCEND:
+		case SORT_ARTICLES_BY_SCORE_DESCEND:
+		case SORT_ARTICLES_BY_SCORE_ASCEND:
 			SortBy(score_comp);
 			break;
 		default:
@@ -661,8 +661,8 @@ sort_base (
 	unsigned int sort_threads_type)
 {
 	switch (sort_threads_type) {
-		case SORT_BY_SCORE_DESCEND:
-		case SORT_BY_SCORE_ASCEND:
+		case SORT_THREADS_BY_SCORE_DESCEND:
+		case SORT_THREADS_BY_SCORE_ASCEND:
 			qsort (base, (size_t)grpmenu.max, sizeof(long), score_comp_base);
 			break;
 	}
@@ -1147,7 +1147,7 @@ write_nov_file (
 	if (fp == (FILE *) 0)
 		error_message (_(txt_cannot_write_index), nov_file);
 	else {
-		if (group->attribute && group->attribute->sort_art_type != SORT_BY_NOTHING)
+		if (group->attribute && group->attribute->sort_art_type != SORT_ARTICLES_BY_NOTHING)
 			SortBy(artnum_comp);
 
 		if (!overview_index_filename)
@@ -1384,7 +1384,7 @@ subj_comp (
 	/*
 	 * return result of strcmp (reversed for descending)
 	 */
-	return (CURR_GROUP.attribute->sort_art_type == SORT_BY_SUBJ_ASCEND
+	return (CURR_GROUP.attribute->sort_art_type == SORT_ARTICLES_BY_SUBJ_ASCEND
 			? (retval = strcasecmp (s1->subject, s2->subject))
 				? retval : ((s1->date - s2->date) > 0) ? 1 : -1
 			: (retval = strcasecmp (s2->subject, s1->subject))
@@ -1404,7 +1404,7 @@ from_comp (
 	/*
 	 * return result of strcmp (reversed for descending)
 	 */
-	return (CURR_GROUP.attribute->sort_art_type == SORT_BY_FROM_ASCEND
+	return (CURR_GROUP.attribute->sort_art_type == SORT_ARTICLES_BY_FROM_ASCEND
 			? (retval = strcasecmp (s1->from, s2->from))
 				? retval : ((s1->date - s2->date) > 0) ? 1 : -1
 			: (retval = strcasecmp (s2->from, s1->from))
@@ -1429,7 +1429,7 @@ date_comp (
 	const struct t_article *s1 = (const struct t_article *) p1;
 	const struct t_article *s2 = (const struct t_article *) p2;
 
-	if (CURR_GROUP.attribute->sort_art_type == SORT_BY_DATE_ASCEND) {
+	if (CURR_GROUP.attribute->sort_art_type == SORT_ARTICLES_BY_DATE_ASCEND) {
 		/*
 		 * s1->date less than s2->date
 		 */
@@ -1471,7 +1471,7 @@ score_comp (
 	const struct t_article *s1 = (const struct t_article *) p1;
 	const struct t_article *s2 = (const struct t_article *) p2;
 
-	if (CURR_GROUP.attribute->sort_art_type == SORT_BY_SCORE_ASCEND) {
+	if (CURR_GROUP.attribute->sort_art_type == SORT_ARTICLES_BY_SCORE_ASCEND) {
 		if (s1->score < s2->score)
 			return -1;
 
@@ -1501,7 +1501,7 @@ score_comp_base (
 	int a = get_score_of_thread (*(const long *)p1);
 	int b = get_score_of_thread (*(const long *)p2);
 
-	if (CURR_GROUP.attribute->sort_art_type == SORT_BY_SCORE_ASCEND) {
+	if (CURR_GROUP.attribute->sort_threads_type == SORT_THREADS_BY_SCORE_ASCEND) {
 		if (a > b)
 			return 1;
 		if (a < b)

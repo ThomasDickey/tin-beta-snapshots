@@ -278,6 +278,64 @@ else
 	fi
 fi
 
+### which locking method should be used for mailbox locking
+### first look for all available locking methods
+AC_CHECK_FUNC(fcntl,[
+	AC_DEFINE(HAVE_FCNTL)
+	locks="fcntl"])
+AC_CHECK_FUNC(lockf,[  
+	AC_DEFINE(HAVE_LOCKF)
+	locks=$locks" lockf"])
+AC_CHECK_FUNC(flock,
+	[AC_DEFINE(HAVE_FLOCK)
+	locks=$locks" flock"],[
+	AC_CHECK_LIB(bsd, flock,
+		AC_DEFINE(HAVE_FLOCK)
+		locks=$locks" flock" 
+		LIBS="$LIBS -lbsd")])
+AC_MSG_CHECKING(which locking method of "$locks" should be used)
+### fcntl() is prefered, if the user just disables fcntl()
+### without specifying an alternative lockf() is prefered
+CF_ARG_DISABLE(fcntl,
+	[  --disable-fcntl         disable fcntl() locking],
+		requested_lock="lockf",
+		requested_lock="fcntl")
+CF_ARG_ENABLE(lockf,
+	[  --enable-lockf          enable lockf() locking],
+		requested_lock="lockf")
+CF_ARG_ENABLE(flock,
+	[  --enable-flock          enable flock() locking],
+		requested_lock="flock")
+### now check the users wishes against available locking methods
+if test -n "$locks"; then
+	for lock in $locks; do
+		if test "$lock" = "$requested_lock"; then
+			case "$requested_lock" in
+				fcntl)  #(vi
+					AC_DEFINE(USE_FCNTL)
+					used_locking=fcntl
+					;;
+				lockf)  #(vi
+					AC_DEFINE(USE_LOCKF)
+					used_locking=lockf
+					;;
+				flock)  #(vi
+					AC_DEFINE(USE_FLOCK)
+					used_locking=flock
+					;;
+			esac
+		fi
+	done
+### if none of them matched use the one with the higest priority
+	if test "x$used_locking" = "x"; then
+		used_locking=`echo $locks|sed -e 's/^\([[^ ]]\+\).*/\1/g'`
+	fi
+	AC_MSG_RESULT($used_locking)
+else
+	AC_MSG_WARN(None of fcntl(), lockf(), flock() available)
+fi
+
+
 ### Look for ncurses in the usual places, accommodating compilers that don't
 ### search /usr/local by default.
 AC_MSG_CHECKING(if you want ncurses library)

@@ -55,6 +55,7 @@ static int reposition_group (struct t_group *group, int default_num);
 static int select_left (void);
 static int select_right (void);
 static t_bool pos_next_unread_group (t_bool redraw);
+static t_bool yank_in_active_file = TRUE;
 static void catchup_group (struct t_group *group, t_bool goto_next_unread_group);
 static void read_groups (void);
 static void select_quit (void);
@@ -435,8 +436,10 @@ selection_page (
 				yank_active_file();
 				break;
 
-			case iKeySelectSyncWithActive:  /* Re-read active file to see if any new news */
+			case iKeySelectSyncWithActive:	/* Re-read active file to see if any new news */
 				sync_active_file ();
+				if (!yank_in_active_file)
+					yank_active_file();			/* yank out if yanked in */
 				break;
 
 			case iKeySelectMarkGrpUnread:
@@ -601,7 +604,6 @@ yank_active_file (
 	char *oldgroup = (char *) 0;
 	int i;
 	int oldmax = selmenu.max;
-	static t_bool yank_in_active_file = TRUE;
 
 	if (oldmax)
 		oldgroup = my_strdup(CURR_GROUP.name);
