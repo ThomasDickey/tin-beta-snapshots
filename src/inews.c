@@ -326,9 +326,7 @@ submit_inews(
 		 * Receive OK_POSTED or ERROR response code from NNTP server
 		 * Don't use get_respcode at this point, because then we would not
 		 * recognize if posting has failed due to missing authentication in
-		 * which case the complete posting has to be resent. Besides, because
-		 * of the put_server(".") above a "." would be resent as the last
-		 * "command".
+		 * which case the complete posting has to be resent.
 		 */
 		respcode = get_only_respcode(line, sizeof(line));
 		leave_loop = TRUE;

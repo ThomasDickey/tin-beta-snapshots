@@ -82,8 +82,10 @@ o  fix check_upgrade() (config.c)
      config file, give a warning and the possibility to quit without saving
      config file
    - check if TINRC_VERSION is 'newer' (already done) and give a warning
-   - use a 'config option' in tinrc for version number instead of
-     'hardcoded' strings
+     which mentiones tinrcupdate.pl and the possibillity to quit right now
+     without having the tinrc touched
+   - use a 'config option' in tinrc for version number (e.g. tinrc.version)
+     instead of 'hardcoded' strings
    [Urs Janssen <urs@tin.org>]
 
 o  add version number to other config-files (e.g. attributes, filter,
@@ -245,6 +247,12 @@ o  rewrite thread-method selection that users can easily combine different
    threading methods (THREAD_SUBJ + THREAD_MULTI || THREAD_REFS +
    THREAD_MULTI || ...) - see also note in art.c
    [20011117 Urs Janssen <urs@tin.org>]
+
+o  add sort articles by score (descending or ascending it doesn't matter
+   here) *and* by date, which would be really useful (e.g sorting articles
+   by score, then within that method scope, sorting them by date, then
+   sorting all unscored articles by date.)
+   [20030309 Matt Anton <tin@syrius.org>
 
 o  if there are no tagged but hot articles in the group make 'S' work on
    the hot articles instead of complaining about no tagged arts.
@@ -419,10 +427,11 @@ o  A system-wide tinrc configuration file (to hold some defaults).
    Maybe a second file which could be used to force settings (eg
    inews & mailer) (tin.defaults [--with-defaults-dir] is a start)
 
-o  (g)oto group is case sensitive
+o  (g)oto group is case sensitive (nate that MH mailgroups might
+   contain uppercase chars)
    also newsgroup names in the command-line are case sensitive
-   better would be: check if they exist and if not ask if you would like to
-   convert newsgroup name to lowercase
+   better would be: check if they exist and if not ask if you would
+   like to convert newsgroup name to lowercase
 	[son_of_1036]
 	NOTE: Possibly newsgroup names  should  have  been
 	case-insensitive, but all existing software treats
@@ -541,6 +550,14 @@ o  the varius filter keys are named a bit inconsistent, currently we have
    would lead us to something like iKeyQuickFilter{Kill,Select} and
    iKeyMenuFilter{Kill,Select}
    [20030303 Urs Janssen <urs@akk.org>]
+
+o  reduce the number of dublicated strings in lang.c
+   txt_help_select_goto_group, txt_help_group_goto_group;
+   txt_help_group_toggle_subj_display, txt_help_thread_toggle_subj_display;
+   txt_help_article_prev_unread, txt_help_group_prev_unread_art;
+   txt_help_article_repost, txt_help_group_repost;
+   txt_help_article_next_unread, txt_help_article_read_next_unread,
+   txt_help_group_next_unread_art, txt_help_group_next_unread_article
 
 o  in page level Up2 ('k') does the same as PageNextUnreadArt ('N'), but
    Up ('^P') behaves different. shouldn't 'k' be named PageNextUnreadArt2

@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 5
 SVER	= 17
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20030306
+DVER	= 20030309
 EXE	= tin
 
 # directory structure
@@ -349,10 +349,12 @@ POFILES = \
 	$(PODIR)/$(PROJECT).pot \
 	$(PODIR)/de.gmo \
 	$(PODIR)/de.po \
+	$(PODIR)/en_GB.gmo \
+	$(PODIR)/en_GB.po \
 	$(PODIR)/et.gmo \
 	$(PODIR)/et.po \
-	$(PODIR)/en_GB.gmo \
-	$(PODIR)/en_GB.po
+	$(PODIR)/fr.gmo \
+	$(PODIR)/fr.po
 
 
 ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(AMIGA) $(VMS) $(PCRE) $(MISC) $(CAN) $(INTLFILES) $(POFILES)
