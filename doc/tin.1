@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2003-06-29
+.\" Updated   : 2003-08-10
 .\" Notes     : use american english; still needs some work, i.e.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "June 29th, 2003" "1.6.0" "A Usenet newsreader"
+.TH tin 1 "August 10th, 2003" "1.7.0" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -21,7 +21,7 @@ tin, rtin \- A Usenet newsreader
 .RB [\|[\| \-h \||\| \-H \||\| \-V \|]\ \||
 .RB [\|[\|[\| \-a \|]
 .RB [\| \-dlnq \||\| -Q \|]
-.RB [\| \-ArzX \|]\|]
+.RB [\| \-ArzxX \|]\|]
 .RB [\|[\| \-R \||\| -S \|]
 .RB \|\| \-s
 .IR News-dir \|]
@@ -216,6 +216,9 @@ Print version and date information.
 .B -w
 Quick mode to post an article and then exit. In order for this to be really
 quick, it should be used with ''\fB-n\fP'' if possible.
+.TP
+.B -x
+No posting mode. You cannot post articles if you use this option.
 .TP
 .B -X
 No overwrite mode. \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR and files in
@@ -1450,6 +1453,13 @@ use the \fBQuit\fP ('\fBq\fP') command.
 Ask for confirmation before marking all not selected (with
 \fBGroupMarkUnselArtRead\fP ('\fBX\fP') command) articles as read.
 .RE
+.TP
+.B 'Mark article read' ignores tags (mark_ignore_tags)
+When this is ON, the \fBiKeyGroupMarkThdRead\fP,
+\fBiKeyThreadMarkArtRead\fB functions ('\fBK\fP') mark just the
+current article or thread, ignoring other tagged, unread articles.
+When OFF, the same function presents a menu with choices of the
+current thread or article, all tagged, unread articles, or nothing.
 .\"
 .\" most of these default_* settings are not available from the menu
 .\" as they are intended for internal use only.
@@ -2994,12 +3004,6 @@ temporary files.
 This variable can be used to override the default path search for mailcap
 files. See also
 .BR tin (5).
-.TP
-.B METAMAIL
-Set this variable to point to
-.BR metamail (1)
-or a replacement (e.g. metamutt). This can be used to override the value of
-\fBmetamail_prog\fP.
 .TP
 .B NOMETAMAIL
 Set this variable to disable the use of

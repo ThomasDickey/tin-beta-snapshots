@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-17
+ *  Updated   : 2003-08-10
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -360,7 +360,7 @@ group_page(
 					old_top = top_art;
 					n = (int) base[grpmenu.curr]; /* should this depend on show_only_unread? */
 					old_artnum = arts[n].artnum;
-					if (quick_filter((ch == iKeyGroupQuickKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[n], GROUP_LEVEL)) {
+					if (quick_filter((ch == iKeyGroupQuickKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[n])) {
 						info_message((ch == iKeyGroupQuickKill) ? _(txt_info_add_kill) : _(txt_info_add_select));
 						if (filter_articles(group)) {
 							make_threads(group, FALSE);
@@ -580,6 +580,7 @@ group_page(
 								break;
 							}
 						} while (n != grpmenu.curr);
+						info_message(_(txt_info_all_parts_tagged));
 					}
 				}
 				break;
@@ -611,7 +612,6 @@ group_page(
 						 * to leave the choice of tagged/untagged
 						 * determination politic in the previous lines.
 						 */
-						info_message(_(txt_untagged_thread));
 						for (ii = n; ii != -1; ii = arts[ii].thread) {
 							if (arts[ii].tagged != 0) {
 								tagged = TRUE;
@@ -619,7 +619,6 @@ group_page(
 							}
 						}
 					} else {
-						info_message(_(txt_tagged_thread));
 						for (ii = n; ii != -1; ii = arts[ii].thread) {
 							if (arts[ii].tagged == 0)
 								arts[ii].tagged = ++num_of_tagged_arts;
@@ -629,11 +628,14 @@ group_page(
 					draw_line(grpmenu.curr, MAGIC);
 					if (tagged)
 						show_tagged_lines();
-					if (grpmenu.curr + 1 < grpmenu.max) {
+
+					if (grpmenu.curr + 1 < grpmenu.max)
 						move_down();
-						break;
-					}
-					draw_subject_arrow();
+					else
+						draw_subject_arrow();
+
+					info_message(tagged ? _(txt_prefix_untagged) : _(txt_prefix_tagged), txt_thread_singular);
+
 				}
 				break;
 
@@ -681,7 +683,7 @@ group_page(
 
 			case iKeyGroupMarkArtUnread:	/* mark base article of thread unread */
 				{
-					char *ptr;
+					const char *ptr;
 
 					if (grpmenu.curr < 0) {
 						info_message(_(txt_no_arts));
@@ -718,7 +720,7 @@ group_page(
 
 			case iKeyGroupMarkThdUnread:	/* mark whole thread as unread */
 				{
-					char *ptr;
+					const char *ptr;
 
 					if (grpmenu.curr < 0) {
 						info_message(_(txt_no_arts));
@@ -741,7 +743,7 @@ group_page(
 						ptr = _(txt_thread_range);
 					} else {
 						thd_mark_unread(group, base[grpmenu.curr]);
-						ptr = _(txt_thread);
+						ptr = _(txt_thread_upper);
 					}
 
 					show_group_title(TRUE);
@@ -1268,6 +1270,8 @@ build_sline(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	mbstowcs(tmp_subj2, arts_sub, ARRAY_SIZE(tmp_subj2) - 1);
 	mbstowcs(tmp_from2, from, ARRAY_SIZE(tmp_from2) - 1);
+	tmp_subj2[ARRAY_SIZE(tmp_subj2) - 1] = (wchar_t) '\0';
+	tmp_from2[ARRAY_SIZE(tmp_from2) - 1] = (wchar_t) '\0';
 
 	/* format subject and from */
 	wcspart(tmp_subj, tmp_subj2, len_subj - 12, ARRAY_SIZE(tmp_subj), TRUE);
@@ -1643,8 +1647,8 @@ mark_thd_read(
 		return;
 	}
 
-	/* Don't prompt if there's an active range */
-	if (!range_active && got_tagged_unread_arts()) {
+	/* Don't prompt if there's an active range or if prompting is turned off */
+	if (!range_active && !tinrc.mark_ignore_tags && got_tagged_unread_arts()) {
 		ch = prompt_slk_response(iKeyMarkReadTag,
 				&menukeymap.mark_read_tagged_current,
 				_(txt_mark_thread_read_tagged_current),

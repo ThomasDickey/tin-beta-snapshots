@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-03-02
- *  Updated   : 2003-06-27
+ *  Updated   : 2003-08-03
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -68,7 +68,7 @@ vwprintw(
 	char *string = buffer;
 	int y, x, code;
 
-	vsprintf(buffer, fmt, ap);
+	vsnprintf(buffer, sizeof(buffer), fmt, ap);
 	getyx(w, y, x);
 	TRACE(("vwprintw[%d/%d,%d/%d]:%s", y, cLINES, x, cCOLS, buffer));
 	while (*string == '\b')
@@ -380,8 +380,10 @@ highlight_string(
 		MoveCursor(row, 0);
 		my_innstr(tmp, cCOLS);
 		tmp[col] = '\0';
-		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
+		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
+			wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
 			col = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+		}
 	}
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
@@ -431,8 +433,10 @@ word_highlight_string(
 		MoveCursor(row, 0);
 		my_innstr(tmp, cCOLS);
 		tmp[col] = '\0';
-		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
+		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
+			wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
 			col = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+		}
 	}
 #		endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
@@ -441,8 +445,10 @@ word_highlight_string(
 
 #		if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	tmp[size] = '\0';
-	if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
+	if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
+		wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
 		wsize = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+	}
 #		endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	/* safegurad against bogus regexps */

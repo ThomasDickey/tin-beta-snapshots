@@ -40,10 +40,10 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.6.0"
+#		define VERSION		"1.7.0"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20030714"
-#	define RELEASENAME	"Vatersay"
+#	define RELEASEDATE	"20030810"
+#	define RELEASENAME	"Sandray"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.6"
 #	define ATTRIBUTES_VERSION	"1.0.0"

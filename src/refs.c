@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2003-06-06
+ *  Updated   : 2003-07-22
  *  Notes     : Cacheing of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -380,9 +380,9 @@ parse_references(
 
 /*
  * Reconstruct the References: field from the parent pointers
- * NB: The original Refs: can be no longer than HEADER_LEN (see open.c)
- *     Broken headers sometimes have malformed or circular reference
- *	    lists, which we strive to work around.
+ * NB: In deep threads this can lead to a very long line. If you want to use
+ *     this function to build a Reference: line for posting be aware that the
+ *     server might refuse long lines -- short it accordingly!
  */
 static char *
 _get_references(
@@ -390,34 +390,33 @@ _get_references(
 	int depth)
 {
 	char *refs;
-	static size_t len;							/* Accumulated size */
+	static size_t len;		/* Accumulated size */
+	static size_t pos;		/* current insertion position */
 
+	if (depth == 1)
+		len = 0;
+
+	len += strlen(refptr->txt) + 1;	/* msgid + space */
 	if (refptr->parent == NULL || depth > MAX_REFS) {
 
 #ifdef DEBUG_REFS
 		if (depth > MAX_REFS)
 			error_message("Warning: Too many refs near to %s. Truncated\n", refptr->txt);
 #endif /* DEBUG_REFS */
-		refs = my_malloc(HEADER_LEN);
-		len = 0;
+		refs = my_malloc(len + 1);	/* total length + nullbyte */
+		pos = 0;
 	} else
 		refs = _get_references(refptr->parent, depth + 1);
 
-	/*
-	 * Attempt at damage limitation in case of broken Refs fields
-	 */
-	if (len + strlen(refptr->txt) < (998 - strlen("References: "))) {
-		sprintf(refs + len, "%s ", refptr->txt);
-		len = strlen(refs);
-	}
+	sprintf(refs + pos, "%s ", refptr->txt);
+	pos = strlen(refs);
 
 	return refs;
 }
 
 
 /*
- * A wrapper to the above, null terminate the string and shrink it
- * to correct size
+ * A wrapper to the above, null terminate the string
  */
 char *
 get_references(
@@ -432,7 +431,6 @@ get_references(
 	refs = _get_references(refptr, 1);
 	len = strlen(refs);
 	refs[len - 1] = '\0';
-	refs = my_realloc(refs, len);
 
 	return refs;
 }

@@ -3,7 +3,7 @@
  *  Module    : tags.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-06
- *  Updated   : 2003-05-14
+ *  Updated   : 2003-07-19
  *  Notes     : Split out from other modules
  *
  * Copyright (c) 1999-2003 Jason Faultless <jason@altarstone.com>
@@ -239,7 +239,6 @@ tag_multipart(
 
 	free(info);
 
-	info_message(_(txt_info_all_parts_tagged));
 	return qty;
 }
 
@@ -277,11 +276,11 @@ tag_article(
 {
 	if (arts[art].tagged != 0) {
 		untag_article(art);
-		info_message(_(txt_untagged_art));
+		info_message(_(txt_prefix_untagged), txt_article_singular);
 		return FALSE;
 	} else {
 		arts[art].tagged = ++num_of_tagged_arts;
-		info_message(_(txt_tagged_art));
+		info_message(_(txt_prefix_tagged), txt_article_singular);
 		return TRUE;
 	}
 }

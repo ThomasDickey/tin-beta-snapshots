@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2003-06-29
+ *  Updated   : 2003-08-10
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
@@ -181,7 +181,7 @@ extern void feed_articles(int function, int level, struct t_group *group, int re
 /* filter.c */
 extern t_bool filter_articles(struct t_group *group);
 extern t_bool filter_menu(int type, struct t_group *group, struct t_article *art);
-extern t_bool quick_filter(int type, struct t_group *group, struct t_article *art, int origin);
+extern t_bool quick_filter(int type, struct t_group *group, struct t_article *art);
 extern t_bool quick_filter_select_posted_art(struct t_group *group, const char *subj, const char *a_message_id);
 extern t_bool read_filter_file(const char *file);
 extern void free_filter_array(struct t_filters *ptr);
@@ -472,7 +472,7 @@ extern time_t parsedate(char *p, TIMEINFO *now);
 /* post.c */
 extern int count_postponed_articles(void);
 extern int mail_to_author(const char *group, int respnum, t_bool copy_text, t_bool with_headers, t_bool raw_data);
-extern int mail_to_someone(const char *address, t_bool confirm_to_mail, t_openartinfo *artinfo);
+extern int mail_to_someone(const char *address, t_bool confirm_to_mail, t_openartinfo *artinfo, const struct t_group *group);
 extern int post_response(const char *group, int respnum, t_bool copy_text, t_bool with_headers, t_bool raw_data);
 extern int repost_article(const char *group, int respnum, t_bool supersede, t_openartinfo *artinfo);
 extern t_bool cancel_article(struct t_group *group, struct t_article *art, int respnum);

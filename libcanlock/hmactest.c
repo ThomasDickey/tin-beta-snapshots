@@ -150,5 +150,5 @@ main()
 	printf("%02x", md5hash[i]);
     putchar('\n');
 
-
+exit(0);
 }

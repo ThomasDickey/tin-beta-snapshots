@@ -557,12 +557,12 @@ From:-field will be used.
 =item B<$REPLYTO>
 
 Set the article header field Reply-To: to the return address specified by
-the variable if there isn't allready a Reply-To: header in the article.
+the variable if there isn't already a Reply-To: header in the article.
 
 =item B<$ORGANIZATION>
 
 Set the article header field Organization: to the contents of the variable
-if there isn't allready a Organization: header in the article.
+if there isn't already a Organization: header in the article.
 
 =back
 

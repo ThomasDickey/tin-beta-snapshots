@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-06-29
+ *  Updated   : 2003-07-22
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -419,9 +419,9 @@ main(
  * process command line options
  */
 #ifndef M_AMIGA
-#	define OPTIONS "aAcdD:f:G:g:hHI:lm:M:nNop:qQrRs:SuvVwXzZ"
+#	define OPTIONS "aAcdD:f:G:g:hHI:lm:M:nNop:qQrRs:SuvVwxXzZ"
 #else
-#	define OPTIONS "BcdD:f:G:hHI:lm:M:nNop:qQrRs:SuvVwXzZ"
+#	define OPTIONS "BcdD:f:G:hHI:lm:M:nNop:qQrRs:SuvVwxXzZ"
 #endif /* M_AMIGA */
 
 static void
@@ -860,6 +860,10 @@ read_cmd_line_options(
 				break;
 #endif /* 0 */
 
+			case 'x':	/* enter no_posting mode */
+				force_no_post = TRUE;
+				break;
+
 			case 'X':	/* don't save ~/.newsrc on exit */
 				no_write = TRUE;
 				break;
@@ -1004,6 +1008,7 @@ usage(
 	error_message(_(txt_usage_verbose));
 	error_message(_(txt_usage_version));
 	error_message(_(txt_usage_post_article));
+	error_message(_(txt_usage_no_posting));
 	error_message(_(txt_usage_dont_save_files_on_quit));
 	error_message(_(txt_usage_start_if_unread_news));
 	error_message(_(txt_usage_check_for_unread_news));

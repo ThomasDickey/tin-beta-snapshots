@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2003-06-29
+.\" Updated   : 2003-08-10
 .\" Notes     : needs a some work
 .\"
-.TH tin 5 "June 29th, 2003" "1.6.0" "A Usenet newsreader"
+.TH tin 5 "August 10th, 2003" "1.7.0" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -1208,6 +1208,13 @@ Ask for confirmation before marking all not selected (with
 \fBGroupMarkUnselArtRead\fP ('\fBX\fP') command) articles as read.
 .in -.5i
 Default is commands & quit.
+.TP
+.B mark_ignore_tags
+When this is ON, the \fBiKeyGroupMarkThdRead\fP,
+\fBiKeyThreadMarkArtRead\fB functions ('\fBK\fP') mark just the
+current article or thread, ignoring other tagged, unread articles.
+When OFF, the same function presents a menu with choices of the
+current thread or article, all tagged, unread articles, or nothing.
 .TP
 .B default_art_search
 .TP

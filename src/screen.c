@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-14
+ *  Updated   : 2003-08-03
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -77,7 +77,7 @@ info_message(
 	fcol(tinrc.col_message);
 #endif /* HAVE_COLOR */
 
-	vsprintf(mesg, fmt, ap);
+	vsnprintf(mesg, sizeof(mesg), fmt, ap);
 
 	center_line(cLINES, FALSE, mesg);	/* center the message at screen bottom */
 
@@ -108,7 +108,7 @@ wait_message(
 	fcol(tinrc.col_message);
 #endif /* HAVE_COLOR */
 
-	vsprintf(mesg, fmt, ap);
+	vsnprintf(mesg, sizeof(mesg), fmt, ap);
 	my_fputs(mesg, stdout);
 
 #ifdef HAVE_COLOR
@@ -138,7 +138,7 @@ error_message(
 
 	errno = 0;
 	clear_message();
-	vsprintf(mesg, fmt, ap);
+	vsnprintf(mesg, sizeof(mesg), fmt, ap);
 
 	my_fputs(mesg, stderr);	/* don't use my_fprintf() here due to %format chars */
 	my_fflush(stderr);
@@ -224,6 +224,8 @@ center_line(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if ((len = mbstowcs(wbuffer, buffer, ARRAY_SIZE(wbuffer) - 1)) <= 0)
 		len = strlen(buffer);
+	else
+		wbuffer[ARRAY_SIZE(wbuffer) - 1] = (wchar_t) '\0';
 	if ((width = wcswidth(wbuffer, ARRAY_SIZE(wbuffer) - 1)) <= 0)
 		width = len;
 #else

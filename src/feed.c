@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2003-05-15
+ *  Updated   : 2003-08-10
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -320,7 +320,7 @@ print_save_summary(
 			break;
 
 		case iKeyFeedThd:
-			STRCPY(what, _(txt_thread));
+			STRCPY(what, _(txt_thread_upper));
 			break;
 
 		case iKeyFeedArt:
@@ -408,7 +408,7 @@ feed_article(
 
 	switch (function) {
 		case FEED_MAIL:
-			switch (mail_to_someone(tinrc.default_mail_address, confirm, openartptr)) {
+			switch (mail_to_someone(tinrc.default_mail_address, confirm, openartptr, group)) {
 				case POSTED_REDRAW:
 					redraw_screen = TRUE;
 					/* FALLTHROUGH */

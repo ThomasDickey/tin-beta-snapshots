@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-06-13
+ *  Updated   : 2003-08-10
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -711,7 +711,7 @@ page_goto_next_unread:
 
 			case iKeyPageQuickAutoSel:	/* quickly auto-select article */
 			case iKeyPageQuickKill:		/* quickly kill article */
-				if ((filtered_articles = quick_filter((ch == iKeyPageQuickKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[this_resp], PAGE_LEVEL)))
+				if ((filtered_articles = quick_filter((ch == iKeyPageQuickKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[this_resp])))
 					goto return_to_index;
 
 				draw_page(group->name, 0);
@@ -775,7 +775,7 @@ page_goto_next_unread:
 				 * FIXME: replace txt_thread by txt_article_upper
 				 * if THREAD_NONE
 				 */
-				info_message(_(txt_marked_as_unread), _(txt_thread));
+				info_message(_(txt_marked_as_unread), _(txt_thread_upper));
 				break;
 
 			case iKeyPageCancel:			/* cancel an article */
@@ -1047,6 +1047,7 @@ print_message_page(
 		bytes = strlen(line);
 #	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (mbstowcs(wline, line, ARRAY_SIZE(wline) - 1) != (size_t) -1) {
+			wline[ARRAY_SIZE(wline) - 1] = (wchar_t) '\0';
 			if (wcswidth(wline, ARRAY_SIZE(wline) - 1) >= cCOLS) {
 				int tmp;
 
@@ -1223,15 +1224,15 @@ invoke_metamail(
 	char buf[LEN];
 #endif /* !DONT_HAVE_PIPING */
 
+	ptr = tinrc.metamail_prog;
+	if (('\0' == *ptr) || (0 == strcmp(ptr, INTERNAL_CMD)) || (NULL != getenv("NOMETAMAIL")))
+		return;
+
 	offset = ftell(fp);
 	rewind(fp);
 
 	EndWin();
 	Raw(FALSE);
-
-	/* $METAMAIL seems to be tin specific, if it really is: kick it */
-	if ((ptr = getenv("METAMAIL")) == NULL)
-		ptr = tinrc.metamail_prog;
 
 	/* TODO: add DONT_HAVE_PIPING fallback code */
 #ifndef DONT_HAVE_PIPING
@@ -1292,7 +1293,7 @@ draw_page_header(
 	grplen = strlen(group);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if (mbstowcs(wtmp, buf, ARRAY_SIZE(wtmp)) != (size_t) -1) {
-		wtmp[HEADER_LEN - 1] = (wchar_t) '\0';
+		wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
 		scrlen = wcswidth(wtmp, ARRAY_SIZE(wtmp));
 	} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -1339,7 +1340,7 @@ draw_page_header(
 		sprintf(tmp, _(txt_thread_x_of_n), buf, x, tin_ltoa(grpmenu.max, 4));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp)) != (size_t) -1) {
-			wtmp[HEADER_LEN - 1] = (wchar_t) '\0';
+			wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
 			wcspart(wbuf, wtmp, cCOLS - 1, ARRAY_SIZE(wbuf), FALSE);
 			wcstombs(tmp, wbuf, sizeof(tmp));
 		} else
@@ -1364,7 +1365,7 @@ draw_page_header(
 	sprintf(buf, _(txt_lines), tmp);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if (mbstowcs(wtmp, buf, ARRAY_SIZE(wtmp)) != (size_t) -1) {
-		wtmp[HEADER_LEN - 1] = (wchar_t) '\0';
+		wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
 		i = wcswidth(wtmp, ARRAY_SIZE(wtmp));
 	} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -1394,7 +1395,7 @@ draw_page_header(
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if (mbstowcs(wtmp, buf, ARRAY_SIZE(wtmp)) != (size_t) -1) {
-		wtmp[HEADER_LEN - 1] = (wchar_t) '\0';
+		wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
 		wcspart(wbuf, wtmp, RIGHT_POS - 5 - i, ARRAY_SIZE(wbuf), FALSE);
 		scrlen = wcswidth(wbuf, ARRAY_SIZE(wbuf));
 		wcstombs(buf, wbuf, sizeof(wbuf));
@@ -1447,7 +1448,7 @@ draw_page_header(
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if (mbstowcs(wtmp, buf, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
-		wtmp[HEADER_LEN - 1] = (wchar_t) '\0';
+		wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
 		wcspart(wbuf, wtmp, cCOLS - 1, ARRAY_SIZE(wbuf) - 1, FALSE);
 	} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -1458,7 +1459,7 @@ draw_page_header(
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp)) != (size_t) -1) {
-			wtmp[HEADER_LEN - 1] = (wchar_t) '\0';
+			wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
 			wconvert_to_printable(wtmp);
 
 			if (wcswidth(wbuf, ARRAY_SIZE(wbuf)) + wcswidth(wtmp, ARRAY_SIZE(wtmp)) >= cCOLS - 1) {
@@ -1688,26 +1689,110 @@ toggle_raw(
 		 * We do this on the fly, since most of the time it won't be used
 		 */
 		if (!pgart.rawl) {			/* Already done this for this article? */
-			char buff[1024];
+			char *line;
+			char *p;
+			long offset;
 
 			j = 0;
 			rewind(pgart.raw);
 			pgart.rawl = my_malloc(sizeof(t_lineinfo) * chunk);
+			offset = ftell(pgart.raw);
 
-			/*
-			 * # lines can increase due to line wrapping
-			 */
-			do {
-				pgart.rawl[j].offset = ftell(pgart.raw);
+			while (NULL != (line = tin_fgets(pgart.raw, FALSE))) {
+				int num_chars;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				int num_bytes;
+				t_bool is_illegal;
+				wchar_t wline[LEN];
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+				pgart.rawl[j].offset = offset;
 				pgart.rawl[j].flags = 0;
 				j++;
 				if (j >= chunk) {
 					chunk += 50;
 					pgart.rawl = my_realloc(pgart.rawl, sizeof(t_lineinfo) * chunk);
 				}
-			} while ((fgets(buff, cCOLS + 1, pgart.raw)) != NULL);
 
-			j--;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				is_illegal = TRUE;
+				if ((size_t) -1 != mbstowcs(wline, line, ARRAY_SIZE(wline) - 1)) {
+					wline[ARRAY_SIZE(wline) - 1] = (wchar_t) '\0';
+					num_chars = wcswidth(wline, ARRAY_SIZE(wline) -1);
+					is_illegal = FALSE;
+				} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				{
+					if (IS_LOCAL_CHARSET("Big5")) {
+						char c;
+
+						num_chars = 0;
+						p = line;
+						while ((c = *p++)) {
+							num_chars++;
+							if (0 == (c & 0x7f))	/* ASCII char, only 1 byte */
+								continue;
+							if (*p)
+								p++;			/* Big5 char, takes 2 bytes */
+						}
+					} else
+						num_chars = (int) strlen(line);
+				}
+
+				if (num_chars <= cCOLS) {
+					offset = ftell(pgart.raw);
+					continue;	/* line fits on screen, next line */
+				}
+
+				/*
+				 * Line exceeds current column width; we need to split
+				 * over several screen lines
+				 */
+				p = line;
+				while (*p) {
+					int space = cCOLS;
+
+					while ((space > 0) && *p) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+						if (!is_illegal) {
+							num_bytes = mbtowc(wline, p, MB_CUR_MAX);
+							if ((space -= wcwidth(wline[0])) < 0)
+								break;
+							p += num_bytes;
+							offset += num_bytes;
+						} else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+						{
+							p++;
+							offset++;
+							if (IS_LOCAL_CHARSET("Big5") && ((*p & 0x7f) > 0)) {
+								p++;	/* non-ASCII chars take 2 bytes */
+								offset++;
+							}
+							space--;
+						}
+					}
+					/*
+					 * if we reached the end of the line we don't need to
+					 * remember anything
+					 */
+					if (*p) {
+						pgart.rawl[j].offset = offset;
+						pgart.rawl[j].flags = 0;
+						if (++j >= chunk) {
+							chunk += 50;
+							pgart.rawl = my_realloc(pgart.rawl, sizeof(t_lineinfo) * chunk);
+						}
+					}
+				}
+
+				/*
+				 * only use ftell's return value here because we didn't
+				 * take the \n into account above.
+				 */
+				offset = ftell(pgart.raw);
+			}
+
 			pgart.rawl = my_realloc(pgart.rawl, sizeof(t_lineinfo) * j);
 		}
 		artline = pgart.rawl;
@@ -1822,6 +1907,10 @@ info_pager(
 
 			case iKeyUp:				/* line up */
 			case iKeyUp2:
+				if (num_info_lines <= NOTESLINES) {
+					info_message(_(txt_begin_of_art));
+					break;
+				}
 				if (curr_info_line == 0) {
 					if (!wrap_at_ends) {
 						info_message(_(txt_begin_of_art));
@@ -1838,6 +1927,10 @@ info_pager(
 
 			case iKeyDown:				/* line down */
 			case iKeyDown2:
+				if (num_info_lines <= NOTESLINES) {
+					info_message(_(txt_end_of_art));
+					break;
+				}
 				if (curr_info_line + NOTESLINES >= num_info_lines) {
 					if (!wrap_at_ends) {
 						info_message(_(txt_end_of_art));
@@ -1855,6 +1948,10 @@ info_pager(
 			case iKeyPageDown:			/* page down */
 			case iKeyPageDown2:
 			case iKeyPageDown3:
+				if (num_info_lines <= NOTESLINES) {
+					info_message(_(txt_end_of_art));
+					break;
+				}
 				if (curr_info_line + NOTESLINES >= num_info_lines) {	/* End is already on screen */
 					if (!wrap_at_ends) {
 						info_message(_(txt_end_of_art));
@@ -1871,6 +1968,10 @@ info_pager(
 			case iKeyPageUp:			/* page up */
 			case iKeyPageUp2:
 			case iKeyPageUp3:
+				if (num_info_lines <= NOTESLINES) {
+					info_message(_(txt_begin_of_art));
+					break;
+				}
 				if (curr_info_line == 0) {
 					if (!wrap_at_ends) {
 						info_message(_(txt_begin_of_art));
@@ -1959,11 +2060,11 @@ display_info_page(
 		start = 0;
 
 	/* Up-scroll, only redraw the top 'part' lines of screen */
-	if ((end = (part < 0) ? -part : NOTESLINES) < NOTESLINES)
+	if ((end = (part < 0) ? -part : NOTESLINES) > NOTESLINES)
 		end = NOTESLINES;
 
 	/* Print title */
-	if ((end-start >= ARTLINES) || (part == 0)) {
+	if ((end - start >= NOTESLINES) || (part == 0)) {
 		ClearScreen();
 		center_line(0, TRUE, info_title);
 	}

@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-15
+ *  Updated   : 2003-07-20
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1116,7 +1116,7 @@ toggle_my_groups(
 		}
 	}
 	fclose(fp);
-#endif /* 1 */
+#endif /* 0 */
 	selmenu.curr = save_restore_curr_group(FALSE);			/* Restore saved group position */
 }
 
@@ -1133,7 +1133,7 @@ subscribe_pattern(
 	t_bool state)
 {
 	char buf[LEN];
-	int i, subscribe_num;
+	int i, subscribe_num = 0;
 
 	if (!num_active || no_write)
 		return;
@@ -1146,9 +1146,10 @@ subscribe_pattern(
 	wait_message(0, message);
 
 	/*
-	 * TODO: why do we do a pass over my_group[] before another one over active[] ?
+	 * TODO: why do we do a pass over my_group[] before another one
+	 *       over active[]? AFAICS the first loop can go away.
 	 */
-	for (subscribe_num = 0, i = 0; i < selmenu.max; i++) {
+	for (i = 0; i < selmenu.max; i++) {
 		if (match_group_list(active[my_group[i]].name, buf)) {
 			if (active[my_group[i]].subscribed != (state != FALSE)) {
 				spin_cursor();
@@ -1167,7 +1168,10 @@ subscribe_pattern(
 					subscribe(&active[i], SUB_CHAR(state), TRUE);
 					if (state) {
 						my_group_add(active[i].name);
-/* TODO: grp_mark_unread() or something needs to do a GrpGetArtInfo to get initial count right */
+						/*
+						 * TODO: grp_mark_unread() or something needs to do a
+						 *       group_get_art_info() to get initial count right
+						 */
 						grp_mark_unread(&active[i]);
 					}
 					subscribe_num++;

@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-06-29
+ *  Updated   : 2003-07-28
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -270,6 +270,17 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #		include <strings.h>
 #	endif /* HAVE_STRINGS_H */
 #endif /* !__QNX__ */
+
+/*
+ * FIXME: make this autoconf
+ */
+#ifdef SEIUX
+#	include <bsd/sys/time.h>
+#	include <bsd/sys/signal.h>
+#	include <bsd/sys/types.h>
+#	include <posix/unistd.h>
+#	include <bsd/netinet/in.h>
+#endif /* SEIUX */
 
 #ifdef HAVE_FCNTL_H
 #	include <fcntl.h>

@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-15
+ *  Updated   : 2003-08-10
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -220,6 +220,7 @@ build_tline(
 			if (!(ptr && arts[ptr->article].subject == art->subject)) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				if (mbstowcs(wtmp2, art->subject, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
+					wtmp2[ARRAY_SIZE(wtmp2) - 1] = (wchar_t) '\0';
 					wcspart(wtmp, wtmp2, gap, ARRAY_SIZE(wtmp), TRUE);
 					if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
 #	ifdef USE_CURSES
@@ -241,9 +242,10 @@ build_tline(
 		 */
 		if (len_from) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-			if (mbstowcs(wtmp, buff, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
+			if (mbstowcs(wtmp, buff, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
+				wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
 				fill = cCOLS - len_from - wcswidth(wtmp, ARRAY_SIZE(wtmp) - 1);
-			else
+			} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				fill = cCOLS - len_from - strlen(buff);
 
@@ -259,6 +261,7 @@ build_tline(
 			get_author(TRUE, art, tmp, sizeof(tmp) - 1);
 
 			if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
+				wtmp2[ARRAY_SIZE(wtmp2) - 1] = (wchar_t) '\0';
 				wcspart(wtmp, wtmp2, len_from, ARRAY_SIZE(wtmp), TRUE);
 				if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
 #	ifdef USE_CURSES
@@ -277,6 +280,7 @@ build_tline(
 		get_author(TRUE, art, tmp, sizeof(tmp) - 1);
 
 		if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
+			wtmp2[ARRAY_SIZE(wtmp2) - 1] = (wchar_t) '\0';
 			wcspart(wtmp, wtmp2, cCOLS - strlen(buff), ARRAY_SIZE(wtmp), TRUE);
 			if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
 #	ifdef USE_CURSES
@@ -298,9 +302,10 @@ build_tline(
 		 * Pad to end of line so that inverse bar looks 'good'
 		 */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if (mbstowcs(wtmp, buff, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
+		if (mbstowcs(wtmp, buff, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
+			wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
 			fill = cCOLS - wcswidth(wtmp, ARRAY_SIZE(wtmp) - 1);
-		else
+		} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			fill = cCOLS - strlen(buff);
 
@@ -337,12 +342,11 @@ draw_line(
 	char *s = &(screen[INDEX2TNUM(i)].col[startpos]);
 #endif /* USE_CURSES */
 
+	if (tinrc.strip_blanks)
+		 strip_line(s);
 	if (!magic) {
-		if (tinrc.strip_blanks) {
-			strip_line(s);
-			CleartoEOLN();
-		}
 		tlen = strlen(s);	/* note new line length */
+		CleartoEOLN();
 	} else
 		tlen = magic;
 
@@ -686,18 +690,23 @@ thread_page(
 				/* Find index of current article */
 				if ((n = find_response(thread_basenote, thdmenu.curr)) < 0)
 					break;
+				else {
+					t_bool tagged;
 
-				if (tag_article(n)) {
-					build_tline(thdmenu.curr, &arts[n]);	/* Update just this line */
-					draw_line(thdmenu.curr, MAGIC);
-				} else
-					update_thread_page();						/* Must update whole page */
+					if ((tagged = tag_article(n))) {
+						build_tline(thdmenu.curr, &arts[n]);	/* Update just this line */
+						draw_line(thdmenu.curr, MAGIC);
+					} else
+						update_thread_page();						/* Must update whole page */
 
-				/* Automatically advance to next art if not at end of thread */
-				if (thdmenu.curr + 1 < thdmenu.max)
-					move_down();
-				else
-					draw_thread_arrow();
+					/* Automatically advance to next art if not at end of thread */
+					if (thdmenu.curr + 1 < thdmenu.max)
+						move_down();
+					else
+						draw_thread_arrow();
+
+					info_message(tagged ? _(txt_prefix_tagged) : _(txt_prefix_untagged), txt_article_singular);
+				}
 				break;
 
 			case iKeyThreadBugReport:
@@ -725,7 +734,7 @@ thread_page(
 			case iKeyThreadMarkThdUnread:		/* mark thread as unread */
 				thd_mark_unread(group, base[thread_basenote]);
 				update_thread_page();
-				info_message(_(txt_marked_as_unread), _(txt_thread));
+				info_message(_(txt_marked_as_unread), _(txt_thread_upper));
 				break;
 
 			case iKeyThreadSelArt:		/* mark article as selected */
@@ -1509,7 +1518,7 @@ mark_art_read(
 	int n = -1, cnt = 0;
 	int tmp_num_of_tagged_arts = num_of_tagged_arts;
 
-	if (got_tagged_unread_arts()) {
+	if (!tinrc.mark_ignore_tags && got_tagged_unread_arts()) {
 		ch = prompt_slk_response(iKeyMarkReadTag,
 				&menukeymap.mark_read_tagged_current,
 				_(txt_mark_art_read_tagged_current),

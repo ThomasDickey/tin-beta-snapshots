@@ -154,7 +154,7 @@ void
 fcol(
 	int color)
 {
-	TRACE(("fcol(%d) %s", color, txt_colors[color-MIN_COLOR]));
+	TRACE(("fcol(%d) %s", color, txt_colors[color - MIN_COLOR]));
 	if (use_color) {
 		if (color >= MIN_COLOR && color <= MAX_COLOR) {
 #	ifdef USE_CURSES
@@ -183,7 +183,7 @@ void
 bcol(
 	int color)
 {
-	TRACE(("bcol(%d) %s", color, txt_colors[color-MIN_COLOR]));
+	TRACE(("bcol(%d) %s", color, txt_colors[color - MIN_COLOR]));
 	if (use_color) {
 		if (color >= MIN_COLOR && color <= MAX_BACKCOLOR) {
 #	ifdef USE_CURSES

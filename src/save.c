@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-15
+ *  Updated   : 2003-08-03
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -231,8 +231,26 @@ check_start_save_any_news(
 						continue;
 					}
 
-					if (function == MAIL_ANY_NEWS)
+					if (function == MAIL_ANY_NEWS) {
 						fprintf(savefp, "To: %s\n", mail_news_user);
+						fprintf(savefp, "Subject: %s\n", arts[j].subject);
+						/*
+						 * Reuse some headers to allow threading in mail reader
+						 */
+						if (arts[j].msgid)
+							fprintf(savefp, "Message-ID: %s\n", arts[j].msgid);
+						/* fprintf(savefp, "References: %s\n", arts[j].refs); */
+						/*
+						 * wrap article in appropriate MIME type
+						 */
+						fprintf(savefp, "MIME-Version: 1.0\n");
+						fprintf(savefp, "Content-Type: message/rfc822\n");
+						/*
+						 * CTE should be 7bit if the article is in pure
+						 * US-ASCII, but this requires previous parsing
+						 */
+						fprintf(savefp, "Content-Transfer-Encoding: 8bit\n\n");
+					}
 
 					snprintf(buf, sizeof(buf), "[%5ld]  %s\n", arts[j].artnum, arts[j].subject);
 					fprintf(fp_log, "%s", buf);		/* buf may contain % */
@@ -246,7 +264,6 @@ check_start_save_any_news(
 					fclose(savefp);
 					saved_arts++;
 
-					/* TODO: if article already contains To: Cc: Bcc: it gets 'relayed' */
 					if (function == MAIL_ANY_NEWS) {
 						strfmailer(mailer, arts[j].subject, mail_news_user, savefile, buf, sizeof(buf), tinrc.mailer_format);
 						invoke_cmd(buf);		/* Keep trying after errors */
