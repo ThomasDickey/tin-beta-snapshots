@@ -110,6 +110,10 @@ tin_getline (
 		if (loc >= 0)
 			gl_fixup (0, BUF_SIZE);
 	}
+
+	if (!cmd_line && gl_max == BUF_SIZE)
+		CleartoEOLN();
+
 	if (str != (char *) 0) {
 		for (i = 0; str[i]; i++)
 			gl_addchar (str[i]);

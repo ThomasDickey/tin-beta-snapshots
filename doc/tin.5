@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2001-08-30
+.\" Updated   : 2001-11-17
 .\" Notes     : needs a lot of work
 .\"
-.TH tin 5 "August 30th, 2001" "1.5.10" "A Usenet newsreader"
+.TH tin 5 "November 17th, 2001" "1.5.10" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -1494,9 +1494,10 @@ Default is ON.
 .B thread_articles
 Defines which threading method to use. The choices are:
 0) Don't thread, 1) Thread on Subject only 2) Thread on References only,
-3) Thread on References then Subject (default).
+3) Thread on References then Subject (default)
+4) Thread multipart articles on Subject.
 It's also possible to set the threading type on a per group basis by setting
-the group attribute variable \fBthread_arts\fR to 0 - 3 in the file
+the group attribute variable \fBthread_arts\fR to 0 - 4 in the file
 \fI$HOME/.tin/attributes\fR.
 .TP
 .B thread_catchup_on_exit

@@ -62,6 +62,7 @@ extern void read_news_active_file (void);
 
 /* art.c */
 extern char *find_nov_file (struct t_group *group, int mode);
+extern int global_get_multipart_info (int aindex, MultiPartInfo *setme);
 extern t_bool index_group (struct t_group *group);
 extern void do_update (t_bool catchup);
 extern void find_base (struct t_group *group);
@@ -100,6 +101,7 @@ extern void draw_pager_line (const char *str, int flags);
 extern char **ulBuildArgv (char *cmd, int *new_argc);
 extern char *quote_space_to_dash (char *str);
 extern const char *print_boolean (t_bool value);
+extern char *fmt_option_prompt (char *dst, int len, t_bool editing, int option);
 extern int change_config_file (struct t_group *group);
 extern int option_row (int option);
 extern t_bool match_boolean (char *line, const char *pat, t_bool *dst);

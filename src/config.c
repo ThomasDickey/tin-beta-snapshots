@@ -68,6 +68,7 @@ enum state { IGNORE, CHECK, UPGRADE };
 #define DASH_TO_SPACE(mark)	(mark == '_' ? ' ' : mark)
 #define SPACE_TO_DASH(mark)	(mark == ' ' ? '_' : mark)
 
+
 /* FIXME: see doc/TODO and comments in the code */
 /*
  * If we don't find a matching version tag line at the top of the rc file,
@@ -94,6 +95,7 @@ check_upgrade (
 		return UPGRADE;
 	}
 }
+
 
 /*
  *  read local & global configuration defaults
@@ -129,7 +131,7 @@ read_config_file (
 			if (match_boolean (buf, "advertising=", &tinrc.advertising))
 				break;
 
-			if (match_boolean (buf, "auto_save=", &tinrc.auto_save))
+			if (match_boolean (buf, "alternative_handling=", &tinrc.alternative_handling))
 				break;
 
 			if (match_string (buf, "art_marked_deleted=", buf, sizeof (buf))) {
@@ -182,10 +184,10 @@ read_config_file (
 				break;
 #endif /* HAVE_METAMAIL */
 
-			if (match_boolean (buf, "auto_cc=", &tinrc.auto_cc))
+			if (match_boolean (buf, "auto_bcc=", &tinrc.auto_bcc))
 				break;
 
-			if (match_boolean (buf, "auto_bcc=", &tinrc.auto_bcc))
+			if (match_boolean (buf, "auto_cc=", &tinrc.auto_cc))
 				break;
 
 			if (match_boolean (buf, "auto_list_thread=", &tinrc.auto_list_thread))
@@ -194,7 +196,7 @@ read_config_file (
 			if (match_boolean (buf, "auto_reconnect=", &tinrc.auto_reconnect))
 				break;
 
-			if (match_boolean (buf, "alternative_handling=", &tinrc.alternative_handling))
+			if (match_boolean (buf, "auto_save=", &tinrc.auto_save))
 				break;
 
 			break;
@@ -778,7 +780,7 @@ read_config_file (
 
 
 /*
- *  write config defaults to ~/.tin/tinrc
+ * write config defaults to file
  */
 void
 write_config_file (
@@ -796,7 +798,6 @@ write_config_file (
 
 	if ((fp = fopen (file_tmp, "w")) == (FILE *) 0) {
 		error_message (_(txt_filesystem_full_backup), CONFIG_FILE);
-		/* free memory for tmp-filename */
 		free (file_tmp);
 		return;
 	}
@@ -1263,18 +1264,16 @@ write_config_file (
 		rename_file (file_tmp, file);
 		chmod (file, (mode_t)(S_IRUSR|S_IWUSR));
 	}
-	/* free memory for tmp-filename */
 	free (file_tmp);
 }
 
-#define option_lines_per_page (cLINES - INDEX_TOP - 3)
 
 static int first_option_on_screen;
 static int actual_top_option = 0;
 
+#define option_lines_per_page (cLINES - INDEX_TOP - 3)
 #define TopOfPage(option) option_lines_per_page \
 			* ((option) / option_lines_per_page)
-
 #define OptionInPage(option)	((option) - first_option_on_screen)
 #define OptionIndex(option)	(OptionInPage(option) % option_lines_per_page)
 
@@ -1286,11 +1285,13 @@ option_row (
 	return (INDEX_TOP + OptionIndex(option));
 }
 
+
 static int
-option_num(
+get_option_num(
 	int act_option)
 {
 	int result = 0;
+
 	if (option_table[act_option].var_type != OPT_TITLE) {
 		while (act_option >= 0) {
 			if (option_table[act_option--].var_type != OPT_TITLE)
@@ -1300,32 +1301,70 @@ option_num(
 	return result;
 }
 
+
+static int
+set_option_num(
+	int option)
+{
+	int result = 0;
+
+	while (option >= 0 && result < LAST_OPT) {
+		while (result < LAST_OPT && option_table[result].var_type == OPT_TITLE)
+			result++;
+		if (result < LAST_OPT) {
+			if (--option < 0)
+				break;
+			++result;
+		}
+	}
+	return result;
+}
+
+
+char *
+fmt_option_prompt (
+	char *dst,
+	int len,
+	t_bool editing,
+	int option)
+{
+	int num = get_option_num(option);
+
+	if (num != 0) {
+		snprintf(dst, len, "%s %3d. %s ",
+			editing ? "->" : "  ", num,
+			_(option_table[option].txt->opt));
+	} else
+		snprintf(dst, len, "  %s", _(option_table[option].txt->opt));
+
+	return dst;
+}
+
+
 static void
 print_any_option (
 	int act_option)
 {
 	constext **list;
-	char temp[LEN], *ptr;
+	char temp[LEN], *ptr, *ptr2;
 	int row = option_row(act_option);
 	int len = sizeof(temp) - 1;
-	int num = option_num(act_option);
 
 	MoveCursor (row, 0);
 
-	if (num)
-		snprintf(temp, len, "   %3d. %s ", num, option_table[act_option].txt->opt);
-	else
-		snprintf(temp, len, "  %s", option_table[act_option].txt->opt);
-	ptr = temp + strlen(temp);
+	ptr = fmt_option_prompt(temp, len, FALSE, act_option);
+	ptr += strlen(temp);
 	len -= strlen(temp);
 
 	switch (option_table[act_option].var_type) {
 		case OPT_ON_OFF:
-			snprintf(ptr, len, "%s ", print_boolean(*OPT_ON_OFF_list[option_table[act_option].var_index]));
+			snprintf(ptr, len, "%s", print_boolean(*OPT_ON_OFF_list[option_table[act_option].var_index]));
 			break;
 		case OPT_LIST:
 			list = option_table[act_option].opt_list;
-			snprintf(ptr, len, "%s", list[*(option_table[act_option].variable) + ((strcasecmp(list[0], _(txt_default)) == 0) ? 1 : 0)]);
+			ptr2 = my_strdup (list[*(option_table[act_option].variable) + ((strcasecmp(_(list[0]), _(txt_default)) == 0) ? 1 : 0)]);
+			snprintf(ptr, len, "%s", _(ptr2));
+			free(ptr2);
 			break;
 		case OPT_STRING:
 			snprintf(ptr, len, "%s", OPT_STRING_list[option_table[act_option].var_index]);
@@ -1341,7 +1380,13 @@ print_any_option (
 	}
 #ifdef USE_CURSES
 	my_printf("%.*s", cCOLS, temp);
-	clrtoeol();
+	{
+		int y, x;
+
+		getyx(stdscr, y, x);
+		if (x < cCOLS)
+			clrtoeol();
+	}
 #else
 	my_printf("%.*s", cCOLS - 1, temp);
 	/* draw_arrow_mark() will read this back for repainting */
@@ -1372,20 +1417,16 @@ static void
 RepaintOption (
 	int option)
 {
-	if (OptionOnPage(option)) {
+	if (OptionOnPage(option))
 		print_any_option (option);
-	}
 }
 
 
 #ifdef USE_CURSES
-static void DoScroll (
+static void
+DoScroll (
 	int jump)
 {
-#	if 0
-	int y, x;
-	getyx(stdscr, y, x);
-#	endif /* 0 */
 	MoveCursor(INDEX_TOP, 0);
 	SetScrollRegion(INDEX_TOP, INDEX_TOP + option_lines_per_page - 1);
 	ScrollScreen(jump);
@@ -1496,16 +1537,13 @@ change_config_file (
 	t_bool change_option = FALSE;
 	t_bool original_on_off_value;
 
-
 	actual_top_option = -1;
 	option = 0;
 
 	ClearScreen ();
 	set_xclick_off ();
 	forever {
-
 		highlight_option (option);
-
 		stow_cursor();
 		ch = ReadCh ();
 
@@ -1630,6 +1668,7 @@ change_config_file (
 				unhighlight_option (option);
 				old_option = option;
 				option = prompt_num (ch, _(txt_enter_option_num)) - 1;
+				option = set_option_num (option);
 				if (option < 0 || option > LAST_OPT) {
 					option = old_option;
 					break;
@@ -1806,7 +1845,7 @@ change_config_file (
 								OPT_ARG_COLUMN,
 								*(option_table[option].variable), /* post_process */
 								option_table[option].txt->help,
-								option_table[option].txt->opt,
+								_(option_table[option].txt->opt),
 								option_table[option].opt_list,
 								option_table[option].opt_count
 								);
@@ -1893,7 +1932,7 @@ change_config_file (
 						case OPT_EDITOR_FORMAT:
 #if defined(NNTP_ABLE) || defined(NNTP_ONLY)
 						case OPT_INEWS_PROG:
-#endif
+#endif /* NNTP_ABLE || NNTP_ONLY */
 						case OPT_MAILER_FORMAT:
 #ifndef CHARSET_CONVERSION
 						case OPT_MM_CHARSET:
@@ -1951,7 +1990,7 @@ change_config_file (
 										OPT_ARG_COLUMN,
 										mime_charset,
 										option_table[option].txt->help,
-										option_table[option].txt->opt,
+										_(option_table[option].txt->opt),
 										option_table[option].opt_list,
 										option_table[option].opt_count
 										);
@@ -1966,7 +2005,7 @@ change_config_file (
 										OPT_ARG_COLUMN,
 										mime_encoding,
 										option_table[option].txt->help,
-										option_table[option].txt->opt,
+										_(option_table[option].txt->opt),
 										option_table[option].opt_list,
 										option_table[option].opt_count
 										);
@@ -2079,7 +2118,7 @@ change_config_file (
 					break;
 			} /* switch (option_table[option].var_type) */
 			change_option = FALSE;
-			show_menu_help (_(txt_select_config_file_option));
+			show_menu_help (txt_select_config_file_option);
 			RepaintOption (option);
 		} /* if (change_option) */
 	} /* forever */
@@ -2089,7 +2128,7 @@ change_config_file (
 
 
 /*
- *  expand ~/News to /usr/username/News and print to screen
+ * expand ~/News to /usr/username/News and print to screen
  */
 static void
 expand_rel_abs_pathname (
@@ -2116,7 +2155,7 @@ expand_rel_abs_pathname (
 
 
 /*
- *  show_menu_help
+ * show_menu_help
  */
 void
 show_menu_help (
@@ -2124,7 +2163,7 @@ show_menu_help (
 {
 	MoveCursor (cLINES - 2, 0);
 	CleartoEOLN ();
-	center_line (cLINES - 2, FALSE, help_message);
+	center_line (cLINES - 2, FALSE, _(help_message));
 }
 
 
@@ -2227,7 +2266,9 @@ match_long (
 }
 
 
-/* If the 'pat' keyword matches, lookup & return an index into the table */
+/*
+ * If the 'pat' keyword matches, lookup & return an index into the table
+ */
 t_bool
 match_list (
 	char *line,
@@ -2312,7 +2353,7 @@ print_boolean (
 
 
 /*
- *  convert underlines to spaces in a string
+ * convert underlines to spaces in a string
  */
 void
 quote_dash_to_space (
@@ -2328,7 +2369,7 @@ quote_dash_to_space (
 
 
 /*
- *  convert spaces to underlines in a string
+ * convert spaces to underlines in a string
  */
 char *
 quote_space_to_dash (
@@ -2368,12 +2409,11 @@ show_config_page (
 	if (first_option_on_screen + option_lines_per_page > LAST_OPT)
 		lines_to_print = LAST_OPT + 1 - first_option_on_screen;
 
-	for (i = 0; i < lines_to_print; i++) {
+	for (i = 0; i < lines_to_print; i++)
 		print_any_option (first_option_on_screen + i);
-	}
 	CleartoEOS ();
 
-	show_menu_help (_(txt_select_config_file_option));
+	show_menu_help (txt_select_config_file_option);
 	my_flush();
 	stow_cursor();
 }
@@ -2384,8 +2424,8 @@ show_config_page (
  *
  * Takes a 1d string and turns it into a 2d array of strings.
  *
- * Watch out for the frees! You must free(*argv) and then free(argv)! NOTHING
- *   ELSE!! Do _NOT_ free the individual args of argv.
+ * Watch out for the frees! You must free(*argv) and then free(argv)!
+ * NOTHING ELSE! Do _NOT_ free the individual args of argv.
  */
 char **
 ulBuildArgv (

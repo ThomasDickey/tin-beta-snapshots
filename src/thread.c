@@ -372,7 +372,7 @@ thread_page (
 	/*
 	 * If threading by Refs, it helps to see the subject line
 	 */
-	show_subject = ((arts[thread_respnum].archive != (char *)0) || (group->attribute->thread_arts >= THREAD_REFS));
+	show_subject = ((arts[thread_respnum].archive != (char *)0) || (group->attribute->thread_arts == THREAD_REFS) || (group->attribute->thread_arts == THREAD_BOTH));
 
 	/*
 	 * Set the cursor to the last response unless pos_first_unread is on
@@ -1001,6 +1001,7 @@ stat_thread (
 	struct t_art_stat *sbuf) /* return value is always ignored */
 {
 	int i;
+	MultiPartInfo minfo;
 
 	sbuf->total = 0;
 	sbuf->unread = 0;
@@ -1013,6 +1014,9 @@ stat_thread (
 	sbuf->art_mark = tinrc.art_marked_read;
 	sbuf->score = 0 /*-(SCORE_MAX) */;
 	sbuf->time = 0;
+	sbuf->multipart_compare_len = 0;
+	sbuf->multipart_total = 0;
+	sbuf->multipart_have = 0;
 
 	for (i = (int) base[n]; i >= 0; i = arts[i].thread) {
 		++sbuf->total;
@@ -1042,7 +1046,14 @@ stat_thread (
 		if (arts[i].killed)
 			++sbuf->killed;
 #endif /* 0 */
+
+		if ((CURR_GROUP.attribute && CURR_GROUP.attribute->thread_arts == THREAD_MULTI) && global_get_multipart_info(i, &minfo) && (minfo.total >= 1)) {
+			sbuf->multipart_compare_len = minfo.subject_compare_len;
+			sbuf->multipart_total = minfo.total;
+			sbuf->multipart_have++;
+		}
 	}
+
 	sbuf->score = get_score_of_thread((int) base[n]);
 	sbuf->art_mark = (sbuf->inrange ? tinrc.art_marked_inrange : (sbuf->deleted ? tinrc.art_marked_deleted : (sbuf->selected_unread ? tinrc.art_marked_selected : (sbuf->unread ? (tinrc.recent_time && (time((time_t) 0) - sbuf->time) < (tinrc.recent_time * DAY)) ? tinrc.art_marked_recent : tinrc.art_marked_unread : (sbuf->seen ? tinrc.art_marked_return : tinrc.art_marked_read)))));
 	return sbuf->total;

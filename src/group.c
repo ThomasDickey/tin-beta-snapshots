@@ -80,6 +80,7 @@ static void show_group_title (t_bool clear_title);
 static void show_tagged_lines (void);
 static void toggle_read_unread (t_bool force);
 static void update_group_page (void);
+static void build_multipart_header(char* dest, int maxlen, const char* src, int cmplen, int have, int total);
 
 /*
  * grpmenu.curr is an index into base[] and so equates to the cursor location
@@ -1177,6 +1178,32 @@ toggle_subject_from (
 
 
 /*
+ *	Builds the correct header for multipart messages when sorting via
+ *	THREAD_MULTI.
+ */
+static void
+build_multipart_header(
+	char* dest,
+	int maxlen,
+	const char* src,
+	int cmplen,
+	int have,
+	int total)
+{
+	const char* mark = (have == total) ? "*" : "-";
+	char* ss = NULL;
+
+	if (cmplen > maxlen)
+		strncpy(dest, src, maxlen);
+	else {
+		strncpy(dest, src, cmplen);
+		ss = dest + cmplen;
+		snprintf(ss, maxlen - cmplen, "(%s/%d)", mark, total);
+	}
+}
+
+
+/*
  * Build subject line given an index into base[].
  *
  * WARNING: the routine is tightly coupled with draw_line() in the sense
@@ -1254,7 +1281,10 @@ bld_sline (
 	if (CURR_GROUP.attribute->show_author != SHOW_FROM_NONE)
 		get_author (FALSE, &arts[j], from, len_from);
 
-	strncpy(arts_sub, arts[j].subject, len_subj + 12);	/* +12? this should be -12, shouldn't it? */
+	if (sbuf.multipart_have > 1) /* We have a multipart msg so lets built our new header info. */
+		build_multipart_header(arts_sub, len_subj, arts[j].subject, sbuf.multipart_compare_len, sbuf.multipart_have, sbuf.multipart_total);
+	else
+		strncpy(arts_sub, arts[j].subject, len_subj);
 	arts_sub[len_subj - 12 + 1] = '\0';
 
 #ifndef USE_CURSES
