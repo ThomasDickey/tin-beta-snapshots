@@ -91,8 +91,10 @@ int InitScreen (void)
 	initscr();
 	cCOLS = COLS;
 	cLINES = LINES - 1;
-/*	set_win_size(&cLINES, &cCOLS);*/
-	raw(); noecho(); cbreak();
+/*	set_win_size(&cLINES, &cCOLS); */
+/*	raw(); */ /* breaks serial terminal using software flow control and cbreak() below does most of the stuff raw() does */
+	noecho();
+	cbreak();
 	cmd_line = FALSE;	/* ...so fcol/bcol will succeed */
 
 	set_keypad_on();

@@ -295,13 +295,11 @@ handle_keypad (
 	int ch = ReadCh ();
 
 	switch (ch) {
-#ifndef WIN32
 		case ESC:	/* common arrow keys */
 #	ifdef HAVE_KEY_PREFIX
 		case KEY_PREFIX:
 #	endif /* HAVE_KEY_PREFIX */
 			switch (get_arrow_key (ch)) {
-#endif /* !WIN32 */
 				case KEYMAP_UP:
 					ch = iKeyUp;
 					break;
@@ -326,7 +324,6 @@ handle_keypad (
 				case KEYMAP_END:
 					ch = iKeyLastPage;
 					break;
-#ifndef WIN32
 				case KEYMAP_MOUSE:
 					ch = mouse_action (ch, left_action, right_action);
 					break;
@@ -334,7 +331,7 @@ handle_keypad (
 					break;
 			}
 			break;
-#endif /* !WIN32 */
+
 		default:
 			ch = map_to_default (ch, menukeys);
 			break;

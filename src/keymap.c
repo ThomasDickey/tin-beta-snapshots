@@ -50,7 +50,7 @@ static t_bool processkey(t_keynode *keyptr, char *kname, char key);
 
 char *ch_post_process;
 
-struct keymap Key = {
+static struct keymap Key = {
 	{	/* Global keys */
 		{ 0, 0, "" },
 		{ iKeyPageUp, iKeyPageUp, "PageUp" },
@@ -361,7 +361,7 @@ struct keymap Key = {
 };
 
 /* NULL terminated list of pointers to the start of all the keygroups */
-t_keynode *keygroups[] = {
+static t_keynode *keygroups[] = {
 	&Key.Global.tag,		/* It is important that global be 1st for duplicate checking */
 	&Key.Config.tag,
 	&Key.Feed.tag,
@@ -383,7 +383,7 @@ t_keynode *keygroups[] = {
 
 /* Keymaps for various menus and screens */
 
-t_keynode *keys_config_change[] = {
+static t_keynode *keys_config_change[] = {
 	&Key.Global.Quit, &Key.Config.NoSave, &Key.Global.Up, &Key.Global.Up2,
 	&Key.Global.Down, &Key.Global.Down2, &Key.Global.FirstPage,
 	&Key.Config.FirstPage2, &Key.Global.LastPage, &Key.Config.LastPage2,
@@ -395,7 +395,7 @@ t_keynode *keys_config_change[] = {
 	&Key.Global.Six, &Key.Global.Seven, &Key.Global.Eight, &Key.Global.Nine,
 	NULL };
 
-t_keynode *keys_feed_art_thread_regex_tag[] = {
+static t_keynode *keys_feed_art_thread_regex_tag[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.Feed.Art, &Key.Feed.Hot,
 	&Key.Feed.Thd, &Key.Feed.Tag, &Key.Feed.Pat, NULL };
 
@@ -421,20 +421,20 @@ t_keynode *keys_feed_art_thread_regex_tag[] = {
  * mind that this will probably confuse users who are upgrading from an
  * older tin because the new action replaces the old one.
  */
-t_keynode *keys_feed_post_process_type[] = {
+static t_keynode *keys_feed_post_process_type[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.PProc.None, &Key.PProc.Shar,
 	&Key.PProc.UUDecode,
 	NULL };
 
-t_keynode *keys_feed_supersede_article[] = {
+static t_keynode *keys_feed_supersede_article[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.Feed.Repost, &Key.Feed.Supersede,
 	NULL };
 
-t_keynode *keys_filter_quit_edit_save[] = {
+static t_keynode *keys_filter_quit_edit_save[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.Filter.Edit, &Key.Filter.Save,
 	NULL };
 
-t_keynode *keys_group_nav[] = {
+static t_keynode *keys_group_nav[] = {
 	&Key.Global.Abort, &Key.Global.One, &Key.Global.Two, &Key.Global.Three,
 	&Key.Global.Four, &Key.Global.Five, &Key.Global.Six, &Key.Global.Seven,
 	&Key.Global.Eight, &Key.Global.Nine,
@@ -476,7 +476,7 @@ t_keynode *keys_group_nav[] = {
 	&Key.Group.MarkUnselArtRead, &Key.Group.DoAutoSel,
 	&Key.Global.ToggleInfoLastLine, NULL };
 
-t_keynode *keys_info_nav[] = {
+static t_keynode *keys_info_nav[] = {
 	&Key.Global.Abort, &Key.Global.MouseToggle, &Key.Global.Up,
 	&Key.Global.Up2, &Key.Global.Down, &Key.Global.Down2, &Key.Global.PageDown,
 	&Key.Global.PageDown2, &Key.Global.PageDown3, &Key.Global.PageUp,
@@ -485,11 +485,11 @@ t_keynode *keys_info_nav[] = {
 	&Key.Global.ToggleHelpDisplay, &Key.Global.SearchSubjF,
 	&Key.Global.SearchSubjB, &Key.Global.Quit, NULL };
 
-t_keynode *keys_nrctbl_create[] = {
+static t_keynode *keys_nrctbl_create[] = {
    &Key.Global.Abort, &Key.Nrctbl.Quit, &Key.Nrctbl.Alternative,
    &Key.Nrctbl.Create, &Key.Nrctbl.Default, NULL };
 
-t_keynode *keys_page_nav[] = {
+static t_keynode *keys_page_nav[] = {
 	&Key.Global.Abort, &Key.Global.Zero, &Key.Global.One, &Key.Global.Two,
 	&Key.Global.Three, &Key.Global.Four, &Key.Global.Five, &Key.Global.Six,
 	&Key.Global.Seven, &Key.Global.Eight, &Key.Global.Nine,
@@ -538,42 +538,42 @@ t_keynode *keys_page_nav[] = {
 #endif /* HAVE_COLOR */
 	&Key.Page.ViewAttach, &Key.Page.ViewUrl, NULL };
 
-t_keynode *keys_pgp_mail[] = {
+static t_keynode *keys_pgp_mail[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.Pgp.EncSign, &Key.Pgp.Encrypt,
 	&Key.Pgp.Sign, NULL };
 
-t_keynode *keys_pgp_news[] = {
+static t_keynode *keys_pgp_news[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.Pgp.Includekey, &Key.Pgp.Sign,
 	NULL };
 
-t_keynode *keys_post_cancel[] = {
+static t_keynode *keys_post_cancel[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.Post.Cancel, &Key.Post.Edit,
 	NULL };
 
-t_keynode *keys_post_cont[] = {
+static t_keynode *keys_post_cont[] = {
 	&Key.Global.Abort, &Key.Post.Abort, &Key.Post.Continue, NULL };
 
-t_keynode *keys_post_delete[] = {
+static t_keynode *keys_post_delete[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.Post.Cancel, &Key.Post.Supersede,
 	NULL };
 
-t_keynode *keys_post_edit[] = {
+static t_keynode *keys_post_edit[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.Post.Edit, &Key.Post.Postpone,
 	NULL };
 
-t_keynode *keys_post_edit_ext[] = {
+static t_keynode *keys_post_edit_ext[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.Post.Edit,
 	&Key.Global.OptionMenu, NULL };
 
-t_keynode *keys_post_ignore_fupto[] = {
+static t_keynode *keys_post_ignore_fupto[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.Post.Ignore, &Key.Global.Post,
 	&Key.Post.Post2, &Key.Post.Post3, NULL };
 
-t_keynode *keys_post_mail_fup[] = {
+static t_keynode *keys_post_mail_fup[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.Global.Post, &Key.Post.Post2,
 	&Key.Post.Post3, &Key.Post.Mail, NULL };
 
-t_keynode *keys_post_post[] = {
+static t_keynode *keys_post_post[] = {
 	&Key.Global.Abort, &Key.Global.Quit,
 #ifdef HAVE_PGP_GPG
 	&Key.Post.PGP,
@@ -584,11 +584,11 @@ t_keynode *keys_post_post[] = {
 	&Key.Post.Edit, &Key.Global.Post, &Key.Post.Post2, &Key.Post.Post3,
 	&Key.Post.Postpone, NULL };
 
-t_keynode *keys_post_postpone[] = {
+static t_keynode *keys_post_postpone[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.Prompt.Yes,
 	&Key.Postpone.All, &Key.Postpone.Override, &Key.Prompt.No, NULL };
 
-t_keynode *keys_post_send[] = {
+static t_keynode *keys_post_send[] = {
 	&Key.Global.Abort, &Key.Global.Quit,
 #ifdef HAVE_PGP_GPG
 	&Key.Post.PGP,
@@ -598,14 +598,14 @@ t_keynode *keys_post_send[] = {
 #endif /* HAVE_ISPELL */
 	&Key.Post.Edit, &Key.Post.Send, &Key.Post.Send2, NULL };
 
-t_keynode *keys_prompt_yn[] = {
+static t_keynode *keys_prompt_yn[] = {
 	&Key.Global.Abort, &Key.Prompt.Yes, &Key.Prompt.No, NULL };
 
-t_keynode *keys_save_append_overwrite_quit[] = {
+static t_keynode *keys_save_append_overwrite_quit[] = {
 	&Key.Global.Abort, &Key.Global.Quit, &Key.Save.AppendFile,
 	&Key.Save.OverwriteFile, NULL };
 
-t_keynode *keys_select_nav[] = {
+static t_keynode *keys_select_nav[] = {
 	&Key.Global.Abort, &Key.Global.One, &Key.Global.Two, &Key.Global.Three,
 	&Key.Global.Four, &Key.Global.Five, &Key.Global.Six, &Key.Global.Seven,
 	&Key.Global.Eight, &Key.Global.Nine,
@@ -636,7 +636,7 @@ t_keynode *keys_select_nav[] = {
 	&Key.Select.YankActive, &Key.Select.SyncWithActive,
 	&Key.Select.MarkGrpUnread, &Key.Select.MarkGrpUnread2, NULL };
 
-t_keynode *keys_thread_nav[] = {
+static t_keynode *keys_thread_nav[] = {
 	&Key.Global.Abort, &Key.Global.One, &Key.Global.Two, &Key.Global.Three,
 	&Key.Global.Four, &Key.Global.Five, &Key.Global.Six, &Key.Global.Seven,
 	&Key.Global.Eight, &Key.Global.Nine,

@@ -324,11 +324,7 @@ backup_newsrc (
 {
 	char buf[HEADER_LEN];
 
-#	ifdef WIN32
-	joinpath (buf, rcdir, OLDNEWSRC_FILE);
-#	else
 	joinpath (buf, homedir, OLDNEWSRC_FILE);
-#	endif /* WIN32 */
 
 	if (!backup_file (newsrc, buf))
 		error_message (_(txt_filesystem_full_backup), NEWSRC_FILE);

@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 5
 SVER	= 9
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20010609
+DVER	= 20010630
 EXE	= tin
 
 # directory structure
@@ -192,6 +192,7 @@ TOP	= \
 	$(TOPDIR)/Makefile \
 	$(TOPDIR)/MANIFEST \
 	$(TOPDIR)/README \
+	$(TOPDIR)/README.MAC \
 	$(TOPDIR)/README.VMS \
 	$(TOPDIR)/README.WIN \
 	$(TOPDIR)/aclocal.m4 \

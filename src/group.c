@@ -45,7 +45,7 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 #ifndef MENUKEYS_H
-#	include  "menukeys.h"
+#	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 
 #define INDEX2SNUM(i)	((i) % NOTESLINES)
@@ -196,10 +196,8 @@ group_page (
 		set_xclick_on ();
 		switch (ch = handle_keypad (group_left, group_right, &menukeymap.group_nav)) {
 
-#ifndef WIN32
 			case iKeyAbort:		/* Abort */
 				break;
-#endif /* !WIN32 */
 
 			case '1': case '2': case '3': case '4': case '5':
 			case '6': case '7': case '8': case '9':
@@ -1491,10 +1489,12 @@ group_catchup(
 			switch (yn) {
 				case -1:					/* ESCAPE - do nothing */
 					break;
+
 				case 1:						/* We caught up - advance group */
 					return GRP_NEXT;
 					/* NOTREACHED */
 					break;
+
 				default:					/* Just leave the group */
 					return GRP_EXIT;
 					/* NOTREACHED */

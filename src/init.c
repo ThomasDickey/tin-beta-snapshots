@@ -48,10 +48,10 @@
 #	include "trace.h"
 #endif /* !included_trace_h */
 #ifndef MENUKEYS_H
-#	include  "menukeys.h"
+#	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 #ifndef VERSION_H
-#	include  "version.h"
+#	include "version.h"
 #endif /* !VERSION_H */
 #ifndef BUGREP_H
 #	include "bugrep.h"
@@ -124,10 +124,6 @@ char proc_ch_default;				/* set in change_config_file () */
 #ifdef VMS
 	char rcdir_asfile[PATH_LEN];	/* rcdir expressed as dev:[dir]tin.dir, for stat() */
 #endif /* VMS */
-
-#ifdef M_OS2
-	char TMPDIR[PATH_LEN];
-#endif /* M_OS2 */
 
 int groupname_len = 0;			/* 'runtime' copy of groupname_max_len */
 int hist_last[HIST_MAXNUM + 1];
@@ -246,7 +242,7 @@ struct t_config tinrc = {
 	"",		/* maildir */
 	"",		/* mail_address */
 	"",		/* mm_charset */
-	"Newsgroups Followup-To Summary Keywords",		/* news_headers_to_display */
+	"Newsgroups Followup-To Summary Keywords X-Comment-To",		/* news_headers_to_display */
 	"",		/* news_headers_to_not_display */
 	"%F wrote:",		/* news_quote_format */
 	DEFAULT_COMMENT,	/* quote_chars */
@@ -361,7 +357,6 @@ struct t_config tinrc = {
 	FALSE,		/* show_only_unread_groups */
 	FALSE,		/* show_score */
 	TRUE,		/* show_signatures */
-	FALSE,		/* show_xcommentto */
 	FALSE,		/* hide_uue */
 	TRUE,		/* sigdashes */
 	TRUE,		/* signature_repost */
@@ -545,28 +540,11 @@ init_selfinfo (
 
 /* we might add a check for $LOGNAME here */
 
-#	if defined(M_OS2) || defined(WIN32)
-	if (myentry == (struct passwd *) 0) {
-		fprintf (stderr, "Environment variable USER not set.\n");
-		giveup();
-	}
-#	else
-#		ifdef VMS
+#	ifdef VMS
 	if (((ptr = getlogin ()) != (char *) 0) && strlen (ptr))
 		myentry = getpwnam (ptr);
-#		endif /* VMS */
-#	endif /* M_OS2 || WIN32 */
+#	endif /* VMS */
 
-#	ifdef M_OS2
-	strcpy (TMPDIR, get_val ("TMP", "/tmp/"));
-	if ((TMPDIR[strlen(TMPDIR) - 1] != '/') && (TMPDIR[strlen(TMPDIR) - 1] != '\\'))
-		strcat(TMPDIR, "/");
-#	endif /* M_OS2 */
-#	ifdef WIN32
-	strcpy (TMPDIR, get_val ("TMP", "\\tmp\\"));
-	if (TMPDIR[strlen(TMPDIR) - 1] != '\\')
-		strcat(TMPDIR, "\\");
-#	endif /* WIN32 */
 	strcpy (userid, myentry->pw_name);
 #	ifdef VMS
 	lower (userid);
@@ -586,7 +564,11 @@ init_selfinfo (
 	created_rcdir = FALSE;
 	dangerous_signal_exit = FALSE;
 	disable_gnksa_domain_check = FALSE;
+#ifdef MAC_OS_X	/* usualy they don't have a valid FQDN */
+	disable_sender = TRUE;
+#else
 	disable_sender = FALSE;
+#endif /* MAC_OS_X */
 	filtered_articles = FALSE;
 	iso2asc_supported = atoi (get_val ("ISO2ASC", DEFAULT_ISO2ASC));
 	if (iso2asc_supported > NUM_ISO_TABLES)
@@ -802,16 +784,11 @@ init_selfinfo (
 	joinpath (mailbox, DEFAULT_MAILBOX, userid);
 #endif /* VMS */
 	joinpath (mailgroups_file, rcdir, MAILGROUPS_FILE);
-#ifdef WIN32
-	joinpath (newsrc, rcdir, NEWSRC_FILE);
-	joinpath (newnewsrc, rcdir, NEWNEWSRC_FILE);
-#else
 	joinpath (newsrc, homedir, NEWSRC_FILE);
 	joinpath (newnewsrc, homedir, NEWNEWSRC_FILE);
-#	ifdef APPEND_PID
+#ifdef APPEND_PID
 	sprintf(newnewsrc + strlen(newnewsrc), "%d", (int) process_id);
-#	endif /* APPEND_PID */
-#endif /* WIN32 */
+#endif /* APPEND_PID */
 	joinpath (posted_info_file, rcdir, POSTED_FILE);
 	joinpath (posted_msgs_file, tinrc.maildir, POSTED_FILE);
 	joinpath (postponed_articles_file, rcdir, POSTPONED_FILE);

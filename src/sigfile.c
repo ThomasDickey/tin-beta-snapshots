@@ -280,11 +280,7 @@ thrashdir (
 						dp = NULL;
 				} else {	/* end dir; we have a file */
 					get_cwd (sigfile);
-#ifdef WIN32
-					strcat (sigfile, "\\");
-#else
 					strcat (sigfile, "/");
-#endif /* WIN32 */
 					strcat (sigfile, dp->d_name);
 #ifdef DEBUG
 					if (debug == 2)

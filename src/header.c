@@ -57,15 +57,10 @@ get_host_name (
 #ifdef HAVE_GETHOSTBYNAME
 	gethostname(hostname, sizeof(hostname));
 #else
-#	if defined(M_AMIGA) || defined(M_OS2)
+#	if defined(M_AMIGA)
 	if ((ptr = getenv("NodeName")) != (char *) 0)
 		strncpy(hostname, ptr, MAXHOSTNAMELEN);
-#	else
-#		ifdef WIN32
-	if ((ptr = getenv("COMPUTERNAME")) != (char *) 0)
-		strncpy(hostname, ptr, MAXHOSTNAMELEN);
-#		endif /* WIN32 */
-#	endif /* M_AMIGA || M_OS2 */
+#	endif /* M_AMIGA */
 #endif /* HAVE_GETHOSTBYNAME */
 #ifdef HAVE_SYS_UTSNAME_H
 	if (! *hostname)
@@ -104,7 +99,7 @@ get_domain_name (
  * which is illegal on a 68000
  */
 static const char *domain_name_hack = DOMAIN_NAME;
-#		undef	DOMAIN_NAME
+#		undef DOMAIN_NAME
 #		define DOMAIN_NAME domain_name_hack
 #	endif /* M_AMIGA */
 

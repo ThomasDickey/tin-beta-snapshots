@@ -140,12 +140,20 @@
 #ifdef DECL_INET_ADDR
 	extern unsigned long inet_addr (const char *);
 #endif /* DECL_INET_ADDR */
+#if 0 /* breaks gcc 3.0 -std=c89 on SuSE 7.1 */
+#	ifdef DECL_INET_ATON
+		extern int inet_aton(const char *, struct in_addr *);
+#	endif /* DECL_INET_ATON */
+#endif /* 0 */
 #ifdef DECL_IOCTL
 	extern int ioctl (int, int, void *);
 #endif /* DECL_IOCTL */
 #if defined(DECL_ISASCII) && !defined(isascii)
 	extern int isascii (int);
 #endif /* DECL_ISASCII && !isascii */
+#ifdef DECL_KILL
+	extern int kill (pid_t, int);
+#endif /* DECL_KILL */
 #ifdef DECL_MALLOC
 	extern void *malloc (size_t);
 #endif /* DECL_MALLOC */
@@ -527,12 +535,9 @@ extern constext txt_error_header_line_bad_encoding[];
 extern constext txt_error_header_line_blank[];
 extern constext txt_error_header_line_colon[];
 extern constext txt_error_header_line_comma[];
-extern constext txt_error_header_line_empty_subject[];
-extern constext txt_error_header_line_empty_newsgroups[];
+extern constext txt_error_header_line_empty[];
 extern constext txt_error_header_line_groups_contd[];
-extern constext txt_error_header_line_missing_newsgroups[];
-extern constext txt_error_header_line_missing_subject[];
-extern constext txt_error_header_line_missing_target[];
+extern constext txt_error_header_line_missing[];
 extern constext txt_error_header_line_space[];
 extern constext txt_error_no_domain_name[];
 extern constext txt_error_no_enter_permission[];
@@ -862,7 +867,7 @@ extern constext txt_posted_info_file[];
 extern constext txt_posting[];
 extern constext txt_postpone_repost[];
 extern constext txt_prompt_fup_ignore[];
-extern constext txt_prompt_unchanged_art[];
+/* extern constext txt_prompt_unchanged_art[]; */
 extern constext txt_prompt_unchanged_mail[];
 extern constext txt_prompt_see_postponed[];
 extern constext txt_quick_filter_kill[];
@@ -1295,10 +1300,6 @@ extern constext txt_processing_saved_arts[];
 	extern t_bool tin_bbs_mode;
 #endif /* M_AMIGA */
 
-#ifdef M_OS2
-	extern char TMPDIR[PATH_LEN];
-#endif /* M_OS2 */
-
 #ifndef NO_ETIQUETTE
 	extern constext txt_warn_posting_etiquette[];
 #endif /* NO_ETIQUETTE */
@@ -1352,7 +1353,6 @@ extern struct opttxt txt_show_signatures;
 extern struct opttxt txt_hide_uue;
 extern struct opttxt txt_news_headers_to_display;
 extern struct opttxt txt_news_headers_to_not_display;
-extern struct opttxt txt_show_xcommentto;
 extern struct opttxt txt_alternative_handling;
 extern struct opttxt txt_strip_re_regex;
 extern struct opttxt txt_strip_was_regex;

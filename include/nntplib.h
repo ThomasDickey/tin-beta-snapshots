@@ -41,7 +41,7 @@
 #ifndef NNTPLIB_H
 #define NNTPLIB_H 1
 
-#ifndef	NNTP_SERVER_FILE
+#ifndef NNTP_SERVER_FILE
 #	ifdef M_AMIGA
 #		define NNTP_SERVER_FILE	"uulib:nntpserver"
 #	else
@@ -49,8 +49,8 @@
 #	endif /* M_AMIGA */
 #endif /* !NNTP_SERVER_FILE */
 
-#define	NNTP_TCP_NAME	"nntp"
-#define	NNTP_TCP_PORT	"119"
+#define NNTP_TCP_NAME	"nntp"
+#define NNTP_TCP_PORT	"119"
 
 /*
  * # seconds after which a read from the NNTP will timeout
@@ -164,6 +164,6 @@
 /*
  * RFC 977 defines this; don't change it.
  */
-#define	NNTP_STRLEN		512
+#define NNTP_STRLEN		512
 
 #endif /* !NNTPLIB_H */

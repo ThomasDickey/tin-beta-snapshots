@@ -44,12 +44,6 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef VERSION_H
-#	include  "version.h"
-#endif /* !VERSION_H */
-#ifndef BUGREP_H
-#	include  "bugrep.h"
-#endif /* !BUGREP_H */
 #ifndef included_trace_h
 #	include "trace.h"
 #endif /* !included_trace_h */
@@ -59,6 +53,10 @@
 #ifndef RFC2046_H
 #	include "rfc2046.h"
 #endif /* !RFC2046_H */
+
+#ifdef MAC_OS_X
+#	include <CoreFoundation/CoreFoundation.h>
+#endif /* MAC_OS_X */
 
 /*
  * defines to control GNKSA-checks behaviour:
@@ -83,6 +81,7 @@ static void write_input_history_file (void);
 	static int to_local (int c);
 	static int to_network (int c);
 #endif /* LOCAL_CHARSET */
+
 
 /*
  * generate tmp-filename
@@ -326,7 +325,6 @@ get_val (
  * or 'M'enu
  */
 #define BACKUP_FILE_EXT ".b"
-
 t_bool
 invoke_editor (
 	const char *filename,
@@ -405,7 +403,6 @@ invoke_ispell (
 		perror_message(_(txt_cannot_open), nam);
 		return FALSE;
 	}
-
 
 	if ((fp_head = fopen (nam_head, "w")) == NULL) {
 		perror_message(_(txt_cannot_open), nam_head);
@@ -717,11 +714,7 @@ my_mkdir (
 	} else
 		return -1;
 #else
-#	if defined(M_OS2) || defined(WIN32)
-		return mkdir (path);
-#	else
 		return mkdir (path, mode);
-#	endif /* M_OS2 || WIN32 */
 #endif /* !HAVE_MKDIR */
 }
 
@@ -733,12 +726,6 @@ my_chdir (
 	int retcode;
 
 	retcode = chdir (path);
-
-#ifdef M_OS2
-	if (*path && path[1] == ':') {
-		_chdrive (toupper((unsigned char)path[0]) - 'A' + 1);
-	}
-#endif /* M_OS2 */
 
 	return retcode;
 }
@@ -922,9 +909,6 @@ base_name (
 			break;
 		}
 	}
-#ifdef M_OS2
-	str_lwr (program);
-#endif /* M_OS2 */
 #ifdef VMS
 	if ((cp = strrchr(program, '.')) != 0)
 		*cp = '\0';
@@ -939,16 +923,15 @@ t_bool
 mail_check (
 	void)
 {
-#ifndef WIN32 /* No unified mail transport on WIN32 */
 	const char *mailbox_name;
 	struct stat buf;
-#	ifdef M_AMIGA
+#ifdef M_AMIGA
 	static long mbox_size = 0;
-#	endif /* M_AMIGA */
+#endif /* M_AMIGA */
 
 	mailbox_name = get_val ("MAIL", mailbox);
 
-#	ifdef M_AMIGA
+#ifdef M_AMIGA
 	/*
 	 * Since AmigaDOS does not distinguish between atime and mtime
 	 * we have to find some other way to figure out if the mailbox
@@ -985,11 +968,10 @@ mail_check (
 				mbox_size = 0;
 		}
 	}
-#	else
+#else
 	if (mailbox_name != 0 && stat (mailbox_name, &buf) >= 0 && buf.st_atime < buf.st_mtime && buf.st_size > 0)
 		return TRUE;
-#	endif /* M_AMIGA */
-#endif /* !WIN32 */
+#endif /* M_AMIGA */
 	return FALSE;
 }
 
@@ -1099,7 +1081,8 @@ parse_from (
 				if (*ap == '\"') {
 					switch (*(ap + 1)) {
 						case '@' : case '%' :
-							*(quoted_p++) = '\"'; *quoted_p = '\0';
+							*(quoted_p++) = '\"';
+							*quoted_p = '\0';
 							APPEND_TO (asp, quoted_buf);
 							APPEND_TO (cmtp, atom_buf);
 							atom_type = 1;
@@ -1219,13 +1202,13 @@ my_isprint (
 	/* use locale */
 	return isprint(c);
 #else
-#	ifdef LOCAL_CHARSET
+#	if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
 		/* use some conversation table */
 		return (isprint(c) || (c >= 0x80 && c <= 0xff));
 #	else
 		/* assume iso-8859-1 */
 		return (isprint(c) || (c >= 0xa0 && c <= 0xff));
-#	endif /* LOCAL_CHARSET */
+#	endif /* LOCAL_CHARSET || MAC_OS_X */
 #endif /* !NO_LOCALE */
 }
 
@@ -1324,16 +1307,10 @@ show_color_status (
 #endif /* HAVE_COLOR */
 
 
-/* moved from art.c */
-#ifdef WIN32
-	/* Don't want the overhead of windows.h */
-	int kbhit(void);
-#endif /* WIN32 */
-
-
 /*
- * Check for lock file to stop multiple copies of tind or tin -U running
- * and if it does not exist create it so this is the only copy running
+ * Check for lock file to stop multiple copies of tind (obsolete) or
+ * tin -U running and if it does not exist create it so this is the
+ * only copy running
  */
 void
 create_index_lock_file (
@@ -1568,11 +1545,6 @@ strfeditor (
 				case 'n':	/* linefeed */
 					strcpy (tbuf, "\n");
 					break;
-#ifdef WIN32
-				case '\"':
-					strcpy (tbuf, "\\\"");
-					break;
-#endif /* WIN32 */
 				default:
 					tbuf[0] = '%';
 					tbuf[1] = *format;
@@ -2236,9 +2208,6 @@ make_post_process_cmd (
 
 	get_cwd (currentdir);
 	my_chdir (dir);
-#	ifdef M_OS2
-	backslash (file);
-#	endif /* M_OS2 */
 	sh_format (buf, sizeof(buf), cmd, file);
 	invoke_cmd (buf);
 	my_chdir (currentdir);
@@ -2270,16 +2239,6 @@ file_mtime (
 	struct stat statbuf;
 
 	return (stat (file, &statbuf) == -1 ? -1L : (S_ISREG(statbuf.st_mode)) ? (long) statbuf.st_mtime : -1L);
-}
-
-
-void
-vPrintBugAddress (
-	void)
-{
-	my_fprintf (stderr, _("%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n"),
-		tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME, bug_addr);
-	my_fflush (stderr);
 }
 
 
@@ -2492,9 +2451,9 @@ quote_wild_whitespace (
 }
 
 
-
+#if 0 /* unused */
 /*
- * strip_address () removes the address part from a given e-mail address
+ * strip_address() removes the address part from a given e-mail address
  */
 void
 strip_address (
@@ -2527,10 +2486,11 @@ strip_address (
 			stripped_address[strlen(stripped_address) - 1] = '\0';
 	}
 }
+#endif /* 0 */
 
 
 /*
- * strip_name () removes the realname part from a given e-mail address
+ * strip_name() removes the realname part from a given e-mail address
  */
 void
 strip_name (
@@ -2558,7 +2518,7 @@ strip_name (
 }
 
 
-#ifdef LOCAL_CHARSET
+#if defined(LOCAL_CHARSET) && !defined(MAC_OS_X)
 /*
  * convert between local and network charset (e.g. NeXT and latin1)
  */
@@ -2623,7 +2583,33 @@ buffer_to_network (
 	for(; *b; b++)
 		*b = to_network(*b);
 }
-#endif /* LOCAL_CHARSET */
+
+#else
+#	ifdef MAC_OS_X
+void
+buffer_to_local (
+	char *b)
+{
+	CFStringRef convertedString;
+
+	convertedString = CFStringCreateWithCString(NULL, b, kCFStringEncodingISOLatin9);
+	CFStringGetCString(convertedString, b, strlen(b)+1, CFStringGetSystemEncoding());
+	CFRelease(convertedString);
+}
+
+
+void
+buffer_to_network (
+	char *b)
+{
+	CFStringRef convertedString;
+
+	convertedString = CFStringCreateWithCString(NULL, b, CFStringGetSystemEncoding());
+	CFStringGetCString(convertedString, b, strlen(b)+1, kCFStringEncodingISOLatin9);
+	CFRelease(convertedString);
+}
+#	endif /* MAC_OS_X */
+#endif /* LOCAL_CHARSET && !MAC_OS_X */
 
 
 /*
@@ -2884,7 +2870,6 @@ gnksa_dequote_plainphrase (
 	char *wpos;	/* write position */
 	int initialstate;	/* initial state */
 	int state;	/* current state */
-
 
 	/* initialize state machine */
 	switch (addrtype) {
@@ -3148,7 +3133,6 @@ gnksa_check_domain_literal (
 		|| ((192 == x1) && (168 == x2))		/* private class C */
 		|| (127 == x1)))			/* localhost */
 		return GNKSA_LOCAL_DOMAIN_LITERAL;
-
 
 	return GNKSA_OK;
 }

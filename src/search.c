@@ -69,7 +69,7 @@ int srch_lineno = -1;
  */
 static int srch_offsets[6];
 static int srch_offsets_size = sizeof(srch_offsets)/sizeof(int);
-struct regex_cache srch_regex;
+static struct regex_cache srch_regex;
 
 
 /*

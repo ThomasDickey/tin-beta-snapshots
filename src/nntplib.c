@@ -190,18 +190,18 @@ server_init (
 	int port,
 	char *text)
 {
-#ifndef INET6
+#	ifndef INET6
 	char temp[256];
 	char *service = strncpy(temp, cservice, 255); /* ...calls non-const funcs */
-#endif /* !INET6 */
+#	endif /* !INET6 */
 #	ifndef VMS
 	int sockt_rd, sockt_wr;
 #	endif /* !VMS */
 
-#	if defined (M_AMIGA) || defined(WIN32)
+#	if defined (M_AMIGA)
 	if (!s_init())		/* some initialisation ... */
 		return -1;
-#	endif /* M_AMIGA || WIN32 */
+#	endif /* M_AMIGA */
 
 #	ifdef DECNET
 	char *cp;
@@ -752,8 +752,6 @@ put_server (
 	s_puts (string, nntp_wr_fp);
 	s_puts ("\r\n", nntp_wr_fp);
 	(void) s_flush (nntp_wr_fp);
-
-	return;
 }
 #	endif /* NNTP_ABLE */
 

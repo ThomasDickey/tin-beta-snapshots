@@ -252,7 +252,7 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 
 ALL_FILES = $(HFILES) $(CFILES) $(NNTP)
 
-LINTFLAGS = -a -c -h -n -x $(CPPOPTS) \
+LINTFLAGS = -a -c -h -n -x $(CPPOPTS) -I/usr/local/include/ \
 	-DUSE_ISO2ASC=\"2\" \
 	-DHAVE_ISPELL \
 	-DHAVE_COLOR
@@ -305,16 +305,16 @@ $(INS_SYSDEF_DIR) :
 	$(top_srcdir)/mkdirs.sh $@
 
 install_manpage: $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)
-	@$(ECHO) "Installing $(EXE) manual page to $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)..."
+	@$(ECHO) "Installing $(EXE) manual pages to $(DESTDIR)$(INS_MANUAL_DIR)..."
 	@$(INSTALL) -m 444 $(DOCDIR)/tin.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(EXE).$(INS_MANUAL_EXT)
-#	@$(INSTALL) -m 444 $(DOCDIR)/tin.5 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(EXE).5
-#	@$(INSTALL) -m 444 $(DOCDIR)/mbox.5 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/mbox.5
+	@$(INSTALL) -m 444 $(DOCDIR)/tin.5 $(DESTDIR)$(INS_MANUAL_DIR)5/$(EXE).5
+#	@$(INSTALL) -m 444 $(DOCDIR)/mbox.5 $(DESTDIR)$(INS_MANUAL_DIR)5/mbox.5
 
 uninstall_manpage:
 	@$(ECHO) "Uninstalling $(EXE) manual page in $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)..."
 	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(EXE).$(INS_MANUAL_EXT)
-#	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(EXE).5
-#       @-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/mbox.5
+	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)5/$(EXE).5
+#	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)5/mbox.5
 
 install_sysdefs: $(INS_SYSDEF_DIR)
 	@$(ECHO) "Installing system-wide defaults to $(INS_SYSDEF_DIR)..."
@@ -447,7 +447,8 @@ $(OBJDIR)/feed.o:		$(SRCDIR)/feed.c $(TIN_DEP) \
 $(OBJDIR)/filter.o:		$(SRCDIR)/filter.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
 $(OBJDIR)/getline.o:		$(SRCDIR)/getline.c $(TIN_DEP)
-$(OBJDIR)/global.o:		$(SRCDIR)/getline.c $(TIN_DEP)
+$(OBJDIR)/global.o:		$(SRCDIR)/global.c $(TIN_DEP) \
+				$(INCDIR)/menukeys.h	
 $(OBJDIR)/group.o:		$(SRCDIR)/group.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
 $(OBJDIR)/hashstr.o:		$(SRCDIR)/hashstr.c $(TIN_DEP)
@@ -471,24 +472,21 @@ $(OBJDIR)/list.o:		$(SRCDIR)/list.c $(TIN_DEP)
 $(OBJDIR)/lock.o:		$(SRCDIR)/lock.c $(TIN_DEP)
 $(OBJDIR)/mail.o:		$(SRCDIR)/mail.c $(TIN_DEP)
 $(OBJDIR)/main.o:		$(SRCDIR)/main.c $(TIN_DEP) \
-				$(INCDIR)/bugrep.h \
 				$(INCDIR)/version.h
 $(OBJDIR)/makecfg.o:		$(SRCDIR)/makecfg.c $(TIN_DEP)
-$(OBJDIR)/memory.o:		$(SRCDIR)/memory.c $(TIN_DEP)
+$(OBJDIR)/memory.o:		$(SRCDIR)/memory.c $(TIN_DEP) \
+				$(INCDIR)/rfc2046.h
 $(OBJDIR)/mimetypes.o:		$(SRCDIR)/mimetypes.c $(TIN_DEP)
 $(OBJDIR)/misc.o:		$(SRCDIR)/misc.c $(TIN_DEP) \
-				$(INCDIR)/bugrep.h \
 				$(INCDIR)/policy.h \
-				$(INCDIR)/rfc2046.h \
-				$(INCDIR)/version.h
+				$(INCDIR)/rfc2046.h
 $(OBJDIR)/newsrc.o:		$(SRCDIR)/newsrc.c $(TIN_DEP)
 $(OBJDIR)/nntplib.o:		$(SRCDIR)/nntplib.c $(TIN_DEP) \
 				$(INCDIR)/tnntp.h
 $(OBJDIR)/nrctbl.o:		$(SRCDIR)/nrctbl.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h \
 				$(INCDIR)/version.h
-$(OBJDIR)/open.o:		$(SRCDIR)/open.c $(TIN_DEP) \
-				$(INCDIR)/version.h
+$(OBJDIR)/open.o:		$(SRCDIR)/open.c $(TIN_DEP)
 $(OBJDIR)/page.o:		$(SRCDIR)/page.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h \
 				$(INCDIR)/rfc2046.h
@@ -506,7 +504,8 @@ $(OBJDIR)/prompt.o:		$(SRCDIR)/prompt.c $(TIN_DEP) \
 $(OBJDIR)/read.o:		$(SRCDIR)/read.c $(TIN_DEP)
 $(OBJDIR)/refs.o:		$(SRCDIR)/refs.c $(TIN_DEP)
 $(OBJDIR)/regex.o:		$(SRCDIR)/regex.c $(TIN_DEP)
-$(OBJDIR)/rfc1524.o:		$(SRCDIR)/rfc1524.c $(TIN_DEP)
+$(OBJDIR)/rfc1524.o:		$(SRCDIR)/rfc1524.c $(TIN_DEP) \
+				$(INCDIR)/rfc2046.h
 $(OBJDIR)/rfc2045.o:		$(SRCDIR)/rfc2045.c $(TIN_DEP)
 $(OBJDIR)/rfc2046.o:		$(SRCDIR)/rfc2046.c $(TIN_DEP) \
 				$(INCDIR)/rfc2046.h
@@ -519,7 +518,8 @@ $(OBJDIR)/search.o:		$(SRCDIR)/search.c $(TIN_DEP)
 $(OBJDIR)/select.o:		$(SRCDIR)/select.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
 $(OBJDIR)/sigfile.o:		$(SRCDIR)/sigfile.c $(TIN_DEP)
-$(OBJDIR)/signal.o:		$(SRCDIR)/signal.c $(TIN_DEP)
+$(OBJDIR)/signal.o:		$(SRCDIR)/signal.c $(TIN_DEP) \
+				$(INCDIR)/version.h
 $(OBJDIR)/strftime.o:		$(SRCDIR)/strftime.c $(TIN_DEP)
 $(OBJDIR)/string.o:		$(SRCDIR)/string.c $(TIN_DEP)
 $(OBJDIR)/tags.o:		$(SRCDIR)/tags.c $(TIN_DEP)

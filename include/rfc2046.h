@@ -135,7 +135,7 @@ struct t_header
 #	define C_QUOTE2	0x040
 #	define C_QUOTE3	0x080
 
-#	define C_URL		0x100	/* Contains URL */
+#	define C_URL		0x100	/* Contains http|ftp|gopher: */
 #	define C_MAIL		0x200	/* Contains mailto: */
 #	define C_NEWS		0x400 /* Contains news|nntp: */
 #	define C_CTRLL		0x800	/* Contains ^L */

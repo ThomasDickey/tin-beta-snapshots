@@ -106,6 +106,20 @@ if test "$CYGWIN" = "yes" ; then
 	PCRE_DEFINES="$PCRE_DEFINES -DSTATIC"
 fi
 
+### check for MacOS X, exclude Darwin on ix86
+case "$host_cpu:$host_vendor:$host_os" in
+	powerpc:apple:darwin*)  #(vi
+		# replacement for AC_CHECK_LIB()
+		# don't use -f as this might be a link
+		if test -e "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation"; then
+			AC_CHECK_HEADER(CoreFoundation/CoreFoundation.h, [
+				AC_DEFINE(MAC_OS_X)
+				LIBS="/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation $LIBS"])
+		fi
+		;;
+esac
+
+
 CF_WITH_PROGRAM(ispell,
 [  --with-ispell           (default: from system path)])
 
@@ -888,6 +902,7 @@ CHECK_DECL_HDRS="$TIN_DECL_HDRS
 CF_CHECK_DECL(\
 	gethostbyname \
 	getservbyname \
+	inet_aton \
 	inet_ntoa \
 	socket \
 )
@@ -927,6 +942,7 @@ CF_CHECK_DECL(\
 	getpass \
 	ioctl \
 	isascii \
+	kill \
 	malloc \
 	memset \
 	mkstemp \

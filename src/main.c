@@ -45,11 +45,8 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 #ifndef VERSION_H
-#	include  "version.h"
+#	include "version.h"
 #endif /* !VERSION_H */
-#ifndef BUGREP_H
-#	include  "bugrep.h"
-#endif /* !BUGREP_H */
 
 #if defined(M_AMIGA) && defined(__SASC_650)
 	extern int _WBArg;
@@ -68,11 +65,11 @@ static char **cmdargs;
 static int num_cmdargs;
 static int max_cmdargs;
 
-t_bool catchup = FALSE;			/* mark all arts read in all subscribed groups */
-t_bool check_any_unread = FALSE;/* print/return status if any unread */
-t_bool mail_news = FALSE;		/* mail all arts to specified user */
-t_bool save_news = FALSE;		/* save all arts to savedir structure */
-t_bool start_any_unread = FALSE;/* only start if unread news */
+static t_bool catchup = FALSE;			/* mark all arts read in all subscribed groups */
+static t_bool check_any_unread = FALSE;/* print/return status if any unread */
+static t_bool mail_news = FALSE;		/* mail all arts to specified user */
+static t_bool save_news = FALSE;		/* save all arts to savedir structure */
+static t_bool start_any_unread = FALSE;/* only start if unread news */
 
 
 /*
@@ -618,7 +615,7 @@ read_cmd_line_options (
 				error_message("\tCFLAGS   = \"%s\"", TIN_CFLAGS);
 #		endif /* TIN_CFLAGS */
 #	endif /* 0 */
-#	ifdef	TIN_CPP
+#	ifdef TIN_CPP
 				error_message("\tCPP      = \"%s\"", TIN_CPP);
 #	endif /* TIN_CPP */
 #	if 0 /* quoting trouble */
@@ -964,7 +961,7 @@ show_intro_page (
 		my_printf("\n");
 	}
 
-	snprintf(buf, sizeof(buf) - 1, _(txt_intro_page), bug_addr);
+	snprintf(buf, sizeof(buf) - 1, _(txt_intro_page), PRODUCT, PRODUCT, bug_addr);
 
 	my_fputs (buf, stdout);
 	my_flush();

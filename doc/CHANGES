@@ -1,4 +1,14 @@
--- 1.5.9 release 20010609 "" --
+-- 1.5.9 release 20010630 "" --
+
+U069) Enrik Berkhan <enrik@tin.org>
+      REM. raw() call
+      FIX. tcurses.c
+
+U068) Mark Nowiasz <buckaroo@gmx.de>
+      Urs Janssen <urs@tin.org>
+      ADD. local<->network charset conversion for MacOS X
+      FIX. README.MAC, Makefile, configure[.in], autoconf.h[in], cook.c
+           init.c, misc.c, rfc2046.c, rfc2047.c
 
 U067) Thomas E. Dickey <dickey@herndon4.his.com>
       ADD. C preprocessor flags configure check update
@@ -11,7 +21,7 @@ U066) Toomas Soome <tsoome@ut.ee>
       FIX. et.po
 
 U065) Dawid Kuroczko <dk@ssw.krakow.pl>
-      ADD. 'collaps' deep thread trees
+      ADD. 'fold' deep thread trees
       FIX. thread.c
 
  033) Dieter Baron <dillo@danbala.ifoer.tuwien.ac.at>
@@ -55,7 +65,7 @@ U061) Andreas Metzler <tin-dev@downhill.at.eu.org>
       ADD. Message-ID (if known) to filter-file
       ADD. Message-ID (if known) to posted_articles_file
       ADD. Date to posted_articles_file
-      ADD. remove emtpy headers from article before appending it to
+      ADD. remove empty headers from article before appending it to
            posted_articles_file
       FIX. TODO, proto.h, filter.c, post.c
 
@@ -65,15 +75,21 @@ U060) Dirk Nimmich <nimmich@uni-muenster.de>
       FIX. keymap.c
 
 U059) Urs Janssen <urs@tin.org>
+      BUG. insert_from_header() didn't fclose() open files on invalid
+           From: lines
       BUG. off by one quoting error in cooked mode with no headers shown
            in followups/replys
-      BUG. backup_file() treated missing sourcefiles as an error
+      BUG. backup_file() treated missing source files as an error
       BUG. if a nntp:-url only contained the name of a group but didn't
-           specify a article the last groupname component wasn't recognized.
-      BUG. crahsed when hitting iKeySelectReadGrp* with
-           show_only_unread_groups=ON and all arts read.
-      ADD. note receipient address in posted_info_file for 'r'eplys and
-           mailing_lists
+           specify a article the last group name component wasn't recognized
+      BUG. crashed when hitting iKeySelectReadGrp*, iKeySelectMoveGrp
+           or iKeySelectBugReport with show_only_unread_groups=ON and
+           all arts read
+      BUG. uninitialized string in info-message saving one hot/pattern
+           article
+      ADD. note recipient address in posted_info_file for
+           'r'eplys/Followup-To: poster and mailing_lists
+      ADD. smarter fall back for missing From: in insert_from_header()
       ADD. moved 'article'-tmp-filenames to tin.h
       ADD. joined iKeyPagePrint/iKeyGroupPrint
       ADD. news:, snews:, nntp: scheme to url_handler.sh
@@ -82,17 +98,26 @@ U059) Urs Janssen <urs@tin.org>
       ADD. config.guess, config.sub, install.sh update
       ADD. (dot-)file locking routines
       ADD. portable uniq tmpfile generation
-      ADD. tmpfile() fallback
-      ADD. strrstr() fallback
+      ADD. tmpfile() fall back
+      ADD. strrstr() fall back
       ADD. THREAD_WEIGHT
+      ADD. made some vars static
+      ADD. check for missing/duplictaed From: line befor posting
+      ADD. minor code cleanup
+      REM. "Article unchanged" prompt for postings (not mails, not reposts)
       REM. printer from attributes file
+      REM. show_xcommentto code, use news_headers_to_display instead
+      REM. WIN32 and OS_2 specific code
       FIX. config.guess, config.sub, configure[.in], install.sh
            url_handler.sh, de.po, keymap.sample, mailcap.sample
-           newsoverview.5, tin.5, Makefile[.in], autoconf.h[in], keymap.h
-           menukeys.h, rfc2046.h, tin.h, attrib.c, auth.c, feed.c, group.c
-           help.c, init.c, keymap.c, lang.c, lock.c, memory.c, misc.c, page.c
-           pgp.c, post.c, rfc2046.c, select.c, string.c, thread.c, tmpfile.c
-           my_tmpfile.c
+           newsoverview.5, tin.1, tin.5, Makefile[.in], autoconf.h[in]
+           extern.h, keymap.h, menukeys.h, rfc2046.h, tin.h, tinrc.h
+           tincfg.tbl, attrib.c, auth.c, cook.c, curses.c, feed.c, getline.c
+           global.c, group.c, header.c, help.c, init.c, keymap.c, lang.c
+           lock.c, main.c, memory.c, misc.c, newsrc.c, nntplib.c, nrctbl.c
+           open.c, page.c, pgp.c, post.c, prompt.c, rfc2046.c, save.c
+           search.c, select.c, sigfile.c, signal.c, string.c, thread.c
+           tmpfile.c, my_tmpfile.c
 
 -- 1.5.8 release 20010221 "Blue Water" --
 
@@ -148,7 +173,7 @@ U053) Dirk Nimmich <nimmich@uni-muenster.de>
       FIX. proto.h, config.c, signal.c
 
 U052) Urs Janssen <urs@tin.org>
-      BUG. dumps core when opening a cached art which is cancelled in the
+      BUG. dumps core when opening a cached art which is canceled in the
            meantime
       BUG. update_posted_msgs_file() didn't quote From_ lines in !MMDF
            mailboxes
@@ -180,7 +205,7 @@ U051) Thomas E. Dickey <dickey@herndon4.his.com>
       BUG. won't compile on termcap systems
       ADD. updated pcre (3.2 -> 3.4)
       ADD. updated some configure script macros
-      BUG. vms/parsdate.c required alloca(), regeneraed with byacc
+      BUG. vms/parsdate.c required alloca(), regenerated with byacc
       FIX. aclocal.m4, extern.h, proto.h, trace.h, cook.c, curses.c
            feed.c, lang.c, signal.c, tcurses.c, trace.c, pcre/*
 
@@ -190,7 +215,7 @@ U050) L. Scott Emmons <scotte@center.uscs.com>
 
 U049) Won-kyu Park <wkpark@chem.skku.ac.kr>
       Urs Janssen <urs@tin.org>
-      ADD. allow multi-byte enviroment
+      ADD. allow multi-byte environment
       FIX. configure[.in], autoconf.h[in], charset.c
 
 U048) Urs Janssen <urs@tin.org>
@@ -207,7 +232,7 @@ U048) Urs Janssen <urs@tin.org>
 
  029) Urs Janssen <urs@tin.org>
       BUG. possible buffer overrun in read_groups_descriptions() on very
-           long groupnames/descriptions
+           long group names/descriptions
       ADD. allow superseding of articles even if one of the groups isn't
            in the active file.
       FIX. mail.c, post.c
@@ -269,7 +294,7 @@ U044) Jason Faultless <jason@radar.tele2.co.uk>
       BUG. post-processing only worked on 1st uuencoded section in an article
       BUG. 'e' EditMailArt broken
       BUG. tin sometimes hung on multipart articles
-      BUG. singleline scrolling in the pager broken in cusres mode if
+      BUG. single line scrolling in the pager broken in curses mode if
            compiled without color support
       FIX. tin.1, extern.h, keymap.h, menukeys.h, proto.h, active.c, color.c
            config.c, cook.c, curses.c, feed.c, group.c, init.c, keymap.c
@@ -286,7 +311,7 @@ U042) Thomas E. Dickey <dickey@herndon4.his.com>
       FIX. aclocal.m4, Makefile[.in]
 
 U041) Dirk Nimmich <nimmich@uni-muenster.de>
-      ADD. prompt_yn prints current keybindings for PromptYes/PromptNo
+      ADD. prompt_yn prints current key bindings for PromptYes/PromptNo
       ADD. switched menus to "key=action" style
       BUG. unbound keys caused actions in several menus
       BUG. PProc* keys could not be remapped
@@ -373,7 +398,7 @@ U029) Jason Faultless <jason@radar.tele2.co.uk>
       Urs Janssen <urs@tin.org>
       BUG. missing initialization artinfo and hdr
       ADD. rewrote mailcaps parsing, added $MAILCAPS support and recommended
-           fallbacks, added mime.types fallback
+           fall backs, added mime.types fall back
       ADD. renamed rfc2045[.hc] to rfc2046.[hc], rfc1521.c to rfc2045.c
            and rfc1522.c to rfc2047.c
       FIX. Makefile[.in], POTFILES.in, curses.c, feed.c, mailcap.c, rfc1524.c
@@ -392,7 +417,7 @@ U028) Jason Faultless <jason@radar.tele2.co.uk>
 
  023) Urs Janssen <urs@tin.org>
       BUG. add Sender to FORGERY cancels
-      BUG. toplevel domains .kh and .zw not recognized
+      BUG. top level domains .kh and .zw not recognized
       FIX. policy.h, post.c
 
  021) Urs Janssen <urs@tin.org>
@@ -564,7 +589,7 @@ U016) Urs Janssen <urs@tin.org>
 -- 1.5.2 release 20000206 "Black Planet" --
 
  015) Urs Janssen <urs@tin.org>
-      ADD. smarter check when quotes around realnames are needed
+      ADD. smarter check when quotes around real names are needed
       FIX. header.c
 
  011) Urs Janssen <urs@tin.org>
@@ -581,7 +606,7 @@ U014) Thomas E. Dickey <dickey@herndon4.his.com>
       ADD. uninstall rule to makefiles
       ADD. removed most unbalanced curly braces
       BUG. redundant parenthesis in N_ macro
-      BUG. wrong fallback prototype for mkstemp
+      BUG. wrong fall back prototype for mkstemp
       FIX. aclocal.m4, config.guess, config.sub, configure[.in], makefile.in
            autoconf.h[in], extern.h, tin.h, trace.h, Makefile.in, active.c
            art.c, auth.c, color.c, config.c, curses.c, debug.c, global.c
@@ -639,7 +664,7 @@ U009) Arkadiusz Miskiewicz <misiek@misiek.eu.org>
 -- 1.5.1 release 20000103 "Sumerland" --
 
 U008) Urs Janssen <urs@tin.org>
-      BUG. typo broke snprintf() fallback
+      BUG. typo broke snprintf() fall back
       BUG. used strlen() instead of sizeof() in various places
       BUG. possible Y2K bug in parsedate.y (can't show up in tin)
       BUG. --disable-nls didn't work
@@ -695,7 +720,7 @@ U002) Dawid Kuroczko <dk@ssw.krakow.pl>
            tincfg.tbl
 
 U001) Urs Janssen <urs@tin.org>
-      ADD. Patrick Powells snprintf(), vsnprintf() fallbacks
+      ADD. Patrick Powells snprintf(), vsnprintf() fall backs
       REM. INDEX_DAEMON-code
       FIX. configure[.in], autoconf.h[in], plp_snprintf.c, *.c
 

@@ -45,10 +45,10 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 #ifndef MENUKEYS_H
-#	include  "menukeys.h"
+#	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 #ifndef RFC2046_H
-#	include  "rfc2046.h"
+#	include "rfc2046.h"
 #endif /* !RFC2046_H */
 
 #define PAGE_HEADER	4
@@ -58,10 +58,10 @@
  */
 #define ARTLINES	(NOTESLINES-(PAGE_HEADER-INDEX_TOP))
 
-FILE *note_fp;			/* active stream (raw or cooked) */
-int artlines;			/* active # of lines in pager */
 int curr_line;			/* current line in art (indexed from 0) */
-t_lineinfo *artline;	/* active 'lineinfo' data */
+static FILE *note_fp;			/* active stream (raw or cooked) */
+static int artlines;			/* active # of lines in pager */
+static t_lineinfo *artline;	/* active 'lineinfo' data */
 
 t_openartinfo pgart =	/* Global context of article open in the pager */
 	{
@@ -76,9 +76,9 @@ int RIGHT_POS;			/* set in set_win_size () */
 int last_resp;			/* previous & current article # in arts[] for '-' command */
 int this_resp;
 
-int tabwidth = 8;
+static int tabwidth = 8;
 
-struct t_header *note_h = &pgart.hdr;	/* Easy access to article headers */
+static struct t_header *note_h = &pgart.hdr;	/* Easy access to article headers */
 
 static int rotate;				/* 0=normal, 13=rot13 decode */
 static int scroll_region_top;	/* first screen line for displayed message */
@@ -140,13 +140,11 @@ handle_pager_keypad(
 	int ch = ReadCh ();
 
 	switch (ch) {
-#ifndef WIN32
 		case ESC:
 #	ifdef HAVE_KEY_PREFIX
 		case KEY_PREFIX:
 #	endif /* HAVE_KEY_PREFIX */
 			switch (get_arrow_key (ch)) {
-#endif /* !WIN32 */
 				case KEYMAP_UP:
 					ch = iKeyUp;
 					break;
@@ -171,7 +169,6 @@ handle_pager_keypad(
 				case KEYMAP_END:
 					ch = iKeyLastPage;
 					break;
-#ifndef WIN32
 				case KEYMAP_MOUSE:
 					switch (xmouse) {
 						case MOUSE_BUTTON_1:
@@ -197,7 +194,6 @@ handle_pager_keypad(
 					break;
 			}
 			break;
-#endif /* !WIN32 */
 		default:
 			ch = map_to_default (ch, menukeys);
 			break;
@@ -253,10 +249,8 @@ show_page (
 
 	forever {
 		switch ((ch = handle_pager_keypad(&menukeymap.page_nav))) {
-#ifndef WIN32
 			case ESC:       /* Abort */
 				break;
-#endif /* !WIN32 */
 
 			case '0': case '1': case '2': case '3': case '4': case '5':
 			case '6': case '7': case '8': case '9':
@@ -844,8 +838,8 @@ print_message_page (
 		fseek (file, curr->offset, SEEK_SET);
 		if ((line = tin_fgets (file, FALSE)) == NULL)
 			break;	/* ran out of message */
-		if (strlen(line) >= cCOLS)
-			line[cCOLS - 1] = '\0';
+		if ((int) strlen(line) >= cCOLS)
+			line[cCOLS] = '\0';
 
 		/*
 		 * rotN encoding on body and sig data only
@@ -1067,18 +1061,7 @@ show_first_header (
 	fcol(tinrc.col_head);
 #endif /* HAVE_COLOR */
 
-	/* Displaying the value of X-Comment-To header in the upper right corner */
-	if (note_h->ftnto && tinrc.show_xcommentto) {
-		char ftbuf[HEADER_LEN]; /* FTN-To aka X-Comment-To */
-		my_fputs (buf, stdout);
-		strip_address(note_h->ftnto, ftbuf);
-		ftbuf[19] = '\0';
-		convert_to_printable (ftbuf);
-		StartInverse ();
-		my_fputs (ftbuf, stdout);
-		EndInverse ();
-		my_fputs (cCRLF, stdout);
-	} else {
+	{
 		char x[5];
 
 		/* Can't eval tin_ltoa() more than once in a statement due to statics */
@@ -1379,7 +1362,7 @@ toggle_raw(
 				j++;
 				if (j >= chunk) {
 					chunk += 50;
-					pgart.rawl = my_realloc((char *)pgart.rawl, sizeof(t_lineinfo) * chunk);
+					pgart.rawl = my_realloc((char *) pgart.rawl, sizeof(t_lineinfo) * chunk);
 				}
 			} while ((fgets(buff, cCOLS + 1, pgart.raw)) != NULL);
 
@@ -1437,9 +1420,11 @@ process_url(
 
 			*(ptr + offsets[1]) = '\0';
 
+			/* TODO: -> lang.c */
 			if (prompt_default_string ("URL:", url, sizeof(url), ptr + offsets[0], HIST_NONE)) {
 				char ubuf[LEN];
 
+				/* TODO: -> lang.c */
 				wait_message(2, "Launching %s\n", url);
 				/* TODO make the handler configurable via 'M'enu */
 				strcpy(ubuf, "url_handler.sh ");
@@ -1449,6 +1434,7 @@ process_url(
 			ptr += offsets[1];
 		}
 	}
+	/* TODO: -> lang.c */
 	info_message ("No more URL's");
 }
 

@@ -48,10 +48,10 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 #ifndef VERSION_H
-#	include  "version.h"
+#	include "version.h"
 #endif /* !VERSION_H */
 #ifndef MENUKEYS_H
-#	include  "menukeys.h"
+#	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 
 /*
@@ -73,7 +73,7 @@ write_newsrctable_file (
 	if ((fp = fopen(local_newsrctable_file, "w")) == (FILE *) 0)
 		return;
 
-	fprintf(fp, _(txt_nrctbl_info), tin_progname, VERSION);
+	fprintf(fp, _(txt_nrctbl_info), PRODUCT, VERSION);
 	fclose(fp);
 }
 

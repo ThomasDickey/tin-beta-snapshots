@@ -195,7 +195,6 @@ struct t_config {
 	t_bool show_only_unread_groups;		/* set TRUE to see only subscribed groups with new news */
 	t_bool show_score;
 	t_bool show_signatures;				/* show signatures when displaying articles */
-	t_bool show_xcommentto;				/* set TRUE to show X-Comment-To in upper right corner */
 	t_bool hide_uue;					/* set TRUE to treat uuencoded data as an attachment */
 	t_bool sigdashes;					/* set TRUE to prepend every signature with dashes */
 	t_bool signature_repost;			/* set TRUE to add signature when reposting articles */
