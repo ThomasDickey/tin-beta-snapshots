@@ -130,7 +130,11 @@ mmdecode (
 	t_bool decode_gt128 = FALSE;
 
 #ifdef MIME_STRICT_CHARSET
+#	ifdef CHARSET_CONVERSION
 	if (charset && !strcasecmp(charset, tinrc.mm_local_charset))
+#	else
+	if (charset && !strcasecmp(charset, tinrc.mm_charset))
+#	endif /* CHARSET_CONVERSION */
 #endif /* MIME_STRICT_CHARSET */
 		decode_gt128 = TRUE;
 
@@ -521,7 +525,7 @@ rfc1522_do_encode(
 	t = buf;
 	encoding = which_encoding(what);
 #ifdef CHARSET_CONVERSION
-	ew_taken_len = strlen(txt_mime_charsets[tinrc.mm_network_charset]) + 7;
+	ew_taken_len = strlen(txt_mime_charsets[tinrc.mm_network_charset]) + 7 /* =?c?E?d?= */;
 #else
 	ew_taken_len = strlen(tinrc.mm_charset) + 7;		/* the minimum encoded word length without any encoded text */
 #endif /* CHARSET_CONVERSION */
@@ -780,15 +784,15 @@ rfc15211522_encode (
 	t_bool umlauts = FALSE;
 	BodyPtr body_encode;
 
-	g = tmpfile();
-	if (!g)
+	if ((g = tmpfile()) == NULL)
 		return;
-	f = fopen(filename, "r");
-	if (!f) {
+	if ((f = fopen(filename, "r")) == NULL) {
 		fclose(g);
 		return;
 	}
+
 	quoteflag = 0;
+
 	while ((header = tin_fgets(f, TRUE))) {
 #if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
 		buffer_to_network(header);
@@ -801,7 +805,9 @@ rfc15211522_encode (
 			fputs(rfc1522_encode(header, ismail), g);
 		fputc('\n', g);
 	}
+
 	fputc('\n', g);
+
 	while (fgets(buffer, 2048, f)) {
 #if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
 		buffer_to_network(buffer);
@@ -817,11 +823,12 @@ rfc15211522_encode (
 	}
 	fclose(f);
 	rewind(g);
-	f = fopen(filename, "w");
-	if (!f) {
+
+	if ((f = fopen(filename, "w")) == NULL) {
 		fclose(g);
 		return;
 	}
+
 	while (fgets(buffer, 2048, g) && !isreturn(buffer[0]))
 		fputs(buffer, f);
 
@@ -835,25 +842,20 @@ rfc15211522_encode (
 	{
 		fputs("MIME-Version: 1.0\n", f);
 		if (body_encoding_needed) {
-
 		/* added for CJK charsets like EUC-KR/JP/CN and others */
-
 #ifdef CHARSET_CONVERSION
 			if (!strncasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-", 4) &&
 				 !strcasecmp(mime_encoding, txt_7bit))
 				fprintf(f, "Content-Type: text/plain; charset=ISO-2022-%s\n", &txt_mime_charsets[tinrc.mm_network_charset][4]);
+			else
+				fprintf(f, "Content-Type: text/plain; charset=%s\n", txt_mime_charsets[tinrc.mm_network_charset]);
 #else
 			if (!strncasecmp(tinrc.mm_charset, "EUC-", 4) &&
 				 !strcasecmp(mime_encoding, txt_7bit))
 				fprintf(f, "Content-Type: text/plain; charset=ISO-2022-%s\n", &tinrc.mm_charset[4]);
-#endif /* CHARSET_CONVERSION */
-			else {
-#ifdef CHARSET_CONVERSION
-				fprintf(f, "Content-Type: text/plain; charset=%s\n", txt_mime_charsets[tinrc.mm_network_charset]);
-#else
+			else
 				fprintf(f, "Content-Type: text/plain; charset=%s\n", tinrc.mm_charset);
 #endif /* CHARSET_CONVERSION */
-			}
 			fprintf(f, "Content-Transfer-Encoding: %s\n", mime_encoding);
 		} else {
 			fputs("Content-Type: text/plain; charset=US-ASCII\n", f);
@@ -893,22 +895,25 @@ rfc15211522_encode (
  */
 #	ifdef CHARSET_CONVERSION
 		else if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-JP"))
+			body_encode = rfc1468_encode;
 #	else
 		else if (!strcasecmp(tinrc.mm_charset, "EUC-JP"))
-#	endif /* CHARSET_CONVERSION */
 			body_encode = rfc1468_encode;
+#	endif /* CHARSET_CONVERSION */
 
 /*
  * Not only EUC-CN but also other Chinese charsets such as
  * BIG5 and EUC-TW might need RFC 1922 encoding. To be confirmed.
  */
-#ifdef CHARSET_CONVERSION
+#	ifdef CHARSET_CONVERSION
 		else if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-CN"))
-#else
-		else if (!strcasecmp(tinrc.mm_charset, "EUC-CN"))
-#endif /* CHARSET_CONVERSION */
 			body_encode = rfc1922_encode;
+#	else
+		else if (!strcasecmp(tinrc.mm_charset, "EUC-CN"))
+			body_encode = rfc1922_encode;
+#	endif /* CHARSET_CONVERSION */
 #endif /* 0 */
+
 		else {
 			body_encode = rfc1521_encode;
 			encoding = '8';

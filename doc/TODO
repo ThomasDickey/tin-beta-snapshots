@@ -1,5 +1,8 @@
 Bugs
 ----
+o  base64 encoding is (sometimes) broken
+   [20011008 Sven Gottwald]
+
 o  'u' etc.pp. may leed to a 'crash' due to which_thread() returning -1
    if no (unread) articles are left. which_response() exits in that case,
    not very userfriendly.
@@ -8,37 +11,25 @@ o  'u' etc.pp. may leed to a 'crash' due to which_thread() returning -1
 o  incorrect nested boundaries in multipart articles hang tin
    [20010804 Urs Janﬂen <urs@tin.org>]
 
-o  abort bugreport prompt invisible
-   [20010703 Sebastian Bork <sebi@sebi.org>]
-
 o  Scrolling down to the bottom of an article fails, when a spoiler
    is set in the article. The text below the spoiler cannot be read.
    [20010701 Martin Klaiber <martinkl@zedat.fu-berlin.de>]
    (^L handling needs some work - urs)
 
-0  When scrolling up or down in an article by using the arrow keys
-   while the computer is very busy, sometimes this message appears:
-   "Do you want to abort this operation (y/N)?" Pressing 'y' means
-   that one line in the text is missing. It's the line which would
-   have been drawn next at the top or bottom of the screen. Pressing
-   'y' doesn't make sense of course. I just mentioned it in case it
-   may help finding the error.
-   [20010701 Martin Klaiber <martinkl@zedat.fu-berlin.de>]
-
 o  -S, -N and -M cmd-line switches are broken (again)
    [20010628 Urs Janssen <urs@tin.org>]
 
-o  lines wich are exatly cCOLS wide introduce an extra \n in the pager
+o  lines which are exatly cCOLS wide introduce an extra \n in the pager
    in raw mode (^H)
    [20010628 Urs Janssen <urs@tin.org>]
 
-o  reusing p'o'stponed artices in mailing_list groups doesn't work
+o  reusing p'o'stponed articles in mailing_list groups doesn't work
    (difficult to fix, postponed art no longer has a Newsgroups-header
     and just looking for To: (instead) might give wrong results. besides
     this it would need a bigger rewrite of the related code)
    [20010623 Urs Janssen <urs@tin.org>]
 
-o  missmatching cached overview data (higher article numbers than on the
+o  mismatching cached overview data (higher article numbers than on the
    server) cause a crash.
    [Urs Janssen <urs@tin.org>]
 
@@ -74,7 +65,7 @@ o  '-s' cmd-line switch implicitly changes 'savedir' in tinrc
    [Jason Faultless <jason@radar.tele2.co.uk>]
 
 o  commas in real-name might cause problems in mail-replys
-   -> rewrite To: before mailing to old-style notation user@dom.in (real-name)
+   [already fixed?]
 
 o  fix tinrc-update from old (tin1.2pl2) versions (sometime causes crashes)
    [Urs Janssen <urs@tin.org>]
@@ -119,10 +110,8 @@ o  if posting with external inews fails fall-back to built_in_inews would be
    [Done. But the read_news_via_nntp && !read_saved_news is unclear. Why can't
     you post or must use external inews if you read_saved_news?]
 
-o  use_builtin_inews=ON should be renamed to
-   inews_prog and hold the (path,) name and agruments
-   of the inews programm to be called. if set to --internal
-   (or something like that) tins built in inews is used.
+o  make INEWSDIR (rename to INEWS_PROG) to hold (path,) name and args of
+   inews. i.e. 'INEWSDIR=/usr/lib/news/bin/inews -h < %s'?
 
 o  remove built in path of external commands (metamail, ispell, ...)
    [for metamail/ispell $METAMAIL/$ISPELL could be used to override
@@ -135,10 +124,6 @@ o  full_page_scroll=OFF is not implemented in config.c (option 'M'enu)
 
 Pager Problems
 --------------
-o  '^H' (backspace) in article is handled as a physical \b in pager,
-   shouldn't it be expanded into into "^H" (simple hack in
-   expand_ctrl_chars() if so)?
-
 o  word highlighting shouldn't be enabled in signatures, as '*'
    and '_' characters may be used for ASCII art (e.g. '___').
    [Vincent Lefevre <vlefevre@ens-lyon.fr>]
@@ -175,15 +160,12 @@ o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
 o  with --enable-forgery reposting of an thread reposts only the first
    article ('x' 't' 'r' <group> 'p')
 
-o  when enabling the 'Cc/Bcc on every message that is sent', and
-   then mailing a message to myself, tin will print the message
-   "Mailing to ... gary gary".  a nice touch would be if tin
-   checks the mail_to line, and doesn't add the user's name
-   twice.  yes, sendmail removes the duplicate ... but it'd
-   be better if tin caught this case first.
-
 New features
 ------------
+o  for "mime.types"-lookups use the logest match found, not the first one.
+   check all existing/known "mime.types"-files.
+   [20011002 Urs Janssen <urs@tin.org>]
+
 o  if there are no tagged but hot articles in the group make 'S' work on
    the hot articles instead of complaining about no tagged arts.
    [20010824 Urs Janssen <urs@tin.org>]
@@ -314,14 +296,13 @@ o  pgp-6 support
 o  add counter to post-processing commands (processing file x of y)
    (Is post-processing really that slow? [Jason Faultless
    <jason@radar.tele2.co.uk>] no but if you post-process more than a
-   handfull of files it would be usefull [Urs Janssen <urs@tin.org>])
+   handful of files it would be useful [Urs Janssen <urs@tin.org>])
 
 o  add feature Cc:
 
 o  add feature show_new_newsgroups_since
 
 o  Additions to the thread menu :
-     'M' (option menu)
      'D' (cancel article)
      'E' (edit filter)
      'r' (reply to) /* not 'R' cause it conflicts with mail_bugreport */
@@ -559,7 +540,7 @@ o  When reading local spool, assign the filehandle of the on-spool
 
 o  what is with NEW_HASH_METHOD in list.c?
 
-Unocode
+Unicode
 -------
 o  add RFC 1468/2237, RFC 1555, RFC 1922/1842 and RFC 1947 support
    (local_charset<->network_charset should allow this - anything else
@@ -579,7 +560,7 @@ o  add UTF-8 (unicode) support (RFC 2279)
 o  make select/group/thread/page-level multibyte "safe". they all use
    strlen(), strncpy(), strncat(), snprintf() to build the screen - but
    in a multibyte environment (i.e. mm_local_charset=UTF-8) this is a
-   fault. (this might require libutf8 for those syste which don't have
+   fault. (this might require libutf8 for those systems which don't have
    wide-char/multibyte functions, see <http://clisp.cons.org/~haible/>)
    [20010904 urs@tin.org]
 
@@ -623,8 +604,6 @@ o  update gettext stuff to >= gettext-0.10.36
 
 o  should the postponed file be in MH-format if tin is running in MH-mode?
    if so we need to extend fetch_postponed_article()
-
-o  reusing postponed articles trash '\n' betwwen postponed arts
 
 o  check if fetch_postponed_article is MH seperator "safe"
 

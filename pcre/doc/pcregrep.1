@@ -1,20 +1,20 @@
-.TH PGREP 1
+.TH PCREGREP 1
 .SH NAME
-pgrep - a grep with Perl-compatible regular expressions.
+pcregrep - a grep with Perl-compatible regular expressions.
 .SH SYNOPSIS
-.B pgrep [-Vchilnsvx] pattern [file] ...
+.B pcregrep [-Vcfhilnrsvx] pattern [file] ...
 
 
 .SH DESCRIPTION
-\fBpgrep\fR searches files for character patterns, in the same way as other
+\fBpcregrep\fR searches files for character patterns, in the same way as other
 grep commands do, but it uses the PCRE regular expression library to support
 patterns that are compatible with the regular expressions of Perl 5. See
 \fBpcre(3)\fR for a full description of syntax and semantics.
 
-If no files are specified, \fBpgrep\fR reads the standard input. By default,
+If no files are specified, \fBpcregrep\fR reads the standard input. By default,
 each line that matches the pattern is copied to the standard output, and if
 there is more than one file, the file name is printed before each line of
-output. However, there are options that can change how \fBpgrep\fR behaves.
+output. However, there are options that can change how \fBpcregrep\fR behaves.
 
 Lines are limited to BUFSIZ characters. BUFSIZ is defined in \fB<stdio.h>\fR.
 The newline character is removed from the end of each line before it is matched
@@ -32,6 +32,22 @@ Do not print individual lines; instead just print a count of the number of
 lines that would otherwise have been printed. If several files are given, a
 count is printed for each of them.
 .TP
+
+       versity of Cambridge for use on Unix systems connected  to
+       the  Internet.  It  is freely available under the terms of
+       the GNU General Public Licence. In style it is similar  to
+       Smail  3,  but  its  facilities are more extensive, and in
+       particular it has some defences  against  mail  bombs  and
+       unsolicited junk mail, in the form of options for refusing
+       messages from particular hosts, networks, or senders.
+
+       Exim's command line takes the  standard  Unix  form  of  a
+       sequence  of  options, each starting with a hyphen charac\fB-f\fIfilename\fR
+Read patterns from the file, one per line, and match all patterns against each
+line. There is a maximum of 100 patterns. Trailing white space is removed, and
+blank lines are ignored. An empty file contains no patterns and therefore
+matches nothing.
+.TP
 \fB-h\fR
 Suppress printing of filenames when searching multiple files.
 .TP
@@ -45,6 +61,10 @@ once, on a separate line.
 .TP
 \fB-n\fR
 Precede each line by its line number in the file.
+.TP
+\fB-r\fR
+If any file is a directory, recursively scan the files it contains. Without
+\fB-r\fR a directory is scanned as a normal file.
 .TP
 \fB-s\fR
 Work silently, that is, display nothing except error messages.
@@ -72,5 +92,7 @@ for syntax errors or inacessible files (even if matches were found).
 
 .SH AUTHOR
 Philip Hazel <ph10@cam.ac.uk>
+
+Last updated: 15 August 2001
 .br
-Copyright (c) 1997-1999 University of Cambridge.
+Copyright (c) 1997-2001 University of Cambridge.

@@ -1,4 +1,38 @@
--- 1.5.10 release 20011013 "" --
+-- 1.5.10 release 20011109 "" --
+
+U078) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. updated pcre (3.4 -> 3.7)
+      ADD. new ncursesw option to --with-screen
+      ADD. subtitles to the config-screen
+      ADD. allow the config screen to be called from the thread screen
+      BUG. off-by-one allocation of the filename for saving articles
+      FIX. aclocal.m4, configure[.in], autoconf.h[in], extern.h, tcurses.h
+           config.c, help.c, init.c, keymap.c, lang.c, makecfg.c, misc.c
+           save.c, thread.c, tincfg.tbl, pcre/*
+
+U077) Dirk Nimmich <nimmich@uni-muenster.de>
+      BUG. '^H' was handled as a physical backspace
+      BUG. duplicate addresses when displaying recipient addresses
+      BUG. duplicate Cc and Bcc addresses when mailing to yourself and
+           auto_cc or auto_bcc enabled
+      BUG. end of header was not recognized when mailing
+      BUG. folded From: header was not treated correctly when mailing
+      BUG. pressing arrow keys when reading article from a file or server
+           may lead to unexpected "Do you want to abort" question
+      BUG. abort bugreport prompt was invisible -- don't use global
+           buffers that may get changed meanwhile!
+      FIX. proto.h, rfc2046.h, tin.h, cook.c, misc.c, post.c, read.c
+           rfc2046.c
+
+U076) Andreas Metzler <tin-dev@downhill.at.eu.org>
+      ADD. joined use_builtin_inews/inews_prog
+      BUG. IPv6 checking was broken due to comments
+      FIX. aclocal.m4, configure, extern.h, tin.h, tinrc.h, config.c, inews.c
+           init.c, lang.c, post.c, sigfile.c, tincfg.tbl
+
+U075) Randy Scott <scottr9@yahoo.com>
+      ADD. turned percent progressmeter into a timer
+      FIX. screen.c
 
  035) Stephan Kulow <coolo@caldera.de>
       BUG. format-strings passed to prompt_slk_response() weren't "quoted".
@@ -22,10 +56,12 @@ U072) Joseph Parmelee <jparmele@wildbear.com>
       FIX. feed.c, save.c
 
 U071) Urs Janssen <urs@tin.org>
+      BUG. match_item() didn't look for exact matches, but took the first
+           partial match
       BUG. typo in the man-page
-      BUG. 8bit chars in Subject werent rfc2047 encodet in local cached
+      BUG. 8bit chars in Subject weren't rfc2047 encoded in local cached
            overviews
-      BUG. From was rfc2047 encodet in local cached overviews even if
+      BUG. From was rfc2047 encoded in local cached overviews even if
            post_8bit_chars was on.
       ADD. crsr-right with auto_list_thread=OFF and no more
            unread arts in the current thread now enters the first
@@ -52,7 +88,7 @@ U071) Urs Janssen <urs@tin.org>
 
 -- 1.5.9 release 20010723 "Chord of Souls" --
 
-U070) Thomas E. Dickey <dickey@herndon4.his.com>
+U070) Thomas E. Dickey <dickey@invisible-island.net>
       REM. top-level makefile.in
       ADD. configure option --with-shell, to set the DEFAULT_SHELL.
       ADD. configure option --with-pcre
@@ -76,7 +112,7 @@ U068) Mark Nowiasz <buckaroo@gmx.de>
       FIX. README.MAC, Makefile, configure[.in], autoconf.h[in], cook.c
            init.c, misc.c, rfc2046.c, rfc2047.c
 
-U067) Thomas E. Dickey <dickey@herndon4.his.com>
+U067) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. C preprocessor flags configure check update
       ADD. smarter locking scheme configure check
       FIX. aclocal.m4, configure[.in], autoconf.h[in], tcurses.h, tin.pot
@@ -273,7 +309,7 @@ U052) Urs Janssen <urs@tin.org>
 
 -- 1.5.7 release 20001104 "Paradise Regained" --
 
-U051) Thomas E. Dickey <dickey@herndon4.his.com>
+U051) Thomas E. Dickey <dickey@invisible-island.net>
       BUG. won't compile on termcap systems
       ADD. updated pcre (3.2 -> 3.4)
       ADD. updated some configure script macros
@@ -338,7 +374,7 @@ U046) Dirk Nimmich <nimmich@uni-muenster.de>
            followup again on that article could lead to a crash
       FIX. TODO, feed.c, help.c, lang.c, misc.c, post.c, prompt.c, save.c
 
-U045) Thomas E. Dickey <dickey@herndon4.his.com>
+U045) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. definition NEED_TERM_H to include <term.h> if needed
       ADD. improved search-order for curses/ncurses libraries
       ADD. plausible default value for the editor and mailer in configure
@@ -378,7 +414,7 @@ U043) Roland Rosenfeld <roland@spinnaker.de>
       BUG. ConvertBody2Printable was disabled
       FIX. proto.h, charset.c, cook.c, page.c
 
-U042) Thomas E. Dickey <dickey@herndon4.his.com>
+U042) Thomas E. Dickey <dickey@invisible-island.net>
       BUG. couple of problems with NLS configuration
       FIX. aclocal.m4, Makefile[.in]
 
@@ -411,7 +447,7 @@ U039) Roland Rosenfeld <roland@spinnaker.de>
 
 -- 1.5.5 release 20000613 "Lucretia" --
 
-U037) Thomas E. Dickey <dickey@herndon4.his.com>
+U037) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. updated pcre (2.08 -> 3.2)
       ADD. new config.sub/config.guess versions
       BUG. missing cursoron() on exit
@@ -496,7 +532,7 @@ U028) Jason Faultless <jason@radar.tele2.co.uk>
       BUG. removed unsupported o from TIN_EDIT_KEYS_EXT
       FIX. post.c
 
-U027) Thomas E. Dickey <dickey@herndon4.his.com>
+U027) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. several configure cleanups/improvements
       BUG.
       FIX. aclocal.m4, configure[.in], autoconf.h[in], makefile[.in]
@@ -673,7 +709,7 @@ U015) Dirk Nimmich <nimmich@uni-muenster.de>
       ADD. allow interactive authentication on startup if invoked with -A
       FIX. extern.h, auth.c lang.c, nntplib.c
 
-U014) Thomas E. Dickey <dickey@herndon4.his.com>
+U014) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. configure script improvements (NLS, passwd.pw_gecos)
       ADD. uninstall rule to makefiles
       ADD. removed most unbalanced curly braces
@@ -802,7 +838,7 @@ U001) Urs Janssen <urs@tin.org>
       ADD. check for server requested auth type
       FIX. auth.txt, nntplib.h, proto.h, auth.c, inews.c, nntplib.c, open.c
 
- 005) Thomas E. Dickey <dickey@herndon4.his.com>
+ 005) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. configure script improvements
       BUG. screen modes weren't restored before piping to external command
       FIX. aclocal.m4, configure[.in], autoconf.h[in], extern.h, feed.c

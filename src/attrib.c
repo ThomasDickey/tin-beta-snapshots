@@ -153,7 +153,7 @@ set_default_attributes (
 
 
 /*
- *  Load global & local attributes into active[].attribute
+ * Load global & local attributes into active[].attribute
  */
 
 #define MATCH_BOOLEAN(pattern, type) \
@@ -473,7 +473,7 @@ do_set_attrib (
 
 
 /*
- *  Save the group attributes from active[].attribute to ~/.tin/attributes
+ * Save the group attributes from active[].attribute to ~/.tin/attributes
  */
 void
 write_attributes_file (

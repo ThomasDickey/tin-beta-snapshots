@@ -326,7 +326,7 @@ feed_articles (
 	/*
 	 * try and work out what default the user wants
 	 * This is dumb. If you have _any_ selected arts, then it picks 'h'
-	 * No it's not, that's exactly whyt you want (in binarie groups)
+	 * No it's not, that's exactly what you want (in binary groups)
 	 */
 	ch_default = (num_of_tagged_arts ? iKeyFeedTag :
 					(level == GROUP_LEVEL && HAS_FOLLOWUPS (thread_base) ? iKeyFeedThd :

@@ -486,6 +486,10 @@ parse_rfc822_headers(
 			return 0;
 		}
 
+		/*
+		 * FIXME: multiple headers of the same name could lead to memory leak
+		 * and loss of information (multiple Cc: lines are allowed, for example)
+		 */
 		unfold_header (line);
 		if ((ptr = parse_header (line, "From", TRUE))) {
 			hdr->from = my_strdup(ptr);
@@ -493,6 +497,14 @@ parse_rfc822_headers(
 		}
 		if ((ptr = parse_header (line, "To", TRUE))) {
 			hdr->to = my_strdup(ptr);
+			continue;
+		}
+		if ((ptr = parse_header (line, "Cc", TRUE))) {
+			hdr->cc = my_strdup (ptr);
+			continue;
+		}
+		if ((ptr = parse_header (line, "Bcc", TRUE))) {
+			hdr->bcc = my_strdup (ptr);
 			continue;
 		}
 		if ((ptr = parse_header (line, "Date", FALSE))) {

@@ -1,11 +1,11 @@
 ;   Project   : tin - a Usenet reader
 ;   Module    : tincfg.tbl
-;   Author    : Thomas E. Dickey <dickey@clark.net>
+;   Author    : Thomas E. Dickey
 ;   Created   : 1996-11-01
-;   Updated   : 1999-11-22
+;   Updated   : 2001-11-10
 ;   Notes     : #defines and structs for config.c
 ;
-; Copyright (c) 1996-2000 Thomas E. Dickey <dickey@clark.net>
+; Copyright (c) 1996-2001 Thomas E. Dickey <dickey@invisible-island.net>
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@
 
 
 ; display options
+	display_options			OPT_TITLE
 	beginner_level			OPT_ON_OFF
 	show_description		OPT_ON_OFF
 	show_author			txt_show_from	SHOW_FROM_BOTH+1
@@ -89,12 +90,14 @@
 #endif
 
 ; getart_limit options
+	getart_limit_options		OPT_TITLE
 	use_getart_limit		OPT_ON_OFF
 	getart_limit			OPT_NUM
 	recent_time			OPT_NUM
 
 ; colour options
 #ifdef	HAVE_COLOR
+	color_options			OPT_TITLE
 	use_color			OPT_ON_OFF
 	col_normal			txt_colors	MAX_COLOR+1
 	col_back			txt_colors	MAX_COLOR+1
@@ -121,9 +124,10 @@
 #endif
 
 ; posting/mailing options
+	posting_options			OPT_TITLE
 	mail_address			OPT_STRING
 	prompt_followupto		OPT_ON_OFF
-	sigfile			OPT_STRING
+	sigfile				OPT_STRING
 	sigdashes			OPT_ON_OFF
 	signature_repost		OPT_ON_OFF
 	quote_chars			OPT_STRING
@@ -133,7 +137,9 @@
 	xpost_quote_format		OPT_STRING
 	mail_quote_format		OPT_STRING
 	advertising			OPT_ON_OFF
+#ifndef CHARSET_CONVERSION
 	mm_charset			OPT_STRING
+#endif
 #ifdef CHARSET_CONVERSION
 	mm_local_charset		OPT_STRING
 	mm_network_charset		txt_mime_charsets	NUM_MIME_CHARSETS
@@ -146,25 +152,27 @@
 	auto_cc				OPT_ON_OFF
 	auto_bcc			OPT_ON_OFF
 	spamtrap_warning_addresses	OPT_STRING
-	filter_days		OPT_NUM
+	filter_days			OPT_NUM
 	add_posted_to_filter		OPT_ON_OFF
 
 ; saving/printing options
+	saving_options			OPT_TITLE
 	maildir				OPT_STRING
 	save_to_mmdf_mailbox		OPT_ON_OFF
 	batch_save			OPT_ON_OFF
 	savedir				OPT_STRING
 	auto_save			OPT_ON_OFF
 	mark_saved_read			OPT_ON_OFF
-	post_process		txt_post_process_type POST_PROC_UUDECODE+1
-	post_process_view	OPT_ON_OFF
+	post_process			txt_post_process_type POST_PROC_UUDECODE+1
+	post_process_view		OPT_ON_OFF
 	process_only_unread		OPT_ON_OFF
 #ifndef DISABLE_PRINTING
 	print_header			OPT_ON_OFF
-	printer			OPT_STRING
+	printer				OPT_STRING
 #endif
 
 ; expert options
+	expert_options			OPT_TITLE
 #ifdef HAVE_COLOR
 	quote_regex			OPT_STRING
 	quote_regex2			OPT_STRING
@@ -176,11 +184,11 @@
 	wildcard			txt_wildcard_type	2
 	force_screen_redraw		OPT_ON_OFF
 	start_editor_offset		OPT_ON_OFF
-	editor_format		OPT_STRING
+	editor_format			OPT_STRING
 #if defined(NNTP_ABLE) || defined(NNTP_ONLY)
-	use_builtin_inews		OPT_ON_OFF
+	inews_prog			OPT_STRING
 #endif
-	mailer_format		OPT_STRING
+	mailer_format			OPT_STRING
 	use_mailreader_i		OPT_ON_OFF
 	unlink_article			OPT_ON_OFF
 	keep_posted_articles		OPT_ON_OFF

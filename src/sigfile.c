@@ -69,7 +69,7 @@ msg_write_signature (
 	char pathfixed[PATH_LEN];
 
 #ifdef NNTP_INEWS
-	if (read_news_via_nntp && tinrc.use_builtin_inews)
+	if (read_news_via_nntp && 0 == strcasecmp(tinrc.inews_prog, "--internal"))
 		include_dot_signature = TRUE;
 #endif /* NNTP_INEWS */
 

@@ -127,11 +127,25 @@ wait_for_input (
 
 			/*
 			 * User pressed something. If 'q'uit, then handle this. Process
-			 * user input 1st so they get chance to quit on busy (or stalled) reads
+			 * user input 1st so they get chance to quit on busy (or stalled)
+			 * reads
 			 */
 			if (FD_ISSET(STDIN_FILENO, &readfds)) {
 				if ((ch = ReadCh()) == EOF)
 					return FALSE;
+
+				/*
+				 * check if keymap key was pressed. Unfortunately, keymap keys
+				 * are encoded by a sequence of bytes starting with ESC, so we
+				 * must first see if it was really an ESC or a keymap key before
+				 * asking the user if he wants to abort.
+				 */
+				if (ch == ESC) {
+					int keymap_ch = get_arrow_key (ch);
+
+					if (keymap_ch != KEYMAP_UNKNOWN)
+						ch = keymap_ch;
+				}
 
 				if (ch == 'q' || ch == 'z' || ch == ESC) {
 					if (prompt_yn (cLINES, _(txt_read_abort), FALSE) == 1)

@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 1999-11-04
+ *  Updated   : 2001-11-10
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
@@ -98,8 +98,6 @@ check_upgrade (
 /*
  *  read local & global configuration defaults
  */
-
-
 t_bool
 read_config_file (
 	char *file,
@@ -449,6 +447,11 @@ read_config_file (
 			if (match_boolean (buf, "inverse_okay=", &tinrc.inverse_okay))
 				break;
 
+#if defined(NNTP_ABLE) || defined(NNTP_ONLY)
+			if (match_string (buf, "inews_prog=", tinrc.inews_prog, sizeof (tinrc.inews_prog)))
+				break;
+#endif /* NNTP_ABLE || NNTP_ONLY */
+
 			break;
 
 		case 'k':
@@ -693,11 +696,6 @@ read_config_file (
 		case 'u':
 			if (match_boolean (buf, "unlink_article=", &tinrc.unlink_article))
 				break;
-
-#if defined(NNTP_ABLE) || defined(NNTP_ONLY)
-			if (match_boolean (buf, "use_builtin_inews=", &tinrc.use_builtin_inews))
-				break;
-#endif /* NNTP_ABLE || NNTP_ONLY */
 
 			if (match_boolean (buf, "use_getart_limit=", &tinrc.use_getart_limit))
 				break;
@@ -1053,8 +1051,8 @@ write_config_file (
 	fprintf (fp, "force_screen_redraw=%s\n\n", print_boolean (tinrc.force_screen_redraw));
 
 #if defined(NNTP_ABLE) || defined(NNTP_ONLY)
-	fprintf (fp, _(txt_use_builtin_inews.tinrc));
-	fprintf (fp, "use_builtin_inews=%s\n\n", print_boolean (tinrc.use_builtin_inews));
+	fprintf (fp, _(txt_inews_prog.tinrc));
+	fprintf (fp, "inews_prog=%s\n\n", tinrc.inews_prog);
 #endif /* NNTP_ABLE || NNTP_ONLY */
 
 	fprintf (fp, _(txt_auto_list_thread.tinrc));
@@ -1288,6 +1286,19 @@ option_row (
 	return (INDEX_TOP + OptionIndex(option));
 }
 
+static int
+option_num(
+	int act_option)
+{
+	int result = 0;
+	if (option_table[act_option].var_type != OPT_TITLE) {
+		while (act_option >= 0) {
+			if (option_table[act_option--].var_type != OPT_TITLE)
+				++result;
+		}
+	}
+	return result;
+}
 
 static void
 print_any_option (
@@ -1297,10 +1308,14 @@ print_any_option (
 	char temp[LEN], *ptr;
 	int row = option_row(act_option);
 	int len = sizeof(temp) - 1;
+	int num = option_num(act_option);
 
 	MoveCursor (row, 0);
 
-	snprintf(temp, len, "   %3d. %s ", act_option + 1, option_table[act_option].txt->opt);
+	if (num)
+		snprintf(temp, len, "   %3d. %s ", num, option_table[act_option].txt->opt);
+	else
+		snprintf(temp, len, "  %s", option_table[act_option].txt->opt);
 	ptr = temp + strlen(temp);
 	len -= strlen(temp);
 
@@ -1765,9 +1780,6 @@ change_config_file (
 						 * case OPT_TAB_GOTO_NEXT_UNREAD:
 						 * case OPT_THREAD_CATCHUP_ON_EXIT:
 						 * case OPT_UNLINK_ARTICLE:
-#if defined(NNTP_ABLE) || defined(NNTP_ONLY)
-						 * case OPT_USE_BUILTIN_INEWS:
-#endif
 						 * case OPT_USE_MAILREADER_I:
 						 * case OPT_USE_MOUSE:
 #ifdef HAVE_KEYPAD
@@ -1879,9 +1891,13 @@ change_config_file (
 				case OPT_STRING:
 					switch (option) {
 						case OPT_EDITOR_FORMAT:
+#if defined(NNTP_ABLE) || defined(NNTP_ONLY)
+						case OPT_INEWS_PROG:
+#endif
 						case OPT_MAILER_FORMAT:
+#ifndef CHARSET_CONVERSION
 						case OPT_MM_CHARSET:
-#ifdef CHARSET_CONVERSION
+#else
 						case OPT_MM_LOCAL_CHARSET:
 #endif /* CHARSET_CONVERSION */
 						case OPT_MAIL_QUOTE_FORMAT:
@@ -2260,7 +2276,7 @@ match_string (
 }
 
 
-/* same as match_string() but without safeguard */
+/* like mach_string() but looks for 100% exact matches */
 static t_bool
 match_item (
 	char *line,
@@ -2269,15 +2285,20 @@ match_item (
 	size_t dstlen)
 {
 	char *ptr;
+	char *nline = my_strdup(line);
 	size_t patlen = strlen (pat);
 
-	if (STRNCMPEQ(line, pat, patlen)) {
-		strncpy (dst, &line[patlen], dstlen);
+	nline[strlen(nline) -1] = '\0'; /* remove tailing \n */
+
+	if (STRCMPEQ(nline, pat)) {
+		strncpy (dst, &nline[patlen], dstlen);
 		if ((ptr = strrchr (dst, '\n')) != (char *) 0)
 			*ptr = '\0';
 
+		free (nline);
 		return TRUE;
 	}
+	free (nline);
 	return FALSE;
 }
 

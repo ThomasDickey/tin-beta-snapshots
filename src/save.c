@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2000-07-08
+ *  Updated   : 2001-11-10
  *  Notes     :
  *
  * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -708,7 +708,7 @@ add_to_save_list (
 			 * clean
 			 */
 			if (num_save == 1) {
-				save[0].path = my_realloc(save[0].path, strlen(save[0].path) + 4);
+				save[0].path = my_realloc(save[0].path, strlen(save[0].path) + 5);
 				strcat(save[0].path, ".001");
 				save[0].file = strrchr (save[0].path, DIRSEP) + 1;	/* ptr to filename portion */
 			}

@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 1997-12-26
+ *  Updated   : 2001-11-10
  *  Notes     :
  *
  * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
@@ -548,6 +548,11 @@ thread_page (
 					toggle_subject_from ();
 					show_thread_page ();
 				}
+				break;
+
+			case iKeyOptionMenu:
+				(void) change_config_file(group);
+				show_thread_page ();
 				break;
 
 			case iKeyHelp:					/* help */

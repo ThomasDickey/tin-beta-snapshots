@@ -124,7 +124,7 @@
  * .kr  Korea, Republic of             .kw  Kuwait
  * .ky  Cayman Islands                 .kz  Kazakhstan
  *
- * .la  Lao (People's Democratic Republic)
+ * .la  Laos (People's Democratic Republic)
  * .lb  Lebanon                        .lc  Saint Lucia
  * .li  Liechtenstein                  .lk  Sri Lanka
  * .lr  Liberia                        .ls  Lesotho
@@ -157,7 +157,7 @@
  * .ph  Philippines                    .pk  Pakistan
  * .pl  Poland                         .pm  St. Pierre and Miquelon
  * .pn  Pitcairn Island                .pr  Puerto Rico
- * .ps  -  Palestinian Territories     .pt  Portugal
+ * .ps  Palestinian Territories        .pt  Portugal
  * .pw  Palau                          .py  Paraguay
  *
  * .qa  Qatar
@@ -173,7 +173,7 @@
  * .sl  Sierra Leone                   .sm  San Marino
  * .sn  Senegal                        .so  Somalia
  * .sr  Surinam                        .st  Sao Tome and Principe
- * .su  USSR (former)                  .sv  El Salvador
+ * .su  Soviet Union (former)          .sv  El Salvador
  * .sy  Syrian Arab Republic           .sz  Swaziland
  *
  * .tc  The Turks & Caicos Islands     .td  Chad
@@ -192,8 +192,8 @@
  * .uz  Uzbekistan
  *
  * .va  Holy See (Vatican City State)  .vc  Saint Vincent and the Grenadines
- * .ve  Venezuela                      .vg  Virgin Islands British
- * .vi  Virgin Islands U.S             .vn  Vietnam
+ * .ve  Venezuela                      .vg  Virgin Islands (British)
+ * .vi  Virgin Islands (U.S)           .vn  Vietnam
  * .vu  Vanuatu
  *
  * .wf  Wallis and Futuna Islands      .ws  Western Samoa

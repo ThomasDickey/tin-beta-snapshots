@@ -651,7 +651,7 @@ enum resizer { cNo, cYes, cRedraw };
 #define CONFIG_FILE	"tinrc"
 #define DEFAULT_MAILDIR	"Mail"
 #define DEFAULT_SAVEDIR	"News"
-
+#define DEFAULT_INEWS_PROG "--internal"
 
 /* MMDF-mailbox seperator */
 #ifndef MMDFHDRTXT
@@ -1081,10 +1081,6 @@ enum resizer { cNo, cYes, cRedraw };
 /*
  * used in post.c
  */
-#define HEADER_TO		0
-#define HEADER_SUBJECT		1
-#define HEADER_NEWSGROUPS	2
-
 #define POSTED_NONE		0			/* Article wasn't posted */
 #define POSTED_REDRAW		1			/* redraw needed in any case */
 #define POSTED_OK		2			/* posted normally */

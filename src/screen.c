@@ -385,19 +385,106 @@ show_progress (
 	long count,
 	long total)
 {
+#ifdef HAVE_GETTIMEOFDAY
+	static const char *last_txt;
+	static int last_length;
+	static int last_total;
+	static int last_count;
+	static int average;
+	static int samples;
+	static int sum;
+	static struct timeval last_time;
+	static struct timeval this_time;
+	int time_diff;
+	int count_diff;
+	int secs_left;
+
+	if (batch_mode || count <= 0 || total == 0)
+		return;
+
+	/* If this is a new progress meter, start recalculating */
+	if ((last_txt != txt) || (last_total != total))
+		last_length = 0;
+
+	MoveCursor(cLINES, 0);
+
+	/* Erase the previous text */
+	if (last_length) {
+		my_printf("%*s", last_length, " ");
+		MoveCursor(cLINES, 0);
+	}
+
+	if (!last_length) {
+#	ifdef HAVE_COLOR
+		fcol(tinrc.col_message);
+#	endif /* HAVE_COLOR */
+		/* Don't print a time left this time */
+		/* last_length = */ my_printf ("%s %3d%%", txt, (int)(count * 100 / total));
+		last_length = strlen(txt) + 5;
+
+		/* Reset the variables */
+		sum = average = samples = 0;
+	} else {
+		/* Get the current time */
+		gettimeofday(&this_time, NULL);
+		time_diff = (this_time.tv_sec - last_time.tv_sec) * 1000000;
+		time_diff += (this_time.tv_usec - last_time.tv_usec);
+
+		count_diff = (count - last_count);
+
+		if (!count_diff) /* avoid div by zero */
+			count_diff++;
+
+		if (samples == 20) {
+			sum -= average;
+			sum += (time_diff / count_diff);
+			average = sum / 20;
+		} else {
+			sum += (time_diff / count_diff);
+			average = sum / ++samples;
+		}
+
+		if (average >= 1000000)
+			secs_left = (total - count) * (average / 1000000);
+		else
+			secs_left = ((total - count) * average) / 1000000;
+
+		if (secs_left < 0)
+			secs_left = 0;
+
+#	ifdef HAVE_COLOR
+		fcol(tinrc.col_message);
+#	endif /* HAVE_COLOR */
+		/* TODO: -> lang.c, difficult with hardcoded last_length */
+		/* last_length = */ my_printf ("%s %3d%% (%d:%02d remaining)", txt, (int)(count * 100 / total), secs_left / 60, secs_left % 60);
+		last_length = strlen(txt) + 21 + secs_left / 600;
+	}
+
+	my_flush();
+#	ifdef HAVE_COLOR
+	fcol(tinrc.col_normal);
+#	endif /* HAVE_COLOR */
+
+	last_txt = txt;
+	last_total = total;
+	last_count = count;
+	gettimeofday(&last_time, NULL);
+
+#else
 	if (batch_mode || count <= 0 || total == 0)
 		return;
 
 	MoveCursor(cLINES, 0);
 
-#ifdef HAVE_COLOR
+#	ifdef HAVE_COLOR
 	fcol(tinrc.col_message);
-#endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
 
 	my_printf ("%s %3d%%", txt, (int) (count * 100 / total));
 	my_flush();
 
-#ifdef HAVE_COLOR
+#	ifdef HAVE_COLOR
 	fcol(tinrc.col_normal);
-#endif /* HAVE_COLOR */
+#	endif /* HAVE_COLOR */
+#endif /* HAVE_GETTIMEOFDAY */
 }

@@ -326,6 +326,7 @@ extern char *quote_wild_whitespace (char *str);
 extern const char *get_val (const char *env, const char *def);
 extern const char *gnksa_strerror (int errcode);
 extern int gnksa_check_from (char *from);
+extern int gnksa_split_from (const char *from, char *address, char *realname, int *addrtype);
 extern int get_initials (int respnum, char *s, int maxsize);
 extern int gnksa_do_check_from(const char *from, char *address, char *realname);
 extern int my_chdir (char *path);

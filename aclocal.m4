@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2001-08-01
+dnl Updated   : 2001-11-10
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2001 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -294,7 +294,7 @@ AC_DEFUN(AM_WITH_NLS,
 	   if test "$gt_cv_func_gettext_libc" != "yes"; then
 	     AC_CHECK_LIB(intl, bindtextdomain,
 	       [ gt_save_LIBS="$LIBS"
-		 LIBS="$gt_save_LIBS -lintl"
+		 LIBS="-lintl $gt_save_LIBS"
 	         AC_CACHE_CHECK([for gettext in libintl],
 		 gt_cv_func_gettext_libintl,
 		 [AC_TRY_LINK([], [return (int) gettext ("")],
@@ -304,7 +304,7 @@ AC_DEFUN(AM_WITH_NLS,
 	   fi
 
 	   if test "$gt_cv_func_gettext_libintl" = yes; then
-	     LIBS="$LIBS -lintl"
+	     LIBS="-lintl $LIBS"
 	   fi
 
 	   if test "$gt_cv_func_gettext_libc" = "yes" \
@@ -1511,7 +1511,7 @@ do
 		;;
 	inria) #(vi
 		dnl http://www.kame.net/
-		AC_EGREP_CPP(yes, [dnl
+		AC_EGREP_CPP(yes, [
 #include <netinet/in.h>
 #ifdef IPV6_INRIA_VERSION
 yes
@@ -1519,7 +1519,7 @@ yes
 		;;
 	kame) #(vi
 		dnl http://www.kame.net/
-		AC_EGREP_CPP(yes, [dnl
+		AC_EGREP_CPP(yes, [
 #include <netinet/in.h>
 #ifdef __KAME__
 yes
@@ -1527,7 +1527,7 @@ yes
 		;;
 	linux-glibc) #(vi
 		dnl http://www.v6.linux.or.jp/
-		AC_EGREP_CPP(yes, [dnl
+		AC_EGREP_CPP(yes, [
 #include <features.h>
 #if defined(__GLIBC__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 1
 yes
@@ -1544,21 +1544,21 @@ yes
 		fi
 		;;
 	toshiba) #(vi
-		AC_EGREP_CPP(yes, [dnl
+		AC_EGREP_CPP(yes, [
 #include <sys/param.h>
 #ifdef _TOSHIBA_INET6
 yes
 #endif],	[cf_cv_ipv6type=$i])
 		;;
 	v6d) #(vi
-		AC_EGREP_CPP(yes, [dnl
+		AC_EGREP_CPP(yes, [
 #include </usr/local/v6/include/sys/v6config.h>
 #ifdef __V6D__
 yes
 #endif],	[cf_cv_ipv6type=$i])
 		;;
 	zeta)
-		AC_EGREP_CPP(yes, [dnl
+		AC_EGREP_CPP(yes, [
 #include <sys/param.h>
 #ifdef _ZETA_MINAMI_INET6
 yes
@@ -1869,6 +1869,10 @@ dnl Construct a search-list for a nonstandard header-file
 AC_DEFUN([CF_HEADER_PATH],
 [$1=""
 
+test "$prefix" != /usr/local && \
+test -d /usr/local && \
+$1="[$]$1 /usr/local/include /usr/local/include/$2 /usr/local/$2/include"
+
 test "$includedir" != NONE && \
 test -d "$includedir" && \
 $1="[$]$1 $includedir $includedir/$2"
@@ -1880,10 +1884,6 @@ $1="[$]$1 $oldincludedir $oldincludedir/$2"
 test "$prefix" != NONE && \
 test -d "$prefix" && \
 $1="[$]$1 $prefix/include $prefix/include/$2 $prefix/$2/include"
-
-test "$prefix" != /usr/local && \
-test -d /usr/local && \
-$1="[$]$1 /usr/local/include /usr/local/include/$2 /usr/local/$2/include"
 
 test "$prefix" != /usr && \
 $1="[$]$1 /usr/include /usr/include/$2 /usr/$2/include"
@@ -1899,6 +1899,10 @@ dnl Construct a search-list for a nonstandard library-file
 AC_DEFUN([CF_LIBRARY_PATH],
 [$1=""
 
+test "$prefix" != /usr/local && \
+test -d /usr/local && \
+$1="[$]$1 /usr/local/lib /usr/local/lib/$2 /usr/local/$2/lib"
+
 test "$libdir" != NONE && \
 test -d $libdir && \
 $1="[$]$1 $libdir $libdir/$2"
@@ -1911,10 +1915,6 @@ test "$prefix" != NONE && \
 test "$prefix" != "$exec_prefix" && \
 test -d $prefix && \
 $1="[$]$1 $prefix/lib $prefix/lib/$2 $prefix/$2/lib"
-
-test "$prefix" != /usr/local && \
-test -d /usr/local && \
-$1="[$]$1 /usr/local/lib /usr/local/lib/$2 /usr/local/$2/lib"
 
 test "$prefix" != /usr && \
 $1="[$]$1 /usr/lib /usr/lib/$2 /usr/$2/lib"
@@ -2111,14 +2111,16 @@ dnl If the installer has set $CFLAGS or $CPPFLAGS so that the ncurses header
 dnl is already in the include-path, don't even bother with this, since we cannot
 dnl easily determine which file it is.  In this case, it has to be <curses.h>.
 dnl
+dnl The optional parameter gives the root name of the library, in case it is
+dnl not installed as the default curses library.  That is how the
+dnl wide-character version of ncurses is installed.
 AC_DEFUN([CF_NCURSES_CPPFLAGS],
 [
-AC_CACHE_CHECK(for ncurses header in include-path, cf_cv_ncurses_h,[
-	for cf_header in \
-		curses.h \
-		ncurses.h \
-		ncurses/curses.h \
-		ncurses/ncurses.h
+cf_ncuhdr_root=ifelse($1,,ncurses,$1)
+AC_CACHE_CHECK(for $cf_ncuhdr_root header in include-path, cf_cv_ncurses_h,[
+	cf_header_list="$cf_ncuhdr_root/curses.h $cf_ncuhdr_root/ncurses.h"
+	test "$cf_ncuhdr_root" = ncurses && cf_header_list="curses.h ncurses.h $cf_header_list"
+	for cf_header in $cf_header_list
 	do
 	AC_TRY_COMPILE([#include <$cf_header>],[
 #ifdef NCURSES_VERSION
@@ -2139,8 +2141,8 @@ make an error
 if test "$cf_cv_ncurses_h" != no ; then
 	cf_cv_ncurses_header=$cf_cv_ncurses_h
 else
-AC_CACHE_CHECK(for ncurses include-path, cf_cv_ncurses_h2,[
-	CF_HEADER_PATH(cf_search,ncurses)
+AC_CACHE_CHECK(for $cf_ncuhdr_root include-path, cf_cv_ncurses_h2,[
+	CF_HEADER_PATH(cf_search,$cf_ncuhdr_root)
 	test -n "$verbose" && echo
 	for cf_incdir in $cf_search
 	do
@@ -2165,8 +2167,8 @@ AC_CACHE_CHECK(for ncurses include-path, cf_cv_ncurses_h2,[
 	cf_cv_ncurses_header=`basename $cf_cv_ncurses_h2`
 	echo cf_1st_include=$cf_1st_incdir
 	echo cf_2nd_include=$cf_2nd_incdir
-	if test `basename $cf_1st_incdir` = ncurses ; then
-		cf_cv_ncurses_header=ncurses/$cf_cv_ncurses_header
+	if test `basename $cf_1st_incdir` = $cf_ncuhdr_root ; then
+		cf_cv_ncurses_header=$cf_ncuhdr_root/$cf_cv_ncurses_header
 		CF_ADD_INCDIR($cf_2nd_incdir)
 	fi
 	CF_ADD_INCDIR($cf_1st_incdir)
@@ -2186,6 +2188,9 @@ case $cf_cv_ncurses_header in # (vi
 ncurses/curses.h|ncurses/ncurses.h)
 	AC_DEFINE(HAVE_NCURSES_NCURSES_H)
 	;;
+ncursesw/curses.h|ncursesw/ncurses.h)
+	AC_DEFINE(HAVE_NCURSESW_NCURSES_H)
+	;;
 esac
 
 CF_NCURSES_VERSION
@@ -2197,9 +2202,14 @@ dnl Some distributions have gpm linked with (bsd) curses, which makes it
 dnl unusable with ncurses.  However, we don't want to link with gpm unless
 dnl ncurses has a dependency, since gpm is normally set up as a shared library,
 dnl and the linker will record a dependency.
+dnl
+dnl The optional parameter gives the root name of the library, in case it is
+dnl not installed as the default curses library.  That is how the
+dnl wide-character version of ncurses is installed.
 AC_DEFUN([CF_NCURSES_LIBS],
 [AC_REQUIRE([CF_NCURSES_CPPFLAGS])
 
+cf_nculib_root=ifelse($1,,ncurses,$1)
 	# This works, except for the special case where we find gpm, but
 	# ncurses is in a nonstandard location via $LIBS, and we really want
 	# to link gpm.
@@ -2219,13 +2229,13 @@ freebsd*)
 esac
 
 LIBS="$cf_ncurses_LIBS $LIBS"
-CF_FIND_LIBRARY(ncurses,ncurses,
+CF_FIND_LIBRARY($cf_nculib_root,$cf_nculib_root,
 	[#include <${cf_cv_ncurses_header-curses.h}>],
 	[initscr()],
 	initscr)
 
 if test -n "$cf_ncurses_LIBS" ; then
-	AC_MSG_CHECKING(if we can link ncurses without $cf_ncurses_LIBS)
+	AC_MSG_CHECKING(if we can link $cf_nculib_root without $cf_ncurses_LIBS)
 	cf_ncurses_SAVE="$LIBS"
 	for p in $cf_ncurses_LIBS ; do
 		q=`echo $LIBS | sed -e 's/'$p' //' -e 's/'$p'$//'`
@@ -2450,7 +2460,9 @@ dnl result begins with 'NONE'.  This is necessary to work around autoconf's
 dnl delayed evaluation of those symbols.
 AC_DEFUN([CF_PATH_SYNTAX],[
 case ".[$]$1" in #(vi
-..|./*) #(vi
+.\[$]\(*\)*|.\'*\'*) #(vi
+  ;;
+..|./*|.\\*) #(vi
   ;;
 .[[a-zA-Z]]:[[\\/]]*) #(vi OS/2 EMX
   ;;
@@ -3019,11 +3031,13 @@ AC_TRY_LINK([],[char *x=(char*)tgoto("",0,0)],
 	CF_VERBOSE(using functions in predefined $cf_cv_termlib LIBS)
 ],[
 ifelse([$1],,,[
-if test "$1" = ncurses; then
-	CF_NCURSES_CPPFLAGS
-	CF_NCURSES_LIBS
+case "$1" in # (vi
+ncurses*)
+	CF_NCURSES_CPPFLAGS($1)
+	CF_NCURSES_LIBS($1)
 	cf_cv_termlib=terminfo
-fi
+	;;
+esac
 ])
 if test "$cf_cv_termlib" = none; then
 	# FreeBSD's linker gives bogus results for AC_CHECK_LIB, saying that
@@ -3294,6 +3308,21 @@ dnl $1=uppercase($2)
 AC_DEFUN([CF_UPPER],
 [
 $1=`echo "$2" | sed y%abcdefghijklmnopqrstuvwxyz./-%ABCDEFGHIJKLMNOPQRSTUVWXYZ___%`
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check for multibyte support, and if not found, utf8 compatibility library
+AC_DEFUN([CF_UTF8_LIB],
+[
+AC_CACHE_CHECK(for multibyte character support,cf_cv_utf8_lib,[
+AC_TRY_LINK([
+#include <stdlib.h>],[putwc(0,0);],cf_cv_utf8_lib=yes,[
+cf_save_LIBS="$LIBS"
+LIBS="-lutf8 $LIBS"
+AC_TRY_LINK([
+#include <libutf8.h>],[putwc(0,0);],
+[cf_cv_utf8_lib=add-on],
+[cf_cv_utf8_lib=no])])
+])
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Use AC_VERBOSE w/o the warnings

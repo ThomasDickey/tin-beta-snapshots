@@ -59,7 +59,8 @@ int cCOLS;
 
 
 #	ifdef HAVE_XCURSES
-static int vwprintw(
+static int
+vwprintw(
 	WINDOW *w,
 	char *fmt,
 	va_list ap)
@@ -86,7 +87,8 @@ static int vwprintw(
 /*
  * Most of the logic corresponding to the termcap version is done in InitScreen.
  */
-void setup_screen (
+void
+setup_screen (
 	void)
 {
 	cmd_line = FALSE;
@@ -100,7 +102,8 @@ void setup_screen (
 
 /*
  */
-int InitScreen (
+int
+InitScreen (
 	void)
 {
 #	ifdef NCURSES_VERSION
@@ -146,7 +149,8 @@ int InitScreen (
 
 /*
  */
-void InitWin(
+void
+InitWin(
 	void)
 {
 	TRACE(("InitWin"));
@@ -158,7 +162,8 @@ void InitWin(
 
 /*
  */
-void EndWin(
+void
+EndWin(
 	void)
 {
 	TRACE(("EndWin (%d)", cmd_line));
@@ -174,7 +179,8 @@ static int _inraw;
 
 /*
  */
-void Raw(
+void
+Raw(
 	int state)
 {
 	if (state && !_inraw) {
@@ -191,7 +197,8 @@ void Raw(
 
 /*
  */
-int RawState(
+int
+RawState(
 	void)
 {
 	return _inraw;
@@ -200,7 +207,8 @@ int RawState(
 
 /*
  */
-void StartInverse(
+void
+StartInverse(
 	void)
 {
 	if (tinrc.inverse_okay) {
@@ -217,7 +225,8 @@ void StartInverse(
 }
 
 
-static int isInverse(
+static int
+isInverse(
 	void)
 {
 #	ifdef HAVE_COLOR
@@ -235,7 +244,8 @@ static int isInverse(
 
 /*
  */
-void ToggleInverse(
+void
+ToggleInverse(
 	void)
 {
 	if (isInverse())
@@ -247,7 +257,8 @@ void ToggleInverse(
 
 /*
  */
-void EndInverse(
+void
+EndInverse(
 	void)
 {
 	if (tinrc.inverse_okay && !cmd_line) {
@@ -262,7 +273,8 @@ void EndInverse(
 
 /*
  */
-void cursoron (
+void
+cursoron (
 	void)
 {
 	if (!cmd_line)
@@ -272,7 +284,8 @@ void cursoron (
 
 /*
  */
-void cursoroff (
+void
+cursoroff (
 	void)
 {
 	if (!cmd_line)
@@ -282,7 +295,8 @@ void cursoroff (
 
 /*
  */
-void set_keypad_on (
+void
+set_keypad_on (
 	void)
 {
 	if (!cmd_line)
@@ -292,7 +306,8 @@ void set_keypad_on (
 
 /*
  */
-void set_keypad_off (
+void
+set_keypad_off (
 	void)
 {
 	if (!cmd_line)
@@ -404,6 +419,7 @@ my_printf(
 	...)
 {
 	va_list ap;
+
 	va_start(ap, fmt);
 	if (cmd_line) {
 		int flag = _inraw;
@@ -426,6 +442,7 @@ my_fprintf(
 	...)
 {
 	va_list ap;
+
 	va_start(ap, fmt);
 	TRACE(("my_fprintf(%s)", fmt));
 	if (cmd_line) {
@@ -476,7 +493,8 @@ my_fputs(
 }
 
 
-void my_erase(
+void
+my_erase(
 	void)
 {
 	TRACE(("my_erase"));

@@ -45,7 +45,7 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.5.10"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20010913"
+#	define RELEASEDATE	"20011111"
 #	define RELEASENAME	"Chord of Souls"
 #	define TINRC_VERSION	"1.2"
 
