@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-11-06
+ *  Updated   : 2003-01-27
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>
@@ -395,6 +395,7 @@ extern constext *help_group[];
 extern constext *help_page[];
 extern constext *help_select[];
 extern constext *help_thread[];
+extern constext *txt_attrs[];
 extern constext *txt_colors[];
 extern constext *txt_confirm_choices[];
 extern constext *txt_kill_level_type[];
@@ -679,6 +680,7 @@ extern constext txt_help_global_search_auth_backwards[];
 extern constext txt_help_global_search_auth_forwards[];
 extern constext txt_help_global_search_body[];
 extern constext txt_help_global_search_body_comment[];
+extern constext txt_help_global_search_repeat[];
 extern constext txt_help_global_search_subj_backwards[];
 extern constext txt_help_global_search_subj_forwards[];
 #ifndef NO_SHELL_ESCAPE
@@ -1085,6 +1087,7 @@ extern int cLINES;
 extern int curr_line;
 extern int debug;
 extern int groupname_len;
+extern int i_key_search_last;
 extern int iso2asc_supported;
 extern int last_resp;
 extern int max_active;
@@ -1382,6 +1385,10 @@ extern struct opttxt txt_mailbox_format;
 extern struct opttxt txt_maildir;
 extern struct opttxt txt_mailer_format;
 extern struct opttxt txt_mark_saved_read;
+extern struct opttxt txt_mono_markstar;
+extern struct opttxt txt_mono_markdash;
+extern struct opttxt txt_mono_markslash;
+extern struct opttxt txt_mono_markstroke;
 extern struct opttxt txt_mm_charset;
 extern struct opttxt txt_news_headers_to_display;
 extern struct opttxt txt_news_headers_to_not_display;
@@ -1431,7 +1438,6 @@ extern struct opttxt txt_strip_newsrc;
 extern struct opttxt txt_strip_re_regex;
 extern struct opttxt txt_strip_was_regex;
 extern struct opttxt txt_strokes_regex;
-extern struct opttxt txt_tab_after_X_selection;
 extern struct opttxt txt_tab_goto_next_unread;
 extern struct opttxt txt_tex2iso_conv;
 extern struct opttxt txt_thread_articles;
@@ -1444,6 +1450,7 @@ extern struct opttxt txt_use_mailreader_i;
 extern struct opttxt txt_use_mouse;
 extern struct opttxt txt_wildcard;
 extern struct opttxt txt_word_highlight;
+extern struct opttxt txt_word_h_display_marks;
 extern struct opttxt txt_wrap_column;
 extern struct opttxt txt_xpost_quote_format;
 #ifdef CHARSET_CONVERSION
@@ -1472,7 +1479,6 @@ extern struct opttxt txt_xpost_quote_format;
 	extern struct opttxt txt_col_from;
 	extern struct opttxt txt_col_title;
 	extern struct opttxt txt_col_signature;
-	extern struct opttxt txt_word_h_display_marks;
 	extern struct opttxt txt_col_markstar;
 	extern struct opttxt txt_col_markdash;
 	extern struct opttxt txt_col_markslash;

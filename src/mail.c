@@ -302,7 +302,7 @@ read_groups_descriptions(
 			}
 		}
 
-		for (p = ptr, q = groupname ; *p && *p != ' ' && *p != '\t' ; p++, q++)
+		for (p = ptr, q = groupname; *p && *p != ' ' && *p != '\t'; p++, q++)
 			*q = *p;
 
 		*q = '\0';

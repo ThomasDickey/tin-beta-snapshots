@@ -53,7 +53,7 @@
 #		include <ncursesw/ncurses.h>
 #		/* we need a recent ncursesw for wide-char */
 #		if (NCURSES_VERSION_MAJOR >= 5) && (NCURSES_VERSION_MINOR >= 3)
-#			define HAVE_NCURSESW
+#			define HAVE_NCURSESW 1
 #		endif /* NCURSES_VERSION_MAJOR >= 5 && NCURSES_VERSION_MINOR >=3 */
 #	elif defined(HAVE_NCURSES_H)
 #		include <ncurses.h>

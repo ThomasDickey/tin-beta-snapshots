@@ -87,3 +87,6 @@ Retired Features
 
 . word_h_display_marks=3 as there is no word highligthing in signatures
   anymore
+
+. tab_after_X_selection as it was broken for several years and nobody
+  complained about it

@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-12-09
+ *  Updated   : 2003-01-27
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -108,9 +108,8 @@ check_upgrade(
 		 */
 		error_message(_(txt_warn_update), VERSION);
 		error_message(_(txt_return_key));
-		ch = ReadCh();
-		/* TODO: document etc.pp. */
-		switch (ch) {
+		/* TODO: document */
+		switch ((ch = ReadCh())) {
 			case iKeyQuit:
 			case iKeyQuitTin:
 			case iKeyAbort:
@@ -162,47 +161,47 @@ read_config_file(
 				break;
 
 			if (match_string(buf, "art_marked_deleted=", buf, sizeof(buf))) {
-				tinrc.art_marked_deleted = DASH_TO_SPACE(buf[0]);
+				tinrc.art_marked_deleted = !buf[0] ? ART_MARK_DELETED : DASH_TO_SPACE(buf[0]);
 				break;
 			}
 
 			if (match_string(buf, "art_marked_inrange=", buf, sizeof(buf))) {
-				tinrc.art_marked_inrange = DASH_TO_SPACE(buf[0]);
+				tinrc.art_marked_inrange = !buf[0] ? MARK_INRANGE : DASH_TO_SPACE(buf[0]);
 				break;
 			}
 
 			if (match_string(buf, "art_marked_killed=", buf, sizeof(buf))) {
-				tinrc.art_marked_killed = DASH_TO_SPACE(buf[0]);
+				tinrc.art_marked_killed = !buf[0] ? ART_MARK_KILLED : DASH_TO_SPACE(buf[0]);
 				break;
 			}
 
 			if (match_string(buf, "art_marked_read=", buf, sizeof(buf))) {
-				tinrc.art_marked_read = DASH_TO_SPACE(buf[0]);
+				tinrc.art_marked_read = !buf[0] ? ART_MARK_READ : DASH_TO_SPACE(buf[0]);
 				break;
 			}
 
 			if (match_string(buf, "art_marked_read_selected=", buf, sizeof(buf))) {
-				tinrc.art_marked_read_selected = DASH_TO_SPACE(buf[0]);
+				tinrc.art_marked_read_selected = !buf[0] ? ART_MARK_READ_SELECTED : DASH_TO_SPACE(buf[0]);
 				break;
 			}
 
 			if (match_string(buf, "art_marked_recent=", buf, sizeof(buf))) {
-				tinrc.art_marked_recent = DASH_TO_SPACE(buf[0]);
+				tinrc.art_marked_recent = !buf[0] ? ART_MARK_RECENT : DASH_TO_SPACE(buf[0]);
 				break;
 			}
 
 			if (match_string(buf, "art_marked_return=", buf, sizeof(buf))) {
-				tinrc.art_marked_return = DASH_TO_SPACE(buf[0]);
+				tinrc.art_marked_return = !buf[0] ? ART_MARK_RETURN : DASH_TO_SPACE(buf[0]);
 				break;
 			}
 
 			if (match_string(buf, "art_marked_selected=", buf, sizeof(buf))) {
-				tinrc.art_marked_selected = DASH_TO_SPACE(buf[0]);
+				tinrc.art_marked_selected = !buf[0] ? ART_MARK_SELECTED : DASH_TO_SPACE(buf[0]);
 				break;
 			}
 
 			if (match_string(buf, "art_marked_unread=", buf, sizeof(buf))) {
-				tinrc.art_marked_unread = DASH_TO_SPACE(buf[0]);
+				tinrc.art_marked_unread = !buf[0] ? ART_MARK_UNREAD : DASH_TO_SPACE(buf[0]);
 				break;
 			}
 
@@ -536,6 +535,18 @@ read_config_file(
 			if (match_list(buf, "mailbox_format=", txt_mailbox_formats, NUM_MAILBOX_FORMATS, &tinrc.mailbox_format))
 				break;
 
+			if (match_integer(buf, "mono_markdash=", &tinrc.mono_markdash, MAX_ATTR))
+				break;
+
+			if (match_integer(buf, "mono_markstar=", &tinrc.mono_markstar, MAX_ATTR))
+				break;
+
+			if (match_integer(buf, "mono_markslash=", &tinrc.mono_markslash, MAX_ATTR))
+				break;
+
+			if (match_integer(buf, "mono_markstroke=", &tinrc.mono_markstroke, MAX_ATTR))
+				break;
+
 			break;
 
 		case 'n':
@@ -733,9 +744,6 @@ read_config_file(
 			if (match_integer(buf, "thread_score=", &tinrc.thread_score, THREAD_SCORE_WEIGHT))
 				break;
 
-			if (match_boolean(buf, "tab_after_X_selection=", &tinrc.tab_after_X_selection))
-				break;
-
 			if (match_boolean(buf, "tab_goto_next_unread=", &tinrc.tab_goto_next_unread))
 				break;
 
@@ -801,10 +809,8 @@ read_config_file(
 			if (match_integer(buf, "wrap_column=", &tinrc.wrap_column, 0))
 				break;
 
-#ifdef HAVE_COLOR
 			if (match_integer(buf, "word_h_display_marks=", &tinrc.word_h_display_marks, MAX_MARK))
 				break;
-#endif /* HAVE_COLOR */
 
 			break;
 
@@ -948,9 +954,6 @@ write_config_file(
 
 	fprintf(fp, _(txt_pgdn_goto_next.tinrc));
 	fprintf(fp, "pgdn_goto_next=%s\n\n", print_boolean(tinrc.pgdn_goto_next));
-
-	fprintf(fp, _(txt_tab_after_X_selection.tinrc));
-	fprintf(fp, "tab_after_X_selection=%s\n\n", print_boolean(tinrc.tab_after_X_selection));
 
 	fprintf(fp, _(txt_scroll_lines.tinrc));
 	fprintf(fp, "scroll_lines=%d\n\n", tinrc.scroll_lines);
@@ -1254,16 +1257,22 @@ write_config_file(
 	fprintf(fp, _(txt_wrap_column.tinrc));
 	fprintf(fp, "wrap_column=%d\n\n", tinrc.wrap_column);
 
-#ifdef HAVE_COLOR
 	fprintf(fp, _(txt_word_h_display_marks.tinrc));
 	fprintf(fp, "word_h_display_marks=%d\n\n", tinrc.word_h_display_marks);
 
+#ifdef HAVE_COLOR
 	fprintf(fp, _(txt_col_markstar.tinrc));
 	fprintf(fp, "col_markstar=%d\n", tinrc.col_markstar);
 	fprintf(fp, "col_markdash=%d\n", tinrc.col_markdash);
 	fprintf(fp, "col_markslash=%d\n", tinrc.col_markslash);
 	fprintf(fp, "col_markstroke=%d\n\n", tinrc.col_markstroke);
 #endif /* HAVE_COLOR */
+
+	fprintf(fp, _(txt_mono_markstar.tinrc));
+	fprintf(fp, "mono_markstar=%d\n", tinrc.mono_markstar);
+	fprintf(fp, "mono_markdash=%d\n", tinrc.mono_markdash);
+	fprintf(fp, "mono_markslash=%d\n", tinrc.mono_markslash);
+	fprintf(fp, "mono_markstroke=%d\n\n", tinrc.mono_markstroke);
 
 	fprintf(fp, _(txt_mail_address.tinrc));
 	fprintf(fp, "mail_address=%s\n\n", tinrc.mail_address);
@@ -1798,8 +1807,12 @@ change_config_file(
 
 			case iKeySearchSubjF:
 			case iKeySearchSubjB:
+			case iKeySearchRepeat:
+				if (ch == iKeySearchRepeat && i_key_search_last != iKeySearchSubjF && i_key_search_last != iKeySearchSubjB)
+					break;
+
 				old_option = option;
-				option = search_config(ch == iKeySearchSubjF, option, LAST_OPT);
+				option = search_config((ch == iKeySearchSubjF), (ch == iKeySearchRepeat), option, LAST_OPT);
 				if (option != old_option) {
 					unhighlight_option(old_option);
 					highlight_option(option);
@@ -1929,7 +1942,6 @@ change_config_file(
 						 * case OPT_SPACE_GOTO_NEXT_UNREAD:
 						 * case OPT_START_EDITOR_OFFSET:
 						 * case OPT_STRIP_BLANKS:
-						 * case OPT_TAB_AFTER_X_SELECTION:
 						 * case OPT_TAB_GOTO_NEXT_UNREAD:
 						 * case OPT_TEX2ISO_CONV:
 						 * case OPT_THREAD_CATCHUP_ON_EXIT:
@@ -2069,8 +2081,12 @@ change_config_file(
 						 * case OPT_COL_MARKDASH:
 						 * case OPT_COL_MARKSLASH:
 						 * case OPT_COL_MARKSTROKE:
-						 * case OPT_WORD_H_DISPLAY_MARKS:
 #endif
+						 * case OPT_WORD_H_DISPLAY_MARKS:
+						 * case OPT_MONO_MARKSTAR:
+						 * case OPT_MONO_MARKDASH:
+						 * case OPT_MONO_MARKSLASH:
+						 * case OPT_MONO_MARKSTROKE:
 						 * case OPT_DEFAULT_SORT_ART_TYPE:
 						 * case OPT_CONFIRM_CHOICE:
 						 * case OPT_MAILBOX_FORMAT:
@@ -2266,8 +2282,6 @@ change_config_file(
 					switch (option) {
 						/*
 						 * TODO: do DASH_TO_SPACE/SPACE_TO_DASH conversion here?
-						 * TODO: ensure that those aren't set to '' as this corrupts
-						 *       the screen layout
 						 */
 						case OPT_ART_MARKED_DELETED:
 						case OPT_ART_MARKED_INRANGE:
@@ -2511,7 +2525,7 @@ match_item(
 	char *nline = my_strdup(line);
 	size_t patlen = strlen(pat);
 
-	nline[strlen(nline) -1] = '\0'; /* remove tailing \n */
+	nline[strlen(nline) -1 ] = '\0'; /* remove tailing \n */
 
 	if (!strcasecmp(nline, pat)) {
 		strncpy(dst, &nline[patlen], dstlen);

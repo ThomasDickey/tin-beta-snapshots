@@ -3,7 +3,7 @@
  *  Module    : menukeys.h
  *  Author    : S.Robbins
  *  Created   : 1994-08-15
- *  Updated   : 1995-12-21; 2000-06-10, Dirk Nimmich
+ *  Updated   : 2003-01-07
  *  Notes     :
  *
  * Copyright (c) 1994-2003 Steve Robbins <stever@cs.mcgill.ca>
@@ -143,6 +143,7 @@
 #define iKeyLastPage '$'
 #define iKeyToggleColor '&'
 #define iKeyLastViewed '-'
+#define iKeySearchRepeat '\\'
 #define iKeySearchSubjF '/'
 #define iKeySearchSubjB '?'
 #define iKeySearchAuthB 'A'

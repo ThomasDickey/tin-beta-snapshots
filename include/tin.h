@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-09-19
+ *  Updated   : 2003-01-27
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -62,6 +62,13 @@
 #if defined(HAVE_GETADDRINFO) && defined(HAVE_GAI_STRERROR) && defined(ENABLE_IPV6)
 #	define INET6
 #endif /* HAVE_GETADDRINFO && HAVE_GAI_STRERROR && ENABLE_IPV6 */
+
+/* Locale support in Mac OS X doesn't work yet, so turn it off */
+#ifdef MAC_OS_X
+#	ifndef NO_LOCALE
+#		define NO_LOCALE 1
+#	endif /* !NO_LOCALE */
+#endif /* MAC_OS_X */
 
 /*
  * Native Language Support.
@@ -785,12 +792,12 @@ enum resizer { cNo, cYes, cRedraw };
 /* Philip Hazel's Perl regular expressions library */
 #include	<pcre.h>
 
-#if defined(HAVE_ICONV) && !defined(LOCAL_CHARSET) && !defined(MAC_OS_X)
+#if defined(HAVE_ICONV) && !defined(LOCAL_CHARSET)
 #	define CHARSET_CONVERSION 1
 #	ifdef HAVE_ICONV_H
 #		include <iconv.h>
 #	endif /* HAVE_ICONV_H */
-#endif /* HAVE_ICONV && !LOCAL_CHARSET && !MAC_OS_X */
+#endif /* HAVE_ICONV && !LOCAL_CHARSET */
 
 #ifdef HAVE_LANGINFO_H
 #	include <langinfo.h>
@@ -804,6 +811,12 @@ enum resizer { cNo, cYes, cRedraw };
 #ifndef CODESET
 #	define CODESET ((nl_item) 1)
 #endif /* CODESET */
+
+#ifdef CHARSET_CONVERSION
+#	define IS_LOCAL_CHARSET(c)	(!strncasecmp(tinrc.mm_local_charset, c, strlen(c)))
+#else
+#	define IS_LOCAL_CHARSET(c)	(!strncasecmp(tinrc.mm_charset, c, strlen(c)))
+#endif /* CHARSET_CONVERSION */
 
 /* TODO: move up to the 'right' place */
 #ifdef HAVE_SYS_FILE_H
@@ -950,6 +963,11 @@ enum resizer { cNo, cYes, cRedraw };
  */
 #define MAX_COLOR	15
 #define MAX_BACKCOLOR	7
+
+/*
+ * Count of available attributes for highlighting
+ */
+#define MAX_ATTR	6
 
 /*
  * Maximal permissible word mark type

@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-03-02
- *  Updated   : 2002-12-18
+ *  Updated   : 2003-01-29
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -225,23 +225,26 @@ StartInverse(
 }
 
 
+#	if 0 /* not used */
 static int
 isInverse(
 	void)
 {
-#	ifdef HAVE_COLOR
+#		ifdef HAVE_COLOR
 	if (use_color) {
 		short pair = PAIR_NUMBER(getattrs(stdscr));
 		short fg, bg;
 		pair_content(pair, &fg, &bg);
 		return (fg == tinrc.col_invers_fg) && (bg == tinrc.col_invers_bg);
 	}
-#	endif /* HAVE_COLOR */
+#		endif /* HAVE_COLOR */
 
 	return (getattrs(stdscr) & A_REVERSE);
 }
+#	endif /* 0 */
 
 
+#	if 0 /* doesn't work correct with ncurses4.x */
 /*
  */
 void
@@ -253,6 +256,7 @@ ToggleInverse(
 	else
 		StartInverse();
 }
+#	endif /* 0 */
 
 
 /*
@@ -366,7 +370,7 @@ highlight_string(
 {
 	char tmp[LEN];
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	/*
 	 * In a multibyte locale we get byte offsets instead of character
 	 * offsets calculate now the correct starting column
@@ -380,7 +384,7 @@ highlight_string(
 		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
 			col = wcswidth(wtmp, ARRAY_SIZE(wtmp));
 	}
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	MoveCursor(row, col);
 	my_innstr(tmp, size);
@@ -393,7 +397,6 @@ highlight_string(
 }
 
 
-#ifdef HAVE_COLOR
 /*
  * Color 'size' chars at (row,col) with 'color' and handle marks
  */
@@ -404,9 +407,21 @@ word_highlight_string(
 	int size,
 	int color)
 {
+	/*
+	 * Mapping of the tinrc.mono_mark* values to the ncurses attributes
+	 */
+	int attributes[] = {
+		A_NORMAL,
+		A_STANDOUT,
+		A_UNDERLINE,
+		A_REVERSE,
+		A_BLINK,
+		A_DIM,
+		A_BOLD
+	};
 	char tmp[LEN];
 	int wsize = size;
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#		if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wchar_t wtmp[LEN];
 
 	/*
@@ -420,16 +435,16 @@ word_highlight_string(
 		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
 			col = wcswidth(wtmp, ARRAY_SIZE(wtmp));
 	}
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#		endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	MoveCursor(row, col);
 	my_innstr(tmp, size);
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#		if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	tmp[size] = '\0';
 	if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
 		wsize = wcswidth(wtmp, ARRAY_SIZE(wtmp));
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#		endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	/* safegurad against bogus regexps */
 	if ((tmp[0] == '*' && tmp[size - 1] == '*') ||
@@ -447,20 +462,36 @@ word_highlight_string(
 				break;
 
 			case 2: /* print space */
+				MoveCursor(row, col + wsize - 1);
+				my_fputs(" ", stdout);
+				MoveCursor(row, col);
+				my_fputs(" ", stdout);
 				tmp[0] = tmp[size - 1] = ' ';
+				str_trim(tmp);
 				break;
 
 			default: /* print mark (case 1) */
 				break;
 		}
 	}
-	fcol(color);
+#	ifdef HAVE_COLOR
+	if (use_color)
+		fcol(color);
+	else
+#	endif /* HAVE_COLOR */
+		if (color > 0 && color <= MAX_ATTR)
+			attron(attributes[color]);
 	my_fputs(tmp, stdout);
 	my_flush();
-	fcol(tinrc.col_text);
+#	ifdef HAVE_COLOR
+	if (use_color)
+		fcol(tinrc.col_text);
+	else
+#	endif /* HAVE_COLOR */
+		if (color > 0 && color <= MAX_ATTR)
+			attroff(attributes[color]);
 	stow_cursor();
 }
-#endif /* HAVE_COLOR */
 
 
 int
@@ -500,32 +531,34 @@ again:
 }
 
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 wint_t
 ReadWch(
 	void)
 {
 	wint_t wch;
+	int res;
 
 	if (cmd_line)
 		wch = cmdReadWch();
 	else {
 		allow_resize(TRUE);
-#if defined(HAVE_NCURSESW)
-		get_wch(&wch);
-#else
+#		ifdef HAVE_NCURSESW
+		res = get_wch(&wch);
+#		else
 		wch = (wint_t) getch();
 
 		if (wch < KEY_MIN) {
 			/* read in the multibyte sequence */
 			char *mbs = my_malloc(MB_CUR_MAX + 1);
-			int i, res;
+			int i;
 
 			mbs[0] = (char) wch;
 			nodelay(stdscr, TRUE);
-			for (i = 1; i < (int) MB_CUR_MAX; i++)
+			for (i = 1; i < (int) MB_CUR_MAX; i++) {
 				if ((mbs[i] = getch()) == ERR)
 					break;
+			}
 			nodelay(stdscr, FALSE);
 
 			mbs[i] = '\0';
@@ -533,8 +566,11 @@ ReadWch(
 			free(mbs);
 			if (res == -1)
 				return WEOF; /* error */
-		}
-#endif /* HAVE_NCURSESW */
+			else
+				res = OK;
+		} else
+			res = KEY_CODE_YES;
+#		endif /* HAVE_NCURSESW */
 		allow_resize(FALSE);
 		if (need_resize) {
 			handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
@@ -542,7 +578,7 @@ ReadWch(
 		}
 		if (wch == KEY_BACKSPACE)
 			wch = (wint_t) '\010';	/* fix for Ctrl-H - show headers */
-		else if (wch == ESC || wch >= KEY_MIN) {
+		else if (wch == ESC || res == KEY_CODE_YES) {
 			/* TODO:
 			 * check out why using unget_wch() here causes problems at
 			 * get_arrow_key()
@@ -554,7 +590,7 @@ ReadWch(
 	}
 	return wch;
 }
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 
 void
@@ -637,7 +673,7 @@ my_fputs(
 }
 
 
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 void
 my_fputwc(
 	wint_t wc,
@@ -648,7 +684,7 @@ my_fputwc(
 			fputwc((wint_t) '\r', fp);
 		fputwc(wc, fp);
 	} else {
-#if defined(HAVE_NCURSESW)
+#		ifdef HAVE_NCURSESW
 		cchar_t cc;
 
 		cc.attr = A_NORMAL;
@@ -656,7 +692,7 @@ my_fputwc(
 		cc.chars[1] = (wchar_t) '\0';
 
 		add_wch(&cc);
-#else
+#	else
 		char *mbs;
 		int len;
 
@@ -669,10 +705,10 @@ my_fputwc(
 			addch('?');
 
 		free(mbs);
-#endif /* HAVE_NCURSESW */
+#		endif /* HAVE_NCURSESW */
 	}
 }
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 
 void
@@ -733,11 +769,11 @@ my_innstr(
 	char *str,
 	int n)
 {
-#if defined(HAVE_NCURSESW) && defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+#	if defined(HAVE_NCURSESW) && defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	size_t len = 0;
 	wchar_t *buffer;
 
-	buffer = (wchar_t *) my_malloc(sizeof(wchar_t) * (n + 1));
+	buffer = my_malloc(sizeof(wchar_t) * (n + 1));
 
 	if (innwstr(buffer, n) != ERR) {
 		if ((len = wcstombs(str, buffer, 2 * n)) == (size_t) (-1))
@@ -747,10 +783,10 @@ my_innstr(
 
 	free(buffer);
 	return len;
-#else
+#	else
 	int len = innstr(str, n);
 	return (len == ERR ? 0 : len);
-#endif /* HAVE_NCURSESW && MULTIBYTE_ABLE && !NO_LOCALE */
+#	endif /* HAVE_NCURSESW && MULTIBYTE_ABLE && !NO_LOCALE */
 }
 
 
@@ -795,33 +831,43 @@ get_arrow_key(
 		case KEY_DC:
 			code = KEYMAP_DEL;
 			break;
+
 		case KEY_IC:
 			code = KEYMAP_INS;
 			break;
+
 		case KEY_UP:
 			code = KEYMAP_UP;
 			break;
+
 		case KEY_DOWN:
 			code = KEYMAP_DOWN;
 			break;
+
 		case KEY_LEFT:
 			code = KEYMAP_LEFT;
 			break;
+
 		case KEY_RIGHT:
 			code = KEYMAP_RIGHT;
 			break;
+
 		case KEY_NPAGE:
 			code = KEYMAP_PAGE_DOWN;
 			break;
+
 		case KEY_PPAGE:
 			code = KEYMAP_PAGE_UP;
 			break;
+
 		case KEY_HOME:
 			code = KEYMAP_HOME;
 			break;
+
 		case KEY_END:
 			code = KEYMAP_END;
 			break;
+
 #	ifdef NCURSES_MOUSE_VERSION
 		case KEY_MOUSE:
 			if (getmouse(&my_event) != ERR) {
@@ -829,9 +875,11 @@ get_arrow_key(
 					case BUTTON1_CLICKED:
 						xmouse = MOUSE_BUTTON_1;
 						break;
+
 					case BUTTON2_CLICKED:
 						xmouse = MOUSE_BUTTON_2;
 						break;
+
 					case BUTTON3_CLICKED:
 						xmouse = MOUSE_BUTTON_3;
 						break;

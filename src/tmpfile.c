@@ -51,51 +51,52 @@ static char rcsid[] = "$OpenBSD: tmpfile.c,v 1.6 1998/09/18 22:06:49 deraadt Exp
 #endif /* 0 */
 
 #ifndef HAVE_TMPFILE
+#	define TRAILER "tmp.XXXXXXXXXX"
 
 FILE *
 tmpfile(
 	void)
 {
-        sigset_t set, oset;
-        FILE *fp;
-        int sverrno, fd = -1;
-#define TRAILER "tmp.XXXXXXXXXX"
-        char buf[sizeof(_PATH_TMP) + sizeof(TRAILER)];
+	sigset_t set, oset;
+	FILE *fp;
+	int sverrno, fd = -1;
+	char buf[sizeof(_PATH_TMP) + sizeof(TRAILER)];
 
-        (void) memcpy(buf, _PATH_TMP, sizeof(_PATH_TMP) - 1);
-        (void) memcpy(buf + sizeof(_PATH_TMP) - 1, TRAILER, sizeof(TRAILER));
+	(void) memcpy(buf, _PATH_TMP, sizeof(_PATH_TMP) - 1);
+	(void) memcpy(buf + sizeof(_PATH_TMP) - 1, TRAILER, sizeof(TRAILER));
 
-/* TODO: use portable signal blocking/unblocking */
-        sigfillset(&set);
-        (void) sigprocmask(SIG_BLOCK, &set, &oset);
+	/* TODO: use portable signal blocking/unblocking */
+	sigfillset(&set);
+	(void) sigprocmask(SIG_BLOCK, &set, &oset);
 
-#ifdef HAVE_MKSTEMP
-        fd = mkstemp(buf);
-#else
-#	ifdef HAVE_MKTEMP
-			fd = open(mktemp(buf), (O_WRONLY|O_CREAT|O_EXCL), (mode_t) (S_IRUSR|S_IWUSR));
-#	endif /* HAVE_MKTEMP */
-#endif /* HAVE_MKSTEMP */
-        if (fd != -1) {
-                mode_t u;
+#	ifdef HAVE_MKSTEMP
+	fd = mkstemp(buf);
+#	else
+#		ifdef HAVE_MKTEMP
+	fd = open(mktemp(buf), (O_WRONLY|O_CREAT|O_EXCL), (mode_t) (S_IRUSR|S_IWUSR));
+#		endif /* HAVE_MKTEMP */
+#	endif /* HAVE_MKSTEMP */
 
-                (void) unlink(buf);
-                u = umask(0);
-                (void) umask(u);
-                (void) fchmod(fd, 0666 & ~u);
-        }
+	if (fd != -1) {
+		mode_t u;
 
-        (void) sigprocmask(SIG_SETMASK, &oset, NULL);
+		(void) unlink(buf);
+		u = umask(0);
+		(void) umask(u);
+		(void) fchmod(fd, 0666 & ~u);
+	}
 
-        if (fd == -1)
-                return NULL;
+	(void) sigprocmask(SIG_SETMASK, &oset, NULL);
 
-        if ((fp = fdopen(fd, "w+")) == NULL) {
-                sverrno = errno;
-                (void) close(fd);
-                errno = sverrno;
-                return NULL;
-        }
-        return fp;
+	if (fd == -1)
+		return NULL;
+
+	if ((fp = fdopen(fd, "w+")) == NULL) {
+		sverrno = errno;
+		(void) close(fd);
+		errno = sverrno;
+		return NULL;
+	}
+	return fp;
 }
 #endif /* !HAVE_TMPFILE */

@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-11-16
+ *  Updated   : 2003-01-27
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -129,6 +129,7 @@ char proc_ch_default;			/* set in change_config_file() */
 int groupname_len = 0;			/* 'runtime' copy of groupname_max_len */
 int hist_last[HIST_MAXNUM + 1];
 int hist_pos[HIST_MAXNUM + 1];
+int i_key_search_last;			/* for repeated search */
 int iso2asc_supported;			/* Convert ISO-Latin1 to Ascii */
 int num_headers_to_display;		/* num headers to display -- swp */
 int num_headers_to_not_display;		/* num headers to not display -- swp */
@@ -328,8 +329,12 @@ struct t_config tinrc = {
 	0,		/* col_subject (initialised later) */
 	0,		/* col_text (initialised later) */
 	0,		/* col_title (initialised later) */
-	2,		/* word_h_display_marks */
 #endif /* HAVE_COLOR */
+	2,		/* word_h_display_marks */
+	2,		/* mono_markdash */
+	6,		/* mono_markstar */
+	5,		/* mono_markslash */
+	3,		/* mono_markstroke */
 	TRUE,		/* word_highlight */
 	0,		/* wrap_column */
 #ifdef HAVE_COLOR
@@ -393,7 +398,6 @@ struct t_config tinrc = {
 #endif /* M_UNIX */
 	TRUE,		/* strip_blanks */
 	FALSE,		/* strip_newsrc */
-	FALSE,		/* tab_after_X_selection */
 	TRUE,		/* tab_goto_next_unread */
 	FALSE,		/* tex2iso_conv */
 	TRUE,		/* thread_catchup_on_exit */
@@ -550,25 +554,21 @@ init_selfinfo(
 
 /* FIXME: move to get_user_name() [header.c] */
 #ifndef M_AMIGA
-#	if 0 /* ??? */
-	if ((myentry = getpwuid(getuid())) != NULL) {
-		memcpy(&pwdentry, myentry, sizeof(struct passwd));
-		myentry = &pwdentry;
-	}
-#	else
-	myentry = getpwuid(getuid());
-#	endif /* 0 */
-
-#	ifdef VMS
-	/* TODO: get_user_name() entirely reles on $USER */
-	if (((ptr = getlogin()) != NULL) && strlen(ptr))
-		myentry = getpwnam(ptr);
-#	endif /* VMS */
-
-	if (myentry == NULL) {
+#	ifndef VMS
+	if ((myentry = getpwuid(getuid())) == NULL) {
 		error_message(_(txt_error_passwd_missing));
 		giveup();
 	}
+#	else
+	/* TODO: get_user_name() entirely reles on $USER */
+	if (((ptr = getlogin()) != NULL) && strlen(ptr))
+		myentry = getpwnam(ptr);
+	else {
+		error_message(_(txt_error_passwd_missing));
+		giveup();
+	}
+#	endif /* !VMS */
+
 	strcpy(userid, myentry->pw_name);
 
 #	ifdef VMS

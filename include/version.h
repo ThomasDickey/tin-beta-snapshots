@@ -40,10 +40,10 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.5.16"
+#		define VERSION		"1.5.17"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20021229"
-#	define RELEASENAME	"Spiders"
+#	define RELEASEDATE	"20030201"
+#	define RELEASENAME	"Bubbles"
 #	define TINRC_VERSION	"1.3.1"
 
 #	ifdef M_AMIGA

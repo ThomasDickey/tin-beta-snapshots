@@ -46,7 +46,7 @@
 #define NEGATE_CLASS	'^'
 
 /* Is "*" a common pattern? */
-#define OPTIMIZE_JUST_STAR
+#define OPTIMIZE_JUST_STAR 1
 
 /* Do tar(1) matching rules, which ignore a trailing slash? */
 #undef MATCH_TAR_PATTERN

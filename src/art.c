@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-12-05
+ *  Updated   : 2003-01-21
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1411,6 +1411,7 @@ write_nov_file(
 
 			if (article->thread != ART_EXPIRED && article->artnum >= group->xmin) {
 				char *p;
+				char *q = NULL, *ref = NULL;
 
 				/*
 				 * TODO: instead of tinrc.mm_local_charset we'd better use UTF-8
@@ -1423,13 +1424,24 @@ write_nov_file(
 				 *       ignore stuff like this.
 				 */
 				p = rfc1522_encode(article->subject, tinrc.mm_local_charset, FALSE);
+
+				/* replace any '\t's with ' ' in the references-data */
+				if (article->refs) {
+					ref = q = my_strdup(article->refs);
+					while (*q) {
+						if (*q == '\t')
+							*q = ' ';
+						q++;
+					}
+				}
+
 				fprintf(fp, "%ld\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
 					article->artnum,
 					tinrc.post_8bit_header ? article->subject : p,
 					print_from(article),
 					print_date(article->date),
 					BlankIfNull(article->msgid),
-					BlankIfNull(article->refs),
+					BlankIfNull(ref),
 					0,	/* bytes */
 					article->line_count);
 
@@ -1438,6 +1450,8 @@ write_nov_file(
 
 				fprintf(fp, "\n");
 				free(p);
+				if (q != ref)
+					free(ref);
 			}
 		}
 		fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH));

@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-12-04
+ *  Updated   : 2003-01-21
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -82,9 +82,7 @@
 #	endif /* EVIL_INSIDE */
 #else
 #	define ADD_CAN_KEY(id)
-#	ifdef EVIL_INSIDE
-#		define ADD_CAN_LOCK(id)
-#	endif /* EVIL_INSIDE */
+#	define ADD_CAN_LOCK(id)
 #endif /* USE_CANLOCK */
 
 #ifdef EVIL_INSIDE
@@ -825,7 +823,7 @@ check_article_to_be_posted(
 #endif /* HAVE_FASCIST_NEWSADMIN */
 			}
 #ifdef CHARSET_CONVERSION
-			p = rfc1522_encode(line, txt_mime_charsets[(*group)->attribute->mm_network_charset], FALSE);
+			p = rfc1522_encode(line, *group ? txt_mime_charsets[(*group)->attribute->mm_network_charset] : txt_mime_charsets[tinrc.mm_network_charset], FALSE);
 #else
 			p = rfc1522_encode(line, tinrc.mm_charset, FALSE);
 #endif /* CHARSET_CONVERSION */
@@ -848,7 +846,7 @@ check_article_to_be_posted(
 
 			found_from_lines++;
 #ifdef CHARSET_CONVERSION
-			p = rfc1522_encode(line, txt_mime_charsets[(*group)->attribute->mm_network_charset], FALSE);
+			p = rfc1522_encode(line, *group ? txt_mime_charsets[(*group)->attribute->mm_network_charset] : txt_mime_charsets[tinrc.mm_network_charset], FALSE);
 #else
 			p = rfc1522_encode(line, tinrc.mm_charset, FALSE);
 #endif /* CHARSET_CONVERSION */
@@ -870,7 +868,7 @@ check_article_to_be_posted(
 			char *p;
 
 #ifdef CHARSET_CONVERSION
-			p = rfc1522_encode(line, txt_mime_charsets[(*group)->attribute->mm_network_charset], FALSE);
+			p = rfc1522_encode(line, *group ? txt_mime_charsets[(*group)->attribute->mm_network_charset] : txt_mime_charsets[tinrc.mm_network_charset], FALSE);
 #else
 			p = rfc1522_encode(line, tinrc.mm_charset, FALSE);
 #endif /* CHARSET_CONVERSION */
@@ -1218,7 +1216,7 @@ check_article_to_be_posted(
 		if (warnings_catbp & CA_WARNING_REFERENCES_WITHOUT_RE)
 			my_fprintf(stderr, _(txt_warn_references_but_no_re));
 
-#ifdef FOLLOW_USEFOR_DRAFT /* TODO give usefull warning */
+#ifdef FOLLOW_USEFOR_DRAFT /* TODO give useful warning */
 		if (warnings_catbp & CA_WARNING_SPACE_IN_NEWSGROUPS)
 			my_fprintf(stderr, _(txt_warn_header_line_comma), "Newsgroups");
 		if (warnings_catbp & CA_WARNING_SPACE_IN_FOLLOWUP_TO)
@@ -2169,7 +2167,7 @@ damaged_id(
 		id++;
 	if (*id != '<')
 		return 1;
-	while (*id && *id != '>')
+	while (isascii((unsigned char) *id) && isgraph((unsigned char) *id) && !iscntrl((unsigned char) *id) && *id != '>')
 		id++;
 	if (*id != '>')
 		return TRUE;

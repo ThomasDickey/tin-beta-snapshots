@@ -185,7 +185,7 @@ debug_save_comp(
 	sprintf(file, "%sSAVE_COMP", TMPDIR);
 
 	if ((fp = fopen(file, "a+")) != NULL) {
-		for (i = 0 ; i < num_save ; i++) {
+		for (i = 0; i < num_save; i++) {
 
 			fprintf(fp, "path=[%s]\n", save[i].path);
 			fprintf(fp, "file=[%s]\n", save[i].file);

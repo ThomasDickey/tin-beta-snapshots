@@ -3,7 +3,7 @@
  *  Module    : regex.c
  *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
  *  Created   : 1997-02-21
- *  Updated   : 2002-07-20
+ *  Updated   : 2003-01-27
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
@@ -157,22 +157,18 @@ highlight_regexes(
 
 	while (pcre_exec(regex->re, regex->extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) > 0) {
 		/* we have a match */
-#ifdef HAVE_COLOR
-		if (use_color && color >= 0) /* color the matching text */
+		if (color >= 0) /* color the matching text */
 			word_highlight_string(row, (ptr - buf) + offsets[0], offsets[1] - offsets[0], color);
 		else
-#endif /* HAVE_COLOR*/
 			/* inverse the matching text */
 			highlight_string(row, (ptr - buf) + offsets[0], offsets[1] - offsets[0]);
 
-#ifdef HAVE_COLOR
 		if (!tinrc.word_h_display_marks) {
-#	ifdef USE_CURSES
+#ifdef USE_CURSES
 			screen_contents(row, 0, buf);
-#	endif /* USE_CURSES */
+#endif /* USE_CURSES */
 			ptr += offsets[1] - 2;
 		} else
-#endif /* HAVE_COLOR */
 			ptr += offsets[1];
 	}
 }

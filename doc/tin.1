@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2002-12-09
+.\" Updated   : 2003-01-27
 .\" Notes     : still needs some work, i.e.:
 .\"             - document authorization (.newsauth)
 .\"             - postprocess differences when linked against libuu
 .\"
 .\"
-.TH tin 1 "December 9th, 2002" "1.5.16" "A Usenet newsreader"
+.TH tin 1 "January 27th, 2003" "1.5.17" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -507,8 +507,9 @@ command-line switch.
 .TP
 .B Help 'h'
 Help screen of commands available on the current menu. You can use
-\fBSearchSubjF\fP ('\fB/\fP') and \fBSearchSubjB\fP ('\fB?\fP') to search on
-this screen. \fBQuit\fP ('\fBq\fP') returns to the menu.
+\fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP') and
+\fBSearchRepeat\fP ('\fB\\\fP') to search on this screen. \fBQuit\fP
+('\fBq\fP') returns to the menu.
 .TP
 .B ToggleHelpDisplay 'H'
 Toggle the display of help mini menu at the bottom of the screen.
@@ -518,9 +519,9 @@ Reload postponed article. See also ''\fB-o\fP'' command-line switch.
 .TP
 .B DisplayPostHist 'W'
 List articles posted by user. The date posted, the newsgroup and the
-subject are listed. You can use \fBSearchSubjF\fP ('\fB/\fP') and
-\fBSearchSubjB\fP ('\fB?\fP') to search on this screen. \fBQuit\fP
-('\fBq\fP') returns to the menu.
+subject are listed. You can use \fBSearchSubjF\fP ('\fB/\fP'),
+\fBSearchSubjB\fP ('\fB?\fP') and \fBSearchRepeat\fP ('\fB\\\fP') to
+search on this screen. \fBQuit\fP ('\fBq\fP') returns to the menu.
 .TP
 .B Version 'v'
 Print \fBtin\fP version information.
@@ -541,6 +542,9 @@ section "RANGES" for more information.
 .TP
 .B SelectSortActive .
 Sort the list of newsgroups
+.TP
+.B SearchRepeat '\\'
+Repeat the previous search
 .TP
 .B SearchSubjF '/'
 Search for a group by name and description (if displayed).
@@ -668,6 +672,9 @@ section "RANGES" for more information.
 .B LastViewed '-'
 Re-enter the last message that was viewed.
 .TP
+.B SearchRepeat '\\'
+Repeat the previous search
+.TP
 .B SearchSubjF '/'
 Search forward for specified subject.
 .TP
@@ -678,7 +685,8 @@ Search backward for specified subject.
 Select current thread for later processing.
 .TP
 .B GroupDoAutoSel '+'
-Perform auto-selection on current group.
+Selects all threads in current group. It is a shortcut for calling
+\fBGroupSelPattern\fP with a pattern of ''*''.
 .TP
 .B GroupToggleThdSel '\\.'
 Toggle selection of current thread. If at least one unread article, (but not
@@ -886,6 +894,9 @@ section "RANGES" for more information.
 .B LastViewed '-'
 Re-enter the last message that was viewed.
 .TP
+.B SearchRepeat '\\'
+Repeat the previous search
+.TP
 .B SearchSubjF '/'
 Search forward for a specified subject.
 .TP
@@ -1051,6 +1062,9 @@ scrolling up will hide it again.
 .TP
 .B LastViewed '-'
 Re-enter the last message that was viewed.
+.TP
+.B SearchRepeat '\\'
+Repeat the previous search
 .TP
 .B SearchSubjF '/'
 Forward search the text of this article.
@@ -1273,10 +1287,10 @@ options. \fBConfigSelect\fP will save the new value, '\fB<ESC>\fP' will
 abort without saving changes.
 .PP
 As with the other menus, '\fB^L\fP' will redraw the screen. You can use
-\fBSearchSubjF\fP ('\fB/\fP') and \fBSearchSubjB\fP ('\fB?\fP') to search
-for a specific option. Use \fBQuit\fP ('\fBq\fP') to exit the option menu
-and keep your changes. Use \fBQuitTin\fP ('\fBQ\fP') to exit without keeping
-your changes.
+\fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP') and
+\fBSearchRepeat\fP ('\fB\\\fP') to search for a specific option. Use
+\fBQuit\fP ('\fBq\fP') to exit the option menu and keep your changes.
+Use \fBQuitTin\fP ('\fBQ\fP') to exit without keeping your changes.
 .PP
 Here is a full list of all the available variables. The name in braces is
 the name of the corresponding setting in
@@ -1392,15 +1406,19 @@ Color of foreground for inverse text
 .TP
 .B Color of highlighting with _dash_ (col_markdash)
 Color of words emphasised like _this_. See also \fBword_h_display_marks\fP
+and \fBword_highlight\fP.
 .TP
 .B Color of highlighting with /slash/ (col_markslash)
 Color of words emphasised like /this/. See also \fBword_h_display_marks\fP
+and \fBword_highlight\fP.
 .TP
 .B Color of highlighting with *stars* (col_markstar)
 Color of words emphasised like *this*. See also \fBword_h_display_marks\fP
+and \fBword_highlight\fP.
 .TP
 .B Color of highlighting with -stroke- (col_markstroke)
 Color of words emphasised like -this-. See also \fBword_h_display_marks\fP
+and \fBword_highlight\fP.
 .TP
 .B col_minihelp
 Color of mini help menu
@@ -1645,17 +1663,17 @@ Filename to be used for storing posted articles, see also
 \fBkeep_posted_articles\fP.
 .TP
 .B Handling of killed articles (kill_level)
-This option controls the processing and display of articles that are killed.
-There are 3 options: 0 (default) is the 'traditional' behaviour of
-\fBtin\fP. Only unread articles are killed once only by marking them read.
-Options 1 and 2 will process all articles in the group and therefore there
-is a processing overhead when using them. Option 1 will thread killed
-articles as normal but they will be marked with
-\fBart_marked_killed\fP. As filtering only happens on unread on
-unread articles with \fBkill_level\fP set to 0, \fBart_marked_killed\fP
-and \fBart_marked_read_selected\fP are only shown once. When you reenter
-the group the mark will be gone. Option 2 simply does not display killed
-articles at all.
+This option controls the processing and display of articles that are
+killed. There are 3 options: 0 (default) is the 'traditional'
+behaviour of \fBtin\fP. Only unread articles are killed once only by
+marking them read. As filtering only happens on unread articles with
+\fBkill_level\fP set to 0, \fBart_marked_killed\fP and
+\fBart_marked_read_selected\fP are only shown once. When you reenter
+the group the mark will be gone. Options 1 and 2 will process all
+articles in the group and therefore there is a processing overhead
+when using them. Option 1 will thread killed articles as normal but
+they will be marked with \fBart_marked_killed\fP. Option 2 simply
+does not display killed articles at all.
 .TP
 .B Use 8bit characters in mail headers (mail_8bit_header)
 Allows 8bit characters unencoded in the header of mail message. Default is
@@ -1730,6 +1748,26 @@ Not all values might work on your system, see
 for more details. If it's not set, the value of the environment variable
 \fB$MM_CHARSET\fP is used. US-ASCII or compile-time default is used in case
 neither of them is defined.
+.TP
+.B Attibute of highlighting with _dash_ (mono_markdash)
+Character attribute of words emphasised like _this_. It does depend on your
+terminal which attributes are useable. See also \fBword_h_display_marks\fP
+and \fBword_highlight\fP.
+.TP
+.B Attibute of highlighting with /slash/ (mono_markslash)
+Character attribute of words emphasised like /this/. It does depend on your
+terminal which attributes are useable. See also \fBword_h_display_marks\fP
+and \fBword_highlight\fP.
+.TP
+.B Attibute of highlighting with *stars* (mono_markstar)
+Character attribute of words emphasised like *this*. It does depend on your
+terminal which attributes are useable. See also \fBword_h_display_marks\fP
+and \fBword_highlight\fP.
+.TP
+.B Attibute of highlighting with -stroke- (mono_markstroke)
+Character attribute of words emphasised like -this-. It does depend on your
+terminal which attributes are useable. See also \fBword_h_display_marks\fP
+and \fBword_highlight\fP.
 .TP
 .B newnews
 These are internal timers used by \fBtin\fP to keep track of new newsgroups.
@@ -1829,17 +1867,17 @@ reply to it, the signature will be quoted even if it would otherwise not be.
 .B Regex used to show quoted lines (quote_regex)
 A regular expression that will be applied when reading articles. All
 matching lines are shown in \fBcol_quote\fP. If \fBquote_regex\fP is
-blank, then \fBtin\fP uses a built in default for this.
+blank, then \fBtin\fP uses a built in default.
 .TP
 .B Regex used to show twice quoted l. (quote_regex2)
 A regular expression that will be applied when reading articles. All
 matching lines are shown in \fBcol_quote2\fP. If \fBquote_regex2\fP is
-blank, then \fBtin\fP uses a built in default for this.
+blank, then \fBtin\fP uses a built in default.
 .TP
 .B Regex used to show >= 3 times q.l. (quote_regex3)
 A regular expression that will be applied when reading articles. All
 matching lines are shown in \fBcol_quote3\fP. If \fBquote_regex3\fP is
-blank, then \fBtin\fP uses a built in default for this.
+blank, then \fBtin\fP uses a built in default.
 .TP
 .B Interval in secs to reread active (reread_active_file_secs)
 The news \fI${TIN_LIBDIR-NEWSLIBDIR}"/"${TIN_ACTIVEFILE-active}\fR file is
@@ -1923,8 +1961,8 @@ If ON add signature to reposted articles. Default is ON.
 .TP
 .B Regex used to highlight /slashes/ (slashes_regex)
 A regular expression that will be applied when reading articles. All
-matching words are shown in \fBcol_markslash\fP. If \fBslashes_regex\fP is
-blank, then \fBtin\fP uses a built in default for this.
+matching words are shown in \fBcol_markslash\fP or \fBmono_markslash\fP. If
+\fBslashes_regex\fP is blank, then \fBtin\fP uses a built in default.
 .TP
 .B Sort articles by (sort_article_type)
 This specifies how articles should be sorted. Sort by ascending Date (6) is
@@ -1984,8 +2022,8 @@ Default is OFF.
 .TP
 .B Regex used to highlight *stars* (stars_regex)
 A regular expression that will be applied when reading articles. All
-matching words are shown in \fBcol_markstar\fP. If \fBstars_regex\fP is
-blank, then \fBtin\fP uses a built in default for this.
+matching words are shown in \fBcol_markstar\fP or \fBmono_markstar\fP. If
+\fBstars_regex\fP is blank, then \fBtin\fP uses a built in default.
 .TP
 .B Start editor with line offset (start_editor_offset)
 Set ON if the editor used for posting, follow-ups and bug reports has the
@@ -2013,13 +2051,8 @@ If ON, then unsubscribed groups will be permanently removed from your
 .TP
 .B Regex used to highlight -strokes- (strokes_regex)
 A regular expression that will be applied when reading articles. All
-matching words are shown in \fBcol_markstroke\fP. If \fBstrokes_regex\fP is
-blank, then \fBtin\fP uses a built in default for this.
-.TP
-.B Do tab after X automatically (tab_after_X_selection)
-If enabled will automatically go to the first unread article after having
-selected all hot articles and threads with the \fBGroupMarkUnselArtRead\fP
-('\fBX\fP') command at Group level. Default is OFF.
+matching words are shown in \fBcol_markstroke\fP or \fBmono_markstroke\fP.
+If \fBstrokes_regex\fP is blank, then \fBtin\fP uses a built in default.
 .TP
 .B Tab goes to next unread article (tab_goto_next_unread)
 If enabled pressing \fBPageNextUnread\fP ('\fB<TAB>\fP') at the Article
@@ -2077,8 +2110,8 @@ doesn't exist, this option is disabled. Default is OFF.
 .TP
 .B Regex used to highlight _underline_ (underscores_regex)
 A regular expression that will be applied when reading articles. All
-matching words are shown in \fBcol_markdash\fP. If \fBunderscores_regex\fP is
-blank, then \fBtin\fP uses a built in default for this.
+matching words are shown in \fBcol_markdash\fP or \fBmono_markdash\fP. If
+\fBunderscores_regex\fP is blank, then \fBtin\fP uses a built in default.
 .TP
 .B Remove ~/.article after posting (unlink_article)
 If ON remove \fI~/.article\fR after posting. Default is ON.
@@ -2122,8 +2155,7 @@ NB: Newsgroup names will always be matched using the wildmat notation.
 .TP
 .B What to display instead of mark (word_h_display_marks)
 Should the leading and ending stars, slashes, strokes and dashes also be
-displayed, even when they are highlighting marks (also requires
-\fBuse_color\fP to be enabled)?
+displayed, even when they are highlighting marks?
 .RS +.5i
 .IP 0 3
 \fBno\fP
@@ -2134,9 +2166,12 @@ print a \fBspace\fP instead
 .RE
 .TP
 .B Word highlighting in message body (word_highlight)
-Enable word highlighting. See \fBword_h_display_marks\fP for the
-options available is this and \fBuse_color\fP is enabled. Default is
-ON.
+Enable word highlighting. See \fBword_h_display_marks\fP for the options
+available. If \fBuse_color\fP is enabled the colors specified in
+\fBcol_markdash\fP, \fBcol_markslash\fP, \fBcol_markstar\fP and
+\fBcol_markstroke\fP are used for word highlighting else the character
+attributes specified in \fBmono_markdash\fP, \fBmono_markslash\fP,
+\fBmono_markstar\fP and \fBmono_markstroke\fP are used. Default is ON.
 .TP
 .B Page line wrap column (wrap_column)
 Sets the column at which a displayed article body should be wrapped.
@@ -2711,7 +2746,7 @@ For a detailed description see
 .\"
 .\"
 .SH ENVIRONMENT
-.\" TODO: sort in a usefull order, add undocumented env-vars like:
+.\" TODO: sort in a useful order, add undocumented env-vars like:
 .\"
 .\" .TP
 .\" .B TIN_POST (VMS, AmigaOS)
@@ -3122,36 +3157,40 @@ Kloczko, Dwarven Knight, Thomas Koenig, Karl-Koenig Koenigsson, Martin
 Kraemer, Gerald Krause, Thomas Kroener, Florian Kuehnert, Bernd Kuemmerlen,
 Kris Kugel, Stephan Kulow, Manoj Kumar, Dawid Kuroczko, Yuri Kuzmenko,
 Olivier Lacroix, Geoff Lane, Alex Lange, Alain Lasserre, Stanislav Latishko,
-Hannu Laurila, Vincent Lefevre, Alexander Lehmann, Marty Leisner, Thomas
-Leitner, Hakan Lennestal, Kevin Lentin, Chua Choon Leong, Chris Lewis,
-Andreas Ley, David-Michael Lincke, Otto Lind, Richard Lloyd, Florian Lohoff,
-Reinhard Luebke, Clifford Luke, Michael Lupp, David MacKenzie, Hugh Mahon,
-Giuseppe De Marco, Scott Marovich, Dmitri A. Martynoff, Kazushi Marukawa,
-Timur Maryin, William McBrine, Owen Medd, Philipp Mergenthaler, Andreas
-Metzler, Arkadiusz Miskiewicz, Soren Moller, Bruce Momjian, Sergio Morales,
-Michael Morrell, Klaus Mueller, Mike Muise, Udo Munk, John R. Myers, Daniel
-Naber, Torsten Neumann, Dirk Nimmich, James Nugen, David E. O'Brien, Michael
-O'Reilly, Oleg Ohotnikov, Ronald Orr, Julien Oster, Guido Ostkamp, Philip
-Paeps, Jeb Palmer, Neil Parker, Joseph Parmelee, Tom Parry, Jim Patterson,
-Sven Paulus, Walter Pelissero, Cameron Perkins, Colin Perkins, Eric
-Peterson, Tim Pierce, Bill Poitras, Scott W. Powers, Wolfgang Prediger, Marc
-Prud'hommeaux, GianPiero Puccioni, Thomas Quinot, Stefan Rapp, Martin
-Reising, Kyle Rhorer, Ted Richards, Steve Robbins, Ollivier Robert, Branden
+Hannu Laurila, Yen-Ming Lee, Vincent Lefevre, Alexander Lehmann,
+Marty Leisner, Thomas Leitner, Hakan Lennestal, Kevin Lentin, Chua
+Choon Leong, Chris Lewis, Andreas Ley, David-Michael Lincke, Otto
+Lind, Richard Lloyd, Florian Lohoff, Reinhard Luebke, Clifford Luke,
+Michael Lupp, David MacKenzie, Hugh Mahon, Giuseppe De Marco, Scott
+Marovich, Dmitri A. Martynoff, Kazushi Marukawa, Timur Maryin,
+William McBrine, Owen Medd, Philipp Mergenthaler, Andreas Metzler,
+Arkadiusz Miskiewicz, Soren Moller, Bruce Momjian, Sergio Morales,
+Michael Morrell, Klaus Mueller, Mike Muise, Udo Munk, John R. Myers,
+Daniel Naber, Torsten Neumann, Dirk Nimmich, James Nugen, David E.
+O'Brien, Michael O'Reilly, Oleg Ohotnikov, Ronald Orr, Julien Oster,
+Guido Ostkamp, Philip Paeps, Jeb Palmer, Neil Parker, Joseph
+Parmelee, Tom Parry, Jim Patterson, Sven Paulus, Walter Pelissero,
+Cameron Perkins, Colin Perkins, Eric Peterson, Tim Pierce, Bill
+Poitras, Scott W. Powers, Wolfgang Prediger, Marc Prud'hommeaux,
+GianPiero Puccioni, Thomas Quinot, Stefan Rapp, Martin Reising, Kyle
+Rhorer, Ted Richards, Steve Robbins, Ollivier Robert, Branden
 Robinson, Jim Robinson, Thomas Roessler, Erik van Roode, Meelis Roos,
 Stephen Roseman, Roland Rosenfeld, Peter Van Rossem, Clifton Royston,
 Juergen Salk, Rich Salz, Gary Sanders, Nickolay Saukh, John Sauter,
-Christopher Sawtell, Holger Schif, Volker Schmidt, John Schmitz, Torsten
-Schneider, Stefan Scholl, Rainer Scholz, Juergen Schroeder, Larry Schwimmer,
-Randy Scott, Bart Sears, Karl-Olav Serrander, Doug Sewell, Philip Shearer,
-Jungshik Shin, Sergey Shkonda, Andreas Siegert, Mark Smith, Toomas Soome,
-Steve Spearman, Helmut Springer, Cliff Stanford, Steve Starck, Jason
-Steiner, Ralf Stephan, Michael Stenns, Helmrich Streitmatter, Hans Werner
-Strube, Dieter Stueken, Ed Sznyter, Dean Takemori, Darrell Tangman, Derek
-Terveer, Carsten Theis, Julian Thompson, David Tiller, Andry Timonin, Mark
-Tomlin, Michael Traub, Mark Trumbull, Alex Vasylenko, Adri Verhoef, Paul
-Vickers, Oliver B. Warzecha, Jason Wessel, Cary Whitney, Henrik Wist, Greg
-Woods, Andreas Wrede, Lloyd Wright, Jens Wuepper, Billy Y., Hideaki
-Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
+Christopher Sawtell, Holger Schif, Volker Schmidt, John Schmitz,
+Torsten Schneider, Stefan Scholl, Rainer Scholz, Juergen Schroeder,
+Larry Schwimmer, Randy Scott, Bart Sears, Karl-Olav Serrander, Doug
+Sewell, Philip Shearer, Jungshik Shin, Sergey Shkonda, Andreas
+Siegert, Mark Smith, Toomas Soome, Steve Spearman, Helmut Springer,
+Cliff Stanford, Steve Starck, Jason Steiner, Ralf Stephan, Michael
+Stenns, Helmrich Streitmatter, Hans Werner Strube, Dieter Stueken, Ed
+Sznyter, Dean Takemori, Darrell Tangman, Derek Terveer, Carsten
+Theis, Julian Thompson, David Tiller, Andry Timonin, Mark Tomlin,
+Michael Traub, Mark Trumbull, Alex Vasylenko, Michael Velten, Adri
+Verhoef, Paul Vickers, Oliver B. Warzecha, Jason Wessel, Cary
+Whitney, Henrik Wist, Greg Woods, Andreas Wrede, Lloyd Wright, Jens
+Wuepper, Billy Y., Hideaki Yoshfuji, Nickolai Zeldovich, Zbigniew
+Zych
 .\"
 .\"
 .SH AUTHOR

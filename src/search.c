@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-04-03
+ *  Updated   : 2003-01-07
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -38,11 +38,14 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
+#ifndef MENUKEYS_H
+#	include "menukeys.h"
+#endif /* !MENUKEYS_H */
 
 /*
  * local prototypes
  */
-static char *get_search_pattern(t_bool forward, const char *fwd_msg, const char *bwd_msg, char *def, int which_hist);
+static char *get_search_pattern(t_bool *forward, t_bool repeat, const char *fwd_msg, const char *bwd_msg, char *def, int which_hist);
 static int author_search(int i, char *searchbuf);
 static int body_search(int i, char *searchbuf);
 static int subject_search(int i, char *searchbuf);
@@ -53,6 +56,8 @@ static int search_group(t_bool forward, int current_art, char *searchbuff, int (
  * The search function may place error text into mesg
  */
 #define MATCH_MSG	(mesg[0] ? mesg : _(txt_no_match))
+
+/* char i_key_search_last; */				/* for repeated search */
 
 /*
  * Kludge to maintain some internal state for body search
@@ -75,18 +80,36 @@ static struct regex_cache srch_regex;
  */
 static char *
 get_search_pattern(
-	t_bool forward,
+	t_bool *forward,
+	t_bool repeat,
 	const char *fwd_msg,
 	const char *bwd_msg,
 	char *def,
 	int which_hist)
 {
 	static char tmpbuf[LEN];	/* Hold the last pattern used */
+	static char last_pattern[LEN];	/* last search pattern used; for repeated search */
+	static t_bool last_forward;
 
-	sprintf(tmpbuf, (forward ? fwd_msg : bwd_msg), def);
+	if (repeat) {
+		*forward = last_forward;
+		my_strncpy(def, last_pattern, LEN);
+	}
+	else {
+		sprintf(tmpbuf, (*forward ? fwd_msg : bwd_msg), def);
 
-	if (!prompt_string_default(tmpbuf, def, _(txt_no_search_string), which_hist))
-		return NULL;
+		if (!prompt_string_default(tmpbuf, def, _(txt_no_search_string), which_hist))
+			return NULL;
+
+		last_forward = *forward;
+		my_strncpy(last_pattern, def, LEN);
+
+		/* HIST_BODY_SEARCH doesn't exist, hence i_key_search_last is set directly in search_body() */
+		if (which_hist == HIST_AUTHOR_SEARCH)
+			i_key_search_last = *forward ? iKeySearchAuthF : iKeySearchAuthB;
+		else
+			i_key_search_last = *forward ? iKeySearchSubjF : iKeySearchSubjB;
+	}
 
 	wait_message(0, _(txt_searching));
 
@@ -112,16 +135,19 @@ get_search_pattern(
 int
 search_config(
 	t_bool forward,
+	t_bool repeat,
 	int current,
 	int last)
 {
 	char *buf;
 	int n;
-	int incr = forward ? 1 : -1;
+	int incr;
 	int result = current;
 
-	if (!(buf = get_search_pattern(forward, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_config, HIST_CONFIG_SEARCH)))
+	if (!(buf = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_config, HIST_CONFIG_SEARCH)))
 		return result;
+
+	incr = forward ? 1 : -1;
 
 	current += incr;
 	n = current;
@@ -150,7 +176,8 @@ search_config(
  */
 int
 search_active(
-	t_bool forward)
+	t_bool forward,
+	t_bool repeat)
 {
 	char *buf;
 	char buf2[LEN];
@@ -162,7 +189,7 @@ search_active(
 		return -1;
 	}
 
-	if (!(buf = get_search_pattern(forward, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_group, HIST_GROUP_SEARCH)))
+	if (!(buf = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_group, HIST_GROUP_SEARCH)))
 		return -1;
 
 	i = selmenu.curr;
@@ -366,21 +393,22 @@ int
 search(
 	int key,
 	int current_art,
-	t_bool forward)
+	t_bool forward,
+	t_bool repeat)
 {
 	char *buf = NULL;
 	int (*search_func) (int i, char *searchbuff) = author_search;
 
 	switch (key) {
 		case SEARCH_SUBJ:
-			if (!(buf = get_search_pattern(forward, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_subject, HIST_SUBJECT_SEARCH)))
+			if (!(buf = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_subject, HIST_SUBJECT_SEARCH)))
 				return -1;
 			search_func = subject_search;
 			break;
 
 		case SEARCH_AUTH:
 		default:
-			if (!(buf = get_search_pattern(forward, _(txt_author_search_forwards), _(txt_author_search_backwards), tinrc.default_search_author, HIST_AUTHOR_SEARCH)))
+			if (!(buf = get_search_pattern(&forward, repeat, _(txt_author_search_forwards), _(txt_author_search_backwards), tinrc.default_search_author, HIST_AUTHOR_SEARCH)))
 				return -1;
 			search_func = author_search;
 			break;
@@ -397,6 +425,7 @@ search(
 int
 search_article(
 	t_bool forward,
+	t_bool repeat,
 	int start_line,
 	int lines,
 	t_lineinfo *line,
@@ -407,7 +436,7 @@ search_article(
 	int i;
 	struct regex_cache srch;
 
-	if (!(pattern = get_search_pattern(forward, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_art, HIST_ART_SEARCH)))
+	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_art, HIST_ART_SEARCH)))
 		return FALSE;
 
 	if (tinrc.wildcard && !(compile_regex(pattern, &srch, PCRE_EXTENDED | PCRE_CASELESS)))
@@ -466,19 +495,23 @@ search_article(
  */
 int
 search_body(
-	int current_art)
+	int current_art,
+	t_bool repeat)
 {
 	char *buf;
 	int i;
+	t_bool forward_fake;
 
 	if (!(buf = get_search_pattern(
-			TRUE,
+			&forward_fake,				/* we pass a dummy var since body search has no `forward' */
+			repeat,
 			_(txt_search_body),
 			_(txt_search_body),
 			tinrc.default_search_art,
 			HIST_ART_SEARCH
 	))) return -1;
 
+	i_key_search_last = iKeySearchBody;	/* store last search type for repeated search */
 	total_cnt = curr_cnt = 0;			/* Reset global counter of articles done */
 
 	/*

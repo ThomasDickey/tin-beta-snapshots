@@ -2,7 +2,7 @@
 ;   Module    : tincfg.tbl
 ;   Author    : Thomas E. Dickey
 ;   Created   : 1996-11-01
-;   Updated   : 2002-11-06
+;   Updated   : 2003-01-27
 ;   Notes     : #defines and structs for config.c
 ;
 ; Copyright (c) 1996-2003 Thomas E. Dickey <dickey@invisible-island.net>
@@ -55,7 +55,6 @@
 	space_goto_next_unread		OPT_ON_OFF
 	pgdn_goto_next			OPT_ON_OFF
 	auto_list_thread		OPT_ON_OFF
-	tab_after_X_selection		OPT_ON_OFF
 	art_marked_deleted		OPT_CHAR
 	art_marked_inrange		OPT_CHAR
 	art_marked_return		OPT_CHAR
@@ -129,13 +128,17 @@
 	col_signature			txt_colors	MAX_COLOR+1
 #endif
 	word_highlight			OPT_ON_OFF
-#ifdef HAVE_COLOR
 	word_h_display_marks		txt_marks	MAX_MARK+1
+#ifdef HAVE_COLOR
 	col_markstar			txt_colors	MAX_COLOR+1
 	col_markdash			txt_colors	MAX_COLOR+1
 	col_markslash			txt_colors	MAX_COLOR+1
 	col_markstroke			txt_colors	MAX_COLOR+1
 #endif
+	mono_markstar			txt_attrs	MAX_ATTR+1
+	mono_markdash			txt_attrs	MAX_ATTR+1
+	mono_markslash			txt_attrs	MAX_ATTR+1
+	mono_markstroke			txt_attrs	MAX_ATTR+1
 
 ; posting/mailing options
 	posting_options			OPT_TITLE

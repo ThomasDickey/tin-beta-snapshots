@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2002-12-09
+.\" Updated   : 2003-01-27
 .\" Notes     : needs a some work
 .\"
-.TH tin 5 "December 9th, 2002" "1.5.16" "A Usenet newsreader"
+.TH tin 5 "January 27th, 2003" "1.5.17" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -672,6 +672,7 @@ Below is a list of all keynames and their default bindings.
 \fBSearchSubjB\fP	?
 \fBSearchAuthB\fP	A
 \fBSearchBody\fP	B
+\fBSearchRepeat\fP	\\
 \fBToggleHelpDisplay\fP	H
 \fBToggleInverseVideo\fP	I
 \fBLookupMessage\fP	L
@@ -1098,15 +1099,19 @@ Color of foreground for inverse text
 .TP
 .B col_markdash
 Color of words emphasised like _this_. See also \fBword_h_display_marks\fP
+and \fBword_highlight\fP.
 .TP
 .B col_markslash
 Color of words emphasised like /this/. See also \fBword_h_display_marks\fP
+and \fBword_highlight\fP.
 .TP
 .B col_markstar
 Color of words emphasised like *this*. See also \fBword_h_display_marks\fP
+and \fBword_highlight\fP.
 .TP
 .B col_markstroke
 Color of words emphasised like -this-. See also \fBword_h_display_marks\fP
+and \fBword_highlight\fP.
 .TP
 .B col_minihelp
 Color of mini help menu
@@ -1343,17 +1348,18 @@ Filename to be used for storing posted articles, see also
 \fBkeep_posted_articles\fP.
 .TP
 .B kill_level
-This option controls the processing and display of articles that are killed.
-There are 3 options: 0 (default) is the 'traditional' behaviour of
+This option controls the processing and display of articles that are
+killed. There are 3 options: 0 (default) is the 'traditional'
+behaviour of
 .BR tin (1).
-Only unread articles are killed once only by marking them read. Options 1
-and 2 will process all articles in the group and therefore there is a
-processing overhead when using them. Option 1 will thread killed
-articles as normal but they will be marked with
-\fBart_marked_killed\fP. As filtering only happens on unread on
-unread articles with \fBkill_level\fP set to 0, \fBart_marked_killed\fP
-and \fBart_marked_read_selected\fP are only shown once. When you reenter
-the group the mark will be gone. Option 2 simply does not display killed
+Only unread articles are killed once only by marking them read. As
+filtering only happens on unread articles with \fBkill_level\fP set
+to 0, \fBart_marked_killed\fP and \fBart_marked_read_selected\fP are
+only shown once. When you reenter the group the mark will be gone.
+Options 1 and 2 will process all articles in the group and therefore
+there is a processing overhead when using them. Option 1 will thread
+killed articles as normal but they will be marked with
+\fBart_marked_killed\fP. Option 2 simply does not display killed
 articles at all.
 .TP
 .B mail_8bit_header
@@ -1429,6 +1435,26 @@ Not all values might work on your system, see
 for more details. If it's not set, the value of the environment variable
 \fB$MM_CHARSET\fP is used. US-ASCII or compile-time default is used in
 case neither of them is defined.
+.TP
+.B mono_markdash
+Character attribute of words emphasised like _this_. It is depending on your
+terminal which attributes are useable. See also \fBword_h_display_marks\fP
+and \fBword_highlight\fP.
+.TP
+.B mono_markslash
+Character attribute of words emphasised like /this/. It is depending on your
+terminal which attributes are useable. See also \fBword_h_display_marks\fP
+and \fBword_highlight\fP.
+.TP
+.B mono_markstar
+Character attribute of words emphasised like *this*. It is depending on your
+terminal which attributes are useable. See also \fBword_h_display_marks\fP
+and \fBword_highlight\fP.
+.TP
+.B mono_markstroke
+Character attribute of words emphasised like -this-. It is depending on your
+terminal which attributes are useable. See also \fBword_h_display_marks\fP
+and \fBword_highlight\fP.
 .TP
 .B newnews
 These are internal timers used by
@@ -1544,21 +1570,21 @@ A regular expression that will be applied when reading articles. All
 matching lines are shown in \fBcol_quote\fP. If \fBquote_regex\fP is blank,
 then
 .BR tin (1)
-uses a built in default for this.
+uses a built in default.
 .TP
 .B quote_regex2
 A regular expression that will be applied when reading articles. All
 matching lines are shown in \fBcol_quote2\fP. If \fBquote_regex2\fP is
 blank, then
 .BR tin (1)
-uses a built in default for this.
+uses a built in default.
 .TP
 .B quote_regex3
 A regular expression that will be applied when reading articles. All
 matching lines are shown in \fBcol_quote3\fP. If \fBquote_regex3\fP is blank,
 then
 .BR tin (1)
-uses a built in default for this.
+uses a built in default.
 .TP
 .B recent_time
 If set to 0, this feature is deactivated, otherwise it means the number of
@@ -1639,10 +1665,10 @@ If ON add signature to reposted articles. Default is ON.
 .TP
 .B slashes_regex
 A regular expression that will be applied when reading articles. All
-matching words are shown in \fBcol_markslash\fP. If \fBslashes_regex\fP
-is blank, then
+matching words are shown in \fBcol_markslash\fP or \fBmono_markslash\fP. If
+\fBslashes_regex\fP is blank, then
 .BR tin (1)
-uses a built in default for this.
+uses a built in default.
 .TP
 .B sort_article_type
 This specifies how articles should be sorted. The following sort
@@ -1687,10 +1713,10 @@ these strings. The matching is case-insensitive.
 .TP
 .B stars_regex
 A regular expression that will be applied when reading articles. All
-matching words are shown in \fBcol_markstar\fP. If \fBstars_regex\fP
-is blank, then
+matching words are shown in \fBcol_markstar\fP or \fBmono_markstar\fP. If
+\fBstars_regex\fP is blank, then
 .BR tin (1)
-uses a built in default for this.
+uses a built in default.
 .TP
 .B start_editor_offset
 Set ON if the editor used for posting, follow-ups and bug reports has the
@@ -1715,15 +1741,10 @@ your \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR file. Default is OFF.
 .TP
 .B strokes_regex
 A regular expression that will be applied when reading articles. All
-matching words are shown in \fBcol_markstroke\fP. If \fBstrokes_regex\fP
-is blank, then
+matching words are shown in \fBcol_markstroke\fP or \fBmono_markstroke\fP.
+If \fBstrokes_regex\fP is blank, then
 .BR tin (1)
-uses a built in default for this.
-.TP
-.B tab_after_X_selection
-If enabled will automatically go to the first unread article after having
-selected all hot articles and threads with the \fBGroupMarkUnselArtRead\fP
-('\fBX\fP') command at group index level. Default is OFF.
+uses a built in default.
 .TP
 .B tab_goto_next_unread
 If enabled pressing \fBPageNextUnread\fP ('\fB<TAB>\fP') at the article viewer
@@ -1770,10 +1791,10 @@ doesn't exist, this option is disabled. Default is OFF.
 .TP
 .B underscores_regex
 A regular expression that will be applied when reading articles. All
-matching words are shown in \fBcol_markdash\fP. If \fBundescores_regex\fP
-is blank, then
+matching words are shown in \fBcol_markdash\fP or \fBmono_markdash\fP. If
+\fBundescores_regex\fP is blank, then
 .BR tin (1)
-uses a built in default for this.
+uses a built in default.
 .TP
 .B unlink_article
 If ON remove \fI${TIN_HOMEDIR-"$HOME"}/.article\fR after posting. Default is
@@ -1821,8 +1842,7 @@ using the wildmat notation.
 .TP
 .B word_h_display_marks
 Should the leading and ending stars, slashes, strokes and dashes also be
-displayed, even when they are highlighting marks (also requires
-\fBuse_color\fP to be enabled)?
+displayed, even when they are highlighting marks?
 .RS +.5i
 .IP 0 3
 \fBno\fP
@@ -1833,8 +1853,12 @@ print a \fBspace\fP instead
 .RE
 .TP
 .B word_highlight
-Enable word highlighting. See \fBword_h_display_marks\fP for the
-options available if this and \fBuse_color\fP is enabled.
+Enable word highlighting. See \fBword_h_display_marks\fP for the options
+available. If \fBuse_color\fP is enabled the colors specified in
+\fBcol_markdash\fP, \fBcol_markslash\fP, \fBcol_markstar\fP and
+\fBcol_markstroke\fP are used for word highlighting else the character
+attributes specified in \fBmono_markdash\fP, \fBmono_markslash\fP,
+\fBmono_markstar\fP and \fBmono_markstroke\fP are used.
 .TP
 .B wrap_column
 Sets the column at which a displayed article body should be wrapped.

@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2002-11-07
+# Updated: 2003-01-14
 #
 # Copyright (c) 1995-2003 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -461,7 +461,7 @@ tincfg.h:			$(SRCDIR)/tincfg.tbl \
 	./makecfg $(SRCDIR)/tincfg.tbl tincfg.h
 
 makecfg$(EXEEXT):		$(OBJDIR)/makecfg.o
-	$(LD) $(LDFLAGS) $(OBJDIR)/makecfg.o -o $@ @LIBS@
+	$(LD) $(LDFLAGS) -o $@ $(OBJDIR)/makecfg.o @LIBS@
 
 $(OBJDIR)/active.o:		$(SRCDIR)/active.c $(TIN_DEP)
 $(OBJDIR)/art.o:		$(SRCDIR)/art.c $(TIN_DEP) \
@@ -557,7 +557,8 @@ $(OBJDIR)/save.o:		$(SRCDIR)/save.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h \
 				$(INCDIR)/rfc2046.h
 $(OBJDIR)/screen.o:		$(SRCDIR)/screen.c $(TIN_DEP)
-$(OBJDIR)/search.o:		$(SRCDIR)/search.c $(TIN_DEP)
+$(OBJDIR)/search.o:		$(SRCDIR)/search.c $(TIN_DEP) \
+				$(INCDIR)/menukeys.h
 $(OBJDIR)/select.o:		$(SRCDIR)/select.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
 $(OBJDIR)/sigfile.o:		$(SRCDIR)/sigfile.c $(TIN_DEP)

@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2002-09-10
+ *  Updated   : 2003-01-30
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2003 Iain Lea <iain@bricbrac.de>
@@ -358,12 +358,12 @@ set_attrib(
 	/*
 	 * Does scope refer to 1 or more than 1 group
 	 */
-	if (!strchr(scope, '*')) {
+	if (!strpbrk(scope, "*,")) {
 		if ((group = group_find(scope)) != NULL)
 			do_set_attrib(group, type, data);
 	} else {
 		int i;
-/* TODO Can we get out of doing this per group for .global case */
+		/* TODO Can we get out of doing this per group for .global case */
 		for_each_group(i) {
 			group = &active[i];
 			if (match_group_list(group->name, scope))
@@ -508,7 +508,7 @@ write_attributes_file(
 		wait_message(0, _(txt_writing_attributes_file));
 
 	/*
-	 * TODO: - sort in a usefull order
+	 * TODO: - sort in a useful order
 	 *       - move strings to lang.c
 	 */
 	fprintf(fp, _("# Group attributes file for the TIN newsreader\n#\n"));
@@ -740,59 +740,45 @@ dump_attributes(
 		if (!group->attribute)
 			continue;
 		fprintf(stderr, "scope=%s\n", group->name);
-		fprintf(stderr, "Global=%d\n", group->attribute->global);
-		fprintf(stderr, "maildir=%s\n", group->attribute->maildir);
-		fprintf(stderr, "savedir=%s\n", group->attribute->savedir);
-		fprintf(stderr, "savefile=%s\n", group->attribute->savefile);
-		fprintf(stderr, "sigfile=%s\n", group->attribute->sigfile);
-		fprintf(stderr, "organization=%s\n", group->attribute->organization);
-		fprintf(stderr, "followup_to=%s\n", group->attribute->followup_to);
-		fprintf(stderr, "mailing_list=%s\n", group->attribute->mailing_list);
-		fprintf(stderr, "x_headers=%s\n", group->attribute->x_headers);
-		fprintf(stderr, "x_body=%s\n", group->attribute->x_body);
-		fprintf(stderr, "from=%s\n", group->attribute->from);
-		fprintf(stderr, "news_quote_format=%s\n", group->attribute->news_quote_format);
-		fprintf(stderr, "quote_chars=%s\n",
-			quote_space_to_dash(group->attribute->quote_chars));
+		fprintf(stderr, "\tGlobal=%d\n", group->attribute->global);
+		fprintf(stderr, "\tmaildir=%s\n", group->attribute->maildir);
+		fprintf(stderr, "\tsavedir=%s\n", group->attribute->savedir);
+		fprintf(stderr, "\tsavefile=%s\n", group->attribute->savefile);
+		fprintf(stderr, "\tsigfile=%s\n", group->attribute->sigfile);
+		fprintf(stderr, "\torganization=%s\n", group->attribute->organization);
+		fprintf(stderr, "\tfollowup_to=%s\n", group->attribute->followup_to);
+		fprintf(stderr, "\tmailing_list=%s\n", group->attribute->mailing_list);
+		fprintf(stderr, "\tx_headers=%s\n", group->attribute->x_headers);
+		fprintf(stderr, "\tx_body=%s\n", group->attribute->x_body);
+		fprintf(stderr, "\tfrom=%s\n", group->attribute->from);
+		fprintf(stderr, "\tnews_quote_format=%s\n", group->attribute->news_quote_format);
+		fprintf(stderr, "\tquote_chars=%s\n", quote_space_to_dash(group->attribute->quote_chars));
 #		ifdef HAVE_ISPELL
-		fprintf(stderr, "ispell=%s\n", group->attribute->ispell);
+		fprintf(stderr, "\tispell=%s\n", group->attribute->ispell);
 #		endif /* HAVE_ISPELL */
-		fprintf(stderr, "show_only_unread=%s\n",
-			print_boolean(group->attribute->show_only_unread));
-		fprintf(stderr, "thread_arts=%d\n", group->attribute->thread_arts);
-		fprintf(stderr, "auto_select=%s\n",
-			print_boolean(group->attribute->auto_select));
-		fprintf(stderr, "auto_save=%s\n",
-			print_boolean(group->attribute->auto_save));
-		fprintf(stderr, "batch_save=%s\n",
-			print_boolean(group->attribute->batch_save));
-		fprintf(stderr, "delete_tmp_files=%s\n",
-			print_boolean(group->attribute->delete_tmp_files));
-		fprintf(stderr, "sort_art_type=%d\n", group->attribute->sort_art_type);
-		fprintf(stderr, "sort_threads_type=%d\n", group->attribute->sort_threads_type);
-		fprintf(stderr, "show_author=%d\n", group->attribute->show_author);
-		fprintf(stderr, "post_proc_type=%d\n", group->attribute->post_proc_type);
-		fprintf(stderr, "quick_kill_scope=%s\n",
-			group->attribute->quick_kill_scope);
-		fprintf(stderr, "quick_kill_case=%s\n",
-			print_boolean(group->attribute->quick_kill_case));
-		fprintf(stderr, "quick_kill_expire=%s\n",
-			print_boolean(group->attribute->quick_kill_expire));
-		fprintf(stderr, "quick_kill_header=%d\n", group->attribute->quick_kill_header);
-		fprintf(stderr, "quick_select_scope=%s\n",
-			group->attribute->quick_select_scope);
-		fprintf(stderr, "quick_select_case=%s\n",
-			print_boolean(group->attribute->quick_select_case));
-		fprintf(stderr, "quick_select_expire=%s\n",
-			print_boolean(group->attribute->quick_select_expire));
-		fprintf(stderr, "quick_select_header=%d\n", group->attribute->quick_select_header);
-		fprintf(stderr, "x_comment_to=%s\n",
-			print_boolean(group->attribute->x_comment_to));
-		fprintf(stderr, "tex2iso_conv=%s\n",
-			print_boolean(group->attribute->tex2iso_conv));
+		fprintf(stderr, "\tshow_only_unread=%s\n", print_boolean(group->attribute->show_only_unread));
+		fprintf(stderr, "\tthread_arts=%d\n", group->attribute->thread_arts);
+		fprintf(stderr, "\tauto_select=%s\n", print_boolean(group->attribute->auto_select));
+		fprintf(stderr, "\tauto_save=%s\n", print_boolean(group->attribute->auto_save));
+		fprintf(stderr, "\tbatch_save=%s\n", print_boolean(group->attribute->batch_save));
+		fprintf(stderr, "\tdelete_tmp_files=%s\n", print_boolean(group->attribute->delete_tmp_files));
+		fprintf(stderr, "\tsort_art_type=%d\n", group->attribute->sort_art_type);
+		fprintf(stderr, "\tsort_threads_type=%d\n", group->attribute->sort_threads_type);
+		fprintf(stderr, "\tshow_author=%d\n", group->attribute->show_author);
+		fprintf(stderr, "\tpost_proc_type=%d\n", group->attribute->post_proc_type);
+		fprintf(stderr, "\tquick_kill_scope=%s\n", group->attribute->quick_kill_scope);
+		fprintf(stderr, "\tquick_kill_case=%s\n", print_boolean(group->attribute->quick_kill_case));
+		fprintf(stderr, "\tquick_kill_expire=%s\n", print_boolean(group->attribute->quick_kill_expire));
+		fprintf(stderr, "\tquick_kill_header=%d\n", group->attribute->quick_kill_header);
+		fprintf(stderr, "\tquick_select_scope=%s\n", group->attribute->quick_select_scope);
+		fprintf(stderr, "\tquick_select_case=%s\n", print_boolean(group->attribute->quick_select_case));
+		fprintf(stderr, "\tquick_select_expire=%s\n", print_boolean(group->attribute->quick_select_expire));
+		fprintf(stderr, "\tquick_select_header=%d\n", group->attribute->quick_select_header);
+		fprintf(stderr, "\tx_comment_to=%s\n", print_boolean(group->attribute->x_comment_to));
+		fprintf(stderr, "\ttex2iso_conv=%s\n", print_boolean(group->attribute->tex2iso_conv));
 #		ifdef CHARSET_CONVERSION
-		fprintf(stderr, "mm_network_charset=%s\n", txt_mime_charsets[group->attribute->mm_charset])
-		fprintf(stderr, "undeclared_charset=%s\n", group->attribute->undeclared_charset);
+		fprintf(stderr, "\tmm_network_charset=%s\n", txt_mime_charsets[group->attribute->mm_network_charset]);
+		fprintf(stderr, "\tundeclared_charset=%s\n", group->attribute->undeclared_charset);
 #		endif /* CHARSET_CONVERSION */
 	}
 }

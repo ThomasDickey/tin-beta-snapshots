@@ -3,16 +3,16 @@
 # Toomas Soome <Toomas.Soome@microlink.ee>, 2002.
 #
 msgid	""
-msgstr	"Project-Id-Version: tin 1.5.15\n"
-	"POT-Creation-Date: 2002-12-09 13:58+0100\n"
-	"PO-Revision-Date: 2002-11-15 22:10+02:00\n"
+msgstr	"Project-Id-Version: tin 1.5.17\n"
+	"POT-Creation-Date: 2003-01-27 23:50+0100\n"
+	"PO-Revision-Date: 2003-01-22 09:44+0200\n"
 	"Last-Translator: Toomas Soome <Toomas.Soome@microlink.ee>\n"
 	"Language-Team: Estonian <et@li.org>\n"
 	"MIME-Version: 1.0\n"
 	"Content-Type: text/plain; charset=ISO-8859-15\n"
 	"Content-Transfer-Encoding: 8bit\n"
 
-#: src/active.c:365 src/open.c:1052
+#: src/active.c:365 src/open.c:1050
 #, c-format
 msgid	"Invalid response to GROUP command, %s"
 msgstr	"Vigane vastus GROUP käsule, %s"
@@ -29,16 +29,16 @@ msgid	"Server has non of the groups listed in %s"
 msgstr	"Serveril pole failis %s näidatud gruppe"
 
 #. TODO: -> lang.c
-#: src/art.c:1602
+#: src/art.c:1616
 msgid	"Catchup"
 msgstr	"Märgin loetuks"
 
-#: src/art.c:1602
+#: src/art.c:1616
 msgid	"Updating"
 msgstr	"Uuendan"
 
 #.
-#. * TODO: - sort in a usefull order
+#. * TODO: - sort in a useful order
 #. *       - move strings to lang.c
 #.
 #: src/attrib.c:514
@@ -248,12 +248,12 @@ msgstr	"# ja sea Followup-To: postitaja\n"
 msgid	"Insecure permissions of %s (%o)"
 msgstr	"Ebaturvalised õigused failil %s (%o)"
 
-#: src/cook.c:953 src/cook.c:972
+#: src/cook.c:952 src/cook.c:971
 msgid	", name: "
 msgstr	", nimi: "
 
 #. FIXME: -> lang.c
-#: src/group.c:1574
+#: src/group.c:1590
 msgid	" and enter next unread group"
 msgstr	" ja siseneda järgmisse lugemata teemasse"
 
@@ -1006,11 +1006,10 @@ msgstr	"Filtreerin globaalseid reegleid (%d/%d)..."
 msgid	"Rule created by: "
 msgstr	"Reegli looja: "
 
-# TRANSLATION MISSING
 #: src/lang.c:237
 #, c-format
 msgid	"Enter pattern [%s]> "
-msgstr	""
+msgstr	"Sisestage muster [%s]> "
 
 #: src/lang.c:238
 #, c-format
@@ -1133,7 +1132,7 @@ msgstr	"näita järgmist artiklit"
 msgid	"display first article in next thread"
 msgstr	"näita järgmise teema esimest artiklit"
 
-#: src/lang.c:272 src/lang.c:282 src/lang.c:352 src/lang.c:353
+#: src/lang.c:272 src/lang.c:282 src/lang.c:353 src/lang.c:354
 msgid	"display next unread article"
 msgstr	"näita järgmist lugemata artiklit"
 
@@ -1149,7 +1148,7 @@ msgstr	"kasuta artiklil PGP operatsioone"
 msgid	"display previous article"
 msgstr	"näita eelmist artiklit"
 
-#: src/lang.c:278 src/lang.c:355
+#: src/lang.c:278 src/lang.c:356
 msgid	"display previous unread article"
 msgstr	"näita eelmist lugemata artiklit"
 
@@ -1177,7 +1176,7 @@ msgstr	"vasta autorile kirjaga (teksti ei kopeerita)"
 msgid	"reply through mail to author quoting complete headers"
 msgstr	"vasta autorile kirjaga, tsiteerides kõiki päiseid"
 
-#: src/lang.c:286 src/lang.c:357
+#: src/lang.c:286 src/lang.c:358
 msgid	"repost chosen article to another group"
 msgstr	"postita valitud artikkel teise gruppi"
 
@@ -1338,340 +1337,344 @@ msgstr	"otsi artiklit teema järgi tagaspidi"
 msgid	"search for articles by Subject line forwards"
 msgstr	"otsi artiklit teema järgi edaspidi"
 
-#: src/lang.c:331
+#: src/lang.c:330
+msgid	"repeat last search"
+msgstr	"korda eelmist otsingut"
+
+#: src/lang.c:332
 msgid	"shell escape"
 msgstr	"paojada käsureale"
 
-#: src/lang.c:333
+#: src/lang.c:334
 msgid	"tag current article for reposting/mailing/piping/printing/saving"
 msgstr	"märgi jooksev artikkel, et postitada/saata/trükkida/salvestada/torusse"
 
-#: src/lang.c:335
+#: src/lang.c:336
 msgid	"toggle color"
 msgstr	"lülita värve"
 
-#: src/lang.c:337
+#: src/lang.c:338
 msgid	"toggle info message in last line (subject/description)"
 msgstr	"lülita viimase rea infoteadet (teema/kirjeldus)"
 
-#: src/lang.c:338
+#: src/lang.c:339
 msgid	"toggle inverse video"
 msgstr	"lülita pööratud video"
 
-#: src/lang.c:339
+#: src/lang.c:340
 msgid	"toggle mini help menu display"
 msgstr	"abiinfo lülita ekraanil miniabi menüüd"
 
-#: src/lang.c:340
+#: src/lang.c:341
 msgid	"show version information"
 msgstr	"esita info versioonist"
 
-#: src/lang.c:341
+#: src/lang.c:342
 msgid	"mark all articles as read and return to group selection menu"
 msgstr	"märgi artiklid loetuks ja välju gruppide valiku menüüsse"
 
-#: src/lang.c:342
+#: src/lang.c:343
 msgid	"mark all articles as read and enter next group with unread articles"
 msgstr	"märgi artiklid loetuks, sisene järgmisse lugemata artiklitega gruppi"
 
-#: src/lang.c:343
+#: src/lang.c:344
 msgid	"choose first thread in list"
 msgstr	"vali loendist esimene teema"
 
-#: src/lang.c:344 src/lang.c:375
+#: src/lang.c:345 src/lang.c:376
 msgid	"choose group by name"
 msgstr	"vali grupp nime järgi"
 
-#: src/lang.c:345
+#: src/lang.c:346
 msgid	"choose last thread in list"
 msgstr	"vali loendist viimane teema"
 
-#: src/lang.c:346
+#: src/lang.c:347
 msgid	"list articles within current thread (bring up Thread sub-menu)"
 msgstr	"artiklite loend jooksvas teemas (esita teema alam-menüü)"
 
-#: src/lang.c:347
+#: src/lang.c:348
 msgid	"mark article as unread"
 msgstr	"märgi artikkel loetuks"
 
-#: src/lang.c:348
+#: src/lang.c:349
 msgid	"mark current thread as read"
 msgstr	"märgi jooksev teema loetuks"
 
-#: src/lang.c:349
+#: src/lang.c:350
 msgid	"mark thread as unread"
 msgstr	"märgi teema loetuks"
 
-#: src/lang.c:350
+#: src/lang.c:351
 msgid	"toggle display of all/selected articles"
 msgstr	"lülita ekraanile kõik/valitud artiklid"
 
-#: src/lang.c:351
+#: src/lang.c:352
 msgid	"display next group"
 msgstr	"näita järgmist gruppi"
 
-#: src/lang.c:354
+#: src/lang.c:355
 msgid	"display previous group"
 msgstr	"näita eelmist gruppi"
 
-#: src/lang.c:356 src/lang.c:404
+#: src/lang.c:357 src/lang.c:405
 msgid	"read chosen article"
 msgstr	"loe valitud artiklit"
 
-#: src/lang.c:358
+#: src/lang.c:359
 msgid	"toggle all selections (all articles)"
 msgstr	"lülita kõiki valikuid (kõiki artikleid)"
 
-#: src/lang.c:359
+#: src/lang.c:360
 msgid	"select group (make \"hot\")"
 msgstr	"vali grupp (muuda \"kuumaks\")"
 
-#: src/lang.c:360
+#: src/lang.c:361
 msgid	"select thread"
 msgstr	"vali teema"
 
-#: src/lang.c:361
+#: src/lang.c:362
 msgid	"select threads if at least one unread article is selected"
 msgstr	"vali teemad, kui on valitud vähemalt üks lugemata artikkel"
 
-#: src/lang.c:362
+#: src/lang.c:363
 msgid	"select threads that match user specified pattern"
 msgstr	"vali kasutaja määratud mustrile vastavad teemad"
 
-#: src/lang.c:363
+#: src/lang.c:364
 msgid	"tag all parts of current multipart-message in order"
 msgstr	"märgi jooksva mitmeosalise teate kõik osad"
 
-#: src/lang.c:364
+#: src/lang.c:365
 msgid	"0 - 9\t  choose thread by number"
 msgstr	"0 - 9\t  vali numbri järgi teema"
 
-#: src/lang.c:365
+#: src/lang.c:366
 msgid	"toggle limit number of articles to get, and reload"
 msgstr	"sea laetavate artiklite piirang ja lae uuesti"
 
-#: src/lang.c:366
+#: src/lang.c:367
 msgid	"toggle display of all/unread articles"
 msgstr	"lülita ekraanil kõik/lugemata artiklid"
 
-#: src/lang.c:367 src/lang.c:405
+#: src/lang.c:368 src/lang.c:406
 msgid	"cycle the display of authors email address, real name, both or neither"
 msgstr	"vali näitamiseks autori aadress, pärisnimi, mõlemad või mitte midagi"
 
-#: src/lang.c:368
+#: src/lang.c:369
 msgid	"toggle selection of thread"
 msgstr	"lülita teema valikut"
 
-#: src/lang.c:369
+#: src/lang.c:370
 msgid	"cycle through threading options available"
 msgstr	"erinevad teemade käsitlemise võtmed"
 
-#: src/lang.c:370
+#: src/lang.c:371
 msgid	"undo all selections (all articles)"
 msgstr	"ennista kõik valikud (kõik artiklid)"
 
-#: src/lang.c:371
+#: src/lang.c:372
 msgid	"untag all tagged threads"
 msgstr	"eemalda märgistus kõikidelt märgitud teemadelt"
 
-#: src/lang.c:372
+#: src/lang.c:373
 msgid	"mark all articles in chosen group read"
 msgstr	"märgi valitud grupis kõik artiklid loetuks"
 
-#: src/lang.c:373
+#: src/lang.c:374
 msgid	"mark all articles in chosen group read and enter next unread group"
 msgstr	"märgi valitud grupis artiklid loetuks ja sisene järgmisse lugemata gruppi"
 
-#: src/lang.c:374
+#: src/lang.c:375
 msgid	"choose first group in list"
 msgstr	"vali loetelust esimene grupp"
 
-#: src/lang.c:376
+#: src/lang.c:377
 msgid	"0 - 9\t  choose group by number"
 msgstr	"0 - 9\t  vali grupp numbri järgi"
 
-#: src/lang.c:377
+#: src/lang.c:378
 msgid	"choose range of groups to be affected by next command"
 msgstr	"järgmise käsuga töödeldavate gruppide vahemik"
 
-#: src/lang.c:378
+#: src/lang.c:379
 msgid	"choose last group in list"
 msgstr	"vali loetelust viimane grupp"
 
-#: src/lang.c:379
+#: src/lang.c:380
 msgid	"mark all articles in chosen group unread"
 msgstr	"märgi valitud grupis kõik artiklid mitte-loetuks"
 
-#: src/lang.c:380
+#: src/lang.c:381
 msgid	"move chosen group within list"
 msgstr	"liiguta valitud gruppi loendis"
 
-#: src/lang.c:381
+#: src/lang.c:382
 msgid	"choose next group with unread news"
 msgstr	"vali järgmine lugemata artiklitega grupp"
 
-#: src/lang.c:382 src/lang.c:826
+#: src/lang.c:383 src/lang.c:840
 msgid	"quit"
 msgstr	"välju"
 
-#: src/lang.c:383
+#: src/lang.c:384
 msgid	"quit without saving configuration changes"
 msgstr	"välju muudetud seadeid salvestamata"
 
-#: src/lang.c:384
+#: src/lang.c:385
 msgid	"read chosen group"
 msgstr	"loe valitud gruppi"
 
-#: src/lang.c:385
+#: src/lang.c:386
 msgid	"reset .newsrc (all available articles in groups marked unread)"
 msgstr	".newsrc faili algväärtustamine (kõik artiklid mitte-loetuks)"
 
-#: src/lang.c:386
+#: src/lang.c:387
 msgid	"search backwards for a group name"
 msgstr	"otsi grupi nime tagaspidi"
 
-#: src/lang.c:387
+#: src/lang.c:388
 msgid	" \t  (all searches are case-insensitive and wrap around)"
 msgstr	" \t  (kõik otsingud on tõstutundetud ja vajadusel alustavad algusest)"
 
-#: src/lang.c:388
+#: src/lang.c:389
 msgid	"search forwards for a group name"
 msgstr	"otsi grupi nime edaspidi"
 
-#: src/lang.c:389
+#: src/lang.c:390
 msgid	"subscribe to chosen group"
 msgstr	"telli valitud grupp"
 
-#: src/lang.c:390
+#: src/lang.c:391
 msgid	"subscribe to groups that match pattern"
 msgstr	"telli mustrile vastavaid gruppe"
 
-#: src/lang.c:391
+#: src/lang.c:392
 msgid	"reread active file to check for any new news"
 msgstr	"kontrolli aktiivsete gruppide faili - kas on uusi artikleid"
 
-#: src/lang.c:392
+#: src/lang.c:393
 msgid	"toggle display of group name only or group name plus description"
 msgstr	"vali ekraanil ainult grupi nimi või grupi nimi ja kirjeldus"
 
-#: src/lang.c:393
+#: src/lang.c:394
 msgid	"toggle display to show all/unread subscribed groups"
 msgstr	"vali ekraanile kõik/lugemata tellitud grupid"
 
-#: src/lang.c:394
+#: src/lang.c:395
 msgid	"unsubscribe from chosen group"
 msgstr	"loobu valitud grupist"
 
-#: src/lang.c:395
+#: src/lang.c:396
 msgid	"unsubscribe from groups that match pattern"
 msgstr	"loobu mustrile vastavatest gruppidest"
 
-#: src/lang.c:396
+#: src/lang.c:397
 msgid	"sort the list of groups"
 msgstr	"järjesta gruppide loend"
 
-#: src/lang.c:397
+#: src/lang.c:398
 msgid	"toggle display to show all/subscribed groups"
 msgstr	"näita ekraanil kõiki/tellitud gruppe"
 
-#: src/lang.c:398
+#: src/lang.c:399
 msgid	"0 - 9\t  choose article by number"
 msgstr	"0 - 9\t  vali numbri järgi artikkel"
 
-#: src/lang.c:399
+#: src/lang.c:400
 msgid	"mark thread as read and return to group index page"
 msgstr	"märgi teema loetuks ja välju gruppide indeksi lehele"
 
-#: src/lang.c:400
+#: src/lang.c:401
 msgid	"mark thread as read and enter next unread thread or group"
 msgstr	"märgi teema loetuks ja sisene järgmisse teemasse või gruppi"
 
-#: src/lang.c:401
+#: src/lang.c:402
 msgid	"choose first article in list"
 msgstr	"vali loendis esimene artikkel"
 
-#: src/lang.c:402
+#: src/lang.c:403
 msgid	"choose last article in list"
 msgstr	"vali loendis viimane artikkel"
 
-#: src/lang.c:403
+#: src/lang.c:404
 msgid	"mark article as read and move cursor to next unread article"
 msgstr	"märgi artikkel loetuks ja liigu edasi järgmisele lugemata artiklile"
 
-#: src/lang.c:406
+#: src/lang.c:407
 msgid	"Display properties\n"
 	"------------------"
 msgstr	"Ekraani omadused\n"
 	"----------------"
 
-#: src/lang.c:407
+#: src/lang.c:408
 msgid	"Miscellaneous\n"
 	"-------------"
 msgstr	"Muud\n"
 	"----"
 
-#: src/lang.c:408
+#: src/lang.c:409
 msgid	"Moving around\n"
 	"-------------"
 msgstr	"Liikumine\n"
 	"---------"
 
-#: src/lang.c:409
+#: src/lang.c:410
 msgid	"Group/thread/article operations\n"
 	"-------------------------------"
 msgstr	"Grupi/teema/artikli operatsioonid\n"
 	"---------------------------------"
 
-#: src/lang.c:410
+#: src/lang.c:411
 msgid	"Group Level Commands"
 msgstr	"Grupitaseme käsud"
 
-#: src/lang.c:411
+#: src/lang.c:412
 msgid	"Kill filter added"
 msgstr	"Surmamise filter lisatud"
 
-#: src/lang.c:412
+#: src/lang.c:413
 msgid	"Auto-selection filter added"
 msgstr	"Automaatse valiku filter lisatud"
 
-#: src/lang.c:413
+#: src/lang.c:414
 msgid	"Storing article for later posting"
 msgstr	"Salvestan artikli hiljem postitamiseks"
 
 #. TODO: replace hardcoded key-name in txt_info_postponed
-#: src/lang.c:415
+#: src/lang.c:416
 #, c-format
 msgid	"%d postponed %s, reuse with ^O...\n"
 msgstr	"%d postitusootel %s, kasutamiseks ^O...\n"
 
-#: src/lang.c:416
+#: src/lang.c:417
 msgid	"*** No postponed articles ***"
 msgstr	"*** Postitusootel artikleid pole ***"
 
-#: src/lang.c:417
+#: src/lang.c:418
 msgid	"You are not subscribed to this group"
 msgstr	"Te pole seda gruppi tellinud"
 
-#: src/lang.c:418
+#: src/lang.c:419
 msgid	"Operation disabled in no-overwrite mode"
 msgstr	"Operatsioon on ülekirjutamist keelavas moodis keelatud"
 
-#: src/lang.c:419
+#: src/lang.c:420
 msgid	"X-Conversion-Note: multipart/alternative contents have been removed.\n"
 	"  To get the whole article, turn alternative handling OFF in the Option Menu\n"
 msgstr	"X-Conversion-Note: multipart/alternative sisu on eemaldatud.\n"
 	"  Et näha tervet artiklit, lülitage alternatiivide käsitlemine välja\n"
 
-#: src/lang.c:421
+#: src/lang.c:422
 #, c-format
 msgid	"Save filename for %s/%s is a mailbox. Attachment not saved"
 msgstr	"Fail %s/%s salvestamiseks on postkast. Lisa ei salvestatud"
 
-#: src/lang.c:422
+#: src/lang.c:423
 msgid	"TeX2Iso encoded article"
 msgstr	"TeX2Iso kodeeritud artikkel"
 
-#: src/lang.c:423
+#: src/lang.c:424
 #, c-format
 msgid	"\n"
 	"Welcome to %s, a full screen threaded Netnews reader. It can read news "
@@ -1729,445 +1732,445 @@ msgstr	"\n"
 	"Lisainfot leiate manualist, README, INSTALL, TODO ja FTP failidest.\n"
 	"Palun saatke vearaportid/kommentaarid 'R' käsuga aadressil %s.\n"
 
-#: src/lang.c:439
+#: src/lang.c:440
 #, c-format
 msgid	"Invalid  From: %s  line. Read the INSTALL file again."
 msgstr	"Vigane From: %s rida. Lugege uuesti faili INSTALL."
 
-#: src/lang.c:440
+#: src/lang.c:441
 #, c-format
 msgid	"Invalid  Sender:-header %s"
 msgstr	"Vigane Sender:-päis %s"
 
-#: src/lang.c:441
+#: src/lang.c:442
 msgid	"Inverse video disabled"
 msgstr	"Pööratud video keelatud"
 
-#: src/lang.c:442
+#: src/lang.c:443
 msgid	"Inverse video enabled"
 msgstr	"Pööratud video lubatud"
 
-#: src/lang.c:443
+#: src/lang.c:444
 #, c-format
 msgid	"Missing definition for %s\n"
 msgstr	"%s definitsioon puudub\n"
 
-#: src/lang.c:444
+#: src/lang.c:445
 #, c-format
 msgid	"Invalid key definition '%s'\n"
 msgstr	"Vigane klahvi definitsioon '%s'\n"
 
-#: src/lang.c:445
+#: src/lang.c:446
 #, c-format
 msgid	"Invalid keyname '%s'\n"
 msgstr	"Vigane klahvi nimi '%s'\n"
 
-#: src/lang.c:447
+#: src/lang.c:448
 #, c-format
 msgid	"Redefined key %s '%s' -> '%s'\n"
 msgstr	"Klahvi %s uus definitsioon '%s' -> '%s'\n"
 
-#: src/lang.c:449
+#: src/lang.c:450
 #, c-format
 msgid	"Key '%s' is defined for both %s%s and %s%s\n"
 msgstr	"Klahv '%s' on defineeritud nii %s%s, kui ka %s%s jaoks\n"
 
-#: src/lang.c:450
+#: src/lang.c:451
 msgid	"-- Last response --"
 msgstr	"-- Viimane vastus --"
 
-#: src/lang.c:453
+#: src/lang.c:454
 #, c-format
 msgid	"%d files successfully written from %d articles. %d %s occurred."
 msgstr	"Edukalt kirjutatud %d faili %d artiklist. Esines %d viga%s."
 
-#: src/lang.c:454
+#: src/lang.c:455
 msgid	"Missing parts."
 msgstr	"Osad puuduvad."
 
-#: src/lang.c:455
+#: src/lang.c:456
 msgid	"No beginning."
 msgstr	"Algus puudub."
 
-#: src/lang.c:456
+#: src/lang.c:457
 msgid	"No data."
 msgstr	"Andmeid pole."
 
-#: src/lang.c:457
+#: src/lang.c:458
 msgid	"Unknown error."
 msgstr	"Tundmatu viga."
 
-#: src/lang.c:459
+#: src/lang.c:460
 #, c-format
 msgid	"Error decoding %s : %s"
 msgstr	"Viga %s dekodeerimisel: %s"
 
-#: src/lang.c:460
+#: src/lang.c:461
 msgid	"No end."
 msgstr	"Lõpp puudub."
 
-#: src/lang.c:461
+#: src/lang.c:462
 #, c-format
 msgid	"%s successfully decoded."
 msgstr	"%s on edukalt dekodeeritud."
 
-#: src/lang.c:463
+#: src/lang.c:464
 #, c-format
 msgid	"Lines %s  "
 msgstr	"Rida: %s  "
 
-#: src/lang.c:465
+#: src/lang.c:466
 #, c-format
 msgid	"Mail article(s) to [%.*s]> "
 msgstr	"Saada artiklid aadressil [%.*s]> "
 
-#: src/lang.c:466
+#: src/lang.c:467
 #, c-format
 msgid	"Mailing log to %s\n"
 msgstr	"Saadan logi aadressil %s\n"
 
-#: src/lang.c:467
+#: src/lang.c:468
 msgid	"Mail bug report..."
 msgstr	"Saada vearaport..."
 
-#: src/lang.c:468
+#: src/lang.c:469
 #, c-format
 msgid	"Mail BUG REPORT to %s?"
 msgstr	"Saadan VEARAPORTI aadressil %s?"
 
-#: src/lang.c:469
+#: src/lang.c:470
 msgid	"Mailed"
 msgstr	"Saadetud"
 
-#: src/lang.c:470
+#: src/lang.c:471
 #, c-format
 msgid	"Mailing to %s..."
 msgstr	"Saadan aadressil %s..."
 
-#: src/lang.c:471
+#: src/lang.c:472
 #, c-format
 msgid	"%s marked as unread"
 msgstr	"%s märgitud loetuks"
 
-#: src/lang.c:472
+#: src/lang.c:473
 #, c-format
 msgid	"Mark all articles as read%s?"
 msgstr	"Märgin kõik artiklid loetuks%s?"
 
-#: src/lang.c:473
+#: src/lang.c:474
 #, c-format
 msgid	"Mark group %.*s as read?"
 msgstr	"Märgin grupi %.*s loetuks?"
 
-#: src/lang.c:474
+#: src/lang.c:475
 #, c-format
 msgid	"Mark thread as read%s?"
 msgstr	"Märgin teema loetuks%s?"
 
-#: src/lang.c:475
+#: src/lang.c:476
 #, c-format
 msgid	"Matching %s groups..."
 msgstr	"Otsin %s gruppe..."
 
-#: src/lang.c:476 src/lang.c:480
+#: src/lang.c:477 src/lang.c:481
 #, c-format
 msgid	"<n>=set current to n; %s=next unread; %s=search pattern; %s=kill/select"
 msgstr	"<n>=n jooksvaks grupiks; %s=järgmine lugemata; %s=otsi; %s=surma/vali;"
 
-#: src/lang.c:477
+#: src/lang.c:478
 #, c-format
 msgid	"%s=author search; %s=catchup; %s=line down; %s=line up; %s=mark read; %s=list "
 	"thread"
 msgstr	"%s=autori otsing; %s=loetud; %s=rida alla; %s=rida üles; %s=märgi loetuks; "
 	"%s=teema"
 
-#: src/lang.c:478
+#: src/lang.c:479
 #, c-format
 msgid	"%s=line up; %s=line down; %s=page up; %s=page down; %s=top; %s=bottom"
 msgstr	"%s=rida üles; %s=rida alla; %s=lk. üles; %s=lk. alla; %s=üles; %s=alla"
 
-#: src/lang.c:479
+#: src/lang.c:480
 #, c-format
 msgid	"%s=search forwards; %s=search backwards; %s=quit"
 msgstr	"%s=otsi edaspidi; %s=otsi tagaspidi; %s=välju"
 
-#: src/lang.c:481
+#: src/lang.c:482
 #, c-format
 msgid	"%s=author search; %s=body search; %s=catchup; %s=followup; %s=mark read"
 msgstr	"%s=autori otsing; %s=otsi sisu; %s=loetud; %s=vasta; %s=märgi loetuks"
 
-#: src/lang.c:485
+#: src/lang.c:486
 #, c-format
 msgid	"%s=pipe; %s=mail; %s=print; %s=quit; %s=toggle all/unread; %s=save; %s=tag; "
 	"%s=post"
 msgstr	"%s=toru; %s=kiri; %s=trüki; %s=välju; %s=kõik/lugem; %s=salv; %s=märgi; "
 	"%s=postita"
 
-#: src/lang.c:486
+#: src/lang.c:487
 #, c-format
 msgid	"%s=pipe; %s=mail; %s=print; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
 msgstr	"%s=toru; %s=kiri; %s=trüki; %s=välju; %s=kirjuta; %s=salv; %s=märgi; "
 	"%s=postita"
 
-#: src/lang.c:488
+#: src/lang.c:489
 #, c-format
 msgid	"%s=mail; %s=print; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post"
 msgstr	"%s=kiri; %s=trüki; %s=välju; %s=kõik/lugem; %s=salvesta; %s=märgi; %s=postita"
 
-#: src/lang.c:489
+#: src/lang.c:490
 #, c-format
 msgid	"%s=mail; %s=print; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
 msgstr	"%s=kiri; %s=trüki; %s=välju; %s=kirjuta; %s=salvesta; %s=märgi; %s=postita"
 
-#: src/lang.c:493
+#: src/lang.c:494
 #, c-format
 msgid	"%s=pipe; %s=mail; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post"
 msgstr	"%s=toru; %s=kiri; %s=välju; %s=kõik/lugemata; %s=salv; %s=märgi; %s=postita"
 
-#: src/lang.c:494
+#: src/lang.c:495
 #, c-format
 msgid	"%s=pipe; %s=mail; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
 msgstr	"%s=toru; %s=kiri; %s=välju; %s=kirjuta; %s=salvesta; %s=märgi; %s=postita"
 
-#: src/lang.c:496
+#: src/lang.c:497
 #, c-format
 msgid	"%s=mail; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post"
 msgstr	"%s=kiri; %s=välju; %s=kõik/lugemata; %s=salvesta; %s=märgi; %s=postita"
 
-#: src/lang.c:497
+#: src/lang.c:498
 #, c-format
 msgid	"%s=mail; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
 msgstr	"%s=kiri; %s=välju; %s=vasta kirjaga; %s=salvesta; %s=märgi; %s=postita"
 
-#: src/lang.c:501
+#: src/lang.c:502
 #, c-format
 msgid	"<n>=set current to n; %s=next unread; %s,%s=search pattern; %s=catchup"
 msgstr	"<n>=n jooksvaks grupiks; %s=järgmine lugemata; %s,%s=otsi; %s=loetud"
 
-#: src/lang.c:502
+#: src/lang.c:503
 #, c-format
 msgid	"%s=line down; %s=line up; %s=help; %s=move; %s=quit; %s=toggle all/unread"
 msgstr	"%s=rida alla; %s=rida üles; %s=appi; %s=tõsta; %s=välju; %s=kõik/lugemata"
 
-#: src/lang.c:503
+#: src/lang.c:504
 #, c-format
 msgid	"%s=subscribe; %s=sub pattern; %s=unsubscribe; %s=unsub pattern; %s=yank in/out"
 msgstr	"%s=telli; %s=telli muster; %s=loobu; %s=loobu muster; %s=kõik/tellitud"
 
-#: src/lang.c:504
+#: src/lang.c:505
 #, c-format
 msgid	"<n>=set current to n; %s=next unread; %s=catchup; %s=display toggle"
 msgstr	"<n>=jooksev n; %s=järgmine lugemata; %s=loetud; %s=ekraani lülit"
 
-#: src/lang.c:505
+#: src/lang.c:506
 #, c-format
 msgid	"%s=help; %s=line down; %s=line up; %s=quit; %s=tag; %s=mark unread"
 msgstr	"%s=appi; %s=rida alla; %s=rida üles; %s=välju; %s=märgi; %s=lugemata"
 
-#: src/lang.c:506
+#: src/lang.c:507
 msgid	"--More--"
 msgstr	"--Veel--"
 
-#: src/lang.c:507
+#: src/lang.c:508
 #, c-format
 msgid	"Moving %s..."
 msgstr	"Tõstan %s..."
 
-#: src/lang.c:508
+#: src/lang.c:509
 #, c-format
 msgid	"Goto newsgroup [%s]> "
 msgstr	"Mine gruppi [%s]> "
 
-#: src/lang.c:509
+#: src/lang.c:510
 msgid	"newsgroups"
 msgstr	"gruppidesse"
 
-#: src/lang.c:510
+#: src/lang.c:511
 #, c-format
 msgid	"Position %s in group list (1,2,..,$) [%d]> "
 msgstr	"Positsioon %s gruppide nimistus (1,2,..,$) [%d]> "
 
-#: src/lang.c:511
+#: src/lang.c:512
 msgid	"newsgroup"
 msgstr	"gruppi"
 
-#: src/lang.c:512
+#: src/lang.c:513
 msgid	"Try and save newsrc file again?"
 msgstr	"Proovin newsrc faili uuesti salvestada?"
 
-#: src/lang.c:513
+#: src/lang.c:514
 msgid	"Warning: No newsgroups were written to your newsrc file. Save aborted."
 msgstr	"Hoiatus: Teie newsrc faili ei salvestatud ühtegi gruppi. Katkestasin "
 	"salvestamise."
 
-#: src/lang.c:514
+#: src/lang.c:515
 msgid	"newsrc file saved successfully.\n"
 msgstr	"newsrc fail on edukalt salvestatud.\n"
 
-#: src/lang.c:515
+#: src/lang.c:516
 msgid	"-- Next response --"
 msgstr	"- Järgmine vastus -"
 
-#: src/lang.c:516
+#: src/lang.c:517
 #, c-format
 msgid	"NNTP authorization password not found for %s"
 msgstr	"Serverile %s vastavat NNTP autoriseerimise parooli pole"
 
-#: src/lang.c:519 src/nntplib.c:952
+#: src/lang.c:520 src/nntplib.c:952
 msgid	"205  Closing connection"
 msgstr	"205  Sulen ühendust"
 
-#: src/lang.c:522
+#: src/lang.c:523
 msgid	"No  "
 msgstr	"Ei  "
 
-#: src/lang.c:523
+#: src/lang.c:524
 msgid	"*** No articles ***"
 msgstr	"*** Artikleid pole ***"
 
-#: src/lang.c:524
+#: src/lang.c:525
 msgid	"No articles have been posted"
 msgstr	"Postitatud artikleid pole"
 
-#: src/lang.c:527
+#: src/lang.c:528
 msgid	"No command"
 msgstr	"Käsku pole"
 
-#: src/lang.c:532
+#: src/lang.c:533
 msgid	"Terminal does not support color"
 msgstr	"Terminal ei toeta värve"
 
-#: src/lang.c:536
+#: src/lang.c:537
 msgid	"*** No description ***"
 msgstr	"*** Kirjeldus puudub ***"
 
-#: src/lang.c:537
+#: src/lang.c:538
 msgid	"No filename"
 msgstr	"Failil pole nime"
 
-#: src/lang.c:538
+#: src/lang.c:539
 msgid	"No group"
 msgstr	"Gruppi pole"
 
-#: src/lang.c:539
+#: src/lang.c:540
 msgid	"*** No groups ***"
 msgstr	"*** Gruppe pole ***"
 
-#: src/lang.c:540
+#: src/lang.c:541
 msgid	"No more groups to read"
 msgstr	"Lugemiseks rohkem gruppe pole"
 
-#: src/lang.c:541
+#: src/lang.c:542
 msgid	"No last message"
 msgstr	"Viimast teadet pole"
 
-#: src/lang.c:542
+#: src/lang.c:543
 msgid	"No mail address"
 msgstr	"E-posti aadressi pole"
 
-#: src/lang.c:543
+#: src/lang.c:544
 msgid	"No match"
 msgstr	"Ei leia"
 
-#: src/lang.c:544
+#: src/lang.c:545
 msgid	"No more groups"
 msgstr	"Rohkem gruppe pole"
 
-#: src/lang.c:545
+#: src/lang.c:546
 msgid	"No newsgroups"
 msgstr	"Gruppe pole"
 
-#: src/lang.c:546
+#: src/lang.c:547
 msgid	"No next unread article"
 msgstr	"Järgmist lugemata artiklit pole"
 
-#: src/lang.c:547
+#: src/lang.c:548
 msgid	"No previous group"
 msgstr	"Eelmist gruppi pole"
 
-#: src/lang.c:548
+#: src/lang.c:549
 msgid	"No previous unread article"
 msgstr	"Eelmist lugemata artiklit pole"
 
-#: src/lang.c:549
+#: src/lang.c:550
 #, c-format
 msgid	"No responses%s"
 msgstr	"Vastuseid pole%s"
 
-#: src/lang.c:550
+#: src/lang.c:551
 msgid	"No responses"
 msgstr	"Vastuseid pole"
 
-#: src/lang.c:551
+#: src/lang.c:552
 msgid	"No responses to list in current thread"
 msgstr	"Jooksvas teemas pole vastuseid"
 
-#: src/lang.c:552
+#: src/lang.c:553
 msgid	"No search string"
 msgstr	"Otsingusõne puudub"
 
-#: src/lang.c:553
+#: src/lang.c:554
 msgid	"No subject"
 msgstr	"Teema puudub"
 
-#: src/lang.c:554
+#: src/lang.c:555
 msgid	"No articles tagged for saving"
 msgstr	"Salvestamiseks märgitud artikleid pole"
 
-#: src/lang.c:555
+#: src/lang.c:556
 #, c-format
 msgid	"%s: Terminal must have clear to end-of-line (ce)\n"
 msgstr	"%s: Terminalil peab olema puhasta realõpuni (ce) omadus\n"
 
-#: src/lang.c:556
+#: src/lang.c:557
 #, c-format
 msgid	"%s: Terminal must have clear to end-of-screen (cd)\n"
 msgstr	"%s: Terminalil peab olema puhasta ekraanilõpuni (cd) omadus\n"
 
-#: src/lang.c:557
+#: src/lang.c:558
 #, c-format
 msgid	"%s: Terminal must have clearscreen (cl) capability\n"
 msgstr	"%s: Terminalil peab olema ekraanipuhastamise (cl) omadus\n"
 
-#: src/lang.c:558
+#: src/lang.c:559
 #, c-format
 msgid	"%s: Terminal must have cursor motion (cm)\n"
 msgstr	"%s: Terminal peab toetama kursori liigutamist (cm)\n"
 
-#: src/lang.c:559
+#: src/lang.c:560
 #, c-format
 msgid	"%s: TERM variable must be set to use screen capabilities\n"
 msgstr	"%s: ekraani omaduste kasutamiseks peab olema seatud keskkonnamuutuja TERM\n"
 
-#: src/lang.c:560
+#: src/lang.c:561
 #, c-format
 msgid	"No viewer found for %s/%s\n"
 msgstr	"%s/%s jaoks puudub vaatur\n"
 
-#: src/lang.c:561
+#: src/lang.c:562
 msgid	"Your server does not support the NNTP XOVER or OVER command.\n"
 	"Tin will use local index files instead.\n"
 msgstr	"Teie server ei toeta NNTP XOVER või OVER käsku.\n"
 	"Tin kasutab lokaalseid indeksfaile.\n"
 
-#: src/lang.c:562
+#: src/lang.c:563
 msgid	"Newsgroup does not exist on this server"
 msgstr	"Gruppi pole sellel serveril"
 
-#: src/lang.c:563
+#: src/lang.c:564
 #, c-format
 msgid	"Group %s not found in active file"
 msgstr	"Gruppi %s pole aktiivsete gruppide failis"
 
-#: src/lang.c:564
+#: src/lang.c:565
 msgid	"c)reate it, use a)lternative name, use d)efault .newsrc, q)uit tin: "
 msgstr	"c=loo fail, a)lternatiivne nimi, d=vaikimisi .newsrc, q=välju: "
 
-#: src/lang.c:565
+#: src/lang.c:566
 msgid	"use a)lternative name, use d)efault .newsrc, q)uit tin: "
 msgstr	"a)lternatiivne nimi, d=vaikimisi .newsrc, q=välju: "
 
-#: src/lang.c:567
+#: src/lang.c:568
 #, c-format
 msgid	"# NNTP-server -> newsrc translation table and NNTP-server\n"
 	"# shortname list for %s %s\n"
@@ -2194,76 +2197,76 @@ msgstr	"# NNTP-server -> newsrc teisendustabel ja %s %s\n"
 	"#   news.ka.nu    /tmp/nrc-nu      kanu    nu\n"
 	"#\n"
 
-#: src/lang.c:574
+#: src/lang.c:575
 #, c-format
 msgid	"Option not enabled. Recompile with %s."
 msgstr	"Võti pole lubatud. Kasutage kompileerimisel %s."
 
-#: src/lang.c:575
+#: src/lang.c:576
 msgid	"Options Menu"
 msgstr	"Omaduste menüü"
 
-#: src/lang.c:578
+#: src/lang.c:579
 #, c-format
 msgid	"Error in regex: %s at pos. %d"
 msgstr	"Viga regulaaravaldises: %s positsioonil %d"
 
-#: src/lang.c:579
+#: src/lang.c:580
 #, c-format
 msgid	"Error in regex: pcre internal error %d"
 msgstr	"Viga regulaaravaldises: pcre sisemine viga %d"
 
-#: src/lang.c:580
+#: src/lang.c:581
 #, c-format
 msgid	"Error in regex: study - pcre internal error %s"
 msgstr	"Viga regulaaravaldises: uurimiseks - pcre sisemine viga %s"
 
-#: src/lang.c:583
+#: src/lang.c:584
 msgid	"Add key(s) to public keyring?"
 msgstr	"Lisan võtmed avalike võtmete hoidlasse?"
 
-#: src/lang.c:584
+#: src/lang.c:585
 #, c-format
 msgid	"%s=encrypt, %s=sign, %s=both, %s=quit: "
 msgstr	"%s=krüpti, %s=allkirjasta, %s=mõlemad, %s=välju: "
 
-#: src/lang.c:585
+#: src/lang.c:586
 #, c-format
 msgid	"%s=sign, %s=sign & include public key, %s=quit: "
 msgstr	"%s=allkirjasta, %s=allkirjasta & lisa avalik võti, %s=välju: "
 
-#: src/lang.c:586
+#: src/lang.c:587
 #, c-format
 msgid	"PGP has not been set up (can't open %s)"
 msgstr	"PGP pole seadistatud (ei saa avada %s)"
 
-#: src/lang.c:587
+#: src/lang.c:588
 msgid	"Article not signed and no public keys found"
 msgstr	"Artikkel pole allkirjastatud ja avalikke võtmeid pole"
 
-#: src/lang.c:591
+#: src/lang.c:592
 msgid	"Pipe"
 msgstr	"Toru"
 
-#: src/lang.c:592
+#: src/lang.c:593
 #, c-format
 msgid	"Pipe to command [%.*s]> "
 msgstr	"Toru käsku [%.*s]> "
 
-#: src/lang.c:593
+#: src/lang.c:594
 msgid	"Piping..."
 msgstr	"Saadan torusse..."
 
-#: src/lang.c:595
+#: src/lang.c:596
 msgid	"Piping not enabled."
 msgstr	"Toru kasutamine pole lubatud."
 
-#: src/lang.c:598
+#: src/lang.c:599
 msgid	"Post a followup..."
 msgstr	"Postita vastus..."
 
 #. TODO: replace hardcoded key-name in txt_post_error_ask_postpone
-#: src/lang.c:600
+#: src/lang.c:601
 msgid	"An error has occurred while posting the article. If you think that this\n"
 	"error is temporary or otherwise correctable, you can postpone the article\n"
 	"and pick it up again with ^O later.\n"
@@ -2271,416 +2274,416 @@ msgstr	"Artikli postitamisel tekkis viga. Kui te arvate, et see viga on ajutine\
 	"või muul viisil kõrvaldatav, võite artikli salvestada hiljem postitamiseks\n"
 	"ja ^O käsuga hiljem postitada.\n"
 
-#: src/lang.c:603
+#: src/lang.c:604
 msgid	"Posted articles history"
 msgstr	"Postitatud artiklite ajalugu"
 
-#: src/lang.c:604
+#: src/lang.c:605
 #, c-format
 msgid	"Post to newsgroup(s) [%s]> "
 msgstr	"Postita gruppidesse [%s]> "
 
-#: src/lang.c:605
+#: src/lang.c:606
 msgid	"-- post processing started --"
 msgstr	"-- lõpptöötlus alustas --"
 
-#: src/lang.c:606
+#: src/lang.c:607
 msgid	"-- post processing completed --"
 msgstr	"-- lõpptöötlus lõpetas --"
 
-#: src/lang.c:607
+#: src/lang.c:608
 #, c-format
 msgid	"Post subject [%s]> "
 msgstr	"Postituse teema [%s]> "
 
-#: src/lang.c:609
+#: src/lang.c:610
 msgid	"Posting using external inews failed. Use built in inews instead?"
 msgstr	"Välise inews programmiga postitamine ebaõnnestus. Proovin sisemist inewsi?"
 
-#: src/lang.c:610
+#: src/lang.c:611
 msgid	"It worked! Should I always use my built in inews from now on?"
 msgstr	"See töötas! Kas kasutan nüüd alati sisemist inews programmi?"
 
-#: src/lang.c:612
+#: src/lang.c:613
 msgid	"# Summary of mailed/posted messages viewable by 'W' command from within tin.\n"
 msgstr	"# Kokkuvõtte saadetud/postitatud teadetest saate tinis 'W' käsuga.\n"
 
-#: src/lang.c:613
+#: src/lang.c:614
 msgid	"Posting article..."
 msgstr	"Postitan artiklit..."
 
-#: src/lang.c:614
+#: src/lang.c:615
 msgid	"Post postponed articles [%%.*s]? (%s/%s/%s/%s/%s): "
 msgstr	"Postitan postitusootel artiklid [%%.*s]? (%s/%s/%s/%s/%s): "
 
-#: src/lang.c:615
+#: src/lang.c:616
 #, c-format
 msgid	"Accept Followup-To? %s=post, %s=ignore, %s=quit: "
 msgstr	"Aktsepteerin Followup-To? %s=postita, %s=ignoreeri, %s=välju: "
 
-#: src/lang.c:616
+#: src/lang.c:617
 msgid	"Article unchanged, abort mailing?"
 msgstr	"Artiklit ei ole muudetud, katkestan saatmise?"
 
-#: src/lang.c:617
+#: src/lang.c:618
 #, c-format
 msgid	"Do you want to see postponed articles (%d)?"
 msgstr	"Kas soovite näha postitamisootel artikleid (%d)?"
 
-#: src/lang.c:618
+#: src/lang.c:619
 msgid	"Add quick kill filter?"
 msgstr	"Lisan kiirsurmamise filtri?"
 
-#: src/lang.c:619
+#: src/lang.c:620
 msgid	"Add quick selection filter?"
 msgstr	"Lisan kiirvaliku filtri?"
 
-#: src/lang.c:620
+#: src/lang.c:621
 msgid	"Do you really want to quit?"
 msgstr	"Kas te tõesti soovite väljuda?"
 
-#: src/lang.c:621
+#: src/lang.c:622
 msgid	"%s=edit cancel message, %s=quit, %s=delete (cancel) [%%.*s]: "
 msgstr	"%s=toimeta katkestamisteadet, %s=välju, %s=kustuta (katkesta) [%%.*s]: "
 
-#: src/lang.c:622
+#: src/lang.c:623
 msgid	"You have tagged articles in this group - quit anyway?"
 msgstr	"Teil on siin grupis märgitud artikleid - väljun siiski?"
 
-#: src/lang.c:623
+#: src/lang.c:624
 #, c-format
 msgid	"%s=quit, %s=edit, %s=postpone: "
 msgstr	"%s=välju, %s=toimeta, %s=postitusootele: "
 
-#: src/lang.c:624
+#: src/lang.c:625
 #, c-format
 msgid	"%s=quit %s=edit %s=save kill description: "
 msgstr	"%s=välju %s=toimeta %s=salvesta surmamise kirjeldus: "
 
-#: src/lang.c:625
+#: src/lang.c:626
 #, c-format
 msgid	"%s=quit %s=edit %s=save select description: "
 msgstr	"%s=välju %s=toimeta %s=salvesta valiku kirjeldus: "
 
-#: src/lang.c:626
+#: src/lang.c:627
 msgid	"Do you really want to quit without saving your configuration?"
 msgstr	"Kas te tõesti soovite seadeid salvestamata väljuda?"
 
-#: src/lang.c:628
+#: src/lang.c:629
 msgid	"Invalid range - valid are '0-9.$' eg. 1-$"
 msgstr	"Vigane vahemik - lubatud on '0-9.$' näiteks 1-$"
 
-#: src/lang.c:629
+#: src/lang.c:630
 msgid	"Do you want to abort this operation?"
 msgstr	"Kas soovite seda operatsiooni katkestada?"
 
-#: src/lang.c:630
+#: src/lang.c:631
 msgid	"Do you want to exit tin immediately?"
 msgstr	"Kas soovite viivitamata tinist väljuda?"
 
-#: src/lang.c:631
+#: src/lang.c:632
 msgid	"Read response> "
 msgstr	"Loen vastust> "
 
-#: src/lang.c:632
+#: src/lang.c:633
 msgid	"Reading ('q' to quit)..."
 msgstr	"Loen ('q' katkestamiseks)..."
 
-#: src/lang.c:633
+#: src/lang.c:634
 #, c-format
 msgid	"Reading %sarticles..."
 msgstr	"Loen %sartikleid..."
 
-#: src/lang.c:634
+#: src/lang.c:635
 #, c-format
 msgid	"Reading %sattributes file...\n"
 msgstr	"Loen %satribuutide faili...\n"
 
-#: src/lang.c:635
+#: src/lang.c:636
 #, c-format
 msgid	"Reading %sconfig file...\n"
 msgstr	"Loen %sseadete faili...\n"
 
-#: src/lang.c:636
+#: src/lang.c:637
 msgid	"Reading filter file...\n"
 msgstr	"Loen filtrite faili...\n"
 
-#: src/lang.c:637
+#: src/lang.c:638
 #, c-format
 msgid	"Reading %s groups..."
 msgstr	"Loen %s gruppe..."
 
-#: src/lang.c:638
+#: src/lang.c:639
 msgid	"Reading input history file...\n"
 msgstr	"Loen sisendi ajalugu...\n"
 
-#: src/lang.c:639
+#: src/lang.c:640
 msgid	"Reading keymap file...\n"
 msgstr	"Loen klahvitabeli faili...\n"
 
-#: src/lang.c:641
+#: src/lang.c:642
 msgid	"Reading mail active file... "
 msgstr	"Loen aktiivsete kirjade kausta... "
 
-#: src/lang.c:642
+#: src/lang.c:643
 msgid	"Reading mailgroups file... "
 msgstr	"Loen kirjagruppide faili... "
 
-#: src/lang.c:644
+#: src/lang.c:645
 msgid	"Reading groups from active file... "
 msgstr	"Loen aktiivseid gruppe... "
 
-#: src/lang.c:645
+#: src/lang.c:646
 msgid	"Reading groups from newsrc file... "
 msgstr	"Loen gruppe newsrc failist... "
 
-#: src/lang.c:646
+#: src/lang.c:647
 msgid	"Reading newsgroups file... "
 msgstr	"Loen gruppide kirjeldusi... "
 
-#: src/lang.c:647
+#: src/lang.c:648
 msgid	"Reading newsrc file..."
 msgstr	"Loen newsrc faili..."
 
-#: src/lang.c:648
+#: src/lang.c:649
 msgid	"Connection to news server has timed out. Reconnect?"
 msgstr	"Ühendus uudisegruppide serveriga aegus. ühendun uuesti?"
 
-#: src/lang.c:649
+#: src/lang.c:650
 #, c-format
 msgid	"Bogus group %s removed."
 msgstr	"Vigane grupp %s on eemaldatud."
 
-#: src/lang.c:650
+#: src/lang.c:651
 #, c-format
 msgid	"Error: rename %s to %s"
 msgstr	"Viga: %s uus nimi %s"
 
-#: src/lang.c:651
+#: src/lang.c:652
 msgid	"Reply to author..."
 msgstr	"Vastan autorile..."
 
-#: src/lang.c:652
+#: src/lang.c:653
 msgid	"Repost"
 msgstr	"Uuesti postitus"
 
-#: src/lang.c:653
+#: src/lang.c:654
 msgid	"Reposting article..."
 msgstr	"Postitan artikli uuesti..."
 
-#: src/lang.c:654
+#: src/lang.c:655
 #, c-format
 msgid	"Repost article(s) to group(s) [%s]> "
 msgstr	"Postitan artikli(d) gruppi(desse) [%s]> "
 
-#: src/lang.c:655
+#: src/lang.c:656
 msgid	"Reset newsrc?"
 msgstr	"Algväärtustan newsrc?"
 
-#: src/lang.c:656
+#: src/lang.c:657
 msgid	"Responses have been directed to the following newsgroups"
 msgstr	"Vastused edastatakse järgnevatesse gruppidesse"
 
-#: src/lang.c:657
+#: src/lang.c:658
 #, c-format
 msgid	"Responses have been directed to poster. %s=mail, %s=post, %s=quit: "
 msgstr	"Vastused edastatakse postitajale. %s=kirjuta, %s=postita, %s=välju: "
 
-#: src/lang.c:658
+#: src/lang.c:659
 #, c-format
 msgid	"RespNo %3d of %3d%s"
 msgstr	"Vastus %3d : %3d%s"
 
-#: src/lang.c:659
+#: src/lang.c:660
 msgid	"Press <RETURN> to continue..."
 msgstr	"Jätkamiseks vajutage <RETURN>..."
 
-#: src/lang.c:660
+#: src/lang.c:661
 msgid	"Save"
 msgstr	"Salvesta"
 
-#: src/lang.c:661
+#: src/lang.c:662
 #, c-format
 msgid	"Save '%s' (%s/%s)?"
 msgstr	"Salvestan '%s' (%s/%s)?"
 
-#: src/lang.c:662
+#: src/lang.c:663
 msgid	"Save configuration before continuing?"
 msgstr	"Salvestan seaded enne jätkamist?"
 
-#: src/lang.c:663
+#: src/lang.c:664
 msgid	"Save filename> "
 msgstr	"Fail salvestamiseks> "
 
-#: src/lang.c:664
+#: src/lang.c:665
 msgid	"Saved"
 msgstr	"Salvestatud"
 
-#: src/lang.c:665
+#: src/lang.c:666
 #, c-format
 msgid	"%4d unread (%4d hot) %s in %s\n"
 msgstr	"%4d lugemata (%4d kuuma) %s grupis %s\n"
 
-#: src/lang.c:666
+#: src/lang.c:667
 #, c-format
 msgid	"Saved %s...\n"
 msgstr	"Salvestatud %s...\n"
 
-#: src/lang.c:667
+#: src/lang.c:668
 msgid	"Nothing was saved"
 msgstr	"Midagi ei salvestatud"
 
-#: src/lang.c:668
+#: src/lang.c:669
 #, c-format
 msgid	"\n"
 	"%s %d %s from %d %s\n"
 msgstr	"\n"
 	"%s %d %s %d grupist%s\n"
 
-#: src/lang.c:669
+#: src/lang.c:670
 msgid	"Saving..."
 msgstr	"Salvestan..."
 
-#: src/lang.c:670
+#: src/lang.c:671
 #, c-format
 msgid	"%s: Screen initialization failed"
 msgstr	"%s: Ekraani initsialiseerimine ebaõnnestus"
 
-#: src/lang.c:671
+#: src/lang.c:672
 #, c-format
 msgid	"%s: screen is too small\n"
 msgstr	"%s: ekraan on liiga väike\n"
 
-#: src/lang.c:672
+#: src/lang.c:673
 #, c-format
 msgid	"screen is too small, %s is exiting\n"
 msgstr	"ekraan on liiga väike, %s lõpetab töö\n"
 
-#: src/lang.c:673
+#: src/lang.c:674
 #, c-format
 msgid	"Search backwards [%s]> "
 msgstr	"Otsin tagurpidi [%s]> "
 
-#: src/lang.c:674
+#: src/lang.c:675
 #, c-format
 msgid	"Search body [%s]> "
 msgstr	"Otsi kehast [%s]> "
 
-#: src/lang.c:675
+#: src/lang.c:676
 #, c-format
 msgid	"Search forwards [%s]> "
 msgstr	"Otsi edaspidi [%s]> "
 
-#: src/lang.c:676
+#: src/lang.c:677
 msgid	"Searching..."
 msgstr	"Otsin..."
 
-#: src/lang.c:677
+#: src/lang.c:678
 #, c-format
 msgid	"Searching article %d of %d ('q' to abort)..."
 msgstr	"Otsin artiklit %d/%d ('q' katkestamiseks)..."
 
-#: src/lang.c:678
+#: src/lang.c:679
 msgid	"Select article> "
 msgstr	"Valige artikkel> "
 
-#: src/lang.c:679
+#: src/lang.c:680
 msgid	"Select option number before text or use arrow keys and <CR>. 'q' to quit."
 msgstr	"Valige teksti eest omaduse number või kasutage nooli ja <CR>. 'q' väljumiseks."
 
-#: src/lang.c:680
+#: src/lang.c:681
 msgid	"Select group> "
 msgstr	"Valige grupp> "
 
-#: src/lang.c:681
+#: src/lang.c:682
 #, c-format
 msgid	"Enter selection pattern [%s]> "
 msgstr	"Sisestage valiku muster [%s]> "
 
-#: src/lang.c:682
+#: src/lang.c:683
 msgid	"Select thread > "
 msgstr	"Valige teema > "
 
-#: src/lang.c:683
+#: src/lang.c:684
 #, c-format
 msgid	"Put the server name in the file %s,\n"
 	"or set the environment variable NNTPSERVER"
 msgstr	"Kirjutage serveri nimi faili %s,\n"
 	"või seadke keskonnamuutuja NNTPSERVER"
 
-#: src/lang.c:684
+#: src/lang.c:685
 msgid	"servers active-file"
 msgstr	"serveri aktiivsete gruppide fail"
 
-#: src/lang.c:686
+#: src/lang.c:687
 #, c-format
 msgid	"Enter shell command [%s]> "
 msgstr	"Sisestage käsuinterpretaatori käsk [%s]> "
 
-#: src/lang.c:688
+#: src/lang.c:689
 msgid	"Cannot move into new newsgroups. Subscribe first..."
 msgstr	"Uutesse gruppidesse ei saa siseneda. Tellige kõigepealt..."
 
-#: src/lang.c:689
+#: src/lang.c:690
 msgid	"<SPACE>"
 msgstr	"<TÜHIK>"
 
-#: src/lang.c:690
+#: src/lang.c:691
 #, c-format
 msgid	"Starting: (%s)"
 msgstr	"Stardin: (%s)"
 
-#: src/lang.c:691
+#: src/lang.c:692
 msgid	"Enter wildcard subscribe pattern> "
 msgstr	"Sisestage tellimise muster> "
 
-#: src/lang.c:692
+#: src/lang.c:693
 #, c-format
 msgid	"subscribed to %d groups"
 msgstr	"%d gruppi on tellitud"
 
-#: src/lang.c:693
+#: src/lang.c:694
 #, c-format
 msgid	"Subscribed to %s"
 msgstr	"%s on tellitud"
 
-#: src/lang.c:694
+#: src/lang.c:695
 msgid	"Subscribing... "
 msgstr	"Tellin... "
 
-#: src/lang.c:695
+#: src/lang.c:696
 msgid	"Repost or supersede article(s) [%%.*s]? (%s/%s/%s): "
 msgstr	"Postitan uuesti või asendan artikli(d) [%%.*s]? (%s/%s/%s): "
 
-#: src/lang.c:696
+#: src/lang.c:697
 #, c-format
 msgid	"Supersede article(s) to group(s) [%s]> "
 msgstr	"Asendan artikli(d) gruppides [%s]> "
 
-#: src/lang.c:697
+#: src/lang.c:698
 msgid	"Superseding article ..."
 msgstr	"Asendan artikli ..."
 
-#: src/lang.c:698
+#: src/lang.c:699
 #, c-format
 msgid	"\n"
 	"Stopped. Type 'fg' to restart %s\n"
 msgstr	"\n"
 	"Peatatud. %s uuesti käivitamiseks kirjutage palun 'fg'\n"
 
-#: src/lang.c:699
+#: src/lang.c:700
 msgid	"<TAB>"
 msgstr	"<TAB>"
 
-#: src/lang.c:700
+#: src/lang.c:701
 msgid	"Tagged article"
 msgstr	"Artikkel on märgitud"
 
-#: src/lang.c:701
+#: src/lang.c:702
 msgid	"Tagged thread"
 msgstr	"Teema on märgitud"
 
-#: src/lang.c:704
+#: src/lang.c:705
 msgid	"# For color-adjust use the following numbers\n"
 	"#  0-black       1-red         2-green        3-brown\n"
 	"#  4-blue        5-pink        6-cyan         7-white\n"
@@ -2700,11 +2703,11 @@ msgstr	"# Värvide seadmiseks kasutage järgnevaid koode\n"
 	"# taust must)\n"
 	"\n"
 
-#: src/lang.c:714
+#: src/lang.c:715
 msgid	"# Default action/prompt strings\n"
 msgstr	"# Vaikimisi aktsioonide/viipade sõned\n"
 
-#: src/lang.c:715
+#: src/lang.c:716
 msgid	"# Defaults for quick (1 key) kill & auto-selection filters\n"
 	"# header=NUM  0,1=Subject: 2,3=From: 4=Message-ID: & full References: line\n"
 	"#             5=Message-ID: & last References: entry only\n"
@@ -2721,11 +2724,11 @@ msgstr	"# Vaikeväärtused kiire (1 võtme) surmamisel & auto-valiku filtritele\n"
 	"# case=ON/OFF    ON=filter on tõstutundlik OFF=tõstutundetu\n"
 	"# expire=ON/OFF  ON=kehtivusaeg default_filter_days OFF=ei aegu\n"
 
-#: src/lang.c:728
+#: src/lang.c:729
 msgid	"# If ON use print current subject or newsgroup description in the last line\n"
 msgstr	"# Kui on ON, trüki teema või grupikirjeldus viimasele reale\n"
 
-#: src/lang.c:731
+#: src/lang.c:732
 msgid	"# Whether or not to automatically convert to a local charset that is\n"
 	"# different from the one defined in mm_charset. Currently only NeXTstep is\n"
 	"# supported. Set to OFF when logged in from a ISO-8859-1 environment.\n"
@@ -2733,15 +2736,15 @@ msgstr	"# Kas teisendada automaatselt lokaalsele, mm_charsetist erinevale\n"
 	"# kooditabelile. Hetkel on toetatud ainult NeXTstep. Kui kasutate\n"
 	"# ISO-8859-1 keskonda, seadke väärtuseks OFF.\n"
 
-#: src/lang.c:736
+#: src/lang.c:737
 msgid	"# Host & time info used for detecting new groups (don't touch)\n"
 msgstr	"# Masin & aeg - kasutatakse uute gruppide leidmiseks (mitte muuta)\n"
 
-#: src/lang.c:738
+#: src/lang.c:739
 msgid	"Enter wildcard unsubscribe pattern> "
 msgstr	"Sisestage loobumise muster> "
 
-#: src/lang.c:739
+#: src/lang.c:740
 #, c-format
 msgid	"View '%s' (%s/%s)?"
 msgstr	"Vaatan '%s' (%s/%s)?"
@@ -2749,433 +2752,464 @@ msgstr	"Vaatan '%s' (%s/%s)?"
 #.
 #. * Special value used to override option-list behavior
 #.
-#: src/lang.c:744 src/lang.c:792
+#: src/lang.c:745 src/lang.c:793
 msgid	"Default"
 msgstr	"Vaikimisi"
 
-#: src/lang.c:756 src/lang.c:772 src/lang.c:854 src/refs.c:269
+#: src/lang.c:757 src/lang.c:773 src/lang.c:868 src/refs.c:269
 msgid	"None"
 msgstr	"Pole"
 
-#: src/lang.c:757
+#: src/lang.c:758
 msgid	"Subject"
 msgstr	"Teema"
 
-#: src/lang.c:758
+#: src/lang.c:759
 msgid	"References"
 msgstr	"Viited"
 
-#: src/lang.c:759
+#: src/lang.c:760
 msgid	"Both Subject and References"
 msgstr	"Nii teema kui viited"
 
-#: src/lang.c:760
+#: src/lang.c:761
 msgid	"Multipart Subject"
 msgstr	"Mitmeosaliste teema"
 
-#: src/lang.c:773
+#: src/lang.c:774
 msgid	"Address"
 msgstr	"Aadress"
 
-#: src/lang.c:774
+#: src/lang.c:775
 msgid	"Full Name"
 msgstr	"Täisnimi"
 
-#: src/lang.c:775
+#: src/lang.c:776
 msgid	"Address and Name"
 msgstr	"Aadress ja nimi"
 
-#: src/lang.c:782
+#: src/lang.c:783
 msgid	"Max"
 msgstr	"Maksimum"
 
-#: src/lang.c:783
+#: src/lang.c:784
 msgid	"Sum"
 msgstr	"Summa"
 
-#: src/lang.c:784
+#: src/lang.c:785
 msgid	"Average"
 msgstr	"Keskmine"
 
-#: src/lang.c:793
+#: src/lang.c:794
 msgid	"Black"
 msgstr	"Must"
 
-#: src/lang.c:794
+#: src/lang.c:795
 msgid	"Red"
 msgstr	"Punane"
 
-#: src/lang.c:795
+#: src/lang.c:796
 msgid	"Green"
 msgstr	"Roheline"
 
-#: src/lang.c:796
+#: src/lang.c:797
 msgid	"Brown"
 msgstr	"Pruun"
 
-#: src/lang.c:797
+#: src/lang.c:798
 msgid	"Blue"
 msgstr	"Sinine"
 
-#: src/lang.c:798
+#: src/lang.c:799
 msgid	"Pink"
 msgstr	"Roosa"
 
-#: src/lang.c:799
+#: src/lang.c:800
 msgid	"Cyan"
 msgstr	"Lilla"
 
-#: src/lang.c:800
+#: src/lang.c:801
 msgid	"White"
 msgstr	"valge"
 
-#: src/lang.c:801
+#: src/lang.c:802
 msgid	"Gray"
 msgstr	"Hall"
 
-#: src/lang.c:802
+#: src/lang.c:803
 msgid	"Light Red"
 msgstr	"Helepunane"
 
-#: src/lang.c:803
+#: src/lang.c:804
 msgid	"Light Green"
 msgstr	"Heleroheline"
 
-#: src/lang.c:804
+#: src/lang.c:805
 msgid	"Yellow"
 msgstr	"Kollane"
 
-#: src/lang.c:805
+#: src/lang.c:806
 msgid	"Light Blue"
 msgstr	"Helesinine"
 
-#: src/lang.c:806
+#: src/lang.c:807
 msgid	"Light Pink"
 msgstr	"Heleroosa"
 
-#: src/lang.c:807
+#: src/lang.c:808
 msgid	"Light Cyan"
 msgstr	"Helelilla"
 
-#: src/lang.c:808
+#: src/lang.c:809
 msgid	"Light White"
 msgstr	"Helevalge"
 
-#: src/lang.c:815 src/lang.c:860 src/lang.c:874
+#: src/lang.c:817 src/lang.c:874 src/lang.c:888
 msgid	"Nothing"
 msgstr	"Ei kasuta"
 
-#: src/lang.c:816
+#: src/lang.c:818
 msgid	"Mark"
 msgstr	"Märk"
 
-#: src/lang.c:817
+#: src/lang.c:819
 msgid	"Space"
 msgstr	"Tühik"
 
-#: src/lang.c:823
+#: src/lang.c:826
+msgid	"Normal"
+msgstr	""
+
+# TRANSLATION MISSING
+#: src/lang.c:827
+msgid	"Best highlighting"
+msgstr	""
+
+# TRANSLATION MISSING
+#: src/lang.c:828
+msgid	"Underline"
+msgstr	""
+
+# TRANSLATION MISSING
+#: src/lang.c:829
+msgid	"Reverse video"
+msgstr	""
+
+#: src/lang.c:830
+msgid	"Blinking"
+msgstr	""
+
+#: src/lang.c:831
+msgid	"Half bright"
+msgstr	""
+
+#: src/lang.c:832
+msgid	"Bold"
+msgstr	""
+
+#: src/lang.c:837
 msgid	"none"
 msgstr	"pole"
 
-#: src/lang.c:824
+#: src/lang.c:838
 msgid	"commands"
 msgstr	"käsud"
 
-#: src/lang.c:825
+#: src/lang.c:839
 msgid	"select"
 msgstr	"valik"
 
-#: src/lang.c:827
+#: src/lang.c:841
 msgid	"commands & quit"
 msgstr	"käsud & välju"
 
-#: src/lang.c:828
+#: src/lang.c:842
 msgid	"commands & select"
 msgstr	"käsud & valik"
 
-#: src/lang.c:829
+#: src/lang.c:843
 msgid	"quit & select"
 msgstr	"välju & valik"
 
-#: src/lang.c:830
+#: src/lang.c:844
 msgid	"commands & quit & select"
 msgstr	"käsud & välju & valik"
 
-#: src/lang.c:855
+#: src/lang.c:869
 msgid	"Shell archive"
 msgstr	"Shelli arhiiv"
 
-#: src/lang.c:856
+#: src/lang.c:870
 msgid	"Uudecode"
 msgstr	"Uudekodeeri"
 
-#: src/lang.c:861
+#: src/lang.c:875
 msgid	"Subject: (descending)"
 msgstr	"Subject: (kahanevalt)"
 
-#: src/lang.c:862
+#: src/lang.c:876
 msgid	"Subject: (ascending)"
 msgstr	"Subject: (kasvavalt)"
 
-#: src/lang.c:863
+#: src/lang.c:877
 msgid	"From: (descending)"
 msgstr	"From: (kahanevalt)"
 
-#: src/lang.c:864
+#: src/lang.c:878
 msgid	"From: (ascending)"
 msgstr	"From: (kasvavalt)"
 
-#: src/lang.c:865
+#: src/lang.c:879
 msgid	"Date: (descending)"
 msgstr	"Date: (kahanevalt)"
 
-#: src/lang.c:866
+#: src/lang.c:880
 msgid	"Date: (ascending)"
 msgstr	"Date: (kasvavalt)"
 
-#: src/lang.c:867 src/lang.c:875
+#: src/lang.c:881 src/lang.c:889
 msgid	"Score (descending)"
 msgstr	"Kaal (kahanevalt)"
 
-#: src/lang.c:868 src/lang.c:876
+#: src/lang.c:882 src/lang.c:890
 msgid	"Score (ascending)"
 msgstr	"Kaal (kasvavalt)"
 
-#: src/lang.c:869
+#: src/lang.c:883
 msgid	"Lines: (descending)"
 msgstr	"Lines: (kahanevalt)"
 
-#: src/lang.c:870
+#: src/lang.c:884
 msgid	"Lines: (ascending)"
 msgstr	"Lines: (kasvavalt)"
 
-#: src/lang.c:881
+#: src/lang.c:895
 msgid	"Always Keep"
 msgstr	"Hoia alati"
 
-#: src/lang.c:882
+#: src/lang.c:896
 msgid	"Always Remove"
 msgstr	"Eemalda alati"
 
-#: src/lang.c:883
+#: src/lang.c:897
 msgid	"Mark with D on selection screen"
 msgstr	"Märgi valikuekraanil tähega D"
 
-#: src/lang.c:888
+#: src/lang.c:902
 msgid	"Kill only unread arts"
 msgstr	"Surma ainult lugemata artiklid"
 
-#: src/lang.c:889
+#: src/lang.c:903
 msgid	"Kill all arts & show with K"
 msgstr	"Surma kõik artiklid & näita K tähega"
 
-#: src/lang.c:890
+#: src/lang.c:904
 msgid	"Kill all arts and never show"
 msgstr	"Surma kõik artiklid ja ära näita"
 
-#: src/lang.c:895
+#: src/lang.c:909
 msgid	"Nothing special"
 msgstr	"Ei midagi erilist"
 
-#: src/lang.c:896
+#: src/lang.c:910
 msgid	"Compress quotes"
 msgstr	"Tihenda tsitaadid"
 
-#: src/lang.c:897
+#: src/lang.c:911
 msgid	"Quote signatures"
 msgstr	"Tsiteeri allkirju"
 
-#: src/lang.c:898
+#: src/lang.c:912
 msgid	"Compress quotes, quote sigs"
 msgstr	"Tihenda tsitaadid, tsiteeri allkirju"
 
-#: src/lang.c:899
+#: src/lang.c:913
 msgid	"Quote empty lines"
 msgstr	"Tsiteeri tühje ridu"
 
 # TRANSLATION TOO LONG
-#: src/lang.c:900
+#: src/lang.c:914
 msgid	"Compress quotes, quote empty lines"
 msgstr	"Tihenda tsitaadid, tsiteeri tühje ridu"
 
-#: src/lang.c:901
+#: src/lang.c:915
 msgid	"Quote sigs & empty lines"
 msgstr	"Tsiteeri allkirju ja tühje ridu"
 
 # TRANSLATION TOO LONG
-#: src/lang.c:902
+#: src/lang.c:916
 msgid	"Comp. q., quote sigs & empty lines"
 msgstr	"Tihenda tsitaate, tsiteeri allkirju ja tühje ridu"
 
-#: src/lang.c:928
+#: src/lang.c:942
 msgid	"Print"
 msgstr	"Trüki"
 
-#: src/lang.c:929
+#: src/lang.c:943
 msgid	"Printing..."
 msgstr	"Trükin..."
 
-#: src/lang.c:934
+#: src/lang.c:948
 #, c-format
 msgid	"%s=quit, %s=edit, %s=ispell, %s=pgp, %s=post, %s=postpone: "
 msgstr	"%s=välju, %s=toimeta, %s=ispell, %s=pgp, %s=postita, %s=postitusootele: "
 
-#: src/lang.c:935
+#: src/lang.c:949
 msgid	"%s=quit, %s=edit, %s=ispell, %s=pgp, %s=send [%%.*s]: "
 msgstr	"%s=välju, %s=toimeta, %s=ispell, %s=pgp, %s=saada [%%.*s]: "
 
-#: src/lang.c:936
+#: src/lang.c:950
 msgid	"%s=quit, %s=edit, %s=ispell, %s=pgp, %s=post, %s=postpone [%%.*s]: "
 msgstr	"%s=välju, %s=toimeta, %s=ispell, %s=pgp, %s=postita, %s=postitusootele "
 	"[%%.*s]: "
 
-#: src/lang.c:938
+#: src/lang.c:952
 #, c-format
 msgid	"%s=quit, %s=edit, %s=pgp, %s=post, %s=postpone: "
 msgstr	"%s=välju, %s=toimeta, %s=pgp, %s=postita, %s=postitusootele: "
 
-#: src/lang.c:939
+#: src/lang.c:953
 msgid	"%s=quit, %s=edit, %s=pgp, %s=send [%%.*s]: "
 msgstr	"%s=välju, %s=toimeta, %s=pgp, %s=saada [%%.*s]: "
 
-#: src/lang.c:940
+#: src/lang.c:954
 msgid	"%s=quit, %s=edit, %s=pgp, %s=post, %s=postpone [%%.*s]: "
 msgstr	"%s=välju, %s=toimeta, %s=pgp, %s=postita, %s=postitusootele [%%.*s]: "
 
-#: src/lang.c:944
+#: src/lang.c:958
 #, c-format
 msgid	"%s=quit, %s=edit, %s=ispell, %s=post, %s=postpone: "
 msgstr	"%s=välju, %s=toimeta, %s=ispell, %s=postita, %s=postitusootele: "
 
-#: src/lang.c:945
+#: src/lang.c:959
 msgid	"%s=quit, %s=edit, %s=ispell, %s=send [%%.*s]: "
 msgstr	"%s=välju, %s=toimeta, %s=ispell, %s=saada [%%.*s]: "
 
-#: src/lang.c:946
+#: src/lang.c:960
 msgid	"%s=quit, %s=edit, %s=ispell, %s=post, %s=postpone [%%.*s]: "
 msgstr	"%s=välju, %s=toimeta, %s=ispell, %s=postita, %s=postitusootele [%%.*s]: "
 
-#: src/lang.c:948
+#: src/lang.c:962
 #, c-format
 msgid	"%s=quit, %s=edit, %s=post, %s=postpone: "
 msgstr	"%s=välju, %s=toimeta, %s=postita, %s=postitusootele: "
 
-#: src/lang.c:949
+#: src/lang.c:963
 msgid	"%s=quit, %s=edit, %s=send [%%.*s]: "
 msgstr	"%s=välju, %s=toimeta, %s=saada [%%.*s]: "
 
-#: src/lang.c:950
+#: src/lang.c:964
 msgid	"%s=quit, %s=edit, %s=post, %s=postpone [%%.*s]: "
 msgstr	"%s=välju, %s=toimeta, %s=postita, %s=postitusootele [%%.*s]: "
 
-#: src/lang.c:954
+#: src/lang.c:968
 #, c-format
 msgid	" at %s"
 msgstr	" o: %s"
 
-#: src/lang.c:955
+#: src/lang.c:969
 msgid	"There is no news\n"
 msgstr	"Uudiseid pole\n"
 
-#: src/lang.c:956
+#: src/lang.c:970
 msgid	"Thread Level Commands"
 msgstr	"Teemataseme käsud"
 
-#: src/lang.c:957
+#: src/lang.c:971
 msgid	"Thread deselected"
 msgstr	"Teema pole valitud"
 
-#: src/lang.c:958
+#: src/lang.c:972
 msgid	"Thread selected"
 msgstr	"Teema on valitud"
 
-#: src/lang.c:959
+#: src/lang.c:973
 #, c-format
 msgid	"%sThread %4s of %4s%s"
 msgstr	"%sTeema %4s : %4s%s"
 
-#: src/lang.c:960
+#: src/lang.c:974
 msgid	"Threading articles..."
 msgstr	"Järjestan artiklid teemade kaupa..."
 
-#: src/lang.c:961
+#: src/lang.c:975
 #, c-format
 msgid	"Toggled word highlighting %s"
 msgstr	"Sõnade esiletõstmine lülitatud %s"
 
-#: src/lang.c:962
+#: src/lang.c:976
 msgid	"Toggled rot13 encoding"
 msgstr	"Lülitatud rot13 kodeerimine"
 
-#: src/lang.c:963
+#: src/lang.c:977
 #, c-format
 msgid	"Toggled german TeX encoding %s"
 msgstr	"Lülitatud saksa TeX kodeering %s"
 
-#: src/lang.c:964
+#: src/lang.c:978
 #, c-format
 msgid	"Toggled tab-width to %d"
 msgstr	"Lülitatud tab-width väärtus %d"
 
-#: src/lang.c:965
+#: src/lang.c:979
 msgid	"           h=help\n"
 msgstr	"           h=appi\n"
 
-#: src/lang.c:966
+#: src/lang.c:980
 msgid	"unread "
 msgstr	"lugemata "
 
-#: src/lang.c:967
+#: src/lang.c:981
 #, c-format
 msgid	"unsubscribed from %d groups"
 msgstr	"loobunud %d grupist"
 
-#: src/lang.c:968
+#: src/lang.c:982
 #, c-format
 msgid	"Unsubscribed from %s"
 msgstr	"Loobunud grupist %s"
 
-#: src/lang.c:969
+#: src/lang.c:983
 msgid	"Unsubscribing... "
 msgstr	"Loobun gruppidest... "
 
-#: src/lang.c:970
+#: src/lang.c:984
 msgid	"Untagged article"
 msgstr	"Märkimata artikkel"
 
-#: src/lang.c:971
+#: src/lang.c:985
 msgid	"Untagged thread"
 msgstr	"Märkimata teema"
 
-#: src/lang.c:972
+#: src/lang.c:986
 msgid	"Unthreading articles..."
 msgstr	"Tükeldan teemad..."
 
-#: src/lang.c:973
+#: src/lang.c:987
 msgid	"Updated"
 msgstr	"Uuendatud"
 
-#: src/lang.c:974
+#: src/lang.c:988
 #, c-format
 msgid	"Opening %s\n"
 msgstr	"Proovin %s\n"
 
-#: src/lang.c:975
+#: src/lang.c:989
 msgid	"No more URL's in this article"
 msgstr	"Selles artiklis pole rohkem URL'e"
 
-#: src/lang.c:978
+#: src/lang.c:992
 msgid	"Use MIME display program for this message?"
 msgstr	"Kasutan selle teate lugemiseks MIME näitamise programmi?"
 
-#: src/lang.c:981
+#: src/lang.c:995
 #, c-format
 msgid	"\n"
 	"%s%d out of range (0 - %d). Reset to 0"
 msgstr	"\n"
 	"%s%d piiridest väljas (0 - %d). Sean 0"
 
-#: src/lang.c:982
+#: src/lang.c:996
 #, c-format
 msgid	"\n"
 	"Warning: posting exceeds %d columns. Line %d is the first long one:\n"
@@ -3184,26 +3218,26 @@ msgstr	"\n"
 	"Hoiatus: postitus ületab %d veergu. Esimene pikk rida on rida %d:\n"
 	"%-100s\n"
 
-#: src/lang.c:983
+#: src/lang.c:997
 msgid	"\n"
 	"Warning: article unchanged after editing\n"
 msgstr	"\n"
 	"Hoiatus: artiklit ei ole toimetamise käigus muudetud\n"
 
-#: src/lang.c:984
+#: src/lang.c:998
 msgid	"\n"
 	"Warning: \"Subject:\" contains only whitespaces.\n"
 msgstr	"\n"
 	"Hoiatus: \"Subject:\" real on ainult tühikud.\n"
 
-#: src/lang.c:985
+#: src/lang.c:999
 msgid	"\n"
 	"Warning: \"Subject:\" begins with \"Re: \" but there are no \"References:\".\n"
 msgstr	"\n"
 	"Hoiatus: \"Subject:\" algab fraasiga \"Re: \", aga \"References:\" välju "
 	"pole.\n"
 
-#: src/lang.c:987
+#: src/lang.c:1001
 msgid	"\n"
 	"Warning: Article has \"References:\" but \"Subject:\" does not begin\n"
 	"         with \"Re: \" and does not contain \"(was:\".\n"
@@ -3211,7 +3245,7 @@ msgstr	"\n"
 	"Hoiatus: Artiklis on \"References:\" päis, aga \"Subject:\" ei alga fraasiga\n"
 	"         \"Re: \" ega sisalda \"(was:\".\n"
 
-#: src/lang.c:990
+#: src/lang.c:1004
 msgid	"Read carefully!\n"
 	"\n"
 	"  You are about to cancel an article seemingly written by you. This will "
@@ -3231,7 +3265,7 @@ msgstr	"Lugege hoolikalt!\n"
 	"Siin on artikkel, mida te hakkate kustutama:\n"
 	"\n"
 
-#: src/lang.c:994
+#: src/lang.c:1008
 msgid	"\n"
 	"Warning: You are using a non-plain transfer encoding (such as base64 or\n"
 	"         quoted-printable) and an external inews program to submit your\n"
@@ -3243,7 +3277,7 @@ msgstr	"\n"
 	"         lisab artiklile signatuuri, siis on võimalik,  et seda ei kodeerita\n"
 	"         korrektselt.\n"
 
-#: src/lang.c:1001
+#: src/lang.c:1015
 #, c-format
 msgid	"\n"
 	"Warning: The \"%s:\" line is continued in the next line.\n"
@@ -3254,14 +3288,14 @@ msgstr	"\n"
 	"      See on uus omadus ja kõik serverid ei pruugi seda toetada.\n"
 	"      Probleemide vältimiseks, kirjutage palun kõik grupid ühele reale.\n"
 
-#: src/lang.c:1005
+#: src/lang.c:1019
 #, c-format
 msgid	"\n"
 	"Warning: The \"%s:\" line has spaces in it that SHOULD be removed.\n"
 msgstr	"\n"
 	"Hoiatus: Rida \"%s:\" sisaldab tühikuid, mis TULEKS eemaldada.\n"
 
-#: src/lang.c:1009
+#: src/lang.c:1023
 #, c-format
 msgid	"\n"
 	"\n"
@@ -3274,7 +3308,7 @@ msgstr	"\n"
 	"Mõned teie seadete väärtused võivad olla muutunud!\n"
 	"Lugege tekste WHATSNEW, jne....\n"
 
-#: src/lang.c:1012
+#: src/lang.c:1026
 #, c-format
 msgid	"Warning: tin wrote fewer groups to your\n"
 	"\t%s\n"
@@ -3287,7 +3321,7 @@ msgstr	"Hoiatus: tin kirjutas vähem gruppe teie\n"
 	"grupist%s, tähendab see viga ja te peaksite varundama oma %s\n"
 	"enne, kui te tini uuesti käivitate!\n"
 
-#: src/lang.c:1018
+#: src/lang.c:1032
 msgid	"Read carefully!\n"
 	"\n"
 	"  You are about to cancel an article seemingly not written by you.  This "
@@ -3311,20 +3345,20 @@ msgstr	"Lugege hoolikalt!\n"
 	"Siin on artikkel, mida te asute kustutama:\n"
 	"\n"
 
-#: src/lang.c:1027
+#: src/lang.c:1041
 msgid	"\n"
 	"Warning: Followup-To set to more than one newsgroup!\n"
 msgstr	"\n"
 	"Hoiatus: Followup-To on seatud rohkem, kui ühele grupile!\n"
 
-#: src/lang.c:1028
+#: src/lang.c:1042
 #, c-format
 msgid	"\n"
 	"Warning: cross-posting to %d newsgroups and no Followup-To line!\n"
 msgstr	"\n"
 	"Hoiatus: ristpostitus %d uudisegruppi ja Followup-To rida puudub!\n"
 
-#: src/lang.c:1029
+#: src/lang.c:1043
 #, c-format
 msgid	"\n"
 	"Warning: \"%s\" is not in your newsrc, it may be invalid at this site!\n"
@@ -3332,14 +3366,14 @@ msgstr	"\n"
 	"Hoiatus: \"%s\" puudub teie newsrc failist, see võib olla selles serveris "
 	"vigane!\n"
 
-#: src/lang.c:1030
+#: src/lang.c:1044
 #, c-format
 msgid	"\n"
 	"Warning: \"%s\" is not a valid newsgroup at this site!\n"
 msgstr	"\n"
 	"Hoiatus: \"%s\" ei ole selles serveris kehtiv grupp!\n"
 
-#: src/lang.c:1034
+#: src/lang.c:1048
 msgid	"\n"
 	"  If your article contains quoted text  please take some time to pare it "
 	"down\n"
@@ -3369,7 +3403,7 @@ msgstr	"\n"
 	"  tega, siis ilmselt enamus lugejaid ignoreerib teid täiesti. Tänapäeval on\n"
 	"  võrgus palju rahvast ja infot!\n"
 
-#: src/lang.c:1046
+#: src/lang.c:1060
 #, c-format
 msgid	"\n"
 	"Warning: Found %d '-- \\n' lines, this may confuse some people.\n"
@@ -3377,7 +3411,7 @@ msgstr	"\n"
 	"Hoiatus: Leidsin %d '-- \\n' rida, mis võib tekitada osades inimestes "
 	"segadust.\n"
 
-#: src/lang.c:1047
+#: src/lang.c:1061
 #, c-format
 msgid	"\n"
 	"Warning: Your signature  is longer than %d lines.  Since signatures usually "
@@ -3392,217 +3426,217 @@ msgstr	"\n"
 	"võimalikult\n"
 	"         lühikesed.\n"
 
-#: src/lang.c:1051
+#: src/lang.c:1065
 #, c-format
 msgid	"Warning: this mail address may contain a spamtrap. %s=continue, %s=abort? "
 msgstr	"Hoiatus: see aadress võib sisaldada rämpsposti lõksu. %s=jätkan, %s=katkestan?"
 
-#: src/lang.c:1052
+#: src/lang.c:1066
 msgid	"\n"
 	"Warning: Signatures should start with '-- \\n' not with '--\\n'.\n"
 msgstr	"\n"
 	"Hoiatus: Signatuuride alguses peaks olema '-- \\n', mitte '--\\n'.\n"
 
-#: src/lang.c:1053
+#: src/lang.c:1067
 msgid	"Writing attributes file..."
 msgstr	"Kirjutan atribuutide faili..."
 
-#: src/lang.c:1054
+#: src/lang.c:1068
 #, c-format
 msgid	"%d Responses%s"
 msgstr	"%d Vastust%s"
 
-#: src/lang.c:1055
+#: src/lang.c:1069
 #, c-format
 msgid	"Added %d %s"
 msgstr	"Lisatud %d %s"
 
-#: src/lang.c:1056
+#: src/lang.c:1070
 msgid	"No unsubscribed groups to show"
 msgstr	"Tellimata gruppe pole"
 
-#: src/lang.c:1057
+#: src/lang.c:1071
 msgid	"Showing subscribed to groups only"
 msgstr	"Näitan ainult tellitud gruppe"
 
-#: src/lang.c:1058
+#: src/lang.c:1072
 msgid	"Showing unread groups only"
 msgstr	"Näitan ainult lugemata gruppe"
 
-#: src/lang.c:1059
+#: src/lang.c:1073
 msgid	"Yes "
 msgstr	"Jah "
 
-#: src/lang.c:1060
+#: src/lang.c:1074
 msgid	"    You have mail\n"
 msgstr	"    Teil on kiri\n"
 
-#: src/lang.c:1061
+#: src/lang.c:1075
 msgid	"All groups"
 msgstr	"Kõik grupid"
 
-#: src/lang.c:1062
+#: src/lang.c:1076
 msgid	"Apply pattern to    : "
 msgstr	"Rakenda mustrit     : "
 
-#: src/lang.c:1063
+#: src/lang.c:1077
 msgid	"From: line (ignore case)      "
 msgstr	"From: rida (tõstutundetu)   "
 
-#: src/lang.c:1064
+#: src/lang.c:1078
 msgid	"From: line (case sensitive)   "
 msgstr	"From: rida (tõstutundlik)   "
 
 # TRANSLATION TOO LONG
-#: src/lang.c:1065
+#: src/lang.c:1079
 msgid	"One or more lines of comment. <CR> to add a line or proceed if line is empty."
 msgstr	"Üks või enam kommentaari rida. <CR> rea lisamiseks või jätkamiseks, kui rida "
 	"on tühi."
 
-#: src/lang.c:1066
+#: src/lang.c:1080
 msgid	"From: line to add to filter file. <SPACE> toggles & <CR> sets."
 msgstr	"From: rida filtrite faili. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1067
+#: src/lang.c:1081
 msgid	"Linecount of articles to be filtered. < for less, > for more, = for equal."
 msgstr	"Filtraaritavate artiklite ridu. < on vähem, > on rohkem, = on võrdne."
 
-#: src/lang.c:1068
+#: src/lang.c:1082
 msgid	"Message-ID: line to add to filter file. <SPACE> toggles & <CR> sets."
 msgstr	"Message-ID: rida filtri faili lisamiseks. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1069
+#: src/lang.c:1083
 msgid	"Subject: line to add to filter file. <SPACE> toggles & <CR> sets."
 msgstr	"Subject: rida filtri faili lisamiseks. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1070
+#: src/lang.c:1084
 msgid	"Enter text pattern to filter if Subject: & From: lines are not what you want."
 msgstr	"Sisestage filtreerimiseks tekstimuster, kui Subject: ja From: ei ole piisav."
 
-#: src/lang.c:1071
+#: src/lang.c:1085
 msgid	"Select where text pattern should be applied. <SPACE> toggles & <CR> sets."
 msgstr	"Valige, kus tekstimustrit rakendada. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1072
+#: src/lang.c:1086
 msgid	"Expiration time in days for the entered filter. <SPACE> toggles & <CR> sets."
 msgstr	"Sisestatud filtri aegumisaeg päevades. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1073
+#: src/lang.c:1087
 msgid	"Apply kill only to current group or all groups. <SPACE> toggles & <CR> sets."
 msgstr	"Kasuta surmamist jooksval/kõikidel gruppidel. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1074
+#: src/lang.c:1088
 msgid	"Apply select to current group or all groups. <SPACE> toggles & <CR> sets."
 msgstr	"Kasuta valikut jooksval/kõikidel gruppidel. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1075
+#: src/lang.c:1089
 #, c-format
 msgid	"Kill From:     [%-*.*s] (y/n): "
 msgstr	"Surmake From:  [%-*.*s] (j/e): "
 
-#: src/lang.c:1076
+#: src/lang.c:1090
 msgid	"Kill Lines: (</>num): "
 msgstr	"Surmake read: (</>num): "
 
-#: src/lang.c:1077
+#: src/lang.c:1091
 msgid	"Kill Article Menu"
 msgstr	"Artuklite surmamise menüü"
 
-#: src/lang.c:1078
+#: src/lang.c:1092
 #, c-format
 msgid	"Kill Msg-Id:   [%-*.*s] (f/l/o/n): "
 msgstr	"Surmake Msg-Id: [%-*.*s] (f/l/o/n): "
 
-#: src/lang.c:1079
+#: src/lang.c:1093
 msgid	"Kill pattern scope  : "
 msgstr	"Surmamise mustri ulatus: "
 
-#: src/lang.c:1080
+#: src/lang.c:1094
 #, c-format
 msgid	"Kill Subject:  [%-*.*s] (y/n): "
 msgstr	"Surmake teema:  [%-*.*s] (j/e): "
 
-#: src/lang.c:1081
+#: src/lang.c:1095
 msgid	"Kill text pattern   : "
 msgstr	"Surmake tekst mustriga : "
 
-#: src/lang.c:1082
+#: src/lang.c:1096
 msgid	"Kill time in days   : "
 msgstr	"Surmamise aeg päevades : "
 
-#: src/lang.c:1083
+#: src/lang.c:1097
 msgid	"Message-ID: line              "
 msgstr	"Message-ID: rida            "
 
-#: src/lang.c:1084
+#: src/lang.c:1098
 msgid	"Select comment : "
 msgstr	"Valige kommentaar: "
 
-#: src/lang.c:1085
+#: src/lang.c:1099
 #, c-format
 msgid	"Select From    [%-*.*s] (y/n): "
 msgstr	"Valige From    [%-*.*s] (j/e): "
 
-#: src/lang.c:1086
+#: src/lang.c:1100
 msgid	"Select Lines: (</>num): "
 msgstr	"Valige read:   (</>num): "
 
-#: src/lang.c:1087
+#: src/lang.c:1101
 msgid	"Auto-select Article Menu"
 msgstr	"Automaatselt valitavate artiklite menüü"
 
-#: src/lang.c:1088
+#: src/lang.c:1102
 #, c-format
 msgid	"Select Msg-Id  [%-*.*s] (f/l/o/n): "
 msgstr	"Valige Msg-Id  [%-*.*s] (f/l/o/n): "
 
-#: src/lang.c:1089
+#: src/lang.c:1103
 msgid	"Select pattern scope: "
 msgstr	"Valige mustri ulatus: "
 
-#: src/lang.c:1090
+#: src/lang.c:1104
 #, c-format
 msgid	"Select Subject [%-*.*s] (y/n): "
 msgstr	"Valige teema   [%-*.*s] (j/e): "
 
-#: src/lang.c:1091
+#: src/lang.c:1105
 msgid	"Select text pattern : "
 msgstr	"Valige tekstimuster : "
 
-#: src/lang.c:1092
+#: src/lang.c:1106
 msgid	"Select time in days   : "
 msgstr	"Valige aeg päevades   : "
 
-#: src/lang.c:1093
+#: src/lang.c:1107
 msgid	"Subject: line (ignore case)   "
 msgstr	"Subject: rida (tõstutundetu)"
 
-#: src/lang.c:1094
+#: src/lang.c:1108
 msgid	"Subject: line (case sensitive)"
 msgstr	"Subject: rida (tõstutundlik)"
 
-#: src/lang.c:1095
+#: src/lang.c:1109
 #, c-format
 msgid	"%d days"
 msgstr	"%d päeva"
 
-#: src/lang.c:1096
+#: src/lang.c:1110
 msgid	"Unlimited"
 msgstr	"Piiramata"
 
-#: src/lang.c:1097
+#: src/lang.c:1111
 msgid	"Full"
 msgstr	"Täis"
 
-#: src/lang.c:1098
+#: src/lang.c:1112
 msgid	"Last"
 msgstr	"Viimane"
 
-#: src/lang.c:1099
+#: src/lang.c:1113
 msgid	"Only"
 msgstr	"Ainult"
 
-#: src/lang.c:1100
+#: src/lang.c:1114
 msgid	"# Filter file for the TIN newsreader\n"
 	"#\n"
 	"# Format:\n"
@@ -3674,198 +3708,198 @@ msgstr	"# TIN uudistelugeja filtrite fail\n"
 	"#   time=NUMBER       Mittekohustuslik. Filtri aegumine time_t väärtusena\n"
 	"#\n"
 
-#: src/lang.c:1128
+#: src/lang.c:1142
 #, c-format
 msgid	"Enter score for rule (default=%d): "
 msgstr	"Reegli kaal        (vaikimisi=%d): "
 
-#: src/lang.c:1129
+#: src/lang.c:1143
 msgid	"Enter the score weight (range 0 < score <= 10000)"
 msgstr	"Sisestage reegli kaal (vahemik on 0 < kaal <= 10000)"
 
 #. SCORE_MAX
-#: src/lang.c:1131
+#: src/lang.c:1145
 msgid	"Article deleted."
 msgstr	"Artikkel kustutatud."
 
-#: src/lang.c:1132
+#: src/lang.c:1146
 msgid	"Article undeleted."
 msgstr	"Artikkel taastatud."
 
-#: src/lang.c:1133
+#: src/lang.c:1147
 msgid	"Processing mail messages marked for deletion."
 msgstr	"Töötlen kirju, mis on kustutamiseks märgitud."
 
-#: src/lang.c:1134
+#: src/lang.c:1148
 msgid	"Processing saved articles marked for deletion."
 msgstr	"Töötlen salvestatud ja kustutamiseks märgitud artikleid."
 
-#: src/lang.c:1137
+#: src/lang.c:1151
 #, c-format
 msgid	"Environment variable %s not found. Set and retry..."
 msgstr	"Keskkonnamuutujat %s pole. Looge ja proovige uuesti..."
 
-#: src/lang.c:1141
+#: src/lang.c:1155
 msgid	"\n"
 	"Error: Followup-To set to more than one newsgroup!\n"
 msgstr	"\n"
 	"Viga: Followup-To real on rohkem kui üks grupp!\n"
 
-#: src/lang.c:1142
+#: src/lang.c:1156
 #, c-format
 msgid	"\n"
 	"Error: cross-posting to %d newsgroups and no Followup-To line!\n"
 msgstr	"\n"
 	"Viga: ristpostitus %d gruppi ja Followup-To rida puudub!\n"
 
-#: src/lang.c:1143
+#: src/lang.c:1157
 #, c-format
 msgid	"\n"
 	"Error: \"%s\" is not a valid newsgroup!\n"
 msgstr	"\n"
 	"Viga: \"%s\" ei ole lubatud grupp!\n"
 
-#: src/lang.c:1147
+#: src/lang.c:1161
 msgid	"Your server does not have Xref: in its XOVER information.\n"
 	"Tin will try to use XHDR XREF instead (slows down things a bit).\n"
 msgstr	"Teie server ei paku Xref: päiserida XOVER informatsioonis.\n"
 	"Tin üritab kasutada XHDR XREF selle asemel (võib olla mõnevõrra "
 	"aeganõudvam).\n"
 
-#: src/lang.c:1150
+#: src/lang.c:1164
 msgid	"Your server does not have Xref: in its XOVER information.\n"
 msgstr	"Teie server ei paku Xref: päiserida XOVER informatsioonis.\n"
 
-#: src/lang.c:1155
+#: src/lang.c:1169
 msgid	"Display Options"
 msgstr	"Ekraani seaded"
 
-#: src/lang.c:1161
+#: src/lang.c:1175
 msgid	"Color Options"
 msgstr	"Värvide seaded"
 
-#: src/lang.c:1167
+#: src/lang.c:1181
 msgid	"Article-Limiting Options"
 msgstr	"Artikli piirangute seaded"
 
-#: src/lang.c:1173
+#: src/lang.c:1187
 msgid	"Posting/Mailing Options"
 msgstr	"Postitamise/saatmise seaded"
 
-#: src/lang.c:1179
+#: src/lang.c:1193
 msgid	"Saving/Printing Options"
 msgstr	"Salvestamise/trükkimise seaded"
 
-#: src/lang.c:1185
+#: src/lang.c:1199
 msgid	"Expert Options"
 msgstr	"Ekspertseaded"
 
-#: src/lang.c:1191
+#: src/lang.c:1205
 msgid	"Filtering Options"
 msgstr	"Filtreerimise seaded"
 
-#: src/lang.c:1196 src/lang.c:1222 src/lang.c:1228 src/lang.c:1235 src/lang.c:1267
-#: src/lang.c:1273 src/lang.c:1281 src/lang.c:1301 src/lang.c:1307 src/lang.c:1382
-#: src/lang.c:1388 src/lang.c:1523 src/lang.c:1529 src/lang.c:1543 src/lang.c:1549
-#: src/lang.c:1555 src/lang.c:1567 src/lang.c:1574 src/lang.c:1625 src/lang.c:1631
-#: src/lang.c:1637 src/lang.c:1643 src/lang.c:1649 src/lang.c:1655 src/lang.c:1661
-#: src/lang.c:1667 src/lang.c:1673 src/lang.c:1679 src/lang.c:1685 src/lang.c:1691
-#: src/lang.c:1697 src/lang.c:1703 src/lang.c:1709 src/lang.c:1715 src/lang.c:1721
-#: src/lang.c:1727 src/lang.c:1733 src/lang.c:1739 src/lang.c:1747 src/lang.c:1753
-#: src/lang.c:1758 src/lang.c:1763 src/lang.c:1770 src/lang.c:1788 src/lang.c:1822
-#: src/lang.c:1876 src/lang.c:1883 src/lang.c:1889 src/lang.c:1928 src/lang.c:1945
-#: src/lang.c:1998 src/lang.c:2031 src/lang.c:2051 src/lang.c:2086 src/lang.c:2094
-#: src/lang.c:2124 src/lang.c:2136
+#: src/lang.c:1210 src/lang.c:1236 src/lang.c:1242 src/lang.c:1249 src/lang.c:1281
+#: src/lang.c:1287 src/lang.c:1295 src/lang.c:1315 src/lang.c:1390 src/lang.c:1396
+#: src/lang.c:1532 src/lang.c:1538 src/lang.c:1552 src/lang.c:1558 src/lang.c:1564
+#: src/lang.c:1576 src/lang.c:1583 src/lang.c:1634 src/lang.c:1640 src/lang.c:1646
+#: src/lang.c:1652 src/lang.c:1658 src/lang.c:1664 src/lang.c:1670 src/lang.c:1676
+#: src/lang.c:1682 src/lang.c:1688 src/lang.c:1694 src/lang.c:1700 src/lang.c:1706
+#: src/lang.c:1712 src/lang.c:1718 src/lang.c:1724 src/lang.c:1730 src/lang.c:1736
+#: src/lang.c:1742 src/lang.c:1748 src/lang.c:1755 src/lang.c:1761 src/lang.c:1767
+#: src/lang.c:1774 src/lang.c:1785 src/lang.c:1791 src/lang.c:1797 src/lang.c:1803
+#: src/lang.c:1809 src/lang.c:1829 src/lang.c:1863 src/lang.c:1917 src/lang.c:1924
+#: src/lang.c:1930 src/lang.c:1969 src/lang.c:1986 src/lang.c:2039 src/lang.c:2072
+#: src/lang.c:2092 src/lang.c:2127 src/lang.c:2135 src/lang.c:2165 src/lang.c:2177
 msgid	"<SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr	"<TÜHIK> lülitab, <CR> seab, <ESC> katkestab."
 
-#: src/lang.c:1197
+#: src/lang.c:1211
 msgid	"Show mini menu & posting etiquette :"
 msgstr	"Näita minimenüüd & post. etiketti  :"
 
-#: src/lang.c:1198
+#: src/lang.c:1212
 msgid	"# If ON show a mini menu of useful commands at each level\n"
 	"# and posting etiquette after composing an article\n"
 msgstr	"# Kui väärtus on ON, näita enimkasutatavate käskude minimenüüd\n"
 	"# ja peale artikli kirjutamist postitamise etiketti.\n"
 
-#: src/lang.c:1203
+#: src/lang.c:1217
 msgid	"Show short description for each newsgroup. <SPACE> toggles & <CR> sets."
 msgstr	"Näita gruppide lühikirjeldusi. <TÜHIK> lülitab ja <CR> seab."
 
-#: src/lang.c:1204
+#: src/lang.c:1218
 msgid	"Show description of each newsgroup :"
 msgstr	"Näita iga grupi lühikirjeldust     :"
 
-#: src/lang.c:1205
+#: src/lang.c:1219
 msgid	"# If ON show group description text after newsgroup name at\n"
 	"# group selection level\n"
 msgstr	"# Kui väärtus on ON, näita gruppide tasemel iga grupi nime\n"
 	"# järel grupi lühikirjeldust\n"
 
-#: src/lang.c:1210
+#: src/lang.c:1224
 msgid	"Show Subject & From (author) fields in group menu. <SPACE> toggles & <CR> "
 	"sets."
 msgstr	"Näita grupimenüüs teema ja From (autor) välju. <TÜHIK> lülitab ja <CR> seab."
 
-#: src/lang.c:1211
+#: src/lang.c:1225
 msgid	"In group menu, show author by      :"
 msgstr	"Näita grupimenüüs autorit          :"
 
-#: src/lang.c:1212
+#: src/lang.c:1226
 msgid	"# Part of from field to display 0) none 1) address 2) full name 3) both\n"
 msgstr	"# Millist saatja nime osa näidata 0) mitte midagi 1) aadress 2) täisnimi\n"
 	"# 3) mõlemad\n"
 
-#: src/lang.c:1216
+#: src/lang.c:1230
 msgid	"Draw -> or highlighted bar for selection. <SPACE> toggles & <CR> sets."
 msgstr	"Märgi valik -> või heleda ribaga. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1217
+#: src/lang.c:1231
 msgid	"Draw -> instead of highlighted bar :"
 msgstr	"Joonista -> heleda riba asemel     :"
 
-#: src/lang.c:1218
+#: src/lang.c:1232
 msgid	"# If ON use -> otherwise highlighted bar for selection\n"
 msgstr	"# Kui väärtus on on, kasuta valiku märkimiseks ->, muidu riba\n"
 
-#: src/lang.c:1223
+#: src/lang.c:1237
 msgid	"Use inverse video for page headers :"
 msgstr	"Kasuta päistel pööratud videot     :"
 
-#: src/lang.c:1224
+#: src/lang.c:1238
 msgid	"# If ON use inverse video for page headers at different levels\n"
 msgstr	"# Kui väärtus on ON, kasuta erinevatel tasemetel päiste näitamisel\n"
 	"# pööratud videot\n"
 
-#: src/lang.c:1229
+#: src/lang.c:1243
 msgid	"Thread articles by                 :"
 msgstr	"Artiklite teemadesse jagamine      :"
 
-#: src/lang.c:1230
+#: src/lang.c:1244
 msgid	"# Thread articles on 0=(nothing) 1=(Subject) 2=(References) 3=(Both)\n"
 	"# 4=(Multipart Subject).\n"
 msgstr	"# Jaga artiklid teemadesse 0=(ei jaga) 1=(teema järgi) 2=(viite järgi)\n"
 	"# 3=(mõlema järgi) 4=(Mitmeosaliste teema).\n"
 
-#: src/lang.c:1236
+#: src/lang.c:1250
 msgid	"Score of a thread                  :"
 msgstr	"Teema kaal                         :"
 
-#: src/lang.c:1237
+#: src/lang.c:1251
 msgid	"# Thread score 0=(Max) 1=(Sum) 2=(Average)\n"
 msgstr	"# Teema kaal 0=(Maksimum) 1=(Summa) 2=(Keskmine)\n"
 
-#: src/lang.c:1241
+#: src/lang.c:1255
 msgid	"Sort articles by Subject, From, Date or Score. <SPACE> toggles & <CR> sets."
 msgstr	"Järjesta artiklid Subject, From, Date, kaalu järgi. <TÜHIK> lülitab, <CR> "
 	"seab."
 
-#: src/lang.c:1242
+#: src/lang.c:1256
 msgid	"Sort articles by                   :"
 msgstr	"Artiklite järjestus                :"
 
-#: src/lang.c:1243
+#: src/lang.c:1257
 msgid	"# Sort articles by 0=(nothing) 1=(Subject descend) 2=(Subject ascend)\n"
 	"# 3=(From descend) 4=(From ascend) 5=(Date descend) 6=(Date ascend)\n"
 	"# 7=(Score descend) 8=(Score ascend) 9=(Lines descend) 10=(Lines ascend).\n"
@@ -3873,57 +3907,57 @@ msgstr	"# Artiklite järjestamine 0=(ei järjesta) 1=(Teema kahanev) 2=(Teema kasv
 	"# 3=(Saatja kahanev) 4=(Saatja kasvava) 5=(Kuup. kahanev) 6=(Kuup. kasvav)\n"
 	"# 7=(Kaal kahanev) 8=(Kaal kasvav) 9=(Ridu kahanev) 10=(Ridu kasvav).\n"
 
-#: src/lang.c:1249
+#: src/lang.c:1263
 msgid	"Sort threads by Nothing or Score. <SPACE> toggles & <CR> sets."
 msgstr	"Järjesta teemad mitte millegi või kaalu järgi. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1250
+#: src/lang.c:1264
 msgid	"Sort threads by                    :"
 msgstr	"Teemade järjestus                  :"
 
-#: src/lang.c:1251
+#: src/lang.c:1265
 msgid	"# Sort thread by 0=(nothing) 1=(Score descend) 2=(Score ascend)\n"
 msgstr	"# Järjesta teema 0=(ei järjesta) 1=skoor kahanevalt, 2=skoor kasvavalt\n"
 
-#: src/lang.c:1255
+#: src/lang.c:1269
 msgid	"Put cursor at first/last unread art in groups. <SPACE> toggles & <CR> sets."
 msgstr	"Vii kursor grupis esimesele/viimasele lugemata artiklile. <TÜHIK> lülitab, "
 	"<CR> seab."
 
-#: src/lang.c:1256
+#: src/lang.c:1270
 msgid	"Goto first unread article in group :"
 msgstr	"Mine grupis esimesele lugemata art.:"
 
-#: src/lang.c:1257
+#: src/lang.c:1271
 msgid	"# If ON put cursor at first unread art in group otherwise last art\n"
 msgstr	"# Kui väärtus on ON, vii kursor grupi esimesele lugemata artiklile,\n"
 	"# muidu viimasele\n"
 
-#: src/lang.c:1261
+#: src/lang.c:1275
 msgid	"Show all articles or only unread articles. <SPACE> toggles & <CR> sets."
 msgstr	"Näita kõiki või ainult lugemata artikleid. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1262
+#: src/lang.c:1276
 msgid	"Show only unread articles          :"
 msgstr	"Näita ainult lugemata artikleid    :"
 
-#: src/lang.c:1263
+#: src/lang.c:1277
 msgid	"# If ON show only new/unread articles otherwise show all.\n"
 msgstr	"# Kui väärtus on ON, näita ainult lugemata artikleid, muidu näita kõiki.\n"
 
-#: src/lang.c:1268
+#: src/lang.c:1282
 msgid	"Show only groups with unread arts  :"
 msgstr	"Ainult lugemata artiklitega grupid :"
 
-#: src/lang.c:1269
+#: src/lang.c:1283
 msgid	"# If ON show only subscribed to groups that contain unread articles.\n"
 msgstr	"# Näita ainult neid tellitud gruppe, kus on lugemata artikleid.\n"
 
-#: src/lang.c:1274
+#: src/lang.c:1288
 msgid	"Filter which articles              :"
 msgstr	"Filtreeri artikleid                :"
 
-#: src/lang.c:1275
+#: src/lang.c:1289
 msgid	"# 0=(Only kill unread articles)\n"
 	"# 1=(Kill all articles and show in threads marked with K)\n"
 	"# 2=(Kill all articles and never show them).\n"
@@ -3931,226 +3965,218 @@ msgstr	"# 0=(Surma ainult lugemata artiklid)\n"
 	"# 1=(Surma kõik artiklid ja näita teemades märgiga K)\n"
 	"# 2=(Surma kõik artiklid ja ära näita neid).\n"
 
-#: src/lang.c:1282
+#: src/lang.c:1296
 msgid	"Tab goes to next unread article    :"
 msgstr	"Tab viib järgmisele lugemata art.  :"
 
-#: src/lang.c:1283
+#: src/lang.c:1297
 msgid	"# If ON the TAB command will go to next unread article at article viewer "
 	"level\n"
 msgstr	"# Kui väärtus on ON, viib Tab käsk järgmisele lugemata artiklile\n"
 
-#: src/lang.c:1287
+#: src/lang.c:1301
 msgid	"Scrolling with <SPACE> past the end of an art. jumps to the next unread one."
 msgstr	"Tühikuga artikli lõpust edasi kerimine hüppab järgmisele lugemata artiklile."
 
-#: src/lang.c:1288
+#: src/lang.c:1302
 msgid	"Space goes to next unread article  :"
 msgstr	"Tühik viib järgmisele lugemata art.:"
 
-#: src/lang.c:1289
+#: src/lang.c:1303
 msgid	"# If ON the SPACE command will go to next unread article at article viewer\n"
 	"# level when the end of the article is reached (rn-style pager)\n"
 msgstr	"# Kui väärtus on ON, viib artikli lõpus tühiku vajutamine\n"
 	"# järgmisele lugemata artiklile (rn stiil)\n"
 
-#: src/lang.c:1294
+#: src/lang.c:1308
 msgid	"Scrolling with <PGDN>/<DOWN> past the end of an art. jumps to the unread one."
 msgstr	"<PGDN>/noolega art. lõpust edasi kerimine hüppab järgmisele lugemata art."
 
-#: src/lang.c:1295
+#: src/lang.c:1309
 msgid	"PgDn goes to next unread article   :"
 msgstr	"PgDn viib järgmisele lugemata art. :"
 
-#: src/lang.c:1296
+#: src/lang.c:1310
 msgid	"# If ON the PGDN or DOWN command will go to next unread article when\n"
 	"# pressed at end of message\n"
 msgstr	"# Kui väärtus on ON, viib artikli lõpus PGDN või nool alla vajutamine\n"
 	"# järgmisele artiklile\n"
 
-#: src/lang.c:1302
+#: src/lang.c:1316
 msgid	"List thread using right arrow key  :"
 msgstr	"Nool paremale näitab teema loendit :"
 
-#: src/lang.c:1303
+#: src/lang.c:1317
 msgid	"# If ON automatically list thread when entering it using right arrow key.\n"
 msgstr	"# Kui väärtus on ON, näita nool paremale klahvi vajutamisel teema artikleid.\n"
 
-#: src/lang.c:1308
-msgid	"Do tab after X automatically       :"
-msgstr	"Tabulaator automaatselt peale X    :"
-
-#: src/lang.c:1309
-msgid	"# If ON a TAB command will be automatically done after the X command\n"
-msgstr	"# Kui väärtus on ON, täidetakse TAB käsk automaatselt peale käsku X\n"
-
-#: src/lang.c:1313
+#: src/lang.c:1321
 msgid	"Enter character to indicate deleted articles. <CR> sets, <ESC> cancels."
 msgstr	"Sisestage sümbol kustutatud artiklite märkimiseks. <CR> seab, <ESC> katkestab."
 
-#: src/lang.c:1314
+#: src/lang.c:1322
 msgid	"Character to show deleted articles :"
 msgstr	"Kustutatud artiklite marker        :"
 
-#: src/lang.c:1315
+#: src/lang.c:1323
 msgid	"# Character used to show that an art was deleted (default 'D')\n"
 	"# _ is turned into ' '\n"
 msgstr	"# Sümbol, mis tähistab kustutatud artiklit (vaikimisi 'D')\n"
 	"# _ asendatakse tühikuga ' '\n"
 
-#: src/lang.c:1320
+#: src/lang.c:1328
 msgid	"Enter character to indicate articles in a range. <CR> sets, <ESC> cancels."
 msgstr	"Sisestage sümbol, mis märgib vahemikku kuuluvaid artikleid. <CR> seab, <ESC> "
 	"katkestab."
 
-#: src/lang.c:1321
+#: src/lang.c:1329
 msgid	"Character to show inrange articles :"
 msgstr	"Artiklite vahemiku marker          :"
 
-#: src/lang.c:1322
+#: src/lang.c:1330
 msgid	"# Character used to show that an art is in a range (default '#')\n"
 	"# _ is turned into ' '\n"
 msgstr	"# Sümbol, mis märgib vahemikku kuuluvaid artikleid (vaikimisi '#')\n"
 	"# _ asendatakse tühikuga ' '\n"
 
-#: src/lang.c:1327
+#: src/lang.c:1335
 msgid	"Enter character to indicate that article will return. <CR> sets, <ESC> "
 	"cancels."
 msgstr	"Sisestage tagasituleva artikli marker. <CR> seab, <ESC> katkestab."
 
-#: src/lang.c:1328
+#: src/lang.c:1336
 msgid	"Character to show returning arts   :"
 msgstr	"Tagasi tulnud artiklite marker     :"
 
-#: src/lang.c:1329
+#: src/lang.c:1337
 msgid	"# Character used to show that an art will return (default '-')\n"
 	"# _ is turned into ' '\n"
 msgstr	"# Sümbol, mis näitab, et artikkel tuleb tagasi (vaikimisi '-')\n"
 	"# _ asendatakse tühikuga ' '\n"
 
-#: src/lang.c:1334
+#: src/lang.c:1342
 msgid	"Enter character to indicate selected articles. <CR> sets, <ESC> cancels."
 msgstr	"Sisestage valitud artikleid märkiv sümbol. <CR> seab, <ESC> katkestab."
 
-#: src/lang.c:1335
+#: src/lang.c:1343
 msgid	"Character to show selected articles:"
 msgstr	"Valitud artiklite marker           :"
 
-#: src/lang.c:1336
+#: src/lang.c:1344
 msgid	"# Character used to show that an art was auto-selected (default '*')\n"
 	"# _ is turned into ' '\n"
 msgstr	"# Sümbol, mis näitab, et artikkel on automaatselt valitud (vaikimisi '*')\n"
 	"# _ asendatakse tühikuga ' '\n"
 
-#: src/lang.c:1341
+#: src/lang.c:1349
 msgid	"Enter character to indicate recent articles. <CR> sets, <ESC> cancels."
 msgstr	"Sisestage värskeid artikleid märkiv sümbol. <CR> seab, <ESC> katkestab."
 
-#: src/lang.c:1342
+#: src/lang.c:1350
 msgid	"Character to show recent articles  :"
 msgstr	"Värskete artiklite marker          :"
 
-#: src/lang.c:1343
+#: src/lang.c:1351
 msgid	"# Character used to show that an art is recent (default 'o')\n"
 	"# _ is turned into ' '\n"
 msgstr	"# Sümbol, mis näitab, et artikkel on värske (vaikimisi 'o')\n"
 	"# _ asendatakse tühikuga ' '\n"
 
-#: src/lang.c:1348
+#: src/lang.c:1356
 msgid	"Enter character to indicate unread articles. <CR> sets, <ESC> cancels."
 msgstr	"Sisestage lugemata artikleid märkiv sümbol. <CR> seab, <ESC> katkestab."
 
-#: src/lang.c:1349
+#: src/lang.c:1357
 msgid	"Character to show unread articles  :"
 msgstr	"Lugemata artiklite marker          :"
 
-#: src/lang.c:1350
+#: src/lang.c:1358
 msgid	"# Character used to show that an art is unread (default '+')\n"
 	"# _ is turned into ' '\n"
 msgstr	"# Sümbol, mis näitab, et artikkel on lugemata (vaikimisi '+')\n"
 	"# _ asendatakse tühikuga ' '\n"
 
-#: src/lang.c:1355
+#: src/lang.c:1363
 msgid	"Enter character to indicate read articles. <CR> sets, <ESC> cancels."
 msgstr	"Sisestage loetud artikleid märkiv sümbol. <CR> seab, <ESC> katkestab."
 
-#: src/lang.c:1356
+#: src/lang.c:1364
 msgid	"Character to show read articles    :"
 msgstr	"Loetud artiklite marker            :"
 
-#: src/lang.c:1357
+#: src/lang.c:1365
 msgid	"# Character used to show that an art was read (default ' ')\n"
 	"# _ is turned into ' '\n"
 msgstr	"# Sümbol, mis näitab, et artikkel on loetud (vaikimisi ' ')\n"
 	"# _ asendatakse tühikuga ' '\n"
 
-#: src/lang.c:1362
+#: src/lang.c:1370
 msgid	"Enter character to indicate killed articles. <CR> sets, <ESC> cancels."
 msgstr	"Sisestage surmatud artikleid märkiv sümbol. <CR> seab, <ESC> katkestab."
 
-#: src/lang.c:1363
+#: src/lang.c:1371
 msgid	"Character to show killed articles  :"
 msgstr	"Surmatud artiklite marker          :"
 
-#: src/lang.c:1364
+#: src/lang.c:1372
 msgid	"# Character used to show that an art was killed (default 'K')\n"
 	"# kill_level must be set accordingly, _ is turned into ' '\n"
 msgstr	"# Sümbol, mis näitab, et artikkel on surmatud (vaikimisi 'K')\n"
 	"# _ asendatakse tühikuga ' '\n"
 
-#: src/lang.c:1369
+#: src/lang.c:1377
 msgid	"Enter character to indicate read selected articles. <CR> sets, <ESC> cancels."
 msgstr	"Sisestage valitud artikleid märkiv sümbol. <CR> seab, <ESC> katkestab."
 
-#: src/lang.c:1370
+#: src/lang.c:1378
 msgid	"Character to show readselected arts:"
 msgstr	"Lugemiseks valitud artiklite marker:"
 
-#: src/lang.c:1371
+#: src/lang.c:1379
 msgid	"# Character used to show that an art was selected before read (default ':')\n"
 	"# kill_level must be set accordingly, _ is turned into ' '\n"
 msgstr	"# Sümbol, mis näitab, et artikkel on enne lugemist valitud (vaikimisi ':')\n"
 	"# Surmamise tase peab samuti olema määratud, _ asendatakse tühikuga ' '\n"
 
-#: src/lang.c:1376
+#: src/lang.c:1384
 msgid	"Enter maximum length of newsgroup names displayed. <CR> sets."
 msgstr	"Sisestage maksimaalne näidatav grupi nime pikkus. <CR> seab."
 
-#: src/lang.c:1377
+#: src/lang.c:1385
 msgid	"Max. length of group names shown   :"
 msgstr	"Maksimaalne grupinime pikkus       :"
 
-#: src/lang.c:1378
+#: src/lang.c:1386
 msgid	"# Maximum length of the names of newsgroups displayed\n"
 msgstr	"# Maksimaalne grupi nime pikkus, mida näidatakse ekraanil\n"
 
-#: src/lang.c:1383
+#: src/lang.c:1391
 msgid	"Show no. of lines in thread listing:"
 msgstr	"Ridade arv teema loendis           :"
 
-#: src/lang.c:1384
+#: src/lang.c:1392
 msgid	"# Show number of lines of first unread article in thread listing (ON/OFF)\n"
 msgstr	"# Näita teema loendis esimese lugemata artikli ridade arvu (ON/OFF)\n"
 
-#: src/lang.c:1389
+#: src/lang.c:1397
 msgid	"Show score of article in listing   :"
 msgstr	"Näita loendis artikli kaalu        :"
 
-#: src/lang.c:1390
+#: src/lang.c:1398
 msgid	"# Show score of article/thread in listing (ON/OFF)\n"
 msgstr	"# Näita loendis artikli/teema kaalu (ON/OFF)\n"
 
-#: src/lang.c:1394
+#: src/lang.c:1402
 msgid	"0 = full page scrolling, -1 = show previous last line as first on next page, "
 	"-2 = half page"
 msgstr	"0 = kerida kogu leht, -1 = näita eelmist rida järgmise lehe esimese reana, -2 "
 	"= pool lehte"
 
-#: src/lang.c:1395
+#: src/lang.c:1403
 msgid	"Number of lines to scroll in pager :"
 msgstr	"Lehitsejas keritavate ridade arv   :"
 
-#: src/lang.c:1396
+#: src/lang.c:1404
 msgid	"# Number of lines that cursor-up/down will scroll in article pager\n"
 	"# eg, 1+ = line-by-line, 0 = page-by-page (traditional behavior),\n"
 	"# -1 = the top/bottom line is carried over onto the next page,\n"
@@ -4160,57 +4186,57 @@ msgstr	"# Ridade arv, mida lehitseja kerib üles/alla\n"
 	"# -1 = ülemine või alumine rida jäetakse järgmisele lehele\n"
 	"# -2 = poole lehe kaupa kerimine\n"
 
-#: src/lang.c:1403
+#: src/lang.c:1411
 msgid	"Display signatures. <SPACE> toggles & <CR> sets."
 msgstr	"Näita signatuure, <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1404
+#: src/lang.c:1412
 msgid	"Display signatures                 :"
 msgstr	"Näita signatuure                   :"
 
-#: src/lang.c:1405
+#: src/lang.c:1413
 msgid	"# If OFF don't show signatures when displaying articles\n"
 msgstr	"# Kui väärtus on OFF, ei näita koos artiklitega signatuure\n"
 
-#: src/lang.c:1409
+#: src/lang.c:1417
 msgid	"Display uuencoded data as tagged attachments. <SPACE> toggles & <CR> sets."
 msgstr	"Näita uuenkodeeritud andmeid märgitud lisadena. <TÜHIK> lülitab ja <CR> seab."
 
-#: src/lang.c:1410
+#: src/lang.c:1418
 msgid	"Display uue data as an attachment  :"
 msgstr	"Näita uuenk. andmeid lisadena      :"
 
-#: src/lang.c:1411
+#: src/lang.c:1419
 msgid	"# If ON uuencoded data will be condensed to a single tag line showing\n"
 	"# size and filename, similar to how MIME attachments are displayed\n"
 msgstr	"# Kui väärtus on ON, näidatakse uuenkodeeritud andmete asemel MIME lisadega\n"
 	"# analoogselt märgendatud rida, mis sisaldab andmete mahtu ja failinime.\n"
 
 #
-#: src/lang.c:1416
+#: src/lang.c:1424
 msgid	"Decode German style TeX umlaut codes to ISO. <SPACE> toggles & <CR> sets."
 msgstr	"Dekodeeri saksa TeX esituses tähed ISO koodideks. <TÜHIK> lülitab, <CR> seab."
 
 #
-#: src/lang.c:1417
+#: src/lang.c:1425
 msgid	"Display \"a as Umlaut-a             :"
 msgstr	"Näita \"a kui Umlaut-a              :"
 
-#: src/lang.c:1418
+#: src/lang.c:1426
 msgid	"# If ON decode German style TeX umlaut codes to ISO and\n"
 	"# show \"a as Umlaut-a, etc.\n"
 msgstr	"# Kui väärtus on ON, teisenda saksa TeX esituses tähed ISO\n"
 	"# koodideks ja näita \"a nagu Umlaut-a, jne.\n"
 
-#: src/lang.c:1422 src/lang.c:1432
+#: src/lang.c:1431 src/lang.c:1441
 msgid	"Space separated list of header fields"
 msgstr	"Tühikuga eraldatud päised"
 
-#: src/lang.c:1423
+#: src/lang.c:1432
 msgid	"Display these header fields (or *) :"
 msgstr	"Näita neid päiseid (või *)         :"
 
-#: src/lang.c:1424
+#: src/lang.c:1433
 msgid	"# Which news headers you wish to see. If you want to see _all_ the headers,\n"
 	"# place an '*' as this value. This is the only way a wildcard can be used.\n"
 	"# If you enter 'X-' as the value, you will see all headers beginning with\n"
@@ -4225,11 +4251,11 @@ msgstr	"# Milliseid artikli päiseid te soovite näha. Kui te soovite näha _kõiki_
 	"tühikut.\n"
 	"# Kui te väärtust ei määra, lülitatakse see omadus välja.\n"
 
-#: src/lang.c:1433
+#: src/lang.c:1442
 msgid	"Do not display these header fields :"
 msgstr	"Ära näita neid päiseridu           :"
 
-#: src/lang.c:1434
+#: src/lang.c:1443
 msgid	"# Same as 'news_headers_to_display' except it denotes the opposite.\n"
 	"# An example of using both options might be if you thought X- headers were\n"
 	"# A Good Thing(tm), but thought Alan and Pape were miscreants...well then "
@@ -4247,28 +4273,28 @@ msgstr	"# Sama kui 'news_headers_to_display', kuid tähendus on vastupidine.\n"
 	"#\n"
 	"# Kui te väärtust ei määra, lülitatakse see omadus välja.\n"
 
-#: src/lang.c:1444
+#: src/lang.c:1453
 msgid	"Do you want to enable automatic handling of multipart/alternative articles?"
 msgstr	"Kas te soovite multipart/alternative artiklite automaatset käsitlemist?"
 
-#: src/lang.c:1445
+#: src/lang.c:1454
 msgid	"Skip multipart/alternative parts   :"
 msgstr	"Jäta multipart/alternative osad    :"
 
-#: src/lang.c:1446
+#: src/lang.c:1455
 msgid	"# If ON strip multipart/alternative messages automatically\n"
 msgstr	"# Kui väärtus on ON, loobu automaatselt multipart/alternative teadete "
 	"lisadest\n"
 
-#: src/lang.c:1451
+#: src/lang.c:1460
 msgid	"A regex used to decide which lines to show in col_quote."
 msgstr	"Regulaaravaldis otsustamaks, milliseid ridu tsitaatides näidata."
 
-#: src/lang.c:1452
+#: src/lang.c:1461
 msgid	"Regex used to show quoted lines    :"
 msgstr	"Tsiteeritud ridade näitamise regex :"
 
-#: src/lang.c:1453
+#: src/lang.c:1462
 msgid	"# A regular expression that tin will use to decide which lines are\n"
 	"# quoted when viewing articles. Quoted lines are shown in col_quote.\n"
 	"# If you leave this blank, tin will use a built in default.\n"
@@ -4276,15 +4302,15 @@ msgstr	"# Regulaaravaldis, mida tin kasutab, et artikli vaatamisel otsustada,\n"
 	"# milliseid read on tsiteeritud. Tsiteeritud ridu näidatakse col_quote.\n"
 	"# Kui te jätate selle tühjaks, kasutab tin sisseehitatud väärtust.\n"
 
-#: src/lang.c:1459
+#: src/lang.c:1468
 msgid	"A regex used to decide which lines to show in col_quote2."
 msgstr	"Regulaaravaldis otsustamaks, milliseid ridu näidata col_quote2."
 
-#: src/lang.c:1460
+#: src/lang.c:1469
 msgid	"Regex used to show twice quoted l. :"
 msgstr	"Topelt tsiteeritud ridu näitav reg :"
 
-#: src/lang.c:1461
+#: src/lang.c:1470
 msgid	"# A regular expression that tin will use to decide which lines are\n"
 	"# quoted twice. Twice quoted lines are shown in col_quote2.\n"
 	"# If you leave this blank, tin will use a built in default.\n"
@@ -4293,15 +4319,15 @@ msgstr	"# Regulaaravaldis, mida tin kasutab, et otsustada, millised\n"
 	"# näidatakse col_quote2.\n"
 	"# Kui te jätate selle tühjaks, kasutab tin sisseehitatud väärtust.\n"
 
-#: src/lang.c:1467
+#: src/lang.c:1476
 msgid	"A regex used to decide which lines to show in col_quote3."
 msgstr	"Regulaaravaldis otsustamaks, milliseid ridu näidata col_quote3."
 
-#: src/lang.c:1468
+#: src/lang.c:1477
 msgid	"Regex used to show >= 3 times q.l. :"
 msgstr	">= 3 tsiteeritud ridu näitav reg   :"
 
-#: src/lang.c:1469
+#: src/lang.c:1478
 msgid	"# A regular expression that tin will use to decide which lines are\n"
 	"# quoted >=3 times. >=3 times quoted lines are shown in col_quote3.\n"
 	"# If you leave this blank, tin will use a built in default.\n"
@@ -4310,15 +4336,15 @@ msgstr	"# Regulaaravaldis, mida tin kasutab, et otsustada, millised\n"
 	"# näidatakse col_quote3.\n"
 	"# Kui te jätate selle tühjaks, kasutab tin sisseehitatud väärtust.\n"
 
-#: src/lang.c:1476
+#: src/lang.c:1485
 msgid	"A regex used to decide which words to show in col_markslashes."
 msgstr	"Regex et otsustada, milliseid sõnu näidata col_markslashes abil."
 
-#: src/lang.c:1477
+#: src/lang.c:1486
 msgid	"Regex used to highlight /slashes/  :"
 msgstr	"Regex et esile tõsta /kaldkriipse/ :"
 
-#: src/lang.c:1478
+#: src/lang.c:1487
 msgid	"# A regular expression that tin will use to decide which words\n"
 	"# bounded by '/' are to be shown in col_markslashes.\n"
 	"# If you leave this blank, tin will use a built in default.\n"
@@ -4326,15 +4352,15 @@ msgstr	"# Regulaaravaldis mida tin kasutab et otsustada, milliseid '/' vahel ole
 	"# sõnu näidata col_markslashes abil. Kui jätate selle tühjaks, kasutab\n"
 	"# tin sisse ehitatud vaikeväärtust.\n"
 
-#: src/lang.c:1484
+#: src/lang.c:1493
 msgid	"A regex used to decide which words to show in col_markstars."
 msgstr	"Regex et otsustada, milliseid sõnu näidata col_markstars abil."
 
-#: src/lang.c:1485
+#: src/lang.c:1494
 msgid	"Regex used to highlight *stars*    :"
 msgstr	"Regex et esile tõsta *tärne*       :"
 
-#: src/lang.c:1486
+#: src/lang.c:1495
 msgid	"# A regular expression that tin will use to decide which words\n"
 	"# bounded by '*' are to be shown in col_markstars.\n"
 	"# If you leave this blank, tin will use a built in default.\n"
@@ -4342,15 +4368,15 @@ msgstr	"# Regulaaravaldis mida tin kasutab et otsustada, milliseid '*' vahel ole
 	"# sõnu näidata col_markstars abil. Kui jätate selle tühjaks, kasutab\n"
 	"# tin sisse ehitatud vaikeväärtust.\n"
 
-#: src/lang.c:1492
+#: src/lang.c:1501
 msgid	"A regex used to decide which words to show in col_markstroke."
 msgstr	"Regex et otsustada, milliseid sõnu näidata col_markstroke abil."
 
-#: src/lang.c:1493
+#: src/lang.c:1502
 msgid	"Regex used to highlight -strokes-  :"
 msgstr	"Regex et esile tõsta -kriipse-     :"
 
-#: src/lang.c:1494
+#: src/lang.c:1503
 msgid	"# A regular expression that tin will use to decide which words\n"
 	"# bounded by '-' are to be shown in col_markstroke.\n"
 	"# If you leave this blank, tin will use a built in default.\n"
@@ -4358,15 +4384,15 @@ msgstr	"# Regulaaravaldis mida tin kasutab et otsustada, milliseid '-' vahel ole
 	"# sõnu näidata col_markstroke abil. Kui jätate selle tühjaks, kasutab\n"
 	"# tin sisse ehitatud vaikeväärtust.\n"
 
-#: src/lang.c:1500
+#: src/lang.c:1509
 msgid	"A regex used to decide which words to show in col_markdash."
 msgstr	"Regex et otsustada, milliseid sõnu näidata col_markdash abil."
 
-#: src/lang.c:1501
+#: src/lang.c:1510
 msgid	"Regex used to highlight _underline_:"
 msgstr	"Regex et esile tõsta _alakriipse_  :"
 
-#: src/lang.c:1502
+#: src/lang.c:1511
 msgid	"# A regular expression that tin will use to decide which words\n"
 	"# bounded by '_' are to be shown in col_markdash.\n"
 	"# If you leave this blank, tin will use a built in default.\n"
@@ -4374,360 +4400,420 @@ msgstr	"# Regulaaravaldis mida tin kasutab et otsustada, milliseid '_' vahel ole
 	"# sõnu näidata col_markdash abil. Kui jätate selle tühjaks, kasutab\n"
 	"# tin sisse ehitatud vaikeväärtust.\n"
 
-#: src/lang.c:1508
+#: src/lang.c:1517
 msgid	"A regex used to find Subject prefixes to remove.  Use '|' as separator."
 msgstr	"Regulaaravaldis eemaldatava teema prefiksi leidmiseks. Eraldajaks on '|'."
 
-#: src/lang.c:1509
+#: src/lang.c:1518
 msgid	"Regex with Subject prefixes        :"
 msgstr	"Regex teema prefiksi leidmiseks    :"
 
-#: src/lang.c:1510
+#: src/lang.c:1519
 msgid	"# A regular expression that tin will use to find Subject prefixes\n"
 	"# which will be removed before showing the header.\n"
 msgstr	"# Regulaaravaldis, mida tin kasutab, et leida teema prefiksit, mida\n"
 	"# enne päise näitamist eemaldada.\n"
 
-#: src/lang.c:1515
+#: src/lang.c:1524
 msgid	"A regex used to find Subject suffixes to remove.  Use '|' as separator."
 msgstr	"Regulaaravaldis eemaldatava teema sufiksi leidmiseks. Eraldajaks on '|'."
 
-#: src/lang.c:1516
+#: src/lang.c:1525
 msgid	"Regex with Subject suffixes        :"
 msgstr	"Regex teema sufiksi leidmiseks     :"
 
-#: src/lang.c:1517
+#: src/lang.c:1526
 msgid	"# A regular expression that tin will use to find Subject suffixes\n"
 	"# which will be removed when replying or posting followup.\n"
 msgstr	"# Regulaaravaldis, mida tin kasutab teema sufiksi leidmiseks,\n"
 	"# mis eemaldatakse vastuse saatmisel või postitamisel.\n"
 
-#: src/lang.c:1524
+#: src/lang.c:1533
 msgid	"Use metamail upon MIME articles    :"
 msgstr	"Kasuta MIME artiklitel metamaili   :"
 
-#: src/lang.c:1525
+#: src/lang.c:1534
 msgid	"# If ON metamail can/will be used to display MIME articles\n"
 msgstr	"# Kui väärtus on ON, kasutatakse MIME artiklite näitamiseks metamaili\n"
 
-#: src/lang.c:1530
+#: src/lang.c:1539
 msgid	"Ask before using metamail          :"
 msgstr	"Küsi metamaili kasutamiseks luba   :"
 
-#: src/lang.c:1531
+#: src/lang.c:1540
 msgid	"# If ON tin will ask before using metamail to display MIME messages\n"
 	"# this only happens if use_metamail is switched ON\n"
 msgstr	"# Kui väärtus on ON, küsib tin metamaili kasutamise luba\n"
 	"# see juhtub ainult siis, kui use_metamail väärtus on ON\n"
 
-#: src/lang.c:1537
+#: src/lang.c:1546
 msgid	"Ask to mark groups read when quitting. <SPACE> toggles & <CR> sets."
 msgstr	"Küsi, kas märkida väljumisel grupid loetuks. <TÜHIK> lülitab ja <CR> seab."
 
-#: src/lang.c:1538
+#: src/lang.c:1547
 msgid	"Catchup read groups when quitting  :"
 msgstr	"Väljumisel märkida grupid loetuks  :"
 
-#: src/lang.c:1539
+#: src/lang.c:1548
 msgid	"# If ON ask user if read groups should all be marked read\n"
 msgstr	"# Kui väärtus on ON, küsi kasutajalt, kas märkida loetud gruppides kõik\n"
 	"# artiklid loetuks\n"
 
-#: src/lang.c:1544
+#: src/lang.c:1553
 msgid	"Catchup group using left key       :"
 msgstr	"Nool vasakule märgib grupi loetuks :"
 
-#: src/lang.c:1545
+#: src/lang.c:1554
 msgid	"# If ON catchup group/thread when leaving with the left arrow key.\n"
 msgstr	"# Kui väärtus on ON, märgi grupp/teema loetuks, kui sellest väljutakse\n"
 	"# nool vasakule klahviga.\n"
 
-#: src/lang.c:1550
+#: src/lang.c:1559
 msgid	"Catchup thread by using left key   :"
 msgstr	"Nool vasakule märgib teema loetuks :"
 
 # TRANSLATION TOO LONG
-#: src/lang.c:1556
+#: src/lang.c:1565
 msgid	"Which actions require confirmation :"
 msgstr	"Millised tegevused nõuavad kinnitust:"
 
-#: src/lang.c:1557
+#: src/lang.c:1566
 msgid	"# What should we ask confirmation for.\n"
 msgstr	"# Millele me peaksime küsima kinnitust.\n"
 
-#: src/lang.c:1561
+#: src/lang.c:1570
 msgid	"Program to run to open URL's, <CR> sets, <ESC> cancels."
 msgstr	"Programm URLide avamiseks, <CR> seab, <ESC> katkestab."
 
-#: src/lang.c:1562
+#: src/lang.c:1571
 msgid	"Program that opens URL's           :"
 msgstr	"Programm URLide avamiseks          :"
 
-#: src/lang.c:1563
+#: src/lang.c:1572
 msgid	"# The program used to open URL's. The actual URL will be appended\n"
 msgstr	"# Programm URLide avamiseks. URL lisatakse argumendiks\n"
 
-#: src/lang.c:1568
+#: src/lang.c:1577
 msgid	"Use mouse in xterm                 :"
 msgstr	"Kasuta xterm aknas hiirt           :"
 
-#: src/lang.c:1569
+#: src/lang.c:1578
 msgid	"# If ON enable mouse key support on xterm terminals\n"
 msgstr	"# Kui väärtus on ON, luba xterm aknas hiire tugi\n"
 
-#: src/lang.c:1575
+#: src/lang.c:1584
 msgid	"Use scroll keys on keypad          :"
 msgstr	"Kasuta kerimisnuppe                :"
 
-#: src/lang.c:1576
+#: src/lang.c:1585
 msgid	"# If ON enable scroll keys on terminals that support it\n"
 msgstr	"# Kui väärtus on ON, luba kerimisnuppude kasutamist terminalidel, millel need "
 	"on olemas\n"
 
-#: src/lang.c:1581
+#: src/lang.c:1590
 msgid	"Enter maximum number of article to get. <CR> sets."
 msgstr	"Sisestage suurim laetavate artiklite arv. <CR> seab."
 
-#: src/lang.c:1582
+#: src/lang.c:1591
 msgid	"Number of articles to get          :"
 msgstr	"Laetavate artiklite arv            :"
 
-#: src/lang.c:1583
+#: src/lang.c:1592
 msgid	"# Number of articles to get (0=no limit), if negative sets maximum number\n"
 	"# of already read articles to be read before first unread one\n"
 msgstr	"# Laetavate artiklite arv (0=limiit puudub), negatiivne väärtus seab\n"
 	"# maksimaalse arvu loetud artikleid, mida lugeda enne lugemata artiklit\n"
 
-#: src/lang.c:1588
+#: src/lang.c:1597
 msgid	"Enter number of days article is considered recent. <CR> sets."
 msgstr	"Sisestage artikli värskuse kestus. <CR> seab."
 
-#: src/lang.c:1589
+#: src/lang.c:1598
 msgid	"Article recentness time limit      :"
 msgstr	"Artikli värskuse ajapiir           :"
 
-#: src/lang.c:1590
+#: src/lang.c:1599
 msgid	"# Number of days in which article is considered recent, (0=OFF)\n"
 msgstr	"# Päevad, mille jooksul loetakse artiklit värskeks, (0=OFF)\n"
 
-#: src/lang.c:1594
+#: src/lang.c:1603
 msgid	"WILDMAT for normal wildcards, REGEX for full regular expression matching."
 msgstr	"WILDMAT tavalistele jokkeritele, REGEX täisregulaaravaldistega otsimisele."
 
-#: src/lang.c:1595
+#: src/lang.c:1604
 msgid	"Wildcard matching                  :"
 msgstr	"Jokkeritega otsimine               :"
 
-#: src/lang.c:1596
+#: src/lang.c:1605
 msgid	"# Wildcard matching 0=(wildmat) 1=(regex)\n"
 msgstr	"# Jokkeritega otsimine 0=(wildmat) 1=(regex)\n"
 
-#: src/lang.c:1600
+#: src/lang.c:1609
 msgid	"Enter minimal score before an article is marked killed. <CR> sets."
 msgstr	"Sisestage minimaalne kaal artikli surmamiseks. <CR> seab."
 
-#: src/lang.c:1601
+#: src/lang.c:1610
 msgid	"Score limit (kill)                 :"
 msgstr	"Kaalu alampiir (surmamine)         :"
 
-#: src/lang.c:1602
+#: src/lang.c:1611
 msgid	"# Score limit before an article is marked killed\n"
 msgstr	"# Kaalu alampiir, enne kui artikkel märgitakse surmatuks\n"
 
-#: src/lang.c:1606
+#: src/lang.c:1615
 msgid	"Enter default score to kill articles. <CR> sets."
 msgstr	"Sisestage vaikimisi kaal artiklite surmamiseks. <CR> seab."
 
 # TRANSLATION TOO LONG
-#: src/lang.c:1607
+#: src/lang.c:1616
 msgid	"Default score to kill articles     :"
 msgstr	"Vaikimisi kaal artiklite surmamiseks:"
 
-#: src/lang.c:1608
+#: src/lang.c:1617
 msgid	"# Default score to kill articles\n"
 msgstr	"# Vaikimisi kaal artiklite surmamiseks\n"
 
-#: src/lang.c:1612
+#: src/lang.c:1621
 msgid	"Enter minimal score before an article is marked hot. <CR> sets."
 msgstr	"Sisestage minimaalne kaal, enne kui artikkel märgitakse kuumaks. <CR> seab."
 
-#: src/lang.c:1613
+#: src/lang.c:1622
 msgid	"Score limit (select)               :"
 msgstr	"Kaalu alampiir (valik)             :"
 
-#: src/lang.c:1614
+#: src/lang.c:1623
 msgid	"# Score limit before an article is marked hot\n"
 msgstr	"# Kaalu alampiir, enne kui artikkel märgitakse muumaks\n"
 
-#: src/lang.c:1618
+#: src/lang.c:1627
 msgid	"Enter default score to select articles. <CR> sets."
 msgstr	"Sisestage vaikimisi kaal artiklite valimiseks. <CR> seab."
 
-#: src/lang.c:1619
+#: src/lang.c:1628
 msgid	"Default score to select articles   :"
 msgstr	"Vaikimisi kaal artiklite valimiseks:"
 
-#: src/lang.c:1620
+#: src/lang.c:1629
 msgid	"# Default score to select articles\n"
 msgstr	"# Vaikimisi kaal artiklite valimiseks\n"
 
-#: src/lang.c:1626
+#: src/lang.c:1635
 msgid	"Use ANSI color                     :"
 msgstr	"Kasuta ANSI värve                  :"
 
-#: src/lang.c:1627
+#: src/lang.c:1636
 msgid	"# If ON using ANSI-color\n"
 msgstr	"# Kui väärtus on ON, kasuta ANSI värve\n"
 
-#: src/lang.c:1632
+#: src/lang.c:1641
 msgid	"Standard foreground color          :"
 msgstr	"Standardne esiplaani värv          :"
 
-#: src/lang.c:1633
+#: src/lang.c:1642
 msgid	"# Standard foreground color\n"
 msgstr	"# Standardne esiplaani värv\n"
 
-#: src/lang.c:1638
+#: src/lang.c:1647
 msgid	"Standard background color          :"
 msgstr	"Standardne tagaplaani värv         :"
 
-#: src/lang.c:1639
+#: src/lang.c:1648
 msgid	"# Standard-Background-Color\n"
 msgstr	"# Standardne tagaplaani värv\n"
 
-#: src/lang.c:1644
+#: src/lang.c:1653
 msgid	"Color for inverse text (background):"
 msgstr	"Pööratud teksti värv (tagaplaan)   :"
 
-#: src/lang.c:1645
+#: src/lang.c:1654
 msgid	"# Color of background for inverse text\n"
 msgstr	"# Pööratud teksti tagaplaani värv\n"
 
-#: src/lang.c:1650
+#: src/lang.c:1659
 msgid	"Color for inverse text (foreground):"
 msgstr	"Pööratud teksti värv (esiplaan)    :"
 
-#: src/lang.c:1651
+#: src/lang.c:1660
 msgid	"# Color of foreground for inverse text\n"
 msgstr	"# Pööratud teksti esiplaani värv\n"
 
-#: src/lang.c:1656
+#: src/lang.c:1665
 msgid	"Color of text lines                :"
 msgstr	"Tekstiridade värv                  :"
 
-#: src/lang.c:1657
+#: src/lang.c:1666
 msgid	"# Color of text-lines\n"
 msgstr	"# Tekstiridade värv\n"
 
-#: src/lang.c:1662
+#: src/lang.c:1671
 msgid	"Color of mini help menu            :"
 msgstr	"Miniabiinfo värv                   :"
 
-#: src/lang.c:1663
+#: src/lang.c:1672
 msgid	"# Color of mini help menu\n"
 msgstr	"# Miniabiinfo värv\n"
 
-#: src/lang.c:1668
+#: src/lang.c:1677
 msgid	"Color of help text                 :"
 msgstr	"Abiinfo värv                       :"
 
-#: src/lang.c:1669
+#: src/lang.c:1678
 msgid	"# Color of help pages\n"
 msgstr	"# Abiinfo värv\n"
 
-#: src/lang.c:1674
+#: src/lang.c:1683
 msgid	"Color of status messages           :"
 msgstr	"Olekuteadete värv                  :"
 
-#: src/lang.c:1675
+#: src/lang.c:1684
 msgid	"# Color of messages in last line\n"
 msgstr	"# Viimasel real olevate teadete värv\n"
 
-#: src/lang.c:1680
+#: src/lang.c:1689
 msgid	"Color of quoted lines              :"
 msgstr	"Tsitaadi värv                      :"
 
-#: src/lang.c:1681
+#: src/lang.c:1690
 msgid	"# Color of quote-lines\n"
 msgstr	"# Tsitaadi värv\n"
 
-#: src/lang.c:1686
+#: src/lang.c:1695
 msgid	"Color of twice quoted line         :"
 msgstr	"Topelt tsiteeritud rea värv        :"
 
-#: src/lang.c:1687
+#: src/lang.c:1696
 msgid	"# Color of twice quoted lines\n"
 msgstr	"# Topelt tsiteeritud rea värv\n"
 
-#: src/lang.c:1692
+#: src/lang.c:1701
 msgid	"Color of =>3 times quoted line     :"
 msgstr	"=>3 korda tsiteeritud rea värv     :"
 
-#: src/lang.c:1693
+#: src/lang.c:1702
 msgid	"# Color of >=3 times quoted lines\n"
 msgstr	"# =>3 korda tsiteeritud rea värv\n"
 
-#: src/lang.c:1698
+#: src/lang.c:1707
 msgid	"Color of article header lines      :"
 msgstr	"Artikli päiseridade värv           :"
 
-#: src/lang.c:1699
+#: src/lang.c:1708
 msgid	"# Color of header-lines\n"
 msgstr	"# Päiseridade värv\n"
 
-#: src/lang.c:1704
+#: src/lang.c:1713
 msgid	"Color of actual news header fields :"
 msgstr	"Artikli tegelike päiseridade värv  :"
 
-#: src/lang.c:1705
+#: src/lang.c:1714
 msgid	"# Color of actual news header fields\n"
 msgstr	"# Artikli tegelike päiseridade värv\n"
 
-#: src/lang.c:1710
+#: src/lang.c:1719
 msgid	"Color of article subject lines     :"
 msgstr	"Artikli teemarea värv              :"
 
-#: src/lang.c:1711
+#: src/lang.c:1720
 msgid	"# Color of article subject\n"
 msgstr	"# Artikli teema värv\n"
 
-#: src/lang.c:1716
+#: src/lang.c:1725
 msgid	"Color of response counter          :"
 msgstr	"Vastuste arvu loenduri värv        :"
 
-#: src/lang.c:1717
+#: src/lang.c:1726
 msgid	"# Color of response counter\n"
 msgstr	"# Vastuste arvu loenduri värv\n"
 
-#: src/lang.c:1722
+#: src/lang.c:1731
 msgid	"Color of sender (From:)            :"
 msgstr	"Saatja värv (From:)                :"
 
-#: src/lang.c:1723
+#: src/lang.c:1732
 msgid	"# Color of sender (From:)\n"
 msgstr	"# Saatja värv (From:)\n"
 
-#: src/lang.c:1728
+#: src/lang.c:1737
 msgid	"Color of help/mail sign            :"
 msgstr	"Abiinfo/kirja teate värv           :"
 
-#: src/lang.c:1729
+#: src/lang.c:1738
 msgid	"# Color of Help/Mail-Sign\n"
 msgstr	"# Abiinfo/kirja teate värv\n"
 
-#: src/lang.c:1734
+#: src/lang.c:1743
 msgid	"Color of signatures                :"
 msgstr	"Signatuuri värv                    :"
 
-#: src/lang.c:1735
+#: src/lang.c:1744
 msgid	"# Color of signature\n"
 msgstr	"# Signatuuri värv\n"
 
-#: src/lang.c:1740
+#: src/lang.c:1749
+msgid	"Color of highlighting with *stars* :"
+msgstr	"*tärnidega* esiletõstmise värv     :"
+
+#: src/lang.c:1750
+msgid	"# Color of word highlighting. There are four possibilities\n"
+	"# in articles: *stars*, /slashes/, _underdashes_ and -strokes-.\n"
+msgstr	"# Sõnade esiletõstmise värv. Artiklites saab kasutada nelja võimalust:\n"
+	"# *tärnid*, /kaldkriipsud/, _alakriipsud_ ja -kriipsud-.\n"
+
+#: src/lang.c:1756
+msgid	"Color of highlighting with _dash_  :"
+msgstr	"_alakriipsudega_ esiletõstmise värv:"
+
+# TRANSLATION TOO LONG
+#: src/lang.c:1762
+msgid	"Color of highlighting with /slash/ :"
+msgstr	"/Kaldkriipsudega/ esiletõstmise värv:"
+
+#: src/lang.c:1768
+msgid	"Color of highlighting with -stroke-:"
+msgstr	"-Kriipsudega- esiletõstmise värv   :"
+
+# TRANSLATION MISSING
+#: src/lang.c:1775
+msgid	"Attr. of highlighting with *stars* :"
+msgstr	""
+
+#: src/lang.c:1776
+msgid	"# Attribute of word highlighting on mono terminals.\n"
+	"# There are four possibilities in articles:\n"
+	"# *stars*, /slashes/, _underdashes_ and -strokes-.\n"
+	"# The possible values are:\n"
+	"# 0 - Normal, 1 - Underline, 2 - Best highlighting,\n"
+	"# 3 - Reverse video, 4 - Blinking, 5 - Half bright, 6 - Bold\n"
+msgstr	""
+
+# TRANSLATION MISSING
+#: src/lang.c:1786
+msgid	"Attr. of highlighting with _dash_  :"
+msgstr	""
+
+# TRANSLATION MISSING
+#: src/lang.c:1792
+msgid	"Attr. of highlighting with /slash/ :"
+msgstr	""
+
+# TRANSLATION MISSING
+#: src/lang.c:1798
+msgid	"Attr. of highlighting with -stroke-:"
+msgstr	""
+
+#: src/lang.c:1804
+msgid	"Word highlighting in message body  :"
+msgstr	"Sõnade esiletõstmine teate kehas   :"
+
+#: src/lang.c:1805
+msgid	"# Enable word highlighting?\n"
+msgstr	"# Lubada sõnade esiletõstmine?\n"
+
+#: src/lang.c:1810
 msgid	"What to display instead of mark    :"
 msgstr	"Mida näidata märgi asemel          :"
 
-#: src/lang.c:1741
+#: src/lang.c:1811
 msgid	"# Should the leading and ending stars and dashes also be displayed,\n"
 	"# even when they are highlighting marks?\n"
 	"# 0 - no    1 - yes, display mark    2 - print a space instead\n"
@@ -4735,78 +4821,47 @@ msgstr	"# Kas näidata algavaid ja lõppevaid tärne ja kriipse,\n"
 	"# isegi, kui need on ka esiletõstmise märgid?\n"
 	"# 0 - ei    1 - jah, näita märki    2 - trüki hoopis tühik\n"
 
-#: src/lang.c:1748
-msgid	"Color of highlighting with *stars* :"
-msgstr	"*tärnidega* esiletõstmise värv     :"
-
-#: src/lang.c:1749
-msgid	"# Color of word highlighting. There are four possibilities\n"
-	"# in articles: *stars*, /slashes/, _underdashes_ and -strokes-.\n"
-msgstr	"# Sõnade esiletõstmise värv. Artiklites saab kasutada nelja võimalust:\n"
-	"# *tärnid*, /kaldkriipsud/, _alakriipsud_ ja -kriipsud-.\n"
-
-#: src/lang.c:1754
-msgid	"Color of highlighting with _dash_  :"
-msgstr	"_alakriipsudega_ esiletõstmise värv:"
-
-# TRANSLATION TOO LONG
-#: src/lang.c:1759
-msgid	"Color of highlighting with /slash/ :"
-msgstr	"/Kaldkriipsudega/ esiletõstmise värv:"
-
-#: src/lang.c:1764
-msgid	"Color of highlighting with -stroke-:"
-msgstr	"-Kriipsudega- esiletõstmise värv   :"
-
-#: src/lang.c:1771
-msgid	"Word highlighting in message body  :"
-msgstr	"Sõnade esiletõstmine teate kehas   :"
-
-#: src/lang.c:1772
-msgid	"# Enable word highlighting?\n"
-msgstr	"# Lubada sõnade esiletõstmine?\n"
-
-#: src/lang.c:1776
+#: src/lang.c:1817
 msgid	"Enter column number to wrap article lines to in the pager. <CR> sets."
 msgstr	"Sisestage veerg, millelt lehitseja hakkab ridu murdma. <CR> seab."
 
-#: src/lang.c:1777
+#: src/lang.c:1818
 msgid	"Page line wrap column              :"
 msgstr	"Rea murdmise veerg lehitsejas      :"
 
-#: src/lang.c:1778
+#: src/lang.c:1819
 msgid	"# Wrap article lines at column\n"
 msgstr	"# Murra artikli read antud veerus\n"
 
-#: src/lang.c:1782
+#: src/lang.c:1823
 msgid	"Enter default mail address (and fullname). <CR> sets."
 msgstr	"Sisestage oma e-posti aadress (ja oma nimi). <CR> seab."
 
-#: src/lang.c:1783
+#: src/lang.c:1824
 msgid	"Mail address (and fullname)        :"
 msgstr	"E-posti aadress (ja teie nimi)     :"
 
-#: src/lang.c:1784
+#: src/lang.c:1825
 msgid	"# User's mail address (and fullname), if not username@host (fullname)\n"
 msgstr	"# Kasutaja e-posti aadress (ja nimi), kui ei ole kasutaja@host (nimi)\n"
 
-#: src/lang.c:1789
+#: src/lang.c:1830
 msgid	"Show empty Followup-To in editor   :"
 msgstr	"Näita toimetis tühja Followup-To   :"
 
-#: src/lang.c:1790
+#: src/lang.c:1831
 msgid	"# If ON show empty Followup-To header when editing an article\n"
 msgstr	"# Kui väärtus on ON, näita artikli toimetamisel tühja Followup-To rida\n"
 
-#: src/lang.c:1794
+#: src/lang.c:1835
 msgid	"Enter path/! command/--none to create your default signature. <CR> sets."
 msgstr	"Sisestage tee/! käsk/--none, et luua oma vaikimisi signatuur. <CR> seab."
 
-#: src/lang.c:1795
+#: src/lang.c:1836
 msgid	"Create signature from path/command :"
 msgstr	"Signatuuri loomiseks tee/käsk      :"
 
-#: src/lang.c:1796
+#: src/lang.c:1837
 msgid	"# Signature path (random sigs)/file to be used when posting/replying\n"
 	"# default_sigfile=file       appends file as signature\n"
 	"# default_sigfile=!command   executes external command to generate a "
@@ -4817,49 +4872,49 @@ msgstr	"# Postitamisel/vastamisel kasutatav signatuuri fail\n"
 	"# default_sigfile=!käsk      käivitab käsu, mis genereerib signatuuri\n"
 	"# default_sigfile=--none     ära lisa signatuuri\n"
 
-#: src/lang.c:1803
+#: src/lang.c:1844
 msgid	"Prepend signature with \"-- \" on own line. <SPACE> toggles & <CR> sets."
 msgstr	"Signatuurile eelnevale reale \"-- \". <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1804
+#: src/lang.c:1845
 msgid	"Prepend signature with \"-- \"       :"
 msgstr	"Lisa signatuuri ette \"-- \"         :"
 
-#: src/lang.c:1805
+#: src/lang.c:1846
 msgid	"# If ON prepend the signature with dashes '\\n-- \\n'\n"
 msgstr	"# Kui väärtus on ON, lisa signatuuri ette '\\n-- \\n'\n"
 
-#: src/lang.c:1809
+#: src/lang.c:1850
 msgid	"Add signature when reposting articles. <SPACE> toggles & <CR> sets."
 msgstr	"Lisa artikli uuestipostitamisel signatuur. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1810
+#: src/lang.c:1851
 msgid	"Add signature when reposting       :"
 msgstr	"Lisa uuestipostitusel signatuur    :"
 
-#: src/lang.c:1811
+#: src/lang.c:1852
 msgid	"# If ON add signature to reposted articles\n"
 msgstr	"# Kui väärtus on ON, lisa uuestipostitatud artiklile signatuur\n"
 
-#: src/lang.c:1815
-msgid	"Enter quotation marks, %%s or %%S for author's initials."
-msgstr	"Sisestage tsitaadimärgid, %%s või %%S annab autori initsiaalid."
+#: src/lang.c:1856
+msgid	"Enter quotation marks, %s or %S for author's initials."
+msgstr	"Sisestage tsitaadimärgid, %s või %S annab autori initsiaalid."
 
-#: src/lang.c:1816
+#: src/lang.c:1857
 msgid	"Characters used as quote-marks     :"
 msgstr	"Tsiteerimise märgid                :"
 
-#: src/lang.c:1817
+#: src/lang.c:1858
 msgid	"# Characters used in quoting to followups and replys.\n"
 	"# '_' is replaced by ' ', %%s, %%S are replaced by author's initials.\n"
 msgstr	"# Sümbolid, mida kasutada tsiteerimisel vastustes.\n"
 	"# '_' asendatakse tühikuga ' ', %%s, %%S asendatakse autori initsiaalidega.\n"
 
-#: src/lang.c:1823
+#: src/lang.c:1864
 msgid	"Quoting behavior                   :"
 msgstr	"Käitumine tsiteerimisel            :"
 
-#: src/lang.c:1824
+#: src/lang.c:1865
 msgid	"# How quoting should be handled when following up or replying.\n"
 	"# 0 = Nothing special\n"
 	"# 1 = Compress quotes\n"
@@ -4879,15 +4934,15 @@ msgstr	"# Kuidas käsitleda vastamisel tsitaate.\n"
 	"# 6 = Tsiteeri allkirju, tsiteeri tühje ridu\n"
 	"# 7 = Tihenda tsitaadid, tsiteeri allkirju, tsiteeri tühje ridu\n"
 
-#: src/lang.c:1836 src/lang.c:1844 src/lang.c:1850
+#: src/lang.c:1877 src/lang.c:1885 src/lang.c:1891
 msgid	"%A Addr %D Date %F Addr+Name %G Groupname %M Message-ID %N Name %C First Name"
 msgstr	"%A Aadr. %D Kuup. %F Aadr.+Nimi %G Grupp %M Message-ID %N Nimi %C Eesnimi"
 
-#: src/lang.c:1837
+#: src/lang.c:1878
 msgid	"Quote line when following up       :"
 msgstr	"Tsiteerimise rida vastamisel       :"
 
-#: src/lang.c:1838
+#: src/lang.c:1879
 msgid	"# Format of quote line when mailing/posting/following-up an article\n"
 	"# %%A Address    %%D Date   %%F Addr+Name   %%G Groupname   %%M Message-ID\n"
 	"# %%N Full Name  %%C First Name   %%I Initials\n"
@@ -4895,35 +4950,35 @@ msgstr	"# Tsiteeriva rea vorming artikli mailimisel/postitamisel/vastamisel\n"
 	"# %%A Aadress    %%D Kuup   %%F Aadr+Nimi   %%G Grupp   %%M Message-ID\n"
 	"# %%N Täielik nimi  %%C Eesnimi   %%I Initsiaalid\n"
 
-#: src/lang.c:1845
+#: src/lang.c:1886
 msgid	"Quote line when cross-posting      :"
 msgstr	"Tsiteerimise rida ristpostitusel   :"
 
-#: src/lang.c:1851
+#: src/lang.c:1892
 msgid	"Quote line when mailing            :"
 msgstr	"Tsiteerimise rida kirjutamisel     :"
 
-#: src/lang.c:1856
+#: src/lang.c:1897
 msgid	"If ON, include User-Agent: header. <SPACE> toggles & <CR> sets."
 msgstr	"Kasuta User-Agent: päiserida. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1857
+#: src/lang.c:1898
 msgid	"Insert 'User-Agent:'-header        :"
 msgstr	"Sisestage 'User-Agent:'-päis       :"
 
-#: src/lang.c:1858
+#: src/lang.c:1899
 msgid	"# If ON include advertising User-Agent: header\n"
 msgstr	"# Kui väärtus on ON, lisa artikli päisesse User-Agent: rida\n"
 
-#: src/lang.c:1862
+#: src/lang.c:1903
 msgid	"Enter charset name for MIME (e.g. US-ASCII, ISO-8859-1, EUC-KR), <CR> to set."
 msgstr	"Sisestage MIME kooditabeli nimi (n. US-ASCII, ISO-8859-15, EUC-KR), <CR> seab."
 
-#: src/lang.c:1863
+#: src/lang.c:1904
 msgid	"MM_CHARSET                         :"
 msgstr	"MM_CHARSET                         :"
 
-#: src/lang.c:1864
+#: src/lang.c:1905
 msgid	"# Charset supported locally which is also used for MIME header and\n"
 	"# Content-Type header unless news and mail need to be encoded in other\n"
 	"# charsets as in case of EUC-KR for Korean which needs to be converted to\n"
@@ -4943,27 +4998,27 @@ msgstr	"# Lokaalselt toetatud kooditabel, mida kasutatakse ka MIME päistes\n"
 	"# loetakse mm_charset väärtusest erinev kooditabel mitte-näidatavaks\n"
 	"# ja näitamisel kasutatakse '?'.\n"
 
-#: src/lang.c:1877
+#: src/lang.c:1918
 msgid	"MM_NETWORK_CHARSET                 :"
 msgstr	"MM_NETWORK_CHARSET                 :"
 
-#: src/lang.c:1878
+#: src/lang.c:1919
 msgid	"# Charset used for MIME (Content-Type) header in postings.\n"
 msgstr	"# Postituste MIME (Content-Type) päises kasutatav kooditabel.\n"
 
-#: src/lang.c:1884
+#: src/lang.c:1925
 msgid	"Mailbox format                     :"
 msgstr	"Kirjade kataloog                   :"
 
-#: src/lang.c:1885
+#: src/lang.c:1926
 msgid	"# Format of the mailbox.\n"
 msgstr	"# Kirjade kataloog.\n"
 
-#: src/lang.c:1890
+#: src/lang.c:1931
 msgid	"MIME encoding in news messages     :"
 msgstr	"Kasuta artiklites MIME kodeerimist :"
 
-#: src/lang.c:1891
+#: src/lang.c:1932
 msgid	"# MIME encoding (8bit, base64, quoted-printable, 7bit) of the body\n"
 	"# for mails and posts, if necessary. QP is efficient for most European\n"
 	"# character sets (ISO-8859-X) with small fraction of non-US-ASCII chars,\n"
@@ -5007,15 +5062,15 @@ msgstr	"# Kirjade ja artiklite kehade vajadusel MIME kodeerimine (8bit, base64,\
 	"# ja spetsiaalset käsitlemist ei ole veel realiseeritud.\n"
 	"# 7bit seadmine ei mõjuta ühtegi teist MIME tabelitt, peale EUC-KR\n"
 
-#: src/lang.c:1913 src/lang.c:1934
+#: src/lang.c:1954 src/lang.c:1975
 msgid	"Don't change unless you know what you are doing. <ESC> cancels."
 msgstr	"Ärge muutke, kui te ei tea, mida teete. <ESC> katkestab."
 
-#: src/lang.c:1914
+#: src/lang.c:1955
 msgid	"Use 8bit characters in news headers:"
 msgstr	"Kasuta artikli päises 8bit tähti   :"
 
-#: src/lang.c:1915
+#: src/lang.c:1956
 msgid	"# If ON, 8bit characters in news headers are NOT encoded.\n"
 	"# default is OFF. Thus 8bit characters are encoded by default.\n"
 	"# 8bit chars in header are encoded regardless of the value of this\n"
@@ -5025,28 +5080,28 @@ msgstr	"# Kui väärtus on ON, 8bit sümboleid artiklite postitamisel ei kodeerita.
 	"# 8bit sümbolid päistes kodeeritakse sõltumata selle parameetri väärtusest,\n"
 	"# v.a. juhul, kui post_mime_encoding väärtus on samuti 8bit.\n"
 
-#: src/lang.c:1922
+#: src/lang.c:1963
 msgid	"Auto-view post-processed files <SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr	"Vaata töödeldud faile automaatselt <TÜHIK> lülitab, <CR> seab, <ESC> "
 	"katkestab."
 
-#: src/lang.c:1923
+#: src/lang.c:1964
 msgid	"View post-processed files          :"
 msgstr	"Vaata töödeldud faile              :"
 
-#: src/lang.c:1924
+#: src/lang.c:1965
 msgid	"# If set, post processed files will be opened in a viewer\n"
 msgstr	"# Kui on seatud, avatakse töödeldud fail vaatamiseks\n"
 
-#: src/lang.c:1929
+#: src/lang.c:1970
 msgid	"MIME encoding in mail messages     :"
 msgstr	"Kasuta kirjades MIME kodeerimist   :"
 
-#: src/lang.c:1935
+#: src/lang.c:1976
 msgid	"Use 8bit characters in mail headers:"
 msgstr	"Kasuta kirja päises 8bit tähti     :"
 
-#: src/lang.c:1936
+#: src/lang.c:1977
 msgid	"# If ON, 8bit characters in mail headers are NOT encoded.\n"
 	"# default is OFF. Thus 8bit characters are encoded by default.\n"
 	"# 8bit chars in headers are encoded regardless of the value of this "
@@ -5061,24 +5116,24 @@ msgstr	"# Kui väärtus on ON, 8bit sümboleid kirjade saatmisel ei kodeerita.\n"
 	"# et RFC 1552/1651/1652 keelab 8bit sümbolid kirjade päistes, seega selle\n"
 	"# parameetri väärtus ON ei ole soovitatav kasutada.\n"
 
-#: src/lang.c:1946
+#: src/lang.c:1987
 msgid	"Strip blanks of end of lines       :"
 msgstr	"Eemalda tühikud realõppudest       :"
 
-#: src/lang.c:1947
+#: src/lang.c:1988
 msgid	"# If ON strip blanks from end of lines to speedup display on slow terminals\n"
 msgstr	"# Kui väärtus on ON, eemalda aeglaste terminalise töö kiirendamiseks\n"
 	"# realõppudest tühikud\n"
 
-#: src/lang.c:1952
+#: src/lang.c:1993
 msgid	"If ON, use transliteration. <SPACE> toggles & <CR> sets."
 msgstr	"Kui väärtus on ON, kasuta transliteratsiooni. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1953
+#: src/lang.c:1994
 msgid	"Transliteration                    :"
 msgstr	"Transliteratsioon                  :"
 
-#: src/lang.c:1954
+#: src/lang.c:1995
 msgid	"# If ON, use //TRANSLIT extension. This means that when a character cannot\n"
 	"# be represented in the in the target character set, it can be approximated\n"
 	"# through one or several similarly looking characters.\n"
@@ -5087,246 +5142,246 @@ msgstr	"# Kui väärtus on ON, kasuta //TRANSLIT laiendust. See tähendab, et kui "
 	"kasutades\n"
 	"# üht või enamat sarnast sümbolit.\n"
 
-#: src/lang.c:1961
+#: src/lang.c:2002
 msgid	"Send you a carbon copy automatically. <SPACE> toggles & <CR> sets."
 msgstr	"Saada kasutajale automaatselt koopia. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1962
+#: src/lang.c:2003
 msgid	"Send you a cc automatically        :"
 msgstr	"Saada automaatselt koopia          :"
 
-#: src/lang.c:1963
+#: src/lang.c:2004
 msgid	"# If ON automatically put your name in the Cc: field when mailing an article\n"
 msgstr	"# Kui väärtus on ON, pane kasutaja nimi artikli saatmisel automaatselt\n"
 	"# Cc: reale\n"
 
-#: src/lang.c:1967
+#: src/lang.c:2008
 msgid	"Send you a blind carbon copy automatically. <SPACE> toggles & <CR> sets."
 msgstr	"Saada automaatselt pimekoopia. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1968
+#: src/lang.c:2009
 msgid	"Send you a blind cc automatically  :"
 msgstr	"Saada automaatselt pimekoopia      :"
 
-#: src/lang.c:1969
+#: src/lang.c:2010
 msgid	"# If ON automatically put your name in the Bcc: field when mailing an "
 	"article\n"
 msgstr	"# Kui väärtus on ON, pane kasutaja nimi artikli saatmisel automaatselt\n"
 	"# Bcc: väljale\n"
 
-#: src/lang.c:1973
+#: src/lang.c:2014
 msgid	"Enter address elements about which you want to be warned. <CR> sets."
 msgstr	"Sisestage aadressi komponendid, mille eest peaks hoiatama. <CR> seab."
 
-#: src/lang.c:1974
+#: src/lang.c:2015
 msgid	"Spamtrap warning address parts     :"
 msgstr	"Rämpsposti hoiatus aadressi osadele:"
 
-#: src/lang.c:1975
+#: src/lang.c:2016
 msgid	"# A comma-delimited list of address-parts you want to be warned\n"
 	"# about when trying to reply by email.\n"
 msgstr	"# Komaga eraldatud aadresside komponentide loend, mille kasutamisel\n"
 	"# tuleks kasutajat hoiatada.\n"
 
-#: src/lang.c:1980
+#: src/lang.c:2021
 msgid	"Enter default number of days a filter entry will be valid. <CR> sets."
 msgstr	"Sisestage kirje kehtivuse aeg päevades. <CR> seab."
 
-#: src/lang.c:1981
+#: src/lang.c:2022
 msgid	"No. of days a filter entry is valid:"
 msgstr	"Filtri kehtivus päevades           :"
 
-#: src/lang.c:1982
+#: src/lang.c:2023
 msgid	"# Number of days a short term filter will be active\n"
 msgstr	"# lühiajalise filtri kehtivus päevades\n"
 
-#: src/lang.c:1986
+#: src/lang.c:2027
 msgid	"Add posted articles to filter. <SPACE> toggles & <CR> sets."
 msgstr	"Lisage postitatud artikkel filtrisse. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:1987
+#: src/lang.c:2028
 msgid	"Add posted articles to filter      :"
 msgstr	"Lisage postitatud artikkel filtrile:"
 
-#: src/lang.c:1988
+#: src/lang.c:2029
 msgid	"# If ON add posted articles which start a new thread to filter for\n"
 	"# highlighting follow-ups\n"
 msgstr	"# Kui väärtus on ON, lisa postitatud artiklid, mis alustavad uut teemat,\n"
 	"# filtrile, mis märgistab vastuseid\n"
 
-#: src/lang.c:1992
+#: src/lang.c:2033
 msgid	"The directory where articles/threads are to be saved in mailbox format."
 msgstr	"Kataloog, kuhu artikleid/teemasid salvestatakse kirjaformaadis."
 
-#: src/lang.c:1993
+#: src/lang.c:2034
 msgid	"Mail directory                     :"
 msgstr	"Kirjade kataloog                   :"
 
-#: src/lang.c:1994
+#: src/lang.c:2035
 msgid	"# (-m) directory where articles/threads are saved in mailbox format\n"
 msgstr	"# (-m) kataloog, kuhu artikleid/teemasid salvestatakse kirjaformaadis\n"
 
-#: src/lang.c:1999
+#: src/lang.c:2040
 msgid	"Save articles in batch mode (-S)   :"
 msgstr	"Salvesta artiklid pakettmoodis (-S):"
 
-#: src/lang.c:2000
+#: src/lang.c:2041
 msgid	"# If ON articles/threads will be saved in batch mode when save -S\n"
 	"# or mail (-M/-N) is specified on the command line\n"
 msgstr	"# Kui väärtus on ON, artiklid salvestatakse pakettmoodis, kui käsureal\n"
 	"# on kasutatud võtmeid salvestamiseks -S või saatmiseks -M, -N\n"
 
-#: src/lang.c:2005
+#: src/lang.c:2046
 msgid	"The directory where you want articles/threads saved."
 msgstr	"Kataloog, kuhu te soovite artikleid salvestada."
 
-#: src/lang.c:2006
+#: src/lang.c:2047
 msgid	"Directory to save arts/threads in  :"
 msgstr	"Kataloog artiklite salvestamiseks  :"
 
-#: src/lang.c:2007
+#: src/lang.c:2048
 msgid	"# Directory where articles/threads are saved\n"
 msgstr	"# Kataloog, kuhu salvestatakse artiklid/teemad\n"
 
-#: src/lang.c:2011
+#: src/lang.c:2052
 msgid	"Auto save article/thread by Archive-name: header. <SPACE> toggles & <CR> sets."
 msgstr	"Salvesta artiklid Archive-name: päiserea järgi. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:2012
+#: src/lang.c:2053
 msgid	"Use Archive-name: header for save  :"
 msgstr	"Kasuta salvestamisel Archive-name: :"
 
-#: src/lang.c:2013
+#: src/lang.c:2054
 msgid	"# If ON articles/threads with Archive-name: in mail header will\n"
 	"# be automatically saved with the Archive-name & part/patch no.\n"
 msgstr	"# Kui väärtus on ON, salvestatakse artiklid/teemad, mis omavad päiserida\n"
 	"# Archive-name:, automaatselt selle reaga määratud nime ja osa numbriga.\n"
 
-#: src/lang.c:2018
+#: src/lang.c:2059
 msgid	"Mark saved articles/threads as read. <SPACE> toggles, <CR> sets, <ESC> "
 	"cancels."
 msgstr	"Märgi salvestatud artiklid loetuks. <TÜHIK> lülitab, <CR> seab, <ESC> "
 	"katkestab."
 
-#: src/lang.c:2019
+#: src/lang.c:2060
 msgid	"Mark saved articles/threads as read:"
 msgstr	"Märgi salvestatud artiklid loetuks :"
 
-#: src/lang.c:2020
+#: src/lang.c:2061
 msgid	"# If ON mark articles that are saved as read\n"
 msgstr	"# Kui väärtus on ON, märgi salvestatud artiklid loetuks\n"
 
-#: src/lang.c:2024
+#: src/lang.c:2065
 msgid	"Post process (ie. unshar) saved article/thread. <SPACE> toggles & <CR> sets."
 msgstr	"Salvestatud artiklite järeltöötlemine (näiteks unshar). <TÜHIK> lülitab, <CR> "
 	"seab."
 
-#: src/lang.c:2025
+#: src/lang.c:2066
 msgid	"Post process saved art/thread with :"
 msgstr	"Salvestatud artiklite järeltöötlus :"
 
-#: src/lang.c:2026
+#: src/lang.c:2067
 msgid	"# Type of post processing to perform after saving articles.\n"
 	"# 0=(none) 1=(unshar) 2=(uudecode)\n"
 msgstr	"# Artikli salvestamise järgne järeltöötlemise tüüp.\n"
 	"# 0=(ei töötle) 1=(unshar) 2=(uudecode)\n"
 
-#: src/lang.c:2032
+#: src/lang.c:2073
 msgid	"Process only unread articles       :"
 msgstr	"Töötle ainult lugemata artikleid   :"
 
-#: src/lang.c:2033
+#: src/lang.c:2074
 msgid	"# If ON only save/print/pipe/mail unread articles (tagged articles excepted)\n"
 msgstr	"# Kui väärtus on ON, salvesta/trüki/torusse/saada lugemata artikleid\n"
 	"# (eeldatakse märgitud artikleid).\n"
 
-#: src/lang.c:2038
+#: src/lang.c:2079
 msgid	"Print all or just part of header. <SPACE> toggles & <CR> sets."
 msgstr	"Trüki kõik või ainult osa päisest. <TÜHIK> lülitab, <CR> seab."
 
-#: src/lang.c:2039
+#: src/lang.c:2080
 msgid	"Print all headers when printing    :"
 msgstr	"Trükkimisel trüki kõik päised      :"
 
-#: src/lang.c:2040
+#: src/lang.c:2081
 msgid	"# If ON print all of article header otherwise just the important lines\n"
 msgstr	"# Kui väärtus on ON, trüki kogu artikli päis, muidu ainult tähtsamad read\n"
 
-#: src/lang.c:2044
+#: src/lang.c:2085
 msgid	"The printer program with options that is to be used to print articles/threads."
 msgstr	"Programm koos argumentidega, mida kasutatakse artiklite/teemade trükkimiseks."
 
-#: src/lang.c:2045
+#: src/lang.c:2086
 msgid	"Printer program with options       :"
 msgstr	"Trükikäsk koos võtmetega           :"
 
-#: src/lang.c:2046
+#: src/lang.c:2087
 msgid	"# Print program with parameters used to print articles/threads\n"
 msgstr	"# Programm koos argumentidega, mida kasutatakse artiklite/teemade "
 	"trükkimiseks\n"
 
-#: src/lang.c:2052
+#: src/lang.c:2093
 msgid	"Force redraw after certain commands:"
 msgstr	"Värskenda ekraani peale käske      :"
 
-#: src/lang.c:2053
+#: src/lang.c:2094
 msgid	"# If ON a screen redraw will always be done after certain external commands\n"
 msgstr	"# Kui väärtus on ON, värskendatakse alati peale teatud väliseid käske "
 	"ekraani\n"
 
-#: src/lang.c:2057
+#: src/lang.c:2098
 msgid	"Start editor with line offset. <SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr	"Käivita tekstitoimeti etteantud real. <TÜHIK> lülitab, <CR> seab, <ESC> "
 	"katkestab."
 
-#: src/lang.c:2058
+#: src/lang.c:2099
 msgid	"Start editor with line offset      :"
 msgstr	"Käivita tekstitoimeti reanumbril   :"
 
-#: src/lang.c:2059
+#: src/lang.c:2100
 msgid	"# If ON editor will be started with cursor offset into the file\n"
 	"# otherwise the cursor will be positioned at the first line\n"
 msgstr	"# Kui väärtus on ON, käivitatakse tekstitoimeti kursori paigutamisega\n"
 	"# vastavale reale. Vastasel korral positsioneeritakse kursor esimesele reale\n"
 
-#: src/lang.c:2064
+#: src/lang.c:2105
 msgid	"Enter %E for editor, %F for filename, %N for line-number, <CR> to set."
 msgstr	"Kasutage %E toimeti kohal, %F failinime kohal, %N reanumbrina, <CR> seab."
 
-#: src/lang.c:2065
+#: src/lang.c:2106
 msgid	"Invocation of your editor          :"
 msgstr	"Teie tekstitoimeti                 :"
 
-#: src/lang.c:2066
+#: src/lang.c:2107
 msgid	"# Format of editor line including parameters\n"
 	"# %%E Editor  %%F Filename  %%N Linenumber\n"
 msgstr	"# Tekstitoimeti rea formaat koos parameetritega\n"
 	"# %%E Toimeti  %%F Failinimi  %%N Reanumber\n"
 
-#: src/lang.c:2071
+#: src/lang.c:2112
 msgid	"Enter name and options for external-inews, --internal for internal inews"
 msgstr	"Sisestage välise inews käsu nimi ja võtmed, sisemise valib --internal"
 
-#: src/lang.c:2072
+#: src/lang.c:2113
 msgid	"External inews                     :"
 msgstr	"Väline inews                       :"
 
-#: src/lang.c:2073
+#: src/lang.c:2114
 msgid	"# If --internal use the built in mini inews for posting via NNTP\n"
 	"# otherwise use an external inews program\n"
 msgstr	"# Kui on --internal, kasuta NNTP postitustel sisseehitatud inews käsku\n"
 	"# muidu kasuta välist inews programmi\n"
 
-#: src/lang.c:2077
+#: src/lang.c:2118
 msgid	"Enter %M for mailer, %S for subject, %T for to, %F for filename, <CR> to set."
 msgstr	"Kasutage %M programmi kohal, %S teema kohal, %T saaja kohal, %F failinime "
 	"kohal, <CR> seab."
 
-#: src/lang.c:2078
+#: src/lang.c:2119
 msgid	"Invocation of your mail command    :"
 msgstr	"Teie e-posti käsk                  :"
 
-#: src/lang.c:2079
+#: src/lang.c:2120
 msgid	"# Format of mailer line including parameters\n"
 	"# %%M Mailer  %%S Subject  %%T To  %%F Filename  %%U User (AmigaDOS)\n"
 	"# ie. to use elm as your mailer:    elm -s \"%%S\" \"%%T\" < %%F\n"
@@ -5336,11 +5391,11 @@ msgstr	"# e-posti saatja käsurea formaat koos parameetritega\n"
 	"# näiteks. kasutada saatjana elm programmi:    elm -s \"%%S\" \"%%T\" < %%F\n"
 	"# näiteks. elm interaktiivses moodis      :    elm -i %%F -s \"%%S\" \"%%T\"\n"
 
-#: src/lang.c:2087
+#: src/lang.c:2128
 msgid	"Use interactive mail reader        :"
 msgstr	"Kasuta interaktiivset e-posti      :"
 
-#: src/lang.c:2088
+#: src/lang.c:2129
 msgid	"# Interactive mailreader: if ON mailreader will be invoked earlier for\n"
 	"# reply so you can use more of its features (eg. MIME, pgp, ...)\n"
 	"# this option has to suit default_mailer_format\n"
@@ -5349,103 +5404,103 @@ msgstr	"# Interaktiivne e-posti lugeja: kui väärtus on ON, käivitatakse vastuse\
 	"# lisavõimalusi (MIME, pgp, ...)\n"
 	"# see omadus kasutab default_mailer_format väärtust\n"
 
-#: src/lang.c:2095
+#: src/lang.c:2136
 msgid	"Remove ~/.article after posting    :"
 msgstr	"Eemalda ~/.article peale postitust :"
 
-#: src/lang.c:2096
+#: src/lang.c:2137
 msgid	"# If ON remove ~/.article after posting.\n"
 msgstr	"# Kui väärtus on ON, kustuta  ~/.article peale postitust.\n"
 
-#: src/lang.c:2100
+#: src/lang.c:2141
 msgid	"Keep all posted articles in ~/Mail/file. <SPACE> toggles & <CR> sets."
 msgstr	"Hoia postitused failis ~/Mail/fail. <TÜHIK> lülitab ja <CR> seab."
 
-#: src/lang.c:2101
+#: src/lang.c:2142
 msgid	"Keep posted articles in ~/Mail/file:"
 msgstr	"Postitatud artiklid ~/Mail/fail    :"
 
-#: src/lang.c:2102
+#: src/lang.c:2143
 msgid	"# If ON keep all postings in ~/Mail/file (see below)\n"
 msgstr	"# Kui väärtus on ON, hoia postitused failis ~/Mail/fail\n"
 
-#: src/lang.c:2106
+#: src/lang.c:2147
 msgid	"Filename for all posted articles. <CR> sets."
 msgstr	"Postitatud artikleid sisaldava faili nimi. <CR> seab."
 
-#: src/lang.c:2107
+#: src/lang.c:2148
 msgid	"Filename for posted articles       :"
 msgstr	"Failinimi postitatud artiklitele   :"
 
-#: src/lang.c:2108
+#: src/lang.c:2149
 msgid	"# Filename where to keep all postings (default posted)\n"
 msgstr	"# Failinimi, kus hoida kõiki postitusi (vaikimisi posted)\n"
 
-#: src/lang.c:2112
+#: src/lang.c:2153
 msgid	"Keep all failed articles in ~/dead.articles. <SPACE> toggles & <CR> sets."
 msgstr	"Hoia ebaõnnestunud postitused failis ~/dead.articles. <TÜHIK> lülitab ja <CR> "
 	"seab."
 
-#: src/lang.c:2113
+#: src/lang.c:2154
 msgid	"Keep failed arts in ~/dead.articles:"
 msgstr	"Vigased artiklid ~/dead.articles   :"
 
-#: src/lang.c:2114
+#: src/lang.c:2155
 msgid	"# If ON keep all failed postings in ~/dead.articles\n"
 msgstr	"# Kui väärtus on ON, hoia ebaõnnestunud postitused failis ~/dead.articles\n"
 
-#: src/lang.c:2118
+#: src/lang.c:2159
 msgid	"Do you want to strip unsubscribed groups from .newsrc"
 msgstr	"Kas te soovite eemaldada tellimata grupid .newsrc failist"
 
-#: src/lang.c:2119
+#: src/lang.c:2160
 msgid	"No unsubscribed groups in newsrc   :"
 msgstr	"newsrcs ainult tellitud grupid     :"
 
-#: src/lang.c:2120
+#: src/lang.c:2161
 msgid	"# If ON strip unsubscribed groups from newsrc\n"
 msgstr	"# Kui väärtus on ON, eemalda tellimata grupid newsrc failist\n"
 
-#: src/lang.c:2125
+#: src/lang.c:2166
 msgid	"Remove bogus groups from newsrc    :"
 msgstr	"Eemalda olematud grupid newsrcst   :"
 
-#: src/lang.c:2126
+#: src/lang.c:2167
 msgid	"# What to do with bogus groups in newsrc file\n"
 	"# 0=(Keep) 1=(Remove) 2=(Highlight with D on selection screen).\n"
 msgstr	"# Mida teha olematute gruppidega newsrc failis\n"
 	"# 0 =(Hoia alles) 1=(Eemalda) 2=(Märgi valikuekraanil D lipuga).\n"
 
-#: src/lang.c:2130
+#: src/lang.c:2171
 msgid	"Enter number of seconds until active file will be reread. <CR> sets."
 msgstr	"Sisestage aktiivsete faili lugemise intervall sekundites. <CR> seab."
 
-#: src/lang.c:2131
+#: src/lang.c:2172
 msgid	"Interval in secs to reread active  :"
 msgstr	"Aktiivsete faili lugemise intervall:"
 
-#: src/lang.c:2132
+#: src/lang.c:2173
 msgid	"# Time interval in seconds between rereading the active file (0=never)\n"
 msgstr	"# Aktiivsete faili lugemise intervall (0 = ei loe)\n"
 
-#: src/lang.c:2137
+#: src/lang.c:2178
 msgid	"Reconnect to server automatically  :"
 msgstr	"Taasta automaatselt NNTP ühendus   :"
 
-#: src/lang.c:2138
+#: src/lang.c:2179
 msgid	"# If ON automatically reconnect to NNTP server if the connection is broken\n"
 msgstr	"# Kui väärtus on ON, ürita NNTP serveriga ühenduse katkemisel ühendust\n"
 	"# automaatselt taastada\n"
 
-#: src/lang.c:2142
+#: src/lang.c:2183
 msgid	"Create local copies of NNTP overview files. <SPACE> toggles & <CR> sets."
 msgstr	"Loo NNTP overview failidest lokaalne koopia. <TÜHIK> lülitab ja <CR> seab."
 
-#: src/lang.c:2143
+#: src/lang.c:2184
 msgid	"Cache NNTP overview files locally  :"
 msgstr	"Puhverda NNTP overview lokaalselt  :"
 
-#: src/lang.c:2144
+#: src/lang.c:2185
 msgid	"# If ON, create local copies of NNTP overview files.\n"
 msgstr	"# Kui väärtus on ON, loo NNTP overview failidest lokaalsed koopiad.\n"
 
@@ -5649,7 +5704,7 @@ msgid	"\n"
 msgstr	"\n"
 	"Saatke palun vea raport/kommentaarid aadressil %s"
 
-#: src/misc.c:560
+#: src/misc.c:556
 #, c-format
 msgid	"Catchup %s..."
 msgstr	"Märgin %s loetuks..."
@@ -5931,16 +5986,16 @@ msgstr	"Tundmatu NNTP vastusekood"
 msgid	"couldn't expand %s\n"
 msgstr	"ei saa laiendada %s\n"
 
-#: src/open.c:1075
+#: src/open.c:1073
 msgid	"Unreachable ?\n"
 msgstr	"Kättesaamatu ?\n"
 
 #. FIXME: replace 'Thread' by 'Article' if THREAD_NONE
-#: src/page.c:730 src/save.c:537 src/thread.c:696
+#: src/page.c:740 src/save.c:537 src/thread.c:717
 msgid	"Thread"
 msgstr	"Teema"
 
-#: src/page.c:896 src/thread.c:689
+#: src/page.c:906 src/thread.c:710
 msgid	"Article"
 msgstr	"Artikkel"
 
@@ -5958,6 +6013,10 @@ msgstr	"%s jaoks pole atribuute"
 #, c-format
 msgid	"Posting: %.*s ..."
 msgstr	"Postitan: %.*s ..."
+
+#: src/prompt.c:412
+msgid	"Please enter a valid character"
+msgstr	"Palun sisestage lubatud sümbol"
 
 #. fp
 #. Check if okay to read
@@ -6021,15 +6080,15 @@ msgstr	"-- %s salvestati %s%s - %s --"
 msgid	"bytes"
 msgstr	"baiti"
 
-#: src/select.c:349
+#: src/select.c:354
 msgid	"unread"
 msgstr	"lugemata"
 
-#: src/select.c:349
+#: src/select.c:354
 msgid	"all"
 msgstr	"kõik"
 
-#: src/select.c:511 src/select.c:513
+#: src/select.c:516 src/select.c:518
 msgid	" R"
 msgstr	" L"
 
@@ -6053,12 +6112,12 @@ msgid	"All parts tagged"
 msgstr	"Kõik osad on märgitud"
 
 #. TODO: -> lang.c
-#: src/thread.c:776
+#: src/thread.c:797
 #, c-format
 msgid	"List Thread (%d of %d)"
 msgstr	"Teemad (%d/%d)"
 
-#: src/thread.c:778
+#: src/thread.c:799
 #, c-format
 msgid	"Thread (%.*s)"
 msgstr	"Teema (%.*s)"

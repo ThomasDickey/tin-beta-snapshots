@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2002-10-25
+ *  Updated   : 2003-01-31
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
@@ -342,13 +342,14 @@ OUT:
 #	undef MBASE
 #endif /* !HAVE_STRTOL */
 
-
+#if !defined(HAVE_STRCASECMP) || !defined(HAVE_STRNCASECMP)
+	/* fix me - put me in tin.h */
+#	define FOLD_TO_UPPER(a)	(toupper((unsigned char) (a)))
+#endif /* !HAVE_STRCASECMP || !HAVE_STRNCASECMP */
 /*
  * strcmp that ignores case
  */
 #ifndef HAVE_STRCASECMP
-/* fix me - put me in tin.h */
-#	define FOLD_TO_UPPER(a)	(toupper((unsigned char) (a)))
 int
 strcasecmp(
 	const char *p,
@@ -623,9 +624,14 @@ wcspart(
 	int size_to)
 {
 	int n, i = 0;
-	const wchar_t *ptr;
+	wchar_t *ptr, *wbuf;
 
-	ptr = from;
+	/* make sure all characters in from are printable */
+	wbuf = my_malloc(size_to * sizeof(wchar_t));
+	wcsncpy(wbuf, from, size_to);
+	wbuf[size_to - 1] = (wchar_t) '\0';
+	ptr = wconvert_to_printable(wbuf);
+
 	to[0] = (wint_t) '\0';
 	while (*ptr && i < size_to && wcswidth(to, size_to - 1) + wcwidth(*ptr) <= columns) {
 		to[i] = *ptr;
@@ -638,5 +644,7 @@ wcspart(
 	for (; i < MIN(n, size_to - 1); i++)
 		to[i] = (wint_t) ' ';
 	to[i] = (wint_t) '\0';
+
+	free(wbuf);
 }
 #endif /* MULTIBYTE_ABLE && !NOLOCALE */
