@@ -83,11 +83,9 @@ o  'K' is still a bit inconsistent
      and jumps to the next unread article.
      'c'/'C' already does this better.
      ('K' would be useless with the group/thread behaviour as the fact we're
-      in the art => it is already read. IMHO we should ditch 'K' in the pager
-      and rebind the existing 'k' to 'K'. 'k' is supposed to be a global Up key)
-
-o  'C' in the pager doesn't match the manpage when no unread arts remain
-   in the group. In this case it is the manpage which is inconsistent.
+      in the art => it is already read. IMHO we should ditch 'K' in the
+      pager and rebind the existing 'k' to 'K'. 'k' is supposed to be a
+      global Up key)
 
 o  Changes to int/bool tinrc variables in the Option Menu don't propogate
    back to the attributes, not even groups with global attributes.
@@ -155,6 +153,14 @@ o  with --enable-forgery reposting of an thread reposts only the first
 
 New features
 ------------
+o  support "Suggested Minimal Digest Format"
+   <ftp://rtfm.mit.edu/pub/usenet/news.answers/faqs/minimal-digest-format>
+
+o  rewrite thread-method selection that users can easyly combine different
+   threading methods (THREAD_SUBJ + THREAD_MULTI || THREAD_REFS +
+   THREAD_MULTI || ...) - see also note in art.c
+   [20011117 Urs Janssen <urs@tin.org>]
+
 o  join use_getart_limit and getart_limit (getart_limit=0 means
    use_getart_limit=OFF)
    [20011114 Urs Janssen <urs@tin.org>]
@@ -274,9 +280,6 @@ o  if using "-n" commandline switch you can't subscribe to newsgroups not
 
 o  item_by_item_etiquette_warnings [compile-time?]
    (i.e. enable x-posts without f'up warning, disable long-sig warning)
-
-o  Menu/tinrc/attributes entry for TeX2ISO_Conversion=ON/OFF
-   [toggle via '"']
 
 o  Rather than Cc/Bcc, I'd like to see tin simply append the
    message to a mail folder, whose name is given by a setting

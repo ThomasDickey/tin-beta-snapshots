@@ -507,12 +507,12 @@ page_goto_next_unread:
 				break;
 
 			case iKeyPageToggleTex2iso:		/* toggle german TeX to ISO latin1 style conversion */
-				if ((tex2iso_supported = !tex2iso_supported))
+				if (((group->attribute->tex2iso_conv) = !(group->attribute->tex2iso_conv)))
 					pgart.tex2iso = is_art_tex_encoded (pgart.raw);
 
 				resize_article (TRUE, &pgart);	/* Also recooks it.. */
 				draw_page (group->name, 0);
-				info_message (_(txt_toggled_tex2iso), (tex2iso_supported) ? "on" : "off");
+				info_message (_(txt_toggled_tex2iso), ((group->attribute->tex2iso_conv)) ? "on" : "off");
 				break;
 
 			case iKeyPageToggleTabs:		/* toggle tab stops 8 vs 4 */

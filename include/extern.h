@@ -1412,6 +1412,7 @@ extern struct opttxt txt_strip_re_regex;
 extern struct opttxt txt_strip_was_regex;
 extern struct opttxt txt_tab_after_X_selection;
 extern struct opttxt txt_tab_goto_next_unread;
+extern struct opttxt txt_tex2iso_conv;
 extern struct opttxt txt_thread_articles;
 extern struct opttxt txt_thread_catchup_on_exit;
 extern struct opttxt txt_unlink_article;

@@ -280,7 +280,7 @@ read_groups_descriptions (
 			groupname = my_malloc(space);
 		} else {
 			while (strlen(ptr) > space) { /* realloc needed? */
-				space *= 2;
+				space <<= 1; /* double size */
 				groupname = (char *) my_realloc((void *) groupname, space);
 			}
 		}

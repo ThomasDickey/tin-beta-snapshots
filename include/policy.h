@@ -268,15 +268,15 @@ static const char *gnksa_domain_list[] = {
 #	if 0
 	"bitnet",	/* AFAIK .bitnet is dead */
 #	endif /* 0 */
-#	if 0
-	/* the new domain names, not yet valid */
+	/* the new domain names, some still not yet valid */
 	"biz",	/* Businesses */
-	"pro",	/* Accountants, lawyers, and physicians */
-	"aero",	/* Air-transport industry */
-	"coop",	/* Non-profit cooperatives */
 	"info",	/* Unrestricted use */
 	"name",	/* For registration by individuals */
 	"museum",	/* Museums */
+#	if 0
+	"pro",	/* Accountants, lawyers, and physicians */
+	"aero",	/* Air-transport industry */
+	"coop",	/* Non-profit cooperatives */
 #	endif /* 0 */
 	/* the next four are defined in RFC 2606 */
 	"invalid",

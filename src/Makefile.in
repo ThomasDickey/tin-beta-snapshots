@@ -298,15 +298,14 @@ $(BINDIR)/$(EXE): $(OFILES) $(EXTRALIBS)
 help:
 	@$(ECHO) "This Makefile offers the following options:"
 	@$(ECHO) " "
-	@$(ECHO) "    make [all]             [ Build the binary for your OS ]"
-	@$(ECHO) "    make clean             [ Delete all object files ]"
-	@$(ECHO) "    make install           [ Install the binary & the manual pages ]"
-	@$(ECHO) "    make uninstall         [ Uninstall the binary & the manual pages ]"
-	@$(ECHO) "    make install_manpage   [ Install the manual pages ]"
-	@$(ECHO) "    make uninstall_manpage [ Uninstall the manual pages ]"
-	@$(ECHO) "    make install_sysdefs   [ Install the system-wide-defaults file ]"
-	@$(ECHO) "    make uninstall_sysdefs [ Uninstall the system-wide-defaults file ]"
-	@$(ECHO) "    make help              [ Show this text ]"
+	@$(ECHO) "    make [all]                 [ Build the binary for your OS ]"
+	@$(ECHO) "    make [un]install           [ [Un]install the binaries & manual pages ]"
+	@$(ECHO) "      make [un]install_helpers [ [Un]install helper applications ]"
+	@$(ECHO) "      make [un]install_manpage [ [Un]install the manual pages ]"
+	@$(ECHO) "      make [un]install_nls     [ [Un]install native language files ]"
+	@$(ECHO) "    make [un]install_sysdefs   [ [Un]install the system-wide defaults file ]"
+	@$(ECHO) "    make clean                 [ Delete all object files ]"
+	@$(ECHO) "    make help                  [ Show this text ]"
 	@$(ECHO) " "
 
 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT) \

@@ -3,11 +3,11 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2001-11-17
+.\" Updated   : 2001-12-03
 .\" Notes     : still needs some work (but getting there ;)
 .\"
 .\"
-.TH tin 1 "Novermber 17th, 2001" "1.5.10" "A Usenet newsreader"
+.TH tin 1 "December 3rd, 2001" "1.5.11" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -84,10 +84,11 @@ Thread level and Article level. Use the 'h' (help) command to view a list of
 the commands available at a particular level.
 .PP
 On startup \fBtin\fP will show a list of the newsgroups found in
-\fI$HOME/.newsrc\fR. An arrow '->' or highlighted bar will point to the
-first newsgroup. Move to a group by using the terminal arrow keys (terminal
-dependent) or 'j' and 'k'. Use PgUp/PgDn (terminal dependent) or Ctrl-U and
-Ctrl-D to page up/down. Enter a newsgroup by pressing <RETURN>.
+\fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR. An arrow '->' or highlighted bar will
+point to the first newsgroup. Move to a group by using the terminal arrow
+keys (terminal dependent) or 'j' and 'k'. Use PgUp/PgDn (terminal dependent)
+or Ctrl-U and Ctrl-D to page up/down. Enter a newsgroup by pressing
+<RETURN>.
 .PP
 The <TAB> key enters the next newsgroup with unread articles.
 .\"
@@ -122,8 +123,9 @@ Toggle ANSI color (default is off).
 Force authentication on initial connect.
 .TP
 .B -c
-Create/update index files for every group in \fI$HOME/.newsrc\fR or file
-specified by the ''\fB-f\fP'' option and mark all articles as read.
+Create/update index files for every group in
+\fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR or file specified by the ''\fB-f\fP''
+option and mark all articles as read.
 .TP
 .B -d
 Don't load newsgroup descriptions (interactive mode).
@@ -133,10 +135,11 @@ Enter debug-level (1 = NNTP, 2 = all).
 .TP
 .BI -f " file"
 Use the specified file of subscribed to newsgroups in place of
-\fI$HOME/.newsrc\fR.
+\fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR.
 .TP
 .BI -g " server"
-Use the server and newsrc specified in \fI$HOME/.tin/newsrctable\fR.
+Use the server and newsrc specified in
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/newsrctable\fR.
 .TP
 .BI -G " article-limit"
 Limit the number of articles/group to retrieve from the server.
@@ -150,8 +153,8 @@ started.
 .TP
 .BI -I " dir"
 Directory in which to store newsgroup index files. Default is
-\fI$HOME/.tin/.news\fR. This option is disabled if \fBtin\fP is compiled
-as reading news via NNTP only.
+\fI${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}/.news\fR. This option
+is disabled if \fBtin\fP is compiled as reading news via NNTP only.
 .TP
 .BI -l
 Get number of articles per group from the \fIactive\fR file - this might
@@ -160,7 +163,7 @@ which is to read the \fIactive\fR file and then check the article count via
 a GROUP command ''\fB-ln\fP''.
 .TP
 .BI -m " dir"
-Mailbox directory to use. Default is \fI$HOME/Mail\fR.
+Mailbox directory to use. Default is \fI${TIN_HOMEDIR-"$HOME"}/Mail\fR.
 .TP
 .BI -M " user"
 Mail unread articles to specified user for later reading. For more
@@ -168,8 +171,9 @@ information read section AUTOMATIC MAILING AND SAVING NEW NEWS.
 .TP
 .B -n
 Only load groups from the active file that are subscribed to in the user's
-\fI$HOME/.newsrc\fR. This allows a noticeable speedup when connecting via a
-slow line, but \fBtin\fP cannot tell which groups are moderated.
+\fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR. This allows a noticeable speedup when
+connecting via a slow line, but \fBtin\fP cannot tell which groups are
+moderated.
 .TP
 .B -N
 Mail unread articles to yourself for later reading. For more
@@ -198,16 +202,18 @@ variable $\fBNNTPSERVER\fP or contained in the file
 Read news saved by the ''\fB-S\fP'' option.
 .TP
 .BI -s " dir"
-Save/read articles to/in directory. Default is \fI$HOME/News\fR.
+Save/read articles to/in directory. Default is
+\fI${TIN_HOMEDIR-"$HOME"}/News\fR.
 .TP
 .B -S
 Save unread articles for later reading by the ''\fB-R\fP'' option. For more
 information read section AUTOMATIC MAILING AND SAVING NEW NEWS.
 .TP
 .B -u
-Create/update index files for every group in \fI$HOME/.newsrc\fR or file
-specified by the ''\fB-f\fP'' option. This option is disabled if \fBtin\fP
-retrieves its index files via a NNTP server.
+Create/update index files for every group in
+\fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR or file specified by the ''\fB-f\fP''
+option. This option is disabled if \fBtin\fP retrieves its index files via a
+NNTP server.
 .TP
 .B -v
 Verbose mode for ''\fB-c\fP'', ''\fB-M\fP'', ''\fB-S\fP'', ''\fB-u\fP''
@@ -222,7 +228,8 @@ Quick mode to post an article and then exit. In order for this to be quick,
 groups in the newsrc are available for posting.
 .TP
 .B -X
-No-overwrite mode. \fI$HOME/.newsrc\fR and files in \fI$HOME/.tin\fR
+No-overwrite mode. \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR and files in
+\fI${TIN_HOMEDIR-"$HOME"}/.tin\fR
 will not be overwritten but may be created if they don't exist.
 .TP
 .B -z
@@ -257,9 +264,9 @@ read/unread status, then the command line groups will be gone. You can use
 'Y' to reread the active file and get them back.
 .PP
 NB: With the ''\fB-n\fP'' flag, only unsubscribed groups in the
-\fI$HOME/.newsrc\fR file (or the newsrc-file given by the ''\fB-f\fP''
-command-line switch or via \fI${TIN_HOMEDIR-"$HOME"}/.tin/newsrctable\fR)
-can be matched.
+\fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR file (or the newsrc-file given by the
+''\fB-f\fP'' command-line switch or via
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/newsrctable\fR) can be matched.
 .\"
 .\"
 .SH USAGE
@@ -486,8 +493,8 @@ Print \fBtin\fP version information.
 Select group 4.
 .TP
 .B ^R
-Reset \fI$HOME/.newsrc\fR file. This will destroy all records of which
-articles have been read, so use this carefully.
+Reset \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR file. This will destroy all
+records of which articles have been read, so use this carefully.
 .TP
 .B #
 Choose a range of articles to be affected by the next command. See the section
@@ -598,7 +605,7 @@ Quit \fBtin\fP without saving any changes to the configuration.
 Yanks in all groups.
 Toggles the displayed groups between all the groups in the
 \fI$NEWSLIBDIR/active\fR file and just those that are subscribed to in
-\fI$HOME/.newsrc\fR.
+\fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR.
 .TP
 .B Y
 Reread the active file to see if any new news has arrived since
@@ -1029,7 +1036,8 @@ Post a followup to the current article with a copy of the article with all
 headers included.
 .TP
 \fB"\fP
-Toggle $\fBTEX2ISO\fP decoding for current article.
+Toggle TeX to ISO decoding for current article. The default behaviour is
+taken from the \fBtex2iso_conv\fP variable in the tinrc file.
 .TP
 .B %
 Toggle ROT-13 decoding for this article.
@@ -1124,8 +1132,7 @@ the previous menu. Move cursor to next item.
 .TP
 .B C
 Mark the rest of the current thread as read [after confirmation] and enter the
-next thread with unread articles. If no unread articles are left in this
-group, enter the next group with unread news.
+next thread with unread articles.
 .TP
 .B D
 Cancel the current article. It must have been posted by the same user. The
@@ -1513,7 +1520,7 @@ This feature is mainly for use with the
 .BR elm (1)
 mail program. It allows the user to save articles/threads/groups simply by
 giving '=' as the filename to save to.
-Default is \fI$HOME/Mail\fR.
+Default is \fI${TIN_HOMEDIR-"$HOME"}/Mail\fR.
 .TP
 .B Invocation of your mail command (default_mailer_format)
 The format string used to create the mailer command with parameters that is
@@ -1555,17 +1562,18 @@ System Administrator
 .B default_save_mode
 .TP
 .B Directory to save articles/threads in (default_savedir)
-Directory where articles/threads are saved. Default is \fI$HOME/News\fR.
+Directory where articles/threads are saved. Default is
+\fI${TIN_HOMEDIR-"$HOME"}/News\fR.
 .TP
 .B default_select_pattern
 .TP
 .B default_shell_command
 .TP
 .B Create signature from path/command (default_sigfile)
-The path that specifies the signature file to use when posting, following up to
-or replying to an article. If the path is a directory then the signature will
-be randomly generated from files that are in the specified directory.
-Default is \fI$HOME/.Sig\fR.
+The path that specifies the signature file to use when posting, following up
+to or replying to an article. If the path is a directory then the signature
+will be randomly generated from files that are in the specified directory.
+Default is \fI${TIN_HOMEDIR-"$HOME"}/.Sig\fR.
 .TP
 .B default_subject_search
 .TP
@@ -1606,6 +1614,10 @@ line showing the size and filename (much the same as a MIME attachment).
 Otherwise the raw uuencoded data is displayed. Default is OFF.
 This behaviour can also be toggled in the article viewer.
 .TP
+.B Decode German style TeX umlaut codes to ISO (tex2iso_conv)
+If ON, show "a as Umlaut-a, etc. Default is OFF.
+This behaviour can also be toggled in the article viewer via '"'.
+.TP
 .B info_in_last_line
 If ON, show current group description or article subject in the last line
 (not in the pager and global menu) - 'i' toggles setting. This facility is
@@ -1615,11 +1627,13 @@ useful as the full width of the screen is available to display long subjects.
 If ON use inverse video for page headers at different levels. Default is ON.
 .TP
 .B Keep failed articles in ~/dead.articles (keep_dead_articles)
-If ON keep all failed postings in \fI$HOME/dead.articles\fR besides keeping
-the last failed posting in \fI$HOME/dead.article\fR. Default is ON.
+If ON keep all failed postings in \fI${TIN_HOMEDIR-"$HOME"}/dead.articles\fR
+besides keeping the last failed posting in \fI${TIN_HOMEDIR-"$HOME"}/dead.article\fR.
+Default is ON.
 .TP
 .B Keep posted articles in ~/Mail/posted (keep_posted_articles)
-If ON keep all postings in \fI$HOME/Mail/posted\fR. Default is ON.
+If ON keep all postings in \fI${TIN_HOMEDIR-"$HOME"}/Mail/posted\fR.
+Default is ON.
 .TP
 .B Handling of killed articles (kill_level)
 This option controls the processing and display of articles that are killed.
@@ -1898,16 +1912,17 @@ Strips the blanks from the end of each line therefore speeding up the
 display when reading on a slow terminal or via modem. Default is ON.
 .TP
 .B Remove bogus groups from newsrc (strip_bogus)
-Bogus groups are groups that are present in your \fI.newsrc\fR file that
-no longer exist on the news server. There are 3 options. 0 means do
-nothing & always keep bogus groups. 1 means bogus groups will be
-permanently removed. 2 means that bogus groups will appear on the Group
-Selection Menu, prefixed with a 'D'. This allows you to unsubscribe
-from them as and when you wish. Default is 0 (Always Keep).
+Bogus groups are groups that are present in your
+\fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR file that no longer exist on the news
+server. There are 3 options. 0 means do nothing & always keep bogus groups.
+1 means bogus groups will be permanently removed. 2 means that bogus groups
+will appear on the Group Selection Menu, prefixed with a 'D'. This allows
+you to unsubscribe from them as and when you wish. Default is 0 (Always
+Keep).
 .TP
 .B No unsubscribed groups in newsrc (strip_newsrc)
 If ON, then unsubscribed groups will be permanently removed from
-your \fI.newsrc\fR file. Default is OFF.
+your \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR file. Default is OFF.
 .TP
 .B Do tab after X automatically (tab_after_X_selection)
 If enabled will automatically goto the first unread article after having
@@ -1921,12 +1936,21 @@ one. Default is ON.
 .TP
 .B Thread articles by (thread_articles)
 Defines which threading method to use. The choices are:
-0) Don't thread, 1) Thread on Subject only 2) Thread on References only,
-3) Thread on References then Subject (default)
-4) Thread multipart articles on Subject.
+.in +.5i
+.ti -\w'\(em'u
+\(emDon't thread (0)
+.ti -\w'\(em'u
+\(emThread on Subject only (1)
+.ti -\w'\(em'u
+\(emThread on References only (2)
+.ti -\w'\(em'u
+\(emThread on References then Subject (3, default)
+.ti -\w'\(em'u
+\(emThread multipart articles on Subject (4)
+.in -.5i
 It's also possible to set the threading type on a per group basis by setting
 the group attribute variable \fBthread_arts\fP to 0 - 4 in the file
-\fI$HOME/.tin/attributes\fR. (See also GROUP ATTRIBUTES)
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/attributes\fR. (See also GROUP ATTRIBUTES)
 .TP
 .B Catchup thread by using left key (thread_catchup_on_exit)
 If ON catchup group/thread when leaving with the left arrow key.
@@ -1935,13 +1959,14 @@ Default is ON.
 .B Remove ~/.article after posting (unlink_article)
 If ON remove \fI~/.article\fR after posting. Default is ON.
 .TP
-.B Use builtin inews (use_builtin_inews)
-Allows the builtin NNTP
+.B External inews (inews_prog)
+Path, name and options of external
 .BR inews (1)
-to be enabled/disabled. This has no effect when reading/posting direct to
-local spool where external
-.BR inews (1)
-will always be used. Default is ON (enabled).
+If you are reading via NNTP the default value is --internal, ie. use builtin
+NNTP inews, else it is "inews -h". If you set INEWSDIR at compile-time
+or inewsdir in tin.defaults you can only choose between using internal inews
+by setting this variable to "--internal" or "<value of inewsdir>/inews -h"
+by setting it to anything else.
 .TP
 .B Limit number of articles fetched from server (use_getart_limit)
 If enabled \fBtin\fP fetches max. \fBgetart_limit\fP articles/group from the
@@ -1994,11 +2019,9 @@ answering to a crossposting to several groups with no ''Followup-To:'' set
 .\"
 .\"
 .SS "GROUP ATTRIBUTES"
-.\" FIXME - add missing descriptions
 \fBtin\fP allows certain attributes to be set on a per group basis. These
-group attributes are read from the file \fI$HOME/.tin/attributes\fR (see
-also
-.BR tin (5)).
+group attributes are read from the file
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/attributes\fR
 A later version will provide a menu interface to set all the attributes.
 At present you will have to edit the file with your editor.
 .PP
@@ -2007,140 +2030,8 @@ attributes are specified for that list. All attributes are set to a
 reasonable default so you only have to specify the attribute that you want
 to change (i.e., savedir). All toggle attributes are set by specifying
 ON/OFF. Otherwise, these function exactly the same as their global
-equivalents. The following group attributes are available:
-.TP 4
-\fBscope
-This changes the list of groups to which the attributes that follow will be
-applied.
-See the section NEWSGROUP LISTS & WILDCARDS for the types of pattern that can
-be used here.
-.TP
-.B maildir
-Identical to the tinrc variable \fBdefault_maildir\fP
-.TP
-.B savedir
-Identical to the tinrc variable \fBdefault_savedir\fP
-.TP
-.B savefile
-.TP
-.B organization
-.TP
-.B from
-Identical to the tinrc variable \fBmail_address\fP
-.TP
-.B sigfile
-.TP
-.B followup_to
-.TP
-.B printer
-.TP
-.B auto_select
-.TP
-.B auto_save
-Identical to the tinrc variable of the same name
-.TP
-.B batch_save
-Can be used to override the global setting in tinrc on a
-per group basis. For more information read section AUTOMATIC MAILING AND
-SAVING NEW NEWS.
-.TP
-.B delete_tmp_files
-If this is set to ON, then saved article files that have been post-processed
-will be automatically deleted.
-If set to OFF, you will be prompted as to whether to delete each file in turn.
-Note that automatic processing of Tagged articles using 'S' will also suppress
-promting.
-.TP
-.B show_only_unread
-Identical to the tinrc variable of the same name
-.TP
-.B thread_arts
-Identical to the tinrc variable \fBthread_articles\fP
-.TP
-.B show_author
-Identical to the tinrc variable of the same name
-.TP
-.B sort_art_type
-Identical to the tinrc variable \fBsort_article_type\fP
-.TP
-.B sort_threads_type
-Identical to the tinrc variable \fBsort_threads_type\fP
-.TP
-.B post_proc_type
-Identical to the tinrc variable \fBpost_process_type\fP
-.TP
-.B mailing_list
-Used when a group is a mailing list. All responses to the group will be
-directed to this email address instead
-.TP
-.B x_headers
-A list of headers that will be automatically added when posting
-.TP
-.B x_body
-A piece of text that will be added at the start of a message body. If this
-string starts with a / or ~ then it is assumed to be the name of a file
-containing the text to insert.
-.TP
-.B quick_kill_scope
-.TP
-.B quick_kill_expire
-.TP
-.B quick_kill_case
-.TP
-.B quick_kill_header
-.TP
-.B quick_select_scope
-.TP
-.B quick_select_expire
-.TP
-.B quick_select_case
-.TP
-.B quick_select_header
-.TP
-.B x_comment_to
-.TP
-.B news_quote_format
-Identical to the tinrc variable of the same name
-.TP
-.B quote_chars
-Identical to the tinrc variable of the same name
-.TP
-.B ispell
-.PP
-Examples:
-.RS
-.nf
-.ft CW
-
-# include extra headers
-scope=*
-x_headers=~/.tin/headers
-
-# in *sources* set post process type to shar
-scope=*sources*
-post_proc_type=1
-
-# in *binaries* set post process type to uudecode
-# remove tmp files and set Followup-To: poster
-scope=*binaries*
-post_proc_type=2
-delete_tmp_files=ON
-followup_to=poster
-
-# in fido.* newsgroups change quote_chars
-# and add X-Comment-To: line
-scope=fido.*
-quote_chars=%s>_
-x_comment_to=ON
-
-# in *.test newsgroups, don't append signature
-# and preset Subject
-scope=*.test
-sigfile=--none
-x_headers=Subject: test - ignore - no reply
-.ft P
-.fi
-.RE
+equivalents. For more details see
+.BR tin (5).
 .\"
 .\"
 .SS "FILTERING ARTICLES"
@@ -2151,8 +2042,8 @@ instruct \fBtin\fP to \fIauto-select\fR or \fIauto-kill\fR articles
 that match \fIrules\fR that you specify. This can be anything from the name
 of the author to the number of lines in an article.
 .PP
-When \fBtin\fP starts up the user's killfile \fI$HOME/.tin/filter\fR /see
-also
+When \fBtin\fP starts up the user's killfile
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/filter\fR /see also
 .BR tin (5))
 is read. Each time a newsgroup is entered the rules are applied and articles
 killed or selected when they meet certain criteria.
@@ -2162,9 +2053,10 @@ setting. By default killed articles will only be marked read. Adjust
 \fBkill_level\fP for more agressive processing. Articles that match an
 auto-selection rule are marked with a ''*''.
 .PP
-Filtering rules can be manually entered into \fI$HOME/.tin/filter\fR (but
-don't do this whilst running \fBtin\fP else you will lose your changes)
-or by using an on screen menu within \fBtin\fP.
+Filtering rules can be manually entered into
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/filter\fR (but don't do this whilst running
+\fBtin\fP else you will lose your changes) or by using an on screen menu
+within \fBtin\fP.
 .PP
 The filtering capabilities of \fBtin\fP have been significantly enhanced over
 previous versions to include scoring and better pattern matching. It is
@@ -2257,7 +2149,7 @@ In <abcINN123@ecrc.de>, Iain Lea (iain@ecrc.de) wrote:
 The quoted text section of an article is marked by a preceding quote string
 at the beginning of each quoted line. The default quote string is set
 to '>_'. The default can be changed by setting the tinrc variable
-\fBquote_chars\fP to ones own preference. (note that '_' underline is used
+\fBquote_chars\fP to ones own preference. (Note that '_' underline is used
 to represent a space).
 .\"
 .\"
@@ -2267,10 +2159,11 @@ repost ('x') and save ('s' and 'S') articles is the same for ease of use.
 .PP
 Auto-saving with 'S' is a special case and operates only on tagged articles.
 They will processed without any further prompting according to the default
-save paramters defined in tinrc or by any attributes set for the current group.
+save paramters defined in tinrc or by any attributes set for the current
+group.
 .PP
-Otherwise, the initial prompt will ask you to select which a)rticle, t)hread,
-h)ot (auto-selected) r)egex pattern, t)agged articles you wish to
+Otherwise, the initial prompt will ask you to select which a)rticle,
+t)hread, h)ot (auto-selected) r)egex pattern, t)agged articles you wish to
 mail, pipe etc.
 .PP
 Tagged articles must have already been tagged with the 't' command.
@@ -2313,9 +2206,9 @@ that expire has removed a whole load of unread articles. Best to run from
 crontab everyday while away, after which you will be mailed a report of
 which articles were mailed/saved from which newsgroups and the total number
 of articles mailed/saved. Articles are saved in a private news structure
-under your <savedir> directory (default is \fI$HOME/News\fR). Be careful of
-using this option if you read a lot of groups because you could overflow
-your file system.
+under your <savedir> directory (default is \fI${TIN_HOMEDIR-"$HOME"}/News\fR).
+Be careful of using this option if you read a lot of groups because you
+could overflow your file system.
 .PP
 If you only want to save some of your groups use the \fBbatch_save\fP tinrc
 variable. Set to ON or OFF in tinrc to enable/disable saving of all groups
@@ -2371,18 +2264,19 @@ examples.
 .\"
 .\"
 .SS SIGNATURES
-\fBtin\fP will recognize a signature in either \fI$HOME/.signature\fR or
-\fI$HOME/.Sig\fR. If \fI$HOME/.signature\fR exists, then the signature
-will be pulled into the editor for mail commands. A signature in
-\fI$HOME/.signature\fR will not be pulled into the editor for posting
-commands since
+\fBtin\fP will recognize a signature in either
+\fI${TIN_HOMEDIR-"$HOME"}/.signature\fR or \fI${TIN_HOMEDIR-"$HOME"}/.Sig\fR.
+If \fI${TIN_HOMEDIR-"$HOME"}/.signature\fR exists, then the signature
+will be pulled into the editor for mail commands onyl. A signature in
+\fI${TIN_HOMEDIR-"$HOME"}/.signature\fR will not be pulled into the
+editor for posting commands since
 .BR inews (1)
 will append the signature itself.
 .PP
-A signature in \fI$HOME/.Sig\fR will be pulled into the editor for both
-posting and mailing commands.
+A signature in \fI${TIN_HOMEDIR-"$HOME"}/.Sig\fR will be pulled into the
+editor for both posting and mailing commands.
 .PP
-The following is an example of a \fI$HOME/.Sig\fR file:
+The following is an example of a \fI.Sig\fR file:
 .RS
 .nf
 .ft CW
@@ -2508,10 +2402,12 @@ If your news server supports NOV index files
 .PP
 If your news server doesn't support NOV index files, \fBtin\fP will maintain
 an index for each newsgroup. Each user creates/updates his/her own index
-files that are stored in \fI$HOME/.tin/.news\fR. A good way to keep index
-files updated is by doing a \fBtin -U\fP that will update index files in the
-background while you are reading news in the foreground. You can also update
-index files via the system batcher cron with the ''\fB-u\fP'' option:
+files that are stored in
+\fI${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}/.news\fR. A good way
+to keep index files updated is by doing a \fBtin -U\fP that will update
+index files in the background while you are reading news in the foreground.
+You can also update index files via the system batcher cron with the
+''\fB-u\fP'' option:
 .PP
 .RS
 .nf
@@ -2532,7 +2428,8 @@ somewhat slower because the articles must be retrieved from the NNTP server.
 .\"
 .\"
 .SH FILES
-.\" TODO: mention .article[.$$], .cancel[.$$], .letter[.$$]?
+.\" TODO: mention dead.article, dead.articles
+.\"               .article[.$$], .cancel[.$$], .letter[.$$]?
 For a detailed description see
 .BR tin (5).
 .PP
@@ -2616,6 +2513,9 @@ For a detailed description see
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/posted
 .PP
 
+.IR ${TIN_HOMEDIR-"$HOME"}/Mail/posted
+.PP
+
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/postponed.articles
 .PP
 
@@ -2663,18 +2563,21 @@ you would set $\fBTIN_HOMEDIR\fP to \fI/tmp\fR.
 .TP
 .B TIN_INDEX_NEWSDIR
 Define this variable if you do not want the \fI.news\fR directory in
-\fI$HOME/.tin/.news\fR. (i.e., if you want all \fBtin\fP's news index files
-in \fI/tmp/.news\fR you would set $\fBTIN_INDEX_NEWSDIR\fP to \fI/tmp\fR.
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/.news\fR. (i.e., if you want all \fBtin\fP's
+news index files in \fI/tmp/.news\fR you would set $\fBTIN_INDEX_NEWSDIR\fP
+to \fI/tmp\fR.
 .TP
 .B TIN_INDEX_MAILDIR
 Define this variable if you do not want the \fI.mail\fR directory in
-\fI$HOME/.tin/.mail\fR. (i.e., if you want all \fBtin\fP's mail index files
-in \fI/tmp/.mail\fR you would set $\fBTIN_INDEX_MAILDIR\fP to \fI/tmp\fR.
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/.mail\fR. (i.e., if you want all \fBtin\fP's
+mail index files in \fI/tmp/.mail\fR you would set $\fBTIN_INDEX_MAILDIR\fP
+to \fI/tmp\fR.
 .TP
 .B TIN_INDEX_SAVEDIR
 Define this variable if you do not want the \fI.save\fR directory in
-\fI$HOME/.tin/.save\fR. (i.e., if you want all \fBtin\fP's save index files
-in \fI/tmp/.save\fR you would set $\fBTIN_INDEX_SAVEDIR\fP to \fI/tmp\fR.
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/.save\fR. (i.e., if you want all \fBtin\fP's
+save index files in \fI/tmp/.save\fR you would set $\fBTIN_INDEX_SAVEDIR\fP
+to \fI/tmp\fR.
 .TP
 .B TIN_LIBDIR
 Define this variable if you want to override the \fBNEWSLIBDIR\fP path that
@@ -2706,11 +2609,6 @@ The ''\fB-p\fP'' command line option overrides $\fBNNTPPORT\fP.
 .B DISTRIBUTION
 Set the article header field ''Distribution:'' to the contents of the
 variable instead of the system default.
-.TP
-.B TEX2ISO
-Set the article viewer to decode German style umlaut codes to ISO latin1.
-Value 0 has the same effect as not defining the variable. Use in combination
-with $\fBISO2ASC\fP.
 .TP
 .B ISO2ASC
 Set the ISO to ASCII charset decoding table character to use in decoding
@@ -2978,6 +2876,8 @@ ftp.tin.org:/pub/news/clients/tin/v1.5/
 .IP "v1.5.8 (beta) - February 21st 2001"
 ftp.tin.org:/pub/news/clients/tin/v1.5/
 .IP "v1.5.9 (beta) - July 23rd 2001"
+ftp.tin.org:/pub/news/clients/tin/v1.5/
+.IP "v1.5.10 (beta) - November 17th 2001"
 ftp.tin.org:/pub/news/clients/tin/v1.5/
 .\"
 .\"

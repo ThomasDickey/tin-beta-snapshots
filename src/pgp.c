@@ -282,12 +282,12 @@ pgp_append_public_key (
 	FILE *fp, *key;
 	char keyfile[PATH_LEN], cmd[LEN], buf[LEN];
 
-	if ((CURR_GROUP.attribute->from) != (char *) 0)
+	if ((CURR_GROUP.attribute->from) != (char *) 0 && strlen(CURR_GROUP.attribute->from))
 		strip_name (CURR_GROUP.attribute->from, buf);
 	else
 		snprintf(buf, sizeof(buf) - 1, "%s@%s", userid, host_name);
 
-	snprintf(keyfile, sizeof(buf) - 1, KEYFILE, TMPDIR, process_id);
+	snprintf(keyfile, sizeof(keyfile) - 1, KEYFILE, TMPDIR, process_id);
 
 /* TODO I'm guessing the pgp append key command creates 'keyfile' and that we should remove it */
 #	ifdef HAVE_GPG

@@ -271,7 +271,7 @@ body_search (
 			code = -1;
 			goto exit_search;
 		case ART_UNAVAILABLE:
-			code =  0;					/* Treat as string not present */
+			code = 0;					/* Treat as string not present */
 			goto exit_search;
 	}
 

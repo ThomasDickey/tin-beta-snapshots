@@ -2644,15 +2644,19 @@ buffer_to_local (
 	const char *network_charset,
 	const char *local_charset)
 {
+	char *cnetwork_charset;
+
 	/* FIXME: this should default in RFC2046.c to US-ASCII */
 	if (!(network_charset && *network_charset)) {	/* Content-Type: did't had a charset parameter */
 		/*
 		 * defaulting to US-ASCII would be more correct, but $MM_CHARSET
 		 * might be more usefull
 		 */
-		network_charset = local_charset;
+		cnetwork_charset = my_strdup(local_charset);
 	} else {
-		if (strcasecmp(network_charset, local_charset)) { /* different charsets? */
+		cnetwork_charset = my_strdup(network_charset);
+
+		if (strcasecmp(cnetwork_charset, local_charset)) { /* different charsets? */
 			char * obuf;
 			char * outbuf;
 			const char * inbuf;
@@ -2661,9 +2665,10 @@ buffer_to_local (
 			size_t inbytesleft, outbytesleft;
 
 #	ifndef MIME_STRICT_CHARSET
-			if (!strcasecmp(network_charset, "US-ASCII")) {
+			if (!strcasecmp(cnetwork_charset, "US-ASCII")) {
 #		if 0
-				network_charset = local_charset;
+				free(cnetwork_charset);
+				cnetwork_charset = my_strdup(local_charset);
 #		else
 				/* no network_charset case already fixed above */
 				;
@@ -2671,10 +2676,10 @@ buffer_to_local (
 			} else
 #	endif /* !MIME_STRICT_CHARSET */
 			{
-				if ((cd = iconv_open(local_charset, network_charset)) != (iconv_t) (-1)) {
+				if ((cd = iconv_open(local_charset, cnetwork_charset)) != (iconv_t) (-1)) {
 #	ifndef HAVE_WORKING_ICONV /* TODO: write configure check */
 					/* iconv() might crash on broken multibyte sequences so check them */
-					if (!strcasecmp(network_charset, "UTF-8"))
+					if (!strcasecmp(cnetwork_charset, "UTF-8"))
 						utf8_valid(line);
 #	endif /* HAVE_WORKING_ICONV */
 					{
@@ -2701,7 +2706,7 @@ buffer_to_local (
 										obuf = (char *) my_realloc(obuf, osize * 2);
 										outbuf = (char *) (obuf + osize - outbytesleft);
 										outbytesleft += osize;
-										osize += osize;
+										osize <<= 1; /* double size */
 										break;
 
 									default:
@@ -2719,6 +2724,7 @@ buffer_to_local (
 			}
 		}
 	}
+	free(cnetwork_charset);
 }
 
 
@@ -2757,7 +2763,7 @@ buffer_to_network (
 						obuf = (char *) my_realloc(obuf, osize * 2);
 						outbuf = (char *) (obuf + osize - outbytesleft);
 						outbytesleft += osize;
-						osize += osize;
+						osize <<= 1; /* double size */
 						break;
 
 					default:	/* EINVAL */
@@ -3800,8 +3806,8 @@ utf8_valid(
 		}
 
 		for (d = 1; d < numc; d++) {
-			e = *(c+d);
-			if (e < 0x80 || e > 0xbf || *(c+d) == '\0' || *(c+d) == '\n')
+			e = *(c + d);
+			if (e < 0x80 || e > 0xbf || *(c + d) == '\0' || *(c + d) == '\n')
 				illegal = TRUE;
 		}
 

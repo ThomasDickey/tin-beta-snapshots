@@ -276,7 +276,7 @@ get_full_name (
 		strncpy (fullname, p, sizeof (fullname));
 		return fullname;
 	}
-	if ((p =  getenv ("REALNAME")) != (char *) 0) {
+	if ((p = getenv ("REALNAME")) != (char *) 0) {
 		strncpy (fullname, p, sizeof (fullname));
 		return fullname;
 	}
@@ -292,8 +292,8 @@ get_full_name (
 	if ((p = strchr (buf, '&'))) {
 		*p++ = '\0';
 		STRCPY(tmp, pw->pw_name);
-		if (*tmp && isalpha((int)*tmp) && islower((int)*tmp))
-			*tmp = toupper((int)*tmp);
+		if (*tmp && isalpha((int) *tmp) && islower((int) *tmp))
+			*tmp = toupper((int) *tmp);
 		snprintf (fullname, sizeof(fullname) -1, "%s%s%s", buf, tmp, p);
 	} else
 		STRCPY(fullname, buf);

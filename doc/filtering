@@ -262,7 +262,7 @@ group=*
 type=1
 case=1
 score=hot
-subj=\b((cd)|[rk]?)?tin(d|pre)?[-\.0-9]*\b
+subj=\b(cd|[rk]?)?tin(d|pre)?[-.0-9]*\b
 
 ### mark own articles and followups to own articles as hot in all groups
 ### except local ones
@@ -293,7 +293,7 @@ group=alt.*,
 type=0
 case=1
 score=-200
-subj=[\$\*\!]{3,}
+subj=[$*!]{3,}
 lines=<3
 xref_max=10
 

@@ -2,22 +2,27 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2001-11-17
+.\" Updated   : 2001-12-03
 .\" Notes     : needs a lot of work
 .\"
-.TH tin 5 "November 17th, 2001" "1.5.10" "A Usenet newsreader"
+.TH tin 5 "December 3rd, 2001" "1.5.11" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
 
 .SH DESCRIPTION
-This manpage describes the various config files and their formats used by
+This manpage describes the various (config) files and their formats used by
 the
 .BR tin (1)
 newsreader.
 
 .SH FILES
-.\" TODO: mention .article[.$$], .cancel[.$$], .letter[.$$]?
+.\" TODO: mention
+.\" ${TIN_HOMEDIR-"$HOME"}/dead.article
+.\" ${TIN_HOMEDIR-"$HOME"}/dead.articles
+.\" ${TIN_HOMEDIR-"$HOME"}/.article[.$$]
+.\" ${TIN_HOMEDIR-"$HOME"}/.cancel[.$$]
+.\" ${TIN_HOMEDIR-"$HOME"}/.letter[.$$]
 .PP
 .IR $MAILCAPS
 .br
@@ -505,6 +510,9 @@ Identical to the tinrc variable of the same name
 .B quote_chars
 Identical to the tinrc variable of the same name
 .TP
+.B tex2iso_conv
+Identical to the tinrc variable of the same name
+.TP
 .B ispell
 .PP
 .TP
@@ -827,6 +835,17 @@ posting history
 .RE
 .PP
 
+.IR ${TIN_HOMEDIR-"$HOME"}/Mail/posted
+.sp
+.RS
+Copy of all posted articles in
+.BR mbox (5)
+format. This requires \fBkeep_posted_articles\fP to be set (which is the
+default). The filename might be changed by setting
+\fBkeep_posted_articles_file\fP.
+.RE
+.PP
+
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/postponed.articles
 .sp
 .RS
@@ -1073,7 +1092,8 @@ The directory where articles/threads are to be saved in
 format. This feature is mainly for use with the
 .BR elm (1)
 mail program. It allows the user to save articles/threads/groups simply
-by giving '=' as the filename to save to. Default is \fI$HOME/Mail\fR.
+by giving '=' as the filename to save to. Default is
+\fI${TIN_HOMEDIR-"$HOME"}/Mail\fR.
 .TP
 .B default_mailer_format
 The format string used to create the mailer command with parameters that is
@@ -1117,7 +1137,8 @@ may have been disabled by the System Administrator.
 .B default_save_mode
 .TP
 .B default_savedir
-Directory where articles/threads are saved. Default is \fI$HOME/News\fR.
+Directory where articles/threads are saved. Default is
+\fI${TIN_HOMEDIR-"$HOME"}/News\fR.
 .TP
 .B default_select_pattern
 .TP
@@ -1179,11 +1200,13 @@ subjects.
 If ON use inverse video for page headers at different levels. Default is ON.
 .TP
 .B keep_dead_articles
-If ON keep all failed postings in \fI$HOME/dead.articles\fR besides keeping
-the last failed posting in \fI$HOME/dead.article\fR. Default is ON.
+If ON keep all failed postings in \fI${TIN_HOMEDIR-"$HOME"}/dead.articles\fR
+besides keeping the last failed posting in
+\fI${TIN_HOMEDIR-"$HOME"}/dead.article\fR. Default is ON.
 .TP
 .B keep_posted_articles
-If ON keep all postings in \fI$HOME/Mail/posted\fR. Default is ON.
+If ON keep all postings in \fI${TIN_HOMEDIR-"$HOME"}/Mail/posted\fR.
+Default is ON.
 .TP
 .B kill_level
 This option controls the processing and display of articles that are killed.
@@ -1491,6 +1514,11 @@ If enabled pressing <TAB> at the article viewer level will goto the next
 unread article immediately instead of first paging through the current one.
 Default is ON.
 .TP
+.B tex2iso_conv
+Decode German style TeX umlaut codes to ISO
+If ON, show "a as Umlaut-a, etc. Default is OFF. This behaviour can also be
+toggled in the article viewer via '"'.
+.TP
 .B thread_articles
 Defines which threading method to use. The choices are:
 0) Don't thread, 1) Thread on Subject only 2) Thread on References only,
@@ -1498,20 +1526,24 @@ Defines which threading method to use. The choices are:
 4) Thread multipart articles on Subject.
 It's also possible to set the threading type on a per group basis by setting
 the group attribute variable \fBthread_arts\fR to 0 - 4 in the file
-\fI$HOME/.tin/attributes\fR.
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/attributes\fR.
 .TP
 .B thread_catchup_on_exit
 If ON catchup group/thread when leaving with the left arrow key. Default is
 ON.
 .TP
 .B unlink_article
-If ON remove \fI~/.article\fR after posting. Default is ON.
+If ON remove \fI${TIN_HOMEDIR-"$HOME"}/.article\fR after posting. Default is
+ON.
 .TP
-.B use_builtin_inews
-Allows the builtin NNTP inews to be enabled/disabled. This has no effect
-when reading/posting direct to local spool where external
+.B External inews (inews_prog)
+Path, name and options of external
 .BR inews (1)
-will always be used. Default is ON (enabled).
+If you are reading via NNTP the default value is --internal, ie. use builtin
+NNTP inews, else it is "inews -h". If you set INEWSDIR at compile-time
+or inewsdir in tin.defaults you can only choose between using internal inews
+by setting this variable to "--internal" or "<value of inewsdir>/inews -h"
+by setting it to anything else.
 .TP
 .B use_getart_limit
 If enabled
@@ -1624,7 +1656,7 @@ Allow unregistered top level domains
 .TP
 .B disable_sender
 Don't generate a ''Sender:''-header. This has no effect if
-\fBuse_builtin_inews\fP is OFF.
+\fBinews_prog\fP is not set to --internal.
 .TP
 .B spooldir
 Base of your newsspool (Bnews, Cnews and INN tradspool style), common values

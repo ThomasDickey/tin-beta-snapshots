@@ -329,7 +329,7 @@ get_mailcap_field(
 	while (space <= (minlen)) { /* need more space ? */ \
 		olen = strlen(line); \
 		space += linelen; \
-		linelen *= 2; \
+		linelen <<= 1; \
 		line = (char *) my_realloc((void *) line, linelen); \
 		memset(line + olen, 0, linelen - olen); \
 	} \
@@ -367,7 +367,7 @@ expand_mailcap_meta(
 		if (space < (sizeof(char) * 10)) { /* 'worst'case are two chars ... */
 			olen = strlen(line);		/* get current legth of string */
 			space += linelen;			/* recalc available space */
-			linelen *= 2;				/* double maxlen */
+			linelen <<= 1;				/* double maxlen */
 			line = (char *) my_realloc((void *) line, linelen);
 			memset (line + olen, 0, linelen - olen); /* weed out junk */
 			lptr = line + olen;		/* adjust pointer to current position */

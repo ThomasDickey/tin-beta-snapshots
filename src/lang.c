@@ -252,7 +252,7 @@ constext txt_help_article_autoselect[] = N_("auto-select (hot) an article via a 
 constext txt_help_article_browse_urls[] = N_("Browse URLs in article");
 constext txt_help_article_by_num[] = N_("0 - 9\t  display article by number in current thread");
 constext txt_help_article_cancel[] = N_("cancel (delete) current article; must have been posted by you");
-constext txt_help_article_edit[] =  N_("edit article (mail-groups only)");
+constext txt_help_article_edit[] = N_("edit article (mail-groups only)");
 constext txt_help_article_first_in_thread[] = N_("display first article in current thread");
 constext txt_help_article_first_page[] = N_("display first page of article");
 constext txt_help_article_followup[] = N_("post followup to current article");
@@ -301,8 +301,8 @@ constext txt_help_global_line_up[] = N_("up one line");
 constext txt_help_global_lookup_art[] = N_("goto article chosen by Message-ID");
 constext txt_help_global_mail[] = N_("mail article/thread/hot/pattern/tagged articles to someone");
 constext txt_help_global_option_menu[] = N_("menu of configurable options");
-constext txt_help_global_page_down[] =  N_("down one page");
-constext txt_help_global_page_up[] =  N_("up one page");
+constext txt_help_global_page_down[] = N_("down one page");
+constext txt_help_global_page_up[] = N_("up one page");
 #ifndef DONT_HAVE_PIPING
 	constext txt_help_global_pipe[] = N_("pipe article/thread/hot/pattern/tagged articles into command");
 #endif /* !DONT_HAVE_PIPING */
@@ -1315,6 +1315,12 @@ struct opttxt txt_hide_uue = {
 # size and filename, similar to how MIME attachments are displayed\n")
 };
 
+struct opttxt txt_tex2iso_conv = {
+	N_("Decode German style TeX umlaut codes to ISO. <SPACE> toggles & <CR> sets."),
+	N_("Display \"a as Umlaut-a             :"),
+	N_("# If ON decode German style TeX umlaut codes to ISO and \n\
+# show \"a as Umlaut-a, etc.\n")
+};
 struct opttxt txt_news_headers_to_display = {
 	N_("Space separated list of header fields"),
 	N_("Display these header fields (or *) :"),

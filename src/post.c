@@ -3139,7 +3139,7 @@ cancel_article (
 				break;
 			case iKeyPostSupersede:
 				repost_article (note_h.newsgroups, respnum, TRUE, &pgart);
-				return redraw_screen;
+				return TRUE; /* force screen redraw */
 			default:
 				return redraw_screen;
 		}
@@ -3474,10 +3474,11 @@ repost_article (
 		if (note_h.messageid)
 			fprintf (fp, "[ Message-ID: %-60s ]\n\n", note_h.messageid);
 	}
+	/* TODO: use cooked art here? */
 	fseek (artinfo->raw, note_h.ext->offset, SEEK_SET);
 	copy_fp (artinfo->raw, fp);
 
-/* only append signature when NOT superseding own articles */
+	/* only append signature when NOT superseding own articles */
 	if (NotSuperseding && tinrc.signature_repost)
 		msg_write_signature (fp, FALSE, psGrp);
 
@@ -4357,10 +4358,10 @@ get_secret (
 	cancel_secret[0] = '\0';
 	joinpath (path_secret, homedir, SECRET_FILE);
 	if ((fp_secret = fopen(path_secret, "r")) == (FILE *) 0) {
+		/* TODO: prompt for secret manually here? silently ignore ? */
 		my_fprintf (stderr, _(txt_cannot_open), path_secret);
 		my_fflush (stderr);
 		sleep(2);
-		/* TODO: prompt for secret manually here? */
 		return ((char *) 0);
 	} else {
 		(void) fread(cancel_secret, HEADER_LEN, 1, fp_secret);

@@ -534,7 +534,7 @@ thread_page (
 					bld_tline (thdmenu.curr, &arts[n]);
 					draw_line (thdmenu.curr, MAGIC);
 				}
-				if ((n = next_unread (n)) == -1)  {	/* no more unread articles */
+				if ((n = next_unread (n)) == -1) {	/* no more unread articles */
 					ret_code = GRP_EXIT;
 					break;
 				}

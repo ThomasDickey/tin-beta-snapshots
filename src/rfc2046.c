@@ -892,7 +892,7 @@ art_open (
 	if (parse_rfc2045_article (fp, art->line_count, artinfo) != 0)
 		return ART_ABORT;
 
-	if ((pgart.tex2iso = (tex2iso_supported ? is_art_tex_encoded (artinfo->raw) : FALSE)))
+	if ((pgart.tex2iso = ((CURR_GROUP.attribute->tex2iso_conv) ? is_art_tex_encoded (artinfo->raw) : FALSE)))
 		wait_message (0, _(txt_is_tex_encoded));
 
 	/* Maybe fix it so if this fails, we default to raw ? */
