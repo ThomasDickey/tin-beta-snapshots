@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-04-25
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -67,8 +67,10 @@ constext txt_articles_mailed[] = N_("-- %d %s mailed --");
 #ifndef DISABLE_PRINTING
 	constext txt_articles_printed[] = N_("%d %s printed");
 #endif /* !DISABLE_PRINTING */
-constext txt_attach[] = N_("%*s[-- %s/%s, encoding %s, %d lines%s%s --]\n\n");
-constext txt_uue[] = N_("[-- %suuencoded file, %d lines, name: %s --]\n\n");
+constext txt_attach[] = N_("%*s[-- %s/%s, encoding %s%s%s, %d lines%s%s --]\n");
+constext txt_attach_charset[] = N_(", charset: ");
+constext txt_attach_description[] = N_("%*s[-- Description: %s --]\n");
+constext txt_uue[] = N_("%*s[-- %s/%s, %suuencoded file, %d lines, name: %s --]\n\n");
 constext txt_auth_failed[] = N_("%d Authentication failed");
 constext txt_auth_needed[] = N_("Server expects authentication.\n");
 constext txt_auth_pass[] = N_("    Please enter password: ");
@@ -120,7 +122,7 @@ constext txt_checking_for_news[] = N_("Checking for news...");
 #ifndef HAVE_LIBUU
 	constext txt_checksum_of_file[] = N_("\tChecksum of %s (%ld %s)");
 #endif /* !HAVE_LIBUU */
-constext txt_choose_post_process_type[] = N_("Process %s=none, %s=shar, %s=uudecode, %s=quit: ");
+constext txt_choose_post_process_type[] = N_("Post-process %s=no, %s=yes, %s=shar, %s=quit: ");
 constext txt_color_off[] = N_("ANSI color disabled");
 constext txt_color_on[] = N_("ANSI color enabled");
 constext txt_command_failed[] = N_("Command failed: %s");
@@ -227,10 +229,7 @@ constext txt_error_header_line_space[] = N_("\nError: Header on line %d does not
 constext txt_error_header_duplicate[] = N_("\nError: There are multiple (%d) \"%s:\" lines in the header.\n");
 constext txt_error_insecure_permissions[] = N_("Insecure permissions of %s (%o)");
 constext txt_error_invalid_response_to_group[] = N_("Invalid response to GROUP command, %s");
-constext txt_error_locale[] = N_("Can't set the specified locale!");
-#ifdef HAVE_METAMAIL
-	constext txt_error_metamail_failed[] = N_("metamail failed: %s");
-#endif /* HAVE_METAMAIL */
+constext txt_error_locale[] = "Can't set the specified locale!";
 constext txt_error_mime_end[] = N_("MIME parse error: Unexpected end of %s/%s article");
 constext txt_error_mime_start[] = N_("MIME parse error: Start boundary whilst reading headers");
 constext txt_error_no_domain_name[] = N_("Can't get a (fully-qualified) domain-name!\n");
@@ -319,7 +318,7 @@ constext txt_help_article_toggle_highlight[] = N_("toggle word highlighting on/o
 constext txt_help_article_toggle_rot13[] = N_("toggle ROT-13 (basic decode) for current article");
 constext txt_help_article_toggle_tabwidth[] = N_("toggle tabwidth 4 <-> 8");
 constext txt_help_article_toggle_tex2iso[] = N_("toggle german TeX style decoding for current article");
-constext txt_help_article_toggle_uue[] = N_("toggle display of uuencoded sections on/off");
+constext txt_help_article_toggle_uue[] = N_("toggle display of uuencoded sections");
 constext txt_help_article_view_attachments[] = N_("View/save multimedia attachments");
 constext txt_help_bug[] = N_("report bug or comment via mail to %s");
 constext txt_help_global_article_range[] = N_("choose range of articles to be affected by next command");
@@ -453,6 +452,7 @@ constext txt_info_x_conversion_note[] = N_("X-Conversion-Note: multipart/alterna
 constext txt_is_mailbox[] = N_("Save filename for %s/%s is a mailbox. Attachment not saved");
 constext txt_is_tex_encoded[] = N_("TeX2Iso encoded article");
 constext txt_incomplete[] = N_("incomplete ");
+/* TODO: replace hardcoded key-names */
 constext txt_intro_page[] = N_("\nWelcome to %s, a full screen threaded Netnews reader. It can read news locally\n\
 (ie. <spool>/news) or remotely (-r option)  from a NNTP (Network News Transport\n\
 Protocol) server. -h lists the available command line options.\n\n\
@@ -560,17 +560,16 @@ constext txt_nntp_authorization_failed[] = N_("NNTP authorization password not f
 	constext txt_usage_newsserver[] = N_("  -g serv  read news from NNTP server serv [default=%s]");
 	constext txt_usage_port[] = N_("  -p port  use port as NNTP port [default=%d]");
 	constext txt_usage_quickstart[] = N_("  -Q       quick start. Same as -nqd");
+	constext txt_usage_read_only_active[] = N_("  -l       use only LIST instead of GROUP (-n) command");
 	constext txt_usage_read_only_subscribed[] = N_("  -n       only read subscribed .newsrc groups from NNTP server");
-	constext txt_usage_use_listgroup[] = N_("  -l       use only LISTGROUP instead of GROUP (-n) command");
 #else
 	constext txt_usage_quickstart[] = N_("  -Q       quick start. Same as -qd");
-	constext txt_usage_read_only_subscribed[] = N_("  -n       TODO: document feature");
-	constext txt_usage_use_listgroup[] = N_("  -l       TODO: document feature");
+	constext txt_usage_read_only_active[] = N_("  -l       read only active file instead of scanning spool (-n) command");
+	constext txt_usage_read_only_subscribed[] = N_("  -n       only read subscribed .newsrc groups from spool");
 #endif /* NNTP_ABLE */
 
 constext txt_no[] = N_("No  ");
 constext txt_no_arts[] = N_("*** No articles ***");
-constext txt_no_arts_to_save[] = N_("No articles to save");
 constext txt_no_arts_posted[] = N_("No articles have been posted");
 
 #ifndef DONT_HAVE_PIPING
@@ -625,7 +624,7 @@ constext txt_option_not_enabled[] = N_("Option not enabled. Recompile with %s.")
 constext txt_options_menu[] = N_("Options Menu");
 constext txt_out_of_memory[] = "%s: memory exhausted trying to allocate %d bytes in file %s line %d";
 
-constext txt_pcre_error_at[] = N_("Error in regex: %s at pos. %d");
+constext txt_pcre_error_at[] = N_("Error in regex: %s at pos. %d '%s'");
 constext txt_pcre_error_num[] = N_("Error in regex: pcre internal error %d");
 constext txt_pcre_error_text[] = N_("Error in regex: study - pcre internal error %s");
 
@@ -777,22 +776,16 @@ constext txt_tinrc_filter[] = N_("# Defaults for quick (1 key) kill & auto-selec
 # global=ON/OFF  ON=apply to all groups OFF=apply to current group\n\
 # case=ON/OFF    ON=filter case sensitive OFF=ignore case\n\
 # expire=ON/OFF  ON=limit to default_filter_days OFF=don't ever expire\n");
+
 /* do NOT localize the next string! */
 constext txt_tinrc_header[] = "# %s configuration file V%s\n\
 # This file was automatically saved by %s %s %s (\"%s\")\n#\n\
 # Do not edit while tin is running, since all your changes to this file\n\
 # will be overwritten when you leave tin.\n#\n\
 ############################################################################\n\n";
+
 constext txt_tinrc_info_in_last_line[] = N_("# If ON use print current subject or newsgroup description in the last line\n");
-
-#ifdef LOCAL_CHARSET
-	constext txt_tinrc_local_charset[] = N_("# Whether or not to automatically convert to a local charset that is\n\
-# different from the one defined in mm_charset. Currently only NeXTstep is\n\
-# supported. Set to OFF when logged in from a ISO-8859-1 environment.\n");
-#endif /* LOCAL_CHARSET */
-
 constext txt_tinrc_newnews[] = N_("# Host & time info used for detecting new groups (don't touch)\n");
-
 constext txt_unsubscribe_pattern[] = N_("Enter wildcard unsubscribe pattern> ");
 constext txt_view_attachment[] = N_("View '%s' (%s/%s)?");
 
@@ -822,6 +815,15 @@ constext *txt_threading[] = {
  * Whether to use wildmat() or regexec() for matching strings
  */
 constext *txt_wildcard_type[] = { "WILDMAT", "REGEX" };
+
+/*
+ * Handling of uuencoded data in pager
+ */
+constext *txt_hide_uue_type[] = {
+	N_("No"),
+	N_("Yes"),
+	N_("Hide All")
+};
 
 /*
  * How the From: line is displayed.
@@ -911,7 +913,7 @@ constext *txt_confirm_choices[] = {
 /*
  * MIME-Content-Transfer-Encodings.
  */
-/* TODO can any of this go away? */
+/* TODO: can any of this go away? */
 constext *txt_mime_encodings[] = {
 	txt_8bit, txt_base64, txt_quoted_printable, txt_7bit
 };
@@ -929,9 +931,9 @@ const char *content_types[] = {
  * This must match the ordering of the defines in tin.h
  */
 constext *txt_post_process_type[] = {
-		N_("None"),
-		N_("Shell archive"),
-		N_("Uudecode")
+		N_("No"),
+		N_("Yes"),
+		N_("Shell archive")
 };
 
 constext *txt_sort_a_type[] = {
@@ -1242,8 +1244,8 @@ constext txt_filter_file[] = N_("# Filter file for the TIN newsreader\n#\n\
 #   lines=[<>]?NUM    Optional. Lines: line. '<' or '>' are optional.\n\
 #   gnksa=[<>]?NUM    Optional. GNKSA parse_from() return code. '<' or '>' opt.\n\
 # either:\n\
-#   xref_max=NUM      Optional. Maximum score (e.g. 5)\n\
-#   xref_score=NUM,PATTERN score for pattern (e.g 0,*.answers)\n\
+#   xref_max=NUM      Optional. Maximum groups (e.g. 5)\n\
+#   xref_score=NUM,PATTERN score for pattern (e.g 15,*.answers)\n\
 #   ...\n\
 # or:\n\
 #   xref=PATTERN      Optional. Kill pattern (e.g. alt.flame*)\n\
@@ -1522,8 +1524,12 @@ struct opttxt txt_show_signatures = {
 struct opttxt txt_hide_uue = {
 	N_("Display uuencoded data as tagged attachments. <SPACE> toggles & <CR> sets."),
 	N_("Display uue data as an attachment  :"),
-	N_("# If ON uuencoded data will be condensed to a single tag line showing\n\
-# size and filename, similar to how MIME attachments are displayed\n")
+	N_("# Handling of uuencoded data in the pager\n\
+# 0 = display raw uuencoded data\n\
+# 1 = uuencoded data will be condensed to a single tag line showing\n\
+#    size and filename, similar to how MIME attachments are displayed\n\
+# 2 = as for 1, but any line that looks like uuencoded data will be folded\n\
+#    into a tag line.\n")
 };
 
 struct opttxt txt_tex2iso_conv = {
@@ -2159,10 +2165,10 @@ struct opttxt txt_mark_saved_read = {
 };
 
 struct opttxt txt_post_process = {
-	N_("Post process (ie. unshar) saved article/thread. <SPACE> toggles & <CR> sets."),
-	N_("Post process saved art/thread with :"),
-	N_("# Type of post processing to perform after saving articles.\n\
-# 0=(none) 1=(unshar) 2=(uudecode)\n")
+	N_("Do post processing (eg. extract attachments) for saved articles."),
+	N_("Post process saved articles        :"),
+	N_("# Perform post processing (saving binary attachments) from saved articles.\n\
+# 0=(no) 1=(yes) 2=(extract shell archives (shar) only)\n")
 };
 
 struct opttxt txt_process_only_unread = {

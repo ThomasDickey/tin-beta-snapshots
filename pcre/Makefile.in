@@ -13,7 +13,15 @@ VPATH		= $(srcdir)
 
 CC	= @CC@
 CFLAGS	= @CFLAGS@ @PCRE_DEFINES@
-CPPOPTS = -DNEWLINE=10 @DEFS@ -I. -I. -I../include
+
+# The -D options correspond to pcre 4.1's default values.
+CPPOPTS = \
+	-DLINK_SIZE=2 \
+	-DMATCH_LIMIT=10000000 \
+	-DNEWLINE=10 \
+	-DPOSIX_MALLOC_THRESHOLD=10 \
+	@DEFS@ -I. -I. -I../include
+
 RANLIB	= @RANLIB@
 RM	= rm
 x	= @PROG_EXT@
@@ -91,7 +99,7 @@ dftables$x:	dftables.c maketables.c $(PCR_DEP)
 
 clean:;		$(RM) -f *.o *.a pcretest$x pgrep$x
 
-distclean:	clean ; $(RM) -f pcre.h dftables$x chartables.c
+distclean:	clean ; $(RM) -f pcre.h dftables$x chartables.c RunTest
 
 runtest:	all
 		./RunTest

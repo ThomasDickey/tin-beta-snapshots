@@ -550,6 +550,7 @@ set_win_size(
 
 	set_subj_from_size(*num_cols);
 
+	/* FIXME: values do differ for different languages */
 	RIGHT_POS = *num_cols - 20;
 	MORE_POS = *num_cols - 15;
 	set_noteslines(*num_lines);

@@ -1,10 +1,13 @@
 #! /bin/sh
+#
 # example of how to call the appropriate viewer
 # based on a script by Michael Elkins <me@cs.hmc.edu>
 # 2001-01-31 <urs@tin.org>
 #
 # URLs must start with a scheme and shell metas must be allready quoted
 # (tin doesn't recognize URLs without a scheme and it quotes the metas)
+#
+# TODO: check $BROWSER?
 
 if test $# -ne 1; then
 	echo "Usage: `basename $0` URL" >&2

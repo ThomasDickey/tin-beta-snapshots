@@ -1,15 +1,15 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2002-03-11
+# Updated: 2002-04-08
 #
 
 PROJECT	= tin
 LVER	= 1
 PVER	= 5
-SVER	= 17
+SVER	= 18
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20030314
+DVER	= 20030425
 EXE	= tin
 
 # directory structure
@@ -221,11 +221,10 @@ PCRE	= \
 	$(PCREDIR)/NEWS \
 	$(PCREDIR)/NON-UNIX-USE \
 	$(PCREDIR)/README \
-	$(PCREDIR)/RunTest \
+	$(PCREDIR)/RunTest.in \
 	$(PCREDIR)/config.h \
 	$(PCREDIR)/configure.in \
 	$(PCREDIR)/dftables.c \
-	$(PCREDIR)/dll.mk \
 	$(PCREDIR)/get.c \
 	$(PCREDIR)/internal.h \
 	$(PCREDIR)/maketables.c \
@@ -239,34 +238,21 @@ PCRE	= \
 	$(PCREDIR)/pcreposix.h \
 	$(PCREDIR)/pcretest.c \
 	$(PCREDIR)/perltest \
+	$(PCREDIR)/printint.c \
 	$(PCREDIR)/study.c \
 	$(PCREDIR)/version.sh \
-	$(PCREDIR)/doc/Tech.Notes \
 	$(PCREDIR)/doc/pcre.3 \
-	$(PCREDIR)/doc/pcre.html \
-	$(PCREDIR)/doc/pcre.txt \
-	$(PCREDIR)/doc/pcregrep.1 \
-	$(PCREDIR)/doc/pcregrep.html \
-	$(PCREDIR)/doc/pcregrep.txt \
-	$(PCREDIR)/doc/pcreposix.3 \
-	$(PCREDIR)/doc/pcreposix.html \
-	$(PCREDIR)/doc/pcreposix.txt \
-	$(PCREDIR)/doc/pcretest.1 \
-	$(PCREDIR)/doc/pcretest.html \
-	$(PCREDIR)/doc/pcretest.txt \
-	$(PCREDIR)/doc/perltest.txt \
+	$(PCREDIR)/doc/pcrepattern.3 \
 	$(PCREDIR)/testdata/testinput1 \
 	$(PCREDIR)/testdata/testinput2 \
 	$(PCREDIR)/testdata/testinput3 \
 	$(PCREDIR)/testdata/testinput4 \
 	$(PCREDIR)/testdata/testinput5 \
-	$(PCREDIR)/testdata/testinput6 \
 	$(PCREDIR)/testdata/testoutput1 \
 	$(PCREDIR)/testdata/testoutput2 \
 	$(PCREDIR)/testdata/testoutput3 \
 	$(PCREDIR)/testdata/testoutput4 \
 	$(PCREDIR)/testdata/testoutput5 \
-	$(PCREDIR)/testdata/testoutput6
 
 CAN	= \
 	$(CANDIR)/Build \
@@ -301,12 +287,6 @@ MISC	= \
 	$(INCDIR)/autoconf.hin \
 	$(PCREDIR)/pcre.mms \
 	$(SRCDIR)/Makefile.in \
-	$(SRCDIR)/ibm437_l1.tab \
-	$(SRCDIR)/ibm850_l1.tab \
-	$(SRCDIR)/l1_ibm437.tab \
-	$(SRCDIR)/l1_ibm850.tab \
-	$(SRCDIR)/l1_next.tab \
-	$(SRCDIR)/next_l1.tab \
 	$(SRCDIR)/tincfg.tbl \
 	$(SRCDIR)/descrip.mms
 
@@ -458,7 +438,6 @@ chmod:
 	$(TOLDIR)/tinrcupdate.pl \
 	$(TOLDIR)/url_handler.sh \
 	$(TOLDIR)/w2r.pl \
-	$(PCREDIR)/RunTest \
 	$(PCREDIR)/perltest \
 	$(PCREDIR)/version.sh \
 	$(CANDIR)/Build
@@ -520,17 +499,15 @@ distclean:
 	@-$(MAKE) clean
 	@-if $(TEST) -r $(PODIR)/Makefile ; then $(CD) $(PODIR) && $(MAKE) distclean ; fi
 	@-if $(TEST) -r $(INTLDIR)/Makefile ; then $(CD) $(INTLDIR) && $(MAKE) distclean ; fi
+	@-if $(TEST) -r $(PCREDIR)/Makefile ; then $(CD) $(PCREDIR) && $(MAKE) distclean ; fi
 	@-$(RM) -f \
 	config.cache \
 	config.log \
 	config.status \
 	td-conf.out \
 	$(INCDIR)/autoconf.h \
-	$(PCREDIR)/chartables.c \
-	$(PCREDIR)/dftables \
-	$(PCREDIR)/pcre.h \
-	$(PCREDIR)/Makefile \
 	$(SRCDIR)/Makefile \
+	$(PCREDIR)/Makefile \
 	$(INTLDIR)/po2tbl.sed \
 	$(CANDIR)/*.[oa] \
 	$(CANDIR)/endian.h \

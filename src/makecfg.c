@@ -267,7 +267,7 @@ generate_tbl(
 			int is_opt = !strncmp(p->type, "OPT_", 4);
 			int is_int = type_is_int(p);
 			char *dft_name = p->name;
-			/* TODO is this still necessary ? */
+			/* TODO: is this still necessary? */
 			/* shorten message-variable names */
 			if (!strncmp(dft_name, "default_", 8))
 				dft_name += 8;

@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-04-25
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -180,8 +180,10 @@ enum resizer { cNo, cYes, cRedraw };
 #else
 #	ifdef HAVE_SYS_ERRNO_H
 #		include	<sys/errno.h>
-#	else
-#		error "No errno.h or sys/errno.h found"
+/*
+	#	else
+	#		error "No errno.h or sys/errno.h found"
+*/
 #	endif /* HAVE_SYS_ERRNO_H */
 #endif /* HAVE_ERRNO_H */
 #if !defined(errno)
@@ -606,12 +608,10 @@ enum resizer { cNo, cYes, cRedraw };
 #	define PATH_ISPELL	"ispell"
 #endif /* !PATH_ISPELL */
 
-#ifdef HAVE_METAMAIL
-#	ifndef PATH_METAMAIL
-#		define PATH_METAMAIL	"metamail"
-#	endif /* !PATH_METAMAIL */
-#	define METAMAIL_CMD		PATH_METAMAIL" -e -p -m \"tin\""
-#endif /* HAVE_METAMAIL */
+#ifndef PATH_METAMAIL	/* unly unset if !HAVE_METAMAIL */
+#	define PATH_METAMAIL	"metamail"
+#endif /* !PATH_METAMAIL */
+#define METAMAIL_CMD		PATH_METAMAIL" -e -p -m \"tin\""
 
 #define INTERNAL_CMD	"--internal"
 
@@ -630,11 +630,11 @@ enum resizer { cNo, cYes, cRedraw };
 #endif /* PATH_SUM */
 
 #ifdef HAVE_LONG_FILE_NAMES
-#	define LONG_PATH_PART	"part"
-#	define LONG_PATH_PATCH	"patch"
+#	define PATH_PART	"part"
+#	define PATH_PATCH	"patch"
 #else
-#	define LONG_PATH_PART	""
-#	define LONG_PATH_PATCH	"p"
+#	define PATH_PART	""
+#	define PATH_PATCH	"p"
 #endif /* HAVE_LONG_FILE_NAMES */
 
 /*
@@ -678,6 +678,8 @@ enum resizer { cNo, cYes, cRedraw };
 #define DEFAULT_MAILDIR	"Mail"
 #define DEFAULT_SAVEDIR	"News"
 #define DEFAULT_URL_HANDLER "url_handler.sh"
+/* Prefixes saved attachments with no set filename */
+#define SAVEFILE_PREFIX		"unknown"
 
 
 /* MMDF-mailbox seperator */
@@ -781,6 +783,8 @@ enum resizer { cNo, cYes, cRedraw };
 #define POSTED_FILE	"posted"
 #define POSTPONED_FILE	"postponed.articles"
 #define SUBSCRIPTIONS_FILE	"subscriptions"
+#define NEWSGROUPS_FILE	"newsgroups"
+
 
 #ifdef USE_INN_NNTPLIB
 #	define _CONF_FROMHOST	"fromhost"
@@ -797,12 +801,12 @@ enum resizer { cNo, cYes, cRedraw };
 /* Philip Hazel's Perl regular expressions library */
 #include	<pcre.h>
 
-#if defined(HAVE_ICONV) && !defined(LOCAL_CHARSET)
+#if defined(HAVE_ICONV)
 #	define CHARSET_CONVERSION 1
 #	ifdef HAVE_ICONV_H
 #		include <iconv.h>
 #	endif /* HAVE_ICONV_H */
-#endif /* HAVE_ICONV && !LOCAL_CHARSET */
+#endif /* HAVE_ICONV */
 
 #ifdef HAVE_LANGINFO_H
 #	include <langinfo.h>
@@ -859,15 +863,15 @@ enum resizer { cNo, cYes, cRedraw };
 #define STRNCASECMPEQ(s1, s2, n)	(strncasecmp((s1), (s2), n) == 0)
 
 /*
- * PATH_LEN    = max. path length
- * NAME_LEN    = max. filename length
+ * PATH_LEN    = max. path length (incl. terminating '\0')
+ * NAME_LEN    = max. filename length (not incl. terminating '\0')
  * LEN         =
  * HEADER_LEN  = max. size of a news/mail header-line
  * NEWSRC_LINE =
  */
 #if defined(VMS) || defined(M_AMIGA)
 #	define PATH_LEN	256
-#	define NAME_MAX	14
+#	define NAME_LEN	14
 #	define LEN	512
 #endif /* VMS || M_AMIGA */
 
@@ -1056,8 +1060,6 @@ enum resizer { cNo, cYes, cRedraw };
  */
 #define PLURAL(x,y)			((x == 1) ? _(y##_singular) : _(y##_plural))
 
-#define POST_PROC_TYPE(x)	(ch_post_process[x])
-
 /*
  * News/Mail group types
  */
@@ -1153,9 +1155,9 @@ enum resizer { cNo, cYes, cRedraw };
 /*
  * used in feed.c & save.c
  */
-#define POST_PROC_NONE		0
+#define POST_PROC_NO		0
 #define POST_PROC_SHAR		1
-#define POST_PROC_UUDECODE	2
+#define POST_PROC_YES		2
 
 /*
  * used in art.c
@@ -1224,6 +1226,14 @@ enum resizer { cNo, cYes, cRedraw };
 #define POSTED_NONE		0			/* Article wasn't posted */
 #define POSTED_REDRAW		1			/* redraw needed in any case */
 #define POSTED_OK		2			/* posted normally */
+
+
+/*
+ * used in pager
+ */
+#define UUE_NO			0		/* Don't hide uue data */
+#define UUE_YES			1		/* Hide uue data */
+#define UUE_ALL			2		/* Hide uue data harder */
 
 
 /*
@@ -1442,6 +1452,15 @@ typedef unsigned char	t_bitmap;
 #define MSGID_HASH_SIZE		2609
 
 /*
+ * Archive-Name: header
+ */
+struct t_archive {
+	char *name;			/* name of archive */
+	char *partnum;			/* part/patch no. in archive */
+	t_bool ispart:1;		/* TRUE if part, FALSE if patch */
+};
+
+/*
  *	struct t_msgid - message id
  */
 struct t_msgid {
@@ -1462,9 +1481,10 @@ struct t_msgid {
  *	   directory for the group)
  *	>=0 points to another arts[] (struct t_article)
  *
- * article.inthread:
- *	FALSE for the first article in a thread, TRUE for all
- *	following articles in thread
+ * article.prev:
+ *	the previous article in thread
+ *	-1 (ART_NORMAL) initial default, no previous article
+ *	>=0 points to the previous arts[] (struct t_article)
  */
 struct t_article {
 	long artnum;			/* Article number in spool directory for group */
@@ -1479,19 +1499,18 @@ struct t_article {
 	char *refs;			/* References: article reference id's */
 	struct t_msgid *refptr;		/* Pointer to us in the reference tree */
 	int line_count;			/* Lines: number of lines in article */
-	char *archive;			/* Archive-name: line from mail header */
-	char *part;			/* part no. of archive */
-	char *patch;			/* patch no. of archive */
+	struct t_archive *archive;	/* Archive-Name: header */
 	int tagged;			/* 0 = not tagged, >0 = tagged */
 	int thread;
+	int prev;
 	int score;			/* score article has reached after filtering */
 	unsigned int status:2;	/* 0 = read, 1 = unread, 2 = will return */
 	unsigned int killed:2;	/* 0 = not killed, 1 = killed, 2 = killed unread */
 	unsigned int zombie:1;	/* 1 = was alive (unread) before 'X' command */
 	unsigned int delete_it:1;	/* 1 = delete art when leaving group [mail group] */
-	unsigned int inthread:1;	/* 0 = thread head, 1 = thread follower */
 	t_bool selected:1;	/* FALSE = not selected, TRUE = selected */
 	t_bool inrange:1;	/* TRUE = article selected via # range command */
+	t_bool matched:1;	/* TRUE = article matched regex in feed.c */
 };
 
 /*
@@ -1512,6 +1531,7 @@ struct t_attribute {
 	char *from;				/* from line */
 	char *news_quote_format;		/* another way to begin a posting format */
 	char *quote_chars;			/* string to precede quoted text on each line */
+	char *mime_types_to_save;	/* MIME content major/minors we want to save */
 #ifdef HAVE_ISPELL
 	char *ispell;			/* path to ispell and options */
 #endif /* HAVE_ISPELL */
@@ -1685,10 +1705,8 @@ struct regex_cache {
 
 struct t_save {
 	char *path;
-	char *file;					/* => file part of *path */
-	struct t_article *artptr;	/* => article in arts[] */
-	t_bool saved:1;				/* Set if saved okay */
-	t_bool is_mailbox:1;			/* Set if path is a mailbox */
+	char *file;					/* ptr to file part of *path */
+	t_bool mailbox:1;			/* Set if path is a mailbox */
 };
 
 #ifndef USE_CURSES
@@ -1848,10 +1866,11 @@ typedef struct {
 
 #define _CDECL
 
+/* Seperator between dir part of path & the filename */
 #ifdef VMS
-#	define SEPDIR ']'
+#	define DIRSEP	']'
 #else
-#	define SEPDIR	'/'
+#	define DIRSEP	'/'
 #endif /* VMS */
 
 /*
@@ -1862,7 +1881,6 @@ typedef struct {
 #define MOUSE_BUTTON_3		2
 
 #define TIN_EDITOR_FMT_OFF		"%E %F"
-#define NEWSGROUPS_FILE		"newsgroups"
 
 #ifdef M_AMIGA
 #	define REDIRECT_OUTPUT	"> NIL:"
@@ -1898,7 +1916,7 @@ extern void joindir (char *result, const char *dir, const char *file);
 #	define ENV_VAR_SHELL		"SHELL"
 #	define TIN_EDITOR_FMT_ON		"%E +%N %F"
 #	define MAILER_FORMAT		"%M -oi -t < %F"
-#	define TMPDIR	_PATH_TMP
+#	define TMPDIR	get_val("TMPDIR", _PATH_TMP)
 #	ifdef HAVE_KEY_PREFIX
 #		define KEY_PREFIX		0x8f: case 0x9b
 #	endif /* HAVE_KEY_PREFIX */
@@ -2237,6 +2255,10 @@ extern struct tm *localtime(time_t *);
 #	define vsnprintf	plp_vsnprintf
 #endif /* HAVE_VSNPRINTF */
 
+/*
+ * TODO: might need an extra check for gcc-version >= 2.5
+ *       __GNUC__ __GNUC_MINOR__
+ */
 /* gcc-specific attributes */
 #if defined(__GNUC__) && !defined(__cplusplus) && !defined(__APPLE_CC__)
 #	define UNUSED(x) x __attribute__((unused))

@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2002-12-31
+dnl Updated   : 2003-03-26
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2003 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -2382,7 +2382,8 @@ AC_DEFUN([CF_NCURSES_CC_CHECK],[
 	AC_TRY_COMPILE([
 ]ifelse($3,ncursesw,[
 #define _XOPEN_SOURCE_EXTENDED
-#define HAVE_LIBUTF8_H
+#undef  HAVE_LIBUTF8_H	/* in case we used CF_UTF8_LIB */
+#define HAVE_LIBUTF8_H	/* to force ncurses' header file to use cchar_t */
 ])[
 #include <$2>],[
 #ifdef NCURSES_VERSION
@@ -3772,6 +3773,9 @@ AC_ARG_WITH(neXtaw,
 	[  --with-neXtaw           link with neXT Athena library],
 	[cf_x_athena=neXtaw])
 
+AC_ARG_WITH(XawPlus,
+	[  --with-XawPlus          link with Athena-Plus library],
+	[cf_x_athena=XawPlus])
 
 AC_CHECK_LIB(Xext,XextCreateExtension,
 	[LIBS="-lXext $LIBS"])
@@ -3855,13 +3859,15 @@ do
 				LIBS="$cf_lib $LIBS"
 				AC_MSG_CHECKING(for $cf_test in $cf_lib)
 			fi
+			cf_SAVE="$LIBS"
+			LIBS="$X_PRE_LIBS $LIBS $X_EXTRA_LIBS"
 			AC_TRY_LINK([],[$cf_test()],
 				[cf_result=yes],
-				[cf_result=no],
-				[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+				[cf_result=no])
 			AC_MSG_RESULT($cf_result)
 			if test "$cf_result" = yes ; then
 				cf_x_athena_lib="$cf_lib"
+				LIBS="$cf_SAVE"
 				break
 			else
 				LIBS="$cf_save"

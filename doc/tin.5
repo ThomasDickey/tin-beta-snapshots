@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2003-03-14
+.\" Updated   : 2003-04-25
 .\" Notes     : needs a some work
 .\"
-.TH tin 5 "March 14th, 2003" "1.5.17" "A Usenet newsreader"
+.TH tin 5 "April 25th, 2003" "1.5.17" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -409,35 +409,12 @@ applied. See the section NEWSGROUP LISTS & WILDCARDS in
 .BR tin (1)
 for the types of pattern that can be used here.
 .TP
-.B maildir
-Identical to the tinrc variable \fBdefault_maildir\fP
-.TP
-.B savedir
-Identical to the tinrc variable \fBdefault_savedir\fP
-.TP
-.B savefile
-.TP
-.B organization
-This can be used to set the article header field ''Organization:''. It
-overrides the setting (if any) of organization in
-\fI/etc/tin/tin.defaults\fR and \fB$ORGANIZATION\fP (or \fB$NEWSORG\fP on
-Apollo DomainOS). Note that some newsserver might still overwrite the
-\&''Organization:''-header.
-.TP
-.B from
-Identical to the tinrc variable \fBmail_address\fP
-.TP
-.B sigfile
-Identical to the tinrc variable \fBdefault_sigfile\fP
-.TP
-.B followup_to
+.B auto_save
+Identical to the tinrc variable of the same name
 .TP
 .B auto_select
 Automatically perform the \fBGroupMarkUnselArtRead\fP ('\fBX\fP') command
 after entering the group.
-.TP
-.B auto_save
-Identical to the tinrc variable of the same name
 .TP
 .B batch_save
 Can be used to override the global setting in tinrc on a
@@ -446,20 +423,62 @@ SAVING NEW NEWS in
 .BR tin (1).
 .TP
 .B delete_tmp_files
-If this is set to ON, then saved article files that have been post-processed
-will be automatically deleted. If set to OFF, you will be prompted as to
-whether to delete each file in turn. Note that automatic processing of
-Tagged articles using \fBGroupAutoSaveTagged\fP ('\fBS\fP') will also
-suppress prompting.
+If this is set to ON, then saved article files that have been
+post-processed will be automatically deleted, otherwise the user will
+be asked whether to delete the post-processed files. Automatic
+processing of tagged articles using \fBGroupAutoSaveTagged\fP
+('\fBS\fP') will suppress prompting.
+.TP
+.B followup_to
+Set ''Followup-To:''-header to the specifed group(s).
+.TP
+.B from
+Identical to the tinrc variable \fBmail_address\fP
+.TP
+.B maildir
+Identical to the tinrc variable \fBdefault_maildir\fP
+.TP
+.B mailing_list
+Used when a group is a mailing list. All responses to the group will be
+directed to this email address instead
+.TP
+.B mime_types_to_save
+A comma seperated list of MIME major/minor Content-Types that will be
+saved when using the view/save and save/autosave features.
+A single * can be used to wildcard the major and/or minor type and
+a ! as the first character in an entry will negate it, eg:
+image/*,!image/bmp,!text/html. Default is */*
+.TP
+.B news_quote_format
+Identical to the tinrc variable of the same name
+.TP
+.B organization
+This can be used to set the article header field ''Organization:''. It
+overrides the setting (if any) of organization in
+\fI/etc/tin/tin.defaults\fR and \fB$ORGANIZATION\fP (or \fB$NEWSORG\fP on
+Apollo DomainOS). Note that some newsserver might still overwrite the
+\&''Organization:''-header.
+.TP
+.B post_proc_type
+Identical to the tinrc variable \fBpost_process_type\fP
+.TP
+.B quote_chars
+Identical to the tinrc variable of the same name
+.TP
+.B savedir
+Identical to the tinrc variable \fBdefault_savedir\fP
+.TP
+.\" TODO: document option
+.B savefile
+.TP
+.B show_author
+Identical to the tinrc variable of the same name
 .TP
 .B show_only_unread
 Identical to the tinrc variable of the same name
 .TP
-.B thread_arts
-Identical to the tinrc variable \fBthread_articles\fP
-.TP
-.B show_author
-Identical to the tinrc variable of the same name
+.B sigfile
+Identical to the tinrc variable \fBdefault_sigfile\fP
 .TP
 .B sort_art_type
 Identical to the tinrc variable \fBsort_article_type\fP
@@ -467,12 +486,19 @@ Identical to the tinrc variable \fBsort_article_type\fP
 .B sort_threads_type
 Identical to the tinrc variable of the same name
 .TP
-.B post_proc_type
-Identical to the tinrc variable \fBpost_process_type\fP
+.B tex2iso_conv
+Identical to the tinrc variable of the same name
 .TP
-.B mailing_list
-Used when a group is a mailing list. All responses to the group will be
-directed to this email address instead
+.B thread_arts
+Identical to the tinrc variable \fBthread_articles\fP
+.TP
+.B x_body
+A piece of text that will be added at the start of a message body. If this
+string starts with a / or ~ then it is assumed to be the name of a file
+containing the text to insert.
+.TP
+.B x_comment_to
+Insert ''X-Comment-To:''-header, this is only usefull in FIDO groups.
 .TP
 .B x_headers
 A string including header-name and the contents of the header that will
@@ -480,37 +506,35 @@ be automatically added when posting. If the string starts with a / or ~
 then it is assumed to be the name of a file containing the header and it's
 content to be inserted.
 .TP
-.B x_body
-A piece of text that will be added at the start of a message body. If this
-string starts with a / or ~ then it is assumed to be the name of a file
-containing the text to insert.
-.TP
 .B quick_kill_scope
+A comma-separated list of newsgroup patterns (wildmat-style) to which
+groups the filter rule added by \fBGroupQuickKill\fP will be applied.
+If unset the default from the tinrc variable
+\fBdefault_filter_kill_global\fP will be used.
 .TP
 .B quick_kill_expire
+Identical to the tinrc variable \fBdefault_filter_kill_expire\fP
 .TP
 .B quick_kill_case
+Identical to the tinrc variable \fBdefault_filter_kill_case\fP
 .TP
 .B quick_kill_header
+Identical to the tinrc variable \fBdefault_filter_kill_header\fP
 .TP
 .B quick_select_scope
+A comma-separated list of newsgroup patterns (wildmat-style) to which
+groups the filter rule added by \fBGroupQuickAutoSel\fP will be
+applied. If unset the default from the tinrc variable
+\fBdefault_filter_select_global\fP will be used.
 .TP
 .B quick_select_expire
+Identical to the tinrc variable \fBdefault_filter_select_expire\fP
 .TP
 .B quick_select_case
+Identical to the tinrc variable \fBdefault_filter_select_case\fP
 .TP
 .B quick_select_header
-.TP
-.B x_comment_to
-.TP
-.B news_quote_format
-Identical to the tinrc variable of the same name
-.TP
-.B quote_chars
-Identical to the tinrc variable of the same name
-.TP
-.B tex2iso_conv
-Identical to the tinrc variable of the same name
+Identical to the tinrc variable \fBdefault_filter_select_header\fP
 .TP
 .B ispell
 Path and options for
@@ -525,7 +549,9 @@ Assume (broken) articles without MIME charset declaration have this
 charset - default is US-ASCII. This attribute works only on systems
 with working
 .BR iconv (3),
-others might have to compile tin with --disable-mime-strict-charset.
+others might have to compile
+.BR tin (1)
+with --disable-mime-strict-charset.
 .PP
 .TP
 Example:
@@ -537,11 +563,11 @@ scope=*
 x_headers=~/.tin/headers
 undeclared_charset=ISO-8859-1
 
-# in *sources* set post process type to shar
+# in *sources* set post process type to shar only
 scope=*sources*
 post_proc_type=1
 
-# in *binaries* set post process type to uudecode
+# in *binaries* turn on full post processing,
 # remove tmp files and set Followup-To: poster
 scope=*binaries*
 post_proc_type=2
@@ -577,13 +603,13 @@ score an article can be filtered out (hidden) or marked hot. Empty lines or
 lines beginning with a '#' are ignored.
 .TP
 .B comment
-Every entry (rule) in the filter file might get a comment. Multiple lines
-are allowed (but only for comments yet). Every line must start with the
-"comment="-keyword. Comments must appear first in the rule. Comment lines
-placed within a rule will be moved to the begin of the next rule. This is
-due to TIN-internals and might be changed in the future. Don't use '#' to
-mark comments! TIN just ignores these lines, and your comments will get
-lost when TIN rewrites the filter file.
+Every entry (rule) in the filter file might get a comment. Multiple
+lines are allowed (but only for comments yet). Every line must start
+with the "comment="-keyword. Comments must appear first in the rule.
+Comment lines placed within a rule will be moved to the begin of the
+next rule. This might be changed in the future. Don't use '#' to mark
+comments as those lines are ignored and your comments will get lost
+on the next write of the file.
 .TP
 .B group
 A comma-separated list of newsgroup patterns (wildmat-style) to which
@@ -599,9 +625,12 @@ Score value of the rule; can also be one of the magic words "kill" or "hot".
 Match against ''Subject:''
 .TP
 .B from
-Match against ''From:''. Tin converts the contents of the From-header to an
-old style e-mail address, i.e. ''some@body.example (John Doe)'' instead of ''John
-Doe <some@body.example>'', before trying to match the patterns in the filter rule.
+Match against ''From:''.
+.BR tin (1)
+converts the contents of the ''From:''-header to an old style e-mail address,
+i.e. ''some@body.example (John Doe)'' instead
+of ''John Doe <some@body.example>'', before trying to match the patterns in
+the filter rule.
 .TP
 .B msgid
 Match against ''Message-ID:'' and full ''References:''
@@ -618,7 +647,9 @@ Match against ''References:''
 .B lines
 Match against ''Lines:'', <num matches less than, >num matches more than.
 .TP
+.\" TODO: document option in detail
 .B gnksa
+Match against ''From:''-address parser return codes.
 .TP
 .B xref_max
 Still valid but might be removed in the future.
@@ -627,6 +658,7 @@ Still valid but might be removed in the future.
 Still valid but might be removed in the future.
 .TP
 .B xref
+Match against ''Xref:''
 .TP
 .B time
 time_t value when rule expires
@@ -647,7 +679,7 @@ subj=\\b(cd|[rk]?)?tin(d|pre)?[-.0-9]*\\b
 .RE
 .PP
 
-.IR /etc/tin/keymap
+.IR /etc/tin/keymap${${LC_ALL-"${LC_CTYPE-"${LC_MESSAGES-"$LANG"}"}"}:+".${LC_ALL-"${LC_CTYPE-"${LC_MESSAGES-"$LANG"}"}"}"}
 .br
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/keymap${${LC_ALL-"${LC_CTYPE-"${LC_MESSAGES-"$LANG"}"}"}:+".${LC_ALL-"${LC_CTYPE-"${LC_MESSAGES-"$LANG"}"}"}"}
 .\" sorry that one got a bit complex ,-)
@@ -895,7 +927,6 @@ Below is a list of all keynames and their default bindings.
 .RE
 .PP
 
-.\" TODO: extend
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/mailgroups
 .sp
 .RS
@@ -1028,7 +1059,9 @@ The character used to show that an article was hot before it was read.
 Default is ':'. \fBkill_level\fP must be set accordingly.
 .TP
 .B Ask before using \fBmetamail_prog\fP (ask_for_metamail)
-If ON \fBtin\fP will ask before using \fBmetamail_prog\fP
+If ON
+.BR tin (1)
+will ask before using \fBmetamail_prog\fP
 to display MIME messages. This only occurs if \fBmetamail_prog\fP is set.
 Default is OFF.
 .TP
@@ -1049,8 +1082,9 @@ Reconnect to server automatically. Default is OFF.
 .TP
 .B auto_save
 If ON articles/threads with ''Archive-name:'' in header will be
-automatically saved with the Archive-name & part/patch no and post processed
-if \fBpost_proc_type\fP is not set to none (0). Default is OFF.
+automatically saved with the Archive-name & part/patch no and post
+processed if \fBpost_process_type\fP is set to something other than 'No'.
+Default is OFF.
 .TP
 .B batch_save
 If set ON articles/threads will be saved in batch mode when save
@@ -1149,8 +1183,9 @@ this manual with '[after confirmation]'.
 .\" TODO: check if all affected commands are marked [after confirmation]
 .sp
 .B quit:
-You'll be asked to confirm that you wish to exit \fBtin\fP when you
-use the \fBQuit\fP ('\fBq\fP') command.
+You'll be asked to confirm that you wish to exit
+.BR tin (1)
+when you use the \fBQuit\fP ('\fBq\fP') command.
 .sp
 .B select:
 Ask for confirmation before marking all not selected (with
@@ -1168,7 +1203,7 @@ The last article/author/config option that was searched for
 .B default_editor_format
 The format string used to create the editor start command with parameters.
 Default is '%E +%N %F' (i.e., /bin/vi +7 .article).
-.\" document %E %F %N
+.\" TODO: document %E, %F, %N
 .TP
 .B default_filter_days
 Default is 28.
@@ -1231,7 +1266,7 @@ used for mailing articles to other people. Default is '%M "%T" < %F' (i.e.,
 different command line parameters to be used such as 'elm -s "%S" "%T" <
 "%F"' (i.e., elm -s "subject" "iain" < .article) or 'sendmail -oem -t < %F'
 (i.e. sendmail -oem -t < .article).
-.\" document %S %T %M %F...
+.\" TODO: document %S, %T, %M, %F...
 .TP
 .B default_move_group
 .TP
@@ -1308,10 +1343,13 @@ Maximum length of the names of newsgroups to be displayed so that more of
 the newsgroup description can be displayed. Default is 32.
 .TP
 .B hide_uue
+By default (OFF) raw uuencoded data is displayed.
 If ON, then sections of uuencoded data will be shown with a single tag line
 showing the size and filename (much the same as a MIME attachment).
-Otherwise the raw uuencoded data is displayed. Default is OFF. This
-behavior can also be toggled in the article viewer.
+If set to ALL then any line that looks like uuencoded data will be folded
+into a tag line. This is useful when uuencoded data is split across
+more than one article but can also lead to false positives.
+This setting can also be toggled in the article viewer.
 .TP
 .B inews_prog
 Path, name and options of external
@@ -1327,7 +1365,8 @@ toggles setting. This facility is useful as the full width of the screen is
 available to display long subjects. Default is OFF.
 .TP
 .B inverse_okay
-If ON use inverse video for page headers at different levels. Default is ON.
+If ON use inverse video for page headers and URL highlighting.
+Default is ON.
 .TP
 .B keep_dead_articles
 If ON keep all failed postings in \fI${TIN_HOMEDIR-"$HOME"}/dead.articles\fR
@@ -1389,10 +1428,10 @@ program used to view non-textual parts of articles.
 To use the built-in viewer, set to --internal. This is the default
 value when
 .BR metamail (1)
-is not installed. Leave it blank if you don't want any
-automatic viewing of non-textual attachments. The 'V' command can
-always be used to manually view any attachments. 
-See also \fBask_for_metamail\fP.
+is not installed. Leave it blank if you don't want any automatic
+viewing of non-textual attachments. The 'V' command can always be
+used to manually view any attachments. See also
+\fBask_for_metamail\fP.
 .TP
 .B mm_charset
 Charset supported locally, which is also used for MIME header
@@ -1504,16 +1543,21 @@ processed and uudecoded. The program is determined using the mailcap file.
 Default is ON.
 .TP
 .B post_process_type
-This specifies the default type of post processing to perform on saved
-articles. The following types of processing are allowed:
-.in +.5i
-.ti -\w'\(em'u
-\(emnone.
-.ti -\w'\(em'u
-\(emunpacking of multi-part shar files (shell archives).
-.ti -\w'\(em'u
-\(emunpacking of multi-part uuencoded files.
-.in -.5i
+This specifies whether to perform post processing on saved articles.
+Because the shell archive may contain commands you may not want to
+be executed, be carefull when extracting shell archives.
+The following values are allowed:
+.RS +.8i
+.IP 0 3
+\fBNo\fP (default), no post processing is done.
+.IP 1
+\fBShell archives\fP, unpacking of multi-part
+.BR shar (1)
+files only. Because the shell archive may contain commands you may
+not want to be executed, be carefull with this option.
+.IP 2
+\fBYes\fP, binary attachments and data will be decoded and saved.
+.RE
 .TP
 .B posted_articles_file
 Keep posted articles in
@@ -1537,7 +1581,7 @@ Default is OFF.
 The character used in quoting included text to article followups and mail
 replies. The '_' character represents a blank character and is replaced
 with ' ' when read. Default is '>_'.
-.\" FIXME - document %s
+.\" TODO: document %s
 .TP
 .B quote_style
 This bit coded integer value controls how articles are to be quoted when
@@ -1607,7 +1651,7 @@ Score of an article which should be marked hot, this must be >=
 .B scroll_lines
 The number of lines that will be scrolled up/down in the article pager when
 using cursor-up/down. The default is 1 (line-by-line). Set to 0 to get
-traditional tin page-by-page scrolling. Set to -1 to get page-by-page
+traditional page-by-page scrolling. Set to -1 to get page-by-page
 scrolling where the top/bottom line is carried over onto the next page.
 This setting supersedes show_last_line_prev_page=ON. Set to -2 to get
 half-page scrolling. This setting supersedes full_page_scroll=OFF.
@@ -1909,7 +1953,7 @@ Defines the default place for some configuration files, common values are
 \fI/news/db\fR. \fB$TIN_LIBDIR\fP overrides any specified value.
 .TP
 .B bugaddress
-Defines the email address to which users can send bug reports using tin's
+Defines the email address to which users can send bug reports using a
 built in function. The default points to a developers mailing list located
 at tin.org. You might want to change this address to one of your local
 administration if you want to deal with your lusers problems on your own.
@@ -2000,7 +2044,7 @@ increasing numbers.
 .sp
 If an article is posted to newsgroups not mentioned in this file, those
 newsgroups are ignored.
-.\" IIRC tin issues a warning in that case
+.\" TODO: IIRC tin issues just a warning in that case?
 If no valid newsgroups are specified, the article is rejected.
 .sp
 Each line consists of four space-separated fields "\fIname\fR \fIhighmark\fR
@@ -2154,6 +2198,7 @@ uses the LIST SUBSCRIPTIONS (\fBRFC2980\fP) command instead.
 .BR perl (1),
 .BR pgp (1),
 .BR rn (1),
+.BR shar (1),
 .BR tin (1),
 .BR xterm (1x),
 .BR iconv (3),

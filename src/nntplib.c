@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-03-17
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -345,7 +345,7 @@ get_tcp_socket(
 #		endif /* HAVE_INET_ATON */
 	{
 		if ((hp = gethostbyname(machine)) == NULL) {
-			my_fprintf(stderr, txt_gethostbyname, "gethostbyname() ", machine);
+			my_fprintf(stderr, _(txt_gethostbyname), "gethostbyname() ", machine);
 			t_close(s);
 			return -EHOSTUNREACH;
 		}
@@ -908,7 +908,8 @@ close_server(
 	if (nntp_wr_fp == NULL || nntp_rd_fp == NULL)
 		return;
 
-	my_fputs(_(txt_disconnecting), stdout);
+	if (!batch_mode || verbose)
+		my_fputs(_(txt_disconnecting), stdout);
 	nntp_command("QUIT", OK_GOODBYE, NULL, 0);
 	quitting = TRUE;										/* Don't reconnect just for this */
 

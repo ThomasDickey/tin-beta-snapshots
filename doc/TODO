@@ -1,24 +1,15 @@
 Bugs
 ----
-o  in the !LIBUU case save_art_to_file() call decode_save_mime(artinfo, TRUE)
-   which does RFC2045 mime-decoding and part extraction, the later is not
-   desired if the user didn't chosse postprocessing.
-   [20030202 Urs Janssen <urs@tin.org>]
+o  better integrate saving of MIME/non-MIME articles when not using libuu.
+   MIME sections are saved by the 's'ave operations, uuencoded sections
+   are saved as part of the postprocess backend
+   [mostly done]
+   [Jason Faultless <jason@altarstone.com>]
 
-o  libuu code doesn't start viewer
-   include basic library source in tin for uudecoding
-   (<http://www.fpx.de/fp/Software/UUDeview/>)
-   [Urs Janssen <urs@tin.org>]
-
-o  changing thread_articles in the thread-level might trigger
-   assertion in show_thread_page() -> the thread display code and logic
-   needs complete rewriting.
-   [20020514 Michael Bienia <michael@vorlon.ping.de>]
-
-o  'u' etc.pp. may leed to a 'crash' due to which_thread() returning -1
-   if no (unread) articles are left. which_response() exits in that case,
-   not very userfriendly.
-   [20010905 Urs Janssen <urs@tin.org>]
+o  add counter to post-processing commands (processing file x of y)
+   (Is post-processing really that slow? [Jason Faultless
+   <jason@altarstone.com>] no but if you post-process more than a
+   handful of files it would be useful [Urs Janssen <urs@tin.org>])
 
 o  when p'|'ping multiple files ('T'agged) screen is defaced
    [20020305 Urs Janssen <urs@tin.org>]
@@ -63,14 +54,14 @@ o  reference based filters won't work with long (> 500 chars)
 
 o  batch mode has several bugs
    - -Z and giving a cmd-line group ends up in a loop
-     (filters each group several times)
+     (filters each group several times, ~25 slower as without a cmd-line
+      group) and the cmd-line group is not displayed in the statistics
+      nor taken inot account for the 'any unread news' status.
+   - -cZ does not perform catchup, feature or bug?
+   - shall we allow stand alone -c?
    - -M/-N do not remove To:, Cc:, Bcc: headers befor passing article
      to MTA (would require article parsing *sigh*) nor do they wrap
      the article into message/rfc822.
-   - -S without -n checks for new groups (ok, as ppl. might use
-     $AUTOSUBSCRIBE) and saves all articles in each new group
-     found on the server which is not ok as -S should only work on
-     subscribed groups.
    [Urs Janssen <urs@tin.org>]
 
 o  '-s' cmd-line switch implicitly changes 'savedir' in tinrc
@@ -103,6 +94,11 @@ o  'K' is still a bit inconsistent
    - in the article pager (page.c) it marks the rest of the current thread
      read and jumps to the next unread article. should we let 'K' behave
      like <TAB> in the pager?
+   - in thread menu 'K' always forces a screen redraw (due to skip to next
+     unread (thread) logic) it would be nice if we could avoid that for the
+     cases where we don't leave the page
+
+o  add 'K' act on tagged articles (mark all tagged as read).
 
 o  Changes to int/bool tinrc variables in the Option Menu don't propogate
    back to the attributes, not even groups with global attributes.
@@ -124,6 +120,7 @@ o  overview file cacheing code is over-complex and broken in places
      contains raw 8 bit data) as we have to deal with that anyway. if there
      are no original overviews, cache the original data from the postings
      headers.
+   - when reading from local spool, overviews are always cached
 
 o  tin uses the first sig-isolator as recent one, USEFOR says it should
    use the last. There is no consense that tin should follow this USEFOR
@@ -166,7 +163,7 @@ o  when last articles in a newsgroup were cancelled, it shows that there are
 o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
    to 'duplicated'-headers and multiple signatures
 
-o  with --enable-forgery reposting of a thread reposts only the first
+o  with -DFORGERY reposting of a thread reposts only the first
    article ('x' 't' 'r' <group> 'p')
 
 New features
@@ -174,24 +171,12 @@ New features
 o  sub-parse message/rfc822 messages (might occur in mail-groups)
    [20030310 Urs Janssen <urs@tin.org>]
 
-o  update included pcre-3.9 to pcre-4.1
-   [20030219 Urs Janssen <urs@tin.org>]
-
 o  instead of exiting when tin fails to get the systems domainname fall
    into no posting mode (and issue a warning).
    [20021125 Urs Janssen <urs@tin.org>]
 
 o  add new cmd-line flag to force 'no_posting' mode
    [20021125 Urs Janssen <urs@tin.org>]
-
-o  automatically disable TeX2ISO conversion if saving articles _and_
-   postprocessing is set to != 'n'
-   [20020423 Urs Janssen <urs@tin.org>]
-
-o  better integrate saving of MIME/non-MIME articles when not using libuu.
-   MIME sections are saved by the 's'ave operations, uuencoded sections
-   are saved as part of the postprocess backend
-   [Jason Faultless <jason@altarstone.com>]
 
 o  turn ask_for_metamail into $MM_NOASK support (see metamail(1))
    [20030314 Urs Janssen <urs@tin.org>]
@@ -221,26 +206,25 @@ o  add a postponed 'browser' (store postponed arts in
 o  add postpone option for mail-actions
    [20020404 Urs Janssen <urs@tin.org>]
 
-o  should the postponed 'file' (and posted messages 'file') be in MH-format
-   if tin is running in MH-mode? (add MH to the allowed mailbox formats) if
-   so we need to extend fetch_postponed_article().
+o  should the postponed 'file' (and posted messages 'file') be in
+   mailbox_format (even if that's a one file/message format, thus
+   the 'file' actually needs to be a directory?).
 
-o  check if fetch_postponed_article is MH seperator "safe"
-
-o  add base224 (<http://b-news.sf.net/>), xBin <http://www.xbin.org/> and
-   yenc (hide/decode-)support (see <http://nerv.cx/liyang/software/yydecode/>
-   for readable code, ignore the crap on <http://www.yenc.org/>). also
-   check <http://www.exit109.com/~jeremy/news/binaries/> which might
-   replace yenc etc.pp. some day.
-   [20020216 Urs Janssen <urs@tin.org>]
-
-o  add maildir support (besides MBOX{O,RD} and MMDF} and maybe
+o  add maildir support (besides MBOX{O,RD} and MMDF},
    MH (not only reading but also writing), mailstore, BABYL, Kendra (MMDF
    like with 20*CTRL-A as sep.) and add man-pages for the varius formats.
    (see <http://www.ifi.uio.no/~larsi/notes/BABYL> for BABYL,
     <http://www.qmail.org/man/man5/maildir.html> for maildir,
     <http://www.qmail.org/man/man5/mbox.html> for MBOXCL and MBOXCL2)
    [20020215 Urs Janssen <urs@tin.org>]
+
+o  add xxencode (<http://www.ctan.org/tex-archive/tools/xxcode/xxdecode.c>),
+   base224 (<http://b-news.sf.net/>), xBin <http://www.xbin.org/> and
+   yenc (hide/decode-)support (see <http://nerv.cx/liyang/software/yydecode/>
+   for readable code, ignore the crap on <http://www.yenc.org/>). also
+   check <http://www.exit109.com/~jeremy/news/binaries/> which might
+   replace yenc etc.pp. some day.
+   [20020216 Urs Janssen <urs@tin.org>]
 
 o  turn CA_ERROR_SPACE_IN_NEWSGROUPS, CA_ERROR_NEWLINE_IN_NEWSGROUPS,
    CA_ERROR_SPACE_IN_FOLLOWUP_TO, CA_ERROR_NEWLINE_IN_FOLLOWUP_TO into
@@ -260,12 +244,6 @@ o  rewrite thread-method selection that users can easily combine different
    threading methods (THREAD_SUBJ + THREAD_MULTI || THREAD_REFS +
    THREAD_MULTI || ...) - see also note in art.c
    [20011117 Urs Janssen <urs@tin.org>]
-
-o  add sort articles by score (descending or ascending it doesn't matter
-   here) *and* by date, which would be really useful (e.g sorting articles
-   by score, then within that method scope, sorting them by date, then
-   sorting all unscored articles by date.)
-   [20030309 Matt Anton <tin@syrius.org>
 
 o  if there are no tagged but hot articles in the group make 'S' work on
    the hot articles instead of complaining about no tagged arts.
@@ -304,11 +282,6 @@ o  check if the articles Subject/From in the pager matches (minus
 o  check if server supports HEADERS, if so use
    "HEADERS - Subject From Date Message-ID References Lines Newsgroups Xref"
    instead of OVER or XOVER
-
-o  make hide_uu a 3 way toggle for the attributes file (not tinrc).
-      0 = don't hide uu-parts
-      1 = hide full uu-parts incl. begin/end
-      2 = hide uu-lines (might have many false positives)
 
 o  attributes (still) needs some work, some entrys aren't really useful
    on a per group basis but others would (e.g. Reply-To)
@@ -353,11 +326,12 @@ o  check if server supports 'LIST MOTD' (e.g. INN >= 2.0) and display
 
 o  if using "-n" commandline switch you can't subscribe to newsgroups not
    present in your newsrc - a simple check against the server
-   [e.g. GROUP $newsgroup] would help - and if the server understands
-   LIST NEWSGROUPS pattern (don't use XGTITLE, it will become obsolte) we
+   (e.g. GROUP $newsgroup or if !NNTP try to stat the dir) would help.
+   ig we are running in NNTP mode and if the server understands
+   LIST NEWSGROUPS pattern (don't use XGTITLE, it will become obsolete) we
    could also fetch the description without loosing "-n" speed improvements;
-   if the server understands LIST ACTIVE pattern we could also get group
-   attribute (moderated, etc.)]
+   if the server understands LIST ACTIVE pattern we could also get the group
+   attribute (moderated, etc.)
 
 o  item_by_item_etiquette_warnings [compile-time?]
    (e.g. enable x-posts without f'up warning, disable long-sig warning)
@@ -375,11 +349,6 @@ o  MIME-pgp support according to RFC2015, RFC3156 - (should be easy now)
    tinews.pl)
 
 o  pgp-{6,7} support
-
-o  add counter to post-processing commands (processing file x of y)
-   (Is post-processing really that slow? [Jason Faultless
-   <jason@altarstone.com>] no but if you post-process more than a
-   handful of files it would be useful [Urs Janssen <urs@tin.org>])
 
 o  add feature Cc:
 
@@ -401,6 +370,8 @@ o  Additions to the thread menu:
      '='  (mark pattern as hot)
      'Y'  (check for new articles in thead)
      '%'  (toggle rot13 encoding)
+     'o'  (print)
+     'x'  (repost)
      keys to go to previous/next thread
 
 o  Additions to the group menu:
@@ -419,13 +390,13 @@ o  Add to the POST_INFO-level:
      'h' help-screen
 
 o  Add a commandline switch (-V) that prints out all values of cpp-symbols
-   etc. [partly done]
+   etc. [partly done, but should be cleaned up]
 
 o  Reorganize tinrc into related sections for easier editing
    e.g., Display, Posting etc.
 
 o  A system-wide tinrc configuration file (to hold some defaults).
-   A key code to reset to the system defaults
+   [done: /etc/tin/tinrc] A key code to reset to the system defaults.
    Maybe a second file which could be used to force settings (eg
    inews & mailer) (tin.defaults [--with-defaults-dir] is a start)
 
@@ -510,10 +481,10 @@ o  when posting to a group containing uppercase-letters: bring up a
 
 o  Enhance -w to take newsgroup name as argument.
 
-o  Enhance -n to take newsgroup name as argument and use vGrpGetArtInfo()
+o  Enhance -n to take newsgroup name as argument and use group_get_art_info()
    to allow posting to groups other than those in newsrc.
 
-o  add config option for (external) viewer for sohwing postings stored in
+o  add config option for (external) viewer to show postings stored in
    keep_posted_articles_file
    [20021003 Michael Gerhards <HM-Gerhards@uni.de>]
 
@@ -541,14 +512,22 @@ o  add command to generate filter rules for all curently tagged articles
 
 Pager enhancements
 ------------------
-o  add Content-Description evaluation for the part-overview in the
-   pager
-
 o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
    about that part) for different content-types
 
+o  integrate multi-part tagging with regular tagging, eg.
+   "This article appears to have multi-parts, try and find them (y/n)?"
+
+o  add Content-Language (RFC 3282) analysis
+
 Internal Changes
 ----------------
+o  clean up $AUTOSUBSCRIBE code (the NNTP code path is a mess)
+   [20030412 Urs Janssen <urs@akk.org>]
+
+o  add configure check for basename(3) and dirname(3) [SUSv2] and if
+   found use them instead of base_name() and co.
+
 o  the varius filter keys are named a bit inconsistent, currently we have
    iKeyGroupQuickAutoSel, iKeyGroupQuickKill, iKeyPageQuickAutoSel,
    iKeyPageQuickKill and iKeyGroupKill, iKeyGroupAutoSel, iKeyPageAutoKill,
@@ -584,13 +563,6 @@ o  check where joinpath() should be used; check joinpath() for overruns.
    (e.g. grep for TMPDIR in the source)
    [Urs Janssen <urs@tin.org>]
 
-o  change '#define TMPDIR "/tmp/"' to
-   '#define TMPDIR get_val("TMPDIR", "/tmp/")'
-   (SUSV2 XBD Files: "applications are encouraged to use
-    the contents of TMPDIR for creating temporary files rather than
-    the specific name /tmp")
-   [Urs Janssen <urs@tin.org>]
-
 o  make configure look for strrstr() in libpub/publib.h
    [Urs Janssen <urs@tin.org>]
 
@@ -605,10 +577,13 @@ o  what type is base[]?
 o  check where PRODUCT should be used instead of tin_progname and/or "tin"
    [Urs Janssen <urs@tin.org>]
 
+o  check where NEWSRC_FILE should be used in lang.c instead of "newsrc"
+
 o  kick Hungarian notation
    [Urs Janssen <urs@tin.org>]
 
-o  check where iKeyAbort should be used instead of ESC
+o  check where iKeyAbort should be used instead of ESC (etc.pp.)
+   (AFAICS all fixed except prompt.c and read.c/'z')
    [Urs Janssen <urs@tin.org>]
 
 o  close potential security holes:
@@ -628,7 +603,6 @@ o  close potential security holes:
 o  add a _-_ to the local part of the MSGID on a subject-change
 
 o  add to autoconf:
-   - determine which network libraries are needed
    - eradicate platform/compiler ifdefs
 
 o  clean up architecture independent files, rename several defines,
@@ -645,10 +619,6 @@ o  add check for sizeof char, short, int, long, ...
    (e.g. char = 1 byte with 32 bit)
 
 o  cleanup (=rewrite) inews.c/header.c/thread.c
-
-o  is art->inthread really needed, surely art->thread contains enough
-   information
-   [Jason Faultless <jason@altarstone.com>]
 
 o  check where my_strncpy() or STRCPY() should be used
    or include OpenBSDs strlcpy(3) (and strlcat(3)) and use it.
@@ -681,10 +651,10 @@ Unicode
 -------
 o  add UTF-8 (unicode) support (RFC 2279)
    (see <http://www.cl.cam.ac.uk/~mgk25/unicode.html>)
-   if we ever want to add UTF-7 (posting) support (I don't think
-   this is needed) we have to encode it ourself (as iconv() might
-   encode <, @, > which leads to illegal headers) or split headers
-   into "encoding part" and "rest" ...
+   if we ever want to add UTF-7 (RFC 2152) (posting) support (I don't
+   think this is needed) we have to encode it ourself (as iconv()
+   might encode <, @, > which leads to illegal headers) or split
+   headers into "encoding part" and "rest" ...
    [local_charset<-> UTF-8 which needs iconv() is added;
     UTF-8 as local_charset needs some work, see below.
     20010830 urs@tin.org]
@@ -692,8 +662,7 @@ o  add UTF-8 (unicode) support (RFC 2279)
 o  make select/group/thread/page-level multibyte "safe". they all use
    strlen(), strncpy(), strncat(), snprintf() to build the screen - but
    in a multibyte environment (e.g. mm_local_charset=UTF-8) this is a
-   fault.
-   [partly done for ncursesw 20010904 urs@tin.org]
+   fault. [mostly done for ncursesw]
 
 o  make mm_network_charset an "option_list" to avoid junk input or
    undesired (UTF-1, UTF-7, UTF-16*, UTF-32*, UCS-2, UCS-4, ...) encodings.
@@ -711,12 +680,21 @@ o  better document keymap feature
 o  man page always needs work
    e.g. 'U', 'V' in pager need better documentation
 
-o  error message when tin -uv and using XOVER is misleading
-
-o  tin.defaults could use more documentation on manpage (tin.5)
+o  tin.defaults could use more documentation in manpage (tin.5)
 
 Not yet classified
 ------------------
+o  what todo if in a CTE: x-uue the CD: filename differs from the one given
+   in the begin line? IMHO we should use the one from the begin line for
+   saving and in the overview in the pager.
+   [urs@tin.org]
+
+o  inverse_okay's Menu description isn't accurate (invers is also used for
+   URL highlighting). mono_mark* do allow "Reverse video" even if
+   inverse_okay=FALSE.
+
+o  --disable-inverse-video seems to be ignored - do we still need it?
+
 o  move tinrc.defaults for certain comands to a pre-filled .inputhistory?
    (if so, also move i_key_search_last there)
    [Jason Faultless]
@@ -725,20 +703,24 @@ o  what about -a cmd-line flag? is this really neaded? IMHO this can be
    dropped, '&' can be used for runtime color toggling.
    [20021106 Urs Janssen <urs@tin.org>]
 
+o  why are -A and -g disabled on M_AMIGA?
+   [20020928 Urs Janssen <urs@tin.org>]
+
+o  -G doesn't "work" in the !NNTP case, shall we disallow it in that case
+   or shall we try to implement it?
+   [20030421 Urs Janssen <urs@tin.org>]
+
 o  commas in real-name might cause problems in mail-replys
    From: Last, First <user@accou.nt> (which is illegal) leads to
    To: Last, First<user@accou.nt> which is last@localhost,user@accou.nt
    should we try to fix things and quote the realname part?
    [20021007 Urs Janssen <urs@tin.org>]
 
-o  why are -A and -g disabled on M_AMIGA?
-   [20020928 Urs Janssen <urs@tin.org>]
-
-o  -R should work even if tin is compiled without NNTP_{ABLE,ONLY}
-   [20020829 Urs Janssen <urs@tin.org>]
-
 o  nuke $BUG_ADDRESS
    [20020226 Urs Janssen <urs@tin.org>]
+
+o  is $METAMAIL tin specific? if so, remove it.
+   [20030317 Urs Janssen <urs@tin.org>]
 
 o  what is with FOPEN_OPTS (VMS)? is it missing from ~50% of all
    fopen()-calls or can it be droped entirely?
@@ -756,8 +738,6 @@ o  check_article_to_be_posted() still need some cleanup
 
 o  update gettext stuff to > gettext-0.11.5
 
-o  --disable-inverse-video seems to be ignored - do we still need it?
-
 o  tin in batchmode dumps core if getting a SIGINT, useful?
 
 o  what is with conflicting tinrc settings? should we disallow those, or leave
@@ -773,31 +753,20 @@ o  think about group numbering in "only unread" display mode
    (using different numbers in show all/show only unread leads to some
     problems, f.e. group moving)
 
-o  remove strip_blanks? IMHO it's not needed anymore
+o  remove tinrc.strip_blanks? IMHO it's not needed anymore
    [20020305 Urs Janssen <urs@tin.org>]
 
 o  what about the INN_NNTPLIB stuff? does this still work or can it be
    dropped?
    [20021007 Urs Janssen <urs@tin.org>]
 
-o  AFAIK the 'hardcoded' local charset stuff (--with-local-charset) is
-   obsolete (at least the two windows charsets should be, IIRC cygwin now
-   uses ISO-8859-1, haven't seen any other working windows 'ports'; the NeXT
-   port seems to be dead). if this can be confirmed: remove the related
-   code/files.
-   [20021022 Urs Janssen <urs@tin.org>]
-
 o  doesn't handle symlinks for .oldnewsrc
    (see <20021003021508.GA28021@akk10.akk.uni-karlsruhe.de> for details, urs)
    [20020627 Jeff Sheinberg <jeffsh@erols.com>]
 
-o  figure out what the -l and -n cmd-line flags are good for if not
-   running in nntp-mode and document it or if they have no meaning
-   disallow them if tin is not nntp_able.
-   [20021117 Urs Janssen <urs@tin.org>]
-
 o  cleanup main.c/init_selfinfo()
    ('strace -e trace=file tin' and you know what I mean)
+   [fixed some of the double/tripple reads, urs]
 
 o  detect pcre version and add compatibility macros for old versions
    (interface has changed twice and might do so again)

@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-04-24
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
@@ -177,7 +177,7 @@ boundary_check(
 /*
  * Parse a Content-* parameter list into a linked list
  * Ensure the ->params element is correctly initialised before calling
- * TODO may still not catch everything permitted in the RFC
+ * TODO: may still not catch everything permitted in the RFC
  */
 static void
 parse_params(
@@ -245,7 +245,7 @@ get_param(
 
 
 /*
- * Split a Content-Type header into a t_content structure
+ * Split a Content-Type header into a t_part structure
  */
 static void
 parse_content_type(
@@ -393,6 +393,7 @@ new_part(
 
 	ptr->type = TYPE_TEXT;					/* Defaults per RFC */
 	ptr->subtype = my_strdup("plain");
+	ptr->description = NULL;
 	ptr->encoding = ENCODING_7BIT;
 	ptr->params = NULL;
 
@@ -443,6 +444,7 @@ free_parts(
 	}
 
 	free(ptr->subtype);
+	FreeAndNull(ptr->description);
 	if (ptr->params)
 		free_list(ptr->params);
 	if (ptr->uue)
@@ -490,12 +492,17 @@ free_and_init_header(
  * pat:  Text to match in header
  * Returns:
  *	(decoded) body of header if matched or NULL
+ *
+ * FIXME: when using decode the full string is decoded which is
+ *        plain wrong in some cases (i.e. in headers which contain
+ *        mail-addresses, the address-part sould never be decoded)
  */
 char *
 parse_header(
 	char *buf,
 	const char *pat,
-	t_bool decode)
+	t_bool decode,
+	t_bool structured)
 {
 	size_t plen = strlen(pat);
 	char *ptr = buf + plen;
@@ -518,8 +525,25 @@ parse_header(
 	if (!*ptr)
 		return ptr;
 
-	if (decode)
-		return (rfc1522_decode(ptr));
+	if (decode) {
+		if (structured) {
+			char addr[HEADER_LEN];
+			char name[HEADER_LEN];
+			int type;
+
+			if (gnksa_split_from(ptr, addr, name, &type) == GNKSA_OK) {
+				if (*name) {
+					if (type == GNKSA_ADDRTYPE_OLDSTYLE)
+						sprintf(ptr, "%s (%s)", addr, rfc1522_decode(name));
+					else
+						sprintf(ptr, "%s <%s>", rfc1522_decode(name), addr);
+				} else
+					sprintf(ptr, "%s", addr);
+			} else
+				return ptr;
+		} else
+			return (rfc1522_decode(ptr));
+	}
 
 	return ptr;
 }
@@ -558,94 +582,116 @@ parse_rfc822_headers(
 		}
 
 		/*
-		 * FIXME: multiple headers of the same name could lead to memory leak
-		 * and loss of information (multiple Cc: lines are allowed, for example)
+		 * FIXME: multiple headers of the same name could lead to information
+		 *        loss (multiple Cc: lines are allowed, for example)
 		 */
 		unfold_header(line);
-		if ((ptr = parse_header(line, "From", TRUE))) {
+		if ((ptr = parse_header(line, "From", TRUE, TRUE))) {
+			FreeIfNeeded(hdr->from);
 			hdr->from = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "To", TRUE))) {
+		if ((ptr = parse_header(line, "To", TRUE, TRUE))) {
+			FreeIfNeeded(hdr->to);
 			hdr->to = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Cc", TRUE))) {
+		if ((ptr = parse_header(line, "Cc", TRUE, TRUE))) {
+			FreeIfNeeded(hdr->cc);
 			hdr->cc = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Bcc", TRUE))) {
+		if ((ptr = parse_header(line, "Bcc", TRUE, TRUE))) {
+			FreeIfNeeded(hdr->bcc);
 			hdr->bcc = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Date", FALSE))) {
+		if ((ptr = parse_header(line, "Date", FALSE, FALSE))) {
+			FreeIfNeeded(hdr->date);
 			hdr->date = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Subject", TRUE))) {
+		if ((ptr = parse_header(line, "Subject", TRUE, FALSE))) {
+			FreeIfNeeded(hdr->subj);
 			hdr->subj = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Organization", TRUE))) {
+		if ((ptr = parse_header(line, "Organization", TRUE, FALSE))) {
+			FreeIfNeeded(hdr->org);
 			hdr->org = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Reply-To", TRUE))) {
+		if ((ptr = parse_header(line, "Reply-To", TRUE, TRUE))) {
+			FreeIfNeeded(hdr->replyto);
 			hdr->replyto = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Newsgroups", FALSE))) {
+		if ((ptr = parse_header(line, "Newsgroups", FALSE, FALSE))) {
+			FreeIfNeeded(hdr->newsgroups);
 			hdr->newsgroups = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Message-ID", FALSE))) {
+		if ((ptr = parse_header(line, "Message-ID", FALSE, FALSE))) {
+			FreeIfNeeded(hdr->messageid);
 			hdr->messageid = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "References", FALSE))) {
+		if ((ptr = parse_header(line, "References", FALSE, FALSE))) {
+			FreeIfNeeded(hdr->references);
 			hdr->references = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Distribution", TRUE))) {
+		if ((ptr = parse_header(line, "Distribution", TRUE, FALSE))) {
+			FreeIfNeeded(hdr->distrib);
 			hdr->distrib = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Keywords", TRUE))) {
+		if ((ptr = parse_header(line, "Keywords", TRUE, FALSE))) {
+			FreeIfNeeded(hdr->keywords);
 			hdr->keywords = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Summary", TRUE))) {
+		if ((ptr = parse_header(line, "Summary", TRUE, FALSE))) {
+			FreeIfNeeded(hdr->summary);
 			hdr->summary = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Followup-To", FALSE))) {
+		if ((ptr = parse_header(line, "Followup-To", FALSE, FALSE))) {
+			FreeIfNeeded(hdr->followup);
 			hdr->followup = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "X-Comment-To", TRUE))) {
+		if ((ptr = parse_header(line, "X-Comment-To", TRUE, TRUE))) {
+			FreeIfNeeded(hdr->ftnto);
 			hdr->ftnto = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Author-IDs", TRUE)) ||
-			(ptr = parse_header(line, "P-Author-IDs", TRUE)) ||
-			(ptr = parse_header(line, "X-P-Author-IDs", TRUE))) {
+		if ((ptr = parse_header(line, "Author-IDs", TRUE, FALSE)) ||
+			(ptr = parse_header(line, "P-Author-IDs", TRUE, FALSE)) ||
+			(ptr = parse_header(line, "X-P-Author-IDs", TRUE, FALSE))) {
+			FreeIfNeeded(hdr->authorids);
 			hdr->authorids = my_strdup(ptr);
 			continue;
 		}
 		/* TODO: check version */
-		if (parse_header(line, "MIME-Version", FALSE)) {
+		if (parse_header(line, "MIME-Version", FALSE, FALSE)) {
 			hdr->mime = TRUE;
 			continue;
 		}
-		if ((ptr = parse_header(line, "Content-Type", FALSE))) {
+		if ((ptr = parse_header(line, "Content-Type", FALSE, FALSE))) {
 			parse_content_type(ptr, hdr->ext);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Content-Transfer-Encoding", FALSE))) {
+		if ((ptr = parse_header(line, "Content-Transfer-Encoding", FALSE, FALSE))) {
 			hdr->ext->encoding = parse_content_encoding(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Content-Disposition", FALSE))) {
+		if ((ptr = parse_header(line, "Content-Description", TRUE, FALSE))) {
+			FreeIfNeeded(hdr->ext->description);
+			hdr->ext->description = my_strdup(ptr);
+			continue;
+		}
+		if ((ptr = parse_header(line, "Content-Disposition", FALSE, FALSE))) {
 			parse_content_disposition(ptr, hdr->ext);
 			continue;
 		}
@@ -787,7 +833,7 @@ parse_multipart_article(
 				 * Keep headers that interest us
 				 */
 /*fprintf(stderr, "HDR:%s\n", line);*/
-				if ((ptr = parse_header(line, "Content-Type", FALSE))) {
+				if ((ptr = parse_header(line, "Content-Type", FALSE, FALSE))) {
 					parse_content_type(ptr, curr_part);
 
 					if (curr_part->type == TYPE_MULTIPART) {	/* Complex multipart article */
@@ -799,12 +845,17 @@ parse_multipart_article(
 							break;
 					}
 				}
-				if ((ptr = parse_header(line, "Content-Transfer-Encoding", FALSE))) {
+				if ((ptr = parse_header(line, "Content-Transfer-Encoding", FALSE, FALSE))) {
 					curr_part->encoding = parse_content_encoding(ptr);
 					break;
 				}
-				if ((ptr = parse_header(line, "Content-Disposition", FALSE))) {
+				if ((ptr = parse_header(line, "Content-Disposition", FALSE, FALSE))) {
 					parse_content_disposition(ptr, curr_part);
+					break;
+				}
+				if ((ptr = parse_header(line, "Content-Description", TRUE, FALSE))) {
+					FreeIfNeeded(curr_part->description);
+					curr_part->description = my_strdup(ptr);
 					break;
 				}
 				break;
@@ -858,6 +909,26 @@ parse_normal_article(
 #ifdef DEBUG_ART
 /* DEBUG dump of what we got */
 static void
+dump_uue(
+	t_part *ptr,
+	t_openartinfo *art)
+{
+	if (ptr->uue != NULL) {
+		t_part *uu;
+		for (uu = ptr->uue; uu != NULL; uu = uu->next) {
+			fprintf(stderr, "UU: %s\n", get_param(uu->params, "name"));
+			fprintf(stderr, "    Content-Type: %s/%s\n    Content-Transfer-Encoding: %s\n",
+				content_types[uu->type], uu->subtype,
+				content_encodings[uu->encoding]);
+			fprintf(stderr, "    Offset: %ld  Lines: %d\n", uu->offset, uu->line_count);
+			fprintf(stderr, "    Depth: %d\n", uu->depth);
+			fseek(art->raw, uu->offset, SEEK_SET);
+			fprintf(stderr, "[%s]\n\n", tin_fgets(art->raw, FALSE));
+		}
+	}
+}
+
+static void
 dump_art(
 	t_openartinfo *art)
 {
@@ -869,18 +940,12 @@ dump_art(
 	fprintf(stderr, "Content-Type: %s/%s\nContent-Transfer-Encoding: %s\n",
 		content_types[note_h.ext->type], note_h.ext->subtype,
 		content_encodings[note_h.ext->encoding]);
+	if (note_h.ext->description)
+		fprintf(stderr, "Content-Description: %s\n", note_h.ext->description);
 	fprintf(stderr, "Offset: %ld\nLines: %d\n", note_h.ext->offset, note_h.ext->line_count);
 	for (pptr = note_h.ext->params; pptr != NULL; pptr = pptr->next)
 		fprintf(stderr, "P: %s = %s\n", pptr->name, pptr->value);
-	if (note_h.ext->uue != NULL) {
-		t_part *uu;
-		for (uu = note_h.ext->uue; uu != NULL; uu = uu->next) {
-			fprintf(stderr, "UU: %s\n", get_param(uu->params, "name"));
-			fprintf(stderr, "    Offset: %ld  Lines: %d\n", uu->offset, uu->line_count);
-			fseek(art->raw, uu->offset, SEEK_SET);
-			fprintf(stderr, "[%s]\n\n", tin_fgets(art->raw, FALSE));
-		}
-	}
+	dump_uue(note_h.ext, art);
 	fseek(art->raw, note_h.ext->offset, SEEK_SET);
 	fprintf(stderr, "[%s]\n\n", tin_fgets(art->raw, FALSE));
 	fprintf(stderr, "\n");
@@ -890,10 +955,13 @@ dump_art(
 		fprintf(stderr, "	Content-Type: %s/%s\n	Content-Transfer-Encoding: %s\n",
 			content_types[ptr->type], ptr->subtype,
 			content_encodings[ptr->encoding]);
+		if (ptr->description)
+			fprintf(stderr, "	Content-Description: %s\n", ptr->description);
 		fprintf(stderr, "	Offset: %ld\n	Lines: %d\n", ptr->offset, ptr->line_count);
 		fprintf(stderr, "	Depth: %d\n", ptr->depth);
 		for (pptr = ptr->params; pptr != NULL; pptr = pptr->next)
 			fprintf(stderr, "	P: %s = %s\n", pptr->name, pptr->value);
+		dump_uue(ptr, art);
 		fseek(art->raw, ptr->offset, SEEK_SET);
 		fprintf(stderr, "[%s]\n\n", tin_fgets(art->raw, FALSE));
 	}
@@ -976,6 +1044,8 @@ art_open(
 	char *ptr;
 	FILE *fp;
 
+	memset(artinfo, 0, sizeof(t_openartinfo));
+
 	if ((fp = open_art_fp(group_path, art->artnum)) == NULL)
 		return ((tin_errno == 0) ? ART_UNAVAILABLE : ART_ABORT);
 
@@ -999,7 +1069,7 @@ art_open(
 
 	/*
 	 * If Newsgroups is empty its a good bet the article is a mail article
-	 * TODO - Probably broken. Also - combine with code to fixup Archive-name?
+	 * TODO: Probably broken. Also: combine with code to fixup Archive-name?
 	 */
 	if (!artinfo->hdr.newsgroups) {
 		artinfo->hdr.newsgroups = my_strdup(group_path);

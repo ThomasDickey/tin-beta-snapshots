@@ -24,9 +24,6 @@ default_subject_search	tinrc.default_search_subject
 default_art_search	tinrc.default_search_art
 default_repost_group	tinrc.default_repost_group
 
-local_charset is not in option_table and not in struct tinrc but in tinrc
-file; global variable use_local_charset is used.
-
 integrate txt_tinrc_colors in txt_col_normal.tinrc
 
 Values of post_mime_encoding and mail_mime_encoding are generated from a
@@ -115,11 +112,11 @@ mail_mime_encoding           *
 post_8bit_header             *
 mail_8bit_header             *
 default_filter_kill_header     quick_kill_header in attributes
-default_filter_kill_global   *
+default_filter_kill_global     quick_kill_scope=* in attributes
 default_filter_kill_case       quick_kill_case in attributes
 default_filter_kill_expire     quick_kill_expire in attributes
 default_filter_select_header   quick_select_header in attributes
-default_filter_select_global *
+default_filter_select_global   quick_select_scope=* in attributes
 default_filter_select_case     quick_select_case in attributes
 default_filter_select_expire   quick_select_expire in attributes
 default_save_file              savefile in attributes

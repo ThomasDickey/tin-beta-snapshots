@@ -3,7 +3,7 @@
  *  Module    : regex.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-02-21
- *  Updated   : 2003-02-13
+ *  Updated   : 2003-04-03
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
@@ -18,10 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Jason Faultless.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -67,7 +64,7 @@ match_regex(
 	 * Compile the expression internally.
 	 */
 	if ((re = pcre_compile(pattern, (icase ? PCRE_CASELESS : 0), &errmsg, &error, NULL)) == NULL) {
-		sprintf(mesg, _(txt_pcre_error_at), errmsg, error);
+		sprintf(mesg, _(txt_pcre_error_at), errmsg, error, pattern);
 		return FALSE;
 	}
 
@@ -87,13 +84,12 @@ match_regex(
 	 *           number of elements in offsets);
 	 *
 	 */
-	error = pcre_exec(re, NULL, string, strlen(string), 0, 0, NULL, 0);
-	if (error >= 0)
+	if ((error = pcre_exec(re, NULL, string, strlen(string), 0, 0, NULL, 0)) >= 0)
 		ret = TRUE;
-	else if (error == -1)
-		ret = FALSE;
-	else
-		sprintf(mesg, _(txt_pcre_error_num), error);
+	else {
+		if (error != PCRE_ERROR_NOMATCH)
+			sprintf(mesg, _(txt_pcre_error_num), error);
+	}
 
 	free(re);
 	return ret;
@@ -113,7 +109,7 @@ compile_regex(
 	int regex_errpos;
 
 	if ((cache->re = pcre_compile(regex, options, &regex_errmsg, &regex_errpos, NULL)) == NULL)
-		error_message(_(txt_pcre_error_at), regex_errmsg, regex_errpos);
+		error_message(_(txt_pcre_error_at), regex_errmsg, regex_errpos, regex);
 	else {
 		cache->extra = pcre_study(cache->re, 0, &regex_errmsg);
 		if (regex_errmsg != NULL)

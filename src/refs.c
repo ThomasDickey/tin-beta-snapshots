@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2003-03-10
+ *  Updated   : 2003-04-25
  *  Notes     : Cacheing of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -19,10 +19,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Jason Faultless.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -526,7 +523,7 @@ dump_msgids(
  * These pointers are automatically set up when we read in the
  * headers for a group.
  *
- * It remains for us to fill in the .thread and .inthread ptrs in
+ * It remains for us to fill in the .thread and .prev ptrs in
  * each article that exists in the spool, using the intelligence of
  * the reference tree to locate the 'next' article in the thread.
  *
@@ -720,7 +717,7 @@ find_next(
 
 
 /*
- * Run the .thread and .inthread pointers through the members of this
+ * Run the .thread and .prev pointers through the members of this
  * thread.
  */
 static void
@@ -740,7 +737,7 @@ build_thread(
 	 */
 	while ((newptr = find_next(ptr)) != NULL) {
 
-		arts[newptr->article].inthread = TRUE;
+		arts[newptr->article].prev = ptr->article;
 		arts[ptr->article].thread = newptr->article;
 
 		ptr = newptr;
@@ -786,7 +783,7 @@ thread_by_reference(
 			(arts[i].refptr->parent) ? arts[i].refptr->parent->article : -2,
 			(arts[i].refptr->sibling) ? arts[i].refptr->sibling->article : -2,
 			(arts[i].refptr->child) ? arts[i].refptr->child->article : -2,
-			arts[i].inthread, arts[i].thread, arts[i].refptr->txt, arts[i].subject);
+			arts[i].prev, arts[i].thread, arts[i].refptr->txt, arts[i].subject);
 	}
 
 	fclose(dbgfd);
@@ -821,7 +818,7 @@ collate_subjects(
 		/*
 		 * Ignore already threaded and expired arts
 		 */
-		if (arts[i].inthread || IGNORE_ART(i))
+		if (arts[i].prev >= 0 || IGNORE_ART(i))
 			continue;
 
 		/*
@@ -836,16 +833,17 @@ collate_subjects(
 			 * is that we have to add later threads onto the end of the
 			 * previous thread
 			 */
-			if (((arts[i].subject == arts[j].subject) ||
-						   ((arts[i].part || arts[i].patch) &&
-							 arts[i].archive == arts[j].archive))) {
-/*DEBUG_PRINT((dbgfd, "RES: %d is now inthread, at end of %d\n", i, j));*/
+			if (
+					(arts[i].subject == arts[j].subject) ||
+					(arts[i].archive && arts[j].archive && (arts[i].archive->name == arts[j].archive->name))
+			) {
+/*DEBUG_PRINT((dbgfd, "RES: %d is now previous, at end of %d\n", i, j));*/
 
 				for (art = j; arts[art].thread >= 0; art = arts[art].thread)
 					;
 
 				arts[art].thread = i;
-				arts[i].inthread = TRUE;
+				arts[i].prev = art;
 			}
 		}
 
@@ -886,15 +884,14 @@ build_references(
 	/*
 	 * The articles are currently unsorted, and are as they were put by setup_hard_base()
 	 */
-	if (group->attribute && group->attribute->sort_art_type != SORT_ARTICLES_BY_NOTHING)
+	if (group->attribute->sort_art_type != SORT_ARTICLES_BY_NOTHING)
 		sort_arts(group->attribute->sort_art_type);
 
-	if (group->attribute)
-		sort_ascend = (group->attribute->sort_art_type == SORT_ARTICLES_BY_SUBJ_ASCEND ||
-		               group->attribute->sort_art_type == SORT_ARTICLES_BY_FROM_ASCEND ||
-		               group->attribute->sort_art_type == SORT_ARTICLES_BY_DATE_ASCEND ||
-		               group->attribute->sort_art_type == SORT_ARTICLES_BY_SCORE_ASCEND ||
-			       group->attribute->sort_art_type == SORT_ARTICLES_BY_LINES_ASCEND);
+	sort_ascend = (group->attribute->sort_art_type == SORT_ARTICLES_BY_SUBJ_ASCEND ||
+	               group->attribute->sort_art_type == SORT_ARTICLES_BY_FROM_ASCEND ||
+	               group->attribute->sort_art_type == SORT_ARTICLES_BY_DATE_ASCEND ||
+	               group->attribute->sort_art_type == SORT_ARTICLES_BY_SCORE_ASCEND ||
+	               group->attribute->sort_art_type == SORT_ARTICLES_BY_LINES_ASCEND);
 
 #ifdef DEBUG_REFS
 	dbgfd = fopen("Refs.dump", "w");

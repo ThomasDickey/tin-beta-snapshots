@@ -1,9 +1,9 @@
 /*
  *  Project   : tin - a Usenet reader
- *  Module    : tin_getline.c
+ *  Module    : getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 2003-01-21
+ *  Updated   : 2003-04-15
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -136,7 +136,8 @@ tin_getline(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if (str != NULL) {
 		wchar_t wbuf[LEN];
-		if (mbstowcs(wbuf, str, LEN - 1) != (size_t) -1) {
+
+		if (mbstowcs(wbuf, str, ARRAY_SIZE(wbuf) - 1) != (size_t) -1) {
 			for (i = 0; wbuf[i]; i++)
 				gl_addwchar(wbuf[i]);
 		}

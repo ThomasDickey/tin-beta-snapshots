@@ -78,7 +78,7 @@ prompt_num(
  *  prompt_string
  *  get a string from the user
  *  Return TRUE if a valid string was typed, FALSE otherwise
- *  TODO no bounds checking on buf size, tin_getline() defaults to 1024
+ *  TODO: no bounds checking on buf size, tin_getline() defaults to 1024
  */
 t_bool
 prompt_string(
@@ -155,7 +155,7 @@ prompt_menu_string(
  * prompt_yn
  * prompt user for 'y'es or 'n'o decision. "prompt" will be displayed in line
  * "line" giving the default answer "default_answer".
- * TODO 'line' is constant - can we remove it ?
+ * TODO: 'line' is constant - can we remove it ?
  * The function returns 1 if the user decided "yes", -1 if the user wanted
  * to escape, or 0 for any other key or decision.
  */
@@ -509,7 +509,8 @@ prompt_msgid(
 /*
  * Format a message such that it'll fit within the screen width
  * Useful for fitting long Subjects and newsgroup names into prompts
- * TODO - maybe add a '...' to the string to show it was truncated. See center_line()
+ * TODO: maybe add a '...' to the string to show it was truncated.
+ *       See center_line()
  */
 char *
 sized_message(

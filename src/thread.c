@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-04-25
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -257,7 +257,7 @@ build_tline(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 			get_author(TRUE, art, tmp, sizeof(tmp) - 1);
 
-			if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) -1) != (size_t) -1) {
+			if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
 				wcspart(wtmp, wtmp2, len_from, ARRAY_SIZE(wtmp));
 				if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
 #	ifdef USE_CURSES
@@ -275,7 +275,7 @@ build_tline(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		get_author(TRUE, art, tmp, sizeof(tmp) - 1);
 
-		if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) -1) != (size_t) -1) {
+		if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
 			wcspart(wtmp, wtmp2, cCOLS - strlen(buff), ARRAY_SIZE(wtmp));
 			if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
 #	ifdef USE_CURSES
@@ -397,7 +397,7 @@ thread_right(
  *		GRP_QUIT		'Q'uit all the way out
  *		GRP_NEXT		Catchup goto next group
  *		GRP_NEXTUNREAD	Catchup enter next unread thread
- *		GRP_KILLED		Thread was killed at art level ?????
+ *		GRP_KILLED		Thread was killed at art level?
  *		GRP_EXIT		Return to group menu
  */
 int
@@ -421,11 +421,6 @@ thread_page(
 		info_message(_(txt_no_resps_in_thread));
 		return GRP_EXIT;
 	}
-
-	/*
-	 * If threading by Refs, it helps to see the subject line
-	 */
-	show_subject = ((arts[thread_respnum].archive != NULL) || (group->attribute->thread_arts == THREAD_REFS) || (group->attribute->thread_arts == THREAD_BOTH));
 
 	/*
 	 * Set the cursor to the last response unless pos_first_unread is on
@@ -550,7 +545,6 @@ thread_page(
 						break;
 					}
 					fixup_thread(n, TRUE);
-					move_to_item(which_response(n));
 				}
 				show_thread_page();
 				break;
@@ -606,17 +600,12 @@ thread_page(
 
 			case iKeyThreadMarkArtRead: /* mark article as read */
 				n = find_response(thread_basenote, thdmenu.curr);
-				if ((arts[n].status == ART_UNREAD) || (arts[n].status == ART_WILL_RETURN)) {
+				if ((arts[n].status == ART_UNREAD) || (arts[n].status == ART_WILL_RETURN))
 					art_mark(group, &arts[n], ART_READ);
-					build_tline(thdmenu.curr, &arts[n]);
-					draw_line(thdmenu.curr, MAGIC);
-				}
-				if ((n = next_unread(n)) == -1) {	/* no more unread articles */
+				if ((n = next_unread(n)) == -1)	/* no more unread articles */
 					ret_code = GRP_EXIT;
-					break;
-				}
-				fixup_thread(n, TRUE);			/* We may be in the next thread now */
-				move_to_item(which_response(n));
+				else
+					fixup_thread(n, TRUE);	/* We may be in the next thread now */
 				break;
 
 			case iKeyThreadToggleSubjDisplay:	/* toggle display of subject & subj/author */
@@ -627,8 +616,15 @@ thread_page(
 				break;
 
 			case iKeyOptionMenu:
-				(void) change_config_file(group);
-				show_thread_page();
+				change_config_file(group);
+				n = find_response(thread_basenote, thdmenu.curr);
+				if (which_thread(n) == -1) /* We have lost the thread */
+					ret_code = GRP_EXIT;
+				else {
+					fixup_thread(n, FALSE);
+					thdmenu.curr = which_response(n);
+					show_thread_page();
+				}
 				break;
 
 			case iKeyHelp:					/* help */
@@ -650,7 +646,7 @@ thread_page(
 
 			case iKeySearchBody:			/* search article body */
 				if ((n = search_body(find_response(thread_basenote, thdmenu.curr), repeat_search)) != -1) {
-					fixup_thread(n, TRUE);
+					fixup_thread(n, FALSE);
 					ret_code = enter_pager(n, FALSE);
 				}
 				break;
@@ -707,11 +703,10 @@ thread_page(
 					update_thread_page();						/* Must update whole page */
 
 				/* Automatically advance to next art if not at end of thread */
-				if (thdmenu.curr + 1 < thdmenu.max) {
+				if (thdmenu.curr + 1 < thdmenu.max)
 					move_down();
-					break;
-				}
-				draw_thread_arrow();
+				else
+					draw_thread_arrow();
 				break;
 
 			case iKeyThreadBugReport:
@@ -729,7 +724,7 @@ thread_page(
 
 			case iKeyThreadMarkArtUnread:		/* mark article as unread */
 				n = find_response(thread_basenote, thdmenu.curr);
-				art_mark(group, &arts[n], ART_WILL_RETURN); /* art_mark(group, &arts[n], ART_UNREAD); */
+				art_mark(group, &arts[n], ART_WILL_RETURN);
 				build_tline(thdmenu.curr, &arts[n]);
 				draw_line(thdmenu.curr, MAGIC);
 				info_message(_(txt_marked_as_unread), _(txt_article_upper));
@@ -746,15 +741,14 @@ thread_page(
 			case iKeyThreadToggleArtSel:		/* toggle article as selected */
 				if ((n = find_response(thread_basenote, thdmenu.curr)) < 0)
 					break;
-				arts[n].selected = (!(ch == iKeyThreadToggleArtSel && arts[n].selected));	/* TODO optimise? */
+				arts[n].selected = (!(ch == iKeyThreadToggleArtSel && arts[n].selected));	/* TODO: optimise? */
 /*				update_thread_page(); */
 				build_tline(thdmenu.curr, &arts[n]);
 				draw_line(thdmenu.curr, MAGIC);
-				if (thdmenu.curr + 1 < thdmenu.max) {
+				if (thdmenu.curr + 1 < thdmenu.max)
 					move_down();
-					break;
-				}
-				draw_thread_arrow();
+				else
+					draw_thread_arrow();
 				break;
 
 			case iKeyThreadReverseSel:		/* reverse selections */
@@ -804,8 +798,7 @@ static void
 show_thread_page(
 	void)
 {
-	int i;
-	static int the_index = 0;
+	int i, art;
 
 	signal_context = cThread;
 	currmenu = &thdmenu;
@@ -814,9 +807,12 @@ show_thread_page(
 
 	set_first_screen_item();
 
-	the_index = find_response(thread_basenote, thdmenu.first);
+	art = find_response(thread_basenote, thdmenu.first);
 
-	assert(thdmenu.first != 0 || the_index == thread_respnum);
+	/*
+	 * If threading by Refs, it helps to see the subject line
+	 */
+	show_subject = ((arts[thread_respnum].archive != NULL) || (CURR_GROUP.attribute->thread_arts == THREAD_REFS) || (CURR_GROUP.attribute->thread_arts == THREAD_BOTH));
 
 	if (show_subject)
 		snprintf(mesg, sizeof(mesg), _(txt_stp_list_thread), grpmenu.curr + 1, grpmenu.max);
@@ -833,11 +829,9 @@ show_thread_page(
 	MoveCursor(INDEX_TOP, 0);
 
 	for (i = thdmenu.first; i < thdmenu.last; ++i) {
-		if (the_index < 0 || the_index >= max_art)
-			break;
-		build_tline(i, &arts[the_index]);
+		build_tline(i, &arts[art]);
 		draw_line(i, 0);
-		the_index = next_response(the_index);
+		art = next_response(art);
 	}
 
 	CleartoEOS();
@@ -892,7 +886,7 @@ fixup_thread(
 {
 	int basenote = which_thread(respnum);
 
-	if (basenote != thread_basenote && basenote >= 0) {
+	if (basenote >= 0) {
 		thread_basenote = basenote;
 		thdmenu.max = num_of_responses(thread_basenote) + 1;
 		thread_respnum = base[thread_basenote];
@@ -943,35 +937,15 @@ which_thread(
 {
 	int i, j;
 
-	for (i = 0; i < grpmenu.max; i++) {
-		for_each_art_in_thread(j, i) {
-			if (j == n)
-#ifdef JUST_TESTING
-			{
-				/*
-				 * We can much more rapidly locate the topmost available parent
-				 * than the brute force method above. This is definitely the
-				 * Right Way to go in 1.5
-				 */
-				int val = n;
-				struct t_msgid *ptr;
-
-				for (ptr = arts[n].refptr; ptr->parent; ptr = ptr->parent) {
-					if (ptr->parent->article != ART_UNAVAILABLE)
-						val = ptr->parent->article;
-				}
-				fprintf(stderr, "TEST: which_thread found %d, actual is %d\n", val, base[i]);
-
-				return i;
-			}
-#else
-				return i;
-#endif /* JUST_TESTING */
-		}
-	}
+	/* Move to top of thread */
+	for (i = n; arts[i].prev >= 0; i = arts[i].prev)
+		;
+	/* Find in base[] */
+	for (j = 0; j < grpmenu.max; j++)
+		if (base[j] == i)
+			return j;
 
 	error_message(_(txt_cannot_find_base_art), n);
-/*	assert(0 != 0); */
 	return -1;
 }
 
@@ -986,8 +960,8 @@ which_response(
 	int i, j;
 	int num = 0;
 
-	i = which_thread(n);
-	assert(i >= 0);
+	if ((i = which_thread(n)) == -1)
+		return 0;
 
 	for_each_art_in_thread(j, i) {
 		if (j == n)
@@ -1042,7 +1016,7 @@ get_score_of_thread(
 	int score = 0;
 
 	for (i = n; i >= 0; i = arts[i].thread) {
-		if (arts[i].status == ART_UNREAD) {
+		if (arts[i].status != ART_READ || arts[i].killed == ART_KILLED_UNREAD) {
 			if (tinrc.thread_score == THREAD_SCORE_MAX) {
 				/* we use the maximum article score for the complete thread */
 				if ((arts[i].score > score) && (arts[i].score > 0))
@@ -1201,13 +1175,11 @@ int
 prev_response(
 	int n)
 {
-	int resp;
 	int i;
 
-	resp = which_response(n);
 
-	if (resp > 0)
-		return find_response(which_thread(n), resp - 1);
+	if (arts[n].prev >= 0)
+		return arts[n].prev;
 
 	i = which_thread(n) - 1;
 
@@ -1466,7 +1438,7 @@ again:
 
 		default:					/* >=0 normal exit, new basenote */
 			if (filtered_articles)
-				return GRP_KILLED; /* ?? set group cursor back to 0 and do nothing */
+				return GRP_KILLED; /* ? set group cursor back to 0 and do nothing */
 			fixup_thread(this_resp, FALSE);
 
 			if (currmenu != &grpmenu)	/* group menu will redraw itself */

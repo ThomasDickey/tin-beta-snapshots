@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-04-25
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -71,20 +71,10 @@ static int gnksa_check_localpart(const char *localpart);
 static int gnksa_dequote_plainphrase(char *realname, char *decoded, int addrtype);
 static int strfeditor(char *editor, int linenum, const char *filename, char *s, size_t maxsize, char *format);
 static void write_input_history_file(void);
-#ifdef LOCAL_CHARSET
-	static int to_local(int c);
-	static int to_network(int c);
-#endif /* LOCAL_CHARSET */
 #ifdef CHARSET_CONVERSION
 	static char *utf8_valid(char *line);
-#endif /* CHARSET_CONVERSION */
-#ifdef LOCAL_CHARSET
-	static void buffer_to_local(char *line);
-#else
-#	ifdef CHARSET_CONVERSION
 	static t_bool buffer_to_local(char **line, int *max_line_len, const char *network_charset, const char *local_charset);
-#	endif /* CHARSET_CONVERSION */
-#endif /* LOCAL_CHARSET */
+#endif /* CHARSET_CONVERSION */
 #if (defined(MIME_STRICT_CHARSET) && !defined(NO_LOCALE)) || defined(CHARSET_CONVERSION)
 	static void buffer_to_ascii(char *c);
 #endif /* (MIME_STRICT_CHARSET && !NO_LOCALE) || CHARSET_CONVERSION */
@@ -568,7 +558,7 @@ tin_done(
 	if (!no_write) {
 		forever {
 			if (((wrote_newsrc_lines = write_newsrc()) >= 0L) && (wrote_newsrc_lines >= read_newsrc_lines)) {
-				if (!batch_mode || (batch_mode && verbose))
+				if (!batch_mode || verbose)
 					my_fputs(_(txt_newsrc_saved), stdout);
 				break;
 			}
@@ -858,6 +848,10 @@ rename_file(
 #endif /* M_AMIGA */
 
 
+/*
+ * Note that we exit screen/curses mode when invoking
+ * external commands
+ */
 t_bool
 invoke_cmd(
 	const char *nam)
@@ -921,10 +915,14 @@ draw_percent_mark(
 }
 
 
+/*
+ * TODO: add configure check for basename(3)/dirname(3) [SUSv2]
+ *       if found use that instead.
+ */
 void
 base_name(
-	char *fullpath,		/* argv[0] */
-	char *program)		/* tin_progname is returned */
+	const char *fullpath,		/* eg, argv[0] */
+	char *program)				/* eg, tin_progname is returned */
 {
 	size_t i;
 #ifdef VMS
@@ -934,7 +932,7 @@ base_name(
 	strcpy(program, fullpath);
 
 	for (i = strlen(fullpath) - 1; i; i--) {
-		if (fullpath[i] == SEPDIR) {
+		if (fullpath[i] == DIRSEP) {
 			strcpy(program, fullpath + i + 1);
 			break;
 		}
@@ -1053,10 +1051,6 @@ my_isprint(
 	/* use locale */
 	return isprint(c);
 #else
-#	ifdef LOCAL_CHARSET
-		/* use some conversation table */
-		return (isprint(c) || (c >= 0x80 && c <= 0xff));
-#	else
 	if (IS_LOCAL_CHARSET("ISO-8859"))
 		return (isprint(c) || (c >= 0xa0 && c <= 0xff));
 	else if (IS_LOCAL_CHARSET("ISO-2022"))
@@ -1067,7 +1061,6 @@ my_isprint(
 		return 1;
 	else /* KOI8-* and UTF-8 */
 		return (isprint(c) || (c >= 0x80 && c <= 0xff));
-#	endif /* LOCAL_CHARSET */
 #endif /* !NO_LOCALE */
 }
 
@@ -1126,8 +1119,10 @@ toggle_inverse_video(
 	if (!(tinrc.inverse_okay = bool_not(tinrc.inverse_okay)))
 		tinrc.draw_arrow = TRUE;
 #ifndef USE_INVERSE_HACK
+#	if 0
 	else
 		tinrc.draw_arrow = FALSE;
+#	endif /* 0 */
 #endif /* !USE_INVERSE_HACK */
 }
 
@@ -1167,10 +1162,10 @@ show_color_status(
 #endif /* HAVE_COLOR */
 
 
+#ifndef NNTP_ONLY
 /*
- * Check for lock file to stop multiple copies of tind (obsolete) or
- * tin -U running and if it does not exist create it so this is the
- * only copy running
+ * Check for lock file to stop multiple copies of tin -u running and if it
+ * does not exist create it so this is the only copy running
  */
 void
 create_index_lock_file(
@@ -1198,6 +1193,7 @@ create_index_lock_file(
 		}
 	}
 }
+#endif /* !NNTP_ONLY */
 
 
 /*
@@ -2054,7 +2050,7 @@ get_cwd(
 #	ifdef HAVE_GETWD
 	getwd(buf);
 #	else
-#		error "No getcwd() or getwd() function found"
+	*buf = '\0';
 #	endif /* HAVE_GETWD */
 #endif /* HAVE_GETCWD */
 }
@@ -2119,11 +2115,10 @@ cleanup_tmp_files(
 	if (!tinrc.cache_overview_files)
 		unlink(local_newsgroups_file);
 
-	/*
-	 * Even though batch_mode is turned off with -U, the child still has it set
-	 */
+#ifndef NNTP_ONLY
 	if (batch_mode)
 		unlink(lock_file);
+#endif /* !NNTP_ONLY */
 }
 
 
@@ -2455,75 +2450,6 @@ strip_name(
 }
 
 
-#ifdef LOCAL_CHARSET
-/*
- * convert between local and network charset (e.g. NeXT and latin1)
- */
-#	define CHARNUM 256
-#	define BAD (-1)
-/* use the appropriate conversion tables */
-#	if LOCAL_CHARSET == 437
-#		include "l1_ibm437.tab"
-#		include "ibm437_l1.tab"
-#	else
-#		if LOCAL_CHARSET == 850
-#			include "l1_ibm850.tab"
-#			include "ibm850_l1.tab"
-#		else
-#			include "l1_next.tab"
-#			include "next_l1.tab"
-#		endif /* 850 */
-#	endif /* 437 */
-static int
-to_local(
-	int c)
-{
-	if (use_local_charset) {
-		c = c_network_local[(unsigned char)c];
-		if (c == BAD)
-			return '?';
-		else
-			return c;
-	} else
-		return c;
-}
-
-
-static void
-buffer_to_local(
-	char *b)
-{
-	for (; *b; b++)
-		*b = to_local(*b);
-}
-
-
-static int
-to_network(
-	int c)
-{
-	if (use_local_charset) {
-		c = c_local_network[(unsigned char) c];
-		if (c == BAD)
-			return '?';
-		else
-			return c;
-	} else
-		return c;
-}
-
-
-void
-buffer_to_network(
-	char *b,
-	int mmnwcharset)
-{
-	for (; *b; b++)
-		*b = to_network(*b);
-}
-#endif /* LOCAL_CHARSET */
-
-
 #ifdef CHARSET_CONVERSION
 static t_bool
 buffer_to_local(
@@ -2774,9 +2700,6 @@ process_charsets(
 		buffer_to_ascii(*line);
 #	endif /* MIME_STRICT_CHARSET && !NO_LOCALE */
 	/* charset conversion (codepage version) */
-#	ifdef LOCAL_CHARSET
-	buffer_to_local(*line);
-#	endif /* LOCAL_CHARSET */
 #endif /* CHARSET_CONVERSION */
 
 	/*

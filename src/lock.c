@@ -273,7 +273,7 @@ t_bool dot_lock(
  *  FALSE = some error occured
  */
 t_bool dot_unlock(
-   const char *filename)
+	const char *filename)
 {
 	char *lockfile;
 	t_bool rval = FALSE;

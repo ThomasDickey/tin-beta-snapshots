@@ -3,13 +3,12 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2003-03-14
+.\" Updated   : 2003-04-25
 .\" Notes     : use american english; still needs some work, i.e.:
 .\"             - document authorization (.newsauth)
-.\"             - postprocess differences when linked against libuu
 .\"
 .\"
-.TH tin 1 "March 14th, 2003" "1.5.17" "A Usenet newsreader"
+.TH tin 1 "April 25th, 2003" "1.5.18" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -82,8 +81,8 @@ style index files if available locally or via the NNTP [X]OVER command
 (\fBRFC2980\fB).
 .PP
 .B tin
-has four separate levels of operation: Group selection level, Group
-level, Thread level and Article level. Use the \fBHelp\fP ('\fBh\fP')
+has four separate levels of operation: Selection level, Group level,
+Thread level and Article level. Use the \fBHelp\fP ('\fBh\fP')
 command to view a list of the commands available at a particular
 level.
 .PP
@@ -141,7 +140,7 @@ option and mark all articles as read.
 Don't load newsgroup descriptions (interactive mode).
 .TP
 .BI -D " debug-level"
-Enter debug-level (1 = NNTP, 2 = all).
+Enter debug-level (1 = NNTP, 2 = all, 3 = newsrc, 4 = memeory allocation).
 .TP
 .BI -f " file"
 Use the specified file of subscribed to newsgroups in place of
@@ -168,11 +167,13 @@ is disabled if \fBtin\fP is compiled as reading news via NNTP only.
 .TP
 .BI -l
 Get number of articles per group from the
-\fI${TIN_LIBDIR-NEWSLIBDIR}"/"${TIN_ACTIVEFILE-active}\fR file - this might
-result in incorrect article counts but is usually faster than the default
-which is to read the
-\fI${TIN_LIBDIR-NEWSLIBDIR}"/"${TIN_ACTIVEFILE-active}\fR file and then
-check the article count via NNTP GROUP command (\fBRFC977\fP) ''\fB-ln\fP''.
+\fI${TIN_LIBDIR-NEWSLIBDIR}"/"${TIN_ACTIVEFILE-active}\fR file. If
+reading via NNTP this is done with the LIST command (\fBRFC977\fP). This
+might result in incorrect article counts but is usually faster than the
+default which is to read the
+\fI${TIN_LIBDIR-NEWSLIBDIR}"/"${TIN_ACTIVEFILE-active}\fR file
+(either directly or via LIST) and then check the article count via
+NNTP GROUP command (\fBRFC977\fP) ''\fB-ln\fP''.
 .TP
 .BI -m " dir"
 Mailbox directory to use. Default is \fI${TIN_HOMEDIR-"$HOME"}/Mail\fR.
@@ -186,7 +187,7 @@ Only load groups from the
 \fI${TIN_LIBDIR-NEWSLIBDIR}"/"${TIN_ACTIVEFILE-active}\fR file that are
 subscribed to in the user's \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR. This
 allows a noticeable speedup when connecting via a slow line, but \fBtin\fP
-can not tell which groups are moderated.
+can not tell which groups are moderated. See also ''\fB-l\fP''.
 .TP
 .B -N
 Mail unread articles to yourself for later reading. For more information
@@ -540,10 +541,10 @@ records of which articles have been read, so use this carefully.
 Choose a range of articles to be affected by the next command. See the
 section "RANGES" for more information.
 .TP
-.B SelectSortActive .
+.B SelectSortActive '.'
 Sort the list of newsgroups
 .TP
-.B SearchRepeat '\\'
+.B SearchRepeat '\\\\'
 Repeat the previous search
 .TP
 .B SearchSubjF '/'
@@ -672,7 +673,7 @@ section "RANGES" for more information.
 .B LastViewed '-'
 Re-enter the last message that was viewed.
 .TP
-.B SearchRepeat '\\'
+.B SearchRepeat '\\\\'
 Repeat the previous search
 .TP
 .B SearchSubjF '/'
@@ -894,7 +895,7 @@ section "RANGES" for more information.
 .B LastViewed '-'
 Re-enter the last message that was viewed.
 .TP
-.B SearchRepeat '\\'
+.B SearchRepeat '\\\\'
 Repeat the previous search
 .TP
 .B SearchSubjF '/'
@@ -1050,7 +1051,7 @@ taken from the \fBtex2iso_conv\fP variable in the tinrc file.
 Toggle ROT-13 decoding for this article.
 .TP
 .B PageToggleUue '('
-Toggle the display of uuencoded sections on/off. The default behavior is
+Toggle the display of uuencoded sections. The default behavior is
 taken from the \fBhide_uue\fP variable in the tinrc file.
 .TP
 .B PageReveal ')'
@@ -1063,7 +1064,7 @@ scrolling up will hide it again.
 .B LastViewed '-'
 Re-enter the last message that was viewed.
 .TP
-.B SearchRepeat '\\'
+.B SearchRepeat '\\\\'
 Repeat the previous search
 .TP
 .B SearchSubjF '/'
@@ -1286,11 +1287,12 @@ enter a new value or use '\fB<SPACE>\fP' to toggle the available
 options. \fBConfigSelect\fP will save the new value, '\fB<ESC>\fP' will
 abort without saving changes.
 .PP
-As with the other menus, '\fB^L\fP' will redraw the screen. You can use
-\fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP') and
-\fBSearchRepeat\fP ('\fB\\\fP') to search for a specific option. Use
-\fBQuit\fP ('\fBq\fP') to exit the option menu and keep your changes.
-Use \fBQuitTin\fP ('\fBQ\fP') to exit without keeping your changes.
+As with the other menus, \fBRedrawScr\fP ('\fB^L\fP') will redraw the
+screen. You can use \fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP
+('\fB?\fP') and \fBSearchRepeat\fP ('\fB\\\fP') to search for a specific
+option. Use \fBQuit\fP ('\fBq\fP') to exit the option menu and keep
+your changes. Use \fBQuitTin\fP ('\fBQ\fP') to exit without keeping
+your changes.
 .PP
 Here is a full list of all the available variables. The name in braces is
 the name of the corresponding setting in
@@ -1361,8 +1363,9 @@ Default is OFF.
 .TP
 .B Use Archive-name: header for save (auto_save)
 If ON articles/threads with ''Archive-name:'' in header will be
-automatically saved with the Archive-name & part/patch no and post processed
-if \fBpost_proc_type\fP is not set to none. Default is OFF.
+automatically saved with the Archive-name & part/patch no and post
+processed if \fBpost_process_type\fP is set to something other than 'No'.
+Default is OFF.
 .TP
 .B Save articles in batch mode (batch_save)
 If set ON articles/threads will be saved in batch mode when save
@@ -1629,10 +1632,13 @@ Maximum length of the names of newsgroups to be displayed so that more of
 the newsgroup description can be displayed. Default is 32.
 .TP
 .B Display uue data as an attachment (hide_uue)
+By default (OFF) raw uuencoded data is displayed.
 If ON, then sections of uuencoded data will be shown with a single tag line
 showing the size and filename (much the same as a MIME attachment).
-Otherwise the raw uuencoded data is displayed. Default is OFF. This
-behavior can also be toggled in the article viewer.
+If set to ALL then any line that looks like uuencoded data will be folded
+into a tag line. This is useful when uuencoded data is split across
+more than one article but can also lead to false positives.
+This setting can also be toggled in the article viewer.
 .TP
 .B External inews (inews_prog)
 Path, name and options of external
@@ -1648,8 +1654,12 @@ If ON, show current group description or article subject in the last line
 toggles setting. This facility is useful as the full width of the screen is
 available to display long subjects. Default is OFF.
 .TP
+.\" TODO: fix menu description
+.\"       mono_mark* currently do allow "Reverse video" even if
+.\"       inverse_okay=FALSE
 .B Use inverse video for page headers (inverse_okay)
-If ON use inverse video for page headers at different levels. Default is ON.
+If ON use inverse video for page headers and URL highlighting.
+Default is ON.
 .TP
 .B Keep failed arts in ~/dead.articles (keep_dead_articles)
 If ON keep all failed postings in \fI${TIN_HOMEDIR-"$HOME"}/dead.articles\fR
@@ -1819,16 +1829,18 @@ If ON, then \fBtin\fP will start an appropriate viewer program to display
 any files that were post processed and uudecoded. The program is determined
 using the mailcap file. Default is ON.
 .TP
-.B Post process saved art/thread with (post_process_type)
-This specifies the default type of post processing to perform on saved
-articles. The following types of processing are allowed:
+.B Post process saved articles (post_process_type)
+This specifies whether to perform post processing on saved articles.
+The following values are allowed:
 .RS +.5i
 .IP 0 3
-\fBNone\fP (default)
+\fBNo\fP (default), no post processing is done.
 .IP 1
-\fBShell archives\fP, unpacking of multi-part shar files.
+\fBShell archives\fP, unpacking of multi-part
+.BR shar (1)
+files only.
 .IP 2
-\fBUuencode\fP, unpacking of multi-part uuencoded files.
+\fBYes\fP, binary attachments and data will be decoded and saved.
 .RE
 .TP
 .B Filename to be used for storing posted articles (posted_articles_file)
@@ -2161,7 +2173,9 @@ Setting this to 1 allows you to use
 compatible regular expressions
 .BR pcre (3)
 (see also
-.BR perlre (1)).
+.BR perlre (1)
+and
+.BR pcrepattern (3)).
 You will probably want to update your filter file if you use this regularly.
 NB: Newsgroup names will always be matched using the wildmat notation.
 .TP
@@ -2388,11 +2402,7 @@ Environment variables are allowed within a filename (i.e.,
 \fI$SOURCES/dir/filename\fR). See \fBdefault_savedir\fP.
 .PP
 When saving articles you can specify whether the saved files should be
-post processed (i.e.,
-.BR unshar (1)
-shell archive,
-.BR uudecode (1)
-multiple parts etc). A default process type can be set
+post processed. A default process type can be set
 via \fBpost_process_type\fP.
 .\"
 .\"
@@ -2708,7 +2718,7 @@ For a detailed description see
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/filter
 .PP
 
-.IR /etc/tin/keymap
+.IR /etc/tin/keymap${${LC_ALL-"${LC_CTYPE-"${LC_MESSAGES-"$LANG"}"}"}:+".${LC_ALL-"${LC_CTYPE-"${LC_MESSAGES-"$LANG"}"}"}"}
 .br
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/keymap${${LC_ALL-"${LC_CTYPE-"${LC_MESSAGES-"$LANG"}"}"}:+".${LC_ALL-"${LC_CTYPE-"${LC_MESSAGES-"$LANG"}"}"}"}
 .PP
@@ -2766,11 +2776,8 @@ For a detailed description see
 .\" .B TIN_POST (VMS, AmigaOS)
 .\"
 .\" .TP
-.\" .B USER (VMS, AmigaOS)
-.\" The name of the logged-in user.
-.\"
-.\" .TP
 .\" .B USERNAME (AmigaOS)
+.\" The name of the logged-in user.
 .\"
 .\" .TP
 .\" .B NODENAME (AmigaOS, obsolete?)
@@ -2784,11 +2791,6 @@ For a detailed description see
 .\"
 .\" .TP
 .\" .B SHELL (Unix, AmigaOS)
-.\"
-.\" .TP
-.\" .B TMPDIR (still to implement!)
-.\" A pathname of a directory made available for \fBtin\fP to create
-.\" temporary files.
 .\"
 .TP
 .B TINRC
@@ -2935,7 +2937,8 @@ syntax. For example, setting
 .sp
 will automatically subscribe the user to all new groups in the comp.os.unix
 hierarchy, and all talk groups other than talk.politics groups (which will
-be queried for as usual).
+be queried for as usual). Of course this does not work if \fBtin\fP
+is started with the ''\fB-X\fP'' command-line switch.
 .TP
 .B AUTOUNSUBSCRIBE
 Is handled like the $\fBAUTOSUBSCRIBE\fP variable, but groups matching the
@@ -2946,6 +2949,10 @@ list are unsubscribed from without further query. For example, setting
 will automatically unsubscribe the user from all new alt.flame groups
 and all groups starting with u (university groups) other than UK groups (which
 will be queried for as usual).
+.TP
+.B TMPDIR
+A pathname of a directory made available for \fBtin\fP to create
+temporary files.
 .TP
 .B MAILCAPS
 This variable can be used to override the default path search for mailcap
@@ -3207,13 +3214,14 @@ Scott, Bart Sears, Karl-Olav Serrander, Doug Sewell, Philip Shearer,
 Jungshik Shin, Sergey Shkonda, Andreas Siegert, Mark Smith, Toomas
 Soome, Steve Spearman, Helmut Springer, Cliff Stanford, Steve Starck,
 Jason Steiner, Ralf Stephan, Michael Stenns, Helmrich Streitmatter,
-Hans Werner Strube, Dieter Stueken, Ed Sznyter, Dean Takemori,
-Darrell Tangman, Derek Terveer, Carsten Theis, Julian Thompson, David
-Tiller, Andry Timonin, Mark Tomlin, Michael Traub, Mark Trumbull,
-Alex Vasylenko, Michael Velten, Adri Verhoef, Paul Vickers, Corinna
-Vinschen, Oliver B. Warzecha, Jason Wessel, Cary Whitney, Henrik
-Wist, Greg Woods, Andreas Wrede, Lloyd Wright, Jens Wuepper, Billy
-Y., Hideaki Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
+Hans Werner Strube, Dieter Stueken, Ed Sznyter, Lech Szychowski, Dean
+Takemori, Darrell Tangman, Derek Terveer, Carsten Theis, Julian
+Thompson, David Tiller, Andry Timonin, Mark Tomlin, Michael Traub,
+Mark Trumbull, Alex Vasylenko, Michael Velten, Adri Verhoef, Paul
+Vickers, Corinna Vinschen, Oliver B. Warzecha, Jason Wessel, Cary
+Whitney, Henrik Wist, Greg Woods, Andreas Wrede, Lloyd Wright, Jens
+Wuepper, Billy Y., Hideaki Yoshfuji, Nickolai Zeldovich, Zbigniew
+Zych
 .\"
 .\"
 .SH AUTHOR
@@ -3242,6 +3250,7 @@ Urs Janssen <urs@tin.org>
 .BR pgp (1),
 .BR rn (1),
 .BR sendmail (1),
+.BR shar (1),
 .BR tass (1),
 .BR unshar (1),
 .BR uudecode (1),
@@ -3251,6 +3260,7 @@ Urs Janssen <urs@tin.org>
 .BR iconv_open (3),
 .BR nl_langinfo (3),
 .BR pcre (3),
+.BR pcrepattern (3),
 .BR snprintf (3),
 .BR vsnprintf (3),
 .BR wildmat (3),

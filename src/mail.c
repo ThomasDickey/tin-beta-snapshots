@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2003-03-14
+ *  Updated   : 2003-03-24
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2003 Iain Lea <iain@bricbrac.de>
@@ -77,7 +77,8 @@ read_mail_active_file(
 		if (cmd_line)
 			my_fputc('\n', stderr);
 
-		error_message(_(txt_cannot_open), mail_active_file);
+		if (!created_rcdir) /* no error on first start */
+			error_message(_(txt_cannot_open), mail_active_file);
 		/*
 		 * TODO: do an autoscan of maildir, create & reopen?
 		 */
@@ -110,7 +111,7 @@ read_mail_active_file(
 			continue;
 
 		/*
-		 * Load group info. TODO - integrate with active_add()
+		 * Load group info. TODO: integrate with active_add()
 		 */
 		strfpath(my_spooldir, buf2, sizeof(buf2) - 1, ptr);
 		ptr->spooldir = my_strdup(buf2);
@@ -313,11 +314,22 @@ read_groups_descriptions(
 		group = group_find(groupname);
 
 		if (group != NULL && group->description == NULL) {
+			char *r;
+			int r_len;
+
 			q = p;
 			while ((q = strchr(q, '\t')) != NULL)
 				*q = ' ';
 
-			group->description = convert_to_printable(my_strdup(p));
+			r = my_strdup(p);
+			r_len = strlen(r);
+			/*
+			 * Protect against invalid character sequences.
+			 *
+			 * TODO: change US-ASCII to UTF-8 when NNTP draft becomes RFC
+			 */
+			process_charsets(&r, &r_len, "US-ASCII", tinrc.mm_local_charset, FALSE);
+			group->description = convert_to_printable(r);
 
 #	if 0 /* not useful for cache_overview_files */
 			if (group->type == GROUP_TYPE_NEWS) {

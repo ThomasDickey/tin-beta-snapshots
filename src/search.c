@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-10
+ *  Updated   : 2003-03-28
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -121,7 +121,7 @@ get_search_pattern(
 	/*
 	 * A gross hack to simulate substrings with wildmat()
 	 */
-/* TODO somehow use REGEX_FMT here? */
+/* TODO: somehow use REGEX_FMT here? */
 	sprintf(tmpbuf, "*%s*", def);
 	return tmpbuf;
 }
@@ -239,7 +239,6 @@ body_search(
 	if (!read_news_via_nntp || CURR_GROUP.type != GROUP_TYPE_NEWS)
 		make_group_path(CURR_GROUP.name, group_path);
 
-	memset(&artinfo, 0, sizeof(t_openartinfo));
 	switch (art_open(TRUE, &arts[i], group_path, &artinfo, FALSE)) {
 		case ART_ABORT:					/* User 'q'uit */
 			art_close(&artinfo);
