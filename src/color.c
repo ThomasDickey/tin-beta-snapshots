@@ -124,7 +124,7 @@ set_colors (
 			if (found)
 				pair = p->pair;
 			else if (++nextpair < COLOR_PAIRS) {
-				p = (struct LIST *) my_malloc(sizeof(struct LIST));
+				p = my_malloc(sizeof(struct LIST));
 				p->fg = fcolor;
 				p->bg = bcolor;
 				p->pair = pair = nextpair;

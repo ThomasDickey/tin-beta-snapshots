@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2002-04-18
+.\" Updated   : 2002-06-09
 .\" Notes     : needs a lot of work
 .\"
-.TH tin 5 "April 18th, 2002" "1.5.12" "A Usenet newsreader"
+.TH tin 5 "June 9th, 2002" "1.5.13" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -437,9 +437,8 @@ be executed to generate a signature. --none will suppress any signature.
 .TP
 .B followup_to
 .TP
-.B printer
-.TP
 .B auto_select
+Automatically perform the '\fBX\fP' command after entering the group.
 .TP
 .B auto_save
 Identical to the tinrc variable of the same name
@@ -461,14 +460,6 @@ Identical to the tinrc variable of the same name
 .TP
 .B thread_arts
 Identical to the tinrc variable \fBthread_articles\fP
-.TP
-.B translit
-If ON append //TRANSLIT to the first argument of
-.BR iconv_open (3)
-to enable transliteration. This means that when a character cannot be
-represented in the target character set, it can be approximated through one
-or several similarly looking characters. On systems where this extension
-doesn't exist, this option is disabled.
 .TP
 .B show_author
 Identical to the tinrc variable of the same name
@@ -522,6 +513,19 @@ Identical to the tinrc variable of the same name
 Identical to the tinrc variable of the same name
 .TP
 .B ispell
+Path and options for
+.BR ispell (1)-like
+spell-checker, e.g. "aspell --mode=email --dont-backup check"
+.TP
+.B mm_network_charset
+Identical to the tinrc variable of the same name
+.TP
+.B undeclared_charset
+Assume (broken) articles without MIME charset declaration have this
+charset - default is US-ASCII. This attribute works only on systems
+with working
+.BR iconv (3),
+others might have to compile tin with --disable-mime-strict-charset.
 .PP
 .TP
 Example:
@@ -558,10 +562,75 @@ x_headers=Subject: test - ignore - no reply
 .RE
 .PP
 
+.\" TODO: add missing descriptions and explain things in detail.
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/filter
 .sp
 .RS
-filter file
+The filter file is used to assign scores to certain articles. Based on the
+score a article can be filtered out (hidden) or marked hot.
+.TP
+.B group
+A comma-separated list of newsgroup patterns (wildmat-style) to which
+groups the filter rule will be applied.
+.TP
+.B type
+0=kill, 1=autoselect. This option is kind of obsolete (currently it is
+still required!) and might vanisch in the future as the type can be
+controlled via \fBscore\fP
+.TP
+.B case
+0=casesensitive, 1=caseinsensitive
+.TP
+.B score
+Score value of the rule; can also be one of the magic words "kill" or "hot".
+.TP
+.B subj
+Match against ''Subject:''
+.TP
+.B from
+Match against ''From:''
+.TP
+.B msgid
+Match against ''Message-ID:'' and full ''References:''
+.TP
+.B msgid_last
+Match against ''Message-ID:'' and last ''References:'' entry only
+.TP
+.B msgid_only
+Match against ''Message-ID:''
+.TP
+.B refs_only
+Match against ''References:''
+.TP
+.B lines
+Match against ''Lines:'', <num matches less than, >num matches more than.
+.TP
+.B gnksa
+.TP
+.B xref_max
+Still valid but might be removed in the future.
+.TP
+.B xref_score
+Still valid but might be removed in the future.
+.TP
+.B xref
+.TP
+.B time
+time_t value when rule expires
+.PP
+.TP
+Example:
+.RS
+.nf
+### mark all articles about tin, rtin,
+### tind, ktin or cdtin as hot
+group=*
+type=1
+case=1
+score=hot
+subj=\\b(cd|[rk]?)?tin(d|pre)?[-.0-9]*\\b
+.fi
+.RE
 .RE
 .PP
 
@@ -1032,14 +1101,24 @@ Color of text-lines
 .B col_title
 Color of title text on all the menu screens
 .TP
-.B confirm_action
+.B confirm_choice
+Tin can ask for manual confirmation to protect the user. Available choices:
+.in +.5i
+.B commands:
 Ask for confirmation before executing certain dangerous commands (e.g.,
-\&'\fBc\fP'atchup). Default is ON.
-.TP
-.B confirm_to_quit
-If ON you will be asked to confirm that you wish to exit
-.BR tin (1)
-when you use the '\fBq\fP' command. Default is ON.
+\&'\fBc\fR'atchup). Commands that this affects are marked in this manual
+with '[after confirmation]'.
+.\" TODO: check if all affected commands are marked [after confirmation]
+.sp
+.B quit:
+You'll be asked to confirm that you wish to exit \fBtin\fP when you
+use the '\fBq\fP' command.
+.sp
+.B select:
+Ask for confirmation before marking all not selected (with '\fBX\fP'
+command) articles as read.
+.in -.5i
+Default is commands & quit.
 .TP
 .B default_art_search
 .TP
@@ -1173,9 +1252,8 @@ Specifies whether a screen redraw should always be done after certain
 external commands. Default is OFF.
 .TP
 .B getart_limit
-If \fBuse_getart_limit\fP is ON and getart_limit is > 0 not more than
-getart_limit articles/group are fetched from the server. If
-\fBuse_getart_limit\fP is ON and getart_limit is < 0
+If \fBgetart_limit\fP is > 0 not more than \fBgetart_limit\fP articles/group
+are fetched from the server. If \fBgetart_limit\fP is < 0
 .BR tin (1)
 will start fetching articles from your first unread minus absolute value of
 \fBgetart_limit\fP. Default is 0, which means no limit.
@@ -1294,7 +1372,7 @@ and you have to use \fBmm_charset\fP instead.
 \fBmm_network_charset\fP is limited to one of the following charsets:
 .in +.3i
 US-ASCII, ISO-8859-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8-{R,U,RU}
-EUC-{CN,JP,KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2,KR}, UTF-8
+EUC-{CN,JP,KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2,KR}, Big5, UTF-8
 .in -.3i
 Not all values might work on your system, see
 .BR iconv_open (3)
@@ -1392,8 +1470,23 @@ replies. The '_' character represents a blank character and is replaced
 with ' ' when read. Default is '>_'.
 .\" FIXME - document %s
 .TP
-.B quote_empty_lines
-If ON quote empty lines, too. Default is ON.
+.B quote_style
+This bit coded integer value controls how articles are to be quoted when
+following up or replying to them. Any of the following options can be
+combined by adding all relevant values. Default is 5, which means that quote
+characters are compressed and empty lines are quoted.
+.RS +.5i
+.IP 0 3
+\fBCompress quotes\fR Compress quote characters together when quoting
+multiple times (for example, '> > >' will be turned into '>>>'). This
+option is on by default.
+.IP 2
+\fBQuote Signatures\fR This option is off by default. Signatures are
+always quoted regardless of this option when you are viewing an article
+in raw mode ('\fB^H\fP') and followup or reply to it.
+.IP 4
+\fBQuote empty lines\fR This option is on by default.
+.RE
 .TP
 .B quote_regex
 A regular expression that will be applied when reading articles. All
@@ -1416,9 +1509,6 @@ then
 .BR tin (1)
 uses a built in default for this.
 .TP
-.B quote_signatures
-If ON quote signatures, too. Default is OFF.
-.TP
 .B recent_time
 If set to 0, this feature is deactivated, otherwise it means the number of
 days. Default is 2.
@@ -1427,6 +1517,22 @@ days. Default is 2.
 The news \fI${TIN_LIBDIR-NEWSLIBDIR}"/"${TIN_ACTIVEFILE-active}\fR file
 is reread at regular intervals to show if any new news has arrived. Default
 is 1200. Setting this to 0 will disable this feature.
+.TP
+.B score_limit_kill
+If the score of an article is below or equal this value the article gets
+marked as killed.
+.TP
+.B score_limit_select
+If the score of an article is above or equal this value the article gets
+marked as hot.
+.TP
+.B score_kill
+Score of an article which should be killed, this must be <=
+\fBscore_limit_kill\fP.
+.TP
+.B score_select
+Score of an article which should be marked hot, this must be >=
+\fBscore_limit_select\fP.
 .TP
 .B scroll_lines
 The number of lines that will be scrolled up/down in the article pager when
@@ -1491,6 +1597,8 @@ types are allowed:
 \(emsort articles by ''Date:'' field (descending=5 & ascending=6).
 .ti -\w'\(em'u
 \(emsort articles by filtering score (descending=7 & ascending=8).
+.ti -\w'\(em'u
+\(emsort articles by ''Lines:'' field (descending=9 & ascending=10).
 .in -.5i
 Sort by ascending Date (6) is the default.
 .TP
@@ -1565,6 +1673,18 @@ the group attribute variable \fBthread_arts\fR to 0 - 4 in the file
 If ON catchup group/thread when leaving with the left arrow key. Default is
 ON.
 .TP
+.B thread_score
+How the total score of a thread is computed. Default is 0, the maximum
+score in this thread.
+.RS +.5i
+.IP 0 3
+\fBMax\fP, the maximum score in this thread.
+.IP 1
+\fBSum\fP, the sum of all scores in this thread.
+.IP 2
+\fBAverage\fP, the average score in this thread.
+.RE
+.TP
 .B translit
 If ON append //TRANSLIT to the first argument of
 .BR iconv_open (3)
@@ -1581,12 +1701,6 @@ ON.
 The program that will be run when launching URL's in the article viewer
 using '\fBU\fP'. The actual URL will be appended to this. Default is
 \fBurl_handler.sh %s\fP.
-.TP
-.B use_getart_limit
-If enabled
-.BR tin (1)
-fetches max. \fBgetart_limit\fP articles/group from the server. Default
-is OFF.
 .TP
 .B use_color
 If enabled
@@ -1880,7 +1994,6 @@ uses the LIST OVERVIEW.FMT (\fBRFC2980\fP) command instead.
 .RE
 .PP
 
-
 .IR ${TIN_LIBDIR-"/news/db"}/subscriptions
 .\" is the Path correct? or is it /news/etc/subscriptions
 .sp
@@ -1899,6 +2012,7 @@ uses the LIST SUBSCRIPTIONS (\fBRFC2980\fP) command instead.
 .SH "SEE ALSO"
 .BR elm (1),
 .BR inews (1),
+.BR ispell (1),
 .BR lp (1),
 .BR lpr (1),
 .BR metamail (1)

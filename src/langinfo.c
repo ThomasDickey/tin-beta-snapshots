@@ -7,10 +7,11 @@
  *
  * http://www.opengroup.org/onlinepubs/7908799/xsh/langinfo.h.html
  *
- * Extend as needed. This emulator will hopefully become
- * redundant soon.
+ * Please extend it as needed and suggest improvements to the author.
+ * This emulator will hopefully become redundant soon as
+ * nl_langinfo(CODESET) becomes more widely implemented.
  *
- * Since the Li18nux encoding name registry is still such a mess,
+ * Since the proposed Li18nux encoding name registry is still not mature,
  * the output follows the MIME registry where possible:
  *
  *   http://www.iana.org/assignments/character-sets
@@ -20,8 +21,14 @@
  *
  *   http://www.cl.cam.ac.uk/~mgk25/unicode.html#activate
  *
- * Markus.Kuhn@cl.cam.ac.uk -- 2001-12-31 -- public domain
- * http://www.cl.cam.ac.uk/~mgk25/ucs/langinfo.c
+ * Markus.Kuhn@cl.cam.ac.uk -- 2002-03-11
+ * Permission to use, copy, modify, and distribute this software
+ * for any purpose and without fee is hereby granted. The author
+ * disclaims all warranties with regard to this software.
+ *
+ * Latest version:
+ *
+ *   http://www.cl.cam.ac.uk/~mgk25/ucs/langinfo.c
  */
 
 #if 0

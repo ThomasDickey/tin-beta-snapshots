@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Mike Gleason.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -77,17 +74,17 @@ msg_write_signature (
 		if (!strcmp(thisgroup->attribute->sigfile, "--none"))
 			return;
 
-			/*TODO: handle DONT_HAVE_PIPING case */
+		/* TODO: handle DONT_HAVE_PIPING case */
 #ifndef DONT_HAVE_PIPING
 		if (thisgroup->attribute->sigfile[0] == '!') {
 			FILE *pipe_fp;
 			char *sigcmd;
 			char cmd[PATH_LEN];
 			fprintf (fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
-			sigcmd = (char *) my_malloc(strlen(thisgroup->attribute->sigfile + 1) + strlen(thisgroup->name) + 4);
+			sigcmd = my_malloc(strlen(thisgroup->attribute->sigfile + 1) + strlen(thisgroup->name) + 4);
 			sprintf (sigcmd, "%s \"%s\"", thisgroup->attribute->sigfile + 1, thisgroup->name);
 
-			if ((pipe_fp = popen (sigcmd, "r")) != (FILE *) 0) {
+			if ((pipe_fp = popen (sigcmd, "r")) != NULL) {
 				while (fgets (cmd, PATH_LEN, pipe_fp))
 					fputs (cmd, fp);
 				pclose (pipe_fp);
@@ -111,7 +108,7 @@ msg_write_signature (
 		 * part of random sig) then read it in first and append
 		 * the random sig part onto the end.
 		 */
-		if ((sigfp = open_random_sig (path)) != (FILE *) 0) {
+		if ((sigfp = open_random_sig (path)) != NULL) {
 #ifdef DEBUG
 			if (debug == 2)
 				error_message ("USING random sig=[%s]", sigfile);
@@ -122,7 +119,7 @@ msg_write_signature (
 			if (debug == 2)
 				error_message ("TRYING fixed sig=[%s]", pathfixed);
 #endif /* DEBUG */
-			if ((fixfp = fopen (pathfixed, "r")) != (FILE *) 0) {
+			if ((fixfp = fopen (pathfixed, "r")) != NULL) {
 				copy_fp (fixfp, fp);
 				fclose (fixfp);
 			} else {
@@ -131,7 +128,7 @@ msg_write_signature (
 				if (debug == 2)
 					error_message ("TRYING fixed sig=[%s]", pathfixed);
 #endif /* DEBUG */
-				if ((fixfp = fopen (pathfixed, "r")) != (FILE *) 0) {
+				if ((fixfp = fopen (pathfixed, "r")) != NULL) {
 					copy_fp (fixfp, fp);
 					fclose (fixfp);
 				}
@@ -143,7 +140,7 @@ msg_write_signature (
 		}
 	}
 
-	if ((sigfp = fopen (path, "r")) != (FILE *) 0) {
+	if ((sigfp = fopen (path, "r")) != NULL) {
 		fprintf (fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
 		copy_fp (sigfp, fp);
 		fclose (sigfp);
@@ -154,7 +151,7 @@ msg_write_signature (
 	 * Use ~/.signature as a last resort, but only if mailing or
 	 * using internal inews (external inews appends it automagically).
 	 */
-	if ((sigfp = fopen (default_signature, "r")) != (FILE *) 0) {
+	if ((sigfp = fopen (default_signature, "r")) != NULL) {
 		if (include_dot_signature) {
 			fprintf (fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
 			copy_fp (sigfp, fp);
@@ -219,11 +216,11 @@ thrashdir (
 	 * consider "." and ".." non-entries
 	 * consider all entries starting with "." non-entries
 	 */
-	cwd = (char *) my_malloc (PATH_LEN + 1);
+	cwd = my_malloc (PATH_LEN + 1);
 #ifndef M_AMIGA
-	if (numentries < 3 || cwd == (char *) 0)
+	if (numentries < 3 || cwd == NULL)
 #else
-	if (numentries == 0 || cwd == (char *) 0)
+	if (numentries == 0 || cwd == NULL)
 #endif /* !M_AMIGA */
 	{
 		CLOSEDIR(dirp);

@@ -71,6 +71,7 @@ static int group_catchup (int ch);
 static int group_left (void);
 static int group_right (void);
 static int tab_pressed (void);
+static int prompt_getart_limit (void);
 static int recent_responses (int thread);
 static void bld_sline (int i);
 static void draw_subject_arrow (void);
@@ -78,7 +79,7 @@ static void show_group_title (t_bool clear_title);
 static void show_tagged_lines (void);
 static void toggle_read_unread (t_bool force);
 static void update_group_page (void);
-static void build_multipart_header(char* dest, int maxlen, const char* src, int cmplen, int have, int total);
+static void build_multipart_header(char *dest, int maxlen, const char *src, int cmplen, int have, int total);
 
 /*
  * grpmenu.curr is an index into base[] and so equates to the cursor location
@@ -154,11 +155,11 @@ group_page (
 	int old_top = 0;
 	int old_group_top;
 	int ret_code = 0;			/* Set to < 0 when it is time to leave this menu */
-	unsigned int flag;
+	t_bool flag;
 	long old_artnum = 0L;
 	struct t_art_stat sbuf;
 	t_bool range_active = FALSE;		/* Set if a range is defined */
-	t_bool xflag = FALSE;      /* 'X'-flag */
+	t_bool xflag = FALSE;	/* 'X'-flag */
 
 	/*
 	 * Set the group attributes
@@ -335,7 +336,7 @@ group_page (
 				show_group_page ();
 				break;
 
-		   case iKeyGroupEditFilter:
+			case iKeyGroupEditFilter:
 				if (!invoke_editor (filter_file, 25)) /* FIXME: is 25 correct offset? */
 					break;
 				unfilter_articles ();
@@ -353,7 +354,7 @@ group_page (
 					info_message (_(txt_no_arts));
 					break;
 				}
-				if (!tinrc.confirm_action || prompt_yn (cLINES, (ch == iKeyGroupQuickKill) ? _(txt_quick_filter_kill) : _(txt_quick_filter_select), TRUE) == 1) {
+				if ((!TINRC_CONFIRM_ACTION) || prompt_yn (cLINES, (ch == iKeyGroupQuickKill) ? _(txt_quick_filter_kill) : _(txt_quick_filter_select), TRUE) == 1) {
 					old_top = top_art;
 					n = (int) base[grpmenu.curr];
 					old_artnum = arts[n].artnum;
@@ -528,6 +529,10 @@ group_page (
 				if (selmenu.curr + 1 >= selmenu.max)
 					info_message (_(txt_no_more_groups));
 				else {
+					if (xflag && TINRC_CONFIRM_SELECT && (prompt_yn(cLINES, txt_confirm_select_on_exit, FALSE) != 1)) {
+						undo_auto_select_arts();
+						xflag = FALSE;
+					}
 					selmenu.curr++;
 					ret_code = GRP_NEXTUNREAD;
 				}
@@ -570,6 +575,10 @@ group_page (
 				if (i < 0)
 					info_message(_(txt_no_prev_group));
 				else {
+					if (xflag && TINRC_CONFIRM_SELECT && (prompt_yn(cLINES, txt_confirm_select_on_exit, FALSE) != 1)) {
+						undo_auto_select_arts();
+						xflag = FALSE;
+					}
 					selmenu.curr = i;
 					ret_code = GRP_NEXTUNREAD;
 				}
@@ -578,12 +587,20 @@ group_page (
 			case iKeyQuit:	/* return to group selection page */
 				if (num_of_tagged_arts && prompt_yn (cLINES, _(txt_quit_despite_tags), TRUE) != 1)
 					break;
+				if (xflag && TINRC_CONFIRM_SELECT && (prompt_yn(cLINES, txt_confirm_select_on_exit, FALSE) != 1)) {
+					undo_auto_select_arts();
+					xflag = FALSE;
+				}
 				ret_code = GRP_EXIT;
 				break;
 
 			case iKeyQuitTin:		/* quit */
 				if (num_of_tagged_arts && prompt_yn (cLINES, _(txt_quit_despite_tags), TRUE) != 1)
 					break;
+				if (xflag && TINRC_CONFIRM_SELECT && (prompt_yn(cLINES, txt_confirm_select_on_exit, FALSE) != 1)) {
+					undo_auto_select_arts();
+					xflag = FALSE;
+				}
 				ret_code = GRP_QUIT;
 				break;
 
@@ -593,8 +610,7 @@ group_page (
 				break;
 
 			case iKeyGroupToggleGetartLimit:
-				clear_message ();
-				tinrc.use_getart_limit = bool_not(tinrc.use_getart_limit);
+				tinrc.getart_limit = prompt_getart_limit ();
 				ret_code = GRP_NEXTUNREAD;
 				break;
 
@@ -736,7 +752,7 @@ group_page (
 						if (arts[base[ii]].inrange) {
 							arts[base[ii]].inrange = FALSE;
 							art_mark_will_return (&CURR_GROUP, &arts[base[ii]]);
-							for (i = arts[base[ii]].thread; i != -1; i = arts[i].thread)
+							for_each_art_in_thread(i, ii)
 								arts[i].inrange = FALSE;
 						}
 					}
@@ -796,14 +812,14 @@ group_page (
 					break;
 				}
 
-				flag = 1;
+				flag = TRUE;
 				if (ch == iKeyGroupToggleThdSel) {
 					stat_thread(grpmenu.curr, &sbuf);
 					if (sbuf.selected_unread == sbuf.unread)
-						flag = 0;
+						flag = FALSE;
 				}
 				n = 0;
-				for (i = (int) base[grpmenu.curr]; i != -1; i = arts[i].thread) {
+				for_each_art_in_thread(i, grpmenu.curr) {
 					arts[i].selected = flag;
 					++n;
 				}
@@ -853,16 +869,16 @@ group_page (
 					sprintf (pat, REGEX_FMT, tinrc.default_select_pattern);
 				}
 
-				flag = 0;
+				flag = FALSE;
 				for (n = 0; n < grpmenu.max; n++) {
 					if (!REGEX_MATCH (arts[base[n]].subject, pat, TRUE))
 						continue;
 
-					for (i = (int) base[n]; i != -1; i = arts[i].thread)
+					for_each_art_in_thread(i, n)
 						arts[i].selected = TRUE;
 
 					bld_sline(n);
-					flag++;
+					flag = TRUE;
 				}
 				if (flag)
 					update_group_page ();
@@ -875,8 +891,8 @@ group_page (
 					if (!sbuf.selected_unread || sbuf.selected_unread == sbuf.unread)
 						continue;
 
-					for (i = (int) base[n]; i != -1; i = arts[i].thread)
-						arts[i].selected = 1;
+					for_each_art_in_thread(i, n)
+						arts[i].selected = TRUE;
 
 				}
 				/* no screen update needed */
@@ -1181,15 +1197,15 @@ toggle_subject_from (
  */
 static void
 build_multipart_header(
-	char* dest,
+	char *dest,
 	int maxlen,
-	const char* src,
+	const char *src,
 	int cmplen,
 	int have,
 	int total)
 {
-	const char* mark = (have == total) ? "*" : "-";
-	char* ss = NULL;
+	const char *mark = (have == total) ? "*" : "-";
+	char *ss = NULL;
 
 	if (cmplen > maxlen)
 		strncpy(dest, src, maxlen);
@@ -1331,9 +1347,12 @@ show_group_title (
 		}
 	}
 
-	/* TODO: clean up, really i8n1? */
-	if (tinrc.use_getart_limit && tinrc.recent_time)
-		sprintf (buf, _("%s (%d%c %d/%d%c %d%c %d%c %d%c %c)"),
+	/*
+	 * TODO: clean up
+	 *       really count read_selected into num_of_selected_arts? (kill_level > 1)
+	 */
+	if (tinrc.getart_limit && tinrc.recent_time)
+		sprintf (buf, "%s (%d%c %d/%d%c %d%c %d%c %d%c %c)",
 			currgrp.name, grpmenu.max,
 			*txt_thread[currgrp.attribute->thread_arts],
 			tinrc.getart_limit,
@@ -1342,8 +1361,8 @@ show_group_title (
 			recent_art_cnt, tinrc.art_marked_recent,
 			num_of_killed_arts, tinrc.art_marked_killed,
 			group_flag(currgrp.moderated));
-	else if (tinrc.use_getart_limit)
-		sprintf (buf, _("%s (%d%c %d/%d%c %d%c %d%c %c)"),
+	else if (tinrc.getart_limit)
+		sprintf (buf, "%s (%d%c %d/%d%c %d%c %d%c %c)",
 			currgrp.name, grpmenu.max,
 			*txt_thread[currgrp.attribute->thread_arts],
 			tinrc.getart_limit,
@@ -1352,7 +1371,7 @@ show_group_title (
 			num_of_killed_arts, tinrc.art_marked_killed,
 			group_flag(currgrp.moderated));
 	else if (tinrc.recent_time)
-		sprintf (buf, _("%s (%d%c %d%c %d%c %d%c %d%c %c)"),
+		sprintf (buf, "%s (%d%c %d%c %d%c %d%c %d%c %c)",
 			currgrp.name, grpmenu.max,
 			*txt_thread[currgrp.attribute->thread_arts],
 			art_cnt, (currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read),
@@ -1361,7 +1380,7 @@ show_group_title (
 			num_of_killed_arts, tinrc.art_marked_killed,
 			group_flag(currgrp.moderated));
 	else
-		sprintf (buf, _("%s (%d%c %d%c %d%c %d%c %c)"),
+		sprintf (buf, "%s (%d%c %d%c %d%c %d%c %c)",
 			currgrp.name, grpmenu.max,
 			*txt_thread[currgrp.attribute->thread_arts],
 			art_cnt, (currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read),
@@ -1534,7 +1553,7 @@ group_catchup(
 	/* FIXME: -> lang.c */
 	snprintf(buf, sizeof(buf) - 1, _(txt_mark_arts_read), (ch == iKeyGroupCatchupNextUnread) ? _(" and enter next unread group") : "");
 
-	if (!CURR_GROUP.newsrc.num_unread || !tinrc.confirm_action || (pyn = prompt_yn (cLINES, buf, TRUE)) == 1)
+	if (!CURR_GROUP.newsrc.num_unread || (!TINRC_CONFIRM_ACTION) || (pyn = prompt_yn (cLINES, buf, TRUE)) == 1)
 		grp_mark_read (&CURR_GROUP, arts);
 
 	switch (ch) {
@@ -1581,10 +1600,26 @@ recent_responses (
 	int i;
 	int sum = 0;
 
-	for (i = (int) base[thread]; i >= 0; i = arts[i].thread) {
+	for_each_art_in_thread(i, thread) {
 		if (tinrc.recent_time && ((time((time_t) 0) - arts[i].date) < (tinrc.recent_time * DAY)) && arts[i].status != ART_READ)
 			sum++;
 	}
 
 	return sum;
+}
+
+
+static int
+prompt_getart_limit (
+	void)
+{
+	char *p;
+	int num = 0;
+
+	clear_message ();
+	if ((p = tin_getline (_(txt_enter_getart_limit), 2, 0, 0, FALSE, HIST_OTHER)) != NULL)
+		num = atoi (p);
+
+	clear_message();
+	return num;
 }

@@ -241,7 +241,7 @@ struct t_config tinrc = {
 #ifndef CHARSET_CONVERSION
 	"",		/* mm_charset, defaults to $MM_CHARSET */
 #else
-	0,			/* mm_network_charset, defaults to US-ASCII */
+	-1,		/* mm_network_charset, defaults to $MM_CHARSET */
 #endif /* !CHARSET_CONVERSION */
 	"",		/* mm_local_charset, display charset */
 #ifdef HAVE_ICONV_OPEN_TRANSLIT
@@ -280,9 +280,14 @@ struct t_config tinrc = {
 	SHOW_FROM_NAME,				/* show_author */
 	SORT_ARTICLES_BY_DATE_ASCEND,		/* sort_article_type */
 	SORT_THREADS_BY_SCORE_DESCEND,		/* sort_threads_type */
-	BOGUS_ASK,		/* strip_bogus */
+	BOGUS_SHOW,		/* strip_bogus */
 	THREAD_MAX,		/* thread_articles */
+	THREAD_SCORE_MAX,	/* thread_score */
 	0,		/* Default to wildmat, not regex */
+	-50,		/* score_limit_kill */
+	50,		/* score_limit_select */
+	-100,		/* score_kill */
+	100,		/* score_select */
 #ifdef HAVE_COLOR
 	0,		/* col_back (initialised later) */
 	0,		/* col_from (initialised later) */
@@ -320,8 +325,7 @@ struct t_config tinrc = {
 	TRUE,		/* beginner_level */
 	FALSE,		/* cache_overview_files */
 	FALSE,		/* catchup_read_groups */
-	TRUE,		/* confirm_action */
-	TRUE,		/* confirm_to_quit */
+	4,		/* confirm_choice */
 #ifdef USE_INVERSE_HACK
 	TRUE,		/* draw_arrow */
 #else
@@ -349,8 +353,7 @@ struct t_config tinrc = {
 #endif /* !DISABLE_PRINTING */
 	FALSE,		/* process_only_unread */
 	FALSE,		/* prompt_followupto */
-	TRUE,		/* quote_empty_lines */
-	FALSE,		/* quote_signatures */
+	QUOTE_COMPRESS|QUOTE_EMPTY,	/* quote_style */
 	TRUE,		/* show_description */
 	TRUE,		/* show_lines */
 	TRUE,		/* show_only_unread_arts */
@@ -374,7 +377,6 @@ struct t_config tinrc = {
 	TRUE,		/* thread_catchup_on_exit */
 	TRUE,		/* unlink_article */
 	"",		/* inews_prog */
-	FALSE,		/* use_getart_limit */
 	FALSE,		/* use_mailreader_i */
 	FALSE,		/* use_mouse */
 #ifdef HAVE_KEYPAD
@@ -430,7 +432,7 @@ preinit_colors (
 {
 	size_t n;
 
-	for (n = 0; n < SIZEOF(our_colors); n++)
+	for (n = 0; n < ARRAY_SIZE(our_colors); n++)
 		*(our_colors[n].colorp) = DFT_INIT;
 }
 
@@ -440,7 +442,7 @@ postinit_colors (
 {
 	size_t n;
 
-	for (n = 0; n < SIZEOF(our_colors); n++) {
+	for (n = 0; n < ARRAY_SIZE(our_colors); n++) {
 		if (*(our_colors[n].colorp) == DFT_INIT) {
 			switch (our_colors[n].color_dft) {
 				case DFT_FORE:
@@ -489,11 +491,11 @@ init_selfinfo (
 #	endif /* HAVE_SYS_UTSNAME_H */
 #endif /* !M_AMIGA */
 
-	if ((cptr = get_host_name()) != (char *) 0)
+	if ((cptr = get_host_name()) != NULL)
 		strcpy (host_name, cptr);
 
 #ifdef DOMAIN_NAME
-	if ((cptr = get_domain_name()) != (char *) 0)
+	if ((cptr = get_domain_name()) != NULL)
 		strcpy (domain_name, cptr);
 #endif /* DOMAIN_NAME */
 
@@ -522,17 +524,17 @@ init_selfinfo (
 
 /* FIXME: move to get_user_name() [header.c] */
 #ifndef M_AMIGA
-	if ((myentry = getpwuid (getuid ())) != (struct passwd *) 0) {
+	if ((myentry = getpwuid (getuid ())) != NULL) {
 		memcpy (&pwdentry, myentry, sizeof (struct passwd));
 		myentry = &pwdentry;
 	}
 #	ifdef VMS
 	/* TODO: get_user_name() entirely reles on $USER */
-	if (((ptr = getlogin ()) != (char *) 0) && strlen (ptr))
+	if (((ptr = getlogin ()) != NULL) && strlen (ptr))
 		myentry = getpwnam (ptr);
 #	endif /* VMS */
 
-	if (myentry != (struct passwd *) 0)
+	if (myentry != NULL)
 		strcpy (userid, myentry->pw_name);
 	else {
 		error_message (_(txt_error_passwd_missing));
@@ -543,9 +545,9 @@ init_selfinfo (
 	lower (userid);
 #	endif /* VMS */
 
-	if ((ptr = getenv ("TIN_HOMEDIR")) != (char *) 0) {
+	if ((ptr = getenv ("TIN_HOMEDIR")) != NULL) {
 		my_strncpy (homedir, ptr, sizeof (homedir));
-	} else if ((ptr = getenv ("HOME")) != (char *) 0) {
+	} else if ((ptr = getenv ("HOME")) != NULL) {
 		my_strncpy (homedir, ptr, sizeof (homedir));
 	} else if (!myentry) {
 		strcpy (homedir, "/tmp");
@@ -554,14 +556,14 @@ init_selfinfo (
 
 #else
 	/* TODO: get_user_name() uses $USER, not $USERNAME */
-	if ((ptr = getenv ("USERNAME")) != (char *) 0) {
+	if ((ptr = getenv ("USERNAME")) != NULL) {
 		my_strncpy (userid, ptr, sizeof (userid));
 	} else {
 		error_message (_(txt_env_var_not_found), "USERNAME");
 		tin_done (EXIT_FAILURE);
 	}
 	/* TODO: why not also check for TIN_HOME? */
-	if ((ptr = getenv ("HOME")) != (char *) 0) {
+	if ((ptr = getenv ("HOME")) != NULL) {
 		my_strncpy (homedir, ptr, sizeof (homedir));
 	} else {
 		error_message (_(txt_env_var_not_found), "HOME");
@@ -652,7 +654,7 @@ init_selfinfo (
 
 #ifdef USE_INN_NNTPLIB
 	ptr = GetConfigValue (_CONF_ORGANIZATION);
-	if (ptr != (char *) 0)
+	if (ptr != NULL)
 		my_strncpy (default_organization, ptr, sizeof (default_organization));
 #endif /* USE_INN_NNTPLIB */
 
@@ -691,6 +693,9 @@ init_selfinfo (
 	/*
 	 * only set the following variables if they weren't set from within
 	 * read_site_config()
+	 *
+	 * TODO do we really want that read_site_config() overwrites
+	 * values given in env-vars? ($MM_CHARSET, $TIN_ACTIVEFILE)
 	 */
 	if (!*news_active_file) /* TODO: really prepend libdir here in case of $TIN_ACTIVEFILE is set? */
 		joinpath (news_active_file, libdir, get_val ("TIN_ACTIVEFILE", ACTIVE_FILE));
@@ -705,9 +710,9 @@ init_selfinfo (
 
 		joinpath (buf, libdir, "organization");
 		if ((fp = fopen(buf, "r")) != NULL) {
-			if (fgets (buf, (int) sizeof (buf), fp) != (char *) 0) {
+			if (fgets (buf, (int) sizeof (buf), fp) != NULL) {
 				ptr = strrchr (buf, '\n');
-				if (ptr != (char *) 0)
+				if (ptr != NULL)
 					*ptr = '\0';
 			}
 			fclose (fp);
@@ -719,20 +724,21 @@ init_selfinfo (
 	 * Formerly get_mm_charset(), read_site_config() may set mm_charset
 	 */
 #ifndef CHARSET_CONVERSION
-	STRCPY(tinrc.mm_charset, get_val("MM_CHARSET", MM_CHARSET));
+	if (!*tinrc.mm_charset)
+		STRCPY(tinrc.mm_charset, get_val("MM_CHARSET", MM_CHARSET));
 #else
-	{
-		char *foo;
+	if (tinrc.mm_network_charset < 0) {
 		size_t space = 255;
 
-		foo = my_malloc(space);
-		strcpy (foo, "mm_network_charset=");
-		space -= strlen(foo);
-		strncat(foo, get_val("MM_CHARSET", MM_CHARSET), space);
-		if ((space -= strlen(foo)) > 0) {
-			strncat(foo, "\n", space);
-			match_list(foo, "mm_network_charset=", txt_mime_charsets, NUM_MIME_CHARSETS, &tinrc.mm_network_charset);
+		ptr = my_malloc(space + 1);
+		strcpy (ptr, "mm_network_charset=");
+		space -= strlen(ptr);
+		strncat(ptr, get_val("MM_CHARSET", MM_CHARSET), space);
+		if ((space -= strlen(ptr)) > 0) {
+			strncat(ptr, "\n", space);
+			match_list(ptr, "mm_network_charset=", txt_mime_charsets, NUM_MIME_CHARSETS, &tinrc.mm_network_charset);
 		}
+		free(ptr);
 	}
 #endif /* !CHARSET_CONVERSION */
 	/* read_site_config() might have changed the value of libdir */
@@ -830,7 +836,7 @@ init_selfinfo (
 #endif /* NNTP_ABLE */
 
 	if (stat (posted_info_file, &sb) == -1) {
-		if ((fp = fopen (posted_info_file, "w")) != (FILE *) 0) {
+		if ((fp = fopen (posted_info_file, "w")) != NULL) {
 			fprintf (fp, txt_posted_info_file);
 			fclose (fp);
 		}
@@ -937,7 +943,7 @@ read_site_config (
 	 * try to find tin.defaults in some different locations
 	 */
 	while (tin_defaults[i] != NULL) {
-		sprintf(buf, "%s/tin.defaults", tin_defaults[i++]);
+		joinpath(buf, tin_defaults[i++], "tin.defaults");
 		if ((fp = fopen(buf, "r")) != NULL)
 			break;
 	}

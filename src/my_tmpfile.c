@@ -63,11 +63,11 @@ my_tmpfile(
 
 	errno = 0;
 
-	if (filename != (char *) 0 && name_size > 0) {
+	if (filename != NULL && name_size > 0) {
 /* #ifdef HAVE_TMPFILE */
 		if(!need_name) {
 			FILE *fp = (FILE *) 0;
-			if ((fp = tmpfile()) != (FILE *) 0)
+			if ((fp = tmpfile()) != NULL)
 				fd = fileno(fp);
 #	ifdef DEBUG
 			else

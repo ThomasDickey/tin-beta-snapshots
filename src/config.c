@@ -55,6 +55,7 @@ static t_bool match_item (char *line, const char *pat, char *dst, size_t dstlen)
 static void expand_rel_abs_pathname (int line, int col, char *str);
 static void redraw_screen (int option);
 static void show_config_page (void);
+static void check_score_defaults (void);
 
 #ifdef HAVE_COLOR
 	static t_bool match_color (char *line, const char *pat, int *dst, int max);
@@ -107,13 +108,13 @@ read_config_file (
 	char buf[LEN];
 	int upgrade = CHECK;
 
-	if ((fp = fopen (file, "r")) == (FILE *) 0)
+	if ((fp = fopen (file, "r")) == NULL)
 		return FALSE;
 
 	if (!batch_mode)
 		wait_message (0, _(txt_reading_config_file), (global_file) ? _(txt_global) : "");
 
-	while (fgets (buf, (int) sizeof (buf), fp) != (char *) 0) {
+	while (fgets (buf, (int) sizeof (buf), fp) != NULL) {
 		if (buf[0] == '#' || buf[0] == '\n') {
 			if (upgrade == CHECK)
 				upgrade = check_upgrade(buf);
@@ -214,12 +215,6 @@ read_config_file (
 			if (match_boolean (buf, "catchup_read_groups=", &tinrc.catchup_read_groups))
 				break;
 
-			if (match_boolean (buf, "confirm_action=", &tinrc.confirm_action))
-				break;
-
-			if (match_boolean (buf, "confirm_to_quit=", &tinrc.confirm_to_quit))
-				break;
-
 #ifdef HAVE_COLOR
 			if (match_color (buf, "col_back=", &tinrc.col_back, MAX_COLOR))
 				break;
@@ -281,6 +276,8 @@ read_config_file (
 			if (match_color (buf, "col_markdash=", &tinrc.col_markdash, MAX_COLOR))
 				break;
 #endif /* HAVE_COLOR */
+			if (match_list (buf, "confirm_choice=", txt_confirm_choices, NUM_CONFIRM_CHOICES, &tinrc.confirm_choice))
+				break;
 
 			break;
 
@@ -575,7 +572,7 @@ read_config_file (
 				break;
 			}
 
-			if (match_boolean (buf, "quote_empty_lines=", &tinrc.quote_empty_lines))
+			if (match_integer (buf, "quote_style=", &tinrc.quote_style, (QUOTE_COMPRESS|QUOTE_SIGS|QUOTE_EMPTY)))
 				break;
 
 #ifdef HAVE_COLOR
@@ -589,9 +586,6 @@ read_config_file (
 				break;
 #endif /* HAVE_COLOR */
 
-			if (match_boolean (buf, "quote_signatures=", &tinrc.quote_signatures))
-				break;
-
 			break;
 
 		case 'r':
@@ -604,6 +598,22 @@ read_config_file (
 			break;
 
 		case 's':
+			if (match_integer (buf, "score_limit_kill=", &tinrc.score_limit_kill, 0))
+				break;
+
+			if (match_integer (buf, "score_limit_select=", &tinrc.score_limit_select, 0))
+				break;
+
+			if (match_integer (buf, "score_kill=", &tinrc.score_kill, 0)) {
+				check_score_defaults ();
+				break;
+			}
+
+			if (match_integer (buf, "score_select=", &tinrc.score_select, 0)) {
+				check_score_defaults ();
+				break;
+			}
+
 			if (match_integer (buf, "show_author=", &tinrc.show_author, SHOW_FROM_BOTH))
 				break;
 
@@ -630,7 +640,7 @@ read_config_file (
 			if (match_boolean (buf, "start_editor_offset=", &tinrc.start_editor_offset))
 				break;
 
-			if (match_integer (buf, "sort_article_type=", &tinrc.sort_article_type, SORT_ARTICLES_BY_SCORE_ASCEND))
+			if (match_integer (buf, "sort_article_type=", &tinrc.sort_article_type, SORT_ARTICLES_BY_LINES_ASCEND))
 				break;
 
 			if (match_integer (buf, "sort_threads_type=", &tinrc.sort_threads_type, SORT_THREADS_BY_SCORE_ASCEND))
@@ -651,7 +661,7 @@ read_config_file (
 			if (match_boolean (buf, "strip_blanks=", &tinrc.strip_blanks))
 				break;
 
-			if (match_integer (buf, "strip_bogus=", &tinrc.strip_bogus, BOGUS_ASK))
+			if (match_integer (buf, "strip_bogus=", &tinrc.strip_bogus, BOGUS_SHOW))
 				break;
 
 			if (match_boolean (buf, "strip_newsrc=", &tinrc.strip_newsrc))
@@ -671,11 +681,15 @@ read_config_file (
 
 		case 't':
 			if (match_integer (buf, "thread_articles=", &tinrc.thread_articles, THREAD_MAX)) {
-				/* Upgrade changes YES/NO to integer, fix it! */
+#if 0
 				if (upgrade == UPGRADE)
-					tinrc.thread_articles = THREAD_MAX;
+					tinrc.thread_articles = THREAD_BOTH;
+#endif /* 0 */
 				break;
 			}
+
+			if (match_integer (buf, "thread_score=", &tinrc.thread_score, THREAD_SCORE_WEIGHT))
+				break;
 
 			if (match_boolean (buf, "tab_after_X_selection=", &tinrc.tab_after_X_selection))
 				break;
@@ -701,9 +715,6 @@ read_config_file (
 				break;
 
 			if (match_string (buf, "url_handler=", tinrc.url_handler, sizeof (tinrc.url_handler)))
-				break;
-
-			if (match_boolean (buf, "use_getart_limit=", &tinrc.use_getart_limit))
 				break;
 
 			if (match_boolean (buf, "use_mailreader_i=", &tinrc.use_mailreader_i))
@@ -822,7 +833,7 @@ write_config_file (
 	/* generate tmp-filename */
 	file_tmp = get_tmpfilename(file);
 
-	if ((fp = fopen (file_tmp, "w")) == (FILE *) 0) {
+	if ((fp = fopen (file_tmp, "w")) == NULL) {
 		error_message (_(txt_filesystem_full_backup), CONFIG_FILE);
 		free (file_tmp);
 		return;
@@ -857,11 +868,8 @@ write_config_file (
 	fprintf (fp, _(txt_prompt_followupto.tinrc));
 	fprintf (fp, "prompt_followupto=%s\n\n", print_boolean (tinrc.prompt_followupto));
 
-	fprintf (fp, _(txt_confirm_action.tinrc));
-	fprintf (fp, "confirm_action=%s\n\n", print_boolean (tinrc.confirm_action));
-
-	fprintf (fp, _(txt_confirm_to_quit.tinrc));
-	fprintf (fp, "confirm_to_quit=%s\n\n", print_boolean (tinrc.confirm_to_quit));
+	fprintf (fp, _(txt_confirm_choice.tinrc));
+	fprintf (fp, "confirm_choice=%s\n\n", txt_confirm_choices[tinrc.confirm_choice]);
 
 	fprintf (fp, _(txt_auto_reconnect.tinrc));
 	fprintf (fp, "auto_reconnect=%s\n\n", print_boolean (tinrc.auto_reconnect));
@@ -971,6 +979,9 @@ write_config_file (
 	fprintf (fp, _(txt_show_score.tinrc));
 	fprintf (fp, "show_score=%s\n\n", print_boolean(tinrc.show_score));
 
+	fprintf (fp, _(txt_thread_score.tinrc));
+	fprintf (fp, "thread_score=%d\n\n", tinrc.thread_score);
+
 	fprintf (fp, _(txt_unlink_article.tinrc));
 	fprintf (fp, "unlink_article=%s\n\n", print_boolean (tinrc.unlink_article));
 
@@ -1010,8 +1021,8 @@ write_config_file (
 	fprintf (fp, _(txt_quote_chars.tinrc));
 	fprintf (fp, "quote_chars=%s\n\n", quote_space_to_dash (tinrc.quote_chars));
 
-	fprintf (fp, _(txt_quote_empty_lines.tinrc));
-	fprintf (fp, "quote_empty_lines=%s\n\n", print_boolean(tinrc.quote_empty_lines));
+	fprintf (fp, _(txt_quote_style.tinrc));
+	fprintf (fp, "quote_style=%d\n\n", tinrc.quote_style);
 
 #ifdef HAVE_COLOR
 	fprintf (fp, _(txt_quote_regex.tinrc));
@@ -1026,9 +1037,6 @@ write_config_file (
 	fprintf (fp, "strip_re_regex=%s\n\n", tinrc.strip_re_regex);
 	fprintf (fp, _(txt_strip_was_regex.tinrc));
 	fprintf (fp, "strip_was_regex=%s\n\n", tinrc.strip_was_regex);
-
-	fprintf (fp, _(txt_quote_signatures.tinrc));
-	fprintf (fp, "quote_signatures=%s\n\n", print_boolean(tinrc.quote_signatures));
 
 	fprintf (fp, _(txt_show_signatures.tinrc));
 	fprintf (fp, "show_signatures=%s\n\n", print_boolean(tinrc.show_signatures));
@@ -1106,14 +1114,23 @@ write_config_file (
 	fprintf (fp, _(txt_cache_overview_files.tinrc));
 	fprintf (fp, "cache_overview_files=%s\n\n", print_boolean (tinrc.cache_overview_files));
 
-	fprintf (fp, _(txt_use_getart_limit.tinrc));
-	fprintf (fp, "use_getart_limit=%s\n\n", print_boolean (tinrc.use_getart_limit));
-
 	fprintf (fp, _(txt_getart_limit.tinrc));
 	fprintf (fp, "getart_limit=%d\n\n", tinrc.getart_limit);
 
 	fprintf (fp, _(txt_recent_time.tinrc));
 	fprintf (fp, "recent_time=%d\n\n", tinrc.recent_time);
+
+	fprintf (fp, _(txt_score_limit_kill.tinrc));
+	fprintf (fp, "score_limit_kill=%d\n\n", tinrc.score_limit_kill);
+
+	fprintf (fp, _(txt_score_kill.tinrc));
+	fprintf (fp, "score_kill=%d\n\n", tinrc.score_kill);
+
+	fprintf (fp, _(txt_score_limit_select.tinrc));
+	fprintf (fp, "score_limit_select=%d\n\n", tinrc.score_limit_select);
+
+	fprintf (fp, _(txt_score_select.tinrc));
+	fprintf (fp, "score_select=%d\n\n", tinrc.score_select);
 
 #ifdef HAVE_COLOR
 	fprintf (fp, _(txt_use_color.tinrc));
@@ -1284,10 +1301,8 @@ write_config_file (
 		char timestring[LEN];
 
 		for (i = 0; i < num_newnews; i++) {
-			timestring[0] = '\0';
-			my_strftime(timestring, LEN - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(newnews[i].time)));
-			fprintf (fp, "newnews=%s %lu (%s)\n", newnews[i].host,
-									(unsigned long int) newnews[i].time, timestring);
+			if (my_strftime(timestring, LEN - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(newnews[i].time))))
+				fprintf (fp, "newnews=%s %lu (%s)\n", newnews[i].host, (unsigned long int) newnews[i].time, timestring);
 		}
 	}
 
@@ -1363,7 +1378,7 @@ fmt_option_prompt (
 {
 	int num = get_option_num(option);
 
-	if (num != 0) {
+	if (num) {
 		snprintf(dst, len, "%s %3d. %s ",
 			editing ? "->" : "  ", num,
 			_(option_table[option].txt->opt));
@@ -1571,12 +1586,8 @@ change_config_file (
 	int option, old_option;
 	int ret_code = NO_FILTERING;
 	int mime_encoding = MIME_ENCODING_7BIT;
-	int mailbox_format = 0;
 	t_bool change_option = FALSE;
 	t_bool original_on_off_value;
-#ifdef CHARSET_CONVERSION
-	int mime_charset = 0;
-#endif /* CHARSET_CONVERSION */
 
 	actual_top_option = -1;
 	option = 0;
@@ -1762,7 +1773,7 @@ change_config_file (
 
 						/* show all arts or just new/unread arts */
 						case OPT_SHOW_ONLY_UNREAD_ARTS:
-							if (!bool_equal(tinrc.show_only_unread_arts, original_on_off_value) && group != (struct t_group *) 0) {
+							if (!bool_equal(tinrc.show_only_unread_arts, original_on_off_value) && group != NULL) {
 								make_threads (group, TRUE);
 								pos_first_unread_thread();
 							}
@@ -1832,8 +1843,6 @@ change_config_file (
 						 * case OPT_AUTO_LIST_THREAD:
 						 * case OPT_AUTO_RECONNECT:
 						 * case OPT_CATCHUP_READ_GROUPS:
-						 * case OPT_CONFIRM_ACTION:
-						 * case OPT_CONFIRM_TO_QUIT:
 						 * case OPT_AUTO_SAVE:
 						 * case OPT_BATCH_SAVE:
 						 * case OPT_FORCE_SCREEN_REDRAW:
@@ -1898,13 +1907,12 @@ change_config_file (
 					 * some options need further action to take effect
 					 */
 					switch (option) {
-
 						case OPT_THREAD_ARTICLES:
 							/*
 							 * If the threading strategy has changed, fix things
 							 * so that rethreading will occur
 							 */
-							if (tinrc.thread_articles != original_list_value && group != (struct t_group *) 0) {
+							if (tinrc.thread_articles != original_list_value && group != NULL) {
 								group->attribute->thread_arts = tinrc.thread_articles;
 								make_threads (group, TRUE);
 							}
@@ -1916,10 +1924,20 @@ change_config_file (
 							 * If the sorting strategy of threads has changed, fix things
 							 * so that resorting will occur
 							 */
-							if (tinrc.sort_threads_type != original_list_value && group != (struct t_group *) 0) {
+							if (tinrc.sort_threads_type != original_list_value && group != NULL) {
 								group->attribute->sort_threads_type = tinrc.sort_threads_type;
 								make_threads (group, TRUE);
 							}
+							clear_message ();
+							break;
+
+						case OPT_THREAD_SCORE:
+							/*
+							 * If the scoring of a thread has changed,
+							 * resort base[]
+							 */
+							if (tinrc.thread_score != original_list_value && group != NULL)
+								find_base (group);
 							clear_message ();
 							break;
 
@@ -1928,7 +1946,7 @@ change_config_file (
 							break;
 
 						case OPT_SHOW_AUTHOR:
-							if (group != (struct t_group *) 0)
+							if (group != NULL)
 								group->attribute->show_author = tinrc.show_author;
 							break;
 
@@ -1936,10 +1954,38 @@ change_config_file (
 							wildcard_func = (tinrc.wildcard) ? match_regex : wildmat;
 							break;
 
+						case OPT_MAIL_MIME_ENCODING:
+						case OPT_POST_MIME_ENCODING:
+							mime_encoding = *(option_table[option].variable);
+							/* do not use 8 bit headers if mime encoding is not 8bit; ask J. Shin why */
+							if (strcasecmp(txt_mime_encodings[mime_encoding], txt_8bit)) {
+								if (option == (int)OPT_POST_MIME_ENCODING) {
+									tinrc.post_8bit_header = FALSE;
+									RepaintOption(OPT_POST_8BIT_HEADER);
+								} else {
+									tinrc.mail_8bit_header = FALSE;
+									RepaintOption(OPT_MAIL_8BIT_HEADER);
+								}
+							}
+							break;
+
+#ifdef CHARSET_CONVERSION
+						case OPT_MM_NETWORK_CHARSET:
+							if (tinrc.mm_network_charset != original_list_value && group != NULL)
+								group->attribute->mm_network_charset = tinrc.mm_network_charset;
+#if 0 /* TODO */
+							else
+								glob_attributes->attribute->mm_network_charset = tinrc.mm_network_charset;
+#endif /* 0 */
+#	ifdef NO_LOCALE
+							strcpy(tinrc.mm_local_charset, txt_mime_charsets[tinrc.mm_network_charset]);
+#	endif /* NO_LOCALE */
+							break;
+#endif /* CHARSET_CONVERSION */
+
 						/*
 						 * the following don't need any further action
 #ifdef HAVE_COLOR
-						 *
 						 * case OPT_COL_BACK:
 						 * case OPT_COL_FROM:
 						 * case OPT_COL_HEAD:
@@ -1959,10 +2005,10 @@ change_config_file (
 						 * case OPT_COL_MARKSTAR:
 						 * case OPT_COL_MARKDASH:
 						 * case OPT_WORD_H_DISPLAY_MARKS:
-						 *
 #endif
-						 *
 						 * case OPT_DEFAULT_SORT_ART_TYPE:
+						 * case OPT_CONFIRM_CHOICE:
+						 * case OPT_MAILBOX_FORMAT:
 						 *	break;
 						 */
 
@@ -2026,59 +2072,6 @@ change_config_file (
 							joinpath (posted_msgs_file, tinrc.maildir, *tinrc.keep_posted_articles_file ? tinrc.keep_posted_articles_file : POSTED_FILE);
 							break;
 
-						case OPT_MAILBOX_FORMAT:
-							mailbox_format = *(option_table[option].variable);
-							mailbox_format = prompt_list (option_row(option),
-										OPT_ARG_COLUMN,
-										mailbox_format,
-										option_table[option].txt->help,
-										_(option_table[option].txt->opt),
-										option_table[option].opt_list,
-										option_table[option].opt_count
-										);
-							*(option_table[option].variable) = mailbox_format;
-							break;
-
-#ifdef CHARSET_CONVERSION
-						case OPT_MM_NETWORK_CHARSET:
-							mime_charset = *(option_table[option].variable);
-							mime_charset = prompt_list (option_row(option),
-										OPT_ARG_COLUMN,
-										mime_charset,
-										option_table[option].txt->help,
-										_(option_table[option].txt->opt),
-										option_table[option].opt_list,
-										option_table[option].opt_count
-										);
-							*(option_table[option].variable) = mime_charset;
-							break;
-#endif /* CHARSET_CONVERSION */
-
-						case OPT_MAIL_MIME_ENCODING:
-						case OPT_POST_MIME_ENCODING:
-							mime_encoding = *(option_table[option].variable);
-							mime_encoding = prompt_list (option_row(option),
-										OPT_ARG_COLUMN,
-										mime_encoding,
-										option_table[option].txt->help,
-										_(option_table[option].txt->opt),
-										option_table[option].opt_list,
-										option_table[option].opt_count
-										);
-							*(option_table[option].variable) = mime_encoding;
-
-							/* do not use 8 bit headers if mime encoding is not 8bit; ask J. Shin why */
-							if (strcasecmp(txt_mime_encodings[mime_encoding], txt_8bit)) {
-								if (option == (int)OPT_POST_MIME_ENCODING) {
-									tinrc.post_8bit_header = FALSE;
-									RepaintOption(OPT_POST_8BIT_HEADER);
-								} else {
-									tinrc.mail_8bit_header = FALSE;
-									RepaintOption(OPT_MAIL_8BIT_HEADER);
-								}
-							}
-							break;
-
 #ifdef HAVE_COLOR
 						case OPT_QUOTE_REGEX:
 							prompt_option_string (option);
@@ -2140,6 +2133,21 @@ change_config_file (
 						case OPT_SCROLL_LINES:
 						case OPT_FILTER_DAYS:
 							prompt_option_num (option);
+							break;
+
+						case OPT_SCORE_LIMIT_KILL:
+						case OPT_SCORE_KILL:
+						case OPT_SCORE_LIMIT_SELECT:
+						case OPT_SCORE_SELECT:
+							prompt_option_num (option);
+							check_score_defaults ();
+							if (group != NULL) {
+								unfilter_articles ();
+								read_filter_file (filter_file);
+								if (filter_articles (group))
+									make_threads (group, FALSE);
+							}
+							redraw_screen (option);
 							break;
 
 						default:
@@ -2365,7 +2373,7 @@ match_string (
 
 	if (STRNCMPEQ(line, pat, patlen) && (strlen(line) > patlen /* + 1 */)) {
 		strncpy (dst, &line[patlen], dstlen);
-		if ((ptr = strrchr (dst, '\n')) != (char *) 0)
+		if ((ptr = strrchr (dst, '\n')) != NULL)
 			*ptr = '\0';
 
 		return TRUE;
@@ -2390,7 +2398,7 @@ match_item (
 
 	if (!strcasecmp(nline, pat)) {
 		strncpy (dst, &nline[patlen], dstlen);
-		if ((ptr = strrchr (dst, '\n')) != (char *) 0)
+		if ((ptr = strrchr (dst, '\n')) != NULL)
 			*ptr = '\0';
 
 		free (nline);
@@ -2507,7 +2515,7 @@ ulBuildArgv (
 		return (NULL);
 	}
 
-	new_argv = (char **) my_calloc (1, sizeof (char *));
+	new_argv = my_calloc (1, sizeof (char *));
 	if (!new_argv) {
 		free (buf);
 		*new_argc = 0;
@@ -2527,11 +2535,26 @@ ulBuildArgv (
 				tmp++;
 			}
 			i++;
-			new_argv = (char **) my_realloc((void *)new_argv, ((i + 1) * sizeof(char *)));
+			new_argv = my_realloc(new_argv, ((i + 1) * sizeof(char *)));
 			new_argv[i] = NULL;
 		} else
 			tmp++;
 	}
 	*new_argc = i;
 	return (new_argv);
+}
+
+
+/*
+ * Check if score_kill is <= score_limit_kill and if score_select >= score_limit_select
+ */
+void
+check_score_defaults (
+	void)
+{
+	if (tinrc.score_kill > tinrc.score_limit_kill)
+		tinrc.score_kill = tinrc.score_limit_kill;
+
+	if (tinrc.score_select < tinrc.score_limit_select)
+		tinrc.score_select = tinrc.score_limit_select;
 }

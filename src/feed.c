@@ -429,7 +429,7 @@ feed_articles (
 			Raw(FALSE);
 			fflush(stdout);
 
-			if ((pipe_fp = popen (tinrc.default_pipe_command, "w")) == (FILE *) 0) {
+			if ((pipe_fp = popen (tinrc.default_pipe_command, "w")) == NULL) {
 				perror_message (_(txt_command_failed), tinrc.default_pipe_command);
 				Raw(TRUE);
 				InitWin();
@@ -538,7 +538,7 @@ feed_articles (
 
 		case iKeyFeedThd:		/* thread */
 			/* Could stat_thread() and pass in 'max' to feed_article() */
-			for (i = (int) base[thread_base]; i >= 0; i = arts[i].thread) {
+			for_each_art_in_thread(i, thread_base) {
 				if (tinrc.process_only_unread && arts[i].status == ART_READ)
 					continue;
 
@@ -581,7 +581,7 @@ feed_articles (
 		case iKeyFeedHot:		/* hot (auto-selected) articles */
 		case iKeyFeedPat:		/* regex pattern matched articles */
 			for (i = 0; i < grpmenu.max; i++) {
-				for (j = (int) base[i]; j >= 0; j = arts[j].thread) {
+				for_each_art_in_thread(j, i) {
 					if (ch == iKeyFeedPat) {
 						if (!REGEX_MATCH(arts[j].subject, tinrc.default_regex_pattern, TRUE))
 							continue;
@@ -719,9 +719,9 @@ print_file (
 
 #	ifdef DONT_HAVE_PIPING
 	snprintf(file, sizeof(file) - 1, TIN_PRINTFILE, respnum);
-	if ((fp = fopen(file, "w")) == (FILE *) 0)
+	if ((fp = fopen(file, "w")) == NULL)
 #	else
-	if ((fp = popen (command, "w")) == (FILE *) 0)
+	if ((fp = popen (command, "w")) == NULL)
 #	endif /* DONT_HAVE_PIPING */
 	{
 		perror_message (_(txt_command_failed), command);
@@ -733,7 +733,7 @@ print_file (
 	else {
 		if (hdr->newsgroups)
 			fprintf (fp, "Newsgroups: %s\n", hdr->newsgroups);
-		if (arts[respnum].from == arts[respnum].name || arts[respnum].name == (char *) 0)
+		if (arts[respnum].from == arts[respnum].name || arts[respnum].name == NULL)
 			fprintf (fp, "From: %s\n", arts[respnum].from);
 		else
 			fprintf (fp, "From: %s <%s>\n", arts[respnum].name, arts[respnum].from);

@@ -29,8 +29,8 @@ metamutt
 	before starting tin and till will pass multipart MIME-articles to
 	metamutt instead of metamail. metamutt will pass the article to mutt
 	(a mail client with an excellent MIME-parser). this might become
-	obsolete as tin now has a small (and unfinished) builtin
-	MIME-parser, set METAMAIL=(internal) to use the builtin version.
+	obsolete as tin now has a small (and unfinished) built in
+	MIME-parser, set METAMAIL=(internal) to use the built in version.
 
 url_handler.sh
 	is a shell script (need to be placed in /usr/local/bin/) which
@@ -43,7 +43,11 @@ expand_aliases.tgz
 	README-file/man-page for more details.
 
 expiretover
-	is a small shell script to expire old tin overview files. if you
-        use cache_overview_files=ON in your tinrc you might want to run this
+	is a small shell script to expire old tin overview files. if you use
+	cache_overview_files=ON in your tinrc you might want to run this
 	script reguarly (i.e. once a day from cron) to purge old overview
 	files.
+
+tinrcupdate.pl
+	is a small perl script that cleanly updates older tinrcs to work
+	with the latest tin version.

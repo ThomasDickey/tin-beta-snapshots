@@ -56,14 +56,14 @@
 
 #define MATCH_REGEX(x,y,z)	(pcre_exec (x.re, x.extra, y, z, 0, 0, NULL, 0) >= 0)
 
-static void put_cooked (t_bool wrap_lines, int flags, const char *fmt, ...);
-static void set_rest (char **rest, const char *ptr);
 static int put_rest (char **rest, char *dest, int max_line_len);
 static int read_decoded_base64_line (FILE *file, char *line, const int max_line_len, const int max_lines_to_read, char **rest);
 static int read_decoded_qp_line (FILE *file, char *line, const int max_line_len, const int max_lines_to_read, char **rest);
+static t_bool header_wanted (const char *line);
 static t_part *new_uue (t_part **part, char *name);
 static void process_text_body_part (t_bool wrap_lines, FILE *in, t_part *part);
-static t_bool header_wanted (const char *line);
+static void put_cooked (t_bool wrap_lines, int flags, const char *fmt, ...);
+static void set_rest (char **rest, const char *ptr);
 
 /*
  * These are used globally within this module for access to the context
@@ -88,15 +88,14 @@ expand_ctrl_chars (
 {
 	const char *p;
 	char *q;
+	int i, j;
 	t_bool ctrl_L = FALSE;
 
 	for (p = from, q = to; *p && q < &to[length]; p++) {
 		if (*p == '\t') {			/* Expand tabs */
-			int i, j;
-
 			i = q - to;
 			j = ((i + lcook_width) / lcook_width) * lcook_width;
-/*			j = (i|(tabwidth - 1)) + 1; TODO more efficient? */
+/*			j = (i | (tabwidth - 1)) + 1; TODO more efficient? */
 
 			while (i++ < j)
 				*q++ = ' ';
@@ -153,7 +152,7 @@ put_cooked (
 				++bufp;
 
 			if (art->cooked_lines == 0) {
-				art->cookl = my_malloc(sizeof(t_lineinfo)*CHUNK);
+				art->cookl = my_malloc(sizeof(t_lineinfo) * CHUNK);
 				art->cookl[0].offset = 0;
 			}
 
@@ -168,7 +167,7 @@ put_cooked (
 			 * Grow the array of lines if needed - we resize it properly at the end
 			 */
 			if (art->cooked_lines % CHUNK == 0)
-				art->cookl = my_realloc ((char *)art->cookl, sizeof(t_lineinfo) * CHUNK * ((art->cooked_lines / CHUNK) + 1));
+				art->cookl = my_realloc (art->cookl, sizeof(t_lineinfo) * CHUNK * ((art->cooked_lines / CHUNK) + 1));
 
 			art->cookl[art->cooked_lines].offset = ftell(art->cooked);
 		}
@@ -214,6 +213,7 @@ set_rest (
 	} else
 		*rest = NULL;	/* no rest anymore */
 }
+
 
 /*
  * FIXME: should go into rfc1521.c
@@ -396,7 +396,7 @@ read_decoded_base64_line (
  * FIXME: should go into rfc1521.c
  *
  * Read a logical quoted-printable encoded line into the specified line
- * buffer.  Quoted-printable lines can be split over several physical lines,
+ * buffer. Quoted-printable lines can be split over several physical lines,
  * so this function collects all affected lines, concatenates and decodes
  * them.
  *
@@ -502,23 +502,20 @@ read_decoded_qp_line (
 	 * to the buffer of the other function to prevent buffer overruns.
 	 */
 	buf2 = my_malloc (strlen(buf) + 1);
-	if (buf2)
-		count = mmdecode (buf, 'q', '\0', buf2);
-	else
-		count = -1;
+	count = mmdecode (buf, 'q', '\0', buf2);
 
 	if (count >= 0) {
 		buf2[count] = '\0';
 		ptr = buf2;
-	} else	/* error in encoding or no memory, copy raw line */
+	} else	/* error in encoding:  copy raw line */
 		ptr = buf;
 
 	strncpy(dest, ptr, max_line_len - put_chars - 1);
 	line[max_line_len - 1] = '\0'; /* be sure to terminate string */
 	if ((signed int)(strlen(ptr) + put_chars) > max_line_len - 1)
 		set_rest (rest, &ptr[max_line_len - put_chars - 1]);
-	FreeIfNeeded (buf);
-	FreeIfNeeded (buf2);
+	free(buf);
+	free(buf2);
 	return lines_read;
 }
 
@@ -572,7 +569,7 @@ get_filename(
 
 	if (!(name = get_param(ptr, "filename"))) {
 		if (!(name = get_param(ptr, "name")))
-		return NULL;
+			return NULL;
 	}
 
 	/* TODO: Use basename()? */
@@ -592,14 +589,16 @@ process_text_body_part(
 	FILE *in,
 	t_part *part)
 {
-	char *line;
 	char *rest = NULL;
-	char buf[LEN], to[LEN];
+	char *line, *buf;
+	char to[LEN];
+	int max_line_len = LEN;
 	int flags, len, lines_left;
 	t_bool in_sig = FALSE;			/* Set when in sig portion */
 	t_bool in_uue = FALSE;			/* Set when in uuencoded section */
 	t_part *curruue = NULL;
 
+	line = buf = my_malloc(max_line_len);
 	fseek(in, part->offset, SEEK_SET);
 
 	if (part->encoding == ENCODING_BASE64)
@@ -609,24 +608,24 @@ process_text_body_part(
 	while ((lines_left > 0) || rest) {
 		switch (part->encoding) {
 			case ENCODING_BASE64:
-				lines_left -= read_decoded_base64_line (in, buf, sizeof(buf), lines_left, &rest);
+				lines_left -= read_decoded_base64_line (in, buf, max_line_len, lines_left, &rest);
 				line = buf;
 				break;
 
 			case ENCODING_QP:
-				lines_left -= read_decoded_qp_line (in, buf, sizeof(buf), lines_left, &rest);
+				lines_left -= read_decoded_qp_line (in, buf, max_line_len, lines_left, &rest);
 				line = buf;
 				break;
 
 			default:
-				line = fgets (buf, (int) sizeof(buf), in);
+				line = fgets (buf, max_line_len, in);
 				lines_left--;
 				break;
 		}
 		if (!(line && strlen(line)))
 			break;	/* premature end of file, file error etc. */
 
-		process_charsets (line, get_param(part->params, "charset"), tinrc.mm_local_charset);
+		process_charsets (&line, &max_line_len, get_param(part->params, "charset"), tinrc.mm_local_charset);
 
 		/*
 		 * Detect and skip signatures if necessary
@@ -647,7 +646,7 @@ process_text_body_part(
 
 		if (hide_uue) {
 			int offsets[6];
-			int size_offsets = (int) (sizeof(offsets)/sizeof(int));
+			int size_offsets = ARRAY_SIZE(offsets);
 			t_bool is_uubody = FALSE;		/* Set if this line looks like a uuencoded line */
 
 			/*
@@ -670,7 +669,7 @@ process_text_body_part(
 			 * See if this line looks like a uuencoded line
 			 */
 			if (MATCH_REGEX (uubody_regex, line, len)) {
-				int sum = (((*line) - ' ') & 077) *4/3;		/* uuencode octet checksum */
+				int sum = (((*line) - ' ') & 077) * 4 / 3;		/* uuencode octet checksum */
 
 				/*
 				 * sum = 0 in a uubody only on the last line, a single `
@@ -738,9 +737,10 @@ process_text_body_part(
 			flags |= C_NEWS;
 
 		if ((CURR_GROUP.attribute->tex2iso_conv) && art->tex2iso) {
-			char texbuf[LEN];
-			strcpy (texbuf, line);
+			char *texbuf;
+			texbuf = my_strdup(line);
 			convert_tex2iso (texbuf, line);
+			free(texbuf);
 		}
 
 		/*
@@ -761,6 +761,8 @@ process_text_body_part(
 	 */
 	if (in_uue)
 		put_cooked (wrap_lines, C_UUE, txt_uue, "incomplete ", curruue->line_count, get_filename(curruue->params));
+
+	free(line);
 }
 
 
@@ -775,9 +777,9 @@ header_wanted(
 	int i;
 	t_bool ret = FALSE;
 
-	if (num_headers_to_display && (news_headers_to_display_array[0][0] == '*')) {
+	if (num_headers_to_display && (news_headers_to_display_array[0][0] == '*'))
 		ret = TRUE; /* wild do */
-	} else {
+	else {
 		for (i = 0; i < num_headers_to_display; i++) {
 			if (!strncasecmp (line, news_headers_to_display_array[i], strlen (news_headers_to_display_array[i]))) {
 				ret = TRUE;
@@ -786,9 +788,9 @@ header_wanted(
 		}
 	}
 
-	if (num_headers_to_not_display && (news_headers_to_not_display_array[0][0] == '*')) {
+	if (num_headers_to_not_display && (news_headers_to_not_display_array[0][0] == '*'))
 		ret = FALSE; /* wild don't: doesn't make sense! */
-	} else {
+	else {
 		for (i = 0; i < num_headers_to_not_display; i++) {
 			if (!strncasecmp (line, news_headers_to_not_display_array[i], strlen (news_headers_to_not_display_array[i]))) {
 				ret = FALSE;
@@ -865,7 +867,7 @@ cook_article(
 	/*
 	 * Put down just the headers we want
 	 */
-	while ((line = tin_fgets (artinfo->raw, TRUE)) != (char *) 0) {
+	while ((line = tin_fgets (artinfo->raw, TRUE)) != NULL) {
 		if (line[0] == '\0') {				/* End of headers? */
 			if (STRIP_ALTERNATIVE(artinfo)) {
 				if (header_wanted(_(txt_info_x_conversion_note))) {
@@ -936,7 +938,7 @@ cook_article(
 #endif /* DEBUG_ART */
 
 	if (art->cooked_lines > 0)
-		art->cookl = my_realloc ((char *) art->cookl, sizeof(t_lineinfo) * art->cooked_lines);
+		art->cookl = my_realloc (art->cookl, sizeof(t_lineinfo) * art->cooked_lines);
 
 	rewind(art->cooked);
 

@@ -148,7 +148,7 @@ add_to_parent (
 	/*
 	 * Trivial case - if we are the first child (followup)
 	 */
-	if (ptr->parent->child == NULL)	{
+	if (ptr->parent->child == NULL) {
 		ptr->parent->child = ptr;
 		return;
 	}
@@ -295,7 +295,7 @@ add_msgid (
 	/*
 	 * This is a new node, so build a structure for it
 	 */
-	ptr = (struct t_msgid *)my_malloc(sizeof(struct t_msgid) + strlen(msgid));
+	ptr = my_malloc(sizeof(struct t_msgid) + strlen(msgid));
 
 	strcpy(ptr->txt, msgid);
 	ptr->parent = newparent;
@@ -403,7 +403,7 @@ _get_references (
 		if (depth > MAX_REFS)
 			error_message("Warning: Too many refs near to %s. Truncated\n", refptr->txt);
 #endif /* DEBUG_REFS */
-		refs = (char *) my_malloc(HEADER_LEN);
+		refs = my_malloc(HEADER_LEN);
 		len = 0;
 	} else
 		refs = _get_references(refptr->parent, depth + 1);
@@ -437,7 +437,7 @@ get_references (
 	refs = _get_references(refptr, 1);
 	len = strlen(refs);
 	refs[len - 1] = '\0';
-	refs = (char *) my_realloc(refs, len);
+	refs = my_realloc(refs, len);
 
 	return refs;
 }
@@ -901,7 +901,8 @@ build_references (
 		sort_ascend = (group->attribute->sort_art_type == SORT_ARTICLES_BY_SUBJ_ASCEND ||
 		               group->attribute->sort_art_type == SORT_ARTICLES_BY_FROM_ASCEND ||
 		               group->attribute->sort_art_type == SORT_ARTICLES_BY_DATE_ASCEND ||
-		               group->attribute->sort_art_type == SORT_ARTICLES_BY_SCORE_ASCEND);
+		               group->attribute->sort_art_type == SORT_ARTICLES_BY_SCORE_ASCEND ||
+			       group->attribute->sort_art_type == SORT_ARTICLES_BY_LINES_ASCEND);
 
 #ifdef DEBUG_REFS
 	dbgfd = fopen("Refs.dump", "w");

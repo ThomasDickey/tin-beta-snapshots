@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -69,7 +66,7 @@ read_mail_active_file (
 	/*
 	 * Open the mail active file
 	 */
-	if ((fp = open_mail_active_fp ("r")) == (FILE *) 0) {
+	if ((fp = open_mail_active_fp ("r")) == NULL) {
 		if (cmd_line)
 			my_fputc ('\n', stderr);
 
@@ -81,7 +78,7 @@ read_mail_active_file (
 		return;
 	}
 
-	while (fgets (buf, (int) sizeof (buf), fp) != (char *) 0) {
+	while (fgets (buf, (int) sizeof (buf), fp) != NULL) {
 		if (!parse_active_line (buf, &max, &min, my_spooldir) || *buf == '\0')
 			continue;
 
@@ -162,7 +159,7 @@ write_mail_active_file (
 
 	print_active_head (mail_active_file);
 
-	if ((fp = open_mail_active_fp ("a+")) != (FILE *) 0) {
+	if ((fp = open_mail_active_fp ("a+")) != NULL) {
 		for_each_group(i) {
 			group = &active[i];
 			if (group->type == GROUP_TYPE_MAIL) {
@@ -193,7 +190,7 @@ read_mailgroups_file (
 {
 	FILE *fp;
 
-	if ((fp = open_mailgroups_fp ()) != (FILE *) 0) {
+	if ((fp = open_mailgroups_fp ()) != NULL) {
 		if (!batch_mode)
 			wait_message (0, _(txt_reading_mailgroups_file));
 
@@ -219,7 +216,7 @@ read_newsgroups_file (
 	FILE *fp;
 	FILE *fp_save = (FILE *) 0;
 
-	if ((fp = open_newsgroups_fp ()) != (FILE *) 0) {
+	if ((fp = open_newsgroups_fp ()) != NULL) {
 		if (!batch_mode)
 			wait_message (0, _(txt_reading_newsgroups_file));
 
@@ -229,7 +226,7 @@ read_newsgroups_file (
 
 		read_groups_descriptions (fp, fp_save);
 
-		if (fp_save != (FILE *) 0) {
+		if (fp_save != NULL) {
 			fclose (fp_save);
 			read_local_newsgroups_file = TRUE;
 		}
@@ -260,7 +257,7 @@ read_groups_descriptions (
 	size_t space = 0;
 	struct t_group *group;
 
-	while ((ptr = tin_fgets (fp, FALSE)) != (char *) 0) {
+	while ((ptr = tin_fgets (fp, FALSE)) != NULL) {
 		if (*ptr == '#' || *ptr == '\0')
 			continue;
 
@@ -271,7 +268,7 @@ read_groups_descriptions (
 		 * newsgroups file to only subscribed-to groups when tin is called
 		 * with the "-q" option.
 		 */
-		if ((fp_save != (FILE *) 0) && read_news_via_nntp && !read_local_newsgroups_file)
+		if ((fp_save != NULL) && read_news_via_nntp && !read_local_newsgroups_file)
 			fprintf (fp_save, "%s\n", ptr);
 
 		if (!space) { /* initial malloc */
@@ -280,7 +277,7 @@ read_groups_descriptions (
 		} else {
 			while (strlen(ptr) > space) { /* realloc needed? */
 				space <<= 1; /* double size */
-				groupname = (char *) my_realloc((void *) groupname, space);
+				groupname = my_realloc(groupname, space);
 			}
 		}
 
@@ -294,16 +291,16 @@ read_groups_descriptions (
 
 		group = group_find (groupname);
 
-		if (group != (struct t_group *) 0 && group->description == (char *) 0) {
+		if (group != NULL && group->description == NULL) {
 			q = p;
-			while ((q = strchr (q, '\t')) != (char *) 0)
+			while ((q = strchr (q, '\t')) != NULL)
 				*q = ' ';
 
 			group->description = my_strdup (p);
 
 #	if 0 /* not useful for cache_overview_files */
 			if (group->type == GROUP_TYPE_NEWS) {
-				if (fp_save != (FILE *) 0 && read_news_via_nntp && !read_local_newsgroups_file)
+				if (fp_save != NULL && read_news_via_nntp && !read_local_newsgroups_file)
 					fprintf (fp_save, "%s\n", ptr);
 			}
 #	endif /* 0 */
@@ -325,7 +322,7 @@ print_active_head (
 	if (no_write && file_size (active_file) != -1L)
 		return;
 
-	if ((fp = fopen (active_file, "w")) != (FILE *) 0) {
+	if ((fp = fopen (active_file, "w")) != NULL) {
 		/* FIXME: -> lang.c */
 		fprintf (fp, _("# [Mail/Save] active file. Format is like news active file:\n"));
 		fprintf (fp, _("#   groupname  max.artnum  min.artnum  /dir\n"));
@@ -353,8 +350,8 @@ find_art_max_min (
 	}
 
 	dir = opendir (group_path);
-	if (dir != (DIR *) 0) {
-		while ((direntry = readdir (dir)) != (DIR_BUF *) 0) {
+	if (dir != NULL) {
+		while ((direntry = readdir (dir)) != NULL) {
 			art_num = atol (direntry->d_name);
 			if (art_num >= 1) {
 				if (art_num > *art_max) {
@@ -402,7 +399,7 @@ make_base_group_path (
 	joinpath (group_path, base_dir, group_name);
 
 	ptr = group_path + strlen (base_dir);
-	while ((ptr = strchr (ptr, '.')) != (char *) 0)
+	while ((ptr = strchr (ptr, '.')) != NULL)
 		*ptr = '/';
 }
 
@@ -440,7 +437,8 @@ vGrpDelMailArts (
 		for_each_art(i) {
 			article = &arts[i];
 			if (article->delete_it) {
-				sprintf (article_filename, "%s/%ld", group_path, article->artnum);
+				/* TODO: use joinpath() instead */
+				snprintf (article_filename, sizeof(article_filename) - 1, "%s/%ld", group_path, article->artnum);
 				unlink (article_filename);
 				article->thread = ART_EXPIRED;
 #if 0 /* see comment below */
@@ -482,6 +480,7 @@ art_edit (
 		return FALSE;
 
 	make_base_group_path (group->spooldir, group->name, temp_filename);
+	/* TODO: use joinpath() instead */
 	snprintf (article_filename, sizeof(article_filename) - 1, "%s/%ld", temp_filename, article->artnum);
 	snprintf (temp_filename, sizeof(temp_filename) - 1, "%s%d.art", TMPDIR, (int) process_id);
 

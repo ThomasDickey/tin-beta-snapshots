@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Markus Kuhn.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -159,13 +156,17 @@ static const char *const tex_to[TEX_SUBST] =
 void
 convert_iso2asc (
 	char *iso,
-	char *asc,
+	char **asc_buffer,
+	int *max_line_len,
 	int t)
 {
 	constext *p;
 	constext *const *tab;
+	char *asc;
 	int first;	/* flag for first SPACE/TAB after other characters */
 	int i, a;	/* column counters in iso and asc */
+
+	asc = *asc_buffer;
 
 	if (iso == 0 || asc == 0)
 		return;
@@ -180,6 +181,12 @@ convert_iso2asc (
 			first = 1;
 			while (*p) {
 				*(asc++) = *(p++);
+				if ((asc - *asc_buffer) >= *max_line_len) {
+					int offset = asc - *asc_buffer;
+					*max_line_len += 64;
+					*asc_buffer = my_realloc(*asc_buffer, *max_line_len);
+					asc = *asc_buffer + offset;
+				}
 				a++;
 			}
 		} else {
@@ -233,6 +240,12 @@ convert_iso2asc (
 				*(asc++) = *(iso++);
 				first = 1;
 			}
+		}
+		if ((asc - *asc_buffer) >= *max_line_len) {
+			int offset = asc - *asc_buffer;
+			*max_line_len += 64;
+			*asc_buffer = my_realloc(*asc_buffer, *max_line_len);
+			asc = *asc_buffer + offset;
 		}
 	}
 	*asc = '\0';
@@ -290,7 +303,7 @@ is_art_tex_encoded (
 
 	rewind (fp);
 
-	while (fgets (line, (int) sizeof(line), fp) != (char *) 0) {
+	while (fgets (line, (int) sizeof(line), fp) != NULL) {
 		if (line[0] == '\n' && !body)
 			body = TRUE;
 		else if (!body)

@@ -128,7 +128,7 @@ look_for_multipart_info (
  *
  * Weakness(?): only walks through the base messages.
  *
- * @return on success, the number of parts found.  On failure, zero if not a
+ * @return on success, the number of parts found. On failure, zero if not a
  * multipart or the negative value of the first missing part.
  * @param base_index index pointing to one of the messages in a multipart
  * message.
@@ -300,7 +300,7 @@ remove_tag (
 	int i, j;
 
 	for (i = 0; i < grpmenu.max; ++i) {
-		for (j = (int) base[i]; j != -1; j = arts[j].thread)
+		for_each_art_in_thread(j, i)
 			if (arts[j].tagged > arts[art].tagged)
 				--arts[j].tagged;
 	}
@@ -396,7 +396,7 @@ bSetRange (
 			case GROUP_LEVEL:
 				vDelRange (iLevel, iNumMax);
 				for (iIndex = iRngMin - 1; iIndex < iRngMax; iIndex++) {
-					for (iNum = (int) base[iIndex]; iNum != -1; iNum = arts[iNum].thread)
+					for_each_art_in_thread(iNum, iIndex)
 						arts[iNum].inrange = TRUE;
 				}
 				break;
@@ -491,7 +491,7 @@ vDelRange (
 			{
 				int iNum;
 				for (iIndex = 0; iIndex < iNumMax - 1; iIndex++) {
-					for (iNum = (int) base[iIndex]; iNum != -1; iNum = arts[iNum].thread)
+					for_each_art_in_thread(iNum, iIndex)
 						arts[iNum].inrange = FALSE;
 				}
 			}
@@ -499,10 +499,6 @@ vDelRange (
 		case THREAD_LEVEL:
 			for (iIndex = 0; iIndex < iNumMax - 1; iIndex++)
 				arts[iIndex].inrange = FALSE;
-#if 0
-			for (iIndex = base[thread_basenote]; iIndex >= 0; iIndex = arts[iIndex].thread)
-				arts[iIndex].inrange = FALSE;
-#endif /* 0 */
 			break;
 		default:
 			break;
@@ -520,7 +516,7 @@ do_auto_select_arts (
 	int i;
 
 	for_each_art(i) {
-		if (arts[i].status == ART_UNREAD && arts[i].selected != 1) {
+		if (arts[i].status == ART_UNREAD && !arts[i].selected) {
 #	ifdef DEBUG_NEWSRC
 			debug_print_comment ("group.c: X command");
 #	endif /* DEBUG_NEWSRC */

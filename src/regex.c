@@ -86,7 +86,7 @@ match_regex (
 	 *
 	 * pcre_exec(precompile pattern, hints pointer, string to match,
 	 *           length of string (string may contain '\0', but not in
-	 *           out case), startoffset, options,
+	 *           our case), startoffset, options,
 	 *           vector of offsets to be filled,
 	 *           number of elements in offsets);
 	 *
@@ -139,7 +139,7 @@ highlight_regexes(
 {
 	char *ptr;
 	int offsets[6];
-	int offsets_size = sizeof(offsets)/sizeof(int);
+	int offsets_size = ARRAY_SIZE(offsets);
 #ifdef USE_CURSES
 	char buf[LEN];
 #else

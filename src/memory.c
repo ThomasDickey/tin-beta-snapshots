@@ -89,24 +89,24 @@ init_alloc (
 	max_active = get_active_num();
 	max_newnews = DEFAULT_NEWNEWS_NUM;
 
-	active = (struct t_group *) my_malloc (sizeof(*active) * max_active);
-	newnews = (struct t_newnews *) my_malloc (sizeof(*newnews) * max_newnews);
-	my_group = (int *) my_calloc (1, sizeof(int) * max_active);
+	active = my_malloc (sizeof(*active) * max_active);
+	newnews =  my_malloc (sizeof(*newnews) * max_newnews);
+	my_group = my_calloc (1, sizeof(int) * max_active);
 
 	/*
 	 * article headers array
 	 */
 	max_art = DEFAULT_ARTICLE_NUM;
 
-	arts = (struct t_article *) my_malloc (sizeof(*arts) * max_art);
-	base = (long *) my_malloc (sizeof(long) * max_art);
+	arts = my_malloc (sizeof(*arts) * max_art);
+	base = my_malloc (sizeof(long) * max_art);
 
 	/*
 	 * save file array
 	 */
 	max_save = DEFAULT_SAVE_NUM;
 
-	save = (struct t_save *) my_malloc (sizeof(*save) * max_save);
+	save = my_malloc (sizeof(*save) * max_save);
 
 #ifndef USE_CURSES
 	screen = (struct t_screen *) 0;
@@ -119,8 +119,8 @@ expand_art (
 	void)
 {
 	max_art += max_art / 2;		/* increase by 50% */
-	arts = (struct t_article *) my_realloc ((char *) arts, sizeof(*arts) * max_art);
-	base = (long *) my_realloc ((char *) base, sizeof(long) * max_art);
+	arts = my_realloc (arts, sizeof(*arts) * max_art);
+	base = my_realloc (base, sizeof(long) * max_art);
 }
 
 
@@ -129,12 +129,12 @@ expand_active (
 	void)
 {
 	max_active += max_active / 2;		/* increase by 50% */
-	if (active == (struct t_group *) 0) {
-		active = (struct t_group *) my_malloc (sizeof (*active) * max_active);
-		my_group = (int *) my_calloc (1, sizeof(int) * max_active);
+	if (active == NULL) {
+		active = my_malloc (sizeof (*active) * max_active);
+		my_group = my_calloc (1, sizeof(int) * max_active);
 	} else {
-		active = (struct t_group *) my_realloc((char *) active, sizeof (*active) * max_active);
-		my_group = (int *) my_realloc((char *) my_group, sizeof (int) * max_active);
+		active = my_realloc(active, sizeof (*active) * max_active);
+		my_group = my_realloc(my_group, sizeof (int) * max_active);
 	}
 }
 
@@ -144,7 +144,7 @@ expand_save (
 	void)
 {
 	max_save += max_save / 2;		/* increase by 50% */
-	save = (struct t_save *) my_realloc((char *) save, sizeof (struct t_save) * max_save);
+	save = my_realloc(save, sizeof (struct t_save) * max_save);
 }
 
 
@@ -153,7 +153,7 @@ expand_newnews (
 	void)
 {
 	max_newnews += max_newnews / 2;			/* increase by 50% */
-	newnews = (struct t_newnews *) my_realloc((char *) newnews, sizeof(struct t_newnews) * max_newnews);
+	newnews = my_realloc(newnews, sizeof(struct t_newnews) * max_newnews);
 }
 
 
@@ -165,16 +165,16 @@ init_screen_array (
 	int i;
 
 	if (allocate) {
-		screen = (struct t_screen *) my_malloc (sizeof (struct t_screen) * cLINES + 1);
+		screen = my_malloc (sizeof (struct t_screen) * cLINES + 1);
 
 		for (i = 0; i < cLINES; i++)
-			screen[i].col = (char *) my_malloc ((size_t)(cCOLS + 2));
+			screen[i].col = my_malloc ((size_t)(cCOLS + 2));
 	} else {
-		if (screen != (struct t_screen *) 0) {
+		if (screen != NULL) {
 			for (i = 0; i < cLINES; i++)
 				FreeAndNull(screen[i].col);
 
-			free ((char *) screen);
+			free (screen);
 			screen = (struct t_screen *) 0;
 		}
 	}
@@ -195,12 +195,12 @@ free_all_arrays (
 	free_art_array ();
 	free_msgids ();
 
-	if (arts != (struct t_article *) 0) {
-		free ((char *) arts);
+	if (arts != NULL) {
+		free (arts);
 		arts = (struct t_article *) 0;
 	}
 
-	free_all_filter_arrays();
+	free_filter_array (&glob_filter);
 	free_active_arrays ();
 
 #ifdef HAVE_COLOR
@@ -228,23 +228,23 @@ free_all_arrays (
 	FreeIfNeeded(shar_regex.re);
 	FreeIfNeeded(shar_regex.extra);
 
-	if (base != (long *) 0) {
-		free ((char *) base);
+	if (base != NULL) {
+		free (base);
 		base = (long *) 0;
 	}
 
-	if (save != (struct t_save *) 0) {
+	if (save != NULL) {
 		free_save_array ();
-		if (save != (struct t_save *) 0) {
-			free ((char *) save);
+		if (save != NULL) {
+			free (save);
 			save = (struct t_save *) 0;
 		}
 	}
 
-	if (newnews != (struct t_newnews *) 0) {
+	if (newnews != NULL) {
 		free_newnews_array ();
-		if (newnews != (struct t_newnews *) 0) {
-			free ((char *) newnews);
+		if (newnews != NULL) {
+			free (newnews);
 			newnews = (struct t_newnews *) 0;
 		}
 	}
@@ -290,8 +290,8 @@ free_if_not_default (
 	char *deflt)
 {
 	/* Can't see how these attribs can be = NULL */
-	if (*attrib != (char *) 0 && *attrib != deflt) {
-		free ((char *) *attrib);
+	if (*attrib != NULL && *attrib != deflt) {
+		free (*attrib);
 		*attrib = (char *) 0;
 	}
 }
@@ -332,7 +332,7 @@ free_attributes_array (
 			FreeAndNull(psGrp->attribute->ispell);
 #endif /* HAVE_ISPELL */
 
-			free ((char *) psGrp->attribute);
+			free (psGrp->attribute);
 		}
 		psGrp->attribute = (struct t_attribute *) 0;
 	}
@@ -345,31 +345,31 @@ free_active_arrays (
 {
 	register int i;
 
-	if (my_group != (int *) 0) {			/* my_group[] */
-		free ((char *) my_group);
+	if (my_group != NULL) {			/* my_group[] */
+		free (my_group);
 		my_group = (int *) 0;
 	}
 
-	if (active != (struct t_group *) 0) {		/* active[] */
+	if (active != NULL) {		/* active[] */
 		for_each_group(i) {
 			FreeAndNull(active[i].name);
 			FreeAndNull(active[i].description);
 			FreeAndNull(active[i].aliasedto);
 
-			if (active[i].type == GROUP_TYPE_MAIL && active[i].spooldir != (char *) 0) {
-				free ((char *) active[i].spooldir);
+			if (active[i].type == GROUP_TYPE_MAIL && active[i].spooldir != NULL) {
+				free (active[i].spooldir);
 				active[i].spooldir = (char *) 0;
 			}
 			if (active[i].newsrc.xbitmap != 0) {
-				free ((char *) active[i].newsrc.xbitmap);
+				free (active[i].newsrc.xbitmap);
 				active[i].newsrc.xbitmap = 0;
 			}
 		}
 
 		free_attributes_array ();
 
-		if (active != (struct t_group *) 0) {
-			free ((char *) active);
+		if (active != NULL) {
+			free (active);
 			active = (struct t_group *) 0;
 		}
 	}
@@ -414,17 +414,17 @@ my_malloc1 (
 	int line,
 	size_t size)
 {
-	char *p;
+	void *p;
 
 #ifdef DEBUG
 	vDbgPrintMalloc (TRUE, file, line, size);
 #endif /* DEBUG */
 
-	if ((p = (char *) malloc (size)) == (char *) 0) {
+	if ((p = malloc (size)) == NULL) {
 		error_message (txt_out_of_memory, tin_progname, size, file, line);
 		giveup();
 	}
-	return (void *) p;
+	return p;
 }
 
 
@@ -438,17 +438,17 @@ my_calloc1 (
 	size_t nmemb,
 	size_t size)
 {
-	char *p;
+	void *p;
 
 #ifdef DEBUG
-	vDbgPrintMalloc (TRUE, file, line, nmemb*size);
+	vDbgPrintMalloc (TRUE, file, line, nmemb * size);
 #endif /* DEBUG */
 
-	if ((p = (char *) calloc (nmemb, size)) == (char *) 0) {
+	if ((p = calloc (nmemb, size)) == NULL) {
 		error_message (txt_out_of_memory, tin_progname, nmemb * size, file, line);
 		giveup();
 	}
-	return (void *) p;
+	return p;
 }
 
 
@@ -456,18 +456,18 @@ void *
 my_realloc1 (
 	const char *file,
 	int line,
-	char *p,
+	void *p,
 	size_t size)
 {
 #ifdef DEBUG
 	vDbgPrintMalloc (FALSE, file, line, size);
 #endif /* DEBUG */
 
-	p = (char *) ((!p) ? (calloc (1, size)) : realloc (p, size));
+	p = ((!p) ? (calloc (1, size)) : realloc (p, size));
 
-	if (p == (char *) 0) {
+	if (p == NULL) {
 		error_message (txt_out_of_memory, tin_progname, size, file, line);
 		giveup();
 	}
-	return (void *) p;
+	return p;
 }

@@ -47,11 +47,11 @@
  * local prototypes
  */
 #ifdef NNTP_INEWS
-	static t_bool submit_inews (char *name, char *a_message_id);
+	static t_bool submit_inews (char *name, struct t_group *group, char *a_message_id);
 #endif /* NNTP_INEWS */
 
 #if defined(NNTP_INEWS) && !defined(FORGERY)
-	static int sender_needed (char * from, char * sender);
+	static int sender_needed (char *from, struct t_group *group, char *sender);
 #endif /* NNTP_INEWS && !FORGERY */
 
 #if 0
@@ -86,6 +86,7 @@
 static t_bool
 submit_inews (
 	char *name,
+	struct t_group *group,
 	char *a_message_id)
 {
 	FILE *fp;
@@ -107,8 +108,7 @@ submit_inews (
 	t_bool can_lock_in_article = FALSE;
 #	endif /* USE_CANLOCK */
 
-
-	if ((fp = fopen (name, "r")) == (FILE *) 0) {
+	if ((fp = fopen (name, "r")) == NULL) {
 		perror_message (_(txt_cannot_open), name);
 		return ret_code;
 	}
@@ -166,7 +166,7 @@ submit_inews (
 
 #	ifndef FORGERY
 		if ((ptr = build_sender()) && (!disable_sender)) {
-			sender = sender_needed (from_name + 6, ptr);
+			sender = sender_needed (from_name + 6, group, ptr);
 			switch (sender) {
 				case -2: /* can't build Sender: */
 					error_message (_(txt_invalid_sender), ptr);
@@ -184,10 +184,13 @@ submit_inews (
 
 				case 1:	/* insert Sender */
 					snprintf (sender_hdr, sizeof(sender_hdr), "Sender: %s", ptr);
-#		if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
-					buffer_to_network(sender_hdr);
-#		endif /* LOCAL_CHARSET || MAC_OS_X || CHARSET_CONVERSION */
-					STRCPY (sender_hdr, rfc1522_encode (sender_hdr, ismail));
+#		if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
+					buffer_to_network(sender_hdr, 0);
+#		endif /* LOCAL_CHARSET || MAC_OS_X */
+#		if defined(CHARSET_CONVERSION)
+					buffer_to_network(sender_hdr, group->attribute->mm_network_charset);
+#		endif /* CHARSET_CONVERSION */
+					STRCPY (sender_hdr, rfc1522_encode (sender_hdr, group, ismail));
 					break;
 
 				case 0: /* no sender needed */
@@ -214,13 +217,13 @@ submit_inews (
 		 */
 		if (message_id[0] == '\0') {
 			/* simple syntax check - locate last '<' */
-			if ((ptr = strrchr (line, '<')) != (char *) 0) {
+			if ((ptr = strrchr (line, '<')) != NULL) {
 				/* search next '>' */
-				if ((ptr2 = strchr (ptr, '>')) != (char *) 0) {
+				if ((ptr2 = strchr (ptr, '>')) != NULL) {
 					/* terminate string */
 					*++ptr2 = '\0';
 					/* check for @ and no whitespaces */
-					if ((strchr(ptr, '@') != (char *) 0) && (strpbrk(ptr, " \t") == (char *) 0))
+					if ((strchr(ptr, '@') != NULL) && (strpbrk(ptr, " \t") == NULL))
 						strcpy(message_id, ptr);	/* copy Message-ID */
 				}
 			}
@@ -251,7 +254,7 @@ submit_inews (
 					const char *lptr = (const char *) 0;
 
 					lock[0] = '\0';
-					if ((lptr = build_canlock(message_id, get_secret())) != (const char *) 0) {
+					if ((lptr = build_canlock(message_id, get_secret())) != NULL) {
 						STRCPY(lock, lptr);
 						sprintf (line, "Cancel-Lock: %s", lock);
 						put_server (line);
@@ -263,11 +266,11 @@ submit_inews (
 		/*
 		 * Send article 1 line at a time ending with "."
 		 */
-		while (fgets (line, (int) sizeof (line), fp) != (char *) 0) {
+		while (fgets (line, (int) sizeof (line), fp) != NULL) {
 			/*
 			 * Remove linefeed from line
 			 */
-			if ((ptr = strrchr (line, '\n')) != (char *) 0)
+			if ((ptr = strrchr (line, '\n')) != NULL)
 				*ptr = '\0';
 
 			/*
@@ -339,13 +342,13 @@ submit_inews (
 	 */
 	{
 		/* simple syntax check - locate last '<' */
-		if ((ptr = strrchr (line, '<')) != (char *) 0) {
+		if ((ptr = strrchr (line, '<')) != NULL) {
 			/* search next '>' */
-			if ((ptr2 = strchr (ptr, '>')) != (char *) 0) {
+			if ((ptr2 = strchr (ptr, '>')) != NULL) {
 				/* terminate string */
 				*++ptr2 = '\0';
 				/* check for @ and no whitespaces */
-				if ((strchr(ptr, '@') != (char *) 0) && (strpbrk(ptr, " \t") == (char *) 0))
+				if ((strchr(ptr, '@') != NULL) && (strpbrk(ptr, " \t") == NULL))
 					/* copy Message-ID */
 					strcpy(a_message_id, ptr);
 			}
@@ -375,6 +378,7 @@ submit_inews (
 t_bool
 submit_news_file (
 	char *name,
+	struct t_group *group,
 	char *a_message_id)
 {
 	char buf[PATH_LEN];
@@ -388,17 +392,17 @@ submit_news_file (
 
 	/* 7bit ISO-2022-KR is NEVER to be used in Korean news posting. */
 #ifdef CHARSET_CONVERSION
-	if (!(strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-KR") || strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_7bit)))
+	if (!(strcasecmp(txt_mime_charsets[group->attribute->mm_network_charset], "EUC-KR") || strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_7bit)))
 #else
 	if (!(strcasecmp(tinrc.mm_charset, "EUC-KR") || strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_7bit)))
 #endif /* CHARSET_CONVERSION */
 		tinrc.post_mime_encoding = 0;	/* FIXME: txt_8bit */
 
-	rfc15211522_encode(name, txt_mime_encodings[tinrc.post_mime_encoding], tinrc.post_8bit_header, ismail);
+	rfc15211522_encode(name, txt_mime_encodings[tinrc.post_mime_encoding], group, tinrc.post_8bit_header, ismail);
 
 #ifdef NNTP_INEWS
 	if (read_news_via_nntp && !read_saved_news && 0 == strcasecmp(tinrc.inews_prog, "--internal"))
-		ret_code = submit_inews (name, a_message_id);
+		ret_code = submit_inews (name, group, a_message_id);
 	else
 #endif /* NNTP_INEWS */
 		{
@@ -423,7 +427,7 @@ submit_news_file (
 #ifdef NNTP_INEWS
 			if (!ret_code && read_news_via_nntp && !read_saved_news && 0 != strcasecmp(tinrc.inews_prog, "--internal")) {
 				if (prompt_yn(cLINES, _(txt_post_via_builtin_inews), TRUE)) {
-					ret_code = submit_inews (name, a_message_id);
+					ret_code = submit_inews (name, group, a_message_id);
 					if (ret_code) {
 						if (prompt_yn(cLINES, _(txt_post_via_builtin_inews_only), TRUE) == 1)
 							strcpy(tinrc.inews_prog,"--internal");
@@ -446,6 +450,7 @@ submit_news_file (
 static int
 sender_needed (
 	char *from,
+	struct t_group *group,
 	char *sender)
 {
 	char *from_at_pos;
@@ -469,7 +474,7 @@ sender_needed (
 	gnksa_do_check_from(from, from_addr, from_name);
 
 	snprintf (sender_line, sizeof(sender_line), "Sender: %s", sender);
-	if (GNKSA_OK != gnksa_do_check_from(rfc1522_encode(sender_line, FALSE) + 8, sender_addr, sender_name))
+	if (GNKSA_OK != gnksa_do_check_from(rfc1522_encode(sender_line, group, FALSE) + 8, sender_addr, sender_name))
 		return -2;
 
 	from_at_pos = strchr(from_addr, '@');

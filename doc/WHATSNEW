@@ -24,6 +24,14 @@ New Features
 
 . NLS support
 
+. Charset conversion using iconv(3) for sending and displaying articles in
+  a different charset than the terminal tin runs on. The charsets are
+  customizable with tinrc-option and group-attribute mm_network_charset
+  (outgoing) and group-attribute undeclared_charset.
+  --disable-mime-strict-charset is a noop with working charset conversion.
+  The charset of the terminal is detected automatically if possible (using
+  nl_langinfo(3)).
+
 . Human readable time-stamp (as a comment) in filter file
 
 . Indicator for articles newer than n-days

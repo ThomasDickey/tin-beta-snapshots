@@ -60,7 +60,7 @@ int srch_lineno = -1;
  * of parameters all the time
  */
 static int srch_offsets[6];
-static int srch_offsets_size = sizeof(srch_offsets)/sizeof(int);
+static int srch_offsets_size = ARRAY_SIZE(srch_offsets);
 static struct regex_cache srch_regex;
 
 
@@ -219,6 +219,7 @@ body_search (
 		case ART_ABORT:					/* User 'q'uit */
 			art_close (&artinfo);
 			return -1;
+
 		case ART_UNAVAILABLE:			/* Treat as string not present */
 			art_close (&artinfo);
 			info_message (_(txt_no_match));
@@ -237,7 +238,7 @@ body_search (
 	 */
 	sprintf(mesg, _(txt_searching_body), ++curr_cnt, total_cnt);
 	show_progress (mesg, curr_cnt, total_cnt);
-	while ((line = tin_fgets (artinfo.cooked, FALSE)) != (char *) 0) {
+	while ((line = tin_fgets (artinfo.cooked, FALSE)) != NULL) {
 		if (tinrc.wildcard) {
 			if (pcre_exec (srch_regex.re, srch_regex.extra, line, strlen(line), 0, 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
 				srch_lineno = i;
@@ -284,7 +285,7 @@ author_search (
 	char buf[LEN];
 	char *ptr = buf;
 
-	if (arts[i].name == (char *) 0)
+	if (arts[i].name == NULL)
 		ptr = arts[i].from;
 	else
 		snprintf (buf, sizeof(buf) - 1, "%s <%s>", arts[i].name, arts[i].from);

@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-04-15
+ *  Updated   : 2002-05-16
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -43,7 +43,6 @@ constext txt_1_resp[] = N_("1 Response%s");
 constext txt_7bit[] = "7bit";
 constext txt_8bit[] = "8bit";
 constext txt_active_file_is_empty[] = N_("\n%s contains no newsgroups. Exiting.");
-constext txt_added_groups[] = N_("Added %d %s");
 constext txt_append_overwrite_quit[] = N_("File %s exists. %s=append, %s=overwrite, %s=quit: ");
 constext txt_all[] = N_("all ");
 constext txt_art_cancel[] = N_("Article cancelled (deleted).");
@@ -119,6 +118,7 @@ constext txt_choose_post_process_type[] = N_("Process %s=none, %s=shar, %s=uudec
 constext txt_color_off[] = N_("ANSI color disabled");
 constext txt_color_on[] = N_("ANSI color enabled");
 constext txt_command_failed[] = N_("Command failed: %s");
+constext txt_confirm_select_on_exit[] = N_("Mark not selected articles read?");
 constext txt_connecting[] = N_("Connecting to %s...");
 constext txt_connecting_port[] = N_("Connecting to %s:%d...");
 
@@ -144,6 +144,7 @@ constext txt_end_of_art[] = N_("*** End of article ***");
 constext txt_end_of_arts[] = N_("*** End of articles ***");
 constext txt_end_of_groups[] = N_("*** End of groups ***");
 constext txt_end_of_thread[] = N_("*** End of thread ***");
+constext txt_enter_getart_limit[] = N_("Enter limit of articles to get> ");
 constext txt_enter_message_id[] = N_("Enter Message-ID to go to> ");
 constext txt_enter_next_thread[] = N_(" and enter next unread thread");
 constext txt_enter_option_num[] = N_("Enter option number> ");
@@ -540,7 +541,6 @@ constext txt_no_filename[] = N_("No filename");
 constext txt_no_group[] = N_("No group");
 constext txt_no_groups[] = N_("*** No groups ***");
 constext txt_no_groups_to_read[] = N_("No more groups to read");
-constext txt_no_groups_to_yank_in[] = N_("No more groups to yank in");
 constext txt_no_last_message[] = N_("No last message");
 constext txt_no_mail_address[] = N_("No mail address");
 constext txt_no_match[] = N_("No match");
@@ -613,8 +613,8 @@ constext txt_post_processing[] = N_("-- post processing started --");
 constext txt_post_processing_finished[] = N_("-- post processing completed --");
 constext txt_post_subject[] = N_("Post subject [%s]> ");
 #ifdef NNTP_INEWS
-	constext txt_post_via_builtin_inews[] = N_("Posting using external inews failed. Use builtin inews instead?");
-	constext txt_post_via_builtin_inews_only[] = N_("It worked! Should I always use my builtin inews from now on?");
+	constext txt_post_via_builtin_inews[] = N_("Posting using external inews failed. Use built in inews instead?");
+	constext txt_post_via_builtin_inews_only[] = N_("It worked! Should I always use my built in inews from now on?");
 #endif /* NNTP_INEWS */
 constext txt_posted_info_file[] = N_("# Summary of mailed/posted messages viewable by 'W' command from within tin.\n");
 constext txt_posting[] = N_("Posting article...");
@@ -737,7 +737,7 @@ constext txt_tinrc_info_in_last_line[] = N_("# If ON use print current subject o
 #ifdef LOCAL_CHARSET
 	constext txt_tinrc_local_charset[] = N_("# Whether or not to automatically convert to a local charset that is\n\
 # different from the one defined in mm_charset. Currently only NeXTstep is\n\
-# supported. Set to OFF when logged in from a iso-8859-1 environment.\n");
+# supported. Set to OFF when logged in from a ISO-8859-1 environment.\n");
 #endif /* LOCAL_CHARSET */
 
 constext txt_tinrc_newnews[] = N_("# Host & time info used for detecting new groups (don't touch)\n");
@@ -759,7 +759,13 @@ constext *txt_onoff[] = { "OFF", "ON" };
  * NB: All the following arrays must match corresponding ordering in tin.h
  * Threading types
  */
-constext *txt_thread[] = { N_("None"), N_("Subject"), N_("References"), N_("Both Subject and References"), N_("Multipart Subject") };
+constext *txt_thread[] = {
+	N_("None"),
+	N_("Subject"),
+	N_("References"),
+	N_("Both Subject and References"),
+	N_("Multipart Subject")
+};
 
 /*
  * Whether to use wildmat() or regexec() for matching strings
@@ -769,30 +775,76 @@ constext *txt_wildcard_type[] = { "WILDMAT", "REGEX" };
 /*
  * How the From: line is displayed.
  */
-constext *txt_show_from[] = { N_("None"), N_("Address"), N_("Full Name"), N_("Address and Name") };
+constext *txt_show_from[] = {
+	N_("None"),
+	N_("Address"),
+	N_("Full Name"),
+	N_("Address and Name")
+};
+
+/*
+ * How the score of a thread is computed
+ */
+constext *txt_thread_score_type[] = {
+	N_("Max"),
+	N_("Sum"),
+	N_("Average")
+};
 
 #ifdef HAVE_COLOR
 	/*
 	 * Which colors can be used.
 	 */
 	constext *txt_colors[] = {
-	N_("Default"),
-	N_("Black"),      N_("Red"),        N_("Green"),       N_("Brown"),
-	N_("Blue"),       N_("Pink"),       N_("Cyan"),        N_("White"),
-	N_("Gray"),       N_("Light Red"),  N_("Light Green"), N_("Yellow"),
-	N_("Light Blue"), N_("Light Pink"), N_("Light Cyan"),  N_("Light White") };
+		N_("Default"),
+		N_("Black"),
+		N_("Red"),
+		N_("Green"),
+		N_("Brown"),
+		N_("Blue"),
+		N_("Pink"),
+		N_("Cyan"),
+		N_("White"),
+		N_("Gray"),
+		N_("Light Red"),
+		N_("Light Green"),
+		N_("Yellow"),
+		N_("Light Blue"),
+		N_("Light Pink"),
+		N_("Light Cyan"),
+		N_("Light White")
+	};
 
 	/*
 	 * Which mark types can be used.
 	 */
-	constext *txt_marks[] = { N_("Nothing"), N_("Mark"), N_("Space"), N_("Space in Sigs") };
+	constext *txt_marks[] = {
+		N_("Nothing"),
+		N_("Mark"),
+		N_("Space"),
+		N_("Space in Sigs")
+	};
 #endif /* HAVE_COLOR */
+
+/* different confirm choices */
+constext *txt_confirm_choices[] = {
+	N_("none"),
+	N_("commands"),
+	N_("select"),
+	N_("quit"),
+	N_("commands & quit"),
+	N_("commands & select"),
+	N_("quit & select"),
+	N_("commands & quit & select")
+};
 
 /*
  * MIME-Content-Transfer-Encodings.
  */
 /* TODO can any of this go away? */
-constext *txt_mime_encodings[] = { txt_8bit, txt_base64, txt_quoted_printable, txt_7bit };
+constext *txt_mime_encodings[] = {
+	txt_8bit, txt_base64, txt_quoted_printable, txt_7bit
+};
 
 constext *content_encodings[] = {
 	"7bit", "quoted-printable", "base64", "8bit", "binary", "x-uuencode"
@@ -814,14 +866,16 @@ constext *txt_post_process_type[] = {
 
 constext *txt_sort_a_type[] = {
 		N_("Nothing"),
-		N_("Subject: field (descending)"),
-		N_("Subject: field (ascending)"),
-		N_("From: field (descending)"),
-		N_("From: field (ascending)"),
-		N_("Date: field (descending)"),
-		N_("Date: field (ascending)"),
+		N_("Subject: (descending)"),
+		N_("Subject: (ascending)"),
+		N_("From: (descending)"),
+		N_("From: (ascending)"),
+		N_("Date: (descending)"),
+		N_("Date: (ascending)"),
 		N_("Score (descending)"),
-		N_("Score (ascending)")
+		N_("Score (ascending)"),
+		N_("Lines: (descending)"),
+		N_("Lines: (ascending)")
 };
 
 constext *txt_sort_t_type[] = {
@@ -844,6 +898,18 @@ constext *txt_kill_level_type[] = {
 		N_("Kill all arts and never show")
 };
 
+/* Various quoting styles */
+constext *txt_quote_style_type[] = {
+		N_("Nothing special"),
+		N_("Compress quotes"),
+		N_("Quote signatures"),
+		N_("Compress quotes, quote sigs"),
+		N_("Quote empty lines"),
+		N_("Compress quotes, quote empty lines"),
+		N_("Quote sigs & empty lines"),
+		N_("Comp. q., quote sigs & empty lines")
+};
+
 #ifdef CHARSET_CONVERSION
 constext *txt_mime_charsets[] = {
 	"US-ASCII",
@@ -854,6 +920,7 @@ constext *txt_mime_charsets[] = {
 	"EUC-CN", "EUC-JP", "EUC-KR", "EUC-TW",
 	"ISO-2022-CN", "ISO-2022-CN-EXT", "ISO-2022-JP", "ISO-2022-JP-1",
 	"ISO-2022-JP-2", "ISO-2022-KR",
+	"Big5",
 	"UTF-8"
 };
 #endif /* CHARSET_CONVERSION */
@@ -999,14 +1066,16 @@ constext txt_warn_suspicious_mail[] = N_("Warning: this mail address may contain
 constext txt_warn_wrong_sig_format[] = N_("\nWarning: Signatures should start with '-- \\n' not with '--\\n'.\n");
 constext txt_writing_attributes_file[] = N_("Writing attributes file...");
 constext txt_x_resp[] = N_("%d Responses%s");
-constext txt_yanking_all_groups[] = N_("Yanking in all groups...");
-constext txt_yanking_sub_groups[] = N_("Yanking in subscribed to groups...");
+constext txt_yanked_groups[] = N_("Added %d %s");
+constext txt_yanked_none[] = N_("No unsubscribed groups to show");
+constext txt_yanked_sub_groups[] = N_("Showing subscribed to groups only");
+constext txt_show_unread[] = N_("Showing unread groups only");
 constext txt_yes[] = N_("Yes ");
 constext txt_you_have_mail[] = N_("    You have mail\n");
 constext txt_all_groups[] = N_("All groups");
 constext txt_filter_text_type[] = N_("Apply pattern to    : ");
-constext txt_from_line_only[] = N_("From: line (ignore case)        ");
-constext txt_from_line_only_case[] = N_("From: line (case sensitive)     ");
+constext txt_from_line_only[] = N_("From: line (ignore case)      ");
+constext txt_from_line_only_case[] = N_("From: line (case sensitive)   ");
 constext txt_help_filter_from[] = N_("From: line to add to filter file. <SPACE> toggles & <CR> sets.");
 constext txt_help_filter_lines[] = N_("Linecount of articles to be filtered. < for less, > for more, = for equal.");
 constext txt_help_filter_msgid[] = N_("Message-Id: line to add to filter file. <SPACE> toggles & <CR> sets.");
@@ -1024,7 +1093,7 @@ constext txt_kill_scope[] = N_("Kill pattern scope  : ");
 constext txt_kill_subj[] = N_("Kill Subject:  [%-*.*s] (y/n): ");
 constext txt_kill_text[] = N_("Kill text pattern   : ");
 constext txt_kill_time[] = N_("Kill time in days   : ");
-constext txt_msgid_line_only[] = N_("Message-Id: line");
+constext txt_msgid_line_only[] = N_("Message-Id: line              ");
 constext txt_select_from[] = N_("Select From    [%-*.*s] (y/n): ");
 constext txt_select_lines[] = N_("Select Lines: (</>num): ");
 constext txt_select_menu[] = N_("Auto-select Article Menu");
@@ -1033,8 +1102,8 @@ constext txt_select_scope[] = N_("Select pattern scope: ");
 constext txt_select_subj[] = N_("Select Subject [%-*.*s] (y/n): ");
 constext txt_select_text[] = N_("Select text pattern : ");
 constext txt_select_time[] = N_("Select time in days   : ");
-constext txt_subj_line_only[] = N_("Subject: line (ignore case)     ");
-constext txt_subj_line_only_case[] = N_("Subject: line (case sensitive)  ");
+constext txt_subj_line_only[] = N_("Subject: line (ignore case)   ");
+constext txt_subj_line_only_case[] = N_("Subject: line (case sensitive)");
 constext txt_time_default_days[] = N_("%d days");
 constext txt_unlimited_time[] = N_("Unlimited");
 constext txt_full[] = N_("Full");
@@ -1123,6 +1192,12 @@ struct opttxt txt_expert_options = {
 	NULL
 };
 
+struct opttxt txt_filtering_options = {
+	NULL,
+	N_("Filtering Options"),
+	NULL
+};
+
 struct opttxt txt_beginner_level = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Show mini menu & posting etiquette :"),
@@ -1158,7 +1233,14 @@ struct opttxt txt_inverse_okay = {
 struct opttxt txt_thread_articles = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Thread articles by                 :"),
-	N_("# Thread articles on 0=(nothing) 1=(Subject) 2=(References) 3=(Both).\n")
+	N_("# Thread articles on 0=(nothing) 1=(Subject) 2=(References) 3=(Both)\n\
+# 4=(Multipart Subject).\n")
+};
+
+struct opttxt txt_thread_score = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Score of a thread                  :"),
+	N_("# Thread score 0=(Max) 1=(Sum) 2=(Average)\n")
 };
 
 struct opttxt txt_sort_article_type = {
@@ -1339,7 +1421,7 @@ struct opttxt txt_hide_uue = {
 struct opttxt txt_tex2iso_conv = {
 	N_("Decode German style TeX umlaut codes to ISO. <SPACE> toggles & <CR> sets."),
 	N_("Display \"a as Umlaut-a             :"),
-	N_("# If ON decode German style TeX umlaut codes to ISO and \n\
+	N_("# If ON decode German style TeX umlaut codes to ISO and\n\
 # show \"a as Umlaut-a, etc.\n")
 };
 struct opttxt txt_news_headers_to_display = {
@@ -1376,7 +1458,7 @@ struct opttxt txt_quote_regex = {
 	N_("Regex used to show quoted lines    :"),
 	N_("# A regular expression that tin will use to decide which lines are\n\
 # quoted when viewing articles. Quoted lines are shown in col_quote.\n\
-# If you leave this blank, tin will use a builtin default.\n")
+# If you leave this blank, tin will use a built in default.\n")
 };
 
 struct opttxt txt_quote_regex2 = {
@@ -1384,7 +1466,7 @@ struct opttxt txt_quote_regex2 = {
 	N_("Regex used to show twice quoted l. :"),
 	N_("# A regular expression that tin will use to decide which lines are\n\
 # quoted twice. Twice quoted lines are shown in col_quote2.\n\
-# If you leave this blank, tin will use a builtin default.\n")
+# If you leave this blank, tin will use a built in default.\n")
 };
 
 struct opttxt txt_quote_regex3 = {
@@ -1392,7 +1474,7 @@ struct opttxt txt_quote_regex3 = {
 	N_("Regex used to show >= 3 times q.l. :"),
 	N_("# A regular expression that tin will use to decide which lines are\n\
 # quoted >=3 times. >=3 times quoted lines are shown in col_quote3.\n\
-# If you leave this blank, tin will use a builtin default.\n")
+# If you leave this blank, tin will use a built in default.\n")
 };
 #endif /* HAVE_COLOR */
 
@@ -1443,16 +1525,10 @@ struct opttxt txt_thread_catchup_on_exit = {
 	""
 };
 
-struct opttxt txt_confirm_action = {
-	N_("Ask for command confirmation. <SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Confirm commands before executing  :"),
-	N_("# If ON confirm certain commands with y/n before executing\n")
-};
-
-struct opttxt txt_confirm_to_quit = {
+struct opttxt txt_confirm_choice = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Confirm before quitting            :"),
-	N_("# If ON confirm with y/n before quitting ('Q' never asks)\n")
+	N_("Which actions require confirmation :"),
+	N_("# What should we ask confirmation for.\n")
 };
 
 struct opttxt txt_url_handler = {
@@ -1475,12 +1551,6 @@ struct opttxt txt_use_keypad = {
 };
 #endif /* HAVE_KEYPAD */
 
-struct opttxt txt_use_getart_limit = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Use getart_limit                   :"),
-	N_("# If ON limit the number of articles to get\n")
-};
-
 struct opttxt txt_getart_limit = {
 	N_("Enter maximum number of article to get. <CR> sets."),
 	N_("Number of articles to get          :"),
@@ -1492,6 +1562,36 @@ struct opttxt txt_recent_time = {
 	N_("Enter number of days article is considered recent. <CR> sets."),
 	N_("Article recentness time limit      :"),
 	N_("# Number of days in which article is considered recent, (0=OFF)\n")
+};
+
+struct opttxt txt_wildcard = {
+	N_("WILDMAT for normal wildcards, REGEX for full regular expression matching."),
+	N_("Wildcard matching                  :"),
+	N_("# Wildcard matching 0=(wildmat) 1=(regex)\n")
+};
+
+struct opttxt txt_score_limit_kill = {
+	N_("Enter minimal score before an article is marked killed. <CR> sets."),
+	N_("Score limit (kill)                 :"),
+	N_("# Score limit before an article is marked killed\n")
+};
+
+struct opttxt txt_score_kill = {
+       N_("Enter default score to kill articles. <CR> sets."),
+       N_("Score (kill)                       :"),
+       N_("# Default score to kill articles\n")
+};
+
+struct opttxt txt_score_limit_select = {
+	N_("Enter minimal score before an article is marked hot. <CR> sets."),
+	N_("Score limit (select)               :"),
+	N_("# Score limit before an article is marked hot\n")
+};
+
+struct opttxt txt_score_select = {
+       N_("Enter default score to select articles. <CR> sets."),
+       N_("Score (select)                     :"),
+       N_("# Default score to select articles\n")
 };
 
 #ifdef HAVE_COLOR
@@ -1672,22 +1772,24 @@ struct opttxt txt_signature_repost = {
 };
 
 struct opttxt txt_quote_chars = {
-	N_("Enter quotation marks, %s or %S for author's initials."),
+	N_("Enter quotation marks, %%s or %%S for author's initials."),
 	N_("Characters used as quote-marks     :"),
 	N_("# Characters used in quoting to followups and replys.\n\
 # '_' is replaced by ' ', %%s, %%S are replaced by author's initials.\n")
 };
 
-struct opttxt txt_quote_empty_lines = {
-	N_("Quote empty lines. <SPACE> toggles & <CR> sets."),
-	N_("Quote empty lines                  :"),
-	N_("# If ON quote empty lines, too\n")
-};
-
-struct opttxt txt_quote_signatures = {
-	N_("Quote signatures. <SPACE> toggles & <CR> sets."),
-	N_("Quote signatures                   :"),
-	N_("# If ON quote signatures, too\n")
+struct opttxt txt_quote_style = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Quoting behaviour                  :"),
+	N_("# How quoting should be handled when following up or replying.\n\
+# 0 = Nothing special\n\
+# 1 = Compress quotes\n\
+# 2 = Quote signatures\n\
+# 3 = Compress quotes, quote signatures\n\
+# 4 = Quote empty lines\n\
+# 5 = Compress quotes, quote empty lines\n\
+# 6 = Quote signatures, quote empty lines\n\
+# 7 = Compress quotes, quote signatures, quote empty lines\n")
 };
 
 struct opttxt txt_news_quote_format = {
@@ -1837,7 +1939,7 @@ struct opttxt txt_spamtrap_warning_addresses = {
 struct opttxt txt_filter_days = {
 	N_("Enter default number of days a filter entry will be valid. <CR> sets."),
 	N_("No. of days a filter entry is valid:"),
-	N_("# Num of days a short term filter will be active\n")
+	N_("# Number of days a short term filter will be active\n")
 };
 
 struct opttxt txt_add_posted_to_filter = {
@@ -1905,12 +2007,6 @@ struct opttxt txt_printer = {
 };
 #endif /* !DISABLE_PRINTING */
 
-struct opttxt txt_wildcard = {
-	N_("WILDMAT for normal wildcards, REGEX for full regular expression matching."),
-	N_("Wildcard matching                  :"),
-	N_("# Wildcard matching 0=(wildmat) 1=(regex)\n")
-};
-
 struct opttxt txt_force_screen_redraw = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Force redraw after certain commands:"),
@@ -1935,7 +2031,7 @@ struct opttxt txt_editor_format = {
 struct opttxt txt_inews_prog = {
 	N_("Enter name and options for external-inews, --internal for internal inews"),
 	N_("External inews                     :"),
-	N_("# If --internal use the builtin mini inews for posting via NNTP\n# otherwise use an external inews program\n"),
+	N_("# If --internal use the built in mini inews for posting via NNTP\n# otherwise use an external inews program\n"),
 };
 #endif /* NNTP_ABLE */
 

@@ -333,7 +333,7 @@ strtol (
 		++str;
 	}
 OUT:
-	if (ptr != (char **) 0)
+	if (ptr != NULL)
 		*ptr = str;
 
 	return (sign * (-val));
@@ -347,7 +347,7 @@ OUT:
  * strcmp that ignores case
  */
 
-/*fix me - put me in tin.h */
+/* fix me - put me in tin.h */
 #define FOLD_TO_UPPER(a)	(toupper ((unsigned char)(a)))
 
 #ifndef HAVE_STRCASECMP
@@ -450,7 +450,7 @@ eat_tab (
 
 /*
  * Format a shell command, escaping blanks and other awkward characters that
- * appear in the string arguments.  Replaces sprintf, except that we pass in
+ * appear in the string arguments. Replaces sprintf, except that we pass in
  * the buffer limit, so we can refrain from trashing memory on very long
  * pathnames.
  *
@@ -516,11 +516,9 @@ sh_format (
 				t_bool fix;
 
 				/*
-				 * This logic works for Unix.  Non-Unix systems
-				 * may require a different set of problem
-				 * chars, and may need quotes around the whole
-				 * string rather than escaping individual
-				 * chars.
+				 * This logic works for Unix. Non-Unix systems may require a
+				 * different set of problem chars, and may need quotes around
+				 * the whole string rather than escaping individual chars.
 				 */
 				if (quote == '"') {
 					fix = (strchr(SH_DOUBLE, *src) != 0);

@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -69,8 +66,8 @@ overview_xref_support (
 	char *ptr;
 	t_bool supported = FALSE;
 
-	if ((fp = open_overview_fmt_fp ()) != (FILE *) 0) {
-		while ((ptr = tin_fgets (fp, FALSE)) != (char *) 0) {
+	if ((fp = open_overview_fmt_fp ()) != NULL) {
+		while ((ptr = tin_fgets (fp, FALSE)) != NULL) {
 
 			if (STRNCASECMPEQ(ptr, "Xref:full", 9)) {
 				supported = TRUE;
@@ -116,8 +113,8 @@ read_xref_header (
 		if ((fp = nntp_command (buf, OK_HEAD, NULL)) == NULL)
 			return;
 
-		while ((ptr = tin_fgets (fp, FALSE)) != (char *) 0) {
-			while (*ptr && isspace((int)*ptr))
+		while ((ptr = tin_fgets (fp, FALSE)) != NULL) {
+			while (*ptr && isspace((int) *ptr))
 				ptr++;
 			if (*ptr == '.')
 				break;
@@ -167,7 +164,7 @@ art_mark_xref_read (
 #	endif /* XHDR_XREF */
 #endif /* NNTP_ABLE */
 
-	if (art->xref == (char *) 0)
+	if (art->xref == NULL)
 		return;
 
 	xref_ptr = art->xref;
@@ -256,7 +253,7 @@ NSETRNG1 (
 {
 	register long i;
 
-	if (bitmap == (t_bitmap *) 0) {
+	if (bitmap == NULL) {
 		error_message ("NSETRNG1() failed. Bitmap == NULL");
 		return;
 	}
@@ -288,7 +285,7 @@ NSETRNG0 (
 {
 	register long i;
 
-	if (bitmap == (t_bitmap *) 0) {
+	if (bitmap == NULL) {
 		error_message ("NSETRNG0() failed. Bitmap == NULL");
 		return;
 	}

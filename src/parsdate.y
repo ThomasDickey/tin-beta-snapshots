@@ -30,9 +30,9 @@
 **  Get the number of elements in a fixed-size array, or a pointer just
 **  past the end of it.
 */
-#define ENDOF(array)	(&array[SIZEOF(array)])
+#define ENDOF(array)	(&array[ARRAY_SIZE(array)])
 
-#define CTYPE(isXXXXX, c) (((unsigned char)(c) < 128) && isXXXXX(((int)c)))
+#define CTYPE(isXXXXX, c)	(((unsigned char)(c) < 128) && isXXXXX(((int)c)))
 
 typedef char	*STRING;
 

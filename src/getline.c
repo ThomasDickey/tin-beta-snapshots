@@ -82,7 +82,7 @@ tin_getline (
 	is_passwd = passwd;
 
 	set_xclick_off ();
-	if (prompt == (char *) 0) {
+	if (prompt == NULL) {
 		prompt = "";
 	}
 	gl_buf[0] = 0;		/* used as end of input indicator */
@@ -114,7 +114,7 @@ tin_getline (
 	if (!cmd_line && gl_max == BUF_SIZE)
 		CleartoEOLN();
 
-	if (str != (char *) 0) {
+	if (str != NULL) {
 		for (i = 0; str[i]; i++)
 			gl_addchar (str[i]);
 	}

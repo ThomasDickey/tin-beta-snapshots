@@ -137,7 +137,7 @@ wildmat (
 	/*
 	 * Make sure the pattern is not NULL
 	 */
-	if (p == (char *) 0 || text == (char *) 0)
+	if (p == NULL || text == NULL)
 		return FALSE;
 #ifdef OPTIMIZE_JUST_STAR
 	if (p[0] == '*' && p[1] == '\0')

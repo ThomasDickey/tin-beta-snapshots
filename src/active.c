@@ -85,7 +85,7 @@ get_active_num (
 	char *ptr;
 	int num;
 
-	if ((ptr = getenv (ENV_VAR_GROUPS)) != (char *) 0)
+	if ((ptr = getenv (ENV_VAR_GROUPS)) != NULL)
 		return ((num = atoi (ptr)) ? num : DEFAULT_ACTIVE_NUM);
 #endif /* ENV_VAR_GROUPS */
 	return DEFAULT_ACTIVE_NUM;
@@ -110,7 +110,7 @@ t_bool
 resync_active_file (
 	void)
 {
-	char old_group[HEADER_LEN];
+	char *old_group = NULL;
 	t_bool command_line = FALSE;
 
 	if (!need_reread_active_file ())
@@ -119,9 +119,7 @@ resync_active_file (
 	reread_active_for_posted_arts = FALSE;
 
 	if (selmenu.curr >= 0 && selmenu.max)
-		strcpy (old_group, CURR_GROUP.name);
-	else
-		old_group[0] = '\0';
+		old_group = my_strdup (CURR_GROUP.name);
 
 	write_newsrc ();
 	read_news_active_file ();
@@ -138,8 +136,9 @@ resync_active_file (
 	if (command_line)		/* Can't show only unread groups with cmd line groups */
 		tinrc.show_only_unread_groups = FALSE;
 	else
-		toggle_my_groups (tinrc.show_only_unread_groups, old_group);
+		toggle_my_groups (old_group);
 
+	FreeAndNull (old_group);
 	set_groupname_len (FALSE);
 	show_selection_page ();
 
@@ -204,7 +203,7 @@ process_bogus (
 {
 	struct t_group *ptr;
 
-	if (read_saved_news || tinrc.strip_bogus != BOGUS_ASK)
+	if (read_saved_news || tinrc.strip_bogus != BOGUS_SHOW)
 		return FALSE;
 
 	if ((ptr = group_add(name)) == NULL)
@@ -268,6 +267,7 @@ read_newsrc_active_file (
 {
 	FILE *fp;
 	char *ptr;
+	char *p;
 	char moderated[PATH_LEN];
 	int window = 0;
 	long count = -1L, min = 1L, max = 0L;
@@ -284,7 +284,7 @@ read_newsrc_active_file (
 	 * return immediately if no .newsrc can be found or .newsrc is empty
 	 * when function asked to use .newsrc
 	 */
-	if ((fp = fopen (newsrc, "r")) == (FILE *) 0)
+	if ((fp = fopen (newsrc, "r")) == NULL)
 		return;
 
 	if (file_size(newsrc) <= 0L) {
@@ -295,9 +295,9 @@ read_newsrc_active_file (
 	if (!batch_mode)
 		wait_message (0, _(txt_reading_news_newsrc_file));
 
-	while ((ptr = tin_fgets (fp, FALSE)) != (char *)0 || window != 0) {
+	while ((ptr = tin_fgets (fp, FALSE)) != NULL || window != 0) {
 		if (ptr) {
-			char *p = strpbrk (ptr, ":!");
+			p = strpbrk (ptr, ":!");
 
 			if (!p || *p != SUBSCRIBED)	/* Invalid line or unsubscribed */
 				continue;
@@ -472,7 +472,7 @@ read_active_file (
 	if (!batch_mode)
 		wait_message (0, _(txt_reading_news_active_file));
 
-	if ((fp = open_news_active_fp ()) == (FILE *) 0) {
+	if ((fp = open_news_active_fp ()) == NULL) {
 
 		if (cmd_line && !batch_mode)
 			my_fputc ('\n', stderr);
@@ -489,7 +489,7 @@ read_active_file (
 		tin_done (EXIT_FAILURE);
 	}
 
-	while ((ptr = tin_fgets (fp, FALSE)) != (char *)0) {
+	while ((ptr = tin_fgets (fp, FALSE)) != NULL) {
 		if (!parse_active_line (ptr, &max, &min, moderated))
 			continue;
 
@@ -554,7 +554,7 @@ read_news_active_file (
 	 * Ignore -n if no .newsrc can be found or .newsrc is empty
 	 */
 	if (newsrc_active) {
-		if ((fp = fopen (newsrc, "r")) == (FILE *) 0) {
+		if ((fp = fopen (newsrc, "r")) == NULL) {
 			list_active = TRUE;
 			newsrc_active = FALSE;
 		} else
@@ -632,8 +632,7 @@ check_for_any_new_groups (
 	}
 #endif /* DEBUG */
 
-	if ((fp = open_newgroups_fp (newnews_index)) != (FILE *) 0) {
-
+	if ((fp = open_newgroups_fp (newnews_index)) != NULL) {
 		/*
 		 * Need these later. They list user-defined groups to be
 		 * automatically subscribed or unsubscribed.
@@ -641,25 +640,22 @@ check_for_any_new_groups (
 		autosubscribe = getenv ("AUTOSUBSCRIBE");
 		autounsubscribe = getenv ("AUTOUNSUBSCRIBE");
 
-		while ((line = tin_fgets (fp, FALSE)) != (char *) 0) {
-
+		while ((line = tin_fgets (fp, FALSE)) != NULL) {
 			/*
 			 * Split the group name off and subscribe. If we're reading local,
 			 * we must check the creation date manually
 			 */
-			if ((ptr = strchr (line, ' ')) != (char *) 0) {
+			if ((ptr = strchr (line, ' ')) != NULL) {
 				if (!read_news_via_nntp && ((time_t) atol (ptr) < old_newnews_time || old_newnews_time == (time_t) 0))
 					continue;
 
 				*ptr = '\0';
 			}
-
 			subscribe_new_group (line, autosubscribe, autounsubscribe);
 		}
-
 		TIN_FCLOSE (fp);
 
-		free_attributes_array ();
+		free_attributes_array ();		/* TODO - wtf is this doing here? */
 		read_attributes_file (TRUE);
 		read_attributes_file (FALSE);
 
@@ -703,7 +699,7 @@ subscribe_new_group (
 	/*
 	 * If we explicitly don't auto subscribe to this group, then don't bother going on
 	 */
-	if ((autounsubscribe != (char *) 0) && match_group_list (group, autounsubscribe))
+	if ((autounsubscribe != NULL) && match_group_list (group, autounsubscribe))
 		return;
 
 	/*
@@ -725,7 +721,7 @@ subscribe_new_group (
 			return;
 	}
 
-	if (!no_write && (autosubscribe != (char *) 0) && match_group_list (group, autosubscribe)) {
+	if (!no_write && (autosubscribe != NULL) && match_group_list (group, autosubscribe)) {
 		my_printf (_(txt_autosubscribed), group);
 
 		subscribe (&active[my_group[idx]], SUBSCRIBED);
@@ -765,7 +761,7 @@ match_group_list (
 		 * find end/length of this entry
 		 */
 		separator = strchr (group_list, ',');
-		group_len = ((separator == (char *) 0) ? list_len : (size_t)(separator - group_list));
+		group_len = ((separator == NULL) ? list_len : (size_t)(separator - group_list));
 
 		if ((negate = ('!' == *group_list))) {
 			/*
@@ -828,7 +824,7 @@ load_newnews_info (
 	/*
 	 * Split 'info' into hostname and time
 	 */
-	if ((ptr = strchr (info, ' ')) == (char *) 0)
+	if ((ptr = strchr (info, ' ')) == NULL)
 		return;
 
 	*ptr++ = '\0';
@@ -931,9 +927,9 @@ make_group_list (
 	struct stat stat_info;
 	t_bool is_dir;
 
-	if ((dir = opendir (group_path)) != (DIR *) 0) {
+	if ((dir = opendir (group_path)) != NULL) {
 		is_dir = FALSE;
-		while ((direntry = readdir (dir)) != (DIR_BUF *) 0) {
+		while ((direntry = readdir (dir)) != NULL) {
 			STRCPY(filename, direntry->d_name);
 			sprintf (path, "%s/%s", group_path, filename);
 
@@ -953,7 +949,7 @@ make_group_list (
 				append_group_line (active_file, group_path, art_max, art_min, base_dir);
 
 				ptr = strrchr (group_path, '/');
-				if (ptr != (char *) 0)
+				if (ptr != NULL)
 					*ptr = '\0';
 			}
 		}
@@ -984,7 +980,7 @@ append_group_line (
 		return;
 	}
 
-	if ((fp = fopen (active_file, "a+")) != (FILE *) 0) {
+	if ((fp = fopen (active_file, "a+")) != NULL) {
 		make_group_name (base_dir, group_name, group_path);
 		my_printf ("Appending=[%s %ld %ld %s]\n", group_name, art_max, art_min, base_dir);
 		print_group_line (fp, group_name, art_max, art_min, base_dir);
@@ -1023,6 +1019,6 @@ make_group_name (
 	strcpy (group_name, ++path_ptr);
 
 	name_ptr = group_name;
-	while ((name_ptr = strchr (name_ptr, '/')) != (char *) 0)
+	while ((name_ptr = strchr (name_ptr, '/')) != NULL)
 		*name_ptr = '.';
 }

@@ -84,7 +84,7 @@ extern void write_attributes_file (const char *file);
 /* charset.c */
 extern t_bool is_art_tex_encoded (FILE *fp);
 extern void convert_body2printable (char* buf);
-extern void convert_iso2asc (char *iso, char *asc, int t);
+extern void convert_iso2asc (char *iso, char **asc_buffer, int *max_line_len, int t);
 extern void convert_tex2iso (char *from, char *to);
 extern void convert_to_printable (char* buf);
 
@@ -180,7 +180,7 @@ extern t_bool filter_menu (int type, struct t_group *group, struct t_article *ar
 extern t_bool quick_filter (int type, struct t_group *group, struct t_article *art);
 extern t_bool quick_filter_select_posted_art (struct t_group *group, const char *subj, const char *a_message_id);
 extern t_bool read_filter_file (const char *file);
-extern void free_all_filter_arrays (void);
+extern void free_filter_array (struct t_filters *ptr);
 extern void refresh_filter_menu (void);
 
 /* getline.c */
@@ -232,7 +232,7 @@ extern const char *get_host_name (void);
 #endif /* !FORGERY */
 
 /* inews.c */
-extern t_bool submit_news_file (char *name, char *a_message_id);
+extern t_bool submit_news_file (char *name, struct t_group *group, char *a_message_id);
 extern void get_from_name (char *from_name, struct t_group *thisgrp);
 extern void get_user_info (char *user_name, char *full_name);
 
@@ -312,7 +312,7 @@ extern void free_attributes_array (void);
 extern void free_save_array (void);
 extern void *my_malloc1 (const char *file, int line, size_t size);
 extern void *my_calloc1 (const char *file, int line, size_t nmemb, size_t size);
-extern void *my_realloc1 (const char *file, int line, char *p, size_t size);
+extern void *my_realloc1 (const char *file, int line, void *p, size_t size);
 #ifndef USE_CURSES
 	extern void init_screen_array (t_bool allocate);
 #endif /* !USE_CURSES */
@@ -346,7 +346,7 @@ extern void append_file (char *old_filename, char *new_filename);
 extern void asfail (const char *file, int line, const char *cond);
 extern void base_name (char *fullpath, char *program);
 extern void cleanup_tmp_files (void);
-extern void copy_body (FILE *fp_ip, FILE *fp_op, char *prefix, char *initl, t_bool with_sig);
+extern void copy_body (FILE *fp_ip, FILE *fp_op, char *prefix, char *initl, t_bool raw_data);
 extern void create_index_lock_file (char *the_lock_file);
 extern void draw_percent_mark (long cur_num, long max_num);
 extern void get_author (t_bool thread, struct t_article *art, char *str, size_t len);
@@ -366,9 +366,10 @@ extern void toggle_inverse_video (void);
 	extern int parse_from (const char *from, char *address, char *realname);
 #endif /* 0 */
 #if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
-	extern void buffer_to_network (char *line);
+	extern void buffer_to_network (char *line, int mmnwcharset);
 #endif /* LOCAL_CHARSET || MAC_OS_X || CHARSET_CONVERSION */
-extern void process_charsets (char *line, const char* network_charset, const char *local_charset);
+
+extern void process_charsets (char **line, int *max_line_len, const char *network_charset, const char *local_charset);
 #ifdef HAVE_COLOR
 	extern t_bool toggle_color (void);
 	extern void show_color_status (void);
@@ -561,9 +562,9 @@ extern void unfold_header (char *line);
 
 /* rfc2047.c */
 extern char *rfc1522_decode (const char *s);
-extern char *rfc1522_encode (char *s,t_bool ismail);
+extern char *rfc1522_encode (char *s, struct t_group *group, t_bool ismail);
 extern int mmdecode (const char *what, int encoding, int delimiter, char *where);
-extern void rfc15211522_encode (const char *filename, constext *mime_encoding, t_bool allow_8bit_header,t_bool ismail);
+extern void rfc15211522_encode (const char *filename, constext *mime_encoding, struct t_group *group, t_bool allow_8bit_header, t_bool ismail);
 
 /* save.c */
 extern int check_start_save_any_news (int function, t_bool catchup);
@@ -589,7 +590,7 @@ extern void show_progress (const char *txt, long count, long total);
 extern void show_title (char *title);
 extern void spin_cursor (void);
 extern void stow_cursor (void);
-extern void wait_message (int sdelay, const char *fmt, ...);
+extern void wait_message (unsigned int sdelay, const char *fmt, ...);
 
 /* search.c */
 extern int get_search_vectors (int *start, int *end);
@@ -607,7 +608,7 @@ extern void draw_group_arrow (void);
 extern void selection_page (int start_groupnum, int num_cmd_line_groups);
 extern void set_groupname_len (t_bool all_groups);
 extern void show_selection_page (void);
-extern void toggle_my_groups (t_bool only_unread_groups, const char *group);
+extern void toggle_my_groups (const char *group);
 
 /* sigfile.c */
 extern void msg_write_signature (FILE *fp, t_bool flag, struct t_group *thisgroup);

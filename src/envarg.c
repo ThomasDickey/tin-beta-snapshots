@@ -82,20 +82,19 @@ envargs (
 	 * see if anything in the environment
 	 */
 	envptr = getenv (envstr);
-	if (envptr == (char *) 0 || *envptr == 0)
+	if (envptr == NULL || *envptr == 0)
 		return;
 
 	/*
 	 * count the args so we can allocate room for them
 	 */
 	argc = count_args (envptr);
-	bufptr = (char *) my_malloc (strlen(envptr) + 1);
-	strcpy (bufptr, envptr);
+	bufptr = my_strdup (envptr);
 
 	/*
 	 * allocate a vector large enough for all args
 	 */
-	argv = (char **) my_malloc ((argc + *Pargc + 1) * sizeof(char *));
+	argv = my_malloc ((argc + *Pargc + 1) * sizeof(char *));
 	argvect = argv;
 
 	/*

@@ -3,7 +3,7 @@
  *  Module    : list.c
  *  Author    : I. Lea
  *  Created   : 1993-12-18
- *  Updated   : 1997-01-07
+ *  Updated   : 2002-05-13
  *  Notes     : Low level functions handling the active[] list and its group_hash index
  *
  * Copyright (c) 1993-2002 Iain Lea <iain@bricbrac.de>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -76,7 +73,7 @@ unsigned long
 hash_groupname (
 	const char *group)
 {
-/*#define NEW_HASH_METHOD 1*/
+/* #define NEW_HASH_METHOD 1 */
 #ifdef NEW_HASH_METHOD	/* still testing */
 	unsigned long hash = 0L, g, hash_value;
 	/* prime == smallest prime number greater than size of string table */
@@ -112,7 +109,6 @@ hash_groupname (
 
 /*
  * Find group name in active[] array and return index otherwise -1
- * TODO see how many callers of this can be eliminated
  */
 int
 find_group_index (
@@ -234,11 +230,23 @@ group_rehash(
 		group_add_to_hash(active[i].name, i);
 
 		/*
-		 * Add a group if all groups are yanked in, or we are
-		 * yanked_out but subscribed
+		 * cf: similar code to toggle_my_groups()
+		 * Add a group if all groups are yanked in
+		 * If we are yanked out, only consider subscribed groups
+		 * Then also honour show_only_unread and BOGUS_SHOW
 		 */
-		if (!yanked_out || (yanked_out && active[i].subscribed))
+		if (!yanked_out) {
 			my_group[selmenu.max++] = i;
+			continue;
+		}
+
+		if (active[i].subscribed) {
+			if (tinrc.show_only_unread_groups) {
+				if (active[i].newsrc.num_unread > 0 || (active[i].bogus && tinrc.strip_bogus == BOGUS_SHOW))
+					my_group[selmenu.max++] = i;
+			} else
+				my_group[selmenu.max++] = i;
+		}
 	}
 
 #ifdef DEBUG

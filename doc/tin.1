@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2002-04-22
+.\" Updated   : 2002-05-15
 .\" Notes     : still needs some work, i.e.:
 .\"             - document authorization (.newsauth)
 .\"             - postprocess differences when linked against libuu
 .\"
 .\"
-.TH tin 1 "April 22nd, 2002" "1.5.12" "A Usenet newsreader"
+.TH tin 1 "May 15th, 2002" "1.5.13" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -97,15 +97,18 @@ The '\fB<TAB>\fP' key enters the next newsgroup with unread articles.
 .\"
 .SH "EXIT STATUS"
 Interactive mode:
-.TP 12
+.RS +.5i
+.TP
 .B 0
 Successful program execution.
 .TP
 .B 1
 Usage, syntax, configuration file or network error.
+.RE
 .PP
 Batch mode (-Z):
-.TP 12
+.RS +.5i
+.TP
 .B 0
 No unread news
 .TP
@@ -114,6 +117,7 @@ Usage, syntax, configuration file or network error.
 .TP
 .B 2
 Unread news
+.RE
 .\"
 .\"
 .SH OPTIONS
@@ -707,14 +711,8 @@ PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
 .B [
 Auto select article(s) with a single key [after confirmation]. The defaults
 used for selection are based upon the following four tinrc config variables:
-.in +.3i
-.nf
-\fBdefault_filter_select_case\fP
-\fBdefault_filter_select_expire\fP
-\fBdefault_filter_select_global\fP
-\fBdefault_filter_select_header\fP
-.fi
-.in -.3i
+\fBdefault_filter_select_case\fP, \fBdefault_filter_select_expire\fP,
+\fBdefault_filter_select_global\fP and \fBdefault_filter_select_header\fP.
 Read the section "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" for
 a full explanation of these variables and "FILTERING ARTICLES" for more
 information on filtering.
@@ -722,14 +720,8 @@ information on filtering.
 .B ]
 Kill article(s) with a single key [after confirmation]. The defaults used
 for killing are based upon the following four tinrc config variables:
-.in +.3i
-.nf
-\fBdefault_filter_kill_case\fP
-\fBdefault_filter_kill_expire\fP
-\fBdefault_filter_kill_global\fP
-\fBdefault_filter_kill_header\fP
-.fi
-.in -.3i
+\fBdefault_filter_kill_case\fP, \fBdefault_filter_kill_expire\fP,
+\fBdefault_filter_kill_global\fP and \fBdefault_filter_kill_header\fP.
 Read the section "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" for
 a full explanation of these variables and "FILTERING ARTICLES" for more
 information on filtering.
@@ -1086,14 +1078,8 @@ PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
 .B [
 Auto select article(s) with a single key. The defaults used for selection
 are set based upon the following four tinrc config variables:
-.in +.3i
-.nf
-\fBdefault_filter_select_case\fP
-\fBdefault_filter_select_expire\fP
-\fBdefault_filter_select_global\fP
-\fBdefault_filter_select_header\fP
-.fi
-.in -.3i
+\fBdefault_filter_select_case\fP, \fBdefault_filter_select_expire\fP,
+\fBdefault_filter_select_global\fP and \fBdefault_filter_select_header\fP
 Read the section "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" for
 a full explanation of these variables and "FILTERING ARTICLES" for more
 information on filtering.
@@ -1101,14 +1087,8 @@ information on filtering.
 .B ]
 Kill article(s) with a single key. The defaults used for killing are based
 upon the following four tinrc config variables:
-.in +.3i
-.nf
-\fBdefault_filter_kill_case\fP
-\fBdefault_filter_kill_expire\fP
-\fBdefault_filter_kill_global\fP
-\fBdefault_filter_kill_header\fP
-.fi
-.in -.3i
+\fBdefault_filter_kill_case\fP, \fBdefault_filter_kill_expire\fP,
+\fBdefault_filter_kill_global\fP and \fBdefault_filter_kill_header\fP.
 Read the section "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" for
 a full explanation of these variables and "FILTERING ARTICLES" for more
 information on filtering.
@@ -1449,15 +1429,24 @@ Color of text-lines
 .B col_title
 Color of title text on all the menu screens
 .TP
-.B Confirm commands before executing (confirm_action)
+.B Which actions require confirmation (confirm_choice)
+Ask for manual confirmation to protect the user.
+.RS +.5i
+.IP \(bu 3
+.B commands
 Ask for confirmation before executing certain dangerous commands (e.g.,
 \&'\fBc\fR'atchup). Commands that this affects are marked in this manual
-with '[after confirmation]'. Default is ON.
+with '[after confirmation]'. Default is commands & quit.
 .\" TODO: check if all affected commands are marked [after confirmation]
-.TP
-.B Confirm before quitting (confirm_to_quit)
-If ON you will be asked to confirm that you wish to exit \fBtin\fP when you
-use the '\fBq\fP' command. Default is ON.
+.IP \(bu
+.B quit
+You'll be asked to confirm that you wish to exit \fBtin\fP when you
+use the '\fBq\fP' command.
+.IP \(bu
+.B select
+Ask for confirmation before marking all not selected (with '\fBX\fP'
+command) articles as read.
+.RE
 .\"
 .\" most of these default_* settings are not available from the '\fBM\fP'enu
 .\" as they are intended for internal use only.
@@ -1595,10 +1584,9 @@ Specifies whether a screen redraw should always be done after certain
 external commands. Default is OFF.
 .TP
 .B Number of articles per group to get (getart_limit)
-If \fBuse_getart_limit\fP is ON and \fBgetart_limit\fP is > 0 not more than
-\fBgetart_limit\fP articles/group are fetched from the server. If
-\fBuse_getart_limit\fP is ON and \fBgetart_limit\fP is < 0 \fBtin\fP will
-start fetching articles from your first unread minus absolute value of
+If \fBgetart_limit\fP is > 0 not more than \fBgetart_limit\fP articles/group
+are fetched from the server. If \fBgetart_limit\fP is < 0 \fBtin\fP will start
+fetching articles from your first unread minus absolute value of
 \fBgetart_limit\fP. Default is 0, which means no limit.
 .TP
 .B Number of days during which article is considered recent (recent_time)
@@ -1719,7 +1707,7 @@ you have to use \fBmm_charset\fP instead. \fBmm_network_charset\fP is
 limited to one of the following charsets:
 .in +.3i
 US-ASCII, ISO-8859-{1,2,3,4,5,7,9,10,13,14,15,16}, KOI8-{R,U,RU}
-EUC-{CN,JP,KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2,KR}, UTF-8
+EUC-{CN,JP,KR,TW}, ISO-2022-{CN,CN-EXT,JP,JP-1,JP-2,KR}, Big5, UTF-8
 .in -.3i
 Not all values might work on your system, see
 .BR iconv_open (3)
@@ -1787,14 +1775,14 @@ using the mailcap file. Default is ON.
 .B Post process saved art/thread with (post_process_type)
 This specifies the default type of post processing to perform on saved
 articles. The following types of processing are allowed:
-.in +.5i
-.ti -\w'\(em'u
-\(emnone.
-.ti -\w'\(em'u
-\(emunpacking of multi-part shar files (shell archives).
-.ti -\w'\(em'u
-\(emunpacking of multi-part uuencoded files.
-.in -.5i
+.RS +.5i
+.IP 0 3
+\fBNone\fP (default)
+.IP 1
+\fBShell archives\fP, unpacking of multi-part shar files.
+.IP 2
+\fBUuencode\fP, unpacking of multi-part uuencoded files.
+.RE
 .TP
 .B Print all headers when printing (print_header)
 If ON, then the full article header is sent to the printer. Otherwise only
@@ -1812,8 +1800,15 @@ The character used in quoting included text to article followups and mail
 replies. The '_' character represents a blank character and is replaced
 with ' ' when read. Default is '>_'.
 .TP
-.B Quote empty lines (quote_empty_lines)
-If ON quote empty lines, too. Default is ON.
+.B Quoting behaviour (quote_style)
+How articles should be quoted when following up or replying to them. There
+are a number of things that can be done: empty lines can be quoted,
+signatures can be quoted and quote_chars can be compressed when quoting
+multiple times (for example, '> > >' will be turned into '>>>'). The default
+is to compress quotes, and to quote empty lines.
+.br
+When you are viewing an article in raw mode ('\fB^H\fP'), and follow up or
+reply to it, the signature will be quoted even if it would otherwise not be.
 .TP
 .B Expression for highlighting quoted text (quote_regex)
 A regular expression that will be applied when reading articles. All
@@ -1830,13 +1825,26 @@ A regular expression that will be applied when reading articles. All
 matching lines are shown in \fBcol_quote3\fP. If \fBquote_regex3\fP is
 blank, then \fBtin\fP uses a built in default for this.
 .TP
-.B Quote signatures (quote_signatures)
-If ON quote signatures, too. Default is OFF.
-.TP
 .B Interval in secs to reread active (reread_active_file_secs)
 The news \fI${TIN_LIBDIR-NEWSLIBDIR}"/"${TIN_ACTIVEFILE-active}\fR file is
 reread at regular intervals to show if any new news has arrived. Default is
 1200. Setting this to 0 will disable this feature.
+.TP
+.B Maximum negative score before an article is marked killed (score_limit_kill)
+If the score of an article is below or equal this value the article gets
+marked as killed.
+.TP
+.B Maximum positive score before an article is marked hot (score_limit_select)
+If the score of an article is above or equal this value the article gets
+marked as hot.
+.TP
+.B Default score to kill articles (score_kill)
+Score of an article which should be killed, this must be <=
+\fBscore_limit_kill\fP.
+.TP
+.B Default score to select articles (score_select)
+Score of an article which should be marked hot, this must be >=
+\fBscore_limit_select\fP.
 .TP
 .B Number of lines to scroll in article pager (scroll_lines)
 The number of lines that will be scrolled up/down in the article pager when
@@ -1847,17 +1855,21 @@ This setting supercedes show_last_line_prev_page=ON. Set to -2 to get
 half-page scrolling. This setting supercedes full_page_scroll=OFF.
 .TP
 .B In group menu, show author by (show_author)
-.in +.5i
-.ti -\w'\(em'u
-\(emNone (0) only the ''Subject:'' line will be displayed.
-.ti -\w'\(em'u
-\(emAddr (1) ''Subject:'' line & the address part of the ''From:'' line are displayed.
-.ti -\w'\(em'u
-\(emName (2) ''Subject:'' line & the authors full name part of the ''From:'' line are displayed.
-.ti -\w'\(em'u
-\(emBoth (3) ''Subject:'' line & all of the ''From:'' line are displayed.
-.in -.5i
-Default is 2, authors full name.
+Which information about the author should be shown. Default is 2, authors
+full name.
+.RS +.5i
+.IP 0 3
+\fBNone\fP, only the ''Subject:'' line will be displayed.
+.IP 1
+\fBAddress\fP, ''Subject:'' line & the address part of the ''From:'' line
+are displayed.
+.IP 2
+\fBFull Name\fP, ''Subject:'' line & the authors full name part of the
+\&''From:'' line are displayed (default).
+.IP 3
+\fBAddress and Name\fP, ''Subject:'' line & all of the ''From:'' line are
+displayed.
+.RE
 .TP
 .B Show description of each newsgroup (show_description)
 If ON show a short group description text after newsgroup name at the group
@@ -1891,32 +1903,47 @@ If ON prepend the signature with sigdashes. Default is ON.
 If ON add signature to reposted articles. Default is ON.
 .TP
 .B Sort articles by (sort_article_type)
-This specifies how articles should be sorted. The following sort types
-are allowed:
-.in +.5i
-.ti -\w'\(em'u
-\(emdon't sort articles (none=0).
-.ti -\w'\(em'u
-\(emsort articles by ''Subject:'' field (descending=1 & ascending=2).
-.ti -\w'\(em'u
-\(emsort articles by ''From:'' field (descending=3 & ascending=4).
-.ti -\w'\(em'u
-\(emsort articles by ''Date:'' field (descending=5 & ascending=6).
-.ti -\w'\(em'u
-\(emsort articles by filtering score (descending=7 & ascending=8).
-.in -.5i
-Sort by ascending Date (6) is the default.
+This specifies how articles should be sorted. Sort by ascending Date (6) is
+the default. The following sort types are allowed:
+.RS +.5i
+.IP 0 3
+\fBNothing\fP, don't sort articles.
+.IP 1
+\fBSubject: (descending)\fP, sort articles by ''Subject:'' field descending.
+.IP 2
+\fBSubject: (ascending)\fP, sort articles by ''Subject:'' field ascending.
+.IP 3
+\fBFrom: (descending)\fP, sort articles by ''From:'' field descending.
+.IP 4
+\fBFrom: (ascending)\fP, sort articles by ''From:'' field ascending.
+.IP 5
+\fBDate: (descending)\fP, sort articles by ''Date:'' field descending.
+.IP 6
+\fBDate: (ascending)\fP, sort articles by ''Date:'' field ascending
+(default).
+.IP 7
+\fBScore (descending)\fP, sort articles by filtering score descending.
+.IP 8
+\fBScore (ascending)\fP, sort articles by filtering score ascending.
+.IP 9
+\fBLines: (descending)\fP, sort articles by ''Lines:'' field descending.
+.IP 10
+\fBLines: (ascending)\fP, sort articles by ''Lines:'' field ascending.
+.RE
 .TP
 .B Sort threads by (sort_threads_type)
-This specifies how threads will be sorted. The following sort types are
+This specifies how threads will be sorted. Sort by descending Score (1) is
+the default. The following sort types are
 allowed:
-.in +.5i
-.ti -\w'\(em'u
-\(emdon't sort threads (none=0).
-.ti -\w'\(em'u
-\(emsort threads by filtering score (descending=1 & ascending=2).
-.in -.5i
-Sort by descending Score (1) is the default.
+.RS +.5i
+.IP 0 3
+\fBNothing\fP, don't sort threads.
+.IP 1
+\fBScore (descending)\fP, sort threads by filtering score descending
+(default).
+.IP 2
+\fBScore (ascending)\fP, sort threads by filtering score ascending.
+.RE
 .TP
 .B Spamtrap warning address parts (spamtrap_warning_addresses)
 Set this option to a list of comma-separated strings to be warned if you are
@@ -1970,26 +1997,41 @@ If ON, show "a as Umlaut-a, etc. Default is OFF. This behaviour can also be
 toggled in the article viewer via '\fB"\fP'.
 .TP
 .B Thread articles by (thread_articles)
-Defines which threading method to use. The choices are:
-.in +.5i
-.ti -\w'\(em'u
-\(emDon't thread (0)
-.ti -\w'\(em'u
-\(emThread on Subject only (1)
-.ti -\w'\(em'u
-\(emThread on References only (2)
-.ti -\w'\(em'u
-\(emThread on References then Subject (3, default)
-.ti -\w'\(em'u
-\(emThread multipart articles on Subject (4)
-.in -.5i
-It's also possible to set the threading type on a per group basis by setting
-the group attribute variable \fBthread_arts\fP to 0 - 4 in the file
+Defines which threading method to use. It's possible to set the threading
+type on a per group basis by setting the group attribute variable
+\fBthread_arts\fP to 0 - 4 in the file
 \fI${TIN_HOMEDIR-"$HOME"}/.tin/attributes\fR. (See also "GROUP ATTRIBUTES".)
+The default is Both Subject and References.
+The choices are:
+.RS +.5i
+.IP 0 3
+\fBNone\fP, don't thread.
+.IP 1
+\fBSubject\fP, thread on ''Subject:'' only.
+.IP 2
+\fBReferences\fP, thread on ''References:'' only.
+.IP 3
+\fBBoth Subject and References\fP, thread on ''References:'' then
+\&''Subject:'' (default).
+.IP 4
+\fBMultipart Subject\fP, thread multipart articles on ''Subject:''.
+.RE
 .TP
 .B Catchup thread by using left key (thread_catchup_on_exit)
 If ON catchup group/thread when leaving with the left arrow key. Default is
 ON.
+.TP
+.B Score of a thread (thread_score)
+How the total score of a thread is computed. Default is 0, the maximum
+score in this thread.
+.RS +.5i
+.IP 0 3
+\fBMax\fP, the maximum score in this thread.
+.IP 1
+\fBSum\fP, the sum of all scores in this thread.
+.IP 2
+\fBAverage\fP, the average score in this thread.
+.RE
 .TP
 .B Transliteration (translit)
 If ON append //TRANSLIT to the first argument of
@@ -2006,10 +2048,6 @@ If ON remove \fI~/.article\fR after posting. Default is ON.
 The program that will be run when launching URL's in the article viewer
 using '\fBU\fP'. The actual URL will be appended to this.
 Default is \fBurl_handler.sh %s\fP.
-.TP
-.B Limit number of articles fetched from server (use_getart_limit)
-If enabled \fBtin\fP fetches max. \fBgetart_limit\fP articles/group from the
-server. Default is OFF.
 .TP
 .B Use ANSI color (use_color)
 If enabled \fBtin\fP uses ANSI-colors. Default is OFF.
@@ -2170,8 +2208,8 @@ following variables are expanded if found in the tinrc variables
 \fB%G\fP	Groupname
 \fB%M\fP	Message-ID
 \fB%N\fP	Fullname of author
-\fB%C\fP        Firstname of author
-\fB%I\fP        Initials of author
+\fB%C\fP	Firstname of author
+\fB%I\fP	Initials of author
 .fi
 .RE
 i.e.,
@@ -2985,13 +3023,13 @@ O'Reilly, Oleg Ohotnikov, Ronald Orr, Julien Oster, Guido Ostkamp, Philip
 Paeps, Jeb Palmer, Neil Parker, Joseph Parmelee, Tom Parry, Jim Patterson,
 Sven Paulus, Walter Pelissero, Cameron Perkins, Colin Perkins, Eric
 Peterson, Tim Pierce, Bill Poitras, Scott W. Powers, Wolfgang Prediger,
-GianPiero Puccioni, Thomas Quinot, Stefan Rapp, Martin Reising, Kyle Rhorer,
-Ted Richards, Steve Robbins, Ollivier Robert, Branden Robinson, Jim
-Robinson, Thomas Roessler, Erik van Roode, Meelis Roos, Stephen Roseman,
-Roland Rosenfeld, Peter Van Rossem, Clifton Royston, Rich Salz, Gary
-Sanders, Nickolay Saukh, John Sauter, Christopher Sawtell, Holger Schif,
-Volker Schmidt, John Schmitz, Torsten Schneider, Stefan Scholl, Rainer
-Scholz, Juergen Schroeder, Larry Schwimmer, Randy Scott, Bart Sears,
+Marc Prud'hommeaux, GianPiero Puccioni, Thomas Quinot, Stefan Rapp, Martin
+Reising, Kyle Rhorer, Ted Richards, Steve Robbins, Ollivier Robert, Branden
+Robinson, Jim Robinson, Thomas Roessler, Erik van Roode, Meelis Roos,
+Stephen Roseman, Roland Rosenfeld, Peter Van Rossem, Clifton Royston, Rich
+Salz, Gary Sanders, Nickolay Saukh, John Sauter, Christopher Sawtell, Holger
+Schif, Volker Schmidt, John Schmitz, Torsten Schneider, Stefan Scholl,
+Rainer Scholz, Juergen Schroeder, Larry Schwimmer, Randy Scott, Bart Sears,
 Karl-Olav Serrander, Doug Sewell, Philip Shearer, Jungshik Shin, Sergey
 Shkonda, Andreas Siegert, Mark Smith, Toomas Soome, Steve Spearman, Helmut
 Springer, Cliff Stanford, Steve Starck, Jason Steiner, Ralf Stephan, Michael

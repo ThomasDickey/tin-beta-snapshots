@@ -1,3 +1,64 @@
+-- 1.5.13 release 20020703 "Chop Suey!" --
+
+U108) Philip Paeps <philip@paeps.cx>
+      ADD. quote_style
+      REM. quote_empty_lines, quote_signatures
+      FIX. extern.h, proto.h, tin.h, tinrc.h, config.c, init.c, lang.c, misc.c
+           post.c, tincfg.tbl, tin.1, tin.5
+
+U107) Jason Faultless <jason@radar.tele2.co.uk>
+      ADD. code cleanup
+      ADD. cursor position is retained when sorting active,
+           show_only_unread/list_bogus flags etc.. are honoured
+      FIX. extern.h, proto.h, tin.h, active.c, config.c, curses.c, feed.c
+           group.c, init.c, lang.c, list.c, main.c, page.c, select.c, tags.c
+           thread.c, tincfg.tbl
+
+U106) Michael Bienia <michael@vorlon.ping.de>
+      ADD. join use_getart_limit and getart_limit
+      ADD. new sort_article_types: Lines descend and Lines ascend
+      ADD. score_limit_kill, score_limit_sel, score_kill, score_select
+      BUG. sort_threads_type > 0 didn't work without -DTHREAD_SUM
+      ADD. thread_score, replaces THREAD_SUM and THREAD_WEIGHT
+      FIX. extern.h, tin.h, tinrc.h, art.c, attrib.c, config.c, filter.c
+           group.c, init.c, lang.c, main.c, refs.c, thread.c, tincfg.tbl
+           tin.1, tin.5
+
+U105) Olaf Dietrich <olaf@dtrx.de>
+      BUG. MAC_OS_X and CHARSET_CONVERSION could be both defined
+      BUG. --disable-locale might corrupt !ISO-8859-* articles
+      BUG. network_charset change in menu wasn't propagated to local_charset
+           if compiled with CHARSET_CONVERSION && NO_LOCALE
+      BUG. ISO2ASC might have been called with !ISO data
+      FIX. proto.h, tin.h, charset.c, config.c, cook.c, misc.c, rfc2047.c
+           INSTALL
+
+U104) Marc Prud'hommeaux <marc@solarmetric.com>
+      BUG. unititialised newbitmap might be used
+      FIX. newsrc.c
+
+U103) Andreas Metzler <tin-dev@downhill.at.eu.org>
+      ADD. joined confirm_action and confirm_to_quit to confirm_choice
+      ADD. missing german translations
+      ADD. mm_network_charset to attributes
+      ADD. undeclared_charset to attributes
+      FIX. tin.1, tin.5, extern.h, proto.h, tin.h, tinrc.h, art.c, attrib.c
+           config.c, group.c, inews.c, init.c, lang.c, misc.c, page.c, post.c
+           rfc2046.c, rfc2047.c, select.c, thread.c, tincfg.tbl, de.po
+
+U102) Urs Janssen <urs@tin.org>
+      BUG. CODESET might be used undeclared
+      BUG. mm_network_charset change in the 'M'enu wasn't propagated to
+           group attribute
+      ADD. moved some var-declarations out of loops
+      ADD. Big5 as possible network charset
+      ADD. some missing german translations
+      ADD. tinrcupdate.pl
+      ADD. config.guess, config.sub update
+      REM. some casts
+      FIX. tin.h, *.c, de.po, tinrcupdate.pl, tin.1, tin.5, config.guess
+           config.sub, INSTALL
+
 -- 1.5.12 release 20020427 "Sugar" --
 
 U101) Thomas E. Dickey <dickey@invisible-island.net>
@@ -126,7 +187,7 @@ U089) Urs Janssen <urs@tin.org>
       BUG. Content-Type header with additional parameters but no charset
            caused crashes
       BUG. if included gettext was needed tin doesn't build due to
-           dependencie problems
+           dependency problems
       FIX. Makefile, Makefile.in, configure[.in], autoconf.h[in], aclocal.m4
            extern.h, policy.h, proto.h, rfc2046.h, tin.h, tinrc.h, active.c
            art.c, charset.c, config.c, cook.c, header.c, help.c, inews.c

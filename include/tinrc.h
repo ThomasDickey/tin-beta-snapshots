@@ -136,7 +136,12 @@ struct t_config {
 	int sort_threads_type;				/* method used to sort base[] */
 	int strip_bogus;
 	int thread_articles;				/* threading system for viewing articles */
+	int thread_score;				/* how the score for threads is computed*/
 	int wildcard;						/* 0=wildmat, 1=regex */
+	int score_limit_kill;					/* score limit to kill articles */
+	int score_limit_select;					/* score limit to select articles */
+	int score_kill;						/* default score for "kill" filter rules */
+	int score_select;					/* default score for "hot" filter rules */
 #ifdef HAVE_COLOR
 	int col_back;						/* standard background color */
 	int col_from;						/* color of sender (From:) */
@@ -174,8 +179,7 @@ struct t_config {
 	t_bool beginner_level;				/* beginner level (shows mini help a la elm) */
 	t_bool cache_overview_files;		/* create local index files for NNTP overview files */
 	t_bool catchup_read_groups;			/* ask if read groups are to be marked read */
-	t_bool confirm_action;
-	t_bool confirm_to_quit;
+	int confirm_choice;				/* what has to be confirmed */
 	t_bool draw_arrow;					/* draw -> or highlighted bar */
 	t_bool force_screen_redraw;			/* force screen redraw after external (shell) commands */
 	t_bool group_catchup_on_exit;		/* catchup group with left arrow key or not */
@@ -195,8 +199,7 @@ struct t_config {
 #endif /* !DISABLE_PRINTING */
 	t_bool process_only_unread;			/* save/print//mail/pipe unread/all articles */
 	t_bool prompt_followupto;			/* display empty Followup-To header in editor */
-	t_bool quote_empty_lines;			/* quote empty lines, too */
-	t_bool quote_signatures;			/* quote signatures */
+	int quote_style;					/* quoting behaviour */
 	t_bool show_description;
 	t_bool show_lines;
 	t_bool show_only_unread_arts;		/* show only new/unread arts or all arts */
@@ -216,7 +219,6 @@ struct t_config {
 	t_bool thread_catchup_on_exit;		/* catchup thread with left arrow key or not */
 	t_bool unlink_article;
 	char inews_prog[PATH_LEN];
-	t_bool use_getart_limit;
 	t_bool use_mailreader_i;			/* invoke user's mailreader earlier to use more of its features (i = interactive) */
 	t_bool use_mouse;					/* enables/disables mouse support under xterm */
 #ifdef HAVE_KEYPAD

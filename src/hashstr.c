@@ -18,10 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea, Rich Skrenta.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -44,19 +41,18 @@
 #endif /* !TIN_H */
 
 /*
- *  Maintain a table of all strings we have seen.
- *  If a new string comes in, add it to the table and return a pointer
- *  to it.  If we've seen it before, just return the pointer to it.
+ * Maintain a table of all strings we have seen.
+ * If a new string comes in, add it to the table and return a pointer
+ * to it. If we've seen it before, just return the pointer to it.
  *
- *  Usage:  hash_str("some string") returns char *
+ * 	Usage: hash_str("some string") returns char *
  *
- *  Spillovers are chained on the end
+ * Spillovers are chained on the end
  */
 
 /*
- *  Arbitrary table size, but make sure it's prime!
+ * Arbitrary table size, but make sure it's prime!
  */
-
 #define HASHNODE_TABLE_SIZE	2411
 
 #ifdef M_AMIGA
@@ -71,25 +67,22 @@ char *
 hash_str (
 	const char *s)
 {
+	const unsigned char *t = (const unsigned char *) s;
+	int len = 0;
 	long h;				/* result of hash: index into hash table */
 	struct t_hashnode **p;	/* used to descend the spillover structs */
 
-	if (s == (char *) 0)
+	if (s == NULL)
 		return (char *) 0;
 
-	{
-		const unsigned char *t = (const unsigned char *) s;
-		int len = 0;
-
-		h = 0;
-		while (*t) {
-			h = (h << 1) ^ *t++;
-			if (++len & 7)
-				continue;
-			h %= (long) HASHNODE_TABLE_SIZE;
-		}
+	h = 0;
+	while (*t) {
+		h = (h << 1) ^ *t++;
+		if (++len & 7)
+			continue;
 		h %= (long) HASHNODE_TABLE_SIZE;
 	}
+	h %= (long) HASHNODE_TABLE_SIZE;
 
 	p = &table[h];
 
@@ -122,7 +115,7 @@ add_string (
 {
 	struct t_hashnode *p;
 
-	p = (struct t_hashnode *) my_malloc (sizeof (struct t_hashnode) + strlen(s));
+	p = my_malloc (sizeof (struct t_hashnode) + strlen(s));
 
 	p->next = (struct t_hashnode *) 0;
 	p->aptr = -1;					/* -1 is the default value */
@@ -141,7 +134,7 @@ hash_init (
 
 #ifdef M_AMIGA
 	if (!table)
-		table = (struct t_hashnode **) my_malloc (HASHNODE_TABLE_SIZE * sizeof (void *));
+		table = my_malloc (HASHNODE_TABLE_SIZE * sizeof (void *));
 #endif /* M_AMIGA */
 
 	for (i = 0; i < HASHNODE_TABLE_SIZE; i++)
@@ -162,11 +155,11 @@ hash_reclaim (
 #endif /* M_AMIGA */
 
 	for (i = 0; i < HASHNODE_TABLE_SIZE; i++) {
-		if (table[i] != (struct t_hashnode *) 0) {
+		if (table[i] != NULL) {
 			p = table[i];
-			while (p != (struct t_hashnode *) 0) {
+			while (p != NULL) {
 				next = p->next;
-				free ((char *) p);
+				free (p);
 				p = next;
 			}
 			table[i] = (struct t_hashnode *) 0;

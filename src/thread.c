@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -126,7 +123,7 @@ bld_tline (
 		} else if (art->killed && tinrc.kill_level == KILL_THREAD) {
 			mark = tinrc.art_marked_killed;
 		} else {
-			if (tinrc.kill_level != KILL_READ && art->score >= SCORE_SELECT)
+			if (tinrc.kill_level != KILL_READ && art->score >= tinrc.score_select)
 				mark = tinrc.art_marked_read_selected ; /* read hot chil^H^H^H^H article */
 			else
 				mark = tinrc.art_marked_read;
@@ -210,7 +207,7 @@ bld_tline (
 		 * Hide subject if same as parent's.
 		 */
 		if (gap > 0) {
-			int len = strlen(buff);
+			size_t len = strlen(buff);
 			for (ptr = art->refptr->parent; ptr && EXPIRED (ptr); ptr = ptr->parent)
 				;
 			if (!(ptr && arts[ptr->article].subject == art->subject))
@@ -372,7 +369,7 @@ thread_page (
 	/*
 	 * If threading by Refs, it helps to see the subject line
 	 */
-	show_subject = ((arts[thread_respnum].archive != (char *)0) || (group->attribute->thread_arts == THREAD_REFS) || (group->attribute->thread_arts == THREAD_BOTH));
+	show_subject = ((arts[thread_respnum].archive != NULL) || (group->attribute->thread_arts == THREAD_REFS) || (group->attribute->thread_arts == THREAD_BOTH));
 
 	/*
 	 * Set the cursor to the last response unless pos_first_unread is on
@@ -667,7 +664,7 @@ thread_page (
 			case iKeyThreadToggleArtSel:		/* toggle article as selected */
 				if ((n = find_response (thread_basenote, thdmenu.curr)) < 0)
 					break;
-				arts[n].selected = (!(ch == iKeyThreadToggleArtSel && arts[n].selected == 1));
+				arts[n].selected = (!(ch == iKeyThreadToggleArtSel && arts[n].selected));	/* TODO optimise? */
 /*				update_thread_page (); */
 				bld_tline (thdmenu.curr, &arts[n]);
 				draw_line (thdmenu.curr, MAGIC);
@@ -679,14 +676,14 @@ thread_page (
 				break;
 
 			case iKeyThreadReverseSel:		/* reverse selections */
-				for (i = (int) base[thread_basenote]; i != -1; i = arts[i].thread)
+				for_each_art_in_thread(i, thread_basenote)
 					arts[i].selected = bool_not(arts[i].selected);
 				update_thread_page ();
 				break;
 
 			case iKeyThreadUndoSel:		/* undo selections */
-				for (i = (int) base[thread_basenote]; i != -1; i = arts[i].thread)
-					arts[i].selected = 0;
+				for_each_art_in_thread(i, thread_basenote)
+					arts[i].selected = FALSE;
 				update_thread_page ();
 				break;
 
@@ -837,7 +834,7 @@ new_responses (
 	int i;
 	int sum = 0;
 
-	for (i = (int) base[thread]; i >= 0; i = arts[i].thread) {
+	for_each_art_in_thread(i, thread) {
 		if (arts[i].status != ART_READ)
 			sum++;
 	}
@@ -865,7 +862,7 @@ which_thread (
 	int i, j;
 
 	for (i = 0; i < grpmenu.max; i++) {
-		for (j = (int) base[i]; j >= 0; j = arts[j].thread) {
+		for_each_art_in_thread(j, i) {
 			if (j == n)
 #ifdef JUST_TESTING
 			{
@@ -910,7 +907,7 @@ which_response (
 	i = which_thread (n);
 	assert(i >= 0);
 
-	for (j = (int) base[i]; j != -1; j = arts[j].thread) {
+	for_each_art_in_thread(j, i) {
 		if (j == n)
 			break;
 		else
@@ -938,7 +935,7 @@ num_of_responses (
 	if (n < 0)
 		n = 0;
 
-	for (i = (int) base[n]; i != -1; i = arts[i].thread) {
+	for_each_art_in_thread(i, n) {
 		assert (i != ART_EXPIRED);
 		assert (i != oldi);
 		oldi = i;
@@ -959,35 +956,29 @@ get_score_of_thread (
 	int n)
 {
 	int i;
-	int score = 0;
-#ifdef THREAD_WEIGHT
 	int j = 0;
-#endif /* THREAD_WEIGHT */
+	int score = 0;
 
-	for (i = n; i >= 0; i = arts[i].thread)
+	for (i = n; i >= 0; i = arts[i].thread) {
 		if (arts[i].status == ART_UNREAD) {
-#ifndef THREAD_SUM
-			/* we use the maximum article score for the complete thread */
-			if ((arts[i].score > score) && (arts[i].score > 0))
-				score = arts[i].score;
-			else {
-				if ((arts[i].score < score) && (score <= 0))
+			if (tinrc.thread_score == THREAD_SCORE_MAX) {
+				/* we use the maximum article score for the complete thread */
+				if ((arts[i].score > score) && (arts[i].score > 0))
 					score = arts[i].score;
+				else {
+					if ((arts[i].score < score) && (score <= 0))
+						score = arts[i].score;
+				}
+			} else { /* tinrc.thread_score >= THREAD_SCORE_SUM */
+				/* sum scores of unread arts and count num. arts */
+				score += arts[i].score;
+				j++;
 			}
-#else
-			/* sum scores of unread arts and count num. arts */
-			score += arts[i].score;
-#	ifdef THREAD_WEIGHT
-			j++;
-#	endif /* THREAD_WEIGHT */
-#endif /* !THREAD_SUM */
 		}
-#ifdef THREAD_SUM
-#  ifdef THREAD_WEIGHT /* 'weight' thread-score or just sum? */
-	if (j)
+	}
+	if (j && tinrc.thread_score == THREAD_SCORE_WEIGHT)
 		score /= j;
-#  endif /* THREAD_WEIGHT */
-#endif /* THREAD_SUM */
+
 	return score;
 }
 
@@ -1012,13 +1003,13 @@ stat_thread (
 	sbuf->selected_unread= 0;
 	sbuf->selected_seen = 0;
 	sbuf->art_mark = tinrc.art_marked_read;
-	sbuf->score = 0 /*-(SCORE_MAX) */;
+	sbuf->score = 0 /* -(SCORE_MAX) */;
 	sbuf->time = 0;
 	sbuf->multipart_compare_len = 0;
 	sbuf->multipart_total = 0;
 	sbuf->multipart_have = 0;
 
-	for (i = (int) base[n]; i >= 0; i = arts[i].thread) {
+	for_each_art_in_thread(i, n) {
 		++sbuf->total;
 		if (arts[i].inrange)
 			++sbuf->inrange;
@@ -1302,7 +1293,7 @@ thread_catchup(
 /* FIXME do some NLS/snprintf work here - see equivalent code in group_catchup() */
 	if (i != -1) {				/* still unread arts in this thread */
 		sprintf(buf, _(txt_mark_thread_read), (ch == iKeyThreadCatchupNextUnread) ? _(txt_enter_next_thread) : "");
-		if (!tinrc.confirm_action || (tinrc.confirm_action && (pyn = prompt_yn (cLINES, buf, TRUE)) == 1))
+		if ((!TINRC_CONFIRM_ACTION) || (pyn = prompt_yn (cLINES, buf, TRUE)) == 1)
 			thd_mark_read (&CURR_GROUP, base[thread_basenote]);
 	}
 

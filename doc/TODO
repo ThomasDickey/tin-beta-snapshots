@@ -1,5 +1,16 @@
 Bugs
 ----
+o  doesn't handle symlinks for .oldnewsrc
+   [20020627 Jeff Sheinberg <jeffsh@erols.com>]
+
+o  '+' in group-level is broken (does nothing)
+   [20020516 Urs Janssen <urs@tin.org>]
+
+o  changing thread_articles in the thread-level might trigger
+   assertion in show_thread_page() -> the thread display code and logic
+   needs complete rewriting.
+   [20020514 Michael Bienia <michael@vorlon.ping.de>]
+
 o  when p'|'ping multiple files ('T'agged) screen is defaced
    [20020305 Urs Janssen <urs@tin.org>]
 
@@ -61,9 +72,6 @@ o  reference based filters won't work with long (> 500 chars)
     if one has a filter based i.e on the 5th oldest message-id and the
     line get's much longer by the time that id might be removed by
     tin and the filter won't work anymore)
-
-o  thread_articles=0 lacks score for read arts if show_score=ON and
-   kill_level>=1
 
 o  batch mode has several bugs
    - -S, -N and -M cmd-line switches are broken (again)
@@ -168,7 +176,7 @@ o  repost ('x') ignores ~/.tin/headers & ~/.tin/attributes - bug or
    feature?!
 
 o  forged cancelling via Supersedes:/Also-Control:/Control:-header is possible
-   if it is supplied by hand (builtin_inews)
+   if it is supplied by hand (inews_prog=--internal)
 
 o  when last articles in a newsgroup were cancelled, it shows that there are
    new articles in that group, even if entered that group in a session before
@@ -197,9 +205,6 @@ o  hierarchical 'M'enu, i.e. hide all color_* options as long as
    use_color is turned off, put all art_marked_*into a 'submenu', ...
    (currently the Menu is statically build on compile time)
    [20020322 Urs Janssen <urs@tin.org>]
-
-o  add two new sort_article_types: Lines descend and Lines ascend
-   [20020302 Peter Leftwich <Hostmaster@Video2Video.Com>]
 
 o  add a postponed 'browser' (store postponed arts in
    MH or maildir format to make things easyer?)
@@ -242,18 +247,9 @@ o  rewrite thread-method selection that users can easyly combine different
    THREAD_MULTI || ...) - see also note in art.c
    [20011117 Urs Janssen <urs@tin.org>]
 
-o  join use_getart_limit and getart_limit (getart_limit=0 means
-   use_getart_limit=OFF)
-   [20011114 Urs Janssen <urs@tin.org>]
-
 o  if there are no tagged but hot articles in the group make 'S' work on
    the hot articles instead of complaining about no tagged arts.
    [20010824 Urs Janssen <urs@tin.org>]
-
-o  make THREAD_SUM/THREAD_WEIGHT a config/attributes option and document it
-   (i.e. make tinrc.show_score a 4 way toggle {"off", "current || max",
-    "sum", weight"})
-   [20020301 Urs Janssen <urs@tin.org>]
 
 o  key to toggle article and thread sorting preferences on the fly
    (like 'u' for threading)
@@ -272,6 +268,8 @@ o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
    about that part) for different content-types
 
 o  better integrate saving of MIME/non-MIME articles when not using libuu
+   MIME sections are saved by the 's'ave operations, uuencoded sections
+   are saved as part of the postprocess backend
    [Jason Faultless <jason@radar.tele2.co.uk>]
 
 o  rewrite keymap stuff:
@@ -303,7 +301,8 @@ o  make hide_uu a 3 way toggle for the attributes file (not tinrc).
 
 o  join keep_posted_articles & keep_posted_articles_file into one option
    posted_articles_file=/path/to/file - don't keep arts if
-   posted_articles_file is unset
+   posted_articles_file is unset. join show_score/show_lines to show_infos =
+   { noting, lines, score, lines & score}
    [Urs Janssen <urs@tin.org>]
 
 o  detect pcre version and add compatibility macros for old versions
@@ -382,11 +381,17 @@ o  Additions to the thread menu:
      'f' (post a followup)
      'X' (mark all unread articles that have not been selected as read)
      ';' (mark unread arts as hot if >= 1 art in thread is hot)
+     '+' (mark thread as hot)
      'Y' (check for new articles in thead)
+     '%' (toggle rto13 encoding)
      keys to go to previous/next thread
 
 o  Additions to the group menu:
      'Y' (check for new articles in group)
+     '%' (toggle rto13 encoding)
+
+o  Additions to the select menu:
+     '%' (toggle rto13 encoding)
 
 o  Add to the 'M'enu:
      DEFAULT_MAILER
@@ -516,6 +521,9 @@ o  allow expiring filter entrys n-days after the last time they matched
 
 Internal Changes
 ----------------
+o  check where joinpath() should be used
+   [Urs Janssen <urs@tin.org>]
+
 o  change '#define TMPDIR "/tmp/"' to
    '#define TMPDIR get_val("TMPDIR", "/tmp/")'
    (SUSV2 XBD Files: "applications are encouraged to use
@@ -527,10 +535,6 @@ o  make configure look for strrstr() in libpub/publib.h
    [Urs Janssen <urs@tin.org>]
 
 o  reorder several structs to avoid padding (see gcc -Wpadding)
-   [Urs Janssen <urs@tin.org>]
-
-o  join some keys, i.e PostponeYes, PostponeNo -> PromptYes, PromptNo;
-   GroupPost, PagePost, SelectPost -> Post
    [Urs Janssen <urs@tin.org>]
 
 o  what type is base[]?
@@ -597,9 +601,10 @@ o  check where my_strncpy() or STRCPY() should be used
    or include OpenBSDs strlcpy(3) (and strlcat(3)) and use it.
    (<ftp://ftp.openbsd.org/pub/OpenBSD/src/lib/libc/string/>)
 
-o  check code with lclint (<http://www.sds.lcs.mit.edu/lclint/>),
-   ccmalloc (<http://www.inf.ethz.ch/personal/biere/projects/ccmalloc/>)
-   and MSS (<http://hem1.passagen.se/blizzar/mss/>)
+o  check code with Splint (LCLint) <http://www.splint.org/>,
+   ccmalloc (<http://www.inf.ethz.ch/personal/biere/projects/ccmalloc/>),
+   MSS (<http://hem1.passagen.se/blizzar/mss/>) and
+   valgrind (<http://developer.kde.org/~sewardj/>)
 
 o  rewrite the tag code so that arts[].tagged becomes index in arts[]
    of next tagged article. num_of_tagged_arts becomes index of first
@@ -648,13 +653,14 @@ o  make mm_network_charset an "option_list" to avoid junk input or
    us-ascii) on each...) and disable those not available.
    [done except configure check 20010907 urs@tin.org]
 
-o  add configure chek if 2 arg of iconv is const or not
-
 Docs/online help
 ----------------
 o  add instalation guide (in html)
 
 o  document keymap feature
+
+o  replace all key references in the manuals by thier names, i.e.
+   'X' -> GroupMarkUnselArtRead
 
 o  man page always needs work
    i.e. 'U', 'V' in pager need better documentation

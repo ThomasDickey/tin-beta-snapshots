@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea, Rich Skrenta
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -115,7 +112,7 @@ main (
 	debug = 0;	/* debug OFF */
 
 #if defined(M_AMIGA) && defined(__SASC)
-	/* Call tzset() here!*/
+	/* Call tzset() here! */
 	_TZ = "GMT0";
 	tzset();
 	if (argc == 0) { /* we are running from the Workbench */
@@ -220,7 +217,7 @@ main (
 
 #ifdef DEBUG_NEWSRC
 	unlink ("/tmp/BITMAP");
-/*	vNewsrcTestHarness ();*/
+/*	vNewsrcTestHarness (); */
 #endif /* DEBUG_NEWSRC */
 
 	/*
@@ -333,7 +330,7 @@ main (
 	if (num_cmd_line_groups)
 		tinrc.show_only_unread_groups = FALSE;
 	else
-		toggle_my_groups (tinrc.show_only_unread_groups, "");
+		toggle_my_groups (NULL);
 
 	/*
 	 * Check/start if any new/unread articles
@@ -472,10 +469,6 @@ read_cmd_line_options (
 
 			case 'G':
 				tinrc.getart_limit = atoi(optarg);
-				if (tinrc.getart_limit != 0)
-					tinrc.use_getart_limit = TRUE;
-				else
-					tinrc.use_getart_limit = FALSE;
 				break;
 
 #	ifndef M_AMIGA
@@ -501,7 +494,7 @@ read_cmd_line_options (
 			case 'I':
 #ifndef NNTP_ONLY
 				my_strncpy (index_newsdir, optarg, sizeof (index_newsdir));
-/*				my_mkdir (index_newsdir, (mode_t)S_IRWXUGO);*/
+/*				my_mkdir (index_newsdir, (mode_t)S_IRWXUGO); */
 #else
 				error_message (_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
@@ -798,11 +791,12 @@ read_cmd_line_options (
 			(void) uname(&uts);
 			get_newsrcname(newsrc, uts.nodename);
 #else
-			char nodenamebuf[32];
+			char nodenamebuf[256]; /* SUSv2 limit; better use HOST_NAME_MAX */
 #	if defined(HAVE_GETHOSTNAME) && !defined (M_AMIGA)
 			(void) gethostname(nodenamebuf, sizeof(nodenamebuf));
 #	else
-			my_strncpy (nodenamebuf, get_val ("NodeName", "PROBLEM_WITH_NODE_NAME"), sizeof (nodenamebuf));
+			/* TODO: document $NodeName */
+			my_strncpy (nodenamebuf, get_val("NodeName", "PROBLEM_WITH_NODE_NAME"), sizeof (nodenamebuf));
 #	endif /* HAVE_GETHOSTNAME && !M_AMIGA */
 			get_newsrcname(newsrc, nodenamebuf);
 #endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
