@@ -461,9 +461,9 @@ parse_rfc822_headers(
 	hdr->ext = new_part(NULL);		/* Initialise MIME data */
 
 	while ((line = tin_fgets (from, TRUE)) != (char *) 0) {
-#ifdef LOCAL_CHARSET
+#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
 		buffer_to_local(line);
-#endif /* LOCAL_CHARSET */
+#endif /* LOCAL_CHARSET || MAC_OS_X */
 
 		if (to) {
 			fprintf(to, "%s\n", line);		/* Put raw data */

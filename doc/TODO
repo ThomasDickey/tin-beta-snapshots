@@ -1,10 +1,25 @@
 Bugs
 ----
-o  pager eats last char on lines which are exatly as long as the screen is
-   wide
+o  check_article_to_be_posted() check for a valid From:, Reply-To:,
+   Sender: line seems to be broken (didn't get a error message for
+   i.e "From: foo.bar", but didn't really check the code why...)
+   [20010629 Urs Janssen <urs@tin.org>]
+
+o  -S, -N and -M cmd-line switches are broken (again)
+   [20010628 Urs Janssen <urs@tin.org>]
+
+o  lines wich are exatly cCOLS wide introduce an extra \n in the pager
+   in raw mode (^H)
+   [20010628 Urs Janssen <urs@tin.org>]
+
+o  reusing p'o'stponed artices in mailing_list groups doesn't work
+   (difficult to fix, postponed art no longer has a Newsgroups-header
+    and just looking for To: (instead) might give wrong results. besides
+    this it would need a bigger rewrite of the related code)
+   [20010623 Urs Janssen <urs@tin.org>]
 
 o  missmatching cached overview data (higher article numbers than on the
-   server) cause a crash.
+   server) cause a crash. [Urs Janssen <urs@tin.org>]
 
 o  'U'RL-view doesn't recognize multiple URLs/line
    [Urs Janssen <urs@tin.org>]
@@ -425,6 +440,9 @@ Internal Changes
 o  make configure look for strrstr() in libpub/publib.h
    [Urs Janssen <urs@tin.org>]
 
+o  reorder several structs to avoid padding (see gcc -Wpadding)
+   [Urs Janssen <urs@tin.org>]
+
 o  check for 10-digits unix-timestamp safety (9->10 digits rollover at
    9.9.2001)
    [Urs Janssen <urs@tin.org>]
@@ -437,8 +455,6 @@ o  what type is base[] ?
    There is a lot of confusion internally over how it is used
    compare setup_hard_base() with find_base() etc..
    [Jason Faultless <jason@radar.tele2.co.uk>]
-
-o  see if strip_line() can be universally replaced with str_trim()
 
 o  check where PRODUCT should be used instead of tin_progname and/or "tin"
    [Urs Janssen <urs@tin.org>]
@@ -538,6 +554,15 @@ o  tin.defaults could use more documentation on manpage
 
 Not yet classified
 ------------------
+o  check_article_to_be_posted() still need some cleanup
+   (avoid setup_check_article_screen(&init);StartInverse();EndInverse();
+    overhead)
+   [20010629 Urs Janssen <urs@tin.org>]
+
+o  sendmail -t && lines containing only a '.' cause trouble, is -oi -t
+   portable?
+   [20010628 Andreas Metzler <ametzler@downhill.at.eu.org>]
+
 o  update gettext stuff to gettext-0.10.36
 
 o  should the postponed file be in MH-format if tin is running in MH-mode?

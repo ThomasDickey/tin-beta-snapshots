@@ -651,9 +651,6 @@ read_config_file (
 			if (match_boolean (buf, "strip_newsrc=", &tinrc.strip_newsrc))
 				break;
 
-			if (match_boolean (buf, "show_xcommentto=", &tinrc.show_xcommentto))
-				break;
-
 			/* Regexp used to strip "Re: "s and similar */
 			if (match_string (buf, "strip_re_regex=", tinrc.strip_re_regex, sizeof (tinrc.strip_re_regex)))
 				break;
@@ -909,9 +906,6 @@ write_config_file (
 
 	fprintf (fp, _(txt_save_to_mmdf_mailbox.tinrc));
 	fprintf (fp, "save_to_mmdf_mailbox=%s\n\n", print_boolean (tinrc.save_to_mmdf_mailbox));
-
-	fprintf (fp, _(txt_show_xcommentto.tinrc));
-	fprintf (fp, "show_xcommentto=%s\n\n", print_boolean(tinrc.show_xcommentto));
 
 #ifndef DISABLE_PRINTING
 	fprintf (fp, _(txt_print_header.tinrc));
@@ -1483,13 +1477,11 @@ change_config_file (
 		 */
 		switch (ch) {
 
-#ifndef WIN32
 			case ESC:	/* common arrow keys */
 #	ifdef HAVE_KEY_PREFIX
 			case KEY_PREFIX:
 #	endif /* HAVE_KEY_PREFIX */
 				switch (get_arrow_key (ch)) {
-#endif /* !WIN32 */
 					case KEYMAP_UP:
 						ch = map_to_local (iKeyUp, &menukeymap.config_change);
 						break;
@@ -1513,12 +1505,11 @@ change_config_file (
 					case KEYMAP_PAGE_DOWN:
 						ch = map_to_local (iKeyPageDown, &menukeymap.config_change);
 						break;
-#ifndef WIN32
 					default:
 						break;
 				} /* switch (get_arrow_key ()) */
 				break;
-#endif /* !WIN32 */
+
 			default:
 				break;
 		}	/* switch (ch) */

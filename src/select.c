@@ -45,7 +45,7 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 #ifndef MENUKEYS_H
-#	include  "menukeys.h"
+#	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 
 /*
@@ -126,15 +126,15 @@ selection_page (
 
 		switch (ch) {
 
-#ifndef WIN32
 			case ESC:		/* Abort */
 				break;
-#endif /* !WIN32 */
 
 			case '1': case '2': case '3': case '4': case '5':
 			case '6': case '7': case '8': case '9':
 				if (selmenu.max)
 					prompt_item_num (ch, _(txt_select_group));
+				else
+					info_message(_(txt_no_groups));
 				break;
 
 #ifndef NO_SHELL_ESCAPE
@@ -174,8 +174,11 @@ selection_page (
 				break;
 
 			case iKeySetRange:	/* set range */
-				if (bSetRange (SELECT_LEVEL, 1, selmenu.max, selmenu.curr + 1))
-					show_selection_page ();
+				if (selmenu.max) {
+					if (bSetRange (SELECT_LEVEL, 1, selmenu.max, selmenu.curr + 1))
+						show_selection_page ();
+				} else
+					info_message(_(txt_no_groups));
 				break;
 
 			case iKeySearchSubjF:	/* search forward */
@@ -205,7 +208,7 @@ selection_page (
 
 			case iKeySelectResetNewsrc:	/* reset .newsrc */
 				if (no_write) {
-					wait_message(0, _(txt_info_no_write));
+					info_message(_(txt_info_no_write));
 					break;
 				}
 				if (prompt_yn (cLINES, _(txt_reset_newsrc), FALSE) == 1) {
@@ -218,9 +221,10 @@ selection_page (
 
 			case iKeySelectCatchup:	/* catchup - mark all articles as read */
 			case iKeySelectCatchupNextUnread:	/* and goto next unread group */
-				if (!selmenu.max)
-					break;
-				catchup_group (&CURR_GROUP, (ch == iKeySelectCatchupNextUnread));
+				if (selmenu.max)
+					catchup_group (&CURR_GROUP, (ch == iKeySelectCatchupNextUnread));
+				else
+					info_message(_(txt_no_groups));
 				break;
 
 			case iKeySelectToggleDescriptions:	/* toggle newsgroup descriptions */
@@ -269,12 +273,18 @@ selection_page (
 				break;
 
 			case iKeySelectMoveGrp:	/* reposition group within group list */
-				if (no_write) {
-					wait_message(0, _(txt_info_no_write));
+				if (!selmenu.max) {
+					info_message(_(txt_no_groups));
 					break;
 				}
+
+				if (no_write) {
+					info_message(_(txt_info_no_write));
+					break;
+				}
+
 				if (!CURR_GROUP.subscribed) {
-					wait_message(0, _(txt_info_not_subscribed));
+					info_message (_(txt_info_not_subscribed));
 					break;
 				}
 
@@ -338,10 +348,12 @@ selection_page (
 				break;
 
 			case iKeySelectSubscribe:	/* subscribe to current group */
-				if (!selmenu.max)
+				if (!selmenu.max) {
+					info_message(_(txt_no_groups));
 					break;
+				}
 				if (no_write) {
-					wait_message(0, _(txt_info_no_write));
+					info_message(_(txt_info_no_write));
 					break;
 				}
 				if (!CURR_GROUP.subscribed && !CURR_GROUP.bogus) {
@@ -354,17 +366,19 @@ selection_page (
 
 			case iKeySelectSubscribePat:	/* subscribe to groups matching pattern */
 				if (no_write) {
-					wait_message(0, _(txt_info_no_write));
+					info_message(_(txt_info_no_write));
 					break;
 				}
 				subscribe_pattern (_(txt_subscribe_pattern), _(txt_subscribing), _(txt_subscribed_num_groups), TRUE);
 				break;
 
 			case iKeySelectUnsubscribe:	/* unsubscribe to current group */
-				if (!selmenu.max)
+				if (!selmenu.max) {
+					info_message(_(txt_no_groups));
 					break;
+				}
 				if (no_write) {
-					wait_message(0, _(txt_info_no_write));
+					info_message(_(txt_info_no_write));
 					break;
 				}
 				if (CURR_GROUP.subscribed) {
@@ -387,7 +401,7 @@ selection_page (
 
 			case iKeySelectUnsubscribePat:	/* unsubscribe to groups matching pattern */
 				if (no_write) {
-					wait_message(0, _(txt_info_no_write));
+					info_message(_(txt_info_no_write));
 					break;
 				}
 				subscribe_pattern (_(txt_unsubscribe_pattern),
@@ -444,8 +458,10 @@ selection_page (
 
 			case iKeySelectMarkGrpUnread:
 			case iKeySelectMarkGrpUnread2:	/* mark group unread */
-				if (!selmenu.max)
+				if (!selmenu.max) {
+					info_message(_(txt_no_groups));
 					break;
+				}
 				grp_mark_unread (&CURR_GROUP);
 				if (CURR_GROUP.newsrc.num_unread)
 					strcpy (mesg, tin_ltoa(CURR_GROUP.newsrc.num_unread, 5));

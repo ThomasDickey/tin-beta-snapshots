@@ -131,7 +131,7 @@ static TTY _raw_tty, _original_tty;
 #			define USE_SGTTY 1
 struct sgttyb _raw_tty, _original_tty;
 #		else
-#			if !defined(M_AMIGA) && !defined(M_OS2)
+#			if !defined(M_AMIGA)
 #				if defined(HAVE_TERMIOS_H) || defined(sinix)
 #					define USE_POSIX_TERMIOS 1
 struct termios _raw_tty, _original_tty;
@@ -139,7 +139,7 @@ struct termios _raw_tty, _original_tty;
 #					define USE_TERMIO 1
 struct termio _raw_tty, _original_tty;
 #				endif /* HAVE_TERMIOS_H || sinix */
-#			endif /* !M_AMIGA && ! M_OS2 */
+#			endif /* !M_AMIGA */
 #		endif /* (M_AMIGA && !__SASC) || BSD || MINIX */
 #	endif /* !VMS */
 #endif /* HAVE_CONFIG_H */
@@ -418,12 +418,6 @@ InitScreen (void)
 	_cleartoeos	= "\033[J";
 	_getwinsize	= "\2330 q";
 #	endif /* M_AMIGA */
-#	ifdef M_OS2
-	_cleartoeos	= NULL;
-	_terminalinit	= NULL;
-	_terminalend	= "";
-	initscr ();
-#	endif /* M_OS2 */
 #	ifdef VMS
 	_cleartoeos	= "\033[J";
 	_terminalinit	= NULL;
@@ -459,12 +453,6 @@ InitScreen (void)
 		_getwinsize = NULL;
 	}
 #	endif /* M_AMIGA */
-#	ifdef M_OS2
-	if (_lines == -1 || _columns == -1) {
-		_lines = LINES;
-		_columns = COLS;
-	}
-#	endif /* M_OS2 */
 #	ifdef VMS /* moved from below InitWin () M.St. 22.01.98 */
 	{
 		int input_chan, status;
@@ -820,40 +808,36 @@ Raw (
 		_inraw = 1;
 	}
 #else
-#	ifndef M_OS2
-
-#		if defined(M_AMIGA) && defined(__SASC)
+#	if defined(M_AMIGA) && defined(__SASC)
 	_inraw = state;
 	rawcon (state);
-#		else
+#	else
 	if (!state && _inraw) {
 		SET_TTY (&_original_tty);
 		_inraw = 0;
 	} else if (state && !_inraw) {
 		GET_TTY (&_original_tty);
 		GET_TTY (&_raw_tty);
-#			if USE_SGTTY
+#		if USE_SGTTY
 		_raw_tty.sg_flags &= ~(ECHO | CRMOD);	/* echo off */
 		_raw_tty.sg_flags |= CBREAK;		/* raw on */
-#				ifdef M_AMIGA
+#			ifdef M_AMIGA
 		_raw_tty.sg_flags |= RAW; /* Manx-C 5.2 does not support CBREAK */
-#				endif /* M_AMIGA */
-#			else
-#				ifdef __FreeBSD__
+#			endif /* M_AMIGA */
+#		else
+#			ifdef __FreeBSD__
 		cfmakeraw(&_raw_tty);
 		_raw_tty.c_lflag |= ISIG;		/* for ^Z */
-#				else
+#			else
 		_raw_tty.c_lflag &= ~(ICANON | ECHO);	/* noecho raw mode */
 		_raw_tty.c_cc[VMIN] = '\01';	/* minimum # of chars to queue */
 		_raw_tty.c_cc[VTIME] = '\0';	/* minimum time to wait for input */
-#				endif /* __FreeBSD__ */
-#			endif /* USE_SGTTY */
+#			endif /* __FreeBSD__ */
+#		endif /* USE_SGTTY */
 		SET_TTY (&_raw_tty);
 		_inraw = 1;
 	}
-#		endif /* M_AMIGA && __SASC */
-
-#	endif /* !M_OS2 */
+#	endif /* M_AMIGA && __SASC */
 #endif /* !VMS */
 }
 
@@ -862,63 +846,6 @@ Raw (
  */
 
 #ifndef VMS
-#	ifdef M_OS2
-
-int
-ReadCh (void)
-{
-	char ch;
-	KBDKEYINFO os2key;
-	int rc;
-	register int result = 0;
-	static secondkey = 0;
-
-	if (secondkey) {
-		result = secondkey;
-		secondkey = 0;
-	} else {
-		rc = KbdCharIn((PKBDKEYINFO)&os2key, IO_WAIT, 0);
-		result = os2key.chChar;
-		if (result == 0xe0) {
-			result = 0x1b;
-			switch (os2key.chScan) {
-				case 'H':
-					secondkey = 'A';
-					break;
-				case 'P':
-					secondkey = 'B';
-					break;
-				case 'K':
-					secondkey = 'D';
-					break;
-				case 'M':
-					secondkey = 'C';
-					break;
-				case 'I':
-					secondkey = 'I';
-					break;
-				case 'Q':
-					secondkey = 'G';
-					break;
-				case 'G':
-					secondkey = 'H';
-					break;
-				case 'O':
-					secondkey = 'F';
-					break;
-				default:
-					secondkey = '?';
-					break;
-			}
-		} else if (result == 0x0d) {
-			result = 0x0a;
-		}
-	}
-	return ((result == EOF) ? EOF : result & 0xFF);
-}
-
-#	endif /* M_OS2 */
-
 #	ifdef M_AMIGA
 #		include <sprof.h>
 
@@ -1145,9 +1072,6 @@ input_pending (
 
 #else
 
-#	ifdef WIN32
-	return kbhit() ? TRUE : FALSE;
-#	endif /* WIN32 */
 #	ifdef M_AMIGA
 	return (WaitForChar(Input(), 1000 * delay) == DOSTRUE) ? TRUE : FALSE;
 #	endif /* M_AMIGA */

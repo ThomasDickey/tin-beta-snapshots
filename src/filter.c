@@ -45,7 +45,7 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 #ifndef MENUKEYS_H
-#	include  "menukeys.h"
+#	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 
 #define IS_READ(i)	(arts[i].status == ART_READ)

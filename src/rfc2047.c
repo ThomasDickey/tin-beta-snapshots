@@ -274,9 +274,9 @@ rfc1522_decode (
 	}
 	*t = '\0';
 
-#ifdef LOCAL_CHARSET
+#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
 	buffer_to_local(buffer);
-#endif /* LOCAL_CHARSET */
+#endif /* LOCAL_CHARSET || MAC_OS_X */
 
 	return buffer;
 }
@@ -761,9 +761,9 @@ rfc15211522_encode (
 	}
 	quoteflag = 0;
 	while ((header = tin_fgets(f, TRUE))) {
-#ifdef LOCAL_CHARSET
+#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
 		buffer_to_network(header);
-#endif /* LOCAL_CHARSET */
+#endif /* LOCAL_CHARSET || MAC_OS_X */
 		if (*header == '\0')
 			break;
 		if (allow_8bit_header)
@@ -774,9 +774,9 @@ rfc15211522_encode (
 	}
 	fputc('\n', g);
 	while (fgets(buffer, 2048, f)) {
-#ifdef LOCAL_CHARSET
+#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
 		buffer_to_network(buffer);
-#endif /* LOCAL_CHARSET */
+#endif /* LOCAL_CHARSET || MAC_OS_X */
 		fputs(buffer, g);
 		/* see if there are any umlauts in the body... */
 		for (c = buffer; *c && !isreturn(*c); c++)

@@ -85,7 +85,7 @@ int
 get_active_num (
 	void)
 {
-#ifdef ENV_VAR_GROUPS /* M_AMIGA && M_OS2 && WIN32 only */
+#ifdef ENV_VAR_GROUPS /* M_AMIGA only */
 	char *ptr;
 	int num;
 
@@ -185,11 +185,7 @@ active_add (
 	ptr->glob_filter = &glob_filter;
 	set_default_bitmap (ptr);
 
-#ifdef WIN32				/* Paths are in form - x:\a\b\c */
-	if (strchr(moderated, '\\'))
-#else
 	if (moderated[0] == '/')
-#endif /* WIN32 */
 	{
 		ptr->type = GROUP_TYPE_SAVE;
 		ptr->spooldir = my_strdup(moderated);

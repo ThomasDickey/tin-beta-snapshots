@@ -62,16 +62,16 @@
  * Set to 0 if user aborted save process
  * We do this hackery to honour the "don't postprocess mailboxes" rule
  */
-signed char proc_ch;
+static signed char proc_ch;
 
 #ifndef DONT_HAVE_PIPING
-	FILE *pipe_fp = (FILE *) 0;
+	static FILE *pipe_fp = (FILE *) 0;
 #endif /* !DONT_HAVE_PIPING */
 
-t_bool confirm;
 t_bool is_mailbox = FALSE;
-t_bool redraw_screen = FALSE;
-t_bool supersede = FALSE;			/* for reposting only */
+static t_bool confirm;
+static t_bool redraw_screen = FALSE;
+static t_bool supersede = FALSE;			/* for reposting only */
 
 /*
  * Local prototypes

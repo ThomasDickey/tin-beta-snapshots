@@ -45,7 +45,7 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 #ifndef MENUKEYS_H
-#	include  "menukeys.h"
+#	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 
 typedef struct thp {
@@ -464,7 +464,6 @@ show_help_page (
 {
 	FILE *fp;
 
-	/* TODO: avoid tmpfile() _or_ provide a fallback for those systems which don't have it */
 	if (!(fp = tmpfile ()))
 		return;
 

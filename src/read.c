@@ -99,9 +99,9 @@ wait_for_input (
 
 		FD_ZERO(&readfds);
 		FD_SET(STDIN_FILENO, &readfds);
-/*		FD_SET(fileno(NEED_REAL_NNTP_FD_HERE), &readfds);*/
+/*		FD_SET(fileno(NEED_REAL_NNTP_FD_HERE), &readfds); */
 
-		tv.tv_sec = 0;		/*NNTP_READ_TIMEOUT;*/
+		tv.tv_sec = 0;		/* NNTP_READ_TIMEOUT; */
 		tv.tv_usec = 0;
 
 /*DEBUG_IO((stderr, "waiting on %d and %d...", STDIN_FILENO, fileno(fd)));*/

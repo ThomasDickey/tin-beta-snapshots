@@ -1,0 +1,10 @@
+Compiling tin for MacOS X:
+
+First, you need the developer packages installed (CD 2).
+
+configure needs at least the two arguments:
+
+--disable-locale
+--with-domain-name=<your domain>
+
+Compile tin and install it - that's all :-)

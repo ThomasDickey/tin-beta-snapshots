@@ -127,10 +127,6 @@ constext txt_connecting_port[] = N_("Connecting to %s:%d...");
 	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2001 Iain Lea & Mark Tomlinson.";
 #endif /* M_AMIGA */
 
-#ifdef M_OS2
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2001 Iain Lea & Andreas Wrede.";
-#endif /* M_OS2 */
-
 #ifdef M_UNIX
 	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2001 Iain Lea.";
 #endif /* M_UNIX */
@@ -138,10 +134,6 @@ constext txt_connecting_port[] = N_("Connecting to %s:%d...");
 #ifdef VMS
 	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2001 Iain Lea & Tod McQuillin & other.";
 #endif /* VMS */
-
-#ifdef WIN32
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2001 Iain Lea & Nigel Ellis.";
-#endif /* WIN32 */
 
 constext txt_cr[] = N_("<CR>");
 constext txt_creating_active[] = N_("Creating active file for saved groups...\n");
@@ -209,17 +201,14 @@ Error: the \"%s:\" line has spaces  in it that MUST be removed.\n\
        The only allowable  space is the one  separating the colon (:)\n\
        from  the  contents.  Use a  comma  (,)  to separate  multiple\n\
        newsgroup names.\n");
-constext txt_error_header_line_empty_subject[] = N_("\nError: the \"Subject:\" line is empty.\n");
-constext txt_error_header_line_empty_newsgroups[] = N_("\nError: the \"Newsgroups:\" line lists no newsgroups.\n");
+constext txt_error_header_line_empty[] = N_("\nError: the \"%s:\" line is empty.\n");
 constext txt_error_header_line_groups_contd[] = N_("\n\
 Error: The \"%s:\" line is  continued in  the next line.  Since\n\
        the line  may not  contain  whitespace,  this is  not allowed.\n\
        Please write all newsgroups into a single line.\n");
-constext txt_error_header_line_missing_newsgroups[] = N_("\nError: the \"Newsgroups:\" line is missing from the article header.\n");
-constext txt_error_header_line_missing_subject[] = N_("\nError: the \"Subject:\" line is missing from the article header.\n");
-constext txt_error_header_line_missing_target[] = N_("\nError: the \"To:\" line is missing from the article header.\n");
+constext txt_error_header_line_missing[] = N_("\nError: the \"%s:\" line is missing from the article header.\n");
 constext txt_error_header_line_space[] = N_("\nError: Header on line %d does not have a space after the colon:\n%s\n");
-constext txt_error_header_duplicate[] = N_("\nError: there are multiple (%d) \"%s\" lines in the header.\n");
+constext txt_error_header_duplicate[] = N_("\nError: there are multiple (%d) \"%s:\" lines in the header.\n");
 #ifdef HAVE_METAMAIL
 	constext txt_error_metamail_failed[] = N_("metamail failed: %s");
 #endif /* HAVE_METAMAIL */
@@ -422,15 +411,14 @@ constext txt_info_postponed[] = N_("%d postponed %s, reuse with ^O...\n");
 constext txt_info_nopostponed[] = N_("*** No postponed articles ***");
 constext txt_info_not_subscribed[] = N_("You are not subscribed to this group");
 constext txt_info_no_write[] = N_("Operation disabled in no-overwrite mode");
-constext txt_info_x_conversion_note[] = N_("\
-X-Conversion-Note: multipart/alternative contents have been removed.\n\
+constext txt_info_x_conversion_note[] = N_("X-Conversion-Note: multipart/alternative contents have been removed.\n\
 \tTo get the whole article, turn alternative handling OFF in the Option Menu\n");
 constext txt_is_mailbox[]= N_("Save filename for %s/%s is a mailbox. Attachment not saved");
 constext txt_is_tex_encoded[]= N_("TeX2Iso encoded article");
-constext txt_intro_page[] = N_("\nWelcome to tin, a full screen threaded Netnews reader. It can read news locally\n\
+constext txt_intro_page[] = N_("\nWelcome to %s, a full screen threaded Netnews reader. It can read news locally\n\
 (ie. <spool>/news) or remotely (-r option)  from a NNTP (Network News Transport\n\
-Protocol) server. tin -h lists the available command line options.\n\n\
-Tin  has four newsreading levels, the newsgroup selection page, the group index\n\
+Protocol) server. -h lists the available command line options.\n\n\
+%s  has four newsreading levels, the newsgroup selection page, the group index\n\
 page, the thread listing page and the article viewer. Help is available at each\n\
 level by pressing the 'h' command.\n\n\
 Move up/down by using the terminal arrow keys or 'j' and 'k'.  Use PgUp/PgDn or\n\
@@ -623,7 +611,7 @@ constext txt_posted_info_file[] = N_("# Summary of mailed/posted messages viewab
 constext txt_posting[] = N_("Posting article...");
 constext txt_postpone_repost[] = N_("Post postponed articles [%%.*s]? (%s/%s/%s/%s/%s): ");
 constext txt_prompt_fup_ignore[] = N_("Accept Followup-To? %s=post, %s=ignore, %s=quit: ");
-constext txt_prompt_unchanged_art[] = N_("Article unchanged, abort posting?");
+/* constext txt_prompt_unchanged_art[] = N_("Article unchanged, abort posting?"); */
 constext txt_prompt_unchanged_mail[] = N_("Article unchanged, abort mailing?");
 constext txt_prompt_see_postponed[] = N_("Do you want to see postponed articles (%d)?");
 constext txt_quick_filter_kill[] = N_("Add quick kill filter?");
@@ -1299,14 +1287,6 @@ struct opttxt txt_news_headers_to_not_display = {
 # news_headers_to_display=X-\n\
 # news_headers_to_not_display=X-Alan X-Pape\n\
 # Not defining anything turns off this option.\n")
-};
-
-struct opttxt txt_show_xcommentto = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Display X-Comment-To: header       : "),
-	N_("# If ON, the realname in the X-Comment-To header is displayed in the\n\
-# upper-right corner. You can use news_headers_to_display=X-Comment-To\n\
-# instead of this\n")
 };
 
 struct opttxt txt_alternative_handling = {

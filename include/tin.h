@@ -336,14 +336,6 @@ enum resizer { cNo, cYes, cRedraw };
 #		include "amiga.h"
 #		define DIR_BUF	struct dirent
 #	endif /* M_AMIGA */
-#	ifdef M_OS2
-#		include "os_2.h"
-#		define DIR_BUF	struct dirent
-#	endif /* M_OS2 */
-#	ifdef WIN32
-#		include "win32.h"
-#		define DIR_BUF	struct direct
-#	endif /* WIN32 */
 #	ifdef M_XENIX
 #		include <sys/ndir.h>
 #		define DIR_BUF	struct direct
@@ -527,28 +519,6 @@ enum resizer { cNo, cYes, cRedraw };
 #		define DEFAULT_PRINTER	"PRINT/DELETE"
 #		define DEFAULT_UNSHAR	"unshar %s."
 #	endif /* VMS */
-#	ifdef M_OS2
-#		ifndef DEFAULT_EDITOR
-#			define DEFAULT_EDITOR	"epm /m"
-#		endif /* !DEFAULT_EDITOR */
-#		define DEFAULT_MAILBOX	"/mail"
-#		define DEFAULT_MAILER	"sendmail -af %s -f %s %s"
-#		define DEFAULT_POSTER	"postnews %s"
-#		define DEFAULT_PRINTER	"lpt1"
-#		define DEFAULT_SHELL	"cmd.exe"
-#		define DEFAULT_UNSHAR	"unshar %s"
-#	endif /* M_OS2 */
-#	ifdef WIN32
-#		ifndef DEFAULT_EDITOR
-#			define DEFAULT_EDITOR	"vi"
-#		endif /* !DEFAULT_EDITOR */
-#		define DEFAULT_MAILBOX	"/mail"
-#		define DEFAULT_MAILER	"sendmail"
-#		define DEFAULT_POSTER	"postnews %s"
-#		define DEFAULT_PRINTER	"lpt1"
-#		define DEFAULT_SHELL	"cmd.exe"
-#		define DEFAULT_UNSHAR	"unshar %s"
-#	endif /* WIN32 */
 #	ifdef QNX42
 #		ifndef DEFAULT_EDITOR
 #			define DEFAULT_EDITOR	"/bin/vedit"
@@ -802,18 +772,13 @@ enum resizer { cNo, cYes, cRedraw };
 #	define PATH_LEN	256
 #endif /* VMS || M_AMIGA */
 
-#if defined(M_OS2) || defined(M_UNIX)
+#if defined(M_UNIX)
 #	ifndef MAXPATHLEN
 #		define MAXPATHLEN	256
 #	endif /* !MAXPATHLEN */
 #	define LEN	1024
 #	define PATH_LEN	MAXPATHLEN
-#endif /* M_OS2 || M_UNIX */
-
-#if defined(WIN32)
-#	define LEN	1024
-#	define PATH_LEN	MAX_PATH
-#endif /* WIN32 */
+#endif /* M_UNIX */
 
 #define NEWSRC_LINE	8192
 
@@ -965,20 +930,6 @@ enum resizer { cNo, cYes, cRedraw };
 /*
  * used by get_arrow_key()
  */
-#ifdef WIN32
-#	define KEYMAP_UNKNOWN		0
-#	define KEYMAP_UP		0xA6
-#	define KEYMAP_DOWN		0xA8
-#	define KEYMAP_LEFT		0xA5
-#	define KEYMAP_RIGHT		0xA7
-#	define KEYMAP_PAGE_UP		0xA1
-#	define KEYMAP_PAGE_DOWN	0xA2
-#	define KEYMAP_HOME		0xA4
-#	define KEYMAP_END		0xA3
-#	define KEYMAP_DEL		0
-#	define KEYMAP_INS		0
-#	define KEYMAP_MOUSE		0
-#else
 #	define KEYMAP_UNKNOWN		0
 #	define KEYMAP_UP		1
 #	define KEYMAP_DOWN		2
@@ -991,7 +942,6 @@ enum resizer { cNo, cYes, cRedraw };
 #	define KEYMAP_DEL		9
 #	define KEYMAP_INS		10
 #	define KEYMAP_MOUSE		11
-#endif /* WIN32 */
 
 
 /*
@@ -1156,14 +1106,12 @@ enum resizer { cNo, cYes, cRedraw };
 /*
  * Assertion verifier
  */
-#if !defined(M_OS2) && !defined(WIN32)
-#	undef assert
-#	ifdef CPP_DOES_EXPAND
-#		define assert(p)	if(! (p)) asfail(__FILE__, __LINE__, #p); else (void)0;
-#	else
-#		define assert(p)	if(! (p)) asfail(__FILE__, __LINE__, "p"); else (void)0;
-#	endif /* CPP_DOES_EXPAND */
-#endif /*!M_OS2 && !WIN32*/
+#undef assert
+#ifdef CPP_DOES_EXPAND
+#	define assert(p)	if(! (p)) asfail(__FILE__, __LINE__, #p); else (void)0;
+#else
+#	define assert(p)	if(! (p)) asfail(__FILE__, __LINE__, "p"); else (void)0;
+#endif /* CPP_DOES_EXPAND */
 
 #define ESC	27
 
@@ -1741,15 +1689,9 @@ typedef struct {
 	typedef char *t_comptype;
 #endif /* HAVE_COMPTYPE_CHAR */
 
-#ifdef M_OS2
-#	define _CDECL	_cdecl
-#	define _FAR_	_far16
-#	define SEPDIR	'\\'
-#else
 #	define _CDECL
 #	define _FAR_
 #	define SEPDIR	'/'
-#endif /* M_OS2 */
 
 /*
  * mouse buttons for use in xterm
@@ -1792,33 +1734,6 @@ extern void joinpath (char *result, const char *dir, const char *file);
 extern void joindir (char *result, const char *dir, const char *file);
 #endif /* VMS */
 
-#ifdef M_OS2
-#	define NEWSGROUPS_FILE	"newsgroups"
-#	define REDIRECT_OUTPUT	"> NUL"
-#	define REDIRECT_PGP_OUTPUT	"> NUL"
-#	define ENV_VAR_GROUPS		"TIN_GROUPS"
-#	define ENV_VAR_MAILER		"TIN_MAIL"
-#	define ENV_VAR_POSTER		"TIN_POST"
-#	define ENV_VAR_SHELL		"COMSPEC"
-#	define TIN_EDITOR_FMT_ON	"%E %F"
-#	define METAMAIL_CMD		"%s -e -p -m \"tin\""
-extern void joinpath (char *result, char *dir, char *file);
-#endif /* M_OS2 */
-
-#ifdef WIN32
-#	define NEWSGROUPS_FILE	"newsgroups"
-#	define REDIRECT_OUTPUT	"> NUL"
-#	define REDIRECT_PGP_OUTPUT "> NUL"
-#	define ENV_VAR_GROUPS		"TIN_GROUPS"
-#	define ENV_VAR_MAILER		"TIN_MAIL"
-#	define ENV_VAR_POSTER		"TIN_POST"
-#	define ENV_VAR_SHELL		"COMSPEC"
-#	define TIN_EDITOR_FMT_ON	"%E +%N %F"
-#	define MAILER_FORMAT		"%M -t %T -f %U -s \"%S\" -F %F"
-#	define METAMAIL_CMD		"%s -e -p -m \"tin\""
-extern void joinpath (char *result, char *dir, char *file);
-#endif /* WIN32 */
-
 #ifdef M_UNIX
 #	define NEWSGROUPS_FILE		"newsgroups"
 #	define REDIRECT_OUTPUT		"> /dev/null 2>&1"
@@ -1826,6 +1741,7 @@ extern void joinpath (char *result, char *dir, char *file);
 #	define ENV_VAR_MAILER		"MAILER"
 #	define ENV_VAR_SHELL		"SHELL"
 #	define TIN_EDITOR_FMT_ON		"%E +%N %F"
+/* is -oi in MAILER_FORMAT portable? if yes, we should include it! */
 #	define MAILER_FORMAT		"%M -t < %F"
 #	define METAMAIL_CMD		"%s -e -p -m \"tin\""
 #	define TMPDIR	"/tmp/"
@@ -1865,13 +1781,6 @@ extern void joinpath (char *result, char *dir, char *file);
 #endif /* !TMPDIR */
 
 #if !defined(S_ISDIR)
-#	if defined(WIN32)
-#		define S_ISDIR(m)	((m) & _S_IFDIR)
-#	else
-#		if defined(M_OS2)
-#			define S_ISDIR(m)	((m) & S_IF_DIR)
-#		endif /* M_OS2 */
-#	endif /* WIN32 */
 #	if defined(M_UNIX) || defined(VMS) || defined(M_AMIGA)
 #		define S_ISDIR(m)	(((m) & S_IFMT) == S_IFDIR)
 #	endif /* M_UNIX || VMS || M_AMIGA */
@@ -1979,15 +1888,17 @@ extern void joinpath (char *result, char *dir, char *file);
 #	endif /* __STDC__ */
 #endif /* !SIG_ARGS */
 
+#ifndef __LCLINT__ /* lclint doesn't like it */
 /* stifle complaints about not-a-prototype from gcc */
-#ifdef DECL_SIG_CONST
-#	undef	SIG_DFL
-#	define SIG_DFL	(void (*)(SIG_ARGS))0
-#	undef	SIG_IGN
-#	define SIG_IGN	(void (*)(SIG_ARGS))1
-#	undef	SIG_ERR
-#	define SIG_ERR	(void (*)(SIG_ARGS))-1
-#endif /* DECL_SIG_CONST */
+#	ifdef DECL_SIG_CONST
+#		undef	SIG_DFL
+#		define SIG_DFL	(void (*)(SIG_ARGS))0
+#		undef	SIG_IGN
+#		define SIG_IGN	(void (*)(SIG_ARGS))1
+#		undef	SIG_ERR
+#		define SIG_ERR	(void (*)(SIG_ARGS))-1
+#	endif /* DECL_SIG_CONST */
+#endif /* !__LCLINT__ */
 
 /*
  * tputs() function-param
@@ -2033,10 +1944,6 @@ typedef	OUTC_RETTYPE (*OutcPtr) (OUTC_ARGS);
 #	endif /* !PROTO_H */
 #endif /* !__CPROTO__ */
 
-#if defined(WIN32)
-#	include	"msmail.h"
-#endif /* WIN32 */
-
 /*
  * rfc1521/rfc1522 interface
  */
@@ -2056,17 +1963,6 @@ typedef void (*BodyPtr) (char *, FILE *, int);
 #	include <dmalloc.h>
 #	define DMALLOC_FUNC_CHECK
 #endif /* USE_DMALLOC */
-
-#if defined(WIN32) && defined(DEBUG) && defined(CHECKHEAP)
-#	undef malloc
-#	undef realloc
-#	undef calloc
-#	undef free
-#	define malloc(cb)		mymalloc(cb, __LINE__, __FILE__)
-#	define realloc(pv,cb)		myrealloc(pv, cb, __LINE__, __FILE__)
-#	define calloc(cbs,cbe)		mycalloc(cbs, cbe, __LINE__, __FILE__)
-#	define free(pv)		myfree(pv, __LINE__, __FILE__)
-#endif /* WIN32 && DEBUG && CHECKHEAP */
 
 #ifdef DOALLOC
 	extern char *doalloc (char *, size_t);

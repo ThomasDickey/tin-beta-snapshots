@@ -68,7 +68,7 @@ extern void find_base (struct t_group *group);
 extern void make_threads (struct t_group *group, t_bool rethread);
 extern void set_article (struct t_article *art);
 extern void show_art_msg (char *group);
-extern void sort_arts (unsigned int sort_art_type);
+extern void sort_arts (unsigned /* int */ sort_art_type);
 extern void write_nov_file (struct t_group *group);
 
 /* attrib.c */
@@ -354,22 +354,20 @@ extern void make_group_path (char *name, char *path);
 extern void read_input_history_file (void);
 extern void rename_file (const char *old_filename, const char *new_filename);
 extern void show_inverse_video_status (void);
-extern void strip_address (char *the_address, char *stripped_address);
 extern void strip_double_ngs (char *ngs_list);
 extern void strip_line (char *line);
 extern void strip_name (char *the_address, char *stripped_address);
 extern void tin_done (int ret);
 extern void toggle_inverse_video (void);
-extern void vPrintBugAddress (void);
 #if 0
 	extern void parse_from (char *from_line, char *eaddr, char *fname);
 #else
 	extern int parse_from (const char *from, char *address, char *realname);
 #endif /* 0 */
-#ifdef LOCAL_CHARSET
+#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
 	extern void buffer_to_local (char *b);
 	extern void buffer_to_network (char *b);
-#endif /* LOCAL_CHARSET */
+#endif /* LOCAL_CHARSET || MAC_OS_X */
 #ifdef HAVE_COLOR
 	extern t_bool toggle_color (void);
 	extern void show_color_status (void);

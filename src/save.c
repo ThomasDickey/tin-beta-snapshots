@@ -45,10 +45,10 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 #ifndef MENUKEYS_H
-#	include  "menukeys.h"
+#	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 #ifndef RFC2046_H
-#	include  "rfc2046.h"
+#	include "rfc2046.h"
 #endif /* !RFC2046_H */
 
 #ifdef HAVE_UUDEVIEW_H
@@ -62,9 +62,9 @@
 enum state { INITIAL, MIDDLE, OFF, END };
 
 #ifdef VMS
-	const char DIRSEP = ']';		/* Seperator between dir + filename */
+	static const char DIRSEP = ']';		/* Seperator between dir + filename */
 #else
-	const char DIRSEP = '/';
+	static const char DIRSEP = '/';
 #endif /* VMS */
 
 /*
@@ -294,7 +294,8 @@ fprintf(stderr, "start_save: create_path(%s)\n", tmp);
 		case MAIL_ANY_NEWS:
 		case SAVE_ANY_NEWS:
 			snprintf (buf, sizeof(buf) - 1, _(txt_saved_summary), (function == MAIL_ANY_NEWS ? _(txt_mailed) : _(txt_saved)),
-					PLURAL(saved_arts, txt_article), PLURAL(group_count, txt_group));
+					saved_arts, PLURAL(saved_arts, txt_article),
+					group_count, PLURAL(group_count, txt_group));
 			fprintf (fp_log, "%s", buf);
 			if (verbose)
 				wait_message (0, buf);
@@ -516,22 +517,25 @@ save_batch (
 		return FALSE;
 	}
 
-	if (count != num_save)
+	if (count != num_save)	/* FIMME: -> lang.c */
 		wait_message (2, _("Warning: Only %d out of %d articles were saved"), count, num_save);
 
 	first = get_first_savefile ();
 
-	switch (type) {
-		case iKeyFeedArt:
-			STRCPY (what, _("Article"));
-			break;
-		case iKeyFeedThd:
-			STRCPY (what, _("Thread"));
+	switch (type) {	/* FIMME: -> lang.c */
+		case iKeyFeedHot:
+			snprintf (what, sizeof(what), _("Hot %s"), PLURAL(count, txt_article));
 			break;
 		case iKeyFeedTag:
 			snprintf (what, sizeof(what), _("Tagged %s"), PLURAL(count, txt_article));
 			break;
+		case iKeyFeedThd:
+			STRCPY (what, _("Thread"));
+			break;
+		case iKeyFeedArt:
+		case iKeyFeedPat:
 		default:
+			snprintf (what, sizeof(what), "%s", PLURAL(count, txt_article));
 			break;
 	}
 

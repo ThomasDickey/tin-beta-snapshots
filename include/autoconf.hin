@@ -71,6 +71,11 @@
 #	undef NEED_PTEM_H
 
 /*
+ * MacOS X needs some extras but doesn't define a usefull macro
+ */
+#	undef MAC_OS_X
+
+/*
  * These are set as configure options, some must be guarded by ifdefs because
  * they're also used in makefile rules (e.g., lint, proto).
  */
@@ -307,9 +312,11 @@
 #	undef DECL_GETOPT
 #	undef DECL_GETPASS
 #	undef DECL_INET_ADDR
+#	undef DECL_INET_ATON
 #	undef DECL_INET_NTOA
 #	undef DECL_IOCTL
 #	undef DECL_ISASCII
+#	undef DECL_KILL
 #	undef DECL_MALLOC
 #	undef DECL_MEMSET
 #	undef DECL_MKSTEMP
@@ -380,7 +387,7 @@
 /*
  * Miscelleneous terminfo/termcap definitions
  */
-#undef	HAVE_EXTERN_TCAP_PC
+#	undef HAVE_EXTERN_TCAP_PC
 
 /*
  * Define a symbol for the prototype arguments of a signal handler
@@ -597,5 +604,6 @@
 #	undef HAVE_SYS_TYPES_H
 
 #	undef HAVE_TMPFILE
+#	undef MAC_OS_X
 
 #endif /* !TIN_AUTOCONF_H */

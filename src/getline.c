@@ -47,7 +47,7 @@ static int gl_init_done = 0;	/* -1 is terminal, 1 is batch */
 static const char *gl_prompt;	/* to save the prompt string */
 static int gl_width = 0;	/* net size available for input */
 static int gl_pos, gl_cnt = 0;	/* position and size of input */
-t_bool is_passwd;
+static t_bool is_passwd;
 
 /*
  * local prototypes

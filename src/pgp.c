@@ -235,8 +235,10 @@ do_pgp (
 	const char *mail_to)
 {
 	char cmd[LEN];
-	char mailfrom[LEN] = "";
+	char mailfrom[LEN];
 	const char *mailto = (mail_to) ? mail_to : "";
+
+	mailfrom[0] = '\0';
 
 	split_file(file);
 

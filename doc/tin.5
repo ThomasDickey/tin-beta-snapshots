@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2001-03-02
+.\" Updated   : 2001-06-25
 .\" Notes     : needs a lot of work
 .\"
-.TH tin 5 "January 9th, 2001" "1.5.8" "A Usenet newsreader"
+.TH tin 5 "June 25th, 2001" "1.5.9" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -42,7 +42,7 @@ Each individual mailcap entry consists of a content-type specification, a
 command to execute, and (possibly) a set of optional "flag" values.
 .sp
 The "type" field is simply any legal content type name. It is the string
-that will be matched against the "Content-type" header to decide if this is
+that will be matched against the "Content-Type" header to decide if this is
 the mailcap entry that matches the current message. Additionally, the type
 field may specify a subtype or a wildcard to match all subtypes.
 .sp
@@ -59,7 +59,7 @@ message. If it contains "%t", those two characters will be replaced by the
 content-type field, including the subtype, if any. If it contains "%{"
 followed by a parameter name and a closing "}", then all those characters
 will be replaced by the value of the named parameter, if any, from the
-Content-type header. Finally, if the field contains "\\%", those two
+Content-Type header. Finally, if the field contains "\\%", those two
 characters will be replaced by a single "%" character.
 .\"
 .\" Two special codes can appear in the viewing command for objects of type
@@ -83,11 +83,11 @@ the data.
 .TP
 .B composetyped
 The "composetyped" field is similar to the "compose" field, but is to be
-used when the composing program needs to specify the Content-type header
+used when the composing program needs to specify the Content-Type header
 field to be applied to the composed data. The "compose" field is simpler,
 and is preferred for use with existing (non-mail-oriented) programs for
 composing data in a given format. The "composetyped" field is necessary when
-the Content-type information must include auxiliary parameters, and the
+the Content-Type information must include auxiliary parameters, and the
 composition program must then know enough about mail formats to produce
 output that includes the mail type information.
 .TP
@@ -157,7 +157,7 @@ specify that a GIF file being passed to a gif viewer should have a name
 ending in ".gif" by using "nametemplate=%s.gif"
 .PP
 .BR tin (1)
-currently only honours the "test", "description", "nametemplate" and partly
+currently only respects the "test", "description", "nametemplate" and partly
 the "needsterminal" flags, all other flags are internally ignored. It also
 can't handle the "%F" and "%n" expansions yet.
 .TP
@@ -1340,10 +1340,6 @@ is OFF.
 .B show_signatures
 If OFF don't show signatures when displaying articles.
 .TP
-.B show_xcommentto
-If ON, the real name in the ``X-Comment-To:'' header is displayed in the
-upper-right corner. Default is OFF.
-.TP
 .B sigdashes
 If ON prepend the signature with sigdashes. Default is ON.
 .TP
@@ -1612,7 +1608,7 @@ increasing numbers.
 .sp
 If an article is posted to newsgroups not mentioned in this file, those
 newsgroups are ignored.
-.\" IIRC tin issues a waring in that case
+.\" IIRC tin issues a warning in that case
 If no valid newsgroups are specified, the article is rejected.
 .sp
 Each line consists of four space-separated fields "\fIname\fR \fIhimark\fR

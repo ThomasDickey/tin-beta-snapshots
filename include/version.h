@@ -45,7 +45,7 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.5.9"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20010609"
+#	define RELEASEDATE	"20010630"
 #	define RELEASENAME	"Blue Water"
 #	define TINRC_VERSION	"1.2"
 
@@ -53,10 +53,6 @@
 #		define OSNAME	"AMIGA"
 #		define AMIVER	VERSION
 #	endif /* M_AMIGA */
-
-#	ifdef M_OS2
-#		define OSNAME	"OS/2"
-#	endif /* M_OS2 */
 
 #	ifdef VMS
 #		define OSNAME	"VMS"

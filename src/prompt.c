@@ -45,7 +45,7 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 #ifndef MENUKEYS_H
-#	include  "menukeys.h"
+#	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 
 /*
@@ -201,13 +201,12 @@ prompt_yn (
 		yn_loop = FALSE; /* normal case: leave loop */
 
 		switch (ch) {
-#ifndef WIN32
 			case ESC:	/* (ESC) common arrow keys */
 #	ifdef HAVE_KEY_PREFIX
 			case KEY_PREFIX:
 #	endif /* HAVE_KEY_PREFIX */
 				switch (get_arrow_key (ch)) {
-#endif /* !WIN32 */
+
 					case KEYMAP_UP:
 					case KEYMAP_DOWN:
 						default_answer = !default_answer;
@@ -221,12 +220,11 @@ prompt_yn (
 					case KEYMAP_RIGHT:
 						ch = prompt_ch;
 						break;
-#ifndef WIN32
 					default:
 						break;
 				}
 				break;
-#endif /* !WIN32 */
+
 			default:
 				break;
 		}
@@ -582,7 +580,6 @@ prompt_continue (
 	info_message (_(txt_return_key));
 	ch = ReadCh ();
 
-#ifndef WIN32
 	switch (ch) {
 		case ESC:
 #	ifdef HAVE_KEY_PREFIX
@@ -593,7 +590,6 @@ prompt_continue (
 		default:
 			break;
 	}
-#endif /* !WIN32 */
 
 #ifdef USE_CURSES
 	cmd_line = FALSE;

@@ -45,7 +45,7 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 #ifndef MENUKEYS_H
-#	include  "menukeys.h"
+#	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 
 #define INDEX2TNUM(i)	((i) % NOTESLINES)
@@ -417,10 +417,8 @@ thread_page (
 		set_xclick_on ();
 		switch (ch = handle_keypad (thread_left, thread_right, &menukeymap.thread_nav)) {
 
-#ifndef WIN32
 			case iKeyAbort:			/* Abort */
 				break;
-#endif /* !WIN32 */
 
 			case '1': case '2': case '3': case '4': case '5':
 			case '6': case '7': case '8': case '9':
@@ -955,8 +953,10 @@ get_score_of_thread (
 	int n)
 {
 	int i;
-	int j = 0;
 	int score = 0;
+#ifdef THREAD_WEIGHT
+	int j = 0;
+#endif /* THREAD_WEIGHT */
 
 	for (i = n; i >= 0; i = arts[i].thread)
 		if (arts[i].status == ART_UNREAD) {
@@ -971,7 +971,9 @@ get_score_of_thread (
 #else
 			/* sum scores of unread arts and count num. arts */
 			score += arts[i].score;
+#	ifdef THREAD_WEIGHT
 			j++;
+#	endif /* THREAD_WEIGHT */
 #endif /* !THREAD_SUM */
 		}
 #ifdef THREAD_SUM

@@ -65,7 +65,7 @@ long head_next;
 
 char *nntp_server = (char *)0;
 static char txt_xover_string[] = "XOVER";
-char *txt_xover = txt_xover_string;
+static char *txt_xover = txt_xover_string;
 
 /*
  * Open a connection to the NNTP server. Authenticate if necessary or

@@ -47,6 +47,9 @@
 #ifndef included_trace_h
 #	include "trace.h"
 #endif /* !included_trace_h */
+#ifndef VERSION_H
+#	include "version.h"
+#endif /* !VERSION_H */
 
 
 #if defined (VMS) && defined (SIGBUS)
@@ -117,6 +120,7 @@ int need_resize = cNo;
 
 int NOTESLINES;			/* # lines of useable area */
 
+#ifndef __LCLINT__ /* lclint doesn't like it */
 static const struct {
 	int code;
 	const char *name;
@@ -127,20 +131,18 @@ static const struct {
 #ifdef SIGQUIT
 	{ SIGQUIT,	"SIGQUIT " },	/* ctrl-\ */
 #endif /* SIGQUIT */
-#ifndef WIN32
-#	ifdef SIGILL
+#ifdef SIGILL
 	{ SIGILL,	"SIGILL" },	/* illegal instruction */
-#	endif /* SIGILL */
-#	ifdef SIGFPE
+#endif /* SIGILL */
+#ifdef SIGFPE
 	{ SIGFPE,	"SIGFPE" },	/* floating point exception */
-#	endif /* SIGFPE */
-#	ifdef SIGBUS
+#endif /* SIGFPE */
+#ifdef SIGBUS
 	{ SIGBUS,	"SIGBUS" },	/* bus error */
-#	endif /* SIGBUS */
-#	ifdef SIGSEGV
+#endif /* SIGBUS */
+#ifdef SIGSEGV
 	{ SIGSEGV,	"SIGSEGV" },	/* segmentation violation */
-#	endif /* SIGSEGV */
-#endif /* !WIN32 */
+#endif /* SIGSEGV */
 #ifdef SIGPIPE
 	{ SIGPIPE,	"SIGPIPE" },	/* broken pipe */
 #endif /* SIGPIPE */
@@ -166,14 +168,16 @@ static const struct {
 	{ SIGWINCH,	"SIGWINCH" },	/* window-size change */
 #endif /* SIGWINCH */
 };
+#endif /* !__LCLINT__ */
 
-#	ifdef HAVE_NESTED_PARAMS
+
+#ifdef HAVE_NESTED_PARAMS
 RETSIGTYPE (*sigdisp(int signum, RETSIGTYPE (_CDECL *func)(SIG_ARGS)))(SIG_ARGS)
-#	else
+#else
 RETSIGTYPE (*sigdisp(signum, func))(SIG_ARGS)
 	int signum;
 	RETSIGTYPE (_CDECL *func)(SIG_ARGS);
-#	endif /* HAVE_NESTED_PARAMS */
+#endif /* HAVE_NESTED_PARAMS */
 {
 #ifdef HAVE_POSIX_JC
 #	define RESTORE_HANDLER(x, y)
@@ -202,23 +206,23 @@ void
 allow_resize (
 	t_bool allow)
 {
-#	ifdef HAVE_POSIX_JC
+#ifdef HAVE_POSIX_JC
 	struct sigaction sa, osa;
 
 	sa.sa_handler = signal_handler;
 	sigemptyset (&sa.sa_mask);
 	sa.sa_flags = 0;
-#		ifdef SA_RESTART
+#	ifdef SA_RESTART
 	if (!allow)
 		sa.sa_flags |= SA_RESTART;
-#		endif /* SA_RESTART */
-#		ifdef SIGWINCH
+#	endif /* SA_RESTART */
+#	ifdef SIGWINCH
 	sigaction(SIGWINCH, &sa, &osa);
-#		endif /* SIGWINCH */
-#		ifdef SIGTSTP
+#	endif /* SIGWINCH */
+#	ifdef SIGTSTP
 	sigaction(SIGTSTP, &sa, &osa);
-#		endif /* SIGTSTP */
-#	endif /* HAVE_POSIX_JC */
+#	endif /* SIGTSTP */
+#endif /* HAVE_POSIX_JC */
 }
 
 static const char *
@@ -368,39 +372,46 @@ signal_handler (
 			RESTORE_HANDLER(sig, signal_handler);
 			return;
 #endif /* SIGPIPE */
+
 #ifdef SIGTSTP
 		case SIGTSTP:
 			handle_suspend();
 			return;
 #endif /* SIGTSTP */
+
 #ifdef SIGWINCH
 		case SIGWINCH:
 			need_resize = cYes;
 			RESTORE_HANDLER (SIGWINCH, signal_handler);
 			return;
 #endif /* SIGWINCH */
+
 		default:
 			break;
 	}
 	fprintf (stderr, "\n%s: signal handler caught %s signal (%d).\n", tin_progname, signal_name(sig), sig);
+
 #if defined(SIGHUP)
 	if (sig == SIGHUP) {
 		dangerous_signal_exit = TRUE;
 		tin_done (- SIGHUP);
 	}
 #endif /* SIGHUP */
+
 #if defined(SIGUSR1)
 	if (sig == SIGUSR1) {
 		dangerous_signal_exit = TRUE;
 		tin_done (- SIGUSR1);
 	}
 #endif /* SIGUSR1 */
+
 #if defined(SIGTERM)
 	if (sig == SIGTERM) {
 		dangerous_signal_exit = TRUE;
 		tin_done (- SIGTERM);
 	}
 #endif /* SIGTERM */
+
 #if defined(SIGBUS) || defined(SIGSEGV)
 	if (
 #	ifdef SIGBUS
@@ -413,7 +424,10 @@ signal_handler (
 		sig == SIGSEGV
 #	endif /* SIGSEGV */
 		) {
-		vPrintBugAddress ();
+		/* FIXME: -> lang.c */
+		my_fprintf (stderr, _("%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n"),
+		tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME, bug_addr);
+		my_fflush (stderr);
 	}
 #endif /* SIGBUS || SIGSEGV */
 	cleanup_tmp_files ();
@@ -426,6 +440,7 @@ signal_handler (
 	giveup();
 #endif /* 1 */ /* apollo || HAVE_COREFILE */
 }
+
 
 /*
  * Turn on (flag != FALSE) our signal handler for TSTP and WINCH
@@ -444,6 +459,7 @@ set_signal_catcher (
 	sigdisp (SIGWINCH, flag ? signal_handler : SIG_DFL);
 #endif /* SIGWINCH */
 }
+
 
 void
 set_signal_handlers (

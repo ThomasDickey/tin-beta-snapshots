@@ -77,8 +77,6 @@ news_headers_to_not_display  *
 sort_article_type              sort_art_type in attributes
 sort_threads_type
 default_maildir                maildir in attributes
-show_xcommentto                should be entirely removed
-                               => news_headers_to_display
 print_header                 *
 batch_save
 start_editor_offset          * allows for different editors in different

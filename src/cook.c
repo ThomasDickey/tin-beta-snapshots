@@ -43,11 +43,8 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef MENUKEYS_H
-#	include  "menukeys.h"
-#endif /* !MENUKEYS_H */
 #ifndef RFC2046_H
-#	include  "rfc2046.h"
+#	include "rfc2046.h"
 #endif /* !RFC2046_H */
 
 /*
@@ -75,9 +72,9 @@ static t_bool header_wanted (const char *line);
  * These are used globally within this module for access to the context
  * currently being built. They must not leak outside.
  */
-int cook_width;
-t_bool hide_uue;
-t_openartinfo *art;
+static int cook_width;
+static t_bool hide_uue;
+static t_openartinfo *art;
 
 /*
  * Rewrite frombuf into tobuf to a maximum length
@@ -616,7 +613,7 @@ process_text_body_part(
 
 	fseek(in, part->offset, SEEK_SET);
 
-#ifdef LOCAL_CHARSET
+#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
 	/*
 	 * if we have a different local charset, we also convert articles
 	 * that do not have MIME headers, since e.g. quoted text may contain
@@ -624,7 +621,7 @@ process_text_body_part(
 	 */
 	if (IS_PLAINTEXT(part))
 		decode = FALSE;
-#endif /* LOCAL_CHARSET */
+#endif /* LOCAL_CHARSET || MAC_OS_X */
 
 	if ((charset = get_param(part->params, "charset")) == NULL)
 		decode = FALSE;				/* Impossible in practice, since it defaults */
@@ -653,10 +650,10 @@ process_text_body_part(
 		if (!(line && strlen(line)))
 			break;	/* premature end of file, file error etc. */
 
-#ifdef LOCAL_CHARSET
+#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
 		if (decode)
 			buffer_to_local (line);
-#endif /* LOCAL_CHARSET */
+#endif /* LOCAL_CHARSET || MAC_OS_X */
 
 		/*
 		 * Detect and skip signatures if necessary
@@ -892,7 +889,6 @@ cook_article(
 	cook_width = tabs;
 	hide_uue = uue;
 
-	/* TODO: avoid tmpfile() _or_ provide a fallback for those systems which don't have it */
 	if (!(art->cooked = tmpfile()))
 		return FALSE;
 
