@@ -1,5 +1,8 @@
 Bugs
 ----
+o  'U'RL-view doesn't recognize multiple URLs/line
+
+o  'a'/'A'uthor search in the pagern dosen't work
 
 o  'Y'ank in doesn't toggle show_only_unread_groups setting
    ('y'ank in all groups, 'Y'ank active file, only subscribed groups
@@ -52,7 +55,7 @@ o  fix check_upgrade() (config.c)
    [Urs Janssen <urs@tin.org>]
 
 o  add version number to other config-files (i.e. attributes, filter,
-   tin.defaults) and do the same checks as for TINRC_VERSION/tinrc
+   tin.defaults, keymap) and do the same checks as for TINRC_VERSION/tinrc
    [Urs Janssen <urs@tin.org>]
 
 o  sender-patch
@@ -142,7 +145,7 @@ o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
 o  with --enable-forgery reposting of an thread reposts only the first
    article ('x' 't' 'r' <group> 'p')
 
-o  when enabling the 'cc/bcc on every message that is sent', and
+o  when enabling the 'Cc/Bcc on every message that is sent', and
    then mailing a message to myself, tin will print the message
    "Mailing to ... gary gary".  a nice touch would be if tin
    checks the mail_to line, and doesn't add the user's name
@@ -153,8 +156,6 @@ New features
 ------------
 o  key to toggle article-sorting preferences on the fly
    (like 'u' for threading)
-
-o  add mail/news-URLs to 'U'RL-viewer (page.c:process_url())
 
 o  add Content-Description evaluation for the part-overview in the
    pager
@@ -258,12 +259,14 @@ o  item_by_item_etiquette_warnings [compile-time?]
 o  Menu/tinrc/attributes entry for TeX2ISO_Conversion=ON/OFF
    [toggle via '"']
 
-o  Rather than cc/bcc, I'd like to see tin simply append the
+o  Rather than Cc/Bcc, I'd like to see tin simply append the
    message to a mail folder, whose name is given by a setting
    in the (M)enu command, possibly overridden by the current
    setting of "record" environment variable. The folder would
    have to be locked using a convention that will hold off
    the various Unix mailer programs (see mbox(5)).
+   [append_mail() should do the trick, fd_lock()/fd_unlock() might need
+    to be enhanced for dotfile locking.]
 
 o  MIME-pgp support according to RFC2015 - (should be easy now)
 
@@ -360,6 +363,9 @@ o  if Newsgroups:-line has groups in it which are not present in the users
    active file ask the user if he wants to strip these groups from the
    newsgroups-line (N/y)
    do the same for Followup-to:
+
+o  check if any valid groups are in the Followup-To:-line and if not inform
+   the user and use Newsgroups: instead (at the start of post_response())
 
 o  bring up a warning on a long Newsgroups: (>=5) line and
    force the user to confirm every single group he wants to post (or

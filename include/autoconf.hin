@@ -579,4 +579,15 @@
 #	undef HAVE_CATGETS
 #	undef HAVE_DCGETTEXT
 #	undef HAVE_GETTEXT
+
+#	undef HAVE_FLOCK
+#	undef HAVE_LOCKF
+#	undef HAVE_FCNTL
+
+#	undef HAVE_SYS_FILE_H
+#	undef HAVE_SYS_STAT_H
+#	undef HAVE_SYS_TYPES_H
+
+#	undef HAVE_TMPFILE
+
 #endif /* !TIN_AUTOCONF_H */

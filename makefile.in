@@ -64,6 +64,7 @@ CFILES	= \
 	$(SRCDIR)/joinpath.c \
 	$(SRCDIR)/lang.c \
 	$(SRCDIR)/list.c \
+	$(SRCDIR)/lock.c \
 	$(SRCDIR)/mail.c \
 	$(SRCDIR)/mimetypes.c \
 	$(SRCDIR)/main.c \
@@ -89,6 +90,7 @@ CFILES	= \
 	$(SRCDIR)/strftime.c \
 	$(SRCDIR)/string.c \
 	$(SRCDIR)/tags.c \
+	$(SRCDIR)/tmpfile.c \
 	$(SRCDIR)/thread.c \
 	$(SRCDIR)/wildmat.c \
 	$(SRCDIR)/xref.c \

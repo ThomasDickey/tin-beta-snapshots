@@ -188,7 +188,7 @@ copy_fp (
 
 /*
  * backup file
- * Returns FALSE if backup failed or source file does not exists.
+ * Returns FALSE if backup failed
  */
 t_bool
 backup_file (
@@ -198,8 +198,8 @@ backup_file (
 	FILE *fp_in, *fp_out;
 	t_bool ret = FALSE;
 
-	if ((fp_in = fopen (filename, "r")) == (FILE *) 0)
-		return ret;
+	if ((fp_in = fopen (filename, "r")) == (FILE *) 0)	/* a missing sourcefile is not a real bug */
+		return TRUE;
 
 	/* don't follow links when writing backup files */
 	unlink (backupname);

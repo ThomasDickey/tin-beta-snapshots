@@ -43,9 +43,9 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.5.8"
+#		define VERSION		"1.5.9"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20010221"
+#	define RELEASEDATE	"20010312"
 #	define RELEASENAME	"Blue Water"
 #	define TINRC_VERSION	"1.2"
 

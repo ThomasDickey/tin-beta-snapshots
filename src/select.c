@@ -1118,12 +1118,12 @@ select_read_group (
 {
 	struct t_group currgrp;
 
-	currgrp = CURR_GROUP;
-
 	if (!selmenu.max) {
 		info_message (_(txt_no_groups));
 		return;
 	}
+
+	currgrp = CURR_GROUP;
 
 	if (currgrp.bogus) {
 		info_message (_(txt_not_exist));

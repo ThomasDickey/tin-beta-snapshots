@@ -1,14 +1,14 @@
 # German Version
-# Sven Hartge <oweh@ds9.argh.org>, 2000
-# Kai Bojens <kbojens@on-luebeck.de>, 2000
+# Sven Hartge <oweh@ds9.argh.org>, 2000-2001
+# Kai Bojens <kbojens@on-luebeck.de>, 2000-2001
 #
 #: src/lang.c:604 src/lang.c:605
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: tin 1.5.5\n"
+"Project-Id-Version: tin 1.5.9\n"
 "POT-Creation-Date: 1999-12-20 20:50+0000\n"
-"PO-Revision-Date: 2000-07-17 13:52+0200\n"
+"PO-Revision-Date: 2001-03-07 19:37+0100\n"
 "Last-Translator: Sven Hartge <oweh@ds9.argh.org>, Kai Bojens <kbojens@on-luebeck.de>\n"
 "Language-Team: German <german-tin@ds9.argh.org>\n"
 "MIME-Version: 1.0\n"
@@ -27,243 +27,243 @@ msgid "Wrong newsgroup name in response of GROUP command, %s for %s"
 msgstr ""
 
 #. FIXME - move strings to lang.c
-#: src/attrib.c:505
+#: src/attrib.c:510
 # TRANSLATION MISSING
 msgid ""
 "# Group attributes file for the TIN newsreader\n"
 "#\n"
 msgstr ""
 
-#: src/attrib.c:506
+#: src/attrib.c:511
 # TRANSLATION MISSING
 msgid "#  scope=STRING (ie. alt.sources, alt.*,!alt.bin* etc..) [mandatory]\n"
 msgstr ""
 
-#: src/attrib.c:507
+#: src/attrib.c:512
 # TRANSLATION MISSING
 msgid "#  maildir=STRING (ie. ~/Mail)\n"
 msgstr ""
 
-#: src/attrib.c:508
+#: src/attrib.c:513
 # TRANSLATION MISSING
 msgid "#  savedir=STRING (ie. ~user/News)\n"
 msgstr ""
 
-#: src/attrib.c:509
+#: src/attrib.c:514
 # TRANSLATION MISSING
 msgid "#  savefile=STRING (ie. =linux)\n"
 msgstr ""
 
-#: src/attrib.c:510
+#: src/attrib.c:515
 # TRANSLATION MISSING
 msgid "#  sigfile=STRING (ie. $var/sig)\n"
 msgstr ""
 
-#: src/attrib.c:511
+#: src/attrib.c:516
 # TRANSLATION MISSING
 msgid "#  organization=STRING (if beginning with '/' read from file)\n"
 msgstr ""
 
-#: src/attrib.c:512
+#: src/attrib.c:517
 # TRANSLATION MISSING
 msgid "#  followup_to=STRING\n"
 msgstr ""
 
-#: src/attrib.c:514
+#: src/attrib.c:519
 # TRANSLATION MISSING
 msgid "#  printer=STRING\n"
 msgstr ""
 
-#: src/attrib.c:516
+#: src/attrib.c:521
 # TRANSLATION MISSING
 msgid "#  mailing_list=STRING (ie. majordomo@list.org)\n"
 msgstr ""
 
-#: src/attrib.c:517
+#: src/attrib.c:522
 # TRANSLATION MISSING
 msgid "#  x_headers=STRING (ie. ~/.tin/extra-headers)\n"
 msgstr ""
 
-#: src/attrib.c:518
+#: src/attrib.c:523
 # TRANSLATION MISSING
 msgid "#  x_body=STRING (ie. ~/.tin/extra-body-text)\n"
 msgstr ""
 
-#: src/attrib.c:519
+#: src/attrib.c:524
 # TRANSLATION MISSING
 msgid "#  from=STRING (just append wanted From:-line, don't use quotes)\n"
 msgstr ""
 
-#: src/attrib.c:520
+#: src/attrib.c:525
 # TRANSLATION MISSING
 msgid "#  news_quote_format=STRING\n"
 msgstr ""
 
-#: src/attrib.c:521
+#: src/attrib.c:526
 # TRANSLATION MISSING
 msgid "#  quote_chars=STRING (%%s, %%S for initials)\n"
 msgstr ""
 
-#: src/attrib.c:523
+#: src/attrib.c:528
 # TRANSLATION MISSING
 msgid "#  ispell = STRING\n"
 msgstr ""
 
-#: src/attrib.c:525
+#: src/attrib.c:530
 # TRANSLATION MISSING
 msgid "#  auto_select=ON/OFF\n"
 msgstr ""
 
-#: src/attrib.c:526
+#: src/attrib.c:531
 # TRANSLATION MISSING
 msgid "#  auto_save=ON/OFF\n"
 msgstr ""
 
-#: src/attrib.c:527
+#: src/attrib.c:532
 # TRANSLATION MISSING
 msgid "#  batch_save=ON/OFF\n"
 msgstr ""
 
-#: src/attrib.c:528
+#: src/attrib.c:533
 # TRANSLATION MISSING
 msgid "#  delete_tmp_files=ON/OFF\n"
 msgstr ""
 
-#: src/attrib.c:529
+#: src/attrib.c:534
 # TRANSLATION MISSING
 msgid "#  show_only_unread=ON/OFF\n"
 msgstr ""
 
-#: src/attrib.c:530
+#: src/attrib.c:535
 # TRANSLATION MISSING
 msgid "#  thread_arts=NUM\n"
 msgstr ""
 
-#: src/attrib.c:531
+#: src/attrib.c:536
 # TRANSLATION MISSING
 msgid "#    0=none, 1=subj, 2=refs, 3=both\n"
 msgstr ""
 
-#: src/attrib.c:532
+#: src/attrib.c:537
 # TRANSLATION MISSING
 msgid "#  show_author=NUM\n"
 msgstr ""
 
-#: src/attrib.c:533
+#: src/attrib.c:538
 # TRANSLATION MISSING
 msgid "#    0=none, 1=name, 2=addr, 3=both\n"
 msgstr ""
 
-#: src/attrib.c:534
+#: src/attrib.c:539
 # TRANSLATION MISSING
 msgid "#  sort_art_type=NUM\n"
 msgstr ""
 
-#: src/attrib.c:535
+#: src/attrib.c:540
 # TRANSLATION MISSING
 msgid "#    0=none, 1=subj descend, 2=subj ascend,\n"
 msgstr ""
 
-#: src/attrib.c:536
+#: src/attrib.c:541
 # TRANSLATION MISSING
 msgid "#    3=from descend, 4=from ascend,\n"
 msgstr ""
 
-#: src/attrib.c:537
+#: src/attrib.c:542
 # TRANSLATION MISSING
 msgid "#    5=date descend, 6=date ascend\n"
 msgstr ""
 
-#: src/attrib.c:538
+#: src/attrib.c:543
 # TRANSLATION MISSING
 msgid "#    7=score descend, 8=score ascend\n"
 msgstr ""
 
-#: src/attrib.c:539
+#: src/attrib.c:544
 # TRANSLATION MISSING
 msgid "#  post_proc_type=NUM\n"
 msgstr ""
 
-#: src/attrib.c:540
+#: src/attrib.c:545
 # TRANSLATION MISSING
 msgid "#    0=none, 1=unshar, 2=uudecode\n"
 msgstr ""
 
-#: src/attrib.c:541
+#: src/attrib.c:546
 # TRANSLATION MISSING
 msgid "#  quick_kill_scope=STRING (ie. talk.*)\n"
 msgstr ""
 
-#: src/attrib.c:542
+#: src/attrib.c:547
 # TRANSLATION MISSING
 msgid "#  quick_kill_expire=ON/OFF\n"
 msgstr ""
 
-#: src/attrib.c:543
+#: src/attrib.c:548
 # TRANSLATION MISSING
 msgid "#  quick_kill_case=ON/OFF\n"
 msgstr ""
 
-#: src/attrib.c:544
+#: src/attrib.c:549
 # TRANSLATION MISSING
 msgid "#  quick_kill_header=NUM\n"
 msgstr ""
 
-#: src/attrib.c:545 src/attrib.c:552
+#: src/attrib.c:550 src/attrib.c:557
 # TRANSLATION MISSING
 msgid "#    0=subj (case sensitive) 1=subj (ignore case)\n"
 msgstr ""
 
-#: src/attrib.c:546 src/attrib.c:553
+#: src/attrib.c:551 src/attrib.c:558
 # TRANSLATION MISSING
 msgid "#    2=from (case sensitive) 3=from (ignore case)\n"
 msgstr ""
 
-#: src/attrib.c:547 src/attrib.c:554
+#: src/attrib.c:552 src/attrib.c:559
 # TRANSLATION MISSING
 msgid "#    4=msgid 5=lines\n"
 msgstr ""
 
-#: src/attrib.c:548
+#: src/attrib.c:553
 # TRANSLATION MISSING
 msgid "#  quick_select_scope=STRING\n"
 msgstr ""
 
-#: src/attrib.c:549
+#: src/attrib.c:554
 # TRANSLATION MISSING
 msgid "#  quick_select_expire=ON/OFF\n"
 msgstr ""
 
-#: src/attrib.c:550
+#: src/attrib.c:555
 # TRANSLATION MISSING
 msgid "#  quick_select_case=ON/OFF\n"
 msgstr ""
 
-#: src/attrib.c:551
+#: src/attrib.c:556
 # TRANSLATION MISSING
 msgid "#  quick_select_header=NUM\n"
 msgstr ""
 
-#: src/attrib.c:555
+#: src/attrib.c:560
 # TRANSLATION MISSING
 msgid "#  x_comment_to=ON/OFF\n"
 msgstr ""
 
-#: src/attrib.c:556
+#: src/attrib.c:561
 # TRANSLATION MISSING
 msgid ""
 "#\n"
 "# Note that it is best to put general (global scoping)\n"
 msgstr ""
 
-#: src/attrib.c:557
+#: src/attrib.c:562
 # TRANSLATION MISSING
 msgid ""
 "# entries first followed by group specific entries.\n"
 "#\n"
 msgstr ""
 
-#: src/attrib.c:558
+#: src/attrib.c:563
 # TRANSLATION MISSING
 msgid ""
 "############################################################################"
@@ -274,22 +274,22 @@ msgstr ""
 #.
 #. * some useful defaults
 #.
-#: src/attrib.c:563
+#: src/attrib.c:568
 # TRANSLATION MISSING
 msgid "# include extra headers\n"
 msgstr ""
 
-#: src/attrib.c:571
+#: src/attrib.c:576
 # TRANSLATION MISSING
 msgid "# in *sources* set post process type to shar\n"
 msgstr ""
 
-#: src/attrib.c:575
+#: src/attrib.c:580
 # TRANSLATION MISSING
 msgid "# in *binaries* set post process type to uudecode, remove tmp files\n"
 msgstr ""
 
-#: src/attrib.c:576
+#: src/attrib.c:581
 # TRANSLATION MISSING
 msgid "# and set Followup-To: poster\n"
 msgstr ""
@@ -301,7 +301,7 @@ msgstr ""
 msgid "Insecure permissions of %s (%o)"
 msgstr ""
 
-#: src/cook.c:942 src/cook.c:961
+#: src/cook.c:947 src/cook.c:966
 msgid ", name: "
 msgstr ", Name: "
 
@@ -1569,7 +1569,7 @@ msgstr "^E\t  antwortet dem Autor, wobei der komplette Header zitiert wird"
 
 #: src/lang.c:368
 msgid "^W\t  post followup to current article quoting complete headers"
-msgstr "W\t  Antworten auf den aktuellen Artikel, mit Komplettzitat des Headers"
+msgstr "^W\t  Antworten auf den aktuellen Artikel, mit Komplettzitat des Headers"
 
 #: src/lang.c:369
 msgid "<CR>\t  display first article in next thread"
@@ -4690,16 +4690,19 @@ msgid "Color of highlighting with _dash_  : "
 msgstr "Farbe der Hervorhebung _Striche_   : "
 
 #: src/lang.c:1569
-msgid "Enter default mail address. <CR> sets."
-msgstr "Standard-Mail-Adresse eingeben. <CR> setzt."
+# TRANSLATION MISSING
+msgid "Enter default mail address (and fullname). <CR> sets."
+msgstr ""
 
 #: src/lang.c:1570
-msgid "Mail address                       : "
-msgstr "Mail-Adresse                       : "
+# TRANSLATION MISSING
+msgid "Mail address (and fullname)        : "
+msgstr ""
 
 #: src/lang.c:1571
-msgid "# User's mail address, if not username@host\n"
-msgstr "# EMail-Adresse des Benutzers, wenn sie nicht Benutzername@host lautet\n"
+# TRANSLATION MISSING
+msgid "# User's mail address (and fullname), if not username@host (fullname)\n"
+msgstr ""
 
 #: src/lang.c:1576
 msgid "Show empty Followup-To in editor   : "
@@ -5437,25 +5440,25 @@ msgstr ""
 "# Das 4. Feld ist das Basisverzeichnis (z.B. ~/Mail oder ~/News)\n"
 "#\n"
 
-#: src/main.c:599
+#: src/main.c:600
 #, c-format
 msgid "Version: %s release %s (\"%s\") %s %s"
 msgstr "Version: %s Ausgabe %s (\"%s\") %s %s"
 
-#: src/main.c:602
+#: src/main.c:603
 #, c-format
 msgid "Version: %s release %s (\"%s\")"
 msgstr "Version: %s Ausgabe %s (\"%s\")"
 
-#: src/main.c:789
+#: src/main.c:793
 msgid "-v only useful for batch mode operations\n"
 msgstr "-v ist nur Sinnvoll für Batchmodeoperationen\n"
 
-#: src/main.c:794
+#: src/main.c:798
 msgid "-R only useful without batch mode operations\n"
 msgstr "-R ist nur Sinnvoll ohne Batchmodeoperationen\n"
 
-#: src/main.c:829
+#: src/main.c:830
 #, c-format
 msgid ""
 "A Usenet reader.\n"
@@ -5466,161 +5469,161 @@ msgstr ""
 "\n"
 "Syntax: %s [Optionen] [Newsgruppe[,...]]"
 
-#: src/main.c:833
+#: src/main.c:834
 msgid "  -a       toggle color flag"
 msgstr "  -a       Farbe ein- oder ausschalten"
 
-#: src/main.c:836
+#: src/main.c:837
 msgid "  -A       force authentication on connect"
 msgstr "  -A       Erzwinge Anmeldung bei Verbindung"
 
-#: src/main.c:839
+#: src/main.c:840
 msgid "  -B       BBS mode. File operations limited to home directories."
 msgstr "  -B       BBS-Modus. Datei-Operationen limitiert auf das Home-Verzeichnis."
 
-#: src/main.c:842
+#: src/main.c:843
 msgid "  -c       mark all news as read in subscribed newsgroups (batch mode)"
 msgstr "  -c       Markiere Artikel gelesen in den abonnierten Gruppen (Batch-Modus)"
 
-#: src/main.c:843
+#: src/main.c:844
 msgid "  -d       don't show newsgroup descriptions"
 msgstr "  -d       Zeige keine Newsgruppenbeschreibungen"
 
-#: src/main.c:846
+#: src/main.c:847
 msgid "  -D       debug mode 1=NNTP 2=ALL"
 msgstr "  -D       Debug-Modus 1=NNTP 2=ALLES"
 
-#: src/main.c:849
+#: src/main.c:850
 #, c-format
 msgid "  -f file  subscribed to newsgroups file [default=%s]"
 msgstr "  -f datei 'datei' als .newsrc-Datei nutzen [Standard=%s]"
 
-#: src/main.c:850
+#: src/main.c:851
 msgid "  -G limit get only limit articles/group"
 msgstr "  -G limit Hole nur 'limit' Artikel pro Newsgruppe"
 
 #. FIXME, default should be $NNTPSERVER if set ...
-#: src/main.c:855
+#: src/main.c:856
 #, c-format
 msgid "  -g serv  read news from NNTP server serv [default=%s]"
 msgstr "  -g serv  Lese Artikel vom NNTP-Server 'serv' [Standard=%s]"
 
-#: src/main.c:859
+#: src/main.c:860
 msgid "  -h       this help message"
 msgstr "  -h       diese Hilfeseite"
 
-#: src/main.c:860
+#: src/main.c:861
 #, c-format
 msgid "  -H       help information about %s"
 msgstr "  -H       Hilfe und Informationen über %s"
 
-#: src/main.c:863
+#: src/main.c:864
 #, c-format
 msgid "  -I dir   news index file directory [default=%s]"
 msgstr "  -I Verz. Verzeichnis für Artikel-Index-Datei [Standard=%s]"
 
-#: src/main.c:867
+#: src/main.c:868
 msgid "  -l       use only LISTGROUP instead of GROUP (-n) command"
 msgstr "  -l       benutze nur das LISTGROUP anstelle vom GROUP-Kommando (-n)"
 
-#: src/main.c:869
+#: src/main.c:870
 # TRANSLATION MISSING
 msgid "  -l       TODO: document feature"
 msgstr ""
 
-#: src/main.c:872
+#: src/main.c:873
 #, c-format
 msgid "  -m dir   mailbox directory [default=%s]"
 msgstr "  -m Verz. Mailbox-Verzeichnis [Standard=%s]"
 
-#: src/main.c:873
+#: src/main.c:874
 msgid "  -M user  mail new news to specified user (batch mode)"
 msgstr "  -M user  Maile neue News-Artikel an 'user' (Batch-Modus)"
 
-#: src/main.c:876
+#: src/main.c:877
 msgid "  -n       only read subscribed .newsrc groups from NNTP server"
 msgstr "  -n       Lese nur Gruppen aus der .newsrc-Datei vom NNTP-Server"
 
-#: src/main.c:878
+#: src/main.c:879
 # TRANSLATION MISSING
 msgid "  -n       TODO: document feature"
 msgstr ""
 
-#: src/main.c:881
+#: src/main.c:882
 msgid "  -N       mail new news to your posts (batch mode)"
 msgstr "  -N       Maile neue Artikel an sich selbst (Batch-Modus)"
 
-#: src/main.c:882
+#: src/main.c:883
 msgid "  -o       post all postponed articles and exit"
 msgstr "  -o       Postet alle zurückgelegten Artikel und beendet tin"
 
-#: src/main.c:885
+#: src/main.c:886
 #, c-format
 msgid "  -p port  use port as NNTP port [default=%d]"
 msgstr "  -p port  Benutze 'port' als NNTP-Port [Standard=%d]"
 
-#: src/main.c:888
+#: src/main.c:889
 msgid "  -q       don't check for new newsgroups"
 msgstr "  -q       Überprüfe nicht auf neue Newsgruppen"
 
-#: src/main.c:891
+#: src/main.c:892
 msgid "  -Q       quick start. Same as -nqd"
 msgstr "  -Q       Schnellstart. Das Selbe wie -nqd"
 
-#: src/main.c:893
+#: src/main.c:894
 msgid "  -Q       quick start. Same as -qd"
 msgstr "  -Q       Schnellstart. Das Selbe wie -qd"
 
-#: src/main.c:898
+#: src/main.c:899
 msgid "  -r       read news remotely from default NNTP server"
 msgstr "  -r       Lese Artikel vom Standard-NNTP-Server"
 
-#: src/main.c:901
+#: src/main.c:902
 msgid "  -R       read news saved by -S option"
 msgstr "  -R       Lese Artikel, die durch -S gespeichert wurden"
 
-#: src/main.c:902
+#: src/main.c:903
 #, c-format
 msgid "  -s dir   save news directory [default=%s]"
 msgstr "  -s Verz. Verzeichnis zum News-Speichern [Standard=%s]"
 
-#: src/main.c:903
+#: src/main.c:904
 msgid "  -S       save new news for later reading (batch mode)"
 msgstr "  -S       Speichere Artikel für das spätere Lesen (Batch-Modus)"
 
-#: src/main.c:906
+#: src/main.c:907
 msgid "  -u       update index files (batch mode)"
 msgstr "  -u       Erneuere Index-Dateien (Batch-Modus)"
 
-#: src/main.c:907
+#: src/main.c:908
 msgid "  -U       update index files in the background while reading news"
 msgstr "  -U       Erneuere Index-Dateien im Hintergrund während des Newslesen"
 
-#: src/main.c:910
+#: src/main.c:911
 msgid "  -v       verbose output for batch mode options"
 msgstr "  -v       Ausführliche Ausgabe für Batch-Modus-Optionen"
 
-#: src/main.c:911
+#: src/main.c:912
 msgid "  -V       print version & date information"
 msgstr "  -V       Gebe Versions- und Datumsinformationen aus"
 
-#: src/main.c:912
+#: src/main.c:913
 msgid "  -w       post an article and exit"
 msgstr "  -w       Postet einen Artikel und beendet tin"
 
-#: src/main.c:913
+#: src/main.c:914
 msgid "  -X       don't save any files on quit"
 msgstr "  -X       Speicher keine Dateien beim Beenden"
 
-#: src/main.c:914
+#: src/main.c:915
 msgid "  -z       start if any unread news"
 msgstr "  -z       Starte, wenn ungelesene Artikel vorliegen"
 
-#: src/main.c:915
+#: src/main.c:916
 msgid "  -Z       return status indicating if any unread news (batch mode)"
 msgstr "  -Z       Rückgabewert zeigt, ob ungelesene Artikel vorliegen (Batch-Modus)"
 
-#: src/main.c:917
+#: src/main.c:918
 #, c-format
 msgid ""
 "\n"
@@ -5941,25 +5944,25 @@ msgid "Unreachable ?\n"
 msgstr "Unerreichbar ?\n"
 
 #. FIXME: replace 'Thread' by 'Article' if THREAD_NONE
-#: src/page.c:604 src/save.c:526 src/thread.c:664
+#: src/page.c:604 src/save.c:528 src/thread.c:664
 msgid "Thread"
 msgstr "Thread"
 
-#: src/page.c:770 src/save.c:523 src/thread.c:657
+#: src/page.c:770 src/save.c:525 src/thread.c:657
 msgid "Article"
 msgstr "Artikel"
 
-#: src/post.c:1447
+#: src/post.c:1485
 #, c-format
 msgid "%s is bogus"
 msgstr "%s ist ungültig"
 
-#: src/post.c:1449
+#: src/post.c:1487
 #, c-format
 msgid "No attributes for %s"
 msgstr "Keine Attribute für %s"
 
-#: src/post.c:1637
+#: src/post.c:1675
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr "Poste: %.*s ..."
@@ -5988,41 +5991,41 @@ msgid "[- Unavailable -]"
 msgstr "[- Nicht Verfügbar -]"
 
 #. TODO maybe print something more context dependent here ?
-#: src/save.c:507
+#: src/save.c:509
 # TRANSLATION MISSING
 msgid "No articles to save"
 msgstr ""
 
-#: src/save.c:517
+#: src/save.c:519
 #, c-format
 # TRANSLATION MISSING
 msgid "Warning: Only %d out of %d articles were saved"
 msgstr ""
 
-#: src/save.c:529
+#: src/save.c:531
 #, c-format
 # TRANSLATION MISSING
 msgid "Tagged %s"
 msgstr ""
 
-#: src/save.c:539
+#: src/save.c:541
 #, c-format
 # TRANSLATION MISSING
 msgid "-- %s saved to %s%s --"
 msgstr ""
 
-#: src/save.c:540 src/save.c:543
+#: src/save.c:542 src/save.c:545
 # TRANSLATION MISSING
 msgid "mailbox "
 msgstr ""
 
-#: src/save.c:542
+#: src/save.c:544
 #, c-format
 # TRANSLATION MISSING
 msgid "-- %s saved to %s%s - %s --"
 msgstr ""
 
-#: src/save.c:1090
+#: src/save.c:1092
 msgid "bytes"
 msgstr "Bytes"
 

@@ -29,6 +29,7 @@ Help				h
 ToggleInfoLastLine		i
 Down2				j
 Up2				k
+Print				o
 Quit				q
 Version				v
 Post				w
@@ -98,7 +99,6 @@ GroupGoto			g
 GroupListThd			l
 GroupMail			m
 GroupNextGroup			n
-GroupPrint			o
 GroupPrevGroup			p
 GroupToggleReadUnread		r
 GroupSave			s
@@ -157,14 +157,12 @@ PageQuickAutoSel		[
 PageQuickKill			]
 PageToggleHighlight		_
 PageCatchup			c
-PageToggleRot2			d
 PageEditArticle			e
 PageFollowupQuote		f
 PageFirstPage2			g
 PageListThd			l
 PageMail			m
 PageNextArt			n
-PagePrint			o
 PagePrevArt			p
 PageReplyQuote			r
 PageSave			s

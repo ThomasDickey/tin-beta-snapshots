@@ -269,6 +269,11 @@ extern void init_group_hash (void);
 	extern struct t_group *psGrpPrev (void);
 #endif /* 0 */
 
+/* lock.c */
+extern int fd_lock(int fd, t_bool block);
+extern int test_fd_lock(int fd);
+extern int fd_unlock(int fd);
+
 /* mail.c */
 extern t_bool art_edit (struct t_group *psGrp, struct t_article *psArt);
 extern void read_newsgroups_file (void);
@@ -669,6 +674,9 @@ extern void do_auto_select_arts (void);
 extern void remove_tag (long art);
 extern void undo_auto_select_arts (void);
 extern void undo_selections (void);
+
+/* tmpfile.c */
+extern int my_tmpfile(char *buffer, size_t size);
 
 /* thread.c */
 extern int find_response (int i, int n);

@@ -57,6 +57,7 @@ init_group_hash (
 	}
 }
 
+
 /*
  * hash group name for fast lookup later
  */
@@ -99,6 +100,7 @@ my_printf ("hash=[%s] [%ld]\n", group, val);
 #endif /* NEW_HASH_METHOD */
 }
 
+
 /*
  *  Find group name in active[] array and return index otherwise -1
  */
@@ -125,6 +127,7 @@ find_group_index (
 	return -1;
 }
 
+
 /*
  *  Find group name in active[] array and return pointer to element
  */
@@ -139,6 +142,7 @@ group_find (
 
 	return (struct t_group *) 0;
 }
+
 
 /*
  * Make sure memory available for next active slot

@@ -1,3 +1,28 @@
+-- 1.5.9 release 20010313 "" --
+
+U060) Dirk Nimmich <nimmich@uni-muenster.de>
+      Nickolay Dudorov <nnd@wint.itfs.nsk.su>
+      BUG. some environment variables could be destroyed
+      FIX. keymap.c
+
+U059) Urs Janssen <urs@tin.org>
+      BUG. backup_file() treated missing sourcefiles as a error
+      BUG. if a nntp:-url only contained the name of a group but didn't
+           specify a article the last groupname component wasn't recognized.
+      BUG. crahsed when hitting iKeySelectReadGrp* with
+           show_only_unread_groups=ON and all arts read.
+      ADD. joined iKeyPagePrint/iKeyGroupPrint
+      ADD. news:, snews:, nntp: scheme to url_handler.sh
+      ADD. 'U' news:, snews:, nntp: and mailto: to 'U'RL-command
+      ADD. recognize IPv6 http:, ftp: and gopher: URLs
+      ADD. config.guess, config.sub update
+      ADD. keep_posted_articles_file locking
+      ADD. portable uniq tmpfile generation
+      FIX. config.guess, config.sub, url_handler.sh, de.po, keymap.sample
+           tin.5, Makefile[.in], autoconf.h[in], keymap.h, menukeys.h, tin.h
+           auth.c, group.c, help.c, keymap.c, lang.c, lock.c, misc.c, page.c
+           post.c, select.c, tmpfile.c
+
 -- 1.5.8 release 20010221 "Blue Water" --
 
 U058) Thomas Roessler <roessler@does-not-exist.org>
