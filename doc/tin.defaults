@@ -30,7 +30,7 @@
 #newslibdir=/usr/lib/news
 
 # bugaddress - defines the email address to which users can send
-#              bugreports using tin's builtin function
+#              bugreports using tin's built in function
 #
 # The default points to a developers mailing list located at tin.org.
 # You might want to change this address to one of your local
@@ -41,7 +41,7 @@
 
 # inewsdir - defines the directory containing of the inews executable
 #
-# Usually tin uses its own builtin inews routines. you might want
+# Usually tin uses its own built in inews routines. you might want
 # to use an external inews, so you can define the directory where tin
 # expects the executable. The program's name is set to inews, don't
 # include it

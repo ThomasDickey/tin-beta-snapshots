@@ -77,7 +77,7 @@ authinfo_generic (
 	t_bool builtinauth = FALSE;
 #ifdef HAVE_PUTENV
 	char *new_env;
-	static char *old_env = 0;
+	static char *old_env = NULL;
 #endif /* HAVE_PUTENV */
 
 #ifdef DEBUG
@@ -120,8 +120,7 @@ authinfo_generic (
 	sprintf (tmpbuf, "NNTP_AUTH_FDS=%d.%d.%d",
 			fileno (get_nntp_fp(FAKE_NNTP_FP)),
 			fileno (get_nntp_wr_fp(FAKE_NNTP_FP)), cookiefd);
-	new_env = (char *) my_malloc (strlen (tmpbuf) + 1);
-	strcpy (new_env, tmpbuf);
+	new_env = my_strdup(tmpbuf);
 	(void) putenv (new_env);
 	FreeIfNeeded (old_env);
 	old_env = new_env;
@@ -176,14 +175,14 @@ read_newsauth_file (
 		 * Search through authorization file for correct NNTP server
 		 * File has format:  'nntp-server' 'password' ['username']
 		 */
-		while (fgets (line, PATH_LEN, fp) != (char *) 0) {
+		while (fgets (line, PATH_LEN, fp) != NULL) {
 
 			/*
 			 * strip trailing newline character
 			 */
 
 			ptr = strchr (line, '\n');
-			if (ptr != (char *) 0)
+			if (ptr != NULL)
 				*ptr = '\0';
 
 			/*
@@ -192,7 +191,7 @@ read_newsauth_file (
 
 			ptr = strpbrk (line, " \t");
 
-			if (ptr == (char *) 0)		/* no passwd, no auth, skip */
+			if (ptr == NULL)		/* no passwd, no auth, skip */
 				continue;
 
 			*ptr++ = '\0';		/* cut off server part */
@@ -211,7 +210,7 @@ read_newsauth_file (
 
 			if (*_authpass == '"') {	/* skip "embedded" password string */
 				ptr = strrchr (_authpass, '"');
-				if ((ptr != (char *) 0) && (ptr > _authpass)) {
+				if ((ptr != NULL) && (ptr > _authpass)) {
 					_authpass++;
 					*ptr++ = '\0';	/* cut off trailing " */
 				} else	/* no matching ", proceede as normal */
@@ -224,7 +223,7 @@ read_newsauth_file (
 
 			ptr = strpbrk (ptr, " \t");	/* find next separating blank */
 
-			if (ptr != (char *) 0) {	/* a 3rd argument follows */
+			if (ptr != NULL) {	/* a 3rd argument follows */
 				while (*ptr == ' ' || *ptr == '\t')	/* skip any blanks */
 					*ptr++ = '\0';
 				if (*ptr != '\0')	/* if its not just empty */
@@ -262,7 +261,7 @@ do_authinfo_original (
 	if ((ret = get_only_respcode(NULL)) != NEED_AUTHDATA)
 		return ret;
 
-	if ((authpass == (char *) 0) || (*authpass == '\0')) {
+	if ((authpass == NULL) || (*authpass == '\0')) {
 #ifdef DEBUG
 		debug_nntp ("authorization", "failed: no password");
 #endif /* DEBUG */

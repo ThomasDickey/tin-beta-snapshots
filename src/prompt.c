@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -65,7 +62,7 @@ prompt_num (
 
 	sprintf (mesg, "%c", ch);
 
-	if ((p = tin_getline (prompt, TRUE, mesg, 0, FALSE, HIST_OTHER)) != (char *) 0) {
+	if ((p = tin_getline (prompt, TRUE, mesg, 0, FALSE, HIST_OTHER)) != NULL) {
 		strcpy (mesg, p);
 		num = atoi (mesg);
 	} else
@@ -110,7 +107,7 @@ prompt_default_string (
 
 	clear_message ();
 
-	if ((p = tin_getline (prompt, FALSE, default_prompt, buf_len, FALSE, which_hist)) == (char *) 0) {
+	if ((p = tin_getline (prompt, FALSE, default_prompt, buf_len, FALSE, which_hist)) == NULL) {
 		buf[0] = '\0';
 		clear_message ();
 		return FALSE;
@@ -145,7 +142,7 @@ prompt_menu_string (
 
 	MoveCursor (line, 0);
 
-	if ((p = tin_getline (prompt, FALSE, var, 0, FALSE, HIST_OTHER)) == (char *) 0)
+	if ((p = tin_getline (prompt, FALSE, var, 0, FALSE, HIST_OTHER)) == NULL)
 		return FALSE;
 
 	strcpy (var, p);
@@ -370,7 +367,7 @@ prompt_option_num (
 	fmt_option_prompt (prompt, sizeof(prompt)-1, TRUE, option);
 	sprintf (&number[0], "%d", *(option_table[option].variable));
 
-	if ((p = tin_getline (prompt, 2, number, 0, FALSE, HIST_OTHER)) == (char *) 0)
+	if ((p = tin_getline (prompt, 2, number, 0, FALSE, HIST_OTHER)) == NULL)
 		return FALSE;
 
 	strcpy (number, p);
@@ -406,7 +403,7 @@ prompt_option_char (
 	MoveCursor (option_row(option), 0);
 	fmt_option_prompt (prompt, sizeof(prompt)-1, TRUE, option);
 
-	if ((p = tin_getline (prompt, FALSE, p, 1, FALSE, HIST_OTHER)) == (char *) 0)
+	if ((p = tin_getline (prompt, FALSE, p, 1, FALSE, HIST_OTHER)) == NULL)
 		return FALSE;
 
 	*variable = p[0];
@@ -440,7 +437,7 @@ prompt_string_default (
 	if (pattern[0] != '\0')			/* got a string - make it the default */
 		my_strncpy (def, pattern, LEN);
 	else {
-		if (def[0] == '\0')	{		/* no default - give up */
+		if (def[0] == '\0') {		/* no default - give up */
 			error_message (failtext);
 			return NULL;
 		}

@@ -840,10 +840,10 @@ printascii (
 
 
 /*
- * Find any key clashes between groups keyptr1 and keyptr2.  This is just an
- * ascending brute force search.  We need a pointer to the tag node in order
+ * Find any key clashes between groups keyptr1 and keyptr2. This is just an
+ * ascending brute force search. We need a pointer to the tag node in order
  * to report errors correctly, the pointers start 1 above this on the first
- * key definition.  If we are checking against the same keygroup, then ptr2
+ * key definition. If we are checking against the same keygroup, then ptr2
  * starts at (ptr1+1) else the algorithm doesn't work!
  */
 static t_bool

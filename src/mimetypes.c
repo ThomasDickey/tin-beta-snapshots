@@ -52,11 +52,15 @@ lookup_mimetype (
 {
 	FILE *fp = (FILE *) 0;
 	char *exts;
+	char *ptr;
 	char buf[LEN];
+	int i;
 
 	/*
 	 * check $HOME/.mime.types first, then /etc/mime.types and
 	 * TIN_DEFAULTS_DIR/mime.types
+	 *
+	 * TODO: use joinpath() here
 	 */
 	snprintf(buf, sizeof(buf), "%s/.mime.types", homedir);
 	fp = fopen (buf, "r");
@@ -80,11 +84,7 @@ lookup_mimetype (
 
 		while ((exts = strtok (NULL, " \t\n")) != NULL) {	/* Work through list of extensions */
 			if (strcasecmp (ext, exts) == 0) {
-				int i;
-
 				if ((i = content_type (strtok(buf, "/"))) != -1) {
-					char *ptr;
-
 					if ((ptr = strtok(NULL, "\n")) != NULL) {
 						part->type = i;
 						part->subtype = my_strdup(ptr);

@@ -3,7 +3,7 @@
  *  Module    : lock.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1998-07-27
- *  Updated   : 2001-06-01
+ *  Updated   : 2002-06-18
  *  Notes     :
  *
  * Copyright (c) 1998-2002 Urs Janssen <urs@tin.org>
@@ -91,7 +91,7 @@ fd_lock(
 #	endif /* USE_LOCKF */
 #endif /* USE_FCNTL */
 
-	return rval;	/* all available locks successfully applied or no locking available */
+	return rval;	/* available lock successfully applied or no locking available */
 }
 
 
@@ -224,7 +224,7 @@ t_bool dot_lock(
 	base_dir = my_strdup(filename);
 	file = my_strdup(filename);		/* to lazy to use malloc here */
 	base_name(base_dir, file);
-	if ((ptr = strrstr(base_dir, file)) != (char *) 0) {
+	if ((ptr = strrstr(base_dir, file)) != NULL) {
 		*ptr = '\0';
 		free(file);
 	} else {
@@ -274,10 +274,10 @@ t_bool dot_lock(
 t_bool dot_unlock(
    const char *filename)
 {
-	char *lockfile = (char *) 0;
+	char *lockfile;
 	t_bool rval = FALSE;
 
-	lockfile = (char *) my_malloc (sizeof(char) * (strlen(filename) + strlen(LOCK_SUFFIX) + 2));
+	lockfile = my_malloc (strlen(filename) + strlen(LOCK_SUFFIX) + 2);
 	strcpy(lockfile, filename);
 	strcat(lockfile, LOCK_SUFFIX);
 	if (!unlink(lockfile))

@@ -86,7 +86,7 @@ static const char *info_title;
 static int curr_info_line;
 static int num_info_lines;
 static int reveal_ctrl_l_lines;	/* number of lines (from top) with de-activated ^L */
-static t_lineinfo *infoline;
+static t_lineinfo *infoline = (t_lineinfo *) 0;
 
 static t_bool show_all_headers;	/* CTRL-H with headers specified */
 static t_bool reveal_ctrl_l;	/* set when ^L hiding is off */
@@ -317,7 +317,7 @@ show_page (
 	filtered_articles = FALSE;	/* used in thread level */
 	make_group_path (group->name, group_path);
 
-	if (group->attribute->mailing_list != (char *) 0)
+	if (group->attribute->mailing_list != NULL)
 		art_type = GROUP_TYPE_MAIL;
 
 	/*
@@ -337,7 +337,7 @@ show_page (
 
 	forever {
 		switch ((ch = handle_pager_keypad(&menukeymap.page_nav))) {
-			case ESC:       /* Abort */
+			case iKeyAbort:       /* Abort */
 				break;
 
 			case '0': case '1': case '2': case '3': case '4': case '5':
@@ -702,7 +702,7 @@ page_goto_next_unread:
 			case iKeyPageCatchup:			/* catchup - mark read, goto next */
 			case iKeyPageCatchupNextUnread:	/* goto next unread */
 				snprintf(buf, sizeof(buf) - 1, _(txt_mark_thread_read), (ch == iKeyPageCatchupNextUnread) ? _(txt_enter_next_thread) : "");
-				if (!tinrc.confirm_action || prompt_yn (cLINES, buf, TRUE) == 1) {
+				if ((!TINRC_CONFIRM_ACTION) || prompt_yn (cLINES, buf, TRUE) == 1) {
 					thd_mark_read (group, base[which_thread(this_resp)]);
 					return (ch == iKeyPageCatchupNextUnread) ? GRP_NEXTUNREAD : GRP_NEXT;
 				}
@@ -763,6 +763,7 @@ return_to_index:
 				if (filter_state == FILTERING || filtered_articles) {
 					int old_top = top_art;
 					long old_artnum = arts[this_resp].artnum;
+
 					filter_articles (group);
 					make_threads (group, FALSE);
 					i = find_new_pos (old_top, old_artnum, i);
@@ -1022,7 +1023,7 @@ draw_page (
 	/*
 	 * Can't do partial draw if term can't scroll properly
 	 */
-	if (part != 0 && !have_linescroll)
+	if (part && !have_linescroll)
 		part = 0;
 
 	/*
@@ -1107,7 +1108,7 @@ show_mime_article (
 	/* TODO: add DONT_HAVE_PIPING fallback code */
 #ifndef DONT_HAVE_PIPING
 	if ((mime_fp = popen (buf, "w"))) {
-		while (fgets (buf, (int) sizeof(buf), fp) != (char *) 0)
+		while (fgets (buf, (int) sizeof(buf), fp) != NULL)
 			fputs (buf, mime_fp);
 
 		fflush (mime_fp);
@@ -1348,7 +1349,7 @@ load_article(
 
 	art_mark_read (&CURR_GROUP, &arts[this_resp]);
 
-	if (pgart.cooked == (FILE *) 0) { /* harmony corruption */
+	if (pgart.cooked == NULL) { /* harmony corruption */
 		wait_message (1, _(txt_art_unavailable));
 		return GRP_ARTFAIL;
 	}
@@ -1490,12 +1491,12 @@ toggle_raw(
 				j++;
 				if (j >= chunk) {
 					chunk += 50;
-					pgart.rawl = my_realloc((char *) pgart.rawl, sizeof(t_lineinfo) * chunk);
+					pgart.rawl = my_realloc(pgart.rawl, sizeof(t_lineinfo) * chunk);
 				}
 			} while ((fgets(buff, cCOLS + 1, pgart.raw)) != NULL);
 
 			j--;
-			pgart.rawl = my_realloc((char *) pgart.rawl, sizeof(t_lineinfo) * j);
+			pgart.rawl = my_realloc(pgart.rawl, sizeof(t_lineinfo) * j);
 		}
 		artline = pgart.rawl;
 		artlines = j;
@@ -1515,7 +1516,9 @@ process_url(
 	char *ptr;
 	int i;
 	int offsets[6];
-	int offsets_size = sizeof(offsets)/sizeof(int);
+	int offsets_size = ARRAY_SIZE(offsets);
+	char url[LEN];
+	char ubuf[LEN];
 
 	/*
 	 * TODO: handle mailto: and news: (not NNTP) URLs internally
@@ -1534,8 +1537,6 @@ process_url(
 		 * Step through, finding URL's
 		 */
 		forever {
-			char url[LEN];
-
 			/* any matches left? */
 			if (pcre_exec (url_regex.re, url_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
 				if (pcre_exec (mail_regex.re, mail_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) == PCRE_ERROR_NOMATCH)
@@ -1545,8 +1546,6 @@ process_url(
 			*(ptr + offsets[1]) = '\0';
 
 			if (prompt_default_string ("URL:", url, sizeof(url), ptr + offsets[0], HIST_URL)) {
-				char ubuf[LEN];
-
 				if (!*url)			/* Don't try and open nothing */
 					break;
 
@@ -1592,6 +1591,7 @@ info_pager (
 	t_bool wrap_at_ends)
 {
 	int ch;
+	int offset;
 
 	info_file = info_fh;
 	info_title = title;
@@ -1599,9 +1599,8 @@ info_pager (
 	preprocess_info_message (info_fh);
 	set_xclick_off ();
 	display_info_page (0);
-	forever {
-		int offset;
 
+	forever {
 		switch (ch = handle_pager_keypad(&menukeymap.info_nav)) {
 			case ESC:	/* common arrow keys */
 				break;
@@ -1672,7 +1671,7 @@ info_pager (
 
 			case iKeyFirstPage:			/* Home */
 			case iKeyHelpFirstPage2:
-				if (curr_info_line != 0) {
+				if (curr_info_line) {
 					curr_info_line = 0;
 					display_info_page (0);
 				}
@@ -1726,7 +1725,7 @@ display_info_page (
 	/*
 	 * Can't do partial draw if term can't scroll properly
 	 */
-	if (part != 0 && !have_linescroll)
+	if (part && !have_linescroll)
 		part = 0;
 
 	if (curr_info_line < 0)
@@ -1767,7 +1766,7 @@ preprocess_info_message (
 	int chunk = 50;
 
 	rewind (info_fh);
-	FreeIfNeeded ((char *)infoline);
+	FreeIfNeeded (infoline);
 	infoline = my_malloc (sizeof(t_lineinfo) * chunk);
 	num_info_lines = 0;
 
@@ -1777,10 +1776,10 @@ preprocess_info_message (
 		num_info_lines++;
 		if (num_info_lines >= chunk) {
 			chunk += 50;
-			infoline = my_realloc((char *)infoline, sizeof(t_lineinfo) * chunk);
+			infoline = my_realloc(infoline, sizeof(t_lineinfo) * chunk);
 		}
 	} while (tin_fgets(info_fh, FALSE) != NULL);
 
 	num_info_lines--;
-	infoline = my_realloc((char *)infoline, sizeof(t_lineinfo) * num_info_lines);
+	infoline = my_realloc(infoline, sizeof(t_lineinfo) * num_info_lines);
 }

@@ -45,7 +45,7 @@
 #	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 #ifndef RFC2046_H
-#	include "rfc2046.h"
+/* #	include "rfc2046.h" */
 #endif /* !RFC2046_H */
 
 #ifdef HAVE_UUDEVIEW_H
@@ -198,7 +198,7 @@ fprintf(stderr, "start_save: create_path(%s)\n", tmp);
 						print_first = FALSE;
 					}
 					art_count++;
-					if (arts[j].score >= SCORE_SELECT)
+					if (arts[j].score >= tinrc.score_select)
 						hot_count++;
 					break;
 
@@ -228,6 +228,8 @@ fprintf(stderr, "start_save: create_path(%s)\n", tmp);
 					else {
 						if (!strfpath (group->attribute->savedir, path, sizeof (path), group))
 							joinpath (path, homedir, DEFAULT_SAVEDIR);
+
+						/* TODO: use joinpath() */
 #ifdef VMS
 						snprintf (savefile, sizeof(savefile) - 1, "%s.%s]%ld", path, group_path, arts[j].artnum);
 #else
@@ -235,7 +237,7 @@ fprintf(stderr, "start_save: create_path(%s)\n", tmp);
 #endif /* VMS */
 					}
 
-					if ((fp = fopen (savefile, "w" FOPEN_OPTS)) == (FILE *) 0) {
+					if ((fp = fopen (savefile, "w" FOPEN_OPTS)) == NULL) {
 						fprintf (fp_log, _(txt_cannot_open), savefile);
 						if (verbose)
 							perror_message (_(txt_cannot_open), savefile);
@@ -256,7 +258,7 @@ fprintf(stderr, "start_save: create_path(%s)\n", tmp);
 					fclose (fp);
 					saved_arts++;
 
-					/* TODO: if article allready contains To: Cc: Bcc: it get's 'relayed' */
+					/* TODO: if article already contains To: Cc: Bcc: it get's 'relayed' */
 					if (function == MAIL_ANY_NEWS) {
 						strfmailer (mailer, arts[j].subject, mail_news_user, savefile, buf, sizeof (buf), tinrc.mailer_format);
 						invoke_cmd (buf);		/* Keep trying after errors */
@@ -359,7 +361,7 @@ open_save_filename(
 
 		switch (ch) {
 			case iKeySaveAppendFile:
-/*				strcpy (mode, "a+");*/
+/*				strcpy (mode, "a+"); */
 				break;
 
 			case iKeySaveOverwriteFile:
@@ -377,7 +379,7 @@ open_save_filename(
 		tinrc.default_save_mode = ch;
 	}
 
-	if ((fp = fopen (path, mode)) == (FILE *) 0) {
+	if ((fp = fopen (path, mode)) == NULL) {
 		perror_message ("%s (%s)", _(txt_art_not_saved), path);
 		return NULL;
 	}
@@ -492,7 +494,6 @@ fprintf(stderr, "save_arts, create_path(%s)\n", save[0].path);
 				art_close (&artinfo);
 		}
 	}
-
 	return count;
 }
 
@@ -909,7 +910,7 @@ post_process_uud (
 		if (!save[i].saved)
 			continue;
 
-		if ((fp_in = fopen (save[i].path, "r")) != (FILE *) 0) {
+		if ((fp_in = fopen (save[i].path, "r")) != NULL) {
 			UULoadFile(save[i].path, NULL, 0);
 			fclose(fp_in);
 		}
@@ -966,7 +967,7 @@ post_process_uud (
 		if (!save[i].saved)
 			continue;
 
-		if ((fp_in = fopen (save[i].path, "r")) == (FILE *) 0)
+		if ((fp_in = fopen (save[i].path, "r")) == NULL)
 			continue;
 
 		while (fgets (s, (int) sizeof(s), fp_in) != 0) {
@@ -991,7 +992,7 @@ post_process_uud (
 
 						get_save_filename (path, filename);
 						filename = strrchr (path, DIRSEP) + 1;  /* ptr to filename portion */
-						if ((fp_out = fopen (path, "w")) == (FILE *) 0) {
+						if ((fp_out = fopen (path, "w")) == NULL) {
 							perror_message (_(txt_cannot_open), path);
 							return;
 						}
@@ -1088,7 +1089,7 @@ sum_and_view (
 
 	/* TODO: add DONT_HAVE_PIPING fallback */
 #ifndef DONT_HAVE_PIPING
-	if ((fp_in = popen (buf, "r")) != (FILE *) 0) {
+	if ((fp_in = popen (buf, "r")) != NULL) {
 		buf[0] = '\0';
 
 		/*
@@ -1276,7 +1277,7 @@ start_viewer(
 {
 	t_mailcap *foo;
 
-	if ((foo = get_mailcap_entry (part, path)) != (t_mailcap *) 0) {
+	if ((foo = get_mailcap_entry (part, path)) != NULL) {
 		char buff[LEN];
 
 		if (foo->nametemplate)	/* honor nametemplate */

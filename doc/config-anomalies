@@ -94,13 +94,11 @@ sigdashes                    * it doesn't make sense to set that globally if
 signature_repost             *
 advertising                  *
 quote_chars
-quote_empty_lines            *
 quote_regex                  *
 quote_regex2                 *
 quote_regex3                 *
 strip_re_regex               *
 strip_was_regex              *
-quote_signatures             *
 show_signatures              *
 hide_uue                     *
 news_quote_format
@@ -109,7 +107,6 @@ xpost_quote_format           *
 auto_cc                      *
 auto_bcc                     *
 default_filter_days          *
-use_getart_limit             *
 getart_limit                 *
 recent_time                  *
 mail_address                   from in attributes; should be splitted into

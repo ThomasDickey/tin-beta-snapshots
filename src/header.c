@@ -58,7 +58,7 @@ get_host_name (
 	gethostname(hostname, sizeof(hostname));
 #else
 #	if defined(M_AMIGA)
-	if ((ptr = getenv("NodeName")) != (char *) 0)
+	if ((ptr = getenv("NodeName")) != NULL)
 		strncpy(hostname, ptr, MAXHOSTNAMELEN);
 #	endif /* M_AMIGA */
 #endif /* HAVE_GETHOSTNAME */
@@ -67,10 +67,10 @@ get_host_name (
 		strcpy(hostname, system_info.nodename);
 #endif /* HAVE_SYS_UTSNAME_H */
 	if (!*hostname) {
-		if ((ptr = getenv("HOST")) != (char *) 0)
+		if ((ptr = getenv("HOST")) != NULL)
 			strncpy (hostname, ptr, MAXHOSTNAMELEN);
 		else {
-			if ((ptr = getenv("HOSTNAME")) != (char *) 0)
+			if ((ptr = getenv("HOSTNAME")) != NULL)
 				strncpy (hostname, ptr, MAXHOSTNAMELEN);
 			else
 				hostname[0] = '\0';
@@ -116,8 +116,8 @@ static const char *domain_name_hack = DOMAIN_NAME;
 #	endif /* M_AMIGA */
 	{
 		/* If 1st letter is '/' read domainname from specified file */
-		if ((fp = fopen (domain, "r")) != (FILE *) 0) {
-			while (fgets (buff, (int) sizeof (buff), fp) != (char *) 0) {
+		if ((fp = fopen (domain, "r")) != NULL) {
+			while (fgets (buff, (int) sizeof (buff), fp) != NULL) {
 				if (buff[0] == '#' || buff[0] == '\n')
 					continue;
 
@@ -181,9 +181,9 @@ get_fqdn (
 
 	sprintf(fqdn, "%s", hp
 		? strchr(hp->h_name, '.')
-			? hp->h_name
-			: inet_ntoa(in)
+			? hp->h_name : inet_ntoa(in)
 		: "");
+
 	if (!*fqdn || (fqdn[strlen(fqdn) - 1] <= '9')) {
 		FILE *inf;
 
@@ -191,19 +191,17 @@ get_fqdn (
 
 		if ((inf = fopen("/etc/resolv.conf", "r")) != NULL) {
 			char *eos;
+			int j;
 
 			while(fgets(line, MAXLINELEN, inf)) {
-
 				if (line[0] == '#' || line[0] == '\n')
 					continue;
 
 				line[MAXLINELEN] = '\0';
 
 				if ((eos = strpbrk(line, WS)) != NULL) {
-					int j = eos - line;
-
-					if (j) {
-						if ((strncmp(line, "domain", j) == 0) || (strncmp(line, "search", j) == 0)) {
+					if ((j = eos - line)) {
+						if (!strncmp(line, "domain", j) || !strncmp(line, "search", j)) {
 							domain = strtok(eos, WS);
 							break;
 						}
@@ -264,7 +262,7 @@ get_user_name (
 #	else
 	pw = getpwuid (getuid ());
 
-	if (pw != (struct passwd *) 0)
+	if (pw != NULL)
 		strcpy (username, pw->pw_name);
 	else {
 		error_message (_(txt_error_passwd_missing));
@@ -289,11 +287,11 @@ get_full_name (
 
 	fullname[0] = '\0';
 
-	if ((p = getenv ("NAME")) != (char *) 0) {
+	if ((p = getenv ("NAME")) != NULL) {
 		strncpy (fullname, p, sizeof (fullname));
 		return fullname;
 	}
-	if ((p = getenv ("REALNAME")) != (char *) 0) {
+	if ((p = getenv ("REALNAME")) != NULL) {
 		strncpy (fullname, p, sizeof (fullname));
 		return fullname;
 	}

@@ -64,20 +64,19 @@ static int date_comp (t_comptype p1, t_comptype p2);
 static int from_comp (t_comptype p1, t_comptype p2);
 static int global_get_multiparts (int aindex, MultiPartInfo **malloc_and_setme_info);
 static int global_look_for_multipart_info (int aindex, MultiPartInfo* setme, char start, char stop, int *offset);
+static int lines_comp (t_comptype p1, t_comptype p2);
 static int read_nov_file (struct t_group *group, long min, long max, int *expired);
 static int read_group (struct t_group *group, char *group_path, int *pcount);
 static int score_comp (t_comptype p1, t_comptype p2);
+static int score_comp_base (t_comptype p1, t_comptype p2);
 static int subj_comp (t_comptype p1, t_comptype p2);
 static int valid_artnum (long art);
 static long find_first_unread (struct t_group *group);
 static t_bool parse_headers (FILE *fp, struct t_article *h);
 static void print_expired_arts (int num_expired);
+static void sort_base (unsigned int sort_threads_type);
 static void thread_by_subject (void);
 static void thread_by_multipart (void);
-#ifdef THREAD_SUM
-	static void sort_base (unsigned int sort_threads_type);
-	static int score_comp_base (t_comptype p1, t_comptype p2);
-#endif /* THREAD_SUM */
 
 
 /*
@@ -144,11 +143,9 @@ find_base (
 			base[grpmenu.max++] = i;
 		}
 	}
-#ifdef THREAD_SUM
 	/* sort base[] */
 	if (group->attribute && group->attribute->sort_threads_type > SORT_THREADS_BY_NOTHING)
 		sort_base (group->attribute->sort_threads_type);
-#endif /* THREAD_SUM */
 }
 
 
@@ -174,7 +171,7 @@ index_group (
 	register int i;
 	t_bool filtered;
 
-	if (group == (struct t_group *) 0)
+	if (group == NULL)
 		return TRUE;
 
 	if (!batch_mode)
@@ -212,15 +209,14 @@ index_group (
 	min = grpmenu.max ? base[0] : group->xmin;
 	max = grpmenu.max ? base[grpmenu.max - 1] : min - 1;
 
-	if (tinrc.use_getart_limit) {
-		if (tinrc.getart_limit > 0) {
-			if (grpmenu.max && (grpmenu.max > tinrc.getart_limit))
-				min = base[grpmenu.max - tinrc.getart_limit];
-		} else if (tinrc.getart_limit < 0) {
-			long first_unread = find_first_unread(group);
-			if (min - first_unread < tinrc.getart_limit)
-				min = first_unread + tinrc.getart_limit;
-		}
+	if (tinrc.getart_limit > 0) {
+		if (grpmenu.max && (grpmenu.max > tinrc.getart_limit))
+			min = base[grpmenu.max - tinrc.getart_limit];
+	} else if (tinrc.getart_limit < 0) {
+		long first_unread = find_first_unread(group);
+
+		if (min - first_unread < tinrc.getart_limit)
+			min = first_unread + tinrc.getart_limit;
 	}
 
 	/*
@@ -400,7 +396,7 @@ read_group (
 		/*
 		 * Try and open the article
 		 */
-		if ((fp = open_art_header (art)) == (FILE *) 0)
+		if ((fp = open_art_header (art)) == NULL)
 			continue;
 
 		/*
@@ -622,6 +618,7 @@ global_get_multiparts (
 	MultiPartInfo **malloc_and_setme_info)
 {
 	int i = 0;
+	int part_index;
 	MultiPartInfo tmp, tmp2;
 	MultiPartInfo *info = 0;
 
@@ -643,40 +640,35 @@ global_get_multiparts (
 	}
 
 	/* try to find all the multiparts... */
-	{
-		int part_index;
+	for_each_art(i) {
+		if (strncmp (arts[i].subject, tmp.subject, tmp.subject_compare_len))
+			continue;
 
-		for_each_art(i) {
+		if (!global_get_multipart_info (i, &tmp2))
+			continue;
 
-			if (strncmp (arts[i].subject, tmp.subject, tmp.subject_compare_len))
-				continue;
+		/* 'test (1/5)' is not the same as 'test (1/15)' */
+		if (tmp.total != tmp2.total)
+			continue;
 
-			if (!global_get_multipart_info (i, &tmp2))
-				continue;
+		part_index = tmp2.part_number - 1;
 
-			/* 'test (1/5)' is not the same as 'test (1/15)' */
-			if (tmp.total != tmp2.total)
-				continue;
+		/* skip the "blah (00/102)" info messages... */
+		if (part_index < 0)
+			continue;
 
-			part_index = tmp2.part_number - 1;
+		/* skip insane "blah (103/102) subjects... */
+		if (part_index >= tmp.total)
+			continue;
 
-			/* skip the "blah (00/102)" info messages... */
-			if (part_index < 0)
-				continue;
-
-			/* skip insane "blah (103/102) subjects... */
-			if (part_index >= tmp.total)
-				continue;
-
-			/* repost check: do we already have this part? */
-			if (info[part_index].part_number != -1) {
-				assert (info[part_index].part_number == tmp2.part_number && "bookkeeping error");
-				continue;
-			}
-
-			/* we have a match, hooray! */
-			info[part_index] = tmp2;
+		/* repost check: do we already have this part? */
+		if (info[part_index].part_number != -1) {
+			assert (info[part_index].part_number == tmp2.part_number && "bookkeeping error");
+			continue;
 		}
+
+		/* we have a match, hooray! */
+		info[part_index] = tmp2;
 	}
 
 	/* see if we got them all. */
@@ -865,13 +857,17 @@ sort_arts (
 			SortBy(score_comp);
 			break;
 
+		case SORT_ARTICLES_BY_LINES_DESCEND:
+		case SORT_ARTICLES_BY_LINES_ASCEND:
+			SortBy(lines_comp);
+			break;
+
 		default:
 			break;
 	}
 }
 
 
-#ifdef THREAD_SUM
 static void
 sort_base (
 	unsigned int sort_threads_type)
@@ -883,7 +879,6 @@ sort_base (
 			break;
 	}
 }
-#endif /* THREAD_SUM */
 
 
 /*
@@ -1092,13 +1087,13 @@ read_nov_file (
 	/*
 	 * open the overview file (whether it be local or via nntp)
 	 */
-	if ((fp = open_xover_fp (group, "r", min, max)) == (FILE *) 0)
+	if ((fp = open_xover_fp (group, "r", min, max)) == NULL)
 		return top_art;
 
 	if (group->xmax > max)
 		group->xmax = max;
 
-	while ((buf = tin_fgets (fp, FALSE)) != (char *) 0) {
+	while ((buf = tin_fgets (fp, FALSE)) != NULL) {
 		if (need_resize) {
 			handle_resize ((need_resize == cRedraw) ? TRUE : FALSE);
 			need_resize = cNo;
@@ -1138,7 +1133,7 @@ read_nov_file (
 		set_article (&arts[top_art]);
 		arts[top_art].artnum = last_read_article = artnum;
 
-		if ((q = strchr (p, '\t')) == (char *) 0) {
+		if ((q = strchr (p, '\t')) == NULL) {
 #ifdef DEBUG
 			error_message ("Bad overview record (Artnum) '%s'", buf);
 			debug_nntp ("read_nov_file", "Bad overview record (Artnum)");
@@ -1155,7 +1150,7 @@ read_nov_file (
 		/*
 		 * read Subject
 		 */
-		if ((q = strchr (p, '\t')) == (char *) 0) {
+		if ((q = strchr (p, '\t')) == NULL) {
 #ifdef DEBUG
 			error_message ("Bad overview record (Subject) [%s]", p);
 			debug_nntp ("read_nov_file", "Bad overview record (Subject)");
@@ -1170,7 +1165,7 @@ read_nov_file (
 		/*
 		 * read From
 		 */
-		if ((q = strchr (p, '\t')) == (char *) 0) {
+		if ((q = strchr (p, '\t')) == NULL) {
 #ifdef DEBUG
 			error_message ("Bad overview record (From) [%s]", p);
 			debug_nntp ("read_nov_file", "Bad overview record (From)");
@@ -1189,7 +1184,7 @@ read_nov_file (
 		/*
 		 * read Date
 		 */
-		if ((q = strchr (p, '\t')) == (char *) 0) {
+		if ((q = strchr (p, '\t')) == NULL) {
 #ifdef DEBUG
 			error_message ("Bad overview record (Date) [%s]", p);
 			debug_nntp ("read_nov_file", "Bad overview record (Date)");
@@ -1198,14 +1193,14 @@ read_nov_file (
 		} else
 			*q = '\0';
 
-		arts[top_art].date = parsedate (p, (TIMEINFO*)0);
+		arts[top_art].date = parsedate (p, (TIMEINFO *) 0);
 		p = q + 1;
 
 		/*
 		 * read Message-ID
 		 */
 		q = strchr (p, '\t');
-		if (q == (char *) 0 || p == q) {	/* Empty msgid's */
+		if (q == NULL || p == q) {	/* Empty msgid's */
 #ifdef DEBUG
 			error_message ("Bad overview record (Msg-id) [%s]", p);
 			debug_nntp ("read_nov_file", "Bad overview record (Msg-id)");
@@ -1226,7 +1221,7 @@ read_nov_file (
 		/*
 		 * read References
 		 */
-		if ((q = strchr (p, '\t')) == (char *) 0) {
+		if ((q = strchr (p, '\t')) == NULL) {
 #ifdef DEBUG
 			error_message ("Bad overview record (References) [%s]", p);
 			debug_nntp ("read_nov_file", "Bad overview record (References)");
@@ -1242,7 +1237,7 @@ read_nov_file (
 		/*
 		 * skip Bytes
 		 */
-		if ((q = strchr (p, '\t')) == (char *) 0) {
+		if ((q = strchr (p, '\t')) == NULL) {
 #ifdef DEBUG
 			error_message ("Bad overview record (Bytes) [%s]", p);
 			debug_nntp ("read_nov_file", "Bad overview record (Bytes)");
@@ -1251,29 +1246,29 @@ read_nov_file (
 		} else
 			*q = '\0';
 
-		p = (q == (char *) 0 ? (char *) 0 : q + 1);
+		p = (q == NULL ? (char *) 0 : q + 1);
 
 		/*
 		 * read Lines
 		 */
-		if (p != (char *) 0) {
-			if ((q = strchr (p, '\t')) != (char *) 0)
+		if (p != NULL) {
+			if ((q = strchr (p, '\t')) != NULL)
 				*q = '\0';
 
 			if (isdigit((unsigned char) *p))
 				arts[top_art].line_count = atoi (p);
 
-			p = (q == (char *) 0 ? (char *) 0 : q + 1);
+			p = (q == NULL ? (char *) 0 : q + 1);
 		}
 
 		/*
 		 * read Xref
 		 */
-		if (p != (char *) 0 && xref_supported) {
-			if ((q = strstr (p, "Xref: ")) == (char *) 0)
+		if (p != NULL && xref_supported) {
+			if ((q = strstr (p, "Xref: ")) == NULL)
 				q = strstr (p, "xref: ");
 
-			if (q != (char *) 0) {
+			if (q != NULL) {
 				p = q + 6;
 				q = p;
 				while (*q && *q != '\t')
@@ -1281,7 +1276,7 @@ read_nov_file (
 
 				*q = '\0';
 				q = strrchr (p, '\n');
-				if (q != (char *) 0)
+				if (q != NULL)
 					*q = '\0';
 
 				q = p;
@@ -1371,7 +1366,7 @@ write_nov_file (
 
 	fp = open_xover_fp (group, "w", 0L, 0L);
 
-	if (fp == (FILE *) 0)
+	if (fp == NULL)
 		error_message (_(txt_cannot_write_index), nov_file);
 	else {
 		if (group->attribute && group->attribute->sort_art_type != SORT_ARTICLES_BY_NOTHING)
@@ -1386,7 +1381,7 @@ write_nov_file (
 			if (article->thread != ART_EXPIRED && article->artnum >= group->xmin) {
 				fprintf (fp, "%ld\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
 					article->artnum,
-					tinrc.post_8bit_header ? article->subject : rfc1522_encode(article->subject, FALSE),
+					tinrc.post_8bit_header ? article->subject : rfc1522_encode(article->subject, NULL, FALSE),
 					print_from (article),
 					print_date (article->date),
 					(article->msgid ? article->msgid : ""),
@@ -1461,7 +1456,7 @@ find_nov_file (
 	t_bool hash_filename;
 	unsigned long hash;
 
-	if (group == (struct t_group *) 0)
+	if (group == NULL)
 		return (char *) 0;
 
 	overview_index_filename = FALSE;	/* Write groupname in nov file? */
@@ -1508,21 +1503,21 @@ find_nov_file (
 
 			snprintf (nov_file, sizeof(nov_file) - 1, "%s/%lu.%d", dir, hash, i);
 
-			if ((fp = fopen (nov_file, "r")) == (FILE *) 0)
+			if ((fp = fopen (nov_file, "r")) == NULL)
 				return nov_file;
 
 			/*
 			 * Don't follow, why should a zero length index file
 			 * cause the write to fail ?
 			 */
-			if (fgets (buf, (int) sizeof (buf), fp) == (char *) 0) {
+			if (fgets (buf, (int) sizeof (buf), fp) == NULL) {
 				fclose (fp);
 				return nov_file;
 			}
 			fclose (fp);
 
 			ptr = strrchr (buf, '\n');
-			if (ptr != (char *) 0)
+			if (ptr != NULL)
 				*ptr = '\0';
 
 			if (STRCMPEQ(buf, group->name))
@@ -1671,7 +1666,6 @@ date_comp (
 		 */
 		if (s1->date > s2->date)
 			return 1;
-
 	} else {
 		/*
 		 * s2->date less than s1->date
@@ -1684,7 +1678,6 @@ date_comp (
 		 */
 		if (s2->date > s1->date)
 			return 1;
-
 	}
 	return 0;
 }
@@ -1714,12 +1707,38 @@ score_comp (
 		if (s2->score > s1->score)
 			return 1;
 	}
-
 	return 0;
 }
 
 
-#ifdef THREAD_SUM
+/*
+ * Same again, but for art[].line_count
+ */
+static int
+lines_comp (
+	t_comptype p1,
+	t_comptype p2)
+{
+	const struct t_article *s1 = (const struct t_article *) p1;
+	const struct t_article *s2 = (const struct t_article *) p2;
+
+	if (CURR_GROUP.attribute->sort_art_type == SORT_ARTICLES_BY_LINES_ASCEND) {
+		if (s1->line_count < s2->line_count)
+			return -1;
+
+		if (s1->line_count > s2->line_count)
+			return 1;
+	} else {
+		if (s2->line_count < s1->line_count)
+			return -1;
+
+		if (s2->line_count > s1->line_count)
+			return 1;
+	}
+	return 0;
+}
+
+
 /*
  * Compares the total score of two threads. Used for sorting base[].
  */
@@ -1736,8 +1755,7 @@ score_comp_base (
 			return 1;
 		if (a < b)
 			return -1;
-	}
-	else {
+	} else {
 		if (a < b)
 			return 1;
 		if (a > b)
@@ -1745,7 +1763,6 @@ score_comp_base (
 	}
 	return 0;
 }
-#endif /* THREAD_SUM */
 
 
 void
@@ -1863,11 +1880,11 @@ print_from (
 
 	*from = '\0';
 
-	if (article->name != (char *) 0) {
+	if (article->name != NULL) {
 		if (strpbrk(article->name, "\".:;<>@[]()\\") != NULL && article->name[0] != '"' && article->name[strlen(article->name)] != '"')
-			snprintf (from, sizeof(from) - 1, "\"%s\" <%s>", tinrc.post_8bit_header ? article->name : rfc1522_encode(article->name, FALSE), article->from);
+			snprintf (from, sizeof(from) - 1, "\"%s\" <%s>", tinrc.post_8bit_header ? article->name : rfc1522_encode(article->name, NULL, FALSE), article->from);
 		else
-			snprintf (from, sizeof(from) - 1, "%s <%s>", tinrc.post_8bit_header ? article->name : rfc1522_encode(article->name, FALSE), article->from);
+			snprintf (from, sizeof(from) - 1, "%s <%s>", tinrc.post_8bit_header ? article->name : rfc1522_encode(article->name, NULL, FALSE), article->from);
 	}
 	else
 		STRCPY (from, article->from);

@@ -3,7 +3,7 @@
  *  Module    : rfc1524.c
  *  Author    : Urs Janssen <urs@tin.org>, Jason Faultless <jason@radar.tele2.co.uk>
  *  Created   : 2000-05-15
- *  Updated   : 2000-06-25
+ *  Updated   : 2002-06-18
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
  * Copyright (c) 2000-2002 Urs Janssen <urs@tin.org>, Jason Faultless <jason@radar.tele2.co.uk>
@@ -41,6 +41,7 @@
 #	include "rfc2046.h"
 #endif /* RFC2046_H */
 
+/* TODO: what about !unix systems? */
 #define DEFAULT_MAILCAPS "~/.mailcap:/etc/mailcap:/usr/etc/mailcap:/usr/local/etc/mailcap:/etc/mail/mailcap"
 
 /* maximum number of mailcap fields */
@@ -75,7 +76,7 @@ get_mailcap_entry (
 
 	mailcaps[0] = '\0';
 	/* build list of mailcap files */
-	if ((ptr = getenv ("MAILCAPS")) != (char *) 0) {
+	if ((ptr = getenv ("MAILCAPS")) != NULL) {
 		if (strlen(ptr)) {
 			STRCPY(mailcaps, ptr);
 			strncat(mailcaps, ":", sizeof(mailcaps) -1);
@@ -90,10 +91,10 @@ get_mailcap_entry (
 	ptr = buf;
 
 	nptr = strtok(mailcaps, ":");
-	while (nptr != (char *) 0) {
+	while (nptr != NULL) {
 		/* expand ~ and/or $HOME etc. */
 		if (strfpath (nptr, filename, sizeof (filename) - 1, &CURR_GROUP)) {
-			if ((fp = fopen(filename, "r")) != (FILE *) 0) {
+			if ((fp = fopen(filename, "r")) != NULL) {
 				while ((fgets (ptr, sizeof(buf) - strlen(buf), fp)) != NULL) {
 					if (*ptr == '#' || *ptr == '\n')		/* skip comments & blank lines */
 						continue;
@@ -108,13 +109,13 @@ get_mailcap_entry (
 					else
 						ptr = buf;
 
-					if ((ptr2 = strchr(buf, '/')) != (char *) 0) {
+					if ((ptr2 = strchr(buf, '/')) != NULL) {
 						if (!strncmp(ptr, content_types[part->type], strlen(ptr) - strlen(ptr2))) {
 							if (!strncmp(ptr + strlen(content_types[part->type]) + 1, part->subtype, strlen(part->subtype))) {
 								/* full match, so parse line and evaluate test if given. */
 								STRCPY(mailcap, ptr);
 								foo = parse_mailcap_line (mailcap, part, path);
-								if (foo != (t_mailcap *) 0) {
+								if (foo != NULL) {
 									fclose (fp); /* perfect match with test succeded (if given) */
 									return foo;
 								}
@@ -123,7 +124,7 @@ get_mailcap_entry (
 									if (!strlen(wildcap)) { /* we don't already have a wildmat match */
 										STRCPY(wildcap, buf);
 										foo = parse_mailcap_line (wildcap, part, path);
-										if (foo == (t_mailcap *) 0) /* test failed */
+										if (foo == NULL) /* test failed */
 											wildcap[0] = '\0'; /* ignore match */
 									}
 								} /* else subtype missmatch, no action required */
@@ -160,7 +161,7 @@ parse_mailcap_line(
 	t_mailcap *tmailcap;
 
 	/* malloc and init */
-	tmailcap = (t_mailcap *) my_malloc (sizeof(t_mailcap));
+	tmailcap = my_malloc (sizeof(t_mailcap));
 	tmailcap->type = (char *) 0;
 	tmailcap->command = (char *) 0;
 	tmailcap->needsterminal = FALSE;
@@ -180,12 +181,11 @@ parse_mailcap_line(
 	/* get required entrys */
 	ptr = get_mailcap_field(ptr);
 	blen = strlen(content_types[part->type]) + strlen(part->subtype) + 2;
-	buf = (char *) my_malloc(sizeof(char) * blen);
-	memset(buf, 0, blen);
+	buf = my_calloc(1, blen);
 	sprintf (buf, "%s/%s", content_types[part->type], part->subtype);
 	tmailcap->type = buf;
 	ptr += strlen(ptr) + 1;
-	if ((ptr = get_mailcap_field(ptr)) != (char *) 0) {
+	if ((ptr = get_mailcap_field(ptr)) != NULL) {
 		tmailcap->command = ptr;
 		ptr += strlen(ptr) + 1;
 	} else { /* required filed missing */
@@ -194,7 +194,7 @@ parse_mailcap_line(
 		return ((t_mailcap *) 0);
 	}
 
-	while ((ptr = get_mailcap_field(ptr)) != (char *) 0) {
+	while ((ptr = get_mailcap_field(ptr)) != NULL) {
 		if (i-- <= 0) /* number of possible fields exhausted */
 			break;
 		if (!strncasecmp(ptr, "needsterminal", 13)) {
@@ -247,26 +247,26 @@ parse_mailcap_line(
 	 * expand metas - we do it in a 2nd pass to be able to honor
 	 * nametemplate
 	 */
-	if (tmailcap->command != (char *) 0)
+	if (tmailcap->command != NULL)
 		tmailcap->command = expand_mailcap_meta(tmailcap->command, part, tmailcap->nametemplate, path);
-	if (tmailcap->description != (char *) 0)
+	if (tmailcap->description != NULL)
 		tmailcap->description = expand_mailcap_meta(tmailcap->description, part, tmailcap->nametemplate, path);
-	if (tmailcap->test != (char *) 0)
+	if (tmailcap->test != NULL)
 		tmailcap->test = expand_mailcap_meta(tmailcap->test, part, tmailcap->nametemplate, path);
-	if (tmailcap->compose != (char *) 0)
+	if (tmailcap->compose != NULL)
 		tmailcap->compose = expand_mailcap_meta(tmailcap->compose, part, tmailcap->nametemplate, path);
-	if (tmailcap->composetyped != (char *) 0)
+	if (tmailcap->composetyped != NULL)
 		tmailcap->composetyped = expand_mailcap_meta(tmailcap->composetyped, part, tmailcap->nametemplate, path);
-	if (tmailcap->edit != (char *) 0)
+	if (tmailcap->edit != NULL)
 		tmailcap->edit = expand_mailcap_meta(tmailcap->edit, part, tmailcap->nametemplate, path);
-	if (tmailcap->print != (char *) 0)
+	if (tmailcap->print != NULL)
 		tmailcap->print = expand_mailcap_meta(tmailcap->print, part, tmailcap->nametemplate, path);
-	if (tmailcap->x11bitmap != (char *) 0)
+	if (tmailcap->x11bitmap != NULL)
 		tmailcap->x11bitmap = expand_mailcap_meta(tmailcap->x11bitmap, part, tmailcap->nametemplate, path);
 
 	free (optr);
 
-	if (tmailcap->test != (char *) 0) { /* test field given */
+	if (tmailcap->test != NULL) { /* test field given */
 		/* TODO: EndWin()/InitWin() around system needed? */
 		/* TODO: use invoke_cmd()? */
 		if (system(tmailcap->test) != 0) { /* test failed? */
@@ -335,7 +335,7 @@ get_mailcap_field(
 		olen = strlen(line); \
 		space += linelen; \
 		linelen <<= 1; \
-		line = (char *) my_realloc((void *) line, linelen); \
+		line = my_realloc(line, linelen); \
 		memset(line + olen, 0, linelen - olen); \
 	} \
 }
@@ -353,13 +353,12 @@ expand_mailcap_meta(
 	t_bool percent = FALSE;
 	size_t linelen, space, olen;
 
-	if ((ptr = strchr(mailcap, '%')) == (char *) 0) /* nothing to expand */
+	if ((ptr = strchr(mailcap, '%')) == NULL) /* nothing to expand */
 		return my_strdup(mailcap); /* waste of mem, but simplyfies the frees */
 
-	linelen = sizeof(char) * LEN * 2;		/* initial maxlen */
-	space = linelen - 1;							/* available space in string */
-	line = (char *) my_malloc (linelen);	/* initial malloc */
-	memset (line, 0, linelen);
+	linelen = LEN * 2;					/* initial maxlen */
+	space = linelen - 1;					/* available space in string */
+	line = my_calloc (1, linelen);
 	lptr = line;
 
 	ptr = mailcap;
@@ -369,11 +368,11 @@ expand_mailcap_meta(
 		 * to avoid reallocs() for the all the single char cases
 		 * we do a check here
 		 */
-		if (space < (sizeof(char) * 10)) { /* 'worst'case are two chars ... */
+		if (space < 10) {				/* 'worst'case are two chars ... */
 			olen = strlen(line);		/* get current legth of string */
 			space += linelen;			/* recalc available space */
 			linelen <<= 1;				/* double maxlen */
-			line = (char *) my_realloc((void *) line, linelen);
+			line = my_realloc(line, linelen);
 			memset (line + olen, 0, linelen - olen); /* weed out junk */
 			lptr = line + olen;		/* adjust pointer to current position */
 		}
@@ -388,7 +387,7 @@ expand_mailcap_meta(
 					percent = TRUE;
 				else {
 					*lptr++ = '%';
-					space -= sizeof(char);
+					space--;
 					quote = FALSE;
 				}
 				break;
@@ -398,16 +397,15 @@ expand_mailcap_meta(
 					char *end;
 
 					percent = FALSE;
-					if ((end = strchr (ptr, '}')) != (char *) 0) {
-						if (part->params != (t_param *) 0) {
+					if ((end = strchr (ptr, '}')) != NULL) {
+						if (part->params != NULL) {
 							char *parameter;
 							const char *value;
 
-							parameter = (char *) my_malloc (end - ptr + 1);
-							memset (parameter, 0, end - ptr + 1);
+							parameter = my_calloc (1, end - ptr + 1);
 							strncpy (parameter, ptr + 1, end - ptr - 1); /* extract paramter name */
 
-							if ((value = get_param (part->params, parameter)) != (char *) 0) { /* match? */
+							if ((value = get_param (part->params, parameter)) != NULL) { /* match? */
 								CHECK_SPACE(strlen(value));
 								strcat (line, value);
 								lptr = line + strlen(line);
@@ -475,19 +473,19 @@ expand_mailcap_meta(
 				if (quote) { /* last char was \ */
 					*lptr = '\\';
 					lptr++;
-					space -= sizeof(char);
+					space--;
 					quote = FALSE;
 				}
 				if (percent) { /* unknow %x sequence */
 					*lptr = '%';
 					lptr++;
-					space -= sizeof(char);
+					space--;
 					percent = FALSE;
 					quote = FALSE;
 				}
 				*lptr = *ptr;
 				lptr++;
-				space -= sizeof(char);
+				space--;
 		}
 		ptr++;
 	}
@@ -512,5 +510,5 @@ free_mailcap (
 	FreeIfNeeded(tmailcap->print);
 	FreeIfNeeded(tmailcap->test);
 	FreeIfNeeded(tmailcap->x11bitmap);
-	FreeIfNeeded((char *)tmailcap);
+	FreeIfNeeded(tmailcap);
 }

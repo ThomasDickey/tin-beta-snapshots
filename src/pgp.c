@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Steven J. Madsen.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -150,12 +147,12 @@ init_pgp (
 	pgpopts = get_val("PGPOPTS", "");
 
 #ifdef HAVE_GPG
-	if ((ptr = getenv("GNUPGHOME")) != (char *) 0)
+	if ((ptr = getenv("GNUPGHOME")) != NULL)
 		my_strncpy (pgp_data, ptr, sizeof(pgp_data));
 	else
 #endif /* HAVE_GPG */
 	{
-		if ((ptr = getenv("PGPPATH")) != (char *) 0)
+		if ((ptr = getenv("PGPPATH")) != NULL)
 			my_strncpy (pgp_data, ptr, sizeof(pgp_data));
 		else
 			joinpath (pgp_data, homedir, PGPDIR);
@@ -207,15 +204,15 @@ split_file (
 	snprintf(pt, sizeof(pt) - 1, PLAINTEXT, TMPDIR, process_id);
 	snprintf(ct, sizeof(ct) - 1, CIPHERTEXT, TMPDIR, process_id);
 
-	if ((art = fopen(file, "r")) == (FILE *) 0)
+	if ((art = fopen(file, "r")) == NULL)
 		return;
 
 	mask = umask((mode_t) (S_IRWXO|S_IRWXG));
 
-	if ((header = fopen(hdr, "w")) == (FILE *) 0)
+	if ((header = fopen(hdr, "w")) == NULL)
 		goto err_art;
 
-	if ((plaintext = fopen(pt, "w")) == (FILE *) 0)
+	if ((plaintext = fopen(pt, "w")) == NULL)
 		goto err_hdr;
 
 	fgets(buf, LEN, art);			/* Copy the hdr up to and including the \n */
@@ -253,7 +250,7 @@ do_pgp (
 	 * <mailfrom> is valid only when signing and a local address exists
 	 */
 	if (what & PGP_SIGN) {
-		if ((CURR_GROUP.attribute->from) != (char *) 0)
+		if ((CURR_GROUP.attribute->from) != NULL)
 			strip_name (CURR_GROUP.attribute->from, mailfrom);
 		if (strlen(mailfrom)) {
 			if (what & PGP_ENCRYPT)
@@ -269,7 +266,6 @@ do_pgp (
 	} else
 		sh_format (cmd, sizeof(cmd), DO_ENCRYPT);
 
-/*fprintf(stderr, "CHECK: !%s!\n", cmd);*/
 	invoke_cmd(cmd);
 	join_files(file);
 }
@@ -282,7 +278,7 @@ pgp_append_public_key (
 	FILE *fp, *key;
 	char keyfile[PATH_LEN], cmd[LEN], buf[LEN];
 
-	if ((CURR_GROUP.attribute->from) != (char *) 0 && strlen(CURR_GROUP.attribute->from))
+	if ((CURR_GROUP.attribute->from) != NULL && strlen(CURR_GROUP.attribute->from))
 		strip_name (CURR_GROUP.attribute->from, buf);
 	else
 		snprintf(buf, sizeof(buf) - 1, "%s@%s", userid, host_name);
@@ -321,7 +317,7 @@ pgp_available (
 	char keyring[PATH_LEN];
 
 	joinpath(keyring, pgp_data, PGP_PUBRING);
-	if ((fp = fopen(keyring, "r")) == (FILE *) 0) {
+	if ((fp = fopen(keyring, "r")) == NULL) {
 		wait_message(2, _(txt_pgp_not_avail), keyring);
 		return FALSE;
 	}
@@ -443,7 +439,7 @@ pgp_check_article (
 	snprintf (artfile + strlen(artfile), sizeof(artfile) - 1, ".%d", (int)process_id);
 #	endif /* APPEND_PID */
 
-	if ((art = fopen(artfile, "w")) == (FILE *) 0) {
+	if ((art = fopen(artfile, "w")) == NULL) {
 		info_message(_(txt_cannot_open), artfile);
 		return FALSE;
 	}
@@ -451,9 +447,9 @@ pgp_check_article (
 
 	fgets(buf, LEN, artinfo->raw);		/* Copy the body whilst looking for SIG/KEY tags */
 	while (!feof(artinfo->raw)) {
-		if (!pgp_signed && strcmp(buf, PGP_SIG_TAG) == 0)
+		if (!pgp_signed && !strcmp(buf, PGP_SIG_TAG))
 			pgp_signed = TRUE;
-		if (!pgp_key && strcmp(buf, PGP_KEY_TAG) == 0)
+		if (!pgp_key && !strcmp(buf, PGP_KEY_TAG))
 			pgp_key = TRUE;
 		fputs(buf, art);
 		fgets(buf, LEN, artinfo->raw);

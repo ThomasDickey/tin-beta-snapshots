@@ -108,15 +108,14 @@ getserverbyfile (
 #	ifdef HAVE_PUTENV
 	char tmpbuf[256];
 	char *new_env;
-	static char *old_env = 0;
+	static char *old_env = NULL;
 #	endif /* HAVE_PUTENV */
 
 	if (cmdline_nntpserver[0] != '\0') {
 		get_nntpserver (buf, cmdline_nntpserver);
 #	ifdef HAVE_PUTENV
 		sprintf (tmpbuf, "NNTPSERVER=%s", buf);
-		new_env = (char *) my_malloc (strlen (tmpbuf) + 1);
-		strcpy (new_env, tmpbuf);
+		new_env = my_strdup(tmpbuf);
 		putenv (new_env);
 		FreeIfNeeded (old_env);
 		old_env = new_env;
@@ -128,17 +127,17 @@ getserverbyfile (
 		return (buf);
 	}
 
-	if ((cp = getenv ("NNTPSERVER")) != (char *) 0) {
+	if ((cp = getenv ("NNTPSERVER")) != NULL) {
 		get_nntpserver (buf, cp);
 		return (buf);
 	}
 
-	if (file == (char *) 0)
+	if (file == NULL)
 		return (char *) 0;
 
-	if ((fp = fopen (file, "r")) != (FILE *) 0) {
+	if ((fp = fopen (file, "r")) != NULL) {
 
-		while (fgets (buf, (int) sizeof(buf), fp) != (char *) 0) {
+		while (fgets (buf, (int) sizeof(buf), fp) != NULL) {
 			if (*buf == '\n' || *buf == '#')
 				continue;
 
@@ -151,14 +150,14 @@ getserverbyfile (
 
 		(void) fclose (fp);
 
-		if (cp != (char *) 0) {
+		if (cp != NULL) {
 			get_nntpserver (buf, cp);
 			return (buf);
 		}
 	}
 
 #	ifdef USE_INN_NNTPLIB
-	if ((cp = GetConfigValue (_CONF_SERVER)) != (char *) 0) {
+	if ((cp = GetConfigValue (_CONF_SERVER)) != NULL) {
 		(void) STRCPY(buf, cp);
 		return (buf);
 	}
@@ -318,7 +317,7 @@ get_tcp_socket (
 	else
 		strcpy(device, "/dev/tcp");
 
-	if ((s = t_open (device, O_RDWR, (struct t_info*) 0)) < 0){
+	if ((s = t_open (device, O_RDWR, (struct t_info *) 0)) < 0){
 		t_error ("t_open: can't t_open /dev/tcp"); /* FIXME: -> lang.c */
 		return (-EPROTO);
 	}
@@ -415,7 +414,7 @@ get_tcp_socket (
 		return (-EHOSTUNREACH);
 	}
 #			else
-	sp = (struct servent *) my_malloc (sizeof (struct servent));
+	sp = my_malloc (sizeof (struct servent));
 	sp->s_port = htons (IPPORT_NNTP);
 #			endif /* HAVE_GETSERVBYNAME */
 
@@ -631,7 +630,7 @@ get_tcp6_socket (
 			break;
 		}
 	}
-	if (res0 != (struct addrinfo *) 0)
+	if (res0 != NULL)
 		freeaddrinfo(res0);
 	if (err < 0) {
 		my_fprintf (stderr, _("\nsocket or connect problem\n")); /* FIXME: -> lang.c */
@@ -674,7 +673,7 @@ get_dnet_socket (
 			area = 0;
 			/* FALLTHROUGH */
 		case 2:
-			node += area*1024;
+			node += area * 1024;
 			sdn.sdn_add.a_len = 2;
 			sdn.sdn_family = AF_DECnet;
 			sdn.sdn_add.a_addr[0] = node % 256;
@@ -795,7 +794,7 @@ reconnect (
 		/*
 		 * Re-establish our current group and resend last command
 		 */
-		if (glob_group != (char *) 0) {
+		if (glob_group != NULL) {
 			DEBUG_IO((stderr, _("Rejoin current group\n")));
 			sprintf (last_put, "GROUP %s", glob_group);
 			put_server (last_put);
@@ -840,7 +839,7 @@ get_server (
 	/*
 	 * NULL socket reads indicates socket has closed. Try a few times more
 	 */
-	while (nntp_rd_fp == NULL || s_gets (string, size, nntp_rd_fp) == (char *) 0) {
+	while (nntp_rd_fp == NULL || s_gets (string, size, nntp_rd_fp) == NULL) {
 
 		if (quitting)						/* Don't bother to reconnect */
 			tin_done (NNTP_ERROR_EXIT);		/* And don't try to disconnect again! */

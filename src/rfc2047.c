@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2002-04-25
+ *  Updated   : 2002-06-09
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2002 Chris Blum <chris@resolution.de>
@@ -75,9 +75,9 @@ static int quoteflag;
  * local prototypes
  */
 static int do_b_encode (char *w, char *b, int max_ewsize, t_bool isstruct_head);
-static int rfc1522_do_encode (char *what, char **where, t_bool break_long_line);
+static int rfc1522_do_encode (char *what, char **where, struct t_group *group, t_bool break_long_line);
 static int sizeofnextword (char *w);
-static int which_encoding (char *w);
+static int which_encoding (char *w, int mmnwcharset);
 static t_bool contains_nonprintables (char *w, t_bool isstruct_head);
 static unsigned hex2bin (int x);
 static void build_base64_rank_table (void);
@@ -203,13 +203,16 @@ rfc1522_decode (
 	char *c, *sc;
 	const char *d;
 	char *t;
-	static char buffer[2048];
+#define BUFFER_LEN 2048
+	static char buffer[BUFFER_LEN];
+	int max_len;
 	char charset[1024];
 	char encoding;
 	t_bool adjacentflag = FALSE;
 
 	charset[0] = '\0';
-	c = sc = my_strdup(s);
+	c = my_strdup(s);
+	max_len = strlen(c) + 1;
 	t = buffer;
 
 	/*
@@ -218,9 +221,14 @@ rfc1522_decode (
 	 *
 	 * process_charsets(c, "UTF-8", tinrc.mm_local_charset);
 	 */
-	process_charsets(c, "US-ASCII", tinrc.mm_local_charset);
+#ifndef CHARSET_CONVERSION
+	process_charsets(&c, &max_len, "US-ASCII", tinrc.mm_local_charset);
+#else
+	process_charsets(&c, &max_len, (CURR_GROUP.attribute->undeclared_charset) ? (CURR_GROUP.attribute->undeclared_charset) : "US-ASCII", tinrc.mm_local_charset);
+#endif /* !CHARSET_CONVERSION */
+	sc = c;
 
-	while (*c && t - buffer < 2048) {
+	while (*c && t - buffer < BUFFER_LEN) {
 		if (*c != '=') {
 			if (adjacentflag && isspace((unsigned char) *c)) {
 				const char *dd;
@@ -259,9 +267,20 @@ rfc1522_decode (
 
 						i = mmdecode(c, encoding, '?', t);
 						if (i > 0) {
-							*(t + i) = '\0';
-							process_charsets(t, charset, tinrc.mm_local_charset);
-							t += strlen(t);
+							int chars_to_copy;
+							char *tmpbuf;
+
+							max_len = i + 1;
+							tmpbuf = my_malloc(max_len);
+							strncpy(tmpbuf, t, i);
+							*(tmpbuf + i) = '\0';
+							process_charsets(&tmpbuf, &max_len, charset, tinrc.mm_local_charset);
+							chars_to_copy = strlen(tmpbuf);
+							if (chars_to_copy > BUFFER_LEN - (t - buffer) - 1)
+								chars_to_copy = BUFFER_LEN - (t - buffer) - 1;
+							strncpy(t, tmpbuf, chars_to_copy);
+							free(tmpbuf);
+							t += chars_to_copy;
 							e++;
 							if (*e == '=')
 								e++;
@@ -272,7 +291,7 @@ rfc1522_decode (
 				}
 			}
 		}
-		while (d != c)
+		while (d != c && t - buffer < BUFFER_LEN - 1)
 			*t++ = *d++;
 	}
 	*t = '\0';
@@ -327,7 +346,6 @@ do_b_encode (
 								   of wide_char should NOT be split into two
 								   encoded words) in order to be compatible with
 								   some CJK mail client */
-
 	int count = max_ewsize / 4 * 3;
 	t_bool isleading_between = TRUE;		/* are we still processing leading space */
 
@@ -358,10 +376,13 @@ do_b_encode (
  * header (i.e. two encoding won't be mixed in a single header line).
  * Mixing two encodings is not a violation of RFC 2047 but may break
  * some news/mail clients.
+ *
+ * mmnwcharset is ignored unless CHARSET_CONVERSION
  */
 static int
 which_encoding (
-	char *w)
+	char *w,
+	int mmnwcharset)
 {
 	int chars = 0;
 	int schars = 0;
@@ -387,7 +408,7 @@ which_encoding (
 		if (chars + 2 * (nonprint + schars) /* QP size */ >
 			 (chars * 4 + 3) / 3		/* B64 size */
 #ifdef CHARSET_CONVERSION
-			 || !strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-KR")
+			 || !strcasecmp(txt_mime_charsets[mmnwcharset], "EUC-KR")
 #else
 			 || !strcasecmp(tinrc.mm_charset, "EUC-KR")
 #endif /* CHARSET_CONVERSION */
@@ -422,7 +443,7 @@ contains_nonprintables (
 			 * best would be using a regexp like
 			 * ^=\?\S+\?[qQbB]\?\S+\?=
 			 */
-			if (strstr(w, "?=") != (char *) 0)
+			if (strstr(w, "?=") != NULL)
 				nonprint = TRUE;
 		}
 		w++;
@@ -454,6 +475,7 @@ static int
 rfc1522_do_encode(
 	char *what,
 	char **where,
+	struct t_group *group,
 	t_bool break_long_line)
 {
 	/*
@@ -479,6 +501,9 @@ rfc1522_do_encode(
 	 * (just checking that they don get longer than 76 characters),
 	 * then, in a second pass, we replace all SPACEs inside encoded
 	 * words by '_', break long lines, etc.
+	 *
+	 * *group is passed for evaluation of group-attributes,
+	 * set to NULL for e-mails
 	 */
 	char *c;
 	char *t;
@@ -494,7 +519,9 @@ rfc1522_do_encode(
 	t_bool isbroken_within = FALSE;	/* is word broken due to length restriction on encoded of word? */
 	t_bool isstruct_head = FALSE;		/* are we dealing with structured header? */
 	t_bool rightafter_ew = FALSE;
-
+#ifdef CHARSET_CONVERSION
+	int mmnwcharset;	/* mm_network_charset */
+#endif /* CHARSET_CONVERSION */
 /*
  * the list of structured header fields where '(' and ')' are
  * treated specially in rfc 1522 encoding
@@ -505,6 +532,13 @@ rfc1522_do_encode(
 		"X-Submissions-To: ", "To: ", "Cc: ", "Bcc: ", "X-Originator: ", 0 };
 	const char **strptr = struct_header;
 
+#ifdef CHARSET_CONVERSION
+	if (group)
+		mmnwcharset = group->attribute->mm_network_charset;
+	else
+		mmnwcharset = tinrc.mm_network_charset;
+#endif /* CHARSET_CONVERSION */
+
 	do {
 		if (!strncasecmp(what, *strptr, strlen(*strptr))) {
 			isstruct_head = TRUE;
@@ -513,10 +547,11 @@ rfc1522_do_encode(
 	} while (*(++strptr) != 0);
 
 	t = buf;
-	encoding = which_encoding(what);
 #ifdef CHARSET_CONVERSION
-	ew_taken_len = strlen(txt_mime_charsets[tinrc.mm_network_charset]) + 7 /* =?c?E?d?= */;
+	encoding = which_encoding(what, mmnwcharset);
+	ew_taken_len = strlen(txt_mime_charsets[mmnwcharset]) + 7 /* =?c?E?d?= */;
 #else
+	encoding = which_encoding(what, 0);
 	ew_taken_len = strlen(tinrc.mm_charset) + 7;		/* the minimum encoded word length without any encoded text */
 #endif /* CHARSET_CONVERSION */
 	while (*what) {
@@ -531,7 +566,7 @@ rfc1522_do_encode(
 			if (encoding == 'Q') {
 				if (!quoting) {
 #ifdef CHARSET_CONVERSION
-					sprintf(buf2, "=?%s?%c?", txt_mime_charsets[tinrc.mm_network_charset], encoding);
+					sprintf(buf2, "=?%s?%c?", txt_mime_charsets[mmnwcharset], encoding);
 #else
 					sprintf(buf2, "=?%s?%c?", tinrc.mm_charset, encoding);
 #endif /* CHARSET_CONVERSION */
@@ -582,7 +617,7 @@ rfc1522_do_encode(
 					}
 				}
 #ifdef CHARSET_CONVERSION
-				if (!contains_nonprintables(what, isstruct_head) || ewsize >= 70 - strlen(txt_mime_charsets[tinrc.mm_network_charset]))
+				if (!contains_nonprintables(what, isstruct_head) || ewsize >= 70 - strlen(txt_mime_charsets[mmnwcharset]))
 #else
 				if (!contains_nonprintables(what, isstruct_head) || ewsize >= 70 - strlen(tinrc.mm_charset))
 #endif /* CHARSET_CONVERSION */
@@ -597,7 +632,7 @@ rfc1522_do_encode(
  * they are made of only 7bit chars)
  */
 #ifdef CHARSET_CONVERSION
-					if (ewsize >= 70 - strlen(txt_mime_charsets[tinrc.mm_network_charset]) && (contains_nonprintables(what, isstruct_head) || isbroken_within))
+					if (ewsize >= 70 - strlen(txt_mime_charsets[mmnwcharset]) && (contains_nonprintables(what, isstruct_head) || isbroken_within))
 #else
 					if (ewsize >= 70 - strlen(tinrc.mm_charset) && (contains_nonprintables(what, isstruct_head) || isbroken_within))
 #endif /* CHARSET_CONVERSION */
@@ -632,7 +667,7 @@ rfc1522_do_encode(
 				 */
 				while (*what && (!isbetween(*what, isstruct_head) || rightafter_ew)) {
 #ifdef CHARSET_CONVERSION
-					sprintf(buf2, "=?%s?%c?", txt_mime_charsets[tinrc.mm_network_charset], encoding);
+					sprintf(buf2, "=?%s?%c?", txt_mime_charsets[mmnwcharset], encoding);
 #else
 					sprintf(buf2, "=?%s?%c?", tinrc.mm_charset, encoding);
 #endif /* CHARSET_CONVERSION */
@@ -724,6 +759,7 @@ rfc1522_do_encode(
 char *
 rfc1522_encode (
 	char *s,
+	struct t_group *group,
 	t_bool ismail)
 {
 	char *b;
@@ -746,7 +782,7 @@ rfc1522_encode (
 #endif /* MIME_BREAK_LONG_LINES */
 
 	b = buf;
-	x = rfc1522_do_encode(s, &b, break_long_line);
+	x = rfc1522_do_encode(s, &b, group, break_long_line);
 	quoteflag = quoteflag || x;
 	return buf;
 }
@@ -756,6 +792,7 @@ void
 rfc15211522_encode (
 	const char *filename,
 	constext * mime_encoding,
+	struct t_group *group,
 	t_bool allow_8bit_header,
 	t_bool ismail)
 {
@@ -768,6 +805,16 @@ rfc15211522_encode (
 	t_bool body_encoding_needed = FALSE;
 	t_bool umlauts = FALSE;
 	BodyPtr body_encode;
+#if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
+	int mmnwcharset = 0;
+
+#	ifdef CHARSET_CONVERSION
+	if (group) /* Posting */
+		mmnwcharset = group->attribute->mm_network_charset;
+	else /* E-Mail */
+		mmnwcharset = tinrc.mm_network_charset;
+#	endif /* CHARSET_CONVERSION */
+#endif /* LOCAL_CHARSET || MAC_OS_X || CHARSET_CONVERSION */
 
 	if ((g = tmpfile()) == NULL)
 		return;
@@ -780,14 +827,14 @@ rfc15211522_encode (
 
 	while ((header = tin_fgets(f, TRUE))) {
 #if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
-		buffer_to_network(header);
-#endif /* LOCAL_CHARSET || MAC_OS_X || defined(CHARSET_CONVERSION) */
+		buffer_to_network(header, mmnwcharset);
+#endif /* LOCAL_CHARSET || MAC_OS_X || CHARSET_CONVERSION */
 		if (*header == '\0')
 			break;
 		if (allow_8bit_header)
 			fputs(header, g);
 		else
-			fputs(rfc1522_encode(header, ismail), g);
+			fputs(rfc1522_encode(header, group, ismail), g);
 		fputc('\n', g);
 	}
 
@@ -795,8 +842,8 @@ rfc15211522_encode (
 
 	while (fgets(buffer, 2048, f)) {
 #if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
-		buffer_to_network(buffer);
-#endif /* LOCAL_CHARSET || MAC_OS_X || defined(CHARSET_CONVERSION) */
+		buffer_to_network(buffer, mmnwcharset);
+#endif /* LOCAL_CHARSET || MAC_OS_X || CHARSET_CONVERSION */
 		fputs(buffer, g);
 		/* see if there are any umlauts in the body... */
 		for (c = buffer; *c && !isreturn(*c); c++)
@@ -828,11 +875,11 @@ rfc15211522_encode (
 		if (body_encoding_needed) {
 		/* added for CJK charsets like EUC-KR/JP/CN and others */
 #ifdef CHARSET_CONVERSION
-			if (!strncasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-", 4) &&
+			if (!strncasecmp(txt_mime_charsets[mmnwcharset], "EUC-", 4) &&
 				 !strcasecmp(mime_encoding, txt_7bit))
-				fprintf(f, "Content-Type: text/plain; charset=ISO-2022-%s\n", &txt_mime_charsets[tinrc.mm_network_charset][4]);
+				fprintf(f, "Content-Type: text/plain; charset=ISO-2022-%s\n", &txt_mime_charsets[mmnwcharset][4]);
 			else
-				fprintf(f, "Content-Type: text/plain; charset=%s\n", txt_mime_charsets[tinrc.mm_network_charset]);
+				fprintf(f, "Content-Type: text/plain; charset=%s\n", txt_mime_charsets[mmnwcharset]);
 #else
 			if (!strncasecmp(tinrc.mm_charset, "EUC-", 4) &&
 				 !strcasecmp(mime_encoding, txt_7bit))
@@ -866,7 +913,7 @@ rfc15211522_encode (
 /* For EUC-KR, 7bit means conversion to ISO-2022-KR specified in RFC 1557 */
 
 #ifdef CHARSET_CONVERSION
-		if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-KR"))
+		if (!strcasecmp(txt_mime_charsets[mmnwcharset], "EUC-KR"))
 #else
 		if (!strcasecmp(tinrc.mm_charset, "EUC-KR"))
 #endif /* CHARSET_CONVERSION */
@@ -878,7 +925,7 @@ rfc15211522_encode (
  * RFC 1468 encoding. To be confirmed.
  */
 #	ifdef CHARSET_CONVERSION
-		else if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-JP"))
+		else if (!strcasecmp(txt_mime_charsets[mmnwcharset], "EUC-JP"))
 			body_encode = rfc1468_encode;
 #	else
 		else if (!strcasecmp(tinrc.mm_charset, "EUC-JP"))
@@ -886,11 +933,11 @@ rfc15211522_encode (
 #	endif /* CHARSET_CONVERSION */
 
 /*
- * Not only EUC-CN but also other Chinese charsets such as BIG5 and EUC-TW
+ * Not only EUC-CN but also other Chinese charsets such as Big5 and EUC-TW
  * might need RFC 1922 encoding. To be confirmed.
  */
 #	ifdef CHARSET_CONVERSION
-		else if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-CN"))
+		else if (!strcasecmp(txt_mime_charsets[mmnwcharset], "EUC-CN"))
 			body_encode = rfc1922_encode;
 #	else
 		else if (!strcasecmp(tinrc.mm_charset, "EUC-CN"))

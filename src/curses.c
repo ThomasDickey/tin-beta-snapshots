@@ -55,7 +55,7 @@ t_bool have_linescroll = TRUE;	/* USE_CURSES always allows line scrolling */
 
 int cLINES = DEFAULT_LINES_ON_TERMINAL - 1;
 int cCOLS  = DEFAULT_COLUMNS_ON_TERMINAL;
-int _hp_glitch = FALSE;		/* standout not erased by overwriting on HP terms */
+int _hp_glitch = FALSE;		/* stdout not erased by overwriting on HP terms */
 static int _inraw = FALSE;	/* are we IN rawmode? */
 static int xclicks = FALSE;	/* do we have an xterm? */
 t_bool have_linescroll = FALSE;
@@ -217,7 +217,7 @@ ScreenSize (
 	if (!_columns)
 		_columns = DEFAULT_COLUMNS_ON_TERMINAL;
 
-	*num_lines = _lines - 1;		/* assume index from zero*/
+	*num_lines = _lines - 1;		/* assume index from zero */
 	*num_columns = _columns;		/* assume index from one */
 }
 
@@ -307,7 +307,7 @@ get_termcaps (void)
 	char the_termname[40], *p;
 	unsigned n;
 
-	if ((p = getenv ("TERM")) == (char *) 0) {
+	if ((p = getenv ("TERM")) == NULL) {
 		my_fprintf (stderr, _(txt_no_term_set), tin_progname);
 		return (FALSE);
 	}
@@ -324,7 +324,7 @@ get_termcaps (void)
 #	endif /* USE_TERMINFO */
 
 	/* load in all those pesky values */
-	for (n = 0; n < SIZEOF(table); n++) {
+	for (n = 0; n < ARRAY_SIZE(table); n++) {
 		*(table[n].value) = TGETSTR(table[n].capname, &ptr);
 	}
 	_lines          = TGETNUM (dCAPNAME("li", "lines"));

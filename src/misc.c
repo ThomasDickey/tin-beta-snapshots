@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-04-26
+ *  Updated   : 2002-06-09
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -86,12 +86,12 @@ static void write_input_history_file (void);
 	static void buffer_to_local (char *line);
 #else
 #	ifdef CHARSET_CONVERSION
-	static t_bool buffer_to_local (char *line, const char* network_charset, const char *local_charset);
+	static t_bool buffer_to_local (char **line, int *max_line_len, const char *network_charset, const char *local_charset);
 #	endif /* CHARSET_CONVERSION */
 #endif /* LOCAL_CHARSET || MAC_OS_X */
-#ifdef MIME_STRICT_CHARSET
+#if defined(MIME_STRICT_CHARSET) || defined(CHARSET_CONVERSION)
 	static void buffer_to_ascii (char *c);
-#endif /* MIME_STRICT_CHARSET */
+#endif /* MIME_STRICT_CHARSET || CHARSET_CONVERSION */
 
 
 /*
@@ -104,7 +104,7 @@ get_tmpfilename (
 	char *file_tmp;
 
 	/* alloc memory for tmp-filename */
-	file_tmp = (char *) my_malloc (strlen(filename) + 5);
+	file_tmp = my_malloc (strlen(filename) + 5);
 
 	/* generate tmp-filename */
 	sprintf (file_tmp, "%s.tmp", filename);
@@ -122,11 +122,11 @@ append_file (
 {
 	FILE *fp_old, *fp_new;
 
-	if ((fp_new = fopen (new_filename, "r")) == (FILE *) 0) {
+	if ((fp_new = fopen (new_filename, "r")) == NULL) {
 		perror_message (_(txt_cannot_open), new_filename);
 		return;
 	}
-	if ((fp_old = fopen (old_filename, "a+")) == (FILE *) 0) {
+	if ((fp_old = fopen (old_filename, "a+")) == NULL) {
 		perror_message (_(txt_cannot_open), old_filename);
 		fclose (fp_new);
 		return;
@@ -208,12 +208,12 @@ backup_file (
 	FILE *fp_in, *fp_out;
 	t_bool ret = FALSE;
 
-	if ((fp_in = fopen (filename, "r")) == (FILE *) 0)	/* a missing sourcefile is not a real bug */
+	if ((fp_in = fopen (filename, "r")) == NULL)	/* a missing sourcefile is not a real bug */
 		return TRUE;
 
 	/* don't follow links when writing backup files */
 	unlink (backupname);
-	if ((fp_out = fopen (backupname, "w")) == (FILE *) 0) {
+	if ((fp_out = fopen (backupname, "w")) == NULL) {
 		fclose (fp_in);
 		return ret;
 	}
@@ -239,7 +239,7 @@ copy_body (
 	FILE *fp_op,
 	char *prefix,
 	char *initl,
-	t_bool with_sig)
+	t_bool raw_data)
 {
 	char buf[8192];
 	char buf2[8192];
@@ -268,17 +268,30 @@ copy_body (
 		}
 	}
 
-	if (strstr(prefix, "%s"))
+	/*
+	 * strip trailing space if tinrc.quote_style doesn't have its
+	 * QUOTE_COMPRESS flag set
+	 */
+	if (tinrc.quote_style & QUOTE_COMPRESS) {
+		if (strstr(prefix, "%s"))
+			sprintf(prefixbuf, prefix, initl);
+		else {
+			/* strip tailing space from quote-char for quoting quoted lines */
+			strcpy(prefixbuf, prefix);
+			if (prefixbuf[strlen(prefixbuf) - 1] == ' ')
+				prefixbuf[strlen(prefixbuf) - 1] = '\0';
+		}
+	} else
 		sprintf(prefixbuf, prefix, initl);
-	else {
-		/* strip tailing space from quote-char for quoting quoted lines */
-		strcpy(prefixbuf, prefix);
-		if (prefixbuf[strlen(prefixbuf) - 1] == ' ')
-			prefixbuf[strlen(prefixbuf) - 1] = '\0';
-	}
 
-	while (fgets (buf, (int) sizeof(buf), fp_ip) != (char *) 0) {
-		if (!with_sig && !strcmp(buf, SIGDASHES))
+	/*
+	 * if raw_data is true, the signature is exceptionally quoted, even if
+	 * tinrc tells us not to do so.  This extraordinary behaviour occurs when
+	 * replying or following up with the 'raw' message shown.
+	 */
+
+	while (fgets (buf, (int) sizeof(buf), fp_ip) != NULL) {
+		if (!(tinrc.quote_style & QUOTE_SIGS) && !strcmp(buf, SIGDASHES) && !raw_data)
 			break;
 		if (strstr(prefix, "%s")) { /* initials wanted */
 			if (buf[0] != '\n') { /* line is not empty */
@@ -300,9 +313,9 @@ copy_body (
 				} else	/* line was not already quoted (no >) */
 					retcode = fprintf (fp_op, "%s%s", prefixbuf, buf);
 			} else	/* line is empty */
-					retcode = fprintf (fp_op, "%s\n", (tinrc.quote_empty_lines ? prefixbuf : ""));
+					retcode = fprintf (fp_op, "%s\n", ((tinrc.quote_style & QUOTE_EMPTY) ? prefixbuf : ""));
 		} else {		/* no initials in quote_string, just copy */
-			if ((buf[0] != '\n') || tinrc.quote_empty_lines)
+			if ((buf[0] != '\n') || (tinrc.quote_style & QUOTE_EMPTY))
 				retcode = fprintf (fp_op, "%s%s", ((buf[0] == '>' || buf[0] == ' ') ? prefixbuf : prefix), buf);  /* use blank-stripped quote string if line is already quoted or beginns with a space */
 			else
 				retcode = fprintf (fp_op, "\n");
@@ -326,7 +339,7 @@ get_val (
 {
 	const char *ptr;
 
-	return ((ptr = getenv(env)) != (char *) 0 ? ptr : def);
+	return ((ptr = getenv(env)) != NULL ? ptr : def);
 }
 
 
@@ -390,7 +403,7 @@ invoke_ispell (
 	strcpy (ispell, "ispell");
 #	else
 */
-	if (psGrp && psGrp->attribute->ispell != (char *) 0)
+	if (psGrp && psGrp->attribute->ispell != NULL)
 		STRCPY(ispell, psGrp->attribute->ispell);
 	else
 		STRCPY(ispell, get_val("ISPELL", PATH_ISPELL));
@@ -407,7 +420,7 @@ invoke_ispell (
 	strncpy (nam_head, nam, 90);
 	strcat (nam_head, ".head");
 
-	if ((fp_all = fopen(nam, "r")) == (FILE *) 0) {
+	if ((fp_all = fopen(nam, "r")) == NULL) {
 		perror_message(_(txt_cannot_open), nam);
 		return FALSE;
 	}
@@ -659,7 +672,7 @@ strip_double_ngs (
 	t_bool over2;		/* TRUE when the inner loop is over */
 
 	/* shortcut, check if there is only 1 group */
-	if (strchr(ngs_list, ',') != (char *) 0) {
+	if (strchr(ngs_list, ',') != NULL) {
 		over1 = FALSE;
 		ncnt1 = 0;
 		strcpy(newlist, ngs_list);		/* make a "working copy" */
@@ -669,7 +682,7 @@ strip_double_ngs (
 			ncnt1++;							/* inc. outer counter */
 			strcpy(cmplist, newlist);	/* duplicate groups for inner loop */
 			ptr2 = strchr(ptr, ',');	/* search "," ... */
-			if (ptr2 != (char *) 0) {	/* if found ... */
+			if (ptr2 != NULL) {	/* if found ... */
 				*ptr2 = '\0';
 				strcpy(ngroup1, ptr);	/* chop off first outer newsgroup */
 				ptr = ptr2 + 1;			/* pointer points to next newsgr. */
@@ -692,7 +705,7 @@ strip_double_ngs (
 				ncnt2++;
 				strcpy(ngroup2, cmplist);
 				ptr2 = strchr(ngroup2, ',');
-				if (ptr2 != (char *) 0) {
+				if (ptr2 != NULL) {
 					strcpy(cmplist, ptr2 + 1);
 					*ptr2 = '\0';
 				} else
@@ -755,11 +768,11 @@ rename_file (
 #	endif /* HAVE_LINK */
 	{
 		if (errno == EXDEV) {	/* create & copy file across filesystem */
-			if ((fp_old = fopen (old_filename, "r")) == (FILE *) 0) {
+			if ((fp_old = fopen (old_filename, "r")) == NULL) {
 				perror_message (_(txt_cannot_open), old_filename);
 				return;
 			}
-			if ((fp_new = fopen (new_filename, "w")) == (FILE *) 0) {
+			if ((fp_new = fopen (new_filename, "w")) == NULL) {
 				perror_message (_(txt_cannot_open), new_filename);
 				fclose (fp_old);
 				return;
@@ -1165,14 +1178,15 @@ FATAL:
 
 #endif /* 0 */
 
+
 /*
- *  Return a pointer into s eliminating any leading Re:'s.  Example:
+ * Return a pointer into s eliminating any leading Re:'s. Example:
  *
- *	  Re: Reorganization of misc.jobs
- *	  ^   ^
- *    Re^2: Reorganization of misc.jobs
+ *		Re: Reorganization of misc.jobs
+ *		^   ^
+ * 	Re^2: Reorganization of misc.jobs
  *
- *  now also strips trailing (was: ...) (obw)
+ * now also strips trailing (was: ...) (obw)
  */
 const char *
 eat_re (
@@ -1181,7 +1195,7 @@ eat_re (
 {
 	int data, slen;
 	int offsets[6];
-	int size_offsets = sizeof(offsets)/sizeof(int);
+	int size_offsets = ARRAY_SIZE(offsets);
 
 	if (!s || !*s)
 		return "<No subject>"; /* also used in art.c:parse_headers() */
@@ -1216,8 +1230,14 @@ my_isprint (
 		/* use some conversation table */
 		return (isprint(c) || (c >= 0x80 && c <= 0xff));
 #	else
-		/* assume iso-8859-1 */
-		return (isprint(c) || (c >= 0xa0 && c <= 0xff));
+	if (!strncasecmp(txt_mime_charsets[tinrc.mm_network_charset], "ISO-8859", 8))
+		return (isprint(c) || (c >= 0xa1 && c <= 0xff));
+	else if (!strncasecmp(txt_mime_charsets[tinrc.mm_network_charset], "ISO-2022", 8))
+		return (isprint(c) || (c == 0x1b));
+	else if (!strncasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-", 4) || !strncasecmp(txt_mime_charsets[tinrc.mm_network_charset], "Big5", 4))
+		return 1;
+	else /* KOI8-* and UTF-8 */
+		return (isprint(c) || (c >= 0x80 && c <= 0xff));
 #	endif /* LOCAL_CHARSET || MAC_OS_X */
 #endif /* !NO_LOCALE */
 }
@@ -1332,14 +1352,14 @@ create_index_lock_file (
 	struct stat sb;
 
 	if (stat (the_lock_file, &sb) == 0) {
-		if ((fp = fopen (the_lock_file, "r")) != (FILE *) 0) {
+		if ((fp = fopen (the_lock_file, "r")) != NULL) {
 			fgets (buf, (int) sizeof(buf), fp);
 			fclose (fp);
 			error_message ("\n%s: Already started pid=[%d] on %s", tin_progname, atoi(buf), buf + 8);
 			giveup();
 		}
 	} else {
-		if ((fp = fopen (the_lock_file, "w")) != (FILE *) 0) {
+		if ((fp = fopen (the_lock_file, "w")) != NULL) {
 			(void) time (&epoch);
 			fprintf (fp, "%6d  %s\n", (int) process_id, ctime (&epoch));
 			if (ferror (fp) || fclose (fp))
@@ -1377,10 +1397,10 @@ strfquote (
 	int i, j;
 	t_bool iflag;
 
-	if (s == (char *) 0 || format == (char *) 0 || maxsize == 0)
+	if (s == NULL || format == NULL || maxsize == 0)
 		return 0;
 
-	if (strchr (format, '%') == (char *) 0 && strlen (format) + 1 >= maxsize)
+	if (strchr (format, '%') == NULL && strlen (format) + 1 >= maxsize)
 		return 0;
 
 	for (; *format && s < endp - 1; format++) {
@@ -1437,7 +1457,7 @@ strfquote (
 					break;
 
 				case 'C':	/* First Name of author */
-					if (arts[respnum].name != (char *) 0) {
+					if (arts[respnum].name != NULL) {
 						STRCPY(tbuf, arts[respnum].name);
 						if (strchr (arts[respnum].name, ' '))
 							*(strchr (tbuf, ' ')) = '\0';
@@ -1463,7 +1483,7 @@ strfquote (
 					break;
 
 				case 'I':	/* Initials of author */
-					STRCPY(tbuf, ((arts[respnum].name != (char *) 0) ? arts[respnum].name : arts[respnum].from));
+					STRCPY(tbuf, ((arts[respnum].name != NULL) ? arts[respnum].name : arts[respnum].from));
 					j = 0;
 					iflag = TRUE;
 					for (i = 0; tbuf[i]; i++) {
@@ -1482,7 +1502,7 @@ strfquote (
 					break;
 
 				case 'N':	/* Articles Name of author */
-					strcpy (tbuf, ((arts[respnum].name != (char *) 0) ? arts[respnum].name : arts[respnum].from));
+					strcpy (tbuf, ((arts[respnum].name != NULL) ? arts[respnum].name : arts[respnum].from));
 					break;
 
 				default:
@@ -1530,10 +1550,10 @@ strfeditor (
 	char tbuf[PATH_LEN];
 	int i;
 
-	if (s == (char *) 0 || format == (char *) 0 || maxsize == 0)
+	if (s == NULL || format == NULL || maxsize == 0)
 		return 0;
 
-	if (strchr (format, '%') == (char *) 0 && strlen (format) + 1 >= maxsize)
+	if (strchr (format, '%') == NULL && strlen (format) + 1 >= maxsize)
 		return 0;
 
 	for (; *format && s < endp - 1; format++) {
@@ -1680,7 +1700,7 @@ _strfpath (
 #endif /* !M_AMIGA */
 	t_bool is_mailbox = FALSE;
 
-	if (str == (char *) 0 || format == (char *) 0 || maxsize == 0)
+	if (str == NULL || format == NULL || maxsize == 0)
 		return 0;
 
 	if (strlen (format) + 1 >= maxsize)
@@ -1759,7 +1779,7 @@ _strfpath (
 				 * OK lookup the variable in the shells environment
 				 */
 				envptr = getenv (tbuf);
-				if (envptr == (char *) 0 || (*envptr == '\0'))
+				if (envptr == NULL || (*envptr == '\0'))
 					strncpy (tbuf, defbuf, sizeof(tbuf) - 1);
 				else
 					strncpy (tbuf, envptr, sizeof(tbuf) - 1);
@@ -1975,10 +1995,10 @@ strfmailer (
 	 * write, or nothing to replace and format string longer than available
 	 * space => return without any action
 	 */
-	if (dest == (char *) 0 || format == (char *) 0 || maxsize == 0)
+	if (dest == NULL || format == NULL || maxsize == 0)
 		return 0;
 
-	if (strchr (format, '%') == (char *) 0 && strlen (format) + 1 >= maxsize)
+	if (strchr (format, '%') == NULL && strlen (format) + 1 >= maxsize)
 		return 0;
 
 	/*
@@ -2064,7 +2084,7 @@ strfmailer (
 					if (tinrc.use_mailreader_i)
 						strncpy (tbuf, escape_shell_meta (subject, quote_area), sizeof(tbuf));
 					else
-						strncpy (tbuf, escape_shell_meta (rfc1522_encode (subject, ismail), quote_area), sizeof(tbuf));
+						strncpy (tbuf, escape_shell_meta (rfc1522_encode (subject, NULL, ismail), quote_area), sizeof(tbuf));
 					tbuf[sizeof(tbuf) - 1] = '\0';	/* just in case */
 					escaped = TRUE;
 					break;
@@ -2073,7 +2093,7 @@ strfmailer (
 					if (tinrc.use_mailreader_i)
 						strncpy (tbuf, escape_shell_meta (to, quote_area), sizeof(tbuf));
 					else
-						strncpy (tbuf, escape_shell_meta (rfc1522_encode (to, ismail), quote_area), sizeof(tbuf));
+						strncpy (tbuf, escape_shell_meta (rfc1522_encode (to, NULL, ismail), quote_area), sizeof(tbuf));
 					tbuf[sizeof(tbuf) - 1] = '\0';	/* just in case */
 					escaped = TRUE;
 					break;
@@ -2082,7 +2102,7 @@ strfmailer (
 					if (tinrc.use_mailreader_i)
 						strncpy (tbuf, userid, sizeof(tbuf));
 					else
-						strncpy (tbuf, rfc1522_encode (userid, ismail), sizeof(tbuf));
+						strncpy (tbuf, rfc1522_encode (userid, NULL, ismail), sizeof(tbuf));
 					tbuf[sizeof(tbuf) - 1] = '\0';	/* just in case */
 					break;
 				default:
@@ -2126,10 +2146,10 @@ get_initials (
 	int i, j;
 	t_bool iflag;
 
-	if (s == (char *) 0 || maxsize == 0)
+	if (s == NULL || maxsize == 0)
 		return 0;
 
-	strcpy (tbuf, ((arts[respnum].name != (char *) 0) ? arts[respnum].name : arts[respnum].from));
+	strcpy (tbuf, ((arts[respnum].name != NULL) ? arts[respnum].name : arts[respnum].from));
 
 	iflag = FALSE;
 	j = 0;
@@ -2312,7 +2332,6 @@ read_input_history_file (
 	memset((void *) hist_pos, 0, sizeof(hist_pos));
 
 	while (fgets(buf, (int) sizeof(buf), fp)) {
-
 		if ((chr = strpbrk(buf, "\n\r")) != NULL)
 			*chr = '\0';
 
@@ -2330,8 +2349,7 @@ read_input_history_file (
 		his_e++;
 		/* check if next type is reached */
 		if (his_e >= HIST_SIZE) {
-			hist_last[his_w] = his_free;
-			hist_pos[his_w] = hist_last[his_w];
+			hist_pos[his_w] = hist_last[his_w] = his_free;
 			his_free = his_e = 0;
 			his_w++;
 		}
@@ -2405,7 +2423,7 @@ quote_wild (
 	char *str)
 {
 	char *target;
-	static char buff[2*LEN];	/* on the safe side */
+	static char buff[2 * LEN];	/* on the safe side */
 
 	for (target = buff; *str != '\0'; str++) {
 		if (tinrc.wildcard) { /* regex */
@@ -2440,7 +2458,7 @@ quote_wild_whitespace (
 	char *str)
 {
 	char *target;
-	static char buff[2*LEN];	/* on the safe side */
+	static char buff[2 * LEN];	/* on the safe side */
 
 	for (target = buff; *str != '\0'; str++) {
 		if (tinrc.wildcard) { /* regex */
@@ -2472,9 +2490,9 @@ strip_address (
 	char *end_pos;
 	char *start_pos;
 
-	if (strchr(the_address, '@') != (char *) 0) {
-		if ((end_pos = strchr(the_address, '<')) == (char *) 0) {
-			if ((start_pos = strchr(the_address, ' ')) == (char *) 0)
+	if (strchr(the_address, '@') != NULL) {
+		if ((end_pos = strchr(the_address, '<')) == NULL) {
+			if ((start_pos = strchr(the_address, ' ')) == NULL)
 				strcpy (stripped_address, the_address);
 			else {
 				strcpy (stripped_address, start_pos + 2);
@@ -2510,17 +2528,17 @@ strip_name (
 	char *start_pos;
 
 	/* skip realname in address */
-	if ((start_pos = strchr (the_address, '<')) == (char *) 0) {
+	if ((start_pos = strchr (the_address, '<')) == NULL) {
 		/* address in user@domain (realname) syntax or realname is missing */
 		strcpy (stripped_address, the_address);
 		start_pos = stripped_address;
-		if ((end_pos = strchr (start_pos, ' ')) == (char *) 0)
+		if ((end_pos = strchr (start_pos, ' ')) == NULL)
 			end_pos = start_pos + strlen(start_pos);
 	} else {
 		start_pos++; /* skip '<' */
 		strcpy (stripped_address, start_pos);
 		start_pos = stripped_address;
-		if ((end_pos = strchr (start_pos, '>')) == (char *) 0)
+		if ((end_pos = strchr (start_pos, '>')) == NULL)
 			end_pos = start_pos + strlen(start_pos); /* skip '>' */
 	}
 	*(end_pos) = '\0';
@@ -2587,7 +2605,8 @@ to_network (
 
 void
 buffer_to_network (
-	char *b)
+	char *b,
+	int mmnwcharset)
 {
 	for(; *b; b++)
 		*b = to_network(*b);
@@ -2620,7 +2639,8 @@ buffer_to_local (
 
 void
 buffer_to_network (
-	char *b)
+	char *b,
+	int mmnwcharset)
 {
 	CFStringRef convb;
 	char *oldb = my_strdup(b);
@@ -2645,7 +2665,8 @@ buffer_to_network (
 #ifdef CHARSET_CONVERSION
 static t_bool
 buffer_to_local (
-	char *line,
+	char **line,
+	int *max_line_len,
 	const char *network_charset,
 	const char *local_charset)
 {
@@ -2667,7 +2688,7 @@ buffer_to_local (
 
 			/* iconv() might crash on broken multibyte sequences so check them */
 			if (!strcasecmp(cnetwork_charset, "UTF-8"))
-				(void) utf8_valid(line);
+				(void) utf8_valid(*line);
 
 			/*
 			 * TODO: hardcode unknown_ucs4 (0x00 0x00 0x00 0x3f)
@@ -2697,11 +2718,11 @@ buffer_to_local (
 				iconv (cd0, &unknown_ascii, &inbytesleft, &unknown_ucs4, &unknown_bytesleft);
 
 				/* temporarily convert to UCS-4 */
-				inbuf = (ICONV_CONST char *) line;
-				inbytesleft = strlen (line);
+				inbuf = (ICONV_CONST char *) *line;
+				inbytesleft = strlen (*line);
 				tmpbytesleft = inbytesleft * 4 + 4;	/* should be enough */
 				tsize = tmpbytesleft;
-				tbuf = (char *) my_malloc (tsize);
+				tbuf = my_malloc (tsize);
 				tmpbuf = (char *) tbuf;
 
 				do {
@@ -2718,7 +2739,7 @@ buffer_to_local (
 								break;
 
 							case E2BIG:
-								tbuf = (char *) my_realloc(tbuf, tsize * 2);
+								tbuf = my_realloc(tbuf, tsize * 2);
 								tmpbytesleft += tsize;
 								tsize <<= 1; /* double size */
 								break;
@@ -2734,7 +2755,7 @@ buffer_to_local (
 				inbytesleft = tsize - tmpbytesleft;
 				outbytesleft = inbytesleft * 4;	/* should be enough */
 				osize = outbytesleft;
-				obuf = (char *) my_malloc(osize + 1);
+				obuf = my_malloc(osize + 1);
 				outbuf = (char *) obuf;
 
 				do {
@@ -2751,7 +2772,7 @@ buffer_to_local (
 								break;
 
 							case E2BIG:
-								obuf = (char *) my_realloc(obuf, osize * 2);
+								obuf = my_realloc(obuf, osize * 2);
 								outbuf = (char *) (obuf + osize - outbytesleft);
 								outbytesleft += osize;
 								osize <<= 1; /* double size */
@@ -2764,7 +2785,11 @@ buffer_to_local (
 				} while (inbytesleft > 0);
 
 				**&outbuf = '\0';
-				strcpy(line, obuf); /* FIXME: obuf might be bigger than line! */
+				if (*max_line_len < (int) strlen(obuf) + 1) {
+					*max_line_len = strlen(obuf) + 1;
+					*line = my_realloc(*line, *max_line_len);
+				}
+				strcpy(*line, obuf);
 				iconv_close(cd2);
 				iconv_close(cd1);
 				iconv_close(cd0);
@@ -2783,9 +2808,11 @@ buffer_to_local (
 }
 
 
+/* convert from local_charset to txt_mime_charsets[mmnwcharset] */
 void
 buffer_to_network (
-	char *line)
+	char *line,
+	int mmnwcharset)
 {
 	char * obuf;
 	char * outbuf;
@@ -2794,12 +2821,12 @@ buffer_to_network (
 	size_t result, osize;
 	size_t inbytesleft, outbytesleft;
 
-	if ((cd = iconv_open(txt_mime_charsets[tinrc.mm_network_charset], tinrc.mm_local_charset)) != (iconv_t) (-1)) {
+	if ((cd = iconv_open(txt_mime_charsets[mmnwcharset], tinrc.mm_local_charset)) != (iconv_t) (-1)) {
 		inbytesleft = strlen (line);
 		inbuf = (char *) line;
 		outbytesleft = 1 + inbytesleft * 4;
 		osize = outbytesleft;
-		obuf = (char *) my_malloc (osize + 1);
+		obuf = my_malloc (osize + 1);
 		outbuf = (char *) obuf;
 
 		do {
@@ -2815,7 +2842,7 @@ buffer_to_network (
 						break;
 
 					case E2BIG:
-						obuf = (char *) my_realloc(obuf, osize * 2);
+						obuf = my_realloc(obuf, osize * 2);
 						outbuf = (char *) (obuf + osize - outbytesleft);
 						outbytesleft += osize;
 						osize <<= 1; /* double size */
@@ -2836,7 +2863,7 @@ buffer_to_network (
 #endif /* CHARSET_CONVERSION */
 
 
-#ifdef MIME_STRICT_CHARSET
+#if defined(MIME_STRICT_CHARSET) || defined(CHARSET_CONVERSION)
 void
 buffer_to_ascii (
 	char *c)
@@ -2847,7 +2874,7 @@ buffer_to_ascii (
 		c++;
 	}
 }
-#endif /* MIME_STRICT_CHARSET */
+#endif /* MIME_STRICT_CHARSET || CHARSET_CONVERSION */
 
 
 /*
@@ -2856,52 +2883,54 @@ buffer_to_ascii (
  * this is called for headers, overview data, and article bodies
  *
  * to set non-ASCII characters to '?' (only with MIME_STRICT_CHARSET
- * and without NO_LOCALE): call with network_charset=="US-ASCII"
+ * or CHARSET_CONVERSION and without NO_LOCALE): call with
+ * network_charset=="US-ASCII"
  */
 void
 process_charsets (
-	char *line,
+	char **line,
+	int *max_line_len,
 	const char *network_charset,
 	const char *local_charset)
 {
-	/* set non-ASCII characters to '?' if required */
-
-#if defined(MIME_STRICT_CHARSET) && !defined(NO_LOCALE)
-#	if !defined(CHARSET_CONVERSION)
+#ifdef CHARSET_CONVERSION
+	if (strcasecmp(network_charset, "US-ASCII")) {	/* network_charset is NOT US-ASCII */
+		char *clocal_charset;
+		if (iso2asc_supported >= 0)
+			clocal_charset = my_strdup("ISO-8859-1");
+		else
+			clocal_charset = my_strdup(local_charset);
+		if (!buffer_to_local(line, max_line_len, network_charset, clocal_charset))
+			buffer_to_ascii(*line);
+		free(clocal_charset);
+	}
+/* #	ifndef NO_LOCALE */
+	else /* set non-ASCII characters to '?' */
+		buffer_to_ascii(*line);
+/* #	endif */ /* !NO_LOCALE */
+#else
+#	if defined(MIME_STRICT_CHARSET) && !defined(NO_LOCALE)
 	if ((local_charset && strcasecmp(network_charset, local_charset)) || !strcasecmp(network_charset, "US-ASCII"))
 		/* different charsets || network charset is US-ASCII (see below) */
-#	else
-	if (!strcasecmp(network_charset, "US-ASCII"))
-		/*
-		 * network charset is US-ASCII: calling process_charsets() with
-		 * network_charset=="US-ASCII" means: set all non-ASCII (8bit)
-		 * characters to '?'
-		 */
-#	endif /* !CHARSET_CONVERSION */
-		buffer_to_ascii(line);
-#endif /* MIME_STRICT_CHARSET && !NO_LOCALE */
-
-	/* charset conversion (codepage or iconv(3) version) */
-#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
-	buffer_to_local(line);
-#else
-#	ifdef CHARSET_CONVERSION
-	if (strcasecmp(network_charset, "US-ASCII"))	/* network_charset is NOT US-ASCII */
-#		ifdef MIME_STRICT_CHARSET
-		if (!buffer_to_local(line, network_charset, local_charset))
-			buffer_to_ascii(line);
-#		else
-		(void) buffer_to_local(line, network_charset, local_charset);
-#		endif /* MIME_STRICT_CHARSET */
-#	endif /* CHARSET_CONVERSION */
-#endif /* LOCAL_CHARSET || MAC_OS_X */
+		buffer_to_ascii(*line);
+#	endif /* MIME_STRICT_CHARSET && !NO_LOCALE */
+	/* charset conversion (codepage version) */
+#	if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
+	buffer_to_local(*line);
+#	endif /* LOCAL_CHARSET || MAC_OS_X */
+#endif /* CHARSET_CONVERSION */
 
 	/* iso2asc support */
+#ifdef CHARSET_CONVERSION
 	if (iso2asc_supported >= 0) {
-		char isobuf[LEN];
+#else
+	if (iso2asc_supported >= 0 && !strcasecmp(network_charset, "ISO-8859-1")) {
+#endif /* CHARSET_CONVERSION */
+		char *isobuf;
 
-		strcpy (isobuf, line);
-		convert_iso2asc (isobuf, line, iso2asc_supported);
+		isobuf = my_strdup(*line);
+		convert_iso2asc (isobuf, line, max_line_len, iso2asc_supported);
+		free(isobuf);
 	}
 }
 

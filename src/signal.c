@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2001-07-22
+ *  Updated   : 2002-06-21
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -235,7 +232,7 @@ signal_name (
 	size_t n;
 	const char *name = "unknown";
 
-	for (n = 0; n < SIZEOF(signal_list); n++) {
+	for (n = 0; n < ARRAY_SIZE(signal_list); n++) {
 		if (signal_list[n].code == code) {
 			name = signal_list[n].name;
 			break;
@@ -396,47 +393,39 @@ signal_handler (
 		default:
 			break;
 	}
+
 	fprintf (stderr, "\n%s: signal handler caught %s signal (%d).\n", tin_progname, signal_name(sig), sig);
 
-#if defined(SIGHUP)
-	if (sig == SIGHUP) {
-		dangerous_signal_exit = TRUE;
-		tin_done (- SIGHUP);
-	}
+	switch (sig) {
+#ifdef SIGHUP
+		case SIGHUP:
 #endif /* SIGHUP */
-
-#if defined(SIGUSR1)
-	if (sig == SIGUSR1) {
-		dangerous_signal_exit = TRUE;
-		tin_done (- SIGUSR1);
-	}
+#ifdef SIGUSR1
+		case SIGUSR1:
 #endif /* SIGUSR1 */
-
-#if defined(SIGTERM)
-	if (sig == SIGTERM) {
-		dangerous_signal_exit = TRUE;
-		tin_done (- SIGTERM);
-	}
+#ifdef SIGTERM
+		case SIGTERM:
 #endif /* SIGTERM */
+			dangerous_signal_exit = TRUE;
+			tin_done (-sig);
+			/* NOTREACHED */
+			break;
 
-#if defined(SIGBUS) || defined(SIGSEGV)
-	if (
-#	ifdef SIGBUS
-		sig == SIGBUS
-#	endif /* SIGBUS */
-#	if defined(SIGBUS) && defined(SIGSEGV)
-		||
-#	endif /* SIGBUS && SIGSEGV */
-#	ifdef SIGSEGV
-		sig == SIGSEGV
-#	endif /* SIGSEGV */
-		) {
-		/* FIXME: -> lang.c */
-		my_fprintf (stderr, _("%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n"),
-		tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME, bug_addr);
-		my_fflush (stderr);
+#ifdef SIGBUS
+		case SIGBUS:
+#endif /*S IGBUS */
+#ifdef SIGSEGV
+		case SIGSEGV:
+#endif /* SIGSEGV */
+			/* FIXME: -> lang.c */
+			my_fprintf (stderr, _("%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n"), tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME, bug_addr);
+			my_fflush (stderr);
+			break;
+
+		default:
+			break;
 	}
-#endif /* SIGBUS || SIGSEGV */
+
 	cleanup_tmp_files ();
 
 #if 1
@@ -478,7 +467,7 @@ set_signal_handlers (
 	RETSIGTYPE (*ptr)(SIG_ARGS);
 #endif /* SIGTSTP */
 
-	for (n = 0; n < SIZEOF(signal_list); n++) {
+	for (n = 0; n < ARRAY_SIZE(signal_list); n++) {
 		switch ((code = signal_list[n].code)) {
 #ifdef SIGTSTP
 		case SIGTSTP:
@@ -493,6 +482,7 @@ set_signal_handlers (
 			do_sigtstp = TRUE;
 			nobreak; /* FALLTHROUGH */
 #endif /* SIGTSTP */
+
 		default:
 			sigdisp (code, signal_handler);
 		}
@@ -524,38 +514,38 @@ set_win_size (
 #ifdef HAVE_XCURSES
 	*num_lines = LINES - 1;		/* FIXME */
 	*num_cols = COLS;
-#else	/* curses/ncurses */
+#else /* curses/ncurses */
 
-#ifndef USE_CURSES
+#	ifndef USE_CURSES
 	init_screen_array (FALSE);		/* deallocate screen array */
-#endif /* !USE_CURSES */
+#	endif /* !USE_CURSES */
 
-#ifdef TIOCGSIZE
+#	ifdef TIOCGSIZE
 	if (ioctl (0, TIOCGSIZE, &win) == 0) {
 		if (win.ts_lines != 0)
 			*num_lines = win.ts_lines - 1;
 		if (win.ts_cols != 0)
 			*num_cols = win.ts_cols;
 	}
-#else
-#	ifdef TIOCGWINSZ
+#	else
+#		ifdef TIOCGWINSZ
 	if (ioctl (0, TIOCGWINSZ, &win) == 0) {
 		if (win.ws_row != 0)
 			*num_lines = win.ws_row - 1;
 		if (win.ws_col != 0)
 			*num_cols = win.ws_col;
 	}
-#	else
-#		ifdef M_AMIGA
+#		else
+#			ifdef M_AMIGA
 	AmiGetWinSize(num_lines, num_cols);
 	(*num_lines)--;
-#		endif /* M_AMIGA */
-#	endif /* TIOCGWINSZ */
-#endif /* TIOCGSIZE */
+#			endif /* M_AMIGA */
+#		endif /* TIOCGWINSZ */
+#	endif /* TIOCGSIZE */
 
-#ifndef USE_CURSES
+#	ifndef USE_CURSES
 	init_screen_array (TRUE);		/* allocate screen array for resize */
-#endif /* !USE_CURSES */
+#	endif /* !USE_CURSES */
 
 #endif /* HAVE_XCURSES */
 

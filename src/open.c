@@ -18,10 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea, Rich Skrenta.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -99,7 +96,7 @@ nntp_open (
 	if (!is_reconnect)
 		nntp_server = getserverbyfile (NNTP_SERVER_FILE);
 
-	if (nntp_server == (char *) 0) {
+	if (nntp_server == NULL) {
 		error_message (_(txt_cannot_get_nntp_server_name));
 		error_message (_(txt_server_name_in_file_env_var), NNTP_SERVER_FILE);
 		return -EHOSTUNREACH;
@@ -707,7 +704,7 @@ open_xover_fp (
 		if (debug)
 			error_message ("READ file=[%s]", pcNovFile);
 #endif /* DEBUG */
-		if (pcNovFile != (char *) 0)
+		if (pcNovFile != NULL)
 			return fopen (pcNovFile, mode);
 
 		return (FILE *) 0;
@@ -1087,8 +1084,8 @@ group_get_art_info (
 
 		make_base_group_path (tin_spooldir, groupname, buf);
 
-		if ((dir = opendir (buf)) != (DIR *) 0) {
-			while ((direntry = readdir (dir)) != (DIR_BUF *) 0) {
+		if ((dir = opendir (buf)) != NULL) {
+			while ((direntry = readdir (dir)) != NULL) {
 				artnum = atol(direntry->d_name); /* should be '\0' terminated... */
 				if (artnum >= 1) {
 					if (artnum > *art_max) {

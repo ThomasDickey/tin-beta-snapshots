@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -105,7 +102,7 @@ debug_nntp (
 
 	sprintf (file, "%sNNTP", TMPDIR);
 
-	if ((fp = fopen (file, "a+")) != (FILE *) 0) {
+	if ((fp = fopen (file, "a+")) != NULL) {
 		fprintf (fp,"%s: %s\n", func, line);
 		fclose (fp);
 		chmod (file, (S_IRUGO|S_IWUGO));
@@ -143,7 +140,7 @@ debug_print_header (
 
 	sprintf (file, "%sARTS", TMPDIR);
 
-	if ((fp = fopen (file, "a+")) != (FILE *) 0) {
+	if ((fp = fopen (file, "a+")) != NULL) {
 		fprintf (fp,"art=[%5ld] tag=[%s] kill=[%s] selected=[%s]\n", s->artnum,
 			bool_unparse(s->tagged),
 			bool_unparse(s->killed),
@@ -189,7 +186,7 @@ debug_save_comp (
 
 	sprintf (file, "%sSAVE_COMP", TMPDIR);
 
-	if ((fp = fopen (file, "a+")) != (FILE *) 0) {
+	if ((fp = fopen (file, "a+")) != NULL) {
 		for (i = 0 ; i < num_save ; i++) {
 
 			fprintf (fp,"path=[%s]\n", save[i].path);
@@ -218,7 +215,7 @@ debug_print_active (
 
 	sprintf (file, "%sACTIVE", TMPDIR);
 
-	if ((fp = fopen (file, "w")) != (FILE *) 0) {
+	if ((fp = fopen (file, "w")) != NULL) {
 		for_each_group(i) {
 			group = &active[i];
 			fprintf (fp, "[%4d]=[%s] type=[%s] spooldir=[%s]\n",
@@ -265,12 +262,12 @@ debug_print_attributes (
 		(attr->quick_kill_scope ? attr->quick_kill_scope : ""),
 		bool_unparse(attr->quick_kill_expire));
 	fprintf (fp, "maildir=[%s] savedir=[%s] savefile=[%s]\n",
-		(attr->maildir == (char *) 0 ? "" : attr->maildir),
-		(attr->savedir == (char *) 0 ? "" : attr->savedir),
-		(attr->savefile == (char *) 0 ? "" : attr->savefile));
+		(attr->maildir == NULL ? "" : attr->maildir),
+		(attr->savedir == NULL ? "" : attr->savedir),
+		(attr->savefile == NULL ? "" : attr->savefile));
 	fprintf (fp, "sigfile=[%s] followup_to=[%s]\n\n",
-		(attr->sigfile == (char *) 0 ? "" : attr->sigfile),
-		(attr->followup_to == (char *) 0 ? "" : attr->followup_to));
+		(attr->sigfile == NULL ? "" : attr->sigfile),
+		(attr->followup_to == NULL ? "" : attr->followup_to));
 	fflush (fp);
 }
 
@@ -288,7 +285,7 @@ vDbgPrintMalloc (
 
 	if (debug == 4) {
 		sprintf (file, "%sMALLOC", TMPDIR);
-		if ((fp = fopen (file, "a+")) != (FILE *) 0) {
+		if ((fp = fopen (file, "a+")) != NULL) {
 			iTotal += iSize;
 			/* sometimes size_t is long */
 			if (iIsMalloc)
@@ -338,7 +335,7 @@ debug_print_filters (
 
 	sprintf (file, "%sFILTER", TMPDIR);
 
-	if ((fp = fopen (file, "w")) != (FILE *) 0) {
+	if ((fp = fopen (file, "w")) != NULL) {
 		/*
 		 * print global filter
 		 */
@@ -370,7 +367,7 @@ debug_print_comment (
 
 	sprintf (file, "%sBITMAP", TMPDIR);
 
-	if ((fp = fopen (file, "a+")) != (FILE *) 0) {
+	if ((fp = fopen (file, "a+")) != NULL) {
 		fprintf (fp,"\n%s\n", comment);
 		fclose (fp);
 		chmod (file, (S_IRUGO|S_IWUGO));
@@ -390,12 +387,12 @@ debug_print_bitmap (
 
 	sprintf (file, "%sBITMAP", TMPDIR);
 
-	if ((fp = fopen (file, "a+")) != (FILE *) 0) {
+	if ((fp = fopen (file, "a+")) != NULL) {
 		fprintf (fp, "\nActive: Group=[%s] sub=[%c] min=[%ld] max=[%ld] count=[%ld] num_unread=[%ld]\n",
 			group->name, SUB_CHAR(group->subscribed),
 			group->xmin, group->xmax, group->count,
 			group->newsrc.num_unread);
-		if (art != (struct t_article *) 0) {
+		if (art != NULL) {
 			fprintf (fp, "art=[%5ld] tag=[%s] kill=[%s] selected=[%s] subj=[%s]\n",
 				art->artnum,
 				bool_unparse(art->tagged),

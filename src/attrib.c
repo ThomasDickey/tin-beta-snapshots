@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2002-03-24
+ *  Updated   : 2002-06-09
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2002 Iain Lea <iain@bricbrac.de>
@@ -85,6 +85,10 @@ enum {
 #endif /* HAVE_ISPELL */
 	ATTRIB_SORT_THREADS_TYPE,
 	ATTRIB_TEX2ISO_CONV
+#ifdef CHARSET_CONVERSION
+	,ATTRIB_MM_NETWORK_CHARSET
+	,ATTRIB_UNDECLARED_CHARSET
+#endif /* CHARSET_CONVERSION */
 };
 
 /*
@@ -150,6 +154,10 @@ set_default_attributes (
 	attributes->post_proc_type = tinrc.post_process;
 	attributes->x_comment_to = FALSE;
 	attributes->tex2iso_conv = tinrc.tex2iso_conv;
+#ifdef CHARSET_CONVERSION
+	attributes->mm_network_charset = tinrc.mm_network_charset;
+	attributes->undeclared_charset = (char *) 0;
+#endif /* CHARSET_CONVERSION */
 }
 
 
@@ -173,6 +181,12 @@ set_default_attributes (
 #define MATCH_STRING(pattern, type) \
 	if (match_string (line, pattern, buf, sizeof (buf))) { \
 		set_attrib (type, scope, buf); \
+		found = TRUE; \
+		break; \
+	}
+#define MATCH_LIST(pattern, type, table, tablelen) \
+	if (match_list (line, pattern, table, tablelen, &num)) { \
+		set_attrib (type, scope, (char *)&num); \
 		found = TRUE; \
 		break; \
 	}
@@ -202,9 +216,9 @@ read_attributes_file (
 	} else
 		file = local_attributes_file;
 
-	if ((fp = fopen (file, "r")) != (FILE *) 0) {
+	if ((fp = fopen (file, "r")) != NULL) {
 		scope[0] = '\0';
-		while (fgets (line, (int) sizeof (line), fp) != (char *) 0) {
+		while (fgets (line, (int) sizeof (line), fp) != NULL) {
 			if (line[0] == '#' || line[0] == '\n')
 				continue;
 
@@ -236,6 +250,9 @@ read_attributes_file (
 				case 'm':
 					MATCH_STRING ("maildir=", ATTRIB_MAILDIR);
 					MATCH_STRING ("mailing_list=", ATTRIB_MAILING_LIST);
+#ifdef CHARSET_CONVERSION
+					MATCH_LIST("mm_network_charset=", ATTRIB_MM_NETWORK_CHARSET,txt_mime_charsets, NUM_MIME_CHARSETS);
+#endif /* CHARSET_CONVERSION */
 					break;
 
 				case 'n':
@@ -277,13 +294,19 @@ read_attributes_file (
 					MATCH_STRING ("sigfile=", ATTRIB_SIGFILE);
 					MATCH_INTEGER ("show_author=", ATTRIB_SHOW_AUTHOR, SHOW_FROM_BOTH);
 					MATCH_BOOLEAN ("show_only_unread=", ATTRIB_SHOW_ONLY_UNREAD);
-					MATCH_INTEGER ("sort_art_type=", ATTRIB_SORT_ART_TYPE, SORT_ARTICLES_BY_SCORE_ASCEND);
+					MATCH_INTEGER ("sort_art_type=", ATTRIB_SORT_ART_TYPE, SORT_ARTICLES_BY_LINES_ASCEND);
 					MATCH_INTEGER ("sort_threads_type=", ATTRIB_SORT_THREADS_TYPE, SORT_THREADS_BY_SCORE_DESCEND);
 					break;
 
 				case 't':
 					MATCH_BOOLEAN ("tex2iso_conv=", ATTRIB_TEX2ISO_CONV);
 					MATCH_INTEGER ("thread_arts=", ATTRIB_THREAD_ARTS, THREAD_MAX);
+					break;
+
+				case 'u':
+#ifdef CHARSET_CONVERSION
+					MATCH_STRING ("undeclared_charset=", ATTRIB_UNDECLARED_CHARSET);
+#endif /* CHARSET_CONVERSION */
 					break;
 
 				case 'x':
@@ -325,7 +348,7 @@ set_attrib (
 {
 	struct t_group *group;
 
-	if (scope == (char *) 0 || *scope == '\0')	/* No active scope set yet */
+	if (scope == NULL || *scope == '\0')	/* No active scope set yet */
 		return;
 #if 0
 	fprintf(stderr, "set_attrib #%d %s %s(%d)\n", type, scope, data, (int)*data);
@@ -335,7 +358,7 @@ set_attrib (
 	 * Does scope refer to 1 or more than 1 group
 	 */
 	if (!strchr (scope, '*')) {
-		if ((group = group_find (scope)) != (struct t_group *) 0)
+		if ((group = group_find (scope)) != NULL)
 			do_set_attrib (group, type, data);
 	} else {
 		int i;
@@ -365,8 +388,8 @@ do_set_attrib (
 	/*
 	 * Setup default attributes for this group if none already set
 	 */
-	if (group->attribute == (struct t_attribute *) 0) {
-		group->attribute = (struct t_attribute *) my_malloc (sizeof (struct t_attribute));
+	if (group->attribute == NULL) {
+		group->attribute = my_malloc (sizeof (struct t_attribute));
 		set_default_attributes (group->attribute);
 	}
 
@@ -426,6 +449,12 @@ do_set_attrib (
 			SET_INTEGER(quick_select_case);
 		case ATTRIB_MAILING_LIST:
 			SET_STRING(mailing_list);
+#ifdef CHARSET_CONVERSION
+		case ATTRIB_MM_NETWORK_CHARSET:
+			SET_INTEGER(mm_network_charset);
+		case ATTRIB_UNDECLARED_CHARSET:
+			SET_STRING(undeclared_charset);
+#endif /* CHARSET_CONVERSION */
 		case ATTRIB_X_HEADERS:
 			SET_STRING(x_headers);
 		case ATTRIB_X_BODY:
@@ -457,8 +486,8 @@ write_attributes_file (
 {
 	FILE *fp;
 	char *file_tmp;
+	int i;
 #if 0
-	register int i;
 	struct t_group *group;
 #endif /* 0 */
 
@@ -468,7 +497,7 @@ write_attributes_file (
 	/* generate tmp-filename */
 	file_tmp = get_tmpfilename(file);
 
-	if ((fp = fopen (file_tmp, "w" FOPEN_OPTS)) == (FILE *) 0) {
+	if ((fp = fopen (file_tmp, "w" FOPEN_OPTS)) == NULL) {
 		error_message (_(txt_filesystem_full_backup), ATTRIBUTES_FILE);
 		free (file_tmp);	/* free memory for tmp-filename */
 		return;
@@ -478,8 +507,8 @@ write_attributes_file (
 		wait_message (0, _(txt_writing_attributes_file));
 
 	/*
-	 * FIXME - move strings to lang.c
-	 * TODO: sort in a usefull order
+	 * TODO: - sort in a usefull order
+	 *       - move strings to lang.c
 	 */
 	fprintf (fp, _("# Group attributes file for the TIN newsreader\n#\n"));
 	fprintf (fp, _("#  scope=STRING (ie. alt.*,!alt.bin*) [mandatory]\n"));
@@ -503,19 +532,47 @@ write_attributes_file (
 	fprintf (fp, _("#  batch_save=ON/OFF\n"));
 	fprintf (fp, _("#  delete_tmp_files=ON/OFF\n"));
 	fprintf (fp, _("#  show_only_unread=ON/OFF\n"));
-	fprintf (fp, _("#  thread_arts=NUM\n"));
-	fprintf (fp, _("#    0=none, 1=subj, 2=refs, 3=both, 4=multipart\n"));
+	fprintf (fp, _("#  thread_arts=NUM"));
+	for (i = 0; i <= THREAD_MAX; i++) {
+		if (!(i % 2))
+			fprintf (fp, "\n#    ");
+		fprintf (fp, "%d=%s, ", i, _(txt_thread[i]));
+	}
+	fprintf (fp, "\n");
 	fprintf (fp, _("#  show_author=NUM\n"));
-	fprintf (fp, _("#    0=none, 1=name, 2=addr, 3=both\n"));
+	fprintf (fp, "#    %d=%s, %d=%s, %d=%s, %d=%s\n",
+		SHOW_FROM_NONE, _(txt_show_from[SHOW_FROM_NONE]),
+		SHOW_FROM_ADDR, _(txt_show_from[SHOW_FROM_ADDR]),
+		SHOW_FROM_NAME, _(txt_show_from[SHOW_FROM_NAME]),
+		SHOW_FROM_BOTH, _(txt_show_from[SHOW_FROM_BOTH]));
 	fprintf (fp, _("#  sort_art_type=NUM\n"));
-	fprintf (fp, _("#    0=none, 1=subj descend, 2=subj ascend,\n"));
-	fprintf (fp, _("#    3=from descend, 4=from ascend,\n"));
-	fprintf (fp, _("#    5=date descend, 6=date ascend\n"));
-	fprintf (fp, _("#    7=score descend, 8=score ascend\n"));
+	fprintf (fp, "#    %d=%s,\n",
+		SORT_ARTICLES_BY_NOTHING, _(txt_sort_a_type[SORT_ARTICLES_BY_NOTHING]));
+	fprintf (fp, "#    %d=%s, %d=%s,\n",
+		SORT_ARTICLES_BY_SUBJ_DESCEND, _(txt_sort_a_type[SORT_ARTICLES_BY_SUBJ_DESCEND]),
+		SORT_ARTICLES_BY_SUBJ_ASCEND, _(txt_sort_a_type[SORT_ARTICLES_BY_SUBJ_ASCEND]));
+	fprintf (fp, "#    %d=%s, %d=%s,\n",
+		SORT_ARTICLES_BY_FROM_DESCEND, _(txt_sort_a_type[SORT_ARTICLES_BY_FROM_DESCEND]),
+		SORT_ARTICLES_BY_FROM_ASCEND, _(txt_sort_a_type[SORT_ARTICLES_BY_FROM_ASCEND]));
+	fprintf (fp, "#    %d=%s, %d=%s,\n",
+		SORT_ARTICLES_BY_DATE_DESCEND, _(txt_sort_a_type[SORT_ARTICLES_BY_DATE_DESCEND]),
+		SORT_ARTICLES_BY_DATE_ASCEND, _(txt_sort_a_type[SORT_ARTICLES_BY_DATE_ASCEND]));
+	fprintf (fp, "#    %d=%s, %d=%s,\n",
+		SORT_ARTICLES_BY_SCORE_DESCEND, _(txt_sort_a_type[SORT_ARTICLES_BY_SCORE_DESCEND]),
+		SORT_ARTICLES_BY_SCORE_ASCEND, _(txt_sort_a_type[SORT_ARTICLES_BY_SCORE_ASCEND]));
+	fprintf (fp, "#    %d=%s, %d=%s\n",
+		SORT_ARTICLES_BY_LINES_DESCEND, _(txt_sort_a_type[SORT_ARTICLES_BY_LINES_DESCEND]),
+		SORT_ARTICLES_BY_LINES_ASCEND, _(txt_sort_a_type[SORT_ARTICLES_BY_LINES_ASCEND]));
 	fprintf (fp, _("#  sort_threads_type=NUM\n"));
-	fprintf (fp, _("#    0=none, 1=score descend, 2=score ascend\n"));
+	fprintf (fp, "#    %d=%s, %d=%s, %d=%s\n",
+		SORT_THREADS_BY_NOTHING, _(txt_sort_t_type[SORT_THREADS_BY_NOTHING]),
+		SORT_THREADS_BY_SCORE_DESCEND, _(txt_sort_t_type[SORT_THREADS_BY_SCORE_DESCEND]),
+		SORT_THREADS_BY_SCORE_ASCEND, _(txt_sort_t_type[SORT_THREADS_BY_SCORE_ASCEND]));
 	fprintf (fp, _("#  post_proc_type=NUM\n"));
-	fprintf (fp, _("#    0=none, 1=unshar, 2=uudecode\n"));
+	fprintf (fp, "#    %d=%s, %d=%s, %d=%s\n",
+		POST_PROC_NONE, _(txt_post_process_type[POST_PROC_NONE]),
+		POST_PROC_SHAR, _(txt_post_process_type[POST_PROC_SHAR]),
+		POST_PROC_UUDECODE, _(txt_post_process_type[POST_PROC_UUDECODE]));
 	fprintf (fp, _("#  quick_kill_scope=STRING (ie. talk.*)\n"));
 	fprintf (fp, _("#  quick_kill_expire=ON/OFF\n"));
 	fprintf (fp, _("#  quick_kill_case=ON/OFF\n"));
@@ -532,6 +589,16 @@ write_attributes_file (
 	fprintf (fp, _("#    4=msgid 5=lines\n"));
 	fprintf (fp, _("#  x_comment_to=ON/OFF\n"));
 	fprintf (fp, _("#  tex2iso_conv=ON/OFF\n"));
+#ifdef CHARSET_CONVERSION
+	fprintf (fp, _("#  mm_network_charset=supported_charset"));
+	for (i = 0; i < NUM_MIME_CHARSETS; i++) {
+		if (!(i % 5)) /* start new line */
+			fprintf (fp, "\n#    ");
+		fprintf (fp, "%s, ", txt_mime_charsets[i]);
+	}
+	fprintf (fp, "\n");
+	fprintf (fp, _("#  undeclared_charset=STRING (default is US-ASCII)\n"));
+#endif /* CHARSET_CONVERSION */
 	fprintf (fp, _("#\n# Note that it is best to put general (global scoping)\n"));
 	fprintf (fp, _("# entries first followed by group specific entries.\n#\n"));
 	fprintf (fp, _("############################################################################\n\n"));
@@ -606,11 +673,15 @@ write_attributes_file (
 			print_boolean (group->attribute->quick_select_case));
 		fprintf (fp, "quick_select_expire=%s\n",
 			print_boolean (group->attribute->quick_select_expire));
-		fprintf (fp, "quick_select_header=%d\n\n", group->attribute->quick_select_header);
+		fprintf (fp, "quick_select_header=%d\n", group->attribute->quick_select_header);
 		fprintf (fp, "x_comment_to=%s\n",
 			print_boolean (group->attribute->x_comment_to));
 		fprintf (fp, "tex2iso_conv=%s\n",
 			print_boolean (group->attribute->tex2iso_conv));
+#	ifdef CHARSET_CONVERSION
+		fprintf (fp, "mm_network_charset=%s\n", txt_mime_charsets[group->attribute->mm_charset]);
+		fprintf (fp, "undeclared_charset=%s\n", group->attribute->undeclared_charset);
+#	endif /* CHARSET_CONVERSION */
 	}
 #endif /* 0 */
 
@@ -715,10 +786,14 @@ dump_attributes (
 		fprintf (stderr, "quick_select_expire=%s\n",
 			print_boolean (group->attribute->quick_select_expire));
 		fprintf (stderr, "quick_select_header=%d\n", group->attribute->quick_select_header);
-		fprintf (stderr, "x_comment_to=%s\n\n",
+		fprintf (stderr, "x_comment_to=%s\n",
 			print_boolean (group->attribute->x_comment_to));
-		fprintf (stderr, "tex2iso_conv=%s\n\n",
+		fprintf (stderr, "tex2iso_conv=%s\n",
 			print_boolean (group->attribute->tex2iso_conv));
+#		ifdef CHARSET_CONVERSION
+		fprintf (stderr, "mm_network_charset=%s\n", txt_mime_charsets[group->attribute->mm_charset])
+		fprintf (stderr, "undeclared_charset=%s\n", group->attribute->undeclared_charset);
+#		endif /* CHARSET_CONVERSION */
 	}
 }
 #	endif /* DEBUG */

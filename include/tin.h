@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2001-07-22
+ *  Updated   : 2002-06-09
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea, Rich Skrenta.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -320,9 +317,9 @@ enum resizer { cNo, cYes, cRedraw };
 #	endif /* NEED_TIMEVAL_FIX */
 #endif /* HAVE_SYS_SELECT_H */
 
-#ifdef HAVE_STROPTS_H
+#if defined(HAVE_STROPTS_H) && !defined(__dietlibc__)
 #	include <stropts.h>
-#endif /* HAVE_STROPTS_H */
+#endif /* HAVE_STROPTS_H && !__dietlibc__ */
 
 #ifdef HAVE_POLL_H
 #	include <poll.h>
@@ -756,19 +753,25 @@ enum resizer { cNo, cYes, cRedraw };
 /* Philip Hazel's Perl regular expressions library */
 #include	<pcre.h>
 
-#if defined(HAVE_ICONV) && !defined(LOCAL_CHARSET)
+#if defined(HAVE_ICONV) && !defined(LOCAL_CHARSET) && !defined(MAC_OS_X)
 #	define CHARSET_CONVERSION 1
 #	ifdef HAVE_ICONV_H
 #		include <iconv.h>
 #	endif /* HAVE_ICONV_H */
-#endif /* HAVE_ICONV && !LOCAL_CHARSET */
+#endif /* HAVE_ICONV && !LOCAL_CHARSET && !MAC_OS_X */
 
 #ifdef HAVE_LANGINFO_H
 #	include <langinfo.h>
 #else
-	typedef int nl_item;
-#	define CODESET ((nl_item) 1)
+#	ifdef HAVE_NL_TYPES_H
+#		include <nl_types.h>
+#	else
+		typedef int nl_item;
+#	endif /* HAVE_NL_TYPES_H */
 #endif /* HAVE_LANGINFO_H */
+#ifndef CODESET
+#	define CODESET ((nl_item) 1)
+#endif /* CODESET */
 
 #ifndef MAX
 #	define MAX(a,b)	(((a) > (b)) ? (a) : (b))
@@ -878,6 +881,11 @@ enum resizer { cNo, cYes, cRedraw };
 #define TIN_ABORT		1			/* User requested abort or timeout */
 #define TIN_TIMEOUT		2			/* Client side timeout */
 
+#define NUM_CONFIRM_CHOICES	8	/* confirm what? */
+#define TINRC_CONFIRM_ACTION	(tinrc.confirm_choice == 1 || tinrc.confirm_choice == 4 || tinrc.confirm_choice == 5 || tinrc.confirm_choice == 7)
+#define TINRC_CONFIRM_TO_QUIT	(tinrc.confirm_choice == 3 || tinrc.confirm_choice == 4 || tinrc.confirm_choice == 6 || tinrc.confirm_choice == 7)
+#define TINRC_CONFIRM_SELECT	(tinrc.confirm_choice == 2 || tinrc.confirm_choice == 5 || tinrc.confirm_choice == 6 || tinrc.confirm_choice == 7)
+
 /*
  * Number of MIME Encodings
  */
@@ -889,7 +897,7 @@ enum resizer { cNo, cYes, cRedraw };
 #define MIME_ENCODING_7BIT	3
 
 #ifdef CHARSET_CONVERSION			/* can/should do charset conversion via iconv() */
-#	define NUM_MIME_CHARSETS 27	/* # known 'outgoing' charsets */
+#	define NUM_MIME_CHARSETS 28	/* # known 'outgoing' charsets */
 #endif /* CHARSET_CONVERSION */
 
 #define NUM_MAILBOX_FORMATS 3		/* MBOX0, MBOXRD, MMDF */
@@ -1034,6 +1042,13 @@ enum resizer { cNo, cYes, cRedraw };
 #define SHOW_FROM_BOTH		3
 
 /*
+ * Values for thread_score
+ */
+#define THREAD_SCORE_MAX	0
+#define THREAD_SCORE_SUM	1
+#define THREAD_SCORE_WEIGHT	2
+
+/*
  * used in feed.c & save.c
  */
 #define POST_PROC_NONE		0
@@ -1053,6 +1068,8 @@ enum resizer { cNo, cYes, cRedraw };
 #define SORT_ARTICLES_BY_DATE_ASCEND	6
 #define SORT_ARTICLES_BY_SCORE_DESCEND	7
 #define SORT_ARTICLES_BY_SCORE_ASCEND	8
+#define SORT_ARTICLES_BY_LINES_DESCEND	9
+#define SORT_ARTICLES_BY_LINES_ASCEND	10
 
 /*
  * used in art.c
@@ -1073,7 +1090,7 @@ enum resizer { cNo, cYes, cRedraw };
  */
 #define BOGUS_KEEP		0
 #define BOGUS_REMOVE		1
-#define BOGUS_ASK		2
+#define BOGUS_SHOW		2
 
 /*
  * Different extents to which we can hide killed articles
@@ -1081,6 +1098,13 @@ enum resizer { cNo, cYes, cRedraw };
 #define KILL_READ		0		/* Kill only read articles */
 #define KILL_THREAD		1		/* Kill all articles and show as K */
 #define KILL_NOTHREAD	2		/* Kill all articles, never show them */
+
+/*
+ * Various types of quoting behaviour
+ */
+#define QUOTE_COMPRESS	1		/* Compress quotes */
+#define QUOTE_SIGS		2		/* Quote signatures */
+#define QUOTE_EMPTY		4		/* Quote empty lines */
 
 /*
  * used in help.c
@@ -1192,14 +1216,6 @@ enum resizer { cNo, cYes, cRedraw };
 #define FILTER_SELECT		1
 
 #define SCORE_MAX		10000
-
-#define SCORE_DEFAULT		100
-#define SCORE_KILL		-(SCORE_DEFAULT)
-#define SCORE_SELECT		SCORE_DEFAULT
-
-/* TODO: the next two should be configurable at runtime */
-#define SCORE_LIM_KILL		-50
-#define SCORE_LIM_SEL		50
 
 #define FILTER_SUBJ_CASE_SENSITIVE		0
 #define FILTER_SUBJ_CASE_IGNORE		1
@@ -1369,13 +1385,13 @@ struct t_article
 	int tagged;			/* 0 = not tagged, >0 = tagged */
 	int thread;
 	int score;			/* score article has reached after filtering */
-	unsigned int inthread:1;	/* 0 = thread head, 1 = thread follower */
-	unsigned int status:2;		/* 0 = read, 1 = unread, 2 = will return */
-	unsigned int killed:1;		/* 0 = not killed, 1 = killed */
-	unsigned int selected:1;	/* 0 = not selected, 1 = selected */
-	unsigned int zombie:1;		/* 1 = was alive (unread) before 'X' command */
-	unsigned int delete_it:1;	/* 1 = delete art when leaving group [mail group] */
-	unsigned int inrange:1;		/* 1 = article selected via # range command */
+	unsigned int status:2;     /* 0 = read, 1 = unread, 2 = will return */
+	unsigned int killed:1;     /* 0 = not killed, 1 = killed */
+	unsigned int zombie:1;     /* 1 = was alive (unread) before 'X' command */
+	unsigned int delete_it:1;  /* 1 = delete art when leaving group [mail group] */
+	unsigned int inthread:1;   /* 0 = thread head, 1 = thread follower */
+	t_bool selected:1;   /* FALSE = not selected, TRUE = selected */
+	t_bool inrange:1;    /* TRUE = article selected via # range command */
 };
 
 /*
@@ -1422,6 +1438,10 @@ struct t_attribute
 	unsigned int post_proc_type:2;		/* 0=none, 1=shar, 2=uudecode */
 	unsigned int x_comment_to:1;		/* insert X-Comment-To: in Followup */
 	unsigned int tex2iso_conv:1;		/* Convert TeX2ISO */
+#ifdef CHARSET_CONVERSION
+	int mm_network_charset;				/* network charset */
+	char *undeclared_charset;			/* charset of articles without MIME charset declaration */
+#endif /* CHARSET_CONVERSION */
 };
 
 /*
@@ -1886,7 +1906,7 @@ extern void joindir (char *result, const char *dir, const char *file);
 #	define my_realloc(ptr, size)	my_realloc1(__FILE__, __LINE__, (ptr), (size))
 #endif /* USE_DBMALLOC */
 
-#define SIZEOF(array)	((int)(sizeof array / sizeof array[0]))
+#define ARRAY_SIZE(array)	((int)(sizeof array / sizeof array[0]))
 
 #if 0
 #	define FreeIfNeeded(p)	if (p != (char *)0) free((char *)p)
@@ -1902,6 +1922,7 @@ extern void joindir (char *result, const char *dir, const char *file);
 #define my_group_add(x)		add_my_group(x, TRUE)
 #define for_each_group(x)	for (x = 0; x < num_active; x++)
 #define for_each_art(x)		for (x = 0; x < top_art; x++)
+#define for_each_art_in_thread(x, y)	for (x = (int)base[y]; x >= 0; x = arts[x].thread)
 
 /*
  * Cast for the (few!) places where we need to examine 8-bit characters w/o
@@ -2161,11 +2182,6 @@ extern struct tm *localtime(time_t *);
 #	define TIN_CANCEL_NAME	"cancel."
 #	define TIN_LETTER_NAME	"letter."
 #endif /* !VMS */
-
-/* THREAD_WEIGHT without THREAD_SUM doesn't make sense */
-#if defined(THREAD_WEIGHT) && !defined(THREAD_SUM)
-#	define THREAD_SUM
-#endif /* THREAD_WEIGHT && !THREAD_SUM */
 
 
 #endif /* !TIN_H */

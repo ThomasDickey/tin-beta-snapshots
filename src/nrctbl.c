@@ -20,10 +20,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Sven Paulus.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -70,7 +67,7 @@ write_newsrctable_file (
 {
 	FILE *fp;
 
-	if ((fp = fopen(local_newsrctable_file, "w")) == (FILE *) 0)
+	if ((fp = fopen(local_newsrctable_file, "w")) == NULL)
 		return;
 
 	fprintf(fp, _(txt_nrctbl_info), PRODUCT, VERSION);
@@ -97,7 +94,7 @@ get_nntpserver (
 	int line_entry_counter;
 	t_bool found = FALSE;
 
-	if ((fp = fopen(local_newsrctable_file, "r")) != (FILE *) 0) {
+	if ((fp = fopen(local_newsrctable_file, "r")) != NULL) {
 		while ((fgets(line, sizeof(line), fp) != NULL) && (!found)) {
 			line_entry_counter = 0;
 
@@ -140,7 +137,7 @@ get_newsrcname (
 	int found = 0;
 	t_bool do_cpy = FALSE;
 
-	if ((fp = fopen(local_newsrctable_file, "r")) != (FILE *) 0) {
+	if ((fp = fopen(local_newsrctable_file, "r")) != NULL) {
 		while ((fgets(line, (int) sizeof(line), fp) != NULL) && (found != 1)) {
 			line_entry_counter = 0;
 

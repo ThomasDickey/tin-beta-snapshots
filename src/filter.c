@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -93,17 +90,16 @@ static struct t_filter *arr_ptr;
  */
 static int get_choice (int x, const char *help, const char *prompt, const char *opt1, const char *opt2, const char *opt3, const char *opt4, const char *opt5);
 static int set_filter_scope (struct t_group *group);
-static struct t_filter * psExpandFilterArray (struct t_filter *ptr, int *num);
-static t_bool bAddFilterRule (struct t_group *psGrp, struct t_article *psArt, struct t_filter_rule *psRule);
-static void free_filter_array (struct t_filters *ptr);
+static struct t_filter * expand_filter_array (struct t_filter *ptr, int *num);
+static t_bool add_filter_rule (struct t_group *group, struct t_article *art, struct t_filter_rule *rule);
 static void free_filter_item (struct t_filter *ptr);
-static void vSetFilter (struct t_filter *psFilter);
+static void set_filter (struct t_filter *ptr);
 static void write_filter_array (FILE *fp, struct t_filters *ptr, time_t theTime);
 static void write_filter_file (const char *filename);
 
 
 static struct t_filter *
-psExpandFilterArray (
+expand_filter_array (
 	struct t_filter *ptr,
 	int *num)
 {
@@ -115,9 +111,9 @@ psExpandFilterArray (
 	block = *num * sizeof (struct t_filter);
 
 	if (*num == 1)	/* allocate */
-		result = (struct t_filter *) my_malloc (block);
+		result = my_malloc (block);
 	else	/* reallocate */
-		result = (struct t_filter *) my_realloc ((char *) ptr, block);
+		result = my_realloc (ptr, block);
 
 	return result;
 }
@@ -157,31 +153,31 @@ test_regex(
 
 
 /*
- * vSetFilter() initialises a struct t_filter with default values
+ * set_filter() initialises a struct t_filter with default values
  */
 static void
-vSetFilter (
-	struct t_filter *psFilter)
+set_filter (
+	struct t_filter *ptr)
 {
-	if (psFilter != (struct t_filter *) 0) {
-		psFilter->type = FILTER_SELECT;
-		psFilter->scope = (char *) 0;
-		psFilter->inscope = TRUE;
-		psFilter->icase = FALSE;
-		psFilter->fullref = FILTER_MSGID;
-		psFilter->subj = (char *) 0;
-		psFilter->from = (char *) 0;
-		psFilter->msgid = (char *) 0;
-		psFilter->lines_cmp = FILTER_LINES_NO;
-		psFilter->lines_num = 0;
-		psFilter->gnksa_cmp = FILTER_LINES_NO;
-		psFilter->gnksa_num = 0;
-		psFilter->score = 0;
-		psFilter->xref = (char *) 0;
-		psFilter->xref_max = 0;
-		psFilter->xref_score_cnt = 0;
-		psFilter->time = (time_t) 0;
-		psFilter->next = (struct t_filter *) 0;
+	if (ptr != NULL) {
+		ptr->type = FILTER_SELECT;
+		ptr->scope = (char *) 0;
+		ptr->inscope = TRUE;
+		ptr->icase = FALSE;
+		ptr->fullref = FILTER_MSGID;
+		ptr->subj = (char *) 0;
+		ptr->from = (char *) 0;
+		ptr->msgid = (char *) 0;
+		ptr->lines_cmp = FILTER_LINES_NO;
+		ptr->lines_num = 0;
+		ptr->gnksa_cmp = FILTER_LINES_NO;
+		ptr->gnksa_num = 0;
+		ptr->score = 0;
+		ptr->xref = (char *) 0;
+		ptr->xref_max = 0;
+		ptr->xref_score_cnt = 0;
+		ptr->time = (time_t) 0;
+		ptr->next = (struct t_filter *) 0;
 	}
 }
 
@@ -204,35 +200,24 @@ free_filter_item (
 /*
  * free_filter_array() frees t_filter structs t_filters contains pointers to
  */
-static void
+void
 free_filter_array (
 	struct t_filters *ptr)
 {
 	register int i;
 
-	if (ptr != (struct t_filters *) 0) {
+	if (ptr != NULL) {
 		for (i = 0; i < ptr->num; i++)
 			free_filter_item(ptr->filter + i);
 
-		if (ptr->filter != (struct t_filter *) 0) {
-			free ((char *) ptr->filter);
+		if (ptr->filter != NULL) {
+			free (ptr->filter);
 			ptr->filter = (struct t_filter *) 0;
 		}
 
 		ptr->num = 0;
 		ptr->max = 0;
 	}
-}
-
-
-void
-free_all_filter_arrays (
-	void) /* FIXME: use free_filter_array() instead */
-{
-	/*
-	 * Global filter array
-	 */
-	free_filter_array (&glob_filter);
 }
 
 
@@ -262,12 +247,12 @@ read_filter_file (
 	int xref_score_cnt = 0;
 	int xref_score_value = 0;
 	long secs = 0L;
-	struct t_group *psGrp;
+	struct t_group *group;
 	t_bool expired = FALSE;
 	t_bool expired_time = FALSE;
 	time_t current_secs = (time_t) 0;
 
-	if ((fp = fopen (file, "r")) == (FILE *) 0)
+	if ((fp = fopen (file, "r")) == NULL)
 		return FALSE;
 
 	if (!batch_mode)
@@ -278,12 +263,12 @@ read_filter_file (
 	/*
 	 * Reset all filter arrays if doing a reread of the active file
 	 */
-	free_all_filter_arrays ();
+	free_filter_array (&glob_filter);
 
-	psGrp = (struct t_group *) 0;
+	group = (struct t_group *) 0;
 	arr_ptr = (struct t_filter *) 0;
 
-	while (fgets (buf, (int) sizeof (buf), fp) != (char *) 0) {
+	while (fgets (buf, (int) sizeof (buf), fp) != NULL) {
 		if (*buf == '#' || *buf == '\n')
 			continue;
 
@@ -319,11 +304,11 @@ read_filter_file (
 				arr_num = &glob_filter.num;
 				arr_max = &glob_filter.max;
 				if (*arr_num >= (*arr_max - 1))
-					glob_filter.filter = psExpandFilterArray (glob_filter.filter, arr_max);
+					glob_filter.filter = expand_filter_array (glob_filter.filter, arr_max);
 				arr_ptr = glob_filter.filter;
 				i = *arr_num;
 				(*arr_num)++;
-				vSetFilter (&arr_ptr[i]);
+				set_filter (&arr_ptr[i]);
 				expired_time = FALSE;
 				arr_ptr[i].scope = my_strdup (scope);
 				subj[0] = '\0';
@@ -333,7 +318,7 @@ read_filter_file (
 				xref[0] = '\0';
 				icase = 0;
 				secs = 0L;
-				psGrp = (struct t_group *) 0;		/* fudge for out of order rules */
+				group = (struct t_group *) 0;		/* fudge for out of order rules */
 				break;
 			}
 			if (match_string (buf + 1, "nksa=", gnksa, sizeof (gnksa))) {
@@ -416,11 +401,11 @@ read_filter_file (
 				arr_num = &glob_filter.num;
 				arr_max = &glob_filter.max;
 				if (*arr_num >= (*arr_max - 1))
-					glob_filter.filter = psExpandFilterArray (glob_filter.filter, arr_max);
+					glob_filter.filter = expand_filter_array (glob_filter.filter, arr_max);
 				arr_ptr = glob_filter.filter;
 				i = *arr_num;
 				(*arr_num)++;
-				vSetFilter (&arr_ptr[i]);
+				set_filter (&arr_ptr[i]);
 				expired_time = FALSE;
 				arr_ptr[i].scope = my_strdup (scope);
 				subj[0] = '\0';
@@ -430,7 +415,7 @@ read_filter_file (
 				xref[0] = '\0';
 				icase = 0;
 				secs = 0L;
-				psGrp = (struct t_group *) 0;	/* fudge for out of order rules */
+				group = (struct t_group *) 0;	/* fudge for out of order rules */
 				break;
 			}
 			if (match_string (buf + 1, "ubj=", subj, sizeof (subj))) {
@@ -464,9 +449,9 @@ read_filter_file (
 						score = -SCORE_MAX;
 					else if (!score) {
 						if (!strncmp(scbuf, "kill", 4))
-							score = SCORE_KILL;
+							score = tinrc.score_kill;
 						else
-							score = (!strncmp(scbuf, "hot", 3) ? SCORE_SELECT : SCORE_DEFAULT);
+							score = tinrc.score_select;
 					}
 					if ((arr_ptr[i].type == FILTER_KILL && score > 0) || (arr_ptr[i].type == FILTER_SELECT && score < 0))
 						score = -score;
@@ -486,7 +471,7 @@ read_filter_file (
 #endif /* DEBUG */
 				if (arr_ptr) {
 					arr_ptr[i].type = (unsigned) type;
-					arr_ptr[i].score = (!type ? SCORE_KILL : SCORE_SELECT);
+					arr_ptr[i].score = (!type ? tinrc.score_kill : tinrc.score_select);
 				}
 				break;
 			}
@@ -581,7 +566,7 @@ write_filter_file (
 		return;
 	}
 
-	if ((fp = fopen (filename, "w")) == (FILE *) 0)
+	if ((fp = fopen (filename, "w")) == NULL)
 		return;
 
 	fprintf (fp, _(txt_filter_file));
@@ -611,7 +596,7 @@ write_filter_array (
 	register int i;
 	int j;
 
-	if (ptr == (struct t_filters *) 0)
+	if (ptr == NULL)
 		return;
 
 	for (i = 0; i < ptr->num; i++) {
@@ -623,10 +608,10 @@ write_filter_array (
 				continue;
 		}
 /*
-my_printf ("Scope=[%s]" cCRLF, (ptr->filter[i].scope != (char *) 0 ? ptr->filter[i].scope : "*"));
+my_printf ("Scope=[%s]" cCRLF, (ptr->filter[i].scope != NULL ? ptr->filter[i].scope : "*"));
 my_flush ();
 */
-		fprintf (fp, "group=%s\n", (ptr->filter[i].scope != (char *) 0 ? ptr->filter[i].scope : "*"));
+		fprintf (fp, "group=%s\n", (ptr->filter[i].scope != NULL ? ptr->filter[i].scope : "*"));
 
 /*
 my_printf ("PtrType=[%d] FilType=[%d]" cCRLF, ptr->filter[i].type, write_filter_type);
@@ -634,24 +619,21 @@ my_flush ();
 */
 		fprintf (fp, "type=%u\n", ptr->filter[i].type);
 		fprintf (fp, "case=%u\n", ptr->filter[i].icase);
-		switch (ptr->filter[i].score) {
-			case SCORE_KILL:
-				fprintf (fp, "score=kill\n");
-				break;
-			case SCORE_SELECT:
-				fprintf (fp, "score=hot\n");
-				break;
-			default:
-				fprintf (fp, "score=%d\n", ptr->filter[i].score);
-				break;
-		}
-		if (ptr->filter[i].subj != (char *) 0)
+
+		if (ptr->filter[i].score == tinrc.score_kill)
+			fprintf (fp, "score=kill\n");
+		else if (ptr->filter[i].score == tinrc.score_select)
+			fprintf (fp, "score=hot\n");
+		else
+			fprintf (fp, "score=%d\n", ptr->filter[i].score);
+
+		if (ptr->filter[i].subj != NULL)
 			fprintf (fp, "subj=%s\n", ptr->filter[i].subj);
 
-		if (ptr->filter[i].from != (char *) 0)
+		if (ptr->filter[i].from != NULL)
 			fprintf (fp, "from=%s\n", ptr->filter[i].from);
 
-		if (ptr->filter[i].msgid != (char *) 0) {
+		if (ptr->filter[i].msgid != NULL) {
 			switch (ptr->filter[i].fullref) {
 				case FILTER_MSGID:
 					fprintf (fp, "msgid=%s\n", ptr->filter[i].msgid);
@@ -713,10 +695,8 @@ my_flush ();
 		}
 		if (ptr->filter[i].time) {
 			char timestring[LEN];
-
-			timestring[0] = '\0';
-			my_strftime(timestring, LEN - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(ptr->filter[i].time)));
-			fprintf (fp, "time=%lu (%s)\n", (unsigned long int) ptr->filter[i].time, timestring);
+			if (my_strftime(timestring, LEN - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(ptr->filter[i].time))))
+				fprintf (fp, "time=%lu (%s)\n", (unsigned long int) ptr->filter[i].time, timestring);
 		}
 		fprintf (fp, "#####\n"); /* makes filter file more readable */
 	}
@@ -1071,7 +1051,7 @@ filter_menu (
 	 * assure we are in range
 	 */
 	if (rule.score <= 0)
-		rule.score = SCORE_DEFAULT;
+		rule.score = tinrc.score_select;
 	else if (rule.score > SCORE_MAX)
 		rule.score = SCORE_MAX;
 
@@ -1099,14 +1079,14 @@ filter_menu (
 		strcpy (argv[1], _(txt_all_groups));
 		strcpy (argv[2], group->name);
 		ptr = strrchr (argv[2], '.');
-		if (ptr != (char *) 0) {
+		if (ptr != NULL) {
 			ptr++;
 			*(ptr++) = '*';
 			*ptr = '\0';
 			strcpy (argv[3], argv[2]);
 			argv[3][strlen(argv[3]) - 2] = '\0';
 			ptr = strrchr (argv[3], '.');
-			if (ptr != (char *) 0) {
+			if (ptr != NULL) {
 				ptr++;
 				*(ptr++) = '*';
 				*ptr = '\0';
@@ -1139,7 +1119,7 @@ filter_menu (
 		switch (ch) {
 
 		case iKeyFilterEdit:
-			bAddFilterRule (group, art, &rule); /* save the rule */
+			add_filter_rule (group, art, &rule); /* save the rule */
 			if (!invoke_editor (filter_file, 25)) /* FIXME: is 25 correct offset? */
 				return FALSE;
 			unfilter_articles ();
@@ -1158,7 +1138,7 @@ filter_menu (
 			/*
 			 * Add the filter rule and save it to the filter file
 			 */
-			return (bAddFilterRule (group, art, &rule));
+			return (add_filter_rule (group, art, &rule));
 			/* keep lint quiet: */
 			/* FALLTHROUGH */
 
@@ -1224,9 +1204,9 @@ quick_filter (
 	rule.icase = icase;
 	rule.expire_time = expire;
 	rule.check_string = TRUE;
-	rule.score = (type == FILTER_KILL) ? SCORE_KILL : SCORE_SELECT;
+	rule.score = (type == FILTER_KILL) ? tinrc.score_kill : tinrc.score_select;
 
-	return (bAddFilterRule (group, art, &rule));
+	return (add_filter_rule (group, art, &rule));
 }
 
 
@@ -1270,7 +1250,7 @@ quick_filter_select_posted_art (
 		rule.icase = FALSE;
 		rule.expire_time = TRUE;
 		rule.check_string = TRUE;
-		rule.score = SCORE_SELECT;
+		rule.score = tinrc.score_select;
 
 		strcpy(rule.scope, group->name);
 
@@ -1301,10 +1281,10 @@ quick_filter_select_posted_art (
 			/* Hack */
 			art.refptr = (struct t_msgid *) &refptr_dummyart;
 
-			filtered = bAddFilterRule (group, &art, &rule);
+			filtered = add_filter_rule (group, &art, &rule);
 		} else {
 			art.subject = my_strdup (subj);
-			filtered = bAddFilterRule (group, &art, &rule);
+			filtered = add_filter_rule (group, &art, &rule);
 			FreeIfNeeded(art.subject);
 		}
 
@@ -1318,86 +1298,86 @@ quick_filter_select_posted_art (
  * API to add filter rule to the local or global filter array
  */
 static t_bool
-bAddFilterRule (
-	struct t_group *psGrp,
-	struct t_article *psArt,
-	struct t_filter_rule *psRule)
+add_filter_rule (
+	struct t_group *group,
+	struct t_article *art,
+	struct t_filter_rule *rule)
 {
 	char acBuf[PATH_LEN];
 	char sbuf[(sizeof(acBuf)/2)]; /* half as big as acBuf so quote_wild(sbuf) fits into acBuf */
-	int *plNum, *plMax;
-	t_bool bFiltered = FALSE;
-	time_t lCurTime;
-	struct t_filter *psPtr;
+	int *num, *max;
+	t_bool filtered = FALSE;
+	time_t current_time;
+	struct t_filter *ptr;
 
-	plNum = &glob_filter.num;
-	plMax = &glob_filter.max;
-	if (*plNum >= *plMax)
-		glob_filter.filter = psExpandFilterArray (glob_filter.filter, plMax);
+	num = &glob_filter.num;
+	max = &glob_filter.max;
+	if (*num >= *max)
+		glob_filter.filter = expand_filter_array (glob_filter.filter, max);
 
-	psPtr = glob_filter.filter;
+	ptr = glob_filter.filter;
 
-	psPtr[*plNum].type = psRule->type;
-	psPtr[*plNum].icase = FALSE;
-	psPtr[*plNum].inscope = TRUE;
-	psPtr[*plNum].fullref = FILTER_MSGID;
-	psPtr[*plNum].scope = (char *) 0;
-	psPtr[*plNum].subj = (char *) 0;
-	psPtr[*plNum].from = (char *) 0;
-	psPtr[*plNum].msgid = (char *) 0;
-	psPtr[*plNum].lines_cmp = psRule->lines_cmp;
-	psPtr[*plNum].lines_num = psRule->lines_num;
-	psPtr[*plNum].gnksa_cmp = FILTER_LINES_NO;
-	psPtr[*plNum].gnksa_num = 0;
-	psPtr[*plNum].score = psRule->score;
-	psPtr[*plNum].xref = (char *) 0;
-	psPtr[*plNum].xref_max = 0;
-	psPtr[*plNum].xref_score_cnt = 0;
+	ptr[*num].type = rule->type;
+	ptr[*num].icase = FALSE;
+	ptr[*num].inscope = TRUE;
+	ptr[*num].fullref = FILTER_MSGID;
+	ptr[*num].scope = (char *) 0;
+	ptr[*num].subj = (char *) 0;
+	ptr[*num].from = (char *) 0;
+	ptr[*num].msgid = (char *) 0;
+	ptr[*num].lines_cmp = rule->lines_cmp;
+	ptr[*num].lines_num = rule->lines_num;
+	ptr[*num].gnksa_cmp = FILTER_LINES_NO;
+	ptr[*num].gnksa_num = 0;
+	ptr[*num].score = rule->score;
+	ptr[*num].xref = (char *) 0;
+	ptr[*num].xref_max = 0;
+	ptr[*num].xref_score_cnt = 0;
 
-	if (psRule->scope[0] == '\0') /* replace empty scope with current group name */
-		psPtr[*plNum].scope = my_strdup (psGrp->name);
+	if (rule->scope[0] == '\0') /* replace empty scope with current group name */
+		ptr[*num].scope = my_strdup (group->name);
 	else {
-		if ((psRule->scope[0] != '*') && (psRule->scope[1] != '\0')) /* copy non-global scope */
-			psPtr[*plNum].scope = my_strdup (psRule->scope);
+		if ((rule->scope[0] != '*') && (rule->scope[1] != '\0')) /* copy non-global scope */
+			ptr[*num].scope = my_strdup (rule->scope);
 	}
 
-	(void) time (&lCurTime);
-	switch(psRule->expire_time) {
+	(void) time (&current_time);
+	switch(rule->expire_time) {
 		case 1:
-			psPtr[*plNum].time = lCurTime + (time_t) (tinrc.filter_days * DAY);
+			ptr[*num].time = current_time + (time_t) (tinrc.filter_days * DAY);
 			break;
 		case 2:
-			psPtr[*plNum].time = lCurTime + (time_t) (tinrc.filter_days * DAY * 2);
+			ptr[*num].time = current_time + (time_t) (tinrc.filter_days * DAY * 2);
 			break;
 		case 3:
-			psPtr[*plNum].time = lCurTime + (time_t) (tinrc.filter_days * DAY * 4);
+			ptr[*num].time = current_time + (time_t) (tinrc.filter_days * DAY * 4);
 			break;
 		default:
-			psPtr[*plNum].time = (time_t) 0;
+			ptr[*num].time = (time_t) 0;
 			break;
 	}
 
-	psPtr[*plNum].icase = psRule->icase;
-	if (*psRule->text) {
-		sprintf (acBuf, REGEX_FMT, quote_wild_whitespace(psRule->text));
+	ptr[*num].icase = rule->icase;
+	if (*rule->text) {
+		sprintf (acBuf, REGEX_FMT, quote_wild_whitespace(rule->text));
 
-		switch (psRule->counter) {
+		switch (rule->counter) {
 			case FILTER_SUBJ_CASE_IGNORE:
 			case FILTER_SUBJ_CASE_SENSITIVE:
-				psPtr[*plNum].subj = my_strdup (acBuf);
+				ptr[*num].subj = my_strdup (acBuf);
 				break;
 
 			case FILTER_FROM_CASE_IGNORE:
 			case FILTER_FROM_CASE_SENSITIVE:
-				psPtr[*plNum].from = my_strdup (acBuf);
+				ptr[*num].from = my_strdup (acBuf);
 				break;
 
 			case FILTER_MSGID:
 			case FILTER_MSGID_LAST:
 			case FILTER_MSGID_ONLY:
 			case FILTER_REFS_ONLY:
-				psPtr[*plNum].msgid = my_strdup (acBuf);
-				psPtr[*plNum].fullref = psRule->counter;
+				ptr[*num].msgid = my_strdup (acBuf);
+				ptr[*num].fullref = rule->counter;
 				break;
 
 			default: /* should not happen */
@@ -1405,63 +1385,63 @@ bAddFilterRule (
 				assert(0 != 0);
 				break;
 		}
-		bFiltered = TRUE;
-		(*plNum)++;
+		filtered = TRUE;
+		(*num)++;
 	} else {
 		/*
 		 * STRCPY() truncates subject/from/message-id so it fits
 		 * into acBuf even after quote_wild()
 		 */
-		if (psRule->subj_ok) {
-			STRCPY(sbuf, psArt->subject);
-			sprintf (acBuf, REGEX_FMT, (psRule->check_string ? quote_wild (sbuf) : sbuf));
-			psPtr[*plNum].subj = my_strdup (acBuf);
+		if (rule->subj_ok) {
+			STRCPY(sbuf, art->subject);
+			sprintf (acBuf, REGEX_FMT, (rule->check_string ? quote_wild (sbuf) : sbuf));
+			ptr[*num].subj = my_strdup (acBuf);
 		}
-		if (psRule->from_ok) {
-			STRCPY(sbuf, psArt->from);
+		if (rule->from_ok) {
+			STRCPY(sbuf, art->from);
 			sprintf (acBuf, REGEX_FMT, quote_wild (sbuf));
-			psPtr[*plNum].from = my_strdup (acBuf);
+			ptr[*num].from = my_strdup (acBuf);
 		}
 		/*
 		 * message-ids should be quoted
 		 */
-		if (psRule->msgid_ok) {
-			STRCPY(sbuf, MSGID(psArt));
+		if (rule->msgid_ok) {
+			STRCPY(sbuf, MSGID(art));
 			sprintf (acBuf, REGEX_FMT, quote_wild (sbuf));
-			psPtr[*plNum].msgid = my_strdup (acBuf);
-			psPtr[*plNum].fullref = psRule->fullref;
+			ptr[*num].msgid = my_strdup (acBuf);
+			ptr[*num].fullref = rule->fullref;
 		}
-		if (psRule->subj_ok || psRule->from_ok || psRule->msgid_ok || psRule->lines_ok) {
-			bFiltered = TRUE;
-			(*plNum)++;
+		if (rule->subj_ok || rule->from_ok || rule->msgid_ok || rule->lines_ok) {
+			filtered = TRUE;
+			(*num)++;
 		}
 	}
 
-	if (bFiltered) {
+	if (filtered) {
 #ifdef DEBUG
 		if (debug)
 			wait_message (2, "inscope=[%s] scope=[%s] typ=[%d] case=[%d] subj=[%s] from=[%s] msgid=[%s] fullref=[%d] line=[%d %d] time=[%lu]",
-				bool_unparse(psPtr[*plNum - 1].inscope),
-				BlankIfNull(psRule->scope),
-				psPtr[*plNum - 1].type, psPtr[*plNum - 1].icase,
-				BlankIfNull(psPtr[*plNum - 1].subj),
-				BlankIfNull(psPtr[*plNum - 1].from),
-				BlankIfNull(psPtr[*plNum - 1].msgid),
-				psPtr[*plNum - 1].fullref, psPtr[*plNum - 1].lines_cmp,
-				psPtr[*plNum - 1].lines_num, (unsigned long int) psPtr[*plNum - 1].time);
+				bool_unparse(ptr[*num - 1].inscope),
+				BlankIfNull(rule->scope),
+				ptr[*num - 1].type, ptr[*num - 1].icase,
+				BlankIfNull(ptr[*num - 1].subj),
+				BlankIfNull(ptr[*num - 1].from),
+				BlankIfNull(ptr[*num - 1].msgid),
+				ptr[*num - 1].fullref, ptr[*num - 1].lines_cmp,
+				ptr[*num - 1].lines_num, (unsigned long int) ptr[*num - 1].time);
 #endif /* DEBUG */
 
 		write_filter_file (filter_file);
 	}
 
-	return bFiltered;
+	return filtered;
 }
 
 
 /*
  * We assume that any articles which are tagged as killed are also
  * tagged as being read BECAUSE they were killed. So, we retag
- * them as being unread.
+ * them as being unread. Selected articles will be un"select"ed.
  */
 int
 unfilter_articles (
@@ -1477,8 +1457,13 @@ unfilter_articles (
 			arts[i].score = 0;
 			unkilled++;
 		}
+		if (IS_SELECTED(i)) {
+			arts[i].selected = FALSE;
+			arts[i].score = 0;
+		}
 	}
 	num_of_killed_arts = 0;
+	num_of_selected_arts = 0;
 
 	return unkilled;
 }
@@ -1535,10 +1520,10 @@ filter_articles (
 		size_t msiz;
 
 		msiz = sizeof(struct regex_cache) * num;
-		regex_cache_subj = (struct regex_cache *) my_malloc(msiz);
-		regex_cache_from = (struct regex_cache *) my_malloc(msiz);
-		regex_cache_msgid = (struct regex_cache *) my_malloc(msiz);
-		regex_cache_xref = (struct regex_cache *) my_malloc(msiz);
+		regex_cache_subj = my_malloc(msiz);
+		regex_cache_from = my_malloc(msiz);
+		regex_cache_msgid = my_malloc(msiz);
+		regex_cache_xref = my_malloc(msiz);
 		for (j = 0; j < num; j++) {
 			regex_cache_subj[j].re = NULL;
 			regex_cache_subj[j].extra = NULL;
@@ -1571,7 +1556,7 @@ filter_articles (
 				/*
 				 * Filter on Subject: line
 				 */
-				if (ptr[j].subj != (char *) 0) {
+				if (ptr[j].subj != NULL) {
 					if (test_regex (arts[i].subject, ptr[j].subj, ptr[j].icase, &regex_cache_subj[j])) {
 						SET_FILTER(group, i, j);
 					}
@@ -1580,8 +1565,8 @@ filter_articles (
 				/*
 				 * Filter on From: line
 				 */
-				if (ptr[j].from != (char *) 0) {
-					if (arts[i].name != (char *) 0)
+				if (ptr[j].from != NULL) {
+					if (arts[i].name != NULL)
 						sprintf (buf, "%s (%s)", arts[i].from, arts[i].name);
 					else
 						strcpy (buf, arts[i].from);
@@ -1596,8 +1581,7 @@ filter_articles (
 				 * Message-ID: & last entry from References: line
 				 * Case is important here
 				 */
-				if (ptr[j].msgid != (char *) 0) {
-
+				if (ptr[j].msgid != NULL) {
 					struct t_article *art = &arts[i];
 					char *refs = NULL;
 					const char *myrefs = NULL;
@@ -1608,6 +1592,7 @@ filter_articles (
  * TODO articles, so we can switch to an appropriate algorithm
  * TODO for each kind of rule, including the deleted one.
  */
+
 					/* myrefs does not need to be freed */
 
 					/* use full references header or just the last entry? */
@@ -1704,18 +1689,15 @@ wait_message (1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].li
 				 * Filter on Xref: lines
 				 */
 				if (arts[i].xref && *arts[i].xref != '\0') {
-					if (ptr[j].xref_max > 0 || ptr[j].xref != (char*) 0) {
+					if (ptr[j].xref_max > 0 || ptr[j].xref != NULL) {
 						char *s, *e;
-						int group_count;
+						int group_count = 0;
 
 						s = arts[i].xref;
-
 						while(*s && !isspace((int) *s))
 							s++;
 						while(*s && isspace((int) *s))
 							s++;
-
-						group_count = 0;
 
 						while(*s) {
 							e = s;
@@ -1734,7 +1716,7 @@ wait_message (1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].li
 								if (k == ptr[j].xref_score_cnt)
 									group_count++;
 							}
-							if (ptr[j].xref != (char*) 0) {
+							if (ptr[j].xref != NULL) {
 								strncpy(buf, s, e - s);
 								buf[e - s] = '\0';
 								/* don't filter when we are actually in that group */
@@ -1788,12 +1770,12 @@ wait_message (1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].li
 	 */
 	if (mesg[0] == '\0') {
 		for_each_art(i) {
-			if (arts[i].score <= SCORE_LIM_KILL) {
+			if (arts[i].score <= tinrc.score_limit_kill) {
 				arts[i].killed = TRUE;
 				num_of_killed_arts++;
 				filtered = TRUE;
 				art_mark_read (group, &arts[i]);
-			} else if (arts[i].score >= SCORE_LIM_SEL) {
+			} else if (arts[i].score >= tinrc.score_limit_select) {
 				arts[i].selected = TRUE;
 				num_of_selected_arts++;
 			}
@@ -1817,8 +1799,8 @@ set_filter_scope (
 
 	for (i = 0; i < num; i++) {
 		ptr[i].inscope = TRUE;
-		ptr[i].next = (struct t_filter*) 0;
-		if (ptr[i].scope != (char *) 0) {
+		ptr[i].next = (struct t_filter *) 0;
+		if (ptr[i].scope != NULL) {
 			if (!match_group_list (group->name, ptr[i].scope)) {
 				ptr[i].inscope = FALSE;
 				inscope--;

@@ -342,7 +342,7 @@ tin_fgets (
 #if 1
 	/* Allocate initial buffer */
 	if (dynbuf == NULL) {
-		dynbuf = (char *) my_malloc (INIT * sizeof(char));
+		dynbuf = my_malloc (INIT * sizeof(*dynbuf));
 		size = INIT;
 	}
 	/* Otherwise reuse last buffer */
@@ -351,7 +351,7 @@ tin_fgets (
 	if (dynbuf != NULL)
 		free(dynbuf);				/* Free any previous allocation */
 
-	dynbuf = (char *) my_malloc (INIT * sizeof(char));
+	dynbuf = my_malloc (INIT * sizeof(*dynbuf));
 	size = INIT;
 #endif /* 1 */
 
@@ -368,7 +368,7 @@ tin_fgets (
 	while (partial_read) {
 		if (next + CHUNK > size)
 			size = next + CHUNK;
-		temp = (char *) my_realloc (dynbuf, size * sizeof(char));
+		temp = my_realloc (dynbuf, size * sizeof(*dynbuf));
 		dynbuf = temp;
 		temp = tin_read (dynbuf + next, size - next, fp, header); /* What if == 0 ?? */
 		next += offset;
@@ -416,7 +416,7 @@ drain_buffer (
 		return;
 
 DEBUG_IO((stderr, _("Draining\n")));
-	while (tin_fgets(fp, FALSE) != (char *) 0) {
+	while (tin_fgets(fp, FALSE) != NULL) {
 		if (++i % MODULO_COUNT_NUM == 0)
 			spin_cursor();
 	}

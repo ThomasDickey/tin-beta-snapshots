@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -392,6 +389,7 @@ extern constext *help_page[];
 extern constext *help_select[];
 extern constext *help_thread[];
 extern constext *txt_colors[];
+extern constext *txt_confirm_choices[];
 extern constext *txt_kill_level_type[];
 #ifdef CHARSET_CONVERSION
 	extern constext *txt_mime_charsets[];
@@ -401,17 +399,18 @@ extern constext *txt_marks[];
 extern constext *txt_mime_encodings[NUM_MIME_ENCODINGS];
 extern constext *txt_onoff[];
 extern constext *txt_post_process_type[];
+extern constext *txt_quote_style_type[];
 extern constext *txt_show_from[];
 extern constext *txt_sort_a_type[];	/* a=articles */
 extern constext *txt_sort_t_type[];	/* t=threads */
 extern constext *txt_strip_bogus_type[];
 extern constext *txt_thread[];
+extern constext *txt_thread_score_type[];
 extern constext *txt_wildcard_type[];
 extern constext txt_1_resp[];
 extern constext txt_7bit[];
 extern constext txt_8bit[];
 extern constext txt_active_file_is_empty[];
-extern constext txt_added_groups[];
 extern constext txt_all[];
 extern constext txt_all_groups[];
 extern constext txt_append_overwrite_quit[];
@@ -488,6 +487,7 @@ extern constext txt_choose_post_process_type[];
 extern constext txt_color_off[];
 extern constext txt_color_on[];
 extern constext txt_command_failed[];
+extern constext txt_confirm_select_on_exit[];
 extern constext txt_connecting[];
 extern constext txt_connecting_port[];
 extern constext txt_copyright_notice[];
@@ -502,6 +502,7 @@ extern constext txt_end_of_art[];
 extern constext txt_end_of_arts[];
 extern constext txt_end_of_groups[];
 extern constext txt_end_of_thread[];
+extern constext txt_enter_getart_limit[];
 extern constext txt_enter_message_id[];
 extern constext txt_enter_next_thread[];
 extern constext txt_enter_option_num[];
@@ -838,7 +839,6 @@ extern constext txt_no_filename[];
 extern constext txt_no_group[];
 extern constext txt_no_groups[];
 extern constext txt_no_groups_to_read[];
-extern constext txt_no_groups_to_yank_in[];
 extern constext txt_no_last_message[];
 extern constext txt_no_mail_address[];
 extern constext txt_no_match[];
@@ -1029,8 +1029,10 @@ extern constext txt_warn_wrong_sig_format[];
 extern constext txt_warn_xref_not_supported[];
 extern constext txt_writing_attributes_file[];
 extern constext txt_x_resp[];
-extern constext txt_yanking_all_groups[];
-extern constext txt_yanking_sub_groups[];
+extern constext txt_yanked_groups[];
+extern constext txt_yanked_none[];
+extern constext txt_yanked_sub_groups[];
+extern constext txt_show_unread[];
 extern constext txt_yes[];
 extern constext txt_you_have_mail[];
 
@@ -1196,7 +1198,7 @@ enum {
 	HIST_SUBJECT_SEARCH,
 	HIST_CONFIG_SEARCH,
 	HIST_HELP_SEARCH,
-	HIST_URL		
+	HIST_URL
 };
 /* must always be the same as the highest HIST_ value except HIST_NONE */
 #define HIST_MAXNUM		HIST_URL
@@ -1361,13 +1363,13 @@ extern struct opttxt txt_beginner_level;
 extern struct opttxt txt_cache_overview_files;
 extern struct opttxt txt_catchup_read_groups;
 extern struct opttxt txt_color_options;
-extern struct opttxt txt_confirm_action;
-extern struct opttxt txt_confirm_to_quit;
+extern struct opttxt txt_confirm_choice;
 extern struct opttxt txt_display_options;
 extern struct opttxt txt_draw_arrow;
 extern struct opttxt txt_editor_format;
 extern struct opttxt txt_expert_options;
 extern struct opttxt txt_filter_days;
+extern struct opttxt txt_filtering_options;
 extern struct opttxt txt_force_screen_redraw;
 extern struct opttxt txt_getart_limit;
 extern struct opttxt txt_getart_limit_options;
@@ -1405,12 +1407,15 @@ extern struct opttxt txt_printer;
 extern struct opttxt txt_process_only_unread;
 extern struct opttxt txt_prompt_followupto;
 extern struct opttxt txt_quote_chars;
-extern struct opttxt txt_quote_empty_lines;
-extern struct opttxt txt_quote_signatures;
+extern struct opttxt txt_quote_style;
 extern struct opttxt txt_recent_time;
 extern struct opttxt txt_reread_active_file_secs;
 extern struct opttxt txt_savedir;
 extern struct opttxt txt_saving_options;
+extern struct opttxt txt_score_limit_kill;
+extern struct opttxt txt_score_limit_select;
+extern struct opttxt txt_score_kill;
+extern struct opttxt txt_score_select;
 extern struct opttxt txt_show_author;
 extern struct opttxt txt_show_description;
 extern struct opttxt txt_scroll_lines;
@@ -1437,9 +1442,9 @@ extern struct opttxt txt_tab_goto_next_unread;
 extern struct opttxt txt_tex2iso_conv;
 extern struct opttxt txt_thread_articles;
 extern struct opttxt txt_thread_catchup_on_exit;
+extern struct opttxt txt_thread_score;
 extern struct opttxt txt_unlink_article;
 extern struct opttxt txt_url_handler;
-extern struct opttxt txt_use_getart_limit;
 extern struct opttxt txt_use_mailreader_i;
 extern struct opttxt txt_use_mouse;
 extern struct opttxt txt_wildcard;

@@ -80,7 +80,7 @@ searches and compares.
 The functions that manipulate the above include:
 
 active.c:
-	read_news_active_file() populates active[] using psGrpAdd()
+	read_news_active_file() populates active[] using group_add()
 
 
 art.c:

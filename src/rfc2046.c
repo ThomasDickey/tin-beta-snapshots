@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
  *  Created   : 2000-02-18
- *  Updated   : 2002-04-10
+ *  Updated   : 2002-06-09
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2002 Jason Faultless <jason@radar.tele2.co.uk>
@@ -237,7 +237,7 @@ parse_content_type(
 
 	subtype = strtok (NULL, PARAM_SEP);
 	/* save new subtype, or use pre-initialised value "plain" */
-	if (subtype != (char *) 0) {				/* check for broken Content-Type: is header without a subtype */
+	if (subtype != NULL) {				/* check for broken Content-Type: is header without a subtype */
 		free (content->subtype);				/* Pre-initialised to plain */
 		content->subtype = my_strdup (subtype);
 		str_lwr (content->subtype);
@@ -247,13 +247,31 @@ parse_content_type(
 	 * Parse any parameters into a list
 	 */
 	if ((params = strtok (NULL, "\n")) != NULL) {
+#ifndef CHARSET_CONVERSION
 		char defparms[] = CT_DEFPARMS;	/* must be writeable */
+#endif /* !CHARSET_CONVERSION */
 
 		free_list (content->params);
 		content->params = NULL;
 		parse_params (params, content);
-		if (!get_param(content->params, "charset"))	/* add default charset if needed */
+		if (!get_param(content->params, "charset")) {	/* add default charset if needed */
+#ifndef CHARSET_CONVERSION
 			parse_params (defparms, content);
+#else
+			if (CURR_GROUP.attribute->undeclared_charset) {
+				char *charsetheader;
+
+				charsetheader = my_malloc (strlen(CURR_GROUP.attribute->undeclared_charset) + 9); /* 9=len('charset=\0') */
+				sprintf(charsetheader, "charset=%s", CURR_GROUP.attribute->undeclared_charset);
+				parse_params (charsetheader, content);
+				free(charsetheader);
+			} else {
+				char defparms[] = CT_DEFPARMS;	/* must be writeable */
+
+				parse_params (defparms, content);
+			}
+#endif /* !CHARSET_CONVERSION */
+		}
 	}
 }
 
@@ -330,13 +348,32 @@ new_part (
 {
 	t_part *p;
 	t_part *ptr = my_malloc(sizeof(t_part));
+#ifndef CHARSET_CONVERSION
 	char defparms[] = CT_DEFPARMS;	/* must be writeable */
+#endif /* !CHARSET_CONVERSION */
 
 	ptr->type = TYPE_TEXT;					/* Defaults per RFC */
 	ptr->subtype = my_strdup ("plain");
 	ptr->encoding = ENCODING_7BIT;
 	ptr->params = NULL;
+
+#ifndef CHARSET_CONVERSION
 	parse_params (defparms, ptr);
+#else
+	if (CURR_GROUP.attribute->undeclared_charset) {
+		char *charsetheader;
+
+		charsetheader = my_malloc (strlen(CURR_GROUP.attribute->undeclared_charset) + 9); /* 9=len('charset=\0') */
+		sprintf(charsetheader, "charset=%s", CURR_GROUP.attribute->undeclared_charset);
+		parse_params (charsetheader, ptr);
+		free(charsetheader);
+	} else {
+		char defparms[] = CT_DEFPARMS;	/* must be writeable */
+
+		parse_params (defparms, ptr);
+	}
+#endif /* !CHARSET_CONVERSION */
+
 	ptr->offset = 0;
 	ptr->line_count = 0;
 	ptr->depth = 0;							/* Not an embedded object (yet) */
@@ -468,8 +505,7 @@ parse_rfc822_headers(
 	hdr->mime = FALSE;
 	hdr->ext = new_part(NULL);		/* Initialise MIME data */
 
-	while ((line = tin_fgets (from, TRUE)) != (char *) 0) {
-
+	while ((line = tin_fgets (from, TRUE)) != NULL) {
 		if (to)
 			fprintf(to, "%s\n", line);		/* Put raw data */
 
@@ -656,7 +692,7 @@ parse_multipart_article(
 	if ((boundary = get_param(part->params, "boundary")) == NULL)
 		return -1;
 
-	while ((line = tin_fgets(infile, (state == M_HDR))) != (char *) 0) {
+	while ((line = tin_fgets(infile, (state == M_HDR))) != NULL) {
 		bnd = boundary_cmp(line, boundary);
 
 /* fprintf(stderr, "---:%s\n", line); */
@@ -767,7 +803,7 @@ parse_normal_article(
 {
 	char *line;
 
-	while ((line = tin_fgets (in, FALSE)) != (char *) 0) {
+	while ((line = tin_fgets (in, FALSE)) != NULL) {
 		fprintf(artinfo->raw, "%s\n", line);
 		++artinfo->hdr.ext->line_count;
 		if (show_progress_meter)

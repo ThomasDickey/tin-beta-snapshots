@@ -7,9 +7,9 @@
 PROJECT	= tin
 LVER	= 1
 PVER	= 5
-SVER	= 12
+SVER	= 13
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20020427
+DVER	= 20020703
 EXE	= tin
 
 # directory structure
@@ -189,6 +189,7 @@ TOL	= \
 	$(TOLDIR)/opt-case.pl \
 	$(TOLDIR)/tinlock \
 	$(TOLDIR)/tinews.pl \
+	$(TOLDIR)/tinrcupdate.pl \
 	$(TOLDIR)/url_handler.sh \
 	$(TOLDIR)/w2r.pl \
 	$(TOLDIR)/expand_aliases.tgz
@@ -452,6 +453,7 @@ chmod:
 	$(TOLDIR)/opt-case.pl \
 	$(TOLDIR)/tinlock \
 	$(TOLDIR)/tinews.pl \
+	$(TOLDIR)/tinrcupdate.pl \
 	$(TOLDIR)/url_handler.sh \
 	$(TOLDIR)/w2r.pl \
 	$(PCREDIR)/RunTest \
