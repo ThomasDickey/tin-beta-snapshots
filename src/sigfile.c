@@ -6,7 +6,7 @@
  *  Updated   : 1998-07-20
  *  Notes     : Generate random signature for posting/mailing etc.
  *
- * Copyright (c) 1992-2000 Mike Gleason
+ * Copyright (c) 1992-2001 Mike Gleason
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,7 @@ static int thrashdir (char *sigdir);
 void
 msg_write_signature (
 	FILE *fp,
-	t_bool flag,
+	t_bool include_dot_signature,
 	struct t_group *thisgroup)
 {
 	FILE *fixfp;
@@ -70,7 +70,7 @@ msg_write_signature (
 
 #ifdef NNTP_INEWS
 	if (read_news_via_nntp && tinrc.use_builtin_inews)
-		flag = TRUE;
+		include_dot_signature = TRUE;
 #endif /* NNTP_INEWS */
 
 	if (thisgroup && !thisgroup->bogus) {
@@ -139,21 +139,22 @@ msg_write_signature (
 		}
 	}
 
-	/*
-	 * Use ~/.signature or ~/.Sig or custom .Sig files
-	 */
-	if ((sigfp = fopen (default_signature, "r")) != (FILE *) 0) {
-		if (flag) {
-			fprintf (fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
-			copy_fp (sigfp, fp);
-		}
+	if ((sigfp = fopen (path, "r")) != (FILE *) 0) {
+		fprintf (fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
+		copy_fp (sigfp, fp);
 		fclose (sigfp);
 		return;
 	}
 
-	if ((sigfp = fopen (path, "r")) != (FILE *) 0) {
-		fprintf (fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
-		copy_fp (sigfp, fp);
+	/*
+	 * Use ~/.signature as a last resort, but only if mailing or
+	 * using internal inews (external inews appends it automagically).
+	 */
+	if ((sigfp = fopen (default_signature, "r")) != (FILE *) 0) {
+		if (include_dot_signature) {
+			fprintf (fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
+			copy_fp (sigfp, fp);
+		}
 		fclose (sigfp);
 	}
 }

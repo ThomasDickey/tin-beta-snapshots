@@ -7,7 +7,7 @@
  *  Notes     : Simple stopwatch routines for timing code using timeb
  *	             or gettimeofday structs
  *
- * Copyright (c) 1993-2000 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2001 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

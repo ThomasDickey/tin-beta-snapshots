@@ -6,7 +6,7 @@
  *  Updated   : 28/02/2000
  *  Notes     : rfc2046 MIME article definitions
  *
- * Copyright (c) 2000 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 2000-2001 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -136,7 +136,8 @@ struct t_header
 
 #	define C_URL		0x100	/* Contains URL */
 #	define C_MAIL		0x200	/* Contains mailto: */
-#	define C_CTRLL		0x400	/* Contains ^L */
+#	define C_NEWS		0x400 /* Contains news|nntp: */
+#	define C_CTRLL		0x800	/* Contains ^L */
 
 typedef struct lineinfo
 {

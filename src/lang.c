@@ -6,7 +6,7 @@
  *  Updated   : 1998-10-17
  *  Notes     :
  *
- * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -124,23 +124,23 @@ constext txt_connecting[] = N_("Connecting to %s...");
 constext txt_connecting_port[] = N_("Connecting to %s:%d...");
 
 #ifdef M_AMIGA
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2000 Iain Lea & Mark Tomlinson.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2001 Iain Lea & Mark Tomlinson.";
 #endif /* M_AMIGA */
 
 #ifdef M_OS2
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2000 Iain Lea & Andreas Wrede.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2001 Iain Lea & Andreas Wrede.";
 #endif /* M_OS2 */
 
 #ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2000 Iain Lea.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2001 Iain Lea.";
 #endif /* M_UNIX */
 
 #ifdef VMS
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2000 Iain Lea & Tod McQuillin & other.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2001 Iain Lea & Tod McQuillin & other.";
 #endif /* VMS */
 
 #ifdef WIN32
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2000 Iain Lea & Nigel Ellis.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2001 Iain Lea & Nigel Ellis.";
 #endif /* WIN32 */
 
 constext txt_creating_active[] = N_("Creating active file for saved groups...\n");

@@ -73,4 +73,4 @@ Dirk Nimmich (2000-01-22)
 <nimmich@uni-muenster.de>
 
 References:
-[1] <http://www.karlsruhe.org/rfc/draft-ietf-nntp-ext-03.txt>
+<http://www.karlsruhe.org/rfc/rfc2980.txt>

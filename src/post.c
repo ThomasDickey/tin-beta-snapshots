@@ -6,7 +6,7 @@
  *  Updated   : 1997-12-25
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
- * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -158,7 +158,7 @@ static t_bool must_include (const char *id);
 static t_bool pcCopyArtHeader (int iHeader, const char *pcArt, char *result);
 static t_bool repair_article (char *result);
 static t_bool submit_mail_file (const char *file);
-static void append_postponed_file (const char *file, const char *addr);
+static void append_mail (const char *the_article, const char *addr, const char *the_mailbox);
 static void appendid (char **where, const char **what);
 static void find_reply_to_addr (char *from_addr, t_bool parse, struct t_header *hdr);
 static void join_references (char *buffer, const char *oldrefs, const char *newref);
@@ -171,7 +171,6 @@ static void postpone_article (const char *the_article);
 static void setup_check_article_screen (int *init);
 static void update_active_after_posting (char *newsgroups);
 static void update_posted_info_file (const char *group, int action, const char *subj, const char *a_message_id);
-static void update_posted_msgs_file (const char *file, const char *addr);
 static void yank_to_addr (char *orig, char *addr);
 #ifdef FORGERY
 	static void make_path_header (char *line);
@@ -451,38 +450,45 @@ user_posted_messages (
 		if (buf[0] == '#' || buf[0] == '\n')
 			continue;
 
-		for (j = 0; buf[j] != '|' && buf[j] != '\n'; j++)
-			posted[i].date[j] = buf[j];	/* posted date */
+		for (j = 0, k = 0; buf[j] != '|' && buf[j] != '\n'; j++)
+			if (k < sizeof (posted[i].date) - 1)
+				posted[i].date[k++] = buf[j];	/* posted date */
 
 		if (buf[j] == '\n') {
 			error_message (_(txt_error_corrupted_file), posted_info_file);
 			(void) sleep (1);
 			fclose (fp);
 			clear_message ();
+			FreeAndNull (posted);
 			return FALSE;
 		}
-		posted[i].date[j++] = '\0';
+		posted[i].date[k] = '\0';
 		posted[i+1].date[0] = '\0';
-		posted[i].action = buf[j];
-		j += 2;
-		for (k = j, j = 0; buf[k] != '|' && buf[k] != ','; k++, j++) {
-			if (j < sizeof (posted[i].group))
-				posted[i].group[j] = buf[k];
-		}
-		if (buf[k] == ',') {
-			while (buf[k] != '|' && buf[k] != '\n')
-				k++;
 
-			posted[i].group[j++] = ',';
-			posted[i].group[j++] = '.';
-			posted[i].group[j++] = '.';
-			posted[i].group[j++] = '.';
+		posted[i].action = buf[++j];
+		j += 2;
+
+		for (k = 0; buf[j] != '|' && buf[j] != ','; j++) {
+			if (k < sizeof (posted[i].group) - 1)
+				posted[i].group[k++] = buf[j];
 		}
-		posted[i].group[j] = '\0';
-		k++;
-		for (j = k, k = 0; buf[j] != '\n'; j++, k++) {
-			if (k < sizeof (posted[i].subj))
-				posted[i].subj[k] = buf[j];
+		if (buf[j] == ',') {
+			while (buf[j] != '|' && buf[j] != '\n')
+				j++;
+
+			if (k > sizeof (posted[i].group) - 5)
+				k = sizeof(posted[i].group) - 5;
+			posted[i].group[k++] = ',';
+			posted[i].group[k++] = '.';
+			posted[i].group[k++] = '.';
+			posted[i].group[k++] = '.';
+		}
+		posted[i].group[k] = '\0';
+		j++;
+
+		for (k = 0; buf[j] != '\n'; j++) {
+			if (k < sizeof (posted[i].subj) - 1)
+				posted[i].subj[k++] = buf[j];
 		}
 		posted[i].subj[k] = '\0';
 		i++;
@@ -492,10 +498,7 @@ user_posted_messages (
 
 	show_info_page (POST_INFO, 0, _(txt_post_history_menu));
 
-	if (posted != (struct t_posted *)0) {
-		free((char *)posted);
-		posted = (struct t_posted *)0;
-	}
+	FreeAndNull (posted);
 	return TRUE;
 }
 
@@ -541,28 +544,47 @@ update_posted_info_file (
 }
 
 
+/*
+ * appends the content of the_article to the_mailbox, with a From_ line of
+ * addr, does mboxo/mboxrd From_ line quoting if needed (!MMDF-style mbox)
+ */
 static void
-update_posted_msgs_file (
-	const char *file,
-	const char *addr)
+append_mail (
+	const char *the_article,
+	const char *addr,
+	const char *the_mailbox)
 {
 	FILE *fp_in, *fp_out;
 	char buf[LEN];
 	time_t epoch;
+	t_bool mmdf = ((the_mailbox != postponed_articles_file) && tinrc.save_to_mmdf_mailbox); /* postponed_articles_file is always in mbox format */
+#ifdef HAVE_MBOXRD
+	char *bufp;
+#endif /* HAVE_MBOXRD */
 
-	if ((fp_in = fopen (file, "r"))  == (FILE *) 0)
+	if ((fp_in = fopen (the_article, "r"))  == (FILE *) 0)
 		return;
 
-	if (!strfpath (posted_msgs_file, buf, sizeof (buf), &CURR_GROUP))
-		strcpy (buf, posted_msgs_file);
-
-	if ((fp_out = fopen (buf, "a+")) != (FILE *) 0) {
+	if ((fp_out = fopen (the_mailbox, "a+")) != (FILE *) 0) {
 		(void) time (&epoch);
-		fprintf (fp_out, "From %s %s", addr, ctime (&epoch));
-		while (fgets (buf, (int) sizeof(buf), fp_in) != (char *) 0)
+		fprintf (fp_out, "%sFrom %s %s", (mmdf ? MMDFHDRTXT : ""), addr, ctime (&epoch));
+		while (fgets (buf, (int) sizeof(buf), fp_in) != (char *) 0) {
+			if (!mmdf) { /* moboxo/mboxrd style From_ quoting required */
+#ifdef HAVE_MBOXRD
+				/* mboxrd: quote quoted and plain From_ lines in the body */
+				bufp = buf;
+				while (*bufp == '>')
+					bufp++;
+				if (strncmp(bufp, "From ", 5) == 0)
+#else
+				/* mboxo: just quote plain From_ lines in the body */
+				if (strncmp(buf, "From ", 5) == 0)
+#endif /* HAVE_MBOXRD */
+					fputc('>', fp_out);
+				}
 			fputs (buf, fp_out);
-
-		print_art_seperator_line (fp_out, FALSE);
+		}
+		print_art_seperator_line (fp_out, mmdf);
 		fclose (fp_out);
 	}
 	fclose (fp_in);
@@ -1384,9 +1406,13 @@ post_article_done:
 			my_strncpy (tinrc.default_post_subject, header.subj, sizeof (tinrc.default_post_subject));
 		}
 
-		if (tinrc.keep_posted_articles && type != POST_REPOST)
+		if (tinrc.keep_posted_articles && type != POST_REPOST) {
 			/* TODO: log Message-ID if given in a_message_id */
-			update_posted_msgs_file (article, userid);
+			char a_mailbox[LEN];
+			if (!strfpath (posted_msgs_file, a_mailbox, sizeof (a_mailbox), &CURR_GROUP))
+				STRCPY(a_mailbox, posted_msgs_file);
+			append_mail (article, userid, a_mailbox);
+		}
 
 		free_and_init_header (&header);
 	}
@@ -1637,33 +1663,6 @@ post_postponed_article (
 }
 
 
-static void
-append_postponed_file (
-	const char *file,
-	const char *addr)
-{
-	FILE *fp_in, *fp_out;
-	char buf[LEN];
-	time_t epoch;
-
-	if ((fp_in = fopen (file, "r")) == (FILE *) 0)
-		return;
-
-	if ((fp_out = fopen (postponed_articles_file, "a+")) != (FILE *) 0) {
-		(void) time (&epoch);
-		fprintf (fp_out, "From %s %s", addr, ctime (&epoch));
-		while (fgets (buf, (int) sizeof(buf), fp_in) != (char *) 0) {
-			if (strncmp(buf, "From ", 5) == 0)
-				fputc('>', fp_out);
-			fputs (buf, fp_out);
-		}
-		print_art_seperator_line (fp_out, FALSE);
-		fclose (fp_out);
-	}
-	fclose (fp_in);
-}
-
-
 /*
  * count how many articles are in postponed.articles. Essentially,
  * we count '^From ' lines
@@ -1705,6 +1704,10 @@ fetch_postponed_article (
 	t_bool first_article;
 	t_bool prev_line_nl;
 	t_bool anything_left;
+#ifdef HAVE_MBOXRD
+	char *bufp;
+#endif /* HAVE_MBOXRD */
+
 
 	strcpy(postponed_tmp, postponed_articles_file);
 	strcat(postponed_tmp, "_");
@@ -1743,6 +1746,9 @@ fetch_postponed_article (
 	 */
 
 	while (fgets(line, (int) sizeof(line), in) != NULL) {
+#ifdef HAVE_MBOXRD
+		bufp = line;
+#endif /* HAVE_MBOXRD */
 		if (strncmp(line, "From ", 5) == 0)
 			first_article = FALSE;
 		if (first_article) {
@@ -1758,7 +1764,18 @@ fetch_postponed_article (
 			} else
 				prev_line_nl = FALSE;
 
-			fputs(line, out);
+			/* unquote quoted From_ lines */
+#ifdef HAVE_MBOXRD
+			while (*bufp == '>')
+				bufp++;
+			if (strncmp(bufp, "From ", 5) == 0)
+				fputs(line + 1, out);
+#else
+			if (strncmp(line, ">From ", 6) == 0)
+				fputs(line + 1, out);
+#endif /* HAVE_MBOXRD */
+			else
+				fputs(line, out);
 		} else {
 			fputs(line, tmp);
 			anything_left = TRUE;
@@ -1841,7 +1858,7 @@ pickup_postponed_articles (
 			case iKeyPromptNo:
 			case iKeyQuit:
 			case iKeyAbort:
-				append_postponed_file(article, userid);
+				append_mail (article, userid, postponed_articles_file);
 				unlink(article);
 				if (ch != iKeyPromptNo)
 					return TRUE;
@@ -1856,7 +1873,7 @@ postpone_article (
 	const char *the_article)
 {
 	wait_message(3, _(txt_info_do_postpone));
-	append_postponed_file(the_article, userid);
+	append_mail (the_article, userid, postponed_articles_file);
 }
 
 
@@ -1982,7 +1999,7 @@ is_crosspost (
 		if (*xref == ':')
 			count++;
 
-	return (count>=2) ? TRUE : FALSE;
+	return (count >= 2) ? TRUE : FALSE;
 }
 
 
@@ -2110,7 +2127,8 @@ post_response (
 	const char *group,
 	int respnum,
 	t_bool copy_text,
-	t_bool with_headers)
+	t_bool with_headers,
+	t_bool raw_data)
 {
 	FILE *fp;
 	char ch, *ptr;
@@ -2120,7 +2138,6 @@ post_response (
 	char initials[64];
 	int art_type = GROUP_TYPE_NEWS;
 	int ret_code = POSTED_NONE;
-	int i;
 	struct t_group *psGrp;
 	struct t_header note_h = pgart.hdr;
 #ifdef FORGERY
@@ -2160,7 +2177,7 @@ post_response (
 				return ret_code;
 
 			default:
-				return mail_to_author (group, respnum, copy_text, with_headers);
+				return mail_to_author (group, respnum, copy_text, with_headers, FALSE);
 		}
 	} else if (note_h.followup && strcmp (note_h.followup, group) != 0
 			&& strcmp (note_h.followup, note_h.newsgroups) != 0) {
@@ -2309,28 +2326,59 @@ post_response (
 			}
 		}
 
-		if (with_headers) {
+		get_initials (respnum, initials, sizeof (initials));
+
+		if (raw_data) /* rewind raw article if needed */
 			fseek (pgart.raw, 0L, SEEK_SET);
-			get_initials (respnum, initials, sizeof (initials));
+
+		if (with_headers && raw_data) {
 			copy_body (pgart.raw, fp,
 						  (psGrp && psGrp->attribute->quote_chars != (char *) 0) ? psGrp->attribute->quote_chars : tinrc.quote_chars,
 						  initials, TRUE);
 		} else {
-			/* without headers */
-/*			resize_article (&pgart); */
-			for (i=0; pgart.cookl[i].flags & C_HEADER; ++i)
-				;
-			fseek (pgart.cooked, pgart.cookl[i].offset, SEEK_SET);
-			get_initials (respnum, initials, sizeof (initials));
-			copy_body (pgart.cooked, fp,
-						  (psGrp && psGrp->attribute->quote_chars != (char *) 0) ? psGrp->attribute->quote_chars : tinrc.quote_chars,
-						  initials, tinrc.quote_signatures);
+			if (raw_data) {
+				long offset = 0L;
+				char buffer[8192];
+
+				/* skip headers + header/body separator */
+				while (fgets (buffer, (int) sizeof(buffer), pgart.raw) != NULL) {
+					offset += strlen(buffer);
+					if (buffer[0] == '\n' || buffer[0] == '\r')
+						break;
+				}
+				fseek (pgart.raw, offset, SEEK_SET);
+				copy_body (pgart.raw, fp,
+							(psGrp && psGrp->attribute->quote_chars != (char *) 0) ? psGrp->attribute->quote_chars : tinrc.quote_chars,
+							initials, with_headers ? TRUE : tinrc.quote_signatures);
+			} else { /* cooked art */
+				resize_article (FALSE, &pgart);
+				if (with_headers) {
+					/*
+					 * unfortunately this includes only those headers
+					 * mentioned in news_headers_to_display as article
+					 * cooking 'hides' all other headers
+					 */
+					fseek (pgart.cooked, 0L, SEEK_SET);
+				} else { /* without headers */
+					int i;
+					for (i = 0; pgart.cookl[i].flags & C_HEADER; ++i)
+						;
+					fseek (pgart.cooked, pgart.cookl[i + 1].offset, SEEK_SET); /* skip headers and header/body separator */
+				}
+				copy_body (pgart.cooked, fp,
+							  (psGrp && psGrp->attribute->quote_chars != (char *) 0) ? psGrp->attribute->quote_chars : tinrc.quote_chars,
+							  initials, tinrc.quote_signatures);
+			}
 		}
-	} else
+	} else /* !copy_text */
 		fprintf (fp, "\n");	/* add a newline to keep vi from bitching */
 
 	msg_write_signature (fp, FALSE, &CURR_GROUP);
 	fclose (fp);
+
+	resize_article (TRUE, &pgart);	/* rebreak long lines */
+	if (raw_data)	/* we've been in raw mode, reenter it */
+		toggle_raw (psGrp);
 
 	return (post_loop(POST_RESPONSE, psGrp, iKeyPostEdit, _(txt_posting), art_type, start_line_offset));
 }
@@ -2506,7 +2554,7 @@ add_mail_quote(
 {
 	char buf[HEADER_LEN];
 	char *s;
-	int line_count=0;
+	int line_count = 0;
 
 	if (strfquote (CURR_GROUP.name, respnum, buf, sizeof (buf), tinrc.mail_quote_format)) {
 		fprintf (fp, "%s\n", buf);
@@ -2640,7 +2688,7 @@ mail_bug_report (
 	domain = "";
 #endif /* DOMAIN_NAME */
 
-	fprintf (fp, "\nCFG1: active=%d  arts=%d  reread=%d  longfilenames=%d",
+	fprintf (fp, "\nCFG1: active=%d  arts=%d  reread=%d  longfilenames=%d\n",
 		DEFAULT_ACTIVE_NUM,
 		DEFAULT_ARTICLE_NUM,
 		tinrc.reread_active_file_secs,
@@ -2705,7 +2753,8 @@ mail_to_author (
 	const char *group,
 	int respnum,
 	t_bool copy_text,
-	t_bool with_headers)
+	t_bool with_headers,
+	t_bool raw_data)
 {
 	FILE *fp;
 	char from_addr[HEADER_LEN];
@@ -2715,7 +2764,6 @@ mail_to_author (
 	int ret_code = POSTED_NONE;
 	struct t_header note_h = pgart.hdr;
 	t_bool spamtrap_found = FALSE;
-	int i;
 
 	wait_message (0, _(txt_reply_to_author));
 
@@ -2756,21 +2804,46 @@ mail_to_author (
 
 	if (copy_text) {
 		start_line_offset += add_mail_quote (fp, respnum);
+		get_initials (respnum, initials, sizeof (initials));
 
-		if (with_headers) {
+		if (raw_data) /* rewind raw article if needed */
 			fseek (pgart.raw, 0L, SEEK_SET);
-			get_initials (respnum, initials, sizeof (initials));
+
+		if (with_headers && raw_data) {
 			copy_body (pgart.raw, fp, tinrc.quote_chars, initials, TRUE);
 		} else {
-			/* without headers */
-/*			resize_article (&pgart);*/
-			for (i=0; pgart.cookl[i].flags & C_HEADER; ++i)
-				;
-			fseek (pgart.cooked, pgart.cookl[i].offset, SEEK_SET);
-			get_initials (respnum, initials, sizeof (initials));
-			copy_body (pgart.cooked, fp, tinrc.quote_chars, initials, tinrc.quote_signatures);
+			if (raw_data) { /* raw data && !with_headers */
+				long offset = 0L;
+				char buffer[8192];
+
+				/* skip headers + header/body separator */
+				while (fgets (buffer, (int) sizeof(buffer), pgart.raw) != NULL) {
+					offset += strlen(buffer);
+					if (buffer[0] == '\n' || buffer[0] == '\r')
+						break;
+				}
+				fseek (pgart.raw, offset, SEEK_SET);
+				copy_body (pgart.raw, fp, tinrc.quote_chars, initials, with_headers ? TRUE : tinrc.quote_signatures);
+			} else { /* cooked art */
+				resize_article (FALSE, &pgart);
+				if (with_headers) {
+					/*
+					 * unfortunately this includes only those headers
+					 * mentioned in news_headers_to_display as article
+					 * cooking 'hides' all other headers
+					 */
+					fseek (pgart.cooked, 0L, SEEK_SET);
+				} else { /* without headers */
+					int i;
+
+					for (i = 0; pgart.cookl[i].flags & C_HEADER; ++i)
+						;
+					fseek (pgart.cooked, pgart.cookl[i + 1].offset, SEEK_SET);	/* skip headers and header/body separator */
+				}
+				copy_body (pgart.cooked, fp, tinrc.quote_chars, initials, tinrc.quote_signatures);
+			}
 		}
-	} else
+	} else /* !copy_text */
 		fprintf (fp, "\n");	/* add a newline to keep vi from bitching */
 
 	if (!tinrc.use_mailreader_i)
@@ -2807,6 +2880,11 @@ mail_to_author (
 
 	if (tinrc.unlink_article)
 		unlink (nam);
+
+	resize_article (TRUE, &pgart);	/* rebreak long lines */
+
+	if (raw_data)	/* we've been in raw mode */
+		toggle_raw (group_find (group));
 
 	return ret_code;
 }

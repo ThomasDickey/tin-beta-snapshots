@@ -6,7 +6,7 @@
  *  Updated   : 1997-12-28
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
- * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -272,7 +272,7 @@ create_newsrc (
 
 /*
  * Automatically subscribe user to newsgroups specified in
- * NEWSLIBDIR/subscribe (locally) or same file but from NNTP
+ * NEWSLIBDIR/subscriptions (locally) or same file but from NNTP
  * server (LIST SUBSCRIPTIONS) and create .newsrc
  */
 static void

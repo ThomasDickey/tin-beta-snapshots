@@ -6,7 +6,7 @@
  *  Updated   : 1997-12-27
  *  Notes     :
  *
- * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -264,7 +264,7 @@ body_search (
 	sprintf(mesg, _(txt_searching_body), ++curr_cnt, total_cnt);
 
 	memset (&artinfo, 0, sizeof(t_openartinfo));
-	switch (art_open (&arts[i], group_path, &artinfo)) {
+	switch (art_open (TRUE, &arts[i], group_path, &artinfo)) {
 		case ART_ABORT:					/* User 'q'uit */
 			code = -1;
 			goto exit_search;
@@ -276,7 +276,7 @@ body_search (
 	/*
 	 * Skip the header - is this right ?
 	 */
-	for (i=0; artinfo.cookl[i].flags & C_HEADER; ++i)
+	for (i = 0; artinfo.cookl[i].flags & C_HEADER; ++i)
 		;
 	fseek (artinfo.cooked, artinfo.cookl[i].offset, SEEK_SET);
 

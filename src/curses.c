@@ -33,7 +33,7 @@ t_bool have_linescroll = TRUE;	/* USE_CURSES always allows line scrolling */
 
 #ifndef ns32000
 #	undef	sinix
-#endif /* !ns32000 */
+#endif /* !ns32000-2001 */
 
 #ifdef VMS
 #	include <descrip.h>
@@ -51,11 +51,10 @@ t_bool have_linescroll = TRUE;	/* USE_CURSES always allows line scrolling */
 
 int cLINES = DEFAULT_LINES_ON_TERMINAL - 1;
 int cCOLS  = DEFAULT_COLUMNS_ON_TERMINAL;
-static int _inraw = FALSE;	/* are we IN rawmode? */
 int _hp_glitch = FALSE;		/* standout not erased by overwriting on HP terms */
+static int _inraw = FALSE;	/* are we IN rawmode? */
+static int xclicks = FALSE;	/* do we have an xterm? */
 t_bool have_linescroll = FALSE;
-
-static int xclicks=FALSE;	/* do we have an xterm? */
 
 #define BACKSPACE        '\b'
 #define VERY_LONG_STRING 2500
@@ -676,7 +675,7 @@ CleartoEOS (void)
 	if (_cleartoeos) {
 		tputs (_cleartoeos, 1, outchar);
 	} else {
-		for (i=_line - 1 ; i < _lines ; i++) {
+		for (i = _line - 1 ; i < _lines ; i++) {
 			MoveCursor (i, 0);
 			CleartoEOLN ();
 		}
@@ -1222,7 +1221,7 @@ get_arrow_key (
 #		else	/* !M_AMIGA */
 	if (!input_pending(0)) {
 #			ifdef HAVE_USLEEP
-		int i=0;
+		int i = 0;
 
 		wait_a_while(i) {
 			usleep((unsigned long) (SECOND_CHARACTER_DELAY * 1000));
@@ -1231,7 +1230,7 @@ get_arrow_key (
 #			else	/* !HAVE_USLEEP */
 #				ifdef HAVE_SELECT
 		struct timeval tvptr;
-		int i=0;
+		int i = 0;
 
 		wait_a_while(i) {
 			tvptr.tv_sec = 0;
@@ -1242,7 +1241,7 @@ get_arrow_key (
 #				else /* !HAVE_SELECT */
 #					ifdef HAVE_POLL
 		struct pollfd fds[1];
-		int i=0;
+		int i = 0;
 
 		wait_a_while(i) {
 			poll(fds, 0, SECOND_CHARACTER_DELAY);

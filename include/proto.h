@@ -6,7 +6,7 @@
  *  Updated   : 2000-01-03
  *  Notes     :
  *
- * Copyright (c) 1997-2000 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2001 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -115,7 +115,7 @@ extern void write_config_file (char *file);
 
 /* cook.c */
 extern const char *get_filename (t_param *ptr);
-extern t_bool cook_article (t_openartinfo *artinfo, int tabs, t_bool uue);
+extern t_bool cook_article (t_bool wrap_lines, t_openartinfo *artinfo, int tabs, t_bool uue);
 
 /* curses.c */
 extern OUTC_RETTYPE outchar (OUTC_ARGS);
@@ -310,6 +310,7 @@ extern void *my_realloc1 (const char *file, int line, char *p, size_t size);
 
 /* misc.c */
 extern char *eat_re (char *s, t_bool eat_was);
+extern char *escape_shell_meta (char *source, int quote_area);
 extern char *get_tmpfilename (const char *filename);
 extern char *quote_wild (char *str);
 extern char *quote_wild_whitespace (char *str);
@@ -445,7 +446,8 @@ extern void vGet1GrpArtInfo (struct t_group *grp);
 /* page.c */
 extern int show_page (struct t_group *group, int respnum, int *threadnum);
 extern void draw_page (const char *group, int part);
-extern void resize_article (t_openartinfo *artinfo);
+extern void resize_article (t_bool wrap_lines, t_openartinfo *artinfo);
+extern void toggle_raw (struct t_group *group);
 
 /* parsdate.y */
 extern time_t parsedate (char *p, TIMEINFO *now);
@@ -468,9 +470,9 @@ extern time_t parsedate (char *p, TIMEINFO *now);
 
 /* post.c */
 extern int count_postponed_articles (void);
-extern int mail_to_author (const char *group, int respnum, t_bool copy_text, t_bool with_headers);
+extern int mail_to_author (const char *group, int respnum, t_bool copy_text, t_bool with_headers, t_bool raw_data);
 extern int mail_to_someone (const char *address, t_bool confirm_to_mail, t_openartinfo *artinfo);
-extern int post_response (const char *group, int respnum, t_bool copy_text, t_bool with_headers);
+extern int post_response (const char *group, int respnum, t_bool copy_text, t_bool with_headers, t_bool raw_data);
 extern int repost_article (const char *group, int respnum, t_bool supersede, t_openartinfo *artinfo);
 extern t_bool cancel_article (struct t_group *group, struct t_article *art, int respnum);
 extern t_bool mail_bug_report (void);
@@ -544,7 +546,7 @@ extern void rfc15211522_encode (const char *filename, constext *mime_encoding, t
 /* rfc2046.c */
 extern const char *get_param (t_param *list, const char *name);
 extern char *parse_header (char *buf, const char *pat, t_bool decode);
-extern int art_open (struct t_article *art, const char *group_path, t_openartinfo *artinfo);
+extern int art_open (t_bool wrap_lines, struct t_article *art, const char *group_path, t_openartinfo *artinfo);
 extern int content_type (char *type);
 extern int parse_rfc822_headers (struct t_header *hdr, FILE *from, FILE *to);
 extern t_part *new_part (t_part *part);

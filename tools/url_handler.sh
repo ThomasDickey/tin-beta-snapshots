@@ -1,54 +1,38 @@
-#!/bin/sh
+#! /bin/sh
+# example of how to call the appropriate viewer
+# based on a script by Michael Elkins <me@cs.hmc.edu>
+# 2001-01-31 <urs@tin.org>
 #
-# This script is an example of how to call the appropriate viewer based upon
-# the URL method
-#
-# Created by:  Michael Elkins <me@cs.hmc.edu> on March 10, 1997
-# Modified by: Liviu Daia <daia@stoilow.imar.ro>
-# Last Edited: May 26, 1997
-#
+# URLs must start with a scheme and shell metas must be allready quoted
+# (tin doesn't recognize URLs withou a scheme and it quotes the metas)
+
+if test $# -ne 1; then
+	echo "Usage: `basename $0` URL" >&2
+	exit 1
+fi
 
 url=$1
-method=`echo $1 | sed 's;\(^[^:]*\):.*;\1;'`
+method=`echo $url | sed 's,^\([^:]*\):.*,\1,' | tr 'A-Z' 'a-z'`
 
 case $method in
-    ftp)
-	target=`echo $url | sed 's;^.*://\([^/]*\)/*\(.*\);\1:/\2;'`
-	ncftp $target
-	;;
-
-    http)
-	if test x$DISPLAY = x; then
-	    lynx $url
-	else
-	    netscape -remote "openURL($url)" || netscape $url
-	fi
-	;;
-
-    mailto)
-	mutt `echo $url | sed 's;^[^:]*:\(.*\);\1;'`
-	;;
-
-    *)
-	method=`echo $url | sed 's;\(^...\).*;\1;'`
-	case $method in
-	    ftp)
-		target=`echo $url | sed 's;^\([^/]*\)/*\(.*\);\1:/\2;'`
-		ncftp $target
-		;;
-
-	    www)
-		target="http://"$url
+	http|https|gopher)
 		if test x$DISPLAY = x; then
-		    lynx $target
+			lynx $url || exit 1
 		else
-		    netscape -remote "openURL($target)" || netscape $target
+			( netscape -remote openURL\($url\) || netscape $url ) || exit 1
 		fi
 		;;
-
-	    *)
-		mutt $url
+	ftp)
+		if test x$DISPLAY = x; then
+			target=`echo $url | sed 's;^.*://\([^/]*\)/*\(.*\);\1:/\2;'`
+			( ncftp $target || ncftp $target"/" ) || exit 1
+		else
+			( netscape -remote openURL\($url\) || netscape $url ) || exit 1
+		fi
 		;;
-	esac
-	;;
+	mailto)
+		( mutt `echo $url | sed 's;^[^:]*:\(.*\);\1;'` ) || exit 1
+		;;
 esac
+
+exit 0

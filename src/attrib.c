@@ -6,7 +6,7 @@
  *  Updated   : 1997-12-20
  *  Notes     : Group attribute routines
  *
- * Copyright (c) 1993-2000 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2001 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,6 +95,11 @@
 static void do_set_attrib (struct t_group *group, int type, const char *data);
 static void set_attrib (int type, const char *scope, const char *data);
 static void set_default_attributes (struct t_attribute *attributes);
+#if 0 /* unused */
+#	ifdef DEBUG
+	static void dump_attributes (void);
+#	endif /* DEBUG */
+#endif /* 0 */
 
 /*
  * Global attributes. This is attached to all groups that have no
@@ -481,10 +486,10 @@ write_attributes_file (
 {
 	FILE *fp;
 	char *file_tmp;
-#	if 0
+#if 0
 	register int i;
 	struct t_group *group;
-#	endif /* 0 */
+#endif /* 0 */
 
 	if (no_write && file_size (file) != -1L)
 		return;
@@ -579,7 +584,7 @@ write_attributes_file (
 	fprintf (fp, "delete_tmp_files=ON\n");
 	fprintf (fp, "followup_to=poster\n\n");
 
-#	if 0 /* FIXME */
+#if 0 /* FIXME */
 	for (i = 0; i < num_active; i++) {
 		group = &active[i];
 		fprintf (fp, "scope=%s\n", group->name);
@@ -589,9 +594,9 @@ write_attributes_file (
 		fprintf (fp, "sigfile=%s\n", group->attribute->sigfile);
 		fprintf (fp, "organization=%s\n", group->attribute->organization);
 		fprintf (fp, "followup_to=%s\n", group->attribute->followup_to);
-#ifndef DISABLE_PRINTING
+#	ifndef DISABLE_PRINTING
 		fprintf (fp, "printer=%s\n", group->attribute->printer);
-#endif /* !DISABLE_PRINTING */
+#	endif /* !DISABLE_PRINTING */
 		fprintf (fp, "mailing_list=%s\n", group->attribute->mailing_list);
 		fprintf (fp, "x_headers=%s\n", group->attribute->x_headers);
 		fprintf (fp, "x_body=%s\n", group->attribute->x_body);
@@ -599,9 +604,9 @@ write_attributes_file (
 		fprintf (fp, "news_quote_format=%s\n", group->attribute->news_quote_format);
 		fprintf (fp, "quote_chars=%s\n",
 			quote_space_to_dash (group->attribute->quote_chars));
-#ifdef HAVE_ISPELL
+#	ifdef HAVE_ISPELL
 		fprintf (fp, "ispell=%s\n", group->attribute->ispell);
-#endif /* HAVE_ISPELL */
+#	endif /* HAVE_ISPELL */
 		fprintf (fp, "show_only_unread=%s\n",
 			print_boolean (group->attribute->show_only_unread));
 		fprintf (fp, "thread_arts=%d\n", group->attribute->thread_arts);
@@ -633,7 +638,7 @@ write_attributes_file (
 		fprintf (fp, "x_comment_to=%s\n",
 			print_boolean (group->attribute->x_comment_to));
 	}
-#	endif /* 0 */
+#endif /* 0 */
 
 	if (ferror (fp) || fclose (fp))
 		error_message (_(txt_filesystem_full), ATTRIBUTES_FILE);
@@ -645,7 +650,7 @@ write_attributes_file (
 }
 
 
-#	if 0
+#if 0
 void
 debug_print_filter_attributes (
 	void)
@@ -673,11 +678,10 @@ debug_print_filter_attributes (
 
 	my_printf("END ***\n");
 }
-#	endif /* 0 */
 
 
-#ifdef DEBUG
-void
+#	ifdef DEBUG
+static void
 dump_attributes (
 	void)
 {
@@ -698,9 +702,9 @@ dump_attributes (
 		fprintf (stderr, "sigfile=%s\n", group->attribute->sigfile);
 		fprintf (stderr, "organization=%s\n", group->attribute->organization);
 		fprintf (stderr, "followup_to=%s\n", group->attribute->followup_to);
-#ifndef DISABLE_PRINTING
+#		ifndef DISABLE_PRINTING
 		fprintf (stderr, "printer=%s\n", group->attribute->printer);
-#endif /* !DISABLE_PRINTING */
+#		endif /* !DISABLE_PRINTING */
 		fprintf (stderr, "mailing_list=%s\n", group->attribute->mailing_list);
 		fprintf (stderr, "x_headers=%s\n", group->attribute->x_headers);
 		fprintf (stderr, "x_body=%s\n", group->attribute->x_body);
@@ -708,9 +712,9 @@ dump_attributes (
 		fprintf (stderr, "news_quote_format=%s\n", group->attribute->news_quote_format);
 		fprintf (stderr, "quote_chars=%s\n",
 			quote_space_to_dash (group->attribute->quote_chars));
-#ifdef HAVE_ISPELL
+#		ifdef HAVE_ISPELL
 		fprintf (stderr, "ispell=%s\n", group->attribute->ispell);
-#endif /* HAVE_ISPELL */
+#		endif /* HAVE_ISPELL */
 		fprintf (stderr, "show_only_unread=%s\n",
 			print_boolean (group->attribute->show_only_unread));
 		fprintf (stderr, "thread_arts=%d\n", group->attribute->thread_arts);
@@ -743,4 +747,5 @@ dump_attributes (
 			print_boolean (group->attribute->x_comment_to));
 	}
 }
-#endif /* DEBUG */
+#	endif /* DEBUG */
+#endif /* 0 */

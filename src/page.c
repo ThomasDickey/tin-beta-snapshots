@@ -6,7 +6,7 @@
  *  Updated   : 1995-07-26
  *  Notes     :
  *
- * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -244,6 +244,8 @@ show_page (
 
 	if (srch_lineno != -1)
 		process_search();
+
+	resize_article (TRUE, &pgart);
 
 	forever {
 		switch ((ch = handle_pager_keypad())) {
@@ -503,53 +505,27 @@ page_goto_next_unread:
 #endif /* HAVE_PGP_GPG */
 
 			case iKeyPageToggleHeaders:	/* toggle display of whole 'raw' article */
-				if (show_all_headers) {
-					artline = pgart.cookl;
-					artlines = pgart.cooked_lines;
-					note_fp = pgart.cooked;
-				} else {
-					int j = 0;
-					/*
-					 * We do this on the fly, since most of the time it won't be used
-					 */
-					if (!pgart.rawl) {
-						rewind (pgart.raw);
-						/* Need one extra as the last \n in the file will be accounted too */
-						pgart.rawl = my_malloc(sizeof(t_lineinfo) * (note_h->ext->line_count+1));
-						do {
-							pgart.rawl[j].offset = ftell(pgart.raw);
-							pgart.rawl[j].flags = 0;
-							j++;
-						} while ((tin_fgets(pgart.raw, FALSE)) != NULL);
-						pgart.rawl = my_realloc((char *)pgart.rawl, sizeof(t_lineinfo) * note_h->ext->line_count);
-					}
-					artline = pgart.rawl;
-					artlines = note_h->ext->line_count;
-					note_fp = pgart.raw;
-				}
-				curr_line = 0;
-				show_all_headers = !show_all_headers;
-				draw_page (group->name, 0);
+				toggle_raw(group);
 				break;
 
 			case iKeyPageToggleTex2iso:		/* toggle german TeX to ISO latin1 style conversion */
 				if ((tex2iso_supported = !tex2iso_supported))
 					pgart.tex2iso = is_art_tex_encoded (pgart.raw);
 
-				resize_article (&pgart);	/* Also recooks it.. */
+				resize_article (TRUE, &pgart);	/* Also recooks it.. */
 				draw_page (group->name, 0);
 				info_message (_(txt_toggled_tex2iso), (tex2iso_supported) ? "on" : "off");
 				break;
 
 			case iKeyPageToggleTabs:		/* toggle tab stops 8 vs 4 */
 				tabwidth = ((tabwidth == 8) ? 4 : 8);
-				resize_article (&pgart);	/* Also recooks it.. */
+				resize_article (TRUE, &pgart);	/* Also recooks it.. */
 				draw_page (group->name, 0);
 				break;
 
 			case iKeyPageToggleUue:			/* toggle display off uuencoded sections */
 				hide_uue = !hide_uue;
-				resize_article (&pgart);	/* Also recooks it.. */
+				resize_article (TRUE, &pgart);	/* Also recooks it.. */
 
 				/*
 				 * If we hid uue and are off the end of the article, reposition to
@@ -650,7 +626,7 @@ page_goto_next_unread:
 				}
 				(void) post_response (group->name, this_resp,
 				  (ch == iKeyPageFollowupQuote || ch == iKeyPageFollowupQuoteHeaders) ? TRUE : FALSE,
-				  ch == iKeyPageFollowupQuoteHeaders ? TRUE : FALSE);
+				  ch == iKeyPageFollowupQuoteHeaders ? TRUE : FALSE, show_all_headers);
 				draw_page (group->name, 0);
 				break;
 
@@ -751,7 +727,7 @@ return_to_index:
 			case iKeyPageReplyQuote:	/* reply to author through mail */
 			case iKeyPageReplyQuoteHeaders:
 			case iKeyPageReply:
-				mail_to_author (group->name, this_resp, (ch == iKeyPageReplyQuote || ch == iKeyPageReplyQuoteHeaders) ? TRUE : FALSE, ch == iKeyPageReplyQuoteHeaders ? TRUE : FALSE);
+				mail_to_author (group->name, this_resp, (ch == iKeyPageReplyQuote || ch == iKeyPageReplyQuoteHeaders) ? TRUE : FALSE, ch == iKeyPageReplyQuoteHeaders ? TRUE : FALSE, show_all_headers);
 				draw_page (group->name, 0);
 				break;
 
@@ -795,7 +771,7 @@ return_to_index:
 				break;
 
 			case iKeyPageSkipIncludedText:	/* skip included text */
-				for (i=curr_line; i < artlines; i++) {
+				for (i = curr_line; i < artlines; i++) {
 					if (!(artline[i].flags & (C_QUOTE1|C_QUOTE2|C_QUOTE3)))
 						break;
 				}
@@ -825,7 +801,11 @@ return_to_index:
 				break;
 
 			case iKeyPageViewUrl:
-				process_url();
+				if (!show_all_headers) { /* cooked mode? */
+					resize_article (FALSE, &pgart); /* umbreak long lines */
+					process_url();
+					resize_article (TRUE, &pgart); /* rebreak long lines */
+				}
 				break;
 
 			default:
@@ -895,7 +875,7 @@ draw_page (
 		if ((rotate != 0) && (curr->flags & (C_BODY | C_SIG))) {
 			char *p = buff;
 
-			for (p=buff; *p; p++) {
+			for (p = buff; *p; p++) {
 				if (*p >= 'A' && *p <= 'Z')
 					*p = (*p - 'A' + rotate) % 26 + 'A';
 				else if (*p >= 'a' && *p <= 'z')
@@ -920,6 +900,9 @@ draw_page (
 
 		if (curr->flags & C_MAIL)
 			highlight_regexes (i+PAGE_HEADER, &mail_regex);
+
+		if (curr->flags & C_NEWS)
+			highlight_regexes (i+PAGE_HEADER, &news_regex);
 
 		/* Blank the screen after a ^L (only occurs when showing cooked) */
 		if (!reveal_ctrl_l && (curr->flags & C_CTRLL)) {
@@ -1195,49 +1178,47 @@ load_article(
 		wait_message (0, _(txt_reading_article));
 
 #ifdef DEBUG
-	fprintf(stderr, "load_art %s(new=%d, curr=%d)\n", (new_respnum == this_resp) ? "ALREADY OPEN!":"", new_respnum, this_resp);
+	fprintf(stderr, "load_art %s(new=%d, curr=%d)\n", (new_respnum == this_resp) ? "ALREADY OPEN!" : "", new_respnum, this_resp);
 #endif /* DEBUG */
 
-	if (new_respnum == this_resp) {
-#ifdef DEBUG
-		fprintf(stderr, "ART %d already open\n", new_respnum);
-#endif /* DEBUG */
-		goto already_open;
-	}
+	if (new_respnum != this_resp) {
+		art_close (&pgart);			/* close previously opened art in pager */
 
-	art_close (&pgart);			/* close previously opened art in pager */
+		make_group_path (CURR_GROUP.name, group_path);
 
-	make_group_path (CURR_GROUP.name, group_path);
+		switch (art_open (TRUE, &arts[new_respnum], group_path, &pgart)) {
 
-	switch (art_open (&arts[new_respnum], group_path, &pgart)) {
-
-		case ART_UNAVAILABLE:
-			art_mark_read (&CURR_GROUP, &arts[new_respnum]);
-			wait_message (1, _(txt_art_unavailable));
-			nobreak;	/* FALLTHROUGH */
-
-		case ART_ABORT:
-			return GRP_ARTFAIL;	/* special retcode to stop redrawing screen */
-
-		default:					/* Normal case */
-#if 0
-			if (prompt_yn(cLINES, "Fake art unavailable ? ", FALSE) == 1) {
-				art_close(&pgart);
+			case ART_UNAVAILABLE:
 				art_mark_read (&CURR_GROUP, &arts[new_respnum]);
-				return GRP_ARTFAIL;
-			}
-#endif /* 0 */
-			/*
-			 * Remember current & previous articles for '-' command
-			 */
-			last_resp = this_resp;
-			this_resp = new_respnum;		/* Set new art globally */
+				wait_message (1, _(txt_art_unavailable));
+				nobreak;	/* FALLTHROUGH */
 
-			break;
+			case ART_ABORT:
+				return GRP_ARTFAIL;	/* special retcode to stop redrawing screen */
+
+			default:					/* Normal case */
+#if 0
+				if (prompt_yn(cLINES, "Fake art unavailable ? ", FALSE) == 1) {
+					art_close(&pgart);
+					art_mark_read (&CURR_GROUP, &arts[new_respnum]);
+					return GRP_ARTFAIL;
+				}
+#endif /* 0 */
+				/*
+				 * Remember current & previous articles for '-' command
+				 */
+				last_resp = this_resp;
+				this_resp = new_respnum;		/* Set new art globally */
+				break;
+		}
 	}
 
-already_open:
 	art_mark_read (&CURR_GROUP, &arts[this_resp]);
+
+	if (pgart.cooked == (FILE *) 0) { /* harmony corruption */
+		wait_message (1, _(txt_art_unavailable));
+		return GRP_ARTFAIL;
+	}
 
 	/*
 	 * Setup to start viewing cooked version
@@ -1329,6 +1310,57 @@ process_search(
 }
 
 
+/*
+ * Implement ^H toggle between cooked and raw views of article
+ */
+void
+toggle_raw(
+	struct t_group *group)
+{
+	if (show_all_headers) {
+		artline = pgart.cookl;
+		artlines = pgart.cooked_lines;
+		note_fp = pgart.cooked;
+	} else {
+		static int j;				/* Needed on successive invocations */
+		int chunk = note_h->ext->line_count;
+
+		/*
+		 * We do this on the fly, since most of the time it won't be used
+		 */
+		if (!pgart.rawl) {			/* Already done this for this article ? */
+			char buff[1024];
+
+			j = 0;
+			rewind (pgart.raw);
+			pgart.rawl = my_malloc(sizeof(t_lineinfo) * chunk);
+
+			/*
+			 * # lines can increase due to line wrapping
+			 */
+			do {
+				pgart.rawl[j].offset = ftell(pgart.raw);
+				pgart.rawl[j].flags = 0;
+				j++;
+				if (j >= chunk) {
+					chunk += 50;
+					pgart.rawl = my_realloc((char *)pgart.rawl, sizeof(t_lineinfo) * chunk);
+				}
+			} while ((fgets(buff, cCOLS+1, pgart.raw)) != NULL);
+
+			j--;
+			pgart.rawl = my_realloc((char *)pgart.rawl, sizeof(t_lineinfo) * j);
+		}
+		artline = pgart.rawl;
+		artlines = j;
+		note_fp = pgart.raw;
+	}
+	curr_line = 0;
+	show_all_headers = !show_all_headers;
+	draw_page (group->name, 0);
+}
+
+
 static void
 process_url(
 	void)
@@ -1339,6 +1371,10 @@ process_url(
 	int offsets[6];
 	int offsets_size = sizeof(offsets)/sizeof(int);
 
+	/*
+	 * TODO: add MAIL_REGEX/NEWS_REGEX
+	 *       really use curr_line or better start at top of article?
+	 */
 	for (i = curr_line; i < artlines; ++i) {
 		if (!artline[i].flags & C_URL)
 			continue;
@@ -1351,17 +1387,19 @@ process_url(
 
 		/*
 		 * Step through, finding URL's
+		 *
+		 * add MAIL_REGEX/NEWS_REGEX
 		 */
 		while (pcre_exec (url_regex.re, url_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) != PCRE_ERROR_NOMATCH) {
 			char url[LEN];
 
-			*(ptr+offsets[1]) = '\0';
-			if (prompt_default_string ("URL:", url, sizeof(url), ptr+offsets[0], HIST_NONE)) {
+			*(ptr + offsets[1]) = '\0';
+			if (prompt_default_string ("URL:", url, sizeof(url), ptr + offsets[0], HIST_NONE)) {
 				char ubuf[LEN];
 
 				wait_message(2, "Launching %s\n", url);
-				strcpy(ubuf, "/usr/local/bin/url_handler.sh ");
-				strncat(ubuf, url, LEN-32);
+				strcpy(ubuf, "url_handler.sh ");
+				strncat(ubuf, escape_shell_meta (url, 0), LEN - 16);
 				invoke_cmd (ubuf);
 			}
 
@@ -1378,13 +1416,14 @@ process_url(
  */
 void
 resize_article(
+	t_bool wrap_lines,
 	t_openartinfo *artinfo)
 {
 	free(artinfo->cookl);
 	if (artinfo->cooked)
 		fclose(artinfo->cooked);
 
-	cook_article (artinfo, tabwidth, hide_uue);
+	cook_article (wrap_lines, artinfo, tabwidth, hide_uue);
 
 	show_all_headers = FALSE;
 	artline = pgart.cookl;

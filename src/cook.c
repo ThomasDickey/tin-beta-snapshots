@@ -6,7 +6,7 @@
  *  Updated   :
  *  Notes     : Split from page.c
  *
- * Copyright (c) 2000 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 2000-2001 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,13 +63,13 @@
 #define MATCH_REGEX(x,y,z)	(pcre_exec (x.re, x.extra, y, z, 0, 0, NULL, 0) >= 0)
 
 static t_bool expand_ctrl_chars (char *to, const char *from, int length);
-static void put_cooked (int flags, const char *fmt, ...);
+static void put_cooked (t_bool wrap_lines, int flags, const char *fmt, ...);
 static void set_rest (char **rest, const char *ptr);
 static int put_rest (char **rest, char *dest, int max_line_len);
 static int read_decoded_base64_line (FILE *file, char *line, const int max_line_len, const int max_lines_to_read, const char *charset, char **rest);
 static int read_decoded_qp_line (FILE *file, char *line, const int max_line_len, const int max_lines_to_read, const char *charset, char **rest);
 static t_part *new_uue (t_part **part, char *name);
-static void process_text_body_part (FILE *in, t_part *part);
+static void process_text_body_part (t_bool wrap_lines, FILE *in, t_part *part);
 static t_bool header_wanted (const char *line);
 
 /*
@@ -132,6 +132,7 @@ expand_ctrl_chars (
  */
 static void
 put_cooked (
+	t_bool wrap_lines,
 	int flags,
 	const char *fmt,
 	...)
@@ -148,7 +149,7 @@ put_cooked (
 	bufp = buf;
 
 	for (p = bufp; *p; p++) {
-		if (*p == '\n' || (overflow + p - bufp >= cCOLS)) {
+		if (*p == '\n' || ((overflow + p - bufp >= cCOLS) && wrap_lines)) {
 			fwrite(bufp, p - bufp, 1, art->cooked);
 
 			fputs("\n", art->cooked);
@@ -196,6 +197,7 @@ put_cooked (
 
 	va_end (ap);
 }
+
 
 /*
  * FIXME: should go into rfc1521.c
@@ -425,6 +427,7 @@ read_decoded_qp_line (
 	char *ptr;
 	char c;
 	int buflen = 0;
+	int chars_added = 0;
 	int count = 0;
 	int lines_read = 0;
 	int max_buf_len = 3 * max_line_len;	/* worst case: every char is qp-encoded (3 chars) */
@@ -446,7 +449,6 @@ read_decoded_qp_line (
 	*buf = '\0';
 	endptr = buf;
 	do {
-
 		if (fgets(endptr, max_buf_len - strlen(buf), file) == NULL) {
 			/*
 			 * Premature end of file (or file error), leave loop. To prevent
@@ -467,6 +469,7 @@ read_decoded_qp_line (
 			break;
 		}
 		lines_read++;
+		chars_added = strlen(buf) - (endptr - buf);
 		if (!(buflen = strlen(buf)))
 			/*
 			 * Empty line. Should not occur, at least newline should be there.
@@ -476,12 +479,14 @@ read_decoded_qp_line (
 		endptr = &buf[buflen - 1];
 		c = *endptr;
 		/*
-		 * Strip trailing white space at the end of the line.
+		 * Strip trailing white space at the end of the line, but no more than
+		 * the number of characters that were newly read.
 		 * See RFC 2045, section 6.7, #3
 		 */
-		while ((buflen > 0) && ((c == ' ') || (c == '\t') || (c == '\n'))) {
+		while ((chars_added > 0) && ((c == ' ') || (c == '\t') || (c == '\n'))) {
 			c = *--endptr;
 			buflen--;
+			chars_added--;
 		}
 		/*
 		 * '=' at the end of a line indicates a soft break meaning
@@ -595,6 +600,7 @@ get_filename(
  */
 static void
 process_text_body_part(
+	t_bool wrap_lines,
 	FILE *in,
 	t_part *part)
 {
@@ -664,7 +670,7 @@ process_text_body_part(
 				in_sig = TRUE;
 				if (in_uue) {
 					in_uue = FALSE;
-					put_cooked (C_UUE, txt_uue, "incomplete ", curruue->line_count, get_filename(curruue->params));
+					put_cooked (wrap_lines, C_UUE, txt_uue, "incomplete ", curruue->line_count, get_filename(curruue->params));
 				}
 			}
 		}
@@ -685,7 +691,7 @@ process_text_body_part(
 				if (in_uue) {
 					in_uue = FALSE;
 					/* TODO include type/subtype/encoding in txt_uue as in txt_attach ? */
-					put_cooked (C_UUE, txt_uue, "", curruue->line_count, get_filename(curruue->params));
+					put_cooked (wrap_lines, C_UUE, txt_uue, "", curruue->line_count, get_filename(curruue->params));
 					continue;				/* To stop 'end' line appearing */
 				}
 			}
@@ -718,7 +724,7 @@ process_text_body_part(
 						fprintf(stderr, "not a uue line while reading a uue body?\n");
 #endif /* DEBUG_ART */
 						in_uue = FALSE;
-						put_cooked (C_UUE, txt_uue, "incomplete ", curruue->line_count, get_filename(curruue->params));
+						put_cooked (wrap_lines, C_UUE, txt_uue, "incomplete ", curruue->line_count, get_filename(curruue->params));
 					}
 				}
 			} else {
@@ -758,6 +764,8 @@ process_text_body_part(
 			flags |= C_URL;
 		if (MATCH_REGEX (mail_regex, line, len))
 			flags |= C_MAIL;
+		if (MATCH_REGEX (news_regex, line, len))
+			flags |= C_NEWS;
 
 		if (tex2iso_supported && art->tex2iso) {
 			char texbuf[LEN];
@@ -781,14 +789,14 @@ process_text_body_part(
 		if (expand_ctrl_chars (to, line, sizeof(to)))
 			flags |= C_CTRLL;				/* Line contains form-feed */
 
-		put_cooked (flags, "%s", to);
+		put_cooked (wrap_lines, flags, "%s", to);
 	} /* while */
 
 	/*
 	 * Were we reading uue and ran off the end ?
 	 */
 	if (in_uue)
-		put_cooked (C_UUE, txt_uue, "incomplete ", curruue->line_count, get_filename(curruue->params));
+		put_cooked (wrap_lines, C_UUE, txt_uue, "incomplete ", curruue->line_count, get_filename(curruue->params));
 }
 
 
@@ -837,7 +845,7 @@ dump_cooked(
 {
 	int i;
 
-	for (i=0; i<art->cooked_lines; i++) {
+	for (i = 0; i < art->cooked_lines; i++) {
 		char *line;
 
 		fseek(art->cooked, art->cookl[i].offset, SEEK_SET);
@@ -871,6 +879,7 @@ dump_cooked(
  */
 t_bool
 cook_article(
+	t_bool wrap_lines,
 	t_openartinfo *artinfo,
 	int tabs,
 	t_bool uue)
@@ -898,17 +907,17 @@ cook_article(
 			if (STRIP_ALTERNATIVE(artinfo)) {
 				if (header_wanted(_(txt_info_x_conversion_note))) {
 					header_put = TRUE;
-					put_cooked (C_HEADER, _(txt_info_x_conversion_note));
+					put_cooked (wrap_lines, C_HEADER, _(txt_info_x_conversion_note));
 				}
 			}
 			if (header_put)
-				put_cooked (0, "\n");		/* put a newline after headers */
+				put_cooked (TRUE, 0, "\n");		/* put a newline after headers */
 			break;
 		}
 
 		if (header_wanted(line)) {	/* Put cooked data */
 			header_put = TRUE;
-			put_cooked (C_HEADER, "%s\n", rfc1522_decode(line));
+			put_cooked (wrap_lines, C_HEADER, "%s\n", rfc1522_decode(line));
 		}
 	}
 
@@ -931,7 +940,7 @@ cook_article(
 			if (STRIP_ALTERNATIVE(artinfo) && !IS_PLAINTEXT(ptr))
 				continue;
 
-			put_cooked (C_ATTACH, _(txt_attach),
+			put_cooked (wrap_lines, C_ATTACH, _(txt_attach),
 				ptr->depth * 4, "",
 				content_types[ptr->type], ptr->subtype,
 				content_encodings[ptr->encoding], ptr->line_count,
@@ -939,18 +948,18 @@ cook_article(
 
 			/* Try to view anything of type text, may need to review this */
 			if (IS_PLAINTEXT(ptr))
-				process_text_body_part(artinfo->raw, ptr);
+				process_text_body_part(wrap_lines, artinfo->raw, ptr);
 		}
 	} else {
 		/*
 		 * A regular single-body article
 		 */
 		if (IS_PLAINTEXT(hdr->ext))
-			process_text_body_part(artinfo->raw, hdr->ext);
+			process_text_body_part(wrap_lines, artinfo->raw, hdr->ext);
 		else {						/* Non-textual main body */
 			const char *name = get_filename(hdr->ext->params);
 
-			put_cooked (C_ATTACH, _(txt_attach),
+			put_cooked (wrap_lines, C_ATTACH, _(txt_attach),
 					0, "",
 					content_types[hdr->ext->type], hdr->ext->subtype,
 					content_encodings[hdr->ext->encoding], hdr->ext->line_count,

@@ -6,7 +6,7 @@
  *  Updated   : 1999-11-13
  *  Notes     :
  *
- * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,8 +45,8 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.5.8"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20001218"
-#	define RELEASENAME	"Paradise Regained"
+#	define RELEASEDATE	"20010221"
+#	define RELEASENAME	"Blue Water"
 #	define TINRC_VERSION	"1.2"
 
 #	ifdef M_AMIGA

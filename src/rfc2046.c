@@ -6,7 +6,7 @@
  *  Updated   : 28/02/2000
  *  Notes     : RFC 2046 MIME article parsing
  *
- * Copyright (c) 2000 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 2000-2001 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -725,7 +725,7 @@ dump_art(
 		content_types[note_h.ext->type], note_h.ext->subtype,
 		content_encodings[note_h.ext->encoding]);
 	fprintf(stderr, "Offset: %ld\nLines: %d\n", note_h.ext->offset, note_h.ext->line_count);
-	for (pptr=note_h.ext->params; pptr!=NULL; pptr=pptr->next)
+	for (pptr = note_h.ext->params; pptr != NULL; pptr = pptr->next)
 		fprintf(stderr, "P: %s = %s\n", pptr->name, pptr->value);
 	if (note_h.ext->uue != NULL) {
 		t_part *uu;
@@ -747,7 +747,7 @@ dump_art(
 			content_encodings[ptr->encoding]);
 		fprintf(stderr, "	Offset: %ld\n	Lines: %d\n", ptr->offset, ptr->line_count);
 		fprintf(stderr, "	Depth: %d\n", ptr->depth);
-		for (pptr=ptr->params; pptr!=NULL; pptr=pptr->next)
+		for (pptr = ptr->params; pptr != NULL; pptr = pptr->next)
 			fprintf(stderr, "	P: %s = %s\n", pptr->name, pptr->value);
 		fseek(art->raw, ptr->offset, SEEK_SET);
 		fprintf(stderr, "[%s]\n\n", tin_fgets(art->raw, FALSE));
@@ -813,6 +813,7 @@ error:
  */
 int
 art_open (
+	t_bool wrap_lines,
 	struct t_article *art,
 	const char *group_path,
 	t_openartinfo *artinfo)
@@ -834,7 +835,7 @@ art_open (
 		wait_message (0, _(txt_is_tex_encoded));
 
 	/* Maybe fix it so if this fails, we default to raw ? */
-	if (!cook_article (artinfo, 8, tinrc.hide_uue))
+	if (!cook_article (wrap_lines, artinfo, 8, tinrc.hide_uue))
 		return ART_ABORT;
 
 #ifdef DEBUG_ART

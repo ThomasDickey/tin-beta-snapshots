@@ -6,7 +6,7 @@
  *  Updated   : 1995-04-19
  *  Notes     :
  *
- * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1003,7 +1003,7 @@ read_nov_file (
 			if ((q = strchr (p, '\t')) != (char *) 0)
 				*q = '\0';
 
-			if (isdigit((unsigned char)*p))
+			if (isdigit((unsigned char) *p))
 				arts[top_art].line_count = atoi (p);
 
 			p = (q == (char *) 0 ? (char *) 0 : q + 1);
@@ -1222,11 +1222,11 @@ find_nov_file (
 			hash_filename = TRUE;
 			break;
 		case GROUP_TYPE_NEWS:
-			if (read_news_via_nntp && xover_supported && ! tinrc.cache_overview_files)
-				snprintf (nov_file, sizeof(nov_file)-1, "%s%d.idx", TMPDIR, (int) process_id);
+			if (read_news_via_nntp && xover_supported && !tinrc.cache_overview_files)
+				snprintf (nov_file, sizeof(nov_file) - 1, "%s%d.idx", TMPDIR, (int) process_id);
 			else {
 				make_base_group_path (novrootdir, group->name, buf);
-				snprintf (nov_file, sizeof(nov_file)-1, "%s/%s", buf, novfilename);
+				snprintf (nov_file, sizeof(nov_file) - 1, "%s/%s", buf, novfilename);
 				if (mode == R_OK || mode == W_OK) {
 					if (!access (nov_file, mode))
 						overview_index_filename = TRUE;
@@ -1246,7 +1246,7 @@ find_nov_file (
 
 		for (i = 1; ; i++) {
 
-			snprintf (nov_file, sizeof(nov_file)-1, "%s/%lu.%d", dir, hash, i);
+			snprintf (nov_file, sizeof(nov_file) - 1, "%s/%lu.%d", dir, hash, i);
 
 			if ((fp = fopen (nov_file, "r")) == (FILE *) 0)
 				return nov_file;

@@ -6,7 +6,7 @@
  *  Updated   : 1994-12-24
  *  Notes     : debug routines
  *
- * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -348,7 +348,7 @@ debug_print_filters (
 		num = glob_filter.num;
 		the_filter = glob_filter.filter;
 		fprintf (fp, "*** BEG GLOBAL FILTER=[%3d] ***\n", num);
-		for (i=0 ; i < num ; i++) {
+		for (i = 0; i < num; i++) {
 			debug_print_filter (fp, i, &the_filter[i]);
 			fprintf (fp, "\n");
 		}
@@ -387,7 +387,7 @@ debug_print_active_hash (
 			empty++;
 		} else {
 			number = 1;
-			for (j=group_hash[i]; active[j].next >= 0; j=active[j].next)
+			for (j = group_hash[i]; active[j].next >= 0; j = active[j].next)
 				number++;
 			if (number > 31)
 				my_printf ("MEGA HASH COLLISION > 31 HASH[%d]=[%d]!!!\n", i, number);
@@ -479,7 +479,7 @@ debug_print_newsrc (
 
 	fprintf (fp, "bitmap=[");
 	if (NewSrc->xbitlen && NewSrc->xbitmap) {
-		for (j=0, i=NewSrc->xmin; i <= NewSrc->xmax; i++) {
+		for (j = 0, i = NewSrc->xmin; i <= NewSrc->xmax; i++) {
 			fprintf (fp, "%d",
 				(NTEST(NewSrc->xbitmap, i - NewSrc->xmin) == ART_READ ?
 				ART_READ : ART_UNREAD));

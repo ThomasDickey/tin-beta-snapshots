@@ -6,7 +6,7 @@
  *  Updated   : 1998-01-03
  *  Notes     : RFC 2045/2047 encoding
  *
- * Copyright (c) 1995-2000 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2001 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

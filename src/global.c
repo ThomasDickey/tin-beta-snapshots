@@ -6,7 +6,7 @@
  *  Updated   : 2000-01-05
  *  Notes     : Generic nagivation and key handling routines
  *
- * Copyright (c) 1999-2000 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 1999-2001 Jason Faultless <jason@radar.tele2.co.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

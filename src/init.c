@@ -6,7 +6,7 @@
  *  Updated   : 1997-12-28
  *  Notes     :
  *
- * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -194,9 +194,10 @@ char *input_history[HIST_MAXNUM+1][HIST_SIZE+1];
 	static struct passwd pwdentry;
 #endif /* !M_AMIGA */
 
-struct regex_cache strip_re_regex, strip_was_regex,
+struct regex_cache
+					strip_re_regex, strip_was_regex,
 					uubegin_regex, uubody_regex,
-					url_regex, mail_regex,
+					url_regex, mail_regex, news_regex,
 					shar_regex
 #ifdef HAVE_COLOR
 		, quote_regex, quote_regex2, quote_regex3
@@ -1020,7 +1021,10 @@ postinit_regexp (
 
 	compile_regex (UUBEGIN_REGEX, &uubegin_regex, PCRE_CASELESS|PCRE_ANCHORED);
 	compile_regex (UUBODY_REGEX, &uubody_regex, PCRE_ANCHORED);
+
 	compile_regex (URL_REGEX, &url_regex, PCRE_CASELESS);
 	compile_regex (MAIL_REGEX, &mail_regex, PCRE_CASELESS);
+	compile_regex (NEWS_REGEX, &news_regex, PCRE_CASELESS);
+
 	compile_regex (SHAR_REGEX, &shar_regex, PCRE_ANCHORED);
 }

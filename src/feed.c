@@ -6,7 +6,7 @@
  *  Updated   : 2000-02-08
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
- * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -204,7 +204,7 @@ feed_article(
 				return FALSE;
 		} else {
 			memset (openartptr, 0, sizeof(t_openartinfo));
-			if (art_open (&arts[art], path, openartptr) == ART_UNAVAILABLE)
+			if (art_open (FALSE, &arts[art], path, openartptr) == ART_UNAVAILABLE)
 				return FALSE;
 		}
 	}
@@ -555,7 +555,7 @@ feed_articles (
 						/* Ignore errors */
 						feed_article(j, function, &count, num_of_tagged_arts, use_current, output, group_path);
 						if (proc_ch == 0) {
-							i=num_of_tagged_arts+1;		/* Force break out of outer-loop */
+							i = num_of_tagged_arts + 1;		/* Force break out of outer-loop */
 							break;
 						}
 

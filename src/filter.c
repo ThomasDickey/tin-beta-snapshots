@@ -6,7 +6,7 @@
  *  Updated   : 1998-02-04
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
- * Copyright (c) 1991-2000 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2001 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -708,7 +708,7 @@ my_flush ();
 		if (ptr->filter[i].xref_max > 0) {
 			fprintf (fp, "xref_max=%d\n", ptr->filter[i].xref_max);
 
-			for(j=0;j<ptr->filter[i].xref_score_cnt;j++)
+			for(j = 0; j<ptr->filter[i].xref_score_cnt; j++)
 				fprintf (fp, "xref_score=%d%s%s\n", ptr->filter[i].xref_scores[j], ptr->filter[i].xref_score_strings[j] ? "," : "", ptr->filter[i].xref_score_strings[j]);
 		}
 		if (ptr->filter[i].time) {

@@ -7,7 +7,7 @@
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
- * Copyright (c) 1997-2000 Dirk Nimmich <nimmich@uni-muenster.de>
+ * Copyright (c) 1997-2001 Dirk Nimmich <nimmich@uni-muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -106,7 +106,7 @@ authinfo_generic (
 	}
 
 	strcpy (tmpbuf, "AUTHINFO GENERIC ");
-	strcpy (authval, get_val ("NNTPAUTH", ""));
+	STRCPY(authval, get_val ("NNTPAUTH", ""));
 	if (strlen (authval))
 		strcat (tmpbuf, authval);
 	else {

@@ -1,4 +1,26 @@
--- 1.5.8 release 20001218 "" --
+-- 1.5.8 release 20010221 "Blue Water" --
+
+U058) Thomas Roessler <roessler@does-not-exist.org>
+      Urs Janssen <urs@tin.org>
+      ADD. mbox(5) manpage
+      FIX. Makefile[.in], mbox.5
+
+U057) Sebastian Bork <sebi@sebi.org>
+      BUG: TIN eats the last "\n" of postponed articles.
+      FIX: save.c
+
+U056) Ulli Horlacher <framstag@belwue.de>
+      BUG. removed absolute path for url_handler.sh
+      FIX. page.c
+
+U055) James Hawtin <oolon@ankh.org>
+      ADD. "T" now uses the rightmost multipart counter
+      FIX. tags.c
+
+U054) Jason Faultless <jason@radar.tele2.co.uk>
+      Michael Bienia <michael@vorlon.ping.de>
+      ADD. ^H wraps long lines
+      FIX. page.c
 
 U053) Dirk Nimmich <nimmich@uni-muenster.de>
       BUG. existing tin.defaults and mime.types were not backed up when doing
@@ -12,7 +34,16 @@ U053) Dirk Nimmich <nimmich@uni-muenster.de>
       BUG. if pgp and gpg are both installed you get tons of warnings because
            of redefined preprocessor variables (must have worked before, just
            removed comments; pgp is preferred over gpg, useful?)
-      FIX. Makefile.in, extern.h, inews.c, lang.c, pgp.c
+      BUG. String input in option menu left current line
+      ADD. updated pgp.txt
+      BUG. default values changed during quick_post_article() were not
+           changed due to no_write logic
+      BUG. ~/.signature was used instead of file named in tinrc/attributes
+      BUG. memory leak and possible buffer overruns in
+           post.c:user_posted_messages()
+      BUG. sig-demiliter wasn't recognized if qp-encodet over 2 lines
+      FIX. Makefile.in, pgp.txt, extern.h, config.c, cook.c, inews.c, lang.c
+           pgp.c, post.c, prompt.c, sigfile.c
 
  031) Dirk Nimmich <nimmich@uni-muenster.de>
       BUG. empty news_headers_to_[not_]display_array could cause a SIGSEGV
@@ -21,8 +52,31 @@ U053) Dirk Nimmich <nimmich@uni-muenster.de>
       FIX. proto.h, config.c, signal.c
 
 U052) Urs Janssen <urs@tin.org>
+      BUG. dumps core when opening a cached art which is cancelled in the
+           meantime
+      BUG. update_posted_msgs_file() didn't quote From_ lines in !MMDF
+           mailboxes
+      BUG. fetch_postponed_article() didn't unquote quoted From_ lines
+      BUG. storing in MMDF mailboxes was broken
+      BUG. quoting long lines in followups/replys lead to wrong quote
+           levels
       BUG. didn't compile on MacOS X with apples gcc-port
-      FIX. tin.h
+      BUG. contains_nonprintables() check for encoded words was to soft
+      BUG. off by one quoting error in followups/replys
+      BUG. url_handler.sh didn't handle uppercase schemes and & in URLs
+      BUG. 'U' in raw_mode crashed tin
+      BUG. newline missing in bugreport
+      ADD. .ps (Palestinian Territories) as a valid TLD
+      ADD. use the raw-article for followups/replys if pager is in
+           raw-mode
+      ADD. config.guess, config.sub, metamutt (1.15 -> 1.17) update
+      ADD. expiretover script for purging old cached overview data
+      ADD. internal inews now breaks long body lines after 1024 chars, not 512
+      ADD. news:, snews: and nntp: URL highlighting
+      FIX. config.guess, config.sub, expiretover, metamutt, url_handler.sh
+           extern.h, policy.h, proto.h, rfc2046.h, tin.h, cook.c, feed.c
+           inews.c, memory.c, misc.c, page.c, post.c, rfc2046.c, rfc2047.c
+           save.c, search.c, signal.c
 
 -- 1.5.7 release 20001104 "Paradise Regained" --
 
@@ -119,7 +173,7 @@ U044) Jason Faultless <jason@radar.tele2.co.uk>
       BUG. post-processing only worked on 1st uuencoded section in an article
       BUG. 'e' EditMailArt broken
       BUG. tin sometimes hung on multipart articles
-      BUG. singleline scrollin in the pager broken in cusres mode if
+      BUG. singleline scrolling in the pager broken in cusres mode if
            compiled without color support
       FIX. tin.1, extern.h, keymap.h, menukeys.h, proto.h, active.c, color.c
            config.c, cook.c, curses.c, feed.c, group.c, init.c, keymap.c
