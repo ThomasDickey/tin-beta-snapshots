@@ -52,11 +52,11 @@ wait_for_input (void /*FILE *fd*/)
 	int ch = ReadChNowait ();
 
 	if (ch == 'q' || ch == 'z' || ch == ESC) {
-		if (prompt_yn (cLINES, txt_read_abort, FALSE) == 1)
+		if (prompt_yn (cLINES, _(txt_read_abort), FALSE) == 1)
 			return TRUE;
 	}
 	if (ch == 'Q') {
-		if (prompt_yn (cLINES, txt_read_exit, FALSE) == 1)
+		if (prompt_yn (cLINES, _(txt_read_exit), FALSE) == 1)
 			tin_done (EXIT_SUCCESS);
 	}
 #		endif /* VMS */
@@ -80,7 +80,7 @@ wait_for_input (void /*FILE *fd*/)
 /*DEBUG_IO((stderr, "waiting on %d and %d...", STDIN_FILENO, fileno(fd)));*/
 		if ((nfds = select(STDIN_FILENO+1, &readfds, NULL, NULL, &tv)) == -1) {
 			if (errno != EINTR) {
-				perror_message("select() failed");
+				perror_message(_("select() failed"));
 				giveup();
 			} else
 				return FALSE;
@@ -104,12 +104,12 @@ wait_for_input (void /*FILE *fd*/)
 					return FALSE;
 
 				if (ch == 'q' || ch == 'z' || ch == ESC) {
-					if (prompt_yn (cLINES, txt_read_abort, FALSE) == 1)
+					if (prompt_yn (cLINES, _(txt_read_abort), FALSE) == 1)
 						return TRUE;
 				}
 
 				if (ch == 'Q') {
-					if (prompt_yn (cLINES, txt_read_exit, FALSE) == 1)
+					if (prompt_yn (cLINES, _(txt_read_exit), FALSE) == 1)
 						tin_done (EXIT_SUCCESS);
 				}
 
@@ -171,7 +171,7 @@ tin_read (
 
 #ifdef NNTP_ABLE
 	if (wait_for_input(/*fp*/)) {			/* Check if okay to read */
-		info_message("Aborting read, please wait...");
+		info_message(_("Aborting read, please wait..."));
 		drain_buffer(fp);
 		clear_message();
 		tin_errno = TIN_ABORT;
@@ -197,7 +197,7 @@ tin_read (
 /* TODO develop this next line ? */
 #ifdef DEBUG
 	if (errno)
-		fprintf(stderr, "errno in tin_read %d\n", errno);
+		fprintf(stderr, _("errno in tin_read %d\n"), errno);
 #endif /* DEBUG */
 
 	if (ptr == 0)	/* End of data ? */
@@ -313,7 +313,7 @@ tin_fgets (
 		return ptr;
 
 	if (tin_errno != 0) {
-		DEBUG_IO((stderr, "Aborted read\n"));
+		DEBUG_IO((stderr, _("Aborted read\n")));
 		return(NULL);
 	}
 
@@ -369,7 +369,7 @@ drain_buffer (
 	if (fp != FAKE_NNTP_FP)
 		return;
 
-DEBUG_IO((stderr, "Draining\n"));
+DEBUG_IO((stderr, _("Draining\n")));
 	while (tin_fgets(fp, FALSE) != (char *) 0) {
 		if (++i % MODULO_COUNT_NUM == 0)
 			spin_cursor();

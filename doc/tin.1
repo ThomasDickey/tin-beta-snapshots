@@ -1247,6 +1247,11 @@ Default is '-'.
 The character used to show that an article/thread is auto-selected (hot).
 Default is '*'.
 .TP
+.B Character to show recent articles (art_marked_recent)
+The character used to show that an article/thread is recent (not older
+than X days).  See also recent_time.
+Default is 'o'.
+.TP
 .B Character to show unread articles (art_marked_unread)
 The character used to show that an article has not been read.
 Default is '+'.
@@ -1507,6 +1512,10 @@ getart_limit articles/group are fetched from the server. If \fBuse_getart_limit\
 is ON and getart_limit is < 0 tin will start fetching articles from
 your first unread minus absolute value of getart_limit. Default is 0, which
 means no limit.
+.TP
+.B Number of days during which article is considered recent (recent_time)
+If set to 0, this feature is deactivated, otherwise it means the
+number of days.  Default is 2.
 .TP
 .B Catchup group using left key (group_catchup_on_exit)
 If ON catchup group when leaving with the left arrow key. Default is ON.
@@ -2546,6 +2555,13 @@ Set this variable to point to \fBmetamail\fR(1) or a replacement
 .B ISPELL
 Set this variable to point to \fBispell\fR(1) or a replacement and it's
 cmd-line options.
+.TP
+.B PGPOPTS
+Define any additional options that you wish to pass to your PGP program
+.TP
+.B PGPPATH
+Over-ride the name of the PGP directory in \fI$HOME/\fP that holds your
+keys etc..
 .\"
 .\"
 .SH FILES
@@ -2717,25 +2733,25 @@ for \fBsnprintf(3)\fR and \fBvsnprintf(3)\fR fallbacks.
 .PP
 I wish to thank the following people for supplying patches:
 .PP
-David Abbott, Earle Ake, Orbby S. Arka, Joachim Astel, Anton Aylward, Jens
-Chr. Bachem, George Baltz, Volker Barthelmann, Kirk Bauer, Paul Bauwens,
-Dieter Becker, Wolfgang Behrens, Fabrice Bellet, Greg Berigan, Enrik
-Berkhan, Juergen Bernau, Dan Berry, David Binderman, Andrey Blochintsev,
-Chris Blum, Fokke de Boer, Andreas Borchert, Mark Boucher, Bill Brolik,
-Herman ten Brugge, Martin Buck, Jeremy Buhler, Leila Burrell-Davis, Sean
-Casey, Peter Castro, Troy Cauble, Andrey A. Chernov, Albert Chin-A-Young,
-Tan Kwee Chuan, Boleslaw Ciesielski, Robert Claeson, Steven Cogswell, Don
-Costello, Bryan Curnutt, Ned Danieley, Lars Dannenberg, Chris Davies, John
-Davis, Borislav Deianov, Thomas E. Dickey, Olaf Dietrich, Theo Van Dinter,
-Ralf Doeblitz, Bryan Dongray, Michael Douglass, Craig Durland, Bernd
-Eckenfels, Phil Edge, Kirk Edson, Nick Efthymiou, Stefan Elf, Rob Engle,
-Olle Eriksson, Brent Ermlick, Bernd Ernesti, Ragnar Hojland Espinosa, Jason
-Faultless, Michael Faurot, Werner Fleck, John M. Flinchbaugh, Andy Gabor,
-Torsten Gesang, Ruediger Geys, Callum Gibson, Mike Glendinning, Philippe
-Goujard, Dan Greenspan, Karlo Gross, Carl Hage, Paul Halsema, Ed Hanway,
-Scott Hauck, Christian Haul, Per Headland, Arnold Hendriks, Daniel Hermans,
-Jose Herrero, Dave Hill, Tom Hite, Torsten Homeyer, Ulli Horlacher, Keith
-Howell, Tommy Hsieh, Shih-Kun Huang, Steve Hunt, Jeff Hurwitt, Jeon
+David Abbott, Earle Ake, Orbby S. Arka, Joachim Astel, Anton Aylward,
+Mark Ayzenshteyn, Jens Chr. Bachem, George Baltz, Volker Barthelmann, Kirk
+Bauer, Paul Bauwens, Dieter Becker, Wolfgang Behrens, Fabrice Bellet, Greg
+Berigan, Enrik Berkhan, Juergen Bernau, Dan Berry, David Binderman, Andrey
+Blochintsev, Chris Blum, Fokke de Boer, Andreas Borchert, Mark Boucher, Bill
+Brolik, Herman ten Brugge, Martin Buck, Jeremy Buhler, Leila Burrell-Davis,
+Sean Casey, Peter Castro, Troy Cauble, Andrey A. Chernov, Albert
+Chin-A-Young, Tan Kwee Chuan, Boleslaw Ciesielski, Robert Claeson, Steven
+Cogswell, Don Costello, Bryan Curnutt, Ned Danieley, Lars Dannenberg, Chris
+Davies, John Davis, Borislav Deianov, Thomas E. Dickey, Olaf Dietrich, Theo
+Van Dinter, Ralf Doeblitz, Bryan Dongray, Michael Douglass, Craig Durland,
+Bernd Eckenfels, Phil Edge, Kirk Edson, Nick Efthymiou, Stefan Elf, Rob
+Engle, Olle Eriksson, Brent Ermlick, Bernd Ernesti, Ragnar Hojland Espinosa,
+Jason Faultless, Michael Faurot, Werner Fleck, John M. Flinchbaugh, Andy
+Gabor, Torsten Gesang, Ruediger Geys, Callum Gibson, Mike Glendinning,
+Philippe Goujard, Dan Greenspan, Karlo Gross, Carl Hage, Paul Halsema, Ed
+Hanway, Scott Hauck, Christian Haul, Per Headland, Arnold Hendriks, Daniel
+Hermans, Jose Herrero, Dave Hill, Tom Hite, Torsten Homeyer, Ulli Horlacher,
+Keith Howell, Tommy Hsieh, Shih-Kun Huang, Steve Hunt, Jeff Hurwitt, Jeon
 Hyoung-Jo, Pieter Immelman, Jarkko Isokungas, Patrick St. Jean, Hal
 Jespersen, Park Sang Jin, Robbin Johnson, Jarkko Jormanainen, Nelson Kading,
 Geoffrey Keating, Karsten Keil, Charles S. Kerr, Fritz Kleeman, Andreas

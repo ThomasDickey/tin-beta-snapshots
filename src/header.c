@@ -30,7 +30,7 @@ get_host_name (
 	char *ptr;
 	static char hostname[MAXHOSTNAMELEN+1]; /* need space for '\0' */
 
-	hostname[0]='\0';
+	hostname[0] = '\0';
 
 #ifdef HAVE_GETHOSTBYNAME
 	gethostname(hostname, sizeof(hostname));
@@ -56,10 +56,10 @@ get_host_name (
 			if ((ptr = getenv("HOSTNAME")) != (char *) 0)
 				strncpy (hostname, ptr, MAXHOSTNAMELEN);
 			else
-				hostname[0]='\0';
+				hostname[0] = '\0';
 		}
 	}
-	hostname[MAXHOSTNAMELEN]='\0';
+	hostname[MAXHOSTNAMELEN] = '\0';
 	return (hostname);
 }
 
@@ -86,7 +86,7 @@ static const char *domain_name_hack = DOMAIN_NAME;
 #		define DOMAIN_NAME domain_name_hack
 #	endif /* M_AMIGA */
 
-	domain[0]='\0';
+	domain[0] = '\0';
 
 	if (strlen(DOMAIN_NAME))
 		strcpy(domain, DOMAIN_NAME);
@@ -108,13 +108,13 @@ static const char *domain_name_hack = DOMAIN_NAME;
 				}
 			}
 			if (domain[0] == '/') /* file was empty */
-				domain[0]='\0';
+				domain[0] = '\0';
 
 			fclose (fp);
 		} else
-			domain[0]='\0';
+			domain[0] = '\0';
 	}
-	domain[MAXHOSTNAMELEN]='\0';
+	domain[MAXHOSTNAMELEN] = '\0';
 	return (domain);
 }
 #endif /* DOMAIN_NAME */

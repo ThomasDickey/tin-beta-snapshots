@@ -830,7 +830,7 @@ rfc15211522_encode (
 
 	if (!strcasecmp(mime_encoding, txt_base64))
 		encoding = 'b';
-	else if (!strcasecmp(mime_encoding, txt_quoted_printable))
+	else if (!strcasecmp(mime_encoding, _(txt_quoted_printable)))
 		encoding = 'q';
 	else
 		encoding = '8';

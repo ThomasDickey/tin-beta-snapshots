@@ -66,6 +66,11 @@ main (
 	int count;
 	t_bool tmp_no_write;
 
+	/* initialize locale support */
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
+
 	set_signal_handlers ();
 
 	cmd_line = TRUE;
@@ -97,7 +102,7 @@ main (
 #	ifdef NNTP_ABLE
 		read_news_via_nntp = TRUE;
 #	else
-		error_message (txt_option_not_enabled, "-DNNTP_ABLE");
+		error_message (_(txt_option_not_enabled), "-DNNTP_ABLE");
 		giveup();
 #	endif /* NNTP_ABLE */
 	}
@@ -136,7 +141,7 @@ main (
 #	ifndef USE_CURSES
 	if (INTERACTIVE) {
 		if (!get_termcaps ()) {
-			error_message (txt_screen_init_failed, tin_progname);
+			error_message (_(txt_screen_init_failed), tin_progname);
 			giveup();
 		}
 /*		EndInverse ();*/
@@ -148,7 +153,7 @@ main (
 	 * Init curses emulation
 	 */
 	if (!InitScreen ()) {
-		error_message (txt_screen_init_failed, tin_progname);
+		error_message (_(txt_screen_init_failed), tin_progname);
 		giveup();
 	}
 
@@ -206,7 +211,7 @@ main (
 	/*
 	 * Initialise active[] and add new newsgroups to start of my_group[]
 	 */
-	group_top = 0;
+	selmenu.max = 0;
 	read_news_active_file ();
 #ifdef DEBUG
 	debug_print_active();
@@ -214,8 +219,13 @@ main (
 
 	/*
 	 * Load the local & global group specific attribute files
+	 * FIXME: is global attributes still needed? if so use TIN_DEFAULTS_DIR
 	 */
+/*	if (INTERACTIVE) */ /* FIXME: NLS support missing */
+	wait_message (0, txt_reading_attributes_file, "global ");
 	read_attributes_file (global_attributes_file, TRUE);
+/*	if (INTERACTIVE) */
+	wait_message (0, txt_reading_attributes_file, "");
 	read_attributes_file (local_attributes_file, FALSE);
 
 	/*
@@ -235,12 +245,12 @@ main (
 	 */
 	if (post_article_and_exit || post_postponed_and_exit) {
 		quick_post_article (post_postponed_and_exit);
-		wait_message (2, txt_exiting);
+		wait_message (2, _(txt_exiting));
 		tin_done (EXIT_SUCCESS);
 	}
 
 	if ((count = count_postponed_articles()))
-		wait_message(3, txt_info_postponed, count, IS_PLURAL(count));
+		wait_message(3, _(txt_info_postponed), count, IS_PLURAL(count));
 
 	/*
 	 * Read text descriptions for mail and/or news groups
@@ -307,6 +317,10 @@ main (
 	if (created_rcdir && !batch_mode)
 		show_intro_page ();
 
+#ifdef USE_CURSES
+	scrollok (stdscr, FALSE);
+#endif /* USE_CURSES */
+
 	/*
 	 * Work loop
 	 */
@@ -341,7 +355,7 @@ read_cmd_line_options (
 #		ifdef HAVE_COLOR
 				use_color = !use_color;
 #		else
-				error_message (txt_option_not_enabled, "-DHAVE_COLOR");
+				error_message (_(txt_option_not_enabled), "-DHAVE_COLOR");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -352,7 +366,7 @@ read_cmd_line_options (
 #		ifdef NNTP_ABLE
 				force_auth_on_conn_open = TRUE;
 #		else
-				error_message (txt_option_not_enabled, "-DNNTP_ABLE");
+				error_message (_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -377,7 +391,7 @@ read_cmd_line_options (
 				debug = atoi (optarg);
 				debug_delete_files ();
 #else
-				error_message (txt_option_not_enabled, "-DDEBUG");
+				error_message (_(txt_option_not_enabled), "-DDEBUG");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -403,7 +417,7 @@ read_cmd_line_options (
 				my_strncpy(cmdline_nntpserver, optarg, sizeof(cmdline_nntpserver));
 				read_news_via_nntp = TRUE;
 #		else
-				error_message (txt_option_not_enabled, "-DNNTP_ABLE");
+				error_message (_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -422,7 +436,7 @@ read_cmd_line_options (
 				my_strncpy (index_newsdir, optarg, sizeof (index_newsdir));
 				my_mkdir (index_newsdir, (mode_t)S_IRWXUGO);
 #else
-				error_message (txt_option_not_enabled, "-DNNTP_ABLE");
+				error_message (_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -479,7 +493,7 @@ read_cmd_line_options (
 #	ifdef NNTP_ABLE
 				read_news_via_nntp = TRUE;
 #	else
-				error_message (txt_option_not_enabled, "-DNNTP_ABLE");
+				error_message (_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -508,7 +522,7 @@ read_cmd_line_options (
 				batch_mode = TRUE;
 				show_description = FALSE;
 #	else
-				error_message (txt_option_not_enabled, "-DNNTP_ABLE");
+				error_message (_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -520,7 +534,7 @@ read_cmd_line_options (
 				update_fork = TRUE;
 				batch_mode = TRUE;
 #	else
-				error_message (txt_option_not_enabled, "-DNNTP_ABLE");
+				error_message (_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -533,10 +547,10 @@ read_cmd_line_options (
 
 			case 'V':
 #if defined(__DATE__) && defined(__TIME__)
-				error_message ("Version: %s release %s (\"%s\") %s %s",
+				error_message (_("Version: %s release %s (\"%s\") %s %s"),
 					VERSION, RELEASEDATE, RELEASENAME, __DATE__, __TIME__);
 #else
-				error_message ("Version: %s release %s (\"%s\")",
+				error_message (_("Version: %s release %s (\"%s\")"),
 					VERSION, RELEASEDATE, RELEASENAME);
 #endif /* __DATE__  && __TIME__ */
 				exit (EXIT_SUCCESS);
@@ -594,12 +608,12 @@ read_cmd_line_options (
 	}
 
 	if (verbose && !batch_mode) {
-		wait_message(1, "-v only useful for batch mode operations\n");
+		wait_message(1, _("-v only useful for batch mode operations\n"));
 		verbose = FALSE;
 	}
 
 	if (read_saved_news && batch_mode) {
-		wait_message(1, "-R only useful without batch mode operations\n");
+		wait_message(1, _("-R only useful without batch mode operations\n"));
 		read_saved_news = FALSE;
 	}
 
@@ -634,91 +648,91 @@ static void
 usage (
 	char *theProgname)
 {
-	error_message ("A Usenet reader.\n\nUsage: %s [options] [newsgroup[,...]]", theProgname);
+	error_message (_("A Usenet reader.\n\nUsage: %s [options] [newsgroup[,...]]"), theProgname);
 
 #	ifndef M_AMIGA
 #		ifdef HAVE_COLOR
-			error_message ("  -a       toggle color flag");
+			error_message (_("  -a       toggle color flag"));
 #		endif /* HAVE_COLOR */
 #		ifdef NNTP_ABLE
-			error_message ("  -A       force authentication on connect");
+			error_message (_("  -A       force authentication on connect"));
 #		endif /* NNTP_ABLE */
 #	else
-		error_message ("  -B       BBS mode. File operations limited to home directories.");
+		error_message (_("  -B       BBS mode. File operations limited to home directories."));
 #	endif /* !M_AMIGA */
 
-	error_message ("  -c       mark all news as read in subscribed newsgroups (batch mode)");
-	error_message ("  -d       don't show newsgroup descriptions");
+	error_message (_("  -c       mark all news as read in subscribed newsgroups (batch mode)"));
+	error_message (_("  -d       don't show newsgroup descriptions"));
 
 #	ifdef DEBUG
-		error_message ("  -D       debug mode 1=NNTP 2=ALL");
+		error_message (_("  -D       debug mode 1=NNTP 2=ALL"));
 #	endif /* DEBUG */
 
-	error_message ("  -f file  subscribed to newsgroups file [default=%s]", newsrc);
-	error_message ("  -G limit get only limit articles/group");
+	error_message (_("  -f file  subscribed to newsgroups file [default=%s]"), newsrc);
+	error_message (_("  -G limit get only limit articles/group"));
 
 #	ifndef M_AMIGA
 #		ifdef NNTP_ABLE
 			/* FIXME, default should be $NNTPSERVER if set ... */
-			error_message ("  -g serv  read news from NNTP server serv [default=%s]", NNTP_DEFAULT_SERVER);
+			error_message (_("  -g serv  read news from NNTP server serv [default=%s]"), NNTP_DEFAULT_SERVER);
 #		endif /* NNTP_ABLE */
 #	endif /* !M_AMIGA */
 
-	error_message ("  -h       this help message");
-	error_message ("  -H       help information about %s", theProgname);
+	error_message (_("  -h       this help message"));
+	error_message (_("  -H       help information about %s"), theProgname);
 
 #	ifndef NNTP_ONLY
-		error_message ("  -I dir   news index file directory [default=%s]", index_newsdir);
+		error_message (_("  -I dir   news index file directory [default=%s]"), index_newsdir);
 #	endif /* !NNTP_ONLY */
 
 #	ifdef NNTP_ABLE
-		error_message ("  -l       use only LISTGROUP instead of GROUP (-n) command");
+		error_message (_("  -l       use only LISTGROUP instead of GROUP (-n) command"));
 #	endif /* NNTP_ABLE */
 
-	error_message ("  -m dir   mailbox directory [default=%s]", tinrc.maildir);
-	error_message ("  -M user  mail new news to specified user (batch mode)");
+	error_message (_("  -m dir   mailbox directory [default=%s]"), tinrc.maildir);
+	error_message (_("  -M user  mail new news to specified user (batch mode)"));
 
 #	ifdef NNTP_ABLE
-		error_message ("  -n       only read subscribed .newsrc groups from NNTP server");
+		error_message (_("  -n       only read subscribed .newsrc groups from NNTP server"));
 #	endif /* NNTP_ABLE */
 
-	error_message ("  -N       mail new news to your posts");
-	error_message ("  -o       post all postponed articles and exit");
+	error_message (_("  -N       mail new news to your posts"));
+	error_message (_("  -o       post all postponed articles and exit"));
 
 #	ifdef NNTP_ABLE
-		error_message ("  -p port  use port as NNTP port [default=%d]", nntp_tcp_port);
+		error_message (_("  -p port  use port as NNTP port [default=%d]"), nntp_tcp_port);
 #	endif /* NNTP_ABLE */
 
-	error_message ("  -q       don't check for new newsgroups");
+	error_message (_("  -q       don't check for new newsgroups"));
 
 #	ifdef NNTP_ABLE
-	error_message ("  -Q       quick start. Same as -nqd");
+	error_message (_("  -Q       quick start. Same as -nqd"));
 #	else
-	error_message ("  -Q       quick start. Same as -qd");
+	error_message (_("  -Q       quick start. Same as -qd"));
 #	endif /* NNTP_ABLE */
 
 #	ifdef NNTP_ABLE
 		if (!read_news_via_nntp)
-			error_message ("  -r       read news remotely from default NNTP server");
+			error_message (_("  -r       read news remotely from default NNTP server"));
 #	endif /* NNTP_ABLE */
 
-	error_message ("  -R       read news saved by -S option");
-	error_message ("  -s dir   save news directory [default=%s]", tinrc.savedir);
-	error_message ("  -S       save new news for later reading (batch mode)");
+	error_message (_("  -R       read news saved by -S option"));
+	error_message (_("  -s dir   save news directory [default=%s]"), tinrc.savedir);
+	error_message (_("  -S       save new news for later reading (batch mode)"));
 
 #	ifndef NNTP_ONLY
-		error_message ("  -u       update index files (batch mode)");
-		error_message ("  -U       update index files in the background while reading news");
+		error_message (_("  -u       update index files (batch mode)"));
+		error_message (_("  -U       update index files in the background while reading news"));
 #	endif /* !NNTP_ONLY */
 
-	error_message ("  -v       verbose output for batch mode options");
-	error_message ("  -V       print version & date information");
-	error_message ("  -w       post an article and exit");
-	error_message ("  -X       don't save any files on quit");
-	error_message ("  -z       start if any unread news");
-	error_message ("  -Z       return status indicating if any unread news (batch mode)");
+	error_message (_("  -v       verbose output for batch mode options"));
+	error_message (_("  -V       print version & date information"));
+	error_message (_("  -w       post an article and exit"));
+	error_message (_("  -X       don't save any files on quit"));
+	error_message (_("  -z       start if any unread news"));
+	error_message (_("  -Z       return status indicating if any unread news (batch mode)"));
 
-	error_message ("\nMail bug reports/comments to %s", BUG_REPORT_ADDRESS);
+	error_message (_("\nMail bug reports/comments to %s"), BUG_REPORT_ADDRESS);
 }
 
 
@@ -864,7 +878,7 @@ show_intro_page (
 		my_printf("\n");
 	}
 
-	sprintf(buf, txt_intro_page, BUG_REPORT_ADDRESS);
+	sprintf(buf, _(txt_intro_page), BUG_REPORT_ADDRESS);
 
 	my_fputs (buf, stdout);
 	my_flush();
@@ -889,10 +903,10 @@ read_cmd_line_groups (
 	register int i;
 
 	if (num_cmdargs < max_cmdargs) {
-		group_top = skip_newgroups();		/* Reposition after any newgroups */
+		selmenu.max = skip_newgroups();		/* Reposition after any newgroups */
 
 		for (num = num_cmdargs; num < max_cmdargs; num++) {
-			wait_message (0, txt_matching_cmd_line_groups, cmdargs[num]);
+			wait_message (0, _(txt_matching_cmd_line_groups), cmdargs[num]);
 
 			for (i = 0; i < num_active; i++) {
 				if (match_group_list (active[i].name, cmdargs[num])) {
@@ -907,7 +921,8 @@ read_cmd_line_groups (
 }
 
 void
-giveup(void)
+giveup (
+	void)
 {
 	static int nested;
 

@@ -119,7 +119,7 @@ check_start_save_any_news (
 		case CHECK_ANY_NEWS:
 		case START_ANY_NEWS:
 			if (verbose)
-				wait_message (0, txt_checking_for_news);
+				wait_message (0, _(txt_checking_for_news));
 			break;
 		case MAIL_ANY_NEWS:
 		case SAVE_ANY_NEWS:
@@ -129,7 +129,7 @@ check_start_save_any_news (
 			sprintf (logfile, "%s/log", rcdir);
 #	endif /* VMS */
 			if (no_write || (fp_log = fopen (logfile, "w" FOPEN_OPTS)) == NULL) {
-				perror_message (txt_cannot_open, logfile);
+				perror_message (_(txt_cannot_open), logfile);
 				fp_log = stdout;
 				verbose = FALSE;
 				log_opened = FALSE;
@@ -146,7 +146,7 @@ check_start_save_any_news (
 			break;
 	}
 
-	for (i = 0; i < group_top; i++) {
+	for (i = 0; i < selmenu.max; i++) {
 		group = &active[my_group[i]];
 		make_group_path (group->name, group_path);
 		if (!index_group (group))
@@ -154,7 +154,7 @@ check_start_save_any_news (
 		print_group = TRUE;
 		check_arts = 0;
 
-		for (j = 0; j < top; j++) {
+		for (j = 0; j < top_art; j++) {
 			if (arts[j].status != ART_UNREAD)
 				continue;
 
@@ -172,7 +172,7 @@ check_start_save_any_news (
 				case MAIL_ANY_NEWS:
 				case SAVE_ANY_NEWS:
 					if (print_group) {
-						sprintf (buf, txt_saved, group->name);
+						sprintf (buf, _(txt_saved), group->name);
 						fprintf (fp_log, buf);
 						if (verbose)
 							wait_message (0, buf);
@@ -211,9 +211,9 @@ check_start_save_any_news (
 					}
 
 					if ((fp = fopen (savefile, "w" FOPEN_OPTS)) == (FILE *) 0) {
-						fprintf (fp_log, txt_cannot_open, savefile);
+						fprintf (fp_log, _(txt_cannot_open), savefile);
 						if (verbose)
-							perror_message (txt_cannot_open, savefile);
+							perror_message (_(txt_cannot_open), savefile);
 						continue;
 					}
 
@@ -234,7 +234,7 @@ check_start_save_any_news (
 					if (check_start_save == MAIL_ANY_NEWS) {
 						strfmailer (mailer, arts[j].subject, mail_news_user, savefile, buf, sizeof (buf), tinrc.mailer_format);
 						if (!invoke_cmd (buf))
-							error_message (txt_command_failed, buf);		/* TODO - not needed */
+							error_message (_(txt_command_failed), buf);		/* TODO - not needed */
 						unlink (savefile);
 					}
 					if (catchup)
@@ -247,7 +247,7 @@ check_start_save_any_news (
 
 		if (check_arts) {
 			if (verbose) /* FIXME: -> lang.c */
-				wait_message (0, "%4d unread articles in %s\n", check_arts, group->name);
+				wait_message (0, _("%4d unread articles in %s\n"), check_arts, group->name);
 			unread_news = TRUE;
 		}
 	}
@@ -258,27 +258,27 @@ check_start_save_any_news (
 				return 2;
 			else {
 				if (verbose)
-					wait_message (1, txt_there_is_no_news);
+					wait_message (1, _(txt_there_is_no_news));
 				return 0;
 			}
 			/* NOTREACHED */
 		case START_ANY_NEWS:
-			wait_message (1, txt_there_is_no_news);
+			wait_message (1, _(txt_there_is_no_news));
 			return -1;
 			/* NOTREACHED */
 		case MAIL_ANY_NEWS:
 		case SAVE_ANY_NEWS:
-			sprintf (buf, "\n%s %d article(s) from %d group(s)\n", (check_start_save == MAIL_ANY_NEWS ? "Mailed" : "Saved"), saved_arts, group_top); /*saved_groups); */ /* FIXME: -> lang.c */
+			sprintf (buf, _("\n%s %d article(s) from %d group(s)\n"), (check_start_save == MAIL_ANY_NEWS ? _("Mailed") : _("Saved")), saved_arts, selmenu.max); /*saved_groups); */ /* FIXME: -> lang.c */
 			fprintf (fp_log, "%s", buf);
 			if (verbose)
 				wait_message (0, buf);
 			if (log_opened) {
 				fclose (fp_log);
 				if (verbose)
-					wait_message (0, "Mailing log to %s\n", (check_start_save == MAIL_ANY_NEWS ? mail_news_user : userid)); /* FIXME: -> lang.c */
+					wait_message (0, _("Mailing log to %s\n"), (check_start_save == MAIL_ANY_NEWS ? mail_news_user : userid)); /* FIXME: -> lang.c */
 				strfmailer (mailer, subject, (check_start_save == MAIL_ANY_NEWS ? mail_news_user : userid), logfile, buf, sizeof (buf), tinrc.mailer_format);
 				if (!invoke_cmd (buf))
-					error_message (txt_command_failed, buf);		/* TODO - not needed */
+					error_message (_(txt_command_failed), buf);		/* TODO - not needed */
 			}
 			break;
 		default:
@@ -323,11 +323,11 @@ save_art_to_file (
 	if (!save[i].is_mailbox) {
 		if (stat (file, &st) != -1) {
 			if (S_ISDIR(st.st_mode)) {
-				wait_message (2, txt_cannot_write_to_directory, file);
+				wait_message (2, _(txt_cannot_write_to_directory), file);
 				return FALSE;
 			}
 
-			ch = prompt_slk_response(tinrc.default_save_mode, "aoq\033", txt_append_overwrite_quit, file);
+			ch = prompt_slk_response(tinrc.default_save_mode, "aoq\033", _(txt_append_overwrite_quit), file);
 			switch (ch) {
 				case iKeySaveAppendFile:
 					strcpy (mode, "a+");
@@ -340,7 +340,7 @@ save_art_to_file (
 				case iKeyAbort:
 				case iKeySaveDontSaveFile2:
 					save[i].saved = FALSE;
-					wait_message (1, txt_art_not_saved);
+					wait_message (1, _(txt_art_not_saved));
 					return ret_code;
 
 				default:
@@ -351,11 +351,11 @@ save_art_to_file (
 	}
 #	ifdef DEBUG
 	if (debug == 2)
-		error_message("Save index=[%d] mbox=[%d] filename=[%s] file=[%s] mode=[%s]", indexnum, the_mailbox, filename, file, mode);
+		error_message(_("Save index=[%d] mbox=[%d] filename=[%s] file=[%s] mode=[%s]"), indexnum, the_mailbox, filename, file, mode);
 #	endif /* DEBUG */
 	if ((fp = fopen (file, mode)) == (FILE *) 0) {
 		save[i].saved = FALSE;
-		info_message (txt_art_not_saved);
+		info_message (_(txt_art_not_saved));
 		return ret_code;
 	}
 
@@ -373,7 +373,7 @@ save_art_to_file (
 	}
 
 	if (fseek (note_fp, 0L, SEEK_SET) == -1)
-		perror_message ("fseek() error on [%s]", save[i].subject); /* FIXME: -> lang.c */
+		perror_message (_("fseek() error on [%s]"), save[i].subject); /* FIXME: -> lang.c */
 
 	copy_fp (note_fp, fp);
 
@@ -388,7 +388,7 @@ save_art_to_file (
 	if (filename == 0) {
 		char *first_savefile;
 
-		sprintf (save_art_info, (is_mailbox ? txt_saved_to_mailbox : txt_art_saved_to), first_savefile = get_first_savefile ());
+		sprintf (save_art_info, (is_mailbox ? _(txt_saved_to_mailbox) : _(txt_art_saved_to)), first_savefile = get_first_savefile ());
 		FreeIfNeeded(first_savefile);
 		info_message (save_art_info);
 	}
@@ -410,7 +410,7 @@ save_arts (
 
 	for (i = 0 ; i < num_save ; i++) {
 		/* the tailing spaces are needed for the progress-meter */
-		wait_message (0, "%s%d  ", txt_saving, i+1);
+		wait_message (0, "%s%d  ", _(txt_saving), i+1);
 
 /* see the TODO file, this bit decides to write to seperate files or not - make it configurable */
 		if (is_mailbox)
@@ -422,7 +422,7 @@ save_arts (
 
 			sprintf(tbuf, "%d", num_save);
 			mlen = strlen(tbuf);
-			sprintf(tbuf, "%%s.%%0%dd", mlen);
+			sprintf(tbuf, "%%s.%%0%dd", (int)mlen);
 			sprintf(file, tbuf, save[i].file, i+1);
 #	else
 			sprintf (file, "%s.%03d", save[i].file, i+1);
@@ -457,24 +457,24 @@ save_thread_to_file (
 	t_bool ret_code;
 
 	if (num_save == 0) {
-		wait_message(2, txt_saved_nothing);
+		wait_message(2, _(txt_saved_nothing));
 		return FALSE;
 	}
 
 	if ((ret_code = save_arts(is_mailbox, group_path))) {
 		first_savefile = get_first_savefile ();
 		if (first_savefile[0] == '\0')
-			info_message (txt_thread_not_saved);
+			info_message (_(txt_thread_not_saved));
 		else {
 			if (is_mailbox)
-				sprintf (buf, txt_saved_to_mailbox, first_savefile);
+				sprintf (buf, _(txt_saved_to_mailbox), first_savefile);
 			else {
 				if (num_save == 1)
-					sprintf (buf, txt_art_saved_to, first_savefile);
+					sprintf (buf, _(txt_art_saved_to), first_savefile);
 				else {
 					char *last_savefile;
 
-					sprintf (buf, txt_thread_saved_to_many, first_savefile, last_savefile = get_last_savefile ());
+					sprintf (buf, _(txt_thread_saved_to_many), first_savefile, last_savefile = get_last_savefile ());
 					FreeIfNeeded(last_savefile);
 				}
 			}
@@ -496,18 +496,18 @@ save_regex_arts_to_file (
 	t_bool ret_code;
 
 	if (num_save == 0) {
-		info_message (txt_no_match);
+		info_message (_(txt_no_match));
 		return FALSE;
 	}
 
 	if ((ret_code = save_arts(is_mailbox, group_path))) {
 		first_savefile = get_first_savefile ();
 		if (is_mailbox)
-			sprintf (buf, txt_saved_to_mailbox, first_savefile);
+			sprintf (buf, _(txt_saved_to_mailbox), first_savefile);
 		else {
 			char *last_savefile;
 
-			sprintf (buf, txt_saved_pattern_to, first_savefile, last_savefile = get_last_savefile ());
+			sprintf (buf, _(txt_saved_pattern_to), first_savefile, last_savefile = get_last_savefile ());
 			FreeIfNeeded(last_savefile);
 		}
 
@@ -532,15 +532,14 @@ create_path (
 	char buf[PATH_LEN];
 	int i, j, len;
 	struct stat st;
-
-	i = my_group[cur_groupnum];
+	struct t_group currgrp = CURR_GROUP;
 
 	/*
 	 * expand "$var..." first, so variables starting with
 	 * '+', '$' or '=' will be processed correctly later
 	 */
 	if (path[0] == '$') {
-		if (strfpath (path, buf, sizeof (buf), homedir, (char *) 0, (char *) 0, active[i].name))
+		if (strfpath (path, buf, sizeof (buf), homedir, (char *) 0, (char *) 0, currgrp.name))
 			my_strncpy (path, buf, PATH_LEN);
 	}
 
@@ -551,8 +550,8 @@ create_path (
 	if (path[0] == '=') {
 		mbox_format = TRUE;
 		strcpy (tmp, path);
-		if (!strfpath (active[i].attribute->maildir, buf, sizeof (buf),
-		    homedir, (char *) 0, (char *) 0, active[i].name)) {
+		if (!strfpath (currgrp.attribute->maildir, buf, sizeof (buf),
+		    homedir, (char *) 0, (char *) 0, currgrp.name)) {
 #	ifdef VMS
 			joindir (buf, homedir, DEFAULT_MAILDIR);
 #	else
@@ -566,8 +565,8 @@ create_path (
 #	endif /* VMS */
 	} else {
 		if (!strchr ("~$=+/.", path[0])) {
-			if (!strfpath (active[i].attribute->savedir, buf, sizeof (buf),
-			    homedir, (char *) 0, (char *) 0, active[i].name)) {
+			if (!strfpath (currgrp.attribute->savedir, buf, sizeof (buf),
+			    homedir, (char *) 0, (char *) 0, currgrp.name)) {
 #	ifdef VMS
 				joindir (buf, homedir, DEFAULT_SAVEDIR);
 #	else
@@ -577,7 +576,7 @@ create_path (
 			joinpath (tmp, buf, path);
 			my_strncpy (path, tmp, PATH_LEN);
 		}
-		if (strfpath (path, buf, sizeof (buf), homedir, (char *) 0, active[i].attribute->savedir, active[i].name))
+		if (strfpath (path, buf, sizeof (buf), homedir, (char *) 0, currgrp.attribute->savedir, currgrp.name))
 			my_strncpy (path, buf, PATH_LEN);
 	}
 
@@ -595,7 +594,7 @@ create_path (
 			if (stat (buf, &st) == -1) {
 				if (my_mkdir (buf, (mode_t)(S_IRWXU|S_IRUGO|S_IXUGO)) == -1) {
 					if (errno != EEXIST) {
-						perror_message (txt_cannot_create, buf);
+						perror_message (_(txt_cannot_create), buf);
 						return FALSE;
 					}
 				}
@@ -605,7 +604,7 @@ create_path (
 #	else
 	if (my_mkdir (buf, (mode_t)(S_IRWXU|S_IRUGO|S_IXUGO)) == -1) {
 		if (errno != EEXIST) {
-			perror_message (txt_cannot_create, buf);
+			perror_message (_(txt_cannot_create), buf);
 			return FALSE;
 		}
 	}
@@ -650,7 +649,6 @@ add_to_save_list (
 	char tmp[PATH_LEN];
 	char dir[PATH_LEN];
 	char file[PATH_LEN];
-	int i;
 	struct t_article *the_article = &arts[the_index];
 
 	dir[0] = '\0';
@@ -680,9 +678,8 @@ add_to_save_list (
 	if (is_mailbox) {
 		my_strncpy (file, ((strlen (path) > 1) ? ((path[0] == '=') ? (path+1) : path) : glob_group), sizeof (file));
 
-		i = my_group[cur_groupnum];
-		if (!strfpath (active[i].attribute->maildir, tmp, sizeof (tmp),
-		    homedir, (char *) 0, (char *) 0, active[i].name)) {
+		if (!strfpath (CURR_GROUP.attribute->maildir, tmp, sizeof (tmp),
+		    homedir, (char *) 0, (char *) 0, CURR_GROUP.name)) {
 #	ifdef VMS
 			joindir (tmp, homedir, DEFAULT_MAILDIR);
 #	else
@@ -701,6 +698,8 @@ add_to_save_list (
 			sprintf(dir, "%s%s", spec->dev, spec->dir);
 			strcpy(file, spec->filename);
 #	else
+			int i;
+
 			for (i = strlen (path); i; i--) {
 #		ifdef WIN32
 				/*
@@ -712,7 +711,7 @@ add_to_save_list (
 				 */
 				if (path[i] == '\\') {
 					int j;
-					for (j=i-1; j; j--) {
+					for (j = i - 1; j; j--) {
 						if (path[j] == '\\' && path[j+1] == '\\') {
 							if (i-j-1 == 0)
 								strcpy(dir, "\\");
@@ -750,9 +749,8 @@ add_to_save_list (
 		if (*dir)
 			save[num_save].dir = my_strdup (dir);
 		else {
-			i = my_group[cur_groupnum];
-			if (!strfpath (active[i].attribute->savedir, tmp, sizeof (tmp),
-			    homedir, (char *) 0, (char *) 0, active[i].name)) {
+			if (!strfpath (CURR_GROUP.attribute->savedir, tmp, sizeof (tmp),
+			    homedir, (char *) 0, (char *) 0, CURR_GROUP.name)) {
 #	ifdef VMS
 				joindir (tmp, homedir, DEFAULT_SAVEDIR);
 #	else
@@ -860,7 +858,7 @@ save_filename (
 
 			sprintf(tbuf, "%d", num_save);
 			mlen = strlen(tbuf);
-			sprintf(tbuf, ".%%0%dd", mlen);
+			sprintf(tbuf, ".%%0%dd", (int)mlen);
 			sprintf(&filename[strlen(filename)], tbuf, i+1);
 #		else
 			sprintf (&filename[strlen(filename)], ".%03d", i+1);
@@ -938,7 +936,7 @@ get_save_filename (
 
 			sprintf(tbuf, "%d", num_save);
 			mlen = strlen(tbuf);
-			sprintf(tbuf, "%%s.%%0%dd", mlen);
+			sprintf(tbuf, "%%s.%%0%dd", (int)mlen);
 			sprintf(file, tbuf, save[i].file, i+1);
 #		else
 			sprintf (file, "%s.%03d", save[i].file, i+1);
@@ -986,7 +984,7 @@ post_process_files (
 	t_bool auto_delete)
 {
 	if (any_saved_files ()) {
-		wait_message (0, txt_post_processing);
+		wait_message (0, _(txt_post_processing));
 
 		switch (proc_type_ch) {
 			case iKeyPProcShar:
@@ -1031,7 +1029,7 @@ post_process_files (
 				break;
 		}
 
-		wait_message (1, txt_post_processing_finished);
+		wait_message (1, _(txt_post_processing_finished));
 		return TRUE;
 	}
 	return FALSE;
@@ -1109,30 +1107,30 @@ post_process_uud (
 		if (state == UURET_OK) {
 			/* open_out_file already declared, might as well use it */
 			open_out_file++;
-			my_printf(txt_libuu_success, item->filename);
+			my_printf(_(txt_libuu_success), item->filename);
 		} else {
 			errors++;
 			if (item->filename == NULL)
-				my_printf(txt_libuu_error_decode, item->subfname);
+				my_printf(_(txt_libuu_error_decode), item->subfname);
 			else
-				my_printf(txt_libuu_error_decode, item->filename);
+				my_printf(_(txt_libuu_error_decode), item->filename);
 
 			if (item->state & UUFILE_MISPART) {
-				my_printf(txt_libuu_error_missing);
+				my_printf(_(txt_libuu_error_missing));
 			} else if (item->state & UUFILE_NOBEGIN) {
-				my_printf(txt_libuu_error_no_begin);
+				my_printf(_(txt_libuu_error_no_begin));
 			} else if (item->state & UUFILE_NOEND) {
-				my_printf(txt_libuu_error_no_end);
+				my_printf(_(txt_libuu_error_no_end));
 			} else if (item->state & UUFILE_NODATA) {
-				my_printf(txt_libuu_error_no_data);
+				my_printf(_(txt_libuu_error_no_data));
 			} else
-				my_printf(txt_libuu_error_unknown);
+				my_printf(_(txt_libuu_error_unknown));
 		}
 		i++;
 		item = UUGetFileListItem(i);
 		my_flush();
 	}
-	my_printf(txt_libuu_saved, open_out_file, num_save, errors, IS_PLURAL(errors));
+	my_printf(_(txt_libuu_saved), open_out_file, num_save, errors, IS_PLURAL(errors));
 	UUCleanUp();
 	delete_processed_files (auto_delete); /* TRUE = auto-delete files */
 	return;
@@ -1146,13 +1144,13 @@ post_process_uud (
 	open_out_file = TRUE;
 
 	for (i = 0; i < num_save; i++) {
-		char realname[PATH_LEN];
+		char realname[130]; /* don't use PATH_LEN if you use an absolut val. below as you can't say that PATH_LEN is big enought */
 
 		if (!save[i].saved)
 			continue;
 		if (open_out_file) {
 			if ((fp_out = fopen (file_out, "w")) == (FILE *) 0) {
-				perror_message (txt_cannot_open, file_out);
+				perror_message (_(txt_cannot_open), file_out);
 				unlink (file_out);
 				return;
 			}
@@ -1169,8 +1167,11 @@ post_process_uud (
 				switch (state) {
 					case INITIAL:
 						if (!strncmp ("begin ", s, 6)) {
-							if (sscanf (s+6, "%*d %128s\n", realname) != 1)	/* Get the real filename */
+							if (sscanf (s+6, "%*d %128c\n", realname) != 1)	/* Get the real filename */
 								realname[0] = '\0';
+							else
+								strtok (realname, "\n");
+							realname[129] = '\0';
 							state = MIDDLE;
 							fprintf (fp_out, "%s", s);
 						}
@@ -1211,7 +1212,7 @@ post_process_uud (
 						break;
 
 					default:
-						my_fprintf (stderr, cCRLF "Error: ASSERT - default state\n"); /* FIXME: -> lang.c */
+						my_fprintf (stderr, "%s %s", cCRLF, _("Error: ASSERT - default state\n")); /* FIXME: -> lang.c */
 						fclose (fp_in);
 						fclose (fp_out);
 						unlink (file_out);
@@ -1256,14 +1257,14 @@ uudecode_file (
 	FILE *fp_in;
 	char buf[LEN];
 
-	wait_message (0, txt_uudecoding, file_out);
+	wait_message (0, _(txt_uudecoding), file_out);
 
 #		if !defined(M_UNIX)
 	make_post_process_cmd (DEFAULT_UUDECODE, file_out_dir, file_out);
 #		else
 	chdir (file_out_dir);
 
-	sh_format (buf, sizeof(buf), "uudecode %s", file_out);
+	sh_format (buf, sizeof(buf), "uudecode %s -o \"%s\"", file_out,uudname);
 	if (!invoke_cmd (buf))
 		return;
 
@@ -1273,7 +1274,7 @@ uudecode_file (
 	/*
 	 *  Sum file
 	 */
-	sh_format (buf, sizeof(buf), "%s %s", DEFAULT_SUM, uudname);
+	sh_format (buf, sizeof(buf), "%s \"%s\"", DEFAULT_SUM, uudname);
 	if ((fp_in = popen (buf, "r")) != (FILE *) 0) {
 		if (fgets (buf, (int) sizeof(buf), fp_in) != 0) {
 			char *ptr = strchr (buf, '\n');
@@ -1281,11 +1282,11 @@ uudecode_file (
 				*ptr = '\0';
 		}
 		pclose (fp_in);
-		my_printf (txt_checksum_of_file, uudname);
+		my_printf (_(txt_checksum_of_file), uudname);
 		my_flush ();
-		my_printf ("%s  %10ld bytes" cCRLF cCRLF, buf, file_size (uudname));
+		my_printf ("%s  %10ld %s %s %s", buf, file_size (uudname), _("bytes"), cCRLF, cCRLF);
 	} else
-		my_printf ("Cannot execute %s" cCRLF, buf); /* FIXME: -> lang.c */
+		my_printf ("%s %s %s", _("Cannot execute"), buf, cCRLF); /* FIXME: -> lang.c */
 
 	my_flush ();
 
@@ -1295,7 +1296,7 @@ uudecode_file (
 	if (*tinrc.post_process_command) {
 		sh_format (buf, sizeof(buf), "%s '%s'", tinrc.post_process_command, uudname);
 		if (!invoke_cmd (buf))
-			error_message (txt_command_failed, buf);		/* TODO not needed */
+			error_message (_(txt_command_failed), buf);		/* TODO not needed */
 		(void) sleep (1);
 	}
 
@@ -1306,11 +1307,11 @@ uudecode_file (
 		 */
 		if (pp > POST_PROC_UUDECODE && archiver[pp].test != 0) {
 			i = (pp == POST_PROC_UUD_LST_ZOO || pp == POST_PROC_UUD_EXT_ZOO ? 3 : 4);
-			sh_format (buf, sizeof(buf), "%s %s %s", archiver[i].name, archiver[i].test, uudname);
-			my_printf (txt_testing_archive, uudname);
+			sh_format (buf, sizeof(buf), "%s %s \"%s\"", archiver[i].name, archiver[i].test, uudname);
+			my_printf (_(txt_testing_archive), uudname);
 			my_flush ();
 			if (!invoke_cmd (buf))
-				error_message (txt_post_processing_failed);
+				error_message (_(txt_post_processing_failed));
 			(void) sleep (3);
 		}
 		/*
@@ -1319,10 +1320,10 @@ uudecode_file (
 		if (pp == POST_PROC_UUD_LST_ZOO || pp == POST_PROC_UUD_LST_ZIP) {
 			i = (pp == POST_PROC_UUD_LST_ZOO ? 3 : 4);
 			sh_format (buf, sizeof(buf), "%s %s %s", archiver[i].name, archiver[i].list, uudname);
-			my_printf (txt_listing_archive, uudname);
+			my_printf (_(txt_listing_archive), uudname);
 			my_flush ();
 			if (!invoke_cmd (buf))
-				error_message (txt_post_processing_failed);
+				error_message (_(txt_post_processing_failed));
 			(void) sleep (3);
 		}
 		/*
@@ -1331,10 +1332,10 @@ uudecode_file (
 		if (pp == POST_PROC_UUD_EXT_ZOO || pp == POST_PROC_UUD_EXT_ZIP) {
 			i = (pp == POST_PROC_UUD_EXT_ZOO ? 3 : 4);
 			sh_format (buf, sizeof(buf), "%s %s %s", archiver[i].name, archiver[i].extract, uudname);
-			my_printf (txt_extracting_archive, uudname);
+			my_printf (_(txt_extracting_archive), uudname);
 			my_flush ();
 			if (!invoke_cmd (buf))
-				error_message (txt_post_processing_failed);
+				error_message (_(txt_post_processing_failed));
 			(void) sleep (3);
 		}
 	}
@@ -1390,7 +1391,7 @@ post_process_sh (
 			continue;
 		my_strncpy (file_in, save_filename (j), sizeof (file_in));
 
-		my_printf (txt_extracting_shar, file_in);
+		my_printf (_(txt_extracting_shar), file_in);
 		my_flush ();
 
 		found_header = FALSE;
@@ -1428,7 +1429,7 @@ post_process_sh (
 			my_flush ();
 			Raw (FALSE);
 			if (!invoke_cmd (buf))
-				error_message (txt_command_failed, buf);		/* TODO not needed */
+				error_message (_(txt_command_failed), buf);		/* TODO not needed */
 			Raw (TRUE);
 #	endif /* M_UNIX */
 			unlink (file_out);
@@ -1448,11 +1449,11 @@ delete_processed_files (
 	if (any_saved_files ()) {
 		if (CURR_GROUP.attribute->delete_tmp_files || auto_delete)
 			delete_it = TRUE;
-		else if (prompt_yn (cLINES, txt_delete_processed_files, TRUE) == 1)
+		else if (prompt_yn (cLINES, _(txt_delete_processed_files), TRUE) == 1)
 			delete_it = TRUE;
 
 		if (delete_it) {
-			wait_message (0, "%s%s", txt_deleting, cCRLF);
+			wait_message (0, "%s%s", _(txt_deleting), cCRLF);
 
 			for (i = 0; i < num_save; i++)
 				unlink (save_filename (i));
@@ -1488,7 +1489,7 @@ print_art_seperator_line (
 	char sep = '\1';	/* Ctrl-A */
 #ifdef DEBUG
 	if (debug == 2)
-		error_message ("Mailbox=[%d]  MMDF=[%d]", is_mailbox, tinrc.save_to_mmdf_mailbox);
+		error_message (_("Mailbox=[%d]  MMDF=[%d]"), is_mailbox, tinrc.save_to_mmdf_mailbox);
 #endif /* DEBUG */
 
 	if (is_mailbox && tinrc.save_to_mmdf_mailbox)

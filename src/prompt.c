@@ -231,7 +231,7 @@ prompt_list (
 {
 	int ch, var_orig;
 	int i;
-	int adjust = (strcasecmp(list[0], txt_default) == 0);
+	int adjust = (strcasecmp(list[0], _(txt_default)) == 0);
 	size_t width = 0;
 
 	var += adjust;
@@ -441,7 +441,7 @@ prompt_msgid (
 {
 	char buf[LEN];
 
-	if (prompt_string(txt_enter_message_id, buf+1, HIST_MESSAGE_ID) && buf[1]) {
+	if (prompt_string(_(txt_enter_message_id), buf+1, HIST_MESSAGE_ID) && buf[1]) {
 		char *ptr = buf+1;
 		struct t_msgid *msgid;
 
@@ -455,7 +455,7 @@ prompt_msgid (
 		}
 
 		if ((msgid = find_msgid(ptr)) == NULL) {
-			info_message(txt_art_unavailable);
+			info_message(_(txt_art_unavailable));
 			return ART_UNAVAILABLE;
 		}
 
@@ -463,7 +463,7 @@ prompt_msgid (
 		 * Is it expired or otherwise not on the spool ?
 		 */
 		if (msgid->article == ART_UNAVAILABLE) {
-			info_message(txt_art_unavailable);
+			info_message(_(txt_art_unavailable));
 			return ART_UNAVAILABLE;
 		}
 
@@ -472,7 +472,7 @@ prompt_msgid (
 		 * no way to display it
 		 */
 		if (which_thread(msgid->article) == -1) {
-			info_message (txt_no_last_message);
+			info_message (_(txt_no_last_message));
 			return ART_UNAVAILABLE;
 		}
 
@@ -554,7 +554,7 @@ continue_prompt (
 #ifdef USE_CURSES
 	cmd_line = TRUE;
 #endif /* USE_CURSES */
-	info_message (txt_return_key);
+	info_message (_(txt_return_key));
 	ch = ReadCh ();
 
 #ifndef WIN32

@@ -98,7 +98,7 @@ show_page (
 
 restart:
 	if (read_news_via_nntp)
-		wait_message (0, txt_reading_article);
+		wait_message (0, _(txt_reading_article));
 
 	glob_respnum = respnum;
 
@@ -115,7 +115,7 @@ restart:
 
 		case ART_UNAVAILABLE:
 			art_mark_read (group, &arts[respnum]);
-			wait_message (1, txt_art_unavailable);
+			wait_message (1, _(txt_art_unavailable));
 			nobreak;	/* FALLTHROUGH */
 
 		case ART_ABORT:
@@ -139,7 +139,7 @@ restart:
 	    && tinrc.use_metamail) {
 		if (tinrc.ask_for_metamail) {
 			show_note_page (group->name, respnum);
-			if (prompt_yn (cLINES, txt_use_mime, TRUE) == 1) {
+			if (prompt_yn (cLINES, _(txt_use_mime), TRUE) == 1) {
 				show_mime_article (note_fp, &arts[respnum]);
 				note_page = 0;
 				note_end = FALSE;
@@ -159,9 +159,9 @@ restart:
 	forever {
 		ch = ReadCh ();
 
-		if (ch >= '0' && ch <= '9') {
+		if (ch > '0' && ch <= '9') {
 			if (!HAS_FOLLOWUPS (which_thread (respnum)))
-				info_message (txt_no_responses);
+				info_message (_(txt_no_responses));
 			else {
 				n = prompt_response (ch, respnum);
 				if (n != -1) {
@@ -243,7 +243,7 @@ end_of_article:
 
 			case iKeyPageLastViewed:	/* show last viewed article */
 				if (last_resp < 0 || (which_thread(last_resp) == -1)) {
-					info_message (txt_no_last_message);
+					info_message (_(txt_no_last_message));
 					break;
 				}
 				art_close ();
@@ -265,17 +265,17 @@ end_of_article:
 				struct t_msgid *parent = arts[respnum].refptr->parent;
 
 				if (parent == NULL) {
-					info_message(txt_art_parent_none);
+					info_message(_(txt_art_parent_none));
 					break;
 				}
 
 				if (parent->article == ART_UNAVAILABLE) {
-					info_message(txt_art_parent_unavail);
+					info_message(_(txt_art_parent_unavail));
 					break;
 				}
 
 				if (arts[parent->article].killed) {
-					info_message(txt_art_parent_killed);
+					info_message(_(txt_art_parent_killed));
 					break;
 				}
 
@@ -308,11 +308,11 @@ end_of_article:
 				break;
 
 			case iKeyPageAutoSaveTagged:	/* Auto-save tagged articles without prompting */
-				if (index_point >= 0) {
+				if (grpmenu.curr >= 0) {
 					if (num_of_tagged_arts)
-						feed_articles (FEED_AUTOSAVE_TAGGED, PAGE_LEVEL, &CURR_GROUP, (int) base[index_point]);
+						feed_articles (FEED_AUTOSAVE_TAGGED, PAGE_LEVEL, &CURR_GROUP, (int) base[grpmenu.curr]);
 					else
-						info_message (txt_no_tagged_arts_to_save);
+						info_message (_(txt_no_tagged_arts_to_save));
 					}
 				break;
 
@@ -333,7 +333,7 @@ end_of_article:
 				if (arts[respnum].inthread) {
 					n = which_thread (respnum);
 					if (n >= 0 && base[n] != respnum) {
-						assert (n < top_base);
+						assert (n < grpmenu.max);
 						respnum = base[n];
 						art_close ();
 						goto restart;
@@ -436,7 +436,7 @@ page_goto_next_unread:
 					tex2iso_article = iIsArtTexEncoded (art, group_path);
 
 				redraw_page (group->name, respnum);
-				info_message (txt_toggled_tex2iso, (tex2iso_supported) ? "on" : "off");
+				info_message (_(txt_toggled_tex2iso), (tex2iso_supported) ? "on" : "off");
 				break;
 
 			/* haeh? */
@@ -474,7 +474,7 @@ page_goto_next_unread:
 begin_of_article:
 				if (note_page == ART_UNAVAILABLE) {
 					ClearScreen ();
-					my_printf (txt_art_unavailable/*, arts[respnum].artnum*/);
+					my_printf (_(txt_art_unavailable)/*, arts[respnum].artnum*/);
 					my_flush ();
 				} else {
 					note_page = 0;
@@ -488,7 +488,7 @@ begin_of_article:
 			case iKeyPageToggleRot2:	/* toggle rot-13 mode */
 				rotate = (rotate ? 0 : 13);
 				redraw_page (group->name, respnum);
-				info_message (txt_toggled_rot13);
+				info_message (_(txt_toggled_rot13));
 				break;
 
 			case iKeySearchAuthF:	/* author search forward */
@@ -513,7 +513,7 @@ page_up:
 
 				} else {
 					if (note_page <= 1)
-						info_message (txt_begin_of_art);
+						info_message (_(txt_begin_of_art));
 					else {
 						note_page -= 2;
 						note_end = FALSE;
@@ -525,7 +525,7 @@ page_up:
 
 			case iKeyPageCatchup:			/* catchup - mark read, goto next */
 			case iKeyPageCatchupNextUnread:	/* goto next unread */
-				sprintf(buf, txt_mark_thread_read, (ch == iKeyPageCatchupNextUnread) ? txt_enter_next_thread : "");
+				sprintf(buf, _(txt_mark_thread_read), (ch == iKeyPageCatchupNextUnread) ? _(txt_enter_next_thread) : "");
 				if (!tinrc.confirm_action || prompt_yn (cLINES, buf, TRUE) == 1) {
 					thd_mark_read (group, base[which_thread(respnum)]);
 					art_close ();
@@ -536,7 +536,7 @@ page_up:
 			case iKeyPageMarkThdUnread:
 				thd_mark_unread (group, base[which_thread(respnum)]);
 				/* FIXME: replace 'Thread' by 'Article' if THREAD_NONE */
-				info_message(txt_marked_as_unread, "Thread");
+				info_message(_(txt_marked_as_unread), _("Thread"));
 				break;
 
 			case iKeyPageCancel:			/* cancel an article */
@@ -544,21 +544,19 @@ page_up:
 					if (cancel_article (group, &arts[respnum], respnum))
 						redraw_page (group->name, respnum);
 				} else
-					info_message (txt_cannot_post);
+					info_message (_(txt_cannot_post));
 				break;
 
 			case iKeyPageEdit:				/* edit an article (mailgroup only) */
-				if (iArtEdit (group, &arts[respnum])) {
+				if (iArtEdit (group, &arts[respnum]))
 					goto restart;
-					/* redraw_page (group->name, respnum); */
-				}
 				break;
 
 			case iKeyPageFollowupQuote:		/* post a followup to this article */
 			case iKeyPageFollowupQuoteHeaders:
 			case iKeyPageFollowup:
 				if (!can_post) {
-					info_message (txt_cannot_post);
+					info_message (_(txt_cannot_post));
 					break;
 				}
 				(void) post_response (group->name, respnum,
@@ -568,7 +566,7 @@ page_up:
 				break;
 
 			case iKeyPageHelp:	/* help */
-				show_info_page (HELP_INFO, help_page, txt_art_pager_com);
+				show_info_page (HELP_INFO, help_page, _(txt_art_pager_com));
 				redraw_page (group->name, respnum);
 				break;
 
@@ -590,7 +588,7 @@ return_to_index:
 					*threadnum = which_response (respnum);
 
 				if (filter_state == FILTERING || local_filtered_articles) {
-					int old_top = top;
+					int old_top = top_art;
 					long old_artnum = arts[respnum].artnum;
 					filter_articles (group);
 					make_threads (group, FALSE);
@@ -657,7 +655,7 @@ return_to_index:
 
 			case iKeyPageNextUnreadArt:	/* next unread article */
 				if ((n = next_unread (next_response (respnum))) == -1)
-					info_message (txt_no_next_unread_art);
+					info_message (_(txt_no_next_unread_art));
 				else {
 					art_close ();
 					respnum = n;
@@ -675,7 +673,7 @@ return_to_index:
 
 			case iKeyPagePrevUnreadArt:	/* previous unread article */
 				if ((n = prev_unread (prev_response (respnum))) == -1)
-					info_message (txt_no_prev_unread_art);
+					info_message (_(txt_no_prev_unread_art));
 				else {
 					art_close ();
 					respnum = n;
@@ -694,13 +692,7 @@ return_to_index:
 				break;
 
 			case iKeyPageTag:	/* tag/untag article for saving */
-				if (arts[respnum].tagged) {
-					arts[respnum].tagged = 0;
-					info_message (txt_untagged_art);
-				} else {
-					arts[respnum].tagged = ++num_of_tagged_arts;
-					info_message (txt_tagged_art);
-				}
+				tag_article (respnum);
 				break;
 
 			case iKeyPageGroupSel:	/* return to group selection page */
@@ -726,7 +718,7 @@ return_to_index:
 					if (pickup_postponed_articles (FALSE, FALSE))
 						redraw_page (group->name, respnum);
 				} else
-					info_message(txt_cannot_post);
+					info_message(_(txt_cannot_post));
 				break;
 
 			case iKeyDisplayPostHist:	/* display messages posted by user */
@@ -736,7 +728,7 @@ return_to_index:
 
 			case iKeyPageMarkArtUnread:	/* mark article as unread (to return) */
 				art_mark_will_return (group, &arts[respnum]);
-				info_message (txt_marked_as_unread, "Article");
+				info_message (_(txt_marked_as_unread), _("Article"));
 				break;
 
 			case iKeyPageSkipIncludedText:	/* skip included text */
@@ -752,13 +744,13 @@ return_to_index:
 				if (use_color) { /* make sure we have color turned on */
 					word_highlight = !word_highlight;
 					redraw_page(group->name, respnum);
-					info_message(txt_toggled_high, (word_highlight) ? "on" : "off");
+					info_message(_(txt_toggled_high), (word_highlight) ? "on" : "off");
 				}
 				break;
 #endif /* HAVE_COLOR */
 
 			default:
-				info_message(txt_bad_command);
+				info_message(_(txt_bad_command));
 		}
 	}
 	/* NOTREACHED */
@@ -773,8 +765,7 @@ redraw_page (
 {
 	if (note_page == ART_UNAVAILABLE) {
 		ClearScreen ();
-		my_printf (txt_art_unavailable/*, arts[respnum].artnum*/);
-		my_flush ();
+		error_message (_(txt_art_unavailable));
 	} else if (note_page > 0) {
 		note_page--;
 		fseek (note_fp, note_mark[note_page], SEEK_SET);
@@ -1031,7 +1022,7 @@ print_a_line:
 		MoveCursor (cLINES, MORE_POS-(5+BLANK_PAGE_COLS));
 		StartInverse ();
 
-		my_fputs (((arts[respnum].thread != -1) ? txt_next_resp : txt_last_resp), stdout);
+		my_fputs (((arts[respnum].thread != -1) ? _(txt_next_resp) : _(txt_last_resp)), stdout);
 
 		my_flush ();
 		EndInverse ();
@@ -1041,7 +1032,7 @@ print_a_line:
 		else {
 			MoveCursor (cLINES, MORE_POS-BLANK_PAGE_COLS);
 			StartInverse ();
-			my_fputs (txt_more, stdout);
+			my_fputs (_(txt_more), stdout);
 			my_flush ();
 			EndInverse ();
 		}
@@ -1080,7 +1071,7 @@ show_mime_article (
 		fflush (mime_fp);
 		pclose (mime_fp);
 	} else
-		info_message (txt_error_metamail_failed, strerror(errno));
+		info_message (_(txt_error_metamail_failed), strerror(errno));
 
 	/*
 	 * if we don't set note_end the undecoded article is displayed
@@ -1097,7 +1088,7 @@ show_mime_article (
 	MoveCursor (cLINES, MORE_POS-(5+BLANK_PAGE_COLS));
 	StartInverse ();
 
-	my_fputs (((art->thread != -1) ? txt_next_resp : txt_last_resp), stdout);
+	my_fputs (((art->thread != -1) ? _(txt_next_resp) : _(txt_last_resp)), stdout);
 
 	my_flush ();
 	EndInverse ();
@@ -1179,7 +1170,7 @@ show_first_header (
 		/* Can't eval tin_ltoa() more than once in a statement due to statics */
 		strcpy(x, tin_ltoa(which_thread(respnum) + 1, 4));
 
-		sprintf (tmp, txt_thread_x_of_n, buf, x, tin_ltoa(top_base, 4));
+		sprintf (tmp, _(txt_thread_x_of_n), buf, x, tin_ltoa(grpmenu.max, 4));
 		my_fputs (tmp, stdout);
 	}
 
@@ -1192,7 +1183,7 @@ show_first_header (
 	fcol(tinrc.col_head);
 #	endif /* HAVE_COLOR */
 
-	sprintf (buf, txt_lines, tmp);
+	sprintf (buf, _(txt_lines), tmp);
 	n = strlen (buf);
 	my_fputs (buf, stdout);
 
@@ -1228,14 +1219,14 @@ show_first_header (
 
 	MoveCursor (1, RIGHT_POS);
 	if (whichresp)
-		my_printf (txt_resp_x_of_n, whichresp, x_resp);
+		my_printf (_(txt_resp_x_of_n), whichresp, x_resp);
 	else {
 		if (!x_resp)
-			my_fputs (txt_no_resp, stdout);
+			my_fputs (_(txt_no_resp), stdout);
 		else if (x_resp == 1)
-			my_fputs (txt_1_resp, stdout);
+			my_fputs (_(txt_1_resp), stdout);
 		else
-			my_printf (txt_x_resp, x_resp);
+			my_printf (_(txt_x_resp), x_resp);
 	}
 
 #	ifdef HAVE_COLOR
@@ -1249,7 +1240,7 @@ show_first_header (
 	buf[cCOLS-1] = '\0';
 
 	if (*note_h.org) {
-		sprintf (tmp, txt_at_s, note_h.org);
+		sprintf (tmp, _(txt_at_s), note_h.org);
 		tmp[sizeof(tmp)-1] = '\0';
 
 		if ((int) strlen (buf) + (int) strlen (tmp) >= cCOLS -1) {
@@ -1295,27 +1286,27 @@ show_cont_header (
 	whichbase = which_thread (respnum);
 	maxresp = num_of_responses (whichbase);
 
-	assert (whichbase < top_base);
+	assert (whichbase < grpmenu.max);
 
 	/*
 	 * the last term in the length of the buffer is mainly to shut
-	 * checker up although we still depend on txt_thread_resp_page
+	 * checker up although we still depend on _(txt_thread_resp_page)
 	 * not being too long
 	 */
 	buf = (char *) my_malloc (strlen((arts[respnum].name ? arts[respnum].name : arts[respnum].from)) + strlen(note_h.subj) + cCOLS + 5*3*sizeof(int));
 
 	if (whichresp) {
-		sprintf(buf, txt_thread_resp_page,
+		sprintf(buf, _(txt_thread_resp_page),
 			whichbase + 1,
-			top_base,
+			grpmenu.max,
 			whichresp,
 			maxresp,
 			note_page + 1,
 			arts[respnum].name ? arts[respnum].name : arts[respnum].from, note_h.subj);
 	} else {
-		sprintf(buf, txt_thread_page,
+		sprintf(buf, _(txt_thread_page),
 			whichbase + 1,
-			top_base,
+			grpmenu.max,
 			note_page + 1,
 			arts[respnum].name ? arts[respnum].name : arts[respnum].from, note_h.subj);
 	}
@@ -1364,7 +1355,7 @@ art_open (
 	art_close ();	/* just in case */
 
 	if ((tex2iso_article = (tex2iso_supported ? iIsArtTexEncoded (art->artnum, group_path) : FALSE)))
-		wait_message (0, txt_is_tex_ecoded);
+		wait_message (0, _(txt_is_tex_ecoded));
 
 	if ((note_fp = open_art_fp (group_path, art->artnum, art->lines, rfc1521decode)) == (FILE *) 0) {
 		note_page = ART_UNAVAILABLE;		/* Flag error for later */
@@ -1514,7 +1505,7 @@ prompt_response (
 
 	clear_message ();
 
-	if ((num = prompt_num (ch, txt_read_resp)) == -1) {
+	if ((num = prompt_num (ch, _(txt_read_resp))) == -1) {
 		clear_message ();
 		return -1;
 	}
@@ -1613,13 +1604,11 @@ match_header (
 
 #ifdef LOCAL_CHARSET
 		/*
-		 * we have a bit of a problem here, if the header
-		 * contains 8 bit character, they were already
-		 * converted to local charset in rfc1521_decode, they
-		 * will be decoded again by rfc1522_decode in modified
-		 * strncpy. We just convert the chars back to network
-		 * charset for now, but this should be done
-		 * differently, I would guess.
+		 * we have a bit of a problem here, if the header contains 8 bit
+		 * character, they were already converted to local charset in
+		 * rfc1521_decode(), they will be decoded again by rfc1522_decode in
+		 * modifiedstrncpy(). We just convert the chars back to network charset
+		 * for now, but this should be done differently, I would guess.
 		 */
 		buffer_to_network(buf+plen);
 #endif /* LOCAL_CHARSET */

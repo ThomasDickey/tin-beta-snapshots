@@ -218,18 +218,17 @@ ScreenSize (
 }
 
 
+/*
+ * get screen size from termcap entry & setup sizes
+ */
 void
 setup_screen (void)
 {
-	/*
-	 * get screen size from termcap entry & setup sizes
-	 */
 	_line = 1;
 	ScreenSize (&cLINES, &cCOLS);
 	cmd_line = FALSE;
 	Raw (TRUE);
 	set_win_size (&cLINES, &cCOLS);
-
 }
 
 #ifdef M_UNIX
@@ -240,15 +239,15 @@ get_termcaps (void)
 	char the_termname[40], *p;
 
 	if ((p = getenv ("TERM")) == (char *) 0) {
-		my_fprintf (stderr, txt_no_term_set, tin_progname);
+		my_fprintf (stderr, _(txt_no_term_set), tin_progname);
 		return (FALSE);
 	}
 	if (strcpy (the_termname, p) == NULL) {
-		my_fprintf (stderr, txt_cannot_get_term, tin_progname);
+		my_fprintf (stderr, _(txt_cannot_get_term), tin_progname);
 		return (FALSE);
 	}
 	if (tgetent (_terminal, the_termname) != 1) {
-		my_fprintf (stderr, txt_cannot_get_term_entry, tin_progname);
+		my_fprintf (stderr, _(txt_cannot_get_term_entry), tin_progname);
 		return (FALSE);
 	}
 
@@ -287,19 +286,19 @@ get_termcaps (void)
 	}
 
 	if (!_clearscreen) {
-		my_fprintf (stderr, txt_no_term_clearscreen, tin_progname);
+		my_fprintf (stderr, _(txt_no_term_clearscreen), tin_progname);
 		return (FALSE);
 	}
 	if (!_moveto) {
-		my_fprintf (stderr, txt_no_term_cursor_motion, tin_progname);
+		my_fprintf (stderr, _(txt_no_term_cursor_motion), tin_progname);
 		return (FALSE);
 	}
 	if (!_cleartoeoln) {
-		my_fprintf (stderr, txt_no_term_clear_eol, tin_progname);
+		my_fprintf (stderr, _(txt_no_term_clear_eol), tin_progname);
 		return (FALSE);
 	}
 	if (!_cleartoeos) {
-		my_fprintf (stderr, txt_no_term_clear_eos, tin_progname);
+		my_fprintf (stderr, _(txt_no_term_clear_eos), tin_progname);
 		return (FALSE);
 	}
 	if (_lines == -1)
@@ -308,7 +307,7 @@ get_termcaps (void)
 		_columns = DEFAULT_COLUMNS_ON_TERMINAL;
 
 	if (_lines < MIN_LINES_ON_TERMINAL || _columns < MIN_COLUMNS_ON_TERMINAL) {
-		my_fprintf(stderr, txt_screen_too_small, tin_progname);
+		my_fprintf(stderr, _(txt_screen_too_small), tin_progname);
 		return (FALSE);
 	}
 	/*
@@ -484,7 +483,7 @@ InitScreen (void)
 #endif /* VMS */
 
 	if (_lines < MIN_LINES_ON_TERMINAL || _columns < MIN_COLUMNS_ON_TERMINAL) {
-		my_fprintf(stderr, txt_screen_too_small, tin_progname);
+		my_fprintf(stderr, _(txt_screen_too_small), tin_progname);
 		return (FALSE);
 	}
 
@@ -501,29 +500,24 @@ InitScreen (void)
 void
 InitWin (void)
 {
-
 	if (_terminalinit) {
 		tputs (_terminalinit, 1, outchar);
 		my_flush();
 	}
 	set_keypad_on ();
 	set_xclick_on ();
-
 }
 
 
 void
 EndWin (void)
 {
-
 	if (_terminalend) {
 		tputs (_terminalend, 1, outchar);
 		my_flush();
 	}
 	set_keypad_off ();
 	set_xclick_off ();
-
-
 }
 
 
@@ -557,11 +551,9 @@ set_keypad_off (void)
 void
 ClearScreen (void)
 {
-
 	tputs (_clearscreen, 1, outchar);
 	my_flush ();		/* clear the output buffer */
 	_line = 1;
-
 }
 
 /*
@@ -576,14 +568,12 @@ MoveCursor (
 	int row,
 	int col)
 {
-
 	char *stuff;
 
 	stuff = tgoto (_moveto, col, row);
 	tputs (stuff, 1, outchar);
 	my_flush ();
 	_line = row + 1;
-
 }
 
 #else	/* !M_UNIX */
@@ -593,7 +583,6 @@ MoveCursor (
 	int row,
 	int col)
 {
-
 	char stuff[12], *tgoto();
 
 	if (_moveto) {
@@ -602,7 +591,6 @@ MoveCursor (
 		my_flush ();
 		_line = row + 1;
 	}
-
 }
 
 #endif /* M_UNIX */
@@ -613,10 +601,8 @@ MoveCursor (
 void
 CleartoEOLN (void)
 {
-
 	tputs (_cleartoeoln, 1, outchar);
 	my_flush ();	/* clear the output buffer */
-
 }
 
 /*
@@ -625,7 +611,6 @@ CleartoEOLN (void)
 void
 CleartoEOS (void)
 {
-
 	int i;
 
 	if (_cleartoeos) {
@@ -637,7 +622,6 @@ CleartoEOS (void)
 		}
 	}
 	my_flush ();	/* clear the output buffer */
-
 }
 
 /*
@@ -647,7 +631,6 @@ CleartoEOS (void)
 void
 StartInverse (void)
 {
-
 	in_inverse = 1;
 	if (_setinverse && tinrc.inverse_okay) {
 #	ifdef HAVE_COLOR
@@ -662,7 +645,6 @@ StartInverse (void)
 #	endif /* HAVE_COLOR */
 	}
 	my_flush ();
-
 }
 
 /*
@@ -672,7 +654,6 @@ StartInverse (void)
 void
 EndInverse (void)
 {
-
 	in_inverse = 0;
 	if (_clearinverse && tinrc.inverse_okay) {
 #	ifdef HAVE_COLOR
@@ -687,7 +668,6 @@ EndInverse (void)
 #	endif /* HAVE_COLOR */
 	}
 	my_flush ();
-
 }
 
 /*
@@ -697,12 +677,10 @@ EndInverse (void)
 void
 ToggleInverse (void)
 {
-
 	if (!in_inverse)
 		StartInverse();
 	else
 		EndInverse();
-
 }
 
 /*
@@ -779,7 +757,6 @@ Raw (
 int
 ReadCh (void)
 {
-
 	char ch;
 	KBDKEYINFO os2key;
 	int rc;
@@ -828,7 +805,6 @@ ReadCh (void)
 		}
 	}
 	return ((result == EOF) ? EOF : result & 0xFF);
-
 }
 
 #	endif /* M_OS2 */
@@ -842,10 +818,9 @@ static int
 AmiReadCh (
 	int getscrsize)
 {
-
-static unsigned char buf[128];
-static int buflen = 0, bufp = 0;
 	int result;
+	static int buflen = 0, bufp = 0;
+	static unsigned char buf[128];
 	unsigned char ch;
 
 	while (getscrsize || !buflen) {

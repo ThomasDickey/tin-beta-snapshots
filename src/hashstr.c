@@ -33,7 +33,7 @@
 #define HASHNODE_TABLE_SIZE	2411
 
 #ifdef M_AMIGA
-	static struct t_hashnode **table=0;
+	static struct t_hashnode **table = 0;
 #else
 	static struct t_hashnode *table[HASHNODE_TABLE_SIZE];
 #endif /* M_AMIGA */

@@ -1,5 +1,8 @@
 Bugs
 ----
+o  xflag is not always reset to FALSE before entering a group, thus
+   you might have to press 'X' twice to weed out all !selected arts
+
 o  --with-ncurses --enable-curses has several display problems:
     - if use_color is set:
       - '^G' (pgp-check article output is grabbled)
@@ -13,6 +16,8 @@ o  using libuu for decoding articles breaks
    (fix this and join post_process_types/post_process_command (i.e
     provide a script which handles all post_process_types) and kick
     non-libuu code afterwards)
+   include basic library source in tin for uudecoding
+   (http://www.informatik.uni-frankfurt.de/~fp/uudeview/)
 
 o  in batch mode (i.e. -S) ~/.tin/attributes is not evaluated, thus
    batch_save etc. is broken.
@@ -180,9 +185,6 @@ o  add cmd-line/tinrc-switch to fetch only headers of unread articles;
    [-G is a start]
    allow setting a per group limit via attributes
 
-o  use (include (basic) librarie source tin tin) libuu (uudeview) for
-   uudecoding (http://www.informatik.uni-frankfurt.de/~fp/uudeview/)
-
 o  Add a trunc() function or something similar for shortening long strings
    like a group name to a fixed length ending in ... (like center_line does)
    for embedding into status messages.
@@ -339,13 +341,19 @@ o  Enhance -w to take newsgroup name as argument and use vGrpGetArtInfo()
 o  Merge the selection code with the range code. Having two similar methods
    of picking articles with similar goals is wasteful.
 
+o  'B'ody search doesn't jump to the match in the article
+   (IMHO this is confusing inside the pager (at least if the hit
+    is in the current article), but ok at any other level).
+
 Internal Changes
 ----------------
+o  any reason to not change base[] to int * ??
+
 o  check where PRODUCT should be used instead of tin_progname and/or "tin"
 
 o  kick Hungarian notation
 
-o  kick ~/.tin/headers, ~/.tin/attributs exists
+o  kick ~/.tin/headers, ~/.tin/attributes exists
 
 o  use XGTITLE (if available) if -n cmd-line flag is present
    (see open.c)
@@ -377,8 +385,6 @@ o  add check for sizeof char, short, int, long, ...
 o  join Makefile and makefile (not entirely possible)
    update makefile[.in]
 
-o  move all strings to lang.c
-
 o  cleanup (=rewrite) post.c/inews.c/header.c/page.c
 
 o  cleanup main.c/init_selfinfo()
@@ -400,6 +406,10 @@ o  check code with lclint (http://www.sds.lcs.mit.edu/lclint/),
    ccmalloc (http://iseran.ira.uka.de/~armin/ccmalloc/) and MSS
    (http://hem1.passagen.se/blizzar/mss/)
 
+o  Rewrite the tag code so that arts[].tagged becomes index in arts[]
+   of next tagged article. num_of_tagged_arts becomes index of first
+   tagged art. Traversing tagged arts becomes much easier & faster.
+
 Docs/online help
 ----------------
 o  man page still needs work
@@ -412,10 +422,6 @@ Not yet classified
 ------------------
 o  we might need a quote_percent(string) function and should check all
    wait_message() etc.pp. calls with user defined strings...
-
-o  'B'ody search doesn't jump to the match in the article
-   (IMHO this is confusing inside the pager (at least if the hit
-    is in the current article), but ok at any other level).
 
 o  strip Xref:-header if saving news in batch mode (-S)?
 

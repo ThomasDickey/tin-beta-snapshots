@@ -225,13 +225,13 @@ free_art_array (
 {
 	register int i;
 
-	for (i = 0; i < top; i++) {
+	for (i = 0; i < top_art; i++) {
 		arts[i].artnum = 0L;
 		arts[i].thread = ART_EXPIRED;
 		arts[i].inthread = FALSE;
 		arts[i].status = ART_UNREAD;
 		arts[i].killed = FALSE;
-		arts[i].tagged = FALSE;
+		arts[i].tagged = 0;
 		arts[i].selected = FALSE;
 		arts[i].date = (time_t) 0;
 
@@ -327,9 +327,9 @@ free_active_arrays (
 
 			FreeAndNull(active[i].name);
 			FreeAndNull(active[i].description);
+			FreeAndNull(active[i].aliasedto);
 
-			if (active[i].type == GROUP_TYPE_MAIL &&
-			    active[i].spooldir != (char *) 0) {
+			if (active[i].type == GROUP_TYPE_MAIL && active[i].spooldir != (char *) 0) {
 				free ((char *) active[i].spooldir);
 				active[i].spooldir = (char *) 0;
 			}
@@ -399,7 +399,7 @@ my_malloc1 (
 #endif /* DEBUG */
 
 	if ((p = (char *) malloc (size)) == (char *) 0) {
-		error_message (txt_out_of_memory, tin_progname, size, file, line);
+		error_message (_(txt_out_of_memory), tin_progname, size, file, line);
 		giveup();
 	}
 	return (void *) p;
@@ -421,7 +421,7 @@ my_realloc1 (
 	p = (char *) ((!p) ? (calloc (1, size)) : realloc (p, size));
 
 	if (p == (char *) 0) {
-		error_message (txt_out_of_memory, tin_progname, size, file, line);
+		error_message (_(txt_out_of_memory), tin_progname, size, file, line);
 		giveup();
 	}
 	return (void *) p;

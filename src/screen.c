@@ -250,7 +250,7 @@ draw_arrow_mark (
 
 
 void
-erase_arrow (
+erase_arrow_mark (
 	int line)
 {
 	MoveCursor (line, 0);
@@ -276,14 +276,14 @@ show_title (
 {
 	int col;
 
-	col = (cCOLS - (int) strlen (txt_type_h_for_help))+1;
+	col = (cCOLS - (int) strlen (_(txt_type_h_for_help)))+1;
 	if (col) {
 		MoveCursor (0, col);
 #ifdef HAVE_COLOR
 		fcol(tinrc.col_title);
 #endif /* HAVE_COLOR */
 		/* you have mail message in */
-		my_fputs ((mail_check () ? txt_you_have_mail : txt_type_h_for_help), stdout);
+		my_fputs ((mail_check () ? _(txt_you_have_mail) : _(txt_type_h_for_help)), stdout);
 
 #ifdef HAVE_COLOR
 		fcol(tinrc.col_normal);

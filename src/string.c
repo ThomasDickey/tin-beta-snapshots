@@ -32,9 +32,9 @@ tin_ltoa (
 	int digits)
 {
 	static char buffer[256];
-	static const char power[]=" KMGT";
+	static const char power[] = " KMGT";
 	int len;
-	int i=0;
+	int i = 0;
 
 	sprintf (buffer, "%ld", value);
 	len = (int) strlen (buffer);
@@ -598,7 +598,7 @@ my_strerror (
 	if (n >= 0 && n < sys_nerr)
 		return sys_errlist[n];
 #	endif /* HAVE_SYS_ERRLIST */
-	sprintf(temp, "Errno: %i", n);
+	sprintf(temp, _("Errno: %i"), n);
 	return temp;
 }
 #endif /* !HAVE_STRERROR */

@@ -1,7 +1,46 @@
+-- 1.5.1 release 19991223 "" --
+
+ 008) Jason Faultless <jason@radar.tele2.co.uk>
+      Urs Janssen <urs@tin.org>
+      BUG. removed annyoing "Reading attributes file ..."-messages
+           for reach new group
+      FIX. active.c, attrib.c, lang.c, main.c
+
+U007) Sebastian Bork <sebi@sebi.org>
+      BUG. misplaced parenthesis
+      FIX. post.c
+
+U006) Arkadiusz Miskiewicz <misiek@misiek.eu.org>
+      ADD. better check is system is IPv6 ready
+      ADD. NLS support
+      FIX. configure[.in], autoconf.h[in], tin.h, *
+
+U005) Mark Ayzenshteyn <marka@bonzo.org>
+      ADD. uudecode files with spaces in name
+      FIX. save.c
+
+U004) Jason Faultless <jason@radar.tele2.co.uk>
+      ADD. split article tagging type code to tag.c
+      ADD. start of GPG support
+      ADD. big code cleanup
+      ADD. turn off curses scrolling after startup - causes display problems
+      FIX. README, CHANGES, TODO, extern.h, proto.h, tin.h, auth.c
+           config.c, curses.c, feed.c, filter.c, group.c, lang.c, memory.c
+           misc.c, page.c, pgp.c, select.c, thread.c
+
+U003) Urs Janssen <urs@tin.org>
+      BUG. typo broke snprintf() fallback
+      BUG. used strlen() instead of sizeof() in various places
+      ADD. check for gpg
+      ADD. -DTHREAD_SUM
+      REM. patch 006
+      FIX. configure[.in], autoconf.h[in], tin.h, config.c, nntplib.c, pgp.c
+           post.c, select.c, thread.c
+
 -- 1.5.0 release 19991201 "Blueprint" --
 
 U002) Dawid Kuroczko <dk@ssw.krakow.pl>
-      ADD. indicator for articles newer then n-days
+      ADD. indicator for articles newer than n-days
       FIX. extern.h, tin.h, tinrc.h, config.c, init.c, lang.c, thread.c
            tincfg.tbl
 

@@ -3,7 +3,7 @@
  *  Module    : open.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 1999-11-29
+ *  Updated   : 1999-07-17
  *  Notes     : Routines to make reading news locally (ie. /var/spool/news)
  *              or via NNTP transparent
  *  Copyright : (c) Copyright 1991-99 by Iain Lea & Rich Skrenta
@@ -73,16 +73,16 @@ nntp_open (
 		nntp_server = getserverbyfile (NNTP_SERVER_FILE);
 
 	if (nntp_server == (char *) 0) {
-		error_message (txt_cannot_get_nntp_server_name);
-		error_message (txt_server_name_in_file_env_var, NNTP_SERVER_FILE);
+		error_message (_(txt_cannot_get_nntp_server_name));
+		error_message (_(txt_server_name_in_file_env_var), NNTP_SERVER_FILE);
 		return -EHOSTUNREACH;
 	}
 
 	if (INTERACTIVE) {
 		if (nntp_tcp_port != 119)
-			wait_message (0, txt_connecting_port, nntp_server, nntp_tcp_port);
+			wait_message (0, _(txt_connecting_port), nntp_server, nntp_tcp_port);
 		else
-			wait_message (0, txt_connecting, nntp_server);
+			wait_message (0, _(txt_connecting), nntp_server);
 	}
 
 #	ifdef DEBUG
@@ -126,7 +126,7 @@ DEBUG_IO((stderr, "server_init returns %d,%s\n", ret, line));
 
 		default:
 			if (ret < 0) {
-				error_message (txt_failed_to_connect_to_server, nntp_server);
+				error_message (_(txt_failed_to_connect_to_server), nntp_server);
 			} else {
 				error_message (line);
 			}
@@ -212,7 +212,7 @@ DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
 #	ifdef DEBUG
 		debug_nntp ("nntp_open", "authenticate");
 #	endif /* DEBUG */
-		authenticate (nntp_server, ERR_NOAUTH, userid, TRUE);
+		authenticate (nntp_server, userid, TRUE);
 		put_server ("MODE READER");
 		ret = get_respcode (line);
 		switch (ret) {
@@ -243,7 +243,7 @@ DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
 	if (!is_reconnect) {
 		/* Inform user if he cannot post */
 		if (!can_post)
-			wait_message(0, "%s\n", txt_cannot_post);
+			wait_message(0, "%s\n", _(txt_cannot_post));
 
 		/* Remove leading white space and save server's second response */
 		linep = line;
@@ -300,7 +300,7 @@ DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
 			/* TODO issue warning if old index files found ? */
 		} else {
 			if (!is_reconnect) {
-				wait_message(2, txt_no_xover_support);
+				wait_message(2, _(txt_no_xover_support));
 			}
 		}
 	}
@@ -411,9 +411,7 @@ get_respcode (
 	int respcode;
 
 	respcode = get_only_respcode (message);
-	if ((respcode == ERR_NOAUTH)       ||
-	    (respcode == ERR_NOAUTHSIMPLE) ||
-	    (respcode == NEED_AUTHINFO)) {
+	if ((respcode == ERR_NOAUTH) || (respcode == NEED_AUTHINFO)) {
 		/*
 		 * Server requires authentication.
 		 */
@@ -422,7 +420,7 @@ get_respcode (
 #	endif /* DEBUG */
 		strncpy (savebuf, last_put, NNTP_STRLEN);		/* Take copy, as authenticate() will clobber this */
 
-		if (authenticate (nntp_server, respcode, userid, FALSE)) {
+		if (authenticate (nntp_server, userid, FALSE)) {
 			strcpy (last_put, savebuf);
 
 			put_server (last_put);
@@ -436,7 +434,7 @@ get_respcode (
 				strcpy(message, end);
 
 		} else {
-			error_message (txt_auth_failed, ERR_ACCESS);
+			error_message (_(txt_auth_failed), ERR_ACCESS);
 /*			return -1;*/
 			tin_done (EXIT_FAILURE);
 		}
@@ -681,12 +679,10 @@ stat_article (
 	char *group_path)
 {
 	char buf[NNTP_STRLEN];
-	int i;
-
-	i = my_group[cur_groupnum];
+	struct t_group currgrp = CURR_GROUP;
 
 #ifdef NNTP_ABLE
-	if (read_news_via_nntp && active[i].type == GROUP_TYPE_NEWS) {
+	if (read_news_via_nntp && currgrp.type == GROUP_TYPE_NEWS) {
 		sprintf (buf, "STAT %ld", art);
 		return(nntp_command (buf, OK_NOTEXT, NULL) != NULL);
 	} else
@@ -694,7 +690,7 @@ stat_article (
 	{
 		struct stat sb;
 
-		joinpath (buf, active[i].spooldir, group_path);
+		joinpath (buf, currgrp.spooldir, group_path);
 		sprintf (&buf[strlen (buf)], "/%ld", art);
 
 		return (stat (buf, &sb) != -1);
@@ -762,7 +758,7 @@ get_article (
 	sprintf (tempfile, "%stin_nntpXXXXXX", TMPDIR);
 #	if defined(HAVE_FDOPEN) && defined(HAVE_MKSTEMP)
 	if ((fd = my_mktemp (tempfile)) == -1) {
-		perror_message (txt_cannot_create_uniq_name);
+		perror_message (_(txt_cannot_create_uniq_name));
 		return (FILE *) 0;
 	}
 	if ((fp = fdopen (fd, "w")) == (FILE *) 0) {
@@ -770,7 +766,7 @@ get_article (
 	mktemp (tempfile);
 	if ((fp = fopen (tempfile, "w")) == (FILE *) 0) {
 #	endif /* HAVE_FDOPEN && HAVE_MKSTEMP */
-		perror_message (txt_article_cannot_open, tempfile);
+		perror_message (_(txt_article_cannot_open), tempfile);
 		return (FILE *) 0;
 	}
 
@@ -783,7 +779,7 @@ get_article (
 		 * Body search is currently the only function that has a different message
 		 */
 		if (lines && ++count % MODULO_COUNT_NUM == 0)
-			show_progress((*mesg=='\0') ? txt_reading_article : mesg, count, lines);
+			show_progress((*mesg=='\0') ? _(txt_reading_article) : mesg, count, lines);
 
 	}
 
@@ -791,7 +787,7 @@ get_article (
 		fclose(fp);
 		if (!tin_errno) {
 			tin_errno = 1;
-			error_message(txt_filesystem_full, tempfile);
+			error_message(_(txt_filesystem_full), tempfile);
 		}
 #	if defined(M_AMIGA) || defined(WIN32)
 		log_unlink(fp, tempfile);
@@ -809,7 +805,7 @@ get_article (
 	note_size = ((stat (tempfile, &sb) < 0) ? 0 : sb.st_size);
 
 	if ((fp = fopen (tempfile, "r")) == (FILE *) 0) {	/* Reopen for just reading */
-		perror_message (txt_article_cannot_reopen, tempfile);
+		perror_message (_(txt_article_cannot_reopen), tempfile);
 		return (FILE *) 0;
 	}
 
@@ -923,7 +919,7 @@ base_comp (
  * Grow the arts[] and bitmaps as needed.
  * NB: the output will be sorted on artnum
  *
- * top_base is one past top.
+ * grpmenu.max is one past top.
  * Returns total number of articles in group, or -1 on error
  */
 long
@@ -935,7 +931,7 @@ setup_hard_base (
 	long art;
 	long total = 0;
 
-	top_base = 0;
+	grpmenu.max = 0;
 
 	/*
 	 * If reading with NNTP, issue a LISTGROUP
@@ -966,10 +962,10 @@ setup_hard_base (
 #	endif /* DEBUG */
 
 			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
-				if (top_base >= max_art)
+				if (grpmenu.max >= max_art)
 					expand_art ();
 
-				base[top_base++] = atoi (ptr);
+				base[grpmenu.max++] = atoi (ptr);
 			}
 
 			if (tin_errno)
@@ -1002,9 +998,9 @@ setup_hard_base (
 				count = last - start;
 
 			while (start <= last) {
-				if (top_base >= max_art)
+				if (grpmenu.max >= max_art)
 					expand_art();
-				base[top_base++] = start++;
+				base[grpmenu.max++] = start++;
 			}
 		}
 #endif /* NNTP_ABLE */
@@ -1018,7 +1014,7 @@ setup_hard_base (
 		joinpath (buf, group->spooldir, group_path);
 
 		if (access (buf, R_OK) != 0) {
-			error_message(txt_not_exist);
+			error_message(_(txt_not_exist));
 			return (-1);
 		}
 
@@ -1027,19 +1023,19 @@ setup_hard_base (
 				art = atol (e->d_name);
 				if (art >= 1) {
 					total++;
-					if (top_base >= max_art)
+					if (grpmenu.max >= max_art)
 						expand_art ();
-					base[top_base++] = art;
+					base[grpmenu.max++] = art;
 				}
 			}
 			CLOSEDIR(d);
-			qsort ((char *) base, (size_t)top_base, sizeof (long), base_comp);
+			qsort ((char *) base, (size_t)grpmenu.max, sizeof (long), base_comp);
 		}
 	}
 
-	if (top_base) {
-		if (base[top_base-1] > group->xmax)
-			group->xmax = base[top_base-1];
+	if (grpmenu.max) {
+		if (base[grpmenu.max-1] > group->xmax)
+			group->xmax = base[grpmenu.max-1];
 		expand_bitmap (group, base[0]);
 	}
 
@@ -1114,7 +1110,7 @@ vGrpGetArtInfo (
 
 			case OK_GROUP:
 				if (sscanf (acLine, "%ld %ld %ld", plArtCount, plArtMin, plArtMax) != 3)
-					error_message("Invalid response to GROUP command, %s", acLine);
+					error_message(_("Invalid response to GROUP command, %s"), acLine);
 				break;
 
 			case ERR_NOGROUP:
@@ -1135,7 +1131,7 @@ vGrpGetArtInfo (
 				return(-1);
 		}
 #else
-		my_fprintf(stderr, "Unreachable ?\n");
+		my_fprintf(stderr, _("Unreachable ?\n"));
 		return 0;
 #endif /* NNTP_ABLE */
 	} else {

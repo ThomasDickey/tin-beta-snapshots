@@ -340,7 +340,7 @@
 #define iKeySelectSubscribePat 'S'
 #define iKeySelectUnsubscribePat 'U'
 #define iKeySelectQuitNoWrite 'X'
-#define iKeySelectSyncWithActive 'Y'
+#define iKeySelectSyncActive 'Y'
 #define iKeySelectMarkGrpUnread2 'Z'
 #define iKeySelectCatchup 'c'
 #define iKeySelectToggleDescriptions 'd'
@@ -360,7 +360,7 @@
 #define iKeyThreadReadNextArtOrThread '\t'
 #define iKeyThreadReadArt '\n'
 #define iKeyThreadReadArt2 '\r'
-#define iKeyThreadMarkArtSel '*'
+#define iKeyThreadSelArt '*'
 #define iKeyThreadLastViewed '-'
 #define iKeyThreadToggleArtSel '.'
 /* digits 0-9 in use */

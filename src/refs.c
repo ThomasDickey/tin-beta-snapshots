@@ -186,13 +186,13 @@ add_msgid (
 	unsigned int h;
 
 	if (!msgid) {
-		error_message("add_msgid: NULL msgid\n");
+		error_message(_("add_msgid: NULL msgid\n"));
 		giveup();
 	}
 
 	h = hash_msgid(msgid+1);				/* Don't hash the initial '<' */
 
-	DEBUG_PRINT((dbgfd, "---------------- Add %s %s with parent %s\n", (key==MSGID_REF)?"MSG":"REF", msgid, (newparent == NULL) ? "unchanged" : newparent->txt));
+	DEBUG_PRINT((dbgfd, _("---------------- Add %s %s with parent %s\n"), (key==MSGID_REF)?"MSG":"REF", msgid, (newparent == NULL) ? _("unchanged") : newparent->txt));
 
 	/*
 	 * Look for this message id in the cache.
@@ -207,7 +207,7 @@ add_msgid (
 		 * CASE 1a - No parent specified, do nothing
 		 */
 		if (newparent == NULL) {
-			DEBUG_PRINT((dbgfd, "nop: %s No parent specified\n", i->txt));
+			DEBUG_PRINT((dbgfd, _("nop: %s No parent specified\n"), i->txt));
 			return(i);
 		}
 
@@ -215,7 +215,7 @@ add_msgid (
 		 * CASE 1b - Parent not changed, do nothing
 		 */
 		if (newparent == i->parent) {
-			DEBUG_PRINT((dbgfd, "dup: %s -> %s (no change)\n", i->txt, i->parent ? i->parent->txt : "NULL"));
+			DEBUG_PRINT((dbgfd, _("dup: %s -> %s (no change)\n"), i->txt, i->parent ? i->parent->txt : "NULL"));
 			return(i);
 		}
 
@@ -231,7 +231,7 @@ add_msgid (
 			 */
 			for (ptr = newparent; ptr != NULL; ptr = ptr->parent) {
 				if (ptr == i) {
-					DEBUG_PRINT((dbgfd, "Avoiding circular reference! (%s)\n", (key==MSGID_REF) ? "MSG" : "REF"));
+					DEBUG_PRINT((dbgfd, _("Avoiding circular reference! (%s)\n"), (key==MSGID_REF) ? "MSG" : "REF"));
 					return(i);
 				}
 			}
@@ -239,7 +239,7 @@ add_msgid (
 			i->parent = newparent;
 			add_to_parent(i);
 
-			DEBUG_PRINT((dbgfd, "set: %s -> %s\n", i->txt, newparent ? newparent->txt : "None"));
+			DEBUG_PRINT((dbgfd, _("set: %s -> %s\n"), i->txt, newparent ? newparent->txt : _("None")));
 			return(i);
 		}
 
@@ -251,18 +251,18 @@ add_msgid (
 		 * All we can do is ignore the error
 		 */
 		if (i->parent != newparent) {
-			DEBUG_PRINT((dbgfd, "Warning: (%s) Ignoring %s -> %s (already %s)\n",
+			DEBUG_PRINT((dbgfd, _("Warning: (%s) Ignoring %s -> %s (already %s)\n"),
 				(key==MSGID_REF) ? "MSG" : "REF", i->txt,
 				newparent ? newparent->txt : "None", i->parent->txt));
 
 			return(i);
 		}
 
-		error_message("Error: Impossible combination of conditions !\n");
+		error_message(_("Error: Impossible combination of conditions !\n"));
 		return(i);
 	}
 
-	DEBUG_PRINT((dbgfd, "new: %s -> %s\n", msgid, (newparent)?newparent->txt:"None"));
+	DEBUG_PRINT((dbgfd, _("new: %s -> %s\n"), msgid, (newparent)?newparent->txt:"None"));
 
 	/*
 	 * This is a new node, so build a structure for it
@@ -272,7 +272,7 @@ add_msgid (
 	strcpy(ptr->txt, msgid);
 	ptr->parent = newparent;
 	ptr->child = ptr->sibling = NULL;
-	ptr->article = (key == MSGID_REF ? top : ART_UNAVAILABLE);
+	ptr->article = (key == MSGID_REF ? top_art : ART_UNAVAILABLE);
 
 	add_to_parent(ptr);
 
@@ -329,7 +329,7 @@ parse_references (
 	if (!r)
 		return(NULL);
 
-	DEBUG_PRINT((dbgfd, "parse_references: %s\n", r));
+	DEBUG_PRINT((dbgfd, _("parse_references: %s\n"), r));
 
 	/*
 	 * Break the refs down, using a space as delimiters
@@ -370,7 +370,7 @@ _get_references (
 
 #ifdef DEBUG_REFS
 		if (depth > MAX_REFS)
-			error_message("Warning: Too many refs near to %s. Truncated\n", refptr->txt);
+			error_message(_("Warning: Too many refs near to %s. Truncated\n"), refptr->txt);
 #endif /* DEBUG_REFS */
 		refs = (char *) my_malloc(HEADER_LEN);
 		len = 0;
@@ -450,7 +450,7 @@ dump_msgids (
 
 	my_fprintf(stderr, "Dumping...\n");
 
-	for (i=0; i<MSGID_HASH_SIZE; i++) {
+	for (i = 0; i<MSGID_HASH_SIZE; i++) {
 
 		if (msgids[i] != NULL) {
 
@@ -548,7 +548,7 @@ dump_thread (
 	if (msgid->article >= 0)
 		sprintf(ptr+len, "%-*.*s   %-17.17s", i, i, arts[msgid->article].subject, (arts[msgid->article].name) ? arts[msgid->article].name : arts[msgid->article].from);
 	else
-		sprintf(ptr+len, "%-*.*s", i, i, "[- Unavailable -]");
+		sprintf(ptr+len, "%-*.*s", i, i, _("[- Unavailable -]"));
 
 	fprintf(fp, "%s\n", ptr);
 
@@ -589,9 +589,9 @@ dump_msgid_threads (
 	int i;
 	struct t_msgid *ptr;
 
-	fprintf(dbgfd, "Dump started.\n\n");
+	fprintf(dbgfd, _("Dump started.\n\n"));
 
-	for (i=0; i<MSGID_HASH_SIZE; i++) {
+	for (i = 0; i<MSGID_HASH_SIZE; i++) {
 		if (msgids[i] != NULL) {
 
 			for (ptr = msgids[i]; ptr != NULL; ptr = ptr->next) {
@@ -604,7 +604,7 @@ dump_msgid_threads (
 		}
 	}
 
-	fprintf(dbgfd, "Dump complete.\n\n");
+	fprintf(dbgfd, _("Dump complete.\n\n"));
 }
 #endif /* DEBUG_REFS */
 
@@ -736,9 +736,9 @@ thread_by_reference (
 	/*
 	 * Build threads starting from root msgids (ie without parent)
 	 */
-	for (i=0; i<MSGID_HASH_SIZE; i++) {
+	for (i = 0; i<MSGID_HASH_SIZE; i++) {
 		if (msgids[i] != NULL) {
-			for (ptr = msgids[i]; ptr!=NULL; ptr = ptr->next) {
+			for (ptr = msgids[i]; ptr != NULL; ptr = ptr->next) {
 				if (ptr->parent == NULL)
 					build_thread(ptr);
 			}
@@ -746,10 +746,10 @@ thread_by_reference (
 	}
 
 #ifdef DEBUG_REFS
-	fprintf(dbgfd, "Full dump of threading info...\n");
+	fprintf(dbgfd, _("Full dump of threading info...\n"));
 	fprintf(dbgfd, "%3s %3s %3s %3s : %3s %3s\n", "#", "Par", "Sib", "Chd", "In", "Thd");
 
-	for (i = 0; i < top; i++) {
+	for (i = 0; i < top_art; i++) {
 		fprintf(dbgfd, "%3d %3d %3d %3d : %3d %3d : %.50s %s\n", i,
 			(arts[i].refptr->parent) ? arts[i].refptr->parent->article : -2,
 			(arts[i].refptr->sibling) ? arts[i].refptr->sibling->article : -2,
@@ -785,7 +785,7 @@ collate_subjects (
 	 * Run through the root messages of each thread. We have to traverse
 	 * using arts[] and not msgids[] to preserve the sorting.
 	 */
-	for (i = 0; i < top; i++) {
+	for (i = 0; i < top_art; i++) {
 
 		/*
 		 * Ignore already threaded and expired arts
@@ -874,7 +874,7 @@ build_references (
 	 * Add the Message-ID headers to the cache, using the last Reference
 	 * as the parent
 	 */
-	for (i = 0; i < top; i++) {
+	for (i = 0; i < top_art; i++) {
 		art = &arts[i];
 
 		if (art->refs) {
@@ -890,7 +890,7 @@ build_references (
 				/*
 				 * Remove circular reference to current article
 				 */
-				DEBUG_PRINT((dbgfd, "removing circular reference to%s\n", s));
+				DEBUG_PRINT((dbgfd, _("removing circular reference to%s\n"), s));
 				*s = '\0';
 			}
 			if (s != NULL) {
@@ -908,11 +908,11 @@ build_references (
 		free(art->msgid);					/* Now cached - discard this */
 	}
 
-	DEBUG_PRINT((dbgfd, "REFS phase\n"));
+	DEBUG_PRINT((dbgfd, _("REFS phase\n")));
 	/*
 	 * Add the References data to the cache
 	 */
-	for (i = 0; i < top; i++) {
+	for (i = 0; i < top_art; i++) {
 		struct t_msgid *refs;
 
 		if (!arts[i].refs)						/* No refs - skip */

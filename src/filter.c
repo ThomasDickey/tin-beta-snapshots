@@ -34,6 +34,9 @@
  * filtering is now done this way:
  * a. set score for all articles and rules
  * b. check each article if the score is above or below the limit
+ *
+ * SET_FILTER is now somewhat shorter, as the real filtering is done
+ * at the end of filter_articles()
  */
 
 #define	SET_FILTER(grp, i, j)	\
@@ -45,9 +48,12 @@
 		(arts[i].score + ptr[j].score) : -SCORE_MAX ; }
 
 /*
- * SET_FILTER is now somewhat shorter, as the real filtering is done
- * at the end of filter_articles()
+ * These will probably go away when filtering is rewritten
+ * Easier access to hashed msgids. Note that in REFS(), y must be free()d
+ * msgid is mandatory in an article and cannot be NULL
  */
+#define MSGID(x)			(x->refptr->txt)
+#define REFS(x,y)			((y = get_references(x->refptr->parent)) ? y : "")
 
 /*
  * global filter array
@@ -1249,13 +1255,13 @@ bAddFilterRule (
 	switch(psRule->expire_time)
 	{
 		case 1:
-			psPtr[*plNum].time = lCurTime + (time_t) (tinrc.filter_days * 86400);	/*  86400 = 60 * 60 * 24 */
+			psPtr[*plNum].time = lCurTime + (time_t) (tinrc.filter_days * DAY);
 			break;
 		case 2:
-			psPtr[*plNum].time = lCurTime + (time_t) (tinrc.filter_days * 172800);	/* 172800 = 60 * 60 * 24 * 2 */
+			psPtr[*plNum].time = lCurTime + (time_t) (tinrc.filter_days * DAY*2);
 			break;
 		case 3:
-			psPtr[*plNum].time = lCurTime + (time_t) (tinrc.filter_days * 345600);	/* 345600 = 60 * 60 * 24 * 4 */
+			psPtr[*plNum].time = lCurTime + (time_t) (tinrc.filter_days * DAY*4);
 			break;
 		default:
 			psPtr[*plNum].time = (time_t) 0;
@@ -1354,7 +1360,7 @@ unfilter_articles (void) /* return value is always ignored */
 	int unkilled = 0;
 	register int i;
 
-	for (i = 0; i < top; i++) {
+	for (i = 0; i < top_art; i++) {
 		if (IS_KILLED(i)) {
 			arts[i].killed = FALSE;
 			arts[i].status = ART_UNREAD;
@@ -1438,7 +1444,7 @@ filter_articles (
 	/*
 	 * loop thru all arts applying global & local filtering rules
 	 */
-	for (i = 0; i < top; i++) {
+	for (i = 0; i < top_art; i++) {
 		arts[i].score = 0;
 
 		if (tinrc.kill_level == KILL_READ && IS_READ(i)) /* skip only when the article is read */
@@ -1667,7 +1673,7 @@ wait_message (1, "FILTERED Lines arts[%d] > [%d]", arts[i].lines, ptr[j].lines_n
 	 * all articles have scored, so do kill & select
 	 */
 
-	for (i = 0; i < top; i++) {
+	for (i = 0; i < top_art; i++) {
 		if (arts[i].score <= SCORE_LIM_KILL) {
 			arts[i].killed = TRUE;
 			num_of_killed_arts++;

@@ -231,7 +231,7 @@ color_fputs (
 	const char* eos = strchr(s, '\0');
 	t_bool hilite = FALSE;
 
-	for (p=s; p < eos; p++) {
+	for (p = s; p < eos; p++) {
 		if (*p == '*' || *p == '_') {
 			if (! hilite) {
 				if ((p == s || !isgraph((unsigned char)p[-1]))
