@@ -358,14 +358,18 @@ extern char mail_active_file[PATH_LEN];
 extern char mail_news_user[LEN];
 extern char mailbox[PATH_LEN];
 extern char mailer[PATH_LEN];
-extern char mailgroups_file[PATH_LEN];
+#ifdef HAVE_MH_MAIL_HANDLING
+	extern char mailgroups_file[PATH_LEN];
+#endif /* HAVE_MH_MAIL_HANDLING */
 extern char mesg[LEN];
 extern char newnewsrc[PATH_LEN];
 extern char news_active_file[PATH_LEN];
 extern char newsgroups_file[PATH_LEN];
 extern char newsrc[PATH_LEN];
-extern char novrootdir[PATH_LEN];
-extern char novfilename[PATH_LEN];
+#ifndef NNTP_ONLY
+	extern char novrootdir[PATH_LEN];
+	extern char novfilename[PATH_LEN];
+#endif /* !NNTP_ONLY */
 extern char page_header[LEN];
 extern char posted_info_file[PATH_LEN];
 extern char posted_msgs_file[PATH_LEN];
@@ -1440,6 +1444,7 @@ extern struct opttxt txt_use_mailreader_i;
 extern struct opttxt txt_use_mouse;
 extern struct opttxt txt_wildcard;
 extern struct opttxt txt_word_highlight;
+extern struct opttxt txt_wrap_column;
 extern struct opttxt txt_xpost_quote_format;
 #ifdef CHARSET_CONVERSION
 	extern struct opttxt txt_mm_network_charset;

@@ -281,7 +281,7 @@ parse_mailcap_line(
 /*
  * extract fields - called from parse_mailcap_line()
  *
- * TODO: add handling for signlequotes
+ * TODO: add handling for singlequotes
  */
 static char *
 get_mailcap_field(

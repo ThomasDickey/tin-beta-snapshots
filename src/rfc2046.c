@@ -69,7 +69,7 @@ static void progress(int line_count);
 static int art_lines = 0;		/* lines in art on spool */
 
 #define PARAM_SEP		"; \n"
-/* defualt parameters for Content-Type */
+/* default parameters for Content-Type */
 #define CT_DEFPARMS	"charset=US-ASCII"
 
 /*

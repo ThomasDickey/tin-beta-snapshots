@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2002-09-06
+ *  Updated   : 2002-10-02
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2002 Thomas Dickey <dickey@invisible-island.net>
@@ -92,6 +92,7 @@
 #	undef DOMAIN_NAME
 #	undef HAVE_FASCIST_NEWSADMIN
 #	undef INEWSDIR
+#	undef PATH_INEWS
 #	undef INN_NNTPLIB
 #	undef LOCAL_CHARSET
 #	undef MIME_BREAK_LONG_LINES
@@ -213,6 +214,8 @@
 #	undef HAVE_TIME_H
 #	undef HAVE_UNISTD_H
 #	undef HAVE_VARARGS_H
+#	undef HAVE_WCHAR_H
+#	undef HAVE_WCTYPE_H
 #	undef STDC_HEADERS
 #	undef TIME_WITH_SYS_TIME
 
@@ -246,7 +249,6 @@
 #	undef HAVE_IS_XTERM
 #	undef HAVE_LINK
 #	undef HAVE_LOCKF
-#	undef HAVE_MBLEN
 #	undef HAVE_MEMCMP
 #	undef HAVE_MEMCPY
 #	undef HAVE_MEMMOVE
@@ -601,6 +603,12 @@
  * Define if iconv_open() has //TRNALSIT extension.
  */
 #	undef HAVE_ICONV_OPEN_TRANSLIT
+
+/*
+ * Define if you have swprintf() and co.
+ */
+#	undef MULTIBYTE_ABLE
+#	undef HAVE_LIBUTF8_H
 
 /*
  * Define if you have <langinfo.h> and nl_langinfo(CODESET).

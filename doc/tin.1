@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2002-09-28
+.\" Updated   : 2002-11-06
 .\" Notes     : still needs some work, i.e.:
 .\"             - document authorization (.newsauth)
 .\"             - postprocess differences when linked against libuu
 .\"
 .\"
-.TH tin 1 "September 18th, 2002" "1.5.14" "A Usenet newsreader"
+.TH tin 1 "November 6th, 2002" "1.5.14" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -83,17 +83,19 @@ style index files if available locally or via the NNTP [X]OVER command
 .PP
 .B tin
 has four separate levels of operation: Group selection level, Group level,
-Thread level and Article level. Use the '\fBh\fP' (help) command to view a
-list of the commands available at a particular level.
+Thread level and Article level. Use the \fBHelp\fP ('\fBh\fP') command to
+view a list of the commands available at a particular level.
 .PP
 On startup \fBtin\fP will show a list of the newsgroups found in
 \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR. An arrow '->' or highlighted bar will
 point to the first newsgroup. Move to a group by using the terminal arrow
-keys (terminal dependent) or '\fBj\fP' and '\fBk\fP'. Use PgUp/PgDn (terminal
-dependent) or '\fB^U\fP' (CTRL-U) and '\fB^D\fP' (CTRL-D) to page up/down.
-Enter a newsgroup by pressing '\fB<RETURN>\fP'.
+keys (terminal dependent) or \fBDown2\fP ('\fBj\fP') and \fBUp2\fP
+('\fBk\fP'). Use PgUp/PgDn (terminal dependent) or \fBPageUp2\fP
+('\fB^U\fP') (CTRL-U) and \fBPageDown\fP ('\fB^D\fP') (CTRL-D) to page
+up/down. Enter a newsgroup by pressing '\fB<CR>\fP'.
 .PP
-The '\fB<TAB>\fP' key enters the next newsgroup with unread articles.
+The \fBGroupNextUnreadArtOrGrp\fP ('\fB<TAB>\fP') key enters the next
+newsgroup with unread articles.
 .\"
 .\"
 .SH "EXIT STATUS"
@@ -107,7 +109,7 @@ Successful program execution.
 Usage, syntax, configuration file or network error.
 .RE
 .PP
-Batch mode (-Z):
+Batch mode (''\fB-Z\fP''):
 .RS +.5i
 .TP
 .B 0
@@ -152,7 +154,7 @@ Use the server and newsrc specified in
 Limit the number of articles/group to retrieve from the server.
 .TP
 .B -h
-Help listing all command line options.
+Help listing all command-line options.
 .TP
 .B -H
 Brief introduction to \fBtin\fP that is also shown the first time it is
@@ -169,7 +171,7 @@ Get number of articles per group from the
 result in incorrect article counts but is usually faster than the default
 which is to read the
 \fI${TIN_LIBDIR-NEWSLIBDIR}"/"${TIN_ACTIVEFILE-active}\fR file and then
-check the article count via NNTP GROUP command (\fBRFC977\fB) ''\fB-ln\fP''.
+check the article count via NNTP GROUP command (\fBRFC977\fP) ''\fB-ln\fP''.
 .TP
 .BI -m " dir"
 Mailbox directory to use. Default is \fI${TIN_HOMEDIR-"$HOME"}/Mail\fR.
@@ -253,13 +255,13 @@ Check if there is any new/unread news and exit with appropriate status. If
 group is printed. An exit code 0 indicates no news, 1 that an error occurred
 and 2 that new/unread news exists. Useful for writing scripts.
 .PP
-\fBtin\fP can also dynamically change its options by the '\fBM\fP' menu command.
-Any changes are written to \fI${TIN_HOMEDIR-"$HOME"}/.tin/tinrc\fR. For
-more information see section "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE
-VARIABLES" and
+\fBtin\fP can also dynamically change its options by the \fBOptionMenu\fP
+('\fBM\fP') command. Any changes are written to
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/tinrc\fR. For more information see section
+"GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" and
 .BR tin (5).
 .PP
-A list of groups can be specified after the other command line options. This
+A list of groups can be specified after the other command-line options. This
 can be useful if you wish to yank in or subscribe to a hand-picked subset of
 the active newsgroups. See the section "NEWSGROUP LISTS & WILDCARDS" for the
 types of pattern that \fBtin\fP understands.
@@ -269,9 +271,10 @@ group, then you will automatically enter that group. Otherwise the normal
 group selection screen will appear, but with all the matching groups present
 too, as though you had yanked just those groups in.
 .PP
-Once you use '\fBy\fP' to yank in all active groups, or '\fBr\fP' to toggle
-the read/unread status, then the command line groups will be gone. You can
-use '\fBY\fP' to reread the
+Once you use \fBSelectYankActive\fP ('\fBy\fP') to yank in all active groups,
+or \fBSelectToggleReadDisplay\fP ('\fBr\fP') to toggle the read/unread
+status, then the command-line groups will be gone. You can use
+\fBSelectSyncWithActive\fP ('\fBY\fP') to reread the
 \fI${TIN_LIBDIR-NEWSLIBDIR}"/"${TIN_ACTIVEFILE-active}\fR file and get
 them back.
 .PP
@@ -320,7 +323,8 @@ There may also be a character prefixing the line. An explanation follows:
 .TP 10
 .B u
 This group is unsubscribed. To see only your subscribed groups use the
-\&'\fBr\fP' or '\fBy\fP' toggle keys.
+\fBSelectToggleReadDisplay\fP ('\fBr\fP') or \fBSelectYankActive\fP
+('\fBy\fP') toggle keys.
 .TP
 .B M
 This is a moderated group. Any posts you make will have to be approved by
@@ -419,20 +423,16 @@ This table shows the common keys used for moving around all levels
 within \fBtin\fP.
 .RS
 .nf
-.ta \w'Beg. of list/article  'u +\w'ANSI/vt100  'u
+.ta \w'Beg. of list/article  'u +\w'ANSI/vt100   'u
 	ANSI/vt100	Other Terminals
-Beg. of list/article	\fBHome\fP	\fB^\fP (1)
-End of list/article	\fBEnd\fP	\fB$\fP (2)
-Page Up	\fBPgUp\fP	\fB^U\fP or \fB^B\fP or \fBb\fP
-Page Down	\fBPgDn\fP	\fB^D\fP or \fB^F\fP or \fB<SPACE>\fP (3)
-Line Up	\fBUp arrow\fP	\fBk\fP or \fB^P\fP
-Line Down	\fBDown arrow\fP	\fBj\fP or \fB^N\fP
-(1) also \fBg\fP in the article, config and help menus
-(2) also \fBG\fP in the article, config and help menus
-(3) When viewing the last page of an article, PgDn and SPACE
-    will optionally move to the next article. See the tinrc
-    variables \fBpgdn_goto_next\fP and \fBspace_goto_next_unread\fP
-    for more information.
+Beg. of list/article	\fBHome\fP	\fBFirstPage\fP (\fB^\fP)
+End of list/article	\fBEnd\fP	\fBLastPage\fP (\fB$\fP)
+Page Up	\fBPgUp\fP	\fBPageUp2\fP (\fB^U\fP), \fBPageUp\fP (\fB^B\fP)
+		or \fBPageUp3\fP (\fBb\fP)
+Page Down	\fBPgDn\fP	\fBPageDown\fP (\fB^D\fP), \fBPageDown2\fP (\fB^F\fP)
+		or \fBPageDown3\fP (\fB<SPACE>\fP)
+Line Up	\fBUp arrow\fP	\fBUp2\fP (\fBk\fP) or \fBUp\fP (\fB^P\fP)
+Line Down	\fBDown arrow\fP	\fBDown2\fP (\fBj\fP) or \fBDown\fP (\fB^N\fP)
 .fi
 .RE
 .\"
@@ -479,46 +479,49 @@ The following commands are available at all 4 menu levels and always have
 the same effect.
 .PP
 .TP 10
-.B !
-Shell escape. '\fB!\fP' by itself will launch a shell, \fB!\fP <command> will
-run an external <command>.
-This facility may have been disabled by the System Administrator
+.B ShellEscape '!'
+Shell escape. \fBShellEscape\fP by itself will launch a shell,
+\fBShellEscape\fP <command> will run an external <command>. This facility
+may have been disabled by the System Administrator
 .TP
-.B &
+.B ToggleColor '&'
 Toggle use of ANSI color.
 .TP
-.B ^L
+.B RedrawScr '^L'
 Redraw the current screen.
 .TP
-.B ^O
-Reload postponed article. If your system blocks '\fB^O\fP' (CTRL-O) you
+.B Postponed '^O'
+Reload postponed article. If your system blocks the \fBPostponed\fP key you
 must quote it by pressing '\fB^V\fP' (CTRL-V) first. The postpone-menu
-offers the following actions: '\fBy\fP' = reload and spawn editor; '\fBY\fP'
-= post article (without spawning editor); '\fBA\fP' = post all postponed
-articles (without spawning editor); '\fBn\fP' = skip this article; '\fBq\fP'
-= quit postponed menu. Currently there is no 'simple' way to delete a
-postponed article from the postponed-file, you have to use the following
-command sequence instead: reload it with '\fB^O\fP', enter editor with
-\&'\fBy\fP', quit editor, discard posting with '\fBq\fP'. See also
-\&''\fB-o\fP'' command-line switch.
+offers the following actions: \fBPromptYes\fP ('\fBy\fP') = reload and spawn
+editor; \fBPostponeOverride\fP ('\fBY\fP') = post article (without spawning
+editor); \fBPostponeAll\fP ('\fBA\fP') = post all postponed articles
+(without spawning editor); \fBPromptNo\fP ('\fBn\fP') = skip this article;
+\fBQuit\fP ('\fBq\fP') = quit postponed menu. Currently there is no 'simple'
+way to delete a postponed article from the postponed-file, you have to use
+the following command sequence instead: reload it with \fBPostponed\fP,
+enter editor with \fBPromptYes\fP, quit editor, discard posting with
+\fBQuit\fP ('\fB^O\fP''\fBy\fP''\fBq\fP'). See also ''\fB-o\fP''
+command-line switch.
 .TP
-.B h
+.B Help 'h'
 Help screen of commands available on the current menu. You can use
-\&'\fB/\fP' and '\fB?\fP' to search on this screen. '\fBq\fP' returns to
-the menu.
+\fBSearchSubjF\fP ('\fB/\fP') and \fBSearchSubjB\fP ('\fB?\fP') to search on
+this screen. \fBQuit\fP ('\fBq\fP') returns to the menu.
 .TP
-.B H
+.B ToggleHelpDisplay 'H'
 Toggle the display of help mini menu at the bottom of the screen.
 .TP
-.B O
+.B Postponed2 'O'
 Reload postponed article. See also ''\fB-o\fP'' command-line switch.
 .TP
-.B W
+.B DisplayPostHist 'W'
 List articles posted by user. The date posted, the newsgroup and the
-subject are listed. You can use '\fB/\fP' and '\fB?\fP' to search on this
-screen. '\fBq\fP' returns to the menu.
+subject are listed. You can use \fBSearchSubjF\fP ('\fB/\fP') and
+\fBSearchSubjB\fP ('\fB?\fP') to search on this screen. \fBQuit\fP
+('\fBq\fP') returns to the menu.
 .TP
-.B v
+.B Version 'v'
 Print \fBtin\fP version information.
 .\"--------------------------------------------------------------------
 .\"
@@ -527,126 +530,120 @@ Print \fBtin\fP version information.
 .B 4
 Select group 4.
 .TP
-.B ^R
+.B SelectResetNewsrc '^R'
 Reset \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR file. This will destroy all
 records of which articles have been read, so use this carefully.
 .TP
-.B #
+.B SetRange '#'
 Choose a range of articles to be affected by the next command. See the
 section "RANGES" for more information.
 .TP
-.B .
+.B SelectSortActive .
 Sort the list of newsgroups
 .TP
-.B /
+.B SearchSubjF '/'
 Search for a group by name and description (if displayed).
 .TP
-.B ?
+.B SearchSubjB '?'
 Backward search through the group names and descriptions.
 .TP
-.B <CR>
+.B SelectReadGrp '^J', SelectReadGrp2 '<CR>'
 Read current group.
 .TP
-.B <TAB>
+.B SelectEnterNextUnreadGrp '<TAB>', SelectEnterNextUnreadGrp2 'n'
 Enter next group with unread news. Will wrap around to the beginning of the
 group selection list looking for unread groups.
 .TP
-.B c
+.B SelectCatchup 'c'
 Make current group as all read [after confirmation] and move to the next
 group in the group selection list.
 .TP
-.B C
+.B SelectCatchupNextUnread 'C'
 Mark current group as all read [after confirmation] and enter the next
 unread group in the group selection list.
 .TP
-.B d
+.B SelectToggleDescriptions 'd'
 Toggle display to show just the group name or the group name and the group
 descriptions.
 .TP
-.B g
+.B SelectGoto 'g'
 Choose a new group by name. This command can be used to access any group,
 even those not currently yanked in.
 .TP
-.B i
+.B ToggleInfoLastLine 'i'
 Toggle the display of the description of the current newsgroup in the last
 line. This will not be available if \fBtin\fP was started with the
 \&''\fB-d\fP'' option.
 .TP
-.B I
+.B ToggleInverseVideo 'I'
 Toggle inverse video.
 .TP
-.B m
+.B SelectMoveGrp 'm'
 Move the current group within the group selection list. By entering '1' the
 group will become the first displayed group in the list, by entering '8' the
 eighth group in the list etc. By entering '$' the group will be the last
 group displayed.
 .TP
-.B M
+.B OptionMenu 'M'
 User configurable options menu (for more information see section "GLOBAL
 OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES").
 .TP
-.B n
-Enter next group with unread news. This key is identical to '\fB<TAB>\fP'
-.TP
-.B N
+.B SelectNextUnreadGrp 'N'
 Positions the cursor on the next group with unread articles in it.
 .TP
-.B q
+.B Quit 'q'
 Quit \fBtin\fP - ask the user to confirm if \fBconfirm_to_quit\fP is on.
 .TP
-.B Q
+.B QuitTin 'Q'
 Quit \fBtin\fP - don't ask the user to confirm.
 .TP
-.B r
+.B SelectToggleReadDisplay 'r'
 Toggle display of all subscribed to groups and just those groups containing
 unread articles. Command has no effect if groups were specified on the
-command line when \fBtin\fP was started.
+command-line when \fBtin\fP was started.
 .TP
-.B R
+.B SelectBugReport 'R'
 Mail a bug report or comment to <tin-bugs@tin.org>. This is the best way of
 getting bugs fixed and features added/changed.
 .TP
-.B s
+.B SelectSubscribe 's'
 Subscribe to current group.
 .TP
-.B S
+.B SelectSubscribePat 'S'
 Subscribe to groups matching user specified pattern. See the section
 "NEWSGROUP LISTS & WILDCARDS" for the types of pattern that
 \fBtin\fP understands.
 .TP
-.B u
+.B SelectUnsubscribe 'u'
 Unsubscribe to current group. This can be used to remove bogus groups.
 See \fBstrip_bogus\fP in the "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE
 VARIABLES" section.
 .TP
-.B U
+.B SelectUnsubscribePat 'U'
 Unsubscribe to groups matching user specified pattern. See the section
 "NEWSGROUP LISTS & WILDCARDS" for the types of pattern that
 \fBtin\fP understands.
 .TP
-.B w
+.B Post 'w'
 Post an article to current group. If posting fails for some reason, you'll
-get the chance to edit ('\fBe\fP') the article again, postpone ('\fBo\fP')
-it for later processing (see also ''\fB-o\fP''command-line switch) or
-discard ('\fBq\fP') it.
+get the chance to \fBPostEdit\fP ('\fBe\fP') the article again,
+\fBPostPostpone\fP ('\fBo\fP') it for later processing (see also ''\fB-o\fP''
+command-line switch) or discard it via \fBQuit\fP ('\fBq\fP').
 .TP
-.B X
+.B SelectQuitNoWrite 'X'
 Quit \fBtin\fP without saving any changes to the configuration.
 .TP
-.B y
+.B SelectYankActive 'y'
 Yanks in all groups. Toggles the displayed groups between all the groups in
 the \fI${TIN_LIBDIR-NEWSLIBDIR}"/"${TIN_ACTIVEFILE-active}\fR file and just
 those that are subscribed to in \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR.
 .TP
-.B Y
+.B SelectSyncWithActive 'Y'
 Reread the \fI${TIN_LIBDIR-NEWSLIBDIR}"/"${TIN_ACTIVEFILE-active}\fR file
 to see if any new news has arrived since starting \fBtin\fP.
 .TP
-.B z
+.B SelectMarkGrpUnread 'z', SelectMarkGrpUnread2 'Z'
 Mark all articles in the current group as unread.
-.TP
-.B Z
-Identical to '\fBz\fP'.
 .\"--------------------------------------------------------------------
 .\"
 .SS "GROUP INDEX COMMANDS"
@@ -654,62 +651,64 @@ Identical to '\fBz\fP'.
 .B 4
 Select article 4.
 .TP
-.B ^A
+.B GroupAutoSel '^A'
 Auto select article(s) using a menu. Read the section "FILTERING ARTICLES"
 for more information.
 .TP
-.B ^K
+.B GroupKill '^K'
 Kill article(s) using a menu. Read the section "FILTERING ARTICLES" for
 more information.
 .TP
-.B #
+.B SetRange '#'
 Choose a range of articles to be affected by the next command. See the
 section "RANGES" for more information.
 .TP
-.B -
+.B LastViewed '-'
 Re-enter the last message that was viewed.
 .TP
-.B /
+.B SearchSubjF '/'
 Search forward for specified subject.
 .TP
-.B ?
+.B SearchSubjB '?'
 Search backward for specified subject.
 .TP
-.B *
+.B GroupSelThd '*'
 Select current thread for later processing.
 .TP
-.B +
+.B GroupDoAutoSel '+'
 Perform auto-selection on current group.
 .TP
-.B \\.
+.B GroupToggleThdSel '\\.'
 Toggle selection of current thread. If at least one unread article, (but not
 every unread article) in the current thread is selected, then all unread
 articles become selected.
 .TP
-.B ;
+.B GroupSelThdIfUnreadSelected ';'
 For each thread in current group, if it at least one unread article is
 selected, all unread articles become selected. This is useful for
 auto-selection on author where reader wants to see entire thread.
 .TP
-.B =
+.B GroupSelPattern '='
 Prompts for a pattern with which to match on. All threads whose subjects
 match the pattern will be marked selected. A pattern of ''*'' will match all
-subjects. Entering just '<CR>' will re-use the last pattern that was entered.
+subjects. Entering just '\fB<CR>\fP' will re-use the last pattern that
+was entered.
 .TP
-.B @
+.B GroupReverseSel '@'
 Reverse all selections on all articles.
 .TP
-.B ~
-Undo all selections on all articles. It clears the toggle effect of '\fBX\fP'
-command. Thus after first doing a '\fBX\fP', one can then do '\fB~\fP' to
-reset articles. Thus, one can iteratively whittle down uninteresting threads.
+.B GroupUndoSel '~'
+Undo all selections on all articles. It clears the toggle effect of
+\fBGroupMarkUnselArtRead\fP ('\fBX\fP') command. Thus after first doing a
+\fBGroupMarkUnselArtRead\fP, one can then do \fBGroupUndoSel\fP to reset
+articles. Thus, one can iteratively whittle down uninteresting threads.
 .TP
-.B |
+.B Pipe '|'
 Pipe current article / thread / auto-selected (hot) articles / articles
 matching pattern / tagged articles into command. See the section "MAILING
 PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
 .TP
-.B [
+.B GroupQuickAutoSel '['
 Auto select article(s) with a single key [after confirmation]. The defaults
 used for selection are based upon the following four tinrc config variables:
 \fBdefault_filter_select_case\fP, \fBdefault_filter_select_expire\fP,
@@ -718,7 +717,7 @@ Read the section "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" for
 a full explanation of these variables and "FILTERING ARTICLES" for more
 information on filtering.
 .TP
-.B ]
+.B GroupQuickKill ']'
 Kill article(s) with a single key [after confirmation]. The defaults used
 for killing are based upon the following four tinrc config variables:
 \fBdefault_filter_kill_case\fP, \fBdefault_filter_kill_expire\fP,
@@ -727,147 +726,148 @@ Read the section "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" for
 a full explanation of these variables and "FILTERING ARTICLES" for more
 information on filtering.
 .TP
-.B <CR>
+.B GroupReadBasenote '^J', GroupReadBasenote2 '<CR>'
 Read current article.
 .TP
-.B <TAB>
+.B GroupNextUnreadArtOrGrp '<TAB>'
 View next unread article or group.
 .TP
-.B a
-Author forward search. This searches for articles with a specific From:
+.B SearchAuthF 'a'
+Author forward search. This searches for articles with a specific ''From:''
 line.
 .TP
-.B A
-Author backward search. Otherwise, see '\fBa\fP' above.
+.B SearchAuthB 'A'
+Author backward search. Otherwise, see \fBSearchAuthF\fP ('\fBa\fP') above.
 .TP
-.B B
+.B SearchBody 'B'
 Search the body of all articles in group (can be slow). You can abort the
-search using '\fBq\fP'.
+search using \fBQuit\fP ('\fBq\fP').
 .TP
-.B c
+.B GroupCatchup 'c'
 Mark all articles as read [after confirmation] then return to the group
 selection list. Move cursor to next group.
 .TP
-.B C
+.B GroupCatchupNextUnread 'C'
 Mark all articles as read [after confirmation] and enter the next group
 with unread news.
 .TP
-.B d
+.B GroupToggleSubjDisplay 'd'
 Cycle the display of the author through all the possible options
 for the tinrc variable \fBshow_author\fP.
 .TP
-.B E
+.B GroupEditFilter 'E'
 Edit the filter file and reload it afterwards.
 .TP
-.B g
+.B GroupGoto 'g'
 Choose a new group by name. This command can be used to access any group, even
 those not currently yanked in.
 .TP
-.B G
+.B GroupToggleGetartLimit 'G'
 Toggle article/group limit.
 .TP
-.B i
+.B ToggleInfoLastLine 'i'
 Display the subject of the first article in the current thread in the last
 line.
 .TP
-.B I
+.B ToggleInverseVideo 'I'
 Toggle inverse video.
 .TP
-.B K
+.B GroupMarkThdRead 'K'
 Mark article/thread as read and move onto the next unread article/thread.
 .TP
-.B l
+.B GroupListThd 'l'
 Open the thread under the current cursor position.
 .TP
-.B L
+.B LookupMessage 'L'
 Look up article by ''Message:-ID:''.
 .TP
-.B m
+.B GroupMail 'm'
 Mail current article / thread / auto-selected (hot) articles / articles
 matching pattern / tagged articles to someone. See the section "MAILING
 PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
 .TP
-.B M
+.B OptionMenu 'M'
 User configurable options menu (for more information see section "GLOBAL
 OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES").
 .TP
-.B n
+.B GroupNextGroup 'n'
 Go to next group.
 .TP
-.B N
+.B GroupNextUnreadArt 'N'
 Go to next unread article.
 .TP
-.B o
+.B Print 'o'
 Send current article / thread / auto-selected (hot) articles / articles
 matching pattern / tagged articles to printer. See the section "MAILING
 PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
 .TP
-.B p
+.B GroupPrevGroup 'p'
 Go to previous group.
 .TP
-.B P
+.B GroupPrevUnreadArt 'P'
 Go to previous unread article.
 .TP
-.B q
+.B Quit 'q'
 Return to previous level.
 .TP
-.B Q
+.B QuitTin 'Q'
 Quit \fBtin\fP - don't ask the user to confirm.
 .TP
-.B r
+.B GroupToggleReadUnread 'r'
 Toggle the display between all articles and unread articles
 .TP
-.B R
+.B GroupBugReport 'R'
 Mail a bug report or comment to <tin-bugs@tin.org>. This is the best way of
 getting bugs fixed and features added/changed.
 .TP
-.B s
+.B GroupSave 's'
 Save current article / thread / auto-selected (hot) articles / articles
 matching pattern / tagged articles. See the section "MAILING PIPING PRINTING
 REPOSTING AND SAVING ARTICLES" for more information.
 .TP
-.B S
+.B GroupAutoSaveTagged 'S'
 Save tagged articles automatically without further prompting.
 .TP
-.B t
-Toggle tag-status of current article / thread for mailing ('\fBm\fP') /
-piping ('\fB|\fP') / printing ('\fBo\fP') / saving ('\fBs\fP') / reposting
-('\fBx\fP').
+.B GroupTag 't'
+Toggle tag-status of current article / thread for \fBGroupMail\fP ('\fBm\fP')
+/ \fBPipe\fP ('\fB|\fP') / \fBPrint\fP ('\fBo\fP') / \fBGroupSave\fP
+('\fBs\fP') / \fBGroupRepost\fP ('\fBx\fP').
 .TP
-.B T
+.B GroupTagParts 'T'
 Automatically tag in order all the parts of the current multi-part message
 .TP
-.B u
+.B GroupToggleThreading 'u'
 Cycle the threading mode through no threading, threading by subject,
 threading by references, threading on both subject and references, group
-multipart articles into a thread (Subject: based).
+multipart articles into a thread (''Subject:'' based).
 .TP
-.B U
+.B GroupUntag 'U'
 Untag all articles that were tagged.
 .TP
-.B w
+.B Post 'w'
 Post an article to current group. If posting fails for some reason, you'll
-get the chance to edit ('\fBe\fP') the article again, postpone ('\fBo\fP')
-it for later processing (see also ''\fB-o\fP''command-line switch) or
-discard ('\fBq\fP') it.
+get the chance to edit the article again via \fBPostEdit\fP ('\fBe\fP'),
+postpone it via \fBPostPostpone\fP ('\fBo\fP') for later processing (see
+also ''\fB-o\fP'' command-line switch) or discard it via \fBQuit\fP ('\fBq\fP').
 .TP
-.B x
+.B GroupRepost 'x'
 Repost an already posted article / thread / auto-selected (hot) articles /
 articles matching pattern / tagged articles to another newsgroup(s). Useful
 for reposting from global to local newsgroups. Do not use this to cross-post
 your own articles.
 .TP
-.B X
+.B GroupMarkUnselArtRead 'X'
 Mark all unread articles that have not been selected as read, redraw screen
 to reflect changes and put index at the first thread to begin reading.
-Pressing '\fBX\fP' again will toggle back to the way it was before. See
-\&'\fB~\fP' command for clearing the toggle effect, leaving the group will
-also clear the toggle effect and make the changes permanent.
+Pressing \fBGroupMarkUnselArtRead\fP ('\fBX\fP') again will toggle back to
+the way it was before. See \fBGroupUndoSel\fP ('\fB~\fP') command for
+clearing the toggle effect, leaving the group will also clear the toggle
+effect and make the changes permanent.
 .TP
-.B z
+.B GroupMarkArtUnread 'z'
 Mark current article as unread.
 .TP
-.B Z
+.B GroupMarkThdUnread 'Z'
 Mark current thread as unread.
 .\"--------------------------------------------------------------------
 .\"
@@ -877,122 +877,119 @@ Mark current thread as unread.
 .B 4
 Select article 4 within thread.
 .TP
-.B #
+.B SetRange '#'
 Choose a range of articles to be affected by the next command. See the
 section "RANGES" for more information.
 .TP
-.B -
+.B LastViewed '-'
 Re-enter the last message that was viewed.
 .TP
-.B /
+.B SearchSubjF '/'
 Search forward for a specified subject.
 .TP
-.B ?
+.B SearchSubjB '?'
 Search backwards for a specified subject.
 .TP
-.B *
+.B ThreadSelArt '*'
 Select the current thread for later processing.
 .TP
-.B .
+.B ThreadToggleArtSel '.'
 Toggle selection of current article.
 .TP
-.B @
+.B ThreadReverseSel '@'
 Reverse article selections.
 .TP
-.B ~
+.B ThreadUndoSel '~'
 Undo all selections on current thread.
 .TP
-.B |
+.B Pipe '|'
 Pipe current article / thread / auto-selected (hot) articles / articles
 matching pattern / tagged articles into command. See the section "MAILING
 PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
 .TP
-.B <CR>
+.B ThreadReadArt '^J', ThreadReadArt2 '<CR>'
 Read current article within thread.
 .TP
-.B <TAB>
+.B ThreadReadNextArtOrThread '<TAB>'
 View next unread article within thread.
 .TP
-.B a
-Author forward search. This searches for articles with a specific From:
+.B SearchAuthF 'a'
+Author forward search. This searches for articles with a specific ''From:''
 line. The search will wrap over into the next thread if nothing is found in
 the current one.
 .TP
-.B A
-Author backward search. Otherwise, see '\fBa\fP' above.
+.B SearchAuthB 'A'
+Author backward search. Otherwise, see \fBSearchAuthF\fP ('\fBa\fP') above.
 .TP
-.B B
+.B SearchBody 'B'
 Search the body of all articles in group (can be slow). You can abort the
-search using '\fBq\fR'.
+search using \fBQuit\fP ('\fBq\fP').
 .TP
-.B c
+.B ThreadCatchup 'c'
 Mark thread as read [after confirmation] and return to the group index page.
 Move cursor to next thread.
 .TP
-.B C
-Mark thread as read [after confirmation] and enter the next thread containing
-unread news.
+.B ThreadCatchupNextUnread 'C'
+Mark thread as read [after confirmation] and enter the next thread
+containing unread news.
 .TP
-.B d
+.B ThreadToggleSubjDisplay 'd'
 Cycle the display of the author through all the possible options for the
 tinrc variable \fBshow_author\fP.
 .TP
-.B i
+.B ToggleInfoLastLine 'i'
 Display the subject of the current article in the last line.
 .TP
-.B I
+.B ToggleInverseVideo 'I'
 Toggle inverse video.
 .TP
-.B K
+.B ThreadMarkArtRead 'K'
 Mark article as read and move onto the next unread article.
 .TP
-.B L
+.B LookupMessage 'L'
 Look up article by ''Message:-ID:''.
 .TP
-.B m
+.B ThreadMail 'm'
 Mail current article / thread / auto-selected (hot) articles / articles
 matching pattern / tagged articles to someone. See the section "MAILING
 PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
 .TP
-.B q
+.B Quit 'q'
 Return to previous level.
 .TP
-.B Q
+.B QuitTin 'Q'
 Quit \fBtin\fP - don't ask the user to confirm.
 .TP
-.B r
-Toggle display to show all articles or only unread articles.
-.TP
-.B R
+.B ThreadBugReport 'R'
 Mail a bug report or comment to <tin-bugs@tin.org>. This is the best way
 of getting bugs fixed and features added/changed.
 .TP
-.B s
+.B ThreadSave 's'
 Save current article / thread / auto-selected (hot) articles / articles
 matching pattern / tagged articles. See the section "MAILING PIPING PRINTING
 REPOSTING AND SAVING ARTICLES" for more information.
 .TP
-.B S
+.B ThreadAutoSaveTagged 'S'
 Save tagged articles automatically without further prompting.
 .TP
-.B t
-Toggle tag status of current article for mailing ('\fBm\fP') / piping
-('\fB|\fP') / printing ('\fBo\fP') / saving ('\fBs\fP') / reposting
-('\fBx\fP').
+.B ThreadTag 't'
+Toggle tag status of current article for mailing, piping, printing, saving
+or reposting.
 .TP
-.B U
+.B ThreadUntag 'U'
 Untag all tagged threads
 .TP
-.B w
+.B Post 'w'
 Post an article to current group. If posting fails for some reason, you'll
-get the chance to edit ('\fBe\fP') the article again, postpone ('\fBo\fP')
-it for later processing (see also ''\fB-o\fP''command-line switch) or
-discard ('\fBq\fP') it.
+get the chance to edit the article again via \fBPostEdit\fP
+('\fBe\fP'), postpone it for later processing via \fBPostPostpone\fP
+('\fBo\fP') (see also ''\fB-o\fP'' command-line switch) or discard it via
+\fBQuit\fP ('\fBq\fP').
 .TP
-.B z
+.B ThreadMarkArtUnread 'z'
 Mark current article in thread as unread.
 .TP
-.B Z
+.B ThreadMarkThdUnread 'Z'
 Mark all articles in thread as unread.
 .\"--------------------------------------------------------------------
 .\"
@@ -1005,78 +1002,78 @@ Read the first (base) article in this thread.
 .B 4
 Read response 4 in this thread.
 .TP
-.B ^A
+.B PageAutoSel '^A'
 Auto select article(s) using a menu. Read the section "FILTERING ARTICLES"
 for more information.
 .TP
-.B ^E
+.B PageReplyQuoteHeaders '^E'
 Reply through mail to the author of the current article with a copy of the
 article with all headers included.
 .TP
-.B ^G
+.B PagePGPCheckArticle '^G'
 Perform
 .BR pgp (1)
 operations on article.
 .TP
-.B ^H
+.B PageToggleHeaders '^H'
 Toggles the display mode (raw including all headers vs. cooked)
 .TP
-.B ^K
+.B PageAutoKill '^K'
 Kill article(s) using a menu. Read the section "FILTERING ARTICLES" for more
 information.
 .TP
-.B ^T
+.B PageToggleTabs '^T'
 Toggle the TAB width between 4 and 8 characters.
 .TP
-.B ^W
+.B PageFollowupQuoteHeaders '^W'
 Post a followup to the current article with a copy of the article with all
 headers included.
 .TP
-.B \&"
+.B PageToggleTex2iso '\&"'
 Toggle TeX to ISO decoding for current article. The default behaviour is
 taken from the \fBtex2iso_conv\fP variable in the tinrc file.
 .TP
-.B %
+.B PageToggleRot '%'
 Toggle ROT-13 decoding for this article.
 .TP
-.B (
+.B PageToggleUue '('
 Toggle the display of uuencoded sections on/off. The default behaviour is
 taken from the \fBhide_uue\fP variable in the tinrc file.
 .TP
-.B )
-The formfeed character ('^L') is often used to hide 'spoilers' that the
+.B PageReveal ')'
+The formfeed character (^L) is often used to hide 'spoilers' that the
 reader may not initially wish to see when viewing an article. Any text
 after a formfeed is not displayed. This keypress acts like a reveal key
 and turns the hidden text back on. Scrolling down will also reveal the text,
 scrolling up will hide it again.
 .TP
-.B -
+.B LastViewed '-'
 Re-enter the last message that was viewed.
 .TP
-.B /
+.B SearchSubjF '/'
 Forward search the text of this article.
 .TP
-.B ?
+.B SearchSubjB '?'
 Backward search the text of this article.
 .TP
-.B :
+.B PageSkipIncludedText ':'
 Skip to the end of the quoted text in this article.
 .TP
-.B <
+.B PageTopThd '<'
 Goto the first article in the current thread.
 .TP
-.B >
+.B PageBotThd '>'
 Goto the last article in the current thread.
 .TP
-.B _
+.B PageToggleHighlight '_'
 Toggle word highlighting on/off.
 .TP
-.B |
+.B Pipe '|'
 Pipe current article / thread / auto-selected (hot) articles / articles
 matching pattern / tagged articles into command. See the section "MAILING
 PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
 .TP
-.B [
+.B PageQuickAutoSel '['
 Auto select article(s) with a single key. The defaults used for selection
 are set based upon the following four tinrc config variables:
 \fBdefault_filter_select_case\fP, \fBdefault_filter_select_expire\fP,
@@ -1085,7 +1082,7 @@ Read the section "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" for
 a full explanation of these variables and "FILTERING ARTICLES" for more
 information on filtering.
 .TP
-.B ]
+.B PageQuickKill ']'
 Kill article(s) with a single key. The defaults used for killing are based
 upon the following four tinrc config variables:
 \fBdefault_filter_kill_case\fP, \fBdefault_filter_kill_expire\fP,
@@ -1094,157 +1091,156 @@ Read the section "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" for
 a full explanation of these variables and "FILTERING ARTICLES" for more
 information on filtering.
 .TP
-.B <CR>
+.B PageNextThd '^J', PageNextThd2 '<CR>'
 Goto next base article.
 .TP
-.B <TAB>
+.B PageNextUnread '<TAB>'
 Goto next unread article. If the tinrc variable \fBtab_goto_next_unread\fP
 is set to OFF, then this key will first page through the current article.
 .TP
-.B a
+.B SearchAuthF 'a'
 Author forward search.
 .TP
-.B A
+.B SearchAuthB 'A'
 Author backward search.
 .TP
-.B B
+.B SearchBody 'B'
 Search the body of all articles in group (can be slow). You can abort the
-search using '\fBq\fP'.
+search using \fBQuit\fP ('\fBq\fP').
 .TP
-.B c
+.B PageCatchup 'c'
 Mark the current thread as read [after confirmation] and return to the
 previous menu. Move cursor to next item.
 .TP
-.B C
+.B PageCatchupNextUnread 'C'
 Mark the rest of the current thread as read [after confirmation] and enter
 the next thread with unread articles.
 .TP
-.B D
+.B PageCancel 'D'
 Cancel the current article. It must have been posted by the same user. The
 cancel message can be seen in the newsgroup 'control' or 'control.cancel'.
 .TP
-.B e
+.B PageEditArticle 'e'
 Edit the current article. Only available when in a mailgroup.
 .TP
-.B E
+.B PageEditFilter 'E'
 Edit the filter file and reload it afterwards.
 .TP
-.B f
+.B PageFollowupQuote 'f'
 Post a followup to the current article with a copy of the article included.
 .TP
-.B F
+.B PageFollowup 'F'
 Post a followup to the current article without including a a copy of the
 article.
 .TP
-.B g
+.B PageFirstPage2 'g'
 Goto the start of the article
 .TP
-.B G
+.B PageLastPage2 'G'
 Goto the end of the article
 .TP
-.B i
+.B ToggleInfoLastLine 'i'
 Display the subject of the current article in the last line.
 .TP
-.B I
+.B ToggleInverseVideo 'I'
 Toggle inverse video.
 .TP
-.B k
+.B Up2 'k'
 Mark article as read and move on to next unread article. Behaves identically
-to \fBN\fP.
+to \fBPageNextUnreadArt\fP ('\fBN\fP').
 .TP
-.B K
+.B PageKillThd 'K'
 Mark rest of thread as read and move onto the next unread thread.
 .TP
-.B l
+.B PageListThd 'l'
 Show the thread menu that the current article is a part of.
 .TP
-.B L
+.B LookupMessage 'L'
 Look up article by ''Message-ID:''.
 .TP
-.B m
+.B PageMail 'm'
 Mail current article / thread / auto-selected (hot) articles / articles
 matching pattern / tagged articles to someone. See the section "MAILING
 PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
 .TP
-.B M
+.B OptionMenu 'M'
 User configurable options menu (for more information see section "GLOBAL
 OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES").
 .TP
-.B n
+.B PageNextArt 'n'
 Go to the next article.
 .TP
-.B N
+.B PageNextUnreadArt 'N'
 Go to the next unread article.
 .TP
-.B o
+.B Print 'o'
 Send current article / thread / auto-selected (hot) articles / articles
 matching pattern / tagged articles to printer. See the section "MAILING
 PIPING PRINTING REPOSTING AND SAVING ARTICLES" for more information.
 .TP
-.B p
+.B PagePrevArt 'p'
 Go to the previous article.
 .TP
-.B P
+.B PagePrevUnreadArt 'P'
 Go to the previous unread article.
 .TP
-.B q
+.B Quit 'q'
 Return to the previous level.
 .TP
-.B Q
+.B QuitTin 'Q'
 Quit \fBtin\fP - don't ask the user to confirm.
 .TP
-.B r
+.B PageReplyQuote 'r'
 Reply through mail to the author of the current article with a copy of the
 article included.
 .TP
-.B R
+.B PageReply 'R'
 Reply through mail to the author of the current article without including
 the original article.
 .TP
-.B s
+.B PageSave 's'
 Save current article / thread / auto-selected (hot) articles / articles
 matching pattern / tagged articles. See the section "MAILING PIPING PRINTING
 REPOSTING AND SAVING ARTICLES" for more information.
 .TP
-.B S
+.B PageAutoSaveTagged 'S'
 Save tagged articles automatically without further prompting.
 .TP
-.B t
-Toggle tag status of current article for mailing ('\fBm\fP') / piping
-('\fB|\fP') / printing ('\fBo\fP') / saving ('\fBs\fP') / reposting
-('\fBx\fP').
+.B PageTag 't'
+Toggle tag status of current article for mailing, piping, printing, saving
+or reposting.
 .TP
-.B T
+.B PageGroupSel 'T'
 Return to group selection level.
 .TP
-.B u
+.B PageGotoParent 'u'
 Goto parent article.
 .TP
-.B U
+.B PageViewUrl 'U'
 Browse URLs in article. All URL's will be prompted in turn and opened
 using the \fBurl_handler\fP. '\fB<ESC>\fP' or no input will skip the
 URL.
 .TP
-.B V
+.B PageViewAttach 'V'
 View or save multimedia attachments.
 .TP
-.B w
+.B Post 'w'
 Post an article to the current group. If posting fails for some reason,
-you'll get the chance to edit ('\fBe\fP') the article again, postpone
-('\fBo\fP') it for later processing (see also ''\fB-o\fP''command-line
-switch) or discard ('\fBq\fP')
-it.
+you'll get the chance to edit the article again via \fBPostEdit\fP
+('\fBe\fP'), postpone it for later processing via \fBPostPostpone\fP
+('\fBo\fP') (see also ''\fB-o\fP'' command-line switch) or discard it
+via \fBQuit\fP ('\fBq\fP').
 .TP
-.B x
+.B PageRepost 'x'
 Repost an already posted article / thread / auto-selected (hot) articles /
 articles matching pattern / tagged articles to another newsgroup(s). Useful
 for reposting from global to local newsgroups. Do not use this to crosspost
 your own articles.
 .TP
-.B z
+.B PageMarkArtUnread 'z'
 Mark article as unread.
 .TP
-.B Z
+.B PageMarkThdUnread 'Z'
 Mark the current thread as unread.
 .\"--------------------------------------------------------------------
 .\"
@@ -1261,30 +1257,32 @@ who have no private tinrc yet.
 .PP
 The variables are user configurable by editing
 \fI${TIN_HOMEDIR-"$HOME"}/.tin/tinrc\fR directly. Most of them can also be
-set in the GLOBAL OPTIONS MENU which is accessed by pressing '\fBM\fP' at all
-levels. It allows the user to customize the behaviour of \fBtin\fP. The
-options are saved to the file \fI${TIN_HOMEDIR-"$HOME"}/.tin/tinrc\fR when
-you exit \fBtin\fP so don't edit the file directly whilst \fBtin\fP is
-running.
+set in the GLOBAL OPTIONS MENU which is accessed by pressing
+\fBOptionMenu\fP ('\fBM\fP') at all levels. It allows the user to customize
+the behaviour of \fBtin\fP. The options are saved to the file
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/tinrc\fR when you exit \fBtin\fP so don't
+edit the file directly whilst \fBtin\fP is running.
 .PP
-In the options '\fBM\fP'enu use the cursor keys in the usual way to move
-around. Use '\fB<CR>\fP' to 'open' the option you wish to change. You will
-need to enter a new value or use '\fB<SPACE>\fP' to toggle the available
-options. \&'\fB<CR>\fP' will save the new value, '\fB<ESC>\fP' will abort
-without saving changes.
+In the options menu use the cursor keys in the usual way to move
+around. Use \fBConfigSelect\fP ('\fB^J\fP') or \fBConfigSelect2\fP
+('\fB<CR>\fP') to 'open' the option you wish to change. You will need to
+enter a new value or use '\fB<SPACE>\fP' to toggle the available
+options. \fBConfigSelect\fP will save the new value, '\fB<ESC>\fP' will
+abort without saving changes.
 .PP
 As with the other menus, '\fB^L\fP' will redraw the screen. You can use
-\&'\fB/\fP' and '\fB?\fP' to search for a specific option. Use '\fBq\fP' to
-exit the option '\fBM\fP'enu and keep your changes. Use '\fBQ\fP' to exit
-without keeping your changes.
+\fBSearchSubjF\fP ('\fB/\fP') and \fBSearchSubjB\fP ('\fB?\fP') to search
+for a specific option. Use \fBQuit\fP ('\fBq\fP') to exit the option menu
+and keep your changes. Use \fBQuitTin\fP ('\fBQ\fP') to exit without keeping
+your changes.
 .PP
 Here is a full list of all the available variables. The name in braces is
 the name of the corresponding setting in
 \fI${TIN_HOMEDIR-"$HOME"}/.tin/tinrc\fR.
 .TP 4
 .B Add posted articles to filter (add_posted_to_filter)
-If ON add posted articles to filter for highlighting follow-ups. Default is
-ON.
+If ON add posted articles which start a new thread to filter for
+highlighting follow-ups. Default is ON.
 .TP
 .B Insert 'User-Agent:'-header (advertising)
 Turn ON advertising in header (''User-Agent:''). Default is ON.
@@ -1442,20 +1440,20 @@ Ask for manual confirmation to protect the user.
 .IP \(bu 3
 .B commands
 Ask for confirmation before executing certain dangerous commands (e.g.,
-\&'\fBc\fR'atchup). Commands that this affects are marked in this manual
-with '[after confirmation]'. Default is commands & quit.
+\fBGroupCatchup\fP ('\fBc\fP')). Commands that this affects are marked in
+this manual with '[after confirmation]'. Default is commands & quit.
 .\" TODO: check if all affected commands are marked [after confirmation]
 .IP \(bu
 .B quit
 You'll be asked to confirm that you wish to exit \fBtin\fP when you
-use the '\fBq\fP' command.
+use the \fBQuit\fP ('\fBq\fP') command.
 .IP \(bu
 .B select
-Ask for confirmation before marking all not selected (with '\fBX\fP'
-command) articles as read.
+Ask for confirmation before marking all not selected (with
+\fBGroupMarkUnselArtRead\fP ('\fBX\fP') command) articles as read.
 .RE
 .\"
-.\" most of these default_* settings are not available from the '\fBM\fP'enu
+.\" most of these default_* settings are not available from the menu
 .\" as they are intended for internal use only.
 .TP
 .B default_art_search
@@ -1531,7 +1529,7 @@ Default is \fI${TIN_HOMEDIR-"$HOME"}/Mail\fR.
 The format string used to create the mailer command with parameters that is
 used for mailing articles to other people. Default is '%M "%T" < %F' (i.e.,
 /bin/mail "iain" < .article). The flexible format allows other mailers with
-different command line parameters to be used such as 'elm -s "%S" "%T" <
+different command-line parameters to be used such as 'elm -s "%S" "%T" <
 "%F"' (i.e., elm -s "subject" "iain" < .article) or 'sendmail -oi -oem -t <
 %F' (i.e. sendmail -oi -oem -t < .article).
 .TP
@@ -1622,9 +1620,9 @@ NNTP inews), else it is "inews -h". The article is passed to
 .TP
 .B info_in_last_line
 If ON, show current group description or article subject in the last line
-(not in the pager and global menu) - '\fBi\fP' toggles setting. This
-facility is useful as the full width of the screen is available to display
-long subjects. Default is OFF.
+(not in the pager and global menu) - \fBToggleInfoLastLine\fP ('\fBi\fP')
+toggles setting. This facility is useful as the full width of the screen is
+available to display long subjects. Default is OFF.
 .TP
 .B Use inverse video for page headers (inverse_okay)
 If ON use inverse video for page headers at different levels. Default is ON.
@@ -1644,9 +1642,12 @@ There are 3 options: 0 (default) is the 'traditional' behaviour of
 \fBtin\fP. Only unread articles are killed once only by marking them read.
 Options 1 and 2 will process all articles in the group and therefore there
 is a processing overhead when using them. Option 1 will thread killed
-articles as normal but they will be marked with a 'K'. Option 2 simply does
-not display killed articles. \fBkill_level\fP was first present in \fBtin\fP
-1.2 and has been resurrected for 1.4.
+articles as normal but they will be marked with
+\fBart_marked_killed\fP. As filtering only happens on unread on
+unread articles with \fBkill_level\fP set to 0, \fBart_marked_killed\fP
+and \fBart_marked_read_selected\fP are only shown once. When you reenter
+the group the mark will be gone. Option 2 simply does not display killed
+articles at all.
 .TP
 .B Use 8bit characters in mail headers (mail_8bit_header)
 Allows 8bit characters unencoded in the header of mail message. Default is
@@ -1882,7 +1883,10 @@ displayed.
 If ON show a short group description text after newsgroup name at the group
 selection level. The ''\fB-d\fP'' command-line flag will override the
 setting and turn descriptions off. The text used is taken from the
-\fI${TIN_LIBDIR-NEWSLIBDIR}/newsgroups\fR file. Default is ON.
+\fI${TIN_LIBDIR-NEWSLIBDIR}/newsgroups\fR file and if supported (requires
+.B tin
+to be build with mh-mail-handling support) from
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/mailgroups\fR for mailgroups. Default is ON.
 .TP
 .B Show no. of lines in thread listing (show_lines)
 Show number of lines of first unread article in thread listing. Default is
@@ -2006,17 +2010,17 @@ blank, then \fBtin\fP uses a built in default for this.
 .TP
 .B Do tab after X automatically (tab_after_X_selection)
 If enabled will automatically go to the first unread article after having
-selected all hot articles and threads with the '\fBX\fP' command at Group
-level. Default is OFF.
+selected all hot articles and threads with the \fBGroupMarkUnselArtRead\fP
+('\fBX\fP') command at Group level. Default is OFF.
 .TP
 .B Tab goes to next unread article (tab_goto_next_unread)
-If enabled pressing '\fB<TAB>\fP' at the Article level will go to
-the next unread article immediately instead of first paging through the
-current one. Default is ON.
+If enabled pressing \fBPageNextUnread\fP ('\fB<TAB>\fP') at the Article
+level will go to the next unread article immediately instead of first
+paging through the current one. Default is ON.
 .TP
 .B Decode German style TeX umlaut codes to ISO (tex2iso_conv)
 If ON, show "a as Umlaut-a, etc. Default is OFF. This behaviour can also be
-toggled in the article viewer via '\fB"\fP'.
+toggled in the article viewer via \fBPageToggleTex2iso\fP ('\fB"\fP').
 .TP
 .B Thread articles by (thread_articles)
 Defines which threading method to use. It's possible to set the threading
@@ -2073,7 +2077,7 @@ If ON remove \fI~/.article\fR after posting. Default is ON.
 .TP
 .B Program that opens URL's (url_handler)
 The program that will be run when launching URL's in the article viewer
-using '\fBU\fP'. The actual URL will be appended to this.
+using \fBPageViewUrl\fP ('\fBU\fP'). The actual URL will be appended to this.
 Default is \fBurl_handler.sh %s\fP.
 .TP
 .B Use ANSI color (use_color)
@@ -2124,6 +2128,13 @@ print a \fBspace\fP instead
 .B Word highlighting in message body (word_highlight)
 Enable word highlighting. See \fBword_h_display_marks\fP for the options
 available is this and \fBuse_color\fP is enabled. Default is ON.
+.TP
+.B Page line wrap column (wrap_column)
+Sets the column at which a displayed article body should be wrapped. If
+this value is smaller or equal to 0, it defaults to the current screen
+width. If this value is greater than your current screen width the part
+off-screen is not displayed. Setting this option to a large value, this
+option can be used to disable wrapping. Default is 80.
 .TP
 .B Quote line when cross-posting (xpost_quote_format)
 Format is the same as for \fBnews_quote_format\fP, this is used when
@@ -2192,8 +2203,8 @@ or save the kill description.
 \fBtin\fP allows posting of articles, follow-up to already posted articles
 and replying direct through mail to the author of an article.
 .PP
-Use the '\fBw\fP' command to post an article to a newsgroup. After entering
-the post subject the default editor (i.e.,
+Use the \fBPost\fP ('\fBw\fP') command to post an article to a newsgroup.
+After entering the post subject the default editor (i.e.,
 .BR vi (1))
 or the editor specified by the $\fBVISUAL\fP or $\fBEDITOR\fP environment
 variable will be started and the article can be entered. To crosspost
@@ -2202,25 +2213,30 @@ the ''Newsgroups:'' line at the beginning of the article. After saving and
 exiting the editor you are asked if you wish to a)bort posting the article,
 e)dit the article again or p)ost the article to the specified newsgroup(s).
 .PP
-Use the '\fBW\fP' command to display a history of the articles you have
-posted. The date the article was posted, which newsgroups the article was
-posted to and the articles subject line are displayed.
+Use the \fBDisplayPostHist\fP ('\fBW\fP') command to display a history of
+the articles you have posted. The date the article was posted, which
+newsgroups the article was posted to and the articles subject line are
+displayed.
 .PP
-Use the '\fBf\fP' / '\fBF\fP' / '\fB^W\fP' command to post a follow-up
-article to an already posted article. The '\fBf\fP' command will copy the
-text of the original article into the editor. The '\fB^W\fP' command will
-copy the text and all headers of the original article into the editor. The
-editing procedure is the same as when posting an article with the '\fBw\fP'
-command.
+Use the \fBPageFollowupQuote\fP ('\fBf\fP'), \fBPageFollowup\fP ('\fBF\fP')
+or \fBPageFollowupQuoteHeaders\fP ('\fB^W\fP') command to post a follow-up
+article to an already posted article. The \fBPageFollowupQuote\fP command
+will copy the text of the original article into the editor. The
+\fBPageFollowupQuoteHeaders\fP command will copy the text and all headers
+of the original article into the editor. The editing procedure is the same
+as when posting an article with the \fBPost\fP ('\fBw\fP') command.
 .PP
-Use the '\fBr\fP' / '\fBR\fP' / '\fB^E\fP' command to reply direct through
-mail to the author of an already posted article. The '\fBr\fP' command will
-copy the text of the original article into the editor. The '\fB^E\fP'
-command will copy the text and all headers of the original article into the
-editor. The editing procedure is the same as when posting an article with
-the '\fBw\fP' command. After saving and exiting the editor you are asked if
-you wish to '\fBa\fP'bort sending the article, '\fBe\fP'dit the article
-again or '\fBs\fP'end the article to the author.
+Use the \fBPageReplyQuote\fP ('\fBr\fP'), \fBPageReply\fP ('\fBR\fP') or
+\fBPageReplyQuoteHeaders\fP ('\fB^E\fP') command to reply direct through
+mail to the author of an already posted article. The \fBPageReplyQuote\fP
+command will copy the text of the original article into the editor. The
+\fBPageReplyQuoteHeaders\fP command will copy the text and all headers of
+the original article into the editor. The editing procedure is the same as
+when posting an article with the \fBPost\fP ('\fBw\fP') command. After
+saving and exiting the editor you are asked if you wish to abort sending
+the article via \fBPostAbort\fP ('\fBa\fP'), edit the article
+again via \fBPostEdit\fP ('\fBe\fP') or send the article to the author via
+\fBPostSend\fP ('\fBs\fP').
 .\"
 .\"
 .SS "CUSTOMIZING THE ARTICLE QUOTE STRING"
@@ -2270,21 +2286,25 @@ to represent a space).
 .\"
 .\"
 .SS "MAILING PIPING PRINTING REPOSTING AND SAVING ARTICLES"
-The command interface to mail ('\fBm\fP'), pipe ('\fB|\fP'), print
-('\fBo\fP'), repost ('\fBx\fP') and save ('\fBs\fP' and '\fBS\fP') articles
+The command interface to \fBGroupMail\fP, \fBPageMail\fP, \fBPostMail\fP or
+\fBThreadMail\fP ('\fBm\fP'), \fBPipe\fP ('\fB|\fP'), \fBPrint\fP ('\fBo\fP'),
+\fBPageRepost\fP or \fBGroupRepost\fP ('\fBx\fP') and \fBGroupSave\fP,
+\fBPageSave\fP or \fBThreadSave\fP ('\fBs\fP' and \fBGroupAutoSaveTagged\fP,
+\fBPageAutoSaveTagged\fP or \fBThreadAutoSaveTagged\fP '\fBS\fP') articles
 is the same for ease of use.
 .PP
-Auto-saving with '\fBS\fP' is a special case and operates only on tagged
-articles. They will processed without any further prompting according to the
-default save parameters defined in tinrc or by any attributes set for the
-current group.
+Auto-saving with \fB*AutoSaveTagged\fP ('\fBS\fP') is a special case and
+operates only on tagged articles. They will processed without any further
+prompting according to the default save parameters defined in tinrc or by
+any attributes set for the current group.
 .PP
-Otherwise, the initial prompt will ask you to select which '\fBa\fP'rticle,
-'\fBt\fP'hread, '\fBh\fP'ot (auto-selected) '\fBr\fP'egex pattern,
-\&'\fBt\fP'agged articles you wish to mail, pipe etc.
+Otherwise, the initial prompt will ask you to select which article,
+thread, hot (auto-selected), regex pattern, tagged articles you wish to
+mail, pipe etc.
 .PP
-Tagged articles must have already been tagged with the '\fBt\fP' command.
-All tagged articles can be untagged by the '\fBU\fP' untag command.
+Tagged articles must have already been tagged with a \fB*Tag\fP ('\fBt\fP')
+command. All tagged articles can be untagged by a \fB*Untag\fP ('\fBU\fP')
+untag command.
 .PP
 If a regex pattern is selected you are asked to enter a pattern (i.e., to
 match all articles subject lines containing 'net News' you enter "net
@@ -2351,18 +2371,19 @@ mark them as read)
 .\"
 .\"
 .SS RANGES
-A range is simply a group of items marked using the range ('#') key. Certain
-\fBtin\fP commands will operate on a range if one exists rather than just
-the current item. A range is an expression of the form <min>-<max>, eg.
-10-15 will highlight items 10 through 15 on the current screen. Other than
-absolute numeric positions, '.' can be used in place of the current cursor
-position and '$' can be used to mean the highest number available. Currently
-the only commands that understand ranges are '\fBK\fP', '\fBz\fP' and
-\&'\fBZ\fP' at the Group level.
+A range is simply a group of items marked using the \fBSetRange\fP
+(\fB'#'\fP) key. Certain \fBtin\fP commands will operate on a range if one
+exists rather than just the current item. A range is an expression of the
+form <min>-<max>, eg. 10-15 will highlight items 10 through 15 on the current
+screen. Other than absolute numeric positions, '.' can be used in place of
+the current cursor position and '$' can be used to mean the highest number
+available. Currently the only commands that understand ranges are
+\fBGroupMarkThdRead\fP ('\fBK\fP'), \fBGroupMarkArtUnread\fP ('\fBz\fP') and
+\fBGroupMarkThdUnread\fP ('\fBZ\fP').
 .PP
 .SS "NEWSGROUP LISTS & WILDCARDS"
 Several places in \fBtin\fP allow you to specify a list of newsgroups. These
-include command line groups, (un)subscribe groups, the AUTO[UN]SUBSCRIBE
+include command-line groups, (un)subscribe groups, the AUTO[UN]SUBSCRIBE
 mechanism. The scope= attributes file tag and the filter file group= tag
 also use the same syntax. \fBtin\fP interprets this variable similarly to
 .BR rn(1).
@@ -2446,7 +2467,7 @@ is resized.
 intervals to show any newly arrived news.
 .PP
 If you find large number of New newsgroups cluttering up your screen,
-pressing '\fBr\fP' will make them go away.
+pressing \fBSelectToggleReadDisplay\fP ('\fBr\fP') will make them go away.
 .\"
 .\"
 .SS "XTERM BUTTONS"
@@ -2472,10 +2493,11 @@ clicked outside the list of articles.
 In the group selection menu, if the mouse is pointing at a group then:
 .TP 10
 left button
-moves to and selects the group pointed at, just like '\fB<CR>\fP'.
+moves to and selects the group pointed at, just like \fBSelectReadGrp2\fP
+('\fB<CR>\fP').
 .TP
 centre button
-quits the program, just like '\fBq\fP'.
+quits the program, just like \fBQuit\fP ('\fBq\fP').
 .TP
 right button
 moves to the group pointed at.
@@ -2483,12 +2505,13 @@ moves to the group pointed at.
 In the article menu, if the mouse is pointing at an article (or thread) then:
 .TP 10
 left button
-reads the article pointed at, just like '\fB<CR>\fP', or the thread, just
-like '\fBl\fP'.
+reads the article pointed at, just like \fBGroupReadBasenote2\fP
+('\fB<CR>\fP'), or the thread, just like \fBGroupListThd\fP ('\fBl\fP').
 .TP
 centre button
 exits the menu, catching up on the group if you have
-\fBgroup_catchup_on_exit\fP set in your configuration, just like '\fBq\fP'.
+\fBgroup_catchup_on_exit\fP set in your configuration, just like \fBQuit\fP
+('\fBq\fP').
 .TP
 right button
 moves to the article (or thread) pointed at.
@@ -2496,11 +2519,12 @@ moves to the article (or thread) pointed at.
 In the thread menu, if the mouse is pointing at an article then:
 .TP 10
 left button
-reads article pointed at, just like '\fB<CR>\fP'.
+reads article pointed at, just like \fBThreadReadArt2\fP ('\fB<CR>\fP').
 .TP
 centre button
 exits the menu, catching up on the thread if you have
-\fBthread_catchup_on_exit\fP set in your configuration, just like '\fBq\fP'.
+\fBthread_catchup_on_exit\fP set in your configuration, just like \fBQuit\fP
+('\fBq\fP').
 .TP
 right button
 moves to the article pointed at.
@@ -2626,6 +2650,9 @@ For a detailed description see
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/keymap${${LC_ALL-"${LC_CTYPE-"${LC_MESSAGES-"$LANG"}"}"}:+".${LC_ALL-"${LC_CTYPE-"${LC_MESSAGES-"$LANG"}"}"}"}
 .PP
 
+.IR ${TIN_HOMEDIR-"$HOME"}/.tin/mailgroups
+.PP
+
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/newsrctable
 .PP
 
@@ -2659,6 +2686,9 @@ For a detailed description see
 .IR ${TIN_LIBDIR-"/news/db"}/newsgroups
 .PP
 
+.IR ${TIN_LIBDIR-"/news/db"}/organization
+.PP
+
 .IR ${TIN_LIBDIR-"/news/db"}/overview.fmt
 .PP
 
@@ -2688,12 +2718,17 @@ For a detailed description see
 .\" .TP
 .\" .B TIN_GROUPS (AmigaOS actived, obsolete)
 .\"
+.\" .TP
+.\" TIN_RNG_MIN, TIN_RNG_MAX, TIN_MIN, TIN_MAX, TIN_COUNT, TIN_SEQ
+.\" (all used in vNewsrcTestHarness() (-DDEBUG_NEWSRC))
+.\"
+.TP
 .B TINRC
-Define this variable if you want to specify command line options that
+Define this variable if you want to specify command-line options that
 \fBtin\fP should be started with to save typing them each time it is
 started. The contents of the environment variable are added to the front of
-the command line options before it is parsed therefore allowing an option
-specified on the command line to override the same option specified in the
+the command-line options before it is parsed therefore allowing an option
+specified on the command-line to override the same option specified in the
 environment.
 .TP
 .B TIN_HOMEDIR
@@ -2742,14 +2777,14 @@ $\fBTIN_LIBDIR\fP is set it prepended to $\fBTIN_ACTIVEFILE\fP.
 .TP
 .B NNTPSERVER
 The default NNTP server to remotely read news from. This variable only
-needs to be set if the ''\fB-r\fP'' command line option is specified and
+needs to be set if the ''\fB-r\fP'' command-line option is specified and
 the file \fI/etc/nntpserver\fR does not exist. The ''\fB-g\fP'' command
 line option overrides $\fBNNTPSERVER\fP.
 .TP
 .B NNTPPORT
 The NNTP TCP-port to read news from. This variable only
 needs to be set if the TCP-port is not 119 (the default).
-The ''\fB-p\fP'' command line option overrides $\fBNNTPPORT\fP.
+The ''\fB-p\fP'' command-line option overrides $\fBNNTPPORT\fP.
 .TP
 .B DISTRIBUTION
 Set the article header field ''Distribution:'' to the contents of the
@@ -2807,9 +2842,9 @@ Full path to the users mailbox.
 .B VISUAL
 This variable has precedence over the default editor (i.e.,
 .BR vi (1))
-that is used in all editing operations within \fBtin\fP (i.e., posting
-\&'\fBw\fP', replying '\fBr\fP', follow-ups '\fBf\fP', ...). Evaluation
-order is \fI${VISUAL-"${EDITOR-vi}"}\fR. See
+that is used in all editing operations within \fBtin\fP (i.e., posting,
+replying, follow-ups, ...). Evaluation order is
+\fI${VISUAL-"${EDITOR-vi}"}\fR. See
 .BR environ (5)
 for more infos.
 .TP
@@ -2957,7 +2992,7 @@ for more infos.
 .\"
 .\"
 .\" .SH SECURITY
-.\" add a note about clear text passwords used by nntp and in ~/.newsauth
+.\" add a note about clear text passwords used by NNTP and in ~/.newsauth
 .\"
 .\"
 .SH "CONFORMING TO"
@@ -2987,7 +3022,7 @@ the TODO-file which comes with the source.
 .\"
 .\"
 .SH HISTORY
-\fBtin\fR is based on the
+\fBtin\fP is based on the
 .BR tass (1)
 newsreader that was developed by Rich Skrenta and posted to alt.sources in
 March 1991; its first version was released on August 23rd 1991.

@@ -1,8 +1,5 @@
 Bugs
 ----
-o  doesn't handle symlinks for .oldnewsrc
-   [20020627 Jeff Sheinberg <jeffsh@erols.com>]
-
 o  '+' in group-level is broken (does nothing)
    [20020516 Urs Janssen <urs@tin.org>]
 
@@ -16,7 +13,7 @@ o  when p'|'ping multiple files ('T'agged) screen is defaced
 
 o  running multiple tins in parallel (each connected to a different
    server) will trash all newnews=timestamps (and other configchanges)
-   except the last form the formaly running tins on quit.
+   except the last form the formerly running tins on quit.
    same problem with .oldnewsrc
    [20020215 Mario Holbe <Mario.Holbe@RZ.TU-Ilmenau.DE>]
    having $NNTPSERVER[:$NNTPPORT]-subdirs (or something defined via an extra
@@ -52,19 +49,11 @@ o  'u' etc.pp. may leed to a 'crash' due to which_thread() returning -1
 o  incorrect nested boundaries in multipart articles hang tin
    [20010804 Urs Janssen <urs@tin.org>]
 
-o  lines which are exatly cCOLS wide introduce an extra \n in the pager
-   in raw mode (^H)
-   [20010628 Urs Janssen <urs@tin.org>]
-
 o  reusing p'o'stponed articles in mailing_list groups doesn't work
    (possible fix: store Newsgroups (and other infos) via msg_add_header()
     (to overwrite any old values) in X-Tin-Postponed:-header and remove it
     before posting.)
    [20010623 Urs Janssen <urs@tin.org>]
-
-o  mismatching cached overview data (higher article numbers than on the
-   server) cause a crash.
-   [Urs Janssen <urs@tin.org>]
 
 o  reference based filters won't work with long (> 500 chars)
    References: lines
@@ -94,12 +83,6 @@ o  '-s' cmd-line switch implicitly changes 'savedir' in tinrc
    Might get away with simply setting glob_attributes->savedir
    [Jason Faultless <jason@radar.tele2.co.uk>]
 
-o  commas in real-name might cause problems in mail-replys
-   [already fixed?]
-
-o  fix tinrc-update from old (tin1.2pl2) versions (sometime causes crashes)
-   [Urs Janssen <urs@tin.org>]
-
 o  fix check_upgrade() (config.c)
    - check if TINRC_VERSION is 'older' (mismatch and not newer) as in the
      config file, give a warning and the possibility to quit without saving
@@ -112,15 +95,16 @@ o  fix check_upgrade() (config.c)
 o  add version number to other config-files (i.e. attributes, filter,
    tin.defaults, keymap) and do the same checks as for TINRC_VERSION/tinrc
    for the filter-file also store the editor offset and the filter method
-   used (wildmat or regexp).
+   used (wildmat or regexp) and the charset the file is written in (i.e.
+   ISO-8859-x vs. unicode)
    [Urs Janssen <urs@tin.org>]
 
 o  'K' is still a bit inconsistent
    - in the group and thread menu it marks current item read & jumps to the
      next unread item.
    - in the article pager (page.c) it marks the whole current thread as read
-     and jumps to the next unread article.
-     'c'/'C' already does this better.
+     and jumps to the next unread article. 'c'/'C' already does this better.
+     should we let 'K' behave like <TAB> in the pager?
 
 o  Changes to int/bool tinrc variables in the Option Menu don't propogate
    back to the attributes, not even groups with global attributes.
@@ -128,19 +112,15 @@ o  Changes to int/bool tinrc variables in the Option Menu don't propogate
    attributes, whereas select.c does. It might be better to fix the problem
    properly in config.c by flashing changes to all affected groups.
 
-o  if no INEWSDIR is given INEWSDIR is set to NEWSLIBDIR which is not always
-   true (Linux) ... search $NEWSLIBDIR, /usr/bin/,... in that case and/or
-   make INEWSDIR (rename to INEWS_PROG) to hold (path,) name and args of
-   inews. i.e. 'INEWS_PROG=/usr/lib/news/bin/inews -h < %s'?
-   ( what about something like
-     AC_PATH_PROG(INEWS_PATH, inews, --internal,
-     	/news/bin:/usr/lib/news/bin)
-    ?)
+o  rewrite code to use INEWS_PATH instead of INEWSDIR
+   [20021007 Urs Janssen <urs@tin.org>
 
 o  if posting with external inews fails fall-back to built_in_inews would be
    good if running in nntp-mode
    [Done. But the read_news_via_nntp && !read_saved_news is unclear. Why can't
     you post or must use external inews if you read_saved_news?]
+   [read_saved_news doesn't require a NNTP connection but the build in inews
+    can't post the the local spool. urs]
 
 o  remove built in path of external commands (metamail, ispell, ...)
    [for metamail/ispell $METAMAIL/$ISPELL could be used to override
@@ -158,9 +138,24 @@ o  iso2asc conversion is missing for 'internal' strings (i.e. 'M'enu)
 
 Pager Problems
 --------------
+o  lines which are exatly cCOLS wide introduce an extra \n in the pager
+   in raw mode (^H)
+   [20010628 Urs Janssen <urs@tin.org>]
 
 o  word_h_display_marks=0 doesn't work for the !USE_CUSRSES case
    [20020720 Urs Janssen <urs@tin.org>]
+
+o  raw mode loses (illegal) chars in multibyte based groups
+   [20021006 Michael Bienia <michael@vorlon.ping.de>]
+
+o  long lines are wrapped at cCOLS, no matter if we are in the middle of
+   a multibyte sequence.
+   [20021102 Urs Janssen <urs@tin.org>]
+
+o  lines > 1024 bytes will lose at least 1 byte (in multibyte mode it seems
+   to depend on the number of multibytesequenes) at the forced wrap after
+   1024 bytes.
+   [20021102 Urs Janssen <urs@tin.org>]
 
 Posting Problems
 ----------------
@@ -174,7 +169,7 @@ o  forged cancelling via Supersedes:/Also-Control:/Control:-header is possible
    if it is supplied by hand (inews_prog=--internal)
 
 o  when last articles in a newsgroup were cancelled, it shows that there are
-   new articles in that group, even if entered that group in a session before
+   new articles in that group (except when using -n cmd-line flag)
 
 o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
    to 'duplicated'-headers and multiple signatures
@@ -202,7 +197,7 @@ o  fetch overview data in chunks (i.e. 100 arts/chunk) to allow
 
 o  hierarchical 'M'enu, i.e. hide all color_* options as long as
    use_color is turned off, put all art_marked_*into a 'submenu', ...
-   (currently the Menu is statically build on compile time)
+   (currently the menu is statically build on compile time)
    [20020322 Urs Janssen <urs@tin.org>]
 
 o  add a postponed 'browser' (store postponed arts in
@@ -282,12 +277,14 @@ o  check if servers high mark is lower as the one in users newsrc, if so
    issue a warning and allow the luser to reset the highmark in the newsrc
    to the servers 'l'ow or the servers 'h'igh mark or 'i'gnore it.
 
-o  check if the articles Subject/From in the pager matches the one on the
-   overview file (if available) - if not issue a warning that the servers
-   overviews seem to be broken. trust the headers, not overviews.
+o  check if the articles Subject/From in the pager matches (minus
+   whitespaces) the one on the overview file (if available) - if not
+   issue a warning that the servers overviews seem to be broken. trust
+   the headers, not overviews.
    do the same with the article numbers in the (cached) overview
-   data. if they are higher then the servers high-mark don't trust
-   them (and discard the locally cached data).
+   data (we already do this, but currently this will lead to article "loss").
+   if they are higher then the servers high-mark don't trust them (and
+   discard the locally cached data).
 
 o  check if server supports HEADERS, if so use
    "HEADERS - Subject From Date Message-ID References Lines Newsgroups"
@@ -306,7 +303,7 @@ o  add post_8bit_header, mail_8bit_header, post_mime_encoding,
 o  join keep_posted_articles & keep_posted_articles_file into one option
    posted_articles_file=/path/to/file - don't keep arts if
    posted_articles_file is unset. join show_score/show_lines to show_infos =
-   { noting, lines, score, lines & score}
+   { nothing, lines, score, lines & score}
    [Urs Janssen <urs@tin.org>]
 
 o  detect pcre version and add compatibility macros for old versions
@@ -338,7 +335,7 @@ o  Add a trunc() function or something similar for shortening long strings
    for embedding into status messages.
    Maybe somehow merge with sized_message(), then you can use
    message(txt, trunc(group, 20)) etc.
-   we now could use snprintf() to do that.
+   we now could use s{w,n}printf() to do that.
 
 o  check if server supports 'LIST MOTD' (i.e. INN >= 2.0) and display
    it on startup.
@@ -387,15 +384,15 @@ o  Additions to the thread menu:
      ';' (mark unread arts as hot if >= 1 art in thread is hot)
      '+' (mark thread as hot)
      'Y' (check for new articles in thead)
-     '%' (toggle rto13 encoding)
+     '%' (toggle rot13 encoding)
      keys to go to previous/next thread
 
 o  Additions to the group menu:
      'Y' (check for new articles in group)
-     '%' (toggle rto13 encoding)
+     '%' (toggle rot13 encoding)
 
 o  Additions to the select menu:
-     '%' (toggle rto13 encoding)
+     '%' (toggle rot13 encoding)
 
 o  Add to the 'M'enu:
      DEFAULT_MAILER
@@ -457,6 +454,9 @@ o  add check for libbzip2/zlib (>=1.1.4)
    option to write/read {g,b}zipped local overviews
    zlib, libbzip2 might also be used for post-processing.
 
+o  add check for GPGME (<http://www.gnupg.org/gpgme.html>) and if found
+   use it for pgp actions.
+
 Posting enhancements
 ----------------------
 o  sort Followup-To:/Newsgroups: after stripping doubled newsgroups and
@@ -501,6 +501,10 @@ o  Enhance -w to take newsgroup name as argument.
 o  Enhance -n to take newsgroup name as argument and use vGrpGetArtInfo()
    to allow posting to groups other than those in newsrc.
 
+o  add config option for (external) viewer for sohwing postings stored in
+   keep_posted_articles_file
+   [20021003 Michael Gerhards <HM-Gerhards@uni.de>]
+
 Filtering enhancements
 ----------------------
 o  add used filter-type to filter-file or filter-rule or use different
@@ -523,6 +527,12 @@ o  allow expiring filter entrys n-days after the last time they matched
 
 Internal Changes
 ----------------
+o  - rename PageFirstPage2 to PageFirstPage and PageLastPage2 to PageLastPage
+   - in page level Up2 ('k') does the same as PageNextUnreadArt ('N'), but
+     Up ('^P') behaves different. shouldn't 'k' be named PageNextUnreadArt2
+     here?
+   [Urs Janssen <urs@tin.org>]
+
 o  check where joinpath() should be used; check joinpath() for overruns.
    (i.e grep for TMPDIR in the source)
    [Urs Janssen <urs@tin.org>]
@@ -537,7 +547,7 @@ o  change '#define TMPDIR "/tmp/"' to
 o  make configure look for strrstr() in libpub/publib.h
    [Urs Janssen <urs@tin.org>]
 
-o  reorder several structs to avoid padding (see gcc -Wpadding)
+o  reorder several structs to avoid padding (see gcc -Wpadded)
    [Urs Janssen <urs@tin.org>]
 
 o  what type is base[]?
@@ -564,7 +574,7 @@ o  close potential security holes:
    - check where we should use vsnprintf() instead of vsprintf()
    - check where we should use strncat() instead of strcat()
    - check where we should use strncpy() instead of strcpy()
-   - check possible races with chmod()/access()/link()/rename()/stat()/
+   - check possible races with access()/link()/rename()/stat()/
                                unlink()/chdir()/fopen()/fstat()/open()/
                                opendir()/t_open()/tmpfile()
    - check getenv() results before using it
@@ -648,7 +658,7 @@ o  make select/group/thread/page-level multibyte "safe". they all use
    in a multibyte environment (i.e. mm_local_charset=UTF-8) this is a
    fault. (this might require libutf8 for those systems which don't have
    wide-char/multibyte functions)
-   [20010904 urs@tin.org]
+   [partly done for ncursesw 20010904 urs@tin.org]
 
 o  make mm_network_charset an "option_list" to avoid junk input or
    undesired (UTF-1, UTF-7, UTF-16*, UTF-32*, UCS-2, UCS-4, ...) encodings.
@@ -660,7 +670,7 @@ Docs/online help
 ----------------
 o  add instalation guide (in html)
 
-o  document keymap feature
+o  better document keymap feature
 
 o  replace all key references in the manuals by thier names, i.e.
    'X' -> GroupMarkUnselArtRead
@@ -674,6 +684,16 @@ o  tin.defaults could use more documentation on manpage (tin.5)
 
 Not yet classified
 ------------------
+o  what about -a cmd-line flag? is this really neaded? IMHO this can be
+   dropped, '&' can be used for runtime color toggling.
+   [20021106 Urs Janssen <urs@tin.org>]
+
+o  commas in real-name might cause problems in mail-replys
+   From: Last, First <user@accou.nt> (which is illegal) leads to
+   To: Last, First<user@accou.nt> wich is last@localhost,user@accou.nt
+   should we try to fix things and quote the realname part?
+   [20021007 Urs Janssen <urs@tin.org>]
+
 o  why are -A and -g disabled on M_AMIGA?
    [20020928 Urs Janssen <urs@tin.org>]
 
@@ -699,8 +719,9 @@ o  check_article_to_be_posted() still need some cleanup
 
 o  update gettext stuff to >= gettext-0.11
 
-o  should the postponed file be in MH-format if tin is running in MH-mode?
-   if so we need to extend fetch_postponed_article()
+o  should the postponed 'file' (and posted messages 'file') be in MH-format
+   if tin is running in MH-mode? (add MH to the allowed mailbox formats) if
+   so we need to extend fetch_postponed_article().
 
 o  check if fetch_postponed_article is MH seperator "safe"
 
@@ -726,3 +747,18 @@ o  think about group numbering in "only unread" display mode
 
 o  remove strip_blanks? IMHO it's not needed anymore
    [20020305 Urs Janssen <urs@tin.org>]
+
+o  what about the INN_NNTPLIB stuff? does this still work or can it be
+   dropped?
+   [20021007 Urs Janssen <urs@tin.org>]
+
+o  AFAIK the 'hardcoded' local charset stuff (--with-local-charset) is
+   obsolete (at least the two windows charsets should be, IIRC cygwin now
+   uses ISO-8859-1, haven't seen any other working windows 'ports'; the NeXT
+   port seems to be dead). if this can be confirmed: remove the related
+   code/files.
+   [20021022 Urs Janssen <urs@tin.org>]
+
+o  doesn't handle symlinks for .oldnewsrc
+   (see <20021003021508.GA28021@akk10.akk.uni-karlsruhe.de> for details, urs)
+   [20020627 Jeff Sheinberg <jeffsh@erols.com>]

@@ -174,8 +174,7 @@ init_screen_array(
 			for (i = 0; i < cLINES; i++)
 				FreeAndNull(screen[i].col);
 
-			free(screen);
-			screen = (struct t_screen *) 0;
+			FreeAndNull(screen);
 		}
 	}
 }
@@ -282,11 +281,8 @@ free_if_not_default(
 	char **attrib,
 	char *deflt)
 {
-	/* Can't see how these attribs can be = NULL */
-	if (*attrib != NULL && *attrib != deflt) {
-		free(*attrib);
-		*attrib = (char *) 0;
-	}
+	if (*attrib != deflt)
+		FreeAndNull(*attrib);
 }
 
 

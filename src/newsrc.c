@@ -799,18 +799,25 @@ parse_unread_arts(
 	struct t_group *group)
 {
 	long unread = 0;
-	long bitmin, bitmax;
+ 	long bitmin, bitmax;
 	register int i;
 	t_bitmap *newbitmap = (t_bitmap *) 0;
 
 	bitmin = group->newsrc.xmin;
 	bitmax = group->newsrc.xmax;
 
+	/*
+	 * TODO
+	 * what about group->newsrc.xmax > group->xmax?
+	 * that should indicate a artnum 'reset' on th server
+	 * (or using the "wrong" newsrc for that server)
+	 */
+
 	if (group->xmax > group->newsrc.xmax)
 		group->newsrc.xmax = group->xmax;
 
 	if (group->newsrc.xmax >= bitmin) {
-		newbitmap = my_malloc(BITS_TO_BYTES(group->newsrc.xmax-bitmin + 1));
+		newbitmap = my_malloc(BITS_TO_BYTES(group->newsrc.xmax - bitmin + 1));
 		NSETRNG0(newbitmap, 0L, group->newsrc.xmax - bitmin);
 	}
 
@@ -826,7 +833,18 @@ parse_unread_arts(
 
 		/* TODO: logic correct? */
 		if (newbitmap != NULL && arts[i].status == ART_UNREAD && arts[i].artnum >= bitmin) {
-			NSET1(newbitmap, arts[i].artnum - bitmin);
+#if 0
+		/*
+		 * check for wrong article numbers in the overview
+		 *
+		 * TODO: check disabled as we currently catch the artnum > high_mark
+		 *       case in read_nov_file() where we might be able to
+		 *       fix the broken artnum (via xref:-parsing). currently
+		 *       we just skip the art there.
+		 */
+			if (arts[i].artnum <= group->xmax)
+#endif /* 0 */
+				NSET1(newbitmap, arts[i].artnum - bitmin);
 			unread++;
 		}
 	}

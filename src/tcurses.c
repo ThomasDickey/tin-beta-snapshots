@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-03-02
- *  Updated   : 2002-07-20
+ *  Updated   : 2002-11-01
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -366,8 +366,25 @@ highlight_string(
 {
 	char tmp[LEN];
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	/*
+	 * In a multibyte locale we get byte offsets instead of character
+	 * offsets calculate now the correct starting column
+	 */
+	if (col > 0) {
+		wchar_t wtmp[LEN];
+
+		MoveCursor(row, 0);
+		my_innstr(tmp, cCOLS);
+		tmp[col] = '\0';
+		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) - 1)
+			col = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+	}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 	MoveCursor(row, col);
-	innstr(tmp, size);
+	my_innstr(tmp, size);
+	tmp[size] = '\0';
 	StartInverse();
 	my_fputs(tmp, stdout);
 	my_flush();
@@ -388,9 +405,31 @@ word_highlight_string(
 	int color)
 {
 	char tmp[LEN];
+	int wsize = size;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t wtmp[LEN];
+
+	/*
+	 * In a multibyte locale we get byte offsets instead of character offsets
+	 * calculate now the correct correct starting column
+	 */
+	if (col > 0) {
+		MoveCursor(row, 0);
+		my_innstr(tmp, cCOLS);
+		tmp[col] = '\0';
+		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) - 1)
+			col = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+	}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	MoveCursor(row, col);
-	innstr(tmp, size);
+	my_innstr(tmp, size);
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	tmp[size] = '\0';
+	if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) - 1)
+		wsize = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	/* safegurad against bogus regexps */
 	if ((tmp[0] == '*' && tmp[size - 1] == '*') ||
@@ -401,7 +440,7 @@ word_highlight_string(
 		switch (tinrc.word_h_display_marks) {
 			case 0:
 				delch();
-				mvdelch(row, col + size - 2);
+				mvdelch(row, col + wsize - 2);
 				MoveCursor(row, col);
 				tmp[0] = tmp[size - 1] = ' ';
 				str_trim(tmp);
@@ -590,6 +629,36 @@ my_retouch(
 }
 
 
+/*
+ * innstr can't read multibyte chars
+ * we use innwstr (if avaible) and convert to multibyte chars
+ */
+int
+my_innstr(
+	char *str,
+	int n)
+{
+#if defined(HAVE_NCURSESW) && defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	size_t len = 0;
+	wchar_t *buffer;
+
+	buffer = (wchar_t *) my_malloc(sizeof(wchar_t) * (n + 1));
+
+	if (innwstr(buffer, n) != ERR) {
+		if ((len = wcstombs(str, buffer, 2 * n)) == (size_t) (-1))
+			len = 0;
+		str[len] = '\0';
+	}
+
+	free(buffer);
+	return len;
+#else
+	int len = innstr(str, n);
+	return (len == ERR ? 0 : len);
+#endif /* HAVE_NCURSESW && MULTIBYTE_ABLE && !NO_LOCALE */
+}
+
+
 char *
 screen_contents(
 	int row,
@@ -601,8 +670,7 @@ screen_contents(
 	getyx(stdscr, y, x);
 	move(row, col);
 	TRACE(("screen_contents(%d,%d)", row, col));
-	if (innstr(buffer, len) == ERR)
-		len = 0;
+	len = my_innstr(buffer, len);
 	buffer[len] = '\0';
 	TRACE(("...screen_contents(%d,%d) %s", y, x, _nc_visbuf(buffer)));
 	return buffer;
@@ -614,13 +682,7 @@ write_line(
 	int row,
 	char *buffer)
 {
-	int len = strlen(buffer);
-
-	if (len > cCOLS)
-		buffer[len = cCOLS] = '\0';
-	mvaddstr(row, 0, buffer);
-	if (len < cCOLS)
-		clrtoeol();
+	mvaddnstr(row, 0, buffer, -1);
 }
 
 

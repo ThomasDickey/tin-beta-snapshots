@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 5
 SVER	= 15
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20021002
+DVER	= 20021108
 EXE	= tin
 
 # directory structure
@@ -346,7 +346,7 @@ INTLFILES = \
 POFILES = \
 	$(PODIR)/Makefile.inn \
 	$(PODIR)/POTFILES.in \
-	$(PODIR)/tin.pot \
+	$(PODIR)/$(PROJECT).pot \
 	$(PODIR)/de.gmo \
 	$(PODIR)/de.po \
 	$(PODIR)/et.gmo \

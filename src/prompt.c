@@ -460,7 +460,7 @@ prompt_msgid(
 	char buf[LEN];
 
 	if (prompt_string(_(txt_enter_message_id), buf + 1, HIST_MESSAGE_ID) && buf[1]) {
-		char *ptr = buf + 1;
+		char *ptr = str_trim(buf + 1);
 		struct t_msgid *msgid;
 
 		/*

@@ -219,6 +219,7 @@ prompt_rejected(
 
 /* FIXME (what does this mean?) fix screen pos. */
 	Raw(FALSE);
+	/* TODO: replace hardcoded key-name in txt_post_error_ask_postpone */
 	my_fprintf(stderr, "\n\n%s\n\n", _(txt_post_error_ask_postpone));
 	my_fflush(stderr);
 	Raw(TRUE);
@@ -811,6 +812,8 @@ check_article_to_be_posted(
 #endif /* !FORGERY */
 
 		if (cp - line == 8 && !strncasecmp(line, "Approved", 8)) {
+			char *p;
+
 			if (tinrc.beginner_level) {
 				setup_check_article_screen(&init);
 				/* StartInverse(); */
@@ -821,7 +824,8 @@ check_article_to_be_posted(
 				errors++;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 			}
-			if (GNKSA_OK != (i = gnksa_check_from(rfc1522_encode(line, *group, FALSE) + (cp - line) + 1))) {
+			p = rfc1522_encode(line, *group, FALSE);
+			if (GNKSA_OK != (i = gnksa_check_from(p + (cp - line) + 1))) {
 				setup_check_article_screen(&init);
 				StartInverse();
 				my_fprintf(stderr, _(txt_error_bad_approved), i);
@@ -832,11 +836,15 @@ check_article_to_be_posted(
 				errors++;
 #endif /* !FORGERY */
 			}
+			free(p);
 		}
 
 		if (cp - line == 4 && !strncasecmp(line, "From", 4)) {
+			char *p;
+
 			found_from_lines++;
-			if (GNKSA_OK != (i = gnksa_check_from(rfc1522_encode(line, *group, FALSE) + (cp - line) + 1))) {
+			p = rfc1522_encode(line, *group, FALSE);
+			if (GNKSA_OK != (i = gnksa_check_from(p + (cp - line) + 1))) {
 				setup_check_article_screen(&init);
 				StartInverse();
 				my_fprintf(stderr, _(txt_error_bad_from), i);
@@ -847,10 +855,14 @@ check_article_to_be_posted(
 				errors++;
 #endif /* !FORGERY */
 			}
+			free(p);
 		}
 
 		if (cp - line == 8 && !strncasecmp(line, "Reply-To", 8)) {
-			if (GNKSA_OK != (i = gnksa_check_from(rfc1522_encode(line, *group, FALSE) + (cp - line) + 1))) {
+			char *p;
+
+			p = rfc1522_encode(line, *group, FALSE);
+			if (GNKSA_OK != (i = gnksa_check_from(p + (cp - line) + 1))) {
 				setup_check_article_screen(&init);
 				StartInverse();
 				my_fprintf(stderr, _(txt_error_bad_replyto), i);
@@ -861,6 +873,7 @@ check_article_to_be_posted(
 				errors++;
 #endif /* !FORGERY */
 			}
+			free(p);
 		}
 
 		if (cp - line == 10 && !strncasecmp(line, "Message-ID", 10)) {
@@ -3836,33 +3849,44 @@ insert_from_header(
 			while ((line = tin_fgets(fp_in, in_header)) != NULL) {
 				if (in_header && !strncasecmp(line, "From: ", 6)) {
 					char from_buff[HEADER_LEN];
+					char *p;
 
 					from_found = TRUE;
 					STRCPY(from_buff, line + 6);
 					unfold_header(from_buff);
 
 					/* Check the From: line */
-					/* insert_from_header() is only called
+					/*
+					 * insert_from_header() is only called
 					 * from submit_mail_file() so the 3rd
-					 * arg should perhaps be TRUE */
-					if (GNKSA_OK != gnksa_check_from(rfc1522_encode(from_buff, NULL, FALSE))) { /* error in address */
+					 * arg should perhaps be TRUE
+					 */
+					p = rfc1522_encode(from_buff, NULL, FALSE);
+					if (GNKSA_OK != gnksa_check_from(p)) { /* error in address */
 						error_message(_(txt_invalid_from), from_buff);
+						free(p);
 						unlink(outfile);
 						fclose(fp_out);
 						fclose(fp_in);
 						return FALSE;
 					}
+					free(p);
 				}
 				if (*line == '\0' && in_header) {
 					if (!from_found) {
+						char *p;
+
 						/* Check the From: line */
-						if (GNKSA_OK != gnksa_check_from(rfc1522_encode(from_name, NULL, FALSE) + 6)) { /* error in address */
+						p = rfc1522_encode(from_name, NULL, FALSE);
+						if (GNKSA_OK != gnksa_check_from(p + 6)) { /* error in address */
 							error_message(_(txt_invalid_from), from_name + 6);
+							free(p);
 							unlink(outfile);
 							fclose(fp_out);
 							fclose(fp_in);
 							return FALSE;
 						}
+						free(p);
 						fprintf(fp_out, "%s\n", from_name);
 					}
 					in_header = FALSE;

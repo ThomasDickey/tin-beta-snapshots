@@ -67,7 +67,7 @@ static int thread_right(void);
 static int thread_tab_pressed(void);
 static t_bool find_unexpired(struct t_msgid *ptr);
 static t_bool has_sibling(struct t_msgid *ptr);
-static void bld_tline(int l, struct t_article *art);
+static void build_tline(int l, struct t_article *art);
 static void draw_thread_arrow(void);
 static void make_prefix(struct t_msgid *art, char *prefix, int maxlen);
 static void show_thread_page(void);
@@ -87,7 +87,7 @@ static t_menu thdmenu = {0, 0, 0, 0, show_thread_page, draw_thread_arrow };
  * there are a lot of variables in the format for the output
  */
 static void
-bld_tline(
+build_tline(
 	int l,
 	struct t_article *art)
 {
@@ -97,10 +97,14 @@ bld_tline(
 #else
 	char *buff = screen[INDEX2TNUM(l)].col;
 #endif /* USE_CURSES */
-	int gap;
+	int gap, fill, i;
 	int rest_of_line = cCOLS;
 	int len_from, len_subj;
 	struct t_msgid *ptr;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t wtmp[BUFSIZ], wtmp2[BUFSIZ];
+	char tmp[BUFSIZ];
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	/*
 	 * Start with 2 spaces for ->
@@ -123,10 +127,10 @@ bld_tline(
 			mark = (art->selected ? tinrc.art_marked_selected : (tinrc.recent_time && ((time((time_t) 0) - art->date) < (tinrc.recent_time * DAY))) ? tinrc.art_marked_recent : tinrc.art_marked_unread);
 		} else if (art->status == ART_WILL_RETURN) {
 			mark = tinrc.art_marked_return;
-		} else if (art->killed && tinrc.kill_level == KILL_THREAD) {
+		} else if (art->killed && tinrc.kill_level != KILL_NOTHREAD) {
 			mark = tinrc.art_marked_killed;
 		} else {
-			if (tinrc.kill_level != KILL_READ && art->score >= tinrc.score_select)
+			if (/* tinrc.kill_level != KILL_READ && */ art->score >= tinrc.score_select)
 				mark = tinrc.art_marked_read_selected ; /* read hot chil^H^H^H^H article */
 			else
 				mark = tinrc.art_marked_read;
@@ -213,26 +217,66 @@ bld_tline(
 			for (ptr = art->refptr->parent; ptr && EXPIRED(ptr); ptr = ptr->parent)
 				;
 			if (!(ptr && arts[ptr->article].subject == art->subject))
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+				if (mbstowcs(wtmp2, art->subject, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
+					wcspart(wtmp, wtmp2, gap, ARRAY_SIZE(wtmp));
+					if (wcstombs(tmp, wtmp, sizeof(tmp)) != (size_t) -1)
+						strncat(buff, tmp, sizeof(buff) - len - 1);
+				}
+#else
 				strncat(buff, art->subject, gap);
 
 			buff[len + gap] = '\0';	/* Just in case */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		}
 
 		/*
 		 * If we need to show the author, pad out to the start of the author field,
 		 */
 		if (len_from) {
-			for (gap = strlen(buff); gap < (cCOLS - len_from); gap++)
-				buff[gap] = ' ';
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			if (mbstowcs(wtmp, buff, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
+				fill = cCOLS - len_from - wcswidth(wtmp, ARRAY_SIZE(wtmp) - 1);
+			else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+				fill = cCOLS - len_from - strlen(buff);
+
+			gap = strlen(buff);
+			for (i = 0; i < fill; i++)
+				buff[gap + i] = ' ';
+			buff[gap + fill] = '\0';
 
 			/*
 			 * Now add the author info at the end. This will be 0 terminated
 			 */
-			get_author(TRUE, art, buff + cCOLS - len_from, len_from);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			tmp[0] = '\0';
+			get_author(TRUE, art, tmp, sizeof(tmp) - 1);
+
+			if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) -1) != (size_t) -1) {
+				wcspart(wtmp, wtmp2, len_from, ARRAY_SIZE(wtmp));
+				if (wcstombs(tmp, wtmp, sizeof(tmp)) != (size_t) -1)
+					strncat(buff, tmp, sizeof(buff) - strlen(buff) - 1);
+			}
+#else
+			get_author(TRUE, art, buff + strlen(buff), len_from);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		}
 
-	} else /* Add the author info. This is always shown if subject is not */
+	} else { /* Add the author info. This is always shown if subject is not */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		tmp[0] = '\0';
+		get_author(TRUE, art, tmp, sizeof(tmp) - 1);
+
+		if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) -1) != (size_t) -1) {
+			wcspart(wtmp, wtmp2, cCOLS - strlen(buff), ARRAY_SIZE(wtmp));
+			if (wcstombs(tmp, wtmp, sizeof(tmp)) != (size_t) -1)
+				strncat(buff, tmp, sizeof(buff) - strlen(buff) - 1);
+		}
+#else
 		get_author(TRUE, art, buff + strlen(buff), cCOLS - strlen(buff));
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	}
 
 	/* protect display from non-displayable characters (e.g., form-feed) */
 	convert_to_printable(buff);
@@ -241,10 +285,18 @@ bld_tline(
 		/*
 		 * Pad to end of line so that inverse bar looks 'good'
 		 */
-		for (gap = strlen(buff); gap < cCOLS; gap++)
-			buff[gap] = ' ';
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if (mbstowcs(wtmp, buff, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
+			fill = cCOLS - wcswidth(wtmp, ARRAY_SIZE(wtmp) - 1);
+		else
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			fill = cCOLS - strlen(buff);
 
-		buff[gap] = '\0';
+		gap = strlen(buff);
+		for (i = 0; i < fill; i++)
+			buff[gap + i] = ' ';
+
+		buff[gap + fill] = '\0';
 	}
 
 	WriteLine(INDEX2LNUM(l), buff);
@@ -253,7 +305,7 @@ bld_tline(
 
 /*
  * Update a line on the group or thread screen.
- * This only puts to the screen, the hard work is done by bld_*line()
+ * This only puts to the screen, the hard work is done by build_*line()
  * i is an index into base[]
  * If 'magic' is != 0 then only a partial redraw of width=magic is done.
  * This is intended to redraw the art_mark/tag/unread counts that change
@@ -295,17 +347,9 @@ draw_line(
 	 */
 	if (s[MARK_OFFSET-startpos] == tinrc.art_marked_selected) {
 		MoveCursor(INDEX2LNUM(i), MARK_OFFSET);
-#if 0	/* doesn't work correct with ncurses4.x */
-		ToggleInverse();
-#else
-		StartInverse();
-#endif /* 0 */
+		StartInverse();	/* ToggleInverse() doesn't work correct with ncurses4.x */
 		my_fputc(s[MARK_OFFSET-startpos], stdout);
-#if 0 /* doesn't work correct with ncurses4.x */
-		ToggleInverse();
-#else
-		EndInverse();
-#endif /* 0 */
+		EndInverse();		/* ToggleInverse() doesn't work correct with ncurses4.x */
 	}
 	MoveCursor(INDEX2LNUM(i) + 1, 0);
 	return;
@@ -415,7 +459,6 @@ thread_page(
 	while (ret_code >= 0) {
 		set_xclick_on();
 		switch (ch = handle_keypad(thread_left, thread_right, &menukeymap.thread_nav)) {
-
 			case iKeyAbort:			/* Abort */
 				break;
 
@@ -530,7 +573,7 @@ thread_page(
 				n = find_response(thread_basenote, thdmenu.curr);
 				if ((arts[n].status == ART_UNREAD) || (arts[n].status == ART_WILL_RETURN)) {
 					art_mark_read(group, &arts[n]);
-					bld_tline(thdmenu.curr, &arts[n]);
+					build_tline(thdmenu.curr, &arts[n]);
 					draw_line(thdmenu.curr, MAGIC);
 				}
 				if ((n = next_unread(n)) == -1) {	/* no more unread articles */
@@ -573,18 +616,14 @@ thread_page(
 
 			case iKeySearchSubjF:			/* subject search */
 			case iKeySearchSubjB:
-				if ((n = search(SEARCH_SUBJ, find_response(thread_basenote, thdmenu.curr),
-										(ch == iKeySearchSubjF))) != -1) {
+				if ((n = search(SEARCH_SUBJ, find_response(thread_basenote, thdmenu.curr), (ch == iKeySearchSubjF))) != -1)
 					fixup_thread(n, TRUE);
-				}
 				break;
 
 			case iKeySearchAuthF:			/* author search */
 			case iKeySearchAuthB:
-				if ((n = search(SEARCH_AUTH, find_response(thread_basenote, thdmenu.curr),
-										(ch == iKeySearchAuthF))) != -1) {
+				if ((n = search(SEARCH_AUTH, find_response(thread_basenote, thdmenu.curr), (ch == iKeySearchAuthF))) != -1)
 					fixup_thread(n, TRUE);
-				}
 				break;
 
 			case iKeyToggleHelpDisplay:		/* toggle mini help menu */
@@ -621,7 +660,7 @@ thread_page(
 					break;
 
 				if (tag_article(n)) {
-					bld_tline(thdmenu.curr, &arts[n]);	/* Update just this line */
+					build_tline(thdmenu.curr, &arts[n]);	/* Update just this line */
 					draw_line(thdmenu.curr, MAGIC);
 				} else
 					update_thread_page();						/* Must update whole page */
@@ -650,7 +689,7 @@ thread_page(
 			case iKeyThreadMarkArtUnread:		/* mark article as unread */
 				n = find_response(thread_basenote, thdmenu.curr);
 				art_mark_will_return(group, &arts[n]); /* art_mark_unread(group, &arts[n]); */
-				bld_tline(thdmenu.curr, &arts[n]);
+				build_tline(thdmenu.curr, &arts[n]);
 				draw_line(thdmenu.curr, MAGIC);
 				info_message(_(txt_marked_as_unread), _("Article"));
 				draw_thread_arrow();
@@ -668,7 +707,7 @@ thread_page(
 					break;
 				arts[n].selected = (!(ch == iKeyThreadToggleArtSel && arts[n].selected));	/* TODO optimise? */
 /*				update_thread_page(); */
-				bld_tline(thdmenu.curr, &arts[n]);
+				build_tline(thdmenu.curr, &arts[n]);
 				draw_line(thdmenu.curr, MAGIC);
 				if (thdmenu.curr + 1 < thdmenu.max) {
 					move_down();
@@ -755,7 +794,7 @@ show_thread_page(
 	for (i = thdmenu.first; i < thdmenu.last; ++i) {
 		if (the_index < 0 || the_index >= max_art)
 			break;
-		bld_tline(i, &arts[the_index]);
+		build_tline(i, &arts[the_index]);
 		draw_line(i, 0);
 		the_index = next_response(the_index);
 	}
@@ -780,7 +819,7 @@ update_thread_page(
 	assert(thdmenu.first != 0 || the_index == thread_respnum);
 
 	for (j = 0, i = thdmenu.first; j < NOTESLINES && i < thdmenu.last; ++i, ++j) {
-		bld_tline(i, &arts[the_index]);
+		build_tline(i, &arts[the_index]);
 		draw_line(i, MAGIC);
 		if ((the_index = next_response(the_index)) == -1)
 			break;

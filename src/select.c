@@ -239,7 +239,7 @@ selection_page(
 			case iKeySelectToggleDescriptions:	/* toggle newsgroup descriptions */
 				show_description = bool_not(show_description);
 				if (show_description)
-					read_newsgroups_file();
+					read_descriptions(TRUE);
 				set_groupname_len(FALSE);
 				show_selection_page();
 				break;
@@ -556,18 +556,19 @@ show_selection_page(
 
 		strncpy(active_name, active[n].name, groupname_len);
 		active_name[groupname_len] = '\0';
-		if (blank_len > 254)
-			blank_len = 254;
-		strncpy(group_descript, active[n].description ? active[n].description : " ", blank_len);
-		group_descript[blank_len] = '\0';
+
+		if (blank_len > (int) (sizeof(group_descript) - 1))
+			blank_len = sizeof(group_descript) - 1;
 
 		if (show_description) {
-			if (active[n].description)
+			if (active[n].description) {
+				strncpy(group_descript, active[n].description, blank_len);
+				group_descript[blank_len] = '\0';
 				sprintf(sptr, "  %c %s %s  %-*.*s  %-*.*s" cCRLF,
 				         subs, tin_ltoa(i + 1, 4), tmp,
 				         groupname_len, groupname_len, active_name,
 				         blank_len, blank_len, group_descript);
-			else
+			} else
 				sprintf(sptr, "  %c %s %s  %-*.*s  " cCRLF,
 				         subs, tin_ltoa(i + 1, 4), tmp,
 				         (groupname_len + blank_len),

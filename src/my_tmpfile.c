@@ -1,6 +1,6 @@
 /*
  *  Project   : tin - a Usenet reader
- *  Module    : tmpfile.c
+ *  Module    : my_tmpfile.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 2001-03-11
  *  Updated   : 2001-04-23

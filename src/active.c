@@ -258,7 +258,7 @@ parse_active_line(
  * Parse a line from the .newsrc file
  * Send GROUP command to NNTP server directly to keep window.
  * We can't know the 'moderator' status and always return 'y'
- * But we don't change if the 'moderator' status is alredy checked by
+ * But we don't change if the 'moderator' status is already checked by
  * read_active_file()
  */
 static void

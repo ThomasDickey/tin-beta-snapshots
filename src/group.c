@@ -73,7 +73,7 @@ static int group_right(void);
 static int tab_pressed(void);
 static int prompt_getart_limit(void);
 static int recent_responses(int thread);
-static void bld_sline(int i);
+static void build_sline(int i);
 static void draw_subject_arrow(void);
 static void show_group_title(t_bool clear_title);
 static void show_tagged_lines(void);
@@ -96,7 +96,7 @@ show_tagged_lines(
 
 	for (i = grpmenu.first; i < grpmenu.last; ++i) {
 		if ((i != grpmenu.curr) && line_is_tagged(base[i])) {
-			bld_sline(i);
+			build_sline(i);
 			draw_line(i, MAGIC);
 		}
 	}
@@ -470,7 +470,7 @@ group_page(
 				if (num_of_selected_arts != old_selected_arts)
 					show_group_title(TRUE);
 
-				bld_sline(grpmenu.curr);
+				build_sline(grpmenu.curr);
 				draw_line(grpmenu.curr, MAGIC);
 				/*
 				 * Move cursor to next unread
@@ -670,7 +670,7 @@ group_page(
 								arts[ii].tagged = ++num_of_tagged_arts;
 						}
 					}
-					bld_sline(grpmenu.curr);
+					build_sline(grpmenu.curr);
 					draw_line(grpmenu.curr, MAGIC);
 					if (tagged)
 						show_tagged_lines();
@@ -753,7 +753,7 @@ group_page(
 				}
 
 				show_group_title(TRUE);
-				bld_sline(grpmenu.curr);
+				build_sline(grpmenu.curr);
 				draw_line(grpmenu.curr, MAGIC);
 				draw_subject_arrow();
 				info_message(_(txt_marked_as_unread), buf);
@@ -787,7 +787,7 @@ group_page(
 				}
 
 				show_group_title(TRUE);
-				bld_sline(grpmenu.curr);
+				build_sline(grpmenu.curr);
 				draw_line(grpmenu.curr, MAGIC);
 				draw_subject_arrow();
 				info_message(_(txt_marked_as_unread), buf);
@@ -812,7 +812,7 @@ group_page(
 					++n;
 				}
 				assert(n > 0);
-				bld_sline(grpmenu.curr);
+				build_sline(grpmenu.curr);
 				draw_line(grpmenu.curr, MAGIC);
 
 				info_message(flag
@@ -865,7 +865,7 @@ group_page(
 					for_each_art_in_thread(i, n)
 						arts[i].selected = TRUE;
 
-					bld_sline(n);
+					build_sline(n);
 					flag = TRUE;
 				}
 				if (flag)
@@ -946,7 +946,7 @@ show_group_page(
 		CleartoEOS();
 
 	for (i = grpmenu.first; i < grpmenu.last; ++i) {
-		bld_sline(i);
+		build_sline(i);
 		draw_line(i, 0);
 	}
 
@@ -971,7 +971,7 @@ update_group_page(
 	register int i;
 
 	for (i = grpmenu.first; i < grpmenu.last; ++i) {
-		bld_sline(i);
+		build_sline(i);
 		draw_line(i, MAGIC);
 	}
 
@@ -1204,7 +1204,7 @@ build_multipart_header(
  * Build subject line given an index into base[].
  *
  * WARNING: the routine is tightly coupled with draw_line() in the sense
- * that draw_line() expects bld_sline() to place the article mark
+ * that draw_line() expects build_sline() to place the article mark
  * (ART_MARK_READ, ART_MARK_SELECTED, etc) at MARK_OFFSET in the
  * screen[].col.
  * So, if you change the format used in this routine, be sure to check
@@ -1212,14 +1212,9 @@ build_multipart_header(
  * Yes, this is somewhat kludgy.
  */
 static void
-bld_sline(
+build_sline(
 	int i)
 {
-#ifdef USE_CURSES
-	char buffer[BUFSIZ];	/* FIXME: allocate? */
-#else
-	char *buffer;
-#endif /* USE_CURSES */
 	char from[HEADER_LEN];
 	char new_resps[8];
 	char art_cnt[10];
@@ -1227,6 +1222,17 @@ bld_sline(
 	int respnum;
 	int n, j;
 	struct t_art_stat sbuf;
+#ifdef USE_CURSES
+	char buffer[BUFSIZ];	/* FIXME: allocate? */
+#else
+	char *buffer;
+#endif /* USE_CURSES */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t format[32];
+	wchar_t wbuffer[LEN];
+	wchar_t tmp_subj[256], tmp_subj2[256];
+	wchar_t tmp_from[HEADER_LEN], tmp_from2[HEADER_LEN];
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	from[0] = '\0';
 	respnum = (int) base[i];
@@ -1253,7 +1259,6 @@ bld_sline(
 	 */
 	j = (sbuf.unread) ? next_unread(respnum) : respnum;
 
-
 	if (tinrc.show_lines) {
 		if (n > 1) { /* change this to (n > 0) if you do a n-- above */
 			if (arts[j].line_count != -1) {
@@ -1276,17 +1281,49 @@ bld_sline(
 	}
 
 	if (CURR_GROUP.attribute->show_author != SHOW_FROM_NONE)
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		/* ignore len_from for now, we truncate it later */
+		get_author(FALSE, &arts[j], from, sizeof(from) - 1);
+#else
 		get_author(FALSE, &arts[j], from, len_from);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	if (sbuf.multipart_have > 1) /* We have a multipart msg so lets built our new header info. */
 		build_multipart_header(arts_sub, len_subj, arts[j].subject, sbuf.multipart_compare_len, sbuf.multipart_have, sbuf.multipart_total);
 	else
-		strncpy(arts_sub, arts[j].subject, len_subj);
-	arts_sub[len_subj - 12 + 1] = '\0';
+		strncpy(arts_sub, arts[j].subject, sizeof(arts_sub) - 1);
 
 #ifndef USE_CURSES
 	buffer = screen[INDEX2SNUM(i)].col;
 #endif /* !USE_CURSES */
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	/* wcswidth() in wcspart() depends that all characters are printable */
+	convert_to_printable(arts_sub);
+	convert_to_printable(from);
+
+	mbstowcs(tmp_subj2, arts_sub, ARRAY_SIZE(tmp_subj2) - 1);
+	mbstowcs(tmp_from2, from, ARRAY_SIZE(tmp_from2) - 1);
+
+	/* format subject and from  */
+	wcspart(tmp_subj, tmp_subj2, len_subj - 12, ARRAY_SIZE(tmp_subj));
+	wcspart(tmp_from, tmp_from2, len_from, ARRAY_SIZE(tmp_from));
+
+	if (tinrc.show_score) {
+		mbstowcs(format, "  %s %s %s%6d %-ls%s%-ls", ARRAY_SIZE(format) - 1);
+		swprintf(wbuffer, ARRAY_SIZE(wbuffer) - 1, format,
+			 tin_ltoa(i + 1, 4), new_resps, art_cnt, sbuf.score, tmp_subj,
+			 spaces, tmp_from);
+	} else {
+		mbstowcs(format, "  %s %s %s %-ls%s%-ls", ARRAY_SIZE(format) - 1);
+		swprintf(wbuffer, ARRAY_SIZE(wbuffer) - 1, format,
+			 tin_ltoa(i + 1, 4), new_resps, art_cnt, tmp_subj,
+			 spaces, tmp_from);
+	}
+
+	wcstombs(buffer, wbuffer, BUFSIZ);
+#else
+	arts_sub[len_subj - 12 + 1] = '\0';
 
 	if (tinrc.show_score)
 		sprintf(buffer, "  %s %s %s%6d %-*.*s%s%-*.*s",
@@ -1298,6 +1335,7 @@ bld_sline(
 			 tin_ltoa(i + 1, 4), new_resps, art_cnt,
 			 len_subj - 12, len_subj - 12, arts_sub,
 			 spaces, len_from, len_from, from);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	/*
 	 * protect display from non-displayable characters (e.g., form-feed)

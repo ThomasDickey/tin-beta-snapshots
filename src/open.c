@@ -701,8 +701,9 @@ open_xover_fp(
 
 		sprintf(line, "%s %ld-%ld", txt_xover, lMin, lMax);
 		return (nntp_command(line, OK_XOVER, NULL, 0));
-	} else {
+	} else
 #endif /* NNTP_ABLE */
+	{
 		char *pcNovFile;
 
 		pcNovFile = find_nov_file(psGrp, (*mode == 'r' ? R_OK : W_OK));
@@ -714,9 +715,7 @@ open_xover_fp(
 			return fopen(pcNovFile, mode);
 
 		return (FILE *) 0;
-#ifdef NNTP_ABLE
 	}
-#endif /* NNTP_ABLE */
 }
 
 
