@@ -75,9 +75,9 @@
 static char *escape_shell_meta (char *source, int quote_area);
 static int gnksa_check_domain (char *domain);
 static int gnksa_check_domain_literal (char *domain);
-static int gnksa_check_localpart (char *localpart);
+static int gnksa_check_localpart (const char *localpart);
 static int gnksa_dequote_plainphrase (char *realname, char *decoded, int addrtype);
-static int gnksa_split_from (char *from, char *address, char *realname, int *addrtype);
+static int gnksa_split_from (const char *from, char *address, char *realname, int *addrtype);
 static int strfeditor (char *editor, int linenum, const char *filename, char *s, size_t maxsize, char *format);
 static void write_input_history_file (void);
 #ifdef LOCAL_CHARSET
@@ -246,7 +246,7 @@ copy_body (
 		} else {		/* no initials in quote_string, just copy */
 			if ((buf[0] != '\n') || tinrc.quote_empty_lines) {
 				/* use blank-stripped quote string if line is already quoted */
-					retcode = fprintf (fp_op, "%s%s", ((buf[0]=='>') ? prefixbuf : prefix), buf);
+					retcode = fprintf (fp_op, "%s%s", ((buf[0] == '>') ? prefixbuf : prefix), buf);
 			} else
 				retcode = fprintf (fp_op, "\n");
 		}
@@ -304,6 +304,8 @@ invoke_editor (
 	if (!strfeditor (editor, lineno, filename, buf, sizeof(buf), editor_format))
 		sh_format (buf, sizeof(buf), "%s %s", editor, filename);
 
+	cursoron();
+	my_flush();
 	retcode = invoke_cmd (buf);
 
 #ifdef BACKUP_FILE_EXT
@@ -428,7 +430,7 @@ shell_escape (
 
 	(void)invoke_cmd(p);
 
-	continue_prompt ();
+	prompt_continue ();
 
 	if (tinrc.draw_arrow)
 		ClearScreen ();
@@ -509,7 +511,7 @@ tin_done (
 					(read_newsrc_lines - wrote_newsrc_lines),
 					PLURAL(read_newsrc_lines - wrote_newsrc_lines, txt_group),
 					OLDNEWSRC_FILE);
-				continue_prompt();
+				prompt_continue();
 				break;
 			}
 
@@ -831,7 +833,7 @@ draw_percent_mark (
 	long cur_num,
 	long max_num)
 {
-	char buf[32]; /* FIXME: ensure it's always big enough snprintf() ?*/
+	char buf[32]; /* should be big enough */
 	int percent;
 
 	if (NOTESLINES <= 0)
@@ -842,93 +844,12 @@ draw_percent_mark (
 
 	clear_message();
 	percent = (int) (cur_num * 100 / max_num);
-	sprintf (buf, "%s(%d%%) [%ld/%ld]", _(txt_more), percent, cur_num, max_num);
-	MoveCursor (cLINES, (cCOLS - (int) strlen (buf))-(1+BLANK_PAGE_COLS));
+	snprintf (buf, sizeof (buf) - 1, "%s(%d%%) [%ld/%ld]", _(txt_more), percent, cur_num, max_num);
+	MoveCursor (cLINES, (cCOLS - (int) strlen (buf)) - (1 + BLANK_PAGE_COLS));
 	StartInverse ();
 	my_fputs (buf, stdout);
 	my_flush ();
 	EndInverse ();
-}
-
-
-/*
- * seteuid/setegid - BSD 4.3 (based on POSIX setuid/setgid)
- * setreuid/setregid - BSD 4.2
- * setuid/setgid - SYSV, POSIX (Std003.1-1988)
- */
-void
-set_real_uid_gid (
-	void)
-{
-#ifdef HAVE_SET_GID_UID
-	if (local_index)
-		return;
-
-	umask (real_umask);
-
-#	if defined(HAVE_SETEUID) && defined(HAVE_SETEGID)
-	if (seteuid (real_uid) == -1)
-		perror_message ("Error seteuid(real) failed");
-
-	if (setegid (real_gid) == -1)
-		perror_message ("Error setegid(real) failed");
-
-#	else
-#		if defined(HAVE_SETREUID) && defined(HAVE_SETREGID)
-	if (setreuid (-1, real_uid) == -1)
-		perror_message ("Error setreuid(real) failed");
-
-	if (setregid (-1, real_gid) == -1)
-		perror_message ("Error setregid(real) failed");
-
-#		else
-	if (setuid (real_uid) == -1)
-		perror_message ("Error setuid(real) failed");
-
-	if (setgid (real_gid) == -1)
-		perror_message ("Error setgid(real) failed");
-
-#		endif /* HAVE_SETREUID && HAVE_SETREGID */
-#	endif /* HAVE_SETEUID && HAVE_SETEGID */
-#endif /* HAVE_SET_GID_UID */
-}
-
-
-void
-set_tin_uid_gid (
-	void)
-{
-#ifdef HAVE_SET_GID_UID
-	if (local_index)
-		return;
-
-	umask (0);
-
-#	if defined(HAVE_SETEUID) && defined(HAVE_SETEGID)
-	if (seteuid (tin_uid) == -1)
-		perror_message ("Error seteuid(real) failed");
-
-	if (setegid (tin_gid) == -1)
-		perror_message ("Error setegid(real) failed");
-
-#	else
-#		if defined(HAVE_SETREUID) && defined(HAVE_SETREGID)
-	if (setreuid (-1, tin_uid) == -1)
-		perror_message ("Error setreuid(tin) failed");
-
-	if (setregid (-1, tin_gid) == -1)
-		perror_message ("Error setregid(tin) failed");
-
-#		else
-	if (setuid (tin_uid) == -1)
-		perror_message ("Error setuid(tin) failed");
-
-	if (setgid (tin_gid) == -1)
-		perror_message ("Error setgid(tin) failed");
-
-#		endif /* HAVE_SETREUID && HAVE_SETREGID */
-#	endif /* HAVE_SETEUID && HAVE_SETEGID */
-#endif /* HAVE_SET_GID_UID */
 }
 
 
@@ -1409,7 +1330,7 @@ create_index_lock_file (
  */
 int
 strfquote (
-	char *group,
+	const char *group,
 	int respnum,
 	char *s,
 	size_t maxsize,
@@ -1417,7 +1338,6 @@ strfquote (
 {
 	char *endp = s + maxsize;
 	char *start = s;
-	char tbuf[LEN];
 	int i, j;
 	t_bool iflag;
 
@@ -1428,6 +1348,8 @@ strfquote (
 		return 0;
 
 	for (; *format && s < endp - 1; format++) {
+		char tbuf[LEN];
+
 		tbuf[0] = '\0';
 
 		if (*format != '\\' && *format != '%') {
@@ -1496,7 +1418,7 @@ strfquote (
 
 				case 'F':	/* Articles Address+Name */
 					if (arts[respnum].name)
-						snprintf (tbuf, LEN, "%s <%s>", arts[respnum].name, arts[respnum].from);
+						snprintf (tbuf, sizeof(tbuf) - 1 , "%s <%s>", arts[respnum].name, arts[respnum].from);
 					else {
 						STRCPY(tbuf, arts[respnum].from);
 					}
@@ -1663,48 +1585,74 @@ out:
 
 
 /*
+ * Helper function for strfpath() to copy expanded strings
+ * into the output buffer. Return new output buffer or NULL
+ * if we overflowed it.
+ */
+static char *
+strfpath_cp(
+	char *str,
+	char *tbuf,
+	char *endp)
+{
+	size_t i;
+
+	if ((i = strlen (tbuf))) {
+		if (str + i < endp - 1) {
+			strcpy (str, tbuf);
+			str += i;
+		} else {
+			str[0] = '\0';
+			return NULL;
+		}
+	}
+
+	return str;
+}
+
+
+/*
  * strfpath - produce formatted pathname expansion. Handles following forms:
  *   ~/News    -> $HOME/News
  *   ~abc/News -> /usr/abc/News
  *   $var/News -> /env/var/News
  *   =file     -> $HOME/Mail/file
- *   +file     -> tinrc.default_savedir/group.name/file
+ *   =         -> $HOME/Mail/group.name
+ *   +file     -> tinrc.savedir/group.name/file
+ *
+ * Interestingly, %G is not documented as such and apparently unused
  *   ~/News/%G -> $HOME/News/group.name
  *
- * FIXME: allow =%G expansion (write all articles to a single file
- *                             named $HOME/Mail/group.name)
+ * FIXME:	allow =%G expansion
+ *			(write all articles to a single file named $HOME/Mail/group.name)
+ *			What's with this ? '=' on its own already does this
  *
  * Inputs:
  *   format		The string to be converted
- *   str			Return buffer
+ *   str		Return buffer
  *   maxsize	Size of str
- *   dir/group	The strings to be substituted in this case
+ *   group		ptr to current group
  * Returns:
  *   0			on error
- *   !0			in all other cases
+ *   1			if generated pathname is a mailbox
+ *   2			success
  */
-int
-strfpath (
-	char *format,
+static int
+_strfpath (
+	const char *format,
 	char *str,
 	size_t maxsize,
-	char *the_homedir,
-	char *maildir,
-	char *savedir,
-	char *group)
+	struct t_group *group)
 {
 	char *endp = str + maxsize;
-	char *start = str;
-	char *envptr;
-	char *startp = format;
-	char buf[PATH_LEN];
-	char tbuf[PATH_LEN];
+	const char *startp = format;
 	char defbuf[PATH_LEN];
-	char tmp[PATH_LEN];
+	char *envptr;
 	int i;
 #ifndef M_AMIGA
 	struct passwd *pwd;
 #endif /* !M_AMIGA */
+	t_bool is_mailbox = FALSE;
 
 	if (str == (char *) 0 || format == (char *) 0 || maxsize == 0)
 		return 0;
@@ -1713,6 +1661,8 @@ strfpath (
 		return 0;
 
 	for (; *format && str < endp - 1; format++) {
+		char tbuf[PATH_LEN];
+
 		tbuf[0] = '\0';
 
 		/*
@@ -1729,10 +1679,10 @@ strfpath (
 		}
 
 		switch (*format) {
-			case '~':	/* Users or another users homedir */
+			case '~':			/* Users or another users homedir */
 				switch (*++format) {
 					case '/':	/* users homedir */
-						joinpath (tbuf, the_homedir, "");
+						joinpath (tbuf, homedir, "");
 						break;
 					default:	/* some other users homedir */
 #ifndef M_AMIGA
@@ -1743,8 +1693,7 @@ strfpath (
 						/*
 						 * OK lookup the username in /etc/passwd
 						 */
-						pwd = getpwnam (tbuf);
-						if (pwd == (struct passwd *) 0) {
+						if ((pwd = getpwnam (tbuf)) == NULL) {
 							str[0] = '\0';
 							return 0;
 						} else
@@ -1756,16 +1705,8 @@ strfpath (
 #endif /* !M_AMIGA */
 						break;
 				}
-				i = strlen (tbuf);
-				if (i) {
-					if (str + i < endp - 1) {
-						strcpy (str, tbuf);
-						str += i;
-					} else {
-						str[0] = '\0';
-						return 0;
-					}
-				}
+				if ((str = strfpath_cp(str, tbuf, endp)) == NULL)
+					return 0;
 				break;
 #ifndef VMS
 			case '$':	/* Read the envvar and use its value */
@@ -1798,16 +1739,9 @@ strfpath (
 					strncpy (tbuf, defbuf, sizeof(tbuf)-1);
 				else
 					strncpy (tbuf, envptr, sizeof(tbuf)-1);
-				i = strlen (tbuf);
-				if (i) {
-					if (str + i < endp - 1) {
-						strcpy (str, tbuf);
-						str += i;
-					} else {
-						str[0] = '\0';
-						return 0;
-					}
-				} else {
+				if ((str = strfpath_cp(str, tbuf, endp)) == NULL)
+					return 0;
+				else if (*tbuf == '\0') {
 					str[0] = '\0';
 					return 0;
 				}
@@ -1815,70 +1749,64 @@ strfpath (
 #endif /* !VMS */
 			case '=':
 				/*
-				 * Shorthand for group maildir
-				 * Only convert if 1st char in format
+				 * Mailbox name expansion
+				 * Only expand if 1st char in format
+				 * =dir expands to maildir/dir
+				 * =    expands to maildir/groupname
 				 */
-				if (startp == format && maildir != (char *) 0) {
-					joinpath (tbuf, maildir, "");
-					i = strlen (tbuf);
-					if (i) {
-						if (str + i < endp - 1) {
-							strcpy (str, tbuf);
-							str += i;
-						} else {
-							str[0] = '\0';
-							return 0;
-						}
-					}
-				} else
-					*str++ = *format;
-				break;
-			case '+':
-				/*
-				 * Shorthand for saving to savedir/groupname/file
-				 * Only convert if 1st char in format
-				 */
-				if (startp == format && savedir != (char *) 0) {
-					if (strfpath (savedir, buf, sizeof(buf), the_homedir,
-					    (char *) 0, (char *) 0, (char *) 0)) {
+				is_mailbox = TRUE;
 
-#ifdef HAVE_LONG_FILE_NAMES
-						my_strncpy (tmp, group, sizeof(tmp));
-#else
-						my_strncpy (tmp, group, 14);
-#endif /* HAVE_LONG_FILE_NAMES */
-#ifndef VMS
-						joinpath (tbuf, buf, tmp);
-#	ifdef WIN32
-						strcat (tbuf, "\\");
-#	else
-						strcat (tbuf, "/");
-#	endif /* WIN32 */
-#else
-			joindir (tbuf, buf, tmp);
-#endif /* !VMS */
-						i = strlen (tbuf);
-						if (i) {
-							if (str + i < endp - 1) {
-								strcpy (str, tbuf);
-								str += i;
-							} else {
-								str[0] = '\0';
-								return 0;
-							}
-						}
+				if (startp == format && group != NULL) {
+					char buf[PATH_LEN];
+
+					if (strfpath (group->attribute->maildir, buf, sizeof(buf), group)) {
+						if (*(format+1) == '\0')				/* Just an = */
+							joinpath (tbuf, buf, group->name);
+						else
+							joinpath (tbuf, buf, "");
+						if ((str = strfpath_cp(str, tbuf, endp)) == NULL)
+							return 0;
 					} else {
 						str[0] = '\0';
 						return 0;
 					}
-				} else
+				} else					/* Wasn't the first char in format */
+					*str++ = *format;
+				break;
+			case '+':
+				/*
+				 * Group name expansion
+				 * Only convert if 1st char in format
+				 */
+				if (startp == format && group != NULL) {
+					char buf[PATH_LEN];
+
+					/*
+					 * Start with the savedir name
+					 */
+					if (strfpath (group->attribute->savedir, buf, sizeof(buf), group)) {
+						char tmp[PATH_LEN];
+#ifdef HAVE_LONG_FILE_NAMES
+						my_strncpy (tmp, group->name, sizeof(tmp));
+#else
+						my_strncpy (tmp, group->name, 14);
+#endif /* HAVE_LONG_FILE_NAMES */
+						JOINPATH(tbuf, buf, tmp);	/* Add the group name */
+						joinpath (tmp, tbuf, "");
+						if ((str = strfpath_cp(str, tmp, endp)) == NULL)
+							return 0;
+					} else {
+						str[0] = '\0';
+						return 0;
+					}
+				} else					/* Wasn't the first char in format */
 					*str++ = *format;
 				break;
 			case '%':	/* Different forms of parsing cmds */
 				format++;
 				if (*format && *format == 'G') {
 					memset(tbuf, 0, sizeof(tbuf));
-					STRCPY(tbuf, group);
+					STRCPY(tbuf, group->name);
 					i = strlen(tbuf);
 					if (((str + i) < (endp - 1)) && (i > 0)) {
 						strcpy(str, tbuf);
@@ -1898,14 +1826,39 @@ strfpath (
 
 	if (str < endp && *format == '\0') {
 		*str = '\0';
-#if 0
-	wait_message (2, "!!!format=[%s]  path=[%s]", startp, start);
-#endif /* 0 */
-		return (str - start);
+		if (is_mailbox)
+			return 1;
+		else
+			return 2;
 	} else {
 		str[0] = '\0';
 		return 0;
 	}
+}
+
+
+/*
+ * The real entry point, exists only to expand leading '$'
+ */
+int
+strfpath (
+	const char *format,
+	char *str,
+	size_t maxsize,
+	struct t_group *group)
+{
+	/*
+	 * Expand any leading env vars first in case they themselves contain
+	 * formatting chars
+	 */
+	if (format[0] == '$') {
+		char buf[PATH_LEN];
+
+		if (_strfpath (format, buf, sizeof (buf), group))
+			return (_strfpath (buf, str, maxsize, group));
+	}
+
+	return (_strfpath (format, str, maxsize, group));
 }
 
 
@@ -3243,9 +3196,9 @@ gnksa_check_domain (
  */
 static int
 gnksa_check_localpart (
-	char *localpart)
+	const char *localpart)
 {
-	char *aux;
+	const char *aux;
 
 	/* no localpart at all? */
 	if (!*localpart)
@@ -3275,7 +3228,7 @@ gnksa_check_localpart (
  */
 static int
 gnksa_split_from (
-	char *from,
+	const char *from,
 	char *address,
 	char *realname,
 	int *addrtype)
@@ -3390,7 +3343,7 @@ gnksa_split_from (
  */
 int
 gnksa_do_check_from (
-	char *from,
+	const char *from,
 	char *address,
 	char *realname)
 {
@@ -3494,7 +3447,7 @@ gnksa_check_from (
  */
 int
 parse_from (
-	char *from,
+	const char *from,
 	char *address,
 	char *realname)
 {

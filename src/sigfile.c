@@ -95,8 +95,8 @@ msg_write_signature (
 		}
 		get_cwd (cwd);
 
-		if (!strfpath (thisgroup->attribute->sigfile, path, sizeof (path), homedir, (char *) 0, (char *) 0, thisgroup->name)) {
-			if (!strfpath (tinrc.sigfile, path, sizeof (path), homedir, (char *) 0, (char *) 0, thisgroup->name))
+		if (!strfpath (thisgroup->attribute->sigfile, path, sizeof (path), thisgroup)) {
+			if (!strfpath (tinrc.sigfile, path, sizeof (path), thisgroup))
 				joinpath (path, homedir, ".Sig");
 		}
 

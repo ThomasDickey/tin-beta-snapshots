@@ -457,7 +457,6 @@ vGrpDelMailArts (
 }
 
 
-/* TODO test this function */
 t_bool
 iArtEdit (
 	struct t_group *psGrp,
@@ -480,16 +479,22 @@ iArtEdit (
 
 	if ((fpin = fopen (acArtFile, "r")) != NULL) {
 		if ((fpout = fopen (acTmpFile, "w")) != NULL) {
-			if (copy_fp (fpin, fpout)) {
-				if (invoke_editor (acTmpFile, 1)) {
-					rename_file (acTmpFile, acArtFile);
-					ret = TRUE;
-				} else
-					unlink (acTmpFile);
-			}
+			ret = copy_fp (fpin, fpout);
 			fclose(fpout);
 		}
 		fclose(fpin);
 	}
+
+	if (!ret)
+		return FALSE;
+
+	if (invoke_editor (acTmpFile, 1)) {
+		rename_file (acTmpFile, acArtFile);
+		ret = TRUE;
+	} else {
+		unlink (acTmpFile);
+		ret = FALSE;
+	}
+
 	return ret;
 }

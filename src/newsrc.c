@@ -82,7 +82,7 @@ read_newsrc (
 	FILE *fp;
 	char *grp, *seq;
 	int sub, i;
-	signed long lines = 0;
+	signed long line_count = 0;
 	struct stat statbuf;
 
 	if (allgroups)
@@ -104,7 +104,7 @@ read_newsrc (
 
 		while ((grp = tin_fgets (fp, FALSE)) != (char *) 0) {
 			seq = pcParseNewsrcLine (grp, &sub);
-			lines++;
+			line_count++;
 
 			if (sub == SUBSCRIBED) {
 				if ((i = my_group_add (grp)) >= 0) {
@@ -124,7 +124,7 @@ read_newsrc (
 			my_flush ();
 		}
 	}
-	return lines;
+	return line_count;
 }
 
 

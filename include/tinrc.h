@@ -95,7 +95,6 @@ struct t_config {
 	char news_headers_to_display[LEN];	/* which headers to display */
 	char news_headers_to_not_display[LEN];	/* which headers to not display */
 	char news_quote_format[LEN];
-	char post_process_command[PATH_LEN];		/* Post processing command */
 	char quote_chars[LEN];			/* quote chars for posting/mails ": " (size matches prefixbuf in copy_body() */
 #ifdef HAVE_COLOR
 	char quote_regex[LEN];				/* regex used to determine quoted lines */
@@ -179,6 +178,7 @@ struct t_config {
 	t_bool pgdn_goto_next;
 	t_bool pos_first_unread;			/* position cursor at first/last unread article */
 	t_bool post_8bit_header;			/* allow 8bit chars. in header when posting to newsgroup */
+	t_bool post_process_view;			/* set TRUE to invoke mailcap viewer app */
 #ifndef DISABLE_PRINTING
 	t_bool print_header;				/* print all of mail header or just Subject: & From lines */
 #endif /* !DISABLE_PRINTING */

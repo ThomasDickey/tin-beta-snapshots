@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2000-04-14
+# Updated: 2000-07-19
 #
 # Copyright (c) 1995-2000 Thomas E. Dickey <dickey@clark.net>
 # All rights reserved.
@@ -50,7 +50,7 @@ PRELIB	= @LIB_PREFIX@
 
 DEBUG	= @ENABLE_DEBUG@ -DDEBUG #-DDEBUG_NEWSRC -DPROFILE -DDEBUG_REFS
 CANLOCK = # -DUSE_CANLOCK # -DEVIL_INSIDE
-CPPOPTS	= @DEFS@ -I. -I../include -I$(top_srcdir)/pcre -DLOCALEDIR=\"$(prefix)/@DATADIRNAME@/locale\" -I$(INCDIR) $(DEBUG) $(CANLOCK) @CPPFLAGS@
+CPPOPTS	= @DEFS@ -I. -I../include -I$(top_builddir)/pcre -I$(top_srcdir)/pcre -DLOCALEDIR=\"$(prefix)/@DATADIRNAME@/locale\" -I$(INCDIR) $(DEBUG) $(CANLOCK) @CPPFLAGS@
 CFLAGS	= @CFLAGS@
 
 LD	= $(CC)
@@ -71,7 +71,6 @@ INS_MANUAL_EXT	= 1
 PROJECT	= @PACKAGE@
 EXE	= @PACKAGE@$x
 VER	= @VERSION@
-MANEXT	= 1
 
 # directory structure
 DOCDIR	= $(top_srcdir)/doc
@@ -288,7 +287,6 @@ help:
 	@$(ECHO) "    make clean           [ Delete all object files ]"
 	@$(ECHO) "    make install         [ Install the binary & the manual page ]"
 	@$(ECHO) "    make uninstall       [ Uninstall the binary & the manual page ]"
-	@$(ECHO) "    make install_setuid  [ Install the binary setuid & the manual page ]"
 	@$(ECHO) "    make install_manpage [ Install the manual page ]"
 	@$(ECHO) "    make install_sysdefs [ Install the system-wide-defaults file ]"
 	@$(ECHO) "    make help            [ Show this text ]"
@@ -302,15 +300,23 @@ $(INS_SYSDEF_DIR) :
 install_manpage: $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)
 	@$(ECHO) "Installing $(EXE) manual page to $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)..."
 	@$(INSTALL) -m 444 $(DOCDIR)/tin.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(EXE).$(INS_MANUAL_EXT)
+#	@$(INSTALL) -m 444 $(DOCDIR)/tin.5 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(EXE).5
+
 
 uninstall_manpage:
 	@$(ECHO) "Uninstalling $(EXE) manual page in $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)..."
 	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(EXE).$(INS_MANUAL_EXT)
+#	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(EXE).5
 
 install_sysdefs: $(INS_SYSDEF_DIR)
-	@$(ECHO) "Installing system-wide defaults file to $(INS_SYSDEF_DIR)..."
+	@$(ECHO) "Installing system-wide defaults to $(INS_SYSDEF_DIR)..."
 	@$(INSTALL) -m 644 $(DOCDIR)/tin.defaults $(INS_SYSDEF_DIR)/tin.defaults
 	@$(INSTALL) -m 644 $(DOCDIR)/mime.types $(INS_SYSDEF_DIR)/mime.types
+
+uninstall_sysdefs:
+	@$(ECHO) "Uninstalling system-wide defaults in $(INS_SYSDEF_DIR)..."
+	@-$(RM) -f $(INS_SYSDEF_DIR)/tin.defaults
+	@-$(RM) -f $(INS_SYSDEF_DIR)/mime.types
 
 install: $(DESTDIR)$(INS_BINARY_DIR)
 	@$(MAKE) all
@@ -326,15 +332,6 @@ uninstall:
 	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/r$(EXE)
 	@$(MAKE) uninstall_manpage
 	@$(MAKE) uninstall_nls
-
-install_setuid:
-	@$(MAKE) all
-	@$(ECHO) "Installing SETUID $(EXE) v$(VER) to $(DESTDIR)$(INS_BINARY_DIR)..."
-	@$(INSTALL) -s -o news -g news -m 6755 $(BINDIR)/$(EXE) $(DESTDIR)$(INS_BINARY_DIR)/$(EXE)
-	@$(CD) $(DESTDIR)$(INS_BINARY_DIR) && $(RM) -f r$(EXE)
-	@$(LN) $(DESTDIR)$(INS_BINARY_DIR)/$(EXE) $(DESTDIR)$(INS_BINARY_DIR)/r$(EXE)
-	@$(MAKE) install_manpage
-	@$(MAKE) install_nls
 
 install_nls:
 	@-if test -r ../po/Makefile ; then $(ECHO) "Installing NLS-files" ; $(CD) ../po/ && $(MAKE) install ; fi
@@ -407,9 +404,9 @@ TIN_DEP	= \
 	@$(ECHO) "Building Philip Hazel's Perl regular expressions library..."
 	@$(CD) ../pcre && $(MAKE) @cf_cv_makeflags@ $(PRELIB)pcre.a
 
-@INTLLIBS@:
-	@$(ECHO) "Building GNU gettext library..."
-	@$(CD) ../intl && $(MAKE) @cf_cv_makeflags@
+@INTLDIR_MAKE@@INTLLIBS@:
+@INTLDIR_MAKE@	@$(ECHO) "Building GNU gettext library..."
+@INTLDIR_MAKE@	@$(CD) ../intl && $(MAKE) @cf_cv_makeflags@
 
 tincfg.h:			$(SRCDIR)/tincfg.tbl \
 				makecfg$x

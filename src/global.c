@@ -247,7 +247,6 @@ move_to_item (
 
 
 /*
- * TODO - fold the call in select.c into here and make this static
  * Handle mouse clicks. We simply map the event to a return
  * keymap code that will drop through to call the correct function
  */
@@ -340,6 +339,7 @@ handle_keypad (
 			ch = map_to_default (ch, menukeys);
 			break;
 	}
+
 	return ch;
 }
 

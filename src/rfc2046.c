@@ -65,10 +65,10 @@ static int art_lines = 0;		/* lines in art on spool */
  */
 static void
 progress(
-	int lines)
+	int line_count)
 {
-	if (lines && lines % MODULO_COUNT_NUM == 0)
-		show_progress(mesg, lines, art_lines);
+	if (line_count && line_count % MODULO_COUNT_NUM == 0)
+		show_progress(mesg, line_count, art_lines);
 }
 
 
@@ -191,7 +191,7 @@ free_list(
 /*
  * Return a parameter value from a param list or NULL
  */
-char *
+const char *
 get_param(
 	t_param *list,
 	const char *name)
@@ -276,7 +276,7 @@ parse_content_encoding(
 
 /*
  * We're only really interested in the filename parameter, which has
- * high precedence than the name parameter from Content-Type (RFC1806)
+ * a higher precedence than the name parameter from Content-Type (RFC1806)
  * Attach the parsed params to the part passed in 'part'
  */
 static void
@@ -330,7 +330,7 @@ new_part (
 	ptr->params = NULL;
 	parse_params (defparms, ptr);
 	ptr->offset = 0;
-	ptr->lines = 0;
+	ptr->line_count = 0;
 	ptr->depth = 0;							/* Not an embedded object (yet) */
 	ptr->uue = NULL;
 	ptr->next = NULL;
@@ -348,7 +348,7 @@ new_part (
 /*
  * Free a linked list of t_part
  */
-static void
+void
 free_parts(
 	t_part *ptr)
 {
@@ -374,12 +374,10 @@ free_and_init_header(
 	 * Initialise the header struct
 	 */
 	FreeAndNull(hdr->from);
-#if 0
-	FreeAndNull(hdr->path);
-#endif /* 0 */
 	FreeAndNull(hdr->date);
 	FreeAndNull(hdr->subj);
 	FreeAndNull(hdr->org);
+	FreeAndNull(hdr->replyto);
 	FreeAndNull(hdr->newsgroups);
 	FreeAndNull(hdr->messageid);
 	FreeAndNull(hdr->references);
@@ -388,12 +386,13 @@ free_and_init_header(
 	FreeAndNull(hdr->summary);
 	FreeAndNull(hdr->followup);
 	FreeAndNull(hdr->ftnto);
-	hdr->mime = FALSE;
 	FreeAndNull(hdr->authorids);
-                                                                                                                FreeAndNull(hdr->followup);
+	hdr->mime = FALSE;
+
 	if (hdr->persist)
 		free_list(hdr->persist);
 	hdr->persist = NULL;
+
 	if (hdr->ext)
 		free_parts(hdr->ext);
 	hdr->ext = NULL;
@@ -419,19 +418,19 @@ parse_header (
 	 * Does ': ' follow the header text?
 	 */
 	if (! (*ptr && *(ptr+1) && *ptr == ':' && *(ptr+1) == ' '))
-		return FALSE;
+		return NULL;
 
 	/*
 	 * If the header matches, skip past the ': ' and any leading whitespace
 	 */
 	if (strncasecmp(buf, pat, plen) != 0)
-		return FALSE;
+		return NULL;
 
 	ptr += 2;
 
 	str_trim (ptr);
 	if (!*ptr)
-		return FALSE;
+		return ptr;
 
 	if (decode)
 		return (rfc1522_decode(ptr));
@@ -466,7 +465,7 @@ parse_rfc822_headers(
 
 		if (to) {
 			fprintf(to, "%s\n", line);		/* Put raw data */
-			progress(++hdr->ext->lines);	/* Should we count header lines ? */
+			progress(++hdr->ext->line_count);	/* Should we count header lines ? */
 		}
 
 		/*
@@ -478,14 +477,12 @@ parse_rfc822_headers(
 			return 0;
 		}
 
-#if 0
-		if ((ptr = parse_header (line, "Path", FALSE))) {
-			hdr->path = my_strdup(ptr);
-			continue;
-		}
-#endif /* 0 */
 		if ((ptr = parse_header (line, "From", TRUE))) {
 			hdr->from = my_strdup(ptr);
+			continue;
+		}
+		if ((ptr = parse_header (line, "Date", FALSE))) {
+			hdr->date = my_strdup(ptr);
 			continue;
 		}
 		if ((ptr = parse_header (line, "Subject", TRUE))) {
@@ -496,8 +493,8 @@ parse_rfc822_headers(
 			hdr->org = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Date", FALSE))) {
-			hdr->date = my_strdup(ptr);
+		if ((ptr = parse_header (line, "Reply-To", TRUE))) {
+			hdr->replyto = my_strdup(ptr);
 			continue;
 		}
 		if ((ptr = parse_header (line, "Newsgroups", FALSE))) {
@@ -516,16 +513,16 @@ parse_rfc822_headers(
 			hdr->distrib = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Followup-To", FALSE))) {
-			hdr->followup = my_strdup(ptr);
-			continue;
-		}
 		if ((ptr = parse_header (line, "Keywords", TRUE))) {
 			hdr->keywords = my_strdup(ptr);
 			continue;
 		}
 		if ((ptr = parse_header (line, "Summary", TRUE))) {
 			hdr->summary = my_strdup(ptr);
+			continue;
+		}
+		if ((ptr = parse_header (line, "Followup-To", FALSE))) {
+			hdr->followup = my_strdup(ptr);
 			continue;
 		}
 		if ((ptr = parse_header (line, "X-Comment-To", TRUE))) {
@@ -554,6 +551,9 @@ parse_rfc822_headers(
 			parse_content_disposition (ptr, hdr->ext);
 			continue;
 		}
+		/*
+		 * Persistent headers
+		 */
 		if ((strncmp (line, "P-", 2) == 0 || strncmp(line, "X-P-", 4) == 0) && (ptr = strstr(line, ": "))) {
 			*ptr = '\0';
 			add_persist (hdr, line, ptr+2);
@@ -574,6 +574,7 @@ parse_rfc822_headers(
  * artinfo is used for generic article pointers
  * part contains content info about the attachment we're parsing
  * depth is the number of levels by which the current part is embedded
+ * Returns a tin_errno value
  */
 static int
 parse_multipart_article(
@@ -583,10 +584,10 @@ parse_multipart_article(
 	int depth)
 {
 	char *line;
-	char *boundary;
+	const char *boundary;
 	char *ptr;
 	int state = M_SEARCHING;
-	t_part *curr_part = 0;	/* TODO check this out */
+	t_part *curr_part = 0;
 
 	/*
 	 * Get the boundary marker
@@ -599,10 +600,19 @@ parse_multipart_article(
 /*fprintf(stderr, "---:%s\n", line);*/
 
 		fprintf(artinfo->raw, "%s\n", line);
-		progress(++artinfo->hdr.ext->lines);		/* Overall line count */
+		progress(++artinfo->hdr.ext->line_count);		/* Overall line count */
 
-		if (bnd == BOUND_END)
+		if (bnd == BOUND_END) {							/* End of this part detected */
+#ifdef NNTP_ABLE
+			/*
+			 * We have reached the end boundary of the outermost envelope.
+			 * Syphon off any trailing data.
+			 */
+			if (depth == 0)	
+				drain_buffer(infile);
+#endif /* NNTP_ABLE */
 			return tin_errno;
+		}
 
 		switch (state) {
 			case M_SEARCHING:
@@ -639,10 +649,13 @@ parse_multipart_article(
 				if ((ptr = parse_header (line, "Content-Type", FALSE))) {
 					parse_content_type (ptr, curr_part);
 
-					if (curr_part->type == TYPE_MULTIPART) {
-/* TODO error recovery */
-/*		if ((ret =*/ parse_multipart_article(infile, artinfo, curr_part, depth+1); /*) != 0)*/
-						break;
+					if (curr_part->type == TYPE_MULTIPART) {	/* Complex mutlipart article */
+						int ret;
+
+						if ((ret = parse_multipart_article(infile, artinfo, curr_part, depth+1)) != 0)
+							return ret;
+						else
+							break;
 					}
 				}
 				if ((ptr = parse_header (line, "Content-Transfer-Encoding", FALSE))) {
@@ -659,7 +672,7 @@ parse_multipart_article(
 				switch (bnd) {
 					case BOUND_NONE:
 /*fprintf(stderr, "BOD:%s\n", line);*/
-						curr_part->lines++;
+						curr_part->line_count++;
 						break;
 					case BOUND_START:		/* Start new attchment */
 						state = M_HDR;
@@ -670,6 +683,10 @@ parse_multipart_article(
 				break;
 		} /* switch (state) */
 	}
+
+	/*
+	 * We only reach this point when we reach the end of the article
+	 */
 	return tin_errno;
 }
 
@@ -686,13 +703,12 @@ parse_normal_article(
 
 	while ((line = tin_fgets (in, FALSE)) != (char *) 0) {
 		fprintf(artinfo->raw, "%s\n", line);
-		progress(++artinfo->hdr.ext->lines);
+		progress(++artinfo->hdr.ext->line_count);
 	}
 	return tin_errno;
 }
 
 
-/* #define DEBUG_ART 1 */
 #ifdef DEBUG_ART
 /* DEBUG dump of what we got */
 static void
@@ -708,14 +724,14 @@ dump_art(
 	fprintf(stderr, "Content-Type: %s/%s\nContent-Transfer-Encoding: %s\n",
 		content_types[note_h.ext->type], note_h.ext->subtype,
 		content_encodings[note_h.ext->encoding]);
-	fprintf(stderr, "Offset: %ld\nLines: %d\n", note_h.ext->offset, note_h.ext->lines);
+	fprintf(stderr, "Offset: %ld\nLines: %d\n", note_h.ext->offset, note_h.ext->line_count);
 	for (pptr=note_h.ext->params; pptr!=NULL; pptr=pptr->next)
 		fprintf(stderr, "P: %s = %s\n", pptr->name, pptr->value);
 	if (note_h.ext->uue != NULL) {
 		t_part *uu;
 		for (uu = note_h.ext->uue; uu != NULL; uu = uu->next) {
 			fprintf(stderr, "UU: %s\n", get_param(uu->params, "name"));
-			fprintf(stderr, "    Offset: %ld  Lines: %d\n", uu->offset, uu->lines);
+			fprintf(stderr, "    Offset: %ld  Lines: %d\n", uu->offset, uu->line_count);
 			fseek(art->raw, uu->offset, SEEK_SET);
 			fprintf(stderr, "[%s]\n\n", tin_fgets(art->raw, FALSE));
 		}
@@ -729,7 +745,7 @@ dump_art(
 		fprintf(stderr, "	Content-Type: %s/%s\n	Content-Transfer-Encoding: %s\n",
 			content_types[ptr->type], ptr->subtype,
 			content_encodings[ptr->encoding]);
-		fprintf(stderr, "	Offset: %ld\n	Lines: %d\n", ptr->offset, ptr->lines);
+		fprintf(stderr, "	Offset: %ld\n	Lines: %d\n", ptr->offset, ptr->line_count);
 		fprintf(stderr, "	Depth: %d\n", ptr->depth);
 		for (pptr=ptr->params; pptr!=NULL; pptr=pptr->next)
 			fprintf(stderr, "	P: %s = %s\n", pptr->name, pptr->value);
@@ -747,7 +763,7 @@ dump_art(
 static int
 parse_rfc2045_article (
 	FILE *infile,
-	int lines,
+	int line_count,
 	t_openartinfo *artinfo)
 {
 	int ret;
@@ -755,12 +771,8 @@ parse_rfc2045_article (
 	if (!infile || !(artinfo->raw = tmpfile ()))
 		return ART_ABORT;
 
-	art_lines = lines;
+	art_lines = line_count;
 
-#ifdef DEBUG
-	if (debug == 2)
-		fprintf(stderr, "PARSE-----------------------------------------------------------------------\n");
-#endif /* DEBUG */
 	if ((ret = parse_rfc822_headers(&artinfo->hdr, infile, artinfo->raw)) != 0)
 		goto error;
 
@@ -769,13 +781,7 @@ parse_rfc2045_article (
 	 * We don't bother to parse all plain text articles
 	 */
 	if (artinfo->hdr.mime && artinfo->hdr.ext->type == TYPE_MULTIPART) {
-		ret = parse_multipart_article(infile, artinfo, artinfo->hdr.ext, 0);
-
-#ifdef NNTP_ABLE
-		drain_buffer(infile);			/* Syphon off any trailing data */
-#endif /* NNTP_ABLE */
-
-		if (ret != 0)
+		if ((ret = parse_multipart_article(infile, artinfo, artinfo->hdr.ext, 0)) != 0)
 			goto error;
 	} else {
 		if ((ret = parse_normal_article(infile, artinfo)) != 0)
@@ -808,8 +814,7 @@ error:
 int
 art_open (
 	struct t_article *art,
-	char *group_path,
-	t_bool decode,		/* currently unused */
+	const char *group_path,
 	t_openartinfo *artinfo)
 {
 	char *ptr;
@@ -822,20 +827,15 @@ art_open (
 	fprintf(stderr, "art_open(%p)\n", artinfo);
 #endif /* DEBUG_ART */
 
-#if 0
-	if (decode) {
-#endif /* 0 */
-		if (parse_rfc2045_article (fp, art->lines, artinfo) != 0)
-			return ART_ABORT;
-#if 0
-	} else
-		/* ???? */;
-#endif /* 0 */
+	if (parse_rfc2045_article (fp, art->line_count, artinfo) != 0)
+		return ART_ABORT;
 
 	if ((pgart.tex2iso = (tex2iso_supported ? iIsArtTexEncoded (artinfo->raw) : FALSE)))
 		wait_message (0, _(txt_is_tex_encoded));
 
-	cook_article (artinfo, 8, tinrc.hide_uue);	/* Fix it so if this fails, we default to raw ? */
+	/* Maybe fix it so if this fails, we default to raw ? */
+	if (!cook_article (artinfo, 8, tinrc.hide_uue))
+		return ART_ABORT;
 
 #ifdef DEBUG_ART
 	dump_art(artinfo);

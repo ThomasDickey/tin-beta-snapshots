@@ -194,21 +194,10 @@ debug_save_comp (
 	if ((fp = fopen (file, "a+")) != (FILE *) 0) {
 		for (i = 0 ; i < num_save ; i++) {
 
-			fprintf (fp,"subj=[%-38s]\n", save[i].subject);
-			fprintf (fp,"dir=[%s]  file=[%s]\n", save[i].dir, save[i].file);
-			if (save[i].archive)
-				fprintf (fp, "arch=[%-38s]  ", save[i].archive);
-			else
-				fprintf (fp, "arch=[]  ");
-			if (save[i].part)
-				fprintf (fp, "part=[%s]  ", save[i].part);
-			else
-				fprintf (fp, "part=[]  ");
-			if (save[i].patch)
-				fprintf (fp, "patch=[%s]\n", save[i].patch);
-			else
-				fprintf (fp, "patch=[]\n");
-			fprintf (fp,"index=[%d]  saved=[%d]  mailbox=[%d]\n\n", save[i].index, save[i].saved, save[i].is_mailbox);
+			fprintf (fp,"path=[%s]\n", save[i].path);
+			fprintf (fp,"file=[%s]\n", save[i].file);
+			fprintf (fp,"art=[%p]  saved=[%d]  mailbox=[%d]\n\n",
+				save[i].artptr, save[i].saved, save[i].is_mailbox);
 		}
 		fflush (fp);
 		fclose (fp);

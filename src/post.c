@@ -124,13 +124,12 @@
 
 struct t_posted *posted;
 
-extern char article[PATH_LEN];			/* Path of the file holding temp. article */
+extern char article[PATH_LEN];		/* Fixed path of the file holding temp. article */
 int start_line_offset = 1;		/* used by invoke_editor for line no. */
-static char found_newsgroups[HEADER_LEN];
 
 char bug_addr[LEN];			/* address to add send bug reports to */
 char my_distribution[LEN];		/* Distribution: */
-char reply_to[LEN];			/* Reply-To: address */
+static char reply_to[LEN];		/* Reply-To: address */
 
 static struct msg_header {
 	char *name;
@@ -141,38 +140,37 @@ static struct msg_header {
 /*
  * Local prototypes
  */
-static char *backup_article_name (char *the_article);
+static char *backup_article_name (const char *the_article);
 static char prompt_rejected (void);
 static char prompt_to_send (const char *subject);
-static int msg_add_x_body (FILE *fp_out, char *body);
+static int msg_add_x_body (FILE *fp_out, const char *body);
 static int msg_write_headers (FILE *fp);
 static int post_loop (int type, struct t_group *psGrp, char ch, const char *posting_msg, int art_type, int offset);
 static size_t skip_id (const char *id);
-static t_bool check_article_to_be_posted (char *the_article, int art_type);
-static t_bool check_for_spamtrap (char *addr);
+static t_bool check_article_to_be_posted (const char *the_article, int art_type);
+static t_bool check_for_spamtrap (const char *addr);
 static t_bool damaged_id (const char *id);
-static t_bool fetch_postponed_article(char tmp_file[], char subject[], char newsgroups[]);
-static t_bool is_crosspost (char *xref);
-static t_bool must_include (char *id);
+static t_bool fetch_postponed_article(const char tmp_file[], char subject[], char newsgroups[]);
+static t_bool is_crosspost (const char *xref);
+static t_bool must_include (const char *id);
 static t_bool pcCopyArtHeader (int iHeader, const char *pcArt, char *result);
 static t_bool repair_article (char *result);
 static t_bool submit_mail_file (const char *file);
-static void append_postponed_file (char *file, char *addr);
+static void append_postponed_file (const char *file, const char *addr);
 static void appendid (char **where, const char **what);
-static void backup_article (char *the_article);
-static void find_reply_to_addr (char *from_addr, t_bool parse, FILE *fp);
-static void join_references (char *buffer, char *oldrefs, const char *newref);
-static void modify_headers (char *line);
+static void backup_article (const char *the_article);
+static void find_reply_to_addr (char *from_addr, t_bool parse, struct t_header *hdr);
+static void join_references (char *buffer, const char *oldrefs, const char *newref);
 static void msg_add_header (const char *name, const char *text);
-static void msg_add_x_headers (char *headers);
+static void msg_add_x_headers (const char *headers);
 static void msg_free_headers (void);
 static void msg_init_headers (void);
-static void post_postponed_article (int ask, char* subject);
-static void postpone_article (char *the_article);
+static void post_postponed_article (int ask, const char *subject);
+static void postpone_article (const char *the_article);
 static void setup_check_article_screen (int *init);
 static void update_active_after_posting (char *newsgroups);
 static void update_posted_info_file (const char *group, int action, const char *subj);
-static void update_posted_msgs_file (char *file, char *addr);
+static void update_posted_msgs_file (const char *file, const char *addr);
 static void yank_to_addr (char *orig, char *addr);
 #ifdef FORGERY
 	static void make_path_header (char *line);
@@ -189,8 +187,30 @@ static char
 prompt_to_send (
 	const char *subject)
 {
+	char buf[LEN];
+	char keyedit[MAXKEYLEN];
+#ifdef HAVE_ISPELL
+	char keyispell[MAXKEYLEN];
+#endif /* HAVE_ISPELL */
+#ifdef HAVE_PGP_GPG
+	char keypgp[MAXKEYLEN];
+#endif /* HAVE_PGP_GPG */
+	char keyquit[MAXKEYLEN];
+	char keysend[MAXKEYLEN];
+
+	snprintf (buf, sizeof(buf), _(txt_quit_edit_send),
+					printascii (keyquit, map_to_local(iKeyQuit, &menukeymap.post_send)),
+					printascii (keyedit, map_to_local(iKeyPostEdit, &menukeymap.post_send)),
+#ifdef HAVE_ISPELL
+					printascii (keyispell, map_to_local(iKeyPostIspell, &menukeymap.post_send)),
+#endif /* HAVE_ISPELL */
+#ifdef HAVE_PGP_GPG
+					printascii (keypgp, map_to_local(iKeyPostPGP, &menukeymap.post_send)),
+#endif /* HAVE_PGP_GPG */
+					printascii (keysend, map_to_local(iKeyPostSend, &menukeymap.post_send)));
+
 	return prompt_slk_response (iKeyPostSend, &menukeymap.post_send,
-				sized_message(_(txt_quit_edit_send), subject));
+				sized_message(buf, subject));
 }
 
 
@@ -275,7 +295,7 @@ repair_article (
  */
 static char *
 backup_article_name (
-	char *the_article)
+	const char *the_article)
 {
 	static char name[PATH_LEN];
 
@@ -286,7 +306,7 @@ backup_article_name (
 
 static void
 backup_article (
-	char *the_article)
+	const char *the_article)
 {
 	FILE *in, *out;
 	char line[LEN];
@@ -518,8 +538,8 @@ update_posted_info_file (
 
 static void
 update_posted_msgs_file (
-	char *file,
-	char *addr)
+	const char *file,
+	const char *addr)
 {
 	FILE *fp_in, *fp_out;
 	char buf[LEN];
@@ -528,7 +548,7 @@ update_posted_msgs_file (
 	if ((fp_in = fopen (file, "r"))  == (FILE *) 0)
 		return;
 
-	if (!strfpath (posted_msgs_file, buf, sizeof (buf), homedir, (char *) 0, (char *) 0, (char *) 0))
+	if (!strfpath (posted_msgs_file, buf, sizeof (buf), &CURR_GROUP))
 		strcpy (buf, posted_msgs_file);
 
 	if ((fp_out = fopen (buf, "a+")) != (FILE *) 0) {
@@ -567,7 +587,7 @@ update_posted_msgs_file (
  */
 static t_bool
 check_article_to_be_posted (
-	char *the_article,
+	const char *the_article,
 	int art_type)
 {
 	FILE *fp;
@@ -678,7 +698,7 @@ check_article_to_be_posted (
 				errors++;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 			}
-			if (GNKSA_OK != (i = gnksa_check_from (rfc1522_encode(cp+1, FALSE)))) {
+			if (GNKSA_OK != (i = gnksa_check_from (rfc1522_encode (line, FALSE) + (cp - line) + 1))) {
 				StartInverse();
 				my_fprintf (stderr, _(txt_error_bad_approved), i);
 				my_fprintf (stderr, gnksa_strerror(i), i);
@@ -690,7 +710,7 @@ check_article_to_be_posted (
 			}
 		}
 		if (cp - line == 4 && !strncasecmp (line, "From", 4)) {
-			if (GNKSA_OK != (i = gnksa_check_from (rfc1522_encode(cp+1, FALSE)))) {
+			if (GNKSA_OK != (i = gnksa_check_from (rfc1522_encode (line, FALSE) + (cp - line) + 1))) {
 				StartInverse();
 				my_fprintf (stderr, _(txt_error_bad_from), i);
 				my_fprintf (stderr, gnksa_strerror(i), i);
@@ -703,7 +723,7 @@ check_article_to_be_posted (
 		}
 
 		if (cp - line == 8 && !strncasecmp (line, "Reply-To", 8)) {
-			if (GNKSA_OK != (i = gnksa_check_from (rfc1522_encode(cp+1, FALSE)))) {
+			if (GNKSA_OK != (i = gnksa_check_from (rfc1522_encode (line, FALSE) + (cp - line) + 1))) {
 				StartInverse();
 				my_fprintf (stderr, _(txt_error_bad_replyto), i);
 				my_fprintf (stderr, gnksa_strerror(i), i);
@@ -1239,8 +1259,14 @@ post_article_loop:
 				break;
 		}
 		if (type != POST_REPOST) {
-			char keyedit[MAXKEYLEN], keyispell[MAXKEYLEN], keypgp[MAXKEYLEN];
-			char keypost[MAXKEYLEN], keypostpone[MAXKEYLEN], keyquit[MAXKEYLEN];
+			char keyedit[MAXKEYLEN], keypost[MAXKEYLEN];
+			char keypostpone[MAXKEYLEN], keyquit[MAXKEYLEN];
+#ifdef HAVE_ISPELL
+			char keyispell[MAXKEYLEN];
+#endif /* HAVE_ISPELL */
+#ifdef HAVE_PGP_GPG
+			char keypgp[MAXKEYLEN];
+#endif /* HAVE_PGP_GPG */
 
 			ch = prompt_slk_response(iKeyPostPost3, &menukeymap.post_post,
 					_(txt_quit_edit_post),
@@ -1254,11 +1280,34 @@ post_article_loop:
 #endif /* HAVE_PGP_GPG */
 					printascii (keypost, map_to_local (iKeyPostPost3, &menukeymap.post_post)),
 					printascii (keypostpone, map_to_local (iKeyPostPostpone, &menukeymap.post_post)));
-		} else
+		} else {
+			char buf[LEN];
+			char keyedit[MAXKEYLEN], keypost[MAXKEYLEN];
+			char keypostpone[MAXKEYLEN], keyquit[MAXKEYLEN];
+#ifdef HAVE_ISPELL
+			char keyispell[MAXKEYLEN];
+#endif /* HAVE_ISPELL */
+#ifdef HAVE_PGP_GPG
+			char keypgp[MAXKEYLEN];
+#endif /* HAVE_PGP_GPG */
+
+			snprintf (buf, sizeof(buf), _(txt_quit_edit_xpost),
+							printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_post)),
+							printascii (keyedit, map_to_local (iKeyPostEdit, &menukeymap.post_post)),
+#ifdef HAVE_ISPELL
+							printascii (keyispell, map_to_local (iKeyPostIspell, &menukeymap.post_post)),
+#endif /* HAVE_ISPELL */
+#ifdef HAVE_PGP_GPG
+							printascii (keypgp, map_to_local (iKeyPostPGP, &menukeymap.post_post)),
+#endif /* HAVE_PGP_GPG */
+							printascii (keypost, map_to_local (iKeyPostPost3, &menukeymap.post_post)),
+							printascii (keypostpone, map_to_local (iKeyPostPostpone, &menukeymap.post_post)));
+
 			/* Superfluous force_command stuff not used in current code */
 			ch = (/*force_command ? ch_default :*/ prompt_slk_response (ch,
-						&menukeymap.post_post, sized_message(_(txt_quit_edit_xpost),
-						""/* TODOTODOTODO !!!note_h.subj*/)));
+						&menukeymap.post_post, sized_message(buf,
+						""/* TODO was note_h.subj */)));
+		}
 	}
 
 post_article_done:
@@ -1556,7 +1605,7 @@ quick_post_article (
 static void
 post_postponed_article (
 	int ask,
-	char *subject)
+	const char *subject)
 {
 	char buf[LEN];
 
@@ -1574,8 +1623,8 @@ post_postponed_article (
 
 static void
 append_postponed_file (
-	char *file,
-	char *addr)
+	const char *file,
+	const char *addr)
 {
 	FILE *fp_in, *fp_out;
 	char buf[LEN];
@@ -1628,7 +1677,7 @@ count_postponed_articles (
  */
 static t_bool
 fetch_postponed_article (
-	char tmp_file[],
+	const char tmp_file[],
 	char subject[],
 	char newsgroups[])
 {
@@ -1647,7 +1696,7 @@ fetch_postponed_article (
 	out = fopen(tmp_file, "w");
 	tmp = fopen(postponed_tmp, "w");
 
-	if (in==NULL || out==NULL || tmp==NULL) {
+	if (in == NULL || out == NULL || tmp == NULL) {
 		if (in)
 			fclose(in);
 		if (out)
@@ -1687,9 +1736,9 @@ fetch_postponed_article (
 			if (prev_line_nl)
 				fputc('\n', out);
 
-			if (strlen(line) && line[strlen(line)-1]=='\n') {
+			if (strlen(line) && line[strlen(line) - 1] == '\n') {
 				prev_line_nl = TRUE;
-				line[strlen(line)-1] = '\0';
+				line[strlen(line) - 1] = '\0';
 			} else
 				prev_line_nl = FALSE;
 
@@ -1744,8 +1793,19 @@ pickup_postponed_articles (
 			return TRUE;
 
 		if (!all) {
+			char buf[LEN];
+			char keyall[MAXKEYLEN], keyno[MAXKEYLEN], keyoverride[MAXKEYLEN];
+			char keyquit[MAXKEYLEN], keyyes[MAXKEYLEN];
+
+			snprintf (buf, sizeof(buf), _(txt_postpone_repost),
+							printascii (keyyes, map_to_local (iKeyPromptYes, &menukeymap.post_postpone)),
+							printascii (keyoverride, map_to_local (iKeyPostponeOverride, &menukeymap.post_postpone)),
+							printascii (keyall, map_to_local (iKeyPostponeAll, &menukeymap.post_postpone)),
+							printascii (keyno, map_to_local (iKeyPromptNo, &menukeymap.post_postpone)),
+							printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_postpone)));
+
 			ch = prompt_slk_response (iKeyPromptYes, &menukeymap.post_postpone,
-						sized_message(_(txt_postpone_repost), subject));
+						sized_message(buf, subject));
 
 			if (ch == iKeyPostponeAll)
 				all = TRUE;
@@ -1777,7 +1837,7 @@ pickup_postponed_articles (
 
 static void
 postpone_article (
-	char *the_article)
+	const char *the_article)
 {
 	wait_message(3, _(txt_info_do_postpone));
 	append_postponed_file(the_article, userid);
@@ -1843,7 +1903,7 @@ appendid (
  */
 static t_bool
 must_include (
-	char *id)
+	const char *id)
 {
 	while (*id && *id != '<')
 		id++;
@@ -1898,12 +1958,12 @@ damaged_id (
  */
 static t_bool
 is_crosspost (
-	char *xref)
+	const char *xref)
 {
 	int count = 0;
 
 	for (; *xref; xref++)
-		if (*xref==':')
+		if (*xref == ':')
 			count++;
 
 	return (count>=2) ? TRUE : FALSE;
@@ -1926,7 +1986,7 @@ is_crosspost (
 static void
 join_references (
 	char *buffer,
-	char *oldrefs,
+	const char *oldrefs,
 	const char *newref)
 {
 	/*
@@ -2031,7 +2091,7 @@ join_references (
 
 int /* return code is currently ignored! */
 post_response (
-	char *group,
+	const char *group,
 	int respnum,
 	t_bool copy_text,
 	t_bool with_headers)
@@ -2050,6 +2110,7 @@ post_response (
 #ifdef FORGERY
 	char line[HEADER_LEN];
 #endif /* FORGERY */
+	t_bool use_followup_to = TRUE;
 
 	msg_init_headers ();
 
@@ -2075,10 +2136,13 @@ post_response (
 			case iKeyPost:
 			case iKeyPostPost2:
 			case iKeyPostPost3:
+				use_followup_to = FALSE;
 				break;
+
 			case iKeyQuit:
 			case iKeyAbort:
 				return ret_code;
+
 			default:
 				return mail_to_author (group, respnum, copy_text, with_headers);
 		}
@@ -2119,7 +2183,7 @@ post_response (
 				return ret_code;
 
 			case iKeyPostIgnore:
-				FreeAndNull (note_h.followup);
+				use_followup_to = FALSE;
 				break;
 
 			case iKeyPost:
@@ -2144,12 +2208,12 @@ post_response (
 #endif /* FORGERY */
 	msg_add_header ("From", from_name);
 
-	sprintf (bigbuf, "Re: %s", eat_re (note_h.subj, TRUE));
+	snprintf (bigbuf, sizeof(bigbuf), "Re: %s", eat_re (note_h.subj, TRUE));
 	msg_add_header ("Subject", bigbuf);
 
 	if (psGrp && psGrp->attribute->x_comment_to && note_h.from)
 		msg_add_header ("X-Comment-To", note_h.from);
-	if (note_h.followup && strcmp (note_h.followup, "poster") != 0) {
+	if (note_h.followup && use_followup_to) {
 		msg_add_header ("Newsgroups", note_h.followup);
 		if (tinrc.prompt_followupto)
 			msg_add_header("Followup-To", (strchr(note_h.followup, ',') != (char *) 0) ? note_h.followup : "");
@@ -2237,7 +2301,7 @@ post_response (
 						  initials, TRUE);
 		} else {
 			/* without headers */
-			resize_article (&pgart);
+/*			resize_article (&pgart); */
 			for (i=0; pgart.cookl[i].flags & C_HEADER; ++i)
 				;
 			fseek (pgart.cooked, pgart.cookl[i].offset, SEEK_SET);
@@ -2342,10 +2406,10 @@ create_mail_headers(
  */
 static int
 mail_loop(
-	const char *filename,			/* Temp. filename being used */
-	char ch,				/* default prompt char */
+	const char *filename,		/* Temp. filename being used */
+	char ch,					/* default prompt char */
 	char *subject,
-	char *prompt)			/* If set, used for final query before posting */
+	const char *prompt)			/* If set, used for final query before posting */
 {
 #ifdef HAVE_PGP_GPG
 	char mail_to[HEADER_LEN];
@@ -2373,7 +2437,7 @@ mail_loop(
 #ifdef HAVE_ISPELL
 			case iKeyPostIspell:
 				invoke_ispell (filename, 0);
-/*				ret = POSTED_REDRAW; TODO is this needed, and REDRAW does not => OK */
+/*				ret = POSTED_REDRAW; TODO is this needed, not that REDRAW does not imply OK */
 				break;
 #endif /* HAVE_ISPELL */
 
@@ -2426,18 +2490,18 @@ add_mail_quote(
 {
 	char buf[HEADER_LEN];
 	char *s;
-	int lines=0;
+	int line_count=0;
 
 	if (strfquote (CURR_GROUP.name, respnum, buf, sizeof (buf), tinrc.mail_quote_format)) {
 		fprintf (fp, "%s\n", buf);
-		lines++;
+		line_count++;
 
 		for (s = buf; *s; s++) {
 			if (*s == '\n')
-				++lines;
+				++line_count;
 		}
 	}
-	return lines;
+	return line_count;
 }
 
 
@@ -2529,6 +2593,9 @@ mail_bug_report (
 	if ((fp = create_mail_headers(nam, ".bugreport", bug_addr, subject, NULL)) == NULL)
 		return FALSE;
 
+	fprintf(fp, "%s\n", page_header);	/* some ppl. trash the subject, so include version information in the body as well */
+	start_line_offset++;
+
 #ifdef HAVE_SYS_UTSNAME_H
 #	ifdef _AIX
 	fprintf (fp, "BOX1: %s %s.%s", system_info.sysname, system_info.version, system_info.release);
@@ -2557,16 +2624,16 @@ mail_bug_report (
 	domain = "";
 #endif /* DOMAIN_NAME */
 
-	fprintf (fp, "\nCFG1: active=%d  arts=%d  reread=%d  longfilenames=%d  setuid=%d\n",
+	fprintf (fp, "\nCFG1: active=%d  arts=%d  reread=%d  longfilenames=%d",
 		DEFAULT_ACTIVE_NUM,
 		DEFAULT_ARTICLE_NUM,
 		tinrc.reread_active_file_secs,
 #ifdef HAVE_LONG_FILE_NAMES
-		1,	/* TRUE */
+		1	/* TRUE */
 #else
-		0, /* FALSE */
+		0 /* FALSE */
 #endif /* HAVE_LONG_FILE_NAMES */
-		(tin_uid == real_uid ? 0 : 1));
+		);
 	fprintf (fp, "CFG2: nntp=%d  nntp_only=%d  nntp_xover=%d\n",
 		is_nntp,
 		is_nntp_only,
@@ -2619,7 +2686,7 @@ mail_bug_report (
 
 int /* return value is always ignored */
 mail_to_author (
-	char *group,
+	const char *group,
 	int respnum,
 	t_bool copy_text,
 	t_bool with_headers)
@@ -2636,7 +2703,7 @@ mail_to_author (
 
 	wait_message (0, _(txt_reply_to_author));
 
-	find_reply_to_addr (from_addr, FALSE, pgart.raw);
+	find_reply_to_addr (from_addr, FALSE, &pgart.hdr);
 	spamtrap_found = check_for_spamtrap(from_addr);
 
 	if (spamtrap_found) {
@@ -2680,7 +2747,7 @@ mail_to_author (
 			copy_body (pgart.raw, fp, tinrc.quote_chars, initials, TRUE);
 		} else {
 			/* without headers */
-			resize_article (&pgart);
+/*			resize_article (&pgart);*/
 			for (i=0; pgart.cookl[i].flags & C_HEADER; ++i)
 				;
 			fseek (pgart.cooked, pgart.cookl[i].offset, SEEK_SET);
@@ -2706,7 +2773,7 @@ mail_to_author (
 		STRCPY(mailreader_subject, subject);
 		mailreader_subject[strlen(subject) - 1] = '\0';	/* cut trailing '\n' */
 
-		find_reply_to_addr (mail_to, TRUE, pgart.raw);
+		find_reply_to_addr (mail_to, TRUE, &pgart.hdr);
 		strfmailer (mailer, mailreader_subject, mail_to, nam, buf, sizeof (buf), tinrc.mailer_format);
 		if (invoke_cmd (buf))
 			ret_code = POSTED_OK;
@@ -2725,7 +2792,7 @@ mail_to_author (
 	if (tinrc.unlink_article)
 		unlink (nam);
 
-	 return ret_code;
+	return ret_code;
 }
 
 
@@ -2734,7 +2801,7 @@ mail_to_author (
  */
 static t_bool
 check_for_spamtrap (
-	char *addr)
+	const char *addr)
 {
 	char *env, *ptr;
 
@@ -2766,107 +2833,6 @@ check_for_spamtrap (
 		}
 		free(env);
 	}
-	return FALSE;
-}
-
-
-/*
- * Read a file grabbing the value of the specified mail header line
- * TODO: re-use the article header parse code if possible instead of this
- */
-static t_bool
-pcCopyArtHeader (
-	int iHeader,
-	const char *pcArt,
-	char *result)
-{
-	FILE *fp;
-	char *ptr;
-	char buf2[HEADER_LEN];
-	const char *p;
-	static char header[HEADER_LEN];
-	t_bool found = FALSE;
-	t_bool was_to = FALSE;
-
-	*header = '\0';
-
-	if ((fp = fopen (pcArt, "r")) == (FILE *) 0) {
-		perror_message (_(txt_cannot_open), pcArt);
-		return FALSE;
-	}
-
-	while ((ptr = tin_fgets (fp, TRUE)) != (char *) 0) {
-
-		if (*ptr == '\0')
-			break;
-
-		switch (iHeader) {
-			case HEADER_TO:
-				if (STRNCASECMPEQ(ptr, "To: ", 4) || STRNCASECMPEQ(ptr, "Cc: ", 4)) {
-					my_strncpy (buf2, &ptr[4], sizeof (buf2));
-					yank_to_addr (buf2, header);
-					was_to = TRUE;
-					found = TRUE;
-				} else if (STRNCASECMPEQ(ptr, "Bcc: ", 5)) {
-					my_strncpy (buf2, &ptr[5], sizeof (buf2));
-					yank_to_addr (buf2, header);
-					was_to = TRUE;
-					found = TRUE;
-				} else if ((*ptr == ' ' || *ptr == '\t') && was_to) {
-					yank_to_addr (ptr, header);
-					found = TRUE;
-				} else
-					was_to = FALSE;
-
-				break;
-
-			case HEADER_NEWSGROUPS:
-				if (match_string (ptr, "Newsgroups: ", header, sizeof (header)))
-					found = TRUE;
-
-				break;
-
-			case HEADER_SUBJECT:
-				if (STRNCASECMPEQ(ptr, "Subject: ", 9)) {
-					my_strncpy (header, &ptr[9], sizeof (header));
-					found = TRUE;
-				}
-				break;
-
-			default:
-				break;
-		}
-	}
-	fclose (fp);
-
-	if (tin_errno != 0)
-		return(FALSE);
-
-	if (found) {
-		p = ((header[0] == ' ') ? &header[1] : header);
-		(void) strcpy (result, rfc1522_decode (p));
-		return TRUE;
-	}
-	switch (iHeader) {
-		case HEADER_TO:
-			p = _(txt_error_header_line_missing_target);
-			break;
-		case HEADER_NEWSGROUPS:
-			p = _(txt_error_header_line_missing_newsgroups);
-			break;
-		case HEADER_SUBJECT:
-			p = _(txt_error_header_line_missing_subject);
-			break;
-		default:
-			p = "?";
-			break;
-	}
-
-	/*
-	 * This should show the name of the offending file, but I didn't want to
-	 * add unnecessary message-text.
-	 */
-	error_message (p, pcArt);
 	return FALSE;
 }
 
@@ -2925,8 +2891,16 @@ cancel_article (
 		return redraw_screen;
 #endif /* FORGERY */
 	} else {
+		char buff[LEN];
+		char keycancel[MAXKEYLEN], keyquit[MAXKEYLEN], keysupersede[MAXKEYLEN];
+
+		snprintf (buff, sizeof(buff), _(txt_cancel_article),
+					printascii (keycancel, map_to_local (iKeyPostCancel, &menukeymap.post_delete)),
+					printascii (keysupersede, map_to_local (iKeyPostSupersede, &menukeymap.post_delete)),
+					printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_delete)));
+
 		option = prompt_slk_response (option_default, &menukeymap.post_delete,
-						sized_message(_(txt_cancel_article), art->subject));
+						sized_message(buff, art->subject));
 
 		switch (option) {
 			case iKeyPostCancel:
@@ -3051,8 +3025,18 @@ cancel_article (
 	Raw (oldraw);
 
 	forever {
-		ch = prompt_slk_response(ch_default, &menukeymap.post_cancel,
-					sized_message(_(txt_quit_cancel), note_h.subj));
+		{
+			char buff[LEN];
+			char keycancel[MAXKEYLEN], keyedit[MAXKEYLEN], keyquit[MAXKEYLEN];
+
+			snprintf (buff, sizeof(buff), _(txt_quit_cancel),
+						printascii (keyedit, map_to_local (iKeyPostEdit, &menukeymap.post_cancel)),
+						printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_cancel)),
+						printascii (keycancel, map_to_local (iKeyPostCancel, &menukeymap.post_cancel)));
+
+			ch = prompt_slk_response(ch_default, &menukeymap.post_cancel,
+					sized_message(buff, note_h.subj));
+		}
 		switch (ch) {
 			case iKeyPostEdit:
 				invoke_editor (cancel, start_line_offset);
@@ -3144,20 +3128,19 @@ repost_article (
 		get_user_info (user_name, full_name);
 		get_from_name (from_name, psGrp);
 #	ifndef FORGERY
-		if (FromSameUser) {
-			msg_add_header ("From", from_name);
-			if (*reply_to)
-				msg_add_header ("Reply-To", reply_to);
-			ADD_MSG_ID_HEADER();
-			ADD_CAN_KEY(note_h.messageid);
-#	else
+		if (FromSameUser)
+#	endif
 		{
+#	ifdef FORGERY
 			make_path_header (line);
 			msg_add_header ("Path", line);
 
 			msg_add_header ("From", (note_h.from ? note_h.from : from_name));
-			find_reply_to_addr (line, FALSE, artinfo->raw);
-			msg_add_header ("Reply-To", line);
+
+			find_reply_to_addr (line, FALSE, &artinfo->hdr);
+			if (*line)
+				msg_add_header ("Reply-To", line);
+
 			msg_add_header ("X-Superseded-By", from_name);
 
 			if (note_h.org)
@@ -3166,6 +3149,12 @@ repost_article (
 			sprintf (line, "<supersede.%s", note_h.messageid + 1);
 			msg_add_header ("Message-ID", line);
 			/* ADD_CAN_KEY(note_h.messageid); */ /* should we add key here? */
+#	else
+			msg_add_header ("From", from_name);
+			if (*reply_to)
+				msg_add_header ("Reply-To", reply_to);
+			ADD_MSG_ID_HEADER();
+			ADD_CAN_KEY(note_h.messageid);
 #	endif /* !FORGERY */
 			msg_add_header ("Supersedes", note_h.messageid);
 
@@ -3253,21 +3242,39 @@ repost_article (
 		force_command = TRUE;
 	}
 
-	ch = (force_command ?
-				ch_default :
-				prompt_slk_response (ch_default,
-					&menukeymap.post_post,
-					sized_message(_(txt_quit_edit_xpost), note_h.subj)));
+	ch = ch_default;
+	if (!force_command) {
+		char buff[LEN];
+		char keyedit[MAXKEYLEN], keypost[MAXKEYLEN];
+		char keypostpone[MAXKEYLEN], keyquit[MAXKEYLEN];
+#ifdef HAVE_ISPELL
+		char keyispell[MAXKEYLEN];
+#endif /* HAVE_ISPELL */
+#ifdef HAVE_PGP_GPG
+		char keypgp[MAXKEYLEN];
+#endif /* HAVE_PGP_GPG */
 
-	return (post_loop(POST_REPOST, psGrp, ch,
-				(Superseding ? _(txt_superseding_art) : _(txt_repost_an_article)),
-				art_type, start_line_offset));
+		snprintf (buff, sizeof(buff), _(txt_quit_edit_xpost),
+						printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.post_post)),
+						printascii (keyedit, map_to_local (iKeyPostEdit, &menukeymap.post_post)),
+#ifdef HAVE_ISPELL
+						printascii (keyispell, map_to_local (iKeyPostIspell, &menukeymap.post_post)),
+#endif /* HAVE_ISPELL */
+#ifdef HAVE_PGP_GPG
+						printascii (keypgp, map_to_local (iKeyPostPGP, &menukeymap.post_post)),
+#endif /* HAVE_PGP_GPG */
+						printascii (keypost, map_to_local (iKeyPostPost3, &menukeymap.post_post)),
+						printascii (keypostpone, map_to_local (iKeyPostPostpone, &menukeymap.post_post)));
+
+		ch = prompt_slk_response (ch_default, &menukeymap.post_post, sized_message(buff, note_h.subj));
+	}
+	return (post_loop(POST_REPOST, psGrp, ch, (Superseding ? _(txt_superseding_art) : _(txt_repost_an_article)), art_type, start_line_offset));
 }
 
 
 static void
 msg_add_x_headers (
-	char *headers)
+	const char *headers)
 {
 	FILE *fp;
 	char *ptr;
@@ -3293,7 +3300,7 @@ msg_add_x_headers (
 	 * without this else a "x_headers=name" without a ':' would be
 	 * treated as a filename in the current dir - IMHO not very useful
 	 */
-		if (!strfpath (headers, file, sizeof (file), homedir, (char *) 0, (char *) 0, (char *) 0))
+		if (!strfpath (headers, file, sizeof (file), &CURR_GROUP))
 			strcpy (file, headers);
 
 		if ((fp = fopen (file, "r")) != (FILE *) 0) {
@@ -3321,7 +3328,7 @@ msg_add_x_headers (
 static int
 msg_add_x_body (
 	FILE *fp_out,
-	char *body)
+	const char *body)
 {
 	FILE *fp;
 	char *ptr;
@@ -3340,7 +3347,7 @@ msg_add_x_body (
 		fprintf (fp_out, "%s\n", line);
 		wrote++;
 	} else {
-		if (!strfpath (body, file, sizeof (file), homedir, (char *) 0, (char *) 0, (char *) 0))
+		if (!strfpath (body, file, sizeof (file), &CURR_GROUP))
 			strcpy (file, body);
 
 		if ((fp = fopen (file, "r")) != (FILE *) 0) {
@@ -3360,101 +3367,86 @@ msg_add_x_body (
 
 
 /*
- * ?? Strip duplicate newsgroups from Newsgroups and Followup-To
- * Don't write Followup-To if the same as Newsgroups
- * Should really sort the list for maximum effect here
- */
-static void
-modify_headers (
-	char *line)
-{
-	char *chr;
-	char *chr2;
-	char buf[HEADER_LEN];
-
-	if (strncasecmp (line, "Newsgroups: ", 12) == 0) {
-		chr = strpbrk (line, "\t ");
-		while ((strchr ("\t ", *chr)) != (char *) 0)
-			chr++;
-
-		chr2 = strchr (chr, '\n');
-		*chr2 = '\0';
-		strip_double_ngs (chr);
-		strcpy (found_newsgroups, chr);
-		sprintf (line, "Newsgroups: %s\n", found_newsgroups);
-	}
-	if (strncasecmp (line, "Followup-To: ", 11) == 0) {
-		chr = strpbrk (line, "\t ");
-		while ((strchr ("\t ", *chr)) != (char *) 0)
-			chr++;
-
-		chr2 = strchr (chr, '\n');
-		*chr2 = '\0';
-		strip_double_ngs (chr);
-		strcpy (buf, chr);
-		if ((*found_newsgroups == '\0') || (strcasecmp (found_newsgroups, buf)))
-			sprintf (line, "Followup-To: %s\n", buf);
-		else
-			*line = '\0';
-	}
-}
-
-
-/*
- * Add the User-Agent header
- * TODO Integrate modify_headers() here and remove static found_newsgroups
+ * Add the User-Agent header after the other headers
+ * Strip duplicate newsgroups. Only write followup header if it differs
+ * from the newsgroups headers.
  */
 void
 checknadd_headers (
 	const char *infile)
 {
 	FILE *fp_in, *fp_out;
+	char newsgroups[HEADER_LEN];
 	char line[HEADER_LEN];
 	char outfile[PATH_LEN];
-	t_bool gotit = FALSE;
+	t_bool inhdrs = TRUE;
 
-	if ((fp_in = fopen (infile, "r")) != (FILE *) 0) {
+	newsgroups[0] = '\0';
+
+	if ((fp_in = fopen (infile, "r")) == (FILE *) 0)
+		return;
+
 #ifdef VMS
-		sprintf (outfile, "%s-%d", infile, (int) process_id);
+	sprintf (outfile, "%s-%d", infile, (int) process_id);
 #else
-		sprintf (outfile, "%s.%d", infile, (int) process_id);
+	sprintf (outfile, "%s.%d", infile, (int) process_id);
 #endif /* VMS */
-		*found_newsgroups = '\0';
-		if ((fp_out = fopen (outfile, "w")) != (FILE *) 0) {
-			while (fgets (line, (int) sizeof(line), fp_in) != (char *) 0) {
-				if (!gotit && line[0] == '\n') {			/* Add after other headers */
-					if (tinrc.advertising) {
+
+	if ((fp_out = fopen (outfile, "w")) == (FILE *) 0) {
+		fclose (fp_in);
+		return;
+	}
+
+	while (fgets (line, (int) sizeof(line), fp_in) != (char *) 0) {
+		if (inhdrs) {
+			if (line[0] == '\n') {			/* End of headers */
+				inhdrs = FALSE;
+
+				if (tinrc.advertising) {	/* Add after other headers */
 #ifdef HAVE_SYS_UTSNAME_H
 #	ifdef _AIX
-						fprintf (fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s) (%s/%s-%s)\n\n",
-							PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME,
-							system_info.sysname, system_info.version, system_info.release);
+					fprintf (fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s) (%s/%s-%s)\n",
+						PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME,
+						system_info.sysname, system_info.version, system_info.release);
 #	else
-						fprintf (fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s) (%s/%s (%s))\n\n",
-							PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME,
-							system_info.sysname, system_info.release, system_info.machine);
+					fprintf (fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s) (%s/%s (%s))\n",
+						PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME,
+						system_info.sysname, system_info.release, system_info.machine);
 #	endif /* _AIX */
 #else
-						fprintf (fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s)\n\n",
-							PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME);
+					fprintf (fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s)\n",
+						PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME);
 #endif /* HAVE_SYS_UTSNAME_H */
-					}
+				}
+			} else {
+				char *ptr;
+
+				if ((ptr = parse_header (line, "Newsgroups", FALSE))) {
+					strip_double_ngs (ptr);
+					strcpy (newsgroups, ptr);
+					sprintf (line, "Newsgroups: %s\n", newsgroups);
+				}
+
+				if ((ptr = parse_header (line, "Followup-To", FALSE))) {
+					strip_double_ngs (ptr);
+					/*
+					 * Only write followup header if not blank, no newsgroups header or
+					 * followups != newsgroups
+					 */
+					if (*ptr && ( /* ( *newsgroups == '\0') ||*/ (strcasecmp (newsgroups, ptr))))
+						sprintf (line, "Followup-To: %s\n", ptr);
 					else
-						fprintf (fp_out, "\n");
-
-					gotit = TRUE;
-				} else {
-					if (!gotit)
-						modify_headers (line);
-
-					fputs (line, fp_out);
+						*line = '\0';
 				}
 			}
-			fclose (fp_out);
-			fclose (fp_in);
-			rename_file (outfile, infile);
 		}
+
+		fputs (line, fp_out);
 	}
+
+	fclose (fp_out);
+	fclose (fp_in);
+	rename_file (outfile, infile);
 }
 
 
@@ -3465,8 +3457,10 @@ insert_from_header (
 {
 	FILE *fp_in, *fp_out;
 	char from_name[HEADER_LEN];
+#if 0 /* unused */
 	char full_name[128];
 	char user_name[128];
+#endif /* 0 */
 	char line[HEADER_LEN];
 	char outfile[PATH_LEN];
 	t_bool from_found = FALSE;
@@ -3479,17 +3473,20 @@ insert_from_header (
 		sprintf (outfile, "%s.%d", infile, (int) process_id);
 #	endif /* VMS */
 		if ((fp_out = fopen (outfile, "w")) != (FILE *) 0) {
+#if 0 /* unused */
 			get_user_info (user_name, full_name);
-			get_from_name (from_name, (struct t_group *) 0);
+#endif /* 0 */
+			strcpy (from_name, "From: ");
+			get_from_name (from_name + 6, (struct t_group *) 0);
 
 #	ifdef DEBUG
 			if (debug == 2)
-				wait_message (2, "insert_from_header [%s]", from_name);
+				wait_message (2, "insert_from_header [%s]", from_name + 6);
 #	endif /* DEBUG */
 
 			/* Check the From: line */
-			if (GNKSA_OK != gnksa_check_from(rfc1522_encode(from_name, FALSE))) { /* error in address */
-				error_message (_(txt_invalid_from), from_name);
+			if (GNKSA_OK != gnksa_check_from(rfc1522_encode (from_name, FALSE) + 6)) { /* error in address */
+				error_message (_(txt_invalid_from), from_name + 6);
 				return FALSE;
 			}
 
@@ -3501,7 +3498,7 @@ insert_from_header (
 			}
 
 			if (!from_found)
-				fprintf (fp_out, "From: %s\n", from_name);
+				fprintf (fp_out, "%s\n", from_name);
 
 			rewind (fp_in);
 			while (fgets (line, (int) sizeof(line), fp_in) != (char *) 0)
@@ -3520,59 +3517,36 @@ insert_from_header (
 
 
 /*
- * TODO add Reply-To: to the list of parsed headers in
- * parse_rfc822_headers and junk all the I/O in here
+ * Copy the appropriate reply-to address
+ * from Reply-To (or From as a fallback) into 'from_addr'
+ * If 'parse' is set, full syntax validation is performed and
+ * the address portion is split off.
  */
 static void
 find_reply_to_addr (
 	char *from_addr,
 	t_bool parse,
-	FILE *fp)
+	struct t_header *hdr)
 {
-	char *ptr, buf[HEADER_LEN];
-	char replyto[HEADER_LEN];
-	char from[HEADER_LEN];
 	char fullname[HEADER_LEN];
-	long orig_offset;
-	t_bool found_replyto = FALSE;
+	char *ptr;
 
-	orig_offset = ftell (fp);
-	rewind (fp);
+	ptr = (hdr->replyto) ? hdr->replyto : hdr->from;
 
-	while (fgets (buf, (int) sizeof (buf), fp) != (char *) 0 && buf[0] != '\n') {
-		/* FIXME we don't process continuation lines, we should use tin_fgets() here */
-		if (STRNCASECMPEQ(buf, "Reply-To: ", 10)) {
-			strcpy (replyto, &buf[10]);
-			ptr = strchr (replyto, '\n');
-			if (ptr != (char *) 0)
-				*ptr = '\0';
-
-			found_replyto = TRUE;
-		} else if (STRNCASECMPEQ(buf, "From: ", 6)) {
-			strcpy (from, &buf[6]);
-			ptr = strchr (from, '\n');
-			if (ptr != (char *) 0)
-				*ptr = '\0';
-
-		}
-	}
-
-	fseek (fp, orig_offset, SEEK_SET);
-#ifdef DEBUG
-	if (debug == 2)
-		fprintf(stderr, "find_reply_to_addr (%s, %s)\n", reply_to, from);
-#endif /* DEBUG */
-	/* We do this to save a redundant strcpy when we don't want to parse */
+	/*
+	 * We do this to save a redundant strcpy when we don't want to parse
+	 */
 	if (parse) {
-#	if 1
-		parse_from ((found_replyto ? replyto : from), from_addr, fullname);
-#	else
+#if 1
+		/* TODO Return code ignored ? */
+		parse_from (ptr, from_addr, fullname);
+#else
 		/* Or should we decode full_addr? */
-		parse_from ((found_replyto ? replyto : from), temp, fullname);
+		parse_from (ptr, temp, fullname);
 		strcpy (full_addr, rfc1522_decode(tmp));
-#	endif /* 1 */
+#endif /* 1 */
 	} else
-		strcpy (from_addr, rfc1522_decode((found_replyto ? replyto : from)));
+		strcpy (from_addr, ptr);
 }
 
 
@@ -3729,6 +3703,11 @@ make_path_header (
 #endif /* FORGERY */
 
 
+/*
+ * Used only by pcCopyArtHeader()
+ * What is this doing ?!
+ * TODO Can't this be junked in favour of parse_from() ?
+ */
 static void
 yank_to_addr (
 	char *orig,
@@ -3770,6 +3749,98 @@ yank_to_addr (
 }
 
 
+/*
+ * Read a file grabbing the value of the specified mail header line
+ * TODO: re-use the article header parse code if possible instead of this
+ */
+static t_bool
+pcCopyArtHeader (
+	int iHeader,
+	const char *pcArt,
+	char *result)
+{
+	FILE *fp;
+	char *ptr;
+	char buf2[HEADER_LEN];
+	const char *p;
+	static char header[HEADER_LEN];
+	t_bool found = FALSE;
+	t_bool was_to = FALSE;
+
+	*header = '\0';
+
+	if ((fp = fopen (pcArt, "r")) == (FILE *) 0) {
+		perror_message (_(txt_cannot_open), pcArt);
+		return FALSE;
+	}
+
+	while ((ptr = tin_fgets (fp, TRUE)) != (char *) 0) {
+
+		if (*ptr == '\0')
+			break;
+
+		switch (iHeader) {
+			case HEADER_TO:
+				if (STRNCASECMPEQ(ptr, "To: ", 4) || STRNCASECMPEQ(ptr, "Cc: ", 4)) {
+					my_strncpy (buf2, &ptr[4], sizeof (buf2));
+					yank_to_addr (buf2, header);
+					was_to = TRUE;
+					found = TRUE;
+				} else if (STRNCASECMPEQ(ptr, "Bcc: ", 5)) {
+					my_strncpy (buf2, &ptr[5], sizeof (buf2));
+					yank_to_addr (buf2, header);
+					was_to = TRUE;
+					found = TRUE;
+				} else if ((*ptr == ' ' || *ptr == '\t') && was_to) {
+					yank_to_addr (ptr, header);
+					found = TRUE;
+				} else
+					was_to = FALSE;
+
+				break;
+
+			case HEADER_SUBJECT:
+				if (STRNCASECMPEQ(ptr, "Subject: ", 9)) {
+					my_strncpy (header, &ptr[9], sizeof (header));
+					found = TRUE;
+				}
+				break;
+
+			default:
+				break;
+		}
+	}
+	fclose (fp);
+
+	if (tin_errno != 0)
+		return(FALSE);
+
+	if (found) {
+		p = ((header[0] == ' ') ? &header[1] : header);
+		(void) strcpy (result, rfc1522_decode (p));
+		return TRUE;
+	}
+	switch (iHeader) {
+		case HEADER_TO:
+			p = _(txt_error_header_line_missing_target);
+			break;
+		case HEADER_SUBJECT:
+			p = _(txt_error_header_line_missing_subject);
+			break;
+		default:
+			p = "?";
+			break;
+	}
+
+	/*
+	 * This should show the name of the offending file, but I didn't want to
+	 * add unnecessary message-text.
+	 */
+	error_message (p, pcArt);
+	return FALSE;
+}
+
+
 #ifdef EVIL_INSIDE
 /*
  * build_messageid()
@@ -3791,7 +3862,7 @@ build_messageid (
 	static char buf2[1024];
 
 	strip_name(build_sender(), buf2);
-	snprintf(buf, sizeof(buf)-1, "<%lxt%lxi%xn%lx%%%s>", seqnum++, time(0), process_id, (unsigned long int) real_uid, buf2);
+	snprintf(buf, sizeof(buf)-1, "<%lxt%lxi%xn%x%%%s>", seqnum++, time(0), process_id, getuid(), buf2);
 #	else
 	/*
 	 * Message ID format as suggested in

@@ -118,7 +118,7 @@ submit_inews (
 		if (line[0] != '\n') {
 			ptr = strchr (line, ':');
 			if (ptr - line == 4 && !strncasecmp (line, "From", 4)) {
-				strcpy(from_name, ptr+2);
+				strcpy(from_name, line);
 				if ((ptr = strchr(from_name, '\n')))
 					*ptr = '\0';
 			}
@@ -132,7 +132,7 @@ submit_inews (
 			break; /* end of headers */
 	}
 
-	if (from_name[0] == '\0') {
+	if ((from_name[0] == '\0') || (from_name[6] == '\0')) {
 		/* we could silently add a From: line here if we want to... */
 		error_message (_(txt_error_no_from));
 		fclose (fp);
@@ -148,8 +148,8 @@ submit_inews (
 	 * check for valid From: line
 	 * this will be done once again in sender_needed!?!
 	 */
-	if (GNKSA_OK != gnksa_check_from(rfc1522_encode(from_name, FALSE))) { /* error in address */
-		error_message (_(txt_invalid_from), from_name);
+	if (GNKSA_OK != gnksa_check_from(rfc1522_encode(from_name, FALSE) + 6)) { /* error in address */
+		error_message (_(txt_invalid_from), from_name + 6);
 		fclose (fp);
 		return ret_code;
 	}
@@ -161,7 +161,7 @@ submit_inews (
 
 #	ifndef FORGERY
 		if ((ptr = build_sender()) && (!disable_sender)) {
-			sender = sender_needed(rfc1522_decode(from_name), ptr);
+			sender = sender_needed (from_name + 6, ptr);
 			switch (sender) {
 				case -2: /* can't build Sender: */
 					error_message (_(txt_invalid_sender), ptr);
@@ -170,15 +170,16 @@ submit_inews (
 					/* NOTREACHED */
 					break;
 
-				case -1: /* illegal From: (can't happen as check is done above allready) */
-					error_message (_(txt_invalid_from), from_name);
+				case -1: /* illegal From: (can't happen as check is done above already) */
+					error_message (_(txt_invalid_from), from_name + 6);
 					fclose (fp);
 					return ret_code;
 					/* NOTREACHED */
 					break;
 
 				case 1:	/* insert Sender */
-					sprintf (sender_hdr, "Sender: %s", rfc1522_encode(ptr, ismail));
+					snprintf (sender_hdr, sizeof(sender_hdr), "Sender: %s", ptr);
+					STRCPY (sender_hdr, rfc1522_encode (sender_hdr, ismail));
 					break;
 
 				case 0: /* no sender needed */
@@ -389,8 +390,10 @@ static int sender_needed (
 	char *sender_at_pos;
 	char *sender_dot_pos;
 	char from_addr[HEADER_LEN];
+	char from_line[HEADER_LEN];
 	char from_name[HEADER_LEN];
 	char sender_addr[HEADER_LEN];
+	char sender_line[HEADER_LEN];
 	char sender_name[HEADER_LEN];
 
 #ifdef DEBUG
@@ -398,7 +401,8 @@ static int sender_needed (
 		wait_message (0, "sender_needed From:=[%s]", from);
 #endif /* DEBUG */
 
-	if (GNKSA_OK != gnksa_do_check_from(rfc1522_encode(from, FALSE), from_addr, from_name))
+	snprintf (from_line, sizeof(from_line), "From: %s", from);
+	if (GNKSA_OK != gnksa_do_check_from(rfc1522_encode(from_line, FALSE) + 6, from_addr, from_name))
 		return -1;
 
 #ifdef DEBUG
@@ -406,7 +410,8 @@ static int sender_needed (
 		wait_message (0, "sender_needed Sender:=[%s]", sender);
 #endif /* DEBUG */
 
-	if (GNKSA_OK != gnksa_do_check_from(rfc1522_encode(sender, FALSE), sender_addr, sender_name))
+	snprintf (sender_line, sizeof(sender_line), "Sender: %s", sender);
+	if (GNKSA_OK != gnksa_do_check_from(rfc1522_encode(sender_line, FALSE) + 8, sender_addr, sender_name))
 		return -2;
 
 	from_at_pos = strchr(from_addr, '@');

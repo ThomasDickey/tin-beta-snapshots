@@ -93,7 +93,7 @@
  * Local prototypes
  */
 static void do_set_attrib (struct t_group *psGrp, int type, const char *data);
-static void set_attrib (int type, char *scope, char *data);
+static void set_attrib (int type, const char *scope, const char *data);
 static void set_default_attributes (struct t_attribute *psAttrib);
 
 /*
@@ -175,7 +175,7 @@ set_default_attributes (
 
 void
 read_attributes_file (
-	char *file,
+	const char *file,
 	t_bool global_file)
 {
 	FILE *fp;
@@ -317,8 +317,8 @@ read_attributes_file (
 static void
 set_attrib (
 	int type,
-	char *scope,
-	char *data)
+	const char *scope,
+	const char *data)
 {
 	struct t_group *psGrp;
 
@@ -477,7 +477,7 @@ do_set_attrib (
  */
 void
 write_attributes_file (
-	char *file)
+	const char *file)
 {
 	FILE *fp;
 	char *file_tmp;
@@ -540,16 +540,7 @@ write_attributes_file (
 	fprintf (fp, "#    5=date descend, 6=date ascend\n");
 	fprintf (fp, "#    7=score descend, 8=score ascend\n");
 	fprintf (fp, "#  post_proc_type=NUM\n");
-	fprintf (fp, "#    0=none, 1=unshar, 2=uudecode,\n");
-#	ifdef M_AMIGA
-		fprintf (fp, "#    3=uudecode & list lha archive,\n");
-		fprintf (fp, "#    4=uudecode & extract lha archive\n");
-#	else
-		fprintf (fp, "#    3=uudecode & list zoo archive,\n");
-		fprintf (fp, "#    4=uudecode & extract zoo archive\n");
-#	endif /* M_AMIGA */
-	fprintf (fp, "#    5=uudecode & list zip archive,\n");
-	fprintf (fp, "#    6=uudecode & extract zip archive\n");
+	fprintf (fp, "#    0=none, 1=unshar, 2=uudecode\n");
 	fprintf (fp, "#  quick_kill_scope=STRING (ie. talk.*)\n");
 	fprintf (fp, "#  quick_kill_expire=ON/OFF\n");
 	fprintf (fp, "#  quick_kill_case=ON/OFF\n");

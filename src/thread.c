@@ -147,14 +147,14 @@ bld_tline (
 	}
 
 	if (tinrc.show_lines) { /* add lines */
-		strcat (buff, ((art->lines != -1) ? tin_ltoa(art->lines, 4): "   ?"));
+		strcat (buff, ((art->line_count != -1) ? tin_ltoa(art->line_count, 4): "   ?"));
 		rest_of_line -= 4;
 	}
 
 	if (tinrc.show_score) {
 		char tmp_score[15];
 
-		if (tinrc.show_lines) { /* insert a sperator if show lines and score */
+		if (tinrc.show_lines) { /* insert a separator if show lines and score */
 			strcat (buff, ",");
 			rest_of_line--;
 		}
@@ -300,11 +300,18 @@ draw_line (
 	 */
 	if (s[MARK_OFFSET-startpos] == tinrc.art_marked_selected) {
 		MoveCursor (INDEX2LNUM(i), MARK_OFFSET);
-		ToggleInverse ();
+#if 0	/* doesn't work correct with ncurses4.x */
+		ToggleInverse();
+#else
+		StartInverse();
+#endif /* 0 */
 		my_fputc (s[MARK_OFFSET-startpos], stdout);
-		ToggleInverse ();
+#if 0 /* doesn't work correct with ncurses4.x */
+		ToggleInverse();
+#else
+		EndInverse();
+#endif /* 0 */
 	}
-
 	MoveCursor(INDEX2LNUM(i)+1, 0);
 	return;
 }

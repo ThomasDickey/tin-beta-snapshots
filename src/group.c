@@ -1105,7 +1105,7 @@ mark_screen (
 		int y, x;
 		getyx(stdscr, y, x);
 		mvaddstr(INDEX_TOP + screen_row, screen_col, (char *)value);
-		move(y, x);
+		MoveCursor(y, x);
 #else
 		int i;
 		for (i = 0; value[i] != '\0'; i++)
@@ -1226,15 +1226,15 @@ bld_sline (
 
 	if (tinrc.show_lines) {
 		if (n > 1) { /* change this to (n > 0) if you do a n-- above */
-			if (arts[j].lines != -1) {
+			if (arts[j].line_count != -1) {
 				char tmp_buffer[4];
 				strcpy (tmp_buffer, tin_ltoa(n, 3));
-				sprintf (art_cnt, "%s %s ", tmp_buffer, tin_ltoa(arts[j].lines, 4));
+				sprintf (art_cnt, "%s %s ", tmp_buffer, tin_ltoa(arts[j].line_count, 4));
 			} else
 				sprintf (art_cnt, "%s    ? ", tin_ltoa(n, 3));
 		} else {
-			if (arts[j].lines != -1)
-				sprintf (art_cnt, "    %s ", tin_ltoa(arts[j].lines, 4));
+			if (arts[j].line_count != -1)
+				sprintf (art_cnt, "    %s ", tin_ltoa(arts[j].line_count, 4));
 			else
 				strcpy (art_cnt, "       ? ");
 		}
@@ -1471,7 +1471,7 @@ group_catchup(
 		return 0;
 
 	/* FIXME: -> lang.c */
-	snprintf(buf, sizeof(buf)-1, _(txt_mark_arts_read), (ch == iKeyGroupCatchupNextUnread) ? _(" and enter next unread group") : "");
+	snprintf(buf, sizeof(buf) - 1, _(txt_mark_arts_read), (ch == iKeyGroupCatchupNextUnread) ? _(" and enter next unread group") : "");
 
 	if (!CURR_GROUP.newsrc.num_unread || !tinrc.confirm_action || (yn = prompt_yn (cLINES, buf, TRUE)) == 1)
 		grp_mark_read (&CURR_GROUP, arts);

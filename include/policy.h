@@ -281,6 +281,12 @@ static const char *gnksa_domain_list[] = {
 	"info",
 	"shop",
 #	endif /* 0 */
+#	if 0
+	/* the new domain names, not yet valid */
+	"tel",
+	"news",
+	"shop",
+#	endif /* 0 */
 	/* the next four are defined in RFC 2606 */
 	"invalid",
 #	if 0

@@ -42,6 +42,9 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
+#ifndef TCURSES_H
+#	include "tcurses.h"
+#endif /* !TCURSES_H */
 
 /*
  * See if pattern is matched in string. Return TRUE or FALSE
@@ -125,3 +128,34 @@ compile_regex(
 	return FALSE;
 }
 
+
+/*
+ * Highlight (in inverse text) any string on 'row' that match 'regex'
+ */
+void
+highlight_regexes(
+	int row,
+	struct regex_cache *regex)
+{
+	char *ptr;
+	int offsets[6];
+	int offsets_size = sizeof(offsets)/sizeof(int);
+#ifdef USE_CURSES
+	char buf[LEN];
+#else
+	char *buf;
+#endif /* USE_CURSES */
+
+	/* Get contents of line from the screen */
+#ifdef USE_CURSES
+	screen_contents(row, 0, buf);
+#else
+	buf = screen[row].col;
+#endif /* USE_CURSES */
+	ptr = buf;
+
+	while (pcre_exec (regex->re, regex->extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) != PCRE_ERROR_NOMATCH) {
+		highlight_string (row, (ptr-buf)+offsets[0], offsets[1]-offsets[0]);
+		ptr += offsets[1];
+	}
+}

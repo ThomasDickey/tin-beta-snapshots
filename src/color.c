@@ -54,7 +54,7 @@
 
 #ifdef HAVE_COLOR
 
-#define MIN_COLOR -1	/* -1 is default, otherwise 0-7 or 0-15 */
+#	define MIN_COLOR -1	/* -1 is default, otherwise 0-7 or 0-15 */
 
 int default_fcol = 7;
 int default_bcol = 0;
@@ -71,7 +71,7 @@ static void color_fputs (const char *s, FILE *stream, int color, t_bool signatur
 static void put_mark_char (int c, FILE *stream, t_bool signature);
 
 
-#ifdef USE_CURSES
+#	ifdef USE_CURSES
 static void
 set_colors (
 	int fcolor,
@@ -85,12 +85,12 @@ set_colors (
 	} *list;
 	static int nextpair;
 
-#	ifndef HAVE_USE_DEFAULT_COLORS
+#		ifndef HAVE_USE_DEFAULT_COLORS
 	if (fcolor < 0)
 		fcolor = default_fcol;
 	if (bcolor < 0)
 		bcolor = default_bcol;
-#	endif /* !HAVE_USE_DEFAULT_COLORS */
+#		endif /* !HAVE_USE_DEFAULT_COLORS */
 	if (cmd_line || !use_color || !has_colors()) {
 		current_fcol = default_fcol;
 		current_bcol = default_bcol;
@@ -139,12 +139,13 @@ set_colors (
 	}
 }
 
-void refresh_color (
+void
+refresh_color (
 	void)
 {
 	set_colors(current_fcol, current_bcol);
 }
-#endif /* USE_CURSES */
+#	endif /* USE_CURSES */
 
 /* setting foreground-color */
 void
@@ -154,9 +155,9 @@ fcol (
 	TRACE(("fcol(%d) %s", color, txt_colors[color-MIN_COLOR]));
 	if (use_color) {
 		if (color >= MIN_COLOR && color <= MAX_COLOR) {
-#ifdef USE_CURSES
+#	ifdef USE_CURSES
 			set_colors(color, current_bcol);
-#else
+#	else
 			int bold;
 			if (color < 0)
 				color = default_fcol;
@@ -164,14 +165,14 @@ fcol (
 			my_printf("\033[%d;%dm", bold, ((color & 7) + 30));
 			if (!bold)
 				bcol(current_bcol);
-#endif /* USE_CURSES */
+#	endif /* USE_CURSES */
 			current_fcol = color;
 		}
 	}
-#ifdef USE_CURSES
+#	ifdef USE_CURSES
 	else
 		set_colors(default_fcol, default_bcol);
-#endif /* USE_CURSES */
+#	endif /* USE_CURSES */
 }
 
 /* setting background-color */
@@ -182,20 +183,20 @@ bcol (
 	TRACE(("bcol(%d) %s", color, txt_colors[color-MIN_COLOR]));
 	if (use_color) {
 		if (color >= MIN_COLOR && color <= MAX_BACKCOLOR) {
-#ifdef USE_CURSES
+#	ifdef USE_CURSES
 			set_colors(current_fcol, color);
-#else
+#	else
 			if (color < 0)
 				color = default_bcol;
 			my_printf("\033[%dm", (color + 40));
-#endif /* USE_CURSES */
+#	endif /* USE_CURSES */
 			current_bcol = color;
 		}
 	}
-#ifdef USE_CURSES
+#	ifdef USE_CURSES
 	else
 		set_colors(default_fcol, default_bcol);
-#endif /* USE_CURSES */
+#	endif /* USE_CURSES */
 }
 
 
@@ -276,6 +277,7 @@ color_fputs (
 		}
 	}
 }
+#endif /* HAVE_COLOR */
 
 
 /*
@@ -283,18 +285,18 @@ color_fputs (
  * word highlights, signatures etc will be highlighted
  */
 void
-print_color (
-	int row,
-	char *str,
+draw_pager_line (
+	const char *str,
 	int flags)
 {
+#ifdef HAVE_COLOR
 	int color = tinrc.col_text;
 
 	if (use_color) {
 		if (flags & C_SIG) {
 			fcol (tinrc.col_signature);
 			color = tinrc.col_signature;
-		} else if (flags & (C_HEADER|C_ATTACH|C_UUE)) {
+		} else if (flags & (C_HEADER | C_ATTACH | C_UUE)) {
 			color = tinrc.col_newsheaders;
 			fcol (tinrc.col_newsheaders);
 		} else {
@@ -315,66 +317,10 @@ print_color (
 	if (word_highlight && use_color)
 		color_fputs(str, stdout, color, (flags&C_SIG));
 	else
-		my_fputs(str, stdout);
-#	ifndef USE_CURSES
-	my_fputs(cCRLF, stdout);
-#	endif /* !USE_CURSES */
-
-	/*
-	 * Highlight URL'S if present - should rewrite highlight code and integrate this
-	 * too much rereading takes place at present since highlight code changes the
-	 * screen layout (by reducing spaces)
-	 */
-	{
-	char buf[LEN];
-	char *ptr;
-	int offsets[6];
-	int offsets_size = sizeof(offsets)/sizeof(int);
-
-
-	if (flags & C_URL) {
-		/* Get contents of line just written */
-#ifdef USE_CURSES
-		screen_contents(row, 0, buf);
-		ptr = buf;
-#else
-		ptr = screen[0].col;
-#endif /* USE_CURSES */
-
-#if 0
-		offsets[0] = 0;
-		offsets[1] = 0;
-#endif /* 0 */
-
-		while (pcre_exec (url_regex.re, url_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) != PCRE_ERROR_NOMATCH) {
-			/*
-			 * TODO: what is buf in the !USE_CURSES case ?
-			 *       what is with offsets[0]/offsets[1]
-			 */
-			highlight_string (row, (ptr-buf)+offsets[0], offsets[1]-offsets[0]);
-			ptr += offsets[1];
-		}
-	}
-
-	if (flags & C_MAIL) {
-		/* Get contents of line just written */
-#ifdef USE_CURSES
-		screen_contents(row, 0, buf);
-		ptr = buf;
-#else
-		ptr = screen[0].col;
-#endif /* USE_CURSES */
-
-		offsets[0] = 0;
-		offsets[1] = 0;
-
-		while (pcre_exec (mail_regex.re, mail_regex.extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) != PCRE_ERROR_NOMATCH) {
-			/* TODO: what is buf in the !USE_CURSES case ? */
-			highlight_string (row, (ptr-buf)+offsets[0], offsets[1]-offsets[0]);
-			ptr += offsets[1];
-		}
-	}
-
-	}
-}
 #endif /* HAVE_COLOR */
+		my_fputs(str, stdout);
+
+#ifndef USE_CURSES
+	my_fputs(cCRLF, stdout);
+#endif /* !USE_CURSES */
+}

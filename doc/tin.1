@@ -3,11 +3,11 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2000-05-23
+.\" Updated   : 2000-08-03
 .\" Notes     : still needs some work (but getting there ;)
 .\"
 .\"
-.TH tin 1 "May 23rd, 2000" "1.5.4" "A Usenet newsreader"
+.TH tin 1 "August 3rd, 2000" "1.5.6" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -506,8 +506,9 @@ Help screen of newsgroup selection commands. You can use \fB/\fR and
 Toggle the display of help mini menu at the bottom of the screen.
 .TP
 .B i
-Toggle the display of the description of the current newsgroup in the last line.
-This will not be available if \fBtin\fR was started with the \fB-d\fR option.
+Toggle the display of the description of the current newsgroup in the last
+line. This will not be available if \fBtin\fR was started with the \fB-d\fR
+option.
 .TP
 .B I
 Toggle inverse video.
@@ -536,8 +537,8 @@ Quit \fBtin\fR - don't ask the user to confirm.
 .TP
 .B r
 Toggle display of all subscribed to groups and just those groups containing
-unread articles. Command has no effect if groups were specified on the command
-line when \fBtin\fR was started.
+unread articles. Command has no effect if groups were specified on the
+command line when \fBtin\fR was started.
 .TP
 .B R
 Mail a bug report or comment to <tin-bugs@tin.org>. This is the best way of
@@ -1004,7 +1005,7 @@ headers included.
 Toggle $\fBTEX2ISO\fR decoding for current article.
 .TP
 .B %
-Toggle ROT-13 decoding for this article. This is the same as \fBd\fR.
+Toggle ROT-13 decoding for this article.
 .TP
 .B (
 Toggle the display of uuencoded sections on/off. The default behaviour is
@@ -1098,9 +1099,6 @@ the previous menu. Move cursor to next item.
 Mark the rest of the current thread as read [after confirmation] and enter the
 next thread with unread articles. If no unread articles are left in this
 group, enter the next group with unread news.
-.TP
-.B d
-Toggle ROT-13 decoding for this article.
 .TP
 .B D
 Cancel the current article. It must have been posted by the same user. The
@@ -1501,8 +1499,12 @@ or 'sendmail -oem -t < %F' (i.e. sendmail -oem -t < .article).
 .TP
 .B Printer program with options (default_printer)
 The printer program with options that is to be used to print articles.
-The default is \fBlpr\fR(1) for BSD machines and \fBlp\fR(1) for SysV machines.
-Printing from \fBtin\fR may have been disabled by the System Administrator
+The default is
+.BR lpr (1)
+for BSD machines and
+.BR lp (1)
+for SysV machines. Printing from \fBtin\fR may have been disabled by the
+System Administrator
 .TP
 .B default_range_group
 .TP
@@ -1687,46 +1689,10 @@ Shift_JIS, Big5) is supposed to be converted into ISO-2022-CN/JP, but it's
 NOT yet implemented. Therefore, currently 7bit has NO effect (i.e.
 equivalent to 8bit) whatever MIME charset/encoding is chosen.
 .TP
-.B post_process_command
-Full pathname of a command to be run after successfully uudecoding an
-article / thread. This option should be used in conjunction with
-post processing type 2=(uudecode)
-A sample script (for Linux) demonstrates a possible use for this:
-.RS
-.nf
-
-# !/bin/bash
-# Sample Tin newsreader postprocessor.
-# $1 is the filename that has been uudecoded.
-#
-
-[ ! -f "$1" ] && exit 1
-
-case ${1##*.} in
-    # View pictures in console mode or X
-    #
-    gif|jpg|GIF|JPG)
-        [ -z "$DISPLAY" ] && zgv $1 || xv $1
-        ;;
-    # List zip archives
-    #
-    zip)
-        unzip -l $1
-        ;;
-    *)
-        echo "Unsupported or missing suffix: ${1##*.}"
-        file $1
-        ;;
-esac
-
-echo ""
-echo "Press <RETURN> to exit."
-read ans
-
-# end of sample script
-
-.fi
-.RE
+.B post_process_view
+If ON, then tin will start an appropriate viewer program to display any
+files that were post processed and uudecoded.
+The program is determined using the mailcap file.
 .TP
 .B Post process saved art/thread with (post_process_type)
 This specifies the default type of post processing to perform on saved
@@ -1738,24 +1704,6 @@ articles. The following types of processing are allowed:
 \(emunpacking of multi-part shar files (shell archives).
 .ti -\w'\(em'u
 \(emunpacking of multi-part uuencoded files.
-.ti -\w'\(em'u
-\(emunpacking of multi-part uuencoded files, which produce a *.zoo archive
-whose contents is listed.
-.ti -\w'\(em'u
-\(emunpacking of multi-part uuencoded files, which produce a *.zoo archive
-whose contents is extracted.
-.ti -\w'\(em'u
-\(emunpacking of multi-part uuencoded files, which produce a *.zip archive
-whose contents is listed.
-.ti -\w'\(em'u
-\(emunpacking of multi-part uuencoded files, which produce a *.zip archive
-whose contents is extracted.
-.ti -\w'\(em'u
-\(emunpacking of multi-part uuencoded files, which produce a *.lha archive
-whose contents is listed (AmigaOS version only).
-.ti -\w'\(em'u
-\(emunpacking of multi-part uuencoded files, which produce a *.lha archive
-whose contents is extracted (AmigaOS version only).
 .in -.5i
 .TP
 .B Print all headers when printing (print_header)
@@ -1929,7 +1877,8 @@ If ON remove \fI~/.article\fP after posting. Default is ON.
 .TP
 .B Use builtin inews (use_builtin_inews)
 Allows the builtin NNTP inews to be enabled/disabled. This has no effect
-when reading/posting direct to local spool where external \fBinews\fR(1)
+when reading/posting direct to local spool where external
+.BR inews (1)
 will always be used. Default is ON (enabled).
 .TP
 .B Limit number of articles fetched from server (use_getart_limit)
@@ -1948,7 +1897,9 @@ this option has to suit \fBdefault_mailer_format\fR
 If ON metamail can/will be used to display MIME articles. Default is ON.
 .TP
 .B Use mouse in xterm (use_mouse)
-Allows the mouse key support in a \fBxterm\fR(1x) to be enabled/disabled.
+Allows the mouse key support in a
+.BR xterm (1x)
+to be enabled/disabled.
 Default is OFF.
 .TP
 .B Wildcard matching (wildcard)
@@ -2023,6 +1974,11 @@ per group basis. For more information read section AUTOMATIC MAILING AND
 SAVING NEW NEWS.
 .TP
 .B delete_tmp_files
+If this is set to ON, then saved article files that have been post-processed
+will be automatically deleted.
+If set to OFF, you will be prompted as to whether to delete each file in turn.
+Note that automatic processing of Tagged articles using 'S' will also suppress
+promting.
 .TP
 .B show_only_unread
 Identical to the tinrc variable of the same name
@@ -2249,6 +2205,11 @@ If a regex pattern is selected you are asked to enter a pattern
 Any articles that match the entered expression will be mailed, piped etc.
 See also the wildcard tinrc variable for advanced pattern matching options.
 .PP
+Various expansion characters are recognised when entering the directory
+and file to save to. Environment variables (prefixed with '$') and user home
+directories (prefixed by '~' or '~username') can be specified.
+Environment variables can themselves contain other special characters
+.PP
 To save articles to a mailbox enter '=<mailbox name>' when asked for the
 save filename. If you enter just '=' then articles will be saved to a
 mailbox with the name of the current newsgroup (eg, alt.sources).
@@ -2259,7 +2220,10 @@ Environment variables are allowed within a filename (i.e.,
 \fI$SOURCES/dir/filename\fP). See default_savedir.
 .PP
 When saving articles you can specify whether the saved files should be
-post processed (i.e., \fBunshar\fR(1) shell archive, \fBuudecode\fR(1)
+post processed (i.e.,
+.BR unshar (1)
+shell archive,
+.BR uudecode (1)
 multiple parts etc). A default process type can be set by the 'Process type:'
 in the `M' options menu.
 .\"
@@ -2309,7 +2273,7 @@ can be used to mean the highest number available.
 Currently the only commands that understand ranges are 'K', 'z' and 'Z' at
 the Group level.
 .PP
-.SH NEWSGROUP LISTS & WILDCARDS
+.SH "NEWSGROUP LISTS & WILDCARDS"
 Several places in tin allow you to specify a list of newsgroups. These include
 command line groups, (un)subscribe groups, the AUTO[UN]SUBSCRIBE mechanism.
 The scope= attributes file tag and the filter file group= tag also use the
@@ -2331,7 +2295,9 @@ See the explanation for the AUTOSUBSCRIBE variables for further examples.
 \fI$HOME/.Sig\fP. If \fI$HOME/.signature\fP exists, then the signature
 will be pulled into the editor for mail commands. A signature in
 \fI$HOME/.signature\fP will not be pulled into the editor for posting
-commands since \fBinews\fR(1) will append the signature itself.
+commands since
+.BR inews (1)
+will append the signature itself.
 .PP
 A signature in \fI$HOME/.Sig\fP will be pulled into the editor for both
 posting and mailing commands.
@@ -2360,8 +2326,7 @@ random sig is read from the file \fI$HOME/.sigfixed\fP.
 .SH "TIPS AND TRICKS"
 \fBtin\fR can be pretty much be navigated by using the four cursor keys. The left
 arrow key goes up a level, the right arrow key goes down a level, the up arrow
-key goes up a line (page at article viewer level) and the down arrow key goes
-down a line (page at article viewer level).
+key goes up a line and the down arrow key goes down a line.
 .PP
 The following newsgroups provide useful information concerning news software:
 .in +.5i
@@ -2381,8 +2346,12 @@ offer a default choice that the cursor is positioned on. By pressing
 Many prompts (i.e., 'Post subject []>') within \fBtin\fR can be aborted by
 pressing ESC.
 .PP
-When \fBtin\fR is run in an \fBxterm\fR(1x) it will resize itself each time
-the \fBxterm\fR(1x) is resized.
+When \fBtin\fR is run in an
+.BR xterm (1x)
+it will resize itself each time
+the
+.BR xterm (1x)
+is resized.
 .PP
 \fBtin\fR will reread the active file at set intervals to show any newly
 arrived news.
@@ -2392,7 +2361,8 @@ pressing 'r' will make them go away.
 .\"
 .\"
 .SH "XTERM BUTTONS"
-If the environment variable \fB$TERM\fR is set to \fBxterm\fR(1x),
+If the environment variable \fB$TERM\fR is set to
+.BR xterm (1x),
 then button pressing can be used to select groups and articles.
 In this discussion, the buttons are assumed to be assigned conventionally
 (i.e., Button1 is the left button).
@@ -2400,16 +2370,15 @@ In this discussion, the buttons are assumed to be assigned conventionally
 In general (i.e., for the group, thread and article menus),
 .TP 10
 Button1 (left)
-enters next (lower) level if you click on a article,
-otherwise pages down.
+enters next (lower) level if you click on a article, otherwise pages down.
 .TP
 Button2 (centre)
-returns to the previous (upper) level if you click on a article,
-otherwise pages up.
+returns to the previous (upper) level if you click on a article, otherwise
+pages up.
 .TP
 Button3 (right)
-positions on the article line under mouse cursor,
-or pages down if you've clicked outside the list of articles.
+positions on the article line under mouse cursor, or pages down if you've
+clicked outside the list of articles.
 .PP
 In the group selection menu, if the mouse is pointing at a group then:
 .TP 10
@@ -2451,7 +2420,9 @@ right button
 moves to the article pointed at.
 .PP
 In other menus and areas button pressing reverts back to usual cut
-and paste of \fBxterm\fR(1x), but after one click of any button.
+and paste of
+.BR xterm (1x),
+but after one click of any button.
 .\"
 .\"
 .SH "INDEX FILES"
@@ -2459,17 +2430,11 @@ If your news server supports NOV index files (most modern installations
 will), then this section can be ignored.
 .PP
 If your news server doesn't support NOV index files, \fBtin\fR will maintain
-an index for each newsgroup. There are a two methods in which index files
-can be created and updated.
-.PP
-The simplest method is that each user creates/updates his/her own index
-files that are stored in \fI$HOME/.tin/.news\fP. This has the advantage that
-any user can compile and install \fBtin\fR, but the disadvantage is that
-each user is going to be creating duplicate files and using precious disk
-space. A good way to keep index files updated is by doing a \fBtin -U\fR
-that will update index files in the background while you are reading news in
-the foreground. You can also update index files via the system batcher cron
-with the ``\fB-u\fR'' option:
+an index for each newsgroup. Each user creates/updates his/her own index
+files that are stored in \fI$HOME/.tin/.news\fP. A good way to keep index
+files updated is by doing a \fBtin -U\fR that will update index files in
+the background while you are reading news in the foreground. You can also
+update index files via the system batcher cron with the ``\fB-u\fR'' option:
 .PP
 .RS
 .nf
@@ -2478,12 +2443,6 @@ with the ``\fB-u\fR'' option:
 .ft P
 .fi
 .RE
-.PP
-A slightly better method is to set \fBtin\fR setuid news and have all index
-files created and updated in the news spool directory (i.e.,
-\fI/var/spool/news/.news\fP). This has the advantage that there will only be
-one copy of the index files on each machine on your network, but the
-disadvantage is that you will have \fBtin\fR running setuid news.
 .PP
 Entering a group the first time tends to be slow because the index file must
 be built from scratch. To alleviate the slowness start \fBtin\fR to create
@@ -2495,7 +2454,7 @@ If reading news remotely and updating index files locally, operation will be
 somewhat slower because the articles must be retrieved from the NNTP server.
 .\"
 .\"
-.SH "ENVIRONMENT VARIABLES"
+ku.SH "ENVIRONMENT VARIABLES"
 .TP
 .B TINRC
 Define this variable if you want to specify command line options that \fBtin\fR
@@ -2589,14 +2548,18 @@ This variable has precedence over the default mailer that is used in all
 mailing operations within \fBtin\fR.
 .TP
 .B EDITOR
-This variable has precedence over the default editor (i.e., \fBvi\fR(1)) that
+This variable has precedence over the default editor (i.e.,
+.BR vi (1)
+) that
 is used in all editing operations within \fBtin\fR (i.e., posting `w',
 replying `r', follow-ups `f', ...).
 .TP
 .B VISUAL
 If $\fBEDITOR\fP is unset, then this variable is looked up for a default
 editor. If $\fBEDITOR\fP and $\fBVISUAL\fR are both unset, tin will uses the
-systems default editor (i.e. \fBvi\fR(1) on UNIX-systems).
+systems default editor (i.e.
+.BR vi (1)
+on UNIX-systems).
 .TP
 .B AUTOSUBSCRIBE
 A new group is checked against the list of patterns; if it matches,
@@ -2629,17 +2592,21 @@ these strings. The matching is case-insensitive. Example:
 \fISPAMTRAP=spam,delete,remove\fP
 .TP
 .B MAILCAPS
-Set this variable to point to your mailcaps file. If unset
-\fI/etc/mailcap\fP will be used.
+This variable can be used to override the default path search for mailcap
+files.
 .TP
 .B METAMAIL
-Set this variable to point to \fBmetamail\fR(1) or a replacement
-(i.e. metamutt).
+Set this variable to point to
+.BR metamail (1)
+or a replacement (i.e. metamutt), if set to "(internal)" tin uses it's
+own mime-parser.
 .TP
 .B MM_CHARSET
 .TP
 .B ISPELL
-Set this variable to point to \fBispell\fR(1) or a replacement and it's
+Set this variable to point to
+.BR ispell (1)
+or a replacement and it's
 cmd-line options.
 .TP
 .B PGPOPTS
@@ -2698,12 +2665,15 @@ postponed articles from the `o' command, reuse via ``\fB-o\fR''
 command-line switch or via CTRL-O from within tin.
 .TP
 \fI$HOME/.signature\fP
-signature. If you are not using use_builtin_inews, \fBinews\fR(1)
+signature. If you are not using use_builtin_inews,
+.BR inews (1)
 automatically appends this file to your article after composing it (you
 won't see your signature in the $\fBEDITOR\fR). See also section SIGNATURES.
 .TP
 \fI$HOME/.Sig\fP
-signature. Same as above, but \fBinews\fR(1) won't include it.
+signature. Same as above, but
+.BR inews (1)
+won't include it.
 .TP
 \fI$HOME/.sigfixed\fP
 fixed part of a randomly generated signature.
@@ -2727,15 +2697,30 @@ List of newsgroups to subscribe first time user to.
 This file is only present on the news-server.
 .\"
 .\"
+.SH NOTES
+Regular expression support is provided by the PCRE library package
+.BR pcre (3),
+which is open source software, written by Philip Hazel, and copyright
+by the University of Cambridge, England.
+.br
+ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/
+.\"
+.\"
 .SH BUGS
-See the TODO-file which comes with the source.
+\fBCNews\fP NNTPd and \fBnoffle\fP (<= V1.0-pre5) can't handle simultaneous
+GROUP commands. If you run into trouble with any of the mentioned servers
+define NUM_SIMULTANEOUS_GROUP_COMMAND to 1 in active.c and recompile. See
+also the TODO-file which comes with the source.
 .\"
 .\"
 .SH HISTORY
-Based on the \fBtass\fR newsreader that was developed by Rich Skrenta and
-posted to alt.sources in March 1991. Tass was itself heavily influenced by
-NOTES which was developed at the University of Illinois by Ray Essick and
-Rob Kolstad in 1982.
+Based on the
+.BR tass (1)
+newsreader that was developed by Rich Skrenta and posted to alt.sources in
+March 1991.
+.BR tass (1)
+itself was heavily influenced by NOTES which was developed at the University
+of Illinois by Ray Essick and Rob Kolstad in 1982.
 .PP
 v1.0 PL0 (full) was posted in 8 parts to alt.sources on 23 Aug 1991.
 .br
@@ -2765,6 +2750,9 @@ February 5th 2000.
 v1.4.3 has been available from ftp.tin.org:/pub/news/clients/tin/v1.4/ since
 May 2nd 2000.
 .br
+v1.4.4 has been available from ftp.tin.org:/pub/news/clients/tin/v1.4/ since
+August 3rd 2000.
+.br
 v1.5.0 has been available from ftp.tin.org:/pub/news/clients/tin/v1.5/ since
 December 1st 1999.
 .br
@@ -2782,12 +2770,17 @@ May 23rd 2000.
 .br
 v1.5.5 has been available from ftp.tin.org:/pub/news/clients/tin/v1.5/ since
 June 13th 2000.
+.br
+v1.5.6 has been available from ftp.tin.org:/pub/news/clients/tin/v1.4/ since
+August 3rd 2000.
 .\"
 .\"
 .SH CREDITS
 .TP 1.5i
 Rich Skrenta
-author of \fBtass\fR v3.2 which this newsreader used as its base.
+author of
+.BR tass (1)
+v3.2 which this newsreader used as its base.
 .TP
 Bill Davidsen
 author of envarg.c environment variable reading routine.
@@ -2811,7 +2804,9 @@ Dave Taylor
 author of curses.c from the elm mailreader.
 .TP
 Chris Thewalt
-author of getline.c \fBemacs\fR style editing routine.
+author of getline.c
+.BR emacs (1)
+style editing routine.
 .TP
 Mark Tomlinson
 for porting \fBtin\fR to the AmigaOS operating system.
@@ -2826,14 +2821,22 @@ Andrew Greer
 for porting \fBtin\fR to the VAX/VMS operating system.
 .TP
 Steven Madsen
-for adding \fBpgp\fR (Pretty Good Privacy) support.
+for adding
+.BR pgp (1)
+(Pretty Good Privacy) support.
 .TP
 Philip Hazel <ph10@cam.ac.uk>
-for \fBlibpcre\fR (Perl-compatible regular expression library).
+for
+.BR pcre (3)
+(Perl-compatible regular expression library).
 .PP
 .TP
 Patrick Powell <papowell@astart.com>
-for \fBsnprintf(3)\fR and \fBvsnprintf(3)\fR fallbacks.
+for
+.BR snprintf (3)
+and
+.BR vsnprintf (3)
+fallbacks.
 .PP
 I wish to thank the following people for supplying patches:
 .PP
@@ -2867,11 +2870,11 @@ Alex Lange, Alain Lasserre, Stanislav Latishko, Hannu Laurila, Vincent
 Lefevre, Alexander Lehmann, Marty Leisner, Thomas Leitner, Hakan Lennestal,
 Kevin Lentin, Chua Choon Leong, Chris Lewis, Andreas Ley, David-Michael
 Lincke, Otto Lind, Richard Lloyd, Florian Lohoff, Reinhard Luebke, Clifford
-Luke, Michael Lupp, David MacKenzie, Hugh Mahon, Giuseppe De Marco, Dmitri
-A. Martynoff, Kazushi Marukawa, William McBrine, Owen Medd, Philipp
-Mergenthaler, Arkadiusz Miskiewicz, Soren Moller, Bruce Momjian, Sergio
-Morales, Michael Morrell, Klaus Mueller, Mike Muise, Udo Munk, John R.
-Myers, Daniel Naber, Torsten Neumann, Dirk Nimmich, James Nugen, David E.
+Luke, Michael Lupp, David MacKenzie, Hugh Mahon, Giuseppe De Marco, Scott
+Marovich, Dmitri A. Martynoff, Kazushi Marukawa, William McBrine, Owen Medd,
+Philipp Mergenthaler, Arkadiusz Miskiewicz, Soren Moller, Bruce Momjian,
+Sergio Morales, Michael Morrell, Klaus Mueller, Mike Muise, Udo Munk, John
+R. Myers, Daniel Naber, Torsten Neumann, Dirk Nimmich, James Nugen, David E.
 O'Brien, Michael O'Reilly, Oleg Ohotnikov, Ronald Orr, Julien Oster, Jeb
 Palmer, Neil Parker, Tom Parry, Jim Patterson, Sven Paulus, Walter
 Pelissero, Cameron Perkins, Colin Perkins, Eric Peterson, Tim Pierce, Bill
@@ -2901,3 +2904,18 @@ Iain Lea <iain@bricbrac.de>
 .SH MAINTAINER
 .TP 1i
 Urs Janssen <urs@tin.org>
+.\"
+.\"
+.SH "SEE ALSO"
+.BR locale (1),
+.BR locale (5),
+.BR pcre (3),
+.BR tin (5),
+.BR wildmat (3),
+.BR RFC977 ,
+.BR RFC1036 ,
+.BR RFC1524 ,
+.BR RFC2045 ,
+.BR RFC2046 ,
+.BR RFC2047 ,
+.BR RFC2048

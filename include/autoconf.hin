@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1995-08-24
- *  Updated   : 2000-01-20
+ *  Updated   : 2000-07-19
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2000 Thomas Dickey <dickey@herndon4.his.com>
@@ -222,18 +222,9 @@
 #	undef HAVE_RESIZETERM
 #	undef HAVE_REWINDDIR
 #	undef HAVE_SELECT
-#	undef HAVE_SETEGID
 #	undef HAVE_SETENV
-#	undef HAVE_SETEUID
-#	undef HAVE_SETGID
 #	undef HAVE_SETLOCALE
-#	undef HAVE_SETPGID
-#	undef HAVE_SETPGRP
-#	undef HAVE_SETREGID
-#	undef HAVE_SETREUID
-#	undef HAVE_SETSID
 #	undef HAVE_SETTZ
-#	undef HAVE_SETUID
 #	undef HAVE_SNPRINTF
 #	undef HAVE_STPCPY
 #	undef HAVE_STRCASECMP
@@ -318,12 +309,7 @@
 #	undef DECL_RENAME
 #	undef DECL_REWIND
 #	undef DECL_SELECT
-#	undef DECL_SETEGID
 #	undef DECL_SETENV
-#	undef DECL_SETEUID
-#	undef DECL_SETPGRP
-#	undef DECL_SETREGID
-#	undef DECL_SETREUID
 #	undef DECL_SNPRINTF
 #	undef DECL_SOCKET
 #	undef DECL_SSCANF
@@ -367,6 +353,8 @@
 #	undef USE_CURSES
 #	undef USE_TRACE
 #	undef NEED_CURSES_H
+#	undef NEED_TERM_H
+#	undef NEED_TERMCAP_H
 
 /*
  * Define symbols to prototype the function 'outchar()'
@@ -452,12 +440,6 @@
  * don't at all.  Others may not, depending on how they're configured.
  */
 #	undef HAVE_COREFILE
-
-/*
- * Define if the system has any of the pairs setuid/setgid, seteuid/setegid or
- * setreuid/setregid.
- */
-#	undef HAVE_SET_GID_UID
 
 /*
  * Define if the system doesn't define SIGWINCH, or the associated structs

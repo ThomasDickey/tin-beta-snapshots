@@ -214,10 +214,6 @@ SaveOverwriteFile		o
 
 #####
 
-PProcExtractZip			E
-PProcListZip			L
-PProcExtractZoo			e
-PProcListZoo			l
 PProcShar			s
 PProcUUDecode			u
 PProcNone			n

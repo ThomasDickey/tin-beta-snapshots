@@ -121,12 +121,12 @@ my_strncpy (
 /*
  * case-insensitive version of strstr()
  */
-char *
+const char *
 strcasestr (
-	char *haystack,
+	const char *haystack,
 	const char *needle)
 {
-	char *h;
+	const char *h;
 	const char *n;
 
 	h = haystack;
@@ -320,15 +320,15 @@ strtol (
 	} else if (use_base == 16)
 		if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
 			str += 2;
-		/*
-		 * for any base > 10, the digits incrementally following
-		 * 9 are assumed to be "abc...z" or "ABC...Z"
-		 */
-		while (isalnum ((unsigned char)*str) && (xx = DIGIT(*str)) < use_base) {
-			/* accumulate neg avoids surprises near maxint */
-			val = use_base * val - xx;
-			++str;
-		}
+	/*
+	 * for any base > 10, the digits incrementally following
+	 * 9 are assumed to be "abc...z" or "ABC...Z"
+	 */
+	while (isalnum ((unsigned char)*str) && (xx = DIGIT(*str)) < use_base) {
+		/* accumulate neg avoids surprises near maxint */
+		val = use_base * val - xx;
+		++str;
+	}
 OUT:
 	if (ptr != (char **) 0)
 		*ptr = str;

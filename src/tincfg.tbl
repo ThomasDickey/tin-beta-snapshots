@@ -153,6 +153,7 @@
 	auto_save			OPT_ON_OFF
 	mark_saved_read			OPT_ON_OFF
 	post_process		txt_post_process_type POST_PROC_UUDECODE+1
+	post_process_view	OPT_ON_OFF
 	process_only_unread		OPT_ON_OFF
 #ifndef DISABLE_PRINTING
 	print_header			OPT_ON_OFF

@@ -45,8 +45,8 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.5.6"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20000618"
-#	define RELEASENAME	"Lucretia"
+#	define RELEASEDATE	"20000803"
+#	define RELEASENAME	"Dust"
 #	define TINRC_VERSION	"1.2"
 
 #	ifdef M_AMIGA

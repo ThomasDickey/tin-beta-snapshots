@@ -717,7 +717,7 @@ parse_headers (
 			case 'L':	/* Lines:  optional */
 				if (!got_lines) {
 					if ((hdr = parse_header (ptr+1, "ines", FALSE))) {
-						h->lines = atoi (hdr);
+						h->line_count = atoi (hdr);
 						got_lines = TRUE;
 					}
 				}
@@ -1004,7 +1004,7 @@ iReadNovFile (
 				*q = '\0';
 
 			if (isdigit((unsigned char)*p))
-				arts[top_art].lines = atoi (p);
+				arts[top_art].line_count = atoi (p);
 
 			p = (q == (char *) 0 ? (char *) 0 : q + 1);
 		}
@@ -1092,8 +1092,6 @@ vWriteNovFile (
 	if (xover_supported && !tinrc.cache_overview_files)
 		return;
 
-	set_tin_uid_gid ();
-
 	/*
 	 * setup the overview file (local only)
 	 */
@@ -1106,10 +1104,9 @@ vWriteNovFile (
 	strcpy(tmp, ((((pcNovFile = pcFindNovFile (psGrp, R_OK)) != 0)) ? pcNovFile : ""));
 	pcNovFile = pcFindNovFile (psGrp, W_OK);
 
-	if (strcmp(tmp, pcNovFile) != 0) {
-		set_real_uid_gid ();
+	if (strcmp(tmp, pcNovFile) != 0)
 		return;
-	}
+
 #ifdef DEBUG
 	if (debug)
 		error_message ("WRITE file=[%s]", pcNovFile);
@@ -1138,7 +1135,7 @@ vWriteNovFile (
 					(psArt->msgid ? psArt->msgid : ""),
 					(psArt->refs ? psArt->refs : ""),
 					0,	/* bytes */
-					psArt->lines);
+					psArt->line_count);
 
 				if (psArt->xref)
 					fprintf (hFp, "\tXref: %s", psArt->xref);
@@ -1151,7 +1148,6 @@ vWriteNovFile (
 		chmod (pcNovFile, (mode_t)(S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH));
 
 	}
-	set_real_uid_gid ();
 }
 
 
@@ -1475,7 +1471,7 @@ set_article (
 	art->msgid	= (char *) 0;
 	art->refs	= (char *) 0;
 	art->refptr	= (struct t_msgid *) 0;
-	art->lines	= -1;
+	art->line_count	= -1;
 	art->archive	= (char *) 0;
 	art->part	= (char *) 0;
 	art->patch	= (char *) 0;

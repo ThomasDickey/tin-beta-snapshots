@@ -130,7 +130,7 @@ find_group_index (
  */
 struct t_group *
 psGrpFind (
-	char *pcGrpName)
+	const char *pcGrpName)
 {
 	int i;
 
@@ -147,7 +147,7 @@ psGrpFind (
  */
 struct t_group *
 psGrpAdd (
-	char *group)
+	const char *group)
 {
 	unsigned long h;
 	int i;

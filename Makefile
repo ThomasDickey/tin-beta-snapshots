@@ -9,9 +9,8 @@ LVER	= 1
 PVER	= 5
 SVER	= 6
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20000618
+DVER	= 20000803
 EXE	= tin
-MANEXT	= 1
 
 # directory structure
 TOPDIR	= .
@@ -160,21 +159,23 @@ DOC	= \
 	$(DOCDIR)/internals.txt \
 	$(DOCDIR)/iso2asc.txt \
 	$(DOCDIR)/keymap.sample \
+	$(DOCDIR)/mailcap.sample \
 	$(DOCDIR)/mime.types \
 	$(DOCDIR)/pgp.txt \
-	$(DOCDIR)/plp_snprintf.3 \
 	$(DOCDIR)/rcvars.txt \
 	$(DOCDIR)/reading-mail.txt \
 	$(DOCDIR)/umlaute.txt \
 	$(DOCDIR)/umlauts.txt \
 	$(DOCDIR)/tin.defaults \
+	$(DOCDIR)/tools.txt \
+	$(DOCDIR)/plp_snprintf.3 \
 	$(DOCDIR)/tin.1 \
-	$(DOCDIR)/tools.txt
+	$(DOCDIR)/tin.5 \
+	$(DOCDIR)/wildmat.3
 
 TOL	= \
 	$(TOLDIR)/metamutt \
 	$(TOLDIR)/opt-case.pl \
-	$(TOLDIR)/tinpp \
 	$(TOLDIR)/tinlock \
 	$(TOLDIR)/url_handler.sh \
 	$(TOLDIR)/w2r.pl \
@@ -360,7 +361,6 @@ all:
 	@$(ECHO) "    make dist            [ Create a gziped distribution tar file ]"
 	@$(ECHO) "    make distclean       [ Delete all config, object and backup files ]"
 	@$(ECHO) "    make install         [ Install the binary and the manual page ]"
-	@$(ECHO) "    make install_setuid  [ Install the binary setuid & the manual page ]"
 	@$(ECHO) "    make install_sysdefs [ Install the system-wide-defaults file ]"
 	@$(ECHO) "    make manpage         [ Create nroff version of manual page ]"
 	@$(ECHO) "    make manifest        [ Create MANIFEST ]"
@@ -371,9 +371,6 @@ build:
 
 install:
 	@$(CD) $(SRCDIR) && $(MAKE) install
-
-install_setuid:
-	@$(CD) $(SRCDIR) && $(MAKE) install_setuid
 
 install_sysdefs:
 	@$(CD) $(SRCDIR) && $(MAKE) install_sysdefs
@@ -422,7 +419,6 @@ chmod:
 	./mkdirs.sh \
 	$(TOLDIR)/metamutt \
 	$(TOLDIR)/opt-case.pl \
-	$(TOLDIR)/tinpp \
 	$(TOLDIR)/tinlock \
 	$(TOLDIR)/url_handler.sh \
 	$(TOLDIR)/w2r.pl \

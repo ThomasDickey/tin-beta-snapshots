@@ -427,7 +427,7 @@ signal_handler (
 }
 
 /*
- * Turn on (flag==TRUE) our signal handler for TSTP and WINCH
+ * Turn on (flag != FALSE) our signal handler for TSTP and WINCH
  * Otherwise revert to the default handler
  */
 void

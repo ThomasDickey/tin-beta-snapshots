@@ -90,7 +90,7 @@ typedef struct part
 	char *subtype;				/* Content subtype */
 	t_param *params;			/* List of Content-Type parameters */
 	long offset;				/* offset in article of the text of attachment */
-	int lines;					/* # lines in this part */
+	int line_count;				/* # lines in this part */
 	int depth;					/* For multipart within multipart */
 	struct part *uue;			/* UUencoded section information */
 	struct part *next;			/* next part */
@@ -103,21 +103,19 @@ typedef struct part
 struct t_header
 {
 	char *from;				/* From: */
-#	if 0
-	char *path;				/* Path: */
-#	endif /* 0 */
 	char *date;				/* Date: */
 	char *subj;				/* Subject: */
-	char *org;				/* Organization: */	/* CHECKED */
+	char *org;				/* Organization: */
+	char *replyto;			/* Reply-To: */
 	char *newsgroups;		/* Newsgroups: */
 	char *messageid;		/* Message-ID: */
-	char *references;		/* References: */	/* CHECKED */
-	char *distrib;			/* Distribution: */	/* CHECKED */
-	char *keywords;			/* Keywords: */		/* CHECKED */
-	char *summary;			/* Summary: */		/* CHECKED */
-	char *followup;			/* Followup-To: */	/* CHECKED */
-	char *ftnto;			/* Old X-Comment-To: (Used by FIDO) */	/* CHECKED */
-	char *authorids;		/* Author-IDs: (USEFOR, 2nd Son of 1036) */	/* CHECKED */
+	char *references;		/* References: */
+	char *distrib;			/* Distribution: */
+	char *keywords;			/* Keywords: */
+	char *summary;			/* Summary: */
+	char *followup;			/* Followup-To: */
+	char *ftnto;			/* Old X-Comment-To: (Used by FIDO) */
+	char *authorids;		/* Author-IDs: (USEFOR, 2nd Son of 1036) */
 	t_param *persist;		/* P-ersistent headers (USEFOR, 2nd Son of 1036) */
 	t_bool mime:1;			/* Is Mime-Version: defined */
 	t_part *ext;			/* Extended Mime header information */
