@@ -80,6 +80,11 @@ t_bool supersede = FALSE;			/* for reposting only */
 	static t_bool print_file (const char *command, int respnum, t_openartinfo *artinfo);
 #endif /* !DISABLE_PRINTING */
 
+#ifndef DONT_HAVE_PIPING
+#	define handle_SIGPIPE() if (got_sig_pipe) goto got_sig_pipe_while_piping
+#else
+#	define handle_SIGPIPE() /*nothing*/
+#endif /* DONT_HAVE_PIPING */
 
 /*
  * 'filename' holds 'filelen' amount of storage in which to place the filename
@@ -508,8 +513,7 @@ feed_articles (
 	switch (ch) {
 		case iKeyFeedArt:		/* article */
 			if (!feed_article (respnum, function, &count, 1, use_current, output, group_path)) {
-				if (got_sig_pipe)
-					goto got_sig_pipe_while_piping;
+				handle_SIGPIPE();
 				/* No point testing proc_ch when handling only a single art */
 				break;
 			}
@@ -535,8 +539,7 @@ feed_articles (
 				if (proc_ch == 0)
 					break;
 
-				if (got_sig_pipe)
-					goto got_sig_pipe_while_piping;
+				handle_SIGPIPE();
 			}
 			if (proc_ch && function == FEED_SAVE) {
 /* Can't see any need for this with real threading */
@@ -556,8 +559,7 @@ feed_articles (
 							break;
 						}
 
-						if (got_sig_pipe)
-							goto got_sig_pipe_while_piping;
+						handle_SIGPIPE();
 					}
 				}
 			}
@@ -592,8 +594,7 @@ feed_articles (
 							break;
 						}
 
-						if (got_sig_pipe)
-							goto got_sig_pipe_while_piping;
+						handle_SIGPIPE();
 					}
 				}
 			}

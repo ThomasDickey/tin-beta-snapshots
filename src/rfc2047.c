@@ -53,15 +53,6 @@
  */
 #define isbetween(c, s) (isspace((unsigned char)c) || ((s) && ((c) == '(' || (c) == ')' || (c) == '"')))
 
-/*
- * NOTE: these routines expect that MM_CHARSET is set to the charset
- * your system is using.  If it is not defined, US-ASCII is used.
- * Can be overridden by setting MM_CHARSET as environment variable.
- */
-#ifndef MM_CHARSET
-#	define MM_CHARSET "US-ASCII"
-#endif /* !MM_CHARSET */
-
 #define NOT_RANKED 255
 
 #if 0

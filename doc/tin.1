@@ -3,11 +3,11 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2000-08-03
+.\" Updated   : 2000-08-24
 .\" Notes     : still needs some work (but getting there ;)
 .\"
 .\"
-.TH tin 1 "August 3rd, 2000" "1.5.6" "A Usenet newsreader"
+.TH tin 1 "August 24th, 2000" "1.5.6" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -23,7 +23,7 @@ tin, rtin \- A Usenet newsreader
 .RB [\|[\| \-R \||\| -S \|]
 .RB -s
 .IR News-dir \|]
-.RB [\| \-cuvUZ \|]
+.RB [\| \-cuvZ \|]
 .RB [\| \-N \||\| -M
 .IR address \|]
 .RB [\| \-o \||\| \-w \|]\|]
@@ -187,11 +187,6 @@ Create/update index files for every group in \fI$HOME/.newsrc\fP or file
 specified by the ``\fB-f\fR'' option. This option is disabled if \fBtin\fR
 retrieves its index files via a NNTP server.
 .TP
-.B -U
-Start \fBtin\fR in the background to update index files while reading news
-in the foreground. This option is disabled if \fBtin\fR retrieves its index
-files via a NNTP server.
-.TP
 .B -v
 Verbose mode for ``\fB-c\fR'', ``\fB-M\fR'', ``\fB-S\fR'', ``\fB-u\fR''
 and ``\fB-Z\fR'' options.
@@ -340,7 +335,7 @@ looks like this:
 .\" FIXME - make this autoscale
 .nf
 ->   0      [   7]  What is this funny tree in the thr  Robert F. Simmig
-     1      [  12]  `->                                 Sephan Wagner <s
+     1      [  12]  +->                                 Sephan Wagner <s
      2      [ 230]  | `->Tin thread-level (was: What is Bob Johnson <bob
      3      [  22]  `->tin threading menu               Brian Richardson
 
@@ -1262,7 +1257,7 @@ If ON add posted articles to filter for highlighting follow-ups.
 Default is ON.
 .TP
 .B Insert 'User-Agent:'-header (advertising)
-Turn ON advertising in header (``User-Agent:'').  Default is ON.
+Turn ON advertising in header (``User-Agent:''). Default is ON.
 .TP
 .B Skip multipart/alternative parts (alternative_handling)
 If ON strip multipart/alternative messages automatically.
@@ -2721,117 +2716,85 @@ March 1991.
 .BR tass (1)
 itself was heavily influenced by NOTES which was developed at the University
 of Illinois by Ray Essick and Rob Kolstad in 1982.
-.PP
-v1.0 PL0 (full) was posted in 8 parts to alt.sources on 23 Aug 1991.
-.br
-v1.1 PL0 (full) was posted in 11 parts to alt.sources on 13 Feb 1992.
-.br
-v1.2 PL0 (full) was posted in 14 parts to alt.sources on 25 May 1993.
-.br
-v1.2 PL1 (patch) was posted in 8 parts to alt.sources on 14 Jul 1993.
-.br
-v1.2 PL2 (patch) was posted in 5 parts to alt.sources on 25 Sep 1993.
-.br
-v1.3 PL0 beta has been available from ftp.scn.de:/pub/news/tin/ since April
-1995.
-.br
-v1.3-unoff-beta has been available from
-ftp.akk.uni-karlsruhe.de:/pub/news/clients/tin-unoff/ since March 1996.
-.br
-v1.4.0 has been available from ftp.tin.org:/pub/news/clients/tin/v1.4/ since
-November 13th 1999.
-.br
-v1.4.1 has been available from ftp.tin.org:/pub/news/clients/tin/v1.4/ since
-December 1st 1999.
-.br
-v1.4.2 has been available from ftp.tin.org:/pub/news/clients/tin/v1.4/ since
-February 5th 2000.
-.br
-v1.4.3 has been available from ftp.tin.org:/pub/news/clients/tin/v1.4/ since
-May 2nd 2000.
-.br
-v1.4.4 has been available from ftp.tin.org:/pub/news/clients/tin/v1.4/ since
-August 3rd 2000.
-.br
-v1.5.0 has been available from ftp.tin.org:/pub/news/clients/tin/v1.5/ since
-December 1st 1999.
-.br
-v1.5.1 has been available from ftp.tin.org:/pub/news/clients/tin/v1.5/ since
-January 3rd 2000.
-.br
-v1.5.2 has been available from ftp.tin.org:/pub/news/clients/tin/v1.5/ since
-February 6th 2000.
-.br
-v1.5.3 has been available from ftp.tin.org:/pub/news/clients/tin/v1.5/ since
-February 21st 2000.
-.br
-v1.5.4 has been available from ftp.tin.org:/pub/news/clients/tin/v1.5/ since
-May 23rd 2000.
-.br
-v1.5.5 has been available from ftp.tin.org:/pub/news/clients/tin/v1.5/ since
-June 13th 2000.
-.br
-v1.5.6 has been available from ftp.tin.org:/pub/news/clients/tin/v1.4/ since
-August 3rd 2000.
+.IP "v1.0 PL0 - August 23rd 1991"
+ftp.tin.org:/pub/news/clients/tin/v1.0/
+.IP "v1.1 PL0 - February 13th 1992"
+ftp.tin.org:/pub/news/clients/tin/v1.1/
+.IP "v1.2 PL0 - May 25th 1993"
+ftp.tin.org:/pub/news/clients/tin/v1.2/
+.IP "v1.3 PL0 (beta) - April 1995"
+ftp.tin.org:/pub/news/clients/tin/v1.3/
+.IP "v1.3-unoff-beta - March 1996"
+ftp.tin.org:/pub/news/clients/tin/prev-1.4/
+.IP "v1.4.0 - November 13th 1999"
+ftp.tin.org:/pub/news/clients/tin/v1.4/
+.IP "v1.4.1 - December 1st 1999"
+ftp.tin.org:/pub/news/clients/tin/v1.4/
+.IP "v1.4.2 - February 5th 2000"
+ftp.tin.org:/pub/news/clients/tin/v1.4/
+.IP "v1.4.3 - May 2nd 2000"
+ftp.tin.org:/pub/news/clients/tin/v1.4/
+.IP "v1.4.4 - August 3rd 2000"
+ftp.tin.org:/pub/news/clients/tin/v1.4/
+.IP "v1.5.0 (beta) - December 1st 1999"
+ftp.tin.org:/pub/news/clients/tin/v1.5/
+.IP "v1.5.1 (beta) - January 3rd 2000"
+ftp.tin.org:/pub/news/clients/tin/v1.5/
+.IP "v1.5.2 (beta) - February 6th 2000"
+ftp.tin.org:/pub/news/clients/tin/v1.5/
+.IP "v1.5.3 (beta) - February 21st 2000"
+ftp.tin.org:/pub/news/clients/tin/v1.5/
+.IP "v1.5.4 (beta) - May 23rd 2000"
+ftp.tin.org:/pub/news/clients/tin/v1.5/
+.IP "v1.5.5 (beta) - June 13th 2000"
+ftp.tin.org:/pub/news/clients/tin/v1.5/
+.IP "v1.5.6 (beta) - August 3rd 2000"
+ftp.tin.org:/pub/news/clients/tin/v1.5/
 .\"
 .\"
 .SH CREDITS
-.TP 1.5i
-Rich Skrenta
+.PP
+.IP "Rich Skrenta"
 author of
 .BR tass (1)
 v3.2 which this newsreader used as its base.
-.TP
-Bill Davidsen
+.IP "Bill Davidsen"
 author of envarg.c environment variable reading routine.
-.TP
-Mike Gleason
+.IP "Mike Gleason"
 author of sigfile.c random signature generation routines.
-.TP
-Markus Kuhn
+.IP "Markus Kuhn"
 author of charset.c and iso2asc.txt ISO-8859-1 documentation.
-.TP
-Arnold Robbins
+.IP "Arnold Robbins"
 author of strftime.c date formatting routine.
-.TP
-Jim Robinson
+.IP "Jim Robinson"
 co-author of original kill.c article kill and auto-selection routines.
-.TP
-Rich Salz
+.IP "Rich Salz"
 author of wildmat.c pattern matching and parsdate.y date parsing routines.
-.TP
-Dave Taylor
-author of curses.c from the elm mailreader.
-.TP
-Chris Thewalt
+.IP "Dave Taylor"
+author of curses.c from the
+.BR elm (1)
+mailreader.
+.IP "Chris Thewalt"
 author of getline.c
 .BR emacs (1)
 style editing routine.
-.TP
-Mark Tomlinson
-for porting \fBtin\fR to the AmigaOS operating system.
-.TP
-Andreas Wrede
+.IP "Mark Tomlinson"
+for originally porting \fBtin\fR to the AmigaOS operating system.
+.IP "Andreas Wrede"
 for porting \fBtin\fR to the OS/2 operating system.
-.TP
-Nigel Ellis & Piers Haken
-for porting \fBtin\fR to the Windows/NT operating system.
-.TP
-Andrew Greer
-for porting \fBtin\fR to the VAX/VMS operating system.
-.TP
-Steven Madsen
+.IP "Nigel Ellis & Piers Haken"
+for originally porting \fBtin\fR to the Windows/NT operating system.
+.IP "Andrew Greer"
+for originally porting \fBtin\fR to the VAX/VMS operating system.
+.IP "Steven Madsen"
 for adding
 .BR pgp (1)
 (Pretty Good Privacy) support.
-.TP
-Philip Hazel <ph10@cam.ac.uk>
+.IP "Philip Hazel <ph10@cam.ac.uk>"
 for
 .BR pcre (3)
 (Perl-compatible regular expression library).
-.PP
-.TP
-Patrick Powell <papowell@astart.com>
+.IP "Patrick Powell <papowell@astart.com>"
 for
 .BR snprintf (3)
 and
@@ -2852,48 +2815,48 @@ Boleslaw Ciesielski, Robert Claeson, Steven Cogswell, Don Costello, Bryan
 Curnutt, Ned Danieley, Lars Dannenberg, Chris Davies, John Davis, Borislav
 Deianov, Thomas E. Dickey, Olaf Dietrich, Theo Van Dinter, Ralf Doeblitz,
 Bryan Dongray, Michael Douglass, Craig Durland, Bernd Eckenfels, Phil Edge,
-Kirk Edson, Nick Efthymiou, Stefan Elf, Rob Engle, Olle Eriksson, Brent
-Ermlick, Bernd Ernesti, Ragnar Hojland Espinosa, Jason Faultless, Michael
-Faurot, Werner Fleck, John M. Flinchbaugh, Andy Gabor, Torsten Gesang,
-Ruediger Geys, Callum Gibson, Mike Glendinning, Philippe Goujard, Dan
-Greenspan, Karlo Gross, Carl Hage, Paul Halsema, Ed Hanway, Scott Hauck,
-Christian Haul, Per Headland, Arnold Hendriks, Daniel Hermans, Jose Herrero,
-Dave Hill, Tom Hite, Torsten Homeyer, Ulli Horlacher, Keith Howell, Tommy
-Hsieh, Shih-Kun Huang, Steve Hunt, Jeff Hurwitt, Jeon Hyoung-Jo, Pieter
-Immelman, Jarkko Isokungas, Patrick St. Jean, Hal Jespersen, Park Sang Jin,
-Robbin Johnson, Jarkko Jormanainen, Nelson Kading, Geoffrey Keating, Karsten
-Keil, Charles S. Kerr, Fritz Kleeman, Andreas Kies, Janne Kiviluoto, Tomasz
-Kloczko, Dwarven Knight, Thomas Koenig, Karl-Koenig Koenigsson, Martin
-Kraemer, Thomas Kroener, Florian Kuehnert, Bernd Kuemmerlen, Kris Kugel,
-Manoj Kumar, Dawid Kuroczko, Yuri Kuzmenko, Olivier Lacroix, Geoff Lane,
-Alex Lange, Alain Lasserre, Stanislav Latishko, Hannu Laurila, Vincent
-Lefevre, Alexander Lehmann, Marty Leisner, Thomas Leitner, Hakan Lennestal,
-Kevin Lentin, Chua Choon Leong, Chris Lewis, Andreas Ley, David-Michael
-Lincke, Otto Lind, Richard Lloyd, Florian Lohoff, Reinhard Luebke, Clifford
-Luke, Michael Lupp, David MacKenzie, Hugh Mahon, Giuseppe De Marco, Scott
-Marovich, Dmitri A. Martynoff, Kazushi Marukawa, William McBrine, Owen Medd,
-Philipp Mergenthaler, Arkadiusz Miskiewicz, Soren Moller, Bruce Momjian,
-Sergio Morales, Michael Morrell, Klaus Mueller, Mike Muise, Udo Munk, John
-R. Myers, Daniel Naber, Torsten Neumann, Dirk Nimmich, James Nugen, David E.
-O'Brien, Michael O'Reilly, Oleg Ohotnikov, Ronald Orr, Julien Oster, Jeb
-Palmer, Neil Parker, Tom Parry, Jim Patterson, Sven Paulus, Walter
-Pelissero, Cameron Perkins, Colin Perkins, Eric Peterson, Tim Pierce, Bill
-Poitras, Scott W. Powers, Wolfgang Prediger, GianPiero Puccioni, Thomas
-Quinot, Stefan Rapp, Martin Reising, Kyle Rhorer, Ted Richards, Steve
-Robbins, Ollivier Robert, Branden Robinson, Jim Robinson, Erik van Roode,
-Meelis Roos, Stephen Roseman, Roland Rosenfeld, Peter Van Rossem, Clifton
-Royston, Rich Salz, Gary Sanders, Nickolay Saukh, John Sauter, Christopher
-Sawtell, Holger Schif, Volker Schmidt, John Schmitz, Torsten Schneider,
-Stefan Scholl, Rainer Scholz, Juergen Schroeder, Larry Schwimmer, Bart
-Sears, Karl-Olav Serrander, Doug Sewell, Philip Shearer, Jungshik Shin,
-Sergey Shkonda, Andreas Siegert, Mark Smith, Toomas Soome, Steve Spearman,
-Helmut Springer, Cliff Stanford, Steve Starck, Jason Steiner, Ralf Stephan,
-Michael Stenns, Helmrich Streitmatter, Hans Werner Strube, Dieter Stueken,
-Ed Sznyter, Dean Takemori, Darrell Tangman, Derek Terveer, Carsten Theis,
-Julian Thompson, David Tiller, Andry Timonin, Mark Tomlin, Michael Traub,
-Adri Verhoef, Paul Vickers, Oliver B. Warzecha, Jason Wessel, Cary Whitney,
-Henrik Wist, Greg Woods, Lloyd Wright, Jens Wuepper, Billy Y., Hideaki
-Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
+Kirk Edson, Nick Efthymiou, Stefan Elf, L. Scott Emmons, Rob Engle, Olle
+Eriksson, Brent Ermlick, Bernd Ernesti, Ragnar Hojland Espinosa, Jason
+Faultless, Michael Faurot, Werner Fleck, John M. Flinchbaugh, Andy Gabor,
+Torsten Gesang, Ruediger Geys, Callum Gibson, Mike Glendinning, Philippe
+Goujard, Dan Greenspan, Karlo Gross, Carl Hage, Paul Halsema, Ed Hanway,
+Scott Hauck, Christian Haul, Per Headland, Arnold Hendriks, Daniel Hermans,
+Jose Herrero, Dave Hill, Tom Hite, Torsten Homeyer, Ulli Horlacher, Keith
+Howell, Tommy Hsieh, Shih-Kun Huang, Steve Hunt, Jeff Hurwitt, Jeon
+Hyoung-Jo, Pieter Immelman, Jarkko Isokungas, Patrick St. Jean, Hal
+Jespersen, Park Sang Jin, Robbin Johnson, Jarkko Jormanainen, Nelson Kading,
+Geoffrey Keating, Karsten Keil, Charles S. Kerr, Fritz Kleeman, Andreas
+Kies, Janne Kiviluoto, Tomasz Kloczko, Dwarven Knight, Thomas Koenig,
+Karl-Koenig Koenigsson, Martin Kraemer, Thomas Kroener, Florian Kuehnert,
+Bernd Kuemmerlen, Kris Kugel, Manoj Kumar, Dawid Kuroczko, Yuri Kuzmenko,
+Olivier Lacroix, Geoff Lane, Alex Lange, Alain Lasserre, Stanislav Latishko,
+Hannu Laurila, Vincent Lefevre, Alexander Lehmann, Marty Leisner, Thomas
+Leitner, Hakan Lennestal, Kevin Lentin, Chua Choon Leong, Chris Lewis,
+Andreas Ley, David-Michael Lincke, Otto Lind, Richard Lloyd, Florian Lohoff,
+Reinhard Luebke, Clifford Luke, Michael Lupp, David MacKenzie, Hugh Mahon,
+Giuseppe De Marco, Scott Marovich, Dmitri A. Martynoff, Kazushi Marukawa,
+William McBrine, Owen Medd, Philipp Mergenthaler, Arkadiusz Miskiewicz,
+Soren Moller, Bruce Momjian, Sergio Morales, Michael Morrell, Klaus Mueller,
+Mike Muise, Udo Munk, John R. Myers, Daniel Naber, Torsten Neumann, Dirk
+Nimmich, James Nugen, David E. O'Brien, Michael O'Reilly, Oleg Ohotnikov,
+Ronald Orr, Julien Oster, Jeb Palmer, Neil Parker, Tom Parry, Jim Patterson,
+Sven Paulus, Walter Pelissero, Cameron Perkins, Colin Perkins, Eric
+Peterson, Tim Pierce, Bill Poitras, Scott W. Powers, Wolfgang Prediger,
+GianPiero Puccioni, Thomas Quinot, Stefan Rapp, Martin Reising, Kyle Rhorer,
+Ted Richards, Steve Robbins, Ollivier Robert, Branden Robinson, Jim
+Robinson, Erik van Roode, Meelis Roos, Stephen Roseman, Roland Rosenfeld,
+Peter Van Rossem, Clifton Royston, Rich Salz, Gary Sanders, Nickolay Saukh,
+John Sauter, Christopher Sawtell, Holger Schif, Volker Schmidt, John
+Schmitz, Torsten Schneider, Stefan Scholl, Rainer Scholz, Juergen Schroeder,
+Larry Schwimmer, Bart Sears, Karl-Olav Serrander, Doug Sewell, Philip
+Shearer, Jungshik Shin, Sergey Shkonda, Andreas Siegert, Mark Smith, Toomas
+Soome, Steve Spearman, Helmut Springer, Cliff Stanford, Steve Starck, Jason
+Steiner, Ralf Stephan, Michael Stenns, Helmrich Streitmatter, Hans Werner
+Strube, Dieter Stueken, Ed Sznyter, Dean Takemori, Darrell Tangman, Derek
+Terveer, Carsten Theis, Julian Thompson, David Tiller, Andry Timonin, Mark
+Tomlin, Michael Traub, Adri Verhoef, Paul Vickers, Oliver B. Warzecha, Jason
+Wessel, Cary Whitney, Henrik Wist, Greg Woods, Lloyd Wright, Jens Wuepper,
+Billy Y., Hideaki Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
 .\"
 .\"
 .SH AUTHOR

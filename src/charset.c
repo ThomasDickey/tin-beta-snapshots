@@ -246,9 +246,10 @@ ConvertTeX2Iso (
 	char *from,
 	char *to)
 {
-	size_t len, col, spaces;	/* length of from, col counter, spaces to add */
-	size_t subst_len;
 	int i, ex;
+	int spaces; /* spaces to add */
+	size_t len, col;	/* length of from, col counter */
+	size_t subst_len;
 
 	*to = '\0';
 	len = strlen (from);
@@ -321,24 +322,35 @@ iIsArtTexEncoded (
 
 
 /*
- *  Replace all non printable characters by '?'
+ * Replace all non printable characters by '?'
  */
 void
 Convert2Printable (
 	char *buf)
 {
 	unsigned char *c;
+#ifdef ENABLE_MBLEN
+	int t_len = 0;
+#endif /* ENABLE_MBLEN */
 
-	for (c= (unsigned char *)buf; *c; c++) {
+	for (c = (unsigned char *)buf; *c; c++) {
+#ifdef ENABLE_MBLEN
+/*		if (!my_isprint(*c) && (t_len = mblen(c, MB_CUR_MAX)) <= 0) */
+		if (!my_isprint(*c) && (t_len = mblen(c, MAX(2,MB_CUR_MAX))) <= 1)
+			*c = '?';
+		while (--t_len > 0)
+			c++;
+#else
 		if (!my_isprint(*c))
 			*c = '?';
+#endif /* ENABLE_MBLEN */
 	}
 }
 
 #if 1
 /*
- *  Same as Convert2Printable() but allows Backspace (ASCII 8), TAB (ASCII 9),
- *  and LineFeed (ASCII 12) according to son of RFC 1036 section 4.4
+ * Same as Convert2Printable() but allows Backspace (ASCII 8), TAB (ASCII 9),
+ * and LineFeed (ASCII 12) according to son of RFC 1036 section 4.4
  * FIXME: ASCII 12 == FormFeed - what is correct ??
  */
 void
@@ -346,10 +358,21 @@ ConvertBody2Printable (
 	char *buf)
 {
 	unsigned char *c;
+#	ifdef ENABLE_MBLEN
+	int t_len = 0;
+#	endif /* ENABLE_MBLEN */
 
 	for (c = (unsigned char *)buf; *c; c++) {
+#	ifdef ENABLE_MBLEN
+/*		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13) && (t_len = mblen(c, MB_CUR_MAX)) <= 0) */
+		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13) && (t_len = mblen(c, MAX(2,MB_CUR_MAX))) <= 1)
+			*c = '?';
+			while (--t_len > 0)
+				c++;
+#	else
 		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13))
 			*c = '?';
+#	endif /* ENABLE_MBLEN */
 	}
 }
 #endif /* 1 */

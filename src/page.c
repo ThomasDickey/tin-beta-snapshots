@@ -117,7 +117,7 @@ scroll_page (
 #ifdef USE_CURSES
 	scrollok(stdscr, TRUE);
 #endif	/* USE_CURSES */
-	SetScrollRegion(INDEX_TOP+HDR_ADJUST, ARTLINES+HDR_ADJUST+1);
+	SetScrollRegion(INDEX_TOP + HDR_ADJUST, ARTLINES + HDR_ADJUST +1);
 	ScrollScreen(i);
 	SetScrollRegion(0, cLINES);
 #ifdef USE_CURSES

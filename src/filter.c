@@ -1633,7 +1633,7 @@ wait_message (1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].li
 						while(*s && isspace((int)*s))
 							s++;
 
-						group_count=0;
+						group_count = 0;
 
 						while(*s) {
 							e = s;
@@ -1641,8 +1641,8 @@ wait_message (1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].li
 								e++;
 
 							if (ptr[j].xref_max > 0) {
-								strncpy(buf, s, e-s);
-								buf[e-s] = '\0';
+								strncpy(buf, s, e - s);
+								buf[e - s] = '\0';
 								for (k = 0; k < ptr[j].xref_score_cnt; k++) {
 									if (GROUP_MATCH(buf, ptr[j].xref_score_strings[k], TRUE)) {
 										group_count += ptr[j].xref_scores[k];
@@ -1653,8 +1653,8 @@ wait_message (1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].li
 									group_count++;
 							}
 							if (ptr[j].xref != (char*)0) {
-								strncpy(buf, s, e-s);
-								buf[e-s] = '\0';
+								strncpy(buf, s, e - s);
+								buf[e - s] = '\0';
 								/* don't filter when we are actually in that group */
 								/* Group names shouldn't be case sensitive in any case. Whatever */
 								if (ptr[j].type != FILTER_KILL || strcmp(group->name, buf) != 0) {
@@ -1662,7 +1662,7 @@ wait_message (1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].li
 										group_count = -1;
 								}
 							}
-							s=e;
+							s = e;
 							while(*s && !isspace((int)*s))
 								s++;
 							while(*s && isspace((int)*s))

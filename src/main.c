@@ -73,7 +73,6 @@ t_bool check_any_unread = FALSE;/* print/return status if any unread */
 t_bool mail_news = FALSE;		/* mail all arts to specified user */
 t_bool save_news = FALSE;		/* save all arts to savedir structure */
 t_bool start_any_unread = FALSE;/* only start if unread news */
-t_bool update_fork = FALSE;     /* update index files by forked tin -U */
 
 
 /*
@@ -367,7 +366,7 @@ main (
 	 * Update index files
 	 * Only the -u batch_mode case will get this far
 	 */
-	if (batch_mode || update_fork)
+	if (batch_mode)
 		update_index_files ();
 
 	/*
@@ -395,9 +394,9 @@ main (
  * process command line options
  */
 #ifndef M_AMIGA
-#	define OPTIONS "aAcdD:f:G:g:hHI:lm:M:nNop:qQrRs:SuUvVwXzZ"
+#	define OPTIONS "aAcdD:f:G:g:hHI:lm:M:nNop:qQrRs:SuvVwXzZ"
 #else
-#	define OPTIONS "BcdD:f:G:hHI:lm:M:nNop:qQrRs:SuUvVwXzZ"
+#	define OPTIONS "BcdD:f:G:hHI:lm:M:nNop:qQrRs:SuvVwXzZ"
 #endif /* M_AMIGA */
 
 static void
@@ -583,18 +582,6 @@ read_cmd_line_options (
 #	ifndef NNTP_ONLY
 				batch_mode = TRUE;
 				show_description = FALSE;
-#	else
-				error_message (_(txt_option_not_enabled), "-DNNTP_ABLE");
-				giveup();
-				/* keep lint quiet: */
-				/* NOTREACHED */
-#	endif /* !NNTP_ONLY */
-				break;
-
-			case 'U':	/* update index files in background */
-#	ifndef NNTP_ONLY
-				update_fork = TRUE;
-/*				batch_mode = FALSE */	/*_NOTE_ only the child goes batch_mode */
 #	else
 				error_message (_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
@@ -816,53 +803,11 @@ update_index_files (
 	}
 
 	cCOLS = 132;							/* set because curses has not started */
-#ifdef HAVE_FORK
-	if (update_fork) {
-		catchup = FALSE;					/* turn off msgs when running forked */
-		verbose = FALSE;
-		switch ((int) fork ()) {			/* fork child to update indexes in background */
-			case -1:						/* error forking */
-				perror_message (_(txt_batch_update_failed));
-				break;
-			case 0:							/* child process */
-				batch_mode = TRUE;			/* put child into batch */
-				create_index_lock_file (lock_file);
-				process_id = getpid ();
-#	if defined(BSD)							/* FIXME: sort and remove OS dependant ifdefs */
-#		ifdef TIOCNOTTY
-				{
-					int fd;
-
-					if ((fd = open ("/dev/tty", O_RDWR)) >= 0) {
-						ioctl (fd, TIOCNOTTY, (char *) NULL);
-						close (fd);
-					}
-				}
-#		endif /* TIOCNOTTY */
-#	endif /* BSD */
-				signal (SIGQUIT, SIG_IGN);	/* stop indexing being interrupted */
-
-				if (nntp_open () != 0)		/* connect server if we are using NNTP */
-					tin_done (EXIT_SUCCESS);
-
-				/* stop threading to run faster */
-				tinrc.thread_articles = THREAD_NONE;
-				do_update (catchup);
-				tin_done (EXIT_SUCCESS);	/* child exits... */
-				break;
-			default:						/* parent process*/
-				break;
-		}	/* switch */
-		batch_mode = FALSE;					/* Other cases drop back to 'normal' reading mode */
-	} else
-#endif /* HAVE_FORK */
-	{	/* This block is also called if fork() is not available */
-		batch_mode = TRUE;						/* -u handling... */
-		create_index_lock_file (lock_file);
-		tinrc.thread_articles = THREAD_NONE;	/* stop threading to run faster */
-		do_update (catchup);
-		tin_done (EXIT_SUCCESS);
-	}
+	batch_mode = TRUE;					/* -u handling... */
+	create_index_lock_file (lock_file);
+	tinrc.thread_articles = THREAD_NONE;	/* stop threading to run faster */
+	do_update (catchup);
+	tin_done (EXIT_SUCCESS);
 }
 
 

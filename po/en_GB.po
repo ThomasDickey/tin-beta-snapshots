@@ -255,11 +255,6 @@ msgstr ""
 msgid "*** Beginning of article ***"
 msgstr ""
 
-#: src/lang.c:96
-#, c-format
-msgid "Overview caching not supported; %s is setuid"
-msgstr ""
-
 #: src/lang.c:97
 msgid "Can't create unique tempfile-name"
 msgstr ""

@@ -76,7 +76,7 @@ static t_bool header_wanted (const char *line);
  * These are used globally within this module for access to the context
  * currently being built. They must not leak outside.
  */
-int tabwidth;
+int cook_width;
 t_bool hide_uue;
 t_openartinfo *art;
 
@@ -103,7 +103,7 @@ expand_ctrl_chars (
 			int i, j;
 
 			i = q - to;
-			j = ((i+tabwidth)/tabwidth) * tabwidth;
+			j = ((i+cook_width)/cook_width) * cook_width;
 /*			j = (i|(tabwidth-1)) + 1; TODO more efficient ? */
 
 			while (i++ < j)
@@ -143,13 +143,13 @@ put_cooked (
 	va_list ap;
 
 	va_start(ap, fmt);
-	vsprintf (buf, fmt, ap);
+	vsnprintf (buf, sizeof(buf) - 1, fmt, ap);
 
 	bufp = buf;
 
 	for (p = bufp; *p; p++) {
-		if (*p == '\n' || overflow+p-bufp >= cCOLS) {
-			fwrite(bufp, p-bufp, 1, art->cooked);
+		if (*p == '\n' || (overflow + p - bufp >= cCOLS)) {
+			fwrite(bufp, p - bufp, 1, art->cooked);
 
 			fputs("\n", art->cooked);
 			bufp = p;
@@ -290,6 +290,7 @@ put_rest (
 	return put_chars;
 }
 
+
 /*
  * FIXME: should go into rfc1521.c
  *
@@ -398,6 +399,7 @@ read_decoded_base64_line (
 	return lines_read;
 }
 
+
 /*
  * FIXME: should go into rfc1521.c
  *
@@ -445,8 +447,7 @@ read_decoded_qp_line (
 	endptr = buf;
 	do {
 
-		if (fgets(endptr, max_buf_len - strlen(buf), file) == NULL)
-		{
+		if (fgets(endptr, max_buf_len - strlen(buf), file) == NULL) {
 			/*
 			 * Premature end of file (or file error), leave loop. To prevent
 			 * re-invokation of this function, set the numbers of read lines to
@@ -511,12 +512,14 @@ read_decoded_qp_line (
 		count = mmdecode (buf, 'q', '\0', buf2, charset);
 	else
 		count = -1;
+
 	if (count >= 0) {
 		buf2[count] = '\0';
 		ptr = buf2;
 	} else
 		/* error in encoding or no memory, copy raw line */
 		ptr = buf;
+
 	strncpy(dest, ptr, max_line_len - put_chars - 1);
 	line[max_line_len - 1] = '\0'; /* be sure to terminate string */
 	if ((signed int)(strlen(ptr) + put_chars) > max_line_len - 1)
@@ -696,9 +699,9 @@ process_text_body_part(
 				/*
 				 * sum = 0 in a uubody only on the last line, a single `
 				 */
-				if (sum == 0 && len == 1+1)			/* +1 for the \n */
+				if (sum == 0 && len == 1 + 1)			/* +1 for the \n */
 					is_uubody = TRUE;
-				else if (len == sum+1+1)
+				else if (len == sum + 1 + 1)
 					is_uubody = TRUE;
 #ifdef DEBUG_ART
 				if (debug == 2)
@@ -772,7 +775,7 @@ process_text_body_part(
 /* Basically: if (!(my_isprint(*c) || *c==8 || *c==9 || *c==12)) */
 /* How about if !isprint() && !isctrl() - expand_ctrl_chars is done at display time */
 		ConvertBody2Printable (line);
-#endif /* 0 */
+#endif /* 1 */
 /* TODO integrate above into expand_ctrl_chars */
 
 		if (expand_ctrl_chars (to, line, sizeof(to)))
@@ -877,7 +880,7 @@ cook_article(
 	struct t_header *hdr = &artinfo->hdr;
 
 	art = artinfo;				/* Global saves lots of passing artinfo around */
-	tabwidth = tabs;
+	cook_width = tabs;
 	hide_uue = uue;
 
 	if (!(art->cooked = tmpfile()))

@@ -209,6 +209,7 @@
 #	undef HAVE_IS_XTERM
 #	undef HAVE_ISASCII
 #	undef HAVE_LINK
+#	undef HAVE_MBLEN
 #	undef HAVE_MEMCMP
 #	undef HAVE_MEMCPY
 #	undef HAVE_MEMMOVE

@@ -48,7 +48,7 @@
 static void read_groups_descriptions (FILE *fp, FILE *fp_save);
 
 /*
- *  Load the mail active file into active[]
+ * Load the mail active file into active[]
  */
 
 #ifdef HAVE_MH_MAIL_HANDLING
@@ -122,7 +122,7 @@ read_mail_active_file (
 
 
 /*
- *  Write out mailgroups from active[] to ~/.tin/active.mail
+ * Write out mailgroups from active[] to ~/.tin/active.mail
  */
 
 void
@@ -154,8 +154,8 @@ write_mail_active_file (
 
 
 /*
- *  Load the text description from ~/.tin/mailgroups for each mail group into
- *  the active[] array.
+ * Load the text description from ~/.tin/mailgroups for each mail group into
+ * the active[] array.
  */
 void
 read_mailgroups_file (
@@ -179,8 +179,8 @@ read_mailgroups_file (
 
 
 /*
- *  Load the text description from NEWSLIBDIR/newsgroups for each group into the
- *  active[] array. Save a copy locally if reading via NNTP to save bandwidth.
+ * Load the text description from NEWSLIBDIR/newsgroups for each group into the
+ * active[] array. Save a copy locally if reading via NNTP to save bandwidth.
  */
 void
 read_newsgroups_file (
@@ -213,36 +213,46 @@ read_newsgroups_file (
 
 
 /*
- *  Read groups descriptions from opened file & make local backup copy
- *  of all groups that don't have a 'x' in the active file moderated
- *  field & if reading groups of type GROUP_TYPE_NEWS.
- *  Aborting this early won't have any adverse affects, just some missing
- *  descriptions.
+ * Read groups descriptions from opened file & make local backup copy
+ * of all groups that don't have a 'x' in the active file moderated
+ * field & if reading groups of type GROUP_TYPE_NEWS.
+ * Aborting this early won't have any adverse affects, just some missing
+ * descriptions.
  */
 static void
 read_groups_descriptions (
 	FILE *fp,
 	FILE *fp_save)
 {
-	char *ptr;
-	char *p, *q;
-	char group[PATH_LEN];
+	char *p, *q, *ptr;
+	char *group = (char *) 0;
 	int count = 0;
+	size_t space = 0;
 	struct t_group *psGrp;
 
 	while ((ptr = tin_fgets (fp, FALSE)) != (char *) 0) {
 		if (*ptr == '#' || *ptr == '\0')
 			continue;
 
-/*
- *  This was moved from below and simplified.  I can't test here for the
- *  type of group being read, because that requires having found the
- *  group in the active file, and that truncates the local copy of the
- *  newsgroups file to only subscribed-to groups when tin is called with
- *  the "-q" option.
- */
+		/*
+		 * This was moved from below and simplified. I can't test here for the
+		 * type of group being read, because that requires having found the
+		 * group in the active file, and that truncates the local copy of the
+		 * newsgroups file to only subscribed-to groups when tin is called
+		 * with the "-q" option.
+		 */
 		if ((fp_save != (FILE *) 0) && read_news_via_nntp && !read_local_newsgroups_file)
 			fprintf (fp_save, "%s\n", ptr);
+
+		if (!space) { /* initial malloc */
+			space = strlen(ptr) + 1;
+			group = my_malloc(space);
+		} else {
+			while (strlen(ptr) > space) { /* realloc needed? */
+				space *= 2;
+				group = (char *) my_realloc((void *) group, space);
+			}
+		}
 
 		for (p = ptr, q = group ; *p && *p != ' ' && *p != '\t' ; p++, q++)
 			*q = *p;
@@ -271,8 +281,8 @@ read_groups_descriptions (
 
 		if (++count % 100 == 0)
 			spin_cursor ();
-
 	}
+	free(group);
 }
 
 

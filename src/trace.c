@@ -75,7 +75,7 @@ _tracef(
 }
 
 char *
-_tracechar(
+tin_tracechar(
 	int ch)
 {
 	static char result[2];

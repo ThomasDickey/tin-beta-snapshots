@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2000-07-19
+dnl Updated   : 2000-09-28
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2000 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -983,12 +983,20 @@ dnl ---------------------------------------------------------------------------
 dnl Look for the curses libraries.  Older curses implementations may require
 dnl termcap/termlib to be linked as well.
 AC_DEFUN([CF_CURSES_LIBS],[
-AC_CHECK_FUNC(initscr,,[
+
+AC_MSG_CHECKING(if we have identified curses libraries)
+AC_TRY_LINK([#include <${cf_cv_ncurses_header-curses.h}>],
+	[initscr(); tgoto("?", 0,0)],
+	cf_result=yes,
+	cf_result=no)
+AC_MSG_RESULT($cf_result)
+
+if test "$cf_result" = no ; then
 case $host_os in #(vi
 freebsd*) #(vi
 	AC_CHECK_LIB(mytinfo,tgoto,[LIBS="-lmytinfo $LIBS"])
 	;;
-hpux10.*|hpux11.*)
+hpux10.*|hpux11.*) #(vi
 	AC_CHECK_LIB(cur_colr,initscr,[
 		LIBS="-lcur_colr $LIBS"
 		CFLAGS="-I/usr/include/curses_colr $CFLAGS"
@@ -1069,8 +1077,9 @@ if test ".$ac_cv_func_initscr" != .yes ; then
 		AC_MSG_RESULT($cf_result)
 	fi
 fi
+fi
 
-])])
+])
 dnl ---------------------------------------------------------------------------
 dnl Check if we should include <curses.h> to pick up prototypes for termcap
 dnl functions.  On terminfo systems, these are normally declared in <curses.h>,
@@ -1500,7 +1509,9 @@ int main()
      }
    }
 
-   if (inet6 != 2 || inet4 != 2)
+   if (!(inet4 == 0 || inet4 == 2))
+     goto bad;
+   if (!(inet6 == 0 || inet6 == 2))
      goto bad;
 
    if (aitop)
@@ -1517,6 +1528,10 @@ int main()
 [cf_cv_getaddrinfo=no],
 [cf_cv_getaddrinfo=unknown])
 ])
+if test "$cf_cv_getaddrinfo" = yes ; then
+	AC_DEFINE(HAVE_GAI_STRERROR)
+	AC_DEFINE(HAVE_GETADDRINFO)
+fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for memmove, or a bcopy that can handle overlapping copy.  If neither
@@ -1541,7 +1556,7 @@ int main() {
 		[cf_cv_good_bcopy=unknown])
 		])
 	],[cf_cv_good_bcopy=no])
-	if test $cf_cv_good_bcopy = yes ; then
+	if test "$cf_cv_good_bcopy" = yes ; then
 		AC_DEFINE(USE_OK_BCOPY)
 	else
 		AC_DEFINE(USE_MY_MEMMOVE)
@@ -2388,8 +2403,7 @@ dnl FIXME: check that this works with "snake" (HP-UX 10.x)
 AC_DEFUN([CF_SIZECHANGE],
 [
 AC_REQUIRE([CF_STRUCT_TERMIOS])
-AC_MSG_CHECKING([declaration of size-change])
-AC_CACHE_VAL(cf_cv_sizechange,[
+AC_CACHE_CHECK(declaration of size-change, cf_cv_sizechange,[
     cf_cv_sizechange=unknown
     cf_save_CFLAGS="$CFLAGS"
 
@@ -2437,13 +2451,19 @@ do
 	CFLAGS="$cf_save_CFLAGS"
 	if test "$cf_cv_sizechange" = yes ; then
 		echo "size-change succeeded ($cf_opts)" >&AC_FD_CC
-		test -n "$cf_opts" && AC_DEFINE_UNQUOTED($cf_opts)
+		test -n "$cf_opts" && cf_cv_sizechange="$cf_opts"
 		break
 	fi
 done
-	])
-AC_MSG_RESULT($cf_cv_sizechange)
-test $cf_cv_sizechange != no && AC_DEFINE(HAVE_SIZECHANGE)
+])
+if test "$cf_cv_sizechange" != no ; then
+	AC_DEFINE(HAVE_SIZECHANGE)
+	case $cf_cv_sizechange in #(vi
+	NEED*)
+		AC_DEFINE_UNQUOTED($cf_cv_sizechange )
+		;;
+	esac
+fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for socks library
@@ -2526,13 +2546,13 @@ unistd.h \
 if test "$ISC" = yes ; then
 	AC_CHECK_HEADERS( sys/termio.h )
 fi
-if test $ac_cv_header_termios_h = yes ; then
+if test "$ac_cv_header_termios_h" = yes ; then
 	case "$CFLAGS" in
 	*-D_POSIX_SOURCE*)
 		termios_bad=dunno ;;
 	*)	termios_bad=maybe ;;
 	esac
-	if test $termios_bad = maybe ; then
+	if test "$termios_bad" = maybe ; then
 	AC_MSG_CHECKING(whether termios.h needs _POSIX_SOURCE)
 	AC_TRY_COMPILE([#include <termios.h>],
 		[struct termios foo; int x = foo.c_iflag],
@@ -2834,7 +2854,7 @@ AC_CACHE_VAL(cf_cv_type_sigaction,[
 		[cf_cv_type_sigaction=yes],
 		[cf_cv_type_sigaction=no])])
 AC_MSG_RESULT($cf_cv_type_sigaction)
-test $cf_cv_type_sigaction = yes && AC_DEFINE(HAVE_TYPE_SIGACTION)
+test "$cf_cv_type_sigaction" = yes && AC_DEFINE(HAVE_TYPE_SIGACTION)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check to see if the BSD-style union wait is declared.  Some platforms may

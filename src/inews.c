@@ -50,7 +50,7 @@
  * local prototypes
  */
 #ifdef NNTP_INEWS
-	static t_bool submit_inews (char *name);
+	static t_bool submit_inews (char *name, char *a_message_id);
 #endif /* NNTP_INEWS */
 
 #if defined(NNTP_INEWS) && !defined(FORGERY)
@@ -88,10 +88,11 @@
 #ifdef NNTP_INEWS
 static t_bool
 submit_inews (
-	char *name)
+	char *name,
+	char *a_message_id)
 {
 	FILE *fp;
-	char *ptr;
+	char *ptr, *ptr2;
 	char from_name[HEADER_LEN];
 	char message_id[HEADER_LEN];
 	char line[NNTP_STRLEN];
@@ -205,7 +206,6 @@ submit_inews (
 		 * if it's present: use it.
 		 */
 		if (message_id[0] == '\0') {
-			char * ptr2;
 
 			/* simple syntax check - locate last '<' */
 			if ((ptr = strrchr (line, '<')) != (char *) 0) {
@@ -286,16 +286,6 @@ submit_inews (
 		 * of the put_server(".") above a "." would be resent as the last
 		 * "command".
 		 */
-		/*
-		 * here we could add a check if the server returns the
-		 * Message-ID in the response string...
-		 * if it does so, compare it with message_id (if set)
-		 * and pass it to update_posted_info_file() and
-		 * quick_filter_select_posted_art() if tinrc.add_posted_to_filter
-		 * is set
-		 * make sure, that quick_filter_select_posted_art() and
-		 * update_posted_info_file() arn't called twice!
-		 */
 		respcode = get_only_respcode (line);
 		leave_loop = TRUE;
 
@@ -322,6 +312,34 @@ submit_inews (
 		return ret_code;
 	}
 
+	/*
+	 * scan line if it contains a Message-ID
+	 */
+	{
+		/* simple syntax check - locate last '<' */
+		if ((ptr = strrchr (line, '<')) != (char *) 0) {
+			/* search next '>' */
+			if ((ptr2 = strchr (ptr, '>')) != (char *) 0) {
+				/* terminate string */
+				*++ptr2 = '\0';
+				/* check for @ and no whitespaces */
+				if ((strchr(ptr, '@') != (char *) 0) && (strpbrk(ptr, " \t") == (char *) 0))
+					/* copy Message-ID */
+					strcpy(a_message_id, ptr);
+			}
+		}
+
+#if 0
+		if (*message_id && *a_message_id) { /* check if returned ID matches purposed ID */
+			if (strcmp(message_id, a_message_id))
+				; /* shouldn't happen - warn user? */
+		}
+#endif /* 0 */
+
+		if (*message_id && (id_in_article || !*a_message_id))
+			strcpy(a_message_id, message_id);
+	}
+
 	ret_code = TRUE;
 
 	return ret_code;
@@ -333,12 +351,15 @@ submit_inews (
  */
 t_bool
 submit_news_file (
-	char *name)
+	char *name,
+	char *a_message_id)
 {
 	char buf[LEN];
 	char *cp = buf;
 	t_bool ret_code;
 	t_bool ismail = FALSE;
+
+	a_message_id[0] = '\0';
 
 	checknadd_headers (name);
 
@@ -350,7 +371,7 @@ submit_news_file (
 
 #ifdef NNTP_INEWS
 	if (read_news_via_nntp && !read_saved_news && tinrc.use_builtin_inews) {
-		ret_code = submit_inews (name);
+		ret_code = submit_inews (name, a_message_id);
 	} else
 #endif /* NNTP_INEWS */
 		{

@@ -157,7 +157,6 @@ t_bool disable_gnksa_domain_check;	/* disable checking TLD in From: etc. */
 t_bool disable_sender;			/* disable generation of Sender: header */
 t_bool got_sig_pipe = FALSE;
 t_bool filtered_articles;		/* locally killed / auto-selected articles */
-t_bool local_index;			/* do private indexing? */
 t_bool list_active;
 t_bool newsrc_active;
 t_bool post_article_and_exit;		/* quick post of an article then exit (elm like) */
@@ -581,8 +580,6 @@ init_selfinfo (
 		my_strncpy (homedir, myentry->pw_dir, sizeof (homedir));
 #endif /* M_AMIGA */
 
-	local_index = TRUE;
-
 	cmdline_nntpserver[0] = '\0';
 	created_rcdir = FALSE;
 	dangerous_signal_exit = FALSE;
@@ -730,8 +727,7 @@ init_selfinfo (
 	/*
 	 * Formerly get_mm_charset(), read_site_config() may set mm_charset
 	 */
-	if (!*tinrc.mm_charset)
-		STRCPY(tinrc.mm_charset, get_val("MM_CHARSET", MM_CHARSET));
+	STRCPY(tinrc.mm_charset, get_val("MM_CHARSET", MM_CHARSET));
 
 	/* read_site_config() might have changed the value of libdir */
 	/* FIXME: we'd better use TIN_DEFAULTS_DIR instead of TIN_LIBDIR here */
@@ -866,11 +862,6 @@ set_up_private_index_cache (
 	if (xover_supported && !tinrc.cache_overview_files)
 		return;
 
-	if (!local_index) {
-		error_message (txt_caching_disabled, tin_progname);
-		tinrc.cache_overview_files = FALSE;
-		return;
-	}
 	if (cmdline_nntpserver[0] != 0) {
 		char *from;
 		char *to;

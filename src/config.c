@@ -2191,7 +2191,7 @@ match_string (
 	char *ptr;
 	size_t patlen = strlen (pat);
 
-	if (STRNCMPEQ(line, pat, patlen)) {
+	if (STRNCMPEQ(line, pat, patlen) && (strlen(line) > patlen + 1)) {
 		strncpy (dst, &line[patlen], dstlen);
 		if ((ptr = strrchr (dst, '\n')) != (char *) 0)
 			*ptr = '\0';
