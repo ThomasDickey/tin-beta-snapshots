@@ -51,7 +51,7 @@ _tracef(
 	const char *fmt,
 	...)
 {
-	static	FILE	*fp;
+	static FILE *fp;
 	va_list ap;
 
 	if (!fp)

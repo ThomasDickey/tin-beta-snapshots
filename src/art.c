@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-15
+ *  Updated   : 2003-06-29
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -48,15 +48,19 @@
 #	endif /* !STPWATCH_H */
 #endif /* PROFILE */
 
+/*
+ * TODO: fixup to remove CURR_GROUP dependency in all sort funcs
+ */
 #define SortBy(func)	qsort(arts, (size_t) top_art, sizeof(struct t_article), func);
 
 static long last_read_article;
-static t_bool overview_index_filename = FALSE;
 int top_art = 0;				/* # of articles in arts[] */
 
 /*
  * Local prototypes
  */
+static FILE *open_xover_fp(struct t_group *group, const char *mode, long min, long max, t_bool local);
+static char *find_nov_file(struct t_group *group, int mode);
 static char *print_date(time_t secs);
 static char *print_from(struct t_article *article);
 static int artnum_comp(t_comptype p1, t_comptype p2);
@@ -65,7 +69,7 @@ static int from_comp(t_comptype p1, t_comptype p2);
 static int global_get_multiparts(int aindex, MultiPartInfo **malloc_and_setme_info);
 static int global_look_for_multipart_info(int aindex, MultiPartInfo *setme, char start, char stop, int *offset);
 static int lines_comp(t_comptype p1, t_comptype p2);
-static int read_nov_file(struct t_group *group, long min, long max, int *expired);
+static int read_nov_file(struct t_group *group, long min, long max, int *expired, t_bool local);
 static int read_group(struct t_group *group, int *pcount);
 static int score_comp(t_comptype p1, t_comptype p2);
 static int score_comp_base(t_comptype p1, t_comptype p2);
@@ -73,6 +77,7 @@ static int subj_comp(t_comptype p1, t_comptype p2);
 static int valid_artnum(long art);
 static long find_first_unread(struct t_group *group);
 static t_bool parse_headers(FILE *fp, struct t_article *h);
+static t_compfunc eval_sort_arts_func(unsigned int sort_art_type);
 static void sort_base(unsigned int sort_threads_type);
 static void thread_by_subject(void);
 static void thread_by_multipart(void);
@@ -167,6 +172,7 @@ index_group(
 	int modified;
 	long min;
 	long max;
+	t_bool caching_xover;
 	t_bool filtered;
 
 	if (group == NULL)
@@ -184,10 +190,10 @@ index_group(
 	/*
 	 * Load articles within min..max from xover index file if it exists
 	 * and then create base[] article numbers from loaded articles.
-	 * If nov file does not exist then create base[] with setup_base().
+	 * If nov file does not exist then create base[] with setup_hard_base().
 	 */
 #ifdef PROFILE
-	BegStopWatch("setup_base");
+	BegStopWatch("setup_hard_base");
 #endif /* PROFILE */
 
 	if (setup_hard_base(group) < 0)
@@ -222,17 +228,37 @@ index_group(
 	if (max < 0)
 		return FALSE;
 
+	top_art = 0;
+	last_read_article = 0L;
+
 	/*
-	 * Read in the existing index via XOVER or the index file
+	 * Read in the existing overview
+	 * This read has local=TRUE set if locally caching XOVER records to ensure
+	 * we pull in any private overview caches in preference to using using OVER
+	 *
+	 * When reading local spool, this will pull in the system wide overview
+	 * cache (if found) otherwise the private overview cache will be read
 	 */
-	if (read_nov_file(group, min, max, &expired) == -1)
+	caching_xover = (tinrc.cache_overview_files && xover_cmd && group->type == GROUP_TYPE_NEWS);
+
+	if (read_nov_file(group, min, max, &expired, caching_xover) == -1)
 		return FALSE;	/* user aborted indexing */
+
+	/*
+	 * Fill in the range last_read_article...max using XOVER
+	 * Only do this if the previous read_nov_file() was against private cache
+	 */
+	if ((last_read_article < max) && caching_xover) {
+		if (read_nov_file(group, (last_read_article >= min) ? last_read_article + 1 : min, max, &expired, FALSE) == -1)
+			return FALSE;	/* user aborted indexing */
+	} else
+		caching_xover = FALSE;
 
 	/*
 	 * Add any articles to arts[] that are new or were killed
 	 */
 	if ((modified = read_group(group, &count)) == -1)
-		return FALSE;	/* user aborted indexing */
+		return FALSE;		/* user aborted indexing */
 
 	/*
 	 * Do this before calling art_mark(,, ART_READ) if you want
@@ -261,7 +287,10 @@ index_group(
 		}
 	}
 
-	if (expired || modified || tinrc.cache_overview_files)
+	/*
+	 * Only rewrite the index if it has changed
+	 */
+	if (expired || modified || caching_xover)
 		write_nov_file(group);
 
 	/*
@@ -314,11 +343,18 @@ find_first_unread(
 
 
 /*
- * Index a group. Assumes any existing NOV index has already been loaded.
+ * Called after XOVER/local/private overview databases have been loaded
+ * Read and parse in headers for any arts not already found (usually
+ * new articles that have not been indexed yet)
+ * Already present articles that pass valid_artnum() have their
+ * ->thread set to ART_NORMAL, as do any new articles that are added.
+ *
  * Return values are:
- *    1   loaded index and modified it
- *    0   loaded index but not modified
- *   -1   user aborted indexing operation
+ *    1   Additional articles were read in
+ *    0   No additional (new) articles were found
+ *   -1   user aborted during read
+ * TODO: think of a function name that sucks less
+ * TODO: *pcount isn't used by the caller (index_group)
  */
 static int
 read_group(
@@ -705,7 +741,7 @@ thread_by_multipart(
  *
  * Apart from THREAD_NONE, .thread and .prev are used, the
  * first article in a thread should have .prev set to ART_NORMAL, the
- * rest >= 0. Only do unexprired articles we haven't visited yet
+ * rest >= 0. Only do unexpired articles we haven't visited yet
  * (arts[].thread == -1 ART_NORMAL).
  *
  * The rethread parameter is a misnomer. Its only effect (if set) is
@@ -798,44 +834,49 @@ make_threads(
 	find_base(group);
 }
 
+static t_compfunc
+eval_sort_arts_func(
+	unsigned int sort_art_type)
+{
+	switch (sort_art_type) {
+		case SORT_ARTICLES_BY_NOTHING:		/* don't sort at all */
+			return artnum_comp;
+
+		case SORT_ARTICLES_BY_SUBJ_DESCEND:
+		case SORT_ARTICLES_BY_SUBJ_ASCEND:
+			return subj_comp;
+
+		case SORT_ARTICLES_BY_FROM_DESCEND:
+		case SORT_ARTICLES_BY_FROM_ASCEND:
+			return from_comp;
+
+		case SORT_ARTICLES_BY_DATE_DESCEND:
+		case SORT_ARTICLES_BY_DATE_ASCEND:
+			return date_comp;
+
+		case SORT_ARTICLES_BY_SCORE_DESCEND:
+		case SORT_ARTICLES_BY_SCORE_ASCEND:
+			return score_comp;
+
+		case SORT_ARTICLES_BY_LINES_DESCEND:
+		case SORT_ARTICLES_BY_LINES_ASCEND:
+			return lines_comp;
+
+		default:
+			break;
+	}
+	return NULL;
+}
+
 
 void
 sort_arts(
 	unsigned int sort_art_type)
 {
-	switch (sort_art_type) {
-		case SORT_ARTICLES_BY_NOTHING:		/* don't sort at all */
-			SortBy(artnum_comp);
-			break;
+	t_compfunc comp_func = eval_sort_arts_func(sort_art_type);
 
-		case SORT_ARTICLES_BY_SUBJ_DESCEND:
-		case SORT_ARTICLES_BY_SUBJ_ASCEND:
-			SortBy(subj_comp);
-			break;
-
-		case SORT_ARTICLES_BY_FROM_DESCEND:
-		case SORT_ARTICLES_BY_FROM_ASCEND:
-			SortBy(from_comp);
-			break;
-
-		case SORT_ARTICLES_BY_DATE_DESCEND:
-		case SORT_ARTICLES_BY_DATE_ASCEND:
-			SortBy(date_comp);
-			break;
-
-		case SORT_ARTICLES_BY_SCORE_DESCEND:
-		case SORT_ARTICLES_BY_SCORE_ASCEND:
-			SortBy(score_comp);
-			break;
-
-		case SORT_ARTICLES_BY_LINES_DESCEND:
-		case SORT_ARTICLES_BY_LINES_ASCEND:
-			SortBy(lines_comp);
-			break;
-
-		default:
-			break;
-	}
+	if (comp_func)
+		SortBy(comp_func);
 }
 
 
@@ -853,9 +894,10 @@ sort_base(
 
 
 /*
- * This is only called when no overview files exist. Code reads (max_lineno)
- * lines of article, presumably to catch headers like Archive-name: which are
- * not normally included in XOVER or even the normal block of headers.
+ * This is called to get header info for articles not already found in the
+ * overview files.
+ * Code reads (max_lineno) lines of article to catch headers like Archive-name:
+ * which are not normally included in XOVER or even the normal block of headers.
  * How this is supposed to be useful when 99% of the time we'll have overview
  * data I don't know...
  * TODO: move Archive-name: parsing to article body parsing, remove the
@@ -1028,6 +1070,10 @@ parse_headers(
 /*
  * Read in an Nov/Xover index file. Fields are separated by TAB.
  * return the new value of 'top_art' or -1 if user quit partway.
+ * TODO: rewrite parser using strtok() or some other separator
+ *       based function
+ * If 'local' is set then always open local overview cache in
+ * preference to NNTP XOVER
  *
  * Format:
  * 	1. article number (ie. 183)                [mandatory]
@@ -1045,7 +1091,8 @@ read_nov_file(
 	struct t_group *group,
 	long min,
 	long max,
-	int *expired)
+	int *expired,
+	t_bool local)
 {
 	FILE *fp;
 	char *p, *q;
@@ -1054,33 +1101,12 @@ read_nov_file(
 	char art_from_addr[HEADER_LEN];
 	long artnum;
 
-	top_art = 0;
-	last_read_article = 0L;
 	*expired = 0;
 
 	/*
-	 * Call ourself recursively to read the cached overview file, if we are
-	 * supposed to be doing NNTP caching and we aren't already the recursive
-	 * instance. (Turn off read_news_via_nntp while we're recursing so we
-	 * will know we're recursing while we're doing it.) If there aren't
-	 * any new articles, just return, without going on to read the NNTP
-	 * overview file. If we're going to read from NNTP, adjust min to the
-	 * next article past last_read_article; there's no reason to read them
-	 * from NNTP if they're cached locally.
-	 */
-	if (tinrc.cache_overview_files && read_news_via_nntp && xover_supported && group->type == GROUP_TYPE_NEWS) {
-		read_news_via_nntp = FALSE;
-		read_nov_file(group, min, max, expired);
-		read_news_via_nntp = TRUE;
-		if (last_read_article >= max)
-			return top_art;
-		if (last_read_article >= min)
-			min = last_read_article + 1;
-	}
-	/*
 	 * open the overview file (whether it be local or via nntp)
 	 */
-	if ((fp = open_xover_fp(group, "r", min, max)) == NULL)
+	if ((fp = open_xover_fp(group, "r", min, max, local)) == NULL)
 		return top_art;
 
 	if (group->xmax > max)
@@ -1107,6 +1133,7 @@ read_nov_file(
 		artnum = atol(p);
 
 		/* catches case of 1st line being groupname (i.e. local cached overviews) */
+		/* TODO: so test the group name properly then ? */
 		if (artnum <= 0)
 			continue;
 
@@ -1122,7 +1149,7 @@ read_nov_file(
 		 * artnum in overview data higher than groups high mark
 		 *
 		 * TODO: - warn user about broken overviews?
-		 *       - try to parse the Xref:-line to get the crrect artnum
+		 *       - try to parse the Xref:-line to get the correct artnum
 		 *       - see also parse_unread_arts()
 		 */
 		if (artnum > group->xmax)
@@ -1350,49 +1377,25 @@ write_nov_file(
 	struct t_group *group)
 {
 	FILE *fp;
-	char *nov_file;
-	char tmp[PATH_LEN];
 	int i;
 	struct t_article *article;
 
 	/*
-	 * Don't write local index if we have XOVER, unless the user has
-	 * asked for caching.
+	 * Can't write or caching is off
 	 */
-	if (no_write || (read_news_via_nntp && xover_supported && !tinrc.cache_overview_files))
+	if (no_write || !tinrc.cache_overview_files)
 		return;
 
-	/*
-	 * TODO: don't write cached overviews if:
-	 *       !read_news_via_nntp && !tinrc.cache_overview_files &&
-	 *       data in novrootdir are correct overviews
-	 */
-
-	/*
-	 * setup the overview file (local only)
-	 *
-	 * don't write an overview file if R_OK returns a different name
-	 * than W_OK, since we won't read it anyway.
-	 */
-	STRCPY(tmp, ((((nov_file = find_nov_file(group, R_OK)) != 0)) ? nov_file : ""));
-	nov_file = find_nov_file(group, W_OK);
-	if (strcmp(tmp, nov_file))
+	if ((fp = open_xover_fp(group, "w", 0L, 0L, FALSE)) == NULL)
 		return;
 
-#ifdef DEBUG
-	if (debug)
-		error_message("WRITE file=[%s]", nov_file);
-#endif /* DEBUG */
-
-	if ((fp = open_xover_fp(group, "w", 0L, 0L)) == NULL) {
-		error_message(_(txt_cannot_write_index), nov_file);
-		return;
-	}
 	if (group->attribute->sort_art_type != SORT_ARTICLES_BY_NOTHING)
 		SortBy(artnum_comp);
 
-	if (!overview_index_filename)
-		fprintf(fp, "%s\n", group->name);
+	/*
+	 * Needed to preserve uniqueness in hashed private overview files
+	 */
+	fprintf(fp, "%s\n", group->name);
 
 	for_each_art(i) {
 		article = &arts[i];
@@ -1459,126 +1462,166 @@ write_nov_file(
 
 
 /*
- * A complex little function to determine where to read the index file
- * from and where to write it.
+ * A complex little function to determine the correct overview index file
+ * according to 'mode' (read or write)
+ * NULL is returned if the current setup dictates otherwise
  *
  * GROUP_TYPE_MAIL index files are read/written in ~/.tin/.mail
- *
  * GROUP_TYPE_SAVE index files are read/written in ~/.tin/.save
  *
- * GROUP_TYPE_NEWS index files are a little bit more complex :(
- * READ:
- *    if  reading via NNTP
- *       path = TMPDIR/num.idx
- *       hash = FALSE
- *    else if  SPOOLDIR/group/name/.overview exists
- *       path = SPOOLDIR/group/name/.overview
- *    else if  SPOOLDIR/.news exists
- *       path = SPOOLDIR/.news
- *       hash = TRUE
- *    else
- *       path = ~/.tin/.news
- *       hash = TRUE
+ * Both of these are hashed
  *
- * WRITE:
- *    if SPOOLDIR/group/name writable
- *       path = SPOOLDIR/group/name/.overview
- *       hash = FALSE
- *    else if SPOOLDIR/.news exists AND writable
- *       path = SPOOLDIR/.news
- *       hash = TRUE
- *    else
- *       path = ~/.tin/.news
- *       hash = TRUE
+ * GROUP_TYPE_NEWS index files are a little bit more complex
  *
- * If hash = TRUE the index filename will be in format number.number.
+ * When hashing the index filename will be in format number.number.
  * Hashing the groupname gets a number. See if that #.1 file exists;
  * if so, read first line. Is this the group we want? If no, try #.2.
  * Repeat until no such file or we find an existing file that matches
  * our group. Return pointer to path or NULL if not found.
  */
-char *
+static char *
 find_nov_file(
 	struct t_group *group,
 	int mode)
 {
+	FILE *fp;
 	const char *dir;
 	char buf[PATH_LEN];
+	int i;
+	struct stat sb;
+	unsigned long hash;
 	static char nov_file[PATH_LEN];
-	t_bool hash_filename;
+	static t_bool once_only = FALSE;	/* Trap things that are done only 1 time */
 
-	if (group == NULL)
+	if (group == NULL || (mode != R_OK && mode != W_OK))
 		return NULL;
-
-	overview_index_filename = FALSE;	/* Write groupname in nov file? (FALSE means write) */
-	hash_filename = FALSE;
-	dir = "";
 
 	switch (group->type) {
 		case GROUP_TYPE_MAIL:
 			dir = index_maildir;
-			hash_filename = TRUE;
 			break;
 
 		case GROUP_TYPE_SAVE:
 			dir = index_savedir;
-			hash_filename = TRUE;
 			break;
 
 		case GROUP_TYPE_NEWS:
-			if (read_news_via_nntp && xover_supported && !tinrc.cache_overview_files)
-				/* what is this good for? */
-				snprintf(nov_file, sizeof(nov_file), "%s%d.idx", TMPDIR, (int) process_id);
-			else {
+			/*
+			 * xover_cmd is not an issue here, any gripes and warnings
+			 * about XOVER are handled in nntp_open()
+			 */
+
+			/*
+			 * When reading via NNTP, system wide overviews are irrelevent, of
+			 * course, and the private overview filename will be the same for
+			 * both reading and writing.
+			 *
+			 * When working locally, we only use a private cache for reading
+			 * if requested and when system wide overviews don't already exist.
+			 * When writing then only private overviews can be used since
+			 * updating system wide overviews is not safe wrt locking etc.
+			 *
+			 * See if local overview file $SPOOLDIR/<groupname>/.overview exists
+			 */
 #ifndef NNTP_ONLY
+			if (!read_news_via_nntp) {
 				make_base_group_path(novrootdir, group->name, buf);
 				joinpath(nov_file, buf, novfilename);
-				if (mode == R_OK || mode == W_OK) {		/* This MUST be true ? */
-					if (!access(nov_file, mode))
-						overview_index_filename = TRUE;
-				}
-#endif /* !NNTP_ONLY */
-				if (!overview_index_filename) {
-					dir = index_newsdir;
-					hash_filename = TRUE;
+				if (access(nov_file, R_OK) == 0) {
+					if (mode == R_OK)
+						return nov_file;		/* Use system wide overviews */
+					else
+						return NULL;			/* Don't write cache in this case */
 				}
 			}
+#endif /* NNTP_ONLY */
+
+			/*
+			 * We only get here when private overviews are going to be used
+			 * Go no further if they are explicitly turned off
+			 */
+			if (!tinrc.cache_overview_files)
+				return NULL;
+
+			/*
+			 * Append -<nntpserver> to private cache dir
+			 */
+			if (!once_only && nntp_server) {
+				const char *from;
+				char *to;
+				int c;
+
+				to = index_newsdir + strlen(index_newsdir);
+				*(to++) = '-';
+				for (from = nntp_server; (c = *from) != 0; ++from)
+					*(to++) = tolower(c);
+				*to = '\0';
+				once_only = TRUE;
+			}
+
+			/*
+			 * Only try to set up the private cache when writing. If it
+			 * doesn't exist yet, then ergo we can't read from it.
+			 * The cache will be checked/created on every write; a previous
+			 * bug report complained that this was not the case
+			 */
+			if (stat(index_newsdir, &sb) == -1) {			/* Private cache doesn't exist */
+				if (mode == R_OK)
+					return NULL;
+				if (my_mkdir(index_newsdir, (mode_t) S_IRWXU) != 0)
+					return NULL;
+			} else {
+				if (!S_ISDIR(sb.st_mode))
+					return NULL;
+			}
+
+			/*
+			 * Update the newsgroups cache to point to the new location
+			 * now that we know it is valid
+			 */
+			if (!once_only)
+				joinpath(local_newsgroups_file, index_newsdir, NEWSGROUPS_FILE);
+
+			dir = index_newsdir;
 			break;
 
 		default: /* not reached */
-			break;
+			return NULL;
 	}
 
-	if (hash_filename) {
-		FILE *fp;
+	/*
+	 * We only get here if writing to a private overview.
+	 * These always have hashed filenames.
+	 * Try <hash>.<seqno> and check the group name tagline until
+	 * matching index file is found. If not found return next unused
+	 * filename
+	 */
+	hash = hash_groupname(group->name);
+
+	for (i = 1; ; i++) {
 		char *ptr;
-		int i;
-		unsigned long hash = hash_groupname(group->name);
 
-		for (i = 1; ; i++) {
-			snprintf(buf, sizeof(buf), "%lu.%d", hash, i);
-			joinpath(nov_file, dir, buf);
+		snprintf(buf, sizeof(buf), "%lu.%d", hash, i);
+		joinpath(nov_file, dir, buf);
 
-			if ((fp = fopen(nov_file, "r")) == NULL)
-				return nov_file;
+		if ((fp = fopen(nov_file, "r")) == NULL)
+			return nov_file;
 
-			/*
-			 * Don't follow, why should a zero length index file
-			 * cause the write to fail ?
-			 */
-			if (fgets(buf, (int) sizeof(buf), fp) == NULL) {
-				fclose(fp);
-				return nov_file;
-			}
+		/*
+		 * No group name header, so not a valid index file => overwrite it
+		 */
+		if (fgets(buf, (int) sizeof(buf), fp) == NULL) {
 			fclose(fp);
-
-			if ((ptr = strrchr(buf, '\n')) != NULL)
-				*ptr = '\0';
-
-			if (STRCMPEQ(buf, group->name))
-				return nov_file;
-
+			return nov_file;
 		}
+		fclose(fp);
+
+		if ((ptr = strrchr(buf, '\n')) != NULL)
+			*ptr = '\0';
+
+		if (STRCMPEQ(buf, group->name))
+			return nov_file;
+
 	}
 
 	return nov_file;
@@ -1766,7 +1809,7 @@ score_comp(
 		if (s2->score > s1->score)
 			return 1;
 	}
-	return 0;
+	return s1->date - s2->date > 0 ? 1 : -1;
 }
 
 
@@ -1794,7 +1837,7 @@ lines_comp(
 		if (s2->line_count > s1->line_count)
 			return 1;
 	}
-	return 0;
+	return s1->date - s2->date > 0 ? 1 : -1;
 }
 
 
@@ -1809,18 +1852,22 @@ score_comp_base(
 	int a = get_score_of_thread(*(const long *)p1);
 	int b = get_score_of_thread(*(const long *)p2);
 
-	if (CURR_GROUP.attribute->sort_threads_type == SORT_THREADS_BY_SCORE_ASCEND) {
-		if (a > b)
-			return 1;
-		if (a < b)
-			return -1;
-	} else {
-		if (a < b)
-			return 1;
-		if (a > b)
-			return -1;
+	/* If scores are equal, compare using the article sort order.
+	 * This determines the order in a group of equally scored threads.
+	 */
+	if (a == b) {
+		const struct t_article *s1 = &arts[*(const long *)p1];
+		const struct t_article *s2 = &arts[*(const long *)p2];
+		t_compfunc comp_func = eval_sort_arts_func(CURR_GROUP.attribute->sort_art_type);
+
+		if (comp_func)
+			return (*comp_func)(s1, s2);
+		return 0;
 	}
-	return 0;
+
+	if (CURR_GROUP.attribute->sort_threads_type == SORT_THREADS_BY_SCORE_ASCEND)
+		return a > b ? 1 : -1;
+	return a < b ? 1 : -1;
 }
 
 
@@ -1887,6 +1934,8 @@ valid_artnum(
 }
 
 
+/*----------------------------- Overview handling -----------------------*/
+
 static char *
 print_date(
 	time_t secs)
@@ -1932,4 +1981,40 @@ print_from(
 		STRCPY(from, article->from);
 
 	return from;
+}
+
+
+/*
+ * Open a group news overview file
+ * Use NNTP XOVER where possible unless 'local' is set
+ */
+static FILE *
+open_xover_fp(
+	struct t_group *group,
+	const char *mode,
+	long min,
+	long max,
+	t_bool local)
+{
+#ifdef NNTP_ABLE
+	if (!local && xover_cmd && *mode == 'r' && group->type == GROUP_TYPE_NEWS) {
+		char line[NNTP_STRLEN];
+
+		sprintf(line, "%s %ld-%ld", xover_cmd, min, max);
+		return (nntp_command(line, OK_XOVER, NULL, 0));
+	} else
+#endif /* NNTP_ABLE */
+	{
+		FILE *fp;
+		char *nov_file = find_nov_file(group, (*mode == 'r') ? R_OK : W_OK);
+
+		if (nov_file != NULL) {
+			if ((fp = fopen(nov_file, mode)) != NULL)
+				return fp;
+
+			if (*mode != 'r')
+				error_message(_(txt_cannot_open), nov_file);
+		}
+		return NULL;
+	}
 }

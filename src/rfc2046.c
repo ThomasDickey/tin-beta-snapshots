@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2003-05-15
+ *  Updated   : 2003-06-09
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
@@ -67,7 +67,7 @@ static void progress(int line_count);
  */
 static int art_lines = 0;		/* lines in art on spool */
 
-#define PARAM_SEP		"; \n"
+#define PARAM_SEP	"; \n"
 /* default parameters for Content-Type */
 #define CT_DEFPARMS	"charset=US-ASCII"
 
@@ -805,6 +805,7 @@ parse_multipart_article(
 				 * Keep headers that interest us
 				 */
 /*fprintf(stderr, "HDR:%s\n", line);*/
+				unfold_header(line);
 				if ((ptr = parse_header(line, "Content-Type", FALSE, FALSE))) {
 					parse_content_type(ptr, curr_part);
 
@@ -924,15 +925,15 @@ dump_art(
 
 	for (ptr = note_h.ext->next; ptr != NULL; ptr = ptr->next) {
 		fprintf(stderr, "Attachment:\n");
-		fprintf(stderr, "	Content-Type: %s/%s\n	Content-Transfer-Encoding: %s\n",
+		fprintf(stderr, "\tContent-Type: %s/%s\n\tContent-Transfer-Encoding: %s\n",
 			content_types[ptr->type], ptr->subtype,
 			content_encodings[ptr->encoding]);
 		if (ptr->description)
-			fprintf(stderr, "	Content-Description: %s\n", ptr->description);
-		fprintf(stderr, "	Offset: %ld\n	Lines: %d\n", ptr->offset, ptr->line_count);
-		fprintf(stderr, "	Depth: %d\n", ptr->depth);
+			fprintf(stderr, "\tContent-Description: %s\n", ptr->description);
+		fprintf(stderr, "\tOffset: %ld\n\tLines: %d\n", ptr->offset, ptr->line_count);
+		fprintf(stderr, "\tDepth: %d\n", ptr->depth);
 		for (pptr = ptr->params; pptr != NULL; pptr = pptr->next)
-			fprintf(stderr, "	P: %s = %s\n", pptr->name, pptr->value);
+			fprintf(stderr, "\tP: %s = %s\n", pptr->name, pptr->value);
 		dump_uue(ptr, art);
 		fseek(art->raw, ptr->offset, SEEK_SET);
 		fprintf(stderr, "[%s]\n\n", tin_fgets(art->raw, FALSE));

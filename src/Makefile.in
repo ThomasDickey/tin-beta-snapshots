@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2003-05-16
+# Updated: 2003-06-04
 #
 # Copyright (c) 1995-2003 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -62,7 +62,7 @@ LDFLAGS	= @LDFLAGS@
 YACC	= @YACC@
 
 CANLIB		= # -L../libcanlock -lcanlock
-INTL_LIBS	= @INTLDIR_MAKE@ @INTLLIBS@
+INTL_LIBS	= @INTLLIBS@
 PCRE_LIBS	= @PCREDIR_LIBS@ @PCREDIR_MAKE@ -L../pcre -lpcre
 LIBS		= $(PCRE_LIBS) $(CANLIB) @LIBS@ @INN_NNTPLIB@ $(INTL_LIBS)
 
@@ -476,6 +476,7 @@ $(OBJDIR)/color.o:		$(SRCDIR)/color.c $(TIN_DEP)
 $(OBJDIR)/config.o:		$(SRCDIR)/config.c $(TIN_DEP) \
 				tincfg.h \
 				$(INCDIR)/menukeys.h \
+				$(INCDIR)/tnntp.h \
 				$(INCDIR)/version.h
 $(OBJDIR)/curses.o:		$(SRCDIR)/curses.c $(TIN_DEP) \
 				$(INCDIR)/tnntp.h
@@ -525,7 +526,8 @@ $(OBJDIR)/misc.o:		$(SRCDIR)/misc.c $(TIN_DEP) \
 				$(INCDIR)/policy.h \
 				$(INCDIR)/rfc2046.h
 $(OBJDIR)/my_tmpfile.o:		$(SRCDIR)/my_tmpfile.c $(TIN_DEP)
-$(OBJDIR)/newsrc.o:		$(SRCDIR)/newsrc.c $(TIN_DEP)
+$(OBJDIR)/newsrc.o:		$(SRCDIR)/newsrc.c $(TIN_DEP) \
+				$(INCDIR)/tnntp.h
 $(OBJDIR)/nntplib.o:		$(SRCDIR)/nntplib.c $(TIN_DEP) \
 				$(INCDIR)/tnntp.h
 $(OBJDIR)/nrctbl.o:		$(SRCDIR)/nrctbl.c $(TIN_DEP) \

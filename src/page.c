@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-15
+ *  Updated   : 2003-06-13
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1267,7 +1267,7 @@ draw_page_header(
 	const char *group)
 {
 	char buf[HEADER_LEN];
-	char tmp[LEN];
+	char tmp[LEN]; /* what if cCOLS is > LEN? */
 	int whichresp;
 	int x_resp;
 	int pos, i;
@@ -1340,11 +1340,11 @@ draw_page_header(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp)) != (size_t) -1) {
 			wtmp[HEADER_LEN - 1] = (wchar_t) '\0';
-			wcspart(wbuf, wtmp, cCOLS - strlen(cCRLF), ARRAY_SIZE(wbuf), FALSE);
+			wcspart(wbuf, wtmp, cCOLS - 1, ARRAY_SIZE(wbuf), FALSE);
 			wcstombs(tmp, wbuf, sizeof(tmp));
 		} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-			tmp[cCOLS - strlen(cCRLF)] = '\0'; /* FIXME: see also note in signal.c:set_win_size() */
+			tmp[cCOLS - 1] = '\0'; /* FIXME: see also note in signal.c:set_win_size() */
 		strcat(tmp, cCRLF);
 		my_fputs(tmp, stdout);
 	}
@@ -1641,12 +1641,11 @@ process_search(
 	 * Reposition within article if needed, try to get matched line
 	 * in the middle of the screen
 	 */
-	if (i < (int) *lcurr_line || i >= (int) (*lcurr_line + screen_lines)) {
-		start = i - (screen_lines / 2);
-		if (start + screen_lines > message_lines)		/* Off the end */
+	if (i < *lcurr_line || i >= (int) (*lcurr_line + screen_lines)) {
+		*lcurr_line = i - (screen_lines / 2);
+		if (*lcurr_line + screen_lines > message_lines)	/* off the end */
 			*lcurr_line = message_lines - screen_lines;
-		else										/* Pos is just fine */
-			*lcurr_line = start;
+		/* else pos. is just fine */
 	}
 
 	switch (help_level) {

@@ -52,6 +52,9 @@
 #	endif /* HAVE_FCNTL */
 #endif /* !USE_FLOCK && !USE_LOCKF && !USE_FCNTL */
 
+/*
+ * TODO: add support for $LOCKEXT
+ */
 #define LOCK_SUFFIX ".lock"
 
 /*

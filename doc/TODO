@@ -22,17 +22,15 @@ o  single quotes in attachment names aren't escaped
 o  'C'atchup in pager is still not correct (we don't ever enter the next group)
    [20030515 Urs Janssen <urs@tin.org>]
 
-!o  reconnect problem reported in debian bug #188052
-!   <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=188052>
+o  reconnect problem reported in debian bug #188052
+   <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=188052>
+   [probabely fixed]
 
-!o  reconnect problem reported in debian bug #143417
-!   <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=143417>
+o  reconnect problem reported in debian bug #143417
+   <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=143417>
 
-!o  crash after reconnect when saving multiple files reported in
-!   <nntp://news.tin.org/20030219101902.GA20318@preusse-16223.user.cis.dfn.de>
-
-!o  'article loss' reported in
-!   <nntp://news.tin.org/20020915165856.GA1541@martinkl.dialup.fu-berlin.de>
+o  'article loss' reported in
+   <nntp://news.tin.org/20020915165856.GA1541@martinkl.dialup.fu-berlin.de>
 
 o  piping/printing articles grabbles screen
    [20030501 Urs Janssen <urs@tin.org>]
@@ -42,19 +40,6 @@ o  better integrate saving of MIME/non-MIME articles when not using libuu.
    are saved as part of the postprocess backend
    [mostly done]
    [Jason Faultless <jason@altarstone.com>]
-
-o  running multiple tins in parallel (each connected to a different
-   server) will trash all newnews=timestamps (and other config changes)
-   except the last form the formerly running tins on quit.
-   same problem with .oldnewsrc
-   [20020215 Mario Holbe <Mario.Holbe@RZ.TU-Ilmenau.DE>]
-   having $NNTPSERVER[:$NNTPPORT]-subdirs (or something defined via an extra
-   field in newsrctbl) below .tin-dir for each server (and port) would be a
-   good solution.
-
-o  $NNTPSERVER is only appended to $TIN_INDEX_NEWSDIR if -g cmd-line
-   option is used, we should change that and always append it to avoid using
-   a wrong cache after changing $NNTPSERVER...
 
 o  attributes are ignored for mail-actions (except mail_to_author())
    cause mail_loop() usualy doesn't know the group we are in.
@@ -113,17 +98,16 @@ o  remove built in path of external commands (metamail, ispell, ...)
    [for metamail/ispell $METAMAIL/$ISPELL could be used to override
     systempath and progname]
 
-o  overview file cacheing code is over-complex and broken in places
-   - if cache-dir is removed during the session it's not recreated
+o  overview file cacheing code is over-complex
    - cache the original overview info instead of rebuilding it from
      the processed (decoded etc.) data, no matter if it's broken (e.g.
      contains raw 8 bit data) as we have to deal with that anyway. if there
      are no original overviews, cache the original data from the postings
      headers.
-   - when reading from local spool, overviews are always cached
+   - Add docs to explain how to create system-wide overviews
 
 o  tin uses the first sig-isolator as recent one, USEFOR says it should
-   use the last. There is no consense that tin should follow this USEFOR
+   use the last. There is no consensus that tin should follow this USEFOR
    requirement.
 
 o  iso2asc conversion is missing for 'internal' strings (e.g. 'M'enu)
@@ -221,6 +205,9 @@ o  add maildir support (besides MBOX{O,RD} and MMDF},
     <http://www.qmail.org/man/man5/maildir.html> for maildir,
     <http://www.qmail.org/man/man5/mbox.html> for MBOXCL and MBOXCL2)
    [20020215 Urs Janssen <urs@tin.org>]
+
+o  add $LOCKEXT support
+   [20030611 Urs Janssen <urs@tin.org>]
 
 o  add xxencode (<http://www.ctan.org/tex-archive/tools/xxcode/xxdecode.c>),
    base224 (<http://b-news.sf.net/>), xBin <http://www.xbin.org/> and
@@ -683,7 +670,9 @@ o  make mm_network_charset an "option_list" to avoid junk input or
    undesired (UTF-1, UTF-7, UTF-16*, UTF-32*, UCS-2, UCS-4, ...) encodings.
    add configure check for the hardcoded charsets (try iconv_open(x,
    us-ascii) on each...) and disable those not available.
-   (think about more network charsets, e.g. ISO-2022-JP-3)
+   (think about more network charsets (GB2312, Shift_JIS,
+    ISO-8859-6[-{I,E}], ISO-8859-8[-{I,E}]), ISO-8859-11, VISCII, VIQR;
+    check wether KOI8-RU is still used/valid)
    [done except configure check 20010907 urs@tin.org]
 
 Docs/online help
@@ -693,7 +682,8 @@ o  add installation guide (in html)
 o  better document keymap feature
 
 o  man page always needs work and proof reading
-   e.g. 'U', 'V' in pager need better documentation
+   e.g. 'U', 'V' in pager need better documentation, random organization
+   feature isn't documented at all
 
 o  tin.defaults could use more documentation in manpage (tin.5)
 

@@ -156,7 +156,7 @@ search_config(
 			if (n > last)
 				n = 0;
 		}
-		if (REGEX_MATCH(option_table[n].txt->opt, buf, TRUE)) {
+		if (REGEX_MATCH(_(option_table[n].txt->opt), buf, TRUE)) {
 			result = n;
 			break;
 		}

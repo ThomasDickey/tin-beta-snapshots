@@ -15,7 +15,7 @@
 #       filter via w2r.pl before
 
 # version number
-# $VERSION = "0.2.1";
+# $VERSION = "0.2.2";
 
 # perl 5 is needed for lookahead assertions and perl < 5.004 is know to be
 # buggy
@@ -74,7 +74,7 @@ opt-case.pl - Optimize case insensitive regexp filters for tin
 
 =head1 SYNOPSIS
 
-B<opt-case.pl> < I<input> [> I<output>]
+B<opt-case.pl> E<lt> I<input> [E<gt> I<output>]
 
 =head1 DESCRIPTION
 

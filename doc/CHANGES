@@ -1,3 +1,68 @@
+-- 1.6.0 release 20030714 "Vatersay" --
+
+U167) Matt Anton <tin@syrius.org>
+      ADD. added a few missing french translations
+      FIX. fr.po
+
+U166) Andreas Metzler <tin-dev@downhill.at.eu.org>
+      BUG. revert bogus cleanup
+      FIX. page.c
+
+U165) Michael Bienia <michael@vorlon.ping.de>
+      BUG. manpage cleanups
+      BUG. //TRANSLIT might not work correct
+      BUG. changing thread_articles via 'M'enu while beeing an 'emtpy'
+           group caused a crash
+      ADD. +/-MULTIBYTE_ABLE to -V output
+      FIX. config.c, main.c, misc.c, tin.1, tin.5
+
+U164) Dirk Nimmich <nimmich@muenster.de>
+      BUG. didn't unfold MIME-header before trying to parse the arguments
+      BUG. art.c didn't compile with --enable-debug
+      BUG. memleak in main.c
+      BUG. newnews timestamps in tinrc got trashed when running multiple
+           tins concurrently
+      BUG. oldnewsrc got trashed when starting multiple tin concurrently
+      NOP. various cleanups
+      FIX. active.c, art.c, config.c, lang.c, main.c, newsrc.c, nntplib.c
+           rfc2046.c
+
+U163) Jason Faultless <jason@altarstone.com>
+      ADD. overhaul find_nov_file() mechanism
+      BUG. reading local spool always cached overview files
+      BUG. spurious private overview cache dirs created
+      BUG. private overview dirs not recreated properly
+      BUG. private overview dirs not always uniquely named
+      FIX. extern.h, proto.h, art.c, init.c, lang.c, main.c, misc.c
+           newsrc.c, open.c, post.c, refs.c, tin.1
+
+U162) Thomas E. Dickey <dickey@invisible-island.net>
+      BUG. -lintl may not be linked to executable if using a "externl" lib
+      FIX. aclocal.m4, configure[.in], Makefile[.in], Makefile.inn
+
+U161) Corinna Vinschen <corinna@vinschen.de>
+      BUG. page header truncated too early
+      ADD. Sort threads with equal scores by article sort order
+      FIX. art.c, page.c, tin.h
+
+U160) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+U159) Urs Janssen <urs@tin.org>
+      ADD. manpage updates
+      ADD. updated german and french translation
+      ADD. config.guess, config.sub update
+      ADD. cleanup SEIUX handling
+      BUG. possible bufferoverrun with charset conversion
+      BUG. search in a localized Menu didn't use the translated text
+      FIX. extern.h, tin.h, lang.c, post.c, search.c, tin.5, de.po
+           fr.po, config.guess, config.sub, configure[.in], autoconf.h[in]
+
+U158) Andreas Metzler <tin-dev@downhill.at.eu.org>
+      ADD. updated german translation
+      FIX. de.po
+
 -- 1.5.18 release 20030602 "Darts" --
 
 U157) Michael Velten <tin@michnet.de>

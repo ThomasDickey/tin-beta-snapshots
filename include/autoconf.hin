@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2003-05-16
+ *  Updated   : 2003-06-18
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2003 Thomas Dickey <dickey@invisible-island.net>
@@ -71,6 +71,11 @@
  * Mac OS X need some extras
  */
 #	undef MAC_OS_X
+
+/*
+ * SEIUX has strange struct utsname values
+ */
+#	undef SEIUX
 
 /*
  * These are set as configure options, some must be guarded by ifdefs because

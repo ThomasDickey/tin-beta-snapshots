@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-16
+ *  Updated   : 2003-06-17
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -642,81 +642,6 @@ tin_done(
 #endif /* VMS */
 
 	exit(ret);
-}
-
-
-/*
- * strip_double_ngs()
- * Strip duplicate newsgroups from within a given list of comma
- * separated groups
- *
- * 14-Jun-'96 Sven Paulus <sven@oops.sub.de>
- *
- */
-void
-strip_double_ngs(
-	char *ngs_list)
-{
-	char *ptr;			/* start of next (outer) newsgroup */
-	char *ptr2;			/* temporary pointer */
-	char ngroup1[HEADER_LEN];	/* outer newsgroup to compare */
-	char ngroup2[HEADER_LEN];	/* inner newsgroup to compare */
-	char cmplist[HEADER_LEN];	/* last loops output */
-	char newlist[HEADER_LEN];	/* the newly generated list without */
-										/* any duplicates of the first nwsg */
-	int ncnt1;			/* counter for the first newsgroup */
-	int ncnt2;			/* counter for the second newsgroup */
-	t_bool over1;		/* TRUE when the outer loop is over */
-	t_bool over2;		/* TRUE when the inner loop is over */
-
-	/* shortcut, check if there is only 1 group */
-	if (strchr(ngs_list, ',') != NULL) {
-		over1 = FALSE;
-		ncnt1 = 0;
-		strcpy(newlist, ngs_list);		/* make a "working copy" */
-		ptr = newlist;						/* the next outer newsg. is the 1st */
-
-		while (!over1) {
-			ncnt1++;							/* inc. outer counter */
-			strcpy(cmplist, newlist);	/* duplicate groups for inner loop */
-			ptr2 = strchr(ptr, ',');	/* search "," ... */
-			if (ptr2 != NULL) {	/* if found ... */
-				*ptr2 = '\0';
-				strcpy(ngroup1, ptr);	/* chop off first outer newsgroup */
-				ptr = ptr2 + 1;			/* pointer points to next newsgr. */
-			} else {							/* ... if not: last group */
-				over1 = TRUE;				/* wow, everything is done after . */
-				strcpy(ngroup1, ptr);	/* ... this last outer newsgroup */
-			}
-
-			over2 = FALSE;
-			ncnt2 = 0;
-
-			/*
-			 * now compare with each inner newsgroup on the list,
-			 * which is behind the momentary outer newsgroup
-			 * if it is different from the outer newsgroup, append
-			 * to list, strip double-commas
-			 */
-
-			while (!over2) {
-				ncnt2++;
-				strcpy(ngroup2, cmplist);
-				ptr2 = strchr(ngroup2, ',');
-				if (ptr2 != NULL) {
-					strcpy(cmplist, ptr2 + 1);
-					*ptr2 = '\0';
-				} else
-					over2 = TRUE;
-
-				if ((ncnt2 > ncnt1) && (strcasecmp(ngroup1, ngroup2)) && (strlen(ngroup2) != 0)) {
-					strcat(newlist, ",");
-					strcat(newlist, ngroup2);
-				}
-			}
-		}
-		strcpy(ngs_list, newlist);	/* move string to its real location */
-	}
 }
 
 
@@ -2127,12 +2052,14 @@ void
 cleanup_tmp_files(
 	void)
 {
+#if 0
 	char acNovFile[PATH_LEN];
 
-	if (read_news_via_nntp && xover_supported && !tinrc.cache_overview_files) {
+	if (xover_cmd && !tinrc.cache_overview_files) {
 		sprintf(acNovFile, "%s%d.idx", TMPDIR, (int) process_id);
 		unlink(acNovFile);
 	}
+#endif /* 0 */
 
 	if (!tinrc.cache_overview_files)
 		unlink(local_newsgroups_file);
@@ -2192,6 +2119,7 @@ file_mtime(
 /*
  * TODO: this seems to be unix specific, avoid !M_UNIX calls or
  *       add code for other OS
+ *       this feature also isn't documented anywhere
  */
 char *
 random_organization(
@@ -2459,10 +2387,13 @@ buffer_to_local(
 				char unknown_buf[4];
 				char *obuf, *outbuf;
 				char *tmpbuf, *tbuf;
+				ICONV_CONST char *cur_inbuf;
+				int used;
 				size_t inbytesleft;
 				size_t unknown_bytesleft;
 				size_t tmpbytesleft, tsize;
 				size_t outbytesleft, osize;
+				size_t cur_obl, cur_ibl;
 				size_t result;
 
 				inbytesleft = 1;
@@ -2514,6 +2445,15 @@ buffer_to_local(
 				outbuf = (char *) obuf;
 
 				do {
+					/*
+					 * save the parameters we need to redo the call of iconv
+					 * if we get into the E2BIG case
+					 */
+					cur_inbuf = inbuf;
+					cur_ibl = inbytesleft;
+					used = outbuf - obuf;
+					cur_obl = outbytesleft;
+
 					errno = 0;
 					result = iconv(cd2, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
 					if (result == (size_t) (-1)) {
@@ -2527,10 +2467,20 @@ buffer_to_local(
 								break;
 
 							case E2BIG:
-								obuf = my_realloc(obuf, osize * 2);
-								outbuf = (char *) (obuf + osize - outbytesleft);
-								outbytesleft += osize;
+								/*
+								 * outbuf was too small
+								 * As some input could be converted successfully
+								 * and we don`t know where the last complete char
+								 * ends, redo the last conversation completely.
+								 */
+								/* resize the output buffer */
+								obuf = my_realloc(obuf, osize * 2 + 1);
+								outbuf = obuf + used;
+								outbytesleft = cur_obl + osize;
 								osize <<= 1; /* double size */
+								/* reset the other params */
+								inbuf = cur_inbuf;
+								inbytesleft = cur_ibl;
 								break;
 
 							default:

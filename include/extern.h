@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-15
+ *  Updated   : 2003-06-29
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>
@@ -330,6 +330,7 @@ extern char *OPT_CHAR_list[];
 extern char *OPT_STRING_list[];
 extern char *ch_post_process;
 extern char *nntp_server;
+extern char *xover_cmd;
 extern char active_times_file[PATH_LEN];
 extern char bug_addr[LEN];
 extern char bug_nntpserver1[PATH_LEN];
@@ -467,6 +468,8 @@ extern constext txt_base_article[];
 extern constext txt_base_article_range[];
 extern constext txt_batch_update_unavail[];
 extern constext txt_begin_of_art[];
+extern constext txt_caching_off[];
+extern constext txt_caching_on[];
 extern constext txt_cancel_article[];
 extern constext txt_cancelling_art[];
 extern constext txt_cannot_create[];
@@ -481,7 +484,6 @@ extern constext txt_cannot_open_for_saving[];
 extern constext txt_cannot_post[];
 extern constext txt_cannot_post_group[];
 extern constext txt_cannot_retrieve[];
-extern constext txt_cannot_write_index[];
 extern constext txt_cannot_write_to_directory[];
 extern constext txt_catchup[];
 extern constext txt_catchup_group[];
@@ -500,9 +502,13 @@ extern constext txt_color_off[];
 extern constext txt_color_on[];
 extern constext txt_command_failed[];
 extern constext txt_confirm_select_on_exit[];
-extern constext txt_connecting[];
-extern constext txt_connecting_port[];
-extern constext txt_connection_to[];
+#ifdef NNTP_ABLE
+	extern constext txt_connecting[];
+	extern constext txt_connecting_port[];
+#endif /* NNTP_ABLE */
+#if defined(NNTP_ABLE) && !defined(INET6)
+	extern constext txt_connection_to[];
+#endif /* NNTP_ABLE && !INET6 */
 extern constext txt_copyright_notice[];
 extern constext txt_cr[];
 extern constext txt_creating_active[];
@@ -510,7 +516,9 @@ extern constext txt_creating_newsrc[];
 extern constext txt_default[];
 extern constext txt_delete_processed_files[];
 extern constext txt_deleting[];
-extern constext txt_disconnecting[];
+#ifdef NNTP_ABLE
+	extern constext txt_disconnecting[];
+#endif /* NNTP_ABLE */
 extern constext txt_end_of_art[];
 extern constext txt_end_of_arts[];
 extern constext txt_end_of_groups[];
@@ -592,13 +600,19 @@ extern constext txt_error_singular[];
 	extern constext txt_error_topen[];
 #endif /* NNTP_ABLE && TLI && !INET6 */
 extern constext txt_error_unknown_dlevel[];
-extern constext txt_error_unknown_service[];
-extern constext txt_error_wrong_newsgroupname_in_group_response[];
+#if defined(NNTP_ABLE) && defined(HAVE_GETSERVBYNAME)
+	extern constext txt_error_unknown_service[];
+#endif /* NNTP_ABLE && HAVE_GETSERVBYNAME */
+#ifdef NNTP_ABLE
+	extern constext txt_error_wrong_newsgroupname_in_group_response[];
+#endif /* NNTP_ABLE */
 extern constext txt_esc[];
 extern constext txt_exiting[];
 extern constext txt_external_mail_done[];
 extern constext txt_extracting_shar[];
-extern constext txt_failed_to_connect_to_server[];
+#ifdef NNTP_ABLE
+	extern constext txt_failed_to_connect_to_server[];
+#endif /* NNTP_ABLE */
 extern constext txt_feed_pattern[];
 extern constext txt_filesystem_full[];
 extern constext txt_filesystem_full_backup[];
@@ -615,7 +629,9 @@ extern constext txt_from_line_only[];
 extern constext txt_from_line_only_case[];
 extern constext txt_full[];
 extern constext txt_gethostbyname[];
-extern constext txt_giving_up[];
+#if defined(NNTP_ABLE) && !defined(INET6)
+	extern constext txt_giving_up[];
+#endif /* NNTP_ABLE && !INET6 */
 extern constext txt_global[];
 extern constext txt_group[];
 extern constext txt_group_aliased[];
@@ -960,7 +976,9 @@ extern constext txt_reading_news_active_file[];
 extern constext txt_reading_news_newsrc_file[];
 extern constext txt_reading_newsgroups_file[];
 extern constext txt_reading_newsrc[];
-extern constext txt_reconnect_to_news_server[];
+#ifdef NNTP_ABLE
+	extern constext txt_reconnect_to_news_server[];
+#endif /* NNTP_ABLE */
 extern constext txt_remove_bogus[];
 extern constext txt_rename_error[];
 extern constext txt_reply_to_author[];
@@ -1006,7 +1024,10 @@ extern constext txt_select_text[];
 extern constext txt_select_thread[];
 extern constext txt_select_time[];
 extern constext txt_send_bugreport[];
-extern constext txt_server_name_in_file_env_var[];
+#ifdef NNTP_ABLE
+	extern constext txt_server_name_in_file_env_var[];
+#endif /* NNTP_ABLE */
+extern constext txt_serverconfig_header[];
 extern constext txt_servers_active[];
 extern constext txt_skipping_newgroups[];
 extern constext txt_space[];
@@ -1044,7 +1065,9 @@ extern constext txt_toggled_high[];
 extern constext txt_toggled_rot13[];
 extern constext txt_toggled_tex2iso[];
 extern constext txt_toggled_tabwidth[];
-extern constext txt_trying[];
+#if defined(NNTP_ABLE) && defined(HAVE_INET_NTOA)
+	extern constext txt_trying[];
+#endif /* NNTP_ABLE && HAVE_INET_NTOA */
 extern constext txt_trying_dotlock[];
 extern constext txt_trying_lock[];
 extern constext txt_type_h_for_help[];
@@ -1271,7 +1294,6 @@ extern t_bool show_description;
 extern t_bool show_subject;
 extern t_bool batch_mode;
 extern t_bool verbose;
-extern t_bool xover_supported;
 extern t_bool xref_supported;
 
 extern t_menu selmenu;

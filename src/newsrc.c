@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-14
+ *  Updated   : 2003-06-29
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -41,6 +41,9 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
+#ifndef TNNTP_H
+#	include "tnntp.h"
+#endif /* TNNTP_H */
 
 #define BITS_TO_BYTES(n)	((size_t) ((n + NBITS - 1) / NBITS))
 
@@ -318,11 +321,28 @@ void
 backup_newsrc(
 	void)
 {
-	char buf[HEADER_LEN];
+	char dirbuf[PATH_LEN];
+	char filebuf[PATH_LEN];
+	struct stat statbuf;
 
-	joinpath(buf, homedir, OLDNEWSRC_FILE);
+#ifdef NNTP_ABLE
+	if (read_news_via_nntp && !read_saved_news && nntp_tcp_port != IPPORT_NNTP)
+		snprintf(filebuf, sizeof(filebuf), "%s:%d", nntp_server, nntp_tcp_port);
+	else
+#endif /* NNTP_ABLE */
+	{
+		STRCPY(filebuf, nntp_server);
+	}
+	JOINPATH(dirbuf, rcdir, filebuf);
+	joinpath(filebuf, dirbuf, OLDNEWSRC_FILE);
 
-	if (!backup_file(newsrc, buf))
+	if (-1 == stat(dirbuf, &statbuf)) {
+		if (-1 == my_mkdir(dirbuf, (mode_t) (S_IRWXU)))
+			/* Can't create directory: Fall back on Homedir */
+			joinpath(filebuf, homedir, OLDNEWSRC_FILE);
+	}
+
+	if (!backup_file(newsrc, filebuf))
 		error_message(_(txt_filesystem_full_backup), NEWSRC_FILE);
 }
 
@@ -692,9 +712,8 @@ parse_subseq(
 {
 	long bitmin;
 	long bitmax;
-	long last_high;
+	long last_high = *high;
 
-	last_high = *high;
 	seq = parse_get_seq(seq, low, high);
 
 	/*
@@ -767,7 +786,6 @@ parse_subseq(
 		 */
 		NSETRNG0(group->newsrc.xbitmap, bitmin, bitmax);
 	}
-
 	return seq;
 }
 
@@ -811,7 +829,7 @@ parse_unread_arts(
 	/*
 	 * TODO
 	 * what about group->newsrc.xmax > group->xmax?
-	 * that should indicate a artnum 'reset' on th server
+	 * that should indicate an artnum 'reset' on the server
 	 * (or using the "wrong" newsrc for that server)
 	 */
 

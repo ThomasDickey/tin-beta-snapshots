@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-11
+ *  Updated   : 2003-06-29
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -47,7 +47,7 @@
 
 #if defined(M_AMIGA) && defined(__SASC_650)
 	extern int _WBArg;
-	extern char	**_WBArgv;
+	extern char **_WBArgv;
 	char __stdiowin[] = "con:0/12/640/200/TIN " VERSION;
 	char __stdiov37[] = "/AUTO/NOCLOSE";
 #else
@@ -74,7 +74,6 @@ static t_bool start_any_unread = FALSE;	/* only start if unread news */
  * Local prototypes
  */
 static t_bool create_mail_save_dirs(void);
-static t_bool setup_private_overview(void);
 static void read_cmd_line_options(int argc, char *argv[]);
 static void show_intro_page(void);
 static void update_index_files(void);
@@ -200,32 +199,25 @@ main(
 	/*
 	 * Connect to nntp server?
 	 */
-	if (read_news_via_nntp) {
-		if (!read_saved_news) {
-			if (nntp_open())
-				giveup();
-		} else { /* set nntp_server if reading via -R as it's used in select.c */
-			if ((nntp_server = getserverbyfile(NNTP_SERVER_FILE)) == NULL)
-				nntp_server = my_strdup("reading saved news"); /* mem-leak on exit */
-		}
-	}
+	nntp_server = getserverbyfile(NNTP_SERVER_FILE);
+	if (read_news_via_nntp && !read_saved_news && nntp_open())
+		giveup();
+
+	read_server_config();
 
 	/*
 	 * exit early - unfortunately we can't do that in read_cmd_line_options()
-	 * as xover_supported is set in nntp_open()
+	 * as xover_cmd is set in nntp_open()
 	 */
-	if (update_index && read_news_via_nntp && xover_supported && !tinrc.cache_overview_files) {
+	if (update_index && xover_cmd && !tinrc.cache_overview_files) {
 		error_message(_(txt_batch_update_unavail), tin_progname);
 		giveup();
 	}
 
-	if (!setup_private_overview())		/* TODO: issue a warning if it fails */
-		fprintf(stderr, "Unable to setup local overview cache\n");
-
 	/*
 	 * Check if overview indexes contain Xref: lines
 	 */
-	if (xover_supported)
+	if (xover_cmd)
 		xref_supported = overview_xref_support();
 
 #ifdef DEBUG_NEWSRC
@@ -756,9 +748,9 @@ read_cmd_line_options(
 				"-HAVE_METAMAIL "
 #endif /* HAVE_METAMAIL */
 #ifdef HAVE_SUM
-				"+HAVE_SUM "
+				"+HAVE_SUM"
 #else
-				"-HAVE_SUM "
+				"-HAVE_SUM"
 #endif /* HAVE_SUM */
 				"\n\t"
 #ifdef HAVE_COLOR
@@ -777,9 +769,9 @@ read_cmd_line_options(
 				"-HAVE_PGPK "
 #endif /* HAVE_PGPK */
 #ifdef HAVE_GPG
-				"+HAVE_GPG "
+				"+HAVE_GPG"
 #else
-				"-HAVE_GPG "
+				"-HAVE_GPG"
 #endif /* HAVE_GPG */
 				"\n\t"
 #ifdef MIME_BREAK_LONG_LINES
@@ -793,15 +785,20 @@ read_cmd_line_options(
 				"-MIME_STRICT_CHARSET "
 #endif /* MIME_STRICT_CHARSET */
 #ifdef CHARSET_CONVERSION
-				"+CHARSET_CONVERSION "
+				"+CHARSET_CONVERSION"
 #else
-				"-CHARSET_CONVERSION "
+				"-CHARSET_CONVERSION"
 #endif /* CHARSET_CONVERSION */
 				"\n\t"
-#ifdef NO_LOCALE
-				"+NO_LOCALE "
+#ifdef MULTIBYTE_ABLE
+				"+MULTIBYTE_ABLE "
 #else
-				"-NO_LOCALE "
+				"-MULTIBYTE_ABLE "
+#endif /* MULTIBYTE_ABLE */
+#ifdef NO_LOCALE
+				"+NO_LOCALE"
+#else
+				"-NO_LOCALE"
 #endif /* NO_LOCALE */
 				"\n\t"
 #ifdef USE_CANLOCK
@@ -1086,57 +1083,6 @@ read_cmd_line_groups(
 		}
 	}
 	return matched;
-}
-
-
-/*
- * If we're cacheing overview files and the user specified an NNTP server
- * with the '-g' option, make the directory name specific to the NNTP server
- * and make sure the directory exists.
- * Returns FALSE if we needed to set up the local cache dir but could not
- */
-static t_bool
-setup_private_overview(
-	void)
-{
-	struct stat sb;
-
-	if (read_news_via_nntp && xover_supported && !tinrc.cache_overview_files)
-		return TRUE;
-
-	/*
-	 * TODO: don't create cache dir if we are reading from local spool,
-	 *       the systems overview data is readable and
-	 *       !tinrc.cache_overview_files
-	 */
-
-	if (cmdline_nntpserver[0] != 0) {	/* this => read_news_via_nntp */
-		char *from;
-		char *to;
-		int c;
-
-		to = index_newsdir + strlen(index_newsdir);
-		*(to++) = '-';
-		for (from = cmdline_nntpserver; (c = *from) != 0; ++from)
-			*(to++) = tolower(c);
-		*to = '\0';
-	}
-
-#	ifdef DEBUG
-	debug_nntp("setup_private_overview", index_newsdir);
-#	endif /* DEBUG */
-
-	if (stat(index_newsdir, &sb) == -1) {
-		if (my_mkdir(index_newsdir, (mode_t) S_IRWXU))
-			return FALSE;
-	} else {
-		if (!S_ISDIR(sb.st_mode))
-			return FALSE;
-	}
-
-	/* TODO why is this only done here ? */
-	joinpath(local_newsgroups_file, index_newsdir, NEWSGROUPS_FILE);
-	return TRUE;
 }
 
 

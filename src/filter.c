@@ -1318,7 +1318,7 @@ quick_filter(
 	int type,
 	struct t_group *group,
 	struct t_article *art,
-    int origin)
+	int origin)
 {
 	char *scope;
 	char txt[LEN];

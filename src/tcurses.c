@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-03-02
- *  Updated   : 2003-02-19
+ *  Updated   : 2003-06-27
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -53,6 +53,8 @@
 
 int cLINES;
 int cCOLS;
+
+static int my_innstr(char *str, int n);
 
 
 #	ifdef HAVE_XCURSES
@@ -764,7 +766,7 @@ my_retouch(
  * innstr can't read multibyte chars
  * we use innwstr (if avaible) and convert to multibyte chars
  */
-int
+static int
 my_innstr(
 	char *str,
 	int n)

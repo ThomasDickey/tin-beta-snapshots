@@ -3,7 +3,7 @@
  *  Module    : version.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-05-09
+ *  Updated   : 2003-06-29
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -40,14 +40,15 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.5.18"
+#		define VERSION		"1.6.0"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20030602"
-#	define RELEASENAME	"Darts"
+#	define RELEASEDATE	"20030714"
+#	define RELEASENAME	"Vatersay"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.6"
 #	define ATTRIBUTES_VERSION	"1.0.0"
 #	define FILTER_VERSION	"1.0.0"
+#	define SERVERCONFIG_VERSION	"1.0.0"
 
 #	ifdef M_AMIGA
 #		define OSNAME	"AMIGA"
