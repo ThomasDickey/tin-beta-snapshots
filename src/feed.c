@@ -467,7 +467,7 @@ feed_articles (
 				char keyquit[MAXKEYLEN];
 				char option;
 
-				/* repost or supersede ? */
+				/* repost or supersede? */
 				snprintf (buf, sizeof(buf), _(txt_supersede_article),
 							printascii (keyrepost, map_to_local(iKeyFeedRepost, &menukeymap.feed_supersede_article)),
 							printascii (keysupersede, map_to_local(iKeyFeedSupersede, &menukeymap.feed_supersede_article)),

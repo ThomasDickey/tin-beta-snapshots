@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-03-26
+ *  Updated   : 2002-04-15
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -102,7 +102,7 @@ static int scroll_page (int i);
 static t_bool deactivate_next_ctrl_l (void);
 static t_bool activate_last_ctrl_l (void);
 static void preprocess_info_message (FILE *info_fh);
-static void print_message_page (FILE *file, t_lineinfo *messageline, size_t messagelines, size_t lcurr_line, size_t begin, size_t end, int help_level);
+static void print_message_page (FILE *file, t_lineinfo *messageline, size_t messagelines, size_t base_line, size_t begin, size_t end, int help_level);
 static void process_search (int *lcurr_line, size_t message_lines, size_t screen_lines, int help_level);
 static void process_url (void);
 static void draw_page_header (const char *group);
@@ -135,8 +135,7 @@ scroll_page (
 			case 0:
 				break;
 			case -1:
-				if (dir == KEYMAP_DOWN)
-					i -= 1;
+				i -= 1;
 				break;
 			case -2:
 				i >>= 1;
@@ -557,10 +556,13 @@ page_goto_next_unread:
 
 			case iKeySearchSubjF:	/* search in article */
 			case iKeySearchSubjB:
-				if ((i = search_article ((ch == iKeySearchSubjF), search_line, artlines, artline, reveal_ctrl_l, reveal_ctrl_l_lines, note_fp)) == -1)
+				if ((i = search_article ((ch == iKeySearchSubjF), search_line, artlines, artline, reveal_ctrl_l_lines, note_fp)) == -1)
 					break;
-
 				process_search(&curr_line, artlines, ARTLINES, PAGE_LEVEL);
+				if (ch == iKeySearchSubjB && !reveal_ctrl_l) {
+					reveal_ctrl_l_lines = curr_line + ARTLINES - 1;
+					draw_page (group->name, 0);
+				}
 				break;
 
 			case iKeySearchBody:	/* article body search */
@@ -644,7 +646,8 @@ page_goto_next_unread:
 				if (!reveal_ctrl_l) {	/* switched back to active ^L's */
 					reveal_ctrl_l_lines = -1;
 					curr_line = 0;
-				}
+				} else
+					reveal_ctrl_l_lines = artlines-1;
 				draw_page (group->name, 0);
 				break;
 
@@ -929,7 +932,7 @@ print_message_page (
 	FILE *file,
 	t_lineinfo *messageline,
 	size_t messagelines,
-	size_t lcurr_line,
+	size_t base_line,
 	size_t begin,
 	size_t end,
 	int help_level)
@@ -940,10 +943,10 @@ print_message_page (
 	t_lineinfo *curr;
 
 	for (; i < end; i++) {
-		if (lcurr_line + i >= messagelines)		/* ran out of message */
+		if (base_line + i >= messagelines)		/* ran out of message */
 			break;
 
-		curr = &messageline[lcurr_line + i];
+		curr = &messageline[base_line + i];
 		fseek (file, curr->offset, SEEK_SET);
 
 		if ((line = tin_fgets (file, FALSE)) == NULL)
@@ -987,7 +990,7 @@ print_message_page (
 			highlight_regexes (i + scroll_region_top, &news_regex);
 
 		/* Blank the screen after a ^L (only occurs when showing cooked) */
-		if (!reveal_ctrl_l && (curr->flags & C_CTRLL) && (int)(lcurr_line + i) > reveal_ctrl_l_lines) {
+		if (!reveal_ctrl_l && (curr->flags & C_CTRLL) && (int)(base_line + i) > reveal_ctrl_l_lines) {
 			CleartoEOS();
 			break;
 		}
@@ -1471,7 +1474,7 @@ toggle_raw(
 		/*
 		 * We do this on the fly, since most of the time it won't be used
 		 */
-		if (!pgart.rawl) {			/* Already done this for this article ? */
+		if (!pgart.rawl) {			/* Already done this for this article? */
 			char buff[1024];
 
 			j = 0;
@@ -1697,21 +1700,27 @@ info_pager (
 
 			case iKeySearchSubjF:
 			case iKeySearchSubjB:
-				if ((search_article ((ch == iKeySearchSubjF), search_line, num_info_lines, infoline, TRUE, 0, info_file)) == -1)
+				if ((search_article ((ch == iKeySearchSubjF), search_line, num_info_lines, infoline, num_info_lines-1, info_file)) == -1)
 					break;
 
 				process_search (&curr_info_line, num_info_lines, NOTESLINES, INFO_PAGER);
 				break;
 
-			default:
-				/* any other key quits pager; useful? */
+			case iKeyQuit:	/* quit */
 				ClearScreen ();
 				return;
+
+			default:
+				break;
 		}
 	}
 }
 
 
+/*
+ * Redraw the current page, curr_info_line will be the first line displayed
+ * If part is !=0, then only draw the first (-ve) or last (+ve) few lines
+ */
 void
 display_info_page (
 	int part)

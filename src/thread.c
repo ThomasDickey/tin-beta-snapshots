@@ -184,7 +184,7 @@ bld_tline (
 			else
 				len_from /= 3; /* otherwise use 33% for author info */
 
-			if (len_from < 0) /* security check - small screen ? */
+			if (len_from < 0) /* security check - small screen? */
 				len_from = 0;
 		}
 		rest_of_line -= len_from;

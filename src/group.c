@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 1997-12-31
+ *  Updated   : 2002-04-15
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea, Rich Skrenta
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -338,7 +335,7 @@ group_page (
 				break;
 
 		   case iKeyGroupEditFilter:
-				if (!invoke_editor (filter_file, 25)) /* FIXME: is 25 correct offset ? */
+				if (!invoke_editor (filter_file, 25)) /* FIXME: is 25 correct offset? */
 					break;
 				unfilter_articles ();
 				(void) read_filter_file (filter_file);
@@ -1111,7 +1108,7 @@ mark_screen (
 #ifdef USE_CURSES
 		int y, x;
 		getyx(stdscr, y, x);
-		mvaddstr(INDEX_TOP + screen_row, screen_col, (char *)value);
+		mvaddstr(INDEX_TOP + screen_row, screen_col, value);
 		MoveCursor(y, x);
 #else
 		int i;
@@ -1458,7 +1455,7 @@ enter_thread (
 
 			case GRP_EXIT:
 			/* case GRP_GOTOTHREAD will never make it up this far */
-			default:		/* ie >= 0 Shouldn't happen any more ? */
+			default:		/* ie >= 0 Shouldn't happen any more? */
 				clear_note_area ();
 				show_group_page ();
 				return 0;

@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 5
 SVER	= 12
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20020410
+DVER	= 20020417
 EXE	= tin
 
 # directory structure
@@ -451,6 +451,7 @@ chmod:
 	$(TOLDIR)/metamutt \
 	$(TOLDIR)/opt-case.pl \
 	$(TOLDIR)/tinlock \
+	$(TOLDIR)/tinews.pl \
 	$(TOLDIR)/url_handler.sh \
 	$(TOLDIR)/w2r.pl \
 	$(PCREDIR)/RunTest \

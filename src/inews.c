@@ -104,7 +104,7 @@ submit_inews (
 	t_bool ismail = FALSE;
 #	endif /* !FORGERY */
 #	ifdef USE_CANLOCK
-	t_bool can_lock_added = FALSE;
+	t_bool can_lock_in_article = FALSE;
 #	endif /* USE_CANLOCK */
 
 
@@ -130,6 +130,14 @@ submit_inews (
 				if ((ptr = strchr(message_id, '\n')))
 					*ptr = '\0';
 			}
+#	ifdef USE_CANLOCK
+			if (ptr - line == 10 && !strncasecmp (line, "Cancel-Lock", 11)) {
+				strcpy(message_id, ptr + 2);
+				can_lock_in_article = TRUE;
+				if ((ptr = strchr(message_id, '\n')))
+					*ptr = '\0';
+			}
+#	endif /* USE_CANLOCK */
 		} else
 			break; /* end of headers */
 	}
@@ -242,19 +250,17 @@ submit_inews (
 				put_server (line);
 			}
 #	ifdef USE_CANLOCK
-			/* create a Cancel-Lock: */
-			{
-				char lock[1024];
-				const char *lptr = (const char *) 0;
+			if (!can_lock_in_article) {
+					char lock[1024];
+					const char *lptr = (const char *) 0;
 
-				lock[0] = '\0';
-				if ((lptr = build_canlock(message_id, get_secret())) != (const char *) 0) {
-					STRCPY(lock, lptr);
-					sprintf (line, "Cancel-Lock: %s", lock);
-					put_server (line);
-					can_lock_added = TRUE;
+					lock[0] = '\0';
+					if ((lptr = build_canlock(message_id, get_secret())) != (const char *) 0) {
+						STRCPY(lock, lptr);
+						sprintf (line, "Cancel-Lock: %s", lock);
+						put_server (line);
+					}
 				}
-			}
 #	endif /* USE_CANLOCK */
 		}
 
@@ -275,11 +281,11 @@ submit_inews (
 				u_put_server (".");
 
 #	ifdef USE_CANLOCK
-			/* avoid dublicated Cancel-Lock: header */
 			if (line[0] == '\n')
-				can_lock_added = FALSE;	/* don't touch the body */
+				can_lock_in_article = FALSE;	/* don't touch the body */
 
-			if (can_lock_added) {
+			if (can_lock_in_article && !id_in_article) {
+				/* skip bogus can-locks */
 				ptr = strchr (line, ':');
 				if (ptr - line == 11 && !strncasecmp (line, "Cancel-Lock", 11)) {
 					; /* skip line */

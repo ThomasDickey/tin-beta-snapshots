@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 1994-06-05
+ *  Updated   : 2002-04-11
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -17,10 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *    This product includes software developed by Iain Lea, Rich Skrenta.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -89,12 +86,12 @@ init_alloc (
 	/*
 	 * active file arrays
 	 */
-	max_active = get_active_num ();
+	max_active = get_active_num();
 	max_newnews = DEFAULT_NEWNEWS_NUM;
 
 	active = (struct t_group *) my_malloc (sizeof(*active) * max_active);
 	newnews = (struct t_newnews *) my_malloc (sizeof(*newnews) * max_newnews);
-	my_group = (int *) my_malloc (sizeof(int) * max_active);
+	my_group = (int *) my_calloc (1, sizeof(int) * max_active);
 
 	/*
 	 * article headers array
@@ -136,7 +133,7 @@ expand_active (
 
 	if (active == (struct t_group *) 0) {
 		active = (struct t_group *) my_malloc (sizeof (*active) * max_active);
-		my_group = (int *) my_malloc (sizeof (int) * max_active);
+		my_group = (int *) my_calloc (1, sizeof(int) * max_active);
 	} else {
 		active = (struct t_group *) my_realloc((char *) active, sizeof (*active) * max_active);
 		my_group = (int *) my_realloc((char *) my_group, sizeof (int) * max_active);
@@ -435,6 +432,30 @@ my_malloc1 (
 
 	if ((p = (char *) malloc (size)) == (char *) 0) {
 		error_message (txt_out_of_memory, tin_progname, size, file, line);
+		giveup();
+	}
+	return (void *) p;
+}
+
+
+/*
+ * TODO: add fallback code with malloc(nmemb*size)/memset(0,nmemb*size)?
+ */
+void *
+my_calloc1 (
+	const char *file,
+	int line,
+	size_t nmemb,
+	size_t size)
+{
+	char *p;
+
+#ifdef DEBUG
+	vDbgPrintMalloc (TRUE, file, line, nmemb*size);
+#endif /* DEBUG */
+
+	if ((p = (char *) calloc (nmemb, size)) == (char *) 0) {
+		error_message (txt_out_of_memory, tin_progname, nmemb*size, file, line);
 		giveup();
 	}
 	return (void *) p;

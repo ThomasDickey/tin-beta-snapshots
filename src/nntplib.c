@@ -808,7 +808,7 @@ reconnect (
 		return 0;
 	}
 
-	if (--retry == 0)					/* No more tries ? */
+	if (--retry == 0)					/* No more tries? */
 		tin_done(NNTP_ERROR_EXIT);
 
 	return(retry);

@@ -616,14 +616,15 @@ rfc1522_do_encode(
 							ewsize += 3;
 						}
 						what++;
-					}					  /* end of while */
-				}						  /* end of else */
-			} else {					  /* end of Q encoding and beg. of B encoding */
+					}					/* end of while */
+				}						/* end of else */
+			} else {					/* end of Q encoding and beg. of B encoding */
 				/*
-				 * if what immediately precedes the current fragment with 8bit char is
-				 * encoded word, the leading spaces should be encoded together with
-				 * 8bit chars following them. No need to worry about '(',')' and '"'
-				 * as they're already excluded with contain_nonprintables used in outer if-clause
+				 * if what immediately precedes the current fragment with 8bit
+				 * char is encoded word, the leading spaces should be encoded
+				 * together with 8bit chars following them. No need to worry
+				 * about '(',')' and '"' as they're already excluded with
+				 * contain_nonprintables used in outer if-clause
 				 */
 				while (*what && (!isbetween(*what, isstruct_head) || rightafter_ew)) {
 #ifdef CHARSET_CONVERSION
@@ -647,7 +648,7 @@ rfc1522_do_encode(
 					any_quoting_done = TRUE;
 				}
 				rightafter_ew = TRUE;
-				word_cnt--;			  /* compensate double counting */
+				word_cnt--;		/* compensate double counting */
 				/*
 				 * if encoded word is followed by 7bit-only fragment, we need to
 				 * eliminate ' ' inserted in while-block above
@@ -656,38 +657,36 @@ rfc1522_do_encode(
 					t--;
 					ewsize--;
 				}
-			}							  /* end of B encoding */
+			}		/* end of B encoding */
 		} else {
 			while (*what && !isbetween(*what, isstruct_head))
-				*t++ = *what++;	  /* output word unencoded */
+				*t++ = *what++;		/* output word unencoded */
 			while (*what && isbetween(*what, isstruct_head))
-				*t++ = *what++;	  /* output trailing whitespace unencoded */
+				*t++ = *what++;		/* output trailing whitespace unencoded */
 			rightafter_ew = FALSE;
 		}
-	}									  /* end of pass 1 while loop */
+	}		/* end of pass 1 while loop */
 	*t = 0;
 	/* Pass 2: break long lines if there are MIME-sequences in the result */
 	c = buf;
 	if (break_long_line) {
 		column = 0;
 		if (any_quoting_done) {
-			word_cnt = 1;			  /*
-											* note, if the user has typed a
-										   * continuation line, we will consider the
-										   * initial whitespace to be delimiting
-										   * word one (well, just assume an empty
-										   * word).
-										   */
+			word_cnt = 1;			/*
+										 * note, if the user has typed a continuation
+										 * line, we will consider the initial
+										 * whitespace to be delimiting word one (well,
+										 * just assume an empty word).
+										 */
 			while (*c) {
 				if (isspace((unsigned char) *c)) {
-					/* According to rfc1522, header lines
-					 * containing encoded words are limited to 76
-					 * chars, but if the first line is too long
-					 * (due to a long header keyword), we cannot
-					 * stick to that, since we would break the line
-					 * directly after the keyword's colon, which is
-					 * not allowed. The same is necessary for a
-					 * continuation line with an unencoded word
+					/*
+					 * According to rfc1522, header lines containing encoded
+					 * words are limited to 76 chars, but if the first line is
+					 * too long (due to a long header keyword), we cannot stick
+					 * to that, since we would break the line directly after the
+					 * keyword's colon, which is not allowed. The same is
+					 * necessary for a continuation line with an unencoded word
 					 * that is too long.
 					 */
 					if (sizeofnextword(c) + column > 76 && word_cnt != 1) {
@@ -708,7 +707,7 @@ rfc1522_do_encode(
 			while (*c)
 				*((*where)++) = *c++;
 		}
-	} else {							  /* !break_long_line */
+	} else {		/* !break_long_line */
 		while (*c)
 			*((*where)++) = *c++;
 	}
@@ -728,17 +727,16 @@ rfc1522_encode (
 	static char buf[2048];
 
 /*
- * break_long_line is FALSE for news posting unless MIME_BREAK_LONG_LINES
- * is defined, but it's TRUE for mail messages regardless of whether or not
+ * break_long_line is FALSE for news posting unless MIME_BREAK_LONG_LINES is
+ * defined, but it's TRUE for mail messages regardless of whether or not
  * MIME_BREAK_LONG_LINES is defined
  */
 #ifdef MIME_BREAK_LONG_LINES
 	t_bool break_long_line = TRUE;
 #else
 /*
- * Even if MIME_BREAK_LONG_LINES is NOT defined,
- * long headers in mail messages should be broken up in
- * accordance with RFC 2047(1522)
+ * Even if MIME_BREAK_LONG_LINES is NOT defined, long headers in mail
+ * messages should be broken up in accordance with RFC 2047(1522)
  */
 	t_bool break_long_line = ismail;
 #endif /* MIME_BREAK_LONG_LINES */
@@ -816,8 +814,7 @@ rfc15211522_encode (
 		fputs(buffer, f);
 
 	/* now add MIME headers as necessary */
-#if 0									  /* RFC1522 does not require MIME headers just because there are
-										     encoded header lines */
+#if 0	/* RFC1522 does not require MIME headers just because there are encoded header lines */
 	if (quoteflag || umlauts)
 #else
 	if (umlauts)
@@ -873,8 +870,8 @@ rfc15211522_encode (
 
 #if 0
 /*
- * Not only EUC-JP but also other Japanese charsets such as
- * SJIS might need RFC 1468 encoding. To be confirmed.
+ * Not only EUC-JP but also other Japanese charsets such as SJIS might need
+ * RFC 1468 encoding. To be confirmed.
  */
 #	ifdef CHARSET_CONVERSION
 		else if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-JP"))
@@ -885,8 +882,8 @@ rfc15211522_encode (
 #	endif /* CHARSET_CONVERSION */
 
 /*
- * Not only EUC-CN but also other Chinese charsets such as
- * BIG5 and EUC-TW might need RFC 1922 encoding. To be confirmed.
+ * Not only EUC-CN but also other Chinese charsets such as BIG5 and EUC-TW
+ * might need RFC 1922 encoding. To be confirmed.
  */
 #	ifdef CHARSET_CONVERSION
 		else if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-CN"))

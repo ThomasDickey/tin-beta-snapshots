@@ -268,7 +268,7 @@ parse_mailcap_line(
 
 	if (tmailcap->test != (char *) 0) { /* test field given */
 		/* TODO: EndWin()/InitWin() around system needed? */
-		/* TODO: use invoke_cmd() ? */
+		/* TODO: use invoke_cmd()? */
 		if (system(tmailcap->test) != 0) { /* test failed? */
 			free_mailcap (tmailcap);
 			return ((t_mailcap *) 0);
@@ -407,7 +407,7 @@ expand_mailcap_meta(
 							memset (parameter, 0, end - ptr + 1);
 							strncpy (parameter, ptr + 1, end - ptr - 1); /* extract paramter name */
 
-							if ((value = get_param (part->params, parameter)) != (char *) 0) { /* match ? */
+							if ((value = get_param (part->params, parameter)) != (char *) 0) { /* match? */
 								CHECK_SPACE(strlen(value));
 								strcat (line, value);
 								lptr = line + strlen(line);

@@ -95,14 +95,14 @@ get_search_pattern (
 	/*
 	 * A gross hack to simulate substrings with wildmat()
 	 */
-/* TODO somehow use REGEX_FMT here ? */
+/* TODO somehow use REGEX_FMT here? */
 	sprintf(tmpbuf, "*%s*", def);
 	return tmpbuf;
 }
 
 
 /*
- * Called by config.c
+ * called by config.c
  */
 int
 search_config (
@@ -412,7 +412,6 @@ search_article (
 	int start_line,
 	int lines,
 	t_lineinfo *line,
-	t_bool show_ctrl_l,
 	int reveal_ctrl_l_lines,
 	FILE *fp)
 {
@@ -451,7 +450,7 @@ search_article (
 		/*
 		 * Don't search beyond ^L if hiding is enabled
 		 */
-		if (!show_ctrl_l && (line[i].flags&C_CTRLL) && i > reveal_ctrl_l_lines)
+		if ((line[i].flags&C_CTRLL) && i > reveal_ctrl_l_lines)
 			break;
 
 		ptr = tin_fgets(fp, FALSE);

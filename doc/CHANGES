@@ -1,4 +1,10 @@
--- 1.5.12 release 20020410 "Sugar" --
+-- 1.5.12 release 20020417 "Sugar" --
+
+U099) Alex Vasylenko <lxv@omut.org>
+      Urs Janssen <urs@tin.org>
+      ADD. my_calloc
+      BUG. my_groups isn't initialized
+      FIX. proto.h, tin.h, config.c, malloc.c
 
 U098) Marc Brockschmidt <marc@marcbrockschmidt.de>
       Urs Janssen <urs@tin.org>
@@ -16,10 +22,12 @@ U096) Guido Ostkamp <Guido.Ostkamp@t-online.de>
 U095) Jason Faultless <jason@radar.tele2.co.uk>
       ADD. attrib cleanup, error reporting
       ADD. scroll_lines pager tuning control
+      ADD. explicit 'q' to quit info pager, to fix...
+      BUG. resizing screen exits info pager
       REM. show_last_line_prev_page, full_page_scroll
-      FIX. tin.1, tin.5, extern.h, proto.h, tinrc.h, active.c, config.c
-           global.c, help.c, init.c, lang.c, main.c, page.c, select.c
-           signal.c, tincfg.tbl
+      FIX. tin.1, tin.5, extern.h, proto.h, tinrc.h, active.c, art.c, config.c
+           cook.c, global.c, group.c, help.c, init.c, lang.c, main.c misc.c
+           page.c, post.c, select.c, signal.c, tincfg.tbl
 
  038) Urs Janssen <urs@tin.org>
       ADD. new TLDs .coop and .aero

@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-04-10
+ *  Updated   : 2002-04-15
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -790,7 +790,7 @@ constext *txt_show_from[] = { N_("None"), N_("Address"), N_("Full Name"), N_("Ad
 /*
  * MIME-Content-Transfer-Encodings.
  */
-/* TODO can any of this go away ? */
+/* TODO can any of this go away? */
 constext *txt_mime_encodings[] = { txt_8bit, txt_base64, txt_quoted_printable, txt_7bit };
 
 constext *content_encodings[] = {
@@ -1315,8 +1315,8 @@ struct opttxt txt_scroll_lines = {
 	N_("0 = full page scrolling, -1 = show previous last line as first on next page, -2 = half page"),
 	N_("Number of lines to scroll in pager :"),
 	N_("# Number of lines that cursor-up/down will scroll in article pager\n\
-# eg, 1+ = line-by-line, 0 = page-by-page (tradional behaviour), -1 = the last\n\
-# line of the previous page will be displayed as the first line of next page,\n\
+# eg, 1+ = line-by-line, 0 = page-by-page (traditional behaviour),\n\
+# -1 = the top/bottom line is carried over onto the next page,\n\
 # -2 = half-page scrolling\n")
 };
 

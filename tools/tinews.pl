@@ -7,22 +7,21 @@
 #            <marc@marcbrockschmidt.de>
 #
 # TODO: - add pgp6 support
-#       - add debug/verbose mode which doesn't dele tmp-files and is verbose
-#       - reorder posting/mailing, do mailing after successfull post
-#         (if Newsgroups header was prestent, otherwise order is unimportant)
-#       - cleanup, remove dublicated code
+#       - add debug mode which doesn't dele tmp-files and is verbose
+#       - cleanup, remove duplicated code
 #       - turn off echoing if prompting for password
-#	- check for ~/.newsauth and use username/password if found
+#       - check for ~/.newsauth and use username/password if found
 #
 # version Number
-my $version = "0.8.7";
+my $version = "0.9.7";
 
 # TODO: put into a "my %config('NNTPServer' => 'news', ... );" array
 my $NNTPServer	= 'news';		# you NNTP servers name
 my $NNTPUser	= '';
 my $NNTPPass	= '';
 my $PGPSigner	= '';			# sign as who?
-my $PGPPass	= '';			# aBiGseCreT
+my $PGPPass	= '';			# aBiGseCreT # pgp2
+my $PathtoPGPPass = '';			# pgp2, pgp5 and gpg
 
 my $pgp		= '/usr/bin/pgp';	# path to pgp
 my $PGPVersion	= '2';			# Use 2 for 2.X, 5 for PGP > 2.X and GPG for GPG
@@ -31,13 +30,16 @@ my $Interactive = 1;			# allow interactive usage
 
 my $sendmail	= '| /usr/sbin/sendmail -t'; # set to '' to disable mail-actions
 
-my @PGPSignHeaders = ('From', 'Newsgroups', 'Subject', 'Followup-To',
-	'Control', 'Approved', 'Message-ID', 'Sender', 'Date', 'Cancel-Key',
-	'Cancel-Lock');
-my @PGPorderheaders = ('From', 'Newsgroups', 'Subject', 'Followup-To',
-	'Control', 'Approved', 'Message-ID', 'Sender', 'Date', 'Cancel-Key',
-	'Cancel-Lock', 'Organization', 'Mime-Version', 'Content-Type',
-	'Content-Transfer-Encoding',);
+my @PGPSignHeaders = ('From', 'Newsgroups', 'Subject', 'Control',
+	'Supersedes', 'Followup-To', 'Date', 'Sender', 'Approved',
+	'Message-ID', 'Reply-To', 'Cancel-Lock', 'Cancel-Key',
+	'Also-Control', 'Distribution');
+my @PGPorderheaders = ('From', 'Newsgroups', 'Subject', 'Control',
+	'Supersedes', 'Followup-To', 'Date', 'Organization', 'Lines',
+	'Sender', 'Approved', 'Distribution', 'Message-ID',
+	'References', 'Reply-To', 'Mime-Version', 'Content-Type',
+	'Content-Transfer-Encoding', 'Summary', 'Keywords', 'Cancel-Lock',
+	'Cancel-Key', 'Also-Control', 'X-PGP', 'User-Agent');
 
 my $pgptmpf	= 'pgptmp';		# temporary file for PGP.
 
@@ -47,74 +49,160 @@ my $pgpend	= '-----END PGP SIGNATURE-----';	# End of PGP-Signature
 
 ################################################################################
 
-use Net::NNTP;		# only used if (defined(Header{'Newsgroups'}))
-use Time::Local;	# only used for Date/Message-ID generation
-if ($Interactive) {
-	use Term::ReadLine;
-}
+use Net::NNTP;
+use Time::Local;
+use Term::ReadLine;
 use strict;
 
-my $term = '';
 my $pname = $0;
 $pname =~ s#^.*/##;
 
+my $term = new Term::ReadLine 'tinews';
 my $in_header = 1;
-my (@Header, %Header, @Body, $PGPCommand, $PathtoPGPPass);
+my (@Header, %Header, @Body, $PGPCommand);
 
 $NNTPServer = $ENV{'NNTPSERVER'} if ($ENV{'NNTPSERVER'});
 $PGPSigner = $ENV{'SIGNER'} if ($ENV{'SIGNER'});
 
+$PathtoPGPPass = $ENV{'PGPPASSFILE'} if ($ENV{'PGPPASSFILE'});
+if ($PathtoPGPPass) {
+	open (PGPPass, "$PathtoPGPPass") or die ("$0: Can't open $PathtoPGPPass: $!");
+	# TODO: ignore any errors if running $Interactive as we can prompt
+	#       the user later?
+	chomp ($PGPPass = <PGPPass>);
+	close(PGPPass);
+}
 if ($PGPVersion eq '2') {
 	$PGPPass = $ENV{'PGPPASS'} if ($ENV{'PGPPASS'});
-} else {
-	$PathtoPGPPass = $ENV{'PGPPASSFILE'} if ($ENV{'PGPPASSFILE'});
-	open (PGPPass, "$PathtoPGPPass");
-	if (!PGPPass) {
-		if (!$Interactive) {
-			die ("$0: Can't open $PathtoPGPPass: $!");
-		} else {
-			# warn ("$0: Can't open $PathtoPGPPass: $!") if ($verbose);
-		}
-	} else {
-		$PGPPass = <PGPPass>;
-		close(PGPPass);
-	}
 }
 
 
-# Read the message and split the header:
-while (defined($_ = <>)) {
-	if ($in_header) {
-		if (m/^$/) { #end of header
-			$in_header = 0;
-			next;
-		}
-		push @Header, $_;
-	} else {
-		push @Body, $_;
-	}
-}
-
-my $currentheader;
-foreach (@Header) {
-	if (m/^(\S+): (.*)$/s) {
-		$currentheader = $1;
-		$Header{$currentheader} = $2;
-	} else {
-		$Header{$currentheader} .= $_;
-	}
-}
+# Read the message and split the header
+readarticle(\%Header, \@Body);
 
 
 # verify/add/remove headers
-my ($i);
-foreach $i ('From', 'Subject') {
-	if (!defined($Header{$i})) {
-		die "$0: No $i:-Header defined.";
+foreach ('From', 'Subject') {
+	die "$0: No $_:-header defined." if (!defined($Header{$_}));
+}
+
+$Header{'Date'} = getdate()."\n" if (!defined($Header{'Date'}));
+
+if (defined($Header{'User-Agent'})) {
+	chomp $Header{'User-Agent'};
+	$Header{'User-Agent'} = $Header{'User-Agent'}." ".$pname."/".$version."\n";
+}
+
+delete $Header{'X-PGP-Key'} if (defined($Header{'X-PGP-Key'}));
+
+if (!defined($Header{'Organization'})) {
+	if ($ENV{'ORGANIZATION'}) {
+		chomp ($Header{'Organization'} = $ENV{'ORGANIZATION'});
+		$Header{'Organization'} .= "\n";
 	}
 }
 
-if (!defined($Header{'Date'})) {
+if (!defined($Header{'Reply-To'})) {
+	if ($ENV{'REPLYTO'}) {
+		chomp ($Header{'Reply-To'} = $ENV{'REPLYTO'});
+		$Header{'Reply-To'} .= "\n";
+	}
+}
+
+if (defined($Header{'Newsgroups'}) && !defined($Header{'Message-ID'})) {
+	my $Server = AuthonNNTP();
+	my $ServerMsg = $Server->message();
+	$Server->datasend('.');
+	$Server->dataend();
+	$Server->quit();
+	$Header{'Message-ID'} = "$1\n" if ($ServerMsg =~ /(<\S+\@\S+>)/);
+}
+
+if (!defined($Header{'Message-ID'})) {
+	chomp (my $hname = `hostname`);
+	my ($hostname,) = gethostbyname($hname);
+	$Header{'Message-ID'} = sprintf ("<N%xI%xT%x@%s>\n", $>, timelocal(localtime), $$, $hostname);
+}
+
+# set Posted-And-Mailed if we send a mailcopy to someone else
+if ($sendmail && defined($Header{'Newsgroups'}) && (defined($Header{'To'}) || defined($Header{'Cc'}) || defined($Header{'Bcc'}))) {
+	foreach ('To', 'Bcc', 'Cc') {
+		if (defined($Header{$_}) && $Header{$_} ne $Header{'From'}) {
+			$Header{'Posted-And-Mailed'} = "yes\n";
+			last;
+		}
+	}
+}
+
+chomp ($PGPSigner = $Header{'From'}) if (!$PGPSigner);
+$PGPCommand = getpgpcommand($PGPVersion);
+
+# (re)move mail-headers
+my ($To, $Cc, $Bcc, $Newsgroups) = '';
+$To = $Header{'To'} if (defined($Header{'To'}));
+$Cc = $Header{'Cc'} if (defined($Header{'Cc'}));
+$Bcc = $Header{'Bcc'} if (defined($Header{'Bcc'}));
+delete $Header{$_} foreach ('To', 'Cc', 'Bcc');
+$Newsgroups = $Header{'Newsgroups'} if (defined($Header{'Newsgroups'}));
+
+# sign article
+my $SignedMessageR = signarticle(\%Header, \@Body);
+
+# post article
+postarticle($SignedMessageR) if ($Newsgroups);
+
+# mail article
+if (($To || $Cc || $Bcc) && $sendmail) {
+	open(MAIL, $sendmail) || die "$!";
+	unshift @$SignedMessageR, "To: $To" if ($To);
+	unshift @$SignedMessageR, "Cc: $Cc" if ($Cc);
+	unshift @$SignedMessageR, "Bcc: $Bcc" if ($Bcc);
+	print(MAIL @$SignedMessageR);
+	close(MAIL);
+}
+
+# Game over. Insert new coin.
+exit;
+
+
+#-------- sub readarticle
+#
+sub readarticle {
+	my ($HeaderR, $BodyR) = @_;
+	my $currentheader;
+	while (defined($_ = <>)) {
+		if ($in_header) {
+			if (m/^$/) { #end of header
+				$in_header = 0;
+			} elsif (m/^(\S+): (.*)$/s) {
+				$currentheader = $1;
+				$$HeaderR{$currentheader} = $2;
+			} elsif (m/^[ \t]/) {
+				$$HeaderR{$currentheader} .= $_;
+			}
+		} else {
+			push @$BodyR, $_;
+		}
+	}
+}
+
+#-------- sub askuser
+# askuser uses Term::Readline to ask the user a question and returns his
+# answer(s).
+#
+# Receives:
+#   - $AnsRef: A reference to a scalar which will hold the answer.
+#   - $Question: A scalar containing the question.
+sub askuser {
+	my ($AnsRef, $Question) = @_;
+	$$AnsRef = $term->readline($Question);
+}
+
+
+#-------- sub getdate
+# getdate generates a date and returns it.
+#
+sub getdate {
 	my @time = localtime;
 	my $ss = ($time[0]<10) ? "0".$time[0] : $time[0];
 	my $mm = ($time[1]<10) ? "0".$time[1] : $time[1];
@@ -133,172 +221,108 @@ if (!defined($Header{'Date'})) {
 	my $offseth = int($offset/3600);
 	my $offsetm = int(($offset - $offseth*3600)/60);
 	my $tz = sprintf ("%s%0.2d%0.2d", $sign, $offseth, $offsetm);
-	my $rfcdate = "$wday, $day $monthN $year $hh:$mm:$ss $tz";
-	$Header{'Date'} = $rfcdate."\n";
+	return "$wday, $day $monthN $year $hh:$mm:$ss $tz";
 }
 
-if (defined($Header{'Newsgroups'}) && !defined($Header{'Message-ID'})) {
-	my $Server = Net::NNTP->new($NNTPServer, Reader => 1, Debug => 0) or die "$0: Can't connect to news server $NNTPServer!\n";
+
+#-------- sub AuthonNNTP
+# AuthonNNTP opens the connection to a Server and returns a Net::NNTP-Object.
+#
+# User, Password and Server are defined before as global
+# scalars ($NNTPServer, $NNTPUser, $NNTPPass). If no values
+# for user or password are defined, the sub will try to
+# ask the user (only if $Interactive is != 0).
+sub AuthonNNTP {
+	my $Server = Net::NNTP->new($NNTPServer, Reader => 1, Debug => 0) or die "$0: Can't connect to $NNTPServer!\n";
 	my $ServerMsg = "";
 	my $ServerCod = $Server->code();
+
+	# no read and/or write access - give up
 	if ($ServerCod < 200 || $ServerCod > 201) {
 		$ServerMsg = $Server->message();
 		$Server->quit();
 		die ($0.": ".$ServerCod." ".$ServerMsg."\n");
 	}
+
+	# read access - try auth
 	if ($ServerCod == 201) {
-		if ($NNTPPass ne "") {
-			$Server->authinfo($NNTPUser, $NNTPPass);
-			$ServerCod = $Server->code();
-			$ServerMsg = $Server->message();
-		} elsif ($Interactive) {
-			$term = new Term::ReadLine 'tinews' if (!$term);
-			$NNTPUser = $term->readline("Your Username at $NNTPServer: ");
-			chomp $NNTPUser;
-			$NNTPPass = $term->readline("Password for $NNTPUser at $NNTPServer:");
-			chomp $NNTPPass;
-			$Server->authinfo($NNTPUser, $NNTPPass);
-			$ServerCod = $Server->code();
-			$ServerMsg = $Server->message();
+		if ($NNTPPass eq "") {
+			if ($Interactive) {
+				askuser(\$NNTPUser, "Your Username at $NNTPServer: ");
+				askuser(\$NNTPPass, "Password for $NNTPUser at $NNTPServer: ");
+			} else {
+				$ServerMsg = $Server->message();
+				$Server->quit();
+				die ($0.": ".$ServerCod." ".$ServerMsg."\n");
+			}
 		}
-		if ($ServerCod != 281) {
+		$Server->authinfo($NNTPUser, $NNTPPass);
+		$ServerCod = $Server->code();
+		$ServerMsg = $Server->message();
+		if ($ServerCod != 281) { # auth failed
 			$Server->quit();
 			die $0.": ".$ServerCod." ".$ServerMsg."\n";
 		}
 	}
+
 	$Server->post();
 	$ServerCod = $Server->code();
 	if ($ServerCod == 480) {
-		if ($NNTPPass ne "") {
-			$Server->authinfo($NNTPUser, $NNTPPass);
-		} elsif ($Interactive) {
-			$term = new Term::ReadLine 'tinews' if (!$term);
-			$NNTPUser = $term->readline("Your Username at $NNTPServer: ");
-			chomp $NNTPUser;
-			$NNTPPass = $term->readline("Password for $NNTPUser at $NNTPServer: ");
-			chomp $NNTPPass;
-			$Server->authinfo($NNTPUser, $NNTPPass);
-		} else {
-			$ServerMsg = $Server->message();
-			$Server->quit();
-			die ($0.": ".$ServerCod." ".$ServerMsg."\n");
+	        if ($NNTPPass eq "") {
+			if ($Interactive) {
+				askuser(\$NNTPUser, "Your Username at $NNTPServer: ");
+				askuser(\$NNTPPass, "Password for $NNTPUser at $NNTPServer: ");
+			} else {
+				$ServerMsg = $Server->message();
+				$Server->quit();
+				die ($0.": ".$ServerCod." ".$ServerMsg."\n");
+			}
 		}
+		$Server->authinfo($NNTPUser, $NNTPPass);
 		$Server->post();
 	}
-	$ServerMsg = $Server->message();
-	$Server->datasend('.');
-	$Server->dataend();
-	$Server->quit();
-	if ($ServerMsg =~ /(<\S+\@\S+>)/) {
-		$Header{'Message-ID'} = "$1\n";
-	}
-}
-if (!defined($Header{'Message-ID'})) {
-	my $hname = `hostname`;
-	chomp $hname;
-	my ($hostname,) = gethostbyname($hname);
-	$Header{'Message-ID'} = sprintf ("<N%xI%xT%x@%s>\n", $>, timelocal(localtime), $$, $hostname);
-}
-
-if (defined($Header{'User-Agent'})) {
-	chomp $Header{'User-Agent'};
-	$Header{'User-Agent'} = $Header{'User-Agent'}." ".$pname."/".$version."\n";
-}
-
-if (defined($Header{'X-PGP-Key'})) {
-	undef $Header{'X-PGP-Key'};
-}
-
-# set Posted-And-Mailed if we send a mailcopy to someone else
-if ($sendmail && defined($Header{'Newsgroups'}) && (defined($Header{'To'}) || defined($Header{'Cc'}) || defined($Header{'Bcc'}))) {
-	my $foo = "";
-	foreach ('To', 'Bcc', 'Cc') {
-		$foo .= $Header{$_} if (defined($Header{$_}));
-	}
-	if (length($foo) && $foo !~ m/$Header{'From'}/) {
-		$Header{'Posted-And-Mailed'} = "yes\n";
-	}
-}
-
-if (!$PGPSigner) {
-	$PGPSigner = $Header{'From'};
-	chomp $PGPSigner;
-}
-
-if ($PGPVersion eq '2') {
-	if ($PGPPass) {
-		$PGPCommand = $pgp." -z \"".$PGPPass."\" -u \"".$PGPSigner."\" +verbose=0 language='en' -saft <".$pgptmpf.".txt >".$pgptmpf.".txt.asc";
-	} elsif ($Interactive) {
-		$PGPCommand = $pgp." -z -u \"".$PGPSigner."\" +verbose=0 language='en' -saft <".$pgptmpf.".txt >".$pgptmpf.".txt.asc";
-	} else {
-		die "$0: Passphrase is unknown!\n";
-	}
-} elsif ($PGPVersion eq '5') {
-	if (defined($PathtoPGPPass)) {
-		$PGPCommand = "PGPPASSFD=2 ".$pgp."s -u \"".$PGPSigner."\" -t --armor -o ".$pgptmpf.".txt.asc -z -f < ".$pgptmpf.".txt 2< ".$PathtoPGPPass;
-	} elsif ($Interactive) {
-		$PGPCommand = $pgp."s -u \"".$PGPSigner."\" -t --armor -o ".$pgptmpf.".txt.asc -z -f < ".$pgptmpf.".txt";
-	} else {
-		die "$0: Passphrase is unknown!\n";
-	}
-} elsif ($PGPVersion eq 'GPG') {
-	if (defined($PathtoPGPPass)) {
-		$PGPCommand = $pgp." -a -z 0 -u \"".$PGPSigner."\" -o ".$pgptmpf.".txt.asc --no-tty --batch --passphrase-fd 2 2<".$PathtoPGPPass." --clearsign ".$pgptmpf.".txt";
-	} elsif ($Interactive) {
-		$PGPCommand = $pgp." -a -z 0 -u \"".$PGPSigner."\" -o ".$pgptmpf.".txt.asc --quiet --no-secmem-warning --no-batch --clearsign ".$pgptmpf.".txt";
-	} else {
-		die "$0: Passphrase is unknown!\n";
-	}
-} else {
-	die "$0: Unknown PGP-Version $PGPVersion!";
+	return $Server;
 }
 
 
-# backup headers
-my %OHeader = %Header;
+#-------- sub getpgpcommand
+# getpgpcommand generates the command to sign the message and returns it.
+#
+# Receives:
+#   - $PGPVersion: A scalar holding the PGPVersion
+sub getpgpcommand {
+	my ($PGPVersion) = @_;
+	my $PGPCommand;
 
-
-# sign article
-my $SignedMessageR = signarticle(\%Header, \@Body);
-
-
-# mail article
-if ($sendmail && (defined($OHeader{'To'}) || defined($OHeader{'Cc'}) || defined($OHeader{'Bcc'}))) {
-	open(MAIL, $sendmail) || die "$!";
-	print(MAIL @$SignedMessageR);
-	close(MAIL);
-}
-
-
-# remove mail headers
-$in_header = 0;
-my ($Delete, @NewSignedMessage);
-foreach (@$SignedMessageR) {
-	if (!$in_header) {
-		if (m/^$/) {
-			$in_header++;
-			redo;
-		} elsif (m/^(To|Bcc|Cc): /){
-			$Delete++;
-		} elsif (m/^\s+/){
-			# Don't use them in @SignedHeader
+	if ($PGPVersion eq '2') {
+		if ($PGPPass) {
+			$PGPCommand = "PGPPASS=\"".$PGPPass."\" ".$pgp." -z -u \"".$PGPSigner."\" +verbose=0 language='en' -saft <".$pgptmpf.".txt >".$pgptmpf.".txt.asc";
+		} elsif ($Interactive) {
+			$PGPCommand = $pgp." -z -u \"".$PGPSigner."\" +verbose=0 language='en' -saft <".$pgptmpf.".txt >".$pgptmpf.".txt.asc";
 		} else {
-			push @NewSignedMessage, $_;
+			die "$0: Passphrase is unknown!\n";
+		}
+	} elsif ($PGPVersion eq '5') {
+		if (defined($PathtoPGPPass)) {
+			$PGPCommand = "PGPPASSFD=2 ".$pgp."s -u \"".$PGPSigner."\" -t --armor -o ".$pgptmpf.".txt.asc -z -f < ".$pgptmpf.".txt 2< ".$PathtoPGPPass;
+		} elsif ($Interactive) {
+			$PGPCommand = $pgp."s -u \"".$PGPSigner."\" -t --armor -o ".$pgptmpf.".txt.asc -z -f < ".$pgptmpf.".txt";
+		} else {
+			die "$0: Passphrase is unknown!\n";
+		}
+	} elsif ($PGPVersion eq 'GPG') {
+		if (defined($PathtoPGPPass)) {
+			$PGPCommand = $pgp." -a -z 0 -u \"".$PGPSigner."\" -o ".$pgptmpf.".txt.asc --no-tty --batch --passphrase-fd 2 2<".$PathtoPGPPass." --clearsign ".$pgptmpf.".txt";
+		} elsif ($Interactive) {
+			$PGPCommand = $pgp." -a -z 0 -u \"".$PGPSigner."\" -o ".$pgptmpf.".txt.asc --quiet --no-secmem-warning --no-batch --clearsign ".$pgptmpf.".txt";
+		} else {
+			die "$0: Passphrase is unknown!\n";
 		}
 	} else {
-		push @NewSignedMessage, $_;
+		die "$0: Unknown PGP-Version $PGPVersion!";
 	}
+	return $PGPCommand;
 }
-
-
-# post article
-if (defined($OHeader{'Newsgroups'})) {
-	postarticle(\@NewSignedMessage);
-}
-
-
-# Game over. Insert new coin.
-exit;
 
 
 #-------- sub postarticle
@@ -309,59 +333,13 @@ exit;
 sub postarticle {
 	my ($ArticleR) = @_;
 
-	my $Server = Net::NNTP->new($NNTPServer, Reader => 1, Debug => 0) or die "$0: Can't connect to news server $NNTPServer!\n";
-	my $ServerMsg ="";
+	my $Server = AuthonNNTP();
 	my $ServerCod = $Server->code();
-	if ($ServerCod < 200 || $ServerCod > 201) {
-		$ServerMsg = $Server->message();
-		$Server->quit();
-		die ($0.": ".$ServerCod." ".$ServerMsg."\n");
-	}
-	if ($ServerCod == 201) {
-		if ($NNTPPass ne "") {
-			$Server->authinfo($NNTPUser, $NNTPPass);
-			$ServerCod = $Server->code();
-			$ServerMsg = $Server->message();
-		} elsif ($Interactive) {
-			$term = new Term::ReadLine 'tinews' if (!$term);
-			$NNTPUser = $term->readline("Your Username at $NNTPServer: ");
-			chomp $NNTPUser;
-			$NNTPPass = $term->readline("Password for $NNTPUser at $NNTPServer:");
-			chomp $NNTPPass;
-			$Server->authinfo($NNTPUser, $NNTPPass);
-			$ServerCod = $Server->code();
-			$ServerMsg = $Server->message();
-		}
-		if ($ServerCod != 281) {
-			$Server->quit();
-			die $0.": ".$ServerCod." ".$ServerMsg."\n";
-		}
-	}
-	$Server->post();
-	$ServerCod = $Server->code();
-	if ($ServerCod == 480) {
-		if ($NNTPPass ne "") {
-			$Server->authinfo($NNTPUser, $NNTPPass);
-		} elsif ($Interactive) {
-			$term = new Term::ReadLine 'tinews' if (!$term);
-			$NNTPUser = $term->readline("Your Username at $NNTPServer: ");
-			chomp $NNTPUser;
-			$NNTPPass = $term->readline("Password for $NNTPUser at $NNTPServer:");
-			chomp $NNTPPass;
-			$Server->authinfo($NNTPUser, $NNTPPass);
-		} else {
-			$ServerMsg = $Server->message();
-			$Server->quit();
-			die ($0.": ".$ServerCod." ".$ServerMsg."\n");
-		}
-		$Server->post();
-	}
-	$ServerCod = $Server->code();
 	if ($ServerCod == 340) {
 		$Server->datasend(@$ArticleR);
 		$Server->dataend();
 		if (!$Server->ok()) {
-			$ServerMsg = $Server->message();
+			my $ServerMsg = $Server->message();
 			$Server->quit();
 			die ("\n$0: Posting failed! Response from news server:\n", $Server->code(), ' ', $ServerMsg);
 		}
@@ -384,7 +362,6 @@ sub postarticle {
 # 	- $MessageRef: A reference to an array containing the whole message.
 sub signarticle {
 	my ($HeaderR, $BodyR) = @_;
-
 	my (@pgphead, @pgpbody, $pgphead, $pgpbody, $header, $signheaders, @signheaders);
 
 	foreach (@PGPSignHeaders) {
@@ -528,14 +505,23 @@ B<pgp>(1)-2.6.3).
 
 =item B<$PGPPASSFILE>
 
-Set to override passphrase file configured in the source (used for
-B<pgp>(1)-5 or B<gpg>(1)).
+Passphrase file used for B<pgp>(1) or B<gpg>(1).
 
 =item B<$SIGNER>
 
 Set to override the user-id for signing configured in the source. If you
 neither set B<$SIGNER> nor configure it in the source the contents of the
 From:-field will be used.
+
+=item B<$REPLYTO>
+
+Set the article header field Reply-To: to the return address specified by
+the variable if there isn't allready a Reply-To: header in the article.
+
+=item B<$ORGANIZATION>
+
+Set the article header field Organization: to the contents of the variable
+if there isn't allready a Organization: header in the article.
 
 =back
 
@@ -553,7 +539,7 @@ Temporary file used to store the reformated and signed article
 
 =item F<$PGPPASSFILE>
 
-The passphrase file to be used for B<pgp>(1) 5 or B<gpg>(1).
+The passphrase file to be used for B<pgp>(1) or B<gpg>(1).
 
 =back
 
@@ -573,9 +559,7 @@ B<tinews.pl> is designed to be used with B<pgp>(1)-2.6.3.
 B<pgp>(1)-5 and B<gpg>(1) may also work.
 
 B<tinews.pl> requires the following standard modules to be installed:
-B<Net::NNTP>(3pm), B<Time::Local>(3pm).
-
-If interactive usage is configured also B<Term::Readline>(3pm) is required.
+B<Net::NNTP>(3pm), B<Time::Local>(3pm) and B<Term::Readline>(3pm).
 
 =head1 AUTHOR
 
