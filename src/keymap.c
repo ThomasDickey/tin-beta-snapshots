@@ -881,7 +881,7 @@ processkey(
 	i = strlen (buf);
 
 	for (; keyptr->t != NULL; ++keyptr) {
-		strcpy (buf+i, keyptr->t);
+		strcpy (buf + i, keyptr->t);
 
 		if (strcasecmp (kname, buf) == 0) {
 #ifdef DEBUG

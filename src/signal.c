@@ -263,7 +263,7 @@ handle_resize (
 
 #	ifdef USE_CURSES
 #		ifdef HAVE_RESIZETERM
-	resizeterm(cLINES+1, cCOLS);
+	resizeterm(cLINES + 1, cCOLS);
 	my_retouch();					/* seems necessary if win size unchanged */
 #		else
 	my_retouch();

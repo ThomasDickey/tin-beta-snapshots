@@ -155,7 +155,7 @@ highlight_regexes(
 	ptr = buf;
 
 	while (pcre_exec (regex->re, regex->extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) != PCRE_ERROR_NOMATCH) {
-		highlight_string (row, (ptr-buf)+offsets[0], offsets[1]-offsets[0]);
+		highlight_string (row, (ptr - buf) + offsets[0], offsets[1] - offsets[0]);
 		ptr += offsets[1];
 	}
 }

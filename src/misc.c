@@ -94,7 +94,7 @@ get_tmpfilename (
 	char *file_tmp;
 
 	/* alloc memory for tmp-filename */
-	file_tmp = (char *) my_malloc (strlen (filename)+5);
+	file_tmp = (char *) my_malloc (strlen(filename) + 5);
 
 	/* generate tmp-filename */
 	sprintf (file_tmp, "%s.tmp", filename);
@@ -263,8 +263,8 @@ copy_body (
 	else {
 		/* strip tailing space from quote-char for quoting quoted lines */
 		strcpy(prefixbuf, prefix);
-		if (prefixbuf[strlen(prefixbuf)-1] == ' ')
-			prefixbuf[strlen(prefixbuf)-1] = '\0';
+		if (prefixbuf[strlen(prefixbuf) - 1] == ' ')
+			prefixbuf[strlen(prefixbuf) - 1] = '\0';
 	}
 
 	while (fgets (buf, (int) sizeof(buf), fp_ip) != (char *) 0) {
@@ -685,7 +685,7 @@ strip_double_ngs (
 				strcpy(ngroup2, cmplist);
 				ptr2 = strchr(ngroup2, ',');
 				if (ptr2 != (char *) 0) {
-					strcpy(cmplist, ptr2+1);
+					strcpy(cmplist, ptr2 + 1);
 					*ptr2 = '\0';
 				} else
 					over2 = TRUE;
@@ -911,14 +911,14 @@ base_name (
 
 	strcpy (program, fullpath);
 
-	for (i = strlen (fullpath)-1; i; i--) {
+	for (i = strlen (fullpath) - 1; i; i--) {
 #ifndef VMS
 		if (fullpath[i] == SEPDIR)
 #else
 		if (fullpath[i] == ']')
 #endif /* !VMS */
 		{
-			strcpy (program, fullpath+(i+1));
+			strcpy (program, fullpath + i + 1);
 			break;
 		}
 	}
@@ -1348,7 +1348,7 @@ create_index_lock_file (
 		if ((fp = fopen (the_lock_file, "r")) != (FILE *) 0) {
 			fgets (buf, (int) sizeof(buf), fp);
 			fclose (fp);
-			error_message ("\n%s: Already started pid=[%d] on %s", tin_progname, atoi(buf), buf+8);
+			error_message ("\n%s: Already started pid=[%d] on %s", tin_progname, atoi(buf), buf + 8);
 			giveup();
 		}
 	} else {
@@ -1784,9 +1784,9 @@ _strfpath (
 				 */
 				envptr = getenv (tbuf);
 				if (envptr == (char *) 0 || (*envptr == '\0'))
-					strncpy (tbuf, defbuf, sizeof(tbuf)-1);
+					strncpy (tbuf, defbuf, sizeof(tbuf) - 1);
 				else
-					strncpy (tbuf, envptr, sizeof(tbuf)-1);
+					strncpy (tbuf, envptr, sizeof(tbuf) - 1);
 				if ((str = strfpath_cp(str, tbuf, endp)) == NULL)
 					return 0;
 				else if (*tbuf == '\0') {
@@ -1808,7 +1808,7 @@ _strfpath (
 					char buf[PATH_LEN];
 
 					if (strfpath (group->attribute->maildir, buf, sizeof(buf), group)) {
-						if (*(format+1) == '\0')				/* Just an = */
+						if (*(format + 1) == '\0')				/* Just an = */
 							joinpath (tbuf, buf, group->name);
 						else
 							joinpath (tbuf, buf, "");
@@ -2153,7 +2153,7 @@ get_initials (
 
 	iflag = FALSE;
 	j = 0;
-	for (i = 0; tbuf[i] && j < maxsize-1; i++) {
+	for (i = 0; tbuf[i] && j < maxsize - 1; i++) {
 		if (isalpha((int)tbuf[i])) {
 			if (!iflag) {
 				s[j++] = tbuf[i];
@@ -2546,13 +2546,13 @@ strip_name (
 		strcpy (stripped_address, the_address);
 		start_pos = stripped_address;
 		if ((end_pos = strchr (start_pos, ' ')) == (char *) 0)
-			end_pos = start_pos+strlen(start_pos);
+			end_pos = start_pos + strlen(start_pos);
 	} else {
 		start_pos++; /* skip '<' */
 		strcpy (stripped_address, start_pos);
 		start_pos = stripped_address;
 		if ((end_pos = strchr (start_pos, '>')) == (char *) 0)
-			end_pos = start_pos+strlen(start_pos); /* skip '>' */
+			end_pos = start_pos + strlen(start_pos); /* skip '>' */
 	}
 	*(end_pos) = '\0';
 }
@@ -3168,7 +3168,7 @@ gnksa_check_domain (
 		return gnksa_check_domain_literal(domain);
 
 	/* check for leading or trailing dot */
-	if (('.' == *domain) || ('.' == *(domain+strlen(domain)-1)))
+	if (('.' == *domain) || ('.' == *(domain + strlen(domain) - 1)))
 		return GNKSA_ZERO_LENGTH_LABEL;
 
 	/* look for TLD start */

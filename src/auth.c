@@ -91,25 +91,9 @@ authinfo_generic (
 	if (cookiefd == -1 && (authcmd = getenv ("NNTP_AUTH_FDS")))
 		(void) sscanf (authcmd, "%*d.%*d.%d", &cookiefd);
 
-#if 0 /* old code - remove after a few test */
-	if (cookiefd == -1) {
-		char tempfile[BUFSIZ];
-
-		snprintf (tempfile, sizeof(tempfile) - 1, "%stin_AXXXXXX", TMPDIR);
-		if ((cookiefd = (my_mktemp (tempfile))) == -1) {
-			error_message (_(txt_cannot_create_uniq_name));
-#	ifdef DEBUG
-			debug_nntp ("authorization", txt_cannot_create_uniq_name);
-#	endif /* DEBUG */
-			return FALSE;
-		} else
-			(void) unlink (tempfile);
-	}
-#else /* new code uses tmpfile() if available */
 	if (cookiefd == -1) {
 		char tempfile[PATH_LEN];
 		if ((cookiefd = my_tmpfile_only(tempfile)) == -1) {
-/*		if ((cookiefd = my_tmpfile(tempfile, sizeof(tempfile) - 1, FALSE, (char *) 0)) == -1) { */
 #	ifdef DEBUG
 			debug_nntp ("authorization", txt_cannot_create_uniq_name);
 #	endif /* DEBUG */
@@ -120,7 +104,6 @@ authinfo_generic (
 				(void) unlink (tempfile);
 		}
 	}
-#endif /* 0 */
 
 	strcpy (tmpbuf, "AUTHINFO GENERIC ");
 	STRCPY(authval, get_val ("NNTPAUTH", ""));

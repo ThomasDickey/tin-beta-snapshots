@@ -268,7 +268,7 @@ group_page (
 				break;
 
 			case iKeySetRange:	/* set range */
-				if (bSetRange (GROUP_LEVEL, 1, grpmenu.max, grpmenu.curr+1)) {
+				if (bSetRange (GROUP_LEVEL, 1, grpmenu.max, grpmenu.curr + 1)) {
 					range_active = TRUE;
 					show_group_page ();
 				}
@@ -1109,7 +1109,7 @@ mark_screen (
 #else
 		int i;
 		for (i = 0; value[i] != '\0'; i++)
-			screen[screen_row].col[screen_col+i] = value[i];
+			screen[screen_row].col[screen_col + i] = value[i];
 #endif /* USE_CURSES */
 		if (level == SELECT_LEVEL)
 			draw_group_arrow();
@@ -1248,8 +1248,8 @@ bld_sline (
 	if (CURR_GROUP.attribute->show_author != SHOW_FROM_NONE)
 		get_author (FALSE, &arts[j], from, len_from);
 
-	strncpy(arts_sub, arts[j].subject, len_subj+12);
-	arts_sub[len_subj-12+1] = '\0';
+	strncpy(arts_sub, arts[j].subject, len_subj + 12);
+	arts_sub[len_subj - 12 + 1] = '\0';
 
 #ifndef USE_CURSES
 	buffer = screen[INDEX2SNUM(i)].col;
@@ -1257,13 +1257,13 @@ bld_sline (
 
 	if (tinrc.show_score)
 		sprintf (buffer, "  %s %s %s%6d %-*.*s%s%-*.*s",
-			 tin_ltoa(i+1, 4), new_resps, art_cnt, sbuf.score,
-			 len_subj-12, len_subj-12, arts_sub,
+			 tin_ltoa(i + 1, 4), new_resps, art_cnt, sbuf.score,
+			 len_subj - 12, len_subj - 12, arts_sub,
 			 spaces, len_from, len_from, from);
 	else
 		sprintf (buffer, "  %s %s %s%-*.*s%s%-*.*s",
-			 tin_ltoa(i+1, 4), new_resps, art_cnt,
-			 len_subj-12, len_subj-12, arts_sub,
+			 tin_ltoa(i + 1, 4), new_resps, art_cnt,
+			 len_subj - 12, len_subj - 12, arts_sub,
 			 spaces, len_from, len_from, from);
 
 	/* protect display from non-displayable characters (e.g., form-feed) */
@@ -1334,7 +1334,7 @@ do_search(
 	/*
 	 * Not intuitive to search current thread in fwd search
 	 */
-	start = (forward && grpmenu.curr < grpmenu.max-1) ? prev_response((int)base[grpmenu.curr+1]) : (int)base[grpmenu.curr];
+	start = (forward && grpmenu.curr < grpmenu.max - 1) ? prev_response((int)base[grpmenu.curr + 1]) : (int)base[grpmenu.curr];
 
 	if ((n = search (type, start, forward)) != -1) {
 		grpmenu.curr = which_thread(n);

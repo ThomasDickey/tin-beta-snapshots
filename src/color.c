@@ -103,7 +103,7 @@ set_colors (
 		/* fcolor/bcolor may be negative, if we're using ncurses
 		 * function use_default_colors().
 		 */
-		if (fcolor > COLORS-1) {
+		if (fcolor > COLORS - 1) {
 			attribute |= A_BOLD;
 			fcolor %= COLORS;
 		}
@@ -212,7 +212,7 @@ check_valid_mark (
 
 	if (s[1] == '\0' || s[1] == c || !isgraph ((unsigned char)s[1]))
 		return FALSE;
-	p = strpbrk(s+2, "*_");
+	p = strpbrk(s + 2, "*_");
 
 	return (p != NULL && *p == c &&
 			((isalnum ((unsigned char)p[-1]) && !isalnum ((unsigned char)p[1])) ||

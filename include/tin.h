@@ -371,6 +371,16 @@ enum resizer { cNo, cYes, cRedraw };
 #endif /* !STDIN_FILENO */
 
 /*
+ * include <paths.h> if available to define _PATH_TMP
+ */
+#ifdef HAVE_PATHS_H
+#	include <paths.h>
+#endif /* HAVE_PATHS_H */
+#ifndef _PATH_TMP
+#	define _PATH_TMP	"/tmp/"
+#endif /* _PATH_TMP */
+
+/*
  * If OS misses the isascii() function
  */
 #if !defined(HAVE_ISASCII) && !defined(isascii)
@@ -1400,9 +1410,6 @@ struct t_attribute
 	char *sigfile;				/* sig file if other than ~/.Sig */
 	char *organization;			/* organization name */
 	char *followup_to;			/* where posts should be redirected */
-#ifndef DISABLE_PRINTING
-	char *printer;				/* printer command & parameters */
-#endif /* !DISABLE_PRINTING */
 	char *quick_kill_scope;			/* quick filter kill scope */
 	char *quick_select_scope;		/* quick filter select scope */
 	char *mailing_list;			/* mail list email address */

@@ -624,6 +624,7 @@ CF_CHECK_HEADERS(\
 	netlib.h \
 	nl_types.h \
 	nomacros.h \
+	paths.h	\
 	poll.h \
 	prototypes.h \
 	pwd.h \

@@ -229,9 +229,9 @@ feed_article(
 		case FEED_PIPE:
 			/* TODO - looks odd because screen mode is raw */
 			if (max)
-				show_progress (_(txt_piping), (*curr)+1, max);
+				show_progress (_(txt_piping), (*curr) + 1, max);
 			else
-				wait_message (0, "%s %d", _(txt_piping), (*curr)+1);
+				wait_message (0, "%s %d", _(txt_piping), (*curr) + 1);
 
 			rewind (openartptr->raw);
 			ok = copy_fp (openartptr->raw, pipe_fp);	/* Check for SIGPIPE on return */
@@ -241,9 +241,9 @@ feed_article(
 #ifndef DISABLE_PRINTING
 		case FEED_PRINT:
 			if (max)
-				show_progress (_(txt_printing), (*curr)+1, max);
+				show_progress (_(txt_printing), (*curr) + 1, max);
 			else
-				wait_message (0, "%s %d", _(txt_printing), (*curr)+1);
+				wait_message (0, "%s %d", _(txt_printing), (*curr) + 1);
 
 			ok = print_file (data /*print_command*/, art, openartptr);
 			break;
@@ -435,7 +435,7 @@ feed_articles (
 #ifndef DISABLE_PRINTING
 		case FEED_PRINT:
 			/* Setup print - get print command line */
-			sprintf (output, "%s %s", group->attribute->printer, REDIRECT_OUTPUT);
+			sprintf (output, "%s %s", tinrc.printer, REDIRECT_OUTPUT);
 			break;
 #endif /* !DISABLE_PRINTING */
 

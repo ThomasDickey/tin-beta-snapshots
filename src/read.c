@@ -105,7 +105,7 @@ wait_for_input (
 		tv.tv_usec = 0;
 
 /*DEBUG_IO((stderr, "waiting on %d and %d...", STDIN_FILENO, fileno(fd)));*/
-		if ((nfds = select(STDIN_FILENO+1, &readfds, NULL, NULL, &tv)) == -1) {
+		if ((nfds = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &tv)) == -1) {
 			if (errno != EINTR) {
 				perror_message("select() failed");
 				giveup();
@@ -263,8 +263,7 @@ tin_read (
 				if (!i) { /* EMPTY */
 					/* Find a header separator, don't check next line. */
 				} else {
-					if ((c = fgetc (get_nntp_fp(fp))) == ' ' || c == '\t')
-					{
+					if ((c = fgetc (get_nntp_fp(fp))) == ' ' || c == '\t') {
 						partial_read = TRUE;
 						/* This is safe because we removed at least one char above */
 						buffer[offset++] = '\n';
@@ -374,8 +373,8 @@ tin_fgets (
 				DEBUG_IO((stderr, "tin_fgets (NULL)\n"));
 				return (NULL);
 			}
-			DEBUG_IO((stderr, "tin_fgets (%s)\n", dynbuf+1));
-			return (dynbuf+1);
+			DEBUG_IO((stderr, "tin_fgets (%s)\n", dynbuf + 1));
+			return (dynbuf + 1);
 		}
 	}
 #endif /* NNTP_ABLE */

@@ -798,7 +798,7 @@ open_art_fp (
 
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && CURR_GROUP.type == GROUP_TYPE_NEWS) {
-		snprintf (buf, sizeof(buf)-1, "ARTICLE %ld", art);
+		snprintf (buf, sizeof(buf) - 1, "ARTICLE %ld", art);
 		if ((art_fp = nntp_command (buf, OK_ARTICLE, NULL)) == NULL)
 			return (FILE *) 0;
 	} else {
@@ -966,8 +966,8 @@ setup_hard_base (
 	}
 
 	if (grpmenu.max) {
-		if (base[grpmenu.max-1] > group->xmax)
-			group->xmax = base[grpmenu.max-1];
+		if (base[grpmenu.max - 1] > group->xmax)
+			group->xmax = base[grpmenu.max - 1];
 		expand_bitmap (group, base[0]);
 	}
 

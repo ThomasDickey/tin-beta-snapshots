@@ -175,6 +175,7 @@ CFILES	= \
 	$(SRCDIR)/tags.c \
 	$(OBJDIR)/tcurses.c \
 	$(OBJDIR)/tmpfile.c \
+	$(OBJDIR)/my_tmpfile.c \
 	$(SRCDIR)/thread.c \
 	$(SRCDIR)/wildmat.c \
 	$(SRCDIR)/xref.c
@@ -243,6 +244,7 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/tags.o \
 	$(OBJDIR)/tcurses.o \
 	$(OBJDIR)/tmpfile.o \
+	$(OBJDIR)/my_tmpfile.o \
 	$(OBJDIR)/thread.o \
 	$(OBJDIR)/wildmat.o \
 	$(OBJDIR)/xref.o

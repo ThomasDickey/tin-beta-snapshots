@@ -58,9 +58,7 @@
 #define ATTRIB_FROM			4
 #define ATTRIB_SIGFILE			5
 #define ATTRIB_FOLLOWUP_TO		6
-#ifndef DISABLE_PRINTING
-#	define ATTRIB_PRINTER		7
-#endif /* !DISABLE_PRINTING */
+/* 7 unused */
 #define ATTRIB_AUTO_SELECT		8
 #define ATTRIB_AUTO_SAVE		9
 #define ATTRIB_BATCH_SAVE		10
@@ -123,9 +121,6 @@ set_default_attributes (
 	attributes->sigfile = tinrc.sigfile;
 	attributes->organization = (*default_organization ? default_organization : (char *) 0);
 	attributes->followup_to = (char *) 0;
-#ifndef DISABLE_PRINTING
-	attributes->printer = tinrc.printer;
-#endif /* !DISABLE_PRINTING */
 	attributes->mailing_list = (char *) 0;
 	attributes->x_headers = (char *) 0;
 	attributes->x_body = (char *) 0;
@@ -247,9 +242,6 @@ read_attributes_file (
 				break;
 
 			case 'p':
-#ifndef DISABLE_PRINTING
-				MATCH_STRING ("printer=", ATTRIB_PRINTER);
-#endif /* !DISABLE_PRINTING */
 				MATCH_INTEGER ("post_proc_type=",
 					ATTRIB_POST_PROC_TYPE,
 					POST_PROC_UUDECODE);
@@ -396,11 +388,6 @@ do_set_attrib (
 		case ATTRIB_FOLLOWUP_TO:
 			group->attribute->followup_to = my_strdup (data);
 			break;
-#ifndef DISABLE_PRINTING
-		case ATTRIB_PRINTER:
-			group->attribute->printer = my_strdup (data);
-			break;
-#endif /* !DISABLE_PRINTING */
 		case ATTRIB_AUTO_SELECT:
 			group->attribute->auto_select = *data;
 			break;
@@ -523,9 +510,6 @@ write_attributes_file (
 	fprintf (fp, _("#  sigfile=STRING (ie. $var/sig)\n"));
 	fprintf (fp, _("#  organization=STRING (if beginning with '/' read from file)\n"));
 	fprintf (fp, _("#  followup_to=STRING\n"));
-#ifndef DISABLE_PRINTING
-	fprintf (fp, _("#  printer=STRING\n"));
-#endif /* !DISABLE_PRINTING */
 	fprintf (fp, _("#  mailing_list=STRING (ie. majordomo@list.org)\n"));
 	fprintf (fp, _("#  x_headers=STRING (ie. ~/.tin/extra-headers)\n"));
 	fprintf (fp, _("#  x_body=STRING (ie. ~/.tin/extra-body-text)\n"));
@@ -604,9 +588,6 @@ write_attributes_file (
 		fprintf (fp, "sigfile=%s\n", group->attribute->sigfile);
 		fprintf (fp, "organization=%s\n", group->attribute->organization);
 		fprintf (fp, "followup_to=%s\n", group->attribute->followup_to);
-#	ifndef DISABLE_PRINTING
-		fprintf (fp, "printer=%s\n", group->attribute->printer);
-#	endif /* !DISABLE_PRINTING */
 		fprintf (fp, "mailing_list=%s\n", group->attribute->mailing_list);
 		fprintf (fp, "x_headers=%s\n", group->attribute->x_headers);
 		fprintf (fp, "x_body=%s\n", group->attribute->x_body);
@@ -713,9 +694,6 @@ dump_attributes (
 		fprintf (stderr, "sigfile=%s\n", group->attribute->sigfile);
 		fprintf (stderr, "organization=%s\n", group->attribute->organization);
 		fprintf (stderr, "followup_to=%s\n", group->attribute->followup_to);
-#		ifndef DISABLE_PRINTING
-		fprintf (stderr, "printer=%s\n", group->attribute->printer);
-#		endif /* !DISABLE_PRINTING */
 		fprintf (stderr, "mailing_list=%s\n", group->attribute->mailing_list);
 		fprintf (stderr, "x_headers=%s\n", group->attribute->x_headers);
 		fprintf (stderr, "x_body=%s\n", group->attribute->x_body);

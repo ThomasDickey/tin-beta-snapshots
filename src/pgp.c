@@ -196,9 +196,9 @@ split_file (
 	char buf[LEN];
 	mode_t mask;
 
-	snprintf(hdr, sizeof(hdr)-1, HEADERS, TMPDIR, process_id);
-	snprintf(pt, sizeof(pt)-1, PLAINTEXT, TMPDIR, process_id);
-	snprintf(ct, sizeof(ct)-1, CIPHERTEXT, TMPDIR, process_id);
+	snprintf(hdr, sizeof(hdr) - 1, HEADERS, TMPDIR, process_id);
+	snprintf(pt, sizeof(pt) - 1, PLAINTEXT, TMPDIR, process_id);
+	snprintf(ct, sizeof(ct) - 1, CIPHERTEXT, TMPDIR, process_id);
 
 	if ((art = fopen(file, "r")) == (FILE *) 0)
 		return;
@@ -276,9 +276,9 @@ pgp_append_public_key (
 	if ((CURR_GROUP.attribute->from) != (char *) 0)
 		strip_name (CURR_GROUP.attribute->from, buf);
 	else
-		snprintf(buf, sizeof(buf)-1, "%s@%s", userid, host_name);
+		snprintf(buf, sizeof(buf) - 1, "%s@%s", userid, host_name);
 
-	snprintf(keyfile, sizeof(buf)-1, KEYFILE, TMPDIR, process_id);
+	snprintf(keyfile, sizeof(buf) - 1, KEYFILE, TMPDIR, process_id);
 
 /* TODO I'm guessing the pgp append key command creates 'keyfile' and that we should remove it */
 #	ifdef HAVE_GPG
@@ -468,7 +468,7 @@ pgp_check_article (
 		/*
 		 * We don't use sh_format here else the redirection get misquoted
 		 */
-		snprintf (cmd, sizeof(cmd)-1, CHECK_SIGN, PGPNAME, pgpopts, artfile, REDIRECT_PGP_OUTPUT);
+		snprintf (cmd, sizeof(cmd) - 1, CHECK_SIGN, PGPNAME, pgpopts, artfile, REDIRECT_PGP_OUTPUT);
 		invoke_cmd(cmd);
 		my_printf("\n");
 		Raw(TRUE);

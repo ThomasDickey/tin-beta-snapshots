@@ -577,15 +577,15 @@ get_tcp6_socket (
 	char *machine,
 	unsigned short port)
 {
-	char mymachine[MAXHOSTNAMELEN+1];
+	char mymachine[MAXHOSTNAMELEN + 1];
 	char myport[12];
 	int s = -1, err = -1;
 	struct addrinfo hints, *res, *res0;
 
-	snprintf(mymachine, sizeof(mymachine)-1, "%s", machine);
-	snprintf(myport, sizeof(myport)-1, "%d", port);
-	mymachine[sizeof(mymachine)-1] = '\0';
-	myport[sizeof(myport)-1] = '\0';
+	snprintf(mymachine, sizeof(mymachine) - 1, "%s", machine);
+	snprintf(myport, sizeof(myport) - 1, "%d", port);
+	mymachine[sizeof(mymachine) - 1] = '\0';
+	myport[sizeof(myport) - 1] = '\0';
 
 /* just in case */
 #	ifdef AF_UNSPEC

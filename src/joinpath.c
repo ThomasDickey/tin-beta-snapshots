@@ -61,7 +61,7 @@ joinpath (
 #	endif /* __amigaos */
 #	ifdef M_UNIX
 	(void) strcpy(result, dir);
-	if (result[0] == '\0' || result[strlen(result)-1] != '/')
+	if (result[0] == '\0' || result[strlen(result) - 1] != '/')
 		(void) strcat(result, "/");
 	(void) strcat(result, file != 0 ? file : "");
 #	endif /* M_UNIX */

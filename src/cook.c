@@ -176,7 +176,7 @@ put_cooked (
 			 * Grow the array of lines if needed - we resize it properly at the end
 			 */
 			if (art->cooked_lines % CHUNK == 0)
-				art->cookl = my_realloc ((char *)art->cookl, sizeof(t_lineinfo) * CHUNK * ((art->cooked_lines/CHUNK)+1));
+				art->cookl = my_realloc ((char *)art->cookl, sizeof(t_lineinfo) * CHUNK * ((art->cooked_lines / CHUNK) + 1));
 
 			art->cookl[art->cooked_lines].offset = ftell(art->cooked);
 		}
@@ -564,7 +564,7 @@ new_uue(
 	 * If an extension is present, try and add a Content-Type
 	 */
 	if ((name = strrchr(name, '.')) != NULL)
-		lookup_mimetype (name+1, ptr);
+		lookup_mimetype (name + 1, ptr);
 
 	return ptr;
 }
@@ -589,7 +589,7 @@ get_filename(
 
 	/* Use basename() ? */
 	if (((p = strrchr(name, '/'))) || ((p = strrchr(name, '\\'))))
-		return p+1;
+		return p + 1;
 
 	return name;
 }
@@ -685,7 +685,7 @@ process_text_body_part(
 			 */
 			if (pcre_exec (uubegin_regex.re, uubegin_regex.extra, line, len, 0, 0, offsets, size_offsets) != PCRE_ERROR_NOMATCH) {
 				in_uue = TRUE;
-				curruue = new_uue(&part, line+offsets[1]);
+				curruue = new_uue(&part, line + offsets[1]);
 				continue;
 			} else if (strncmp (line, "end\n", 4) == 0) {
 				if (in_uue) {

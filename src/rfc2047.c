@@ -496,11 +496,10 @@ rfc1522_do_encode (
  * the list of structured header fields where '(' and ')' are
  * treated specially in rfc 1522 encoding
  */
-	static const char *struct_header[] =
-	{
+	static const char *struct_header[] = {
 		"Approved: ", "From: ", "Originator: ",
 		"Reply-To: ", "Sender: ", "X-Cancelled-By: ", "X-Comment-To: ",
-		"X-Submissions-To: ", "To: ", "Cc: ", "Bcc: ", "X-Originator: ", 0};
+		"X-Submissions-To: ", "To: ", "Cc: ", "Bcc: ", "X-Originator: ", 0 };
 	const char **strptr = struct_header;
 
 	do {

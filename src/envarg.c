@@ -89,13 +89,13 @@ envargs (
 	 * count the args so we can allocate room for them
 	 */
 	argc = count_args (envptr);
-	bufptr = (char *) my_malloc (strlen (envptr)+1);
+	bufptr = (char *) my_malloc (strlen(envptr) + 1);
 	strcpy (bufptr, envptr);
 
 	/*
 	 * allocate a vector large enough for all args
 	 */
-	argv = (char **) my_malloc ((argc+*Pargc+1)*sizeof(char *));
+	argv = (char **) my_malloc ((argc + *Pargc + 1) * sizeof(char *));
 	argvect = argv;
 
 	/*

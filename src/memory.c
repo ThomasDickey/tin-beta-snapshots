@@ -175,10 +175,10 @@ init_screen_array (
 
 	if (allocate) {
 		screen = (struct t_screen *) my_malloc (
-			sizeof (struct t_screen) * cLINES+1);
+			sizeof (struct t_screen) * cLINES + 1);
 
 		for (i = 0; i < cLINES; i++)
-			screen[i].col = (char *) my_malloc ((size_t)(cCOLS+2));
+			screen[i].col = (char *) my_malloc ((size_t)(cCOLS + 2));
 
 	} else {
 		if (screen != (struct t_screen *) 0) {
@@ -327,10 +327,6 @@ free_attributes_array (
 			free_if_not_default(&psGrp->attribute->organization, default_organization);
 
 			FreeAndNull(psGrp->attribute->followup_to);
-
-#ifndef DISABLE_PRINTING
-			free_if_not_default(&psGrp->attribute->printer, tinrc.printer);
-#endif /* !DISABLE_PRINTING */
 
 			FreeAndNull(psGrp->attribute->quick_kill_scope);
 			FreeAndNull(psGrp->attribute->quick_select_scope);

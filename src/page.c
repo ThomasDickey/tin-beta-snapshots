@@ -65,7 +65,7 @@ t_lineinfo *artline;	/* active 'lineinfo' data */
 
 t_openartinfo pgart =	/* Global context of article open in the pager */
 	{
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, FALSE, 0 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, FALSE, 0 },
 		FALSE, 0,
 		NULL, NULL, NULL, NULL,
 	};
@@ -175,13 +175,13 @@ handle_pager_keypad(
 				case KEYMAP_MOUSE:
 					switch (xmouse) {
 						case MOUSE_BUTTON_1:
-							if (xrow < PAGE_HEADER || xrow >= cLINES-1)
+							if (xrow < PAGE_HEADER || xrow >= cLINES - 1)
 								ch = iKeyPageDown;
 							else
 								ch = iKeyPageNextUnread;
 							break;
 						case MOUSE_BUTTON_2:
-							if (xrow < PAGE_HEADER || xrow >= cLINES-1)
+							if (xrow < PAGE_HEADER || xrow >= cLINES - 1)
 								ch = iKeyPageUp;
 							else
 								ch = iKeyQuit;
@@ -595,7 +595,7 @@ page_goto_next_unread:
 
 			case iKeyPageCatchup:			/* catchup - mark read, goto next */
 			case iKeyPageCatchupNextUnread:	/* goto next unread */
-				snprintf(buf, sizeof(buf)-1, _(txt_mark_thread_read), (ch == iKeyPageCatchupNextUnread) ? _(txt_enter_next_thread) : "");
+				snprintf(buf, sizeof(buf) - 1, _(txt_mark_thread_read), (ch == iKeyPageCatchupNextUnread) ? _(txt_enter_next_thread) : "");
 				if (!tinrc.confirm_action || prompt_yn (cLINES, buf, TRUE) == 1) {
 					thd_mark_read (group, base[which_thread(this_resp)]);
 					return (ch == iKeyPageCatchupNextUnread) ? GRP_NEXTUNREAD : GRP_NEXT;
@@ -820,6 +820,7 @@ return_to_index:
 	return GRP_ARTFAIL; /* default-value - I don't think we should get here */
 }
 
+
 static void
 print_message_page (
 	FILE *file,
@@ -863,7 +864,7 @@ print_message_page (
 		strip_line(line);
 
 #ifndef USE_CURSES
-		snprintf (screen[i+scroll_region_top].col, cCOLS, "%s" cCRLF, line);
+		snprintf (screen[i + scroll_region_top].col, cCOLS, "%s" cCRLF, line);
 #endif /* !USE_CURSES */
 
 		MoveCursor (i + scroll_region_top, 0);
@@ -923,7 +924,7 @@ draw_page (
 
 	search_line = curr_line;	/* Reset search to start from top of display */
 
-	buff = my_malloc(cCOLS+1);	/* Need to account for \n */
+	buff = my_malloc(cCOLS + 1);	/* Need to account for \n */
 
 	if (part == 0) {
 		ClearScreen();
@@ -978,9 +979,9 @@ show_mime_article (
 			decode_save_mime (&pgart, FALSE);
 			return;
 		}
-		snprintf (buf, sizeof(buf)-1, mm);
+		snprintf (buf, sizeof(buf) - 1, mm);
 	} else
-		snprintf (buf, sizeof(buf)-1, METAMAIL_CMD, PATH_METAMAIL);
+		snprintf (buf, sizeof(buf) - 1, METAMAIL_CMD, PATH_METAMAIL);
 
 	EndWin();
 	Raw(FALSE);
@@ -1000,7 +1001,7 @@ show_mime_article (
 	/* This is redundant, but harmless, unless we are viewing the raw art */
 	fseek (fp, offset, SEEK_SET);	/* goto old position */
 
-	MoveCursor (cLINES, MORE_POS-(5+BLANK_PAGE_COLS));
+	MoveCursor (cLINES, MORE_POS - (5 + BLANK_PAGE_COLS));
 	StartInverse ();
 
 	my_flush ();
@@ -1052,7 +1053,7 @@ show_first_header (
 	buf[i] = '\0';
 
 	if (maxlen != grplen) {					/* ie groupname was too long */
-		strncat (buf, group, maxlen-3);
+		strncat (buf, group, maxlen - 3);
 		strcat (buf, "...");
 	} else
 		strncat (buf, group, maxlen);
@@ -1151,16 +1152,16 @@ show_first_header (
 	if (arts[this_resp].name)
 		sprintf (buf, "%s <%s>", arts[this_resp].name, arts[this_resp].from);
 	else
-		strncpy (buf, arts[this_resp].from, cCOLS-1);
-	buf[cCOLS-1] = '\0';
+		strncpy (buf, arts[this_resp].from, cCOLS - 1);
+	buf[cCOLS - 1] = '\0';
 
 	if (note_h->org) {
 		sprintf (tmp, _(txt_at_s), note_h->org);
-		tmp[sizeof(tmp)-1] = '\0';
+		tmp[sizeof(tmp) - 1] = '\0';
 
-		if ((int) strlen (buf) + (int) strlen (tmp) >= cCOLS -1) {
+		if ((int) strlen (buf) + (int) strlen (tmp) >= cCOLS - 1) {
 			strncat (buf, tmp, cCOLS - 1 - strlen(buf));
-			buf[cCOLS-1] = '\0';
+			buf[cCOLS - 1] = '\0';
 		} else {
 			pos = cCOLS - 1 - (int) strlen(tmp);
 			for (i = strlen(buf); i < pos; i++)
@@ -1316,7 +1317,7 @@ process_search(
 	 * Reposition within article if needed, try to get matched line
 	 * in the middle of the screen
 	 */
-	if (i < *lcurr_line || i >= *lcurr_line + screen_lines) {
+	if (i < *lcurr_line || i >= (*lcurr_line + screen_lines)) {
 		int ideal_pos = i - (screen_lines / 2);
 
 		if (ideal_pos + screen_lines > message_lines)		/* Off the end */
@@ -1380,10 +1381,10 @@ toggle_raw(
 					chunk += 50;
 					pgart.rawl = my_realloc((char *)pgart.rawl, sizeof(t_lineinfo) * chunk);
 				}
-			} while ((fgets(buff, cCOLS+1, pgart.raw)) != NULL);
+			} while ((fgets(buff, cCOLS + 1, pgart.raw)) != NULL);
 
 			j--;
-			pgart.rawl = my_realloc((char *)pgart.rawl, sizeof(t_lineinfo) * j);
+			pgart.rawl = my_realloc((char *) pgart.rawl, sizeof(t_lineinfo) * j);
 		}
 		artline = pgart.rawl;
 		artlines = j;
@@ -1476,7 +1477,6 @@ resize_article(
 /*
  * Infopager: simply page files
  */
-
 void
 info_pager (
 	FILE *info_fh,
@@ -1500,8 +1500,7 @@ info_pager (
 			case iKeyUp:				/* line up */
 			case iKeyUp2:
 				if (curr_info_line == 0) {
-					if (!wrap_at_ends)
-					{
+					if (!wrap_at_ends) {
 						info_message (_(txt_begin_of_art));
 						break;
 					}
@@ -1520,8 +1519,7 @@ info_pager (
 			case iKeyDown:				/* line down */
 			case iKeyDown2:
 				if (curr_info_line + NOTESLINES >= num_info_lines) {
-					if (!wrap_at_ends)
-					{
+					if (!wrap_at_ends) {
 						info_message (_(txt_end_of_art));
 						break;
 					}
@@ -1607,6 +1605,7 @@ info_pager (
 	}
 }
 
+
 void
 display_info_page (
 	int part)
@@ -1641,6 +1640,7 @@ display_info_page (
 	stow_cursor ();
 }
 
+
 static void
 preprocess_info_message (
 	FILE *info_fh)
@@ -1652,6 +1652,7 @@ preprocess_info_message (
 	FreeIfNeeded ((char *)infoline);
 	infoline = my_malloc (sizeof(t_lineinfo) * chunk);
 	num_info_lines = 0;
+
 	do {
 		infoline[num_info_lines].offset = ftell(info_fh);
 		infoline[num_info_lines].flags  = 0;

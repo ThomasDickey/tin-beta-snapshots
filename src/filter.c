@@ -289,7 +289,7 @@ read_filter_file (
 
 		switch(tolower((unsigned char)buf[0])) {
 		case 'c':
-			if (match_integer (buf+1, "ase=", &icase, 1)) {
+			if (match_integer (buf + 1, "ase=", &icase, 1)) {
 				if (arr_ptr && !expired_time)
 					arr_ptr[i].icase = (unsigned) icase;
 
@@ -297,7 +297,7 @@ read_filter_file (
 			}
 			break;
 		case 'f':
-			if (match_string (buf+1, "rom=", from, sizeof (from))) {
+			if (match_string (buf + 1, "rom=", from, sizeof (from))) {
 				if (arr_ptr && !expired_time)
 					arr_ptr[i].from = my_strdup (from);
 
@@ -309,7 +309,7 @@ read_filter_file (
  *       of the "scope" code.
  */
 		case 'g':
-			if (match_string (buf+1, "roup=", scope, sizeof (scope))) {
+			if (match_string (buf + 1, "roup=", scope, sizeof (scope))) {
 #ifdef DEBUG
 if (debug) {
 	my_printf ("scope=[%s] num=[%d]\n", scope, glob_filter.num);
@@ -336,7 +336,7 @@ if (debug) {
 				psGrp = (struct t_group *) 0;		/* fudge for out of order rules */
 				break;
 			}
-			if (match_string (buf+1, "nksa=", gnksa, sizeof (gnksa))) {
+			if (match_string (buf + 1, "nksa=", gnksa, sizeof (gnksa))) {
 				if (arr_ptr && !expired_time) {
 					if (gnksa[0] == '<') {
 						arr_ptr[i].gnksa_cmp = FILTER_LINES_LT;
@@ -354,7 +354,7 @@ if (debug) {
 		break;
 
 		case 'l':
-			if (match_string (buf+1, "ines=", buffer, sizeof (buffer))) {
+			if (match_string (buf + 1, "ines=", buffer, sizeof (buffer))) {
 				if (arr_ptr && !expired_time) {
 					if (buffer[0] == '<') {
 						arr_ptr[i].lines_cmp = FILTER_LINES_LT;
@@ -372,21 +372,21 @@ if (debug) {
 			break;
 
 		case 'm':
-			if (match_string (buf+1, "sgid=", msgid, sizeof (msgid))) {
+			if (match_string (buf + 1, "sgid=", msgid, sizeof (msgid))) {
 				if (arr_ptr) {
 					arr_ptr[i].msgid = my_strdup (msgid);
 					arr_ptr[i].fullref = FILTER_MSGID;
 				}
 				break;
 			}
-			if (match_string (buf+1, "sgid_last=", msgid, sizeof (msgid))) {
+			if (match_string (buf + 1, "sgid_last=", msgid, sizeof (msgid))) {
 				if (arr_ptr) {
 					arr_ptr[i].msgid = my_strdup (msgid);
 					arr_ptr[i].fullref = FILTER_MSGID_LAST;
 				}
 				break;
 			}
-			if (match_string (buf+1, "sgid_only=", msgid, sizeof (msgid))) {
+			if (match_string (buf + 1, "sgid_only=", msgid, sizeof (msgid))) {
 				if (arr_ptr) {
 					arr_ptr[i].msgid = my_strdup (msgid);
 					arr_ptr[i].fullref = FILTER_MSGID_ONLY;
@@ -396,7 +396,7 @@ if (debug) {
 			break;
 
 		case 'r':
-			if (match_string (buf+1, "efs_only=", msgid, sizeof (msgid))) {
+			if (match_string (buf + 1, "efs_only=", msgid, sizeof (msgid))) {
 				if (arr_ptr) {
 					arr_ptr[i].msgid = my_strdup (msgid);
 					arr_ptr[i].fullref = FILTER_REFS_ONLY;
@@ -406,7 +406,7 @@ if (debug) {
 			break;
 
 		case 's':
-			if (match_string (buf+1, "cope=", scope, sizeof (scope))) {
+			if (match_string (buf + 1, "cope=", scope, sizeof (scope))) {
 #ifdef DEBUG
 if (debug) {
 	my_printf ("scope=[%s] num=[%d]\n", scope, glob_filter.num);
@@ -433,7 +433,7 @@ if (debug) {
 				psGrp = (struct t_group *) 0;	/* fudge for out of order rules */
 				break;
 			}
-			if (match_string (buf+1, "ubj=", subj, sizeof (subj))) {
+			if (match_string (buf + 1, "ubj=", subj, sizeof (subj))) {
 				if (arr_ptr && !expired_time)
 					arr_ptr[i].subj = my_strdup (subj);
 
@@ -449,7 +449,7 @@ if (debug) {
 			/*
 			 * read score for rule
 			 */
-			if (match_string (buf+1, "core=", scbuf, PATH_LEN)) {
+			if (match_string (buf + 1, "core=", scbuf, PATH_LEN)) {
 				score = atoi(scbuf);
 #ifdef DEBUG
 if (debug) {
@@ -477,7 +477,7 @@ if (debug) {
 			break;
 
 		case 't':
-			if (match_integer (buf+1, "ype=", &type, 1)) {
+			if (match_integer (buf + 1, "ype=", &type, 1)) {
 #ifdef DEBUG
 if (debug) {
 	my_printf ("type=[%d][%s]\n", type, (!type ? "KILL" : "SELECT"));
@@ -490,7 +490,7 @@ if (debug) {
 				}
 				break;
 			}
-			if (match_long (buf+1, "ime=", &secs)) {
+			if (match_long (buf + 1, "ime=", &secs)) {
 				if (arr_ptr && !expired_time) {
 					arr_ptr[i].time = (time_t) secs;
 					if (secs && current_secs > (time_t) secs) {
@@ -510,19 +510,19 @@ if (debug) {
 			break;
 
 		case 'x':
-			if (match_string (buf+1, "ref=", xref, sizeof (xref))) {
+			if (match_string (buf + 1, "ref=", xref, sizeof (xref))) {
 				if (arr_ptr && ! expired_time)
 					arr_ptr[i].xref = my_strdup (xref);
 
 				break;
 			}
-			if (match_integer (buf+1, "ref_max=", &xref_max, 1000)) {
+			if (match_integer (buf + 1, "ref_max=", &xref_max, 1000)) {
 				if (arr_ptr && ! expired_time)
 					arr_ptr[i].xref_max = xref_max;
 
 				break;
 			}
-			if (match_string (buf+1, "ref_score=", xref_score, sizeof(xref_score))) {
+			if (match_string (buf + 1, "ref_score=", xref_score, sizeof(xref_score))) {
 				if (arr_ptr && !expired_time) {
 					if (xref_score_cnt < 10) {
 						if (isdigit((int)xref_score[0])) {
@@ -558,10 +558,10 @@ if (debug) {
 	return TRUE;
 }
 
+
 /*
  * write filter strings to ~/.tin/filter
  */
-
 static void
 write_filter_file (
 	const char *filename)
@@ -575,8 +575,7 @@ write_filter_file (
 	/* generate tmp-filename */
 	file_tmp = get_tmpfilename(filename);
 
-	if (!backup_file (filename, file_tmp))
-	{
+	if (!backup_file (filename, file_tmp)) {
 		error_message (_(txt_filesystem_full_backup), filename);
 		free (file_tmp);
 		return;
@@ -601,6 +600,7 @@ write_filter_file (
 	chmod (filename, (mode_t)(S_IRUSR|S_IWUSR));
 	free (file_tmp);
 }
+
 
 static void
 write_filter_array (
@@ -715,7 +715,7 @@ my_flush ();
 			char timestring[LEN];
 
 			timestring[0] = '\0';
-			my_strftime(timestring, LEN-1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(ptr->filter[i].time)));
+			my_strftime(timestring, LEN - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(ptr->filter[i].time)));
 			fprintf (fp, "time=%lu (%s)\n", (unsigned long int) ptr->filter[i].time, timestring);
 		}
 		fprintf (fp, "#####\n"); /* makes filter file more readable */
@@ -724,10 +724,10 @@ my_flush ();
 	fflush (fp);
 }
 
+
 /*
  * Interactive filter menu
  */
-
 static int
 get_choice (
 	int x,
@@ -786,6 +786,7 @@ static char text_from[PATH_LEN];
 static char text_msgid[PATH_LEN];
 static int filter_context;
 
+
 static void
 print_filter_menu (
 	void)
@@ -797,17 +798,18 @@ print_filter_menu (
 	MoveCursor (INDEX_TOP, 0);
 	my_printf ("%s" cCRLF, ptr_filter_text);
 	my_printf ("%s" cCRLF cCRLF, _(txt_filter_text_type));
-	my_printf ("%s" cCRLF , text_subj);
-	my_printf ("%s" cCRLF , text_from);
+	my_printf ("%s" cCRLF, text_subj);
+	my_printf ("%s" cCRLF, text_from);
 	my_printf ("%s" cCRLF cCRLF, text_msgid);
-	my_printf ("%s" cCRLF , ptr_filter_lines);
-	my_printf ("%s" cCRLF , ptr_filter_score);
+	my_printf ("%s" cCRLF, ptr_filter_lines);
+	my_printf ("%s" cCRLF, ptr_filter_score);
 	my_printf ("%s" cCRLF cCRLF, ptr_filter_time);
 	my_printf ("%s%s", ptr_filter_scope, ptr_filter_groupname);
 	my_flush ();
 
 	show_menu_help (_(txt_help_filter_text));
 }
+
 
 void
 refresh_filter_menu (
@@ -826,6 +828,7 @@ refresh_filter_menu (
 	 *    string input)
 	 */
 }
+
 
 /*
  * Interactive filter menu so that the user can dynamically enter parameters.
@@ -877,7 +880,6 @@ filter_menu (
 	/*
 	 * setup correct text for user selected menu
 	 */
-
 	(void) printascii (keyedit, map_to_local (iKeyFilterEdit, &menukeymap.filter_quit_edit_save));
 	(void) printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.filter_quit_edit_save));
 	(void) printascii (keysave, map_to_local (iKeyFilterSave, &menukeymap.filter_quit_edit_save));
@@ -912,16 +914,16 @@ filter_menu (
 	len = cCOLS - 30;
 
 	snprintf (text_time, sizeof(text_time), _(txt_time_default_days), tinrc.filter_days);
-	text_time[sizeof(text_time)-1] = '\0';
+	text_time[sizeof(text_time) - 1] = '\0';
 	snprintf (text_subj, sizeof(text_subj), ptr_filter_subj, len, len, art->subject);
-	text_subj[sizeof(text_subj)-1] = '\0';
+	text_subj[sizeof(text_subj) - 1] = '\0';
 
 	STRCPY (buf, art->from);
 
 	snprintf (text_from, sizeof(text_from), ptr_filter_from, len, len, buf);
-	text_from[sizeof(text_from)-1] = '\0';
-	snprintf (text_msgid, sizeof(text_msgid), ptr_filter_msgid, len-4, len-4, MSGID(art));
-	text_msgid[sizeof(text_msgid)-1] = '\0';
+	text_from[sizeof(text_from) - 1] = '\0';
+	snprintf (text_msgid, sizeof(text_msgid), ptr_filter_msgid, len - 4, len - 4, MSGID(art));
+	text_msgid[sizeof(text_msgid) - 1] = '\0';
 
 	print_filter_menu ();
 
@@ -929,7 +931,7 @@ filter_menu (
 		return FALSE;
 
 	if (*rule.text) {
-		i = get_choice (INDEX_TOP+1, _(txt_help_filter_text_type),
+		i = get_choice (INDEX_TOP + 1, _(txt_help_filter_text_type),
 			       _(txt_filter_text_type),
 			       _(txt_subj_line_only_case),
 			       _(txt_subj_line_only),
@@ -966,7 +968,7 @@ filter_menu (
 		/*
 		 * Subject:
 		 */
-		i = get_choice (INDEX_TOP+3, _(txt_help_filter_subj), text_subj, _(txt_yes), _(txt_no), (char *)0, (char *)0, (char *)0);
+		i = get_choice (INDEX_TOP + 3, _(txt_help_filter_subj), text_subj, _(txt_yes), _(txt_no), (char *)0, (char *)0, (char *)0);
 
 		if (i == -1)
 			return FALSE;
@@ -976,7 +978,7 @@ filter_menu (
 		/*
 		 * From:
 		 */
-		i = get_choice (INDEX_TOP+4, _(txt_help_filter_from), text_from, (rule.subj_ok ? _(txt_no) : _(txt_yes)), (rule.subj_ok ? _(txt_yes) : _(txt_no)), (char *)0, (char *)0, (char *)0);
+		i = get_choice (INDEX_TOP + 4, _(txt_help_filter_from), text_from, (rule.subj_ok ? _(txt_no) : _(txt_yes)), (rule.subj_ok ? _(txt_yes) : _(txt_no)), (char *)0, (char *)0, (char *)0);
 
 		if (i == -1)
 			return FALSE;
@@ -987,14 +989,14 @@ filter_menu (
 		 * Message-Id:
 		 */
 		if (rule.subj_ok || rule.from_ok)
-			i = get_choice (INDEX_TOP+5, _(txt_help_filter_msgid), text_msgid, _(txt_no), _(txt_full), _(txt_last), _(txt_only), (char *)0);
+			i = get_choice (INDEX_TOP + 5, _(txt_help_filter_msgid), text_msgid, _(txt_no), _(txt_full), _(txt_last), _(txt_only), (char *)0);
 		else
-			i = get_choice (INDEX_TOP+5, _(txt_help_filter_msgid), text_msgid, _(txt_full), _(txt_last), _(txt_only), _(txt_no), (char *)0);
+			i = get_choice (INDEX_TOP + 5, _(txt_help_filter_msgid), text_msgid, _(txt_full), _(txt_last), _(txt_only), _(txt_no), (char *)0);
 
 		if (i == -1)
 			return FALSE;
 		else {
-			switch ((rule.subj_ok || rule.from_ok) ? i : i+1) {
+			switch ((rule.subj_ok || rule.from_ok) ? i : i + 1) {
 				case 0:
 				case 4:
 					rule.msgid_ok = FALSE;
@@ -1032,7 +1034,7 @@ filter_menu (
 
 	buf[0] = '\0';
 
-	if (!prompt_menu_string (INDEX_TOP+7, ptr_filter_lines, buf))
+	if (!prompt_menu_string (INDEX_TOP + 7, ptr_filter_lines, buf))
 		return FALSE;
 
 	/*
@@ -1063,7 +1065,7 @@ filter_menu (
 	buf[0] = '\0';
 	show_menu_help(_(txt_filter_score_help)); /* FIXME: a sprintf() is necessary here */
 
-	if (!prompt_menu_string(INDEX_TOP+8, ptr_filter_score, buf))
+	if (!prompt_menu_string(INDEX_TOP + 8, ptr_filter_score, buf))
 		return FALSE;
 
 	rule.score = atoi(buf);
@@ -1083,7 +1085,7 @@ filter_menu (
 	 */
 	sprintf (double_time, "2x %s", text_time);
 	sprintf (quat_time, "4x %s", text_time);
-	i = get_choice (INDEX_TOP+9, _(txt_help_filter_time), ptr_filter_time,
+	i = get_choice (INDEX_TOP + 9, _(txt_help_filter_time), ptr_filter_time,
 			_(txt_unlimited_time), text_time, double_time, quat_time, (char *)0);
 
 	if (i == -1)
@@ -1104,7 +1106,7 @@ filter_menu (
 			*(ptr++) = '*';
 			*ptr = '\0';
 			strcpy (argv[3], argv[2]);
-			argv[3][strlen(argv[3])-2] = '\0';
+			argv[3][strlen(argv[3]) - 2] = '\0';
 			ptr = strrchr (argv[3], '.');
 			if (ptr != (char *) 0) {
 				ptr++;
@@ -1116,13 +1118,13 @@ filter_menu (
 		} else
 			argv[2][0] = '\0';
 
-		i = get_choice (INDEX_TOP+11, ptr_filter_help_scope,
+		i = get_choice (INDEX_TOP + 11, ptr_filter_help_scope,
 			       ptr_filter_scope,
-			       (argv[0][0] ? argv[0] : (char *)0),
-			       (argv[1][0] ? argv[1] : (char *)0),
-			       (argv[2][0] ? argv[2] : (char *)0),
-			       (argv[3][0] ? argv[3] : (char *)0),
-			       (char *)0);
+			       (argv[0][0] ? argv[0] : (char *) 0),
+			       (argv[1][0] ? argv[1] : (char *) 0),
+			       (argv[2][0] ? argv[2] : (char *) 0),
+			       (argv[3][0] ? argv[3] : (char *) 0),
+			       (char *) 0);
 
 		if (i == -1)
 			return FALSE;
@@ -1229,6 +1231,7 @@ quick_filter (
 	return (bAddFilterRule (group, art, &rule));
 }
 
+
 /*
  * Quick command to add an auto-select filter to the article that user
  * has just posted. Selects on Subject: line with limited expire time.
@@ -1312,6 +1315,7 @@ quick_filter_select_posted_art (
 	return filtered;
 }
 
+
 /*
  * API to add filter rule to the local or global filter array
  */
@@ -1360,8 +1364,7 @@ bAddFilterRule (
 	}
 
 	(void) time (&lCurTime);
-	switch(psRule->expire_time)
-	{
+	switch(psRule->expire_time) {
 		case 1:
 			psPtr[*plNum].time = lCurTime + (time_t) (tinrc.filter_days * DAY);
 			break;
@@ -1440,14 +1443,14 @@ bAddFilterRule (
 #ifdef DEBUG
 		if (debug)
 			wait_message (2, "inscope=[%s] scope=[%s] typ=[%d] case=[%d] subj=[%s] from=[%s] msgid=[%s] fullref=[%d] line=[%d %d] time=[%lu]",
-				bool_unparse(psPtr[*plNum-1].inscope),
+				bool_unparse(psPtr[*plNum - 1].inscope),
 				BlankIfNull(psRule->scope),
-				psPtr[*plNum-1].type, psPtr[*plNum-1].icase,
-				BlankIfNull(psPtr[*plNum-1].subj),
-				BlankIfNull(psPtr[*plNum-1].from),
-				BlankIfNull(psPtr[*plNum-1].msgid),
-				psPtr[*plNum-1].fullref, psPtr[*plNum-1].lines_cmp,
-				psPtr[*plNum-1].lines_num, (unsigned long int) psPtr[*plNum-1].time);
+				psPtr[*plNum - 1].type, psPtr[*plNum - 1].icase,
+				BlankIfNull(psPtr[*plNum - 1].subj),
+				BlankIfNull(psPtr[*plNum - 1].from),
+				BlankIfNull(psPtr[*plNum - 1].msgid),
+				psPtr[*plNum - 1].fullref, psPtr[*plNum - 1].lines_cmp,
+				psPtr[*plNum - 1].lines_num, (unsigned long int) psPtr[*plNum - 1].time);
 #endif /* DEBUG */
 
 		write_filter_file (filter_file);
@@ -1800,6 +1803,7 @@ wait_message (1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].li
 	}
 	return filtered;
 }
+
 
 static int
 set_filter_scope (

@@ -318,7 +318,7 @@ show_title (
 {
 	int col;
 
-	col = (cCOLS - (int) strlen (_(txt_type_h_for_help)))+1;
+	col = (cCOLS - (int) strlen (_(txt_type_h_for_help))) + 1;
 	if (col) {
 		MoveCursor (0, col);
 #ifdef HAVE_COLOR
