@@ -545,7 +545,7 @@ prompt_slk_response(
 	char buf[LEN];
 
 	va_start(ap, fmt);
-	vsnprintf(buf, sizeof(buf) - 1, fmt, ap);	/* We need to do this, else wait_message() will clobber us */
+	vsnprintf(buf, sizeof(buf), fmt, ap);	/* We need to do this, else wait_message() will clobber us */
 	va_end(ap);
 
 	ch_default = map_to_local(ch_default, responses);

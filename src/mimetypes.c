@@ -3,7 +3,7 @@
  *  Module    : mimetypes.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-31
- *  Updated   : 2000-06-05
+ *  Updated   : 2003-03-12
  *  Notes     : mime.types handling
  *
  * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
@@ -59,16 +59,16 @@ lookup_mimetype(
 	/*
 	 * check $HOME/.mime.types first, then /etc/mime.types and
 	 * TIN_DEFAULTS_DIR/mime.types
-	 *
-	 * TODO: use joinpath() here
 	 */
-	snprintf(buf, sizeof(buf), "%s/.mime.types", homedir);
+	joinpath(buf, homedir, ".mime.types");
 	fp = fopen(buf, "r");
+#ifdef M_UNIX
 	if (!fp)
 		fp = fopen("/etc/mime.types", "r");
+#endif /* M_UNIX */
 #ifdef TIN_DEFAULTS_DIR
 	if (!fp) {
-		snprintf(buf, sizeof(buf), "%s/mime.types", TIN_DEFAULTS_DIR);
+		joinpath(buf, TIN_DEFAULTS_DIR, "mime.types");
 		fp = fopen(buf, "r");
 	}
 #endif /* TIN_DEFAULTS_DIR */

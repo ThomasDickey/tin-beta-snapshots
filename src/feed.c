@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2003-02-18
+ *  Updated   : 2003-03-14
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -120,7 +120,7 @@ get_save_filename(
 			free(group->attribute->savefile);
 			group->attribute->savefile = my_strdup(filename);
 		}
-		my_strncpy(tinrc.default_save_file, filename, sizeof(tinrc.default_save_file));
+		my_strncpy(tinrc.default_save_file, filename, sizeof(tinrc.default_save_file) - 1);
 	} else {									/* No file was specified, try default */
 		if (*default_savefile)
 			my_strncpy(filename, default_savefile, sizeof(filename) - 1);
@@ -230,7 +230,7 @@ feed_article(
 
 #ifndef DONT_HAVE_PIPING
 		case FEED_PIPE:
-			/* TODO - looks odd because screen mode is raw */
+			/* TODO: looks odd because screen mode is raw */
 			if (max)
 				show_progress(_(txt_piping), (*curr) + 1, max);
 			else
@@ -243,7 +243,7 @@ feed_article(
 
 #ifndef DISABLE_PRINTING
 		case FEED_PRINT:
-			/* TODO - looks odd because screen mode is raw */
+			/* TODO: looks odd because screen mode is raw */
 			if (max)
 				show_progress(_(txt_printing), (*curr) + 1, max);
 			else
@@ -381,7 +381,7 @@ feed_articles(
 		char keyart[MAXKEYLEN], keythread[MAXKEYLEN], keyhot[MAXKEYLEN];
 		char keypat[MAXKEYLEN], keytag[MAXKEYLEN], keyquit[MAXKEYLEN];
 
-		snprintf(buf, sizeof(buf) - 1, _(txt_art_thread_regex_tag),
+		snprintf(buf, sizeof(buf), _(txt_art_thread_regex_tag),
 			printascii(keyart, map_to_local(iKeyFeedArt, &menukeymap.feed_art_thread_regex_tag)),
 			printascii(keythread, map_to_local(iKeyFeedThd, &menukeymap.feed_art_thread_regex_tag)),
 			printascii(keyhot, map_to_local(iKeyFeedHot, &menukeymap.feed_art_thread_regex_tag)),
@@ -590,9 +590,8 @@ feed_articles(
 						continue;
 
 					if (feed_article(j, function, &count, 0, use_current, output, group_path)) {
-						if (ch == iKeyFeedHot) {
+						if (ch == iKeyFeedHot)
 							arts[j].selected = FALSE;
-						}
 					} else {
 						if (proc_ch == 0) {
 							i = grpmenu.max;		/* Force break out of outer-loop */
@@ -713,7 +712,7 @@ print_file(
 #	endif /* DONT_HAVE_PIPING */
 
 #	ifdef DONT_HAVE_PIPING
-	snprintf(file, sizeof(file) - 1, TIN_PRINTFILE, respnum);
+	snprintf(file, sizeof(file), TIN_PRINTFILE, respnum);
 	if ((fp = fopen(file, "w")) == NULL)
 #	else
 	if ((fp = popen(command, "w")) == NULL)

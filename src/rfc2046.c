@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2003-03-05
+ *  Updated   : 2003-03-14
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
@@ -743,14 +743,13 @@ parse_multipart_article(
 			progress(artinfo->hdr.ext->line_count);		/* Overall line count */
 
 		if (bnd == BOUND_END) {							/* End of this part detected */
-#ifdef NNTP_ABLE
 			/*
-			 * We have reached the end boundary of the outermost envelope.
-			 * Syphon off any trailing data.
+			 * When we have reached the end boundary of the outermost envelope
+			 * just log any trailing data for the raw article format.
 			 */
 			if (depth == 0)
-				drain_buffer(infile);
-#endif /* NNTP_ABLE */
+				while ((line = tin_fgets(infile, FALSE)) != NULL)
+					fprintf(artinfo->raw, "%s\n", line);
 			return tin_errno;
 		}
 
@@ -771,8 +770,7 @@ parse_multipart_article(
 			case M_HDR:
 				switch (bnd) {
 					case BOUND_START:
-						/* TODO: -> lang.c */
-						error_message(_("MIME parse error: Start boundary whilst reading headers"));
+						error_message(_(txt_error_mime_start));
 						continue;
 
 					case BOUND_NONE:
@@ -933,8 +931,7 @@ parse_rfc2045_article(
 			/* Strip off EOF condition if present */
 			if (ret & TIN_EOF) {
 				ret ^= TIN_EOF;
-				/* TODO: -> lang.c */
-				error_message(_("MIME parse error: Unexpected end of %s/%s article"), content_types[artinfo->hdr.ext->type], artinfo->hdr.ext->subtype);
+				error_message(_(txt_error_mime_end), content_types[artinfo->hdr.ext->type], artinfo->hdr.ext->subtype);
 				if (ret != 0)
 					goto error;
 			} else
@@ -989,7 +986,7 @@ art_open(
 	if (parse_rfc2045_article(fp, art->line_count, artinfo, show_progress_meter) != 0)
 		return ART_ABORT;
 
-	if ((pgart.tex2iso = ((CURR_GROUP.attribute->tex2iso_conv) ? is_art_tex_encoded(artinfo->raw) : FALSE)))
+	if ((artinfo->tex2iso = ((CURR_GROUP.attribute->tex2iso_conv) ? is_art_tex_encoded(artinfo->raw) : FALSE)))
 		wait_message(0, _(txt_is_tex_encoded));
 
 	/* Maybe fix it so if this fails, we default to raw? */
@@ -1002,11 +999,12 @@ art_open(
 
 	/*
 	 * If Newsgroups is empty its a good bet the article is a mail article
+	 * TODO - Probably broken. Also - combine with code to fixup Archive-name?
 	 */
 	if (!artinfo->hdr.newsgroups) {
 		artinfo->hdr.newsgroups = my_strdup(group_path);
 		while ((ptr = strchr(artinfo->hdr.newsgroups, '/')))
-			*ptr = '.';		/* TODO - combine with code to fixup Archive-name? */
+			*ptr = '.';
 	}
 
 	return 0;

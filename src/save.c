@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-18
+ *  Updated   : 2003-03-14
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -68,7 +68,7 @@ static const char *get_last_savefile(void);
 static int save_arts(const char *group_path);
 static t_bool any_saved_files(void);
 static t_bool get_save_filename(char *outpath, const char *path);
-static void decode_save_one(t_part *part, FILE *rawfp, t_bool postproc);
+static t_bool decode_save_one(t_part *part, FILE *rawfp, t_bool postproc);
 static void delete_processed_files(t_bool auto_delete);
 static void post_process_sh(t_bool auto_delete);
 static void post_process_uud(t_bool auto_delete);
@@ -103,9 +103,9 @@ check_start_save_any_news(
 	int function,
 	t_bool catchup)
 {
-	FILE *artfp;
-	FILE *fp;
+	FILE *artfp, *savefp;
 	FILE *fp_log = (FILE *) 0;
+	char *line;
 	char buf[LEN], logfile[LEN];
 	char group_path[PATH_LEN];
 	char path[PATH_LEN];
@@ -129,12 +129,13 @@ check_start_save_any_news(
 			break;
 
 		case MAIL_ANY_NEWS:
+			joinpath(savefile, TMPDIR, "tin");
+#ifdef APPEND_PID
+			snprintf(savefile + strlen(savefile), sizeof(savefile) - 1, ".%d", (int) process_id);
+#endif /* APPEND_PID */
 		case SAVE_ANY_NEWS:
-#ifdef VMS
-			joinpath(logfile, rcdir, "log.");
-#else
 			joinpath(logfile, rcdir, "log");
-#endif /* VMS */
+
 			if (no_write || (fp_log = fopen(logfile, "w" FOPEN_OPTS)) == NULL) {
 				perror_message(_(txt_cannot_open), logfile);
 				fp_log = stdout;
@@ -143,7 +144,7 @@ check_start_save_any_news(
 			}
 			fprintf(fp_log, "To: %s\n", userid);
 			(void) time(&epoch);
-			snprintf(subject, sizeof(subject) - 1, "Subject: NEWS LOG %s", ctime(&epoch));
+			snprintf(subject, sizeof(subject), "Subject: NEWS LOG %s", ctime(&epoch));
 			fprintf(fp_log, "%s\n", subject);	/* ctime() includes a \n too */
 			break;
 
@@ -163,14 +164,12 @@ check_start_save_any_news(
 		if (!index_group(group))
 			continue;
 
-		make_group_path(group->name, group_path);
-
 		if (function == MAIL_ANY_NEWS || function == SAVE_ANY_NEWS) {
 			if (!group->attribute->batch_save)
 				continue;
 
 			group_count++;
-			snprintf(buf, sizeof(buf) - 1, _(txt_saved_groupname), group->name);
+			snprintf(buf, sizeof(buf), _(txt_saved_groupname), group->name);
 			fprintf(fp_log, buf);
 			if (verbose)
 				wait_message(0, buf);
@@ -178,13 +177,12 @@ check_start_save_any_news(
 			if (function == SAVE_ANY_NEWS) {
 				char tmp[PATH_LEN];
 
-				if (!strfpath(group->attribute->savedir, buf, sizeof(buf), group))
-					joinpath(buf, homedir, DEFAULT_SAVEDIR);
-				joinpath(tmp, buf, group_path);
-#if 0
-fprintf(stderr, "start_save: create_path(%s)\n", tmp);
-#endif /* 0 */
-				create_path(tmp);
+				if (!strfpath(group->attribute->savedir, tmp, sizeof(tmp), group))
+					joinpath(tmp, homedir, DEFAULT_SAVEDIR);
+
+				make_group_path(group->name, group_path);
+				joinpath(path, tmp, group_path);
+				create_path(path);
 			}
 		}
 
@@ -212,31 +210,15 @@ fprintf(stderr, "start_save: create_path(%s)\n", tmp);
 
 				case MAIL_ANY_NEWS:
 				case SAVE_ANY_NEWS:
-					/*
-					 * TODO: open_art_fp() returns FAKE_NNTP_FP in case of
-					 *       reading via NNTP, artfp later is used in
-					 *       copy_fp() which badly fails in that case.
-					 */
-					artfp = open_art_fp(group_path, arts[j].artnum);
-					/* FIXME! (i.e. use t_openartinfo->raw) */
-					if (artfp == FAKE_NNTP_FP || artfp == NULL)
+					if ((artfp = open_art_fp(group_path, arts[j].artnum)) == NULL)
 						continue;
 
-					if (function == MAIL_ANY_NEWS)
-						snprintf(savefile, sizeof(savefile) - 1, "%stin.%d", TMPDIR, (int) process_id);
-					else {
-						if (!strfpath(group->attribute->savedir, path, sizeof(path), group))
-							joinpath(path, homedir, DEFAULT_SAVEDIR);
-
-						/* TODO: use joinpath() */
-#ifdef VMS
-						snprintf(savefile, sizeof(savefile) - 1, "%s.%s]%ld", path, group_path, arts[j].artnum);
-#else
-						snprintf(savefile, sizeof(savefile) - 1, "%s/%s/%ld", path, group_path, arts[j].artnum);
-#endif /* VMS */
+					if (function == SAVE_ANY_NEWS) {
+						snprintf(buf, sizeof(buf), "%ld", arts[j].artnum);
+						joinpath(savefile, path, buf);
 					}
 
-					if ((fp = fopen(savefile, "w" FOPEN_OPTS)) == NULL) {
+					if ((savefp = fopen(savefile, "w" FOPEN_OPTS)) == NULL) {
 						fprintf(fp_log, _(txt_cannot_open), savefile);
 						if (verbose)
 							perror_message(_(txt_cannot_open), savefile);
@@ -245,19 +227,21 @@ fprintf(stderr, "start_save: create_path(%s)\n", tmp);
 					}
 
 					if (function == MAIL_ANY_NEWS)
-						fprintf(fp, "To: %s\n", mail_news_user);
+						fprintf(savefp, "To: %s\n", mail_news_user);
 
-					snprintf(buf, sizeof(buf) - 1, "[%5ld]  %s\n", arts[j].artnum, arts[j].subject);
+					snprintf(buf, sizeof(buf), "[%5ld]  %s\n", arts[j].artnum, arts[j].subject);
 					fprintf(fp_log, "%s", buf);		/* buf may contain % */
 					if (verbose)
 						wait_message(0, buf);
 
-					copy_fp(artfp, fp);
+					while ((line = tin_fgets(artfp, FALSE)) != NULL)
+						fprintf(savefp, "%s\n", line);		/* TODO error handling */
+
 					TIN_FCLOSE(artfp);
-					fclose(fp);
+					fclose(savefp);
 					saved_arts++;
 
-					/* TODO: if article already contains To: Cc: Bcc: it get's 'relayed' */
+					/* TODO: if article already contains To: Cc: Bcc: it gets 'relayed' */
 					if (function == MAIL_ANY_NEWS) {
 						strfmailer(mailer, arts[j].subject, mail_news_user, savefile, buf, sizeof(buf), tinrc.mailer_format);
 						invoke_cmd(buf);		/* Keep trying after errors */
@@ -298,7 +282,7 @@ fprintf(stderr, "start_save: create_path(%s)\n", tmp);
 
 		case MAIL_ANY_NEWS:
 		case SAVE_ANY_NEWS:
-			snprintf(buf, sizeof(buf) - 1, _(txt_saved_summary), (function == MAIL_ANY_NEWS ? _(txt_mailed) : _(txt_saved)),
+			snprintf(buf, sizeof(buf), _(txt_saved_summary), (function == MAIL_ANY_NEWS ? _(txt_mailed) : _(txt_saved)),
 					saved_arts, PLURAL(saved_arts, txt_article),
 					group_count, PLURAL(group_count, txt_group));
 			fprintf(fp_log, "%s", buf);
@@ -573,11 +557,11 @@ t_bool
 create_path(
 	const char *path)
 {
+#ifndef VMS
 	char buf[PATH_LEN];
 	int i, j, len;
 	struct stat st;
 
-#ifndef VMS
 	len = (int) strlen(path);
 
 	for (i = 0, j = 0; i < len; i++, j++) {
@@ -595,7 +579,7 @@ create_path(
 		}
 	}
 #else
-	if (my_mkdir(buf, (mode_t) (S_IRWXU|S_IRUGO|S_IXUGO)) == -1) {
+	if (my_mkdir(path, (mode_t) (S_IRWXU|S_IRUGO|S_IXUGO)) == -1) {
 		if (errno != EEXIST) {
 			perror_message(_(txt_cannot_create), buf);
 			return FALSE;
@@ -693,7 +677,7 @@ add_to_save_list(
 		joinpath(archpath, tmp, artptr->archive);
 
 		/* Generate the filename part and append it */
-		snprintf(filename, sizeof(filename) - 1, "%s.%s%s", artptr->archive, partname, partprefix);
+		snprintf(filename, sizeof(filename), "%s.%s%s", artptr->archive, partname, partprefix);
 		joinpath(tmp, archpath, filename);
 	} else {
 		/*
@@ -874,6 +858,11 @@ post_process_files(
 }
 
 
+/*
+ * TODO
+ * Add more useful text about how each implementation differs
+ */
+#ifdef HAVE_LIBUU
 static void
 post_process_uud(
 	t_bool auto_delete)
@@ -881,26 +870,16 @@ post_process_uud(
 	FILE *fp_in;
 	char file_out_dir[PATH_LEN];
 	int i;
-#ifdef HAVE_LIBUU
 	const char *eptr;
 	int count;
 	int errors = 0;
 	uulist *item;
-#else
-	FILE *fp_out = NULL;
-	char *filename = NULL;
-	char path[PATH_LEN];
-	char s[LEN], t[LEN], u[LEN];
-	int state;
-	mode_t mode = (S_IRUSR|S_IWUSR);
-#endif /* HAVE_LIBUU */
 
 	/*
 	 * Grab the dirname portion
 	 */
 	my_strncpy(file_out_dir, save[0].path, save[0].file - save[0].path);
 
-#ifdef HAVE_LIBUU
 	UUInitialize();
 
 	UUSetOption(UUOPT_SAVEPATH, 0, file_out_dir);
@@ -954,7 +933,32 @@ post_process_uud(
 	my_printf(_(txt_libuu_saved), count, num_save, errors, PLURAL(errors, txt_error));
 	my_printf(cCRLF);
 	UUCleanUp();
+
+	delete_processed_files(auto_delete); /* TRUE = auto-delete files */
+	return;
+}
+
 #else
+
+static void
+post_process_uud(
+	t_bool auto_delete)
+{
+	FILE *fp_in;
+	char file_out_dir[PATH_LEN];
+	int i;
+	FILE *fp_out = NULL;
+	char *filename = NULL;
+	char path[PATH_LEN];
+	char s[LEN], t[LEN], u[LEN];
+	int state;
+	mode_t mode = (S_IRUSR|S_IWUSR);
+
+	/*
+	 * Grab the dirname portion
+	 */
+	my_strncpy(file_out_dir, save[0].path, save[0].file - save[0].path);
+
 	t[0] = '\0';
 	u[0] = '\0';
 
@@ -1066,7 +1070,6 @@ post_process_uud(
 		my_printf(cCRLF);
 	}
 
-#endif /* HAVE_LIBUU */
 	delete_processed_files(auto_delete); /* TRUE = auto-delete files */
 	return;
 }
@@ -1075,7 +1078,6 @@ post_process_uud(
 /*
  * Do whatever needs doing after a successful uudecode
  */
-#ifndef HAVE_LIBUU
 static void
 sum_and_view(
 	const char *path,
@@ -1142,7 +1144,7 @@ sum_and_view(
 
 	free_parts(part);
 }
-#endif /* !HAVE_LIBUU */
+#endif /* HAVE_LIBUU */
 
 
 /*
@@ -1165,9 +1167,9 @@ post_process_sh(
 	my_strncpy(file_out_dir, save[0].path, save[0].file - save[0].path);
 
 #ifdef VMS
-	snprintf(file_out, sizeof(file_out) - 1, "%ssh.%05d", file_out_dir, (int) process_id);
+	snprintf(file_out, sizeof(file_out), "%ssh.%05d", file_out_dir, (int) process_id);
 #else
-	snprintf(file_out, sizeof(file_out) - 1, "%ssh%05d", file_out_dir, (int) process_id);
+	snprintf(file_out, sizeof(file_out), "%ssh%05d", file_out_dir, (int) process_id);
 #endif /* VMS */
 
 	for (i = 0; i < num_save; i++) {
@@ -1287,7 +1289,7 @@ start_viewer(
 		wait_message(0, _(txt_starting_command), foo->command);
 
 		/* are the () needed if foo->command holds more than one cmd? */
-		snprintf(buff, sizeof(buff) - 1, "(%s)", foo->command);
+		snprintf(buff, sizeof(buff), "(%s)", foo->command);
 		if (foo->needsterminal) {
 			set_xclick_off();
 			EndWin();
@@ -1314,8 +1316,10 @@ start_viewer(
 /*
  * Decode and save the binary object pointed to in 'part'
  * Optionally launch a viewer for it
+ * Return FALSE if Abort used to skip further viewing/saving
+ * or other terminal error occurs
  */
-static void
+static t_bool
 decode_save_one(
 	t_part *part,
 	FILE *rawfp,
@@ -1342,12 +1346,12 @@ decode_save_one(
 	 */
 	if (mbox) {
 		wait_message(2, _(txt_is_mailbox), content_types[part->type], part->subtype);
-		return;
+		return FALSE;
 	}
 
 	if (!(create_path(savepath))) {
 		error_message(_(txt_cannot_open_for_saving), savepath);
-		return;
+		return FALSE;
 	}
 
 	/*
@@ -1355,7 +1359,7 @@ decode_save_one(
 	 */
 	if ((fp = open_save_filename(savepath, FALSE)) == NULL) {
 		error_message(_(txt_cannot_open_for_saving), savepath);
-		return;
+		return FALSE;
 	}
 
 	if (part->encoding == ENCODING_BASE64)
@@ -1404,9 +1408,14 @@ decode_save_one(
 			my_printf(cCRLF);
 		}
 	} else {
-		snprintf(buf, sizeof(buf) - 1, _(txt_view_attachment), savepath, content_types[part->type], part->subtype);
-		if (prompt_yn(cLINES, buf, TRUE) == 1)
+		int resp;
+		snprintf(buf, sizeof(buf), _(txt_view_attachment), savepath, content_types[part->type], part->subtype);
+		if ((resp = prompt_yn(cLINES, buf, TRUE)) == 1) {
 			start_viewer(part, savepath);
+		} else if (resp == -1) {	/* Skip rest of attachments */
+			unlink(savepath);
+			return FALSE;
+		}
 	}
 
 	/*
@@ -1417,10 +1426,16 @@ decode_save_one(
 		my_printf(cCRLF);
 	}
 	if (!postproc) {
-		snprintf(buf, sizeof(buf) - 1, _(txt_save_attachment), savepath, content_types[part->type], part->subtype);
-		if (prompt_yn(cLINES, buf, FALSE) != 1)
+		int resp;
+
+		snprintf(buf, sizeof(buf), _(txt_save_attachment), savepath, content_types[part->type], part->subtype);
+		if ((resp = prompt_yn(cLINES, buf, FALSE)) != 1) {
 			unlink(savepath);
+			if (resp == -1)	/* Skip rest of attachments */
+				return FALSE;
+		}
 	}
+	return TRUE;
 }
 
 
@@ -1452,8 +1467,10 @@ decode_save_mime(
 		 * code already handles uuencoded data
 		 */
 		if (!postproc) {
-			for (uueptr = ptr->uue; uueptr != NULL; uueptr = uueptr->next)
-				decode_save_one(uueptr, art->raw, postproc);
+			for (uueptr = ptr->uue; uueptr != NULL; uueptr = uueptr->next) {
+				if (!(decode_save_one(uueptr, art->raw, postproc)))
+					break;
+			}
 		}
 
 		/*
@@ -1462,7 +1479,8 @@ decode_save_mime(
 		if (ptr->type == TYPE_MULTIPART || IS_PLAINTEXT(ptr))
 			continue;
 
-		decode_save_one(ptr, art->raw, postproc);
+		if (!(decode_save_one(ptr, art->raw, postproc)))
+			break;
 	}
 }
 

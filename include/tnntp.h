@@ -3,7 +3,7 @@
  *  Module    : tnntp.h
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-03-05
- *  Updated   : 1997-12-01
+ *  Updated   : 2003-03-14
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2003 Thomas Dickey <dickey@herndon4.his.com>
@@ -175,6 +175,9 @@
 
 #endif /* NNTP_ABLE || HAVE_GETHOSTBYNAME */
 
+#if defined(HOST_NAME_MAX) && !defined(MAXHOSTNAMELEN)
+#	define MAXHOSTNAMELEN	HOST_NAME_MAX
+#endif /* HOST_NAME_MAX && !MAXHOSTNAMELEN */
 #ifndef MAXHOSTNAMELEN
 #	define MAXHOSTNAMELEN 255
 #endif /* !MAXHOSTNAMELEN */

@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-06
+ *  Updated   : 2003-03-14
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -97,7 +97,7 @@ check_upgrade(
 	int ch;
 
 	my_strncpy(foo, txt_tinrc_header, sizeof(foo) - 1);
-	snprintf(bar, sizeof(bar) - 1, foo, PRODUCT, TINRC_VERSION);
+	snprintf(bar, sizeof(bar), foo, PRODUCT, TINRC_VERSION);
 
 	if (strncmp(buf, bar, MIN(strlen(bar), strlen(buf))) == 0)
 		return IGNORE;
@@ -205,10 +205,8 @@ read_config_file(
 				break;
 			}
 
-#ifdef HAVE_METAMAIL
 			if (match_boolean(buf, "ask_for_metamail=", &tinrc.ask_for_metamail))
 				break;
-#endif /* HAVE_METAMAIL */
 
 			if (match_boolean(buf, "auto_bcc=", &tinrc.auto_bcc))
 				break;
@@ -325,7 +323,7 @@ read_config_file(
 			if (match_string(buf, "default_savedir=", tinrc.savedir, sizeof(tinrc.savedir))) {
 				if (tinrc.savedir[0] == '.' && strlen(tinrc.savedir) == 1) {
 					get_cwd(buf);
-					my_strncpy(tinrc.savedir, buf, sizeof(tinrc.savedir));
+					my_strncpy(tinrc.savedir, buf, sizeof(tinrc.savedir) - 1);
 				}
 				break;
 			}
@@ -528,6 +526,9 @@ read_config_file(
 			if (match_list(buf, "mailbox_format=", txt_mailbox_formats, NUM_MAILBOX_FORMATS, &tinrc.mailbox_format))
 				break;
 
+			if (match_string(buf, "metamail_prog=", tinrc.metamail_prog, sizeof(tinrc.metamail_prog)))
+				break;
+
 			if (match_integer(buf, "mono_markdash=", &tinrc.mono_markdash, MAX_ATTR))
 				break;
 
@@ -689,7 +690,7 @@ read_config_file(
 			if (match_integer(buf, "scroll_lines=", &tinrc.scroll_lines, 0))
 				break;
 
-			if (match_integer(buf, "show_info=" , &tinrc.show_info, SHOW_INFO_BOTH))
+			if (match_integer(buf, "show_info=", &tinrc.show_info, SHOW_INFO_BOTH))
 				break;
 
 			if (match_boolean(buf, "show_signatures=", &tinrc.show_signatures))
@@ -768,11 +769,6 @@ read_config_file(
 			if (match_boolean(buf, "use_keypad=", &tinrc.use_keypad))
 				break;
 #endif /* HAVE_KEYPAD */
-
-#ifdef HAVE_METAMAIL
-			if (match_boolean(buf, "use_metamail=", &tinrc.use_metamail))
-				break;
-#endif /* HAVE_METAMAIL */
 
 #ifdef HAVE_COLOR
 			if (match_boolean(buf, "use_color=", &tinrc.use_color)) {
@@ -862,12 +858,7 @@ write_config_file(
 	char *file_tmp;
 	int i;
 
-	/*
-	 * TODO: is logic correct? shouldn't that be:
-	 * if (no_write || post_article_and_exit || post_postponed_and_exit)
-	 * 	return;
-	 */
-	if (no_write && !(post_article_and_exit || post_postponed_and_exit) && file_size(file) != -1L)
+	if ((no_write || post_article_and_exit || post_postponed_and_exit) && file_size(file) != -1L)
 		return;
 
 	/* generate tmp-filename */
@@ -1289,13 +1280,11 @@ write_config_file(
 	fprintf(fp, _(txt_mail_8bit_header.tinrc));
 	fprintf(fp, "mail_8bit_header=%s\n\n", print_boolean(tinrc.mail_8bit_header));
 
-#ifdef HAVE_METAMAIL
-	fprintf(fp, _(txt_use_metamail.tinrc));
-	fprintf(fp, "use_metamail=%s\n\n", print_boolean(tinrc.use_metamail));
+	fprintf(fp, _(txt_metamail_prog.tinrc));
+	fprintf(fp, "metamail_prog=%s\n\n", tinrc.metamail_prog);
 
 	fprintf(fp, _(txt_ask_for_metamail.tinrc));
 	fprintf(fp, "ask_for_metamail=%s\n\n", print_boolean(tinrc.ask_for_metamail));
-#endif /* HAVE_METAMAIL */
 
 #ifdef HAVE_KEYPAD
 	fprintf(fp, _(txt_use_keypad.tinrc));
@@ -1899,7 +1888,7 @@ change_config_file(
 #endif /* HAVE_COLOR */
 
 						/*
-						 * the following do not need further action (if I'm right)
+						 * the following are boolean and do not need further action (if I'm right)
 						 *
 						 * case OPT_AUTO_BCC:
 						 * case OPT_AUTO_CC:
@@ -1936,10 +1925,7 @@ change_config_file(
 #ifdef HAVE_KEYPAD
 						 * case OPT_USE_KEYPAD:
 #endif
-#ifdef HAVE_METAMAIL
 						 * case OPT_ASK_FOR_METAMAIL:
-						 * case OPT_USE_METAMAIL:
-#endif
 #if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
 						 * case OPT_TRANSLIT:
 #endif
@@ -2074,7 +2060,7 @@ change_config_file(
 #endif /* CHARSET_CONVERSION */
 
 						/*
-						 * the following don't need any further action
+						 * the following are picklists and don't need any further action
 #ifdef HAVE_COLOR
 						 * case OPT_COL_BACK:
 						 * case OPT_COL_FROM:
@@ -2119,16 +2105,17 @@ change_config_file(
 						case OPT_EDITOR_FORMAT:
 						case OPT_INEWS_PROG:
 						case OPT_MAILER_FORMAT:
+						case OPT_MAIL_ADDRESS:
+						case OPT_MAIL_QUOTE_FORMAT:
+						case OPT_METAMAIL_PROG:
 #ifndef CHARSET_CONVERSION
 						case OPT_MM_CHARSET:
 #endif /* !CHARSET_CONVERSION */
-						case OPT_MAIL_QUOTE_FORMAT:
 						case OPT_NEWS_QUOTE_FORMAT:
 						case OPT_QUOTE_CHARS:
-						case OPT_XPOST_QUOTE_FORMAT:
-						case OPT_MAIL_ADDRESS:
 						case OPT_SPAMTRAP_WARNING_ADDRESSES:
 						case OPT_URL_HANDLER:
+						case OPT_XPOST_QUOTE_FORMAT:
 							prompt_option_string(option);
 							break;
 

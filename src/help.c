@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-01-07
+ *  Updated   : 2003-03-14
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -456,11 +456,11 @@ make_help_page(
 	while (helppage->helptext) {
 		if (helppage->key == 0) {
 			if (!strlen(helppage->helptext))	/* avoid empty string translations */
-				snprintf(buf, sizeof(buf) - 1, "%s", helppage->helptext);
+				snprintf(buf, sizeof(buf), "%s", helppage->helptext);
 			else
-				snprintf(buf, sizeof(buf) - 1, "%s", _(helppage->helptext));
+				snprintf(buf, sizeof(buf), "%s", _(helppage->helptext));
 		} else
-			snprintf(buf, sizeof(buf) - 1, "%s\t  %s", printascii(key, map_to_local(helppage->key, menukeys)), _(helppage->helptext));
+			snprintf(buf, sizeof(buf), "%s\t  %s", printascii(key, map_to_local(helppage->key, menukeys)), _(helppage->helptext));
 		buf[sizeof(buf) - 1] = '\0';
 		expand_ctrl_chars(helpline, buf, sizeof(helpline) - 1, 8);
 		fprintf(fp, "%s", helpline);

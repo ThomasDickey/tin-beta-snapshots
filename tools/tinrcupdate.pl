@@ -11,10 +11,10 @@
 # NOPS: - word_h_display_marks
 #
 # version Number
-# $VERSION = "0.1.0";
+# $VERSION = "0.1.1";
 
 # current tinrc version number
-my $rc_version="1.3.3";
+my $rc_version="1.3.4";
 
 # rc values to be updated, removed, joined #
 my $use_getart_limit = 0;		# replaced by getart_limit
@@ -43,6 +43,8 @@ my $default_regex_pattern = "";		# misnomer, renamed to default_pattern
 
 my $keep_posted_articles = 0;		# replaced by posted_articles_file
 my $posted_articles_file = "posted";	# replaces keep_posted_articles_file
+
+my $metamail_prog = "";			# replaces use_metamail
 # denioj ,devomer ,detadpu eb ot seulav cr #
 
 while (defined($line = <>)) {
@@ -161,6 +163,12 @@ while (defined($line = <>)) {
 		next;
 	}
 
+	# use_metamail
+	if ($line =~ m/^use_metamail=(.*)/o) {
+		$metamail_prog="--internal" if ($1 =~ m/(?i)on/o);
+		next;
+	}
+
 	# other lines don't need to be translated
 	print "$line\n";
 }
@@ -220,3 +228,5 @@ if ($keep_posted_articles) {
 } else {
 	print "posted_articles_file=\n";
 }
+
+print "metamail_prog=".$metamail_prog."\n";

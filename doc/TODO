@@ -62,13 +62,15 @@ o  reference based filters won't work with long (> 500 chars)
     tin and the filter won't work anymore)
 
 o  batch mode has several bugs
-   - -S, -Z, -N and -M cmd-line switches are broken (again)
-     -S doesn't create subdirs, thus saving fails
    - -Z and giving a cmd-line group ends up in a loop
      (filters each group several times)
    - -M/-N do not remove To:, Cc:, Bcc: headers befor passing article
      to MTA (would require article parsing *sigh*) nor do they wrap
      the article into message/rfc822.
+   - -S without -n checks for new groups (ok, as ppl. might use
+     $AUTOSUBSCRIBE) and saves all articles in each new group
+     found on the server which is not ok as -S should only work on
+     subscribed groups.
    [Urs Janssen <urs@tin.org>]
 
 o  '-s' cmd-line switch implicitly changes 'savedir' in tinrc
@@ -169,7 +171,10 @@ o  with --enable-forgery reposting of a thread reposts only the first
 
 New features
 ------------
-o  update included pcre-3.9 to pcre-4.0
+o  sub-parse message/rfc822 messages (might occur in mail-groups)
+   [20030310 Urs Janssen <urs@tin.org>]
+
+o  update included pcre-3.9 to pcre-4.1
    [20030219 Urs Janssen <urs@tin.org>]
 
 o  instead of exiting when tin fails to get the systems domainname fall
@@ -182,6 +187,14 @@ o  add new cmd-line flag to force 'no_posting' mode
 o  automatically disable TeX2ISO conversion if saving articles _and_
    postprocessing is set to != 'n'
    [20020423 Urs Janssen <urs@tin.org>]
+
+o  better integrate saving of MIME/non-MIME articles when not using libuu.
+   MIME sections are saved by the 's'ave operations, uuencoded sections
+   are saved as part of the postprocess backend
+   [Jason Faultless <jason@altarstone.com>]
+
+o  turn ask_for_metamail into $MM_NOASK support (see metamail(1))
+   [20030314 Urs Janssen <urs@tin.org>]
 
 o  fetch overview data in chunks (e.g. 100 arts/chunk) to allow
    faster read interruption.
@@ -261,23 +274,12 @@ o  if there are no tagged but hot articles in the group make 'S' work on
 o  add key to toggle article and thread sorting preferences on the fly
    (like 'u' for threading)
 
-o  add Content-Description evaluation for the part-overview in the
-   pager
-
 o  default_mailer_format should be extended to be able to
    give the interactive mailer the full article including all
    headers (useful for mutt -H). we could differ between
    %f (just body, headers must be given with %S, %T, ...)
    and %F (headers included in the body, useful for sendmail -t <
    "%F" etc.pp.)
-
-o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
-   about that part) for different content-types
-
-o  better integrate saving of MIME/non-MIME articles when not using libuu
-   MIME sections are saved by the 's'ave operations, uuencoded sections
-   are saved as part of the postprocess backend
-   [Jason Faultless <jason@altarstone.com>]
 
 o  rewrite keymap stuff:
    Define what key should trigger what action and use function names instead
@@ -465,6 +467,8 @@ o  add check for libbzip2/zlib (>=1.1.4)
 o  add check for GPGME (<http://www.gnupg.org/gpgme.html>) and if found
    use it for pgp actions.
 
+o  rewrite/cleanup all the debugging code
+
 Posting enhancements
 ----------------------
 o  sort Followup-To:/Newsgroups: after stripping doubled newsgroups and
@@ -534,6 +538,14 @@ o  allow any given amount of days in default_filter_days not only
 o  allow expiring filter entrys n-days after the last time they matched
 
 o  add command to generate filter rules for all curently tagged articles
+
+Pager enhancements
+------------------
+o  add Content-Description evaluation for the part-overview in the
+   pager
+
+o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
+   about that part) for different content-types
 
 Internal Changes
 ----------------

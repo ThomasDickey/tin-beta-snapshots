@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-13
+ *  Updated   : 2003-03-10
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -205,7 +205,7 @@ search_active(
 		 * Get the group name & description into buf2
 		 */
 		if (show_description && active[my_group[i]].description) {
-			snprintf(buf2, sizeof(buf2) - 1, "%s %s", active[my_group[i]].name, active[my_group[i]].description);
+			snprintf(buf2, sizeof(buf2), "%s %s", active[my_group[i]].name, active[my_group[i]].description);
 			ptr = buf2;
 		} else
 			ptr = active[my_group[i]].name;
@@ -313,7 +313,7 @@ author_search(
 	if (arts[i].name == NULL)
 		ptr = arts[i].from;
 	else
-		snprintf(buf, sizeof(buf) - 1, "%s <%s>", arts[i].name, arts[i].from);
+		snprintf(buf, sizeof(buf), "%s <%s>", arts[i].name, arts[i].from);
 
 	return (REGEX_MATCH(ptr, searchbuf, TRUE)) ? 1 : 0;
 }
@@ -342,16 +342,12 @@ search_group(
 	char *searchbuff,
 	int (*search_func) (int i, char *searchbuff))
 {
-	char group_path[PATH_LEN];
 	int i;
 
 	if (grpmenu.curr < 0) {
 		info_message(_(txt_no_arts));
 		return -1;
 	}
-
-	if (!read_news_via_nntp || CURR_GROUP.type != GROUP_TYPE_NEWS)
-		make_group_path(CURR_GROUP.name, group_path);
 
 	i = current_art;
 

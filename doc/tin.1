@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2003-03-09
+.\" Updated   : 2003-03-14
 .\" Notes     : use american english; still needs some work, i.e.:
 .\"             - document authorization (.newsauth)
 .\"             - postprocess differences when linked against libuu
 .\"
 .\"
-.TH tin 1 "March 9th, 2003" "1.5.17" "A Usenet newsreader"
+.TH tin 1 "March 14th, 2003" "1.5.17" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -1137,7 +1137,7 @@ Cancel the current article. It must have been posted by the same user. The
 cancel message can be seen in the newsgroup 'control' or 'control.cancel'.
 .TP
 .B PageEditArticle 'e'
-Edit the current article. Only available when in a mailgroup.
+Edit the current article. This is restricted to mailgroups and saved news.
 .TP
 .B PageEditFilter 'E'
 Edit the filter file and reload it afterwards.
@@ -1339,11 +1339,10 @@ The character used to show that an article was killed. Default is 'K'.
 The character used to show that an article was hot before it was read.
 Default is ':'. \fBkill_level\fP must be set accordingly.
 .TP
-.B Ask before using metamail (ask_for_metamail)
-If ON \fBtin\fP will ask before using
-.BR metamail (1)
-to display MIME messages. This only occurs if \fBuse_metamail\fP is also
-switched ON. Default is OFF.
+.B Ask before using \fBmetamail_prog\fP (ask_for_metamail)
+If ON \fBtin\fP will ask before using \fBmetamail_prog\fP
+to display MIME messages. This only occurs if \fBmetamail_prog\fP is set.
+Default is OFF.
 .TP
 .B Send you a blind cc automatically (auto_bcc)
 If ON automatically put your name in the ''Bcc:'' field when mailing an
@@ -1593,9 +1592,13 @@ Directory where articles/threads are saved. Default is
 .B default_shell_command
 .TP
 .B Create signature from path/command (default_sigfile)
-The path that specifies the signature file to use when posting, following up
-to or replying to an article. If the path is a directory then the signature
-will be randomly generated from files that are in the specified directory.
+The path that specifies the signature file to use when posting, following
+up to or replying to an article. If the path is a directory then the
+signature will be randomly generated from files that are in the specified
+directory. If the path starts with a ! the program the path points to will
+be executed to generate a signature. Tin will pass the name of the
+current newsgroup as argument to the program. --none will suppress any
+signature.
 Default is \fI${TIN_HOMEDIR-"$HOME"}/.Sig\fR.
 .TP
 .B default_subject_search
@@ -1698,6 +1701,18 @@ for more details about MMDF.
 .TP
 .B Mark saved articles/threads as read (mark_saved_read)
 If ON mark articles that are saved as read. Default is ON.
+.TP
+.B Viewer program for MIME articles (metamail_prog)
+Path, name and options of external
+.BR metamail (1)
+program used to view non-textual parts of articles.
+To use the built-in viewer, set to --internal. This is the default
+value when
+.BR metamail (1)
+is not installed. Leave it blank if you don't want any
+automatic viewing of non-textual attachments. The 'V' command can
+always be used to manually view any attachments.
+See also \fBask_for_metamail\fP.
 .TP
 .B MM_CHARSET (mm_charset)
 Charset supported locally, which is also used for MIME header
@@ -2131,9 +2146,6 @@ Default is OFF.
 Interactive mailreader: if ON mailreader will be invoked earlier for reply
 so you can use more of its features (e.g. MIME, pgp, ...) this option has to
 suit \fBdefault_mailer_format\fP. Default is OFF.
-.TP
-.B Use metamail upon MIME articles (use_metamail)
-If ON metamail can/will be used to display MIME articles. Default is OFF.
 .TP
 .B Use mouse in xterm (use_mouse)
 Allows the mouse key support in a
@@ -2761,17 +2773,22 @@ For a detailed description see
 .\" .B USERNAME (AmigaOS)
 .\"
 .\" .TP
-.\" .B NoMetaMail (AmigaOS)
-.\"
-.\" .TP
 .\" .B NODENAME (AmigaOS, obsolete?)
 .\"
 .\" .TP
 .\" .B TIN_GROUPS (AmigaOS actived, obsolete)
 .\"
 .\" .TP
-.\" TIN_RNG_MIN, TIN_RNG_MAX, TIN_MIN, TIN_MAX, TIN_COUNT, TIN_SEQ
+.\" .B TIN_RNG_MIN, TIN_RNG_MAX, TIN_MIN, TIN_MAX, TIN_COUNT, TIN_SEQ
 .\" (all used in vNewsrcTestHarness() (-DDEBUG_NEWSRC))
+.\"
+.\" .TP
+.\" .B SHELL (Unix, AmigaOS)
+.\"
+.\" .TP
+.\" .B TMPDIR (still to implement!)
+.\" A pathname of a directory made available for \fBtin\fP to create
+.\" temporary files.
 .\"
 .TP
 .B TINRC
@@ -2938,8 +2955,13 @@ files. See also
 .B METAMAIL
 Set this variable to point to
 .BR metamail (1)
-or a replacement (i.e. metamutt), if set to "(internal)" \fBtin\fP uses
-it's own mime-parser.
+or a replacement (i.e. metamutt). This can be used to override the value of
+\fBmetamail_prog\fP.
+.TP
+.B NOMETAMAIL
+Set this variable to disable the use of
+.BR metamail (1)
+or a replacement (i.e. metamutt).
 .TP
 .B MM_CHARSET
 .TP
@@ -3031,10 +3053,6 @@ The type of terminal in use. This is used when looking up termcap sequences.
 See
 .BR environ (5)
 for more infos.
-.\" .TP
-.\" .B TMPDIR
-.\" A pathname of a directory made available for \fBtin\fP to create
-.\" temporary files.
 .\"
 .\"
 .\" .SH DIAGNOSTICS

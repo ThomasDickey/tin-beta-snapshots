@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2003-02-08
+ *  Updated   : 2003-03-12
  *  Notes     :
  *
  * Copyright (c) 1992-2003 Iain Lea <iain@bricbrac.de>
@@ -182,7 +182,7 @@ active_add(
 
 	if (moderated[0] == '/') {
 		ptr->type = GROUP_TYPE_SAVE;
-		ptr->spooldir = my_strdup(moderated);
+		ptr->spooldir = my_strdup(moderated); /* TODO: Unix'ism, other OSs need transformation */
 	} else {
 		ptr->type = GROUP_TYPE_NEWS;
 		ptr->spooldir = spooldir;		/* another global - sigh */
@@ -306,6 +306,7 @@ read_newsrc_active_file(
 			/*
 			 * 128 should be enough for a groupname, >256 and we overflow buffers
 			 * later on
+			 * TODO: check RFCs for possible max. size
 			 */
 			strncpy(ngname, ptr, 128);
 			ptr = ngname;
@@ -656,7 +657,7 @@ check_for_any_new_groups(
 		}
 		TIN_FCLOSE(fp);
 
-		free_attributes_array();		/* TODO - wtf is this doing here? */
+		free_attributes_array();		/* TODO: wtf is this doing here? */
 		read_attributes_file(TRUE);
 		read_attributes_file(FALSE);
 
@@ -902,7 +903,7 @@ create_save_active_file(
 	char group_path[PATH_LEN];
 	char local_save_active_file[PATH_LEN];
 
-	snprintf(local_save_active_file, sizeof(local_save_active_file) - 1, "%s/%s/%s", homedir, RCDIR, ACTIVE_SAVE_FILE);
+	joinpath(local_save_active_file, rcdir, ACTIVE_SAVE_FILE);
 
 	if (no_write && file_size(local_save_active_file) != -1L)
 		return;
@@ -935,7 +936,7 @@ make_group_list(
 		is_dir = FALSE;
 		while ((direntry = readdir(dir)) != NULL) {
 			STRCPY(filename, direntry->d_name);
-			sprintf(path, "%s/%s", group_path, filename);
+			joinpath(path, group_path, filename);
 
 			if (!(filename[0] == '.' && filename[1] == '\0') &&
 				!(filename[0] == '.' && filename[1] == '.' && filename[2] == '\0')) {
@@ -952,7 +953,7 @@ make_group_list(
 				find_art_max_min(group_path, &art_max, &art_min);
 				append_group_line(active_file, group_path, art_max, art_min, base_dir);
 
-				ptr = strrchr(group_path, '/');
+				ptr = strrchr(group_path, '/'); /* TODO: Unix'ism */
 				if (ptr != NULL)
 					*ptr = '\0';
 			}

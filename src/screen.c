@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-05
+ *  Updated   : 2003-03-14
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -260,7 +260,7 @@ center_line(
 		char *buf;
 
 		buf = my_strdup(buffer);
-		snprintf(buffer, sizeof(buffer) - 1, "%-.*s%s", cCOLS - 6, buf, TRUNC_TAIL);
+		snprintf(buffer, sizeof(buffer), "%-.*s%s", cCOLS - 6, buf, TRUNC_TAIL);
 		free(buf);
 	}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -342,7 +342,7 @@ erase_arrow(
 
 void
 show_title(
-	char *title)
+	const char *title)
 {
 	int col;
 
@@ -359,7 +359,7 @@ show_title(
 		fcol(tinrc.col_normal);
 #endif /* HAVE_COLOR */
 	}
-	center_line(0, TRUE, title);
+	center_line(0, TRUE, title); /* wastes some space on the left */
 }
 
 
@@ -459,7 +459,7 @@ show_progress(
 #ifdef HAVE_GETTIMEOFDAY
 	if (last_length == 0) {
 		/* Don't print a "time remaining" this time */
-		snprintf(display, sizeof(display) - 1, "%s %3d%%", txt, ratio);
+		snprintf(display, sizeof(display), "%s %3d%%", txt, ratio);
 		display[sizeof(display) - 1] = '\0';
 		last_length = strlen(txt) + 5;
 
@@ -504,8 +504,7 @@ show_progress(
 			secs_left = 0;
 
 		/* TODO: -> lang.c, difficult with hardcoded last_length */
-		snprintf(display, sizeof(display) - 1, "%s %3d%% (%d:%02d remaining)", txt, ratio, secs_left / 60, secs_left % 60);
-		display[sizeof(display) - 1] = '\0';
+		snprintf(display, sizeof(display), "%s %3d%% (%d:%02d remaining)", txt, ratio, secs_left / 60, secs_left % 60);
 		last_length = strlen(txt) + 21 + secs_left / 600;
 	}
 
@@ -513,8 +512,7 @@ show_progress(
 	gettimeofday(&last_time, NULL);
 
 #else /* HAVE_GETTIMEOFDAY */
-	snprintf(display, sizeof(display) - 1, "%s %3d%%", txt, ratio);
-	display[sizeof(display) - 1] = '\0';
+	snprintf(display, sizeof(display), "%s %3d%%", txt, ratio);
 #endif /* HAVE_GETTIMEOFDAY */
 
 	/* Only display text if it changed from last time */

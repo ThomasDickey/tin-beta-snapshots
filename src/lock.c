@@ -3,7 +3,7 @@
  *  Module    : lock.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1998-07-27
- *  Updated   : 2002-06-18
+ *  Updated   : 2003-03-14
  *  Notes     :
  *
  * Copyright (c) 1998-2003 Urs Janssen <urs@tin.org>
@@ -241,8 +241,7 @@ t_bool dot_lock(
 	}
 
 	free(base_dir);
-
-	snprintf(lockfile, sizeof(lockfile) - 1, "%s%s", filename, LOCK_SUFFIX);
+	snprintf(lockfile, sizeof(lockfile), "%s%s", filename, LOCK_SUFFIX);
 
 #ifdef HAVE_LINK
 	if (stat(lockfile, &statbuf)) {				/* lockfile doesn't exist */

@@ -3,7 +3,7 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 1998-07-20
+ *  Updated   : 2003-03-14
  *  Notes     : Generate random signature for posting/mailing etc.
  *
  * Copyright (c) 1992-2003 Mike Gleason
@@ -66,7 +66,7 @@ msg_write_signature(
 	char pathfixed[PATH_LEN];
 
 #ifdef NNTP_INEWS
-	if (read_news_via_nntp && 0 == strcasecmp(tinrc.inews_prog, "--internal"))
+	if (read_news_via_nntp && 0 == strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
 		include_dot_signature = TRUE;
 #endif /* NNTP_INEWS */
 

@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2003-02-23
+ *  Updated   : 2003-03-10
  *  Notes     : Cacheing of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -45,7 +45,7 @@
 #endif /* !TIN_H */
 
 #define MAX_REFS	100			/* Limit recursion depth */
-#define REF_SEP	" "			/* Separator chars in ref headers */
+#define REF_SEP	" \t"			/* Separator chars in ref headers */
 
 /* Produce disgusting amounts of output to help me tame this thing */
 #undef DEBUG_REFS
@@ -361,8 +361,7 @@ parse_references(
 	DEBUG_PRINT((dbgfd, "parse_references: %s\n", r));
 
 	/*
-	 * Break the refs down, using a space as delimiters
-	 * A msgid can't contain a space, right ?
+	 * Break the refs down, using REF_SEP as delimiters
 	 */
 	if ((ptr = strtok(r, REF_SEP)) == NULL)
 		return NULL;
@@ -879,7 +878,7 @@ void
 build_references(
 	struct t_group *group)
 {
-	char *s;
+	char *s, *t;
 	int i;
 	struct t_article *art;
 	struct t_msgid *refs;
@@ -917,6 +916,8 @@ build_references(
 			 * Add the last ref, and then trim it to save wasting time adding
 			 * it again later
 			 * Check for circular references to current article
+			 *
+			 * TODO: do this in a single pass
 			 */
 			while (((s = strrchr(art->refs, ' ')) != NULL) && (!strcmp(art->msgid, s + 1))) {
 				/*
@@ -925,6 +926,16 @@ build_references(
 				DEBUG_PRINT((dbgfd, "removing circular reference to%s\n", s));
 				*s = '\0';
 			}
+			while (((t = strrchr(art->refs, '\t')) != NULL) && (!strcmp(art->msgid, t + 1))) {
+				/*
+				 * Remove circular reference to current article
+				 */
+				DEBUG_PRINT((dbgfd, "removing circular reference to%s\n", t));
+				*t = '\0';
+			}
+			if (t > s)
+				s = t;
+
 			if (s != NULL) {
 				art->refptr = add_msgid(MSGID_REF, art->msgid, add_msgid(REF_REF, s + 1, NULL));
 				*s = '\0';
@@ -932,7 +943,6 @@ build_references(
 				art->refptr = add_msgid(MSGID_REF, art->msgid, add_msgid(REF_REF, art->refs, NULL));
 				FreeAndNull(art->refs);
 			}
-
 		} else
 			art->refptr = add_msgid(MSGID_REF, art->msgid, NULL);
 

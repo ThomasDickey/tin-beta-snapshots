@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-06
+ *  Updated   : 2003-03-14
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -64,6 +64,9 @@ static int read_site_config(void);
 #endif /* HAVE_COLOR */
 
 
+char **news_headers_to_display_array;	/* array of which headers to display */
+char **news_headers_to_not_display_array;	/* array of which headers to not display */
+char proc_ch_default;			/* set in change_config_file() */
 char active_times_file[PATH_LEN];
 char article[PATH_LEN];			/* ~/TIN_ARTICLE_NAME file */
 char bug_nntpserver1[PATH_LEN];		/* welcome message of NNTP server used */
@@ -86,40 +89,36 @@ char inewsdir[PATH_LEN];
 char libdir[PATH_LEN];			/* directory where news config files are (ie. active) */
 char local_attributes_file[PATH_LEN];
 char local_config_file[PATH_LEN];
-char filter_file[PATH_LEN];
 char local_input_history_file[PATH_LEN];
 char local_newsgroups_file[PATH_LEN];	/* local copy of NNTP newsgroups file */
 char local_newsrctable_file[PATH_LEN];
 char lock_file[PATH_LEN];		/* contains name of index lock file */
+char filter_file[PATH_LEN];
 char mail_active_file[PATH_LEN];
 char mail_news_user[LEN];		/* mail new news to this user address */
 char mailbox[PATH_LEN];			/* system mailbox for each user */
 char mailer[PATH_LEN];			/* mail program */
-#ifdef HAVE_MH_MAIL_HANDLING
-	char mailgroups_file[PATH_LEN];
-#endif /* HAVE_MH_MAIL_HANDLING */
-char **news_headers_to_display_array;	/* array of which headers to display */
-char **news_headers_to_not_display_array;	/* array of which headers to not display */
 char newnewsrc[PATH_LEN];
 char news_active_file[PATH_LEN];
 char newsgroups_file[PATH_LEN];
 char newsrc[PATH_LEN];
-#ifndef NNTP_ONLY
-	char novrootdir[PATH_LEN];		/* root directory of nov index files */
-	char novfilename[PATH_LEN];		/* file name of a single nov index files */
-#endif /* !NNTP_ONLY */
 char page_header[LEN];			/* page header of pgm name and version */
 char posted_info_file[PATH_LEN];
 char postponed_articles_file[PATH_LEN];	/* ~/.tin/postponed.articles file */
-char tin_progname[PATH_LEN];		/* program name */
 char rcdir[PATH_LEN];
 char save_active_file[PATH_LEN];
 char spooldir[PATH_LEN];		/* directory where news is */
 char subscriptions_file[PATH_LEN];
+char tin_progname[PATH_LEN];		/* program name */
 char txt_help_bug_report[LEN];		/* address to send bug reports to */
 char userid[PATH_LEN];
-
-char proc_ch_default;			/* set in change_config_file() */
+#ifdef HAVE_MH_MAIL_HANDLING
+	char mailgroups_file[PATH_LEN];
+#endif /* HAVE_MH_MAIL_HANDLING */
+#ifndef NNTP_ONLY
+	char novrootdir[PATH_LEN];		/* root directory of nov index files */
+	char novfilename[PATH_LEN];		/* file name of a single nov index files */
+#endif /* !NNTP_ONLY */
 
 #ifdef VMS
 	char rcdir_asfile[PATH_LEN];	/* rcdir expressed as dev:[dir]tin.dir, for stat() */
@@ -144,17 +143,19 @@ t_bool word_highlight;		/* word highlighting on/off */
 pid_t process_id;			/* Useful to have around for .suffixes */
 mode_t real_umask;
 
-t_bool no_write = FALSE;		/* do not write newsrc on quit (-X cmd-line flag) */
+t_bool (*wildcard_func) (const char *str, char *patt, t_bool icase);		/* Wildcard matching function */
+t_bool batch_mode;			/* update index files only mode */
 t_bool check_for_new_newsgroups;	/* don't check for new newsgroups */
 t_bool cmd_line;			/* batch / interactive mode */
 t_bool created_rcdir;			/* checks if first time tin is started */
 t_bool dangerous_signal_exit;		/* no get_respcode() in nntp_command when dangerous signal exit */
 t_bool disable_gnksa_domain_check;	/* disable checking TLD in From: etc. */
 t_bool disable_sender;			/* disable generation of Sender: header */
-t_bool got_sig_pipe = FALSE;
 t_bool filtered_articles;		/* locally killed / auto-selected articles */
+t_bool got_sig_pipe = FALSE;
 t_bool list_active;
 t_bool newsrc_active;
+t_bool no_write = FALSE;		/* do not write newsrc on quit (-X cmd-line flag) */
 t_bool post_article_and_exit;		/* quick post of an article then exit(elm like) */
 t_bool post_postponed_and_exit;		/* post postponed articles and exit */
 t_bool reread_active_for_posted_arts;
@@ -162,9 +163,7 @@ t_bool read_local_newsgroups_file;	/* read newsgroups file locally or via NNTP *
 t_bool read_news_via_nntp = FALSE;	/* read news locally or via NNTP */
 t_bool read_saved_news = FALSE;		/* tin -R read saved news from tin -S */
 t_bool show_description = TRUE;		/* current copy of tinrc flag */
-t_bool batch_mode;			/* update index files only mode */
 t_bool verbose = FALSE;			/* update index files only mode */
-t_bool (*wildcard_func) (const char *str, char *patt, t_bool icase);		/* Wildcard matching function */
 t_bool xover_supported = FALSE;
 t_bool xref_supported = TRUE;
 #ifdef LOCAL_CHARSET
@@ -249,6 +248,11 @@ struct t_config tinrc = {
 	0,			/* mailbox_format = MBOXO */
 #endif /* SCO_UNIX */
 	"",		/* mail_address */
+#ifdef HAVE_METAMAIL
+	METAMAIL_CMD,		/* metamail_prog */
+#else
+	INTERNAL_CMD,		/* metamail_prog */
+#endif /* HAVE_METAMAIL */
 #ifndef CHARSET_CONVERSION
 	"",		/* mm_charset, defaults to $MM_CHARSET */
 #else
@@ -404,10 +408,7 @@ struct t_config tinrc = {
 	FALSE,		/* use_keypad */
 #endif /* HAVE_KEYPAD */
 	TRUE,		/* wrap_on_next_unread */
-#ifdef HAVE_METAMAIL
 	FALSE,		/* ask_for_metamail */
-	FALSE,		/* use_metamail */
-#endif /* HAVE_METAMAIL */
 	FALSE,		/* default_filter_kill_case */
 	FALSE,		/* default_filter_kill_expire */
 	TRUE,		/* default_filter_kill_global */
@@ -538,15 +539,6 @@ init_selfinfo(
 	real_umask = umask(0);
 	(void) umask(real_umask);
 
-#if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
-	if (!setlocale(LC_ALL, "")) { /* EMPTY */
-		/*
-		 * TODO: issue a warning here like
-		 *       "Can't set the specified locale! Check $LANG, $LC_CTYPE, $LC_ALL"
-		 */
-	}
-#endif /* HAVE_SETLOCALE && !NO_LOCALE */
-
 /* FIXME: move to get_user_name() [header.c] */
 #ifndef M_AMIGA
 #	ifndef VMS
@@ -555,7 +547,6 @@ init_selfinfo(
 		giveup();
 	}
 #	else
-	/* TODO: get_user_name() entirely reles on $USER */
 	if (((ptr = getlogin()) != NULL) && strlen(ptr))
 		myentry = getpwnam(ptr);
 	else {
@@ -571,13 +562,13 @@ init_selfinfo(
 #	endif /* VMS */
 
 	if ((ptr = getenv("TIN_HOMEDIR")) != NULL) {
-		my_strncpy(homedir, ptr, sizeof(homedir));
+		my_strncpy(homedir, ptr, sizeof(homedir) - 1);
 	} else if ((ptr = getenv("HOME")) != NULL) {
-		my_strncpy(homedir, ptr, sizeof(homedir));
+		my_strncpy(homedir, ptr, sizeof(homedir) - 1);
 	} else if (!myentry) {
-		strcpy(homedir, "/tmp");
+		strncpy(homedir, "/tmp", sizeof(homedir) - 1); /* FIXME: Unix'ism, what about VMS? */
 	} else
-		my_strncpy(homedir, myentry->pw_dir, sizeof(homedir));
+		strncpy(homedir, myentry->pw_dir, sizeof(homedir) - 1);
 
 #else
 	/* TODO: get_user_name() uses $USER, not $USERNAME */
@@ -585,14 +576,14 @@ init_selfinfo(
 		error_message(_(txt_env_var_not_found), "USERNAME");
 		giveup();
 	}
-	my_strncpy(userid, ptr, sizeof(userid));
+	my_strncpy(userid, ptr, sizeof(userid) - 1);
 
 	/* TODO: why not also check for $TIN_HOMEDIR? */
 	if ((ptr = getenv("HOME")) == NULL) {
 		error_message(_(txt_env_var_not_found), "HOME");
 		giveup();
 	}
-	my_strncpy(homedir, ptr, sizeof(homedir));
+	my_strncpy(homedir, ptr, sizeof(homedir) - 1);
 #endif /* !M_AMIGA */
 
 	cmdline_nntpserver[0] = '\0';
@@ -600,14 +591,18 @@ init_selfinfo(
 	dangerous_signal_exit = FALSE;
 	disable_gnksa_domain_check = FALSE;
 #ifdef MAC_OS_X	/* usualy they don't have a valid FQDN */
+	/*
+	 * TODO: check if gnksa_check_domain(get_fqdn()) returns ok
+	 *       and if it does, don't disable Sender
+	 */
 	disable_sender = TRUE;
 #else
 	disable_sender = FALSE;
 #endif /* MAC_OS_X */
 	filtered_articles = FALSE;
 	iso2asc_supported = atoi(get_val("ISO2ASC", DEFAULT_ISO2ASC));
-	if (iso2asc_supported > NUM_ISO_TABLES)
-		iso2asc_supported = 0;
+	if (iso2asc_supported > NUM_ISO_TABLES || iso2asc_supported < 0) /* TODO: issue a warning here? */
+		iso2asc_supported = -1;
 	list_active = FALSE;
 	newsrc_active = FALSE;
 	num_headers_to_display = 0;
@@ -620,12 +615,6 @@ init_selfinfo(
 	batch_mode = FALSE;
 	check_for_new_newsgroups = TRUE;
 	wildcard_func = wildmat;
-#ifdef HAVE_METAMAIL
-#	ifdef M_AMIGA
-		/* for all those AmigaElm users ... ;-) */
-		tinrc.use_metamail = (getenv("NoMetaMail") != NULL) ? TRUE : FALSE;
-#	endif /* M_AMIGA */
-#endif /* HAVE_METAMAIL */
 
 #ifdef HAVE_COLOR
 	preinit_colors();
@@ -650,42 +639,34 @@ init_selfinfo(
 	news_headers_to_not_display_array = NULL;
 
 	/* TODO: nuke $BUG_ADDRESS entirely? */
-	strcpy(bug_addr, get_val("BUG_ADDRESS", BUG_REPORT_ADDRESS));
+	strncpy(bug_addr, get_val("BUG_ADDRESS", BUG_REPORT_ADDRESS), sizeof(bug_addr) - 1);
 
 	bug_nntpserver1[0] = '\0';
 	bug_nntpserver2[0] = '\0';
 
-	/*
-	 * Amiga uses assigns which end in a ':' and won't work with a '/'
-	 * tacked on after them: e.g. we want UULIB:active, and not
-	 * UULIB:/active. For this reason I have changed the sprintf calls
-	 * to joinpath. This is defined to sprintf(result,"%s/%s",dir,file)
-	 * on all UNIX systems.
-	 */
-
 #ifdef INEWSDIR
-	strcpy(inewsdir, INEWSDIR);
+	strncpy(inewsdir, INEWSDIR, sizeof(inewsdir) - 1);
 #else
 	inewsdir[0] = '\0';
 #endif /* INEWSDIR */
 
 #ifdef apollo
-	strcpy(default_organization, get_val("NEWSORG", ""));
+	my_strncpy(default_organization, get_val("NEWSORG", ""), sizeof(default_organization) - 1);
 #else
-	strcpy(default_organization, get_val("ORGANIZATION", ""));
+	my_strncpy(default_organization, get_val("ORGANIZATION", ""), sizeof(default_organization) - 1);
 #endif /* apollo */
 
 #ifdef USE_INN_NNTPLIB
 	ptr = GetConfigValue(_CONF_ORGANIZATION);
 	if (ptr != NULL)
-		my_strncpy(default_organization, ptr, sizeof(default_organization));
+		my_strncpy(default_organization, ptr, sizeof(default_organization) - 1);
 #endif /* USE_INN_NNTPLIB */
 
 #ifndef NNTP_ONLY
-	strcpy(libdir, get_val("TIN_LIBDIR", NEWSLIBDIR)); /* moved inside ifdef */
-	strcpy(novrootdir, get_val("TIN_NOVROOTDIR", NOVROOTDIR));
-	strcpy(novfilename, get_val("TIN_NOVFILENAME", OVERVIEW_FILE));
-	strcpy(spooldir, get_val("TIN_SPOOLDIR", SPOOLDIR));
+	my_strncpy(libdir, get_val("TIN_LIBDIR", NEWSLIBDIR), sizeof(libdir) - 1);
+	my_strncpy(novrootdir, get_val("TIN_NOVROOTDIR", NOVROOTDIR), sizeof(novrootdir) - 1);
+	my_strncpy(novfilename, get_val("TIN_NOVFILENAME", OVERVIEW_FILE), sizeof(novfilename) - 1);
+	my_strncpy(spooldir, get_val("TIN_SPOOLDIR", SPOOLDIR), sizeof(spooldir) - 1);
 #endif /* !NNTP_ONLY */
 	/* clear news_active_file, active_time_file, newsgroups_file */
 	news_active_file[0] = '\0';
@@ -718,6 +699,14 @@ init_selfinfo(
 	}
 
 	/*
+	 * Amiga uses assigns which end in a ':' and won't work with a '/'
+	 * tacked on after them: e.g. we want UULIB:active, and not
+	 * UULIB:/active. For this reason I have changed the sprintf calls
+	 * to joinpath. This is defined to sprintf(result,"%s/%s",dir,file)
+	 * on all UNIX systems.
+	 */
+
+	/*
 	 * only set the following variables if they weren't set from within
 	 * read_site_config()
 	 *
@@ -743,7 +732,7 @@ init_selfinfo(
 					*ptr = '\0';
 			}
 			fclose(fp);
-			my_strncpy(default_organization, buf, sizeof(default_organization));
+			my_strncpy(default_organization, buf, sizeof(default_organization) - 1);
 		}
 	}
 
@@ -804,10 +793,10 @@ init_selfinfo(
 #	endif /* M_AMIGA */
 #endif /* !DISABLE_PRINTING */
 	strcpy(tinrc.inews_prog, PATH_INEWS);
-	strcpy(mailer, get_val(ENV_VAR_MAILER, DEFAULT_MAILER));
+	my_strncpy(mailer, get_val(ENV_VAR_MAILER, DEFAULT_MAILER), sizeof(mailer) - 1);
 	joinpath(article, homedir, TIN_ARTICLE_NAME);
 #ifdef APPEND_PID
-	sprintf(article + strlen(article), ".%d", (int) process_id);
+	snprintf(article + strlen(article), sizeof(article) - 1, ".%d", (int) process_id);
 #endif /* APPEND_PID */
 	joinpath(dead_article, homedir, "dead.article");
 	joinpath(dead_articles, homedir, "dead.articles");
@@ -842,16 +831,16 @@ init_selfinfo(
 	joinpath(newsrc, homedir, NEWSRC_FILE);
 	joinpath(newnewsrc, homedir, NEWNEWSRC_FILE);
 #ifdef APPEND_PID
-	sprintf(newnewsrc + strlen(newnewsrc), "%d", (int) process_id);
+	snprintf(newnewsrc + strlen(newnewsrc), sizeof(newnewsrc) - 1, ".%d", (int) process_id);
 #endif /* APPEND_PID */
 	joinpath(posted_info_file, rcdir, POSTED_FILE);
 	joinpath(postponed_articles_file, rcdir, POSTPONED_FILE);
 	joinpath(save_active_file, rcdir, ACTIVE_SAVE_FILE);
 
 #ifdef HAVE_LONG_FILE_NAMES
-	sprintf(lock_file, "%stin.%s.LCK", TMPDIR, userid);
+	snprintf(lock_file, sizeof(lock_file), "%stin.%s.LCK", TMPDIR, userid);
 #else
-	sprintf(lock_file, "%s%s.LCK", TMPDIR, userid);
+	snprintf(lock_file, sizeof(lock_file), "%s%s.LCK", TMPDIR, userid);
 #endif /* HAVE_LONG_FILE_NAMES */
 
 #ifdef NNTP_ABLE

@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2003-03-05
+ *  Updated   : 2003-03-14
  *  Notes     :
  *
  * Copyright (c) 1999-2003 Jason Faultless <jason@altarstone.com>
@@ -94,6 +94,7 @@ struct t_config {
 	char maildir[PATH_LEN];				/* mailbox dir where = saves are stored */
 	int mailbox_format;					/* format of the mailbox (mboxo, mboxrd, mmdf, ...) */
 	char mail_address[HEADER_LEN];				/* user's mail address */
+	char metamail_prog[PATH_LEN];				/* name of MIME message viewer */
 #	ifndef CHARSET_CONVERSION
 		char mm_charset[LEN];				/* MIME charset */
 #	else
@@ -237,10 +238,7 @@ struct t_config {
 		t_bool use_keypad;
 #	endif /* HAVE_KEYPAD */
 	t_bool wrap_on_next_unread;		/* Wrap around threads when searching next unread article */
-#	ifdef HAVE_METAMAIL
-		t_bool ask_for_metamail;			/* enables/disables the metamail query if a MIME message is going to be displayed */
-		t_bool use_metamail;				/* enables/disables metamail on MIME messages */
-#	endif /* HAVE_METAMAIL */
+	t_bool ask_for_metamail;			/* enables/disables the viewer query if a MIME message is going to be displayed */
 	t_bool default_filter_kill_case;
 	t_bool default_filter_kill_expire;
 	t_bool default_filter_kill_global;

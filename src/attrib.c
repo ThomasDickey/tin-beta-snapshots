@@ -362,7 +362,7 @@ set_attrib(
 			do_set_attrib(group, type, data);
 	} else {
 		int i;
-		/* TODO Can we get out of doing this per group for .global case */
+		/* TODO: Can we get out of doing this per group for .global case */
 		for_each_group(i) {
 			group = &active[i];
 			if (match_group_list(group->name, scope))
@@ -507,8 +507,8 @@ write_attributes_file(
 		wait_message(0, _(txt_writing_attributes_file));
 
 	/*
-	 * TODO: - sort in a useful order
-	 *       - move strings to lang.c
+	 * TODO: sort in a useful order
+	 *       move strings to lang.c
 	 */
 	fprintf(fp, _("# Group attributes file for the TIN newsreader\n#\n"));
 	fprintf(fp, _("#  scope=STRING (ie. alt.*,!alt.bin*) [mandatory]\n"));
