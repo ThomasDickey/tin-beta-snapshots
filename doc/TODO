@@ -148,7 +148,7 @@ o  when enabling the 'cc/bcc on every message that is sent', and
 New features
 ------------
 o  add 'autoview' (spawn external viewer) 'autohide' (don't even show info
-   abou that part) for different contenttypes
+   about that part) for different contenttypes
 
 o  Better integrate saving of MIME/non-MIME articles when not using libuu
    [Jason Faultless <jason@radar.tele2.co.uk>]
@@ -203,8 +203,6 @@ o  add IPv6 support
    newsserver it always uses DNS (gethostbyname()/gethostbyaddr() checked
    /etc/hosts first) and getaddrinfo() seems to have a (huge) delay in some
    cases.
-
-o  check where snprintf() could be used - this is ongoing
 
 o  add shortcut(s) to repeat last command (i.e. search again)
 
@@ -418,8 +416,18 @@ o  use XGTITLE (if available) if -n cmd-line flag is present
    (see open.c)
    [Urs Janssen <urs@tin.org>]
 
-o  change all system()/popen() calls to fork() and exec() calls
-   [close security holes]
+o  close potential security holes:
+   - change all system()/popen() calls to fork() and exec() calls
+   - check where we should use snprintf() instead of sprintf()
+   - check where we should use vsnprintf() instead of vsprintf()
+   - check where we should use strncat() instead of strcat()
+   - check where we should use strncpy() instead of strcpy()
+   - check possible races with chmod()/access()/link()/rename()/stat()/
+                               unlink()/chdir()/fopen()/fstat()/open()/
+                               opendir()/t_open()/tmpfile()
+   - check getenv() results before using it
+   [Urs Janssen <urs@tin.org> - its4 <http://www.rstcorp.com/its4> can
+    locate potential security holes]
 
 o  compile-time option: generate own MSGIDs on host with a proper FQDN
    (EVIL_INSIDE)

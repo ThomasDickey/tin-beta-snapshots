@@ -169,7 +169,7 @@ static void post_postponed_article (int ask, const char *subject);
 static void postpone_article (const char *the_article);
 static void setup_check_article_screen (int *init);
 static void update_active_after_posting (char *newsgroups);
-static void update_posted_info_file (const char *group, int action, const char *subj);
+static void update_posted_info_file (const char *group, int action, const char *subj, const char *a_message_id);
 static void update_posted_msgs_file (const char *file, const char *addr);
 static void yank_to_addr (char *orig, char *addr);
 #ifdef FORGERY
@@ -436,6 +436,7 @@ msg_write_headers (
 }
 
 
+/* TODO: handle optional Message-ID: field */
 t_bool
 user_posted_messages (
 	void)
@@ -518,7 +519,8 @@ static void
 update_posted_info_file (
 	const char *group,
 	int action,
-	const char *subj)
+	const char *subj,
+	const char *a_message_id)
 {
 	FILE *fp;
 	struct tm *pitm;
@@ -530,7 +532,10 @@ update_posted_info_file (
 	if ((fp = fopen (posted_info_file, "a+")) != NULL) {
 		(void) time (&epoch);
 		pitm = localtime (&epoch);
-		fprintf (fp, "%02d-%02d-%02d|%c|%s|%s\n", pitm->tm_mday, pitm->tm_mon + 1, pitm->tm_year % 100, action, group, subj);
+		if (*a_message_id)
+			fprintf (fp, "%02d-%02d-%02d|%c|%s|%s|%s\n", pitm->tm_mday, pitm->tm_mon + 1, pitm->tm_year % 100, action, group, subj, a_message_id);
+		else
+			fprintf (fp, "%02d-%02d-%02d|%c|%s|%s\n", pitm->tm_mday, pitm->tm_mon + 1, pitm->tm_year % 100, action, group, subj);
 		fclose (fp);
 	}
 }
@@ -1167,6 +1172,7 @@ post_loop(
 {
 	int ret_code = POSTED_NONE;
 	long artchanged = 0L;		/* artchanged work was not done in post_postponed_article */
+	char a_message_id[HEADER_LEN];	/* Message-ID of the article if known */
 
 	forever {
 post_article_loop:
@@ -1222,7 +1228,7 @@ post_article_loop:
 
 				/* Functions that didn't handle mail didn't do this */
 				if (art_type == GROUP_TYPE_NEWS) {
-					if (submit_news_file (article))
+					if (submit_news_file (article, a_message_id))
 						ret_code = POSTED_OK;
 				} else {
 					if (submit_mail_file (article))
@@ -1231,7 +1237,7 @@ post_article_loop:
 
 				if (ret_code == POSTED_OK) {
 					unlink(backup_article_name(article));
-					wait_message (1, _(txt_art_posted));
+					wait_message (2, _(txt_art_posted), *a_message_id ? a_message_id : "");
 					goto post_article_done;
 				} else {
 					if ((ch = prompt_rejected()) == iKeyPostPostpone)
@@ -1342,6 +1348,7 @@ post_article_done:
 			 */
 			if (tinrc.add_posted_to_filter && (type == POST_QUICK || type == POST_POSTPONED || type == POST_NORMAL)) {
 				if (type != POST_POSTPONED || (type == POST_POSTPONED && !strchr(header.newsgroups, ',') && (psGrp = psGrpFind(header.newsgroups))))
+					/* TODO: log Message-ID if given in a_message_id */
 					quick_filter_select_posted_art (psGrp, header.subj);
 			}
 
@@ -1367,17 +1374,18 @@ post_article_done:
 			/* Different logic for followup_to: poster */
 			if ((type == POST_RESPONSE) || (type == POST_POSTPONED && tag == 'f')) {
 				if (header.followup && strcmp (header.followup, "poster") != 0)
-					update_posted_info_file (header.followup, tag, header.subj);
+					update_posted_info_file (header.followup, tag, header.subj, a_message_id);
 				else
-					update_posted_info_file (header.newsgroups, tag, header.subj);
+					update_posted_info_file (header.newsgroups, tag, header.subj, a_message_id);
 			} else
 				/* Repost_article() uses psGrp->name rather than group here, but this is probably better anyway */
-				update_posted_info_file (header.newsgroups, tag, header.subj);
+				update_posted_info_file (header.newsgroups, tag, header.subj, a_message_id);
 
 			my_strncpy (tinrc.default_post_subject, header.subj, sizeof (tinrc.default_post_subject));
 		}
 
 		if (tinrc.keep_posted_articles && type != POST_REPOST)
+			/* TODO: log Message-ID if given in a_message_id */
 			update_posted_msgs_file (article, userid);
 
 		free_and_init_header (&header);
@@ -1406,6 +1414,7 @@ check_moderated (
 	char *group;
 	char newsgroups[HEADER_LEN];
 	struct t_group *psretGrp = NULL;
+	int vnum = 0, bnum = 0;
 
 	/* Take copy - strtok() modifies its args */
 	STRCPY(newsgroups, groups);
@@ -1415,9 +1424,11 @@ check_moderated (
 	do {
 		struct t_group *psGrp;
 
+		vnum++; /* number of newsgroups */
+
 		if (!(psGrp = psGrpFind (group))) {
-			error_message (_(txt_not_in_active_file), group);
-			return NULL;
+			bnum++;	/* number of bogus groups */
+			continue;
 		}
 
 		if (!psretGrp)				/* Save ptr to the 1st group */
@@ -1458,7 +1469,12 @@ check_moderated (
 		}
 	} while ((group = strtok (NULL, ",")) != NULL);
 
-	return psretGrp;
+	if (vnum > bnum)
+		return psretGrp;
+	else {
+		error_message (_(txt_not_in_active_file), group);
+		return NULL;
+	}
 }
 
 
@@ -2787,7 +2803,7 @@ mail_to_author (
 	 * the mailer I think this is the best solution. -dn, 2000-03-16
 	 */
 	if (ret_code == POSTED_OK)
-		update_posted_info_file (group, 'r', subject); /* TODO update_posted_info_file elsewhere ? */
+		update_posted_info_file (group, 'r', subject, ""); /* TODO update_posted_info_file elsewhere ? */
 
 	if (tinrc.unlink_article)
 		unlink (nam);
@@ -2850,6 +2866,7 @@ cancel_article (
 	char buf[HEADER_LEN];
 	char cancel[HEADER_LEN];
 	char from_name[HEADER_LEN];
+	char a_message_id[HEADER_LEN];
 #ifdef FORGERY
 	char line[HEADER_LEN];
 	t_bool author = TRUE;
@@ -3044,10 +3061,10 @@ cancel_article (
 
 			case iKeyPostCancel:
 				wait_message (1, _(txt_cancelling_art));
-				if (submit_news_file (cancel)) {
+				if (submit_news_file (cancel, a_message_id)) {
 					info_message (_(txt_art_cancel));
 					if (pcCopyArtHeader (HEADER_SUBJECT, cancel, buf))
-						update_posted_info_file (group->name, iKeyPostCancel, buf);
+						update_posted_info_file (group->name, iKeyPostCancel, buf, a_message_id);
 					unlink (cancel);
 					return redraw_screen;
 				}
@@ -3129,7 +3146,7 @@ repost_article (
 		get_from_name (from_name, psGrp);
 #	ifndef FORGERY
 		if (FromSameUser)
-#	endif
+#	endif /* !FORGERY */
 		{
 #	ifdef FORGERY
 			make_path_header (line);
@@ -3528,7 +3545,7 @@ find_reply_to_addr (
 	t_bool parse,
 	struct t_header *hdr)
 {
-	char fullname[HEADER_LEN];
+	char fname[HEADER_LEN];
 	char *ptr;
 
 	ptr = (hdr->replyto) ? hdr->replyto : hdr->from;
@@ -3539,10 +3556,10 @@ find_reply_to_addr (
 	if (parse) {
 #if 1
 		/* TODO Return code ignored ? */
-		parse_from (ptr, from_addr, fullname);
+		parse_from (ptr, from_addr, fname);
 #else
 		/* Or should we decode full_addr? */
-		parse_from (ptr, temp, fullname);
+		parse_from (ptr, temp, fname);
 		strcpy (full_addr, rfc1522_decode(tmp));
 #endif /* 1 */
 	} else

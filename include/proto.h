@@ -42,6 +42,12 @@
 #		include <rfc2046.h>
 #	endif /* !RFC2046_H */
 
+/* This fixes ambiguities on platforms that don't distinguish extern case */
+#ifdef CASE_PROBLEM
+#	define Raw tin_raw
+#	define EndWin tin_EndWin
+#endif /* CASE_PROBLEM */
+
 /* active.c */
 extern char group_flag (int ch);
 extern int get_active_num (void);
@@ -223,7 +229,7 @@ extern const char *get_host_name (void);
 #endif /* !FORGERY */
 
 /* inews.c */
-extern t_bool submit_news_file (char *name);
+extern t_bool submit_news_file (char *name, char *a_message_id);
 extern void get_from_name (char *from_name, struct t_group *thisgrp);
 extern void get_user_info (char *user_name, char *full_name);
 

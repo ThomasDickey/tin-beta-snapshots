@@ -55,7 +55,7 @@ constext txt_art_newsgroups[] = N_("\nYour article:\n  \"%s\"\nwill be posted to
 constext txt_art_not_posted[] = N_("Article not posted!");
 constext txt_art_not_saved[] = N_("Article not saved");
 constext txt_art_pager_com[] = N_("Article Level Commands (page %d of %d)");
-constext txt_art_posted[] = N_("Article posted");
+constext txt_art_posted[] = N_("Article posted: %s");
 constext txt_art_rejected[] = N_("Article rejected (saved to %s)");
 constext txt_art_thread_regex_tag[] = N_("%s=article, %s=thread, %s=hot, %s=pattern, %s=tagged articles, %s=quit: ");
 constext txt_art_unavailable[] = N_("Article unavailable");
@@ -90,7 +90,6 @@ constext txt_base64[] = "base64";
 constext txt_batch_update_unavail[] = N_("%s: Updating of index files not supported\n");
 constext txt_batch_update_failed[] = N_("Failed to start background indexing process");
 constext txt_begin_of_art[] = N_("*** Beginning of article ***");
-constext txt_caching_disabled[] = N_("Overview caching not supported; %s is setuid");
 constext txt_cancel_article[] = N_("Cancel (delete) or supersede (overwrite) article [%%.*s]? (%s/%s/%s): ");
 constext txt_cancelling_art[] = N_("Cancelling article...");
 constext txt_cannot_create_uniq_name[] = "Can't create unique tempfile-name";
@@ -270,38 +269,21 @@ constext txt_help_misc_[] = N_("-------------");
 	constext txt_help_shell[] = N_("!\t  shell escape");
 #endif /* !NO_SHELL_ESCAPE */
 
-#ifdef CASE_PROBLEM
-	constext txt_help_BIGB[] = N_("B\t  search all articles for a given string (this may take some time)") N_("\t  (searches are case-insensitive and wrap around to all articles)");
-	constext txt_help_BIGD[] = N_("D\t  cancel (delete) current article; must have been posted by you");
-	constext txt_help_BIGI[] = N_("I\t  toggle inverse video");
-	constext txt_help_BIGK[] = N_("K\t  mark current thread as read");
-	constext txt_help_BIGL[] = N_("L\t  goto article chosen by Message-ID");
-	constext txt_help_BIGM[] = N_("M\t  menu of configurable options");
-	constext txt_help_BIGQ[] = N_("Q\t  quit");
-	constext txt_help_BIGS[] = N_("S U\t  subscribe (U = unsubscribe) to groups that match pattern");
-	constext txt_help_BIGT[] = N_("T\t  return to group selection level");
-	constext txt_help_BIGU[] = N_("U\t  untag all tagged threads");
-	constext txt_help_BIGW[] = N_("W\t  list articles posted by you (from posted file)");
-	constext txt_help_BIGX[] = N_("X\t  toggle display of all/selected articles");
-	constext txt_help_p_BIGU[] = N_("U\t  Browse URL's in article");
-	constext txt_help_p_BIGV[] = N_("V\t  View/save multimedia attachments");
-#else
-	constext txt_help_B[] = N_("B\t  search all articles for a given string (this may take some time)");
-	constext txt_help_B_[] = N_("\t  (searches are case-insensitive and wrap around to all articles)");
-	constext txt_help_D[] = N_("D\t  cancel (delete) current article; must have been posted by you");
-	constext txt_help_I[] = N_("I\t  toggle inverse video");
-	constext txt_help_K[] = N_("K\t  mark current thread as read");
-	constext txt_help_L[] = N_("L\t  goto article chosen by Message-ID");
-	constext txt_help_M[] = N_("M\t  menu of configurable options");
-	constext txt_help_Q[] = N_("Q\t  quit");
-	constext txt_help_S[] = N_("S U\t  subscribe (U = unsubscribe) to groups that match pattern");
-	constext txt_help_T[] = N_("T\t  return to group selection level");
-	constext txt_help_U[] = N_("U\t  untag all tagged threads");
-	constext txt_help_W[] = N_("W\t  list articles posted by you (from posted file)");
-	constext txt_help_X[] = N_("X\t  toggle display of all/selected articles");
-	constext txt_help_p_U[] = N_("U\t  Browse URL's in article");
-	constext txt_help_p_V[] = N_("V\t  View/save multimedia attachments");
-#endif /* CASE_PROBLEM */
+constext txt_help_B[] = N_("B\t  search all articles for a given string (this may take some time)");
+constext txt_help_B_[] = N_("\t  (searches are case-insensitive and wrap around to all articles)");
+constext txt_help_D[] = N_("D\t  cancel (delete) current article; must have been posted by you");
+constext txt_help_I[] = N_("I\t  toggle inverse video");
+constext txt_help_K[] = N_("K\t  mark current thread as read");
+constext txt_help_L[] = N_("L\t  goto article chosen by Message-ID");
+constext txt_help_M[] = N_("M\t  menu of configurable options");
+constext txt_help_Q[] = N_("Q\t  quit");
+constext txt_help_S[] = N_("S U\t  subscribe (U = unsubscribe) to groups that match pattern");
+constext txt_help_T[] = N_("T\t  return to group selection level");
+constext txt_help_U[] = N_("U\t  untag all tagged threads");
+constext txt_help_W[] = N_("W\t  list articles posted by you (from posted file)");
+constext txt_help_X[] = N_("X\t  toggle display of all/selected articles");
+constext txt_help_p_U[] = N_("U\t  Browse URL's in article");
+constext txt_help_p_V[] = N_("V\t  View/save multimedia attachments");
 
 constext txt_help_a[] = N_("a A\t  search for articles by author (a = forward, A = backward)");
 
@@ -399,13 +381,7 @@ constext txt_help_p_num[] = N_("0 - 9\t  display article by number in current th
 constext txt_help_p_p[] = N_("p P\t  display previous (P = previous unread) article");
 constext txt_help_p_r[] = N_("r R\t  reply through mail (R = don't copy text) to author");
 constext txt_help_p_s[] = N_("s\t  save article/thread/hot/pattern/tagged articles to file");
-
-#ifdef CASE_PROBLEM
-	constext txt_help_p_BIGS[] = N_("S\t  save tagged articles automatically without user prompts");
-#else
-	constext txt_help_p_S[] = N_("S\t  save tagged articles automatically without user prompts");
-#endif /* CASE_PROBLEM */
-
+constext txt_help_p_S[] = N_("S\t  save tagged articles automatically without user prompts");
 constext txt_help_p_search[] = N_("/ ?\t  search forwards within this article (? = backwards)");
 constext txt_help_p_star[] = N_("*\t  select article");
 constext txt_help_p_tab[] = N_("<TAB>\t  display next unread article");

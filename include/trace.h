@@ -50,7 +50,7 @@ extern char *_nc_visbuf(const char *s);
 
 #			define _nc_visbuf(s) s
 
-extern char *_tracechar(int c);
+extern char *tin_tracechar(int c);
 
 extern void	_tracef (const char *, ...)
 #			if defined(__GNUC__)

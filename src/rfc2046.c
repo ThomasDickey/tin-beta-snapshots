@@ -608,7 +608,7 @@ parse_multipart_article(
 			 * We have reached the end boundary of the outermost envelope.
 			 * Syphon off any trailing data.
 			 */
-			if (depth == 0)	
+			if (depth == 0)
 				drain_buffer(infile);
 #endif /* NNTP_ABLE */
 			return tin_errno;

@@ -253,11 +253,6 @@ msgstr "Taistal indekseerimise protsessi käivitamine ebaõnnestus"
 msgid "*** Beginning of article ***"
 msgstr "*** Artikli algus ***"
 
-#: src/lang.c:93
-#, c-format
-msgid "Overview caching not supported; %s is setuid"
-msgstr "Päiste puhverdamist ei tee; %s on setuid"
-
 #: src/lang.c:94
 #, c-format
 msgid "Cancel (delete) or supersede (overwrite) article [%.*s]? (d/s/q): "

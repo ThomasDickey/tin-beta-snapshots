@@ -72,7 +72,7 @@ bin2hex (
 void
 rfc1521_encode (
 	char *line,
-	FILE * f,
+	FILE *f,
 	int e)
 {
 	int i;
@@ -232,21 +232,21 @@ rfc1521_encode (
 void
 rfc1557_encode (
 	char *line,
-	FILE * f,
-	int e)		/* dummy argument : not used */
+	FILE *f,
+	int UNUSED(e))		/* dummy argument : not used */
 {
 	int i = 0;
 	int mode = ASCII;
-	static int iskorean = 0;
+	static t_bool iskorean = FALSE;
 
 	if (!line) {
-		iskorean = 0;
+		iskorean = FALSE;
 		return;
 	}
 	if (!iskorean) {				  /* search for KS C 5601 character(s) in line */
 		while (line[i]) {
 			if (isksc(line[i])) {
-				iskorean = 1;		  /* found KS C 5601 */
+				iskorean = TRUE;		  /* found KS C 5601 */
 				fprintf(f, "\033$)C\n");	/* put out the designator */
 				break;
 			}
@@ -287,8 +287,8 @@ rfc1557_encode (
 void
 rfc1468_encode (
 	char *line,
-	FILE * f,
-	int e)		/* dummy argument: not used */
+	FILE *f,
+	int UNUSED(e))		/* dummy argument: not used */
 {
 	if (line)
 		fputs(line, f);
@@ -299,8 +299,8 @@ rfc1468_encode (
 void
 rfc1922_encode (
 	char *line,
-	FILE * f,
-	int e)		/* dummy argument: not used */
+	FILE *f,
+	int UNUSED(e))		/* dummy argument: not used */
 {
 	if (line)
 		fputs(line, f);

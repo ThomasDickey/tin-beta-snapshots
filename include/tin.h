@@ -689,15 +689,31 @@ enum resizer { cNo, cYes, cRedraw };
 /* case sensitive & ^-anchored */
 #define UUBODY_REGEX	"(?:`|.[\\x20-\\x60]{1,61})$"
 
-/* case insensitive */
-#define URL_REGEX "\\b(?:https?|ftp|gopher)://(?:\\w+:\\w+@)?(?:[^\\W_]+(?:(?:[-.][^\\W_]+)+)?\\.[a-z]{2,5}|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
-/* case insensitive */
-#define MAIL_REGEX	"\\b(?:mailto:(?:(?:[-\\w$.+!*'(),;/?:@&=]|(?:%[\\da-f]{2}))+))"
-/* case insensitive - not implemented */
-#define NEWS_REGEX	"\\b(?:s?news|nntp):[^\\s@]+[@.][^\\s@]+(?:$|(?=[\\s.>]))\\b"
-
 /* case sensitive & ^-anchored */
 #define SHAR_REGEX	"\\#(?:!\\s?(?:/usr)?/bin/sh|\\s?(?i)this\\sis\\sa\\sshell\\sarchive)"
+
+
+/*
+ * URL related regexs:
+ * add TELNET & WAIS (RFC 1738), IMAP (RFC 2192), NFS (RFC 2224)
+ *     LDAP (RFC 2255), POP (RFC 2384)
+ * add IPv6 (RFC 2732, RFC 2373) support
+ */
+/* 
+ * case insensitive
+ * split out ftp (only ftp allows username:passwd@, RFC 1738)
+ */
+#define URL_REGEX "\\b(?:https?|ftp|gopher)://(?:[^:@/]*(?::[^:@/]*)?@)?(?:[^\\W_]+(?:(?:[-.][^\\W_]+)+)?\\.[a-z]{2,5}|localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?(?:/[^)\\>\"\\s]*|$|(?=[)\\>\"\\s]))"
+/* 
+ * case insensitive
+ * check against RFC 2368
+ */
+#define MAIL_REGEX	"\\b(?:mailto:(?:(?:[-\\w$.+!*'(),;/?:@&=]|(?:%[\\da-f]{2}))+))"
+/*
+ * case insensitive
+ * not implemented
+ */
+#define NEWS_REGEX	"\\b(?:s?news|nntp):[^\\s@]+[@.][^\\s@]+(?:$|(?=[\\s.>]))\\b"
 
 
 #define FILTER_FILE	"filter"
@@ -2144,5 +2160,21 @@ extern struct tm *localtime(time_t *);
 #	define vsnprintf	plp_vsnprintf
 #endif /* HAVE_VSNPRINTF */
 
+/* GCC-specific attributes */
+#ifdef __GNUC__
+#	define UNUSED(x) x __attribute__((unused))
+#else
+#	define UNUSED(x) x
+#endif /* __GNUC__ */
+
+/* can we use mblen()? */
+#if defined(HAVE_MBLEN) && defined(HAVE_SETLOCALE) && defined(MB_CUR_MAX) && !defined (NO_LOCALE)
+#	define ENABLE_MBLEN 1
+#endif /* HAVE_MBLEN && HAVE_SETLOCALE && MB_CUR_MAX && !NO_LOCALE */
+
+/* init_selfinfo() needs MM_CHARSET */
+#ifndef MM_CHARSET
+#  define MM_CHARSET "US-ASCII"
+#endif /* !MM_CHARSET */
 
 #endif /* !TIN_H */

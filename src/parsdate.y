@@ -110,7 +110,7 @@ static int	GetTimeInfo(TIMEINFO *Now);
  */
 /*ARGSUSED*/
 static void
-date_error(const char *s)
+date_error(const char UNUSED(*s))
 {
     /*NOTREACHED*/
 }

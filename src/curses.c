@@ -293,6 +293,10 @@ get_termcaps (void)
 	static char _capabilities[1024];	/* String for cursor motion */
 	static char *ptr = _capabilities;	/* for buffering */
 
+#	if defined(USE_TERMCAP) && defined(HAVE_EXTERN_TCAP_PC)
+	char *t;
+#	endif /* USE_TERMCAP && HAVE_EXTERN_TCAP_PC */
+
 	char the_termname[40], *p;
 	unsigned n;
 
@@ -322,13 +326,11 @@ get_termcaps (void)
 	_keypadxmit     = "";
 #	endif /* HAVE_BROKEN_TGETSTR */
 
-#	ifdef USE_TERMCAP
-#		ifdef HAVE_EXTERN_TCAP_PC
+#	if defined(USE_TERMCAP) && defined(HAVE_EXTERN_TCAP_PC)
 	t = TGETSTR(CAPNAME("pc", "pad"), &p);
 	if (t != 0)
 		PC = *t;
-#		endif /* HAVE_EXTERN_TCAP_PC */
-#	endif /* USE_TERMCAP */
+#	endif /* USE_TERMCAP && HAVE_EXTERN_TCAP_PC */
 
 	if (STRCMPEQ(the_termname, "xterm")) {
 		static char x_init[] = "\033[?9h";

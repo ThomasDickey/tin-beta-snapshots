@@ -43,9 +43,9 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.5.6"
+#		define VERSION		"1.5.7"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20000803"
+#	define RELEASEDATE	"20000929"
 #	define RELEASENAME	"Dust"
 #	define TINRC_VERSION	"1.2"
 

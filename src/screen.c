@@ -178,7 +178,7 @@ perror_message (
 
 	clear_message ();
 
-	vsprintf (buf, fmt, ap);
+	vsnprintf (buf, sizeof(LEN) - 1, fmt, ap);
 
 	va_end(ap);
 
@@ -259,7 +259,7 @@ draw_arrow_mark (
 		char buffer[BUFSIZ];
 		char *s = screen_contents(line, 0, buffer);
 #else
-		char *s = screen[line-INDEX_TOP].col;
+		char *s = screen[line - INDEX_TOP].col;
 #endif /* USE_CURSES */
 		StartInverse ();
 		my_fputs (s, stdout);
@@ -292,7 +292,12 @@ erase_arrow (
 		char buffer[BUFSIZ];
 		char *s = screen_contents(line, 0, buffer);
 #else
-		char *s = screen[line-INDEX_TOP].col;
+		char *s;
+
+		if (line - INDEX_TOP < 0) /* avoid underruns */
+			line = INDEX_TOP;
+
+		s = screen[line - INDEX_TOP].col;
 #endif /* USE_CURSES */
 		EndInverse ();
 		my_fputs (s, stdout);

@@ -44,7 +44,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.5.6
+VERSION=1.5.7
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -712,6 +712,7 @@ AC_CHECK_FUNCS(\
 	is_xterm \
 	isascii \
 	link \
+	mblen \
 	memcmp \
 	memcpy \
 	memmove \

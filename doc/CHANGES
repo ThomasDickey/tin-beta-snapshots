@@ -1,3 +1,40 @@
+-- 1.5.7 release 20000929 "" --
+
+U051) Thomas E. Dickey <dickey@herndon4.his.com>
+      BUG. won't compile on termcap systems
+      ADD. updated pcre (3.2 -> 3.4)
+      ADD. updated some configure script macros
+      BUG. vms/parsdate.c required alloca(), regeneraed with byacc
+      FIX. aclocal.m4, extern.h, proto.h, trace.h, cook.c, curses.c
+           feed.c, lang.c, tcurses.c, trace.c, pcre/*
+
+U050) L. Scott Emmons <scotte@center.uscs.com>
+      BUG. gpg keyname must be last option
+      FIX. pgp.c
+
+U049) Won-kyu Park <wkpark@chem.skku.ac.kr>
+      Urs Janssen <urs@tin.org>
+      ADD. allow multi-byte enviroment
+      FIX. configure[.in], autoconf.h[in], charset.c
+
+U048) Urs Janssen <urs@tin.org>
+      BUG. empty mm_charset in tinrc did override $MM_CHARSET
+      ADD. submit_inews() returns the Message-ID if known
+      ADD. URL_REGEX update
+      ADD. config.guess, config.sub update
+      ADD. turned some vsprintf calls into vsnprintf ones
+      REM. -U option
+      FIX. config.guess, config.sub, proto.h, tin.h, parsdate.y, config.c
+           cook.c, inews.c, init.c, lang.c, post.c, rfc2045.c, screen.c
+           tin.1, tin.5
+
+ 029) Urs Janssen <urs@tin.org>
+      BUG. possible buffer overrun in read_groups_descriptions() on very
+           long groupnames/descriptions
+      ADD. allow superseding of articles even if one of the groups isn't
+           in the active file.
+      FIX. mail.c, post.c
+
 -- 1.5.6 release 20000803 "Dust" --
 
  028) Urs Janssen <urs@tin.org>
@@ -7,7 +44,7 @@
 
  027) v9@fakehalo.org
       Urs Janssen <urs@tin.org>
-      BUG. possible bufferoverflow
+      BUG. possible buffer overflow
       FIX. curses.c
 
 U047) Scott Marovich <marovich@hpl.hp.com>

@@ -334,7 +334,7 @@ get_mailcap_field(
 		memset(line + olen, 0, linelen - olen); \
 	} \
 }
-		
+
 static char *
 expand_mailcap_meta(
 	const char *mailcap,

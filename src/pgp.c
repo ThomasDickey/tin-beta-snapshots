@@ -55,7 +55,7 @@
  * NB: The '1' variations on DO_{SIGN,BOTH} are used when local-user name is
  * used and are valid only when signing
  */
-#	if defined(HAVE_PGP) && !defined(PGPNAME)	/* pgp-2 */
+#	if defined(HAVE_PGP) /* && !defined(PGPNAME) */ /* pgp-2 */
 #		define PGPNAME		PATH_PGP
 #		define PGPDIR		".pgp"
 #		define PGP_PUBRING	"pubring.pgp"
@@ -69,7 +69,7 @@
 #		define DO_BOTH1		"%s %s -ates %s %s -u %s", PGPNAME, pgpopts, pt, mailto, mailfrom
 #	endif /* HAVE_PGP */
 
-#	if defined(HAVE_PGPK) && !defined(PGPNAME)	/* pgp-5 */
+#	if defined(HAVE_PGPK) /* && !defined(PGPNAME) */ /* pgp-5 */
 #		define PGPNAME		"pgp"	/* FIXME: this is AFAIK not PATH_PGPK */
 #		define PGPDIR		".pgp"
 #		define PGP_PUBRING	"pubring.pkr"
@@ -83,14 +83,13 @@
 #		define DO_BOTH1		"%se %s -ats %s %s -u %s", PGPNAME, pgpopts, pt, mailto, mailfrom
 #	endif /* HAVE_PGPK */
 
-#	if defined(HAVE_GPG) && !defined(PGPNAME)	/* gpg */
+#	if defined(HAVE_GPG) /* && !defined(PGPNAME) */ /* gpg */
 #		define PGPNAME		PATH_GPG
 #		define PGPDIR		".gnupg"
 #		define PGP_PUBRING	"pubring.gpg"
 #		define CHECK_SIGN	"%s %s --no-batch --decrypt <%s %s"
 #		define ADD_KEY		"%s %s --no-batch --import %s"
-/* TODO check that re-org from: 'user pt' -> '--export --output pt user' is okay */
-#		define APPEND_KEY	"%s %s --no-batch --armor --export %s --output %s"
+#		define APPEND_KEY	"%s %s --no-batch --armor --output %s --export %s"
 #		define LOCAL_USER	"--local-user %s"
 #		define DO_ENCRYPT	\
 "%s %s --textmode --armor --no-batch --output %s.asc --recipient %s --encrypt %s", \
@@ -282,7 +281,16 @@ pgp_append_public_key (
 	snprintf(keyfile, sizeof(buf)-1, KEYFILE, TMPDIR, process_id);
 
 /* TODO I'm guessing the pgp append key command creates 'keyfile' and that we should remove it */
-	sh_format (cmd, sizeof(cmd), APPEND_KEY, PGPNAME, pgpopts, buf, keyfile);
+#	ifdef HAVE_GPG
+	/*
+	 * FIXME: reoder !gpg opts (if possible) and make this obsolete
+	 *        we can't reoder the gpg opts as --export must be the last one 
+	 */
+		sh_format (cmd, sizeof(cmd), APPEND_KEY, PGPNAME, pgpopts, buf, keyfile);
+#	else
+		sh_format (cmd, sizeof(cmd), APPEND_KEY, PGPNAME, pgpopts, keyfile, buf);
+#	endif /* HAVE_GPG */
+
 	if (invoke_cmd (cmd)) {
 		if ((fp = fopen(file, "a")) != NULL) {
 			if ((key = fopen(keyfile, "r")) != NULL) {

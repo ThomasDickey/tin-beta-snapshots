@@ -4,6 +4,8 @@ New features and changes in tin-1.5
 New Features
 ------------
 
+. Rebindable keys
+
 . New pager
      Parses and displays MIME articles
      Single line scrolling with Up/Down
@@ -50,11 +52,11 @@ Retired Features
 
 . INDEX_DAEMON is no longer supported
 
+. -U indexing is no longer supported
+
 . ~/.tin/headers file is no longer directly supported. Use:
-
-  scope=*
-  x_headers=~/.tin/headers
-
+  	scope=*
+  	x_headers=~/.tin/headers
   or an equivalent instead
 
 . ~/.tin/bug_address is no longer supported. Set a site-wide address either
@@ -62,7 +64,6 @@ Retired Features
   setting, use the BUG_ADDRESS environment variable.
 
 . 'k' no longer works in the pager. Use 'N' instead
-  (or wait for rebindable keys)
 
 . display_mime_header_asis
   display_mime_allheader_asis

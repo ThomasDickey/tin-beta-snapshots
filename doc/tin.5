@@ -2,16 +2,16 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2000-07-25
+.\" Updated   : 2000-08-24
 .\" Notes     : needs a lot of work
 .\"
-.TH tin 5 "July 25th, 2000" "1.5.6" "A Usenet newsreader"
+.TH tin 5 "August 24th, 2000" "1.5.6" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
 
 .SH DESCRIPTION
-This manpage describes the varoius config files and their formats used by
+This manpage describes the various config files and their formats used by
 the
 .BR tin (1)
 newsreader.
@@ -27,7 +27,8 @@ newsreader.
 .IR /usr/local/etc/mailcap
 .sp
 .RS
-Mailcap files as defined in \fBRFC1524\fR. The Mailcap files are read by
+.BR mailcap (4)
+files as defined in \fBRFC1524\fR. The Mailcap files are read by
 .BR tin (1)
 to determine how to display non-text messages at the local site. Any line
 that starts with "#" is a comment. Blank lines are ignored. Otherwise, each
@@ -83,7 +84,7 @@ used when the composing program needs to specify the Content-type header
 field to be applied to the composed data. The "compose" field is simpler,
 and is preferred for use with existing (non-mail-oriented) programs for
 composing data in a given format. The "composetyped" field is necessary when
-the Content-type information must include auxilliary parameters, and the
+the Content-type information must include auxiliary parameters, and the
 composition program must then know enough about mail formats to produce
 output that includes the mail type information.
 .TP
@@ -123,7 +124,7 @@ not executed on either a real terminal or a terminal window.
 The "copiousoutput" field indicates that the output from the view-command
 will be an extended stream of output, and is to be interpreted as advice to
 the UA (User Agent mail-reading program) that the output should be either
-paged or made scrollable. Note that it is probably a mistake if
+paged or made scroll-able. Note that it is probably a mistake if
 needsterminal and copiousoutput are both specified.
 .TP
 .B description
@@ -148,13 +149,13 @@ this kind of data.
 The "nametemplate" field gives a file name format, in which %s will be
 replaced by a short unique string to give the name of the temporary file to
 be passed to the viewing command. This is only expected to be relevant in
-environments where filename extensions are meaningful, e.g., one coulld
+environments where filename extensions are meaningful, e.g., one could
 specify that a GIF file being passed to a gif viewer should have a name
-eding in ".gif" by using "nametemplate=%s.gif"
+ending in ".gif" by using "nametemplate=%s.gif"
 .PP
 .BR tin (1)
-currenly only honors the "test", "description", "nametemplate" and partly
-the "needsterminal" flags, all other flags are internaly ignored. It also
+currently only honours the "test", "description", "nametemplate" and partly
+the "needsterminal" flags, all other flags are internally ignored. It also
 can't handle the "%F" and "%n" expansions yet.
 .TP
 Example:
@@ -401,15 +402,146 @@ global configuration
 .RE
 .PP
 
-.\" /usr/local/share/locale/*/LC_MESSAGES/tin.mo
+.IR /usr/local/share/locale/${LC_MESSAGES}/LC_MESSAGES/tin.mo
+.sp
+.RS
+translation into language specified in $\fBLC_ALL\fR, $\fBLC_MESSAGES\fR or
+$\fBLANG\fR
+.RE
+.PP
 
-.\" /news/db/active
-.\" /news/db/active.times
-.\" /news/db/newsgroups
-.\" /news/db/subscriptions
+.\" tin uses inns old (pre 2.x) Path convention.
+.\" as with inn >= 2.2.x getting more and more popular
+.\" we should think about checking for the new Paths
+.\" (described shown below).
+.IR ${NEWSLIBDIR-/news/db}/active
+.sp
+.RS
+This file lists the newsgroups that the local site receives. Each newsgroup
+should be listed only once. Each line specifies one group; within each
+newsgroup, articles are assigned unique names, which are monotonically
+increasing numbers.
+.sp
+If an article is posted to newsgroups not mentioned in this file, those
+newsgroups are ignored.
+.\" IIRC tin issues a waring in that case
+If no valid newsgroups are specified, the article is rejected.
+.sp
+Each line consists of four space-separated fields "\fIname\fP \fIhimark\fP
+\fIlomark\fP \fIflags\fP".
+.TP
+.B name
+is the name of the newsgroup
+.TP
+.B himark
+is the highest article number that has been used in that newsgroup
+.TP
+.B lowmark
+is the lowest article number in the group; this number is not guaranteed to
+be accurate, and should only be taken to be a hint. Note that because of
+article cancellations, there may be gaps in the numbering sequence. If the
+lowest article number is greater then the highest article number, then there
+are no articles in the newsgroup.
+.TP
+.B flags
+can be one of those
+.RS
+.TP
+.B y
+local postings are allowed
+.TP
+.B n
+no local postings are allowed, only remote ones
+.TP
+.B m
+the group is moderated and all postings must be approved
+.TP
+.B j
+articles in this group are not kept, but only passed on
+.TP
+.B x
+articles cannot be posted to this newsgroup
+.TP
+.B =foo.bar
+articles are locally filed into the ``foo.bar'' group
+.RE
+.TP
+.BR tin (1)
+only only tries to read the file if you read directly from the local spool,
+if you read news via NNTP,
+.BR tin (1)
+uses the LIST command instead.
+.RE
+.PP
+
+.IR ${NEWSLIBDIR-/news/db}/active.times
+.sp
+.RS
+This file provides a chronological record of when newsgroups are created. It
+is normally updated by the local newsserver (i.e
+.BR innd (8))
+whenever a newgroup is created. Each line consist of three space-separated
+fields "\fIname\fP \fItime\fP \fIcreator\fP".
+.TP
+.B name
+is the name of the newsgroup
+.TP
+.B time
+is the time when the group was created, expressed as the number of seconds
+since the epoch.
+.TP
+.B creator
+is the electronic mail address of the person who created the group.
+.TP
+.BR tin (1)
+only only tries to read the file if you read directly from the local spool,
+if you read news via NNTP,
+.BR tin (1)
+uses the NEWGROUPS command instead.
+.RE
+.PP
+
+.IR ${NEWSLIBDIR-/news/db}/newsgroups
+.sp
+.RS
+This file provides shot descriptions of each newsgroup. It is normally
+updated by the local newsserver (i.e
+.BR innd (8))
+whenever a newgroup is created. Each line consist of two tab-separated
+fields "\fIgroup.name\fP	\fIone-line description\fP".
+.TP
+.B group.name
+is the name of the newsgroup
+.TP
+.B one-line description
+is a short single-line description of the group
+.TP
+.BR tin (1)
+only only tries to read the file if you read directly from the local spool,
+if you read news via NNTP,
+.BR tin (1)
+uses the LIST NEWSGROUPS command instead.
+.RE
+.PP
+
+.IR ${NEWSLIBDIR-/news/db}/subscriptions
+.\" is the Path correct? or is it /news/etc/subscriptions
+.sp
+.RS
+This file contains a list of newsgroups - one per line - which the client
+should subscribe to when the user has no ${TIN_HOMEDIR-"$HOME"}/.newsrc for
+the newsserver.
+.BR tin (1)
+only only tries to read the file if you read directly from the local spool,
+if you read news via NNTP,
+.BR tin (1)
+uses the LIST SUBSCRIPTIONS command instead.
 
 .SH "SEE ALSO"
+.BR active (5),
+.BR innd (8),
 .BR mailcap (4),
+.BR system (3),
 .BR tin (1),
 .BR RFC977 ,
 .BR RFC1036 ,

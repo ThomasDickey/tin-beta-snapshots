@@ -326,7 +326,7 @@ again:
 			ch = ESC;
 		}
 	}
-	TRACE(("ReadCh(%s)", _tracechar(ch)));
+	TRACE(("ReadCh(%s)", tin_tracechar(ch)));
 	return ch;
 }
 
@@ -377,7 +377,7 @@ my_fputc(
 	int ch,
 	FILE *fp)
 {
-	TRACE(("my_fputc(%s)", _tracechar(ch)));
+	TRACE(("my_fputc(%s)", tin_tracechar(ch)));
 	if (cmd_line) {
 		if (_inraw && ch == '\n')
 			fputc ('\r', fp);
