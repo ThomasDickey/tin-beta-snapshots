@@ -34,14 +34,15 @@
 #
 # TODO: - FIXME add debug mode which doesn't delete tmp-files and is verbose
 #       - add pgp6 support
-#       - check for ~/.newsauth (and ~/.nntpauth?) and use username/password if found
+#       - check for ~/.newsauth (and ~/.nntpauth?) and use username/password
+#         if found
 #       - check for /etc/nntpserver (and /etc/news/server)
 #       - allow config in ~/.tinewsrc
 #       - add $PGPOPTS, $PGPPATH, $GNUPGHOME support
 #       - cleanup, remove duplicated code
 #
 # version Number
-my $version = "1.1.6";
+my $version = "1.1.7";
 
 my %config;
 
@@ -502,7 +503,7 @@ sub signarticle {
 	`$PGPCommand`;
 
 	open (FH, "<" . $config{'pgptmpf'} . ".txt.asc") or die "$0: can't open ".$config{'pgptmpf'}.".txt.asc: $!\n";
-	$/ = $config{'pgpbegin'}."\n";
+	$/ = "\n".$config{'pgpbegin'}."\n";
 	$_ = <FH>;
 	unless (m/\Q$config{'pgpbegin'}\E$/o) {
 		unlink $config{'pgptmpf'} . ".txt";

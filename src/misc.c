@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-06-07
+ *  Updated   : 2004-08-20
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -38,6 +38,9 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
+#ifndef VERSION_H
+#	include "version.h"
+#endif /* !VERSION_H */
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
@@ -805,16 +808,21 @@ invoke_cmd(
 		need_resize = cYes;		/* Flag a redraw */
 	}
 
-#ifdef VMS
-	success = (ret != 0);
+#ifdef IGNORE_SYSTEM_STATUS
+	return TRUE;
 #else
-	success = (ret == 0);
-#endif /* VMS */
+
+#	ifdef VMS
+		success = (ret != 0);
+#	else
+		success = (ret == 0);
+#	endif /* VMS */
 
 	if (!success || system_status != 0)
 		error_message(_(txt_command_failed), nam);
 
 	return success;
+#endif /* IGNORE_SYSTEM_STATUS */
 }
 
 
@@ -839,7 +847,6 @@ draw_percent_mark(
 	snprintf(buf, sizeof(buf), "%s(%d%%) [%ld/%ld]", _(txt_more), (int) (cur_num * 100 / max_num), cur_num, max_num);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if ((wbuf = char2wchar_t(buf)) != NULL) {
-		wconvert_to_printable(wbuf);
 		len = wcswidth(wbuf, wcslen(wbuf) + 1);
 		free(wbuf);
 	} else
@@ -3528,7 +3535,7 @@ strip_line(
 }
 
 
-#if defined(CHARSET_CONVERSION) || defined(HAVE_UNICODE_NORMALIZATION)
+#if defined(CHARSET_CONVERSION) || (defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE))
 /*
  * 'check' a given UTF-8 strig and '?'-out illegal sequences
  * TODO: is this check complete?
@@ -3664,7 +3671,7 @@ utf8_valid(
 	}
 	return line;
 }
-#endif /* CHARSET_CONVERSION || HAVE_UNICODE_NORMALIZATION */
+#endif /* CHARSET_CONVERSION || (MULTIBYTE_ABLE && !NO_LOCALE) */
 
 
 char *idna_decode(
@@ -3691,6 +3698,259 @@ char *idna_decode(
 #endif /* HAVE_LIBIDN && HAVE_IDNA_TO_UNICODE_LZLZ */
 
 	return out;
+}
+
+
+int
+tin_version_info(
+	FILE *fp)
+{
+	int wlines = 0;	/* written lines */
+
+#if defined(__DATE__) && defined(__TIME__)
+	fprintf(fp, _("Version: %s %s release %s (\"%s\") %s %s\n"),
+		PRODUCT, VERSION, RELEASEDATE, RELEASENAME, __DATE__, __TIME__);
+#else
+	fprintf(fp, _("Version: %s %s release %s (\"%s\")\n"),
+	       PRODUCT, VERSION, RELEASEDATE, RELEASENAME);
+#endif /* __DATE__ && __TIME__ */
+	wlines++;
+
+#ifdef SYSTEM_NAME
+	fprintf(fp, "Platform:\n");
+	fprintf(fp, "\tOS-Name  = \"%s\"\n", SYSTEM_NAME);
+	wlines += 2;
+#endif /* SYSTEM_NAME */
+
+#ifdef TIN_CC
+	fprintf(fp, "Compiler:\n");
+	fprintf(fp, "\tCC       = \"%s\"\n", TIN_CC);
+	wlines += 2;
+#	ifdef TIN_CFLAGS
+		fprintf(fp, "\tCFLAGS   = \"%s\"\n", TIN_CFLAGS);
+		wlines++;
+#	endif /* TIN_CFLAGS */
+#	ifdef TIN_CPP
+		fprintf(fp, "\tCPP      = \"%s\"\n", TIN_CPP);
+		wlines++;
+#	endif /* TIN_CPP */
+#	ifdef TIN_CPPFLAGS
+		fprintf(fp, "\tCPPFLAGS = \"%s\"\n", TIN_CPPFLAGS);
+		wlines++;
+#	endif /* TIN_CPPFLAGS */
+#endif /* TIN_CC */
+
+#ifdef TIN_LD
+	fprintf(fp, "Linker and Libraries:\n");
+	fprintf(fp, "\tLD       = \"%s\"\n", TIN_LD);
+	wlines += 2;
+#	ifdef TIN_LDFLAGS
+		fprintf(fp, "\tLDFLAGS  = \"%s\"\n", TIN_LDFLAGS);
+		wlines++;
+#	endif /* TIN_LDFLAGS */
+#	ifdef TIN_LIBS
+		fprintf(fp, "\tLIBS     = \"%s\"\n", TIN_LIBS);
+		wlines++;
+#	endif /* TIN_LIBS */
+#endif /* TIN_LD */
+
+	fprintf(fp, "Characteristics:\n\t"
+/* TODO: complete list and do some useful grouping */
+#ifdef NNTP_ONLY
+			"+NNTP_ONLY "
+#else
+#	ifdef NNTP_ABLE
+			"+NNTP_ABLE "
+#	else
+			"-NNTP_ABLE "
+#	endif /* NNTP_ABLE */
+#endif /* NNTP_ONLY */
+#ifdef NO_POSTING
+			"+NO_POSTING "
+#else
+			"-NO_POSTING "
+#endif /* NO_POSTING */
+#ifdef BROKEN_LISTGROUP
+			"+BROKEN_LISTGROUP "
+#else
+			"-BROKEN_LISTGROUP "
+#endif /* BROKEN_LISTGROUP */
+#ifdef XHDR_XREF
+			"+XHDR_XREF"
+#else
+			"-XHDR_XREF"
+#endif /* XHDR_XREF */
+			"\n\t"
+#ifdef HAVE_FASCIST_NEWSADMIN
+			"+HAVE_FASCIST_NEWSADMIN "
+#else
+			"-HAVE_FASCIST_NEWSADMIN "
+#endif /* HAVE_FASCIST_NEWSADMIN */
+#ifdef ENABLE_IPV6
+			"+ENABLE_IPV6 "
+#else
+			"-ENABLE_IPV6 "
+#endif /* ENABLE_IPV6 */
+#ifdef HAVE_COREFILE
+			"+HAVE_COREFILE"
+#else
+			"-HAVE_COREFILE"
+#endif /* HAVE_COREFILE */
+			"\n\t"
+#ifdef NO_SHELL_ESCAPE
+			"+NO_SHELL_ESCAPE "
+#else
+			"-NO_SHELL_ESCAPE "
+#endif /* NO_SHELL_ESCAPE */
+#ifdef DISABLE_PRINTING
+			"+DISABLE_PRINTING "
+#else
+			"-DISABLE_PRINTING "
+#endif /* DISABLE_PRINTING */
+#ifdef DONT_HAVE_PIPING
+			"+DONT_HAVE_PIPING "
+#else
+			"-DONT_HAVE_PIPING "
+#endif /* DONT_HAVE_PIPING */
+#ifdef NO_ETIQUETTE
+			"+NO_ETIQUETTE"
+#else
+			"-NO_ETIQUETTE"
+#endif /* NO_ETIQUETTE */
+			"\n\t"
+#ifdef HAVE_LONG_FILE_NAMES
+			"+HAVE_LONG_FILE_NAMES "
+#else
+			"-HAVE_LONG_FILE_NAMES "
+#endif /* HAVE_LONG_FILE_NAMES */
+#ifdef APPEND_PID
+			"+APPEND_PID "
+#else
+			"-APPEND_PID "
+#endif /* APPEND_PID */
+#ifdef HAVE_MH_MAIL_HANDLING
+			"+HAVE_MH_MAIL_HANDLING"
+#else
+			"-HAVE_MH_MAIL_HANDLING"
+#endif /* HAVE_MH_MAIL_HANDLING */
+			"\n\t"
+#ifdef HAVE_ISPELL
+			"+HAVE_ISPELL "
+#else
+			"-HAVE_ISPELL "
+#endif /* HAVE_ISPELL */
+#ifdef HAVE_METAMAIL
+			"+HAVE_METAMAIL "
+#else
+			"-HAVE_METAMAIL "
+#endif /* HAVE_METAMAIL */
+#ifdef HAVE_SUM
+			"+HAVE_SUM"
+#else
+			"-HAVE_SUM"
+#endif /* HAVE_SUM */
+			"\n\t"
+#ifdef HAVE_COLOR
+			"+HAVE_COLOR "
+#else
+			"-HAVE_COLOR "
+#endif /* HAVE_COLOR */
+#ifdef HAVE_PGP
+			"+HAVE_PGP "
+#else
+			"-HAVE_PGP "
+#endif /* HAVE_PGP */
+#ifdef HAVE_PGPK
+			"+HAVE_PGPK "
+#else
+			"-HAVE_PGPK "
+#endif /* HAVE_PGPK */
+#ifdef HAVE_GPG
+			"+HAVE_GPG"
+#else
+			"-HAVE_GPG"
+#endif /* HAVE_GPG */
+			"\n\t"
+#ifdef MIME_BREAK_LONG_LINES
+			"+MIME_BREAK_LONG_LINES "
+#else
+			"-MIME_BREAK_LONG_LINES "
+#endif /* MIME_BREAK_LONG_LINES */
+#ifdef MIME_STRICT_CHARSET
+			"+MIME_STRICT_CHARSET "
+#else
+			"-MIME_STRICT_CHARSET "
+#endif /* MIME_STRICT_CHARSET */
+#ifdef CHARSET_CONVERSION
+			"+CHARSET_CONVERSION"
+#else
+			"-CHARSET_CONVERSION"
+#endif /* CHARSET_CONVERSION */
+			"\n\t"
+#ifdef MULTIBYTE_ABLE
+			"+MULTIBYTE_ABLE "
+#else
+			"-MULTIBYTE_ABLE "
+#endif /* MULTIBYTE_ABLE */
+#ifdef NO_LOCALE
+			"+NO_LOCALE"
+#else
+			"-NO_LOCALE"
+#endif /* NO_LOCALE */
+			"\n\t"
+#ifdef USE_CANLOCK
+			"+USE_CANLOCK "
+#else
+			"-USE_CANLOCK "
+#endif /* USE_CANLOCK */
+#ifdef EVIL_INSIDE
+			"+EVIL_INSIDE "
+#else
+			"-EVIL_INSIDE "
+#endif /* EVIL_INSIDE */
+#ifdef FORGERY
+			"+FORGERY "
+#else
+			"-FORGERY "
+#endif /* FORGERY */
+#ifdef TINC_DNS
+			"+TINC_DNS "
+#else
+			"-TINC_DNS "
+#endif /* TINC_DNS */
+#ifdef ENFORCE_RFC1034
+			"+ENFORCE_RFC1034"
+#else
+			"-ENFORCE_RFC1034"
+#endif /* ENFORCE_RFC1034 */
+			"\n\t"
+#ifdef REQUIRE_BRACKETS_IN_DOMAIN_LITERAL
+			"+REQUIRE_BRACKETS_IN_DOMAIN_LITERAL "
+#else
+			"-REQUIRE_BRACKETS_IN_DOMAIN_LITERAL "
+#endif /* REQUIRE_BRACKETS_IN_DOMAIN_LITERAL */
+#ifdef FOLLOW_USEFOR_DRAFT
+			"+FOLLOW_USEFOR_DRAFT"
+#else
+			"-FOLLOW_USEFOR_DRAFT"
+#endif /* FOLLOW_USEFOR_DRAFT */
+			"\n");
+	wlines += 11;
+
+	fflush(fp);
+	return wlines;
+}
+
+
+void
+draw_mark_selected(
+	int i)
+{
+	MoveCursor(INDEX2LNUM(i), MARK_OFFSET);
+	StartInverse();	/* ToggleInverse() doesn't work correct with ncurses4.x */
+	my_fputc(tinrc.art_marked_selected, stdout);
+	EndInverse();	/* ToggleInverse() doesn't work correct with ncurses4.x */
+	return;
 }
 
 

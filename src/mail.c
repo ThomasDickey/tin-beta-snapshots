@@ -141,8 +141,8 @@ read_mail_active_file(
 		strfpath(my_spooldir, buf2, sizeof(buf2) - 1, ptr);
 		ptr->spooldir = my_strdup(buf2);
 		group_get_art_info(ptr->spooldir, buf, GROUP_TYPE_MAIL, &ptr->count, &ptr->xmax, &ptr->xmin);
-		ptr->aliasedto = (char *) 0;
-		ptr->description = (char *) 0;
+		ptr->aliasedto = NULL;
+		ptr->description = NULL;
 		ptr->moderated = 'y';
 		ptr->type = GROUP_TYPE_MAIL;
 		ptr->inrange = FALSE;
@@ -337,7 +337,7 @@ read_groups_descriptions(
 	FILE *fp_save)
 {
 	char *p, *q, *ptr;
-	char *groupname = (char *) 0;
+	char *groupname = NULL;
 	int count = 0;
 	size_t space = 0;
 	struct t_group *group;

@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-06-12
+ *  Updated   : 2004-07-03
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -68,9 +68,7 @@ prompt_num(
 	int num;
 
 	clear_message();
-
 	snprintf(tmp, sizeof(tmp), "%c", ch);
-
 	if ((p = tin_getline(prompt, TRUE, tmp, 0, FALSE, HIST_OTHER)) != NULL) {
 		STRCPY(tmp, p);
 		num = atoi(tmp);
@@ -78,7 +76,6 @@ prompt_num(
 		num = -1;
 
 	clear_message();
-
 	return num;
 }
 
@@ -115,16 +112,13 @@ prompt_default_string(
 	char *p;
 
 	clear_message();
-
 	if ((p = tin_getline(prompt, FALSE, default_prompt, buf_len, FALSE, which_hist)) == NULL) {
 		buf[0] = '\0';
 		clear_message();
 		return FALSE;
 	}
 	strcpy(buf, p);
-
 	clear_message();
-
 	return TRUE;
 }
 
@@ -148,14 +142,11 @@ prompt_menu_string(
 	 * would lead to a 'n' answer to the reconnect prompt
 	 */
 	fflush(stdin);
-
 	MoveCursor(line, 0);
-
 	if ((p = tin_getline(prompt, FALSE, var, 0, FALSE, HIST_OTHER)) == NULL)
 		return FALSE;
 
 	strcpy(var, p);
-
 	return TRUE;
 }
 
@@ -212,7 +203,6 @@ prompt_yn(
 			case KEY_PREFIX:
 #	endif /* HAVE_KEY_PREFIX */
 				switch (get_arrow_key(ch)) {
-
 					case KEYMAP_UP:
 					case KEYMAP_DOWN:
 						default_answer = bool_not(default_answer);
@@ -226,6 +216,7 @@ prompt_yn(
 					case KEYMAP_RIGHT:
 						ch = prompt_ch;
 						break;
+
 					default:
 						break;
 				}
@@ -246,7 +237,6 @@ prompt_yn(
 		cursoroff();
 		my_flush();
 	}
-
 	return (tolower((unsigned char) map_to_default(ch, &menukeymap.prompt_yn)) == tolower((unsigned char)iKeyPromptYes)) ? 1 : (ch == iKeyAbort) ? -1 : 0;
 }
 
@@ -271,8 +261,12 @@ prompt_list(
 {
 	int ch, var_orig;
 	int i, offset;
+	int change;
 	int adjust = (strcasecmp(_(list[0]), _(txt_default)) == 0);
 	size_t width = 0;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wbuf;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	var += adjust;
 	size += adjust;
@@ -287,31 +281,68 @@ prompt_list(
 	show_menu_help(help_text);
 	cursoron();
 
-	do {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		wchar_t *wbuf;
-
-		if ((wbuf = char2wchar_t(_(prompt_text))) != NULL) {
-			wconvert_to_printable(wbuf);
-			offset = wcswidth(wbuf, wcslen(wbuf) + 1);
-			if (offset == -1) {
-				/* something went wrong, use wcslen as fallback */
-				offset = (int) wcslen(wbuf);
-			}
-
-			free(wbuf);
-		} else
+	if ((wbuf = char2wchar_t(_(prompt_text))) != NULL) {
+		if ((offset = wcswidth(wbuf, wcslen(wbuf) + 1)) == -1) /* something went wrong, use wcslen as fallback */
+			offset = (int) wcslen(wbuf);
+		free(wbuf);
+	} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-			offset = (int) strlen(_(prompt_text));
+		offset = (int) strlen(_(prompt_text));
 
+	do {
 		MoveCursor(row, col + offset);
-		if ((ch = (char) ReadCh()) == ' ') {
+		ch = (char) ReadCh();
 
+		/*
+		 * change:
+		 *   1 = move to the next list element
+		 *   0 = do nothing
+		 *  -1 = move to the previous list element
+		 *
+		 *  if an arrow key was pressed change ch to an other value
+		 *  otherwise we will exit the while loop
+		 */
+		switch (ch) {
+			case ' ':
+				change = 1;
+				break;
+
+			case ESC:	/* (ESC) common arrow keys */
+#	ifdef HAVE_KEY_PREFIX
+			case KEY_PREFIX:
+#	endif /* HAVE_KEY_PREFIX */
+				switch (get_arrow_key(ch)) {
+					case KEYMAP_UP:
+						change = -1;
+						ch = ' ';
+						break;
+
+					case KEYMAP_DOWN:
+						change = 1;
+						ch = ' ';
+						break;
+
+					default:
+						change = 0;
+						break;
+				}
+				break;
+
+			default:
+				change = 0;
+				break;
+		}
+
+		if (change) {
 			/*
-			 * Increment list, looping around at the max
+			 * increment or decrement list, loop around at the limits
 			 */
-			++var;
-			var %= size;
+			var += change;
+			if (var < 0)
+				var = size - 1;
+			else
+				var %= size;
 
 			my_printf("%-*s", (int) width, _(list[var]));
 			my_flush();
@@ -320,13 +351,11 @@ prompt_list(
 
 	if (ch == ESC) {
 		var = var_orig;
-
 		my_printf("%-*s", (int) width, _(list[var]));
 		my_flush();
 	}
 
 	cursoroff();
-
 	return (var - adjust);
 }
 
@@ -415,9 +444,7 @@ prompt_option_num(
 	STRCPY(number, p);
 	num = atoi(number);
 	*(option_table[option].variable) = num;
-
 	clear_message();
-
 	return TRUE;
 }
 
@@ -455,7 +482,6 @@ prompt_option_char(
 	} while (!*p);
 
 	*variable = p[0];
-
 	clear_message();
 	return TRUE;
 }
@@ -566,7 +592,6 @@ sized_message(
 	wchar_t *wformat;
 
 	if ((wformat = char2wchar_t(format)) != NULL) {
-		wconvert_to_printable(wformat);
 		/* The formatting info (%s) wastes 2 chars, but our prompt needs 1 char */
 		max_len = cCOLS - wcswidth(wformat, wcslen(wformat) + 1) + 2 - 1;
 		free(wformat);
@@ -665,7 +690,6 @@ prompt_slk_redraw(
 	/* get the cursor _just_ right */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if ((wtmp = char2wchar_t(prompt_slk_message)) != NULL) {
-		wconvert_to_printable(wtmp);
 		column = wcswidth(wtmp, wcslen(wtmp) + 1) - 1;
 		free(wtmp);
 	} else
@@ -699,6 +723,7 @@ prompt_continue(
 #	endif /* HAVE_KEY_PREFIX */
 			(void) get_arrow_key(ch);
 			/* FALLTHROUGH */
+
 		default:
 			break;
 	}

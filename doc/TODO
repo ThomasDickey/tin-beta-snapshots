@@ -19,9 +19,6 @@ o  Changes to int/bool tinrc variables in the Option Menu don't propagate
 o  'C'atchup in pager is still not correct (we don't ever enter the next group)
    [20030515 Urs Janssen <urs@tin.org>]
 
-o  'article loss' reported in
-   <nntp://news.tin.org/20020915165856.GA1541@martinkl.dialup.fu-berlin.de>
-
 o  piping/printing articles grabbles screen
    [20030501 Urs Janssen <urs@tin.org>]
 
@@ -106,12 +103,6 @@ o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
 
 New features
 ------------
-o  make kill/hot-menu "Kill/Select pattern scope" walk up the hierarchie
-   level instead of a 3way toggle.
-   (foo.bar.baz.ex.boo -> foo.bar.baz.ex.* -> foo.bar.baz.* foo.bar.* ->
-    foo.bar.* -> foo.* -> *)
-   [20040423 Urs Janssen <urs@tin.org>]
-
 o  add TLS support
    (see draft-ietf-nntpext-tls-nntp-01.txt;
    <http://www.gnu.org/software/gnutls/> might be useful)
@@ -145,9 +136,7 @@ o  allow bold, underline, italic, ... as colour substitution for
    (see also <20020416202232.A4575@bloatware.reston01.va.comcast.net>)
    [20030218 Serge Matveev <sm@cl.spb.ru>]
 
-o  hierarchical 'M'enu, e.g. hide all color_* options as long as
-   use_color is turned off, put all art_marked_*into a 'submenu', ...
-   (currently the menu is statically build on compile time)
+o  hierarchical 'M'enu, e.g. put all art_marked_*into a 'submenu', ...
    [20020322 Urs Janssen <urs@tin.org>]
 
 o  add a postponed 'browser' (store postponed arts in MH or maildir
@@ -378,10 +367,11 @@ o  Merge the selection code with the range code. Having two similar methods
    of picking articles with similar goals is wasteful.
    [Jason Faultless <jason@altarstone.com>]
 
-o  add check for libbzip2/zlib (>=1.1.4)
-   (<http://sources.redhat.com/bzip2/>, <http://www.gzip.org/zlib/>) and
-   option to write/read {g,b}zipped local overviews
-   zlib, libbzip2 might also be used for post-processing.
+o  add check for libbzip2/zlib (>=1.1.4)/[mini]lzo
+   (<http://sources.redhat.com/bzip2/>, <http://www.gzip.org/zlib/>,
+    <http://www.oberhumer.com/opensource/lzo/>) and
+   option to write/read {g,b,l}zipped local overviews
+   zlib, libbzip2 lzo might also be used for post-processing.
 
 o  add check for GPGME (<http://www.gnupg.org/gpgme.html>) and if found
    use it for pgp actions.
@@ -643,6 +633,11 @@ o  tin.defaults could use more documentation in manpage (tin.5)
 
 Not yet classified
 ------------------
+o  there is no command to undo a range ('#') selection
+
+o  'article loss' reported in
+   <nntp://news.tin.org/20020915165856.GA1541@martinkl.dialup.fu-berlin.de>
+
 o  should 'tin -z foo.bar' only start up if there is any unread news in
    foo.bar?
    [20040325 Urs Janssen <urs@tin.org>]
@@ -714,7 +709,9 @@ o  remove tinrc.strip_blanks? IMHO it's not needed anymore
    [20020305 Urs Janssen <urs@tin.org>]
 
 o  doesn't handle symlinks for .oldnewsrc
-   (see <20021003021508.GA28021@akk10.akk.uni-karlsruhe.de> for details, urs)
+   (see <20021003021508.GA28021@akk10.akk.uni-karlsruhe.de> for details, urs.
+    if we're going to 'fix' this we must be careful to avoid symlink
+    attacks (<http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-1999-1091>)
    [20020627 Jeff Sheinberg <jeffsh@erols.com>]
 
 o  cleanup main.c/init_selfinfo()

@@ -161,19 +161,19 @@ parse_mailcap_line(
 
 	/* malloc and init */
 	tmailcap = my_malloc(sizeof(t_mailcap));
-	tmailcap->type = (char *) 0;
-	tmailcap->command = (char *) 0;
+	tmailcap->type = NULL;
+	tmailcap->command = NULL;
 	tmailcap->needsterminal = FALSE;
 	tmailcap->copiousoutput = FALSE;
 	tmailcap->textualnewlines = 0;
-	tmailcap->description = (char *) 0;
-	tmailcap->test = (char *) 0;
-	tmailcap->nametemplate = (char *) 0;
-	tmailcap->compose = (char *) 0;
-	tmailcap->composetyped = (char *) 0;
-	tmailcap->edit = (char *) 0;
-	tmailcap->print = (char *) 0;
-	tmailcap->x11bitmap = (char *) 0;
+	tmailcap->description = NULL;
+	tmailcap->test = NULL;
+	tmailcap->nametemplate = NULL;
+	tmailcap->compose = NULL;
+	tmailcap->composetyped = NULL;
+	tmailcap->edit = NULL;
+	tmailcap->print = NULL;
+	tmailcap->x11bitmap = NULL;
 
 	optr = ptr = my_strdup(mailcap);
 

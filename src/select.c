@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-03-16
+ *  Updated   : 2004-07-19
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -56,6 +56,7 @@ static int select_right(void);
 static t_bool pos_next_unread_group(t_bool redraw);
 static t_bool yanked_out = TRUE;
 static void catchup_group(struct t_group *group, t_bool goto_next_unread_group);
+static void draw_group_arrow(void);
 static void read_groups(void);
 static void select_done(void);
 static void select_quit(void);
@@ -395,7 +396,7 @@ selection_page(
 					break;
 				}
 				if (CURR_GROUP.subscribed) {
-					mark_screen(SELECT_LEVEL, selmenu.curr - selmenu.first, 2, CURR_GROUP.newgroup ? "N" : "u");
+					mark_screen(selmenu.curr, 2, CURR_GROUP.newgroup ? "N" : "u");
 					subscribe(&CURR_GROUP, UNSUBSCRIBED, TRUE);
 					info_message(_(txt_unsubscribed_to), CURR_GROUP.name);
 					move_down();
@@ -498,7 +499,7 @@ selection_page(
 						STRCPY(tmp, tin_ltoa(CURR_GROUP.newsrc.num_unread, 5));
 					else
 						STRCPY(tmp, "     ");
-					mark_screen(SELECT_LEVEL, selmenu.curr - selmenu.first, 9, tmp);
+					mark_screen(selmenu.curr, 9, tmp);
 				}
 				break;
 
@@ -650,7 +651,7 @@ show_selection_page(
 }
 
 
-void
+static void
 draw_group_arrow(
 	void)
 {
@@ -937,7 +938,7 @@ catchup_group(
 
 	if ((!TINRC_CONFIRM_ACTION) || prompt_yn(cLINES, sized_message(&smsg, _(txt_mark_group_read), group->name), TRUE) == 1) {
 		grp_mark_read(group, NULL);
-		mark_screen(SELECT_LEVEL, selmenu.curr - selmenu.first, 9, "     ");
+		mark_screen(selmenu.curr, 9, "     ");
 
 		if (goto_next_unread_group)
 			pos_next_unread_group(TRUE);

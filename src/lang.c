@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-06-06
+ *  Updated   : 2004-09-03
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -606,6 +606,9 @@ constext txt_reading_news_active_file[] = N_("Reading groups from active file...
 constext txt_reading_news_newsrc_file[] = N_("Reading groups from newsrc file... ");
 constext txt_reading_newsgroups_file[] = N_("Reading newsgroups file... ");
 constext txt_reading_newsrc[] = N_("Reading newsrc file...");
+#ifdef HAVE_GETTIMEOFDAY
+	constext txt_remaining[] = N_("(%d:%02d remaining)");
+#endif /* HAVE_GETTIMEOFDAY */
 constext txt_remove_bogus[] = N_("Bogus group %s removed.");
 constext txt_rename_error[] = N_("Error: rename %s to %s");
 constext txt_reply_to_author[] = N_("Reply to author...");
@@ -2065,6 +2068,7 @@ struct opttxt txt_advertising = {
 	N_("# If ON include advertising User-Agent: header\n")
 };
 
+#ifndef CHARSET_CONVERSION
 struct opttxt txt_mm_charset = {
 	N_("Enter charset name for MIME (e.g. US-ASCII, ISO-8859-1, EUC-KR), <CR> to set."),
 	N_("MM_CHARSET"),
@@ -2075,14 +2079,13 @@ struct opttxt txt_mm_charset = {
 # If MIME_STRICT_CHARSET is defined at compile-time, charset other than\n\
 # mm_charset is considered not displayable and represented as '?'.\n")
 };
-
-#ifdef CHARSET_CONVERSION
+#else
 struct opttxt txt_mm_network_charset = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("MM_NETWORK_CHARSET"),
 	N_("# Charset used for MIME (Content-Type) header in postings.\n")
 };
-#endif /* CHARSET_CONVERSION */
+#endif /* !CHARSET_CONVERSION */
 
 struct opttxt txt_mailbox_format = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),

@@ -1202,7 +1202,6 @@ draw_page(
 		STRCPY(buf, (arts[this_resp].thread != -1) ? _(txt_next_resp) : _(txt_last_resp));
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if ((wbuf = char2wchar_t(buf)) != NULL) {
-			wconvert_to_printable(wbuf);
 			len = wcswidth(wbuf, wcslen(wbuf) + 1);
 			free(wbuf);
 		} else
@@ -1354,7 +1353,6 @@ draw_page_header(
 	else
 		wbuf[line_len - 1] = (wchar_t) '\0';
 
-	wconvert_to_printable(wbuf);
 	if ((i = wcswidth(wbuf, line_len)) < (int) len)
 		len = i;
 
@@ -1391,10 +1389,10 @@ draw_page_header(
 	my_fputws(line, stdout);
 	my_fputs(cCRLF, stdout);
 
-#if 0
+#	if 0
 	/* display a ruler for layout checking purposes */
 	my_fputs("....|....3....|....2....|....1....|....0....|....1....|....2....|....3....|....\n", stdout);
-#endif /* 0 */
+#	endif /* 0 */
 
 	/*
 	 * second line
@@ -1429,7 +1427,7 @@ draw_page_header(
 
 	/* tex2iso */
 	if (pgart.tex2iso) {
-		mbstowcs(wtmp, "TeX ", line_len);
+		mbstowcs(wtmp, "TeX ", line_len);	/* TODO: -> lang.c */
 		len += wcswidth(wtmp, line_len);
 		my_fputws(wtmp, stdout);
 	}
@@ -1442,13 +1440,10 @@ draw_page_header(
 	 */
 	strncpy(buf, (note_h->subj ? note_h->subj : arts[this_resp].subject), line_len);
 	buf[line_len - 1] = '\0';
-	if (IS_LOCAL_CHARSET("UTF-8"))
-		utf8_valid(buf);
 	if (mbstowcs(wtmp, buf, line_len) == (size_t) (-1))
 		wtmp[0] = (wchar_t) '\0';	/* conversion failed */
 	else
 		wtmp[line_len - 1] = (wchar_t) '\0';
-	wconvert_to_printable(wtmp);
 	if (wcswidth(wtmp, line_len) > cCOLS - 2 * right_len - 3)
 		wstrunc(wtmp, wbuf, line_len, cCOLS - 2 * right_len - 3);
 	else
@@ -1520,9 +1515,6 @@ draw_page_header(
 		free(p);
 	}
 
-	if (IS_LOCAL_CHARSET("UTF-8"))
-		utf8_valid(buf);
-
 	if (mbstowcs(wbuf, buf, line_len) == (size_t) (-1))
 		line[0] = (wchar_t) '\0';
 	wstrunc(wbuf, line, line_len, cCOLS - 1);
@@ -1533,7 +1525,6 @@ draw_page_header(
 
 		if (mbstowcs(wbuf, buf, line_len) == (size_t) (-1))
 			wbuf[0] = (wchar_t) '\0';
-		wconvert_to_printable(wbuf);
 
 		if (wcswidth(line, line_len) + wcswidth(wbuf, line_len) >= cCOLS - 1) {
 			wcsncat(line, wbuf, line_len - wcslen(line) - 1);
@@ -1622,10 +1613,10 @@ draw_page_header(
 	my_fputs(line, stdout);
 	my_fputs(cCRLF, stdout);
 
-#if 0
+#	if 0
 	/* display a ruler for layout checking purposes */
 	my_fputs("....|....3....|....2....|....1....|....0....|....1....|....2....|....3....|....\n", stdout);
-#endif /* 0 */
+#	endif /* 0 */
 
 	/*
 	 * second line
@@ -1653,7 +1644,7 @@ draw_page_header(
 
 	/* tex2iso */
 	if (pgart.tex2iso) {
-		strcpy(buf, "TeX ");
+		strcpy(buf, "TeX ");	/* TODO: -> lang.c */
 		len += strlen(buf);
 		my_fputs(buf, stdout);
 	}
@@ -1667,7 +1658,6 @@ draw_page_header(
 	strncpy(buf, (note_h->subj ? note_h->subj : arts[this_resp].subject), line_len);
 	buf[line_len - 1] = '\0';
 
-	convert_to_printable(buf);
 	if ((int) strlen(buf) > cCOLS - 2 * right_len - 3)
 		strunc(buf, line, line_len, cCOLS - 2 * right_len - 3);
 	else {
@@ -1748,7 +1738,6 @@ draw_page_header(
 			strncat(buf, tmp, line_len - strlen(buf) - 1);
 		}
 	}
-	convert_to_printable(buf);
 
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_from);

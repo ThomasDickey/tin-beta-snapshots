@@ -3,7 +3,7 @@
  *  Module    : tcurses.h
  *  Author    : Thomas Dickey
  *  Created   : 1997-03-02
- *  Updated   : 2004-01-20
+ *  Updated   : 2004-07-19
  *  Notes     : curses #include files, #defines & struct's
  *
  * Copyright (c) 1997-2004 Thomas Dickey <dickey@invisible-island.net>
@@ -164,7 +164,7 @@ extern void write_line(int row, char *buffer);
 #		define my_flush()			fflush(stdout)
 #		define my_fflush(stream)		fflush(stream)
 #		define my_retouch()			ClearScreen()
-#		define WriteLine(row,buffer)		/*nothing*/
+#		define WriteLine(row,buffer)		MoveCursor(row, 0); my_fputs(buffer, stdout);
 
 #		define HpGlitch(func)			if (_hp_glitch) func
 

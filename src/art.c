@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-05-27
+ *  Updated   : 2004-08-16
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -64,16 +64,21 @@ static char *print_date(time_t secs);
 static char *print_from(struct t_article *article);
 static int artnum_comp(t_comptype p1, t_comptype p2);
 static int base_comp(t_comptype p1, t_comptype p2);
-static int date_comp(t_comptype p1, t_comptype p2);
-static int from_comp(t_comptype p1, t_comptype p2);
+static int date_comp_asc(t_comptype p1, t_comptype p2);
+static int date_comp_desc(t_comptype p1, t_comptype p2);
+static int from_comp_asc(t_comptype p1, t_comptype p2);
+static int from_comp_desc(t_comptype p1, t_comptype p2);
 static int global_get_multiparts(int aindex, MultiPartInfo **malloc_and_setme_info);
 static int global_look_for_multipart_info(int aindex, MultiPartInfo *setme, char start, char stop, int *offset);
-static int lines_comp(t_comptype p1, t_comptype p2);
+static int lines_comp_asc(t_comptype p1, t_comptype p2);
+static int lines_comp_desc(t_comptype p1, t_comptype p2);
 static int read_art_headers(struct t_group *group, int total, long top);
 static int read_overview(struct t_group *group, long min, long max, long *top, t_bool local);
-static int score_comp(t_comptype p1, t_comptype p2);
+static int score_comp_asc(t_comptype p1, t_comptype p2);
+static int score_comp_desc(t_comptype p1, t_comptype p2);
 static int score_comp_base(t_comptype p1, t_comptype p2);
-static int subj_comp(t_comptype p1, t_comptype p2);
+static int subj_comp_asc(t_comptype p1, t_comptype p2);
+static int subj_comp_desc(t_comptype p1, t_comptype p2);
 static int valid_artnum(long art);
 static long find_first_unread(struct t_group *group);
 static long setup_hard_base(struct t_group *group);
@@ -976,13 +981,16 @@ make_threads(
 
 			/* Should never happen if tree is built properly */
 			if (arts[i].refptr == 0) {
+#ifdef DEBUG
 				my_fprintf(stderr, "\nError  : art->refptr is NULL\n");
 				my_fprintf(stderr, "Artnum : %ld\n", arts[i].artnum);
 				my_fprintf(stderr, "Subject: %s\n", arts[i].subject);
 				my_fprintf(stderr, "From   : %s\n", arts[i].from);
+				assert(arts[i].refptr != 0);
+#else
+				continue;
+#endif /* DEBUG */
 			}
-			assert(arts[i].refptr != 0);
-
 			arts[i].refptr->article = i;
 		}
 	}
@@ -1031,24 +1039,34 @@ eval_sort_arts_func(
 			return artnum_comp;
 
 		case SORT_ARTICLES_BY_SUBJ_DESCEND:
+			return subj_comp_desc;
+
 		case SORT_ARTICLES_BY_SUBJ_ASCEND:
-			return subj_comp;
+			return subj_comp_asc;
 
 		case SORT_ARTICLES_BY_FROM_DESCEND:
+			return from_comp_desc;
+
 		case SORT_ARTICLES_BY_FROM_ASCEND:
-			return from_comp;
+			return from_comp_asc;
 
 		case SORT_ARTICLES_BY_DATE_DESCEND:
+			return date_comp_desc;
+
 		case SORT_ARTICLES_BY_DATE_ASCEND:
-			return date_comp;
+			return date_comp_asc;
 
 		case SORT_ARTICLES_BY_SCORE_DESCEND:
+			return score_comp_desc;
+
 		case SORT_ARTICLES_BY_SCORE_ASCEND:
-			return score_comp;
+			return score_comp_asc;
 
 		case SORT_ARTICLES_BY_LINES_DESCEND:
+			return lines_comp_desc;
+
 		case SORT_ARTICLES_BY_LINES_ASCEND:
-			return lines_comp;
+			return lines_comp_asc;
 
 		default:
 			break;
@@ -1162,9 +1180,9 @@ parse_headers(
 				if (!got_from) {
 					if ((hdr = parse_header(ptr + 1, "rom", FALSE, FALSE))) {
 						h->gnksa_code = parse_from(hdr, art_from_addr, art_full_name);
-						h->from = hash_str(art_from_addr);
+						h->from = hash_str(buffer_to_ascii(art_from_addr));
 						if (*art_full_name)
-							h->name = hash_str(eat_tab(rfc1522_decode(art_full_name)));
+							h->name = hash_str(eat_tab(convert_to_printable(rfc1522_decode(art_full_name))));
 						got_from = TRUE;
 					}
 				}
@@ -1210,7 +1228,7 @@ parse_headers(
 			case 'S':	/* Subject:  mandatory */
 				if (!h->subject) {
 					if ((hdr = parse_header(ptr + 1, "ubject", FALSE, FALSE))) {
-						strncpy(art_trunc_subj, eat_re(eat_tab(rfc1522_decode(hdr)), FALSE), sizeof(art_trunc_subj) - 1);
+						strncpy(art_trunc_subj, eat_re(eat_tab(convert_to_printable(rfc1522_decode(hdr))), FALSE), sizeof(art_trunc_subj) - 1);
 						h->subject = hash_str(art_trunc_subj);
 					}
 				}
@@ -1367,16 +1385,15 @@ read_overview(
 		for (count = 1; (ptr = tin_strtok(NULL, "\t")) != NULL; count++) {
 			switch (count) {
 				case 1:		/* Subject */
-					/* buffer_to_ascii() is correct but might confuse too many ppl. */
-					art->subject = hash_str(eat_re(eat_tab(rfc1522_decode(/*buffer_to_ascii(*/ptr/*)*/)), FALSE));
+					art->subject = hash_str(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr))), FALSE));
 					break;
 
 				case 2:		/* From */
 					art->gnksa_code = parse_from(ptr, art_from_addr, art_full_name);
-					art->from = hash_str(art_from_addr);
+					art->from = hash_str(buffer_to_ascii(art_from_addr));
 
 					if (*art_full_name)
-						art->name = hash_str(eat_tab(rfc1522_decode(buffer_to_ascii(art_full_name))));
+						art->name = hash_str(eat_tab(convert_to_printable(rfc1522_decode(art_full_name))));
 					break;
 
 				case 3:		/* Date */
@@ -1769,6 +1786,13 @@ do_update(
 	 */
 	for (i = 0; i < selmenu.max; i++) {
 		group = &active[my_group[i]];
+		/*
+		 * FIXME: workaround to get a valid CURR_GROUP
+		 * it also points to the currently processed group so that
+		 * the correct attributes are used
+		 * The correct fix is to get rid of CURR_GROUP
+		 */
+		selmenu.curr = i;
 
 		if (group->bogus || !group->subscribed)
 			continue;
@@ -1821,8 +1845,11 @@ artnum_comp(
 }
 
 
+/*
+ * return result of strcmp (reversed for descending)
+ */
 static int
-subj_comp(
+subj_comp_asc(
 	t_comptype p1,
 	t_comptype p2)
 {
@@ -1830,19 +1857,15 @@ subj_comp(
 	const struct t_article *s1 = (const struct t_article *) p1;
 	const struct t_article *s2 = (const struct t_article *) p2;
 
-	/*
-	 * return result of strcmp(reversed for descending)
-	 */
-	return (CURR_GROUP.attribute->sort_art_type == SORT_ARTICLES_BY_SUBJ_ASCEND
-			? (retval = strcasecmp(s1->subject, s2->subject))
-				? retval : ((s1->date - s2->date) > 0) ? 1 : -1
-			: (retval = strcasecmp(s2->subject, s1->subject))
-				? retval : ((s1->date - s2->date) > 0) ? 1 : -1);
+	if ((retval = strcasecmp(s1->subject, s2->subject))) /* != 0 */
+		return retval;
+
+	return s1->date - s2->date > 0 ? 1 : -1;
 }
 
 
 static int
-from_comp(
+subj_comp_desc(
 	t_comptype p1,
 	t_comptype p2)
 {
@@ -1850,14 +1873,45 @@ from_comp(
 	const struct t_article *s1 = (const struct t_article *) p1;
 	const struct t_article *s2 = (const struct t_article *) p2;
 
-	/*
-	 * return result of strcmp(reversed for descending)
-	 */
-	return (CURR_GROUP.attribute->sort_art_type == SORT_ARTICLES_BY_FROM_ASCEND
-			? (retval = strcasecmp(s1->from, s2->from))
-				? retval : ((s1->date - s2->date) > 0) ? 1 : -1
-			: (retval = strcasecmp(s2->from, s1->from))
-				? retval : ((s1->date - s2->date) > 0) ? 1 : -1);
+	if ((retval = strcasecmp(s2->subject, s1->subject))) /* != 0 */
+		return retval;
+
+	return s1->date - s2->date > 0 ? 1 : -1;
+}
+
+
+/*
+ * return result of strcmp (reversed for descending)
+ */
+static int
+from_comp_asc(
+	t_comptype p1,
+	t_comptype p2)
+{
+	int retval;
+	const struct t_article *s1 = (const struct t_article *) p1;
+	const struct t_article *s2 = (const struct t_article *) p2;
+
+	if ((retval = strcasecmp(s1->from, s2->from))) /* != 0 */
+		return retval;
+
+	return s1->date - s2->date > 0 ? 1 : -1;
+}
+
+
+static int
+from_comp_desc(
+	t_comptype p1,
+	t_comptype p2)
+{
+	int retval;
+	const struct t_article *s1 = (const struct t_article *) p1;
+	const struct t_article *s2 = (const struct t_article *) p2;
+
+	if ((retval = strcasecmp(s2->from, s1->from))) /* != 0 */
+		return retval;
+
+	return s1->date - s2->date > 0 ? 1 : -1;
 }
 
 
@@ -1871,38 +1925,49 @@ from_comp(
  * is reversed.
  */
 static int
-date_comp(
+date_comp_asc(
 	t_comptype p1,
 	t_comptype p2)
 {
 	const struct t_article *s1 = (const struct t_article *) p1;
 	const struct t_article *s2 = (const struct t_article *) p2;
 
-	if (CURR_GROUP.attribute->sort_art_type == SORT_ARTICLES_BY_DATE_ASCEND) {
-		/*
-		 * s1->date less than s2->date
-		 */
-		if (s1->date < s2->date)
-			return -1;
+	/*
+	 * s1->date less than s2->date
+	 */
+	if (s1->date < s2->date)
+		return -1;
 
-		/*
-		 * s1->date greater than s2->date
-		 */
-		if (s1->date > s2->date)
-			return 1;
-	} else {
-		/*
-		 * s2->date less than s1->date
-		 */
-		if (s2->date < s1->date)
-			return -1;
+	/*
+	 * s1->date greater than s2->date
+	 */
+	if (s1->date > s2->date)
+		return 1;
 
-		/*
-		 * s2->date greater than s1->date
-		 */
-		if (s2->date > s1->date)
-			return 1;
-	}
+	return 0;
+}
+
+
+static int
+date_comp_desc(
+	t_comptype p1,
+	t_comptype p2)
+{
+	const struct t_article *s1 = (const struct t_article *) p1;
+	const struct t_article *s2 = (const struct t_article *) p2;
+
+	/*
+	 * s2->date less than s1->date
+	 */
+	if (s2->date < s1->date)
+		return -1;
+
+	/*
+	 * s2->date greater than s1->date
+	 */
+	if (s2->date > s1->date)
+		return 1;
+
 	return 0;
 }
 
@@ -1911,26 +1976,37 @@ date_comp(
  * Same again, but for art[].score
  */
 static int
-score_comp(
+score_comp_asc(
 	t_comptype p1,
 	t_comptype p2)
 {
 	const struct t_article *s1 = (const struct t_article *) p1;
 	const struct t_article *s2 = (const struct t_article *) p2;
 
-	if (CURR_GROUP.attribute->sort_art_type == SORT_ARTICLES_BY_SCORE_ASCEND) {
-		if (s1->score < s2->score)
-			return -1;
+	if (s1->score < s2->score)
+		return -1;
 
-		if (s1->score > s2->score)
-			return 1;
-	} else {
-		if (s2->score < s1->score)
-			return -1;
+	if (s1->score > s2->score)
+		return 1;
 
-		if (s2->score > s1->score)
-			return 1;
-	}
+	return s1->date - s2->date > 0 ? 1 : -1;
+}
+
+
+static int
+score_comp_desc(
+	t_comptype p1,
+	t_comptype p2)
+{
+	const struct t_article *s1 = (const struct t_article *) p1;
+	const struct t_article *s2 = (const struct t_article *) p2;
+
+	if (s2->score < s1->score)
+		return -1;
+
+	if (s2->score > s1->score)
+		return 1;
+
 	return s1->date - s2->date > 0 ? 1 : -1;
 }
 
@@ -1939,26 +2015,37 @@ score_comp(
  * Same again, but for art[].line_count
  */
 static int
-lines_comp(
+lines_comp_asc(
 	t_comptype p1,
 	t_comptype p2)
 {
 	const struct t_article *s1 = (const struct t_article *) p1;
 	const struct t_article *s2 = (const struct t_article *) p2;
 
-	if (CURR_GROUP.attribute->sort_art_type == SORT_ARTICLES_BY_LINES_ASCEND) {
-		if (s1->line_count < s2->line_count)
-			return -1;
+	if (s1->line_count < s2->line_count)
+		return -1;
 
-		if (s1->line_count > s2->line_count)
-			return 1;
-	} else {
-		if (s2->line_count < s1->line_count)
-			return -1;
+	if (s1->line_count > s2->line_count)
+		return 1;
 
-		if (s2->line_count > s1->line_count)
-			return 1;
-	}
+	return s1->date - s2->date > 0 ? 1 : -1;
+}
+
+
+static int
+lines_comp_desc(
+	t_comptype p1,
+	t_comptype p2)
+{
+	const struct t_article *s1 = (const struct t_article *) p1;
+	const struct t_article *s2 = (const struct t_article *) p2;
+
+	if (s2->line_count < s1->line_count)
+		return -1;
+
+	if (s2->line_count > s1->line_count)
+		return 1;
+
 	return s1->date - s2->date > 0 ? 1 : -1;
 }
 

@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-02-21
+ *  Updated   : 2004-07-19
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -45,13 +45,7 @@
 #	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 
-#define INDEX2TNUM(i)	((i) % NOTESLINES)
-#define INDEX2LNUM(i)	(INDEX_TOP + INDEX2TNUM(i))
-
 #define EXPIRED(a) ((a)->article == ART_UNAVAILABLE || arts[(a)->article].thread == ART_EXPIRED)
-
-/* sizeof the tagged/art mark area */
-#define MAGIC		3
 
 int thread_basenote = 0;				/* Index in base[] of basenote */
 static int thread_respnum = 0;			/* Index in arts[] of basenote ie base[thread_basenote] */
@@ -60,6 +54,7 @@ t_bool show_subject;
 /*
  * Local prototypes
  */
+static char get_art_mark(struct t_article *art);
 static int enter_pager(int art, t_bool ignore_unavail, int level);
 static int mark_art_read(struct t_group *group);
 static int thread_catchup(int ch);
@@ -83,9 +78,40 @@ static void update_thread_page(void);
  */
 static t_menu thdmenu = {0, 0, 0, 0, show_thread_page, draw_thread_arrow };
 
+
+/*
+ * returns the mark which should be used for this article
+ */
+static char
+get_art_mark(
+	struct t_article *art)
+{
+	if (art->inrange) {
+		return tinrc.art_marked_inrange;
+	} else if (art->status == ART_UNREAD) {
+		return (art->selected ? tinrc.art_marked_selected : (tinrc.recent_time && ((time((time_t) 0) - art->date) < (tinrc.recent_time * DAY))) ? tinrc.art_marked_recent : tinrc.art_marked_unread);
+	} else if (art->status == ART_WILL_RETURN) {
+		return tinrc.art_marked_return;
+	} else if (art->killed && tinrc.kill_level != KILL_NOTHREAD) {
+		return tinrc.art_marked_killed;
+	} else {
+		if (/* tinrc.kill_level != KILL_UNREAD && */ art->score >= tinrc.score_select)
+			return tinrc.art_marked_read_selected; /* read hot chil^H^H^H^H article */
+		else
+			return tinrc.art_marked_read;
+	}
+}
+
+
 /*
  * Build one line of the thread page display. Looks long winded, but
  * there are a lot of variables in the format for the output
+ *
+ * WARNING: some other code expects to find the article mark (ART_MARK_READ,
+ * ART_MARK_SELECTED, etc) at MARK_OFFSET from beginning of the line.
+ * So, if you change the format used in this routine, be sure to check that
+ * the value of MARK_OFFSET (tin.h) is still correct.
+ * Yes, this is somewhat kludgy.
  */
 static void
 build_tline(
@@ -99,7 +125,7 @@ build_tline(
 	struct t_msgid *ptr;
 	char *buffer;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t wtmp[BUFSIZ], wtmp2[BUFSIZ];
+	wchar_t *wtmp, *wtmp2;
 	char tmp[BUFSIZ];
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
@@ -114,7 +140,7 @@ build_tline(
 		buffer = my_malloc(cCOLS + 2);
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #else
-	buffer = screen[INDEX2TNUM(l)].col;
+	buffer = screen[INDEX2SNUM(l)].col;
 #endif /* USE_CURSES */
 
 	/*
@@ -128,24 +154,12 @@ build_tline(
 	 * Add the article flags, tag number, or whatever (3 chars)
 	 */
 	rest_of_line -= 3;
-	if (art->tagged)
+	if (art->tagged) {
 		strcat(buffer, tin_ltoa(art->tagged, 3));
-	else {
+		mark = '\0';
+	} else {
 		strcat(buffer, "   ");
-		if (art->inrange) {
-			mark = tinrc.art_marked_inrange;
-		} else if (art->status == ART_UNREAD) {
-			mark = (art->selected ? tinrc.art_marked_selected : (tinrc.recent_time && ((time((time_t) 0) - art->date) < (tinrc.recent_time * DAY))) ? tinrc.art_marked_recent : tinrc.art_marked_unread);
-		} else if (art->status == ART_WILL_RETURN) {
-			mark = tinrc.art_marked_return;
-		} else if (art->killed && tinrc.kill_level != KILL_NOTHREAD) {
-			mark = tinrc.art_marked_killed;
-		} else {
-			if (/* tinrc.kill_level != KILL_UNREAD && */ art->score >= tinrc.score_select)
-				mark = tinrc.art_marked_read_selected; /* read hot chil^H^H^H^H article */
-			else
-				mark = tinrc.art_marked_read;
-		}
+		mark = get_art_mark(art);
 		buffer[MARK_OFFSET] = mark;			/* insert mark */
 	}
 
@@ -230,18 +244,14 @@ build_tline(
 				;
 			if (!(ptr && arts[ptr->article].subject == art->subject)) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-				char *buf = my_strdup(art->subject);
-
-				if (IS_LOCAL_CHARSET("UTF-8"))
-					utf8_valid(buf);
-
-				if (mbstowcs(wtmp2, buf, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
-					wtmp2[ARRAY_SIZE(wtmp2) - 1] = (wchar_t) '\0';
-					wcspart(wtmp, wtmp2, gap, ARRAY_SIZE(wtmp), TRUE);
-					if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
+				if ((wtmp = char2wchar_t(art->subject)) != NULL) {
+					wtmp2 = wcspart(wtmp, gap, TRUE);
+					if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 						strncat(buffer, tmp, cCOLS * MB_CUR_MAX - len - 1);
+
+					free(wtmp);
+					free(wtmp2);
 				}
-				free(buf);
 			}
 #else
 				strncat(buffer, art->subject, gap);
@@ -255,9 +265,9 @@ build_tline(
 		 */
 		if (len_from) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-			if (mbstowcs(wtmp, buffer, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
-				wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
-				fill = cCOLS - len_from - wcswidth(wtmp, ARRAY_SIZE(wtmp) - 1);
+			if ((wtmp = char2wchar_t(buffer)) != NULL) {
+				fill = cCOLS - len_from - wcswidth(wtmp, wcslen(wtmp) + 1);
+				free(wtmp);
 			} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 				fill = cCOLS - len_from - strlen(buffer);
@@ -273,14 +283,13 @@ build_tline(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 			get_author(TRUE, art, tmp, sizeof(tmp) - 1);
 
-			if (IS_LOCAL_CHARSET("UTF-8"))
-				utf8_valid(tmp);
-
-			if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
-				wtmp2[ARRAY_SIZE(wtmp2) - 1] = (wchar_t) '\0';
-				wcspart(wtmp, wtmp2, len_from, ARRAY_SIZE(wtmp), TRUE);
-				if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
+			if ((wtmp = char2wchar_t(tmp)) != NULL) {
+				wtmp2 = wcspart(wtmp, len_from, TRUE);
+				if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 					strncat(buffer, tmp, cCOLS * MB_CUR_MAX - strlen(buffer) - 1);
+
+				free(wtmp);
+				free(wtmp2);
 			}
 #else
 			get_author(TRUE, art, buffer + strlen(buffer), len_from);
@@ -291,11 +300,13 @@ build_tline(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		get_author(TRUE, art, tmp, sizeof(tmp) - 1);
 
-		if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
-			wtmp2[ARRAY_SIZE(wtmp2) - 1] = (wchar_t) '\0';
-			wcspart(wtmp, wtmp2, cCOLS - strlen(buffer), ARRAY_SIZE(wtmp), TRUE);
-			if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
+		if ((wtmp = char2wchar_t(tmp)) != NULL) {
+			wtmp2 = wcspart(wtmp, cCOLS - strlen(buffer), TRUE);
+			if (wcstombs(tmp, wtmp2, sizeof(tmp) - 1) != (size_t) -1)
 				strncat(buffer, tmp, cCOLS * MB_CUR_MAX - strlen(buffer) - 1);
+
+			free(wtmp);
+			free(wtmp2);
 		}
 #else
 		get_author(TRUE, art, buffer + strlen(buffer), cCOLS - strlen(buffer));
@@ -310,9 +321,9 @@ build_tline(
 		 * Pad to end of line so that inverse bar looks 'good'
 		 */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		if (mbstowcs(wtmp, buffer, ARRAY_SIZE(wtmp) - 1) != (size_t) -1) {
-			wtmp[ARRAY_SIZE(wtmp) - 1] = (wchar_t) '\0';
-			fill = cCOLS - wcswidth(wtmp, ARRAY_SIZE(wtmp) - 1);
+		if ((wtmp = char2wchar_t(buffer)) != NULL) {
+			fill = cCOLS - wcswidth(wtmp, wcslen(wtmp) + 1);
+			free(wtmp);
 		} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			fill = cCOLS - strlen(buffer);
@@ -324,63 +335,15 @@ build_tline(
 		buffer[gap + fill] = '\0';
 	}
 
-#ifdef USE_CURSES
 	WriteLine(INDEX2LNUM(l), buffer);
 
+#ifdef USE_CURSES
 	free(buffer);
 #endif /* USE_CURSES */
-}
 
-
-/*
- * Update a line on the group or thread screen.
- * This only puts to the screen, the hard work is done by build_*line()
- * i is an index into base[]
- * If 'magic' is != 0 then only a partial redraw of width=magic is done.
- * This is intended to redraw the art_mark/tag/unread counts that change
- * more frequently than the rest of the line
- */
-void
-draw_line(
-	int i,
-	int magic)
-{
-	int startpos = (!magic) ? 0 : (MARK_OFFSET - 2);
-	int tlen;
-#ifdef USE_CURSES
-	char buffer[BUFSIZ];
-	char *s = screen_contents(INDEX2LNUM(i), startpos, buffer);
-#else
-	char *s = &(screen[INDEX2TNUM(i)].col[startpos]);
-#endif /* USE_CURSES */
-
-	if (tinrc.strip_blanks)
-		strip_line(s);
-	if (!magic) {
-		tlen = strlen(s);	/* note new line length */
-		CleartoEOLN();
-	} else
-		tlen = magic;
-
-	MoveCursor(INDEX2LNUM(i), startpos);
-	if (tlen)
-		my_printf("%.*s", tlen, s);
-
-	/*
-	 * It is somewhat less efficient to go back and redo the art mark
-	 * if selected, but it is more readable
-	 *
-	 * we don't highlight read_selected arts, as one might have set
-	 * art_mark_read_selected = art_mark_read...
-	 */
-	if (s[MARK_OFFSET-startpos] == tinrc.art_marked_selected) {
-		MoveCursor(INDEX2LNUM(i), MARK_OFFSET);
-		StartInverse();	/* ToggleInverse() doesn't work correct with ncurses4.x */
-		my_fputc(s[MARK_OFFSET-startpos], stdout);
-		EndInverse();		/* ToggleInverse() doesn't work correct with ncurses4.x */
-	}
-	MoveCursor(INDEX2LNUM(i) + 1, 0);
-	return;
+	if (mark == tinrc.art_marked_selected)
+		draw_mark_selected(l);
+	MoveCursor(INDEX2LNUM(l) + 1, 0);
 }
 
 
@@ -425,6 +388,7 @@ thread_page(
 	t_pagerinfo *page)			/* !NULL if we must go direct to the pager */
 {
 	char key[MAXKEYLEN];
+	char mark[] = { '\0', '\0' };
 	int ret_code = 0;			/* Set to < 0 when it is time to leave this menu */
 	int ch = 0;
 	int i, n;
@@ -706,10 +670,9 @@ thread_page(
 				else {
 					t_bool tagged;
 
-					if ((tagged = tag_article(n))) {
-						build_tline(thdmenu.curr, &arts[n]);	/* Update just this line */
-						draw_line(thdmenu.curr, MAGIC);
-					} else
+					if ((tagged = tag_article(n)))
+						mark_screen(thdmenu.curr, MARK_OFFSET - 2, tin_ltoa((&arts[n])->tagged, 3));
+					else
 						update_thread_page();						/* Must update whole page */
 
 					/* Automatically advance to next art if not at end of thread */
@@ -738,8 +701,8 @@ thread_page(
 			case iKeyThreadMarkArtUnread:		/* mark article as unread */
 				n = find_response(thread_basenote, thdmenu.curr);
 				art_mark(group, &arts[n], ART_WILL_RETURN);
-				build_tline(thdmenu.curr, &arts[n]);
-				draw_line(thdmenu.curr, MAGIC);
+				mark[0] = get_art_mark(&arts[n]);
+				mark_screen(thdmenu.curr, MARK_OFFSET, mark);
 				info_message(_(txt_marked_as_unread), _(txt_article_upper));
 				draw_thread_arrow();
 				break;
@@ -756,8 +719,8 @@ thread_page(
 					break;
 				arts[n].selected = (!(ch == iKeyThreadToggleArtSel && arts[n].selected));	/* TODO: optimise? */
 /*				update_thread_page(); */
-				build_tline(thdmenu.curr, &arts[n]);
-				draw_line(thdmenu.curr, MAGIC);
+				mark[0] = get_art_mark(&arts[n]);
+				mark_screen(thdmenu.curr, MARK_OFFSET, mark);
 				if (thdmenu.curr + 1 < thdmenu.max)
 					move_down();
 				else
@@ -839,7 +802,6 @@ show_thread_page(
 
 	for (i = thdmenu.first; i < thdmenu.last; ++i) {
 		build_tline(i, &arts[art]);
-		draw_line(i, 0);
 		art = next_response(art);
 	}
 
@@ -857,14 +819,22 @@ static void
 update_thread_page(
 	void)
 {
+	char mark[] = { '\0', '\0' };
 	int i, j, the_index;
 
 	the_index = find_response(thread_basenote, thdmenu.first);
 	assert(thdmenu.first != 0 || the_index == thread_respnum);
 
 	for (j = 0, i = thdmenu.first; j < NOTESLINES && i < thdmenu.last; ++i, ++j) {
-		build_tline(i, &arts[the_index]);
-		draw_line(i, MAGIC);
+		if ((&arts[the_index])->tagged) {
+			mark_screen(i, MARK_OFFSET - 2, tin_ltoa((&arts[the_index])->tagged, 3));
+		} else {
+			mark[0] = get_art_mark(&arts[the_index]);
+			mark_screen(i, MARK_OFFSET - 2, "  ");	/* clear space used by tag numbering */
+			mark_screen(i, MARK_OFFSET, mark);
+			if (mark[0] == tinrc.art_marked_selected)
+				draw_mark_selected(i);
+		}
 		if ((the_index = next_response(the_index)) == -1)
 			break;
 	}
@@ -1026,7 +996,10 @@ get_score_of_thread(
 	int score = 0;
 
 	for (i = n; i >= 0; i = arts[i].thread) {
-		if (arts[i].status != ART_READ || arts[i].killed == ART_KILLED_UNREAD) {
+		/*
+		 * TODO: do we want to take the score of read articles into account?
+		 */
+		if (arts[i].status != ART_READ || arts[i].killed == ART_KILLED_UNREAD /* || tinrc.kill_level == KILL_THREAD */) {
 			if (tinrc.thread_score == THREAD_SCORE_MAX) {
 				/* we use the maximum article score for the complete thread */
 				if ((arts[i].score > score) && (arts[i].score > 0))
@@ -1546,9 +1519,11 @@ mark_art_read(
 		case iKeyMarkReadCur: /* mark current article as read */
 			n = find_response(thread_basenote, thdmenu.curr);
 			if ((arts[n].status == ART_UNREAD) || (arts[n].status == ART_WILL_RETURN)) {
+				char mark[] = { '\0', '\0' };
+
 				art_mark(group, &arts[n], ART_READ);
-				build_tline(thdmenu.curr, &arts[n]);
-				draw_line(thdmenu.curr, MAGIC);
+				mark[0] = get_art_mark(&arts[n]);
+				mark_screen(thdmenu.curr, MARK_OFFSET, mark);
 			}
 			break;
 

@@ -49,7 +49,7 @@
  * The initial and expansion sizes to use for allocating read data
  */
 #define INIT					512
-#define CHUNK					256
+#define RCHUNK					256
 
 /*
  * Global error flag. Set if something abnormal happens during file I/O
@@ -365,8 +365,8 @@ tin_fgets(
 	next = offset;
 
 	while (partial_read) {
-		if (next + CHUNK > size)
-			size = next + CHUNK;
+		if (next + RCHUNK > size)
+			size = next + RCHUNK;
 		temp = my_realloc(dynbuf, size * sizeof(*dynbuf));
 		dynbuf = temp;
 		temp = tin_read(dynbuf + next, size - next, fp, header); /* What if == 0? */

@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2004-01-05
+ *  Updated   : 2004-07-07
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2004 Jason Faultless <jason@altarstone.com>
@@ -611,17 +611,19 @@ parse_header(
 			int type;
 
 			if (gnksa_split_from(ptr, addr, name, &type) == GNKSA_OK) {
+				buffer_to_ascii(addr);
+
 				if (*name) {
 					if (type == GNKSA_ADDRTYPE_OLDSTYLE)
-						sprintf(ptr, "%s (%s)", addr, rfc1522_decode(name));
+						sprintf(ptr, "%s (%s)", addr, convert_to_printable(rfc1522_decode(name)));
 					else
-						sprintf(ptr, "%s <%s>", rfc1522_decode(name), addr);
+						sprintf(ptr, "%s <%s>", convert_to_printable(rfc1522_decode(name)), addr);
 				} else
 					sprintf(ptr, "%s", addr);
 			} else
-				return ptr;
+				return convert_to_printable(ptr);
 		} else
-			return (rfc1522_decode(ptr));
+			return (convert_to_printable(rfc1522_decode(ptr)));
 	}
 
 	return ptr;

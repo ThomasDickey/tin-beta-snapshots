@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2004-06-07
+ *  Updated   : 2004-08-21
  *  Notes     :
  *
  * Copyright (c) 1997-2004 Urs Janssen <urs@tin.org>
@@ -268,7 +268,7 @@ strpbrk(
 				return ptr1;
 		}
 	}
-	return (char *) 0;
+	return NULL;
 }
 #endif /* !HAVE_STRPBRK */
 
@@ -714,40 +714,44 @@ wchar_t2char(
 
 
 /*
- * copy wide-chars from '*from' to '*to' until 'columns' columns are filled
- * pad with spaces if necessary
+ * returns a new string fitting into 'columns' columns
+ * if pad is TRUE the resulting string will be filled with spaces if necessary
  */
-void
+wchar_t *
 wcspart(
-	wchar_t *to,
-	const wchar_t *from,
+	const wchar_t *wstr,
 	int columns,
-	int size_to,
 	t_bool pad)
 {
-	int n, i = 0;
+	int used = 0;
 	wchar_t *ptr, *wbuf;
 
-	/* make sure all characters in from are printable */
-	wbuf = my_wcsdup(from);
+	wbuf = my_wcsdup(wstr);
+	/* make sure all characters in wbuf are printable */
 	ptr = wconvert_to_printable(wbuf);
 
-	to[0] = (wint_t) '\0';
-	while (*ptr && i < size_to && wcswidth(to, size_to - 1) + wcwidth(*ptr) <= columns) {
-		to[i] = *ptr;
-		ptr++;
-		to[++i] = (wint_t) '\0';
-	}
+	/* terminate wbuf after 'columns' columns */
+	while (*ptr && used + wcwidth(*ptr) <= columns)
+		used += wcwidth(*ptr++);
+	*ptr = (wchar_t) '\0';
 
 	/* pad with spaces */
 	if (pad) {
-		n = columns - wcswidth(to, size_to - 1) + (int) wcslen(to);
-		for (; i < MIN(n, size_to - 1); i++)
-			to[i] = (wint_t) ' ';
-		to[i] = (wint_t) '\0';
-	}
+		int gap;
 
-	free(wbuf);
+		gap = columns - wcswidth(wbuf, wcslen(wbuf) + 1);
+		assert(gap >= 0);
+		wbuf = my_realloc(wbuf, sizeof(wchar_t) * (wcslen(wbuf) + gap + 1));
+		ptr = wbuf + wcslen(wbuf); /* set ptr again to end of wbuf */
+
+		while (gap-- > 0)
+			*ptr++ = (wchar_t) ' ';
+
+		*ptr = (wchar_t) '\0';
+	} else
+		wbuf = my_realloc(wbuf, sizeof(wchar_t) * (wcslen(wbuf) + 1));
+
+	return wbuf;
 }
 #endif /* MULTIBYTE_ABLE && !NOLOCALE */
 
@@ -822,34 +826,36 @@ wstrunc(
 	wtmp = my_wcsdup(wmessage);
 	wconvert_to_printable(wtmp);
 
-	if (wcswidth(wtmp, wcslen(wtmp)) <= len && wcslen(wtmp) < wbuf_len) {
-		/* wtmp doesn't need to be truncated */
+	if (wcswidth(wtmp, wcslen(wtmp)) <= len && wcslen(wtmp) < wbuf_len) /* wtmp doesn't need to be truncated */
 		wcscpy(wbuf, wtmp);
-	} else {
+	else {
 		/* wtmp must be truncated */
+		wchar_t *wtmp2, *format;
+
 #	ifdef USE_UTF8_HORIZONTAL_ELLIPSIS
 		if (IS_LOCAL_CHARSET("UTF-8")) {
 			/*
 			 * use U+2026 (HORIZONTAL ELLIPSIS) instead of "..."
 			 * we gain two additional screen positions
 			 */
-			wchar_t wtail[2] = {8230, 0};	/* \0-terminated U+2026 */
+			format = char2wchar_t("%ls%lc");
 
-			wcspart(wbuf, wtmp, len - 1, wbuf_len - 1, FALSE);
-			wcscat(wbuf, wtail);
+			wtmp2 = wcspart(wtmp, MIN(len - 1, (int) wbuf_len - 2), FALSE);
+			swprintf(wbuf, wbuf_len, format, wtmp2, 8230); /* U+2026 */
 		} else
 #	endif /* USE_UTF8_HORIZONTAL_ELLIPSIS */
 		{
-			wchar_t tail[4];
-			size_t i;
+			wchar_t *tail;
 
-			i = mbstowcs(tail, TRUNC_TAIL, ARRAY_SIZE(tail));
-			tail[3] = (wchar_t) '\0';
-			assert(i != (size_t) (-1));
+			tail = char2wchar_t(TRUNC_TAIL);
+			format = char2wchar_t("%ls%ls");
 
-			wcspart(wbuf, wtmp, len - 3, wbuf_len - 3, FALSE);
-			wcscat(wbuf, tail);
+			wtmp2 = wcspart(wtmp, MIN(len - 3, (int) wbuf_len - 4), FALSE);
+			swprintf(wbuf, wbuf_len, format, wtmp2, tail);
+			free(tail);
 		}
+		free(format);
+		free(wtmp2);
 	}
 	free(wtmp);
 
@@ -1022,14 +1028,11 @@ fmt_string(
 	const char *fmt,
 	...) {
 	char *str;
-#ifdef HAVE_VASPRINTF
-	int n;
-#endif /* HAVE_VASPRINTF */
 	va_list ap;
 
 	va_start(ap, fmt);
 #ifdef HAVE_VASPRINTF
-	if ((n = vasprintf(&str, fmt, ap)) == -1)	/* something went wrong */
+	if (vasprintf(&str, fmt, ap) == -1)	/* something went wrong */
 #endif /* HAVE_VASPRINTF */
 	{
 		size_t size = LEN;

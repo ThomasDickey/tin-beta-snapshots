@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-06-12
+ *  Updated   : 2004-08-20
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -322,8 +322,8 @@ msg_init_headers(
 	int i;
 
 	for (i = 0; i < MAX_MSG_HEADERS; i++) {
-		msg_headers[i].name = (char *) 0;
-		msg_headers[i].text = (char *) 0;
+		msg_headers[i].name = NULL;
+		msg_headers[i].text = NULL;
 	}
 }
 
@@ -348,8 +348,8 @@ msg_add_header(
 {
 	const char *p;
 	char *ptr;
-	char *new_name = (char *) 0;
-	char *new_text = (char *) 0;
+	char *new_name = NULL;
+	char *new_text = NULL;
 	int i;
 	t_bool done = FALSE;
 
@@ -1449,8 +1449,9 @@ post_loop(
 {
 	char a_message_id[HEADER_LEN];	/* Message-ID of the article if known */
 	int ret_code = POSTED_NONE;
-	long artchanged = 0L;		/* artchanged work was not done in post_postponed_article */
 	int i = 1;
+	long artchanged = 0L;		/* artchanged work was not done in post_postponed_article */
+	struct t_group *ogroup = curr_group;
 	t_bool art_unchanged;
 
 	a_message_id[0] = '\0';
@@ -1460,13 +1461,22 @@ post_article_loop:
 		art_unchanged = FALSE;
 		switch (ch) {
 			case iKeyPostEdit:
-				/* This was VERY different in repost_article
-				 * Code existed to recheck subject and restart editor, but
-				 * is not enabled
+				/*
+				 * This was VERY different in repost_article Code existed to
+				 * recheck subject and restart editor, but is not enabled
 				 */
 				artchanged = file_mtime(article);
-				if (!invoke_editor(article, offset))
+				if (!invoke_editor(article, offset)) {
+					if (file_size(article) > 0L) {
+						if (artchanged != file_mtime(article)) {
+							unlink(backup_article_name(article));
+							rename_file(article, dead_article);
+							if (tinrc.keep_dead_articles)
+								append_file(dead_articles, dead_article);
+						}
+					}
 					goto post_article_postponed;
+				}
 				ret_code = POSTED_REDRAW;
 
 				/* This might be erroneous with posting postponed */
@@ -1709,6 +1719,7 @@ post_article_done:
 	}
 
 post_article_postponed:
+	curr_group = ogroup;
 	if (tinrc.unlink_article)
 		unlink(article);
 
@@ -1990,7 +2001,7 @@ fetch_postponed_article(
 {
 	FILE *in, *out;
 	FILE *tmp;
-	char *bufp = (char *) 0;
+	char *bufp = NULL;
 	char postponed_tmp[PATH_LEN];
 	char line[HEADER_LEN];
 	t_bool first_article;
@@ -2989,7 +3000,6 @@ mail_bug_report(
 	char tmesg[LEN];
 	char subject[HEADER_LEN];
 	t_bool ret_code = FALSE;
-	t_bool is_nntp = FALSE, is_nntp_only;
 
 	wait_message(0, _(txt_mail_bug_report));
 	snprintf(subject, sizeof(subject), "BUG REPORT %s\n", page_header);
@@ -2997,8 +3007,8 @@ mail_bug_report(
 	if ((fp = create_mail_headers(nam, ".bugreport", bug_addr, subject, NULL)) == NULL)
 		return FALSE;
 
-	fprintf(fp, "VER1 : %s\n", page_header);	/* some ppl. trash the subject, so include version information in the body as well */
-#ifdef HAVE_SYS_UTSNAME_H
+	start_line_offset += tin_version_info(fp);
+#if defined(HAVE_SYS_UTSNAME_H) && defined(HAVE_UNAME)
 #	ifdef _AIX
 	fprintf(fp, "BOX1 : %s %s.%s", system_info.sysname, system_info.version, system_info.release);
 #	else
@@ -3010,16 +3020,7 @@ mail_bug_report(
 #	endif /* _AIX */
 #else
 	fprintf(fp, "BOX1 : Please enter the following information: Machine+OS");
-#endif /* HAVE_SYS_UTSNAME_H */
-
-#ifdef NNTP_ONLY
-	is_nntp_only = TRUE;
-#else
-	is_nntp_only = FALSE;
-#	ifdef NNTP_ABLE
-	is_nntp = TRUE;
-#	endif /* NNTP_ABLE */
-#endif /* NNTP_ONLY */
+#endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
 
 #ifdef DOMAIN_NAME
 	domain = DOMAIN_NAME;
@@ -3027,23 +3028,14 @@ mail_bug_report(
 	domain = "";
 #endif /* DOMAIN_NAME */
 
-	fprintf(fp, "\nCFG1 : active=%d, arts=%d, reread=%d, longfilenames=%s\n",
+	fprintf(fp, "\nCFG1 : active=%d, arts=%d, reread=%d, nntp_xover=%s\n",
 		DEFAULT_ACTIVE_NUM,
 		DEFAULT_ARTICLE_NUM,
 		tinrc.reread_active_file_secs,
-#ifdef HAVE_LONG_FILE_NAMES
-		bool_unparse(TRUE)
-#else
-		bool_unparse(FALSE)
-#endif /* HAVE_LONG_FILE_NAMES */
-		);
-	fprintf(fp, "CFG2 : nntp=%s, nntp_only=%s, nntp_xover=%s\n",
-		bool_unparse(is_nntp),
-		bool_unparse(is_nntp_only),
 		bool_unparse(xover_cmd != NULL));
-	fprintf(fp, "CFG3 : debug=%d, threading=%d\n", debug, tinrc.thread_articles);
-	fprintf(fp, "CFG4 : domain=[%s]\n", BlankIfNull(domain));
-	start_line_offset += 6;
+	fprintf(fp, "CFG2 : debug=%d, threading=%d\n", debug, tinrc.thread_articles);
+	fprintf(fp, "CFG3 : domain=[%s]\n", BlankIfNull(domain));
+	start_line_offset += 4;
 
 	if (*bug_nntpserver1) {
 		fprintf(fp, "NNTP1: %s\n", bug_nntpserver1);
@@ -3919,7 +3911,7 @@ checknadd_headers(
 		char suffix[HEADER_LEN];
 
 		suffix[0] = '\0';
-#ifdef HAVE_SYS_UTSNAME_H
+#if defined(HAVE_SYS_UTSNAME_H) && defined(HAVE_UNAME)
 #	ifdef _AIX
 		snprintf(suffix, sizeof(suffix), " (%s/%s.%s)",
 			system_info.sysname, system_info.version, system_info.release);
@@ -3932,7 +3924,12 @@ checknadd_headers(
 				system_info.sysname, system_info.release, system_info.machine);
 #		endif /* SEIUX */
 #	endif /* _AIX */
-#endif /* HAVE_SYS_UTSNAME_H */
+#else
+#	ifdef SYSTEM_NAME
+		if (strlen(SYSTEM_NAME))
+			snprintf(suffix, sizeof(suffix), " (%s)", SYSTEM_NAME);
+#	endif /* SYSTEM_NAME */
+#endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
 		fprintf(fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s)%s\n",
 			PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME, suffix);
 	}
@@ -4653,7 +4650,7 @@ get_secret(
 		my_fprintf(stderr, _(txt_cannot_open), path_secret);
 		my_fflush(stderr);
 		sleep(2);
-		return ((char *) 0);
+		return NULL;
 	} else {
 		(void) fread(cancel_secret, HEADER_LEN - 1, 1, fp_secret);
 		fclose(fp_secret);
@@ -4714,14 +4711,14 @@ add_headers(
 					struct tm *gmdate;
 					char dateheader[50];
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
-					char *old_lc_all = (char *) 0, *old_lc_time = (char *) 0;
+					char *old_lc_all = NULL, *old_lc_time = NULL;
 
 					/* Unlocalized date-header */
 					if (getenv("LC_ALL") != NULL) {
-						old_lc_all = my_strdup(setlocale(LC_ALL, (char *) 0));
+						old_lc_all = my_strdup(setlocale(LC_ALL, NULL));
 						setlocale(LC_ALL, "POSIX");
 					} else {
-						old_lc_time = my_strdup(setlocale(LC_TIME, (char *) 0));
+						old_lc_time = my_strdup(setlocale(LC_TIME, NULL));
 						setlocale(LC_TIME, "POSIX");
 					}
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */

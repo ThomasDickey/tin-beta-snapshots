@@ -279,7 +279,7 @@ rfc1522_decode(
 				c++;
 				encoding = tolower((unsigned char)*c);
 				if (encoding == 'b')
-					(void) mmdecode((char *) 0, 'b', 0, (char *) 0);	/* flush */
+					(void) mmdecode(NULL, 'b', 0, NULL);	/* flush */
 				c++;
 				if (*c == '?') {
 					c++;

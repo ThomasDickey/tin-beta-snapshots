@@ -15,12 +15,13 @@ Note: The section 'News machine names' is now at the beginning as it
 
 The following configure options and defines are documented in detail:
 ---------------------------------------------------------------------
-  --disable-fcntl                         --program-suffix
-  --disable-included-msgs                 --program-transform-name
-  --enable-8bit-keys                      --with-coffee
-  --enable-append-pid                     --with-curses-dir
-  --enable-break-long-lines               --with-dbmalloc
-  --enable-broken-listgroup-fix           --with-defaults-dir
+  --disable-fcntl                         --program-prefix
+  --disable-included-msgs                 --program-suffix
+  --enable-8bit-keys                      --program-transform-name
+  --enable-append-pid                     --with-coffee
+  --enable-break-long-lines               --with-curses-dir
+  --enable-broken-listgroup-fix           --with-dbmalloc
+  --enable-broken-system-fix              --with-defaults-dir
   --enable-color                          --with-dmalloc
   --enable-curses                         --with-domain-name
   --enable-debug                          --with-editor
@@ -47,7 +48,6 @@ The following configure options and defines are documented in detail:
   --exec-prefix                           --with-shell
   --mandir                                --with-spooldir
   --prefix                                --with-trace
-  --program-prefix
 
   ENFORCE_RFC1034                         HAVE_UUDEVIEW_H
   EVIL_INSIDE                             NNTP_INEWS
@@ -567,6 +567,11 @@ folding right seems to be a major problem). This option only affects
 headers in postings; e-mail headers are always folded if they have MIME
 encoded words and are longer than 76 characters.
 
+--enable-broken-system-fix (default: off)
+Ignore system()s return value. This is only needed on some very old OSs,
+e.g. NEXTSTEP3, SEIUX, DG/UX where the WIFEXITED()/WEXITSTATUS() macros do
+not work.
+
 --prefix=dirname
 Specify the toplevel installation directory. This is the recommended way to
 install tin into a directory other than the default. The toplevel
@@ -638,5 +643,5 @@ Compiled & installed
 --------------------
 Tin was successfully built and installed on a variety of platforms including
 Linux, FreeBSD, OpenBSD, NetBSD, BSDi, Darwin, Solaris, IRIX, HP-UX, Ultrix,
-Tru64, AIX, SINIX, UXP/V, SUPER-UX, QNX, GNU Hurd, DG/UX, SEIUX, MiNT and
-Cygwin. For a detailed list see <http://www.tin.org/builds.html>
+Tru64, AIX, SINIX, UXP/V, SUPER-UX, QNX, GNU Hurd, DG/UX, SEIUX, Openstep,
+MiNT and Cygwin. For a detailed list see <http://www.tin.org/builds.html>

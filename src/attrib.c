@@ -80,7 +80,7 @@ enum {
 	ATTRIB_MAILING_LIST,
 	ATTRIB_X_HEADERS,
 	ATTRIB_X_BODY,
-	ATTRIB_AUTO_SAVE_MSG,
+	ATTRIB_AUTO_SAVE_MSG, /* TODO: what is this? dublicate of ATTRIB_AUTO_SAVE? */
 	ATTRIB_X_COMMENT_TO,
 	ATTRIB_FCC,
 	ATTRIB_NEWS_QUOTE,
@@ -128,25 +128,25 @@ set_default_attributes(
 	attributes->global = FALSE;	/* global/group specific */
 	attributes->maildir = tinrc.maildir;
 	attributes->savedir = tinrc.savedir;
-	attributes->savefile = (char *) 0;
+	attributes->savefile = NULL;
 	attributes->sigfile = tinrc.sigfile;
-	attributes->organization = (*default_organization ? default_organization : (char *) 0);
-	attributes->followup_to = (char *) 0;
-	attributes->mailing_list = (char *) 0;
-	attributes->x_headers = (char *) 0;
-	attributes->x_body = (char *) 0;
+	attributes->organization = (*default_organization ? default_organization : NULL);
+	attributes->followup_to = NULL;
+	attributes->mailing_list = NULL;
+	attributes->x_headers = NULL;
+	attributes->x_body = NULL;
 	attributes->from = tinrc.mail_address;
 	attributes->news_quote_format = tinrc.news_quote_format;
 	attributes->quote_chars = tinrc.quote_chars;
 	attributes->mime_types_to_save = my_strdup("*/*");
 #ifdef HAVE_ISPELL
-	attributes->ispell = (char *) 0;
+	attributes->ispell = NULL;
 #endif /* HAVE_ISPELL */
-	attributes->quick_kill_scope = (tinrc.default_filter_kill_global ? my_strdup("*") : (char *) 0);
+	attributes->quick_kill_scope = (tinrc.default_filter_kill_global ? my_strdup("*") : NULL);
 	attributes->quick_kill_header = tinrc.default_filter_kill_header;
 	attributes->quick_kill_case = tinrc.default_filter_kill_case;
 	attributes->quick_kill_expire = tinrc.default_filter_kill_expire;
-	attributes->quick_select_scope = (tinrc.default_filter_select_global ? my_strdup("*") : (char *) 0);
+	attributes->quick_select_scope = (tinrc.default_filter_select_global ? my_strdup("*") : NULL);
 	attributes->quick_select_header = tinrc.default_filter_select_header;
 	attributes->quick_select_case = tinrc.default_filter_select_case;
 	attributes->quick_select_expire = tinrc.default_filter_select_expire;
@@ -164,10 +164,10 @@ set_default_attributes(
 	attributes->x_comment_to = FALSE;
 	attributes->tex2iso_conv = tinrc.tex2iso_conv;
 	attributes->mime_forward = FALSE;
-	attributes->fcc = (char *) 0;
+	attributes->fcc = NULL;
 #ifdef CHARSET_CONVERSION
 	attributes->mm_network_charset = tinrc.mm_network_charset;
-	attributes->undeclared_charset = (char *) 0;
+	attributes->undeclared_charset = NULL;
 #endif /* CHARSET_CONVERSION */
 }
 
@@ -400,8 +400,11 @@ set_attrib(
 {
 	struct t_group *group;
 
-	if (scope == NULL || *scope == '\0')	/* No active scope set yet */
+	if (scope == NULL || *scope == '\0') {	/* No active scope set yet */
+		/* TODO: include full line in error-message */
+		error_message("attribute with no scope: %s", data);
 		return;
+	}
 #if 0
 	fprintf(stderr, "set_attrib #%d %s %s(%d)\n", type, scope, data, (int) *data);
 #endif /* 0 */
@@ -414,6 +417,7 @@ set_attrib(
 			do_set_attrib(group, type, data);
 	} else {
 		int i;
+
 		/* TODO: Can we get out of doing this per group for .global case */
 		for_each_group(i) {
 			group = &active[i];

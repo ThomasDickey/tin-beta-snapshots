@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2004-06-07
+ *  Updated   : 2004-09-04
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -89,7 +89,7 @@ struct t_filters glob_filter = { 0, 0, (struct t_filter *) 0 };
 /*
  * Local prototypes
  */
-static int get_choice(int x, const char *help, const char *prompt, const char *opt1, const char *opt2, const char *opt3, const char *opt4, const char *opt5);
+static int get_choice(int x, const char *help, const char *prompt, char *list[], int list_size);
 static int set_filter_scope(struct t_group *group);
 static struct t_filter_comment *add_filter_comment(struct t_filter_comment *ptr, char *text);
 static struct t_filter_comment *free_filter_comment(struct t_filter_comment *ptr);
@@ -230,19 +230,19 @@ set_filter(
 {
 	if (ptr != NULL) {
 		ptr->comment = (struct t_filter_comment *) 0;
-		ptr->scope = (char *) 0;
+		ptr->scope = NULL;
 		ptr->inscope = TRUE;
 		ptr->icase = FALSE;
 		ptr->fullref = FILTER_MSGID;
-		ptr->subj = (char *) 0;
-		ptr->from = (char *) 0;
-		ptr->msgid = (char *) 0;
+		ptr->subj = NULL;
+		ptr->from = NULL;
+		ptr->msgid = NULL;
 		ptr->lines_cmp = FILTER_LINES_NO;
 		ptr->lines_num = 0;
 		ptr->gnksa_cmp = FILTER_LINES_NO;
 		ptr->gnksa_num = 0;
 		ptr->score = 0;
-		ptr->xref = (char *) 0;
+		ptr->xref = NULL;
 		ptr->time = (time_t) 0;
 		ptr->next = (struct t_filter *) 0;
 	}
@@ -812,54 +812,69 @@ get_choice(
 	int x,
 	const char *help,
 	const char *prompt,
-	const char *opt1,
-	const char *opt2,
-	const char *opt3,
-	const char *opt4,
-	const char *opt5)
+	char *list[],
+	int list_size)
 {
-	const char *argv[5];
-	int ch, n = 0, i = 0;
-
-	if (opt1)
-		argv[n++] = opt1;
-	if (opt2)
-		argv[n++] = opt2;
-	if (opt3)
-		argv[n++] = opt3;
-	if (opt4)
-		argv[n++] = opt4;
-	if (opt5)
-		argv[n++] = opt5;
-	assert(n > 0);
+	int ch, y, i = 0;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wbuf;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	if (help)
 		show_menu_help(help);
 
-	do {
-		int y;
+	if (list == NULL || list_size < 1)
+		return -1;
+
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		wchar_t *wbuf;
+	if ((wbuf = char2wchar_t(prompt)) != NULL) {
+		wconvert_to_printable(wbuf);
+		if ((y = wcswidth(wbuf, wcslen(wbuf) + 1)) == -1) /* something went wrong, use wcslen() as fallback */
+			y = wcslen(wbuf);
 
-		if ((wbuf = char2wchar_t(prompt)) != NULL) {
-			wconvert_to_printable(wbuf);
-			y = wcswidth(wbuf, wcslen(wbuf) + 1);
-			if (y == -1) /* something went wrong, use wcslen() as fallback */
-				y = wcslen(wbuf);
-
-			free(wbuf);
-		} else
+		free(wbuf);
+	} else
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-			y = (int) strlen(prompt);
+		y = (int) strlen(prompt);
 
+	do {
 		MoveCursor(x, y);
-		my_fputs(argv[i], stdout);
+		my_fputs(list[i], stdout);
 		my_flush();
 		CleartoEOLN();
-		if ((ch = ReadCh()) != ' ')
-			continue;
-		if (++i == n)
-			i = 0;
+		ch = ReadCh();
+		switch (ch) {
+			case ' ':
+				i++;
+				i %= list_size;
+				break;
+
+			case ESC:	/* (ESC) common arrow keys */
+#	ifdef HAVE_KEY_PREFIX
+			case KEY_PREFIX:
+#	endif /* HAVE_KEY_PREFIX */
+				switch (get_arrow_key(ch)) {
+					case KEYMAP_UP:
+						i--;
+						if (i < 0)
+							i = list_size - 1;
+						ch = ' ';	/* don't exit the while loop yet */
+						break;
+
+					case KEYMAP_DOWN:
+						i++;
+						i %= list_size;
+						ch = ' ';	/* don't exit the while loop yet */
+						break;
+
+					default:
+						break;
+				}
+				break;
+
+			default:
+				break;
+		}
 	} while (ch != '\n' && ch != '\r' && ch != iKeyAbort); /* TODO: replace hardcoded keynames */
 
 	if (ch == iKeyAbort)
@@ -940,14 +955,10 @@ fmt_filter_menu_prompt(
 {
 	char *buf;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	size_t wsize;
 	wchar_t *wbuf, *wbuf2;
 
 	if ((wbuf = char2wchar_t(text)) != NULL) {
-		wsize = wcslen(wbuf) + 1;
-		/* make sure there is enough space for padding with ' ' */
-		wbuf2 = my_malloc(sizeof(wchar_t) * (wsize + len));
-		wcspart(wbuf2, wbuf, len, wsize + len, TRUE);
+		wbuf2 = wcspart(wbuf, len, TRUE);
 		if ((buf = wchar_t2char(wbuf2)) == NULL) {
 			/* conversion failed, truncate original string */
 			buf = my_malloc(len + 1);
@@ -985,8 +996,8 @@ filter_menu(
 	const char *ptr_filter_help_scope;
 	const char *ptr_filter_quit_edit_save;
 	char *ptr;
+	char **list;
 	char comment_line[LEN];
-	char argv[4][PATH_LEN];
 	char buf[LEN];
 	char keyedit[MAXKEYLEN], keyquit[MAXKEYLEN], keysave[MAXKEYLEN];
 	char text_time[PATH_LEN];
@@ -1087,13 +1098,17 @@ filter_menu(
 	}
 
 	if (*rule.text) {
+		list = my_malloc(sizeof(char *) * 5);
+		list[0] = (char *) _(txt_subj_line_only_case);
+		list[1] = (char *) _(txt_subj_line_only);
+		list[2] = (char *) _(txt_from_line_only_case);
+		list[3] = (char *) _(txt_from_line_only);
+		list[4] = (char *) _(txt_msgid_line_only);
+
 		i = get_choice(INDEX_TOP + 3, _(txt_help_filter_text_type),
-			       _(txt_filter_text_type),
-			       _(txt_subj_line_only_case),
-			       _(txt_subj_line_only),
-			       _(txt_from_line_only_case),
-			       _(txt_from_line_only),
-			       _(txt_msgid_line_only));
+			       _(txt_filter_text_type), list, 5);
+		free(list);
+
 		if (i == -1) {
 			rule.comment = free_filter_comment(rule.comment);
 			return FALSE;
@@ -1126,7 +1141,12 @@ filter_menu(
 		/*
 		 * Subject:
 		 */
-		i = get_choice(INDEX_TOP + 5, _(txt_help_filter_subj), text_subj, _(txt_yes), _(txt_no), (char *) 0, (char *) 0, (char *) 0);
+		list = my_malloc(sizeof(char *) * 2);
+		list[0] = (char *) _(txt_yes);
+		list[1] = (char *) _(txt_no);
+		i = get_choice(INDEX_TOP + 5, _(txt_help_filter_subj), text_subj, list, 2);
+		free(list);
+
 		if (i == -1) {
 			rule.comment = free_filter_comment(rule.comment);
 			return FALSE;
@@ -1136,7 +1156,17 @@ filter_menu(
 		/*
 		 * From:
 		 */
-		i = get_choice(INDEX_TOP + 6, _(txt_help_filter_from), text_from, (rule.subj_ok ? _(txt_no) : _(txt_yes)), (rule.subj_ok ? _(txt_yes) : _(txt_no)), (char *) 0, (char *) 0, (char *) 0);
+		list = my_malloc(sizeof(char *) * 2);
+		if (rule.subj_ok) {
+			list[0] = (char *) _(txt_no);
+			list[1] = (char *) _(txt_yes);
+		} else {
+			list[0] = (char *) _(txt_yes);
+			list[1] = (char *) _(txt_no);
+		}
+		i = get_choice(INDEX_TOP + 6, _(txt_help_filter_from), text_from, list, 2);
+		free(list);
+
 		if (i == -1) {
 			rule.comment = free_filter_comment(rule.comment);
 			return FALSE;
@@ -1146,10 +1176,20 @@ filter_menu(
 		/*
 		 * Message-ID:
 		 */
-		if (rule.subj_ok || rule.from_ok)
-			i = get_choice(INDEX_TOP + 7, _(txt_help_filter_msgid), text_msgid, _(txt_no), _(txt_full), _(txt_last), _(txt_only), (char *) 0);
-		else
-			i = get_choice(INDEX_TOP + 7, _(txt_help_filter_msgid), text_msgid, _(txt_full), _(txt_last), _(txt_only), _(txt_no), (char *) 0);
+		list = my_malloc(sizeof(char *) * 4);
+		if (rule.subj_ok || rule.from_ok) {
+			list[0] = (char *) _(txt_no);
+			list[1] = (char *) _(txt_full);
+			list[2] = (char *) _(txt_last);
+			list[3] = (char *) _(txt_only);
+		} else {
+			list[0] = (char *) _(txt_full);
+			list[1] = (char *) _(txt_last);
+			list[2] = (char *) _(txt_only);
+			list[3] = (char *) _(txt_no);
+		}
+		i = get_choice(INDEX_TOP + 7, _(txt_help_filter_msgid), text_msgid, list, 4);
+		free(list);
 
 		if (i == -1) {
 			rule.comment = free_filter_comment(rule.comment);
@@ -1266,8 +1306,13 @@ filter_menu(
 	 */
 	snprintf(double_time, sizeof(double_time), "2x %s", text_time);
 	snprintf(quat_time, sizeof(double_time), "4x %s", text_time);
-	i = get_choice(INDEX_TOP + 11, _(txt_help_filter_time), ptr_filter_time,
-			_(txt_unlimited_time), text_time, double_time, quat_time, (char *) 0);
+	list = my_malloc(sizeof(char *) * 4);
+	list[0] = (char *) _(txt_unlimited_time);
+	list[1] = text_time;
+	list[2] = double_time;
+	list[3] = quat_time;
+	i = get_choice(INDEX_TOP + 11, _(txt_help_filter_time), ptr_filter_time, list, 4);
+	free(list);
 
 	if (i == -1) {
 		rule.comment = free_filter_comment(rule.comment);
@@ -1280,41 +1325,33 @@ filter_menu(
 	 * Scope
 	 */
 	if (*rule.text || rule.subj_ok || rule.from_ok || rule.msgid_ok || rule.lines_ok) {
-		strcpy(argv[0], group->name);
-		strcpy(argv[1], _(txt_all_groups));
-		strcpy(argv[2], group->name);
-		ptr = strrchr(argv[2], '.');
-		if (ptr != NULL) {
-			ptr++;
-			*(ptr++) = '*';
-			*ptr = '\0';
-			strcpy(argv[3], argv[2]);
-			argv[3][strlen(argv[3]) - 2] = '\0';
-			ptr = strrchr(argv[3], '.');
-			if (ptr != NULL) {
-				ptr++;
-				*(ptr++) = '*';
-				*ptr = '\0';
-			} else
-				argv[3][0] = '\0';
+		int j = 0;
 
-		} else
-			argv[2][0] = '\0';
+		list = my_malloc(sizeof(char *) * 2); /* at least 2 scopes */
+		list[j++] = my_strdup(group->name);
+		list[j] = my_strdup(list[j - 1]);
+		while ((ptr = strrchr(list[j], '.')) != NULL) {
+			*(++ptr) = '*';
+			*(++ptr) = '\0';
+			j++;
+			list = my_realloc(list, sizeof(char *) * (j + 1)); /* one element more */
+			list[j] = my_strdup(list[j - 1]);
+			list[j][strlen(list[j]) - 2] = '\0';
+		}
+		free(list[j]); /* this copy isn't needed anymore */
+		list[j] = (char *) _(txt_all_groups);
 
-		i = get_choice(INDEX_TOP + 13, ptr_filter_help_scope,
-			       ptr_filter_scope,
-			       (argv[0][0] ? argv[0] : (char *) 0),
-			       (argv[1][0] ? argv[1] : (char *) 0),
-			       (argv[2][0] ? argv[2] : (char *) 0),
-			       (argv[3][0] ? argv[3] : (char *) 0),
-			       (char *) 0);
+		if ((i = get_choice(INDEX_TOP + 13, ptr_filter_help_scope, ptr_filter_scope, list, j + 1)) > 0)
+			strncpy(rule.scope, i == j ? "*" : list[i], sizeof(rule.scope));
+
+		for(j--; j >= 0; j--)
+			free(list[j]);
+		free(list);
 
 		if (i == -1) {
 			rule.comment = free_filter_comment(rule.comment);
 			return FALSE;
 		}
-
-		strcpy(rule.scope, ((i == 1) ? "*" : argv[i]));
 	} else {
 		rule.comment = free_filter_comment(rule.comment);
 		return FALSE;
@@ -1543,16 +1580,16 @@ add_filter_rule(
 	ptr[i].inscope = TRUE;
 	ptr[i].fullref = FILTER_MSGID;
 	ptr[i].comment = (struct t_filter_comment *) 0;
-	ptr[i].scope = (char *) 0;
-	ptr[i].subj = (char *) 0;
-	ptr[i].from = (char *) 0;
-	ptr[i].msgid = (char *) 0;
+	ptr[i].scope = NULL;
+	ptr[i].subj = NULL;
+	ptr[i].from = NULL;
+	ptr[i].msgid = NULL;
 	ptr[i].lines_cmp = rule->lines_cmp;
 	ptr[i].lines_num = rule->lines_num;
 	ptr[i].gnksa_cmp = FILTER_LINES_NO;
 	ptr[i].gnksa_num = 0;
 	ptr[i].score = rule->score;
-	ptr[i].xref = (char *) 0;
+	ptr[i].xref = NULL;
 
 	if (rule->comment != NULL)
 		ptr[i].comment = copy_filter_comment(rule->comment, ptr[i].comment);
@@ -1791,14 +1828,7 @@ filter_articles(
 				 * Filter on Subject: line
 				 */
 				if (ptr[j].subj != NULL) {
-					char *tmp = my_strdup(arts[i].subject);
-
-#if defined(CHARSET_CONVERSION) || defined(HAVE_UNICODE_NORMALIZATION)
-					if (IS_LOCAL_CHARSET("UTF-8"))
-						utf8_valid(tmp);
-#endif /* CHARSET_CONVERSION || HAVE_UNICODE_NORMALIZATION */
-
-					switch (test_regex(tmp, ptr[j].subj, ptr[j].icase, &regex_cache_subj[j])) {
+					switch (test_regex(arts[i].subject, ptr[j].subj, ptr[j].icase, &regex_cache_subj[j])) {
 						case 1:
 							SET_FILTER(group, i, j);
 							break;
@@ -1810,7 +1840,6 @@ filter_articles(
 						default:
 							break;
 					}
-					free(tmp);
 				}
 
 				/*
@@ -1821,11 +1850,6 @@ filter_articles(
 						snprintf(buf, sizeof(buf), "%s (%s)", arts[i].from, arts[i].name);
 					else
 						strcpy(buf, arts[i].from);
-
-#if defined(CHARSET_CONVERSION) || defined(HAVE_UNICODE_NORMALIZATION)
-					if (IS_LOCAL_CHARSET("UTF-8"))
-						utf8_valid(buf);
-#endif /* CHARSET_CONVERSION || HAVE_UNICODE_NORMALIZATION */
 
 					switch (test_regex(buf, ptr[j].from, ptr[j].icase, &regex_cache_from[j])) {
 						case 1:
@@ -1890,9 +1914,9 @@ filter_articles(
 							break;
 					}
 
-					x = test_regex(myrefs, ptr[j].msgid, FALSE, &regex_cache_msgid[j]);
-					if (x == 0) /* no match */
+					if ((x = test_regex(myrefs, ptr[j].msgid, FALSE, &regex_cache_msgid[j])) == 0) /* no match */
 						x = test_regex(mymsgid, ptr[j].msgid, FALSE, &regex_cache_msgid[j]);
+
 					switch (x) {
 						case 1:
 							SET_FILTER(group, i, j);

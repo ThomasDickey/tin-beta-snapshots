@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2004-06-07
+ *  Updated   : 2004-07-20
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -153,12 +153,11 @@ struct termio _raw_tty, _original_tty;
 #	define USE_SGTTY 0
 #endif /* !USE_SGTTY */
 
-#ifndef USE_TERMIO
-#	define USE_TERMIO 0
-#endif /* !USE_TERMIO */
-
 #ifndef USE_POSIX_TERMIOS
 #	define USE_POSIX_TERMIOS 0
+#	ifndef USE_TERMIO
+#		define USE_TERMIO 0
+#	endif /* !USE_TERMIO */
 #endif /* !USE_POSIX_TERMIOS */
 
 static char *_clearscreen, *_moveto, *_cleartoeoln, *_cleartoeos,

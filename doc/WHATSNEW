@@ -16,6 +16,8 @@ New features
 
 . x_headers can take a command which generates the header(s). See tin(5).
 
+. mime_forward (message/rfc822) attributes option
+
 Retired Features
 ----------------
 . AmigaOS support

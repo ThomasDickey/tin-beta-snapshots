@@ -690,9 +690,8 @@ my_fputc(
 		if (_inraw && ch == '\n')
 			fputc('\r', fp);
 		fputc(ch, fp);
-	} else {
+	} else
 		addch((unsigned char) ch);
-	}
 }
 
 

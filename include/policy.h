@@ -220,11 +220,11 @@
  * .cs  Serbia and Montenegro
  * .eu  European Union (planned for 2004-11)
  *
- * 'expireing' TLDs:
+ * xccTLDs:
  * .gb  United Kingdom, use .uk
- *(.hk  Hong Kong, now .cn)
+ * .hk  Hong Kong, now .cn
  * .su  former USSR, now .ru
- *(.yu  former Yugoslavia)
+ * .yu  former Yugoslavia
  */
 
 static char gnksa_country_codes[26*26] = {
@@ -278,7 +278,11 @@ static const char *gnksa_domain_list[] = {
 	"info",	/* Unrestricted use */
 	"name",	/* For registration by individuals */
 	"museum",	/* Museums */
-	/* 3 more gTLDs to come in 2004 (.travel is likely to be one of them) */
+	/*
+	 * more gTLDs to come in 2004, proposed are:
+	 *  .asia   .cat    .jobs   .mail   .mobi
+	 *  .post   .tel    .travel .xxx
+	 */
 #	if 0		/* $DEAD */
 	"uucp",
 	"bitnet",

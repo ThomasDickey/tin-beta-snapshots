@@ -3,7 +3,7 @@
  *  Module    : getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 2004-03-14
+ *  Updated   : 2004-07-02
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -135,12 +135,12 @@ tin_getline(
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if (str != NULL) {
-		wchar_t wbuf[LEN];
+		wchar_t *wbuf;
 
-		if (mbstowcs(wbuf, str, ARRAY_SIZE(wbuf) - 1) != (size_t) -1) {
-			wbuf[ARRAY_SIZE(wbuf) - 1] = (wchar_t) '\0';
+		if ((wbuf = char2wchar_t(str)) != NULL) {
 			for (i = 0; wbuf[i]; i++)
 				gl_addwchar(wbuf[i]);
+			free(wbuf);
 		}
 	}
 
@@ -228,7 +228,7 @@ tin_getline(
 
 						default:
 							input_context = cNone;
-							return (char *) 0;
+							return NULL;
 					}
 					break;
 
@@ -684,17 +684,8 @@ hist_add(
 		return;
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	{
-		int size = wcstombs(NULL, gl_buf, 0);
-
-		tmp = my_malloc(size + 1);
-		if (wcstombs(tmp, gl_buf, size) == (size_t) -1) {
-			/* conversion failed */
-			free(tmp);
-			return;
-		} else
-			tmp[size] = '\0';
-	}
+	if ((tmp = wchar_t2char(gl_buf)) == NULL)
+		return;
 #else
 	tmp = my_strdup(gl_buf);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */

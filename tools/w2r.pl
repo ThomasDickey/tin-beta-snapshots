@@ -18,7 +18,7 @@
 require 5.004;
 
 # version Number
-# $VERSION = "0.2.6";
+# $VERSION = "0.2.7";
 
 while (defined($line = <>)) {
 	chomp $line;
@@ -92,13 +92,15 @@ sub w2p {
 	}
 
 	# common abbreviations
-	#
+	# TODO: make this global
 	# replace [0-9] with [\d] in the first []
-	# TODO: make this global
+	# replace [a-zA-Z0-9_] with [\w] in the first []
+	# replace [a-zA-Z0-9] with [^\W_] in the first []
+	# replace [a-zA-Z] with [^\W\d_] in the first []
 	$rval =~ s/^([^\[]*)\[0-9\]/$1\[\\d\]/o;
-	# replace [a-zA-Z_] with [\w] in the first []
-	# TODO: make this global
 	$rval =~ s/([^\[]*)\[a-za-z0-9_\]/$1\[\\w\]/io;
+	$rval =~ s/([^\[]*)\[a-za-z0-9\]/$1\[^\\W_\]/io;
+	$rval =~ s/([^\[]*)\[a-za-z\]/$1\[^\\W\\d_\]/io;
 
 	# optimizations
 	#

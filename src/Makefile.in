@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2004-01-28
+# Updated: 2004-09-06
 #
 # Copyright (c) 1995-2004 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -170,6 +170,7 @@ CFILES	= \
 	$(SRCDIR)/newsrc.c \
 	$(SRCDIR)/nntplib.c \
 	$(SRCDIR)/nrctbl.c \
+	$(SRCDIR)/options_menu.c \
 	$(SRCDIR)/page.c \
 	$(SRCDIR)/parsdate.y \
 	$(SRCDIR)/pgp.c \
@@ -244,6 +245,7 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/newsrc$o \
 	$(OBJDIR)/nntplib$o \
 	$(OBJDIR)/nrctbl$o \
+	$(OBJDIR)/options_menu$o \
 	$(OBJDIR)/page$o \
 	$(OBJDIR)/parsdate$o \
 	$(OBJDIR)/pgp$o \
@@ -488,8 +490,6 @@ $(OBJDIR)/auth$o :		$(SRCDIR)/auth.c $(TIN_DEP)
 $(OBJDIR)/charset$o :		$(SRCDIR)/charset.c $(TIN_DEP)
 $(OBJDIR)/color$o :		$(SRCDIR)/color.c $(TIN_DEP)
 $(OBJDIR)/config$o :		$(SRCDIR)/config.c $(TIN_DEP) \
-				tincfg.h \
-				$(INCDIR)/menukeys.h \
 				$(INCDIR)/tnntp.h \
 				$(INCDIR)/version.h
 $(OBJDIR)/curses$o :		$(SRCDIR)/curses.c $(TIN_DEP) \
@@ -538,7 +538,8 @@ $(OBJDIR)/memory$o :		$(SRCDIR)/memory.c $(TIN_DEP) \
 $(OBJDIR)/mimetypes$o :		$(SRCDIR)/mimetypes.c $(TIN_DEP)
 $(OBJDIR)/misc$o :		$(SRCDIR)/misc.c $(TIN_DEP) \
 				$(INCDIR)/policy.h \
-				$(INCDIR)/rfc2046.h
+				$(INCDIR)/rfc2046.h \
+				$(INCDIR)/version.h
 $(OBJDIR)/my_tmpfile$o :	$(SRCDIR)/my_tmpfile.c $(TIN_DEP)
 $(OBJDIR)/newsrc$o :		$(SRCDIR)/newsrc.c $(TIN_DEP) \
 				$(INCDIR)/newsrc.h \
@@ -548,6 +549,9 @@ $(OBJDIR)/nntplib$o :		$(SRCDIR)/nntplib.c $(TIN_DEP) \
 $(OBJDIR)/nrctbl$o :		$(SRCDIR)/nrctbl.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h \
 				$(INCDIR)/version.h
+$(OBJDIR)/options_menu$o :	$(SRCDIR)/options_menu.c $(TIN_DEP) \
+				tincfg.h \
+				$(INCDIR)/menukeys.h
 $(OBJDIR)/page$o :		$(SRCDIR)/page.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h \
 				$(INCDIR)/rfc2046.h

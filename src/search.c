@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-03-14
+ *  Updated   : 2004-09-04
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -164,21 +164,23 @@ search_config(
 			if (n > last)
 				n = 0;
 		}
+		/* search only visible options */
+		if (option_is_visible(n)) {
 #ifdef HAVE_UNICODE_NORMALIZATION
-		if (IS_LOCAL_CHARSET("UTF-8"))
-			buf = normalize(_(option_table[n].txt->opt));
-		else
+			if (IS_LOCAL_CHARSET("UTF-8"))
+				buf = normalize(_(option_table[n].txt->opt));
+			else
 #endif /* HAVE_UNICODE_NORMALIZATION */
-			buf = my_strdup(_(option_table[n].txt->opt));
+				buf = my_strdup(_(option_table[n].txt->opt));
 
-		if (match_regex(buf, pattern, &search_regex, TRUE)) {
-			result = n;
+			if (match_regex(buf, pattern, &search_regex, TRUE)) {
+				result = n;
+				free(buf);
+				break;
+			}
 			free(buf);
-			break;
 		}
-
 		n += incr;
-		free(buf);
 	} while (n != current);
 
 	clear_message();

@@ -5,8 +5,8 @@
 # Christian Garbs <tin-dev@cgarbs.de>, 2003
 #
 msgid	""
-msgstr	"Project-Id-Version: tin 1.7.4\n"
-	"POT-Creation-Date: 2004-06-04 13:31+0200\n"
+msgstr	"Project-Id-Version: tin 1.7.6\n"
+	"POT-Creation-Date: 2004-09-06 10:40+0200\n"
 	"PO-Revision-Date: 2003-03-13 04:15+0200\n"
 	"Last-Translator: Sven Hartge <oweh@ds9.argh.org>, Kai Bojens "
 	"<kbojens@on-luebeck.de>\n"
@@ -16,269 +16,269 @@ msgstr	"Project-Id-Version: tin 1.7.4\n"
 	"Content-Transfer-Encoding: 8bit\n"
 	"Report-Msgid-Bugs-To: \n"
 
-#: src/art.c:1430
+#: src/art.c:1447
 #, c-format
 msgid	"%d Bad overview record (%d fields) '%s'"
 msgstr	"%d Fehlerhafter Overview-Datensatz (%d Felder) '%s'"
 
-#: src/attrib.c:590
+#: src/attrib.c:594
 msgid	"# Do not edit this comment block\n"
 	"#\n"
 msgstr	"# Diesen Kommentarabschnitt nicht verändern\n"
 	"#\n"
 
-#: src/attrib.c:591
+#: src/attrib.c:595
 msgid	"#  scope=STRING (ie. alt.*,!alt.bin*) [mandatory]\n"
 msgstr	"#  scope=STRING  [notwendig]\n"
 	"#    Gültigkeitsbereich, zB. alt.*,!alt.bin*\n"
 
-#: src/attrib.c:592
+#: src/attrib.c:596
 msgid	"#  maildir=STRING (ie. ~/Mail)\n"
 msgstr	"#  maildir=STRING\n"
 	"#    Verzeichnis der Mailfolder, z.B. ~/Mail\n"
 
-#: src/attrib.c:593
+#: src/attrib.c:597
 msgid	"#  savedir=STRING (ie. ~user/News)\n"
 msgstr	"#  savedir=STRING\n"
 	"#    Verzeichnis zum Speichern, z.B. ~user/News\n"
 
-#: src/attrib.c:594
+#: src/attrib.c:598
 msgid	"#  savefile=STRING (ie. =linux)\n"
 msgstr	"#  savefile=STRING\n"
 	"#    Datei zum Speichern, z.B. =linux\n"
 
-#: src/attrib.c:595
+#: src/attrib.c:599
 msgid	"#  sigfile=STRING (ie. $var/sig)\n"
 msgstr	"#  sigfile=STRING\n"
 	"#    Signatur, z.B. $var/sig\n"
 
-#: src/attrib.c:596
+#: src/attrib.c:600
 msgid	"#  organization=STRING (if beginning with '/' read from file)\n"
 msgstr	"#  organization=STRING\n"
 	"#    Organization-Header; ist das erste Zeichen ein '/', wird der\n"
 	"#    Wert aus dieser Datei gelesen.\n"
 
-#: src/attrib.c:597
+#: src/attrib.c:601
 msgid	"#  followup_to=STRING\n"
 msgstr	"#  followup_to=STRING\n"
 	"#    Voreinstellung für den Followup-To-Header\n"
 
-#: src/attrib.c:598
+#: src/attrib.c:602
 msgid	"#  mailing_list=STRING (ie. majordomo@example.org)\n"
 msgstr	"#  mailing_list=STRING\n"
 	"#    Gruppe ist eine gegatete Mailingliste, z.B. majordomo@example.org\n"
 
-#: src/attrib.c:599
+#: src/attrib.c:603
 msgid	"#  x_headers=STRING (ie. ~/.tin/extra-headers)\n"
 msgstr	"#  x_headers=STRING\n"
 	"#    Zusätzliche Header, z.B. ~/.tin/extra-headers\n"
 
-#: src/attrib.c:600
+#: src/attrib.c:604
 msgid	"#  x_body=STRING (ie. ~/.tin/extra-body-text)\n"
 msgstr	"#  x_body=STRING\n"
 	"#    Text wird automatisch zu Beginn des Artikels eingefügt,\n"
 	"#    z.B. ~/.tin/extra-body-text\n"
 
-#: src/attrib.c:601
+#: src/attrib.c:605
 msgid	"#  from=STRING (just append wanted From:-line, don't use quotes)\n"
 msgstr	"#  from=STRING\n"
 	"#    Absender, einfach den gewünschten Wert eintragen,\n"
 	"#    keine Anführungszeichen verwenden\n"
 
-#: src/attrib.c:602
+#: src/attrib.c:606
 msgid	"#  news_quote_format=STRING\n"
 msgstr	"#  news_quote_format=STRING\n"
 	"#    Einleitungszeile, z.B. news_quote_format=In %%M, %%F wrote:\n"
 
-#: src/attrib.c:603
+#: src/attrib.c:607
 msgid	"#  quote_chars=STRING (%%s, %%S for initials)\n"
 msgstr	"#  quote_chars=STRING\n"
 	"#    Zeichen für Zitate in Antworten, %%s oder %%S ergibt Autoreninitialien\n"
 
-#: src/attrib.c:604
+#: src/attrib.c:608
 msgid	"#  mime_types_to_save=STRING (eg. image/*,!image/bmp)\n"
 msgstr	"#  mime_types_to_save=STRING\n"
 	"#    z.B. image/*,!image/bmp\n"
 
-#: src/attrib.c:606
+#: src/attrib.c:610
 msgid	"#  ispell=STRING\n"
 msgstr	"#  ispell=STRING\n"
 	"#    Aufruf der Rechtschreibprüfung,\n"
 	"#    z.B. ispell -C -ddeutsch -w äöüÄÖÜß@ -Tlatin1\n"
 
-#: src/attrib.c:608
+#: src/attrib.c:612
 msgid	"#  auto_select=ON/OFF\n"
 msgstr	"#  auto_select=ON/OFF\n"
 	"#    Führe GroupMarkUnselArtRead Kommando automatisch beim Betreten\n"
 	"#    der Gruppe aus\n"
 
-#: src/attrib.c:609
+#: src/attrib.c:613
 msgid	"#  auto_save=ON/OFF\n"
 msgstr	"#  auto_save=ON/OFF\n"
 	"#    Artikel mit 'Archive-name:'-Header automatisch in die darin\n"
 	"#    angegebene Datei speichern\n"
 
-#: src/attrib.c:610
+#: src/attrib.c:614
 msgid	"#  batch_save=ON/OFF\n"
 msgstr	"#  batch_save=ON/OFF\n"
 	"#    Im Batch-Modus werden die Article beachtet\n"
 
-#: src/attrib.c:611
+#: src/attrib.c:615
 msgid	"#  delete_tmp_files=ON/OFF\n"
 msgstr	"#  delete_tmp_files=ON/OFF\n"
 	"#    Gespeicherte, zur Nachbearbeitung weitergegebene Artikel ohne\n"
 	"#    Nachfrage löschen\n"
 
-#: src/attrib.c:612
+#: src/attrib.c:616
 msgid	"#  show_only_unread=ON/OFF\n"
 msgstr	"#  show_only_unread=ON/OFF\n"
 	"#    nur ungelesene Artikel anzeigen\n"
 
-#: src/attrib.c:613
+#: src/attrib.c:617
 msgid	"#  thread_arts=NUM"
 msgstr	"#  thread_arts=ZAHL\n"
 	"#    Threading nach:"
 
-#: src/attrib.c:620
+#: src/attrib.c:624
 msgid	"#  show_author=NUM\n"
 msgstr	"#  show_author=ZAHL\n"
 	"#    Anzeige des From-Felds\n"
 
-#: src/attrib.c:626
+#: src/attrib.c:630
 msgid	"#  show_info=NUM\n"
 msgstr	"#  show_info=ZAHL\n"
 
-#: src/attrib.c:632
+#: src/attrib.c:636
 msgid	"#  sort_art_type=NUM\n"
 msgstr	"#  sort_art_type=ZAHL\n"
 	"#    Artikel sortieren nach:\n"
 
-#: src/attrib.c:650
+#: src/attrib.c:654
 msgid	"#  sort_threads_type=NUM\n"
 msgstr	"#  sort_threads_type=ZAHL\n"
 	"#    Threads sortieren nach:\n"
 
-#: src/attrib.c:655
+#: src/attrib.c:659
 msgid	"#  post_proc_type=NUM\n"
 msgstr	"#  post_proc_type=ZAHL\n"
 	"#    Nachbearbeitung\n"
 
-#: src/attrib.c:660
+#: src/attrib.c:664
 msgid	"#  quick_kill_scope=STRING (ie. talk.*)\n"
 msgstr	"#  quick_kill_scope=STRING\n"
 	"#    Voreinstellung für Gültigkeitsbereich neuer Kill-Einträge,\n"
 	"#    z.B. talk.*\n"
 
-#: src/attrib.c:661
+#: src/attrib.c:665
 msgid	"#  quick_kill_expire=ON/OFF\n"
 msgstr	"#  quick_kill_expire=ON/OFF\n"
 	"#    Kill verfällt automatisch\n"
 
-#: src/attrib.c:662
+#: src/attrib.c:666
 msgid	"#  quick_kill_case=ON/OFF\n"
 msgstr	"#  quick_kill_case=ON/OFF\n"
 	"#    Kill beachtet Gross/Kleinschreibung\n"
 
-#: src/attrib.c:663
+#: src/attrib.c:667
 msgid	"#  quick_kill_header=NUM\n"
 msgstr	"#  quick_kill_header=ZAHL\n"
 	"#    Killen nach:\n"
 
-#: src/attrib.c:664 src/attrib.c:671
+#: src/attrib.c:668 src/attrib.c:675
 msgid	"#    0=subj (case sensitive) 1=subj (ignore case)\n"
 msgstr	"#    0=Subject (Gross/Kleinschreibung beachten), 1=Subject (G/K ignorieren)\n"
 
-#: src/attrib.c:665 src/attrib.c:672
+#: src/attrib.c:669 src/attrib.c:676
 msgid	"#    2=from (case sensitive) 3=from (ignore case)\n"
 msgstr	"#    2=From (G/K beachten), 3=From (G/K ignorieren)\n"
 
-#: src/attrib.c:666 src/attrib.c:673
+#: src/attrib.c:670 src/attrib.c:677
 msgid	"#    4=msgid 5=lines\n"
 msgstr	"#    4=Message-ID, 5=Zeilen\n"
 
-#: src/attrib.c:667
+#: src/attrib.c:671
 msgid	"#  quick_select_scope=STRING\n"
 msgstr	"#  quick_select_scope=STRING\n"
 	"#    Voreinstellung für Gültigkeitsbereich neuer Auswahlregeln (Hochscoren)\n"
 
-#: src/attrib.c:668
+#: src/attrib.c:672
 msgid	"#  quick_select_expire=ON/OFF\n"
 msgstr	"#  quick_select_expire=ON/OFF\n"
 	"#    Regel verfällt automatisch\n"
 
-#: src/attrib.c:669
+#: src/attrib.c:673
 msgid	"#  quick_select_case=ON/OFF\n"
 msgstr	"#  quick_select_case=ON/OFF\n"
 	"#    Regel beachtet Gross/Kleinschreibung\n"
 
-#: src/attrib.c:670
+#: src/attrib.c:674
 msgid	"#  quick_select_header=NUM\n"
 msgstr	"#  quick_select_header=NUM\n"
 	"#    Auswählen (Hochscoren) nach:\n"
 
-#: src/attrib.c:674
+#: src/attrib.c:678
 msgid	"#  x_comment_to=ON/OFF\n"
 msgstr	"#  x_comment_to=ON/OFF\n"
 	"#    X-Comment-To:-Header einfügen.\n"
 	"#    (Nur sinnvoll in nach Fido Technology Network gegateten Gruppen.)\n"
 
-#: src/attrib.c:675
+#: src/attrib.c:679
 msgid	"#  fcc=STRING (eg. =mailbox)\n"
 msgstr	"#  fcc=STRING\n"
 	"#    Datei in der eine Kopie der Mail abgelegt werden soll,#    z.B: "
 	"=mailbox\n"
 
-#: src/attrib.c:676
+#: src/attrib.c:680
 msgid	"#  tex2iso_conv=ON/OFF\n"
 msgstr	"#  tex2iso_conv=ON/OFF\n"
 	"#    Automatische Umwandlung von TeX-Umlauten\n"
 
-#: src/attrib.c:677
+#: src/attrib.c:681
 msgid	"#  mime_forward=ON/OFF\n"
 msgstr	"#  mime_forward=ON/OFF\n"
 	"#    Weitergeleitete Artikel als MIME-Anhang senden\n"
 
-#: src/attrib.c:679
+#: src/attrib.c:683
 msgid	"#  mm_network_charset=supported_charset"
 msgstr	"#  mm_network_charset=Zeichensatz\n"
 	"#    Erlaubt sind folgende:"
 
-#: src/attrib.c:686
+#: src/attrib.c:690
 msgid	"#  undeclared_charset=STRING (default is US-ASCII)\n"
 msgstr	"#  undeclared_charset=STRING\n"
 	"#    Voreinstellung ist US-ASCII\n"
 
-#: src/attrib.c:688
+#: src/attrib.c:692
 msgid	"#\n"
 	"# Note that it is best to put general (global scoping)\n"
 msgstr	"#\n"
 	"# Es empfiehlt sich, zuerst allgemein gültige und danach spezielle,\n"
 
-#: src/attrib.c:689
+#: src/attrib.c:693
 msgid	"# entries first followed by group specific entries.\n"
 	"#\n"
 msgstr	"# nur für bestimmte Newsgruppen gültige Einträge aufzuführen.\n"
 	"#\n"
 
-#: src/attrib.c:690
+#: src/attrib.c:694
 msgid	"############################################################################\n"
 	"\n"
 msgstr	"############################################################################\n"
 	"\n"
 
-#: src/attrib.c:696
+#: src/attrib.c:700
 msgid	"# include extra headers\n"
 msgstr	"# Zusätzliche Header einfügen\n"
 
-#: src/attrib.c:704
+#: src/attrib.c:708
 msgid	"# in *sources* set post process type to shar only\n"
 msgstr	"# in *sources* nur Nachbearbeitung mit shar\n"
 
-#: src/attrib.c:708
+#: src/attrib.c:712
 msgid	"# in *binaries* do full post processing, remove tmp files\n"
 msgstr	"# in *binaries* Nachbearbeitung, temporäre Dateien löschen\n"
 
-#: src/attrib.c:709
+#: src/attrib.c:713
 msgid	"# and set Followup-To: poster\n"
 msgstr	"# und Antwort per EMail (Followup-To: poster) anfordern\n"
 
@@ -641,7 +641,7 @@ msgstr	"Erzeuge die Datei 'active' für gespeicherte Gruppen...\n"
 msgid	"Creating newsrc file...\n"
 msgstr	"Erzeuge newsrc Datei...\n"
 
-#: src/lang.c:127 src/lang.c:1118
+#: src/lang.c:127 src/lang.c:1121
 msgid	"Default"
 msgstr	"Voreinstellung"
 
@@ -954,12 +954,11 @@ msgstr	"Ungültige Antwort auf GROUP-Befehl, %s"
 #: src/lang.c:201
 #, c-format
 msgid	"MIME parse error: Unexpected end of %s/%s article"
-msgstr	"Fehlerhafter %s/%s-Artikel: Unerwartetes Ende"
+msgstr	"MIME-Fehler: Unerwartetes Ende des %s/%s-Artikels"
 
-# TRANSLATION MISSING
 #: src/lang.c:202
 msgid	"MIME parse error: Start boundary whilst reading headers"
-msgstr	""
+msgstr	"MIME-Fehler: Anfangsgrenze in Hadern"
 
 #: src/lang.c:203
 msgid	"Can't get a (fully-qualified) domain-name!"
@@ -1688,7 +1687,7 @@ msgstr	"bewegt die gewählte Gruppe innerhalb der Liste"
 msgid	"choose next group with unread news"
 msgstr	"wählt die nächste Gruppe mit ungelesenen Artikeln"
 
-#: src/lang.c:384 src/lang.c:1165
+#: src/lang.c:384 src/lang.c:1168
 msgid	"quit"
 msgstr	"Beenden"
 
@@ -2591,91 +2590,96 @@ msgstr	"Lese Newsgroups-Datei... "
 msgid	"Reading newsrc file..."
 msgstr	"Lese newsrc-Datei..."
 
-#: src/lang.c:609
+#: src/lang.c:610
+#, c-format
+msgid	"(%d:%02d remaining)"
+msgstr	"(noch %d:%02d benötigt)"
+
+#: src/lang.c:612
 #, c-format
 msgid	"Bogus group %s removed."
 msgstr	"Nicht vorhandene Gruppe %s entfernt."
 
-#: src/lang.c:610
+#: src/lang.c:613
 #, c-format
 msgid	"Error: rename %s to %s"
 msgstr	"Fehler: Benenne %s in %s"
 
-#: src/lang.c:611
+#: src/lang.c:614
 msgid	"Reply to author..."
 msgstr	"Mailantwort an Autor..."
 
-#: src/lang.c:612
+#: src/lang.c:615
 msgid	"Repost"
 msgstr	"Reposte"
 
-#: src/lang.c:613
+#: src/lang.c:616
 msgid	"Reposting article..."
 msgstr	"Wiederholtes posten des Artikels..."
 
-#: src/lang.c:614
+#: src/lang.c:617
 #, c-format
 msgid	"Repost article(s) to group(s) [%s]> "
 msgstr	"Wiederholtes posten de(s|r) Artikel(s) in [%s]> "
 
-#: src/lang.c:615
+#: src/lang.c:618
 msgid	"Reset newsrc?"
 msgstr	"newsrc zurücksetzen?"
 
-#: src/lang.c:616
+#: src/lang.c:619
 msgid	"Responses have been directed to the following newsgroups"
 msgstr	"Antworten werden in folgende Gruppen gepostet"
 
-#: src/lang.c:617
+#: src/lang.c:620
 #, c-format
 msgid	"Responses have been directed to poster. %s=mail, %s=post, %s=quit: "
 msgstr	"Antwort per Mail wurde angefordert. %s=Mail, %s=post, %s=beenden: "
 
-#: src/lang.c:618
+#: src/lang.c:621
 #, c-format
 msgid	"RespNo %4d of %4d"
 msgstr	"Antw. %4d von %4d"
 
-#: src/lang.c:619
+#: src/lang.c:622
 msgid	"Press <RETURN> to continue..."
 msgstr	"Drücken sie <RETURN> um fortzufahren..."
 
-#: src/lang.c:621
+#: src/lang.c:624
 #, c-format
 msgid	"Select From    [%s] (y/n): "
 msgstr	"Wähle From     [%s] (j/n): "
 
-#: src/lang.c:622
+#: src/lang.c:625
 msgid	"Select Lines: (</>num): "
 msgstr	"Wähle Zeilen: (</>num): "
 
-#: src/lang.c:623
+#: src/lang.c:626
 msgid	"Auto-select Article Menu"
 msgstr	"Filter Menü (Bewertung/Score erhöhen)"
 
-#: src/lang.c:624
+#: src/lang.c:627
 #, c-format
 msgid	"Select Msg-Id  [%s] (f/l/o/n): "
 msgstr	"Wähle Msg-Id   [%s] (v/l/n/n): "
 
-#: src/lang.c:625
+#: src/lang.c:628
 msgid	"Select pattern scope: "
 msgstr	"Wähle Muster        : "
 
-#: src/lang.c:626
+#: src/lang.c:629
 #, c-format
 msgid	"Select Subject [%s] (y/n): "
 msgstr	"Wähle Subject  [%s] (j/n): "
 
-#: src/lang.c:627
+#: src/lang.c:630
 msgid	"Select text pattern : "
 msgstr	"Wähle Textmuster    : "
 
-#: src/lang.c:628
+#: src/lang.c:631
 msgid	"Select time in days   : "
 msgstr	"Wähle Zeit in Tagen   : "
 
-#: src/lang.c:629
+#: src/lang.c:632
 #, c-format
 msgid	"# %s server configuration file\n"
 	"# This file was automatically saved by %s %s %s (\"%s\")\n"
@@ -2695,218 +2699,218 @@ msgstr	"# %s Server Konfigurationsdatei\n"
 	"############################################################################\n"
 	"\n"
 
-#: src/lang.c:635
+#: src/lang.c:638
 msgid	"Showing unread groups only"
 msgstr	"Zeige nur Gruppen mit ungelesenen Artikeln"
 
-#: src/lang.c:636
+#: src/lang.c:639
 msgid	"Subject: line (ignore case)   "
 msgstr	"Subject: Z. (Groß-Kl. ign.)                  "
 
-#: src/lang.c:637
+#: src/lang.c:640
 msgid	"Subject: line (case sensitive)"
 msgstr	"Subject: Z. (Groß-Kl. beachten)              "
 
-#: src/lang.c:638
+#: src/lang.c:641
 msgid	"Save"
 msgstr	"Speichern"
 
-#: src/lang.c:639
+#: src/lang.c:642
 #, c-format
 msgid	"Save '%s' (%s/%s)?"
 msgstr	"'%s' (%s/%s) speichern?"
 
-#: src/lang.c:640
+#: src/lang.c:643
 msgid	"Save configuration before continuing?"
 msgstr	"Zuerst Konfiguration speichern und danach fortfahren?"
 
-#: src/lang.c:641
+#: src/lang.c:644
 msgid	"Save filename> "
 msgstr	"Name der zu speichernden Datei> "
 
-#: src/lang.c:642
+#: src/lang.c:645
 msgid	"Saved"
 msgstr	"Gespeichert"
 
-#: src/lang.c:643
+#: src/lang.c:646
 #, c-format
 msgid	"%4d unread (%4d hot) %s in %s\n"
 msgstr	"%4d ungelesene (%4d 'hot') %s in %s\n"
 
-#: src/lang.c:644
+#: src/lang.c:647
 #, c-format
 msgid	"Saved %s...\n"
 msgstr	"%s gespeichert...\n"
 
-#: src/lang.c:645
+#: src/lang.c:648
 msgid	"Nothing was saved"
 msgstr	"Nichts gespeichert"
 
-#: src/lang.c:646
+#: src/lang.c:649
 #, c-format
 msgid	"\n"
 	"%s %d %s from %d %s\n"
 msgstr	"\n"
 	"%s %d %s aus %d %s\n"
 
-#: src/lang.c:647
+#: src/lang.c:650
 #, c-format
 msgid	"-- %s saved to %s%s --"
 msgstr	"-- %s nach %s%s gespeichert --"
 
-#: src/lang.c:648
+#: src/lang.c:651
 #, c-format
 msgid	"-- %s saved to %s - %s --"
 msgstr	"-- %s gespeichert als %s - %s --"
 
-#: src/lang.c:649
+#: src/lang.c:652
 msgid	"Saving..."
 msgstr	"Speichere..."
 
-#: src/lang.c:650
+#: src/lang.c:653
 #, c-format
 msgid	"%s: Screen initialization failed"
 msgstr	"%s: Initialisierung des Bildschirms fehlgeschlagen"
 
-#: src/lang.c:651
+#: src/lang.c:654
 #, c-format
 msgid	"%s: screen is too small\n"
 msgstr	"%s: Anzeige ist zu klein\n"
 
-#: src/lang.c:652
+#: src/lang.c:655
 #, c-format
 msgid	"screen is too small, %s is exiting\n"
 msgstr	"Anzeige zu klein, %s beendet sich\n"
 
-#: src/lang.c:653
+#: src/lang.c:656
 #, c-format
 msgid	"Search backwards [%s]> "
 msgstr	"Suche rückwärts [%s]> "
 
-#: src/lang.c:654
+#: src/lang.c:657
 #, c-format
 msgid	"Search body [%s]> "
 msgstr	"Durchsuche Artikelinhalt [%s]> "
 
-#: src/lang.c:655
+#: src/lang.c:658
 #, c-format
 msgid	"Search forwards [%s]> "
 msgstr	"Suche vorwärts [%s]> "
 
-#: src/lang.c:656
+#: src/lang.c:659
 msgid	"Searching..."
 msgstr	"Suche..."
 
-#: src/lang.c:657
+#: src/lang.c:660
 #, c-format
 msgid	"Searching article %d of %d ('q' to abort)..."
 msgstr	"Suche Artikel %d von %d ('q' zum abbrechen)..."
 
-#: src/lang.c:658
+#: src/lang.c:661
 msgid	"Select article> "
 msgstr	"Wähle Artikel> "
 
-#: src/lang.c:659
+#: src/lang.c:662
 msgid	"Select option number before text or use arrow keys and <CR>. 'q' to quit."
 msgstr	"Wähle Optionsnummer, oder benutze die Cursor Tasten und <CR>. 'q' zum beenden."
 
-#: src/lang.c:660
+#: src/lang.c:663
 msgid	"Select group> "
 msgstr	"Wähle Gruppe> "
 
-#: src/lang.c:661
+#: src/lang.c:664
 #, c-format
 msgid	"Enter selection pattern [%s]> "
 msgstr	"Nenne das Auswahlmuster [%s]> "
 
-#: src/lang.c:662
+#: src/lang.c:665
 msgid	"Select thread > "
 msgstr	"Wähle thread > "
 
-#: src/lang.c:663
+#: src/lang.c:666
 #, c-format
 msgid	"%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n"
 msgstr	"%s %s %s (\"%s\") [%s]: schicken sie einen DETAILIERTEN Fehlerbericht an %s\n"
 
-#: src/lang.c:664
+#: src/lang.c:667
 msgid	"servers active-file"
 msgstr	"Die 'active' Datei des Servers"
 
-#: src/lang.c:665
+#: src/lang.c:668
 msgid	"Cannot move into new newsgroups. Subscribe first..."
 msgstr	"Kann die Newsgruppe nicht öffnen. Sie muss erst abonniert werden..."
 
-#: src/lang.c:666
+#: src/lang.c:669
 msgid	"<SPACE>"
 msgstr	"<LEERT>"
 
-#: src/lang.c:667
+#: src/lang.c:670
 #, c-format
 msgid	"Starting: (%s)"
 msgstr	"Starte: (%s)"
 
-#: src/lang.c:668
+#: src/lang.c:671
 #, c-format
 msgid	"List Thread (%d of %d)"
 msgstr	"Zeige Thread (%d von %d)"
 
-#: src/lang.c:669
+#: src/lang.c:672
 #, c-format
 msgid	"Thread (%.*s)"
 msgstr	"Thread (%.*s)"
 
-#: src/lang.c:670
+#: src/lang.c:673
 msgid	"Enter wildcard subscribe pattern> "
 msgstr	"Wildcardmuster für zu abonnierende Gruppen> "
 
-#: src/lang.c:671
+#: src/lang.c:674
 #, c-format
 msgid	"subscribed to %d groups"
 msgstr	"%d Gruppen sind abonniert"
 
-#: src/lang.c:672
+#: src/lang.c:675
 #, c-format
 msgid	"Subscribed to %s"
 msgstr	"%s wurde abonniert"
 
-#: src/lang.c:673
+#: src/lang.c:676
 msgid	"Subscribing... "
 msgstr	"Abonniere... "
 
-#: src/lang.c:674
+#: src/lang.c:677
 msgid	"Repost or supersede article(s) [%%s]? (%s/%s/%s): "
 msgstr	"Artikel erneut posten oder überschreiben [%%s]? (%s/%s/%s): "
 
-#: src/lang.c:675
+#: src/lang.c:678
 #, c-format
 msgid	"Supersede article(s) to group(s) [%s]> "
 msgstr	"Supersede (überschreibe) Artikel in den Gruppen [%s]> "
 
-#: src/lang.c:676
+#: src/lang.c:679
 msgid	"Superseding article ..."
 msgstr	"Überschreibe Artikel ..."
 
-#: src/lang.c:677
+#: src/lang.c:680
 #, c-format
 msgid	"\n"
 	"Stopped. Type 'fg' to restart %s\n"
 msgstr	"\n"
 	"Angehalten. Geben sie 'fg' ein um %s wieder zu starten\n"
 
-#: src/lang.c:679
+#: src/lang.c:682
 #, c-format
 msgid	"%d days"
 msgstr	"%d Tage"
 
-#: src/lang.c:680
+#: src/lang.c:683
 msgid	"<TAB>"
 msgstr	"<TAB>"
 
-#: src/lang.c:681
+#: src/lang.c:684
 msgid	"# Default action/prompt strings\n"
 msgstr	"# Voreingestellte Aktion/zeige Zeichenkette\n"
 
-#: src/lang.c:682
+#: src/lang.c:685
 msgid	"# Defaults for quick (1 key) kill & auto-selection filters\n"
 	"# header=NUM  0,1=Subject: 2,3=From: 4=Message-ID: & full References: line\n"
 	"#             5=Message-ID: & last References: entry only\n"
@@ -2922,261 +2926,261 @@ msgstr	"# Voreinstellung für schnellen (1 Taste) Filterregeln (Kill & Hochscoren
 	"# case=ON/OFF    ON=Filter case sensitive OFF=ignoriere case\n"
 	"# expire=ON/OFF  ON=Verfallen nach default_filter_days OFF=verfällt nie\n"
 
-#: src/lang.c:695
+#: src/lang.c:698
 msgid	"# If ON use print current subject or newsgroup description in the last line\n"
 msgstr	"# Falls ON anzeige des Subject oder des Gruppennamens in der letzten Zeile.\n"
 
-#: src/lang.c:696
+#: src/lang.c:699
 msgid	"# Host & time info used for detecting new groups (don't touch)\n"
 msgstr	"# Host & Zeit Info benutzen um neue Gruppen zu finden (nicht ändern)\n"
 
-#: src/lang.c:697
+#: src/lang.c:700
 msgid	"There is no news\n"
 msgstr	"Es gibt keine neuen Artikel\n"
 
-#: src/lang.c:698
+#: src/lang.c:701
 msgid	"Thread"
 msgstr	"Thread"
 
-#: src/lang.c:699
+#: src/lang.c:702
 msgid	"Thread Level Commands"
 msgstr	"Thread Level Kommandos"
 
-#: src/lang.c:700
+#: src/lang.c:703
 msgid	"Thread deselected"
 msgstr	"Thread nicht mehr ausgewählt"
 
-#: src/lang.c:701
+#: src/lang.c:704
 msgid	"Thread selected"
 msgstr	"Thread ausgewählt"
 
-#: src/lang.c:702
+#: src/lang.c:705
 msgid	"threads"
 msgstr	"Threads"
 
-#: src/lang.c:703
+#: src/lang.c:706
 msgid	"Thread range"
 msgstr	"Thread-Bereich"
 
-#: src/lang.c:704
+#: src/lang.c:707
 msgid	"thread"
 msgstr	"Thread"
 
-#: src/lang.c:705
+#: src/lang.c:708
 #, c-format
 msgid	"Thread %4s of %4s"
 msgstr	"Thread %4s v. %4s"
 
-#: src/lang.c:706
+#: src/lang.c:709
 msgid	"Threading articles..."
 msgstr	"Sortiere Artikel..."
 
-#: src/lang.c:707
+#: src/lang.c:710
 #, c-format
 msgid	"Toggled word highlighting %s"
 msgstr	"Wort-Hervorhebung: %s"
 
-#: src/lang.c:708
+#: src/lang.c:711
 msgid	"Toggled rot13 encoding"
 msgstr	"ROT13-Kodierung (de)aktiviert"
 
-#: src/lang.c:709
+#: src/lang.c:712
 #, c-format
 msgid	"Toggled german TeX encoding %s"
 msgstr	"Deutsche TeX-Dekodierung: %s"
 
-#: src/lang.c:710
+#: src/lang.c:713
 #, c-format
 msgid	"Toggled tab-width to %d"
 msgstr	"Tabulatorweite zu %d gewechselt"
 
-#: src/lang.c:711
+#: src/lang.c:714
 #, c-format
 msgid	"%d Trying to dotlock %s"
 msgstr	"%d Versuche %s zu dotlocken"
 
-#: src/lang.c:712
+#: src/lang.c:715
 #, c-format
 msgid	"%d Trying to lock %s"
 msgstr	"%d Versuche %s zu locken"
 
-#: src/lang.c:713
+#: src/lang.c:716
 msgid	"           h=help\n"
 msgstr	"          h=Hilfe\n"
 
-#: src/lang.c:715
+#: src/lang.c:718
 msgid	"Unlimited"
 msgstr	"Unbegrenzt"
 
-#: src/lang.c:716
+#: src/lang.c:719
 msgid	"Enter wildcard unsubscribe pattern> "
 msgstr	"Wildcardmuster für abzubestellende Gruppen> "
 
-#: src/lang.c:717
+#: src/lang.c:720
 #, c-format
 msgid	"Error decoding %s : %s"
 msgstr	"Fehler beim Dekodieren von %s : %s"
 
-#: src/lang.c:718
+#: src/lang.c:721
 msgid	"No end."
 msgstr	"Kein Ende."
 
-#: src/lang.c:719
+#: src/lang.c:722
 #, c-format
 msgid	"%s successfully decoded."
 msgstr	"%s erfolgreich dekodiert"
 
-#: src/lang.c:720
+#: src/lang.c:723
 #, c-format
 msgid	"%*s[-- %s/%s, %suuencoded file, %d lines, name: %s --]\n"
 	"\n"
 msgstr	"%*s[-- %s/%s, %suukodierte Datei, %d Zeilen, Name: %s --]\n"
 	"\n"
 
-#: src/lang.c:721
+#: src/lang.c:724
 msgid	"unread "
 msgstr	"ungelesen "
 
-#: src/lang.c:722
+#: src/lang.c:725
 #, c-format
 msgid	"unsubscribed from %d groups"
 msgstr	"%d Gruppen abbestellt"
 
-#: src/lang.c:723
+#: src/lang.c:726
 #, c-format
 msgid	"Unsubscribed from %s"
 msgstr	"%s wurde abbestellt"
 
-#: src/lang.c:724
+#: src/lang.c:727
 msgid	"Unsubscribing... "
 msgstr	"Abbestellen... "
 
-#: src/lang.c:725
+#: src/lang.c:728
 msgid	"Unthreading articles..."
 msgstr	"Aktuelle Sortierung der Artikel aufheben..."
 
-#: src/lang.c:726
+#: src/lang.c:729
 msgid	"Updated"
 msgstr	"Aktualisiert"
 
-#: src/lang.c:727
+#: src/lang.c:730
 msgid	"Updating"
 msgstr	"Aktualisiere"
 
-#: src/lang.c:728
+#: src/lang.c:731
 #, c-format
 msgid	"Opening %s\n"
 msgstr	"Öffne %s\n"
 
-#: src/lang.c:729
+#: src/lang.c:732
 msgid	"No more URL's in this article"
 msgstr	"Keine weiteren URLs im Artikel"
 
-#: src/lang.c:730
+#: src/lang.c:733
 msgid	"Use MIME display program for this message?"
 msgstr	"MIME-Anzeigeprogramm für diese Nachricht benutzen?"
 
-#: src/lang.c:731
+#: src/lang.c:734
 msgid	"  -c       mark all news as read in subscribed newsgroups (batch mode)"
 msgstr	"  -c       Markiere Artikel gelesen in den abonnierten Gruppen (Batch-Modus)"
 
-#: src/lang.c:732
+#: src/lang.c:735
 msgid	"  -Z       return status indicating if any unread news (batch mode)"
 msgstr	"  -Z       Rückgabewert zeigt, ob ungelesene Artikel vorliegen (Batch-Modus)"
 
-#: src/lang.c:733
+#: src/lang.c:736
 msgid	"  -q       don't check for new newsgroups"
 msgstr	"  -q       Überprüfe nicht auf neue Newsgruppen"
 
-#: src/lang.c:734
+#: src/lang.c:737
 msgid	"  -X       don't save any files on quit"
 msgstr	"  -X       Speicher keine Dateien beim Beenden"
 
-#: src/lang.c:735
+#: src/lang.c:738
 msgid	"  -d       don't show newsgroup descriptions"
 msgstr	"  -d       Zeige keine Newsgruppenbeschreibungen"
 
-#: src/lang.c:736
+#: src/lang.c:739
 msgid	"  -G limit get only limit articles/group"
 msgstr	"  -G limit Hole nur 'limit' Artikel pro Newsgruppe"
 
-#: src/lang.c:737
+#: src/lang.c:740
 #, c-format
 msgid	"  -H       help information about %s"
 msgstr	"  -H       Hilfe und Informationen über %s"
 
-#: src/lang.c:738
+#: src/lang.c:741
 msgid	"  -h       this help message"
 msgstr	"  -h       Diese Hilfeseite"
 
-#: src/lang.c:739
+#: src/lang.c:742
 #, c-format
 msgid	"  -I dir   news index file directory [default=%s]"
 msgstr	"  -I Verz. Verzeichnis für Artikel-Index-Datei [Standard=%s]"
 
-#: src/lang.c:740
+#: src/lang.c:743
 msgid	"  -u       update index files (batch mode)"
 msgstr	"  -u       Erneuere Index-Dateien (Batch-Modus)"
 
-#: src/lang.c:741
+#: src/lang.c:744
 #, c-format
 msgid	"  -m dir   mailbox directory [default=%s]"
 msgstr	"  -m Verz. Mailbox-Verzeichnis [Standard=%s]"
 
-#: src/lang.c:742
+#: src/lang.c:745
 #, c-format
 msgid	"\n"
 	"Mail bug reports/comments to %s"
 msgstr	"\n"
 	"Schicken Sie Fehlerberichte/Kommentare an %s"
 
-#: src/lang.c:743
+#: src/lang.c:746
 msgid	"  -N       mail new news to your posts (batch mode)"
 msgstr	"  -N       Maile neue Artikel an sich selbst (Batch-Modus)"
 
-#: src/lang.c:744
+#: src/lang.c:747
 msgid	"  -M user  mail new news to specified user (batch mode)"
 msgstr	"  -M user  Maile neue News-Artikel an 'user' (Batch-Modus)"
 
-#: src/lang.c:745
+#: src/lang.c:748
 #, c-format
 msgid	"  -f file  subscribed to newsgroups file [default=%s]"
 msgstr	"  -f Datei 'Datei' als .newsrc-Datei nutzen [Standard=%s]"
 
-#: src/lang.c:746
+#: src/lang.c:749
 msgid	"  -x       no posting mode"
 msgstr	"  -x       Posten nicht erlaubt Modus"
 
-#: src/lang.c:747
+#: src/lang.c:750
 msgid	"  -w       post an article and exit"
 msgstr	"  -w       Postet einen Artikel und beendet tin"
 
-#: src/lang.c:748
+#: src/lang.c:751
 msgid	"  -o       post all postponed articles and exit"
 msgstr	"  -o       Postet alle zurückgelegten Artikel und beendet tin"
 
-#: src/lang.c:749
+#: src/lang.c:752
 msgid	"  -r       read news remotely from default NNTP server"
 msgstr	"  -r       Lese Artikel vom Standard-NNTP-Server"
 
-#: src/lang.c:750
+#: src/lang.c:753
 msgid	"  -R       read news saved by -S option"
 msgstr	"  -R       Lese Artikel, die durch -S gespeichert wurden"
 
-#: src/lang.c:751
+#: src/lang.c:754
 #, c-format
 msgid	"  -s dir   save news directory [default=%s]"
 msgstr	"  -s Verz. Verzeichnis zum News-Speichern [Standard=%s]"
 
-#: src/lang.c:752
+#: src/lang.c:755
 msgid	"  -S       save new news for later reading (batch mode)"
 msgstr	"  -S       Speichere Artikel für das spätere Lesen (Batch-Modus)"
 
-#: src/lang.c:753
+#: src/lang.c:756
 msgid	"  -z       start if any unread news"
 msgstr	"  -z       Starte, wenn ungelesene Artikel vorliegen"
 
-#: src/lang.c:754
+#: src/lang.c:757
 #, c-format
 msgid	"A Usenet reader.\n"
 	"\n"
@@ -3185,37 +3189,37 @@ msgstr	"Ein Usenet-Client.\n"
 	"\n"
 	"Syntax: %s [Optionen] [Newsgruppe[,...]]"
 
-#: src/lang.c:755
+#: src/lang.c:758
 msgid	"  -v       verbose output for batch mode options"
 msgstr	"  -v       Ausführliche Ausgabe für Batch-Modus-Optionen"
 
-#: src/lang.c:756
+#: src/lang.c:759
 msgid	"  -V       print version & date information"
 msgstr	"  -V       Gebe Versions- und Datumsinformationen aus"
 
-#: src/lang.c:757
+#: src/lang.c:760
 #, c-format
 msgid	"%s only useful without batch mode operations\n"
 msgstr	"%s ist nur sinnvoll ohne Batchmodeoperationen\n"
 
-#: src/lang.c:758
+#: src/lang.c:761
 #, c-format
 msgid	"%s only useful for batch mode operations\n"
 msgstr	"%s ist nur sinnvoll für Batchmodeoperationen\n"
 
-#: src/lang.c:760
+#: src/lang.c:763
 #, c-format
 msgid	"\n"
 	"%s%d out of range (0 - %d). Reset to 0"
 msgstr	"\n"
 	"%s%d ist außerhalb der Grenzen (0 - %d). Zurücksetzen auf 0"
 
-#: src/lang.c:761
+#: src/lang.c:764
 #, c-format
 msgid	"View '%s' (%s/%s)?"
 msgstr	"'%s' (%s/%s) anzeigen?"
 
-#: src/lang.c:763
+#: src/lang.c:766
 #, c-format
 msgid	"\n"
 	"Warning: posting exceeds %d columns. Line %d is the first long one:\n"
@@ -3224,26 +3228,26 @@ msgstr	"\n"
 	"Warnung: Artikel überschreitet %d Spalten. Zeile %d ist die erste lange:\n"
 	"%-100s\n"
 
-#: src/lang.c:764
+#: src/lang.c:767
 msgid	"\n"
 	"Warning: article unchanged after editing\n"
 msgstr	"\n"
 	"Warnung: Artikel wurde im Editor nicht verändert\n"
 
-#: src/lang.c:765
+#: src/lang.c:768
 msgid	"\n"
 	"Warning: \"Subject:\" contains only whitespaces.\n"
 msgstr	"\n"
 	"Warnung: \"Subject:\" enthält nur Leerzeichen.\n"
 
-#: src/lang.c:766
+#: src/lang.c:769
 msgid	"\n"
 	"Warning: \"Subject:\" begins with \"Re: \" but there are no \"References:\".\n"
 msgstr	"\n"
 	"Warnung: \"Subject:\" beginnt mit \"Re: \", aber es gibt keine "
 	"\"References:\".\n"
 
-#: src/lang.c:768
+#: src/lang.c:771
 msgid	"\n"
 	"Warning: Article has \"References:\" but \"Subject:\" does not begin\n"
 	"         with \"Re: \" and does not contain \"(was:\".\n"
@@ -3251,7 +3255,7 @@ msgstr	"\n"
 	"Warnung: Artikel hat \"References:\" aber \"Subject:\" beginnt nicht\n"
 	"         mit \"Re: \" and enthält auch kein \"(was:\".\n"
 
-#: src/lang.c:771
+#: src/lang.c:774
 msgid	"Read carefully!\n"
 	"\n"
 	"  You are about to cancel an article seemingly written by you. This will "
@@ -3271,7 +3275,7 @@ msgstr	"Sorgfältig lesen!\n"
 	"Das ist der Artikel, den sie canceln (löschen) wollen:\n"
 	"\n"
 
-#: src/lang.c:775
+#: src/lang.c:778
 msgid	"\n"
 	"Warning: You are using a non-plain transfer encoding (such as base64 or\n"
 	"         quoted-printable) and an external inews program to submit your\n"
@@ -3283,7 +3287,7 @@ msgstr	"\n"
 	"         Artikel zu übertragen. Falls durch diesen inews eine Signatur\n"
 	"         angehängt wird, so kann diese nicht korrekt kodiert werden.\n"
 
-#: src/lang.c:780
+#: src/lang.c:783
 #, c-format
 msgid	"\n"
 	"\n"
@@ -3296,7 +3300,7 @@ msgstr	"\n"
 	"Einige Einstellungen in Ihrem %s-File haben sich geändert!\n"
 	"Lesen sie \"WHATSNEW\", usw....\n"
 
-#: src/lang.c:782
+#: src/lang.c:785
 #, c-format
 msgid	"\n"
 	"\n"
@@ -3308,7 +3312,7 @@ msgstr	"\n"
 	"Evtl. werden Einstellungen in Ihrem %s-File nicht erkannt\n"
 	"oder ändern sich!\n"
 
-#: src/lang.c:785
+#: src/lang.c:788
 #, c-format
 msgid	"Warning: tin wrote fewer groups to your\n"
 	"\t%s\n"
@@ -3321,19 +3325,19 @@ msgstr	"Warnung: tin hat weniger Gruppen in ihre\n"
 	"währenddessen abbestellt haben, ist ein Fehler aufgetreten und Sie sollten\n"
 	"ihre %s wiederherstellen, bevor Sie tin nochmal starten!\n"
 
-#: src/lang.c:789
+#: src/lang.c:792
 #, c-format
 msgid	"\n"
 	"Warning: Found %d '-- \\n' lines, this may confuse some people.\n"
 msgstr	"\n"
 	"Warnung: Es gibt %d '-- \\n' Zeilen. Das könnte einige Leute verwirren.\n"
 
-#: src/lang.c:790
+#: src/lang.c:793
 #, c-format
 msgid	"Warning: Only %d out of %d articles were saved"
 msgstr	"Warnung: Nur %d von %d Artikeln gespeichert"
 
-#: src/lang.c:791
+#: src/lang.c:794
 #, c-format
 msgid	"\n"
 	"Warning: Your signature  is longer than %d lines.  Since signatures usually "
@@ -3347,48 +3351,48 @@ msgstr	"\n"
 	"         nützlichen Informationen enthalten, sollten sie so kurz wie möglich\n"
 	"         gehalten werden.\n"
 
-#: src/lang.c:795
+#: src/lang.c:798
 #, c-format
 msgid	"Warning: this mail address may contain a spamtrap. %s=continue, %s=abort? "
 msgstr	"Warnung: E-Mailadr. evtl. verfälscht (Spamfalle). %s=weiter, %s=Abbruch? "
 
-#: src/lang.c:796
+#: src/lang.c:799
 msgid	"\n"
 	"Warning: Signatures should start with '-- \\n' not with '--\\n'.\n"
 msgstr	"\n"
 	"Warnung: Signaturen sollten mit '-- \\n' und nicht mit '--\\n' beginnen.\n"
 
-#: src/lang.c:797
+#: src/lang.c:800
 msgid	"Writing attributes file..."
 msgstr	"Schreibe Datei mit den Eigenschaften der Newsgruppen..."
 
-#: src/lang.c:799
+#: src/lang.c:802
 #, c-format
 msgid	"%d Responses"
 msgstr	"%d Antworten"
 
-#: src/lang.c:801
+#: src/lang.c:804
 #, c-format
 msgid	"Added %d %s"
 msgstr	"%d %s hinzugefügt"
 
-#: src/lang.c:802
+#: src/lang.c:805
 msgid	"No unsubscribed groups to show"
 msgstr	"Keine nicht abonnierte Gruppen gefunden"
 
-#: src/lang.c:803
+#: src/lang.c:806
 msgid	"Showing subscribed to groups only"
 msgstr	"Zeige nur abonnierte Gruppen"
 
-#: src/lang.c:804
+#: src/lang.c:807
 msgid	"Yes "
 msgstr	"Ja  "
 
-#: src/lang.c:805
+#: src/lang.c:808
 msgid	"    You have mail\n"
 msgstr	"   Sie haben Mail\n"
 
-#: src/lang.c:810
+#: src/lang.c:813
 #, c-format
 msgid	"\n"
 	"Warning: Posting is in %s and contains characters which are not\n"
@@ -3407,16 +3411,16 @@ msgstr	"\n"
 	"         entfernen oder MM_NETWORK_CHARSET im M)neu auf einen\n"
 	"         passenderen Wert setzen.\n"
 
-#: src/lang.c:821
+#: src/lang.c:824
 #, c-format
 msgid	"Redefined key %s '%s' -> '%s'\n"
 msgstr	"Neubelegung %s '%s' -> '%s'\n"
 
-#: src/lang.c:822
+#: src/lang.c:825
 msgid	"  -D       debug mode 1=NNTP 2=ALL"
 msgstr	"  -D       Debug-Modus 1=NNTP 2=ALLES"
 
-#: src/lang.c:826
+#: src/lang.c:829
 msgid	"Read carefully!\n"
 	"\n"
 	"  You are about to cancel an article seemingly not written by you.  This "
@@ -3442,11 +3446,11 @@ msgstr	"Sorgfältig lesen!\n"
 	"Dies ist der Artikel, den Sie canceln (löschen) wollen:\n"
 	"\n"
 
-#: src/lang.c:835
+#: src/lang.c:838
 msgid	"toggle color"
 msgstr	"Farben ein/aus"
 
-#: src/lang.c:836
+#: src/lang.c:839
 msgid	"# For color-adjust use the following numbers\n"
 	"#  0-black       1-red         2-green        3-brown\n"
 	"#  4-blue        5-pink        6-cyan         7-white\n"
@@ -3465,352 +3469,352 @@ msgstr	"# Für die Farbanpassung benutzen Sie folgende Nummern\n"
 	"# Eine '-1' wird als Voreinstellung interpretiert (der Vordergrund ist\n"
 	"# normalerweise weiß und der Hintergrund schwarz)\n"
 
-#: src/lang.c:844
+#: src/lang.c:847
 msgid	"  -a       toggle color flag"
 msgstr	"  -a       Farbe ein- oder ausschalten"
 
-#: src/lang.c:848
+#: src/lang.c:851
 msgid	"\n"
 	"Error: Followup-To set to more than one newsgroup!\n"
 msgstr	"\n"
 	"Fehler: Followup-To auf mehr als eine Newsgruppe gesetzt!\n"
 
-#: src/lang.c:849
+#: src/lang.c:852
 #, c-format
 msgid	"\n"
 	"Error: cross-posting to %d newsgroups and no Followup-To line!\n"
 msgstr	"\n"
 	"Fehler: Crossposting in %d Newsgruppen und kein Followup-To gesetzt!\n"
 
-#: src/lang.c:850
+#: src/lang.c:853
 #, c-format
 msgid	"\n"
 	"Error: \"%s\" is not a valid newsgroup!\n"
 msgstr	"\n"
 	"Fehler: \"%s\" ist keine gültige Newsgruppe!\n"
 
-#: src/lang.c:852
+#: src/lang.c:855
 msgid	"\n"
 	"Warning: Followup-To set to more than one newsgroup!\n"
 msgstr	"\n"
 	"Warnung: Followup-To in mehr als eine Newsgruppe gesetzt!\n"
 
-#: src/lang.c:853
+#: src/lang.c:856
 #, c-format
 msgid	"\n"
 	"Warning: cross-posting to %d newsgroups and no Followup-To line!\n"
 msgstr	"\n"
 	"Warnung: Crossposting in %d Newsgruppen und kein Followup-To gesetzt!\n"
 
-#: src/lang.c:854
+#: src/lang.c:857
 #, c-format
 msgid	"\n"
 	"Warning: \"%s\" is not in your newsrc, it may be invalid at this site!\n"
 msgstr	"\n"
 	"Warnung: \"%s\" ist nicht in Ihrer newsrc, sie könnte ungültig sein!\n"
 
-#: src/lang.c:855
+#: src/lang.c:858
 #, c-format
 msgid	"\n"
 	"Warning: \"%s\" is not a valid newsgroup at this site!\n"
 msgstr	"\n"
 	"Warnung: \"%s\" ist keine gültige Newsgruppe auf diesem Server!\n"
 
-#: src/lang.c:859
+#: src/lang.c:862
 #, c-format
 msgid	"%d files successfully written from %d articles. %d %s occurred."
 msgstr	"%d Dateien aus %d Artikeln erfolgreich geschrieben. %d %s traten auf"
 
-#: src/lang.c:860
+#: src/lang.c:863
 msgid	"Missing parts."
 msgstr	"Teile fehlen."
 
-#: src/lang.c:861
+#: src/lang.c:864
 msgid	"No beginning."
 msgstr	"Kein Anfang."
 
-#: src/lang.c:862
+#: src/lang.c:865
 msgid	"No data."
 msgstr	"Keine Daten."
 
-#: src/lang.c:863
+#: src/lang.c:866
 msgid	"Unknown error."
 msgstr	"Unbekannter Fehler."
 
-#: src/lang.c:865
+#: src/lang.c:868
 #, c-format
 msgid	"\tChecksum of %s (%ld %s)"
 msgstr	"\tPrüfsumme für %s (%ld %s)"
 
-#: src/lang.c:869
+#: src/lang.c:872
 msgid	"Reading mail active file... "
 msgstr	"Lese EMail-Active-Datei... "
 
-#: src/lang.c:870
+#: src/lang.c:873
 msgid	"Reading mailgroups file... "
 msgstr	"Lese Mailgruppen-Datei... "
 
-#: src/lang.c:874
+#: src/lang.c:877
 msgid	"perform PGP operations on article"
 msgstr	"wendet PGP auf den Artikel an"
 
-#: src/lang.c:875
+#: src/lang.c:878
 msgid	"Add key(s) to public keyring?"
 msgstr	"Schlüssel dem Öffentlichen Schlüsselring hinzufügen?"
 
-#: src/lang.c:876
+#: src/lang.c:879
 #, c-format
 msgid	"%s=encrypt, %s=sign, %s=both, %s=quit: "
 msgstr	"%s=verschlüsseln, %s=signieren, %s=beides, %s=Ende: "
 
-#: src/lang.c:877
+#: src/lang.c:880
 #, c-format
 msgid	"%s=sign, %s=sign & include public key, %s=quit: "
 msgstr	"%s=signiere, %s=signiere & füge öffentl. Schlüssel hinzu, %s=Ende: "
 
-#: src/lang.c:878
+#: src/lang.c:881
 #, c-format
 msgid	"PGP has not been set up (can't open %s)"
 msgstr	"PGP Wurde nicht konfiguriert (kann %s nicht öffnen)"
 
-#: src/lang.c:879
+#: src/lang.c:882
 msgid	"Article not signed and no public keys found"
 msgstr	"Artikel ist nicht signiert; keine öffentlichen Schlüssel gefunden"
 
-#: src/lang.c:881
+#: src/lang.c:884
 #, c-format
 msgid	"%s=quit, %s=edit, %s=ispell, %s=pgp, %s=menu, %s=post, %s=postpone: "
 msgstr	"%s=Ende, %s=bearbeiten, %s=ispell, %s=pgp, %s=Menu, %s=posten, "
 	"%s=zurücklegen: "
 
-#: src/lang.c:882
+#: src/lang.c:885
 msgid	"%s=quit, %s=edit, %s=ispell, %s=pgp, %s=send [%%s]: "
 msgstr	"%s=Ende, %s=bearbeiten, %s=ispell, %s=pgp, %s=verschicken [%%s]: "
 
-#: src/lang.c:883
+#: src/lang.c:886
 msgid	"%s=quit, %s=edit, %s=ispell, %s=pgp, %s=menu, %s=post, %s=postpone [%%s]: "
 msgstr	"%s=Ende, %s=bearbeiten, %s=ispell, %s=pgp, %s=Menu, %s=posten, %s=zurücklegen "
 	"[%%s]: "
 
-#: src/lang.c:885
+#: src/lang.c:888
 #, c-format
 msgid	"%s=quit, %s=edit, %s=pgp, %s=menu, %s=post, %s=postpone: "
 msgstr	"%s=Ende, %s=bearbeiten, %s=pgp, %s=Menu, %s=posten, %s=zurücklegen: "
 
-#: src/lang.c:886
+#: src/lang.c:889
 msgid	"%s=quit, %s=edit, %s=pgp, %s=send [%%s]: "
 msgstr	"%s=Ende, %s=bearbeiten, %s=pgp, %s=verschicken [%%s]: "
 
-#: src/lang.c:887
+#: src/lang.c:890
 msgid	"%s=quit, %s=edit, %s=pgp, %s=menu, %s=post, %s=postpone [%%s]: "
 msgstr	"%s=Ende, %s=bearbeiten, %s=pgp, %s=Menu, %s=posten, %s=zurücklegen [%%s]: "
 
-#: src/lang.c:891
+#: src/lang.c:894
 #, c-format
 msgid	"%s=quit, %s=edit, %s=ispell, %s=menu, %s=post, %s=postpone: "
 msgstr	"%s=Ende, %s=bearbeiten, %s=ispell, %s=Menü, %s=posten, %s=zurücklegen: "
 
-#: src/lang.c:892
+#: src/lang.c:895
 msgid	"%s=quit, %s=edit, %s=ispell, %s=send [%%s]: "
 msgstr	"%s=Ende, %s=bearbeiten, %s=ispell, %s=verschicken [%%s]: "
 
-#: src/lang.c:893
+#: src/lang.c:896
 msgid	"%s=quit, %s=edit, %s=ispell, %s=menu, %s=post, %s=postpone [%%s]: "
 msgstr	"%s=Ende, %s=bearbeiten, %s=ispell, %s=Menü, %s=post, %s=Zurückl. [%%s]: "
 
-#: src/lang.c:895
+#: src/lang.c:898
 #, c-format
 msgid	"%s=quit, %s=edit, %s=menu, %s=post, %s=postpone: "
 msgstr	"%s=Ende, %s=bearbeiten, %s=Menu, %s=posten, %s=zurücklegen: "
 
-#: src/lang.c:896
+#: src/lang.c:899
 msgid	"%s=quit, %s=edit, %s=send [%%s]: "
 msgstr	"%s=Ende, %s=bearbeiten, %s=verschicken [%%s]: "
 
-#: src/lang.c:897
+#: src/lang.c:900
 msgid	"%s=quit, %s=edit, %s=menu, %s=post, %s=postpone [%%s]: "
 msgstr	"%s=Ende, %s=bearbeiten, %s=Menü, %s=posten, %s=zurücklegen [%%s]: "
 
-#: src/lang.c:906
+#: src/lang.c:909
 msgid	"Try cache_overview_files to speed up things.\n"
 msgstr	"Setze cache_overview_files um das lesen zu beschleubigen.\n"
 
-#: src/lang.c:907
+#: src/lang.c:910
 msgid	"Tin will use local index files instead.\n"
 msgstr	"Tin wird lokale index files benutzen.\n"
 
-#: src/lang.c:908
+#: src/lang.c:911
 msgid	"Cannot find NNTP server name"
 msgstr	"Kann den Namen des NNTP Servers nicht finden"
 
-#: src/lang.c:909
+#: src/lang.c:912
 #, c-format
 msgid	"Connecting to %s:%d..."
 msgstr	"Verbinde mit %s:%d..."
 
-#: src/lang.c:910
+#: src/lang.c:913
 msgid	"Disconnecting from server...\n"
 msgstr	"Trenne Verbindung zum Server...\n"
 
-#: src/lang.c:911
+#: src/lang.c:914
 #, c-format
 msgid	"Wrong newsgroup name in response of GROUP command, %s for %s"
 msgstr	"Falsche Newsgruppe in Antwort auf GROUP-Befehl, %s statt %s"
 
-#: src/lang.c:912
+#: src/lang.c:915
 #, c-format
 msgid	"Failed to connect to NNTP server %s. Exiting..."
 msgstr	"Konnte nicht zum NNTP Server %s verbinden. Beende..."
 
-#: src/lang.c:913
+#: src/lang.c:916
 msgid	"205  Closing connection"
 msgstr	"205  Schließe Verbindung"
 
-#: src/lang.c:914
+#: src/lang.c:917
 msgid	"Your server does not support the NNTP XOVER or OVER command.\n"
 msgstr	"Ihr Server unterstützt kein NNTP XOVER oder OVER Kommando.\n"
 
-#: src/lang.c:915
+#: src/lang.c:918
 msgid	"Connection to news server has timed out. Reconnect?"
 msgstr	"Die Verbindung zum Newsserver wurde unterbrochen. Wieder verbinden?"
 
-#: src/lang.c:916
+#: src/lang.c:919
 #, c-format
 msgid	"Put the server name in the file %s,\n"
 	"or set the environment variable NNTPSERVER"
 msgstr	"Schreiben Sie den Servernamen in die Datei %s,\n"
 	"oder setzen Sie die Umgebungsvariable NNTPSERVER"
 
-#: src/lang.c:917
+#: src/lang.c:920
 msgid	"  -A       force authentication on connect"
 msgstr	"  -A       Erzwinge Anmeldung bei Verbindung"
 
-#: src/lang.c:918
+#: src/lang.c:921
 #, c-format
 msgid	"  -g serv  read news from NNTP server serv [default=%s]"
 msgstr	"  -g serv  Lese Artikel vom NNTP-Server 'serv' [Standard=%s]"
 
-#: src/lang.c:919
+#: src/lang.c:922
 #, c-format
 msgid	"  -p port  use port as NNTP port [default=%d]"
 msgstr	"  -p port  Benutze 'port' als NNTP-Port [Standard=%d]"
 
-#: src/lang.c:920
+#: src/lang.c:923
 msgid	"  -Q       quick start. Same as -nqd"
 msgstr	"  -Q       Schnellstart. Das Selbe wie -nqd"
 
-#: src/lang.c:921
+#: src/lang.c:924
 msgid	"  -l       use only LIST instead of GROUP (-n) command"
 msgstr	"  -l       Benutze nur das LIST anstelle vom GROUP-Kommando (-n)"
 
-#: src/lang.c:922
+#: src/lang.c:925
 msgid	"  -n       only read subscribed .newsrc groups from NNTP server"
 msgstr	"  -n       Lese nur Gruppen aus der .newsrc-Datei vom NNTP-Server"
 
-#: src/lang.c:924
+#: src/lang.c:927
 #, c-format
 msgid	"%s/tcp: Unknown service.\n"
 msgstr	"%s/tcp: Unbekannter Service.\n"
 
-#: src/lang.c:927
+#: src/lang.c:930
 msgid	"\n"
 	"socket or connect problem\n"
 msgstr	"\n"
 	"Socket oder Verbindungsproblem\n"
 
-#: src/lang.c:929
+#: src/lang.c:932
 #, c-format
 msgid	"\n"
 	"Connection to %s: "
 msgstr	"\n"
 	"Verbindung mit %s: "
 
-#: src/lang.c:930
+#: src/lang.c:933
 msgid	"Giving up...\n"
 msgstr	"Gebe auf...\n"
 
-#: src/lang.c:933
+#: src/lang.c:936
 msgid	"Your server does not have Xref: in its XOVER information.\n"
 	"Tin will try to use XHDR XREF instead (slows down things a bit).\n"
 msgstr	"Ihr Server hat kein Xref: in seiner XOVER-Information.\n"
 	"Tin versucht XHDR XREF zu benutzen (verlangsamt den Prozess etwas).\n"
 
-#: src/lang.c:936
+#: src/lang.c:939
 msgid	"Your server does not have Xref: in its XOVER information.\n"
 msgstr	"Ihr Server hat kein Xref: in seiner XOVER-Information.\n"
 
-#: src/lang.c:939
+#: src/lang.c:942
 #, c-format
 msgid	"Can't open %s. Try %s -r to read news via NNTP.\n"
 msgstr	"Kann %s nicht öffnen. Probieren Sie %s -r um via NNTP zu lesen.\n"
 
-#: src/lang.c:942
+#: src/lang.c:945
 msgid	"  -Q       quick start. Same as -qd"
 msgstr	"  -Q       Schnellstart. Das Selbe wie -qd"
 
-#: src/lang.c:943
+#: src/lang.c:946
 msgid	"  -l       read only active file instead of scanning spool (-n) command"
 msgstr	"  -l       Nur active File lesen ohne den Spool zu durchsuchen (-n) Kommando"
 
-#: src/lang.c:944
+#: src/lang.c:947
 msgid	"  -n       only read subscribed .newsrc groups from spool"
 msgstr	"  -n       Lese nur Gruppen aus der .newsrc-Datei aus dem lokalen Spool"
 
-#: src/lang.c:945
+#: src/lang.c:948
 msgid	"Your server does not have Xref: in its NOV-files.\n"
 msgstr	"Ihr Server hat kein Xref: in seinern NOV-Dateien.\n"
 
-#: src/lang.c:949
+#: src/lang.c:952
 msgid	"Posting using external inews failed. Use built in inews instead?"
 msgstr	"Fehler beim Posten mit externem inews, verwende eingebautes?"
 
-#: src/lang.c:950
+#: src/lang.c:953
 msgid	"It worked! Should I always use my built in inews from now on?"
 msgstr	"Das hat funktioniert. In Zukunft immer eingebautes inews verwenden?"
 
-#: src/lang.c:958
+#: src/lang.c:961
 #, c-format
 msgid	"%d %s printed"
 msgstr	"%d %s gedruckt"
 
-#: src/lang.c:959
+#: src/lang.c:962
 msgid	"output article/thread/hot/pattern/tagged articles to printer"
 msgstr	"druckt Artikel/Thread/hervorgehobene/Muster/markierten"
 
-#: src/lang.c:960
+#: src/lang.c:963
 msgid	"Print"
 msgstr	"drucken"
 
-#: src/lang.c:961
+#: src/lang.c:964
 msgid	"Printing..."
 msgstr	"Drucke..."
 
-#: src/lang.c:965
+#: src/lang.c:968
 msgid	"pipe article/thread/hot/pattern/tagged articles into command"
 msgstr	"pipet Artikel/thread hervorgehoben/muster/markierten Artikel"
 
-#: src/lang.c:966
+#: src/lang.c:969
 msgid	"No command"
 msgstr	"Kein Kommando"
 
-#: src/lang.c:967
+#: src/lang.c:970
 msgid	"Pipe"
 msgstr	"Pipe"
 
-#: src/lang.c:968
+#: src/lang.c:971
 #, c-format
 msgid	"Pipe to command [%.*s]> "
 msgstr	"Pipen in Kommando [%.*s]> "
 
-#: src/lang.c:969
+#: src/lang.c:972
 msgid	"Piping..."
 msgstr	"Pipen..."
 
-#: src/lang.c:971
+#: src/lang.c:974
 msgid	"Piping not enabled."
 msgstr	"Pipen nicht aktiviert."
 
-#: src/lang.c:975
+#: src/lang.c:978
 #, c-format
 msgid	"\n"
 	"Error: The \"%s:\" line has spaces  in it that MUST be removed.\n"
@@ -3823,7 +3827,7 @@ msgstr	"\n"
 	"        vom Inhalt trennt. Benutzen sie ein ',' um mehrere Newsgruppen\n"
 	"        anzugeben\n"
 
-#: src/lang.c:980
+#: src/lang.c:983
 #, c-format
 msgid	"\n"
 	"Error: The \"%s:\" line is  continued in  the next line.  Since\n"
@@ -3834,7 +3838,7 @@ msgstr	"\n"
 	"        Da diese Zeile keinen leeren Raum enthalten darf, ist dies nicht\n"
 	"        erlaubt. Bitte schreiben Sie alle Newsgruppen in eine Zeile\n"
 
-#: src/lang.c:985
+#: src/lang.c:988
 #, c-format
 msgid	"\n"
 	"Warning: The \"%s:\" line is continued in the next line.\n"
@@ -3845,7 +3849,7 @@ msgstr	"\n"
 	"         Da diese Zeile keinen leeren Raum enthalten darf, ist dies nicht\n"
 	"         erlaubt. Bitte schreiben Sie alle Newsgruppen in eine Zeile.\n"
 
-#: src/lang.c:989
+#: src/lang.c:992
 #, c-format
 msgid	"\n"
 	"Warning: The \"%s:\" line has spaces in it that SHOULD be removed.\n"
@@ -3853,7 +3857,7 @@ msgstr	"\n"
 	"Warnung: Die \"%s:\" Zeile enthält Leerzeichen die entfernt\n"
 	"         werden sollten.\n"
 
-#: src/lang.c:994
+#: src/lang.c:997
 msgid	"\n"
 	"  If your article contains quoted text  please take some time to pare it "
 	"down\n"
@@ -3884,554 +3888,554 @@ msgstr	"\n"
 	"  Artikel nicht sorgfältig formatieren, ist es sehr wahrscheinlich, dass er\n"
 	"  von vielen gar nicht gelesen wird.\n"
 
-#: src/lang.c:1007
+#: src/lang.c:1010
 msgid	"shell escape"
 msgstr	"Ausgang zur Shell"
 
-#: src/lang.c:1008
+#: src/lang.c:1011
 #, c-format
 msgid	"Shell Command (%s)"
 msgstr	"Shellkommando (%s)"
 
-#: src/lang.c:1009
+#: src/lang.c:1012
 #, c-format
 msgid	"Enter shell command [%s]> "
 msgstr	"Geben Sie ein Shellkommando ein [%s]> "
 
-#: src/lang.c:1013
+#: src/lang.c:1016
 #, c-format
 msgid	"%s: Can't get entry for TERM\n"
 msgstr	"%s: Kann den Wert für TERM nicht finden\n"
 
-#: src/lang.c:1017
+#: src/lang.c:1020
 #, c-format
 msgid	"Group %.*s ('q' to quit)..."
 msgstr	"Gruppe %.*s ('q' zum beenden...)"
 
-#: src/lang.c:1019
+#: src/lang.c:1022
 #, c-format
 msgid	"Group %.*s..."
 msgstr	"Gruppe %.*s..."
 
-#: src/lang.c:1023
+#: src/lang.c:1026
 msgid	"Server unavailable\n"
 msgstr	"Server nicht erreichbar\n"
 
-#: src/lang.c:1029
+#: src/lang.c:1032
 #, c-format
 msgid	"%s=pipe; %s=mail; %s=print; %s=quit; %s=toggle all/unread; %s=save; %s=tag; "
 	"%s=post"
 msgstr	"%s=Pipe; %s=Mail; %s=Drucken; %s=Ende; %s=Alle/Nur ungel.; %s=Speich.; "
 	"%s=tag; %s=Posten"
 
-#: src/lang.c:1030
+#: src/lang.c:1033
 #, c-format
 msgid	"%s=pipe; %s=mail; %s=print; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
 msgstr	"%s=Pipe; %s=Mail; %s=Drucken; %s=Ende; %s=Antw. Mail; %s=Speich.; %s=tag; "
 	"%s=Posten"
 
-#: src/lang.c:1032
+#: src/lang.c:1035
 #, c-format
 msgid	"%s=mail; %s=print; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post"
 msgstr	"%s=Mail; %s=Drucken; %s=Ende; %s=Alle/Nur ungel.; %s=Speich.; %s=tag; "
 	"%s=Posten"
 
-#: src/lang.c:1033
+#: src/lang.c:1036
 #, c-format
 msgid	"%s=mail; %s=print; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
 msgstr	"%s=Mail; %s=Drucken; %s=Ende; %s=Antw. Mail; %s=Speich.; %s=tag; %s=Posten"
 
-#: src/lang.c:1037
+#: src/lang.c:1040
 #, c-format
 msgid	"%s=pipe; %s=mail; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post"
 msgstr	"%s=Pipe; %s=Mail; %s=Ende; %s=Alle/Nur ungel.; %s=Speich.; %s=tag; %s=Posten"
 
-#: src/lang.c:1038
+#: src/lang.c:1041
 #, c-format
 msgid	"%s=pipe; %s=mail; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
 msgstr	"%s=Pipe; %s=Mail; %s=Ende; %s=Antw. Mail; %s=Speich.; %s=tag; %s=Posten"
 
-#: src/lang.c:1040
+#: src/lang.c:1043
 #, c-format
 msgid	"%s=mail; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post"
 msgstr	"%s=Mail; %s=Ende; %s=Alle/Nur ungel.; %s=Speich.; %s=tag; %s=Posten"
 
-#: src/lang.c:1041
+#: src/lang.c:1044
 #, c-format
 msgid	"%s=mail; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
 msgstr	"%s=Mail; %s=Ende; %s=Antw. Mail; %s=Speich.; %s=tag; %s=Posten"
 
-#: src/lang.c:1047
+#: src/lang.c:1050
 msgid	"Terminal does not support color"
 msgstr	"Terminal unterstützt keine Farben"
 
-#: src/lang.c:1052
+#: src/lang.c:1055
 #, c-format
 msgid	"Trying %s"
 msgstr	"Versuche %s"
 
-#: src/lang.c:1066 src/lang.c:1091 src/lang.c:1107 src/lang.c:1286 src/refs.c:296
+#: src/lang.c:1069 src/lang.c:1094 src/lang.c:1110 src/lang.c:1289 src/refs.c:296
 msgid	"None"
 msgstr	"Nichts"
 
-#: src/lang.c:1067
+#: src/lang.c:1070
 msgid	"Subject"
 msgstr	"Subject"
 
-#: src/lang.c:1068
+#: src/lang.c:1071
 msgid	"References"
 msgstr	"References"
 
-#: src/lang.c:1069
+#: src/lang.c:1072
 msgid	"Both Subject and References"
 msgstr	"Beides: Subject und References"
 
-#: src/lang.c:1070
+#: src/lang.c:1073
 msgid	"Multipart Subject"
 msgstr	"Mehrteilige Artikel (Subject)"
 
-#: src/lang.c:1082 src/lang.c:1193
+#: src/lang.c:1085 src/lang.c:1196
 msgid	"No"
 msgstr	"Nein"
 
-#: src/lang.c:1083 src/lang.c:1195
+#: src/lang.c:1086 src/lang.c:1198
 msgid	"Yes"
 msgstr	"Ja"
 
-#: src/lang.c:1084
+#: src/lang.c:1087
 msgid	"Hide All"
 msgstr	"Alle ausblenden"
 
-#: src/lang.c:1092
+#: src/lang.c:1095
 msgid	"Address"
 msgstr	"Adresse"
 
-#: src/lang.c:1093
+#: src/lang.c:1096
 msgid	"Full Name"
 msgstr	"Voller Name"
 
-#: src/lang.c:1094
+#: src/lang.c:1097
 msgid	"Address and Name"
 msgstr	"Adresse und Name"
 
-#: src/lang.c:1101
+#: src/lang.c:1104
 msgid	"Max"
 msgstr	"Höchster"
 
-#: src/lang.c:1102
+#: src/lang.c:1105
 msgid	"Sum"
 msgstr	"Summe"
 
-#: src/lang.c:1103
+#: src/lang.c:1106
 msgid	"Average"
 msgstr	"Durchschnitt"
 
-#: src/lang.c:1108
+#: src/lang.c:1111
 msgid	"Lines"
 msgstr	"Zeilen"
 
-#: src/lang.c:1109
+#: src/lang.c:1112
 msgid	"Score"
 msgstr	"Bewertung"
 
-#: src/lang.c:1110
+#: src/lang.c:1113
 msgid	"Lines & Score"
 msgstr	"Zeilen und Bewertung"
 
-#: src/lang.c:1119
+#: src/lang.c:1122
 msgid	"Black"
 msgstr	"Schwarz"
 
-#: src/lang.c:1120
+#: src/lang.c:1123
 msgid	"Red"
 msgstr	"Rot"
 
-#: src/lang.c:1121
+#: src/lang.c:1124
 msgid	"Green"
 msgstr	"Grün"
 
-#: src/lang.c:1122
+#: src/lang.c:1125
 msgid	"Brown"
 msgstr	"Braun"
 
-#: src/lang.c:1123
+#: src/lang.c:1126
 msgid	"Blue"
 msgstr	"Blau"
 
-#: src/lang.c:1124
+#: src/lang.c:1127
 msgid	"Pink"
 msgstr	"Rosa"
 
-#: src/lang.c:1125
+#: src/lang.c:1128
 msgid	"Cyan"
 msgstr	"Cyan"
 
-#: src/lang.c:1126
+#: src/lang.c:1129
 msgid	"White"
 msgstr	"Weiß"
 
-#: src/lang.c:1127
+#: src/lang.c:1130
 msgid	"Gray"
 msgstr	"Grau"
 
-#: src/lang.c:1128
+#: src/lang.c:1131
 msgid	"Light Red"
 msgstr	"Helles Rot"
 
-#: src/lang.c:1129
+#: src/lang.c:1132
 msgid	"Light Green"
 msgstr	"Helles Grün"
 
-#: src/lang.c:1130
+#: src/lang.c:1133
 msgid	"Yellow"
 msgstr	"Gelb"
 
-#: src/lang.c:1131
+#: src/lang.c:1134
 msgid	"Light Blue"
 msgstr	"Helles Blau"
 
-#: src/lang.c:1132
+#: src/lang.c:1135
 msgid	"Light Pink"
 msgstr	"Helles Rosa"
 
-#: src/lang.c:1133
+#: src/lang.c:1136
 msgid	"Light Cyan"
 msgstr	"Helles Cyan"
 
-#: src/lang.c:1134
+#: src/lang.c:1137
 msgid	"Light White"
 msgstr	"Helles Weiß"
 
-#: src/lang.c:1142 src/lang.c:1199 src/lang.c:1213
+#: src/lang.c:1145 src/lang.c:1202 src/lang.c:1216
 msgid	"Nothing"
 msgstr	"Nichts"
 
-#: src/lang.c:1143
+#: src/lang.c:1146
 msgid	"Mark"
 msgstr	"Markierung"
 
-#: src/lang.c:1144
+#: src/lang.c:1147
 msgid	"Space"
 msgstr	"Leerzeichen"
 
-#: src/lang.c:1151
+#: src/lang.c:1154
 msgid	"Normal"
 msgstr	"Normal"
 
-#: src/lang.c:1152
+#: src/lang.c:1155
 msgid	"Best highlighting"
 msgstr	"Beste Hervorhebung"
 
-#: src/lang.c:1153
+#: src/lang.c:1156
 msgid	"Underline"
 msgstr	"Unterstreichen"
 
-#: src/lang.c:1154
+#: src/lang.c:1157
 msgid	"Reverse video"
 msgstr	"Invers"
 
-#: src/lang.c:1155
+#: src/lang.c:1158
 msgid	"Blinking"
 msgstr	"Blinkend"
 
-#: src/lang.c:1156
+#: src/lang.c:1159
 msgid	"Half bright"
 msgstr	"Halbe Helligkeit"
 
-#: src/lang.c:1157
+#: src/lang.c:1160
 msgid	"Bold"
 msgstr	"Fett"
 
-#: src/lang.c:1162
+#: src/lang.c:1165
 msgid	"none"
 msgstr	"Nichts"
 
-#: src/lang.c:1163
+#: src/lang.c:1166
 msgid	"commands"
 msgstr	"Kommandos"
 
-#: src/lang.c:1164
+#: src/lang.c:1167
 msgid	"select"
 msgstr	"X-Befehl"
 
-#: src/lang.c:1166
+#: src/lang.c:1169
 msgid	"commands & quit"
 msgstr	"Kommandos & Ende"
 
-#: src/lang.c:1167
+#: src/lang.c:1170
 msgid	"commands & select"
 msgstr	"Kommandos & X-Befehl"
 
-#: src/lang.c:1168
+#: src/lang.c:1171
 msgid	"quit & select"
 msgstr	"Ende & X-Befehl"
 
-#: src/lang.c:1169
+#: src/lang.c:1172
 msgid	"commands & quit & select"
 msgstr	"Kmndos & Ende & X-Befehl"
 
-#: src/lang.c:1194
+#: src/lang.c:1197
 msgid	"Shell archive"
 msgstr	"Shellarchiv"
 
-#: src/lang.c:1200
+#: src/lang.c:1203
 msgid	"Subject: (descending)"
 msgstr	"Subject: (Absteigend)"
 
-#: src/lang.c:1201
+#: src/lang.c:1204
 msgid	"Subject: (ascending)"
 msgstr	"Subject: (Aufsteigend)"
 
-#: src/lang.c:1202
+#: src/lang.c:1205
 msgid	"From: (descending)"
 msgstr	"From: (Absteigend)"
 
-#: src/lang.c:1203
+#: src/lang.c:1206
 msgid	"From: (ascending)"
 msgstr	"From: (Aufsteigend)"
 
-#: src/lang.c:1204
+#: src/lang.c:1207
 msgid	"Date: (descending)"
 msgstr	"Date: (Absteigend)"
 
-#: src/lang.c:1205
+#: src/lang.c:1208
 msgid	"Date: (ascending)"
 msgstr	"Date: (Aufsteigend)"
 
-#: src/lang.c:1206 src/lang.c:1214
+#: src/lang.c:1209 src/lang.c:1217
 msgid	"Score (descending)"
 msgstr	"Bewertung (Absteigend)"
 
-#: src/lang.c:1207 src/lang.c:1215
+#: src/lang.c:1210 src/lang.c:1218
 msgid	"Score (ascending)"
 msgstr	"Bewertung (Aufsteigend)"
 
-#: src/lang.c:1208
+#: src/lang.c:1211
 msgid	"Lines: (descending)"
 msgstr	"Lines: (Absteigend)"
 
-#: src/lang.c:1209
+#: src/lang.c:1212
 msgid	"Lines: (ascending)"
 msgstr	"Lines: (Aufsteigend)"
 
-#: src/lang.c:1220
+#: src/lang.c:1223
 msgid	"Always Keep"
 msgstr	"Immer behalten"
 
-#: src/lang.c:1221
+#: src/lang.c:1224
 msgid	"Always Remove"
 msgstr	"Immer entfernen"
 
-#: src/lang.c:1222
+#: src/lang.c:1225
 msgid	"Mark with D on selection screen"
 msgstr	"Mit D in der Anzeige markiert"
 
-#: src/lang.c:1227
+#: src/lang.c:1230
 msgid	"Kill only unread arts"
 msgstr	"Killt nur ungelesene Artikel"
 
-#: src/lang.c:1228
+#: src/lang.c:1231
 msgid	"Kill all arts & show with K"
 msgstr	"Killt alle Artikel, markiert mit K"
 
 #. TODO: s/K/art_marked_killed/
-#: src/lang.c:1229
+#: src/lang.c:1232
 msgid	"Kill all arts and never show"
 msgstr	"Killt alle Artikel, zeigt sie nie"
 
-#: src/lang.c:1234
+#: src/lang.c:1237
 msgid	"Nothing special"
 msgstr	"Nichts besonderes"
 
-#: src/lang.c:1235
+#: src/lang.c:1238
 msgid	"Compress quotes"
 msgstr	"Zitatzeichen zusammenfassen"
 
-#: src/lang.c:1236
+#: src/lang.c:1239
 msgid	"Quote signatures"
 msgstr	"Signaturen zitieren"
 
-#: src/lang.c:1237
+#: src/lang.c:1240
 msgid	"Compress quotes, quote sigs"
 msgstr	"Zitatz. kürzen, Signat. zitieren"
 
-#: src/lang.c:1238
+#: src/lang.c:1241
 msgid	"Quote empty lines"
 msgstr	"Leerzeilen zitieren"
 
-#: src/lang.c:1239
+#: src/lang.c:1242
 msgid	"Compress quotes, quote empty lines"
 msgstr	"Zitatz. kürzen, Leerzeilen zit."
 
-#: src/lang.c:1240
+#: src/lang.c:1243
 msgid	"Quote sigs & empty lines"
 msgstr	"Signat. und Leerzeilen zitieren"
 
-#: src/lang.c:1241
+#: src/lang.c:1244
 msgid	"Comp. q., quote sigs & empty lines"
 msgstr	"Zitatz. kürzen, Sign & Leerz. zit."
 
-#: src/lang.c:1279
+#: src/lang.c:1282
 msgid	"no"
 msgstr	"nein"
 
-#: src/lang.c:1280
+#: src/lang.c:1283
 msgid	"with headers"
 msgstr	"mit Header"
 
-#: src/lang.c:1281
+#: src/lang.c:1284
 msgid	"without headers"
 msgstr	"ohne Header"
 
 # TRANSLATION MISSING
-#: src/lang.c:1288 src/lang.c:1294
+#: src/lang.c:1291 src/lang.c:1297
 msgid	"NFKC"
 msgstr	""
 
 # TRANSLATION MISSING
-#: src/lang.c:1289
+#: src/lang.c:1292
 msgid	"NFKD"
 msgstr	""
 
 # TRANSLATION MISSING
-#: src/lang.c:1290
+#: src/lang.c:1293
 msgid	"NFC"
 msgstr	""
 
 # TRANSLATION MISSING
-#: src/lang.c:1291
+#: src/lang.c:1294
 msgid	"NFD"
 msgstr	""
 
-#: src/lang.c:1302
+#: src/lang.c:1305
 msgid	"Display Options"
 msgstr	"Darstellungseinstellungen"
 
-#: src/lang.c:1308
+#: src/lang.c:1311
 msgid	"Color Options"
 msgstr	"Farbeinstellungen"
 
-#: src/lang.c:1314
+#: src/lang.c:1317
 msgid	"Article-Limiting Options"
 msgstr	"Artikel-Begrenzungseinstellungen"
 
-#: src/lang.c:1320
+#: src/lang.c:1323
 msgid	"Posting/Mailing Options"
 msgstr	"Versandeinstellungen für Mail und News"
 
-#: src/lang.c:1326
+#: src/lang.c:1329
 msgid	"Saving/Printing Options"
 msgstr	"Speicher- und Druckereinstellungen"
 
-#: src/lang.c:1332
+#: src/lang.c:1335
 msgid	"Expert Options"
 msgstr	"Experteneinstellungen"
 
-#: src/lang.c:1338
+#: src/lang.c:1341
 msgid	"Filtering Options"
 msgstr	"Filtereinstellungen"
 
-#: src/lang.c:1343 src/lang.c:1369 src/lang.c:1375 src/lang.c:1382 src/lang.c:1414
-#: src/lang.c:1420 src/lang.c:1428 src/lang.c:1448 src/lang.c:1523 src/lang.c:1685
-#: src/lang.c:1691 src/lang.c:1697 src/lang.c:1703 src/lang.c:1715 src/lang.c:1722
-#: src/lang.c:1773 src/lang.c:1782 src/lang.c:1788 src/lang.c:1794 src/lang.c:1800
-#: src/lang.c:1806 src/lang.c:1812 src/lang.c:1818 src/lang.c:1824 src/lang.c:1830
-#: src/lang.c:1836 src/lang.c:1842 src/lang.c:1848 src/lang.c:1854 src/lang.c:1860
-#: src/lang.c:1866 src/lang.c:1872 src/lang.c:1878 src/lang.c:1884 src/lang.c:1890
-#: src/lang.c:1896 src/lang.c:1902 src/lang.c:1909 src/lang.c:1915 src/lang.c:1921
-#: src/lang.c:1928 src/lang.c:1939 src/lang.c:1945 src/lang.c:1951 src/lang.c:1957
-#: src/lang.c:1963 src/lang.c:1969 src/lang.c:1983 src/lang.c:1995 src/lang.c:2029
-#: src/lang.c:2081 src/lang.c:2088 src/lang.c:2094 src/lang.c:2119 src/lang.c:2136
-#: src/lang.c:2189 src/lang.c:2222 src/lang.c:2242 src/lang.c:2277 src/lang.c:2286
-#: src/lang.c:2311 src/lang.c:2323 src/lang.c:2342 src/lang.c:2350
+#: src/lang.c:1346 src/lang.c:1372 src/lang.c:1378 src/lang.c:1385 src/lang.c:1417
+#: src/lang.c:1423 src/lang.c:1431 src/lang.c:1451 src/lang.c:1526 src/lang.c:1688
+#: src/lang.c:1694 src/lang.c:1700 src/lang.c:1706 src/lang.c:1718 src/lang.c:1725
+#: src/lang.c:1776 src/lang.c:1785 src/lang.c:1791 src/lang.c:1797 src/lang.c:1803
+#: src/lang.c:1809 src/lang.c:1815 src/lang.c:1821 src/lang.c:1827 src/lang.c:1833
+#: src/lang.c:1839 src/lang.c:1845 src/lang.c:1851 src/lang.c:1857 src/lang.c:1863
+#: src/lang.c:1869 src/lang.c:1875 src/lang.c:1881 src/lang.c:1887 src/lang.c:1893
+#: src/lang.c:1899 src/lang.c:1905 src/lang.c:1912 src/lang.c:1918 src/lang.c:1924
+#: src/lang.c:1931 src/lang.c:1942 src/lang.c:1948 src/lang.c:1954 src/lang.c:1960
+#: src/lang.c:1966 src/lang.c:1972 src/lang.c:1986 src/lang.c:1998 src/lang.c:2032
+#: src/lang.c:2084 src/lang.c:2091 src/lang.c:2097 src/lang.c:2122 src/lang.c:2139
+#: src/lang.c:2192 src/lang.c:2225 src/lang.c:2245 src/lang.c:2280 src/lang.c:2289
+#: src/lang.c:2314 src/lang.c:2326 src/lang.c:2345 src/lang.c:2353
 msgid	"<SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr	"<SPACE> schaltet um, <CR> setzt, <ESC> bricht ab."
 
-#: src/lang.c:1344
+#: src/lang.c:1347
 msgid	"Show mini menu & posting etiquette"
 msgstr	"Zeigt Minimenü & Posting etiquette"
 
-#: src/lang.c:1345
+#: src/lang.c:1348
 msgid	"# If ON show a mini menu of useful commands at each level\n"
 	"# and posting etiquette after composing an article\n"
 msgstr	"# Falls ON wird ein kleines Menü mit nützlichen Kommandos in jedem Level\n"
 	"# angezeigt. Nach dem Erstellen eines Artikels wird die etiquette angezeigt\n"
 
-#: src/lang.c:1350
+#: src/lang.c:1353
 msgid	"Show short description for each newsgroup. <SPACE> toggles & <CR> sets."
 msgstr	"Zeige Kurzbeschreibung für Gruppe. <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:1351
+#: src/lang.c:1354
 msgid	"Show description of each newsgroup"
 msgstr	"Zeige Beschreibung der Newsgruppen"
 
-#: src/lang.c:1352
+#: src/lang.c:1355
 msgid	"# If ON show group description text after newsgroup name at\n"
 	"# group selection level\n"
 msgstr	"# Falls ON wird die Newsgruppenbeschreibung im Gruppenauswahlmenü\n"
 	"# nach dem Namen angezeigt\n"
 
-#: src/lang.c:1357
+#: src/lang.c:1360
 msgid	"Show Subject & From (author) fields in group menu. <SPACE> toggles & <CR> "
 	"sets."
 msgstr	"Zeigt Subject & From (Autor) Felder im Gruppenmenü. <SPACE> wechselt & <CR> "
 	"setzt."
 
-#: src/lang.c:1358
+#: src/lang.c:1361
 msgid	"In group menu, show author by"
 msgstr	"Im Gruppenmenü, zeige Autor an nach"
 
-#: src/lang.c:1359
+#: src/lang.c:1362
 msgid	"# Part of from field to display 0) none 1) address 2) full name 3) both\n"
 msgstr	"# Anzeige des 'From:' Felds 0) nichts 1) Adresse 2) Voller Name 3) beides\n"
 
-#: src/lang.c:1363
+#: src/lang.c:1366
 msgid	"Draw -> or highlighted bar for selection. <SPACE> toggles & <CR> sets."
 msgstr	"Zeige -> oder Hervorhebung für Auswahl. <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:1364
+#: src/lang.c:1367
 msgid	"Draw -> instead of highlighted bar"
 msgstr	"Zeige -> anstatt einer Markierung"
 
-#: src/lang.c:1365
+#: src/lang.c:1368
 msgid	"# If ON use -> otherwise highlighted bar for selection\n"
 msgstr	"# Falls ON benutze -> andernfalls benutze eine Markierung zur Auswahl\n"
 
-#: src/lang.c:1370
+#: src/lang.c:1373
 msgid	"Use inverse video for page headers"
 msgstr	"Inverse Darstellung für die Header"
 
-#: src/lang.c:1371
+#: src/lang.c:1374
 msgid	"# If ON use inverse video for page headers at different levels\n"
 msgstr	"# Falls ON nutze inverse Darstellung für Header bei verschiedenen Ebenen\n"
 
-#: src/lang.c:1376
+#: src/lang.c:1379
 msgid	"Thread articles by"
 msgstr	"Threade Artikel anhand"
 
-#: src/lang.c:1377
+#: src/lang.c:1380
 msgid	"# Thread articles on 0=(nothing) 1=(Subject) 2=(References) 3=(Both)\n"
 	"# 4=(Multipart Subject).\n"
 msgstr	"# Zeige Artikel nach 0=(nichts) 1=(Subject) 2=(References) 3=(beides)\n"
 	"# 4=(Mehrteilige Artikel).\n"
 
-#: src/lang.c:1383
+#: src/lang.c:1386
 msgid	"Score of a thread"
 msgstr	"Bewertung eines Threads"
 
-#: src/lang.c:1384
+#: src/lang.c:1387
 msgid	"# Thread score 0=(Max) 1=(Sum) 2=(Average)\n"
 msgstr	"# Bewertung des Threads 0=(Höchster) 1=(Summe) 2=(Durchschnitt)\n"
 
-#: src/lang.c:1388
+#: src/lang.c:1391
 msgid	"Sort articles by Subject, From, Date or Score. <SPACE> toggles & <CR> sets."
 msgstr	"Sortiere Artikel nach Subject, From, Datum oder Bewertung."
 
-#: src/lang.c:1389
+#: src/lang.c:1392
 msgid	"Sort articles by"
 msgstr	"Sortiere Artikel nach"
 
-#: src/lang.c:1390
+#: src/lang.c:1393
 msgid	"# Sort articles by 0=(nothing) 1=(Subject descend) 2=(Subject ascend)\n"
 	"# 3=(From descend) 4=(From ascend) 5=(Date descend) 6=(Date ascend)\n"
 	"# 7=(Score descend) 8=(Score ascend) 9=(Lines descend) 10=(Lines ascend).\n"
@@ -4440,56 +4444,56 @@ msgstr	"# Sort. Art. nach 0=(nichts) 1=(Subject absteigend) 2=(Subject aufsteige
 	"# 7=(Bewertung abst.) 8=(Bewertung aufst.) 9=(Lines abst.) 10=(Lines "
 	"aufst.).\n"
 
-#: src/lang.c:1396
+#: src/lang.c:1399
 msgid	"Sort threads by Nothing or Score. <SPACE> toggles & <CR> sets."
 msgstr	"Threads nach Bewertung (Score) oder nichts ordnen. <SPACE> wechselt & <CR> "
 	"setzt"
 
-#: src/lang.c:1397
+#: src/lang.c:1400
 msgid	"Sort threads by"
 msgstr	"Sortiere Threads nach"
 
-#: src/lang.c:1398
+#: src/lang.c:1401
 msgid	"# Sort thread by 0=(nothing) 1=(Score descend) 2=(Score ascend)\n"
 msgstr	"# Ordne Threads nach 0=(nichts) 1=(Bewertung abst.) 2=(Bewertung aufst.)\n"
 
-#: src/lang.c:1402
+#: src/lang.c:1405
 msgid	"Put cursor at first/last unread art in groups. <SPACE> toggles & <CR> sets."
 msgstr	"Setze Cursor an ersten/letzten ungel. Artikel. <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:1403
+#: src/lang.c:1406
 msgid	"Goto first unread article in group"
 msgstr	"Setze Cursor auf ersten ungel. Art."
 
-#: src/lang.c:1404
+#: src/lang.c:1407
 msgid	"# If ON put cursor at first unread art in group otherwise last art\n"
 msgstr	"# Falls ON setze Cursor auf ersten ungelesenen Art., sonst auf letzten\n"
 
-#: src/lang.c:1408
+#: src/lang.c:1411
 msgid	"Show all articles or only unread articles. <SPACE> toggles & <CR> sets."
 msgstr	"Zeige alle oder nur ungelesene Artikel. <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:1409
+#: src/lang.c:1412
 msgid	"Show only unread articles"
 msgstr	"Zeige nur ungelesene Artikel"
 
-#: src/lang.c:1410
+#: src/lang.c:1413
 msgid	"# If ON show only new/unread articles otherwise show all.\n"
 msgstr	"# Falls ON zeige nur neue/ungelesene Artikel, sonst alle.\n"
 
-#: src/lang.c:1415
+#: src/lang.c:1418
 msgid	"Show only groups with unread arts"
 msgstr	"Zeige nur Gruppen mit ungel. Art."
 
-#: src/lang.c:1416
+#: src/lang.c:1419
 msgid	"# If ON show only subscribed to groups that contain unread articles.\n"
 msgstr	"# Falls ON zeige nur abonnierte Gruppen mit ungelesen Artikeln.\n"
 
-#: src/lang.c:1421
+#: src/lang.c:1424
 msgid	"Filter which articles"
 msgstr	"Filter (kill) anwenden auf"
 
-#: src/lang.c:1422
+#: src/lang.c:1425
 msgid	"# 0=(Only kill unread articles)\n"
 	"# 1=(Kill all articles and show in threads marked with K)\n"
 	"# 2=(Kill all articles and never show them).\n"
@@ -4497,215 +4501,215 @@ msgstr	"# 0=(Filtert nur ungelesene Artikel)\n"
 	"# 1=(Filtert alle Artikel und markiert sie mit K)\n"
 	"# 2=(Filtert alle Artikel und zeigt sie niemals an).\n"
 
-#: src/lang.c:1429
+#: src/lang.c:1432
 msgid	"Tab goes to next unread article"
 msgstr	"Tab zeigt nächsten ungelesenen Art."
 
-#: src/lang.c:1430
+#: src/lang.c:1433
 msgid	"# If ON the TAB command will go to next unread article at article viewer "
 	"level\n"
 msgstr	"# Falls ON wechselt TAB sofort zum nächsten ungelesenen Artikel\n"
 
-#: src/lang.c:1434
+#: src/lang.c:1437
 msgid	"Scrolling with <SPACE> past the end of an art. jumps to the next unread one."
 msgstr	"Weiterscrollen mit Leertaste am Artikelende wechselt zum nächsten ungel. "
 	"Artikel"
 
-#: src/lang.c:1435
+#: src/lang.c:1438
 msgid	"Space goes to next unread article"
 msgstr	"Leertaste zeigt nächsten unge. Art."
 
-#: src/lang.c:1436
+#: src/lang.c:1439
 msgid	"# If ON the SPACE command will go to next unread article at article viewer\n"
 	"# level when the end of the article is reached (rn-style pager)\n"
 msgstr	"# Falls ON wechselt die Leertaste zum nächsten ungelesenen Artikel, wenn\n"
 	"# das Ende des Artikels erreicht wird (rn-Stil)\n"
 
-#: src/lang.c:1441
+#: src/lang.c:1444
 msgid	"Scrolling with <PGDN>/<DOWN> past the end of an art. jumps to the unread one."
 msgstr	"Weiterscrollen mit BildAb am Artikelende wechselt zum nächsten ungel. Artikel"
 
-#: src/lang.c:1442
+#: src/lang.c:1445
 msgid	"PgDn goes to next unread article"
 msgstr	"PgDn zeigt nächst. ungelesenen Art."
 
-#: src/lang.c:1443
+#: src/lang.c:1446
 msgid	"# If ON the PGDN or DOWN command will go to next unread article when\n"
 	"# pressed at end of message\n"
 msgstr	"# Falls ON wechselt Bildrunter oder Cursorrunter zum nächsten ungelesenen\n"
 	"# Artikel, wenn das Artikelende erreicht wurde\n"
 
-#: src/lang.c:1449
+#: src/lang.c:1452
 msgid	"List thread using right arrow key"
 msgstr	"Zeige Thread mit rechter Pfeilt. an"
 
-#: src/lang.c:1450
+#: src/lang.c:1453
 msgid	"# If ON automatically list thread when entering it using right arrow key.\n"
 msgstr	"# Falls ON: Thread beim Betreten mit der rechten Cursortaste automatisch\n"
 	"# anzeigen?\n"
 
-#: src/lang.c:1454
+#: src/lang.c:1457
 msgid	"Enter character to indicate deleted articles. <CR> sets, <ESC> cancels."
 msgstr	"Definiere Zeichen für gelöschte Artikel. <CR> setzt, <ESC> bricht ab."
 
-#: src/lang.c:1455
+#: src/lang.c:1458
 msgid	"Character to show deleted articles"
 msgstr	"Zeichen für gelöschte Artikel"
 
-#: src/lang.c:1456
+#: src/lang.c:1459
 msgid	"# Character used to show that an art was deleted (default 'D')\n"
 	"# _ is turned into ' '\n"
 msgstr	"# Zeichen für einen Artikel, der gelöscht wurde (Voreinstellung 'D')\n"
 	"# _ wird in ' ' umgewandelt\n"
 
-#: src/lang.c:1461
+#: src/lang.c:1464
 msgid	"Enter character to indicate articles in a range. <CR> sets, <ESC> cancels."
 msgstr	"Definiere Zeichen, das Artikel im Bereich anzeigt.<CR> setzt, <ESC> bricht ab."
 
-#: src/lang.c:1462
+#: src/lang.c:1465
 msgid	"Character to show inrange articles"
 msgstr	"Zeichen für Artikel im Bereich"
 
-#: src/lang.c:1463
+#: src/lang.c:1466
 msgid	"# Character used to show that an art is in a range (default '#')\n"
 	"# _ is turned into ' '\n"
 msgstr	"# Zeichen für Artikel die im Bereich sind (Voreinstellung '#')\n"
 	"# _ wird in ' ' umgewandelt\n"
 
-#: src/lang.c:1468
+#: src/lang.c:1471
 msgid	"Enter character to indicate that article will return. <CR> sets, <ESC> "
 	"cancels."
 msgstr	"Definiere Zeichen für wiederkehrende Art. <CR> setzt. <ESC> bricht ab."
 
-#: src/lang.c:1469
+#: src/lang.c:1472
 msgid	"Character to show returning arts"
 msgstr	"Zeichen für wiederkehrende Artikel"
 
-#: src/lang.c:1470
+#: src/lang.c:1473
 msgid	"# Character used to show that an art will return (default '-')\n"
 	"# _ is turned into ' '\n"
 msgstr	"# Zeichen, dass ein Artikel wiederkommen wird (Voreinstellung '-')\n"
 	"# _ wird in ' ' umgewandelt\n"
 
-#: src/lang.c:1475
+#: src/lang.c:1478
 msgid	"Enter character to indicate selected articles. <CR> sets, <ESC> cancels."
 msgstr	"Zeichen für Artikel mit Markierung wichtig/'hot' <CR> setzt, <ESC> bricht ab."
 
-#: src/lang.c:1476
+#: src/lang.c:1479
 msgid	"Character to show selected articles"
 msgstr	"Zeichen für wichtige Artikel"
 
-#: src/lang.c:1477
+#: src/lang.c:1480
 msgid	"# Character used to show that an art was auto-selected (default '*')\n"
 	"# _ is turned into ' '\n"
 msgstr	"# Zeichen für Artikel mit Markierung wichtig/'hot' (Voreinstellung '*')\n"
 	"# _ wird in ' ' umgewandelt\n"
 
-#: src/lang.c:1482
+#: src/lang.c:1485
 msgid	"Enter character to indicate recent articles. <CR> sets, <ESC> cancels."
 msgstr	"Definiere Zeichen für aktuelle Artikel. <CR> setzt, <ESC> bricht ab."
 
-#: src/lang.c:1483
+#: src/lang.c:1486
 msgid	"Character to show recent articles"
 msgstr	"Zeichen für aktuelle Artikel"
 
-#: src/lang.c:1484
+#: src/lang.c:1487
 msgid	"# Character used to show that an art is recent (default 'o')\n"
 	"# _ is turned into ' '\n"
 msgstr	"# Zeichen für einen aktuellen Artikel (Voreinstellung ist 'o')\n"
 	"# _ wird in ' ' umgewandelt\n"
 
-#: src/lang.c:1489
+#: src/lang.c:1492
 msgid	"Enter character to indicate unread articles. <CR> sets, <ESC> cancels."
 msgstr	"Zeichen für ungelesene Artikel. <CR> setzt, <ESC> bricht ab."
 
-#: src/lang.c:1490
+#: src/lang.c:1493
 msgid	"Character to show unread articles"
 msgstr	"Zeichen für ungelesene Artikel"
 
-#: src/lang.c:1491
+#: src/lang.c:1494
 msgid	"# Character used to show that an art is unread (default '+')\n"
 	"# _ is turned into ' '\n"
 msgstr	"# Zeichen für ungelesene Artikel (Voreinstellung '+')\n"
 	"# _ wird in ' ' umgewandelt\n"
 
-#: src/lang.c:1496
+#: src/lang.c:1499
 msgid	"Enter character to indicate read articles. <CR> sets, <ESC> cancels."
 msgstr	"Zeichen für gelesene Artikel. <CR> setzt, <ESC> bricht ab."
 
-#: src/lang.c:1497
+#: src/lang.c:1500
 msgid	"Character to show read articles"
 msgstr	"Zeichen für gelesene Artikel"
 
-#: src/lang.c:1498
+#: src/lang.c:1501
 msgid	"# Character used to show that an art was read (default ' ')\n"
 	"# _ is turned into ' '\n"
 msgstr	"# Zeichen für gelesene Artikel (Voreinstellung ' ')\n"
 	"# _ wird in ' ' umgewandelt\n"
 
-#: src/lang.c:1503
+#: src/lang.c:1506
 msgid	"Enter character to indicate killed articles. <CR> sets, <ESC> cancels."
 msgstr	"Zeichen für gekillte Artikel. <CR> setzt, <ESC> bricht ab."
 
-#: src/lang.c:1504
+#: src/lang.c:1507
 msgid	"Character to show killed articles"
 msgstr	"Zeichen für gekillte Artikel"
 
-#: src/lang.c:1505
+#: src/lang.c:1508
 msgid	"# Character used to show that an art was killed (default 'K')\n"
 	"# kill_level must be set accordingly, _ is turned into ' '\n"
 msgstr	"# Zeichen für gekillte Artikel (Voreinstellung 'K')\n"
 	"# _ wird in ' ' umgewandelt, kill_level muss passend gesetzt sein.\n"
 
-#: src/lang.c:1510
+#: src/lang.c:1513
 msgid	"Enter character to indicate read selected articles. <CR> sets, <ESC> cancels."
 msgstr	"Zeichen für gelesene wichtige/'hot' Artikel. <CR> setzt, <ESC> bricht ab."
 
-#: src/lang.c:1511
+#: src/lang.c:1514
 msgid	"Character to show readselected arts"
 msgstr	"Zeichen für gelesene wichtige Art."
 
-#: src/lang.c:1512
+#: src/lang.c:1515
 msgid	"# Character used to show that an art was selected before read (default ':')\n"
 	"# kill_level must be set accordingly, _ is turned into ' '\n"
 msgstr	"# Zeichen für bereits gelesene Artikel mit Markierung wichtig/'hot'\n"
 	"# (Voreinstellung ':')\n"
 	"# _ wird in ' ' umgewandelt, kill_level muss passend gesetzt sein.\n"
 
-#: src/lang.c:1517
+#: src/lang.c:1520
 msgid	"Enter maximum length of newsgroup names displayed. <CR> sets."
 msgstr	"Maximale Länge des angezeigten Newsgruppennamens. <CR> setzt."
 
-#: src/lang.c:1518
+#: src/lang.c:1521
 msgid	"Max. length of group names shown"
 msgstr	"Max. Länge angezeigter Gruppennamen"
 
-#: src/lang.c:1519
+#: src/lang.c:1522
 msgid	"# Maximum length of the names of newsgroups displayed\n"
 msgstr	"# Maximale Länge der angezeigten Newsgruppennamen\n"
 
-#: src/lang.c:1524
+#: src/lang.c:1527
 msgid	"Show lines/score in listings"
 msgstr	"Zeige Zeilenz./Bewert. in Übersicht"
 
-#: src/lang.c:1525
+#: src/lang.c:1528
 msgid	"# What informations should be displayed in article/thread listing\n"
 	"# 0 = nothing, 1 = lines, 2 = score, 3 = lines & score\n"
 msgstr	"# Welche weiteren Informationen sollen in der Artikel/Thread\n"
 	"# Übersicht angezeigt werden:\n"
 	"# 0 = keine, 1 = Zeilenzahl, 2 = Bewertung, 3 = Zeilenzahl & Bewertung\n"
 
-#: src/lang.c:1530
+#: src/lang.c:1533
 msgid	"0 = full page scrolling, -1 = show previous last line as first on next page, "
 	"-2 = half page"
 msgstr	"0 = seitenweise, -1 = zeige zusätzlich letzte Zeile der vorigen Seite, -2 = "
 	"halbe Seite"
 
-#: src/lang.c:1531
+#: src/lang.c:1534
 msgid	"Number of lines to scroll in pager"
 msgstr	"Blättere Artikel um ... Zeilen"
 
-#: src/lang.c:1532
+#: src/lang.c:1535
 msgid	"# Number of lines that cursor-up/down will scroll in article pager\n"
 	"# eg, 1+ = line-by-line, 0 = page-by-page (traditional behavior),\n"
 	"# -1 = the top/bottom line is carried over onto the next page,\n"
@@ -4715,27 +4719,27 @@ msgstr	"# Anzahl der Zeilen, die Cursor-Auf/Ab bei der Artikelanzeige\n"
 	"# -1 = seitenweise, zeigt zusätzlich letzte Zeile der vorigen Seite\n"
 	"# -2 = um eine halbe Seite\n"
 
-#: src/lang.c:1539
+#: src/lang.c:1542
 msgid	"Display signatures. <SPACE> toggles & <CR> sets."
 msgstr	"Zeige Signaturen an. <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:1540
+#: src/lang.c:1543
 msgid	"Display signatures"
 msgstr	"Zeige Signaturen an"
 
-#: src/lang.c:1541
+#: src/lang.c:1544
 msgid	"# If OFF don't show signatures when displaying articles\n"
 msgstr	"# Falls OFF zeige keine Signaturen an\n"
 
-#: src/lang.c:1545
+#: src/lang.c:1548
 msgid	"Display uuencoded data as tagged attachments. <SPACE> toggles & <CR> sets."
 msgstr	"Uu-kodierte Teile als Attachment anzeigen. <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:1546
+#: src/lang.c:1549
 msgid	"Display uue data as an attachment"
 msgstr	"Zeige uue-Teile als Attachment"
 
-#: src/lang.c:1547
+#: src/lang.c:1550
 msgid	"# Handling of uuencoded data in the pager\n"
 	"# 0 = display raw uuencoded data\n"
 	"# 1 = uuencoded data will be condensed to a single tag line showing\n"
@@ -4748,29 +4752,29 @@ msgstr	"# Behandlung von uuencodeten Daten bei der Artikelanzeige:\n"
 	"#     ähnlich der von MIME Anhängen\n"
 	"# 2 = Einzeilige Zusammenfassung auch für unvollständige Daten\n"
 
-#: src/lang.c:1556
+#: src/lang.c:1559
 msgid	"Decode German style TeX umlaut codes to ISO. <SPACE> toggles & <CR> sets."
 msgstr	"TeX german.sty Umlautkodierung auswerten. <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:1557
+#: src/lang.c:1560
 msgid	"Display \"a as Umlaut-a"
 msgstr	"Wandle TeX-Umlaute automatisch um"
 
-#: src/lang.c:1558
+#: src/lang.c:1561
 msgid	"# If ON decode German style TeX umlaut codes to ISO and\n"
 	"# show \"a as Umlaut-a, etc.\n"
 msgstr	"# Wenn ON dekodiere laut german.sty (TeX) kodierte Umlaute und stelle\n"
 	"# \"a als ä, usw. dar\n"
 
-#: src/lang.c:1563 src/lang.c:1573
+#: src/lang.c:1566 src/lang.c:1576
 msgid	"Space separated list of header fields"
 msgstr	"Durch Leerzeichen getrennte Liste der Header-Felder"
 
-#: src/lang.c:1564
+#: src/lang.c:1567
 msgid	"Display these header fields (or *)"
 msgstr	"Zeige diese Header-Felder (oder *)"
 
-#: src/lang.c:1565
+#: src/lang.c:1568
 msgid	"# Which news headers you wish to see. If you want to see _all_ the headers,\n"
 	"# place an '*' as this value. This is the only way a wildcard can be used.\n"
 	"# If you enter 'X-' as the value, you will see all headers beginning with\n"
@@ -4784,11 +4788,11 @@ msgstr	"# Welche Header wollen Sie sehen. Wenn Sie _alle_ sehen wollen, setzen\n
 	"# Leerzeichen getrennte Werte angeben. Wenn Sie hier nichts definieren\n"
 	"# wird diese Option deaktiviert.\n"
 
-#: src/lang.c:1574
+#: src/lang.c:1577
 msgid	"Do not display these header fields"
 msgstr	"Zeige folgende Header nicht an"
 
-#: src/lang.c:1575
+#: src/lang.c:1578
 msgid	"# Same as 'news_headers_to_display' except it denotes the opposite.\n"
 	"# An example of using both options might be if you thought X- headers were\n"
 	"# A Good Thing(tm), but thought Alan and Pape were miscreants...well then "
@@ -4805,27 +4809,27 @@ msgstr	"# Genau das gleiche wie 'news_headers_to_display', mit der Ausnahme,\n"
 	"# news_headers_to_not_display=X-Alan X-Pape\n"
 	"# Wenn Sie hier nichts angeben, wird diese Option deaktiviert.\n"
 
-#: src/lang.c:1585
+#: src/lang.c:1588
 msgid	"Do you want to enable automatic handling of multipart/alternative articles?"
 msgstr	"Automatische Bearbeitung von Art. mit multipart/alternative-Teilen aktivieren?"
 
-#: src/lang.c:1586
+#: src/lang.c:1589
 msgid	"Skip multipart/alternative parts"
 msgstr	"Übersp. multipart/alternative-Teile"
 
-#: src/lang.c:1587
+#: src/lang.c:1590
 msgid	"# If ON strip multipart/alternative messages automatically\n"
 msgstr	"# Falls ON entsorge multipart/alternative Teile des Artikels automatisch\n"
 
-#: src/lang.c:1592
+#: src/lang.c:1595
 msgid	"A regex used to decide which lines to show in col_quote."
 msgstr	"Regulärer Ausdruck für Zeilen, die mit col_quote dargestellt werden."
 
-#: src/lang.c:1593
+#: src/lang.c:1596
 msgid	"Regex used to show quoted lines"
 msgstr	"Regulärer Ausd. für zit. Zeilen"
 
-#: src/lang.c:1594
+#: src/lang.c:1597
 msgid	"# A regular expression that tin will use to decide which lines are\n"
 	"# quoted when viewing articles. Quoted lines are shown in col_quote.\n"
 	"# If you leave this blank, tin will use a built in default.\n"
@@ -4834,15 +4838,15 @@ msgstr	"# Ein regulärer Ausdruck, den tin benutzt um zu entscheiden, welche Zeil
 	"# Farbe angezeigt, die in col_quote definiert sind.\n"
 	"# Wenn Sie hier nichts angeben, werden die Voreinstellungen benutzt.\n"
 
-#: src/lang.c:1600
+#: src/lang.c:1603
 msgid	"A regex used to decide which lines to show in col_quote2."
 msgstr	"Regulärer Ausdruck für Zeilen, die mit col_quote2 dargestellt werden"
 
-#: src/lang.c:1601
+#: src/lang.c:1604
 msgid	"Regex used to show twice quoted l."
 msgstr	"Reg. Ausd. für zweifach zitierte Z."
 
-#: src/lang.c:1602
+#: src/lang.c:1605
 msgid	"# A regular expression that tin will use to decide which lines are\n"
 	"# quoted twice. Twice quoted lines are shown in col_quote2.\n"
 	"# If you leave this blank, tin will use a built in default.\n"
@@ -4851,15 +4855,15 @@ msgstr	"# Ein regulärer Ausdruck, den tin benutzt, um zu entscheiden welche\n"
 	"# Farbe dargestellt, die in col_quote2 definiert ist.\n"
 	"# Wenn Sie hier nichts eingeben, werden die Voreinstellungen benutzt.\n"
 
-#: src/lang.c:1608
+#: src/lang.c:1611
 msgid	"A regex used to decide which lines to show in col_quote3."
 msgstr	"Regulärer Ausdruck für Zeilen, die mit col_quote3 dargestellt werden."
 
-#: src/lang.c:1609
+#: src/lang.c:1612
 msgid	"Regex used to show >= 3 times q.l."
 msgstr	"Reg. Ausd. für >=3-fach zitierte Z."
 
-#: src/lang.c:1610
+#: src/lang.c:1613
 msgid	"# A regular expression that tin will use to decide which lines are\n"
 	"# quoted >=3 times. >=3 times quoted lines are shown in col_quote3.\n"
 	"# If you leave this blank, tin will use a built in default.\n"
@@ -4868,15 +4872,15 @@ msgstr	"# Ein regulärer Ausdruck, der entscheidet, ob eine Zeile 3 mal oder öfte
 	"# dargestellt, die in col_quote3 definiert sind.\n"
 	"# Wenn Sie hier nichts eingeben, werden die Voreinstellungen benutzt.\n"
 
-#: src/lang.c:1617
+#: src/lang.c:1620
 msgid	"A regex used to decide which words to show in col_markslashes."
 msgstr	"Regulärer Ausdruck für Zeilen, die mit col_markslashes dargestellt werden."
 
-#: src/lang.c:1618
+#: src/lang.c:1621
 msgid	"Regex used to highlight /slashes/"
 msgstr	"Reg. für /Schrägst./ Hervorhebungen"
 
-#: src/lang.c:1619
+#: src/lang.c:1622
 msgid	"# A regular expression that tin will use to decide which words\n"
 	"# bounded by '/' are to be shown in col_markslashes.\n"
 	"# If you leave this blank, tin will use a built in default.\n"
@@ -4884,15 +4888,15 @@ msgstr	"# Ein regulärer Ausdruck, der entscheidet, welche Wörter\n"
 	"# zwischen '/' in col_markslashes angezeigt werden.\n"
 	"# Wenn Sie hier nichts eingeben, werden die Voreinstellungen benutzt.\n"
 
-#: src/lang.c:1625
+#: src/lang.c:1628
 msgid	"A regex used to decide which words to show in col_markstars."
 msgstr	"Regulärer Ausdruck für Zeilen, die mit col_markstars dargestellt werden."
 
-#: src/lang.c:1626
+#: src/lang.c:1629
 msgid	"Regex used to highlight *stars*"
 msgstr	"Regu. A. für *Stern* Hervorhebungen"
 
-#: src/lang.c:1627
+#: src/lang.c:1630
 msgid	"# A regular expression that tin will use to decide which words\n"
 	"# bounded by '*' are to be shown in col_markstars.\n"
 	"# If you leave this blank, tin will use a built in default.\n"
@@ -4900,15 +4904,15 @@ msgstr	"# Ein regulärer Ausdruck, der entscheidet, welche Wörter\n"
 	"# zwischen '*' in col_markstars angezeigt werden.\n"
 	"# Wenn Sie hier nichts eingeben, werden die Voreinstellungen benutzt.\n"
 
-#: src/lang.c:1633
+#: src/lang.c:1636
 msgid	"A regex used to decide which words to show in col_markstroke."
 msgstr	"Regulärer Ausdruck für Zeilen, die mit col_markstroke dargestellt werden."
 
-#: src/lang.c:1634
+#: src/lang.c:1637
 msgid	"Regex used to highlight -strokes-"
 msgstr	"Reg. für -Durchstr.- Hervorhebungen"
 
-#: src/lang.c:1635
+#: src/lang.c:1638
 msgid	"# A regular expression that tin will use to decide which words\n"
 	"# bounded by '-' are to be shown in col_markstroke.\n"
 	"# If you leave this blank, tin will use a built in default.\n"
@@ -4916,15 +4920,15 @@ msgstr	"# Ein regulärer Ausdruck, der entscheidet, welche Wörter\n"
 	"# zwischen '-' in col_markstroke angezeigt werden.\n"
 	"# Wenn Sie hier nichts eingeben, werden die Voreinstellungen benutzt.\n"
 
-#: src/lang.c:1641
+#: src/lang.c:1644
 msgid	"A regex used to decide which words to show in col_markdash."
 msgstr	"Regulärer Ausdruck für Zeilen, die mit col_markdash dargestellt werden."
 
-#: src/lang.c:1642
+#: src/lang.c:1645
 msgid	"Regex used to highlight _underline_"
 msgstr	"Reg. für _Unterstr._ Hervorhebungen"
 
-#: src/lang.c:1643
+#: src/lang.c:1646
 msgid	"# A regular expression that tin will use to decide which words\n"
 	"# bounded by '_' are to be shown in col_markdash.\n"
 	"# If you leave this blank, tin will use a built in default.\n"
@@ -4932,44 +4936,44 @@ msgstr	"# Ein regulärer Ausdruck, der entscheidet, welche Wörter\n"
 	"# zwischen '_' in col_markdash angezeigt werden.\n"
 	"# Wenn Sie hier nichts eingeben, werden die Voreinstellungen benutzt.\n"
 
-#: src/lang.c:1649
+#: src/lang.c:1652
 msgid	"A regex used to find Subject prefixes to remove.  Use '|' as separator."
 msgstr	"Reg. Ausd., um Teile im Subjectanfang zu entfernen. '|' trennt die Ausd.."
 
-#: src/lang.c:1650
+#: src/lang.c:1653
 msgid	"Regex with Subject prefixes"
 msgstr	"Reg. Ausd. für den Subjectanfang"
 
-#: src/lang.c:1651
+#: src/lang.c:1654
 msgid	"# A regular expression that tin will use to find Subject prefixes\n"
 	"# which will be removed before showing the header.\n"
 msgstr	"# Ein regulärer Ausdruck, mit dem tin Worte im Anfang des Subjects findet,\n"
 	"# die dann entfernt werden.\n"
 
-#: src/lang.c:1656
+#: src/lang.c:1659
 msgid	"A regex used to find Subject suffixes to remove.  Use '|' as separator."
 msgstr	"Reg. Ausd., um Teile am Subjectanfang zu entfernen. '|' trennt die Ausd.."
 
-#: src/lang.c:1657
+#: src/lang.c:1660
 msgid	"Regex with Subject suffixes"
 msgstr	"Reg. Ausd. für das Subjectende"
 
-#: src/lang.c:1658
+#: src/lang.c:1661
 msgid	"# A regular expression that tin will use to find Subject suffixes\n"
 	"# which will be removed when replying or posting followup.\n"
 msgstr	"# Ein regulärer Ausdruck, der beim Antworten zum Abschneiden von\n"
 	"# unerwünschten Teilen am Ende des Subjects verwendet wird.\n"
 
-#: src/lang.c:1663
+#: src/lang.c:1666
 msgid	"Enter name and options for external MIME viewer, --internal for built-in "
 	"viewer"
 msgstr	"Name und Optionen für ext. MIME-Viewer, --internal für eingebaute Version"
 
-#: src/lang.c:1664
+#: src/lang.c:1667
 msgid	"MIME binary content viewer"
 msgstr	"MIME-Viewer"
 
-#: src/lang.c:1665
+#: src/lang.c:1668
 msgid	"# If --internal automatically use the built in MIME viewer for non-text\n"
 	"# parts of articles.\n"
 	"# Otherwise specify an external viewer program (eg, metamail) or leave blank\n"
@@ -4978,51 +4982,51 @@ msgstr	"# Falls --internal wird der eingebaute MIME-Viewer für die Anzeige von\n
 	"# nicht Text teilen benutzt. Andernfalls das angegebene Programm\n"
 	"# (z.B. metamail). Keine Angabe schaltet die automatische Anzeige aus.\n"
 
-#: src/lang.c:1672
+#: src/lang.c:1675
 msgid	"Confirm before starting non-text viewing program"
 msgstr	"Start des MIME-Viewers bestätigen"
 
-#: src/lang.c:1673
+#: src/lang.c:1676
 msgid	"Ask before using MIME viewer"
 msgstr	"Start des MIME-Viewers bestätigen"
 
-#: src/lang.c:1674
+#: src/lang.c:1677
 msgid	"# If ON tin will ask before using metamail to display MIME messages\n"
 	"# this only happens if metamail_prog is set to something\n"
 msgstr	"# Falls ON fragt tin nach, bevor metamail zum Anzeigen von MIME Artikeln\n"
 	"# benutzt wird. Das passiert nur, wenn auch metamail_prog gesetzt ist.\n"
 
-#: src/lang.c:1679
+#: src/lang.c:1682
 msgid	"Ask to mark groups read when quitting. <SPACE> toggles & <CR> sets."
 msgstr	"Beim Beenden anbieten, alle betretenen Gruppen als gelesen zu markieren?"
 
-#: src/lang.c:1680
+#: src/lang.c:1683
 msgid	"Catchup read groups when quitting"
 msgstr	"Aufholen der Gruppen beim Beenden"
 
-#: src/lang.c:1681
+#: src/lang.c:1684
 msgid	"# If ON ask user if read groups should all be marked read\n"
 msgstr	"# Falls ON: Beim Beenden von tin anbieten, alle betretenen Gruppen\n"
 	"#           als gelesen zu markieren\n"
 
-#: src/lang.c:1686
+#: src/lang.c:1689
 msgid	"Catchup group using left key"
 msgstr	"Catchup der Gruppe mit l. Cursor"
 
-#: src/lang.c:1687
+#: src/lang.c:1690
 msgid	"# If ON catchup group/thread when leaving with the left arrow key.\n"
 msgstr	"# Falls ON: Aufholen (als gelesen markieren) der Gruppe/des Threads\n"
 	"#           beim Verlassen mit der linken Cursortaste\n"
 
-#: src/lang.c:1692
+#: src/lang.c:1695
 msgid	"Catchup thread by using left key"
 msgstr	"Catchup mit der linken Cursort."
 
-#: src/lang.c:1698
+#: src/lang.c:1701
 msgid	"Which actions require confirmation"
 msgstr	"Bestätigung erforderlich für"
 
-#: src/lang.c:1699
+#: src/lang.c:1702
 msgid	"# What should we ask confirmation for.\n"
 msgstr	"# Welche Operationen müssen explizit bestätigt werden.\n"
 	"# Kommandos, die im Manual mit [after confirmation] markiert sind,\n"
@@ -5030,330 +5034,330 @@ msgstr	"# Welche Operationen müssen explizit bestätigt werden.\n"
 	"# gelesen (siehe 'X' Befehl im Manual).\n"
 
 # TRANSLATION MISSING
-#: src/lang.c:1704
+#: src/lang.c:1707
 msgid	"'Mark article read' ignores tags"
 msgstr	""
 
-#: src/lang.c:1705
+#: src/lang.c:1708
 msgid	"# If ON the 'Mark article read' function marks only the current article.\n"
 msgstr	"# Falls ON wird mit der Fuktion 'Artikel als gelesen markieren' nur\n"
 	"# der jeweilige Artikel markiert.\n"
 
-#: src/lang.c:1709
+#: src/lang.c:1712
 msgid	"Program to run to open URL's, <CR> sets, <ESC> cancels."
 msgstr	"Öffne URLs mit ... <CR> setzt, <ESC> bricht ab."
 
-#: src/lang.c:1710
+#: src/lang.c:1713
 msgid	"Program that opens URL's"
 msgstr	"Öffne URLs mit ..."
 
-#: src/lang.c:1711
+#: src/lang.c:1714
 msgid	"# The program used to open URL's. The actual URL will be appended\n"
 msgstr	"# Programm zum Öffnen von URLs, die jeweilige URL wird hinten angehängt.\n"
 
-#: src/lang.c:1716
+#: src/lang.c:1719
 msgid	"Use mouse in xterm"
 msgstr	"Maus in xterm nutzen"
 
-#: src/lang.c:1717
+#: src/lang.c:1720
 msgid	"# If ON enable mouse key support on xterm terminals\n"
 msgstr	"# Falls ON wird die Maustastenunterstützung für xterm aktiviert\n"
 
-#: src/lang.c:1723
+#: src/lang.c:1726
 msgid	"Use scroll keys on keypad"
 msgstr	"Scrollt. vom Nummernblock nutzen"
 
-#: src/lang.c:1724
+#: src/lang.c:1727
 msgid	"# If ON enable scroll keys on terminals that support it\n"
 msgstr	"# Falls ON werden die Scrolltasten genutzt (Terminalabhängig)\n"
 
-#: src/lang.c:1729
+#: src/lang.c:1732
 msgid	"Enter maximum number of article to get. <CR> sets."
 msgstr	"Maximale Anzahl der zu holenden Artikel eingeben. <CR> setzt."
 
-#: src/lang.c:1730
+#: src/lang.c:1733
 msgid	"Number of articles to get"
 msgstr	"Anzahl der zu holenden Artikel"
 
-#: src/lang.c:1731
+#: src/lang.c:1734
 msgid	"# Number of articles to get (0=no limit), if negative sets maximum number\n"
 	"# of already read articles to be read before first unread one\n"
 msgstr	"# Anzahl der zu holenden Artikel (0=unbegrenzt), falls ein negativer Wert\n"
 	"# angegeben wird, holt tin alle ungelesenen plus die letzten n gelesenen\n"
 	"# Artikel\n"
 
-#: src/lang.c:1736
+#: src/lang.c:1739
 msgid	"Enter number of days article is considered recent. <CR> sets."
 msgstr	"Anzahl der Tage, die ein Artikel als neu eingestuft wird. <CR> setzt."
 
-#: src/lang.c:1737
+#: src/lang.c:1740
 msgid	"Article recentness time limit"
 msgstr	"Artikel Neuheitszeit-Limit"
 
-#: src/lang.c:1738
+#: src/lang.c:1741
 msgid	"# Number of days in which article is considered recent, (0=OFF)\n"
 msgstr	"# Anzahl der Tage, die ein Artikel als neu eingestuft wird, (0=Aus)\n"
 
-#: src/lang.c:1742
+#: src/lang.c:1745
 msgid	"WILDMAT for normal wildcards, REGEX for full regular expression matching."
 msgstr	"WILDMAT für normale Wildcards, REGEX für die Nutzung von regulären Ausdrücken."
 
-#: src/lang.c:1743
+#: src/lang.c:1746
 msgid	"Wildcard matching"
 msgstr	"Wildcardprüfung"
 
-#: src/lang.c:1744
+#: src/lang.c:1747
 msgid	"# Wildcard matching 0=(wildmat) 1=(regex)\n"
 msgstr	"# Wildcardprüfung 0=(wildmat) 1=(Regulärer Ausdruck)\n"
 
-#: src/lang.c:1748
+#: src/lang.c:1751
 msgid	"Enter minimal score before an article is marked killed. <CR> sets."
 msgstr	"Artikel mit weniger Bewertung (Score) werden als `gekillt' markiert. <CR> "
 	"setzt."
 
-#: src/lang.c:1749
+#: src/lang.c:1752
 msgid	"Score limit (kill)"
 msgstr	"Bewertungsgrenze (kill)"
 
-#: src/lang.c:1750
+#: src/lang.c:1753
 msgid	"# Score limit before an article is marked killed\n"
 msgstr	"# Jeder Artikel mit einer niedrigeren Bewertung (Score) wird als\n"
 	"# gekillt markiert\n"
 
-#: src/lang.c:1754
+#: src/lang.c:1757
 msgid	"Enter default score to kill articles. <CR> sets."
 msgstr	"Bewertung für gekillte Artikel. <CR> setzt."
 
-#: src/lang.c:1755
+#: src/lang.c:1758
 msgid	"Default score to kill articles"
 msgstr	"Bewertung für gekillte Artikel"
 
-#: src/lang.c:1756
+#: src/lang.c:1759
 msgid	"# Default score to kill articles\n"
 msgstr	"# Bewertung für gekillte Artikel\n"
 
-#: src/lang.c:1760
+#: src/lang.c:1763
 msgid	"Enter minimal score before an article is marked hot. <CR> sets."
 msgstr	"Artikel mit einer höheren Bewertung (Score) werd. als wichtig/hot markiert."
 
-#: src/lang.c:1761
+#: src/lang.c:1764
 msgid	"Score limit (select)"
 msgstr	"Bewertungsgrenze (select)"
 
-#: src/lang.c:1762
+#: src/lang.c:1765
 msgid	"# Score limit before an article is marked hot\n"
 msgstr	"# Artikel mit einer höheren Bewertung (Score) werden als\n"
 	"# wichtig (hot) markiert\n"
 
-#: src/lang.c:1766
+#: src/lang.c:1769
 msgid	"Enter default score to select articles. <CR> sets."
 msgstr	"Bewertung für wichtige Artikel (hot). <CR> setzt."
 
-#: src/lang.c:1767
+#: src/lang.c:1770
 msgid	"Default score to select articles"
 msgstr	"Bewertung für wichtige Artikel"
 
-#: src/lang.c:1768
+#: src/lang.c:1771
 msgid	"# Default score to select articles\n"
 msgstr	"# Bewertung für wichtige Artikel (hot)\n"
 
-#: src/lang.c:1774
+#: src/lang.c:1777
 msgid	"Use slrnface to show ''X-Face:''s"
 msgstr	"''X-Face:''s mit slrnface Anzeigen"
 
-#: src/lang.c:1775
+#: src/lang.c:1778
 msgid	"# If ON using slrnface(1) to interpret the ''X-Face:'' header.\n"
 	"# Only useful when running in an xterm.\n"
 msgstr	"# Falls ON benutze slrnface(1) um ''X-Face:'' anzuzeigen.\n"
 	"# Funktioniert nur wenn tin in einem xterm läuft.\n"
 
-#: src/lang.c:1783
+#: src/lang.c:1786
 msgid	"Use ANSI color"
 msgstr	"Benutze ANSI-Farben"
 
-#: src/lang.c:1784
+#: src/lang.c:1787
 msgid	"# If ON using ANSI-color\n"
 msgstr	"# Falls ON benutze ANSI-Farben\n"
 
-#: src/lang.c:1789
+#: src/lang.c:1792
 msgid	"Standard foreground color"
 msgstr	"Standard Vordergrundfarbe"
 
-#: src/lang.c:1790
+#: src/lang.c:1793
 msgid	"# Standard foreground color\n"
 msgstr	"# Standard Vordergrundfarbe\n"
 
-#: src/lang.c:1795
+#: src/lang.c:1798
 msgid	"Standard background color"
 msgstr	"Standard Hintergrundfarbe"
 
-#: src/lang.c:1796
+#: src/lang.c:1799
 msgid	"# Standard-Background-Color\n"
 msgstr	"# Standard Hintergrundfarbe\n"
 
-#: src/lang.c:1801
+#: src/lang.c:1804
 msgid	"Color for inverse text (background)"
 msgstr	"Farbe des inversen Text (Hinterg.)"
 
-#: src/lang.c:1802
+#: src/lang.c:1805
 msgid	"# Color of background for inverse text\n"
 msgstr	"# Farbe des Hintergrunds für inversen Text\n"
 
-#: src/lang.c:1807
+#: src/lang.c:1810
 msgid	"Color for inverse text (foreground)"
 msgstr	"Farbe des inversen Text (Vordergr.)"
 
-#: src/lang.c:1808
+#: src/lang.c:1811
 msgid	"# Color of foreground for inverse text\n"
 msgstr	"# Farbe des Vordergrunds für inversen Text\n"
 
-#: src/lang.c:1813
+#: src/lang.c:1816
 msgid	"Color of text lines"
 msgstr	"Farbe der Textzeilen"
 
-#: src/lang.c:1814
+#: src/lang.c:1817
 msgid	"# Color of text-lines\n"
 msgstr	"# Farbe der Textzeilen\n"
 
-#: src/lang.c:1819
+#: src/lang.c:1822
 msgid	"Color of mini help menu"
 msgstr	"Farbe des Minihilfemenü"
 
-#: src/lang.c:1820
+#: src/lang.c:1823
 msgid	"# Color of mini help menu\n"
 msgstr	"# Farbe des Minihilfemenü\n"
 
-#: src/lang.c:1825
+#: src/lang.c:1828
 msgid	"Color of help text"
 msgstr	"Farbe des Hilfstext"
 
-#: src/lang.c:1826
+#: src/lang.c:1829
 msgid	"# Color of help pages\n"
 msgstr	"# Farbe der Hilfsseiten\n"
 
-#: src/lang.c:1831
+#: src/lang.c:1834
 msgid	"Color of status messages"
 msgstr	"Farbe der Statusmeldungen"
 
-#: src/lang.c:1832
+#: src/lang.c:1835
 msgid	"# Color of messages in last line\n"
 msgstr	"# Farbe der letzten Zeile im Artikel\n"
 
-#: src/lang.c:1837
+#: src/lang.c:1840
 msgid	"Color of quoted lines"
 msgstr	"Farbe der zitierten Zeilen"
 
-#: src/lang.c:1838
+#: src/lang.c:1841
 msgid	"# Color of quote-lines\n"
 msgstr	"# Farbe der zitierten Zeilen\n"
 
-#: src/lang.c:1843
+#: src/lang.c:1846
 msgid	"Color of twice quoted line"
 msgstr	"Farbe von zweifach zitierten Zeilen"
 
-#: src/lang.c:1844
+#: src/lang.c:1847
 msgid	"# Color of twice quoted lines\n"
 msgstr	"# Farbe von zweifach zitierten Zeilen\n"
 
-#: src/lang.c:1849
+#: src/lang.c:1852
 msgid	"Color of =>3 times quoted line"
 msgstr	"Farbe von =>3-fach zitierten Zeilen"
 
-#: src/lang.c:1850
+#: src/lang.c:1853
 msgid	"# Color of >=3 times quoted lines\n"
 msgstr	"# Farbe von =>3-fach zitierten Zeilen\n"
 
-#: src/lang.c:1855
+#: src/lang.c:1858
 msgid	"Color of article header lines"
 msgstr	"Farbe der Artikelheaderzeilen"
 
-#: src/lang.c:1856
+#: src/lang.c:1859
 msgid	"# Color of header-lines\n"
 msgstr	"# Farbe der Artikelheaderzeilen\n"
 
-#: src/lang.c:1861
+#: src/lang.c:1864
 msgid	"Color of actual news header fields"
 msgstr	"Farbe des angezeigten Headers"
 
-#: src/lang.c:1862
+#: src/lang.c:1865
 msgid	"# Color of actual news header fields\n"
 msgstr	"# Farbe des angezeigten Headers\n"
 
-#: src/lang.c:1867
+#: src/lang.c:1870
 msgid	"Color of article subject lines"
 msgstr	"Farbe der Subjectzeile"
 
-#: src/lang.c:1868
+#: src/lang.c:1871
 msgid	"# Color of article subject\n"
 msgstr	"# Farbe der Subjectzeile\n"
 
-#: src/lang.c:1873
+#: src/lang.c:1876
 msgid	"Color of response counter"
 msgstr	"Farbe des Antwortzählers"
 
-#: src/lang.c:1874
+#: src/lang.c:1877
 msgid	"# Color of response counter\n"
 msgstr	"# Farbe des Antwortzählers\n"
 
-#: src/lang.c:1879
+#: src/lang.c:1882
 msgid	"Color of sender (From:)"
 msgstr	"Farbe des Autors (From:)"
 
-#: src/lang.c:1880
+#: src/lang.c:1883
 msgid	"# Color of sender (From:)\n"
 msgstr	"# Farbe des Autors (From:)\n"
 
-#: src/lang.c:1885
+#: src/lang.c:1888
 msgid	"Color of help/mail sign"
 msgstr	"Farbe des Hilfe/Mail-Zeichen"
 
-#: src/lang.c:1886
+#: src/lang.c:1889
 msgid	"# Color of Help/Mail-Sign\n"
 msgstr	"# Farbe des Hilfe/Mail-Zeichen\n"
 
-#: src/lang.c:1891
+#: src/lang.c:1894
 msgid	"Color of signatures"
 msgstr	"Farbe von Signaturen"
 
-#: src/lang.c:1892
+#: src/lang.c:1895
 msgid	"# Color of signature\n"
 msgstr	"# Farbe von Signaturen\n"
 
-#: src/lang.c:1897
+#: src/lang.c:1900
 msgid	"Color of highlighted URLs"
 msgstr	"Farbe der hervorgehobenen URLs"
 
-#: src/lang.c:1898
+#: src/lang.c:1901
 msgid	"# Color of highlighted URLs\n"
 msgstr	"# Farbe der hervorgehobenen URLs\n"
 
-#: src/lang.c:1903
+#: src/lang.c:1906
 msgid	"Color of highlighting with *stars*"
 msgstr	"Farbe der Hervorhebung *Sterne*"
 
-#: src/lang.c:1904
+#: src/lang.c:1907
 msgid	"# Color of word highlighting. There are four possibilities\n"
 	"# in articles: *stars*, /slashes/, _underdashes_ and -strokes-.\n"
 msgstr	"# Farbe der Hervorhebungen. Es gibt vier Möglichkeiten in Artikeln:\n"
 	"# *Sterne*, _Unterstriche_, /Schrägstriche/ und -Durchstreichen-.\n"
 
-#: src/lang.c:1910
+#: src/lang.c:1913
 msgid	"Color of highlighting with _dash_"
 msgstr	"Farbe der Hervorhebung _Striche_"
 
-#: src/lang.c:1916
+#: src/lang.c:1919
 msgid	"Color of highlighting with /slash/"
 msgstr	"Farbe der Hervorhebung /Schrägstr./"
 
-#: src/lang.c:1922
+#: src/lang.c:1925
 msgid	"Color of highlighting with -stroke-"
 msgstr	"Farbe der Hervorhebung -Durchstr.-"
 
-#: src/lang.c:1929
+#: src/lang.c:1932
 msgid	"Attr. of highlighting with *stars*"
 msgstr	"Hervorhebungsattribute *Sterne*"
 
-#: src/lang.c:1930
+#: src/lang.c:1933
 msgid	"# Attribute of word highlighting on mono terminals.\n"
 	"# There are four possibilities in articles:\n"
 	"# *stars*, /slashes/, _underdashes_ and -strokes-.\n"
@@ -5367,39 +5371,39 @@ msgstr	"# Attribute der Hervorhebung von Wörtern auf monochromen Terminals.\n"
 	"# 0 - normal, 1 - unterstrichen, 2 - beste Hervorhebung,\n"
 	"# 3 - invers, 4 - blinkend, 5 - halbe Helligkeit, 6 - fett\n"
 
-#: src/lang.c:1940
+#: src/lang.c:1943
 msgid	"Attr. of highlighting with _dash_"
 msgstr	"Hervorhebungsattr. _Unterstriche_"
 
-#: src/lang.c:1946
+#: src/lang.c:1949
 msgid	"Attr. of highlighting with /slash/"
 msgstr	"Hervorhebungsattr. /Schrägstriche/"
 
-#: src/lang.c:1952
+#: src/lang.c:1955
 msgid	"Attr. of highlighting with -stroke-"
 msgstr	"Hervorhebungsattr. -Durchstreich.-"
 
-#: src/lang.c:1958
+#: src/lang.c:1961
 msgid	"URL highlighting in message body"
 msgstr	"URL-Hervorhebung im Artikel"
 
-#: src/lang.c:1959
+#: src/lang.c:1962
 msgid	"# Enable URL highlighting?\n"
 msgstr	"# URL-Hervorhebung aktivieren?\n"
 
-#: src/lang.c:1964
+#: src/lang.c:1967
 msgid	"Word highlighting in message body"
 msgstr	"Wort-Hervorhebung im Artikel"
 
-#: src/lang.c:1965
+#: src/lang.c:1968
 msgid	"# Enable word highlighting?\n"
 msgstr	"# Wort-Hervorhebung aktivieren?\n"
 
-#: src/lang.c:1970
+#: src/lang.c:1973
 msgid	"What to display instead of mark"
 msgstr	"Anstelle der Markierung anzeigen"
 
-#: src/lang.c:1971
+#: src/lang.c:1974
 msgid	"# Should the leading and ending stars and dashes also be displayed,\n"
 	"# even when they are highlighting marks?\n"
 	"# 0 - no    1 - yes, display mark    2 - print a space instead\n"
@@ -5407,59 +5411,59 @@ msgstr	"# Sollen die führenden und abschließenden Sterne und Striche dargestellt
 	"# werden, auch wenn sie Hervorhebungsmarkierungen sind?\n"
 	"# 0 - nein  1 - ja, anzeigen  2 - Leerzeichen anstelle darstellen\n"
 
-#: src/lang.c:1977
+#: src/lang.c:1980
 msgid	"Enter column number to wrap article lines to in the pager. <CR> sets."
 msgstr	"Nach wie vielen Zeichen soll im Pager umbrochen werden? <CR> setzt."
 
-#: src/lang.c:1978
+#: src/lang.c:1981
 msgid	"Page line wrap column"
 msgstr	"Zeilen umbrechen nach"
 
-#: src/lang.c:1979
+#: src/lang.c:1982
 msgid	"# Wrap article lines at column\n"
 msgstr	"# In der Artikelanzeige Zeilen umbrechen bei Spalte\n"
 
-#: src/lang.c:1984
+#: src/lang.c:1987
 msgid	"Wrap around threads on next unread"
 msgstr	"Nä.ungel.-kein Abbr. am Listenende?"
 
-#: src/lang.c:1985
+#: src/lang.c:1988
 msgid	"# If ON wrap around threads on searching next unread article\n"
 msgstr	"# Diverse Funktionen in tin wechseln zum \"nächsten\" ungelesenen\n"
 	"# Artikel. Diese Einstellung kontrolliert, ob tin am Ende der\n"
 	"# Artikel/Threadliste abbricht (OFF) oder zum Beginn derselben springt und\n"
 	"# von dort aus den nächsten ungelesenen Artikel sucht. (ON)\n"
 
-#: src/lang.c:1989
+#: src/lang.c:1992
 msgid	"Enter default mail address (and fullname). <CR> sets."
 msgstr	"Standard Mail-Adresse (und Name) eingeben. <CR> setzt."
 
-#: src/lang.c:1990
+#: src/lang.c:1993
 msgid	"Mail address (and fullname)"
 msgstr	"Mailadresse (und Name)"
 
-#: src/lang.c:1991
+#: src/lang.c:1994
 msgid	"# User's mail address (and fullname), if not username@host (fullname)\n"
 msgstr	"# EMail-Adresse und vollständiger Name des Benutzers, wenn sie nicht\n"
 	"# benutzername@host (Vollständiger Name) lautet\n"
 
-#: src/lang.c:1996
+#: src/lang.c:1999
 msgid	"Show empty Followup-To in editor"
 msgstr	"Leeres Fup'2 im Editor anzeigen"
 
-#: src/lang.c:1997
+#: src/lang.c:2000
 msgid	"# If ON show empty Followup-To header when editing an article\n"
 msgstr	"# Wenn ON, zeige leeren Followup-To:-Header im Editor\n"
 
-#: src/lang.c:2001
+#: src/lang.c:2004
 msgid	"Enter path/! command/--none to create your default signature. <CR> sets."
 msgstr	"Setze Pfad/! Kommando/--none um ihre Signatur festzulegen. <CR> setzt."
 
-#: src/lang.c:2002
+#: src/lang.c:2005
 msgid	"Create signature from path/command"
 msgstr	"Erzeuge Signatur aus Pfad/Kommando"
 
-#: src/lang.c:2003
+#: src/lang.c:2006
 msgid	"# Signature path (random sigs)/file to be used when posting/replying\n"
 	"# default_sigfile=file       appends file as signature\n"
 	"# default_sigfile=!command   executes external command to generate a "
@@ -5470,49 +5474,49 @@ msgstr	"# Pfad der Sig (Zufällige Sigs)/Datei die für Antworten genutzt wird\n"
 	"# default_sigfile=!Kommando führt Kommando aus um Sig zu erzeugen\n"
 	"# default_sigfile=--none    hängt keine Signatur an\n"
 
-#: src/lang.c:2010
+#: src/lang.c:2013
 msgid	"Prepend signature with \"-- \" on own line. <SPACE> toggles & <CR> sets."
 msgstr	"Trenne Sig mit \"-- \" in eigener Zeile ab. <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:2011
+#: src/lang.c:2014
 msgid	"Prepend signature with \"-- \""
 msgstr	"Trenne Sig mit \"-- \" ab"
 
-#: src/lang.c:2012
+#: src/lang.c:2015
 msgid	"# If ON prepend the signature with dashes '\\n-- \\n'\n"
 msgstr	"# Falls ON trenne Signatur mit '\\n-- \\n' ab\n"
 
-#: src/lang.c:2016
+#: src/lang.c:2019
 msgid	"Add signature when reposting articles. <SPACE> toggles & <CR> sets."
 msgstr	"Sig. beim Reposten eines Artikels hinzufügen? <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:2017
+#: src/lang.c:2020
 msgid	"Add signature when reposting"
 msgstr	"Signatur beim Reposten anhängen"
 
-#: src/lang.c:2018
+#: src/lang.c:2021
 msgid	"# If ON add signature to reposted articles\n"
 msgstr	"# Falls ON wird die Signatur auch an repostete Artikel angehängt.\n"
 
-#: src/lang.c:2022
+#: src/lang.c:2025
 msgid	"Enter quotation marks, %s or %S for author's initials."
 msgstr	"Zitatzeichen eingeben, %s oder %S für die Initialen des Verfassers."
 
-#: src/lang.c:2023
+#: src/lang.c:2026
 msgid	"Characters used as quote-marks"
 msgstr	"Zitatzeichen"
 
-#: src/lang.c:2024
+#: src/lang.c:2027
 msgid	"# Characters used in quoting to followups and replies.\n"
 	"# '_' is replaced by ' ', %%s, %%S are replaced by author's initials.\n"
 msgstr	"# Zeichen für Zitate in Antworten.\n"
 	"# '_' wird durch ' ' ersetzt. %%s, %%S wird ersetzt durch Autoreninitialen.\n"
 
-#: src/lang.c:2030
+#: src/lang.c:2033
 msgid	"Quoting behavior"
 msgstr	"Zitierverhalten"
 
-#: src/lang.c:2031
+#: src/lang.c:2034
 msgid	"# How quoting should be handled when following up or replying.\n"
 	"# 0 = Nothing special\n"
 	"# 1 = Compress quotes\n"
@@ -5533,15 +5537,15 @@ msgstr	"# Spezielle Optionen beim Zitieren\n"
 	"# 7 = Zitatzeichen zusammenziehen & Signaturen zitieren & Leerzeilen "
 	"zitieren\n"
 
-#: src/lang.c:2043 src/lang.c:2051 src/lang.c:2057
+#: src/lang.c:2046 src/lang.c:2054 src/lang.c:2060
 msgid	"%A Addr %D Date %F Addr+Name %G Groupname %M Message-ID %N Name %C First Name"
 msgstr	"%A Adr %D Datum %F Adr+Name %G Gruppenname %M Message-ID %N Name %C Vorname"
 
-#: src/lang.c:2044
+#: src/lang.c:2047
 msgid	"Quote line when following up"
 msgstr	"Einleitungszeile beim Antworten"
 
-#: src/lang.c:2045
+#: src/lang.c:2048
 msgid	"# Format of quote line when mailing/posting/following-up an article\n"
 	"# %%A Address    %%D Date   %%F Addr+Name   %%G Groupname   %%M Message-ID\n"
 	"# %%N Full Name  %%C First Name   %%I Initials\n"
@@ -5549,35 +5553,35 @@ msgstr	"# Format der Einleitungszeile beim Schreiben/Beantworten von Artikeln\n"
 	"# %%A Adresse  %%D Datum  %%F Adr+Name  %%G Gruppenname  %%M Message-ID\n"
 	"# %%N Voller Name  %%C Vorname  %%I Initialen\n"
 
-#: src/lang.c:2052
+#: src/lang.c:2055
 msgid	"Quote line when cross-posting"
 msgstr	"Einleitungszeile beim Crossposten"
 
-#: src/lang.c:2058
+#: src/lang.c:2061
 msgid	"Quote line when mailing"
 msgstr	"Einleitungszeile bei Mailantwort"
 
-#: src/lang.c:2063
+#: src/lang.c:2066
 msgid	"If ON, include User-Agent: header. <SPACE> toggles & <CR> sets."
 msgstr	"Falls ON, füge User-Agent:-Header ein. <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:2064
+#: src/lang.c:2067
 msgid	"Insert 'User-Agent:'-header"
 msgstr	"Füge 'User-Agent:'-header ein"
 
-#: src/lang.c:2065
+#: src/lang.c:2068
 msgid	"# If ON include advertising User-Agent: header\n"
 msgstr	"# Falls ON füge 'User-Agent: header' ein\n"
 
-#: src/lang.c:2069
+#: src/lang.c:2073
 msgid	"Enter charset name for MIME (e.g. US-ASCII, ISO-8859-1, EUC-KR), <CR> to set."
 msgstr	"Zeichensatz für MIME (z.B. US-ASCII, ISO-8859-1, EUC-KR), <CR> setzt."
 
-#: src/lang.c:2070
+#: src/lang.c:2074
 msgid	"MM_CHARSET"
 msgstr	"MM_CHARSET"
 
-#: src/lang.c:2071
+#: src/lang.c:2075
 msgid	"# Charset supported locally which is also used for MIME header and\n"
 	"# Content-Type header.\n"
 	"# If not set, the value of the environment variable MM_CHARSET is used.\n"
@@ -5594,27 +5598,27 @@ msgstr	"# Der lokale Zeichensatz, der auch für MIME- und Content-Type-Header\n"
 	"# definiert, werden andere Zeichensätze als mm_charset nicht dargestellt\n"
 	"# und die jeweiligen Zeichen durch ein '?' ersetzt.\n"
 
-#: src/lang.c:2082
+#: src/lang.c:2085
 msgid	"MM_NETWORK_CHARSET"
 msgstr	"MM_NETWORK_CHARSET"
 
-#: src/lang.c:2083
+#: src/lang.c:2086
 msgid	"# Charset used for MIME (Content-Type) header in postings.\n"
 msgstr	"# Zeichensatz für den MIME (Content-Type) Header der Artikel.\n"
 
-#: src/lang.c:2089
+#: src/lang.c:2092
 msgid	"Mailbox format"
 msgstr	"Mailbox-Format"
 
-#: src/lang.c:2090
+#: src/lang.c:2093
 msgid	"# Format of the mailbox.\n"
 msgstr	"# Format der Mailbox.\n"
 
-#: src/lang.c:2095
+#: src/lang.c:2098
 msgid	"MIME encoding in news messages"
 msgstr	"MIME-Kodierung in Newsartikeln"
 
-#: src/lang.c:2096
+#: src/lang.c:2099
 msgid	"# MIME encoding (8bit, base64, quoted-printable, 7bit) of the body\n"
 	"# for mails and posts, if necessary. QP is efficient for most European\n"
 	"# character sets (ISO-8859-X) with small fraction of non-US-ASCII chars,\n"
@@ -5628,15 +5632,15 @@ msgstr	"# MIME-Kodierung (8bit, base64, quoted-printable, 7bit) des Textkörpers 
 	"# die meisten 8Bit Zeichensätze aus Ostasien, Griechenland und Russland\n"
 	"# ist, da dort gehäuft 8Bit Zeichen vorkommen.\n"
 
-#: src/lang.c:2104 src/lang.c:2125
+#: src/lang.c:2107 src/lang.c:2128
 msgid	"Don't change unless you know what you are doing. <ESC> cancels."
 msgstr	"Nur ändern, wenn Sie genau wissen, was Sie machen. <ESC> bricht ab"
 
-#: src/lang.c:2105
+#: src/lang.c:2108
 msgid	"Use 8bit characters in news headers"
 msgstr	"Benutze 8bit-Zeichen im Newsheader"
 
-#: src/lang.c:2106
+#: src/lang.c:2109
 msgid	"# If ON, 8bit characters in news headers are NOT encoded.\n"
 	"# default is OFF. Thus 8bit characters are encoded by default.\n"
 	"# 8bit chars in header are encoded regardless of the value of this\n"
@@ -5648,27 +5652,27 @@ msgstr	"# Wenn ON werden 8-Bit-Zeichen (wie z.B. Umlaute) im Header von\n"
 	"# kodiert, wenn post_mime_encoding nicht auch auf 8bit eingestellt\n"
 	"# ist.\n"
 
-#: src/lang.c:2113
+#: src/lang.c:2116
 msgid	"Auto-view post-processed files <SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr	"Nachbearbeitete Artikel autom. anz. <SPACE> wechselt, <CR> setzt, <ESC> Ende"
 
-#: src/lang.c:2114
+#: src/lang.c:2117
 msgid	"View post-processed files"
 msgstr	"Nachbearbeitete Artikel anzeigen"
 
-#: src/lang.c:2115
+#: src/lang.c:2118
 msgid	"# If set, post processed files will be opened in a viewer\n"
 msgstr	"# Wenn ON werden nachbearbeitete Artikel automatisch angezeigt.\n"
 
-#: src/lang.c:2120
+#: src/lang.c:2123
 msgid	"MIME encoding in mail messages"
 msgstr	"MIME-Kodierung für E-Mails"
 
-#: src/lang.c:2126
+#: src/lang.c:2129
 msgid	"Use 8bit characters in mail headers"
 msgstr	"Benutze 8bit Zeichen im Mail Header"
 
-#: src/lang.c:2127
+#: src/lang.c:2130
 msgid	"# If ON, 8bit characters in mail headers are NOT encoded.\n"
 	"# default is OFF. Thus 8bit characters are encoded by default.\n"
 	"# 8bit chars in headers are encoded regardless of the value of this "
@@ -5685,24 +5689,24 @@ msgstr	"# Wenn ON werden 8-Bit-Zeichen (wie z.B. Umlaute) im Header von\n"
 	"# E-Mailheadern verbieten, daher sollte diese Einstellung NICHT auf ON\n"
 	"# geändert werden, wenn es keine zwingende Gründe dafür gibt.\n"
 
-#: src/lang.c:2137
+#: src/lang.c:2140
 msgid	"Strip blanks from ends of lines"
 msgstr	"Leerzeichen am Zeilenende entfernen"
 
-#: src/lang.c:2138
+#: src/lang.c:2141
 msgid	"# If ON strip blanks from ends of lines for faster display on slow "
 	"terminals.\n"
 msgstr	"# Falls ON lösche Leerzeichen am Zeilenende; verbessert die Geschwindigkeit\n"
 
-#: src/lang.c:2143
+#: src/lang.c:2146
 msgid	"If ON, use transliteration. <SPACE> toggles & <CR> sets."
 msgstr	"Wenn ON verwende Umschreibungen. <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:2144
+#: src/lang.c:2147
 msgid	"Transliteration"
 msgstr	"Verwende Umschreibungen"
 
-#: src/lang.c:2145
+#: src/lang.c:2148
 msgid	"# If ON, use //TRANSLIT extension. This means that when a character cannot\n"
 	"# be represented in the in the target character set, it can be approximated\n"
 	"# through one or several similarly looking characters.\n"
@@ -5712,242 +5716,242 @@ msgstr	"# Wenn ON verwende //TRANSLIT Erweiterung. Das heisst, dass nicht\n"
 	"# Terminal als EUR umschrieben, ohne //TRANSLIT würde tin ein\n"
 	"# Fragezeichen verwenden.\n"
 
-#: src/lang.c:2152
+#: src/lang.c:2155
 msgid	"Send you a carbon copy automatically. <SPACE> toggles & <CR> sets."
 msgstr	"Sendet ihnen automatisch eine Kopie. <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:2153
+#: src/lang.c:2156
 msgid	"Send you a cc automatically"
 msgstr	"Sendet Ihnen ein Cc automatisch"
 
-#: src/lang.c:2154
+#: src/lang.c:2157
 msgid	"# If ON automatically put your name in the Cc: field when mailing an article\n"
 msgstr	"# Falls ON wird Ihr Name in das Cc: Feld beim Mailen des Artikels eingesetzt\n"
 
-#: src/lang.c:2158
+#: src/lang.c:2161
 msgid	"Send you a blind carbon copy automatically. <SPACE> toggles & <CR> sets."
 msgstr	"Sendet ihnen automatisch eine blinde Kopie. <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:2159
+#: src/lang.c:2162
 msgid	"Send you a blind cc automatically"
 msgstr	"Sendet Ihnen eine blinde cc autom."
 
-#: src/lang.c:2160
+#: src/lang.c:2163
 msgid	"# If ON automatically put your name in the Bcc: field when mailing an "
 	"article\n"
 msgstr	"# Falls ON wird Ihr Name in das Bcc: Feld beim Mailen des Artikels "
 	"eingesetzt\n"
 
-#: src/lang.c:2164
+#: src/lang.c:2167
 msgid	"Enter address elements about which you want to be warned. <CR> sets."
 msgstr	"Geben Sie den Adressenteil an, vor dem Sie gewarnt werden. <CR> setzt."
 
-#: src/lang.c:2165
+#: src/lang.c:2168
 msgid	"Spamtrap warning address parts"
 msgstr	"Spamfallenwarnung in Adresse"
 
-#: src/lang.c:2166
+#: src/lang.c:2169
 msgid	"# A comma-delimited list of address-parts you want to be warned\n"
 	"# about when trying to reply by email.\n"
 msgstr	"# Eine Komma-separierte Liste von Adressteilen, vor denen gewarnt wird, wenn\n"
 	"# Sie via Mail antworten wollen.\n"
 
-#: src/lang.c:2171
+#: src/lang.c:2174
 msgid	"Enter default number of days a filter entry will be valid. <CR> sets."
 msgstr	"Gültigkeit eines Filtereintrags in Tagen. <CR> setzt."
 
-#: src/lang.c:2172
+#: src/lang.c:2175
 msgid	"No. of days a filter entry is valid"
 msgstr	"Tage, die ein Filter gültig ist"
 
-#: src/lang.c:2173
+#: src/lang.c:2176
 msgid	"# Number of days a short term filter will be active\n"
 msgstr	"# Anzahl der Tage die ein temporaerer Filter aktiv ist\n"
 
-#: src/lang.c:2177
+#: src/lang.c:2180
 msgid	"Add posted articles to filter. <SPACE> toggles & <CR> sets."
 msgstr	"Gepostete Artikel zum Filter hinzufügen. <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:2178
+#: src/lang.c:2181
 msgid	"Add posted articles to filter"
 msgstr	"Füge gepostete Artikel zum Filter"
 
-#: src/lang.c:2179
+#: src/lang.c:2182
 msgid	"# If ON add posted articles which start a new thread to filter for\n"
 	"# highlighting follow-ups\n"
 msgstr	"# Falls ON füge gepostete Article die einen neunen Thread einleiten\n"
 	"# zum Filter hinzu um evtl. Antworten hervorzuheben\n"
 
-#: src/lang.c:2183
+#: src/lang.c:2186
 msgid	"The directory where articles/threads are to be saved in mailbox format."
 msgstr	"Verzeichnis, in dem Artikel/Threads im mailbox-Format gespeichert werden"
 
-#: src/lang.c:2184
+#: src/lang.c:2187
 msgid	"Mail directory"
 msgstr	"Mail Verzeichnis"
 
-#: src/lang.c:2185
+#: src/lang.c:2188
 msgid	"# (-m) directory where articles/threads are saved in mailbox format\n"
 msgstr	"# (-m) Verzeichnis für im mailbox-Format gespeicherte Artikel/Threads\n"
 
-#: src/lang.c:2190
+#: src/lang.c:2193
 msgid	"Save articles in batch mode (-S)"
 msgstr	"Speicher Artikel im Batchmode (-S)"
 
-#: src/lang.c:2191
+#: src/lang.c:2194
 msgid	"# If ON articles/threads will be saved in batch mode when save -S\n"
 	"# or mail (-M/-N) is specified on the command line\n"
 msgstr	"# Falls ON werden Artikel/Threads im Batchmode gespeichert wenn save -S,\n"
 	"# oder gemailt, wenn -M bzw. -N in der Kommandozeile angegeben wurde\n"
 
-#: src/lang.c:2196
+#: src/lang.c:2199
 msgid	"The directory where you want articles/threads saved."
 msgstr	"Das Verzeichnis, in dem Artikel/Threads gespeichert werden sollen."
 
-#: src/lang.c:2197
+#: src/lang.c:2200
 msgid	"Directory to save arts/threads in"
 msgstr	"Verz. um Art/Threads zu speichern"
 
-#: src/lang.c:2198
+#: src/lang.c:2201
 msgid	"# Directory where articles/threads are saved\n"
 msgstr	"# Verzeichnis in dem Artikel/Threads gespeichert werden\n"
 
-#: src/lang.c:2202
+#: src/lang.c:2205
 msgid	"Auto save article/thread by Archive-name: header. <SPACE> toggles & <CR> sets."
 msgstr	"Autom. sp. von Art/Thread anhand Archive-name:-Header. <SPACE> wechselt & "
 	"<CR> setzt."
 
-#: src/lang.c:2203
+#: src/lang.c:2206
 msgid	"Use Archive-name: header for save"
 msgstr	"Nutze Archive-name: zum Speichern"
 
-#: src/lang.c:2204
+#: src/lang.c:2207
 msgid	"# If ON articles/threads with Archive-name: in mail header will\n"
 	"# be automatically saved with the Archive-name & part/patch no.\n"
 msgstr	"# Falls ON werden Artikel mit gesetztem Archive-name:-Header unter\n"
 	"# diesem abgespeichert\n"
 
-#: src/lang.c:2209
+#: src/lang.c:2212
 msgid	"Mark saved articles/threads as read. <SPACE> toggles, <CR> sets, <ESC> "
 	"cancels."
 msgstr	"Gesp. Art. gelesen markieren. <SPACE> wechselt, <CR> setzt, <ESC> bricht ab."
 
-#: src/lang.c:2210
+#: src/lang.c:2213
 msgid	"Mark saved articles/threads as read"
 msgstr	"Mark. gesp. Artikel/Threads gelesen"
 
-#: src/lang.c:2211
+#: src/lang.c:2214
 msgid	"# If ON mark articles that are saved as read\n"
 msgstr	"# Falls ON werden gespeicherte Artikel als gelesen markiert\n"
 
-#: src/lang.c:2215
+#: src/lang.c:2218
 msgid	"Do post processing (eg. extract attachments) for saved articles."
 msgstr	"Bearbeite (z.B. unshar) gesp. Art/Threads. <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:2216
+#: src/lang.c:2219
 msgid	"Post process saved articles"
 msgstr	"Nachbearbeiten gespeichert. Artikel"
 
-#: src/lang.c:2217
+#: src/lang.c:2220
 msgid	"# Perform post processing (saving binary attachments) from saved articles.\n"
 	"# 0=(no) 1=(yes) 2=(extract shell archives (shar) only)\n"
 msgstr	"# Nachbearbeiten gespeicherter Artikel\n"
 	"# 0=(nein) 1=(ja) 2=(nur Shell Archive (shar) auspacken)\n"
 
-#: src/lang.c:2223
+#: src/lang.c:2226
 msgid	"Process only unread articles"
 msgstr	"Bearbeite nur ungelesene Artikel"
 
-#: src/lang.c:2224
+#: src/lang.c:2227
 msgid	"# If ON only save/print/pipe/mail unread articles (tagged articles excepted)\n"
 msgstr	"# Falls ON speichere/drucke/pipe/maile nur ungelesene Artikel\n"
 	"# (markierte Artikel ausgenommen)\n"
 
-#: src/lang.c:2229
+#: src/lang.c:2232
 msgid	"Print all or just part of header. <SPACE> toggles & <CR> sets."
 msgstr	"Drucke alles oder nur Teile des Headers <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:2230
+#: src/lang.c:2233
 msgid	"Print all headers when printing"
 msgstr	"Alle Header beim Drucken ausgeben"
 
-#: src/lang.c:2231
+#: src/lang.c:2234
 msgid	"# If ON print all of article header otherwise just the important lines\n"
 msgstr	"# Falls ON drucke alle Header des Artikels aus. Ansonsten nur die "
 	"wichtigsten\n"
 
-#: src/lang.c:2235
+#: src/lang.c:2238
 msgid	"The printer program with options that is to be used to print articles/threads."
 msgstr	"Das Druckprogramm, das zum drucken von Artikeln/Threads benutzt wird."
 
-#: src/lang.c:2236
+#: src/lang.c:2239
 msgid	"Printer program with options"
 msgstr	"Druckprogramm mit Optionen"
 
-#: src/lang.c:2237
+#: src/lang.c:2240
 msgid	"# Print program with parameters used to print articles/threads\n"
 msgstr	"# Druckprogramm mit Optionen zum drucken der Artikel/Threads\n"
 
-#: src/lang.c:2243
+#: src/lang.c:2246
 msgid	"Force redraw after certain commands"
 msgstr	"Anzeigeauffrischung nach Kommandos"
 
-#: src/lang.c:2244
+#: src/lang.c:2247
 msgid	"# If ON a screen redraw will always be done after certain external commands\n"
 msgstr	"# Falls ON wird die Anzeige nach einigen externen Kommandos aufgefrischt\n"
 
-#: src/lang.c:2248
+#: src/lang.c:2251
 msgid	"Start editor with line offset. <SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr	"Starte Editor mit Einrückung. <SPACE> wechselt, <CR> setzt, <ESC> bricht ab."
 
-#: src/lang.c:2249
+#: src/lang.c:2252
 msgid	"Start editor with line offset"
 msgstr	"Starte Editor mit Einrückung"
 
-#: src/lang.c:2250
+#: src/lang.c:2253
 msgid	"# If ON editor will be started with cursor offset into the file\n"
 	"# otherwise the cursor will be positioned at the first line\n"
 msgstr	"# Falls ON wird der Cursor im Editor an die definierte Position gesetzt.\n"
 	"# Anderenfalls wird der Cursor in die erste Zeile gesetzt\n"
 
-#: src/lang.c:2255
+#: src/lang.c:2258
 msgid	"Enter %E for editor, %F for filename, %N for line-number, <CR> to set."
 msgstr	"%E für Editor, %F für Dateiname, %N für Zeilennummer, <CR> setzt."
 
-#: src/lang.c:2256
+#: src/lang.c:2259
 msgid	"Invocation of your editor"
 msgstr	"Aufruf ihres Editors"
 
-#: src/lang.c:2257
+#: src/lang.c:2260
 msgid	"# Format of editor line including parameters\n"
 	"# %%E Editor  %%F Filename  %%N Linenumber\n"
 msgstr	"# Format der Editorzeile mit den Parametern für den Aufruf\n"
 	"# %%E Editor  %%F Dateiname  %%N Zeilennummer\n"
 
-#: src/lang.c:2262
+#: src/lang.c:2265
 msgid	"Enter name and options for external-inews, --internal for internal inews"
 msgstr	"Name und Optionen für ext. inews, --internal für eingebaute Version"
 
-#: src/lang.c:2263
+#: src/lang.c:2266
 msgid	"External inews"
 msgstr	"Externes inews-Programm"
 
-#: src/lang.c:2264
+#: src/lang.c:2267
 msgid	"# If --internal use the built in mini inews for posting via NNTP\n"
 	"# otherwise use an external inews program\n"
 msgstr	"# Falls --internal wird das eingebaute mini inews zum posten via NNTP\n"
 	"# benutzt, sonst wird das hier angegebene Programm mit den angebenen\n"
 	"# Optionen verwendet. z.B. 'inews -h'\n"
 
-#: src/lang.c:2268
+#: src/lang.c:2271
 msgid	"Enter %M for mailer, %S for subject, %T for to, %F for filename, <CR> to set."
 msgstr	"%M für den Mailer, %S für Subject, %T für to, %F für Dateinamen, <CR> setzt."
 
-#: src/lang.c:2269
+#: src/lang.c:2272
 msgid	"Invocation of your mail command"
 msgstr	"Aufruf ihres Mailkommandos"
 
-#: src/lang.c:2270
+#: src/lang.c:2273
 msgid	"# Format of mailer line including parameters\n"
 	"# %%M Mailer  %%S Subject  %%T To  %%F Filename\n"
 	"# ie. to use elm as your mailer:    elm -s \"%%S\" \"%%T\" < %%F\n"
@@ -5957,11 +5961,11 @@ msgstr	"# Format der Mailkommandozeile mit ihren Parametern\n"
 	"# Ein Beispiel für elm           :  elm -s \"%%S\" \"%%T\" < %%F\n"
 	"# Ein Beispiel für elm interaktiv:  elm -i %%F -s \"%%S\" \"%%T\"\n"
 
-#: src/lang.c:2278
+#: src/lang.c:2281
 msgid	"Use interactive mail reader"
 msgstr	"Benutze interaktives Mailprogramm"
 
-#: src/lang.c:2279
+#: src/lang.c:2282
 msgid	"# Interactive mailreader:\n"
 	"# 0 = no interactive mailreader\n"
 	"# 1 = use interactive mailreader with headers in file\n"
@@ -5972,137 +5976,137 @@ msgstr	"# Interaktives Mailprogramm:\n"
 	"übergeben\n"
 	"# 2 = interaktives Mailprogramm, Mailheader werden als Argumente übergeben\n"
 
-#: src/lang.c:2287
+#: src/lang.c:2290
 msgid	"Remove ~/.article after posting"
 msgstr	"Entferne ~/.article nach dem posten"
 
-#: src/lang.c:2288
+#: src/lang.c:2291
 msgid	"# If ON remove ~/.article after posting.\n"
 msgstr	"# Falls ON entferne ~/.article nach dem posten.\n"
 
-#: src/lang.c:2292
+#: src/lang.c:2295
 msgid	"Filename for all posted articles, <CR> sets, no filename=do not save."
 msgstr	"Dateiname für Kopie geposteter Artikel. <CR> setzt, kein Name=keine Kopie."
 
-#: src/lang.c:2293
+#: src/lang.c:2296
 msgid	"Filename for posted articles"
 msgstr	"Gepostete Artikel speichern in"
 
-#: src/lang.c:2294
+#: src/lang.c:2297
 msgid	"# Filename where to keep all postings (default posted)\n"
 	"# If no filename is set then postings will not be saved\n"
 msgstr	"# Dateiname für die Kopie aller Postings (Voreinstellung posted)\n"
 	"# Ist kein Name angegeben wird keine Kopie gespeichert\n"
 
-#: src/lang.c:2299
+#: src/lang.c:2302
 msgid	"Keep all failed articles in ~/dead.articles. <SPACE> toggles & <CR> sets."
 msgstr	"Behalte alle Fehlschläge in ~/dead.articles. <SPACE> wechselt & <CR> setzt."
 
-#: src/lang.c:2300
+#: src/lang.c:2303
 msgid	"Keep failed arts in ~/dead.articles"
 msgstr	"Halte Fehlschl. in ~/dead.articles"
 
-#: src/lang.c:2301
+#: src/lang.c:2304
 msgid	"# If ON keep all failed postings in ~/dead.articles\n"
 msgstr	"# Falls ON werden Fehlgeschlagene Artikel in ~/dead.articles verwahrt\n"
 
-#: src/lang.c:2305
+#: src/lang.c:2308
 msgid	"Do you want to strip unsubscribed groups from .newsrc"
 msgstr	"Wollen Sie nicht-abonnierte Gruppen aus der .newsrc entfernen?"
 
-#: src/lang.c:2306
+#: src/lang.c:2309
 msgid	"No unsubscribed groups in newsrc"
 msgstr	"Nur abonnierte Gruppen in newsrc"
 
-#: src/lang.c:2307
+#: src/lang.c:2310
 msgid	"# If ON strip unsubscribed groups from newsrc\n"
 msgstr	"# Falls ON entferne nicht-abonnierte Gruppen aus der newsrc\n"
 
-#: src/lang.c:2312
+#: src/lang.c:2315
 msgid	"Remove bogus groups from newsrc"
 msgstr	"Lösche nicht vorhande G. aus newsrc"
 
-#: src/lang.c:2313
+#: src/lang.c:2316
 msgid	"# What to do with bogus groups in newsrc file\n"
 	"# 0=(Keep) 1=(Remove) 2=(Highlight with D on selection screen).\n"
 msgstr	"# Was soll mit nicht mehr vorhanden Gruppen in der newsrc-Datei passieren?\n"
 	"# 0=(Behalten) 1=(entfernen) 2=(Mit D in der Auswahl markieren).\n"
 
-#: src/lang.c:2317
+#: src/lang.c:2320
 msgid	"Enter number of seconds until active file will be reread. <CR> sets."
 msgstr	"Sekunden, nach denen die active-Datei wieder gelesen wird. <CR> setzt."
 
-#: src/lang.c:2318
+#: src/lang.c:2321
 msgid	"Interval in secs to reread active"
 msgstr	"Active alle ... Sekunden neu lesen"
 
-#: src/lang.c:2319
+#: src/lang.c:2322
 msgid	"# Time interval in seconds between rereading the active file (0=never)\n"
 msgstr	"# Zeitintervall in Sekunden zwischen dem Wiedereinlesen des active (0=nie)\n"
 
-#: src/lang.c:2324
+#: src/lang.c:2327
 msgid	"Reconnect to server automatically"
 msgstr	"Autom. Wiederverbindung zum Server"
 
-#: src/lang.c:2325
+#: src/lang.c:2328
 msgid	"# If ON automatically reconnect to NNTP server if the connection is broken\n"
 msgstr	"# Falls ON wird eine unterbrochene Verbindung zum NNTP Server\n"
 	"# automatisch reaktiviert\n"
 
-#: src/lang.c:2329
+#: src/lang.c:2332
 msgid	"Create local copies of NNTP overview files. <SPACE> toggles & <CR> sets."
 msgstr	"Erzeuge lokale Kopien der NNTP Overview Dateien. <SPACE> wechselt & <CR> "
 	"setzt."
 
-#: src/lang.c:2330
+#: src/lang.c:2333
 msgid	"Cache NNTP overview files locally"
 msgstr	"Speichere NNTP Overview Daten lokal"
 
-#: src/lang.c:2331
+#: src/lang.c:2334
 msgid	"# If ON, create local copies of NNTP overview files.\n"
 msgstr	"# Falls ON, erzeuge lokale Kopien der NNTP Overview Dateien.\n"
 
-#: src/lang.c:2335
+#: src/lang.c:2338
 msgid	"Enter format string. <CR> sets, <ESC> cancels."
 msgstr	"Format-Zeichenkette eingeben. <CR> setzt, <ESC> bricht ab."
 
-#: src/lang.c:2336
+#: src/lang.c:2339
 msgid	"Format string for display of dates"
 msgstr	"Datums Format-Zeichenkette"
 
-#: src/lang.c:2337
+#: src/lang.c:2340
 msgid	"# Format string for date representation\n"
 msgstr	"# Zeichenkette die die Datumsanzeige beschreibt.\n"
 
-# TRANSLATION MISSING
-#: src/lang.c:2343
+#: src/lang.c:2346
 msgid	"Unicode normalization form"
-msgstr	""
+msgstr	"Unicode Normalisierungsart"
 
-# TRANSLATION MISSING
-#: src/lang.c:2344
+#: src/lang.c:2347
 msgid	"# Unicode normalization form\n"
 	"# 0 = None, 1 = NFKC, 2 = NFKD, 3 = NFC, 4 = NFD\n"
-msgstr	""
+msgstr	"# Unicode Normalisierungsart\n"
+	"# 0 = keine, 1 = NFKC, 2 = NFKD, 3 = NFC, 4 = NFD\n"
 
-#: src/lang.c:2351
+# TRANSLATION MISSING
+#: src/lang.c:2354
 msgid	"Render BiDi"
 msgstr	""
 
 # TRANSLATION MISSING
-#: src/lang.c:2352
+#: src/lang.c:2355
 msgid	"# If ON, bi-directional text is rendered by tin\n"
 msgstr	""
 
-#: src/main.c:590
+#: src/misc.c:3711
 #, c-format
-msgid	"Version: %s release %s (\"%s\") %s %s"
-msgstr	"Version: %s Ausgabe %s (\"%s\") %s %s"
+msgid	"Version: %s %s release %s (\"%s\") %s %s\n"
+msgstr	"Version: %s %s Ausgabe %s (\"%s\") %s %s\n"
 
-#: src/main.c:593
+#: src/misc.c:3714
 #, c-format
-msgid	"Version: %s release %s (\"%s\")"
-msgstr	"Version: %s Ausgabe %s (\"%s\")"
+msgid	"Version: %s %s release %s (\"%s\")\n"
+msgstr	"Version: %s %s Ausgabe %s (\"%s\")\n"
 
 #: src/newsrc.c:432
 msgid	"Unreachable?\n"
@@ -6134,7 +6138,7 @@ msgstr	"Sende letztes Kommando (%s) neu\n"
 msgid	"couldn't expand %s\n"
 msgstr	"Kann %s nicht expandieren\n"
 
-#: src/post.c:1951
+#: src/post.c:1962
 #, c-format
 msgid	"Posting: %.*s ..."
 msgstr	"Poste: %.*s ..."
@@ -6162,7 +6166,6 @@ msgstr	"unverändert"
 msgid	"[- Unavailable -]"
 msgstr	"[- Nicht Verfügbar -]"
 
-# TRANSLATION MISSING
 #.
 #. * preamble
 #. * TODO: -> lang.c
@@ -6172,21 +6175,24 @@ msgid	"This message has been composed in the 'multipart/mixed' MIME-format. If y
 	"are reading this prefix, your mail reader probably has not yet been modified\n"
 	"to understand the new format, and some of what follows may look strange.\n"
 	"\n"
-msgstr	""
+msgstr	"Dieser Artikel wurde im 'multipart/mixed' MIME-Format verfasst. Wenn Sie\n"
+	"dieses Präfix lesen ist ihr Mailprogramm vermutlich nicht in der Lage dieses\n"
+	"Format zu verstehen und einiges von was folgt, kann merkwürdig aussehen.\n"
+	"\n"
 
-#: src/save.c:967
+#: src/save.c:974
 msgid	"bytes"
 msgstr	"Bytes"
 
-#: src/select.c:351
+#: src/select.c:352
 msgid	"unread"
 msgstr	"ungelesen"
 
-#: src/select.c:351
+#: src/select.c:352
 msgid	"all"
 msgstr	"Alle"
 
-#: src/select.c:529 src/select.c:531
+#: src/select.c:530 src/select.c:532
 msgid	" R"
 msgstr	" R"
 
