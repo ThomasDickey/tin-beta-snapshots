@@ -110,6 +110,10 @@ struct t_config {
 	char quote_regex2[LEN];				/* regex used to determine twice quoted lines */
 	char quote_regex3[LEN];				/* regex used to determine >=3 times quoted lines */
 #endif /* HAVE_COLOR */
+	char slashes_regex[LEN];			/* regex used to highlight /slashes/ */
+	char stars_regex[LEN];				/* regex used to highlight *stars* */
+	char underscores_regex[LEN];			/* regex used to highlight _underscores_ */
+	char strokes_regex[LEN];			/* regex used to highlight -strokes- */
 	char sigfile[PATH_LEN];
 	char strip_re_regex[LEN];			/* regex used to find and remove 'Re:'-like strings */
 	char strip_was_regex[LEN];			/* regex used to find and remove '(was:.*'-like strings */
@@ -153,6 +157,8 @@ struct t_config {
 	int col_normal;						/* standard foreground color */
 	int col_markdash;					/* text highlighting with _underdashes_ */
 	int col_markstar;					/* text highlighting with *stars* */
+	int col_markslash;					/* text highlighting with /slashes/ */
+	int col_markstroke;					/* text highlighting with -strokes- */
 	int col_message;					/* color of message lines at bottom */
 	int col_newsheaders;				/* color of actual news header fields */
 	int col_quote;						/* color of quotelines */
@@ -164,7 +170,9 @@ struct t_config {
 	int col_text;						/* color of textlines*/
 	int col_title;						/* color of Help/Mail-Sign */
 	int word_h_display_marks;			/* display * or _ when highlighting or space or nothing*/
+#endif /* HAVE_COLOR */
 	t_bool word_highlight;				/* like word_highlight but stored in tinrc */
+#ifdef HAVE_COLOR
 	t_bool use_color;					/* like use_color but stored in tinrc */
 #endif /* HAVE_COLOR */
 	t_bool add_posted_to_filter;

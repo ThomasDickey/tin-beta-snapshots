@@ -48,7 +48,7 @@
 #	endif /* !STPWATCH_H */
 #endif /* PROFILE */
 
-#define SortBy(func) qsort (arts, (size_t)top_art, sizeof (struct t_article), func);
+#define SortBy(func)	qsort(arts, (size_t) top_art, sizeof(struct t_article), func);
 
 static long last_read_article;
 static t_bool overview_index_filename = FALSE;
@@ -57,26 +57,26 @@ int top_art = 0;				/* # of articles in arts[] */
 /*
  * Local prototypes
  */
-static char *print_date (time_t secs);
-static char *print_from (struct t_article *article);
-static int artnum_comp (t_comptype p1, t_comptype p2);
-static int date_comp (t_comptype p1, t_comptype p2);
-static int from_comp (t_comptype p1, t_comptype p2);
-static int global_get_multiparts (int aindex, MultiPartInfo **malloc_and_setme_info);
-static int global_look_for_multipart_info (int aindex, MultiPartInfo* setme, char start, char stop, int *offset);
-static int lines_comp (t_comptype p1, t_comptype p2);
-static int read_nov_file (struct t_group *group, long min, long max, int *expired);
-static int read_group (struct t_group *group, char *group_path, int *pcount);
-static int score_comp (t_comptype p1, t_comptype p2);
-static int score_comp_base (t_comptype p1, t_comptype p2);
-static int subj_comp (t_comptype p1, t_comptype p2);
-static int valid_artnum (long art);
-static long find_first_unread (struct t_group *group);
-static t_bool parse_headers (FILE *fp, struct t_article *h);
-static void print_expired_arts (int num_expired);
-static void sort_base (unsigned int sort_threads_type);
-static void thread_by_subject (void);
-static void thread_by_multipart (void);
+static char *print_date(time_t secs);
+static char *print_from(struct t_article *article);
+static int artnum_comp(t_comptype p1, t_comptype p2);
+static int date_comp(t_comptype p1, t_comptype p2);
+static int from_comp(t_comptype p1, t_comptype p2);
+static int global_get_multiparts(int aindex, MultiPartInfo **malloc_and_setme_info);
+static int global_look_for_multipart_info(int aindex, MultiPartInfo *setme, char start, char stop, int *offset);
+static int lines_comp(t_comptype p1, t_comptype p2);
+static int read_nov_file(struct t_group *group, long min, long max, int *expired);
+static int read_group(struct t_group *group, char *group_path, int *pcount);
+static int score_comp(t_comptype p1, t_comptype p2);
+static int score_comp_base(t_comptype p1, t_comptype p2);
+static int subj_comp(t_comptype p1, t_comptype p2);
+static int valid_artnum(long art);
+static long find_first_unread(struct t_group *group);
+static t_bool parse_headers(FILE *fp, struct t_article *h);
+static void print_expired_arts(int num_expired);
+static void sort_base(unsigned int sort_threads_type);
+static void thread_by_subject(void);
+static void thread_by_multipart(void);
 
 
 /*
@@ -101,7 +101,7 @@ show_art_msg(
  * ART_EXPIRED
  */
 void
-find_base (
+find_base(
 	struct t_group *group)
 {
 	register int i;
@@ -110,7 +110,7 @@ find_base (
 	grpmenu.max = 0;
 
 #ifdef DEBUG
-	debug_print_arts ();
+	debug_print_arts();
 #endif /* DEBUG */
 
 	if (group->attribute && group->attribute->show_only_unread) {
@@ -119,7 +119,7 @@ find_base (
 				continue;
 
 			if (grpmenu.max >= max_art)
-				expand_art ();
+				expand_art();
 
 			if (arts[i].status == ART_UNREAD)
 				base[grpmenu.max++] = i;
@@ -138,14 +138,14 @@ find_base (
 				continue;
 
 			if (grpmenu.max >= max_art)
-				expand_art ();
+				expand_art();
 
 			base[grpmenu.max++] = i;
 		}
 	}
 	/* sort base[] */
 	if (group->attribute && group->attribute->sort_threads_type > SORT_THREADS_BY_NOTHING)
-		sort_base (group->attribute->sort_threads_type);
+		sort_base(group->attribute->sort_threads_type);
 }
 
 
@@ -159,7 +159,7 @@ find_base (
  * Returns FALSE if the user aborted the indexing, otherwise TRUE
  */
 t_bool
-index_group (
+index_group(
 	struct t_group *group)
 {
 	char group_path[PATH_LEN];
@@ -175,14 +175,14 @@ index_group (
 		return TRUE;
 
 	if (!batch_mode)
-		show_art_msg (group->name);
+		show_art_msg(group->name);
 
-	make_group_path (group->name, group_path);
+	make_group_path(group->name, group_path);
 	signal_context = cArt;			/* Set this once glob_group is valid */
 
-	hash_reclaim ();
-	free_art_array ();
-	free_msgids ();
+	hash_reclaim();
+	free_art_array();
+	free_msgids();
 
 	/*
 	 * Load articles within min..max from xover index file if it exists
@@ -193,7 +193,7 @@ index_group (
 	BegStopWatch("setup_base");
 #endif /* PROFILE */
 
-	if (setup_hard_base (group, group_path) < 0)
+	if (setup_hard_base(group, group_path) < 0)
 		return FALSE;
 
 #ifdef PROFILE
@@ -202,8 +202,8 @@ index_group (
 #endif /* PROFILE */
 
 #ifdef DEBUG_NEWSRC
-	debug_print_comment ("Before read_nov_file");
-	debug_print_bitmap (group, NULL);
+	debug_print_comment("Before read_nov_file");
+	debug_print_bitmap(group, NULL);
 #endif /* DEBUG_NEWSRC */
 
 	min = grpmenu.max ? base[0] : group->xmin;
@@ -228,7 +228,7 @@ index_group (
 	/*
 	 * Read in the existing index via XOVER or the index file
 	 */
-	if (read_nov_file (group, min, max, &expired) == -1)
+	if (read_nov_file(group, min, max, &expired) == -1)
 		return FALSE;	/* user aborted indexing */
 
 #if 0	/* IMHO this is a bit to verbose (urs) */
@@ -236,13 +236,13 @@ index_group (
 	 * Prints 'P' for each expired article if verbose
 	 */
 	if (expired)
-		print_expired_arts (expired);
+		print_expired_arts(expired);
 #endif /* 0 */
 
 	/*
 	 * Add any articles to arts[] that are new or were killed
 	 */
-	if ((modified = read_group (group, group_path, &count)) == -1)
+	if ((modified = read_group(group, group_path, &count)) == -1)
 		return FALSE;	/* user aborted indexing */
 
 	/*
@@ -250,13 +250,13 @@ index_group (
 	 * the unread count to be correct.
 	 */
 #ifdef DEBUG_NEWSRC
-	debug_print_comment ("Before parse_unread_arts()");
-	debug_print_bitmap (group, NULL);
+	debug_print_comment("Before parse_unread_arts()");
+	debug_print_bitmap(group, NULL);
 #endif /* DEBUG_NEWSRC */
-	parse_unread_arts (group);
+	parse_unread_arts(group);
 #ifdef DEBUG_NEWSRC
-	debug_print_comment ("After parse_unread_arts()");
-	debug_print_bitmap (group, NULL);
+	debug_print_comment("After parse_unread_arts()");
+	debug_print_bitmap(group, NULL);
 #endif /* DEBUG_NEWSRC */
 
 	/*
@@ -266,37 +266,37 @@ index_group (
 		if (arts[i].thread == ART_EXPIRED) {
 			expired = 1;
 #ifdef DEBUG_NEWSRC
-			debug_print_comment ("art.c: index_group() purging...");
+			debug_print_comment("art.c: index_group() purging...");
 #endif /* DEBUG_NEWSRC */
-			art_mark_read (group, &arts[i]);
-			print_expired_arts (expired);
+			art_mark_read(group, &arts[i]);
+			print_expired_arts(expired);
 		}
 	}
 
 	if (expired || modified || tinrc.cache_overview_files)
-		write_nov_file (group);
+		write_nov_file(group);
 
 	/*
 	 * Create the reference tree. The msgid and ref ptrs will
 	 * be free()d now that the NovFile has been written.
 	 */
-	build_references (group);
+	build_references(group);
 
 	/*
 	 * Needs access to the reference tree
 	 */
-	filtered = filter_articles (group);
+	filtered = filter_articles(group);
 
 	if ((expired || count) && cmd_line && verbose) {
-		my_fputc ('\n', stdout);
-		my_flush ();
+		my_fputc('\n', stdout);
+		my_flush();
 	}
 
 #ifdef PROFILE
 	BegStopWatch("make_thread");
 #endif /* PROFILE */
 
-	make_threads (group, FALSE);
+	make_threads(group, FALSE);
 
 #ifdef PROFILE
 	EndStopWatch();
@@ -304,7 +304,7 @@ index_group (
 #endif /* PROFILE */
 
 	if ((modified || filtered) && !batch_mode)
-		clear_message ();
+		clear_message();
 
 	return TRUE;
 }
@@ -314,7 +314,7 @@ index_group (
  * Returns number of first unread article
  */
 static long
-find_first_unread (
+find_first_unread(
 	struct t_group *group)
 {
 	unsigned char *p;
@@ -338,7 +338,7 @@ find_first_unread (
  *   -1   user aborted indexing operation
  */
 static int
-read_group (
+read_group(
 	struct t_group *group,
 	char *group_path,
 	int *pcount)
@@ -357,16 +357,16 @@ read_group (
 	 * change to groups spooldir to optimize fopen()'s on local articles
 	 */
 	if (!read_news_via_nntp || group->type != GROUP_TYPE_NEWS) {
-		get_cwd (dir);
-		joinpath (buf, group->spooldir, group_path);
-		my_chdir (buf);
+		get_cwd(dir);
+		joinpath(buf, group->spooldir, group_path);
+		my_chdir(buf);
 	}
 
 	/*
 	 * Count num of arts to index so the user has an idea of index time
 	 */
 	for (i = 0; i < grpmenu.max; i++) {
-		if (base[i] <= last_read_article || valid_artnum (base[i]) >= 0)
+		if (base[i] <= last_read_article || valid_artnum(base[i]) >= 0)
 			continue;
 
 		total++;
@@ -378,7 +378,6 @@ read_group (
 	head_next = -1;
 
 	for (i = 0; i < grpmenu.max; i++) {	/* for each article # */
-
 		art = base[i];
 
 		/*
@@ -386,7 +385,7 @@ read_group (
 		 * arts[].thread from ART_EXPIRED to ART_NORMAL and skip
 		 * reading the header.
 		 */
-		if ((respnum = valid_artnum (art)) >= 0 || art <= last_read_article) {
+		if ((respnum = valid_artnum(art)) >= 0 || art <= last_read_article) {
 			if (respnum >= 0)
 				arts[respnum].thread = ART_NORMAL;
 
@@ -396,7 +395,7 @@ read_group (
 		/*
 		 * Try and open the article
 		 */
-		if ((fp = open_art_header (art)) == NULL)
+		if ((fp = open_art_header(art)) == NULL)
 			continue;
 
 		/*
@@ -410,24 +409,24 @@ read_group (
 		if (top_art >= max_art)
 			expand_art();
 
-		set_article (&arts[top_art]);
+		set_article(&arts[top_art]);
 		arts[top_art].artnum = art;
 		arts[top_art].thread = ART_NORMAL;
 
-		res = parse_headers (fp, &arts[top_art]);
+		res = parse_headers(fp, &arts[top_art]);
 
 		TIN_FCLOSE(fp);
 		if (tin_errno) {
 			if (!read_news_via_nntp || group->type != GROUP_TYPE_NEWS)
-				my_chdir (dir);
+				my_chdir(dir);
 
 			return -1;
 		}
 
 		if (!res) {
-			sprintf (buf, "FAILED parse_header(%ld)", art);
+			sprintf(buf, "FAILED parse_header(%ld)", art);
 #ifdef DEBUG
-			debug_nntp ("read_group", buf);
+			debug_nntp("read_group", buf);
 #endif /* DEBUG */
 			continue;
 		}
@@ -436,11 +435,11 @@ read_group (
 		top_art++;
 
 		if (++count % MODULO_COUNT_NUM == 0)
-			show_progress (mesg, count, total);
+			show_progress(mesg, count, total);
 
 #if 0 /* again too verbose */
 		if (batch_mode && verbose) {
-			my_fputc ('.', stdout);
+			my_fputc('.', stdout);
 			my_flush();
 		}
 #endif /* 0 */
@@ -456,7 +455,7 @@ read_group (
 	 * if !nntp change to previous dir before indexing started
 	 */
 	if (!read_news_via_nntp || group->type != GROUP_TYPE_NEWS)
-		my_chdir (dir);
+		my_chdir(dir);
 
 	return modified;
 }
@@ -474,21 +473,20 @@ read_group (
  *    2) Both are part of the same archive (name's match and arch bit set)
  */
 static void
-thread_by_subject (
+thread_by_subject(
 	void)
 {
 	int i, j;
 	struct t_hashnode *h;
 
 	for_each_art(i) {
-
 		if (arts[i].thread != ART_NORMAL || IGNORE_ART(i))
 			continue;
 
 		/*
 		 * Get the contents of the magic marker in the hashnode
 		 */
-		h = (struct t_hashnode *)(arts[i].subject - sizeof(int) - sizeof(void *)); /* FIXME: cast increases required alignment of target type */
+		h = (struct t_hashnode *) (arts[i].subject - sizeof(int) - sizeof(void *)); /* FIXME: cast increases required alignment of target type */
 
 		j = h->aptr;
 
@@ -531,7 +529,7 @@ thread_by_subject (
  * @return nonzero on success
  */
 int
-global_get_multipart_info (
+global_get_multipart_info(
 	int aindex,
 	MultiPartInfo *setme)
 {
@@ -558,7 +556,7 @@ global_get_multipart_info (
  *	rather then on base_index.
  */
 static int
-global_look_for_multipart_info (
+global_look_for_multipart_info(
 	int aindex,
 	MultiPartInfo* setme,
 	char start,
@@ -572,12 +570,12 @@ global_look_for_multipart_info (
 	*offset = 0;
 
 	/* entry assertions */
-	assert (0 <= aindex && aindex < top_art && "invalid index");
-	assert (setme != NULL && "setme must not be NULL");
+	assert(0 <= aindex && aindex < top_art && "invalid index");
+	assert(setme != NULL && "setme must not be NULL");
 
 	/* parse the message */
 	subj = arts[aindex].subject;
-	pch = strrchr (subj, start);
+	pch = strrchr(subj, start);
 	if (!pch || !isdigit((int) pch[1]))
 		return 0;
 	tmp.base_index = aindex; /* This could be confusing because we are actually storing the index into arts, not the base_index. */
@@ -587,7 +585,7 @@ global_look_for_multipart_info (
 		return 0;
 	if (!isdigit((int) pch[1]))
 		return 0;
-	tmp.total = (int) strtol (pch + 1, &pch, 10);
+	tmp.total = (int) strtol(pch + 1, &pch, 10);
 	if (*pch != stop)
 		return 0;
 	tmp.subject = subj;
@@ -613,7 +611,7 @@ global_look_for_multipart_info (
  * parts found.
  */
 static int
-global_get_multiparts (
+global_get_multiparts(
 	int aindex,
 	MultiPartInfo **malloc_and_setme_info)
 {
@@ -623,15 +621,15 @@ global_get_multiparts (
 	MultiPartInfo *info = 0;
 
 	/* entry assertions */
-	assert (0 <= aindex && aindex < top_art && "Invalid index");
-	assert (malloc_and_setme_info != NULL && "malloc_and_setme_info must not be NULL");
+	assert(0 <= aindex && aindex < top_art && "Invalid index");
+	assert(malloc_and_setme_info != NULL && "malloc_and_setme_info must not be NULL");
 
 	/* make sure this is a multipart message... */
 	if (!global_get_multipart_info(aindex, &tmp) || tmp.total < 1)
 		return 0;
 
 	/* make a temporary buffer to hold the multipart info... */
-	info = my_malloc (sizeof(MultiPartInfo) * tmp.total);
+	info = my_malloc(sizeof(MultiPartInfo) * tmp.total);
 
 	/* zero out part-number for the repost check below */
 	for (i = 0; i < tmp.total; ++i) {
@@ -641,10 +639,10 @@ global_get_multiparts (
 
 	/* try to find all the multiparts... */
 	for_each_art(i) {
-		if (strncmp (arts[i].subject, tmp.subject, tmp.subject_compare_len))
+		if (strncmp(arts[i].subject, tmp.subject, tmp.subject_compare_len))
 			continue;
 
-		if (!global_get_multipart_info (i, &tmp2))
+		if (!global_get_multipart_info(i, &tmp2))
 			continue;
 
 		/* 'test (1/5)' is not the same as 'test (1/15)' */
@@ -663,7 +661,7 @@ global_get_multiparts (
 
 		/* repost check: do we already have this part? */
 		if (info[part_index].part_number != -1) {
-			assert (info[part_index].part_number == tmp2.part_number && "bookkeeping error");
+			assert(info[part_index].part_number == tmp2.part_number && "bookkeeping error");
 			continue;
 		}
 
@@ -689,7 +687,7 @@ global_get_multiparts (
  *	The algorithm uses the tag multipart searches to thread articles together.
  */
 static void
-thread_by_multipart (
+thread_by_multipart(
 	void)
 {
 	int i, j, threadNum, parent;
@@ -702,7 +700,7 @@ thread_by_multipart (
 
 		threadNum = -1;
 		parent = -1;
-		for (j = minfo[0].total-1; j >= 0; j--) {
+		for (j = minfo[0].total - 1; j >= 0; j--) {
 			if (minfo[j].part_number != -1) {
 				if (threadNum != -1)
 					arts[minfo[j].base_index].thread = threadNum;
@@ -743,18 +741,18 @@ thread_by_multipart (
  *       - thread_by_multipart() + collate_subjects()
  */
 void
-make_threads (
+make_threads(
 	struct t_group *group,
 	t_bool rethread)
 {
 	int i;
 
 	if (!cmd_line && !batch_mode)
-		info_message (((group->attribute && group->attribute->thread_arts == THREAD_NONE) ? _(txt_unthreading_arts) : _(txt_threading_arts)));
+		info_message(((group->attribute && group->attribute->thread_arts == THREAD_NONE) ? _(txt_unthreading_arts) : _(txt_threading_arts)));
 
 #ifdef DEBUG
 	if (debug == 2)
-		error_message ("rethread=[%d]  thread_arts=[%d]  attr_thread_arts=[%d]",
+		error_message("rethread=[%d]  thread_arts=[%d]  attr_thread_arts=[%d]",
 				rethread, tinrc.thread_articles, group->attribute->thread_arts);
 #endif /* DEBUG */
 
@@ -765,7 +763,7 @@ make_threads (
 	 * will be sorted in this way.
 	 */
 	if (group->attribute)
-		sort_arts (group->attribute->sort_art_type);
+		sort_arts(group->attribute->sort_art_type);
 
 	/*
 	 * Reset all the ptrs to articles following the above sort
@@ -824,12 +822,12 @@ make_threads (
 		default: /* not reached */
 			break;
 	}
-	find_base (group);
+	find_base(group);
 }
 
 
 void
-sort_arts (
+sort_arts(
 	unsigned int sort_art_type)
 {
 	switch (sort_art_type) {
@@ -869,13 +867,13 @@ sort_arts (
 
 
 static void
-sort_base (
+sort_base(
 	unsigned int sort_threads_type)
 {
 	switch (sort_threads_type) {
 		case SORT_THREADS_BY_SCORE_DESCEND:
 		case SORT_THREADS_BY_SCORE_ASCEND:
-			qsort (base, (size_t)grpmenu.max, sizeof(long), score_comp_base);
+			qsort(base, (size_t) grpmenu.max, sizeof(long), score_comp_base);
 			break;
 	}
 }
@@ -890,7 +888,7 @@ sort_base (
  * 99% of the time we'll have overview data I don't know...
  */
 static t_bool
-parse_headers (
+parse_headers(
 	FILE *fp,
 	struct t_article *h)
 {
@@ -912,41 +910,41 @@ parse_headers (
 		if (lineno++ > max_lineno || h->archive)
 			break;
 
-		unfold_header (ptr);
+		unfold_header(ptr);
 		switch (toupper((unsigned char)*ptr)) {
 			case 'A':	/* Archive-name:  optional */
-				if ((hdr = parse_header (ptr + 1, "rchive-name", FALSE))) {
+				if ((hdr = parse_header(ptr + 1, "rchive-name", FALSE))) {
 					/* TODO - what if header of form news/group/name/part01? */
-					if ((s = strrchr (hdr, '/')) != NULL) {
+					if ((s = strrchr(hdr, '/')) != NULL) {
 						if (STRNCASECMPEQ(s + 1, "part", 4)) {
-							h->part = my_strdup (s + 5);
+							h->part = my_strdup(s + 5);
 							strtok(h->part, "\n");
 						} else if (STRNCASECMPEQ(s + 1, "patch", 5)) {
-							h->patch = my_strdup (s + 6);
+							h->patch = my_strdup(s + 6);
 							strtok(h->patch, "\n");
 						} else
 							continue;
 
 						strtok(hdr, "/");
-						h->archive = hash_str (hdr);
+						h->archive = hash_str(hdr);
 					}
 				}
 				break;
 
 			case 'D':	/* Date:  mandatory */
 				if (!h->date) {
-					if ((hdr = parse_header (ptr + 1, "ate", FALSE)))
-						h->date = parsedate (hdr, (struct _TIMEINFO *) 0);
+					if ((hdr = parse_header(ptr + 1, "ate", FALSE)))
+						h->date = parsedate(hdr, (struct _TIMEINFO *) 0);
 				}
 				break;
 
 			case 'F':	/* From:  mandatory */
 				if (!got_from) {
-					if ((hdr = parse_header (ptr + 1, "rom", FALSE))) {
-						h->gnksa_code = parse_from (hdr, art_from_addr, art_full_name);
-						h->from = hash_str (art_from_addr);
+					if ((hdr = parse_header(ptr + 1, "rom", FALSE))) {
+						h->gnksa_code = parse_from(hdr, art_from_addr, art_full_name);
+						h->from = hash_str(art_from_addr);
 						if (*art_full_name)
-							h->name = hash_str (eat_tab(rfc1522_decode(art_full_name)));
+							h->name = hash_str(eat_tab(rfc1522_decode(art_full_name)));
 						got_from = TRUE;
 					}
 				}
@@ -954,8 +952,8 @@ parse_headers (
 
 			case 'L':	/* Lines:  optional */
 				if (!got_lines) {
-					if ((hdr = parse_header (ptr + 1, "ines", FALSE))) {
-						h->line_count = atoi (hdr);
+					if ((hdr = parse_header(ptr + 1, "ines", FALSE))) {
+						h->line_count = atoi(hdr);
 						got_lines = TRUE;
 					}
 				}
@@ -963,20 +961,20 @@ parse_headers (
 
 			case 'M':	/* Message-ID:  mandatory */
 				if (!h->msgid) {
-					if ((hdr = parse_header (ptr + 1, "essage-ID", FALSE)))
-						h->msgid = my_strdup (hdr);
+					if ((hdr = parse_header(ptr + 1, "essage-ID", FALSE)))
+						h->msgid = my_strdup(hdr);
 				}
 				break;
 
 			case 'R':	/* References:  optional */
 				if (!h->refs) {
-					if ((hdr = parse_header (ptr + 1, "eferences", FALSE)))
-						h->refs = my_strdup (hdr);
+					if ((hdr = parse_header(ptr + 1, "eferences", FALSE)))
+						h->refs = my_strdup(hdr);
 				}
 
 				/* Received:  If found it's probably a mail article */
 				if (!got_received) {
-					if ((hdr = parse_header (ptr + 1, "eceived", FALSE))) {
+					if ((hdr = parse_header(ptr + 1, "eceived", FALSE))) {
 						max_lineno = 50;		/* Get extra lines for some reason */
 						got_received = TRUE;
 					}
@@ -985,17 +983,17 @@ parse_headers (
 
 			case 'S':	/* Subject:  mandatory */
 				if (!h->subject) {
-					if ((hdr = parse_header (ptr + 1, "ubject", FALSE))) {
+					if ((hdr = parse_header(ptr + 1, "ubject", FALSE))) {
 						s = eat_re(eat_tab(rfc1522_decode(hdr)), FALSE);
-						h->subject = hash_str (s);
+						h->subject = hash_str(s);
 					}
 				}
 				break;
 
 			case 'X':	/* Xref:  optional */
 				if (!h->xref) {
-					if ((hdr = parse_header (ptr + 1, "ref", FALSE)))
-						h->xref = my_strdup (hdr);
+					if ((hdr = parse_header(ptr + 1, "ref", FALSE)))
+						h->xref = my_strdup(hdr);
 				}
 				break;
 
@@ -1019,10 +1017,10 @@ parse_headers (
 	 */
 	if (got_from && h->date && h->msgid) {
 		if (!h->subject)
-			h->subject = hash_str ("<No subject>");
+			h->subject = hash_str("<No subject>");
 
 #ifdef DEBUG
-		debug_print_header (h);
+		debug_print_header(h);
 #endif /* DEBUG */
 		return TRUE;
 	}
@@ -1048,7 +1046,7 @@ parse_headers (
  * 	10.  Archive-name:  (ie. widget/part01)      [optional]
  */
 static int
-read_nov_file (
+read_nov_file(
 	struct t_group *group,
 	long min,
 	long max,
@@ -1077,7 +1075,7 @@ read_nov_file (
 	 */
 	if (tinrc.cache_overview_files && read_news_via_nntp && xover_supported && group->type == GROUP_TYPE_NEWS) {
 		read_news_via_nntp = FALSE;
-		read_nov_file (group, min, max, expired);
+		read_nov_file(group, min, max, expired);
 		read_news_via_nntp = TRUE;
 		if (last_read_article >= max)
 			return top_art;
@@ -1087,31 +1085,31 @@ read_nov_file (
 	/*
 	 * open the overview file (whether it be local or via nntp)
 	 */
-	if ((fp = open_xover_fp (group, "r", min, max)) == NULL)
+	if ((fp = open_xover_fp(group, "r", min, max)) == NULL)
 		return top_art;
 
 	if (group->xmax > max)
 		group->xmax = max;
 
-	while ((buf = tin_fgets (fp, FALSE)) != NULL) {
+	while ((buf = tin_fgets(fp, FALSE)) != NULL) {
 		if (need_resize) {
-			handle_resize ((need_resize == cRedraw) ? TRUE : FALSE);
+			handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
 			need_resize = cNo;
 		}
 
 #ifdef DEBUG
-		debug_nntp ("read_nov_file", buf);
+		debug_nntp("read_nov_file", buf);
 #endif /* DEBUG */
 
 		if (top_art >= max_art)
-			expand_art ();
+			expand_art();
 
 		p = buf;
 
 		/*
 		 * read the article number, guaranteed to be the first field
 		 */
-		artnum = atol (p);
+		artnum = atol(p);
 
 		/* catches case of 1st line being groupname */
 		if (artnum <= 0)
@@ -1121,7 +1119,7 @@ read_nov_file (
 		 * Check to make sure article in nov file has not expired in group
 		 */
 #if 0
-	my_printf ("artnum=[%ld] xmin=[%ld] xmax=[%ld]\n", artnum, group->xmin, group->xmax);
+	my_printf("artnum=[%ld] xmin=[%ld] xmax=[%ld]\n", artnum, group->xmin, group->xmax);
 	my_flush();
 	(void) sleep(1);
 #endif /* 0 */
@@ -1130,13 +1128,13 @@ read_nov_file (
 			(*expired)++;
 			continue;
 		}
-		set_article (&arts[top_art]);
+		set_article(&arts[top_art]);
 		arts[top_art].artnum = last_read_article = artnum;
 
-		if ((q = strchr (p, '\t')) == NULL) {
+		if ((q = strchr(p, '\t')) == NULL) {
 #ifdef DEBUG
-			error_message ("Bad overview record (Artnum) '%s'", buf);
-			debug_nntp ("read_nov_file", "Bad overview record (Artnum)");
+			error_message("Bad overview record (Artnum) '%s'", buf);
+			debug_nntp("read_nov_file", "Bad overview record (Artnum)");
 #endif /* DEBUG */
 			continue;
 		} else
@@ -1150,60 +1148,60 @@ read_nov_file (
 		/*
 		 * read Subject
 		 */
-		if ((q = strchr (p, '\t')) == NULL) {
+		if ((q = strchr(p, '\t')) == NULL) {
 #ifdef DEBUG
-			error_message ("Bad overview record (Subject) [%s]", p);
-			debug_nntp ("read_nov_file", "Bad overview record (Subject)");
+			error_message("Bad overview record (Subject) [%s]", p);
+			debug_nntp("read_nov_file", "Bad overview record (Subject)");
 #endif /* DEBUG */
 			continue;
 		} else
 			*q = '\0';
 
-		arts[top_art].subject = hash_str (eat_re(eat_tab(rfc1522_decode(p)), FALSE));
+		arts[top_art].subject = hash_str(eat_re(eat_tab(rfc1522_decode(p)), FALSE));
 		p = q + 1;
 
 		/*
 		 * read From
 		 */
-		if ((q = strchr (p, '\t')) == NULL) {
+		if ((q = strchr(p, '\t')) == NULL) {
 #ifdef DEBUG
-			error_message ("Bad overview record (From) [%s]", p);
-			debug_nntp ("read_nov_file", "Bad overview record (From)");
+			error_message("Bad overview record (From) [%s]", p);
+			debug_nntp("read_nov_file", "Bad overview record (From)");
 #endif /* DEBUG */
 			continue;
 		} else
 			*q = '\0';
 
-		arts[top_art].gnksa_code = parse_from (p, art_from_addr, art_full_name);
-		arts[top_art].from = hash_str (art_from_addr);
+		arts[top_art].gnksa_code = parse_from(p, art_from_addr, art_full_name);
+		arts[top_art].from = hash_str(art_from_addr);
 
 		if (*art_full_name)
-			arts[top_art].name = hash_str (eat_tab(rfc1522_decode(art_full_name)));
+			arts[top_art].name = hash_str(eat_tab(rfc1522_decode(art_full_name)));
 
 		p = q + 1;
 		/*
 		 * read Date
 		 */
-		if ((q = strchr (p, '\t')) == NULL) {
+		if ((q = strchr(p, '\t')) == NULL) {
 #ifdef DEBUG
-			error_message ("Bad overview record (Date) [%s]", p);
-			debug_nntp ("read_nov_file", "Bad overview record (Date)");
+			error_message("Bad overview record (Date) [%s]", p);
+			debug_nntp("read_nov_file", "Bad overview record (Date)");
 #endif /* DEBUG */
 			continue;
 		} else
 			*q = '\0';
 
-		arts[top_art].date = parsedate (p, (TIMEINFO *) 0);
+		arts[top_art].date = parsedate(p, (TIMEINFO *) 0);
 		p = q + 1;
 
 		/*
 		 * read Message-ID
 		 */
-		q = strchr (p, '\t');
+		q = strchr(p, '\t');
 		if (q == NULL || p == q) {	/* Empty msgid's */
 #ifdef DEBUG
-			error_message ("Bad overview record (Msg-id) [%s]", p);
-			debug_nntp ("read_nov_file", "Bad overview record (Msg-id)");
+			error_message("Bad overview record (Msg-id) [%s]", p);
+			debug_nntp("read_nov_file", "Bad overview record (Msg-id)");
 #endif /* DEBUG */
 			continue;
 		} else
@@ -1214,33 +1212,33 @@ read_nov_file (
 		 * draft-ietf-nntpext-base-13.txt, section 9.2.1.1
 		 * comes up with "<0>" - should we use it instead of '\0'?
 		 */
-		arts[top_art].msgid = ((*p) ? (my_strdup (p)) : ((char *) '\0'));
+		arts[top_art].msgid = (*p ? my_strdup(p) : '\0');
 
 		p = q + 1;
 
 		/*
 		 * read References
 		 */
-		if ((q = strchr (p, '\t')) == NULL) {
+		if ((q = strchr(p, '\t')) == NULL) {
 #ifdef DEBUG
-			error_message ("Bad overview record (References) [%s]", p);
-			debug_nntp ("read_nov_file", "Bad overview record (References)");
+			error_message("Bad overview record (References) [%s]", p);
+			debug_nntp("read_nov_file", "Bad overview record (References)");
 #endif /* DEBUG */
 			continue;
 		} else
 			*q = '\0';
 
-		arts[top_art].refs = ((*p) ? (my_strdup (p)) : ((char *) '\0'));
+		arts[top_art].refs = (*p ? my_strdup(p) : '\0');
 
 		p = q + 1;
 
 		/*
 		 * skip Bytes
 		 */
-		if ((q = strchr (p, '\t')) == NULL) {
+		if ((q = strchr(p, '\t')) == NULL) {
 #ifdef DEBUG
-			error_message ("Bad overview record (Bytes) [%s]", p);
-			debug_nntp ("read_nov_file", "Bad overview record (Bytes)");
+			error_message("Bad overview record (Bytes) [%s]", p);
+			debug_nntp("read_nov_file", "Bad overview record (Bytes)");
 #endif /* DEBUG */
 			continue;
 		} else
@@ -1252,11 +1250,11 @@ read_nov_file (
 		 * read Lines
 		 */
 		if (p != NULL) {
-			if ((q = strchr (p, '\t')) != NULL)
+			if ((q = strchr(p, '\t')) != NULL)
 				*q = '\0';
 
 			if (isdigit((unsigned char) *p))
-				arts[top_art].line_count = atoi (p);
+				arts[top_art].line_count = atoi(p);
 
 			p = (q == NULL ? (char *) 0 : q + 1);
 		}
@@ -1265,8 +1263,8 @@ read_nov_file (
 		 * read Xref
 		 */
 		if (p != NULL && xref_supported) {
-			if ((q = strstr (p, "Xref: ")) == NULL)
-				q = strstr (p, "xref: ");
+			if ((q = strstr(p, "Xref: ")) == NULL)
+				q = strstr(p, "xref: ");
 
 			if (q != NULL) {
 				p = q + 6;
@@ -1275,7 +1273,7 @@ read_nov_file (
 					q++;
 
 				*q = '\0';
-				q = strrchr (p, '\n');
+				q = strrchr(p, '\n');
 				if (q != NULL)
 					*q = '\0';
 
@@ -1283,7 +1281,7 @@ read_nov_file (
 				while (*q && *q == ' ')
 					q++;
 
-				arts[top_art].xref = my_strdup (q);
+				arts[top_art].xref = my_strdup(q);
 			}
 		}
 
@@ -1291,7 +1289,7 @@ read_nov_file (
 		 * end of overview line processing
 		 */
 #ifdef DEBUG
-		debug_print_header (&arts[top_art]);
+		debug_print_header(&arts[top_art]);
 #endif /* DEBUG */
 
 		/* we might loose accuracy here, but that shouldn't hurt */
@@ -1301,7 +1299,7 @@ read_nov_file (
 		top_art++;
 	}
 
-	TIN_FCLOSE (fp);
+	TIN_FCLOSE(fp);
 
 	if (tin_errno)
 		return -1;
@@ -1325,7 +1323,7 @@ read_nov_file (
  * 	9. Xref: line     (ie. alt.test:389)       [optional]
  */
 void
-write_nov_file (
+write_nov_file(
 	struct t_group *group)
 {
 	FILE *fp;
@@ -1334,14 +1332,11 @@ write_nov_file (
 	int i;
 	struct t_article *article;
 
-	if (no_write)
-		return;
-
 	/*
 	 * Don't write local index if we have XOVER, unless the user has
 	 * asked for caching.
 	 */
-	if (xover_supported && !tinrc.cache_overview_files)
+	if (no_write || (xover_supported && !tinrc.cache_overview_files))
 		return;
 
 	/*
@@ -1353,52 +1348,50 @@ write_nov_file (
 	 * than W_OK, since we won't read it anyway.
 	 */
 
-	STRCPY(tmp, ((((nov_file = find_nov_file (group, R_OK)) != 0)) ? nov_file : ""));
-	nov_file = find_nov_file (group, W_OK);
+	STRCPY(tmp, ((((nov_file = find_nov_file(group, R_OK)) != 0)) ? nov_file : ""));
+	nov_file = find_nov_file(group, W_OK);
 
 	if (strcmp(tmp, nov_file) != 0)
 		return;
 
 #ifdef DEBUG
 	if (debug)
-		error_message ("WRITE file=[%s]", nov_file);
+		error_message("WRITE file=[%s]", nov_file);
 #endif /* DEBUG */
 
-	fp = open_xover_fp (group, "w", 0L, 0L);
+	fp = open_xover_fp(group, "w", 0L, 0L);
 
 	if (fp == NULL)
-		error_message (_(txt_cannot_write_index), nov_file);
+		error_message(_(txt_cannot_write_index), nov_file);
 	else {
 		if (group->attribute && group->attribute->sort_art_type != SORT_ARTICLES_BY_NOTHING)
 			SortBy(artnum_comp);
 
 		if (!overview_index_filename)
-			fprintf (fp, "%s\n", group->name);
+			fprintf(fp, "%s\n", group->name);
 
 		for_each_art(i) {
 			article = &arts[i];
 
 			if (article->thread != ART_EXPIRED && article->artnum >= group->xmin) {
-				fprintf (fp, "%ld\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
+				fprintf(fp, "%ld\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
 					article->artnum,
 					tinrc.post_8bit_header ? article->subject : rfc1522_encode(article->subject, NULL, FALSE),
-					print_from (article),
-					print_date (article->date),
-					(article->msgid ? article->msgid : ""),
-					(article->refs ? article->refs : ""),
+					print_from(article),
+					print_date(article->date),
+					BlankIfNull(article->msgid),
+					BlankIfNull(article->refs),
 					0,	/* bytes */
 					article->line_count);
 
 				if (article->xref)
-					fprintf (fp, "\tXref: %s", article->xref);
+					fprintf(fp, "\tXref: %s", article->xref);
 
-				fprintf (fp, "\n");
+				fprintf(fp, "\n");
 			}
 		}
-
-		fclose (fp);
-		chmod (nov_file, (mode_t)(S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH));
-
+		fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH));
+		fclose(fp);
 	}
 }
 
@@ -1443,14 +1436,14 @@ write_nov_file (
  * our group. Return pointer to path or NULL if not found.
  */
 char *
-find_nov_file (
+find_nov_file(
 	struct t_group *group,
 	int mode)
 {
+	FILE *fp;
 	char *ptr;
 	const char *dir;
 	char buf[PATH_LEN];
-	FILE *fp;
 	int i;
 	static char nov_file[PATH_LEN];
 	t_bool hash_filename;
@@ -1477,12 +1470,13 @@ find_nov_file (
 
 		case GROUP_TYPE_NEWS:
 			if (read_news_via_nntp && xover_supported && !tinrc.cache_overview_files)
-				snprintf (nov_file, sizeof(nov_file) - 1, "%s%d.idx", TMPDIR, (int) process_id);
+				snprintf(nov_file, sizeof(nov_file) - 1, "%s%d.idx", TMPDIR, (int) process_id);
 			else {
-				make_base_group_path (novrootdir, group->name, buf);
-				snprintf (nov_file, sizeof(nov_file) - 1, "%s/%s", buf, novfilename);
+				make_base_group_path(novrootdir, group->name, buf);
+				/* TODO: use joinpath() */
+				snprintf(nov_file, sizeof(nov_file) - 1, "%s/%s", buf, novfilename);
 				if (mode == R_OK || mode == W_OK) {
-					if (!access (nov_file, mode))
+					if (!access(nov_file, mode))
 						overview_index_filename = TRUE;
 				}
 				if (!overview_index_filename) {
@@ -1497,26 +1491,26 @@ find_nov_file (
 	}
 
 	if (hash_filename) {
-		hash = hash_groupname (group->name);
+		hash = hash_groupname(group->name);
 
 		for (i = 1; ; i++) {
+			/* TODO: use joinpath() */
+			snprintf(nov_file, sizeof(nov_file) - 1, "%s/%lu.%d", dir, hash, i);
 
-			snprintf (nov_file, sizeof(nov_file) - 1, "%s/%lu.%d", dir, hash, i);
-
-			if ((fp = fopen (nov_file, "r")) == NULL)
+			if ((fp = fopen(nov_file, "r")) == NULL)
 				return nov_file;
 
 			/*
 			 * Don't follow, why should a zero length index file
 			 * cause the write to fail ?
 			 */
-			if (fgets (buf, (int) sizeof (buf), fp) == NULL) {
-				fclose (fp);
+			if (fgets(buf, (int) sizeof(buf), fp) == NULL) {
+				fclose(fp);
 				return nov_file;
 			}
-			fclose (fp);
+			fclose(fp);
 
-			ptr = strrchr (buf, '\n');
+			ptr = strrchr(buf, '\n');
 			if (ptr != NULL)
 				*ptr = '\0';
 
@@ -1534,7 +1528,7 @@ find_nov_file (
  * Run the index file updater only for the groups we've loaded.
  */
 void
-do_update (
+do_update(
 	t_bool catchup)
 {
 	char group_path[PATH_LEN];
@@ -1543,30 +1537,31 @@ do_update (
 	struct t_group *group;
 
 	if (verbose)
-		(void) time (&beg_epoch);
+		(void) time(&beg_epoch);
 
 	/*
 	 * loop through groups and update any required index files
 	 */
 	for (i = 0; i < selmenu.max; i++) {
 		group = &active[my_group[i]];
-		make_group_path (group->name, group_path);
+		make_group_path(group->name, group_path);
 
 		if (verbose) {
-			my_printf ("%s %s\n", (catchup ? "Catchup" : "Updating"), group->name);
+			/* TODO: -> lang.c */
+			my_printf("%s %s\n", (catchup ? _("Catchup") : _("Updating")), group->name);
 			my_flush();
 		}
-		if (!index_group (group))
+		if (!index_group(group))
 			continue;
 
 		if (catchup) {
 			for_each_art(j)
-				art_mark_read (group, &arts[j]);
+				art_mark_read(group, &arts[j]);
 		}
 	}
 
 	if (verbose) {
-		wait_message (0, _(txt_catchup_update_info),
+		wait_message(0, _(txt_catchup_update_info),
 			(catchup ? _(txt_caughtup) : _(txt_updated)), selmenu.max,
 			PLURAL(selmenu.max, txt_group), (unsigned long int) (time(NULL) - beg_epoch));
 	}
@@ -1574,7 +1569,7 @@ do_update (
 
 
 static int
-artnum_comp (
+artnum_comp(
 	t_comptype p1,
 	t_comptype p2)
 {
@@ -1598,7 +1593,7 @@ artnum_comp (
 
 
 static int
-subj_comp (
+subj_comp(
 	t_comptype p1,
 	t_comptype p2)
 {
@@ -1607,18 +1602,18 @@ subj_comp (
 	const struct t_article *s2 = (const struct t_article *) p2;
 
 	/*
-	 * return result of strcmp (reversed for descending)
+	 * return result of strcmp(reversed for descending)
 	 */
 	return (CURR_GROUP.attribute->sort_art_type == SORT_ARTICLES_BY_SUBJ_ASCEND
-			? (retval = strcasecmp (s1->subject, s2->subject))
+			? (retval = strcasecmp(s1->subject, s2->subject))
 				? retval : ((s1->date - s2->date) > 0) ? 1 : -1
-			: (retval = strcasecmp (s2->subject, s1->subject))
+			: (retval = strcasecmp(s2->subject, s1->subject))
 				? retval : ((s1->date - s2->date) > 0) ? 1 : -1);
 }
 
 
 static int
-from_comp (
+from_comp(
 	t_comptype p1,
 	t_comptype p2)
 {
@@ -1627,12 +1622,12 @@ from_comp (
 	const struct t_article *s2 = (const struct t_article *) p2;
 
 	/*
-	 * return result of strcmp (reversed for descending)
+	 * return result of strcmp(reversed for descending)
 	 */
 	return (CURR_GROUP.attribute->sort_art_type == SORT_ARTICLES_BY_FROM_ASCEND
-			? (retval = strcasecmp (s1->from, s2->from))
+			? (retval = strcasecmp(s1->from, s2->from))
 				? retval : ((s1->date - s2->date) > 0) ? 1 : -1
-			: (retval = strcasecmp (s2->from, s1->from))
+			: (retval = strcasecmp(s2->from, s1->from))
 				? retval : ((s1->date - s2->date) > 0) ? 1 : -1);
 }
 
@@ -1647,7 +1642,7 @@ from_comp (
  * is reversed.
  */
 static int
-date_comp (
+date_comp(
 	t_comptype p1,
 	t_comptype p2)
 {
@@ -1687,7 +1682,7 @@ date_comp (
  * Same again, but for art[].score
  */
 static int
-score_comp (
+score_comp(
 	t_comptype p1,
 	t_comptype p2)
 {
@@ -1715,7 +1710,7 @@ score_comp (
  * Same again, but for art[].line_count
  */
 static int
-lines_comp (
+lines_comp(
 	t_comptype p1,
 	t_comptype p2)
 {
@@ -1743,12 +1738,12 @@ lines_comp (
  * Compares the total score of two threads. Used for sorting base[].
  */
 static int
-score_comp_base (
+score_comp_base(
 	t_comptype p1,
 	t_comptype p2)
 {
-	int a = get_score_of_thread (*(const long *)p1);
-	int b = get_score_of_thread (*(const long *)p2);
+	int a = get_score_of_thread(*(const long *)p1);
+	int b = get_score_of_thread(*(const long *)p2);
 
 	if (CURR_GROUP.attribute->sort_threads_type == SORT_THREADS_BY_SCORE_ASCEND) {
 		if (a > b)
@@ -1766,7 +1761,7 @@ score_comp_base (
 
 
 void
-set_article (
+set_article(
 	struct t_article *art)
 {
 	art->subject = (char *) 0;
@@ -1798,17 +1793,17 @@ set_article (
  * Return index into arts[] or -1
  */
 static int
-valid_artnum (
+valid_artnum(
 	long art)
 {
-	register int prev, range;
-	register int dctop = top_art;
-	register int cur = 1;
+	int prev, range;
+	int dctop = top_art;
+	int cur = 1;
 
-	while ((dctop /= 2))
+	while ((dctop >>= 1))
 		cur <<= 1;
 
-	range = cur / 2;
+	range = cur >> 1;
 	cur--;
 
 	forever {
@@ -1823,14 +1818,14 @@ valid_artnum (
 		if (cur >= top_art)
 			cur = top_art - 1;
 
-		range /= 2;
+		range >>= 1;
 	}
 	return -1;
 }
 
 
 static void
-print_expired_arts (
+print_expired_arts(
 	int num_expired)
 {
 	int i;
@@ -1838,10 +1833,10 @@ print_expired_arts (
 	if (cmd_line && verbose) {
 #ifdef DEBUG
 		if (debug)
-			my_printf ("Expired Index Arts=[%d]", num_expired);
+			my_printf("Expired Index Arts=[%d]", num_expired);
 #endif /* DEBUG */
 		for (i = 0; i < num_expired; i++)
-			my_fputc ('P', stdout);
+			my_fputc('P', stdout);
 
 		if (num_expired)
 			my_flush();
@@ -1850,7 +1845,7 @@ print_expired_arts (
 
 
 static char *
-print_date (
+print_date(
 	time_t secs)
 {
 	static char date[25];
@@ -1861,7 +1856,7 @@ print_date (
 		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 	};
 
-	tm = localtime (&secs);
+	tm = localtime(&secs);
 	sprintf(date, "%02d %s %04d %02d:%02d:%02d",
 			tm->tm_mday,
 			months_a[tm->tm_mon],
@@ -1873,7 +1868,7 @@ print_date (
 
 
 static char *
-print_from (
+print_from(
 	struct t_article *article)
 {
 	static char from[PATH_LEN];
@@ -1882,12 +1877,12 @@ print_from (
 
 	if (article->name != NULL) {
 		if (strpbrk(article->name, "\".:;<>@[]()\\") != NULL && article->name[0] != '"' && article->name[strlen(article->name)] != '"')
-			snprintf (from, sizeof(from) - 1, "\"%s\" <%s>", tinrc.post_8bit_header ? article->name : rfc1522_encode(article->name, NULL, FALSE), article->from);
+			snprintf(from, sizeof(from) - 1, "\"%s\" <%s>", tinrc.post_8bit_header ? article->name : rfc1522_encode(article->name, NULL, FALSE), article->from);
 		else
-			snprintf (from, sizeof(from) - 1, "%s <%s>", tinrc.post_8bit_header ? article->name : rfc1522_encode(article->name, NULL, FALSE), article->from);
+			snprintf(from, sizeof(from) - 1, "%s <%s>", tinrc.post_8bit_header ? article->name : rfc1522_encode(article->name, NULL, FALSE), article->from);
 	}
 	else
-		STRCPY (from, article->from);
+		STRCPY(from, article->from);
 
 	return from;
 }

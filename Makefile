@@ -7,9 +7,9 @@
 PROJECT	= tin
 LVER	= 1
 PVER	= 5
-SVER	= 13
+SVER	= 14
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20020703
+DVER	= 20020926
 EXE	= tin
 
 # directory structure
@@ -364,7 +364,7 @@ CD	= cd
 CHMOD	= chmod
 CP	= cp -p
 ECHO	= echo
-LS	= ls -l
+LS	= ls
 MAKE	= make
 MV	= mv
 NROFF	= groff -Tascii
@@ -471,7 +471,7 @@ tar:
 	| $(TR) "[\012]" " "`
 	@$(GZIP) -9 $(PROJECT)-$(VER).tar
 	@$(CHMOD) 644 $(PROJECT)-$(VER).tar.gz
-	@$(LS) $(PROJECT)-$(VER).tar.gz
+	@$(LS) -l $(PROJECT)-$(VER).tar.gz
 
 bzip2:
 	@$(ECHO) "Generating bzipped tar file..."
@@ -483,7 +483,7 @@ bzip2:
 	| $(TR) "[\012]" " "`
 	@$(BZIP2) -9 $(PROJECT)-$(VER).tar
 	@$(CHMOD) 644 $(PROJECT)-$(VER).tar.bz2
-	@$(LS) $(PROJECT)-$(VER).tar.bz2
+	@$(LS) -l $(PROJECT)-$(VER).tar.bz2
 
 #
 # I know it's ugly, but it works

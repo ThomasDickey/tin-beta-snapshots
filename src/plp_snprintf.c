@@ -219,9 +219,9 @@ int plp_vsnprintf(char *str, size_t count, const char *fmt, va_list args)
 
 /* VARARGS3 */
 #ifdef HAVE_STDARGS
-int plp_snprintf (char *str,size_t count,const char *fmt,...)
+int plp_snprintf(char *str,size_t count,const char *fmt,...)
 #else
-int plp_snprintf (va_alist) va_dcl
+int plp_snprintf(va_alist) va_dcl
 #endif
 {
 #ifndef HAVE_STDARGS
@@ -235,7 +235,7 @@ int plp_snprintf (va_alist) va_dcl
     VA_SHIFT (str, char *);
     VA_SHIFT (count, size_t );
     VA_SHIFT (fmt, char *);
-    (void) plp_vsnprintf ( str, count, fmt, ap);
+    (void) plp_vsnprintf( str, count, fmt, ap);
     VA_END;
 	return( strlen( str ) );
 }
@@ -580,7 +580,7 @@ static char * plp_Errormsg ( int err )
 	{
 		static char msgbuf[32];     /* holds "errno=%d". */
 		/* SAFE use of sprintf */
-		(void) sprintf (msgbuf, "errno=%d", err);
+		(void) sprintf(msgbuf, "errno=%d", err);
 		cp = msgbuf;
     }
 #endif

@@ -154,7 +154,7 @@ static const char *const tex_to[TEX_SUBST] =
  */
 
 void
-convert_iso2asc (
+convert_iso2asc(
 	char *iso,
 	char **asc_buffer,
 	int *max_line_len,
@@ -255,7 +255,7 @@ convert_iso2asc (
 
 
 void
-convert_tex2iso (
+convert_tex2iso(
 	char *from,
 	char *to)
 {
@@ -265,14 +265,14 @@ convert_tex2iso (
 	size_t subst_len;
 
 	*to = '\0';
-	len = strlen (from);
+	len = strlen(from);
 
 	while (col < len) {
 		i = ex = 0;
 		while ((i < TEX_SUBST) && !ex) {
-			subst_len = strlen (tex_from[i]);
-			if (!strncmp (from + col, tex_from[i], subst_len)) {
-				strcat (to, tex_to[i]);
+			subst_len = strlen(tex_from[i]);
+			if (!strncmp(from + col, tex_from[i], subst_len)) {
+				strcat(to, tex_to[i]);
 				spaces += subst_len - 1;
 				col += subst_len - 1;
 				ex = 1;
@@ -280,9 +280,9 @@ convert_tex2iso (
 			i++;
 		}
 		if (!ex)
-			strncat (to, from + col, 1);
+			strncat(to, from + col, 1);
 		if (from[col] == ' ') {
-			strncat (to, SPACES, spaces);
+			strncat(to, SPACES, spaces);
 			spaces = 0;
 		}
 
@@ -290,20 +290,21 @@ convert_tex2iso (
 	}
 }
 
+
 /*
  * Check for german TeX encoding in file open on fp
  */
 t_bool
-is_art_tex_encoded (
+is_art_tex_encoded(
 	FILE *fp)
 {
 	char line[LEN];
 	int i, len;
 	t_bool body = FALSE;
 
-	rewind (fp);
+	rewind(fp);
 
-	while (fgets (line, (int) sizeof(line), fp) != NULL) {
+	while (fgets(line, (int) sizeof(line), fp) != NULL) {
 		if (line[0] == '\n' && !body)
 			body = TRUE;
 		else if (!body)
@@ -336,7 +337,7 @@ is_art_tex_encoded (
  * Replace all non printable characters by '?'
  */
 void
-convert_to_printable (
+convert_to_printable(
 	char *buf)
 {
 	unsigned char *c;
@@ -364,7 +365,7 @@ convert_to_printable (
  * LineFeed (ASCII 10) and CarriageReturn (ASCII 13) are allowed, too.
  */
 void
-convert_body2printable (
+convert_body2printable(
 	char *buf)
 {
 	unsigned char *c;

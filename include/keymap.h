@@ -236,9 +236,7 @@ struct k_page {
 	t_keynode MarkThdUnread;			/* 'Z' */
 	t_keynode QuickAutoSel;				/* '[' */
 	t_keynode QuickKill;					/* ']' */
-#ifdef HAVE_COLOR
 	t_keynode ToggleHighlight;			/* '_' */
-#endif /* HAVE_COLOR */
 	t_keynode Catchup;					/* 'c' */
 	t_keynode EditArticle;				/* 'e' */
 	t_keynode FollowupQuote;			/* 'f' */

@@ -119,7 +119,7 @@ struct t_header
 	char *ftnto;			/* Old X-Comment-To: (Used by FIDO) */
 	char *authorids;		/* Author-IDs: (USEFOR, 2nd Son of 1036) Obsolete, USEFOR kicked it */
 	t_param *persist;		/* P-ersistent headers (USEFOR, 2nd Son of 1036) Obsolete, USEFOR kicked it */
-	t_bool mime:1;			/* Is Mime-Version: defined */
+	t_bool mime:1;			/* Is Mime-Version: defined - TODO: change to version number */
 	t_part *ext;			/* Extended Mime header information */
 };
 

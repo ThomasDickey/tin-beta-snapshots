@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-06-09
+ *  Updated   : 2002-09-19
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -79,7 +79,7 @@
 
 #ifdef ENABLE_NLS
 #	include <libintl.h>
-#	define _(Text) gettext (Text)
+#	define _(Text)	gettext(Text)
 #else
 #	undef bindtextdomain
 #	define bindtextdomain(Domain, Directory) /* empty */
@@ -101,7 +101,7 @@
 #	if !defined(__GNUC__)
 #		undef M_UNIX
 #		define M_AMIGA
-#		define SIG_ARGS /*nothing, since compiler doesn't handle it*/
+#		define SIG_ARGS /* nothing, since compiler doesn't handle it */
 #		undef DECL_SIG_CONST
 #	endif /* !__GNUC__ */
 #endif /* __amiga__ || __amiga */
@@ -171,7 +171,11 @@ enum resizer { cNo, cYes, cRedraw };
 #ifdef HAVE_ERRNO_H
 #	include	<errno.h>
 #else
-#	include	<sys/errno.h>
+#	ifdef HAVE_SYS_ERRNO_H
+#		include	<sys/errno.h>
+#	else
+#		error "No errno.h or sys/errno.h found"
+#	endif /* HAVE_SYS_ERRNO_H */
 #endif /* HAVE_ERRNO_H */
 #if !defined(errno)
 #	ifdef DECL_ERRNO
@@ -182,12 +186,16 @@ enum resizer { cNo, cYes, cRedraw };
 #ifdef HAVE_STDDEF_H
 #	include <stddef.h>
 #endif /* HAVE_STDDEF_H */
-#include <sys/types.h>
+#ifdef HAVE_SYS_TYPES_H
+#	include <sys/types.h>
+#endif /* HAVE_SYS_TYPES_H */
 
 #ifdef M_AMIGA
 #	include "include:stat.h"	/* FIXME: Problem with AmiTCP-includes, AmiTCP's fstat() needs */
 #else									/* a running TCP-Stack. OTOH fstat() ist used with local spool */
-#	include <sys/stat.h>
+#	ifdef HAVE_SYS_STAT_H
+#		include <sys/stat.h>
+#	endif /* HAVE_SYS_STAT_H */
 #endif /* M_AMIGA */
 
 #ifdef TIME_WITH_SYS_TIME
@@ -370,7 +378,7 @@ enum resizer { cNo, cYes, cRedraw };
 #endif /* !HAVE_UNLINK */
 
 /*
- * If native OS has'nt defined STDIN_FILENO be a smartass and do it
+ * If native OS hasn't defined STDIN_FILENO be a smartass and do it
  */
 #if !defined(STDIN_FILENO)
 #	define STDIN_FILENO	0
@@ -417,8 +425,8 @@ enum resizer { cNo, cYes, cRedraw };
 #define FAKE_NNTP_FP		(FILE *) 9999
 
 /*
- *  Max time between the first character of a VT terminal escape sequence
- *  for special keys and the following characters to arrive (msec)
+ * Max time between the first character of a VT terminal escape sequence
+ * for special keys and the following characters to arrive (msec)
  */
 #define SECOND_CHARACTER_DELAY	200
 
@@ -500,7 +508,7 @@ enum resizer { cNo, cYes, cRedraw };
 #	else
 #		define DEFAULT_PRINTER	"/usr/ucb/lpr"
 #		define DEFAULT_SUM	"sum"
-#	endif /* __386BSD__ || __bsdi__ || __NetBSD__ ||__FreeBSD__ || __OpenBSD__ */
+#	endif /* __386BSD__ || __bsdi__ || __NetBSD__ || __FreeBSD__ || __OpenBSD__ */
 #	ifdef DGUX
 #		define USE_INVERSE_HACK
 #	endif /* DGUX */
@@ -541,9 +549,6 @@ enum resizer { cNo, cYes, cRedraw };
 #		define DEFAULT_PRINTER	"/bin/lp"
 #		define READ_CHAR_HACK
 #	endif /* _AIX */
-#	ifdef SCO_UNIX
-#		define HAVE_MMDF_MAILER
-#	endif /* SCO_UNIX */
 #	ifdef sinix
 #		define DEFAULT_PRINTER	"/bin/lpr"
 #	endif /* sinix */
@@ -650,7 +655,9 @@ enum resizer { cNo, cYes, cRedraw };
 #define CONFIG_FILE	"tinrc"
 #define DEFAULT_MAILDIR	"Mail"
 #define DEFAULT_SAVEDIR	"News"
-#define DEFAULT_INEWS_PROG "--internal"
+#ifdef NNTP_ABLE
+#	define DEFAULT_INEWS_PROG "--internal"
+#endif /* NNTP_ABLE */
 #define DEFAULT_URL_HANDLER "url_handler.sh"
 
 
@@ -669,6 +676,19 @@ enum resizer { cNo, cYes, cRedraw };
 #	define DEFAULT_QUOTE_REGEX2	"^\\s{0,3}(?:(?:[\\]{}>|:)]|\\w{1,3}[>|])\\s*){2}(?!-[})>])"
 #	define DEFAULT_QUOTE_REGEX3	"^\\s{0,3}(?:(?:[\\]{}>|:)]|\\w{1,3}[>|])\\s*){3}"
 #endif /* HAVE_COLOR */
+
+/* case insensitive */
+#if 0 /* single words only */
+#	define DEFAULT_SLASHES_REGEX	"(?:^|(?<=\\s))/[^\\s/]+/(?:(?=[,.!?;]?\\s)|$)"
+#	define DEFAULT_STARS_REGEX	"(?:^|(?<=\\s))\\*[^\\s*]+\\*(?:(?=[,.!?;]?\\s)|$)"
+#	define DEFAULT_UNDERSCORES_REGEX	"(?:^|(?<=\\s))_[^\\s_]+_(?:(?=[,.!?;]?\\s)|$)"
+#	define DEFAULT_STROKES_REGEX	"(?:^|(?<=\\s))-[^-\\s]+-(?:(?=[,.!?;]?\\s)|$)"
+#else /* multiple words */
+#	define DEFAULT_SLASHES_REGEX	"(?:^|(?<=\\s))/(?(?=[^-*/_\\s][^/\\s])[^-*/_\\s][^/]*[^-*/_\\s]|[^/\\s])/(?:(?=[,.!?;]?\\s)|$)"
+#	define DEFAULT_STARS_REGEX	"(?:^|(?<=\\s))\\*(?(?=[^-*/_\\s][^*\\s])[^-*/_\\s][^*]*[^-*/_\\s]|[^*\\s])\\*(?:(?=[,.!?;]?\\s)|$)"
+#	define DEFAULT_UNDERSCORES_REGEX	"(?:^|(?<=\\s))_(?(?=[^-*/_\\s][^_\\s])[^-*/_\\s][^_]*[^-*/_\\s]|[^_\\s])_(?:(?=[,.!?;]?\\s)|$)"
+#	define DEFAULT_STROKES_REGEX	"(?:^|(?<=\\s))-(?(?=[^-*/_\\s][^-\\s])[^-*/_\\s][^-]*[^-*/_\\s]|[^-\\s])-(?:(?=[,.!?;]?\\s)|$)"
+#endif /* 0 */
 
 /* case sensitive && ^-anchored */
 #define DEFAULT_STRIP_RE_REGEX	"(?:R[eE](?:\\^\\d+|\\[\\d\\])?|A[wW]|Odp|Sv):\\s"
@@ -711,22 +731,23 @@ enum resizer { cNo, cYes, cRedraw };
  */
 /* #define MAIL_REGEX	"\\b(?:mailto:(?:(?:[-\\w$.+!*'(),;/?:@&=]|(?:%[\\da-f]{2}))+))" */
 #define MAIL_REGEX	"\\b(?:mailto:(?:[-\\w$.+!*'(),;/?:@&=]|%[\\da-f]{2})+)"
-
 /*
  * case insensitive
  */
 #define NEWS_REGEX	"\\b(?:s?news|nntp):[^\\s@]+[@.][^\\s@]+(?:$|(?=[\\s.><,\"/():]))\\b"
+#if 0 /* not implemented */
 /*
- * case insensitive, no implemented
+ * case insensitive
  */
-#define TELNET_REGEX	"\\btelnet://(?:[^:@/]*(?::[^:@/]*)?@)?(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?\\.)+[a-z]{2,6}\\.?||localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?/?"
+#	define TELNET_REGEX	"\\btelnet://(?:[^:@/]*(?::[^:@/]*)?@)?(?:(?:[^\\W_](?:(?:-(?!-)|[^\\W_]){0,61}[^\\W_])?\\.)+[a-z]{2,6}\\.?||localhost|(?:(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(?:2[0-4]\\d|25[0-5]|[01]?\\d\\d?))(?::\\d+)?/?"
+#endif /* 0 */
 
 
 #define FILTER_FILE	"filter"
-#define GROUP_TIMES_FILE	"group.times"
+/* editor offset for filter-file; TODO: doesn't match for german filter-file */
+#define FILTER_FILE_OFFSET	24
 #define INPUT_HISTORY_FILE	".inputhistory"
 #define MAILGROUPS_FILE	"mailgroups"
-#define MSG_HEADERS_FILE	"headers"
 #define NEWSRC_FILE	".newsrc"
 #define NEWSRCTABLE_FILE	"newsrctable"
 /* ifdef APPEND_PID (default) NEWNEWSRC_FILE will be .newnewsrc<pid> */
@@ -740,9 +761,11 @@ enum resizer { cNo, cYes, cRedraw };
 #define POSTPONED_FILE	"postponed.articles"
 #define SUBSCRIPTIONS_FILE	"subscriptions"
 
-#define _CONF_FROMHOST	"fromhost"
-#define _CONF_ORGANIZATION	"organization"
-#define _CONF_SERVER	"server"
+#ifdef USE_INN_NNTPLIB
+#	define _CONF_FROMHOST	"fromhost"
+#	define _CONF_ORGANIZATION	"organization"
+#	define _CONF_SERVER	"server"
+#endif /* USE_INN_NNTPLIB */
 
 #define SIGDASHES "-- \n"
 
@@ -785,16 +808,8 @@ enum resizer { cNo, cYes, cRedraw };
 #	define forever	for(;;)
 #endif /* !forever */
 
-#ifndef nop
-#	define nop	((void)0)
-#endif /* !nop */
-
-#ifndef nobreak
-#	define nobreak
-#endif /* !nobreak */
-
 /* safe strcpy into fixed-legth buffer */
-#define STRCPY(dst, src)	(dst[sizeof(dst) - 1] = '\0', strncpy(dst, src, sizeof(dst) -1))
+#define STRCPY(dst, src)	(dst[sizeof(dst) - 1] = '\0', strncpy(dst, src, sizeof(dst) - 1))
 
 #define STRCMPEQ(s1, s2)	(strcmp((s1), (s2)) == 0)
 #define STRNCMPEQ(s1, s2, n)	(strncmp((s1), (s2), n) == 0)
@@ -805,7 +820,7 @@ enum resizer { cNo, cYes, cRedraw };
 #	define PATH_LEN	256
 #endif /* VMS || M_AMIGA */
 
-#if defined(M_UNIX)
+#ifdef M_UNIX
 #	ifndef MAXPATHLEN
 #		define MAXPATHLEN	256
 #	endif /* !MAXPATHLEN */
@@ -819,14 +834,13 @@ enum resizer { cNo, cYes, cRedraw };
 
 #define MODULO_COUNT_NUM	50
 #define TABLE_SIZE	1409
-#define MAX_PAGES	2000	/* maximum article pages */
 
 #define DAY	(60*60*24)		/* Seconds in a day */
 
 #define ctrl(c)	((c) & 0x1F)
 
 #ifndef DEFAULT_ISO2ASC
-#	define DEFAULT_ISO2ASC	"-1 "	/* ISO -> Ascii charset conversion */
+#	define DEFAULT_ISO2ASC	"-1 "	/* ISO -> ASCII charset conversion */
 #endif /* !DEFAULT_ISO2ASC */
 
 #ifndef DEFAULT_COMMENT
@@ -879,7 +893,6 @@ enum resizer { cNo, cYes, cRedraw };
  * Return values for tin_errno
  */
 #define TIN_ABORT		1			/* User requested abort or timeout */
-#define TIN_TIMEOUT		2			/* Client side timeout */
 
 #define NUM_CONFIRM_CHOICES	8	/* confirm what? */
 #define TINRC_CONFIRM_ACTION	(tinrc.confirm_choice == 1 || tinrc.confirm_choice == 4 || tinrc.confirm_choice == 5 || tinrc.confirm_choice == 7)
@@ -891,7 +904,7 @@ enum resizer { cNo, cYes, cRedraw };
  */
 #define NUM_MIME_ENCODINGS	4
 
-#define MIME_ENCODING_8BIT	0
+#define MIME_ENCODING_8BIT	0	/* not used */
 #define MIME_ENCODING_BASE64	1
 #define MIME_ENCODING_QP	2
 #define MIME_ENCODING_7BIT	3
@@ -915,8 +928,9 @@ enum resizer { cNo, cYes, cRedraw };
 
 /*
  * Maximal permissible word mark type
+ * 0 = nothing, 1 = mark, 2 = space
  */
-#define MAX_MARK		3
+#define MAX_MARK	2
 
 /* Line number (starting at 0) of 1st non-header data on the screen */
 /* ie, size of header */
@@ -933,7 +947,7 @@ enum resizer { cNo, cYes, cRedraw };
  * Is this part text/plain ?
  */
 #define IS_PLAINTEXT(x) \
-			(x->type == TYPE_TEXT && strcmp("plain", x->subtype) == 0)
+			(x->type == TYPE_TEXT && strcasecmp("plain", x->subtype) == 0)
 
 /* TRUE if basenote has responses */
 #define HAS_FOLLOWUPS(i)	(arts[base[i]].thread != -1)
@@ -990,8 +1004,8 @@ enum resizer { cNo, cYes, cRedraw };
 
 /*
  * used in curses.c and signal.c
- *     it's useless trying to run tin below these sizes
- *     (values acquired by testing ;-) )
+ * it's useless trying to run tin below these sizes
+ * (values acquired by testing ;-) )
  */
 #define MIN_LINES_ON_TERMINAL		 8
 #define MIN_COLUMNS_ON_TERMINAL		50
@@ -1088,7 +1102,7 @@ enum resizer { cNo, cYes, cRedraw };
 /*
  * Different values of strip_bogus - the ways to handle bogus groups
  */
-#define BOGUS_KEEP		0
+#define BOGUS_KEEP		0	/* not used */
 #define BOGUS_REMOVE		1
 #define BOGUS_SHOW		2
 
@@ -1105,12 +1119,6 @@ enum resizer { cNo, cYes, cRedraw };
 #define QUOTE_COMPRESS	1		/* Compress quotes */
 #define QUOTE_SIGS		2		/* Quote signatures */
 #define QUOTE_EMPTY		4		/* Quote empty lines */
-
-/*
- * used in help.c
- */
-#define HELP_INFO		0
-#define POST_INFO		1
 
 
 /*
@@ -1301,9 +1309,9 @@ enum resizer { cNo, cYes, cRedraw };
  * construct a mask for the byte containing the low bit, AND or OR it in;
  * use memset to fill in the intervening bytes efficiently; then construct
  * a mask for the byte containing the high bit, and AND or OR this mask
- * in.	Masks are constructed by left-shift of 0xff (to set high-order bits
+ * in. Masks are constructed by left-shift of 0xff (to set high-order bits
  * to 1), negating a left-shift of 0xfe (to set low-order bits to 1), and
- * the various negations and combinations of the same.	This procedure is
+ * the various negations and combinations of the same. This procedure is
  * complex, but 1 to 2 orders of magnitude faster than a shift inside a
  * loop for each bit inside a loop for each individual byte.
  *
@@ -1341,8 +1349,7 @@ typedef unsigned char	t_bitmap;
 /*
  *	struct t_msgid - message id
  */
-struct t_msgid
-{
+struct t_msgid {
 	struct t_msgid *next;		/* Next in hash chain */
 	struct t_msgid *parent;		/* Message-id followed up to */
 	struct t_msgid *sibling;	/* Next followup to parent */
@@ -1363,10 +1370,8 @@ struct t_msgid
  * article.inthread:
  *	FALSE for the first article in a thread, TRUE for all
  *	following articles in thread
- *
  */
-struct t_article
-{
+struct t_article {
 	long artnum;			/* Article number in spool directory for group */
 	char *subject;			/* Subject: line from mail header */
 	char *from;			/* From: line from mail header (address) */
@@ -1397,8 +1402,7 @@ struct t_article
 /*
  * struct t_attribute - configurable attributes on a per group basis
  */
-struct t_attribute
-{
+struct t_attribute {
 	char *maildir;				/* mail dir if other than ~/Mail */
 	char *savedir;				/* save dir if other than ~/News */
 	char *savefile;			/* save articles to specified file */
@@ -1447,9 +1451,8 @@ struct t_attribute
 /*
  * struct t_newsrc - newsrc related info.
  */
-struct t_newsrc
-{
-	t_bool present;		/* update newsrc ? */
+struct t_newsrc {
+	t_bool present:1;		/* update newsrc ? */
 	long num_unread;		/* unread articles in group */
 	long xmax;			/* newsrc max */
 	long xmin;			/* newsrc min */
@@ -1460,8 +1463,7 @@ struct t_newsrc
 /*
  * struct t_group - newsgroup info from active file
  */
-struct t_group
-{
+struct t_group {
 	char *name;			/* newsgroup / mailbox name */
 	char *aliasedto;		/* =new.group in active file, NULL if not */
 	char *description;	/* text from NEWSLIBDIR/newsgroups file */
@@ -1486,8 +1488,7 @@ struct t_group
 /*
  * used in hashstr.c
  */
-struct t_hashnode
-{
+struct t_hashnode {
 	struct t_hashnode *next;	/* chain for spillover */
 	int aptr;			/* used in subject threading */
 	char txt[1];			/* stub for the string data, \0 terminated */
@@ -1496,23 +1497,22 @@ struct t_hashnode
 /*
  * used in filter.c
  *
- *  Create 2 filter arrays - global & local. Local will be part of group_t
- *  structure and will have priority over global filter. Should help to
- *  speed kill/selecting within a group. The long value number that is in
- *  ~/.tin/kill will be replaced by group name so that it is more human
- *  readable and that if hash routine is changed it will still work.
+ * Create 2 filter arrays - global & local. Local will be part of group_t
+ * structure and will have priority over global filter. Should help to
+ * speed kill/selecting within a group. The long value number that is in
+ * ~/.tin/kill will be replaced by group name so that it is more human
+ * readable and that if hash routine is changed it will still work.
  *
- *  Add time period to filter_t struct to allow timed kills & auto-selection
- *  Default kill & select time 28 days. Store as a long and compare when
- *  loading against present time. If time secs is passed set flag to save
- *  filter file and don't load expired entry. Renamed to filter because of
- *  future directions in adding other retrieval methods to present kill &
- *  auto selection.
+ * Add time period to filter_t struct to allow timed kills & auto-selection
+ * Default kill & select time 28 days. Store as a long and compare when
+ * loading against present time. If time secs is passed set flag to save
+ * filter file and don't load expired entry. Renamed to filter because of
+ * future directions in adding other retrieval methods to present kill &
+ * auto selection.
  *
- *  Also seperate kill/select screen to allow ^K=kill ^A=auto-select
+ * Also seperate kill/select screen to allow ^K=kill ^A=auto-select
  */
-struct t_filters
-{
+struct t_filters {
 	int max;
 	int num;
 	struct t_filter *filter;
@@ -1521,8 +1521,7 @@ struct t_filters
 /*
  * struct t_filter - local & global filtering (ie. kill & auto-selection)
  */
-struct t_filter
-{
+struct t_filter {
 	char *scope;			/* NULL='*' (all groups) or 'comp.os.*' */
 	char *subj;			/* Subject: line */
 	char *from;			/* From: line */
@@ -1540,7 +1539,6 @@ struct t_filter
 	time_t time;			/* expire time in seconds */
 	struct t_filter *next;		/* next rule valid in group */
 	unsigned int inscope:4;		/* if group matches scope ie. 'comp.os.*' */
-	unsigned int type:2;		/* kill/auto select */
 	unsigned int icase:2;		/* Case sensitive filtering */
 	unsigned int fullref:4;		/* use full references or last entry only */
 };
@@ -1548,8 +1546,7 @@ struct t_filter
 /*
  * struct t_filter_rule - provides parameters to build filter rule from
  */
-struct t_filter_rule
-{
+struct t_filter_rule {
 	char text[PATH_LEN];
 	char scope[PATH_LEN];
 	int counter;
@@ -1557,14 +1554,13 @@ struct t_filter_rule
 	int fullref;
 	int lines_cmp;
 	int lines_num;
+	int score;
+	int expire_time;
 	t_bool from_ok:1;
 	t_bool lines_ok:1;
 	t_bool msgid_ok:1;
 	t_bool subj_ok:1;
 	t_bool check_string:1;
-	int type;
-	int score;
-	int expire_time;
 };
 
 /*
@@ -1576,32 +1572,29 @@ struct regex_cache {
 	pcre_extra *extra;
 };
 
-struct t_save
-{
+struct t_save {
 	char *path;
 	char *file;					/* => file part of *path */
 	struct t_article *artptr;	/* => article in arts[] */
-	t_bool saved;				/* Set if saved okay */
-	t_bool is_mailbox;			/* Set if path is a mailbox */
+	t_bool saved:1;				/* Set if saved okay */
+	t_bool is_mailbox:1;			/* Set if path is a mailbox */
 };
 
 #ifndef USE_CURSES
-struct t_screen
-{
+struct t_screen {
 	char *col;
 };
 #endif /* !USE_CURSES */
 
-struct t_posted
-{
+struct t_posted {
 	char date[10];
 	char group[80];
 	char action;
 	char subj[120];
 };
 
-struct t_art_stat
-{
+struct t_art_stat {
+	char art_mark;		/* mark to use for this thread - not used for groups */
 	int total;		/* total article count */
 	int unread;		/* number of unread articles (does not include seen) arts */
 	int seen;		/* number of seen articles (ART_WILL_RETURN) */
@@ -1610,20 +1603,18 @@ struct t_art_stat
 	int selected_total;	/* total selected count */
 	int selected_unread;	/* selected and unread */
 	int selected_seen;	/* selected and seen */
-	char art_mark;		/* mark to use for this thread - not used for groups */
 	int score;		/* maximum score */
-	time_t time;		/* latest time */
 	int multipart_total; /* 0=not multipart, >0 = number of articles in the multipart */
 	int multipart_have; /* number of articles we actually have found */
 	int multipart_compare_len; /* length of subject which contains non-specific multipart info */
+	time_t time;		/* latest time */
 };
 
 
 /*
  * Used for detecting changes in active file size on different news servers
  */
-struct t_newnews
-{
+struct t_newnews {
 	char *host;
 	time_t time;
 };
@@ -1685,15 +1676,14 @@ typedef struct {
  */
 typedef struct {
 	int art;
-	t_bool ignore_unavail;
+	t_bool ignore_unavail:1;
 } t_pagerinfo;
 
 
 /*
  * Time functions.
  */
-typedef struct _TIMEINFO
-{
+typedef struct _TIMEINFO {
 	time_t time;
 	long usec;
 	long tzone;
@@ -1717,8 +1707,8 @@ typedef struct {
 	char *test;
 	char *x11bitmap;
 	int textualnewlines;
-	t_bool needsterminal;
-	t_bool copiousoutput;
+	t_bool needsterminal:1;
+	t_bool copiousoutput:1;
 } t_mailcap;
 
 
@@ -1738,15 +1728,19 @@ typedef struct {
 #	else
 		typedef void *t_comptype;
 #	endif /* __STDC__ */
+#else
+#	ifdef HAVE_COMPTYPE_CHAR
+		typedef char *t_comptype;
+#	endif /* HAVE_COMPTYPE_CHAR */
 #endif /* HAVE_COMPTYPE_VOID */
 
-#ifdef HAVE_COMPTYPE_CHAR
-	typedef char *t_comptype;
-#endif /* HAVE_COMPTYPE_CHAR */
+#define _CDECL
 
-#	define _CDECL
-#	define _FAR_
+#ifdef VMS
+#	define SEPDIR ']'
+#else
 #	define SEPDIR	'/'
+#endif /* VMS */
 
 /*
  * mouse buttons for use in xterm
@@ -1770,7 +1764,6 @@ typedef struct {
 #	define METAMAIL_CMD		"%s -e -p -m \"tin\""
 #	define TMPDIR			"T:"
 #	define KEY_PREFIX		0x9b
-extern void joinpath (char *result, const char *dir, const char *file);
 #endif /* M_AMIGA */
 #ifdef VMS
 #	define REDIRECT_OUTPUT	""
@@ -1784,7 +1777,6 @@ extern void joinpath (char *result, const char *dir, const char *file);
 #	ifdef	HAVE_KEY_PREFIX
 #		define KEY_PREFIX	0x9b
 #	endif /* HAVE_KEY_PREFIX */
-extern void joinpath (char *result, const char *dir, const char *file);
 extern void joindir (char *result, const char *dir, const char *file);
 #endif /* VMS */
 
@@ -1796,7 +1788,7 @@ extern void joindir (char *result, const char *dir, const char *file);
 #	define TIN_EDITOR_FMT_ON		"%E +%N %F"
 #	define MAILER_FORMAT		"%M -oi -t < %F"
 #	define METAMAIL_CMD		"%s -e -p -m \"tin\""
-#	define TMPDIR	"/tmp/"
+#	define TMPDIR	_PATH_TMP
 #	ifdef	HAVE_KEY_PREFIX
 #		define KEY_PREFIX		0x8f: case 0x9b
 #	endif /* HAVE_KEY_PREFIX */
@@ -1826,7 +1818,7 @@ extern void joindir (char *result, const char *dir, const char *file);
 #	define METAMAIL_CMD		""
 #endif /* !METAMAIL_CMD */
 #ifndef TMPDIR
-#	define TMPDIR		""
+#	define TMPDIR	_PATH_TMP
 #endif /* !TMPDIR */
 
 #if !defined(S_ISDIR)
@@ -1898,7 +1890,7 @@ extern void joindir (char *result, const char *dir, const char *file);
 /* Various function redefinitions */
 #ifdef USE_DBMALLOC
 #	define my_malloc(size)	malloc(size)
-#	define my_calloc(nmemb, size)	calloc(nmemb, size)
+#	define my_calloc(nmemb, size)	calloc((nmemb), (size))
 #	define my_realloc(ptr, size)	realloc((ptr), (size))
 #else
 #	define my_malloc(size)	my_malloc1(__FILE__, __LINE__, (size))
@@ -1906,15 +1898,10 @@ extern void joindir (char *result, const char *dir, const char *file);
 #	define my_realloc(ptr, size)	my_realloc1(__FILE__, __LINE__, (ptr), (size))
 #endif /* USE_DBMALLOC */
 
-#define ARRAY_SIZE(array)	((int)(sizeof array / sizeof array[0]))
+#define ARRAY_SIZE(array)	((int) (sizeof(array) / sizeof(array[0])))
 
-#if 0
-#	define FreeIfNeeded(p)	if (p != (char *)0) free((char *)p)
-#	define FreeAndNull(p)	if (p != (char *)0) { free((char *)p); p = (char *)0; }
-#else
-#	define FreeIfNeeded(p)	if (p != NULL) free((void *)p)
-#	define FreeAndNull(p)	if (p != NULL) { free((void *)p); p = NULL; }
-#endif /* 0 */
+#define FreeIfNeeded(p)	if (p != NULL) free((void *) p)
+#define FreeAndNull(p)	if (p != NULL) { free((void *) p); p = NULL; }
 
 #define BlankIfNull(p)	((p) ? (p) : "")
 
@@ -1922,7 +1909,7 @@ extern void joindir (char *result, const char *dir, const char *file);
 #define my_group_add(x)		add_my_group(x, TRUE)
 #define for_each_group(x)	for (x = 0; x < num_active; x++)
 #define for_each_art(x)		for (x = 0; x < top_art; x++)
-#define for_each_art_in_thread(x, y)	for (x = (int)base[y]; x >= 0; x = arts[x].thread)
+#define for_each_art_in_thread(x, y)	for (x = (int) base[y]; x >= 0; x = arts[x].thread)
 
 /*
  * Cast for the (few!) places where we need to examine 8-bit characters w/o
@@ -1934,7 +1921,6 @@ extern void joindir (char *result, const char *dir, const char *file);
 /*
  * function prototypes & extern definitions
  */
-/* #include	"filebug.h" */
 
 #ifndef SIG_ARGS
 #	if defined(__STDC__)
@@ -1973,13 +1959,13 @@ extern void joindir (char *result, const char *dir, const char *file);
 #	define OUTC_FUNCTION(func)	OUTC_RETTYPE func (c) int c;
 #endif /* __STDC__ || __cplusplus */
 
-typedef	OUTC_RETTYPE (*OutcPtr) (OUTC_ARGS);
+typedef OUTC_RETTYPE (*OutcPtr) (OUTC_ARGS);
 
 #ifdef M_AMIGA
-	typedef	struct __tcpbuf TCP;
+	typedef struct __tcpbuf	TCP;
 #	include "amigatcp.h"
 #else
-	typedef	FILE	TCP;
+	typedef FILE TCP;
 #endif /* M_AMIGA */
 
 #ifndef EXTERN_H
@@ -2008,8 +1994,8 @@ typedef void (*BodyPtr) (char *, FILE *, int);
 #	undef strrchr
 #	undef NSET1
 #	undef NSET0
-#	define NSET1(n,b) memset(n+NOFFSET(b), n[NOFFSET(b)] | NTEST(n,b), 1)
-#	define NSET0(n,b) memset(n+NOFFSET(b), n[NOFFSET(b)] & ~NTEST(n,b), 1)
+#	define NSET1(n,b) memset(n + NOFFSET(b), n[NOFFSET(b)] | NTEST(n,b), 1)
+#	define NSET0(n,b) memset(n + NOFFSET(b), n[NOFFSET(b)] & ~NTEST(n,b), 1)
 #	include <dbmalloc.h> /* dbmalloc 1.4 */
 #endif /* USE_DBMALLOC */
 
@@ -2019,23 +2005,23 @@ typedef void (*BodyPtr) (char *, FILE *, int);
 #endif /* USE_DMALLOC */
 
 #ifdef DOALLOC
-	extern char *doalloc (char *, size_t);
-	extern char *docalloc (size_t, size_t);
-	extern void	dofree (char *);
+	extern char *doalloc(char *, size_t);
+	extern char *docalloc(size_t, size_t);
+	extern void	dofree(char *);
 #	undef malloc
 #	undef realloc
 #	undef calloc
 #	undef free
-#	define malloc(n)		doalloc((char *)0, n)
+#	define malloc(n)	doalloc((char *) 0, n)
 #	define realloc		doalloc
 #	define calloc		docalloc
 #	define free		dofree
-	extern void	fail_alloc ( char *, char * );
-	extern void	Trace ( char *, ... );
-	extern void	Elapsed ( char * );
-	extern void	WalkBack ( void );
-	extern void	show_alloc ( void );
-	extern void	no_leaks ( void );
+	extern void	fail_alloc(char *, char *);
+	extern void	Trace(char *, ...);
+	extern void	Elapsed(char *);
+	extern void	WalkBack(void);
+	extern void	show_alloc(void);
+	extern void	no_leaks(void);
 #endif /* DOALLOC */
 
 #ifdef __DECC		/* VMS */
@@ -2059,7 +2045,7 @@ typedef void (*BodyPtr) (char *, FILE *, int);
  * argument can't be a pointer and if argument is changed on return
  * we must unlik the tmp-file ourself
  */
-#	define my_tmpfile_only(a)  my_tmpfile(a, sizeof(a)-1, FALSE, (char *) 0)
+#	define my_tmpfile_only(a)  my_tmpfile(a, sizeof(a) - 1, FALSE, (char *) 0)
 #endif /* !my_tmpfile_only */
 
 
@@ -2118,8 +2104,10 @@ extern struct tm *localtime(time_t *);
 #	include <mss.h>
 #	undef my_malloc
 #	undef my_realloc
+#	undef my_calloc
 #	define my_malloc(size)	malloc(size)
 #	define my_realloc(ptr, size)	realloc((ptr), (size))
+#	define my_calloc(nmemb, size) calloc((nmemb), (size))
 #endif /* MSS */
 
 /* libcanlock */
@@ -2182,6 +2170,5 @@ extern struct tm *localtime(time_t *);
 #	define TIN_CANCEL_NAME	"cancel."
 #	define TIN_LETTER_NAME	"letter."
 #endif /* !VMS */
-
 
 #endif /* !TIN_H */

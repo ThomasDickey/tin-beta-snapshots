@@ -20,7 +20,7 @@
 **  The precondition that must be fulfilled is that DoMatch will consume
 **  at least one character in text.  This is true if *p is neither '*' nor
 **  '\0'.)  The last return has ABORT instead of FALSE to avoid quadratic
-**  behaviour in cases like pattern "*a*b*c*d" with text "abcxxxxx".  With
+**  behavior in cases like pattern "*a*b*c*d" with text "abcxxxxx".  With
 **  FALSE, each star-loop has to run to the end of the text; with ABORT
 **  only the last one does.
 **
@@ -61,7 +61,7 @@ static int DoMatch(register const char *text, register char *p);
  */
 
 static int
-DoMatch (
+DoMatch(
 	register const char *text,
 	register char *p)
 {
@@ -122,17 +122,16 @@ DoMatch (
 
 
 /*
- *  User-level routine.  Returns TRUE or FALSE.
+ * User-level routine. Returns TRUE or FALSE.
  */
-
 t_bool
-wildmat (
+wildmat(
 	const char *text,
 	char *p,
 	t_bool icase)
 {
+	char *txt;
 	t_bool ret;
-	char * txt;
 
 	/*
 	 * Make sure the pattern is not NULL
@@ -151,10 +150,77 @@ wildmat (
 		str_lwr(txt);
 		str_lwr(p);
 		ret = (DoMatch(txt, p) == TRUE);
-		free (txt);
-	} else {
+		free(txt);
+	} else
 		ret = (DoMatch(text, p) == TRUE);
+
+	return ret;
+}
+
+
+/*
+ * User-level routine. Calculates position of a match within a line.
+ * Returns TRUE or FALSE.
+ */
+t_bool
+wildmatpos(
+	const char *text,
+	char *p,
+	t_bool icase,
+	int *srch_offsets,
+	int srch_offsets_size)
+{
+	char *txt, *t, *px;
+	int i;
+	t_bool ret = FALSE;
+
+	if (srch_offsets_size >= 2)
+		srch_offsets[0] = srch_offsets[1] = 0;
+
+	/*
+	 * Make sure the pattern is not NULL
+	 */
+	if (p == NULL || text == NULL)
+		return FALSE;
+#ifdef OPTIMIZE_JUST_STAR
+	if (p[0] == '*' && p[1] == '\0') {
+		if (srch_offsets_size >= 2) {
+			srch_offsets[0] = 0;
+			srch_offsets[1] = strlen(text);
+		}
+		return TRUE;
 	}
+#endif /* OPTIMIZE_JUST_STAR */
+
+	mesg[0] = '\0';
+
+	txt = my_strdup(text);
+	if (icase) {
+		str_lwr(txt);
+		str_lwr(p);
+	}
+
+	/* remove the leading '*' */
+	px = my_strdup(p + 1);
+
+	for (t = txt; *t; t++)
+		if ((ret = (DoMatch(t, px)) == TRUE)) {
+			/* remove the trailing '*' */
+			px[strlen(px) - 1] = '\0';
+			for (i = strlen(t); i > 0; i--) {
+				t[i] = '\0';
+				if ((ret = (DoMatch(t, px)) == TRUE)) {
+					if (srch_offsets_size >= 2) {
+						srch_offsets[0] = t - txt;
+						srch_offsets[1] = srch_offsets[0] + i;
+					}
+					break;
+				}
+			}
+			break;
+		}
+	free(px);
+	free(txt);
 
 	return ret;
 }

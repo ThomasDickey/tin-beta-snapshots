@@ -74,8 +74,11 @@ static t_bool supersede = FALSE;			/* for reposting only */
 /*
  * Local prototypes
  */
+static char *get_save_filename(struct t_group *group, int function, char *filename, int filelen);
+static int get_post_proc_type(void);
+static t_bool feed_article(int art, int function, int *curr, int max, t_bool use_current, const char *data, const char *path);
 #ifndef DISABLE_PRINTING
-	static t_bool print_file (const char *command, int respnum, t_openartinfo *artinfo);
+	static t_bool print_file(const char *command, int respnum, t_openartinfo *artinfo);
 #endif /* !DISABLE_PRINTING */
 
 #ifndef DONT_HAVE_PIPING
@@ -86,9 +89,10 @@ static t_bool supersede = FALSE;			/* for reposting only */
 
 
 /*
- * 'filename' holds 'filelen' amount of storage in which to place the filename
- * to save-to. The filename is also returned after basic syntax checking.
- * We default to the global save filename or group specific filename if it exists
+ * 'filename' holds 'filelen' amount of storage in which to place the
+ * filename to save-to. The filename is also returned after basic syntax
+ * checking.  We default to the global save filename or group specific
+ * filename if it exists
  */
 static char *
 get_save_filename(
@@ -101,27 +105,27 @@ get_save_filename(
 
 	filename[0] = '\0';
 
-	strcpy (default_savefile, (group->attribute->savefile ? group->attribute->savefile : tinrc.default_save_file));
+	strncpy(default_savefile, (group->attribute->savefile ? group->attribute->savefile : tinrc.default_save_file), sizeof(default_savefile) - 1);
 
 	if (function != FEED_AUTOSAVE_TAGGED) {			/* ie, FEED_SAVE */
-		if (!prompt_default_string (_(txt_save_filename), filename, filelen, default_savefile, HIST_SAVE_FILE)) {
-			clear_message ();
+		if (!prompt_default_string(_(txt_save_filename), filename, filelen, default_savefile, HIST_SAVE_FILE)) {
+			clear_message();
 			return NULL;
 		}
-		str_trim (filename);
+		str_trim(filename);
 	}
 
 	if (*filename) {
 		if (group->attribute->savefile) {
-			free (group->attribute->savefile);
-			group->attribute->savefile = my_strdup (filename);
+			free(group->attribute->savefile);
+			group->attribute->savefile = my_strdup(filename);
 		}
-		my_strncpy (tinrc.default_save_file, filename, sizeof (tinrc.default_save_file));
+		my_strncpy(tinrc.default_save_file, filename, sizeof(tinrc.default_save_file));
 	} else {									/* No file was specified, try default */
 		if (*default_savefile)
-			my_strncpy (filename, default_savefile, LEN);
+			my_strncpy(filename, default_savefile, sizeof(filename) - 1);
 		else {									/* No default either */
-			info_message (_(txt_no_filename));
+			info_message(_(txt_no_filename));
 			return NULL;
 		}
 	}
@@ -130,10 +134,9 @@ get_save_filename(
 	 * Punt invalid expansions
 	 */
 	if ((filename[0] == '~' || filename[0] == '+') && filename[1] == '\0') {
-		info_message (_(txt_no_filename));
+		info_message(_(txt_no_filename));
 		return NULL;
 	}
-
 	return filename;
 }
 
@@ -153,19 +156,18 @@ get_post_proc_type(
 	char keynone[MAXKEYLEN], keyquit[MAXKEYLEN], keyshar[MAXKEYLEN];
 	char keyuud[MAXKEYLEN];
 
-	ch = (char) prompt_slk_response (proc_ch_default,
+	ch = (char) prompt_slk_response(proc_ch_default,
 				&menukeymap.feed_post_process_type,
 				_(txt_choose_post_process_type),
-				printascii (keynone, map_to_local(iKeyPProcNone, &menukeymap.feed_post_process_type)),
-				printascii (keyshar, map_to_local(iKeyPProcShar, &menukeymap.feed_post_process_type)),
-				printascii (keyuud, map_to_local(iKeyPProcUUDecode, &menukeymap.feed_post_process_type)),
-				printascii (keyquit, map_to_local(iKeyQuit, &menukeymap.feed_post_process_type)));
+				printascii(keynone, map_to_local(iKeyPProcNone, &menukeymap.feed_post_process_type)),
+				printascii(keyshar, map_to_local(iKeyPProcShar, &menukeymap.feed_post_process_type)),
+				printascii(keyuud, map_to_local(iKeyPProcUUDecode, &menukeymap.feed_post_process_type)),
+				printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.feed_post_process_type)));
 
 	if (ch == iKeyQuit || ch == iKeyAbort) {			/* exit */
-		clear_message ();
+		clear_message();
 		return 0;
 	}
-
 	return ch;
 }
 
@@ -200,18 +202,18 @@ feed_article(
 	else {
 		if (function == FEED_SAVE || function == FEED_AUTOSAVE_TAGGED) {
 			/* When saving, just check that it exists for now */
-			if (!stat_article (arts[art].artnum, path))
+			if (!stat_article(arts[art].artnum, path))
 				return FALSE;
 		} else {
-			memset (openartptr, 0, sizeof(t_openartinfo));
-			if (art_open (FALSE, &arts[art], path, openartptr, TRUE) == ART_UNAVAILABLE)
+			memset(openartptr, 0, sizeof(t_openartinfo));
+			if (art_open(FALSE, &arts[art], path, openartptr, TRUE) == ART_UNAVAILABLE)
 				return FALSE;
 		}
 	}
 
 	switch (function) {
 		case FEED_MAIL:
-			switch (mail_to_someone (tinrc.default_mail_address, confirm, openartptr)) {
+			switch (mail_to_someone(tinrc.default_mail_address, confirm, openartptr)) {
 				case POSTED_REDRAW:
 					redraw_screen = TRUE;
 					/* FALLTHROUGH */
@@ -230,12 +232,12 @@ feed_article(
 		case FEED_PIPE:
 			/* TODO - looks odd because screen mode is raw */
 			if (max)
-				show_progress (_(txt_piping), (*curr) + 1, max);
+				show_progress(_(txt_piping), (*curr) + 1, max);
 			else
-				wait_message (0, "%s %d\n", _(txt_piping), (*curr) + 1);
+				wait_message(0, "%s %d\n", _(txt_piping), (*curr) + 1);
 
-			rewind (openartptr->raw);
-			ok = copy_fp (openartptr->raw, pipe_fp);	/* Check for SIGPIPE on return */
+			rewind(openartptr->raw);
+			ok = copy_fp(openartptr->raw, pipe_fp);	/* Check for SIGPIPE on return */
 			break;
 #endif /* !DONT_HAVE_PIPING */
 
@@ -243,28 +245,28 @@ feed_article(
 		case FEED_PRINT:
 			/* TODO - looks odd because screen mode is raw */
 			if (max)
-				show_progress (_(txt_printing), (*curr) + 1, max);
+				show_progress(_(txt_printing), (*curr) + 1, max);
 			else
-				wait_message (0, "%s %d\n", _(txt_printing), (*curr) + 1);
+				wait_message(0, "%s %d\n", _(txt_printing), (*curr) + 1);
 
-			ok = print_file (data /*print_command*/, art, openartptr);
+			ok = print_file(data /*print_command*/, art, openartptr);
 			break;
 #endif /* !DISABLE_PRINTING */
 
 		/* add_to_save_list() is instant, the actual saving happens later */
 		case FEED_SAVE:
-			if (!(is_mailbox = add_to_save_list (&arts[art], data /*filename*/))) {
+			if (!(is_mailbox = add_to_save_list(&arts[art], data /*filename*/))) {
 				if (proc_ch < 0 && (proc_ch = get_post_proc_type()) == 0)
 					ok = FALSE;
 			}
 			break;
 
 		case FEED_AUTOSAVE_TAGGED:
-			add_to_save_list (&arts[art], data /*filename*/);
+			add_to_save_list(&arts[art], data /*filename*/);
 			break;
 
 		case FEED_REPOST:
-			if (repost_article (tinrc.default_repost_group, art, supersede, openartptr) == POSTED_NONE)
+			if (repost_article(tinrc.default_repost_group, art, supersede, openartptr) == POSTED_NONE)
 				ok = FALSE;
 			else			/* POSTED_REDRAW, POSTED_OK */
 				redraw_screen = TRUE;
@@ -282,17 +284,16 @@ feed_article(
 	 */
 	if (!(function == FEED_SAVE || function == FEED_AUTOSAVE_TAGGED)) {
 		if (!use_current)
-			art_close (openartptr);
+			art_close(openartptr);
 		if (ok && tinrc.mark_saved_read)
-			art_mark_read (&CURR_GROUP, &arts[art]);
+			art_mark_read(&CURR_GROUP, &arts[art]);
 	}
-
 	return ok;
 }
 
 
 void
-feed_articles (
+feed_articles(
 	int function,
 	int level,
 	struct t_group *group,
@@ -313,15 +314,15 @@ feed_articles (
 
 #ifdef DONT_HAVE_PIPING
 	if (function == FEED_PIPE) {
-		error_message (_(txt_piping_not_enabled));
-		clear_message ();
+		error_message(_(txt_piping_not_enabled));
+		clear_message();
 		return;
 	}
 #endif /* DONT_HAVE_PIPING */
 
-	set_xclick_off ();
+	set_xclick_off();
 
-	thread_base = which_thread (respnum);
+	thread_base = which_thread(respnum);
 
 	proc_ch = -1;			/* No selection made yet */
 
@@ -331,7 +332,7 @@ feed_articles (
 	 * No it's not, that's exactly what you want (in binary groups)
 	 */
 	ch_default = (num_of_tagged_arts ? iKeyFeedTag :
-					(level == GROUP_LEVEL && HAS_FOLLOWUPS (thread_base) ? iKeyFeedThd :
+					(level == GROUP_LEVEL && HAS_FOLLOWUPS(thread_base) ? iKeyFeedThd :
 						(num_of_selected_arts ? iKeyFeedHot : iKeyFeedArt)));
 
 	switch (function) {
@@ -368,7 +369,7 @@ feed_articles (
 			break;
 	}
 
-	make_group_path (group->name, group_path);
+	make_group_path(group->name, group_path);
 
 	/*
 	 * If not automatic, ask what the user wants to save
@@ -378,14 +379,14 @@ feed_articles (
 		char keyart[MAXKEYLEN], keythread[MAXKEYLEN], keyhot[MAXKEYLEN];
 		char keypat[MAXKEYLEN], keytag[MAXKEYLEN], keyquit[MAXKEYLEN];
 
-		snprintf (buf, sizeof(buf) - 1, _(txt_art_thread_regex_tag),
-			printascii (keyart, map_to_local (iKeyFeedArt, &menukeymap.feed_art_thread_regex_tag)),
-			printascii (keythread, map_to_local (iKeyFeedThd, &menukeymap.feed_art_thread_regex_tag)),
-			printascii (keyhot, map_to_local (iKeyFeedHot, &menukeymap.feed_art_thread_regex_tag)),
-			printascii (keypat, map_to_local (iKeyFeedPat, &menukeymap.feed_art_thread_regex_tag)),
-			printascii (keytag, map_to_local (iKeyFeedTag, &menukeymap.feed_art_thread_regex_tag)),
-			printascii (keyquit, map_to_local (iKeyQuit, &menukeymap.feed_art_thread_regex_tag)));
-		ch = prompt_slk_response (ch_default,
+		snprintf(buf, sizeof(buf) - 1, _(txt_art_thread_regex_tag),
+			printascii(keyart, map_to_local(iKeyFeedArt, &menukeymap.feed_art_thread_regex_tag)),
+			printascii(keythread, map_to_local(iKeyFeedThd, &menukeymap.feed_art_thread_regex_tag)),
+			printascii(keyhot, map_to_local(iKeyFeedHot, &menukeymap.feed_art_thread_regex_tag)),
+			printascii(keypat, map_to_local(iKeyFeedPat, &menukeymap.feed_art_thread_regex_tag)),
+			printascii(keytag, map_to_local(iKeyFeedTag, &menukeymap.feed_art_thread_regex_tag)),
+			printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.feed_art_thread_regex_tag)));
+		ch = prompt_slk_response(ch_default,
 				&menukeymap.feed_art_thread_regex_tag,
 				"%s %s", _(prompt), buf);
 	} else
@@ -394,11 +395,11 @@ feed_articles (
 	switch (ch) {
 		case iKeyQuit:
 		case iKeyAbort:
-			clear_message ();
+			clear_message();
 			return;
 
 		case iKeyFeedPat:
-			sprintf (mesg, _(txt_feed_pattern), tinrc.default_regex_pattern);
+			sprintf(mesg, _(txt_feed_pattern), tinrc.default_regex_pattern);
 			if (!(prompt_string_default(mesg, tinrc.default_regex_pattern, _(txt_no_match), HIST_REGEX_PATTERN)))
 				return;
 			break;
@@ -410,7 +411,7 @@ feed_articles (
 	switch (function) {
 		/* Setup mail - get address to mail to */
 		case FEED_MAIL:
-			sprintf (mesg, _(txt_mail_art_to), cCOLS - (strlen(_(txt_mail_art_to)) + 30), tinrc.default_mail_address);
+			sprintf(mesg, _(txt_mail_art_to), cCOLS - (strlen(_(txt_mail_art_to)) + 30), tinrc.default_mail_address);
 			if (!(prompt_string_default(mesg, tinrc.default_mail_address, _(txt_no_mail_address), HIST_MAIL_ADDRESS)))
 				return;
 			break;
@@ -418,19 +419,16 @@ feed_articles (
 #ifndef DONT_HAVE_PIPING
 		/* Setup pipe - get pipe-to command and open the pipe */
 		case FEED_PIPE:
-			sprintf (mesg, _(txt_pipe_to_command), cCOLS - (strlen(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);
-			if (!(prompt_string_default (mesg, tinrc.default_pipe_command, _(txt_no_command), HIST_PIPE_COMMAND)))
+			sprintf(mesg, _(txt_pipe_to_command), cCOLS - (strlen(_(txt_pipe_to_command)) + 30), tinrc.default_pipe_command);
+			if (!(prompt_string_default(mesg, tinrc.default_pipe_command, _(txt_no_command), HIST_PIPE_COMMAND)))
 				return;
 
 			got_sig_pipe = FALSE;
-
-			/* Turn off curses/windowing */
-			EndWin();
+			EndWin(); /* Turn off curses/windowing */
 			Raw(FALSE);
 			fflush(stdout);
-
-			if ((pipe_fp = popen (tinrc.default_pipe_command, "w")) == NULL) {
-				perror_message (_(txt_command_failed), tinrc.default_pipe_command);
+			if ((pipe_fp = popen(tinrc.default_pipe_command, "w")) == NULL) {
+				perror_message(_(txt_command_failed), tinrc.default_pipe_command);
 				Raw(TRUE);
 				InitWin();
 				return;
@@ -441,14 +439,14 @@ feed_articles (
 #ifndef DISABLE_PRINTING
 		case FEED_PRINT:
 			/* Setup print - get print command line */
-			sprintf (output, "%s %s", tinrc.printer, REDIRECT_OUTPUT);
+			sprintf(output, "%s %s", tinrc.printer, REDIRECT_OUTPUT);
 			break;
 #endif /* !DISABLE_PRINTING */
 
 		case FEED_SAVE:		/* ask user for filename to save to */
 		case FEED_AUTOSAVE_TAGGED:
 			if (!group->attribute->auto_save || (arts[respnum].archive == NULL)) {
-				if (get_save_filename (group, function, output, sizeof(output)) == NULL)
+				if (get_save_filename(group, function, output, sizeof(output)) == NULL)
 					return;
 			}
 			break;
@@ -456,49 +454,49 @@ feed_articles (
 		case FEED_REPOST:	/* repost article */
 			{
 #ifndef FORGERY
-			char from_name[PATH_LEN];
+				char from_name[PATH_LEN];
 
-			get_from_name (from_name, (struct t_group *) 0);
+				get_from_name(from_name, (struct t_group *) 0);
 
-			if (strstr (from_name, arts[respnum].from)) {
+				if (strstr(from_name, arts[respnum].from)) {
 #endif /* !FORGERY */
-				char buf[LEN];
-				char keyrepost[MAXKEYLEN], keysupersede[MAXKEYLEN];
-				char keyquit[MAXKEYLEN];
-				char option;
+					char buf[LEN];
+					char keyrepost[MAXKEYLEN], keysupersede[MAXKEYLEN];
+					char keyquit[MAXKEYLEN];
+					char option;
 
-				/* repost or supersede? */
-				snprintf (buf, sizeof(buf), _(txt_supersede_article),
-							printascii (keyrepost, map_to_local(iKeyFeedRepost, &menukeymap.feed_supersede_article)),
-							printascii (keysupersede, map_to_local(iKeyFeedSupersede, &menukeymap.feed_supersede_article)),
-							printascii (keyquit, map_to_local(iKeyQuit, &menukeymap.feed_supersede_article)));
-				option = (char) prompt_slk_response (iKeyFeedSupersede,
+					/* repost or supersede? */
+					snprintf(buf, sizeof(buf), _(txt_supersede_article),
+							printascii(keyrepost, map_to_local(iKeyFeedRepost, &menukeymap.feed_supersede_article)),
+							printascii(keysupersede, map_to_local(iKeyFeedSupersede, &menukeymap.feed_supersede_article)),
+							printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.feed_supersede_article)));
+					option = (char) prompt_slk_response(iKeyFeedSupersede,
 										&menukeymap.feed_supersede_article, "%s",
 										sized_message(buf, arts[respnum].subject));
 
-				switch (option) {
-					case iKeyFeedSupersede:
-						sprintf (mesg, _(txt_supersede_group), tinrc.default_repost_group);
-						supersede = TRUE;
-						break;
+					switch (option) {
+						case iKeyFeedSupersede:
+							sprintf(mesg, _(txt_supersede_group), tinrc.default_repost_group);
+							supersede = TRUE;
+							break;
 
-					case iKeyFeedRepost:
-						sprintf (mesg, _(txt_repost_group), tinrc.default_repost_group);
-						supersede = FALSE;
-						break;
+						case iKeyFeedRepost:
+							sprintf(mesg, _(txt_repost_group), tinrc.default_repost_group);
+							supersede = FALSE;
+							break;
 
-					default:
-						clear_message ();
-						return;
-				}
+						default:
+							clear_message();
+							return;
+					}
 #ifndef FORGERY
-			} else {
-				sprintf (mesg, _(txt_repost_group), tinrc.default_repost_group);
-				supersede = FALSE;
-			}
+				} else {
+					sprintf(mesg, _(txt_repost_group), tinrc.default_repost_group);
+					supersede = FALSE;
+				}
 #endif /* !FORGERY */
-			if (!(prompt_string_default (mesg, tinrc.default_repost_group, _(txt_no_group), HIST_REPOST_GROUP)))
-				return;
+				if (!(prompt_string_default(mesg, tinrc.default_repost_group, _(txt_no_group), HIST_REPOST_GROUP)))
+					return;
 			}
 			break;
 
@@ -520,7 +518,7 @@ feed_articles (
 
 	switch (ch) {
 		case iKeyFeedArt:		/* article */
-			if (!feed_article (respnum, function, &count, 1, use_current, output, group_path)) {
+			if (!feed_article(respnum, function, &count, 1, use_current, output, group_path)) {
 				handle_SIGPIPE();
 				/* No point testing proc_ch when handling only a single art */
 				break;
@@ -528,12 +526,11 @@ feed_articles (
 
 			if (proc_ch && function == FEED_SAVE) {
 				if (use_current) {
-					if (create_path (save[0].path))
-						processed_ok = save_art_to_file (0, &pgart);
+					if (create_path(save[0].path))
+						processed_ok = save_art_to_file(0, &pgart);
 				} else
-					processed_ok = save_batch (ch, group_path);
+					processed_ok = save_batch(ch, group_path);
 			}
-
 			break;
 
 		case iKeyFeedThd:		/* thread */
@@ -543,7 +540,7 @@ feed_articles (
 					continue;
 
 				/* Ignore errors */
-				feed_article (i, function, &count, 0, use_current, output, group_path);
+				feed_article(i, function, &count, 0, use_current, output, group_path);
 				if (proc_ch == 0)
 					break;
 
@@ -551,8 +548,8 @@ feed_articles (
 			}
 			if (proc_ch && function == FEED_SAVE) {
 				/* Can't see any need for this with real threading */
-				/*	sort_save_list (); */
-				processed_ok = save_batch (ch, group_path);
+				/*	sort_save_list(); */
+				processed_ok = save_batch(ch, group_path);
 			}
 			break;
 
@@ -566,16 +563,15 @@ feed_articles (
 							i = num_of_tagged_arts + 1;		/* Force break out of outer-loop */
 							break;
 						}
-
 						handle_SIGPIPE();
 					}
 				}
 			}
 
 			if (proc_ch && (function == FEED_SAVE || function == FEED_AUTOSAVE_TAGGED))
-				processed_ok = save_batch (ch, group_path);
+				processed_ok = save_batch(ch, group_path);
 
-			untag_all_articles ();
+			untag_all_articles();
 			break;
 
 		case iKeyFeedHot:		/* hot (auto-selected) articles */
@@ -601,13 +597,12 @@ feed_articles (
 							i = grpmenu.max;		/* Force break out of outer-loop */
 							break;
 						}
-
 						handle_SIGPIPE();
 					}
 				}
 			}
 			if (proc_ch && function == FEED_SAVE)
-				processed_ok = save_batch (ch, group_path);
+				processed_ok = save_batch(ch, group_path);
 
 			break;
 
@@ -619,22 +614,20 @@ feed_articles (
 	 * Now work out what (if anything) needs to be redrawn
 	 */
 	if (!tinrc.use_mailreader_i)
-		redraw_screen |= mail_check ();	/* in case of sending to oneself */
+		redraw_screen |= mail_check();	/* in case of sending to oneself */
 
 	switch (function) {
 #ifndef DONT_HAVE_PIPING
 		case FEED_PIPE:
 got_sig_pipe_while_piping:
-#	if 1
 			if (got_sig_pipe)
-				perror_message (_(txt_command_failed), tinrc.default_pipe_command);
-#	endif /* 1 */
+				perror_message(_(txt_command_failed), tinrc.default_pipe_command);
 			got_sig_pipe = FALSE;
-			fflush (pipe_fp);
-			(void) pclose (pipe_fp);
-			Raw (TRUE);
+			fflush(pipe_fp);
+			(void) pclose(pipe_fp);
+			Raw(TRUE);
 			InitWin();
-			prompt_continue ();
+			prompt_continue();
 			redraw_screen = TRUE;
 			break;
 #endif /* !DONT_HAVE_PIPING */
@@ -644,11 +637,11 @@ got_sig_pipe_while_piping:
 			if (proc_ch != 'n' && !is_mailbox && processed_ok) {
 				if (proc_ch < 0) {
 					if (proc_ch_default != 'n')
-					  ret2 = post_process_files (proc_ch_default, (function == FEED_SAVE ? FALSE : TRUE));
+					  ret2 = post_process_files(proc_ch_default, (function == FEED_SAVE ? FALSE : TRUE));
 				} else
-					ret2 = post_process_files (proc_ch, (function == FEED_SAVE ? FALSE : TRUE));
+					ret2 = post_process_files(proc_ch, (function == FEED_SAVE ? FALSE : TRUE));
 			}
-			free_save_array ();		/* NB: This is where num_save etc.. gets purged */
+			free_save_array();		/* NB: This is where num_save etc.. gets purged */
 			break;
 
 		default:
@@ -672,10 +665,10 @@ got_sig_pipe_while_piping:
 			curr_line = saved_curr_line;
 
 		if (redraw_screen)
-			draw_page (group->name, 0);
+			draw_page(group->name, 0);
 		else {
 			if (function == FEED_PIPE)
-				clear_message ();
+				clear_message();
 		}
 	} else {
 		if (redraw_screen)
@@ -685,14 +678,14 @@ got_sig_pipe_while_piping:
 	switch (function) {
 		case FEED_MAIL:
 			if (tinrc.use_mailreader_i)
-				info_message (_(txt_external_mail_done));
+				info_message(_(txt_external_mail_done));
 			else
-				info_message (_(txt_articles_mailed), count, PLURAL(count, txt_article));
+				info_message(_(txt_articles_mailed), count, PLURAL(count, txt_article));
 			break;
 
 #ifndef DISABLE_PRINTING
 		case FEED_PRINT:
-			info_message (_(txt_articles_printed), count, PLURAL(count, txt_article));
+			info_message(_(txt_articles_printed), count, PLURAL(count, txt_article));
 			break;
 #endif /* !DISABLE_PRINTING */
 
@@ -703,9 +696,10 @@ got_sig_pipe_while_piping:
 	}
 }
 
+
 #ifndef DISABLE_PRINTING
 static t_bool
-print_file (
+print_file(
 	const char *command,
 	int respnum,
 	t_openartinfo *artinfo)
@@ -721,30 +715,30 @@ print_file (
 	snprintf(file, sizeof(file) - 1, TIN_PRINTFILE, respnum);
 	if ((fp = fopen(file, "w")) == NULL)
 #	else
-	if ((fp = popen (command, "w")) == NULL)
+	if ((fp = popen(command, "w")) == NULL)
 #	endif /* DONT_HAVE_PIPING */
 	{
-		perror_message (_(txt_command_failed), command);
+		perror_message(_(txt_command_failed), command);
 		return FALSE;
 	}
 
 	if (tinrc.print_header)
-		rewind (artinfo->raw);
+		rewind(artinfo->raw);
 	else {
 		if (hdr->newsgroups)
-			fprintf (fp, "Newsgroups: %s\n", hdr->newsgroups);
+			fprintf(fp, "Newsgroups: %s\n", hdr->newsgroups);
 		if (arts[respnum].from == arts[respnum].name || arts[respnum].name == NULL)
-			fprintf (fp, "From: %s\n", arts[respnum].from);
+			fprintf(fp, "From: %s\n", arts[respnum].from);
 		else
-			fprintf (fp, "From: %s <%s>\n", arts[respnum].name, arts[respnum].from);
+			fprintf(fp, "From: %s <%s>\n", arts[respnum].name, arts[respnum].from);
 		if (hdr->subj)
-			fprintf (fp, "Subject: %s\n", hdr->subj);
+			fprintf(fp, "Subject: %s\n", hdr->subj);
 		if (hdr->date)
-			fprintf (fp, "Date: %s\n\n", hdr->date);
-		fseek (artinfo->raw, hdr->ext->offset, SEEK_SET);	/* -> start of body */
+			fprintf(fp, "Date: %s\n\n", hdr->date);
+		fseek(artinfo->raw, hdr->ext->offset, SEEK_SET);	/* -> start of body */
 	}
 
-	ok = copy_fp (artinfo->raw, fp);
+	ok = copy_fp(artinfo->raw, fp);
 
 #	ifdef DONT_HAVE_PIPING
 	fclose(fp);
@@ -755,8 +749,8 @@ print_file (
 	invoke_cmd(cmd);
 	unlink(file);
 #	else
-	fflush (fp);
-	pclose (fp);
+	fflush(fp);
+	pclose(fp);
 #	endif /* DONT_HAVE_PIPING */
 
 	return ok;

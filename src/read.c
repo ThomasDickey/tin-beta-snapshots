@@ -61,9 +61,9 @@ static int offset = 0;
 /*
  * local prototypes
  */
-static char * tin_read (char *buffer, size_t len, FILE *fp, t_bool header);
+static char *tin_read(char *buffer, size_t len, FILE *fp, t_bool header);
 #ifdef NNTP_ABLE
-	static t_bool wait_for_input (void /*FILE *fd*/);
+	static t_bool wait_for_input(void /*FILE *fd*/);
 #endif /* NNTP_ABLE */
 
 
@@ -74,20 +74,20 @@ static char * tin_read (char *buffer, size_t len, FILE *fp, t_bool header);
  *         FALSE otherwise
  */
 static t_bool
-wait_for_input (
+wait_for_input(
 	void /*FILE *fd*/)
 {
 #	ifndef HAVE_SELECT
 #		ifdef VMS
-	int ch = ReadChNowait ();
+	int ch = ReadChNowait();
 
 	if (ch == 'q' || ch == 'z' || ch == ESC) {
-		if (prompt_yn (cLINES, _(txt_read_abort), FALSE) == 1)
+		if (prompt_yn(cLINES, _(txt_read_abort), FALSE) == 1)
 			return TRUE;
 	}
 	if (ch == 'Q') {
-		if (prompt_yn (cLINES, _(txt_read_exit), FALSE) == 1)
-			tin_done (EXIT_SUCCESS);
+		if (prompt_yn(cLINES, _(txt_read_exit), FALSE) == 1)
+			tin_done(EXIT_SUCCESS);
 	}
 #		endif /* VMS */
 #	else
@@ -140,20 +140,20 @@ wait_for_input (
 				 * asking the user if he wants to abort.
 				 */
 				if (ch == ESC) {
-					int keymap_ch = get_arrow_key (ch);
+					int keymap_ch = get_arrow_key(ch);
 
 					if (keymap_ch != KEYMAP_UNKNOWN)
 						ch = keymap_ch;
 				}
 
 				if (ch == 'q' || ch == 'z' || ch == ESC) {
-					if (prompt_yn (cLINES, _(txt_read_abort), FALSE) == 1)
+					if (prompt_yn(cLINES, _(txt_read_abort), FALSE) == 1)
 						return TRUE;
 				}
 
 				if (ch == 'Q') {
-					if (prompt_yn (cLINES, _(txt_read_exit), FALSE) == 1)
-						tin_done (EXIT_SUCCESS);
+					if (prompt_yn(cLINES, _(txt_read_exit), FALSE) == 1)
+						tin_done(EXIT_SUCCESS);
 				}
 
 			}
@@ -191,7 +191,7 @@ static t_bool partial_read;
 
 
 static char *
-tin_read (
+tin_read(
 	char *buffer,
 	size_t len,
 	FILE *fp,
@@ -230,11 +230,11 @@ tin_read (
 	if (fp == FAKE_NNTP_FP)
 		ptr = get_server(buffer, len);
 	else
-		ptr = fgets (buffer, len, fp);
+		ptr = fgets(buffer, len, fp);
 #else
 	errno = 0;		/* To check errno after read, clear it here */
 
-	ptr = fgets (buffer, len, fp);
+	ptr = fgets(buffer, len, fp);
 #endif /* NNTP_ABLE */
 
 /* TODO develop this next line? */
@@ -279,7 +279,7 @@ tin_read (
 				if (!i) { /* EMPTY */
 					/* Find a header separator, don't check next line. */
 				} else {
-					if ((c = fgetc (get_nntp_fp(fp))) == ' ' || c == '\t') {
+					if ((c = fgetc(get_nntp_fp(fp))) == ' ' || c == '\t') {
 						partial_read = TRUE;
 						/* This is safe because we removed at least one char above */
 						buffer[offset++] = '\n';
@@ -326,7 +326,7 @@ tin_read (
  * possible.
  */
 char *
-tin_fgets (
+tin_fgets(
 	FILE *fp,
 	t_bool header)
 {
@@ -342,16 +342,14 @@ tin_fgets (
 #if 1
 	/* Allocate initial buffer */
 	if (dynbuf == NULL) {
-		dynbuf = my_malloc (INIT * sizeof(*dynbuf));
+		dynbuf = my_malloc(INIT * sizeof(*dynbuf));
 		size = INIT;
 	}
 	/* Otherwise reuse last buffer */
 	/* TODO: Should we free too large buffer? */
 #else
-	if (dynbuf != NULL)
-		free(dynbuf);				/* Free any previous allocation */
-
-	dynbuf = my_malloc (INIT * sizeof(*dynbuf));
+	FreeIfNeeded(dynbuf);	/* Free any previous allocation */
+	dynbuf = my_malloc(INIT * sizeof(*dynbuf));
 	size = INIT;
 #endif /* 1 */
 
@@ -368,9 +366,9 @@ tin_fgets (
 	while (partial_read) {
 		if (next + CHUNK > size)
 			size = next + CHUNK;
-		temp = my_realloc (dynbuf, size * sizeof(*dynbuf));
+		temp = my_realloc(dynbuf, size * sizeof(*dynbuf));
 		dynbuf = temp;
-		temp = tin_read (dynbuf + next, size - next, fp, header); /* What if == 0 ?? */
+		temp = tin_read(dynbuf + next, size - next, fp, header); /* What if == 0 ?? */
 		next += offset;
 
 		if (tin_errno != 0)
@@ -386,16 +384,16 @@ tin_fgets (
 	if (fp == FAKE_NNTP_FP) {
 		if (dynbuf[0] == '.') {			/* reduce leading .'s */
 			if (dynbuf[1] == '\0') {
-				DEBUG_IO((stderr, "tin_fgets (NULL)\n"));
+				DEBUG_IO((stderr, "tin_fgets(NULL)\n"));
 				return NULL;
 			}
-			DEBUG_IO((stderr, "tin_fgets (%s)\n", dynbuf + 1));
+			DEBUG_IO((stderr, "tin_fgets(%s)\n", dynbuf + 1));
 			return (dynbuf + 1);
 		}
 	}
 #endif /* NNTP_ABLE */
 
-DEBUG_IO((stderr, "tin_fgets (%s)\n", (dynbuf) ? dynbuf : "NULL"));
+DEBUG_IO((stderr, "tin_fgets(%s)\n", (dynbuf) ? dynbuf : "NULL"));
 
 	return dynbuf;
 }
@@ -407,7 +405,7 @@ DEBUG_IO((stderr, "tin_fgets (%s)\n", (dynbuf) ? dynbuf : "NULL"));
  */
 #ifdef NNTP_ABLE
 void
-drain_buffer (
+drain_buffer(
 	FILE *fp)
 {
 	int i = 0;

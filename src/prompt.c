@@ -51,24 +51,24 @@
  *  Return -1 if missing or bad number typed
  */
 int
-prompt_num (
+prompt_num(
 	int ch,
 	const char *prompt)
 {
 	char *p;
 	int num;
 
-	clear_message ();
+	clear_message();
 
-	sprintf (mesg, "%c", ch);
+	sprintf(mesg, "%c", ch);
 
-	if ((p = tin_getline (prompt, TRUE, mesg, 0, FALSE, HIST_OTHER)) != NULL) {
-		strcpy (mesg, p);
-		num = atoi (mesg);
+	if ((p = tin_getline(prompt, TRUE, mesg, 0, FALSE, HIST_OTHER)) != NULL) {
+		strcpy(mesg, p);
+		num = atoi(mesg);
 	} else
 		num = -1;
 
-	clear_message ();
+	clear_message();
 
 	return num;
 }
@@ -81,12 +81,12 @@ prompt_num (
  *  TODO no bounds checking on buf size, tin_getline() defaults to 1024
  */
 t_bool
-prompt_string (
+prompt_string(
 	const char *prompt,
 	char *buf,
 	int which_hist)
 {
-	return prompt_default_string (prompt, buf, 0, (char *) NULL, which_hist);
+	return prompt_default_string(prompt, buf, 0, (char *) NULL, which_hist);
 }
 
 
@@ -96,7 +96,7 @@ prompt_string (
  * Return TRUE if a valid string was typed, FALSE otherwise
  */
 t_bool
-prompt_default_string (
+prompt_default_string(
 	const char *prompt,
 	char *buf,
 	int buf_len,
@@ -105,16 +105,16 @@ prompt_default_string (
 {
 	char *p;
 
-	clear_message ();
+	clear_message();
 
-	if ((p = tin_getline (prompt, FALSE, default_prompt, buf_len, FALSE, which_hist)) == NULL) {
+	if ((p = tin_getline(prompt, FALSE, default_prompt, buf_len, FALSE, which_hist)) == NULL) {
 		buf[0] = '\0';
-		clear_message ();
+		clear_message();
 		return FALSE;
 	}
-	strcpy (buf, p);
+	strcpy(buf, p);
 
-	clear_message ();
+	clear_message();
 
 	return TRUE;
 }
@@ -126,7 +126,7 @@ prompt_default_string (
  *  Return TRUE if a valid string was typed, FALSE otherwise
  */
 t_bool
-prompt_menu_string (
+prompt_menu_string(
 	int line,
 	const char *prompt,
 	char *var)
@@ -140,12 +140,12 @@ prompt_menu_string (
 	 */
 	fflush(stdin);
 
-	MoveCursor (line, 0);
+	MoveCursor(line, 0);
 
-	if ((p = tin_getline (prompt, FALSE, var, 0, FALSE, HIST_OTHER)) == NULL)
+	if ((p = tin_getline(prompt, FALSE, var, 0, FALSE, HIST_OTHER)) == NULL)
 		return FALSE;
 
-	strcpy (var, p);
+	strcpy(var, p);
 
 	return TRUE;
 }
@@ -160,7 +160,7 @@ prompt_menu_string (
  * to escape, or 0 for any other key or decision.
  */
 int
-prompt_yn (
+prompt_yn(
 	int line,
 	const char *prompt,
 	t_bool default_answer)
@@ -173,24 +173,24 @@ prompt_yn (
 
 /*	fflush(stdin); */		/* Prevent finger trouble from making important decisions */
 
-	(void) printascii (keyyes, (default_answer ? toupper(map_to_local(iKeyPromptYes, &menukeymap.prompt_yn)) : map_to_local(iKeyPromptYes, &menukeymap.prompt_yn)));
-	(void) printascii (keyno, (!default_answer ? toupper(map_to_local(iKeyPromptNo, &menukeymap.prompt_yn)) : map_to_local(iKeyPromptNo, &menukeymap.prompt_yn)));
-	maxlen = MAX(strlen (keyyes), strlen (keyno));
+	(void) printascii(keyyes, (default_answer ? toupper(map_to_local(iKeyPromptYes, &menukeymap.prompt_yn)) : map_to_local(iKeyPromptYes, &menukeymap.prompt_yn)));
+	(void) printascii(keyno, (!default_answer ? toupper(map_to_local(iKeyPromptNo, &menukeymap.prompt_yn)) : map_to_local(iKeyPromptNo, &menukeymap.prompt_yn)));
+	maxlen = MAX(strlen(keyyes), strlen(keyno));
 
 	while (yn_loop) {
-		prompt_ch = map_to_local ((default_answer ? iKeyPromptYes : iKeyPromptNo), &menukeymap.prompt_yn);
+		prompt_ch = map_to_local((default_answer ? iKeyPromptYes : iKeyPromptNo), &menukeymap.prompt_yn);
 		keyprompt = (default_answer ? keyyes : keyno);
 
 		if (!cmd_line) {
-			MoveCursor (line, 0);
-			CleartoEOLN ();
+			MoveCursor(line, 0);
+			CleartoEOLN();
 		}
-		my_printf ("%s (%s/%s) %-*s", prompt, keyyes, keyno, (int)maxlen, keyprompt);
+		my_printf("%s (%s/%s) %-*s", prompt, keyyes, keyno, (int) maxlen, keyprompt);
 		if (!cmd_line)
-			cursoron ();
-		my_flush ();
+			cursoron();
+		my_flush();
 		if (!cmd_line)
-			MoveCursor (line, (int) strlen (prompt) + strlen(keyyes) + strlen(keyno) + 5);
+			MoveCursor(line, (int) strlen(prompt) + strlen(keyyes) + strlen(keyno) + 5);
 
 		if (((ch = (char) ReadCh()) == '\n') || (ch == '\r'))
 			ch = prompt_ch;
@@ -202,7 +202,7 @@ prompt_yn (
 #	ifdef HAVE_KEY_PREFIX
 			case KEY_PREFIX:
 #	endif /* HAVE_KEY_PREFIX */
-				switch (get_arrow_key (ch)) {
+				switch (get_arrow_key(ch)) {
 
 					case KEYMAP_UP:
 					case KEYMAP_DOWN:
@@ -229,16 +229,16 @@ prompt_yn (
 
 	if (!cmd_line) {
 		if (line == cLINES)
-			clear_message ();
+			clear_message();
 		else {
-			MoveCursor (line, (int) strlen (prompt));
-			my_fputc (((ch == iKeyAbort) ? prompt_ch : ch), stdout);
+			MoveCursor(line, (int) strlen(prompt));
+			my_fputc(((ch == iKeyAbort) ? prompt_ch : ch), stdout);
 		}
-		cursoroff ();
-		my_flush ();
+		cursoroff();
+		my_flush();
 	}
 
-	return (tolower ((unsigned char) map_to_default (ch, &menukeymap.prompt_yn)) == tolower ((unsigned char)iKeyPromptYes)) ? 1 : (ch == iKeyAbort) ? -1 : 0;
+	return (tolower((unsigned char) map_to_default(ch, &menukeymap.prompt_yn)) == tolower((unsigned char)iKeyPromptYes)) ? 1 : (ch == iKeyAbort) ? -1 : 0;
 }
 
 
@@ -251,7 +251,7 @@ prompt_yn (
  * The new value is returned.
  */
 int
-prompt_list (
+prompt_list(
 	int row,
 	int col,
 	int var,
@@ -275,12 +275,12 @@ prompt_list (
 	for (i = 0; i < size; i++)
 		width = MAX(width, strlen(_(list[i])));
 
-	show_menu_help (help_text);
-	cursoron ();
+	show_menu_help(help_text);
+	cursoron();
 
 	do {
-		MoveCursor (row, col + (int) strlen (_(prompt_text)));
-		if ((ch = (char) ReadCh ()) == ' ') {
+		MoveCursor(row, col + (int) strlen(_(prompt_text)));
+		if ((ch = (char) ReadCh()) == ' ') {
 
 			/*
 			 * Increment list, looping around at the max
@@ -288,21 +288,21 @@ prompt_list (
 			++var;
 			var %= size;
 
-			my_printf("%-*s", (int)width, _(list[var]));
-			my_flush ();
+			my_printf("%-*s", (int) width, _(list[var]));
+			my_flush();
 		}
 	} while (ch != '\r' && ch != '\n' && ch != ESC);
 
 	if (ch == ESC) {
 		var = var_orig;
 
-		my_printf("%-*s", (int)width, _(list[var]));
-		my_flush ();
+		my_printf("%-*s", (int) width, _(list[var]));
+		my_flush();
 	}
 
-	cursoroff ();
+	cursoroff();
 
-	return(var - adjust);
+	return (var - adjust);
 }
 
 
@@ -310,7 +310,7 @@ prompt_list (
  * Special case of prompt_list() Toggle between ON and OFF
  */
 void
-prompt_on_off (
+prompt_on_off(
 	int row,
 	int col,
 	t_bool *var,
@@ -319,7 +319,7 @@ prompt_on_off (
 {
 	t_bool ret;
 
-	ret = prompt_list (row, col, (int)*var, help_text, _(prompt_text), txt_onoff, 2);
+	ret = prompt_list(row, col, (int) *var, help_text, _(prompt_text), txt_onoff, 2);
 	*var = (ret != 0);
 }
 
@@ -333,15 +333,15 @@ prompt_on_off (
  * The function returns TRUE, if the value was changed, FALSE otherwise.
  */
 t_bool
-prompt_option_string (
+prompt_option_string(
 	int option) /* return value is always ignored */
 {
 	char prompt[LEN];
 	char *variable = OPT_STRING_list[option_table[option].var_index];
 
-	show_menu_help (option_table[option].txt->help);
-	fmt_option_prompt (prompt, sizeof(prompt)-1, TRUE, option);
-	return prompt_menu_string (option_row(option), prompt, variable);
+	show_menu_help(option_table[option].txt->help);
+	fmt_option_prompt(prompt, sizeof(prompt) - 1, TRUE, option);
+	return prompt_menu_string(option_row(option), prompt, variable);
 }
 
 
@@ -354,7 +354,7 @@ prompt_option_string (
  * The function returns TRUE if the value was changed, FALSE otherwise.
  */
 t_bool
-prompt_option_num (
+prompt_option_num(
 	int option) /* return value is always ignored */
 {
 	char prompt[LEN];
@@ -362,19 +362,19 @@ prompt_option_num (
 	char *p;
 	int num;
 
-	show_menu_help (option_table[option].txt->help);
-	MoveCursor (option_row(option), 0);
-	fmt_option_prompt (prompt, sizeof(prompt)-1, TRUE, option);
-	sprintf (&number[0], "%d", *(option_table[option].variable));
+	show_menu_help(option_table[option].txt->help);
+	MoveCursor(option_row(option), 0);
+	fmt_option_prompt(prompt, sizeof(prompt) - 1, TRUE, option);
+	sprintf(&number[0], "%d", *(option_table[option].variable));
 
-	if ((p = tin_getline (prompt, 2, number, 0, FALSE, HIST_OTHER)) == NULL)
+	if ((p = tin_getline(prompt, 2, number, 0, FALSE, HIST_OTHER)) == NULL)
 		return FALSE;
 
-	strcpy (number, p);
-	num = atoi (number);
+	strcpy(number, p);
+	num = atoi(number);
 	*(option_table[option].variable) = num;
 
-	clear_message ();
+	clear_message();
 
 	return TRUE;
 }
@@ -388,7 +388,7 @@ prompt_option_num (
  * The function returns TRUE if the value was changed, FALSE otherwise.
  */
 t_bool
-prompt_option_char (
+prompt_option_char(
 	int option) /* return value is always ignored */
 {
 	char prompt[LEN];
@@ -399,19 +399,20 @@ prompt_option_char (
 	input[0] = *variable;
 	input[1] = '\0';
 
-	show_menu_help (option_table[option].txt->help);
-	MoveCursor (option_row(option), 0);
-	fmt_option_prompt (prompt, sizeof(prompt)-1, TRUE, option);
+	show_menu_help(option_table[option].txt->help);
+	MoveCursor(option_row(option), 0);
+	fmt_option_prompt(prompt, sizeof(prompt) - 1, TRUE, option);
 
-	if ((p = tin_getline (prompt, FALSE, p, 1, FALSE, HIST_OTHER)) == NULL)
+	if ((p = tin_getline(prompt, FALSE, p, 1, FALSE, HIST_OTHER)) == NULL)
 		return FALSE;
 
 	*variable = p[0];
 
-	clear_message ();
+	clear_message();
 
 	return TRUE;
 }
+
 
 /*
  * Get a string. Make it the new default.
@@ -419,7 +420,7 @@ prompt_option_char (
  * Return the string or NULL if we can't get anything useful
  */
 char *
-prompt_string_default (
+prompt_string_default(
 	const char *prompt,
 	char *def,
 	const char *failtext,
@@ -429,16 +430,16 @@ prompt_string_default (
 
 	clear_message();
 
-	if (!prompt_string (prompt, pattern, history)) {
+	if (!prompt_string(prompt, pattern, history)) {
 		clear_message();
 		return NULL;
 	}
 
 	if (pattern[0] != '\0')			/* got a string - make it the default */
-		my_strncpy (def, pattern, LEN);
+		my_strncpy(def, pattern, LEN);
 	else {
 		if (def[0] == '\0') {		/* no default - give up */
-			error_message (failtext);
+			error_message(failtext);
 			return NULL;
 		}
 	}
@@ -453,7 +454,7 @@ prompt_string_default (
  * in arts[], else ART_UNAVAILABLE
  */
 int
-prompt_msgid (
+prompt_msgid(
 	void)
 {
 	char buf[LEN];
@@ -489,7 +490,7 @@ prompt_msgid (
 		 * no way to display it
 		 */
 		if (which_thread(msgid->article) == -1) {
-			info_message (_(txt_no_last_message));
+			info_message(_(txt_no_last_message));
 			return ART_UNAVAILABLE;
 		}
 
@@ -506,19 +507,19 @@ prompt_msgid (
  * TODO - maybe add a '...' to the string to show it was truncated. See center_line()
  */
 char *
-sized_message (
+sized_message(
 	const char *format,
 	const char *subject)
 {
 	/* The formatting info (%.*s) wastes 4 chars, but our prompt needs 1 char */
-	int have = cCOLS - strlen (format) + 4 - 1;
+	int have = cCOLS - strlen(format) + 4 - 1;
 	int want = strlen(subject);
 
 	if (want > 0 && subject[want - 1] == '\n')
 		want--;
 	if (have > want)
 		have = want;
-	sprintf (mesg, format, have, subject);
+	sprintf(mesg, format, have, subject);
 	return mesg;
 }
 
@@ -528,7 +529,7 @@ sized_message (
  * eg, Press a)ppend, o)verwrite, q)uit :
  */
 int
-prompt_slk_response (
+prompt_slk_response(
 	int ch_default,
 	const t_menukeys /* char */ *responses,
 	const char *fmt,
@@ -538,24 +539,24 @@ prompt_slk_response (
 	char ch;
 	char buf[LEN];
 
-	va_start (ap, fmt);
-	vsnprintf (buf, sizeof(buf) - 1, fmt, ap);	/* We need to do this, else wait_message() will clobber us */
-	va_end (ap);
+	va_start(ap, fmt);
+	vsnprintf(buf, sizeof(buf) - 1, fmt, ap);	/* We need to do this, else wait_message() will clobber us */
+	va_end(ap);
 
-	ch_default = map_to_local (ch_default, responses);
+	ch_default = map_to_local(ch_default, responses);
 	do {
-		wait_message (0, "%s%c", buf, ch_default);
+		wait_message(0, "%s%c", buf, ch_default);
 
 		/* Get the cursor _just_ right */
-		MoveCursor (cLINES, (int) strlen (buf));
+		MoveCursor(cLINES, (int) strlen(buf));
 
-		if ((ch = ReadCh ()) == '\r' || ch == '\n')
+		if ((ch = ReadCh()) == '\r' || ch == '\n')
 			ch = ch_default;
 
-	} while (!strchr (responses->localkeys, ch));
+	} while (!strchr(responses->localkeys, ch));
 
-	clear_message ();
-	return map_to_default (ch, responses);
+	clear_message();
+	return map_to_default(ch, responses);
 }
 
 
@@ -566,7 +567,7 @@ prompt_slk_response (
  * ii) CTRL, SHIFT etc don't work
  */
 void
-prompt_continue (
+prompt_continue(
 	void)
 {
 	int ch;
@@ -574,8 +575,8 @@ prompt_continue (
 #ifdef USE_CURSES
 	cmd_line = TRUE;
 #endif /* USE_CURSES */
-	info_message (_(txt_return_key));
-	ch = ReadCh ();
+	info_message(_(txt_return_key));
+	ch = ReadCh();
 
 	switch (ch) {
 		case ESC:
@@ -583,7 +584,7 @@ prompt_continue (
 		case KEY_PREFIX:
 #	endif /* HAVE_KEY_PREFIX */
 			(void) get_arrow_key(ch);
-			nobreak;	/* FALLTHROUGH */
+			/* FALLTHROUGH */
 		default:
 			break;
 	}

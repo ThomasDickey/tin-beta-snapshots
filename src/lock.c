@@ -243,9 +243,9 @@ t_bool dot_lock(
 	snprintf(lockfile, sizeof(lockfile) - 1, "%s%s", filename, LOCK_SUFFIX);
 
 #ifdef HAVE_LINK
-	if (stat (lockfile, &statbuf)) {				/* lockfile doesn't exist */
+	if (stat(lockfile, &statbuf)) {				/* lockfile doesn't exist */
 		if (!link(tempfile, lockfile)) {			/* link succsessfull */
-			if (!stat (tempfile, &statbuf)) {	/* tempfile exist */
+			if (!stat(tempfile, &statbuf)) {	/* tempfile exist */
 				if (statbuf.st_nlink == 2)			/* link count ok */
 					rval = TRUE;
 			}
@@ -254,9 +254,9 @@ t_bool dot_lock(
 #endif /* HAVE_LINK */
 
 	close(dot_fd);
-	(void) unlink (tempfile);
+	(void) unlink(tempfile);
 
-	if (!stat (lockfile, &statbuf)) {			/* lockfile still here */
+	if (!stat(lockfile, &statbuf)) {			/* lockfile still here */
 		if (statbuf.st_nlink != 1)					/* link count wrong? */
 			rval = FALSE;								/* shouldn't happen */
 	}
@@ -277,7 +277,7 @@ t_bool dot_unlock(
 	char *lockfile;
 	t_bool rval = FALSE;
 
-	lockfile = my_malloc (strlen(filename) + strlen(LOCK_SUFFIX) + 2);
+	lockfile = my_malloc(strlen(filename) + strlen(LOCK_SUFFIX) + 2);
 	strcpy(lockfile, filename);
 	strcat(lockfile, LOCK_SUFFIX);
 	if (!unlink(lockfile))

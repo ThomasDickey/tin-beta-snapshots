@@ -44,7 +44,6 @@ subj=*$$$*
 New style rule:
 
 group=*
-type=0
 case=0
 score=-100
 subj=*$$$*
@@ -52,28 +51,13 @@ subj=*$$$*
 
 So you can give the individual rule a weight, based on your opinion
 about the rule. e.g. if you want to be sure to never read a certain
-individual again, you may give the rule a score of (-)9000. The sign is
-not important by now, the direction (+ or -) is still determined by the
-"type" of a rule. So the following
-
-group=*
-type=0
-case=0
-score=100
-subj=*$$$*
-#####
-
-will be equivalent with the rule above for now. When tin writes it's
-filter-file the signs are rewritten to match the types. This is intended
-for backwards *and* future compatibility. A future version of tin will
-delete the "type"-line and write only the score.
+individual again, you may give the rule a score of (-)9000.
 
 If you want only "classical" filtering and don't want to mess around
 with score values, you can use the magic words "kill" and "hot" as score
 values in your filter file. Example:
 
 group=*
-type=0
 case=0
 score=kill
 subj=*$$$*
@@ -134,13 +118,6 @@ Valid "command"s are:
 
 scope selection:
 
-scope=pattern
-group=newsgroup
-
-was the "old" format. It is still understood, when tin reads the
-filter-file. The subdivision in local and global filter was removed, so
-when tin writes it, it is rewritten to:
-
 group=newsgroup_pattern_list
 
 newsgroup_pattern_list is a comma-separated list of newsgroup_patterns
@@ -154,7 +131,6 @@ used when you enter new entries by hand.
 
 additional info:
 
-type=num    num: 0=kill, 1=autoselect
 case=num    num: 0=casesensitive, 1=caseinsensitive
 score=num   num: score value of rule, can now also be one of the magic words
                  "kill" or "hot", which are equivalent to
@@ -169,7 +145,7 @@ matches:            matched to:
 subj=pattern        Subject:
 from=pattern        From:
 msgid=pattern       Message-Id: *AND* full References:
-msgid_last=pattern  Message-Id: and last last Reference:s entry only
+msgid_last=pattern  Message-Id: and last Reference:s entry only
 msgid_only=pattern  Message-Id:
 refs_only=pattern   References: line (e.g. <123@ether.net>) without Message-Id:
 lines=num           Lines: ; <num matches less than, >num matches more than.
@@ -250,14 +226,12 @@ configuration menu or in file ~/.tin/tinrc
 ### this kills all articles about CNews, DNEWS or diablo
 ### in news.software.* but not in news.software.readers
 group=news.software.*,!news.software.readers
-type=0
 case=1
 score=kill
 subj=([cd]news|diablo)
 
 ### this should mark all articles about tin, rtin, tind, ktin or cdtin as hot
 group=*
-type=1
 case=1
 score=hot
 subj=\b(cd|[rk]?)?tin(d|pre)?[-.0-9]*\b
@@ -267,7 +241,6 @@ subj=\b(cd|[rk]?)?tin(d|pre)?[-.0-9]*\b
 ### match From: (a bit complex) and/or
 ### Message-ID: (I'm the only user who's posting on this server)
 group=*,!akk.*,!tin.*
-type=1
 case=1
 score=hot
 from=urs@(.*\.)?((akk\.uni-karlsruhe|dana)\.de|(karlsruhe|tin|akk)\.org|ka\.nu|argh\.net)
@@ -277,7 +250,6 @@ msgid=@akk3\.akk\.uni-karlsruhe\.de>
 ### forged cancels around... the next rule helps you a bit
 ### ignore know despammers and net.* cancels
 group=control.cancel
-type=0
 case=1
 score=kill
 from=(news@news\.msfc\.nasa\.gov|clewis@ferret\.ocunix\.on\.ca|jem@xpat\.com|(jeremy|lysander)@exit109\.com|howardk@iswest\.com|cosmo.roadkill.*rauug\.mil\.wi\.us|spamless@pacbell\.net|cwilkins@.*\.clark\.net)
@@ -288,7 +260,6 @@ msgid_only=<net-monitor-cancel
 ### ignore all postings shorter then 3 lines
 ### ignore all postings crossposted into more then 10 groups
 group=alt.*,
-type=0
 case=1
 score=-200
 subj=[$*!]{3,}
@@ -299,7 +270,6 @@ xref_max=10
 ### mark own articles and direct replies based on message-id
 ### use 2*hot as score to unkill otherwise killed articles
 group=*
-type=1
 case=1
 score=200
 msgid_last=doeblitz\.ts\.rz\.tu-bs\.de
@@ -307,7 +277,6 @@ msgid_last=doeblitz\.ts\.rz\.tu-bs\.de
 ### unmark own articles based on message-id
 ### -> only f'ups to own articles keep marked hot
 group=*
-type=0
 case=1
 score=-200
 msgid_only=doeblitz\.ts\.rz\.tu-bs\.de
@@ -315,7 +284,6 @@ msgid_only=doeblitz\.ts\.rz\.tu-bs\.de
 ### kill all articles which do not have your message-id
 ### as last refenrece _if_ article has any references
 group=de.newusers.questions
-type=0
 case=1
 score=-100
 refs_only=.*<[^@\s]+@\S+(?<!akk3\.akk\.uni-karlsruhe\.de)>$
@@ -326,6 +294,4 @@ refs_only=.*<[^@\s]+@\S+(?<!akk3\.akk\.uni-karlsruhe\.de)>$
 - make the time value in the filter file more human readable.
 - rewrite filtering order to get optimal performance
 - filtering on arbitrary header lines
-- convert .tin/filter, make "type" obsolete, maybe completely new file
-  format
 - throw out "xref*" when it is obsolete for sure

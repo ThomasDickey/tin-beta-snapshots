@@ -111,6 +111,8 @@ o  fix check_upgrade() (config.c)
 
 o  add version number to other config-files (i.e. attributes, filter,
    tin.defaults, keymap) and do the same checks as for TINRC_VERSION/tinrc
+   for the filter-file also store the editor offset and the filter method
+   used (wildmat or regexp).
    [Urs Janssen <urs@tin.org>]
 
 o  'K' is still a bit inconsistent
@@ -156,16 +158,9 @@ o  iso2asc conversion is missing for 'internal' strings (i.e. 'M'enu)
 
 Pager Problems
 --------------
-o  word highlighting shouldn't be enabled in signatures, as '*'
-   and '_' characters may be used for ASCII art (e.g. '___').
-   [Vincent Lefevre <vlefevre@ens-lyon.fr>]
-   There is a hack to not collapse spaces in sigs, is more needed?
-   [<jason@radar.tele2.co.uk>]
 
-o  word-highlighting should be rewritten to use regexp, i.e.:
-   (?:^|\s)/[^\s/]+/(?:\s|$)      for /slashes/
-   (?:^|\s)\*[^\s*]+\*(?:\s|$)    for *stars*
-   (?:^|\s)_[^\s_]+_(?:\s|$)      for _underscores_
+o  word_h_display_marks=0 doesn't work for the !USE_CUSRSES case
+   [20020720 Urs Janssen <urs@tin.org>]
 
 Posting Problems
 ----------------
@@ -191,11 +186,15 @@ New features
 ------------
 o  automatically disable TeX2ISO conversion if saving articles _and_
    postprocessing is set to != 'n'
-   [20020423 Urs Janssen]
+   [20020423 Urs Janssen <urs@tin.org>]
 
 o  add underline/bold/... support (i.e. for monochrom terminals
    as color substitution)
    [20020326 Serge Matveev <sm@cl.spb.ru>]
+
+o  add bold-italic, bold-underline, italic-underline, bold-italic-underline
+   word highlightings.
+   [20020721 Urs Janssen <urs@tin.org>]
 
 o  fetch overview data in chunks (i.e. 100 arts/chunk) to allow
    faster read interruption.
@@ -298,6 +297,11 @@ o  make hide_uu a 3 way toggle for the attributes file (not tinrc).
       0 = don't hide uu-parts
       1 = hide full uu-parts incl. begin/end
       2 = hide uu-lines (might have many false positives)
+
+o  add post_8bit_header, mail_8bit_header, post_mime_encoding,
+   mail_mime_encoding to the attributes file to allow plain 8 bit
+   header in i.e. fr.* but avoid them in i.e. de.*
+   [20020910 Urs Janssen <urs@tin.org>]
 
 o  join keep_posted_articles & keep_posted_articles_file into one option
    posted_articles_file=/path/to/file - don't keep arts if
@@ -412,10 +416,6 @@ o  A system-wide tinrc configuration file (to hold some defaults).
    Maybe a second file which could be used to force settings (eg
    inews & mailer) (tin.defaults [--with-defaults-dir] is a start)
 
-o  think about removing global attributes files (TIN_LIBDIR/attributes)
-   and move global files (TIN_LIBDIR/tinrc, TIN_LIBDIR/attributes) to
-   TIN_DEFAULTS_DIR
-
 o  attributes (still) needs some work, some entrys aren't really useful
    on a per group basis but others would (i.e. Reply-To)
    once we have a 'attributes-menu' we could remove most of the
@@ -455,7 +455,7 @@ o  Merge the selection code with the range code. Having two similar methods
 o  add check for libbzip2/zlib (>=1.1.4)
    (<http://sources.redhat.com/bzip2/>, <http://www.gzip.org/zlib/>) and
    option to write/read {g,b}zipped local overviews
-   zlib, libbzip2 might also be be used for post-processing.
+   zlib, libbzip2 might also be used for post-processing.
 
 Posting enhancements
 ----------------------
@@ -478,7 +478,7 @@ o  bring up a warning on a long Newsgroups: (>=5) line and
    rewrite NGLIMIT handling (post.c) ulBuildArgv() would replace a lot of
    the current code
    (not just truncate Newsgroups:-line after the NGLIMITth newsgroup -
-    or if we do so - give an extra warning to the user and give the the
+    or if we do so - give an extra warning to the user and give him the
     chance to reedit the Newsgroups:-line)
 
 o  bring up a warning when trying to f'up into a binary group
@@ -521,7 +521,8 @@ o  allow expiring filter entrys n-days after the last time they matched
 
 Internal Changes
 ----------------
-o  check where joinpath() should be used
+o  check where joinpath() should be used; check joinpath() for overruns.
+   (i.e grep for TMPDIR in the source)
    [Urs Janssen <urs@tin.org>]
 
 o  change '#define TMPDIR "/tmp/"' to
@@ -546,6 +547,9 @@ o  check where PRODUCT should be used instead of tin_progname and/or "tin"
    [Urs Janssen <urs@tin.org>]
 
 o  kick Hungarian notation
+   [Urs Janssen <urs@tin.org>]
+
+o  check where iKeyAbort should be used instead of ESC
    [Urs Janssen <urs@tin.org>]
 
 o  use XGTITLE (if available) if -n cmd-line flag is present
@@ -671,8 +675,15 @@ o  tin.defaults could use more documentation on manpage (tin.5)
 
 Not yet classified
 ------------------
+o  -R should work even if tin is compiled without NNTP_{ABLE,ONLY}
+   [20020829 Urs Janssen <urs@tin.org>]
+
 o  nuke $BUG_ADDRESS
    [20020226 Urs Janssen <urs@tin.org>]
+
+o  what is with FOPEN_OPTS (VMS)? is it missing from ~50% of all
+   fopen()-calls or can it be droped entirely?
+   [20020821 Urs Janssen <urs@tin.org>]
 
 o  setting TIN_HOMEDIR to a nonexistant dir gives a "Filesystem full"
    error-message (but doesn't abort) instead of creating the dir. bug?

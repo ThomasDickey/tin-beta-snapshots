@@ -42,10 +42,10 @@
 #	include "tin.h"
 #endif /* !TIN_H */
 
-static int count_args (char *s);
+static int count_args(char *s);
 
 static int
-count_args (
+count_args(
 	char *s)
 {
 	int ch, count = 0;
@@ -66,7 +66,7 @@ count_args (
 
 
 void
-envargs (
+envargs(
 	int *Pargc,
 	char ***Pargv,
 	const char *envstr)
@@ -81,20 +81,20 @@ envargs (
 	/*
 	 * see if anything in the environment
 	 */
-	envptr = getenv (envstr);
+	envptr = getenv(envstr);
 	if (envptr == NULL || *envptr == 0)
 		return;
 
 	/*
 	 * count the args so we can allocate room for them
 	 */
-	argc = count_args (envptr);
-	bufptr = my_strdup (envptr);
+	argc = count_args(envptr);
+	bufptr = my_strdup(envptr);
 
 	/*
 	 * allocate a vector large enough for all args
 	 */
-	argv = my_malloc ((argc + *Pargc + 1) * sizeof(char *));
+	argv = my_malloc((argc + *Pargc + 1) * sizeof(char *));
 	argvect = argv;
 
 	/*

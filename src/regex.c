@@ -3,7 +3,7 @@
  *  Module    : regex.c
  *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
  *  Created   : 1997-02-21
- *  Updated   : 1997-02-25
+ *  Updated   : 2002-07-20
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
@@ -51,7 +51,7 @@
  * if icase=TRUE then ignore case in the compare
  */
 t_bool
-match_regex (
+match_regex(
 	const char *string,
 	char *pattern,
 	t_bool icase)
@@ -76,7 +76,7 @@ match_regex (
 	}
 
 	/*
-	 * Since we are running the the compare only once,
+	 * Since we are running the compare only once,
 	 * we don't need to use pcre_study() to improve
 	 * performance
 	 */
@@ -116,12 +116,12 @@ compile_regex(
 	const char *regex_errmsg = 0;
 	int regex_errpos;
 
-	if ((cache->re = pcre_compile (regex, PCRE_EXTENDED | options, &regex_errmsg, &regex_errpos, NULL)) == NULL)
-		error_message (_(txt_pcre_error_at), regex_errmsg, regex_errpos);
+	if ((cache->re = pcre_compile(regex, PCRE_EXTENDED | options, &regex_errmsg, &regex_errpos, NULL)) == NULL)
+		error_message(_(txt_pcre_error_at), regex_errmsg, regex_errpos);
 	else {
-		cache->extra = pcre_study (cache->re, 0, &regex_errmsg);
+		cache->extra = pcre_study(cache->re, 0, &regex_errmsg);
 		if (regex_errmsg != NULL)
-			error_message (_(txt_pcre_error_text), regex_errmsg);
+			error_message(_(txt_pcre_error_text), regex_errmsg);
 		else
 			return TRUE;
 	}
@@ -130,12 +130,13 @@ compile_regex(
 
 
 /*
- * Highlight (in inverse text) any string on 'row' that match 'regex'
+ * Highlight any string on 'row' that match 'regex'
  */
 void
 highlight_regexes(
 	int row,
-	struct regex_cache *regex)
+	struct regex_cache *regex,
+	int color)
 {
 	char *ptr;
 	int offsets[6];
@@ -154,8 +155,24 @@ highlight_regexes(
 #endif /* USE_CURSES */
 	ptr = buf;
 
-	while (pcre_exec (regex->re, regex->extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) != PCRE_ERROR_NOMATCH) {
-		highlight_string (row, (ptr - buf) + offsets[0], offsets[1] - offsets[0]);
-		ptr += offsets[1];
+	while (pcre_exec(regex->re, regex->extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) > 0) {
+		/* we have a match */
+#ifdef HAVE_COLOR
+		if (use_color && color >= 0) /* color the matching text */
+			word_highlight_string(row, (ptr - buf) + offsets[0], offsets[1] - offsets[0], color);
+		else
+#endif /* HAVE_COLOR*/
+			/* inverse the matching text */
+			highlight_string(row, (ptr - buf) + offsets[0], offsets[1] - offsets[0]);
+
+#ifdef HAVE_COLOR
+		if (!tinrc.word_h_display_marks) {
+#	ifdef USE_CURSES
+			screen_contents(row, 0, buf);
+#	endif /* USE_CURSES */
+			ptr += offsets[1] - 2;
+		} else
+#endif /* HAVE_COLOR */
+			ptr += offsets[1];
 	}
 }

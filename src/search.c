@@ -42,7 +42,12 @@
 /*
  * local prototypes
  */
-static char *get_search_pattern (t_bool forward, const char *fwd_msg, const char *bwd_msg, char *def, int which_hist);
+static char *get_search_pattern(t_bool forward, const char *fwd_msg, const char *bwd_msg, char *def, int which_hist);
+static int author_search(int i, char *searchbuf);
+static int body_search(int i, char *searchbuf);
+static int subject_search(int i, char *searchbuf);
+static int search_group(t_bool forward, int current_art, char *searchbuff, int (*search_func) (int i, char *searchbuff));
+
 
 /*
  * The search function may place error text into mesg
@@ -69,7 +74,7 @@ static struct regex_cache srch_regex;
  * Return NULL if no pattern could be found
  */
 static char *
-get_search_pattern (
+get_search_pattern(
 	t_bool forward,
 	const char *fwd_msg,
 	const char *bwd_msg,
@@ -83,12 +88,12 @@ get_search_pattern (
 	if (!prompt_string_default(tmpbuf, def, _(txt_no_search_string), which_hist))
 		return NULL;
 
-	wait_message (0, _(txt_searching));
+	wait_message(0, _(txt_searching));
 
 	stow_cursor();
 
 	if (tinrc.wildcard) {			/* ie, not wildmat() */
-		strcpy(def, quote_wild_whitespace (def));
+		strcpy(def, quote_wild_whitespace(def));
 		return def;
 	}
 
@@ -105,38 +110,35 @@ get_search_pattern (
  * called by config.c
  */
 int
-search_config (
+search_config(
 	t_bool forward,
 	int current,
 	int last)
 {
+	char *buf;
 	int n;
 	int incr = forward ? 1 : -1;
 	int result = current;
-	char *buf;
 
-	if (!(buf = get_search_pattern(
-				forward,
-				_(txt_search_forwards),
-				_(txt_search_backwards),
-				tinrc.default_search_config,
-				HIST_CONFIG_SEARCH
-	))) return result;
+	if (!(buf = get_search_pattern(forward, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_config, HIST_CONFIG_SEARCH)))
+		return result;
 
 	current += incr;
 	n = current;
 	do {
 		if (n < 0)
 			n = last;
-		else if (n > last)
-			n = 0;
-		if (REGEX_MATCH (option_table[n].txt->opt, buf, TRUE)) {
+		else {
+			if (n > last)
+				n = 0;
+		}
+		if (REGEX_MATCH(option_table[n].txt->opt, buf, TRUE)) {
 			result = n;
 			break;
 		}
 		n += incr;
 	} while (n != current);
-	clear_message ();
+	clear_message();
 	return result;
 }
 
@@ -147,7 +149,7 @@ search_config (
  * Return index into active of matching groupname or -1
  */
 int
-search_active (
+search_active(
 	t_bool forward)
 {
 	char *buf;
@@ -156,7 +158,7 @@ search_active (
 	int i;
 
 	if (!selmenu.max) {
-		info_message (_(txt_no_groups));
+		info_message(_(txt_no_groups));
 		return -1;
 	}
 
@@ -167,12 +169,10 @@ search_active (
 
 	do {
 		if (forward) {
-			i++;
-			if (i >= selmenu.max)
+			if (++i >= selmenu.max)
 				i = 0;
 		} else {
-			i--;
-			if (i < 0)
+			if (--i < 0)
 				i = selmenu.max - 1;
 		}
 
@@ -180,17 +180,17 @@ search_active (
 		 * Get the group name & description into buf2
 		 */
 		if (show_description && active[my_group[i]].description) {
-			snprintf (buf2, sizeof(buf2) - 1, "%s %s", active[my_group[i]].name, active[my_group[i]].description);
+			snprintf(buf2, sizeof(buf2) - 1, "%s %s", active[my_group[i]].name, active[my_group[i]].description);
 			ptr = buf2;
 		} else
 			ptr = active[my_group[i]].name;
 
-		if (REGEX_MATCH (ptr, buf, TRUE)) {
+		if (REGEX_MATCH(ptr, buf, TRUE)) {
 			return i;
 		}
 	} while (i != selmenu.curr);
 
-	info_message (MATCH_MSG);
+	info_message(MATCH_MSG);
 	return -1;
 }
 
@@ -200,10 +200,10 @@ search_active (
  * used only by search_body()
  * Returns:	1	String found
  *          0	Not found
- *			-1	User aborted search
+ *	        -1	User aborted search
  */
 static int
-body_search (
+body_search(
 	int i,
 	char *searchbuf)
 {
@@ -212,17 +212,17 @@ body_search (
 	t_openartinfo artinfo;
 
 	if (!read_news_via_nntp || CURR_GROUP.type != GROUP_TYPE_NEWS)
-		make_group_path (CURR_GROUP.name, group_path);
+		make_group_path(CURR_GROUP.name, group_path);
 
-	memset (&artinfo, 0, sizeof(t_openartinfo));
-	switch (art_open (TRUE, &arts[i], group_path, &artinfo, FALSE)) {
+	memset(&artinfo, 0, sizeof(t_openartinfo));
+	switch (art_open(TRUE, &arts[i], group_path, &artinfo, FALSE)) {
 		case ART_ABORT:					/* User 'q'uit */
-			art_close (&artinfo);
+			art_close(&artinfo);
 			return -1;
 
 		case ART_UNAVAILABLE:			/* Treat as string not present */
-			art_close (&artinfo);
-			info_message (_(txt_no_match));
+			art_close(&artinfo);
+			info_message(_(txt_no_match));
 			return 0;
 	}
 
@@ -231,30 +231,30 @@ body_search (
 	 */
 	for (i = 0; artinfo.cookl[i].flags & C_HEADER; ++i)
 		;
-	fseek (artinfo.cooked, artinfo.cookl[i].offset, SEEK_SET);
+	fseek(artinfo.cooked, artinfo.cookl[i].offset, SEEK_SET);
 
 	/*
 	 * Now search the body
 	 */
 	sprintf(mesg, _(txt_searching_body), ++curr_cnt, total_cnt);
-	show_progress (mesg, curr_cnt, total_cnt);
-	while ((line = tin_fgets (artinfo.cooked, FALSE)) != NULL) {
+	show_progress(mesg, curr_cnt, total_cnt);
+	while ((line = tin_fgets(artinfo.cooked, FALSE)) != NULL) {
 		if (tinrc.wildcard) {
-			if (pcre_exec (srch_regex.re, srch_regex.extra, line, strlen(line), 0, 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
+			if (pcre_exec(srch_regex.re, srch_regex.extra, line, strlen(line), 0, 0, srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
 				srch_lineno = i;
-				art_close (&pgart);		/* Switch the pager over to matched art */
+				art_close(&pgart);		/* Switch the pager over to matched art */
 				pgart = artinfo;
 #ifdef DEBUG
 				if (debug == 2)
-					fprintf(stderr, "art_switch(%p = %p)\n", &pgart, &artinfo);
+					fprintf(stderr, "art_switch(%p = %p)\n", (void *) &pgart, (void *) &artinfo);
 #endif /* DEBUG */
 
 				return 1;
 			}
 		} else {
-			if (REGEX_MATCH (line, searchbuf, TRUE)) {
+			if (wildmatpos(line, searchbuf, TRUE, srch_offsets, srch_offsets_size)) {
 				srch_lineno = i;
-				art_close (&pgart);		/* Switch the pager over to matched art */
+				art_close(&pgart);		/* Switch the pager over to matched art */
 				pgart = artinfo;
 				return 1;
 			}
@@ -263,12 +263,12 @@ body_search (
 	}
 
 	if (tin_errno != 0) {			/* User abort */
-		art_close (&artinfo);
+		art_close(&artinfo);
 		return -1;
 	}
 
-	art_close (&artinfo);
-/*	info_message (MATCH_MSG); */
+	art_close(&artinfo);
+/*	info_message(MATCH_MSG); */
 	return 0;
 }
 
@@ -278,7 +278,7 @@ body_search (
  * 1 = found, 0 = not found
  */
 static int
-author_search (
+author_search(
 	int i,
 	char *searchbuf)
 {
@@ -288,9 +288,9 @@ author_search (
 	if (arts[i].name == NULL)
 		ptr = arts[i].from;
 	else
-		snprintf (buf, sizeof(buf) - 1, "%s <%s>", arts[i].name, arts[i].from);
+		snprintf(buf, sizeof(buf) - 1, "%s <%s>", arts[i].name, arts[i].from);
 
-	return (REGEX_MATCH (ptr, searchbuf, TRUE)) ? 1 : 0;
+	return (REGEX_MATCH(ptr, searchbuf, TRUE)) ? 1 : 0;
 }
 
 
@@ -299,11 +299,11 @@ author_search (
  * 1 = found, 0 = not found
  */
 static int
-subject_search (
+subject_search(
 	int i,
 	char *searchbuf)
 {
-	return (REGEX_MATCH (arts[i].subject, searchbuf, TRUE)) ? 1 : 0;
+	return (REGEX_MATCH(arts[i].subject, searchbuf, TRUE)) ? 1 : 0;
 }
 
 
@@ -311,7 +311,7 @@ subject_search (
  * Returns index into arts[] of matching article or -1
  */
 static int
-search_group (
+search_group(
 	t_bool forward,
 	int current_art,
 	char *searchbuff,
@@ -321,39 +321,39 @@ search_group (
 	int i;
 
 	if (grpmenu.curr < 0) {
-		info_message (_(txt_no_arts));
+		info_message(_(txt_no_arts));
 		return -1;
 	}
 
 	if (!read_news_via_nntp || CURR_GROUP.type != GROUP_TYPE_NEWS)
-		make_group_path (CURR_GROUP.name, group_path);
+		make_group_path(CURR_GROUP.name, group_path);
 
 	i = current_art;
 
 	do {
 		if (forward) {
-			if ((i = next_response (i)) < 0)
+			if ((i = next_response(i)) < 0)
 				i = base[0];
 		} else {
-			if ((i = prev_response (i)) < 0)
-				i = find_response(grpmenu.max - 1, num_of_responses (grpmenu.max - 1));
+			if ((i = prev_response(i)) < 0)
+				i = find_response(grpmenu.max - 1, num_of_responses(grpmenu.max - 1));
 		}
 
 		/* Only search displayed articles */
 		if (CURR_GROUP.attribute->show_only_unread && arts[i].status != ART_UNREAD)
 			continue;
 
-		switch (search_func (i, searchbuff)) {
+		switch (search_func(i, searchbuff)) {
 			case 1:								/* Found */
-				clear_message ();
+				clear_message();
 				return i;
+
 			case -1:							/* User abort */
 				return -1;
 		}
-
 	} while (i != current_art);
 
-	info_message (_(txt_no_match));
+	info_message(_(txt_no_match));
 	return -1;
 }
 
@@ -363,7 +363,7 @@ search_group (
  * Returns index into arts[] of matching article or -1
  */
 int
-search (
+search(
 	int key,
 	int current_art,
 	t_bool forward)
@@ -373,32 +373,19 @@ search (
 
 	switch (key) {
 		case SEARCH_SUBJ:
-			if (!(buf = get_search_pattern(
-					forward,
-					_(txt_search_forwards),
-					_(txt_search_backwards),
-					tinrc.default_search_subject,
-					HIST_SUBJECT_SEARCH
-			))) return -1;
-
+			if (!(buf = get_search_pattern(forward, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_subject, HIST_SUBJECT_SEARCH)))
+				return -1;
 			search_func = subject_search;
 			break;
 
 		case SEARCH_AUTH:
 		default:
-			if (!(buf = get_search_pattern(
-					forward,
-					_(txt_author_search_forwards),
-					_(txt_author_search_backwards),
-					tinrc.default_search_author,
-					HIST_AUTHOR_SEARCH
-			))) return -1;
-
+			if (!(buf = get_search_pattern(forward, _(txt_author_search_forwards), _(txt_author_search_backwards), tinrc.default_search_author, HIST_AUTHOR_SEARCH)))
+				return -1;
 			search_func = author_search;
 			break;
 	}
-
-	return (search_group (forward, current_art, buf, search_func));
+	return (search_group(forward, current_art, buf, search_func));
 }
 
 
@@ -408,7 +395,7 @@ search (
  * If using regex's return vector of character offsets
  */
 int
-search_article (
+search_article(
 	t_bool forward,
 	int start_line,
 	int lines,
@@ -417,18 +404,13 @@ search_article (
 	FILE *fp)
 {
 	char *pattern, *ptr;
-	struct regex_cache srch;
 	int i;
+	struct regex_cache srch;
 
-	if (!(pattern = get_search_pattern(
-				forward,
-				_(txt_search_forwards),
-				_(txt_search_backwards),
-				tinrc.default_search_art,
-				HIST_ART_SEARCH
-	))) return FALSE;
+	if (!(pattern = get_search_pattern(forward, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_art, HIST_ART_SEARCH)))
+		return FALSE;
 
-	if (tinrc.wildcard && !(compile_regex (pattern, &srch, PCRE_EXTENDED | PCRE_CASELESS)))
+	if (tinrc.wildcard && !(compile_regex(pattern, &srch, PCRE_EXTENDED | PCRE_CASELESS)))
 		return -1;
 
 	srch_lineno = -1;
@@ -436,41 +418,40 @@ search_article (
 
 	forever {
 		if (forward) {
-			i++;
-			if (i == lines)
+			if (++i == lines)
 				break;
 		} else {
-			i--;
-			if (i < 0)
+			if (--i < 0)
 				break;
 		}
 
-/* TODO consider not searching some line types ? - body search skips hdrs */
-		fseek (fp, line[i].offset, SEEK_SET);
-
 		/*
-		 * Don't search beyond ^L if hiding is enabled
+		 * TODO: consider not searching some line types?
+		 * 'B'ody search skips hdrs, '/' inside article does not.
 		 */
+		fseek(fp, line[i].offset, SEEK_SET);
+
+		/* Don't search beyond ^L if hiding is enabled */
 		if ((line[i].flags&C_CTRLL) && i > reveal_ctrl_l_lines)
 			break;
 
 		ptr = tin_fgets(fp, FALSE);
 
 		if (tinrc.wildcard) {
-			if (pcre_exec (srch.re, srch.extra, ptr, strlen(ptr), 0, 0,
+			if (pcre_exec(srch.re, srch.extra, ptr, strlen(ptr), 0, 0,
 								srch_offsets, srch_offsets_size) != PCRE_ERROR_NOMATCH) {
 				srch_lineno = i;
 				return i;
 			}
 		} else {
-			if (REGEX_MATCH (ptr, pattern, TRUE)) {
+			if (wildmatpos(ptr, pattern, TRUE, srch_offsets, srch_offsets_size)) {
 				srch_lineno = i;
 				return i;
 			}
 		}
 	}
 
-	wait_message (0, _(txt_no_match));
+	info_message(_(txt_no_match));
 	return -1;
 }
 
@@ -484,7 +465,7 @@ search_article (
  * Return index in arts[] of article that matched or -1
  */
 int
-search_body (
+search_body(
 	int current_art)
 {
 	char *buf;
@@ -505,7 +486,7 @@ search_body (
 	 */
 	if (CURR_GROUP.attribute->show_only_unread) {
 		for (i = 0; i < grpmenu.max; i++)
-			total_cnt += new_responses (i);
+			total_cnt += new_responses(i);
 	} else {
 		for_each_art(i) {
 			if (!IGNORE_ART(i))
@@ -516,11 +497,11 @@ search_body (
 	/*
 	 * Pre-compile if we're using full regex
 	 */
-	if (tinrc.wildcard && !(compile_regex (buf, &srch_regex, PCRE_EXTENDED | PCRE_CASELESS)))
+	if (tinrc.wildcard && !(compile_regex(buf, &srch_regex, PCRE_EXTENDED | PCRE_CASELESS)))
 		return -1;
 
 	srch_lineno = -1;
-	return search_group (1, current_art, buf, body_search);
+	return search_group(1, current_art, buf, body_search);
 }
 
 

@@ -124,10 +124,14 @@
 	col_from			txt_colors	MAX_COLOR+1
 	col_title			txt_colors	MAX_COLOR+1
 	col_signature			txt_colors	MAX_COLOR+1
+#endif
 	word_highlight			OPT_ON_OFF
+#ifdef HAVE_COLOR
 	word_h_display_marks		txt_marks	MAX_MARK+1
 	col_markstar			txt_colors	MAX_COLOR+1
 	col_markdash			txt_colors	MAX_COLOR+1
+	col_markslash			txt_colors	MAX_COLOR+1
+	col_markstroke			txt_colors	MAX_COLOR+1
 #endif
 
 ; posting/mailing options
@@ -143,7 +147,7 @@
 	xpost_quote_format		OPT_STRING
 	mail_quote_format		OPT_STRING
 	advertising			OPT_ON_OFF
-#ifdef HAVE_ICONV_OPEN_TRANSLIT
+#if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
 	translit			OPT_ON_OFF
 #endif
 #ifndef CHARSET_CONVERSION
@@ -186,15 +190,17 @@
 	quote_regex2			OPT_STRING
 	quote_regex3			OPT_STRING
 #endif
+	slashes_regex			OPT_STRING
+	stars_regex			OPT_STRING
+	strokes_regex			OPT_STRING
+	underscores_regex		OPT_STRING
 	strip_re_regex			OPT_STRING
 	strip_was_regex			OPT_STRING
 
 	force_screen_redraw		OPT_ON_OFF
 	start_editor_offset		OPT_ON_OFF
 	editor_format			OPT_STRING
-#ifdef NNTP_ABLE
 	inews_prog			OPT_STRING
-#endif
 	mailer_format			OPT_STRING
 	use_mailreader_i		OPT_ON_OFF
 	unlink_article			OPT_ON_OFF

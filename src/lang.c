@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-05-16
+ *  Updated   : 2002-09-05
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>
@@ -85,7 +85,6 @@ constext txt_bad_attrib[] = N_("Unrecognised attribute: %s");
 constext txt_bad_command[] = N_("Bad command. Type '%s' for help.");
 constext txt_base64[] = "base64";
 constext txt_batch_update_unavail[] = N_("%s: Updating of index files not supported\n");
-constext txt_batch_update_failed[] = N_("Failed to start background indexing process");
 constext txt_begin_of_art[] = N_("*** Beginning of article ***");
 constext txt_cancel_article[] = N_("Cancel (delete) or supersede (overwrite) article [%%.*s]? (%s/%s/%s): ");
 constext txt_cancelling_art[] = N_("Cancelling article...");
@@ -95,9 +94,9 @@ constext txt_cannot_find_base_art[] = N_("Can't find base article %d");
 constext txt_cannot_get_nntp_server_name[] = N_("Cannot find NNTP server name");
 constext txt_cannot_get_term_entry[] = N_("%s: Can't get entry for TERM\n");
 constext txt_cannot_open[] = N_("Can't open %s");
-#if defined(NNTP_ABLE) || defined(NNTP_ONLY)
+#if defined(NNTP_ABLE) && !defined(NNTP_ONLY)
 	constext txt_cannot_open_active_file[] = N_("Can't open %s. Try %s -r to read news via NNTP.\n");
-#endif /* NNTP_ABLE || NNTP_ONLY */
+#endif /* NNTP_ABLE && !NNTP_ONLY */
 constext txt_cannot_open_for_saving[] = N_("Couldn't open %s for saving");
 constext txt_cannot_post[] = N_("*** Posting not allowed ***");
 constext txt_cannot_post_group[] = N_("Posting is not allowed to %s");
@@ -289,9 +288,7 @@ constext txt_help_article_search_forwards[] = N_("search forwards within this ar
 constext txt_help_article_show_raw[] = N_("show article in raw-mode (including all headers)");
 constext txt_help_article_skip_quote[] = N_("skip next block of included text");
 constext txt_help_article_toggle_formfeed[] = N_("toggle display of sections hidden by a form-feed (^L) on/off");
-#ifdef HAVE_COLOR
-	constext txt_help_article_toggle_highlight[] = N_("toggle word highlighting on/off");
-#endif /* HAVE_COLOR */
+constext txt_help_article_toggle_highlight[] = N_("toggle word highlighting on/off");
 constext txt_help_article_toggle_rot13[] = N_("toggle ROT-13 (basic decode) for current article");
 constext txt_help_article_toggle_tabwidth[] = N_("toggle tabwidth 4 <-> 8");
 constext txt_help_article_toggle_tex2iso[] = N_("toggle german TeX style decoding for current article");
@@ -409,8 +406,6 @@ constext txt_help_title_disp[]  = N_("Display properties\n------------------");
 constext txt_help_title_misc[] = N_("Miscellaneous\n-------------");
 constext txt_help_title_navi[]  = N_("Moving around\n-------------");
 constext txt_help_title_ops[]   = N_("Group/thread/article operations\n-------------------------------");
-
-constext txt_hit_space_for_more[] = N_("PgDn,End,<SPACE>,^D - page down. PgUp,Home,b,^U - page up. <CR>,q - quit");
 constext txt_index_page_com[] = N_("Group Level Commands");
 constext txt_info_add_kill[] = N_("Kill filter added");
 constext txt_info_add_select[] = N_("Auto-selection filter added");
@@ -720,9 +715,9 @@ constext txt_tagged_thread[] = N_("Tagged thread");
 
 constext txt_tinrc_defaults[] = N_("# Default action/prompt strings\n");
 constext txt_tinrc_filter[] = N_("# Defaults for quick (1 key) kill & auto-selection filters\n\
-# header=NUM  0,1=Subject: 2,3=From: 4=Message-Id: & full References: line\n\
-#             5=Message-Id: & last References: entry only\n\
-#             6=Message-Id: entry only 7=Lines:\n\
+# header=NUM  0,1=Subject: 2,3=From: 4=Message-ID: & full References: line\n\
+#             5=Message-ID: & last References: entry only\n\
+#             6=Message-ID: entry only 7=Lines:\n\
 # global=ON/OFF  ON=apply to all groups OFF=apply to current group\n\
 # case=ON/OFF    ON=filter case sensitive OFF=ignore case\n\
 # expire=ON/OFF  ON=limit to default_filter_days OFF=don't ever expire\n");
@@ -821,8 +816,7 @@ constext *txt_thread_score_type[] = {
 	constext *txt_marks[] = {
 		N_("Nothing"),
 		N_("Mark"),
-		N_("Space"),
-		N_("Space in Sigs")
+		N_("Space")
 	};
 #endif /* HAVE_COLOR */
 
@@ -960,22 +954,16 @@ constext *txt_mailbox_formats[] = {
 #endif /* HAVE_PGP_GPG */
 
 constext txt_at_s[] = N_(" at %s");
-#ifndef HAVE_LIBUU
-	constext txt_testing_archive[] = N_("Testing %s archive...");
-#endif /* !HAVE_LIBUU */
 constext txt_there_is_no_news[] = N_("There is no news\n");
 constext txt_thread_com[] = N_("Thread Level Commands");
 constext txt_thread_marked_as_deselected[] = N_("Thread deselected");
 constext txt_thread_marked_as_selected[] = N_("Thread selected");
 constext txt_thread_x_of_n[] = N_("%sThread %4s of %4s%s");
 constext txt_threading_arts[] = N_("Threading articles...");
-
-#ifdef HAVE_COLOR
-	constext txt_toggled_high[] = N_("Toggled word highlighting %s");
-#endif /* HAVE_COLOR */
-
+constext txt_toggled_high[] = N_("Toggled word highlighting %s");
 constext txt_toggled_rot13[] = N_("Toggled rot13 encoding");
 constext txt_toggled_tex2iso[] = N_("Toggled german TeX encoding %s");
+constext txt_toggled_tabwidth[] = N_("Toggled tab-width to %d");
 constext txt_type_h_for_help[] = N_("           h=help\n");
 constext txt_unread[] = N_("unread ");
 constext txt_unsubscribed_num_groups[] = N_("unsubscribed from %d groups");
@@ -1078,7 +1066,7 @@ constext txt_from_line_only[] = N_("From: line (ignore case)      ");
 constext txt_from_line_only_case[] = N_("From: line (case sensitive)   ");
 constext txt_help_filter_from[] = N_("From: line to add to filter file. <SPACE> toggles & <CR> sets.");
 constext txt_help_filter_lines[] = N_("Linecount of articles to be filtered. < for less, > for more, = for equal.");
-constext txt_help_filter_msgid[] = N_("Message-Id: line to add to filter file. <SPACE> toggles & <CR> sets.");
+constext txt_help_filter_msgid[] = N_("Message-ID: line to add to filter file. <SPACE> toggles & <CR> sets.");
 constext txt_help_filter_subj[] = N_("Subject: line to add to filter file. <SPACE> toggles & <CR> sets.");
 constext txt_help_filter_text[] = N_("Enter text pattern to filter if Subject: & From: lines are not what you want.");
 constext txt_help_filter_text_type[] = N_("Select where text pattern should be applied. <SPACE> toggles & <CR> sets.");
@@ -1093,7 +1081,7 @@ constext txt_kill_scope[] = N_("Kill pattern scope  : ");
 constext txt_kill_subj[] = N_("Kill Subject:  [%-*.*s] (y/n): ");
 constext txt_kill_text[] = N_("Kill text pattern   : ");
 constext txt_kill_time[] = N_("Kill time in days   : ");
-constext txt_msgid_line_only[] = N_("Message-Id: line              ");
+constext txt_msgid_line_only[] = N_("Message-ID: line              ");
 constext txt_select_from[] = N_("Select From    [%-*.*s] (y/n): ");
 constext txt_select_lines[] = N_("Select Lines: (</>num): ");
 constext txt_select_menu[] = N_("Auto-select Article Menu");
@@ -1112,7 +1100,6 @@ constext txt_only[] = N_("Only");
 constext txt_filter_file[] = N_("# Global & local filter file for the TIN newsreader\n#\n\
 # Global format:\n\
 #   group=STRING      Newsgroups list (e.g. comp.*,!*sources*)    [mandatory]\n\
-#   type=NUM          0=kill 1=auto-select (hot) [mandatory]\n\
 #   case=NUM          Compare=0 / ignore=1 case when filtering\n\
 #   score=NUM         Score to give (e.g. 70)\n\
 #   subj=STRING       Subject: line (e.g. How to be a wizard)\n\
@@ -1120,7 +1107,7 @@ constext txt_filter_file[] = N_("# Global & local filter file for the TIN newsre
 #   msgid=STRING      Message-ID: line (e.g. <123@ether.net>) with full references\n\
 #   msgid_last=STRING Message-ID: line (e.g. <123@ether.net>) with last reference only\n\
 #   msgid_only=STRING Message-ID: line (e.g. <123@ether.net>) without references\n\
-#   refs_only=STRING  References: line (e.g. <123@ether.net>) without Message-Id:\n\
+#   refs_only=STRING  References: line (e.g. <123@ether.net>) without Message-ID:\n\
 #   lines=[<>]?NUM    Lines: line\n\
 #   gnksa=[<>]?NUM    GNKSA parse_from() return code\n\
 # either:\n\
@@ -1131,8 +1118,8 @@ constext txt_filter_file[] = N_("# Global & local filter file for the TIN newsre
 #   xref=PATTERN      Kill pattern (e.g. alt.flame*)\n\
 #\n\
 #   time=NUM          time_t value when rule expires\n#\n");
-constext txt_filter_score[] = N_("Enter score for rule (default=100): ");
-constext txt_filter_score_help[] = N_("Enter the score weight (range 0 < score <= 10000)");
+constext txt_filter_score[] = N_("Enter score for rule (default=%d): ");
+constext txt_filter_score_help[] = N_("Enter the score weight (range 0 < score <= 10000)"); /* SCORE_MAX */
 
 constext txt_art_deleted[] = N_("Article deleted.");
 constext txt_art_undeleted[] = N_("Article undeleted.");
@@ -1248,7 +1235,7 @@ struct opttxt txt_sort_article_type = {
 	N_("Sort article by                    :"),
 	N_("# Sort articles by 0=(nothing) 1=(Subject descend) 2=(Subject ascend)\n\
 # 3=(From descend) 4=(From ascend) 5=(Date descend) 6=(Date ascend)\n\
-# 7=(Score descend) 8=(Score ascend).\n")
+# 7=(Score descend) 8=(Score ascend) 9=(Lines descend) 10=(Lines ascend).\n")
 };
 
 struct opttxt txt_sort_threads_type = {
@@ -1400,7 +1387,7 @@ struct opttxt txt_scroll_lines = {
 	N_("0 = full page scrolling, -1 = show previous last line as first on next page, -2 = half page"),
 	N_("Number of lines to scroll in pager :"),
 	N_("# Number of lines that cursor-up/down will scroll in article pager\n\
-# eg, 1+ = line-by-line, 0 = page-by-page (traditional behaviour),\n\
+# eg, 1+ = line-by-line, 0 = page-by-page (traditional behavior),\n\
 # -1 = the top/bottom line is carried over onto the next page,\n\
 # -2 = half-page scrolling\n")
 };
@@ -1477,6 +1464,38 @@ struct opttxt txt_quote_regex3 = {
 # If you leave this blank, tin will use a built in default.\n")
 };
 #endif /* HAVE_COLOR */
+
+struct opttxt txt_slashes_regex = {
+	N_("A regex used to decide which words to show in col_markslashes."),
+	N_("Regex used to highlight /slashes/  :"),
+	N_("# A regular expression that tin will use to decide which words\n\
+# bounded by '/' are to be shown in col_markslashes.\n\
+# If you leave this blank, tin will use a built in default.\n")
+};
+
+struct opttxt txt_stars_regex = {
+	N_("A regex used to decide which words to show in col_markstars."),
+	N_("Regex used to highlight *stars*    :"),
+	N_("# A regular expression that tin will use to decide which words\n\
+# bounded by '*' are to be shown in col_markstars.\n\
+# If you leave this blank, tin will use a built in default.\n")
+};
+
+struct opttxt txt_strokes_regex = {
+	N_("A regex used to decide which words to show in col_markstroke."),
+	N_("Regex used to highlight -strokes-  :"),
+	N_("# A regular expression that tin will use to decide which words\n\
+# bounded by '-' are to be shown in col_markstroke.\n\
+# If you leave this blank, tin will use a built in default.\n")
+};
+
+struct opttxt txt_underscores_regex = {
+	N_("A regex used to decide which words to show in col_markdash."),
+	N_("Regex used to highlight _underline_:"),
+	N_("# A regular expression that tin will use to decide which words\n\
+# bounded by '_' are to be shown in col_markdash.\n\
+# If you leave this blank, tin will use a built in default.\n")
+};
 
 struct opttxt txt_strip_re_regex = {
 	N_("A regex used to find Subject prefixes to remove.  Use '|' as separator."),
@@ -1709,34 +1728,42 @@ struct opttxt txt_col_signature = {
 	N_("# Color of signature\n")
 };
 
-struct opttxt txt_word_highlight = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Word highlighting in message body  :"),
-	N_("# Enable word highlighting?\n")
-};
-
 struct opttxt txt_word_h_display_marks = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("What to display instead of mark    :"),
 	N_("# Should the leading and ending stars and dashes also be displayed,\n\
 # even when they are highlighting marks?\n\
-# 0 - no    1 - yes, display mark    2 - print a space instead\n\
-# 3 - print a space, but only in signatures\n")
+# 0 - no    1 - yes, display mark    2 - print a space instead\n")
 };
 
 struct opttxt txt_col_markstar = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of highlighting with *stars* :"),
-	N_("# Color of word highlighting. There are two possibilities for\n\
-# in Articles: *stars* and _underdashes_\n")
+	N_("# Color of word highlighting. There are four possibilities\n\
+# in articles: *stars*, /slashes/, _underdashes_ and -strokes-.\n")
 };
-
 struct opttxt txt_col_markdash = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of highlighting with _dash_  :"),
 	""
 };
+struct opttxt txt_col_markslash = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Color of highlighting with /slash/ :"),
+	""
+};
+struct opttxt txt_col_markstroke = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Color of highlighting with -stroke-:"),
+	""
+};
 #endif /* HAVE_COLOR */
+
+struct opttxt txt_word_highlight = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Word highlighting in message body  :"),
+	N_("# Enable word highlighting?\n")
+};
 
 struct opttxt txt_mail_address = {
 	N_("Enter default mail address (and fullname). <CR> sets."),
@@ -1780,7 +1807,7 @@ struct opttxt txt_quote_chars = {
 
 struct opttxt txt_quote_style = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Quoting behaviour                  :"),
+	N_("Quoting behavior                   :"),
 	N_("# How quoting should be handled when following up or replying.\n\
 # 0 = Nothing special\n\
 # 1 = Compress quotes\n\
@@ -1793,10 +1820,10 @@ struct opttxt txt_quote_style = {
 };
 
 struct opttxt txt_news_quote_format = {
-	N_("%A Addr %D Date %F Addr+Name %G Groupname %M Message-Id %N Name %C First Name"),
+	N_("%A Addr %D Date %F Addr+Name %G Groupname %M Message-ID %N Name %C First Name"),
 	N_("Quote line when following up       :"),
 	N_("# Format of quote line when mailing/posting/following-up an article\n\
-# %%A Address    %%D Date   %%F Addr+Name   %%G Groupname   %%M Message-Id\n\
+# %%A Address    %%D Date   %%F Addr+Name   %%G Groupname   %%M Message-ID\n\
 # %%N Full Name  %%C First Name   %%I Initials\n")
 };
 
@@ -2027,13 +2054,11 @@ struct opttxt txt_editor_format = {
 # %%E Editor  %%F Filename  %%N Linenumber\n")
 };
 
-#ifdef NNTP_ABLE
 struct opttxt txt_inews_prog = {
 	N_("Enter name and options for external-inews, --internal for internal inews"),
 	N_("External inews                     :"),
 	N_("# If --internal use the built in mini inews for posting via NNTP\n# otherwise use an external inews program\n"),
 };
-#endif /* NNTP_ABLE */
 
 struct opttxt txt_mailer_format = {
 	N_("Enter %M for mailer, %S for subject, %T for to, %F for filename, <CR> to set."),

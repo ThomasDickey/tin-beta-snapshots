@@ -8,8 +8,10 @@
 # TODO: - add missing updates (full_page_scroll, show_xcommentto)
 #       - add documentation
 #
+# NOPS: - word_h_display_marks
+#
 # version Number
-# $VERSION = "0.0.6";
+# $VERSION = "0.0.7";
 
 # current tinrc version number
 my $rc_version="1.3.0";
@@ -102,9 +104,9 @@ while (defined($line = <>)) {
 
 	# thread_articles
 	if ($line =~ m/^thread_articles=(.*)/o) {
+		$thread_articles = $1;
 		$thread_articles = 3 if ($1 =~ m/on/oi);
 		$thread_articles = 0 if ($1 =~ m/off/oi);
-		$thread_articles = $1 if ($thread_articles < 0);
 		next;
 	}
 
@@ -174,4 +176,4 @@ if ($mailbox_format ne "") {
 
 print "thread_articles=".$thread_articles."\n";
 
-print "quote_style=".$quote_style"\n";
+print "quote_style=".$quote_style."\n";

@@ -60,15 +60,15 @@ FILE *dbgfd;
 /*
  * local prototypes
  */
-static char * _get_references (struct t_msgid *refptr, int depth);
-static struct t_msgid *add_msgid (int key, const char *msgid, struct t_msgid *newparent);
-static struct t_msgid *find_next (struct t_msgid *ptr);
-static struct t_msgid *parse_references (char *r);
-static unsigned int hash_msgid (const char *key);
-static void add_to_parent (struct t_msgid *ptr);
-static void build_thread (struct t_msgid *ptr);
+static char *_get_references(struct t_msgid *refptr, int depth);
+static struct t_msgid *add_msgid(int key, const char *msgid, struct t_msgid *newparent);
+static struct t_msgid *find_next(struct t_msgid *ptr);
+static struct t_msgid *parse_references(char *r);
+static unsigned int hash_msgid(const char *key);
+static void add_to_parent(struct t_msgid *ptr);
+static void build_thread(struct t_msgid *ptr);
 #ifdef DEBUG_REFS
-	static void dump_thread (FILE *fp, struct t_msgid *msgid, int level);
+	static void dump_thread(FILE *fp, struct t_msgid *msgid, int level);
 	static void dump_msgid_thread(struct t_msgid *ptr, int level);
 	static void dump_msgid_threads(void);
 #endif /* DEBUG_REFS */
@@ -77,7 +77,7 @@ static void build_thread (struct t_msgid *ptr);
 #endif /* 0 */
 
 /*
- * Set if the the sorting algorithm goes 'upwards'
+ * Set if the sorting algorithm goes 'upwards'
  */
 static t_bool sort_ascend;
 
@@ -88,10 +88,10 @@ static struct t_msgid *msgids[MSGID_HASH_SIZE] = {0};
 
 /*
  * This part of the code deals with the cacheing and retrieval
- * of Message-id and References headers
+ * of Message-ID and References headers
  *
  * Rationale:
- *    Even though the Message-id is unique to an article, the References
+ *    Even though the Message-ID is unique to an article, the References
  *    field contains msgids from elsewhere in the group. As the expiry
  *    period increases, so does the redundancy of data.
  *    At the time of writing, comp.os.ms-windows.advocacy held ~850
@@ -117,7 +117,7 @@ static struct t_msgid *msgids[MSGID_HASH_SIZE] = {0};
  * MSGID_HASH_SIZE is a prime of order 2^11
  */
 static unsigned int
-hash_msgid (
+hash_msgid(
 	const char *key)
 {
 	unsigned int hash = 0;
@@ -137,7 +137,7 @@ hash_msgid (
  * Thread us into our parents' list of children.
  */
 static void
-add_to_parent (
+add_to_parent(
 	struct t_msgid *ptr)
 {
 	struct t_msgid *p;
@@ -204,7 +204,7 @@ add_to_parent (
  *        overview database.
  */
 static struct t_msgid *
-add_msgid (
+add_msgid(
 	int key,
 	const char *msgid,
 	struct t_msgid *newparent)
@@ -227,7 +227,6 @@ add_msgid (
 	 * Broken software will sometimes damage the case of a message-id.
 	 */
 	for (i = msgids[h]; i != NULL; i = i->next) {
-
 		if (strcasecmp(i->txt, msgid) != 0)				/* No match yet */
 			continue;
 
@@ -319,7 +318,7 @@ add_msgid (
  * not found.
  */
 struct t_msgid *
-find_msgid (
+find_msgid(
 	const char *msgid)
 {
 	unsigned int h;
@@ -350,7 +349,7 @@ find_msgid (
  * The space saving vs. storing the refs as a single string is significant.
  */
 static struct t_msgid *
-parse_references (
+parse_references(
 	char *r)
 {
 	char *ptr;
@@ -390,7 +389,7 @@ parse_references (
  *	    lists, which we strive to work around.
  */
 static char *
-_get_references (
+_get_references(
 	struct t_msgid *refptr,
 	int depth)
 {
@@ -425,7 +424,7 @@ _get_references (
  * to correct size
  */
 char *
-get_references (
+get_references(
 	struct t_msgid *refptr)
 {
 	char *refs;
@@ -448,7 +447,7 @@ get_references (
  * normally only needed when entering a new group
  */
 void
-free_msgids (
+free_msgids(
 	void)
 {
 	int i;
@@ -473,7 +472,7 @@ free_msgids (
 
 #if 0	/* But please don't remove it */
 static void
-dump_msgids (
+dump_msgids(
 	void)
 {
 	int i;
@@ -482,11 +481,8 @@ dump_msgids (
 	my_fprintf(stderr, "Dumping...\n");
 
 	for (i = 0; i < MSGID_HASH_SIZE; i++) {
-
 		if (msgids[i] != NULL) {
-
 			my_fprintf(stderr, "node %d", i);
-
 			for (ptr = msgids[i]; ptr != NULL; ptr = ptr->next)
 				my_fprintf(stderr, " -> %s", ptr->txt);
 
@@ -541,7 +537,7 @@ dump_msgids (
  * rethread.
  */
 void
-clear_art_ptrs (
+clear_art_ptrs(
 	void)
 {
 	int i;
@@ -560,7 +556,7 @@ clear_art_ptrs (
  */
 #ifdef DEBUG_REFS
 static void
-dump_thread (
+dump_thread(
 	FILE *fp,
 	struct t_msgid *msgid,
 	int level)
@@ -600,7 +596,7 @@ dump_thread (
  * A thread is defined as a starting article with no parent
  */
 static void
-dump_msgid_thread (
+dump_msgid_thread(
 	struct t_msgid *ptr,
 	int level)
 {
@@ -617,7 +613,7 @@ dump_msgid_thread (
 
 
 static void
-dump_msgid_threads (
+dump_msgid_threads(
 	void)
 {
 	int i;
@@ -654,13 +650,13 @@ dump_msgid_threads (
  *  It doesn't point to an article OR
  *     (it's already threaded/expired OR it has been autokilled)
  */
-/* We SHOULD skip killed in the normal case */
-#	define SKIP_ART(ptr)	\
+#define SKIP_ART(ptr)	\
 	(ptr && (ptr->article == ART_UNAVAILABLE || \
-		(arts[ptr->article].thread != ART_NORMAL || (tinrc.kill_level != KILL_THREAD && arts[ptr->article].killed))))
+		(arts[ptr->article].thread != ART_NORMAL || \
+			(tinrc.kill_level == KILL_NOTHREAD && arts[ptr->article].killed))))
 
 static struct t_msgid *
-find_next (
+find_next(
 	struct t_msgid *ptr)
 {
 	static t_bool bottom = FALSE;
@@ -706,7 +702,7 @@ find_next (
 		 */
 		if (ptr->child == NULL && ptr->sibling == NULL) {
 
-			while(ptr != NULL && ptr->sibling == NULL)
+			while (ptr != NULL && ptr->sibling == NULL)
 				ptr = ptr->parent;
 
 			/*
@@ -729,7 +725,7 @@ find_next (
  * thread.
  */
 static void
-build_thread (
+build_thread(
 	struct t_msgid *ptr)
 {
 	struct t_msgid *newptr;
@@ -737,7 +733,7 @@ build_thread (
 	/*
 	 * If the root article is gone/expired/killed, find the first valid one
 	 */
-	if (SKIP_ART (ptr))
+	if (SKIP_ART(ptr))
 		ptr = find_next(ptr);
 
 	/*
@@ -759,7 +755,7 @@ build_thread (
  * parent / child / sibling  / article pointers in the msgid hash.
  */
 void
-thread_by_reference (
+thread_by_reference(
 	void)
 {
 	int i;
@@ -812,7 +808,7 @@ thread_by_reference (
  * correct.
  */
 void
-collate_subjects (
+collate_subjects(
 	void)
 {
 	int i, j, art;
@@ -823,7 +819,6 @@ collate_subjects (
 	 * using arts[] and not msgids[] to preserve the sorting.
 	 */
 	for_each_art(i) {
-
 		/*
 		 * Ignore already threaded and expired arts
 		 */
@@ -833,12 +828,10 @@ collate_subjects (
 		/*
 		 * Get the contents of the magic marker in the hashnode
 		 */
-		h = (struct t_hashnode *)(arts[i].subject - sizeof(int) - sizeof(void *)); /* FIXME: cast increases required alignment of target type */
-
+		h = (struct t_hashnode *) (arts[i].subject - sizeof(int) - sizeof(void *)); /* FIXME: cast increases required alignment of target type */
 		j = h->aptr;
 
 		if (j != -1 && j < i) {
-
 			/*
 			 * Modified form of the subject threading - the only difference
 			 * is that we have to add later threads onto the end of the
@@ -883,7 +876,7 @@ collate_subjects (
  * 4) free() up the msgid and refs headers once cached
  */
 void
-build_references (
+build_references(
 	struct t_group *group)
 {
 	char *s;
@@ -895,7 +888,7 @@ build_references (
 	 * The articles are currently unsorted, and are as they were put by setup_hard_base()
 	 */
 	if (group->attribute && group->attribute->sort_art_type != SORT_ARTICLES_BY_NOTHING)
-		sort_arts (group->attribute->sort_art_type);
+		sort_arts(group->attribute->sort_art_type);
 
 	if (group->attribute)
 		sort_ascend = (group->attribute->sort_art_type == SORT_ARTICLES_BY_SUBJ_ASCEND ||
@@ -907,7 +900,7 @@ build_references (
 #ifdef DEBUG_REFS
 	dbgfd = fopen("Refs.dump", "w");
 	SETVBUF(dbgfd, NULL, _IONBF, 0);
-	fprintf (dbgfd, "MSGID phase\n");
+	fprintf(dbgfd, "MSGID phase\n");
 #endif /* DEBUG_REFS */
 
 	/*
@@ -975,5 +968,3 @@ build_references (
 	fclose(dbgfd);
 #endif /* DEBUG_REFS */
 }
-
-/* end of refs.c */

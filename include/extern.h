@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2001-11-10
+ *  Updated   : 2002-07-22
  *  Notes     :
  *
  * Copyright (c) 1997-2002 Iain Lea <iain@bricbrac.de>
@@ -52,94 +52,97 @@
  * warnings are enabled. (Not all of the functions are ANSI or POSIX).
  */
 #ifdef DECL__FLSBUF
-	extern int _flsbuf (int, FILE *);
+	extern int _flsbuf(int, FILE *);
 #endif /* DECL__FLSBUF */
 #ifdef DECL_ATOI
-	extern int atoi (char *);
+	extern int atoi(char *);
 #endif /* DECL_ATOI */
 #ifdef DECL_ATOL
-	extern long atol (char *);
+	extern long atol(char *);
 #endif /* DECL_ATOL */
 #ifndef HAVE_MEMCPY
 #	ifdef DECL_BCOPY
-		extern int bcopy (char *, char *, int);
+		extern int bcopy(char *, char *, int);
 #	endif /* DECL_BCOPY */
 #endif /* !HAVE_MEMCPY */
 
 #if 0 /* trouble on Linux/gcc 3.1 */
 #	ifdef DECL_BZERO /* FD_ZERO() might use this */
-		extern void bzero (char *, int);
+		extern void bzero(char *, int);
 #	endif /* DECL_BZERO */
 #endif /* 0 */
 
 #ifdef DECL_CALLOC
-	extern void *calloc (size_t, size_t);
+	extern void *calloc(size_t, size_t);
 #endif /* DECL_CALLOC */
 #ifdef DECL_FCLOSE
-	extern int fclose (FILE *);
+	extern int fclose(FILE *);
 #endif /* DECL_FCLOSE */
 #ifdef DECL_FDOPEN
-	extern FILE *fdopen (int, const char *);
+	extern FILE *fdopen(int, const char *);
 #endif /* DECL_FDOPEN */
 #ifdef DECL_FFLUSH
-	extern int fflush (FILE *);
+	extern int fflush(FILE *);
 #endif /* DECL_FFLUSH */
 #ifdef DECL_FGETC
-	extern int fgetc (FILE *);
+	extern int fgetc(FILE *);
 #endif /* DECL_FGETC */
 #if defined(DECL_FILENO) && !defined(fileno)
-	extern int fileno (FILE *);
+	extern int fileno(FILE *);
 #endif /* DECL_FILENO && !fileno */
 #ifdef DECL_FPRINTF
-	extern int fprintf (FILE *, const char *, ...);
+	extern int fprintf(FILE *, const char *, ...);
 #endif /* DECL_FPRINTF */
 #ifdef DECL_FPUTC
-	extern int fputc (int, FILE *);
+	extern int fputc(int, FILE *);
 #endif /* DECL_FPUTC */
 #ifdef DECL_FPUTS
-	extern int fputs (const char *, FILE *);
+	extern int fputs(const char *, FILE *);
 #endif /* DECL_FPUTS */
 #ifdef DECL_FREAD
-	extern size_t fread (void *, size_t, size_t, FILE *);
+	extern size_t fread(void *, size_t, size_t, FILE *);
 #endif /* DECL_FREAD */
 #ifdef DECL_FREE
-	extern void free (void *);
+	extern void free(void *);
 #endif /* DECL_FREE */
 #ifdef DECL_FSEEK
-	extern int fseek (FILE *, long, int);
+	extern int fseek(FILE *, long, int);
 #endif /* DECL_FSEEK */
 #ifdef DECL_FWRITE
-	extern size_t fwrite (void *, size_t, size_t, FILE *);
+	extern size_t fwrite(void *, size_t, size_t, FILE *);
 #endif /* DECL_FWRITE */
 #ifdef DECL_GETCWD
-	extern char *getcwd (char *, size_t);
+	extern char *getcwd(char *, size_t);
 #endif /* DECL_GETCWD */
 #ifdef DECL_GETENV
-	extern char *getenv (const char *);
+	extern char *getenv(const char *);
 #endif /* DECL_GETENV */
 #ifdef DECL_GETHOSTBYNAME
-	extern struct hostent *gethostbyname (const char *);
+	extern struct hostent *gethostbyname(const char *);
 #endif /* DECL_GETHOSTBYNAME */
 #ifdef DECL_GETHOSTNAME
-	extern int gethostname (char *, int);
+	extern int gethostname(char *, int);
 #endif /* DECL_GETHOSTNAME */
 #ifdef DECL_GETLOGIN
-	extern char *getlogin (void);
+	extern char *getlogin(void);
 #endif /* DECL_GETLOGIN */
 #ifdef DECL_GETOPT
-	extern int getopt (int, char * const*, const char *);
+	extern int getopt(int, char * const*, const char *);
 #endif /* DECL_GETOPT */
 #ifdef DECL_GETPASS
 	extern char *getpass(const char *);
 #endif /* DECL_GETPASS */
 #ifdef DECL_GETPWNAM
-	extern struct passwd *getpwnam (const char *);
+	extern struct passwd *getpwnam(const char *);
 #endif /* DECL_GETPWNAM */
 #ifdef DECL_GETSERVBYNAME
-	extern struct servent *getservbyname (const char *, const char *);
+	extern struct servent *getservbyname(const char *, const char *);
 #endif /* DECL_GETSERVBYNAME */
+#ifdef DECL_GETWD
+	extern char *getwd(char *);
+#endif /* DECL_GETWD */
 #ifdef DECL_INET_ADDR
-	extern unsigned long inet_addr (const char *);
+	extern unsigned long inet_addr(const char *);
 #endif /* DECL_INET_ADDR */
 
 #if 0 /* breaks gcc 3.0 -std=c89 on SuSE 7.1 */
@@ -149,133 +152,133 @@
 #endif /* 0 */
 
 #ifdef DECL_IOCTL
-	extern int ioctl (int, int, void *);
+	extern int ioctl(int, int, void *);
 #endif /* DECL_IOCTL */
 #if defined(DECL_ISASCII) && !defined(isascii)
-	extern int isascii (int);
+	extern int isascii(int);
 #endif /* DECL_ISASCII && !isascii */
 #ifdef DECL_KILL
-	extern int kill (pid_t, int);
+	extern int kill(pid_t, int);
 #endif /* DECL_KILL */
 #ifdef DECL_MALLOC
-	extern void *malloc (size_t);
+	extern void *malloc(size_t);
 #endif /* DECL_MALLOC */
 #ifdef DECL_MEMSET
-	extern void *memset (void *, int, size_t);
+	extern void *memset(void *, int, size_t);
 #endif /* DECL_MEMSET */
 #ifdef DECL_MKSTEMP
-	extern int mkstemp (char *);
+	extern int mkstemp(char *);
 #endif /* DECL_MKSTEMP */
 #ifdef DECL_MKTEMP
-	extern char *mktemp (char *);
+	extern char *mktemp(char *);
 #endif /* DECL_MKTEMP */
 #ifdef DECL_PCLOSE
-	extern int pclose (FILE *);
+	extern int pclose(FILE *);
 #endif /* DECL_PCLOSE */
 #ifdef DECL_PERROR
-	extern void perror (const char *);
+	extern void perror(const char *);
 #endif /* DECL_PERROR */
 #ifdef DECL_POPEN
-	extern FILE *popen (const char *, const char *);
+	extern FILE *popen(const char *, const char *);
 #endif /* DECL_POPEN */
 #ifdef DECL_PRINTF
-	extern int printf (const char *, ...);
+	extern int printf(const char *, ...);
 #endif /* DECL_PRINTF */
 #ifdef DECL_PUTENV
-	extern int putenv (const char *);
+	extern int putenv(const char *);
 #endif /* DECL_PUTENV */
 #ifdef DECL_QSORT
-	extern void qsort (void *, size_t, size_t, int (*)(t_comptype*, t_comptype*));
+	extern void qsort(void *, size_t, size_t, int (*)(t_comptype*, t_comptype*));
 #endif /* DECL_QSORT */
 #ifdef DECL_REALLOC
-	extern void *realloc (void *, size_t);
+	extern void *realloc(void *, size_t);
 #endif /* DECL_REALLOC */
 #ifdef DECL_RENAME
-	extern int rename (const char *, const char *);
+	extern int rename(const char *, const char *);
 #endif /* DECL_RENAME */
 #ifdef DECL_REWIND
-	extern void rewind (FILE *);
+	extern void rewind(FILE *);
 #endif /* DECL_REWIND */
 #ifdef DECL_SELECT
-	extern int select (int, fd_set *, fd_set *, fd_set *, struct timeval *);
+	extern int select(int, fd_set *, fd_set *, fd_set *, struct timeval *);
 #endif /* DECL_SELECT */
 #ifndef HAVE_PUTENV
 #	ifdef DECL_SETENV
-		extern int setenv (const char *, const char *, int);
+		extern int setenv(const char *, const char *, int);
 #	endif /* DECL_SETENV */
 #endif /* !HAVE_PUTENV */
 #ifdef DECL_SOCKET
-	extern int socket (int, int, int);
+	extern int socket(int, int, int);
 #endif /* DECL_SOCKET */
 #ifdef DECL_SNPRINTF
-	extern int snprintf (char *, size_t, const char *, ...);
+	extern int snprintf(char *, size_t, const char *, ...);
 #endif /* DECL_SNPRINTF */
 #ifdef DECL_SSCANF
-	extern int sscanf (const char *, const char *, ...);
+	extern int sscanf(const char *, const char *, ...);
 #endif /* DECL_SSCANF */
 #ifdef DECL_STRCASECMP
-	extern int strcasecmp (const char *, const char *);
+	extern int strcasecmp(const char *, const char *);
 #endif /* DECL_STRCASECMP */
 #ifdef DECL_STRCHR
-	extern char *strchr (const char *, int);
-	extern char *strrchr (const char *, int);
+	extern char *strchr(const char *, int);
+	extern char *strrchr(const char *, int);
 #endif /* DECL_STRCHR */
 #ifdef DECL_STRFTIME
-	extern int strftime (char *, int, char *, struct tm *);
+	extern int strftime(char *, int, char *, struct tm *);
 #endif /* DECL_STRFTIME */
 #ifdef DECL_STRNCASECMP
-	extern int strncasecmp (const char *, const char *, size_t);
+	extern int strncasecmp(const char *, const char *, size_t);
 #endif /* DECL_STRNCASECMP */
 #ifdef DECL_STRTOL
-	extern long strtol (const char *, char **, int);
+	extern long strtol(const char *, char **, int);
 #endif /* DECL_STRTOL */
 #ifdef DECL_SYSTEM
-	extern int system (char *);
+	extern int system(char *);
 #endif /* DECL_SYSTEM */
 #ifdef DECL_TEMPNAM
-	extern char *tempnam (const char *, const char *);
+	extern char *tempnam(const char *, const char *);
 #endif /* DECL_TEMPNAM */
 #ifdef DECL_TGETENT
-	extern int tgetent (char *, char *);
+	extern int tgetent(char *, char *);
 #endif /* DECL_TGETENT */
 #ifdef DECL_TGETFLAG
-	extern int tgetflag (char *);
+	extern int tgetflag(char *);
 #endif /* DECL_TGETFLAG */
 #if defined(DECL_TGETNUM)
-	extern int tgetnum (char *);
+	extern int tgetnum(char *);
 #endif /* DECL_TGETNUM */
 #ifdef DECL_TGETSTR
-	extern char *tgetstr (char *, char **);
+	extern char *tgetstr(char *, char **);
 #endif /* DECL_TGETSTR */
 #ifdef DECL_TGOTO
-	extern char *tgoto (char *, int, int);
+	extern char *tgoto(char *, int, int);
 #endif /* DECL_TGOTO */
 #ifdef DECL_TIGETFLAG
-	extern int tigetflag (char *);
+	extern int tigetflag(char *);
 #endif /* DECL_TIGETFLAG */
 #if defined(DECL_TIGETNUM)
-	extern int tigetnum (char *);
+	extern int tigetnum(char *);
 #endif /* DECL_TGETNUM */
 #ifdef DECL_TIGETSTR
-	extern char *tigetstr (char *, char **);
+	extern char *tigetstr(char *, char **);
 #endif /* DECL_TIGETSTR */
 #ifdef DECL_TIME
-	extern time_t time (time_t *);
+	extern time_t time(time_t *);
 #endif /* DECL_TIME */
 #if defined(DECL_TOLOWER) && !defined(tolower)
-	extern int tolower (int);
+	extern int tolower(int);
 #endif /* DECL_TOLOWER && !tolower */
 #if defined(DECL_TOUPPER) && !defined(toupper)
-	extern int toupper (int);
+	extern int toupper(int);
 #endif /* DECL_TOUPPER && !toupper */
 #ifdef DECL_TPARM
-	extern char *tparm (const char *, ...);
+	extern char *tparm(const char *, ...);
 #endif /* DECL_TPARM */
 #ifdef DECL_TPUTS
-	extern int tputs (char *, int, OutcPtr);
+	extern int tputs(char *, int, OutcPtr);
 #endif /* DECL_TPUTS */
 #ifdef DECL_UNGETC
-	extern int ungetc (int, FILE *);
+	extern int ungetc(int, FILE *);
 #endif /* DECL_UNGETC */
 
 #if 0 /* SUSv2 changed that to "int usleep(unsigned long)" */
@@ -285,7 +288,7 @@
 #endif /* 0 */
 
 #ifdef DECL_VSNPRINTF
-	extern int vsnprintf (char *, size_t, const char *, va_list);
+	extern int vsnprintf(char *, size_t, const char *, va_list);
 #endif /* DECL_VSNPRINTF */
 #ifdef DECL_VSPRINTF
 	extern int vsprintf(char *, char *, va_list);
@@ -455,7 +458,6 @@ extern constext txt_bad_attrib[];
 extern constext txt_bad_command[];
 extern constext txt_base64[];
 extern constext txt_batch_update_unavail[];
-extern constext txt_batch_update_failed[];
 extern constext txt_begin_of_art[];
 extern constext txt_cancel_article[];
 extern constext txt_cancelling_art[];
@@ -568,9 +570,6 @@ extern constext txt_error_unknown_dlevel[];
 extern constext txt_esc[];
 extern constext txt_exiting[];
 extern constext txt_external_mail_done[];
-#ifndef HAVE_LIBUU
-	extern constext txt_extracting_archive[];
-#endif /* !HAVE_LIBUU */
 extern constext txt_extracting_shar[];
 extern constext txt_failed_to_connect_to_server[];
 extern constext txt_feed_pattern[];
@@ -631,9 +630,7 @@ extern constext txt_help_article_search_forwards[];
 extern constext txt_help_article_show_raw[];
 extern constext txt_help_article_skip_quote[];
 extern constext txt_help_article_toggle_formfeed[];
-#ifdef HAVE_COLOR
-	extern constext txt_help_article_toggle_highlight[];
-#endif /* HAVE_COLOR */
+extern constext txt_help_article_toggle_highlight[];
 extern constext txt_help_article_toggle_rot13[];
 extern constext txt_help_article_toggle_tabwidth[];
 extern constext txt_help_article_toggle_tex2iso[];
@@ -760,7 +757,6 @@ extern constext txt_help_title_disp[];
 extern constext txt_help_title_misc[];
 extern constext txt_help_title_navi[];
 extern constext txt_help_title_ops[];
-extern constext txt_hit_space_for_more[];
 extern constext txt_index_page_com[];
 extern constext txt_info_add_kill[];
 extern constext txt_info_add_select[];
@@ -991,9 +987,10 @@ extern constext txt_tinrc_filter[];
 extern constext txt_tinrc_header[];
 extern constext txt_tinrc_info_in_last_line[];
 extern constext txt_tinrc_newnews[];
-extern constext txt_tinrc_post_process_view[];
+extern constext txt_toggled_high[];
 extern constext txt_toggled_rot13[];
 extern constext txt_toggled_tex2iso[];
+extern constext txt_toggled_tabwidth[];
 extern constext txt_type_h_for_help[];
 extern constext txt_unlimited_time[];
 extern constext txt_unread[];
@@ -1037,13 +1034,11 @@ extern constext txt_yes[];
 extern constext txt_you_have_mail[];
 
 #ifndef DISABLE_PRINTING
-	extern constext txt_help_o[];
 	extern constext txt_print[];
 	extern constext txt_printing[];
 #endif /* !DISABLE_PRINTING */
 
 #ifndef DONT_HAVE_PIPING
-	extern constext txt_help_pipe[];
 	extern constext txt_no_command[];
 #endif /* !DONT_HAVE_PIPING */
 
@@ -1056,7 +1051,6 @@ extern constext txt_you_have_mail[];
 
 #ifdef HAVE_LIBUU
 	extern constext txt_libuu_saved[];
-	extern constext txt_libuu_success[];
 	extern constext txt_libuu_error_missing[];
 	extern constext txt_libuu_error_no_begin[];
 	extern constext txt_libuu_error_no_data[];
@@ -1066,9 +1060,9 @@ extern constext txt_uu_error_decode[];
 extern constext txt_uu_error_no_end[];
 extern constext txt_uu_success[];
 
-#if defined(NNTP_ABLE) || defined(NNTP_ONLY)
+#if defined(NNTP_ABLE) && !defined(NNTP_ONLY)
 	extern constext txt_cannot_open_active_file[];
-#endif /* NNTP_ABLE || NNTP_ONLY */
+#endif /* NNTP_ABLE && !NNTP_ONLY */
 
 #ifndef NO_SHELL_ESCAPE
 	extern constext txt_shell_escape[];
@@ -1128,7 +1122,10 @@ extern struct regex_cache url_regex;
 extern struct regex_cache mail_regex;
 extern struct regex_cache news_regex;
 extern struct regex_cache shar_regex;
-
+extern struct regex_cache slashes_regex;
+extern struct regex_cache stars_regex;
+extern struct regex_cache underscores_regex;
+extern struct regex_cache strokes_regex;
 #ifdef HAVE_COLOR
 	extern struct regex_cache quote_regex;
 	extern struct regex_cache quote_regex2;
@@ -1264,15 +1261,12 @@ extern char *input_history[HIST_MAXNUM+1][HIST_SIZE+1];
 	extern constext txt_warn_cancel_forgery[];
 #endif /* FORGERY */
 
+extern t_bool word_highlight;
 #ifdef HAVE_COLOR
-	extern constext txt_help__[];
-	extern constext txt_help_color[];
 	extern constext txt_tinrc_colors[];
-	extern constext txt_toggled_high[];
 	extern int default_bcol;
 	extern int default_fcol;
 	extern t_bool use_color;
-	extern t_bool word_highlight;
 #	ifdef USE_CURSES
 		extern constext txt_no_colorterm[];
 #	endif /* USE_CURSES */
@@ -1290,7 +1284,6 @@ extern char *input_history[HIST_MAXNUM+1][HIST_SIZE+1];
 #endif /* HAVE_METAMAIL */
 
 #ifdef HAVE_PGP_GPG
-	extern constext txt_help_ctrl_g[];
 	extern constext txt_pgp_add[];
 	extern constext txt_pgp_mail[];
 	extern constext txt_pgp_news[];
@@ -1326,10 +1319,6 @@ extern constext txt_processing_saved_arts[];
 #ifndef NO_ETIQUETTE
 	extern constext txt_warn_posting_etiquette[];
 #endif /* NO_ETIQUETTE */
-
-#ifndef NO_SHELL_ESCAPE
-	extern constext txt_help_shell[];
-#endif /* NO_SHELL_ESCAPE */
 
 #if !defined(USE_CURSES)
 	extern struct t_screen *screen;
@@ -1376,9 +1365,7 @@ extern struct opttxt txt_getart_limit_options;
 extern struct opttxt txt_group_catchup_on_exit;
 extern struct opttxt txt_groupname_max_length;
 extern struct opttxt txt_hide_uue;
-#ifdef NNTP_ABLE
-	extern struct opttxt txt_inews_prog;
-#endif /* NNTP_ABLE */
+extern struct opttxt txt_inews_prog;
 extern struct opttxt txt_inverse_okay;
 extern struct opttxt txt_keep_dead_articles;
 extern struct opttxt txt_keep_posted_articles;
@@ -1388,6 +1375,7 @@ extern struct opttxt txt_mail_8bit_header;
 extern struct opttxt txt_mail_address;
 extern struct opttxt txt_mail_mime_encoding;
 extern struct opttxt txt_mail_quote_format;
+extern struct opttxt txt_mailbox_format;
 extern struct opttxt txt_maildir;
 extern struct opttxt txt_mailer_format;
 extern struct opttxt txt_mark_saved_read;
@@ -1416,9 +1404,9 @@ extern struct opttxt txt_score_limit_kill;
 extern struct opttxt txt_score_limit_select;
 extern struct opttxt txt_score_kill;
 extern struct opttxt txt_score_select;
+extern struct opttxt txt_scroll_lines;
 extern struct opttxt txt_show_author;
 extern struct opttxt txt_show_description;
-extern struct opttxt txt_scroll_lines;
 extern struct opttxt txt_show_lines;
 extern struct opttxt txt_show_only_unread_arts;
 extern struct opttxt txt_show_only_unread_groups;
@@ -1427,32 +1415,36 @@ extern struct opttxt txt_show_signatures;
 extern struct opttxt txt_sigdashes;
 extern struct opttxt txt_sigfile;
 extern struct opttxt txt_signature_repost;
+extern struct opttxt txt_slashes_regex;
 extern struct opttxt txt_sort_article_type;
 extern struct opttxt txt_sort_threads_type;
 extern struct opttxt txt_space_goto_next_unread;
 extern struct opttxt txt_spamtrap_warning_addresses;
+extern struct opttxt txt_stars_regex;
 extern struct opttxt txt_start_editor_offset;
 extern struct opttxt txt_strip_blanks;
 extern struct opttxt txt_strip_bogus;
 extern struct opttxt txt_strip_newsrc;
 extern struct opttxt txt_strip_re_regex;
 extern struct opttxt txt_strip_was_regex;
+extern struct opttxt txt_strokes_regex;
 extern struct opttxt txt_tab_after_X_selection;
 extern struct opttxt txt_tab_goto_next_unread;
 extern struct opttxt txt_tex2iso_conv;
 extern struct opttxt txt_thread_articles;
 extern struct opttxt txt_thread_catchup_on_exit;
 extern struct opttxt txt_thread_score;
+extern struct opttxt txt_underscores_regex;
 extern struct opttxt txt_unlink_article;
 extern struct opttxt txt_url_handler;
 extern struct opttxt txt_use_mailreader_i;
 extern struct opttxt txt_use_mouse;
 extern struct opttxt txt_wildcard;
+extern struct opttxt txt_word_highlight;
 extern struct opttxt txt_xpost_quote_format;
 #ifdef CHARSET_CONVERSION
 	extern struct opttxt txt_mm_network_charset;
 #endif /* CHARSET_CONVERSION */
-extern struct opttxt txt_mailbox_format;
 #ifdef HAVE_COLOR
 	extern struct opttxt txt_quote_regex;
 	extern struct opttxt txt_quote_regex2;
@@ -1476,10 +1468,11 @@ extern struct opttxt txt_mailbox_format;
 	extern struct opttxt txt_col_from;
 	extern struct opttxt txt_col_title;
 	extern struct opttxt txt_col_signature;
-	extern struct opttxt txt_word_highlight;
 	extern struct opttxt txt_word_h_display_marks;
 	extern struct opttxt txt_col_markstar;
 	extern struct opttxt txt_col_markdash;
+	extern struct opttxt txt_col_markslash;
+	extern struct opttxt txt_col_markstroke;
 #endif /* HAVE_COLOR */
 #ifdef HAVE_ICONV_OPEN_TRANSLIT
 	extern struct opttxt txt_translit;

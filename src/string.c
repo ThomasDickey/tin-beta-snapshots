@@ -50,7 +50,7 @@
  * Kilo, Mega, Giga, Terra
  */
 char *
-tin_ltoa (
+tin_ltoa(
 	long value,
 	int digits)
 {
@@ -59,8 +59,8 @@ tin_ltoa (
 	int len;
 	int i = 0;
 
-	sprintf (buffer, "%ld", value);
-	len = (int) strlen (buffer);
+	sprintf(buffer, "%ld", value);
+	len = (int) strlen(buffer);
 
 	while (len > digits) {
 		len -= 3;
@@ -74,9 +74,9 @@ tin_ltoa (
 		buffer[digits - 1] = power[i];
 		buffer[digits] = '\0';
 	} else
-		sprintf (buffer, "%*ld", digits, value);
+		sprintf(buffer, "%*ld", digits, value);
 
-	return (buffer);
+	return buffer;
 }
 
 
@@ -87,16 +87,16 @@ tin_ltoa (
  * also, strdup is not mandatory in ANSI-C
  */
 char *
-my_strdup (
+my_strdup(
 	const char *str)
 {
-	size_t len = strlen (str) + 1;
-	void *ptr = my_malloc (len);
+	size_t len = strlen(str) + 1;
+	void *ptr = my_malloc(len);
 
 	if (ptr == NULL)
 		return NULL;
 
-	memcpy (ptr, str, len);
+	memcpy(ptr, str, len);
 	return (char *) ptr;
 }
 
@@ -105,7 +105,7 @@ my_strdup (
  * strncpy that stops at a newline and null terminates
  */
 void
-my_strncpy (
+my_strncpy(
 	char *p,
 	const char *q,
 	size_t n)
@@ -124,7 +124,7 @@ my_strncpy (
  * case-insensitive version of strstr()
  */
 const char *
-strcasestr (
+strcasestr(
 	const char *haystack,
 	const char *needle)
 {
@@ -134,7 +134,7 @@ strcasestr (
 	h = haystack;
 	n = needle;
 	while (*haystack) {
-		if (tolower ((unsigned char) *h) == tolower ((unsigned char) *n)) {
+		if (tolower((unsigned char) *h) == tolower((unsigned char) *n)) {
 			h++;
 			n++;
 			if (!*n)
@@ -150,7 +150,7 @@ strcasestr (
 
 
 size_t
-mystrcat (
+mystrcat(
 	char **t,
 	const char *s)
 {
@@ -166,13 +166,13 @@ mystrcat (
 
 
 void
-str_lwr (
+str_lwr(
 	char *str)
 {
 	char *dst = str;
 
 	while (*str) {
-		*dst++ = (char)tolower((unsigned char)*str);
+		*dst++ = (char) tolower((unsigned char) *str);
 		str++;
 	}
 	*dst = '\0';
@@ -188,7 +188,7 @@ str_lwr (
  * find first occurrence of any char from str2 in str1
  */
 char *
-strpbrk (
+strpbrk(
 	char *str1,
 	char *str2)
 {
@@ -198,7 +198,7 @@ strpbrk (
 	for (ptr1 = str1; *ptr1 != '\0'; ptr1++) {
 		for (ptr2 = str2; *ptr2 != '\0'; ) {
 			if (*ptr1 == *ptr2++)
-				return (ptr1);
+				return ptr1;
 		}
 	}
 	return (char *) 0;
@@ -207,10 +207,10 @@ strpbrk (
 
 #ifndef HAVE_STRSTR
 /*
- * ANSI C strstr () - Uses Boyer-Moore algorithm.
+ * ANSI C strstr() - Uses Boyer-Moore algorithm.
  */
 char *
-strstr (
+strstr(
 	char *text,
 	char *pattern)
 {
@@ -221,16 +221,16 @@ strstr (
 	size_t textlen;
 	size_t patlen;
 
-	textlen = strlen (text);
-	patlen = strlen (pattern);
+	textlen = strlen(text);
+	patlen = strlen(pattern);
 
 	/* algorithm fails if pattern is empty */
 	if ((p1 = patlen) == 0)
-		return (text);
+		return text;
 
 	/* code below fails (whenever i is unsigned) if pattern too long */
 	if (p1 > textlen)
-		return (NULL);
+		return NULL;
 
 	/* set up deltas */
 	delta = deltaspace;
@@ -252,14 +252,14 @@ strstr (
 	i = textlen - patlen;
 	forever {
 		if (*p == *t && memcmp ((p - p1), (t - p1), p1) == 0)
-			return ((char *)t - p1);
+			return ((char *) t - p1);
 		j = delta[*t];
 		if (i < j)
 			break;
 		i -= j;
 		t += j;
 	}
-	return (NULL);
+	return NULL;
 }
 #endif /* !HAVE_STRSTR */
 
@@ -268,7 +268,7 @@ strstr (
  * handrolled atol
  */
 long
-atol (
+atol(
 	const char *s)
 {
 	long ret = 0;
@@ -290,10 +290,10 @@ atol (
 
 #ifndef HAVE_STRTOL
 /* fix me - put me in tin.h */
-#define DIGIT(x) (isdigit((unsigned char)x) ? ((x) - '0') : (10 + tolower((unsigned char)x) - 'a'))
-#define MBASE 36
+#	define DIGIT(x) (isdigit((unsigned char) x) ? ((x) - '0') : (10 + tolower((unsigned char) x) - 'a'))
+#	define MBASE 36
 long
-strtol (
+strtol(
 	const char *str,
 	char **ptr,
 	int use_base)
@@ -303,7 +303,7 @@ strtol (
 
 	if (use_base < 0 || use_base > MBASE)
 		goto OUT;
-	while (isspace ((unsigned char)*str))
+	while (isspace((unsigned char) *str))
 		++str;
 	if (*str == '-') {
 		++str;
@@ -327,7 +327,7 @@ strtol (
 	 * for any base > 10, the digits incrementally following
 	 * 9 are assumed to be "abc...z" or "ABC...Z"
 	 */
-	while (isalnum ((unsigned char)*str) && (xx = DIGIT(*str)) < use_base) {
+	while (isalnum((unsigned char) *str) && (xx = DIGIT(*str)) < use_base) {
 		/* accumulate neg avoids surprises near maxint */
 		val = use_base * val - xx;
 		++str;
@@ -338,21 +338,19 @@ OUT:
 
 	return (sign * (-val));
 }
-#undef DIGIT(x)
-#undef MBASE
+#	undef DIGIT(x)
+#	undef MBASE
 #endif /* !HAVE_STRTOL */
 
 
 /*
  * strcmp that ignores case
  */
-
-/* fix me - put me in tin.h */
-#define FOLD_TO_UPPER(a)	(toupper ((unsigned char)(a)))
-
 #ifndef HAVE_STRCASECMP
+/* fix me - put me in tin.h */
+#	define FOLD_TO_UPPER(a)	(toupper((unsigned char) (a)))
 int
-strcasecmp (
+strcasecmp(
 	const char *p,
 	const char *q)
 {
@@ -368,13 +366,13 @@ strcasecmp (
 
 #ifndef HAVE_STRNCASECMP
 int
-strncasecmp (
+strncasecmp(
 	const char *p,
 	const char *q,
 	size_t n)
 {
 	int r = 0;
-	for (; n && (r = (FOLD_TO_UPPER (*p) - FOLD_TO_UPPER (*q))) == 0; ++p, ++q, --n) {
+	for (; n && (r = (FOLD_TO_UPPER(*p) - FOLD_TO_UPPER(*q))) == 0; ++p, ++q, --n) {
 		if (*p == '\0')
 			return 0;
 	}
@@ -393,18 +391,18 @@ strncasecmp (
  * RETURN: trimmed string
  */
 char *
-str_trim (
+str_trim(
 	char *string)
 {
 	char *rp;		/* reading string pointer */
 	char *wp;		/* writing string pointer */
 	char *ls;		/* last space */
 
-	for (rp = wp = ls = string; isspace((int)*rp); rp++)		/* Skip leading space */
+	for (rp = wp = ls = string; isspace((int) *rp); rp++)		/* Skip leading space */
 		;
 
 	while (*rp) {
-		if (isspace((int)*rp)) {
+		if (isspace((int) *rp)) {
 			if (ls == NULL)		/* Remember last written space */
 				ls = wp;
 		} else
@@ -417,7 +415,7 @@ str_trim (
 	else
 		*wp = '\0';
 
-	return (string);
+	return string;
 }
 
 
@@ -425,7 +423,7 @@ str_trim (
  * Return a pointer into s eliminating any TAB, CR and LF.
  */
 char *
-eat_tab (
+eat_tab(
 	char *s)
 {
 	char *p1 = s;
@@ -467,7 +465,7 @@ eat_tab (
 #define SH_META   "\\\'\"`$*%?()[]{}|<>^&;#~"
 
 int
-sh_format (
+sh_format(
 	char *dst,
 	size_t len,
 	const char *fmt,
@@ -500,13 +498,16 @@ sh_format (
 			case '%':
 				src = strcpy(temp, "%");
 				break;
+
 			case 's':
 				src = va_arg(ap, char *);
 				break;
+
 			case 'd':
 				sprintf(temp, "%d", va_arg(ap, int));
 				src = temp;
 				break;
+
 			default:
 				src = strcpy(temp, "");
 				break;
@@ -549,8 +550,9 @@ sh_format (
 	else
 		*dst = '\0';
 
-	return (result);
+	return result;
 }
+
 
 #ifndef HAVE_STRERROR
 #	ifdef HAVE_SYS_ERRLIST
@@ -566,12 +568,12 @@ sh_format (
 #		endif /* M_AMIGA */
 		extern int sys_nerr;
 #	endif /* HAVE_SYS_ERRLIST */
-
 char *
-my_strerror (
+my_strerror(
 	int n)
 {
 	static char temp[32];
+
 #	ifdef HAVE_SYS_ERRLIST
 	if (n >= 0 && n < sys_nerr)
 		return sys_errlist[n];
@@ -585,12 +587,12 @@ my_strerror (
 /* strrstr() based on Lars Wirzenius' <lars.wirzenius@helsinki.fi> code */
 #ifndef HAVE_STRRSTR
 char *
-strrstr (
+strrstr(
 	const char *str,
 	const char *pat)
 {
-	size_t slen, plen;
 	const char *ptr;
+	size_t slen, plen;
 
 	if ((str != 0) && (pat != 0)) {
 		slen = strlen(str);

@@ -48,26 +48,27 @@
 #	define BIT_AND(n, b, mask)	n[NOFFSET(b)] &= mask
 #endif /* USE_DBMALLOC */
 
-#ifdef NNTP_ABLE
-#	ifdef XHDR_XREF
-		static void read_xref_header (struct t_article *art);
-#	endif /* XHDR_XREF */
-#endif /* NNTP_ABLE */
+/*
+ * local prototypes
+ */
+#if defined(NNTP_ABLE) && defined(XHDR_XREF)
+	static void read_xref_header(struct t_article *art);
+#endif /* NNTP_ABLE && XHDR_XREF */
 
 
 /*
- *  Read NEWSLIBDIR/overview.fmt file to check if Xref:full is enabled/disabled
+ * Read NEWSLIBDIR/overview.fmt file to check if Xref:full is enabled/disabled
  */
 t_bool
-overview_xref_support (
+overview_xref_support(
 	void)
 {
 	FILE *fp;
 	char *ptr;
 	t_bool supported = FALSE;
 
-	if ((fp = open_overview_fmt_fp ()) != NULL) {
-		while ((ptr = tin_fgets (fp, FALSE)) != NULL) {
+	if ((fp = open_overview_fmt_fp()) != NULL) {
+		while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
 
 			if (STRNCASECMPEQ(ptr, "Xref:full", 9)) {
 				supported = TRUE;
@@ -77,7 +78,7 @@ overview_xref_support (
 				break;
 			}
 		}
-		TIN_FCLOSE (fp);
+		TIN_FCLOSE(fp);
 		/*
 		 * If user aborted with 'q', then we continue regardless. If Xref was
 		 * found, then fair enough. If not, tough. No real harm done
@@ -85,7 +86,7 @@ overview_xref_support (
 	}
 
 	if (!supported)
-		wait_message (2, _(txt_warn_xref_not_supported));
+		wait_message(2, _(txt_warn_xref_not_supported));
 
 	return supported;
 }
@@ -96,10 +97,9 @@ overview_xref_support (
  * This enables crosspost marking even if the xref records are not
  * part of the xover record.
  */
-#ifdef NNTP_ABLE
-#	ifdef XHDR_XREF
+#if defined(NNTP_ABLE) && defined(XHDR_XREF)
 static void
-read_xref_header (
+read_xref_header(
 	struct t_article *art)
 {
 	/* xref_supported means already supported in xover record */
@@ -110,10 +110,10 @@ read_xref_header (
 		long artnum = 0L;
 
 		snprintf(buf, sizeof(buf) - 1, "XHDR XREF %ld", art->artnum);
-		if ((fp = nntp_command (buf, OK_HEAD, NULL)) == NULL)
+		if ((fp = nntp_command(buf, OK_HEAD, NULL, 0)) == NULL)
 			return;
 
-		while ((ptr = tin_fgets (fp, FALSE)) != NULL) {
+		while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
 			while (*ptr && isspace((int) *ptr))
 				ptr++;
 			if (*ptr == '.')
@@ -121,34 +121,33 @@ read_xref_header (
 			/*
 			 * read the article number
 			 */
-			artnum = atol (ptr);
-			if ((artnum == art->artnum) && !art->xref && !strstr (ptr, "(none)")) {
-				q = strchr (ptr, ' ');	/* skip article number */
+			artnum = atol(ptr);
+			if ((artnum == art->artnum) && !art->xref && !strstr(ptr, "(none)")) {
+				q = strchr(ptr, ' ');	/* skip article number */
 				if (q == NULL)
 					continue;
 				ptr = q;
-				while (*ptr && isspace((int)*ptr))
+				while (*ptr && isspace((int) *ptr))
 					ptr++;
-				q = strchr (ptr, '\n');
+				q = strchr(ptr, '\n');
 				if (q)
 					*q = '\0';
-				art->xref = my_strdup (ptr);
+				art->xref = my_strdup(ptr);
 			}
 		}
 
 	}
 	return;
 }
-#	endif /* XHDR_XREF */
-#endif /* NNTP_ABLE */
+#endif /* NNTP_ABLE && XHDR_XREF */
 
 
 /*
- *  mark all other Xref: crossposted articles as read when one article read
- *  Xref: sitename newsgroup:artnum newsgroup:artnum [newsgroup:artnum ...]
+ * mark all other Xref: crossposted articles as read when one article read
+ * Xref: sitename newsgroup:artnum newsgroup:artnum [newsgroup:artnum ...]
  */
 void
-art_mark_xref_read (
+art_mark_xref_read(
 	struct t_article *art)
 {
 	char *xref_ptr;
@@ -158,11 +157,9 @@ art_mark_xref_read (
 	t_bool artread;
 	struct t_group *psGrp;
 
-#ifdef NNTP_ABLE
-#	ifdef XHDR_XREF
-	read_xref_header (art);
-#	endif /* XHDR_XREF */
-#endif /* NNTP_ABLE */
+#if defined(NNTP_ABLE) && defined(XHDR_XREF)
+	read_xref_header(art);
+#endif /* NNTP_ABLE && XHDR_XREF */
 
 	if (art->xref == NULL)
 		return;
@@ -170,13 +167,13 @@ art_mark_xref_read (
 	xref_ptr = art->xref;
 
 	/*
-	 *  check sitename matches nodename of current machine (ignore for now!)
+	 * check sitename matches nodename of current machine (ignore for now!)
 	 */
 	while (*xref_ptr != ' ' && *xref_ptr)
 		xref_ptr++;
 
 	/*
-	 *  tokenize each pair and update that newsgroup if it is in my_group[].
+	 * tokenize each pair and update that newsgroup if it is in my_group[].
 	 */
 	forever {
 		while (*xref_ptr == ' ')
@@ -190,8 +187,8 @@ art_mark_xref_read (
 			break;
 
 		ptr = xref_ptr++;
-		artnum = atol (xref_ptr);
-		while (isdigit((int)*xref_ptr))
+		artnum = atol(xref_ptr);
+		while (isdigit((int) *xref_ptr))
 			xref_ptr++;
 
 		if (&ptr[1] == xref_ptr)
@@ -200,19 +197,19 @@ art_mark_xref_read (
 		c = *ptr;
 		*ptr = '\0';
 
-		psGrp = group_find (group);
+		psGrp = group_find(group);
 
 #ifdef DEBUG
 		if (debug == 3) {
-			sprintf (mesg, "LOOKUP Xref: [%s:%ld] active=[%s] num_unread=[%ld]",
+			sprintf(mesg, "LOOKUP Xref: [%s:%ld] active=[%s] num_unread=[%ld]",
 				group, artnum,
 				(psGrp ? psGrp->name : ""),
 				(psGrp ? psGrp->newsrc.num_unread : 0));
 #	ifdef DEBUG_NEWSRC
-			debug_print_comment (mesg);
-			debug_print_bitmap (psGrp, NULL);
+			debug_print_comment(mesg);
+			debug_print_bitmap(psGrp, NULL);
 #	endif /* DEBUG_NEWSRC */
-			error_message (mesg);
+			error_message(mesg);
 		}
 #endif /* DEBUG */
 
@@ -225,13 +222,13 @@ art_mark_xref_read (
 						psGrp->newsrc.num_unread--;
 #ifdef DEBUG
 					if (debug == 3) {
-						sprintf (mesg, "FOUND!Xref: [%s:%ld] marked READ num_unread=[%ld]",
+						sprintf(mesg, "FOUND!Xref: [%s:%ld] marked READ num_unread=[%ld]",
 							group, artnum, psGrp->newsrc.num_unread);
 #	ifdef DEBUG_NEWSRC
-						debug_print_comment (mesg);
-						debug_print_bitmap (psGrp, NULL);
+						debug_print_comment(mesg);
+						debug_print_bitmap(psGrp, NULL);
 #	endif /* DEBUG_NEWSRC */
-						wait_message (2, mesg);
+						wait_message(2, mesg);
 					}
 #endif /* DEBUG */
 				}
@@ -246,7 +243,7 @@ art_mark_xref_read (
  * Set bits [low..high] of 'bitmap' to 1's
  */
 void
-NSETRNG1 (
+NSETRNG1(
 	t_bitmap *bitmap,
 	long low,
 	long high)
@@ -254,7 +251,7 @@ NSETRNG1 (
 	register long i;
 
 	if (bitmap == NULL) {
-		error_message ("NSETRNG1() failed. Bitmap == NULL");
+		error_message("NSETRNG1() failed. Bitmap == NULL");
 		return;
 	}
 
@@ -266,7 +263,7 @@ NSETRNG1 (
 		} else {
 			BIT_OR(bitmap, low, (NBITSON << NBITIDX(low)));
 			if (NOFFSET(high) > NOFFSET(low) + 1) {
-				memset (&bitmap[NOFFSET(low) + 1], NBITSON,
+				memset(&bitmap[NOFFSET(low) + 1], NBITSON,
 					(size_t) (NOFFSET(high) - NOFFSET(low) - 1));
 			}
 			BIT_OR(bitmap, high, ~ (NBITNEG1 << NBITIDX(high)));
@@ -274,11 +271,12 @@ NSETRNG1 (
 	}
 }
 
+
 /*
  * Set bits [low..high] of 'bitmap' to 0's
  */
 void
-NSETRNG0 (
+NSETRNG0(
 	t_bitmap *bitmap,
 	long low,
 	long high)
@@ -286,7 +284,7 @@ NSETRNG0 (
 	register long i;
 
 	if (bitmap == NULL) {
-		error_message ("NSETRNG0() failed. Bitmap == NULL");
+		error_message("NSETRNG0() failed. Bitmap == NULL");
 		return;
 	}
 
@@ -299,7 +297,7 @@ NSETRNG0 (
 			BIT_AND(bitmap, low, ~(NBITSON << NBITIDX(low)));
 
 			if (NOFFSET(high) > NOFFSET(low) + 1) {
-				memset (&bitmap[NOFFSET(low) + 1], 0,
+				memset(&bitmap[NOFFSET(low) + 1], 0,
 					(size_t) (NOFFSET(high) - NOFFSET(low) - 1));
 			}
 			BIT_AND(bitmap, high, NBITNEG1 << NBITIDX(high));

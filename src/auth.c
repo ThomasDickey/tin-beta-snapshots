@@ -55,10 +55,10 @@
 /*
  * local prototypes
  */
-static int do_authinfo_original (char *server, char *authuser, char *authpass);
-static t_bool authinfo_generic (void);
-static t_bool read_newsauth_file (char *server, char *authuser, char *authpass);
-static t_bool authinfo_original (char *server, char *authuser, t_bool startup);
+static int do_authinfo_original(char *server, char *authuser, char *authpass);
+static t_bool authinfo_generic(void);
+static t_bool read_newsauth_file(char *server, char *authuser, char *authpass);
+static t_bool authinfo_original(char *server, char *authuser, t_bool startup);
 
 
 /*
@@ -67,7 +67,7 @@ static t_bool authinfo_original (char *server, char *authuser, t_bool startup);
  * FALSE means failed
  */
 static t_bool
-authinfo_generic (
+authinfo_generic(
 	void)
 {
 	char *authcmd;
@@ -81,60 +81,60 @@ authinfo_generic (
 #endif /* HAVE_PUTENV */
 
 #ifdef DEBUG
-	debug_nntp ("authorization", "authinfo generic");
+	debug_nntp("authorization", "authinfo generic");
 #endif /* DEBUG */
 
 	/*
 	 * If we have authenticated before, NNTP_AUTH_FDS already
 	 * exists, pull out the cookiefd. Just in case we've nested.
 	 */
-	if (cookiefd == -1 && (authcmd = getenv ("NNTP_AUTH_FDS")))
-		(void) sscanf (authcmd, "%*d.%*d.%d", &cookiefd);
+	if (cookiefd == -1 && (authcmd = getenv("NNTP_AUTH_FDS")))
+		(void) sscanf(authcmd, "%*d.%*d.%d", &cookiefd);
 
 	if (cookiefd == -1) {
 		char tempfile[PATH_LEN];
 		if ((cookiefd = my_tmpfile_only(tempfile)) == -1) {
 #	ifdef DEBUG
-			debug_nntp ("authorization", txt_cannot_create_uniq_name);
+			debug_nntp("authorization", txt_cannot_create_uniq_name);
 #	endif /* DEBUG */
 			return FALSE;
 		} else {
 			close(cookiefd);
 			if (tempfile[0] != '\0')
-				(void) unlink (tempfile);
+				(void) unlink(tempfile);
 		}
 	}
 
-	strcpy (tmpbuf, "AUTHINFO GENERIC ");
-	STRCPY(authval, get_val ("NNTPAUTH", ""));
-	if (strlen (authval))
-		strcat (tmpbuf, authval);
+	strcpy(tmpbuf, "AUTHINFO GENERIC ");
+	STRCPY(authval, get_val("NNTPAUTH", ""));
+	if (strlen(authval))
+		strcat(tmpbuf, authval);
 	else {
-		strcat (tmpbuf, "ANY ");
-		strcat (tmpbuf, userid);
+		strcat(tmpbuf, "ANY ");
+		strcat(tmpbuf, userid);
 		builtinauth = TRUE;
 	}
-	put_server (tmpbuf);
+	put_server(tmpbuf);
 
 #ifdef HAVE_PUTENV
-	sprintf (tmpbuf, "NNTP_AUTH_FDS=%d.%d.%d",
-			fileno (get_nntp_fp(FAKE_NNTP_FP)),
-			fileno (get_nntp_wr_fp(FAKE_NNTP_FP)), cookiefd);
+	sprintf(tmpbuf, "NNTP_AUTH_FDS=%d.%d.%d",
+			fileno(get_nntp_fp(FAKE_NNTP_FP)),
+			fileno(get_nntp_wr_fp(FAKE_NNTP_FP)), cookiefd);
 	new_env = my_strdup(tmpbuf);
-	(void) putenv (new_env);
-	FreeIfNeeded (old_env);
+	(void) putenv(new_env);
+	FreeIfNeeded(old_env);
 	old_env = new_env;
 #else
 #	ifdef HAVE_SETENV
-	sprintf (tmpbuf, "%d.%d.%d",
-			fileno (get_nntp_fp(FAKE_NNTP_FP)),
-			fileno (get_nntp_wr_fp(FAKE_NNTP_FP)), cookiefd);
-	setenv ("NNTP_AUTH_FDS", tmpbuf, 1);
+	sprintf(tmpbuf, "%d.%d.%d",
+			fileno(get_nntp_fp(FAKE_NNTP_FP)),
+			fileno(get_nntp_wr_fp(FAKE_NNTP_FP)), cookiefd);
+	setenv("NNTP_AUTH_FDS", tmpbuf, 1);
 #	endif /* HAVE_SETENV */
 #endif /* HAVE_PUTENV */
 
 	/* TODO - is it possible that we should have drained server here? */
-	return (builtinauth ? (get_only_respcode(NULL) == OK_AUTH) : (invoke_cmd (authval) ? TRUE : FALSE));
+	return (builtinauth ? (get_only_respcode(NULL, 0) == OK_AUTH) : (invoke_cmd(authval) ? TRUE : FALSE));
 }
 
 
@@ -145,7 +145,7 @@ authinfo_generic (
  * no .newsauth file or no matching server.
  */
 static t_bool
-read_newsauth_file (
+read_newsauth_file(
 	char *server,
 	char *authuser,
 	char *authpass)
@@ -157,31 +157,31 @@ read_newsauth_file (
 	int found = 0;
 	struct stat statbuf;
 
-	joinpath (line, homedir, ".newsauth");
+	joinpath(line, homedir, ".newsauth");
 
-	if (stat (line, &statbuf) == -1)
+	if (stat(line, &statbuf) == -1)
 		return FALSE;
 	else {
 		if (S_ISREG(statbuf.st_mode) && (statbuf.st_mode|S_IRUSR|S_IWUSR) != (S_IRUSR|S_IWUSR|S_IFREG)) {
 			/* FIXME: -> lang.c */
-			error_message (_("Insecure permissions of %s (%o)"), line, statbuf.st_mode);
+			error_message(_("Insecure permissions of %s (%o)"), line, statbuf.st_mode);
 			sleep(2);
 		}
 	}
 
-	if ((fp = fopen (line, "r"))) {
+	if ((fp = fopen(line, "r"))) {
 
 		/*
 		 * Search through authorization file for correct NNTP server
 		 * File has format:  'nntp-server' 'password' ['username']
 		 */
-		while (fgets (line, PATH_LEN, fp) != NULL) {
+		while (fgets(line, PATH_LEN, fp) != NULL) {
 
 			/*
 			 * strip trailing newline character
 			 */
 
-			ptr = strchr (line, '\n');
+			ptr = strchr(line, '\n');
 			if (ptr != NULL)
 				*ptr = '\0';
 
@@ -189,14 +189,14 @@ read_newsauth_file (
 			 * Get server from 1st part of the line
 			 */
 
-			ptr = strpbrk (line, " \t");
+			ptr = strpbrk(line, " \t");
 
 			if (ptr == NULL)		/* no passwd, no auth, skip */
 				continue;
 
 			*ptr++ = '\0';		/* cut off server part */
 
-			if ((strcasecmp (line, server)))
+			if ((strcasecmp(line, server)))
 				continue;		/* wrong server, keep on */
 
 			/*
@@ -209,7 +209,7 @@ read_newsauth_file (
 			_authpass = ptr;
 
 			if (*_authpass == '"') {	/* skip "embedded" password string */
-				ptr = strrchr (_authpass, '"');
+				ptr = strrchr(_authpass, '"');
 				if ((ptr != NULL) && (ptr > _authpass)) {
 					_authpass++;
 					*ptr++ = '\0';	/* cut off trailing " */
@@ -221,19 +221,19 @@ read_newsauth_file (
 			 * Get user from 3rd part of the line
 			 */
 
-			ptr = strpbrk (ptr, " \t");	/* find next separating blank */
+			ptr = strpbrk(ptr, " \t");	/* find next separating blank */
 
 			if (ptr != NULL) {	/* a 3rd argument follows */
 				while (*ptr == ' ' || *ptr == '\t')	/* skip any blanks */
 					*ptr++ = '\0';
 				if (*ptr != '\0')	/* if its not just empty */
-					strcpy (authuser, ptr);	/* so will replace default user */
+					strcpy(authuser, ptr);	/* so will replace default user */
 			}
-			strcpy (authpass, _authpass);
+			strcpy(authpass, _authpass);
 			found++;
 			break;	/* if we end up here, everything seems OK */
 		}
-		fclose (fp);
+		fclose(fp);
 		return (found > 0);
 	} else
 		return FALSE;
@@ -245,7 +245,7 @@ read_newsauth_file (
  * code from server.
  */
 static int
-do_authinfo_original (
+do_authinfo_original(
 	char *server,
 	char *authuser,
 	char *authpass)
@@ -253,28 +253,28 @@ do_authinfo_original (
 	char line[PATH_LEN];
 	int ret;
 
-	sprintf (line, "AUTHINFO USER %s", authuser);
+	sprintf(line, "AUTHINFO USER %s", authuser);
 #ifdef DEBUG
-	debug_nntp ("authorization", line);
+	debug_nntp("authorization", line);
 #endif /* DEBUG */
-	put_server (line);
-	if ((ret = get_only_respcode(NULL)) != NEED_AUTHDATA)
+	put_server(line);
+	if ((ret = get_only_respcode(NULL, 0)) != NEED_AUTHDATA)
 		return ret;
 
 	if ((authpass == NULL) || (*authpass == '\0')) {
 #ifdef DEBUG
-		debug_nntp ("authorization", "failed: no password");
+		debug_nntp("authorization", "failed: no password");
 #endif /* DEBUG */
-		error_message (_(txt_nntp_authorization_failed), server);
+		error_message(_(txt_nntp_authorization_failed), server);
 		return ERR_AUTHBAD;
 	}
 
-	sprintf (line, "AUTHINFO PASS %s", authpass);
+	sprintf(line, "AUTHINFO PASS %s", authpass);
 #ifdef DEBUG
-	debug_nntp ("authorization", line);
+	debug_nntp("authorization", line);
 #endif /* DEBUG */
-	put_server (line);
-	wait_message(2, (((ret = get_only_respcode(line)) == OK_AUTH) ? _(txt_authorization_ok) : _(txt_authorization_fail)), authuser);
+	put_server(line);
+	wait_message(2, (((ret = get_only_respcode(line, sizeof(line))) == OK_AUTH) ? _(txt_authorization_ok) : _(txt_authorization_fail)), authuser);
 	return ret;
 }
 
@@ -290,7 +290,7 @@ do_authinfo_original (
  *   etc.
  */
 static t_bool
-authinfo_original (
+authinfo_original(
 	char *server,
 	char *authuser,
 	t_bool startup)
@@ -303,11 +303,11 @@ authinfo_original (
 	static t_bool already_failed = FALSE;
 
 #ifdef DEBUG
-	debug_nntp ("authorization", "original authinfo");
+	debug_nntp("authorization", "original authinfo");
 #endif /* DEBUG */
 
 	authpassword[0] = '\0';
-	authuser = strncpy (authusername, authuser, PATH_LEN);
+	authuser = strncpy(authusername, authuser, PATH_LEN);
 	authpass = authpassword;
 
 	/*
@@ -323,13 +323,13 @@ authinfo_original (
 	 * and restart tin or change to another server and back in order to get
 	 * it read again.
 	 */
-	if ((changed = strcmp (server, last_server)) || (!changed && !already_failed)) {
+	if ((changed = strcmp(server, last_server)) || (!changed && !already_failed)) {
 		already_failed = FALSE;
-		if (read_newsauth_file (server, authuser, authpass)) {
-			ret = do_authinfo_original (server, authuser, authpass);
+		if (read_newsauth_file(server, authuser, authpass)) {
+			ret = do_authinfo_original(server, authuser, authpass);
 			if (!(already_failed = (ret != OK_AUTH))) {
 #ifdef DEBUG
-				debug_nntp ("authorization", "succeeded");
+				debug_nntp("authorization", "succeeded");
 #endif /* DEBUG */
 				return TRUE;
 			}
@@ -342,7 +342,7 @@ authinfo_original (
 	 * matching username/password for the current server. If we are not at
 	 * startup we ask the user to enter such a pair by hand. Don't ask him
 	 * startup except if requested by -A option because if he doesn't need
-	 * authenticate (we don't know), the "Server expects authentication"
+	 * authenticate(we don't know), the "Server expects authentication"
 	 * messages are annoying (and even wrong).
 	 * UNSURE: Maybe we want to make this decision configurable in the
 	 * options menu, too, so that the user doesn't need -A.
@@ -354,22 +354,22 @@ authinfo_original (
 		int state = RawState();
 #endif /* USE_CURSES */
 
-		wait_message (0, _(txt_auth_needed));
+		wait_message(0, _(txt_auth_needed));
 #ifdef USE_CURSES
 		Raw(TRUE);
 #endif /* USE_CURSES */
 
 		if (!prompt_default_string(_(txt_auth_user), authuser, PATH_LEN, authusername, HIST_NONE)) {
 #ifdef DEBUG
-			debug_nntp ("authorization", "failed: no username");
+			debug_nntp("authorization", "failed: no username");
 #endif /* DEBUG */
 			return FALSE;
 		}
 
 #ifdef USE_CURSES
 		Raw(state);
-		my_printf ("%s", _(txt_auth_pass));
-		wgetnstr (stdscr, authpassword, sizeof(authpassword));
+		my_printf("%s", _(txt_auth_pass));
+		wgetnstr(stdscr, authpassword, sizeof(authpassword));
 		Raw(TRUE);
 #else
 #	if 0
@@ -378,18 +378,18 @@ authinfo_original (
 		 * we use tin_getline() till we have a config check
 		 * for getpass() or our own getpass()
 		 */
-		authpass = strncpy (authpassword, getpass (_(txt_auth_pass)), PATH_LEN);
+		authpass = strncpy(authpassword, getpass(_(txt_auth_pass)), PATH_LEN);
 #	else
-		authpass = strncpy (authpassword, tin_getline (_(txt_auth_pass), FALSE, (char *) 0, PATH_LEN, TRUE, HIST_NONE), PATH_LEN);
+		authpass = strncpy(authpassword, tin_getline(_(txt_auth_pass), FALSE, (char *) 0, PATH_LEN, TRUE, HIST_NONE), PATH_LEN);
 #	endif /* 0 */
 #endif /* USE_CURSES */
 
-		ret = do_authinfo_original (server, authuser, authpass);
+		ret = do_authinfo_original(server, authuser, authpass);
 		my_retouch();			/* Get rid of the chaff */
 	}
 
 #ifdef DEBUG
-	debug_nntp ("authorization", (ret == OK_AUTH ? "succeeded" : "failed"));
+	debug_nntp("authorization", (ret == OK_AUTH ? "succeeded" : "failed"));
 #endif /* DEBUG */
 
 	return (ret == OK_AUTH);
@@ -404,18 +404,18 @@ authinfo_original (
  * AUTHINFO method. Other authentication methods can easily be added.
  */
 t_bool
-authenticate (
+authenticate(
 	char *server,
 	char *user,
 	t_bool startup)
 {
-	return (authinfo_generic () || authinfo_original (server, user, startup));
+	return (authinfo_generic() || authinfo_original(server, user, startup));
 }
 
 #else
-static void no_authenticate (void);			/* proto-type */
+static void no_authenticate(void);			/* proto-type */
 static void
-no_authenticate (					/* ANSI C requires non-empty source file */
+no_authenticate(					/* ANSI C requires non-empty source file */
 	void)
 {
 }

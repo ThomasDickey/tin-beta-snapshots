@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2002-03-11
+ *  Updated   : 2002-09-06
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2002 Thomas Dickey <dickey@invisible-island.net>
@@ -188,6 +188,7 @@
 #	undef HAVE_STROPTS_H
 #	undef HAVE_SYS_BSDTYPES_H
 #	undef HAVE_SYS_DIR_H
+#	undef HAVE_SYS_ERRNO_H
 #	undef HAVE_SYS_FILE_H
 #	undef HAVE_SYS_IOCTL_H
 #	undef HAVE_SYS_NDIR_H
@@ -236,6 +237,7 @@
 #	undef HAVE_GETHOSTNAME
 #	undef HAVE_GETSERVBYNAME
 #	undef HAVE_GETTIMEOFDAY
+#	undef HAVE_GETWD
 #	undef HAVE_ICONV
 #	undef HAVE_INET_ADDR
 #	undef HAVE_INET_ATON
@@ -334,6 +336,7 @@
 #	undef DECL_GETHOSTNAME
 #	undef DECL_GETOPT
 #	undef DECL_GETPASS
+#	undef DECL_GETWD
 #	undef DECL_INET_ADDR
 #	undef DECL_INET_ATON
 #	undef DECL_INET_NTOA
@@ -642,109 +645,160 @@
 Added missing headers after gettext update, using autoheader
 -----------------------------------
 */
-/* Define if using alloca.c.  */
-#undef C_ALLOCA
-/* Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP systems.
-   This function is required for alloca.c support on those systems.  */
-#undef CRAY_STACKSEG_END
-/* Define if you have the <argz.h> header file.  */
-#undef HAVE_ARGZ_H
-/* Define if you don't have vprintf but do have _doprnt.  */
-#undef HAVE_DOPRNT
-/* Define if you have the feof_unlocked function.  */
-#undef HAVE_FEOF_UNLOCKED
-/* Define if you have the fgets_unlocked function.  */
-#undef HAVE_FGETS_UNLOCKED
-/* Define if your system has a working fnmatch function.  */
-#undef HAVE_FNMATCH
-/* Define if you have the getegid function.  */
-#undef HAVE_GETEGID
-/* Define if you have the geteuid function.  */
-#undef HAVE_GETEUID
-/* Define if you have the getgid function.  */
-#undef HAVE_GETGID
-/* Define if your system has its own `getloadavg' function.  */
-#undef HAVE_GETLOADAVG
-/* Define if you have the getmntent function.  */
-#undef HAVE_GETMNTENT
-/* Define if you have the getnameinfo function.  */
-#undef HAVE_GETNAMEINFO
-/* Define if you have the getpagesize function.  */
-#undef HAVE_GETPAGESIZE
-/* Define if you have the getuid function.  */
-#undef HAVE_GETUID
-/* Define if you have the nsl library (-lnsl).  */
-#undef HAVE_LIBNSL
-/* Define if you have the socket library (-lsocket).  */
-#undef HAVE_LIBSOCKET
-/* Define if you have the <limits.h> header file.  */
-#undef HAVE_LIMITS_H
-/* Define if the `long double' type works.  */
-#undef HAVE_LONG_DOUBLE
-/* Define if you have the mempcpy function.  */
-#undef HAVE_MEMPCPY
-/* Define if you have a working `mmap' system call.  */
-#undef HAVE_MMAP
-/* Define if you have the <ndir.h> header file.  */
-#undef HAVE_NDIR_H
-/* Define if you have the <nl_types.h> header file.  */
-#undef HAVE_NL_TYPES_H
-/* Define if system calls automatically restart after interruption
-   by a signal.  */
-#undef HAVE_RESTARTABLE_SYSCALLS
-/* Define if you have the sigaction function.  */
-#undef HAVE_SIGACTION
-/* Define if your struct stat has st_blksize.  */
-#undef HAVE_ST_BLKSIZE
-/* Define if your struct stat has st_blocks.  */
-#undef HAVE_ST_BLOCKS
-/* Define if you have the strcoll function and it is properly defined.  */
-#undef HAVE_STRCOLL
-/* Define if your struct stat has st_rdev.  */
-#undef HAVE_ST_RDEV
-/* Define if you have the ANSI # stringizing operator in cpp. */
-#undef HAVE_STRINGIZE
-/* Define if you have the strtoul function.  */
-#undef HAVE_STRTOUL
-/* Define if you have the <sys/termio.h> header file.  */
-#undef HAVE_SYS_TERMIO_H
-/* Define if your struct tm has tm_zone.  */
-#undef HAVE_TM_ZONE
-/* Define if you have the tsearch function.  */
-#undef HAVE_TSEARCH
-/* Define if you don't have tm_zone but do have the external array
-   tzname.  */
-#undef HAVE_TZNAME
-/* Define if utime(file, NULL) sets file's timestamp to the present.  */
-#undef HAVE_UTIME_NULL
-/* Define if you have <vfork.h>.  */
-#undef HAVE_VFORK_H
-/* Define if you have the vprintf function.  */
-#undef HAVE_VPRINTF
-/* Define if you have the wait3 system call.  */
-#undef HAVE_WAIT3
-/* Define if you have the <wait.h> header file.  */
-#undef HAVE_WAIT_H
-/* Define if you have the <waitstatus.h> header file.  */
-#undef HAVE_WAITSTATUS_H
-/* Define if your C compiler doesn't accept -c and -o together.  */
-#undef NO_MINUS_C_MINUS_O
-/* Define if your Fortran 77 compiler doesn't accept -c and -o together. */
-#undef F77_NO_MINUS_C_MINUS_O
-/* Define to the type of arg1 for select(). */
-#undef SELECT_TYPE_ARG1
-/* Define to the type of args 2, 3 and 4 for select(). */
-#undef SELECT_TYPE_ARG234
-/* Define to the type of arg5 for select(). */
-#undef SELECT_TYPE_ARG5
-/* If using the C implementation of alloca, define if you know the
-   direction of stack growth for your system; otherwise it will be
-   automatically deduced at run-time.
- STACK_DIRECTION > 0 => grows toward higher addresses
- STACK_DIRECTION < 0 => grows toward lower addresses
- STACK_DIRECTION = 0 => direction of growth unknown
+/* Define if using alloca.c. */
+#	undef C_ALLOCA
+
+/*
+ * Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP systems.
+ * This function is required for alloca.c support on those systems.
  */
-#undef STACK_DIRECTION
-/* Define if the X Window System is missing or not being used.  */
-#undef X_DISPLAY_MISSING
+#	undef CRAY_STACKSEG_END
+
+/* Define if you have the <argz.h> header file. */
+#	undef HAVE_ARGZ_H
+
+/* Define if you don't have vprintf but do have _doprnt. */
+#	undef HAVE_DOPRNT
+
+/* Define if you have the feof_unlocked function. */
+#	undef HAVE_FEOF_UNLOCKED
+
+/* Define if you have the fgets_unlocked function. */
+#	undef HAVE_FGETS_UNLOCKED
+
+/* Define if your system has a working fnmatch function. */
+#	undef HAVE_FNMATCH
+
+/* Define if you have the getegid function. */
+#	undef HAVE_GETEGID
+
+/* Define if you have the geteuid function. */
+#	undef HAVE_GETEUID
+
+/* Define if you have the getgid function. */
+#	undef HAVE_GETGID
+
+/* Define if your system has its own `getloadavg' function. */
+#	undef HAVE_GETLOADAVG
+
+/* Define if you have the getmntent function. */
+#	undef HAVE_GETMNTENT
+
+/* Define if you have the getnameinfo function. */
+#	undef HAVE_GETNAMEINFO
+
+/* Define if you have the getpagesize function. */
+#	undef HAVE_GETPAGESIZE
+
+/* Define if you have the getuid function. */
+#	undef HAVE_GETUID
+
+/* Define if you have the nsl library (-lnsl). */
+#	undef HAVE_LIBNSL
+
+/* Define if you have the socket library (-lsocket). */
+#	undef HAVE_LIBSOCKET
+
+/* Define if you have the <limits.h> header file. */
+#	undef HAVE_LIMITS_H
+
+/* Define if the `long double' type works. */
+#	undef HAVE_LONG_DOUBLE
+
+/* Define if you have the mempcpy function. */
+#	undef HAVE_MEMPCPY
+
+/* Define if you have a working `mmap' system call. */
+#	undef HAVE_MMAP
+
+/* Define if you have the <ndir.h> header file. */
+#	undef HAVE_NDIR_H
+
+/* Define if you have the <nl_types.h> header file. */
+#	undef HAVE_NL_TYPES_H
+
+/*
+ * Define if system calls automatically restart after interruption
+ * by a signal.
+ */
+#	undef HAVE_RESTARTABLE_SYSCALLS
+
+/* Define if you have the sigaction function. */
+#	undef HAVE_SIGACTION
+
+/* Define if your struct stat has st_blksize. */
+#	undef HAVE_ST_BLKSIZE
+
+/* Define if your struct stat has st_blocks. */
+#	undef HAVE_ST_BLOCKS
+
+/* Define if you have the strcoll function and it is properly defined. */
+#	undef HAVE_STRCOLL
+
+/* Define if your struct stat has st_rdev. */
+#	undef HAVE_ST_RDEV
+
+/* Define if you have the ANSI # stringizing operator in cpp. */
+#	undef HAVE_STRINGIZE
+
+/* Define if you have the strtoul function. */
+#	undef HAVE_STRTOUL
+
+/* Define if you have the <sys/termio.h> header file. */
+#	undef HAVE_SYS_TERMIO_H
+
+/* Define if your struct tm has tm_zone. */
+#	undef HAVE_TM_ZONE
+
+/* Define if you have the tsearch function. */
+#	undef HAVE_TSEARCH
+
+/*
+ * Define if you don't have tm_zone but do have the external array
+ * tzname.
+ */
+#	undef HAVE_TZNAME
+
+/* Define if utime(file, NULL) sets file's timestamp to the present. */
+#	undef HAVE_UTIME_NULL
+
+/* Define if you have <vfork.h>. */
+#	undef HAVE_VFORK_H
+
+/* Define if you have the vprintf function. */
+#	undef HAVE_VPRINTF
+
+/* Define if you have the wait3 system call. */
+#	undef HAVE_WAIT3
+
+/* Define if you have the <wait.h> header file. */
+#	undef HAVE_WAIT_H
+
+/* Define if your C compiler doesn't accept -c and -o together. */
+#	undef NO_MINUS_C_MINUS_O
+
+/* Define if your Fortran 77 compiler doesn't accept -c and -o together. */
+#	undef F77_NO_MINUS_C_MINUS_O
+
+/* Define to the type of arg1 for select(). */
+#	undef SELECT_TYPE_ARG1
+
+/* Define to the type of args 2, 3 and 4 for select(). */
+#	undef SELECT_TYPE_ARG234
+
+/* Define to the type of arg5 for select(). */
+#	undef SELECT_TYPE_ARG5
+
+/*
+ * If using the C implementation of alloca, define if you know the
+ * direction of stack growth for your system; otherwise it will be
+ * automatically deduced at run-time.
+ * STACK_DIRECTION > 0 => grows toward higher addresses
+ * STACK_DIRECTION < 0 => grows toward lower addresses
+ * STACK_DIRECTION = 0 => direction of growth unknown
+ */
+#	undef STACK_DIRECTION
+
+/* Define if the X Window System is missing or not being used. */
+#	undef X_DISPLAY_MISSING
 #endif /* !TIN_AUTOCONF_H */

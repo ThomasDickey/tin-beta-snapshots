@@ -48,21 +48,22 @@
 /*
  * Local prototypes
  */
-static int reposition_group (struct t_group *group, int default_num);
-static int save_restore_curr_group (t_bool saving);
-static int select_left (void);
-static int select_right (void);
-static t_bool pos_next_unread_group (t_bool redraw);
+static int active_comp(t_comptype p1, t_comptype p2);
+static int reposition_group(struct t_group *group, int default_num);
+static int save_restore_curr_group(t_bool saving);
+static int select_left(void);
+static int select_right(void);
+static t_bool pos_next_unread_group(t_bool redraw);
 static t_bool yanked_out = TRUE;
-static void catchup_group (struct t_group *group, t_bool goto_next_unread_group);
-static void read_groups (void);
-static void select_quit (void);
-static void select_read_group (void);
-static void select_done (void);
-static void sort_active_file (void);
-static void subscribe_pattern (const char *prompt, const char *message, const char *result, t_bool state);
-static void sync_active_file (void);
-static void yank_active_file (void);
+static void catchup_group(struct t_group *group, t_bool goto_next_unread_group);
+static void read_groups(void);
+static void select_done(void);
+static void select_quit(void);
+static void select_read_group(void);
+static void sort_active_file(void);
+static void subscribe_pattern(const char *prompt, const char *message, const char *result, t_bool state);
+static void sync_active_file(void);
+static void yank_active_file(void);
 
 
 /*
@@ -74,7 +75,7 @@ static void yank_active_file (void);
 t_menu selmenu = { 1, 0, 0, 0, show_selection_page, draw_group_arrow };
 
 static int
-select_left (
+select_left(
 	void)
 {
 	return iKeyQuit;
@@ -82,7 +83,7 @@ select_left (
 
 
 static int
-select_right (
+select_right(
 	void)
 {
 	return iKeySelectReadGrp;
@@ -90,7 +91,7 @@ select_right (
 
 
 void
-selection_page (
+selection_page(
 	int start_groupnum,
 	int num_cmd_line_groups)
 {
@@ -101,11 +102,11 @@ selection_page (
 	selmenu.curr = start_groupnum;
 
 #ifdef READ_CHAR_HACK
-	setbuf (stdin, 0);
+	setbuf(stdin, 0);
 #endif /* READ_CHAR_HACK */
 
 	ClearScreen();
-	set_groupname_len (FALSE);	/* find longest subscribed to groupname */
+	set_groupname_len(FALSE);	/* find longest subscribed to groupname */
 
 	/*
 	 * If user specified only 1 cmd line groupname (eg. tin -r alt.sources)
@@ -114,19 +115,19 @@ selection_page (
 	if (num_cmd_line_groups == 1)
 		select_read_group();
 
-	show_selection_page ();	/* display group selection page */
+	show_selection_page();	/* display group selection page */
 
 	forever {
-		if (!resync_active_file ()) {
-			if (reread_active_after_posting ()) /* reread active file if necessary */
-				show_selection_page ();
+		if (!resync_active_file()) {
+			if (reread_active_after_posting()) /* reread active file if necessary */
+				show_selection_page();
 		} else {
 			if (!yanked_out)
 				yanked_out = bool_not(yanked_out); /* yank out if yanked in */
 		}
 
-		set_xclick_on ();
-		ch = handle_keypad (select_left, select_right, &menukeymap.select_nav);
+		set_xclick_on();
+		ch = handle_keypad(select_left, select_right, &menukeymap.select_nav);
 
 		switch (ch) {
 
@@ -136,14 +137,14 @@ selection_page (
 			case '1': case '2': case '3': case '4': case '5':
 			case '6': case '7': case '8': case '9':
 				if (selmenu.max)
-					prompt_item_num (ch, _(txt_select_group));
+					prompt_item_num(ch, _(txt_select_group));
 				else
 					info_message(_(txt_no_groups));
 				break;
 
 #ifndef NO_SHELL_ESCAPE
 			case iKeyShellEscape:
-				do_shell_escape ();
+				do_shell_escape();
 				break;
 #endif /* !NO_SHELL_ESCAPE */
 
@@ -183,17 +184,17 @@ selection_page (
 
 			case iKeySetRange:	/* set range */
 				if (selmenu.max) {
-					if (bSetRange (SELECT_LEVEL, 1, selmenu.max, selmenu.curr + 1))
-						show_selection_page ();
+					if (bSetRange(SELECT_LEVEL, 1, selmenu.max, selmenu.curr + 1))
+						show_selection_page();
 				} else
 					info_message(_(txt_no_groups));
 				break;
 
 			case iKeySearchSubjF:	/* search forward */
 			case iKeySearchSubjB:	/* search backward */
-				if ((i = search_active (ch == iKeySearchSubjF)) != -1) {
-					move_to_item (i);
-					clear_message ();
+				if ((i = search_active(ch == iKeySearchSubjF)) != -1) {
+					move_to_item(i);
+					clear_message();
 				}
 				break;
 
@@ -204,14 +205,14 @@ selection_page (
 
 			case iKeySelectEnterNextUnreadGrp:	/* enter next group containing unread articles */
 			case iKeySelectEnterNextUnreadGrp2:
-				if (pos_next_unread_group (FALSE))
+				if (pos_next_unread_group(FALSE))
 					read_groups();
 				break;							/* Nothing more to do at the moment */
 
 			case iKeyRedrawScr:		/* redraw */
-				my_retouch ();					/* TODO not done elsewhere, maybe should be in show_selection_page */
-				set_xclick_off ();
-				show_selection_page ();
+				my_retouch();					/* TODO not done elsewhere, maybe should be in show_selection_page */
+				set_xclick_off();
+				show_selection_page();
 				break;
 
 			case iKeySelectResetNewsrc:	/* reset .newsrc */
@@ -219,18 +220,18 @@ selection_page (
 					info_message(_(txt_info_no_write));
 					break;
 				}
-				if (prompt_yn (cLINES, _(txt_reset_newsrc), FALSE) == 1) {
-					reset_newsrc ();
-					sync_active_file ();
+				if (prompt_yn(cLINES, _(txt_reset_newsrc), FALSE) == 1) {
+					reset_newsrc();
+					sync_active_file();
 					selmenu.curr = 0;
-					show_selection_page ();
+					show_selection_page();
 				}
 				break;
 
 			case iKeySelectCatchup:	/* catchup - mark all articles as read */
 			case iKeySelectCatchupNextUnread:	/* and goto next unread group */
 				if (selmenu.max)
-					catchup_group (&CURR_GROUP, (ch == iKeySelectCatchupNextUnread));
+					catchup_group(&CURR_GROUP, (ch == iKeySelectCatchupNextUnread));
 				else
 					info_message(_(txt_no_groups));
 				break;
@@ -238,46 +239,46 @@ selection_page (
 			case iKeySelectToggleDescriptions:	/* toggle newsgroup descriptions */
 				show_description = bool_not(show_description);
 				if (show_description)
-					read_newsgroups_file ();
-				set_groupname_len (FALSE);
-				show_selection_page ();
+					read_newsgroups_file();
+				set_groupname_len(FALSE);
+				show_selection_page();
 				break;
 
 			case iKeySelectGoto:			/* prompt for a new group name */
-				if ((n = choose_new_group ()) >= 0) {
-					set_groupname_len (FALSE);
-					move_to_item (n);
+				if ((n = choose_new_group()) >= 0) {
+					set_groupname_len(FALSE);
+					move_to_item(n);
 				}
 				break;
 
 			case iKeyHelp:					/* help */
-				show_help_page (SELECT_LEVEL, _(txt_group_select_com));
-				show_selection_page ();
+				show_help_page(SELECT_LEVEL, _(txt_group_select_com));
+				show_selection_page();
 				break;
 
 			case iKeyToggleHelpDisplay:		/* toggle mini help menu */
-				toggle_mini_help (SELECT_LEVEL);
-				show_selection_page ();
+				toggle_mini_help(SELECT_LEVEL);
+				show_selection_page();
 				break;
 
 			case iKeyToggleInverseVideo:	/* toggle inverse video */
-				toggle_inverse_video ();
-				show_selection_page ();
-				show_inverse_video_status ();
+				toggle_inverse_video();
+				show_selection_page();
+				show_inverse_video_status();
 				break;
 
 #ifdef HAVE_COLOR
 			case iKeyToggleColor:			/* toggle color */
-				if (toggle_color ()) {
-					show_selection_page ();
-					show_color_status ();
+				if (toggle_color()) {
+					show_selection_page();
+					show_color_status();
 				}
 				break;
 #endif /* HAVE_COLOR */
 
 			case iKeyToggleInfoLastLine:	/* display group description */
 				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
-				show_selection_page ();
+				show_selection_page();
 				break;
 
 			case iKeySelectMoveGrp:	/* reposition group within group list */
@@ -288,7 +289,7 @@ selection_page (
 				}
 
 				if (!CURR_GROUP.subscribed) {
-					info_message (_(txt_info_not_subscribed));
+					info_message(_(txt_info_not_subscribed));
 					break;
 				}
 
@@ -298,30 +299,30 @@ selection_page (
 				}
 
 				n = selmenu.curr;
-				selmenu.curr = reposition_group (&active[my_group[n]], n);
-				HpGlitch(erase_arrow ());
+				selmenu.curr = reposition_group(&active[my_group[n]], n);
+				HpGlitch(erase_arrow());
 				if (selmenu.curr < selmenu.first || selmenu.curr >= selmenu.last || selmenu.curr != n)
-					show_selection_page ();
+					show_selection_page();
 				else {
 					i = selmenu.curr;
 					selmenu.curr = n;
-					erase_arrow ();
+					erase_arrow();
 					selmenu.curr = i;
-					clear_message ();
-					draw_group_arrow ();
+					clear_message();
+					draw_group_arrow();
 				}
 				break;
 
 			case iKeyOptionMenu:	/* option menu */
 				(void) change_config_file(NULL);
-				free_attributes_array ();
-				read_attributes_file (TRUE);
-				read_attributes_file (FALSE);
-				show_selection_page ();
+				free_attributes_array();
+				read_attributes_file(TRUE);
+				read_attributes_file(FALSE);
+				show_selection_page();
 				break;
 
 			case iKeySelectNextUnreadGrp:	/* goto next unread group */
-				pos_next_unread_group (TRUE);
+				pos_next_unread_group(TRUE);
 				break;
 
 			case iKeyQuit:	/* quit */
@@ -333,9 +334,9 @@ selection_page (
 				break;
 
 			case iKeySelectQuitNoWrite:	/* quit, but don't save configuration */
-				if (prompt_yn (cLINES, _(txt_quit_no_write), TRUE) == 1)
-					tin_done (EXIT_SUCCESS);
-				show_selection_page ();
+				if (prompt_yn(cLINES, _(txt_quit_no_write), TRUE) == 1)
+					tin_done(EXIT_SUCCESS);
+				show_selection_page();
 				break;
 
 			case iKeySelectToggleReadDisplay:
@@ -345,17 +346,17 @@ selection_page (
 				 * articles
 				 */
 				tinrc.show_only_unread_groups = bool_not(tinrc.show_only_unread_groups);
-				wait_message (0, _(txt_reading_groups), (tinrc.show_only_unread_groups) ? _("unread") : _("all"));
+				wait_message(0, _(txt_reading_groups), (tinrc.show_only_unread_groups) ? _("unread") : _("all"));
 
-				toggle_my_groups (NULL);
-				set_groupname_len (FALSE);
-				show_selection_page ();
+				toggle_my_groups(NULL);
+				set_groupname_len(FALSE);
+				show_selection_page();
 				if (tinrc.show_only_unread_groups)
-					info_message (_(txt_show_unread));
+					info_message(_(txt_show_unread));
 				break;
 
 			case iKeySelectBugReport:
-				bug_report ();
+				bug_report();
 				break;
 
 			case iKeySelectSubscribe:	/* subscribe to current group */
@@ -368,9 +369,9 @@ selection_page (
 					break;
 				}
 				if (!CURR_GROUP.subscribed && !CURR_GROUP.bogus) {
-					subscribe (&CURR_GROUP, SUBSCRIBED);
+					subscribe(&CURR_GROUP, SUBSCRIBED);
 					show_selection_page();
-					info_message (_(txt_subscribed_to), CURR_GROUP.name);
+					info_message(_(txt_subscribed_to), CURR_GROUP.name);
 					move_down();
 				}
 				break;
@@ -380,7 +381,7 @@ selection_page (
 					info_message(_(txt_info_no_write));
 					break;
 				}
-				subscribe_pattern (_(txt_subscribe_pattern), _(txt_subscribing), _(txt_subscribed_num_groups), TRUE);
+				subscribe_pattern(_(txt_subscribe_pattern), _(txt_subscribing), _(txt_subscribed_num_groups), TRUE);
 				break;
 
 			case iKeySelectUnsubscribe:	/* unsubscribe to current group */
@@ -393,20 +394,20 @@ selection_page (
 					break;
 				}
 				if (CURR_GROUP.subscribed) {
-					mark_screen (SELECT_LEVEL, selmenu.curr - selmenu.first, 2, CURR_GROUP.newgroup ? "N" : "u");
-					subscribe (&CURR_GROUP, UNSUBSCRIBED);
+					mark_screen(SELECT_LEVEL, selmenu.curr - selmenu.first, 2, CURR_GROUP.newgroup ? "N" : "u");
+					subscribe(&CURR_GROUP, UNSUBSCRIBED);
 					info_message(_(txt_unsubscribed_to), CURR_GROUP.name);
 					move_down();
 				} else if (CURR_GROUP.bogus && tinrc.strip_bogus == BOGUS_SHOW) {
 					/* Bogus groups aren't subscribed to avoid confusion */
 					/* Note that there is no way to remove the group from active[] */
-					sprintf (buf, _(txt_remove_bogus), CURR_GROUP.name);
-					write_newsrc ();					/* save current newsrc */
+					sprintf(buf, _(txt_remove_bogus), CURR_GROUP.name);
+					write_newsrc();					/* save current newsrc */
 					delete_group(CURR_GROUP.name);		/* remove bogus group */
 					read_newsrc(newsrc, TRUE);			/* reload newsrc */
-					toggle_my_groups (NULL);			/* keep current display-state */
+					toggle_my_groups(NULL);			/* keep current display-state */
 					show_selection_page();				/* redraw screen */
-					info_message (buf);
+					info_message(buf);
 				}
 				break;
 
@@ -415,12 +416,12 @@ selection_page (
 					info_message(_(txt_info_no_write));
 					break;
 				}
-				subscribe_pattern (_(txt_unsubscribe_pattern),
+				subscribe_pattern(_(txt_unsubscribe_pattern),
 								_(txt_unsubscribing), _(txt_unsubscribed_num_groups), FALSE);
 				break;
 
 			case iKeyVersion:	/* show tin version */
-				info_message (cvers);
+				info_message(cvers);
 				break;
 
 			case iKeyPost:	/* post a basenote */
@@ -429,32 +430,32 @@ selection_page (
 					break;
 				}
 				if (!selmenu.max) {
-					sprintf (buf, _(txt_post_newsgroups), tinrc.default_post_newsgroups);
-					if (!(prompt_string_default (buf, tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS)))
+					sprintf(buf, _(txt_post_newsgroups), tinrc.default_post_newsgroups);
+					if (!(prompt_string_default(buf, tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS)))
 						break;
 
-					if (group_find (buf) == NULL) {
-						error_message (_(txt_not_in_active_file), buf);
+					if (group_find(buf) == NULL) {
+						error_message(_(txt_not_in_active_file), buf);
 						break;
 					}
 				} else
-					strcpy (buf, CURR_GROUP.name);
-				if (post_article (buf))
-					show_selection_page ();
+					strcpy(buf, CURR_GROUP.name);
+				if (post_article(buf))
+					show_selection_page();
 				break;
 
 			case iKeyPostponed:
 			case iKeyPostponed2:	/* post postponed article */
 				if (can_post) {
 					if (pickup_postponed_articles(FALSE, FALSE))
-						show_selection_page ();
+						show_selection_page();
 				} else
 					info_message(_(txt_cannot_post));
 				break;
 
 			case iKeyDisplayPostHist:	/* display messages posted by user */
-				if (user_posted_messages ())
-					show_selection_page ();
+				if (user_posted_messages())
+					show_selection_page();
 				break;
 
 			case iKeySelectYankActive:	/* yank in/out rest of groups from active */
@@ -462,7 +463,7 @@ selection_page (
 				break;
 
 			case iKeySelectSyncWithActive:	/* Re-read active file to see if any new news */
-				sync_active_file ();
+				sync_active_file();
 				if (!yanked_out)
 					yank_active_file();			/* yank out if yanked in */
 				break;
@@ -473,23 +474,23 @@ selection_page (
 					info_message(_(txt_no_groups));
 					break;
 				}
-				grp_mark_unread (&CURR_GROUP);
+				grp_mark_unread(&CURR_GROUP);
 				if (CURR_GROUP.newsrc.num_unread)
-					strcpy (mesg, tin_ltoa(CURR_GROUP.newsrc.num_unread, 5));
+					strcpy(mesg, tin_ltoa(CURR_GROUP.newsrc.num_unread, 5));
 				else
-					strcpy (mesg, "     ");
-				mark_screen (SELECT_LEVEL, selmenu.curr - selmenu.first, 9, mesg);
+					strcpy(mesg, "     ");
+				mark_screen(SELECT_LEVEL, selmenu.curr - selmenu.first, 9, mesg);
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii (key, map_to_local (iKeyHelp, &menukeymap.select_nav)));
+				info_message(_(txt_bad_command), printascii(key, map_to_local(iKeyHelp, &menukeymap.select_nav)));
 		}
 	}
 }
 
 
 void
-show_selection_page (
+show_selection_page(
 	void)
 {
 	char buf[LEN];
@@ -503,23 +504,23 @@ show_selection_page (
 	signal_context = cSelect;
 	currmenu = &selmenu;
 
-	MoveCursor (0, 0);		/* top left corner */
-	CleartoEOLN ();
+	MoveCursor(0, 0);		/* top left corner */
+	CleartoEOLN();
 
 	if (read_news_via_nntp)
-		sprintf (buf, "%s (%s  %d%s)", _(txt_group_selection), nntp_server, selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
+		sprintf(buf, "%s (%s  %d%s)", _(txt_group_selection), nntp_server, selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
 	else
-		sprintf (buf, "%s (%d%s)", _(txt_group_selection), selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
+		sprintf(buf, "%s (%d%s)", _(txt_group_selection), selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
 
-	show_title (buf);
-	MoveCursor (1, 0);
-	CleartoEOLN ();
-	MoveCursor (INDEX_TOP, 0);
+	show_title(buf);
+	MoveCursor(1, 0);
+	CleartoEOLN();
+	MoveCursor(INDEX_TOP, 0);
 
 	if (selmenu.curr < 0)
 		selmenu.curr = 0;
 
-	set_first_screen_item ();
+	set_first_screen_item();
 
 	blank_len = (cCOLS - (groupname_len + SELECT_MISC_COLS)) + (show_description ? 2 : 4);
 
@@ -530,11 +531,11 @@ show_selection_page (
 		char *sptr = screen[j].col;
 #endif /* USE_CURSES */
 		if (active[my_group[i]].inrange)
-			strcpy (tmp, "    #");
+			strcpy(tmp, "    #");
 		else if (active[my_group[i]].newsrc.num_unread) {
-			strcpy (tmp, tin_ltoa(active[my_group[i]].newsrc.num_unread, 5));
+			strcpy(tmp, tin_ltoa(active[my_group[i]].newsrc.num_unread, 5));
 		} else
-			strcpy (tmp, "     ");
+			strcpy(tmp, "     ");
 
 		n = my_group[i];
 
@@ -549,7 +550,7 @@ show_selection_page (
 		if (active[n].bogus)					/* Group is not in active list */
 			subs = 'D';
 		else if (active[n].subscribed)			/* Important that this preceeds Newgroup */
-			subs = group_flag (active[n].moderated);
+			subs = group_flag(active[n].moderated);
 		else
 			subs = ((active[n].newgroup) ? 'N' : 'u'); /* New (but unsubscribed) group or unsubscribed group */
 
@@ -563,78 +564,79 @@ show_selection_page (
 
 		if (show_description) {
 			if (active[n].description)
-				sprintf (sptr, "  %c %s %s  %-*.*s  %-*.*s" cCRLF,
+				sprintf(sptr, "  %c %s %s  %-*.*s  %-*.*s" cCRLF,
 				         subs, tin_ltoa(i + 1, 4), tmp,
 				         groupname_len, groupname_len, active_name,
 				         blank_len, blank_len, group_descript);
 			else
-				sprintf (sptr, "  %c %s %s  %-*.*s  " cCRLF,
+				sprintf(sptr, "  %c %s %s  %-*.*s  " cCRLF,
 				         subs, tin_ltoa(i + 1, 4), tmp,
 				         (groupname_len + blank_len),
 				         (groupname_len + blank_len), active[n].name);
 		} else {
 			if (tinrc.draw_arrow)
-				sprintf (sptr, "  %c %s %s  %-*.*s" cCRLF, subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name);
+				sprintf(sptr, "  %c %s %s  %-*.*s" cCRLF, subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name);
 			else
-				sprintf (sptr, "  %c %s %s  %-*.*s%*s" cCRLF, subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name, blank_len, " ");
+				sprintf(sptr, "  %c %s %s  %-*.*s%*s" cCRLF, subs, tin_ltoa(i + 1, 4), tmp, groupname_len, groupname_len, active_name, blank_len, " ");
 		}
 		if (tinrc.strip_blanks) {
-			strip_line (sptr);
-			strcat (sptr, cCRLF);
+			strip_line(sptr);
+			strcat(sptr, cCRLF);
 		}
-		CleartoEOLN ();
-		my_fputs (sptr, stdout);
+		CleartoEOLN();
+		my_fputs(sptr, stdout);
 	}
 
-	CleartoEOS ();
-	show_mini_help (SELECT_LEVEL);
+	CleartoEOS();
+	show_mini_help(SELECT_LEVEL);
 
 	if (selmenu.max <= 0) {
-		info_message (_(txt_no_groups));
+		info_message(_(txt_no_groups));
 		return;
 	} else if (selmenu.last == selmenu.max)
-		info_message (_(txt_end_of_groups));
+		info_message(_(txt_end_of_groups));
 
-	draw_group_arrow ();
+	draw_group_arrow();
 }
 
 
 void
-draw_group_arrow (
+draw_group_arrow(
 	void)
 {
 	if (!selmenu.max)
-		info_message (_(txt_no_groups));
+		info_message(_(txt_no_groups));
 	else {
-		draw_arrow_mark (INDEX_TOP + selmenu.curr - selmenu.first);
+		draw_arrow_mark(INDEX_TOP + selmenu.curr - selmenu.first);
 		if (CURR_GROUP.aliasedto)
-			info_message (_(txt_group_aliased), CURR_GROUP.aliasedto);
+			info_message(_(txt_group_aliased), CURR_GROUP.aliasedto);
 		else if (tinrc.info_in_last_line)
-			info_message ("%s", CURR_GROUP.description ? CURR_GROUP.description : _(txt_no_description));
+			info_message("%s", CURR_GROUP.description ? CURR_GROUP.description : _(txt_no_description));
 	}
 }
 
 
 static void
-sync_active_file (
+sync_active_file(
 	void)
 {
 	force_reread_active_file = TRUE;
-	resync_active_file ();
+	resync_active_file();
 }
 
+
 static void
-yank_active_file (
+yank_active_file(
 	void)
 {
 	if (yanked_out) {										/* Yank in */
 		if (selmenu.max == num_active)						/* All groups currently present ? */
-			info_message (_(txt_yanked_none));
+			info_message(_(txt_yanked_none));
 		else {
 			int i;
 			int prevmax = selmenu.max;
 
-			save_restore_curr_group (TRUE);					/* Save group position */
+			save_restore_curr_group(TRUE);					/* Save group position */
 
 			/*
 			 * Reset counter and load all the groups in active[] into my_group[]
@@ -643,16 +645,16 @@ yank_active_file (
 			for_each_group(i)
 				my_group[selmenu.max++] = i;
 
-			selmenu.curr = save_restore_curr_group (FALSE);	/* Restore previous group position */
-			set_groupname_len (yanked_out);
-			show_selection_page ();
-			info_message (_(txt_yanked_groups), selmenu.max-prevmax, PLURAL(selmenu.max-prevmax, txt_group));
+			selmenu.curr = save_restore_curr_group(FALSE);	/* Restore previous group position */
+			set_groupname_len(yanked_out);
+			show_selection_page();
+			info_message(_(txt_yanked_groups), selmenu.max-prevmax, PLURAL(selmenu.max-prevmax, txt_group));
 		}
 	} else {												/* Yank out */
 		toggle_my_groups(NULL);
-		HpGlitch(erase_arrow ());
-		set_groupname_len (yanked_out);
-		show_selection_page ();
+		HpGlitch(erase_arrow());
+		set_groupname_len(yanked_out);
+		show_selection_page();
 		info_message(_(txt_yanked_sub_groups));
 	}
 
@@ -664,7 +666,7 @@ yank_active_file (
  * Sort active[] and associated qsort() helper function
  */
 static int
-active_comp (
+active_comp(
 	t_comptype p1,
 	t_comptype p2)
 {
@@ -704,8 +706,8 @@ save_restore_curr_group(
 	ret = -1;
 
 	if (oldmax) {
-		ret = my_group_find (oldgroup);
-		FreeAndNull (oldgroup);
+		ret = my_group_find(oldgroup);
+		FreeAndNull(oldgroup);
 	}
 
 	if (ret == -1) {		/* Group not present, return something semi-useful */
@@ -719,29 +721,29 @@ save_restore_curr_group(
 
 
 static void
-sort_active_file (
+sort_active_file(
 	void)
 {
-	save_restore_curr_group (TRUE);
+	save_restore_curr_group(TRUE);
 
-	qsort (active, (size_t)num_active, sizeof(struct t_group), active_comp);
+	qsort(active, (size_t) num_active, sizeof(struct t_group), active_comp);
 	group_rehash(yanked_out);
 
-	selmenu.curr = save_restore_curr_group (FALSE);
+	selmenu.curr = save_restore_curr_group(FALSE);
 
-	show_selection_page ();
+	show_selection_page();
 }
 
 
 int
-choose_new_group (
+choose_new_group(
 	void)
 {
 	int idx;
 
-	sprintf (mesg, _(txt_newsgroup), tinrc.default_goto_group);
+	sprintf(mesg, _(txt_newsgroup), tinrc.default_goto_group);
 
-	if (!(prompt_string_default (mesg, tinrc.default_goto_group, "", HIST_GOTO_GROUP)))
+	if (!(prompt_string_default(mesg, tinrc.default_goto_group, "", HIST_GOTO_GROUP)))
 		return -1;
 
 	str_trim(tinrc.default_goto_group);
@@ -749,10 +751,10 @@ choose_new_group (
 	if (tinrc.default_goto_group[0] == '\0')
 		return -1;
 
-	clear_message ();
+	clear_message();
 
-	if ((idx = my_group_add (tinrc.default_goto_group)) == -1)
-		info_message (_(txt_not_in_active_file), tinrc.default_goto_group);
+	if ((idx = my_group_add(tinrc.default_goto_group)) == -1)
+		info_message(_(txt_not_in_active_file), tinrc.default_goto_group);
 
 	return idx;
 }
@@ -763,7 +765,7 @@ choose_new_group (
  * found
  */
 int
-skip_newgroups (
+skip_newgroups(
 	void)
 {
 	int i = 0;
@@ -786,13 +788,13 @@ skip_newgroups (
  * NOTE: can't be static due to my_group_add() marco
  */
 int
-add_my_group (
+add_my_group(
 	const char *group,
 	t_bool add)
 {
 	int i, j;
 
-	if ((i = find_group_index (group)) < 0)
+	if ((i = find_group_index(group)) < 0)
 		return -1;
 
 	for (j = 0; j < selmenu.max; j++) {
@@ -810,7 +812,7 @@ add_my_group (
 
 
 static int
-reposition_group (
+reposition_group(
 	struct t_group *group,
 	int default_num)
 {
@@ -820,14 +822,14 @@ reposition_group (
 
 	/* Have already trapped no_write at this point */
 
-	sprintf (buf, _(txt_newsgroup_position), group->name,
+	sprintf(buf, _(txt_newsgroup_position), group->name,
 		(tinrc.default_move_group ? tinrc.default_move_group : default_num + 1));
 
-	if (!prompt_string (buf, pos, HIST_MOVE_GROUP))
+	if (!prompt_string(buf, pos, HIST_MOVE_GROUP))
 		return default_num;
 
-	if (strlen (pos))
-		pos_num = ((pos[0] == '$') ? selmenu.max: atoi (pos));
+	if (strlen(pos))
+		pos_num = ((pos[0] == '$') ? selmenu.max: atoi(pos));
 	else {
 		if (tinrc.default_move_group)
 			pos_num = tinrc.default_move_group;
@@ -850,7 +852,7 @@ reposition_group (
 		return default_num;
 	}
 
-	wait_message (0, _(txt_moving), group->name);
+	wait_message(0, _(txt_moving), group->name);
 
 	/*
 	 * seems to have the side effect of rearranging
@@ -862,8 +864,8 @@ reposition_group (
 	 * New newgroups aren't in .newsrc so we need to offset to
 	 * get the right position
 	 */
-	if (pos_group_in_newsrc (group, pos_num - newgroups)) {
-		read_newsrc (newsrc, TRUE);
+	if (pos_group_in_newsrc(group, pos_num - newgroups)) {
+		read_newsrc(newsrc, TRUE);
 		tinrc.default_move_group = pos_num;
 		return (pos_num - 1);
 	} else {
@@ -874,16 +876,16 @@ reposition_group (
 
 
 static void
-catchup_group (
+catchup_group(
 	struct t_group *group,
 	t_bool goto_next_unread_group)
 {
-	if ((!TINRC_CONFIRM_ACTION) || prompt_yn (cLINES, sized_message(_(txt_mark_group_read), group->name), TRUE) == 1) {
-		grp_mark_read (group, NULL);
-		mark_screen (SELECT_LEVEL, selmenu.curr - selmenu.first, 9, "     ");
+	if ((!TINRC_CONFIRM_ACTION) || prompt_yn(cLINES, sized_message(_(txt_mark_group_read), group->name), TRUE) == 1) {
+		grp_mark_read(group, NULL);
+		mark_screen(SELECT_LEVEL, selmenu.curr - selmenu.first, 9, "     ");
 
 		if (goto_next_unread_group)
-			pos_next_unread_group (TRUE);
+			pos_next_unread_group(TRUE);
 		else
 			move_down();
 	}
@@ -898,7 +900,7 @@ catchup_group (
  *        TRUE  at all other times
  */
 static t_bool
-pos_next_unread_group (
+pos_next_unread_group(
 	t_bool redraw)
 {
 	int i;
@@ -908,7 +910,7 @@ pos_next_unread_group (
 		return FALSE;
 
 	for (i = selmenu.curr; i < selmenu.max; i++) {
-		if (UNREAD_GROUP (i)) {
+		if (UNREAD_GROUP(i)) {
 			all_groups_read = FALSE;
 			break;
 		}
@@ -916,7 +918,7 @@ pos_next_unread_group (
 
 	if (all_groups_read) {
 		for (i = 0; i < selmenu.curr; i++) {
-			if (UNREAD_GROUP (i)) {
+			if (UNREAD_GROUP(i)) {
 				all_groups_read = FALSE;
 				break;
 			}
@@ -924,12 +926,12 @@ pos_next_unread_group (
 	}
 
 	if (all_groups_read) {
-		info_message (_(txt_no_groups_to_read));
+		info_message(_(txt_no_groups_to_read));
 		return FALSE;
 	}
 
 	if (redraw)
-		move_to_item (i);
+		move_to_item(i);
 	else
 		selmenu.curr = i;
 
@@ -942,15 +944,15 @@ pos_next_unread_group (
  * We keep going until we return to the selection screen or exit tin
  */
 static void
-read_groups (
+read_groups(
 	void)
 {
 	t_bool done = FALSE;
 
-	clear_message ();
+	clear_message();
 
 	while (!done) {		/* if xmin > xmax the newsservers active is broken */
-		switch (group_page (&CURR_GROUP)) {
+		switch (group_page(&CURR_GROUP)) {
 			case GRP_QUIT:
 				select_quit();
 				break;
@@ -962,7 +964,7 @@ read_groups (
 				break;
 
 			case GRP_NEXTUNREAD:
-				if (!pos_next_unread_group (FALSE))
+				if (!pos_next_unread_group(FALSE))
 					done = TRUE;
 				break;
 
@@ -977,8 +979,8 @@ read_groups (
 		}
 	}
 
-	if (!need_reread_active_file ())
-		show_selection_page ();
+	if (!need_reread_active_file())
+		show_selection_page();
 
 	return;
 }
@@ -990,7 +992,7 @@ read_groups (
  * just subscribed to groups.
  */
 void
-set_groupname_len (
+set_groupname_len(
 	t_bool all_groups)
 {
 	int len;
@@ -1000,12 +1002,12 @@ set_groupname_len (
 
 	if (all_groups) {
 		for_each_group(i) {
-			if ((len = strlen (active[i].name)) > groupname_len)
+			if ((len = strlen(active[i].name)) > groupname_len)
 				groupname_len = len;
 		}
 	} else {
 		for (i = 0; i < selmenu.max; i++) {
-			if ((len = strlen (active[my_group[i]].name)) > groupname_len)
+			if ((len = strlen(active[my_group[i]].name)) > groupname_len)
 				groupname_len = len;
 		}
 	}
@@ -1031,7 +1033,7 @@ set_groupname_len (
  * and Bogus groups if tinrc.strip_bogus = BOGUS_SHOW
  */
 void
-toggle_my_groups (
+toggle_my_groups(
 	const char *group)
 {
 #if 1
@@ -1048,7 +1050,7 @@ toggle_my_groups (
 		int old_curr_group_idx = 0;
 
 		if (group != NULL) {
-			if ((i = my_group_find (group)) >= 0)
+			if ((i = my_group_find(group)) >= 0)
 				old_curr_group_idx = i;
 		} else
 			old_curr_group_idx = (selmenu.curr == -1) ? 0 : selmenu.curr;
@@ -1081,24 +1083,24 @@ toggle_my_groups (
 		}
 	}
 #else
-	if ((fp = fopen (newsrc, "r")) == NULL)
+	if ((fp = fopen(newsrc, "r")) == NULL)
 		return;
 
-	while (fgets (buf, (int) sizeof(buf), fp) != NULL) {
-		if ((ptr = strchr (buf, SUBSCRIBED)) != NULL) {
+	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
+		if ((ptr = strchr(buf, SUBSCRIBED)) != NULL) {
 			*ptr = '\0';
 
-			if ((i = find_group_index (buf)) < 0)
+			if ((i = find_group_index(buf)) < 0)
 				continue;
 
 			if (tinrc.show_only_unread_groups) {
 				if (active[i].newsrc.num_unread || (active[i].bogus && tinrc.strip_bogus == BOGUS_SHOW))
-					my_group_add (buf);
+					my_group_add(buf);
 			} else
-				my_group_add (buf);
+				my_group_add(buf);
 		}
 	}
-	fclose (fp);
+	fclose(fp);
 #endif /* 1 */
 	selmenu.curr = save_restore_curr_group(FALSE);			/* Restore saved group position */
 }
@@ -1109,7 +1111,7 @@ toggle_my_groups (
  * by match_group_list()
  */
 static void
-subscribe_pattern (
+subscribe_pattern(
 	const char *prompt,
 	const char *message,
 	const char *result,
@@ -1121,21 +1123,21 @@ subscribe_pattern (
 	if (!num_active || no_write)
 		return;
 
-	if (!prompt_string (prompt, buf, HIST_OTHER) || !*buf) {
-		clear_message ();
+	if (!prompt_string(prompt, buf, HIST_OTHER) || !*buf) {
+		clear_message();
 		return;
 	}
 
-	wait_message (0, message);
+	wait_message(0, message);
 
 	/*
 	 * TODO why do we do a pass over my_group[] before another one over active[] ?
 	 */
 	for (subscribe_num = 0, i = 0; i < selmenu.max; i++) {
-		if (match_group_list (active[my_group[i]].name, buf)) {
+		if (match_group_list(active[my_group[i]].name, buf)) {
 			if (active[my_group[i]].subscribed != (state != FALSE)) {
-				spin_cursor ();
-				subscribe (&active[my_group[i]], SUB_CHAR(state));
+				spin_cursor();
+				subscribe(&active[my_group[i]], SUB_CHAR(state));
 				subscribe_num++;
 			}
 		}
@@ -1143,15 +1145,15 @@ subscribe_pattern (
 
 	if (num_active > selmenu.max) {			/* ie, there are groups yanked out */
 		for_each_group(i) {
-			if (match_group_list (active[i].name, buf)) {
+			if (match_group_list(active[i].name, buf)) {
 				if (active[i].subscribed != (state != FALSE)) {
-					spin_cursor ();
+					spin_cursor();
 					/* If found and group is not subscribed add it to end of my_group[]. */
-					subscribe (&active[i], SUB_CHAR(state));
+					subscribe(&active[i], SUB_CHAR(state));
 					if (state) {
-						my_group_add (active[i].name);
+						my_group_add(active[i].name);
 /* TODO grp_mark_unread() or something needs to do a GrpGetArtInfo to get initial count right */
-						grp_mark_unread (&active[i]);
+						grp_mark_unread(&active[i]);
 					}
 					subscribe_num++;
 				}
@@ -1160,12 +1162,12 @@ subscribe_pattern (
 	}
 
 	if (subscribe_num) {
-		toggle_my_groups (NULL);
-		set_groupname_len (FALSE);
-		show_selection_page ();
-		info_message (result, subscribe_num);
+		toggle_my_groups(NULL);
+		set_groupname_len(FALSE);
+		show_selection_page();
+		info_message(result, subscribe_num);
 	} else
-		info_message (_(txt_no_match));
+		info_message(_(txt_no_match));
 }
 
 
@@ -1173,48 +1175,48 @@ subscribe_pattern (
  * Does NOT return
  */
 static void
-select_quit (
+select_quit(
 	void)
 {
-	write_config_file (local_config_file);
-	tin_done (EXIT_SUCCESS);	/* Tin END */
+	write_config_file(local_config_file);
+	tin_done(EXIT_SUCCESS);	/* Tin END */
 }
 
 
 static void
-select_done (
+select_done(
 	void)
 {
-	if ( (!TINRC_CONFIRM_TO_QUIT) || prompt_yn (cLINES, _(txt_quit), TRUE) == 1)
+	if ( (!TINRC_CONFIRM_TO_QUIT) || prompt_yn(cLINES, _(txt_quit), TRUE) == 1)
 		select_quit();
-	if (!no_write && prompt_yn (cLINES, _(txt_save_config), TRUE) == 1) {
-		write_config_file (local_config_file);
-		write_newsrc ();
+	if (!no_write && prompt_yn(cLINES, _(txt_save_config), TRUE) == 1) {
+		write_config_file(local_config_file);
+		write_newsrc();
 	}
-	show_selection_page ();
+	show_selection_page();
 }
 
 
 static void
-select_read_group (
+select_read_group(
 	void)
 {
 	struct t_group currgrp;
 
 	if (!selmenu.max || selmenu.curr == -1) {
-		info_message (_(txt_no_groups));
+		info_message(_(txt_no_groups));
 		return;
 	}
 
 	currgrp = CURR_GROUP;
 
 	if (currgrp.bogus) {
-		info_message (_(txt_not_exist));
+		info_message(_(txt_not_exist));
 		return;
 	}
 
 	if (currgrp.xmax > 0 && (currgrp.xmin <= currgrp.xmax))
 		read_groups();
 	else
-		info_message (_(txt_no_arts));
+		info_message(_(txt_no_arts));
 }

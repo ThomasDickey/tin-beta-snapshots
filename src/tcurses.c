@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@herndon4.his.com>
  *  Created   : 1997-03-02
- *  Updated   : 2001-07-22
+ *  Updated   : 2002-07-20
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -88,7 +88,7 @@ vwprintw(
  * Most of the logic corresponding to the termcap version is done in InitScreen.
  */
 void
-setup_screen (
+setup_screen(
 	void)
 {
 	cmd_line = FALSE;
@@ -96,14 +96,14 @@ setup_screen (
 	bcol(tinrc.col_back);
 #	endif /* HAVE_COLOR */
 	scrollok(stdscr, TRUE);
-	set_win_size (&cLINES, &cCOLS);
+	set_win_size(&cLINES, &cCOLS);
 }
 
 
 /*
  */
 int
-InitScreen (
+InitScreen(
 	void)
 {
 #	ifdef NCURSES_VERSION
@@ -143,7 +143,7 @@ InitScreen (
 	postinit_colors();
 #	endif /* HAVE_COLOR */
 	set_xclick_on();
-	return (TRUE);
+	return TRUE;
 }
 
 
@@ -166,7 +166,7 @@ void
 EndWin(
 	void)
 {
-	TRACE(("EndWin (%d)", cmd_line));
+	TRACE(("EndWin(%d)", cmd_line));
 	if (!cmd_line) {
 		Raw(FALSE);
 		endwin();
@@ -274,7 +274,7 @@ EndInverse(
 /*
  */
 void
-cursoron (
+cursoron(
 	void)
 {
 	if (!cmd_line)
@@ -285,7 +285,7 @@ cursoron (
 /*
  */
 void
-cursoroff (
+cursoroff(
 	void)
 {
 	if (!cmd_line)
@@ -296,7 +296,7 @@ cursoroff (
 /*
  */
 void
-set_keypad_on (
+set_keypad_on(
 	void)
 {
 	if (!cmd_line)
@@ -307,7 +307,7 @@ set_keypad_on (
 /*
  */
 void
-set_keypad_off (
+set_keypad_off(
 	void)
 {
 	if (!cmd_line)
@@ -320,14 +320,14 @@ set_keypad_off (
  * as well as when we enable/disable the mousemask.
  */
 void
-set_xclick_on (
+set_xclick_on(
 	void)
 {
 #	ifdef NCURSES_MOUSE_VERSION
 	if (tinrc.use_mouse)
 		mousemask(
 			(BUTTON1_CLICKED|BUTTON2_CLICKED|BUTTON3_CLICKED),
-			(mmask_t *)0);
+			(mmask_t *) 0);
 #	endif /* NCURSES_MOUSE_VERSION */
 }
 
@@ -335,11 +335,11 @@ set_xclick_on (
 /*
  */
 void
-set_xclick_off (
+set_xclick_off(
 	void)
 {
 #	ifdef NCURSES_MOUSE_VERSION
-	(void) mousemask(0, (mmask_t *)0);
+	(void) mousemask(0, (mmask_t *) 0);
 #	endif /* NCURSES_MOUSE_VERSION */
 }
 
@@ -359,21 +359,69 @@ MoveCursor(
  * Inverse 'size' chars at (row,col)
  */
 void
-highlight_string (
+highlight_string(
 	int row,
 	int col,
 	int size)
 {
 	char tmp[LEN];
 
-	MoveCursor (row, col);
-	innstr (tmp, size);
-	StartInverse ();
-	my_fputs (tmp, stdout);
-	my_flush ();
-	EndInverse ();
+	MoveCursor(row, col);
+	innstr(tmp, size);
+	StartInverse();
+	my_fputs(tmp, stdout);
+	my_flush();
+	EndInverse();
 	stow_cursor();
 }
+
+
+#ifdef HAVE_COLOR
+/*
+ * Color 'size' chars at (row,col) with 'color' and handle marks
+ */
+void
+word_highlight_string(
+	int row,
+	int col,
+	int size,
+	int color)
+{
+	char tmp[LEN];
+
+	MoveCursor(row, col);
+	innstr(tmp, size);
+
+	/* safegurad against bogus regexps */
+	if ((tmp[0] == '*' && tmp[size - 1] == '*') ||
+		 (tmp[0] == '/' && tmp[size - 1] == '/') ||
+		 (tmp[0] == '_' && tmp[size - 1] == '_') ||
+		 (tmp[0] == '-' && tmp[size - 1] == '-')) {
+
+		switch (tinrc.word_h_display_marks) {
+			case 0:
+				delch();
+				mvdelch(row, col + size - 2);
+				MoveCursor(row, col);
+				tmp[0] = tmp[size - 1] = ' ';
+				str_trim(tmp);
+				break;
+
+			case 2: /* print space */
+				tmp[0] = tmp[size - 1] = ' ';
+				break;
+
+			default: /* print mark (case 1) */
+				break;
+		}
+	}
+	fcol(color);
+	my_fputs(tmp, stdout);
+	my_flush();
+	fcol(tinrc.col_text);
+	stow_cursor();
+}
+#endif /* HAVE_COLOR */
 
 
 int
@@ -388,11 +436,11 @@ ReadCh(
 #	if 0
 again:
 #	endif /* 0 */
-		allow_resize (TRUE);
+		allow_resize(TRUE);
 		ch = getch();
-		allow_resize (FALSE);
+		allow_resize(FALSE);
 		if (need_resize) {
-			handle_resize ((need_resize == cRedraw) ? TRUE : FALSE);
+			handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
 #	if 0
 			if (need_resize == cRedraw) {
 				need_resize = cNo;
@@ -429,7 +477,7 @@ my_printf(
 		if (flag)
 			Raw(TRUE);
 	} else {
-		vwprintw(stdscr, (char *)fmt, ap);
+		vwprintw(stdscr, (char *) fmt, ap);
 	}
 	va_end(ap);
 }
@@ -453,7 +501,7 @@ my_fprintf(
 		if (flag)
 			Raw(TRUE);
 	} else {
-		vwprintw(stdscr, (char *)fmt, ap);
+		vwprintw(stdscr, (char *) fmt, ap);
 	}
 	va_end(ap);
 }
@@ -467,10 +515,10 @@ my_fputc(
 	TRACE(("my_fputc(%s)", tin_tracechar(ch)));
 	if (cmd_line) {
 		if (_inraw && ch == '\n')
-			fputc ('\r', fp);
-		fputc (ch, fp);
+			fputc('\r', fp);
+		fputc(ch, fp);
 	} else {
-		addch ((unsigned char) ch);
+		addch((unsigned char) ch);
 	}
 }
 
@@ -486,9 +534,9 @@ my_fputs(
 			while (*str)
 				my_fputc(*str++, fp);
 		} else
-			fputs (str, fp);
+			fputs(str, fp);
 	} else {
-		addstr((char *)str);
+		addstr((char *) str);
 	}
 }
 
@@ -577,7 +625,7 @@ write_line(
 
 
 int
-get_arrow_key (
+get_arrow_key(
 	int prech) /* unused */
 {
 #	ifdef NCURSES_MOUSE_VERSION

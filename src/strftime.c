@@ -8,9 +8,9 @@
  *              routine for System V Unix systems.
  *              If target system already has strftime() call the #define
  *              HAVE_STRFTIME can be set to use it.
- *  Example   : time (&secs);
- *              tm = localtime (&secs);
- *              num = strftime (buf, sizeof (buf), "%a %d-%m-%y %H:%M:%S", tm);
+ *  Example   : time(&secs);
+ *              tm = localtime(&secs);
+ *              num = strftime(buf, sizeof(buf), "%a %d-%m-%y %H:%M:%S", tm);
  *
  * Copyright (c) 1991-2002 Arnold Robbins <arnold@skeeve.com>
  * All rights reserved.
@@ -49,21 +49,23 @@
 extern int daylight;
 #endif /* SYSV */
 
-#define SYSV_EXT	1	/* stuff in System V ascftime routine */
+#ifndef HAVE_STRFTIME
+#	define SYSV_EXT	1	/* stuff in System V ascftime routine */
+#endif /* !HAVE_STRFTIME */
 
 /*
  * strftime --- produce formatted time
  */
 
 size_t
-my_strftime (
+my_strftime(
 	char *s,
 	size_t maxsize,
 	const char *format,
 	struct tm *timeptr)
 {
 #ifdef HAVE_STRFTIME
-	return strftime (s, maxsize, format, timeptr);
+	return strftime(s, maxsize, format, timeptr);
 #else
 	char *endp = s + maxsize;
 	char *start = s;
@@ -99,10 +101,10 @@ my_strftime (
 		return 0;
 
 #ifdef HAVE_TZSET
-	tzset ();
+	tzset();
 #else
 #	ifdef HAVE_SETTZ
-	settz ();
+	settz();
 #	endif /* HAVE_SETTZ */
 #endif /* HAVE_TZSET */
 
@@ -254,13 +256,13 @@ my_strftime (
 			tbuf[2] = '\0';
 			break;
 		}
-		i = strlen(tbuf);
-		if (i)
+		if ((i = strlen(tbuf))) {
 			if (s + i < endp - 1) {
 				strcpy(s, tbuf);
 				s += i;
 			} else
 				return 0;
+		}
 	}
 out:
 	if (s < endp && *format == '\0') {

@@ -66,14 +66,14 @@ static int current_bcol = 0;
 /*
  * local prototypes
  */
-static t_bool check_valid_mark (const char *s);
-static void color_fputs (const char *s, FILE *stream, int color, t_bool signature);
-static void put_mark_char (int c, FILE *stream, t_bool signature);
+#	ifdef USE_CURSES
+	static void set_colors(int fcolor, int bcolor);
+#	endif /* USE_CURSES */
 
 
 #	ifdef USE_CURSES
 static void
-set_colors (
+set_colors(
 	int fcolor,
 	int bcolor)
 {
@@ -98,7 +98,7 @@ set_colors (
 		chtype attribute = A_NORMAL;
 		int pair = 0;
 
-		TRACE(("set_colors (%d, %d)", fcolor, bcolor));
+		TRACE(("set_colors(%d, %d)", fcolor, bcolor));
 
 		/* fcolor/bcolor may be negative, if we're using ncurses
 		 * function use_default_colors().
@@ -139,17 +139,19 @@ set_colors (
 	}
 }
 
+
 void
-refresh_color (
+refresh_color(
 	void)
 {
 	set_colors(current_fcol, current_bcol);
 }
 #	endif /* USE_CURSES */
 
+
 /* setting foreground-color */
 void
-fcol (
+fcol(
 	int color)
 {
 	TRACE(("fcol(%d) %s", color, txt_colors[color-MIN_COLOR]));
@@ -175,9 +177,10 @@ fcol (
 #	endif /* USE_CURSES */
 }
 
+
 /* setting background-color */
 void
-bcol (
+bcol(
 	int color)
 {
 	TRACE(("bcol(%d) %s", color, txt_colors[color-MIN_COLOR]));
@@ -198,85 +201,6 @@ bcol (
 		set_colors(default_fcol, default_bcol);
 #	endif /* USE_CURSES */
 }
-
-
-/*
- * Lookahead to find matching closing highlight character
- */
-static t_bool
-check_valid_mark (
-	const char *s)
-{
-	const char *p;
-	int c = *s;
-
-	if (s[1] == '\0' || s[1] == c || !isgraph ((unsigned char)s[1]))
-		return FALSE;
-	p = strpbrk(s + 2, "*_");
-
-	return (p != NULL && *p == c &&
-			((isalnum ((unsigned char)p[-1]) && !isalnum ((unsigned char)p[1])) ||
-			 (ispunct ((unsigned char)p[-1]) && !isgraph ((unsigned char)p[1])))
-			);
-}
-
-
-static void
-put_mark_char (
-	int c,
-	FILE *stream,
-	t_bool signature)
-{
-	switch (tinrc.word_h_display_marks) {
-		case 1: /* print mark */
-			my_fputc(c, stream);
-			break;
-		case 2: /* print space */
-			my_fputc(' ', stream);
-			break;
-		case 3: /* print space, but only in signatures */
-			if (signature)
-				my_fputc(' ', stream);
-			break;
-		default: /* print nothing */
-			break;
-	}
-}
-
-
-/*
- * Like fputs(), but highlights words denoted by * and _ in colour
- */
-static void
-color_fputs (
-	const char *s,
-	FILE *stream,
-	int color,
-	t_bool signature)
-{
-	const char *p;
-	t_bool hilite = FALSE;
-
-	for (p = s; *p; p++) {
-		if (*p == '*' || *p == '_') {
-			if (!hilite) {
-				if ((p == s || !isgraph((unsigned char)p[-1]))
-						&& check_valid_mark(p)) {
-					hilite = TRUE;
-					fcol(*p == '*' ? tinrc.col_markstar : tinrc.col_markdash);
-					put_mark_char(*p, stream, signature);
-				} else /* print normal character */
-					my_fputc(*p, stream);
-			} else {
-				hilite = FALSE;
-				put_mark_char(*p, stream, signature);
-				fcol(color);
-			}
-		} else {
-			my_fputc(*p, stream);
-		}
-	}
-}
 #endif /* HAVE_COLOR */
 
 
@@ -285,40 +209,31 @@ color_fputs (
  * word highlights, signatures etc will be highlighted
  */
 void
-draw_pager_line (
+draw_pager_line(
 	const char *str,
 	int flags)
 {
 #ifdef HAVE_COLOR
-	int color = tinrc.col_text;
 
 	if (use_color) {
 		if (flags & C_SIG) {
-			fcol (tinrc.col_signature);
-			color = tinrc.col_signature;
+			fcol(tinrc.col_signature);
 		} else if (flags & (C_HEADER | C_ATTACH | C_UUE)) {
-			color = tinrc.col_newsheaders;
-			fcol (tinrc.col_newsheaders);
+			fcol(tinrc.col_newsheaders);
 		} else {
 			if (flags & C_QUOTE3) {
-				fcol (tinrc.col_quote3);
-				color = tinrc.col_quote3;
+				fcol(tinrc.col_quote3);
 			} else if (flags & C_QUOTE2) {
-				fcol (tinrc.col_quote2);
-				color = tinrc.col_quote2;
+				fcol(tinrc.col_quote2);
 			} else if (flags & C_QUOTE1) {
-				fcol (tinrc.col_quote);
-				color = tinrc.col_quote;
+				fcol(tinrc.col_quote);
 			} else
-				fcol (tinrc.col_text);
+				fcol(tinrc.col_text);
 		}
 	}
 
-	if (word_highlight && use_color)
-		color_fputs(str, stdout, color, (flags & C_SIG));
-	else
 #endif /* HAVE_COLOR */
-		my_fputs(str, stdout);
+	my_fputs(str, stdout);
 
 #ifndef USE_CURSES
 	my_fputs(cCRLF, stdout);

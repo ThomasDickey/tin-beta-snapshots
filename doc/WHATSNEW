@@ -84,3 +84,6 @@ Retired Features
 
 . full_page_scroll and show_last_line_prev_page have been superceded by
   scroll_lines
+
+. word_h_display_marks=3 as there is no word highligthing in signatures
+  anymore

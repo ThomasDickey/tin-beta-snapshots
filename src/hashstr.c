@@ -61,10 +61,10 @@
 	static struct t_hashnode *table[HASHNODE_TABLE_SIZE];
 #endif /* M_AMIGA */
 
-static struct t_hashnode *add_string (const char *s);
+static struct t_hashnode *add_string(const char *s);
 
 char *
-hash_str (
+hash_str(
 	const char *s)
 {
 	const unsigned char *t = (const unsigned char *) s;
@@ -92,7 +92,7 @@ hash_str (
 		p = &(*p)->next;
 	}
 
-	*p = add_string (s);
+	*p = add_string(s);
 	return (*p)->txt;			/* Return ptr to text, _not_ the struct */
 }
 
@@ -110,31 +110,31 @@ hash_str (
  * \0							String terminator
  */
 static struct t_hashnode *
-add_string (
+add_string(
 	const char *s)
 {
 	struct t_hashnode *p;
 
-	p = my_malloc (sizeof (struct t_hashnode) + strlen(s));
+	p = my_malloc(sizeof(struct t_hashnode) + strlen(s));
 
 	p->next = (struct t_hashnode *) 0;
 	p->aptr = -1;					/* -1 is the default value */
 
-	strcpy (p->txt, s);			/* Copy in the text */
+	strcpy(p->txt, s);			/* Copy in the text */
 
 	return p;
 }
 
 
 void
-hash_init (
+hash_init(
 	void)
 {
 	int i;
 
 #ifdef M_AMIGA
 	if (!table)
-		table = my_malloc (HASHNODE_TABLE_SIZE * sizeof (void *));
+		table = my_malloc(HASHNODE_TABLE_SIZE * sizeof(void *));
 #endif /* M_AMIGA */
 
 	for (i = 0; i < HASHNODE_TABLE_SIZE; i++)
@@ -143,7 +143,7 @@ hash_init (
 
 
 void
-hash_reclaim (
+hash_reclaim(
 	void)
 {
 	int i;
@@ -159,7 +159,7 @@ hash_reclaim (
 			p = table[i];
 			while (p != NULL) {
 				next = p->next;
-				free (p);
+				free(p);
 				p = next;
 			}
 			table[i] = (struct t_hashnode *) 0;

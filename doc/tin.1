@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2002-05-15
+.\" Updated   : 2002-09-18
 .\" Notes     : still needs some work, i.e.:
 .\"             - document authorization (.newsauth)
 .\"             - postprocess differences when linked against libuu
 .\"
 .\"
-.TH tin 1 "May 15th, 2002" "1.5.13" "A Usenet newsreader"
+.TH tin 1 "September 18th, 2002" "1.5.14" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -78,7 +78,8 @@ is a full-screen easy to use Usenet newsreader. It can read news locally
 option) via a NNTP (Network News Transport Protocol) server. It will
 automatically utilize NOV
 .BR newsoverview (5)
-style index files if available locally or via the NNTP [X]OVER command.
+style index files if available locally or via the NNTP [X]OVER command
+(\fBRFC2980\fB).
 .PP
 .B tin
 has four separate levels of operation: Group selection level, Group level,
@@ -168,7 +169,7 @@ Get number of articles per group from the
 result in incorrect article counts but is usually faster than the default
 which is to read the
 \fI${TIN_LIBDIR-NEWSLIBDIR}"/"${TIN_ACTIVEFILE-active}\fR file and then
-check the article count via NNTP GROUP command ''\fB-ln\fP''.
+check the article count via NNTP GROUP command (\fBRFC977\fB) ''\fB-ln\fP''.
 .TP
 .BI -m " dir"
 Mailbox directory to use. Default is \fI${TIN_HOMEDIR-"$HOME"}/Mail\fR.
@@ -1392,8 +1393,14 @@ Color of foreground for inverse text
 .B col_markdash
 Color of words emphasised like _this_. See also \fBword_h_display_marks\fP
 .TP
+.B col_markslash
+Color of words emphasised like /this/. See also \fBword_h_display_marks\fP
+.TP
 .B col_markstar
 Color of words emphasised like *this*. See also \fBword_h_display_marks\fP
+.TP
+.B col_markstroke
+Color of words emphasised like -this-. See also \fBword_h_display_marks\fP
 .TP
 .B col_minihelp
 Color of mini help menu
@@ -1665,12 +1672,12 @@ EUC-KR (Korean).
 .TP
 .B Quote line when mailing (mail_quote_format)
 Format of quote line when replying (via mail) to an article (%A=Address,
-%D=Date, %F=Fullname+Address, %G=Groupname, %M=Message-Id, %N=Fullname,
+%D=Date, %F=Fullname+Address, %G=Groupname, %M=Message-ID, %N=Fullname,
 %C=Firstname, %I=Initials). Default is "In article %M you wrote:"
 .TP
 .B Format of the mailbox (mailbox_format)
-Select one of the following mailbox-formats: MBOXO (default), MBOXRD or
-MMDF. See
+Select one of the following mailbox-formats: MBOXO (default, except for
+SCO), MBOXRD or MMDF (default on SCO). See
 .BR mbox (5)
 for more details on MBOXO and MBOXRD and
 .BR mmdf (5)
@@ -1737,7 +1744,7 @@ Not defining anything turns off this option.
 .TP
 .B Quote line when following up (news_quote_format)
 Format of quote line when posting/following up an article (%A=Address,
-%D=Date, %F=Fullname+Address, %G=Groupname, %M=Message-Id, %N=Fullname,
+%D=Date, %F=Fullname+Address, %G=Groupname, %M=Message-ID, %N=Fullname,
 %C=Firstname, %I=Initials). Default is "%F wrote:"
 .TP
 .B PgDn goes to next unread article at end of article (pgdn_goto_next)
@@ -1848,7 +1855,7 @@ Score of an article which should be marked hot, this must be >=
 .TP
 .B Number of lines to scroll in article pager (scroll_lines)
 The number of lines that will be scrolled up/down in the article pager when
-using cursor-up/down. The default is 1 (line-by-line). Set to to 0 to get
+using cursor-up/down. The default is 1 (line-by-line). Set to 0 to get
 traditional tin page-by-page scrolling. Set to -1 to get page-by-page
 scrolling where the top/bottom line is carried over onto the next page.
 This setting supercedes show_last_line_prev_page=ON. Set to -2 to get
@@ -1901,6 +1908,11 @@ If ON prepend the signature with sigdashes. Default is ON.
 .TP
 .B Add signature when reposting (signature_repost)
 If ON add signature to reposted articles. Default is ON.
+.TP
+.B Expression for highlighting /words/ (slashes_regex)
+A regular expression that will be applied when reading articles. All
+matching words are shown in \fBcol_markslash\fP. If \fBslashes_regex\fP is
+blank, then \fBtin\fP uses a built in default for this.
 .TP
 .B Sort articles by (sort_article_type)
 This specifies how articles should be sorted. Sort by ascending Date (6) is
@@ -1958,6 +1970,11 @@ article. If this option is turned ON the <SPACE> command will go to the next
 unread article when the end of the article is reached (rn-style pager).
 Default is OFF.
 .TP
+.B Expression for highlighting *words* (stars_regex)
+A regular expression that will be applied when reading articles. All
+matching words are shown in \fBcol_markstar\fP. If \fBstars_regex\fP is
+blank, then \fBtin\fP uses a built in default for this.
+.TP
 .B Start editor with line offset (start_editor_offset)
 Set ON if the editor used for posting, follow-ups and bug reports has the
 capability of starting and positioning the cursor at a specified line within
@@ -1981,6 +1998,11 @@ Keep).
 .B No unsubscribed groups in newsrc (strip_newsrc)
 If ON, then unsubscribed groups will be permanently removed from your
 \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR file. Default is OFF.
+.TP
+.B Expression for highlighting -words- (strokes_regex)
+A regular expression that will be applied when reading articles. All
+matching words are shown in \fBcol_markstroke\fP. If \fBstrokes_regex\fP is
+blank, then \fBtin\fP uses a built in default for this.
 .TP
 .B Do tab after X automatically (tab_after_X_selection)
 If enabled will automatically go to the first unread article after having
@@ -2041,6 +2063,11 @@ represented in the target character set, it can be approximated through one
 or several similarly looking characters. On systems where this extension
 doesn't exist, this option is disabled. Default is OFF.
 .TP
+.B Expression for highlighting _words_ (underscores_regex)
+A regular expression that will be applied when reading articles. All
+matching words are shown in \fBcol_markdash\fP. If \fBunderscores_regex\fP is
+blank, then \fBtin\fP uses a built in default for this.
+.TP
 .B Remove ~/.article after posting (unlink_article)
 If ON remove \fI~/.article\fR after posting. Default is ON.
 .TP
@@ -2082,16 +2109,21 @@ You will probably want to update your filter file if you use this regularly.
 NB: Newsgroup names will always be matched using the wildmat notation.
 .TP
 .B What to display instead of mark (word_h_display_marks)
-Should the leading and ending stars and dashes also be displayed, even when
-they are highlighting marks?
-0 - no
-1 - yes, display mark
-2 - print a space instead
-3 - print a space, but only in signatures
+Should the leading and ending stars, slashes, strokes and dashes also be
+displayed, even when they are highlighting marks (also requires
+\fBuse_color\fP to be enabled)?
+.RS +.5i
+.IP 0 3
+\fBno\fP
+.IP 1
+yes, \fBdisplay mark\fP
+.IP 2
+print a \fBspace\fP instead
+.RE
 .TP
 .B Word highlighting in message body (word_highlight)
 Enable word highlighting. See \fBword_h_display_marks\fP for the options
-available is this is enabled. Default is ON.
+available is this and \fBuse_color\fP is enabled. Default is ON.
 .TP
 .B Quote line when cross-posting (xpost_quote_format)
 Format is the same as for \fBnews_quote_format\fP, this is used when
@@ -2123,7 +2155,7 @@ you specify. This can be anything from the name of the author to the number
 of lines in an article.
 .PP
 When \fBtin\fP starts up the user's killfile
-\fI${TIN_HOMEDIR-"$HOME"}/.tin/filter\fR /see also
+\fI${TIN_HOMEDIR-"$HOME"}/.tin/filter\fR (see also
 .BR tin (5))
 is read. Each time a newsgroup is entered the rules are applied and articles
 killed or selected when they meet certain criteria.
@@ -2257,8 +2289,8 @@ All tagged articles can be untagged by the '\fBU\fP' untag command.
 If a regex pattern is selected you are asked to enter a pattern (i.e., to
 match all articles subject lines containing 'net News' you enter "net
 News"). Any articles that match the entered expression will be mailed, piped
-etc. See also the wildcard tinrc variable for advanced pattern matching
-options.
+etc. See also the \fBwildcard\fP tinrc variable for advanced pattern
+matching options.
 .PP
 Various expansion characters are recognised when entering the directory
 and file to save to. Environment variables (prefixed with '$') and user home
@@ -2279,8 +2311,8 @@ post processed (i.e.,
 .BR unshar (1)
 shell archive,
 .BR uudecode (1)
-multiple parts etc). A default process type can be set by the 'Process type:'
-in the '\fBM\fP' options menu.
+multiple parts etc). A default process type can be set
+via \fBpost_process_type\fP.
 .\"
 .\"
 .SS "AUTOMATIC MAILING AND SAVING NEW NEWS"
@@ -2305,8 +2337,8 @@ you don't want using attributes.
 .PP
 .TP 2i
 .B tin -M iain -c -f newsrc.mail
-(mail any unread articles in newsgroups specified in file newsrc.mail and
-mark them as read)
+(mail any unread articles in newsgroups specified in file newsrc.mail to the
+local user iain and mark them as read)
 .PP
 .TP 2i
 .B tin -S -c -f newsrc.save
@@ -2580,7 +2612,8 @@ For a detailed description see
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/active.save
 .PP
 
-.IR ${TIN_LIBDIR-"/news/etc"}/attributes
+.\" .IR ${TIN_LIBDIR-"/news/etc"}/attributes
+.IR /etc/tin/attributes
 .br
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/attributes
 .PP
@@ -2605,7 +2638,8 @@ For a detailed description see
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/postponed.articles
 .PP
 
-.IR ${TIN_LIBDIR-"/news/etc"}/tinrc
+.\" .IR ${TIN_LIBDIR-"/news/etc"}/tinrc
+.IR /etc/tin/tinrc
 .br
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/tinrc
 .PP
@@ -2633,8 +2667,27 @@ For a detailed description see
 .\"
 .\"
 .SH ENVIRONMENT
-.\" TODO: sort in a usefull order
-.TP
+.\" TODO: sort in a usefull order, add undocumented env-vars like:
+.\"
+.\" .TP
+.\" .B TIN_POST (VMS, AmigaOS)
+.\"
+.\" .TP
+.\" .B USER (VMS, AmigaOS)
+.\" The name of the logged-in user.
+.\"
+.\" .TP
+.\" .B USERNAME (AmigaOS)
+.\"
+.\" .TP
+.\" .B NoMetaMail (AmigaOS)
+.\"
+.\" .TP
+.\" .B NODENAME (AmigaOS, obsolete?)
+.\"
+.\" .TP
+.\" .B TIN_GROUPS (AmigaOS actived, obsolete)
+.\"
 .B TINRC
 Define this variable if you want to specify command line options that
 \fBtin\fP should be started with to save typing them each time it is
@@ -2695,7 +2748,7 @@ line option overrides $\fBNNTPSERVER\fP.
 .TP
 .B NNTPPORT
 The NNTP TCP-port to read news from. This variable only
-needs to be set if the the TCP-port is not the default 119.
+needs to be set if the TCP-port is not 119 (the default).
 The ''\fB-p\fP'' command line option overrides $\fBNNTPPORT\fP.
 .TP
 .B DISTRIBUTION
@@ -2717,6 +2770,9 @@ variable instead of the system default. If reading news on an Apollo
 DomainOS machine the environment variable $\fBNEWSORG\fP has to be used
 instead of $\fBORGANIZATION\fP.
 .TP
+.B NEWSORG (DomainOS)
+DomainOS specific, same as $\fBORGANIZATION\fP on other OSs (see above).
+.TP
 .B REPLYTO
 Set the article header field ''Reply-To:'' to the return address specified
 by the variable. This is useful if you wish to receive replies at a
@@ -2726,6 +2782,9 @@ different address.
 Overrides the fullname given in the gecos-files in \fI/etc/passwd\fR, see
 also \fBmail_address\fP.
 .TP
+.B REALNAME
+Same as $\fBNAME\fP.
+.TP
 .B HOME
 Pathname of the user's home directory. See
 .BR environ (5)
@@ -2734,7 +2793,16 @@ for more infos.
 .B MAILER
 This variable has precedence over the default mailer that is used in all
 mailing operations within \fBtin\fP. If reading news on AmigaOS use
-$\fBTIN_MAIL\fP, if reading news on VMS use \fBTIN_MAILER\fP instead.
+$\fBTIN_MAIL\fP, if reading news on VMS use $\fBTIN_MAILER\fP instead.
+.TP
+.B TIN_MAILER (VMS)
+VMS specific, same as $\fBMAILER\fP on other OSs (see above).
+.TP
+.B TIN_MAIL (AmigaOS)
+AmigaOS specific, same as $\fBMAILER\fP on other OSs (see above).
+.TP
+.B MAIL
+Full path to the users mailbox.
 .TP
 .B VISUAL
 This variable has precedence over the default editor (i.e.,
@@ -2822,8 +2890,8 @@ It's value should be of the from
 \fIlanguage\fR[\fI_territory\fR][\fI.codeset\fR][\fI@modifier\fR]. See
 .BR environ (5)
 for more infos.
-.\" document LC_CTYPEs influence on
-.\" ~/.tin/keymap.*, 8bit char display, ...
+.\" TODO: document LC_CTYPEs influence on
+.\"       ~/.tin/keymap.*, 8bit char display, ...
 .TP
 .B LC_MESSAGES
 Formats of informative and diagnostic messages and interactive responses.
@@ -2896,7 +2964,7 @@ for more infos.
 .B tin
 does conform to the Base Definitions volume of IEEE Std 1003.1-2001, Section
 12, Utility Convetions (Utility Argument Syntax, Utility Syntax Guidelines).
-.\" - RFC 977, RFC 1036, RFC 2045, RFC 2047, RFC 2980, RFC 2822
+.\" - RFC977, RFC1036, RFC2045, RFC2047, RFC2980, RFC2822
 .\"   or whatever
 .\"
 .\"
@@ -2944,8 +3012,6 @@ author of sigfile.c random signature generation routines.
 author of langinfo.c, charset.c and iso2asc.txt ISO-8859-1 documentation.
 .IP "Arnold Robbins"
 author of strftime.c date formatting routine.
-.IP "Jim Robinson"
-co-author of original kill.c article kill and auto-selection routines.
 .IP "Rich Salz"
 author of wildmat.c pattern matching and parsdate.y date parsing routines.
 .IP "Dave Taylor"
@@ -2972,35 +3038,32 @@ and
 fallbacks.
 .IP "Mark Tomlinson"
 for originally porting \fBtin\fP to the AmigaOS operating system.
-.IP "Andreas Wrede"
-for originally porting \fBtin\fP to the OS/2 operating system.
-.IP "Nigel Ellis & Piers Haken"
-for originally porting \fBtin\fP to the Windows/NT operating system.
 .IP "Andrew Greer"
 for originally porting \fBtin\fP to the VAX/VMS operating system.
 .PP
 I wish to thank the following people for supplying patches:
 .PP
-David Abbott, Earle Ake, Orbby S. Arka, Joachim Astel, Anton Aylward, Mark
-Ayzenshteyn, Jens Chr. Bachem, George Baltz, Dieter Baron, Volker
-Barthelmann, Kirk Bauer, Paul Bauwens, Dieter Becker, Wolfgang Behrens,
-Fabrice Bellet, Greg Berigan, Enrik Berkhan, Juergen Bernau, Dan Berry,
-Michael Bienia, David Binderman, Andrey Blochintsev, Chris Blum, Fokke de
-Boer, Andreas Borchert, Sebastian Bork, Mark Boucher, Robert Brady, Bill
-Brolik, Herman ten Brugge, Martin Buck, Jeremy Buhler, Leila Burrell-Davis,
-Sean Casey, Peter Castro, Troy Cauble, Andrey A. Chernov, Albert
-Chin-A-Young, Park Chong-Dae, Tan Kwee Chuan, Boleslaw Ciesielski, Robert
-Claeson, Steven Cogswell, Don Costello, Bryan Curnutt, Ned Danieley, Lars
-Dannenberg, Chris Davies, John Davis, Borislav Deianov, Thomas E. Dickey,
-Olaf Dietrich, Herbert Martin Dietze, Theo Van Dinter, Ralf Doeblitz, Bryan
-Dongray, Michael Douglass, Nickolay Dudorov, Craig Durland, Bernd Eckenfels,
-Phil Edge, Kirk Edson, Nick Efthymiou, Stefan Elf, L. Scott Emmons, Rob
-Engle, Olle Eriksson, Brent Ermlick, Bernd Ernesti, Ragnar Hojland Espinosa,
-Jason Faultless, Michael Faurot, Werner Fleck, John M. Flinchbaugh, Andy
-Gabor, Torsten Gesang, Ruediger Geys, Callum Gibson, Mike Glendinning, Igor
-Goryachev, Philippe Goujard, Dan Greenspan, Karlo Gross, Carl Hage, Paul
-Halsema, Ed Hanway, Scott Hauck, Christian Haul, James Hawtin, Per Headland,
-Arnold Hendriks, Daniel Hermans, Jose Herrero, Dave Hill, Tom Hite, Torsten
+David Abbott, Earle Ake, Russ Allbery, Orbby S. Arka, Joachim Astel, Anton
+Aylward, Mark Ayzenshteyn, Jens Chr. Bachem, George Baltz, Dieter Baron,
+Volker Barthelmann, Kirk Bauer, Paul Bauwens, Dieter Becker, Wolfgang
+Behrens, Fabrice Bellet, Greg Berigan, Enrik Berkhan, Juergen Bernau, Dan
+Berry, Michael Bienia, David Binderman, Andrey Blochintsev, Chris Blum,
+Fokke de Boer, Andreas Borchert, Sebastian Bork, Mark Boucher, Robert Brady,
+Bill Brolik, Herman ten Brugge, Martin Buck, Jeremy Buhler, Leila
+Burrell-Davis, Sean Casey, Peter Castro, Troy Cauble, Andrey A. Chernov,
+Albert Chin-A-Young, Park Chong-Dae, Tan Kwee Chuan, Boleslaw Ciesielski,
+Robert Claeson, Steven Cogswell, Don Costello, Bryan Curnutt, Ned Danieley,
+Lars Dannenberg, Chris Davies, John Davis, Borislav Deianov, Thomas E.
+Dickey, Martin Dickopp, Olaf Dietrich, Herbert Martin Dietze, Theo Van
+Dinter, Ralf Doeblitz, Bryan Dongray, Michael Douglass, Nickolay Dudorov,
+Craig Durland, Bernd Eckenfels, Phil Edge, Kirk Edson, Nick Efthymiou,
+Stefan Elf, Nigel Ellis, L. Scott Emmons, Rob Engle, Olle Eriksson, Brent
+Ermlick, Bernd Ernesti, Ragnar Hojland Espinosa, Jason Faultless, Michael
+Faurot, Werner Fleck, John M. Flinchbaugh, Andy Gabor, Torsten Gesang,
+Ruediger Geys, Callum Gibson, Mike Glendinning, Igor Goryachev, Philippe
+Goujard, Dan Greenspan, Karlo Gross, Carl Hage, Piers Haken, Paul Halsema,
+Ed Hanway, Scott Hauck, Christian Haul, James Hawtin, Per Headland, Arnold
+Hendriks, Daniel Hermans, Jose Herrero, Dave Hill, Tom Hite, Torsten
 Homeyer, Ulli Horlacher, Keith Howell, Tommy Hsieh, Shih-Kun Huang, Steve
 Hunt, Jeff Hurwitt, Jeon Hyoung-Jo, Pieter Immelman, Jarkko Isokungas,
 Patrick St. Jean, Hal Jespersen, Park Sang Jin, Robbin Johnson, Jarkko
@@ -3022,23 +3085,24 @@ Naber, Torsten Neumann, Dirk Nimmich, James Nugen, David E. O'Brien, Michael
 O'Reilly, Oleg Ohotnikov, Ronald Orr, Julien Oster, Guido Ostkamp, Philip
 Paeps, Jeb Palmer, Neil Parker, Joseph Parmelee, Tom Parry, Jim Patterson,
 Sven Paulus, Walter Pelissero, Cameron Perkins, Colin Perkins, Eric
-Peterson, Tim Pierce, Bill Poitras, Scott W. Powers, Wolfgang Prediger,
-Marc Prud'hommeaux, GianPiero Puccioni, Thomas Quinot, Stefan Rapp, Martin
+Peterson, Tim Pierce, Bill Poitras, Scott W. Powers, Wolfgang Prediger, Marc
+Prud'hommeaux, GianPiero Puccioni, Thomas Quinot, Stefan Rapp, Martin
 Reising, Kyle Rhorer, Ted Richards, Steve Robbins, Ollivier Robert, Branden
 Robinson, Jim Robinson, Thomas Roessler, Erik van Roode, Meelis Roos,
-Stephen Roseman, Roland Rosenfeld, Peter Van Rossem, Clifton Royston, Rich
-Salz, Gary Sanders, Nickolay Saukh, John Sauter, Christopher Sawtell, Holger
-Schif, Volker Schmidt, John Schmitz, Torsten Schneider, Stefan Scholl,
-Rainer Scholz, Juergen Schroeder, Larry Schwimmer, Randy Scott, Bart Sears,
-Karl-Olav Serrander, Doug Sewell, Philip Shearer, Jungshik Shin, Sergey
-Shkonda, Andreas Siegert, Mark Smith, Toomas Soome, Steve Spearman, Helmut
-Springer, Cliff Stanford, Steve Starck, Jason Steiner, Ralf Stephan, Michael
-Stenns, Helmrich Streitmatter, Hans Werner Strube, Dieter Stueken, Ed
-Sznyter, Dean Takemori, Darrell Tangman, Derek Terveer, Carsten Theis,
-Julian Thompson, David Tiller, Andry Timonin, Mark Tomlin, Michael Traub,
-Mark Trumbull, Alex Vasylenko, Adri Verhoef, Paul Vickers, Oliver B.
-Warzecha, Jason Wessel, Cary Whitney, Henrik Wist, Greg Woods, Lloyd Wright,
-Jens Wuepper, Billy Y., Hideaki Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
+Stephen Roseman, Roland Rosenfeld, Peter Van Rossem, Clifton Royston,
+Juergen Salk, Rich Salz, Gary Sanders, Nickolay Saukh, John Sauter,
+Christopher Sawtell, Holger Schif, Volker Schmidt, John Schmitz, Torsten
+Schneider, Stefan Scholl, Rainer Scholz, Juergen Schroeder, Larry Schwimmer,
+Randy Scott, Bart Sears, Karl-Olav Serrander, Doug Sewell, Philip Shearer,
+Jungshik Shin, Sergey Shkonda, Andreas Siegert, Mark Smith, Toomas Soome,
+Steve Spearman, Helmut Springer, Cliff Stanford, Steve Starck, Jason
+Steiner, Ralf Stephan, Michael Stenns, Helmrich Streitmatter, Hans Werner
+Strube, Dieter Stueken, Ed Sznyter, Dean Takemori, Darrell Tangman, Derek
+Terveer, Carsten Theis, Julian Thompson, David Tiller, Andry Timonin, Mark
+Tomlin, Michael Traub, Mark Trumbull, Alex Vasylenko, Adri Verhoef, Paul
+Vickers, Oliver B. Warzecha, Jason Wessel, Cary Whitney, Henrik Wist, Greg
+Woods, Andreas Wrede, Lloyd Wright, Jens Wuepper, Billy Y., Hideaki
+Yoshfuji, Nickolai Zeldovich, Zbigniew Zych
 .\"
 .\"
 .SH AUTHOR
