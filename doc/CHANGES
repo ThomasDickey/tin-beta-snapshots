@@ -1,12 +1,12 @@
--- 1.5.11 release 20011203 "" --
+-- 1.5.11 release 20011225 "" --
 
 U085) Andreas Metzler <tin-dev@downhill.at.eu.org>
-      ADD. docu update (inews_prog)
+      ADD. docu update
       REM. $TEX2ISO env-var
-      ADD. tex2iso_cov tinrc-item
+      ADD. tex2iso_cov menu/tinrc/attributes-item
       FIX. INSTALL, TODO, tin.1, tin.5, tin.defaults, extern.h, tin.h, tinrc.h
            attrib.c, config.c, cook.c, init.c, lang.c, page.c, rfc2046.c
-           tincfg.tbl
+           tincfg.tbl, de.po, en_GB.po, et.po, tin.pot
 
 U084) Sven Hartge <hartge@ds9.argh.org>
       Andreas Metzler <tin-dev@downhill.at.eu.org>
@@ -14,12 +14,15 @@ U084) Sven Hartge <hartge@ds9.argh.org>
       FIX. de.po
 
 U083) Urs Janssen <urs@tin.org>
-      ADD. config.sub update
+      ADD. updated pcre (3.7 -> 3.8)
+      ADD. config.guess, config.sub update
       ADD. '<', '(', ')', ':' as NEWS_REGEX 'terminator'
       BUG. possible buffer overrun and emtpy pgp-address
       BUG. missing screen redraw after supersede
       BUG. possible dereferenced pointer (network_charset)
-      FIX. config.sub, tin.h, misc.c, pgp.c, post.c, version.sh, tin.1
+      BUG. fixed some typos
+      FIX. config.guess, config.sub, tin.h, lang.c, misc.c, pgp.c, post.c
+           version.sh, tin.1, tin.5, pcre.c, pcretest.c, *.po
 
 U082) Mark Trumbull <mjt@pipedreaminteractive.com>
       BUG. multipart threading sometimes joins threads which don't belong

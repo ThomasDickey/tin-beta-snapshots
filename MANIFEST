@@ -1,4 +1,4 @@
-MANIFEST for tin-1.5.11 (Mon Dec  3 19:46:24 CET 2001)
+MANIFEST for tin-1.5.11 (Tue Dec 25 16:32:15 CET 2001)
 ----------------------------------------------------
   13347 ./Makefile
    7664 ./MANIFEST
@@ -8,18 +8,18 @@ MANIFEST for tin-1.5.11 (Mon Dec  3 19:46:24 CET 2001)
    1006 ./README.WIN
  104405 ./aclocal.m4
     915 ./conf-tin
-  38315 ./config.guess
-  28441 ./config.sub
+  38218 ./config.guess
+  28724 ./config.sub
  418656 ./configure
   27924 ./configure.in
    5555 ./install.sh
     777 ./mkdirs.sh
   11651 ./doc/ABOUT-NLS
-  39639 ./doc/CHANGES
- 153544 ./doc/CHANGES.old
+  39819 ./doc/CHANGES
+ 153546 ./doc/CHANGES.old
    1469 ./doc/DEBUG_REFS
-  35797 ./doc/INSTALL
-  24831 ./doc/TODO
+  35798 ./doc/INSTALL
+  24832 ./doc/TODO
    1976 ./doc/WHATSNEW
    2671 ./doc/art_handling.txt
    3863 ./doc/auth.txt
@@ -42,8 +42,8 @@ MANIFEST for tin-1.5.11 (Mon Dec  3 19:46:24 CET 2001)
    5890 ./doc/mbox.5
    2128 ./doc/newsoverview.5
    6963 ./doc/plp_snprintf.3
- 103077 ./doc/tin.1
-  56018 ./doc/tin.5
+ 103095 ./doc/tin.1
+  56029 ./doc/tin.5
    4729 ./doc/w2r.pl.1
    2196 ./doc/wildmat.3
     344 ./tools/expiretover
@@ -72,7 +72,7 @@ MANIFEST for tin-1.5.11 (Mon Dec  3 19:46:24 CET 2001)
    2416 ./include/trace.h
    2713 ./include/version.h
   25286 ./src/active.c
-  45079 ./src/art.c
+  45086 ./src/art.c
   25553 ./src/attrib.c
   12247 ./src/auth.c
   10704 ./src/charset.c
@@ -94,7 +94,7 @@ MANIFEST for tin-1.5.11 (Mon Dec  3 19:46:24 CET 2001)
   32044 ./src/init.c
    3053 ./src/joinpath.c
   37915 ./src/keymap.c
-  99841 ./src/lang.c
+  99853 ./src/lang.c
    4382 ./src/list.c
    6954 ./src/lock.c
   12153 ./src/mail.c
@@ -107,7 +107,7 @@ MANIFEST for tin-1.5.11 (Mon Dec  3 19:46:24 CET 2001)
   27017 ./src/nntplib.c
    7430 ./src/nrctbl.c
   26290 ./src/open.c
-  42408 ./src/page.c
+  42403 ./src/page.c
   24256 ./src/parsdate.y
   16970 ./src/plp_snprintf.c
   13371 ./src/pgp.c
@@ -168,7 +168,7 @@ MANIFEST for tin-1.5.11 (Mon Dec  3 19:46:24 CET 2001)
     389 ./vms/vmstimval.h
     179 ./pcre/AUTHORS
    1944 ./pcre/COPYING
-  27843 ./pcre/ChangeLog
+  28303 ./pcre/ChangeLog
    8049 ./pcre/INSTALL
    1944 ./pcre/LICENCE
    2245 ./pcre/Makefile.in
@@ -185,14 +185,14 @@ MANIFEST for tin-1.5.11 (Mon Dec  3 19:46:24 CET 2001)
   16328 ./pcre/internal.h
    3987 ./pcre/maketables.c
    1093 ./pcre/pcre-config.in
- 153390 ./pcre/pcre.c
+ 153180 ./pcre/pcre.c
     212 ./pcre/pcre.def
    3345 ./pcre/pcre.in
    2257 ./pcre/pcredemo.c
   13249 ./pcre/pcregrep.c
    9109 ./pcre/pcreposix.c
    2341 ./pcre/pcreposix.h
-  33804 ./pcre/pcretest.c
+  33785 ./pcre/pcretest.c
    4131 ./pcre/perltest
    4861 ./pcre/pgrep.c
   10978 ./pcre/study.c
@@ -216,13 +216,13 @@ MANIFEST for tin-1.5.11 (Mon Dec  3 19:46:24 CET 2001)
   17884 ./pcre/testdata/testinput3
     569 ./pcre/testdata/testinput4
    1948 ./pcre/testdata/testinput5
-    763 ./pcre/testdata/testinput6
+   1134 ./pcre/testdata/testinput6
   65784 ./pcre/testdata/testoutput1
   44143 ./pcre/testdata/testoutput2
   28632 ./pcre/testdata/testoutput3
    1495 ./pcre/testdata/testoutput4
    3874 ./pcre/testdata/testoutput5
-   4321 ./pcre/testdata/testoutput6
+   7628 ./pcre/testdata/testoutput6
   13879 ./include/autoconf.hin
    5800 ./pcre/pcre.mms
   18795 ./src/Makefile.in
@@ -286,8 +286,8 @@ MANIFEST for tin-1.5.11 (Mon Dec  3 19:46:24 CET 2001)
    2814 ./intl/xopen-msg.sed
    6989 ./po/Makefile.inn
     798 ./po/POTFILES.in
- 111752 ./po/tin.pot
- 173506 ./po/de.po
- 172654 ./po/et.po
- 113657 ./po/en_GB.po
-4933106 total
+ 111764 ./po/tin.pot
+ 173531 ./po/de.po
+ 172666 ./po/et.po
+ 113669 ./po/en_GB.po
+4937489 total

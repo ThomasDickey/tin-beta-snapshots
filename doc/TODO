@@ -310,7 +310,7 @@ o  Additions to the thread menu :
      ''  r ought to be toggle show all/show only unread
      'f' (post a followup)
      'X' (mark all unread articles that have not been selected as read)
-     keys to goto previous/next thread
+     keys to go to previous/next thread
 
 o  Add to the 'M'enu:
      DEFAULT_MAILER

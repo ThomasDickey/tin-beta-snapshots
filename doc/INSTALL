@@ -137,7 +137,7 @@ Building the Normal version:
     options.
 
 3)  Type 'make build' to build tin in the src/ directory.
-    Alternatively goto the src subdirectory and type 'make'.
+    Alternatively go to the src subdirectory and type 'make'.
 
 4)  Type 'make install' to install.
 
@@ -682,7 +682,7 @@ hppa1.1-hp-hpux9.07                        cc 9.77       (1.5.1 release 20000103
 hppa1.1-hp-hpux9.07                        gcc 2.7.2.3   (1.4.0 release 19991113)          <urs@tin.org>
 hppa1.1-hp-hpux10.20                       cc 10.32.20   (1.4.4 release 20000803)          <andy@tin.org>
 hppa1.1-hp-hpux10.20                       gcc 2.8.1     (1.4.0 release 19991113)          <andy@tin.org>
-hppa1.1-hp-hpux11.00                       cc 11.11.02   (1.5.9 release 20010723)          <urs@tin.org>
+hppa1.1-hp-hpux11.00                       cc 11.11.02   (1.5.10 release 20011117)         <urs@tin.org>
 hppa1.1-hp-hpux11.00                       gcc 2.95.2    (1.5.6 release 20000803)          <urs@tin.org>
 hppa2.0-hp-hpux10.20                       cc 10.32.05   (1.5.6 release 20000803)          <urs@tin.org>
 hppa2.0-hp-hpux10.20                       gcc 2.7.2.3   (1.4.0 release 19991113)          <urs@tin.org>

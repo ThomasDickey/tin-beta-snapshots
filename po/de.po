@@ -699,7 +699,7 @@ msgid "*** End of thread ***"
 msgstr "*** Ende des Threads ***"
 
 #: src/lang.c:147
-msgid "Enter Message-ID to goto> "
+msgid "Enter Message-ID to go to> "
 msgstr "Message-ID, die Sie suchen> "
 
 #: src/lang.c:148
@@ -1239,7 +1239,7 @@ msgid "display next unread article"
 msgstr "zeige nächsten ungelesenen Artikel an"
 
 #: src/lang.c:267
-msgid "goto the article that this one followed up"
+msgid "go to the article that this one followed up"
 msgstr "nächster Artikel, der eine direkte Antwort auf diesen ist"
 
 #: src/lang.c:269
@@ -1323,7 +1323,7 @@ msgid "toggle display of uuencoded sections on/off"
 msgstr "schalte Anzeige von UU-kodierten Teilen ein/aus"
 
 #: src/lang.c:293
-msgid "View/save multimedia attachmenats"
+msgid "View/save multimedia attachments"
 msgstr "Anzeigen/Speichern von Multimedia-Anhängen"
 
 #: src/lang.c:294
@@ -1356,7 +1356,7 @@ msgid "up one line"
 msgstr "eine Zeile hoch"
 
 #: src/lang.c:301
-msgid "goto article chosen by Message-ID"
+msgid "go to article chosen by Message-ID"
 msgstr "geht zum Artikel mit dieser Message-ID"
 
 #: src/lang.c:302
@@ -4004,7 +4004,7 @@ msgstr "Tab zeigt nächsten ungelesenen Art.:"
 
 #: src/lang.c:1183
 msgid ""
-"# If ON the TAB command will goto next unread article at article viewer "
+"# If ON the TAB command will go to next unread article at article viewer "
 "level\n"
 msgstr ""
 "# Falls ON wechselt TAB sofort zum nächsten ungelesenen Artikel\n"
@@ -4015,7 +4015,7 @@ msgstr "Leertaste zeigt nächsten unge. Art.:"
 
 #: src/lang.c:1189
 msgid ""
-"# If ON the SPACE command will goto next unread article at article viewer\n"
+"# If ON the SPACE command will go to next unread article at article viewer\n"
 "# level when the end of the article is reached (rn-style pager)\n"
 msgstr ""
 "# Falls ON wechselt die Leertaste zum nächsten ungelesenen Artikel, wenn\n"
@@ -4027,11 +4027,11 @@ msgstr "PgDn zeigt nächsten Art. nach EOF  :"
 
 #: src/lang.c:1196
 msgid ""
-"# If ON the PGDN or DOWN command will goto next article when pressed\n"
-"# at end of message\n"
+"# If ON the PGDN or DOWN command will go to next unread article when\n"
+"# pressed at end of message\n"
 msgstr ""
-"# Falls ON wechselt Bildrunter oder Cursorrunter zum nächsten Artikel\n"
-"# wenn das Artikelende erreicht wurde\n"
+"# Falls ON wechselt Bildrunter oder Cursorrunter zum nächsten ungelesenen\n"
+"# Artikel, wenn das Artikelende erreicht wurde\n"
 
 #: src/lang.c:1202
 msgid "List thread using right arrow key  :"

@@ -2345,7 +2345,7 @@ tin 1.3BETA 950824 and tin 1.4.0, for recent changes look at CHANGES
 315) Jason Faultless <jason@radar.tele2.co.uk>
      BUG. Tagged article counter sometimes badly broken
      BUG. 'q' quit didn't work properly while entering a group
-     ADD. 'u' goto parent article in pager
+     ADD. 'u' go to parent article in pager
      ADD. 'S' auto-save tagged and 'U' untag all to thread menu
      ADD. Better handling of upgrade from earlier versions of Tin
      ADD. Some documentation and help
@@ -3032,7 +3032,7 @@ tin 1.3BETA 950824 and tin 1.4.0, for recent changes look at CHANGES
      FIX. lang.c, post.c
 
 196) Roland Rosenfeld <roland@spinnaker.rhein.de>
-     BUG. 'g' goto group does not work with show_only_unread_groups=ON &
+     BUG. 'g' go to group does not work with show_only_unread_groups=ON &
           show_only_unread=ON but having no articles to read
      FIX. select.c
 
