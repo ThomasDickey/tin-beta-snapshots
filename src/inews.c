@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 1999-11-29
+ *  Updated   : 1997-12-31
  *  Notes     : NNTP builtin version of inews
  *  Copyright : (c) Copyright 1991-99 by Iain Lea
  *              You may  freely  copy or  redistribute  this software,
@@ -81,7 +81,7 @@ submit_inews (
 #	endif /* !FORGERY */
 
 	if ((fp = fopen (name, "r")) == (FILE *) 0) {
-		perror_message (txt_cannot_open, name);
+		perror_message (_(txt_cannot_open), name);
 		return ret_code;
 	}
 
@@ -108,7 +108,7 @@ submit_inews (
 
 	if (from_name[0] == '\0') {
 		/* we could silently add a From: line here if we want to... */
-		error_message (txt_error_no_from);
+		error_message (_(txt_error_no_from));
 		fclose (fp);
 		return ret_code;
 	}
@@ -118,7 +118,7 @@ submit_inews (
 	 * this will be done once again in sender_needed!?!
 	 */
 	if (GNKSA_OK != gnksa_check_from(rfc1522_encode(from_name, FALSE))) { /* error in address */
-		error_message (txt_invalid_from, from_name);
+		error_message (_(txt_invalid_from), from_name);
 		fclose (fp);
 		return ret_code;
 	}
@@ -168,14 +168,14 @@ submit_inews (
 			sender = sender_needed(rfc1522_decode(from_name), ptr);
 			switch (sender) {
 				case -2: /* can't build Sender: */
-					error_message (txt_invalid_sender, ptr);
+					error_message (_(txt_invalid_sender), ptr);
 					fclose (fp);
 					return ret_code;
 					/* NOTREACHED */
 					break;
 
 				case -1: /* illegal From: (can't happen as check is done above allready) */
-					error_message (txt_invalid_from, from_name);
+					error_message (_(txt_invalid_from), from_name);
 					fclose (fp);
 					return ret_code;
 					/* NOTREACHED */
@@ -265,10 +265,7 @@ submit_inews (
 		 * authentication request was received. Leave loop on any other
 		 * response or any further authentication requests.
 		 */
-		if (((respcode == ERR_NOAUTH)       || 
-		     (respcode == ERR_NOAUTHSIMPLE) ||
-		     (respcode == NEED_AUTHINFO)) &&
-		    (auth_error++ < 1) && (authenticate (nntp_server, respcode, userid, FALSE)))
+		if (((respcode == ERR_NOAUTH) || (respcode == NEED_AUTHINFO)) && (auth_error++ < 1) && (authenticate (nntp_server, userid, FALSE)))
 			leave_loop = FALSE;
 	} while (!leave_loop);
 

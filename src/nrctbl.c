@@ -47,7 +47,7 @@ write_newsrctable_file (
 	if ((fp = fopen(local_newsrctable_file, "w")) == (FILE *) 0)
 		return;
 
-	fprintf(fp, txt_nrctbl_info, tin_progname, VERSION);
+	fprintf(fp, _(txt_nrctbl_info), tin_progname, VERSION);
 	fclose(fp);
 }
 
@@ -146,7 +146,7 @@ get_newsrcname (
 
 			if (!strfpath (name_found, tmp_newsrc, sizeof (tmp_newsrc),
 				homedir, (char *) 0, (char *) 0, (char *) 0)) {
-					my_fprintf (stderr, "couldn't expand %s\n", name_found);
+					my_fprintf (stderr, _("couldn't expand %s\n"), name_found);
 					error = 1;
 			} else {
 				if (tmp_newsrc[0] == '/')
@@ -161,22 +161,22 @@ get_newsrcname (
 			if (!error) {
 			/* FIXME - write a global permssion check routine */
 				if (access (dir, X_OK)) {
-					my_fprintf (stderr, txt_error_no_enter_permission, dir);
+					my_fprintf (stderr, _(txt_error_no_enter_permission), dir);
 					error = 1;
 				} else if (access (newsrc_name, F_OK)) {
-					my_fprintf (stderr, txt_error_no_such_file, newsrc_name);
+					my_fprintf (stderr, _(txt_error_no_such_file), newsrc_name);
 					error = 2;
 				} else if (access (dir, R_OK)) {
-					my_fprintf (stderr, txt_error_no_read_permission, dir);
+					my_fprintf (stderr, _(txt_error_no_read_permission), dir);
 					error = 1;
 				} else if (access (newsrc_name, R_OK)) {
-					my_fprintf (stderr, txt_error_no_read_permission, newsrc_name);
+					my_fprintf (stderr, _(txt_error_no_read_permission), newsrc_name);
 					error = 1;
 				} else if (access (dir, W_OK)) {
-					my_fprintf (stderr, txt_error_no_write_permission, dir);
+					my_fprintf (stderr, _(txt_error_no_write_permission), dir);
 					error = 1;
 				} else if (access (newsrc_name, W_OK)) {
-					my_fprintf (stderr, txt_error_no_write_permission, newsrc_name);
+					my_fprintf (stderr, _(txt_error_no_write_permission), newsrc_name);
 					error = 1;
 				}
 			}
@@ -188,9 +188,9 @@ get_newsrcname (
 					/* very ugly code, but curses is not initialized yet */
 					if (error >= 2) {
 						default_ch = iKeyNrctblCreate;
-						printf("%s%c\b", txt_nrctbl_create, default_ch);
+						printf("%s%c\b", _(txt_nrctbl_create), default_ch);
 					} else
-						printf("%s%c\b", txt_nrctbl_default, default_ch);
+						printf("%s%c\b", _(txt_nrctbl_default), default_ch);
 
 					if ((ch = (char) ReadCh ()) == '\r' || ch == '\n')
 						ch = default_ch;

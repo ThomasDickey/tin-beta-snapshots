@@ -28,7 +28,7 @@ joinpath (
 	const char *file)
 {
 #	ifdef __amigaos
-	int i=0, tmp=0, tmp2=1;
+	int i = 0, tmp = 0, tmp2 = 1;
 #	endif /* __amigaos */
 #	ifdef M_UNIX
 	(void) strcpy(result, dir);
@@ -46,7 +46,7 @@ joinpath (
 			;
 	while (result[i] != '/' && result[i] != ':')
 		i++;
-	result[i]=':';
+	result[i] = ':';
 #	endif /* __amigaos */
 }
 #endif /* !M_AMIGA */

@@ -30,19 +30,38 @@
 #endif /* HAVE_CONFIG_H */
 
 
-/* FIXME */
-#if 0
 /*
  * this causes trouble on Linux (forces nameserver lookups even for local
  * connections - this is an (unwanted) feature of getaddrinfo) see also
  * nntplib.c
  */
 /* IPv6 support */
-#if defined(HAVE_GETADDRINFO) && defined(HAVE_GAI_STRERROR)
+#if defined(HAVE_GETADDRINFO) && defined(HAVE_GAI_STRERROR) && (ENABLE_IPV6)
 #	define INET6
 #endif /* HAVE_GETADDRINFO && HAVE_GAI_STRERROR */
-#endif /* 0 */
 
+/*
+ * Native Language Support.
+ */
+#ifdef HAVE_LOCALE_H
+#	include <locale.h>
+#endif /* HAVE_LOCALE_H */
+#ifndef HAVE_SETLOCALE
+#	define setlocale(Category, Locale) /* empty */
+#endif /* !HAVE_SETLOCALE */
+
+#define N_(Str) (Str)
+
+#ifdef ENABLE_NLS
+#	include <libintl.h>
+#	define _(Text) gettext (Text)
+#else
+#	undef bindtextdomain
+#	define bindtextdomain(Domain, Directory) /* empty */
+#	undef textdomain
+#	define textdomain(Domain) /* empty */
+#	define _(Text) Text
+#endif /* ENABLE_NLS */
 
 /*
  * Non-autoconf'able definitions for Amiga Developer Environment (gcc 2.7.2,
@@ -705,6 +724,8 @@ enum resizer { cNo, cYes, cRedraw };
 #define TABLE_SIZE	1409
 #define MAX_PAGES	2000	/* maximum article pages */
 
+#define DAY	(60*60*24)		/* Seconds in a day */
+
 #define ctrl(c)	((c) & 0x1F)
 
 #ifndef DEFAULT_ISO2ASC
@@ -723,9 +744,9 @@ enum resizer { cNo, cYes, cRedraw };
 #ifndef ART_MARK_SELECTED
 #	define ART_MARK_SELECTED	'*'	/* used to show that an art was auto selected */
 #endif /* !ART_MARK_SELECTED */
-#ifndef ART_MARK_FRESH
-#	define ART_MARK_FRESH	'o'	/* used to show that an art is fresh */
-#endif /* !ART_MARK_FRESH */
+#ifndef ART_MARK_RECENT
+#	define ART_MARK_RECENT	'o'	/* used to show that an art is fresh */
+#endif /* !ART_MARK_RECENT */
 #ifndef ART_MARK_READ
 #	define ART_MARK_READ	' '	/* used to show that an art was not read or seen */
 #endif /* !ART_MARK_READ */
@@ -786,6 +807,7 @@ enum resizer { cNo, cYes, cRedraw };
  */
 #define MAX_MARK		3
 
+/* Line number (starting at 0) of 1st non-header data on the screen */
 #define INDEX_TOP	2
 
 #define GROUP_MATCH(s1, pat, case)		(wildmat (s1, pat, case))
@@ -810,7 +832,7 @@ enum resizer { cNo, cYes, cRedraw };
 /*
  * Often used macro to point to the group we are currenty in
  */
-#define CURR_GROUP	(active[my_group[cur_groupnum]])
+#define CURR_GROUP	(active[my_group[selmenu.curr]])
 
 /*
  * Defines an unread group
@@ -1208,14 +1230,6 @@ typedef unsigned char	t_bitmap;
 #define MSGID_HASH_SIZE		2609
 
 /*
- * These will probably go away when filtering is rewritten
- * Easier access to hashed msgids. Note that in REFS(), y must be free()d
- * msgid is mandatory in an article and cannot be NULL
- */
-#define MSGID(x)			(x->refptr->txt)
-#define REFS(x,y)			((y = get_references(x->refptr->parent)) ? y : "")
-
-/*
  *	struct t_msgid - message id
  */
 struct t_msgid
@@ -1246,7 +1260,6 @@ struct t_article
 {
 	long artnum;			/* Article number in spool directory for group */
 	char *subject;			/* Subject: line from mail header */
-/* t_article.subject is casted to (int *) in art.c :-( */
 	char *from;			/* From: line from mail header (address) */
 	char *name;			/* From: line from mail header (full name) */
 	int gnksa_code;			/* From: line from mail header (GNKSA error code) */
@@ -1286,7 +1299,7 @@ struct t_attribute
 #ifndef DISABLE_PRINTING
 	char *printer;				/* printer command & parameters */
 #endif /* !DISABLE_PRINTING */
-	char *quick_kill_scope; 		/* quick filter kill scope */
+	char *quick_kill_scope;			/* quick filter kill scope */
 	char *quick_select_scope;		/* quick filter select scope */
 	char *mailing_list;			/* mail list email address */
 	char *x_headers;			/* extra headers for message header */
@@ -1560,6 +1573,31 @@ struct t_option {
 };
 
 /*
+ * Multipart article detection
+ */
+typedef struct {
+	char *subject;
+	int subject_compare_len;
+	int part_number;
+	int total;
+	int base_index;
+} MultiPartInfo;
+
+
+/*
+ * Key information about current menu screen
+ */
+typedef struct {
+	int curr;					/* Current cursor pos (cur_groupnum, index_point, thread_index_point) */
+	int max;					/* Max # on current menu (group_top, top_base, top_thread) */
+	int first;					/* First # on current menu */
+	int last;					/* Last # on current menu (first,last_*_on_screen) */
+	void (*redraw) (void);		/* Redraw function */
+	void (*erase_arrow) (void);	/* Arrow erase */
+	void (*draw_arrow) (void);	/* Arrow draw */
+} t_menu;
+
+/*
  * Time functions.
  */
 typedef struct _TIMEINFO
@@ -1569,21 +1607,6 @@ typedef struct _TIMEINFO
 	long	tzone;
 } TIMEINFO;
 
-#if 0		/* Does anyone know what this was going to do ? */
-/*
- * Used for detecting new groups when reading news locally. It's easy to be
- * confused by arrays of pointers to pointers, so typedef's are used for the
- * first level pointers to keep it clearer.
- */
-struct t_notify
-{
-	char *name;
-	int visited;
-};
-
-typedef struct t_group *group_p;
-typedef struct t_notify *notify_p;
-#endif /* 0 */
 
 /*
  * Determine signal return type
@@ -2045,7 +2068,7 @@ extern struct tm *localtime(time_t *);
 
 /* snprintf(), vsnprintf() */
 #ifndef HAVE_SNPRINTF
-#	define vsnprintf	plp_vsnprintf
+#	define snprintf	plp_snprintf
 #endif /* HAVE_SNPRINTF */
 #ifndef HAVE_VSNPRINTF
 #	define vsnprintf	plp_vsnprintf

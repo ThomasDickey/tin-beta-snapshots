@@ -42,7 +42,7 @@ match_regex (
 	 * Compile the expression internally.
 	 */
 	if ((re = pcre_compile(pattern, flags, &errmsg, &error, NULL)) == NULL) {
-		sprintf(mesg, txt_pcre_error_at, errmsg, error);
+		sprintf(mesg, _(txt_pcre_error_at), errmsg, error);
 		return(FALSE);
 	}
 
@@ -68,7 +68,7 @@ match_regex (
 	else if (error == -1)
 		ret = FALSE;
 	else
-		sprintf(mesg, txt_pcre_error_num, error);
+		sprintf(mesg, _(txt_pcre_error_num), error);
 
 	free(re);
 	return(ret);
@@ -88,11 +88,11 @@ compile_regex(
 	int regex_errpos;
 
 	if ((cache->re = pcre_compile (regex, PCRE_EXTENDED | options, &regex_errmsg, &regex_errpos, NULL)) == NULL)
-		error_message (txt_pcre_error_at, regex_errmsg, regex_errpos);
+		error_message (_(txt_pcre_error_at), regex_errmsg, regex_errpos);
 	else {
 		cache->extra = pcre_study (cache->re, 0, &regex_errmsg);
 		if (regex_errmsg != NULL)
-			error_message (txt_pcre_error_text, regex_errmsg);
+			error_message (_(txt_pcre_error_text), regex_errmsg);
 		else
 			return TRUE;
 	}

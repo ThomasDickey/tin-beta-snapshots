@@ -248,7 +248,8 @@ MoveCursor(
 
 
 int
-ReadCh(void)
+ReadCh(
+	void)
 {
 	int ch;
 

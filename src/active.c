@@ -43,7 +43,6 @@ static void active_add (struct t_group *ptr, long count, long max, long min, con
 static void check_for_any_new_groups (void);
 static void read_active_file (void);
 static void read_newsrc_active_file (void);
-static void set_active_timestamp (void);
 static void subscribe_new_group (char *group, char *autosubscribe, char *autounsubscribe);
 static void vAppendGrpLine (char *pcActiveFile, char *pcGrpPath, long lArtMax, long lArtMin, char *pcBaseDir);
 static void vInitVariables (void);
@@ -69,17 +68,8 @@ get_active_num (
 }
 
 
-static void
-set_active_timestamp (
-	void)
-{
-	(void) time (&active_timestamp);
-	force_reread_active_file = FALSE;
-}
-
-
 t_bool
-reread_active_file (
+need_reread_active_file (
 	void)
 {
 	return (force_reread_active_file || (tinrc.reread_active_file_secs != 0 &&
@@ -98,12 +88,12 @@ resync_active_file (
 	char old_group[HEADER_LEN];
 	t_bool command_line = FALSE;
 
-	if (!reread_active_file ())
+	if (!need_reread_active_file ())
 		return FALSE;
 
 	reread_active_for_posted_arts = FALSE;
 
-	if (cur_groupnum >= 0 && group_top)
+	if (selmenu.curr >= 0 && selmenu.max)
 		strcpy (old_group, CURR_GROUP.name);
 	else
 		old_group[0] = '\0';
@@ -226,7 +216,7 @@ parse_active_line (
 	r = strtok((char *)0, ACTIVE_SEP);	/* mod status or path to mailgroup */
 
 	if (!p || !q || !r) {
-		error_message (txt_bad_active_file, line);
+		error_message (_(txt_bad_active_file), line);
 		return FALSE;
 	}
 
@@ -278,7 +268,7 @@ read_newsrc_active_file (
 	}
 
 	if (INTERACTIVE)
-		wait_message (0, txt_reading_news_newsrc_file);
+		wait_message (0, _(txt_reading_news_newsrc_file));
 
 	while ((ptr = tin_fgets (fp, FALSE)) != (char *)0 || window != 0) {
 		if (ptr) {
@@ -428,7 +418,7 @@ read_newsrc_active_file (
 	 *  Exit if active file wasn't read correctly or is empty
 	 */
 	if (tin_errno || !num_active) {
-		error_message (txt_active_file_is_empty, (read_news_via_nntp ? txt_servers_active : news_active_file));
+		error_message (_(txt_active_file_is_empty), (read_news_via_nntp ? _(txt_servers_active) : news_active_file));
 		tin_done (EXIT_FAILURE);
 	}
 
@@ -452,7 +442,7 @@ read_active_file (
 	struct t_group *grpptr;
 
 	if (INTERACTIVE)
-		wait_message (0, txt_reading_news_active_file);
+		wait_message (0, _(txt_reading_news_active_file));
 
 	if ((fp = open_news_active_fp ()) == (FILE *) 0) {
 
@@ -462,10 +452,10 @@ read_active_file (
 #if defined(NNTP_ABLE) || defined(NNTP_ONLY)
 		if (read_news_via_nntp)
 #endif /* NNTP_ABLE || NNTP_ONLY */
-			error_message (txt_cannot_open, news_active_file);
+			error_message (_(txt_cannot_open), news_active_file);
 #if defined(NNTP_ABLE) || defined(NNTP_ONLY)
 		else
-			error_message (txt_cannot_open_active_file, news_active_file, tin_progname);
+			error_message (_(txt_cannot_open_active_file), news_active_file, tin_progname);
 #endif /* NNTP_ABLE || NNTP_ONLY */
 
 		tin_done (EXIT_FAILURE);
@@ -513,7 +503,7 @@ read_active_file (
 	 *  Exit if active file wasn't read correctly or is empty
 	 */
 	if (tin_errno || !num_active) {
-		error_message (txt_active_file_is_empty, (read_news_via_nntp ? txt_servers_active : news_active_file));
+		error_message (_(txt_active_file_is_empty), (read_news_via_nntp ? _(txt_servers_active) : news_active_file));
 		tin_done (EXIT_FAILURE);
 	}
 
@@ -556,7 +546,8 @@ read_news_active_file (
 	if (newsrc_active)
 		read_newsrc_active_file ();
 
-	set_active_timestamp ();
+	(void) time (&active_timestamp);
+	force_reread_active_file = FALSE;
 
 	check_for_any_new_groups ();
 }
@@ -587,7 +578,7 @@ check_for_any_new_groups (
 	if (!check_for_new_newsgroups || !INTERACTIVE)
 		return;
 
-	wait_message (0, txt_checking_new_groups);
+	wait_message (0, _(txt_checking_new_groups));
 	(void) time (&new_newnews_time);
 	strcpy (new_newnews_host, (read_news_via_nntp ? nntp_server : "local")); /* What if nntp server called local ? */
 
@@ -631,14 +622,23 @@ check_for_any_new_groups (
 				*ptr = '\0';
 			}
 
+#ifdef OLD_SLOW_STARTUP /* IMHO this should go outside the while loop */
 			free_attributes_array ();
+			spin_cursor();
 			read_attributes_file (global_attributes_file, TRUE);
 			read_attributes_file (local_attributes_file, FALSE);
+#endif /* OLD_SLOW_STARTUP */
 
 			subscribe_new_group (line, autosubscribe, autounsubscribe);
 		}
 
 		TIN_FCLOSE (fp);
+
+#ifndef OLD_SLOW_STARTUP
+			free_attributes_array ();
+			read_attributes_file (global_attributes_file, TRUE);
+			read_attributes_file (local_attributes_file, FALSE);
+#endif /* !OLD_SLOW_STARTUP */
 
 		if (tin_errno)
 			return;				/* Don't update the time if we quit */
@@ -655,6 +655,7 @@ check_for_any_new_groups (
 		sprintf (buf, "%s %lu", new_newnews_host, (unsigned long int) new_newnews_time);
 		load_newnews_info (buf);
 	}
+	my_fputc('\n',stdout);
 }
 
 
@@ -702,7 +703,7 @@ subscribe_new_group (
 	}
 
 	if (!no_write && (autosubscribe != (char *) 0) && match_group_list (group, autosubscribe)) {
-		my_printf (txt_autosubscribed, group);
+		my_printf (_(txt_autosubscribed), group);
 
 		subscribe (&active[my_group[idx]], SUBSCRIBED);
 		/*
@@ -710,7 +711,7 @@ subscribe_new_group (
 		 * effectively loses the group, and it has now been subscribed to and
 		 * so will be reread later by read_newsrc()
 		 */
-		group_top--;
+		selmenu.max--;
 	} else
 		active[my_group[idx]].newgroup = TRUE;
 }
@@ -882,7 +883,7 @@ create_save_active_file (
 	if (no_write && file_size (acSaveActiveFile) != -1)
 		return;
 
-	my_printf (txt_creating_active);
+	my_printf (_(txt_creating_active));
 
 	vPrintActiveHead (acSaveActiveFile);
 	strcpy (acGrpPath, tinrc.savedir);

@@ -38,7 +38,7 @@ read_mail_active_file (
 	struct t_group *ptr;
 
 	if (INTERACTIVE)
-		wait_message (0, txt_reading_mail_active_file);
+		wait_message (0, _(txt_reading_mail_active_file));
 
 	/*
 	 * Open the mail active file
@@ -47,7 +47,7 @@ read_mail_active_file (
 		if (cmd_line)
 			my_fputc ('\n', stderr);
 
-		error_message (txt_cannot_open, mail_active_file);
+		error_message (_(txt_cannot_open), mail_active_file);
 		/*
 		 * FIXME - maybe do an autoscan of maildir, create & do a reopen ?
 		 */
@@ -142,7 +142,7 @@ read_mailgroups_file (
 
 	if ((fp = open_mailgroups_fp ()) != (FILE *) 0) {
 		if (INTERACTIVE)
-			wait_message (0, txt_reading_mailgroups_file);
+			wait_message (0, _(txt_reading_mailgroups_file));
 
 		read_groups_descriptions (fp, (FILE *) 0);
 
@@ -171,7 +171,7 @@ read_newsgroups_file (
 
 	if ((fp = open_newsgroups_fp ()) != (FILE *) 0) {
 		if (INTERACTIVE)
-			wait_message (0, txt_reading_newsgroups_file);
+			wait_message (0, _(txt_reading_newsgroups_file));
 
 
 		if (read_news_via_nntp && !read_local_newsgroups_file && !no_write)
@@ -267,9 +267,9 @@ vPrintActiveHead (
 
 	if ((hFp = fopen (pcActiveFile, "w")) != (FILE *) 0) {
 		/* FIXME: -> lang.c */
-		fprintf (hFp, "# [Mail/Save] active file. Format is like news active file:\n");
-		fprintf (hFp, "#   groupname  max.artnum  min.artnum  /dir\n");
-		fprintf (hFp, "# The 4th field is the basedir (ie. ~/Mail or ~/News)\n#\n");
+		fprintf (hFp, _("# [Mail/Save] active file. Format is like news active file:\n"));
+		fprintf (hFp, _("#   groupname  max.artnum  min.artnum  /dir\n"));
+		fprintf (hFp, _("# The 4th field is the basedir (ie. ~/Mail or ~/News)\n#\n"));
 		fclose (hFp);
 	}
 }
@@ -385,10 +385,10 @@ vGrpDelMailArt (
 
 	if (psArt->delete_it) {
 		art_mark_undeleted (psArt);
-		info_message (txt_art_undeleted);
+		info_message (_(txt_art_undeleted));
 	} else {
 		art_mark_deleted (psArt);
-		info_message (txt_art_deleted);
+		info_message (_(txt_art_deleted));
 	}
 }
 
@@ -406,9 +406,9 @@ vGrpDelMailArts (
 #endif /* 0 */
 
 	if (psGrp->type == GROUP_TYPE_MAIL || psGrp->type == GROUP_TYPE_SAVE) {
-		wait_message (1, (psGrp->type == GROUP_TYPE_MAIL) ? txt_processing_mail_arts : txt_processing_saved_arts);
+		wait_message (1, (psGrp->type == GROUP_TYPE_MAIL) ? _(txt_processing_mail_arts) : _(txt_processing_saved_arts));
 		vMakeGrpPath (psGrp->spooldir, psGrp->name, acGrpPath);
-		for (iNum = 0; iNum < top; iNum++) {
+		for (iNum = 0; iNum < top_art; iNum++) {
 			psArt = &arts[iNum];
 			if (psArt->delete_it) {
 				sprintf (acArtFile, "%s/%ld", acGrpPath, psArt->artnum);
@@ -437,29 +437,39 @@ vGrpDelMailArts (
 }
 
 
-int
+/* TODO test this function */
+t_bool
 iArtEdit (
 	struct t_group *psGrp,
 	struct t_article *psArt)
 {
+	FILE *fpin, *fpout;
 	char acArtFile[PATH_LEN];
 	char acTmpFile[PATH_LEN];
+	t_bool ret = FALSE;
 
 	/*
 	 * Check if news / mail group
 	 */
-	if (psGrp->type != GROUP_TYPE_NEWS) {
-		vMakeGrpPath (psGrp->spooldir, psGrp->name, acTmpFile);
-		sprintf (acArtFile, "%s/%ld", acTmpFile, psArt->artnum);
-		sprintf (acTmpFile, "%s%d.art", TMPDIR, (int) process_id);
-		if (copy_file (acArtFile, acTmpFile)) {
-			if (!invoke_editor (acTmpFile, 1)) {
-				unlink (acTmpFile);
-				return FALSE;
+	if (psGrp->type == GROUP_TYPE_NEWS)
+		return FALSE;
+
+	vMakeGrpPath (psGrp->spooldir, psGrp->name, acTmpFile);
+	sprintf (acArtFile, "%s/%ld", acTmpFile, psArt->artnum);
+	sprintf (acTmpFile, "%s%d.art", TMPDIR, (int) process_id);
+
+	if ((fpin = fopen (acArtFile, "r")) != NULL) {
+		if ((fpout = fopen (acTmpFile, "w")) != NULL) {
+			if (copy_fp (fpin, fpout)) {
+				if (invoke_editor (acTmpFile, 1)) {
+					rename_file (acTmpFile, acArtFile);
+					ret = TRUE;
+				} else
+					unlink (acTmpFile);
 			}
-			rename_file (acTmpFile, acArtFile);
-			return TRUE;
+			fclose(fpout);
 		}
+		fclose(fpin);
 	}
-	return FALSE;
+	return ret;
 }

@@ -16,8 +16,8 @@
 #	define VERSION_H	1
 
 #	define PRODUCT		"tin"
-#	define VERSION 	"1.5.0"
-#	define RELEASEDATE	"19991201"
+#	define VERSION		"1.5.1"
+#	define RELEASEDATE	"19991228"
 #	define RELEASENAME	"Blueprint"
 #	define TINRC_VERSION	"1.2"
 

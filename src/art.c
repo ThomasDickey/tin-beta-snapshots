@@ -25,10 +25,11 @@
 #	endif /* !STPWATCH_H */
 #endif /* PROFILE */
 
-#define SortBy(func) qsort (arts, (size_t)top, sizeof (struct t_article), func);
+#define SortBy(func) qsort (arts, (size_t)top_art, sizeof (struct t_article), func);
 
 static long last_read_article;
 static t_bool overview_index_filename = FALSE;
+int top_art = 0;				/* # of articles in arts[] */
 
 /*
  * Local prototypes
@@ -58,10 +59,11 @@ show_art_msg(char *group)
 	ClearScreen ();
 #if defined(HAVE_POLL) || defined(HAVE_SELECT)
 	/* strlen("Group %s ('q' to quit)... 'low'/'high'") = 45 */
-	wait_message (0, txt_group, cCOLS - 45, group);
+	/* FIXME: 'high'/'low' is "%6d/%-6d", see screen.c */
+	wait_message(0, _(txt_group), cCOLS - strlen(_(txt_group)) + 18, group);
 #else
 	/* strlen("Group %s ... 'low'/'high'") = 31 */
-	wait_message (0, txt_group, cCOLS - 31, group);
+	wait_message(0, _(txt_group), cCOLS - strlen(_(txt_group)) + 18, group);
 #endif /* HAVE_POLL || HAVE_SELECT */
 }
 
@@ -80,40 +82,40 @@ find_base (
 	register int i;
 	register int j;
 
-	top_base = 0;
+	grpmenu.max = 0;
 
 #ifdef DEBUG
 	debug_print_arts ();
 #endif /* DEBUG */
 
 	if (group->attribute && group->attribute->show_only_unread) {
-		for (i = 0; i < top; i++) {
+		for (i = 0; i < top_art; i++) {
 			if (IGNORE_ART(i) || arts[i].inthread)
 				continue;
 
-			if (top_base >= max_art)
+			if (grpmenu.max >= max_art)
 				expand_art ();
 
 			if (arts[i].status == ART_UNREAD)
-				base[top_base++] = i;
+				base[grpmenu.max++] = i;
 			else {
 				for (j = i; j >= 0; j = arts[j].thread) {
 					if (arts[j].status == ART_UNREAD) {
-						base[top_base++] = i;
+						base[grpmenu.max++] = i;
 						break;
 					}
 				}
 			}
 		}
 	} else {
-		for (i = 0; i < top; i++) {
+		for (i = 0; i < top_art; i++) {
 			if (IGNORE_ART(i) || arts[i].inthread)
 				continue;
 
-			if (top_base >= max_art)
+			if (grpmenu.max >= max_art)
 				expand_art ();
 
-			base[top_base++] = i;
+			base[grpmenu.max++] = i;
 		}
 	}
 }
@@ -144,19 +146,14 @@ index_group (
 	if (group == (struct t_group *) 0)
 		return TRUE;
 
-	/* TODO - can this be based on strlen(txt_group) ? */
-#if defined(HAVE_POLL) || defined(HAVE_SELECT)
-	i = 45; /* len of "Group %s ('q' to quit)... 'low'/'high'" */
-#else
-	i = 31; /* len of "Group %s ... 'low'/'high'" */
-#endif /* HAVE_POLL || HAVE_SELECT */
+	i = strlen(_(txt_group)) + 18;
 
 	/* very small screen */
 	if (cCOLS < i)
 		i = 0;
 
 	if (INTERACTIVE)
-		wait_message (0, txt_group, cCOLS - i, group->name);
+		wait_message (0, _(txt_group), cCOLS - i, group->name);
 
 	make_group_path (group->name, group_path);
 	signal_context = cArt;			/* Set this once glob_group is valid */
@@ -187,13 +184,13 @@ index_group (
 	debug_print_bitmap (group, NULL);
 #endif /* DEBUG_NEWSRC */
 
-	min = top_base ? base[0] : group->xmin;
-	max = top_base ? base[top_base-1] : min - 1;
+	min = grpmenu.max ? base[0] : group->xmin;
+	max = grpmenu.max ? base[grpmenu.max-1] : min - 1;
 
 	if (tinrc.use_getart_limit) {
 		if (tinrc.getart_limit > 0) {
-			if (top_base && (top_base > tinrc.getart_limit))
-				min = base[top_base-tinrc.getart_limit];
+			if (grpmenu.max && (grpmenu.max > tinrc.getart_limit))
+				min = base[grpmenu.max-tinrc.getart_limit];
 		} else if (tinrc.getart_limit < 0) {
 			long first_unread = find_first_unread(group);
 			if (min - first_unread < tinrc.getart_limit)
@@ -243,7 +240,7 @@ index_group (
 	/*
 	 * Stat all articles to see if any have expired
 	 */
-	for (i = 0; i < top; i++) {
+	for (i = 0; i < top_art; i++) {
 		if (arts[i].thread == ART_EXPIRED) {
 			expired = 1;
 #ifdef DEBUG_NEWSRC
@@ -345,7 +342,7 @@ read_group (
 	/*
 	 *  Count num of arts to index so the user has an idea of index time
 	 */
-	for (i = 0; i < top_base; i++) {
+	for (i = 0; i < grpmenu.max; i++) {
 		if (base[i] <= last_read_article || valid_artnum (base[i]) >= 0)
 			continue;
 
@@ -357,7 +354,7 @@ read_group (
 	 */
 	head_next = -1;
 
-	for (i = 0; i < top_base; i++) {	/* for each article # */
+	for (i = 0; i < grpmenu.max; i++) {	/* for each article # */
 
 		art = base[i];
 
@@ -387,14 +384,14 @@ read_group (
 		/*
 		 *  Add article to arts[]
 		 */
-		if (top >= max_art)
+		if (top_art >= max_art)
 			expand_art();
 
-		set_article (&arts[top]);
-		arts[top].artnum = art;
-		arts[top].thread = ART_NORMAL;
+		set_article (&arts[top_art]);
+		arts[top_art].artnum = art;
+		arts[top_art].thread = ART_NORMAL;
 
-		res = parse_headers (fp, &arts[top]);
+		res = parse_headers (fp, &arts[top_art]);
 
 		TIN_FCLOSE(fp);
 		if (tin_errno) {
@@ -412,8 +409,8 @@ read_group (
 			continue;
 		}
 
-		last_read_article = arts[top].artnum;	/* used if arts are killed */
-		top++;
+		last_read_article = arts[top_art].artnum;	/* used if arts are killed */
+		top_art++;
 
 		if (++count % MODULO_COUNT_NUM == 0)
 			show_progress (mesg, count, total);
@@ -458,7 +455,7 @@ thread_by_subject (
 	int i, j;
 	struct t_hashnode *h;
 
-	for (i = 0; i < top; i++) {
+	for (i = 0; i < top_art; i++) {
 
 		if (arts[i].thread != ART_NORMAL || IGNORE_ART(i))
 			continue;
@@ -494,7 +491,7 @@ thread_by_subject (
 #if 0
 	fprintf(stderr, "Subj dump\n");
 	fprintf(stderr, "%3s %3s %3s %3s : %3s %3s\n", "#", "Par", "Sib", "Chd", "In", "Thd");
-	for (i = 0; i < top; i++) {
+	for (i = 0; i < top_art; i++) {
 		fprintf(stderr, "%3d %3d %3d %3d : %3d %3d : %.50s %s\n", i,
 			(arts[i].refptr->parent)  ? arts[i].refptr->parent->article : -2,
 			(arts[i].refptr->sibling) ? arts[i].refptr->sibling->article : -2,
@@ -531,7 +528,7 @@ make_threads (
 	int i;
 
 	if (!cmd_line)
-		info_message (((group->attribute && group->attribute->thread_arts == THREAD_NONE) ? txt_unthreading_arts : txt_threading_arts));
+		info_message (((group->attribute && group->attribute->thread_arts == THREAD_NONE) ? _(txt_unthreading_arts) : _(txt_threading_arts)));
 
 #ifdef DEBUG
 	if (debug == 2)
@@ -559,7 +556,7 @@ make_threads (
 	 */
 	if (rethread || (group->attribute && group->attribute->thread_arts)) {
 
-		for (i = 0; i < top; i++) {
+		for (i = 0; i < top_art; i++) {
 
 			if (arts[i].thread != ART_EXPIRED)
 				arts[i].thread = ART_NORMAL;
@@ -798,7 +795,7 @@ parse_headers (
 
 /*
  *  Read in an Nov/Xover index file. Fields are separated by TAB.
- *  return the new value of 'top' or -1 if user quit partway.
+ *  return the new value of 'top_art' or -1 if user quit partway.
  *
  *  Format:
  *    1.  article number (ie. 183)                [mandatory]
@@ -826,7 +823,7 @@ iReadNovFile (
 	char art_from_addr[HEADER_LEN];
 	long artnum;
 
-	top = 0;
+	top_art = 0;
 	last_read_article = 0L;
 	*expired = 0;
 /*
@@ -844,7 +841,7 @@ iReadNovFile (
 		iReadNovFile (group, min, max, expired);
 		read_news_via_nntp = TRUE;
 		if (last_read_article >= max)
-			return top;
+			return top_art;
 		if (last_read_article >= min)
 			min = last_read_article + 1;
 	}
@@ -852,7 +849,7 @@ iReadNovFile (
 	 * open the overview file (whether it be local or via nntp)
 	 */
 	if ((fp = open_xover_fp (group, "r", min, max)) == (FILE *) 0)
-		return top;
+		return top_art;
 
 	if (group->xmax > max)
 		group->xmax = max;
@@ -867,7 +864,7 @@ iReadNovFile (
 		debug_nntp ("iReadNovFile", buf);
 #endif /* DEBUG */
 
-		if (top >= max_art)
+		if (top_art >= max_art)
 			expand_art ();
 
 		p = buf;
@@ -894,8 +891,8 @@ iReadNovFile (
 			(*expired)++;
 			continue;
 		}
-		set_article (&arts[top]);
-		arts[top].artnum = last_read_article = artnum;
+		set_article (&arts[top_art]);
+		arts[top_art].artnum = last_read_article = artnum;
 
 		if ((q = strchr (p, '\t')) == (char *) 0) {
 #ifdef DEBUG
@@ -918,7 +915,7 @@ iReadNovFile (
 		} else
 			*q = '\0';
 
-		arts[top].subject = hash_str (eat_re(eat_tab(rfc1522_decode(p)), FALSE));
+		arts[top_art].subject = hash_str (eat_re(eat_tab(rfc1522_decode(p)), FALSE));
 		p = q + 1;
 
 		/*
@@ -933,11 +930,11 @@ iReadNovFile (
 		} else
 			*q = '\0';
 
-		arts[top].gnksa_code = parse_from (p, art_from_addr, art_full_name);
-		arts[top].from = hash_str (art_from_addr);
+		arts[top_art].gnksa_code = parse_from (p, art_from_addr, art_full_name);
+		arts[top_art].from = hash_str (art_from_addr);
 
 		if (*art_full_name)
-			arts[top].name = hash_str (eat_tab(rfc1522_decode(art_full_name)));
+			arts[top_art].name = hash_str (eat_tab(rfc1522_decode(art_full_name)));
 
 		p = q + 1;
 		/*
@@ -952,7 +949,7 @@ iReadNovFile (
 		} else
 			*q = '\0';
 
-		arts[top].date = parsedate (p, (TIMEINFO*)0);
+		arts[top_art].date = parsedate (p, (TIMEINFO*)0);
 		p = q + 1;
 
 		/*
@@ -969,7 +966,7 @@ iReadNovFile (
 			*q = '\0';
 
 		/* TODO is no mesg-id allowed in rfc ? */
-		arts[top].msgid = ((*p) ? (my_strdup (p)) : ((char *) '\0'));
+		arts[top_art].msgid = ((*p) ? (my_strdup (p)) : ((char *) '\0'));
 
 		p = q + 1;
 
@@ -985,7 +982,7 @@ iReadNovFile (
 		} else
 			*q = '\0';
 
-		arts[top].refs = ((*p) ? (my_strdup (p)) : ((char *) '\0'));
+		arts[top_art].refs = ((*p) ? (my_strdup (p)) : ((char *) '\0'));
 
 		p = q + 1;
 
@@ -1011,7 +1008,7 @@ iReadNovFile (
 				*q = '\0';
 
 			if (isdigit((unsigned char)*p))
-				arts[top].lines = atoi (p);
+				arts[top_art].lines = atoi (p);
 
 			p = (q == (char *) 0 ? (char *) 0 : q + 1);
 		}
@@ -1038,7 +1035,7 @@ iReadNovFile (
 				while (*q && *q == ' ')
 					q++;
 
-				arts[top].xref = my_strdup (q);
+				arts[top_art].xref = my_strdup (q);
 			}
 		}
 
@@ -1046,13 +1043,13 @@ iReadNovFile (
 		 * end of overview line processing
 		 */
 #ifdef DEBUG
-		debug_print_header (&arts[top]);
+		debug_print_header (&arts[top_art]);
 #endif /* DEBUG */
 
 		if (artnum % MODULO_COUNT_NUM == 0)
 			show_progress(mesg, (int) artnum, (int) max); /* we might loose accuracy here, but that shouldn't hurt */
 
-		top++;
+		top_art++;
 	}
 
 	TIN_FCLOSE (fp);
@@ -1060,7 +1057,7 @@ iReadNovFile (
 	if (tin_errno)
 		return(-1);
 
-	return top;
+	return top_art;
 }
 
 
@@ -1124,7 +1121,7 @@ vWriteNovFile (
 	hFp = open_xover_fp (psGrp, "w", 0L, 0L);
 
 	if (hFp == (FILE *) 0)
-		error_message (txt_cannot_write_index, pcNovFile);
+		error_message (_(txt_cannot_write_index), pcNovFile);
 	else {
 		if (psGrp->attribute && psGrp->attribute->sort_art_type != SORT_BY_NOTHING)
 			SortBy(artnum_comp);
@@ -1132,7 +1129,7 @@ vWriteNovFile (
 		if (!overview_index_filename)
 			fprintf (hFp, "%s\n", psGrp->name);
 
-		for (iNum = 0; iNum < top; iNum++) {
+		for (iNum = 0; iNum < top_art; iNum++) {
 			psArt = &arts[iNum];
 
 			if (psArt->thread != ART_EXPIRED && psArt->artnum >= psGrp->xmin) {
@@ -1303,7 +1300,7 @@ do_update (
 	/*
 	 * loop through groups and update any required index files
 	 */
-	for (i = 0; i < group_top; i++) {
+	for (i = 0; i < selmenu.max; i++) {
 		psGrp = &active[my_group[i]];
 		make_group_path (psGrp->name, group_path);
 
@@ -1315,14 +1312,14 @@ do_update (
 			continue;
 
 		if (catchup) {
-			for (j = 0; j < top; j++)
+			for (j = 0; j < top_art; j++)
 				art_mark_read (psGrp, &arts[j]);
 		}
 	}
 
 	if (verbose) {
-		wait_message (0, txt_catchup_update_info,
-			(catchup ? "Caughtup" : "Updated"), group_top, IS_PLURAL(group_top), (unsigned long int) (time(NULL) - beg_epoch));
+		wait_message (0, _(txt_catchup_update_info),
+			(catchup ? _("Caughtup") : _("Updated")), selmenu.max, IS_PLURAL(selmenu.max), (unsigned long int) (time(NULL) - beg_epoch));
 	}
 }
 
@@ -1505,7 +1502,7 @@ valid_artnum (
 	long art)
 {
 	register int prev, range;
-	register int dctop = top;
+	register int dctop = top_art;
 	register int cur = 1;
 
 	while ((dctop /= 2))
@@ -1523,8 +1520,8 @@ valid_artnum (
 		if (prev == cur)
 			return -1;
 
-		if (cur >= top)
-			cur = top - 1;
+		if (cur >= top_art)
+			cur = top_art - 1;
 
 		range /= 2;
 	}

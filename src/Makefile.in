@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 1998-01-31
+# Updated: 1999-12-16
 #
 
 SHELL		= /bin/sh
@@ -19,7 +19,7 @@ PRELIB	= @LIB_PREFIX@
 
 DEBUG	= @ENABLE_DEBUG@ -DDEBUG #-DDEBUG_NEWSRC -DPROFILE -DDEBUG_REFS
 CANLOCK = # -DUSE_CANLOCK # -DEVIL_INSIDE
-CPPOPTS	= @DEFS@ -I. -I../include -I$(top_srcdir)/pcre -I$(INCDIR) $(DEBUG) $(CANLOCK) @CPPFLAGS@
+CPPOPTS	= @DEFS@ -I. -I../include -I$(top_srcdir)/pcre -DLOCALEDIR=\"$(prefix)/@DATADIRNAME@/locale\" -I$(INCDIR) $(DEBUG) $(CANLOCK) @CPPFLAGS@
 CFLAGS	= @CFLAGS@
 
 LD	= $(CC)
@@ -27,7 +27,7 @@ LDFLAGS	= @LDFLAGS@
 YACC	= @YACC@
 
 CANLIB	= # -L../libcanlock -lcanlock
-LIBS	= -L../pcre -lpcre $(CANLIB) @LIBS@ @INN_NNTPLIB@
+LIBS	= -L../pcre -lpcre $(CANLIB) @LIBS@ @INN_NNTPLIB@ @INTLLIBS@
 
 # Where do you want the binary & manual page installed?
 INSTALL_PREFIX	= @INSTALL_PREFIX@
@@ -39,8 +39,7 @@ INS_MANUAL_EXT	= 1
 # Project
 PROJECT	= tin
 EXE	= tin$x
-EXED	= tind
-VER	= 1.4
+VER	= 1.5.1
 MANEXT	= 1
 
 # directory structure
@@ -96,6 +95,7 @@ CFILES	= \
 	$(SRCDIR)/feed.c \
 	$(SRCDIR)/filter.c \
 	$(SRCDIR)/getline.c \
+	$(SRCDIR)/global.c \
 	$(SRCDIR)/group.c \
 	$(SRCDIR)/hashstr.c \
 	$(SRCDIR)/header.c \
@@ -131,13 +131,14 @@ CFILES	= \
 	$(SRCDIR)/signal.c \
 	$(SRCDIR)/strftime.c \
 	$(SRCDIR)/string.c \
+	$(SRCDIR)/tags.c \
 	$(SRCDIR)/thread.c \
 	$(SRCDIR)/wildmat.c \
 	$(SRCDIR)/xref.c
 
 EXTRAOBJS = @EXTRAOBJS@
 
-EXTRALIBS = ../pcre/$(PRELIB)pcre.a
+EXTRALIBS = ../pcre/$(PRELIB)pcre.a @INTLLIBS@
 
 OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/active.o \
@@ -153,6 +154,7 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/feed.o \
 	$(OBJDIR)/filter.o \
 	$(OBJDIR)/getline.o \
+	$(OBJDIR)/global.o \
 	$(OBJDIR)/group.o \
 	$(OBJDIR)/hashstr.o \
 	$(OBJDIR)/header.o \
@@ -189,6 +191,7 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/signal.o \
 	$(OBJDIR)/strftime.o \
 	$(OBJDIR)/string.o \
+	$(OBJDIR)/tags.o \
 	$(OBJDIR)/tcurses.o \
 	$(OBJDIR)/thread.o \
 	$(OBJDIR)/wildmat.o \
@@ -251,7 +254,7 @@ $(INS_SYSDEF_DIR) :
 
 install_manpage: $(INSTALL_PREFIX)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)
 	@$(ECHO) "Installing $(EXE) manual page to $(INSTALL_PREFIX)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)..."
-	@$(INSTALL) -m 444 $(DOCDIR)/$(EXE).$(MANEXT) $(INSTALL_PREFIX)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(EXE).$(INS_MANUAL_EXT)
+	@$(INSTALL) -m 444 $(DOCDIR)/tin.1 $(INSTALL_PREFIX)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(EXE).$(INS_MANUAL_EXT)
 
 install_sysdefs: $(INS_SYSDEF_DIR)
 	@$(ECHO) "Installing system-wide defaults file to $(INS_SYSDEF_DIR)..."
@@ -294,9 +297,10 @@ clean:
 	@-$(RM) -f LINT *.ln *.out
 	@-$(RM) -f makecfg$x makecfg.o tincfg.h
 	@-$(RM) -f core *~
-	@-$(RM) -f $(EXE) $(EXED)
-	@$(ECHO) "Cleaning Philip Hazel's Perl regular expressions library..."
-	@$(CD) ../pcre && $(MAKE) @cf_cv_makeflags@ clean
+	@-$(RM) -f $(EXE)
+	@-if test -f ../intl/Makefile ; then $(CD) ../intl && $(ECHO) "Cleaning GNU gettext files..." && $(MAKE) @cf_cv_makeflags@ clean ; fi
+	@-if test -f ../po/Makefile ; then $(CD) ../po && $(MAKE) @cf_cv_makeflags@ clean ; fi
+	@-if test -f ../pcre/Makefile ; then $(CD) ../pcre && $(ECHO) "Cleaning Philip Hazel's Perl-compatible regular expressions library..." && $(MAKE) @cf_cv_makeflags@ clean ; fi
 
 laundry \
 dirty:
@@ -305,7 +309,7 @@ dirty:
 distclean \
 clobber: clean
 	@$(ECHO) "Clobbering..."
-	@-$(RM) -f $(OFILES) $(BINDIR)/$(EXE) $(BINDIR)/$(EXED) tags TAGS LINT cflow.$(PROJECT)
+	@-$(RM) -f $(OFILES) $(BINDIR)/$(EXE) tags TAGS LINT cflow.$(PROJECT)
 
 cflow:
 	@$(ECHO) "Creating cflow for $(PROJECT)..."
@@ -333,6 +337,11 @@ TIN_DEP	= \
 	@$(ECHO) "Building Philip Hazel's Perl regular expressions library..."
 	@$(CD) ../pcre && $(MAKE) @cf_cv_makeflags@ $(PRELIB)pcre.a
 
+#@INTLLIBS@:
+../intl/libintl.a:
+	@$(ECHO) "Building GNU gettext library..."
+	@$(CD) $(top_srcdir)/intl && $(MAKE) @cf_cv_makeflags@
+
 tincfg.h:			$(SRCDIR)/tincfg.tbl \
 				makecfg$x
 	./makecfg $(SRCDIR)/tincfg.tbl tincfg.h
@@ -359,6 +368,7 @@ $(OBJDIR)/feed.o:		$(SRCDIR)/feed.c $(TIN_DEP) \
 $(OBJDIR)/filter.o:		$(SRCDIR)/filter.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
 $(OBJDIR)/getline.o:		$(SRCDIR)/getline.c $(TIN_DEP)
+$(OBJDIR)/global.o:		$(SRCDIR)/getline.c $(TIN_DEP)
 $(OBJDIR)/group.o:		$(SRCDIR)/group.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h
 $(OBJDIR)/hashstr.o:		$(SRCDIR)/hashstr.c $(TIN_DEP)
@@ -415,6 +425,7 @@ $(OBJDIR)/sigfile.o:		$(SRCDIR)/sigfile.c $(TIN_DEP)
 $(OBJDIR)/signal.o:		$(SRCDIR)/signal.c $(TIN_DEP)
 $(OBJDIR)/strftime.o:		$(SRCDIR)/strftime.c $(TIN_DEP)
 $(OBJDIR)/string.o:		$(SRCDIR)/string.c $(TIN_DEP)
+$(OBJDIR)/tags.o:		$(SRCDIR)/tags.c $(TIN_DEP)
 $(OBJDIR)/tcurses.o:		$(SRCDIR)/tcurses.c $(TIN_DEP)
 $(OBJDIR)/thread.o:		$(SRCDIR)/thread.c $(TIN_DEP) \
 				$(INCDIR)/menukeys.h

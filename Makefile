@@ -7,9 +7,9 @@
 PROJECT	= tin
 LVER	= 1
 PVER	= 5
-SVER	= 0
+SVER	= 1
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 19991201
+DVER	= 19991228
 EXE	= tin
 MANEXT	= 1
 
@@ -24,6 +24,8 @@ VMSDIR	= ./vms
 PCREDIR	= ./pcre
 CANDIR	= ./libcanlock
 TOLDIR	= ./tools
+PODIR	= ./po
+INTLDIR	= ./intl
 
 HFILES	= \
 	$(INCDIR)/bool.h \
@@ -56,6 +58,7 @@ CFILES	= \
 	$(SRCDIR)/feed.c \
 	$(SRCDIR)/filter.c \
 	$(SRCDIR)/getline.c \
+	$(SRCDIR)/global.c \
 	$(SRCDIR)/group.c \
 	$(SRCDIR)/hashstr.c \
 	$(SRCDIR)/header.c \
@@ -93,6 +96,7 @@ CFILES	= \
 	$(SRCDIR)/signal.c \
 	$(SRCDIR)/strftime.c \
 	$(SRCDIR)/string.c \
+	$(SRCDIR)/tags.c \
 	$(SRCDIR)/tcurses.c \
 	$(SRCDIR)/thread.c \
 	$(SRCDIR)/trace.c \
@@ -134,6 +138,7 @@ VMS	= \
 	$(VMSDIR)/vmstimval.h
 
 DOC	= \
+	$(DOCDIR)/ABOUT-NLS \
 	$(DOCDIR)/CHANGES \
 	$(DOCDIR)/CHANGES.old \
 	$(DOCDIR)/DEBUG_REFS \
@@ -152,7 +157,7 @@ DOC	= \
 	$(DOCDIR)/umlaute.txt \
 	$(DOCDIR)/umlauts.txt \
 	$(DOCDIR)/tin.defaults \
-	$(DOCDIR)/$(EXE).$(MANEXT)
+	$(DOCDIR)/tin.1
 
 TOL	= \
 	$(TOLDIR)/metamutt \
@@ -257,9 +262,42 @@ MISC	= \
 	$(SRCDIR)/descrip.mms \
 	$(PCREDIR)/pcre.mms
 
-ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(AMIGA) $(VMS) $(PCRE) $(MISC) $(CAN)
+INTLFILES = \
+        $(INTLDIR)/bindtextdom.c \
+        $(INTLDIR)/cat-compat.c \
+        $(INTLDIR)/ChangeLog \
+        $(INTLDIR)/dcgettext.c \
+        $(INTLDIR)/dgettext.c \
+        $(INTLDIR)/explodename.c \
+        $(INTLDIR)/finddomain.c \
+        $(INTLDIR)/gettext.c \
+        $(INTLDIR)/gettext.h \
+        $(INTLDIR)/gettextP.h \
+        $(INTLDIR)/hash-string.h \
+        $(INTLDIR)/intl-compat.c \
+        $(INTLDIR)/l10nflist.c \
+        $(INTLDIR)/libgettext.h \
+        $(INTLDIR)/linux-msg.sed \
+        $(INTLDIR)/loadinfo.h \
+        $(INTLDIR)/loadmsgcat.c \
+        $(INTLDIR)/localealias.c \
+        $(INTLDIR)/Makefile.in \
+        $(INTLDIR)/po2tbl.sed.in \
+        $(INTLDIR)/textdomain.c \
+        $(INTLDIR)/VERSION \
+        $(INTLDIR)/xopen-msg.sed \
+	
+POFILES = \
+	$(PODIR)/Makefile.in \
+	$(PODIR)/Makefile.in.in \
+	$(PODIR)/POTFILES \
+	$(PODIR)/POTFILES.in \
+	$(PODIR)/tin.pot
 
-ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(AMGDIR) $(VMSDIR) $(PCREDIR) $(CANDIR) $(CANDIR)/doc
+	
+ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(AMIGA) $(VMS) $(PCRE) $(MISC) $(CAN) $(INTLFILES) $(POFILES)
+
+ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(AMGDIR) $(VMSDIR) $(PCREDIR) $(CANDIR) $(CANDIR)/doc $(INTLDIR) $(PODIR)
 
 # standard commands
 CD	= cd
@@ -292,7 +330,6 @@ all:
 	@$(ECHO) "    make dist            [ Create a gziped distribution tar file ]"
 	@$(ECHO) "    make distclean       [ Delete all config, object and backup files ]"
 	@$(ECHO) "    make install         [ Install the binary and the manual page ]"
-	@$(ECHO) "    make install_daemon  [ Install the index daemon binary ]"
 	@$(ECHO) "    make install_setuid  [ Install the binary setuid & the manual page ]"
 	@$(ECHO) "    make install_sysdefs [ Install the system-wide-defaults file ]"
 	@$(ECHO) "    make manpage         [ Create nroff version of manual page ]"
@@ -308,9 +345,6 @@ install:
 install_setuid:
 	@$(CD) $(SRCDIR) && $(MAKE) install_setuid
 
-install_daemon:
-	@$(CD) $(SRCDIR) && $(MAKE) install_daemon
-
 install_sysdefs:
 	@$(CD) $(SRCDIR) && $(MAKE) install_sysdefs
 
@@ -321,15 +355,17 @@ clean:
 	$(INCDIR)/*~ \
 	$(SRCDIR)/*~ \
 	$(PCREDIR)/*~
-	@-if test -f $(SRCDIR)/Makefile ; then $(CD) $(SRCDIR) && $(MAKE) clean ; fi
 	@-if test -f $(PCREDIR)/Makefile ; then $(CD) $(PCREDIR) && $(MAKE) clean ; fi
+	@-if test -f $(INTLDIR)/Makefile ; then $(CD) $(INTLDIR) && $(MAKE) clean ; fi
+	@-if test -f $(PODIR)/Makefile ; then $(CD) $(PODIR) && $(MAKE) clean ; fi
+	@-if test -f $(SRCDIR)/Makefile ; then $(CD) $(SRCDIR) && $(MAKE) clean ; fi
 
 man:
 	@$(MAKE) manpage
 
 manpage:
 	@$(ECHO) "Creating $(NROFF) man page for $(EXE)-$(VER)..."
-	@$(NROFF) -man $(DOCDIR)/$(EXE).1 > $(DOCDIR)/$(EXE).nrf
+	@$(NROFF) -man $(DOCDIR)/tin.1 > $(DOCDIR)/$(EXE).nrf
 
 # Use 2 passes for creating MANIFEST because its size changes (it's not likely
 # that we'll need 3 passes, since that'll happen only when the grand total's
@@ -394,7 +430,7 @@ name:
 	$(SED) "s,^DVER[[:space:]]*=[[:print:]]*,DVER	= $$DATE," ./Makefile > ./Makefile.tmp && \
 	$(MV) ./Makefile.tmp ./Makefile ;\
 	$(SED) "s,RELEASEDATE[[:space:]]*\"[[:print:]]*\",RELEASEDATE	\"$$DATE\"," $(INCDIR)/version.h > $(INCDIR)/version.h.tmp && \
-	$(SED) "s, VERSION[[:space:]]*\"[[:print:]]*\", VERSION 	\"$(VER)\"," $(INCDIR)/version.h.tmp > $(INCDIR)/version.h ;\
+	$(SED) "s, VERSION[[:space:]]*\"[[:print:]]*\", VERSION		\"$(VER)\"," $(INCDIR)/version.h.tmp > $(INCDIR)/version.h ;\
 	$(SED) "s,^DVER[[:space:]]*=[[:print:]]*,DVER		= $$DATE," ./makefile.in > ./makefile.in.tmp && \
 	$(MV) ./makefile.in.tmp ./makefile.in
 
@@ -425,7 +461,8 @@ distclean:
 	$(CANDIR)/endian.h \
 	$(CANDIR)/canlocktest \
 	$(CANDIR)/endian \
-	$(CANDIR)/hmactest
+	$(CANDIR)/hmactest \
+	$(INTLDIR)/Makefile
 
 configure: configure.in aclocal.m4
 	autoconf

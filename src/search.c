@@ -21,12 +21,12 @@ static char tmpbuf[LEN];
 /*
  * local prototypes
  */
-static char * get_search_pattern (int forward, const char *fwd_msg, const char *bwd_msg, char *def, int which_hist);
+static char *get_search_pattern (t_bool forward, const char *fwd_msg, const char *bwd_msg, char *def, int which_hist);
 
 /*
  * The search function may place error text into mesg
  */
-#define MATCH_MSG	(mesg[0] ? mesg : txt_no_match)
+#define MATCH_MSG	(mesg[0] ? mesg : _(txt_no_match))
 
 /*
  * Kludge to maintain counters for body search
@@ -40,7 +40,7 @@ static int total_cnt = 0, curr_cnt = 0;
  */
 static char *
 get_search_pattern (
-	int forward,
+	t_bool forward,
 	const char *fwd_msg,
 	const char *bwd_msg,
 	char *def,
@@ -48,10 +48,10 @@ get_search_pattern (
 {
 	sprintf (tmpbuf, (forward ? fwd_msg : bwd_msg), def);
 
-	if (!prompt_string_default(tmpbuf, def, txt_no_search_string, which_hist))
+	if (!prompt_string_default(tmpbuf, def, _(txt_no_search_string), which_hist))
 		return (NULL);
 
-	wait_message (0, txt_searching);
+	wait_message (0, _(txt_searching));
 	stow_cursor();
 
 	if (tinrc.wildcard) {			/* ie, not wildmat() */
@@ -73,7 +73,7 @@ get_search_pattern (
  */
 int
 search_config (
-	int forward,
+	t_bool forward,
 	int current,
 	int last)
 {
@@ -84,8 +84,8 @@ search_config (
 
 	if (!(buf = get_search_pattern(
 				forward,
-				txt_search_forwards,
-				txt_search_backwards,
+				_(txt_search_forwards),
+				_(txt_search_backwards),
 				tinrc.default_search_config,
 				HIST_CONFIG_SEARCH
 	))) return result;
@@ -115,32 +115,32 @@ search_config (
  */
 int
 search_active (
-	int forward)
+	t_bool forward)
 {
 	char *buf;
 	char buf2[LEN];
 	char *ptr = buf2;
 	int i;
 
-	if (!group_top) {
-		info_message (txt_no_groups);
+	if (!selmenu.max) {
+		info_message (_(txt_no_groups));
 		return -1;
 	}
 
-	if (!(buf = get_search_pattern(forward, txt_search_forwards, txt_search_backwards, tinrc.default_search_group, HIST_GROUP_SEARCH)))
+	if (!(buf = get_search_pattern(forward, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_group, HIST_GROUP_SEARCH)))
 		return -1;
 
-	i = cur_groupnum;
+	i = selmenu.curr;
 
 	do {
 		if (forward) {
 			i++;
-			if (i >= group_top)
+			if (i >= selmenu.max)
 				i = 0;
 		} else {
 			i--;
 			if (i < 0)
-				i = group_top - 1;
+				i = selmenu.max - 1;
 		}
 
 		/*
@@ -155,7 +155,7 @@ search_active (
 		if (REGEX_MATCH (ptr, buf, TRUE)) {
 			return i;
 		}
-	} while (i != cur_groupnum);
+	} while (i != selmenu.curr);
 
 	info_message (MATCH_MSG);
 	return -1;
@@ -167,7 +167,7 @@ search_active (
  */
 int
 search_help (
-	int forward,
+	t_bool forward,
 	int current,
 	int last)
 {
@@ -178,8 +178,8 @@ search_help (
 
 	if (!(buf = get_search_pattern(
 				forward,
-				txt_search_forwards,
-				txt_search_backwards,
+				_(txt_search_forwards),
+				_(txt_search_backwards),
 				tinrc.default_search_group,
 				HIST_HELP_SEARCH
 	))) return result;
@@ -226,7 +226,7 @@ body_search (
 	/*
 	 * open_art_fp() will display 'mesg' if not null instead of the default progress counter
 	 */
-	sprintf(mesg, txt_searching_body, ++curr_cnt, total_cnt);
+	sprintf(mesg, _(txt_searching_body), ++curr_cnt, total_cnt);
 
 #if 1 /* see also screen.c show_progress ()*/
 	if ((fp = open_art_fp (group_path, art->artnum, -art->lines, TRUE)) == (FILE *) 0)
@@ -309,7 +309,7 @@ subject_search (
  */
 static int
 search_group (
-	int forward,
+	t_bool forward,
 	int current_art,
 	char *searchbuff,
 	int (*search_func) (int i, char *searchbuff))
@@ -317,8 +317,8 @@ search_group (
 	char group_path[PATH_LEN];
 	int i;
 
-	if (index_point < 0) {
-		info_message (txt_no_arts);
+	if (grpmenu.curr < 0) {
+		info_message (_(txt_no_arts));
 		return 0;
 	}
 
@@ -333,7 +333,7 @@ search_group (
 				i = base[0];
 		} else {
 			if ((i = prev_response (i)) < 0)
-				i = find_response(top_base - 1, num_of_responses (top_base - 1));
+				i = find_response(grpmenu.max - 1, num_of_responses (grpmenu.max - 1));
 		}
 
 		/* Only search displayed articles */
@@ -363,7 +363,7 @@ int
 search (
 	int key,
 	int current_art,
-	int forward)
+	t_bool forward)
 {
 	char *buf = NULL;
 	int (*search_func) (int i, char *searchbuff) = author_search;
@@ -372,8 +372,8 @@ search (
 		case SEARCH_SUBJ:
 			if (!(buf = get_search_pattern(
 					forward,
-					txt_search_forwards,
-					txt_search_backwards,
+					_(txt_search_forwards),
+					_(txt_search_backwards),
 					tinrc.default_search_subject,
 					HIST_SUBJECT_SEARCH
 			))) return -1;
@@ -385,8 +385,8 @@ search (
 		default:
 			if (!(buf = get_search_pattern(
 					forward,
-					txt_author_search_forwards,
-					txt_author_search_backwards,
+					_(txt_author_search_forwards),
+					_(txt_author_search_backwards),
 					tinrc.default_search_author,
 					HIST_AUTHOR_SEARCH
 			))) return -1;
@@ -401,11 +401,11 @@ search (
 
 /*
  * page.c (search current article body)
- *	TODO - highlight located text ?
+ * TODO - highlight located text ?
  */
 t_bool
 search_article (
-	int forward)
+	t_bool forward)
 {
 	char *pattern;
 	char *p, *q;
@@ -418,8 +418,8 @@ search_article (
 
 	if (!(pattern = get_search_pattern(
 				forward,
-				txt_search_forwards,
-				txt_search_backwards,
+				_(txt_search_forwards),
+				_(txt_search_backwards),
 				tinrc.default_search_art,
 				HIST_ART_SEARCH
 	))) return FALSE;
@@ -492,7 +492,7 @@ search_body (
 	char *buf;
 	int i;
 
-	if (!(buf = get_search_pattern(1, txt_search_body, txt_search_body, tinrc.default_search_art, HIST_ART_SEARCH)))
+	if (!(buf = get_search_pattern(TRUE, _(txt_search_body), _(txt_search_body), tinrc.default_search_art, HIST_ART_SEARCH)))
 		return -1;
 
 	total_cnt = curr_cnt = 0;			/* Reset global counter of articles done */
@@ -501,10 +501,10 @@ search_body (
 	 * Count up the articles to be processed for the progress meter
 	 */
 	if (CURR_GROUP.attribute->show_only_unread) {
-		for (i = 0; i < top_base; i++)
+		for (i = 0; i < grpmenu.max; i++)
 			total_cnt += new_responses (i);
 	} else {
-		for (i = 0; i < top; i++) {
+		for (i = 0; i < top_art; i++) {
 			if (!IGNORE_ART(i))
 				total_cnt++;
 		}

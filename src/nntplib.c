@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 1999-11-29
+ *  Updated   : 1997-12-22
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -312,7 +312,7 @@ get_tcp_socket (
 		strcpy(device, "/dev/tcp");
 
 	if ((s = t_open (device, O_RDWR, (struct t_info*) 0)) < 0){
-		t_error ("t_open: can't t_open /dev/tcp"); /* FIXME: -> lang.c */
+		t_error (_("t_open: can't t_open /dev/tcp")); /* FIXME: -> lang.c */
 		return (-EPROTO);
 	}
 	if (t_bind (s, (struct t_bind *) 0, (struct t_bind *) 0) < 0) {
@@ -332,7 +332,7 @@ get_tcp_socket (
 #		endif /* HAVE_INET_ATON */
 	{
 		if ((hp = gethostbyname (machine)) == NULL) {
-			my_fprintf (stderr, "gethostbyname: %s: host unknown\n", machine); /* FIXME: -> lang.c */
+			my_fprintf (stderr, _("gethostbyname: %s: host unknown\n"), machine); /* FIXME: -> lang.c */
 			t_close (s);
 			return (-EHOSTUNREACH);
 		}
@@ -361,7 +361,7 @@ get_tcp_socket (
 	if (t_connect (s, callptr, (struct t_call *) 0) < 0) {
 		save_errno = t_errno;
 		if (save_errno == TLOOK)
-			fprintf(stderr, "Server unavailable\n"); /* FIXME: -> lang.c */
+			fprintf(stderr, _("Server unavailable\n")); /* FIXME: -> lang.c */
 		else
 			t_error ("t_connect"); /* FIXME: -> lang.c */
 		t_free((char *)callptr, T_CALL);
@@ -404,7 +404,7 @@ get_tcp_socket (
 
 #			ifdef HAVE_GETSERVBYNAME
 	if ((sp = (struct servent *) getservbyname (service, "tcp")) ==  NULL) {
-		my_fprintf (stderr, "%s/tcp: Unknown service.\n", service); /* FIXME: -> lang.c */
+		my_fprintf (stderr, _("%s/tcp: Unknown service.\n"), service); /* FIXME: -> lang.c */
 		return (-EHOSTUNREACH);
 	}
 #			else
@@ -436,7 +436,7 @@ get_tcp_socket (
 	}
 
 	if (hp == NULL) {
-		my_fprintf (stderr, "\n%s: Unknown host.\n", machine); /* FIXME: -> lang.c */
+		my_fprintf (stderr, _("\n%s: Unknown host.\n"), machine); /* FIXME: -> lang.c */
 		return (-EHOSTUNREACH);
 	}
 
@@ -472,7 +472,7 @@ get_tcp_socket (
 		memcpy((char *) &sock_in.sin_addr, *cp, hp->h_length);
 
 		if (x < 0)
-			my_fprintf (stderr, "Trying %s", (char *) inet_ntoa (sock_in.sin_addr)); /* FIXME: -> lang.c */
+			my_fprintf (stderr, _("Trying %s"), (char *) inet_ntoa (sock_in.sin_addr)); /* FIXME: -> lang.c */
 
 #			if defined(__hpux) && defined(SVR4)	/* recommended by raj@cup.hp.com */
 #				define HPSOCKSIZE 0x8000
@@ -494,13 +494,13 @@ get_tcp_socket (
 			break;
 
 		save_errno = errno;									/* Keep for later */
-		my_fprintf (stderr, "\nConnection to %s: ", (char *) inet_ntoa (sock_in.sin_addr)); /* FIXME: -> lang.c */
+		my_fprintf (stderr, _("\nConnection to %s: "), (char *) inet_ntoa (sock_in.sin_addr)); /* FIXME: -> lang.c */
 		perror ("");
 		(void) s_close (s);
 	}
 
 	if (x < 0) {
-		my_fprintf (stderr, "Giving up...\n"); /* FIXME: -> lang.c */
+		my_fprintf (stderr, _("Giving up...\n")); /* FIXME: -> lang.c */
 		return (-save_errno);					/* Return the last errno we got */
 	}
 #		else	/* no name server */
@@ -517,7 +517,7 @@ get_tcp_socket (
 	sock_in.sin_port = htons (IPPORT_NNTP);
 
 	if ((sock_in.sin_addr.s_addr = rhost (&machine)) == -1) {
-		my_fprintf (stderr, "\n%s: Unknown host.\n", machine); /* FIXME: -> lang.c */
+		my_fprintf (stderr, _("\n%s: Unknown host.\n"), machine); /* FIXME: -> lang.c */
 		return (-1);
 	}
 
@@ -577,8 +577,8 @@ get_tcp6_socket (
 	int s = -1, err = -1;
 	struct addrinfo hints, *res, *res0;
 
-	snprintf(mymachine, strlen(mymachine)-1, "%s", machine);
-	snprintf(myport, strlen(myport)-1, "%d", port);
+	snprintf(mymachine, sizeof(mymachine)-1, "%s", machine);
+	snprintf(myport, sizeof(myport)-1, "%d", port);
 
 /* just in case */
 #	ifdef AF_UNSPEC
@@ -611,7 +611,7 @@ get_tcp6_socket (
 		}
 	}
 	if (err < 0) {
-		my_fprintf (stderr, "\nsocket or connect problem\n"); /* FIXME: -> lang.c */
+		my_fprintf (stderr, _("\nsocket or connect problem\n")); /* FIXME: -> lang.c */
 		return (-1);
 	}
 	return(s);
@@ -658,7 +658,7 @@ get_dnet_socket (
 			break;
 		default:
 			if ((np = getnodebyname (machine)) == NULL) {
-				my_fprintf (stderr, "%s: Unknown host.\n", machine); /* FIXME: -> lang.c */
+				my_fprintf (stderr, _("%s: Unknown host.\n"), machine); /* FIXME: -> lang.c */
 				return (-1);
 			} else {
 				memcpy((char *) sdn.sdn_add.a_addr, np->n_addr, np->n_length);
@@ -763,9 +763,9 @@ reconnect (
 	if (!tinrc.auto_reconnect)
 		ring_bell ();
 
-	DEBUG_IO((stderr, "\nServer timed out, trying reconnect # %d\n", retry));
+	DEBUG_IO((stderr, _("\nServer timed out, trying reconnect # %d\n"), retry));
 
-	if (!tinrc.auto_reconnect && prompt_yn (cLINES, txt_reconnect_to_news_server, TRUE) != 1)
+	if (!tinrc.auto_reconnect && prompt_yn (cLINES, _(txt_reconnect_to_news_server), TRUE) != 1)
 		tin_done(EXIT_SUCCESS);		/* user said no to reconnect */
 
 	clear_message ();
@@ -778,13 +778,13 @@ reconnect (
 		 * Re-establish our current group and resend last command
 		 */
 		if (glob_group != (char *) 0) {
-			DEBUG_IO((stderr, "Rejoin current group\n"));
+			DEBUG_IO((stderr, _("Rejoin current group\n")));
 			sprintf (last_put, "GROUP %s", glob_group);
 			put_server (last_put);
 			s_gets (last_put, NNTP_STRLEN, nntp_rd_fp);
-			DEBUG_IO((stderr, "Read (%s)\n", last_put));
+			DEBUG_IO((stderr, _("Read (%s)\n"), last_put));
 		}
-		DEBUG_IO((stderr, "Resend last command (%s)\n", buf));
+		DEBUG_IO((stderr, _("Resend last command (%s)\n"), buf));
 		put_server (buf);
 		return 0;
 	}
@@ -857,7 +857,7 @@ close_server (
 	if (nntp_wr_fp == NULL || nntp_rd_fp == NULL)
 		return;
 
-	my_fputs("Disconnecting from server...\n", stdout); /* FIXME: -> lang.c */
+	my_fputs(_("Disconnecting from server...\n"), stdout); /* FIXME: -> lang.c */
 	nntp_command("QUIT", OK_GOODBYE, NULL);
 
 	(void) s_fclose (nntp_wr_fp);
@@ -884,186 +884,174 @@ nntp_respcode (
 			text = "";
 			break;
 		case INF_HELP:
-			text = "100  Help text on way";
+			text = _("100  Help text on way");
 			break;
 		case INF_AUTH:
-			text = "180  Authorization capabilities";
+			text = _("180  Authorization capabilities");
 			break;
 		case INF_DEBUG:
-			text = "199  Debug output";
+			text = _("199  Debug output");
 			break;
 		case OK_CANPOST:
-			text = "200  Hello; you can post";
+			text = _("200  Hello; you can post");
 			break;
 		case OK_NOPOST:
-			text = "201  Hello; you can't post";
+			text = _("201  Hello; you can't post");
 			break;
 		case OK_SLAVE:
-			text = "202  Slave status noted";
+			text = _("202  Slave status noted");
 			break;
 		case OK_GOODBYE:
-			text = "205  Closing connection";
+			text = _("205  Closing connection");
 			break;
 		case OK_GROUP:
-			text = "211  Group selected";
+			text = _("211  Group selected");
 			break;
 		/* case OK_MOTD: */
 		case OK_GROUPS:
-			text = "215  Newsgroups follow";
+			text = _("215  Newsgroups follow");
 			break;
 		case OK_XINDEX:
-			text = "218  Group index file follows";
+			text = _("218  Group index file follows");
 			break;
 		case OK_ARTICLE:
-			text = "220  Article (head & body) follows";
+			text = _("220  Article (head & body) follows");
 			break;
 		case OK_HEAD:
-			text = "221  Head follows";
+			text = _("221  Head follows");
 			break;
 		case OK_BODY:
-			text = "222  Body follows";
+			text = _("222  Body follows");
 			break;
 		case OK_NOTEXT:
-			text = "223  No text sent -- stat, next, last";
+			text = _("223  No text sent -- stat, next, last");
 			break;
 		case OK_NEWNEWS:
-			text = "230  New articles by message-id follow";
+			text = _("230  New articles by message-id follow");
 			break;
 		case OK_NEWGROUPS:
-			text = "231  New newsgroups follow";
+			text = _("231  New newsgroups follow");
 			break;
 		case OK_XFERED:
-			text = "235  Article transferred successfully";
+			text = _("235  Article transferred successfully");
 			break;
 		case OK_POSTED:
-			text = "240  Article posted successfully";
+			text = _("240  Article posted successfully");
 			break;
-	        case OK_AUTHSIMPLE:
-	     	        text = "250  Authorization accepted";
-                        break;
 		case OK_AUTHSYS:
-			text = "280  Authorization system ok";
+			text = _("280  Authorization system ok");
 			break;
 		case OK_AUTH:
-			text = "281  Authorization (user/pass) ok";
+			text = _("281  Authorization (user/pass) ok");
 			break;
 		case OK_BIN:
-			text = "282  binary data follows";
+			text = _("282  binary data follows");
 			break;
 		case OK_SPLIST:
-			text = "283  spooldir list follows";
+			text = _("283  spooldir list follows");
 			break;
 		case OK_SPSWITCH:
-			text = "284  Switching to a different spooldir";
+			text = _("284  Switching to a different spooldir");
 			break;
 		case OK_SPNOCHANGE:
-			text = "285  Still using same spooldir";
+			text = _("285  Still using same spooldir");
 			break;
 		case OK_SPLDIRCUR:
-			text = "286  Current spooldir";
+			text = _("286  Current spooldir");
 			break;
 		case OK_SPLDIRAVL:
-			text = "287  Available spooldir";
+			text = _("287  Available spooldir");
 			break;
 		case OK_SPLDIRERR:
-			text = "288  Unavailable spooldir or invalid entry";
+			text = _("288  Unavailable spooldir or invalid entry");
 			break;
 		case CONT_XFER:
-			text = "335  Continue to send article";
+			text = _("335  Continue to send article");
 			break;
 		case CONT_POST:
-			text = "340  Continue to post article";
-			break;
-	        case CONT_AUTHSIMPLE:
-		        text = "350  Continue with authorization sequence";
+			text = _("340  Continue to post article");
 			break;
 		case NEED_AUTHINFO:
-			text = "380  authorization is required";
+			text = _("380  authorization is required");
 			break;
 		case NEED_AUTHDATA:
-			text = "381  <type> authorization data required";
+			text = _("381  <type> authorization data required");
 			break;
 		case ERR_GOODBYE:
-			text = "400  Have to hang up for some reason";
+			text = _("400  Have to hang up for some reason");
 			break;
 		case ERR_NOGROUP:
-			text = "411  No such newsgroup";
+			text = _("411  No such newsgroup");
 			break;
 		case ERR_NCING:
-			text = "412  Not currently in newsgroup";
+			text = _("412  Not currently in newsgroup");
 			break;
 		case ERR_XINDEX:
-			text = "418  No index file for this group";
+			text = _("418  No index file for this group");
 			break;
 		case ERR_NOCRNT:
-			text = "420  No current article selected";
+			text = _("420  No current article selected");
 			break;
 		case ERR_NONEXT:
-			text = "421  No next article in this group";
+			text = _("421  No next article in this group");
 			break;
 		case ERR_NOPREV:
-			text = "422  No previous article in this group";
+			text = _("422  No previous article in this group");
 			break;
 		case ERR_NOARTIG:
-			text = "423  No such article in this group";
+			text = _("423  No such article in this group");
 			break;
 		case ERR_NOART:
-			text = "430  No such article at all";
+			text = _("430  No such article at all");
 			break;
 		case ERR_GOTIT:
-			text = "435  Already got that article, don't send";
+			text = _("435  Already got that article, don't send");
 			break;
 		case ERR_XFERFAIL:
-			text = "436  Transfer failed";
+			text = _("436  Transfer failed");
 			break;
 		case ERR_XFERRJCT:
-			text = "437  Article rejected, don't resend";
+			text = _("437  Article rejected, don't resend");
 			break;
 		case ERR_NOPOST:
-			text = "440  Posting not allowed";
+			text = _("440  Posting not allowed");
 			break;
 		case ERR_POSTFAIL:
-			text = "441  Posting failed";
+			text = _("441  Posting failed");
 			break;
-	        case ERR_NOAUTHSIMPLE:
-	                text = "450  Authorization required for this command";
-	                break;
-	        case ERR_AUTHREJSIMPLE:
-	                text = "452  Authorization rejected";
-	                break;
 		case ERR_NOAUTH:
-			text = "480  authorization required for command";
+			text = _("480  authorization required for command");
 			break;
 		case ERR_AUTHSYS:
-			text = "481  Authorization system invalid";
+			text = _("481  Authorization system invalid");
 			break;
 		case ERR_AUTHREJ:
-			text = "482  Authorization data rejected";
+			text = _("482  Authorization data rejected");
 			break;
 		case ERR_INVALIAS:
-			text = "483  Invalid alias on spooldir cmd";
+			text = _("483  Invalid alias on spooldir cmd");
 			break;
 		case ERR_INVNOSPDIR:
-			text = "484  No spooldir file found";
+			text = _("484  No spooldir file found");
 			break;
 		case ERR_COMMAND:
-			text = "500  Command not recognized";
+			text = _("500  Command not recognized");
 			break;
 		case ERR_CMDSYN:
-			text = "501  Command syntax error";
+			text = _("501  Command syntax error");
 			break;
 		case ERR_ACCESS:
-			text = "502  Access to server denied";
+			text = _("502  Access to server denied");
 			break;
 		/* case ERR_MOTD: */
 		case ERR_FAULT:
-			text = "503  Program fault, command not performed";
+			text = _("503  Program fault, command not performed");
 			break;
 		case ERR_AUTHBAD:
-			text = "580  Authorization Failed";
+			text = _("580  Authorization Failed");
 			break;
 		default:
-			text = "Unknown NNTP response code";
+			text = _("Unknown NNTP response code");
 			break;
 	}
 	return (text);

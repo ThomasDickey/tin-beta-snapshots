@@ -68,11 +68,11 @@ append_file (
 	FILE *fp_old, *fp_new;
 
 	if ((fp_new = fopen (new_filename, "r")) == (FILE *) 0) {
-		perror_message (txt_cannot_open, new_filename);
+		perror_message (_(txt_cannot_open), new_filename);
 		return;
 	}
 	if ((fp_old = fopen (old_filename, "a+")) == (FILE *) 0) {
-		perror_message (txt_cannot_open, old_filename);
+		perror_message (_(txt_cannot_open), old_filename);
 		fclose (fp_new);
 		return;
 	}
@@ -88,7 +88,7 @@ asfail (
 	int line,
 	const char *cond)
 {
-	my_fprintf (stderr, txt_error_asfail, tin_progname, file, line, cond);
+	my_fprintf (stderr, _(txt_error_asfail), tin_progname, file, line, cond);
 	my_fflush (stderr);
 
 /*
@@ -133,7 +133,7 @@ copy_fp (
 			TRACE(("copy_fp wrote %d of %d:{%.*s}",
 				sent, have, (int) sent, buf));
 			if (!got_sig_pipe) /* !SIGPIPE => more serious error */
-				perror_message (txt_error_copy_fp);
+				perror_message (_(txt_error_copy_fp));
 			return FALSE;
 		}
 		TRACE(("copy_fp wrote %d:{%.*s}", sent, (int) sent, buf));
@@ -200,7 +200,7 @@ copy_body (
 				if (strchr(buf, '>')) {
 					status_space = FALSE;
 					status_char = TRUE;
-					for (i=0; buf[i] && (buf[i] != '>'); i++) {
+					for (i = 0; buf[i] && (buf[i] != '>'); i++) {
 						buf2[i] = buf[i];
 						if (buf[i] != ' ')
 							status_space = TRUE;
@@ -327,19 +327,19 @@ invoke_ispell (
 	strcat (nam_head, ".head");
 
 	if ((fp_all = fopen(nam, "r")) == (FILE *) 0) {
-		perror_message(txt_cannot_open, nam);
+		perror_message(_(txt_cannot_open), nam);
 		return FALSE;
 	}
 
 
 	if ((fp_head = fopen (nam_head, "w")) == NULL) {
-		perror_message(txt_cannot_open, nam_head);
+		perror_message(_(txt_cannot_open), nam_head);
 		fclose (fp_all);
 		return FALSE;
 	}
 
 	if ((fp_body = fopen (nam_body, "w")) == NULL) {
-		perror_message(txt_cannot_open, nam_body);
+		perror_message(_(txt_cannot_open), nam_body);
 		fclose (fp_head);
 		fclose (fp_all);
 		return FALSE;
@@ -379,7 +379,7 @@ shell_escape (
 	char *p;
 	char shell[LEN];
 
-	sprintf (mesg, txt_shell_escape, tinrc.default_shell_command);
+	sprintf (mesg, _(txt_shell_escape), tinrc.default_shell_command);
 
 	if (!prompt_string (mesg, shell, HIST_SHELL_COMMAND))
 		return;
@@ -428,11 +428,11 @@ tin_done (
 	 * check if any groups were read & ask if they should marked read
 	 */
 	if (tinrc.catchup_read_groups && !cmd_line && !no_write) {
-		for (i = 0; i < group_top; i++) {
+		for (i = 0; i < selmenu.max; i++) {
 			group = &active[my_group[i]];
 			if (group->read_during_session) {
 				if (ask) {
-					if (prompt_yn (cLINES, txt_catchup_all_read_groups, FALSE) == 1) {
+					if (prompt_yn (cLINES, _(txt_catchup_all_read_groups), FALSE) == 1) {
 						ask = FALSE;
 						tinrc.thread_articles = THREAD_NONE;	/* speeds up index loading */
 					} else
@@ -451,17 +451,17 @@ tin_done (
 	if (!no_write) {
 		forever {
 			if (((wrote_newsrc_lines = vWriteNewsrc ()) >= 0L) && (wrote_newsrc_lines >= read_newsrc_lines)) {
-				my_fputs(txt_newsrc_saved, stdout);
+				my_fputs(_(txt_newsrc_saved), stdout);
 				break;
 			}
 
 			if (wrote_newsrc_lines < read_newsrc_lines) {
 				/* FIXME: prompt for retry? (i.e. remove break) */
-				wait_message(5, txt_warn_newsrc, newsrc, (read_newsrc_lines - wrote_newsrc_lines), (read_newsrc_lines - wrote_newsrc_lines) == 1 ? "" : txt_plural, OLDNEWSRC_FILE);
+				wait_message(5, _(txt_warn_newsrc), newsrc, (read_newsrc_lines - wrote_newsrc_lines), (read_newsrc_lines - wrote_newsrc_lines) == 1 ? "" : _(txt_plural), OLDNEWSRC_FILE);
 				break;
 			}
 
-			if (!prompt_yn (cLINES, txt_newsrc_again, TRUE))
+			if (!prompt_yn (cLINES, _(txt_newsrc_again), TRUE))
 				break;
 		}
 
@@ -659,11 +659,11 @@ rename_file (
 	{
 		if (errno == EXDEV) {	/* create & copy file across filesystem */
 			if ((fp_old = fopen (old_filename, "r")) == (FILE *) 0) {
-				perror_message (txt_cannot_open, old_filename);
+				perror_message (_(txt_cannot_open), old_filename);
 				return;
 			}
 			if ((fp_new = fopen (new_filename, "w")) == (FILE *) 0) {
-				perror_message (txt_cannot_open, new_filename);
+				perror_message (_(txt_cannot_open), new_filename);
 				fclose (fp_old);
 				return;
 			}
@@ -672,13 +672,13 @@ rename_file (
 			fclose (fp_old);
 			errno = 0;
 		} else {
-			perror_message (txt_rename_error, old_filename, new_filename);
+			perror_message (_(txt_rename_error), old_filename, new_filename);
 			return;
 		}
 	}
 #	ifdef HAVE_LINK
 	if (unlink (old_filename) == -1) {
-		perror_message (txt_rename_error, old_filename, new_filename);
+		perror_message (_(txt_rename_error), old_filename, new_filename);
 		return;
 	}
 #	endif /* HAVE_LINK */
@@ -705,7 +705,7 @@ rename_file (
 	}
 
 	if (rename(old_filename, new_filename))
-		perror_message (txt_rename_error, old_filename, new_filename);
+		perror_message (_(txt_rename_error), old_filename, new_filename);
 }
 #endif /* VMS */
 
@@ -723,7 +723,7 @@ rename_file (
 
 	unlink (new_filename);
 	if (rename (old_filename, new_filename) == EOF)
-		perror_message (txt_rename_error, old_filename, new_filename);
+		perror_message (_(txt_rename_error), old_filename, new_filename);
 
 	return;
 }
@@ -760,7 +760,7 @@ invoke_cmd (
 	}
 
 	if (ret != 0)
-		error_message (txt_command_failed, nam);
+		error_message (_(txt_command_failed), nam);
 
 #ifdef VMS
 	return ret != 0;
@@ -785,7 +785,7 @@ draw_percent_mark (
 		return;
 
 	percent = (int) (cur_num * 100 / max_num);
-	sprintf (buf, "%s(%d%%) [%ld/%ld]", txt_more, percent, cur_num, max_num);
+	sprintf (buf, "%s(%d%%) [%ld/%ld]", _(txt_more), percent, cur_num, max_num);
 	MoveCursor (cLINES, (cCOLS - (int) strlen (buf))-(1+BLANK_PAGE_COLS));
 	StartInverse ();
 	my_fputs (buf, stdout);
@@ -810,25 +810,25 @@ set_real_uid_gid (
 
 #	if defined(HAVE_SETEUID) && defined(HAVE_SETEGID)
 	if (seteuid (real_uid) == -1)
-		perror_message ("Error seteuid(real) failed");
+		perror_message (_("Error seteuid(real) failed"));
 
 	if (setegid (real_gid) == -1)
-		perror_message ("Error setegid(real) failed");
+		perror_message (_("Error setegid(real) failed"));
 
 #	else
 #		if defined(HAVE_SETREUID) && defined(HAVE_SETREGID)
 	if (setreuid (-1, real_uid) == -1)
-		perror_message ("Error setreuid(real) failed");
+		perror_message (_("Error setreuid(real) failed"));
 
 	if (setregid (-1, real_gid) == -1)
-		perror_message ("Error setregid(real) failed");
+		perror_message (_("Error setregid(real) failed"));
 
 #		else
 	if (setuid (real_uid) == -1)
-		perror_message ("Error setuid(real) failed");
+		perror_message (_("Error setuid(real) failed"));
 
 	if (setgid (real_gid) == -1)
-		perror_message ("Error setgid(real) failed");
+		perror_message (_("Error setgid(real) failed"));
 
 #		endif /* HAVE_SETREUID && HAVE_SETREGID */
 #	endif /* HAVE_SETEUID && HAVE_SETEGID */
@@ -847,25 +847,25 @@ set_tin_uid_gid (
 
 #	if defined(HAVE_SETEUID) && defined(HAVE_SETEGID)
 	if (seteuid (tin_uid) == -1)
-		perror_message ("Error seteuid(real) failed");
+		perror_message (_("Error seteuid(real) failed"));
 
 	if (setegid (tin_gid) == -1)
-		perror_message ("Error setegid(real) failed");
+		perror_message (_("Error setegid(real) failed"));
 
 #	else
 #		if defined(HAVE_SETREUID) && defined(HAVE_SETREGID)
 	if (setreuid (-1, tin_uid) == -1)
-		perror_message ("Error setreuid(tin) failed");
+		perror_message (_("Error setreuid(tin) failed"));
 
 	if (setregid (-1, tin_gid) == -1)
-		perror_message ("Error setregid(tin) failed");
+		perror_message (_("Error setregid(tin) failed"));
 
 #		else
 	if (setuid (tin_uid) == -1)
-		perror_message ("Error setuid(tin) failed");
+		perror_message (_("Error setuid(tin) failed"));
 
 	if (setgid (tin_gid) == -1)
-		perror_message ("Error setgid(tin) failed");
+		perror_message (_("Error setgid(tin) failed"));
 
 #		endif /* HAVE_SETREUID && HAVE_SETREGID */
 #	endif /* HAVE_SETEUID && HAVE_SETEGID */
@@ -875,23 +875,23 @@ set_tin_uid_gid (
 
 void
 base_name (
-	char *dirname,		/* argv[0] */
+	char *fullpath,		/* argv[0] */
 	char *program)		/* tin_progname is returned */
 {
-	int i;
+	size_t i;
 #ifdef VMS
 	char *cp;
 #endif /* VMS */
 
-	strcpy (program, dirname);
+	strcpy (program, fullpath);
 
-	for (i = (int) strlen (dirname)-1; i; i--) {
+	for (i = strlen (fullpath)-1; i; i--) {
 #ifndef VMS
-		if (dirname[i] == SEPDIR) {
+		if (fullpath[i] == SEPDIR) {
 #else
-		if (dirname[i] == ']') {
+		if (fullpath[i] == ']') {
 #endif /* !VMS */
-			strcpy (program, dirname+(i+1));
+			strcpy (program, fullpath+(i+1));
 			break;
 		}
 	}
@@ -1184,29 +1184,6 @@ eat_re (
 }
 
 
-/*
- * Clear tag status of all articles. If articles were untagged, return TRUE
- * FIXME: Move to same place as other tagging code
- */
-t_bool
-untag_all_articles (
-	void)
-{
-	t_bool untagged = FALSE;
-	register int i;
-
-	for (i = 0; i < top; i++) {
-		if (arts[i].tagged) {
-			arts[i].tagged = 0;
-			untagged = TRUE;
-		}
-	}
-	num_of_tagged_arts = 0;
-
-	return untagged;
-}
-
-
 int
 my_isprint (
 	int c)
@@ -1289,7 +1266,7 @@ void
 show_inverse_video_status (
 	void)
 {
-		info_message ((tinrc.inverse_okay ? txt_inverse_on : txt_inverse_off));
+		info_message ((tinrc.inverse_okay ? _(txt_inverse_on) : _(txt_inverse_off)));
 }
 
 
@@ -1301,7 +1278,7 @@ toggle_color (
 #	ifdef USE_CURSES
 	if (!has_colors()) {
 		use_color = FALSE;
-		info_message (txt_no_colorterm);
+		info_message (_(txt_no_colorterm));
 		return FALSE;
 	} else
 #	endif /* USE_CURSES */
@@ -1315,7 +1292,7 @@ void
 show_color_status (
 	void)
 {
-	info_message ((use_color ? txt_color_on : txt_color_off));
+	info_message ((use_color ? _(txt_color_on) : _(txt_color_off)));
 }
 #endif /* HAVE_COLOR */
 
@@ -1344,7 +1321,7 @@ create_index_lock_file (
 		if ((fp = fopen (the_lock_file, "r")) != (FILE *) 0) {
 			fgets (buf, (int) sizeof(buf), fp);
 			fclose (fp);
-			error_message ("\n%s: Already started pid=[%d] on %s", tin_progname, atoi(buf), buf+8);
+			error_message (_("\n%s: Already started pid=[%d] on %s"), tin_progname, atoi(buf), buf+8);
 			giveup();
 		}
 	} else {
@@ -1452,7 +1429,7 @@ strfquote (
 					strcpy (tbuf, ((arts[respnum].name != (char *) 0) ? arts[respnum].name : arts[respnum].from));
 					j = 0;
 					iflag = TRUE;
-					for (i=0; tbuf[i]; i++) {
+					for (i = 0; tbuf[i]; i++) {
 						if (iflag) {
 							tbuf[j++] = tbuf[i];
 							iflag = FALSE;
@@ -2044,7 +2021,7 @@ get_initials (
 
 	iflag = FALSE;
 	j = 0;
-	for (i=0; tbuf[i] && j < maxsize-1; i++) {
+	for (i = 0; tbuf[i] && j < maxsize-1; i++) {
 		if (isalpha((int)tbuf[i])) {
 			if (!iflag) {
 				s[j++] = tbuf[i];
@@ -2165,48 +2142,9 @@ void
 vPrintBugAddress (
 	void)
 {
-	my_fprintf (stderr, "%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n",
+	my_fprintf (stderr, _("%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n"),
 		tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME, BUG_REPORT_ADDRESS);
 	my_fflush (stderr);
-}
-
-
-/*
- *  Copy file from pcSrcFile to pcDstFile
- *  FIXME: Used only in mail.c, rework using copy_fp and junk this
- */
-t_bool
-copy_file (
-	char *pcSrcFile,
-	char *pcDstFile)
-{
-	FILE *hFpDst;
-	FILE *hFpSrc;
-	char acBuffer[8192];
-	int iReadOk = -1;
-	int iWriteOk = -1;
-	long lCurFilePos = 0L;
-	long lSrcFilePos = 0L;
-	size_t iWriteSize = 0;
-	t_bool retcode = FALSE;
-
-	if ((hFpSrc = fopen (pcSrcFile, "r")) != (FILE *) 0) {
-		if ((hFpDst = fopen (pcDstFile, "w")) != (FILE *) 0) {
-			while (!feof (hFpSrc) && (iReadOk = (int) fread (acBuffer, sizeof(acBuffer), 1, hFpSrc)) != -1) {
-				lCurFilePos = ftell (hFpSrc);
-				iWriteSize = (size_t) (lCurFilePos - lSrcFilePos);
-				lSrcFilePos = lCurFilePos;
-				if ((iWriteOk = (int) fwrite (acBuffer, iWriteSize, 1, hFpDst)) == -1)
-					break;
-			}
-			if (iReadOk != -1 && iWriteOk != -1)
-				retcode = TRUE;
-
-			fclose (hFpDst);
-		}
-		fclose (hFpSrc);
-	}
-	return retcode;
 }
 
 
@@ -2272,7 +2210,7 @@ read_input_history_file (
 		return;
 
 	if (INTERACTIVE)
-		wait_message (0, txt_reading_input_history_file);
+		wait_message (0, _(txt_reading_input_history_file));
 
 	/* to be safe ;-) */
 	memset((void *) input_history, 0, sizeof(input_history));
@@ -2482,92 +2420,6 @@ strip_name (
 }
 
 
-/*
- * Return the new line index following a PageUp request.
- * Take half page scrolling into account
- */
-int
-page_up (
-	int curslot,
-	int maxslot)
-{
-	int n, scroll_lines;
-
-	if (curslot == 0)
-		return (maxslot - 1);
-
-	scroll_lines = (tinrc.full_page_scroll ? NOTESLINES : NOTESLINES / 2);
-
-	if ((n = curslot % scroll_lines) > 0)
-		curslot -= n;
-	else
-		curslot = ((curslot - scroll_lines) / scroll_lines) * scroll_lines;
-
-	return ((curslot < 0) ? 0 : curslot);
-}
-
-/*
- * Return the new line index following a PageDown request.
- * Take half page scrolling into account
- */
-int
-page_down (
-	int curslot,
-	int maxslot)
-{
-	int scroll_lines;
-
-	if (curslot == maxslot - 1)
-		return 0;
-
-	scroll_lines = (tinrc.full_page_scroll ? NOTESLINES : NOTESLINES / 2);
-
-	curslot = ((curslot + scroll_lines) / scroll_lines) * scroll_lines;
-
-	if (curslot >= maxslot) {
-		curslot = (maxslot / scroll_lines) * scroll_lines;
-		if (curslot < maxslot - 1)
-			curslot = maxslot - 1;
-	}
-
-	return (curslot);
-}
-
-
-/*
- * Calculate the first and last objects that will appear on the current screen
- * based on the current position and the max available
- */
-void
-set_first_screen_item (
-	int cur,
-	int max,
-	int *first,
-	int *last)
-{
-	if (NOTESLINES <= 0)
-		*first = 0;
-	else {
-		*first = (cur / NOTESLINES) * NOTESLINES;
-		if (*first < 0)
-			*first = 0;
-	}
-
-	*last = *first + NOTESLINES;
-
-	if (*last >= max) {
-		*last = max;
-		*first = (max / NOTESLINES) * NOTESLINES;
-
-		if (*first == *last || *first < 0)
-			*first = ((*first < 0) ? 0 : *last - NOTESLINES);
-	}
-
-	if (!max)
-		*first = *last = 0;
-}
-
-
 #ifdef LOCAL_CHARSET
 /*
  * convert between local and network charset (e.g. NeXT and latin1)
@@ -2765,7 +2617,7 @@ gnksa_strerror (
 
 	switch (errcode) {
 		case GNKSA_INTERNAL_ERROR:
-			message = txt_error_gnksa_internal;
+			message = _(txt_error_gnksa_internal);
 			break;
 
 		case GNKSA_LANGLE_MISSING:
@@ -2773,99 +2625,99 @@ gnksa_strerror (
 			break;
 
 		case GNKSA_LPAREN_MISSING:
-			message = txt_error_gnksa_lparen;
+			message = _(txt_error_gnksa_lparen);
 			break;
 
 		case GNKSA_RPAREN_MISSING:
-			message = txt_error_gnksa_rparen;
+			message = _(txt_error_gnksa_rparen);
 			break;
 
 		case GNKSA_ATSIGN_MISSING:
-			message = txt_error_gnksa_atsign;
+			message = _(txt_error_gnksa_atsign);
 			break;
 
 		case GNKSA_SINGLE_DOMAIN:
-			message = txt_error_gnksa_sgl_domain;
+			message = _(txt_error_gnksa_sgl_domain);
 			break;
 
 		case GNKSA_INVALID_DOMAIN:
-			message = txt_error_gnksa_inv_domain;
+			message = _(txt_error_gnksa_inv_domain);
 			break;
 
 		case GNKSA_ILLEGAL_DOMAIN:
-			message = txt_error_gnksa_ill_domain;
+			message = _(txt_error_gnksa_ill_domain);
 			break;
 
 		case GNKSA_UNKNOWN_DOMAIN:
-			message = txt_error_gnksa_unk_domain;
+			message = _(txt_error_gnksa_unk_domain);
 			break;
 
 		case GNKSA_INVALID_FQDN_CHAR:
-			message = txt_error_gnksa_fqdn;
+			message = _(txt_error_gnksa_fqdn);
 			break;
 
 		case GNKSA_ZERO_LENGTH_LABEL:
-			message = txt_error_gnksa_zero;
+			message = _(txt_error_gnksa_zero);
 			break;
 
 		case GNKSA_ILLEGAL_LABEL_LENGTH:
-			message = txt_error_gnksa_length;
+			message = _(txt_error_gnksa_length);
 			break;
 
 		case GNKSA_ILLEGAL_LABEL_HYPHEN:
-			message = txt_error_gnksa_hyphen;
+			message = _(txt_error_gnksa_hyphen);
 			break;
 
 		case GNKSA_ILLEGAL_LABEL_BEGNUM:
-			message = txt_error_gnksa_begnum;
+			message = _(txt_error_gnksa_begnum);
 			break;
 
 		case GNKSA_BAD_DOMAIN_LITERAL:
-			message = txt_error_gnksa_bad_lit;
+			message = _(txt_error_gnksa_bad_lit);
 			break;
 
 		case GNKSA_LOCAL_DOMAIN_LITERAL:
-			message = txt_error_gnksa_local_lit;
+			message = _(txt_error_gnksa_local_lit);
 			break;
 
 		case GNKSA_RBRACKET_MISSING:
-			message = txt_error_gnksa_rbracket;
+			message = _(txt_error_gnksa_rbracket);
 			break;
 
 		case GNKSA_LOCALPART_MISSING:
-			message = txt_error_gnksa_lp_missing;
+			message = _(txt_error_gnksa_lp_missing);
 			break;
 
 		case GNKSA_INVALID_LOCALPART:
-			message = txt_error_gnksa_lp_invalid;
+			message = _(txt_error_gnksa_lp_invalid);
 			break;
 
 		case GNKSA_ZERO_LENGTH_LOCAL_WORD:
-			message = txt_error_gnksa_lp_zero;
+			message = _(txt_error_gnksa_lp_zero);
 			break;
 
 		case GNKSA_ILLEGAL_UNQUOTED_CHAR:
-			message = txt_error_gnksa_rn_unq;
+			message = _(txt_error_gnksa_rn_unq);
 			break;
 
 		case GNKSA_ILLEGAL_QUOTED_CHAR:
-			message = txt_error_gnksa_rn_qtd;
+			message = _(txt_error_gnksa_rn_qtd);
 			break;
 
 		case GNKSA_ILLEGAL_ENCODED_CHAR:
-			message = txt_error_gnksa_rn_enc;
+			message = _(txt_error_gnksa_rn_enc);
 			break;
 
 		case GNKSA_BAD_ENCODE_SYNTAX:
-			message = txt_error_gnksa_rn_encsyn;
+			message = _(txt_error_gnksa_rn_encsyn);
 			break;
 
 		case GNKSA_ILLEGAL_PAREN_CHAR:
-			message = txt_error_gnksa_rn_paren;
+			message = _(txt_error_gnksa_rn_paren);
 			break;
 
 		case GNKSA_INVALID_REALNAME:
-			message = txt_error_gnksa_rn_invalid;
+			message = _(txt_error_gnksa_rn_invalid);
 			break;
 
 		case GNKSA_OK:
@@ -3530,3 +3382,19 @@ parse_from (
 	return gnksa_do_check_from(from, address, realname);
 }
 #endif /* 1 */
+
+
+/*
+ * Strip trailing blanks, tabs, \r and \n
+ */
+void
+strip_line (
+	char *line)
+{
+	char *ptr = line + strlen(line) - 1;
+
+	while ((ptr >= line) && (*ptr == ' ' || *ptr == '\t' || *ptr == '\r' || *ptr == '\n'))
+		ptr--;
+
+	*++ptr = '\0';
+}

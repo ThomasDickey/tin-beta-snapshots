@@ -156,7 +156,7 @@ rfc1521_decode (
 			 */
 			strcpynl(boundary, strcasestr(content_type, "boundary=") + 9);
 
-			fputs (txt_info_x_conversion_note, outfile);
+			fputs (_(txt_info_x_conversion_note), outfile);
 
 			hdr_pos = ftell (outfile);
 
@@ -242,7 +242,7 @@ rfc1521_decode (
 	/* see if content transfer encoding requires decoding anyway */
 	if (!strcasecmp(content_transfer_encoding, txt_base64))
 		encoding = 'b';
-	else if (!strcasecmp(content_transfer_encoding, txt_quoted_printable))
+	else if (!strcasecmp(content_transfer_encoding, _(txt_quoted_printable)))
 		encoding = 'q';
 
 	if (encoding) {

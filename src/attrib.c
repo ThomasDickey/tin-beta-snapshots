@@ -217,9 +217,6 @@ read_attributes_file (
 	}
 
 	if ((fp = fopen (file, "r")) != (FILE *) 0) {
-		if (INTERACTIVE)
-			wait_message (0, txt_reading_attributes_file, (global_file) ? "global " : "");
-
 		scope[0] = '\0';
 		while (fgets (line, (int) sizeof (line), fp) != (char *) 0) {
 			if (line[0] == '#' || line[0] == '\n')
@@ -630,13 +627,13 @@ write_attributes_file (
 	sprintf (file_tmp, "%s.tmp", file);
 
 	if ((fp = fopen (file_tmp, "w" FOPEN_OPTS)) == (FILE *) 0) {
-		error_message (txt_filesystem_full_backup, ATTRIBUTES_FILE);
+		error_message (_(txt_filesystem_full_backup), ATTRIBUTES_FILE);
 		free (file_tmp);	/* free memory for tmp-filename */
 		return;
 	}
 
 	if (!cmd_line && INTERACTIVE)
-		wait_message (0, txt_writing_attributes_file);
+		wait_message (0, _(txt_writing_attributes_file));
 
 	/* FIXME - move strings to lang.c */
 	fprintf (fp, "# Group attributes file for the TIN newsreader\n#\n");
@@ -770,7 +767,7 @@ write_attributes_file (
 #	endif /* 0 */
 
 	if (ferror (fp) || fclose (fp))
-		error_message (txt_filesystem_full, ATTRIBUTES_FILE);
+		error_message (_(txt_filesystem_full), ATTRIBUTES_FILE);
 	else {
 		rename_file (file_tmp, file);
 		chmod (file, (mode_t)(S_IRUSR|S_IWUSR));

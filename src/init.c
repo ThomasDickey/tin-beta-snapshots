@@ -115,10 +115,7 @@ int num_headers_to_display;		/* num headers to display -- swp */
 int num_headers_to_not_display;		/* num headers to not display -- swp */
 int num_of_killed_arts;
 int num_of_selected_arts;		/* num articles marked 'hot' */
-int num_of_tagged_arts;
 int system_status;
-int top = 0;
-int top_base;				/* Highest numbered thread */
 int xmouse, xrow, xcol;			/* xterm button pressing information */
 
 #ifdef HAVE_COLOR
@@ -126,7 +123,7 @@ int xmouse, xrow, xcol;			/* xterm button pressing information */
 	t_bool word_highlight;		/* word highlighting on/off */
 #endif /* HAVE_COLOR */
 
-pid_t process_id;
+pid_t process_id;			/* Useful to have around for .suffixes */
 uid_t real_uid;
 gid_t real_gid;
 gid_t tin_gid;
@@ -174,6 +171,9 @@ t_bool xref_supported = TRUE;
 	t_bool force_auth_on_conn_open = FALSE;	/* authenticate on connection startup */
 #endif /* NNTP_ABLE */
 
+/* Currently active menu parameters */
+t_menu *currmenu;
+
 /* History entries */
 char *input_history[HIST_MAXNUM+1][HIST_SIZE+1];
 
@@ -200,7 +200,7 @@ struct t_config tinrc = {
 	MARK_INRANGE,			/* art_marked_inrange */
 	ART_MARK_RETURN,		/* art_marked_return */
 	ART_MARK_SELECTED,		/* art_marked_selected */
-	ART_MARK_FRESH,			/* art_marked_fresh */
+	ART_MARK_RECENT,		/* art_marked_recent */
 	ART_MARK_UNREAD,		/* art_marked_unread */
 	"",		/* editor_format */
 	"",		/* default_goto_group */
@@ -253,7 +253,7 @@ struct t_config tinrc = {
 	0,		/* default_move_group */
 	iKeySaveAppendFile,		/* default_save_mode */
 	0,		/* getart_limit */
-	2,		/* fresh_time */
+	2,		/* recent_time */
 	32,		/* groupname_max_length */
 	KILL_READ,		/* kill_level */
 	MIME_ENCODING_7BIT,		/* mail_mime_encoding */
@@ -465,8 +465,8 @@ init_selfinfo (
 	FILE *fp;
 	struct stat sb;
 
-	host_name[0]='\0';
-	domain_name[0]='\0';
+	host_name[0] = '\0';
+	domain_name[0] = '\0';
 
 #ifndef M_AMIGA
 #	ifdef HAVE_SYS_UTSNAME_H
@@ -604,7 +604,6 @@ init_selfinfo (
 	num_headers_to_not_display = 0;
 	num_of_selected_arts = 0;
 	num_of_killed_arts = 0;
-	num_of_tagged_arts = 0;
 	post_article_and_exit = FALSE;
 	post_postponed_and_exit = FALSE;
 	purge_index_files = FALSE;
@@ -910,11 +909,7 @@ init_selfinfo (
 	sprintf (txt_help_bug_report, txt_help_bug, bug_addr);
 
 #ifdef HAVE_PGP
-	pgpopts = get_val("PGPOPTS", "");
-	if ((ptr = getenv("PGPPATH")) != (char *) 0)
-		my_strncpy (pgp_data, ptr, sizeof(pgp_data));
-	else
-		joinpath (pgp_data, homedir, ".pgp");
+	init_pgp();
 #endif /* HAVE_PGP */
 }
 

@@ -20,13 +20,13 @@
  */
 
 #ifdef USE_TERMINFO
-#define tigetnum(s) tgetnum(s)
-#endif
+#	define tigetnum(s) tgetnum(s)
+#endif /* USE_TERMINFO */
 
 /*
  * The prototypes bracketed by DECL_xxxx ifdef's are used to get moderately
- * clean compiles on systems with pre-ANSI/POSIX headers when compiler warnings
- * are enabled.  (Not all of the functions are ANSI or POSIX).
+ * clean compiles on systems with pre-ANSI/POSIX headers when compiler
+ * warnings are enabled. (Not all of the functions are ANSI or POSIX).
  */
 #ifdef DECL__FLSBUF
 	extern int _flsbuf (int, FILE *);
@@ -197,6 +197,9 @@
 #ifdef DECL_SOCKET
 	extern int socket (int, int, int);
 #endif /* DECL_SOCKET */
+#ifdef DECL_SNPRINTF
+	extern int snprintf (char *, size_t, const char *, ...);
+#endif /* DECL_SNPRINTF */
 #ifdef DECL_SSCANF
 	extern int sscanf (const char *, const char *, ...);
 #endif /* DECL_SSCANF */
@@ -255,9 +258,13 @@
 #ifdef DECL_USLEEP
 	extern void usleep(unsigned long);
 #endif /* DECL_USLEEP */
+#ifdef DECL_VSNPRINTF
+	extern int vsnprintf (char *, size_t, const char *, va_list);
+#endif /* DECL_VSNPRINTF */
 #ifdef DECL_VSPRINTF
 	extern int vsprintf(char *, char *, va_list);
 #endif /* DECL_VSPRINTF */
+
 
 extern int optind;
 extern char *optarg;
@@ -954,13 +961,10 @@ extern int RIGHT_POS;
 extern int _hp_glitch;
 extern int cCOLS;
 extern int cLINES;
-extern int cur_groupnum;
 extern int debug;
 extern int glob_respnum;
 extern int group_hash[TABLE_SIZE];
-extern int group_top;
 extern int groupname_len;
-extern int index_point;
 extern int iso2asc_supported;
 extern int last_resp;
 extern int max_active;
@@ -985,8 +989,7 @@ extern int system_status;
 extern int this_resp;
 extern int thread_basenote;
 extern int tin_errno;
-extern int top;
-extern int top_base;
+extern int top_art;
 extern int xcol;
 extern int xmouse;
 extern int xrow;
@@ -1056,7 +1059,6 @@ extern t_bool reread_active_for_posted_arts;
 extern t_bool save_news;
 extern t_bool show_description;
 extern t_bool show_subject;
-extern t_bool space_mode;
 extern t_bool start_any_unread;
 extern t_bool tex2iso_supported;
 extern t_bool batch_mode;
@@ -1064,6 +1066,11 @@ extern t_bool update_fork;
 extern t_bool verbose;
 extern t_bool xover_supported;
 extern t_bool xref_supported;
+extern t_bool xflag;			/* 'X'-key */
+
+extern t_menu selmenu;
+extern t_menu grpmenu;
+extern t_menu *currmenu;
 
 #define HIST_SIZE		15
 #define HIST_OTHER		 0
@@ -1211,8 +1218,6 @@ extern char *input_history[HIST_MAXNUM+1][HIST_SIZE+1];
 #endif /* HAVE_METAMAIL */
 
 #ifdef HAVE_PGP
-	extern char pgp_data[PATH_LEN];
-	extern const char *pgpopts;
 	extern constext txt_help_ctrl_g[];
 	extern constext txt_pgp_add[];
 	extern constext txt_pgp_mail[];
@@ -1287,7 +1292,7 @@ extern struct opttxt txt_art_marked_deleted;
 extern struct opttxt txt_art_marked_inrange;
 extern struct opttxt txt_art_marked_return;
 extern struct opttxt txt_art_marked_selected;
-extern struct opttxt txt_art_marked_fresh;
+extern struct opttxt txt_art_marked_recent;
 extern struct opttxt txt_art_marked_unread;
 extern struct opttxt txt_groupname_max_length;
 extern struct opttxt txt_show_lines;
@@ -1323,7 +1328,7 @@ extern struct opttxt txt_use_mouse;
 #endif	/* HAVE_KEYPAD */
 extern struct opttxt txt_use_getart_limit;
 extern struct opttxt txt_getart_limit;
-extern struct opttxt txt_fresh_time;
+extern struct opttxt txt_recent_time;
 #ifdef HAVE_COLOR
 	extern struct opttxt txt_use_color;
 	extern struct opttxt txt_col_normal;
@@ -1397,12 +1402,5 @@ extern struct opttxt txt_strip_bogus;
 extern struct opttxt txt_reread_active_file_secs;
 extern struct opttxt txt_auto_reconnect;
 extern struct opttxt txt_cache_overview_files;
-
-#ifdef DECL_SNPRINTF
-	extern int snprintf (char *, size_t, const char *, ...);
-#endif /* DECL_SNPRINTF */
-#ifdef DECL_VSNPRINTF
-	extern int vsnprintf (char *, size_t, const char *, va_list);
-#endif /* DECL_VSNPRINTF */
 
 #endif /* !EXTERN_H */

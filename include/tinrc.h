@@ -14,7 +14,7 @@ struct t_config {
 	char art_marked_inrange;
 	char art_marked_return;
 	char art_marked_selected;
-	char art_marked_fresh;
+	char art_marked_recent;
 	char art_marked_unread;
 	char editor_format[PATH_LEN];		/* editor + parameters  %E +%N %F */
 	char default_goto_group[HEADER_LEN];		/* default for the 'g' command */
@@ -67,7 +67,7 @@ struct t_config {
 	int default_move_group;
 	int default_save_mode;				/* Append/Overwrite existing file when saving */
 	int getart_limit;					/* number of article to get */
-	int fresh_time;						/* Time limit when article is "fresh" */
+	int recent_time;				/* Time limit when article is "fresh" */
 	int groupname_max_length;			/* max len of group names to display on screen */
 	int kill_level;						/* Define how killed articles are shown */
 	int mail_mime_encoding;

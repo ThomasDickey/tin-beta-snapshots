@@ -222,7 +222,7 @@ handle_resize (
 
 	if (cLINES < MIN_LINES_ON_TERMINAL || cCOLS < MIN_COLUMNS_ON_TERMINAL) {
 		ring_bell ();
-		wait_message(3, txt_screen_too_small_exiting);
+		wait_message(3, _(txt_screen_too_small_exiting));
 		tin_done (EXIT_FAILURE);
 	}
 
@@ -255,20 +255,14 @@ handle_resize (
 #	endif /* USE_CURSES*/
 			break;
 		case cGroup:
+		case cSelect:
+		case cThread:
 			ClearScreen ();
-			show_group_page ();
+			currmenu->redraw();
 			break;
 		case cPage:
 			ClearScreen ();
 			redraw_page (glob_group, glob_respnum);
-			break;
-		case cSelect:
-			ClearScreen ();
-			show_selection_page ();
-			break;
-		case cThread:
-			ClearScreen ();
-			show_thread_page ();
 			break;
 		case cMain:
 			break;
@@ -289,7 +283,7 @@ handle_suspend (
 		set_xclick_off ();
 
 	Raw (FALSE);
-	wait_message (0, txt_suspended_message);
+	wait_message (0, _(txt_suspended_message));
 
 	kill (0, SIGSTOP);				/* Put ourselves to sleep */
 
@@ -358,7 +352,7 @@ signal_handler (
 		default:
 			break;
 	}
-	fprintf (stderr, "\n%s: signal handler caught %s signal (%d).\n", tin_progname, signal_name(sig), sig);
+	fprintf (stderr, _("\n%s: signal handler caught %s signal (%d).\n"), tin_progname, signal_name(sig), sig);
 #if defined(SIGHUP)
 	if (sig == SIGHUP) {
 		dangerous_signal_exit = TRUE;

@@ -20,7 +20,6 @@ DOCDIR = ./doc
 INCDIR = ./include
 OBJDIR = ./src
 SRCDIR = ./src
-OLDDIR = ./old
 
 # OS2DIR    = ./os2
 # MISCDIR   = ./misc
@@ -41,10 +40,6 @@ HFILES	= \
 	$(INCDIR)/stpwatch.h \
 	$(INCDIR)/tin.h \
 	$(INCDIR)/version.h
-#	$(OLDDIR)/msmail.h
-#	$(OLDDIR)/os_2.h
-#	$(OLDDIR)/win32.h
-#	$(OLDDIR)/win32tcp.h
 #	$(INCDIR)/conf.h
 
 CFILES	= \
@@ -60,6 +55,7 @@ CFILES	= \
 	$(SRCDIR)/feed.c \
 	$(SRCDIR)/filter.c \
 	$(SRCDIR)/getline.c \
+	$(SRCDIR)/global.c \
 	$(SRCDIR)/group.c \
 	$(SRCDIR)/hashstr.c \
 	$(SRCDIR)/help.c\
@@ -91,16 +87,11 @@ CFILES	= \
 	$(SRCDIR)/signal.c \
 	$(SRCDIR)/strftime.c \
 	$(SRCDIR)/string.c \
+	$(SRCDIR)/tags.c \
 	$(SRCDIR)/thread.c \
 	$(SRCDIR)/wildmat.c \
 	$(SRCDIR)/xref.c \
 	$(SRCDIR)/vms.c
-#	$(OLDDIR)/msmail.c
-#	$(OLDDIR)/nntpw32.c
-#	$(OLDDIR)/nntpvms.c
-#	$(OLDDIR)/os_2.c
-#	$(OLDDIR)/win32.c
-#	$(OLDDIR)/win32tcp.c
 
 DOC	= \
 	$(DOCDIR)/HACKERS \

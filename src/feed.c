@@ -134,7 +134,7 @@ feed_articles (
 	 * If not automatic, ask what the user wants to save
 	 */
 	if (((!tinrc.auto_save || arts[respnum].archive == (char *) 0) || (tinrc.auto_save && function != FEED_SAVE) || ch_default == iKeyFeedTag) && function != FEED_AUTOSAVE_TAGGED)
-		ch = prompt_slk_response (ch_default, "ahpqtT\033", "%s%s", prompt, txt_art_thread_regex_tag);
+		ch = prompt_slk_response (ch_default, "ahpqtT\033", "%s%s", prompt, _(txt_art_thread_regex_tag));
 	else {
 		filename[0] = '\0';
 		ch = ch_default;
@@ -426,8 +426,8 @@ feed_articles (
 		case iKeyFeedTag:		/* tagged articles */
 			confirm = TRUE;
 			for (i = 1; i <= num_of_tagged_arts; i++) {
-				for (j = 0; j < top; j++) {
-					if (arts[j].tagged && arts[j].tagged == i) {
+				for (j = 0; j < top_art; j++) {
+					if (arts[j].tagged == i) {
 						if (level == PAGE_LEVEL)
 							art_close ();
 
@@ -493,7 +493,7 @@ feed_articles (
 		case iKeyFeedHot:		/* hot (auto-selected) articles */
 		case iKeyFeedPat:		/* regex pattern matched articles */
 			confirm = TRUE;
-			for (i = 0; i < top_base; i++) {
+			for (i = 0; i < grpmenu.max; i++) {
 				for (j = (int) base[i]; j >= 0; j = arts[j].thread) {
 					proceed = FALSE;
 					if (ch == iKeyFeedPat) {
