@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2004-05-27
+ *  Updated   : 2004-07-22
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2004 Jason Faultless <jason@altarstone.com>
@@ -997,11 +997,13 @@ cook_article(
 		}
 
 		if (header_wanted(line)) {	/* Put cooked data */
+			int i = LEN;
+			char *l = my_strdup(convert_body2printable(rfc1522_decode(line)));	/* FIXME: don't decode addr-part of From:/Cc:/ etc.pp. */
+
 			header_put = TRUE;
-			/*
-			 * FIXME: don't decode addr-part of From:/Cc:/ etc.pp.
-			 */
-			put_cooked(LEN, wrap_lines, C_HEADER, "%s\n", rfc1522_decode(buffer_to_ascii(line)));
+			expand_ctrl_chars(&l, &i, tabs);
+			put_cooked(LEN, wrap_lines, C_HEADER, "%s", l);
+			free(l);
 		}
 	}
 

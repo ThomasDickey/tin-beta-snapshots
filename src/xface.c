@@ -3,7 +3,7 @@
  *  Module    : xface.c
  *  Author    : Joshua Crawford & Drazen Kacar
  *  Created   : 2003-04-27
- *  Updated   : 2003-06-27
+ *  Updated   : 2004-07-27
  *  Notes     :
  *
  * Copyright (c) 2003-2004 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
@@ -127,7 +127,7 @@ slrnface_start(
 	}
 
 	unlink(fifo);
-	if (mkfifo(fifo, 0600) < 0) {
+	if (mkfifo(fifo, (S_IRUSR|S_IWUSR)) < 0) {
 		perror_message(_("Can't run slrnface: failed to create %s"), fifo);
 		unlink(fifo);
 		free(fifo);
@@ -146,9 +146,9 @@ slrnface_start(
 			 *              "-yOffsetChar", tinrc.xfacey,
 			 *              "-ink", tinrc.xfacefg,
 			 *              "-paper", tinrc.xfacebg,
-			 *              fifo, (char *) 0);
+			 *              fifo, NULL);
 			 */
-			execlp("slrnface", "slrnface", fifo, (char *) 0);
+			execlp("slrnface", "slrnface", fifo, NULL);
 			/* This is child, exit on error. */
 			giveup();
 			/* NOTREACHED */
@@ -165,7 +165,7 @@ slrnface_start(
 
 				switch (WEXITSTATUS(status)) {
 					case 0:	/* All fine, open the pipe */
-						slrnface_fd = open(fifo, O_WRONLY, 0600);
+						slrnface_fd = open(fifo, O_WRONLY, (S_IRUSR|S_IWUSR));
 						write(slrnface_fd, "start\n", strlen("start\n"));
 						message = NULL;
 						break;

@@ -3,7 +3,7 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2003-12-28
+ *  Updated   : 2004-08-31
  *  Notes     :
  *
  * Copyright (c) 1993-2004 Iain Lea <iain@bricbrac.de>
@@ -172,7 +172,7 @@ art_mark_xref_read(
 	long artnum;
 	struct t_group *group;
 #ifdef DEBUG
-	char debug_mesg;
+	char *debug_mesg;
 #endif /* DEBUG */
 
 #if defined(NNTP_ABLE) && defined(XHDR_XREF)

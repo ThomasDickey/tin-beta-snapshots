@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2003-05-09
+ *  Updated   : 2004-06-30
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -152,7 +152,7 @@ read_newsauth_file(
 	char *ptr;
 	char line[PATH_LEN];
 	int found = 0;
-	int fd = -1;
+	int fd;
 	struct stat statbuf;
 
 	joinpath(line, homedir, ".newsauth");
@@ -387,7 +387,7 @@ authinfo_original(
 		 */
 		authpass = strncpy(authpassword, getpass(_(txt_auth_pass)), sizeof(authpassword) - 1);
 #	else
-		authpass = strncpy(authpassword, tin_getline(_(txt_auth_pass), FALSE, (char *) 0, PATH_LEN, TRUE, HIST_NONE), sizeof(authpassword) - 1);
+		authpass = strncpy(authpassword, tin_getline(_(txt_auth_pass), FALSE, NULL, PATH_LEN, TRUE, HIST_NONE), sizeof(authpassword) - 1);
 #	endif /* 0 */
 #endif /* USE_CURSES */
 

@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-06-07
+ *  Updated   : 2004-09-03
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -243,7 +243,6 @@ center_line(
 	t_bool inverse,
 	const char *str)
 {
-	char buffer[256];
 	int pos;
 	int len;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -251,14 +250,9 @@ center_line(
 	wchar_t *wbuffer;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
-	STRCPY(buffer, str);
-
-	/* protect terminal... */
-	convert_to_printable(buffer);
-
-	len = strlen(buffer);
+	len = strlen(str);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	if ((wbuffer = char2wchar_t(buffer)) != NULL) {
+	if ((wbuffer = char2wchar_t(str)) != NULL) {
 		if ((width = wcswidth(wbuffer, wcslen(wbuffer) + 1)) > 0)
 			len = width;
 		free(wbuffer);
@@ -279,13 +273,12 @@ center_line(
 	}
 
 	if (len >= cCOLS) {
-		char *buf;
+		char buffer[256];
 
-		buf = my_strdup(buffer);
-		strunc(buf, buffer, sizeof(buffer), cCOLS - 2);
-		free(buf);
-	}
-	my_fputs(buffer, stdout);
+		strunc(str, buffer, sizeof(buffer), cCOLS - 2);
+		my_fputs(buffer, stdout);
+	} else
+		my_fputs(str, stdout);
 
 	if (cmd_line)
 		my_flush();
@@ -425,6 +418,7 @@ spin_cursor(
 }
 
 
+#define DISPLAY_FMT "%s %3d%% "
 /*
  * progressmeter in %
  */
@@ -439,7 +433,6 @@ show_progress(
 	time_t curr_time;
 	static char last_display[LEN];
 	static const char *last_txt;
-	static int last_length;
 	static int last_ratio;
 	static long last_total;
 	static time_t last_update;
@@ -450,6 +443,7 @@ show_progress(
 	static int sum;
 	static struct timeval last_time;
 	static struct timeval this_time;
+	char *display_format;
 	int time_diff;
 	int secs_left;
 	long count_diff;
@@ -460,7 +454,6 @@ show_progress(
 
 	/* If this is a new progress meter, start recalculating */
 	if ((last_txt != txt) || (last_total != total)) {
-		last_length = 0;
 		last_ratio = -1;
 		last_display[0] = '\0';
 		last_update = time(NULL) - 2;
@@ -478,11 +471,12 @@ show_progress(
 	last_update = curr_time;
 
 #ifdef HAVE_GETTIMEOFDAY
-	if (last_length == 0) {
+	display_format = my_malloc(strlen(DISPLAY_FMT) + strlen(_(txt_remaining)) + 1);
+	strcpy(display_format, DISPLAY_FMT);
+
+	if (last_ratio == -1) {
 		/* Don't print a "time remaining" this time */
-		snprintf(display, sizeof(display), "%s %3d%%", txt, ratio);
-		display[sizeof(display) - 1] = '\0';
-		last_length = strlen(txt) + 5;
+		snprintf(display, sizeof(display), display_format, txt, ratio);
 
 		/* Reset the variables */
 		sum = average = samples = 0;
@@ -524,10 +518,10 @@ show_progress(
 		if (secs_left < 0)
 			secs_left = 0;
 
-		/* TODO: -> lang.c, difficult with hardcoded last_length */
-		snprintf(display, sizeof(display), "%s %3d%% (%d:%02d remaining)", txt, ratio, secs_left / 60, secs_left % 60);
-		last_length = strlen(txt) + 21 + secs_left / 600;
+		strcat(display_format, _(txt_remaining));
+		snprintf(display, sizeof(display), display_format, txt, ratio, secs_left / 60, secs_left % 60);
 	}
+	free(display_format);
 
 	last_count = count;
 	gettimeofday(&last_time, NULL);
@@ -538,6 +532,8 @@ show_progress(
 
 	/* Only display text if it changed from last time */
 	if (strcmp(display, last_display)) {
+		char *tmp;
+
 		clear_message();
 		MoveCursor(cLINES, 0);
 
@@ -545,7 +541,13 @@ show_progress(
 		fcol(tinrc.col_message);
 #	endif /* HAVE_COLOR */
 
-		my_printf("%s", display);
+		/*
+		 * TODO: depending on the length of the newsgroup name
+		 * it's possible to cut away a great part of the progress meter
+		 * perhaps we should shorten the newsgroup name instead?
+		 */
+		my_printf("%s", sized_message(&tmp, "%s", display));
+		free(tmp);
 
 #	ifdef HAVE_COLOR
 		fcol(tinrc.col_normal);

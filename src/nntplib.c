@@ -155,7 +155,7 @@ getserverbyfile(
 	}
 
 	if (file == NULL)
-		return (char *) 0;
+		return NULL;
 
 	if ((fp = fopen(file, "r")) != NULL) {
 
@@ -191,7 +191,7 @@ getserverbyfile(
 #	endif /* NNTP_DEFAULT_SERVER */
 
 #endif /* NNTP_ABLE */
-	return (char *) 0;	/* No entry */
+	return NULL;	/* No entry */
 }
 
 
@@ -403,7 +403,7 @@ get_tcp_socket(
 
 	t_free((char *) callptr, T_CALL);
 
-	if (ioctl(s, I_POP, (char *) 0) < 0) {
+	if (ioctl(s, I_POP, NULL) < 0) {
 		perror("I_POP(timod)");
 		t_close(s);
 		return -EPROTO;

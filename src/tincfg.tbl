@@ -223,7 +223,7 @@
 #	else
 #		ifdef HAVE_LIBIDN
 			normalization_form		txt_normalization_forms 2
-		#endif
+#		endif
 #	endif
 #endif
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)

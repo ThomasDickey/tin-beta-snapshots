@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2004-06-12
+ *  Updated   : 2004-09-05
  *  Notes     :
  *
  * Copyright (c) 1997-2004 Urs Janssen <urs@tin.org>
@@ -78,8 +78,8 @@ extern void write_attributes_file(const char *file);
 
 /* charset.c */
 extern char *convert_to_printable(char *buf);
+extern char *convert_body2printable(char* buf);
 extern t_bool is_art_tex_encoded(FILE *fp);
-extern void convert_body2printable(char* buf);
 extern void convert_iso2asc(char *iso, char **asc_buffer, int *max_line_len, int t);
 extern void convert_tex2iso(char *from, char *to);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -95,11 +95,8 @@ extern void draw_pager_line(const char *str, int flags, t_bool raw_data);
 
 /* config.c */
 extern char **ulBuildArgv(char *cmd, int *new_argc);
-extern char *fmt_option_prompt(char *dst, size_t len, t_bool editing, int option);
 extern char *quote_space_to_dash(char *str);
 extern const char *print_boolean(t_bool value);
-extern int change_config_file(struct t_group *group);
-extern int option_row(int option);
 extern t_bool match_boolean(char *line, const char *pat, t_bool *dst);
 extern t_bool match_integer(char *line, const char *pat, int *dst, int maxval);
 extern t_bool match_list(char *line, constext *pat, constext *const *table, size_t tablelen, int *dst);
@@ -108,8 +105,6 @@ extern t_bool match_string(char *line, const char *pat, char *dst, size_t dstlen
 extern t_bool read_config_file(char *file, t_bool global_file);
 extern void quote_dash_to_space(char *str);
 extern void read_server_config(void);
-extern void refresh_config_page(int act_option);
-extern void show_menu_help(const char *help_message);
 extern void write_config_file(char *file);
 
 /* cook.c */
@@ -208,7 +203,7 @@ extern void set_first_screen_item(void);
 extern int find_new_pos(int old_top, long old_artnum, int cur_pos);
 extern int group_page(struct t_group *group);
 extern void clear_note_area(void);
-extern void mark_screen(int level, int screen_row, int screen_col, const char *value);
+extern void mark_screen(int screen_row, int screen_col, const char *value);
 extern void pos_first_unread_thread(void);
 extern void show_group_page(void);
 
@@ -287,10 +282,6 @@ extern void grp_del_mail_art(struct t_article *article);
 	extern void write_mail_active_file(void);
 #endif /* HAVE_MH_MAIL_HANDLING */
 
-/* mimetypes.c */
-extern void lookup_mimetype(const char *ext, t_part *part);
-extern t_bool lookup_extension(char *extension, size_t ext_len, const char *major, const char *minor);
-
 /* main.c */
 extern int main(int argc, char *argv[]);
 extern int read_cmd_line_groups(void);
@@ -314,6 +305,10 @@ extern void *my_realloc1(const char *file, int line, void *p, size_t size);
 	extern void init_screen_array(t_bool allocate);
 #endif /* !USE_CURSES */
 
+/* mimetypes.c */
+extern void lookup_mimetype(const char *ext, t_part *part);
+extern t_bool lookup_extension(char *extension, size_t ext_len, const char *major, const char *minor);
+
 /* misc.c */
 extern char *buffer_to_ascii(char *c);
 extern char *escape_shell_meta(const char *source, int quote_area);
@@ -336,6 +331,7 @@ extern int parse_from(const char *from, char *address, char *realname);
 extern int strfmailer(const char *mail_prog, char *subject, char *to, const char *filename, char *dest, size_t maxsize, const char *format);
 extern int strfpath(const char *format, char *str, size_t maxsize, struct t_group *group);
 extern int strfquote(const char *group, int respnum, char *s, size_t maxsize, char *format);
+extern int tin_version_info(FILE *fp);
 extern long file_mtime(const char *file);
 extern long file_size(const char *file);
 extern t_bool backup_file(const char *filename, const char *backupname);
@@ -350,6 +346,7 @@ extern void cleanup_tmp_files(void);
 extern void copy_body(FILE *fp_ip, FILE *fp_op, char *prefix, char *initl, t_bool raw_data);
 extern void create_index_lock_file(char *the_lock_file);
 extern void dir_name(const char *fullpath, char *dir);
+extern void draw_mark_selected(int i);
 extern void draw_percent_mark(long cur_num, long max_num);
 extern void get_author(t_bool thread, struct t_article *art, char *str, size_t len);
 extern void get_cwd(char *buf);
@@ -362,9 +359,9 @@ extern void show_inverse_video_status(void);
 extern void strip_name(const char *from, char *address);
 extern void tin_done(int ret);
 extern void toggle_inverse_video(void);
-#if defined(CHARSET_CONVERSION) || defined(HAVE_UNICODE_NORMALIZATION)
+#if defined(CHARSET_CONVERSION) || (defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE))
 	extern char *utf8_valid(char *line);
-#endif /* CHARSET_CONVERSION || HAVE_UNICODE_NORMALIZATION */
+#endif /* CHARSET_CONVERSION || (MULTIBYTE_ABLE && !NO_LOCALE) */
 #ifdef CHARSET_CONVERSION
 	extern t_bool buffer_to_network(char *line, int mmnwcharset);
 #endif /* CHARSET_CONVERSION */
@@ -423,6 +420,15 @@ extern void u_put_server(const char *string);
 /* nrctbl.c */
 extern int get_newsrcname(char *newsrc_name, const char *nntpserver_name);
 extern void get_nntpserver(char *nntpserver_name, char *nick_name);
+
+/* options_menu.c */
+extern char *fmt_option_prompt(char *dst, size_t len, t_bool editing, int option);
+extern int change_config_file(struct t_group *group);
+extern int option_row(int option);
+extern t_bool option_is_visible(int option);
+extern void check_score_defaults(void);
+extern void refresh_config_page(int act_option);
+extern void show_menu_help(const char *help_message);
 
 /* page.c */
 extern int show_page(struct t_group *group, int respnum, int *threadnum);
@@ -574,7 +580,6 @@ extern int search_body(struct t_group *group, int current_art, t_bool repeat);
 extern int add_my_group(const char *group, t_bool add);
 extern int choose_new_group(void);
 extern int skip_newgroups(void);
-extern void draw_group_arrow(void);
 extern void selection_page(int start_groupnum, int num_cmd_line_groups);
 extern void show_selection_page(void);
 extern void toggle_my_groups(const char *group);
@@ -639,8 +644,8 @@ extern void str_lwr(char *str);
 #endif /* !HAVE_STRRSTR */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	extern char *wchar_t2char(const wchar_t *wstr);
-	extern void wcspart(wchar_t *to, const wchar_t *from, int columns, int size_to, t_bool pad);
 	extern wchar_t *char2wchar_t(const char *str);
+	extern wchar_t *wcspart(const wchar_t *wstr, int columns, t_bool pad);
 	extern wchar_t *wstrunc(const wchar_t *wmessage, wchar_t *wbuf, size_t wbuf_len, int len);
 	extern wchar_t *my_wcsdup(const wchar_t *wstr);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -688,7 +693,6 @@ extern int stat_thread(int n, struct t_art_stat *sbuf);
 extern int which_response(int n);
 extern int which_thread(int n);
 extern int thread_page(struct t_group *group, int respnum, int thread_depth, t_pagerinfo *page);
-extern void draw_line(int i, int magic);
 extern void fixup_thread(int respnum, t_bool redraw);
 
 /* version.c */

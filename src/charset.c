@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2004-06-07
+ *  Updated   : 2004-07-21
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2004 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -255,7 +255,7 @@ convert_tex2iso(
 	char *from,
 	char *to)
 {
-	const char * tex_to[TEX_SUBST];
+	const char *tex_to[TEX_SUBST];
 	int i;
 	size_t spaces = 0; /* spaces to add */
 	size_t len, col = 0;	/* length of from, col counter */
@@ -381,6 +381,9 @@ convert_to_printable(
 	wchar_t *wbuffer;
 	size_t len = strlen(buf) + 1;
 
+	if (IS_LOCAL_CHARSET("UTF-8"))
+		utf8_valid(buf);
+
 	if ((wbuffer = char2wchar_t(buf)) != NULL) {
 		wconvert_to_printable(wbuffer);
 
@@ -435,7 +438,7 @@ wconvert_to_printable(
  *        sometimes fails to propper convert (wchar_t) 0 to (wint_t) 0
  *        and thus loop termination fails.
  */
-void
+char *
 convert_body2printable(
 	char *buf)
 {
@@ -451,8 +454,7 @@ convert_body2printable(
 		}
 		if ((buffer = wchar_t2char(wbuffer)) != NULL) {
 			strncpy(buf, buffer, len);
-			buffer[len - 1] = '\0';
-
+			buf[len - 1] = '\0';
 			free(buffer);
 		}
 		free(wbuffer);
@@ -465,4 +467,5 @@ convert_body2printable(
 			*c = '?';
 	}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	return buf;
 }

@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2004-06-06
+ *  Updated   : 2004-08-20
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2004 Thomas Dickey <dickey@invisible-island.net>
@@ -595,6 +595,11 @@
  * (old versions of leafnode and NNTPcache need this)
  */
 #	undef BROKEN_LISTGROUP
+
+/*
+ * on some old systems the WIFEXITED()/WEXITSTATUS() macros do not work
+ */
+#	undef IGNORE_SYSTEM_STATUS
 
 #	undef HAVE_COFFEE
 

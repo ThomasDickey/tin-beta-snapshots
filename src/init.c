@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-06-06
+ *  Updated   : 2004-08-20
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -510,14 +510,19 @@ init_selfinfo(
 
 	domain_name[0] = '\0';
 
-#if defined(HAVE_SYS_UTSNAME_H) && defined(HAVE_UNAME)
-	if (uname(&system_info) < 0) {
+#ifdef HAVE_SYS_UTSNAME_H
+#	ifdef HAVE_UNAME
+	if (!uname(&system_info))
+		;
+	else
+#	endif /* HAVE_UNAME */
+	{
 		strcpy(system_info.sysname, "unknown");
 		*system_info.machine = '\0';
 		*system_info.release = '\0';
 		*system_info.nodename = '\0';
 	}
-#endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
+#endif /* HAVE_SYS_UTSNAME_H */
 
 #ifdef DOMAIN_NAME
 	if ((cptr = get_domain_name()) != NULL)
@@ -527,7 +532,7 @@ init_selfinfo(
 #ifdef HAVE_GETHOSTBYNAME
 	if (domain_name[0] == '\0') {
 		cptr = get_fqdn(get_host_name());
-		if (cptr != (char *) 0)
+		if (cptr != NULL)
 			strcpy(domain_name, cptr);
 	}
 #endif /* HAVE_GETHOSTBYNAME */
@@ -608,7 +613,7 @@ init_selfinfo(
 	newsrc[0] = '\0';
 
 	snprintf(page_header, sizeof(page_header), "%s %s release %s (\"%s\") [%s%s]",
-		tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME,
+		PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME,
 		(iso2asc_supported >= 0 ? " ISO2ASC" : ""));
 	snprintf(cvers, sizeof(cvers), txt_copyright_notice, page_header);
 

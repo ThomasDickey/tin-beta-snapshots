@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-03-14
+ *  Updated   : 2004-06-22
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -154,6 +154,13 @@ check_start_save_any_news(
 	for (i = 0; i < selmenu.max; i++) {
 		art_count = hot_count = 0;
 		group = &active[my_group[i]];
+		/*
+		 * FIXME: workaround to get a valid CURR_GROUP
+		 * it also points to the currently processed group so that
+		 * the correct attributes are used
+		 * The correct fix is to get rid of CURR_GROUP
+		 */
+		selmenu.curr = i;
 
 		if (group->bogus || !group->subscribed)
 			continue;

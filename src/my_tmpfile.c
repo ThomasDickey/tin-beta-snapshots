@@ -3,7 +3,7 @@
  *  Module    : my_tmpfile.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 2001-03-11
- *  Updated   : 2001-04-23
+ *  Updated   : 2004-06-30
  *  Notes     :
  *
  * Copyright (c) 2001-2004 Urs Janssen <urs@tin.org>
@@ -65,7 +65,8 @@ my_tmpfile(
 
 	if (filename != NULL && name_size > 0) {
 		if (!need_name) {
-			FILE *fp = (FILE *) 0;
+			FILE *fp;
+
 			if ((fp = tmpfile()) != NULL)
 				fd = fileno(fp);
 #ifdef DEBUG

@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-03-16
+ *  Updated   : 2004-07-19
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -45,14 +45,6 @@
 #	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 
-#define INDEX2SNUM(i)	((i) % NOTESLINES)
-#ifdef USE_CURSES
-#	define INDEX2LNUM(i)	(INDEX_TOP + INDEX2SNUM(i))
-#endif /* USE_CURSES */
-
-/* 3+1+3; width(art_mark) + space + width(unread count) */
-#define MAGIC	7
-
 /*
  * Globally accessible pointer to currently active group
  * Any functionality accessed from group level or below can use this pointer.
@@ -92,13 +84,11 @@ static void
 show_tagged_lines(
 	void)
 {
-	int i;
+	int i, j;
 
 	for (i = grpmenu.first; i < grpmenu.last; ++i) {
-		if ((i != grpmenu.curr) && line_is_tagged(base[i])) {
-			build_sline(i);
-			draw_line(i, MAGIC);
-		}
+		if ((i != grpmenu.curr) && (j = line_is_tagged(base[i])))
+			mark_screen(i, MARK_OFFSET - 2, tin_ltoa(j, 3));
 	}
 }
 
@@ -611,8 +601,16 @@ group_page(
 								arts[ii].tagged = ++num_of_tagged_arts;
 						}
 					}
-					build_sline(grpmenu.curr);
-					draw_line(grpmenu.curr, MAGIC);
+					if ((ii = line_is_tagged(n)))
+						mark_screen(grpmenu.curr, MARK_OFFSET - 2, tin_ltoa(ii, 3));
+					else {
+						char mark[] = { '\0', '\0' };
+
+						stat_thread(grpmenu.curr, &sbuf);
+						mark[0] = sbuf.art_mark;
+						mark_screen(grpmenu.curr, MARK_OFFSET - 2, "  "); /* clear space used by tag numbering */
+						mark_screen(grpmenu.curr, MARK_OFFSET, mark);
+					}
 					if (tagged)
 						show_tagged_lines();
 
@@ -697,7 +695,6 @@ group_page(
 
 					show_group_title(TRUE);
 					build_sline(grpmenu.curr);
-					draw_line(grpmenu.curr, MAGIC);
 					draw_subject_arrow();
 					info_message(_(txt_marked_as_unread), ptr);
 				}
@@ -730,7 +727,6 @@ group_page(
 
 					show_group_title(TRUE);
 					build_sline(grpmenu.curr);
-					draw_line(grpmenu.curr, MAGIC);
 					draw_subject_arrow();
 					info_message(_(txt_marked_as_unread), ptr);
 				}
@@ -755,13 +751,15 @@ group_page(
 					++n;
 				}
 				assert(n > 0);
-				build_sline(grpmenu.curr);
-				draw_line(grpmenu.curr, MAGIC);
+				{
+					char mark[] = { '\0', '\0' };
 
-				info_message(flag
-					      ? _(txt_thread_marked_as_selected)
-					      : _(txt_thread_marked_as_deselected));
+					stat_thread(grpmenu.curr, &sbuf);
+					mark[0] = sbuf.art_mark;
+					mark_screen(grpmenu.curr, MARK_OFFSET, mark);
+				}
 
+				info_message(flag ? _(txt_thread_marked_as_selected) : _(txt_thread_marked_as_deselected));
 				show_group_title(TRUE);
 
 				if (grpmenu.curr + 1 < grpmenu.max) {
@@ -817,7 +815,6 @@ group_page(
 						for_each_art_in_thread(i, n)
 							arts[i].selected = TRUE;
 
-						build_sline(n);
 						flag = TRUE;
 					}
 					if (flag) {
@@ -909,10 +906,8 @@ show_group_page(
 	if (tinrc.draw_arrow)
 		CleartoEOS();
 
-	for (i = grpmenu.first; i < grpmenu.last; ++i) {
+	for (i = grpmenu.first; i < grpmenu.last; ++i)
 		build_sline(i);
-		draw_line(i, 0);
-	}
 
 	CleartoEOS();
 	show_mini_help(GROUP_LEVEL);
@@ -931,11 +926,21 @@ static void
 update_group_page(
 	void)
 {
-	int i;
+	int i, j;
+	char mark[] = { '\0', '\0' };
+	struct t_art_stat sbuf;
 
 	for (i = grpmenu.first; i < grpmenu.last; ++i) {
-		build_sline(i);
-		draw_line(i, MAGIC);
+		if ((j = line_is_tagged(base[i])))
+			mark_screen(i, MARK_OFFSET - 2, tin_ltoa(j, 3));
+		else {
+			stat_thread(i, &sbuf);
+			mark[0] = sbuf.art_mark;
+			mark_screen(i, MARK_OFFSET - 2, "  ");	/* clear space used by tag numbering */
+			mark_screen(i, MARK_OFFSET, mark);
+			if (sbuf.art_mark == tinrc.art_marked_selected)
+				draw_mark_selected(i);
+		}
 	}
 
 	if (grpmenu.max <= 0)
@@ -1058,13 +1063,12 @@ pos_first_unread_thread(
 
 void
 mark_screen(
-	int level,	/* Always SELECT_LEVEL - TODO: move to select.c or use this everywhere */
 	int screen_row,
 	int screen_col,
 	const char *value)
 {
 	if (tinrc.draw_arrow) {
-		MoveCursor(INDEX_TOP + screen_row, screen_col);
+		MoveCursor(INDEX2LNUM(screen_row), screen_col);
 		my_fputs(value, stdout);
 		stow_cursor();
 		my_flush();
@@ -1072,17 +1076,16 @@ mark_screen(
 #ifdef USE_CURSES
 		int y, x;
 		getyx(stdscr, y, x);
-		mvaddstr(INDEX_TOP + screen_row, screen_col, value);
+		mvaddstr(INDEX2LNUM(screen_row), screen_col, value);
 		MoveCursor(y, x);
 #else
 		int i;
 		for (i = 0; value[i] != '\0'; i++)
-			screen[screen_row].col[screen_col + i] = value[i];
+			screen[INDEX2SNUM(screen_row)].col[screen_col + i] = value[i];
+		MoveCursor(INDEX2LNUM(screen_row), screen_col);
+		my_fputs(value, stdout);
 #endif /* USE_CURSES */
-		if (level == SELECT_LEVEL)
-			draw_group_arrow();
-		else
-			draw_subject_arrow();
+		currmenu->draw_arrow();
 	}
 }
 
@@ -1116,12 +1119,10 @@ build_multipart_header(
 /*
  * Build subject line given an index into base[].
  *
- * WARNING: the routine is tightly coupled with draw_line() in the sense
- * that draw_line() expects build_sline() to place the article mark
- * (ART_MARK_READ, ART_MARK_SELECTED, etc) at MARK_OFFSET in the
- * screen[].col.
- * So, if you change the format used in this routine, be sure to check
- * that the value of MARK_OFFSET (tin.h) is still correct.
+ * WARNING: some other code expects to find the article mark (ART_MARK_READ,
+ * ART_MARK_SELECTED, etc) at MARK_OFFSET from beginning of the line.
+ * So, if you change the format used in this routine, be sure to check that
+ * the value of MARK_OFFSET (tin.h) is still correct.
  * Yes, this is somewhat kludgy.
  */
 static void
@@ -1143,8 +1144,8 @@ build_sline(
 	size_t len;
 	wchar_t format[32];
 	wchar_t wbuffer[LEN];
-	wchar_t tmp_subj[256], tmp_subj2[256];
-	wchar_t tmp_from[HEADER_LEN], tmp_from2[HEADER_LEN];
+	wchar_t *tmp_subj = NULL, *tmp_subj2;
+	wchar_t *tmp_from = NULL, *tmp_from2;
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	/* set len_from and len_subj */
@@ -1261,26 +1262,20 @@ build_sline(
 	else
 		strncpy(arts_sub, arts[j].subject, sizeof(arts_sub) - 1);
 
-#if defined(CHARSET_CONVERSION) || defined(HAVE_UNICODE_NORMALIZATION)
-	if (IS_LOCAL_CHARSET("UTF-8")) {
-		utf8_valid(from);
-		utf8_valid(arts_sub);
-	}
-#endif /* CHARSET_CONVERSION || HAVE_UNICODE_NORMALIZATION */
-
 #ifndef USE_CURSES
 	buffer = screen[INDEX2SNUM(i)].col;
 #endif /* !USE_CURSES */
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	mbstowcs(tmp_subj2, arts_sub, ARRAY_SIZE(tmp_subj2) - 1);
-	mbstowcs(tmp_from2, from, ARRAY_SIZE(tmp_from2) - 1);
-	tmp_subj2[ARRAY_SIZE(tmp_subj2) - 1] = (wchar_t) '\0';
-	tmp_from2[ARRAY_SIZE(tmp_from2) - 1] = (wchar_t) '\0';
-
 	/* format subject and from */
-	wcspart(tmp_subj, tmp_subj2, len_subj - 12, ARRAY_SIZE(tmp_subj), TRUE);
-	wcspart(tmp_from, tmp_from2, len_from, ARRAY_SIZE(tmp_from), TRUE);
+	if ((tmp_subj2 = char2wchar_t(arts_sub)) != NULL) {
+		tmp_subj = wcspart(tmp_subj2, len_subj - 12, TRUE);
+		free(tmp_subj2);
+	}
+	if ((tmp_from2 = char2wchar_t(from)) != NULL) {
+		tmp_from = wcspart(tmp_from2, len_from, TRUE);
+		free(tmp_from2);
+	}
 
 	if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH) {
 		mbstowcs(format, "  %s %s %s%6d %-ls%s%-ls", ARRAY_SIZE(format) - 1);
@@ -1293,6 +1288,9 @@ build_sline(
 			 tin_ltoa(i + 1, 4), new_resps, art_cnt, tmp_subj,
 			 spaces, tmp_from);
 	}
+
+	FreeIfNeeded(tmp_subj);
+	FreeIfNeeded(tmp_from);
 
 	if ((len = wcstombs(buffer, wbuffer, cCOLS * MB_CUR_MAX)) == (size_t) -1)
 		len = 0;
@@ -1312,15 +1310,18 @@ build_sline(
 			 spaces, len_from, len_from, from);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
-#ifdef USE_CURSES
 	/*
 	 * protect display from non-displayable characters (e.g., form-feed)
 	 * and write line.
 	 */
 	WriteLine(INDEX2LNUM(i), convert_to_printable(buffer));
 
+#ifdef USE_CURSES
 	free(buffer);
 #endif /* USE_CURSES */
+	if (sbuf.art_mark == tinrc.art_marked_selected)
+		draw_mark_selected(i);
+	MoveCursor(INDEX2LNUM(i) + 1, 0);
 }
 
 
@@ -1700,10 +1701,8 @@ mark_thd_read(
 	 */
 	if (range_active || ch == iKeyMarkReadTag)
 		show_group_page();
-	else {
+	else
 		build_sline(grpmenu.curr);
-		draw_line(grpmenu.curr, MAGIC);
-	}
 
 	/*
 	 * Move cursor to next unread

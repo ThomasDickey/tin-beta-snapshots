@@ -40,10 +40,10 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.7.5"
+#		define VERSION		"1.7.6"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20040615"
-#	define RELEASENAME	"Gighay"
+#	define RELEASEDATE	"20040906"
+#	define RELEASENAME	"Baleshare"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.7"
 #	define ATTRIBUTES_VERSION	"1.0.3"

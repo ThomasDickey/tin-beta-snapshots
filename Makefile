@@ -1,15 +1,15 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2003-11-18
+# Updated: 2004-09-05
 #
 
 PROJECT	= tin
 LVER	= 1
 PVER	= 7
-SVER	= 5
+SVER	= 6
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20040615
+DVER	= 20040906
 EXE	= tin
 
 # directory structure
@@ -83,6 +83,7 @@ CFILES	= \
 	$(SRCDIR)/newsrc.c\
 	$(SRCDIR)/nntplib.c \
 	$(SRCDIR)/nrctbl.c \
+	$(SRCDIR)/options_menu.c \
 	$(SRCDIR)/page.c \
 	$(SRCDIR)/parsdate.y \
 	$(SRCDIR)/plp_snprintf.c \

@@ -79,7 +79,7 @@ tmpfile(
 		(void) unlink(buf);
 		u = umask(0);
 		(void) umask(u);
-		(void) fchmod(fd, 0666 & ~u);
+		(void) fchmod(fd, (S_IRUGO|S_IWUGO) & ~u);
 	}
 
 	(void) sigprocmask(SIG_SETMASK, &oset, NULL);

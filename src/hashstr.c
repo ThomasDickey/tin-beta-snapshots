@@ -68,7 +68,7 @@ hash_str(
 	struct t_hashnode **p;	/* used to descend the spillover structs */
 
 	if (s == NULL)
-		return (char *) 0;
+		return NULL;
 
 	h = 0;
 	while (*t) {

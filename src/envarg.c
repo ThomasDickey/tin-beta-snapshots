@@ -125,7 +125,7 @@ envargs(
 	/*
 	 * finally, add a NULL after the last arg, like UNIX
 	 */
-	*argv = (char *) 0;
+	*argv = NULL;
 
 	/*
 	 * save the values and return

@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2004-03-16
+ *  Updated   : 2004-06-30
  *  Notes     :
  *
  * Copyright (c) 1992-2004 Iain Lea <iain@bricbrac.de>
@@ -141,8 +141,8 @@ active_add(
 	const char *moderated)
 {
 	/* name - pre-initialised when group is made */
-	ptr->aliasedto = ((moderated[0] == '=') ? my_strdup(moderated + 1) : (char *) 0);
-	ptr->description = (char *) 0;
+	ptr->aliasedto = ((moderated[0] == '=') ? my_strdup(moderated + 1) : NULL);
+	ptr->description = NULL;
 	/* spool - see below */
 	ptr->moderated = moderated[0];
 	ptr->count = count;
@@ -460,7 +460,7 @@ static void
 read_active_file(
 	void)
 {
-	FILE *fp = NULL;
+	FILE *fp;
 	char *ptr;
 	char moderated[PATH_LEN];
 	long count = -1L, min = 1L, max = 0L;
@@ -546,7 +546,7 @@ void
 read_news_active_file(
 	void)
 {
-	FILE *fp = NULL;
+	FILE *fp;
 
 	/*
 	 * Ignore -n if no .newsrc can be found or .newsrc is empty
@@ -851,7 +851,7 @@ load_newnews_info(
 	 */
 	if (!num_newnews) {
 		for (i = 0; i < max_newnews; i++) {
-			newnews[i].host = (char *) 0;
+			newnews[i].host = NULL;
 			newnews[i].time = (time_t) 0;
 		}
 	}

@@ -372,9 +372,9 @@ build_sender(
 			strcat(sender, ptr);
 			strcat(sender, ">");
 		} else
-			return (char *) 0;
+			return NULL;
 	} else
-		return (char *) 0;
+		return NULL;
 
 	return sender;
 }

@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2004-05-31
+.\" Updated   : 2004-09-06
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "May 31st, 2004" "1.7.5" "A Usenet newsreader"
+.TH tin 1 "September 6th, 2004" "1.7.6" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -3166,9 +3166,11 @@ ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/
 .\"
 .\"
 .SH BUGS
-\fBCNews\fP NNTPd and
+\fBCNews\fP NNTPd,
 .BR noffle (1)
-(<= V1.0-pre5) can't handle simultaneous GROUP commands. If you run into
+(<= V1.0-pre5) and
+.BR NewsCache
+(<= V1.1.91) can't handle simultaneous GROUP commands. If you run into
 trouble with any of the mentioned servers define
 NUM_SIMULTANEOUS_GROUP_COMMAND to 1 in active.c and recompile. See also
 the TODO-file which comes with the source.

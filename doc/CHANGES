@@ -1,3 +1,46 @@
+-- 1.7.6 release 20040906 "Baleshare" --
+
+U030) Dennis Grevenstein <dennis@pcde.inka.de>
+      Urs Janssen <urs@tin.org>
+      ADD. --enable-broken-system-fix
+      FIX. configure[.in], autoconf.hin, misc.c
+
+U029) Urs Janssen <urs@tin.org>
+      ADD. config.guess, config.sub update
+      ADD. warn about attributes outside scope
+      ADD. move .article to dead.article if $EDITOR dies
+      ADD. tweak URL_REGEX, NEWS_REGEX
+      ADD. also check for alloca if we're going to build intl/*
+      BUG. memleak in wstrunc()
+      BUG. repost to a different group didn't restore the current group
+           pointer
+      FIX. configure[.in], extern.h, tin.h, art.c, attrib.c, charset.c, cook.c
+           curses.c, lang.c, post.c, string.c, xref.c, config.guess
+           config.sub
+
+ 025) Michael Bienia <michael@vorlon.ping.de>
+      BUG. ensure CURR_GROUP always points to current group even for
+           non interactive group-processing
+      FIX. art.c, save.c
+
+U028) Michael Bienia <michael@vorlon.ping.de>
+      BUG. missing string termination
+      ADD. allow to hide options in the 'M'enu based on the value of other
+           options
+      ADD. crsr-up/dowm in option-list
+      ADD. remove CURR_GROUP dependecy from sort functions
+      ADD. wcspart() now mallocs the needed space on its own
+      ADD. kill/hot-menu "Kill/Select pattern scope" now walks up the
+           hierarchie level
+      ADD. move '-V' code into a function, use it inside mail_bug_report()
+      ADD. use mark_screen() also in GROUP_LEVEL and THREAD_LEVEL
+      ADD. move the options menu code from config.c to options_menu.c
+      REM. draw_line()
+      FIX. Makefile[.in], extern.h, proto.h, tcurses.c, tin.h, art.c
+           charset.c, config.c, filter.c, getline.c, group.c, init.c, lang.c
+           main.c, misc.c, options_menu.c, post.c, prompt.c, rfc2046.c
+           screen.c, select.c, string.c, thread.c
+
 -- 1.7.5 release 20040615 "Gighay" --
 
  024) Herbert Xu <herbert@gondor.apana.org.au

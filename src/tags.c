@@ -85,8 +85,8 @@ look_for_multipart_info(
 	int *offset)
 {
 	MultiPartInfo tmp;
-	char *subj = (char *) 0;
-	char *pch = (char *) 0;
+	char *subj = NULL;
+	char *pch = NULL;
 
 	*offset = 0;
 

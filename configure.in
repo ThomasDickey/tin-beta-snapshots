@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2004-06-06
+dnl Updated   : 2004-08-20
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2004 Thomas E. Dickey <dickey@invisible-island.net>
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.7.5
+VERSION=1.7.6
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -623,6 +623,14 @@ CF_ARG_ENABLE(broken-listgroup-fix,
 	[AC_DEFINE(BROKEN_LISTGROUP)])
 AC_MSG_RESULT($enableval)
 
+### on some old systems the WIFEXITED()/WEXITSTATUS() macros do not work
+AC_MSG_CHECKING(whether to ignore system()s return value)
+CF_ARG_ENABLE(broken-system-fix,
+        [  --enable-broken-system-fix
+                          ignore system()s return value],
+        [AC_DEFINE(IGNORE_SYSTEM_STATUS)])
+AC_MSG_RESULT($enableval)
+
 ### checks for the location of the system-wide default setting file
 AC_MSG_CHECKING(for directory containing tin.defaults file)
 CF_WITH_PATH(defaults-dir,
@@ -668,16 +676,6 @@ CF_CPP_EXPANDS
 CF_CPP_CONCATS
 CF_CHECK_NESTED_PARAMS
 
-### check for alloca (only required for bison)
-case "$YACC" in
-bison*)
-	AC_FUNC_ALLOCA
-	;;
-*)
-	ALLOCA=""
-	AC_SUBST(ALLOCA)
-	;;
-esac
 
 ###	Checks for header files.
 AC_HEADER_STDC
@@ -1183,6 +1181,24 @@ esac
 ### so we don't need to do the tests ourselves.
 CF_BUNDLED_INTL
 LIBS="$LIBS $LIBICONV"
+
+### check for alloca (required for bison and/or intl/*)
+case "$YACC" in
+bison*)
+	AC_FUNC_ALLOCA
+	;;
+*)
+	case "$USE_INCLUDED_LIBINTL" in
+	yes)
+		AC_FUNC_ALLOCA
+		;;
+	no)
+		ALLOCA=""
+		AC_SUBST(ALLOCA)
+		;;
+	esac
+	;;
+esac
 
 CF_CHECK_HEADERS(iconv.h)
 AC_MSG_CHECKING(for iconv_open() //TRANSLIT extension)
