@@ -5,7 +5,7 @@
  *  Author    : Roland Rosenfeld <roland@spinnaker.rhein.de>
  *              Giuseppe De Marco <gdm@rebel.net> (light-colors)
  *              Julien Oster <fuzzy@cu8.cum.de> (word highlighting)
- *              T.Dickey <dickey@herndon4.his.com> (curses support)
+ *              T.Dickey <dickey@invisible-island.net> (curses support)
  *  Created   : 1995-06-02
  *  Updated   : 2004-01-11
  *  Notes     : This are the basic function for ansi-color

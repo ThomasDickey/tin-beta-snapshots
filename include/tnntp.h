@@ -1,12 +1,12 @@
 /*
  *  Project   : tin - a Usenet reader
  *  Module    : tnntp.h
- *  Author    : Thomas Dickey <dickey@herndon4.his.com>
+ *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-05
  *  Updated   : 2003-09-19
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2004 Thomas Dickey <dickey@herndon4.his.com>
+ * Copyright (c) 1997-2004 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

@@ -13,7 +13,7 @@ o  AFAICS change_config_file() currently has a static return value,
    change something we should update (global) attributes accordingly.
    [20030511 Urs Janssen <urs@tin.org>]
 
-o  Changes to int/bool tinrc variables in the Option Menu don't propogate
+o  Changes to int/bool tinrc variables in the Option Menu don't propagate
    back to the attributes, not even groups with global attributes.
    This is because the Option-Menu in {group,page}.c doesn't reread the
    attributes, whereas select.c does. Fix the problem properly in config.c by
@@ -40,8 +40,9 @@ o  batch mode has several bugs
      (filters each group several times, ~25 times slower as without a
       cmd-line group) and the cmd-line group is not displayed in the
       statistics nor taken into account for the 'any unread news' status.
-   - -cZ does not perform catchup, feature or bug?
-   - shall we allow stand alone -c?
+   - -vc could be more verbose (like -vcZ is)
+   - -cZ has an unclear return value (shall we return 0 or 2 if there
+      was unread news before -c marked it as read?)
    - -o currently is not a 'batch_mode' option
    [Urs Janssen <urs@tin.org>]
 
@@ -138,7 +139,7 @@ o  add bold-italic, bold-underline, italic-underline, bold-italic-underline
    [20020721 Urs Janssen <urs@tin.org>]
 
 o  allow bold, underline, italic, ... as colour substitution for
-   monochrom terminals (map green=underline, italic=yellow)
+   monochrome terminals (map green=underline, italic=yellow)
    (see also <20020416202232.A4575@bloatware.reston01.va.comcast.net>)
    [20030218 Serge Matveev <sm@cl.spb.ru>]
 
@@ -164,7 +165,7 @@ o  should the postponed 'file' (and posted messages 'file') be in
 
 o  add maildir support (besides MBOX{O,RD} and MMDF},
    MH (not only reading but also writing), mailstore, BABYL, Kendra (MMDF
-   like with 20*CTRL-A as sep.) and add man-pages for the varius formats.
+   like with 20*CTRL-A as sep.) and add man-pages for the various formats.
    (see <http://www.ifi.uio.no/~larsi/notes/BABYL> for BABYL,
     <http://www.qmail.org/man/man5/maildir.html> for maildir,
     <http://www.qmail.org/man/man5/mbox.html> for MBOXCL and MBOXCL2)
@@ -240,7 +241,7 @@ o  attributes (still) needs some work, some entrys aren't really useful
    on a per group basis but others would (e.g. Reply-To)
    once we have a 'attributes-menu' we could remove most of the
    global 'attributes' set in tinrc and move them to a scope=*
-   in attibutes (e.g. From)
+   in attributes (e.g. From)
    [Urs Janssen <urs@tin.org>]
 
 o  add post_8bit_header, mail_8bit_header, post_mime_encoding,
@@ -272,7 +273,7 @@ o  check if server supports 'LIST MOTD' (e.g. INN >= 2.0) and display
    'LIST DISTRIB.PATS' and if it does parse the output so it can be shown
    to the user. (e.g. when posting to a moderated group, show the
    moderators mail-address, but still leave the mailing to the server; if
-   the group has limitied distribution inform the user, ...)
+   the group has limited distribution inform the user, ...)
 
 o  if using "-n" commandline switch you can't subscribe to newsgroups not
    present in your newsrc - a simple check against the server
@@ -346,7 +347,7 @@ o  A system-wide tinrc configuration file (to hold some defaults).
    Maybe a second file which could be used to force settings (eg
    inews & mailer) (tin.defaults [--with-defaults-dir] is a start)
 
-o  (g)oto group is case sensitive (nate that MH mailgroups might
+o  (g)oto group is case sensitive (note that MH mailgroups might
    contain uppercase chars)
    also newsgroup names in the command-line are case sensitive
    better would be: check if they exist and if not ask if you would
@@ -452,7 +453,7 @@ o  allow any given amount of days in default_filter_days not only
 
 o  allow expiring filter entrys n-days after the last time they matched
 
-o  add command to generate filter rules for all curently tagged articles
+o  add command to generate filter rules for all currently tagged articles
 
 Pager enhancements
 ------------------
@@ -480,7 +481,7 @@ o  get rid of CURR_GROUP, use t_group instead
 o  clean up $AUTOSUBSCRIBE code (the NNTP code path is a mess)
    [20030412 Urs Janssen <urs@akk.org>]
 
-o  the varius filter keys are named a bit inconsistent, currently we have
+o  the various filter keys are named a bit inconsistent, currently we have
    iKeyGroupQuickAutoSel, iKeyGroupQuickKill, iKeyPageQuickAutoSel,
    iKeyPageQuickKill and iKeyGroupKill, iKeyGroupAutoSel, iKeyPageAutoKill,
    iKeyPageAutoSel. in actual fact iKeyPageAutoKill is a misnomer and
@@ -489,12 +490,12 @@ o  the varius filter keys are named a bit inconsistent, currently we have
    the filter/scoring menu. It would be nice if the name would express
    that. e.g. rename them to something like *QuickFilter{Kill,Select}
    and *MenuFilter{Kill,Select}. and as the default values for those
-   keys arn't used anywhere else we could drop theier scope prefix which
+   keys arn't used anywhere else we could drop their scope prefix which
    would lead us to something like iKeyQuickFilter{Kill,Select} and
    iKeyMenuFilter{Kill,Select}
    [20030303 Urs Janssen <urs@akk.org>]
 
-o  reduce the number of dublicated strings in lang.c
+o  reduce the number of duplicated strings in lang.c
    txt_help_select_goto_group, txt_help_group_goto_group;
    txt_help_group_toggle_subj_display, txt_help_thread_toggle_subj_display;
    txt_help_article_prev_unread, txt_help_group_prev_unread_art;
@@ -624,7 +625,7 @@ o  make mm_network_charset an "option_list" to avoid junk input or
 
 o  add IDNA support (RFC 3490ff.)
    (<http://www.gnu.org/software/libidn/> might be usefull)
-   (added minmalistic IDNA decoding support if a recent libidn is found, urs)
+   (added minimalistic IDNA decoding support if a recent libidn is found, urs)
    [20030917 Urs Janssen <urs@tin.org>]
 
 o  add normalization
@@ -637,6 +638,8 @@ Docs/online help
 ----------------
 o  add installation guide (in html)
 
+o  add cross-compilation hints
+
 o  better document keymap feature
 
 o  man page always needs work and proof reading
@@ -647,6 +650,11 @@ o  tin.defaults could use more documentation in manpage (tin.5)
 
 Not yet classified
 ------------------
+o  trn uses ~/.nntpauth (format is "^server\s+user\s+password"),
+   shall we also try ~/.nntpauth if we can't find a matching entry
+   in ~/.newsauth?
+   [20040128 Urs Janssen <urs@tin.org>]
+
 o  what todo if in a CTE: x-uue the CD: filename differs from the one given
    in the begin line? IMHO we should use the one from the begin line for
    saving and in the overview in the pager.
@@ -662,7 +670,7 @@ o  move tinrc.defaults for certain comands to a pre-filled .inputhistory?
    (if so, also move i_key_search_last there)
    [Jason Faultless]
 
-o  what about -a cmd-line flag? is this really neaded? IMHO this can be
+o  what about -a cmd-line flag? is this really needed? IMHO this can be
    dropped, '&' can be used for runtime color toggling.
    [20021106 Urs Janssen <urs@tin.org>]
 
@@ -677,7 +685,7 @@ o  commas in real-name might cause problems in mail-replys
    [20021007 Urs Janssen <urs@tin.org>]
 
 o  what is with FOPEN_OPTS (VMS)? is it missing from ~50% of all
-   fopen()-calls or can it be droped entirely?
+   fopen()-calls or can it be dropped entirely?
    [20020821 Urs Janssen <urs@tin.org>]
 
 o  setting TIN_HOMEDIR to a non-existent dir gives a "Filesystem full"

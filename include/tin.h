@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-12-19
+ *  Updated   : 2004-02-09
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1947,6 +1947,10 @@ extern void joindir (char *result, const char *dir, const char *file);
 #	define S_IXUGO	(S_IXUSR|S_IXGRP|S_IXOTH)	/* execute permission (all) */
 #endif /* !S_IRWXUGO */
 
+#ifndef S_ISVTX
+#	define S_ISVTX 0
+#endif /* !S_ISVTX */
+
 #ifdef DONT_HAVE_PIPING
 #	ifdef VMS
 #		define TIN_PRINTFILE "Sys$Scratch:TIN_PRINT%d.TMP"
@@ -2152,6 +2156,12 @@ extern struct tm *localtime(time_t *);
 #else
 #	define CLOSEDIR(DIR)	if (closedir(DIR)) error_message("closedir() failed: %s %s", __FILE__, __LINE__)
 #endif /* CLOSEDIR_VOID */
+
+#ifdef HAVE_GETTIMEOFDAY
+#	ifndef GETTIMEOFDAY_2ARGS
+#		define gettimeofday(a,b) gettimeofday(a)
+#	endif /* GETTIMEOFDAY_2ARGS */
+#endif /* HAVE_GETTIMEOFDAY */
 
 /* libmss */
 #ifdef MSS

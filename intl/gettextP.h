@@ -25,7 +25,7 @@
 #ifdef _LIBC
 # include "../iconv/gconv_int.h"
 #else
-# if HAVE_ICONV
+# ifdef HAVE_ICONV
 #  include <iconv.h>
 # endif
 #endif
@@ -132,7 +132,7 @@ struct loaded_domain
 #ifdef _LIBC
   __gconv_t conv;
 #else
-# if HAVE_ICONV
+# ifdef HAVE_ICONV
   iconv_t conv;
 # endif
 #endif
@@ -237,11 +237,11 @@ extern char *bind_textdomain_codeset__ PARAMS ((const char *__domainname,
 #endif
 
 #ifdef _LIBC
-extern void __gettext_free_exp PARAMS ((struct expression *exp))
+extern void __gettext_free_exp PARAMS ((struct expression *_exp))
      internal_function;
 extern int __gettextparse PARAMS ((void *arg));
 #else
-extern void gettext_free_exp__ PARAMS ((struct expression *exp))
+extern void gettext_free_exp__ PARAMS ((struct expression *_exp))
      internal_function;
 extern int gettextparse__ PARAMS ((void *arg));
 #endif

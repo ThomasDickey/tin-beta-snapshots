@@ -79,6 +79,10 @@ System related:
   --libexecdir                            --sysconfdir
   --with-x                                --with-Xaw3d
   --with-neXtaw                           --with-XawPlus
+  --with-build-cc                         --with-build-cflags
+  --with-build-cppflags                   --with-build-ldflags
+  --with-build-libs                       --build
+  --host                                  --target
 
 News machine names
 ------------------
@@ -499,7 +503,7 @@ within tin). See doc/reading-mail.txt for further information.
 
 --enable-nls (default: on)
 The --enable-nls option enables Native Language Support (NLS), which allows
-tin to run in languages other than American English.  Native Language
+tin to run in languages other than American English. Native Language
 Support is enabled by default, the --disable-nls option disables NLS.
 
 --with-included-gettext  (default:off)
@@ -634,5 +638,5 @@ Compiled & installed
 --------------------
 Tin was successfully built and installed on a variety of platforms including
 Linux, FreeBSD, OpenBSD, NetBSD, BSDi, Darwin, Solaris, IRIX, HP-UX, Ultrix,
-Tru64, AIX, SINIX, UXP/V, QNX, GNU Hurd, DG/UX, SEIUX and Cygwin.
-For a detailed list see <http://www.tin.org/builds.html>
+Tru64, AIX, SINIX, UXP/V, SUPER-UX, QNX, GNU Hurd, DG/UX, SEIUX, MiNT and
+Cygwin. For a detailed list see <http://www.tin.org/builds.html>

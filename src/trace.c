@@ -1,12 +1,12 @@
 /*
  *  Project   : tin - a Usenet reader
  *  Module    : trace.c
- *  Author    : Thomas Dickey <dickey@herndon4.his.com>
+ *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-22
  *  Updated   : 2001-07-22
  *  Notes     : debugging support via TRACE macro.
  *
- * Copyright (c) 1997-2004 Thomas Dickey <dickey@herndon4.his.com>
+ * Copyright (c) 1997-2004 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

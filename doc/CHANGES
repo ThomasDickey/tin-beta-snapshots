@@ -1,8 +1,26 @@
--- 1.7.4 release 20040111 "" --
+-- 1.7.4 release 20040211 "" --
+
+U022) Lech Szychowski <lech7@pse.pl>
+      BUG. didn't check if message-ids taken from the References:-header are
+           valid before using them for threading.
+      FIX. refs.c
+
+U021) Matt Anton <tin@syrius.org>
+      ADD. added a few missing french translations
+      FIX. fr.po
+
+U020) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. allow cross-compiling
+      FIX. aclocal.m4, configure[.in], autoconf.hin, proto.h, tcurses.h, tin.h
+           Makefile.in, config.c, langinfo.c, pcre/Makefile.in
+           intl/Makefile.in, intl/dcigettext.c, intl/gettextP.h
+           intl/loadmsgcat.c, intl/localealias.c
 
  021) Urs Janssen <urs@tin.org>
       BUG. did allow unused .eh and .kp TLDs
-      FIX. policy.h
+      BUG. still used some old keynames in keymap.sample
+      ADD. mention supersede possibility in manpage/online help
+      FIX. policy.h, lang.c, tin.1, de.po, keymap.sample
 
 U019) Michael Bienia <michael@vorlon.ping.de>
       BUG. error_message() clobbers global var mesg
@@ -14,14 +32,18 @@ U019) Michael Bienia <michael@vorlon.ping.de>
            configure[.in], autoconf.h[in]
 
 U018) Urs Janssen <urs@tin.org>
+      ADD. allow standalone -c cmd-line flag.
       ADD. config.guess, config.sub update
       ADD. increase MAXREFSIZE to 998
       ADD. minor manpage update
       ADD. don't read keymapfile when using -o cmd-line flag
+      ADD. [un]install_helpers includes tinews.pl
+      ADD. configure test if gettimeofday() takes two arguments
       BUG. didn't compile on !CHARSET_CONVERSION systems
       REM. some unused vars
-      FIX. extern.h, filter.c, group.c, init.c, main.c, nntplib.c, post.c
-           pgp.c, tin.1, tin.5, config.guess, config.sub
+      FIX. Makefile[.in], configure[.in], autoconf.h[in], extern.h, tin.h
+           filter.c, group.c, init.c, main.c, nntplib.c, post.c, pgp.c, save.c
+           tin.1, tin.5, config.guess, config.sub
 
 -- 1.7.3 release 20031220 "Taransay" --
 
@@ -37,7 +59,7 @@ U016) Piotr Kucharski
 U015) Michael Bienia <michael@vorlon.ping.de>
       BUG. didn't search first article line and rest of the line after a
            match
-      BUG. option and filter menus werent multibyte safe
+      BUG. option and filter menus weren't multibyte safe
       BUG. in REGEX-mode a iKeyGroupSelPattern of "*" wasn't transformed
            into a valid regex
       ADD. search again wraps around if no more matches are found
@@ -139,7 +161,7 @@ U006) Urs Janssen <urs@tin.org>
       ADD. a few missing german translations
       ADD. config.guess, config.sub update
       BUG. fixed a small memleak when using Fcc:
-      BUG. fixed possible use of unitialized attributes data
+      BUG. fixed possible use of uninitialized attributes data
       FIX. Makefile, bugrep.h, extern.h, nntplib.h, proto.h, tin.h, tnntp.h
            version.h, active.c, config.c, curses.c, hashstr.c, header.c, init.c
            joinpath.c, lang.c, mail.c, main.c, memory.c, misc.c, newsrc.c
@@ -229,7 +251,7 @@ U001) Dirk Nimmich <nimmich@muenster.de>
            tincfg.tbl, tin.1, tin.5
 
  005) Dirk Nimmich <nimmich@muenster.de>
-      BUG. make install_sysdefs didn't honor $DESTDIR
+      BUG. make install_sysdefs didn't honour $DESTDIR
       BUG. filter on References didn't work on deep threads
       BUG. upgrading from use_metamail=ON could lead to
            metamail_prog=--internal
@@ -247,8 +269,8 @@ U001) Dirk Nimmich <nimmich@muenster.de>
            save.c, tin.1, tin.spec, Makefile, src/Makefile.in, umlaut[es].txt
 
  004) Michael Velten <tin@michnet.de>
-      BUG. some info messages about (un)tagging wern't displayed
-      BUG. strip_blanks wasn't always honored
+      BUG. some info messages about (un)tagging weren't displayed
+      BUG. strip_blanks wasn't always honoured
       BUG. in some cases body-search couldn't be aborted
       ADD. avoid some useless screen redraws
       FIX. extern.h, cook.c, feed.c, group.c, lang.c, page.c, tags.c, thread.c

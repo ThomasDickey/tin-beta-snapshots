@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-01-10
+ *  Updated   : 2004-01-12
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -328,7 +328,7 @@ main(
 	 * Check/start if any new/unread articles
 	 */
 	if (check_any_unread)
-		exit(check_start_save_any_news(CHECK_ANY_NEWS, catchup));
+		tin_done(check_start_save_any_news(CHECK_ANY_NEWS, catchup));
 
 	if (start_any_unread) {
 		batch_mode = TRUE;			/* Suppress some unwanted on-screen garbage */
@@ -434,11 +434,7 @@ read_cmd_line_options(
 				break;
 
 			case 'c':
-				/*
-				 * TODO: should -c enter batch-mode?
-				 *       this would allow to use -c without -[NMS]
-				 */
-				/* batch_mode = TRUE; */
+				batch_mode = TRUE;
 				catchup = TRUE;
 				break;
 

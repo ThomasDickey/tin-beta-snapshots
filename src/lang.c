@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-01-05
+ *  Updated   : 2004-01-13
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
@@ -280,7 +280,7 @@ constext txt_help_article_autokill[] = N_("kill an article via a menu");
 constext txt_help_article_autoselect[] = N_("auto-select (hot) an article via a menu");
 constext txt_help_article_browse_urls[] = N_("Browse URLs in article");
 constext txt_help_article_by_num[] = N_("0 - 9\t  display article by number in current thread");
-constext txt_help_article_cancel[] = N_("cancel (delete) current article; must have been posted by you");
+constext txt_help_article_cancel[] = N_("cancel (delete) or supersede (overwrite) current article");
 constext txt_help_article_edit[] = N_("edit article (mail-groups only)");
 constext txt_help_article_first_in_thread[] = N_("display first article in current thread");
 constext txt_help_article_first_page[] = N_("display first page of article");

@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2004-01-11
+ *  Updated   : 2004-01-20
  *  Notes     :
  *
  * Copyright (c) 1997-2004 Urs Janssen <urs@tin.org>
@@ -254,7 +254,7 @@ extern void free_keymaps(void);
 
 /* langinfo.c */
 #ifndef NO_LOCALE
-	extern char *tin_nl_langinfo(nl_item item);
+	extern const char *tin_nl_langinfo(nl_item item);
 #endif /* !NO_LOCALE */
 
 /* list.c */

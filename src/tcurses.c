@@ -1,13 +1,13 @@
 /*
  *  Project   : tin - a Usenet reader
  *  Module    : tcurses.c
- *  Author    : Thomas Dickey <dickey@herndon4.his.com>
+ *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
  *  Updated   : 2003-10-15
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
- * Copyright (c) 1997-2004 Thomas Dickey <dickey@herndon4.his.com>
+ * Copyright (c) 1997-2004 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

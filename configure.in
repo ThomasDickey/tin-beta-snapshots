@@ -1,11 +1,11 @@
 dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
-dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
+dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2003-12-22
+dnl Updated   : 2004-02-09
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2004 Thomas E. Dickey <dickey@herndon4.his.com>
+dnl Copyright (c) 1995-2004 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -84,7 +84,6 @@ AC_PROG_CC
 AC_PROG_GCC_TRADITIONAL
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
-AC_PROG_RANLIB
 CF_PROG_YACC
 AC_CHECK_PROGS(LINT, lint alint lclint tdlint splint, [])
 CF_GNU_SOURCE
@@ -93,6 +92,14 @@ CF_ANSI_CC_REQD
 CF_PROG_EXT
 CF_LIB_PREFIX(LIB_PREFIX)
 AC_PROG_LN_S
+
+CF_BUILD_CC([-I$(INCDIR)],[])
+
+dnl These are standard among *NIX systems, but not when cross-compiling
+AC_CHECK_TOOL(RANLIB, ranlib, ':')
+AC_CHECK_TOOL(LD, ld, ld)
+AC_CHECK_TOOL(AR, ar, ar)
+CF_SUBST(archiver options,AR_OPTS,rv)
 
 case "$host_cpu:$host_vendor:$host_os" in
 	# check for MacOS X, exclude Darwin on ix86
@@ -283,14 +290,14 @@ AC_SUBST(INN_NNTPLIB)
 ### are used in a lot of places.
 AC_CACHE_CHECK(if you want socks library,cf_cv_use_libsocks,[
 AC_ARG_WITH(socks,
-	[  --with-socks[=path]     link with socks library if available],
+	[  --with-socks[=path]       link with socks library if available],
 	[cf_cv_use_libsocks=$withval],
 	[cf_cv_use_libsocks=no])
 ])
 
 AC_CACHE_CHECK(if you want socks5 library,cf_cv_use_libsocks5,[
 AC_ARG_WITH(socks5,
-	[  --with-socks5[=path]    link with socks5 library if available],
+	[  --with-socks5[=path]      link with socks5 library if available],
 	[cf_cv_use_libsocks5=$withval],
 	[cf_cv_use_libsocks5=no])
 ])
@@ -432,22 +439,9 @@ if test "$PCRE_HOME" = "no" ; then
 fi
 
 ## debugging libraries (do this after other libraries)
-AC_MSG_CHECKING(if you want dbmalloc library)
 debug_malloc=none
-AC_ARG_WITH(dbmalloc,
-	[  --with-dbmalloc         use Conor Cahill's dbmalloc library],
-	[AC_MSG_RESULT(yes)
-	 AC_CHECK_LIB(dbmalloc,debug_malloc,
-	 AC_CHECK_HEADER(dbmalloc.h,debug_malloc=DBMALLOC))],
-	AC_MSG_RESULT(no))
-
-AC_MSG_CHECKING(if you want dmalloc library)
-AC_ARG_WITH(dmalloc,
-	[  --with-dmalloc          use Gray Watson's dmalloc library],
-	[AC_MSG_RESULT(yes)
-	 AC_CHECK_LIB(dmalloc,dmalloc_debug,
-	 AC_CHECK_HEADER(dmalloc.h,debug_malloc=DMALLOC))],
-	AC_MSG_RESULT(no))
+CF_WITH_DBMALLOC(debug_malloc=DBMALLOC)
+CF_WITH_DMALLOC(debug_malloc=DMALLOC)
 
 AC_MSG_CHECKING(if you want debugging-trace)
 AC_ARG_WITH(trace,
@@ -967,6 +961,19 @@ AC_CHECK_FUNC(flock,
 
 AM_MULTIBYTE_ABLE
 
+AC_MSG_CHECKING(if gettimeofday takes two arguments)
+AC_TRY_COMPILE([
+#if HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif],
+[struct timeval *tv;
+struct timezone *tz;
+gettimeofday(tv, tz);],
+ac_cv_func_gettimeofday_2args=yes, ac_cv_func_gettimeofday_2args=no)
+AC_MSG_RESULT($ac_cv_func_gettimeofday_2args)
+if test $ac_cv_func_gettimeofday_2args = yes; then
+	AC_DEFINE(GETTIMEOFDAY_2ARGS)
+fi
 
 CF_POSIX_JC
 CF_FUNC_FORK
@@ -979,8 +986,11 @@ AC_EGREP_HEADER([select\(.*, *int *\*,],time.h,
 )
 
 AC_FUNC_CLOSEDIR_VOID
-## AC_FUNC_SETPGRP
-AC_FUNC_SETVBUF_REVERSED
+
+# autoconf 2.5x assumes setvbuf is not reversed when cross-compiling
+if test "$cross_compiling" != yes ; then
+	AC_FUNC_SETVBUF_REVERSED
+fi
 
 ###	Checks for network library functions.
 AC_CHECK_FUNCS(\
