@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2004-12-08
+dnl Updated   : 2005-03-20
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2004 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2005 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.7.7
+VERSION=1.7.8
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -76,7 +76,7 @@ case "$host_os" in
 esac
 
 ### Native Language Support
-ALL_LINGUAS="de en_GB et fr"
+ALL_LINGUAS="de en_GB et fr tr"
 
 ### Checks for programs
 save_CFLAGS="$CFLAGS"
@@ -943,6 +943,7 @@ AC_CHECK_FUNCS(\
 	strftime \
 	strpbrk \
 	strrstr \
+	strsep \
 	strstr \
 	strtol \
 	tmpfile \
@@ -1069,6 +1070,7 @@ CF_CHECK_DECL(\
 	popen \
 	strchr \
 	strcasestr \
+	strsep \
 )
 
 dnl Check network stuff separately, to limit the effect of inconsistent headers

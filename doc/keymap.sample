@@ -1,4 +1,4 @@
-# Keymap file V1.0.0 for the TIN newsreader
+# Keymap file V1.0.4 for the TIN newsreader
 #
 # Sample keymap file
 # This file contains the default key mappings
@@ -16,43 +16,41 @@ SearchSubjB			?
 SearchAuthB			A
 SearchBody			B
 SearchRepeat			\
+EditFilter			E
 ToggleHelpDisplay		H
 ToggleInverseVideo		I
 LookupMessage			L
 OptionMenu			M
-Postponed2			O
+Postponed			O	^O
 QuitTin				Q
 DisplayPostHist			W
 FirstPage			^
 SearchAuthF			a
-PageUp3				b
 Help				h
 ToggleInfoLastLine		i
-Down2				j
-Up2				k
+Down				j	^N
+Up				k	^P
 Print				o
 Quit				q
 Version				v
 Post				w
 Pipe				|
+QuickFilterSelect		[
+QuickFilterKill			]
 ScrollUp			<
 ScrollDown			>
-PageUp				^B
-PageDown			^D
-PageDown2			^F
+PageUp				b	^B	^U
+PageDown			^D	^F
 RedrawScr			^L
-Down				^N
-Postponed			^O
-Up				^P
-PageUp2				^U
+MenuFilterSelect		^A
+MenuFilterKill			^K
 
 #####
 
-ConfigSelect			^J
-ConfigSelect2			^M
-ConfigLastPage2			G
+ConfigSelect			^J	^M
+ConfigLastPage			G
 ConfigNoSave			Q
-ConfigFirstPage2		g
+ConfigFirstPage			g
 
 #####
 
@@ -71,11 +69,8 @@ FilterSave			s
 
 #####
 
-GroupAutoSel			^A
 GroupNextUnreadArtOrGrp		TAB
-GroupReadBasenote		^J
-GroupKill			^K
-GroupReadBasenote2		^M
+GroupReadBasenote		^J	^M
 GroupSelThd			*
 GroupDoAutoSel			+
 GroupToggleThdSel		.
@@ -83,19 +78,16 @@ GroupSelThdIfUnreadSelected	;
 GroupSelPattern			=
 GroupReverseSel			@
 GroupCatchupNextUnread		C
-GroupEditFilter			E
 GroupToggleGetartLimit		G
 GroupMarkThdRead		K
 GroupNextUnreadArt		N
 GroupPrevUnreadArt		P
 GroupBugReport			R
-GroupAutoSave		S
+GroupAutoSave			S
 GroupTagParts			T
 GroupUntag			U
 GroupMarkUnselArtRead		X
 GroupMarkThdUnread		Z
-GroupQuickAutoSel		[
-GroupQuickKill			]
 GroupCatchup			c
 GroupToggleSubjDisplay		d
 GroupGoto			g
@@ -113,26 +105,16 @@ GroupUndoSel			~
 
 #####
 
-HelpLastPage2			G
-HelpFirstPage2			g
+HelpLastPage			G
+HelpFirstPage			g
 
 #####
 
-NrctblCreate			c
-NrctblDefault			d
-NrctblAlternative		a
-NrctblQuit			q
-
-#####
-
-PageAutoSel			^A
 PageReplyQuoteHeaders		^E
 PagePGPCheckArticle		^G
 PageToggleHeaders		^H
 PageNextUnread			TAB
-PageNextThd			^J
-PageAutoKill			^K
-PageNextThd2			^M
+PageNextThd			^J	^M
 PageToggleTabs			^T
 PageFollowupQuoteHeaders	^W
 PageToggleTex2iso		"
@@ -144,20 +126,17 @@ PageTopThd			<
 PageBotThd			>
 PageCatchupNextUnread		C
 PageCancel			D
-PageEditFilter			E
 PageFollowup			F
 PageLastPage			G
 PageKillThd			K
 PageNextUnreadArt		N
 PagePrevUnreadArt		P
 PageReply			R
-PageAutoSave		S
+PageAutoSave			S
 PageGroupSel			T
 PageViewUrl			U
 PageViewAttach			V
 PageMarkThdUnread		Z
-PageQuickAutoSel		[
-PageQuickKill			]
 PageToggleHighlight		_
 PageCatchup			c
 PageEditArticle			e
@@ -191,10 +170,8 @@ PostContinue			c
 PostAbort			a
 PostIgnore			i
 PostMail			m
-PostPost2			y
-PostPost3			p
-PostSend			s
-PostSend2			y
+PostPost			p	y
+PostSend			s	y
 PostSupersede			s
 PostPostpone			o
 
@@ -205,8 +182,8 @@ PostponeAll			A
 
 #####
 
-PromptYes			y
-PromptNo			n
+PromptYes			y	Y
+PromptNo			n	N
 
 #####
 
@@ -221,9 +198,8 @@ PProcYes			y
 
 #####
 
-SelectEnterNextUnreadGrp	TAB
-SelectReadGrp			^J
-SelectReadGrp2			^M
+SelectEnterNextUnreadGrp	TAB	n
+SelectReadGrp			^J	^M
 SelectResetNewsrc		^R
 SelectCatchupNextUnread		C
 SelectNextUnreadGrp		N
@@ -232,30 +208,27 @@ SelectSubscribePat		S
 SelectUnsubscribePat		U
 SelectQuitNoWrite		X
 SelectSyncWithActive		Y
-SelectMarkGrpUnread2		Z
 SelectCatchup			c
 SelectToggleDescriptions	d
 SelectGoto			g
 SelectMoveGrp			m
-SelectEnterNextUnreadGrp2	n
 SelectToggleReadDisplay		r
 SelectSubscribe			s
 SelectUnsubscribe		u
 SelectYankActive		y
-SelectMarkGrpUnread		z
+SelectMarkGrpUnread		z	Z
 
 #####
 
 ThreadReadNextArtOrThread	TAB
-ThreadReadArt			^J
-ThreadReadArt2			^M
+ThreadReadArt			^J	^M
 ThreadSelArt			*
 ThreadToggleArtSel		.
 ThreadReverseSel		@
 ThreadCatchupNextUnread		C
 ThreadMarkArtRead		K
 ThreadBugReport			R
-ThreadAutoSave		S
+ThreadAutoSave			S
 ThreadUntag			U
 ThreadMarkThdUnread		Z
 ThreadCatchup			c

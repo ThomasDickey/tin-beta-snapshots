@@ -3,10 +3,10 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2004-11-16
+ *  Updated   : 2005-03-20
  *  Notes     : Split from config.c
  *
- * Copyright (c) 2004 Michael Bienia <michael@vorlon.ping.de>
+ * Copyright (c) 2004-2005 Michael Bienia <michael@vorlon.ping.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,9 +44,9 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 
 #define option_lines_per_page (cLINES - INDEX_TOP - 3)
 
@@ -64,6 +64,8 @@ static enum option_enum set_option_num(int num);
 static int get_option_num(enum option_enum option);
 static t_bool option_is_title(enum option_enum option);
 static t_bool option_on_page(enum option_enum option);
+static t_function option_left(void);
+static t_function option_right(void);
 static void highlight_option(enum option_enum option);
 static void print_any_option(enum option_enum the_option);
 static void redraw_screen(enum option_enum option);
@@ -668,6 +670,22 @@ check_score_defaults(
 }
 
 
+static t_function
+option_left(
+	void)
+{
+	return GLOBAL_QUIT;
+}
+
+
+static t_function
+option_right(
+	void)
+{
+	return CONFIG_SELECT;
+}
+
+
 /*
  * options menu so that the user can dynamically change parameters
  *
@@ -681,10 +699,10 @@ change_config_file(
 	struct t_group *group)
 {
 	enum option_enum option, old_option;
-	int ch = 1;
 	int ret_code = NO_FILTERING;
 	int mime_encoding = MIME_ENCODING_7BIT;
 	t_bool change_option = FALSE;
+	t_function func;
 
 	signal_context = cConfig;
 
@@ -694,74 +712,27 @@ change_config_file(
 
 	redraw_screen(option);
 	forever {
-		ch = ReadCh();
-
-		/*
-		 * convert arrow key codes to "normal" codes
-		 */
-		switch (ch) {
-			case ESC:	/* common arrow keys */
-#	ifdef HAVE_KEY_PREFIX
-			case KEY_PREFIX:
-#	endif /* HAVE_KEY_PREFIX */
-				switch (get_arrow_key(ch)) {
-					case KEYMAP_UP:
-						ch = map_to_local(iKeyUp, &menukeymap.config_change);
-						break;
-
-					case KEYMAP_DOWN:
-						ch = map_to_local(iKeyDown, &menukeymap.config_change);
-						break;
-
-					case KEYMAP_HOME:
-						ch = map_to_local(iKeyFirstPage, &menukeymap.config_change);
-						break;
-
-					case KEYMAP_END:
-						ch = map_to_local(iKeyLastPage, &menukeymap.config_change);
-						break;
-
-					case KEYMAP_PAGE_UP:
-						ch = map_to_local(iKeyPageUp, &menukeymap.config_change);
-						break;
-
-					case KEYMAP_PAGE_DOWN:
-						ch = map_to_local(iKeyPageDown, &menukeymap.config_change);
-						break;
-
-					default:
-						break;
-				} /* switch (get_arrow_key()) */
-				break;
-
-			default:
-				break;
-		}	/* switch (ch) */
-
-		switch (map_to_default(ch, &menukeymap.config_change)) {
-			case iKeyQuit:
+		switch ((func = handle_keypad(option_left, option_right, NULL, option_menu_keys))) {
+			case GLOBAL_QUIT:
 				write_config_file(local_config_file);
 				/* FALLTHROUGH */
-			case iKeyConfigNoSave:
+			case CONFIG_NO_SAVE:
 				clear_note_area();
 				return ret_code;
 
-			case iKeyUp:
-			case iKeyUp2:
+			case GLOBAL_LINE_UP:
 				unhighlight_option(option);
 				option = move_cursor(option, FALSE);
 				highlight_option(option);
 				break;
 
-			case iKeyDown:
-			case iKeyDown2:
+			case GLOBAL_LINE_DOWN:
 				unhighlight_option(option);
 				option = move_cursor(option, TRUE);
 				highlight_option(option);
 				break;
 
-			case iKeyFirstPage:
-			case iKeyConfigFirstPage2:
+			case GLOBAL_FIRST_PAGE:
 				unhighlight_option(option);
 				option = 1;
 				first_option_on_screen = 0;
@@ -770,8 +741,7 @@ change_config_file(
 				/* highlight_option(option); is already done by redraw_screen() */
 				break;
 
-			case iKeyLastPage:
-			case iKeyConfigLastPage2:
+			case GLOBAL_LAST_PAGE:
 				unhighlight_option(option);
 				option = LAST_OPT;
 				last_option_on_screen = LAST_OPT;
@@ -780,9 +750,7 @@ change_config_file(
 				/* highlight_option(option); is already done by redraw_screen() */
 				break;
 
-			case iKeyPageUp:
-			case iKeyPageUp2:
-			case iKeyPageUp3:
+			case GLOBAL_PAGE_UP:
 				unhighlight_option(option);
 				if (option != first_option_on_screen &&	!(option_is_title(first_option_on_screen) && option == next_option(first_option_on_screen, FALSE))) {
 					option = first_option_on_screen;
@@ -812,9 +780,7 @@ change_config_file(
 				/* highlight_option(option); is already done by redraw_screen() */
 				break;
 
-			case iKeyPageDown:
-			case iKeyPageDown2:
-			case iKeyPageDown3:
+			case GLOBAL_PAGE_DOWN:
 				unhighlight_option(option);
 				if (option == LAST_OPT) {
 					/* wrap around */
@@ -850,18 +816,25 @@ change_config_file(
 				/* highlight_option(option); is already done by redraw_screen() */
 				break;
 
-			case iKeyScrollUp:
+			case GLOBAL_SCROLL_UP:
 				option = opt_scroll_up(option);
 				break;
 
-			case iKeyScrollDown:
+			case GLOBAL_SCROLL_DOWN:
 				option = opt_scroll_down(option);
 				break;
 
-			case '1': case '2': case '3': case '4': case '5':
-			case '6': case '7': case '8': case '9':
+			case DIGIT_1:
+			case DIGIT_2:
+			case DIGIT_3:
+			case DIGIT_4:
+			case DIGIT_5:
+			case DIGIT_6:
+			case DIGIT_7:
+			case DIGIT_8:
+			case DIGIT_9:
 				unhighlight_option(option);
-				option = set_option_num(prompt_num(ch, _(txt_enter_option_num)));
+				option = set_option_num(prompt_num(func_to_key(func, option_menu_keys), _(txt_enter_option_num)));
 				if (!option_on_page(option)) {
 					first_option_on_screen = option;
 					set_last_option_on_screen(option);
@@ -870,14 +843,14 @@ change_config_file(
 					highlight_option(option);
 				break;
 
-			case iKeySearchSubjF:
-			case iKeySearchSubjB:
-			case iKeySearchRepeat:
-				if (ch == iKeySearchRepeat && i_key_search_last != iKeySearchSubjF && i_key_search_last != iKeySearchSubjB)
+			case GLOBAL_SEARCH_SUBJECT_FORWARD:
+			case GLOBAL_SEARCH_SUBJECT_BACKWARD:
+			case GLOBAL_SEARCH_REPEAT:
+				if (func == GLOBAL_SEARCH_REPEAT && last_search != GLOBAL_SEARCH_SUBJECT_FORWARD && last_search != GLOBAL_SEARCH_SUBJECT_BACKWARD)
 					break;
 
 				old_option = option;
-				option = search_config((ch == iKeySearchSubjF), (ch == iKeySearchRepeat), option, LAST_OPT);
+				option = search_config((func == GLOBAL_SEARCH_SUBJECT_FORWARD), (func == GLOBAL_SEARCH_REPEAT), option, LAST_OPT);
 				if (option != old_option) {
 					unhighlight_option(old_option);
 					if (!option_on_page(option)) {
@@ -889,12 +862,11 @@ change_config_file(
 				}
 				break;
 
-			case iKeyConfigSelect:
-			case iKeyConfigSelect2:
+			case CONFIG_SELECT:
 				change_option = TRUE;
 				break;
 
-			case iKeyRedrawScr:	/* redraw screen */
+			case GLOBAL_REDRAW_SCREEN:
 				set_last_option_on_screen(first_option_on_screen);
 				redraw_screen(option);
 				break;
@@ -927,7 +899,9 @@ change_config_file(
 						case OPT_PGDN_GOTO_NEXT:
 						case OPT_POS_FIRST_UNREAD:
 						case OPT_POST_PROCESS_VIEW:
+#ifndef DISABLE_PRINTING
 						case OPT_PRINT_HEADER:
+#endif /*! DISABLE_PRINTING */
 						case OPT_PROCESS_ONLY_UNREAD:
 						case OPT_PROMPT_FOLLOWUPTO:
 						case OPT_SHOW_ONLY_UNREAD_GROUPS:

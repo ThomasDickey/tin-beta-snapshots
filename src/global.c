@@ -3,10 +3,10 @@
  *  Module    : global.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-12
- *  Updated   : 2004-11-16
+ *  Updated   : 2005-01-30
  *  Notes     : Generic nagivation and key handling routines
  *
- * Copyright (c) 1999-2004 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2005 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,14 +41,13 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 
 /*
  * Local prototypes
  */
-static int mouse_action(int ch, int (*left_action) (void), int (*right_action) (void));
 #ifdef USE_CURSES
 	static void do_scroll(int jump);
 #endif /* USE_CURSES */
@@ -318,11 +317,10 @@ do_scroll(
  * Handle mouse clicks. We simply map the event to a return
  * keymap code that will drop through to call the correct function
  */
-static int
-mouse_action(
-	int ch,
-	int (*left_action) (void),		/* Typically catchup type event */
-	int (*right_action) (void))		/* Typically read next etc.. */
+t_function
+global_mouse_action(
+	t_function (*left_action) (void),
+	t_function (*right_action) (void))
 {
 	int INDEX_BOTTOM = INDEX_TOP + NOTESLINES;
 
@@ -330,7 +328,7 @@ mouse_action(
 		case MOUSE_BUTTON_1:
 		case MOUSE_BUTTON_3:
 			if (xrow < INDEX_TOP || xrow >= INDEX_BOTTOM)
-				return iKeyPageDown;
+				return GLOBAL_PAGE_DOWN;
 
 			erase_arrow();
 			currmenu->curr = xrow - INDEX_TOP + currmenu->first;
@@ -342,24 +340,28 @@ mouse_action(
 
 		case MOUSE_BUTTON_2:
 			if (xrow < INDEX_TOP || xrow >= INDEX_BOTTOM)
-				return iKeyPageUp;
+				return GLOBAL_PAGE_UP;
 
 			return left_action();
 
 		default:
 			break;
 	}
-	return ch;			/* Pass through */
+	return NOT_ASSIGNED;
 }
 
 
-int
+t_function
 handle_keypad(
-	int (*left_action) (void),
-	int (*right_action) (void),
-	const t_menukeys *menukeys)
+	t_function (*left_action) (void),
+	t_function (*right_action) (void),
+	t_function (*mouse_action) (
+		t_function (*left_action) (void),
+		t_function (*right_action) (void)),
+	const struct keylist keys)
 {
 	int ch = ReadCh();
+	t_function func = NOT_ASSIGNED;
 
 	switch (ch) {
 		case ESC:	/* common arrow keys */
@@ -368,40 +370,40 @@ handle_keypad(
 #	endif /* HAVE_KEY_PREFIX */
 			switch (get_arrow_key(ch)) {
 				case KEYMAP_UP:
-					ch = iKeyUp;
+					func = GLOBAL_LINE_UP;
 					break;
 
 				case KEYMAP_DOWN:
-					ch = iKeyDown;
+					func = GLOBAL_LINE_DOWN;
 					break;
 
 				case KEYMAP_LEFT:
-					ch = left_action();
+					func = left_action();
 					break;
 
 				case KEYMAP_RIGHT:
-					ch = right_action();
+					func = right_action();
 					break;
 
 				case KEYMAP_PAGE_UP:
-					ch = iKeyPageUp;
+					func = GLOBAL_PAGE_UP;
 					break;
 
 				case KEYMAP_PAGE_DOWN:
-					ch = iKeyPageDown;
+					func = GLOBAL_PAGE_DOWN;
 					break;
 
 				case KEYMAP_HOME:
-					ch = iKeyFirstPage;
+					func = GLOBAL_FIRST_PAGE;
 					break;
 
 				case KEYMAP_END:
-					ch = iKeyLastPage;
+					func = GLOBAL_LAST_PAGE;
 					break;
 
 				case KEYMAP_MOUSE:
-					ch = mouse_action(ch, left_action, right_action);
-					break;
+					if (mouse_action)
+						func = mouse_action(left_action, right_action);
 
 				default:
 					break;
@@ -409,10 +411,10 @@ handle_keypad(
 			break;
 
 		default:
-			ch = map_to_default(ch, menukeys);
+			func = key_to_func(ch, keys);
 			break;
 	}
-	return ch;
+	return func;
 }
 
 

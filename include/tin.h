@@ -3,10 +3,10 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-10-01
+ *  Updated   : 2005-03-07
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -787,6 +787,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define POSTPONED_FILE	"postponed.articles"
 #define SUBSCRIPTIONS_FILE	"subscriptions"
 #define NEWSGROUPS_FILE	"newsgroups"
+#define KEYMAP_FILE	"keymap"
 
 
 #ifdef USE_INN_NNTPLIB
@@ -1201,12 +1202,6 @@ enum {
 #define SORT_THREADS_BY_NOTHING			0
 #define SORT_THREADS_BY_SCORE_DESCEND	1
 #define SORT_THREADS_BY_SCORE_ASCEND	2
-
-/*
- * Search keys
- */
-#define SEARCH_SUBJ		1
-#define SEARCH_AUTH		2
 
 /*
  * Different values of strip_bogus - the ways to handle bogus groups

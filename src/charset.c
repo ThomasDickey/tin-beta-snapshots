@@ -6,7 +6,7 @@
  *  Updated   : 2004-07-21
  *  Notes     : ISO to ascii charset conversion routines
  *
- * Copyright (c) 1993-2004 Markus Kuhn <mgk25@cl.cam.ac.uk>
+ * Copyright (c) 1993-2005 Markus Kuhn <mgk25@cl.cam.ac.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

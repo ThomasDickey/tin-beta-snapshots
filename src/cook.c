@@ -6,7 +6,7 @@
  *  Updated   : 2004-11-04
  *  Notes     : Split from page.c
  *
- * Copyright (c) 2000-2004 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2005 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -438,6 +438,9 @@ process_text_body_part(
 		/*
 		 * Detect and process uuencoded sections
 		 * Look for the start or the end of a uuencoded section
+		 *
+		 * TODO: look for a tailing size line after end (non standard
+		 *       extension)?
 		 */
 		if (pcre_exec(uubegin_regex.re, uubegin_regex.extra, line, len, 0, 0, offsets, size_offsets) != PCRE_ERROR_NOMATCH) {
 			in_uue = TRUE;

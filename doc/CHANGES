@@ -1,3 +1,45 @@
+-- 1.7.8 release 20050321 "Hellisay" --
+
+U039) Matt Anton <tin@syrius.org>
+      ADD. added missing french translations
+      FIX. fr.po
+
+U038) Sebnem Korkmaz <sebnem_k@hotmail.com>
+      ADD. started turkish translation
+      FIX. tr.po
+
+U037) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+U036) Michael Bienia <michael@vorlon.ping.de>
+      ADD. rewrite keymap-rebinding
+      ADD. keymap autoupdate feature
+      FIX. Makefile[.in], extern.h, keymap.h, proto.h, tin.h, feed.c, filter.c
+           global.c, group.c, help.c, inews.c, init.c, keymap.c, lang.c, main.c
+           misc.c, nntplib.c, nrctbl.c, options_menu.c, page.c, pgp.c, post.c
+           prompt.c, read.c, save.c, search.c, select.c, thread.c, version.c
+           tin.1, tin.5
+
+U035) Urs Janssen <urs@tin.org>
+      ADD. basic code for new nntp-command CAPABILITIES
+      ADD. config.guess, config.sub update
+      ADD. GLOBAL_PRINT ('o') to thread-level
+      ADD. EDIT_FILTER ('E') to select- and thread-level
+      ADD. update online 'h'elp
+      ADD. ad configure check and fallback for non ANSI-C strsep() function
+      BUG. typos in the german translation
+      BUG. didn't compile if configured with --disable-printing
+      BUG. description of a few keys in the online help was wrong
+      BUG. out of bounds read in utf8_valid()
+      BUG. missing postinit_regexp() call in batch_mode.
+      FIX. extern.h, keymap.h, nntplib.h, proto.h, tin.h, attrib.c, config.c
+           debug.c, feed.c, filter.c, group.c, help.c, keymap.c, lang.c, main.c
+           memory.c, misc.c, nntplib.c, options_menu.c, page.c, post.c
+           screen.c, select.c, string.c, thread.c, xref.c, de.po, tr.po
+           Makefile, configure.in, autoconf.hin. config.guess, config.sub
+           tin.1, tin.5
+
 -- 1.7.7 release 20041215 "Scalpay" --
 
  026) Michael Bienia <michael@vorlon.ping.de>

@@ -12,7 +12,7 @@
  *              tm = localtime(&secs);
  *              num = strftime(buf, sizeof(buf), "%a %d-%m-%y %H:%M:%S", tm);
  *
- * Copyright (c) 1991-2004 Arnold Robbins <arnold@skeeve.com>
+ * Copyright (c) 1991-2005 Arnold Robbins <arnold@skeeve.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

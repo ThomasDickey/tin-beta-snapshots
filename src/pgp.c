@@ -3,10 +3,10 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2004-12-01
+ *  Updated   : 2005-02-12
  *  Notes     : PGP support
  *
- * Copyright (c) 1995-2004 Steven J. Madsen <steve@erinet.com>
+ * Copyright (c) 1995-2005 Steven J. Madsen <steve@erinet.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,9 +43,9 @@
 #	ifndef TCURSES_H
 #		include "tcurses.h"
 #	endif /* !TCURSES_H */
-#	ifndef MENUKEYS_H
-#		include "menukeys.h"
-#	endif /* !MENUKEYS_H */
+#	ifndef KEYMAP_H
+#		include "keymap.h"
+#	endif /* !KEYMAP_H */
 
 
 /*
@@ -332,25 +332,24 @@ invoke_pgp_mail(
 	const char *nam,
 	char *mail_to)
 {
-	char ch, ch_default = iKeyPgpSign;
 	char keyboth[MAXKEYLEN], keyencrypt[MAXKEYLEN], keyquit[MAXKEYLEN];
 	char keysign[MAXKEYLEN];
+	t_function func, default_func = PGP_SIGN;
 
 	if (!pgp_available())
 		return;
 
-	ch = prompt_slk_response(ch_default, &menukeymap.pgp_mail,
-			_(txt_pgp_mail),
-			printascii(keyencrypt, map_to_local(iKeyPgpEncrypt, &menukeymap.pgp_mail)),
-			printascii(keysign, map_to_local(iKeyPgpSign, &menukeymap.pgp_mail)),
-			printascii(keyboth, map_to_local(iKeyPgpEncSign, &menukeymap.pgp_mail)),
-			printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.pgp_mail)));
-	switch (ch) {
-		case iKeyAbort:
-		case iKeyQuit:
+	func = prompt_slk_response(default_func, pgp_mail_keys, _(txt_pgp_mail),
+			printascii(keyencrypt, func_to_key(PGP_KEY_ENCRYPT, pgp_mail_keys)),
+			printascii(keysign, func_to_key(PGP_KEY_SIGN, pgp_mail_keys)),
+			printascii(keyboth, func_to_key(PGP_KEY_ENCRYPT_SIGN, pgp_mail_keys)),
+			printascii(keyquit, func_to_key(GLOBAL_QUIT, pgp_mail_keys)));
+	switch (func) {
+		case GLOBAL_ABORT:
+		case GLOBAL_QUIT:
 			break;
 
-		case iKeyPgpSign:
+		case PGP_KEY_SIGN:
 #ifdef HAVE_PGPK
 			ClearScreen();
 			MoveCursor(cLINES - 7, 0);
@@ -358,7 +357,7 @@ invoke_pgp_mail(
 			do_pgp(PGP_SIGN, nam, NULL);
 			break;
 
-		case iKeyPgpEncSign:
+		case PGP_KEY_ENCRYPT_SIGN:
 #ifdef HAVE_PGPK
 			ClearScreen();
 			MoveCursor(cLINES - 7, 0);
@@ -366,7 +365,7 @@ invoke_pgp_mail(
 			do_pgp(PGP_SIGN | PGP_ENCRYPT, nam, mail_to);
 			break;
 
-		case iKeyPgpEncrypt:
+		case PGP_KEY_ENCRYPT:
 			do_pgp(PGP_ENCRYPT, nam, mail_to);
 			break;
 
@@ -380,23 +379,22 @@ void
 invoke_pgp_news(
 	char *artfile)
 {
-	char ch, ch_default = iKeyPgpSign;
 	char keyinclude[MAXKEYLEN], keyquit[MAXKEYLEN], keysign[MAXKEYLEN];
+	t_function func, default_func = PGP_SIGN;
 
 	if (!pgp_available())
 		return;
 
-	ch = prompt_slk_response(ch_default, &menukeymap.pgp_news,
-				_(txt_pgp_news),
-				printascii(keysign, map_to_local(iKeyPgpSign, &menukeymap.pgp_news)),
-				printascii(keyinclude, map_to_local(iKeyPgpIncludekey, &menukeymap.pgp_news)),
-				printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.pgp_news)));
-	switch (ch) {
-		case iKeyAbort:
-		case iKeyQuit:
+	func = prompt_slk_response(default_func, pgp_news_keys, _(txt_pgp_news),
+				printascii(keysign, func_to_key(PGP_KEY_SIGN, pgp_news_keys)),
+				printascii(keyinclude, func_to_key(PGP_INCLUDE_KEY, pgp_news_keys)),
+				printascii(keyquit, func_to_key(GLOBAL_QUIT, pgp_news_keys)));
+	switch (func) {
+		case GLOBAL_ABORT:
+		case GLOBAL_QUIT:
 			break;
 
-		case iKeyPgpSign:
+		case PGP_KEY_SIGN:
 #ifdef HAVE_PGPK
 			info_message(" ");
 			MoveCursor(cLINES - 7, 0);
@@ -405,7 +403,7 @@ invoke_pgp_news(
 			do_pgp(PGP_SIGN, artfile, NULL);
 			break;
 
-		case iKeyPgpIncludekey:
+		case PGP_INCLUDE_KEY:
 #ifdef HAVE_PGPK
 			info_message(" ");
 			MoveCursor(cLINES - 7, 0);
@@ -473,7 +471,7 @@ pgp_check_article(
 	}
 
 	if (pgp_key) {
-		if (prompt_yn(cLINES, _(txt_pgp_add), FALSE) == 1) {
+		if (prompt_yn(_(txt_pgp_add), FALSE) == 1) {
 			Raw(FALSE);
 
 			sh_format(cmd, sizeof(cmd), ADD_KEY, PGPNAME, pgpopts, artfile);

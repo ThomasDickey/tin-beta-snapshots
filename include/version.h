@@ -6,7 +6,7 @@
  *  Updated   : 2004-10-19
  *  Notes     :
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,15 +40,15 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.7.7"
+#		define VERSION		"1.7.8"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20041215"
-#	define RELEASENAME	"Scalpay"
+#	define RELEASEDATE	"20050321"
+#	define RELEASENAME	"Hellisay"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.7"
 #	define ATTRIBUTES_VERSION	"1.0.3"
 #	define FILTER_VERSION	"1.0.0"
-#	define KEYMAP_VERSION	"1.0.0"
+#	define KEYMAP_VERSION	"1.0.4"
 #	define SERVERCONFIG_VERSION	"1.0.0"
 
 #	ifdef VMS

@@ -3,10 +3,10 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2004-09-04
+ *  Updated   : 2005-02-12
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,9 +44,9 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 
 
 #define IS_READ(i)	(arts[i].status == ART_READ)
@@ -1003,8 +1003,8 @@ filter_menu(
 	char text_time[PATH_LEN];
 	char double_time[PATH_LEN];
 	char quat_time[PATH_LEN];
-	char ch_default = iKeyFilterSave;
-	int ch, i, len;
+	t_function func, default_func = FILTER_SAVE;
+	int i, len;
 	struct t_filter_rule rule;
 	t_bool proceed;
 	t_bool ret;
@@ -1032,9 +1032,9 @@ filter_menu(
 	/*
 	 * setup correct text for user selected menu
 	 */
-	(void) printascii(keyedit, map_to_local(iKeyFilterEdit, &menukeymap.filter_quit_edit_save));
-	(void) printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.filter_quit_edit_save));
-	(void) printascii(keysave, map_to_local(iKeyFilterSave, &menukeymap.filter_quit_edit_save));
+	printascii(keyedit, func_to_key(FILTER_EDIT, filter_keys));
+	printascii(keyquit, func_to_key(GLOBAL_QUIT, filter_keys));
+	printascii(keysave, func_to_key(FILTER_SAVE, filter_keys));
 
 	if (type == FILTER_KILL) {
 		ptr_filter_from = _(txt_kill_from);
@@ -1063,7 +1063,7 @@ filter_menu(
 	ptr_filter_comment = _(txt_filter_comment);
 	ptr_filter_groupname = group->name;
 
-	len = cCOLS - 30;
+	len = cCOLS - 33;
 
 	snprintf(text_time, sizeof(text_time), _(txt_time_default_days), tinrc.filter_days);
 	fmt_filter_menu_prompt(text_subj, sizeof(text_subj), ptr_filter_subj, len, art->subject);
@@ -1358,13 +1358,11 @@ filter_menu(
 	}
 
 	forever {
-		ch = prompt_slk_response(ch_default,
-				&menukeymap.filter_quit_edit_save,
-				ptr_filter_quit_edit_save,
-				keyquit, keyedit, keysave);
-		switch (ch) {
+		func = prompt_slk_response(default_func, filter_keys,
+				ptr_filter_quit_edit_save, keyquit, keyedit, keysave);
+		switch (func) {
 
-		case iKeyFilterEdit:
+		case FILTER_EDIT:
 			add_filter_rule(group, art, &rule, FALSE); /* save the rule */
 			rule.comment = free_filter_comment(rule.comment);
 			if (!invoke_editor(filter_file, FILTER_FILE_OFFSET))
@@ -1375,14 +1373,14 @@ filter_menu(
 			/* keep lint quiet: */
 			/* FALLTHROUGH */
 
-		case iKeyQuit:
-		case iKeyAbort:
+		case GLOBAL_QUIT:
+		case GLOBAL_ABORT:
 			rule.comment = free_filter_comment(rule.comment);
 			return FALSE;
 			/* keep lint quiet: */
 			/* FALLTHROUGH */
 
-		case iKeyFilterSave:
+		case FILTER_SAVE:
 			/*
 			 * Add the filter rule and save it to the filter file
 			 */
@@ -1450,9 +1448,9 @@ quick_filter(
 
 	/* create an auto-comment. */
 	if (type == FILTER_KILL)
-		snprintf(txt, sizeof(txt), "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", iKeyGroupQuickKill, "' (", _(txt_help_article_quick_kill), ").");
+		snprintf(txt, sizeof(txt), "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", ']', "' (", _(txt_help_article_quick_kill), ").");
 	else
-		snprintf(txt, sizeof(txt), "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", iKeyGroupQuickAutoSel, "' (", _(txt_help_article_quick_select), ").");
+		snprintf(txt, sizeof(txt), "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", '[', "' (", _(txt_help_article_quick_select), ").");
 	rule.comment = add_filter_comment(NULL, txt);
 
 	rule.text[0] = '\0';

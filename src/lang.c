@@ -3,10 +3,10 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-11-16
+ *  Updated   : 2005-03-20
  *  Notes     :
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -115,8 +115,10 @@ constext txt_check_article[] = N_("Check Prepared Article");
 constext txt_checking_new_groups[] = N_("Checking for new groups... ");
 constext txt_checking_for_news[] = N_("Checking for news...");
 constext txt_choose_post_process_type[] = N_("Post-process %s=no, %s=yes, %s=shar, %s=quit: ");
-constext txt_color_off[] = N_("ANSI color disabled");
-constext txt_color_on[] = N_("ANSI color enabled");
+#ifdef HAVE_COLOR
+	constext txt_color_off[] = N_("ANSI color disabled");
+	constext txt_color_on[] = N_("ANSI color enabled");
+#endif /* HAVE_COLOR */
 constext txt_command_failed[] = N_("Command failed: %s");
 constext txt_confirm_select_on_exit[] = N_("Mark not selected articles read?");
 constext txt_connecting[] = N_("Connecting to %s...");
@@ -317,6 +319,7 @@ constext txt_help_article_view_attachments[] = N_("View/save multimedia attachme
 constext txt_help_bug[] = N_("report bug or comment via mail to %s");
 constext txt_help_global_article_range[] = N_("choose range of articles to be affected by next command");
 constext txt_help_global_esc[] = N_("escape from command prompt");
+constext txt_help_global_edit_filter[] = N_("edit filter file");
 constext txt_help_global_help[] = N_("get help");
 constext txt_help_global_last_art[] = N_("display last article viewed");
 constext txt_help_global_line_down[] = N_("down one line");
@@ -455,7 +458,10 @@ constext txt_inverse_on[] = N_("Inverse video enabled");
 constext txt_keymap_missing_key[] = N_("Missing definition for %s\n");
 constext txt_keymap_invalid_key[] = N_("Invalid key definition '%s'\n");
 constext txt_keymap_invalid_name[] = N_("Invalid keyname '%s'\n");
-constext txt_keymap_conflict[] = N_("Key '%s' is defined for both %s%s and %s%s\n");
+#if 0 /* unused */
+	constext txt_keymap_conflict[] = N_("Key '%s' is defined for both %s%s and %s%s\n");
+#endif /* 0 */
+constext txt_keymap_upgraded[] = N_("Keymap file was upgraded to version %s\n");
 constext txt_kill_from[] = N_("Kill From:     [%s] (y/n): ");
 constext txt_kill_lines[] = N_("Kill Lines: (</>num): ");
 constext txt_kill_menu[] = N_("Kill Article Menu");
@@ -470,7 +476,7 @@ constext txt_last_resp[] = N_("-- Last response --");
 constext txt_lines[] = N_("Lines %s  ");
 
 constext txt_msgid_line_only[] = N_("Message-ID: line              ");
-constext txt_mail[] = "Mail";
+constext txt_mail[] = N_("Mail");
 constext txt_mailbox[] = N_("mailbox ");
 constext txt_mail_art_to[] = N_("Mail article(s) to [%.*s]> ");
 constext txt_mail_log_to[] = N_("Mailing log to %s\n");
@@ -709,7 +715,9 @@ constext txt_thread_upper[] = N_("Thread");
 constext txt_thread_com[] = N_("Thread Level Commands");
 constext txt_thread_marked_as_deselected[] = N_("Thread deselected");
 constext txt_thread_marked_as_selected[] = N_("Thread selected");
-constext txt_thread_plural[] = N_("threads");
+#if 0 /* unused */
+	constext txt_thread_plural[] = N_("threads");
+#endif /* 0 */
 constext txt_thread_range[] = N_("Thread range");
 constext txt_thread_singular[] = N_("thread");
 constext txt_thread_x_of_n[] = N_("Thread %4s of %4s");
@@ -884,7 +892,9 @@ Warning: Posting is in %s and contains characters which are not\n\
 	constext txt_libuu_error_no_data[] = N_("No data.");
 	constext txt_libuu_error_unknown[] = N_("Unknown error.");
 #else
-	constext txt_checksum_of_file[] = N_("\tChecksum of %s (%ld %s)");
+#	if defined(M_UNIX) && defined(HAVE_SUM) && !defined(DONT_HAVE_PIPING)
+		constext txt_checksum_of_file[] = N_("\tChecksum of %s (%ld %s)");
+#	endif /* M_UNIX && HAVE_SUM && !DONT_HAVE_PIPING */
 #endif /* HAVE_LIBUU */
 
 #ifdef HAVE_MH_MAIL_HANDLING
@@ -921,7 +931,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 #endif /* HAVE_PGP_GPG */
 
 #ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2004 Iain Lea.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2005 Iain Lea.";
 #endif /* M_UNIX */
 
 #ifdef NNTP_ABLE
@@ -973,7 +983,7 @@ Tin will try to use XHDR XREF instead (slows down things a bit).\n");
 #endif /* NNTP_INEWS */
 
 #ifdef VMS
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2004 Iain Lea & Tod McQuillin & other.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2005 Iain Lea & Tod McQuillin & other.";
 #endif /* VMS */
 
 #ifndef DISABLE_PRINTING
@@ -1325,11 +1335,13 @@ struct opttxt txt_display_options = {
 	NULL
 };
 
+#ifdef HAVE_COLOR
 struct opttxt txt_color_options = {
 	NULL,
 	N_("Color Options"),
 	NULL
 };
+#endif /* HAVE_COLOR */
 
 struct opttxt txt_getart_limit_options = {
 	NULL,

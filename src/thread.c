@@ -3,10 +3,10 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2004-12-01
+ *  Updated   : 2005-03-14
  *  Notes     :
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,9 +41,9 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 
 #define EXPIRED(a) ((a)->article == ART_UNAVAILABLE || arts[(a)->article].thread == ART_EXPIRED)
 
@@ -57,12 +57,12 @@ t_bool show_subject;
 static char get_art_mark(struct t_article *art);
 static int enter_pager(int art, t_bool ignore_unavail, int level);
 static int mark_art_read(struct t_group *group);
-static int thread_catchup(int ch);
-static int thread_left(void);
-static int thread_right(void);
+static int thread_catchup(t_function func);
 static int thread_tab_pressed(void);
 static t_bool find_unexpired(struct t_msgid *ptr);
 static t_bool has_sibling(struct t_msgid *ptr);
+static t_function thread_left(void);
+static t_function thread_right(void);
 static void build_tline(int l, struct t_article *art);
 static void draw_thread_arrow(void);
 static void draw_thread_item(int item);
@@ -78,6 +78,8 @@ static void update_thread_page(void);
  */
 static t_menu thdmenu = {0, 0, 0, show_thread_page, draw_thread_arrow, draw_thread_item };
 
+/* TODO: find a better solution */
+static int ret_code = 0;		/* Set to < 0 when it is time to leave this menu */
 
 /*
  * returns the mark which should be used for this article
@@ -355,22 +357,22 @@ draw_thread_item(
 }
 
 
-static int
+static t_function
 thread_left(
 	void)
 {
 	if (tinrc.thread_catchup_on_exit)
-		return iKeyCatchupLeft;			/* ie, not via 'c' or 'C' */
+		return SPECIAL_CATCHUP_LEFT;			/* ie, not via 'c' or 'C' */
 	else
-		return iKeyQuit;
+		return GLOBAL_QUIT;
 }
 
 
-static int
+static t_function
 thread_right(
 	void)
 {
-	return iKeyThreadReadArt;
+	return THREAD_READ_ARTICLE;
 }
 
 
@@ -397,10 +399,9 @@ thread_page(
 {
 	char key[MAXKEYLEN];
 	char mark[] = { '\0', '\0' };
-	int ret_code = 0;			/* Set to < 0 when it is time to leave this menu */
-	int ch;
 	int i, n;
 	t_bool repeat_search;
+	t_function func;
 
 	thread_respnum = respnum;		/* Bodge to make this variable global */
 
@@ -452,41 +453,50 @@ thread_page(
 	/* Now we know where the cursor is, actually put something on the screen */
 	show_thread_page();
 
+	/* reset ret_code */
+	ret_code = 0;
 	while (ret_code >= 0) {
 		set_xclick_on();
-		if ((ch = handle_keypad(thread_left, thread_right, &menukeymap.thread_nav)) == iKeySearchRepeat) {
-			ch = i_key_search_last;
+		if ((func = handle_keypad(thread_left, thread_right, global_mouse_action, thread_keys)) == GLOBAL_SEARCH_REPEAT) {
+			func = last_search;
 			repeat_search = TRUE;
 		} else
 			repeat_search = FALSE;
 
-		switch (ch) {
-			case iKeyAbort:			/* Abort */
+		switch (func) {
+			case GLOBAL_ABORT:			/* Abort */
 				break;
 
-			case '1': case '2': case '3': case '4': case '5':
-			case '6': case '7': case '8': case '9':
+			case DIGIT_1:
+			case DIGIT_2:
+			case DIGIT_3:
+			case DIGIT_4:
+			case DIGIT_5:
+			case DIGIT_6:
+			case DIGIT_7:
+			case DIGIT_8:
+			case DIGIT_9:
 				if (thdmenu.max == 1)
 					info_message(_(txt_no_responses));
 				else
-					prompt_item_num(ch, _(txt_select_art));
+					prompt_item_num(func_to_key(func, thread_keys), _(txt_select_art));
 				break;
 
 #ifndef NO_SHELL_ESCAPE
-			case iKeyShellEscape:
+			case GLOBAL_SHELL_ESCAPE:
 				do_shell_escape();
 				break;
 #endif /* !NO_SHELL_ESCAPE */
 
-			case iKeyFirstPage:	/* show first page of articles */
+			case GLOBAL_FIRST_PAGE:		/* show first page of articles */
 				top_of_list();
 				break;
 
-			case iKeyLastPage:	/* show last page of articles */
+			case GLOBAL_LAST_PAGE:		/* show last page of articles */
 				end_of_list();
 				break;
 
-			case iKeyLastViewed:	/* show last viewed article */
+			case GLOBAL_LAST_VIEWED:	/* show last viewed article */
 				if (this_resp < 0 || (which_thread(this_resp) == -1)) {
 					info_message(_(txt_no_last_message));
 					break;
@@ -494,36 +504,46 @@ thread_page(
 				ret_code = enter_pager(this_resp, FALSE, THREAD_LEVEL);
 				break;
 
-			case iKeySetRange:	/* set range */
+			case GLOBAL_SET_RANGE:		/* set range */
 				if (set_range(THREAD_LEVEL, 1, thdmenu.max, thdmenu.curr + 1))
 					show_thread_page();
 				break;
 
-			case iKeyPipe:			/* pipe article to command */
+			case GLOBAL_PIPE:			/* pipe article(s) to command */
 				if (thread_basenote >= 0)
 					feed_articles(FEED_PIPE, THREAD_LEVEL, group, find_response(thread_basenote, thdmenu.curr));
 				break;
 
-			case iKeyThreadMail:	/* mail article to somebody */
+#ifndef DISABLE_PRINTING
+			case GLOBAL_PRINT:			/* print article(s) */
+				if (thread_basenote >= 0)
+					feed_articles(FEED_PRINT, THREAD_LEVEL, group, find_response(thread_basenote, thdmenu.curr));
+				break;
+#endif /* !DISABLE_PRINTING */
+
+			case THREAD_MAIL:	/* mail article(s) to somebody */
 				if (thread_basenote >= 0)
 					feed_articles(FEED_MAIL, THREAD_LEVEL, group, find_response(thread_basenote, thdmenu.curr));
 				break;
 
-			case iKeyThreadSave:	/* save articles with prompting */
+			case THREAD_SAVE:	/* save articles with prompting */
 				if (thread_basenote >= 0)
 					feed_articles(FEED_SAVE, THREAD_LEVEL, group, find_response(thread_basenote, thdmenu.curr));
 				break;
 
-			case iKeyThreadAutoSave:	/* Auto-save articles without prompting */
+			case THREAD_AUTOSAVE:	/* Auto-save articles without prompting */
 				if (thread_basenote >= 0)
 					feed_articles(FEED_AUTOSAVE, THREAD_LEVEL, group, (int) base[grpmenu.curr]);
 				break;
 
-#if 0 /* FIXME: crsr-position after kill */
-			case iKeyThreadAutoSel:
-			case iKeyThreadAutoKill:
+			case GLOBAL_MENU_FILTER_SELECT:
+			case GLOBAL_MENU_FILTER_KILL:
+				/*
+				 * FIXME: a filter which kills all remaining messages in a thread
+				 *        is 'troublesome'
+				 */
 				n = find_response(thread_basenote, thdmenu.curr);
-				filter_menu((ch == iKeyThreadAutoKill) ? FILTER_KILL : FILTER_SELECT, group, &arts[n]);
+				filter_menu((func == GLOBAL_MENU_FILTER_KILL) ? FILTER_KILL : FILTER_SELECT, group, &arts[n]);
 				if (filter_articles(group)) {
 					make_threads(group, FALSE);
 					if ((n = next_unread(n)) == -1) {
@@ -534,69 +554,77 @@ thread_page(
 				}
 				show_thread_page();
 				break;
-#endif /* 0 */
 
-			case iKeyThreadReadArt:
-			case iKeyThreadReadArt2:	/* read current article within thread */
+			case GLOBAL_EDIT_FILTER:
+				if (!invoke_editor(filter_file, FILTER_FILE_OFFSET))
+					break;
+				unfilter_articles();
+				(void) read_filter_file(filter_file);
+				if (filter_articles(group)) {
+					make_threads(group, FALSE);
+					if ((n = next_unread(n)) == -1) {
+						ret_code = GRP_EXIT;
+						break;
+					}
+					fixup_thread(n, TRUE);
+				}
+				show_thread_page();
+				break;
+
+			case THREAD_READ_ARTICLE:	/* read current article within thread */
 				ret_code = enter_pager(find_response(thread_basenote, thdmenu.curr), FALSE, THREAD_LEVEL);
 				break;
 
-			case iKeyThreadReadNextArtOrThread:
+			case THREAD_READ_NEXT_ARTICLE_OR_THREAD:
 				ret_code = thread_tab_pressed();
 				break;
 
-			case iKeyPost:	/* post a basenote */
+			case GLOBAL_POST:		/* post a basenote */
 				if (post_article(group->name))
 					show_thread_page();
 				break;
 
-			case iKeyRedrawScr:		/* redraw screen */
+			case GLOBAL_REDRAW_SCREEN:	/* redraw screen */
 				my_retouch();
 				set_xclick_off();
 				show_thread_page();
 				break;
 
-			case iKeyDown:		/* line down */
-			case iKeyDown2:
+			case GLOBAL_LINE_DOWN:
 				move_down();
 				break;
 
-			case iKeyUp:
-			case iKeyUp2:		/* line up */
+			case GLOBAL_LINE_UP:
 				move_up();
 				break;
 
-			case iKeyPageUp:		/* page up */
-			case iKeyPageUp2:
-			case iKeyPageUp3:
+			case GLOBAL_PAGE_UP:
 				page_up();
 				break;
 
-			case iKeyPageDown:		/* page down */
-			case iKeyPageDown2:
-			case iKeyPageDown3:
+			case GLOBAL_PAGE_DOWN:
 				page_down();
 				break;
 
-			case iKeyScrollDown:
+			case GLOBAL_SCROLL_DOWN:
 				scroll_down();
 				break;
 
-			case iKeyScrollUp:
+			case GLOBAL_SCROLL_UP:
 				scroll_up();
 				break;
 
-			case iKeyCatchupLeft:				/* come here when exiting thread via <- */
-			case iKeyThreadCatchup:				/* catchup thread, move to next one */
-			case iKeyThreadCatchupNextUnread:	/* -> next with unread arts */
-				ret_code = thread_catchup(ch);
+			case SPECIAL_CATCHUP_LEFT:				/* come here when exiting thread via <- */
+			case THREAD_CATCHUP:				/* catchup thread, move to next one */
+			case THREAD_CATCHUP_NEXT_UNREAD:	/* -> next with unread arts */
+				ret_code = thread_catchup(func);
 				break;
 
-			case iKeyThreadMarkArtRead: /* mark article as read */
+			case THREAD_MARK_ARTICLE_READ: /* mark article as read */
 				ret_code = mark_art_read(group);
 				break;
 
-			case iKeyThreadToggleSubjDisplay:	/* toggle display of subject & subj/author */
+			case THREAD_TOGGLE_SUBJECT_DISPLAY:	/* toggle display of subject & subj/author */
 				if (show_subject) {
 					if (++curr_group->attribute->show_author > SHOW_FROM_BOTH)
 						curr_group->attribute->show_author = SHOW_FROM_NONE;
@@ -604,7 +632,7 @@ thread_page(
 				}
 				break;
 
-			case iKeyOptionMenu:
+			case GLOBAL_OPTION_MENU:
 				change_config_file(group);
 				n = find_response(thread_basenote, thdmenu.curr);
 				if (which_thread(n) == -1) /* We have lost the thread */
@@ -616,55 +644,44 @@ thread_page(
 				}
 				break;
 
-			case iKeyHelp:					/* help */
+			case GLOBAL_HELP:					/* help */
 				show_help_page(THREAD_LEVEL, _(txt_thread_com));
 				show_thread_page();
 				break;
 
-			/* TODO: assign a new key here */
-			case iKeyGroupKill:
-				n = find_response(thread_basenote, thdmenu.curr);
-				filter_menu(FILTER_KILL, group, &arts[n]);
-				show_thread_page();
-				break;
-
-			case iKeyLookupMessage:
+			case GLOBAL_LOOKUP_MESSAGEID:
 				if ((n = prompt_msgid()) != ART_UNAVAILABLE)
 					ret_code = enter_pager(n, FALSE, THREAD_LEVEL);
 				break;
 
-			case iKeySearchBody:			/* search article body */
+			case GLOBAL_SEARCH_BODY:			/* search article body */
 				if ((n = search_body(group, find_response(thread_basenote, thdmenu.curr), repeat_search)) != -1) {
 					fixup_thread(n, FALSE);
 					ret_code = enter_pager(n, FALSE, THREAD_LEVEL);
 				}
 				break;
 
-			case iKeySearchSubjF:			/* subject search */
-			case iKeySearchSubjB:
-				if ((n = search(SEARCH_SUBJ, find_response(thread_basenote, thdmenu.curr), (ch == iKeySearchSubjF), repeat_search)) != -1)
+			case GLOBAL_SEARCH_AUTHOR_FORWARD:			/* author search */
+			case GLOBAL_SEARCH_AUTHOR_BACKWARD:
+			case GLOBAL_SEARCH_SUBJECT_FORWARD:			/* subject search */
+			case GLOBAL_SEARCH_SUBJECT_BACKWARD:
+				if ((n = search(func, find_response(thread_basenote, thdmenu.curr), repeat_search)) != -1)
 					fixup_thread(n, TRUE);
 				break;
 
-			case iKeySearchAuthF:			/* author search */
-			case iKeySearchAuthB:
-				if ((n = search(SEARCH_AUTH, find_response(thread_basenote, thdmenu.curr), (ch == iKeySearchAuthF), repeat_search)) != -1)
-					fixup_thread(n, TRUE);
-				break;
-
-			case iKeyToggleHelpDisplay:		/* toggle mini help menu */
+			case GLOBAL_TOGGLE_HELP_DISPLAY:		/* toggle mini help menu */
 				toggle_mini_help(THREAD_LEVEL);
 				show_thread_page();
 				break;
 
-			case iKeyToggleInverseVideo:	/* toggle inverse video */
+			case GLOBAL_TOGGLE_INVERSE_VIDEO:	/* toggle inverse video */
 				toggle_inverse_video();
 				show_thread_page();
 				show_inverse_video_status();
 				break;
 
 #ifdef HAVE_COLOR
-			case iKeyToggleColor:		/* toggle color */
+			case GLOBAL_TOGGLE_COLOR:		/* toggle color */
 				if (toggle_color()) {
 					show_thread_page();
 					show_color_status();
@@ -672,15 +689,15 @@ thread_page(
 				break;
 #endif /* HAVE_COLOR */
 
-			case iKeyQuit:				/* return to previous level */
+			case GLOBAL_QUIT:			/* return to previous level */
 				ret_code = GRP_EXIT;
 				break;
 
-			case iKeyQuitTin:			/* quit */
+			case GLOBAL_QUIT_TIN:			/* quit */
 				ret_code = GRP_QUIT;
 				break;
 
-			case iKeyThreadTag:			/* tag/untag article */
+			case THREAD_TAG:			/* tag/untag article */
 				/* Find index of current article */
 				if ((n = find_response(thread_basenote, thdmenu.curr)) < 0)
 					break;
@@ -702,20 +719,20 @@ thread_page(
 				}
 				break;
 
-			case iKeyThreadBugReport:
+			case GLOBAL_BUGREPORT:
 				bug_report();
 				break;
 
-			case iKeyThreadUntag:			/* untag all articles */
+			case THREAD_UNTAG:			/* untag all articles */
 				if (grpmenu.curr >= 0 && untag_all_articles())
 					update_thread_page();
 				break;
 
-			case iKeyVersion:			/* version */
+			case GLOBAL_VERSION:			/* version */
 				info_message(cvers);
 				break;
 
-			case iKeyThreadMarkArtUnread:		/* mark article as unread */
+			case THREAD_MARK_ARTICLE_UNREAD:	/* mark article as unread */
 				n = find_response(thread_basenote, thdmenu.curr);
 				art_mark(group, &arts[n], ART_WILL_RETURN);
 				mark[0] = get_art_mark(&arts[n]);
@@ -724,17 +741,17 @@ thread_page(
 				info_message(_(txt_marked_as_unread), _(txt_article_upper));
 				break;
 
-			case iKeyThreadMarkThdUnread:		/* mark thread as unread */
+			case THREAD_MARK_THREAD_UNREAD:		/* mark thread as unread */
 				thd_mark_unread(group, base[thread_basenote]);
 				update_thread_page();
 				info_message(_(txt_marked_as_unread), _(txt_thread_upper));
 				break;
 
-			case iKeyThreadSelArt:		/* mark article as selected */
-			case iKeyThreadToggleArtSel:		/* toggle article as selected */
+			case THREAD_SELECT_ARTICLE:		/* mark article as selected */
+			case THREAD_TOGGLE_ARTICLE_SELECTION:		/* toggle article as selected */
 				if ((n = find_response(thread_basenote, thdmenu.curr)) < 0)
 					break;
-				arts[n].selected = (!(ch == iKeyThreadToggleArtSel && arts[n].selected));	/* TODO: optimise? */
+				arts[n].selected = (!(func == THREAD_TOGGLE_ARTICLE_SELECTION && arts[n].selected));	/* TODO: optimise? */
 /*				update_thread_page(); */
 				mark[0] = get_art_mark(&arts[n]);
 				mark_screen(thdmenu.curr, MARK_OFFSET, mark);
@@ -744,20 +761,19 @@ thread_page(
 					draw_thread_arrow();
 				break;
 
-			case iKeyThreadReverseSel:		/* reverse selections */
+			case THREAD_REVERSE_SELECTIONS:		/* reverse selections */
 				for_each_art_in_thread(i, thread_basenote)
 					arts[i].selected = bool_not(arts[i].selected);
 				update_thread_page();
 				break;
 
-			case iKeyThreadUndoSel:		/* undo selections */
+			case THREAD_UNDO_SELECTIONS:		/* undo selections */
 				for_each_art_in_thread(i, thread_basenote)
 					arts[i].selected = FALSE;
 				update_thread_page();
 				break;
 
-			case iKeyPostponed:
-			case iKeyPostponed2:		/* post postponed article */
+			case GLOBAL_POSTPONED:		/* post postponed article */
 				if (can_post) {
 					if (pickup_postponed_articles(FALSE, FALSE))
 						show_thread_page();
@@ -765,18 +781,18 @@ thread_page(
 					info_message(_(txt_cannot_post));
 				break;
 
-			case iKeyDisplayPostHist:	/* display messages posted by user */
+			case GLOBAL_DISPLAY_POST_HISTORY:	/* display messages posted by user */
 				if (user_posted_messages())
 					show_thread_page();
 				break;
 
-			case iKeyToggleInfoLastLine:		/* display subject in last line */
+			case GLOBAL_TOGGLE_INFO_LAST_LINE:		/* display subject in last line */
 				tinrc.info_in_last_line = bool_not(tinrc.info_in_last_line);
 				show_thread_page();
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, map_to_local(iKeyHelp, &menukeymap.thread_nav)));
+				info_message(_(txt_bad_command), printascii(key, key_to_func(GLOBAL_HELP, thread_keys)));
 		}
 	} /* ret_code >= 0 */
 
@@ -1342,7 +1358,7 @@ make_prefix(
  */
 static int
 thread_catchup(
-	int ch)
+	t_function func)
 {
 	char buf[LEN];
 	int i, n;
@@ -1356,23 +1372,23 @@ thread_catchup(
 	}
 
 	if (i != -1) {				/* still unread arts in this thread */
-		snprintf(buf, sizeof(buf), _(txt_mark_thread_read), (ch == iKeyThreadCatchupNextUnread) ? _(txt_enter_next_thread) : "");
-		if ((!TINRC_CONFIRM_ACTION) || (pyn = prompt_yn(cLINES, buf, TRUE)) == 1)
+		snprintf(buf, sizeof(buf), _(txt_mark_thread_read), (func == THREAD_CATCHUP_NEXT_UNREAD) ? _(txt_enter_next_thread) : "");
+		if ((!TINRC_CONFIRM_ACTION) || (pyn = prompt_yn(buf, TRUE)) == 1)
 			thd_mark_read(curr_group, base[thread_basenote]);
 	}
 
-	switch (ch) {
-		case iKeyThreadCatchup:				/* 'c' */
+	switch (func) {
+		case THREAD_CATCHUP:				/* 'c' */
 			if (pyn == 1)
 				return GRP_NEXT;
 			break;
 
-		case iKeyThreadCatchupNextUnread:	/* 'C' */
+		case THREAD_CATCHUP_NEXT_UNREAD:	/* 'C' */
 			if (pyn == 1)
 				return GRP_NEXTUNREAD;
 			break;
 
-		case iKeyCatchupLeft:			/* <- thread catchup on exit */
+		case SPECIAL_CATCHUP_LEFT:			/* <- thread catchup on exit */
 			switch (pyn) {
 				case -1:				/* ESC from prompt, stay in group */
 					break;
@@ -1504,27 +1520,27 @@ mark_art_read(
 	struct t_group *group)
 {
 	char keytagged[MAXKEYLEN], keycurrent[MAXKEYLEN], keyquit[MAXKEYLEN];
-	int ch = iKeyMarkReadCur;
 	int n = -1, cnt = 0;
 	int tmp_num_of_tagged_arts = num_of_tagged_arts;
+	t_function func = MARK_READ_CURRENT;
 
 	if (!tinrc.mark_ignore_tags && got_tagged_unread_arts()) {
-		ch = prompt_slk_response(iKeyMarkReadTag,
-				&menukeymap.mark_read_tagged_current,
+		func = prompt_slk_response(MARK_READ_TAGGED,
+				mark_read_keys,
 				_(txt_mark_art_read_tagged_current),
-				printascii(keytagged, map_to_local(iKeyMarkReadTag, &menukeymap.mark_read_tagged_current)),
-				printascii(keycurrent, map_to_local(iKeyMarkReadCur, &menukeymap.mark_read_tagged_current)),
-				printascii(keyquit, map_to_local(iKeyQuit, &menukeymap.mark_read_tagged_current)));
+				printascii(keytagged, func_to_key(MARK_READ_TAGGED, mark_read_keys)),
+				printascii(keycurrent, func_to_key(MARK_READ_CURRENT, mark_read_keys)),
+				printascii(keyquit, func_to_key(GLOBAL_QUIT, mark_read_keys)));
 	}
 
-	switch (ch) {
-		case iKeyMarkReadTag: /* mark tagged unread articles as read */
+	switch (func) {
+		case MARK_READ_TAGGED: /* mark tagged unread articles as read */
 			cnt = mark_tagged_read(group);
 			show_thread_page();
 			n = find_response(thread_basenote, thdmenu.curr);
 			break;
 
-		case iKeyMarkReadCur: /* mark current article as read */
+		case MARK_READ_CURRENT: /* mark current article as read */
 			n = find_response(thread_basenote, thdmenu.curr);
 			if ((arts[n].status == ART_UNREAD) || (arts[n].status == ART_WILL_RETURN)) {
 				char mark[] = { '\0', '\0' };
@@ -1535,8 +1551,9 @@ mark_art_read(
 			}
 			break;
 
-		case iKeyQuit: /* cancel operation */
-		case iKeyAbort:
+		case GLOBAL_QUIT: /* cancel operation */
+		case GLOBAL_ABORT:
+		default:
 			return 0;
 			/* NOTREACHED */
 			break;
@@ -1547,7 +1564,7 @@ mark_art_read(
 	else
 		fixup_thread(n, TRUE);	/* We may be in the next thread now */
 
-	if (ch == iKeyMarkReadTag)
+	if (func == MARK_READ_TAGGED)
 		info_message(_(txt_marked_tagged_arts_as_read), cnt, tmp_num_of_tagged_arts, PLURAL(tmp_num_of_tagged_arts, txt_article));
 
 	return 0;

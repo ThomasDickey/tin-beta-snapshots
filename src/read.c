@@ -3,9 +3,9 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 2003-09-19
+ *  Updated   : 2005-02-12
  *
- * Copyright (c) 1997-2004 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1997-2005 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,9 +40,9 @@
 #ifndef TNNTP_H
 #	include "tnntp.h"
 #endif /* !TNNTP_H */
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 
 
 /*
@@ -149,12 +149,12 @@ wait_for_input(
 				}
 
 				if (ch == iKeyQuit || ch == 'z' || ch == iKeyAbort) {
-					if (prompt_yn(cLINES, _(txt_read_abort), FALSE) == 1)
+					if (prompt_yn(_(txt_read_abort), FALSE) == 1)
 						return TRUE;
 				}
 
 				if (ch == iKeyQuitTin) {
-					if (prompt_yn(cLINES, _(txt_read_exit), FALSE) == 1)
+					if (prompt_yn(_(txt_read_exit), FALSE) == 1)
 						tin_done(EXIT_SUCCESS);
 				}
 

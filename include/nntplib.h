@@ -3,10 +3,10 @@
  *  Module    : nntplib.h
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-09-19
+ *  Updated   : 2005-01-19
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -88,6 +88,7 @@
 #endif /* 0 */
 
 #define	INF_HELP		100	/* Help text on way */
+#define	INF_CAPABILITIES	101	/* Capability list follows */
 #define	INF_AUTH		180	/* Authorization capabilities */
 #define	INF_DEBUG		199	/* Debug output */
 

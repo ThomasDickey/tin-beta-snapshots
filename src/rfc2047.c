@@ -6,7 +6,7 @@
  *  Updated   : 2004-11-26
  *  Notes     : MIME header encoding/decoding stuff
  *
- * Copyright (c) 1995-2004 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2005 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -72,7 +72,7 @@ static int base64_rank_table_built;
 static t_bool quoteflag;
 
 /* fixed prefix and default part for tin-generated MIME boundaries */
-static const char MIME_BOUNDARY_PREFIX[]       = "=_tin=_";
+static const char MIME_BOUNDARY_PREFIX[] = "=_tin=_";
 static const char MIME_BOUNDARY_DEFAULT_PART[] = "====____====____====____";
 /* required size of a buffer containing a MIME boundary, including the final '\0' */
 enum {

@@ -3,10 +3,10 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-09-19
+ *  Updated   : 2005-02-11
  *  Notes     :
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,11 +46,6 @@
 	struct t_screen *screen;
 #endif /* !USE_CURSES */
 
-/*
- * Local prototypes
- */
-static char *fmt_message(const char *fmt, va_list ap);
-
 
 /*
  * Move the cursor to the lower-left of the screen, where it won't be annoying
@@ -69,7 +64,7 @@ stow_cursor(
  * returns a pointer to an allocated buffer with the formated message
  * must be freed if not needed anymore
  */
-static char *
+char *
 fmt_message(
 	const char *fmt,
 	va_list ap)

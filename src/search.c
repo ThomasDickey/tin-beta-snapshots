@@ -3,10 +3,10 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-10-17
+ *  Updated   : 2005-03-07
  *  Notes     :
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,9 +38,9 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
-#ifndef MENUKEYS_H
-#	include "menukeys.h"
-#endif /* !MENUKEYS_H */
+#ifndef KEYMAP_H
+#	include "keymap.h"
+#endif /* !KEYMAP_H */
 
 /*
  * local prototypes
@@ -98,9 +98,9 @@ get_search_pattern(
 
 		/* HIST_BODY_SEARCH doesn't exist, hence i_key_search_last is set directly in search_body() */
 		if (which_hist == HIST_AUTHOR_SEARCH)
-			i_key_search_last = *forward ? iKeySearchAuthF : iKeySearchAuthB;
+			last_search = *forward ? GLOBAL_SEARCH_AUTHOR_FORWARD : GLOBAL_SEARCH_AUTHOR_BACKWARD;
 		else
-			i_key_search_last = *forward ? iKeySearchSubjF : iKeySearchSubjB;
+			last_search = *forward ? GLOBAL_SEARCH_SUBJECT_FORWARD : GLOBAL_SEARCH_SUBJECT_BACKWARD;
 	}
 
 	wait_message(0, _(txt_searching));
@@ -475,22 +475,29 @@ search_group(
  */
 int
 search(
-	int key,
+	t_function func,
 	int current_art,
-	t_bool forward,
 	t_bool repeat)
 {
 	char *buf = NULL;
 	int (*search_func) (int i, char *searchbuff) = author_search;
+	t_bool forward;
 
-	switch (key) {
-		case SEARCH_SUBJ:
+	if (func == GLOBAL_SEARCH_SUBJECT_FORWARD || func == GLOBAL_SEARCH_AUTHOR_FORWARD)
+		forward = TRUE;
+	else
+		forward = FALSE;
+
+	switch (func) {
+		case GLOBAL_SEARCH_SUBJECT_FORWARD:
+		case GLOBAL_SEARCH_SUBJECT_BACKWARD:
 			if (!(buf = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_subject, HIST_SUBJECT_SEARCH)))
 				return -1;
 			search_func = subject_search;
 			break;
 
-		case SEARCH_AUTH:
+		case GLOBAL_SEARCH_AUTHOR_FORWARD:
+		case GLOBAL_SEARCH_AUTHOR_BACKWARD:
 		default:
 			if (!(buf = get_search_pattern(&forward, repeat, _(txt_author_search_forwards), _(txt_author_search_backwards), tinrc.default_search_author, HIST_AUTHOR_SEARCH)))
 				return -1;
@@ -641,7 +648,7 @@ search_body(
 			HIST_ART_SEARCH
 	))) return -1;
 
-	i_key_search_last = iKeySearchBody;	/* store last search type for repeated search */
+	last_search = GLOBAL_SEARCH_BODY;	/* store last search type for repeated search */
 	total_cnt = curr_cnt = 0;			/* Reset global counter of articles done */
 
 	/*

@@ -6,7 +6,7 @@
  *  Updated   : 2004-08-16
  *  Notes     :
  *
- * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1385,6 +1385,14 @@ read_overview(
 		for (count = 1; (ptr = tin_strtok(NULL, "\t")) != NULL; count++) {
 			switch (count) {
 				case 1:		/* Subject */
+					/*
+					 * TODO: As eat_re() is also called in batch_mode we need
+					 *       to init (all) regexes (but do not use the others).
+					 *       Calling eat_re() isn't very wise at all as we use
+					 *       the modified subject for -N/-M batch opperations
+					 *       so ppl. can't tell from the subject if the posting
+					 *       was a reply or not.
+					 */
 					art->subject = hash_str(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr))), FALSE));
 					break;
 
