@@ -1316,8 +1316,7 @@ do_update (
 	if (verbose) {
 		wait_message (0, _(txt_catchup_update_info),
 			(catchup ? _(txt_caughtup) : _(txt_updated)), selmenu.max,
-			(selmenu.max != 1 ? _(txt_group_plural) : _(txt_group_singular)),
-			(unsigned long int) (time(NULL) - beg_epoch));
+			PLURAL(selmenu.max, txt_group), (unsigned long int) (time(NULL) - beg_epoch));
 	}
 }
 

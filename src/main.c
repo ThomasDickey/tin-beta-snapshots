@@ -280,8 +280,7 @@ main (
 	}
 
 	if ((count = count_postponed_articles()))
-		wait_message(3, _(txt_info_postponed), count,
-			(count > 1 ? _(txt_article_plural) : _(txt_article_singular)));
+		wait_message(3, _(txt_info_postponed), count, PLURAL(count, txt_article));
 
 	/*
 	 * Read text descriptions for mail and/or news groups
@@ -375,6 +374,7 @@ This makes -Z handle command line newsgroups. Test & document
 		show_intro_page ();
 
 #ifdef USE_CURSES
+	/* Turn scrolling off now the startup messages have been displayed */
 	scrollok (stdscr, FALSE);
 #endif /* USE_CURSES */
 

@@ -597,7 +597,6 @@ vWriteFilterArray (
 {
 	register int i;
 	int j;
-	char timestring[LEN];
 
 	if (ptr == (struct t_filters *) 0)
 		return;
@@ -700,8 +699,10 @@ my_flush ();
 				fprintf (fp, "xref_score=%d%s%s\n", ptr->filter[i].xref_scores[j], ptr->filter[i].xref_score_strings[j] ? "," : "", ptr->filter[i].xref_score_strings[j]);
 		}
 		if (ptr->filter[i].time) {
+			char timestring[LEN];
+
 			timestring[0] = '\0';
-			strftime(timestring, LEN-1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(ptr->filter[i].time)));
+			my_strftime(timestring, LEN-1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(ptr->filter[i].time)));
 			fprintf (fp, "time=%lu (%s)\n", (unsigned long int) ptr->filter[i].time, timestring);
 		}
 		fprintf (fp, "#####\n"); /* makes filter file more readable */

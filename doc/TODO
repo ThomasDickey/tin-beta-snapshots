@@ -1,5 +1,8 @@
 Bugs
 ----
+o  make intsall_sysdefs overwrites an existing tin.defaults file without
+   making a backup
+
 o  pgp.txt badly out of date
 
 o  batch mode has several bugs
@@ -146,7 +149,11 @@ o  when enabling the 'cc/bcc on every message that is sent', and
 
 New features
 ------------
-o  make hide_uu a 3 way toggle:
+o  check if server supports HEADERS, if so use
+   HEADERS - Subject From Date Message-ID References Lines Newsgroups
+   instead of OVER or XOVER
+
+o  make hide_uu a 3 way toggle for the attributes file (not tinrc).
       0 = don't hide uu-parts
       1 = hide full uu-parts incl. begin/end
       2 = hide uu-lines (might have many false positives)
@@ -190,8 +197,8 @@ o  add unicode/UTF-8 support
 
 o  add Message-ID param to quick_filter_select_posted_art() and
    update_posted_info_file() so we could log the Message-ID in the
-   filter and posting history file if we know it (see inews.c.
-   submit_inews(), and post.c).
+   filter and posting history file if we know it (see inews.c:submit_inews(),
+   and post.c).
    [Urs Janssen <urs@tin.org>]
 
 o  lock news/tinrc via flock or lockf or fcntl (one tin) and dotfile-locking
@@ -223,7 +230,7 @@ o  if using "-n" commandline switch you can't subscribe to newsgroups not
     (moderated, etc.)]
 
 o  item_by_item_etiquette_warnings [compile-time?]
-   (i.e. enable x-posts without f'up waring, disable long-sig warning)
+   (i.e. enable x-posts without f'up warning, disable long-sig warning)
 
 o  Menu/tinrc/attributes entry for TeX2ISO_Conversion=ON/OFF
    [toggle via '"']
@@ -235,7 +242,7 @@ o  Rather than cc/bcc, I'd like to see tin simply append the
    have to be locked using a convention that will hold off
    the various Unix mailer programs.
 
-o  MIME-pgp support according to RFC2015
+o  MIME-pgp support according to RFC2015 - (should be easy now)
 
 o  pgp-6 support
 
@@ -249,10 +256,6 @@ o  add counter to post-processing commands (processing file x of y)
 o  add feature Cc:
 
 o  add feature show_new_newsgroups_since
-
-o  Additions to the pager:
-    check for urlview during configure and if found add
-     'U' feed page to urlview <ftp://ftp.tin.org/pub/misc/>
 
 o  Additions to the thread menu :
      'M' (option menu)
@@ -430,7 +433,7 @@ o  strip Xref:-header if saving news in batch mode (-S)?
 
 Docs/online help
 ----------------
-o  man page still needs work
+o  man page always needs work
 
 o  error message when tin -uv and using xover is misleading
 
@@ -440,7 +443,7 @@ Not yet classified
 ------------------
 o  tin in batchmode dumps core if getting a SIGINT, useful?
 
-o  what is with the conflicting settings? should we disallow those, or leave
+o  what is with conflicting tinrc settings? should we disallow those, or leave
    it to the user to realise that i.e. strip_blanks=ON && inverse_okay=ON
    looks ugly?
 

@@ -305,6 +305,7 @@ uninstall_manpage:
 install_sysdefs: $(INS_SYSDEF_DIR)
 	@$(ECHO) "Installing system-wide defaults file to $(INS_SYSDEF_DIR)..."
 	@$(INSTALL) -m 644 $(DOCDIR)/tin.defaults $(INS_SYSDEF_DIR)/tin.defaults
+	@$(INSTALL) -m 644 $(DOCDIR)/mime.types $(INS_SYSDEF_DIR)/mime.types
 
 install: $(DESTDIR)$(INS_BINARY_DIR)
 	@$(MAKE) all

@@ -261,11 +261,15 @@ parse_content_encoding(
 {
 	int i;
 
-	for (i=0; i < NUM_ENCODINGS; ++i) {
+	for (i = 0; i < NUM_ENCODINGS; ++i) {
 		if (strcasecmp(encoding, content_encodings[i]) == 0)
 		return i;
 	}
 
+	/*
+	 * TODO: check rfc - may need to switch Content-Type to application/octet-steam
+	 * where this header exists but is unparseable
+	 */
 	return ENCODING_7BIT;			/* RFC default */
 }
 
@@ -369,30 +373,14 @@ free_and_init_header(
 	/*
 	 * Initialise the header struct
 	 */
-	FreeAndNull(hdr->from);
-#if 0
-	FreeAndNull(hdr->path);
-#endif
-	FreeAndNull(hdr->date);
-	FreeAndNull(hdr->subj);
-	FreeAndNull(hdr->org);
-	FreeAndNull(hdr->newsgroups);
-	FreeAndNull(hdr->messageid);
-	FreeAndNull(hdr->references);
-	FreeAndNull(hdr->distrib);
-	FreeAndNull(hdr->keywords);
-	FreeAndNull(hdr->summary);
-	FreeAndNull(hdr->followup);
-	FreeAndNull(hdr->ftnto);
-	hdr->mime = FALSE;
-
-	if (hdr->persist)
-		free_list(hdr->persist);
-	hdr->persist = NULL;
-
-	if (hdr->ext)
-		free_parts(hdr->ext);
-	hdr->ext = NULL;
+	if (hdr->from != NULL) {
+		if (hdr->persist)
+			free_list(hdr->persist);
+		if (hdr->ext)
+			free_parts(hdr->ext);
+		memset(hdr, 0, sizeof(struct t_header));
+		hdr->mime = FALSE;
+	}
 }
 
 
@@ -451,6 +439,8 @@ parse_rfc822_headers(
 	char *line;
 	char *ptr;
 
+	memset(hdr, 0, sizeof(struct t_header));
+	hdr->mime = FALSE;
 	hdr->ext = new_part(NULL);		/* Initialise MIME data */
 
 	while ((line = tin_fgets (from, TRUE)) != (char *) 0) {
@@ -477,7 +467,7 @@ parse_rfc822_headers(
 			hdr->path = my_strdup(ptr);
 			continue;
 		}
-#endif
+#endif /* 0 */
 		if ((ptr = parse_header (line, "From", TRUE))) {
 			hdr->from = my_strdup(ptr);
 			continue;
@@ -686,6 +676,7 @@ parse_normal_article(
 }
 
 
+/* #define DEBUG_ART 1 */
 #ifdef DEBUG_ART
 /* DEBUG dump of what we got */
 static void
@@ -706,11 +697,15 @@ dump_art(
 		fprintf(stderr, "P: %s = %s\n", pptr->name, pptr->value);
 	if (note_h.ext->uue != NULL) {
 		t_part *uu;
-		for (uu = note_h.ext->uue; uu != NULL; uu = uu->next)
-			fprintf(stderr, "UU: %4d %s\n", uu->lines, get_param(uu->params, "name"));
+		for (uu = note_h.ext->uue; uu != NULL; uu = uu->next) {
+			fprintf(stderr, "UU: %s\n", get_param(uu->params, "name"));
+			fprintf(stderr, "    Offset: %ld  Lines: %d\n", uu->offset, uu->lines);
+			fseek(art->raw, uu->offset, SEEK_SET);
+			fprintf(stderr, "[%s]\n\n", tin_fgets(art->raw, FALSE));
+		}
 	}
 	fseek(art->raw, note_h.ext->offset, SEEK_SET);
-	fprintf(stderr, "[ %s ]\n\n", tin_fgets(art->raw, FALSE));
+	fprintf(stderr, "[%s]\n\n", tin_fgets(art->raw, FALSE));
 	fprintf(stderr, "\n");
 
 	for (ptr = note_h.ext->next; ptr != NULL; ptr = ptr->next) {
@@ -723,7 +718,7 @@ dump_art(
 		for (pptr=ptr->params; pptr!=NULL; pptr=pptr->next)
 			fprintf(stderr, "	P: %s = %s\n", pptr->name, pptr->value);
 		fseek(art->raw, ptr->offset, SEEK_SET);
-		fprintf(stderr, "[ %s ]\n\n", tin_fgets(art->raw, FALSE));
+		fprintf(stderr, "[%s]\n\n", tin_fgets(art->raw, FALSE));
 	}
 }
 #endif
@@ -773,17 +768,11 @@ parse_rfc2045_article (
 
 	TIN_FCLOSE (infile);
 
-#ifdef DEBUG_ART
-	dump_art(artinfo);
-#endif
-
 	return 0;
 
 error:
 	TIN_FCLOSE (infile);
-fprintf(stderr, "ABRT:do art_close()\n");
 	art_close (artinfo);
-fprintf(stderr, "ABRT:done art_close()\n");
 	return ret;
 }
 
@@ -830,6 +819,10 @@ art_open (
 		wait_message (0, _(txt_is_tex_encoded));
 
 	cook_article (artinfo, 8, tinrc.hide_uue);	/* Fix it so if this fails, we default to raw ? */
+
+#ifdef DEBUG_ART
+	dump_art(artinfo);
+#endif
 
 	/*
 	 * If Newsgroups is empty its a good bet the article is a mail article
