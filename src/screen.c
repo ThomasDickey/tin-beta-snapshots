@@ -52,18 +52,19 @@ char mesg[LEN];
  * Move the cursor to the lower-left of the screen, where it won't be annoying
  */
 void
-stow_cursor (
+stow_cursor(
 	void)
 {
 	if (!cmd_line)
-		MoveCursor (cLINES, 0);
+		MoveCursor(cLINES, 0);
 }
+
 
 /*
  * Centre a formatted colour message at the bottom of the screen
  */
 void
-info_message (
+info_message(
 	const char *fmt,
 	...)
 {
@@ -71,14 +72,14 @@ info_message (
 
 	va_start(ap, fmt);
 
-	clear_message ();
+	clear_message();
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_message);
 #endif /* HAVE_COLOR */
 
-	vsprintf (mesg, fmt, ap);
+	vsprintf(mesg, fmt, ap);
 
-	center_line (cLINES, FALSE, mesg);	/* center the message at screen bottom */
+	center_line(cLINES, FALSE, mesg);	/* center the message at screen bottom */
 
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_normal);
@@ -93,7 +94,7 @@ info_message (
  * Print a formatted colour message at the bottom of the screen, wait a while
  */
 void
-wait_message (
+wait_message(
 	unsigned int sdelay,
 	const char *fmt,
 	...)
@@ -102,18 +103,18 @@ wait_message (
 
 	va_start(ap, fmt);
 
-	clear_message ();
+	clear_message();
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_message);
 #endif /* HAVE_COLOR */
 
-	vsprintf (mesg, fmt, ap);
-	my_fputs (mesg, stdout);
+	vsprintf(mesg, fmt, ap);
+	my_fputs(mesg, stdout);
 
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_normal);
 #endif /* HAVE_COLOR */
-	cursoron ();
+	cursoron();
 	my_flush();
 
 	(void) sleep(sdelay);
@@ -127,7 +128,7 @@ wait_message (
  * Interesting - this function implicitly clears 'errno'
  */
 void
-error_message (
+error_message(
 	const char *fmt,
 	...)
 {
@@ -136,21 +137,19 @@ error_message (
 	va_start(ap, fmt);
 
 	errno = 0;
+	clear_message();
+	vsprintf(mesg, fmt, ap);
 
-	clear_message ();
-
-	vsprintf (mesg, fmt, ap);
-
-/*	my_fprintf (stderr, mesg); */
-	my_fputs (mesg, stderr);
-	my_fflush (stderr);
+/*	my_fprintf(stderr, mesg); */
+	my_fputs(mesg, stderr);
+	my_fflush(stderr);
 
 	if (cmd_line) {
-		my_fputc ('\n', stderr);
-		fflush (stderr);
+		my_fputc('\n', stderr);
+		fflush(stderr);
 	} else {
 		stow_cursor();
-		(void) sleep (2);
+		(void) sleep(2);
 		clear_message();
 	}
 
@@ -163,7 +162,7 @@ error_message (
  * This function implicitly clears 'errno'
  */
 void
-perror_message (
+perror_message(
 	const char *fmt,
 	...)
 {
@@ -174,9 +173,9 @@ perror_message (
 	err = errno;
 	va_start(ap, fmt);
 
-	clear_message ();
+	clear_message();
 
-	vsnprintf (buf, sizeof(LEN) - 1, fmt, ap);
+	vsnprintf(buf, sizeof(LEN) - 1, fmt, ap);
 
 	va_end(ap);
 
@@ -187,13 +186,13 @@ perror_message (
 
 
 void
-clear_message (
+clear_message(
 	void)
 {
 	if (!cmd_line) {
-		MoveCursor (cLINES, 0);
-		CleartoEOLN ();
-		cursoroff ();
+		MoveCursor(cLINES, 0);
+		CleartoEOLN();
+		cursoroff();
 #ifndef USE_CURSES
 		my_flush();
 #endif /* !USE_CURSES */
@@ -202,7 +201,7 @@ clear_message (
 
 
 void
-center_line (
+center_line(
 	int line,
 	t_bool inverse,
 	const char *str)
@@ -213,45 +212,45 @@ center_line (
 	STRCPY(buffer, str);
 
 	if (!cmd_line) {
-		if (cCOLS >= (int) strlen (str))
-			pos = (cCOLS - (int) strlen (str)) / 2;
+		if (cCOLS >= (int) strlen(str))
+			pos = (cCOLS - (int) strlen(str)) / 2;
 		else
 			pos = 1;
 
-		MoveCursor (line, pos);
+		MoveCursor(line, pos);
 		if (inverse) {
-			StartInverse ();
+			StartInverse();
 			my_flush();
 		}
 	}
 
 	/* protect terminal... */
-	convert_to_printable (buffer);
+	convert_to_printable(buffer);
 
-	if ((int) strlen (buffer) >= cCOLS) {
+	if ((int) strlen(buffer) >= cCOLS) {
 		char buf[256];
 		sprintf(buf, "%-.*s%s", cCOLS-6, buffer, " ...");
-		my_fputs (buf, stdout);
+		my_fputs(buf, stdout);
 	} else
-		my_fputs (buffer, stdout);
+		my_fputs(buffer, stdout);
 
 	if (cmd_line)
 		my_flush();
 	else {
 		if (inverse)
-			EndInverse ();
+			EndInverse();
 	}
 }
 
 
 void
-draw_arrow_mark (
+draw_arrow_mark(
 	int line)
 {
-	MoveCursor (line, 0);
+	MoveCursor(line, 0);
 
 	if (tinrc.draw_arrow)
-		my_fputs ("->", stdout);
+		my_fputs("->", stdout);
 	else {
 #ifdef USE_CURSES
 		char buffer[BUFSIZ];
@@ -259,13 +258,13 @@ draw_arrow_mark (
 #else
 		char *s = screen[line - INDEX_TOP].col;
 #endif /* USE_CURSES */
-		StartInverse ();
-		my_fputs (s, stdout);
-		EndInverse ();
+		StartInverse();
+		my_fputs(s, stdout);
+		EndInverse();
 		if (s[MARK_OFFSET] == tinrc.art_marked_selected) {
-			MoveCursor (line, MARK_OFFSET);
-			EndInverse ();
-			my_fputc (s[MARK_OFFSET], stdout);
+			MoveCursor(line, MARK_OFFSET);
+			EndInverse();
+			my_fputc(s[MARK_OFFSET], stdout);
 		}
 	}
 	stow_cursor();
@@ -273,7 +272,7 @@ draw_arrow_mark (
 
 
 void
-erase_arrow (
+erase_arrow(
 	void)
 {
 	int line = INDEX_TOP + currmenu->curr - currmenu->first;
@@ -281,10 +280,10 @@ erase_arrow (
 	if (!currmenu->max)
 		return;
 
-	MoveCursor (line, 0);
+	MoveCursor(line, 0);
 
 	if (tinrc.draw_arrow)
-		my_fputs ("  ", stdout);
+		my_fputs("  ", stdout);
 	else {
 #ifdef USE_CURSES
 		char buffer[BUFSIZ];
@@ -297,43 +296,43 @@ erase_arrow (
 
 		s = screen[line - INDEX_TOP].col;
 #endif /* USE_CURSES */
-		EndInverse ();
-		my_fputs (s, stdout);
+		EndInverse();
+		my_fputs(s, stdout);
 		if (s[MARK_OFFSET] == tinrc.art_marked_selected) {
-			MoveCursor (line, MARK_OFFSET);
-			StartInverse ();
-			my_fputc (s[MARK_OFFSET], stdout);
-			EndInverse ();
+			MoveCursor(line, MARK_OFFSET);
+			StartInverse();
+			my_fputc(s[MARK_OFFSET], stdout);
+			EndInverse();
 		}
 	}
 }
 
 
 void
-show_title (
+show_title(
 	char *title)
 {
 	int col;
 
-	col = (cCOLS - (int) strlen (_(txt_type_h_for_help))) + 1;
+	col = (cCOLS - (int) strlen(_(txt_type_h_for_help))) + 1;
 	if (col) {
-		MoveCursor (0, col);
+		MoveCursor(0, col);
 #ifdef HAVE_COLOR
 		fcol(tinrc.col_title);
 #endif /* HAVE_COLOR */
 		/* you have mail message in */
-		my_fputs ((mail_check () ? _(txt_you_have_mail) : _(txt_type_h_for_help)), stdout);
+		my_fputs((mail_check() ? _(txt_you_have_mail) : _(txt_type_h_for_help)), stdout);
 
 #ifdef HAVE_COLOR
 		fcol(tinrc.col_normal);
 #endif /* HAVE_COLOR */
 	}
-	center_line (0, TRUE, title);
+	center_line(0, TRUE, title);
 }
 
 
 void
-ring_bell (
+ring_bell(
 	void)
 {
 #ifdef USE_CURSES
@@ -341,7 +340,7 @@ ring_bell (
 		beep();
 	else {
 #endif /* USE_CURSES */
-	my_fputc ('\007', stdout);
+	my_fputc('\007', stdout);
 	my_flush();
 #ifdef USE_CURSES
 	}
@@ -350,7 +349,7 @@ ring_bell (
 
 
 void
-spin_cursor (
+spin_cursor(
 	void)
 {
 	static const char buf[] = "|/-\\|/-\\ "; /* don't remove the taling sapce! */
@@ -365,7 +364,7 @@ spin_cursor (
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_message);
 #endif /* HAVE_COLOR */
-	my_printf ("\b%c", buf[i++]);
+	my_printf("\b%c", buf[i++]);
 	my_flush();
 #ifdef HAVE_COLOR
 	fcol(tinrc.col_normal);
@@ -377,7 +376,7 @@ spin_cursor (
  * progressmeter in %
  */
 void
-show_progress (
+show_progress(
 	const char *txt,
 	long count,
 	long total)
@@ -416,7 +415,7 @@ show_progress (
 		fcol(tinrc.col_message);
 #	endif /* HAVE_COLOR */
 		/* Don't print a time left this time */
-		/* last_length = */ my_printf ("%s %3d%%", txt, (int)(count * 100 / total));
+		/* last_length = */ my_printf("%s %3d%%", txt, (int) (count * 100 / total));
 		last_length = strlen(txt) + 5;
 
 		/* Reset the variables */
@@ -453,7 +452,7 @@ show_progress (
 		fcol(tinrc.col_message);
 #	endif /* HAVE_COLOR */
 		/* TODO: -> lang.c, difficult with hardcoded last_length */
-		/* last_length = */ my_printf ("%s %3d%% (%d:%02d remaining)", txt, (int)(count * 100 / total), secs_left / 60, secs_left % 60);
+		/* last_length = */ my_printf("%s %3d%% (%d:%02d remaining)", txt, (int) (count * 100 / total), secs_left / 60, secs_left % 60);
 		last_length = strlen(txt) + 21 + secs_left / 600;
 	}
 
@@ -477,7 +476,7 @@ show_progress (
 	fcol(tinrc.col_message);
 #	endif /* HAVE_COLOR */
 
-	my_printf ("%s %3d%%", txt, (int) (count * 100 / total));
+	my_printf("%s %3d%%", txt, (int) (count * 100 / total));
 	my_flush();
 
 #	ifdef HAVE_COLOR

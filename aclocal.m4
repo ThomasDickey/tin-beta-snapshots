@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2002-04-17
+dnl Updated   : 2002-09-25
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2002 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -248,7 +248,7 @@ dnl ====================
 # to provide support for the GNU gettext functionality.
 # Please note that the actual code of the GNU gettext library is covered
 # by the GNU Library General Public License, and the rest of the GNU
-# gettext package package is covered by the GNU General Public License.
+# gettext package is covered by the GNU General Public License.
 # They are *not* in the public domain.
 
 # serial 2
@@ -277,7 +277,7 @@ dnl ====================
 # to provide support for the GNU gettext functionality.
 # Please note that the actual code of the GNU gettext library is covered
 # by the GNU Library General Public License, and the rest of the GNU
-# gettext package package is covered by the GNU General Public License.
+# gettext package is covered by the GNU General Public License.
 # They are *not* in the public domain.
 
 # serial 2
@@ -334,7 +334,7 @@ dnl ====================
 # to provide support for the GNU gettext functionality.
 # Please note that the actual code of the GNU gettext library is covered
 # by the GNU Library General Public License, and the rest of the GNU
-# gettext package package is covered by the GNU General Public License.
+# gettext package is covered by the GNU General Public License.
 # They are *not* in the public domain.
 
 # serial 10
@@ -1425,18 +1425,22 @@ dnl ---------------------------------------------------------------------------
 dnl Look for a Bourne-shell compatible program from a list that we know about:
 dnl	ash	Almquist Shell (sh based)
 dnl	bash	Bourne Again Shell (sh, ksh based)
+dnl	dash	Debian Almquist Shell (sh based)
 dnl	jsh	Job Control Bourne Shell (sh based)
 dnl	keysh 	Key Shell (ksh based)
 dnl	ksh	Korn Shell (sh based)
 dnl	pdksh	Public-domain ksh
 dnl	sh	Bourne Shell or POSIX Shell
 dnl	zsh	Z Shell (sh, ksh based)
+dnl On BSD systems look for a C Shell compatible program:
+dnl	csh	C Shell
+dnl	tcsh	TENEX C Shell (csh based)
 AC_DEFUN([CF_DEFAULT_SHELL],
 [
 AC_MSG_CHECKING(for the default shell program)
 cf_shell_progs="ifelse($1,,sh,[$1])"
 if test -z "$cf_shell_progs" ; then
-	cf_shell_progs="sh ksh bash zsh pdksh jsh keysh ash"
+	cf_shell_progs="sh ksh bash zsh pdksh jsh keysh ash dash"
 	# TIN preferred default shell for BSD systems is csh. Others are sh.
 	AC_TRY_COMPILE([
 #include <sys/params.h>],[
@@ -1447,11 +1451,22 @@ make an error
 ],[$cf_shell_progs="csh tcsh $cf_shell_progs"])
 fi
 CF_MSG_LOG(paths of shell programs: $cf_shell_progs)
-if test -f /etc/shells ; then
+if test -s /etc/shells && test `egrep -c -v '^(#| |    |$)' /etc/shells` -gt 0; then
 	CF_MSG_LOG(/etc/shells)
 	for cf_prog in $cf_shell_progs
 	do
-		cf_path=`egrep '/'$cf_prog'$' /etc/shells 2>/dev/null`
+		case $cf_prog in
+			/*)
+				cf_pattern="^"$cf_prog"$"
+				;;
+			*/*)
+				AC_MSG_ERROR(Program name must be absolute or filename: $cf_prog)
+				;;
+			*)
+				cf_pattern="/"$cf_prog"$"
+				;;
+		esac
+		cf_path=`egrep $cf_pattern /etc/shells 2>/dev/null`
 		if test -n "$cf_path"
 		then
 			for cf_shell in $cf_path

@@ -75,7 +75,7 @@ INS_BINARY_DIR	= @bindir@
 INS_MANUAL_DIR	= @mandir@/man
 INS_SYSDEF_DIR	= @TIN_DEFAULTS_DIR@
 INS_MANUAL_EXT	= 1
-INS_OLD_SUFFIX  = old
+INS_OLD_SUFFIX	= old
 
 # Project
 PROJECT	= @PACKAGE@
@@ -92,18 +92,19 @@ TOLDIR	= $(top_srcdir)/tools
 
 # standard commands
 CD	= cd
-CFLOW	= cflow
 CHMOD	= chmod
 CP	= cp
-CSCOPE	= cscope
 ECHO	= echo
-LINT	= @LINT@
-LN	= @LN_S@
-LS	= ls -l
-MV	= mv -f
+LS	= ls
+MV	= mv
 RM	= rm
+SED	= sed
+CFLOW	= cflow
+CSCOPE	= cscope
 TAGS	= ctags
 ETAGS	= etags
+LINT	= @LINT@
+LN	= @LN_S@
 INSTALL	= @INSTALL@
 @SET_MAKE@
 
@@ -286,19 +287,19 @@ all: $(BINDIR)/$(EXE)
 $(OBJDIR)/parsdate.o: $(SRCDIR)/parsdate.y
 	@$(ECHO) "expect 6 shift/reduce conflicts ..."
 	$(YACC) $(SRCDIR)/parsdate.y
-	$(MV) y.tab.c $(OBJDIR)/parsdate.c
+	$(MV) -f y.tab.c $(OBJDIR)/parsdate.c
 @SHOW_CC@
 	@ECHO_CC@$(CC) $(CPPOPTS) $(CFLAGS) -c $(OBJDIR)/parsdate.c
 
 $(OBJDIR)/parsdate.c: $(SRCDIR)/parsdate.y
 	@$(ECHO) "expect 6 shift/reduce conflicts ..."
 	$(YACC) $(SRCDIR)/parsdate.y
-	$(MV) y.tab.c $(OBJDIR)/parsdate.c
+	$(MV) -f y.tab.c $(OBJDIR)/parsdate.c
 
 $(BINDIR)/$(EXE): $(OFILES) $(EXTRALIBS)
 	@$(ECHO) "Linking $(EXE) v$(VER) ..."
 	$(LD) $(LDFLAGS) -o $(BINDIR)/$(EXE) $(OFILES) $(NNTPLIB) $(NETLIBS) $(LIBS) $(DEBUG)
-	@$(LS) $(BINDIR)/$(EXE)
+	@$(LS) -l $(BINDIR)/$(EXE)
 
 help:
 	@$(ECHO) "This Makefile offers the following options:"
@@ -337,8 +338,8 @@ uninstall_manpage:
 
 install_sysdefs: $(INS_SYSDEF_DIR)
 	@$(ECHO) "Installing system-wide defaults to $(INS_SYSDEF_DIR) ..."
-	@-if test -f $(INS_SYSDEF_DIR)/tin.defaults ; then $(ECHO) "  ... backing up existing tin.defaults file to tin.defaults.$(INS_OLD_SUFFIX)" ; $(MV) $(INS_SYSDEF_DIR)/tin.defaults $(INS_SYSDEF_DIR)/tin.defaults.$(INS_OLD_SUFFIX) ; fi
-	@-if test -f $(INS_SYSDEF_DIR)/mime.types ; then $(ECHO) "  ... backing up existing mime.types file to mime.types.$(INS_OLD_SUFFIX)" ; $(MV) $(INS_SYSDEF_DIR)/mime.types $(INS_SYSDEF_DIR)/mime.types.$(INS_OLD_SUFFIX) ; fi
+	@-if test -f $(INS_SYSDEF_DIR)/tin.defaults ; then $(ECHO) "  ... backing up existing tin.defaults file to tin.defaults.$(INS_OLD_SUFFIX)" ; $(MV) -f $(INS_SYSDEF_DIR)/tin.defaults $(INS_SYSDEF_DIR)/tin.defaults.$(INS_OLD_SUFFIX) ; fi
+	@-if test -f $(INS_SYSDEF_DIR)/mime.types ; then $(ECHO) "  ... backing up existing mime.types file to mime.types.$(INS_OLD_SUFFIX)" ; $(MV) -f $(INS_SYSDEF_DIR)/mime.types $(INS_SYSDEF_DIR)/mime.types.$(INS_OLD_SUFFIX) ; fi
 	@$(INSTALL) -m 644 $(DOCDIR)/tin.defaults $(INS_SYSDEF_DIR)/tin.defaults
 	@$(INSTALL) -m 644 $(DOCDIR)/mime.types $(INS_SYSDEF_DIR)/mime.types
 
@@ -398,7 +399,7 @@ TAGS:
 
 lint:	$(CFILES) $(OBJDIR)/parsdate.c tincfg.h
 	@$(ECHO) "Linting source (results in ./LINT) ..."
-	@$(LINT) $(LINTFLAGS) -DNNTP_ABLE `/bin/ls $(CFILES)|sed -e 's/\.y/.c/'` $(LIBS) > LINT
+	@$(LINT) $(LINTFLAGS) -DNNTP_ABLE `$(LS) $(CFILES)|$(SED) -e 's/\.y/.c/'` $(LIBS) > LINT
 
 clean:
 	@$(ECHO) "Cleaning ..."

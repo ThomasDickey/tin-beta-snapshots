@@ -42,11 +42,11 @@
 /*
  * local prototypes
  */
-static unsigned char bin2hex (unsigned int x);
+static unsigned char bin2hex(unsigned int x);
 
 
 static unsigned char
-bin2hex (
+bin2hex(
 	unsigned int x)
 {
 	if (x < 10)
@@ -55,8 +55,8 @@ bin2hex (
 }
 
 
-#define HI4BITS(c) (unsigned char)(*EIGHT_BIT(c) >> 4)
-#define LO4BITS(c) (unsigned char)(*c & 0xf)
+#define HI4BITS(c) ((unsigned char) (*EIGHT_BIT(c) >> 4))
+#define LO4BITS(c) ((unsigned char) (*c & 0xf))
 
 /*
  * A MIME replacement for fputs. e can be 'b' for base64, 'q' for
@@ -67,7 +67,7 @@ bin2hex (
  *       certainly break any binary format ...
  */
 void
-rfc1521_encode (
+rfc1521_encode(
 	char *line,
 	FILE *f,
 	int e)
@@ -226,7 +226,7 @@ rfc1521_encode (
 #define SI '\017'
 #define SO '\016'
 void
-rfc1557_encode (
+rfc1557_encode(
 	char *line,
 	FILE *f,
 	int UNUSED(e))		/* dummy argument : not used */
@@ -280,7 +280,7 @@ rfc1557_encode (
 
 #if 0 /* Not yet implemented */
 void
-rfc1468_encode (
+rfc1468_encode(
 	char *line,
 	FILE *f,
 	int UNUSED(e))		/* dummy argument: not used */
@@ -292,7 +292,7 @@ rfc1468_encode (
 
 /* Not yet implemented */
 void
-rfc1922_encode (
+rfc1922_encode(
 	char *line,
 	FILE *f,
 	int UNUSED(e))		/* dummy argument: not used */

@@ -44,7 +44,7 @@
 #	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 
-static size_t keymapsize (t_keynode *ptr[]);
+static size_t keymapsize(t_keynode *ptr[]);
 static t_bool check_duplicates(t_keynode *keyptr1, t_keynode *keyptr2);
 static t_bool processkey(t_keynode *keyptr, char *kname, char key);
 
@@ -235,9 +235,7 @@ static struct keymap Key = {
 		{ iKeyPageMarkThdUnread, iKeyPageMarkThdUnread, "MarkThdUnread" },
 		{ iKeyPageQuickAutoSel, iKeyPageQuickAutoSel, "QuickAutoSel" },
 		{ iKeyPageQuickKill, iKeyPageQuickKill, "QuickKill" },
-#ifdef HAVE_COLOR
 		{ iKeyPageToggleHighlight, iKeyPageToggleHighlight, "ToggleHighlight" },
-#endif /* HAVE_COLOR */
 		{ iKeyPageCatchup, iKeyPageCatchup, "Catchup" },
 		{ iKeyPageEditArticle, iKeyPageEditArticle, "EditArticle" },
 		{ iKeyPageFollowupQuote, iKeyPageFollowupQuote, "FollowupQuote" },
@@ -534,9 +532,7 @@ static t_keynode *keys_page_nav[] = {
 	&Key.Global.Postponed, &Key.Global.Postponed2, &Key.Global.DisplayPostHist,
 	&Key.Page.MarkArtUnread, &Key.Page.SkipIncludedText,
 	&Key.Global.ToggleInfoLastLine,
-#ifdef HAVE_COLOR
 	&Key.Page.ToggleHighlight,
-#endif /* HAVE_COLOR */
 	&Key.Page.ViewAttach, &Key.Page.ViewUrl, NULL };
 
 static t_keynode *keys_pgp_mail[] = {
@@ -702,7 +698,7 @@ t_menukeymap menukeymap = {
  * Return the number of keys in a menu
  */
 static size_t
-keymapsize (
+keymapsize(
 	t_keynode *ptr[])
 {
 	size_t i = 0;
@@ -722,25 +718,25 @@ keymapsize (
  * Compile keymaps for faster access and conversion
  */
 void
-build_keymaps (
+build_keymaps(
 	void)
 {
 	char *dkey, *lkey;
-	int cnt = sizeof (menukeymap) / sizeof (t_menukeys);
+	int cnt = sizeof(menukeymap) / sizeof(t_menukeys);
 	size_t size;
 	t_keynode *keyptr;
 	t_menukeys *menuptr = &menukeymap.config_change;
 
 	while (cnt--) {
-		size = keymapsize (menuptr->keys);
+		size = keymapsize(menuptr->keys);
 		if (menuptr->defaultkeys)
-			menuptr->defaultkeys = my_realloc (menuptr->defaultkeys, size + 1);
+			menuptr->defaultkeys = my_realloc(menuptr->defaultkeys, size + 1);
 		else
-			menuptr->defaultkeys = my_malloc (size + 1);
+			menuptr->defaultkeys = my_malloc(size + 1);
 		if (menuptr->localkeys)
-			menuptr->localkeys = my_realloc (menuptr->localkeys, size + 1);
+			menuptr->localkeys = my_realloc(menuptr->localkeys, size + 1);
 		else
-			menuptr->localkeys = my_malloc (size + 1);
+			menuptr->localkeys = my_malloc(size + 1);
 		dkey = menuptr->defaultkeys;
 		lkey = menuptr->localkeys;
 		dkey[size] = '\0';
@@ -760,11 +756,11 @@ build_keymaps (
  * convert a local key to the internal (default) mapping
  */
 int
-map_to_default (
+map_to_default(
 	const char key,
 	const t_menukeys *menukeys)
 {
-	char *ptr = strchr (menukeys->localkeys, key);
+	char *ptr = strchr(menukeys->localkeys, key);
 
 	if (ptr)
 		return menukeys->defaultkeys[ptr - menukeys->localkeys];
@@ -777,11 +773,11 @@ map_to_default (
  * convert an internal (default) key to a local one
  */
 int
-map_to_local (
+map_to_local(
 	const char key,
 	const t_menukeys *menukeys)
 {
-	char *ptr = strchr (menukeys->defaultkeys, key);
+	char *ptr = strchr(menukeys->defaultkeys, key);
 
 	if (ptr)
 		return menukeys->localkeys[ptr - menukeys->defaultkeys];
@@ -794,15 +790,15 @@ map_to_local (
  * Free all memory for keymaps.
  */
 void
-free_keymaps (
+free_keymaps(
 	void)
 {
-	int cnt = sizeof (menukeymap) / sizeof (t_menukeys);
+	int cnt = sizeof(menukeymap) / sizeof(t_menukeys);
 	t_menukeys *menuptr = &menukeymap.config_change;
 
 	while (cnt--) {
-		FreeIfNeeded (menuptr->localkeys);
-		FreeIfNeeded (menuptr->defaultkeys);
+		FreeIfNeeded(menuptr->localkeys);
+		FreeIfNeeded(menuptr->defaultkeys);
 		menuptr++;
 	}
 }
@@ -813,7 +809,7 @@ free_keymaps (
  * Is there no lib function to do this ?
  */
 char *
-printascii (
+printascii(
 	char *buf,
 	int ch)
 {
@@ -821,19 +817,19 @@ printascii (
 		buf[0] = ch;
 		buf[1] = '\0';
 	} else if (ch == '\t') {	/* TAB */
-		strcpy (buf, _(txt_tab));
+		strcpy(buf, _(txt_tab));
 	} else if ((ch == '\n') || (ch == '\r')) {	/* LF, CR */
-		strcpy (buf, _(txt_cr));
+		strcpy(buf, _(txt_cr));
 	} else if (ch == ESC) {		/* Escape */
-		strcpy (buf, _(txt_esc));
+		strcpy(buf, _(txt_esc));
 	} else if (iscntrl(ch)) {	/* Control keys */
 		buf[0] = '^';
 		buf[1] = (ch & 0xFF) + '@';
 		buf[2] = '\0';
 	} else if (ch == ' ')		/* SPACE */
-		strcpy (buf, _(txt_space));
+		strcpy(buf, _(txt_space));
 	else
-		strcpy (buf, "???");	/* Never happens? */
+		strcpy(buf, "???");	/* Never happens? */
 
 	return buf;
 }
@@ -857,7 +853,7 @@ check_duplicates(
 	for (ptr1 = keyptr1 + 1; ptr1->localkey != '\0'; ++ptr1) {
 		for (ptr2 = (keyptr1 == keyptr2) ? ptr1 + 1 : keyptr2 + 1; ptr2->localkey != '\0'; ++ptr2) {
 			if (ptr1->localkey == ptr2->localkey) {
-				fprintf (stderr, _(txt_keymap_conflict), printascii (buf, ptr1->localkey),
+				fprintf(stderr, _(txt_keymap_conflict), printascii(buf, ptr1->localkey),
 								keyptr1->t, ptr1->t, keyptr2->t, ptr2->t);
 				return FALSE;
 			}
@@ -882,16 +878,16 @@ processkey(
 	char was[10], is[10];
 #endif /* DEBUG */
 
-	strcpy (buf, keyptr->t);	/* Preload the groupname for speed */
+	strcpy(buf, keyptr->t);	/* Preload the groupname for speed */
 	keyptr++;						/* Advance to 1st key */
-	i = strlen (buf);
+	i = strlen(buf);
 
 	for (; keyptr->t != NULL; ++keyptr) {
-		strcpy (buf + i, keyptr->t);
+		strcpy(buf + i, keyptr->t);
 
-		if (strcasecmp (kname, buf) == 0) {
+		if (strcasecmp(kname, buf) == 0) {
 #ifdef DEBUG
-			fprintf (stderr, _(txt_keymap_redef), buf, printascii (was, keyptr->localkey), printascii (is, key));
+			fprintf(stderr, _(txt_keymap_redef), buf, printascii(was, keyptr->localkey), printascii(is, key));
 #endif /* DEBUG */
 			keyptr->localkey = key;
 			return TRUE;
@@ -906,7 +902,7 @@ processkey(
 /* TODO -> tin.h */
 #define KEYMAP_FILE	"keymap"
 t_bool
-read_keymap_file (
+read_keymap_file(
 	void)
 {
 	FILE *fp = (FILE *) 0;
@@ -918,7 +914,7 @@ read_keymap_file (
 	t_bool ret = TRUE;
 
 	if (!batch_mode)
-		wait_message (0, _(txt_reading_keymap_file));
+		wait_message(0, _(txt_reading_keymap_file));
 
 	/*
 	 * checks TIN_HOMEDIR/HOME/TIN_DEFAULTS_DIR
@@ -931,24 +927,24 @@ read_keymap_file (
 	/* get locale suffix */
 	map = my_strdup(get_val("LC_ALL", get_val("LC_CTYPE", get_val("LC_MESSAGES", get_val("LANG", "")))));
 	if (strlen(map)) {
-		if ((ptr = strchr (map, '.')))
+		if ((ptr = strchr(map, '.')))
 			*ptr = '\0';
-		snprintf (buff, sizeof(buff) - 1, "%s.%s", KEYMAP_FILE, map);
-		joinpath (buf, rcdir, buff);
-		fp = fopen (buf, "r");
+		snprintf(buff, sizeof(buff) - 1, "%s.%s", KEYMAP_FILE, map);
+		joinpath(buf, rcdir, buff);
+		fp = fopen(buf, "r");
 	}
 	if (!fp) {
-		joinpath (buf, rcdir, KEYMAP_FILE);
-		fp = fopen (buf, "r");
+		joinpath(buf, rcdir, KEYMAP_FILE);
+		fp = fopen(buf, "r");
 	}
 #ifdef TIN_DEFAULTS_DIR
 	if (strlen(map) && !fp) {
-		joinpath (buf, TIN_DEFAULTS_DIR, buff);
-		fp = fopen (buf, "r");
+		joinpath(buf, TIN_DEFAULTS_DIR, buff);
+		fp = fopen(buf, "r");
 	}
 	if (!fp) {
-		joinpath (buf, TIN_DEFAULTS_DIR, KEYMAP_FILE);
-		fp = fopen (buf, "r");
+		joinpath(buf, TIN_DEFAULTS_DIR, KEYMAP_FILE);
+		fp = fopen(buf, "r");
 	}
 #endif /* TIN_DEFAULTS_DIR */
 
@@ -957,21 +953,21 @@ read_keymap_file (
 	if (!fp)
 		return FALSE;
 
-	while ((line = fgets (buf, sizeof(buf), fp)) != NULL) {
+	while ((line = fgets(buf, sizeof(buf), fp)) != NULL) {
 		/*
 		 * Ignore blank and comment lines
 		 */
 		if (line[0] == '#' || line[0] == '\n')
 			continue;
 
-		kname = strtok (line, KEYSEPS);
-		keydef = strtok (NULL, KEYSEPS);
+		kname = strtok(line, KEYSEPS);
+		keydef = strtok(NULL, KEYSEPS);
 
 		/*
 		 * Warn about basic syntax errors
 		 */
 		if (keydef == NULL) {
-			fprintf (stderr, _(txt_keymap_missing_key), kname);
+			fprintf(stderr, _(txt_keymap_missing_key), kname);
 			ret = FALSE;
 			continue;
 		}
@@ -983,11 +979,11 @@ read_keymap_file (
 		 * TAB -> ^I
 		 * SPACE -> ' '
 		 */
-		if (strlen (keydef) > 1)
+		if (strlen(keydef) > 1)
 			switch (keydef[0]) {
 				case '^':
-					if (!(isupper ((int)keydef[1]))) {
-						fprintf (stderr, _(txt_keymap_invalid_key), keydef);
+					if (!(isupper((int)(unsigned char) keydef[1]))) {
+						fprintf(stderr, _(txt_keymap_invalid_key), keydef);
 						ret = FALSE;
 						continue;
 					}
@@ -1000,7 +996,7 @@ read_keymap_file (
 					key = ctrl('I');
 					break;
 				default:
-					fprintf (stderr, _(txt_keymap_invalid_key), keydef);
+					fprintf(stderr, _(txt_keymap_invalid_key), keydef);
 					ret = FALSE;
 					continue;
 			}
@@ -1011,7 +1007,7 @@ read_keymap_file (
 		 * Try and locate the tagline in each keygroup
 		 */
 		for (i = 0; keygroups[i] != NULL; ++i) {
-			if (processkey (keygroups[i], kname, key))
+			if (processkey(keygroups[i], kname, key))
 				break;
 		}
 
@@ -1020,7 +1016,7 @@ read_keymap_file (
 		 * depending on the OS (i.e. on tin has colr the other has not)
 		 */
 		if (keygroups[i] == NULL) {
-			fprintf (stderr, _(txt_keymap_invalid_name), kname);
+			fprintf(stderr, _(txt_keymap_invalid_name), kname);
 			ret = FALSE;
 			continue;
 		}
@@ -1031,13 +1027,13 @@ read_keymap_file (
 	 * Check for duplicates in each keygroup and vs. the global group
 	 */
 	for (i = 0; keygroups[i] != NULL; ++i) {
-		if (!(check_duplicates (keygroups[i], keygroups[i])))
+		if (!(check_duplicates(keygroups[i], keygroups[i])))
 			ret = FALSE;
-		if (i != 0 && !(check_duplicates (keygroups[i], keygroups[0])))
+		if (i != 0 && !(check_duplicates(keygroups[i], keygroups[0])))
 			ret = FALSE;
 	}
 
-	fclose (fp);
-	build_keymaps ();
+	fclose(fp);
+	build_keymaps();
 	return ret;
 }

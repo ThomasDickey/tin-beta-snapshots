@@ -74,18 +74,18 @@ static int quoteflag;
 /*
  * local prototypes
  */
-static int do_b_encode (char *w, char *b, int max_ewsize, t_bool isstruct_head);
-static int rfc1522_do_encode (char *what, char **where, struct t_group *group, t_bool break_long_line);
-static int sizeofnextword (char *w);
-static int which_encoding (char *w, int mmnwcharset);
-static t_bool contains_nonprintables (char *w, t_bool isstruct_head);
-static unsigned hex2bin (int x);
-static void build_base64_rank_table (void);
-static void str2b64 (char *from, char *to);
+static int do_b_encode(char *w, char *b, int max_ewsize, t_bool isstruct_head);
+static int rfc1522_do_encode(char *what, char **where, struct t_group *group, t_bool break_long_line);
+static int sizeofnextword(char *w);
+static int which_encoding(char *w, int mmnwcharset);
+static t_bool contains_nonprintables(char *w, t_bool isstruct_head);
+static unsigned hex2bin(int x);
+static void build_base64_rank_table(void);
+static void str2b64(char *from, char *to);
 
 
 static void
-build_base64_rank_table (
+build_base64_rank_table(
 	void)
 {
 	int i;
@@ -101,7 +101,7 @@ build_base64_rank_table (
 
 
 static unsigned
-hex2bin (
+hex2bin(
 	int x)
 {
 	if (x >= '0' && x <= '9')
@@ -119,7 +119,7 @@ hex2bin (
  * Return number of bytes decoded into 'where' or -1.
  */
 int
-mmdecode (
+mmdecode(
 	const char *what,
 	int encoding,
 	int delimiter,
@@ -197,7 +197,7 @@ mmdecode (
  * format
  */
 char *
-rfc1522_decode (
+rfc1522_decode(
 	const char *s)
 {
 	char *c, *sc;
@@ -306,7 +306,7 @@ rfc1522_decode (
  * Woohyung Choi's(whchoi@cosmos.kaist.ac.kr) sdn2ks and ks2sdn
  */
 static void
-str2b64 (
+str2b64(
 	char *from,
 	char *to)
 {
@@ -333,7 +333,7 @@ str2b64 (
 
 
 static int
-do_b_encode (
+do_b_encode(
 	char *w,
 	char *b,
 	int max_ewsize,
@@ -380,7 +380,7 @@ do_b_encode (
  * mmnwcharset is ignored unless CHARSET_CONVERSION
  */
 static int
-which_encoding (
+which_encoding(
 	char *w,
 	int mmnwcharset)
 {
@@ -422,7 +422,7 @@ which_encoding (
 
 /* now only checks if there's any 8bit chars in a given "fragment" */
 static t_bool
-contains_nonprintables (
+contains_nonprintables(
 	char *w,
 	t_bool isstruct_head)
 {
@@ -457,7 +457,7 @@ contains_nonprintables (
  * with rfc 2047 (rfc 1522)
  */
 static int
-sizeofnextword (
+sizeofnextword(
 	char *w)
 {
 	char *x;
@@ -588,9 +588,9 @@ rfc1522_do_encode(
 				isbroken_within = FALSE;
 				while (*what && !isbetween(*what, isstruct_head)) {
 #if 0
-					if (is_EIGHT_BIT(what) || (strchr (RFC2047_ESPECIALS, *what)))
+					if (is_EIGHT_BIT(what) || (strchr(RFC2047_ESPECIALS, *what)))
 #else
-					if (is_EIGHT_BIT(what) || !isalnum((int)*what))
+					if (is_EIGHT_BIT(what) || !isalnum((int)(unsigned char) *what))
 #endif /* 0 */
 					{
 						sprintf(buf2, "=%2.2X", *EIGHT_BIT(what));
@@ -757,7 +757,7 @@ rfc1522_do_encode(
 
 
 char *
-rfc1522_encode (
+rfc1522_encode(
 	char *s,
 	struct t_group *group,
 	t_bool ismail)
@@ -789,7 +789,7 @@ rfc1522_encode (
 
 
 void
-rfc15211522_encode (
+rfc15211522_encode(
 	const char *filename,
 	constext * mime_encoding,
 	struct t_group *group,

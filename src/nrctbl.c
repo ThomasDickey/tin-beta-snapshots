@@ -54,7 +54,7 @@
 /*
  * local prototypes
  */
-static void write_newsrctable_file (void);
+static void write_newsrctable_file(void);
 
 
 /*
@@ -62,7 +62,7 @@ static void write_newsrctable_file (void);
  * create newsrctable file in local rc directory
  */
 static void
-write_newsrctable_file (
+write_newsrctable_file(
 	void)
 {
 	FILE *fp;
@@ -76,14 +76,14 @@ write_newsrctable_file (
 
 
 /*
- * get_nntpserver ()
+ * get_nntpserver()
  * returns the FQDN of NNTP server by looking up a given
  * nickname or alias in the newsrctable
  * ---> extend to allow nameserver-lookups, if search in table
  *      failed
  */
 void
-get_nntpserver (
+get_nntpserver(
 	char *nntpserver_name,
 	char *nick_name)
 {
@@ -95,7 +95,7 @@ get_nntpserver (
 	t_bool found = FALSE;
 
 	if ((fp = fopen(local_newsrctable_file, "r")) != NULL) {
-		while ((fgets(line, sizeof(line), fp) != NULL) && (!found)) {
+		while ((fgets(line, sizeof(line), fp) != NULL) && !found) {
 			line_entry_counter = 0;
 
 			if (!strchr("# ;", line[0])) {
@@ -125,7 +125,7 @@ get_nntpserver (
  * returns TRUE if name was found, FALSE if the search failed
  */
 int
-get_newsrcname (
+get_newsrcname(
 	char *newsrc_name,
 	const char *nntpserver_name) /* return value is always ignored */
 {
@@ -167,59 +167,59 @@ get_newsrcname (
 			char tmp_newsrc[PATH_LEN];
 			int error = 0;
 
-			if (!strfpath (name_found, tmp_newsrc, sizeof (tmp_newsrc), NULL)) {
-					my_fprintf (stderr, _("couldn't expand %s\n"), name_found);
+			if (!strfpath(name_found, tmp_newsrc, sizeof(tmp_newsrc), NULL)) {
+					my_fprintf(stderr, _("couldn't expand %s\n"), name_found);
 					error = 1;
 			} else {
 				if (tmp_newsrc[0] == '/')
-					(void) strcpy (newsrc_name, tmp_newsrc);
+					(void) strcpy(newsrc_name, tmp_newsrc);
 				else
-					joinpath (newsrc_name, homedir, tmp_newsrc);
+					joinpath(newsrc_name, homedir, tmp_newsrc);
 			}
-			(void) strcpy (dir, newsrc_name);
-			if (strchr (dir, '/'))
-				*strrchr (dir, '/') = (char) 0;
+			(void) strcpy(dir, newsrc_name);
+			if (strchr(dir, '/'))
+				*strrchr(dir, '/') = (char) 0;
 
 			if (!error) {
 			/* FIXME - write a global permssion check routine */
-				if (access (dir, X_OK)) {
-					my_fprintf (stderr, _(txt_error_no_enter_permission), dir);
+				if (access(dir, X_OK)) {
+					my_fprintf(stderr, _(txt_error_no_enter_permission), dir);
 					error = 1;
-				} else if (access (newsrc_name, F_OK)) {
-					my_fprintf (stderr, _(txt_error_no_such_file), newsrc_name);
+				} else if (access(newsrc_name, F_OK)) {
+					my_fprintf(stderr, _(txt_error_no_such_file), newsrc_name);
 					error = 2;
-				} else if (access (dir, R_OK)) {
-					my_fprintf (stderr, _(txt_error_no_read_permission), dir);
+				} else if (access(dir, R_OK)) {
+					my_fprintf(stderr, _(txt_error_no_read_permission), dir);
 					error = 1;
-				} else if (access (newsrc_name, R_OK)) {
-					my_fprintf (stderr, _(txt_error_no_read_permission), newsrc_name);
+				} else if (access(newsrc_name, R_OK)) {
+					my_fprintf(stderr, _(txt_error_no_read_permission), newsrc_name);
 					error = 1;
-				} else if (access (dir, W_OK)) {
-					my_fprintf (stderr, _(txt_error_no_write_permission), dir);
+				} else if (access(dir, W_OK)) {
+					my_fprintf(stderr, _(txt_error_no_write_permission), dir);
 					error = 1;
-				} else if (access (newsrc_name, W_OK)) {
-					my_fprintf (stderr, _(txt_error_no_write_permission), newsrc_name);
+				} else if (access(newsrc_name, W_OK)) {
+					my_fprintf(stderr, _(txt_error_no_write_permission), newsrc_name);
 					error = 1;
 				}
 			}
 			if (error) {
 				char ch;
-				char default_ch = map_to_local (iKeyNrctblAlternative, &menukeymap.nrctbl_create);
+				char default_ch = map_to_local(iKeyNrctblAlternative, &menukeymap.nrctbl_create);
 
 				do {
 					/* very ugly code, but curses is not initialized yet */
 					if (error >= 2) {
-						default_ch = map_to_local (iKeyNrctblCreate, &menukeymap.nrctbl_create);
+						default_ch = map_to_local(iKeyNrctblCreate, &menukeymap.nrctbl_create);
 						printf("%s%c\b", _(txt_nrctbl_create), default_ch);
 					} else
 						printf("%s%c\b", _(txt_nrctbl_default), default_ch);
 
-					if ((ch = (char) ReadCh ()) == '\r' || ch == '\n')
+					if ((ch = (char) ReadCh()) == '\r' || ch == '\n')
 						ch = default_ch;
-				} while (!strchr (menukeymap.nrctbl_create.localkeys, ch));
+				} while (!strchr(menukeymap.nrctbl_create.localkeys, ch));
 				printf("%c\n", ch);
 
-				switch (map_to_default (ch, &menukeymap.nrctbl_create)) {
+				switch (map_to_default(ch, &menukeymap.nrctbl_create)) {
 					case iKeyNrctblCreate:
 						/* FIXME this doesn't check if we could create the file */
 						return TRUE;
@@ -231,7 +231,7 @@ get_newsrcname (
 						joinpath(newsrc_name, homedir, name_found);
 						return TRUE;
 					case iKeyNrctblQuit:
-						exit (EXIT_SUCCESS);
+						exit(EXIT_SUCCESS);
 						/* keep lint quiet: */
 						/* FALLTHROUGH */
 					case ESC:

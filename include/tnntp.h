@@ -93,9 +93,7 @@
 #	ifdef HAVE_NETDB_H
 #		include <netdb.h>
 #	endif /* HAVE_NETDB_H */
-#if defined( __amigaos__ ) /* JK 101097 */
 #	define IPPORT_NNTP ((unsigned short) 119)
-#endif /* !__amigaos__ */
 #	ifdef TLI
 #		ifdef HAVE_FCNTL_H
 #			include	<fcntl.h>
@@ -118,7 +116,6 @@
 #		ifdef HAVE_NETINET_IN_H
 #			include	<netinet/in.h>
 #		endif /* HAVE_NETINET_IN_H */
-#		define IPPORT_NNTP	((unsigned short) 119)
 #	else
 #		ifdef VMS
 #			ifdef MULTINET
@@ -141,7 +138,6 @@
 #					define netread	read
 #					define netwrite	write
 #					define netclose	close
-#					define IPPORT_NNTP	((unsigned short) 119)
 #				endif /* UCX */
 #			endif /* MULTINET */
 #		else

@@ -64,28 +64,26 @@ my_tmpfile(
 	errno = 0;
 
 	if (filename != NULL && name_size > 0) {
-/* #ifdef HAVE_TMPFILE */
-		if(!need_name) {
+		if (!need_name) {
 			FILE *fp = (FILE *) 0;
 			if ((fp = tmpfile()) != NULL)
 				fd = fileno(fp);
-#	ifdef DEBUG
+#ifdef DEBUG
 			else
 				wait_message(5, "HAVE_TMPFILE %s", strerror(errno));
-#	endif /* DEBUG */
+#endif /* DEBUG */
 			*filename = '\0';
 			if (fd == -1)
-				error_message (_(txt_cannot_create_uniq_name));
+				error_message(_(txt_cannot_create_uniq_name));
 			return fd;
 		}
-/* #endif *//* HAVE_TMPFILE */
 
 		if (base_dir) {
-			snprintf (buf, MIN(name_size, (sizeof(buf) - 1)), "tin-%s-%d-XXXXXX", get_host_name(), process_id);
-			joinpath (filename, base_dir, buf);
+			snprintf(buf, MIN(name_size, (sizeof(buf) - 1)), "tin-%s-%d-XXXXXX", get_host_name(), process_id);
+			joinpath(filename, base_dir, buf);
 		} else {
-			snprintf (buf, MIN(name_size, (sizeof(buf) - 1)), "tin_XXXXXX");
-			joinpath (filename, TMPDIR, buf);
+			snprintf(buf, MIN(name_size, (sizeof(buf) - 1)), "tin_XXXXXX");
+			joinpath(filename, TMPDIR, buf);
 		}
 #ifdef HAVE_MKSTEMP
 		fd = mkstemp(filename);
@@ -95,7 +93,7 @@ my_tmpfile(
 #	endif /* DEBUG */
 #else
 #	ifdef HAVE_MKTEMP
-		fd = open(mktemp(filename), (O_WRONLY|O_CREAT|O_EXCL), (mode_t)(S_IRUSR|S_IWUSR));
+		fd = open(mktemp(filename), (O_WRONLY|O_CREAT|O_EXCL), (mode_t) (S_IRUSR|S_IWUSR));
 #		ifdef DEBUG
 		if (errno)
 			wait_message(5, "HAVE_MKTEMP %s: %s", filename, strerror(errno));
@@ -104,6 +102,6 @@ my_tmpfile(
 #endif /* HAVE_MKSTEMP */
 		}
 	if (fd == -1)
-		error_message (_(txt_cannot_create_uniq_name));
+		error_message(_(txt_cannot_create_uniq_name));
 	return fd;
 }

@@ -295,9 +295,7 @@
 #define iKeyPageMarkThdUnread 'Z'
 #define iKeyPageQuickAutoSel '['		/* Merge with same keys in Group ? */
 #define iKeyPageQuickKill ']'
-#ifdef HAVE_COLOR
-#	define iKeyPageToggleHighlight '_'
-#endif /* HAVE_COLOR */
+#define iKeyPageToggleHighlight '_'
 #define iKeyPageCatchup 'c'
 #define iKeyPageEditArticle 'e'
 #define iKeyPageFollowupQuote 'f'

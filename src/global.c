@@ -51,8 +51,8 @@
 /*
  * Local prototypes
  */
-static int _page_up (int curslot, int maxslot);
-static int _page_down (int curslot, int maxslot);
+static int _page_up(int curslot, int maxslot);
+static int _page_down(int curslot, int maxslot);
 static int mouse_action(int ch, int (*left_action) (void), int (*right_action) (void));
 
 /*
@@ -60,7 +60,7 @@ static int mouse_action(int ch, int (*left_action) (void), int (*right_action) (
  * Take half page scrolling into account
  */
 static int
-_page_up (
+_page_up(
 	int curslot,
 	int maxslot)
 {
@@ -79,12 +79,13 @@ _page_up (
 	return ((curslot < 0) ? 0 : curslot);
 }
 
+
 /*
  * Return the new line index following a PageDown request.
  * Take half page scrolling into account
  */
 static int
-_page_down (
+_page_down(
 	int curslot,
 	int maxslot)
 {
@@ -102,7 +103,6 @@ _page_down (
 		if (curslot < maxslot - 1)
 			curslot = maxslot - 1;
 	}
-
 	return curslot;
 }
 
@@ -112,7 +112,7 @@ _page_down (
  * based on the current position and the max available
  */
 void
-set_first_screen_item (
+set_first_screen_item(
 	void)
 {
 	if (currmenu->curr >= currmenu->max)
@@ -142,70 +142,70 @@ set_first_screen_item (
 
 
 void
-move_up (
+move_up(
 	void)
 {
 	if (currmenu->max)
-		move_to_item ((currmenu->curr == 0) ? (currmenu->max - 1) : (currmenu->curr - 1));
+		move_to_item((currmenu->curr == 0) ? (currmenu->max - 1) : (currmenu->curr - 1));
 }
 
 
 void
-move_down (
+move_down(
 	void)
 {
 	if (currmenu->max)
-		move_to_item ((currmenu->curr + 1 >= currmenu->max) ? 0 : (currmenu->curr + 1));
+		move_to_item((currmenu->curr + 1 >= currmenu->max) ? 0 : (currmenu->curr + 1));
 }
 
 
 void
-page_up (
+page_up(
 	void)
 {
 	if (currmenu->max)
-		move_to_item (_page_up (currmenu->curr, currmenu->max));
+		move_to_item(_page_up(currmenu->curr, currmenu->max));
 }
 
 
 void
-page_down (
+page_down(
 	void)
 {
 	if (currmenu->max)
-		move_to_item (_page_down (currmenu->curr, currmenu->max));
+		move_to_item(_page_down(currmenu->curr, currmenu->max));
 }
 
 
 void
-top_of_list (
+top_of_list(
 	void)
 {
 	if (currmenu->max)
-		move_to_item (0);
+		move_to_item(0);
 }
 
 
 void
-end_of_list (
+end_of_list(
 	void)
 {
 	if (currmenu->max)
-		move_to_item (currmenu->max - 1);
+		move_to_item(currmenu->max - 1);
 }
 
 
 void
-prompt_item_num (
+prompt_item_num(
 	int ch,
 	const char *prompt)
 {
 	int num;
 
-	clear_message ();
+	clear_message();
 
-	if ((num = prompt_num (ch, prompt)) == -1) {
-		clear_message ();
+	if ((num = prompt_num(ch, prompt)) == -1) {
+		clear_message();
 		return;
 	}
 	num--;		/* index from 0 (internal) vs. 1 (user) */
@@ -216,7 +216,7 @@ prompt_item_num (
 	if (num >= currmenu->max)
 		num = currmenu->max - 1;
 
-	move_to_item (num);
+	move_to_item(num);
 }
 
 
@@ -224,26 +224,25 @@ prompt_item_num (
  * Move the on-screen pointer & internal pointer variable to a new position
  */
 void
-move_to_item (
+move_to_item(
 	int n)
 {
 	if (currmenu->curr == n)
 		return;
 
-	HpGlitch(erase_arrow ());
-	erase_arrow ();
+	HpGlitch(erase_arrow());
+	erase_arrow();
 
 	currmenu->curr = n;
 	if (currmenu->curr < 0)
 		currmenu->curr = 0;
-	clear_message ();
+	clear_message();
 
 	if (n >= currmenu->first && n < currmenu->last)
-		currmenu->draw_arrow ();
+		currmenu->draw_arrow();
 	else
-		currmenu->redraw ();
+		currmenu->redraw();
 }
-
 
 
 /*
@@ -281,62 +280,69 @@ mouse_action(
 		default:
 			break;
 	}
-
 	return ch;			/* Pass through */
 }
 
 
 int
-handle_keypad (
+handle_keypad(
 	int (*left_action) (void),
 	int (*right_action) (void),
 	const t_menukeys *menukeys)
 {
-	int ch = ReadCh ();
+	int ch = ReadCh();
 
 	switch (ch) {
 		case ESC:	/* common arrow keys */
 #	ifdef HAVE_KEY_PREFIX
 		case KEY_PREFIX:
 #	endif /* HAVE_KEY_PREFIX */
-			switch (get_arrow_key (ch)) {
+			switch (get_arrow_key(ch)) {
 				case KEYMAP_UP:
 					ch = iKeyUp;
 					break;
+
 				case KEYMAP_DOWN:
 					ch = iKeyDown;
 					break;
+
 				case KEYMAP_LEFT:
 					ch = left_action();
 					break;
+
 				case KEYMAP_RIGHT:
 					ch = right_action();
 					break;
+
 				case KEYMAP_PAGE_UP:
 					ch = iKeyPageUp;
 					break;
+
 				case KEYMAP_PAGE_DOWN:
 					ch = iKeyPageDown;
 					break;
+
 				case KEYMAP_HOME:
 					ch = iKeyFirstPage;
 					break;
+
 				case KEYMAP_END:
 					ch = iKeyLastPage;
 					break;
+
 				case KEYMAP_MOUSE:
-					ch = mouse_action (ch, left_action, right_action);
+					ch = mouse_action(ch, left_action, right_action);
 					break;
+
 				default:
 					break;
 			}
 			break;
 
 		default:
-			ch = map_to_default (ch, menukeys);
+			ch = map_to_default(ch, menukeys);
 			break;
 	}
-
 	return ch;
 }
 
@@ -345,10 +351,10 @@ handle_keypad (
  * bug/gripe/comment mailed to author
  */
 void
-bug_report (
+bug_report(
 	void)
 {
-	mail_bug_report ();
-	ClearScreen ();
-	currmenu->redraw ();
+	mail_bug_report();
+	ClearScreen();
+	currmenu->redraw();
 }

@@ -90,7 +90,7 @@ t_bool have_linescroll = FALSE;
 #				define USE_SGTTY 1
 #				define TTY struct sgttyb
 #			else
-				please-fix-me(thanks)
+#				error "No termios.h, termio.h or sgtty.h found"
 #			endif /* HAVE_SGTTY_H */
 #		endif /* HAVE_TERMIO_H */
 #	endif /* HAVE_TERMIOS_H && HAVE_TCGETATTR && HAVE_TCSETATTR */
@@ -177,18 +177,18 @@ static int _columns, _line, _lines;
 #	undef SET_TTY
 #	undef GET_TTY
 #	if USE_POSIX_TERMIOS
-#		define SET_TTY(arg) tcsetattr (TTYIN, TCSANOW, arg)
-#		define GET_TTY(arg) tcgetattr (TTYIN, arg)
+#		define SET_TTY(arg) tcsetattr(TTYIN, TCSANOW, arg)
+#		define GET_TTY(arg) tcgetattr(TTYIN, arg)
 #	else
 #		if USE_TERMIO
-#			define SET_TTY(arg) ioctl (TTYIN, TCSETAW, arg)
-#			define GET_TTY(arg) ioctl (TTYIN, TCGETA, arg)
+#			define SET_TTY(arg) ioctl(TTYIN, TCSETAW, arg)
+#			define GET_TTY(arg) ioctl(TTYIN, TCGETA, arg)
 #		else
 #			if USE_SGTTY
 #				define SET_TTY(arg) stty(TTYIN, arg)
 #				define GET_TTY(arg) gtty(TTYIN, arg)
 #			else
-				please-fix-me(thanks)
+#				error "No termios.h, termio.h or sgtty.h found"
 #			endif /* USE_SGTTY */
 #		endif /* USE_TERMIO */
 #	endif /* USE_POSIX_TERMIOS */
@@ -200,15 +200,19 @@ static int in_inverse;			/* 1 when in inverse, 0 otherwise */
 /*
  * Local prototypes
  */
-static void ScreenSize (int *num_lines, int *num_columns);
-static int input_pending (int delay);
+static int input_pending(int delay);
+static void ScreenSize(int *num_lines, int *num_columns);
+static void xclick(int state);
+#if !defined(VMS) && defined(M_AMIGA)
+	static int AmiReadCh(int getscrsize);
+#endif /* !VMS && M_AMIGA */
 
 
 /*
- *  returns the number of lines and columns on the display.
+ * returns the number of lines and columns on the display.
  */
 static void
-ScreenSize (
+ScreenSize(
 	int *num_lines,
 	int *num_columns)
 {
@@ -226,13 +230,13 @@ ScreenSize (
  * get screen size from termcap entry & setup sizes
  */
 void
-setup_screen (void)
+setup_screen(void)
 {
 	_line = 1;
-	ScreenSize (&cLINES, &cCOLS);
+	ScreenSize(&cLINES, &cCOLS);
 	cmd_line = FALSE;
-	Raw (TRUE);
-	set_win_size (&cLINES, &cCOLS);
+	Raw(TRUE);
+	set_win_size(&cLINES, &cCOLS);
 }
 
 #ifdef M_UNIX
@@ -243,7 +247,7 @@ setup_screen (void)
 #		define TGETSTR(b,bufp)    tigetstr(b)
 #		define TGETNUM(b)         tigetnum(b) /* may be tigetint() */
 #		define TGETFLAG(b)        tigetflag(b)
-#		define NO_CAP(s)           (s == 0 || s == (char *)-1)
+#		define NO_CAP(s)          (s == 0 || s == (char *) -1)
 #		if !defined(HAVE_TIGETNUM) && defined(HAVE_TIGETINT)
 #			define tigetnum tigetint
 #		endif /* !HAVE_TIGETNUM && HAVE_TIGETINT */
@@ -255,7 +259,7 @@ setup_screen (void)
 #		define TGETSTR(a, bufp)   tgetstr(a, bufp)
 #		define TGETNUM(a)         tgetnum(a)
 #		define TGETFLAG(a)        tgetflag(a)
-#		define NO_CAP(s)           (s == 0)
+#		define NO_CAP(s)          (s == 0)
 #	endif /* USE_TERMINFO */
 
 #	ifdef HAVE_TPARM
@@ -269,7 +273,7 @@ extern char PC;			/* used in 'tputs()' */
 #	endif /* HAVE_EXTERN_TCAP_PC */
 
 int
-get_termcaps (void)
+get_termcaps(void)
 {
 	static struct {
 		char **value;
@@ -307,19 +311,19 @@ get_termcaps (void)
 	char the_termname[40], *p;
 	unsigned n;
 
-	if ((p = getenv ("TERM")) == NULL) {
-		my_fprintf (stderr, _(txt_no_term_set), tin_progname);
-		return (FALSE);
+	if ((p = getenv("TERM")) == NULL) {
+		my_fprintf(stderr, _(txt_no_term_set), tin_progname);
+		return FALSE;
 	}
 
 	my_strncpy(the_termname, p, sizeof(the_termname) - 1);
 
 #	ifdef USE_TERMINFO
-	setupterm(the_termname, fileno(stdout), (int *)0);
+	setupterm(the_termname, fileno(stdout), (int *) 0);
 #	else
-	if (tgetent (_terminal, the_termname) != 1) {
-		my_fprintf (stderr, _(txt_cannot_get_term_entry), tin_progname);
-		return (FALSE);
+	if (tgetent(_terminal, the_termname) != 1) {
+		my_fprintf(stderr, _(txt_cannot_get_term_entry), tin_progname);
+		return FALSE;
 	}
 #	endif /* USE_TERMINFO */
 
@@ -327,8 +331,8 @@ get_termcaps (void)
 	for (n = 0; n < ARRAY_SIZE(table); n++) {
 		*(table[n].value) = TGETSTR(table[n].capname, &ptr);
 	}
-	_lines          = TGETNUM (dCAPNAME("li", "lines"));
-	_columns        = TGETNUM (dCAPNAME("co", "cols"));
+	_lines          = TGETNUM(dCAPNAME("li", "lines"));
+	_columns        = TGETNUM(dCAPNAME("co", "cols"));
 	_hp_glitch      = TGETFLAG(dCAPNAME("xs", "xhp"));
 
 #	if defined(USE_TERMCAP) && defined(HAVE_EXTERN_TCAP_PC)
@@ -346,20 +350,20 @@ get_termcaps (void)
 	}
 
 	if (NO_CAP(_clearscreen)) {
-		my_fprintf (stderr, _(txt_no_term_clearscreen), tin_progname);
-		return (FALSE);
+		my_fprintf(stderr, _(txt_no_term_clearscreen), tin_progname);
+		return FALSE;
 	}
 	if (NO_CAP(_moveto)) {
-		my_fprintf (stderr, _(txt_no_term_cursor_motion), tin_progname);
-		return (FALSE);
+		my_fprintf(stderr, _(txt_no_term_cursor_motion), tin_progname);
+		return FALSE;
 	}
 	if (NO_CAP(_cleartoeoln)) {
-		my_fprintf (stderr, _(txt_no_term_clear_eol), tin_progname);
-		return (FALSE);
+		my_fprintf(stderr, _(txt_no_term_clear_eol), tin_progname);
+		return FALSE;
 	}
 	if (NO_CAP(_cleartoeos)) {
-		my_fprintf (stderr, _(txt_no_term_clear_eos), tin_progname);
-		return (FALSE);
+		my_fprintf(stderr, _(txt_no_term_clear_eos), tin_progname);
+		return FALSE;
 	}
 	if (_lines == -1)
 		_lines = DEFAULT_LINES_ON_TERMINAL;
@@ -368,7 +372,7 @@ get_termcaps (void)
 
 	if (_lines < MIN_LINES_ON_TERMINAL || _columns < MIN_COLUMNS_ON_TERMINAL) {
 		my_fprintf(stderr, _(txt_screen_too_small), tin_progname);
-		return (FALSE);
+		return FALSE;
 	}
 	/*
 	 * kludge to workaround no inverse
@@ -383,23 +387,23 @@ get_termcaps (void)
 		have_linescroll = FALSE;
 	else
 		have_linescroll = TRUE;
-	return (TRUE);
+	return TRUE;
 }
 
 int
-InitScreen (void)
+InitScreen(void)
 {
-	InitWin ();
+	InitWin();
 #	ifdef HAVE_COLOR
 	postinit_colors();
 #	endif /* HAVE_COLOR */
-	return (TRUE);
+	return TRUE;
 }
 
 #else	/* !M_UNIX */
 
 int
-InitScreen (void)
+InitScreen(void)
 {
 	char *ptr;
 
@@ -437,11 +441,11 @@ InitScreen (void)
 	 * you're using something other than an Amiga window
 	 */
 
-	if ((ptr = getenv ("LINES")) != 0) {
-		_lines = atol (ptr);
+	if ((ptr = getenv("LINES")) != 0) {
+		_lines = atol(ptr);
 	}
-	if ((ptr = getenv ("COLUMNS")) != 0) {
-		_columns = atol (ptr);
+	if ((ptr = getenv("COLUMNS")) != 0) {
+		_columns = atol(ptr);
 	}
 
 	/*
@@ -459,7 +463,7 @@ InitScreen (void)
 		_getwinsize = NULL;
 	}
 #	endif /* M_AMIGA */
-#	ifdef VMS /* moved from below InitWin () M.St. 22.01.98 */
+#	ifdef VMS /* moved from below InitWin() M.St. 22.01.98 */
 	{
 		int input_chan, status;
 		int item_code, eightbit;
@@ -477,12 +481,12 @@ InitScreen (void)
 			unsigned long tt_char : 24, scr_len : 8;
 			unsigned long tt2_char;
 		} tty;
-		$DESCRIPTOR (input_dsc, "TT");
+		$DESCRIPTOR(input_dsc, "TT");
 
-		status = SYS$ASSIGN (&input_dsc, &input_chan, 0, 0);
+		status = SYS$ASSIGN(&input_dsc, &input_chan, 0, 0);
 		if (!(status & 1))
-			LIB$STOP (status);
-		SYS$QIOW (0, input_chan, IO$_SENSEMODE, &tty, 0, 0, &tty.class, 12, 0, 0, 0, 0);
+			LIB$STOP(status);
+		SYS$QIOW(0, input_chan, IO$_SENSEMODE, &tty, 0, 0, &tty.class, 12, 0, 0, 0, 0);
 		item_code = DVI$_TT_EIGHTBIT;
 		status = LIB$GETDVI(&item_code, &input_chan, 0, &eightbit, 0, 0);
 		_columns = tty.scr_wid;
@@ -536,50 +540,50 @@ InitScreen (void)
 
 	if (_lines < MIN_LINES_ON_TERMINAL || _columns < MIN_COLUMNS_ON_TERMINAL) {
 		my_fprintf(stderr, _(txt_screen_too_small), tin_progname);
-		return (FALSE);
+		return FALSE;
 	}
 
-	InitWin ();
+	InitWin();
 
-	Raw (FALSE);
+	Raw(FALSE);
 
 	have_linescroll = FALSE;
-	return (TRUE);
+	return TRUE;
 }
 
 #endif /* M_UNIX */
 
 
 void
-InitWin (void)
+InitWin(void)
 {
 	if (_terminalinit) {
-		tputs (_terminalinit, 1, outchar);
+		tputs(_terminalinit, 1, outchar);
 		my_flush();
 	}
-	set_keypad_on ();
-	set_xclick_on ();
+	set_keypad_on();
+	set_xclick_on();
 }
 
 
 void
-EndWin (void)
+EndWin(void)
 {
 	if (_terminalend) {
-		tputs (_terminalend, 1, outchar);
+		tputs(_terminalend, 1, outchar);
 		my_flush();
 	}
-	set_keypad_off ();
-	set_xclick_off ();
+	set_keypad_off();
+	set_xclick_off();
 }
 
 
 void
-set_keypad_on (void)
+set_keypad_on(void)
 {
 #	ifdef HAVE_KEYPAD
 	if (tinrc.use_keypad && _keypadxmit) {
-		tputs (_keypadxmit, 1, outchar);
+		tputs(_keypadxmit, 1, outchar);
 		my_flush();
 	}
 #	endif /* HAVE_KEYPAD */
@@ -587,11 +591,11 @@ set_keypad_on (void)
 
 
 void
-set_keypad_off (void)
+set_keypad_off(void)
 {
 #	ifdef HAVE_KEYPAD
 	if (tinrc.use_keypad && _keypadlocal) {
-		tputs (_keypadlocal, 1, outchar);
+		tputs(_keypadlocal, 1, outchar);
 		my_flush();
 	}
 #	endif /* HAVE_KEYPAD */
@@ -605,8 +609,8 @@ void
 ClearScreen(
 	void)
 {
-	tputs (_clearscreen, 1, outchar);
-	my_flush ();		/* clear the output buffer */
+	tputs(_clearscreen, 1, outchar);
+	my_flush();		/* clear the output buffer */
 	_line = 1;
 }
 
@@ -617,31 +621,31 @@ ClearScreen(
  */
 #ifdef M_UNIX
 void
-MoveCursor (
+MoveCursor(
 	int row,
 	int col)
 {
 	char *stuff;
 
 	stuff = tgoto(_moveto, col, row);
-	tputs (stuff, 1, outchar);
-	my_flush ();
+	tputs(stuff, 1, outchar);
+	my_flush();
 	_line = row + 1;
 }
 
 #else	/* !M_UNIX */
 
 void
-MoveCursor (
+MoveCursor(
 	int row,
 	int col)
 {
 	char stuff[12];
 
 	if (_moveto) {
-		sprintf (stuff, _moveto, row+1, col+1);
-		tputs (stuff, 1, outchar);
-		my_flush ();
+		sprintf(stuff, _moveto, row + 1, col + 1);
+		tputs(stuff, 1, outchar);
+		my_flush();
 		_line = row + 1;
 	}
 }
@@ -652,11 +656,11 @@ MoveCursor (
  * clear to end of line
  */
 void
-CleartoEOLN (
+CleartoEOLN(
 	void)
 {
-	tputs (_cleartoeoln, 1, outchar);
-	my_flush ();	/* clear the output buffer */
+	tputs(_cleartoeoln, 1, outchar);
+	my_flush();	/* clear the output buffer */
 }
 
 
@@ -664,27 +668,27 @@ CleartoEOLN (
  * clear to end of screen
  */
 void
-CleartoEOS (
+CleartoEOS(
 	void)
 {
 	int i;
 
 	if (_cleartoeos) {
-		tputs (_cleartoeos, 1, outchar);
+		tputs(_cleartoeos, 1, outchar);
 	} else {
 		for (i = _line - 1 ; i < _lines ; i++) {
-			MoveCursor (i, 0);
-			CleartoEOLN ();
+			MoveCursor(i, 0);
+			CleartoEOLN();
 		}
 	}
-	my_flush ();	/* clear the output buffer */
+	my_flush();	/* clear the output buffer */
 }
 
 
 static int _topscrregion, _bottomscrregion;
 
 void
-SetScrollRegion (
+SetScrollRegion(
 	int topline,
 	int bottomline)
 {
@@ -694,16 +698,16 @@ SetScrollRegion (
 		return;
 	if (_scrollregion) {
 		stuff = TFORMAT(_scrollregion, topline, bottomline);
-		tputs (stuff, 1, outchar);
+		tputs(stuff, 1, outchar);
 		_topscrregion = topline;
 		_bottomscrregion = bottomline;
 	}
-	my_flush ();
+	my_flush();
 }
 
 
 void
-ScrollScreen (
+ScrollScreen(
 	int lines_to_scroll)
 {
 	int i;
@@ -714,19 +718,19 @@ ScrollScreen (
 		if (_scrollback) {
 			i = lines_to_scroll;
 			while (i++) {
-				MoveCursor (_topscrregion, 0);
-				tputs (_scrollback, 1, outchar);
+				MoveCursor(_topscrregion, 0);
+				tputs(_scrollback, 1, outchar);
 			}
 		}
 	} else
 		if (_scrollfwd) {
 			i = lines_to_scroll;
 			while (i--) {
-				MoveCursor (_bottomscrregion, 0);
-				tputs (_scrollfwd, 1, outchar);
+				MoveCursor(_bottomscrregion, 0);
+				tputs(_scrollfwd, 1, outchar);
 			}
 		}
-	my_flush ();
+	my_flush();
 }
 
 
@@ -734,7 +738,7 @@ ScrollScreen (
  * set inverse video mode
  */
 void
-StartInverse (
+StartInverse(
 	void)
 {
 	in_inverse = 1;
@@ -744,13 +748,13 @@ StartInverse (
 			bcol(tinrc.col_invers_bg);
 			fcol(tinrc.col_invers_fg);
 		} else {
-			tputs (_setinverse, 1, outchar);
+			tputs(_setinverse, 1, outchar);
 		}
 #	else
-		tputs (_setinverse, 1, outchar);
+		tputs(_setinverse, 1, outchar);
 #	endif /* HAVE_COLOR */
 	}
-	my_flush ();
+	my_flush();
 }
 
 
@@ -758,7 +762,7 @@ StartInverse (
  * compliment of startinverse
  */
 void
-EndInverse (
+EndInverse(
 	void)
 {
 	in_inverse = 0;
@@ -768,13 +772,13 @@ EndInverse (
 			fcol(tinrc.col_normal);
 			bcol(tinrc.col_back);
 		} else {
-			tputs (_clearinverse, 1, outchar);
+			tputs(_clearinverse, 1, outchar);
 		}
 #	else
-		tputs (_clearinverse, 1, outchar);
+		tputs(_clearinverse, 1, outchar);
 #	endif /* HAVE_COLOR */
 	}
-	my_flush ();
+	my_flush();
 }
 
 
@@ -782,7 +786,7 @@ EndInverse (
  * toggle inverse video mode
  */
 void
-ToggleInverse (
+ToggleInverse(
 	void)
 {
 	if (!in_inverse)
@@ -799,7 +803,7 @@ int
 RawState(
 	void)
 {
-	return (_inraw);
+	return _inraw;
 }
 
 
@@ -807,7 +811,7 @@ RawState(
  * state is either TRUE or FALSE, as indicated by call
  */
 void
-Raw (
+Raw(
 	int state)
 {
 #ifdef VMS
@@ -824,11 +828,11 @@ Raw (
 	rawcon (state);
 #	else
 	if (!state && _inraw) {
-		SET_TTY (&_original_tty);
+		SET_TTY(&_original_tty);
 		_inraw = 0;
 	} else if (state && !_inraw) {
-		GET_TTY (&_original_tty);
-		GET_TTY (&_raw_tty);
+		GET_TTY(&_original_tty);
+		GET_TTY(&_raw_tty);
 #		if USE_SGTTY
 		_raw_tty.sg_flags &= ~(ECHO | CRMOD);	/* echo off */
 		_raw_tty.sg_flags |= CBREAK;		/* raw on */
@@ -845,7 +849,7 @@ Raw (
 		_raw_tty.c_cc[VTIME] = '\0';	/* minimum time to wait for input */
 #			endif /* __FreeBSD__ */
 #		endif /* USE_SGTTY */
-		SET_TTY (&_raw_tty);
+		SET_TTY(&_raw_tty);
 		_inraw = 1;
 	}
 #	endif /* M_AMIGA && __SASC */
@@ -864,7 +868,7 @@ Raw (
 static int new_lines, new_columns;
 
 static int
-AmiReadCh (
+AmiReadCh(
 	int getscrsize)
 {
 	int result;
@@ -874,22 +878,22 @@ AmiReadCh (
 
 	while (getscrsize || !buflen) {
 PROFILE_OFF();
-		result = read (0, (char *)&buf[buflen], 1);
+		result = read(0, (char *) &buf[buflen], 1);
 PROFILE_ON();
 		if (result <= 0) return EOF;
 		buflen++;
 		if (buf[bufp] == KEY_PREFIX) {
 			do {
-				result = read (0, (char *)&buf[buflen], 1);
+				result = read(0, (char *) &buf[buflen], 1);
 				if (result <= 0) return EOF;
 			} while (buf[buflen++] < 0x40);
 
-			switch (buf[buflen-1])
-			{	char *ptr;
+			switch (buf[buflen-1]) {
+				char *ptr;
 				long class;
 
 				case 'r':		/* Window bounds report */
-					ptr = (char *)&buf[bufp+1];
+					ptr = (char *) &buf[bufp + 1];
 					strtol(ptr, &ptr, 10);
 					ptr++;
 					strtol(ptr, &ptr, 10);
@@ -903,7 +907,7 @@ PROFILE_ON();
 					break;
 
 				case '|':		/* Raw Input Events */
-					ptr = (char *)&buf[bufp+1];
+					ptr = (char *) &buf[bufp + 1];
 					class = strtol(ptr, &ptr, 10);
 					ptr++;
 					switch (class) {
@@ -941,13 +945,14 @@ PROFILE_ON();
 	}
 
 	ch = buf[bufp++];
-	if (bufp >= buflen) buflen = bufp = 0;
+	if (bufp >= buflen)
+		buflen = bufp = 0;
 	return ch;
 }
 
 
 int
-ReadCh (
+ReadCh(
 	void)
 {
 	return AmiReadCh(0);
@@ -955,13 +960,13 @@ ReadCh (
 
 
 void
-AmiGetWinSize (
+AmiGetWinSize(
 	int *lines,
 	int *columns)
 {
 	if (_getwinsize) {
-		tputs (_getwinsize, 1, outchar);	/* identify yourself */
-		my_flush ();
+		tputs(_getwinsize, 1, outchar);	/* identify yourself */
+		my_flush();
 		AmiReadCh(1);		/* Look for the identification */
 		*lines = new_lines;
 		*columns = new_columns;
@@ -974,13 +979,13 @@ AmiGetWinSize (
 /*
  *  output a character. From tputs... (Note: this CANNOT be a macro!)
  */
-OUTC_FUNCTION (
+OUTC_FUNCTION(
 	outchar)
 {
 #ifdef OUTC_RETURN
-	return fputc (c, stdout);
+	return fputc(c, stdout);
 #else
-	(void) fputc (c, stdout);
+	(void) fputc(c, stdout);
 #endif /* OUTC_RETURN */
 }
 
@@ -989,18 +994,18 @@ OUTC_FUNCTION (
  * setup to monitor mouse buttons if running in a xterm
  */
 static void
-xclick (
+xclick(
 	int state)
 {
 	static int prev_state = 999;
 
 	if (xclicks && prev_state != state) {
 		if (state) {
-			tputs (_xclickinit, 1, outchar);
+			tputs(_xclickinit, 1, outchar);
 		} else {
-			tputs (_xclickend, 1, outchar);
+			tputs(_xclickend, 1, outchar);
 		}
-		my_flush ();
+		my_flush();
 		prev_state = state;
 	}
 }
@@ -1010,9 +1015,10 @@ xclick (
  * switch on monitoring of mouse buttons
  */
 void
-set_xclick_on (void)
+set_xclick_on(void)
 {
-	if (tinrc.use_mouse) xclick (TRUE);
+	if (tinrc.use_mouse)
+		xclick(TRUE);
 }
 
 
@@ -1020,25 +1026,26 @@ set_xclick_on (void)
  * switch off monitoring of mouse buttons
  */
 void
-set_xclick_off (void)
+set_xclick_off(void)
 {
-	if (tinrc.use_mouse) xclick (FALSE);
+	if (tinrc.use_mouse)
+		xclick(FALSE);
 }
 
 
 void
-cursoron (void)
+cursoron(void)
 {
 	if (_cursoron)
-		tputs (_cursoron, 1, outchar);
+		tputs(_cursoron, 1, outchar);
 }
 
 
 void
-cursoroff (void)
+cursoroff(void)
 {
 	if (_cursoroff)
-		tputs (_cursoroff, 1, outchar);
+		tputs(_cursoroff, 1, outchar);
 }
 
 
@@ -1046,32 +1053,75 @@ cursoroff (void)
  * Inverse 'size' chars at (row,col)
  */
 void
-highlight_string (
+highlight_string(
 	int row,
 	int col,
 	int size)
 {
 	char tmp[LEN];
 
-	MoveCursor (row, col);
-	my_strncpy (tmp, &(screen[row].col[col]), size);
+	MoveCursor(row, col);
+	my_strncpy(tmp, &(screen[row].col[col]), size);
 
-	StartInverse ();
-	my_fputs (tmp, stdout);
-	my_flush ();
-	EndInverse ();
+	StartInverse();
+	my_fputs(tmp, stdout);
+	my_flush();
+	EndInverse();
 
 	stow_cursor();
 }
 
 
+#ifdef HAVE_COLOR
+/*
+ * Color 'size' chars at (row,col) with 'color' and handle marks
+ */
+void
+word_highlight_string(
+	int row,
+	int col,
+	int size,
+	int color)
+{
+	char tmp[LEN];
+
+	MoveCursor(row, col);
+	my_strncpy(tmp, &(screen[row].col[col]), size);
+
+	/* safegurad against bogus regexps */
+	if ((tmp[0] == '*' && tmp[size - 1] == '*') ||
+		 (tmp[0] == '/' && tmp[size - 1] == '/') ||
+		 (tmp[0] == '_' && tmp[size - 1] == '_') ||
+		 (tmp[0] == '-' && tmp[size - 1] == '-')) {
+
+		switch (tinrc.word_h_display_marks) {
+			case 0: /* FIXME */
+				break;
+
+			case 2: /* print space */
+				tmp[0] = tmp[size - 1] = ' ';
+				break;
+
+			default:	/* print mark (case 1) */
+				break;
+		}
+	}
+	fcol(color);
+	my_fputs(tmp, stdout);
+	my_flush();
+	fcol(tinrc.col_text);
+	stow_cursor();
+}
+#endif /* HAVE_COLOR */
+
+
 /*
  * input_pending() waits for input during time given
- * by delay in msec. The original behaviour of input_pending()
+ * by delay in msec. The original behavior of input_pending()
  * (in art.c's threading code) is delay=0
  */
 static int
-input_pending (
+input_pending(
 	int delay)
 {
 #if 0
@@ -1101,9 +1151,9 @@ input_pending (
 	FD_SET(fd, &fdread);
 
 #		ifdef HAVE_SELECT_INTP
-	if (select (1, (int *)&fdread, NULL, NULL, &tvptr))
+	if (select(1, (int *) &fdread, NULL, NULL, &tvptr))
 #		else
-	if (select (1, &fdread, NULL, NULL, &tvptr))
+	if (select(1, &fdread, NULL, NULL, &tvptr))
 #		endif /* HAVE_SELECT_INTP */
 	{
 		if (FD_ISSET(fd, &fdread))
@@ -1117,7 +1167,7 @@ input_pending (
 	static struct pollfd fds[]= {{ STDIN_FILENO, POLLIN, 0 }};
 
 	Timeout = delay;
-	if (poll (fds, nfds, Timeout) < 0) /* Error on poll */
+	if (poll(fds, nfds, Timeout) < 0) /* Error on poll */
 		return FALSE;
 
 	switch (fds[0].revents) {
@@ -1140,7 +1190,7 @@ input_pending (
 
 
 int
-get_arrow_key (
+get_arrow_key(
 	int prech)
 {
 	int ch;
@@ -1171,7 +1221,7 @@ get_arrow_key (
 		wait_a_while(i) {
 			tvptr.tv_sec = 0;
 			tvptr.tv_usec = SECOND_CHARACTER_DELAY * 1000;
-			select (0, NULL, NULL, NULL, &tvptr);
+			select(0, NULL, NULL, NULL, &tvptr);
 			i++;
 		}
 #				else /* !HAVE_SELECT */
@@ -1193,9 +1243,9 @@ get_arrow_key (
 	}
 #		endif /* M_AMIGA */
 #	endif /* !VMS */
-	ch = ReadCh ();
+	ch = ReadCh();
 	if (ch == '[' || ch == 'O')
-		ch = ReadCh ();
+		ch = ReadCh();
 
 	switch (ch) {
 		case 'A':
@@ -1262,26 +1312,26 @@ get_arrow_key (
 			return KEYMAP_END;
 
 		case '2':		/* vt200 Ins */
-			(void) ReadCh ();	/* eat the ~ */
+			(void) ReadCh();	/* eat the ~ */
 			return KEYMAP_INS;
 
 		case '3':		/* vt200 Del */
-			(void) ReadCh ();	/* eat the ~ */
+			(void) ReadCh();	/* eat the ~ */
 			return KEYMAP_DEL;
 
 		case '5':		/* vt200 PgUp */
-			(void) ReadCh ();	/* eat the ~ (interesting use of words :) */
+			(void) ReadCh();	/* eat the ~ (interesting use of words :) */
 			return KEYMAP_PAGE_UP;
 
 		case '6':		/* vt200 PgUp */
-			(void) ReadCh ();	/* eat the ~ */
+			(void) ReadCh();	/* eat the ~ */
 			return KEYMAP_PAGE_DOWN;
 
 		case '1':		/* vt200 PgUp */
-			ch = ReadCh (); /* eat the ~ */
+			ch = ReadCh(); /* eat the ~ */
 			if (ch == '5') {	/* RS/6000 PgUp is 150g, PgDn is 154g */
-				ch1 = ReadCh ();
-				(void) ReadCh ();
+				ch1 = ReadCh();
+				(void) ReadCh();
 				if (ch1 == '0')
 					return KEYMAP_PAGE_UP;
 				if (ch1 == '4')
@@ -1290,13 +1340,13 @@ get_arrow_key (
 			return KEYMAP_HOME;
 
 		case '4':		/* vt200 PgUp */
-			(void) ReadCh ();	/* eat the ~ */
+			(void) ReadCh();	/* eat the ~ */
 			return KEYMAP_END;
 
 		case 'M':		/* xterminal button press */
-			xmouse = ReadCh () - ' ';	/* button */
-			xcol = ReadCh () - '!';		/* column */
-			xrow = ReadCh () - '!';		/* row */
+			xmouse = ReadCh() - ' ';	/* button */
+			xcol = ReadCh() - '!';		/* column */
+			xrow = ReadCh() - '!';		/* row */
 			return KEYMAP_MOUSE;
 
 		default:
@@ -1311,7 +1361,7 @@ get_arrow_key (
  */
 #ifdef M_UNIX
 int
-ReadCh (void)
+ReadCh(void)
 {
 	register int result;
 #		ifndef READ_CHAR_HACK
@@ -1340,16 +1390,16 @@ ReadCh (void)
 #		else
 #			ifdef EINTR
 
-	allow_resize (TRUE);
-	while ((result = read (0, &ch, 1)) < 0 && errno == EINTR) {		/* spin on signal interrupts */
+	allow_resize(TRUE);
+	while ((result = read(0, &ch, 1)) < 0 && errno == EINTR) {		/* spin on signal interrupts */
 		if (need_resize) {
-			handle_resize ((need_resize == cRedraw) ? TRUE : FALSE);
+			handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
 			need_resize = cNo;
 		}
 	}
-	allow_resize (FALSE);
+	allow_resize(FALSE);
 #			else
-	result = read (0, &ch, 1);
+	result = read(0, &ch, 1);
 #			endif /* EINTR */
 
 	return ((result <= 0) ? EOF : ch & 0xFF);

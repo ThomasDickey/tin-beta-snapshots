@@ -41,24 +41,28 @@ t_bool quitting = FALSE;
 static TCP *nntp_rd_fp = NULL;
 static TCP *nntp_wr_fp = NULL;
 
+
 /*
  * local prototypes
  */
 #ifdef NNTP_ABLE
-#ifdef INET6
-	static int get_tcp6_socket (char *machine, unsigned short port);
-#else
-	static int get_tcp_socket (char *machine, char *service, unsigned short port);
-#endif /* INET6 */
+	static int reconnect(int retry);
+#	ifdef INET6
+		static int get_tcp6_socket(char *machine, unsigned short port);
+#	else
+		static int get_tcp_socket(char *machine, char *service, unsigned short port);
+#	endif /* INET6 */
 #endif /* NNTP_ABLE */
 
+#ifdef NNTP_ABLE
 /* Close the NNTP connection with prejudice */
-#define NNTP_HARD_CLOSE					\
-	if (nntp_wr_fp)						\
-		s_fclose (nntp_wr_fp);			\
-	if (nntp_rd_fp)						\
-		s_fclose (nntp_rd_fp);			\
-	nntp_rd_fp = nntp_wr_fp = NULL;
+#	define NNTP_HARD_CLOSE					\
+		if (nntp_wr_fp)						\
+			s_fclose(nntp_wr_fp);			\
+		if (nntp_rd_fp)						\
+			s_fclose(nntp_rd_fp);			\
+		nntp_rd_fp = nntp_wr_fp = NULL;
+#endif /* NNTP_ABLE */
 
 
 /*
@@ -67,7 +71,7 @@ static TCP *nntp_wr_fp = NULL;
  * localised
  */
 FILE *
-get_nntp_fp (
+get_nntp_fp(
 	FILE *fp)
 {
 	return (fp == FAKE_NNTP_FP ? nntp_rd_fp : fp);
@@ -75,7 +79,7 @@ get_nntp_fp (
 
 
 FILE *
-get_nntp_wr_fp (
+get_nntp_wr_fp(
 	FILE *fp)
 {
 	return (fp == FAKE_NNTP_FP ? nntp_wr_fp : fp);
@@ -98,7 +102,7 @@ get_nntp_wr_fp (
  *	Side effects: None.
  */
 char *
-getserverbyfile (
+getserverbyfile(
 	const char *file)
 {
 #ifdef NNTP_ABLE
@@ -112,54 +116,54 @@ getserverbyfile (
 #	endif /* HAVE_PUTENV */
 
 	if (cmdline_nntpserver[0] != '\0') {
-		get_nntpserver (buf, cmdline_nntpserver);
+		get_nntpserver(buf, cmdline_nntpserver);
 #	ifdef HAVE_PUTENV
-		sprintf (tmpbuf, "NNTPSERVER=%s", buf);
+		sprintf(tmpbuf, "NNTPSERVER=%s", buf);
 		new_env = my_strdup(tmpbuf);
-		putenv (new_env);
-		FreeIfNeeded (old_env);
+		putenv(new_env);
+		FreeIfNeeded(old_env);
 		old_env = new_env;
 #	else
 #		ifdef HAVE_SETENV
-		setenv ("NNTPSERVER", buf, 1);
+		setenv("NNTPSERVER", buf, 1);
 #		endif /* HAVE_SETENV */
 #	endif /* HAVE_PUTENV */
-		return (buf);
+		return buf;
 	}
 
-	if ((cp = getenv ("NNTPSERVER")) != NULL) {
-		get_nntpserver (buf, cp);
-		return (buf);
+	if ((cp = getenv("NNTPSERVER")) != NULL) {
+		get_nntpserver(buf, cp);
+		return buf;
 	}
 
 	if (file == NULL)
 		return (char *) 0;
 
-	if ((fp = fopen (file, "r")) != NULL) {
+	if ((fp = fopen(file, "r")) != NULL) {
 
-		while (fgets (buf, (int) sizeof(buf), fp) != NULL) {
+		while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
 			if (*buf == '\n' || *buf == '#')
 				continue;
 
-			if ((cp = strrchr (buf, '\n')) != NULL)
+			if ((cp = strrchr(buf, '\n')) != NULL)
 				*cp = '\0';
 
-			(void) fclose (fp);
-			return (buf);
+			(void) fclose(fp);
+			return buf;
 		}
 
-		(void) fclose (fp);
+		(void) fclose(fp);
 
 		if (cp != NULL) {
-			get_nntpserver (buf, cp);
-			return (buf);
+			get_nntpserver(buf, cp);
+			return buf;
 		}
 	}
 
 #	ifdef USE_INN_NNTPLIB
-	if ((cp = GetConfigValue (_CONF_SERVER)) != NULL) {
+	if ((cp = GetConfigValue(_CONF_SERVER)) != NULL) {
 		(void) STRCPY(buf, cp);
-		return (buf);
+		return buf;
 	}
 #	endif /* USE_INN_NNTPLIB */
 
@@ -190,11 +194,12 @@ getserverbyfile (
  */
 #ifdef NNTP_ABLE
 int
-server_init (
+server_init(
 	char *machine,
 	const char *cservice,	/* usually a literal */
 	int port,
-	char *text)
+	char *text,
+	size_t mlen)
 {
 #	ifndef INET6
 	char temp[256];
@@ -204,7 +209,7 @@ server_init (
 	int sockt_rd, sockt_wr;
 #	endif /* !VMS */
 
-#	if defined (M_AMIGA)
+#	ifdef M_AMIGA
 	if (!s_init())		/* some initialisation ... */
 		return -1;
 #	endif /* M_AMIGA */
@@ -212,23 +217,23 @@ server_init (
 #	ifdef DECNET
 	char *cp;
 
-	cp = strchr (machine, ':');
+	cp = strchr(machine, ':');
 
 	if (cp && cp[1] == ':') {
 		*cp = '\0';
-		sockt_rd = get_dnet_socket (machine, service);
+		sockt_rd = get_dnet_socket(machine, service);
 	} else
-		sockt_rd = get_tcp_socket (machine, service, port);
+		sockt_rd = get_tcp_socket(machine, service, port);
 #	else
 #		ifdef INET6
-	sockt_rd = get_tcp6_socket (machine, (unsigned short)port);
+	sockt_rd = get_tcp6_socket(machine, (unsigned short) port);
 #		else
-	sockt_rd = get_tcp_socket (machine, service, (unsigned short)port);
+	sockt_rd = get_tcp_socket(machine, service, (unsigned short) port);
 #		endif /* INET6 */
 #	endif /* DECNET */
 
 	if (sockt_rd < 0)
-		return (sockt_rd);
+		return sockt_rd;
 
 #	ifndef VMS
 	/*
@@ -238,27 +243,27 @@ server_init (
 	 * up two separate fp's, one for reading, one for writing.
 	 */
 
-	if ((nntp_rd_fp = (TCP *) s_fdopen (sockt_rd, "r")) == NULL) {
-		perror ("server_init: fdopen() #1");
-		return (-errno);
+	if ((nntp_rd_fp = (TCP *) s_fdopen(sockt_rd, "r")) == NULL) {
+		perror("server_init: fdopen() #1");
+		return -errno;
 	}
 
-	if ((sockt_wr = s_dup (sockt_rd)) < 0) {
-		perror ("server_init: dup()");
-		return (-errno);
+	if ((sockt_wr = s_dup(sockt_rd)) < 0) {
+		perror("server_init: dup()");
+		return -errno;
 	}
 
 #		ifdef TLI /* Transport Level Interface */
-	if (t_sync (sockt_rd) < 0) {	/* Sync up new fd with TLI */
-		t_error ("server_init: t_sync()");
+	if (t_sync(sockt_rd) < 0) {	/* Sync up new fd with TLI */
+		t_error("server_init: t_sync()");
 		nntp_rd_fp = NULL;
-		return (-EPROTO);
+		return -EPROTO;
 	}
 #		else
-	if ((nntp_wr_fp = (TCP *) s_fdopen (sockt_wr, "w")) == NULL) {
-		perror ("server_init: fdopen() #2");
+	if ((nntp_wr_fp = (TCP *) s_fdopen(sockt_wr, "w")) == NULL) {
+		perror("server_init: fdopen() #2");
 		nntp_rd_fp = NULL;
-		return (-errno);
+		return -errno;
 	}
 #		endif /* TLI */
 
@@ -270,7 +275,7 @@ server_init (
 	/*
 	 * Now get the server's signon message
 	 */
-	return (get_respcode(text));
+	return (get_respcode(text, mlen));
 }
 #endif /* NNTP_ABLE */
 
@@ -293,7 +298,7 @@ server_init (
  */
 #if defined(NNTP_ABLE) && !defined(INET6)
 static int
-get_tcp_socket (
+get_tcp_socket(
 	char *machine,		/* remote host */
 	char *service,		/* nttp/smtp etc. */
 	unsigned short port)	/* tcp port number */
@@ -305,7 +310,7 @@ get_tcp_socket (
 	char device[20];
 	char *env_device;
 	extern int t_errno;
-	extern struct hostent *gethostbyname ();
+	extern struct hostent *gethostbyname();
 	struct hostent *hp;
 	struct t_call *callptr;
 
@@ -317,30 +322,32 @@ get_tcp_socket (
 	else
 		strcpy(device, "/dev/tcp");
 
-	if ((s = t_open (device, O_RDWR, (struct t_info *) 0)) < 0){
-		t_error ("t_open: can't t_open /dev/tcp"); /* FIXME: -> lang.c */
-		return (-EPROTO);
+	if ((s = t_open(device, O_RDWR, (struct t_info *) 0)) < 0){
+		t_error("t_open: can't t_open /dev/tcp"); /* FIXME: -> lang.c */
+		return -EPROTO;
 	}
-	if (t_bind (s, (struct t_bind *) 0, (struct t_bind *) 0) < 0) {
-		t_error ("t_bind");
-		t_close (s);
-		return (-EPROTO);
+	if (t_bind(s, (struct t_bind *) 0, (struct t_bind *) 0) < 0) {
+		t_error("t_bind");
+		t_close(s);
+		return -EPROTO;
 	}
-	memset((char *) &sock_in, '\0', sizeof (sock_in));
+	memset((char *) &sock_in, '\0', sizeof(sock_in));
 	sock_in.sin_family = AF_INET;
-	sock_in.sin_port = htons (port);
+	sock_in.sin_port = htons(port);
 
 	if (!isdigit((unsigned char)*machine) ||
 #		ifdef HAVE_INET_ATON
 	    !inet_aton(machine, &sock_in)
 #		else
-	    (long)(sock_in.sin_addr.s_addr = inet_addr (machine)) == INADDR_NONE)
+#			ifdef HAVE_INET_ADDR
+	    (long) (sock_in.sin_addr.s_addr = inet_addr(machine)) == INADDR_NONE)
+#			endif /* HAVE_INET_ADDR */
 #		endif /* HAVE_INET_ATON */
 	{
-		if ((hp = gethostbyname (machine)) == NULL) {
-			my_fprintf (stderr, txt_gethostbyname, "gethostbyname() ", machine);
-			t_close (s);
-			return (-EHOSTUNREACH);
+		if ((hp = gethostbyname(machine)) == NULL) {
+			my_fprintf(stderr, txt_gethostbyname, "gethostbyname() ", machine);
+			t_close(s);
+			return -EHOSTUNREACH;
 		}
 		memcpy((char *) &sock_in.sin_addr, hp->h_addr, hp->h_length);
 	}
@@ -349,14 +356,14 @@ get_tcp_socket (
 	 * Allocate a t_call structure and initialize it.
 	 * Let t_alloc() initialize the addr structure of the t_call structure.
 	 */
-	if ((callptr = (struct t_call *) t_alloc (s, T_CALL, T_ADDR)) == NULL){
-		t_error ("t_alloc");
-		t_close (s);
-		return (-EPROTO);
+	if ((callptr = (struct t_call *) t_alloc(s, T_CALL, T_ADDR)) == NULL){
+		t_error("t_alloc");
+		t_close(s);
+		return -EPROTO;
 	}
 
-	callptr->addr.maxlen = sizeof (sock_in);
-	callptr->addr.len = sizeof (sock_in);
+	callptr->addr.maxlen = sizeof(sock_in);
+	callptr->addr.len = sizeof(sock_in);
 	callptr->addr.buf = (char *) &sock_in;
 	callptr->opt.len = 0;			/* no options */
 	callptr->udata.len = 0;			/* no user data with connect */
@@ -364,15 +371,15 @@ get_tcp_socket (
 	/*
 	 * Connect to the server.
 	 */
-	if (t_connect (s, callptr, (struct t_call *) 0) < 0) {
+	if (t_connect(s, callptr, (struct t_call *) 0) < 0) {
 		save_errno = t_errno;
 		if (save_errno == TLOOK)
 			fprintf(stderr, _("Server unavailable\n")); /* FIXME: -> lang.c */
 		else
-			t_error ("t_connect");
-		t_free((char *)callptr, T_CALL);
-		t_close (s);
-		return (-save_errno);
+			t_error("t_connect");
+		t_free((char *) callptr, T_CALL);
+		t_close(s);
+		return -save_errno;
 	}
 
 	/*
@@ -381,18 +388,18 @@ get_tcp_socket (
 	 * descriptor.
 	 */
 
-	t_free((char *)callptr, T_CALL);
+	t_free((char *) callptr, T_CALL);
 
-	if (ioctl (s, I_POP, (char *) 0) < 0) {
-		perror ("I_POP(timod)");
-		t_close (s);
-		return (-EPROTO);
+	if (ioctl(s, I_POP, (char *) 0) < 0) {
+		perror("I_POP(timod)");
+		t_close(s);
+		return -EPROTO;
 	}
 
-	if (ioctl (s, I_PUSH, "tirdwr") < 0) {
-		perror ("I_PUSH(tirdwr)");
-		t_close (s);
-		return (-EPROTO);
+	if (ioctl(s, I_PUSH, "tirdwr") < 0) {
+		perror("I_PUSH(tirdwr)");
+		t_close(s);
+		return -EPROTO;
 	}
 
 #	else
@@ -409,13 +416,13 @@ get_tcp_socket (
 	static char namebuf[256];
 
 #			ifdef HAVE_GETSERVBYNAME
-	if ((sp = (struct servent *) getservbyname (service, "tcp")) == NULL) {
-		my_fprintf (stderr, _("%s/tcp: Unknown service.\n"), service); /* FIXME: -> lang.c */
-		return (-EHOSTUNREACH);
+	if ((sp = (struct servent *) getservbyname(service, "tcp")) == NULL) {
+		my_fprintf(stderr, _("%s/tcp: Unknown service.\n"), service); /* FIXME: -> lang.c */
+		return -EHOSTUNREACH;
 	}
 #			else
-	sp = my_malloc (sizeof (struct servent));
-	sp->s_port = htons (IPPORT_NNTP);
+	sp = my_malloc(sizeof(struct servent));
+	sp->s_port = htons(IPPORT_NNTP);
 #			endif /* HAVE_GETSERVBYNAME */
 
 	/* If not a raw ip address, try nameserver */
@@ -423,11 +430,13 @@ get_tcp_socket (
 #			ifdef HAVE_INET_ATON
 	    !inet_aton(machine, &defaddr)
 #			else
-	    (long)(defaddr.s_addr = (long) inet_addr (machine)) == -1
+#				ifdef HAVE_INET_ADDR
+	    (long) (defaddr.s_addr = (long) inet_addr(machine)) == -1
+#				endif /* HAVE_INET_ADDR */
 #			endif /* HAVE_INET_ATON */
 	    )
 	{
-		hp = gethostbyname (machine);
+		hp = gethostbyname(machine);
 	} else {
 		/* Raw ip address, fake */
 		STRCPY(namebuf, machine);
@@ -436,23 +445,23 @@ get_tcp_socket (
 		def.h_addr_list = alist;
 #			endif /* h_addr */
 		def.h_addr = (char *) &defaddr;
-		def.h_length = sizeof (struct in_addr);
+		def.h_length = sizeof(struct in_addr);
 		def.h_addrtype = AF_INET;
 		def.h_aliases = 0;
 		hp = &def;
 	}
 
 	if (hp == NULL) {
-		my_fprintf (stderr, _(txt_gethostbyname), "\n", machine);
-		return (-EHOSTUNREACH);
+		my_fprintf(stderr, _(txt_gethostbyname), "\n", machine);
+		return -EHOSTUNREACH;
 	}
 
-	memset((char *) &sock_in, '\0', sizeof (sock_in));
+	memset((char *) &sock_in, '\0', sizeof(sock_in));
 	sock_in.sin_family = hp->h_addrtype;
-	sock_in.sin_port = htons (port);
+	sock_in.sin_port = htons(port);
 /*	sock_in.sin_port = sp->s_port; */
 #		else
-	memset((char *) &sock_in, '\0', sizeof (sock_in));
+	memset((char *) &sock_in, '\0', sizeof(sock_in));
 	sock_in.sin_family = AF_INET;
 #		endif /* !EXCELAN */
 
@@ -475,16 +484,16 @@ get_tcp_socket (
 		unsigned long socksize, socksizelen;
 #			endif /* __hpux && SVR4 */
 
-		if ((s = socket (hp->h_addrtype, SOCK_STREAM, 0)) < 0) {
-			perror ("socket");
-			return (-errno);
+		if ((s = socket(hp->h_addrtype, SOCK_STREAM, 0)) < 0) {
+			perror("socket");
+			return -errno;
 		}
 
 		memcpy((char *) &sock_in.sin_addr, *cp, hp->h_length);
 
 #			ifdef HAVE_INET_NTOA
 		if (x < 0)
-			my_fprintf (stderr, _("Trying %s"), (char *) inet_ntoa (sock_in.sin_addr)); /* FIXME: -> lang.c */
+			my_fprintf(stderr, _("Trying %s"), (char *) inet_ntoa(sock_in.sin_addr)); /* FIXME: -> lang.c */
 #			endif /* HAVE_INET_NTOA */
 
 #			if defined(__hpux) && defined(SVR4)	/* recommended by raj@cup.hp.com */
@@ -503,62 +512,62 @@ get_tcp_socket (
 		}
 #			endif /* __hpux && SVR4 */
 
-		if ((x = connect (s, (struct sockaddr *) &sock_in, sizeof (sock_in))) == 0)
+		if ((x = connect(s, (struct sockaddr *) &sock_in, sizeof(sock_in))) == 0)
 			break;
 
 		save_errno = errno;									/* Keep for later */
 #			ifdef HAVE_INET_NTOA
-		my_fprintf (stderr, _("\nConnection to %s: "), (char *) inet_ntoa (sock_in.sin_addr)); /* FIXME: -> lang.c */
-		perror ("");
+		my_fprintf(stderr, _("\nConnection to %s: "), (char *) inet_ntoa(sock_in.sin_addr)); /* FIXME: -> lang.c */
+		perror("");
 #			endif /* HAVE_INET_NTOA */
-		(void) s_close (s);
+		(void) s_close(s);
 	}
 
 	if (x < 0) {
-		my_fprintf (stderr, _("Giving up...\n")); /* FIXME: -> lang.c */
-		return (-save_errno);					/* Return the last errno we got */
+		my_fprintf(stderr, _("Giving up...\n")); /* FIXME: -> lang.c */
+		return -save_errno;					/* Return the last errno we got */
 	}
 #		else
 
 #			ifdef EXCELAN
-	if ((s = socket (SOCK_STREAM, (struct sockproto *)NULL, &sock_in, SO_KEEPALIVE)) < 0) {
-		perror ("socket");
-		return (-errno);
+	if ((s = socket(SOCK_STREAM, (struct sockproto *) NULL, &sock_in, SO_KEEPALIVE)) < 0) {
+		perror("socket");
+		return -errno;
 	}
 
 	/* set up addr for the connect */
-	memset((char *) &sock_in, '\0', sizeof (sock_in));
+	memset((char *) &sock_in, '\0', sizeof(sock_in));
 	sock_in.sin_family = AF_INET;
-	sock_in.sin_port = htons (IPPORT_NNTP);
+	sock_in.sin_port = htons(IPPORT_NNTP);
 
-	if ((sock_in.sin_addr.s_addr = rhost (&machine)) == -1) {
-		my_fprintf (stderr, _(txt_gethostbyname), "\n", machine);
-		return (-1);
+	if ((sock_in.sin_addr.s_addr = rhost(&machine)) == -1) {
+		my_fprintf(stderr, _(txt_gethostbyname), "\n", machine);
+		return -1;
 	}
 
 	/* And connect */
-	if (connect (s, (struct sockaddr *)&sock_in) < 0) {
+	if (connect(s, (struct sockaddr *) &sock_in) < 0) {
 		save_errno = errno;
-		perror ("connect");
-		(void) s_close (s);
-		return (-save_errno);
+		perror("connect");
+		(void) s_close(s);
+		return -save_errno;
 	}
 
 #			else
-	if ((s = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
-		perror ("socket");
-		return (-errno);
+	if ((s = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		perror("socket");
+		return -errno;
 	}
 
 	/* And then connect */
 
 	memcpy((char *) &sock_in.sin_addr, hp->h_addr, hp->h_length);
 
-	if (connect (s, (struct sockaddr *) &sock_in, sizeof (sock_in)) < 0) {
+	if (connect(s, (struct sockaddr *) &sock_in, sizeof(sock_in)) < 0) {
 		save_errno = errno;
-		perror ("connect");
-		(void) s_close (s);
-		return (-save_errno);
+		perror("connect");
+		(void) s_close(s);
+		return -save_errno;
 	}
 
 #			endif /* !EXCELAN */
@@ -584,7 +593,7 @@ get_tcp_socket (
  * Errors:       Printed via my_fprintf.
  */
 static int
-get_tcp6_socket (
+get_tcp6_socket(
 	char *machine,
 	unsigned short port)
 {
@@ -616,8 +625,8 @@ get_tcp6_socket (
 	res0 = (struct addrinfo *) 0;
 	err = getaddrinfo(mymachine, myport, &hints, &res0);
 	if (err != 0) {
-		my_fprintf (stderr, "\ngetaddrinfo: %s\n", gai_strerror(err));
-		return (-1);
+		my_fprintf(stderr, "\ngetaddrinfo: %s\n", gai_strerror(err));
+		return -1;
 	}
 	err = -1;
 	for (res = res0; res; res = res->ai_next) {
@@ -633,7 +642,7 @@ get_tcp6_socket (
 	if (res0 != NULL)
 		freeaddrinfo(res0);
 	if (err < 0) {
-		my_fprintf (stderr, _("\nsocket or connect problem\n")); /* FIXME: -> lang.c */
+		my_fprintf(stderr, _("\nsocket or connect problem\n")); /* FIXME: -> lang.c */
 		return -1;
 	}
 	return s;
@@ -656,7 +665,7 @@ get_tcp6_socket (
  *	Errors:		Printed via nerror.
  */
 int
-get_dnet_socket (
+get_dnet_socket(
 	char *machine,
 	char *service)
 {
@@ -665,9 +674,9 @@ get_dnet_socket (
 	struct sockaddr_dn sdn;
 	struct nodeent *getnodebyname(), *np;
 
-	memset((char *) &sdn, '\0', sizeof (sdn));
+	memset((char *) &sdn, '\0', sizeof(sdn));
 
-	switch (s = sscanf (machine, "%d%*[.]%d", &area, &node)) {
+	switch (s = sscanf(machine, "%d%*[.]%d", &area, &node)) {
 		case 1:
 			node = area;
 			area = 0;
@@ -680,9 +689,9 @@ get_dnet_socket (
 			sdn.sdn_add.a_addr[1] = node / 256;
 			break;
 		default:
-			if ((np = getnodebyname (machine)) == NULL) {
-				my_fprintf (stderr, _(txt_gethostbyname), "", machine);
-				return (-1);
+			if ((np = getnodebyname(machine)) == NULL) {
+				my_fprintf(stderr, _(txt_gethostbyname), "", machine);
+				return -1;
 			} else {
 				memcpy((char *) sdn.sdn_add.a_addr, np->n_addr, np->n_length);
 				sdn.sdn_add.a_len = np->n_length;
@@ -692,19 +701,19 @@ get_dnet_socket (
 	}
 	sdn.sdn_objnum = 0;
 	sdn.sdn_flags = 0;
-	sdn.sdn_objnamel = strlen ("NNTP");
+	sdn.sdn_objnamel = strlen("NNTP");
 	memcpy(&sdn.sdn_objname[0], "NNTP", sdn.sdn_objnamel);
 
-	if ((s = socket (AF_DECnet, SOCK_STREAM, 0)) < 0) {
-		nerror ("socket");
-		return (-1);
+	if ((s = socket(AF_DECnet, SOCK_STREAM, 0)) < 0) {
+		nerror("socket");
+		return -1;
 	}
 
 	/* And then connect */
 
-	if (connect (s, (struct sockaddr *) &sdn, sizeof (sdn)) < 0) {
-		nerror ("connect");
-		close (s);
+	if (connect(s, (struct sockaddr *) &sdn, sizeof(sdn)) < 0) {
+		nerror("connect");
+		close(s);
 		return -1;
 	}
 
@@ -722,7 +731,7 @@ get_dnet_socket (
 #ifndef VMS
 #	ifdef NNTP_ABLE
 void
-u_put_server (
+u_put_server(
 	const char *string)
 {
 	s_puts(string, nntp_wr_fp);
@@ -743,7 +752,7 @@ u_put_server (
  *			fprintf's yourself, and then a final fflush.
  */
 void
-put_server (
+put_server(
 	const char *string)
 {
 	/*
@@ -751,11 +760,11 @@ put_server (
 	 * we have to reconnect. Reconnection is handled by get_server()
 	 */
 	DEBUG_IO((stderr, "put_server(%s)\n", string));
-	strcpy (last_put, string);
+	strcpy(last_put, string);
 
-	s_puts (string, nntp_wr_fp);
-	s_puts ("\r\n", nntp_wr_fp);
-	(void) s_flush (nntp_wr_fp);
+	s_puts(string, nntp_wr_fp);
+	s_puts("\r\n", nntp_wr_fp);
+	(void) s_flush(nntp_wr_fp);
 }
 
 
@@ -764,7 +773,7 @@ put_server (
  * get us back into the pre-timeout state
  */
 static int
-reconnect (
+reconnect(
 	int retry)
 {
 	char buf[NNTP_STRLEN];
@@ -774,7 +783,7 @@ reconnect (
 	 */
 	NNTP_HARD_CLOSE;
 	if (!tinrc.auto_reconnect)
-		ring_bell ();
+		ring_bell();
 
 	DEBUG_IO((stderr, _("\nServer timed out, trying reconnect # %d\n"), retry));
 
@@ -782,34 +791,34 @@ reconnect (
 	 * Exit tin if the user says no to reconnect. The exit code stops tin from trying
 	 * to disconnect again - the connection is already dead
 	 */
-	if (!tinrc.auto_reconnect && prompt_yn (cLINES, _(txt_reconnect_to_news_server), TRUE) != 1)
+	if (!tinrc.auto_reconnect && prompt_yn(cLINES, _(txt_reconnect_to_news_server), TRUE) != 1)
 		tin_done(NNTP_ERROR_EXIT);		/* user said no to reconnect */
 
-	clear_message ();
+	clear_message();
 
-	strcpy (buf, last_put);			/* Keep copy here, it will be clobbered a lot otherwise */
+	strcpy(buf, last_put);			/* Keep copy here, it will be clobbered a lot otherwise */
 
-	if (!nntp_open ()) {
+	if (!nntp_open()) {
 
 		/*
 		 * Re-establish our current group and resend last command
 		 */
 		if (glob_group != NULL) {
 			DEBUG_IO((stderr, _("Rejoin current group\n")));
-			sprintf (last_put, "GROUP %s", glob_group);
-			put_server (last_put);
-			s_gets (last_put, NNTP_STRLEN, nntp_rd_fp);
+			sprintf(last_put, "GROUP %s", glob_group);
+			put_server(last_put);
+			s_gets(last_put, NNTP_STRLEN, nntp_rd_fp);
 			DEBUG_IO((stderr, _("Read (%s)\n"), last_put));
 		}
 		DEBUG_IO((stderr, _("Resend last command (%s)\n"), buf));
-		put_server (buf);
+		put_server(buf);
 		return 0;
 	}
 
 	if (--retry == 0)					/* No more tries? */
 		tin_done(NNTP_ERROR_EXIT);
 
-	return(retry);
+	return retry;
 }
 
 
@@ -827,7 +836,7 @@ reconnect (
  *			Exits via tin_done() if fatal error occurs.
  */
 char *
-get_server (
+get_server(
 	char *string,
 	int size)
 {
@@ -839,10 +848,10 @@ get_server (
 	/*
 	 * NULL socket reads indicates socket has closed. Try a few times more
 	 */
-	while (nntp_rd_fp == NULL || s_gets (string, size, nntp_rd_fp) == NULL) {
+	while (nntp_rd_fp == NULL || s_gets(string, size, nntp_rd_fp) == NULL) {
 
 		if (quitting)						/* Don't bother to reconnect */
-			tin_done (NNTP_ERROR_EXIT);		/* And don't try to disconnect again! */
+			tin_done(NNTP_ERROR_EXIT);		/* And don't try to disconnect again! */
 
 #		ifdef DEBUG
 		if (errno != 0 && errno != EINTR)	/* Will only confuse end users */
@@ -880,18 +889,18 @@ get_server (
  *					routine is called.
  */
 void
-close_server (
+close_server(
 	void)
 {
 	if (nntp_wr_fp == NULL || nntp_rd_fp == NULL)
 		return;
 
 	my_fputs(_(txt_disconnecting), stdout);
-	nntp_command("QUIT", OK_GOODBYE, NULL);
+	nntp_command("QUIT", OK_GOODBYE, NULL, 0);
 	quitting = TRUE;										/* Don't reconnect just for this */
 
-	(void) s_fclose (nntp_wr_fp);
-	(void) s_fclose (nntp_rd_fp);
+	(void) s_fclose(nntp_wr_fp);
+	(void) s_fclose(nntp_rd_fp);
 	s_end();
 	nntp_wr_fp = nntp_rd_fp = NULL;
 }
@@ -904,7 +913,7 @@ close_server (
  * NNTP strings for get_respcode()
  */
 const char *
-nntp_respcode (
+nntp_respcode(
 	int respcode)
 {
 #	ifdef NNTP_ABLE
@@ -914,183 +923,239 @@ nntp_respcode (
 		case 0:
 			text = "";
 			break;
+
 		case INF_HELP:
 			text = _("100  Help text on way");
 			break;
+
 		case INF_AUTH:
 			text = _("180  Authorization capabilities");
 			break;
+
 		case INF_DEBUG:
 			text = _("199  Debug output");
 			break;
+
 		case OK_CANPOST:
 			text = _("200  Hello; you can post");
 			break;
+
 		case OK_NOPOST:
 			text = _("201  Hello; you can't post");
 			break;
+
 		case OK_SLAVE:
 			text = _("202  Slave status noted");
 			break;
+
 		case OK_GOODBYE:
 			text = _("205  Closing connection");
 			break;
+
 		case OK_GROUP:
 			text = _("211  Group selected");
 			break;
+
 		/* case OK_MOTD: */
 		case OK_GROUPS:
 			text = _("215  Newsgroups follow");
 			break;
+
 #if 0 /* obsolete */
 		case OK_XINDEX:
 			text = _("218  Group index file follows");
 			break;
 #endif /* 0 */
+
 		case OK_ARTICLE:
 			text = _("220  Article (head & body) follows");
 			break;
+
 		case OK_HEAD:
 			text = _("221  Head follows");
 			break;
+
 		case OK_BODY:
 			text = _("222  Body follows");
 			break;
+
 		case OK_NOTEXT:
 			text = _("223  No text sent -- stat, next, last");
 			break;
+
 		case OK_NEWNEWS:
 			text = _("230  New articles by message-id follow");
 			break;
+
 		case OK_NEWGROUPS:
 			text = _("231  New newsgroups follow");
 			break;
+
 		case OK_XFERED:
 			text = _("235  Article transferred successfully");
 			break;
+
 		case OK_POSTED:
 			text = _("240  Article posted successfully");
 			break;
+
 		case OK_AUTHSYS:
 			text = _("280  Authorization system ok");
 			break;
+
 		case OK_AUTH:
 			text = _("281  Authorization (user/pass) ok");
 			break;
+
 		case OK_BIN:
 			text = _("282  binary data follows");
 			break;
+
 		case OK_SPLIST:
 			text = _("283  spooldir list follows");
 			break;
+
 		case OK_SPSWITCH:
 			text = _("284  Switching to a different spooldir");
 			break;
+
 		case OK_SPNOCHANGE:
 			text = _("285  Still using same spooldir");
 			break;
+
 		case OK_SPLDIRCUR:
 			text = _("286  Current spooldir");
 			break;
+
 		case OK_SPLDIRAVL:
 			text = _("287  Available spooldir");
 			break;
+
 		case OK_SPLDIRERR:
 			text = _("288  Unavailable spooldir or invalid entry");
 			break;
+
 		case CONT_XFER:
 			text = _("335  Continue to send article");
 			break;
+
 		case CONT_POST:
 			text = _("340  Continue to post article");
 			break;
+
 		case NEED_AUTHINFO:
 			text = _("380  authorization is required");
 			break;
+
 		case NEED_AUTHDATA:
 			text = _("381  <type> authorization data required");
 			break;
+
 		case ERR_GOODBYE:
 			text = _("400  Have to hang up for some reason");
 			break;
+
 		case ERR_NOGROUP:
 			text = _("411  No such newsgroup");
 			break;
+
 		case ERR_NCING:
 			text = _("412  Not currently in newsgroup");
 			break;
+
 		case ERR_XINDEX:
 			text = _("418  No index file for this group");
 			break;
+
 		case ERR_NOCRNT:
 			text = _("420  No current article selected");
 			break;
+
 		case ERR_NONEXT:
 			text = _("421  No next article in this group");
 			break;
+
 		case ERR_NOPREV:
 			text = _("422  No previous article in this group");
 			break;
+
 		case ERR_NOARTIG:
 			text = _("423  No such article in this group");
 			break;
+
 		case ERR_NOART:
 			text = _("430  No such article at all");
 			break;
+
 		case ERR_GOTIT:
 			text = _("435  Already got that article, don't send");
 			break;
+
 		case ERR_XFERFAIL:
 			text = _("436  Transfer failed");
 			break;
+
 		case ERR_XFERRJCT:
 			text = _("437  Article rejected, don't resend");
 			break;
+
 		case ERR_NOPOST:
 			text = _("440  Posting not allowed");
 			break;
+
 		case ERR_POSTFAIL:
 			text = _("441  Posting failed");
 			break;
+
 		case ERR_NOAUTH:
 			text = _("480  authorization required for command");
 			break;
+
 		case ERR_AUTHSYS:
 			text = _("481  Authorization system invalid");
 			break;
+
 		case ERR_AUTHREJ:
 			text = _("482  Authorization data rejected");
 			break;
+
 		case ERR_INVALIAS:
 			text = _("483  Invalid alias on spooldir cmd");
 			break;
+
 		case ERR_INVNOSPDIR:
 			text = _("484  No spooldir file found");
 			break;
+
 		case ERR_COMMAND:
 			text = _("500  Command not recognized");
 			break;
+
 		case ERR_CMDSYN:
 			text = _("501  Command syntax error");
 			break;
+
 		case ERR_ACCESS:
 			text = _("502  Access to server denied");
 			break;
+
 		/* case ERR_MOTD: */
 		case ERR_FAULT:
 			text = _("503  Program fault, command not performed");
 			break;
+
 		case ERR_AUTHBAD:
 			text = _("580  Authorization Failed");
 			break;
+
 		default:
 			text = _("Unknown NNTP response code");
 			break;
 	}
-	return (text);
+	return text;
 
 #	else
-	return ("");
+	return "";
 #	endif /* NNTP_ABLE */
 }
 #endif /* DEBUG */

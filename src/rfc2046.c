@@ -46,9 +46,22 @@
 /*
  * local prototypes
  */
-static int boundary_cmp (const char *line, const char *boundary);
-static void add_persist (struct t_header *hdr, const char *p_header, char *p_content);
-static int count_lines (char *line);
+static int boundary_cmp(const char *line, const char *boundary);
+static int count_lines(char *line);
+static int parse_multipart_article(FILE *infile, t_openartinfo *artinfo, t_part *part, int depth, t_bool show_progress_meter);
+static int parse_normal_article( FILE *in, t_openartinfo *artinfo, t_bool show_progress_meter);
+static int parse_rfc2045_article(FILE *infile, int line_count, t_openartinfo *artinfo, t_bool show_progress_meter);
+static unsigned parse_content_encoding(const char *encoding);
+static void add_persist(struct t_header *hdr, const char *p_header, char *p_content);
+static void free_list(t_param *list);
+static void parse_content_type(char *type, t_part *content);
+static void parse_content_disposition(char *disp, t_part *part);
+static void parse_params(char *params, t_part *content);
+static void progress(int line_count);
+#ifdef DEBUG_ART
+	static void dump_art(t_openartinfo *art);
+#endif /* DEBUG_ART */
+
 
 /*
  * Local variables
@@ -77,13 +90,13 @@ progress(
  * index or -1
  */
 int
-content_type (
+content_type(
 	char *type)
 {
 	int i;
 
 	for (i = 0; i < NUM_CONTENT_TYPES; ++i) {
-		if (strcasecmp (type, content_types[i]) == 0)
+		if (strcasecmp(type, content_types[i]) == 0)
 			return i;
 	}
 
@@ -97,7 +110,7 @@ content_type (
  * BOUND_END if closing boundary
  */
 static int
-boundary_cmp (
+boundary_cmp(
 	const char *line,
 	const char *boundary)
 {
@@ -141,7 +154,7 @@ boundary_cmp (
  * TODO may still not catch everything permitted in the RFC
  */
 static void
-parse_params (
+parse_params(
 	char *params,
 	t_part *content)
 {
@@ -149,21 +162,21 @@ parse_params (
 	t_param *ptr;
 
 	for (param = strtok(params, ";"); param; param = strtok(NULL, PARAM_SEP)) {
-		if ((eql = strchr (param, '=')) == NULL)
+		if ((eql = strchr(param, '=')) == NULL)
 			continue;						/* No =, Malformed param */
 
 		*eql++ = '\0';						/* Split at = */
 
-		ptr = my_malloc (sizeof (t_param));
+		ptr = my_malloc(sizeof(t_param));
 		str_trim(param);
-		ptr->name = my_strdup (param);
+		ptr->name = my_strdup(param);
 
 		str_trim(eql);						/* See if in "" */
 		if (*eql == '"' && (param = strrchr(eql, '"')) != NULL) {
 			eql++;
 			*param = '\0';
 		}
-		ptr->value= my_strdup (rfc1522_decode(eql));
+		ptr->value= my_strdup(rfc1522_decode(eql));
 		ptr->next = content->params;		/* Push onto start of list */
 		content->params = ptr;
 	}
@@ -219,7 +232,7 @@ parse_content_type(
 	/*
 	 * Split the type/subtype
 	 */
-	if ((type = strtok (type, "/")) == NULL)
+	if ((type = strtok(type, "/")) == NULL)
 		return;
 
 	/* Look up major type */
@@ -227,48 +240,48 @@ parse_content_type(
 	/*
 	 * Unrecognised type, treat according to RFC
 	 */
-	if ((i = content_type (type)) == -1) {
+	if ((i = content_type(type)) == -1) {
 		content->type = TYPE_APPLICATION;
-		free (content->subtype);
-		content->subtype = my_strdup ("octet-stream");
+		free(content->subtype);
+		content->subtype = my_strdup("octet-stream");
 		return;
 	} else
 		content->type = i;
 
-	subtype = strtok (NULL, PARAM_SEP);
+	subtype = strtok(NULL, PARAM_SEP);
 	/* save new subtype, or use pre-initialised value "plain" */
 	if (subtype != NULL) {				/* check for broken Content-Type: is header without a subtype */
-		free (content->subtype);				/* Pre-initialised to plain */
-		content->subtype = my_strdup (subtype);
-		str_lwr (content->subtype);
+		free(content->subtype);				/* Pre-initialised to plain */
+		content->subtype = my_strdup(subtype);
+		str_lwr(content->subtype);
 	}
 
 	/*
 	 * Parse any parameters into a list
 	 */
-	if ((params = strtok (NULL, "\n")) != NULL) {
+	if ((params = strtok(NULL, "\n")) != NULL) {
 #ifndef CHARSET_CONVERSION
 		char defparms[] = CT_DEFPARMS;	/* must be writeable */
 #endif /* !CHARSET_CONVERSION */
 
-		free_list (content->params);
+		free_list(content->params);
 		content->params = NULL;
-		parse_params (params, content);
+		parse_params(params, content);
 		if (!get_param(content->params, "charset")) {	/* add default charset if needed */
 #ifndef CHARSET_CONVERSION
-			parse_params (defparms, content);
+			parse_params(defparms, content);
 #else
 			if (CURR_GROUP.attribute->undeclared_charset) {
 				char *charsetheader;
 
-				charsetheader = my_malloc (strlen(CURR_GROUP.attribute->undeclared_charset) + 9); /* 9=len('charset=\0') */
+				charsetheader = my_malloc(strlen(CURR_GROUP.attribute->undeclared_charset) + 9); /* 9=len('charset=\0') */
 				sprintf(charsetheader, "charset=%s", CURR_GROUP.attribute->undeclared_charset);
-				parse_params (charsetheader, content);
+				parse_params(charsetheader, content);
 				free(charsetheader);
 			} else {
 				char defparms[] = CT_DEFPARMS;	/* must be writeable */
 
-				parse_params (defparms, content);
+				parse_params(defparms, content);
 			}
 #endif /* !CHARSET_CONVERSION */
 		}
@@ -312,16 +325,16 @@ parse_content_disposition(
 {
 	char *ptr;
 
-	strtok (disp, PARAM_SEP);
-	if ((ptr = strtok (NULL, "\n")) == NULL)
+	strtok(disp, PARAM_SEP);
+	if ((ptr = strtok(NULL, "\n")) == NULL)
 		return;
 
-	parse_params (ptr, part);
+	parse_params(ptr, part);
 }
 
 
 static void
-add_persist (
+add_persist(
 	struct t_header *hdr,
 	const char *p_header,
 	char *p_content)
@@ -343,7 +356,7 @@ add_persist (
  * end of the list of article parts given
  */
 t_part *
-new_part (
+new_part(
 	t_part *part)
 {
 	t_part *p;
@@ -353,24 +366,24 @@ new_part (
 #endif /* !CHARSET_CONVERSION */
 
 	ptr->type = TYPE_TEXT;					/* Defaults per RFC */
-	ptr->subtype = my_strdup ("plain");
+	ptr->subtype = my_strdup("plain");
 	ptr->encoding = ENCODING_7BIT;
 	ptr->params = NULL;
 
 #ifndef CHARSET_CONVERSION
-	parse_params (defparms, ptr);
+	parse_params(defparms, ptr);
 #else
 	if (CURR_GROUP.attribute->undeclared_charset) {
 		char *charsetheader;
 
-		charsetheader = my_malloc (strlen(CURR_GROUP.attribute->undeclared_charset) + 9); /* 9=len('charset=\0') */
+		charsetheader = my_malloc(strlen(CURR_GROUP.attribute->undeclared_charset) + 9); /* 9=len('charset=\0') */
 		sprintf(charsetheader, "charset=%s", CURR_GROUP.attribute->undeclared_charset);
-		parse_params (charsetheader, ptr);
+		parse_params(charsetheader, ptr);
 		free(charsetheader);
 	} else {
 		char defparms[] = CT_DEFPARMS;	/* must be writeable */
 
-		parse_params (defparms, ptr);
+		parse_params(defparms, ptr);
 	}
 #endif /* !CHARSET_CONVERSION */
 
@@ -403,7 +416,7 @@ free_parts(
 		ptr->next = NULL;
 	}
 
-	free (ptr->subtype);
+	free(ptr->subtype);
 	if (ptr->params)
 		free_list(ptr->params);
 	if (ptr->uue)
@@ -453,12 +466,12 @@ free_and_init_header(
  *	(decoded) body of header if matched or NULL
  */
 char *
-parse_header (
+parse_header(
 	char *buf,
 	const char *pat,
 	t_bool decode)
 {
-	size_t plen = strlen (pat);
+	size_t plen = strlen(pat);
 	char *ptr = buf + plen;
 
 	/*
@@ -475,14 +488,14 @@ parse_header (
 
 	ptr += 2;
 
-	str_trim (ptr);
+	str_trim(ptr);
 	if (!*ptr)
 		return ptr;
 
 	if (decode)
 		return (rfc1522_decode(ptr));
 
-	return (ptr);
+	return ptr;
 }
 
 
@@ -505,7 +518,7 @@ parse_rfc822_headers(
 	hdr->mime = FALSE;
 	hdr->ext = new_part(NULL);		/* Initialise MIME data */
 
-	while ((line = tin_fgets (from, TRUE)) != NULL) {
+	while ((line = tin_fgets(from, TRUE)) != NULL) {
 		if (to)
 			fprintf(to, "%s\n", line);		/* Put raw data */
 
@@ -514,7 +527,7 @@ parse_rfc822_headers(
 		 */
 		if (line[0] == '\0') {
 			if (to)
-				hdr->ext->offset = ftell (to);	/* Offset of main body */
+				hdr->ext->offset = ftell(to);	/* Offset of main body */
 			return 0;
 		}
 
@@ -522,99 +535,100 @@ parse_rfc822_headers(
 		 * FIXME: multiple headers of the same name could lead to memory leak
 		 * and loss of information (multiple Cc: lines are allowed, for example)
 		 */
-		unfold_header (line);
-		if ((ptr = parse_header (line, "From", TRUE))) {
+		unfold_header(line);
+		if ((ptr = parse_header(line, "From", TRUE))) {
 			hdr->from = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "To", TRUE))) {
+		if ((ptr = parse_header(line, "To", TRUE))) {
 			hdr->to = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Cc", TRUE))) {
-			hdr->cc = my_strdup (ptr);
+		if ((ptr = parse_header(line, "Cc", TRUE))) {
+			hdr->cc = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Bcc", TRUE))) {
-			hdr->bcc = my_strdup (ptr);
+		if ((ptr = parse_header(line, "Bcc", TRUE))) {
+			hdr->bcc = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Date", FALSE))) {
+		if ((ptr = parse_header(line, "Date", FALSE))) {
 			hdr->date = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Subject", TRUE))) {
+		if ((ptr = parse_header(line, "Subject", TRUE))) {
 			hdr->subj = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Organization", TRUE))) {
+		if ((ptr = parse_header(line, "Organization", TRUE))) {
 			hdr->org = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Reply-To", TRUE))) {
+		if ((ptr = parse_header(line, "Reply-To", TRUE))) {
 			hdr->replyto = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Newsgroups", FALSE))) {
+		if ((ptr = parse_header(line, "Newsgroups", FALSE))) {
 			hdr->newsgroups = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Message-ID", FALSE))) {
+		if ((ptr = parse_header(line, "Message-ID", FALSE))) {
 			hdr->messageid = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "References", FALSE))) {
+		if ((ptr = parse_header(line, "References", FALSE))) {
 			hdr->references = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Distribution", TRUE))) {
+		if ((ptr = parse_header(line, "Distribution", TRUE))) {
 			hdr->distrib = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Keywords", TRUE))) {
+		if ((ptr = parse_header(line, "Keywords", TRUE))) {
 			hdr->keywords = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Summary", TRUE))) {
+		if ((ptr = parse_header(line, "Summary", TRUE))) {
 			hdr->summary = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Followup-To", FALSE))) {
+		if ((ptr = parse_header(line, "Followup-To", FALSE))) {
 			hdr->followup = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "X-Comment-To", TRUE))) {
+		if ((ptr = parse_header(line, "X-Comment-To", TRUE))) {
 			hdr->ftnto = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Author-IDs", TRUE)) ||
-			(ptr = parse_header (line, "P-Author-IDs", TRUE)) ||
-			(ptr = parse_header (line, "X-P-Author-IDs", TRUE))) {
+		if ((ptr = parse_header(line, "Author-IDs", TRUE)) ||
+			(ptr = parse_header(line, "P-Author-IDs", TRUE)) ||
+			(ptr = parse_header(line, "X-P-Author-IDs", TRUE))) {
 			hdr->authorids = my_strdup(ptr);
 			continue;
 		}
-		if (parse_header (line, "Mime-Version", FALSE)) {
+		/* TODO: check version */
+		if (parse_header(line, "MIME-Version", FALSE)) {
 			hdr->mime = TRUE;
 			continue;
 		}
-		if ((ptr = parse_header (line, "Content-Type", FALSE))) {
-			parse_content_type (ptr, hdr->ext);
+		if ((ptr = parse_header(line, "Content-Type", FALSE))) {
+			parse_content_type(ptr, hdr->ext);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Content-Transfer-Encoding", FALSE))) {
-			hdr->ext->encoding = parse_content_encoding (ptr);
+		if ((ptr = parse_header(line, "Content-Transfer-Encoding", FALSE))) {
+			hdr->ext->encoding = parse_content_encoding(ptr);
 			continue;
 		}
-		if ((ptr = parse_header (line, "Content-Disposition", FALSE))) {
-			parse_content_disposition (ptr, hdr->ext);
+		if ((ptr = parse_header(line, "Content-Disposition", FALSE))) {
+			parse_content_disposition(ptr, hdr->ext);
 			continue;
 		}
 		/*
 		 * Persistent headers
 		 */
-		if ((strncmp (line, "P-", 2) == 0 || strncmp(line, "X-P-", 4) == 0) && (ptr = strstr(line, ": "))) {
+		if ((strncmp(line, "P-", 2) == 0 || strncmp(line, "X-P-", 4) == 0) && (ptr = strstr(line, ": "))) {
 			*ptr = '\0';
-			add_persist (hdr, line, ptr + 2);
+			add_persist(hdr, line, ptr + 2);
 			continue;
 		}
 	}
@@ -699,7 +713,7 @@ parse_multipart_article(
 
 		fprintf(artinfo->raw, "%s\n", line);
 
-		artinfo->hdr.ext->line_count += count_lines (line);
+		artinfo->hdr.ext->line_count += count_lines(line);
 		if (show_progress_meter)
 			progress(artinfo->hdr.ext->line_count);		/* Overall line count */
 
@@ -720,6 +734,7 @@ parse_multipart_article(
 				switch (bnd) {
 					case BOUND_NONE:
 						break;				/* Keep looking */
+
 					case BOUND_START:
 						state = M_HDR;		/* Now parsing headers of a part */
 						curr_part = new_part(part);
@@ -733,6 +748,7 @@ parse_multipart_article(
 					case BOUND_START:
 						fprintf(stderr, "MIME parse error:  Start boundary whilst reading headers\n");
 						continue;
+
 					case BOUND_NONE:
 						break;				/* Correct - No boundary */
 				}
@@ -747,8 +763,8 @@ parse_multipart_article(
 				 * Keep headers that interest us
 				 */
 /*fprintf(stderr, "HDR:%s\n", line);*/
-				if ((ptr = parse_header (line, "Content-Type", FALSE))) {
-					parse_content_type (ptr, curr_part);
+				if ((ptr = parse_header(line, "Content-Type", FALSE))) {
+					parse_content_type(ptr, curr_part);
 
 					if (curr_part->type == TYPE_MULTIPART) {	/* Complex mutlipart article */
 						int ret;
@@ -759,12 +775,12 @@ parse_multipart_article(
 							break;
 					}
 				}
-				if ((ptr = parse_header (line, "Content-Transfer-Encoding", FALSE))) {
-					curr_part->encoding = parse_content_encoding (ptr);
+				if ((ptr = parse_header(line, "Content-Transfer-Encoding", FALSE))) {
+					curr_part->encoding = parse_content_encoding(ptr);
 					break;
 				}
-				if ((ptr = parse_header (line, "Content-Disposition", FALSE))) {
-					parse_content_disposition (ptr, curr_part);
+				if ((ptr = parse_header(line, "Content-Disposition", FALSE))) {
+					parse_content_disposition(ptr, curr_part);
 					break;
 				}
 				break;
@@ -775,6 +791,7 @@ parse_multipart_article(
 /*fprintf(stderr, "BOD:%s\n", line);*/
 						curr_part->line_count++;
 						break;
+
 					case BOUND_START:		/* Start new attchment */
 						state = M_HDR;
 						curr_part = new_part(part);
@@ -803,7 +820,7 @@ parse_normal_article(
 {
 	char *line;
 
-	while ((line = tin_fgets (in, FALSE)) != NULL) {
+	while ((line = tin_fgets(in, FALSE)) != NULL) {
 		fprintf(artinfo->raw, "%s\n", line);
 		++artinfo->hdr.ext->line_count;
 		if (show_progress_meter)
@@ -823,8 +840,7 @@ dump_art(
 	t_param *pptr;
 	struct t_header note_h = art->hdr;
 
-	fprintf(stderr, "\nMain body\nMime-Version: %d\n",
-		note_h.mime);
+	fprintf(stderr, "\nMain body\nMIME-Version: %d\n", note_h.mime);
 	fprintf(stderr, "Content-Type: %s/%s\nContent-Transfer-Encoding: %s\n",
 		content_types[note_h.ext->type], note_h.ext->subtype,
 		content_encodings[note_h.ext->encoding]);
@@ -865,7 +881,7 @@ dump_art(
  * Return NULL if we couldn't open an output stream
  */
 static int
-parse_rfc2045_article (
+parse_rfc2045_article(
 	FILE *infile,
 	int line_count,
 	t_openartinfo *artinfo,
@@ -873,7 +889,7 @@ parse_rfc2045_article (
 {
 	int ret;
 
-	if (!infile || !(artinfo->raw = tmpfile ()))
+	if (!infile || !(artinfo->raw = tmpfile()))
 		return ART_ABORT;
 
 	art_lines = line_count;
@@ -893,13 +909,13 @@ parse_rfc2045_article (
 			goto error;
 	}
 
-	TIN_FCLOSE (infile);
+	TIN_FCLOSE(infile);
 
 	return 0;
 
 error:
-	TIN_FCLOSE (infile);
-	art_close (artinfo);
+	TIN_FCLOSE(infile);
+	art_close(artinfo);
 	return ret;
 }
 
@@ -917,7 +933,7 @@ error:
  *		ART_ABORT		User aborted during read of article
  */
 int
-art_open (
+art_open(
 	t_bool wrap_lines,
 	struct t_article *art,
 	const char *group_path,
@@ -927,21 +943,21 @@ art_open (
 	char *ptr;
 	FILE *fp;
 
-	if ((fp = open_art_fp (group_path, art->artnum)) == NULL)
+	if ((fp = open_art_fp(group_path, art->artnum)) == NULL)
 		return ((tin_errno == 0) ? ART_UNAVAILABLE : ART_ABORT);
 
 #ifdef DEBUG_ART
-	fprintf(stderr, "art_open(%p)\n", artinfo);
+	fprintf(stderr, "art_open(%p)\n", (void *) artinfo);
 #endif /* DEBUG_ART */
 
-	if (parse_rfc2045_article (fp, art->line_count, artinfo, show_progress_meter) != 0)
+	if (parse_rfc2045_article(fp, art->line_count, artinfo, show_progress_meter) != 0)
 		return ART_ABORT;
 
-	if ((pgart.tex2iso = ((CURR_GROUP.attribute->tex2iso_conv) ? is_art_tex_encoded (artinfo->raw) : FALSE)))
-		wait_message (0, _(txt_is_tex_encoded));
+	if ((pgart.tex2iso = ((CURR_GROUP.attribute->tex2iso_conv) ? is_art_tex_encoded(artinfo->raw) : FALSE)))
+		wait_message(0, _(txt_is_tex_encoded));
 
 	/* Maybe fix it so if this fails, we default to raw? */
-	if (!cook_article (wrap_lines, artinfo, 8, tinrc.hide_uue))
+	if (!cook_article(wrap_lines, artinfo, 8, tinrc.hide_uue))
 		return ART_ABORT;
 
 #ifdef DEBUG_ART
@@ -952,8 +968,8 @@ art_open (
 	 * If Newsgroups is empty its a good bet the article is a mail article
 	 */
 	if (!artinfo->hdr.newsgroups) {
-		artinfo->hdr.newsgroups = my_strdup (group_path);
-		while ((ptr = strchr (artinfo->hdr.newsgroups, '/')))
+		artinfo->hdr.newsgroups = my_strdup(group_path);
+		while ((ptr = strchr(artinfo->hdr.newsgroups, '/')))
 			*ptr = '.';		/* TODO - combine with code to fixup Archive-name? */
 	}
 
@@ -965,24 +981,24 @@ art_open (
  * Close an open article identified by an 'artinfo' handle
  */
 void
-art_close (
+art_close(
 	t_openartinfo *artinfo)
 {
 #ifdef DEBUG_ART
-	fprintf(stderr, "art_close(%p)\n", artinfo);
+	fprintf(stderr, "art_close(%p)\n", (void *) artinfo);
 #endif /* DEBUG_ART */
 
-	free_and_init_header (&artinfo->hdr);
+	free_and_init_header(&artinfo->hdr);
 
 	artinfo->tex2iso = FALSE;
 
 	if (artinfo->raw) {
-		fclose (artinfo->raw);
+		fclose(artinfo->raw);
 		artinfo->raw = NULL;
 	}
 
 	if (artinfo->cooked) {
-		fclose (artinfo->cooked);
+		fclose(artinfo->cooked);
 		artinfo->cooked = NULL;
 	}
 

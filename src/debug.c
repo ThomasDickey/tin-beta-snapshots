@@ -51,46 +51,45 @@ int debug;
 /*
  * Local prototypes
  */
-static void debug_print_attributes (struct t_attribute *attr, FILE *fp);
-static void debug_print_filter (FILE *fp, int num, struct t_filter *the_filter);
+static void debug_print_attributes(struct t_attribute *attr, FILE *fp);
+static void debug_print_filter(FILE *fp, int num, struct t_filter *the_filter);
 
 
 /*
- *  nntp specific debug routines
+ * nntp specific debug routines
  */
 void
-debug_delete_files (
+debug_delete_files(
 	void)
 {
 	char file[PATH_LEN];
 
 	if (debug) {
-		sprintf (file, "%sNNTP", TMPDIR);
-		unlink (file);
-		sprintf (file, "%sARTS", TMPDIR);
-		unlink (file);
-		sprintf (file, "%sSAVE_COMP", TMPDIR);
-		unlink (file);
-		sprintf (file, "%sBASE", TMPDIR);
-		unlink (file);
-		sprintf (file, "%sACTIVE", TMPDIR);
-		unlink (file);
-		sprintf (file, "%sBITMAP", TMPDIR);
-		unlink (file);
-		sprintf (file, "%sMALLOC", TMPDIR);
-		unlink (file);
-		sprintf (file, "%sFILTER", TMPDIR);
-		unlink (file);
+		sprintf(file, "%sNNTP", TMPDIR);
+		unlink(file);
+		sprintf(file, "%sARTS", TMPDIR);
+		unlink(file);
+		sprintf(file, "%sSAVE_COMP", TMPDIR);
+		unlink(file);
+		sprintf(file, "%sBASE", TMPDIR);
+		unlink(file);
+		sprintf(file, "%sACTIVE", TMPDIR);
+		unlink(file);
+		sprintf(file, "%sBITMAP", TMPDIR);
+		unlink(file);
+		sprintf(file, "%sMALLOC", TMPDIR);
+		unlink(file);
+		sprintf(file, "%sFILTER", TMPDIR);
+		unlink(file);
 	}
 }
 
 
 /*
- *  nntp specific debug routines
+ * nntp specific debug routines
  */
-
 void
-debug_nntp (
+debug_nntp(
 	const char *func,
 	const char *line)
 {
@@ -100,22 +99,21 @@ debug_nntp (
 	if (!debug)
 		return;
 
-	sprintf (file, "%sNNTP", TMPDIR);
+	sprintf(file, "%sNNTP", TMPDIR);
 
-	if ((fp = fopen (file, "a+")) != NULL) {
-		fprintf (fp,"%s: %s\n", func, line);
-		fclose (fp);
-		chmod (file, (S_IRUGO|S_IWUGO));
+	if ((fp = fopen(file, "a+")) != NULL) {
+		fprintf(fp,"%s: %s\n", func, line);
+		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
+		fclose(fp);
 	}
 }
 
 
 /*
- *  tin specific debug routines
+ * tin specific debug routines
  */
-
 void
-debug_print_arts (
+debug_print_arts(
 	void)
 {
 	int i;
@@ -124,12 +122,12 @@ debug_print_arts (
 		return;
 
 	for_each_art(i)
-		debug_print_header (&arts[i]);
+		debug_print_header(&arts[i]);
 }
 
 
 void
-debug_print_header (
+debug_print_header(
 	struct t_article *s)
 {
 	char file[PATH_LEN];
@@ -138,43 +136,43 @@ debug_print_header (
 	if (debug != 2)
 		return;
 
-	sprintf (file, "%sARTS", TMPDIR);
+	sprintf(file, "%sARTS", TMPDIR);
 
-	if ((fp = fopen (file, "a+")) != NULL) {
-		fprintf (fp,"art=[%5ld] tag=[%s] kill=[%s] selected=[%s]\n", s->artnum,
+	if ((fp = fopen(file, "a+")) != NULL) {
+		fprintf(fp,"art=[%5ld] tag=[%s] kill=[%s] selected=[%s]\n", s->artnum,
 			bool_unparse(s->tagged),
 			bool_unparse(s->killed),
 			bool_unparse(s->selected));
-		fprintf (fp,"subj=[%-38s]\n", s->subject);
-		fprintf (fp,"date=[%ld]  from=[%s]  name=[%s]\n", (long)s->date, s->from,
-			(s->name ? s->name : ""));
-		fprintf (fp,"msgid=[%s]  refs=[%s]\n",
-			(s->msgid ? s->msgid : ""),
-			(s->refs ? s->refs : ""));
+		fprintf(fp,"subj=[%-38s]\n", s->subject);
+		fprintf(fp,"date=[%ld]  from=[%s]  name=[%s]\n", (long) s->date, s->from,
+			BlankIfNull(s->name));
+		fprintf(fp,"msgid=[%s]  refs=[%s]\n",
+			BlankIfNull(s->msgid),
+			BlankIfNull(s->refs));
 
 		if (s->archive)
-			fprintf (fp, "arch=[%-38s]  ", s->archive);
+			fprintf(fp, "arch=[%-38s]  ", s->archive);
 		else
-			fprintf (fp, "arch=[]  ");
+			fprintf(fp, "arch=[]  ");
 		if (s->part)
-			fprintf (fp, "part=[%s]  ", s->part);
+			fprintf(fp, "part=[%s]  ", s->part);
 		else
-			fprintf (fp, "part=[]  ");
+			fprintf(fp, "part=[]  ");
 		if (s->patch)
-			fprintf (fp, "patch=[%s]\n", s->patch);
+			fprintf(fp, "patch=[%s]\n", s->patch);
 		else
-			fprintf (fp, "patch=[]\n");
-		fprintf (fp,"thread=[%d]  inthread=[%d]  status=[%d]\n\n", s->thread, s->inthread, s->status);
-/*		fprintf (fp,"thread=[%s]  inthread=[%s]  status=[%s]\n", (s->thread == ART_NORMAL ? "ART_NORMAL" : "ART_EXPIRED"), bool_unparse(s->inthread), bool_unparse(s->status)); */
-		fflush (fp);
-		fclose (fp);
-		chmod (file, (S_IRUGO|S_IWUGO));
+			fprintf(fp, "patch=[]\n");
+		fprintf(fp,"thread=[%d]  inthread=[%d]  status=[%d]\n\n", s->thread, s->inthread, s->status);
+/*		fprintf(fp,"thread=[%s]  inthread=[%s]  status=[%s]\n", (s->thread == ART_NORMAL ? "ART_NORMAL" : "ART_EXPIRED"), bool_unparse(s->inthread), bool_unparse(s->status)); */
+		fflush(fp);
+		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
+		fclose(fp);
 	}
 }
 
 
 void
-debug_save_comp (
+debug_save_comp(
 	void)
 {
 	char file[PATH_LEN];
@@ -184,25 +182,26 @@ debug_save_comp (
 	if (debug != 2)
 		return;
 
-	sprintf (file, "%sSAVE_COMP", TMPDIR);
+	sprintf(file, "%sSAVE_COMP", TMPDIR);
 
-	if ((fp = fopen (file, "a+")) != NULL) {
+	if ((fp = fopen(file, "a+")) != NULL) {
 		for (i = 0 ; i < num_save ; i++) {
 
-			fprintf (fp,"path=[%s]\n", save[i].path);
-			fprintf (fp,"file=[%s]\n", save[i].file);
-			fprintf (fp,"art=[%p]  saved=[%d]  mailbox=[%d]\n\n",
-				save[i].artptr, save[i].saved, save[i].is_mailbox);
+			fprintf(fp, "path=[%s]\n", save[i].path);
+			fprintf(fp, "file=[%s]\n", save[i].file);
+			fprintf(fp, "art=[%p]  saved=[%s]  mailbox=[%s]\n\n",
+				(void *) save[i].artptr, bool_unparse(save[i].saved),
+				bool_unparse(save[i].is_mailbox));
 		}
-		fflush (fp);
-		fclose (fp);
-		chmod (file, (S_IRUGO|S_IWUGO));
+		fflush(fp);
+		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
+		fclose(fp);
 	}
 }
 
 
 void
-debug_print_active (
+debug_print_active(
 	void)
 {
 	char file[PATH_LEN];
@@ -213,37 +212,38 @@ debug_print_active (
 	if (debug != 2)
 		return;
 
-	sprintf (file, "%sACTIVE", TMPDIR);
+	sprintf(file, "%sACTIVE", TMPDIR);
 
-	if ((fp = fopen (file, "w")) != NULL) {
+	if ((fp = fopen(file, "w")) != NULL) {
 		for_each_group(i) {
 			group = &active[i];
-			fprintf (fp, "[%4d]=[%s] type=[%s] spooldir=[%s]\n",
+			fprintf(fp, "[%4d]=[%s] type=[%s] spooldir=[%s]\n",
 				i, group->name,
 				(group->type == GROUP_TYPE_NEWS ? "NEWS" : "MAIL"),
 				group->spooldir);
-			fprintf (fp, "count=[%4ld] max=[%4ld] min=[%4ld] mod=[%c]\n",
+			fprintf(fp, "count=[%4ld] max=[%4ld] min=[%4ld] mod=[%c]\n",
 				group->count, group->xmax, group->xmin, group->moderated);
-			fprintf (fp, " nxt=[%4d] hash=[%ld]  description=[%s]\n", group->next,
-				hash_groupname (group->name), (group->description ? group->description : ""));
+			fprintf(fp, " nxt=[%4d] hash=[%ld]  description=[%s]\n", group->next,
+				hash_groupname(group->name), BlankIfNull(group->description));
 #	ifdef DEBUG_NEWSRC
-			debug_print_newsrc (&group->newsrc, fp);
+			debug_print_newsrc(&group->newsrc, fp);
 #	endif /* DEBUG_NEWSRC */
-			debug_print_attributes (group->attribute, fp);
+			debug_print_attributes(group->attribute, fp);
 		}
-		fclose (fp);
-		chmod (file, (S_IRUGO|S_IWUGO));
+		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
+		fclose(fp);
 	}
 }
 
+
 static void
-debug_print_attributes (
+debug_print_attributes(
 	struct t_attribute *attr,
 	FILE *fp)
 {
 	if (attr == 0)
 		return;
-	fprintf (fp, "global=[%d] show=[%d] thread=[%d] sort=[%d] author=[%d] auto_select=[%d] auto_save=[%d] batch_save=[%d] process=[%d]\n",
+	fprintf(fp, "global=[%d] show=[%d] thread=[%d] sort=[%d] author=[%d] auto_select=[%d] auto_save=[%d] batch_save=[%d] process=[%d]\n",
 		attr->global,
 		attr->show_only_unread,
 		attr->thread_arts,
@@ -253,27 +253,27 @@ debug_print_attributes (
 		attr->auto_save,
 		attr->batch_save,
 		attr->post_proc_type);
-	fprintf (fp, "select_header=[%d] select_global=[%s] select_expire=[%s]\n",
+	fprintf(fp, "select_header=[%d] select_global=[%s] select_expire=[%s]\n",
 		attr->quick_select_header,
-		(attr->quick_select_scope ? attr->quick_select_scope : ""),
+		BlankIfNull(attr->quick_select_scope),
 		bool_unparse(attr->quick_select_expire));
-	fprintf (fp, "kill_header  =[%d] kill_global  =[%s] kill_expire  =[%s]\n",
+	fprintf(fp, "kill_header  =[%d] kill_global  =[%s] kill_expire  =[%s]\n",
 		attr->quick_kill_header,
-		(attr->quick_kill_scope ? attr->quick_kill_scope : ""),
+		BlankIfNull(attr->quick_kill_scope),
 		bool_unparse(attr->quick_kill_expire));
-	fprintf (fp, "maildir=[%s] savedir=[%s] savefile=[%s]\n",
-		(attr->maildir == NULL ? "" : attr->maildir),
-		(attr->savedir == NULL ? "" : attr->savedir),
-		(attr->savefile == NULL ? "" : attr->savefile));
-	fprintf (fp, "sigfile=[%s] followup_to=[%s]\n\n",
-		(attr->sigfile == NULL ? "" : attr->sigfile),
-		(attr->followup_to == NULL ? "" : attr->followup_to));
-	fflush (fp);
+	fprintf(fp, "maildir=[%s] savedir=[%s] savefile=[%s]\n",
+		BlankIfNull(attr->maildir),
+		BlankIfNull(attr->savedir),
+		BlankIfNull(attr->savefile));
+	fprintf(fp, "sigfile=[%s] followup_to=[%s]\n\n",
+		BlankIfNull(attr->sigfile),
+		BlankIfNull(attr->followup_to));
+	fflush(fp);
 }
 
 
 void
-vDbgPrintMalloc (
+vDbgPrintMalloc(
 	int iIsMalloc,
 	const char *pcFile,
 	int iLine,
@@ -284,45 +284,46 @@ vDbgPrintMalloc (
 	static int iTotal = 0;
 
 	if (debug == 4) {
-		sprintf (file, "%sMALLOC", TMPDIR);
-		if ((fp = fopen (file, "a+")) != NULL) {
+		sprintf(file, "%sMALLOC", TMPDIR);
+		if ((fp = fopen(file, "a+")) != NULL) {
 			iTotal += iSize;
 			/* sometimes size_t is long */
 			if (iIsMalloc)
-				fprintf (fp, "%10s:%-4d Malloc  %6ld. Total %d\n", pcFile, iLine, (long)iSize, iTotal);
+				fprintf(fp, "%10s:%-4d Malloc  %6ld. Total %d\n", pcFile, iLine, (long) iSize, iTotal);
 			else
-				fprintf (fp, "%10s:%-4d Realloc %6ld. Total %d\n", pcFile, iLine, (long)iSize, iTotal);
-			fclose (fp);
-			chmod (file, (S_IRUGO|S_IWUGO));
+				fprintf(fp, "%10s:%-4d Realloc %6ld. Total %d\n", pcFile, iLine, (long) iSize, iTotal);
+			fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
+			fclose(fp);
 		}
 	}
 }
 
 
 static void
-debug_print_filter (
+debug_print_filter(
 	FILE *fp,
 	int num,
 	struct t_filter *the_filter)
 {
-	fprintf (fp, "[%3d]  scope=[%s] inscope=[%s] type=[%d][%s] case=[%d][%s] lines=[%d %d]\n",
-		num, (the_filter->scope ? the_filter->scope : ""),
+	fprintf(fp, "[%3d]  group=[%s] inscope=[%s] score=[%d] case=[%d][%s] lines=[%d %d]\n",
+		num, BlankIfNull(the_filter->scope),
 		(the_filter->inscope ? "TRUE" : "FILTER"),
-		the_filter->type, (the_filter->type == 0 ? "KILL" : "SELECT"),
+		the_filter->score,
 		the_filter->icase, bool_unparse(bool_not(the_filter->icase)),
 		the_filter->lines_cmp, the_filter->lines_num);
-	fprintf (fp, "       subj=[%s] from=[%s] msgid=[%s]\n",
+
+	fprintf(fp, "       subj=[%s] from=[%s] msgid=[%s]\n",
 		BlankIfNull(the_filter->subj),
-		(the_filter->from  ? the_filter->from  : ""),
-		(the_filter->msgid ? the_filter->msgid : ""));
+		BlankIfNull(the_filter->from),
+		BlankIfNull(the_filter->msgid));
 
 	if (the_filter->time)
-		fprintf (fp, "       time=[%ld][%s", the_filter->time, (the_filter->time ? ctime (&the_filter->time) : "]\n"));
+		fprintf(fp, "       time=[%ld][%s", the_filter->time, (the_filter->time ? ctime(&the_filter->time) : "]\n"));
 }
 
 
 void
-debug_print_filters (
+debug_print_filters(
 	void)
 {
 	char file[PATH_LEN];
@@ -333,30 +334,30 @@ debug_print_filters (
 	if (debug < 2)
 		return;
 
-	sprintf (file, "%sFILTER", TMPDIR);
+	sprintf(file, "%sFILTER", TMPDIR);
 
-	if ((fp = fopen (file, "w")) != NULL) {
+	if ((fp = fopen(file, "w")) != NULL) {
 		/*
 		 * print global filter
 		 */
 		num = glob_filter.num;
 		the_filter = glob_filter.filter;
-		fprintf (fp, "*** BEG GLOBAL FILTER=[%3d] ***\n", num);
+		fprintf(fp, "*** BEG GLOBAL FILTER=[%3d] ***\n", num);
 		for (i = 0; i < num; i++) {
-			debug_print_filter (fp, i, &the_filter[i]);
-			fprintf (fp, "\n");
+			debug_print_filter(fp, i, &the_filter[i]);
+			fprintf(fp, "\n");
 		}
-		fprintf (fp, "*** END GLOBAL FILTER ***\n");
+		fprintf(fp, "*** END GLOBAL FILTER ***\n");
 
-		fclose (fp);
-		chmod (file, (S_IRUGO|S_IWUGO));
+		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
+		fclose(fp);
 	}
 }
 #endif /* DEBUG */
 
 #ifdef DEBUG_NEWSRC
 void
-debug_print_comment (
+debug_print_comment(
 	const char *comment)
 {
 	char file[PATH_LEN];
@@ -365,17 +366,18 @@ debug_print_comment (
 	if (debug < 2)
 		return;
 
-	sprintf (file, "%sBITMAP", TMPDIR);
+	sprintf(file, "%sBITMAP", TMPDIR);
 
-	if ((fp = fopen (file, "a+")) != NULL) {
-		fprintf (fp,"\n%s\n", comment);
-		fclose (fp);
-		chmod (file, (S_IRUGO|S_IWUGO));
+	if ((fp = fopen(file, "a+")) != NULL) {
+		fprintf(fp,"\n%s\n", comment);
+		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
+		fclose(fp);
 	}
 }
 
+
 void
-debug_print_bitmap (
+debug_print_bitmap(
 	struct t_group *group,
 	struct t_article *art)
 {
@@ -385,54 +387,54 @@ debug_print_bitmap (
 	if (debug != 3)
 		return;
 
-	sprintf (file, "%sBITMAP", TMPDIR);
+	sprintf(file, "%sBITMAP", TMPDIR);
 
-	if ((fp = fopen (file, "a+")) != NULL) {
-		fprintf (fp, "\nActive: Group=[%s] sub=[%c] min=[%ld] max=[%ld] count=[%ld] num_unread=[%ld]\n",
+	if ((fp = fopen(file, "a+")) != NULL) {
+		fprintf(fp, "\nActive: Group=[%s] sub=[%c] min=[%ld] max=[%ld] count=[%ld] num_unread=[%ld]\n",
 			group->name, SUB_CHAR(group->subscribed),
 			group->xmin, group->xmax, group->count,
 			group->newsrc.num_unread);
 		if (art != NULL) {
-			fprintf (fp, "art=[%5ld] tag=[%s] kill=[%s] selected=[%s] subj=[%s]\n",
+			fprintf(fp, "art=[%5ld] tag=[%s] kill=[%s] selected=[%s] subj=[%s]\n",
 				art->artnum,
 				bool_unparse(art->tagged),
 				bool_unparse(art->killed),
 				bool_unparse(art->selected),
 				art->subject);
-			fprintf (fp, "thread=[%s]  inthread=[%s]  status=[%s]\n",
+			fprintf(fp, "thread=[%s]  inthread=[%s]  status=[%s]\n",
 				(art->thread == ART_NORMAL ? "ART_NORMAL" : "ART_EXPIRED"),
 				bool_unparse(art->inthread),
 				(art->status == ART_READ ? "READ" : "UNREAD"));
 		}
-		debug_print_newsrc (&group->newsrc, fp);
-		fclose (fp);
-		chmod (file, (S_IRUGO|S_IWUGO));
+		debug_print_newsrc(&group->newsrc, fp);
+		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
+		fclose(fp);
 	}
 }
 
 
 void
-debug_print_newsrc (
+debug_print_newsrc(
 	struct t_newsrc *NewSrc,
 	FILE *fp)
 {
 	register int i, j;
 
-	fprintf (fp, "Newsrc: min=[%ld] max=[%ld] bitlen=[%ld] num_unread=[%ld] present=[%d]\n",
+	fprintf(fp, "Newsrc: min=[%ld] max=[%ld] bitlen=[%ld] num_unread=[%ld] present=[%d]\n",
 		NewSrc->xmin, NewSrc->xmax, NewSrc->xbitlen,
 		NewSrc->num_unread, NewSrc->present);
 
-	fprintf (fp, "bitmap=[");
+	fprintf(fp, "bitmap=[");
 	if (NewSrc->xbitlen && NewSrc->xbitmap) {
 		for (j = 0, i = NewSrc->xmin; i <= NewSrc->xmax; i++) {
-			fprintf (fp, "%d",
+			fprintf(fp, "%d",
 				(NTEST(NewSrc->xbitmap, i - NewSrc->xmin) == ART_READ ?
 				ART_READ : ART_UNREAD));
 			if ((j++ % 8) == 7 && i < NewSrc->xmax)
-				fprintf (fp, " ");
+				fprintf(fp, " ");
 		}
 	}
-	fprintf (fp, "]\n");
-	fflush (fp);
+	fprintf(fp, "]\n");
+	fflush(fp);
 }
 #endif /* DEBUG_NEWSRC */

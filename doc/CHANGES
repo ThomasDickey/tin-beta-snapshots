@@ -1,3 +1,50 @@
+-- 1.5.14 release 20020926 "Soil" --
+
+U113) Olaf Dietrich <olaf@dtrx.de>
+      ADD. search result highlighting for wildcard search
+      FIX. proto.h, search.c, wildmat.c
+
+U112) Martin Dickopp <firefly-mail@gmx.net>
+      ADD. prefer TIN_DEFAULTS_DIR over libdir for global
+           ATTRIBUTES_FILE and CONFIG_FILE
+      FIX. init.c
+
+U111) Michael Bienia <michael@vorlon.ping.de>
+      ADD. filter-code cleanup (remove obsolete type= and scope=)
+      ADD. rewrote word-highlighting code to use regex
+      ADD. slash-highlighting
+      ADD. config options for {stars,slashes,strokes,underscores}_regex
+      BUG. wrong editor offset for filter-file edit.
+      REM, word_h_display_marks=3
+      FIX. tin.1, tin.5, extern.h, proto.h, tin.h, tinrc.h, color.c
+           config.c, curses.c, filter.c, group.c, init.c, lang.c, memory.c
+           page.c, regex.c, tcurses.c, tincfg.tbl
+
+U110) Juergen Salk <juergen.salk@gmx.de>
+      BUG. doesn't try to reconnect after a 400 response
+      FIX. open.c
+
+U109) Urs Janssen <urs@tin.org>
+      ADD. config.guess, config.sub update
+      ADD. stroke-highlighting
+      ADD. word-highlighting without color
+      ADD. some missing german translations
+      ADD. smarter configure check for a shell, add dash to the list
+           of sh shells
+      ADD. reformat code, fixed a few typos
+      ADD. backup_file() and rename_file() preserves file mode
+      ADD. missing prototypes
+      ADD. note about FQDN to README
+      BUG. don't rfc2047-encode Sender if post_8bit_header is set
+      BUG. possible use of group->attributes when not beeing in a
+           (valid) group
+      BUG. typo and logic error in tinrcupdate.pl
+      BUG. fixed most chmod()-races
+      REM. some unused vars and defines
+      FIX. config.guess, config.sub, tin.1, tin.5, autoconf.h[in], extern.h
+           keymap.h menukeys.h, proto.h, tin.h, tinrc.h, *.c, de.po
+           tinrcupdate.pl, configure[.in], aclocal.m4, README
+
 -- 1.5.13 release 20020703 "Chop Suey!" --
 
 U108) Philip Paeps <philip@paeps.cx>

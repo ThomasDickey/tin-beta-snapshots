@@ -75,6 +75,7 @@ _tracef(
 	va_end(ap);
 }
 
+
 char *
 _nc_visbuf(const char *s)
 {

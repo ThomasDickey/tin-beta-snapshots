@@ -46,7 +46,7 @@
  * Update the passed-in attachment structure with type/subtype if found
  */
 void
-lookup_mimetype (
+lookup_mimetype(
 	const char *ext,
 	t_part *part)
 {
@@ -63,7 +63,7 @@ lookup_mimetype (
 	 * TODO: use joinpath() here
 	 */
 	snprintf(buf, sizeof(buf), "%s/.mime.types", homedir);
-	fp = fopen (buf, "r");
+	fp = fopen(buf, "r");
 	if (!fp)
 		fp = fopen("/etc/mime.types", "r");
 #ifdef TIN_DEFAULTS_DIR
@@ -76,20 +76,19 @@ lookup_mimetype (
 	if (!fp)
 		return;
 
-	while ((fgets (buf, sizeof(buf), fp)) != NULL) {
+	while ((fgets(buf, sizeof(buf), fp)) != NULL) {
 		if (buf[0] == '#' || buf[0] == '\n')		/* Skip comments & blank lines */
 			continue;
 
 		strtok(buf, " \t\n");
 
-		while ((exts = strtok (NULL, " \t\n")) != NULL) {	/* Work through list of extensions */
-			if (strcasecmp (ext, exts) == 0) {
-				if ((i = content_type (strtok(buf, "/"))) != -1) {
+		while ((exts = strtok(NULL, " \t\n")) != NULL) {	/* Work through list of extensions */
+			if (strcasecmp(ext, exts) == 0) {
+				if ((i = content_type(strtok(buf, "/"))) != -1) {
 					if ((ptr = strtok(NULL, "\n")) != NULL) {
 						part->type = i;
 						part->subtype = my_strdup(ptr);
-
-						fclose (fp);
+						fclose(fp);
 						return;
 					}
 				}
@@ -97,6 +96,6 @@ lookup_mimetype (
 		}
 	}
 
-	fclose (fp);
+	fclose(fp);
 	return;
 }

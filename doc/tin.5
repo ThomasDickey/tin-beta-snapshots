@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2002-06-09
+.\" Updated   : 2002-09-16
 .\" Notes     : needs a lot of work
 .\"
-.TH tin 5 "June 9th, 2002" "1.5.13" "A Usenet newsreader"
+.TH tin 5 "September 16th, 2002" "1.5.14" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -386,11 +386,10 @@ active file of user's saved newsgroups, used by \fBtin -R\fP.
 
 .\" tin uses inns old (pre 2.x) Path convention.
 .\" as with inn >= 2.2.x getting more and more popular
-.\" we should think about checking for the new Paths
-.\" (described shown below) and/or place tin only related global
-.\" config files to TIN_DEFAULTS_DIR (/etc/tin/)
-.IR ${TIN_LIBDIR-"/news/etc"}/attributes
-.sp
+.\" we should think about checking for the new Paths (/news/etc/)
+.\" ${TIN_LIBDIR-"/news/etc"}/attributes
+.IR /etc/tin/attributes
+.br
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/attributes
 .sp
 .RS
@@ -532,8 +531,10 @@ Example:
 .RS
 .nf
 # include extra headers
+# and assume ISO-8859-1 as charset if no charset is declared
 scope=*
 x_headers=~/.tin/headers
+undeclared_charset=ISO-8859-1
 
 # in *sources* set post process type to shar
 scope=*sources*
@@ -557,6 +558,10 @@ x_comment_to=ON
 scope=*.test
 sigfile=--none
 x_headers=Subject: test - ignore - no reply
+
+# assume ISO-2022-JP-2 as charset
+scope=fj.*,japan.*
+undeclared_charset=ISO-2022-JP-2
 .fi
 .RE
 .RE
@@ -572,11 +577,6 @@ score a article can be filtered out (hidden) or marked hot.
 .B group
 A comma-separated list of newsgroup patterns (wildmat-style) to which
 groups the filter rule will be applied.
-.TP
-.B type
-0=kill, 1=autoselect. This option is kind of obsolete (currently it is
-still required!) and might vanisch in the future as the type can be
-controlled via \fBscore\fP
 .TP
 .B case
 0=casesensitive, 1=caseinsensitive
@@ -934,10 +934,9 @@ format.
 
 .\" tin uses inns old (pre 2.x) Path convention.
 .\" as with inn >= 2.2.x getting more and more popular
-.\" we should think about checking for the new Paths
-.\" (described shown below) and/or place tin only related global
-.\" config files to TIN_DEFAULTS_DIR (/etc/tin/)
-.IR ${TIN_LIBDIR-"/news/etc"}/tinrc
+.\" we should think about checking for the new Paths (/news/etc/)
+.\" .IR ${TIN_LIBDIR-"/news/etc"}/tinrc
+.IR /etc/tin/tinrc
 .br
 .IR ${TIN_HOMEDIR-"$HOME"}/.tin/tinrc
 .sp
@@ -1064,8 +1063,14 @@ Color of foreground for inverse text
 .B col_markdash
 Color of words emphasised like _this_. See also \fBword_h_display_marks\fP
 .TP
+.B col_markslash
+Color of words emphasised like /this/. See also \fBword_h_display_marks\fP
+.TP
 .B col_markstar
 Color of words emphasised like *this*. See also \fBword_h_display_marks\fP
+.TP
+.B col_markstroke
+Color of words emphasised like -this-. See also \fBword_h_display_marks\fP
 .TP
 .B col_minihelp
 Color of mini help menu
@@ -1149,9 +1154,9 @@ OFF=apply to current group. Default is ON.
 .TP
 .B default_filter_kill_header
 Defaults for quick (1 key) kill filter header.
-0,1 = ''Subject:'', 2,3 = ''From:'', 4 = ''Message-Id:'' & full ''References:''
-5 = ''Message-Id:'' & last ''References:'' entry only,
-6 = ''Message-Id:'' entry only, 7 = ''Lines:''
+0,1 = ''Subject:'', 2,3 = ''From:'', 4 = ''Message-ID:'' & full ''References:''
+5 = ''Message-ID:'' & last ''References:'' entry only,
+6 = ''Message-ID:'' entry only, 7 = ''Lines:''
 .TP
 .B default_filter_select_case
 Defaults for quick (1 key) auto-selection filter case. ON=filter case
@@ -1167,9 +1172,9 @@ groups OFF=apply to current group. Default is ON.
 .TP
 .B default_filter_select_header
 Defaults for quick (1 key) auto-selection filter header.
-0,1 = ''Subject:'', 2,3 = ''From:'', 4 = ''Message-Id:'' & full ''References:''
-5 = ''Message-Id:'' & last ''References:'' entry only,
-6 = ''Message-Id:'' entry only, 7 = ''Lines:''
+0,1 = ''Subject:'', 2,3 = ''From:'', 4 = ''Message-ID:'' & full ''References:''
+5 = ''Message-ID:'' & last ''References:'' entry only,
+6 = ''Message-ID:'' entry only, 7 = ''Lines:''
 .TP
 .B default_goto_group
 .TP
@@ -1330,12 +1335,12 @@ EUC-KR (Korean).
 .TP
 .B mail_quote_format
 Format of quote line when replying (via mail) to an article (%A=Address,
-%D=Date, %F=Fullname+Address, %G=Groupname, %M=Message-Id, %N=Fullname,
+%D=Date, %F=Fullname+Address, %G=Groupname, %M=Message-ID, %N=Fullname,
 %C=Firstname, %I=Initials). Default is "In article %M you wrote:"
 .TP
 .B Format of the mailbox (mailbox_format)
-Select one of the following mailbox-formats: MBOXO (default), MBOXRD
-or MMDF. See
+Select one of the following mailbox-formats: MBOXO (default, except on SCO),
+MBOXRD or MMDF (default on SCO). See
 .BR mbox (5)
 for more details on MBOXO and MBOXRD and
 .BR mmdf (5)
@@ -1404,7 +1409,7 @@ Not defining anything turns off this option.
 .TP
 .B news_quote_format
 Format of quote line when posting/following up an article (%A=Address,
-%D=Date, %F=Fullname+Address, %G=Groupname, %M=Message-Id, %N=Fullname,
+%D=Date, %F=Fullname+Address, %G=Groupname, %M=Message-ID, %N=Fullname,
 %C=Firstname, %I=Initials). Default is "%F wrote:"
 .TP
 .B pgdn_goto_next
@@ -1536,7 +1541,7 @@ Score of an article which should be marked hot, this must be >=
 .TP
 .B scroll_lines
 The number of lines that will be scrolled up/down in the article pager when
-using cursor-up/down. The default is 1 (line-by-line). Set to to 0 to get
+using cursor-up/down. The default is 1 (line-by-line). Set to 0 to get
 traditional tin page-by-page scrolling. Set to -1 to get page-by-page
 scrolling where the top/bottom line is carried over onto the next page.
 This setting supercedes show_last_line_prev_page=ON. Set to -2 to get
@@ -1583,6 +1588,13 @@ If ON prepend the signature with sigdashes. Default is ON.
 .B signature_repost
 If ON add signature to reposted articles. Default is ON.
 .TP
+.B slashes_regex
+A regular expression that will be applied when reading articles. All
+matching words are shown in \fBcol_markslash\fR. If \fBslashes_regex\fR
+is blank, then
+.BR tin (1)
+uses a built in default for this.
+.TP
 .B sort_article_type
 This specifies how articles should be sorted. The following sort
 types are allowed:
@@ -1624,6 +1636,13 @@ Set this option to a list of comma-separated strings to be warned if you are
 replying to an article by mail where the e-mail address contains one of
 these strings. The matching is case-insensitive.
 .TP
+.B stars_regex
+A regular expression that will be applied when reading articles. All
+matching words are shown in \fBcol_markstar\fR. If \fBstars_regex\fR
+is blank, then
+.BR tin (1)
+uses a built in default for this.
+.TP
 .B start_editor_offset
 Set ON if the editor used for posting, follow-ups and bug reports has the
 capability of starting and positioning the cursor at a specified line within
@@ -1644,6 +1663,13 @@ you to unsubscribe from them as and when you wish. Default is 0 (Always Keep).
 .B strip_newsrc
 If ON, then unsubscribed groups will be permanently removed from
 your \fI${TIN_HOMEDIR-"$HOME"}/.newsrc\fR file. Default is OFF.
+.TP
+.B strokes_regex
+A regular expression that will be applied when reading articles. All
+matching words are shown in \fBcol_markstroke\fR. If \fBstrokes_regex\fR
+is blank, then
+.BR tin (1)
+uses a built in default for this.
 .TP
 .B tab_after_X_selection
 If enabled will automatically go to the first unread article after having
@@ -1693,6 +1719,13 @@ represented in the target character set, it can be approximated through one
 or several similarly looking characters. On systems where this extension
 doesn't exist, this option is disabled. Default is OFF.
 .TP
+.B underscores_regex
+A regular expression that will be applied when reading articles. All
+matching words are shown in \fBcol_markdash\fR. If \fBundescores_regex\fR
+is blank, then
+.BR tin (1)
+uses a built in default for this.
+.TP
 .B unlink_article
 If ON remove \fI${TIN_HOMEDIR-"$HOME"}/.article\fR after posting. Default is
 ON.
@@ -1738,22 +1771,21 @@ file if you use this regularly. NB: Newsgroup names will always be matched
 using the wildmat notation.
 .TP
 .B word_h_display_marks
-Should the leading and ending stars and dashes also be displayed,
-even when they are highlighting marks?
-.in +.5i
-.ti -\w'\(em'u
-\(em 0 = no
-.ti -\w'\(em'u
-\(em 1 = yes, display mark
-.ti -\w'\(em'u
-\(em 2 = print a space instead
-.ti -\w'\(em'u
-\(em 3 = print a space, but only in signatures
-.in -.5i
+Should the leading and ending stars, slashes, strokes and dashes also be
+displayed, even when they are highlighting marks (also requires
+\fBuse_color\fP to be enabled)?
+.RS +.5i
+.IP 0 3
+\fBno\fP
+.IP 1
+yes, \fBdisplay mark\fP
+.IP 2
+print a \fBspace\fP instead
+.RE
 .TP
 .B word_highlight
 Enable word highlighting. See \fBword_h_display_marks\fP for the options
-available is this is enabled.
+available if this and \fBuse_color\fP is enabled.
 .TP
 .B xpost_quote_format
 Format is the same as for \fBnews_quote_format\fP, this is used when
@@ -1917,7 +1949,7 @@ articles are locally filed into the ''foo.bar'' group
 .RE
 .TP
 .BR tin (1)
-only only tries to read the file if you read directly from the local spool,
+only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,
 .BR tin (1)
 uses the LIST (\fBRFC977\fP) command instead.
@@ -1944,7 +1976,7 @@ since the epoch.
 is the electronic mail address of the person who created the group.
 .TP
 .BR tin (1)
-only only tries to read the file if you read directly from the local spool,
+only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,
 .BR tin (1)
 uses the NEWGROUPS (\fBRFC977\fP) command instead.
@@ -1967,7 +1999,7 @@ is the name of the newsgroup
 is a short single-line description of the group
 .TP
 .BR tin (1)
-only only tries to read the file if you read directly from the local spool,
+only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,
 .BR tin (1)
 uses the LIST NEWSGROUPS (\fBRFC2980\fP) command instead.

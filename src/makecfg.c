@@ -61,45 +61,45 @@ static MYDATA *all_data;
 static int line_no;
 
 static void
-failed (
+failed(
 	const char *message)
 {
-	perror (message);
-	exit (EXIT_FAILURE);
+	perror(message);
+	exit(EXIT_FAILURE);
 }
 
 static FILE *
-open_it (
+open_it(
 	const char *filename,
 	const char *mode)
 {
-	FILE *fp = fopen (filename, mode);
+	FILE *fp = fopen(filename, mode);
 
 	if (fp == 0)
-		failed (filename);
+		failed(filename);
 	return fp;
 }
 
 static char *
-string_dup (
+string_dup(
 	const char *string)
 {
-	return strcpy ((char *)malloc (strlen (string) + 1), string);
+	return strcpy((char *) malloc(strlen(string) + 1), string);
 }
 
 static void
-store_data (
+store_data(
 	const char *name,
 	const char *type,
 	const char *size)
 {
-	MYDATA *p = (MYDATA *) malloc (sizeof (MYDATA));
+	MYDATA *p = (MYDATA *) malloc(sizeof(MYDATA));
 	MYDATA *q;
 
 	p->link = 0;
-	p->name = string_dup (name);
-	p->type = string_dup (type);
-	p->size = string_dup (size);
+	p->name = string_dup(name);
+	p->type = string_dup(type);
+	p->size = string_dup(size);
 
 	if ((q = all_data) == 0)
 		all_data = p;
@@ -111,11 +111,11 @@ store_data (
 }
 
 static void
-parse_tbl (
+parse_tbl(
 	char *buffer)
 {
 	char *s = buffer;
-	char *t = s + strlen (s);
+	char *t = s + strlen(s);
 
 	/* strip leading/trailing blanks */
 	while ((t-- != s) && isspace ((int)*t))
@@ -127,7 +127,7 @@ parse_tbl (
 	line_no++;
 	if (*buffer != ';' && *buffer != '\0') {	/* ignore comments */
 		if (*buffer == '#') {
-			store_data (buffer, "", "");
+			store_data(buffer, "", "");
 		} else {
 			/*
 			 * otherwise the data consists of up to 3 blank
@@ -142,20 +142,20 @@ parse_tbl (
 				t++;
 			while (isspace ((int)*t))
 				*t++ = '\0';
-			store_data (buffer, s, t);
+			store_data(buffer, s, t);
 		}
 	}
 }
 
 static void
-write_it (
+write_it(
 	FILE *ofp,
 	const char * const *table)
 {
 	int n;
 
 	for (n = 0; table[n] != 0; n++)
-		fprintf (ofp, "%s\n", table[n]);
+		fprintf(ofp, "%s\n", table[n]);
 }
 
 static int
@@ -202,7 +202,7 @@ typename_of(
 }
 
 static void
-generate_tbl (
+generate_tbl(
 	FILE *ofp)
 {
 	static const char *const table_1[] =
@@ -239,61 +239,61 @@ generate_tbl (
 	char temp[BUFSIZ];
 
 	/* generate enumerated type */
-	write_it (ofp, table_1);
+	write_it(ofp, table_1);
 	for (p = all_data; p != 0; p = p->link) {
 		if (p->name[0] == '#')
-			fprintf (ofp, "%s\n", p->name);
+			fprintf(ofp, "%s\n", p->name);
 		else {
 			char *s = p->name;
 
-			fprintf (ofp, "\tOPT_");
+			fprintf(ofp, "\tOPT_");
 			while (*s != '\0') {
-				fprintf (ofp, "%c",
-					 isalpha ((unsigned char)*s) && islower ((unsigned char)*s)
+				fprintf(ofp, "%c",
+					 isalpha ((unsigned char)*s) && islower((unsigned char)*s)
 					 ? toupper ((unsigned char)*s)
 					 : *s);
 				s++;
 			}
-			fprintf (ofp, ",\n");
+			fprintf(ofp, ",\n");
 		}
 	}
 
 	/* generate the access table */
-	write_it (ofp, table_2);
+	write_it(ofp, table_2);
 	for (p = all_data; p != 0; p = p->link) {
 		if (p->name[0] == '#')
-			fprintf (ofp, "%s\n", p->name);
+			fprintf(ofp, "%s\n", p->name);
 		else {
-			int is_opt = !strncmp (p->type, "OPT_", 4);
+			int is_opt = !strncmp(p->type, "OPT_", 4);
 			int is_int = type_is_int(p);
 			char *dft_name = p->name;
 			/* TODO is this still necessary ? */
 			/* shorten message-variable names */
-			if (!strncmp (dft_name, "default_", 8))
+			if (!strncmp(dft_name, "default_", 8))
 				dft_name += 8;
 
-			fprintf (ofp, "%s", prefix);
-			sprintf (temp, "%s,", is_opt ? p->type : "OPT_LIST");
-			fprintf (ofp, "%-13s", temp);
+			fprintf(ofp, "%s", prefix);
+			sprintf(temp, "%s,", is_opt ? p->type : "OPT_LIST");
+			fprintf(ofp, "%-13s", temp);
 
 			if (is_title(p)) {
-				fprintf (ofp, "0, NULL, ");
+				fprintf(ofp, "0, NULL, ");
 			} else if (!is_int) {
 				fprintf(ofp, "OINX_%s, 0, ", p->name);
 			} else {
-				fprintf (ofp, "0, &tinrc.%s, ", p->name);
+				fprintf(ofp, "0, &tinrc.%s, ", p->name);
 			}
 
 			if (is_opt)
-				fprintf (ofp, "NULL, 0, ");
+				fprintf(ofp, "NULL, 0, ");
 			else
-				fprintf (ofp, "%s, %s, ", p->type, p->size);
-			fprintf (ofp, "&txt_%s ", dft_name);
-			fprintf (ofp, "%s\n", suffix);
+				fprintf(ofp, "%s, %s, ", p->type, p->size);
+			fprintf(ofp, "&txt_%s ", dft_name);
+			fprintf(ofp, "%s\n", suffix);
 		}
 	}
 
-	write_it (ofp, table_3);
+	write_it(ofp, table_3);
 }
 
 static void
@@ -378,7 +378,7 @@ generate_ptr(
 }
 
 static void
-makecfg (
+makecfg(
 	FILE *ifp,
 	FILE *ofp)
 {
@@ -437,14 +437,14 @@ makecfg (
 	 * Process the input file.
 	 */
 	line_no = 0;
-	while (fgets (buffer, sizeof (buffer) - 1, ifp))
-		parse_tbl (buffer);
-	fclose (ifp);
+	while (fgets(buffer, sizeof(buffer) - 1, ifp))
+		parse_tbl(buffer);
+	fclose(ifp);
 
 	/*
 	 * Generate the output file
 	 */
-	write_it (ofp, table_1);
+	write_it(ofp, table_1);
 
 	/*
 	 * For each type used in the table, generate a list of pointers to
@@ -471,15 +471,15 @@ makecfg (
 			generate_ptr (ofp, p->type, typename_of(p), 2);
 		}
 	}
-	generate_tbl (ofp);
+	generate_tbl(ofp);
 
-	write_it (ofp, table_2);
+	write_it(ofp, table_2);
 
-	fclose (ofp);
+	fclose(ofp);
 }
 
 int
-main (
+main(
 	int argc,
 	char *argv[])
 {
@@ -487,10 +487,10 @@ main (
 	FILE *output = stdout;
 
 	if (argc > 1)
-		input = open_it (argv[1], "r");
+		input = open_it(argv[1], "r");
 	if (argc > 2)
-		output = open_it (argv[2], "w");
-	makecfg (input, output);
+		output = open_it(argv[2], "w");
+	makecfg(input, output);
 
 	return (0);
 }

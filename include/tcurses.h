@@ -114,10 +114,10 @@ extern void write_line(int row, char *buffer);
 #		include <ncurses/term.h>
 #	else
 #		include <term.h>
-#	endif
+#	endif /* HAVE_NCURSES_TERM_H */
 #else
 #	ifdef HAVE_TERMCAP_H
-#	include <termcap.h>
+#		include <termcap.h>
 #	endif /* HAVE_TERMCAP_H */
 #endif /* NEED_TERM_H */
 

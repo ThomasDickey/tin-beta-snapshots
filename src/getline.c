@@ -52,24 +52,24 @@ static t_bool is_passwd;
 /*
  * local prototypes
  */
-static void gl_addchar (int c);
-static void gl_del (int loc);
-static void gl_fixup (int change, int cursor);
-static int gl_tab (char *buf, int offset, int *loc);
-static void gl_redraw (void);
-static void gl_newline (int w);
-static void gl_kill (void);
-static void gl_kill_back_word (void);
-static void hist_add (int w);
-static void hist_next (int w);
-static void hist_prev (int w);
+static void gl_addchar(int c);
+static void gl_del(int loc);
+static void gl_fixup(int change, int cursor);
+static int gl_tab(char *buf, int offset, int *loc);
+static void gl_redraw(void);
+static void gl_newline(int w);
+static void gl_kill(void);
+static void gl_kill_back_word(void);
+static void hist_add(int w);
+static void hist_next(int w);
+static void hist_prev(int w);
 
 static int (*gl_in_hook) (char *) = 0;
 static int (*gl_out_hook) (char *) = 0;
 static int (*gl_tab_hook) (char *, int, int *) = gl_tab;
 
 char *
-tin_getline (
+tin_getline(
 	const char *prompt,
 	int number_only,	/* 1=positive numbers only, 2=negative too */
 	const char *str,
@@ -81,13 +81,13 @@ tin_getline (
 
 	is_passwd = passwd;
 
-	set_xclick_off ();
+	set_xclick_off();
 	if (prompt == NULL) {
 		prompt = "";
 	}
 	gl_buf[0] = 0;		/* used as end of input indicator */
-	gl_fixup (-1, 0);	/* this resets gl_fixup */
-	gl_width = cCOLS - strlen (prompt);
+	gl_fixup(-1, 0);	/* this resets gl_fixup */
+	gl_width = cCOLS - strlen(prompt);
 	gl_prompt = prompt;
 	gl_pos = gl_cnt = 0;
 
@@ -101,14 +101,14 @@ tin_getline (
 		gl_max = max_chars;
 	}
 
-	my_fputs (prompt, stdout);
-	cursoron ();
-	my_flush ();
+	my_fputs(prompt, stdout);
+	cursoron();
+	my_flush();
 
 	if (gl_in_hook) {
-		loc = gl_in_hook (gl_buf);
+		loc = gl_in_hook(gl_buf);
 		if (loc >= 0)
-			gl_fixup (0, BUF_SIZE);
+			gl_fixup(0, BUF_SIZE);
 	}
 
 	if (!cmd_line && gl_max == BUF_SIZE)
@@ -116,22 +116,22 @@ tin_getline (
 
 	if (str != NULL) {
 		for (i = 0; str[i]; i++)
-			gl_addchar (str[i]);
+			gl_addchar(str[i]);
 	}
-	while ((c = ReadCh ()) != EOF) {
+	while ((c = ReadCh()) != EOF) {
 		c &= 0xff;
 		if ((gl_cnt < gl_max) && my_isprint(c)) {
 			if (number_only) {
-				if (isdigit (c)) {
-					gl_addchar (c);
+				if (isdigit(c)) {
+					gl_addchar(c);
 				/* Minus */
 				} else if (number_only == 2 && gl_pos == 0 && c == '-') {
-					gl_addchar (c);
+					gl_addchar(c);
 				} else {
-					ring_bell ();
+					ring_bell();
 				}
 			} else {
-				gl_addchar (c);
+				gl_addchar(c);
 			}
 		} else {
 			switch (c) {
@@ -139,32 +139,32 @@ tin_getline (
 #ifdef HAVE_KEY_PREFIX
 				case KEY_PREFIX:
 #endif /* HAVE_KEY_PREFIX */
-					switch (get_arrow_key (c)) {
+					switch (get_arrow_key(c)) {
 						case KEYMAP_UP:
 						case KEYMAP_PAGE_UP:
-							hist_prev (which_hist);
+							hist_prev(which_hist);
 							break;
 						case KEYMAP_PAGE_DOWN:
 						case KEYMAP_DOWN:
-							hist_next (which_hist);
+							hist_next(which_hist);
 							break;
 						case KEYMAP_RIGHT:
-							gl_fixup (-1, gl_pos + 1);
+							gl_fixup(-1, gl_pos + 1);
 							break;
 						case KEYMAP_LEFT:
-							gl_fixup (-1, gl_pos - 1);
+							gl_fixup(-1, gl_pos - 1);
 							break;
 						case KEYMAP_HOME:
-							gl_fixup (-1, 0);
+							gl_fixup(-1, 0);
 							break;
 						case KEYMAP_END:
-							gl_fixup (-1, gl_cnt);
+							gl_fixup(-1, gl_cnt);
 							break;
 						case KEYMAP_DEL:
-							gl_del (0);
+							gl_del(0);
 							break;
 						case KEYMAP_INS:
-							gl_addchar (' ');
+							gl_addchar(' ');
 							break;
 						default:
 							return (char *) 0;
@@ -172,62 +172,62 @@ tin_getline (
 					break;
 				case '\n':	/* newline */
 				case '\r':
-					gl_newline (which_hist);
+					gl_newline(which_hist);
 					return gl_buf;
 				case CTRL_A:
-					gl_fixup (-1, 0);
+					gl_fixup(-1, 0);
 					break;
 				case CTRL_B:
-					gl_fixup (-1, gl_pos - 1);
+					gl_fixup(-1, gl_pos - 1);
 					break;
 				case CTRL_D:
 					if (gl_cnt == 0) {
 						gl_buf[0] = 0;
-						my_fputc ('\n', stdout);
+						my_fputc('\n', stdout);
 						return gl_buf;
 					} else {
-						gl_del (0);
+						gl_del(0);
 					}
 					break;
 				case CTRL_E:
-					gl_fixup (-1, gl_cnt);
+					gl_fixup(-1, gl_cnt);
 					break;
 				case CTRL_F:
-					gl_fixup (-1, gl_pos + 1);
+					gl_fixup(-1, gl_pos + 1);
 					break;
 				case CTRL_H:
 				case DEL:
-					gl_del (-1);
+					gl_del(-1);
 					break;
 				case TAB:
 					if (gl_tab_hook) {
 						tmp = gl_pos;
-						loc = gl_tab_hook (gl_buf, strlen (gl_prompt), &tmp);
+						loc = gl_tab_hook(gl_buf, strlen(gl_prompt), &tmp);
 						if (loc >= 0 || tmp != gl_pos)
-							gl_fixup (loc, tmp);
+							gl_fixup(loc, tmp);
 					}
 					break;
 				case CTRL_W:
-					gl_kill_back_word ();
+					gl_kill_back_word();
 					break;
 				case CTRL_U:
-					gl_fixup (-1, 0);
+					gl_fixup(-1, 0);
 					/* FALLTHROUGH */
 				case CTRL_K:
-					gl_kill ();
+					gl_kill();
 					break;
 				case CTRL_L:
 				case CTRL_R:
-					gl_redraw ();
+					gl_redraw();
 					break;
 				case CTRL_N:
-					hist_next (which_hist);
+					hist_next(which_hist);
 					break;
 				case CTRL_P:
-					hist_prev (which_hist);
+					hist_prev(which_hist);
 					break;
 				default:
-					ring_bell ();
+					ring_bell();
 					break;
 			}
 		}
@@ -235,36 +235,36 @@ tin_getline (
 	return gl_buf;
 }
 
+
 /*
  * adds the character c to the input buffer at current location if
  * the character is in the allowed template of characters
  */
-
 static void
-gl_addchar (
+gl_addchar(
 	int c)
 {
 	int i;
 
 	if (gl_cnt >= BUF_SIZE - 1) {
-		error_message ("tin_getline: input buffer overflow");
+		error_message("tin_getline: input buffer overflow");
 		giveup();
 	}
 
-	for (i = gl_cnt; i >= gl_pos; i--) {
+	for (i = gl_cnt; i >= gl_pos; i--)
 		gl_buf[i + 1] = gl_buf[i];
-	}
+
 	gl_buf[gl_pos] = c;
-	gl_fixup (gl_pos, gl_pos + 1);
+	gl_fixup(gl_pos, gl_pos + 1);
 }
+
 
 /*
  * Cleans up entire line before returning to caller. A \n is appended.
  * If line longer than screen, we redraw starting at beginning
  */
-
 static void
-gl_newline (
+gl_newline(
 	int w)
 {
 	int change = gl_cnt;
@@ -272,28 +272,28 @@ gl_newline (
 	int loc = gl_width - 5;	/* shifts line back to start position */
 
 	if (gl_cnt >= BUF_SIZE - 1) {
-		error_message ("tin_getline: input buffer overflow");
+		error_message("tin_getline: input buffer overflow");
 		giveup();
 	}
-	hist_add (w);		/* only adds if nonblank */
+	hist_add(w);		/* only adds if nonblank */
 	if (gl_out_hook) {
-		change = gl_out_hook (gl_buf);
-		len = strlen (gl_buf);
+		change = gl_out_hook(gl_buf);
+		len = strlen(gl_buf);
 	}
 	if (loc > len)
 		loc = len;
-	gl_fixup (change, loc);	/* must do this before appending \n */
+	gl_fixup(change, loc);	/* must do this before appending \n */
 	gl_buf[len] = '\0';
 }
+
 
 /*
  * Delete a character.  The loc variable can be:
  *    -1 : delete character to left of cursor
  *     0 : delete character under cursor
  */
-
 static void
-gl_del (
+gl_del(
 	int loc)
 {
 	int i;
@@ -301,73 +301,74 @@ gl_del (
 	if ((loc == -1 && gl_pos > 0) || (loc == 0 && gl_pos < gl_cnt)) {
 		for (i = gl_pos + loc; i < gl_cnt; i++)
 			gl_buf[i] = gl_buf[i + 1];
-		gl_fixup (gl_pos + loc, gl_pos + loc);
+		gl_fixup(gl_pos + loc, gl_pos + loc);
 	} else {
-		ring_bell ();
+		ring_bell();
 	}
 }
+
 
 /*
  * delete from current position to the end of line
  */
-
 static void
-gl_kill (
+gl_kill(
 	void)
 {
 	if (gl_pos < gl_cnt) {
 		gl_buf[gl_pos] = '\0';
-		gl_fixup (gl_pos, gl_pos);
+		gl_fixup(gl_pos, gl_pos);
 	} else {
-		ring_bell ();
+		ring_bell();
 	}
 }
+
 
 /*
  * delete from the start of current or last word to current position
  */
-
 static void
-gl_kill_back_word (
+gl_kill_back_word(
 	void)
 {
 	int i, cur;
 
 	/* delete spaces */
-	for (i = gl_pos - 1; i >= 0 && isspace((int)gl_buf[i]); --i)
+	for (i = gl_pos - 1; i >= 0 && isspace((int) gl_buf[i]); --i)
 		;
 	/* delete not alnum characters but graph characters */
-	for (; i >= 0 && isgraph((int)gl_buf[i]) && !isalnum((int)gl_buf[i]); --i)
+	for (; i >= 0 && isgraph((int) gl_buf[i]) && !isalnum((int) gl_buf[i]); --i)
 		;
 	/* delete all graph characters except '/' */
-	for (; i >= 0 && gl_buf[i] != '/' && isgraph((int)gl_buf[i]); --i)
+	for (; i >= 0 && gl_buf[i] != '/' && isgraph((int) gl_buf[i]); --i)
 		;
 	i++;
 	if (i != gl_pos) {
 		cur = gl_pos;
-		gl_fixup (-1, i);
-		strcpy (&gl_buf[i], &gl_buf[cur]);
-		gl_fixup (i, i);
+		gl_fixup(-1, i);
+		strcpy(&gl_buf[i], &gl_buf[cur]);
+		gl_fixup(i, i);
 	} else {
-		ring_bell ();
+		ring_bell();
 	}
 }
+
 
 /*
  * emit a newline, reset and redraw prompt and current input line
  */
-
 static void
-gl_redraw (
+gl_redraw(
 	void)
 {
 	if (gl_init_done == -1) {
-		my_fputc ('\n', stdout);
-		my_fputs (gl_prompt, stdout);
+		my_fputc('\n', stdout);
+		my_fputs(gl_prompt, stdout);
 		gl_pos = 0;
-		gl_fixup (0, BUF_SIZE);
+		gl_fixup(0, BUF_SIZE);
 	}
 }
+
 
 /*
  * This function is used both for redrawing when input changes or for
@@ -378,9 +379,8 @@ gl_redraw (
  *            A value of BUF_SIZE can be used to indicate the cursor
  *            should move just past the end of the input line.
  */
-
 static void
-gl_fixup (
+gl_fixup(
 	int change,
 	int cursor)
 {
@@ -401,17 +401,17 @@ gl_fixup (
 	pad = (off_right) ? gl_width - 1 : gl_cnt - gl_shift;	/* old length */
 	backup = gl_pos - gl_shift;
 	if (change >= 0) {
-		gl_cnt = strlen (gl_buf);
+		gl_cnt = strlen(gl_buf);
 		if (change > gl_cnt)
 			change = gl_cnt;
 	}
 	if (cursor > gl_cnt) {
 		if (cursor != BUF_SIZE)		/* BUF_SIZE means end of line */
-			ring_bell ();
+			ring_bell();
 		cursor = gl_cnt;
 	}
 	if (cursor < 0) {
-		ring_bell ();
+		ring_bell();
 		cursor = 0;
 	}
 	if (!is_passwd) {
@@ -445,48 +445,48 @@ gl_fixup (
 		pad = (pad < 0) ? 0 : pad;
 		if (left <= right) {	/* clean up screen */
 			for (i = 0; i < backup; i++)
-				my_fputc ('\b', stdout);
+				my_fputc('\b', stdout);
 			if (left == gl_shift && off_left) {
-				my_fputc ('$', stdout);
+				my_fputc('$', stdout);
 				left++;
 			}
 			for (i = left; i < right; i++)
-				my_fputc (gl_buf[i], stdout);
+				my_fputc(gl_buf[i], stdout);
 			if (off_right) {
-				my_fputc ('$', stdout);
+				my_fputc('$', stdout);
 				gl_pos = right + 1;
 			} else {
 				for (i = 0; i < pad; i++)	/* erase remains of prev line */
-					my_fputc (' ', stdout);
+					my_fputc(' ', stdout);
 				gl_pos = right + pad;
 			}
 		}
 		i = gl_pos - cursor;	/* move to final cursor location */
 		if (i > 0) {
 			while (i--)
-				my_fputc ('\b', stdout);
+				my_fputc('\b', stdout);
 		} else {
 			for (i = gl_pos; i < cursor; i++)
-				my_fputc (gl_buf[i], stdout);
+				my_fputc(gl_buf[i], stdout);
 		}
-		my_flush ();
+		my_flush();
 	}
 	gl_pos = cursor;
 }
 
+
 /*
  * default tab handler, acts like tabstops every TABSIZE cols
  */
-
 static int
-gl_tab (
+gl_tab(
 	char *buf,
 	int offset,
 	int *loc)
 {
 	int i, count, len;
 
-	len = strlen (buf);
+	len = strlen(buf);
 	count = TABSIZE - (offset + *loc) % TABSIZE;
 	for (i = len; i >= *loc; i--)
 		buf[i + count] = buf[i];
@@ -497,8 +497,9 @@ gl_tab (
 	return i;
 }
 
+
 static void
-hist_add (
+hist_add(
 	int w)
 {
 	char *p = gl_buf;
@@ -509,22 +510,19 @@ hist_add (
 	while (*p == ' ' || *p == '\t')		/* only save nonblank line */
 		p++;
 	if (*p) {
-		input_history[w][hist_last[w]] = my_strdup (gl_buf);
+		input_history[w][hist_last[w]] = my_strdup(gl_buf);
 		hist_last[w] = (hist_last[w] + 1) % HIST_SIZE;
-		if (input_history[w][hist_last[w]]) {	/* erase next location */
-			free (input_history[w][hist_last[w]]);
-			input_history[w][hist_last[w]] = (char *) 0;
-		}
+		FreeAndNull(input_history[w][hist_last[w]]);	/* erase next location */
 	}
 	hist_pos[w] = hist_last[w];
 }
 
+
 /*
  * loads previous hist entry into input buffer, sticks on first
  */
-
 static void
-hist_prev (
+hist_prev(
 	int w)
 {
 	int next;
@@ -536,16 +534,16 @@ hist_prev (
 	if (next != hist_last[w]) {
 		if (input_history[w][next]) {
 			hist_pos[w] = next;
-			strcpy (gl_buf, input_history[w][hist_pos[w]]);
+			strcpy(gl_buf, input_history[w][hist_pos[w]]);
 		} else {
-			ring_bell ();
+			ring_bell();
 		}
 	} else {
-		ring_bell ();
+		ring_bell();
 	}
 	if (gl_in_hook)
-		gl_in_hook (gl_buf);
-	gl_fixup (0, BUF_SIZE);
+		gl_in_hook(gl_buf);
+	gl_fixup(0, BUF_SIZE);
 }
 
 
@@ -553,7 +551,7 @@ hist_prev (
  * loads next hist entry into input buffer, clears on last
  */
 static void
-hist_next (
+hist_next(
 	int w)
 {
 
@@ -563,14 +561,14 @@ hist_next (
 	if (hist_pos[w] != hist_last[w]) {
 		hist_pos[w] = (hist_pos[w] + 1) % HIST_SIZE;
 		if (input_history[w][hist_pos[w]]) {
-			strcpy (gl_buf, input_history[w][hist_pos[w]]);
+			strcpy(gl_buf, input_history[w][hist_pos[w]]);
 		} else {
 			gl_buf[0] = 0;
 		}
 	} else {
-		ring_bell ();
+		ring_bell();
 	}
 	if (gl_in_hook)
-		gl_in_hook (gl_buf);
-	gl_fixup (0, BUF_SIZE);
+		gl_in_hook(gl_buf);
+	gl_fixup(0, BUF_SIZE);
 }

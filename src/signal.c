@@ -49,7 +49,7 @@
 #endif /* !VERSION_H */
 
 
-#if defined (VMS) && defined (SIGBUS)
+#if defined(VMS) && defined(SIGBUS)
 	/*
 	 * SIGBUS works on VMS, but many useful information will be hidden
 	 * if catched by signal handler.
@@ -96,12 +96,12 @@
  */
 static const char *signal_name(int code);
 #ifdef SIGTSTP
-	static void handle_suspend (void);
+	static void handle_suspend(void);
 #endif /* SIGTSTP */
-static void _CDECL signal_handler (SIG_ARGS);
+static void _CDECL signal_handler(SIG_ARGS);
 
 #ifndef WEXITSTATUS
-#	define WEXITSTATUS(stat_val) ((unsigned)(stat_val) >> 8)
+#	define WEXITSTATUS(stat_val) ((unsigned) (stat_val) >> 8)
 #endif /* !WEXITSTATUS */
 #ifndef WIFEXITED
 #	define WIFEXITED(stat_val) (((stat_val) & 255) == 0)
@@ -183,17 +183,17 @@ static const struct {
 	struct sigaction sa, osa;
 
 	sa.sa_handler = func;
-	sigemptyset (&sa.sa_mask);
+	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 #	ifdef SA_RESTART
 		sa.sa_flags |= SA_RESTART;
 #	endif /* SA_RESTART */
-	if (sigaction (signum, &sa, &osa) < 0)
+	if (sigaction(signum, &sa, &osa) < 0)
 		return SIG_ERR;
 	return (osa.sa_handler);
 #else
-#	define RESTORE_HANDLER(x, y)	signal (x, y)
-	return (signal (signum, func));
+#	define RESTORE_HANDLER(x, y)	signal(x, y)
+	return (signal(signum, func));
 #endif /* HAVE_POSIX_JC */
 }
 
@@ -202,14 +202,14 @@ static const struct {
  * Block/unblock SIGWINCH/SIGTSTP restarting syscalls
  */
 void
-allow_resize (
+allow_resize(
 	t_bool allow)
 {
 #ifdef HAVE_POSIX_JC
 	struct sigaction sa, osa;
 
 	sa.sa_handler = signal_handler;
-	sigemptyset (&sa.sa_mask);
+	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 #	ifdef SA_RESTART
 	if (!allow)
@@ -226,7 +226,7 @@ allow_resize (
 
 
 static const char *
-signal_name (
+signal_name(
 	int code)
 {
 	size_t n;
@@ -248,18 +248,18 @@ signal_name (
  * This should NOT be called from an interrupt context
  */
 void
-handle_resize (
+handle_resize(
 	t_bool repaint)
 {
 #if defined(SIGWINCH) || defined(SIGTSTP)
 #	ifdef SIGWINCH
-	repaint |= set_win_size (&cLINES, &cCOLS);
+	repaint |= set_win_size(&cLINES, &cCOLS);
 #	endif /* SIGWINCH */
 
 	if (cLINES < MIN_LINES_ON_TERMINAL || cCOLS < MIN_COLUMNS_ON_TERMINAL) {
-		ring_bell ();
+		ring_bell();
 		wait_message(3, _(txt_screen_too_small_exiting), tin_progname);
-		tin_done (EXIT_FAILURE);
+		tin_done(EXIT_FAILURE);
 	}
 
 	TRACE(("handle_resize(%d:%d)", signal_context, repaint));
@@ -278,27 +278,27 @@ handle_resize (
 
 	switch (signal_context) {
 		case cArt:
-			ClearScreen ();
-			show_art_msg (glob_group);
+			ClearScreen();
+			show_art_msg(glob_group);
 			break;
 		case cConfig:
-			refresh_config_page (-1);
+			refresh_config_page(-1);
 			break;
 		case cFilter:
-			refresh_filter_menu ();
+			refresh_filter_menu();
 			break;
 		case cInfopager:
-			display_info_page (0);
+			display_info_page(0);
 			break;
 		case cGroup:
 		case cSelect:
 		case cThread:
-			ClearScreen ();
+			ClearScreen();
 			currmenu->redraw();
 			break;
 		case cPage:
-			resize_article (TRUE, &pgart);
-			draw_page (glob_group, 0);
+			resize_article(TRUE, &pgart);
+			draw_page(glob_group, 0);
 			break;
 		case cMain:
 			break;
@@ -310,35 +310,35 @@ handle_resize (
 
 #ifdef SIGTSTP
 static void
-handle_suspend (
+handle_suspend(
 	void)
 {
 	TRACE(("handle_suspend(%d)", signal_context));
 
-	set_keypad_off ();
+	set_keypad_off();
 	if (!cmd_line)
-		set_xclick_off ();
+		set_xclick_off();
 
-	Raw (FALSE);
-	wait_message (0, _(txt_suspended_message), tin_progname);
+	Raw(FALSE);
+	wait_message(0, _(txt_suspended_message), tin_progname);
 
-	kill (0, SIGSTOP);				/* Put ourselves to sleep */
+	kill(0, SIGSTOP);				/* Put ourselves to sleep */
 
-	RESTORE_HANDLER (SIGTSTP, signal_handler);
+	RESTORE_HANDLER(SIGTSTP, signal_handler);
 
 	if (!batch_mode) {
-		Raw (TRUE);
+		Raw(TRUE);
 		need_resize = cRedraw;		/* Flag a redraw */
 	}
-	set_keypad_on ();
+	set_keypad_on();
 	if (!cmd_line)
-		set_xclick_on ();
+		set_xclick_on();
 }
 #endif /* SIGTSTP */
 
 
 static void _CDECL
-signal_handler (
+signal_handler(
 	int sig)
 {
 #ifdef SIGCHLD
@@ -355,7 +355,7 @@ signal_handler (
 		case SIGINT:
 #	if !defined(M_AMIGA) && !defined(__SASC)
 			if (!batch_mode) {
-				RESTORE_HANDLER (sig, signal_handler);
+				RESTORE_HANDLER(sig, signal_handler);
 				return;
 			}
 #	endif /* !M_AMIGA && !__SASC */
@@ -364,8 +364,8 @@ signal_handler (
 
 #ifdef SIGCHLD
 		case SIGCHLD:
-			wait (&wait_status);
-			RESTORE_HANDLER (sig, signal_handler);	/* death of a child */
+			wait(&wait_status);
+			RESTORE_HANDLER(sig, signal_handler);	/* death of a child */
 			system_status = WEXITSTATUS(wait_status);
 			return;
 #endif /* SIGCHLD */
@@ -386,7 +386,7 @@ signal_handler (
 #ifdef SIGWINCH
 		case SIGWINCH:
 			need_resize = cYes;
-			RESTORE_HANDLER (SIGWINCH, signal_handler);
+			RESTORE_HANDLER(SIGWINCH, signal_handler);
 			return;
 #endif /* SIGWINCH */
 
@@ -394,7 +394,7 @@ signal_handler (
 			break;
 	}
 
-	fprintf (stderr, "\n%s: signal handler caught %s signal (%d).\n", tin_progname, signal_name(sig), sig);
+	fprintf(stderr, "\n%s: signal handler caught %s signal (%d).\n", tin_progname, signal_name(sig), sig);
 
 	switch (sig) {
 #ifdef SIGHUP
@@ -407,7 +407,7 @@ signal_handler (
 		case SIGTERM:
 #endif /* SIGTERM */
 			dangerous_signal_exit = TRUE;
-			tin_done (-sig);
+			tin_done(-sig);
 			/* NOTREACHED */
 			break;
 
@@ -418,15 +418,15 @@ signal_handler (
 		case SIGSEGV:
 #endif /* SIGSEGV */
 			/* FIXME: -> lang.c */
-			my_fprintf (stderr, _("%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n"), tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME, bug_addr);
-			my_fflush (stderr);
+			my_fprintf(stderr, _("%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n"), tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME, bug_addr);
+			my_fflush(stderr);
 			break;
 
 		default:
 			break;
 	}
 
-	cleanup_tmp_files ();
+	cleanup_tmp_files();
 
 #if 1
 /* #if defined(apollo) || defined(HAVE_COREFILE) */
@@ -443,22 +443,22 @@ signal_handler (
  * Otherwise revert to the default handler
  */
 void
-set_signal_catcher (
+set_signal_catcher(
 	int flag)
 {
 #ifdef SIGTSTP
 	if (do_sigtstp)
-		sigdisp (SIGTSTP, flag ? signal_handler : SIG_DFL);
+		sigdisp(SIGTSTP, flag ? signal_handler : SIG_DFL);
 #endif /* SIGTSTP */
 
 #ifdef SIGWINCH
-	sigdisp (SIGWINCH, flag ? signal_handler : SIG_DFL);
+	sigdisp(SIGWINCH, flag ? signal_handler : SIG_DFL);
 #endif /* SIGWINCH */
 }
 
 
 void
-set_signal_handlers (
+set_signal_handlers(
 	void)
 {
 	size_t n;
@@ -471,8 +471,8 @@ set_signal_handlers (
 		switch ((code = signal_list[n].code)) {
 #ifdef SIGTSTP
 		case SIGTSTP:
-			ptr = sigdisp (code, SIG_DFL);
-			sigdisp (code, ptr);
+			ptr = sigdisp(code, SIG_DFL);
+			sigdisp(code, ptr);
 			if (ptr == SIG_IGN)
 				break;
 			/*
@@ -480,11 +480,11 @@ set_signal_handlers (
 			 * without job-control
 			 */
 			do_sigtstp = TRUE;
-			nobreak; /* FALLTHROUGH */
+			/* FALLTHROUGH */
 #endif /* SIGTSTP */
 
 		default:
-			sigdisp (code, signal_handler);
+			sigdisp(code, signal_handler);
 		}
 	}
 }
@@ -494,7 +494,7 @@ set_signal_handlers (
  * Size the display at startup or rescale following a SIGWINCH etc.
  */
 t_bool
-set_win_size (
+set_win_size(
 	int *num_lines,
 	int *num_cols)
 {
@@ -517,11 +517,11 @@ set_win_size (
 #else /* curses/ncurses */
 
 #	ifndef USE_CURSES
-	init_screen_array (FALSE);		/* deallocate screen array */
+	init_screen_array(FALSE);		/* deallocate screen array */
 #	endif /* !USE_CURSES */
 
 #	ifdef TIOCGSIZE
-	if (ioctl (0, TIOCGSIZE, &win) == 0) {
+	if (ioctl(0, TIOCGSIZE, &win) == 0) {
 		if (win.ts_lines != 0)
 			*num_lines = win.ts_lines - 1;
 		if (win.ts_cols != 0)
@@ -529,7 +529,7 @@ set_win_size (
 	}
 #	else
 #		ifdef TIOCGWINSZ
-	if (ioctl (0, TIOCGWINSZ, &win) == 0) {
+	if (ioctl(0, TIOCGWINSZ, &win) == 0) {
 		if (win.ws_row != 0)
 			*num_lines = win.ws_row - 1;
 		if (win.ws_col != 0)
@@ -544,22 +544,22 @@ set_win_size (
 #	endif /* TIOCGSIZE */
 
 #	ifndef USE_CURSES
-	init_screen_array (TRUE);		/* allocate screen array for resize */
+	init_screen_array(TRUE);		/* allocate screen array for resize */
 #	endif /* !USE_CURSES */
 
 #endif /* HAVE_XCURSES */
 
-	set_subj_from_size (*num_cols);
+	set_subj_from_size(*num_cols);
 
 	RIGHT_POS = *num_cols - 20;
 	MORE_POS  = *num_cols - 15;
-	set_noteslines (*num_lines);
+	set_noteslines(*num_lines);
 	return (*num_lines != old_lines || *num_cols != old_cols);
 }
 
 
 void
-set_noteslines (
+set_noteslines(
 	int num_lines)
 {
 	NOTESLINES = num_lines - INDEX_TOP - (tinrc.beginner_level ? MINI_HELP_LINES : 1);

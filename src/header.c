@@ -40,13 +40,13 @@
 #	include "tnntp.h"
 #endif /* !TNNTP_H */
 
-static const char * get_full_name (void);
-static const char * get_user_name (void);
+static const char *get_full_name(void);
+static const char *get_user_name(void);
 
 
 /* find hostname */
 const char *
-get_host_name (
+get_host_name(
 	void)
 {
 	char *ptr;
@@ -57,7 +57,7 @@ get_host_name (
 #ifdef HAVE_GETHOSTNAME
 	gethostname(hostname, sizeof(hostname));
 #else
-#	if defined(M_AMIGA)
+#	ifdef M_AMIGA
 	if ((ptr = getenv("NodeName")) != NULL)
 		strncpy(hostname, ptr, MAXHOSTNAMELEN);
 #	endif /* M_AMIGA */
@@ -68,10 +68,10 @@ get_host_name (
 #endif /* HAVE_SYS_UTSNAME_H */
 	if (!*hostname) {
 		if ((ptr = getenv("HOST")) != NULL)
-			strncpy (hostname, ptr, MAXHOSTNAMELEN);
+			strncpy(hostname, ptr, MAXHOSTNAMELEN);
 		else {
 			if ((ptr = getenv("HOSTNAME")) != NULL)
-				strncpy (hostname, ptr, MAXHOSTNAMELEN);
+				strncpy(hostname, ptr, MAXHOSTNAMELEN);
 			else
 				hostname[0] = '\0';
 		}
@@ -85,7 +85,7 @@ get_host_name (
 /* find domainname - check DOMAIN_NAME */
 /* TODO: check /etc/defaultdomain as a last resort? */
 const char *
-get_domain_name (
+get_domain_name(
 	void)
 {
 	char *ptr;
@@ -116,20 +116,20 @@ static const char *domain_name_hack = DOMAIN_NAME;
 #	endif /* M_AMIGA */
 	{
 		/* If 1st letter is '/' read domainname from specified file */
-		if ((fp = fopen (domain, "r")) != NULL) {
-			while (fgets (buff, (int) sizeof (buff), fp) != NULL) {
+		if ((fp = fopen(domain, "r")) != NULL) {
+			while (fgets(buff, (int) sizeof(buff), fp) != NULL) {
 				if (buff[0] == '#' || buff[0] == '\n')
 					continue;
 
-				if ((ptr = strrchr (buff, '\n'))) {
+				if ((ptr = strrchr(buff, '\n'))) {
 					*ptr = '\0';
-					strcpy (domain, buff);
+					strcpy(domain, buff);
 				}
 			}
 			if (domain[0] == '/') /* file was empty */
 				domain[0] = '\0';
 
-			fclose (fp);
+			fclose(fp);
 		} else
 			domain[0] = '\0';
 	}
@@ -144,7 +144,7 @@ static const char *domain_name_hack = DOMAIN_NAME;
 #	define WS	" \f\t\v"
 /* find FQDN - gethostbyaddr() */
 const char *
-get_fqdn (
+get_fqdn(
 	const char *host)
 {
 	char *domain;
@@ -169,12 +169,14 @@ get_fqdn (
 			return NULL;
 	}
 
+#	ifdef HAVE_INET_ADDR
 	if ('0' <= *name && *name <= '9') {
 		in.s_addr = inet_addr(name);
 		if ((hp = gethostbyaddr((char *) &in.s_addr, 4, AF_INET)))
 			in.s_addr = (*hp->h_addr);
-		return(hp && strchr(hp->h_name, '.') ? hp->h_name : inet_ntoa(in));
+		return (hp && strchr(hp->h_name, '.') ? hp->h_name : inet_ntoa(in));
 	}
+#	endif /* HAVE_INET_ADDR */
 	if ((hp = gethostbyname(name)) && !strchr(hp->h_name, '.'))
 		if ((hp = gethostbyaddr(hp->h_addr, hp->h_length, hp->h_addrtype)))
 			in.s_addr = (*hp->h_addr);
@@ -193,7 +195,7 @@ get_fqdn (
 			char *eos;
 			int j;
 
-			while(fgets(line, MAXLINELEN, inf)) {
+			while (fgets(line, MAXLINELEN, inf)) {
 				if (line[0] == '#' || line[0] == '\n')
 					continue;
 
@@ -225,7 +227,7 @@ get_fqdn (
  * Find username & fullname
  */
 void
-get_user_info (
+get_user_info(
 	char *user_name,
 	char *full_name)
 {
@@ -242,31 +244,31 @@ get_user_info (
 
 
 static const char *
-get_user_name (
+get_user_name(
 	void)
 {
-#	if defined (M_AMIGA) || (defined VMS)
+#	if defined(M_AMIGA) || defined(VMS)
 	char *p;
 #	endif /* M_AMIGA || VMS */
 	static char username[128];
 	struct passwd *pw;
 
 	username[0] = '\0';
-#	if defined (M_AMIGA) || defined (VMS)
-	if ((p = getenv ("USER"))) {
+#	if defined(M_AMIGA) || defined(VMS)
+	if ((p = getenv("USER"))) {
 		STRCPY(username, p);
 #		ifdef VMS
-		lower (username);
+		lower(username);
 #		endif /* VMS */
 	}
 #	else
-	pw = getpwuid (getuid ());
+	pw = getpwuid(getuid());
 
 	if (pw != NULL)
-		strcpy (username, pw->pw_name);
+		strcpy(username, pw->pw_name);
 	else {
-		error_message (_(txt_error_passwd_missing));
-		tin_done (EXIT_FAILURE);
+		error_message(_(txt_error_passwd_missing));
+		tin_done(EXIT_FAILURE);
 	}
 #	endif /* M_AMIGA || VMS */
 	return username;
@@ -274,7 +276,7 @@ get_user_name (
 
 
 static const char *
-get_full_name (
+get_full_name(
 	void)
 {
 	char *p;
@@ -287,12 +289,12 @@ get_full_name (
 
 	fullname[0] = '\0';
 
-	if ((p = getenv ("NAME")) != NULL) {
-		strncpy (fullname, p, sizeof (fullname));
+	if ((p = getenv("NAME")) != NULL) {
+		strncpy(fullname, p, sizeof(fullname));
 		return fullname;
 	}
-	if ((p = getenv ("REALNAME")) != NULL) {
-		strncpy (fullname, p, sizeof (fullname));
+	if ((p = getenv("REALNAME")) != NULL) {
+		strncpy(fullname, p, sizeof(fullname));
 		return fullname;
 	}
 
@@ -300,16 +302,16 @@ get_full_name (
 	STRCPY(fullname, fix_fullname(get_uaf_fullname()));
 #	else
 #		ifndef DONT_HAVE_PW_GECOS
-	pw = getpwuid (getuid ());
+	pw = getpwuid(getuid());
 	STRCPY(buf, pw->pw_gecos);
-	if ((p = strchr (buf, ',')))
+	if ((p = strchr(buf, ',')))
 		*p = '\0';
-	if ((p = strchr (buf, '&'))) {
+	if ((p = strchr(buf, '&'))) {
 		*p++ = '\0';
 		STRCPY(tmp, pw->pw_name);
-		if (*tmp && isalpha((int) *tmp) && islower((int) *tmp))
-			*tmp = toupper((int) *tmp);
-		snprintf (fullname, sizeof(fullname) -1, "%s%s%s", buf, tmp, p);
+		if (*tmp && isalpha((int)(unsigned char) *tmp) && islower((int)(unsigned char) *tmp))
+			*tmp = toupper((int)(unsigned char) *tmp);
+		snprintf(fullname, sizeof(fullname) - 1, "%s%s%s", buf, tmp, p);
 	} else
 		STRCPY(fullname, buf);
 #		endif /* !DONT_HAVE_PW_GECOS */
@@ -320,18 +322,18 @@ get_full_name (
 
 /*
  * FIXME to:
- * char * build_from(full_name, user_name, domain_name)
+ * char *build_from(full_name, user_name, domain_name)
  */
 /*
  * build From: in 'name <user@host.doma.in>' format
  */
 void
-get_from_name (
+get_from_name(
 	char *from_name,
 	struct t_group *thisgrp)
 {
 #	ifdef USE_INN_NNTPLIB
-	char *fromhost = GetConfigValue (_CONF_FROMHOST);
+	char *fromhost = GetConfigValue(_CONF_FROMHOST);
 #	else
 	char *fromhost = NULL;
 #	endif /* USE_INN_NNTPLIB */
@@ -344,11 +346,11 @@ get_from_name (
 		return;
 	}
 
-	sprintf (from_name, ((strpbrk(get_full_name(), "!()<>@,;:\\\".[]")) ? "\"%s\" <%s@%s>" : "%s <%s@%s>"), get_full_name(), get_user_name(), fromhost);
+	sprintf(from_name, ((strpbrk(get_full_name(), "!()<>@,;:\\\".[]")) ? "\"%s\" <%s@%s>" : "%s <%s@%s>"), get_full_name(), get_user_name(), fromhost);
 
 #	ifdef DEBUG
 	if (debug == 2)
-		error_message ("FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", from_name, get_user_name(), domain_name, get_full_name());
+		error_message("FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", from_name, get_user_name(), domain_name, get_full_name());
 #	endif /* DEBUG */
 
 }
@@ -360,7 +362,7 @@ get_from_name (
  */
 #ifndef FORGERY
 char *
-build_sender (
+build_sender(
 	void)
 {
 	const char *ptr;

@@ -49,12 +49,12 @@
 
 static char sigfile[PATH_LEN];
 
-static FILE *open_random_sig (char *sigdir);
-static int thrashdir (char *sigdir);
+static FILE *open_random_sig(char *sigdir);
+static int thrashdir(char *sigdir);
 
 
 void
-msg_write_signature (
+msg_write_signature(
 	FILE *fp,
 	t_bool include_dot_signature,
 	struct t_group *thisgroup)
@@ -80,25 +80,25 @@ msg_write_signature (
 			FILE *pipe_fp;
 			char *sigcmd;
 			char cmd[PATH_LEN];
-			fprintf (fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
+			fprintf(fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
 			sigcmd = my_malloc(strlen(thisgroup->attribute->sigfile + 1) + strlen(thisgroup->name) + 4);
-			sprintf (sigcmd, "%s \"%s\"", thisgroup->attribute->sigfile + 1, thisgroup->name);
+			sprintf(sigcmd, "%s \"%s\"", thisgroup->attribute->sigfile + 1, thisgroup->name);
 
-			if ((pipe_fp = popen (sigcmd, "r")) != NULL) {
-				while (fgets (cmd, PATH_LEN, pipe_fp))
-					fputs (cmd, fp);
-				pclose (pipe_fp);
+			if ((pipe_fp = popen(sigcmd, "r")) != NULL) {
+				while (fgets(cmd, PATH_LEN, pipe_fp))
+					fputs(cmd, fp);
+				pclose(pipe_fp);
 			}
 			free(sigcmd);
 
 			return;
 		}
 #endif /* !DONT_HAVE_PIPING */
-		get_cwd (cwd);
+		get_cwd(cwd);
 
-		if (!strfpath (thisgroup->attribute->sigfile, path, sizeof (path), thisgroup)) {
-			if (!strfpath (tinrc.sigfile, path, sizeof (path), thisgroup))
-				joinpath (path, homedir, ".Sig");
+		if (!strfpath(thisgroup->attribute->sigfile, path, sizeof(path), thisgroup)) {
+			if (!strfpath(tinrc.sigfile, path, sizeof(path), thisgroup))
+				joinpath(path, homedir, ".Sig");
 		}
 
 		/*
@@ -108,42 +108,42 @@ msg_write_signature (
 		 * part of random sig) then read it in first and append
 		 * the random sig part onto the end.
 		 */
-		if ((sigfp = open_random_sig (path)) != NULL) {
+		if ((sigfp = open_random_sig(path)) != NULL) {
 #ifdef DEBUG
 			if (debug == 2)
-				error_message ("USING random sig=[%s]", sigfile);
+				error_message("USING random sig=[%s]", sigfile);
 #endif /* DEBUG */
-			fprintf (fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
-			joinpath (pathfixed, path, ".sigfixed");
+			fprintf(fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
+			joinpath(pathfixed, path, ".sigfixed");
 #ifdef DEBUG
 			if (debug == 2)
-				error_message ("TRYING fixed sig=[%s]", pathfixed);
+				error_message("TRYING fixed sig=[%s]", pathfixed);
 #endif /* DEBUG */
-			if ((fixfp = fopen (pathfixed, "r")) != NULL) {
-				copy_fp (fixfp, fp);
-				fclose (fixfp);
+			if ((fixfp = fopen(pathfixed, "r")) != NULL) {
+				copy_fp(fixfp, fp);
+				fclose(fixfp);
 			} else {
-				joinpath (pathfixed, homedir, ".sigfixed");
+				joinpath(pathfixed, homedir, ".sigfixed");
 #ifdef DEBUG
 				if (debug == 2)
-					error_message ("TRYING fixed sig=[%s]", pathfixed);
+					error_message("TRYING fixed sig=[%s]", pathfixed);
 #endif /* DEBUG */
-				if ((fixfp = fopen (pathfixed, "r")) != NULL) {
-					copy_fp (fixfp, fp);
-					fclose (fixfp);
+				if ((fixfp = fopen(pathfixed, "r")) != NULL) {
+					copy_fp(fixfp, fp);
+					fclose(fixfp);
 				}
 			}
-			copy_fp (sigfp, fp);
-			fclose (sigfp);
-			my_chdir (cwd);
+			copy_fp(sigfp, fp);
+			fclose(sigfp);
+			my_chdir(cwd);
 			return;
 		}
 	}
 
-	if ((sigfp = fopen (path, "r")) != NULL) {
-		fprintf (fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
-		copy_fp (sigfp, fp);
-		fclose (sigfp);
+	if ((sigfp = fopen(path, "r")) != NULL) {
+		fprintf(fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
+		copy_fp(sigfp, fp);
+		fclose(sigfp);
 		return;
 	}
 
@@ -151,39 +151,39 @@ msg_write_signature (
 	 * Use ~/.signature as a last resort, but only if mailing or
 	 * using internal inews (external inews appends it automagically).
 	 */
-	if ((sigfp = fopen (default_signature, "r")) != NULL) {
+	if ((sigfp = fopen(default_signature, "r")) != NULL) {
 		if (include_dot_signature) {
-			fprintf (fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
-			copy_fp (sigfp, fp);
+			fprintf(fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
+			copy_fp(sigfp, fp);
 		}
-		fclose (sigfp);
+		fclose(sigfp);
 	}
 }
 
 
 static FILE *
-open_random_sig (
+open_random_sig(
 	char *sigdir)
 {
 	struct stat st;
 
-	if (stat (sigdir, &st) != -1) {
+	if (stat(sigdir, &st) != -1) {
 		if (S_ISDIR(st.st_mode)) {
-			srand ((unsigned int) time(NULL));
-			my_chdir (sigdir);
+			srand((unsigned int) time(NULL));
+			my_chdir(sigdir);
 
-			if (thrashdir (sigdir) || !*sigfile) {
+			if (thrashdir(sigdir) || !*sigfile) {
 #ifdef DEBUG
 				if (debug == 2)
-					error_message ("NO sigfile=[%s]", sigfile);
+					error_message("NO sigfile=[%s]", sigfile);
 #endif /* DEBUG */
 				return (FILE *) 0;
 			} else {
 #ifdef DEBUG
 				if (debug == 2)
-					error_message ("sigfile=[%s]", sigfile);
+					error_message("sigfile=[%s]", sigfile);
 #endif /* DEBUG */
-				return fopen (sigfile, "r");
+				return fopen(sigfile, "r");
 			}
 		}
 	}
@@ -193,7 +193,7 @@ open_random_sig (
 
 
 static int
-thrashdir (
+thrashdir(
 	char *sigdir)
 {
 	char *cwd;
@@ -205,18 +205,18 @@ thrashdir (
 
 	sigfile[0] = '\0';
 
-	if ((dirp = opendir (CURRENTDIR)) == NULL)
+	if ((dirp = opendir(CURRENTDIR)) == NULL)
 		return 1;
 
 	numentries = 0;
-	while ((dp = readdir (dirp)) != NULL)
+	while ((dp = readdir(dirp)) != NULL)
 		numentries++;
 
 	/*
 	 * consider "." and ".." non-entries
 	 * consider all entries starting with "." non-entries
 	 */
-	cwd = my_malloc (PATH_LEN + 1);
+	cwd = my_malloc(PATH_LEN + 1);
 #ifndef M_AMIGA
 	if (numentries < 3 || cwd == NULL)
 #else
@@ -227,8 +227,8 @@ thrashdir (
 		return -1;
 	}
 
-	get_cwd (cwd);
-	recurse = strcmp (cwd, sigdir);
+	get_cwd(cwd);
+	recurse = strcmp(cwd, sigdir);
 
 	/*
 	 * If we are using the root sig directory, we don't want
@@ -238,25 +238,25 @@ thrashdir (
 	for (safeguard = 0, dp = NULL; safeguard < MAXLOOPS && dp == NULL; safeguard++) {
 #ifdef DEBUG
 		if (debug == 2)
-			error_message ("sig loop=[%d] recurse=[%d]", safeguard, recurse);
+			error_message("sig loop=[%d] recurse=[%d]", safeguard, recurse);
 #endif /* DEBUG */
 #ifdef HAVE_REWINDDIR
-		rewinddir (dirp);
+		rewinddir(dirp);
 #else
 		CLOSEDIR(dirp);
-		if ((dirp = opendir (CURRENTDIR)) == NULL)
+		if ((dirp = opendir(CURRENTDIR)) == NULL)
 			return 1;
 #endif /* HAVE_REWINDDIR */
-		pick = rand () % numentries + 1;
+		pick = rand() % numentries + 1;
 		while (--pick >= 0) {
-			if ((dp = readdir (dirp)) == NULL)
+			if ((dp = readdir(dirp)) == NULL)
 				break;
 		}
 		if (dp != NULL) {	/* if we could open the dir entry */
-			if (!strcmp (dp->d_name, CURRENTDIR) || (dp->d_name[0] == '.'))
+			if (!strcmp(dp->d_name, CURRENTDIR) || (dp->d_name[0] == '.'))
 				dp = NULL;
 			else {	/* if we have a non-dot entry */
-				if (stat (dp->d_name, &st) == -1) {
+				if (stat(dp->d_name, &st) == -1) {
 					CLOSEDIR(dirp);
 					return 1;
 				}
@@ -265,7 +265,7 @@ thrashdir (
 						/*
 						 * do subdirectories
 						 */
-						if ((my_chdir (dp->d_name) < 0) || ((c = thrashdir (sigdir)) == 1)) {
+						if ((my_chdir(dp->d_name) < 0) || ((c = thrashdir(sigdir)) == 1)) {
 							CLOSEDIR(dirp);
 							return 1;
 						}
@@ -275,26 +275,26 @@ thrashdir (
 							 * empty dir so try again.
 							 */
 							dp = NULL;
-							my_chdir (cwd);
+							my_chdir(cwd);
 						}
 					} else
 						dp = NULL;
 				} else {	/* end dir; we have a file */
-					get_cwd (sigfile);
-					strcat (sigfile, "/");
-					strcat (sigfile, dp->d_name);
+					get_cwd(sigfile);
+					strcat(sigfile, "/");
+					strcat(sigfile, dp->d_name);
 #ifdef DEBUG
 					if (debug == 2)
-						error_message ("Found a file=[%s]", sigfile);
+						error_message("Found a file=[%s]", sigfile);
 #endif /* DEBUG */
 				}
 			}
 		}
 	}
-	free (cwd);
+	free(cwd);
 #ifdef DEBUG
 	if (debug == 2)
-		error_message ("return 0: sigfile=[%s]", sigfile);
+		error_message("return 0: sigfile=[%s]", sigfile);
 #endif /* DEBUG */
 	CLOSEDIR(dirp);
 

@@ -51,7 +51,7 @@
  */
 #ifndef M_AMIGA
 void
-joinpath (
+joinpath(
 	char *result,
 	const char *dir,
 	const char *file)
@@ -63,7 +63,7 @@ joinpath (
 	(void) strcpy(result, dir);
 	if (result[0] == '\0' || result[strlen(result) - 1] != '/')
 		(void) strcat(result, "/");
-	(void) strcat(result, file != 0 ? file : "");
+	(void) strcat(result, BlankIfNull(file));
 #	endif /* M_UNIX */
 /*
  * JK - horrible hack to convert "/foo/baz/bar" to "foo:baz/bar" (editors bug with *NIX-paths)

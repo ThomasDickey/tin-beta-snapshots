@@ -44,25 +44,30 @@
 
 static int group_hash[TABLE_SIZE];	/* group name --> active[] */
 
+/*
+ * local prototypes
+ */
+static t_bool group_add_to_hash(const char *groupname, int idx);
 #ifdef DEBUG
-static void debug_print_active_hash(void);
+	static void debug_print_active_hash(void);
 #endif /* DEBUG */
 
+
 void
-init_group_hash (
+init_group_hash(
 	void)
 {
 	int i;
 
 #if 0
 	if (num_active == -1) {
-#endif
+#endif /* 0 */
 		num_active = 0;
 		for (i = 0; i < TABLE_SIZE; i++)
 			group_hash[i] = -1;
 #if 0
 	}
-#endif
+#endif /* 0 */
 }
 
 
@@ -70,7 +75,7 @@ init_group_hash (
  * hash group name for fast lookup later
  */
 unsigned long
-hash_groupname (
+hash_groupname(
 	const char *group)
 {
 /* #define NEW_HASH_METHOD 1 */
@@ -88,7 +93,7 @@ hash_groupname (
 		}
 	}
 	hash_value = hash % prime;
-/*	my_printf ("hash=[%s] [%ld]\n", group, hash_value); */
+/*	my_printf("hash=[%s] [%ld]\n", group, hash_value); */
 #else
 	unsigned long hash_value = 0L;
 	unsigned int len = 0;
@@ -111,13 +116,13 @@ hash_groupname (
  * Find group name in active[] array and return index otherwise -1
  */
 int
-find_group_index (
+find_group_index(
 	const char *group)
 {
 	int i;
 	unsigned long h;
 
-	h = hash_groupname (group);
+	h = hash_groupname(group);
 	i = group_hash[h];
 
 	/*
@@ -138,7 +143,7 @@ find_group_index (
  * Find group name in active[] array and return pointer to element
  */
 struct t_group *
-group_find (
+group_find(
 	const char *group_name)
 {
 	int i;
@@ -155,11 +160,11 @@ group_find (
  * Return FALSE if the group is already present
  */
 static t_bool
-group_add_to_hash (
+group_add_to_hash(
 	const char *groupname,
 	int idx)
 {
-	unsigned long h = hash_groupname (groupname);
+	unsigned long h = hash_groupname(groupname);
 
 	if (group_hash[h] == -1)
 		group_hash[h] = idx;
@@ -190,11 +195,11 @@ group_add_to_hash (
  * Return pointer to next free active slot or NULL if duplicate
  */
 struct t_group *
-group_add (
+group_add(
 	const char *group)
 {
 	if (num_active >= max_active)		/* Grow memory area if needed */
-		expand_active ();
+		expand_active();
 
 	if (!(group_add_to_hash(group, num_active)))
 		return NULL;
@@ -260,7 +265,7 @@ group_rehash(
  * Prints out hash distribution of active[]
  */
 static void
-debug_print_active_hash (
+debug_print_active_hash(
 	void)
 {
 	int empty = 0;
@@ -271,10 +276,10 @@ debug_print_active_hash (
 		collisions[i] = 0;
 
 	for (i = 0; i < TABLE_SIZE; i++) {
-		/* my_printf ("HASH[%4d]  ", i); */
+		/* my_printf("HASH[%4d]  ", i); */
 
 		if (group_hash[i] == -1) {
-			/* my_printf ("EMPTY\n"); */
+			/* my_printf("EMPTY\n"); */
 			empty++;
 		} else {
 			int j;
@@ -284,18 +289,18 @@ debug_print_active_hash (
 				number++;
 
 			if (number > 31)
-				fprintf (stderr, "MEGA HASH COLLISION > 31 HASH[%d]=[%d]!!!\n", i, number);
+				fprintf(stderr, "MEGA HASH COLLISION > 31 HASH[%d]=[%d]!!!\n", i, number);
 			else
 				collisions[number]++;
 		}
 	}
 
-	fprintf (stderr, "HashTable Active=[%d] Size=[%d] Filled=[%d] Empty=[%d]\n",
+	fprintf(stderr, "HashTable Active=[%d] Size=[%d] Filled=[%d] Empty=[%d]\n",
 		num_active, TABLE_SIZE, TABLE_SIZE-empty, empty);
-	fprintf (stderr, "00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32\n");
-	fprintf (stderr, "--------------------------------------------------------------------------------------------------\n");
+	fprintf(stderr, "00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32\n");
+	fprintf(stderr, "--------------------------------------------------------------------------------------------------\n");
 	for (i = 0; i < 32; i++)
-		fprintf (stderr, "%2d ", collisions[i]);
-	fprintf (stderr, "\n");
+		fprintf(stderr, "%2d ", collisions[i]);
+	fprintf(stderr, "\n");
 }
 #endif /* DEBUG */

@@ -44,7 +44,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.5.13
+VERSION=1.5.14
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -89,7 +89,7 @@ AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 CF_PROG_YACC
-AC_CHECK_PROGS(LINT, lint alint lclint tdlint, [])
+AC_CHECK_PROGS(LINT, lint alint lclint tdlint splint, [])
 CF_GNU_SOURCE
 AC_ISC_POSIX
 CF_ANSI_CC_REQD
@@ -724,6 +724,7 @@ CF_CHECK_HEADERS(\
 	strings.h \
 	stropts.h \
 	sys/bsdtypes.h \
+	sys/errno.h \
 	sys/file.h \
 	sys/ioctl.h \
 	sys/param.h \
@@ -744,7 +745,6 @@ CF_CHECK_HEADERS(\
 	time.h \
 	unistd.h \
 	varargs.h \
-	waitstatus.h \
 )
 
 ###	Checks that depend on existence-checks for headers
@@ -852,6 +852,7 @@ AC_CHECK_FUNCS(\
 	ftime \
 	getcwd \
 	gettimeofday \
+	getwd \
 	inet_aton \
 	is_xterm \
 	isascii \
@@ -932,7 +933,7 @@ AC_EGREP_HEADER([select\(.*, *int *\*,],time.h,
 )
 
 AC_FUNC_CLOSEDIR_VOID
-AC_FUNC_SETPGRP
+## AC_FUNC_SETPGRP
 AC_FUNC_SETVBUF_REVERSED
 
 ###	Checks for network library functions.
@@ -1055,6 +1056,7 @@ CF_CHECK_DECL(\
 	getcwd \
 	getopt \
 	getpass \
+	getwd \
 	ioctl \
 	isascii \
 	kill \

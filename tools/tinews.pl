@@ -13,10 +13,10 @@
 #       - check for ~/.newsauth and use username/password if found
 #
 # version Number
-my $version = "1.0.2";
+my $version = "1.0.3";
 
 # TODO: put into a "my %config('NNTPServer' => 'news', ... );" array
-my $NNTPServer	= 'news';		# you NNTP servers name
+my $NNTPServer	= 'news';		# your NNTP servers name
 my $NNTPUser	= '';
 my $NNTPPass	= '';
 my $PGPSigner	= '';			# sign as who?
@@ -128,7 +128,7 @@ if (!defined($Header{'message-id'})) {
 if ($sendmail && defined($Header{'newsgroups'}) && (defined($Header{'to'}) || defined($Header{'cc'}) || defined($Header{'bcc'}))) {
 	foreach ('to', 'bcc', 'cc') {
 		if (defined($Header{$_}) && $Header{$_} ne $Header{'from'}) {
-			$Header{'posted-and-mailed'} = "Posted-And-Mailes: yes\n";
+			$Header{'posted-and-mailed'} = "Posted-And-Mailed: yes\n";
 			last;
 		}
 	}
@@ -307,7 +307,7 @@ sub getpgpcommand {
 		}
 	} elsif ($PGPVersion eq '5') {
 		if ($PathtoPGPPass) {
-			$PGPCommand = "PGPPASSFD=2 ".$pgp."s -u \"".$PGPSigner."\" -t --armor -o ".$pgptmpf.".txt.asc -z -f < ".$pgptmpf.".txt 2 < ".$PathtoPGPPass;
+			$PGPCommand = "PGPPASSFD=2 ".$pgp."s -u \"".$PGPSigner."\" -t --armor -o ".$pgptmpf.".txt.asc -z -f < ".$pgptmpf.".txt 2<".$PathtoPGPPass;
 		} elsif ($Interactive) {
 			$PGPCommand = $pgp."s -u \"".$PGPSigner."\" -t --armor -o ".$pgptmpf.".txt.asc -z -f < ".$pgptmpf.".txt";
 		} else {
@@ -315,7 +315,7 @@ sub getpgpcommand {
 		}
 	} elsif ($PGPVersion =~ m/GPG/io) {
 		if ($PathtoPGPPass) {
-			$PGPCommand = $pgp." --digest-algo MD5 -a -u \"".$PGPSigner."\" -o ".$pgptmpf.".txt.asc --no-tty --batch --passphrase-fd 2 2 < ".$PathtoPGPPass." --clearsign ".$pgptmpf.".txt";
+			$PGPCommand = $pgp." --digest-algo MD5 -a -u \"".$PGPSigner."\" -o ".$pgptmpf.".txt.asc --no-tty --batch --passphrase-fd 2 2<".$PathtoPGPPass." --clearsign ".$pgptmpf.".txt";
 		} elsif ($Interactive) {
 			$PGPCommand = $pgp." --digest-algo MD5 -a -u \"".$PGPSigner."\" -o ".$pgptmpf.".txt.asc --no-secmem-warning --no-batch --clearsign ".$pgptmpf.".txt";
 		} else {
