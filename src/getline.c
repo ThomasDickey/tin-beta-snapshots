@@ -246,10 +246,19 @@ gl_addchar(
 {
 	int i;
 
+	/*
+	 * Crashing is always the worst solution IMHO. So as a quick hack,
+	 * ignore characters silently, if buffer is full. To allow a final
+	 * newline, leave space for one more character. Just a hack too.
+	 * This was the original code:
+	 *
 	if (gl_cnt >= BUF_SIZE - 1) {
 		error_message("tin_getline: input buffer overflow");
 		giveup();
 	}
+	 */
+	if (gl_cnt >= BUF_SIZE - 2)
+		return;
 
 	for (i = gl_cnt; i >= gl_pos; i--)
 		gl_buf[i + 1] = gl_buf[i];
@@ -272,6 +281,12 @@ gl_newline(
 	int loc = gl_width - 5;	/* shifts line back to start position */
 
 	if (gl_cnt >= BUF_SIZE - 1) {
+		/*
+		 * Like above: avoid crashing if possible. gl_addchar() now
+		 * leaves one space left for the newline, so this part of the
+		 * code should never be reached. A proper implementation is
+		 * desirable though.
+		 */
 		error_message("tin_getline: input buffer overflow");
 		giveup();
 	}

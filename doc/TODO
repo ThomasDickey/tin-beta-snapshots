@@ -598,9 +598,6 @@ o  is art->inthread really needed, surely art->thread contains enough
    information
    [Jason Faultless <jason@radar.tele2.co.uk>]
 
-o  check where tin_done() or giveup() should be called instead of using
-   exit()
-
 o  check where my_strncpy() or STRCPY() should be used
    or include OpenBSDs strlcpy(3) (and strlcat(3)) and use it.
    (<ftp://ftp.openbsd.org/pub/OpenBSD/src/lib/libc/string/>)

@@ -284,11 +284,13 @@ main(
 #endif /* DEBUG */
 
 	/*
-	 * Quick post an article & exit if -w specified
+	 * Quick post an article and exit if -w or -o specified
 	 */
 	if (post_article_and_exit || post_postponed_and_exit) {
+		no_write = tmp_no_write; /* restore original value */
 		quick_post_article(post_postponed_and_exit);
 		wait_message(2, _(txt_exiting));
+		no_write = TRUE; /* disable tinrc updates */
 		tin_done(EXIT_SUCCESS);
 	}
 
@@ -535,7 +537,15 @@ read_cmd_line_options(
 				break;
 
 			case 'o':	/* post postponed articles & exit */
+#ifndef NO_POSTING
 				post_postponed_and_exit = TRUE;
+				check_for_new_newsgroups = FALSE;
+#else
+				error_message(_(txt_option_not_enabled), "-UNO_POSTING");
+				giveup();
+				/* keep lint quiet: */
+				/* NOTREACHED */
+#endif /* NO_POSTING */
 				break;
 
 #ifdef NNTP_ABLE
@@ -832,8 +842,6 @@ read_cmd_line_options(
 			case 'w':	/* post article & exit */
 #ifndef NO_POSTING
 				post_article_and_exit = TRUE;
-				no_write = TRUE;
-				newsrc_active = TRUE;
 				check_for_new_newsgroups = FALSE;
 #else
 				error_message(_(txt_option_not_enabled), "-UNO_POSTING");

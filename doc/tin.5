@@ -572,14 +572,24 @@ undeclared_charset=ISO-2022-JP-2
 .sp
 .RS
 The filter file is used to assign scores to certain articles. Based on the
-score a article can be filtered out (hidden) or marked hot.
+score an article can be filtered out (hidden) or marked hot. Empty lines or
+lines beginning with a '#' are ignored.
+.TP
+.B comment
+Every entry (rule) in the filter file might get a comment. Multiple lines
+are allowed (but only for comments yet). Every line must start with the
+"comment="-keyword. Comments must appear first in the rule. Comment lines
+placed within a rule will be moved to the begin of the next rule. This is
+due to TIN-internals and might be changed in the future. Don't use '#' to
+mark comments! TIN just ignores these lines, and your comments will get
+lost when TIN rewrites the filter file.
 .TP
 .B group
 A comma-separated list of newsgroup patterns (wildmat-style) to which
-groups the filter rule will be applied.
+groups the filter rule will be applied. This line is mandatory!
 .TP
 .B case
-0=casesensitive, 1=caseinsensitive
+0=case-sensitive, 1=case-insensitive
 .TP
 .B score
 Score value of the rule; can also be one of the magic words "kill" or "hot".
@@ -622,8 +632,8 @@ time_t value when rule expires
 Example:
 .RS
 .nf
-### mark all articles about tin, rtin,
-### tind, ktin or cdtin as hot
+comment=mark all articles about tin, rtin,
+comment=tind, ktin or cdtin as hot
 group=*
 type=1
 case=1

@@ -223,17 +223,21 @@ get_newsrcname(
 					case iKeyNrctblCreate:
 						/* FIXME this doesn't check if we could create the file */
 						return TRUE;
+
 					case iKeyNrctblDefault:
 						joinpath(newsrc_name, homedir, ".newsrc");
 						return TRUE;
+
 					case iKeyNrctblAlternative:
 						sprintf(name_found, ".newsrc-%s", nntpserver_name);
 						joinpath(newsrc_name, homedir, name_found);
 						return TRUE;
+
 					case iKeyNrctblQuit:
 						exit(EXIT_SUCCESS);
 						/* keep lint quiet: */
 						/* FALLTHROUGH */
+
 					case ESC:
 					default:
 						return TRUE;
