@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2003-02-08
+ *  Updated   : 2003-03-11
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2003 Jason Faultless <jason@altarstone.com>
@@ -152,7 +152,7 @@ put_cooked(
 	va_list ap;
 
 	va_start(ap, fmt);
-	vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
+	vsnprintf(buf, sizeof(buf), fmt, ap);
 
 	if (tinrc.wrap_column < 0)
 		wrap_column = ((tinrc.wrap_column > -cCOLS) ? cCOLS + tinrc.wrap_column : cCOLS);
@@ -486,7 +486,6 @@ read_decoded_qp_line(
 			 * re-invokation of this function, set the numbers of read lines to
 			 * the expected maximum that should be read at most.
 			 */
-#if 1
 			/*
 			 * FIXME: If the last line ended in '=' (soft break), skip that
 			 * character because the QP decoder will happily strip the
@@ -495,7 +494,7 @@ read_decoded_qp_line(
 			 */
 			if (*endptr == '=')
 				endptr--;
-#endif /* 1 */
+
 			lines_read = max_lines_to_read;
 			break;
 		}
@@ -685,8 +684,7 @@ process_text_body_part(
 				in_sig = TRUE;
 				if (in_uue) {
 					in_uue = FALSE;
-					/* TODO -> lang.c */
-					put_cooked(wrap_lines, C_UUE, txt_uue, "incomplete ", curruue->line_count, get_filename(curruue->params));
+					put_cooked(wrap_lines, C_UUE, txt_uue, txt_incomplete, curruue->line_count, get_filename(curruue->params));
 				}
 			}
 		}
@@ -706,7 +704,7 @@ process_text_body_part(
 			} else if (strncmp(line, "end\n", 4) == 0) {
 				if (in_uue) {
 					in_uue = FALSE;
-					/* TODO include type/subtype/encoding in txt_uue as in txt_attach? */
+					/* TODO: include type/subtype/encoding in txt_uue as in txt_attach? */
 					put_cooked(wrap_lines, C_UUE, txt_uue, "", curruue->line_count, get_filename(curruue->params));
 					continue;				/* To stop 'end' line appearing */
 				}
@@ -740,8 +738,7 @@ process_text_body_part(
 						fprintf(stderr, "not a uue line while reading a uue body?\n");
 #endif /* DEBUG_ART */
 						in_uue = FALSE;
-						/* TODO -> lang.c */
-						put_cooked(wrap_lines, C_UUE, txt_uue, "incomplete ", curruue->line_count, get_filename(curruue->params));
+						put_cooked(wrap_lines, C_UUE, txt_uue, txt_incomplete, curruue->line_count, get_filename(curruue->params));
 					}
 				}
 			} else {
@@ -800,8 +797,8 @@ process_text_body_part(
 	/*
 	 * Were we reading uue and ran off the end ?
 	 */
-	if (in_uue) /* TODO -> lang.c */
-		put_cooked(wrap_lines, C_UUE, txt_uue, "incomplete ", curruue->line_count, get_filename(curruue->params));
+	if (in_uue)
+		put_cooked(wrap_lines, C_UUE, txt_uue, txt_incomplete, curruue->line_count, get_filename(curruue->params));
 
 	free(line);
 }

@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-27
+ *  Updated   : 2003-03-14
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -598,7 +598,7 @@ enum resizer { cNo, cYes, cRedraw };
 #endif /* !DEFAULT_MAILBOX */
 
 
-/* FIXME: remove absolut-paths! */
+/* FIXME: remove absolute-paths! */
 /*
  * Miscellaneous program-paths
  */
@@ -606,9 +606,14 @@ enum resizer { cNo, cYes, cRedraw };
 #	define PATH_ISPELL	"ispell"
 #endif /* !PATH_ISPELL */
 
-#ifndef PATH_METAMAIL
-#	define PATH_METAMAIL	"metamail"
-#endif /* !PATH_METAMAIL */
+#ifdef HAVE_METAMAIL
+#	ifndef PATH_METAMAIL
+#		define PATH_METAMAIL	"metamail"
+#	endif /* !PATH_METAMAIL */
+#	define METAMAIL_CMD		PATH_METAMAIL" -e -p -m \"tin\""
+#endif /* HAVE_METAMAIL */
+
+#define INTERNAL_CMD	"--internal"
 
 /*
  * Fix up the 'sum' path and parameter for './configure'd systems
@@ -769,7 +774,7 @@ enum resizer { cNo, cYes, cRedraw };
 /* ifdef APPEND_PID (default) NEWNEWSRC_FILE will be .newnewsrc<pid> */
 #define NEWNEWSRC_FILE	".newnewsrc"
 #define OLDNEWSRC_FILE	".oldnewsrc"
-#ifndef	OVERVIEW_FILE
+#ifndef OVERVIEW_FILE
 #	define OVERVIEW_FILE	".overview"
 #endif /* !OVERVIEW_FILE */
 #define OVERVIEW_FMT	"overview.fmt"
@@ -853,25 +858,55 @@ enum resizer { cNo, cYes, cRedraw };
 #define STRNCMPEQ(s1, s2, n)	(strncmp((s1), (s2), n) == 0)
 #define STRNCASECMPEQ(s1, s2, n)	(strncasecmp((s1), (s2), n) == 0)
 
+/*
+ * PATH_LEN    = max. path length
+ * NAME_LEN    = max. filename length
+ * LEN         =
+ * HEADER_LEN  = max. size of a news/mail header-line
+ * NEWSRC_LINE =
+ */
 #if defined(VMS) || defined(M_AMIGA)
-#	define LEN	512
 #	define PATH_LEN	256
+#	define NAME_MAX	14
+#	define LEN	512
 #endif /* VMS || M_AMIGA */
 
 #ifdef M_UNIX
-#	ifndef MAXPATHLEN
-#		define MAXPATHLEN	256
-#	endif /* !MAXPATHLEN */
+#	ifdef PATH_MAX
+#		define PATH_LEN	PATH_MAX
+#	else
+#		ifdef MAXPATHLEN
+#			define PATH_LEN	MAXPATHLEN
+#		else
+#			ifdef _POSIX_PATH_MAX
+#				define PATH_LEN	_POSIX_PATH_MAX
+#			else
+#				define PATH_LEN	255
+#			endif /* _POSIX_PATH_MAX */
+#		endif /* MAXPATHLEN */
+#	endif /* PATH_MAX */
+#	ifdef HAVE_LONG_FILE_NAMES
+#		ifdef NAME_MAX
+#			define NAME_LEN	NAME_MAX
+#		else
+#			ifdef _POSIX_NAME_MAX
+#				define NAME_LEN	_POSIX_NAME_MAX
+#			else
+#				define NAME_LEN	14
+#			endif /* _POSIX_NAME_MAX */
+#		endif /* NAME_MAX */
+#	else
+#  	define NAME_LEN	14
+#	endif /* HAVE_LONG_FILE_NAMES */
 #	define LEN	1024
-#	define PATH_LEN	MAXPATHLEN
 #endif /* M_UNIX */
 
 #define NEWSRC_LINE	8192
-
 #define HEADER_LEN	1024
 
-#define MODULO_COUNT_NUM	50
 #define TABLE_SIZE	1409
+
+#define MODULO_COUNT_NUM	50
 
 #define DAY	(60*60*24)		/* Seconds in a day */
 
@@ -1838,10 +1873,10 @@ typedef struct {
 #	define ENV_VAR_SHELL		"SHELL"
 #	define TIN_EDITOR_FMT_ON	"%E %F"
 #	define MAILER_FORMAT		"%M <%F -f %U"
-#	define METAMAIL_CMD		"%s -e -p -m \"tin\""
 #	define TMPDIR			"T:"
 #	define KEY_PREFIX		0x9b
 #endif /* M_AMIGA */
+
 #ifdef VMS
 #	define REDIRECT_OUTPUT	""
 #	define REDIRECT_PGP_OUTPUT	""
@@ -1849,9 +1884,8 @@ typedef struct {
 /*#	define ENV_VAR_SHELL		"SHELL"*/
 #	define ENV_VAR_POSTER		"TIN_POST"
 #	define TIN_EDITOR_FMT_ON	"%E %F"
-#	define METAMAIL_CMD		"%s -e -p -m \"tin\""
 #	define TMPDIR "SYS$SCRATCH:"
-#	ifdef	HAVE_KEY_PREFIX
+#	ifdef HAVE_KEY_PREFIX
 #		define KEY_PREFIX	0x9b
 #	endif /* HAVE_KEY_PREFIX */
 extern void joindir (char *result, const char *dir, const char *file);
@@ -1864,9 +1898,8 @@ extern void joindir (char *result, const char *dir, const char *file);
 #	define ENV_VAR_SHELL		"SHELL"
 #	define TIN_EDITOR_FMT_ON		"%E +%N %F"
 #	define MAILER_FORMAT		"%M -oi -t < %F"
-#	define METAMAIL_CMD		"%s -e -p -m \"tin\""
 #	define TMPDIR	_PATH_TMP
-#	ifdef	HAVE_KEY_PREFIX
+#	ifdef HAVE_KEY_PREFIX
 #		define KEY_PREFIX		0x8f: case 0x9b
 #	endif /* HAVE_KEY_PREFIX */
 #endif /* M_UNIX */
@@ -1891,9 +1924,6 @@ extern void joindir (char *result, const char *dir, const char *file);
 #ifndef MAILER_FORMAT
 #	define MAILER_FORMAT		""
 #endif /* !MAILER_FORMAT */
-#ifndef METAMAIL_CMD
-#	define METAMAIL_CMD		""
-#endif /* !METAMAIL_CMD */
 #ifndef TMPDIR
 #	define TMPDIR	_PATH_TMP
 #endif /* !TMPDIR */

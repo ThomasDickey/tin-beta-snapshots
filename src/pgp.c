@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 1999-12-02
+ *  Updated   : 2003-03-13
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2003 Steven J. Madsen <steve@erinet.com>
@@ -147,12 +147,12 @@ init_pgp(
 
 #ifdef HAVE_GPG
 	if ((ptr = getenv("GNUPGHOME")) != NULL)
-		my_strncpy(pgp_data, ptr, sizeof(pgp_data));
+		my_strncpy(pgp_data, ptr, sizeof(pgp_data) - 1);
 	else
 #endif /* HAVE_GPG */
 	{
 		if ((ptr = getenv("PGPPATH")) != NULL)
-			my_strncpy(pgp_data, ptr, sizeof(pgp_data));
+			my_strncpy(pgp_data, ptr, sizeof(pgp_data) - 1);
 		else
 			joinpath(pgp_data, homedir, PGPDIR);
 	}
@@ -199,9 +199,9 @@ split_file(
 	char buf[LEN];
 	mode_t mask;
 
-	snprintf(hdr, sizeof(hdr) - 1, HEADERS, TMPDIR, process_id);
-	snprintf(pt, sizeof(pt) - 1, PLAINTEXT, TMPDIR, process_id);
-	snprintf(ct, sizeof(ct) - 1, CIPHERTEXT, TMPDIR, process_id);
+	snprintf(hdr, sizeof(hdr), HEADERS, TMPDIR, process_id);
+	snprintf(pt, sizeof(pt), PLAINTEXT, TMPDIR, process_id);
+	snprintf(ct, sizeof(ct), CIPHERTEXT, TMPDIR, process_id);
 
 	if ((art = fopen(file, "r")) == NULL)
 		return;
@@ -280,9 +280,9 @@ pgp_append_public_key(
 	if ((CURR_GROUP.attribute->from) != NULL && strlen(CURR_GROUP.attribute->from))
 		strip_name(CURR_GROUP.attribute->from, buf);
 	else
-		snprintf(buf, sizeof(buf) - 1, "%s@%s", userid, host_name);
+		snprintf(buf, sizeof(buf), "%s@%s", userid, host_name);
 
-	snprintf(keyfile, sizeof(keyfile) - 1, KEYFILE, TMPDIR, process_id);
+	snprintf(keyfile, sizeof(keyfile), KEYFILE, TMPDIR, process_id);
 
 /*
  * TODO: I'm guessing the pgp append key command creates 'keyfile' and that
@@ -467,7 +467,7 @@ pgp_check_article(
 		/*
 		 * We don't use sh_format here else the redirection get misquoted
 		 */
-		snprintf(cmd, sizeof(cmd) - 1, CHECK_SIGN, PGPNAME, pgpopts, artfile, REDIRECT_PGP_OUTPUT);
+		snprintf(cmd, sizeof(cmd), CHECK_SIGN, PGPNAME, pgpopts, artfile, REDIRECT_PGP_OUTPUT);
 		invoke_cmd(cmd);
 		my_printf("\n");
 		Raw(TRUE);

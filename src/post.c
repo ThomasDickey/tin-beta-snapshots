@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-06
+ *  Updated   : 2003-03-14
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -246,20 +246,20 @@ init_postinfo(
 	 */
 	reply_to[0] = '\0';
 	if ((ptr = getenv("REPLYTO")) != NULL)
-		my_strncpy(reply_to, ptr, sizeof(reply_to));
+		my_strncpy(reply_to, ptr, sizeof(reply_to) - 1);
 
 	/*
 	 * check enviroment for DISTRIBUTION
 	 */
 	my_distribution[0] = '\0';
 	if ((ptr = getenv("DISTRIBUTION")) != NULL)
-		my_strncpy(my_distribution, ptr, sizeof(my_distribution));
+		my_strncpy(my_distribution, ptr, sizeof(my_distribution) - 1);
 }
 
 
 /*
  * TODO: add p'o'stpone function here? would be nice but difficult
- *       as the postpone fetcher looks for articles with corect headers
+ *       as the postpone fetcher looks for articles with correct headers
  */
 static t_bool
 repair_article(
@@ -297,7 +297,7 @@ backup_article_name(
 {
 	static char name[PATH_LEN];
 
-	snprintf(name, sizeof(name) - 1, "%s.bak", the_article);
+	snprintf(name, sizeof(name), "%s.bak", the_article);
 	return name;
 }
 
@@ -502,7 +502,7 @@ user_posted_messages(
 		return FALSE;
 	}
 	for (; i > 0; i--) {
-		snprintf(buf, sizeof(buf) - 1, "%8s  %c  %-*s  %s",
+		snprintf(buf, sizeof(buf), "%8s  %c  %-*s  %s",
 			posted[i - 1].date, posted[i - 1].action,
 			(int) group_len, posted[i - 1].group, posted[i - 1].subj);
 		buf[cCOLS - 2] = '\0';
@@ -1067,12 +1067,14 @@ check_article_to_be_posted(
 		if (saw_sig_dashes || saw_wrong_sig_dashes)
 			sig_lines++;
 
-		if (!strcmp(line, "-- ")) {
+		/* SIGDASHES excluding the terminating \n as we removed it from line right above */
+		if (!strncmp(line, SIGDASHES, 3)) {
 			saw_wrong_sig_dashes = FALSE;
 			saw_sig_dashes++;
 			sig_lines = 0;
 		}
-		if (!strcmp(line, "--") && !saw_sig_dashes) {
+		/* SIGDASHES excluding the taling SAPCE (and '\n', see comment above) */
+		if (!strncmp(line, SIGDASHES, 2) && !saw_sig_dashes) {
 			saw_wrong_sig_dashes = TRUE;
 			sig_lines = 0;
 		}
@@ -1152,7 +1154,7 @@ check_article_to_be_posted(
 	 * signature it will not be encoded. We might additionally check if there's
 	 * a file named ~/.signature and skip the warning if it is not present.
 	 */
-	if (((tinrc.post_mime_encoding == MIME_ENCODING_QP) || (tinrc.post_mime_encoding == MIME_ENCODING_BASE64)) && 0 != strcasecmp(tinrc.inews_prog, "--internal"))
+	if (((tinrc.post_mime_encoding == MIME_ENCODING_QP) || (tinrc.post_mime_encoding == MIME_ENCODING_BASE64)) && 0 != strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
 		warnings_catbp |= CA_WARNING_ENCODING_EXTERNAL_INEWS;
 
 	/* give most error messages */
@@ -1535,7 +1537,7 @@ post_article_done:
 			if (header.newsgroups) {
 				update_active_after_posting(header.newsgroups);
 				/* In POST_RESPONSE, this was copied from note_h.newsgroups if !followup to poster */
-				my_strncpy(tinrc.default_post_newsgroups, header.newsgroups, sizeof(tinrc.default_post_newsgroups));
+				my_strncpy(tinrc.default_post_newsgroups, header.newsgroups, sizeof(tinrc.default_post_newsgroups) - 1);
 			}
 		}
 
@@ -1594,7 +1596,7 @@ post_article_done:
 					break;
 			}
 
-			my_strncpy(tinrc.default_post_subject, header.subj, sizeof(tinrc.default_post_subject));
+			my_strncpy(tinrc.default_post_subject, header.subj, sizeof(tinrc.default_post_subject) - 1);
 		}
 
 		if (*tinrc.posted_articles_file && type != POST_REPOST) {
@@ -1684,7 +1686,7 @@ check_moderated(
 		}
 
 		if (psGrp->moderated == 'm') {
-			snprintf(mesg, sizeof(mesg) - 1, _(txt_group_is_moderated), group);
+			snprintf(mesg, sizeof(mesg), _(txt_group_is_moderated), group);
 			if (prompt_yn(cLINES, mesg, TRUE) != 1) {
 /*				Raw(FALSE); */
 				error_message(failmsg);
@@ -1722,9 +1724,9 @@ create_normal_article_headers(
 	if (strlen(tinrc.default_post_subject) > DISPLAY_SUBJECT_LEN)
 		sprintf(tmp, "%.*s ...", DISPLAY_SUBJECT_LEN, tinrc.default_post_subject);
 	else
-		strncpy(tmp, tinrc.default_post_subject, sizeof(tmp));
+		strncpy(tmp, tinrc.default_post_subject, sizeof(tmp) - 1);
 
-	snprintf(mesg, sizeof(mesg) - 1, _(txt_post_subject), tmp);
+	snprintf(mesg, sizeof(mesg), _(txt_post_subject), tmp);
 
 	if (!(prompt_string_default(mesg, tinrc.default_post_subject, _(txt_no_subject), HIST_POST_SUBJECT)))
 		return FALSE;
@@ -1897,8 +1899,7 @@ fetch_postponed_article(
 	char subject[],
 	char newsgroups[])
 {
-	FILE *in;
-	FILE *out;
+	FILE *in, *out;
 	FILE *tmp;
 	char *bufp = (char *) 0;
 	char postponed_tmp[PATH_LEN];
@@ -1907,8 +1908,7 @@ fetch_postponed_article(
 	t_bool prev_line_nl;
 	t_bool anything_left;
 
-	strcpy(postponed_tmp, postponed_articles_file);
-	strcat(postponed_tmp, "_");
+	snprintf(postponed_tmp, sizeof(postponed_tmp), "%s_", postponed_articles_file);
 	in = fopen(postponed_articles_file, "r");
 	out = fopen(tmp_file, "w");
 	tmp = fopen(postponed_tmp, "w");
@@ -2015,7 +2015,7 @@ pickup_postponed_articles(
 		return FALSE;
 	}
 
-	sprintf(question, _(txt_prompt_see_postponed), count);
+	snprintf(question, sizeof(question), _(txt_prompt_see_postponed), count);
 
 	if (ask && prompt_yn(cLINES, question, TRUE) != 1)
 		return FALSE;
@@ -2623,7 +2623,7 @@ create_mail_headers(
 
 	/* TODO: why do we exclude VMS here but nowhere else? */
 #if defined(APPEND_PID) && !defined(VMS)
-	sprintf(filename + strlen(filename), ".%d", (int) process_id);
+	snprintf(filename + strlen(filename), PATH_LEN - 1, ".%d", (int) process_id);
 #endif /* APPEND_PID && !VMS */
 
 	if ((fp = fopen(filename, "w")) == NULL) {
@@ -2850,7 +2850,7 @@ mail_to_someone(
 	struct t_header note_h = artinfo->hdr;
 
 	clear_message();
-	snprintf(subject, sizeof(subject) - 1, "(fwd) %s\n", note_h.subj);
+	snprintf(subject, sizeof(subject), "(fwd) %s\n", note_h.subj);
 
 	/*
 	 * don't add extra headers in the mail_to_someone() case as we include
@@ -2902,7 +2902,7 @@ mail_bug_report(
 {
 	FILE *fp;
 	const char *domain;
-	char buf[LEN], nam[100];
+	char buf[LEN], nam[PATH_LEN];
 	char mail_to[HEADER_LEN];
 	char tmesg[LEN];
 	char subject[HEADER_LEN];
@@ -2994,7 +2994,7 @@ mail_bug_report(
 		if (invoke_cmd(buf))
 			ret_code = TRUE;
 	} else {
-		snprintf(tmesg, sizeof(tmesg) - 1, _(txt_mail_bug_report_confirm), bug_addr);
+		snprintf(tmesg, sizeof(tmesg), _(txt_mail_bug_report_confirm), bug_addr);
 		ret_code = mail_loop(nam, iKeyPostEdit, subject, NULL, tmesg);
 	}
 
@@ -3051,7 +3051,7 @@ mail_to_author(
 		char *foo;
 
 		foo = my_strdup(note_h.subj);
-		snprintf(subject, sizeof(subject) - 1, "Re: %s\n", eat_re(note_h.subj, TRUE));
+		snprintf(subject, sizeof(subject), "Re: %s\n", eat_re(note_h.subj, TRUE));
 		free(foo);
 	}
 
@@ -3272,7 +3272,7 @@ cancel_article(
 
 	joinpath(cancel, homedir, TIN_CANCEL_NAME);
 #ifdef APPEND_PID
-	sprintf(cancel + strlen(cancel), ".%d", (int) process_id);
+	snprintf(cancel + strlen(cancel), sizeof(cancel) - 1, ".%d", (int) process_id);
 #endif /* APPEND_PID */
 
 	if ((fp = fopen(cancel, "w")) == NULL) {
@@ -3718,8 +3718,8 @@ msg_add_x_body(
 	if (!body)
 		return 0;
 
-	if (body[0] != '/' && body[0] != '~') {
-		strncpy(line, body, sizeof(line));
+	if (body[0] != '/' && body[0] != '~') { /* FIXME: Unix'ism */
+		strncpy(line, body, sizeof(line) - 1);
 		if ((ptr = strrchr(line, '\n')) != NULL)
 			*ptr = '\0';
 
@@ -4435,14 +4435,14 @@ build_messageid(
 	static char buf2[1024];
 
 	strip_name(build_sender(), buf2);
-	snprintf(buf, sizeof(buf) - 1, "<%lxt%lxi%xn%x%%%s>", seqnum++, time(0), process_id, getuid(), buf2);
+	snprintf(buf, sizeof(buf), "<%lxt%lxi%xn%x%%%s>", seqnum++, time(0), process_id, getuid(), buf2);
 #	else
 	/*
 	 * Message ID format as suggested in
 	 * draft-ietf-usefor-msg-id-alt-00, 2.1.1
 	 * based on the host's FQDN
 	 */
-	snprintf(buf, sizeof(buf) - 1, "<%lxt%lxi%xn%x@%s>", seqnum++, time(0), getpid(), getuid(), get_fqdn(get_host_name()));
+	snprintf(buf, sizeof(buf), "<%lxt%lxi%xn%x@%s>", seqnum++, time(0), getpid(), getuid(), get_fqdn(get_host_name()));
 #	endif /* !FORGERY */
 
 	i = gnksa_check_from(buf);
@@ -4575,7 +4575,7 @@ add_headers(
 				inhdrs = FALSE;
 				if (addmid) {
 					char msgidbuf[HEADER_LEN];
-					snprintf(msgidbuf, sizeof(msgidbuf) - 1, "Message-ID: %s\n", a_message_id);
+					snprintf(msgidbuf, sizeof(msgidbuf), "Message-ID: %s\n", a_message_id);
 					if (write(fd_out, msgidbuf, strlen(msgidbuf)) == (ssize_t) -1) /* abort on write errors */ {
 						writesuccess = FALSE;
 						break;

@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2003-03-04
+ *  Updated   : 2003-03-14
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2003 Iain Lea <iain@bricbrac.de>
@@ -79,7 +79,7 @@ read_mail_active_file(
 
 		error_message(_(txt_cannot_open), mail_active_file);
 		/*
-		 * FIXME - maybe do an autoscan of maildir, create & do a reopen ?
+		 * TODO: do an autoscan of maildir, create & reopen?
 		 */
 		write_mail_active_file();
 		return;
@@ -336,7 +336,7 @@ read_groups_descriptions(
 
 void
 print_active_head(
-	char *active_file)
+	const char *active_file)
 {
 	FILE *fp;
 
@@ -352,7 +352,7 @@ print_active_head(
 
 void
 find_art_max_min(
-	char *group_path,
+	const char *group_path,
 	long *art_max,
 	long *art_min)
 {
@@ -384,35 +384,13 @@ find_art_max_min(
 void
 print_group_line(
 	FILE *fp,
-	char *group_name,
+	const char *group_name,
 	long art_max,
 	long art_min,
-	char *base_dir)
+	const char *base_dir)
 {
 	fprintf(fp, "%s %05ld %05ld %s\n",
 		group_name, art_max, art_min, base_dir);
-}
-
-
-/*
- * Given a base pathname & a newsgroup name build an absolute pathname.
- * base = /usr/spool/news
- * newsgroup = alt.sources
- * absolute path = /usr/spool/news/alt/sources
- */
-void
-make_base_group_path(
-	char *base_dir,
-	char *group_name,
-	char *group_path)
-{
-	char *ptr;
-
-	joinpath(group_path, base_dir, group_name);
-
-	ptr = group_path + strlen(base_dir);
-	while ((ptr = strchr(ptr, '.')) != NULL)
-		*ptr = '/';
 }
 
 
@@ -437,6 +415,7 @@ grp_del_mail_arts(
 {
 	char article_filename[PATH_LEN];
 	char group_path[PATH_LEN];
+	char artnum[LEN];
 	int i;
 	struct t_article *article;
 #if 0 /* see comment below */
@@ -452,8 +431,8 @@ grp_del_mail_arts(
 		for_each_art(i) {
 			article = &arts[i];
 			if (article->delete_it) {
-				/* TODO: use joinpath() instead */
-				snprintf(article_filename, sizeof(article_filename) - 1, "%s/%ld", group_path, article->artnum);
+				snprintf(artnum, sizeof(artnum), "%ld", article->artnum);
+				joinpath(article_filename, group_path, artnum);
 				unlink(article_filename);
 				article->thread = ART_EXPIRED;
 #if 0 /* see comment below */
@@ -486,6 +465,7 @@ art_edit(
 {
 	char article_filename[PATH_LEN];
 	char temp_filename[PATH_LEN];
+	char buf[PATH_LEN];
 
 	/*
 	 * Check if news / mail group
@@ -494,9 +474,9 @@ art_edit(
 		return FALSE;
 
 	make_base_group_path(group->spooldir, group->name, temp_filename);
-	/* TODO: use joinpath() instead */
-	snprintf(article_filename, sizeof(article_filename) - 1, "%s/%ld", temp_filename, article->artnum);
-	snprintf(temp_filename, sizeof(temp_filename) - 1, "%s%d.art", TMPDIR, (int) process_id);
+	snprintf(buf, sizeof(buf), "%ld", article->artnum);
+	joinpath(article_filename, temp_filename, buf);
+	snprintf(temp_filename, sizeof(temp_filename), "%s%d.art", TMPDIR, (int) process_id);
 
 	if (!backup_file(article_filename, temp_filename))
 		return FALSE;

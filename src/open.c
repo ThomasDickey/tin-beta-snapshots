@@ -3,7 +3,7 @@
  *  Module    : open.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-18
+ *  Updated   : 2003-03-13
  *  Notes     : Routines to make reading news locally (ie. /var/spool/news)
  *              or via NNTP transparent
  *
@@ -397,9 +397,16 @@ get_only_respcode(
 
 	ptr = tin_fgets(FAKE_NNTP_FP, FALSE);
 
-	if (tin_errno || ptr == NULL)
+	if (tin_errno || ptr == NULL) {
+#	ifdef DEBUG
+		debug_nntp("<<<", "Error: tin_error<>0 or ptr==NULL in get_only_respcode()");
+#	endif /* DEBUG */
 		return -1;
+	}
 
+#	ifdef DEBUG
+	debug_nntp("<<<", ptr);
+#	endif /* DEBUG */
 	respcode = (int) strtol(ptr, &end, 10);
 	DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
 
@@ -415,9 +422,16 @@ get_only_respcode(
 		put_server(last_put);
 		ptr = tin_fgets(FAKE_NNTP_FP, FALSE);
 
-		if (tin_errno)
+		if (tin_errno) {
+#	ifdef DEBUG
+			debug_nntp("<<<", "Error: tin_errno <> 0");
+#	endif /* DEBUG */
 			return -1;
+		}
 
+#	ifdef DEBUG
+		debug_nntp("<<<", ptr);
+#	endif /* DEBUG */
 		respcode = (int) strtol(ptr, &end, 10);
 		DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
 	}
@@ -457,7 +471,7 @@ get_respcode(
 #	ifdef DEBUG
 		debug_nntp("get_respcode", "authentication");
 #	endif /* DEBUG */
-		strncpy(savebuf, last_put, NNTP_STRLEN);		/* Take copy, as authenticate() will clobber this */
+		strncpy(savebuf, last_put, sizeof(savebuf) - 1);		/* Take copy, as authenticate() will clobber this */
 
 		if (authenticate(nntp_server, userid, FALSE)) {
 			strcpy(last_put, savebuf);
@@ -465,9 +479,16 @@ get_respcode(
 			put_server(last_put);
 			ptr = tin_fgets(FAKE_NNTP_FP, FALSE);
 
-			if (tin_errno)
+			if (tin_errno) {
+#	ifdef DEBUG
+				debug_nntp("<<<", "Error: tin_errno <> 0");
+#	endif /* DEBUG */
 				return -1;
+			}
 
+#	ifdef DEBUG
+			debug_nntp("<<<", ptr);
+#	endif /* DEBUG */
 			respcode = (int) strtol(ptr, &end, 10);
 			if (message != NULL)				/* Pass out the rest of the text */
 				strcpy(message, end);
@@ -805,7 +826,7 @@ open_art_fp(
 
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && CURR_GROUP.type == GROUP_TYPE_NEWS) {
-		snprintf(buf, sizeof(buf) - 1, "ARTICLE %ld", art);
+		snprintf(buf, sizeof(buf), "ARTICLE %ld", art);
 		art_fp = nntp_command(buf, OK_ARTICLE, NULL, 0);
 	} else {
 #endif /* NNTP_ABLE */
@@ -861,8 +882,7 @@ base_comp(
  */
 long
 setup_hard_base(
-	struct t_group *group,
-	const char *group_path)
+	struct t_group *group)
 {
 	char buf[NNTP_STRLEN];
 	long art;
@@ -948,7 +968,7 @@ setup_hard_base(
 		DIR *d;
 		DIR_BUF *e;
 
-		joinpath(buf, group->spooldir, group_path);
+		make_base_group_path(group->spooldir, group->name, buf);
 
 		if (access(buf, R_OK) != 0) {
 			error_message(_(txt_not_exist));

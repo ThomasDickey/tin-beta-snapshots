@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-05
+ *  Updated   : 2003-03-14
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -854,7 +854,7 @@ group_page(
 				if (!prompt_string(mesg, buf, HIST_SELECT_PATTERN))
 					break;
 
-				if (buf[0] == '\0') {				/* TODO -> prompt_string_default ?? */
+				if (buf[0] == '\0') {	/* TODO: prompt_string_default? */
 					if (tinrc.default_select_pattern[0] == '\0') {
 						info_message(_(txt_info_no_previous_expression));
 						break;
@@ -1410,17 +1410,17 @@ show_group_title(
 	 * build the group title
 	 */
 	/* group name and thread count */
-	snprintf(buf, sizeof(buf) - 1, "%s (%d%c",
+	snprintf(buf, sizeof(buf), "%s (%d%c",
 		currgrp.name, grpmenu.max,
 		*txt_threading[currgrp.attribute->thread_arts]);
 
 	/* article count */
 	if (tinrc.getart_limit)
-		snprintf(tmp, sizeof(tmp) - 1, " %d/%d%c",
+		snprintf(tmp, sizeof(tmp), " %d/%d%c",
 			tinrc.getart_limit, art_cnt,
 			(currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read));
 	else
-		snprintf(tmp, sizeof(tmp) - 1, " %d%c",
+		snprintf(tmp, sizeof(tmp), " %d%c",
 			art_cnt,
 			(currgrp.attribute->show_only_unread ? tinrc.art_marked_unread : tinrc.art_marked_read));
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
@@ -1428,10 +1428,10 @@ show_group_title(
 
 	/* selected articles */
 	if (currgrp.attribute->show_only_unread)
-		snprintf(tmp, sizeof(tmp) - 1, " %d%c",
+		snprintf(tmp, sizeof(tmp), " %d%c",
 			selected_art_cnt, tinrc.art_marked_selected);
 	else
-		snprintf(tmp, sizeof(tmp) - 1, " %d%c %d%c",
+		snprintf(tmp, sizeof(tmp), " %d%c %d%c",
 			selected_art_cnt, tinrc.art_marked_selected,
 			read_selected_art_cnt, tinrc.art_marked_read_selected);
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
@@ -1439,7 +1439,7 @@ show_group_title(
 
 	/* recent articles */
 	if (tinrc.recent_time) {
-		snprintf(tmp, sizeof(tmp) - 1, " %d%c",
+		snprintf(tmp, sizeof(tmp), " %d%c",
 			recent_art_cnt, tinrc.art_marked_recent);
 
 		if (sizeof(buf) > strlen(buf) + strlen(tmp))
@@ -1447,13 +1447,13 @@ show_group_title(
 	}
 
 	/* killed articles */
-	snprintf(tmp, sizeof(tmp) - 1, " %d%c",
+	snprintf(tmp, sizeof(tmp), " %d%c",
 		killed_art_cnt, tinrc.art_marked_killed);
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
 		strcat(buf, tmp);
 
 	/* group flag */
-	snprintf(tmp, sizeof(tmp) - 1, ") %c",
+	snprintf(tmp, sizeof(tmp), ") %c",
 		group_flag(currgrp.moderated));
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
 		strcat(buf, tmp);
@@ -1618,7 +1618,7 @@ group_catchup(
 	if (num_of_tagged_arts && prompt_yn(cLINES, _(txt_catchup_despite_tags), TRUE) != 1)
 		return 0;
 
-	snprintf(buf, sizeof(buf) - 1, _(txt_mark_arts_read), (ch == iKeyGroupCatchupNextUnread) ? _(txt_enter_next_unread_group) : "");
+	snprintf(buf, sizeof(buf), _(txt_mark_arts_read), (ch == iKeyGroupCatchupNextUnread) ? _(txt_enter_next_unread_group) : "");
 
 	if (!CURR_GROUP.newsrc.num_unread || (!TINRC_CONFIRM_ACTION) || (pyn = prompt_yn(cLINES, buf, TRUE)) == 1)
 		grp_mark_read(&CURR_GROUP, arts);

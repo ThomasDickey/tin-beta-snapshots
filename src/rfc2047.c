@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2003-02-05
+ *  Updated   : 2003-03-14
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2003 Chris Blum <chris@resolution.de>
@@ -81,7 +81,7 @@ static int which_encoding(char *w);
 static t_bool contains_nonprintables(char *w, t_bool isstruct_head);
 static unsigned hex2bin(int x);
 static void build_base64_rank_table(void);
-static void str2b64(char *from, char *to);
+static void str2b64(const char *from, char *to);
 
 
 static void
@@ -307,7 +307,7 @@ rfc1522_decode(
  */
 static void
 str2b64(
-	char *from,
+	const char *from,
 	char *to)
 {
 	short int i, count;

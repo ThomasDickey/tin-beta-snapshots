@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2003-03-06
+ *  Updated   : 2003-03-14
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -197,7 +197,7 @@ submit_inews(
 					if (!tinrc.post_8bit_header) {
 						char *p;
 #ifdef CHARSET_CONVERSION
-						p = rfc1522_encode(sender_hdr, group ? txt_mime_charsets[group->attribute->mm_network_charset] : txt_mime_charsets[tinrc.mm_network_charset] , ismail);
+						p = rfc1522_encode(sender_hdr, group ? txt_mime_charsets[group->attribute->mm_network_charset] : txt_mime_charsets[tinrc.mm_network_charset], ismail);
 #else
 						p = rfc1522_encode(sender_hdr, tinrc.mm_charset, ismail);
 #endif /* CHARSET_CONVERSION */
@@ -412,14 +412,14 @@ submit_news_file(
 	rfc15211522_encode(name, txt_mime_encodings[tinrc.post_mime_encoding], group, tinrc.post_8bit_header, ismail);
 
 #ifdef NNTP_INEWS
-	if (read_news_via_nntp && !read_saved_news && 0 == strcasecmp(tinrc.inews_prog, "--internal"))
+	if (read_news_via_nntp && !read_saved_news && 0 == strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
 		ret_code = submit_inews(name, group, a_message_id);
 	else
 #endif /* NNTP_INEWS */
 		{
 #ifdef M_UNIX
 			/* use tinrc.inews_prog or 'inewsdir/inews -h' 'inews -h' */
-			if (0 != strcasecmp(tinrc.inews_prog, "--internal"))
+			if (0 != strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
 				strncpy(buf, tinrc.inews_prog, sizeof(buf) - 1);
 			else {
 				if (*inewsdir)
@@ -436,12 +436,12 @@ submit_news_file(
 			ret_code = invoke_cmd(buf);
 
 #ifdef NNTP_INEWS
-			if (!ret_code && read_news_via_nntp && !read_saved_news && 0 != strcasecmp(tinrc.inews_prog, "--internal")) {
+			if (!ret_code && read_news_via_nntp && !read_saved_news && 0 != strcasecmp(tinrc.inews_prog, INTERNAL_CMD)) {
 				if (prompt_yn(cLINES, _(txt_post_via_builtin_inews), TRUE)) {
 					ret_code = submit_inews(name, group, a_message_id);
 					if (ret_code) {
 						if (prompt_yn(cLINES, _(txt_post_via_builtin_inews_only), TRUE) == 1)
-							strcpy(tinrc.inews_prog,"--internal");
+							strcpy(tinrc.inews_prog, INTERNAL_CMD);
 					}
 				}
 			}

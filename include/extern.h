@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-06
+ *  Updated   : 2003-03-14
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>
@@ -290,9 +290,11 @@
 #ifdef DECL_VSNPRINTF
 	extern int vsnprintf(char *, size_t, const char *, va_list);
 #endif /* DECL_VSNPRINTF */
+#if 0 /* some (most?) systems have "int vsprintf(char *, const char *, va_list)" */
 #ifdef DECL_VSPRINTF
 	extern int vsprintf(char *, char *, va_list);
 #endif /* DECL_VSPRINTF */
+#endif /* 0 */
 
 
 extern int optind;
@@ -441,6 +443,7 @@ extern constext txt_article_cancelled[];
 extern constext txt_article_plural[];
 extern constext txt_article_reposted[];
 extern constext txt_article_singular[];
+extern constext txt_article_upper[];
 extern constext txt_articles_mailed[];
 #ifndef DISABLE_PRINTING
 	extern constext txt_articles_printed[];
@@ -567,14 +570,13 @@ extern constext txt_error_header_line_bad_encoding[];
 extern constext txt_error_header_line_blank[];
 extern constext txt_error_header_line_colon[];
 extern constext txt_error_header_line_empty[];
-#ifndef FOLLOW_USEFOR_DRAFT
-	extern constext txt_error_header_line_comma[];
-	extern constext txt_error_header_line_groups_contd[];
-#endif /* !FOLLOW_USEFOR_DRAFT */
 extern constext txt_error_header_line_missing[];
 extern constext txt_error_header_line_space[];
 extern constext txt_error_insecure_permissions[];
 extern constext txt_error_invalid_response_to_group[];
+extern constext txt_error_locale[];
+extern constext txt_error_mime_end[];
+extern constext txt_error_mime_start[];
 extern constext txt_error_no_domain_name[];
 extern constext txt_error_no_enter_permission[];
 extern constext txt_error_no_from[];
@@ -787,6 +789,7 @@ extern constext txt_help_title_disp[];
 extern constext txt_help_title_misc[];
 extern constext txt_help_title_navi[];
 extern constext txt_help_title_ops[];
+extern constext txt_incomplete[];
 extern constext txt_index_page_com[];
 extern constext txt_info_add_kill[];
 extern constext txt_info_add_select[];
@@ -1099,6 +1102,7 @@ extern constext txt_usage_verbose[];
 extern constext txt_usage_version[];
 extern constext txt_useful_without_batch_mode[];
 extern constext txt_useful_with_batch_mode[];
+extern constext txt_use_mime[];
 extern constext txt_value_out_of_range[];
 extern constext txt_view_attachment[];
 extern constext txt_warn_art_line_too_long[];
@@ -1372,9 +1376,13 @@ extern t_bool word_highlight;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 
 #ifdef HAVE_METAMAIL
-	extern constext txt_use_mime[];
 	extern constext txt_error_metamail_failed[];
 #endif /* HAVE_METAMAIL */
+
+#ifndef FOLLOW_USEFOR_DRAFT
+	extern constext txt_error_header_line_comma[];
+	extern constext txt_error_header_line_groups_contd[];
+#endif /* !FOLLOW_USEFOR_DRAFT */
 
 #ifdef HAVE_PGP_GPG
 	extern constext txt_pgp_add[];
@@ -1436,6 +1444,7 @@ extern struct opttxt txt_art_marked_recent;
 extern struct opttxt txt_art_marked_return;
 extern struct opttxt txt_art_marked_selected;
 extern struct opttxt txt_art_marked_unread;
+extern struct opttxt txt_ask_for_metamail;
 extern struct opttxt txt_auto_bcc;
 extern struct opttxt txt_auto_cc;
 extern struct opttxt txt_auto_list_thread;
@@ -1476,6 +1485,7 @@ extern struct opttxt txt_mono_markdash;
 extern struct opttxt txt_mono_markslash;
 extern struct opttxt txt_mono_markstroke;
 extern struct opttxt txt_mm_charset;
+extern struct opttxt txt_metamail_prog;
 extern struct opttxt txt_news_headers_to_display;
 extern struct opttxt txt_news_headers_to_not_display;
 extern struct opttxt txt_news_quote_format;
@@ -1577,9 +1587,5 @@ extern struct opttxt txt_xpost_quote_format;
 #ifdef HAVE_KEYPAD
 	extern struct opttxt txt_use_keypad;
 #endif /* HAVE_KEYPAD */
-#ifdef HAVE_METAMAIL
-	extern struct opttxt txt_use_metamail;
-	extern struct opttxt txt_ask_for_metamail;
-#endif /* HAVE_METAMAIL */
 
 #endif /* !EXTERN_H */

@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-18
+ *  Updated   : 2003-03-14
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -66,7 +66,7 @@ static int global_get_multiparts(int aindex, MultiPartInfo **malloc_and_setme_in
 static int global_look_for_multipart_info(int aindex, MultiPartInfo *setme, char start, char stop, int *offset);
 static int lines_comp(t_comptype p1, t_comptype p2);
 static int read_nov_file(struct t_group *group, long min, long max, int *expired);
-static int read_group(struct t_group *group, char *group_path, int *pcount);
+static int read_group(struct t_group *group, int *pcount);
 static int score_comp(t_comptype p1, t_comptype p2);
 static int score_comp_base(t_comptype p1, t_comptype p2);
 static int subj_comp(t_comptype p1, t_comptype p2);
@@ -85,7 +85,7 @@ static void thread_by_multipart(void);
  */
 void
 show_art_msg(
-	char *group)
+	const char *group)
 {
 /* what if cCOLS < (strlen)+18? */
 	wait_message(0, _(txt_group), cCOLS - strlen(_(txt_group)) + 2 - 3, group);
@@ -162,7 +162,6 @@ t_bool
 index_group(
 	struct t_group *group)
 {
-	char group_path[PATH_LEN];
 	int count;
 	int expired;
 	int modified;
@@ -177,7 +176,6 @@ index_group(
 	if (!batch_mode)
 		show_art_msg(group->name);
 
-	make_group_path(group->name, group_path);
 	signal_context = cArt;			/* Set this once glob_group is valid */
 
 	hash_reclaim();
@@ -193,7 +191,7 @@ index_group(
 	BegStopWatch("setup_base");
 #endif /* PROFILE */
 
-	if (setup_hard_base(group, group_path) < 0)
+	if (setup_hard_base(group) < 0)
 		return FALSE;
 
 #ifdef PROFILE
@@ -242,7 +240,7 @@ index_group(
 	/*
 	 * Add any articles to arts[] that are new or were killed
 	 */
-	if ((modified = read_group(group, group_path, &count)) == -1)
+	if ((modified = read_group(group, &count)) == -1)
 		return FALSE;	/* user aborted indexing */
 
 	/*
@@ -340,7 +338,6 @@ find_first_unread(
 static int
 read_group(
 	struct t_group *group,
-	char *group_path,
 	int *pcount)
 {
 	FILE *fp;
@@ -354,11 +351,11 @@ read_group(
 	static char dir[PATH_LEN] = "";
 
 	/*
-	 * change to groups spooldir to optimize fopen()'s on local articles
+	 * Change to groups spooldir to optimize fopen()'s on local articles
 	 */
 	if (!read_news_via_nntp || group->type != GROUP_TYPE_NEWS) {
 		get_cwd(dir);
-		joinpath(buf, group->spooldir, group_path);
+		make_base_group_path(group->spooldir, group->name, buf);
 		my_chdir(buf);
 	}
 
@@ -1230,10 +1227,13 @@ read_nov_file(
 		} else
 			*q = '\0';
 
-		/* TODO is no mesg-id allowed in rfc? */
 		/*
-		 * draft-ietf-nntpext-base-13.txt, section 9.2.1.1
-		 * comes up with "<0>" - should we use it instead of '\0'?
+		 * TODO: is no mesg-id allowed in rfc?
+		 *       no, but we might see that in mailgroups as mesg-id is
+		 *       optional in mail
+		 *
+		 *       draft-ietf-nntpext-base-13.txt, section 9.2.1.1
+		 *       comes up with "<0>" - should we use it instead of '\0'?
 		 */
 		arts[top_art].msgid = (*p ? my_strdup(p) : '\0');
 
@@ -1305,7 +1305,7 @@ read_nov_file(
 					q++;
 
 				arts[top_art].xref = my_strdup(q);
-				/* TODO: crosscheck artnum against Xref:-line (if xref:full) */
+				/* TODO: crosscheck artnum against Xref:-line (if Xref:full) */
 			}
 		}
 
@@ -1450,8 +1450,10 @@ write_nov_file(
 
 				fprintf(fp, "\n");
 				free(p);
-				if (q != ref)
+				if (q != ref) {
 					free(ref);
+					ref = q = NULL;
+				}
 			}
 		}
 		fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH));
@@ -1533,12 +1535,11 @@ find_nov_file(
 
 		case GROUP_TYPE_NEWS:
 			if (read_news_via_nntp && xover_supported && !tinrc.cache_overview_files)
-				snprintf(nov_file, sizeof(nov_file) - 1, "%s%d.idx", TMPDIR, (int) process_id);
+				snprintf(nov_file, sizeof(nov_file), "%s%d.idx", TMPDIR, (int) process_id);
 			else {
 #ifndef NNTP_ONLY
 				make_base_group_path(novrootdir, group->name, buf);
-				/* TODO: use joinpath() */
-				snprintf(nov_file, sizeof(nov_file) - 1, "%s/%s", buf, novfilename);
+				joinpath(nov_file, buf, novfilename);
 				if (mode == R_OK || mode == W_OK) {
 					if (!access(nov_file, mode))
 						overview_index_filename = TRUE;
@@ -1559,8 +1560,8 @@ find_nov_file(
 		hash = hash_groupname(group->name);
 
 		for (i = 1; ; i++) {
-			/* TODO: use joinpath() */
-			snprintf(nov_file, sizeof(nov_file) - 1, "%s/%lu.%d", dir, hash, i);
+			snprintf(buf, sizeof(buf), "%lu.%d", hash, i);
+			joinpath(nov_file, dir, buf);
 
 			if ((fp = fopen(nov_file, "r")) == NULL)
 				return nov_file;
@@ -1596,7 +1597,6 @@ void
 do_update(
 	t_bool catchup)
 {
-	char group_path[PATH_LEN];
 	register int i, j;
 	time_t beg_epoch;
 	struct t_group *group;
@@ -1609,7 +1609,6 @@ do_update(
 	 */
 	for (i = 0; i < selmenu.max; i++) {
 		group = &active[my_group[i]];
-		make_group_path(group->name, group_path);
 
 		if (verbose) {
 			my_printf("%s %s\n", (catchup ? _(txt_catchup) : _(txt_updating)), group->name);
@@ -1943,9 +1942,9 @@ print_from(
 	if (article->name != NULL) {
 		p = rfc1522_encode(article->name, tinrc.mm_local_charset, FALSE);
 		if (strpbrk(article->name, "\".:;<>@[]()\\") != NULL && article->name[0] != '"' && article->name[strlen(article->name)] != '"')
-			snprintf(from, sizeof(from) - 1, "\"%s\" <%s>", tinrc.post_8bit_header ? article->name : p, article->from);
+			snprintf(from, sizeof(from), "\"%s\" <%s>", tinrc.post_8bit_header ? article->name : p, article->from);
 		else
-			snprintf(from, sizeof(from) - 1, "%s <%s>", tinrc.post_8bit_header ? article->name : p, article->from);
+			snprintf(from, sizeof(from), "%s <%s>", tinrc.post_8bit_header ? article->name : p, article->from);
 
 		free(p);
 	}

@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-05
+ *  Updated   : 2003-03-14
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -101,13 +101,13 @@ static int prompt_response(int ch, int curr_respnum);
 static int scroll_page(int dir);
 static t_bool deactivate_next_ctrl_l(void);
 static t_bool activate_last_ctrl_l(void);
+static void draw_page_header(const char *group);
 static void preprocess_info_message(FILE *info_fh);
 static void print_message_page(FILE *file, t_lineinfo *messageline, size_t messagelines, size_t base_line, size_t begin, size_t end, int help_level);
 static void process_search(int *lcurr_line, size_t message_lines, size_t screen_lines, int help_level);
 static void process_url(void);
-static void draw_page_header(const char *group);
 #ifdef HAVE_METAMAIL
-	static void show_mime_article(FILE *fp);
+	static void invoke_metamail(FILE *fp);
 #endif /* HAVE_METAMAIL */
 
 
@@ -321,7 +321,6 @@ show_page(
 	int *threadnum)			/* to allow movement in thread mode */
 {
 	char buf[LEN];
-	char group_path[LEN];
 	char key[MAXKEYLEN];
 	int ch, i, n = 0;
 	int filter_state = NO_FILTERING;
@@ -331,7 +330,6 @@ show_page(
 	t_bool repeat_search = FALSE;
 
 	filtered_articles = FALSE;	/* used in thread level */
-	make_group_path(group->name, group_path);
 
 	if (group->attribute->mailing_list != NULL)
 		art_type = GROUP_TYPE_MAIL;
@@ -726,7 +724,7 @@ page_goto_next_unread:
 
 			case iKeyPageCatchup:			/* catchup - mark read, goto next */
 			case iKeyPageCatchupNextUnread:	/* goto next unread */
-				snprintf(buf, sizeof(buf) - 1, _(txt_mark_thread_read), (ch == iKeyPageCatchupNextUnread) ? _(txt_enter_next_thread) : "");
+				snprintf(buf, sizeof(buf), _(txt_mark_thread_read), (ch == iKeyPageCatchupNextUnread) ? _(txt_enter_next_thread) : "");
 				if ((!TINRC_CONFIRM_ACTION) || prompt_yn(cLINES, buf, TRUE) == 1) {
 					thd_mark_read(group, base[which_thread(this_resp)]);
 					return (ch == iKeyPageCatchupNextUnread) ? GRP_NEXTUNREAD : GRP_NEXT;
@@ -735,8 +733,11 @@ page_goto_next_unread:
 
 			case iKeyPageMarkThdUnread:
 				thd_mark_unread(group, base[which_thread(this_resp)]);
-				/* FIXME: replace 'Thread' by 'Article' if THREAD_NONE */
-				info_message(_(txt_marked_as_unread), _("Thread"));
+				/*
+				 * FIXME: replace txt_thread by txt_article_upper
+				 * if THREAD_NONE
+				 */
+				info_message(_(txt_marked_as_unread), _(txt_thread));
 				break;
 
 			case iKeyPageCancel:			/* cancel an article */
@@ -902,7 +903,7 @@ return_to_index:
 
 			case iKeyPageMarkArtUnread:	/* mark article as unread(to return) */
 				art_mark(group, &arts[this_resp], ART_WILL_RETURN);
-				info_message(_(txt_marked_as_unread), _("Article"));
+				info_message(_(txt_marked_as_unread), _(txt_article_upper));
 				break;
 
 			case iKeyPageSkipIncludedText:	/* skip included text */
@@ -1137,13 +1138,16 @@ draw_page(
 }
 
 
+/*
+ * Start external metamail program
+ */
 #ifdef HAVE_METAMAIL
 static void
-show_mime_article(
+invoke_metamail(
 	FILE *fp)
 {
-	char *mm;
-	char buf[PATH_LEN];
+	char *ptr;
+	char buf[LEN];
 	long offset;
 #ifndef DONT_HAVE_PIPING
 	FILE *mime_fp;
@@ -1152,22 +1156,15 @@ show_mime_article(
 	offset = ftell(fp);
 	rewind(fp);
 
-	if ((mm = getenv("METAMAIL"))) {
-		if (strcmp(mm, "(internal)") == 0) {	/* Special hack - use internal viewer */
-			draw_page(CURR_GROUP.name, 0);
-			decode_save_mime(&pgart, FALSE);
-			return;
-		}
-		snprintf(buf, sizeof(buf) - 1, mm);
-	} else
-		snprintf(buf, sizeof(buf) - 1, METAMAIL_CMD, PATH_METAMAIL);
-
 	EndWin();
 	Raw(FALSE);
 
+	if ((ptr = getenv("METAMAIL")) == NULL)
+		ptr = tinrc.metamail_prog;
+
 	/* TODO: add DONT_HAVE_PIPING fallback code */
 #ifndef DONT_HAVE_PIPING
-	if ((mime_fp = popen(buf, "w"))) {
+	if ((mime_fp = popen(ptr, "w"))) {
 		while (fgets(buf, (int) sizeof(buf), fp) != NULL)
 			fputs(buf, mime_fp);
 
@@ -1181,7 +1178,7 @@ show_mime_article(
 	InitWin();
 	prompt_continue();
 
-	/* This is redundant, but harmless, unless we are viewing the raw art */
+	/* This is needed if we are viewing the raw art */
 	fseek(fp, offset, SEEK_SET);	/* goto old position */
 
 	MoveCursor(cLINES, MORE_POS - (5 + BLANK_PAGE_COLS));
@@ -1286,7 +1283,7 @@ draw_page_header(
 		my_fputs(buf, stdout);
 	}
 
-	strncpy(buf, (note_h->subj ? note_h->subj : arts[this_resp].subject), HEADER_LEN - 1);
+	strncpy(buf, (note_h->subj ? note_h->subj : arts[this_resp].subject), sizeof(buf) - 1);
 
 	buf[RIGHT_POS - 5 - i] = '\0';
 
@@ -1388,7 +1385,7 @@ load_article(
 				return GRP_ARTFAIL;	/* special retcode to stop redrawing screen */
 
 			default:					/* Normal case */
-#if 0
+#if 0			/* Very useful debugging tool */
 				if (prompt_yn(cLINES, "Fake art unavailable ? ", FALSE) == 1) {
 					art_close(&pgart);
 					art_mark(&CURR_GROUP, &arts[new_respnum], ART_READ);
@@ -1425,21 +1422,36 @@ load_article(
 	reveal_ctrl_l_lines = -1;	/* all ^L's active */
 	hide_uue = tinrc.hide_uue;
 
+	draw_page(CURR_GROUP.name, 0);
+
 	/*
 	 * Automatically invoke attachment viewing if requested
 	 */
-#ifdef HAVE_METAMAIL
-	if (tinrc.use_metamail && note_h->mime && !(IS_PLAINTEXT(note_h->ext))) {
-		if (tinrc.ask_for_metamail) {
-			draw_page(CURR_GROUP.name, 0);
-			if (prompt_yn(cLINES, _(txt_use_mime), TRUE) == 1)
-				show_mime_article(pgart.raw);
-		} else
-			show_mime_article(pgart.raw);
-	}
-#endif /* HAVE_METAMAIL */
+	if (!note_h->mime || IS_PLAINTEXT(note_h->ext))		/* Text only article */
+		return 0;
 
-	draw_page(CURR_GROUP.name, 0);
+	if (*tinrc.metamail_prog == '\0')					/* Viewer turned off */
+		return 0;
+
+	if (getenv("NOMETAMAIL") != NULL)
+		return 0;
+
+	if (strcmp(tinrc.metamail_prog, INTERNAL_CMD) == 0) {	/* Use internal viewer */
+		if (tinrc.ask_for_metamail) {
+			if (prompt_yn(cLINES, _(txt_use_mime), TRUE) != 1)
+				return 0;
+		}
+		decode_save_mime(&pgart, FALSE);
+		return 0;
+	}
+
+#ifdef HAVE_METAMAIL
+	if (tinrc.ask_for_metamail) {
+		if (prompt_yn(cLINES, _(txt_use_mime), TRUE) != 1)
+			return 0;
+	}
+	invoke_metamail(pgart.raw);
+#endif /* HAVE_METAMAIL */
 	return 0;
 }
 
@@ -1607,7 +1619,7 @@ process_url(
 					break;
 
 				wait_message(2, _(txt_url_open), url);
-				snprintf(ubuf, sizeof(ubuf) - 1, "%s %s", tinrc.url_handler, escape_shell_meta(url, 0));
+				snprintf(ubuf, sizeof(ubuf), "%s %s", tinrc.url_handler, escape_shell_meta(url, 0));
 				invoke_cmd(ubuf);
 			}
 			ptr += offsets[1] + 1;

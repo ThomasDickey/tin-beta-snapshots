@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-18
+ *  Updated   : 2003-03-14
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -403,7 +403,7 @@ invoke_ispell(
 	struct t_group *group) /* return value is always ignored */
 {
 	FILE *fp_all, *fp_body, *fp_head;
-	char buf[PATH_LEN], nam_body[100], nam_head[100];
+	char buf[PATH_LEN], nam_body[PATH_LEN], nam_head[PATH_LEN];
 	char ispell[PATH_LEN];
 	t_bool retcode;
 
@@ -416,11 +416,13 @@ invoke_ispell(
 	 * Now seperating the header and body in two different files so that
 	 * the header is not checked by ispell
 	 */
-	strncpy(nam_body, nam, sizeof(nam_body) - 6);
-	strcat(nam_body, ".body");
-
-	strncpy(nam_head, nam, sizeof(nam_head) - 6);
-	strcat(nam_head, ".head");
+#ifdef HAVE_LONG_FILE_NAMES
+	snprintf(nam_body, sizeof(nam_body), "%s%s", nam, ".body");
+	snprintf(nam_head, sizeof(nam_head), "%s%s", nam, ".head");
+#else
+	snprintf(nam_body, sizeof(nam_body), "%s%s", nam, ".b");
+	snprintf(nam_head, sizeof(nam_head), "%s%s", nam, ".h");
+#endif /* HAVE_LONG_FILE_NAMES */
 
 	if ((fp_all = fopen(nam, "r")) == NULL) {
 		perror_message(_(txt_cannot_open), nam);
@@ -482,9 +484,9 @@ shell_escape(
 		continue;
 
 	if (*p)
-		my_strncpy(tinrc.default_shell_command, p, sizeof(tinrc.default_shell_command));
+		my_strncpy(tinrc.default_shell_command, p, sizeof(tinrc.default_shell_command) - 1);
 	else {
-		my_strncpy(shell, (*tinrc.default_shell_command ? tinrc.default_shell_command : (get_val(ENV_VAR_SHELL, DEFAULT_SHELL))), sizeof(shell));
+		my_strncpy(shell, (*tinrc.default_shell_command ? tinrc.default_shell_command : (get_val(ENV_VAR_SHELL, DEFAULT_SHELL))), sizeof(shell) - 1);
 		p = shell;
 	}
 
@@ -910,7 +912,7 @@ draw_percent_mark(
 		return;
 
 	clear_message();
-	snprintf(buf, sizeof(buf) - 1, "%s(%d%%) [%ld/%ld]", _(txt_more), (int) (cur_num * 100 / max_num), cur_num, max_num);
+	snprintf(buf, sizeof(buf), "%s(%d%%) [%ld/%ld]", _(txt_more), (int) (cur_num * 100 / max_num), cur_num, max_num);
 	MoveCursor(cLINES, (cCOLS - (int) strlen(buf)) - (1 + BLANK_PAGE_COLS));
 	StartInverse();
 	my_fputs(buf, stdout);
@@ -1302,7 +1304,7 @@ strfquote(
 
 				case 'F':	/* Articles Address+Name */
 					if (arts[respnum].name)
-						snprintf(tbuf, sizeof(tbuf) - 1 , "%s <%s>", arts[respnum].name, arts[respnum].from);
+						snprintf(tbuf, sizeof(tbuf), "%s <%s>", arts[respnum].name, arts[respnum].from);
 					else {
 						STRCPY(tbuf, arts[respnum].from);
 					}
@@ -1671,7 +1673,7 @@ _strfpath(
 					if (strfpath(group->attribute->savedir, buf, sizeof(buf), group)) {
 						char tmp[PATH_LEN];
 #ifdef HAVE_LONG_FILE_NAMES
-						my_strncpy(tmp, group->name, sizeof(tmp));
+						my_strncpy(tmp, group->name, sizeof(tmp) - 1);
 #else
 						my_strncpy(tmp, group->name, 14);
 #endif /* HAVE_LONG_FILE_NAMES */
@@ -1929,7 +1931,7 @@ strfmailer(
 				case 'S':	/* Subject */
 					/* don't MIME encode Subject if using external mail client */
 					if (tinrc.use_mailreader_i)
-						strncpy(tbuf, escape_shell_meta(subject, quote_area), sizeof(tbuf));
+						strncpy(tbuf, escape_shell_meta(subject, quote_area), sizeof(tbuf) - 1);
 					else {
 						char *p;
 
@@ -1938,7 +1940,7 @@ strfmailer(
 #else
 						p = rfc1522_encode(subject, tinrc.mm_charset, ismail);
 #endif /* CHARSET_CONVERSION */
-						strncpy(tbuf, escape_shell_meta(p, quote_area), sizeof(tbuf));
+						strncpy(tbuf, escape_shell_meta(p, quote_area), sizeof(tbuf) - 1);
 						free(p);
 					}
 					tbuf[sizeof(tbuf) - 1] = '\0';	/* just in case */
@@ -1948,7 +1950,7 @@ strfmailer(
 				case 'T':	/* To */
 					/* don't MIME encode To if using external mail client */
 					if (tinrc.use_mailreader_i)
-						strncpy(tbuf, escape_shell_meta(to, quote_area), sizeof(tbuf));
+						strncpy(tbuf, escape_shell_meta(to, quote_area), sizeof(tbuf) - 1);
 					else {
 						char *p;
 
@@ -1957,7 +1959,7 @@ strfmailer(
 #else
 						p = rfc1522_encode(to, tinrc.mm_charset, ismail);
 #endif /* CHARSET_CONVERSION */
-						strncpy(tbuf, escape_shell_meta(p, quote_area), sizeof(tbuf));
+						strncpy(tbuf, escape_shell_meta(p, quote_area), sizeof(tbuf) - 1);
 						free(p);
 					}
 					tbuf[sizeof(tbuf) - 1] = '\0';	/* just in case */
@@ -1967,7 +1969,7 @@ strfmailer(
 				case 'U':	/* User */
 					/* don't MIME encode User if using external mail client */
 					if (tinrc.use_mailreader_i)
-						strncpy(tbuf, userid, sizeof(tbuf));
+						strncpy(tbuf, userid, sizeof(tbuf) - 1);
 					else {
 						char *p;
 
@@ -1976,7 +1978,7 @@ strfmailer(
 #else
 						p = rfc1522_encode(userid, tinrc.mm_charset, ismail);
 #endif /* CHARSET_CONVERSION */
-						strncpy(tbuf, p, sizeof(tbuf));
+						strncpy(tbuf, p, sizeof(tbuf) - 1);
 						free(p);
 					}
 					tbuf[sizeof(tbuf) - 1] = '\0';	/* just in case */
@@ -2064,7 +2066,7 @@ get_cwd(
  */
 void
 make_group_path(
-	char *name,
+	const char *name,
 	char *path)
 {
 #ifdef VMS
@@ -2075,8 +2077,28 @@ make_group_path(
 		name++;
 		path++;
 	}
+	*path++ = '/';
 	*path = '\0';
 #endif /* VMS */
+}
+
+
+/*
+ * Given a base pathname & a newsgroup name build an absolute pathname.
+ * base_dir = /usr/spool/news
+ * group_name = alt.sources
+ * group_path = /usr/spool/news/alt/sources
+ */
+void
+make_base_group_path(
+	const char *base_dir,
+	const char *group_name,
+	char *group_path)
+{
+	char buf[LEN];
+
+	make_group_path(group_name, buf);
+	joinpath(group_path, base_dir, buf);
 }
 
 

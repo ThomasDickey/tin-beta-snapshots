@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2003-02-18
+ *  Updated   : 2003-03-14
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
@@ -68,7 +68,7 @@ extern void do_update(t_bool catchup);
 extern void find_base(struct t_group *group);
 extern void make_threads(struct t_group *group, t_bool rethread);
 extern void set_article(struct t_article *art);
-extern void show_art_msg(char *group);
+extern void show_art_msg(const char *group);
 extern void sort_arts(unsigned /* int */ sort_art_type);
 extern void write_nov_file(struct t_group *group);
 
@@ -291,10 +291,9 @@ extern t_bool dot_unlock(const char *filename);
 
 /* mail.c */
 extern t_bool art_edit(struct t_group *group, struct t_article *article);
-extern void find_art_max_min(char *group_path, long *art_max, long *art_min);
-extern void make_base_group_path(char *base_dir, char *group_name, char *group_path);
-extern void print_active_head(char *active_file);
-extern void print_group_line(FILE *fp, char *group_name, long art_max, long art_min, char *base_dir);
+extern void find_art_max_min(const char *group_path, long *art_max, long *art_min);
+extern void print_active_head(const char *active_file);
+extern void print_group_line(FILE *fp, const char *group_name, long art_max, long art_min, const char *base_dir);
 extern void read_descriptions(t_bool verb);
 extern void grp_del_mail_arts(struct t_group *group);
 extern void grp_del_mail_art(struct t_article *article);
@@ -363,7 +362,8 @@ extern void create_index_lock_file(char *the_lock_file);
 extern void draw_percent_mark(long cur_num, long max_num);
 extern void get_author(t_bool thread, struct t_article *art, char *str, size_t len);
 extern void get_cwd(char *buf);
-extern void make_group_path(char *name, char *path);
+extern void make_base_group_path(const char *base_dir, const char *group_name, char *group_path);
+extern void make_group_path(const char *name, char *path);
 extern void read_input_history_file(void);
 extern void rename_file(const char *old_filename, const char *new_filename);
 extern void show_inverse_video_status(void);
@@ -445,7 +445,7 @@ extern int get_respcode(char *, size_t);
 extern int get_only_respcode(char *, size_t);
 extern int nntp_open(void);
 extern int group_get_art_info(char *tin_spooldir, char *groupname, int grouptype, long *art_count, long *art_max, long *art_min);
-extern long setup_hard_base(struct t_group *group, const char *group_path);
+extern long setup_hard_base(struct t_group *group);
 extern t_bool stat_article(long art, const char *group_path);
 extern void nntp_close(void);
 extern void vGet1GrpArtInfo(struct t_group *grp);
@@ -587,7 +587,7 @@ extern void info_message(const char *fmt, ...);
 extern void perror_message(const char *fmt, ...);
 extern void ring_bell(void);
 extern void show_progress(const char *txt, long count, long total);
-extern void show_title(char *title);
+extern void show_title(const char *title);
 extern void spin_cursor(void);
 extern void stow_cursor(void);
 extern void wait_message(unsigned int sdelay, const char *fmt, ...);

@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-15
+ *  Updated   : 2003-03-13
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -74,8 +74,10 @@ static t_bool start_any_unread = FALSE;	/* only start if unread news */
  */
 static void read_cmd_line_options(int argc, char *argv[]);
 static void show_intro_page(void);
-static void update_index_files(void);
 static void usage(char *theProgname);
+#ifndef NNTP_ONLY
+	static void update_index_files(void);
+#endif /* !NNTP_ONLY */
 
 
 /*
@@ -91,6 +93,8 @@ main(
 	int start_groupnum = 0;
 	t_bool tmp_no_write;
 
+	cmd_line = TRUE;
+
 	/* initialize locale support */
 #if defined(HAVE_SETLOCALE) && !defined(NO_LOCALE)
 	if (setlocale(LC_ALL, "")) {
@@ -98,17 +102,14 @@ main(
 		bindtextdomain(PACKAGE, LOCALEDIR);
 		textdomain(PACKAGE);
 #	endif /* ENABLE_NLS */
-	} else { /* EMPTY */
-	/*
-	 * TODO: issue a warning here like
-	 *       "Can't set the specified locale! Check $LANG, $LC_CTYPE, $LC_ALL"
-	 */
+	} else {
+		error_message(_(txt_error_locale));
+		sleep(2);
 	}
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
 
 	set_signal_handlers();
 
-	cmd_line = TRUE;
 	debug = 0;	/* debug OFF */
 
 #if defined(M_AMIGA) && defined(__SASC)
@@ -242,10 +243,11 @@ main(
 	 * create_save_active_file cannot write to active.save
 	 * if no_write != FALSE, so restore original value temporarily
 	 */
-	no_write = tmp_no_write;
-	if (read_saved_news)
+	if (read_saved_news) {
+		no_write = tmp_no_write;
 		create_save_active_file();
-	no_write = TRUE;
+		no_write = TRUE;
+	}
 
 #ifdef HAVE_MH_MAIL_HANDLING
 	read_mail_active_file();
@@ -287,7 +289,7 @@ main(
 		no_write = tmp_no_write; /* restore original value */
 		quick_post_article(post_postponed_and_exit);
 		wait_message(2, _(txt_exiting));
-		no_write = TRUE; /* disable tinrc updates */
+		no_write = TRUE; /* disable newsrc updates */
 		tin_done(EXIT_SUCCESS);
 	}
 
@@ -352,8 +354,6 @@ main(
 	 * or
 	 * Save any new articles to savedir structure for later reading
 	 *
-	 * FIXME: this currentyl doen't work, see comments in
-	 *        check_start_save_any_news()
 	 * TODO: should we temporarely set
 	 *       getart_limit=-1,thread_arts=0,sort_art_type=0
 	 *       for speed reasons?
@@ -372,12 +372,14 @@ main(
 		tin_done(EXIT_SUCCESS);
 	}
 
+#ifndef NNTP_ONLY
 	/*
 	 * Update index files
 	 * Only the -u batch_mode case will get this far
 	 */
 	if (batch_mode)
 		update_index_files();
+#endif /* !NNTP_ONLY */
 
 	/*
 	 * If first time print welcome screen and auto-subscribe
@@ -470,7 +472,7 @@ read_cmd_line_options(
 				break;
 
 			case 'f':	/* newsrc (tin) file */
-				my_strncpy(newsrc, optarg, sizeof(newsrc));
+				my_strncpy(newsrc, optarg, sizeof(newsrc) - 1);
 				newsrc_set = TRUE;
 				break;
 
@@ -481,7 +483,7 @@ read_cmd_line_options(
 #	ifndef M_AMIGA
 			case 'g':	/* select alternative NNTP-server, implies -r */
 #		ifdef NNTP_ABLE
-				my_strncpy(cmdline_nntpserver, optarg, sizeof(cmdline_nntpserver));
+				my_strncpy(cmdline_nntpserver, optarg, sizeof(cmdline_nntpserver) - 1);
 				read_news_via_nntp = TRUE;
 #		else
 				error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
@@ -500,7 +502,7 @@ read_cmd_line_options(
 
 			case 'I':
 #ifndef NNTP_ONLY
-				my_strncpy(index_newsdir, optarg, sizeof(index_newsdir));
+				my_strncpy(index_newsdir, optarg, sizeof(index_newsdir) - 1);
 #else
 				error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
@@ -514,11 +516,11 @@ read_cmd_line_options(
 				break;
 
 			case 'm':
-				my_strncpy(tinrc.maildir, optarg, sizeof(tinrc.maildir));
+				my_strncpy(tinrc.maildir, optarg, sizeof(tinrc.maildir) - 1);
 				break;
 
 			case 'M':	/* mail new news to specified user */
-				my_strncpy(mail_news_user, optarg, sizeof(mail_news_user));
+				my_strncpy(mail_news_user, optarg, sizeof(mail_news_user) - 1);
 				mail_news = TRUE;
 				batch_mode = TRUE;
 				break;
@@ -579,11 +581,11 @@ read_cmd_line_options(
 				list_active = TRUE;
 				newsrc_active = FALSE;
 				check_for_new_newsgroups = FALSE;
-				my_strncpy(news_active_file, save_active_file, sizeof(news_active_file));
+				my_strncpy(news_active_file, save_active_file, sizeof(news_active_file) - 1);
 				break;
 
 			case 's':
-				my_strncpy(tinrc.savedir, optarg, sizeof(tinrc.savedir));
+				my_strncpy(tinrc.savedir, optarg, sizeof(tinrc.savedir) - 1);
 				break;
 
 			case 'S':	/* save new news to dir structure */
@@ -890,7 +892,7 @@ read_cmd_line_options(
 			(void) gethostname(nodenamebuf, sizeof(nodenamebuf));
 #	else
 			/* TODO: document $NodeName */
-			my_strncpy(nodenamebuf, get_val("NodeName", "PROBLEM_WITH_NODE_NAME"), sizeof(nodenamebuf));
+			my_strncpy(nodenamebuf, get_val("NodeName", "PROBLEM_WITH_NODE_NAME"), sizeof(nodenamebuf) - 1);
 #	endif /* HAVE_GETHOSTNAME && !M_AMIGA */
 			get_newsrcname(newsrc, nodenamebuf);
 #endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
@@ -964,8 +966,7 @@ usage(
 
 #	ifndef M_AMIGA
 #		ifdef NNTP_ABLE
-			/* FIXME, default should be $NNTPSERVER if set ... */
-			error_message(_(txt_usage_newsserver), NNTP_DEFAULT_SERVER);
+			error_message(_(txt_usage_newsserver), get_val("NNTPSERVER", NNTP_DEFAULT_SERVER));
 #		endif /* NNTP_ABLE */
 #	endif /* !M_AMIGA */
 
@@ -1014,6 +1015,7 @@ usage(
 }
 
 
+#ifndef NNTP_ONLY
 /*
  * update index files
  */
@@ -1033,6 +1035,7 @@ update_index_files(
 	do_update(catchup);
 	tin_done(EXIT_SUCCESS);
 }
+#endif /* !NNTP_ONLY */
 
 
 /*
@@ -1051,7 +1054,7 @@ show_intro_page(
 		my_printf("\n");
 	}
 
-	snprintf(buf, sizeof(buf) - 1, _(txt_intro_page), PRODUCT, PRODUCT, PRODUCT, bug_addr);
+	snprintf(buf, sizeof(buf), _(txt_intro_page), PRODUCT, PRODUCT, PRODUCT, bug_addr);
 
 	my_fputs(buf, stdout);
 	my_flush();

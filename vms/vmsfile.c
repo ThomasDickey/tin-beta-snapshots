@@ -27,6 +27,9 @@ char **split(char *spliton, char *target)
 }
 #endif
 
+/*
+ * TODO may need to append a '.' if file has no extension ?
+ */
 void joinpath(char *result, const char *dir, const char *file)
 {
   struct filespec *spec;

@@ -1,7 +1,15 @@
--- 1.5.17 release 20030309 "" --
+-- 1.5.17 release 20030314 "" --
+
+ 048) Darrell Tangman <dgtangman@acm.org>
+      BUG. malloc() mem. could be free()ed twice
+      FIX. art.c
+
+U143) Andreas Metzler <tin-dev@downhill.at.eu.org>
+      ADD. manpage update
+      FIX. tin.1, tin.5
 
 U142) Matt Anton <tin@syrius.org>
-      ADD. strated french translation
+      ADD. started french translation
       FIX. fr.po
 
 U141) Christian Garbs <tin-dev@cgarbs.de>
@@ -10,10 +18,15 @@ U141) Christian Garbs <tin-dev@cgarbs.de>
 
 U140) Jason Faultless <jason@altarstone.com>
       BUG. incorrectly nested multipart articles sometimes hung tin
+      BUG. -S did not create subdirs
+      BUG. -S was broken in reading news via NNTP
       ADD. tinrc.posted_articles_file (replaces tinrc.keep_posted_articles &
            tinrc.keep_posted_articles_file)
-      FIX. extern.h, rfc2046.h, tinrc.h, config.c, init.c, lang.c, post.c
-           rfc2046.c, tincfg.tbl
+      ADD. cleanup MIME-viewing code
+      FIX. extern.h, proto.h, rfc2046.h, tin.h, tinrc.h, art.c, config.c
+           inews.c, init.c, lang.c, mail.c, misc.c, open.c, page.c, post.c
+           rfc2046.c, rfc2047.c, save.c, screen.c, search.c, sigfile.c
+           tincfg.tbl, tin.1, tin.5
 
 U139) Olaf Dietrich <olaf@dtrx.de>
       ADD. allow PageGotoParent for killed parents if kill_level==KILL_THREAD
@@ -22,8 +35,12 @@ U139) Olaf Dietrich <olaf@dtrx.de>
 U138) Dirk Nimmich <nimmich@muenster.de>
       BUG. "time remaining" was updated constantly, so it was unusable on a
            modem link
+      BUG. raw multipart article didn't contain epilog after last boundary
+      BUG. highlighting in multibyte charset environment without USE_CURSES
+           was broken
+      ADD. more NNTP debug output
       NOP. revised TODO
-      FIX. screen.c, TODO
+      FIX. curses.c, nntplib.c, open.c, rfc2046.c, screen.c, TODO
 
 U137) Toomas Soome <Toomas.Soome@microlink.ee>
       ADD. updated estonian translation
@@ -36,8 +53,13 @@ U136) Corinna Vinschen <corinna@vinschen.de>
 
  046) Urs Janssen <urs@tin.org>
       BUG. comma separated group list in attribute scope didn't work
-      BUG. "." might be resend as last command after a reconnect
-      FIX. attrib.c, inews.c, nntplib.c
+      BUG. "." might be resent as last command after a reconnect
+      BUG. part of the threading code aussumed that References are always
+           space separated
+      BUG. fixed some possible bufferoverflows
+      ADD. allow .pro-TLD
+      FIX. policy.h, attrib.c, config.c, feed.c, header.c, inews.c, init.c
+           main.c, misc.c, nntplib.c, post.c, refs.c, save.c, select.c
 
 U135) Michael Bienia <michael@vorlon.ping.de>
       ADD. word highlighting for monochrom terminals
@@ -71,15 +93,18 @@ U133) Urs Janssen <urs@tin.org>
       REM. EUC-TW -> ISO-2022-KR autoconversion for 7bit mime_encoding
       REM. disallow ISO-2022-KR as network charset
       REM. base64 encoding force for EUC-KR
+      REM. superfluous setlocale() call
       ADD. allow ISO-2022-* 7bit encodings
       ADD. config.guess, config.sub update
       ADD. post_8bit_header=ON now also disables body encoding
       ADD. expand path-names in 4th filed of the active.mail file
-      FIX. attrib.c, auth.c, config.c, curses.c, group.c, inews.c, keymap.c
-           lang.c, mail.c, misc.c, nntplib.c, post.c, regex.c, rfc2045.c
-           rfc2047.c, save.c, search.c, string.c, tags.c, tcurses.c, xref.c
-           extern.h, proto.h, tin.h, tcurses.h, tin.1, tin.5, de.po
-           config.guess, config.sub, tinrcupdate.pl
+      ADD. moved a few strings to lang.c
+      FIX. active.c, art.c, attrib.c, auth.c, config.c, cook.c, curses.c
+           group.c, inews.c, init.c, keymap.c, lang.c, mail.c, main.c
+           mimetypes.c, misc.c, nntplib.c, page.c, post.c, regex.c, rfc2045.c
+           rfc2046.c, rfc2047.c, save.c, search.c, string.c, tags.c, tcurses.c
+           thread.c, xref.c, extern.h, proto.h, tin.h, tcurses.h, tin.1, tin.5
+           de.po, en_GB.po, config.guess, config.sub, tinrcupdate.pl
 
 -- 1.5.16 release 20030125 "Bubbles" --
 

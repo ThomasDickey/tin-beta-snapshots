@@ -3,7 +3,7 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2003-02-06
+ *  Updated   : 2003-03-14
  *  Notes     :
  *
  * Copyright (c) 1993-2003 Iain Lea <iain@bricbrac.de>
@@ -109,7 +109,7 @@ read_xref_header(
 		char buf[HEADER_LEN];
 		long artnum = 0L;
 
-		snprintf(buf, sizeof(buf) - 1, "XHDR XREF %ld", art->artnum);
+		snprintf(buf, sizeof(buf), "XHDR XREF %ld", art->artnum);
 		if ((fp = nntp_command(buf, OK_HEAD, NULL, 0)) == NULL)
 			return;
 

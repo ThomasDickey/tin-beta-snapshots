@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-03
+ *  Updated   : 2003-03-14
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -131,7 +131,7 @@ build_tline(
 			mark = tinrc.art_marked_killed;
 		} else {
 			if (/* tinrc.kill_level != KILL_UNREAD && */ art->score >= tinrc.score_select)
-				mark = tinrc.art_marked_read_selected ; /* read hot chil^H^H^H^H article */
+				mark = tinrc.art_marked_read_selected; /* read hot chil^H^H^H^H article */
 			else
 				mark = tinrc.art_marked_read;
 		}
@@ -216,7 +216,7 @@ build_tline(
 			size_t len = strlen(buff);
 			for (ptr = art->refptr->parent; ptr && EXPIRED(ptr); ptr = ptr->parent)
 				;
-			if (!(ptr && arts[ptr->article].subject == art->subject))
+			if (!(ptr && arts[ptr->article].subject == art->subject)) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				if (mbstowcs(wtmp2, art->subject, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
 					wcspart(wtmp, wtmp2, gap, ARRAY_SIZE(wtmp));
@@ -227,9 +227,10 @@ build_tline(
 						strncat(buff, tmp, cCOLS * MB_CUR_MAX - len - 1);
 #	endif /* USE_CURSES */
 				}
+			}
 #else
 				strncat(buff, art->subject, gap);
-
+			}
 			buff[len + gap] = '\0';	/* Just in case */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		}
@@ -731,14 +732,14 @@ thread_page(
 				art_mark(group, &arts[n], ART_WILL_RETURN); /* art_mark(group, &arts[n], ART_UNREAD); */
 				build_tline(thdmenu.curr, &arts[n]);
 				draw_line(thdmenu.curr, MAGIC);
-				info_message(_(txt_marked_as_unread), _("Article"));
+				info_message(_(txt_marked_as_unread), _(txt_article_upper));
 				draw_thread_arrow();
 				break;
 
 			case iKeyThreadMarkThdUnread:		/* mark thread as unread */
 				thd_mark_unread(group, base[thread_basenote]);
 				update_thread_page();
-				info_message(_(txt_marked_as_unread), _("Thread"));
+				info_message(_(txt_marked_as_unread), _(txt_thread));
 				break;
 
 			case iKeyThreadSelArt:		/* mark article as selected */
@@ -818,9 +819,9 @@ show_thread_page(
 	assert(thdmenu.first != 0 || the_index == thread_respnum);
 
 	if (show_subject)
-		snprintf(mesg, sizeof(mesg) - 1, _(txt_stp_list_thread), grpmenu.curr + 1, grpmenu.max);
+		snprintf(mesg, sizeof(mesg), _(txt_stp_list_thread), grpmenu.curr + 1, grpmenu.max);
 	else
-		snprintf(mesg, sizeof(mesg) - 1, _(txt_stp_thread), cCOLS - 23, arts[thread_respnum].subject);
+		snprintf(mesg, sizeof(mesg), _(txt_stp_thread), cCOLS - 23, arts[thread_respnum].subject);
 
 	/*
 	 * Slight misuse of the 'mesg' buffer here. We need to clear it so that progress messages
@@ -1392,9 +1393,8 @@ thread_catchup(
 			break;
 	}
 
-/* FIXME do some NLS/snprintf work here - see equivalent code in group_catchup() */
 	if (i != -1) {				/* still unread arts in this thread */
-		sprintf(buf, _(txt_mark_thread_read), (ch == iKeyThreadCatchupNextUnread) ? _(txt_enter_next_thread) : "");
+		snprintf(buf, sizeof(buf), _(txt_mark_thread_read), (ch == iKeyThreadCatchupNextUnread) ? _(txt_enter_next_thread) : "");
 		if ((!TINRC_CONFIRM_ACTION) || (pyn = prompt_yn(cLINES, buf, TRUE)) == 1)
 			thd_mark_read(&CURR_GROUP, base[thread_basenote]);
 	}

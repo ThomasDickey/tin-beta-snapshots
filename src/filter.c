@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2003-02-18
+ *  Updated   : 2003-03-14
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -87,11 +87,11 @@ struct t_filters glob_filter = { 0, 0, (struct t_filter *) 0 };
  */
 static int get_choice(int x, const char *help, const char *prompt, const char *opt1, const char *opt2, const char *opt3, const char *opt4, const char *opt5);
 static int set_filter_scope(struct t_group *group);
-static t_bool add_filter_rule(struct t_group *group, struct t_article *art, struct t_filter_rule *rule);
-static t_bool test_regex(const char *string, char *regex, t_bool nocase, struct regex_cache *cache);
 static struct t_filter_comment *add_filter_comment(struct t_filter_comment *ptr, char *text);
 static struct t_filter_comment *free_filter_comment(struct t_filter_comment *ptr);
 static struct t_filter_comment *copy_filter_comment(struct t_filter_comment *from, struct t_filter_comment *to);
+static t_bool add_filter_rule(struct t_group *group, struct t_article *art, struct t_filter_rule *rule);
+static t_bool test_regex(const char *string, char *regex, t_bool nocase, struct regex_cache *cache);
 static void expand_filter_array(struct t_filters *ptr);
 static void free_filter_item(struct t_filter *ptr);
 static void print_filter_menu(void);
@@ -263,7 +263,7 @@ void
 free_filter_array(
 	struct t_filters *ptr)
 {
-	register int i;
+	int i;
 
 	if (ptr != NULL) {
 		for (i = 0; i < ptr->num; i++)
@@ -942,20 +942,11 @@ filter_menu(
 	len = cCOLS - 30;
 
 	snprintf(text_time, sizeof(text_time), _(txt_time_default_days), tinrc.filter_days);
-	text_time[sizeof(text_time) - 1] = '\0';
-
 	snprintf(text_subj, sizeof(text_subj), ptr_filter_subj, len, len, art->subject);
-	text_subj[sizeof(text_subj) - 1] = '\0';
-
 	snprintf(text_score, sizeof(text_score), _(txt_filter_score), (type == FILTER_KILL ? -tinrc.score_kill : tinrc.score_select));
-	text_score[sizeof(text_score) - 1] = '\0';
-
 	STRCPY(buf, art->from);
 	snprintf(text_from, sizeof(text_from), ptr_filter_from, len, len, buf);
-	text_from[sizeof(text_from) - 1] = '\0';
-
 	snprintf(text_msgid, sizeof(text_msgid), ptr_filter_msgid, len - 4, len - 4, MSGID(art));
-	text_msgid[sizeof(text_msgid) - 1] = '\0';
 
 	print_filter_menu();
 
@@ -1109,9 +1100,10 @@ filter_menu(
 	/*
 	 * Scoring value
 	 */
-	buf[0] = '\0';
-	show_menu_help(_(txt_filter_score_help)); /* FIXME: a sprintf() is necessary here */
+	snprintf(buf, sizeof(buf), _(txt_filter_score_help), SCORE_MAX);
+	show_menu_help(buf);
 
+	buf[0] = '\0';
 	if (!prompt_menu_string(INDEX_TOP + 10, text_score, buf))
 		return FALSE;
 
@@ -1284,9 +1276,9 @@ quick_filter(
 	/* create an auto-comment. */
 	rule.comment = (struct t_filter_comment *) 0;	/* needs to be NULL, or add_filter_comment() will fail to create the first entry. */
 	if (type == FILTER_KILL)
-		snprintf(txt, sizeof(txt) - 1, "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", iKeyGroupQuickKill, "' (", _(txt_help_article_quick_kill), ").");
+		snprintf(txt, sizeof(txt), "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", iKeyGroupQuickKill, "' (", _(txt_help_article_quick_kill), ").");
 	else
-		snprintf(txt, sizeof(txt) - 1, "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", iKeyGroupQuickAutoSel, "' (", _(txt_help_article_quick_select), ").");
+		snprintf(txt, sizeof(txt), "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", iKeyGroupQuickAutoSel, "' (", _(txt_help_article_quick_select), ").");
 	rule.comment = (struct t_filter_comment *) add_filter_comment (rule.comment, (char *) txt);
 
 	rule.text[0] = '\0';
@@ -1345,7 +1337,7 @@ quick_filter_select_posted_art(
 
 		/* create an auto-comment. */
 		rule.comment = (struct t_filter_comment *) 0;	/* needs to be NULL, or add_filter_comment() will fail to create the first entry. */
-		snprintf(txt, sizeof(txt) - 1, "%s%s", _(txt_filter_rule_created), "add_posted_to_filter=ON.");
+		snprintf(txt, sizeof(txt), "%s%s", _(txt_filter_rule_created), "add_posted_to_filter=ON.");
 		rule.comment = (struct t_filter_comment *) add_filter_comment(rule.comment, txt);
 
 		/*
@@ -1675,12 +1667,12 @@ filter_articles(
 					char *refs = NULL;
 					const char *myrefs = NULL;
 					const char *mymsgid = NULL;
-
-/*
- * TODO nice idea del'd; better apply one rule on all fitting
- * TODO articles, so we can switch to an appropriate algorithm
- * TODO for each kind of rule, including the deleted one.
- */
+					/*
+					 * TODO: nice idea del'd; better apply one rule on all
+					 *       fitting articles, so we can switch to an appropriate
+					 *       algorithm for each kind of rule, including the
+					 *       deleted one.
+					 */
 
 					/* myrefs does not need to be freed */
 

@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2003-02-01
+ *  Updated   : 2003-03-13
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -1087,13 +1087,29 @@ highlight_string(
 	int col,
 	int size)
 {
-	char tmp[LEN];
+	char output[LEN];
+
+	my_strncpy(output, &(screen[row].col[col]), size);
+
+	#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	/*
+	 * In a multibyte locale we get byte offsets instead of character
+	 * offsets; calculate now the correct starting column
+	 */
+	if (col > 0) {
+		char tmp[LEN];
+		wchar_t wtmp[LEN];
+
+		my_strncpy(tmp, &(screen[row].col[0]), sizeof(tmp) - 1);
+		tmp[col] = '\0';
+		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
+			col = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+	}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	MoveCursor(row, col);
-	my_strncpy(tmp, &(screen[row].col[col]), size);
-
 	StartInverse();
-	my_fputs(tmp, stdout);
+	my_fputs(output, stdout);
 	my_flush();
 	EndInverse();
 
@@ -1115,7 +1131,11 @@ word_highlight_string(
 	 * Mapping of the tinrc.mono_mark* values to the corresponding escape sequences
 	 */
 	char *attributes[MAX_ATTR + 1];
-	char tmp[LEN];
+	char output[LEN];
+	int wsize = size;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t wtmp[LEN];
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	attributes[0] = _reset;	/* Normal */
 	attributes[1] = _setinverse;	/* Best highlighting */
@@ -1125,26 +1145,45 @@ word_highlight_string(
 	attributes[5] = _dim;	/* Dim */
 	attributes[6] = _bold;	/* Bold */
 
-	MoveCursor(row, col);
-	my_strncpy(tmp, &(screen[row].col[col]), size);
+	my_strncpy(output, &(screen[row].col[col]), size);
+	/* output[size] = '\0'; */ /* my_strncpy() already '\0' terminated output */
 
-	/* safegurad against bogus regexps */
-	if ((tmp[0] == '*' && tmp[size - 1] == '*') ||
-		 (tmp[0] == '/' && tmp[size - 1] == '/') ||
-		 (tmp[0] == '_' && tmp[size - 1] == '_') ||
-		 (tmp[0] == '-' && tmp[size - 1] == '-')) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	/*
+	 * In a multibyte locale we get byte offsets instead of character
+	 * offsets; calculate now the correct starting column and
+	 * width
+	 */
+	if (col > 0) {
+		char tmp[LEN];
+		my_strncpy(tmp, &(screen[row].col[0]), sizeof(tmp) - 1);
+		tmp[col] = '\0';
+		if (mbstowcs(wtmp, tmp, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
+			col = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+	}
+	if (mbstowcs(wtmp, output, ARRAY_SIZE(wtmp) - 1) != (size_t) -1)
+		wsize = wcswidth(wtmp, ARRAY_SIZE(wtmp));
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+	MoveCursor(row, col);
+
+	/* safeguard against bogus regexps */
+	if ((output[0] == '*' && output[size - 1] == '*') ||
+		 (output[0] == '/' && output[size - 1] == '/') ||
+		 (output[0] == '_' && output[size - 1] == '_') ||
+		 (output[0] == '-' && output[size - 1] == '-')) {
 
 		switch (tinrc.word_h_display_marks) {
 			case 0: /* FIXME */
 				break;
 
 			case 2: /* print space */
-				MoveCursor(row, col + size - 1);
+				MoveCursor(row, col + wsize - 1);
 				my_fputs(" ", stdout);
 				MoveCursor(row, col);
 				my_fputs(" ", stdout);
-				tmp[0] = tmp[size - 1] = ' ';
-				str_trim(tmp);
+				output[0] = output[size - 1] = ' ';
+				str_trim(output);
 				break;
 
 			default:	/* print mark (case 1) */
@@ -1158,7 +1197,7 @@ word_highlight_string(
 #	endif /* HAVE_COLOR */
 		if (color > 0 && color <= MAX_ATTR && !NO_CAP(attributes[color]))
 			tputs(attributes[color], 1, outchar);
-	my_fputs(tmp, stdout);
+	my_fputs(output, stdout);
 	my_flush();
 #	ifdef HAVE_COLOR
 	if (use_color)

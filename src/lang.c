@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-03-05
+ *  Updated   : 2003-03-14
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -62,6 +62,7 @@ constext txt_article_cancelled[] = "Article cancelled by author.\n";
 constext txt_article_plural[] = N_("articles");
 constext txt_article_reposted[] = N_("This is a repost of the following article:");
 constext txt_article_singular[] = N_("article");
+constext txt_article_upper[] = N_("Article");
 constext txt_articles_mailed[] = N_("-- %d %s mailed --");
 #ifndef DISABLE_PRINTING
 	constext txt_articles_printed[] = N_("%d %s printed");
@@ -81,7 +82,7 @@ constext txt_autosubscribing_groups[] = N_("Autosubscribing groups...\n");
 constext txt_autoselecting_articles[] = N_("Autoselecting articles (use '%s' to see all unread) ...");
 constext txt_bad_active_file[] = N_("Active file corrupt - %s");
 constext txt_bad_article[] = N_("Article to be posted resulted in errors/warnings. %s=quit, %s=Menu, %s=edit: ");
-constext txt_bad_attrib[] = N_("Unrecognised attribute: %s");
+constext txt_bad_attrib[] = N_("Unrecognized attribute: %s");
 constext txt_bad_command[] = N_("Bad command. Type '%s' for help.");
 constext txt_base64[] = "base64";
 constext txt_base_article[] = N_("Base article");
@@ -226,9 +227,12 @@ constext txt_error_header_line_space[] = N_("\nError: Header on line %d does not
 constext txt_error_header_duplicate[] = N_("\nError: There are multiple (%d) \"%s:\" lines in the header.\n");
 constext txt_error_insecure_permissions[] = N_("Insecure permissions of %s (%o)");
 constext txt_error_invalid_response_to_group[] = N_("Invalid response to GROUP command, %s");
+constext txt_error_locale[] = N_("Can't set the specified locale!");
 #ifdef HAVE_METAMAIL
 	constext txt_error_metamail_failed[] = N_("metamail failed: %s");
 #endif /* HAVE_METAMAIL */
+constext txt_error_mime_end[] = N_("MIME parse error: Unexpected end of %s/%s article");
+constext txt_error_mime_start[] = N_("MIME parse error: Start boundary whilst reading headers");
 constext txt_error_no_domain_name[] = N_("Can't get a (fully-qualified) domain-name!\n");
 constext txt_error_no_enter_permission[] = N_("No permissions to go into %s\n");
 constext txt_error_no_from[] = N_("\nError: From: line missing.\n");
@@ -448,6 +452,7 @@ constext txt_info_x_conversion_note[] = N_("X-Conversion-Note: multipart/alterna
   To get the whole article, turn alternative handling OFF in the Option Menu\n");
 constext txt_is_mailbox[] = N_("Save filename for %s/%s is a mailbox. Attachment not saved");
 constext txt_is_tex_encoded[] = N_("TeX2Iso encoded article");
+constext txt_incomplete[] = N_("incomplete ");
 constext txt_intro_page[] = N_("\nWelcome to %s, a full screen threaded Netnews reader. It can read news locally\n\
 (ie. <spool>/news) or remotely (-r option)  from a NNTP (Network News Transport\n\
 Protocol) server. -h lists the available command line options.\n\n\
@@ -1063,11 +1068,7 @@ constext txt_updated[] = N_("Updated");
 constext txt_updating[] = N_("Updating");
 constext txt_url_open[] = N_("Opening %s\n");
 constext txt_url_done[] = N_("No more URL's in this article");
-
-#ifdef HAVE_METAMAIL
-	constext txt_use_mime[] = N_("Use MIME display program for this message?");
-#endif /* HAVE_METAMAIL */
-
+constext txt_use_mime[] = N_("Use MIME display program for this message?");
 constext txt_usage_catchup[] = N_("  -c       mark all news as read in subscribed newsgroups (batch mode)");
 constext txt_usage_check_for_unread_news[] = N_("  -Z       return status indicating if any unread news (batch mode)");
 constext txt_usage_dont_check_new_newsgroups[] = N_("  -q       don't check for new newsgroups");
@@ -1249,7 +1250,7 @@ constext txt_filter_file[] = N_("# Filter file for the TIN newsreader\n#\n\
 #\n\
 #   time=NUM          Optional. time_t value when rule expires\n#\n");
 constext txt_filter_score[] = N_("Enter score for rule (default=%d): ");
-constext txt_filter_score_help[] = N_("Enter the score weight (range 0 < score <= 10000)"); /* SCORE_MAX */
+constext txt_filter_score_help[] = N_("Enter the score weight (range 0 < score <= %d)"); /* SCORE_MAX */
 
 constext txt_art_deleted[] = N_("Article deleted.");
 constext txt_art_undeleted[] = N_("Article undeleted.");
@@ -1632,20 +1633,21 @@ struct opttxt txt_strip_was_regex = {
 # which will be removed when replying or posting followup.\n")
 };
 
-#ifdef HAVE_METAMAIL
-struct opttxt txt_use_metamail = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Use metamail upon MIME articles    :"),
-	N_("# If ON metamail can/will be used to display MIME articles\n")
+struct opttxt txt_metamail_prog = {
+	N_("Enter name and options for external MIME viewer, --internal for built-in viewer"),
+	N_("MIME binary content viewer         :"),
+	N_("# If --internal automatically use the built in MIME viewer for non-text\n\
+# parts of articles.\n\
+# Otherwise specify an external viewer program (eg, metamail) or leave blank\n\
+# for no automatic viewing\n")
 };
 
 struct opttxt txt_ask_for_metamail = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Ask before using metamail          :"),
+	N_("Confirm before starting non-text viewing program"),
+	N_("Ask before using MIME viewer       :"),
 	N_("# If ON tin will ask before using metamail to display MIME messages\n\
-# this only happens if use_metamail is switched ON\n")
+# this only happens if metamail_prog is set to something\n")
 };
-#endif /* HAVE_METAMAIL */
 
 struct opttxt txt_catchup_read_groups = {
 	N_("Ask to mark groups read when quitting. <SPACE> toggles & <CR> sets."),

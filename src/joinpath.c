@@ -45,7 +45,7 @@
 /*
  * Concatenate dir+file, ensuring that we don't introduce extra '/', since some
  * systems (e.g., Apollo) use "//" for special purposes.
- * TODO ../vms/vmsfile.c defines a joinpath, maybe VMS should be guarded here
+ * TODO ../vms/vmsfile.c defines joinpath, VMS should be guarded here
  * TODO ../amiga/amiga.c defines a joinpath, plus this section is ifndef AMIGA
  *      so can we junk the #ifdef __amigaos from this code ??????
  */

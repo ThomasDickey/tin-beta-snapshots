@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 1997-03-19
+ *  Updated   : 2003-03-14
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -55,41 +55,45 @@ get_host_name(
 	hostname[0] = '\0';
 
 #ifdef HAVE_GETHOSTNAME
-	gethostname(hostname, sizeof(hostname));
+	gethostname(hostname, sizeof(hostname) - 1);
 #else
 #	ifdef M_AMIGA
 	if ((ptr = getenv("NodeName")) != NULL)
-		strncpy(hostname, ptr, MAXHOSTNAMELEN);
+		strncpy(hostname, ptr, sizeof(hostname) - 1);
 #	endif /* M_AMIGA */
 #endif /* HAVE_GETHOSTNAME */
 #ifdef HAVE_SYS_UTSNAME_H
 	if (!*hostname)
-		strcpy(hostname, system_info.nodename);
+		strncpy(hostname, system_info.nodename, sizeof(hostname) - 1);
 #endif /* HAVE_SYS_UTSNAME_H */
 	if (!*hostname) {
 		if ((ptr = getenv("HOST")) != NULL)
-			strncpy(hostname, ptr, MAXHOSTNAMELEN);
+			my_strncpy(hostname, ptr, sizeof(hostname) - 1);
 		else {
 			if ((ptr = getenv("HOSTNAME")) != NULL)
-				strncpy(hostname, ptr, MAXHOSTNAMELEN);
+				my_strncpy(hostname, ptr, sizeof(hostname) - 1);
 			else
 				hostname[0] = '\0';
 		}
 	}
-	hostname[MAXHOSTNAMELEN] = '\0';
+	hostname[MAXHOSTNAMELEN + 1] = '\0';
 	return hostname;
 }
 
 
 #ifdef DOMAIN_NAME
-/* find domainname - check DOMAIN_NAME */
-/* TODO: check /etc/defaultdomain as a last resort? */
+/*
+ * find domainname - check DOMAIN_NAME
+ * TODO: check /etc/defaultdomain as a last resort?
+ *       there is M_UNIX/M_AMIGA specific code in here, but no VMS
+ *       alternative
+ */
 const char *
 get_domain_name(
 	void)
 {
 	char *ptr;
-	char buff[MAXHOSTNAMELEN];
+	char buff[MAXHOSTNAMELEN + 1];
 	FILE *fp;
 	static char domain[8192];
 
@@ -110,12 +114,12 @@ static const char *domain_name_hack = DOMAIN_NAME;
 		strcpy(domain, DOMAIN_NAME);
 
 #	ifdef M_AMIGA
-	if (strchr(domain, ':')) /* absolute AmigaOS paths contain one, RFC-hostnames don't */
+	if (strchr(domain, ':')) /* absolute AmigaOS paths contain ':', RFC-hostnames don't */
 #	else
 	if (domain[0] == '/' && domain[1])
 #	endif /* M_AMIGA */
 	{
-		/* If 1st letter is '/' read domainname from specified file */
+		/* read domainname from specified file */
 		if ((fp = fopen(domain, "r")) != NULL) {
 			while (fgets(buff, (int) sizeof(buff), fp) != NULL) {
 				if (buff[0] == '#' || buff[0] == '\n')
@@ -126,14 +130,18 @@ static const char *domain_name_hack = DOMAIN_NAME;
 					strcpy(domain, buff);
 				}
 			}
-			if (domain[0] == '/') /* file was empty */
+#	ifdef M_AMIGA
+			if (strchr(domain, ':'))	/* ':' is not allowed in domainames -> file was empty */
+#	else
+			if (domain[0] == '/')	/* '/' is not allowed in domainames -> file was empty */
+#	endif /* M_AMIGA */
 				domain[0] = '\0';
 
 			fclose(fp);
 		} else
 			domain[0] = '\0';
 	}
-	domain[MAXHOSTNAMELEN] = '\0';
+	domain[MAXHOSTNAMELEN + 1] = '\0';
 	return domain;
 }
 #endif /* DOMAIN_NAME */
@@ -149,22 +157,22 @@ get_fqdn(
 {
 	char *domain;
 	char line[MAXLINELEN + 1];
-	char name[MAXHOSTNAMELEN + 2];
+	char name[MAXHOSTNAMELEN + 1];
 	static char fqdn[1024];
 	struct hostent *hp;
 	struct in_addr in;
 
 	*fqdn = '\0';
 	domain = NULL;
-	name[MAXHOSTNAMELEN] = '\0';
+	name[MAXHOSTNAMELEN + 1] = '\0';
 
 	if (host) {
 		if (strchr(host, '.'))
 			return host;
-		(void) strncpy(name, host, MAXHOSTNAMELEN);
+		strncpy(name, host, sizeof(name) - 1);
 	} else {
 #	ifdef HAVE_GETHOSTNAME
-		if (gethostname(name, MAXHOSTNAMELEN))
+		if (gethostname(name, sizeof(name) - 1))
 #	endif /* HAVE_GETHOSTNAME */
 			return NULL;
 	}
@@ -286,11 +294,11 @@ get_full_name(
 	fullname[0] = '\0';
 
 	if ((p = getenv("NAME")) != NULL) {
-		strncpy(fullname, p, sizeof(fullname));
+		my_strncpy(fullname, p, sizeof(fullname) - 1);
 		return fullname;
 	}
 	if ((p = getenv("REALNAME")) != NULL) {
-		strncpy(fullname, p, sizeof(fullname));
+		my_strncpy(fullname, p, sizeof(fullname) - 1);
 		return fullname;
 	}
 
@@ -307,7 +315,7 @@ get_full_name(
 			STRCPY(tmp, pw->pw_name);
 			if (*tmp && isalpha((int)(unsigned char) *tmp) && islower((int)(unsigned char) *tmp))
 				*tmp = toupper((int)(unsigned char) *tmp);
-			snprintf(fullname, sizeof(fullname) - 1, "%s%s%s", buf, tmp, p);
+			snprintf(fullname, sizeof(fullname), "%s%s%s", buf, tmp, p);
 		} else
 			STRCPY(fullname, buf);
 	}
@@ -368,7 +376,7 @@ build_sender(
 	sender[0] = '\0';
 
 	if ((ptr = get_full_name()))
-		snprintf(sender, sizeof(sender) - 1, ((strpbrk(ptr, "\".:;<>@[]()\\")) ? "\"%s\"" : "%s "), ptr);
+		snprintf(sender, sizeof(sender), ((strpbrk(ptr, "\".:;<>@[]()\\")) ? "\"%s\"" : "%s "), ptr);
 	if ((ptr = get_user_name())) {
 		strcat(sender, "<");
 		strcat(sender, ptr);

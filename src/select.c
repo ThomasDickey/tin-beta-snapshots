@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-02
+ *  Updated   : 2003-03-15
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -508,14 +508,13 @@ show_selection_page(
 	signal_context = cSelect;
 	currmenu = &selmenu;
 
+	if (read_news_via_nntp)
+		snprintf(buf, sizeof(buf), "%s (%s  %d%s)", _(txt_group_selection), nntp_server, selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
+	else
+		snprintf(buf, sizeof(buf), "%s (%d%s)", _(txt_group_selection), selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
+
 	MoveCursor(0, 0);		/* top left corner */
 	CleartoEOLN();
-
-	if (read_news_via_nntp)
-		sprintf(buf, "%s (%s  %d%s)", _(txt_group_selection), nntp_server, selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
-	else
-		sprintf(buf, "%s (%d%s)", _(txt_group_selection), selmenu.max, (tinrc.show_only_unread_groups ? _(" R") : ""));
-
 	show_title(buf);
 	MoveCursor(1, 0);
 	CleartoEOLN();

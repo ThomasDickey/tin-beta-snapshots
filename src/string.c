@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2003-01-31
+ *  Updated   : 2003-03-13
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
@@ -481,7 +481,9 @@ sh_format(
 	va_start(ap, fmt);
 
 	while (*fmt != 0) {
-		int ch = *fmt++;
+		int ch;
+
+		ch = *fmt++;
 
 		if (ch == '\\') {
 			SH_FORMAT(ch);

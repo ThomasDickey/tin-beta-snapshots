@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2003-03-07
+ *  Updated   : 2003-03-14
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -602,10 +602,8 @@ get_tcp6_socket(
 	int s = -1, err = -1;
 	struct addrinfo hints, *res, *res0;
 
-	snprintf(mymachine, sizeof(mymachine) - 1, "%s", machine);
-	snprintf(myport, sizeof(myport) - 1, "%d", port);
-	mymachine[sizeof(mymachine) - 1] = '\0';
-	myport[sizeof(myport) - 1] = '\0';
+	snprintf(mymachine, sizeof(mymachine), "%s", machine);
+	snprintf(myport, sizeof(myport), "%d", port);
 
 /* just in case */
 #	ifdef AF_UNSPEC
@@ -735,6 +733,9 @@ u_put_server(
 	const char *string)
 {
 	s_puts(string, nntp_wr_fp);
+#		ifdef DEBUG
+	debug_nntp(">>>", string);
+#		endif /* DEBUG */
 }
 
 
@@ -758,13 +759,16 @@ put_server(
 	const char *string)
 {
 	if (*string && strlen(string)) {
+		DEBUG_IO((stderr, "put_server(%s)\n", string));
+		s_puts(string, nntp_wr_fp);
+		s_puts("\r\n", nntp_wr_fp);
+#		ifdef DEBUG
+		debug_nntp(">>>", string);
+#		endif /* DEBUG */
 		/*
 		 * remember the last command we wrote to be able to resend it after a
 		 * reconnect. reconnection is handled by get_server()
 		 */
-		DEBUG_IO((stderr, "put_server(%s)\n", string));
-		s_puts(string, nntp_wr_fp);
-		s_puts("\r\n", nntp_wr_fp);
 		strcpy(last_put, string);
 	}
 	(void) s_flush(nntp_wr_fp);
@@ -810,6 +814,9 @@ reconnect(
 			sprintf(last_put, "GROUP %s", glob_group);
 			put_server(last_put);
 			s_gets(last_put, NNTP_STRLEN, nntp_rd_fp);
+#		ifdef DEBUG
+			debug_nntp("<<<", last_put);
+#		endif /* DEBUG */
 			DEBUG_IO((stderr, _("Read (%s)\n"), last_put));
 		}
 		DEBUG_IO((stderr, _("Resend last command (%s)\n"), buf));

@@ -926,7 +926,7 @@ read_keymap_file(
 	if (strlen(map)) {
 		if ((ptr = strchr(map, '.')))
 			*ptr = '\0';
-		snprintf(buff, sizeof(buff) - 1, "%s.%s", KEYMAP_FILE, map);
+		snprintf(buff, sizeof(buff), "%s.%s", KEYMAP_FILE, map);
 		joinpath(buf, rcdir, buff);
 		fp = fopen(buf, "r");
 	}
