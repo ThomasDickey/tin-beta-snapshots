@@ -95,15 +95,19 @@ char mail_active_file[PATH_LEN];
 char mail_news_user[LEN];		/* mail new news to this user address */
 char mailbox[PATH_LEN];			/* system mailbox for each user */
 char mailer[PATH_LEN];			/* mail program */
-char mailgroups_file[PATH_LEN];
+#ifdef HAVE_MH_MAIL_HANDLING
+	char mailgroups_file[PATH_LEN];
+#endif /* HAVE_MH_MAIL_HANDLING */
 char **news_headers_to_display_array;	/* array of which headers to display */
 char **news_headers_to_not_display_array;	/* array of which headers to not display */
 char newnewsrc[PATH_LEN];
 char news_active_file[PATH_LEN];
 char newsgroups_file[PATH_LEN];
 char newsrc[PATH_LEN];
-char novrootdir[PATH_LEN];		/* root directory of nov index files */
-char novfilename[PATH_LEN];		/* file name of a single nov index files */
+#ifndef NNTP_ONLY
+	char novrootdir[PATH_LEN];		/* root directory of nov index files */
+	char novfilename[PATH_LEN];		/* file name of a single nov index files */
+#endif /* !NNTP_ONLY */
 char page_header[LEN];			/* page header of pgm name and version */
 char posted_info_file[PATH_LEN];
 char posted_msgs_file[PATH_LEN];
@@ -327,6 +331,7 @@ struct t_config tinrc = {
 	2,		/* word_h_display_marks */
 #endif /* HAVE_COLOR */
 	TRUE,		/* word_highlight */
+	80,		/* wrap column */
 #ifdef HAVE_COLOR
 	FALSE,		/* use_color */
 #endif /* HAVE_COLOR */
@@ -799,9 +804,7 @@ init_selfinfo(
 		strcpy(tinrc.printer, DEFAULT_BBS_PRINTER);
 #	endif /* M_AMIGA */
 #endif /* !DISABLE_PRINTING */
-#ifdef NNTP_ABLE
-	strcpy(tinrc.inews_prog, DEFAULT_INEWS_PROG);
-#endif /* NNTP_ABLE */
+	strcpy(tinrc.inews_prog, PATH_INEWS);
 	strcpy(mailer, get_val(ENV_VAR_MAILER, DEFAULT_MAILER));
 	joinpath(article, homedir, TIN_ARTICLE_NAME);
 #ifdef APPEND_PID
@@ -816,20 +819,12 @@ init_selfinfo(
 
 	if (!index_newsdir[0])
 		JOINPATH(index_newsdir, get_val("TIN_INDEX_NEWSDIR", rcdir), INDEX_NEWSDIR);
-#if 0
-	 else {
-		if (stat(index_newsdir, &sb) == -1)
-			my_mkdir(index_newsdir, (mode_t) S_IRWXUGO);
-	}
-#endif /* 0 */
-
 	JOINPATH(index_maildir, get_val("TIN_INDEX_MAILDIR", rcdir), INDEX_MAILDIR);
 	if (stat(index_maildir, &sb) == -1)
-		my_mkdir(index_maildir, (mode_t) S_IRWXUGO);
-	joinpath(index_savedir, get_val("TIN_INDEX_SAVEDIR", rcdir), INDEX_SAVEDIR);
-
+		my_mkdir(index_maildir, (mode_t) S_IRWXU);
+	JOINPATH(index_savedir, get_val("TIN_INDEX_SAVEDIR", rcdir), INDEX_SAVEDIR);
 	if (stat(index_savedir, &sb) == -1)
-		my_mkdir(index_savedir, (mode_t) S_IRWXUGO);
+		my_mkdir(index_savedir, (mode_t) S_IRWXU);
 	joinpath(local_attributes_file, rcdir, ATTRIBUTES_FILE);
 	joinpath(local_config_file, rcdir, CONFIG_FILE);
 	joinpath(filter_file, rcdir, FILTER_FILE);
@@ -842,7 +837,9 @@ init_selfinfo(
 #else
 	joinpath(mailbox, DEFAULT_MAILBOX, userid);
 #endif /* VMS */
+#ifdef HAVE_MH_MAIL_HANDLING
 	joinpath(mailgroups_file, rcdir, MAILGROUPS_FILE);
+#endif /* HAVE_MH_MAIL_HANDLING */
 	joinpath(newsrc, homedir, NEWSRC_FILE);
 	joinpath(newnewsrc, homedir, NEWNEWSRC_FILE);
 #ifdef APPEND_PID
@@ -866,6 +863,7 @@ init_selfinfo(
 	if (stat(posted_info_file, &sb) == -1) {
 		if ((fp = fopen(posted_info_file, "w")) != NULL) {
 			fprintf(fp, txt_posted_info_file);
+			fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
 			fclose(fp);
 		}
 	}
@@ -934,7 +932,7 @@ create_mail_save_dirs(
 		joinpath(path, homedir, DEFAULT_MAILDIR);
 
 	if (stat(path, &sb) == -1) {
-		my_mkdir(path, (mode_t) (S_IRWXU|S_IRUGO|S_IXUGO));
+		my_mkdir(path, (mode_t) (S_IRWXU));
 		created = TRUE;
 	}
 
@@ -942,7 +940,7 @@ create_mail_save_dirs(
 		joinpath(path, homedir, DEFAULT_SAVEDIR);
 
 	if (stat(path, &sb) == -1) {
-		my_mkdir(path, (mode_t) (S_IRWXU|S_IRUGO|S_IXUGO));
+		my_mkdir(path, (mode_t) (S_IRWXU));
 		created = TRUE;
 	}
 

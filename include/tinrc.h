@@ -172,6 +172,7 @@ struct t_config {
 	int word_h_display_marks;			/* display * or _ when highlighting or space or nothing*/
 #endif /* HAVE_COLOR */
 	t_bool word_highlight;				/* like word_highlight but stored in tinrc */
+	int wrap_column;				/* screen column to wrap of text messages */
 #ifdef HAVE_COLOR
 	t_bool use_color;					/* like use_color but stored in tinrc */
 #endif /* HAVE_COLOR */

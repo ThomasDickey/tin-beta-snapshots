@@ -47,7 +47,14 @@
 #		include <xcurses.h>
 #		define getattrs(w) (w)->_attrs
 #	elif defined(HAVE_NCURSESW_NCURSES_H)
+#		ifndef _XOPEN_SOURCE_EXTENDED
+#			define _XOPEN_SOURCE_EXTENDED 1
+#		endif /* _XOPEN_SOURCE_EXTENDED */
 #		include <ncursesw/ncurses.h>
+#		/* we need a recent ncursesw for wide-char */
+#		if (NCURSES_VERSION_MAJOR >= 5) && (NCURSES_VERSION_MINOR >= 3)
+#			define HAVE_NCURSESW
+#		endif /* NCURSES_VERSION_MAJOR >= 5 && NCURSES_VERSION_MINOR >=3 */
 #	elif defined(HAVE_NCURSES_H)
 #		include <ncurses.h>
 #	elif defined(HAVE_NCURSES_NCURSES_H)
@@ -80,14 +87,15 @@
 #define CleartoEOS()			clrtobot()
 #define ScrollScreen(lines_to_scroll)	scrl(lines_to_scroll)
 #define SetScrollRegion(top,bottom)	setscrreg(top, bottom)
-#define WriteLine(row,buffer)		write_line(row,buffer)
+#define WriteLine(row,buffer)		write_line(row, buffer)
 
 #define HpGlitch(func)			/*nothing*/
 
 extern int cmdReadCh (void);
 
 extern char *screen_contents(int row, int col, char *buffer);
-extern void MoveCursor(int row,int col);
+extern int my_innstr(char *str, int n);
+extern void MoveCursor(int row, int col);
 extern void my_erase(void);
 extern void my_fflush(FILE *stream);
 extern void my_fputc(int ch, FILE *stream);
@@ -123,8 +131,8 @@ extern void write_line(int row, char *buffer);
 
 #define cCRLF				"\r\n"
 
-#define my_fputc(ch, stream)		fputc (ch, stream)
-#define my_fputs(str, stream)		fputs (str, stream)
+#define my_fputc(ch, stream)		fputc(ch, stream)
+#define my_fputs(str, stream)		fputs(str, stream)
 
 #define my_printf			printf
 #define my_fprintf			fprintf

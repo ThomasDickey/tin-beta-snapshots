@@ -95,6 +95,7 @@ fd_lock(
 }
 
 
+#if 0 /* unused */
 /*
  * test_fd_lock(fd)
  *
@@ -155,6 +156,7 @@ test_fd_lock(
 
 	return rval;	/* file wasn't locked or no locking available */
 }
+#endif /* 0 */
 
 
 /*

@@ -275,22 +275,23 @@ extern void init_group_hash(void);
 /* lock.c */
 extern int fd_lock(int fd, t_bool block);
 extern int fd_unlock(int fd);
-extern int test_fd_lock(int fd);
 extern t_bool dot_lock(const char *filename);
 extern t_bool dot_unlock(const char *filename);
+#if 0 /* unused */
+	extern int test_fd_lock(int fd);
+#endif /* 0 */
 
 /* mail.c */
 extern t_bool art_edit(struct t_group *psGrp, struct t_article *psArt);
-extern void read_newsgroups_file(void);
 extern void find_art_max_min(char *group_path, long *art_max, long *art_min);
 extern void make_base_group_path(char *base_dir, char *group_name, char *group_path);
 extern void print_active_head(char *active_file);
 extern void print_group_line(FILE *fp, char *group_name, long art_max, long art_min, char *base_dir);
+extern void read_descriptions(t_bool verb);
 extern void vGrpDelMailArts(struct t_group *psGrp);
 extern void vGrpDelMailArt(struct t_article *psArt);
 #ifdef HAVE_MH_MAIL_HANDLING
 	extern void read_mail_active_file(void);
-	extern void read_mailgroups_file(void);
 	extern void write_mail_active_file(void);
 #endif /* HAVE_MH_MAIL_HANDLING */
 
@@ -664,6 +665,9 @@ extern void str_lwr(char *str);
 	extern char *my_strrstr(const char *str, const char *pat);
 #	define strrstr(s,p)	my_strrstr(s,p)
 #endif /* !HAVE_STRRSTR */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	extern void wcspart (wchar_t *to, const wchar_t *from, int columns, int size_to);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 /* tags.c */
 extern int line_is_tagged(int n);

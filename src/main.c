@@ -293,18 +293,15 @@ main(
 		tin_done(EXIT_SUCCESS);
 	}
 
+	/* TODO: replace hardcoded key-name in txt_info_postponed */
 	if ((count = count_postponed_articles()))
 		wait_message(3, _(txt_info_postponed), count, PLURAL(count, txt_article));
 
 	/*
 	 * Read text descriptions for mail and/or news groups
 	 */
-	if (show_description && !batch_mode) {
-#ifdef HAVE_MH_MAIL_HANDLING
-		read_mailgroups_file();
-#endif /* HAVE_MH_MAIL_HANDLING */
-		read_newsgroups_file();
-	}
+	if (show_description && !batch_mode)
+		read_descriptions(TRUE);
 
 	if (create_mail_save_dirs())
 		write_config_file(local_config_file);
@@ -502,7 +499,6 @@ read_cmd_line_options(
 			case 'I':
 #ifndef NNTP_ONLY
 				my_strncpy(index_newsdir, optarg, sizeof(index_newsdir));
-/*				my_mkdir(index_newsdir, (mode_t) S_IRWXUGO); */
 #else
 				error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();

@@ -194,8 +194,13 @@ submit_inews(
 #		ifdef CHARSET_CONVERSION
 					buffer_to_network(sender_hdr, group ? group->attribute->mm_network_charset : tinrc.mm_network_charset);
 #		endif /* CHARSET_CONVERSION */
-					if (!tinrc.post_8bit_header)
-						STRCPY(sender_hdr, rfc1522_encode(sender_hdr, group, ismail));
+					if (!tinrc.post_8bit_header) {
+						char *p;
+
+						p = rfc1522_encode(sender_hdr, group, ismail);
+						STRCPY(sender_hdr, p);
+						free(p);
+					}
 					break;
 
 				case 0: /* no sender needed */
@@ -377,8 +382,10 @@ submit_inews(
 }
 #endif /* NNTP_INEWS */
 
+
 /*
- * Call submit_inews() if using built in inews, else invoke external inews prog
+ * Call submit_inews() if using built in inews, else invoke external inews
+ * prog
  */
 t_bool
 submit_news_file(
@@ -461,6 +468,7 @@ sender_needed(
 	char *from_at_pos;
 	char *sender_at_pos;
 	char *sender_dot_pos;
+	char *p;
 	char from_addr[HEADER_LEN];
 	char from_name[HEADER_LEN];
 	char sender_addr[HEADER_LEN];
@@ -479,8 +487,13 @@ sender_needed(
 	gnksa_do_check_from(from, from_addr, from_name);
 
 	snprintf(sender_line, sizeof(sender_line), "Sender: %s", sender);
-	if (GNKSA_OK != gnksa_do_check_from(rfc1522_encode(sender_line, group, FALSE) + 8, sender_addr, sender_name))
+
+	p = rfc1522_encode(sender_line, group, FALSE);
+	if (GNKSA_OK != gnksa_do_check_from(p + 8, sender_addr, sender_name)) {
+		free(p);
 		return -2;
+	}
+	free(p);
 
 	from_at_pos = strchr(from_addr, '@');
 	sender_at_pos = strchr(sender_addr, '@');

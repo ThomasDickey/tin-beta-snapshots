@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2002-09-30
+ *  Updated   : 2002-11-02
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2002 Jason Faultless <jason@radar.tele2.co.uk>
@@ -79,7 +79,7 @@ static t_openartinfo *art;
  * Handle backspace, expand tabs, expand control chars to a literal ^[A-Z]
  * Allows \n through
  * Return TRUE if line contains a ^L (form-feed)
- * Anything after the (lenght-3)th character in the output string is
+ * Anything after the (lenght-2)th character in the output string is
  * dropped, if the resultinglast character is not \n, \n is added
  * afterwards.
  */
@@ -95,7 +95,7 @@ expand_ctrl_chars(
 	int i, j, space;
 	t_bool ctrl_L = FALSE;
 
-	for (p = from, q = to, end = p, space = length - 3; space && *p; end = p, p++) {
+	for (p = from, q = to, end = p, space = length - 2; space && *p; end = p, p++) {
 		if (*p == '\t') {			/* Expand tabs */
 			i = q - to;
 			j = ((i + lcook_width) / lcook_width) * lcook_width;
@@ -132,7 +132,9 @@ expand_ctrl_chars(
  * Update the line count and the array of line offsets
  * Extend the lineoffset array as needed in CHUNK amounts.
  * flags are 'hints' to the pager about line content
- * TODO do word wrap of long lines ?
+ *
+ * TODO: make wrapping multibyte safe.
+ *       do word wrap of long lines.
  */
 static void
 put_cooked(
@@ -153,7 +155,7 @@ put_cooked(
 	bufp = buf;
 
 	for (p = bufp; *p; p++) {
-		if (*p == '\n' || ((overflow + p - bufp >= cCOLS) && wrap_lines)) {
+		if (*p == '\n' || ((overflow + p - bufp >= tinrc.wrap_column) && wrap_lines)) {
 			fwrite(bufp, p - bufp, 1, art->cooked);
 
 			fputs("\n", art->cooked);
@@ -637,7 +639,21 @@ process_text_body_part(
 		if (!(line && strlen(line)))
 			break;	/* premature end of file, file error etc. */
 
+		/*
+		 * conversion should be conde before ISO2ASC conversion
+		 * (done in process_charsets()) to allow TEX2ISO && ISO2ASC,
+		 * i.e. "a -> auml -> ae
+		 */
+		if ((CURR_GROUP.attribute->tex2iso_conv) && art->tex2iso) {
+			char *texbuf;
+			texbuf = my_strdup(line);
+			convert_tex2iso(texbuf, line);
+			free(texbuf);
+		}
+
 		process_charsets(&line, &max_line_len, get_param(part->params, "charset"), tinrc.mm_local_charset);
+		/* we might have realloced line, so make sure we use this new buffer */
+		buf = line;
 
 		/*
 		 * Detect and skip signatures if necessary
@@ -748,13 +764,6 @@ process_text_body_part(
 		if (MATCH_REGEX(news_regex, line, len))
 			flags |= C_NEWS;
 
-		if ((CURR_GROUP.attribute->tex2iso_conv) && art->tex2iso) {
-			char *texbuf;
-			texbuf = my_strdup(line);
-			convert_tex2iso(texbuf, line);
-			free(texbuf);
-		}
-
 		/*
 		 * Basically, c_b2p() does: if (!(my_isprint(*c) || *c==8 || *c==9 || *c==12))
 		 * It is only used here
@@ -762,7 +771,7 @@ process_text_body_part(
 		 * TODO: integrate into expand_ctrl_chars
 		 */
 		convert_body2printable(line);
-		if (expand_ctrl_chars(to, line, sizeof(to), cook_width))
+		if (expand_ctrl_chars(to, line, sizeof(to) - 1, cook_width))
 			flags |= C_CTRLL;				/* Line contains form-feed */
 
 		put_cooked(wrap_lines, flags, "%s", to);

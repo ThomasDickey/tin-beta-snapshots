@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-04-15
+ *  Updated   : 2002-11-05
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -730,7 +730,7 @@ thread_by_multipart(
  *
  * Apart from THREAD_NONE, .thread and .inthread are used, the
  * first article in a thread should have .inthread set to FALSE, the
- * rest TRUE.  Only do unexprired articles we haven't visited yet
+ * rest TRUE. Only do unexprired articles we haven't visited yet
  * (arts[].thread == -1 ART_NORMAL).
  *
  * The rethread parameter is a misnomer. Its only effect (if set) is
@@ -894,6 +894,7 @@ parse_headers(
 {
 	char art_from_addr[HEADER_LEN];
 	char art_full_name[HEADER_LEN];
+	char art_trunc_subj[HEADER_LEN];
 	char *hdr, *ptr;
 	const char *s;
 	int lineno = 0;
@@ -975,17 +976,23 @@ parse_headers(
 				/* Received:  If found it's probably a mail article */
 				if (!got_received) {
 					if ((hdr = parse_header(ptr + 1, "eceived", FALSE))) {
-						max_lineno = 50;		/* Get extra lines for some reason */
+						max_lineno <<= 1;		/* double the max number of line to read for mails */
 						got_received = TRUE;
 					}
 				}
 				break;
 
+			/*
+			 * FIXME: Subject: truncation is a HACK and it's not multibyte safe
+			 *        the core problem are probabely fixed length buffers
+			 *        (i.e. in rfc1522_encode() called from write_nov_file()
+			 *         with the data read in here).
+			 */
 			case 'S':	/* Subject:  mandatory */
 				if (!h->subject) {
 					if ((hdr = parse_header(ptr + 1, "ubject", FALSE))) {
-						s = eat_re(eat_tab(rfc1522_decode(hdr)), FALSE);
-						h->subject = hash_str(s);
+						strncpy(art_trunc_subj, eat_re(eat_tab(rfc1522_decode(hdr)), FALSE), sizeof(art_trunc_subj) - 1);
+						h->subject = hash_str(art_trunc_subj);
 					}
 				}
 				break;
@@ -1111,23 +1118,28 @@ read_nov_file(
 		 */
 		artnum = atol(p);
 
-		/* catches case of 1st line being groupname */
+		/* catches case of 1st line being groupname (i.e. local cached overviews) */
 		if (artnum <= 0)
 			continue;
 
 		/*
 		 * Check to make sure article in nov file has not expired in group
 		 */
-#if 0
-	my_printf("artnum=[%ld] xmin=[%ld] xmax=[%ld]\n", artnum, group->xmin, group->xmax);
-	my_flush();
-	(void) sleep(1);
-#endif /* 0 */
-
 		if (artnum < group->xmin) {
 			(*expired)++;
 			continue;
 		}
+
+		/*
+		 * artnum in overview data higher than groups high mark
+		 *
+		 * TODO: - warn user about broken overviews?
+		 *       - try to prase the Xref:-line to get the crrect artnum
+		 *       - see also parse_unread_arts()
+		 */
+		if (artnum > group->xmax)
+			continue;
+
 		set_article(&arts[top_art]);
 		arts[top_art].artnum = last_read_article = artnum;
 
@@ -1282,6 +1294,7 @@ read_nov_file(
 					q++;
 
 				arts[top_art].xref = my_strdup(q);
+				/* TODO: crosscheck artnum against Xref:-line (if xref:full) */
 			}
 		}
 
@@ -1374,9 +1387,12 @@ write_nov_file(
 			article = &arts[i];
 
 			if (article->thread != ART_EXPIRED && article->artnum >= group->xmin) {
+				char *p;
+
+				p = rfc1522_encode(article->subject, NULL, FALSE);
 				fprintf(fp, "%ld\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
 					article->artnum,
-					tinrc.post_8bit_header ? article->subject : rfc1522_encode(article->subject, NULL, FALSE),
+					tinrc.post_8bit_header ? article->subject : p,
 					print_from(article),
 					print_date(article->date),
 					BlankIfNull(article->msgid),
@@ -1388,6 +1404,7 @@ write_nov_file(
 					fprintf(fp, "\tXref: %s", article->xref);
 
 				fprintf(fp, "\n");
+				free(p);
 			}
 		}
 		fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH));
@@ -1419,10 +1436,10 @@ write_nov_file(
  *       hash = TRUE
  *
  * WRITE:
- *    if  SPOOLDIR/group/name writable
+ *    if SPOOLDIR/group/name writable
  *       path = SPOOLDIR/group/name/.overview
  *       hash = FALSE
- *    else if  SPOOLDIR/.news exists AND writable
+ *    else if SPOOLDIR/.news exists AND writable
  *       path = SPOOLDIR/.news
  *       hash = TRUE
  *    else
@@ -1452,8 +1469,7 @@ find_nov_file(
 	if (group == NULL)
 		return (char *) 0;
 
-	overview_index_filename = FALSE;	/* Write groupname in nov file? */
-
+	overview_index_filename = FALSE;	/* Write groupname in nov file? (FALSE means write) */
 	hash_filename = FALSE;
 	dir = "";
 
@@ -1472,6 +1488,7 @@ find_nov_file(
 			if (read_news_via_nntp && xover_supported && !tinrc.cache_overview_files)
 				snprintf(nov_file, sizeof(nov_file) - 1, "%s%d.idx", TMPDIR, (int) process_id);
 			else {
+#ifndef NNTP_ONLY
 				make_base_group_path(novrootdir, group->name, buf);
 				/* TODO: use joinpath() */
 				snprintf(nov_file, sizeof(nov_file) - 1, "%s/%s", buf, novfilename);
@@ -1479,6 +1496,7 @@ find_nov_file(
 					if (!access(nov_file, mode))
 						overview_index_filename = TRUE;
 				}
+#endif /* !NNTP_ONLY */
 				if (!overview_index_filename) {
 					dir = index_newsdir;
 					hash_filename = TRUE;
@@ -1872,14 +1890,18 @@ print_from(
 	struct t_article *article)
 {
 	static char from[PATH_LEN];
+	char *p;
 
 	*from = '\0';
 
 	if (article->name != NULL) {
+		p = rfc1522_encode(article->name, NULL, FALSE);
 		if (strpbrk(article->name, "\".:;<>@[]()\\") != NULL && article->name[0] != '"' && article->name[strlen(article->name)] != '"')
-			snprintf(from, sizeof(from) - 1, "\"%s\" <%s>", tinrc.post_8bit_header ? article->name : rfc1522_encode(article->name, NULL, FALSE), article->from);
+			snprintf(from, sizeof(from) - 1, "\"%s\" <%s>", tinrc.post_8bit_header ? article->name : p, article->from);
 		else
-			snprintf(from, sizeof(from) - 1, "%s <%s>", tinrc.post_8bit_header ? article->name : rfc1522_encode(article->name, NULL, FALSE), article->from);
+			snprintf(from, sizeof(from) - 1, "%s <%s>", tinrc.post_8bit_header ? article->name : p, article->from);
+
+		free(p);
 	}
 	else
 		STRCPY(from, article->from);

@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-09-28
+ *  Updated   : 2002-11-01
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1944,8 +1944,13 @@ strfmailer(
 					/* don't MIME encode Subject if using external mail client */
 					if (tinrc.use_mailreader_i)
 						strncpy(tbuf, escape_shell_meta(subject, quote_area), sizeof(tbuf));
-					else
-						strncpy(tbuf, escape_shell_meta(rfc1522_encode(subject, NULL, ismail), quote_area), sizeof(tbuf));
+					else {
+						char *p;
+
+						p = rfc1522_encode(subject, NULL, ismail);
+						strncpy(tbuf, escape_shell_meta(p, quote_area), sizeof(tbuf));
+						free(p);
+					}
 					tbuf[sizeof(tbuf) - 1] = '\0';	/* just in case */
 					escaped = TRUE;
 					break;
@@ -1954,8 +1959,13 @@ strfmailer(
 					/* don't MIME encode To if using external mail client */
 					if (tinrc.use_mailreader_i)
 						strncpy(tbuf, escape_shell_meta(to, quote_area), sizeof(tbuf));
-					else
-						strncpy(tbuf, escape_shell_meta(rfc1522_encode(to, NULL, ismail), quote_area), sizeof(tbuf));
+					else {
+						char *p;
+
+						p = rfc1522_encode(to, NULL, ismail);
+						strncpy(tbuf, escape_shell_meta(p, quote_area), sizeof(tbuf));
+						free(p);
+					}
 					tbuf[sizeof(tbuf) - 1] = '\0';	/* just in case */
 					escaped = TRUE;
 					break;
@@ -1964,8 +1974,13 @@ strfmailer(
 					/* don't MIME encode User if using external mail client */
 					if (tinrc.use_mailreader_i)
 						strncpy(tbuf, userid, sizeof(tbuf));
-					else
-						strncpy(tbuf, rfc1522_encode(userid, NULL, ismail), sizeof(tbuf));
+					else {
+						char *p;
+
+						p = rfc1522_encode(userid, NULL, ismail);
+						strncpy(tbuf, p, sizeof(tbuf));
+						free(p);
+					}
 					tbuf[sizeof(tbuf) - 1] = '\0';	/* just in case */
 					break;
 
@@ -2558,7 +2573,7 @@ buffer_to_local(
 #	ifdef HAVE_ICONV_OPEN_TRANSLIT
 			if (tinrc.translit)
 				strcat(clocal_charset, "//TRANSLIT");
-#	endif /* HAVE_ICONV_OPEN_TRANSLIT && TRANSLIT */
+#	endif /* HAVE_ICONV_OPEN_TRANSLIT */
 
 			/* iconv() might crash on broken multibyte sequences so check them */
 			if (!strcasecmp(cnetwork_charset, "UTF-8"))
@@ -2627,7 +2642,7 @@ buffer_to_local(
 				/* now convert from UCS-4 to local charset */
 				inbuf = (ICONV_CONST char *) tbuf;
 				inbytesleft = tsize - tmpbytesleft;
-				outbytesleft = inbytesleft * 4;	/* should be enough */
+				outbytesleft = inbytesleft;
 				osize = outbytesleft;
 				obuf = my_malloc(osize + 1);
 				outbuf = (char *) obuf;

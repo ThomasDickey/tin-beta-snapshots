@@ -608,3 +608,35 @@ strrstr(
 	return 0;
 }
 #endif /* HAVE_STRRSTR */
+
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+/*
+ * copy wide-chars from '*from' to '*to' until 'columns' columns are filled
+ * pad with spaces if necessary
+ */
+void
+wcspart(
+	wchar_t *to,
+	const wchar_t *from,
+	int columns,
+	int size_to)
+{
+	int n, i = 0;
+	const wchar_t *ptr;
+
+	ptr = from;
+	to[0] = (wint_t) '\0';
+	while (*ptr && i < size_to && wcswidth(to, size_to - 1) + wcwidth(*ptr) <= columns) {
+		to[i] = *ptr;
+		ptr++;
+		to[++i] = (wint_t) '\0';
+	}
+
+	/* pad with spaces */
+	n = columns - wcswidth(to, size_to - 1) + (int) wcslen(to);
+	for (; i < MIN(n, size_to - 1); i++)
+		to[i] = (wint_t) ' ';
+	to[i] = (wint_t) '\0';
+}
+#endif /* MULTIBYTE_ABLE && !NOLOCALE */

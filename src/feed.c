@@ -742,7 +742,7 @@ print_file(
 
 #	ifdef DONT_HAVE_PIPING
 	fclose(fp);
-	strncpy(cmd, command, sizeof(cmd));
+	strncpy(cmd, command, sizeof(cmd) - 2);
 	strcat(cmd, " ");
 	strncat(cmd, file, sizeof(cmd) - strlen(cmd) - 1);
 	cmd[254] = '\0';

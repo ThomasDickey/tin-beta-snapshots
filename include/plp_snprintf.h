@@ -1,5 +1,5 @@
 /*
- * includes/defines/declarations which are allready done by tin.h
+ * includes/defines/declarations which are already done by tin.h
  * but might be needed if you use plp_snprintf() in other programms
  */
 

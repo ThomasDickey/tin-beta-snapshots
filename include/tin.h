@@ -404,9 +404,19 @@ enum resizer { cNo, cYes, cRedraw };
 
 /*
  * any pgp/gpp support possible and wanted
+ * sort out possible conflicts: gpg is prefered over pgp5 over pgp
  */
 #if defined(HAVE_PGP) || defined(HAVE_PGPK) || defined(HAVE_GPG)
 #	define HAVE_PGP_GPG 1
+#	if defined(HAVE_PGP) && defined(HAVE_PGPK)
+#		undef HAVE_PGP
+#	endif /* HAVE_PGP && HAVE_PGPK */
+#	if defined(HAVE_PGPK) && defined(HAVE_GPG)
+#		undef HAVE_PGPK
+#	endif /* HAVE_PGPK && HAVE_GPG */
+#	if defined(HAVE_PGP) && defined(HAVE_GPG)
+#		undef HAVE_PGP
+#	endif /* HAVE_PGP && HAVE_GPG */
 #endif /* HAVE_PGP || HAVE_PGPK || HAVE_GPG */
 
 
@@ -655,9 +665,6 @@ enum resizer { cNo, cYes, cRedraw };
 #define CONFIG_FILE	"tinrc"
 #define DEFAULT_MAILDIR	"Mail"
 #define DEFAULT_SAVEDIR	"News"
-#ifdef NNTP_ABLE
-#	define DEFAULT_INEWS_PROG "--internal"
-#endif /* NNTP_ABLE */
 #define DEFAULT_URL_HANDLER "url_handler.sh"
 
 
@@ -747,7 +754,9 @@ enum resizer { cNo, cYes, cRedraw };
 /* editor offset for filter-file; TODO: doesn't match for german filter-file */
 #define FILTER_FILE_OFFSET	32
 #define INPUT_HISTORY_FILE	".inputhistory"
-#define MAILGROUPS_FILE	"mailgroups"
+#ifdef HAVE_MH_MAIL_HANDLING
+#	define MAILGROUPS_FILE	"mailgroups"
+#endif /* HAVE_MH_MAIL_HANDLING */
 #define NEWSRC_FILE	".newsrc"
 #define NEWSRCTABLE_FILE	"newsrctable"
 /* ifdef APPEND_PID (default) NEWNEWSRC_FILE will be .newnewsrc<pid> */
@@ -795,6 +804,17 @@ enum resizer { cNo, cYes, cRedraw };
 #ifndef CODESET
 #	define CODESET ((nl_item) 1)
 #endif /* CODESET */
+
+#ifdef HAVE_LIBUTF8_H
+#	include <libutf8.h>
+#else
+#	ifdef HAVE_WCHAR_H
+#		include <wchar.h>
+#	endif /* HAVE_WCHAR_H */
+#	ifdef HAVE_WCTYPE_H
+#		include <wctype.h>
+#	endif /* HAVE_WCTYPE_H */
+#endif /* HAVE_LIBUTF8_H */
 
 #ifndef MAX
 #	define MAX(a,b)	(((a) > (b)) ? (a) : (b))
@@ -1449,6 +1469,9 @@ struct t_attribute {
 };
 
 /*
+ * TODO: turn longs to unsigned long long or at least unsigned long
+ */
+/*
  * struct t_newsrc - newsrc related info.
  */
 struct t_newsrc {
@@ -1460,6 +1483,9 @@ struct t_newsrc {
 	t_bitmap *xbitmap;	/* bitmap read/unread (max-min+1+7)/8 */
 };
 
+/*
+ * TODO: turn longs to unsigned long long or at least unsigned long
+ */
 /*
  * struct t_group - newsgroup info from active file
  */
@@ -2147,10 +2173,6 @@ extern struct tm *localtime(time_t *);
 #	define UNUSED(x) x
 #endif /* __GNUC__ && !__APPLE_CC__ */
 
-/* can we use mblen()? */
-#if defined(HAVE_MBLEN) && defined(HAVE_SETLOCALE) && defined(MB_CUR_MAX) && !defined(NO_LOCALE)
-#	define ENABLE_MBLEN 1
-#endif /* HAVE_MBLEN && HAVE_SETLOCALE && MB_CUR_MAX && !NO_LOCALE */
 
 /* init_selfinfo() needs MM_CHARSET */
 #ifndef MM_CHARSET

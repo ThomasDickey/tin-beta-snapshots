@@ -798,6 +798,12 @@ read_config_file(
 				break;
 			}
 
+			if (match_integer(buf, "wrap_column=", &tinrc.wrap_column, 0)) {
+				if (tinrc.wrap_column <= 0)
+					(tinrc.wrap_column = cCOLS) >= 0 ? cCOLS : 80;
+				break;
+			}
+
 #ifdef HAVE_COLOR
 			if (match_integer(buf, "word_h_display_marks=", &tinrc.word_h_display_marks, MAX_MARK))
 				break;
@@ -1248,6 +1254,9 @@ write_config_file(
 	fprintf(fp, _(txt_word_highlight.tinrc));
 	fprintf(fp, "word_highlight=%s\n\n", print_boolean(tinrc.word_highlight));
 
+	fprintf(fp, _(txt_wrap_column.tinrc));
+	fprintf(fp, "wrap_column=%d\n\n", tinrc.wrap_column);
+
 #ifdef HAVE_COLOR
 	fprintf(fp, _(txt_word_h_display_marks.tinrc));
 	fprintf(fp, "word_h_display_marks=%d\n\n", tinrc.word_h_display_marks);
@@ -1463,7 +1472,8 @@ print_any_option(
 
 	switch (option_table[act_option].var_type) {
 		case OPT_ON_OFF:
-			snprintf(ptr, len, "%s", print_boolean(*OPT_ON_OFF_list[option_table[act_option].var_index]));
+			/* tailing space to overwrite any left over F from OFF */
+			snprintf(ptr, len, "%s ", print_boolean(*OPT_ON_OFF_list[option_table[act_option].var_index]));
 			break;
 
 		case OPT_LIST:
@@ -1872,12 +1882,10 @@ change_config_file(
 						/* show newsgroup description text next to newsgroups */
 						case OPT_SHOW_DESCRIPTION:
 							show_description = tinrc.show_description;
-							if (show_description) {			/* force reread of newgroups file */
-								read_newsgroups_file();
-								redraw_screen(option);	/* tidy up screen */
-							} else
+							if (show_description)			/* force reread of newgroups file */
+								read_descriptions(FALSE);
+							else
 								set_groupname_len(FALSE);
-
 							break;
 
 #ifdef HAVE_COLOR
@@ -2239,6 +2247,16 @@ change_config_file(
 									make_threads(group, FALSE);
 							}
 							redraw_screen(option);
+							break;
+
+						case OPT_WRAP_COLUMN:
+							prompt_option_num(option);
+							if (tinrc.wrap_column <= 0)
+								(tinrc.wrap_column = cCOLS) >= 0 ? cCOLS: 80;
+
+							/* recook if in an article is open */
+							if (pgart.raw)
+								resize_article(TRUE, &pgart);
 							break;
 
 						default:

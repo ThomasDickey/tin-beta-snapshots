@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 1994-02-28
+ *  Updated   : 2002-11-08
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2002 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -144,10 +144,6 @@ static const char *const tex_from[TEX_SUBST] =
 {
 	"\"a","\\\"a","\"o","\\\"o","\"u","\\\"u","\"A","\\\"A","\"O","\\\"O","\"U","\\\"U","\"s","\\\"s","\\3"
 };
-static const char *const tex_to[TEX_SUBST] =
-{
-	"ä", "ä", "ö", "ö", "ü", "ü", "Ä", "Ä", "Ö", "Ö", "Ü", "Ü", "ß", "ß", "ß"
-};
 
 /*
  *  Now the conversion function...
@@ -163,7 +159,7 @@ convert_iso2asc(
 	constext *p;
 	constext *const *tab;
 	char *asc;
-	int first;	/* flag for first SPACE/TAB after other characters */
+	t_bool first;	/* flag for first SPACE/TAB after other characters */
 	int i, a;	/* column counters in iso and asc */
 
 	asc = *asc_buffer;
@@ -172,13 +168,13 @@ convert_iso2asc(
 		return;
 
 	tab = (iso2asc[t] - ISO_EXTRA);
-	first = 1;
+	first = TRUE;
 	i = a = 0;
 	while (*iso != '\0') {
 		if (*EIGHT_BIT(iso) >= ISO_EXTRA) {
 			p = tab[*EIGHT_BIT(iso)];
 			iso++, i++;
-			first = 1;
+			first = TRUE;
 			while (*p) {
 				*(asc++) = *(p++);
 				if ((asc - *asc_buffer) >= *max_line_len) {
@@ -201,7 +197,7 @@ convert_iso2asc(
 					if (first) {
 						*(asc++) = ' ';
 						a++;
-						first = 0;
+						first = FALSE;
 					}
 					i++;
 				} else {	/* here: *iso == '\t' */
@@ -212,7 +208,7 @@ convert_iso2asc(
 						if (first) {
 							*(asc++) = ' ';
 							a++;
-							first = 0;
+							first = FALSE;
 						}
 					} else {
 						/*
@@ -238,7 +234,7 @@ convert_iso2asc(
 					i++;
 				}
 				*(asc++) = *(iso++);
-				first = 1;
+				first = TRUE;
 			}
 		}
 		if ((asc - *asc_buffer) >= *max_line_len) {
@@ -259,23 +255,45 @@ convert_tex2iso(
 	char *from,
 	char *to)
 {
-	int i, ex;
+	const char * tex_to[TEX_SUBST];
+	int i;
 	size_t spaces = 0; /* spaces to add */
 	size_t len, col = 0;	/* length of from, col counter */
 	size_t subst_len;
+	t_bool ex;
+
+	/* initialize tex_to */
+	if (strcasecmp(tinrc.mm_local_charset, "UTF-8")) {
+		tex_to[1] = tex_to[0] = "\344";	/* auml */
+		tex_to[3] = tex_to[2] = "\366";	/* ouml */
+		tex_to[5] = tex_to[4] = "\374";	/* uuml */
+		tex_to[7] = tex_to[6] = "\304";	/* Auml */
+		tex_to[9] = tex_to[8] = "\326";	/* Ouml */
+		tex_to[11] = tex_to[10] = "\334";	/* Uuml */
+		tex_to[14] = tex_to[13] = tex_to[12] = "\337"; /* szlig */
+	} else { /* locale charset is UTF-8 */
+		tex_to[1] = tex_to[0] = "\303\244";	/* auml */
+		tex_to[3] = tex_to[2] = "\303\266";	/* ouml */
+		tex_to[5] = tex_to[4] = "\303\274";	/* uuml */
+		tex_to[7] = tex_to[6] = "\303\204";	/* Auml */
+		tex_to[9] = tex_to[8] = "\303\266";	/* Ouml */
+		tex_to[11] = tex_to[10] = "\303\234";	/* Uuml */
+		tex_to[14] = tex_to[13] = tex_to[12] = "\303\237";	/* szlig */
+	}
 
 	*to = '\0';
 	len = strlen(from);
 
 	while (col < len) {
-		i = ex = 0;
+		i = 0;
+		ex = FALSE;
 		while ((i < TEX_SUBST) && !ex) {
 			subst_len = strlen(tex_from[i]);
 			if (!strncmp(from + col, tex_from[i], subst_len)) {
 				strcat(to, tex_to[i]);
 				spaces += subst_len - 1;
 				col += subst_len - 1;
-				ex = 1;
+				ex = TRUE;
 			}
 			i++;
 		}
@@ -335,27 +353,40 @@ is_art_tex_encoded(
 
 /*
  * Replace all non printable characters by '?'
+ *
+ * NOTES: don't make wc a wint_t as libutf8 (at least version 0.8)
+ *        sometimes fails to propper convert (wchar_t) 0 to (wint_t) 0
+ *        and thus loop termination fails.
  */
 char *
 convert_to_printable(
 	char *buf)
 {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wc;
+	wchar_t wbuffer[LEN];
+	char buffer[LEN];
+
+	if (mbstowcs(wbuffer, buf, LEN - 1) != (size_t) (-1)) {
+		for (wc = wbuffer; *wc; wc++) {
+			if (!iswprint((wint_t) *wc))
+				*wc = (wchar_t) '?';
+		}
+		wc++;
+		*wc = (wchar_t) '\0';
+
+		wcstombs(buffer, wbuffer, LEN - 1);
+		buffer[LEN - 1] = '\0';
+		strcpy(buf, (const char *) buffer);
+	}
+#else
 	unsigned char *c;
-#ifdef ENABLE_MBLEN
-	int t_len = 0;
-#endif /* ENABLE_MBLEN */
 
 	for (c = (unsigned char *) buf; *c; c++) {
-#ifdef ENABLE_MBLEN
-		if (!my_isprint(*c) && (t_len = mblen((const char *) c, MAX(2,MB_CUR_MAX))) <= 1)
-			*c = '?';
-		while (--t_len > 0)
-			c++;
-#else
 		if (!my_isprint(*c))
 			*c = '?';
-#endif /* ENABLE_MBLEN */
 	}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	return buf;
 }
 
@@ -364,25 +395,38 @@ convert_to_printable(
  * Same as convert_to_printable() but allows Backspace (ASCII 8), TAB (ASCII
  * 9), and FormFeed (ASCII 12) according to son of RFC 1036 section 4.4;
  * LineFeed (ASCII 10) and CarriageReturn (ASCII 13) are allowed, too.
+ *
+ * NOTES: don't make wc a wint_t as libutf8 (at least version 0.8)
+ *        sometimes fails to propper convert (wchar_t) 0 to (wint_t) 0
+ *        and thus loop termination fails.
  */
 void
 convert_body2printable(
 	char *buf)
 {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	char buffer[LEN];
+	wchar_t *wc;
+	wchar_t wbuffer[LEN];
+
+	if (mbstowcs(wbuffer, buf, LEN - 1) != (size_t) (-1)) {
+		for (wc = wbuffer; *wc; wc++) {
+			if(!(iswprint((wint_t) *wc) || *wc == (wchar_t) 8 || *wc == (wchar_t) 9 || *wc == (wchar_t) 10 || *wc == (wchar_t) 12 || *wc == (wchar_t) 13))
+				*wc = (wchar_t) '?';
+		}
+		wc++;
+		*wc = (wchar_t) '\0';
+
+		wcstombs(buffer, wbuffer, LEN - 1);
+		buffer[LEN - 1] = '\0';
+		strcpy(buf, (const char *) buffer);
+	}
+#else
 	unsigned char *c;
-#ifdef ENABLE_MBLEN
-	int t_len = 0;
-#endif /* ENABLE_MBLEN */
 
 	for (c = (unsigned char *)buf; *c; c++) {
-#ifdef ENABLE_MBLEN
-		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13) && (t_len = mblen((const char *) c, MAX(2,MB_CUR_MAX))) <= 1)
-			*c = '?';
-		while (--t_len > 0)
-			c++;
-#else
 		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13))
 			*c = '?';
-#endif /* ENABLE_MBLEN */
 	}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 }

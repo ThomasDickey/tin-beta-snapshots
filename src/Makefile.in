@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2001-07-22
+# Updated: 2002-11-07
 #
 # Copyright (c) 1995-2002 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -159,6 +159,7 @@ CFILES	= \
 	$(SRCDIR)/memory.c \
 	$(SRCDIR)/mimetypes.c \
 	$(SRCDIR)/misc.c \
+	$(SRCDIR)/my_tmpfile.c \
 	$(SRCDIR)/newsrc.c \
 	$(SRCDIR)/nntplib.c \
 	$(SRCDIR)/nrctbl.c \
@@ -185,9 +186,8 @@ CFILES	= \
 	$(SRCDIR)/strftime.c \
 	$(SRCDIR)/string.c \
 	$(SRCDIR)/tags.c \
-	$(OBJDIR)/tcurses.c \
-	$(OBJDIR)/tmpfile.c \
-	$(OBJDIR)/my_tmpfile.c \
+	$(SRCDIR)/tcurses.c \
+	$(SRCDIR)/tmpfile.c \
 	$(SRCDIR)/thread.c \
 	$(SRCDIR)/wildmat.c \
 	$(SRCDIR)/xref.c
@@ -231,6 +231,7 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/memory.o \
 	$(OBJDIR)/mimetypes.o \
 	$(OBJDIR)/misc.o \
+	$(OBJDIR)/my_tmpfile.o \
 	$(OBJDIR)/newsrc.o \
 	$(OBJDIR)/nntplib.o \
 	$(OBJDIR)/nrctbl.o \
@@ -259,7 +260,6 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/tags.o \
 	$(OBJDIR)/tcurses.o \
 	$(OBJDIR)/tmpfile.o \
-	$(OBJDIR)/my_tmpfile.o \
 	$(OBJDIR)/thread.o \
 	$(OBJDIR)/wildmat.o \
 	$(OBJDIR)/xref.o
@@ -424,7 +424,7 @@ clobber :: clean
 
 distclean ::
 @INTLDIR_MAKE@	@-$(CD) ../intl && $(MAKE) @cf_cv_makeflags@ $@
-@MSG_DIR_MAKE@	@-$(CD) ../po && $(MAKE) @cf_cv_makeflags@ $@
+@MSG_DIR_MAKE@	@-$(CD) ../po && $(MAKE) @cf_cv_makeflags@ clean
 
 cflow:
 	@$(ECHO) "Creating cflow for $(PROJECT) ..."
@@ -445,6 +445,7 @@ TIN_DEP	= \
 	../include/autoconf.h \
 	$(INCDIR)/extern.h \
 	$(INCDIR)/nntplib.h \
+	$(INCDIR)/tcurses.h \
 	$(INCDIR)/proto.h $(EXTRA_INTLLIBS)
 
 @PCREDIR_MAKE@../pcre/$(PRELIB)pcre.a:
@@ -519,6 +520,7 @@ $(OBJDIR)/mimetypes.o:		$(SRCDIR)/mimetypes.c $(TIN_DEP)
 $(OBJDIR)/misc.o:		$(SRCDIR)/misc.c $(TIN_DEP) \
 				$(INCDIR)/policy.h \
 				$(INCDIR)/rfc2046.h
+$(OBJDIR)/my_tmpfile.o:		$(SRCDIR)/my_tmpfile.c $(TIN_DEP)
 $(OBJDIR)/newsrc.o:		$(SRCDIR)/newsrc.c $(TIN_DEP)
 $(OBJDIR)/nntplib.o:		$(SRCDIR)/nntplib.c $(TIN_DEP) \
 				$(INCDIR)/tnntp.h

@@ -411,6 +411,7 @@ constext txt_index_page_com[] = N_("Group Level Commands");
 constext txt_info_add_kill[] = N_("Kill filter added");
 constext txt_info_add_select[] = N_("Auto-selection filter added");
 constext txt_info_do_postpone[] = N_("Storing article for later posting");
+/* TODO: replace hardcoded key-name in txt_info_postponed */
 constext txt_info_postponed[] = N_("%d postponed %s, reuse with ^O...\n");
 constext txt_info_nopostponed[] = N_("*** No postponed articles ***");
 constext txt_info_not_subscribed[] = N_("You are not subscribed to this group");
@@ -595,6 +596,7 @@ constext txt_pcre_error_text[] = N_("Error in regex: study - pcre internal error
 #endif /* !DONT_HAVE_PIPING */
 
 constext txt_post_a_followup[] = N_("Post a followup...");
+/* TODO: replace hardcoded key-name in txt_post_error_ask_postpone */
 constext txt_post_error_ask_postpone[] = N_("An error has occurred while posting the article. If you think that this\n\
 error is temporary or otherwise correctable, you can postpone the article\n\
 and pick it up again with ^O later.\n");
@@ -1770,6 +1772,12 @@ struct opttxt txt_word_highlight = {
 	N_("# Enable word highlighting?\n")
 };
 
+struct opttxt txt_wrap_column = {
+	N_("Enter column number to wrap article lines to in the pager. <CR> sets."),
+	N_("Page line wrap column              :"),
+	N_("# Wrap article lines at column\n")
+};
+
 struct opttxt txt_mail_address = {
 	N_("Enter default mail address (and fullname). <CR> sets."),
 	N_("Mail address (and fullname)        :"),
@@ -1975,9 +1983,9 @@ struct opttxt txt_filter_days = {
 };
 
 struct opttxt txt_add_posted_to_filter = {
-	N_("Add subject of posted articles to filter. <SPACE> toggles & <CR> sets."),
+	N_("Add posted articles to filter. <SPACE> toggles & <CR> sets."),
 	N_("Add posted articles to filter      :"),
-	N_("# If ON add posted articles to filter for highlighting follow-ups\n")
+	N_("# If ON add posted articles which start a new thread to filter for\n# highlighting follow-ups\n")
 };
 
 struct opttxt txt_maildir = {

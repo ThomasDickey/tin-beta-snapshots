@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2002-09-25
+dnl Updated   : 2002-11-08
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2002 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -3775,3 +3775,65 @@ AC_DEFUN([jm_GLIBC21],
     GLIBC21="$ac_cv_gnu_library_2_1"
   ]
 )
+
+
+dnl check for required multibyte/widechar functions
+dnl Urs Janssen <urs@tin.org> 20021006
+dnl Usage: AM_MULTIBYTE_ABLE
+AC_DEFUN([AM_MULTIBYTE_ABLE],
+[
+  AC_CACHE_CHECK([for wide char and multibyte support], am_cv_multibyte_able,
+   [AC_TRY_LINK([#include <stdio.h>
+#ifdef HAVE_STDLIB_H
+#	include <stdlib.h>
+#endif /* HAVE_STDLIB_H */
+#ifdef HAVE_WCHAR_H
+#	include <wchar.h>
+#endif /* HAVE_WCHAR_H */
+#ifdef HAVE_WCTYPE_H
+#	include <wctype.h>
+#endif /* HAVE_WCTYPE_H */
+],
+     [char icb[5] = {0xa4, 0xa4, 0xa4, 0xe5, 0x00};
+      char ocb[5];
+      wchar_t wcb[5];
+      wchar_t wcb2[5];
+      wchar_t format[3];
+
+      mbstowcs(wcb, icb, 5);
+      iswprint((wint_t) wcb[0]);
+      wcsnlen(wcb, 4);
+      wcswidth(wcb, 5);
+      wcstombs(ocb, wcb, 5);
+      mbstowcs(format, "%s", 2);
+      swprintf(wcb, 5, format, "test");
+      wcsncat(wcb2, wcb, 5);],
+     am_cv_multibyte_able=yes,
+     [cf_save_LIBS="$LIBS"
+      LIBS="-lutf8 $LIBS"
+      AC_TRY_LINK([#include <libutf8.h>],
+       [char icb[5] = {0xa4, 0xa4, 0xa4, 0xe5, 0x00};
+        char ocb[5];
+        wchar_t wcb[5];
+ 	wchar_t wcb2[5];
+        wchar_t format[3];
+
+        mbstowcs(wcb, icb, 5);
+        iswprint((wint_t) wcb[0]);
+        wcsnlen(wcb, 4);
+        wcswidth(wcb, 5);
+        wcstombs(ocb, wcb, 5);
+        mbstowcs(format, "%s", 2);
+        swprintf(wcb, 5, format, "test");
+	wcsncat(wcb2, wcb, 5);],
+        [am_cv_multibyte_able=yes
+         AC_DEFINE(HAVE_LIBUTF8_H)],
+        [am_cv_multibyte_able=no
+         LIBS="$cf_save_LIBS"])
+   ])
+  if test $am_cv_multibyte_able = yes; then
+    AC_DEFINE(MULTIBYTE_ABLE, 1,
+      [Define if you have swprintf() and co.])
+  fi
+  ])
+])

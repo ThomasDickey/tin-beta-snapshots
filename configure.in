@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@herndon4.his.com>
 dnl Created   : 1995-08-24
-dnl Updated   : 2002-04-20
+dnl Updated   : 2002-11-03
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2001 Thomas E. Dickey <dickey@herndon4.his.com>
@@ -251,12 +251,25 @@ else
 	INEWSPATH="/usr/lib/news"
 fi
 
-## TODO: turn into path + args?
+## TODO: kick the --with-inews-dir= stuff, the check below should be enough
+## (requires some code rework in tin)
 AC_MSG_CHECKING(for directory containing \"inews\")
 CF_WITH_PATH(inews-dir,
 	[  --with-inews-dir=PATH   directory containing "inews"],
 	INEWSDIR,$INEWSPATH)
+INEWSDIR=`echo $INEWSDIR |sed -e 's,/$,,'`
 AC_MSG_RESULT($INEWSDIR)
+
+AC_PATH_PROG(INEWS,
+	inews, --internal,
+	$INEWSDIR:/news/bin:/usr/lib/news/bin:$INEWSPATH)
+if test "$ac_cv_path_INEWS" != ""; then
+	if test "$ac_cv_path_INEWS" = "--internal"; then
+		CF_DEFINE_STRING(PATH_INEWS, "$INEWS")
+	else
+		CF_DEFINE_STRING(PATH_INEWS, "$INEWS -h")
+	fi
+fi
 
 ## !NNTP_ONLY
 if test "$USE_SPOOLDIR" = "yes"; then
@@ -415,14 +428,6 @@ if test "$PCRE_HOME" = "no" ; then
 	PCRE_MAKEFILE="$PCRE_MAKEFILE pcre/Makefile pcre/pcre.h:pcre/pcre.in"
 fi
 
-## iconv
-AC_CHECK_LIB(iconv, iconv,[
-	AC_DEFINE(HAVE_ICONV)
-	LIBS="$LIBS -liconv"],[
-	AC_CHECK_FUNC(iconv,
-		AC_DEFINE(HAVE_ICONV))
-	])
-
 ## debugging libraries (do this after other libraries)
 AC_MSG_CHECKING(if you want dbmalloc library)
 debug_malloc=none
@@ -506,10 +511,10 @@ AC_DEFINE_UNQUOTED(NOVROOTDIR,"$NOVROOTDIR")
 AC_DEFINE_UNQUOTED(SPOOLDIR,"$SPOOLDIR")
 
 ## optional features
-AC_MSG_CHECKING(whether to use MH style mail handling)
+AC_MSG_CHECKING(whether to use MH style mail handling for mailgroups)
 CF_ARG_ENABLE(mh-mail-handling,
 	[  --enable-mh-mail-handling
-                          use MH style mail handling],
+                          use MH style mail handling for mailgroups],
 	[AC_DEFINE(HAVE_MH_MAIL_HANDLING)])
 AC_MSG_RESULT($enableval)
 
@@ -699,7 +704,6 @@ CF_CHECK_HEADERS(\
 	errno.h \
 	fcntl.h \
 	getopt.h \
-	iconv.h \
 	ioctl.h \
 	langinfo.h \
 	libc.h \
@@ -745,6 +749,8 @@ CF_CHECK_HEADERS(\
 	time.h \
 	unistd.h \
 	varargs.h \
+	wchar.h \
+	wctype.h \
 )
 
 ###	Checks that depend on existence-checks for headers
@@ -858,7 +864,6 @@ AC_CHECK_FUNCS(\
 	isascii \
 	link \
 	lockf \
-	mblen \
 	memcmp \
 	memcpy \
 	memmove \
@@ -904,23 +909,8 @@ AC_CHECK_FUNC(flock,
 		AC_DEFINE(HAVE_FLOCK)
 		LIBS="$LIBS -lbsd")])
 
-AM_LANGINFO_CODESET
+AM_MULTIBYTE_ABLE
 
-AC_MSG_CHECKING(for iconv_open() //TRANSLIT extension)
-AC_TRY_RUN([
-#include <iconv.h>
-#include <stdlib.h>
-int main() {
-	iconv_t cd;
-
-	if ((cd = iconv_open("US-ASCII//TRANSLIT", "ISO-8859-1")) == (iconv_t) (-1))
-		exit(1);
-	exit(0);
-}],
-	AC_DEFINE(HAVE_ICONV_OPEN_TRANSLIT) AC_MSG_RESULT(yes),
-	AC_MSG_RESULT(no),
-	AC_MSG_RESULT(unknown)
-)
 
 CF_POSIX_JC
 CF_FUNC_FORK
@@ -1121,7 +1111,10 @@ DMALLOC)
 esac
 
 ### Use gettext
+### this also calles AM_LANGINFO_CODESET and AM_ICONV
+### so we don't need to do the tests ourself
 AM_GNU_GETTEXT
+LIBS="$LIBS $LIBICONV"
 if test "$USE_INCLUDED_LIBINTL" = yes ; then
 	CPPFLAGS="-I../intl $CPPFLAGS"
 	INTLDIR_MAKE=""
@@ -1139,6 +1132,29 @@ else
 	PO_MAKEFILE=""
 fi
 AC_SUBST(MSG_DIR_MAKE)
+
+CF_CHECK_HEADERS(iconv.h)
+AC_MSG_CHECKING(for iconv_open() //TRANSLIT extension)
+AC_TRY_RUN([
+#ifdef HAVE_ICONV_H
+#	include <iconv.h>
+#endif /* HAVE_ICONV_H */
+#ifdef HAVE_STDLIB_H
+#	include <stdlib.h>
+#endif /* HAVE_STDLIB_H */
+int main() {
+	iconv_t cd;
+
+	if ((cd = iconv_open("US-ASCII//TRANSLIT", "ISO-8859-1")) == (iconv_t) (-1))
+		exit(1);
+	exit(0);
+}],
+	AC_DEFINE(HAVE_ICONV_OPEN_TRANSLIT) AC_MSG_RESULT(yes),
+	AC_MSG_RESULT(no),
+	AC_MSG_RESULT(unknown)
+)
+
+
 # tin has mkdirs.sh instead of mkinstalldirs, overwrite the result of test
 # in gettext.m4
 MKINSTALLDIRS="\$(top_srcdir)/mkdirs.sh"

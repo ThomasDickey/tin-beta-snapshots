@@ -71,6 +71,7 @@ write_newsrctable_file(
 		return;
 
 	fprintf(fp, _(txt_nrctbl_info), PRODUCT, VERSION);
+	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
 	fclose(fp);
 }
 

@@ -756,16 +756,17 @@ rfc1522_do_encode(
 }
 
 
+/*
+ * calling code must free() the result if it's no longer needed
+ */
 char *
 rfc1522_encode(
 	char *s,
 	struct t_group *group,
 	t_bool ismail)
 {
-	char *b;
+	char *b, *buf;
 	int x;
-	static char buf[2048];
-
 /*
  * break_long_line is FALSE for news posting unless MIME_BREAK_LONG_LINES is
  * defined, but it's TRUE for mail messages regardless of whether or not
@@ -781,7 +782,7 @@ rfc1522_encode(
 	t_bool break_long_line = ismail;
 #endif /* MIME_BREAK_LONG_LINES */
 
-	b = buf;
+	b = buf = (char *) my_malloc(2048);
 	x = rfc1522_do_encode(s, &b, group, break_long_line);
 	quoteflag = quoteflag || x;
 	return buf;
@@ -833,8 +834,13 @@ rfc15211522_encode(
 			break;
 		if (allow_8bit_header)
 			fputs(header, g);
-		else
-			fputs(rfc1522_encode(header, group, ismail), g);
+		else {
+			char *p;
+
+			p = rfc1522_encode(header, group, ismail);
+			fputs(p, g);
+			free(p);
+		}
 		fputc('\n', g);
 	}
 

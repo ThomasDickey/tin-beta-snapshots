@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 1997-12-31
+ *  Updated   : 2002-11-08
  *  Notes     :
  *
  * Copyright (c) 1991-2002 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -140,8 +140,7 @@ error_message(
 	clear_message();
 	vsprintf(mesg, fmt, ap);
 
-/*	my_fprintf(stderr, mesg); */
-	my_fputs(mesg, stderr);
+	my_fputs(mesg, stderr);	/* don't use my_fprintf() here due to %format chars */
 	my_fflush(stderr);
 
 	if (cmd_line) {
@@ -200,20 +199,45 @@ clear_message(
 }
 
 
+#define TRUNC_TAIL	" ..."
 void
 center_line(
 	int line,
 	t_bool inverse,
 	const char *str)
 {
-	int pos;
 	char buffer[256];
+	int pos;
+	int len;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	int width;
+	wchar_t wbuffer[256];	/* needs same number of elements as buffer */
+	wchar_t wbuffer2[256];
+	wchar_t suffix_buf[6];	/* space for TRUNC_TAIL */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	STRCPY(buffer, str);
 
+	/* protect terminal... */
+	convert_to_printable(buffer);
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if ((len = mbstowcs(wbuffer, buffer, ARRAY_SIZE(wbuffer) - 1)) <= 0)
+		len = strlen(buffer);
+	if ((width = wcswidth(wbuffer, ARRAY_SIZE(wbuffer) - 1)) <= 0)
+		width = len;
+#else
+	len = strlen(buffer);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 	if (!cmd_line) {
-		if (cCOLS >= (int) strlen(str))
-			pos = (cCOLS - (int) strlen(str)) / 2;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if (cCOLS >= width)
+			pos = (cCOLS - width) / 2;
+#else
+		if (cCOLS >= len)
+			pos = (cCOLS - len) / 2;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		else
 			pos = 1;
 
@@ -224,15 +248,23 @@ center_line(
 		}
 	}
 
-	/* protect terminal... */
-	convert_to_printable(buffer);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if (width >= cCOLS) {
+		wcspart(wbuffer2, wbuffer, cCOLS - 6, ARRAY_SIZE(wbuffer2) - 5);
+		mbstowcs(suffix_buf, TRUNC_TAIL, ARRAY_SIZE(suffix_buf) - 1);
+		wcsncat(wbuffer2, suffix_buf, 4);
+		wcstombs(buffer, wbuffer2, sizeof(buffer) - 1);
+	}
+#else
+	if (len >= cCOLS) {
+		char *buf;
 
-	if ((int) strlen(buffer) >= cCOLS) {
-		char buf[256];
-		sprintf(buf, "%-.*s%s", cCOLS-6, buffer, " ...");
-		my_fputs(buf, stdout);
-	} else
-		my_fputs(buffer, stdout);
+		buf = my_strdup(buffer);
+		snprintf(buffer, sizeof(buffer) - 1, "%-.*s%s", cCOLS - 6, buf, TRUNC_TAIL);
+		free(buf);
+	}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	my_fputs(buffer, stdout);
 
 	if (cmd_line)
 		my_flush();

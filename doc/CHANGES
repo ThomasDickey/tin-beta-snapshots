@@ -1,4 +1,26 @@
--- 1.5.15 release 20021002 "" --
+-- 1.5.15 release 20021108 "" --
+
+U121) Michael Bienia <michael@vorlon.ping.de>
+      BUG. possible reuse of already freed mem
+      ADD. wrap_column, user defined wrap margin
+      FIX. extern.h, tinrc.h, config.c, cook.c, init.c, lang.c, tincfg.tbl
+           tin.1, tin.5
+
+ 043) Urs Janssen <urs@tin.org>
+      BUG. article numbers in the (broken) overview data which were higher
+           than groups high water mark caused a crash
+      FIX. art.c
+
+U120) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+U119) Michael Bienia <michael@vorlon.ping.de>
+      Urs Janssen <urs@tin.org>
+      ADD. start multibyte/wide char support
+      BUG. TeX2ISO didn't work with UTF-8 locales
+      FIX. configure[.in], aclocal.m4, autoconf.h[in], proto.h, tcurses.h
+           tin.h, charset.c, group.c, screen.c, string.c, tcurses.c, thread.c
 
 U118) Philip Paeps <philip@paeps.cx>
       ADD. improve UUBEGIN_REGEX
@@ -11,23 +33,41 @@ U117) Andreas Metzler <tin-dev@downhill.at.eu.org>
 
 U116) Sebastian Bork <sebi@sebi.org>
       ADD. cosmetics
-      FIX. group.c, lang.c
+      ADD. use art_marked_killed, art_marked_read_selected in kill_level=0
+      FIX. group.c, lang.c, thread.c
 
 U115) Martin Klaiber <martinkl@zedat.fu-berlin.de>
       ADD. comment field to filter-file
       FIX. tin.5, extern.h, tin.h, filter.c, getline.c, lang.c
 
+ 042) Urs Janssen <urs@tin.org>
+      BUG. didn't disallow unprintable chars in group descriptions
+      FIX. select.c
+
 U114) Urs Janssen <urs@tin.org>
       BUG. cached overview datas date was in localtime() without holding a
            timezone
+      BUG. in some cases tin created incorrect overview datas
       BUG. add_posted_to_filter didn't work with -w and -o
       BUG. typo fixed in the english translation
-      BUG. didn't disallow unprintable chars in group descriptions
+      BUG. description-toggle didn't work for mailgroups
+      BUG. redraw problem in the config-menu
+      BUG. dir concatenation problem under VMS
+      BUG. ISO2ASC conversion was done before TEX2ISO conversion
+      BUG. fix iconv()-configure check
+      BUG. can't handle very long subjects (>1K)
+      ADD. restricted several file permissions
       ADD. removed unused vars under VMS
       ADD. use THREAD_BOTH instead of THREAD_MAX as initial threading
-      FIX. extern.h, proto.h, art.c, charset.c, filter.c, group.c, header.c
-           init.c, lang.c, mail.c, main.c, misc.c, page.c, post.c, select.c
-           tin.1, en_GB.po
+      ADD. manpage updates
+      ADD. smarter check for inews
+      ADD. config.guess update
+      ADD. ignore leading/taling whitespaces in input at prompt_msgid()
+      FIX. extern.h, proto.h, tin.h, art.c, charset.c, config.c, cook.c
+           filter.c, group.c, header.c, help.c, inews.c, init.c, lang.c
+           mail.c, main.c, misc.c, nrctbl.c, page.c, pgp.c, post.c, prompt.c
+           rfc2047.c, select.c, Makefile, Makefile[.in], configure[.in], tin.1
+           tin.5, de.po, en_GB.po, config.guess
 
 -- 1.5.14 release 20020926 "Soil" --
 
@@ -87,7 +127,7 @@ U108) Philip Paeps <philip@paeps.cx>
 U107) Jason Faultless <jason@radar.tele2.co.uk>
       ADD. code cleanup
       ADD. cursor position is retained when sorting active,
-           show_only_unread/list_bogus flags etc.. are honoured
+           show_only_unread/list_bogus flags etc. are honoured
       FIX. extern.h, proto.h, tin.h, active.c, config.c, curses.c, feed.c
            group.c, init.c, lang.c, list.c, main.c, page.c, select.c, tags.c
            thread.c, tincfg.tbl

@@ -46,6 +46,10 @@
  * local prototypes
  */
 static void read_groups_descriptions(FILE *fp, FILE *fp_save);
+static void read_newsgroups_file(t_bool verb);
+#ifdef HAVE_MH_MAIL_HANDLING
+	static void read_mailgroups_file(t_bool verb);
+#endif /* HAVE_MH_MAIL_HANDLING */
 
 
 /*
@@ -187,21 +191,21 @@ write_mail_active_file(
  * Load the text description from ~/.tin/mailgroups for each mail group into
  * the active[] array.
  */
-void
+static void
 read_mailgroups_file(
-	void)
+	t_bool verb)
 {
 	FILE *fp;
 
 	if ((fp = open_mailgroups_fp()) != NULL) {
-		if (!batch_mode)
+		if (!batch_mode && verb)
 			wait_message(0, _(txt_reading_mailgroups_file));
 
 		read_groups_descriptions(fp, (FILE *) 0);
 
 		fclose(fp);
 
-		if (!batch_mode)
+		if (!batch_mode && verb)
 			my_fputs("\n", stdout);
 	}
 }
@@ -209,18 +213,32 @@ read_mailgroups_file(
 
 
 /*
+ * read group descriptions for news (and mailgroups)
+ */
+void
+read_descriptions(
+	t_bool verb)
+{
+#ifdef HAVE_MH_MAIL_HANDLING
+	read_mailgroups_file(verb);
+#endif /* HAVE_MH_MAIL_HANDLING */
+	read_newsgroups_file(verb);
+}
+
+
+/*
  * Load the text description from NEWSLIBDIR/newsgroups for each group into the
  * active[] array. Save a copy locally if reading via NNTP to save bandwidth.
  */
-void
+static void
 read_newsgroups_file(
-	void)
+	t_bool verb)
 {
 	FILE *fp;
 	FILE *fp_save = (FILE *) 0;
 
 	if ((fp = open_newsgroups_fp()) != NULL) {
-		if (!batch_mode)
+		if (!batch_mode && verb)
 			wait_message(0, _(txt_reading_newsgroups_file));
 
 
@@ -236,7 +254,7 @@ read_newsgroups_file(
 
 		TIN_FCLOSE(fp);
 
-		if (!batch_mode)
+		if (!batch_mode && verb)
 			my_fputs("\n", stdout);
 	}
 }

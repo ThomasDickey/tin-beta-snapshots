@@ -514,7 +514,7 @@ save_batch(
 	int count;
 
 	if (num_save == 0) {
-		/* TODO maybe print something more context dependent here? */
+		/* TODO maybe print something more context dependent here? -> lang.c */
 		wait_message(1, _("No articles to save"));
 		return FALSE;
 	}
@@ -896,7 +896,7 @@ post_process_uud(
 	char path[PATH_LEN];
 	char s[LEN], t[LEN], u[LEN];
 	int state;
-	mode_t mode = (S_IRUSR | S_IWUSR);
+	mode_t mode = (S_IRUSR|S_IWUSR);
 #endif /* HAVE_LIBUU */
 
 	/*
@@ -983,7 +983,7 @@ post_process_uud(
 						else
 							strtok(name, "\n");
 
-						name[129] = '\0';
+						name[sizeof(name) - 1] = '\0';
 						str_trim(name);
 
 						/* Remove pathname if present, it's dangerous */
@@ -1037,8 +1037,8 @@ post_process_uud(
 
 			if (state == END) {
 				/* set the mode after getting rid of dangerous bits */
-				if (!(mode &= ~(S_ISUID | S_ISGID | S_ISVTX)))
-					mode = (S_IRUSR | S_IWUSR);
+				if (!(mode &= ~(S_ISUID|S_ISGID|S_ISVTX)))
+					mode = (S_IRUSR|S_IWUSR);
 
 				fchmod (fileno(fp_out), mode);
 
