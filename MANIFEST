@@ -1,4 +1,4 @@
-MANIFEST for tin-1.5.14 (Thu Sep 26 02:52:19 CEST 2002)
+MANIFEST for tin-1.5.15 (Sat Sep 28 02:37:01 CEST 2002)
 ----------------------------------------------------
   13573 ./Makefile
    8014 ./MANIFEST
@@ -15,11 +15,11 @@ MANIFEST for tin-1.5.14 (Thu Sep 26 02:52:19 CEST 2002)
    5555 ./install.sh
     777 ./mkdirs.sh
   18847 ./doc/ABOUT-NLS
-  52036 ./doc/CHANGES
+  52458 ./doc/CHANGES
  153546 ./doc/CHANGES.old
    1469 ./doc/DEBUG_REFS
   28979 ./doc/INSTALL
-  29321 ./doc/TODO
+  29238 ./doc/TODO
    2706 ./doc/WHATSNEW
    2671 ./doc/art_handling.txt
    3863 ./doc/auth.txt
@@ -43,8 +43,8 @@ MANIFEST for tin-1.5.14 (Thu Sep 26 02:52:19 CEST 2002)
    4168 ./doc/mmdf.5
    2128 ./doc/newsoverview.5
    6963 ./doc/plp_snprintf.3
- 109630 ./doc/tin.1
-  62012 ./doc/tin.5
+ 109632 ./doc/tin.1
+  62597 ./doc/tin.5
    4729 ./doc/w2r.1
    2196 ./doc/wildmat.3
     344 ./tools/expiretover
@@ -59,23 +59,23 @@ MANIFEST for tin-1.5.14 (Thu Sep 26 02:52:19 CEST 2002)
    2227 ./include/bool.h
    2128 ./include/bugrep.h
    9502 ./include/oldconfig.h
-  52565 ./include/extern.h
+  52689 ./include/extern.h
   11299 ./include/keymap.h
   15818 ./include/menukeys.h
    6465 ./include/nntplib.h
     666 ./include/plp_snprintf.h
   11985 ./include/policy.h
-  29441 ./include/proto.h
+  29494 ./include/proto.h
    5167 ./include/rfc2046.h
    3373 ./include/stpwatch.h
    4527 ./include/tcurses.h
-  62765 ./include/tin.h
+  63054 ./include/tin.h
   12395 ./include/tinrc.h
    5788 ./include/tnntp.h
    2416 ./include/trace.h
    2525 ./include/version.h
   24915 ./src/active.c
-  44983 ./src/art.c
+  44984 ./src/art.c
   27502 ./src/attrib.c
   12156 ./src/auth.c
   10957 ./src/charset.c
@@ -86,8 +86,8 @@ MANIFEST for tin-1.5.14 (Thu Sep 26 02:52:19 CEST 2002)
   10602 ./src/debug.c
    3605 ./src/envarg.c
   21366 ./src/feed.c
-  43848 ./src/filter.c
-  12462 ./src/getline.c
+  48659 ./src/filter.c
+  12970 ./src/getline.c
    7460 ./src/global.c
   40903 ./src/group.c
    4158 ./src/hashstr.c
@@ -97,25 +97,25 @@ MANIFEST for tin-1.5.14 (Thu Sep 26 02:52:19 CEST 2002)
   33864 ./src/init.c
    3048 ./src/joinpath.c
   37592 ./src/keymap.c
- 103959 ./src/lang.c
+ 104718 ./src/lang.c
    4310 ./src/langinfo.c
    7031 ./src/list.c
    6867 ./src/lock.c
   11874 ./src/mail.c
-  26918 ./src/main.c
+  27193 ./src/main.c
   10422 ./src/makecfg.c
   10157 ./src/memory.c
    3206 ./src/mimetypes.c
   91505 ./src/misc.c
   37006 ./src/newsrc.c
   27180 ./src/nntplib.c
-   7183 ./src/nrctbl.c
+   7187 ./src/nrctbl.c
   26336 ./src/open.c
   46452 ./src/page.c
   24260 ./src/parsdate.y
   16966 ./src/plp_snprintf.c
   12749 ./src/pgp.c
- 123098 ./src/post.c
+ 123176 ./src/post.c
   13707 ./src/prompt.c
   10788 ./src/read.c
   24971 ./src/refs.c
@@ -297,11 +297,11 @@ MANIFEST for tin-1.5.14 (Thu Sep 26 02:52:19 CEST 2002)
      41 ./intl/VERSION
    4941 ./po/Makefile.inn
     813 ./po/POTFILES.in
- 115637 ./po/tin.pot
- 153854 ./po/de.gmo
- 185136 ./po/de.po
- 141899 ./po/et.gmo
- 176726 ./po/et.po
+ 116276 ./po/tin.pot
+ 154501 ./po/de.gmo
+ 185860 ./po/de.po
+ 139841 ./po/et.gmo
+ 176362 ./po/et.po
    7317 ./po/en_GB.gmo
- 118153 ./po/en_GB.po
-5432951 total
+ 118795 ./po/en_GB.po
+5441009 total

@@ -183,6 +183,7 @@ extern t_bool quick_filter_select_posted_art(struct t_group *group, const char *
 extern t_bool read_filter_file(const char *file);
 extern void free_filter_array(struct t_filters *ptr);
 extern void refresh_filter_menu(void);
+extern void write_filter_file(const char *filename);
 
 /* getline.c */
 extern char *tin_getline(const char *prompt, int number_only, const char *str, int max_chars, t_bool passwd, int which_hist);

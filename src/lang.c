@@ -233,6 +233,7 @@ constext txt_failed_to_connect_to_server[] = N_("Failed to connect to NNTP serve
 constext txt_filesystem_full[] = N_("Error writing %s file. Filesystem full? File reset to previous state.");
 constext txt_filesystem_full_backup[] = N_("Error making backup of %s file. Filesystem full?");
 constext txt_filter_global_rules[] = N_("Filtering global rules (%d/%d)...");
+constext txt_filter_rule_created[] = N_("Rule created by: ");
 constext txt_feed_pattern[] = N_("Enter wildcard pattern [%s]> ");
 constext txt_followup_newsgroups[] = N_("\nYou requested followups to your article to go to the following %s:\n");
 constext txt_followup_poster[] = N_("  %s\t Answers will be directed to you by mail.\n");
@@ -1064,6 +1065,7 @@ constext txt_all_groups[] = N_("All groups");
 constext txt_filter_text_type[] = N_("Apply pattern to    : ");
 constext txt_from_line_only[] = N_("From: line (ignore case)      ");
 constext txt_from_line_only_case[] = N_("From: line (case sensitive)   ");
+constext txt_help_filter_comment[] = ("One or more lines of comment. <CR> to add a line or proceed if line is empty.");
 constext txt_help_filter_from[] = N_("From: line to add to filter file. <SPACE> toggles & <CR> sets.");
 constext txt_help_filter_lines[] = N_("Linecount of articles to be filtered. < for less, > for more, = for equal.");
 constext txt_help_filter_msgid[] = N_("Message-ID: line to add to filter file. <SPACE> toggles & <CR> sets.");
@@ -1082,6 +1084,7 @@ constext txt_kill_subj[] = N_("Kill Subject:  [%-*.*s] (y/n): ");
 constext txt_kill_text[] = N_("Kill text pattern   : ");
 constext txt_kill_time[] = N_("Kill time in days   : ");
 constext txt_msgid_line_only[] = N_("Message-ID: line              ");
+constext txt_select_comment[] = N_("Select comment : ");
 constext txt_select_from[] = N_("Select From    [%-*.*s] (y/n): ");
 constext txt_select_lines[] = N_("Select Lines: (</>num): ");
 constext txt_select_menu[] = N_("Auto-select Article Menu");
@@ -1097,27 +1100,34 @@ constext txt_unlimited_time[] = N_("Unlimited");
 constext txt_full[] = N_("Full");
 constext txt_last[] = N_("Last");
 constext txt_only[] = N_("Only");
-constext txt_filter_file[] = N_("# Global & local filter file for the TIN newsreader\n#\n\
-# Global format:\n\
-#   group=STRING      Newsgroups list (e.g. comp.*,!*sources*)    [mandatory]\n\
-#   case=NUM          Compare=0 / ignore=1 case when filtering\n\
-#   score=NUM         Score to give (e.g. 70)\n\
-#   subj=STRING       Subject: line (e.g. How to be a wizard)\n\
-#   from=STRING       From: line (e.g. *Craig Shergold*)\n\
-#   msgid=STRING      Message-ID: line (e.g. <123@ether.net>) with full references\n\
-#   msgid_last=STRING Message-ID: line (e.g. <123@ether.net>) with last reference only\n\
-#   msgid_only=STRING Message-ID: line (e.g. <123@ether.net>) without references\n\
-#   refs_only=STRING  References: line (e.g. <123@ether.net>) without Message-ID:\n\
-#   lines=[<>]?NUM    Lines: line\n\
-#   gnksa=[<>]?NUM    GNKSA parse_from() return code\n\
+constext txt_filter_file[] = N_("# Filter file for the TIN newsreader\n#\n\
+# Format:\n\
+#   comment=STRING    Optional. Multiple lines allowed. Comments must be placed\n\
+#                     at the beginning of a rule, or they will be moved to the\n\
+#                     next rule. '#' is not a valid keyword for a comment!\n\
+#   group=STRING      Mandatory. Newsgroups list (e.g. comp.*,!*sources*).\n\
+#   case=NUM          Mandatory. Compare=0 / ignore=1 case when filtering.\n\
+#   score=NUM|STRING  Mandatory. Score to give. Either:\n\
+#     score=NUM         A number (e.g. 70). Or:\n\
+#     score=STRING      One of the two keywords: 'hot' or 'kill'.\n\
+#   subj=STRING       Optional. Subject: line (e.g. How to be a wizard).\n\
+#   from=STRING       Optional. From: line (e.g. *Craig Shergold*).\n\
+#   msgid=STRING      Optional. Message-ID: line (e.g. <123@ether.net>) with\n\
+#                     full references.\n\
+#   msgid_last=STRING Optional. Like above, but with last reference only.\n\
+#   msgid_only=STRING Optional. Like above, but without references.\n\
+#   refs_only=STRING  Optional. References: line (e.g. <123@ether.net>) without\n\
+#                     Message-ID:\n\
+#   lines=[<>]?NUM    Optional. Lines: line. '<' or '>' are optional.\n\
+#   gnksa=[<>]?NUM    Optional. GNKSA parse_from() return code. '<' or '>' opt.\n\
 # either:\n\
-#   xref_max=NUM      Maximum score (e.g. 5)\n\
+#   xref_max=NUM      Optional. Maximum score (e.g. 5)\n\
 #   xref_score=NUM,PATTERN score for pattern (e.g 0,*.answers)\n\
 #   ...\n\
 # or:\n\
-#   xref=PATTERN      Kill pattern (e.g. alt.flame*)\n\
+#   xref=PATTERN      Optional. Kill pattern (e.g. alt.flame*)\n\
 #\n\
-#   time=NUM          time_t value when rule expires\n#\n");
+#   time=NUM          Optional. time_t value when rule expires\n#\n");
 constext txt_filter_score[] = N_("Enter score for rule (default=%d): ");
 constext txt_filter_score_help[] = N_("Enter the score weight (range 0 < score <= 10000)"); /* SCORE_MAX */
 

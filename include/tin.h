@@ -745,7 +745,7 @@ enum resizer { cNo, cYes, cRedraw };
 
 #define FILTER_FILE	"filter"
 /* editor offset for filter-file; TODO: doesn't match for german filter-file */
-#define FILTER_FILE_OFFSET	24
+#define FILTER_FILE_OFFSET	32
 #define INPUT_HISTORY_FILE	".inputhistory"
 #define MAILGROUPS_FILE	"mailgroups"
 #define NEWSRC_FILE	".newsrc"
@@ -1519,9 +1519,18 @@ struct t_filters {
 };
 
 /*
+ * struct t_filter_comment: allow multiple comment-lines in filter-file.
+ */
+struct t_filter_comment {
+	char *text;			/* One line of comment. */
+	struct t_filter_comment *next;	/* points to next comment-entry */
+};
+
+/*
  * struct t_filter - local & global filtering (ie. kill & auto-selection)
  */
 struct t_filter {
+	struct t_filter_comment *comment;
 	char *scope;			/* NULL='*' (all groups) or 'comp.os.*' */
 	char *subj;			/* Subject: line */
 	char *from;			/* From: line */
@@ -1547,6 +1556,7 @@ struct t_filter {
  * struct t_filter_rule - provides parameters to build filter rule from
  */
 struct t_filter_rule {
+	struct t_filter_comment *comment;
 	char text[PATH_LEN];
 	char scope[PATH_LEN];
 	int counter;

@@ -94,7 +94,70 @@ static void free_filter_item(struct t_filter *ptr);
 static void print_filter_menu(void);
 static void set_filter(struct t_filter *ptr);
 static void write_filter_array(FILE *fp, struct t_filters *ptr, time_t theTime);
-static void write_filter_file(const char *filename);
+static struct t_filter_comment *add_filter_comment(struct t_filter_comment *ptr, char *text);
+static struct t_filter_comment *free_filter_comment(struct t_filter_comment *ptr);
+static struct t_filter_comment *copy_filter_comment(struct t_filter_comment *from, struct t_filter_comment *to);
+
+
+/*
+ * Add one more entry to the filter-comment-list.
+ * If ptr == NULL the list will be created.
+ */
+static struct t_filter_comment *
+add_filter_comment(
+	struct t_filter_comment *ptr,
+	char *text)
+{
+	if (ptr == NULL) {
+		ptr = (struct t_filter_comment *) my_malloc(sizeof(struct t_filter_comment));
+		ptr->text = (char *) my_strdup(text);
+		ptr->next = (struct t_filter_comment *) 0;
+	} else
+		ptr->next = (struct t_filter_comment *) add_filter_comment((struct t_filter_comment *) ptr->next, (char *) text);
+
+	return (struct t_filter_comment *) ptr;
+}
+
+
+/*
+ * Free all entries in a filter-comment-list.
+ * Set ptr to NULL and return it.
+ */
+static struct t_filter_comment *
+free_filter_comment(
+	struct t_filter_comment *ptr)
+{
+	struct t_filter_comment *tmp, *next;
+
+	tmp = ptr;
+	while (tmp != NULL) {
+		next = tmp->next;
+		free(tmp);
+		tmp = next;
+	}
+
+	return (struct t_filter_comment *) tmp;
+}
+
+
+/*
+ * Copy the filter-comment-list 'from' into the list 'to'.
+ */
+static struct t_filter_comment *
+copy_filter_comment(
+	struct t_filter_comment *from,
+	struct t_filter_comment *to)
+{
+	if (from != NULL) {
+		to = (struct t_filter_comment *) my_malloc(sizeof(struct t_filter_comment));
+		to->text = (char *) my_strdup(from->text);
+		/* don't know if the next line is necessary, but it doesn't harm */
+		to->next = (struct t_filter_comment *) 0;
+		to->next = (struct t_filter_comment *) copy_filter_comment(from->next, to->next);
+	}
+
+	return (struct t_filter_comment *) to;
+}
 
 
 static void
@@ -134,7 +197,7 @@ test_regex(
 			return TRUE;
 	} else {
 		if (!cache->re)
-			compile_regex(regex, cache, ((nocase) ? PCRE_CASELESS : 0));
+			compile_regex(regex, cache, (nocase ? PCRE_CASELESS : 0));
 		if (cache->re) {
 			regex_errpos = pcre_exec(cache->re, cache->extra, string, strlen(string), 0, 0, NULL, 0);
 			if (regex_errpos >= 0)
@@ -155,6 +218,7 @@ set_filter(
 	struct t_filter *ptr)
 {
 	if (ptr != NULL) {
+		ptr->comment = (struct t_filter_comment *) 0;
 		ptr->scope = (char *) 0;
 		ptr->inscope = TRUE;
 		ptr->icase = FALSE;
@@ -183,6 +247,7 @@ static void
 free_filter_item(
 	struct t_filter *ptr)
 {
+	ptr->comment = free_filter_comment(ptr->comment);
 	FreeAndNull(ptr->scope);
 	FreeAndNull(ptr->subj);
 	FreeAndNull(ptr->from);
@@ -222,6 +287,7 @@ read_filter_file(
 	char *s;
 	char buf[HEADER_LEN];
 	char scope[HEADER_LEN];
+	char comment_line[LEN];  /* one line of comment */
 	char subj[HEADER_LEN];
 	char from[HEADER_LEN];
 	char msgid[HEADER_LEN];
@@ -237,6 +303,7 @@ read_filter_file(
 	int xref_score_cnt = 0;
 	int xref_score_value = 0;
 	long secs = 0L;
+	struct t_filter_comment *comment;
 	struct t_filter *ptr;
 	struct t_group *group;
 	t_bool expired = FALSE;
@@ -258,6 +325,7 @@ read_filter_file(
 
 	group = (struct t_group *) 0;
 	ptr = (struct t_filter *) 0;
+	comment = (struct t_filter_comment *) 0;
 
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
 		if (*buf == '#' || *buf == '\n')
@@ -269,6 +337,10 @@ read_filter_file(
 				if (ptr && !expired_time)
 					ptr[i].icase = (unsigned) icase;
 
+				break;
+			}
+			if (match_string(buf + 1, "omment=", comment_line, sizeof(comment_line))) {
+				comment = (struct t_filter_comment *) add_filter_comment(comment, comment_line);
 				break;
 			}
 			break;
@@ -298,6 +370,10 @@ read_filter_file(
 				set_filter(&ptr[i]);
 				expired_time = FALSE;
 				ptr[i].scope = my_strdup(scope);
+				if (comment != NULL) {
+    					ptr[i].comment = (struct t_filter_comment *) copy_filter_comment(comment, ptr[i].comment);
+    					comment = (struct t_filter_comment *) free_filter_comment(comment);
+				}
 				subj[0] = '\0';
 				from[0] = '\0';
 				msgid[0] = '\0';
@@ -499,7 +575,7 @@ read_filter_file(
 /*
  * write filter strings to ~/.tin/filter
  */
-static void
+void
 write_filter_file(
 	const char *filename)
 {
@@ -547,6 +623,7 @@ write_filter_array(
 {
 	int i;
 	int j;
+	struct t_filter_comment *comment = (struct t_filter_comment *) 0;
 
 	if (ptr == NULL)
 		return;
@@ -562,6 +639,22 @@ write_filter_array(
 my_printf("Scope=[%s]" cCRLF, (ptr->filter[i].scope != NULL ? ptr->filter[i].scope : "*"));
 my_flush();
 */
+		fprintf(fp, "\n");		/* makes filter file more readable */
+
+		/* comments appear always first, if there are any... */
+		if (ptr->filter[i].comment != NULL) {
+			/*
+			 * Save the start of the list, in case write_filter_array is
+			 * called multiple times. Otherwise the list would get lost.
+			 */
+			comment = ptr->filter[i].comment;
+			while (ptr->filter[i].comment != NULL) {
+				fprintf (fp, "comment=%s\n", ptr->filter[i].comment->text);
+				ptr->filter[i].comment = ptr->filter[i].comment->next;
+    			}
+    			ptr->filter[i].comment = comment;
+		}
+
 		fprintf(fp, "group=%s\n", (ptr->filter[i].scope != NULL ? ptr->filter[i].scope : "*"));
 
 		fprintf(fp, "case=%u\n", ptr->filter[i].icase);
@@ -654,7 +747,6 @@ my_flush();
 			if (my_strftime(timestring, sizeof(timestring) - 1, "%Y-%m-%d %H:%M:%S UTC", gmtime(&(ptr->filter[i].time))))
 				fprintf(fp, "time=%lu (%s)\n", (unsigned long int) ptr->filter[i].time, timestring);
 		}
-		fprintf(fp, "#####\n"); /* makes filter file more readable */
 	}
 	fflush(fp);
 }
@@ -710,6 +802,7 @@ get_choice(
 }
 
 
+static const char *ptr_filter_comment;
 static const char *ptr_filter_lines;
 static const char *ptr_filter_menu;
 static const char *ptr_filter_scope;
@@ -731,6 +824,7 @@ print_filter_menu(
 	center_line(0, TRUE, ptr_filter_menu);
 
 	MoveCursor(INDEX_TOP, 0);
+	my_printf("%s" cCRLF cCRLF, ptr_filter_comment);
 	my_printf("%s" cCRLF, ptr_filter_text);
 	my_printf("%s" cCRLF cCRLF, _(txt_filter_text_type));
 	my_printf("%s" cCRLF, text_subj);
@@ -741,8 +835,6 @@ print_filter_menu(
 	my_printf("%s" cCRLF cCRLF, ptr_filter_time);
 	my_printf("%s%s", ptr_filter_scope, ptr_filter_groupname);
 	my_flush();
-
-	show_menu_help(txt_help_filter_text);
 }
 
 
@@ -781,6 +873,7 @@ filter_menu(
 	const char *ptr_filter_help_scope;
 	const char *ptr_filter_quit_edit_save;
 	char *ptr;
+	char comment_line[LEN];
 	char argv[4][PATH_LEN];
 	char buf[LEN];
 	char keyedit[MAXKEYLEN], keyquit[MAXKEYLEN], keysave[MAXKEYLEN];
@@ -789,10 +882,12 @@ filter_menu(
 	char quat_time[PATH_LEN];
 	char ch_default = iKeyFilterSave;
 	int ch, i, len;
+	t_bool proceed;
 	struct t_filter_rule rule;
 
 	signal_context = cFilter;
 
+	rule.comment = (struct t_filter_comment *) 0;
 	rule.text[0] = '\0';
 	rule.scope[0] = '\0';
 	rule.counter = 0;
@@ -807,6 +902,8 @@ filter_menu(
 	rule.score = 0;
 	rule.expire_time = FALSE;
 	rule.check_string = FALSE;
+
+	comment_line[0] = '\0';
 
 	/*
 	 * setup correct text for user selected menu
@@ -839,29 +936,51 @@ filter_menu(
 		ptr_filter_quit_edit_save = _(txt_quit_edit_save_select);
 	}
 
+	ptr_filter_comment = _(txt_select_comment);
 	ptr_filter_groupname = group->name;
 
 	len = cCOLS - 30;
 
 	snprintf(text_time, sizeof(text_time), _(txt_time_default_days), tinrc.filter_days);
 	text_time[sizeof(text_time) - 1] = '\0';
+
 	snprintf(text_subj, sizeof(text_subj), ptr_filter_subj, len, len, art->subject);
 	text_subj[sizeof(text_subj) - 1] = '\0';
+
 	snprintf(text_score, sizeof(text_score), _(txt_filter_score), (type == FILTER_KILL ? -tinrc.score_kill : tinrc.score_select));
 	text_score[sizeof(text_score) - 1] = '\0';
+
 	STRCPY(buf, art->from);
 	snprintf(text_from, sizeof(text_from), ptr_filter_from, len, len, buf);
 	text_from[sizeof(text_from) - 1] = '\0';
+
 	snprintf(text_msgid, sizeof(text_msgid), ptr_filter_msgid, len - 4, len - 4, MSGID(art));
 	text_msgid[sizeof(text_msgid) - 1] = '\0';
 
 	print_filter_menu();
 
-	if (!prompt_menu_string(INDEX_TOP, ptr_filter_text, rule.text))
+	/*
+	 * None, one or multiple lines of comment.
+	 * Continue until an empty line is entered.
+	 * The empty line is ignored.
+	 */
+	show_menu_help(_(txt_help_filter_comment));
+	while ((proceed = prompt_menu_string(INDEX_TOP, ptr_filter_comment, comment_line)) && comment_line[0] != '\0') {
+		rule.comment = (struct t_filter_comment *) add_filter_comment(rule.comment, comment_line);
+		comment_line[0] = '\0';
+	}
+	if (!proceed)
+		return FALSE;
+
+	/*
+	 * Text which might be used to filter on subj, from or msgid
+	 */
+	show_menu_help(_(txt_help_filter_text));
+	if (!prompt_menu_string(INDEX_TOP + 2, ptr_filter_text, rule.text))
 		return FALSE;
 
 	if (*rule.text) {
-		i = get_choice(INDEX_TOP + 1, _(txt_help_filter_text_type),
+		i = get_choice(INDEX_TOP + 3, _(txt_help_filter_text_type),
 			       _(txt_filter_text_type),
 			       _(txt_subj_line_only_case),
 			       _(txt_subj_line_only),
@@ -898,7 +1017,7 @@ filter_menu(
 		/*
 		 * Subject:
 		 */
-		i = get_choice(INDEX_TOP + 3, _(txt_help_filter_subj), text_subj, _(txt_yes), _(txt_no), (char *) 0, (char *) 0, (char *) 0);
+		i = get_choice(INDEX_TOP + 5, _(txt_help_filter_subj), text_subj, _(txt_yes), _(txt_no), (char *) 0, (char *) 0, (char *) 0);
 
 		if (i == -1)
 			return FALSE;
@@ -908,7 +1027,7 @@ filter_menu(
 		/*
 		 * From:
 		 */
-		i = get_choice(INDEX_TOP + 4, _(txt_help_filter_from), text_from, (rule.subj_ok ? _(txt_no) : _(txt_yes)), (rule.subj_ok ? _(txt_yes) : _(txt_no)), (char *) 0, (char *) 0, (char *) 0);
+		i = get_choice(INDEX_TOP + 6, _(txt_help_filter_from), text_from, (rule.subj_ok ? _(txt_no) : _(txt_yes)), (rule.subj_ok ? _(txt_yes) : _(txt_no)), (char *) 0, (char *) 0, (char *) 0);
 
 		if (i == -1)
 			return FALSE;
@@ -919,9 +1038,9 @@ filter_menu(
 		 * Message-ID:
 		 */
 		if (rule.subj_ok || rule.from_ok)
-			i = get_choice(INDEX_TOP + 5, _(txt_help_filter_msgid), text_msgid, _(txt_no), _(txt_full), _(txt_last), _(txt_only), (char *) 0);
+			i = get_choice(INDEX_TOP + 7, _(txt_help_filter_msgid), text_msgid, _(txt_no), _(txt_full), _(txt_last), _(txt_only), (char *) 0);
 		else
-			i = get_choice(INDEX_TOP + 5, _(txt_help_filter_msgid), text_msgid, _(txt_full), _(txt_last), _(txt_only), _(txt_no), (char *) 0);
+			i = get_choice(INDEX_TOP + 7, _(txt_help_filter_msgid), text_msgid, _(txt_full), _(txt_last), _(txt_only), _(txt_no), (char *) 0);
 
 		if (i == -1)
 			return FALSE;
@@ -960,11 +1079,11 @@ filter_menu(
 	/*
 	 * Lines:
 	 */
-	show_menu_help(txt_help_filter_lines);
+	show_menu_help(_(txt_help_filter_lines));
 
 	buf[0] = '\0';
 
-	if (!prompt_menu_string(INDEX_TOP + 7, ptr_filter_lines, buf))
+	if (!prompt_menu_string(INDEX_TOP + 9, ptr_filter_lines, buf))
 		return FALSE;
 
 	/*
@@ -993,9 +1112,9 @@ filter_menu(
 	 * Scoring value
 	 */
 	buf[0] = '\0';
-	show_menu_help(txt_filter_score_help); /* FIXME: a sprintf() is necessary here */
+	show_menu_help(_(txt_filter_score_help)); /* FIXME: a sprintf() is necessary here */
 
-	if (!prompt_menu_string(INDEX_TOP + 8, text_score, buf))
+	if (!prompt_menu_string(INDEX_TOP + 10, text_score, buf))
 		return FALSE;
 
 	/* check if a score has been entered */
@@ -1030,7 +1149,7 @@ filter_menu(
 	 */
 	sprintf(double_time, "2x %s", text_time);
 	sprintf(quat_time, "4x %s", text_time);
-	i = get_choice(INDEX_TOP + 9, _(txt_help_filter_time), ptr_filter_time,
+	i = get_choice(INDEX_TOP + 11, _(txt_help_filter_time), ptr_filter_time,
 			_(txt_unlimited_time), text_time, double_time, quat_time, (char *) 0);
 
 	if (i == -1)
@@ -1063,7 +1182,7 @@ filter_menu(
 		} else
 			argv[2][0] = '\0';
 
-		i = get_choice(INDEX_TOP + 11, ptr_filter_help_scope,
+		i = get_choice(INDEX_TOP + 13, ptr_filter_help_scope,
 			       ptr_filter_scope,
 			       (argv[0][0] ? argv[0] : (char *) 0),
 			       (argv[1][0] ? argv[1] : (char *) 0),
@@ -1128,6 +1247,7 @@ quick_filter(
 	struct t_article *art)
 {
 	char *scope;
+	char txt[LEN];
 	int header, expire, icase;
 	struct t_filter_rule rule;
 
@@ -1163,6 +1283,14 @@ quick_filter(
 	rule.from_ok = (header == FILTER_FROM_CASE_SENSITIVE || header == FILTER_FROM_CASE_IGNORE);
 	rule.subj_ok = (header == FILTER_SUBJ_CASE_SENSITIVE || header == FILTER_SUBJ_CASE_IGNORE);
 
+	/* create an auto-comment. */
+	rule.comment = (struct t_filter_comment *) 0;	/* needs to be NULL, or add_filter_comment() will fail to create the first entry. */
+	if (type == FILTER_KILL)
+		snprintf(txt, sizeof(txt) - 1, "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", iKeyGroupQuickKill, "' (", _(txt_help_article_quick_kill), ").");
+	else
+		snprintf (txt, sizeof(txt) - 1, "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", iKeyGroupQuickAutoSel, "' (", _(txt_help_article_quick_select), ").");
+	rule.comment = (struct t_filter_comment *) add_filter_comment (rule.comment, (char *) txt);
+
 	rule.text[0] = '\0';
 	rule.icase = icase;
 	rule.expire_time = expire;
@@ -1185,6 +1313,7 @@ quick_filter_select_posted_art(
 	const char *a_message_id)	/* return value is always ignored */
 {
 	t_bool filtered = FALSE;
+	char txt[LEN];
 
 	if (group->type == GROUP_TYPE_NEWS) {
 		struct t_article art;
@@ -1215,6 +1344,11 @@ quick_filter_select_posted_art(
 		rule.score = tinrc.score_select;
 
 		strcpy(rule.scope, group->name);
+
+		/* create an auto-comment. */
+		rule.comment = (struct t_filter_comment *) 0;	/* needs to be NULL, or add_filter_comment() will fail to create the first entry. */
+		snprintf (txt, sizeof(txt) - 1, "%s%s", _(txt_filter_rule_created), "add_posted_to_filter=ON.");
+		rule.comment = (struct t_filter_comment *) add_filter_comment(rule.comment, txt);
 
 		/*
 		 * Setup dummy article with posted articles subject
@@ -1279,6 +1413,7 @@ add_filter_rule(
 	ptr[i].icase = FALSE;
 	ptr[i].inscope = TRUE;
 	ptr[i].fullref = FILTER_MSGID;
+	ptr[i].comment = (struct t_filter_comment *) 0;
 	ptr[i].scope = (char *) 0;
 	ptr[i].subj = (char *) 0;
 	ptr[i].from = (char *) 0;
@@ -1291,6 +1426,9 @@ add_filter_rule(
 	ptr[i].xref = (char *) 0;
 	ptr[i].xref_max = 0;
 	ptr[i].xref_score_cnt = 0;
+
+	if (rule->comment != NULL)
+		ptr[i].comment = (struct t_filter_comment *) copy_filter_comment(rule->comment, ptr[i].comment);
 
 	if (rule->scope[0] == '\0') /* replace empty scope with current group name */
 		ptr[i].scope = my_strdup(group->name);

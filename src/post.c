@@ -1423,6 +1423,7 @@ post_article_loop:
 					}
 				return ret_code;
 				}
+
 			case iKeyPostPostpone:
 				postpone_article(article);
 				goto post_article_postponed;
@@ -1513,8 +1514,11 @@ post_article_done:
 			 * FIXME: This logic is faithful to the original, but awful
 			 */
 			if (tinrc.add_posted_to_filter && (type == POST_QUICK || type == POST_POSTPONED || type == POST_NORMAL)) {
-				if (type != POST_POSTPONED || (type == POST_POSTPONED && !strchr(header.newsgroups, ',') && (psGrp = group_find(header.newsgroups))))
+				if ((psGrp = group_find(header.newsgroups)) && (type != POST_POSTPONED || (type == POST_POSTPONED && !strchr(header.newsgroups, ',')))) {
 					quick_filter_select_posted_art(psGrp, header.subj, a_message_id);
+					if (type == POST_QUICK)
+						write_filter_file(filter_file);
+				}
 			}
 
 			switch (type) {

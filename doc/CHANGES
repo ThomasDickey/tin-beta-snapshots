@@ -1,3 +1,15 @@
+-- 1.5.15 release 20020928 "" --
+
+U115) Martin Klaiber <martinkl@zedat.fu-berlin.de>
+      ADD. comment field to filter-file
+      FIX. tin.5, extern.h, tin.h, filter.c, getline.c, lang.c
+
+U114) Urs Janssen <urs@tin.org>
+      BUG. cached overview datas date was in localtime() without holding a
+           timezone
+      BUG. add_posted_to_filter didn't work with -w
+      FIX. proto.h, art.c, filter.c, main.c, post.c
+
 -- 1.5.14 release 20020926 "Soil" --
 
 U113) Olaf Dietrich <olaf@dtrx.de>
@@ -516,7 +528,7 @@ U059) Urs Janssen <urs@tin.org>
            in followups/replys
       BUG. backup_file() treated missing source files as an error
       BUG. if a nntp:-url only contained the name of a group but didn't
-           specify a article the last group name component wasn't recognized
+           specify an article the last group name component wasn't recognized
       BUG. crashed when hitting iKeySelectReadGrp*, iKeySelectMoveGrp
            or iKeySelectBugReport with show_only_unread_groups=ON and
            all arts read

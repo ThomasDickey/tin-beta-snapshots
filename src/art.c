@@ -1856,8 +1856,8 @@ print_date(
 		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 	};
 
-	tm = localtime(&secs);
-	sprintf(date, "%02d %s %04d %02d:%02d:%02d",
+	tm = gmtime(&secs);
+	sprintf(date, "%02d %s %04d %02d:%02d:%02d GMT",
 			tm->tm_mday,
 			months_a[tm->tm_mon],
 			tm->tm_year + 1900,
