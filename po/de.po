@@ -5,7 +5,7 @@
 #
 msgid	""
 msgstr	"Project-Id-Version: tin 1.5.17\n"
-	"POT-Creation-Date: 2003-03-06 20:05+0100\n"
+	"POT-Creation-Date: 2003-03-09 16:03+0100\n"
 	"PO-Revision-Date: 2003-03-04 21:16+0100\n"
 	"Last-Translator: Sven Hartge <oweh@ds9.argh.org>, Kai Bojens "
 	"<kbojens@on-luebeck.de>\n"
@@ -2160,7 +2160,7 @@ msgstr	"- Nächste Antwort -"
 msgid	"NNTP authorization password not found for %s"
 msgstr	"NNTP Anmeldepasswort für %s nicht gefunden"
 
-#: src/lang.c:553 src/nntplib.c:959
+#: src/lang.c:553 src/nntplib.c:958
 msgid	"205  Closing connection"
 msgstr	"205  Schließe Verbindung"
 
@@ -5874,12 +5874,12 @@ msgstr	"Speichere NNTP Overview Daten lokal:"
 msgid	"# If ON, create local copies of NNTP overview files.\n"
 msgstr	"# Falls ON, erzeuge lokale Kopien der NNTP Overview Dateien.\n"
 
-#: src/main.c:614
+#: src/main.c:612
 #, c-format
 msgid	"Version: %s release %s (\"%s\") %s %s"
 msgstr	"Version: %s Ausgabe %s (\"%s\") %s %s"
 
-#: src/main.c:617
+#: src/main.c:615
 #, c-format
 msgid	"Version: %s release %s (\"%s\")"
 msgstr	"Version: %s Ausgabe %s (\"%s\")"
@@ -5891,237 +5891,237 @@ msgid	"\n"
 msgstr	"\n"
 	"Server reagierte nicht, Wiederholung Nummer # %d\n"
 
-#: src/nntplib.c:810
+#: src/nntplib.c:809
 msgid	"Rejoin current group\n"
 msgstr	"Betrete aktuelle Gruppe neu\n"
 
-#: src/nntplib.c:814
+#: src/nntplib.c:813
 #, c-format
 msgid	"Read (%s)\n"
 msgstr	"Lese (%s)\n"
 
-#: src/nntplib.c:816
+#: src/nntplib.c:815
 #, c-format
 msgid	"Resend last command (%s)\n"
 msgstr	"Sende letztes Kommando (%s) neu\n"
 
-#: src/nntplib.c:935
+#: src/nntplib.c:934
 msgid	"100  Help text on way"
 msgstr	"100  Hilfetext ist auf dem Weg"
 
-#: src/nntplib.c:939
+#: src/nntplib.c:938
 msgid	"180  Authorization capabilities"
 msgstr	"180  Anmeldeeigenschaft"
 
-#: src/nntplib.c:943
+#: src/nntplib.c:942
 msgid	"199  Debug output"
 msgstr	"199  Debug-Ausgabe"
 
-#: src/nntplib.c:947
+#: src/nntplib.c:946
 msgid	"200  Hello; you can post"
 msgstr	"200  Hallo; Sie dürfen Posten"
 
-#: src/nntplib.c:951
+#: src/nntplib.c:950
 msgid	"201  Hello; you can't post"
 msgstr	"201  Hallo; Sie dürfen nicht Posten"
 
-#: src/nntplib.c:955
+#: src/nntplib.c:954
 msgid	"202  Slave status noted"
 msgstr	"202  Empfängerstatus notiert"
 
-#: src/nntplib.c:963
+#: src/nntplib.c:962
 msgid	"211  Group selected"
 msgstr	"211  Gruppe ausgewählt"
 
-#: src/nntplib.c:968
+#: src/nntplib.c:967
 msgid	"215  Newsgroups follow"
 msgstr	"215  Newsgruppen folgen"
 
-#: src/nntplib.c:973
+#: src/nntplib.c:972
 msgid	"218  Group index file follows"
 msgstr	"218  Gruppenindexdatei folgt"
 
-#: src/nntplib.c:978
+#: src/nntplib.c:977
 msgid	"220  Article (head & body) follows"
 msgstr	"220  Artikel (Header und Body) folgt"
 
-#: src/nntplib.c:982
+#: src/nntplib.c:981
 msgid	"221  Head follows"
 msgstr	"221  Header folgt"
 
-#: src/nntplib.c:986
+#: src/nntplib.c:985
 msgid	"222  Body follows"
 msgstr	"222  Body folgt"
 
-#: src/nntplib.c:990
+#: src/nntplib.c:989
 msgid	"223  No text sent -- stat, next, last"
 msgstr	"223  Kein Text gesendet -- status, nächster, letzter"
 
-#: src/nntplib.c:994
+#: src/nntplib.c:993
 msgid	"230  New articles by message-id follow"
 msgstr	"230  Neue Artikel mit Message-ID folgen"
 
-#: src/nntplib.c:998
+#: src/nntplib.c:997
 msgid	"231  New newsgroups follow"
 msgstr	"231  Neue Newsgruppen folgen"
 
-#: src/nntplib.c:1002
+#: src/nntplib.c:1001
 msgid	"235  Article transferred successfully"
 msgstr	"235  Artikel erfolgreich übertragen"
 
-#: src/nntplib.c:1006
+#: src/nntplib.c:1005
 msgid	"240  Article posted successfully"
 msgstr	"240  Artikel erfolgreich gepostet"
 
-#: src/nntplib.c:1010
+#: src/nntplib.c:1009
 msgid	"280  Authorization system ok"
 msgstr	"280  Anmeldeart OK"
 
-#: src/nntplib.c:1014
+#: src/nntplib.c:1013
 msgid	"281  Authorization (user/pass) ok"
 msgstr	"281  Anmeldung (Benutzer/Passwort) OK"
 
-#: src/nntplib.c:1018
+#: src/nntplib.c:1017
 msgid	"282  binary data follows"
 msgstr	"282  Binär-Daten folgen"
 
-#: src/nntplib.c:1022
+#: src/nntplib.c:1021
 msgid	"283  spooldir list follows"
 msgstr	"283  Spool-Verzeichnisliste folgt"
 
-#: src/nntplib.c:1026
+#: src/nntplib.c:1025
 msgid	"284  Switching to a different spooldir"
 msgstr	"284  Schalte auf ein anderes Spool-Verzeichnis um"
 
-#: src/nntplib.c:1030
+#: src/nntplib.c:1029
 msgid	"285  Still using same spooldir"
 msgstr	"285  Benutze immer noch das selbe Spool-Verzeichnis"
 
-#: src/nntplib.c:1034
+#: src/nntplib.c:1033
 msgid	"286  Current spooldir"
 msgstr	"286  Aktuelles Spool-Verzeichnis"
 
-#: src/nntplib.c:1038
+#: src/nntplib.c:1037
 msgid	"287  Available spooldir"
 msgstr	"287  Verfügbare Spool-Verzeichnisse"
 
-#: src/nntplib.c:1042
+#: src/nntplib.c:1041
 msgid	"288  Unavailable spooldir or invalid entry"
 msgstr	"288  Nicht verfügbares Spool-Verzeichnis oder ungültiger Eintrag"
 
-#: src/nntplib.c:1046
+#: src/nntplib.c:1045
 msgid	"335  Continue to send article"
 msgstr	"335  Fahren Sie mit dem Senden des Artikels fort"
 
-#: src/nntplib.c:1050
+#: src/nntplib.c:1049
 msgid	"340  Continue to post article"
 msgstr	"340  Fahren sie mit dem Posten des Artikels fort"
 
-#: src/nntplib.c:1054
+#: src/nntplib.c:1053
 msgid	"380  authorization is required"
 msgstr	"380  Anmeldung ist notwendig"
 
-#: src/nntplib.c:1058
+#: src/nntplib.c:1057
 msgid	"381  <type> authorization data required"
 msgstr	"381  <Typ> Anmeldedaten notwendig"
 
-#: src/nntplib.c:1062
+#: src/nntplib.c:1061
 msgid	"400  Have to hang up for some reason"
 msgstr	"400  Muss aus irgendeinem Grund die Verbindung trennen"
 
-#: src/nntplib.c:1066
+#: src/nntplib.c:1065
 msgid	"411  No such newsgroup"
 msgstr	"411  Ungültige Newsgruppe"
 
-#: src/nntplib.c:1070
+#: src/nntplib.c:1069
 msgid	"412  Not currently in newsgroup"
 msgstr	"412  Im Augenblick in keiner Newsgruppe"
 
-#: src/nntplib.c:1074
+#: src/nntplib.c:1073
 msgid	"418  No index file for this group"
 msgstr	"418  Keine Index-Datei für diese Newsgruppe"
 
-#: src/nntplib.c:1078
+#: src/nntplib.c:1077
 msgid	"420  No current article selected"
 msgstr	"420  Kein aktueller Artikel ausgewählt"
 
-#: src/nntplib.c:1082
+#: src/nntplib.c:1081
 msgid	"421  No next article in this group"
 msgstr	"421  Kein nächster Artikel in dieser Gruppe"
 
-#: src/nntplib.c:1086
+#: src/nntplib.c:1085
 msgid	"422  No previous article in this group"
 msgstr	"422  Kein vorheriger Artikel in dieser Gruppe"
 
-#: src/nntplib.c:1090
+#: src/nntplib.c:1089
 msgid	"423  No such article in this group"
 msgstr	"423  Ungültiger Artikel in dieser Gruppe"
 
-#: src/nntplib.c:1094
+#: src/nntplib.c:1093
 msgid	"430  No such article at all"
 msgstr	"430  Allgemein ungültiger Artikel"
 
-#: src/nntplib.c:1098
+#: src/nntplib.c:1097
 msgid	"435  Already got that article, don't send"
 msgstr	"435  Habe den Artikel schon, nicht senden"
 
-#: src/nntplib.c:1102
+#: src/nntplib.c:1101
 msgid	"436  Transfer failed"
 msgstr	"436  Transfer fehlgeschlagen"
 
-#: src/nntplib.c:1106
+#: src/nntplib.c:1105
 msgid	"437  Article rejected, don't resend"
 msgstr	"437  Artikel abgelehnt, nicht neu senden"
 
-#: src/nntplib.c:1110
+#: src/nntplib.c:1109
 msgid	"440  Posting not allowed"
 msgstr	"440  Posten nicht erlaubt"
 
-#: src/nntplib.c:1114
+#: src/nntplib.c:1113
 msgid	"441  Posting failed"
 msgstr	"441  Posten fehlgeschlagen"
 
-#: src/nntplib.c:1118
+#: src/nntplib.c:1117
 msgid	"480  authorization required for command"
 msgstr	"480  Anmeldung für dieses Kommando notwendig"
 
-#: src/nntplib.c:1122
+#: src/nntplib.c:1121
 msgid	"481  Authorization system invalid"
 msgstr	"481  Anmeldeart ungültig"
 
-#: src/nntplib.c:1126
+#: src/nntplib.c:1125
 msgid	"482  Authorization data rejected"
 msgstr	"482  Anmeldedaten abgelehnt"
 
-#: src/nntplib.c:1130
+#: src/nntplib.c:1129
 msgid	"483  Invalid alias on spooldir cmd"
 msgstr	"483  Ungültiger Alias im Kommando für das Spoolverzeichnis"
 
-#: src/nntplib.c:1134
+#: src/nntplib.c:1133
 msgid	"484  No spooldir file found"
 msgstr	"484  Kein Spool-Verzeichnis gefunden"
 
-#: src/nntplib.c:1138
+#: src/nntplib.c:1137
 msgid	"500  Command not recognized"
 msgstr	"500  Kommando nicht erkannt"
 
-#: src/nntplib.c:1142
+#: src/nntplib.c:1141
 msgid	"501  Command syntax error"
 msgstr	"501  Kommandosyntaxfehler"
 
-#: src/nntplib.c:1146
+#: src/nntplib.c:1145
 msgid	"502  Access to server denied"
 msgstr	"502  Zugriff auf Server verboten"
 
-#: src/nntplib.c:1151
+#: src/nntplib.c:1150
 msgid	"503  Program fault, command not performed"
 msgstr	"503  Programmfehler, Kommando nicht ausgeführt"
 
-#: src/nntplib.c:1155
+#: src/nntplib.c:1154
 msgid	"580  Authorization Failed"
 msgstr	"580  Anmeldung fehlgeschlagen"
 
-#: src/nntplib.c:1159
+#: src/nntplib.c:1158
 msgid	"Unknown NNTP response code"
 msgstr	"Unbekannter NNTP-Antwort-Code"
 

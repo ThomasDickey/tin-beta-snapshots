@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2003-03-06
+ *  Updated   : 2003-03-07
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -759,13 +759,13 @@ put_server(
 {
 	if (*string && strlen(string)) {
 		/*
-		 * remember the last command we wrote (except ".") to be able
-		 * to resend it after a reconnect. reconnection is handled by
-		 * get_server()
+		 * remember the last command we wrote to be able to resend it after a
+		 * reconnect. reconnection is handled by get_server()
 		 */
 		DEBUG_IO((stderr, "put_server(%s)\n", string));
 		s_puts(string, nntp_wr_fp);
 		s_puts("\r\n", nntp_wr_fp);
+		strcpy(last_put, string);
 	}
 	(void) s_flush(nntp_wr_fp);
 }
@@ -802,7 +802,6 @@ reconnect(
 	strcpy(buf, last_put);			/* Keep copy here, it will be clobbered a lot otherwise */
 
 	if (!nntp_open()) {
-
 		/*
 		 * Re-establish our current group and resend last command
 		 */

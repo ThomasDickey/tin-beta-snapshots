@@ -108,8 +108,8 @@ check_upgrade(
 		 */
 		error_message(_(txt_warn_update), VERSION);
 		error_message(_(txt_return_key));
-		/* TODO: document */
-		switch ((ch = ReadCh())) {
+		/* TODO: document, use something unbuffered here */
+		switch ((ch = getchar())) {
 			case iKeyQuit:
 			case iKeyQuitTin:
 			case iKeyAbort:

@@ -1,4 +1,12 @@
--- 1.5.17 release 20030306 "" --
+-- 1.5.17 release 20030309 "" --
+
+U142) Matt Anton <tin@syrius.org>
+      ADD. strated french translation
+      FIX. fr.po
+
+U141) Christian Garbs <tin-dev@cgarbs.de>
+      ADD. updated MH mailgroups documentation
+      FIX. reading-mail.txt
 
 U140) Jason Faultless <jason@altarstone.com>
       BUG. incorrectly nested multipart articles sometimes hung tin

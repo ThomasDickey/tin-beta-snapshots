@@ -44,3 +44,9 @@ Usage:
 Start tin as normal.
 You'll have to subscribe to your mailgroups the first time you use them.
 
+If you want postings to a mailgroup to be sent to a specified mail address
+(e.g. a mailing list), set the "mailing_list" variable in your attributes
+file (see tin(5) for details).
+
+If you want to set descriptions for your mailgroups, then edit your
+mailgroups file (again, see tin(5) for details).

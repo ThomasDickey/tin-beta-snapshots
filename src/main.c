@@ -106,7 +106,7 @@ main(
 	}
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
 
-/*	set_signal_handlers(); */
+	set_signal_handlers();
 
 	cmd_line = TRUE;
 	debug = 0;	/* debug OFF */
@@ -196,8 +196,6 @@ main(
 		 */
 		setup_screen();
 	}
-
-	set_signal_handlers();
 
 	if (!batch_mode || (batch_mode && verbose))
 		wait_message(0, "%s\n", cvers);

@@ -959,13 +959,13 @@ print_message_page(
 	int help_level)
 {
 	char *line;
-#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t wline[LEN];
-#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	char *p;
 	int bytes;
 	size_t i = begin;
 	t_lineinfo *curr;
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t wline[LEN];
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	for (; i < end; i++) {
 		if (base_line + i >= messagelines)		/* ran out of message */
@@ -989,12 +989,14 @@ print_message_page(
 			}
 		} else
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+		{
 			if (IS_LOCAL_CHARSET("Big5"))
 				bytes = 2 * cCOLS;
 			else {
 				if ((int) strlen(line) >= cCOLS)
 					bytes = cCOLS;
 			}
+		}
 		line[bytes] = '\0';
 
 		/*
