@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-01-05
+ *  Updated   : 2004-02-26
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -903,7 +903,7 @@ catchup_group(
 	struct t_group *group,
 	t_bool goto_next_unread_group)
 {
-	char *smsg;
+	char *smsg = NULL;
 
 	if ((!TINRC_CONFIRM_ACTION) || prompt_yn(cLINES, sized_message(&smsg, _(txt_mark_group_read), group->name), TRUE) == 1) {
 		grp_mark_read(group, NULL);
@@ -914,7 +914,7 @@ catchup_group(
 		else
 			move_down();
 	}
-	free(smsg);
+	FreeIfNeeded(smsg);
 }
 
 

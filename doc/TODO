@@ -159,12 +159,14 @@ o  should the postponed 'file' (and posted messages 'file') be in
    mailbox_format (even if that's a one file/message format, thus
    the 'file' actually needs to be a directory?).
 
-o  add maildir support (besides MBOX{O,RD} and MMDF},
+o  add maildir/maildir++ support (besides MBOX{O,RD} and MMDF},
    MH (not only reading but also writing), mailstore, BABYL, Kendra (MMDF
-   like with 20*CTRL-A as sep.) and add man-pages for the various formats.
+   like with 20*CTRL-A as sep.), MBX (indexed MBOX from UW-IMAP) and add
+   man-pages for the various formats.
    (see <http://www.ifi.uio.no/~larsi/notes/BABYL> for BABYL,
     <http://www.qmail.org/man/man5/maildir.html> for maildir,
-    <http://www.qmail.org/man/man5/mbox.html> for MBOXCL and MBOXCL2)
+    <http://www.qmail.org/man/man5/mbox.html> for MBOXCL and MBOXCL2,
+    <http://www.washington.edu/imap/listarch/2000/msg00363.html> for MBX)
    [20020215 Urs Janssen <urs@tin.org>]
 
 o  add $LOCKEXT support

@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-12-28
+ *  Updated   : 2004-03-03
  *  Notes     :
  *
  * Copyright (c) 1991-2004 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -330,7 +330,7 @@ copy_body(
 					retcode = fprintf(fp_op, "%s\n", ((tinrc.quote_style & QUOTE_EMPTY) ? prefixbuf : ""));
 		} else {		/* no initials in quote_string, just copy */
 			if ((buf[0] != '\n') || (tinrc.quote_style & QUOTE_EMPTY))
-				retcode = fprintf(fp_op, "%s%s", ((buf[0] == '>' || buf[0] == ' ') ? prefixbuf : prefix), buf);  /* use blank-stripped quote string if line is already quoted or beginns with a space */
+				retcode = fprintf(fp_op, "%s%s", ((buf[0] == '>' || buf[0] == ' ') ? prefixbuf : prefix), buf);	/* use blank-stripped quote string if line is already quoted or beginns with a space */
 			else
 				retcode = fprintf(fp_op, "\n");
 		}
@@ -842,7 +842,7 @@ draw_percent_mark(
 	snprintf(buf, sizeof(buf), "%s(%d%%) [%ld/%ld]", _(txt_more), (int) (cur_num * 100 / max_num), cur_num, max_num);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if (mbstowcs(wbuf, buf, ARRAY_SIZE(wbuf)) != (size_t) (-1)) {
-		wbuf[ARRAY_SIZE(wbuf) - 1]  = (wchar_t) '\0';
+		wbuf[ARRAY_SIZE(wbuf) - 1] = (wchar_t) '\0';
 		wconvert_to_printable(wbuf);
 		len = wcswidth(wbuf, ARRAY_SIZE(wbuf));
 	} else
@@ -2358,15 +2358,13 @@ buffer_to_local(
 				char *tmpbuf, *tbuf;
 				ICONV_CONST char *cur_inbuf;
 				int used;
-				size_t inbytesleft;
-				size_t unknown_bytesleft;
+				size_t inbytesleft = 1;
+				size_t unknown_bytesleft = 4;
 				size_t tmpbytesleft, tsize;
 				size_t outbytesleft, osize;
 				size_t cur_obl, cur_ibl;
 				size_t result;
 
-				inbytesleft = 1;
-				unknown_bytesleft = 4;
 				unknown_ucs4 = unknown_buf;
 
 				/* convert '?' from ASCII to UCS-4 */

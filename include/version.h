@@ -40,9 +40,9 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.7.4"
+#		define VERSION		"1.7.5"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20040225"
+#	define RELEASEDATE	"20040306"
 #	define RELEASENAME	"Benbecula"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.7"

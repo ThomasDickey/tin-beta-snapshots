@@ -1,3 +1,28 @@
+-- 1.7.5 release 20040306 "" --
+
+U027) Urs Janssen <urs@tin.org>
+      BUG. can't link when configured with --with-included-gettext
+      ADD. minor code cleanup
+      ADD. config.guess update
+      FIX. intl/loadmsgcat.c, getline.c, refs.c, config.guess
+
+U026) Matt Anton <tin@syrius.org>
+      ADD. added a some missing french translations
+      FIX. fr.po
+
+U025) Elmar W. Tischhauser <tischhau@rbg.informatik.tu-darmstadt.de>
+      ADD. wrap forwared articles into message/rfc822
+      FIX. proto.h, post.c, rfc2047.c
+
+U024) Thomas E. Dickey <dickey@invisible-island.net>
+      BUG. didn't build with pdcurses
+      BUG. unportable linewrapping used in configure macro
+      FIX. aclocal.m4, tcurses.c
+
+U023) Michael Bienia <michael@vorlon.ping.de>
+      BUG. in case of a reconnect unmalloced memory could be freed
+      FIX. select.c
+
 -- 1.7.4 release 20040225 "Benbecula" --
 
 U022) Lech Szychowski <lech7@pse.pl>
@@ -29,7 +54,7 @@ U019) Michael Bienia <michael@vorlon.ping.de>
       ADD. several checks for valid utf-8 data
       ADD. display non-printable characters as octals in raw-mode
       ADD, redraw tin_getline()-prompt after window-resizing
-      ADD. minor code cleanup cleanup
+      ADD. minor code cleanup
       FIX. extern.h, proto.h, tin.h, art.c, color.c, feed.c, filter.c
            getline.c, group.c, help.c, lang.c, misc.c, page.c, post.c
            prompt.c, rfc2046.c, screen.c, search.c, select.c, signal.c

@@ -1277,7 +1277,7 @@ nntp_open(
 			if (!nntp_command(xover_cmds, ERR_COMMAND, NULL, 0))
 				xover_cmd = xover_cmds;
 		}
-#if 0 /* unused */
+#	if 0 /* unused */
 		if (!xhdr_cmd) {
 			/*
 			 * LIST EXTENSIONS didn't mention HDR or XHDR, try
@@ -1286,7 +1286,7 @@ nntp_open(
 			if (!nntp_command(xhdr_cmds, ERR_COMMAND, NULL, 0))
 				xhdr_cmd = xhdr_cmds;
 		}
-#endif /* 0 */
+#	endif /* 0 */
 	}
 
 	if (!xover_cmd) {
@@ -1298,13 +1298,13 @@ nntp_open(
 			else
 				wait_message(2, _(txt_caching_off));
 		}
-#if 0
+#	if 0
 	} else {
 		/*
 		 * TODO: issue warning if old index files found?
 		 *	      in index_newsdir?
 		 */
-#endif /* 0 */
+#	endif /* 0 */
 	}
 
 #	if 0

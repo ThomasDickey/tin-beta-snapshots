@@ -3,7 +3,7 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2004-02-24
+ *  Updated   : 2004-02-28
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
@@ -48,6 +48,10 @@
 #	ifndef KEY_MIN
 #		define KEY_MIN KEY_BREAK	/* SVr3 curses */
 #	endif /* !KEY_MIN */
+
+#	ifndef KEY_CODE_YES
+#		define KEY_CODE_YES (KEY_MIN-1)	/* PDCurses */
+#	endif
 
 #	include "trace.h"
 

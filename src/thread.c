@@ -61,6 +61,7 @@ t_bool show_subject;
  * Local prototypes
  */
 static int enter_pager(int art, t_bool ignore_unavail, int level);
+static int mark_art_read(struct t_group *group);
 static int thread_catchup(int ch);
 static int thread_left(void);
 static int thread_right(void);
@@ -72,7 +73,6 @@ static void draw_thread_arrow(void);
 static void make_prefix(struct t_msgid *art, char *prefix, int maxlen);
 static void show_thread_page(void);
 static void update_thread_page(void);
-static int mark_art_read(struct t_group *group);
 
 
 /*
