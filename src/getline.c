@@ -453,11 +453,11 @@ gl_kill_back_word(
 		;
 
 	/* delete not alnum characters but graph characters */
-	for(; i >= 0 && iswgraph((wint_t) gl_buf[i]) && !iswalnum((wint_t) gl_buf[i]); --i)
+	for (; i >= 0 && iswgraph((wint_t) gl_buf[i]) && !iswalnum((wint_t) gl_buf[i]); --i)
 		;
 
 	/* delete all graph characters except '/' */
-	for(; i >= 0 && gl_buf[i] != (wchar_t) '/' && iswgraph((wint_t) gl_buf[i]); --i)
+	for (; i >= 0 && gl_buf[i] != (wchar_t) '/' && iswgraph((wint_t) gl_buf[i]); --i)
 		;
 #else
 	/* delete spaces */

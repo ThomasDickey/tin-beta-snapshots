@@ -649,7 +649,7 @@ my_flush();
 			 */
 			comment = ptr->filter[i].comment;
 			while (ptr->filter[i].comment != NULL) {
-				fprintf (fp, "comment=%s\n", ptr->filter[i].comment->text);
+				fprintf(fp, "comment=%s\n", ptr->filter[i].comment->text);
 				ptr->filter[i].comment = ptr->filter[i].comment->next;
 			}
 			ptr->filter[i].comment = comment;
@@ -1286,7 +1286,7 @@ quick_filter(
 	if (type == FILTER_KILL)
 		snprintf(txt, sizeof(txt) - 1, "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", iKeyGroupQuickKill, "' (", _(txt_help_article_quick_kill), ").");
 	else
-		snprintf (txt, sizeof(txt) - 1, "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", iKeyGroupQuickAutoSel, "' (", _(txt_help_article_quick_select), ").");
+		snprintf(txt, sizeof(txt) - 1, "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", iKeyGroupQuickAutoSel, "' (", _(txt_help_article_quick_select), ").");
 	rule.comment = (struct t_filter_comment *) add_filter_comment (rule.comment, (char *) txt);
 
 	rule.text[0] = '\0';
@@ -1345,7 +1345,7 @@ quick_filter_select_posted_art(
 
 		/* create an auto-comment. */
 		rule.comment = (struct t_filter_comment *) 0;	/* needs to be NULL, or add_filter_comment() will fail to create the first entry. */
-		snprintf (txt, sizeof(txt) - 1, "%s%s", _(txt_filter_rule_created), "add_posted_to_filter=ON.");
+		snprintf(txt, sizeof(txt) - 1, "%s%s", _(txt_filter_rule_created), "add_posted_to_filter=ON.");
 		rule.comment = (struct t_filter_comment *) add_filter_comment(rule.comment, txt);
 
 		/*

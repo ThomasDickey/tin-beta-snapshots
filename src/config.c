@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-06
+ *  Updated   : 2003-03-06
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -483,12 +483,6 @@ read_config_file(
 			if (match_boolean(buf, "keep_dead_articles=", &tinrc.keep_dead_articles))
 				break;
 
-			if (match_boolean(buf, "keep_posted_articles=", &tinrc.keep_posted_articles))
-				break;
-
-			if (match_string(buf, "keep_posted_articles_file=", tinrc.keep_posted_articles_file, sizeof(tinrc.keep_posted_articles_file)))
-				break;
-
 			if (match_integer(buf, "kill_level=", &tinrc.kill_level, KILL_NOTHREAD))
 				break;
 
@@ -598,6 +592,9 @@ read_config_file(
 			if (match_boolean(buf, "post_process_view=", &tinrc.post_process_view))
 				break;
 
+			if (match_string(buf, "posted_articles_file=", tinrc.posted_articles_file, sizeof(tinrc.posted_articles_file)))
+				break;
+
 			if (match_boolean(buf, "process_only_unread=", &tinrc.process_only_unread))
 				break;
 
@@ -692,10 +689,7 @@ read_config_file(
 			if (match_integer(buf, "scroll_lines=", &tinrc.scroll_lines, 0))
 				break;
 
-			if (match_boolean(buf, "show_lines=" , &tinrc.show_lines))
-				break;
-
-			if (match_boolean(buf, "show_score=" , &tinrc.show_score))
+			if (match_integer(buf, "show_info=" , &tinrc.show_info, SHOW_INFO_BOTH))
 				break;
 
 			if (match_boolean(buf, "show_signatures=", &tinrc.show_signatures))
@@ -803,6 +797,9 @@ read_config_file(
 			if (match_integer(buf, "wrap_column=", &tinrc.wrap_column, 0))
 				break;
 
+			if (match_boolean(buf, "wrap_on_next_unread=", &tinrc.wrap_on_next_unread))
+				break;
+
 			if (match_integer(buf, "word_h_display_marks=", &tinrc.word_h_display_marks, MAX_MARK))
 				break;
 
@@ -819,11 +816,6 @@ read_config_file(
 		}
 	}
 	fclose(fp);
-
-	/*
-	 * set posted_msgs_file
-	 */
-	joinpath(posted_msgs_file, tinrc.maildir, *tinrc.keep_posted_articles_file ? tinrc.keep_posted_articles_file : POSTED_FILE);
 
 	/*
 	 * sort out conflicting settings
@@ -1018,11 +1010,8 @@ write_config_file(
 	fprintf(fp, _(txt_use_mailreader_i.tinrc));
 	fprintf(fp, "use_mailreader_i=%s\n\n", print_boolean(tinrc.use_mailreader_i));
 
-	fprintf(fp, _(txt_show_lines.tinrc));
-	fprintf(fp, "show_lines=%s\n\n", print_boolean(tinrc.show_lines));
-
-	fprintf(fp, _(txt_show_score.tinrc));
-	fprintf(fp, "show_score=%s\n\n", print_boolean(tinrc.show_score));
+	fprintf(fp, _(txt_show_info.tinrc));
+	fprintf(fp, "show_info=%d\n\n", tinrc.show_info);
 
 	fprintf(fp, _(txt_thread_score.tinrc));
 	fprintf(fp, "thread_score=%d\n\n", tinrc.thread_score);
@@ -1033,11 +1022,8 @@ write_config_file(
 	fprintf(fp, _(txt_keep_dead_articles.tinrc));
 	fprintf(fp, "keep_dead_articles=%s\n\n", print_boolean(tinrc.keep_dead_articles));
 
-	fprintf(fp, _(txt_keep_posted_articles.tinrc));
-	fprintf(fp, "keep_posted_articles=%s\n\n", print_boolean(tinrc.keep_posted_articles));
-
-	fprintf(fp, _(txt_keep_posted_articles_file.tinrc));
-	fprintf(fp, "keep_posted_articles_file=%s\n\n", tinrc.keep_posted_articles_file);
+	fprintf(fp, _(txt_posted_articles_file.tinrc));
+	fprintf(fp, "posted_articles_file=%s\n\n", tinrc.posted_articles_file);
 
 	fprintf(fp, _(txt_add_posted_to_filter.tinrc));
 	fprintf(fp, "add_posted_to_filter=%s\n\n", print_boolean(tinrc.add_posted_to_filter));
@@ -1147,6 +1133,9 @@ write_config_file(
 
 	fprintf(fp, _(txt_auto_list_thread.tinrc));
 	fprintf(fp, "auto_list_thread=%s\n\n", print_boolean(tinrc.auto_list_thread));
+
+	fprintf(fp, _(txt_wrap_on_next_unread.tinrc));
+	fprintf(fp, "wrap_on_next_unread=%s\n\n", print_boolean(tinrc.wrap_on_next_unread));
 
 	fprintf(fp, _(txt_use_mouse.tinrc));
 	fprintf(fp, "use_mouse=%s\n\n", print_boolean(tinrc.use_mouse));
@@ -1916,23 +1905,22 @@ change_config_file(
 						 * case OPT_AUTO_CC:
 						 * case OPT_AUTO_LIST_THREAD:
 						 * case OPT_AUTO_RECONNECT:
-						 * case OPT_CATCHUP_READ_GROUPS:
 						 * case OPT_AUTO_SAVE:
 						 * case OPT_BATCH_SAVE:
+						 * case OPT_CATCHUP_READ_GROUPS:
 						 * case OPT_FORCE_SCREEN_REDRAW:
 						 * case OPT_FULL_PAGE_SCROLL:
 						 * case OPT_GROUP_CATCHUP_ON_EXIT:
-						 * case OPT_KEEP_POSTED_ARTICLES:
+						 * case OPT_HIDE_UUE:
+						 * case OPT_KEEP_DEAD_ARTICLES:
 						 * case OPT_MARK_SAVED_READ:
 						 * case OPT_NO_ADVERTISING:
 						 * case OPT_POS_FIRST_UNREAD:
+						 * case OPT_POSTED_ARTICLES:
 						 * case OPT_PRINT_HEADER:
 						 * case OPT_PROCESS_ONLY_UNREAD:
-						 * case OPT_SHOW_LINES:
-						 * case OPT_SHOW_SCORE:
 						 * case OPT_SHOW_ONLY_UNREAD_GROUPS:
 						 * case OPT_SHOW_XCOMMENTTO:
-						 * case OPT_HIDE_UUE:
 						 * case OPT_SIGDASHES:
 						 * case OPT_SPACE_GOTO_NEXT_UNREAD:
 						 * case OPT_START_EDITOR_OFFSET:
@@ -1943,6 +1931,8 @@ change_config_file(
 						 * case OPT_UNLINK_ARTICLE:
 						 * case OPT_USE_MAILREADER_I:
 						 * case OPT_USE_MOUSE:
+						 * case OPT_WORD_HIGHLIGHT_TINRC:
+						 * case OPT_WRAP_ON_NEXT_UNREAD:
 #ifdef HAVE_KEYPAD
 						 * case OPT_USE_KEYPAD:
 #endif
@@ -1950,8 +1940,6 @@ change_config_file(
 						 * case OPT_ASK_FOR_METAMAIL:
 						 * case OPT_USE_METAMAIL:
 #endif
-						 * case OPT_KEEP_DEAD_ARTICLES:
-						 * case OPT_WORD_HIGHLIGHT_TINRC:
 #if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
 						 * case OPT_TRANSLIT:
 #endif
@@ -2114,9 +2102,10 @@ change_config_file(
 						 * case OPT_MONO_MARKDASH:
 						 * case OPT_MONO_MARKSLASH:
 						 * case OPT_MONO_MARKSTROKE:
-						 * case OPT_DEFAULT_SORT_ART_TYPE:
 						 * case OPT_CONFIRM_CHOICE:
+						 * case OPT_DEFAULT_SORT_ART_TYPE:
 						 * case OPT_MAILBOX_FORMAT:
+						 * case OPT_SHOW_INFO:
 						 *	break;
 						 */
 
@@ -2165,7 +2154,7 @@ change_config_file(
 						case OPT_MAILDIR:
 						case OPT_SAVEDIR:
 						case OPT_SIGFILE:
-						case OPT_KEEP_POSTED_ARTICLES_FILE:
+						case OPT_POSTED_ARTICLES_FILE:
 #ifdef M_AMIGA
 							if (tin_bbs_mode)
 								break;
@@ -2175,7 +2164,6 @@ change_config_file(
 								OPT_ARG_COLUMN + OPTION_WIDTH,
 								OPT_STRING_list[option_table[option].var_index]
 								);
-							joinpath(posted_msgs_file, tinrc.maildir, *tinrc.keep_posted_articles_file ? tinrc.keep_posted_articles_file : POSTED_FILE);
 							break;
 
 #ifdef HAVE_COLOR
@@ -2552,7 +2540,7 @@ match_item(
 	char *nline = my_strdup(line);
 	size_t patlen = strlen(pat);
 
-	nline[strlen(nline) -1 ] = '\0'; /* remove tailing \n */
+	nline[strlen(nline) - 1] = '\0'; /* remove tailing \n */
 
 	if (!strcasecmp(nline, pat)) {
 		strncpy(dst, &nline[patlen], dstlen);

@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-08
+ *  Updated   : 2003-03-05
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -288,7 +288,7 @@ constext txt_help_article_followup_no_quote[] = N_("post followup (don't copy te
 constext txt_help_article_followup_with_header[] = N_("post followup to current article quoting complete headers");
 constext txt_help_article_last_in_thread[] = N_("display last article in current thread");
 constext txt_help_article_last_page[] = N_("display last page of article");
-constext txt_help_article_mark_thread_read[] = N_("mark thread as read and advance to next unread");
+constext txt_help_article_mark_thread_read[] = N_("mark rest of thread as read and advance to next unread");
 constext txt_help_article_next[] = N_("display next article");
 constext txt_help_article_next_thread[] = N_("display first article in next thread");
 constext txt_help_article_next_unread[] = N_("display next unread article");
@@ -835,6 +835,13 @@ constext *txt_thread_score_type[] = {
 	N_("Max"),
 	N_("Sum"),
 	N_("Average")
+};
+
+constext *txt_show_info_type[] = {
+	N_("None"),
+	N_("Lines"),
+	N_("Score"),
+	N_("Lines & Score")
 };
 
 #ifdef HAVE_COLOR
@@ -1489,16 +1496,11 @@ struct opttxt txt_groupname_max_length = {
 	N_("# Maximum length of the names of newsgroups displayed\n")
 };
 
-struct opttxt txt_show_lines = {
+struct opttxt txt_show_info = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Show no. of lines in thread listing:"),
-	N_("# Show number of lines of first unread article in thread listing (ON/OFF)\n")
-};
-
-struct opttxt txt_show_score = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Show score of article in listing   :"),
-	N_("# Show score of article/thread in listing (ON/OFF)\n")
+	N_("Show lines/score in listings       :"),
+	N_("# What informations should be displayed in article/thread listing\n\
+# 0 = nothing, 1 = lines, 2 = score, 3 = lines & score\n")
 };
 
 struct opttxt txt_scroll_lines = {
@@ -1922,6 +1924,12 @@ struct opttxt txt_wrap_column = {
 	N_("# Wrap article lines at column\n")
 };
 
+struct opttxt txt_wrap_on_next_unread = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Wrap around threads on next unread :"),
+	N_("# If ON wrap around threads on searching next unread article\n")
+};
+
 struct opttxt txt_mail_address = {
 	N_("Enter default mail address (and fullname). <CR> sets."),
 	N_("Mail address (and fullname)        :"),
@@ -2224,16 +2232,11 @@ struct opttxt txt_unlink_article = {
 	N_("# If ON remove ~/.article after posting.\n")
 };
 
-struct opttxt txt_keep_posted_articles = {
-	N_("Keep all posted articles in ~/Mail/file. <SPACE> toggles & <CR> sets."),
-	N_("Keep posted articles in ~/Mail/file:"),
-	N_("# If ON keep all postings in ~/Mail/file (see below)\n")
-};
-
-struct opttxt txt_keep_posted_articles_file = {
-	N_("Filename for all posted articles. <CR> sets."),
+struct opttxt txt_posted_articles_file = {
+	N_("Filename for all posted articles, <CR> sets, no filename=do not save."),
 	N_("Filename for posted articles       :"),
-	N_("# Filename where to keep all postings (default posted)\n")
+	N_("# Filename where to keep all postings (default posted)\n\
+# If no filename is set then postings will not be saved\n")
 };
 
 struct opttxt txt_keep_dead_articles = {

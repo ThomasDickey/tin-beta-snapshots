@@ -1,13 +1,13 @@
 /*
  *  Project   : tin - a Usenet reader
  *  Module    : regex.c
- *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
+ *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-02-21
  *  Updated   : 2003-02-13
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
- * Copyright (c) 1997-2003 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 1997-2003 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

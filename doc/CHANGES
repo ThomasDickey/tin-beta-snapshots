@@ -1,13 +1,41 @@
--- 1.5.17 release 20030223 "" --
+-- 1.5.17 release 20030306 "" --
+
+U140) Jason Faultless <jason@altarstone.com>
+      BUG. incorrectly nested multipart articles sometimes hung tin
+      ADD. tinrc.posted_articles_file (replaces tinrc.keep_posted_articles &
+           tinrc.keep_posted_articles_file)
+      FIX. extern.h, rfc2046.h, tinrc.h, config.c, init.c, lang.c, post.c
+           rfc2046.c, tincfg.tbl
+
+U139) Olaf Dietrich <olaf@dtrx.de>
+      ADD. allow PageGotoParent for killed parents if kill_level==KILL_THREAD
+      FIX. page.c
+
+U138) Dirk Nimmich <nimmich@muenster.de>
+      BUG. "time remaining" was updated constantly, so it was unusable on a
+           modem link
+      NOP. revised TODO
+      FIX. screen.c, TODO
+
+U137) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+U136) Corinna Vinschen <corinna@vinschen.de>
+      ADD. wrap_on_next_unread
+      FIX. extern.h, tinrc.h, config.c, init.c, lang.c, thread.c
+           tincfg.tbl, tin.1, tin.5
 
  046) Urs Janssen <urs@tin.org>
       BUG. comma separated group list in attribute scope didn't work
-      FIX. attrib.c
+      BUG. "." might be resend as last command after a reconnect
+      FIX. attrib.c, inews.c, nntplib.c
 
 U135) Michael Bienia <michael@vorlon.ping.de>
       ADD. word highlighting for monochrom terminals
       ADD. renamed some vars
       ADD. moved several strings to lang.c
+      ADD. tinrc.show_info (replaces tinrc.show_lines and tinrc.show_score)
       REM. some hungarian notations
       ADD. replace art_mark_{unread,read,will_return}() with
            art_mark(group, art, flag)
@@ -15,12 +43,13 @@ U135) Michael Bienia <michael@vorlon.ping.de>
            was hidden
       BUG. count of hot and killed articles in the group page header was
            wrong
-      FIX. extern.h, menukeys.h, proto.h, tin.h, tinrc.h, active.c, art.c
-           attrib.c, auth.c, config.c, cook.c, curses.c, feed.c, filter.c
-           group.c, help.c, init.c, keymap.c, lang.c, mail.c, main.c, memory.c
-           misc.c, newsrc.c, nntplib.c, page.c, open.c, page.c, post.c
-           prompt.c, refs.c, regex.c, save.c, signal.c, tags.c, tcurses.c
-           thread.c, tincfg.tbl, keymap.sample, tin.1, tin.5
+      FIX. extern.h, menukeys.h, proto.h, tin.h, tinrc.h, version.h, active.c
+           art.c, attrib.c, auth.c, config.c, cook.c, curses.c, feed.c
+           filter.c, group.c, help.c, init.c, keymap.c, lang.c, mail.c
+           main.c, memory.c, misc.c, newsrc.c, nntplib.c, page.c, open.c
+           page.c, post.c, prompt.c, refs.c, regex.c, save.c, signal.c
+           tags.c, tcurses.c, thread.c, tincfg.tbl, keymap.sample, tin.1
+           tin.5, tinrcupdate.pl
 
 U134) Sebastian Bork
       ADD. manpage update
@@ -30,7 +59,6 @@ U133) Urs Janssen <urs@tin.org>
       BUG. used fprintf(stderr) instead of error_message()
       BUG. hypothetical use of undefined FOLD_TO_UPPER() macro
       BUG. used PCRE_EXTENDED without quoting #
-      BUG. "." might be resend as last command after a reconnect
       ADD. minor code cleanup
       REM. EUC-TW -> ISO-2022-KR autoconversion for 7bit mime_encoding
       REM. disallow ISO-2022-KR as network charset
@@ -38,11 +66,12 @@ U133) Urs Janssen <urs@tin.org>
       ADD. allow ISO-2022-* 7bit encodings
       ADD. config.guess, config.sub update
       ADD. post_8bit_header=ON now also disables body encoding
+      ADD. expand path-names in 4th filed of the active.mail file
       FIX. attrib.c, auth.c, config.c, curses.c, group.c, inews.c, keymap.c
-           lang.c, misc.c, nntplib.c, post.c, regex.c, rfc2045.c, rfc2047.c
-           save.c, search.c, string.c, tags.c, tcurses.c, xref.c, extern.h
-           proto.h, tin.h, tcurses.h, tin.1, tin.5, de.po, config.guess
-           config.sub
+           lang.c, mail.c, misc.c, nntplib.c, post.c, regex.c, rfc2045.c
+           rfc2047.c, save.c, search.c, string.c, tags.c, tcurses.c, xref.c
+           extern.h, proto.h, tin.h, tcurses.h, tin.1, tin.5, de.po
+           config.guess, config.sub, tinrcupdate.pl
 
 -- 1.5.16 release 20030125 "Bubbles" --
 
@@ -256,7 +285,7 @@ U108) Philip Paeps <philip@paeps.cx>
       FIX. extern.h, proto.h, tin.h, tinrc.h, config.c, init.c, lang.c, misc.c
            post.c, tincfg.tbl, tin.1, tin.5
 
-U107) Jason Faultless <jason@radar.tele2.co.uk>
+U107) Jason Faultless <jason@altarstone.com>
       ADD. code cleanup
       ADD. cursor position is retained when sorting active,
            show_only_unread/list_bogus flags etc. are honoured
@@ -341,7 +370,7 @@ U096) Guido Ostkamp <Guido.Ostkamp@t-online.de>
       BUG. possible buffer overflow in search_active()
       FIX. search.c
 
-U095) Jason Faultless <jason@radar.tele2.co.uk>
+U095) Jason Faultless <jason@altarstone.com>
       ADD. code cleanup
       ADD. sorting of newsgroups with '.'
       ADD. attrib cleanup, error reporting
@@ -781,7 +810,7 @@ U055) James Hawtin <oolon@ankh.org>
       ADD. "T" now uses the rightmost multipart counter
       FIX. tags.c
 
-U054) Jason Faultless <jason@radar.tele2.co.uk>
+U054) Jason Faultless <jason@altarstone.com>
       Michael Bienia <michael@vorlon.ping.de>
       ADD. ^H wraps long lines
       FIX. page.c
@@ -921,7 +950,7 @@ U045) Thomas E. Dickey <dickey@invisible-island.net>
            curses.c, filter.c, group.c, help.c, newsrc.c, page.c, post.c
            rfc2046.c, save.c, string.c, thread.c
 
-U044) Jason Faultless <jason@radar.tele2.co.uk>
+U044) Jason Faultless <jason@altarstone.com>
       ADD. URL-highlighting in termcap mode and if compiled without
            color support
       ADD. better positioning in article when hiding uuencoded data
@@ -994,7 +1023,7 @@ U036) Toomas Soome <tsoome@ut.ee>
       FIX. et.po
 
 U035) Dirk Nimmich <nimmich@muenster.de>
-      Jason Faultless <jason@radar.tele2.co.uk>
+      Jason Faultless <jason@altarstone.com>
       ADD. allow remapping of keys
       BUG. potential buffer overruns when saving attachments
       ADD. moved some strings to lang.c and added i18n-macros
@@ -1037,7 +1066,7 @@ U030) Dirk Nimmich <nimmich@muenster.de>
       BUG. last line in qp-encoded arts isn't always displayed
       FIX. cook.c
 
-U029) Jason Faultless <jason@radar.tele2.co.uk>
+U029) Jason Faultless <jason@altarstone.com>
       Urs Janssen <urs@tin.org>
       BUG. missing initialization artinfo and hdr
       ADD. rewrote mailcaps parsing, added $MAILCAPS support and recommended
@@ -1047,7 +1076,7 @@ U029) Jason Faultless <jason@radar.tele2.co.uk>
       FIX. Makefile[.in], POTFILES.in, curses.c, feed.c, mailcap.c, rfc1524.c
            rfc2046.c, mime.types
 
-U028) Jason Faultless <jason@radar.tele2.co.uk>
+U028) Jason Faultless <jason@altarstone.com>
       BUG. possible errors/crashes when 'q'uitting during article load
       BUG. off-by-1 error in mailcap %s expansion
       BUG. count in "%d articles mailed" sometimes incorrect
@@ -1100,7 +1129,7 @@ U024) Dirk Nimmich <nimmich@muenster.de>
       FIX. extern.h, proto.h, cook.c, curses.c, misc.c, page.c, pgp.c
            rfc2045.c
 
-U023) Jason Faultless <jason@radar.tele2.co.uk>
+U023) Jason Faultless <jason@altarstone.com>
       ADD. rewrite article handling
            rewrite pager
            RFC2045 MIME parsing / display of articles
@@ -1158,7 +1187,7 @@ U021) Dirk Nimmich <nimmich@muenster.de>
       BUG. Do not GNKSA-test From: for FORGERY cancels
       FIX. inews.c, post.c
 
-U020) Jason Faultless <jason@radar.tele2.co.uk>
+U020) Jason Faultless <jason@altarstone.com>
       Urs Janssen <urs@tin.org>
       BUG. --disable-nls creates libintl.h-link
       ADD. x-headers (via attributes) support to mails if not using
@@ -1185,7 +1214,7 @@ U019) Roland Rosenfeld <roland@spinnaker.de>
       BUG. change line offset when editing filter from 22 to 25.
       FIX. filter.c
 
-U018) Jason Faultless <jason@radar.tele2.co.uk>
+U018) Jason Faultless <jason@altarstone.com>
       ADD. Pipe '|' to thread menu
       ADD. rewrote feed.c
       ADD. general cleanup
@@ -1203,7 +1232,7 @@ U018) Jason Faultless <jason@radar.tele2.co.uk>
            post.c, prompt.c, rfc1522.c, save.c, screen.c, select.c
            string.c, thread.c
 
- 014) Jason Faultless <jason@radar.tele2.co.uk>
+ 014) Jason Faultless <jason@altarstone.com>
       BUG. Sender: errors on posting hung NNTP socket
       BUG. possible buffer overrun in the wildmat code
       FIX. inews.c, wildmat.c
@@ -1264,7 +1293,7 @@ U013) Sven Hartge <hartge@ds9.argh.org>
       ADD. (basic) german translation
       FIX. de.po
 
-U012) Jason Faultless <jason@radar.tele2.co.uk>
+U012) Jason Faultless <jason@altarstone.com>
       ADD. better PGP/GPG support
       ADD. big group/thread menu cleanup
       ADD. proper return code handling to group menu
@@ -1282,7 +1311,7 @@ U012) Jason Faultless <jason@radar.tele2.co.uk>
       FIX. tin.1, menukeys.h, proto.h, tin.h, attrib.c, global.c, group.c
            page.c, pgp.c, select.c, thread.c
 
- 009) Jason Faultless <jason@radar.tele2.co.uk>
+ 009) Jason Faultless <jason@altarstone.com>
       BUG. -z did not restore terminal modes
       BUG. manpage had '[' and ']' in thread section instead of pager
       FIX. tin.1, menukeys.h, main.c, page.c
@@ -1326,7 +1355,7 @@ U007) Michael Bienia <michael@vorlon.ping.de>
       FIX. configure[.in], autoconf.h[in], extern.h, menukeys.h, proto.h
            help.c, init.c, lang.c, page.c, pgp.c, post.c
 
- 008) Jason Faultless <jason@radar.tele2.co.uk>
+ 008) Jason Faultless <jason@altarstone.com>
       Urs Janssen <urs@tin.org>
       BUG. removed annoying "Reading attributes file ..."-messages
            for each new group
@@ -1346,7 +1375,7 @@ U004) Mark Ayzenshteyn <marka@bonzo.org>
       ADD. uudecode files with spaces in name
       FIX. save.c
 
-U003) Jason Faultless <jason@radar.tele2.co.uk>
+U003) Jason Faultless <jason@altarstone.com>
       ADD. split article tagging type code to tag.c
       ADD. start of GPG support
       ADD. big code cleanup
@@ -1383,7 +1412,7 @@ U001) Urs Janssen <urs@tin.org>
       ADD. add X-Headers in cancels and reposts
       FIX. post.c
 
- 003) Jason Faultless <jason@radar.tele2.co.uk>
+ 003) Jason Faultless <jason@altarstone.com>
       BUG. fixed the newgroup during session hack which didn't work
            with leafnode
       BUG. Possible core when entering newgroups

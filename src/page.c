@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-18
+ *  Updated   : 2003-03-05
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -534,7 +534,7 @@ page_goto_next_unread:
 					break;
 				}
 
-				if (arts[parent->article].killed) {
+				if (arts[parent->article].killed && tinrc.kill_level == KILL_NOTHREAD) {
 					info_message(_(txt_art_parent_killed));
 					break;
 				}

@@ -2,10 +2,10 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2003-02-04
+.\" Updated   : 2003-03-05
 .\" Notes     : needs a some work
 .\"
-.TH tin 5 "February 4th, 2003" "1.5.17" "A Usenet newsreader"
+.TH tin 5 "March 5th, 2003" "1.5.17" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -954,9 +954,8 @@ posting history
 .RS
 Copy of all posted articles in
 .BR mbox (5)
-format. This requires \fBkeep_posted_articles\fP to be set (which is the
-default). The filename might be changed by setting
-\fBkeep_posted_articles_file\fP.
+format. The filename can be changed by setting
+\fBposted_articles_file\fP.
 .RE
 .PP
 
@@ -1338,15 +1337,6 @@ If ON keep all failed postings in \fI${TIN_HOMEDIR-"$HOME"}/dead.articles\fR
 besides keeping the last failed posting in
 \fI${TIN_HOMEDIR-"$HOME"}/dead.article\fR. Default is ON.
 .TP
-.B keep_posted_articles
-If ON keep all postings in
-\fI${TIN_HOMEDIR-"$HOME"}/Mail/\fBkeep_posted_articles_file\fP\fR.
-Default is ON.
-.TP
-.B keep_posted_articles_file
-Filename to be used for storing posted articles, see also
-\fBkeep_posted_articles\fP.
-.TP
 .B kill_level
 This option controls the processing and display of articles that are
 killed. There are 3 options: 0 (default) is the 'traditional'
@@ -1516,6 +1506,12 @@ articles. The following types of processing are allowed:
 \(emunpacking of multi-part uuencoded files.
 .in -.5i
 .TP
+.B posted_articles_file
+Keep posted articles in
+\fI${TIN_HOMEDIR-"$HOME"}/Mail/\fBposted_articles_file\fP\fR.
+If no filename is set then postings will not be saved.
+Default is 'posted'.
+.TP
 .B print_header
 If ON, then the full article header is sent to the printer. Otherwise only
 the ''Subject:'' and ''From:'' fields are output. Default is OFF.
@@ -1631,8 +1627,23 @@ and turn descriptions off. The text used is taken from the
 to be build with mh-mail-handling support) from
 \fI${TIN_HOMEDIR-"$HOME"}/.tin/mailgroups\fR for mailgroups. Default is ON.
 .TP
-.B show_lines
-Show number of lines of first unread article in thread listing (ON/OFF).
+.B show_info
+Which information about the thread or article should be shown. Default is 1,
+show only the line count.
+.RS +.5i
+.IP 0 3
+\fBNone\fP, no information will be displayed.
+.IP 1
+\fBLines\fP, in article listing the line count of an article will be
+displayed and in thread listing the line count of first (unread)
+article will be displayed.
+.IP 2
+\fBScore\fP, in article listing the score of an article will be displayed
+and in thread listing the score of the thread will be displayed - see also
+\fBthread_score\fP.
+.IP 3
+\fBLines & Score\fP, display line count and score.
+.RE
 .TP
 .B show_only_unread_arts
 If ON show only new/unread articles otherwise show all articles. Default is
@@ -1858,6 +1869,11 @@ wrap margin is the current screen width plus the given value (as long
 as the result is still positive, otherwise it will fall back to the
 current screen width). Default is 0, wrapping at the current screen
 width.
+.TP
+.B wrap_on_next_unread
+If enabled a search for the next unread article will wrap around all
+articles to find also previous unread articles. If disabled the search
+stops at the end of the thread list. Default is ON.
 .TP
 .B xpost_quote_format
 Format is the same as for \fBnews_quote_format\fP, this is used when

@@ -3,7 +3,7 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-11-08
+ *  Updated   : 2003-03-05
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -413,10 +413,16 @@ show_progress(
 	long count,
 	long total)
 {
-#ifdef HAVE_GETTIMEOFDAY
+	static char last_display[LEN];
 	static const char *last_txt;
 	static int last_length;
+	static int last_ratio;
 	static int last_total;
+	static time_t last_update;
+	char display[LEN];
+	int ratio;
+	time_t curr_time;
+#ifdef HAVE_GETTIMEOFDAY
 	static int last_count;
 	static int average;
 	static int samples;
@@ -426,28 +432,35 @@ show_progress(
 	int time_diff;
 	int count_diff;
 	int secs_left;
+#endif /* HAVE_GETTIMEOFDAY */
 
 	if (batch_mode || count <= 0 || total == 0)
 		return;
 
 	/* If this is a new progress meter, start recalculating */
-	if ((last_txt != txt) || (last_total != total))
+	if ((last_txt != txt) || (last_total != total)) {
 		last_length = 0;
-
-	MoveCursor(cLINES, 0);
-
-	/* Erase the previous text */
-	if (last_length) {
-		my_printf("%*s", last_length, " ");
-		MoveCursor(cLINES, 0);
+		last_ratio = -1;
+		last_display[0] = '\0';
+		last_update = time(NULL) - 2;
 	}
 
-	if (!last_length) {
-#	ifdef HAVE_COLOR
-		fcol(tinrc.col_message);
-#	endif /* HAVE_COLOR */
-		/* Don't print a time left this time */
-		/* last_length = */ my_printf("%s %3d%%", txt, (int) (count * 100 / total));
+	curr_time = time(NULL);
+	ratio = (int) ((count * 100) / total);
+	if ((ratio == last_ratio) && (curr_time - last_update < 2))
+		/*
+		 * return if ratio did not change and less than 1-2 seconds since last
+		 * update to reduce output
+		 */
+		return;
+
+	last_update = curr_time;
+
+#ifdef HAVE_GETTIMEOFDAY
+	if (last_length == 0) {
+		/* Don't print a "time remaining" this time */
+		snprintf(display, sizeof(display) - 1, "%s %3d%%", txt, ratio);
+		display[sizeof(display) - 1] = '\0';
 		last_length = strlen(txt) + 5;
 
 		/* Reset the variables */
@@ -463,6 +476,16 @@ show_progress(
 		if (!count_diff) /* avoid div by zero */
 			count_diff++;
 
+		/*
+		 * Calculate a running average based on the last 20 samples. For the
+		 * first 19 samples just add all and divide by the number of samples.
+		 * From the 20th sample on use only the last 20 samples to calculate
+		 * the running averave. To make things easier we don't want to store
+		 * and keep track of all of them, so we assume that the first sample
+		 * was close to the current average and substract it from sum. Then,
+		 * the new sample is added to the sum and the sum is divided by 20 to
+		 * get the new average.
+		 */
 		if (samples == 20) {
 			sum -= average;
 			sum += (time_diff / count_diff);
@@ -480,39 +503,40 @@ show_progress(
 		if (secs_left < 0)
 			secs_left = 0;
 
-#	ifdef HAVE_COLOR
-		fcol(tinrc.col_message);
-#	endif /* HAVE_COLOR */
 		/* TODO: -> lang.c, difficult with hardcoded last_length */
-		/* last_length = */ my_printf("%s %3d%% (%d:%02d remaining)", txt, (int) (count * 100 / total), secs_left / 60, secs_left % 60);
+		snprintf(display, sizeof(display) - 1, "%s %3d%% (%d:%02d remaining)", txt, ratio, secs_left / 60, secs_left % 60);
+		display[sizeof(display) - 1] = '\0';
 		last_length = strlen(txt) + 21 + secs_left / 600;
 	}
 
-	my_flush();
-#	ifdef HAVE_COLOR
-	fcol(tinrc.col_normal);
-#	endif /* HAVE_COLOR */
-
-	last_txt = txt;
-	last_total = total;
 	last_count = count;
 	gettimeofday(&last_time, NULL);
 
-#else
-	if (batch_mode || count <= 0 || total == 0)
-		return;
-
-	MoveCursor(cLINES, 0);
-
-#	ifdef HAVE_COLOR
-	fcol(tinrc.col_message);
-#	endif /* HAVE_COLOR */
-
-	my_printf("%s %3d%%", txt, (int) (count * 100 / total));
-	my_flush();
-
-#	ifdef HAVE_COLOR
-	fcol(tinrc.col_normal);
-#	endif /* HAVE_COLOR */
+#else /* HAVE_GETTIMEOFDAY */
+	snprintf(display, sizeof(display) - 1, "%s %3d%%", txt, ratio);
+	display[sizeof(display) - 1] = '\0';
 #endif /* HAVE_GETTIMEOFDAY */
+
+	/* Only display text if it changed from last time */
+	if (strcmp(display, last_display)) {
+		clear_message();
+		MoveCursor(cLINES, 0);
+
+#	ifdef HAVE_COLOR
+		fcol(tinrc.col_message);
+#	endif /* HAVE_COLOR */
+
+		my_printf("%s", display);
+
+#	ifdef HAVE_COLOR
+		fcol(tinrc.col_normal);
+#	endif /* HAVE_COLOR */
+
+		my_flush();
+		STRCPY(last_display, display);
+	}
+
+	last_txt = txt;
+	last_total = total;
+	last_ratio = ratio;
 }

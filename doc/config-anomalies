@@ -1,10 +1,10 @@
 config anomalies in tin:
 
 different variable names in tinrc file and struct tinrc:
-default_save_dir	tinrc.savedir
 post_process_type	tinrc.post_process
 show_only_unread	tinrc.show_only_unread_arts
 default_maildir		tinrc.maildir
+default_savedir		tinrc.savedir
 default_printer		tinrc.printer
 default_editor_format	tinrc.editor_format
 default_mailer_format	tinrc.mailer_format
@@ -65,7 +65,6 @@ kill_level                   *
 tab_goto_next_unread         *
 space_goto_next_unread       *
 pgdn_goto_next               *
-tab_after_X_selection        *
 full_page_scroll             *
 show_last_line_prev_page     *
 group_catchup_on_exit        *
@@ -82,10 +81,8 @@ batch_save
 start_editor_offset          * allows for different editors in different
 default_editor_format        * hierarchies (e.g. a special one for asian
                                newsgroups)
-show_lines                   *
-show_score                   *
-keep_posted_articles         *
-keep_posted_articles_file    *
+show_info                    *
+posted_articles_file         *
 add_posted_to_filter         *
 default_sigfile                sigfile in attributes
 sigdashes                    * it doesn't make sense to set that globally if
@@ -111,7 +108,8 @@ getart_limit                 *
 recent_time                  *
 mail_address                   from in attributes; should be splitted into
                                username and addresse
-mm_charset                   *
+mm_charset                     mm_network_charset
+                               (if charset conversion is available)
 post_mime_encoding           *
 mail_mime_encoding           *
 post_8bit_header             *

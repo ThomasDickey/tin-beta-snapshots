@@ -11,10 +11,10 @@
 # NOPS: - word_h_display_marks
 #
 # version Number
-# $VERSION = "0.0.8";
+# $VERSION = "0.1.0";
 
 # current tinrc version number
-my $rc_version="1.3.1";
+my $rc_version="1.3.3";
 
 # rc values to be updated, removed, joined #
 my $use_getart_limit = 0;		# replaced by getart_limit
@@ -37,7 +37,12 @@ my $thread_articles = -1;		# bool -> int change
 
 my $quote_style = 5;			# default=quote_empty_lines|compress_quotes
 
+my $show_info = 1;			# replaces show_score and show_lines
+
 my $default_regex_pattern = "";		# misnomer, renamed to default_pattern
+
+my $keep_posted_articles = 0;		# replaced by posted_articles_file
+my $posted_articles_file = "posted";	# replaces keep_posted_articles_file
 # denioj ,devomer ,detadpu eb ot seulav cr #
 
 while (defined($line = <>)) {
@@ -136,6 +141,26 @@ while (defined($line = <>)) {
 		next;
 	}
 
+	# show_lines/show_score
+	if ($line =~ m/^show_lines=(.*)/o) {
+		$show_info -= 1 if ($1 =~ m/(?i)off/o);
+		next;
+	}
+	if ($line =~ m/^show_score=(.*)/o) {
+		$show_info += 2 if ($1 =~ m/(?i)on/o);
+		next;
+	}
+
+	# keep_posted_articles/keep_posted_articles_file
+	if ($line =~ m/^keep_posted_articles=(?i)on/o) {
+		$keep_posted_articles++;
+		next;
+	}
+	if ($line =~ m/^keep_posted_articles_file=(.*)/o) {
+		$posted_articles_file=$1 if ($1 ne "");
+		next;
+	}
+
 	# other lines don't need to be translated
 	print "$line\n";
 }
@@ -187,3 +212,11 @@ print "thread_articles=".$thread_articles."\n";
 print "quote_style=".$quote_style."\n";
 
 print "default_pattern=".$default_regex_pattern."\n";
+
+print "show_info=".$show_info."\n";
+
+if ($keep_posted_articles) {
+	print "posted_articles_file=".$posted_articles_file."\n";
+} else {
+	print "posted_articles_file=\n";
+}

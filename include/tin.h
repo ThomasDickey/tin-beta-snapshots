@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2003-02-15
+ *  Updated   : 2003-02-27
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1099,6 +1099,14 @@ enum resizer { cNo, cYes, cRedraw };
 #define SHOW_FROM_ADDR		1
 #define SHOW_FROM_NAME		2
 #define SHOW_FROM_BOTH		3
+
+/*
+ * Values for show_infos
+ */
+#define SHOW_INFO_NOTHING	0
+#define SHOW_INFO_LINES		1
+#define SHOW_INFO_SCORE		2
+#define SHOW_INFO_BOTH		3
 
 /*
  * Values for thread_score

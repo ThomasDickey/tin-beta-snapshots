@@ -1036,7 +1036,7 @@ post_process_uud(
 				if (!(mode &= ~(S_ISUID|S_ISGID|S_ISVTX)))
 					mode = (S_IRUSR|S_IWUSR);
 
-				fchmod (fileno(fp_out), mode);
+				fchmod(fileno(fp_out), mode);
 
 				fclose(fp_out);
 				fp_out = NULL;

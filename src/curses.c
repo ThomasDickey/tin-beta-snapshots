@@ -850,7 +850,7 @@ Raw(
 #else
 #	if defined(M_AMIGA) && defined(__SASC)
 	_inraw = state;
-	rawcon (state);
+	rawcon(state);
 #	else
 	if (!state && _inraw) {
 		SET_TTY(&_original_tty);

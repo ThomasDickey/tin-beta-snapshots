@@ -1,11 +1,11 @@
 /*
  *  Project   : tin - a Usenet reader
  *  Module    : read.c
- *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
+ *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
  *  Updated   : 1998-07-04
  *
- * Copyright (c) 1997-2003 Jason Faultless <jason@radar.tele2.co.uk>
+ * Copyright (c) 1997-2003 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

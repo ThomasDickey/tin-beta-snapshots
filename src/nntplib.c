@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2003-02-23
+ *  Updated   : 2003-03-06
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -763,8 +763,6 @@ put_server(
 		 * to resend it after a reconnect. reconnection is handled by
 		 * get_server()
 		 */
-		if (strcmp(last_put, "."))
-			strcpy(last_put, string);
 		DEBUG_IO((stderr, "put_server(%s)\n", string));
 		s_puts(string, nntp_wr_fp);
 		s_puts("\r\n", nntp_wr_fp);
@@ -889,9 +887,13 @@ get_server(
 /*
  * Send "QUIT" command and close the connection to the server
  *
- * Side effects:	Closes the connection to the server.
- *					You can't use "put_server" or "get_server" after this
- *					routine is called.
+ * Side effects: Closes the connection to the server.
+ *	              You can't use "put_server" or "get_server" after this
+ *	              routine is called.
+ *
+ * TODO: remember servers response string and if it contains anything else
+ *       than just "." (i.e. transfer statistics) present it to the user?
+ *
  */
 void
 close_server(
