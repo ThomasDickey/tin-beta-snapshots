@@ -1470,7 +1470,7 @@ unfilter_articles (
 	int unkilled = 0;
 	register int i;
 
-	for (i = 0; i < top_art; i++) {
+	for_each_art(i) {
 		if (IS_KILLED(i)) {
 			arts[i].killed = FALSE;
 			arts[i].status = ART_UNREAD;
@@ -1787,7 +1787,7 @@ wait_message (1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].li
 	 * all articles have scored, so do kill & select
 	 */
 	if (mesg[0] == '\0') {
-		for (i = 0; i < top_art; i++) {
+		for_each_art(i) {
 			if (arts[i].score <= SCORE_LIM_KILL) {
 				arts[i].killed = TRUE;
 				num_of_killed_arts++;

@@ -308,17 +308,17 @@ tin_read (
  *
  * We simply request data from an fd and data is read up to the next \n
  * Any trailing \r and \n will be stripped.
- * If fp is FAKE_NNTP_FP, then we are reading via a socket to an NNTP server. The
- * required post-processing of the data will be done such that we look like
- * a local read to the calling function.
+ * If fp is FAKE_NNTP_FP, then we are reading via a socket to an NNTP
+ * server. The required post-processing of the data will be done such that
+ * we look like a local read to the calling function.
  *
  * Header lines: If header is TRUE, then we assume we're reading a news
- *   article header.  In some cases, article headers are split over multiple
- *   lines. The rule is that if the next line starts with \t or ' ', then it
- *   will be included as part of the current line. Line breaks are NOT
- *   stripped (but replaced by \n) in continuated lines except the trailing
- *   one; unfolding MUST be done at a higher level because it may be
- *   significant or not.
+ * article header. In some cases, article headers are split over multiple
+ * lines. The rule is that if the next line starts with \t or ' ', then it
+ * will be included as part of the current line. Line breaks are NOT
+ * stripped (but replaced by \n) in continuated lines except the trailing
+ * one; unfolding MUST be done at a higher level because it may be
+ * significant or not.
  *
  * Dynamic read code based on code by <emcmanus@gr.osf.org>
  *

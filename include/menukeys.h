@@ -362,6 +362,7 @@
 #define iKeySelectReadGrp '\n'
 #define iKeySelectReadGrp2 '\r'
 #define iKeySelectResetNewsrc ctrl('R')
+#define iKeySelectSortActive '.'
 #define iKeySelectCatchupNextUnread 'C'
 #define iKeySelectNextUnreadGrp 'N'
 #define iKeySelectBugReport 'R'

@@ -115,7 +115,7 @@ find_base (
 #endif /* DEBUG */
 
 	if (group->attribute && group->attribute->show_only_unread) {
-		for (i = 0; i < top_art; i++) {
+		for_each_art(i) {
 			if (IGNORE_ART(i) || arts[i].inthread)
 				continue;
 
@@ -134,7 +134,7 @@ find_base (
 			}
 		}
 	} else {
-		for (i = 0; i < top_art; i++) {
+		for_each_art(i) {
 			if (IGNORE_ART(i) || arts[i].inthread)
 				continue;
 
@@ -266,7 +266,7 @@ index_group (
 	/*
 	 * Stat all articles to see if any have expired
 	 */
-	for (i = 0; i < top_art; i++) {
+	for_each_art(i) {
 		if (arts[i].thread == ART_EXPIRED) {
 			expired = 1;
 #ifdef DEBUG_NEWSRC
@@ -484,7 +484,7 @@ thread_by_subject (
 	int i, j;
 	struct t_hashnode *h;
 
-	for (i = 0; i < top_art; i++) {
+	for_each_art(i) {
 
 		if (arts[i].thread != ART_NORMAL || IGNORE_ART(i))
 			continue;
@@ -513,7 +513,7 @@ thread_by_subject (
 #if 0
 	fprintf(stderr, "Subj dump\n");
 	fprintf(stderr, "%3s %3s %3s %3s : %3s %3s\n", "#", "Par", "Sib", "Chd", "In", "Thd");
-	for (i = 0; i < top_art; i++) {
+	for_each_art(i) {
 		fprintf(stderr, "%3d %3d %3d %3d : %3d %3d : %.50s %s\n", i,
 			(arts[i].refptr->parent) ? arts[i].refptr->parent->article : -2,
 			(arts[i].refptr->sibling) ? arts[i].refptr->sibling->article : -2,
@@ -646,7 +646,7 @@ global_get_multiparts (
 	{
 		int part_index;
 
-		for (i = 0; i < top_art; ++i) {
+		for_each_art(i) {
 
 			if (strncmp (arts[i].subject, tmp.subject, tmp.subject_compare_len))
 				continue;
@@ -703,7 +703,7 @@ thread_by_multipart (
 	int i, j, threadNum, parent;
 	MultiPartInfo *minfo = NULL;
 
-	for (i = 0; i < top_art; i++) {
+	for_each_art(i) {
 
 		if (arts[i].thread != ART_NORMAL || IGNORE_ART(i) || arts[i].inthread || !global_get_multiparts(i, &minfo))
 			continue;
@@ -785,7 +785,7 @@ make_threads (
 	 *	If using ref threading, revector the links back to the articles
 	 */
 	if (rethread || (group->attribute && group->attribute->thread_arts)) {
-		for (i = 0; i < top_art; i++) {
+		for_each_art(i) {
 			if (arts[i].thread != ART_EXPIRED)
 				arts[i].thread = ART_NORMAL;
 
@@ -1380,7 +1380,7 @@ write_nov_file (
 		if (!overview_index_filename)
 			fprintf (fp, "%s\n", group->name);
 
-		for (i = 0; i < top_art; i++) {
+		for_each_art(i) {
 			article = &arts[i];
 
 			if (article->thread != ART_EXPIRED && article->artnum >= group->xmin) {
@@ -1565,7 +1565,7 @@ do_update (
 			continue;
 
 		if (catchup) {
-			for (j = 0; j < top_art; j++)
+			for_each_art(j)
 				art_mark_read (group, &arts[j]);
 		}
 	}

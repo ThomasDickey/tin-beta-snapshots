@@ -71,14 +71,14 @@ static void free_newnews_array (void);
 static void free_active_arrays (void);
 static void free_if_not_default (char **attrib, char *deflt);
 
-/*
- *  Dynamic table management
- *  These settings are memory conservative:  small initial allocations
- *  and a 50% expansion on table overflow.  A fast vm system with
- *  much memory might want to start with higher initial allocations
- *  and a 100% expansion on overflow, especially for the arts[] array.
- */
 
+/*
+ * Dynamic table management
+ * These settings are memory conservative: small initial allocations
+ * and a 50% expansion on table overflow. A fast vm system with
+ * much memory might want to start with higher initial allocations
+ * and a 100% expansion on overflow, especially for the arts[] array.
+ */
 void
 init_alloc (
 	void)
@@ -119,7 +119,6 @@ expand_art (
 	void)
 {
 	max_art += max_art / 2;		/* increase by 50% */
-
 	arts = (struct t_article *) my_realloc ((char *) arts, sizeof(*arts) * max_art);
 	base = (long *) my_realloc ((char *) base, sizeof(long) * max_art);
 }
@@ -130,7 +129,6 @@ expand_active (
 	void)
 {
 	max_active += max_active / 2;		/* increase by 50% */
-
 	if (active == (struct t_group *) 0) {
 		active = (struct t_group *) my_malloc (sizeof (*active) * max_active);
 		my_group = (int *) my_calloc (1, sizeof(int) * max_active);
@@ -146,9 +144,7 @@ expand_save (
 	void)
 {
 	max_save += max_save / 2;		/* increase by 50% */
-
-	save = (struct t_save *) my_realloc((char *) save,
-		sizeof (struct t_save) * max_save);
+	save = (struct t_save *) my_realloc((char *) save, sizeof (struct t_save) * max_save);
 }
 
 
@@ -157,9 +153,7 @@ expand_newnews (
 	void)
 {
 	max_newnews += max_newnews / 2;			/* increase by 50% */
-
-	newnews = (struct t_newnews *) my_realloc((char *) newnews,
-		sizeof(struct t_newnews) * max_newnews);
+	newnews = (struct t_newnews *) my_realloc((char *) newnews, sizeof(struct t_newnews) * max_newnews);
 }
 
 
@@ -171,12 +165,10 @@ init_screen_array (
 	int i;
 
 	if (allocate) {
-		screen = (struct t_screen *) my_malloc (
-			sizeof (struct t_screen) * cLINES + 1);
+		screen = (struct t_screen *) my_malloc (sizeof (struct t_screen) * cLINES + 1);
 
 		for (i = 0; i < cLINES; i++)
 			screen[i].col = (char *) my_malloc ((size_t)(cCOLS + 2));
-
 	} else {
 		if (screen != (struct t_screen *) 0) {
 			for (i = 0; i < cLINES; i++)
@@ -267,7 +259,7 @@ free_art_array (
 {
 	register int i;
 
-	for (i = 0; i < top_art; i++) {
+	for_each_art(i) {
 		arts[i].artnum = 0L;
 		arts[i].thread = ART_EXPIRED;
 		arts[i].inthread = FALSE;
@@ -312,7 +304,7 @@ free_attributes_array (
 	register int i;
 	struct t_group *psGrp;
 
-	for (i = 0; i < num_active; i++) {
+	for_each_group(i) {
 		psGrp = &active[i];
 		if (psGrp->attribute && !psGrp->attribute->global) {
 			free_if_not_default(&psGrp->attribute->maildir, tinrc.maildir);
@@ -359,8 +351,7 @@ free_active_arrays (
 	}
 
 	if (active != (struct t_group *) 0) {		/* active[] */
-		for (i = 0; i < num_active; i++) {
-
+		for_each_group(i) {
 			FreeAndNull(active[i].name);
 			FreeAndNull(active[i].description);
 			FreeAndNull(active[i].aliasedto);
@@ -393,7 +384,6 @@ free_save_array (
 	int i;
 
 	for (i = 0; i < num_save; i++) {
-
 		FreeAndNull(save[i].path);
 		/* file does NOT need to be freed */
 		save[i].file = NULL;
@@ -401,9 +391,9 @@ free_save_array (
 		save[i].saved = FALSE;
 		save[i].is_mailbox = FALSE;
 	}
-
 	num_save = 0;
 }
+
 
 static void
 free_newnews_array (
@@ -439,7 +429,7 @@ my_malloc1 (
 
 
 /*
- * TODO: add fallback code with malloc(nmemb*size)/memset(0,nmemb*size)?
+ * TODO: add fallback code with malloc(nmemb*size);memset(0,nmemb*size)?
  */
 void *
 my_calloc1 (
@@ -455,7 +445,7 @@ my_calloc1 (
 #endif /* DEBUG */
 
 	if ((p = (char *) calloc (nmemb, size)) == (char *) 0) {
-		error_message (txt_out_of_memory, tin_progname, nmemb*size, file, line);
+		error_message (txt_out_of_memory, tin_progname, nmemb * size, file, line);
 		giveup();
 	}
 	return (void *) p;
@@ -469,7 +459,6 @@ my_realloc1 (
 	char *p,
 	size_t size)
 {
-
 #ifdef DEBUG
 	vDbgPrintMalloc (FALSE, file, line, size);
 #endif /* DEBUG */

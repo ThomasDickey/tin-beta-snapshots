@@ -458,7 +458,7 @@ group_page (
 					 * We check all arts, in case the user did something clever like
 					 * change the threading mode on us since the range was created
 					 */
-					for (n = 0; n < top_art; ++n)
+					for_each_art(n)
 						if (arts[n].inrange) {
 							arts[n].inrange = FALSE;	/* Clear the range */
 							art_mark_read(&CURR_GROUP, &arts[n]);
@@ -768,7 +768,7 @@ group_page (
 				if (range_active) {
 					int ii;
 
-					for (ii = 0; ii < top_art; ++ii) {
+					for_each_art(ii) {
 						if (arts[ii].inrange) {
 							arts[ii].inrange = FALSE;
 							art_mark_will_return (&CURR_GROUP, &arts[ii]);
@@ -823,7 +823,7 @@ group_page (
 				break;
 
 			case iKeyGroupReverseSel:	/* reverse selections */
-				for (i = 0; i < top_art; i++)
+				for_each_art(i)
 					arts[i].selected = bool_not(arts[i].selected);
 				update_group_page ();
 				break;
@@ -1060,7 +1060,7 @@ find_new_pos (
 	if (top_art == old_top)
 		return cur_pos;
 
-	for (i = 0; i < top_art; i++) {
+	for_each_art(i) {
 		if (arts[i].artnum == old_artnum) {
 			pos = which_thread (arts[i].artnum);
 			if (pos >= 0)
@@ -1322,7 +1322,7 @@ show_group_title (
 			recent_art_cnt += recent_responses (i);
 		}
 	} else {
-		for (i = 0; i < top_art; i++) {
+		for_each_art(i) {
 			if (!IGNORE_ART(i)) {
 				++art_cnt;
 				if (tinrc.recent_time && ((time((time_t) 0) - arts[i].date) < (tinrc.recent_time * DAY)))

@@ -319,7 +319,7 @@ untag_all_articles (
 	int i;
 	t_bool untagged = FALSE;
 
-	for (i = 0; i < top_art; i++) {
+	for_each_art(i) {
 		if (arts[i].tagged != 0) {
 			arts[i].tagged = 0;
 			untagged = TRUE;
@@ -519,7 +519,7 @@ do_auto_select_arts (
 {
 	int i;
 
-	for (i = 0; i < top_art; ++i) {
+	for_each_art(i) {
 		if (arts[i].status == ART_UNREAD && arts[i].selected != 1) {
 #	ifdef DEBUG_NEWSRC
 			debug_print_comment ("group.c: X command");
@@ -543,7 +543,7 @@ undo_auto_select_arts (
 {
 	int i;
 
-	for (i = 0; i < top_art; ++i) {
+	for_each_art(i) {
 		if (arts[i].status == ART_READ && arts[i].zombie) {
 #	ifdef DEBUG_NEWSRC
 			debug_print_comment ("group.c: + command");
@@ -566,7 +566,7 @@ undo_selections (
 {
 	int i;
 
-	for (i = 0; i < top_art; i++) {
+	for_each_art(i) {
 		arts[i].selected = FALSE;
 		arts[i].zombie = FALSE;
 	}

@@ -664,6 +664,7 @@ alphaev6-dec-osf5.0                        cc 6.3-126    (1.5.6 release 20000803
 alphaev6-dec-osf5.1                        cc 6.3-126    (1.5.6 release 20000803)          <urs@tin.org>
 alphaev67-dec-osf5.1                       cc 6.4-212    (1.5.9 release 20010723)          <urs@tin.org>
 alphaev67-dec-osf5.1                       gcc 3.0.1     (1.5.11 release 20020130)         <urs@tin.org>
+alphaev68-dec-osf5.1                       cc 6.4-215    (1.5.11 release 20020130)         <urs@tin.org>
 
 powerpc-ibm-aix4.3.1.0                     egcs 2.91.60  (pre-1.4 release 19990927)        <rhoenie@mayn.de>
 powerpc-ibm-aix4.3.3.0                     gcc 2.95.3    (1.5.10 release 20011117)         <nils@bissingstrasse36.de>

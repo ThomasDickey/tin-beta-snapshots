@@ -44,7 +44,7 @@
 #	include "menukeys.h"
 #endif /* !MENUKEYS_H */
 
-static int keymapsize (t_keynode *ptr[]);
+static size_t keymapsize (t_keynode *ptr[]);
 static t_bool check_duplicates(t_keynode *keyptr1, t_keynode *keyptr2);
 static t_bool processkey(t_keynode *keyptr, char *kname, char key);
 
@@ -315,6 +315,7 @@ static struct keymap Key = {
 		{ iKeySelectReadGrp, iKeySelectReadGrp, "ReadGrp" },
 		{ iKeySelectReadGrp2, iKeySelectReadGrp2, "ReadGrp2" },
 		{ iKeySelectResetNewsrc, iKeySelectResetNewsrc, "ResetNewsrc" },
+		{ iKeySelectSortActive, iKeySelectSortActive, "SortActive" },
 		{ iKeySelectCatchupNextUnread, iKeySelectCatchupNextUnread, "CatchupNextUnread" },
 		{ iKeySelectNextUnreadGrp, iKeySelectNextUnreadGrp, "NextUnreadGrp" },
 		{ iKeySelectBugReport, iKeySelectBugReport, "BugReport" },
@@ -619,7 +620,7 @@ static t_keynode *keys_select_nav[] = {
 	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB,
 	&Key.Select.ReadGrp, &Key.Select.ReadGrp2, &Key.Select.EnterNextUnreadGrp,
 	&Key.Select.EnterNextUnreadGrp2, &Key.Global.RedrawScr,
-	&Key.Select.ResetNewsrc, &Key.Select.Catchup,
+	&Key.Select.ResetNewsrc, &Key.Select.SortActive, &Key.Select.Catchup,
 	&Key.Select.CatchupNextUnread, &Key.Select.ToggleDescriptions,
 	&Key.Select.Goto, &Key.Global.Help, &Key.Global.ToggleHelpDisplay,
 	&Key.Global.ToggleInverseVideo,
@@ -696,16 +697,18 @@ t_menukeymap menukeymap = {
 	{ keys_thread_nav, NULL, NULL }
 };
 
+
 /*
  * Return the number of keys in a menu
  */
-static int
+static size_t
 keymapsize (
 	t_keynode *ptr[])
 {
-	int i = 0;
+	size_t i = 0;
 
-	if (!ptr) return 0;
+	if (!ptr)
+		return i;
 
 	while (*ptr) {
 		i++;
@@ -713,6 +716,7 @@ keymapsize (
 	}
 	return i;
 }
+
 
 /*
  * Compile keymaps for faster access and conversion
@@ -723,7 +727,7 @@ build_keymaps (
 {
 	char *dkey, *lkey;
 	int cnt = sizeof (menukeymap) / sizeof (t_menukeys);
-	int size;
+	size_t size;
 	t_keynode *keyptr;
 	t_menukeys *menuptr = &menukeymap.config_change;
 
@@ -751,6 +755,7 @@ build_keymaps (
 	ch_post_process = &menukeymap.feed_post_process_type.defaultkeys[2];
 }
 
+
 /*
  * convert a local key to the internal (default) mapping
  */
@@ -767,6 +772,7 @@ map_to_default (
 	return 0;
 }
 
+
 /*
  * convert an internal (default) key to a local one
  */
@@ -782,6 +788,7 @@ map_to_local (
 
 	return 0;
 }
+
 
 /*
  * Free all memory for keymaps.
@@ -800,8 +807,6 @@ free_keymaps (
 	}
 }
 
-/* TODO -> tin.h */
-#define KEYMAP_FILE	"keymap"
 
 /*
  * Render ch in human readable ASCII
@@ -833,6 +838,7 @@ printascii (
 	return buf;
 }
 
+
 /*
  * Find any key clashes between groups keyptr1 and keyptr2.  This is just an
  * ascending brute force search.  We need a pointer to the tag node in order
@@ -857,7 +863,6 @@ check_duplicates(
 			}
 		}
 	}
-
 	return TRUE;
 }
 
@@ -896,8 +901,10 @@ processkey(
 	return FALSE;
 }
 
-#define KEYSEPS		" \t\n"
 
+#define KEYSEPS		" \t\n"
+/* TODO -> tin.h */
+#define KEYMAP_FILE	"keymap"
 t_bool
 read_keymap_file (
 	void)
@@ -905,7 +912,6 @@ read_keymap_file (
 	FILE *fp = (FILE *) 0;
 	char *line, *keydef, *kname;
 	char *map, *ptr;
-	const char *ptr2;
 	char buf[LEN], buff[LEN];
 	char key;
 	int i;
@@ -916,36 +922,33 @@ read_keymap_file (
 
 	/*
 	 * checks TIN_HOMEDIR/HOME/TIN_DEFAULTS_DIR
-	 * for keymap."locale" or keymap
+	 * for KEYMAP_FILE."locale" or KEYMAP_FILE
 	 *
 	 * locale is first match from LC_ALL, LC_CTYPE, LC_MESSAGES, LANG
 	 *
+	 * TODO: fix possible buf-overflows
 	 */
-	ptr2 = get_val("TIN_HOMEDIR", get_val("HOME", homedir));
 	/* get locale suffix */
 	map = my_strdup(get_val("LC_ALL", get_val("LC_CTYPE", get_val("LC_MESSAGES", get_val("LANG", "")))));
 	if (strlen(map)) {
 		if ((ptr = strchr (map, '.')))
-				*ptr = '\0';
-		snprintf(buff, sizeof(buff) - 1, "%s/.tin/keymap.%s", ptr2, map);
-		if (strfpath (buff, buf, sizeof(buf), NULL))
-			fp = fopen (buf, "r");
+			*ptr = '\0';
+		snprintf (buff, sizeof(buff) - 1, "%s.%s", KEYMAP_FILE, map);
+		joinpath (buf, rcdir, buff);
+		fp = fopen (buf, "r");
 	}
 	if (!fp) {
-		snprintf(buff, sizeof(buff) - 1, "%s/.tin/keymap", ptr2);
-		if (strfpath (buff, buf, sizeof(buf), NULL))
-			fp = fopen (buf, "r");
+		joinpath (buf, rcdir, KEYMAP_FILE);
+		fp = fopen (buf, "r");
 	}
 #ifdef TIN_DEFAULTS_DIR
 	if (strlen(map) && !fp) {
-		snprintf(buff, sizeof(buff) - 1, "%s/keymap.%s", TIN_DEFAULTS_DIR, map);
-		if (strfpath (buff, buf, sizeof(buf), NULL))
-			fp = fopen (buf, "r");
+		joinpath (buf, TIN_DEFAULTS_DIR, buff);
+		fp = fopen (buf, "r");
 	}
 	if (!fp) {
-		snprintf(buff, sizeof(buff) - 1, "%s/keymap", TIN_DEFAULTS_DIR);
-		if (strfpath (buff, buf, sizeof(buf), NULL))
-			fp = fopen (buf, "r");
+		joinpath (buf, TIN_DEFAULTS_DIR, KEYMAP_FILE);
+		fp = fopen (buf, "r");
 	}
 #endif /* TIN_DEFAULTS_DIR */
 

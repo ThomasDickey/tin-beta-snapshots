@@ -55,12 +55,13 @@ static int reposition_group (struct t_group *group, int default_num);
 static int select_left (void);
 static int select_right (void);
 static t_bool pos_next_unread_group (t_bool redraw);
-static t_bool yank_in_active_file = TRUE;
+static t_bool yanked_out = TRUE;
 static void catchup_group (struct t_group *group, t_bool goto_next_unread_group);
 static void read_groups (void);
 static void select_quit (void);
 static void select_read_group (void);
 static void select_done (void);
+static void sort_active_file (void);
 static void subscribe_pattern (const char *prompt, const char *message, const char *result, t_bool state);
 static void sync_active_file (void);
 static void yank_active_file (void);
@@ -122,8 +123,8 @@ selection_page (
 			if (reread_active_after_posting ()) /* reread active file if necessary */
 				show_selection_page ();
 		} else {
-			if (!yank_in_active_file)
-				yank_in_active_file = bool_not(yank_in_active_file); /* yank out if yanked in */
+			if (!yanked_out)
+				yanked_out = bool_not(yanked_out); /* yank out if yanked in */
 		}
 
 		set_xclick_on ();
@@ -176,6 +177,15 @@ selection_page (
 			case iKeyDown:		/* line down */
 			case iKeyDown2:
 				move_down();
+				break;
+
+			case iKeySelectSortActive:	/* Sort active groups */
+				sort_active_file();
+				group_rehash(yanked_out);
+				/* TODO, save/restore_group() - this is used elsewhere */
+				/* Stay positioned on same group as before */
+				/*selmenu.curr = my_group_find (oldgroup);*/
+				show_selection_page ();
 				break;
 
 			case iKeySetRange:	/* set range */
@@ -457,7 +467,7 @@ selection_page (
 
 			case iKeySelectSyncWithActive:	/* Re-read active file to see if any new news */
 				sync_active_file ();
-				if (!yank_in_active_file)
+				if (!yanked_out)
 					yank_active_file();			/* yank out if yanked in */
 				break;
 
@@ -601,8 +611,8 @@ draw_group_arrow (
 		info_message (_(txt_no_groups));
 	else {
 		draw_arrow_mark (INDEX_TOP + selmenu.curr - selmenu.first);
-		if (CURR_GROUP.aliasedto) /* FIXME -> lang.c */
-			info_message ("Please use %.100s instead", CURR_GROUP.aliasedto);
+		if (CURR_GROUP.aliasedto)
+			info_message (_(txt_group_aliased), CURR_GROUP.aliasedto);
 		else if (tinrc.info_in_last_line)
 			info_message ("%s", CURR_GROUP.description ? CURR_GROUP.description : _(txt_no_description));
 	}
@@ -628,14 +638,14 @@ yank_active_file (
 	if (oldmax)
 		oldgroup = my_strdup(CURR_GROUP.name);
 
-	if (yank_in_active_file) {
+	if (yanked_out) {										/* Yank in */
 		wait_message (0, _(txt_yanking_all_groups));
 
 		/*
 		 * Reset counter and load all the groups in active[] into my_group[]
 		 */
 		selmenu.max = 0;
-		for (i = 0; i < num_active; i++)
+		for_each_group(i)
 			my_group[selmenu.max++] = i;
 
 		/*
@@ -644,7 +654,7 @@ yank_active_file (
 		if (oldmax < selmenu.max) {
 			if (oldmax)					/* Keep us positioned on the group we were before */
 				selmenu.curr = my_group_add (oldgroup);
-			set_groupname_len (yank_in_active_file);
+			set_groupname_len (yanked_out);
 			show_selection_page ();
 			info_message (_(txt_added_groups), selmenu.max - oldmax, PLURAL(selmenu.max - oldmax, txt_group));
 		} else
@@ -666,14 +676,39 @@ yank_active_file (
 				selmenu.curr = 0;
 		}
 
-		set_groupname_len (yank_in_active_file);
+		set_groupname_len (yanked_out);
 		show_selection_page ();
 	}
 
-	yank_in_active_file = bool_not(yank_in_active_file);
+	yanked_out = bool_not(yanked_out);
 
 	if (oldmax)
 		FreeAndNull (oldgroup);
+}
+
+
+/*
+ * Sort active[] and associated qsort() helper function
+ * This will have no effect on group_hash[] which is hashed by
+ * group name
+ */
+static int
+active_comp (
+	t_comptype p1,
+	t_comptype p2)
+{
+	const struct t_group *s1 = (const struct t_group *)p1;
+	const struct t_group *s2 = (const struct t_group *)p2;
+
+	return strcasecmp(s1->name, s2->name);
+}
+
+
+static void
+sort_active_file (
+	void)
+{
+	qsort (active, (size_t)num_active, sizeof(struct t_group), active_comp);
 }
 
 
@@ -946,7 +981,7 @@ set_groupname_len (
 	groupname_len = 0;
 
 	if (all_groups) {
-		for (i = 0; i < num_active; i++) {
+		for_each_group(i) {
 			if ((len = strlen (active[i].name)) > groupname_len)
 				groupname_len = len;
 		}
@@ -1081,7 +1116,7 @@ subscribe_pattern (
 	}
 
 	if (num_active > selmenu.max) {			/* ie, there are groups yanked out */
-		for (i = 0; i < num_active; i++) {
+		for_each_group(i) {
 			if (match_group_list (active[i].name, buf)) {
 				if (active[i].subscribed != (state != FALSE)) {
 					spin_cursor ();

@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2002-04-18
+.\" Updated   : 2002-04-22
 .\" Notes     : still needs some work, i.e.:
 .\"             - document authorization (.newsauth)
 .\"             - postprocess differences when linked against libuu
 .\"
 .\"
-.TH tin 1 "April 18th, 2002" "1.5.12" "A Usenet newsreader"
+.TH tin 1 "April 22nd, 2002" "1.5.12" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -297,7 +297,7 @@ NNTP Extensions (\fBRFC2980\fP) and all modern servers should understand it.
 \fBtin\fP has four separate levels of operation: Selection level,
 Group level, Thread level and Article level.
 .PP
-At the Group Selection level the title displays (the name of the newsserver
+At the Selection level the title displays (the name of the newsserver
 and) the number of subscribed groups (containing new unread articles). The
 newsgroups are displayed in the middle of the screen with the number of
 unread articles displayed on the same line in front.
@@ -357,21 +357,21 @@ recent articles and the number of killed articles. I.e.:
 .PP
 The characters after the numbers are depending to the configuration and if
 your are in \fBshow_only_unread_arts\fP mode or not. Some numbers could be
-missing if the specific option is not enabled. It might also contain an 'M'
-or 'X' (see above; doesn't work with the ''\fB-n\fP'' command-line switch!)
-if the group is moderated or set to no posting.
+missing if the specific option is not enabled. It might also contain an 'M',
+\&'X' or '=' (see above; doesn't work with the ''\fB-n\fP'' command-line
+switch!) if the group is moderated, set to no posting or postings to it get
+redirected.
 .PP
 If a thread has unread articles in it it's marked with a
 \fBart_marked_unread\fP in front of the total number of articles in the
 thread. If there are recent articles within the thread it might be marked
-with \fBart_marked_recent\fP in front of the total number of articles in
-the thread - this is controlled by the \fBrecent_time\fP option.
-If a thread has hot articles in it (see also section "FILTERING ARTICLES")
-it's marked with \fBart_marked_selected\fP in front of the total number of
-articles in the thread.
-There might also be shown the number of lines of the first (unread) article
-in the thread right before the subject - this is controlled by
-the \fBshow_lines\fP option.
+with \fBart_marked_recent\fP in front of the total number of articles in the
+thread - this is controlled by the \fBrecent_time\fP option. If a thread has
+hot articles in it (see also section "FILTERING ARTICLES") it's marked with
+\fBart_marked_selected\fP in front of the total number of articles in the
+thread. The number of lines of the first (unread) article in the thread
+might also be shown right before the subject - this is controlled by the
+\fBshow_lines\fP option.
 .PP
 .\" FIXME - make this autoscale
 .nf
@@ -383,8 +383,8 @@ the \fBshow_lines\fP option.
      4   *      368 <1997-11-12> Fremdcancel-FAQ     Thomas Roessler <ro
 .fi
 .PP
-At the Thread level the screen usually (depends on the threading method used)
-looks like this:
+At the Thread level the screen usually (depends on the threading method
+used) looks like this:
 .\" FIXME - add description of fields
 .PP
 .\" FIXME - make this autoscale
@@ -529,6 +529,9 @@ records of which articles have been read, so use this carefully.
 .B #
 Choose a range of articles to be affected by the next command. See the
 section "RANGES" for more information.
+.TP
+.B .
+Sort the list of newsgroups
 .TP
 .B /
 Search for a group by name and description (if displayed).
@@ -1954,11 +1957,11 @@ If ON, then unsubscribed groups will be permanently removed from your
 .TP
 .B Do tab after X automatically (tab_after_X_selection)
 If enabled will automatically go to the first unread article after having
-selected all hot articles and threads with the '\fBX\fP' command at group
-index level. Default is OFF.
+selected all hot articles and threads with the '\fBX\fP' command at Group
+level. Default is OFF.
 .TP
 .B Tab goes to next unread article (tab_goto_next_unread)
-If enabled pressing '\fB<TAB>\fP' at the article viewer level will go to
+If enabled pressing '\fB<TAB>\fP' at the Article level will go to
 the next unread article immediately instead of first paging through the
 current one. Default is ON.
 .TP
@@ -2105,10 +2108,10 @@ documentation directory.
 .\" This file can also be read online at http://www.tin.org/FIXME
 .PP
 .\" FIXME - Next paragraph is out of date
-The on screen filtering menu is accessed by pressing '\fB^K\fP' at the group
-and page levels. It allows the user to kill or select an article that matches
-the current ''Subject:'' line, ''From:'' line or a string entered by the
-user. The user entered string can be applied to the ''Subject:'' or
+The on screen filtering menu is accessed by pressing '\fB^K\fP' at the Group
+and Article levels. It allows the user to kill or select an article that
+matches the current ''Subject:'' line, ''From:'' line or a string entered by
+the user. The user entered string can be applied to the ''Subject:'' or
 \&''From:'' lines of an article. The kill description can be limited to the
 current newsgroup or it can apply to all newsgroups. Once entered the user
 can abort the command and not save the kill description, edit the kill file

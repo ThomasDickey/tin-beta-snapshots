@@ -277,12 +277,11 @@ t_bool dot_unlock(
 	char *lockfile = (char *) 0;
 	t_bool rval = FALSE;
 
-	if ((lockfile = (char *) my_malloc (sizeof(char) * (strlen(filename) + strlen(LOCK_SUFFIX) + 2))) != (char *) 0) {
-		strcpy(lockfile, filename);
-		strcat(lockfile, LOCK_SUFFIX);
-		if (!unlink(lockfile))
-			rval = TRUE;
-		free(lockfile);
-	}
+	lockfile = (char *) my_malloc (sizeof(char) * (strlen(filename) + strlen(LOCK_SUFFIX) + 2));
+	strcpy(lockfile, filename);
+	strcat(lockfile, LOCK_SUFFIX);
+	if (!unlink(lockfile))
+		rval = TRUE;
+	free(lockfile);
 	return rval;
 }

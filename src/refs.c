@@ -786,7 +786,7 @@ thread_by_reference (
 	fprintf(dbgfd, "Full dump of threading info...\n");
 	fprintf(dbgfd, "%3s %3s %3s %3s : %3s %3s\n", "#", "Par", "Sib", "Chd", "In", "Thd");
 
-	for (i = 0; i < top_art; i++) {
+	for_each_art(i) {
 		fprintf(dbgfd, "%3d %3d %3d %3d : %3d %3d : %.50s %s\n", i,
 			(arts[i].refptr->parent) ? arts[i].refptr->parent->article : -2,
 			(arts[i].refptr->sibling) ? arts[i].refptr->sibling->article : -2,
@@ -822,7 +822,7 @@ collate_subjects (
 	 * Run through the root messages of each thread. We have to traverse
 	 * using arts[] and not msgids[] to preserve the sorting.
 	 */
-	for (i = 0; i < top_art; i++) {
+	for_each_art(i) {
 
 		/*
 		 * Ignore already threaded and expired arts
@@ -913,7 +913,7 @@ build_references (
 	 * Add the Message-ID headers to the cache, using the last Reference
 	 * as the parent
 	 */
-	for (i = 0; i < top_art; i++) {
+	for_each_art(i) {
 		art = &arts[i];
 
 		if (art->refs) {
@@ -951,7 +951,7 @@ build_references (
 	/*
 	 * Add the References data to the cache
 	 */
-	for (i = 0; i < top_art; i++) {
+	for_each_art(i) {
 		if (!arts[i].refs)						/* No refs - skip */
 			continue;
 

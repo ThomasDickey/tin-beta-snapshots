@@ -102,7 +102,7 @@ my_strdup (
 
 
 /*
- *  strncpy that stops at a newline and null terminates
+ * strncpy that stops at a newline and null terminates
  */
 void
 my_strncpy (
@@ -344,7 +344,7 @@ OUT:
 
 
 /*
- *  strcmp that ignores case
+ * strcmp that ignores case
  */
 
 /*fix me - put me in tin.h */
@@ -422,7 +422,7 @@ str_trim (
 
 
 /*
- *  Return a pointer into s eliminating any TAB, CR and LF.
+ * Return a pointer into s eliminating any TAB, CR and LF.
  */
 char *
 eat_tab (

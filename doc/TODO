@@ -57,6 +57,10 @@ o  mismatching cached overview data (higher article numbers than on the
 
 o  reference based filters won't work with long (> 500 chars)
    References: lines
+   (this might be due to the shortening of the line done by tin, i.e
+    if one has a filter based i.e on the 5th oldest message-id and the
+    line get's much longer by the time that id might be removed by
+    tin and the filter won't work anymore)
 
 o  thread_articles=0 lacks score for read arts if show_score=ON and
    kill_level>=1
@@ -177,8 +181,9 @@ o  with --enable-forgery reposting of an thread reposts only the first
 
 New features
 ------------
-o  sort the list of all newsgroups on the server (after [y]ank) on demand
-   [20020419 Andreas Metzler]
+o  automatically disable TeX2ISO conversion if saving articles _and_
+   postprocessing is set to != 'n'
+   [20020423 Urs Janssen]
 
 o  add underline/bold/... support (i.e. for monochrom terminals
    as color substitution)
@@ -699,10 +704,6 @@ o  numbering of Hot articles is wrong after (post)processing them
 o  think about group numbering in "only unread" display mode
    (using different numbers in show all/show only unread leads to some
     problems, f.e. group moving)
-
-o  what is with HAVE_UUDECODE (it's always true, do we need the
-   !HAVE_UUDECODE path?)
-   [20020226 Urs Janssen <urs@tin.org>]
 
 o  remove strip_blanks? IMHO it's not needed anymore
    [20020305 Urs Janssen <urs@tin.org>]

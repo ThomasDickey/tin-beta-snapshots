@@ -65,11 +65,11 @@ static char **cmdargs;
 static int num_cmdargs;
 static int max_cmdargs;
 
-static t_bool catchup = FALSE;			/* mark all arts read in all subscribed groups */
-static t_bool check_any_unread = FALSE;/* print/return status if any unread */
+static t_bool catchup = FALSE;		/* mark all arts read in all subscribed groups */
+static t_bool check_any_unread = FALSE;	/* print/return status if any unread */
 static t_bool mail_news = FALSE;		/* mail all arts to specified user */
 static t_bool save_news = FALSE;		/* save all arts to savedir structure */
-static t_bool start_any_unread = FALSE;/* only start if unread news */
+static t_bool start_any_unread = FALSE;	/* only start if unread news */
 
 
 /*
@@ -1009,7 +1009,7 @@ read_cmd_line_groups (
 		for (num = num_cmdargs; num < max_cmdargs; num++) {
 			wait_message (0, _(txt_matching_cmd_line_groups), cmdargs[num]);
 
-			for (i = 0; i < num_active; i++) {
+			for_each_group(i) {
 				if (match_group_list (active[i].name, cmdargs[num])) {
 					if (my_group_add (active[i].name) != -1)
 						matched++;

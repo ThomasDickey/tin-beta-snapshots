@@ -133,7 +133,9 @@ extern void SetScrollRegion (int topline, int bottomline);
 extern void EndInverse (void);
 extern void EndWin (void);
 extern void InitWin (void);
-extern void MoveCursor (int row, int col);
+#ifndef USE_CURSES
+	extern void MoveCursor (int row, int col);
+#endif /* USE_CURSES */
 extern void Raw (int state);
 extern void StartInverse (void);
 extern void ToggleInverse (void);
@@ -265,6 +267,7 @@ extern int find_group_index (const char *group);
 extern struct t_group *group_add (const char *group);
 extern struct t_group *group_find (const char *group_name);
 extern unsigned long hash_groupname (const char *group);
+extern void group_rehash (t_bool yanked_out);
 extern void init_group_hash (void);
 
 /* lock.c */

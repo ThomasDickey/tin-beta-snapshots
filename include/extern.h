@@ -497,6 +497,7 @@ extern constext txt_creating_newsrc[];
 extern constext txt_default[];
 extern constext txt_delete_processed_files[];
 extern constext txt_deleting[];
+extern constext txt_disconnecting[];
 extern constext txt_end_of_art[];
 extern constext txt_end_of_arts[];
 extern constext txt_end_of_groups[];
@@ -545,7 +546,6 @@ extern constext txt_error_header_line_bad_charset[];
 extern constext txt_error_header_line_bad_encoding[];
 extern constext txt_error_header_line_blank[];
 extern constext txt_error_header_line_colon[];
-extern constext txt_error_header_line_comma[];
 extern constext txt_error_header_line_empty[];
 #ifndef FOLLOW_USEFOR_DRAFT
 	extern constext txt_error_header_line_comma[];
@@ -585,8 +585,10 @@ extern constext txt_followup_poster[];
 extern constext txt_from_line_only[];
 extern constext txt_from_line_only_case[];
 extern constext txt_full[];
+extern constext txt_gethostbyname[];
 extern constext txt_global[];
 extern constext txt_group[];
+extern constext txt_group_aliased[];
 extern constext txt_group_is_moderated[];
 extern constext txt_group_plural[];
 extern constext txt_group_select_com[];
@@ -728,7 +730,6 @@ extern constext txt_help_select_last_group[];
 extern constext txt_help_select_mark_group_unread[];
 extern constext txt_help_select_move_group[];
 extern constext txt_help_select_next_unread_group[];
-extern constext txt_help_select_next_unread_group[];
 extern constext txt_help_select_quit[];
 extern constext txt_help_select_quit_no_write[];
 extern constext txt_help_select_read_group[];
@@ -744,6 +745,7 @@ extern constext txt_help_select_toggle_descriptions[];
 extern constext txt_help_select_toggle_read_groups[];
 extern constext txt_help_select_unsubscribe[];
 extern constext txt_help_select_unsubscribe_pattern[];
+extern constext txt_help_select_sort_active[];
 extern constext txt_help_select_yank_active[];
 extern constext txt_help_thread_article_by_num[];
 extern constext txt_help_thread_catchup[];
@@ -1005,9 +1007,6 @@ extern constext txt_unthreading_arts[];
 extern constext txt_updated[];
 extern constext txt_url_open[];
 extern constext txt_url_done[];
-#ifndef HAVE_UUDECODE
-	extern constext txt_uuencode_not_supported[];
-#endif /* !HAVE_UUDECODE */
 extern constext txt_value_out_of_range[];
 extern constext txt_view_attachment[];
 extern constext txt_warn_art_line_too_long[];
@@ -1082,7 +1081,6 @@ extern int cCOLS;
 extern int cLINES;
 extern int curr_line;
 extern int debug;
-extern int group_hash[TABLE_SIZE];
 extern int groupname_len;
 extern int iso2asc_supported;
 extern int last_resp;
@@ -1178,28 +1176,32 @@ extern t_menu *currmenu;
 
 extern t_openartinfo pgart;
 
-#define HIST_SIZE		15
-#define HIST_OTHER		 0
-#define HIST_ART_SEARCH		 1
-#define HIST_AUTHOR_SEARCH	 2
-#define HIST_GOTO_GROUP		 3
-#define HIST_GROUP_SEARCH	 4
-#define HIST_MAIL_ADDRESS	 5
-#define HIST_MESSAGE_ID		 6
-#define HIST_MOVE_GROUP		 7
-#define HIST_PIPE_COMMAND	 8
-#define HIST_POST_NEWSGROUPS	 9
-#define HIST_POST_SUBJECT	10
-#define HIST_REGEX_PATTERN	11
-#define HIST_REPOST_GROUP	12
-#define HIST_SAVE_FILE		13
-#define HIST_SELECT_PATTERN	14
-#define HIST_SHELL_COMMAND	15
-#define HIST_SUBJECT_SEARCH	16
-#define HIST_CONFIG_SEARCH	17
-#define HIST_HELP_SEARCH	18
-#define HIST_MAXNUM		18	/* must always be the same as the highest HIST_ value except HIST_NONE */
+enum {
+	HIST_OTHER = 0,
+	HIST_ART_SEARCH,
+	HIST_AUTHOR_SEARCH,
+	HIST_GOTO_GROUP,
+	HIST_GROUP_SEARCH,
+	HIST_MAIL_ADDRESS,
+	HIST_MESSAGE_ID,
+	HIST_MOVE_GROUP,
+	HIST_PIPE_COMMAND,
+	HIST_POST_NEWSGROUPS,
+	HIST_POST_SUBJECT,
+	HIST_REGEX_PATTERN,
+	HIST_REPOST_GROUP,
+	HIST_SAVE_FILE,
+	HIST_SELECT_PATTERN,
+	HIST_SHELL_COMMAND,
+	HIST_SUBJECT_SEARCH,
+	HIST_CONFIG_SEARCH,
+	HIST_HELP_SEARCH,
+	HIST_URL		
+};
+/* must always be the same as the highest HIST_ value except HIST_NONE */
+#define HIST_MAXNUM		HIST_URL
 #define HIST_NONE		(HIST_MAXNUM+1)
+#define HIST_SIZE		15	/* # items in each history */
 
 extern int hist_last[HIST_MAXNUM+1];
 extern int hist_pos[HIST_MAXNUM+1];

@@ -41,6 +41,8 @@ New Features
 
 . configurable URL handler via url_handler
 
+. '.' sorts the newsgroup list
+
 Changes
 -------
 

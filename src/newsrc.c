@@ -257,7 +257,7 @@ create_newsrc (
 	if ((fp = fopen (newsrc_file, "w")) != (FILE *) 0) {
 		wait_message (0, _(txt_creating_newsrc));
 
-		for (i = 0; i < num_active; i++)
+		for_each_group(i)
 			fprintf (fp, "%s!\n", active[i].name);
 
 		if (ferror (fp) || fclose (fp)) {
@@ -497,7 +497,7 @@ grp_mark_read (
 #endif /* DEBUG_NEWSRC */
 
 	if (psArt != (struct t_article *) 0) {
-		for (i = 0; i < top_art; i++)
+		for_each_art(i)
 			art_mark_read (group, &psArt[i]);
 	}
 	if (group->newsrc.xbitmap != (t_bitmap *) 0) {
@@ -846,7 +846,7 @@ parse_unread_arts (
 		NSETRNG0(newbitmap, 0L, group->newsrc.xmax - bitmin);
 	}
 
-	for (i = 0; i < top_art; i++) {
+	for_each_art(i) {
 		if (arts[i].artnum < bitmin)
 			arts[i].status = ART_READ;
 		else if (arts[i].artnum > bitmax)
