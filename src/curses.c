@@ -379,10 +379,10 @@ InitScreen (void)
 	 * you're using something other than an Amiga window
 	 */
 
-	if (ptr = getenv ("LINES")) {
+	if ((ptr = getenv ("LINES")) != 0) {
 		_lines = atol (ptr);
 	}
-	if (ptr = getenv ("COLUMNS")) {
+	if ((ptr = getenv ("COLUMNS")) != 0) {
 		_columns = atol (ptr);
 	}
 

@@ -54,9 +54,7 @@ int debug;
 /*
  * Local prototypes
  */
-static void debug_print_group_hash (void);
 static void debug_print_attributes (struct t_attribute *attr, FILE *fp);
-static void debug_print_base (void);
 static void debug_print_filter (FILE *fp, int num, struct t_filter *the_filter);
 #	if 0
 	static void debug_print_active_hash (void);
@@ -130,7 +128,7 @@ debug_print_arts (
 	if (debug != 2)
 		return;
 
-	for (i = 0; i < top; i++)	/* for each group */
+	for (i = 0; i < top_art; i++)	/* for each group */
 		debug_print_header (&arts[i]);
 }
 
@@ -212,29 +210,6 @@ debug_save_comp (
 				fprintf (fp, "patch=[]\n");
 			fprintf (fp,"index=[%d]  saved=[%d]  mailbox=[%d]\n\n", save[i].index, save[i].saved, save[i].is_mailbox);
 		}
-		fflush (fp);
-		fclose (fp);
-		chmod (file, (S_IRUGO|S_IWUGO));
-	}
-}
-
-
-static void
-debug_print_base (
-	void)
-{
-	char file[PATH_LEN];
-	FILE *fp;
-	int i;
-
-	if (debug != 2)
-		return;
-
-	sprintf (file, "%sBASE", TMPDIR);
-
-	if ((fp = fopen (file, "a+")) != (FILE *) 0) {
-		for (i = 0; i < top_base; i++)
-			fprintf (fp, "base[%3d]=[%5ld]\n", i, base[i]);
 		fflush (fp);
 		fclose (fp);
 		chmod (file, (S_IRUGO|S_IWUGO));
@@ -443,16 +418,6 @@ debug_print_active_hash (
 	my_printf ("\n");
 }
 #endif /* 0 */
-
-static void
-debug_print_group_hash (
-	void)
-{
-	int i;
-
-	for (i = 0; i < TABLE_SIZE; i++)
-		my_printf ("group_hash[%4d]=[%4d]\n", i, group_hash[i]);
-}
 #endif /* DEBUG */
 
 #ifdef DEBUG_NEWSRC

@@ -25,6 +25,10 @@ CC="${CC-cc}"
 # and
 #	--with-nntp-default-server=news.doma.in
 # to your local needs
+# if your like to use pgp and you have more then method installed on your
+# system _disable_ two of the three offered pgp/pgp supports, i.e. use:
+# 	-without-pgpk --without-gpg
+# for pgp-2 support
 
 echo "Making with $CC $CFLAGS"
 CFLAGS="$CFLAGS" \

@@ -32,9 +32,11 @@
 */
 #define ENDOF(array)	(&array[SIZEOF(array)])
 
-#define CTYPE(isXXXXX, c) (((unsigned char)(c) < 128) && isXXXXX((c)))
+#define CTYPE(isXXXXX, c) (((unsigned char)(c) < 128) && isXXXXX(((int)c)))
 
 typedef char	*STRING;
+
+extern int date_parse(void);
 
 #define yyparse		date_parse
 #define yylex		date_lex
@@ -696,7 +698,7 @@ LookupWord(
 static int
 date_lex(void)
 {
-    register char	c;
+    register int	c;
     register char	*p;
     char		buff[20];
     register int	sign;

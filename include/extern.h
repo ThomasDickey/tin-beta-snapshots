@@ -157,7 +157,7 @@
 #endif /* 0 */
 
 #ifdef DECL_MKSTEMP
-	extern int mktemp (char *);
+	extern int mkstemp (char *);
 #endif /* DECL_MKSTEMP */
 #ifdef DECL_MKTEMP
 	extern char *mktemp (char *);
@@ -339,8 +339,6 @@ extern char mailbox[PATH_LEN];
 extern char mailer[PATH_LEN];
 extern char mailgroups_file[PATH_LEN];
 extern char mesg[LEN];
-extern char msg_headers_file[PATH_LEN];
-extern char my_distribution[LEN];
 extern char newnewsrc[PATH_LEN];
 extern char news_active_file[PATH_LEN];
 extern char newsgroups_file[PATH_LEN];
@@ -354,7 +352,6 @@ extern char postponed_articles_file[PATH_LEN];
 extern char proc_ch_default;
 extern char tin_progname[PATH_LEN];
 extern char rcdir[PATH_LEN];
-extern char reply_to[LEN];
 extern char save_active_file[PATH_LEN];
 extern char spooldir[PATH_LEN];
 extern char subscriptions_file[PATH_LEN];
@@ -460,6 +457,7 @@ extern constext txt_creating_newsrc[];
 extern constext txt_default[];
 extern constext txt_delete_processed_files[];
 extern constext txt_deleting[];
+extern constext txt_disconnecting[];
 extern constext txt_end_of_arts[];
 extern constext txt_end_of_groups[];
 extern constext txt_end_of_thread[];
@@ -724,7 +722,6 @@ extern constext txt_mini_thread_1[];
 extern constext txt_mini_thread_2[];
 extern constext txt_more[];
 extern constext txt_moving[];
-extern constext txt_msg_headers_file[];
 extern constext txt_msgid_line_only[];
 extern constext txt_newsgroup[];
 extern constext txt_newsgroup_position[];
@@ -788,7 +785,7 @@ extern constext txt_posting[];
 extern constext txt_postpone_repost[];
 extern constext txt_prompt_fup_ignore[];
 extern constext txt_prompt_unchanged_art[];
-extern constext txt_prompt_unchanged_bug[];
+extern constext txt_prompt_unchanged_mail[];
 extern constext txt_prompt_see_postponed[];
 extern constext txt_quick_filter_kill[];
 extern constext txt_quick_filter_select[];
@@ -835,8 +832,10 @@ extern constext txt_save_config[];
 extern constext txt_save_filename[];
 extern constext txt_saved[];
 extern constext txt_saved_arts[];
+extern constext txt_saved_group[];
 extern constext txt_saved_nothing[];
 extern constext txt_saved_pattern_to[];
+extern constext txt_saved_summary[];
 extern constext txt_saved_to_mailbox[];
 extern constext txt_saving[];
 extern constext txt_screen_init_failed[];
@@ -1037,8 +1036,6 @@ extern struct t_posted *posted;
 extern struct t_save *save;
 
 extern t_bool can_post;
-extern t_bool catchup;
-extern t_bool check_any_unread;
 extern t_bool check_for_new_newsgroups;
 extern t_bool cmd_line;
 extern t_bool created_rcdir;
@@ -1052,26 +1049,21 @@ extern t_bool got_sig_pipe;
 extern t_bool in_headers; /* colorful headers */
 extern t_bool local_filtered_articles;
 extern t_bool local_index;
-extern t_bool mail_news;
 extern t_bool list_active;
 extern t_bool newsrc_active;
 extern t_bool note_end;					/* end of article ? */
 extern t_bool no_write;
 extern t_bool post_article_and_exit;
 extern t_bool post_postponed_and_exit;
-extern t_bool purge_index_files;
 extern t_bool read_local_newsgroups_file;
 extern t_bool read_news_via_nntp;
 extern t_bool read_saved_news;
 extern t_bool reconnected_in_last_get_server;
 extern t_bool reread_active_for_posted_arts;
-extern t_bool save_news;
 extern t_bool show_description;
 extern t_bool show_subject;
-extern t_bool start_any_unread;
 extern t_bool tex2iso_supported;
 extern t_bool batch_mode;
-extern t_bool update_fork;
 extern t_bool verbose;
 extern t_bool xover_supported;
 extern t_bool xref_supported;
@@ -1273,6 +1265,7 @@ extern constext txt_processing_saved_arts[];
 #endif /* !USE_CURSES */
 
 #ifdef NNTP_ABLE
+	extern constext txt_nntp_ok_goodbye[];
 	extern unsigned short nntp_tcp_port;
 	extern t_bool force_auth_on_conn_open;
 #endif /* NNTP_ABLE */
@@ -1299,6 +1292,9 @@ extern struct opttxt txt_art_marked_return;
 extern struct opttxt txt_art_marked_selected;
 extern struct opttxt txt_art_marked_recent;
 extern struct opttxt txt_art_marked_unread;
+extern struct opttxt txt_art_marked_read;
+extern struct opttxt txt_art_marked_killed;
+extern struct opttxt txt_art_marked_read_selected;
 extern struct opttxt txt_groupname_max_length;
 extern struct opttxt txt_show_lines;
 extern struct opttxt txt_show_score;

@@ -247,6 +247,7 @@ all:
 	@$(ECHO) "    make ftptar          [ Create compressed tar archive for ftp sites ]"
 	@$(ECHO) "    make build           [ Compile tin ]"
 	@$(ECHO) "    make install         [ Install the binary & the manual page ]"
+	@$(ECHO) "    make uninstall       [ Uninstall the binary & the manual page ]"
 	@$(ECHO) "    make install_daemon  [ Install the index daemon binary ]"
 	@$(ECHO) "    make install_setuid  [ Install the binary setuid & the manual page ]"
 	@$(ECHO) "    make manpage         [ Generate & print troff version of manual page ]"
@@ -262,14 +263,11 @@ all:
 build:
 	@$(CD) $(SRCDIR) && $(MAKE) @cf_cv_makeflags@
 
-install:
-	@$(CD) $(SRCDIR) && $(MAKE) @cf_cv_makeflags@ install
-
-install_setuid:
-	@$(CD) $(SRCDIR) && $(MAKE) @cf_cv_makeflags@ install_setuid
-
+install \
+uninstall \
+install_setuid \
 install_daemon:
-	@$(CD) $(SRCDIR) && $(MAKE) @cf_cv_makeflags@ install_daemon
+	@$(CD) $(SRCDIR) && $(MAKE) @cf_cv_makeflags@ $@
 
 version:
 	@$(ECHO) "TIN v$(VER)"
@@ -432,8 +430,10 @@ print:
 	done
 
 distclean:
-	$(CD) pcre && $(MAKE) @cf_cv_makeflags@ $@
-	$(CD) src && $(MAKE) @cf_cv_makeflags@ $@
+	@-$(CD) pcre && $(MAKE) @cf_cv_makeflags@ $@
+	@-$(CD) src && $(MAKE) @cf_cv_makeflags@ $@
+@INTLDIR_MAKE@	@-test -f intl/Makefile && $(CD) intl && $(MAKE) @cf_cv_makeflags@ $@
+@MSG_DIR_MAKE@	@-test -f po/Makefile && $(CD) po && $(MAKE) @cf_cv_makeflags@ $@
 	$(RM) -f config.cache config.log config.status makefile */Makefile include/autoconf.h td-conf.out
 
 configure: configure.in aclocal.m4

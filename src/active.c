@@ -201,7 +201,8 @@ active_add (
  * Decide how to handle a bogus groupname.
  * If we process them interactively, create an empty active[] for this
  * group and mark it bogus for display in the group selection page
- * Otherwise, bogus groups are dealt with when newsrc is written.
+ * Otherwise, bogus groups are not displayed and are dealt with when newsrc
+ * is written.
  */
 t_bool
 process_bogus (
@@ -209,7 +210,7 @@ process_bogus (
 {
 	struct t_group *ptr;
 
-	if (read_saved_news)
+	if (read_saved_news || tinrc.strip_bogus != BOGUS_ASK)
 		return FALSE;
 
 	if ((ptr = psGrpAdd(name)) == NULL)
@@ -297,7 +298,7 @@ read_newsrc_active_file (
 		return;
 	}
 
-	if (INTERACTIVE)
+	if (!batch_mode)
 		wait_message (0, _(txt_reading_news_newsrc_file));
 
 	while ((ptr = tin_fgets (fp, FALSE)) != (char *)0 || window != 0) {
@@ -452,7 +453,7 @@ read_newsrc_active_file (
 		tin_done (EXIT_FAILURE);
 	}
 
-	if (INTERACTIVE)
+	if (!batch_mode)
 		my_fputs("\n", stdout);
 }
 
@@ -471,12 +472,12 @@ read_active_file (
 	long processed = 0L;
 	struct t_group *grpptr;
 
-	if (INTERACTIVE)
+	if (!batch_mode)
 		wait_message (0, _(txt_reading_news_active_file));
 
 	if ((fp = open_news_active_fp ()) == (FILE *) 0) {
 
-		if (cmd_line)
+		if (cmd_line && !batch_mode)
 			my_fputc ('\n', stderr);
 
 #if defined(NNTP_ABLE) || defined(NNTP_ONLY)
@@ -537,7 +538,7 @@ read_active_file (
 		tin_done (EXIT_FAILURE);
 	}
 
-	if (INTERACTIVE)
+	if (!batch_mode)
 		my_fputs("\n", stdout);
 }
 
@@ -605,10 +606,12 @@ check_for_any_new_groups (
 	time_t old_newnews_time;
 	time_t new_newnews_time;
 
-	if (!check_for_new_newsgroups || !INTERACTIVE)
+	if (!check_for_new_newsgroups || !batch_mode)
 		return;
 
-	wait_message (0, _(txt_checking_new_groups));
+	if (!batch_mode /* || (batch_mode && verbose) */)
+		wait_message (0, _(txt_checking_new_groups));
+
 	(void) time (&new_newnews_time);
 	strcpy (new_newnews_host, (read_news_via_nntp ? nntp_server : "local")); /* What if nntp server called local ? */
 
@@ -758,7 +761,7 @@ match_group_list (
 	/*
 	 * walk through comma-separated entries in list
 	 */
-	while (list_len > 0) {
+	while (list_len != 0) {
 		/*
 		 * find end/length of this entry
 		 */
@@ -782,7 +785,7 @@ match_group_list (
 		 * case-insensitive wildcard match
 		 */
 		if (GROUP_MATCH(group, pattern, TRUE))
-			accept = !negate;	/* matched!*/
+			accept = !negate;	/* matched! */
 
 		/*
 		 * now examine next entry if any

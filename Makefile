@@ -7,9 +7,9 @@
 PROJECT	= tin
 LVER	= 1
 PVER	= 5
-SVER	= 2
+SVER	= 3
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20000119
+DVER	= 20000221
 EXE	= tin
 MANEXT	= 1
 
@@ -290,7 +290,7 @@ INTLFILES = \
         $(INTLDIR)/xopen-msg.sed
 
 POFILES = \
-	$(PODIR)/Makefile.in.in \
+	$(PODIR)/Makefile.inn \
 	$(PODIR)/POTFILES.in \
 	$(PODIR)/tin.pot \
 	$(PODIR)/de.po
@@ -340,7 +340,7 @@ all:
 	@$(ECHO) " "
 
 build:
-	@$(CD) $(SRCDIR) && $(MAKE)
+	@-if $(TEST) -r $(SRCDIR)/Makefile ; then $(CD) $(SRCDIR) && $(MAKE) ; else $(ECHO) "You need to run configure first - didn't you read README?" ; fi
 
 install:
 	@$(CD) $(SRCDIR) && $(MAKE) install
@@ -358,10 +358,10 @@ clean:
 	$(INCDIR)/*~ \
 	$(SRCDIR)/*~ \
 	$(PCREDIR)/*~
-	@-if $(TEST) -f $(PCREDIR)/Makefile ; then $(CD) $(PCREDIR) && $(MAKE) clean ; fi
-	@-if $(TEST) -f $(INTLDIR)/Makefile ; then $(CD) $(INTLDIR) && $(MAKE) clean ; fi
-	@-if $(TEST) -f $(PODIR)/Makefile ; then $(CD) $(PODIR) && $(MAKE) clean ; fi
-	@-if $(TEST) -f $(SRCDIR)/Makefile ; then $(CD) $(SRCDIR) && $(MAKE) clean ; fi
+	@-if $(TEST) -r $(PCREDIR)/Makefile ; then $(CD) $(PCREDIR) && $(MAKE) clean ; fi
+	@-if $(TEST) -r $(INTLDIR)/Makefile ; then $(CD) $(INTLDIR) && $(MAKE) clean ; fi
+	@-if $(TEST) -r $(PODIR)/Makefile ; then $(CD) $(PODIR) && $(MAKE) clean ; fi
+	@-if $(TEST) -r $(SRCDIR)/Makefile ; then $(CD) $(SRCDIR) && $(MAKE) clean ; fi
 
 man:
 	@$(MAKE) manpage
@@ -440,14 +440,11 @@ name:
 	$(SED) "s, VERSION[[:space:]]*\"[[:print:]]*\", VERSION		\"$(VER)\"," $(INCDIR)/version.h.tmp > $(INCDIR)/version.h && \
 	$(RM) $(INCDIR)/version.h.tmp ;\
 	$(SED) "s,^DVER[[:space:]]*=[[:print:]]*,DVER		= $$DATE," ./makefile.in > ./makefile.in.tmp && \
-	$(MV) ./makefile.in.tmp ./makefile.in && \
-	if $(TEST) configure.in -nt configure ; then \
-		autoconf ;\
-	fi
+	$(MV) ./makefile.in.tmp ./makefile.in
+	@$(MAKE) configure
 
 dist:
 	@$(MAKE) name
-	@$(MAKE) configure
 	@$(MAKE) manifest
 	@$(MAKE) chmod
 	@$(MAKE) tar
@@ -457,6 +454,8 @@ version :
 
 distclean:
 	@-$(MAKE) clean
+	@-if $(TEST) -r $(PODIR)/Makefile ; then $(CD) $(PODIR) && $(MAKE) distclean ; fi
+	@-if $(TEST) -r $(INTLDIR)/Makefile ; then $(CD) $(INTLDIR) && $(MAKE) distclean ; fi
 	@-$(RM) -f \
 	makefile \
 	config.cache \
@@ -472,13 +471,7 @@ distclean:
 	$(CANDIR)/endian.h \
 	$(CANDIR)/canlocktest \
 	$(CANDIR)/endian \
-	$(CANDIR)/hmactest \
-	$(INTLDIR)/libintl.h \
-	$(INTLDIR)/po2tbl.sed \
-	$(INTLDIR)/Makefile \
-	$(PODIR)/Makefile.in \
-	$(PODIR)/Makefile \
-	$(PODIR)/POTFILES
+	$(CANDIR)/hmactest
 
 configure: configure.in aclocal.m4
 	autoconf

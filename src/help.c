@@ -538,7 +538,7 @@ show_info_page (
 				break;
 
 			case iKeyFirstPage:			/* Home */
-			case iKeyHelpFirstPage:
+			case iKeyHelpFirstPage2:
 				if (cur_page != 1) {
 					cur_page = 1;
 					pos_help = 0;
@@ -546,7 +546,7 @@ show_info_page (
 				break;
 
 			case iKeyLastPage:			/* End */
-			case iKeyHelpLastPage:
+			case iKeyHelpLastPage2:
 				if (cur_page != max_page)
 					cur_page = max_page;
 				pos_help = (max_page-1) * help_lines;

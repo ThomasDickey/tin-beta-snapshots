@@ -53,10 +53,12 @@
 
 #define EXPIRED(a) ((a)->article == ART_UNAVAILABLE || arts[(a)->article].thread == ART_EXPIRED)
 
+/* sizeof the tagged/art mark area */
+#define MAGIC		3
+
 int thread_basenote = 0;				/* Index in base[] of basenote */
 static int thread_respnum = 0;			/* Index in arts[] of basenote ie base[thread_basenote] */
 t_bool show_subject;
-
 
 /*
  * Local prototypes
@@ -67,9 +69,9 @@ static int thread_tab_pressed (void);
 static t_bool find_unexpired (struct t_msgid *ptr);
 static t_bool has_sibling (struct t_msgid *ptr);
 static void bld_tline (int l, struct t_article *art);
-static void draw_tline (int i, t_bool full);
 static void draw_thread_arrow (void);
 static void make_prefix (struct t_msgid *art, char *prefix, int maxlen);
+static void show_thread_page (void);
 static void update_thread_page (void);
 
 /*
@@ -90,11 +92,11 @@ bld_tline (
 	struct t_article *art)
 {
 	char mark;
-#	ifdef USE_CURSES
+#ifdef USE_CURSES
 	char buff[BUFSIZ];
-#	else
+#else
 	char *buff = screen[INDEX2TNUM(l)].col;
-#	endif /* USE_CURSES */
+#endif /* USE_CURSES */
 	int gap;
 	int rest_of_line = cCOLS;
 	int len_from, len_subj;
@@ -119,18 +121,16 @@ bld_tline (
 			mark = tinrc.art_marked_inrange;
 		} else if (art->status == ART_UNREAD) {
 			mark = (art->selected ? tinrc.art_marked_selected : (tinrc.recent_time && ((time((time_t) 0) - art->date) < (tinrc.recent_time * DAY))) ? tinrc.art_marked_recent : tinrc.art_marked_unread);
-
 		} else if (art->status == ART_WILL_RETURN) {
 			mark = tinrc.art_marked_return;
-		} else if (art->killed) {
-			mark = 'K';
+		} else if (art->killed && tinrc.kill_level == KILL_THREAD) {
+			mark = tinrc.art_marked_killed;
 		} else {
-			if (tinrc.kill_level == KILL_THREAD && art->score >= SCORE_SELECT)
-				mark = ART_MARK_READ_SELECTED ; /* read hot chil^H^H^H^H article */
+			if (tinrc.kill_level != KILL_READ && art->score >= SCORE_SELECT)
+				mark = tinrc.art_marked_read_selected ; /* read hot chil^H^H^H^H article */
 			else
-				mark = ART_MARK_READ;
+				mark = tinrc.art_marked_read;
 		}
-
 		buff[MARK_OFFSET] = mark;			/* insert mark */
 	}
 
@@ -256,41 +256,52 @@ bld_tline (
 }
 
 
-static void
-draw_tline (
+/*
+ * Update a line on the group or thread screen.
+ * This only puts to the screen, the hard work is done by bld_*line()
+ * i is an index into base[]
+ * If 'magic' is != 0 then only a partial redraw of width=magic is done.
+ * This is intended to redraw the art_mark/tag/unread counts that change
+ * more frequently than the rest of the line
+ */
+void
+draw_line (
 	int i,
-	t_bool full)
+	int magic)
 {
+	int startpos = (!magic) ? 0 : (MARK_OFFSET-2);
 	int tlen;
-	int x = full ? 0 : (MARK_OFFSET-2);
-#	ifdef USE_CURSES
+#ifdef USE_CURSES
 	char buffer[BUFSIZ];
-	char *s = screen_contents(INDEX2LNUM(i), x, buffer);
-#	else
-	char *s = &(screen[INDEX2TNUM(i)].col[x]);
-#	endif /* USE_CURSES */
+	char *s = screen_contents(INDEX2LNUM(i), startpos, buffer);
+#else
+	char *s = &(screen[INDEX2TNUM(i)].col[startpos]);
+#endif /* USE_CURSES */
 
-	if (full) {
+	if (!magic) {
 		if (tinrc.strip_blanks) {
 			strip_line (s);
 			CleartoEOLN ();
 		}
 		tlen = strlen (s);	/* note new line length */
 	} else
-		tlen = 3; /* tagged/mark is 3 chars wide */
+		tlen = magic;
 
-	MoveCursor(INDEX2LNUM(i), x);
+	MoveCursor(INDEX2LNUM(i), startpos);
 	if (tlen)
 		my_printf("%.*s", tlen, s);
 
 	/*
-	 * it is somewhat less efficient to go back and redo that art mark
-	 * if selected, but it is quite readable as to what is happening
+	 * It is somewhat less efficient to go back and redo the art mark
+	 * if selected, but it is more readable
+	 *
+	 * we don't highlight read_selected arts, as one might have set
+	 * art_mark_read_selected = art_mark_read...
 	 */
-	if (s[MARK_OFFSET-x] == tinrc.art_marked_selected || (tinrc.kill_level == KILL_THREAD && s[MARK_OFFSET-x] == ART_MARK_READ_SELECTED)) {
+	if (s[MARK_OFFSET-startpos] == tinrc.art_marked_selected) {
 		MoveCursor (INDEX2LNUM(i), MARK_OFFSET);
 		ToggleInverse ();
-		my_fputc (s[MARK_OFFSET-x], stdout);
+		my_fputc (s[MARK_OFFSET-startpos], stdout);
 		ToggleInverse ();
 	}
 
@@ -415,11 +426,11 @@ thread_page (
 					prompt_item_num (ch, txt_select_art);
 				break;
 
-#	ifndef NO_SHELL_ESCAPE
+#ifndef NO_SHELL_ESCAPE
 			case iKeyShellEscape:
 				do_shell_escape ();
 				break;
-#	endif /* !NO_SHELL_ESCAPE */
+#endif /* !NO_SHELL_ESCAPE */
 
 			case iKeyFirstPage:	/* show first page of articles */
 				top_of_list();
@@ -429,7 +440,7 @@ thread_page (
 				end_of_list();
 				break;
 
-			case iKeyThreadLastViewed:	/* show last viewed article */
+			case iKeyLastViewed:	/* show last viewed article */
 				if (this_resp < 0 || (which_thread(this_resp) == -1)) {
 					info_message (_(txt_no_last_message));
 					break;
@@ -440,6 +451,11 @@ thread_page (
 			case iKeySetRange:	/* set range */
 				if (bSetRange (THREAD_LEVEL, 0, thdmenu.max, thdmenu.curr))
 					show_thread_page ();
+				break;
+
+			case iKeyPipe:			/* pipe article to command */
+				if (thread_basenote >= 0)
+					feed_articles (FEED_PIPE, THREAD_LEVEL, &CURR_GROUP, find_response (thread_basenote, thdmenu.curr));
 				break;
 
 			case iKeyThreadMail:	/* mail article to somebody */
@@ -514,7 +530,7 @@ thread_page (
 				if ((arts[n].status == ART_UNREAD) || (arts[n].status == ART_WILL_RETURN)) {
 					art_mark_read (group, &arts[n]);
 					bld_tline (thdmenu.curr, &arts[n]);
-					draw_tline (thdmenu.curr, FALSE);
+					draw_line (thdmenu.curr, MAGIC);
 				}
 				if ((n = next_unread (n)) == -1)  {	/* no more unread articles */
 					ret_code = GRP_EXIT;
@@ -578,14 +594,14 @@ thread_page (
 				show_inverse_video_status ();
 				break;
 
-#	ifdef HAVE_COLOR
+#ifdef HAVE_COLOR
 			case iKeyToggleColor:		/* toggle color */
 				if (toggle_color ()) {
 					show_thread_page ();
 					show_color_status ();
 				}
 				break;
-#	endif /* HAVE_COLOR */
+#endif /* HAVE_COLOR */
 
 			case iKeyQuit:				/* return to previous level */
 				ret_code = GRP_EXIT;
@@ -602,7 +618,7 @@ thread_page (
 
 				if (tag_article(n)) {
 					bld_tline (thdmenu.curr, &arts[n]);	/* Update just this line */
-					draw_tline (thdmenu.curr, FALSE);
+					draw_line (thdmenu.curr, MAGIC);
 				} else
 					update_thread_page();						/* Must update whole page */
 
@@ -631,7 +647,7 @@ thread_page (
 				n = find_response (thread_basenote, thdmenu.curr);
 				art_mark_will_return (group, &arts[n]); /*art_mark_unread (group, &arts[n]);*/
 				bld_tline (thdmenu.curr, &arts[n]);
-				draw_tline (thdmenu.curr, FALSE);
+				draw_line (thdmenu.curr, MAGIC);
 				info_message (_(txt_marked_as_unread), "Article");
 				draw_thread_arrow ();
 				break;
@@ -649,7 +665,7 @@ thread_page (
 				arts[n].selected = (!(ch == iKeyThreadToggleArtSel && arts[n].selected == 1));
 /*				update_thread_page (); */
 				bld_tline (thdmenu.curr, &arts[n]);
-				draw_tline (thdmenu.curr, FALSE);
+				draw_line (thdmenu.curr, MAGIC);
 				if (thdmenu.curr + 1 < thdmenu.max) {
 					move_down();
 					break;
@@ -700,11 +716,10 @@ thread_page (
 }
 
 
-void
+static void
 show_thread_page (
 	void)
 {
-
 	int i;
 	static int the_index = 0;
 
@@ -737,7 +752,7 @@ show_thread_page (
 		if (the_index < 0 || the_index >= max_art)
 			break;
 		bld_tline (i, &arts[the_index]);
-		draw_tline (i, TRUE);
+		draw_line (i, 0);
 		the_index = next_response (the_index);
 	}
 
@@ -762,7 +777,7 @@ update_thread_page (
 
 	for (j = 0, i = thdmenu.first; j < NOTESLINES && i < thdmenu.last; ++i, ++j) {
 		bld_tline (i, &arts[the_index]);
-		draw_tline (i, FALSE);
+		draw_line (i, MAGIC);
 		if ((the_index = next_response (the_index)) == -1)
 			break;
 	}
@@ -949,7 +964,7 @@ stat_thread (
 	sbuf->selected_total = 0;
 	sbuf->selected_unread= 0;
 	sbuf->selected_seen  = 0;
-	sbuf->art_mark = ART_MARK_READ;
+	sbuf->art_mark = tinrc.art_marked_read;
 	sbuf->score = 0 /*-(SCORE_MAX) */;
 	sbuf->time = 0;
 
@@ -999,7 +1014,7 @@ stat_thread (
 	if (j)
 		sbuf->score /= j;
 #endif /* THREAD_SUM */
-	sbuf->art_mark = (sbuf->inrange ? tinrc.art_marked_inrange : (sbuf->deleted ? tinrc.art_marked_deleted : (sbuf->selected_unread ? tinrc.art_marked_selected : (sbuf->unread ? (tinrc.recent_time && (time((time_t) 0) - sbuf->time) < (tinrc.recent_time * DAY)) ? tinrc.art_marked_recent : tinrc.art_marked_unread : (sbuf->seen ? tinrc.art_marked_return : ART_MARK_READ)))));
+	sbuf->art_mark = (sbuf->inrange ? tinrc.art_marked_inrange : (sbuf->deleted ? tinrc.art_marked_deleted : (sbuf->selected_unread ? tinrc.art_marked_selected : (sbuf->unread ? (tinrc.recent_time && (time((time_t) 0) - sbuf->time) < (tinrc.recent_time * DAY)) ? tinrc.art_marked_recent : tinrc.art_marked_unread : (sbuf->seen ? tinrc.art_marked_return : tinrc.art_marked_read)))));
 	return(sbuf->total);
 }
 
@@ -1254,6 +1269,7 @@ thread_catchup(
 				default:				/* Just leave the group */
 					return GRP_EXIT;
 			}
+			/* FALLTHROUGH */
 		default:
 			break;
 	}
@@ -1278,24 +1294,22 @@ enter_pager(
 {
 	int i;
 
+again:
 	i = show_page (&CURR_GROUP, art, &thdmenu.curr);
 
-	/*
-	 * Keep paging if we ignore unavailable arts
-	 */
-	if (ignore_unavail && i == GRP_ARTFAIL)
-		i = GRP_NEXTUNREAD;
-
 	switch (i) {
-		/* These exit to group menu */
+		/* These exit to previous menu level */
 		case GRP_QUIT:				/* 'Q' all the way out */
 		case GRP_RETURN:			/* 'T' back to select menu */
 		case GRP_NEXT:				/* 'c' Move to next thread on group menu */
 		case GRP_NEXTUNREAD:		/* 'C' */
 			break;
 
-		/* These stay in thread menu */
+		/* Keeps us in thread menu */
 		case GRP_ARTFAIL:
+			if (ignore_unavail && (art = next_unread(art)) != -1)
+				goto again;
+
 		case GRP_GOTOTHREAD:		/* 'l' from pager */
 			show_thread_page();
 			return 0;
@@ -1304,7 +1318,10 @@ enter_pager(
 			if (local_filtered_articles)
 				return GRP_KILLED; /* ?? set group cursor back to 0 and do nothing */
 			fixup_thread (this_resp, FALSE);
-			show_thread_page();
+
+			if (currmenu != &grpmenu)	/* group menu will redraw itself */
+				currmenu->redraw();
+
 			return 1;				/* Must return any +ve integer */
 	}
 	return i;

@@ -111,7 +111,7 @@ _page_down (
  * based on the current position and the max available
  */
 void
-set_first_screen_item ()
+set_first_screen_item (void)
 {
 	if (currmenu->curr >= currmenu->max)
 		currmenu->curr = currmenu->max - 1;
@@ -276,8 +276,6 @@ mouse_action(
 				return iKeyPageUp;
 
 			return left_action();
-			/* NOTREACHED */
-			break;
 
 		default:
 			break;

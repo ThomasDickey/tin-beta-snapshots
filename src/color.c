@@ -97,7 +97,7 @@ set_colors (
 		chtype attribute = A_NORMAL;
 		int pair = 0;
 
-		TRACE(("set_colors (%d, %d)", fcolor, bcolor))
+		TRACE(("set_colors (%d, %d)", fcolor, bcolor));
 
 		/* fcolor/bcolor may be negative, if we're using ncurses
 		 * function use_default_colors().
@@ -150,7 +150,7 @@ void
 fcol (
 	int color)
 {
-	TRACE(("fcol(%d) %s", color, txt_colors[color-MIN_COLOR]))
+	TRACE(("fcol(%d) %s", color, txt_colors[color-MIN_COLOR]));
 	if (use_color) {
 		if (color >= MIN_COLOR && color <= MAX_COLOR) {
 #ifdef USE_CURSES
@@ -178,7 +178,7 @@ void
 bcol (
 	int color)
 {
-	TRACE(("bcol(%d) %s", color, txt_colors[color-MIN_COLOR]))
+	TRACE(("bcol(%d) %s", color, txt_colors[color-MIN_COLOR]));
 	if (use_color) {
 		if (color >= MIN_COLOR && color <= MAX_BACKCOLOR) {
 #ifdef USE_CURSES

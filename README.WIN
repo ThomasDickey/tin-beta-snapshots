@@ -16,7 +16,7 @@
 
      - configure
        - export CC=gcc
-       - export CFLAGS="-DLOCAL_CHARSET=850 -DSTATIC"
+       - export CFLAGS="-DLOCAL_CHARSET=850"
                                         ^^^
                             (or 437 depends on "mode con")
        - ./configure --with-ncurses --libdir=/usr/local/lib --disable-locale

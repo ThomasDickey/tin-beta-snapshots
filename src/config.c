@@ -38,12 +38,12 @@
  */
 
 
-#ifndef VERSION_H
-#	include	"version.h"
-#endif /* !VERSION_H */
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
+#ifndef VERSION_H
+#	include	"version.h"
+#endif /* !VERSION_H */
 #ifndef TINTBL_H
 #	include	"tincfg.h"
 #endif /* !TINTBL_H */
@@ -58,11 +58,13 @@ static void expand_rel_abs_pathname (int line, int col, char *str);
 static void show_config_page (void);
 
 #ifdef HAVE_COLOR
-	static t_bool match_color (char *line, const char *pat, int *dst, int maxlen);
+	static t_bool match_color (char *line, const char *pat, int *dst, int max);
 #endif /* HAVE_COLOR */
 
 enum state { IGNORE, CHECK, UPGRADE };
 
+#define DASH_TO_SPACE(mark)	(mark == '_' ? ' ' : mark)
+#define SPACE_TO_DASH(mark)	(mark == ' ' ? '_' : mark)
 
 /* FIXME: see doc/TODO and comments in the code */
 /*
@@ -95,6 +97,7 @@ check_upgrade (
  *  read local & global configuration defaults
  */
 
+
 t_bool
 read_config_file (
 	char *file,
@@ -108,7 +111,7 @@ read_config_file (
 	if ((fp = fopen (file, "r")) == (FILE *) 0)
 		return FALSE;
 
-	if (INTERACTIVE)
+	if (!batch_mode)
 		/* FIXME: -> lang.c */
 		wait_message (0, _(txt_reading_config_file), (global_file) ? "global " : "");
 
@@ -131,32 +134,47 @@ read_config_file (
 				break;
 
 			if (match_string (buf, "art_marked_deleted=", buf, sizeof (buf))) {
-				tinrc.art_marked_deleted = buf[0];
+				tinrc.art_marked_deleted = DASH_TO_SPACE(buf[0]);
 				break;
 			}
 
 			if (match_string (buf, "art_marked_inrange=", buf, sizeof (buf))) {
-				tinrc.art_marked_inrange = buf[0];
+				tinrc.art_marked_inrange = DASH_TO_SPACE(buf[0]);
+				break;
+			}
+
+			if (match_string (buf, "art_marked_killed=", buf, sizeof (buf))) {
+				tinrc.art_marked_killed = DASH_TO_SPACE(buf[0]);
+				break;
+			}
+
+			if (match_string (buf, "art_marked_read=", buf, sizeof (buf))) {
+				tinrc.art_marked_read = DASH_TO_SPACE(buf[0]);
+				break;
+			}
+
+			if (match_string (buf, "art_marked_read_selected=", buf, sizeof (buf))) {
+				tinrc.art_marked_read_selected = DASH_TO_SPACE(buf[0]);
 				break;
 			}
 
 			if (match_string (buf, "art_marked_recent=", buf, sizeof (buf))) {
-				tinrc.art_marked_recent = buf[0];
+				tinrc.art_marked_recent = DASH_TO_SPACE(buf[0]);
 				break;
 			}
 
 			if (match_string (buf, "art_marked_return=", buf, sizeof (buf))) {
-				tinrc.art_marked_return = buf[0];
+				tinrc.art_marked_return = DASH_TO_SPACE(buf[0]);
 				break;
 			}
 
 			if (match_string (buf, "art_marked_selected=", buf, sizeof (buf))) {
-				tinrc.art_marked_selected = buf[0];
+				tinrc.art_marked_selected = DASH_TO_SPACE(buf[0]);
 				break;
 			}
 
 			if (match_string (buf, "art_marked_unread=", buf, sizeof (buf))) {
-				tinrc.art_marked_unread = buf[0];
+				tinrc.art_marked_unread = DASH_TO_SPACE(buf[0]);
 				break;
 			}
 
@@ -522,7 +540,7 @@ read_config_file (
 				break;
 
 			if (match_integer (buf, "post_process_type=", &tinrc.post_process, POST_PROC_UUD_EXT_ZIP)) {
-				proc_ch_default = get_post_proc_type (tinrc.post_process);
+				proc_ch_default = POST_PROC_TYPE (tinrc.post_process);
 				break;
 			}
 
@@ -736,11 +754,6 @@ read_config_file (
 	/* nobody likes to navigate blind */
 	if (!(tinrc.draw_arrow || tinrc.inverse_okay))
 		tinrc.draw_arrow = TRUE;
-
-#if 0
-	if (INTERACTIVE)
-		wait_message (0, "\n");
-#endif /* 0 */
 
 	return TRUE;
 }
@@ -987,22 +1000,31 @@ write_config_file (
 	fprintf (fp, "auto_bcc=%s\n\n", print_boolean (tinrc.auto_bcc));
 
 	fprintf (fp, _(txt_art_marked_deleted.tinrc));
-	fprintf (fp, "art_marked_deleted=%c\n\n", tinrc.art_marked_deleted);
+	fprintf (fp, "art_marked_deleted=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_deleted));
 
 	fprintf (fp, _(txt_art_marked_inrange.tinrc));
-	fprintf (fp, "art_marked_inrange=%c\n\n", tinrc.art_marked_inrange);
+	fprintf (fp, "art_marked_inrange=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_inrange));
 
 	fprintf (fp, _(txt_art_marked_return.tinrc));
-	fprintf (fp, "art_marked_return=%c\n\n", tinrc.art_marked_return);
+	fprintf (fp, "art_marked_return=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_return));
 
 	fprintf (fp, _(txt_art_marked_selected.tinrc));
-	fprintf (fp, "art_marked_selected=%c\n\n", tinrc.art_marked_selected);
+	fprintf (fp, "art_marked_selected=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_selected));
 
 	fprintf (fp, _(txt_art_marked_recent.tinrc));
-	fprintf (fp, "art_marked_recent=%c\n\n", tinrc.art_marked_recent);
+	fprintf (fp, "art_marked_recent=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_recent));
 
 	fprintf (fp, _(txt_art_marked_unread.tinrc));
-	fprintf (fp, "art_marked_unread=%c\n\n", tinrc.art_marked_unread);
+	fprintf (fp, "art_marked_unread=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_unread));
+
+	fprintf (fp, _(txt_art_marked_read.tinrc));
+	fprintf (fp, "art_marked_read=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_read));
+
+	fprintf (fp, _(txt_art_marked_killed.tinrc));
+	fprintf (fp, "art_marked_killed=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_killed));
+
+	fprintf (fp, _(txt_art_marked_read_selected.tinrc));
+	fprintf (fp, "art_marked_read_selected=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_read_selected));
 
 	fprintf (fp, _(txt_force_screen_redraw.tinrc));
 	fprintf (fp, "force_screen_redraw=%s\n\n", print_boolean (tinrc.force_screen_redraw));
@@ -1302,8 +1324,10 @@ RepaintOption (
 static void DoScroll (
 	int jump)
 {
+#	if 0
 	int y, x;
 	getyx(stdscr, y, x);
+#	endif /* 0 */
 	move(INDEX_TOP, 0);
 	setscrreg(INDEX_TOP, INDEX_TOP + option_lines_per_page - 1);
 	scrl(jump);
@@ -1333,10 +1357,7 @@ highlight_option (
 	}
 
 	refresh_config_page (option);
-	MoveCursor (option_row(option), 0);
-	my_fputs ("->", stdout);
-	my_flush();
-	stow_cursor();
+	draw_arrow_mark(option_row(option));
 }
 
 
@@ -1344,9 +1365,14 @@ static void
 unhighlight_option (
 	int option)
 {
-	MoveCursor (option_row(option), 0);
-	my_fputs ("  ", stdout);
-	my_flush();
+	/* Astonishing hack */
+	t_menu *savemenu = currmenu;
+	t_menu cfgmenu = { 0, 1, 0, 0, NULL, NULL };
+
+	currmenu=&cfgmenu;
+	currmenu->curr = option_row(option)-INDEX_TOP;
+	erase_arrow();
+	currmenu=savemenu;
 }
 
 
@@ -1483,14 +1509,14 @@ change_config_file (
 				break;
 
 			case iKeyFirstPage:
-			case iKeyConfigFirstPage:
+			case iKeyConfigFirstPage2:
 				unhighlight_option (option);
 				option = 0;
 				highlight_option (option);
 				break;
 
 			case iKeyLastPage:
-			case iKeyConfigLastPage:
+			case iKeyConfigLastPage2:
 				unhighlight_option (option);
 				option = LAST_OPT;
 				highlight_option (option);
@@ -1746,7 +1772,7 @@ change_config_file (
 							break;
 
 						case OPT_POST_PROCESS:
-							proc_ch_default = get_post_proc_type (tinrc.post_process);
+							proc_ch_default = POST_PROC_TYPE (tinrc.post_process);
 							break;
 
 						case OPT_SHOW_AUTHOR:
@@ -1913,6 +1939,8 @@ change_config_file (
 						default:
 							break;
 					} /* switch (option) */
+
+					RepaintOption(option);			/* Else unsaved changes remain on screen */
 					break;
 
 				case OPT_NUM:
@@ -1932,12 +1960,20 @@ change_config_file (
 
 				case OPT_CHAR:
 					switch (option) {
+						/*
+						 * TODO: do DASH_TO_SPACE/SPACE_TO_DASH conversion here?
+						 * TODO: ensure that those aren't set to '' as this corrupts
+						 *       the screen layout
+						 */
 						case OPT_ART_MARKED_DELETED:
 						case OPT_ART_MARKED_INRANGE:
 						case OPT_ART_MARKED_RETURN:
 						case OPT_ART_MARKED_SELECTED:
 						case OPT_ART_MARKED_RECENT:
 						case OPT_ART_MARKED_UNREAD:
+						case OPT_ART_MARKED_READ:
+						case OPT_ART_MARKED_KILLED:
+						case OPT_ART_MARKED_READ_SELECTED:
 							prompt_option_char (option);
 							break;
 
@@ -2020,7 +2056,7 @@ match_color (
 	char *line,
 	const char *pat,
 	int *dst,
-	int maxlen)
+	int max)
 {
 	int n;
 	size_t patlen = strlen (pat);
@@ -2031,7 +2067,7 @@ match_color (
 			if (!strcasecmp(&line[patlen], txt_colors[n])) {
 				found = TRUE;
 				*dst = n;
-				if (*dst > maxlen)
+				if (*dst > max)
 					*dst = -1;
 			}
 		}
@@ -2039,9 +2075,9 @@ match_color (
 		if (!found)
 			*dst = atoi (&line[patlen]);
 
-		if (maxlen) {
-			if ((*dst < -1) || (*dst > maxlen)) {
-				my_fprintf(stderr, _(txt_value_out_of_range), pat, *dst, maxlen);
+		if (max) {
+			if ((*dst < -1) || (*dst > max)) {
+				my_fprintf(stderr, _(txt_value_out_of_range), pat, *dst, max);
 				*dst = 0;
 			}
 		}
@@ -2054,7 +2090,7 @@ match_color (
 
 /*
  * If pat matches the start of line, convert rest of line to an integer, dst
- * If maxlen is set, constrain value to 0 <= dst <= maxlen and return TRUE.
+ * If maxval is set, constrain value to 0 <= dst <= maxlen and return TRUE.
  * If no match is made, return FALSE.
  */
 t_bool
@@ -2062,16 +2098,16 @@ match_integer (
 	char *line,
 	const char *pat,
 	int *dst,
-	int maxlen)
+	int maxval)
 {
 	size_t patlen = strlen (pat);
 
 	if (STRNCMPEQ(line, pat, patlen)) {
 		*dst = atoi (&line[patlen]);
 
-		if (maxlen) {
-			if ((*dst < 0) || (*dst > maxlen)) {
-				my_fprintf(stderr, _(txt_value_out_of_range), pat, *dst, maxlen);
+		if (maxval) {
+			if ((*dst < 0) || (*dst > maxval)) {
+				my_fprintf(stderr, _(txt_value_out_of_range), pat, *dst, maxval);
 				*dst = 0;
 			}
 		}

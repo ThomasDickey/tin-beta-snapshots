@@ -68,6 +68,7 @@ struct t_save *save;			/* sorts articles before saving them */
  */
 static void free_newnews_array (void);
 static void free_active_arrays (void);
+static void free_if_not_default (char **attrib, char *deflt);
 
 /*
  *  Dynamic table management
@@ -272,7 +273,23 @@ free_art_array (
 }
 
 
-/* FIXME: checks which entrys are missing and should be freed */
+/*
+ * Use this only for attributes that have a fixed default of a static string
+ * in tinrc
+ */
+static void
+free_if_not_default (
+	char **attrib,
+	char *deflt)
+{
+	/* Can't see how these attribs can be = NULL */
+	if (*attrib != (char *) 0 && *attrib != deflt) {
+		free ((char *) *attrib);
+		*attrib = (char *) 0;
+	}
+}
+
+
 void
 free_attributes_array (
 	void)
@@ -283,40 +300,18 @@ free_attributes_array (
 	for (i = 0; i < num_active; i++) {
 		psGrp = &active[i];
 		if (psGrp->attribute && !psGrp->attribute->global) {
-			if (psGrp->attribute->maildir != (char *) 0 &&
-				psGrp->attribute->maildir != tinrc.maildir) {
-				free ((char *) psGrp->attribute->maildir);
-				psGrp->attribute->maildir = (char *) 0;
-			}
-			if (psGrp->attribute->savedir != (char *) 0 &&
-			    psGrp->attribute->savedir != tinrc.savedir) {
-				free ((char *) psGrp->attribute->savedir);
-				psGrp->attribute->savedir = (char *) 0;
-			}
+			free_if_not_default(&psGrp->attribute->maildir, tinrc.maildir);
+			free_if_not_default(&psGrp->attribute->savedir, tinrc.savedir);
 
 			FreeAndNull(psGrp->attribute->savefile);
 
-			if (psGrp->attribute->sigfile != (char *) 0 &&
-			    psGrp->attribute->sigfile != tinrc.sigfile) {
-				free ((char *) psGrp->attribute->sigfile);
-				psGrp->attribute->sigfile = (char *) 0;
-			}
+			free_if_not_default(&psGrp->attribute->sigfile, tinrc.sigfile);
+			free_if_not_default(&psGrp->attribute->organization, default_organization);
 
-			if (psGrp->attribute->organization != (char *) 0 &&
-			    psGrp->attribute->organization != default_organization) {
-				free ((char *) psGrp->attribute->organization);
-				psGrp->attribute->organization = (char *) 0;
-			}
-
-			FreeAndNull(psGrp->attribute->from);
 			FreeAndNull(psGrp->attribute->followup_to);
 
 #ifndef DISABLE_PRINTING
-			if (psGrp->attribute->printer != (char *) 0 &&
-			    psGrp->attribute->printer != tinrc.printer) {
-				free ((char *) psGrp->attribute->printer);
-				psGrp->attribute->printer = (char *) 0;
-			}
+			free_if_not_default(&psGrp->attribute->printer, tinrc.printer);
 #endif /* !DISABLE_PRINTING */
 
 			FreeAndNull(psGrp->attribute->quick_kill_scope);
@@ -325,6 +320,10 @@ free_attributes_array (
 			FreeAndNull(psGrp->attribute->mailing_list);
 			FreeAndNull(psGrp->attribute->x_headers);
 			FreeAndNull(psGrp->attribute->x_body);
+
+			free_if_not_default(&psGrp->attribute->from, tinrc.mail_address);
+			free_if_not_default(&psGrp->attribute->news_quote_format, tinrc.news_quote_format);
+			free_if_not_default(&psGrp->attribute->quote_chars, tinrc.quote_chars);
 
 #ifdef HAVE_ISPELL
 			FreeAndNull(psGrp->attribute->ispell);
@@ -385,9 +384,9 @@ free_save_array (
 	for (i = 0; i < num_save; i++) {
 
 		FreeAndNull(save[i].subject);
-		FreeAndNull(save[i].archive);
 		FreeAndNull(save[i].dir);
 		FreeAndNull(save[i].file);
+		FreeAndNull(save[i].archive);
 		FreeAndNull(save[i].part);
 		FreeAndNull(save[i].patch);
 

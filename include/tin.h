@@ -76,7 +76,7 @@
 #	define setlocale(Category, Locale) /* empty */
 #endif /* !HAVE_SETLOCALE */
 
-#define N_(Str) (Str)
+#define N_(Str) Str
 
 #ifdef ENABLE_NLS
 #	include <libintl.h>
@@ -88,6 +88,10 @@
 #	define textdomain(Domain) /* empty */
 #	define _(Text) Text
 #endif /* ENABLE_NLS */
+
+#ifndef LOCALEDIR
+#	define LOCALEDIR "/usr/share/locale"
+#endif /* !LOCALEDIR */
 
 /*
  * Non-autoconf'able definitions for Amiga Developer Environment (gcc 2.7.2,
@@ -739,6 +743,7 @@ enum resizer { cNo, cYes, cRedraw };
 #	define LEN	512
 #	define PATH_LEN	256
 #endif /* VMS || M_AMIGA */
+
 #if defined(M_OS2) || defined(M_UNIX)
 #	ifndef MAXPATHLEN
 #		define MAXPATHLEN	256
@@ -746,6 +751,7 @@ enum resizer { cNo, cYes, cRedraw };
 #	define LEN	1024
 #	define PATH_LEN	MAXPATHLEN
 #endif /* M_OS2 || M_UNIX */
+
 #if defined(WIN32)
 #	define LEN	1024
 #	define PATH_LEN	MAX_PATH
@@ -786,8 +792,11 @@ enum resizer { cNo, cYes, cRedraw };
 #	define ART_MARK_READ	' '	/* used to show that an art was not read or seen */
 #endif /* !ART_MARK_READ */
 #ifndef ART_MARK_READ_SELECTED
-#	define ART_MARK_READ_SELECTED ':'	/* used to show that an read art is hot */
+#	define ART_MARK_READ_SELECTED ':'	/* used to show that an read art is hot (kill_level >0) */
 #endif /* !ART_MARK_READ_SELECTED */
+#ifndef ART_MARK_KILLED
+#	define ART_MARK_KILLED 'K'		/* art has been killed (kill_level >0) */
+#endif /*! ART_MARK_KILLED */
 #ifndef ART_MARK_DELETED
 #	define ART_MARK_DELETED	'D'	/* art has been marked for deletion (mailgroup) */
 #endif /* !ART_MARK_DELETED */
@@ -873,13 +882,8 @@ enum resizer { cNo, cYes, cRedraw };
  * Defines an unread group
  */
 #define UNREAD_GROUP(i)		(!active[my_group[i]].bogus && active[my_group[i]].newsrc.num_unread > 0)
-/*
- * Some informational message are only shown if we're running in
- * the background or some other non-curses mode
- */
-#define INTERACTIVE	(!batch_mode || update_fork)
-/* Obselete now, I think */
-#define INTERACTIVE2	((cmd_line && !(batch_mode || verbose)) || (batch_mode && update_fork))
+
+#define POST_PROC_TYPE(x)		(ch_post_process[x])
 
 /*
  * News/Mail group types
@@ -1341,6 +1345,11 @@ struct t_attribute
 	char *x_headers;			/* extra headers for message header */
 	char *x_body;				/* bolierplate text for message body */
 	char *from;				/* from line */
+	char *news_quote_format;		/* another way to begin a posting format */
+	char *quote_chars;			/* string to precede quoted text on each line */
+#ifdef HAVE_ISPELL
+	char *ispell;			/* path to ispell and options */
+#endif /* HAVE_ISPELL */
 	unsigned global:1;			/* global/group specific */
 	unsigned quick_kill_header:3;		/* quick filter kill header */
 	unsigned quick_kill_expire:1;		/* quick filter kill limited/unlimited time */
@@ -1362,11 +1371,6 @@ struct t_attribute
 	unsigned int post_proc_type:4;		/* 0=none, 1=shar, 2=uudecode,
 						   3=uud & list zoo, 4=uud & ext zoo*/
 	unsigned int x_comment_to:1;		/* insert X-Comment-To: in Followup */
-	char *news_quote_format;		/* another way to begin a posting format */
-	char *quote_chars;			/* string to precede quoted text on each line */
-#ifdef HAVE_ISPELL
-	char *ispell;			/* path to ispell and options */
-#endif /* HAVE_ISPELL */
 };
 
 /*
@@ -1396,7 +1400,7 @@ struct t_group
 	long xmax;				/* max. article number */
 	long xmin;				/* min. article number */
 	unsigned int type:4;			/* grouptype - newsgroup / mailbox / savebox */
-	unsigned int inrange:4;			/* 1 = group selected via # range command */
+	t_bool inrange:1;			/* TRUE if group selected via # range command */
 	t_bool read_during_session:1;		/* TRUE if group entered during session */
 	t_bool art_was_posted:1;		/* TRUE if art was posted to group */
 	t_bool subscribed:1;			/* TRUE if subscribed to group */
@@ -1539,14 +1543,16 @@ struct t_save
 	char *part;
 	char *patch;
 	int index;
-	int saved;
+	t_bool saved;
 	t_bool is_mailbox;
 };
 
+#ifndef USE_CURSES
 struct t_screen
 {
 	char *col;
 };
+#endif /* !USE_CURSES */
 
 struct t_posted
 {
@@ -1665,14 +1671,14 @@ typedef struct _TIMEINFO
  */
 #ifdef HAVE_COMPTYPE_VOID
 #	ifdef __STDC__
-		typedef const void t_comptype;
+		typedef const void *t_comptype;
 #	else
-		typedef void t_comptype;
+		typedef void *t_comptype;
 #	endif /* __STDC__ */
 #endif /* HAVE_COMPTYPE_VOID */
 
 #ifdef HAVE_COMPTYPE_CHAR
-	typedef char t_comptype;
+	typedef char *t_comptype;
 #endif /* HAVE_COMPTYPE_CHAR */
 
 #ifdef M_OS2
@@ -2106,9 +2112,9 @@ extern struct tm *localtime(time_t *);
 
 /* FXIME: use autoconf here to detect if stat(2)-structure has st_mtime */
 #ifndef M_AMIGA
-#	define file_changed(file)  file_mtime(file)
+#	define FILE_CHANGED(file)  file_mtime(file)
 #else
-#	define file_changed(file)  file_size(file)
+#	define FILE_CHANGED(file)  file_size(file)
 #endif /* M_AMIGA */
 
 /* snprintf(), vsnprintf() */

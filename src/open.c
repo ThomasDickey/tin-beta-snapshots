@@ -50,7 +50,6 @@
 /*
  * local prototypes
  */
-static int base_comp (t_comptype *p1, t_comptype *p2);
 #if 0 /* currently unused */
 	static FILE * open_xhdr_fp (char *header, long min, long max);
 #endif /* 0 */
@@ -103,7 +102,7 @@ nntp_open (
 		return -EHOSTUNREACH;
 	}
 
-	if (INTERACTIVE) {
+	if (!batch_mode) {
 		if (nntp_tcp_port != 119)
 			wait_message (0, _(txt_connecting_port), nntp_server, nntp_tcp_port);
 		else
@@ -492,7 +491,7 @@ DEBUG_IO((stderr, "nntp_command (%s)\n", command));
 	put_server (command);
 
 	if (!bool_equal(dangerous_signal_exit, TRUE))
-		if ((/* respcode = */ get_respcode (message)) != success) {
+		if ((get_respcode (message)) != success) {
 #	ifdef DEBUG
 			debug_nntp (command, "NOT_OK");
 #	endif /* DEBUG */
@@ -647,10 +646,11 @@ open_newsgroups_fp (
 #	if 0 /* TODO */
 		if (xgtitle_supported && newsrc_active
 		    && !list_active
-		    && num_active < some_usefull_limit) {
+		    && num_active < some_useful_limit) {
 			for (i = 0; i < num_active; i++) {
 				sprintf(buff, "XGTITLE %s", active[i].name);
-				nntp_command(buff, OK_LIST, NULL));
+				nntp_command(buff, OK_LIST, NULL);
+			}
 		} else
 #	endif /* 0 */
 		return (nntp_command ("LIST NEWSGROUPS", OK_GROUPS, NULL));
@@ -704,7 +704,9 @@ stat_article (
 	char *group_path)
 {
 	char buf[NNTP_STRLEN];
-	struct t_group currgrp = CURR_GROUP;
+	struct t_group currgrp;
+
+	currgrp = CURR_GROUP;
 
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && currgrp.type == GROUP_TYPE_NEWS) {
@@ -786,11 +788,12 @@ get_article (
 		perror_message (_(txt_cannot_create_uniq_name));
 		return (FILE *) 0;
 	}
-	if ((fp = fdopen (fd, "w")) == (FILE *) 0) {
+	if ((fp = fdopen (fd, "w")) == (FILE *) 0)
 #	else
 	mktemp (tempfile);
-	if ((fp = fopen (tempfile, "w")) == (FILE *) 0) {
+	if ((fp = fopen (tempfile, "w")) == (FILE *) 0)
 #	endif /* HAVE_FDOPEN && HAVE_MKSTEMP */
+	{
 		perror_message (_(txt_article_cannot_open), tempfile);
 		return (FILE *) 0;
 	}
@@ -914,8 +917,8 @@ open_art_fp (
  */
 static int
 base_comp (
-	t_comptype *p1,
-	t_comptype *p2)
+	t_comptype p1,
+	t_comptype p2)
 {
 	const long *a = (const long *) p1;
 	const long *b = (const long *) p2;

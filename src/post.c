@@ -147,6 +147,10 @@ extern char article[PATH_LEN];			/* Path of the file holding temp. article */
 int start_line_offset = 1;		/* used by invoke_editor for line no. */
 static char found_newsgroups[HEADER_LEN];
 
+char bug_addr[LEN];			/* address to add send bug reports to */
+char my_distribution[LEN];		/* Distribution: */
+char reply_to[LEN];			/* Reply-To: address */
+
 static struct msg_header {
 	char *name;
 	char *text;
@@ -169,9 +173,9 @@ static t_bool damaged_id (const char *id);
 static t_bool fetch_postponed_article(char tmp_file[], char subject[], char newsgroups[]);
 static t_bool is_crosspost (char *xref);
 static t_bool must_include (char *id);
-static t_bool pcCopyArtHeader (int iHeader, char *pcArt, char *result);
+static t_bool pcCopyArtHeader (int iHeader, const char *pcArt, char *result);
 static t_bool repair_article (char *result);
-static t_bool submit_mail_file (char *file);
+static t_bool submit_mail_file (const char *file);
 static void append_postponed_file (char *file, char *addr);
 static void appendid (char **where, const char **what);
 static void backup_article (char *the_article);
@@ -186,14 +190,14 @@ static void post_postponed_article (int ask, char* subject);
 static void postpone_article (char *the_article);
 static void setup_check_article_screen (int *init);
 static void update_active_after_posting (char *newsgroups);
-static void update_posted_info_file (char *group, int action, char *subj);
+static void update_posted_info_file (const char *group, int action, const char *subj);
 static void update_posted_msgs_file (char *file, char *addr);
 static void yank_to_addr (char *orig, char *addr);
 #ifdef FORGERY
 	static void make_path_header (char *line);
 #endif /* FORGERY */
 #ifndef M_AMIGA
-	static t_bool insert_from_header (char *infile);
+	static t_bool insert_from_header (const char *infile);
 #endif /* !M_AMIGA */
 #ifdef EVIL_INSIDE
 	static const char * build_messageid (void);
@@ -222,6 +226,31 @@ prompt_rejected (
 }
 
 
+/*
+ * Set up posting specific environment
+ */
+void
+init_postinfo (
+	void)
+{
+	char *ptr;
+
+	/*
+	 *  check enviroment for REPLYTO
+	 */
+	reply_to[0] = '\0';
+	if ((ptr = getenv ("REPLYTO")) != (char *) 0)
+		my_strncpy (reply_to, ptr, sizeof (reply_to));
+
+	/*
+	 *  check enviroment for DISTRIBUTION
+	 */
+	my_distribution[0] = '\0';
+	if ((ptr = getenv ("DISTRIBUTION")) != (char *) 0)
+		my_strncpy (my_distribution, ptr, sizeof (my_distribution));
+}
+
+
 static t_bool
 repair_article (
 	char *result)
@@ -245,9 +274,7 @@ repair_article (
 /*
  * make a backup copy of ~/.article, this is necessary since
  * submit_news_file adds headers, does q-p conversion etc
- *
- * TODO:
- * - why not use BACKUP_FILE_EXT like in misc.c?
+ * TODO: why not use BACKUP_FILE_EXT like in misc.c?
  */
 static char *
 backup_article_name (
@@ -472,9 +499,9 @@ user_posted_messages (
 
 static void
 update_posted_info_file (
-	char *group,
+	const char *group,
 	int action,
-	char *subj)
+	const char *subj)
 {
 	FILE *fp;
 	struct tm *pitm;
@@ -1101,14 +1128,14 @@ post_article_loop:
 				 * Code existed to recheck subject and restart editor, but
 				 * is not enabled
 				 */
-				artchanged = file_changed(article);
+				artchanged = FILE_CHANGED(article);
 				if (!invoke_editor (article, offset))
 					goto post_article_postponed;
 				ret_code = POSTED_REDRAW;
 
 				/* This might be erroneous with posting postponed */
 				if (file_size(article) > 0L) {
-					if ((artchanged == file_changed(article)) && (prompt_yn (cLINES, _(txt_prompt_unchanged_art), TRUE) > 0)) {
+					if ((artchanged == FILE_CHANGED(article)) && (prompt_yn (cLINES, _(txt_prompt_unchanged_art), TRUE) > 0)) {
 						;
 					} else {
 						while (!check_article_to_be_posted (article, art_type) && repair_article(&ch))
@@ -1219,6 +1246,8 @@ post_article_done:
 					break;
 
 				case POST_POSTPONED:
+					/* TODO when a generic reread headers routine exists, check for
+					 * References here. Kill entry from TODO file when done */
 					tag = strncmp(subj, "Re: ", 4) ? 'w' : 'f';
 					break;
 
@@ -1345,14 +1374,11 @@ create_normal_article_headers(
 	char from_name[HEADER_LEN];
 	char tmp[HEADER_LEN];
 
-	/* TODO rework without tmp */
-	/* combine with other code in tin that does the ... truncation ? */
+	/* TODO combine with other code in tin that does the ... truncation ? */
 	/* Get subject for posting article - Limit the display if needed */
-	if (strlen(tinrc.default_post_subject) > DISPLAY_SUBJECT_LEN) {
-		strncpy(tmp, tinrc.default_post_subject, DISPLAY_SUBJECT_LEN);
-		tmp[DISPLAY_SUBJECT_LEN] = '\0';
-		strcat(tmp, " ...");
-	} else
+	if (strlen(tinrc.default_post_subject) > DISPLAY_SUBJECT_LEN)
+		sprintf (tmp, "%.*s ...", DISPLAY_SUBJECT_LEN, tinrc.default_post_subject);
+	else
 		strncpy(tmp, tinrc.default_post_subject, sizeof(tmp));
 
 	sprintf (mesg, _(txt_post_subject), tmp);
@@ -1400,7 +1426,6 @@ create_normal_article_headers(
 	msg_add_header ("Summary", "");
 	msg_add_header ("Keywords", "");
 
-	msg_add_x_headers (msg_headers_file);
 	msg_add_x_headers (psGrp->attribute->x_headers);
 
 	start_line_offset = msg_write_headers (fp) + 1;
@@ -1828,16 +1853,16 @@ is_crosspost (
 /*
  * Widespread news software like INN's nnrpd restricts the size of several
  * headers, notably the references header, to 512 characters.  Oh well...
- * guess that's what son-of-1036 calls a "desparate last resort" :-/
+ * guess that's what son of RFC 1036 calls a "desperate last resort" :-/
  * From TIN's point of view, this could be HEADER_LEN.
  */
 #define MAXREFSIZE 512
+
 
 /*
  * TODO - if we have the art[x] that we are following up to, then
  *        get_references(art[x].refptr) will give us the new refs line
  */
-
 static void
 join_references (
 	char *buffer,
@@ -1856,7 +1881,7 @@ join_references (
 	 * do some sanity cleanups: remove damaged ids, make
 	 * sure there is space between ids (tabs and commas are stripped)
 	 *
-	 * note that we're not doing strict son-of-1036 here: we don't
+	 * note that we're not doing strict son of RFC 1036 here: we don't
 	 * take any precautions to keep the last three message ids, but
 	 * it's not very likely that MAXREFSIZE chars can't hold at least
 	 * 4 refs
@@ -1918,7 +1943,7 @@ join_references (
 	return;
 
 	/*
-	 * son-of-1036 says:
+	 * son of RFC 1036 says:
 	 * Followup agents SHOULD not shorten References  headers.   If
 	 * it  is absolutely necessary to shorten the header, as a des-
 	 * perate last resort, a followup agent MAY do this by deleting
@@ -1987,12 +2012,12 @@ post_response (
 				return ret_code;
 			default:
 			{
-				char save_followup[HEADER_LEN];
+				char save_followup[HEADER_LEN];		/* TODO: what changes this then ? */
 
 				strcpy (save_followup, note_h.followup);
 				*note_h.followup = '\0';
 				find_reply_to_addr (/*respnum,*/ buf, FALSE);
-				mail_to_someone (respnum, buf, TRUE, FALSE, (t_bool *) &ret_code);	/* FIXME: cast for arg5 */
+				ret_code = mail_to_someone (respnum, buf, TRUE, FALSE);
 				strcpy (note_h.followup, save_followup);
 				return ret_code;
 			}
@@ -2106,7 +2131,6 @@ post_response (
 	if (*note_h.authorids)
 		msg_add_header ("Author-IDs", note_h.authorids);
 
-	msg_add_x_headers (msg_headers_file);
 	msg_add_x_headers (psGrp->attribute->x_headers);
 	{
 		struct t_header_list *pptr;
@@ -2157,15 +2181,17 @@ post_response (
 
 /*
  * Generates the basic header for a mailed article
- * Returns NULL if article couldn't be created
+ * Returns an open fp or NULL if article couldn't be created
  * The name of the temp. article file is written to 'filename'
+ * If extra_hdrs is defined, then additional headers are added, see the code
  */
 static FILE *
 create_mail_headers(
 	char *filename,
 	const char *suffix,
 	const char *to,
-	const char *subject)
+	const char *subject,
+	struct t_header *extra_hdrs)
 {
 	FILE *fp;
 
@@ -2184,25 +2210,44 @@ create_mail_headers(
 
 	if (!tinrc.use_mailreader_i) {	/* tin should start editor */
 
-		if (*tinrc.mail_address)
-			msg_add_header ("From", tinrc.mail_address);
+		if (*(CURR_GROUP.attribute->from) != '\0')
+			msg_add_header ("From", CURR_GROUP.attribute->from);
 
 		msg_add_header ("To", to);
 		msg_add_header ("Subject", subject);
 
-		if (tinrc.auto_cc)
-			msg_add_header ("Cc", userid);
+		if (tinrc.auto_cc) {
+			if (*(CURR_GROUP.attribute->from) != '\0')
+				msg_add_header ("Cc", CURR_GROUP.attribute->from);
+			else
+				msg_add_header ("Cc", userid);
+		}
 
-		if (tinrc.auto_bcc)
-			msg_add_header ("Bcc", userid);
+		if (tinrc.auto_bcc) {
+			if (*(CURR_GROUP.attribute->from) != '\0')
+				msg_add_header ("Bcc", CURR_GROUP.attribute->from);
+			else
+				msg_add_header ("Bcc", userid);
+		}
+
+		if (extra_hdrs) {
+			/*
+			 * Rewrite Newsgroups: as X-Newsgroups: as RFC 822 doesn't define it.
+			 */
+			strip_double_ngs (extra_hdrs->newsgroups);
+			msg_add_header ("X-Newsgroups", extra_hdrs->newsgroups);
+
+			/*
+			 * Write Message-Id as In-Reply-To to the mail
+			 */
+			msg_add_header ("In-Reply-To", extra_hdrs->messageid);
+		}
 
 		if (*default_organization)
 			msg_add_header ("Organization", random_organization(default_organization));
 
 		if (*reply_to)
 			msg_add_header ("Reply-To", reply_to);
-
-		msg_add_x_headers (msg_headers_file);
 	}
 	start_line_offset = msg_write_headers (fp) + 1;
 	msg_free_headers ();
@@ -2214,27 +2259,31 @@ create_mail_headers(
 /*
  * Handle editing/spellcheck/PGP etc., operations on a mail article
  * Submit/abort the article as required and return POSTED_{NONE,REDRAW,OK}
+ * Replaces core of mail_to_someone(), mail_bug_report(), mail_to_author()
  */
-#if 0
-int
+static int
 mail_loop(
-	char *filename,			/* Temp. filename being used */
-	char ch				/* default prompt char */
-	)
+	const char *filename,			/* Temp. filename being used */
+	char ch,				/* default prompt char */
+	char *subject,
+	char *prompt)			/* If set, used for final query before posting */
 {
+#ifdef HAVE_PGP_GPG
+	char mail_to[HEADER_LEN];
+#endif /* HAVE_PGP_GPG */
 	int ret = POSTED_NONE;
 	long artchanged = 0L;
 
 	forever {
 		switch (ch) {
 			case iKeyPostEdit:
-				artchanged = file_changed(filename);
+				artchanged = FILE_CHANGED(filename);
 
 				if (!(invoke_editor (filename, start_line_offset)))
 					return ret;
 
 				ret = POSTED_REDRAW;
-				if (((artchanged == file_changed(filename)) && (prompt_yn (cLINES, _(txt_prompt_unchanged_bug), TRUE) > 0)) || (file_size(filename) <= 0L)) {
+				if (((artchanged == FILE_CHANGED(filename)) && (prompt_yn (cLINES, _(txt_prompt_unchanged_mail), TRUE) > 0)) || (file_size(filename) <= 0L)) {
 					clear_message();
 					return ret;
 				}
@@ -2245,15 +2294,17 @@ mail_loop(
 #ifdef HAVE_ISPELL
 			case iKeyPostIspell:
 				invoke_ispell (filename, 0);
-/*				ret = POSTED_REDRAW; TODO needed ? */
+/*				ret = POSTED_REDRAW; TODO is this needed, and REDRAW does not => OK */
 				break;
 #endif /* HAVE_ISPELL */
 
 #ifdef HAVE_PGP_GPG
 			case iKeyPostPGP:
-				my_strncpy (mail_to, arts[respnum].from, sizeof (mail_to));
+/* TODO			what was with the next line ? */
+/*				my_strncpy (mail_to, arts[respnum].from, sizeof (mail_to));*/
 				if (pcCopyArtHeader (HEADER_TO, filename, mail_to) && pcCopyArtHeader (HEADER_SUBJECT, filename, subject))
 					invoke_pgp_mail (filename, mail_to);
+/*fprintf(stderr, "PGPmailto:%s!\n", mail_to);*/
 				break;
 #endif /* HAVE_PGP_GPG */
 
@@ -2264,13 +2315,22 @@ mail_loop(
 
 			case iKeyPostSend:
 			case iKeyPostSend2:
+			{
+				t_bool confirm = TRUE;
+
+/* TODO			Why was the code grabbing mail_to here ? */
 /*				my_strncpy (mail_to, arts[respnum].from, sizeof (mail_to));*/
+/* TODO			why do this for a mail article, why should we change anything ? */
 				checknadd_headers (filename);
-				if (submit_mail_file (filename)) {
-					info_message (_(txt_mail)ed, 1, IS_PLURAL(1));
+				if (prompt && prompt_yn (cLINES, prompt, FALSE) != 1)
+					confirm = FALSE;
+
+				if (confirm && submit_mail_file (filename)) {
+					info_message (_(txt_mailed), 1, IS_PLURAL(1));
 					return POSTED_OK;
 				}
 				return ret;
+			}
 
 			default:
 				break;
@@ -2280,32 +2340,53 @@ mail_loop(
 
 	return ret;
 }
-#endif /* 0 */
 
 
 /*
- * Return TRUE if screen redraw is needed
+ * Add the mail_quote_format string to 'fp', return the number of lines of text
+ * added to the file
  */
-t_bool
+static int
+add_mail_quote(
+	FILE *fp,
+	int respnum)
+{
+	char buf[HEADER_LEN];
+	char *s;
+	int lines=0;
+
+	if (strfquote (CURR_GROUP.name, respnum, buf, sizeof (buf), tinrc.mail_quote_format)) {
+		fprintf (fp, "%s\n", buf);
+		lines++;
+
+		for (s = buf; *s; s++) {
+			if (*s == '\n')
+				++lines;
+		}
+	}
+	return lines;
+}
+
+
+/*
+ * Return a POSTED_* code
+ * NB: mail_to_poster and confirm_to_mail are currently mutually exclusive
+ */
+int
 mail_to_someone (
 	int respnum,
 	const char *address,
 	t_bool mail_to_poster,
-	t_bool confirm_to_mail,
-	t_bool *mailed_ok)		/* TODO this should be the return code */
+	t_bool confirm_to_mail)
 {
 	FILE *fp;
 	char ch = iKeyPostSend;
 	char nam[HEADER_LEN];
 	char subject[HEADER_LEN];
-	char mailreader_subject[PATH_LEN];	/* for calling external mailreader */
 	char buf[HEADER_LEN];
-	char mail_to[HEADER_LEN];
 	char initials[64];
-	t_bool redraw_screen = FALSE;
+	int ret_code = POSTED_NONE;
 
-	*mailed_ok = FALSE;
-	strcpy (mail_to, address);			/* strfmailer() won't take const arg 3 */
 	clear_message ();
 
 	if (mail_to_poster)
@@ -2313,23 +2394,12 @@ mail_to_someone (
 	else
 		sprintf (subject, "(fwd) %s\n", note_h.subj);
 
-	if ((fp = create_mail_headers(nam, TIN_LETTER, mail_to, subject)) == NULL)
-		return redraw_screen;
+	if ((fp = create_mail_headers(nam, TIN_LETTER, address, subject, NULL)) == NULL)
+		return ret_code;
 
 	if (mail_to_poster) {
 		ch = iKeyPostEdit;
-		if (strfquote (CURR_GROUP.name, respnum, buf, sizeof (buf), tinrc.mail_quote_format)) {
-			fprintf (fp, "%s\n", buf);
-			start_line_offset++;
-			{
-				char *s;
-
-				for (s = buf; *s; s++) {
-					if (*s == '\n')
-						++start_line_offset;
-				}
-			}
-		}
+		start_line_offset += add_mail_quote (fp, respnum);
 		fseek (note_fp, mark_body, SEEK_SET);
 		get_initials (respnum, initials, sizeof (initials));
 		copy_body (note_fp, fp, tinrc.quote_chars, initials, tinrc.quote_signatures);
@@ -2346,71 +2416,33 @@ mail_to_someone (
 #ifdef WIN32
 	putc ('\0', fp);
 #endif /* WIN32 */
+
 	fclose (fp);
 
 	if (tinrc.use_mailreader_i) {	/* user wants to use his own mailreader */
-		ch = iKeyAbort;
-		redraw_screen = TRUE;
+		char mail_to[HEADER_LEN];
+		char mailreader_subject[PATH_LEN];	/* for calling external mailreader */
+
+		ret_code = POSTED_REDRAW;
+		/* TODO we did this earlier but with trailing '\n' */
 		if (mail_to_poster)
 			sprintf (mailreader_subject, "Re: %s", eat_re (note_h.subj, TRUE));
 		else
 			sprintf (mailreader_subject, "(fwd) %s", note_h.subj);
+		strcpy (mail_to, address);			/* strfmailer() won't take const arg 3 */
 		strfmailer (mailer, mailreader_subject, mail_to, nam, buf, sizeof (buf), tinrc.mailer_format);
-		if (!invoke_cmd (buf))
-			error_message (_(txt_command_failed), buf);		/* TODO - not needed */
+		if (invoke_cmd (buf))
+			ret_code = POSTED_OK;
+	} else {
+		if (confirm_to_mail)
+			ch = prompt_to_send(subject);
+		ret_code = mail_loop (nam, ch, subject, NULL);
 	}
 
-	forever {
-		if (confirm_to_mail && (!tinrc.use_mailreader_i))
-			ch = prompt_to_send(subject);
-
-		switch (ch) {
-			case iKeyPostEdit:
-				if (!invoke_editor (nam, start_line_offset))
-					goto mail_to_someone_done;
-				if (!pcCopyArtHeader (HEADER_SUBJECT, nam, subject))
-					subject[0] = '\0';
-				redraw_screen = TRUE;
-				break;
-
-#ifdef HAVE_ISPELL
-			case iKeyPostIspell:
-				invoke_ispell (nam, 0);
-				break;
-#endif /* HAVE_ISPELL */
-
-#ifdef HAVE_PGP_GPG
-			case iKeyPostPGP:
-				invoke_pgp_mail (nam, mail_to);
-				break;
-#endif /* HAVE_PGP_GPG */
-
-			case iKeyQuit:
-			case iKeyAbort:
-				clear_message ();
-				goto mail_to_someone_done;
-
-			case iKeyPostSend:
-			case iKeyPostSend2:
-				/*
-				 * Open letter and get the To: line in
-				 * case they changed it with the editor
-				 */
-				*mailed_ok = submit_mail_file (nam);
-				goto mail_to_someone_done;
-
-			default:
-				break;
-		}
-		if (mail_to_poster)
-			ch = prompt_to_send(subject);
-	}
-
-mail_to_someone_done:
 	if (tinrc.unlink_article)
 		unlink (nam);
 
-	return redraw_screen;
+	return ret_code;
 }
 
 
@@ -2420,19 +2452,17 @@ mail_bug_report (
 {
 	FILE *fp;
 	const char *domain;
-	char ch;
 	char buf[LEN], nam[100];
 	char mail_to[HEADER_LEN];
 	char subject[HEADER_LEN];
 	int ret_code = FALSE;
-	long artchanged = 0L;
 	t_bool is_nntp = FALSE, is_nntp_only;
 
-	wait_message (1, _(txt_mail_bug_report));
+	wait_message (0, _(txt_mail_bug_report));
 
 	sprintf (subject, "BUG REPORT %s\n", page_header);
 
-	if ((fp = create_mail_headers(nam, ".bugreport", bug_addr, subject)) == NULL)
+	if ((fp = create_mail_headers(nam, ".bugreport", bug_addr, subject, NULL)) == NULL)
 		return FALSE;
 
 #ifdef HAVE_SYS_UTSNAME_H
@@ -2441,10 +2471,11 @@ mail_bug_report (
 #	else
 	fprintf (fp, "BOX1: %s %s %s", system_info.machine, system_info.sysname, system_info.release);
 #	endif /* AIX */
-	start_line_offset += 2;
+	start_line_offset++;
 #else
 	fprintf (fp, "Please enter the following information:\n");
 	fprintf (fp, "BOX1: Machine+OS:\n");
+	start_line_offset += 2;
 #endif /* HAVE_SYS_UTSNAME_H */
 
 #ifdef NNTP_ONLY
@@ -2455,11 +2486,13 @@ mail_bug_report (
 	is_nntp = TRUE;
 #	endif /* NNTP_ABLE */
 #endif /* NNTP_ONLY */
+
 #ifdef DOMAIN_NAME
 	domain = DOMAIN_NAME;
 #else
 	domain = "";
 #endif /* DOMAIN_NAME */
+
 	fprintf (fp, "\nCFG1: active=%d  arts=%d  reread=%d  longfilenames=%d  setuid=%d\n",
 		DEFAULT_ACTIVE_NUM,
 		DEFAULT_ARTICLE_NUM,
@@ -2482,7 +2515,7 @@ mail_bug_report (
 #endif /* DEBUG */
 		*domain ? domain : "");
 	fprintf (fp, "CFG4: threading=%d\n", tinrc.thread_articles);
-	start_line_offset++;
+	start_line_offset += 4;
 
 	if (*bug_nntpserver1) {
 		fprintf(fp, "NNTP1: %s\n", bug_nntpserver1);
@@ -2493,9 +2526,8 @@ mail_bug_report (
 		start_line_offset++;
 	}
 
-	fprintf (fp, "\nPlease enter bug report/gripe/comment:\n");
-
-	start_line_offset += 4;
+	fprintf (fp, "\nPlease enter bug report/gripe/comment:\n\n");
+	start_line_offset += 2;
 
 	if (!tinrc.use_mailreader_i)
 		msg_write_signature (fp, TRUE, (selmenu.curr == -1) ? NULL : &CURR_GROUP);
@@ -2506,168 +2538,51 @@ mail_bug_report (
 	fclose (fp);
 
 	if (tinrc.use_mailreader_i) {	/* user wants to use his own mailreader */
-		ch = iKeyAbort;
 		sprintf (subject, "BUG REPORT %s", page_header);
 		sprintf (mail_to, "%s", bug_addr);
 		strfmailer (mailer, subject, mail_to, nam, buf, sizeof (buf), tinrc.mailer_format);
-		if (!invoke_cmd (buf))
-			error_message (_(txt_command_failed), buf);		/* TODO not needed */
-	} else
-		ch = iKeyPostEdit;
-
-	forever {
-		switch (ch) {
-			case iKeyPostEdit:
-				artchanged = file_changed(nam);
-				if (!(invoke_editor (nam, start_line_offset)))
-					goto mail_bug_report_done;
-
-				if (((artchanged == file_changed(nam)) && (prompt_yn (cLINES, _(txt_prompt_unchanged_bug), TRUE) > 0)) || (file_size(nam) <= 0L)) {
-					unlink (nam);
-					clear_message ();
-					return TRUE;
-				} else {
-					if (!pcCopyArtHeader (HEADER_SUBJECT, nam, subject))
-						subject[0] = '\0';
-				}
-				break;
-
-#ifdef HAVE_ISPELL
-			case iKeyPostIspell:
-				invoke_ispell (nam, 0);
-				break;
-#endif /* HAVE_ISPELL */
-
-#ifdef HAVE_PGP_GPG
-			case iKeyPostPGP:
-				invoke_pgp_mail (nam, mail_to);
-				break;
-#endif /* HAVE_PGP_GPG */
-
-			case iKeyQuit:
-			case iKeyAbort:
-				clear_message ();
-				goto mail_bug_report_done;
-
-			case iKeyPostSend:
-			case iKeyPostSend2:
-				sprintf (mesg, _(txt_mail_bug_report_confirm), bug_addr);
-				if (prompt_yn (cLINES, mesg, FALSE) == 1) {
-					if (submit_mail_file (nam)) {
-						ret_code = TRUE;
-						info_message (_(txt_mailed), 1, IS_PLURAL(1));
-					}
-				}
-				goto mail_bug_report_done;
-
-			default:
-				break;
-		}
-		ch = prompt_to_send(subject);
+		if (invoke_cmd (buf))
+			ret_code = TRUE;
+	} else {
+		sprintf (mesg, _(txt_mail_bug_report_confirm), bug_addr);
+		ret_code = mail_loop (nam, iKeyPostEdit, subject, mesg);
 	}
 
-mail_bug_report_done:
 	unlink (nam);
 	return ret_code;
 }
 
 
-t_bool
+int /* return value is always ignored */
 mail_to_author (
 	char *group,
 	int respnum,
 	int copy_text,
-	t_bool with_headers) /* return value is always ignored */
+	t_bool with_headers)
 {
 	FILE *fp;
-	char ch;
-	char buf[LEN];
 	char from_addr[HEADER_LEN];
 	char nam[100];
-	char mail_to[HEADER_LEN];
 	char subject[HEADER_LEN];
-	char mailreader_subject[PATH_LEN];	/* for calling external mailreader */
 	char initials[64];
-	t_bool redraw_screen = FALSE;
+	int redraw_screen = POSTED_NONE;
 	t_bool spamtrap_found = FALSE;
 
 	wait_message (0, _(txt_reply_to_author));
 
-	msg_init_headers ();
-
-	joinpath (nam, homedir, TIN_LETTER);
-
-#if defined(APPEND_PID) && !defined (VMS)
-	sprintf (nam+strlen(nam), ".%d", (int) process_id);
-#endif /* APPEND_PID && !VMS */
-
-	if ((fp = fopen (nam, "w")) == NULL) {
-		perror_message (_(txt_cannot_open), nam);
-		return redraw_screen;
-	}
-	chmod (nam, (mode_t)(S_IRUSR|S_IWUSR));
-
 	sprintf (subject, "Re: %s\n", eat_re (note_h.subj, TRUE));
 
 	if (!tinrc.use_mailreader_i) {	/* tin should start editor */
-
-		if (*tinrc.mail_address)
-			msg_add_header ("From", tinrc.mail_address);
-
 		find_reply_to_addr (/*respnum,*/ from_addr, FALSE);
-
-		msg_add_header ("To", from_addr);
-		spamtrap_found = check_for_spamtrap(from_addr);
-		msg_add_header ("Subject", subject);
-
-		if (tinrc.auto_cc)
-			msg_add_header ("Cc", userid);
-
-		if (tinrc.auto_bcc)
-			msg_add_header ("Bcc", userid);
-
-		/*
-		 * remove duplicates from Newsgroups header
-		 */
-		strip_double_ngs (note_h.newsgroups);
-
-		/*
-		 * rename Newsgroups: to X-Newsgroups as RFC 822 dosn't define it.
-		 */
-		msg_add_header ("X-Newsgroups", note_h.newsgroups);
-
-		/*
-		 * Write Message-Id as In-Reply-To to the mail
-		 */
-		msg_add_header ("In-Reply-To", note_h.messageid);
-
-		if (*default_organization)
-			msg_add_header ("Organization", random_organization(default_organization));
-
-		if (*reply_to)
-			msg_add_header ("Reply-To", reply_to);
-
-		msg_add_x_headers (msg_headers_file);
+		spamtrap_found = check_for_spamtrap(from_addr);		/* Why not when use_mailreader ? */
 	}
-	start_line_offset = msg_write_headers (fp) + 1;
-	msg_free_headers ();
+
+	if ((fp = create_mail_headers(nam, TIN_LETTER, from_addr, subject, &note_h)) == NULL)
+		return redraw_screen;
 
 	if (copy_text) {
-		if (strfquote (group, respnum, buf, sizeof (buf), tinrc.mail_quote_format)) {
-			fprintf (fp, "%s\n", buf);
-			start_line_offset++;
-			{
-				char *s;
-
-				for (s = buf; *s; s++) {
-					if (*s == '\n')
-						++start_line_offset;
-				}
-			}
-		}
-
+		start_line_offset += add_mail_quote (fp, respnum);
 		fseek (note_fp, (with_headers ? 0L : mark_body), SEEK_SET);
-
 		get_initials (respnum, initials, sizeof (initials));
 		copy_body (note_fp, fp, tinrc.quote_chars, initials, with_headers ? TRUE : tinrc.quote_signatures);
 	} else
@@ -2682,6 +2597,8 @@ mail_to_author (
 	fclose (fp);
 
 	if (spamtrap_found) {
+		char ch;
+
 		ch = prompt_slk_response (iKeyPostContinue, TIN_CONT_KEYS, _(txt_warn_suspicious_mail));
 		switch (ch) {
 			case iKeyPostAbort:
@@ -2699,65 +2616,21 @@ mail_to_author (
 	}
 
 	if (tinrc.use_mailreader_i) {	/* user wants to use his own mailreader for reply */
-		ch = iKeyAbort;
+		char buf[LEN];
+		char mail_to[HEADER_LEN];
+		char mailreader_subject[PATH_LEN];	/* for calling external mailreader */
+
 		sprintf (mailreader_subject, "Re: %s", eat_re (note_h.subj, TRUE));
 		find_reply_to_addr (/* respnum, */ mail_to, TRUE);
 		strfmailer (mailer, mailreader_subject, mail_to, nam, buf, sizeof (buf), tinrc.mailer_format);
-		if (!invoke_cmd (buf))
-			error_message (_(txt_command_failed), buf);		/* TODO not needed */
-	} else
-		ch = iKeyPostEdit;
-
-	forever {
-		switch (ch) {
-			case iKeyPostEdit:
-				if (!(invoke_editor (nam, start_line_offset)))
-					goto mail_to_author_failed;
-
-				if (!pcCopyArtHeader (HEADER_SUBJECT, nam, subject))
-					subject[0] = '\0';
-				redraw_screen = TRUE;
-				break;
-
-#ifdef HAVE_ISPELL
-			case iKeyPostIspell:
-				invoke_ispell (nam, 0);
-				break;
-#endif /* HAVE_ISPELL */
-
-#ifdef HAVE_PGP_GPG
-			case iKeyPostPGP:
-				my_strncpy (mail_to, arts[respnum].from, sizeof (mail_to));
-				if (pcCopyArtHeader (HEADER_TO, nam, mail_to) && pcCopyArtHeader (HEADER_SUBJECT, nam, subject))
-					invoke_pgp_mail (nam, mail_to);
-				break;
-#endif /* HAVE_PGP_GPG */
-
-			case iKeyQuit:
-			case iKeyAbort:
-				clear_message ();
-				goto mail_to_author_failed;
-
-			case iKeyPostSend:
-			case iKeyPostSend2:
-/*				my_strncpy (mail_to, arts[respnum].from, sizeof (mail_to));*/
-				checknadd_headers (nam);
-				if (submit_mail_file (nam)) {
-					redraw_screen = TRUE;
-					info_message (_(txt_mailed), 1, IS_PLURAL(1));
-					goto mail_to_author_done;
-				}
-				goto mail_to_author_failed;
-
-			default:
-				break;
-		}
-		ch = prompt_to_send(subject);
+		if (invoke_cmd (buf))
+			redraw_screen = POSTED_OK;
+/* TODO update_posted_info_file here ? and elsewhere ? */
+	} else {
+		if ((redraw_screen = mail_loop(nam, iKeyPostEdit, subject, NULL)) == POSTED_OK)
+			update_posted_info_file (group, 'r', subject);
 	}
 
-mail_to_author_done:
-	update_posted_info_file (group, 'r', subject);
-mail_to_author_failed:
 	unlink (nam);
 	return redraw_screen;
 }
@@ -2805,12 +2678,14 @@ check_for_spamtrap (
 
 
 /*
- *  Read a file grabbing the value of the specified mail header line
+ * Read a file grabbing the value of the specified mail header line
+ * TODO: make this a generic routine to reread all headers and return a t_header *
+ *       merge with code in art_open() that already does all this
  */
 static t_bool
 pcCopyArtHeader (
 	int iHeader,
-	char *pcArt,
+	const char *pcArt,
 	char *result)
 {
 	FILE *fp;
@@ -2919,7 +2794,6 @@ cancel_article (
 	char from_name[HEADER_LEN];
 #ifdef FORGERY
 	char line[HEADER_LEN];
-	char line2[HEADER_LEN];
 	t_bool author = TRUE;
 #else
 	char user_name[128];
@@ -2927,7 +2801,7 @@ cancel_article (
 #endif /* FORGERY */
 	int init = 1;
 	int oldraw;
-	t_bool redraw_screen = TRUE;
+	t_bool redraw_screen = FALSE;
 
 	msg_init_headers ();
 
@@ -2944,10 +2818,12 @@ cancel_article (
 #else
 	get_user_info (user_name, full_name);
 #endif /* FORGERY */
+
 #ifdef DEBUG
 	if (debug == 2)
 		error_message ("From=[%s]  Cancel=[%s]", art->from, from_name);
 #endif /* DEBUG */
+
 	if (!strcasestr (from_name, art->from)) {
 #ifdef FORGERY
 		author = FALSE;
@@ -2984,6 +2860,8 @@ cancel_article (
 
 #ifdef FORGERY
 	if (!author) {
+		char line2[HEADER_LEN];
+
 		sprintf (line2, "cyberspam!%s", line);
 		msg_add_header ("Path", line2);
 	} else
@@ -3033,10 +2911,9 @@ cancel_article (
 		msg_add_header ("Distribution", my_distribution);
 
 	/* some ppl. like X-Headers: in cancels */
-	msg_add_x_headers (msg_headers_file);
 	msg_add_x_headers (group->attribute->x_headers);
 
-	msg_write_headers (fp);
+	start_line_offset = msg_write_headers (fp);
 	msg_free_headers ();
 
 #ifdef FORGERY
@@ -3087,16 +2964,15 @@ cancel_article (
 						update_posted_info_file (group->name, iKeyPostCancel, buf);
 					unlink (cancel);
 					return redraw_screen;
-				} else {
-					error_message (_(txt_command_failed), cancel);	/* TODO not needed */
-					break;
 				}
+				break;
 
 			case iKeyQuit:
 			case iKeyAbort:
 				unlink (cancel);
 				clear_message ();
 				return redraw_screen;
+
 			default:
 				break;
 		}
@@ -3230,12 +3106,11 @@ repost_article (
 
 	}
 
-/* some ppl. like X-Headers: in reposts */
-/*	if (Superseding) { */
-		/* X-Headers got lost on supersede, readd */
-		msg_add_x_headers (msg_headers_file);
-		msg_add_x_headers (psGrp->attribute->x_headers);
-/*	} */
+	/*
+	 * some ppl. like X-Headers: in reposts
+	 * X-Headers got lost on supersede, re-add
+	 */
+	msg_add_x_headers (psGrp->attribute->x_headers);
 
 	start_line_offset = msg_write_headers (fp) + 1;
 	msg_free_headers ();
@@ -3266,8 +3141,8 @@ repost_article (
 
 	/* on supersede change default-key */
 	/*
-	 * FIXME: this is only usefull when entering the editor
-	 * after leaving the editor it should be iKeyPostPost
+	 * FIXME: this is only useful when entering the editor.
+	 * After leaving the editor it should be iKeyPostPost
 	 */
 	if (Superseding) {
 		ch_default = iKeyPostEdit;
@@ -3306,7 +3181,7 @@ msg_add_x_headers (
 		} else {
 		/*
 		 * without this else a "x_headers=name" without a ':' would be
-		 * treated as a filename in the current dir - IMHO not very usefull
+		 * treated as a filename in the current dir - IMHO not very useful
 		 */
 			if (!strfpath (headers, file, sizeof (file), homedir, (char *) 0, (char *) 0, (char *) 0))
 				strcpy (file, headers);
@@ -3375,6 +3250,11 @@ msg_add_x_body (
 }
 
 
+/*
+ * ?? Strip duplicate newsgroups from Newsgroups and Followup-To
+ * Don't write Followup-To if the same as Newsgroups
+ * Should really sort the list for maximum effect here
+ */
 static void
 modify_headers (
 	char *line)
@@ -3411,9 +3291,13 @@ modify_headers (
 }
 
 
+/*
+ * Add the User-Agent header
+ * TODO Integrate modify_headers() here and remove static found_newsgroups
+ */
 void
 checknadd_headers (
-	char *infile)
+	const char *infile)
 {
 	FILE *fp_in, *fp_out;
 	char line[HEADER_LEN];
@@ -3429,22 +3313,23 @@ checknadd_headers (
 		*found_newsgroups = '\0';
 		if ((fp_out = fopen (outfile, "w")) != (FILE *) 0) {
 			while (fgets (line, (int) sizeof(line), fp_in) != (char *) 0) {
-				if (!gotit && line[0] == '\n') {
-					if (tinrc.advertising)
+				if (!gotit && line[0] == '\n') {			/* Add after other headers */
+					if (tinrc.advertising) {
 #ifdef HAVE_SYS_UTSNAME_H
 #	ifdef _AIX
 						fprintf (fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s) (%s/%s-%s)\n\n",
 							PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME,
 							system_info.sysname, system_info.version, system_info.release);
-#	else /* AIX */
+#	else
 						fprintf (fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s) (%s/%s (%s))\n\n",
 							PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME,
 							system_info.sysname, system_info.release, system_info.machine);
-#	endif /* AIX */
+#	endif /* _AIX */
 #else
 						fprintf (fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s)\n\n",
 							PRODUCT, VERSION, RELEASEDATE, RELEASENAME, OSNAME);
 #endif /* HAVE_SYS_UTSNAME_H */
+					}
 					else
 						fprintf (fp_out, "\n");
 
@@ -3467,7 +3352,7 @@ checknadd_headers (
 #ifndef M_AMIGA
 static t_bool
 insert_from_header (
-	char *infile)
+	const char *infile)
 {
 	FILE *fp_in, *fp_out;
 	char from_name[HEADER_LEN];
@@ -3678,7 +3563,7 @@ reread_active_after_posting (
 
 /*
  * If posting was successful parse the Newgroups; line and set a flag in each
- * posted to newsgroups for later processing to update num of unread articles
+ * posted to newsgroup for later processing to update num of unread articles
  */
 static void
 update_active_after_posting (
@@ -3717,7 +3602,7 @@ update_active_after_posting (
 
 static t_bool
 submit_mail_file (
-	char *file)
+	const char *file)
 {
 	char buf[HEADER_LEN];
 	char mail_to[HEADER_LEN];

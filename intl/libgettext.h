@@ -126,7 +126,7 @@ extern char *bindtextdomain__ PARAMS ((const char *__domainname,
 /* Solaris 2.3 has the gettext function but dcgettext is missing.
    So we omit this optimization for Solaris 2.3.  BTW, Solaris 2.4
    has dcgettext.  */
-# if !defined(HAVE_CATGETS) && (!defined(HAVE_GETTEXT) || HAVE_DCGETTEXT)
+# if !defined(HAVE_CATGETS) && (!defined(HAVE_GETTEXT) || defined(HAVE_DCGETTEXT))
 
 #  define gettext(Msgid)						      \
      dgettext (NULL, Msgid)

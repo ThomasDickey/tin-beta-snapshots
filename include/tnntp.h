@@ -84,11 +84,23 @@
 #	define IPPORT_NNTP ((unsigned short) 119)
 #endif /* !__amigaos__ */
 #	ifdef TLI
-#		include	<fcntl.h>
+#		ifdef HAVE_FCNTL_H
+#			include	<fcntl.h>
+#		endif /* HAVE_FCNTL_H */
 #		include	<tiuser.h>
-#		include	<stropts.h>
-#		include	<sys/socket.h>
-#		include	<netinet/in.h>
+#		ifdef HAVE_STROPTS_H
+#			include	<stropts.h>
+#		endif /* HAVE_STROPTS_H */
+#		ifdef HAVE_SYS_SOCKET_H
+#			include	<sys/socket.h>
+#		else
+#			ifdef HAVE_SOCKET_H
+#				include <socket.h>
+#			endif /* HAVE_SOCKET_H */
+#		endif /* HAVE_SYS_SOCKET_H */
+#		ifdef HAVE_NETINET_IN_H
+#			include	<netinet/in.h>
+#		endif /* HAVE_NETINET_IN_H */
 #		define IPPORT_NNTP	((unsigned short) 119)
 #	else
 #		ifdef VMS
@@ -116,8 +128,16 @@
 #				endif /* UCX */
 #			endif /* MULTINET */
 #		else
-#			include <sys/socket.h>
-#			include <netinet/in.h>
+#			ifdef HAVE_SYS_SOCKET_H
+#				include <sys/socket.h>
+#			else
+#				ifdef HAVE_SOCKET_H
+#					include <socket.h>
+#				endif /* HAVE_SOCKET_H */
+#			endif /* HAVE_SYS_SOCKET_H */
+#			ifdef HAVE_NETINET_IN_H
+#				include <netinet/in.h>
+#			endif /* HAVE_NETINET_IN_H */
 #			ifdef HAVE_NETLIB_H
 #				include <netlib.h>
 #			endif /* HAVE_NETLIB_H */

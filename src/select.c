@@ -51,11 +51,9 @@
 /*
  * Local prototypes
  */
-static int sel_handle_keypad (int ch, int ch1);
 static int reposition_group (struct t_group *group, int default_num);
 static int select_left (void);
 static int select_right (void);
-static t_bool continual_key (int ch, int ch1);
 static t_bool pos_next_unread_group (t_bool redraw);
 static void catchup_group (struct t_group *group, t_bool goto_next_unread_group);
 static void read_groups (void);
@@ -74,6 +72,7 @@ static void yank_active_file (void);
  */
 t_menu selmenu = { 1, 0, 0, 0, show_selection_page, draw_group_arrow };
 
+#if 0
 /*
  *  TRUE, if we should check whether it's time to reread the active file
  *  after this keypress.
@@ -119,6 +118,7 @@ continual_key (
 			return TRUE;
 	}
 }
+#endif /* 0 */
 
 
 static int
@@ -137,16 +137,16 @@ select_right (
 }
 
 
-static int /* TODO merge with generic function */
+#if 0
+static int
 sel_handle_keypad (
 	int ch,
 	int ch1)
 {
-#ifndef WIN32
-	switch (ch1) {
-#else
+#ifdef WIN32
+	ch = ch1;
+#endif /* WIN32 */
 	switch (ch) {
-#endif /* !WIN32 */
 		case KEYMAP_UP:
 			ch = iKeyUp;
 			break;
@@ -181,6 +181,7 @@ sel_handle_keypad (
 	}
 	return ch;
 }
+#endif /* 0 */
 
 
 void
@@ -217,7 +218,7 @@ selection_page (
 			show_selection_page ();
 
 		set_xclick_on ();
-		switch (ch = handle_keypad(select_left, select_right)) {
+		ch = handle_keypad(select_left, select_right);
 #if 0
 		ch = ReadCh ();
 		ch1 = KEYMAP_UNKNOWN;
@@ -229,6 +230,7 @@ selection_page (
 #	endif /* HAVE_KEY_PREFIX */
 				ch1 = get_arrow_key (ch);
 				ch = sel_handle_keypad(ch, ch1);
+				break;
 			default:
 				break;
 		}
@@ -236,9 +238,9 @@ selection_page (
 
 		if (continual_key (ch, ch1))
 			(void) resync_active_file ();
+#endif /* 0 */
 
 		switch (ch) {
-#endif /* 0 */
 
 #ifndef WIN32
 			case ESC:		/* Abort */
@@ -425,6 +427,7 @@ selection_page (
 
 			case iKeyQuitTin:	/* quit, no ask */
 				select_quit();
+				break;
 
 			case iKeySelectQuitNoWrite:	/* quit, but don't save configuration */
 				if (prompt_yn (cLINES, _(txt_quit_no_write), TRUE) == 1)
@@ -461,6 +464,7 @@ selection_page (
 					subscribe (&CURR_GROUP, SUBSCRIBED);
 					show_selection_page();
 					info_message (_(txt_subscribed_to), CURR_GROUP.name);
+					move_down();
 				}
 				break;
 
@@ -479,20 +483,20 @@ selection_page (
 					wait_message(0, _(txt_info_no_write));
 					break;
 				}
-
-				if (CURR_GROUP.subscribed && !no_write) {
+				if (CURR_GROUP.subscribed) {
 					mark_screen (SELECT_LEVEL, selmenu.curr - selmenu.first, 2, CURR_GROUP.newgroup ? "N" : "u");
 					subscribe (&CURR_GROUP, UNSUBSCRIBED);
 					info_message(_(txt_unsubscribed_to), CURR_GROUP.name);
-					move_to_item (selmenu.curr + 1);
+					move_down();
 				} else if (CURR_GROUP.bogus && tinrc.strip_bogus == BOGUS_ASK) {
 					/* Bogus groups aren't subscribed to avoid confusion */
+					/* Note that there is no way to remove the group from active[] */
 					sprintf (buf, _(txt_remove_bogus), CURR_GROUP.name);
-					vWriteNewsrc ();		/* save current newsrc */
+					vWriteNewsrc ();					/* save current newsrc */
 					delete_group(CURR_GROUP.name);		/* remove bogus group */
-					read_newsrc(newsrc, TRUE);		/* reload newsrc */
+					read_newsrc(newsrc, TRUE);			/* reload newsrc */
 					toggle_my_groups (tinrc.show_only_unread_groups, "");		/* keep current display-state */
-					show_selection_page();		/* redraw screen */
+					show_selection_page();				/* redraw screen */
 					info_message (buf);
 				}
 				break;
@@ -690,7 +694,9 @@ draw_group_arrow (
 		info_message (_(txt_no_groups));
 	else {
 		draw_arrow_mark (INDEX_TOP + selmenu.curr - selmenu.first);
-		if (tinrc.info_in_last_line)
+		if (CURR_GROUP.aliasedto) /* FIXME -> lang.c */
+			info_message ("Please use %.100s instead", CURR_GROUP.aliasedto);
+		else if (tinrc.info_in_last_line)
 			info_message ("%s", CURR_GROUP.description ? CURR_GROUP.description : _(txt_no_description));
 	}
 }
@@ -770,7 +776,6 @@ int
 choose_new_group (
 	void)
 {
-	char *p;
 	int idx;
 
 	sprintf (mesg, _(txt_newsgroup), tinrc.default_goto_group);
@@ -778,19 +783,15 @@ choose_new_group (
 	if (!(prompt_string_default (mesg, tinrc.default_goto_group, "", HIST_GOTO_GROUP)))
 		return -1;
 
-	/*
-	 * Skip leading whitespace, ignore blank strings
-	 */
-	for (p = tinrc.default_goto_group; *p && (*p == ' ' || *p == '\t'); p++)
-		continue;
+	str_trim(tinrc.default_goto_group);
 
-	if (*p == '\0')
+	if (tinrc.default_goto_group[0] == '\0')
 		return -1;
 
 	clear_message ();
 
-	if ((idx = my_group_add (p)) == -1)
-		info_message (_(txt_not_in_active_file), p);
+	if ((idx = my_group_add (tinrc.default_goto_group)) == -1)
+		info_message (_(txt_not_in_active_file), tinrc.default_goto_group);
 
 	return idx;
 }
@@ -926,7 +927,7 @@ catchup_group (
 		if (goto_next_unread_group)
 			pos_next_unread_group (TRUE);
 		else
-			move_to_item (selmenu.curr + 1);
+			move_down();
 	}
 }
 
@@ -994,6 +995,7 @@ read_groups (
 		switch (group_page (&CURR_GROUP)) {
 			case GRP_QUIT:
 				select_quit();
+				break;
 
 			case GRP_NEXT:
 				if (selmenu.curr + 1 < selmenu.max)
@@ -1133,7 +1135,6 @@ toggle_my_groups (
 	 */
 	if ((selmenu.curr = my_group_find(old_curr_group)) == -1)
 		selmenu.curr = 0;
-
 }
 
 
@@ -1161,7 +1162,9 @@ subscribe_pattern (
 
 	wait_message (0, message);
 
-	/* TODO - so why precisely do we need these 2 separate passes ? */
+	/*
+	 * TODO why do we do a pass over my_group[] before another one over active[] ?
+	 */
 	for (subscribe_num = 0, i = 0; i < selmenu.max; i++) {
 		if (match_group_list (active[my_group[i]].name, buf)) {
 			if (active[my_group[i]].subscribed != (state != FALSE)) {
@@ -1172,7 +1175,7 @@ subscribe_pattern (
 		}
 	}
 
-	if (num_active > selmenu.max) {
+	if (num_active > selmenu.max) {			/* ie, there are groups yanked out */
 		for (i = 0; i < num_active; i++) {
 			if (match_group_list (active[i].name, buf)) {
 				if (active[i].subscribed != (state != FALSE)) {
@@ -1198,13 +1201,6 @@ subscribe_pattern (
 	} else
 		info_message (_(txt_no_match));
 }
-
-
-#if 0
-/* TODO - work this back in again somewhere */
-	if (CURR_GROUP.aliasedto) /* FIXME -> lang.c */
-		info_message ("Please use %.100s instead", CURR_GROUP.aliasedto);
-#endif /* 0 */
 
 
 /*
@@ -1237,7 +1233,9 @@ static void
 select_read_group (
 	void)
 {
-	struct t_group currgrp = CURR_GROUP;
+	struct t_group currgrp;
+
+	currgrp = CURR_GROUP;
 
 	if (!selmenu.max) {
 		info_message (_(txt_no_groups));

@@ -564,10 +564,11 @@ rfc1522_do_encode (
 				isbroken_within = FALSE;
 				while (*what && !isbetween(*what, isstruct_head)) {
 #if 0
-					if (is_EIGHT_BIT(what) || (strchr (RFC2047_ESPECIALS, *what))) {
+					if (is_EIGHT_BIT(what) || (strchr (RFC2047_ESPECIALS, *what)))
 #else
-					if (is_EIGHT_BIT(what) || !isalnum((int)*what)) {
+					if (is_EIGHT_BIT(what) || !isalnum((int)*what))
 #endif /* 0 */
+					{
 						sprintf(buf2, "=%2.2X", *EIGHT_BIT(what));
 						*t++ = buf2[0];
 						*t++ = buf2[1];
@@ -758,7 +759,7 @@ rfc1522_encode (
 
 void
 rfc15211522_encode (
-	char *filename,
+	const char *filename,
 	constext * mime_encoding,
 	t_bool allow_8bit_header,
 	t_bool ismail)
@@ -832,10 +833,11 @@ rfc15211522_encode (
 	/* now add MIME headers as necessary */
 #if 0									  /* RFC1522 does not require MIME headers just because there are
 										     encoded header lines */
-	if (quoteflag || umlauts) {
+	if (quoteflag || umlauts)
 #else
-	if (umlauts) {
+	if (umlauts)
 #endif /* 0 */
+	{
 		fputs("MIME-Version: 1.0\n", f);
 		if (body_encoding_needed) {
 

@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@clark.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 1999-11-22
+dnl Updated   : 2000-01-20
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2000 Thomas E. Dickey <dickey@clark.net>
@@ -44,7 +44,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.5.2
+VERSION=1.5.3
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -54,12 +54,12 @@ CF_CHECK_CACHE
 
 CF_WITH_PATH(install-prefix,
 	[  --install-prefix        prefixes actual install location],
-	INSTALL_PREFIX,/)
-case ".$INSTALL_PREFIX" in # (vi
-./)	INSTALL_PREFIX=
+	DESTDIR,/)
+case ".$DESTDIR" in # (vi
+./)	DESTDIR=
 	;; # (vi
 ./*/)	;; # (vi
-./*)	INSTALL_PREFIX="$INSTALL_PREFIX/"
+./*)	DESTDIR="$DESTDIR/"
 	;;
 esac
 
@@ -94,6 +94,17 @@ AC_ISC_POSIX
 CF_ANSI_CC_REQD
 CF_PROG_EXT
 CF_LIB_PREFIX(LIB_PREFIX)
+AC_PROG_LN_S
+
+### check for cygwin enviroment
+dnl AC_CYGWIN is new in actuconf 2.13
+AC_CYGWIN
+dnl -DSTATIC needed for pcre
+dnl also add a check for "mode con" here and set
+dln CFLAGS="$CFLAGS -DLOCAL_CHARSET=" accordingly
+if test "$CYGWIN" = "yes" ; then
+	PCRE_DEFINES="$PCRE_DEFINES -DSTATIC"
+fi
 
 CF_WITH_PROGRAM(ispell,
 [  --with-ispell           (default: from system path)])
@@ -309,10 +320,17 @@ AC_ARG_WITH(dmalloc,
 AC_MSG_CHECKING(if you want debugging-trace)
 AC_ARG_WITH(trace,
 	[  --with-trace            use debugging/traces],
-	[AC_MSG_RESULT(yes)
+	[use_trace=yes],
+	[use_trace=no])
+AC_MSG_RESULT($use_trace)
+if test "$use_trace" = yes ; then
 	 AC_DEFINE(USE_TRACE)
-	 test $found_ncurses = no && EXTRAOBJS="$EXTRAOBJS trace.o"],
-	AC_MSG_RESULT(no))
+	 if test "$found_ncurses" = no ; then
+		 EXTRAOBJS="$EXTRAOBJS trace.o"
+	 else
+		 AC_CHECK_FUNC(_tracef,,[EXTRAOBJS="$EXTRAOBJS trace.o"])
+	 fi
+fi
 AC_SUBST(EXTRAOBJS)
 
 ## options for miscellaneous definitions
@@ -507,16 +525,18 @@ AC_MSG_CHECKING([whether to enable ipv6])
 AC_ARG_ENABLE(ipv6,
  [  --enable-ipv6           Enable ipv6 (with ipv4) support (default: disabled)],
  [ case "$enableval" in
-   no)
-        AC_MSG_RESULT(no)
-        ipv6=no
-        ;;
-   *)
+   yes)
         AC_MSG_RESULT(yes)
         AC_DEFINE(ENABLE_IPV6)
         ipv6=yes
         ;;
-   esac ],ipv6=no)
+   *)
+        AC_MSG_RESULT(no)
+        ipv6=no
+        ;;
+   esac ],
+	ipv6=no
+	AC_MSG_RESULT($ipv6))
 
  ipv6type=unknown
  ipv6lib=none
@@ -766,7 +786,7 @@ bison*)
 esac
 
 ###	Checks for header files.
-AC_STDC_HEADERS
+AC_HEADER_STDC
 AC_HEADER_DIRENT
 AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
@@ -790,6 +810,7 @@ AC_CHECK_HEADERS(\
 	prototypes.h \
 	pwd.h \
 	sgtty.h \
+	socket.h \
 	stdarg.h \
 	stddef.h \
 	stdlib.h \
@@ -973,6 +994,7 @@ AC_CHECK_FUNCS(\
 CF_SET_GID_UID
 CF_TYPE_SIGACTION
 CF_TERMIOS
+CF_PW_GECOS
 CF_TM_GMTOFF
 
 AC_SYS_LONG_FILE_NAMES
@@ -1072,7 +1094,6 @@ CF_CHECK_DECL(\
 	fseek \
 	fwrite \
 	getcwd \
-	gethostname \
 	getopt \
 	getpass \
 	ioctl \
@@ -1123,6 +1144,7 @@ CHECK_DECL_HDRS="$TIN_DECL_HDRS
 #include <tnntp.h>"
 CF_CHECK_DECL(\
 	connect \
+	gethostname \
 )
 
 fi
@@ -1150,9 +1172,8 @@ test ".$cf_cv_good_bcopy" = ".yes" && \
 	PCRE_DEFINES="$PCRE_DEFINES -DUSE_BCOPY"
 AC_SUBST(PCRE_DEFINES)
 
-### NLS macro
-AM_GNU_GETTEXT
-test "$nls_cv_use_gnu_gettext" = "yes" && CPPFLAGS="$CPPFLAGS -I../intl"
+### NLS (gettext plus bundled libintl for systems without one)
+CF_BUNDLED_INTL
 
 ### sum up warnings
 if test "$cf_cv_termlib" = none ; then
@@ -1164,9 +1185,9 @@ if test "$YACC" = "" ; then
 	echo "Warning: no yacc-parser found, you might run into trouble later."
 fi
 if test "$RANLIB" = "" ; then
-        echo "Warning: no librarie archive builder found, you might run into trouble later."
+        echo "Warning: no library archive builder found, you might run into trouble later."
 fi
 
 ### Finally, build autoconf.h and the makefiles
 CFLAGS="$CFLAGS $EXTRA_CFLAGS"
-AC_OUTPUT(makefile intl/Makefile po/Makefile.in pcre/Makefile src/Makefile)
+AC_OUTPUT(makefile $SUB_MAKEFILE pcre/Makefile src/Makefile)

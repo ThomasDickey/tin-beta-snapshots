@@ -68,7 +68,7 @@ joinpath (
  */
 #	ifdef __amigaos
 	if (result[0] == '/')
-		while (result[tmp++] = result[tmp2++])
+		while ((result[tmp++] = result[tmp2++]) != 0)
 			;
 	while (result[i] != '/' && result[i] != ':')
 		i++;

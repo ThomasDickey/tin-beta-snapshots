@@ -150,6 +150,13 @@ restart:
 			return GRP_ARTFAIL;	/* special retcode to stop redrawing screen */
 
 		default:					/* Normal case */
+#if 0
+			if (prompt_yn(cLINES, "Fake art unavailable ? ", FALSE) == 1) {
+				art_close();
+				art_mark_read (group, &arts[respnum]);
+				return GRP_ARTFAIL;
+			}
+#endif
 			break;
 	}
 
@@ -269,7 +276,7 @@ end_of_article:
 
 				break;
 
-			case iKeyPageLastViewed:	/* show last viewed article */
+			case iKeyLastViewed:	/* show last viewed article */
 				if (last_resp < 0 || (which_thread(last_resp) == -1)) {
 					info_message (_(txt_no_last_message));
 					break;
@@ -313,7 +320,7 @@ end_of_article:
 				goto restart;
 			}
 
-			case iKeyPagePipe:	/* pipe article/thread/tagged arts to command */
+			case iKeyPipe:		/* pipe article/thread/tagged arts to command */
 				feed_articles (FEED_PIPE, PAGE_LEVEL, group, respnum);
 				break;
 
@@ -492,6 +499,16 @@ page_goto_next_unread:
 				redraw_page (group->name, respnum);
 				break;
 
+		   case iKeyPageEditFilter:
+				if (!invoke_editor (local_filter_file, 25)) /* FIXME: is 25 correct offset? */
+					break;
+				unfilter_articles ();
+				(void) read_filter_file (local_filter_file, FALSE);
+				if ((local_filtered_articles = filter_articles (group)))
+					goto return_to_index;
+				redraw_page (group->name, respnum);
+				break;
+
 			case iKeyRedrawScr:		/* redraw current page of article */
 				my_retouch();
 				redraw_page (group->name, respnum);
@@ -576,7 +593,7 @@ page_up:
 					info_message (_(txt_cannot_post));
 				break;
 
-			case iKeyPageEdit:				/* edit an article (mailgroup only) */
+			case iKeyPageEditArticle:		/* edit an article (mailgroup only) */
 				if (iArtEdit (group, &arts[respnum]))
 					goto restart;
 				break;
@@ -673,27 +690,15 @@ return_to_index:
 				goto restart;
 				/* NOTREACHED */
 
-			/* TODO: combine this with iKeyPageNextUnreadArt */
-			case iKeyPageKillArt:
+			case iKeyPageNextUnreadArt:	/* next unread article */
 				if (note_page != ART_UNAVAILABLE)
 					art_close ();
 
-				if ((n = next_unread (next_response(respnum))) == -1)
-					return (which_thread (respnum));
-
-				respnum = n;
-				goto restart;
-				/* NOTREACHED */
-
-			case iKeyPageNextUnreadArt:	/* next unread article */
-				if ((n = next_unread (next_response (respnum))) == -1)
-					info_message (_(txt_no_next_unread_art));
-				else {
-					art_close ();
+				if ((n = next_unread (next_response(respnum))) != -1) {
 					respnum = n;
 					goto restart;
 				}
-				break;
+				return (which_thread (respnum));
 
 			case iKeyPagePrevArt:	/* previous article */
 				art_close ();
@@ -1202,7 +1207,7 @@ show_first_header (
 		/* Can't eval tin_ltoa() more than once in a statement due to statics */
 		strcpy(x, tin_ltoa(which_thread(respnum) + 1, 4));
 
-		sprintf (tmp, _(txt_thread_x_of_n), buf, x, tin_ltoa(grpmenu.max, 4));
+		sprintf (tmp, _(txt_thread_x_of_n), buf, x, tin_ltoa(grpmenu.max, 4), cCRLF);
 		my_fputs (tmp, stdout);
 	}
 
@@ -1251,14 +1256,14 @@ show_first_header (
 
 	MoveCursor (1, RIGHT_POS);
 	if (whichresp)
-		my_printf (_(txt_resp_x_of_n), whichresp, x_resp);
+		my_printf (_(txt_resp_x_of_n), whichresp, x_resp, cCRLF);
 	else {
 		if (!x_resp)
-			my_fputs (_(txt_no_resp), stdout);
+			my_printf (_(txt_no_resp), cCRLF);
 		else if (x_resp == 1)
-			my_fputs (_(txt_1_resp), stdout);
+			my_printf (_(txt_1_resp), cCRLF);
 		else
-			my_printf (_(txt_x_resp), x_resp);
+			my_printf (_(txt_x_resp), x_resp, cCRLF);
 	}
 
 #	ifdef HAVE_COLOR

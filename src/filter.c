@@ -92,7 +92,6 @@ static struct t_filter *arr_ptr;
  * Local prototypes
  */
 static int get_choice (int x, const char *help, const char *prompt, const char *opt1, const char *opt2, const char *opt3, const char *opt4, const char *opt5);
-static int unfilter_articles (void);
 static int set_filter_scope (struct t_group *group);
 static struct t_filter * psExpandFilterArray (struct t_filter *ptr, int *num);
 static t_bool bAddFilterRule (struct t_group *psGrp, struct t_article *psArt, struct t_filter_rule *psRule);
@@ -281,8 +280,8 @@ read_filter_file (
 	if ((fp = fopen (file, "r")) == (FILE *) 0)
 		return FALSE;
 
-	if (INTERACTIVE)
-		wait_message (0, txt_reading_filter_file, (global ? "global " : ""));
+	if (!batch_mode)
+		wait_message (0, txt_reading_filter_file, (global_file ? "global " : ""));
 
 	(void) time (&current_secs);
 
@@ -566,6 +565,10 @@ if (debug) {
 
 	if (cmd_line)
 		printf ("\r\n");
+
+	/* is this needed? */
+	if (!batch_mode)
+		clear_message();
 
 	return TRUE;
 }
@@ -1086,7 +1089,7 @@ filter_menu (
 
 		case iKeyFilterEdit:
 			bAddFilterRule (group, art, &rule); /* save the rule */
-			if (!invoke_editor (local_filter_file, 22)) /* FIXME: is 22 correct offset ? */
+			if (!invoke_editor (local_filter_file, 25)) /* FIXME: is 25 correct offset ? */
 				return FALSE;
 			unfilter_articles ();
 			(void) read_filter_file (local_filter_file, FALSE);
@@ -1381,7 +1384,7 @@ bAddFilterRule (
  * tagged as being read BECAUSE they were killed. So, we retag
  * them as being unread.
  */
-static int
+int
 unfilter_articles (void) /* return value is always ignored */
 {
 	int unkilled = 0;
@@ -1439,7 +1442,7 @@ filter_articles (
 	 * ie. group=comp.os.linux.help  scope=comp.os.linux.*
 	 */
 	inscope = set_filter_scope (group);
-	if (!cmd_line)
+	if (!cmd_line && !batch_mode)
 		wait_message (0, txt_filter_global_rules, inscope, group->glob_filter->num);
 	num = group->glob_filter->num;
 	ptr = group->glob_filter->filter;
@@ -1474,10 +1477,10 @@ filter_articles (
 	for (i = 0; i < top_art; i++) {
 		arts[i].score = 0;
 
+		mesg[0] = '\0';				/* Clear system message field */
+
 		if (tinrc.kill_level == KILL_READ && IS_READ(i)) /* skip only when the article is read */
 			continue;
-
-		mesg[0] = '\0';				/* Clear system message field */
 
 		for (j = 0; j < num; j++) {
 			if (ptr[j].inscope) {

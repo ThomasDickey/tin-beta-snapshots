@@ -75,7 +75,7 @@ static int gnksa_check_domain_literal (char *domain);
 static int gnksa_check_localpart (char *localpart);
 static int gnksa_dequote_plainphrase (char *realname, char *decoded, int addrtype);
 static int gnksa_split_from (char *from, char *address, char *realname, int *addrtype);
-static int strfeditor (char *editor, int linenum, char *filename, char *s, size_t maxsize, char *format);
+static int strfeditor (char *editor, int linenum, const char *filename, char *s, size_t maxsize, char *format);
 static void write_input_history_file (void);
 #ifdef LOCAL_CHARSET
 	static int to_local (int c);
@@ -281,7 +281,7 @@ get_val (
 
 t_bool
 invoke_editor (
-	char *filename,
+	const char *filename,
 	int lineno) /* return value is always ignored */
 {
 	char *my_editor;
@@ -317,7 +317,7 @@ invoke_editor (
 #ifdef HAVE_ISPELL
 t_bool
 invoke_ispell (
-	char *nam,
+	const char *nam,
 	struct t_group *psGrp) /* return value is always ignored */
 {
 	FILE *fp_all, *fp_body, *fp_head;
@@ -410,7 +410,7 @@ shell_escape (
 	if (!prompt_string (mesg, shell, HIST_SHELL_COMMAND))
 		return;
 
-	for (p = shell; *p && (*p == ' ' || *p == '\t'); p++)
+	for (p = shell; *p && isspace((int)*p); p++)
 		continue;
 
 	if (*p)
@@ -447,6 +447,11 @@ do_shell_escape (
 #endif /* !NO_SHELL_ESCAPE */
 
 
+/*
+ * Exits tin cleanly.
+ * Has recursion protection - this may happen if the NNTP connection aborts
+ * and is not re-established
+ */
 void
 tin_done (
 	int ret)
@@ -461,6 +466,10 @@ tin_done (
 		giveup();
 
 	signal_context = cMain;
+
+#ifdef USE_CURSES
+	scrollok (stdscr, TRUE);			/* Allows display of multi-line messages */
+#endif /* USE_CURSES */
 
 	/*
 	 * check if any groups were read & ask if they should marked read
@@ -495,7 +504,8 @@ tin_done (
 
 			if (wrote_newsrc_lines < read_newsrc_lines) {
 				/* FIXME: prompt for retry? (i.e. remove break) */
-				wait_message(5, _(txt_warn_newsrc), newsrc, (read_newsrc_lines - wrote_newsrc_lines), (read_newsrc_lines - wrote_newsrc_lines) == 1 ? "" : _(txt_plural), OLDNEWSRC_FILE);
+				wait_message(0, _(txt_warn_newsrc), newsrc, (read_newsrc_lines - wrote_newsrc_lines), (read_newsrc_lines - wrote_newsrc_lines) == 1 ? "" : _(txt_plural), OLDNEWSRC_FILE);
+				continue_prompt();
 				break;
 			}
 
@@ -682,8 +692,8 @@ my_chdir (
 #ifdef M_UNIX
 void
 rename_file (
-	char *old_filename,
-	char *new_filename)
+	const char *old_filename,
+	const char *new_filename)
 {
 	FILE *fp_old, *fp_new;
 
@@ -781,14 +791,14 @@ invoke_cmd (
 	}
 	set_signal_catcher (FALSE);
 
-	TRACE(("called system(%s)", _nc_visbuf(nam)))
+	TRACE(("called system(%s)", _nc_visbuf(nam)));
 #ifdef USE_SYSTEM_STATUS
 	system(nam);
 	ret = system_status;
 #else
 	ret = system (nam);
 #endif /* USE_SYSTEM_STATUS */
-	TRACE(("return %d", ret))
+	TRACE(("return %d", ret));
 
 	set_signal_catcher (TRUE);
 	if (!save_cmd_line) {
@@ -925,10 +935,11 @@ base_name (
 
 	for (i = strlen (fullpath)-1; i; i--) {
 #ifndef VMS
-		if (fullpath[i] == SEPDIR) {
+		if (fullpath[i] == SEPDIR)
 #else
-		if (fullpath[i] == ']') {
+		if (fullpath[i] == ']')
 #endif /* !VMS */
+		{
 			strcpy (program, fullpath+(i+1));
 			break;
 		}
@@ -937,7 +948,7 @@ base_name (
 	str_lwr (program, program);
 #endif /* M_OS2 */
 #ifdef VMS
-	if (cp = strrchr(program, '.'))
+	if ((cp = strrchr(program, '.')) != 0)
 		*cp = '\0';
 #endif /* VMS */
 }
@@ -1383,6 +1394,7 @@ create_index_lock_file (
  *   %N  Articles Name of author
  *   %C  First Name of author
  *   %I  Initials of author
+ * Return number of characters written (???) or 0 on failure
  */
 int
 strfquote (
@@ -1530,7 +1542,7 @@ static int
 strfeditor (
 	char *editor,
 	int linenum,
-	char *filename,
+	const char *filename,
 	char *s,
 	size_t maxsize,
 	char *format)
@@ -1948,7 +1960,7 @@ strfmailer (
 	char *the_mailer,
 	char *subject,
 	char *to,
-	char *filename,
+	const char *filename,
 	char *s,
 	size_t maxsize,
 	char *format) /* return value is always ignored */
@@ -2137,7 +2149,10 @@ cleanup_tmp_files (
 	if (!tinrc.cache_overview_files)
 		unlink (local_newsgroups_file);
 
-	if (batch_mode || update_fork)
+	/*
+	 * Even though batch_mode is turned off with -U, the child still has it set
+	 */
+	if (batch_mode)
 		unlink (lock_file);
 }
 
@@ -2169,7 +2184,7 @@ make_post_process_cmd (
  */
 long /* we use long here as off_t might be unsigned on some systems */
 file_size (
-	char *file)
+	const char *file)
 {
 	struct stat statbuf;
 
@@ -2180,9 +2195,9 @@ file_size (
  * returns mtime
  * -1 in case of an error (file not found, or !S_IFREG)
  */
-long /* we use long (not time_t) here for file_changed() macro */
+long /* we use long (not time_t) here for FILE_CHANGED() macro */
 file_mtime (
-	char *file)
+	const char *file)
 {
 	struct stat statbuf;
 
@@ -2195,7 +2210,7 @@ vPrintBugAddress (
 	void)
 {
 	my_fprintf (stderr, _("%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n"),
-		tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME, BUG_REPORT_ADDRESS);
+		tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME, bug_addr);
 	my_fflush (stderr);
 }
 
@@ -2261,7 +2276,7 @@ read_input_history_file (
 	if ((fp = fopen(local_input_history_file, "r")) == NULL)
 		return;
 
-	if (INTERACTIVE)
+	if (!batch_mode)
 		wait_message (0, _(txt_reading_input_history_file));
 
 	/* to be safe ;-) */
@@ -2543,7 +2558,7 @@ buffer_to_network (
 /*
  * checking of mail adresses for GNKSA compliance
  *
- * son-of-rfc1036:
+ * son of RFC 1036:
  *   article         = 1*header separator body
  *   header          = start-line *continuation
  *   start-line      = header-name ":" space [ nonblank-text ] eol
@@ -2610,7 +2625,7 @@ static char gnksa_legal_fqdn_chars[256] = {
 
 
 /*
- * legal localpart components according to son-of-rfc1036
+ * legal localpart components according to son of RFC 1036
  * includes also '.' as valid separator
  */
 static char gnksa_legal_localpart_chars[256] = {
@@ -2635,7 +2650,7 @@ static char gnksa_legal_localpart_chars[256] = {
 
 
 /*
- * legal realname characters according to son-of-rfc1036
+ * legal realname characters according to son of RFC 1036
  */
 static char gnksa_legal_realname_chars[256] = {
 /*         0 1 2 3  4 5 6 7  8 9 a b  c d e f */
@@ -3318,7 +3333,7 @@ gnksa_split_from (
 
 
 /*
- * restrictive check for valid address conforming to RFC 1036, son-of-rfc1036
+ * restrictive check for valid address conforming to RFC 1036, son of RFC 1036
  * and draft-usefor-article-xx.txt
  */
 int
@@ -3367,7 +3382,7 @@ gnksa_do_check_from (
 
 		/* convert FQDN part to lowercase */
 		for (aux = addr_begin; *aux; aux++)
-			*aux = tolower(*aux);
+			*aux = tolower((int)*aux);
 
 		if (GNKSA_OK != (result = gnksa_check_domain(addr_begin))
 		    && (GNKSA_OK == code)) /* error detected */

@@ -69,7 +69,6 @@ static int read_site_config(void);
 
 char active_times_file[PATH_LEN];
 char article[PATH_LEN];			/* ~/.article file */
-char bug_addr[LEN];			/* address to add send bug reports to */
 char bug_nntpserver1[PATH_LEN];		/* welcome message of NNTP server used */
 char bug_nntpserver2[PATH_LEN];		/* welcome message of NNTP server used */
 char cmdline_nntpserver[PATH_LEN];
@@ -101,8 +100,6 @@ char mail_news_user[LEN];		/* mail new news to this user address */
 char mailbox[PATH_LEN];			/* system mailbox for each user */
 char mailer[PATH_LEN];			/* mail program */
 char mailgroups_file[PATH_LEN];
-char msg_headers_file[PATH_LEN];	/* $HOME/.tin/headers */
-char my_distribution[LEN];		/* Distribution: */
 char **news_headers_to_display_array;	/* array of which headers to display */
 char **news_headers_to_not_display_array;	/* array of which headers to not display */
 char newnewsrc[PATH_LEN];
@@ -117,12 +114,13 @@ char posted_msgs_file[PATH_LEN];
 char postponed_articles_file[PATH_LEN];	/* ~/.tin/postponed.articles file */
 char tin_progname[PATH_LEN];		/* program name */
 char rcdir[PATH_LEN];
-char reply_to[LEN];			/* Reply-To: address */
 char save_active_file[PATH_LEN];
 char spooldir[PATH_LEN];		/* directory where news is */
 char subscriptions_file[PATH_LEN];
 char txt_help_bug_report[LEN];		/* address to send bug reports to */
 char userid[PATH_LEN];
+
+char proc_ch_default;				/* set in change_config_file () */
 
 #ifdef VMS
 	char rcdir_asfile[PATH_LEN];	/* rcdir expressed as dev:[dir]tin.dir, for stat() */
@@ -157,8 +155,6 @@ uid_t tin_uid;
 mode_t real_umask;
 
 t_bool no_write = FALSE;		/* do not write newsrc on quit (-X cmd-line flag) */
-t_bool catchup = FALSE;			/* mark all arts read in all subscribed groups */
-t_bool check_any_unread = FALSE;
 t_bool check_for_new_newsgroups;	/* don't check for new newsgroups */
 t_bool cmd_line;			/* batch / interactive mode */
 t_bool created_rcdir;			/* checks if first time tin is started */
@@ -170,22 +166,17 @@ t_bool got_sig_pipe = FALSE;
 t_bool in_headers;			/* color in headers */
 t_bool local_filtered_articles;		/* locally killed / auto-selected articles */
 t_bool local_index;			/* do private indexing? */
-t_bool mail_news;			/* mail all arts to specified user */
 t_bool list_active;
 t_bool newsrc_active;
 t_bool post_article_and_exit;		/* quick post of an article then exit (elm like) */
 t_bool post_postponed_and_exit;		/* post postponed articles and exit */
-t_bool purge_index_files;		/* stat all articles to see if they still exist */
 t_bool reread_active_for_posted_arts;
 t_bool read_local_newsgroups_file;	/* read newsgroups file locally or via NNTP */
 t_bool read_news_via_nntp = FALSE;	/* read news locally or via NNTP */
 t_bool read_saved_news = FALSE;		/* tin -R read saved news from tin -S */
-t_bool save_news;			/* save all arts to savedir structure */
 t_bool show_description = TRUE;		/* current copy of tinrc flag */
-t_bool start_any_unread = FALSE;
 t_bool tex2iso_supported;		/* Convert german style TeX to ISO-Latin1 */
 t_bool batch_mode;			/* update index files only mode */
-t_bool update_fork = FALSE;		/* update index files by forked tin -u */
 t_bool verbose = FALSE;			/* update index files only mode */
 t_bool (*wildcard_func) (const char *str, char *patt, t_bool icase);		/* Wildcard matching function */
 t_bool xover_supported = FALSE;
@@ -228,6 +219,9 @@ struct t_config tinrc = {
 	ART_MARK_SELECTED,		/* art_marked_selected */
 	ART_MARK_RECENT,		/* art_marked_recent */
 	ART_MARK_UNREAD,		/* art_marked_unread */
+	ART_MARK_READ,			/* art_marked_read */
+	ART_MARK_KILLED,		/* art_marked_killed */
+	ART_MARK_READ_SELECTED,		/* art_marked_read_selected */
 	"",		/* editor_format */
 	"",		/* default_goto_group */
 	"",		/* default_mail_address */
@@ -324,7 +318,7 @@ struct t_config tinrc = {
 	TRUE,		/* auto_list_thread */
 	FALSE,		/* auto_reconnect */
 	FALSE,		/* auto_save */
-	FALSE,		/* batch_save */
+	TRUE,		/* batch_save */
 	TRUE,		/* beginner_level */
 	FALSE,		/* cache_overview_files */
 	FALSE,		/* catchup_read_groups */
@@ -358,7 +352,7 @@ struct t_config tinrc = {
 #endif /* !DISABLE_PRINTING */
 	FALSE,		/* process_only_unread */
 	FALSE,		/* prompt_followupto */
-	FALSE,		/* quote_empty_lines */
+	TRUE,		/* quote_empty_lines */
 	TRUE,		/* quote_signatures */
 #ifdef HAVE_MMDF_MAILER
 	TRUE,		/* save_to_mmdf_mailbox */
@@ -468,7 +462,7 @@ postinit_colors (
 					break;
 			}
 		}
-		TRACE(("postinit_colors [%d] = %d", n, *(our_colors[n].colorp)))
+		TRACE(("postinit_colors [%d] = %d", n, *(our_colors[n].colorp)));
 	}
 }
 #endif /* HAVE_COLOR */
@@ -485,7 +479,6 @@ void
 init_selfinfo (
 	void)
 {
-	char nam[LEN];
 	char *ptr;
 	const char *cptr;
 	FILE *fp;
@@ -632,11 +625,9 @@ init_selfinfo (
 	num_of_killed_arts = 0;
 	post_article_and_exit = FALSE;
 	post_postponed_and_exit = FALSE;
-	purge_index_files = FALSE;
 	read_local_newsgroups_file = FALSE;
 	force_reread_active_file = TRUE;
 	reread_active_for_posted_arts = TRUE;
-	save_news = FALSE;
 	tex2iso_supported = (atoi (get_val ("TEX2ISO", "0")) != 0) ? TRUE : FALSE;
 	batch_mode = FALSE;
 	check_for_new_newsgroups = !batch_mode;
@@ -670,7 +661,9 @@ init_selfinfo (
 	news_headers_to_display_array = ulBuildArgv(tinrc.news_headers_to_display, &num_headers_to_display);
 	news_headers_to_not_display_array = NULL;
 
-	strcpy (bug_addr, BUG_REPORT_ADDRESS);
+	/* TODO: nuke $BUG_ADDRESS entirely? */
+	strcpy (bug_addr, get_val("BUG_ADDRESS", BUG_REPORT_ADDRESS));
+
 	bug_nntpserver1[0] = '\0';
 	bug_nntpserver2[0] = '\0';
 
@@ -684,13 +677,13 @@ init_selfinfo (
 
 #ifdef INEWSDIR
 	strcpy (inewsdir, INEWSDIR);
-#else /* INEWSDIR */
+#else
 	inewsdir[0] = '\0';
 #endif /* INEWSDIR */
 
 #ifdef apollo
 	strcpy(default_organization, get_val("NEWSORG", ""));
-#else /* apollo */
+#else
 	strcpy(default_organization, get_val("ORGANIZATION", ""));
 #endif /* apollo */
 
@@ -769,7 +762,7 @@ init_selfinfo (
 	joinpath (rcdir_asfile, homedir, RCDIR);	/* for stat() */
 	strcat(rcdir_asfile, ".DIR");
 	if (stat (rcdir_asfile, &sb) == -1)
-#else /* VMS */
+#else
 	joinpath (rcdir, homedir, RCDIR);
 	if (stat (rcdir, &sb) == -1)
 #endif /* VMS */
@@ -779,9 +772,9 @@ init_selfinfo (
 	}
 #if defined(M_UNIX) || defined (M_AMIGA) || defined(VMS)
 	strcpy (tinrc.mailer_format, MAILER_FORMAT);
-#else /* M_UNIX ... */
+#else
 	strcpy (tinrc.mailer_format, mailer);
-#endif /* M_UNIX ... */
+#endif /* M_UNIX || M_AMIGA || VMS */
 #ifndef DISABLE_PRINTING
 	strcpy (tinrc.printer, DEFAULT_PRINTER);
 #	ifdef M_AMIGA
@@ -792,7 +785,7 @@ init_selfinfo (
 	strcpy (mailer, get_val (ENV_VAR_MAILER, DEFAULT_MAILER));
 #ifdef VMS
 	joinpath (article, homedir, "article.");
-#else /* VMS */
+#else
 	joinpath (article, homedir, ".article");
 #endif /* VMS */
 #ifdef APPEND_PID
@@ -803,7 +796,7 @@ init_selfinfo (
 #ifdef VMS
 	joindir (tinrc.maildir, homedir, DEFAULT_MAILDIR);
 	joindir (tinrc.savedir, homedir, DEFAULT_SAVEDIR);
-#else /* VMS */
+#else
 	joinpath (tinrc.maildir, homedir, DEFAULT_MAILDIR);
 	joinpath (tinrc.savedir, homedir, DEFAULT_SAVEDIR);
 #endif /* VMS */
@@ -813,13 +806,13 @@ init_selfinfo (
 	if (!index_newsdir[0])
 #ifdef VMS
 		joindir (index_newsdir, get_val ("TIN_INDEX_NEWSDIR", rcdir), INDEX_NEWSDIR);
-#else /* VMS */
+#else
 		joinpath (index_newsdir, get_val ("TIN_INDEX_NEWSDIR", rcdir), INDEX_NEWSDIR);
 #endif /* VMS */
 
 #ifdef VMS
 	joindir (index_maildir, get_val ("TIN_INDEX_MAILDIR", rcdir), INDEX_MAILDIR);
-#else /* VMS */
+#else
 	joinpath (index_maildir, get_val ("TIN_INDEX_MAILDIR", rcdir), INDEX_MAILDIR);
 #endif /* VMS */
 	if (stat (index_maildir, &sb) == -1)
@@ -837,15 +830,14 @@ init_selfinfo (
 	joinpath (mail_active_file, rcdir, ACTIVE_MAIL_FILE);
 #ifdef VMS
 	joinpath (mailbox, DEFAULT_MAILBOX, "MAIL.TXT");
-#else /* VMS */
+#else
 	joinpath (mailbox, DEFAULT_MAILBOX, userid);
 #endif /* VMS */
-	joinpath (msg_headers_file, rcdir, MSG_HEADERS_FILE);
 	joinpath (mailgroups_file, rcdir, MAILGROUPS_FILE);
 #ifdef WIN32
 	joinpath (newsrc, rcdir, NEWSRC_FILE);
 	joinpath (newnewsrc, rcdir, NEWNEWSRC_FILE);
-#else /* WIN32 */
+#else
 	joinpath (newsrc, homedir, NEWSRC_FILE);
 	joinpath (newnewsrc, homedir, NEWNEWSRC_FILE);
 #	ifdef APPEND_PID
@@ -874,10 +866,13 @@ init_selfinfo (
 			my_mkdir (index_newsdir, (mode_t)S_IRWXUGO);
 
 		set_real_uid_gid ();
-	} else {
+	}
+#if 0
+	 else {
 		if (stat (index_newsdir, &sb) == -1)
 			my_mkdir (index_newsdir, (mode_t)S_IRWXUGO);
 	}
+#endif
 
 	if (stat (posted_info_file, &sb) == -1) {
 		if ((fp = fopen (posted_info_file, "w")) != (FILE *) 0) {
@@ -886,52 +881,10 @@ init_selfinfo (
 		}
 	}
 
-	if (stat (msg_headers_file, &sb) == -1) {
-		if ((fp = fopen (msg_headers_file, "w")) != (FILE *) 0) {
-			fprintf (fp, txt_msg_headers_file);
-			fclose (fp);
-		}
-	}
-
 	if (stat (local_attributes_file, &sb) == -1)
 		write_attributes_file (local_attributes_file);
 
-	/*
-	 *  check enviroment for REPLYTO
-	 */
-	reply_to[0] = '\0';
-	if ((ptr = getenv ("REPLYTO")) != (char *) 0)
-		my_strncpy (reply_to, ptr, sizeof (reply_to));
-
-	/*
-	 *  check enviroment for DISTRIBUTION
-	 */
-	my_distribution[0] = '\0';
-	if ((ptr = getenv ("DISTRIBUTION")) != (char *) 0)
-		my_strncpy (my_distribution, ptr, sizeof (my_distribution));
-
-	/*
-	 * check enviroment for BUG_ADDRESS
-	 *
-	 * Argh! I think it's complete nonsense to have a _per_user_
-	 * configurable bug report address in $HOME/.tin/bug_address!
-	 * I think we should delete this whole section. Who sets a
-	 * bug report in environment anyway? XXXXXXXXXXXXXXXXXX
-	 */
-	/* I agree (obw) */
-	if ((ptr = getenv ("BUG_ADDRESS")) != (char *) 0) {
-		my_strncpy (bug_addr, ptr, sizeof (bug_addr));
-	} else {
-		joinpath (nam, rcdir, "bug_address");
-		if ((fp = fopen (nam, "r")) != (FILE *) 0) {
-			if (fgets (bug_addr, (int) sizeof (bug_addr), fp) != (char *) 0) {
-				ptr = strrchr (bug_addr, '\n');
-				if (ptr != (char *) 0)
-					*ptr = '\0';
-			}
-			fclose (fp);
-		}
-	}
+	init_postinfo();
 	sprintf (txt_help_bug_report, txt_help_bug, bug_addr);
 
 #ifdef HAVE_PGP_GPG
@@ -949,27 +902,31 @@ void
 set_up_private_index_cache (
 	void)
 {
-	char *to;
-	char *from;
-	int c;
 	struct stat sb;
 
-	if (! tinrc.cache_overview_files)
+	if (xover_supported && !tinrc.cache_overview_files)
 		return;
-	if (! local_index) {
-		error_message (txt_caching_disabled);
+
+	if (!local_index) {
+		error_message (txt_caching_disabled, tin_progname);
 		tinrc.cache_overview_files = FALSE;
 		return;
 	}
-	if (cmdline_nntpserver[0] == 0)
-		return;
-	to = index_newsdir + strlen (index_newsdir);
-	*(to++) = '-';
-	for (from = cmdline_nntpserver; (c = *from) != 0; ++from)
-		*(to++) = tolower(c);
-	*to = 0;
+	if (cmdline_nntpserver[0] != 0) {
+		char *from;
+		char *to;
+		int c;
+
+		to = index_newsdir + strlen (index_newsdir);
+		*(to++) = '-';
+		for (from = cmdline_nntpserver; (c = *from) != 0; ++from)
+			*(to++) = tolower(c);
+		*to = 0;
+	}
+
 	if (stat (index_newsdir, &sb) == -1)
-		my_mkdir (index_newsdir, (mode_t)S_IRWXUGO); /* why not S_IRWXU ? */
+		my_mkdir (index_newsdir, (mode_t)S_IRWXU); /* was S_IRWXUGO */
+
 #	ifdef DEBUG
 	debug_nntp ("set_up_private_index_cache", index_newsdir);
 #	endif /* DEBUG */

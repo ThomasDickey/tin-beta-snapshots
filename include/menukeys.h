@@ -135,6 +135,7 @@
 #define iKeySetRange '#'
 #define iKeyLastPage '$'
 #define iKeyToggleColor '&'
+#define iKeyLastViewed '-'
 #define iKeySearchSubjF '/'
 #define iKeySearchSubjB '?'
 #define iKeySearchAuthB 'A'
@@ -152,6 +153,7 @@
 #define iKeyUp2 'k'
 #define iKeyQuit 'q'
 #define iKeyVersion 'v'
+#define iKeyPipe '|'
 #define iKeyPageUp ctrl('B')
 #define iKeyPageDown ctrl('D')
 #define iKeyPageDown2 ctrl('F')
@@ -165,9 +167,9 @@
 
 #define iKeyConfigSelect '\n'
 #define iKeyConfigSelect2 '\r'
-#define iKeyConfigLastPage 'G'
+#define iKeyConfigLastPage2 'G'
 #define iKeyConfigNoSave 'Q'
-#define iKeyConfigFirstPage 'g'
+#define iKeyConfigFirstPage2 'g'
 
 /* feed.c */
 
@@ -193,13 +195,13 @@
 #define iKeyGroupReadBasenote2 '\r'
 #define iKeyGroupSelThd '*'
 #define iKeyGroupDoAutoSel '+'
-#define iKeyGroupLastViewed '-'
 #define iKeyGroupToggleThdSel '.'
 /* digits 0-9 in use */
 #define iKeyGroupSelThdIfUnreadSelected ';'
 #define iKeyGroupSelPattern '='
 #define iKeyGroupReverseSel '@'
 #define iKeyGroupCatchupNextUnread 'C'
+#define iKeyGroupEditFilter 'E'
 #define iKeyGroupToggleGetartLimit 'G'
 #define iKeyGroupToggleHelpDisplay 'H'
 #define iKeyGroupToggleInverseVideo 'I'
@@ -232,13 +234,12 @@
 #define iKeyGroupPost 'w'
 #define iKeyGroupRepost 'x'
 #define iKeyGroupMarkArtUnread 'z'
-#define iKeyGroupPipe '|'
 #define iKeyGroupUndoSel '~'
 
 /* help.c */
 
-#define iKeyHelpLastPage 'G'
-#define iKeyHelpFirstPage 'g'
+#define iKeyHelpLastPage2 'G'
+#define iKeyHelpFirstPage2 'g'
 /* all other keys exit help */
 
 /* nrctbl.c */
@@ -267,13 +268,13 @@
 #ifdef HAVE_COLOR
 #	define iKeyPageToggleHighlight '_'
 #endif /* HAVE_COLOR */
-#define iKeyPageLastViewed '-'
 /* digits 0-9 in use */
 #define iKeyPageSkipIncludedText ':'
 #define iKeyPageTopThd '<'
 #define iKeyPageBotThd '>'
 #define iKeyPageCatchupNextUnread 'C'
 #define iKeyPageCancel 'D'
+#define iKeyPageEditFilter 'E'
 #define iKeyPageFollowup 'F'
 #define iKeyPageLastPage2 'G'
 #define iKeyPageToggleHelpDisplay 'H'
@@ -289,11 +290,10 @@
 #define iKeyPageQuickKill ']'
 #define iKeyPageCatchup 'c'
 #define iKeyPageToggleRot2 'd'
-#define iKeyPageEdit 'e'
+#define iKeyPageEditArticle 'e'
 #define iKeyPageFollowupQuote 'f'
 #define iKeyPageFirstPage2 'g'
 #define iKeyPageHelp 'h'
-#define iKeyPageKillArt 'k' /* overrides iKeyUp3, which has no effect at pager level */
 #define iKeyPageListThd 'l'
 #define iKeyPageMail 'm'
 #define iKeyPageNextArt 'n'
@@ -308,7 +308,6 @@
 #define iKeyPagePost 'w'
 #define iKeyPageRepost 'x'
 #define iKeyPageMarkArtUnread 'z'
-#define iKeyPagePipe '|'
 
 /* post.c */
 
@@ -388,7 +387,6 @@
 #define iKeyThreadReadArt '\n'
 #define iKeyThreadReadArt2 '\r'
 #define iKeyThreadSelArt '*'
-#define iKeyThreadLastViewed '-'
 #define iKeyThreadToggleArtSel '.'
 /* digits 0-9 in use */
 #define iKeyThreadReverseSel '@'

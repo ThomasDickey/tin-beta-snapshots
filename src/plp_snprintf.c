@@ -186,16 +186,16 @@ union value {
 #ifdef cval
 #	undef cval
 #endif /* cval */
-#define cval(s) (*((unsigned char *)s))
+#define cval(s) (*((unsigned const char *)s))
 
 
 static char *plp_Errormsg(int err);
 static void plp_strcat(char *dest, const char *src);
 static void dopr(char *buffer, const char *format, va_list args);
-static void fmtstr(char *value, int ljust, int len, int zpad, int precision);
-static void fmtnum(union value *value, int plp_base, int dosign, int ljust, int len, int zpad, int precision);
+static void fmtstr(const char *value, int ljust, int len, int precision);
+static void fmtnum(union value *value, int plp_base, int dosign, int ljust, int len, int zpad);
 static void fmtdouble(int fmt, double value, int ljust, int len, int zpad, int precision);
-static void dostr(char *);
+static void dostr(const char *);
 static void dopr_outch(int c);
 
 static char *output;
@@ -209,7 +209,7 @@ int plp_vsnprintf(char *str, size_t count, const char *fmt, va_list args)
 	str[0] = 0;
 	end = str+count-1;
 	dopr( str, fmt, args );
-	if( count>0 )
+	if( count != 0 )
 		end[0] = 0;
 	return(strlen(str));
 }
@@ -272,9 +272,16 @@ static void dopr( char *buffer, const char *format, va_list args )
 			case '*': len = va_arg( args, int ); goto nextch;
 			case '0': /* set zero padding if len not set */
 				if(len==0 && set_precision == 0 ) zpad = '0';
-			case '1': case '2': case '3':
-			case '4': case '5': case '6':
-			case '7': case '8': case '9':
+				/* FALLTHROUGH */
+			case '1': /* FALLTHROUGH */
+			case '2': /* FALLTHROUGH */
+			case '3': /* FALLTHROUGH */
+			case '4': /* FALLTHROUGH */
+			case '5': /* FALLTHROUGH */
+			case '6': /* FALLTHROUGH */
+			case '7': /* FALLTHROUGH */
+			case '8': /* FALLTHROUGH */
+			case '9':
 				if( set_precision ){
 					precision = precision*10 + ch - '0';
 				} else {
@@ -285,12 +292,16 @@ static void dopr( char *buffer, const char *format, va_list args )
 			case 'q': quadflag = 1; goto nextch;
 			case 'u': case 'U':
 				if( plp_base == 0 ){ plp_base = 10; signed_val = 0; }
+				/* FALLTHROUGH */
 			case 'o': case 'O':
 				if( plp_base == 0 ){ plp_base = 8; signed_val = 0; }
+				/* FALLTHROUGH */
 			case 'd': case 'D':
 				if( plp_base == 0 ){ plp_base = 10; signed_val = 1; }
+				/* FALLTHROUGH */
 			case 'x':
 				if( plp_base == 0 ){ plp_base = 16; signed_val = 0; }
+				/* FALLTHROUGH */
 			case 'X':
 				if( plp_base == 0 ){ plp_base = -16; signed_val = 0; }
 				if( quadflag || longflag > 1 ){
@@ -320,11 +331,11 @@ static void dopr( char *buffer, const char *format, va_list args )
 						value.value = va_arg( args, unsigned int );
 					}
 				}
-				fmtnum( &value,plp_base,signed_val, ljust, len, zpad, precision );
+				fmtnum( &value,plp_base,signed_val, ljust, len, zpad );
 				break;
 			case 's':
 				strvalue = va_arg( args, char *);
-				fmtstr( strvalue,ljust,len, zpad, precision );
+				fmtstr(strvalue, ljust, len, precision);
 				break;
 			case 'c':
 				ch = va_arg( args, int );
@@ -333,15 +344,17 @@ static void dopr( char *buffer, const char *format, va_list args )
 					b[0] = ch;
 					b[1] = 0;
 					visible_control = 0;
-					fmtstr( b,ljust,len, zpad, precision );
+					fmtstr(b, ljust, len, precision);
 					visible_control = vsb;
 				}
 				break;
 			case 'f': case 'g': case 'e':
 				dval = va_arg( args, double );
-				fmtdouble( ch, dval,ljust,len, zpad, precision ); break;
+				fmtdouble(ch, dval, ljust, len, zpad, precision);
+				break;
 			case 'm':
-				fmtstr( plp_Errormsg(err),ljust,len, zpad, precision ); break;
+				fmtstr(plp_Errormsg(err), ljust, len, precision);
+				break;
 			case '%': dopr_outch( ch ); continue;
 			default:
 				dostr(  "???????" );
@@ -363,7 +376,7 @@ static void dopr( char *buffer, const char *format, va_list args )
  * precision = numbers of chars in string to use
  */
 static void
-fmtstr(  char *value, int ljust, int len, int zpad, int precision )
+fmtstr(const char *value, int ljust, int len, int precision)
 {
 	int padlen, slen, i, c;	/* amount to pad */
 
@@ -404,7 +417,7 @@ fmtstr(  char *value, int ljust, int len, int zpad, int precision )
 
 static void
 fmtnum(  union value *value, int plp_base, int dosign, int ljust,
-	int len, int zpad, int precision )
+	int len, int zpad )
 {
 	int signvalue = 0;
 #ifdef HAVE_LONG_LONG
@@ -483,9 +496,9 @@ fmtdouble( int fmt, double value, int ljust, int len, int zpad, int precision )
 
 	if( len == 0 )
 		len = 10;
-	if( len > (sizeof(convert) - 20) )
+	if( len > (int) (sizeof(convert) - 20) )
 		len = sizeof(convert) - 20;
-	if( precision > sizeof(convert) - 20 )
+	if( precision > (int) sizeof(convert) - 20 )
 		precision = sizeof(convert) - 20;
 	if( precision > len )
 		precision = len;
@@ -506,7 +519,7 @@ fmtdouble( int fmt, double value, int ljust, int len, int zpad, int precision )
 	dostr( convert );
 }
 
-static void dostr( char *str )
+static void dostr( const char *str )
 {
 	while(*str) dopr_outch(*str++);
 }
