@@ -1,8 +1,5 @@
 Bugs
 ----
-o  '+' in group-level is broken (does nothing)
-   [20020516 Urs Janssen <urs@tin.org>]
-
 o  changing thread_articles in the thread-level might trigger
    assertion in show_thread_page() -> the thread display code and logic
    needs complete rewriting.
@@ -63,7 +60,7 @@ o  reference based filters won't work with long (> 500 chars)
     tin and the filter won't work anymore)
 
 o  batch mode has several bugs
-   - -S, -N and -M cmd-line switches are broken (again)
+   - -S, -Z, -N and -M cmd-line switches are broken (again)
      -S doesn't create subdirs, thus saving fails
    - -Z and giving a cmd-line group ends up in a loop
      (filters each group several times)
@@ -162,6 +159,7 @@ Posting Problems
 ----------------
 o  remove Message-IDs with 8bit chars in them when they occur in
    Message-ID or References header
+   [done for References in replies/followups, Urs]
 
 o  repost ('x') ignores ~/.tin/attributes - bug or feature?!
 
@@ -180,7 +178,7 @@ o  with --enable-forgery reposting of a thread reposts only the first
 New features
 ------------
 o  instead of exiting when tin fails to get the systems domainname fall
-   into no posting mode (and issuie a warning).
+   into no posting mode (and issue a warning).
    [20021125 Urs Janssen <urs@tin.org>]
 
 o  add new cmd-line flag to force 'no_posting' mode
@@ -189,10 +187,6 @@ o  add new cmd-line flag to force 'no_posting' mode
 o  automatically disable TeX2ISO conversion if saving articles _and_
    postprocessing is set to != 'n'
    [20020423 Urs Janssen <urs@tin.org>]
-
-o  add underline/bold/... support (i.e. for monochrom terminals
-   as color substitution)
-   [20020326 Serge Matveev <sm@cl.spb.ru>]
 
 o  add bold-italic, bold-underline, italic-underline, bold-italic-underline
    word highlightings.
@@ -214,11 +208,11 @@ o  add a postponed 'browser' (store postponed arts in
 o  add postpone option for mail-actions
    [20020404 Urs Janssen <urs@tin.org>]
 
-o  add base224 (<http://b-news.sf.net/>) and yydecode support (see
-   <http://nerv.cx/liyang/download/yydecode/> for readable code,
-   ignore the crap on <http://www.yenc.org/>). also check
-   <http://www.exit109.com/~jeremy/news/binaries/> which might replace
-   yenc etc.pp. some day.
+o  add base224 (<http://b-news.sf.net/>), xBin <http://www.xbin.org/> and
+   yenc (decode-)support (see <http://nerv.cx/liyang/software/yydecode/>
+   for readable code, ignore the crap on <http://www.yenc.org/>). also
+   check <http://www.exit109.com/~jeremy/news/binaries/> which might
+   replace yenc etc.pp. some day.
    [20020216 Urs Janssen <urs@tin.org>]
 
 o  add maildir support (besides MBOX{O,RD} and MMDF} and maybe
@@ -330,8 +324,6 @@ o  add IPv6 support
    /etc/hosts first) and getaddrinfo() seems to have a (huge) delay in some
    cases. use getipnodebyname()/getipnodebyaddr() (if available) instead.
 
-o  add shortcut(s) to repeat last command (i.e. search again)
-
 o  add cmd-line/tinrc-switch to fetch only headers of unread articles;
    in that case, make 'r' reading the rest of the articles
    [-G is a start]
@@ -406,7 +398,7 @@ o  Add to the 'M'enu:
 
 o  Add to the POST_INFO-level:
      '?','/' search (partly done, currently only the displayed page is
-                     searched which is not that usefull)
+                     searched which is not that useful)
      'h' help-screen
 
 o  Add a commandline switch (-V) that prints out all values of cpp-symbols
@@ -532,6 +524,8 @@ o  allow any given amount of days in default_filter_days not only
 
 o  allow expiring filter entrys n-days after the last time they matched
 
+o  add command to generate filter rules for all curently tagged articles
+
 Internal Changes
 ----------------
 o  change txt_select_comment to something like "Comment (optional) :"
@@ -613,9 +607,6 @@ o  add check for sizeof char, short, int, long, ...
 
 o  cleanup (=rewrite) inews.c/header.c/thread.c
 
-o  cleanup main.c/init_selfinfo()
-   ('strace -e trace=file tin' and you know what I mean)
-
 o  is art->inthread really needed, surely art->thread contains enough
    information
    [Jason Faultless <jason@radar.tele2.co.uk>]
@@ -674,6 +665,7 @@ o  make mm_network_charset an "option_list" to avoid junk input or
    undesired (UTF-1, UTF-7, UTF-16*, UTF-32*, UCS-2, UCS-4, ...) encodings.
    add configure check for the hardcoded charsets (try iconv_open(x,
    us-ascii) on each...) and disable those not available.
+   (think about more network charsets, i.e. ISO-2022-JP-3)
    [done except configure check 20010907 urs@tin.org]
 
 Docs/online help
@@ -691,6 +683,10 @@ o  tin.defaults could use more documentation on manpage (tin.5)
 
 Not yet classified
 ------------------
+o  move tinrc.defaults for certain comands to a pre-filled .inputhistory?
+   (if so, also move i_key_search_last there)
+   [Jason Faultless]
+
 o  what about -a cmd-line flag? is this really neaded? IMHO this can be
    dropped, '&' can be used for runtime color toggling.
    [20021106 Urs Janssen <urs@tin.org>]
@@ -724,7 +720,7 @@ o  check_article_to_be_posted() still need some cleanup
     overhead)
    [20010629 Urs Janssen <urs@tin.org>]
 
-o  update gettext stuff to >= gettext-0.11
+o  update gettext stuff to > gettext-0.11.5
 
 o  should the postponed 'file' (and posted messages 'file') be in MH-format
    if tin is running in MH-mode? (add MH to the allowed mailbox formats) if
@@ -771,6 +767,9 @@ o  doesn't handle symlinks for .oldnewsrc
    [20020627 Jeff Sheinberg <jeffsh@erols.com>]
 
 o  figure out what the -l and -n cmd-line flags are good for if not
-   running in nntp-mode and document it - if they have no meaning at all
-   disallow them if tin is not nntp_able at all.
+   running in nntp-mode and document it or if they have no meaning
+   disallow them if tin is not nntp_able.
    [20021117 Urs Janssen <urs@tin.org>]
+
+o  cleanup main.c/init_selfinfo()
+   ('strace -e trace=file tin' and you know what I mean)

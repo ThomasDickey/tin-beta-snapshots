@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-11-11
+ *  Updated   : 2003-01-07
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -74,6 +74,8 @@ static void yank_active_file(void);
  */
 t_menu selmenu = { 1, 0, 0, 0, show_selection_page, draw_group_arrow };
 
+/* char i_key_search_last;	*/			/* for repeated search */
+
 static int
 select_left(
 	void)
@@ -127,10 +129,8 @@ selection_page(
 		}
 
 		set_xclick_on();
-		ch = handle_keypad(select_left, select_right, &menukeymap.select_nav);
 
-		switch (ch) {
-
+		switch ((ch = handle_keypad(select_left, select_right, &menukeymap.select_nav))) {
 			case iKeyAbort:		/* Abort */
 				break;
 
@@ -192,9 +192,14 @@ selection_page(
 
 			case iKeySearchSubjF:	/* search forward */
 			case iKeySearchSubjB:	/* search backward */
-				if ((i = search_active(ch == iKeySearchSubjF)) != -1) {
-					move_to_item(i);
-					clear_message();
+			case iKeySearchRepeat:
+				if (ch == iKeySearchRepeat && i_key_search_last != iKeySearchSubjF && i_key_search_last != iKeySearchSubjB)
+					info_message(_(txt_bad_command), printascii(key, map_to_local(iKeyHelp, &menukeymap.select_nav)));
+				else {
+					if ((i = search_active((ch == iKeySearchSubjF), (ch == iKeySearchRepeat))) != -1) {
+						move_to_item(i);
+						clear_message();
+					}
 				}
 				break;
 

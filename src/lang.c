@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-12-09
+ *  Updated   : 2003-01-27
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -327,6 +327,7 @@ constext txt_help_global_search_body[] = N_("search all articles for a given str
 constext txt_help_global_search_body_comment[] = N_(" \t  (searches are case-insensitive and wrap around to all articles)");
 constext txt_help_global_search_subj_backwards[] = N_("search for articles by Subject line backwards");
 constext txt_help_global_search_subj_forwards[] = N_("search for articles by Subject line forwards");
+constext txt_help_global_search_repeat[] = N_("repeat last search");
 #ifndef NO_SHELL_ESCAPE
 	constext txt_help_global_shell_escape[] = N_("shell escape");
 #endif /* !NO_SHELL_ESCAPE */
@@ -807,16 +808,29 @@ constext *txt_thread_score_type[] = {
 		N_("Light Cyan"),
 		N_("Light White")
 	};
-
-	/*
-	 * Which mark types can be used.
-	 */
-	constext *txt_marks[] = {
-		N_("Nothing"),
-		N_("Mark"),
-		N_("Space")
-	};
 #endif /* HAVE_COLOR */
+
+/*
+ * Which mark types can be used.
+ */
+constext *txt_marks[] = {
+	N_("Nothing"),
+	N_("Mark"),
+	N_("Space")
+};
+
+/*
+ * Which attributes can be used for highlighting
+ */
+constext *txt_attrs[] = {
+	N_("Normal"),
+	N_("Best highlighting"),
+	N_("Underline"),
+	N_("Reverse video"),
+	N_("Blinking"),
+	N_("Half bright"),
+	N_("Bold")
+};
 
 /* different confirm choices */
 constext *txt_confirm_choices[] = {
@@ -1303,12 +1317,6 @@ struct opttxt txt_auto_list_thread = {
 	N_("# If ON automatically list thread when entering it using right arrow key.\n")
 };
 
-struct opttxt txt_tab_after_X_selection = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Do tab after X automatically       :"),
-	N_("# If ON a TAB command will be automatically done after the X command\n")
-};
-
 struct opttxt txt_art_marked_deleted = {
 	N_("Enter character to indicate deleted articles. <CR> sets, <ESC> cancels."),
 	N_("Character to show deleted articles :"),
@@ -1418,6 +1426,7 @@ struct opttxt txt_tex2iso_conv = {
 	N_("# If ON decode German style TeX umlaut codes to ISO and\n\
 # show \"a as Umlaut-a, etc.\n")
 };
+
 struct opttxt txt_news_headers_to_display = {
 	N_("Space separated list of header fields"),
 	N_("Display these header fields (or *) :"),
@@ -1735,30 +1744,25 @@ struct opttxt txt_col_signature = {
 	N_("# Color of signature\n")
 };
 
-struct opttxt txt_word_h_display_marks = {
-	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("What to display instead of mark    :"),
-	N_("# Should the leading and ending stars and dashes also be displayed,\n\
-# even when they are highlighting marks?\n\
-# 0 - no    1 - yes, display mark    2 - print a space instead\n")
-};
-
 struct opttxt txt_col_markstar = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of highlighting with *stars* :"),
 	N_("# Color of word highlighting. There are four possibilities\n\
 # in articles: *stars*, /slashes/, _underdashes_ and -strokes-.\n")
 };
+
 struct opttxt txt_col_markdash = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of highlighting with _dash_  :"),
 	""
 };
+
 struct opttxt txt_col_markslash = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of highlighting with /slash/ :"),
 	""
 };
+
 struct opttxt txt_col_markstroke = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of highlighting with -stroke-:"),
@@ -1766,10 +1770,47 @@ struct opttxt txt_col_markstroke = {
 };
 #endif /* HAVE_COLOR */
 
+struct opttxt txt_mono_markstar = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Attr. of highlighting with *stars* :"),
+	N_("# Attribute of word highlighting on mono terminals.\n\
+# There are four possibilities in articles:\n\
+# *stars*, /slashes/, _underdashes_ and -strokes-.\n\
+# The possible values are:\n\
+# 0 - Normal, 1 - Underline, 2 - Best highlighting,\n\
+# 3 - Reverse video, 4 - Blinking, 5 - Half bright, 6 - Bold\n")
+};
+
+struct opttxt txt_mono_markdash = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Attr. of highlighting with _dash_  :"),
+	""
+};
+
+struct opttxt txt_mono_markslash = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Attr. of highlighting with /slash/ :"),
+	""
+};
+
+struct opttxt txt_mono_markstroke = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Attr. of highlighting with -stroke-:"),
+	""
+};
+
 struct opttxt txt_word_highlight = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Word highlighting in message body  :"),
 	N_("# Enable word highlighting?\n")
+};
+
+struct opttxt txt_word_h_display_marks = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("What to display instead of mark    :"),
+	N_("# Should the leading and ending stars and dashes also be displayed,\n\
+# even when they are highlighting marks?\n\
+# 0 - no    1 - yes, display mark    2 - print a space instead\n")
 };
 
 struct opttxt txt_wrap_column = {
@@ -1812,7 +1853,7 @@ struct opttxt txt_signature_repost = {
 };
 
 struct opttxt txt_quote_chars = {
-	N_("Enter quotation marks, %%s or %%S for author's initials."),
+	N_("Enter quotation marks, %s or %S for author's initials."),
 	N_("Characters used as quote-marks     :"),
 	N_("# Characters used in quoting to followups and replys.\n\
 # '_' is replaced by ' ', %%s, %%S are replaced by author's initials.\n")

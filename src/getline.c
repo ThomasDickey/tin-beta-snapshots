@@ -3,7 +3,7 @@
  *  Module    : tin_getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 2002-12-18
+ *  Updated   : 2003-01-21
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -383,7 +383,7 @@ gl_newline(
 	if (gl_out_hook) {
 		change = gl_out_hook(gl_buf);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		len = wcswidth(gl_buf, BUF_SIZE);
+		len = wcslen(gl_buf);
 #else
 		len = strlen(gl_buf);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -536,7 +536,7 @@ gl_fixup(
 	backup = gl_pos - gl_shift;
 	if (change >= 0) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-		gl_cnt = wcswidth(gl_buf, BUF_SIZE);
+		gl_cnt = wcslen(gl_buf);
 #else
 		gl_cnt = strlen(gl_buf);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -639,7 +639,7 @@ gl_tab(
 	int i, count, len;
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	len = wcswidth(wbuf, ARRAY_SIZE(wbuf));
+	len = wcslen(wbuf);
 	count = TABSIZE - (offset + *loc) % TABSIZE;
 	for (i = len; i >= *loc; i--)
 		wbuf[i + count] = wbuf[i];
@@ -705,7 +705,9 @@ hist_prev(
 	int w)
 {
 	int next;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	size_t size;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	if (w == HIST_NONE)
 		return;
@@ -739,8 +741,6 @@ static void
 hist_next(
 	int w)
 {
-	size_t size;
-
 	if (w == HIST_NONE)
 		return;
 
@@ -748,6 +748,8 @@ hist_next(
 		hist_pos[w] = (hist_pos[w] + 1) % HIST_SIZE;
 		if (input_history[w][hist_pos[w]]) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			size_t size;
+
 			if ((size = mbstowcs(gl_buf, input_history[w][hist_pos[w]], BUF_SIZE - 1)) == (size_t) -1)
 				size = 0;
 			gl_buf[size] = (wchar_t) '\0';

@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2002-12-14
+ *  Updated   : 2003-01-26
  *  Notes     :
  *
  * Copyright (c) 1997-2003 Urs Janssen <urs@tin.org>
@@ -87,6 +87,9 @@ extern t_bool is_art_tex_encoded(FILE *fp);
 extern void convert_body2printable(char* buf);
 extern void convert_iso2asc(char *iso, char **asc_buffer, int *max_line_len, int t);
 extern void convert_tex2iso(char *from, char *to);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	extern wchar_t *wconvert_to_printable(wchar_t *wbuf);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 /* color.c */
 #ifdef HAVE_COLOR
@@ -141,7 +144,6 @@ extern void InitWin(void);
 #endif /* USE_CURSES */
 extern void Raw(int state);
 extern void StartInverse(void);
-extern void ToggleInverse(void);
 extern void cursoroff(void);
 extern void cursoron(void);
 extern void highlight_string(int row, int col, int size);
@@ -151,6 +153,9 @@ extern void set_xclick_off(void);
 extern void set_xclick_on(void);
 extern void setup_screen(void);
 extern void word_highlight_string(int row, int col, int size, int color);
+#if 0
+	extern void ToggleInverse(void);
+#endif /* 0 */
 
 /* debug.c */
 #ifdef DEBUG
@@ -367,9 +372,9 @@ extern void strip_name(char *the_address, char *stripped_address);
 extern void tin_done(int ret);
 extern void toggle_inverse_video(void);
 extern int parse_from(const char *from, char *address, char *realname);
-#if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
+#if defined(LOCAL_CHARSET) || defined(CHARSET_CONVERSION)
 	extern void buffer_to_network(char *line, int mmnwcharset);
-#endif /* LOCAL_CHARSET || MAC_OS_X || CHARSET_CONVERSION */
+#endif /* LOCAL_CHARSET || CHARSET_CONVERSION */
 
 extern void process_charsets(char **line, int *max_line_len, const char *network_charset, const char *local_charset, t_bool conv_tex2iso);
 #ifdef HAVE_COLOR
@@ -596,11 +601,11 @@ extern void wait_message(unsigned int sdelay, const char *fmt, ...);
 
 /* search.c */
 extern int get_search_vectors(int *start, int *end);
-extern int search(int key, int current_art, t_bool forward);
-extern int search_active(t_bool forward);
-extern int search_article(t_bool forward, int start_line, int lines, t_lineinfo *line, int reveal_ctrl_l_lines, FILE *fp);
-extern int search_config(t_bool forward, int current, int last);
-extern int search_body(int current_art);
+extern int search(int key, int current_art, t_bool forward, t_bool repeat);
+extern int search_active(t_bool forward, t_bool repeat);
+extern int search_article(t_bool forward, t_bool repeat, int start_line, int lines, t_lineinfo *line, int reveal_ctrl_l_lines, FILE *fp);
+extern int search_config(t_bool forward, t_bool repeat, int current, int last);
+extern int search_body(int current_art, t_bool repeat);
 
 /* select.c */
 extern int add_my_group(const char *group, t_bool add);

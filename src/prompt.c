@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 1997-12-31
+ *  Updated   : 2003-01-05
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -399,17 +399,22 @@ prompt_option_char(
 	input[0] = *variable;
 	input[1] = '\0';
 
-	show_menu_help(option_table[option].txt->help);
-	MoveCursor(option_row(option), 0);
-	fmt_option_prompt(prompt, sizeof(prompt) - 1, TRUE, option);
+	do {
+		show_menu_help(option_table[option].txt->help);
+		MoveCursor(option_row(option), 0);
+		fmt_option_prompt(prompt, sizeof(prompt) - 1, TRUE, option);
 
-	if ((p = tin_getline(prompt, FALSE, p, 1, FALSE, HIST_OTHER)) == NULL)
-		return FALSE;
+		if ((p = tin_getline(prompt, FALSE, p, 1, FALSE, HIST_OTHER)) == NULL) {
+			clear_message();
+			return FALSE;
+		}
+		if (!*p)
+			info_message(_("Please enter a valid character")); /* TODO: Use move to lang.c */
+	} while (!*p);
 
 	*variable = p[0];
 
 	clear_message();
-
 	return TRUE;
 }
 
@@ -576,9 +581,8 @@ prompt_continue(
 	cmd_line = TRUE;
 #endif /* USE_CURSES */
 	info_message(_(txt_return_key));
-	ch = ReadCh();
 
-	switch (ch) {
+	switch ((ch = ReadCh())) {
 		case ESC:
 #	ifdef HAVE_KEY_PREFIX
 		case KEY_PREFIX:

@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2002-12-04
+ *  Updated   : 2003-01-18
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -188,16 +188,16 @@ submit_inews(
 
 				case 1:	/* insert Sender */
 					snprintf(sender_hdr, sizeof(sender_hdr), "Sender: %s", ptr);
-#		if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
+#		ifdef LOCAL_CHARSET
 					buffer_to_network(sender_hdr, 0);
-#		endif /* LOCAL_CHARSET || MAC_OS_X */
+#		endif /* LOCAL_CHARSET */
 #		ifdef CHARSET_CONVERSION
 					buffer_to_network(sender_hdr, group ? group->attribute->mm_network_charset : tinrc.mm_network_charset);
 #		endif /* CHARSET_CONVERSION */
 					if (!tinrc.post_8bit_header) {
 						char *p;
 #ifdef CHARSET_CONVERSION
-						p = rfc1522_encode(sender_hdr, txt_mime_charsets[group->attribute->mm_network_charset], ismail);
+						p = rfc1522_encode(sender_hdr, group ? txt_mime_charsets[group->attribute->mm_network_charset] : txt_mime_charsets[tinrc.mm_network_charset] , ismail);
 #else
 						p = rfc1522_encode(sender_hdr, tinrc.mm_charset, ismail);
 #endif /* CHARSET_CONVERSION */
@@ -492,7 +492,7 @@ sender_needed(
 	snprintf(sender_line, sizeof(sender_line), "Sender: %s", sender);
 
 #ifdef CHARSET_CONVERSION
-	p = rfc1522_encode(sender_line, txt_mime_charsets[group->attribute->mm_network_charset], FALSE);
+	p = rfc1522_encode(sender_line, group ? txt_mime_charsets[group->attribute->mm_network_charset] : txt_mime_charsets[tinrc.mm_network_charset], FALSE);
 #else
 	p = rfc1522_encode(sender_line, tinrc.mm_charset, FALSE);
 #endif /* CHARSET_CONVERSION */

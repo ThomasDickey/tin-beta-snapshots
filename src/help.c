@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-10-17
+ *  Updated   : 2003-01-07
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -82,6 +82,7 @@ static t_help_page select_help_page[] = {
 	{ txt_help_select_search_group_forwards, iKeySearchSubjF },
 	{ txt_help_select_search_group_backwards, iKeySearchSubjB },
 	{ txt_help_select_search_group_comment, 0 },
+	{ txt_help_global_search_repeat, iKeySearchRepeat },
 	{ txt_help_empty_line, 0 },
 	{ txt_help_title_disp, 0 },
 	{ txt_help_select_toggle_read_groups, iKeySelectToggleReadDisplay },
@@ -167,6 +168,7 @@ static t_help_page group_help_page[] = {
 	{ txt_help_global_search_auth_backwards, iKeySearchAuthB },
 	{ txt_help_global_search_body, iKeySearchBody },
 	{ txt_help_global_search_body_comment, 0 },
+	{ txt_help_global_search_repeat, iKeySearchRepeat },
 	{ txt_help_empty_line, 0 },
 	{ txt_help_title_disp, 0 },
 	{ txt_help_group_toggle_read_articles, iKeyGroupToggleReadUnread },
@@ -267,6 +269,7 @@ static t_help_page thread_help_page[] = {
 	{ txt_help_global_search_auth_backwards, iKeySearchAuthB },
 	{ txt_help_global_search_body, iKeySearchBody },
 	{ txt_help_global_search_body_comment, 0 },
+	{ txt_help_global_search_repeat, iKeySearchRepeat },
 	{ txt_help_empty_line, 0 },
 	{ txt_help_title_disp, 0 },
 	{ txt_help_global_toggle_info_line, iKeyToggleInfoLastLine },
@@ -360,6 +363,7 @@ static t_help_page page_help_page[] = {
 	{ txt_help_global_search_auth_backwards, iKeySearchAuthB },
 	{ txt_help_global_search_body, iKeySearchBody },
 	{ txt_help_global_search_body_comment, 0 },
+	{ txt_help_global_search_repeat, iKeySearchRepeat },
 	{ txt_help_empty_line, 0 },
 	{ txt_help_title_disp, 0 },
 	{ txt_help_global_toggle_info_line, iKeyToggleInfoLastLine },

@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2002-11-11
+ *  Updated   : 2003-01-21
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -54,6 +54,7 @@
 #define MAGIC		3
 
 int thread_basenote = 0;				/* Index in base[] of basenote */
+/* char i_key_search_last; */					/* for repeated search */
 static int thread_respnum = 0;			/* Index in arts[] of basenote ie base[thread_basenote] */
 t_bool show_subject;
 
@@ -221,7 +222,11 @@ build_tline(
 				if (mbstowcs(wtmp2, art->subject, ARRAY_SIZE(wtmp2) - 1) != (size_t) -1) {
 					wcspart(wtmp, wtmp2, gap, ARRAY_SIZE(wtmp));
 					if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
+#	ifdef USE_CURSES
 						strncat(buff, tmp, sizeof(buff) - len - 1);
+#	else
+						strncat(buff, tmp, cCOLS * MB_CUR_MAX - len - 1);
+#	endif /* USE_CURSES */
 				}
 #else
 				strncat(buff, art->subject, gap);
@@ -255,7 +260,11 @@ build_tline(
 			if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) -1) != (size_t) -1) {
 				wcspart(wtmp, wtmp2, len_from, ARRAY_SIZE(wtmp));
 				if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
+#	ifdef USE_CURSES
 					strncat(buff, tmp, sizeof(buff) - strlen(buff) - 1);
+#	else
+					strncat(buff, tmp, cCOLS * MB_CUR_MAX - strlen(buff) - 1);
+#	endif /* USE_CURSES */
 			}
 #else
 			get_author(TRUE, art, buff + strlen(buff), len_from);
@@ -269,7 +278,11 @@ build_tline(
 		if (mbstowcs(wtmp2, tmp, ARRAY_SIZE(wtmp2) -1) != (size_t) -1) {
 			wcspart(wtmp, wtmp2, cCOLS - strlen(buff), ARRAY_SIZE(wtmp));
 			if (wcstombs(tmp, wtmp, sizeof(tmp) - 1) != (size_t) -1)
+#	ifdef USE_CURSES
 				strncat(buff, tmp, sizeof(buff) - strlen(buff) - 1);
+#	else
+				strncat(buff, tmp, cCOLS * MB_CUR_MAX - strlen(buff) - 1);
+#	endif /* USE_CURSES */
 		}
 #else
 		get_author(TRUE, art, buff + strlen(buff), cCOLS - strlen(buff));
@@ -398,6 +411,7 @@ thread_page(
 	int ret_code = 0;			/* Set to < 0 when it is time to leave this menu */
 	int ch = 0;
 	int i, n;
+	t_bool repeat_search = FALSE;
 
 	thread_respnum = respnum;		/* Bodge to make this variable global */
 
@@ -454,7 +468,14 @@ thread_page(
 
 	while (ret_code >= 0) {
 		set_xclick_on();
-		switch (ch = handle_keypad(thread_left, thread_right, &menukeymap.thread_nav)) {
+		if ((ch = handle_keypad(thread_left, thread_right, &menukeymap.thread_nav)) == iKeySearchRepeat) {
+			ch = i_key_search_last;
+			repeat_search = TRUE;
+		}
+		else
+			repeat_search = FALSE;
+
+		switch (ch) {
 			case iKeyAbort:			/* Abort */
 				break;
 
@@ -603,7 +624,7 @@ thread_page(
 				break;
 
 			case iKeySearchBody:			/* search article body */
-				if ((n = search_body(find_response(thread_basenote, thdmenu.curr))) != -1) {
+				if ((n = search_body(find_response(thread_basenote, thdmenu.curr), repeat_search)) != -1) {
 					fixup_thread(n, TRUE);
 					ret_code = enter_pager(n, FALSE);
 				}
@@ -611,13 +632,13 @@ thread_page(
 
 			case iKeySearchSubjF:			/* subject search */
 			case iKeySearchSubjB:
-				if ((n = search(SEARCH_SUBJ, find_response(thread_basenote, thdmenu.curr), (ch == iKeySearchSubjF))) != -1)
+				if ((n = search(SEARCH_SUBJ, find_response(thread_basenote, thdmenu.curr), (ch == iKeySearchSubjF), repeat_search)) != -1)
 					fixup_thread(n, TRUE);
 				break;
 
 			case iKeySearchAuthF:			/* author search */
 			case iKeySearchAuthB:
-				if ((n = search(SEARCH_AUTH, find_response(thread_basenote, thdmenu.curr), (ch == iKeySearchAuthF))) != -1)
+				if ((n = search(SEARCH_AUTH, find_response(thread_basenote, thdmenu.curr), (ch == iKeySearchAuthF), repeat_search)) != -1)
 					fixup_thread(n, TRUE);
 				break;
 
@@ -1382,9 +1403,7 @@ enter_pager(
 	int i;
 
 again:
-	i = show_page(&CURR_GROUP, art, &thdmenu.curr);
-
-	switch (i) {
+	switch ((i = show_page(&CURR_GROUP, art, &thdmenu.curr))) {
 		/* These exit to previous menu level */
 		case GRP_QUIT:				/* 'Q' all the way out */
 		case GRP_RETURN:			/* 'T' back to select menu */

@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2002-11-20
+ *  Updated   : 2003-01-16
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2003 Jason Faultless <jason@radar.tele2.co.uk>
@@ -105,8 +105,7 @@ expand_ctrl_chars(
 				*q++ = ' ';
 				space--;
 			}
-
-		} else if (((*p) & 0xFF) < ' ' && *p != '\n') {	/* Literal ctrl chars */
+		} else if (((*p) & 0xFF) < ' ' && *p != '\n' && (!IS_LOCAL_CHARSET("Big5") || *p != 27)) {	/* Literal ctrl chars */
 			*q++ = '^';
 			if (--space) {
 				*q++ = ((*p) & 0xFF) + '@';
@@ -793,7 +792,7 @@ process_text_body_part(
 		if (expand_ctrl_chars(to, line, sizeof(to) - 1, cook_width))
 			flags |= C_CTRLL;				/* Line contains form-feed */
 
-		put_cooked(wrap_lines, flags, "%s", to);
+		put_cooked(wrap_lines && (!IS_LOCAL_CHARSET("Big5")), flags, "%s", to);
 	} /* while */
 
 	/*

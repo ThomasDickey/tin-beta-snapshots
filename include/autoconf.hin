@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2002-10-02
+ *  Updated   : 2003-01-22
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2003 Thomas Dickey <dickey@invisible-island.net>
@@ -71,7 +71,7 @@
 #	undef NEED_PTEM_H
 
 /*
- * MacOS X needs some extras but doesn't define a usefull macro
+ * Mac OS X need some extras
  */
 #	undef MAC_OS_X
 

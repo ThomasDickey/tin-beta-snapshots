@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-04-15
+ *  Updated   : 2003-01-27
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -56,6 +56,7 @@
 #define PAGE_HEADER	4
 #define ARTLINES	(NOTESLINES - (PAGE_HEADER - INDEX_TOP))
 
+/* char i_key_search_last;*/			/* for repeated search */
 int curr_line;			/* current line in art (indexed from 0) */
 static FILE *note_fp;			/* active stream (raw or cooked) */
 static int artlines;			/* active # of lines in pager */
@@ -328,6 +329,7 @@ show_page(
 	int old_sort_art_type = tinrc.sort_article_type;
 	int art_type = GROUP_TYPE_NEWS;
 	t_bool mouse_click_on = TRUE;
+	t_bool repeat_search = FALSE;
 
 	filtered_articles = FALSE;	/* used in thread level */
 	make_group_path(group->name, group_path);
@@ -351,7 +353,14 @@ show_page(
 	resize_article(TRUE, &pgart);
 
 	forever {
-		switch ((ch = handle_pager_keypad(&menukeymap.page_nav))) {
+		if ((ch = handle_pager_keypad(&menukeymap.page_nav)) == iKeySearchRepeat) {
+			ch = i_key_search_last;
+			repeat_search = TRUE;
+		}
+		else
+			repeat_search = FALSE;
+
+		switch (ch) {
 			case iKeyAbort:       /* Abort */
 				break;
 
@@ -570,8 +579,9 @@ page_goto_next_unread:
 
 			case iKeySearchSubjF:	/* search in article */
 			case iKeySearchSubjB:
-				if ((i = search_article((ch == iKeySearchSubjF), search_line, artlines, artline, reveal_ctrl_l_lines, note_fp)) == -1)
+				if ((i = search_article((ch == iKeySearchSubjF), repeat_search, search_line, artlines, artline, reveal_ctrl_l_lines, note_fp)) == -1)
 					break;
+
 				if (ch == iKeySearchSubjB && !reveal_ctrl_l) {
 					reveal_ctrl_l_lines = curr_line + ARTLINES - 1;
 					draw_page(group->name, 0);
@@ -580,7 +590,7 @@ page_goto_next_unread:
 				break;
 
 			case iKeySearchBody:	/* article body search */
-				if ((n = search_body(this_resp)) != -1) {
+				if ((n = search_body(this_resp, repeat_search)) != -1) {
 					this_resp = n;			/* Stop load_article() changing context again */
 					if (load_article(n) < 0)
 						return GRP_ARTFAIL;
@@ -709,7 +719,7 @@ page_goto_next_unread:
 
 			case iKeySearchAuthF:	/* author search forward */
 			case iKeySearchAuthB:	/* author search backward */
-				if ((n = search(SEARCH_AUTH, this_resp, (ch == iKeySearchAuthF))) < 0)
+				if ((n = search(SEARCH_AUTH, this_resp, (ch == iKeySearchAuthF), repeat_search)) < 0)
 					break;
 				if (load_article(n) < 0)
 					return GRP_ARTFAIL;
@@ -980,8 +990,12 @@ print_message_page(
 			}
 		} else
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-			if ((int) strlen(line) >= cCOLS)
-				bytes = cCOLS;
+			if (IS_LOCAL_CHARSET("Big5"))
+				bytes = 2 * cCOLS;
+			else {
+				if ((int) strlen(line) >= cCOLS)
+					bytes = cCOLS;
+			}
 		line[bytes] = '\0';
 
 		/*
@@ -1023,15 +1037,15 @@ print_message_page(
 		 */
 		if (word_highlight && (curr->flags & C_BODY) && !(curr->flags & C_CTRLL)) {
 #ifdef HAVE_COLOR
-			highlight_regexes(i + scroll_region_top, &slashes_regex, use_color ? tinrc.col_markslash : -1);
-			highlight_regexes(i + scroll_region_top, &stars_regex, use_color ? tinrc.col_markstar : -1);
-			highlight_regexes(i + scroll_region_top, &underscores_regex, use_color ? tinrc.col_markdash : -1);
-			highlight_regexes(i + scroll_region_top, &strokes_regex, use_color ? tinrc.col_markstroke : -1);
+			highlight_regexes(i + scroll_region_top, &slashes_regex, use_color ? tinrc.col_markslash : tinrc.mono_markslash);
+			highlight_regexes(i + scroll_region_top, &stars_regex, use_color ? tinrc.col_markstar : tinrc.mono_markstar);
+			highlight_regexes(i + scroll_region_top, &underscores_regex, use_color ? tinrc.col_markdash : tinrc.mono_markdash);
+			highlight_regexes(i + scroll_region_top, &strokes_regex, use_color ? tinrc.col_markstroke : tinrc.mono_markstroke);
 #else
-			highlight_regexes(i + scroll_region_top, &slashes_regex, -1);
-			highlight_regexes(i + scroll_region_top, &stars_regex, -1);
-			highlight_regexes(i + scroll_region_top, &underscores_regex, -1);
-			highlight_regexes(i + scroll_region_top, &strokes_regex, -1);
+			highlight_regexes(i + scroll_region_top, &slashes_regex, tinrc.mono_markslash);
+			highlight_regexes(i + scroll_region_top, &stars_regex, tinrc.mono_markstar);
+			highlight_regexes(i + scroll_region_top, &underscores_regex, tinrc.mono_markdash);
+			highlight_regexes(i + scroll_region_top, &strokes_regex, tinrc.mono_markstroke);
 #endif /* HAVE_COLOR */
 		}
 
@@ -1604,6 +1618,8 @@ process_url(
 
 /*
  * Re-cook an article
+ *
+ * TODO: check cook_article()s return code
  */
 void
 resize_article(
@@ -1635,6 +1651,7 @@ info_pager(
 	int ch;
 	int offset;
 
+	search_line = -1;
 	info_file = info_fh;
 	info_title = title;
 	curr_info_line = 0;
@@ -1735,7 +1752,11 @@ info_pager(
 
 			case iKeySearchSubjF:
 			case iKeySearchSubjB:
-				if ((search_article((ch == iKeySearchSubjF), search_line, num_info_lines, infoline, num_info_lines -1, info_file)) == -1)
+			case iKeySearchRepeat:
+				if (ch == iKeySearchRepeat && i_key_search_last != iKeySearchSubjF && i_key_search_last != iKeySearchSubjB)
+					break;
+
+				if ((search_article((ch == iKeySearchSubjF), (ch == iKeySearchRepeat), search_line, num_info_lines, infoline, num_info_lines - 1, info_file)) == -1)
 					break;
 
 				process_search(&curr_info_line, num_info_lines, NOTESLINES, INFO_PAGER);

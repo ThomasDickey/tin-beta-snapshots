@@ -1,4 +1,49 @@
--- 1.5.16 release 20021229 "" --
+-- 1.5.17 release 20030201 "" --
+
+ 046) Urs Janssen <urs@tin.org>
+      BUG. comma separate group list in attribute scope didn't work   
+      FIX. attrib.c
+
+U135) Michael Bienia <michael@vorlon.ping.de>
+      ADD. word highlighting for monochrom terminals
+      FIX. extern.h, tin.h, tinrc.h, config.c, curses.c, init.c, lang.c
+           page.c, regex.c, tcurses.c, tincfg.tbl, tin.1, tin.5
+
+U134) Sebastian Bork
+      ADD. manpage update
+      FIX. tin.1, tin.5
+
+U133) Urs Janssen <urs@tin.org>
+      BUG. used fprintf(stderr) instead of error_message()
+      BUG. hypothetical use of undefined FOLD_TO_UPPER() macro
+      ADD. commented out some unused code
+      ADD. config.guess, config.sub update
+      FIX. curses.c, keymap.c, tcurses.c. proto.h, string.c, config.guess
+           config.sub
+
+-- 1.5.16 release 20030125 "Bubbles" --
+
+ 045) Urs Janssen <urs@tin.org>
+      ADD. remove Message-IDs with illegal chars (i.e. 8bit chars) from
+           References
+      BUG. tabs weren't removed from (folded) References lines when
+           creating local overviews
+      REM. tinrc.tab_after_X_selection as it didn't work for years now
+           and nobody complained about it
+      FIX. art.c, config.c, init.c, lang.c, post.c, extern.h, tinrc.h, tin.1
+
+U132) Yen-Ming Lee <leeym@leeym.com>
+      Urs Janssen <urs@tin.org>
+      ADD. define Big5 printable chars
+      BUG. my_isprint() in NO_LOCALE case did depend on the network charset
+           not on the local charset
+      FIX. charset.c, cook.c, misc.c, page.c, tin.h
+
+U131) Michael Velten <tin@michnet.de>
+      BUG. prompt_option_char allowed empty strings
+      ADD. '\' search again
+      FIX. extern.h, keymap.h, menukeys.h, proto.h, config.c, group.c, help.c
+           keymap.c, lang.c, page.c, prompt.c, search.c, select.c, thread.c
 
 U130) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. compile-check that ncurses/ncursesw header files are
@@ -7,7 +52,11 @@ U130) Thomas E. Dickey <dickey@invisible-island.net>
 
 U129) Michael Bienia <michael@vorlon.ping.de>
       ADD. make tin_getline() multibyte safe
-      FIX. proto.h, tcurses.h, curses.c, getline.c, tcurses.c
+      BUG. GroupDoAutoSel didn't do anything usefull
+      BUG. memory corruptions when compiled in a multibyte-able environment
+           without using ncurses
+      FIX. proto.h, tcurses.h, charset.c, curses.c, getline.c, group.c
+           memory.c, string.c, tcurses.c, thread.c, tin.1
 
 U128) Olaf Dietrich <olaf@dtrx.de>
       BUG. TeX2ISO was done before charset conversion
@@ -27,14 +76,19 @@ U125) Urs Janssen <urs@tin.org>
       BUG. typo fixed
       BUG. used tin_done() instead of giveup() in init_selfinfo()
       BUG. used network_charset in cached oevrviews instead of local_charset
+      BUG. a 'local' unknown group in the Newsgroup line caused a crash if
+           listed as first group
       ADD. autotruncation of Menu items to 35 chars
       ADD. allow negative values for wrap_column
       ADD. config.guess, config.sub update
       ADD. don't read keymap file in batch-mode
-      FIX. proto.h, tinrc.h, art.c, config.c, cook.c, feed.c, inews.c, init.c
-           keymap.c, lang.c, main.c, misc.c, post.c, rfc2047.c, tin.1, tin.5
-           tin.pot, de.po, et.po, en_GB.po, config.guess, config.sub
-           aclocal.m4
+      ADD. disabled Mac OS X specific charset stuff as it's not needed
+           anymore in current OS X versions
+      REM. some unnecessary casts
+      FIX. proto.h, tinrc.h, art.c, config.c, cook.c, feed.c, filter.c
+           inews.c, init.c, keymap.c, lang.c, main.c, misc.c, nrctbl.c
+           post.c, rfc2047.c, tcurses.c, tin.1, tin.5, tin.pot, de.po, et.po
+           en_GB.po, config.guess, config.sub, aclocal.m4, Makefile.[in]
 
 U124) Toomas Soome <Toomas.Soome@microlink.ee>
       ADD. updated estonian translation

@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-12-04
+ *  Updated   : 2003-01-16
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -51,10 +51,6 @@
 #	include "rfc2046.h"
 #endif /* !RFC2046_H */
 
-#ifdef MAC_OS_X
-#	include <CoreFoundation/CoreFoundation.h>
-#endif /* MAC_OS_X */
-
 /*
  * defines to control GNKSA-checks behavior:
  * - ENFORCE_RFC1034
@@ -82,13 +78,13 @@ static void write_input_history_file(void);
 #ifdef CHARSET_CONVERSION
 	static char *utf8_valid(char *line);
 #endif /* CHARSET_CONVERSION */
-#if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
+#ifdef LOCAL_CHARSET
 	static void buffer_to_local(char *line);
 #else
 #	ifdef CHARSET_CONVERSION
 	static t_bool buffer_to_local(char **line, int *max_line_len, const char *network_charset, const char *local_charset);
 #	endif /* CHARSET_CONVERSION */
-#endif /* LOCAL_CHARSET || MAC_OS_X */
+#endif /* LOCAL_CHARSET */
 #if (defined(MIME_STRICT_CHARSET) && !defined(NO_LOCALE)) || defined(CHARSET_CONVERSION)
 	static void buffer_to_ascii(char *c);
 #endif /* (MIME_STRICT_CHARSET && !NO_LOCALE) || CHARSET_CONVERSION */
@@ -1055,30 +1051,21 @@ my_isprint(
 	/* use locale */
 	return isprint(c);
 #else
-#	if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
+#	ifdef LOCAL_CHARSET
 		/* use some conversation table */
 		return (isprint(c) || (c >= 0x80 && c <= 0xff));
 #	else
-#		ifdef CHARSET_CONVERSION
-	if (!strncasecmp(txt_mime_charsets[tinrc.mm_network_charset], "ISO-8859", 8))
+	if (IS_LOCAL_CHARSET("ISO-8859"))
 		return (isprint(c) || (c >= 0xa0 && c <= 0xff));
-	else if (!strncasecmp(txt_mime_charsets[tinrc.mm_network_charset], "ISO-2022", 8))
+	else if (IS_LOCAL_CHARSET("ISO-2022"))
 		return (isprint(c) || (c == 0x1b));
-	else if (!strncasecmp(txt_mime_charsets[tinrc.mm_network_charset], "EUC-", 4) || !strncasecmp(txt_mime_charsets[tinrc.mm_network_charset], "Big5", 4))
+	else if (IS_LOCAL_CHARSET("Big5"))
+		return (isprint(c) || (c >= 0x40 && c <= 0xfe && c != 0x7f));
+	else if (IS_LOCAL_CHARSET("EUC-"))
 		return 1;
 	else /* KOI8-* and UTF-8 */
 		return (isprint(c) || (c >= 0x80 && c <= 0xff));
-#		else
-	if (!strncasecmp(tinrc.mm_charset, "ISO-8859", 8))
-		return (isprint(c) || (c >= 0xa0 && c <= 0xff));
-	else if (!strncasecmp(tinrc.mm_charset, "ISO-2022", 8))
-		return (isprint(c) || (c == 0x1b));
-	else if (!strncasecmp(tinrc.mm_charset, "EUC-", 4) || !strncasecmp(tinrc.mm_charset, "Big5", 4))
-		return 1;
-	else /* KOI8-* and UTF-8 */
-		return (isprint(c) || (c >= 0x80 && c <= 0xff));
-#		endif /* CHARSET_CONVERSION */
-#	endif /* LOCAL_CHARSET || MAC_OS_X */
+#	endif /* LOCAL_CHARSET */
 #endif /* !NO_LOCALE */
 }
 
@@ -2445,7 +2432,7 @@ strip_name(
 }
 
 
-#if defined(LOCAL_CHARSET) && !defined(MAC_OS_X)
+#ifdef LOCAL_CHARSET
 /*
  * convert between local and network charset (e.g. NeXT and latin1)
  */
@@ -2511,55 +2498,7 @@ buffer_to_network(
 	for (; *b; b++)
 		*b = to_network(*b);
 }
-
-
-#else
-#	ifdef MAC_OS_X
-static void
-buffer_to_local(
-	char *b)
-{
-	CFStringRef convb;
-	char *oldb = my_strdup(b);
-
-	if (!oldb)
-		return;
-
-	convb = CFStringCreateWithCString(NULL, b, kCFStringEncodingISOLatin9);
-
-	if (convb) {
-		CFStringGetCString(convb, b, strlen(b) + 1, CFStringGetSystemEncoding());
-		CFRelease(convb);
-		if (!strlen(b))
-			strcpy(b, oldb);
-	}
-	free(oldb);
-}
-
-
-void
-buffer_to_network(
-	char *b,
-	int mmnwcharset)
-{
-	CFStringRef convb;
-	char *oldb = my_strdup(b);
-
-	if (!oldb)
-		return;
-
-	convb = CFStringCreateWithCString(NULL, b, CFStringGetSystemEncoding());
-
-	if (convb) {
-		CFStringGetCString(convb, b, strlen(b) + 1, kCFStringEncodingISOLatin9);
-		CFRelease(convb);
-		if (!strlen(b))
-			strcpy(b, oldb);
-	}
-	free(oldb);
-}
-#	endif /* MAC_OS_X */
-#endif /* LOCAL_CHARSET && !MAC_OS_X */
+#endif /* LOCAL_CHARSET */
 
 
 #ifdef CHARSET_CONVERSION
@@ -2812,9 +2751,9 @@ process_charsets(
 		buffer_to_ascii(*line);
 #	endif /* MIME_STRICT_CHARSET && !NO_LOCALE */
 	/* charset conversion (codepage version) */
-#	if defined(LOCAL_CHARSET) || defined(MAC_OS_X)
+#	ifdef LOCAL_CHARSET
 	buffer_to_local(*line);
-#	endif /* LOCAL_CHARSET || MAC_OS_X */
+#	endif /* LOCAL_CHARSET */
 #endif /* CHARSET_CONVERSION */
 
 	/*

@@ -260,9 +260,7 @@ get_user_name(
 #		endif /* VMS */
 	}
 #	else
-	pw = getpwuid(getuid());
-
-	if (pw != NULL)
+	if ((pw = getpwuid(getuid())) != NULL)
 		strcpy(username, pw->pw_name);
 	else {
 		error_message(_(txt_error_passwd_missing));
@@ -300,18 +298,19 @@ get_full_name(
 	STRCPY(fullname, fix_fullname(get_uaf_fullname()));
 #	else
 #		ifndef DONT_HAVE_PW_GECOS
-	pw = getpwuid(getuid());
-	STRCPY(buf, pw->pw_gecos);
-	if ((p = strchr(buf, ',')))
-		*p = '\0';
-	if ((p = strchr(buf, '&'))) {
-		*p++ = '\0';
-		STRCPY(tmp, pw->pw_name);
-		if (*tmp && isalpha((int)(unsigned char) *tmp) && islower((int)(unsigned char) *tmp))
-			*tmp = toupper((int)(unsigned char) *tmp);
-		snprintf(fullname, sizeof(fullname) - 1, "%s%s%s", buf, tmp, p);
-	} else
-		STRCPY(fullname, buf);
+	if ((pw = getpwuid(getuid())) != NULL) {
+		STRCPY(buf, pw->pw_gecos);
+		if ((p = strchr(buf, ',')))
+			*p = '\0';
+		if ((p = strchr(buf, '&'))) {
+			*p++ = '\0';
+			STRCPY(tmp, pw->pw_name);
+			if (*tmp && isalpha((int)(unsigned char) *tmp) && islower((int)(unsigned char) *tmp))
+				*tmp = toupper((int)(unsigned char) *tmp);
+			snprintf(fullname, sizeof(fullname) - 1, "%s%s%s", buf, tmp, p);
+		} else
+			STRCPY(fullname, buf);
+	}
 #		endif /* !DONT_HAVE_PW_GECOS */
 #	endif /* VMS */
 	return fullname;

@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-04-11
+ *  Updated   : 2003-01-21
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -168,7 +168,11 @@ init_screen_array(
 		screen = my_malloc(sizeof(struct t_screen) * cLINES + 1);
 
 		for (i = 0; i < cLINES; i++)
+#	if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			screen[i].col = my_malloc((size_t) (cCOLS * MB_CUR_MAX + 2));
+#	else
 			screen[i].col = my_malloc((size_t) (cCOLS + 2));
+#	endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	} else {
 		if (screen != NULL) {
 			for (i = 0; i < cLINES; i++)

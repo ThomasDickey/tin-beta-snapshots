@@ -468,7 +468,7 @@ fprintf(stderr, "save_arts, create_path(%s)\n", save[0].path);
 	if (!create_path(save[0].path))
 		return count;
 
-	for (i = 0 ; i < num_save ; i++) {
+	for (i = 0; i < num_save; i++) {
 		/* the tailing spaces are needed for the progress-meter */
 		wait_message(0, "%s%d  ", _(txt_saving), i + 1);
 
@@ -796,7 +796,7 @@ sort_save_list(
 /*
  * Return the name of the file to be saved from save[i]
  * The name is used for reporting purposes only, so whatever reads most
- * usefully is returned. for mailboxes we return the full path.
+ * usefuly is returned. for mailboxes we return the full path.
  */
 static const char *
 get_first_savefile(

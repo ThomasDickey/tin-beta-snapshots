@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2002-11-08
+ *  Updated   : 2003-01-16
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2003 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -381,17 +381,11 @@ convert_to_printable(
 	char *buf)
 {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	wchar_t *wc;
 	wchar_t wbuffer[LEN];
 	char buffer[LEN];
 
 	if (mbstowcs(wbuffer, buf, LEN - 1) != (size_t) (-1)) {
-		for (wc = wbuffer; *wc; wc++) {
-			if (!iswprint((wint_t) *wc))
-				*wc = (wchar_t) '?';
-		}
-		wc++;
-		*wc = (wchar_t) '\0';
+		wconvert_to_printable(wbuffer);
 
 		wcstombs(buffer, wbuffer, LEN - 1);
 		buffer[LEN - 1] = '\0';
@@ -407,6 +401,23 @@ convert_to_printable(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	return buf;
 }
+
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+wchar_t *
+wconvert_to_printable(
+	wchar_t *wbuf)
+{
+	wchar_t *wc;
+
+	for (wc = wbuf; *wc; wc++) {
+		if (!iswprint((wint_t) *wc))
+			*wc = (wchar_t) '?';
+	}
+
+	return wbuf;
+}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 
 /*
@@ -429,11 +440,9 @@ convert_body2printable(
 
 	if (mbstowcs(wbuffer, buf, LEN - 1) != (size_t) (-1)) {
 		for (wc = wbuffer; *wc; wc++) {
-			if (!(iswprint((wint_t) *wc) || *wc == (wchar_t) 8 || *wc == (wchar_t) 9 || *wc == (wchar_t) 10 || *wc == (wchar_t) 12 || *wc == (wchar_t) 13))
+			if (!(iswprint((wint_t) *wc) || *wc == (wchar_t) 8 || *wc == (wchar_t) 9 || *wc == (wchar_t) 10 || *wc == (wchar_t) 12 || *wc == (wchar_t) 13 || (IS_LOCAL_CHARSET("Big5") && *wc == (wchar_t) 27)))
 				*wc = (wchar_t) '?';
 		}
-		wc++;
-		*wc = (wchar_t) '\0';
 
 		wcstombs(buffer, wbuffer, LEN - 1);
 		buffer[LEN - 1] = '\0';
@@ -443,7 +452,7 @@ convert_body2printable(
 	unsigned char *c;
 
 	for (c = (unsigned char *) buf; *c; c++) {
-		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13))
+		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13 || (IS_LOCAL_CHARSET("Big5") && *c == 27)))
 			*c = '?';
 	}
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */

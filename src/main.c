@@ -651,7 +651,7 @@ read_cmd_line_options(
 
 				error_message("Characteristics:");
 				error_message("\t"
-/* TODO: complete list and do some usefull grouping */
+/* TODO: complete list and do some useful grouping */
 #ifdef NNTP_ONLY
 				"+NNTP_ONLY "
 #else

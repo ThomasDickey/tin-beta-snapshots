@@ -15,6 +15,7 @@ SearchSubjF			/
 SearchSubjB			?
 SearchAuthB			A
 SearchBody			B
+SearchRepeat			\
 ToggleHelpDisplay		H
 ToggleInverseVideo		I
 LookupMessage			L

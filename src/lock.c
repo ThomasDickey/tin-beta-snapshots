@@ -40,13 +40,13 @@
 
 #if !defined(USE_FLOCK) && !defined(USE_LOCKF) && !defined(USE_FCNTL)
 #	ifdef HAVE_FCNTL
-#		define USE_FCNTL
+#		define USE_FCNTL 1
 #	else
 #		ifdef HAVE_LOCKF
-#			define USE_LOCKF
+#			define USE_LOCKF 1
 #		else
 #			ifdef HAVE_FLOCK
-#				define USE_FLOCK
+#				define USE_FLOCK 1
 #			endif /* HAVE_FLOCK */
 #		endif /* HAVE_LOCKF */
 #	endif /* HAVE_FCNTL */

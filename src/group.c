@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2002-11-11
+ *  Updated   : 2003-01-31
  *  Notes     :
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -46,13 +46,15 @@
 #endif /* !MENUKEYS_H */
 
 #define INDEX2SNUM(i)	((i) % NOTESLINES)
-#define INDEX2LNUM(i)	(INDEX_TOP + INDEX2SNUM(i))
+#ifdef USE_CURSES
+#	define INDEX2LNUM(i)	(INDEX_TOP + INDEX2SNUM(i))
+#endif /* USE_CURSES */
 
 /* 3+1+3; width(art_mark) + space + width(unread count) */
 #define MAGIC	7
 
 char *glob_group;
-
+/* int i_key_search_last; */				/* for repeated search */
 int max_from = 0;
 int max_subj = 0;
 
@@ -64,7 +66,7 @@ static int thread_depth;			/* Starting depth in threads we enter */
 /*
  * Local prototypes
  */
-static int do_search(int type, t_bool forward);
+static int do_search(int type, t_bool forward, t_bool repeat);
 static int enter_pager(int art, t_bool ignore_unavail);
 static int enter_thread(int depth, t_pagerinfo *page);
 static int group_catchup(int ch);
@@ -160,6 +162,8 @@ group_page(
 	t_bool flag;
 	t_bool range_active = FALSE;		/* Set if a range is defined */
 	t_bool xflag = FALSE;	/* 'X'-flag */
+	t_bool repeat_search = FALSE;
+
 
 	/*
 	 * Set the group attributes
@@ -202,7 +206,14 @@ group_page(
 
 	while (ret_code >= 0) {
 		set_xclick_on();
-		switch (ch = handle_keypad(group_left, group_right, &menukeymap.group_nav)) {
+		if ((ch = handle_keypad(group_left, group_right, &menukeymap.group_nav)) == iKeySearchRepeat) {
+			ch = i_key_search_last;
+			repeat_search = TRUE;
+		}
+		else
+			repeat_search = FALSE;
+
+		switch (ch) {
 			case iKeyAbort:		/* Abort */
 				break;
 
@@ -281,19 +292,19 @@ group_page(
 
 			case iKeySearchAuthF:	/* author forward/backward  search */
 			case iKeySearchAuthB:
-				if ((thread_depth = do_search(SEARCH_AUTH, (ch == iKeySearchAuthF))) != 0)
+				if ((thread_depth = do_search(SEARCH_AUTH, (ch == iKeySearchAuthF), repeat_search)) != 0)
 					ret_code = enter_thread(thread_depth, NULL);
 				break;
 
 			case iKeySearchSubjF:	/* subject forward/backward search */
 			case iKeySearchSubjB:
-				if ((thread_depth = do_search(SEARCH_SUBJ, (ch == iKeySearchSubjF))) != 0)
+				if ((thread_depth = do_search(SEARCH_SUBJ, (ch == iKeySearchSubjF), repeat_search)) != 0)
 					ret_code = enter_thread(thread_depth, NULL);
 				break;
 
 			case iKeySearchBody:	/* search article body */
 				if (grpmenu.curr >= 0) {
-					if ((n = search_body((int) base[grpmenu.curr])) != -1)
+					if ((n = search_body((int) base[grpmenu.curr], repeat_search)) != -1)
 						ret_code = enter_pager(n, FALSE);
 				} else
 					info_message(_(txt_no_arts));
@@ -896,8 +907,11 @@ group_page(
 				break;
 
 			case iKeyGroupDoAutoSel:		/* perform auto-selection on group */
-				undo_auto_select_arts();
-				xflag = FALSE;
+				for (n = 0; n < grpmenu.max; n++) {
+					for_each_art_in_thread(i, n)
+						arts[i].selected = TRUE;
+				}
+				update_group_page();
 				break;
 
 			case iKeyToggleInfoLastLine:
@@ -1228,6 +1242,7 @@ build_sline(
 	char *buffer;
 #endif /* USE_CURSES */
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	size_t len;
 	wchar_t format[32];
 	wchar_t wbuffer[LEN];
 	wchar_t tmp_subj[256], tmp_subj2[256];
@@ -1298,10 +1313,6 @@ build_sline(
 #endif /* !USE_CURSES */
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	/* wcswidth() in wcspart() depends that all characters are printable */
-	convert_to_printable(arts_sub);
-	convert_to_printable(from);
-
 	mbstowcs(tmp_subj2, arts_sub, ARRAY_SIZE(tmp_subj2) - 1);
 	mbstowcs(tmp_from2, from, ARRAY_SIZE(tmp_from2) - 1);
 
@@ -1321,7 +1332,13 @@ build_sline(
 			 spaces, tmp_from);
 	}
 
-	wcstombs(buffer, wbuffer, BUFSIZ - 1);
+#	ifdef USE_CURSES
+	if ((len = wcstombs(buffer, wbuffer, BUFSIZ - 1)) == (size_t) -1)
+#	else
+	if ((len = wcstombs(buffer, wbuffer, cCOLS * MB_CUR_MAX)) == (size_t) -1)
+#	endif /* USE_CURSES */
+		len = 0;
+	buffer[len] = '\0';
 #else
 	arts_sub[len_subj - 12 + 1] = '\0';
 
@@ -1337,11 +1354,13 @@ build_sline(
 			 spaces, len_from, len_from, from);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
+#ifdef USE_CURSES
 	/*
 	 * protect display from non-displayable characters (e.g., form-feed)
 	 * and write line.
 	 */
 	WriteLine(INDEX2LNUM(i), convert_to_printable(buffer));
+#endif /* USE_CURSES */
 }
 
 
@@ -1425,7 +1444,8 @@ show_group_title(
 static int
 do_search(
 	int type,
-	t_bool forward)
+	t_bool forward,
+	t_bool repeat)
 {
 	int start, n;
 
@@ -1437,7 +1457,7 @@ do_search(
 	 */
 	start = (forward && grpmenu.curr < grpmenu.max - 1) ? prev_response((int) base[grpmenu.curr + 1]) : (int) base[grpmenu.curr];
 
-	if ((n = search(type, start, forward)) != -1) {
+	if ((n = search(type, start, forward, repeat)) != -1) {
 		grpmenu.curr = which_thread(n);
 
 		/*

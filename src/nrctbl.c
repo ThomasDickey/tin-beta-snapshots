@@ -3,7 +3,7 @@
  *  Module    : nrctbl.c
  *  Author    : Sven Paulus <sven@tin.org>
  *  Created   : 1996-10-06
- *  Updated   : 1997-12-26
+ *  Updated   : 2003-01-18
  *  Notes     : This module does the NNTP server name lookup in
  *              ~/.tin/newsrctable and returns the real hostname
  *              and the name of the newsrc file for a given
@@ -100,7 +100,7 @@ get_nntpserver(
 			line_entry_counter = 0;
 
 			if (!strchr("# ;", line[0])) {
-				while ((line_entry = strtok(line_entry_counter ? 0 : line, " \t\n")) != 0) {
+				while ((line_entry = strtok(line_entry_counter ? NULL : line, " \t\n")) != NULL) {
 					line_entry_counter++;
 
 					if (line_entry_counter == 1)
@@ -143,7 +143,7 @@ get_newsrcname(
 			line_entry_counter = 0;
 
 			if (!strchr("# ;", line[0])) {
-				while ((line_entry = strtok(line_entry_counter ? 0 : line, " \t\n")) != 0) {
+				while ((line_entry = strtok(line_entry_counter ? NULL : line, " \t\n")) != NULL) {
 					line_entry_counter++;
 
 					if ((line_entry_counter == 1) && (!strcasecmp(line_entry, nntpserver_name))) {

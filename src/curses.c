@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2002-12-18
+ *  Updated   : 2003-01-31
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -63,9 +63,7 @@ static int _inraw = FALSE;	/* are we IN rawmode? */
 static int xclicks = FALSE;	/* do we have an xterm? */
 t_bool have_linescroll = FALSE;
 
-#define BACKSPACE        '\b'
-#define VERY_LONG_STRING 2500
-#define TTYIN            0
+#define TTYIN	0
 
 #ifdef HAVE_CONFIG_H
 
@@ -167,7 +165,8 @@ static char *_clearscreen, *_moveto, *_cleartoeoln, *_cleartoeos,
 			*_setinverse, *_clearinverse, *_setunderline, *_clearunderline,
 			*_xclickinit, *_xclickend, *_cursoron, *_cursoroff,
 			*_terminalinit, *_terminalend, *_keypadlocal, *_keypadxmit,
-			*_scrollregion, *_scrollfwd, *_scrollback;
+			*_scrollregion, *_scrollfwd, *_scrollback,
+			*_reset, *_reversevideo, *_blink, *_dim, *_bold;
 
 #ifdef M_AMIGA
 static char *_getwinsize;
@@ -301,6 +300,12 @@ get_termcaps(
 		{ &_setunderline,	CAPNAME("us", "smul") },
 		{ &_terminalend,	CAPNAME("te", "rmcup") },
 		{ &_terminalinit,	CAPNAME("ti", "smcup") },
+		/* extra caps needed for word highlighting */
+		{ &_reset,		CAPNAME("me", "sgr0") },
+		{ &_reversevideo,	CAPNAME("mr", "rev") },
+		{ &_blink,		CAPNAME("mb", "blink") },
+		{ &_dim,		CAPNAME("mh", "dim") },
+		{ &_bold,		CAPNAME("mb", "bold") },
 	};
 
 	static char _terminal[1024];		/* Storage for terminal entry */
@@ -441,6 +446,12 @@ InitScreen(
 	_terminalinit	= NULL;
 	_terminalend	= "";
 #	endif /* VMS */
+	/* needed for word highlighting */
+	_reset		= "\033[0m";
+	_reversevideo	= "\033[7m";
+	_blink		= "\033[5m";
+	_dim		= "\033[2m";
+	_bold		= "\033[1m";
 
 	_lines = _columns = -1;
 
@@ -688,7 +699,7 @@ CleartoEOS(
 	if (_cleartoeos) {
 		tputs(_cleartoeos, 1, outchar);
 	} else {
-		for (i = _line - 1 ; i < _lines ; i++) {
+		for (i = _line - 1; i < _lines; i++) {
 			MoveCursor(i, 0);
 			CleartoEOLN();
 		}
@@ -794,6 +805,7 @@ EndInverse(
 }
 
 
+#if 0 /* doesn't work correct with ncurses4.x */
 /*
  * toggle inverse video mode
  */
@@ -806,6 +818,7 @@ ToggleInverse(
 	else
 		EndInverse();
 }
+#endif /* 0 */
 
 
 /*
@@ -900,7 +913,7 @@ PROFILE_ON();
 				if (result <= 0) return EOF;
 			} while (buf[buflen++] < 0x40);
 
-			switch (buf[buflen-1]) {
+			switch (buf[buflen - 1]) {
 				char *ptr;
 				long class;
 
@@ -1088,7 +1101,6 @@ highlight_string(
 }
 
 
-#ifdef HAVE_COLOR
 /*
  * Color 'size' chars at (row,col) with 'color' and handle marks
  */
@@ -1099,7 +1111,19 @@ word_highlight_string(
 	int size,
 	int color)
 {
+	/*
+	 * Mapping of the tinrc.mono_mark* values to the corresponding escape sequences
+	 */
+	char *attributes[MAX_ATTR];
 	char tmp[LEN];
+
+	attributes[0] = _reset;	/* Normal */
+	attributes[1] = _setinverse;	/* Best highlighting */
+	attributes[2] = _setunderline;	/* Underline */
+	attributes[3] = _reversevideo;	/* Reverse video */
+	attributes[4] = _blink;	/* Blink */
+	attributes[5] = _dim;	/* Dim */
+	attributes[6] = _bold;	/* Bold */
 
 	MoveCursor(row, col);
 	my_strncpy(tmp, &(screen[row].col[col]), size);
@@ -1115,20 +1139,36 @@ word_highlight_string(
 				break;
 
 			case 2: /* print space */
+				MoveCursor(row, col + size - 1);
+				my_fputs(" ", stdout);
+				MoveCursor(row, col);
+				my_fputs(" ", stdout);
 				tmp[0] = tmp[size - 1] = ' ';
+				str_trim(tmp);
 				break;
 
 			default:	/* print mark (case 1) */
 				break;
 		}
 	}
-	fcol(color);
+#	ifdef HAVE_COLOR
+	if (use_color)
+		fcol(color);
+	else
+#	endif /* HAVE_COLOR */
+		if (color > 0 && color <= MAX_ATTR && !NO_CAP(attributes[color]))
+			tputs(attributes[color], 1, outchar);
 	my_fputs(tmp, stdout);
 	my_flush();
-	fcol(tinrc.col_text);
+#	ifdef HAVE_COLOR
+	if (use_color)
+		fcol(tinrc.col_text);
+	else
+#	endif /* HAVE_COLOR */
+		if (!NO_CAP(_reset))
+			tputs(_reset, 1, outchar);
 	stow_cursor();
 }
-#endif /* HAVE_COLOR */
 
 
 /*

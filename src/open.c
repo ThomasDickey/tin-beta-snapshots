@@ -205,8 +205,7 @@ nntp_open(
 	 * which do return ERR_COMMAND if they are feed only servers.
 	 */
 
-	ret = get_respcode(line, sizeof(line));
-	switch (ret) {
+	switch ((ret = get_respcode(line, sizeof(line)))) {
 		case OK_CANPOST:
 /*		case OK_NOIHAVE: */
 #	ifndef NO_POSTING
@@ -256,8 +255,7 @@ nntp_open(
 #	endif /* DEBUG */
 		authenticate(nntp_server, userid, TRUE);
 		put_server("MODE READER");
-		ret = get_respcode(line, sizeof(line));
-		switch (ret) {
+		switch ((ret = get_respcode(line, sizeof(line)))) {
 			case OK_CANPOST:
 /*			case OK_NOIHAVE: */
 #	ifndef NO_POSTING
@@ -423,7 +421,7 @@ get_only_respcode(
 		respcode = (int) strtol(ptr, &end, 10);
 		DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
 	}
-	if (message != NULL) 				/* Pass out the rest of the text */
+	if (message != NULL)		/* Pass out the rest of the text */
 		my_strncpy(message, end, mlen - 1);
 
 #endif /* NNTP_ABLE */

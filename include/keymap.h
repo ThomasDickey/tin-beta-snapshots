@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2000-06-10
+ *  Updated   : 2002-01-07
  *  Notes     :
  *
  * Copyright (c) 1999-2003 Jason Faultless <jason@radar.tele2.co.uk>
@@ -82,6 +82,7 @@ struct k_global {
 	t_keynode Eight;
 	t_keynode Nine;
 	t_keynode SearchSubjB;				/* '?' */
+	t_keynode SearchRepeat;				/* '\\' */
 	t_keynode SearchAuthB;				/* 'A' */
 	t_keynode SearchBody;				/* 'B' */
 	t_keynode ToggleHelpDisplay;		/* 'H' */

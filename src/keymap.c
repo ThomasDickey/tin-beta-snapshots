@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2002-12-01
+ *  Updated   : 2003-01-26
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2003 Dirk Nimmich <nimmich@uni-muenster.de>
@@ -84,6 +84,7 @@ static struct keymap Key = {
 		{ '8', '8', "" },
 		{ '9', '9', "" },
 		{ iKeySearchSubjB, iKeySearchSubjB, "SearchSubjB" },
+		{ iKeySearchRepeat, iKeySearchRepeat, "SearchRepeat" },
 		{ iKeySearchAuthB, iKeySearchAuthB, "SearchAuthB" },
 		{ iKeySearchBody, iKeySearchBody, "SearchBody" },
 		{ iKeyToggleHelpDisplay, iKeyToggleHelpDisplay, "ToggleHelpDisplay" },
@@ -388,7 +389,7 @@ static t_keynode *keys_config_change[] = {
 	&Key.Config.FirstPage2, &Key.Global.LastPage, &Key.Config.LastPage2,
 	&Key.Global.PageUp, &Key.Global.PageUp2, &Key.Global.PageUp3,
 	&Key.Global.PageDown, &Key.Global.PageDown2, &Key.Global.PageDown3,
-	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB, &Key.Config.Select,
+	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB, &Key.Global.SearchRepeat, &Key.Config.Select,
 	&Key.Config.Select2, &Key.Global.RedrawScr, &Key.Global.One,
 	&Key.Global.Two, &Key.Global.Three, &Key.Global.Four, &Key.Global.Five,
 	&Key.Global.Six, &Key.Global.Seven, &Key.Global.Eight, &Key.Global.Nine,
@@ -447,7 +448,7 @@ static t_keynode *keys_group_nav[] = {
 #endif /* !DISABLE_PRINTING */
 	&Key.Group.Repost, &Key.Group.Save, &Key.Group.AutoSaveTagged,
 	&Key.Global.SetRange, &Key.Global.SearchAuthF, &Key.Global.SearchAuthB,
-	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB, &Key.Global.SearchBody,
+	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB, &Key.Global.SearchRepeat, &Key.Global.SearchBody,
 	&Key.Group.ReadBasenote, &Key.Group.ReadBasenote2,
 	&Key.Group.NextUnreadArtOrGrp, &Key.Global.PageDown, &Key.Global.PageDown2,
 	&Key.Global.PageDown3, &Key.Group.AutoSel, &Key.Group.Kill,
@@ -482,7 +483,7 @@ static t_keynode *keys_info_nav[] = {
 	&Key.Global.PageUp2, &Key.Global.PageUp3, &Key.Global.FirstPage,
 	&Key.Help.FirstPage2, &Key.Global.LastPage, &Key.Help.LastPage2,
 	&Key.Global.ToggleHelpDisplay, &Key.Global.SearchSubjF,
-	&Key.Global.SearchSubjB, &Key.Global.Quit, NULL };
+	&Key.Global.SearchSubjB, &Key.Global.SearchRepeat, &Key.Global.Quit, NULL };
 
 static t_keynode *keys_nrctbl_create[] = {
    &Key.Global.Abort, &Key.Nrctbl.Quit, &Key.Nrctbl.Alternative,
@@ -507,8 +508,8 @@ static t_keynode *keys_page_nav[] = {
 #endif /* !DISABLE_PRINTING */
 	&Key.Page.Repost, &Key.Page.Save, &Key.Page.AutoSaveTagged,
 	&Key.Global.SearchAuthF, &Key.Global.SearchAuthB, &Key.Global.SearchSubjF,
-	&Key.Global.SearchSubjB, &Key.Global.SearchBody, &Key.Page.TopThd,
-	&Key.Page.BotThd, &Key.Page.NextThd, &Key.Page.NextThd2,
+	&Key.Global.SearchSubjB, &Key.Global.SearchRepeat, &Key.Global.SearchBody,
+	&Key.Page.TopThd, &Key.Page.BotThd, &Key.Page.NextThd, &Key.Page.NextThd2,
 #ifdef HAVE_PGP_GPG
 	&Key.Page.PGPCheckArticle,
 #endif /* HAVE_PGP_GPG */
@@ -613,7 +614,7 @@ static t_keynode *keys_select_nav[] = {
 	&Key.Global.PageUp2, &Key.Global.PageUp3, &Key.Global.PageDown,
 	&Key.Global.PageDown2, &Key.Global.PageDown3, &Key.Global.Up,
 	&Key.Global.Up2, &Key.Global.Down, &Key.Global.Down2, &Key.Global.SetRange,
-	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB,
+	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB, &Key.Global.SearchRepeat,
 	&Key.Select.ReadGrp, &Key.Select.ReadGrp2, &Key.Select.EnterNextUnreadGrp,
 	&Key.Select.EnterNextUnreadGrp2, &Key.Global.RedrawScr,
 	&Key.Select.ResetNewsrc, &Key.Select.SortActive, &Key.Select.Catchup,
@@ -651,7 +652,7 @@ static t_keynode *keys_thread_nav[] = {
 	&Key.Thread.CatchupNextUnread, &Key.Thread.MarkArtRead,
 	&Key.Thread.ToggleSubjDisplay, &Key.Global.Help,
 	&Key.Global.LookupMessage, &Key.Global.SearchBody,
-	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB,
+	&Key.Global.SearchSubjF, &Key.Global.SearchSubjB, &Key.Global.SearchRepeat,
 	&Key.Global.SearchAuthF, &Key.Global.SearchAuthB,
 	&Key.Global.ToggleHelpDisplay, &Key.Global.ToggleInverseVideo,
 #ifdef HAVE_COLOR
@@ -853,8 +854,7 @@ check_duplicates(
 	for (ptr1 = keyptr1 + 1; ptr1->localkey != '\0'; ++ptr1) {
 		for (ptr2 = (keyptr1 == keyptr2) ? ptr1 + 1 : keyptr2 + 1; ptr2->localkey != '\0'; ++ptr2) {
 			if (ptr1->localkey == ptr2->localkey) {
-				fprintf(stderr, _(txt_keymap_conflict), printascii(buf, ptr1->localkey),
-								keyptr1->t, ptr1->t, keyptr2->t, ptr2->t);
+				error_message(_(txt_keymap_conflict), printascii(buf, ptr1->localkey), keyptr1->t, ptr1->t, keyptr2->t, ptr2->t);
 				return FALSE;
 			}
 		}
@@ -1009,7 +1009,7 @@ read_keymap_file(
 		}
 
 		/*
-		 * TODO: usefull? shared keymaps (NFS-Home) may differ
+		 * TODO: useful? shared keymaps (NFS-Home) may differ
 		 * depending on the OS (i.e. on tin has colr the other has not)
 		 */
 		if (keygroups[i] == NULL) {

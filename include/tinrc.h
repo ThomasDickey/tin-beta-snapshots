@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@radar.tele2.co.uk>
  *  Created   : 1999-04-13
- *  Updated   : 2002-11-06
+ *  Updated   : 2003-01-27
  *  Notes     :
  *
  * Copyright (c) 1999-2003 Jason Faultless <jason@radar.tele2.co.uk>
@@ -46,7 +46,7 @@
  *        and could be nuked if tin comes with a prefilled .inputhistory
  *        which is installed automatically if no .inputhistory is found.
  *
- * TODO:  sort in a usefull order (also needs reoerdering in init.c)
+ * TODO:  sort in a useful order (also needs reoerdering in init.c)
  */
 
 #ifndef TINRC_H
@@ -171,8 +171,12 @@ struct t_config {
 		int col_subject;					/* color of article subject */
 		int col_text;						/* color of textlines*/
 		int col_title;						/* color of Help/Mail-Sign */
-		int word_h_display_marks;			/* display * or _ when highlighting or space or nothing*/
 #	endif /* HAVE_COLOR */
+	int word_h_display_marks;			/* display * or _ when highlighting or space or nothing*/
+	int mono_markdash;				/* attribute for text highlighting with _underdashes_ */
+	int mono_markstar;				/* attribute for text highlighting with *stars* */
+	int mono_markslash;				/* attribute for text highlighting with /slashes/ */
+	int mono_markstroke;				/* attribute for text highlighting with -strokes- */
 	t_bool word_highlight;				/* like word_highlight but stored in tinrc */
 	int wrap_column;				/* screen column to wrap of text messages */
 #	ifdef HAVE_COLOR
@@ -224,7 +228,6 @@ struct t_config {
 	t_bool start_editor_offset;
 	t_bool strip_blanks;
 	t_bool strip_newsrc;
-	t_bool tab_after_X_selection;		/* set TRUE if you want auto TAB after X */
 	t_bool tab_goto_next_unread;
 	t_bool tex2iso_conv;			/* convert "a to Umlaut-a */
 	t_bool thread_catchup_on_exit;		/* catchup thread with left arrow key or not */

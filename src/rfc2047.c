@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2002-12-04
+ *  Updated   : 2003-01-18
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2003 Chris Blum <chris@resolution.de>
@@ -745,7 +745,7 @@ rfc1522_encode(
 	t_bool break_long_line = ismail;
 #endif /* MIME_BREAK_LONG_LINES */
 
-	b = buf = (char *) my_malloc(2048);
+	b = buf = my_malloc(2048);
 	x = rfc1522_do_encode(s, &b, charset, break_long_line);
 	quoteflag = quoteflag || x;
 	return buf;
@@ -769,7 +769,7 @@ rfc15211522_encode(
 	t_bool body_encoding_needed = FALSE;
 	t_bool umlauts = FALSE;
 	BodyPtr body_encode;
-#if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
+#if defined(LOCAL_CHARSET) || defined(CHARSET_CONVERSION)
 	int mmnwcharset = 0;
 
 #	ifdef CHARSET_CONVERSION
@@ -778,7 +778,7 @@ rfc15211522_encode(
 	else /* E-Mail */
 		mmnwcharset = tinrc.mm_network_charset;
 #	endif /* CHARSET_CONVERSION */
-#endif /* LOCAL_CHARSET || MAC_OS_X || CHARSET_CONVERSION */
+#endif /* LOCAL_CHARSET || CHARSET_CONVERSION */
 
 	if ((g = tmpfile()) == NULL)
 		return;
@@ -790,11 +790,12 @@ rfc15211522_encode(
 	quoteflag = 0;
 
 	while ((header = tin_fgets(f, TRUE))) {
-#if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
+#if defined(LOCAL_CHARSET) || defined(CHARSET_CONVERSION)
 		buffer_to_network(header, mmnwcharset);
-#endif /* LOCAL_CHARSET || MAC_OS_X || CHARSET_CONVERSION */
+#endif /* LOCAL_CHARSET || CHARSET_CONVERSION */
 		if (*header == '\0')
 			break;
+
 		if (allow_8bit_header)
 			fputs(header, g);
 		else {
@@ -818,9 +819,9 @@ rfc15211522_encode(
 	fputc('\n', g);
 
 	while (fgets(buffer, 2048, f)) {
-#if defined(LOCAL_CHARSET) || defined(MAC_OS_X) || defined(CHARSET_CONVERSION)
+#if defined(LOCAL_CHARSET) || defined(CHARSET_CONVERSION)
 		buffer_to_network(buffer, mmnwcharset);
-#endif /* LOCAL_CHARSET || MAC_OS_X || CHARSET_CONVERSION */
+#endif /* LOCAL_CHARSET || CHARSET_CONVERSION */
 		fputs(buffer, g);
 		/* see if there are any umlauts in the body... */
 		for (c = buffer; *c && !isreturn(*c); c++)

@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2002-12-01
+ *  Updated   : 2003-01-18
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2003 Iain Lea <iain@bricbrac.de>
@@ -109,8 +109,8 @@ add_filter_comment(
 	char *text)
 {
 	if (ptr == NULL) {
-		ptr = (struct t_filter_comment *) my_malloc(sizeof(struct t_filter_comment));
-		ptr->text = (char *) my_strdup(text);
+		ptr = my_malloc(sizeof(struct t_filter_comment));
+		ptr->text = my_strdup(text);
 		ptr->next = (struct t_filter_comment *) 0;
 	} else
 		ptr->next = (struct t_filter_comment *) add_filter_comment((struct t_filter_comment *) ptr->next, (char *) text);
@@ -149,8 +149,8 @@ copy_filter_comment(
 	struct t_filter_comment *to)
 {
 	if (from != NULL) {
-		to = (struct t_filter_comment *) my_malloc(sizeof(struct t_filter_comment));
-		to->text = (char *) my_strdup(from->text);
+		to = my_malloc(sizeof(struct t_filter_comment));
+		to->text = my_strdup(from->text);
 		/* don't know if the next line is necessary, but it doesn't harm */
 		to->next = (struct t_filter_comment *) 0;
 		to->next = (struct t_filter_comment *) copy_filter_comment(from->next, to->next);
@@ -371,8 +371,8 @@ read_filter_file(
 				expired_time = FALSE;
 				ptr[i].scope = my_strdup(scope);
 				if (comment != NULL) {
-    					ptr[i].comment = (struct t_filter_comment *) copy_filter_comment(comment, ptr[i].comment);
-    					comment = (struct t_filter_comment *) free_filter_comment(comment);
+					ptr[i].comment = (struct t_filter_comment *) copy_filter_comment(comment, ptr[i].comment);
+					comment = (struct t_filter_comment *) free_filter_comment(comment);
 				}
 				subj[0] = '\0';
 				from[0] = '\0';
@@ -651,8 +651,8 @@ my_flush();
 			while (ptr->filter[i].comment != NULL) {
 				fprintf (fp, "comment=%s\n", ptr->filter[i].comment->text);
 				ptr->filter[i].comment = ptr->filter[i].comment->next;
-    			}
-    			ptr->filter[i].comment = comment;
+			}
+			ptr->filter[i].comment = comment;
 		}
 
 		fprintf(fp, "group=%s\n", (ptr->filter[i].scope != NULL ? ptr->filter[i].scope : "*"));
