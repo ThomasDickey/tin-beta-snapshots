@@ -1,4 +1,4 @@
-# Keymap file V1.0.4 for the TIN newsreader
+# Keymap file V1.0.6 for the TIN newsreader
 #
 # Sample keymap file
 # This file contains the default key mappings
@@ -11,11 +11,12 @@ SetRange			#
 LastPage			$
 ToggleColor			&
 LastViewed			-
+SearchRepeat			\
 SearchSubjF			/
 SearchSubjB			?
 SearchAuthB			A
 SearchBody			B
-SearchRepeat			\
+CatchupNextUnread		C
 EditFilter			E
 ToggleHelpDisplay		H
 ToggleInverseVideo		I
@@ -23,9 +24,12 @@ LookupMessage			L
 OptionMenu			M
 Postponed			O	^O
 QuitTin				Q
+BugReport                  	R
 DisplayPostHist			W
+MarkThreadUnread		Z
 FirstPage			^
 SearchAuthF			a
+Catchup				c
 Help				h
 ToggleInfoLastLine		i
 Down				j	^N
@@ -34,6 +38,7 @@ Print				o
 Quit				q
 Version				v
 Post				w
+MarkArticleUnread		z
 Pipe				|
 QuickFilterSelect		[
 QuickFilterKill			]
@@ -77,18 +82,14 @@ GroupToggleThdSel		.
 GroupSelThdIfUnreadSelected	;
 GroupSelPattern			=
 GroupReverseSel			@
-GroupCatchupNextUnread		C
 GroupToggleGetartLimit		G
 GroupMarkThdRead		K
 GroupNextUnreadArt		N
 GroupPrevUnreadArt		P
-GroupBugReport			R
 GroupAutoSave			S
 GroupTagParts			T
 GroupUntag			U
 GroupMarkUnselArtRead		X
-GroupMarkThdUnread		Z
-GroupCatchup			c
 GroupToggleSubjDisplay		d
 GroupGoto			g
 GroupListThd			l
@@ -100,7 +101,6 @@ GroupSave			s
 GroupTag			t
 GroupToggleThreading		u
 GroupRepost			x
-GroupMarkArtUnread		z
 GroupUndoSel			~
 
 #####
@@ -124,7 +124,6 @@ PageReveal			)
 PageSkipIncludedText		:
 PageTopThd			<
 PageBotThd			>
-PageCatchupNextUnread		C
 PageCancel			D
 PageFollowup			F
 PageLastPage			G
@@ -136,9 +135,7 @@ PageAutoSave			S
 PageGroupSel			T
 PageViewUrl			U
 PageViewAttach			V
-PageMarkThdUnread		Z
 PageToggleHighlight		_
-PageCatchup			c
 PageEditArticle			e
 PageFollowupQuote		f
 PageFirstPage			g
@@ -151,7 +148,6 @@ PageSave			s
 PageTag				t
 PageGotoParent			u
 PageRepost			x
-PageMarkArtUnread		z
 
 #####
 
@@ -201,14 +197,12 @@ PProcYes			y
 SelectEnterNextUnreadGrp	TAB	n
 SelectReadGrp			^J	^M
 SelectResetNewsrc		^R
-SelectCatchupNextUnread		C
+SelectSortActive		.
 SelectNextUnreadGrp		N
-SelectBugReport			R
 SelectSubscribePat		S
 SelectUnsubscribePat		U
 SelectQuitNoWrite		X
 SelectSyncWithActive		Y
-SelectCatchup			c
 SelectToggleDescriptions	d
 SelectGoto			g
 SelectMoveGrp			m
@@ -225,16 +219,11 @@ ThreadReadArt			^J	^M
 ThreadSelArt			*
 ThreadToggleArtSel		.
 ThreadReverseSel		@
-ThreadCatchupNextUnread		C
 ThreadMarkArtRead		K
-ThreadBugReport			R
 ThreadAutoSave			S
 ThreadUntag			U
-ThreadMarkThdUnread		Z
-ThreadCatchup			c
 ThreadToggleSubjDisplay		d
 ThreadMail			m
 ThreadSave			s
 ThreadTag			t
-ThreadMarkArtUnread		z
 ThreadUndoSel			~

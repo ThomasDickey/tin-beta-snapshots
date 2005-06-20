@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2005-03-20
+dnl Updated   : 2005-06-09
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2005 Thomas E. Dickey <dickey@invisible-island.net>
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.7.8
+VERSION=1.7.9
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -76,7 +76,7 @@ case "$host_os" in
 esac
 
 ### Native Language Support
-ALL_LINGUAS="de en_GB et fr tr"
+ALL_LINGUAS="de en_GB et fr ru rw tr"
 
 ### Checks for programs
 save_CFLAGS="$CFLAGS"
@@ -85,7 +85,7 @@ AC_PROG_GCC_TRADITIONAL
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 CF_PROG_YACC
-AC_CHECK_PROGS(LINT, lint alint lclint tdlint splint, [])
+AC_CHECK_PROGS(LINT, lint alint lclint tdlint splint, :)
 AC_AIX
 CF_GNU_SOURCE
 AC_ISC_POSIX
@@ -155,7 +155,7 @@ fi
 
 ## Default shell
 AC_ARG_WITH(shell,
-	[  --with-shell=PROG       default \$SHELL program (default: sh)],
+	[  --with-shell=PROG       default $SHELL program (default: sh)],
 	[cf_cv_default_shell=$withval],
 	[cf_cv_default_shell=])
 CF_DEFAULT_SHELL($cf_cv_default_shell)
@@ -291,14 +291,14 @@ AC_SUBST(INN_NNTPLIB)
 ### are used in a lot of places.
 AC_CACHE_CHECK(if you want socks library,cf_cv_use_libsocks,[
 AC_ARG_WITH(socks,
-	[  --with-socks[=path]       link with socks library if available],
+	[  --with-socks[=path]     link with socks library if available],
 	[cf_cv_use_libsocks=$withval],
 	[cf_cv_use_libsocks=no])
 ])
 
 AC_CACHE_CHECK(if you want socks5 library,cf_cv_use_libsocks5,[
 AC_ARG_WITH(socks5,
-	[  --with-socks5[=path]      link with socks5 library if available],
+	[  --with-socks5[=path]    link with socks5 library if available],
 	[cf_cv_use_libsocks5=$withval],
 	[cf_cv_use_libsocks5=no])
 ])
@@ -464,7 +464,7 @@ AC_SUBST(EXTRAOBJS)
 ## options for miscellaneous definitions
 AC_MSG_CHECKING(for domain-name)
 CF_ARG_WITH(domain-name,
-	[  --with-domain-name      sets \$DOMAIN_NAME],
+	[  --with-domain-name      sets $DOMAIN_NAME],
 	DOMAIN_NAME)
 if test "$DOMAIN_NAME" != ""; then
 	AC_DEFINE_UNQUOTED(DOMAIN_NAME, "$DOMAIN_NAME")
@@ -475,9 +475,9 @@ if test "$USE_NNTP" = "yes" ; then
 AC_MSG_CHECKING(for NNTP default-server)
 CF_ARG_WITH(nntp-default-server,
 	[  --with-nntp-default-server
-                          (sets \$NNTP_DEFAULT_SERVER)
-                          (default: news\$DOMAIN_NAME)],
-	[NNTP_DEFAULT_SERVER])
+                          (sets NNTP_DEFAULT_SERVER)
+                         ],
+	[NNTP_DEFAULT_SERVER], news.$DOMAIN_NAME)
 
     if test "$NNTP_DEFAULT_SERVER" = "" ; then
 	if test "$DOMAIN_NAME" != "" ; then
@@ -551,7 +551,7 @@ AC_MSG_RESULT($enableval)
 AC_MSG_CHECKING(for MIME character-set)
 CF_WITH_DFTENV(mime-default-charset,
 	[  --with-mime-default-charset=CHARSET
-                          fallback for \$MM_CHARSET],
+                          fallback for $MM_CHARSET],
 	MM_CHARSET,US-ASCII)
 AC_MSG_RESULT($MM_CHARSET)
 

@@ -3,7 +3,7 @@
  *  Module    : tags.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-06
- *  Updated   : 2004-03-14
+ *  Updated   : 2005-05-10
  *  Notes     : Split out from other modules
  *
  * Copyright (c) 1999-2005 Jason Faultless <jason@altarstone.com>
@@ -85,8 +85,8 @@ look_for_multipart_info(
 	int *offset)
 {
 	MultiPartInfo tmp;
-	char *subj = NULL;
-	char *pch = NULL;
+	char *subj;
+	char *pch;
 
 	*offset = 0;
 
@@ -137,7 +137,7 @@ get_multiparts(
 {
 	MultiPartInfo tmp, tmp2;
 	MultiPartInfo *info = 0;
-	int i = 0;
+	int i;
 	int part_index;
 
 	/* entry assertions */
@@ -208,7 +208,7 @@ tag_multipart(
 	int base_index)
 {
 	MultiPartInfo *info = 0;
-	int i = 0;
+	int i;
 	const int qty = get_multiparts(base_index, &info);
 
 	/* check for failure... */

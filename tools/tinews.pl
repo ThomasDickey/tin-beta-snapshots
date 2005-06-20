@@ -696,6 +696,8 @@ These options are accepted for compatibility reasons but ignored.
 
 These options are accepted but do not have any functionality yet.
 
+=back
+
 =head1 EXIT STATUS
 
 The following exit values are returned:

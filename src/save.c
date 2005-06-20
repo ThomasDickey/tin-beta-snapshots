@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-02-12
+ *  Updated   : 2005-04-28
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -100,10 +100,10 @@ check_start_save_any_news(
 	FILE *artfp, *savefp;
 	FILE *fp_log = (FILE *) 0;
 	char *line;
-	char buf[LEN], logfile[LEN];
+	char buf[LEN];
 	char group_path[PATH_LEN];
 	char path[PATH_LEN];
-	char savefile[PATH_LEN];
+	char logfile[PATH_LEN], savefile[PATH_LEN];
 	char subject[HEADER_LEN];
 	int group_count = 0;
 	int i, j;
@@ -364,6 +364,7 @@ open_save_filename(
 		}
 /* TODO: will this get called every art? Should only be done once/batch */
 /* TODO: or add an option for defaulting on all future queries */
+/* TODO: 'truncate' path if query exceeds screen-width */
 		func = prompt_slk_response((tinrc.default_save_mode == 'a' ? SAVE_APPEND_FILE : SAVE_OVERWRITE_FILE),
 				save_append_overwrite_keys,
 				_(txt_append_overwrite_quit), path,

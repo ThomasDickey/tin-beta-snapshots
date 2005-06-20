@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-03-16
+ *  Updated   : 2005-04-19
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -102,8 +102,8 @@ static t_help_page select_help_page[] = {
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_select_group_range, GLOBAL_SET_RANGE },
 	{ txt_help_empty_line, NOT_ASSIGNED },
-	{ txt_help_select_catchup, SELECT_CATCHUP },
-	{ txt_help_select_catchup_next_unread, SELECT_CATCHUP_NEXT_UNREAD },
+	{ txt_help_select_catchup, CATCHUP },
+	{ txt_help_select_catchup_next_unread, CATCHUP_NEXT_UNREAD },
 	{ txt_help_select_mark_group_unread, SELECT_MARK_GROUP_UNREAD },
 	{ txt_help_select_subscribe, SELECT_SUBSCRIBE },
 	{ txt_help_select_unsubscribe, SELECT_UNSUBSCRIBE },
@@ -202,10 +202,10 @@ static t_help_page group_help_page[] = {
 	{ txt_help_group_untag_thread, GROUP_UNTAG },
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_group_mark_thread_read, GROUP_MARK_THREAD_READ },
-	{ txt_help_group_catchup, GROUP_CATCHUP },
-	{ txt_help_group_catchup_next, GROUP_CATCHUP_NEXT_UNREAD },
-	{ txt_help_group_mark_article_unread, GROUP_MARK_ARTICLE_UNREAD },
-	{ txt_help_group_mark_thread_unread, GROUP_MARK_THREAD_UNREAD },
+	{ txt_help_group_catchup, CATCHUP },
+	{ txt_help_group_catchup_next, CATCHUP_NEXT_UNREAD },
+	{ txt_help_group_mark_article_unread, MARK_ARTICLE_UNREAD },
+	{ txt_help_group_mark_thread_unread, MARK_THREAD_UNREAD },
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_group_select_all, GROUP_DO_AUTOSELECT },
 	{ txt_help_group_select_thread, GROUP_SELECT_THREAD },
@@ -294,10 +294,10 @@ static t_help_page thread_help_page[] = {
 	{ txt_help_group_untag_thread, THREAD_UNTAG },
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_thread_mark_article_read, THREAD_MARK_ARTICLE_READ },
-	{ txt_help_thread_catchup, THREAD_CATCHUP },
-	{ txt_help_thread_catchup_next_unread, THREAD_CATCHUP_NEXT_UNREAD },
-	{ txt_help_group_mark_article_unread, GROUP_MARK_ARTICLE_UNREAD },
-	{ txt_help_group_mark_thread_unread, GROUP_MARK_THREAD_UNREAD },
+	{ txt_help_thread_catchup, CATCHUP },
+	{ txt_help_thread_catchup_next_unread, CATCHUP_NEXT_UNREAD },
+	{ txt_help_group_mark_article_unread, MARK_ARTICLE_UNREAD },
+	{ txt_help_group_mark_thread_unread, MARK_THREAD_UNREAD },
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_group_select_thread, THREAD_SELECT_ARTICLE },
 	{ txt_help_group_toggle_thread_selection, THREAD_TOGGLE_ARTICLE_SELECTION },
@@ -403,10 +403,10 @@ static t_help_page page_help_page[] = {
 	{ txt_help_global_tag, PAGE_TAG },
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_article_mark_thread_read, PAGE_MARK_THREAD_READ },
-	{ txt_help_thread_catchup, PAGE_CATCHUP },
-	{ txt_help_thread_catchup_next_unread, PAGE_CATCHUP_NEXT_UNREAD },
-	{ txt_help_group_mark_article_unread, GROUP_MARK_ARTICLE_UNREAD },
-	{ txt_help_group_mark_thread_unread, GROUP_MARK_THREAD_UNREAD },
+	{ txt_help_thread_catchup, CATCHUP },
+	{ txt_help_thread_catchup_next_unread, CATCHUP_NEXT_UNREAD },
+	{ txt_help_group_mark_article_unread, MARK_ARTICLE_UNREAD },
+	{ txt_help_group_mark_thread_unread, MARK_THREAD_UNREAD },
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_article_autoselect, GLOBAL_MENU_FILTER_SELECT },
 	{ txt_help_article_autokill, GLOBAL_MENU_FILTER_KILL },
@@ -443,18 +443,20 @@ make_help_page(
 	const t_help_page *helppage,
 	const struct keylist keys)
 {
-	char *buf;
+	char *buf = my_malloc(LEN);
+	char *last = my_malloc(LEN);
 	char key[MAXKEYLEN];
 	/*
 	 * length is only needed to pass it to expand_ctrl_chars()
 	 * we have no need for the value
 	 */
 	int length;
-
-	buf = my_malloc(LEN);
+	size_t i;
 
 	if (!helppage)
 		return;
+
+	last[0] = '\0';
 
 	while (helppage->helptext) {
 		if (helppage->func == NOT_ASSIGNED) {
@@ -464,23 +466,24 @@ make_help_page(
 			 */
 			buf = my_realloc(buf, LEN);
 
-			if (!strlen(helppage->helptext))	/* avoid empty string translations */
-				snprintf(buf, LEN, "%s", helppage->helptext);
+			if (!strlen(helppage->helptext))	/* avoid translation of empty strings */
+				snprintf(buf, LEN, "\n");
 			else
 				snprintf(buf, LEN, "%s", _(helppage->helptext));
 			buf[LEN - 1] = '\0';
 			expand_ctrl_chars(&buf, &length, 8);
 			fprintf(fp, "%s", buf);
 		} else {
-			size_t i;
-
 			for (i = 0; i < keys.used; i++) {
 				if (keys.list[i].function == helppage->func) {
 					buf = my_realloc(buf, LEN);
 					snprintf(buf, LEN, "%s\t  %s", printascii(key, keys.list[i].key), _(helppage->helptext));
 					buf[LEN - 1] = '\0';
 					expand_ctrl_chars(&buf, &length, 8);
-					fprintf(fp, "%s", buf);
+					if (strcmp(last, buf)) {
+						fprintf(fp, "%s", buf);
+						strncpy(last, buf, LEN);
+					}
 				}
 			}
 		}
@@ -488,6 +491,7 @@ make_help_page(
 	}
 
 	free(buf);
+	free(last);
 }
 
 
@@ -556,7 +560,7 @@ show_mini_help(
 				printascii(key[0], func_to_key(SELECT_ENTER_NEXT_UNREAD_GROUP, select_keys)),
 				printascii(key[1], func_to_key(SELECT_GOTO, select_keys)),
 				printascii(key[2], func_to_key(GLOBAL_SEARCH_SUBJECT_FORWARD, select_keys)),
-				printascii(key[3], func_to_key(SELECT_CATCHUP, select_keys)));
+				printascii(key[3], func_to_key(CATCHUP, select_keys)));
 			center_line(line, FALSE, buf);
 			snprintf(buf, bufs, _(txt_mini_select_2),
 				printascii(key[0], func_to_key(GLOBAL_LINE_DOWN, select_keys)),
@@ -583,7 +587,7 @@ show_mini_help(
 			center_line(line, FALSE, buf);
 			snprintf(buf, bufs, _(txt_mini_group_2),
 				printascii(key[0], func_to_key(GLOBAL_SEARCH_AUTHOR_FORWARD, group_keys)),
-				printascii(key[1], func_to_key(GROUP_CATCHUP, group_keys)),
+				printascii(key[1], func_to_key(CATCHUP, group_keys)),
 				printascii(key[2], func_to_key(GLOBAL_LINE_DOWN, group_keys)),
 				printascii(key[3], func_to_key(GLOBAL_LINE_UP, group_keys)),
 				printascii(key[4], func_to_key(GROUP_MARK_THREAD_READ, group_keys)),
@@ -608,7 +612,7 @@ show_mini_help(
 		case THREAD_LEVEL:
 			snprintf(buf, bufs, _(txt_mini_thread_1),
 				printascii(key[0], func_to_key(THREAD_READ_NEXT_ARTICLE_OR_THREAD, thread_keys)),
-				printascii(key[1], func_to_key(THREAD_CATCHUP, thread_keys)),
+				printascii(key[1], func_to_key(CATCHUP, thread_keys)),
 				printascii(key[2], func_to_key(THREAD_TOGGLE_SUBJECT_DISPLAY, thread_keys)));
 			center_line(line, FALSE, buf);
 			snprintf(buf, bufs, _(txt_mini_thread_2),
@@ -617,7 +621,7 @@ show_mini_help(
 				printascii(key[2], func_to_key(GLOBAL_LINE_UP, thread_keys)),
 				printascii(key[3], func_to_key(GLOBAL_QUIT, thread_keys)),
 				printascii(key[4], func_to_key(THREAD_TAG, thread_keys)),
-				printascii(key[5], func_to_key(THREAD_MARK_ARTICLE_UNREAD, thread_keys)));
+				printascii(key[5], func_to_key(MARK_ARTICLE_UNREAD, thread_keys)));
 			center_line(line + 1, FALSE, buf);
 			break;
 
@@ -630,7 +634,7 @@ show_mini_help(
 			snprintf(buf, bufs, _(txt_mini_page_2),
 				printascii(key[0], func_to_key(GLOBAL_SEARCH_AUTHOR_FORWARD, page_keys)),
 				printascii(key[1], func_to_key(GLOBAL_SEARCH_BODY, page_keys)),
-				printascii(key[2], func_to_key(PAGE_CATCHUP, page_keys)),
+				printascii(key[2], func_to_key(CATCHUP, page_keys)),
 				printascii(key[3], func_to_key(PAGE_FOLLOWUP_QUOTE, page_keys)),
 				printascii(key[4], func_to_key(PAGE_MARK_THREAD_READ, page_keys)));
 			center_line(line + 1, FALSE, buf);

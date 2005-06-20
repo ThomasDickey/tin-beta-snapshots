@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-08-16
+ *  Updated   : 2005-06-20
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -85,8 +85,9 @@ static long setup_hard_base(struct t_group *group);
 static t_bool parse_headers(FILE *fp, struct t_article *h);
 static t_compfunc eval_sort_arts_func(unsigned int sort_art_type);
 static void sort_base(unsigned int sort_threads_type);
-static void thread_by_subject(void);
 static void thread_by_multipart(void);
+static void thread_by_percentage(void);
+static void thread_by_subject(void);
 
 
 /*
@@ -179,7 +180,7 @@ base_comp(
  *   Read the article numbers existing in the group into base[]
  *   If the LISTGROUP failed, issue a GROUP command. Use the results to
  *   create a less accurate version of base[]
- *	 This data will already be sorted
+ *   This data will already be sorted
  *
  * on local spool:
  *   Read the spool dir to populate base[] as above. Sort it.
@@ -259,8 +260,11 @@ setup_hard_base(
 			if (sscanf(line, "%ld %ld %ld", &count, &start, &last) != 3)
 				return -1;
 
+			/*
+			 * TODO: AFAICS "total" and "count" arn't used in the code below
+			 *       anymore, why do we bother to set them?
+			 */
 			total = count;
-
 			if (last - count > start)
 				count = last - start;
 
@@ -390,7 +394,7 @@ index_group(
 	 * When reading local spool, this will pull in the system wide overview
 	 * cache (if found) otherwise the private overview cache will be read
 	 */
-	caching_xover = (tinrc.cache_overview_files && xover_cmd && group->type == GROUP_TYPE_NEWS);
+	caching_xover = (tinrc.cache_overview_files && nntp_caps.over_cmd && group->type == GROUP_TYPE_NEWS);
 	if ((changed = read_overview(group, min, max, &last_read_article, caching_xover)) == -1)
 		return FALSE;	/* user aborted indexing */
 
@@ -717,6 +721,96 @@ thread_by_subject(
 #endif /* 0 */
 }
 
+/*
+ * This Threading algorithm threads articles into 'buckets' where each bucket
+ * contains all the articles which match the root article's subject line to
+ * the configured percentage. Eg, if the root article had the subject "asdf"
+ * and the match percentage was configured to be 75% then any article would
+ * match if its subject was no different in more than a single character.
+ */
+static void
+thread_by_percentage(
+	void)
+{
+	int i, j, k;
+	int root_num = 0; /* The index number of the root we are currently working on. */
+	int unmatched; /* This is the number of characters that don't match between the two strings */
+	unsigned int percentage = 100 - tinrc.thread_perc;
+	int length_diff;
+
+	/* First we need to sort art[] to simplify and speed up the matching. */
+	SortBy(subj_comp_asc);
+
+	/*
+	 * Now we put all the articles which match enough into the thread. If
+	 * an article doesn't match enough we create a new thread and then add
+	 * to that and so on.
+	 */
+	base[0] = 0;
+	arts[0].prev = ART_NORMAL;
+	for_each_art(i) {
+		if (i == 0)
+			continue;
+
+		/* Check each character to see if it matched enough */
+		k = 0;
+		unmatched = 0;
+		for (j = 0; arts[base[root_num]].subject[j] != '\0' && arts[i].subject[k] != '\0'; j++) {
+			if (arts[base[root_num]].subject[j] == arts[i].subject[k]) {
+				/* The characters match up. So we move onto the next*/
+				k++;
+				continue;
+			}
+
+			/*
+			 * So the characters didn't match up and a character
+			 * wasn't inserted. So we'll just ignore these two
+			 * characters and see if they were just differing, but
+			 * don't through the alignment out. We need to keep
+			 * track of this character as a difference.
+			 */
+			k++;
+			unmatched++;
+		}
+
+		/*
+		 * By getting here we have a number of unmatched characters
+		 * between the two strings. We also have the length of the
+		 * strings available to us easily.
+		 * All we need to do is see if the match is good enough, but
+		 * we count differences in the length of the strings against
+		 * them matching.
+		 */
+
+		length_diff = strlen(arts[base[root_num]].subject) - strlen(arts[i].subject);
+		/* ensure that it's positive */
+		if (length_diff < 0)
+			length_diff = -1 * length_diff;
+
+		unmatched += length_diff;
+		if ((unmatched * 100) / strlen(arts[base[root_num]].subject) > percentage) {
+			/*
+			 * If there is less greater than percentage% different
+			 *  start a new thread.
+			 */
+			root_num++;
+			base[root_num] = i;
+			arts[i].prev = ART_NORMAL;
+			continue;
+		} else {
+			/*
+			 * The subject lines match enough to consider them part
+			 * of a single thread, so add the current article to
+			 * the thread.
+			 */
+			if (arts[base[root_num]].thread < 0)
+				arts[base[root_num]].thread = i;
+			arts[i].prev = i - 1;
+			arts[i - 1].thread = i;
+			continue;
+		}
+	}
+}
 
 /*
  * This was brought over from tags.c, however this version doesn't not
@@ -896,7 +990,6 @@ thread_by_multipart(
 	MultiPartInfo *minfo = NULL;
 
 	for_each_art(i) {
-
 		if (IGNORE_ART_THREAD(i) || arts[i].prev >= 0 || !global_get_multiparts(i, &minfo))
 			continue;
 
@@ -925,6 +1018,7 @@ thread_by_multipart(
  *	THREAD_REFS		Threads are created using the References headers
  *	THREAD_BOTH		Threads created using References and then Subject
  *	THREAD_MULTI	Threads created using Subject to search for Multiparts
+ *	THREAD_PERC		Threads based upon a char for char match of greater than x%
  *
  * .thread and .prev are used to hold the threading information, see tin.h for
  * more information
@@ -1019,6 +1113,10 @@ make_threads(
 			thread_by_multipart();
 			break;
 
+		case THREAD_PERC:
+			thread_by_percentage();
+			break;
+
 		default: /* not reached */
 			break;
 	}
@@ -1090,7 +1188,7 @@ static void
 sort_base(
 	unsigned int sort_threads_type)
 {
-	switch (sort_threads_type) {
+	switch (sort_threads_type) { /* this switch doesn't look very usefull */
 		case SORT_THREADS_BY_SCORE_DESCEND:
 		case SORT_THREADS_BY_SCORE_ASCEND:
 			qsort(base, (size_t) grpmenu.max, sizeof(long), score_comp_base);
@@ -1654,8 +1752,8 @@ find_nov_file(
 
 		case GROUP_TYPE_NEWS:
 			/*
-			 * xover_cmd is not an issue here, any gripes and warnings
-			 * about XOVER are handled in nntp_open()
+			 * nntp.caps.over_cmd is not an issue here, any gripes and warnings
+			 * about [X]OVER are handled in nntp_open()
 			 */
 
 			/*
@@ -2181,8 +2279,8 @@ static char *
 print_from(
 	struct t_article *article)
 {
-	static char from[PATH_LEN];
 	char *p;
+	static char from[PATH_LEN];
 
 	*from = '\0';
 
@@ -2216,10 +2314,10 @@ open_xover_fp(
 	t_bool local)
 {
 #ifdef NNTP_ABLE
-	if (!local && xover_cmd && *mode == 'r' && group->type == GROUP_TYPE_NEWS) {
+	if (!local && nntp_caps.over_cmd && *mode == 'r' && group->type == GROUP_TYPE_NEWS) {
 		char line[NNTP_STRLEN];
 
-		snprintf(line, sizeof(line), "%s %ld-%ld", xover_cmd, min, max);
+		snprintf(line, sizeof(line), "%s %ld-%ld", nntp_caps.over_cmd, min, max);
 		return (nntp_command(line, OK_XOVER, NULL, 0));
 	}
 #endif /* NNTP_ABLE */

@@ -3,13 +3,23 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2005-03-16
+.\" Updated   : 2005-06-20
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
+.\" Macros
+.de Vb \" Begin verbatim text
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve \" End verbatim text
+.ft R
+.fi
+..
 .\"
-.TH tin 1 "March 16th, 2005" "1.7.8" "A Usenet newsreader"
+.TH tin 1 "June 20th, 2005" "1.7.9" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -541,11 +551,11 @@ Read current group.
 Enter next group with unread news. Will wrap around to the beginning of the
 group selection list looking for unread groups.
 .TP
-.B SelectCatchup 'c'
+.B Catchup 'c'
 Make current group as all read [after confirmation] and move to the next
 group in the group selection list.
 .TP
-.B SelectCatchupNextUnread 'C'
+.B CatchupNextUnread 'C'
 Mark current group as all read [after confirmation] and enter the next
 unread group in the group selection list.
 .TP
@@ -593,7 +603,7 @@ Toggle display of all subscribed to groups and just those groups containing
 unread articles. Command has no effect if groups were specified on the
 command-line when \fBtin\fP was started.
 .TP
-.B SelectBugReport 'R'
+.B BugReport 'R'
 Mail a bug report or comment to <tin\-bugs@tin.org>. This is the best way of
 getting bugs fixed and features added/changed.
 .TP
@@ -738,11 +748,11 @@ Author backward search. Otherwise, see \fBSearchAuthF\fP ('\fBa\fP') above.
 Search the body of all articles in group (can be slow). You can abort the
 search using \fBQuit\fP ('\fBq\fP').
 .TP
-.B GroupCatchup 'c'
+.B Catchup 'c'
 Mark all articles as read [after confirmation] then return to the group
 selection list. Move cursor to next group.
 .TP
-.B GroupCatchupNextUnread 'C'
+.B CatchupNextUnread 'C'
 Mark all articles as read [after confirmation] and enter the next group
 with unread news.
 .TP
@@ -811,7 +821,7 @@ Quit \fBtin\fP - don't ask the user to confirm.
 .B GroupToggleReadUnread 'r'
 Toggle the display between all articles and unread articles.
 .TP
-.B GroupBugReport 'R'
+.B BugReport 'R'
 Mail a bug report or comment to <tin\-bugs@tin.org>. This is the best way of
 getting bugs fixed and features added/changed.
 .TP
@@ -859,10 +869,10 @@ the way it was before. See \fBGroupUndoSel\fP ('\fB~\fP') command for
 clearing the toggle effect, leaving the group will also clear the toggle
 effect and make the changes permanent.
 .TP
-.B GroupMarkArtUnread 'z'
+.B MarkArtUnread 'z'
 Mark current article as unread.
 .TP
-.B GroupMarkThdUnread 'Z'
+.B MarkThdUnread 'Z'
 Mark current thread as unread.
 .\"--------------------------------------------------------------------
 .\"
@@ -931,11 +941,11 @@ Author backward search. Otherwise, see \fBSearchAuthF\fP ('\fBa\fP') above.
 Search the body of all articles in group (can be slow). You can abort the
 search using \fBQuit\fP ('\fBq\fP').
 .TP
-.B ThreadCatchup 'c'
+.B Catchup 'c'
 Mark thread as read [after confirmation] and return to the group index page.
 Move cursor to next thread.
 .TP
-.B ThreadCatchupNextUnread 'C'
+.B CatchupNextUnread 'C'
 Mark thread as read [after confirmation] and enter the next thread
 containing unread news.
 .TP
@@ -974,7 +984,7 @@ Return to previous level.
 .B QuitTin 'Q'
 Quit \fBtin\fP - don't ask the user to confirm.
 .TP
-.B ThreadBugReport 'R'
+.B BugReport 'R'
 Mail a bug report or comment to <tin\-bugs@tin.org>. This is the best way
 of getting bugs fixed and features added/changed.
 .TP
@@ -1000,10 +1010,10 @@ get the chance to edit the article again via \fBPostEdit\fP
 ('\fBo\fP') (see also ''\fB\-o\fP'' command-line switch) or discard it via
 \fBQuit\fP ('\fBq\fP').
 .TP
-.B ThreadMarkArtUnread 'z'
+.B MarkArtUnread 'z'
 Mark current article in thread as unread.
 .TP
-.B ThreadMarkThdUnread 'Z'
+.B MarkThdUnread 'Z'
 Mark all articles in thread as unread.
 .\"--------------------------------------------------------------------
 .\"
@@ -1127,11 +1137,11 @@ Author backward search.
 Search the body of all articles in group (can be slow). You can abort the
 search using \fBQuit\fP ('\fBq\fP').
 .TP
-.B PageCatchup 'c'
+.B Catchup 'c'
 Mark the current thread as read [after confirmation] and return to the
 previous menu. Move cursor to next item.
 .TP
-.B PageCatchupNextUnread 'C'
+.B CatchupNextUnread 'C'
 Mark the rest of the current thread as read [after confirmation] and enter
 the next thread with unread articles.
 .TP
@@ -1253,10 +1263,10 @@ articles matching pattern / tagged articles to another newsgroup(s). Useful
 for reposting from global to local newsgroups. Do not use this to crosspost
 your own articles.
 .TP
-.B PageMarkArtUnread 'z'
+.B MarkArtUnread 'z'
 Mark article as unread.
 .TP
-.B PageMarkThdUnread 'Z'
+.B MarkThdUnread 'Z'
 Mark the current thread as unread.
 .\"--------------------------------------------------------------------
 .\"
@@ -1283,7 +1293,7 @@ In the options menu use the cursor keys in the usual way to move around. Use
 \fBConfigSelect\fP ('\fB^J\fP' or '\fB<CR>\fP') to 'open' the option you
 wish to change. You will need to enter a new value or use '\fB<SPACE>\fP' to
 toggle the available options. \fBConfigSelect\fP will save the new value,
-'\fB<ESC>\fP' will abort without saving changes.
+\&'\fB<ESC>\fP' will abort without saving changes.
 .PP
 As with the other menus, \fBRedrawScr\fP ('\fB^L\fP') will redraw the
 screen. You can use \fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP
@@ -1342,7 +1352,7 @@ Default is ':'. \fBkill_level\fP must be set accordingly.
 .B Ask before using MIME viewer (ask_for_metamail)
 If ON \fBtin\fP will ask before using a MIME viewer
 (\fBmetamail_prog\fP) to display MIME messages. This only occurs if a
-MIME viewer is set.  Default is OFF.
+MIME viewer is set. Default is OFF.
 .TP
 .B Send you a blind cc automatically (auto_bcc)
 If ON automatically put your name in the ''Bcc:'' field when mailing an
@@ -1463,7 +1473,7 @@ Ask for manual confirmation to protect the user.
 .IP \(bu 3
 .B commands
 Ask for confirmation before executing certain dangerous commands (e.g.,
-\fBGroupCatchup\fP ('\fBc\fP')). Commands that this affects are marked in
+\fBCatchup\fP ('\fBc\fP')). Commands that this affects are marked in
 this manual with '[after confirmation]'. Default is commands & quit.
 .\" TODO: check if all affected commands are marked [after confirmation]
 .IP \(bu
@@ -1754,7 +1764,7 @@ for more details about MMDF.
 .B 'Mark article read' ignores tags (mark_ignore_tags)
 When this is ON, the \fBGroupMarkThdRead\fP, \fBThreadMarkArtRead\fP
 functions ('\fBK\fP') mark just the current article or thread, ignoring
-other tagged, unread articles.  When OFF, the same function presents a menu
+other tagged, unread articles. When OFF, the same function presents a menu
 with choices of the current thread or article, all tagged, unread articles,
 or nothing.
 .TP
@@ -2186,11 +2196,18 @@ The choices are:
 \&''Subject:'' (default).
 .IP 4
 \fBMultipart Subject\fP, thread multipart articles on ''Subject:''.
+.IP 5
+\fBPercentage Match\fP, thread base upon a partial character match on
+\&''Subject:''.
 .RE
 .TP
 .B Catchup thread by using left key (thread_catchup_on_exit)
 If ON catchup group/thread when leaving with the left arrow key. Default is
 ON.
+.TP
+.B Matchingness of a thread (thread_perc)
+How closely the subjects must match for two threads to be considered
+part of the same thread. This is a percentage and the default if 75%.
 .TP
 .B Score of a thread (thread_score)
 How the total score of a thread is computed. Default is 0, the maximum
@@ -2425,21 +2442,17 @@ following variables are expanded if found in the tinrc variables
 .RE
 e.g.,
 .RS
-.nf
-.ft CW
+.Vb
 mail_quote_format=On %D in %G you wrote:
 news_quote_format=In %M, %F wrote:
-.ft R
-.fi
+.Ve
 .RE
 would expand to:
 .RS
-.nf
-.ft CW
-On 21 Jul 1992 09:45:51 -0400 in alt.sources you wrote:
+.Vb
+On 21 Sep 1993 09:45:51 -0400 in alt.sources you wrote:
 In <abcINN123@example.org>, Joe Bar <joe@example.org> wrote:
-.ft R
-.fi
+.Ve
 .RE
 The quoted text section of an article is marked by a preceding quote string
 at the beginning of each quoted line. The default quote string is set to
@@ -2538,8 +2551,8 @@ expression of the form <min>-<max>, e.g. 10-15 will highlight items
 positions, '.' can be used in place of the current cursor position
 and '$' can be used to mean the highest number available. Currently
 the only commands that understand ranges are \fBGroupMarkThdRead\fP
-('\fBK\fP'), \fBGroupMarkArtUnread\fP ('\fBz\fP') and
-\fBGroupMarkThdUnread\fP ('\fBZ\fP').
+('\fBK\fP'), \fBMarkArtUnread\fP ('\fBz\fP') and
+\fBMarkThdUnread\fP ('\fBZ\fP').
 .PP
 .SS "NEWSGROUP LISTS & WILDCARDS"
 Several places in \fBtin\fP allow you to specify a list of
@@ -2576,12 +2589,10 @@ editor for both posting and mailing commands.
 .PP
 The following is an example of a \fI.Sig\fR file:
 .RS
-.nf
-.ft CW
+.Vb
 NAMES  Joe Bar <joe@example.org>
 SNAIL  Musterweg 12, 99999 Notreal, Germany
-.ft P
-.fi
+.Ve
 .RE
 .PP
 \fBtin\fP also has the capability to generate random signatures on a per
@@ -2727,11 +2738,9 @@ the system batcher
 with the ''\fB\-u\fP'' option:
 .PP
 .RS
-.nf
-.ft CW
+.Vb
 30 6 * * * /usr/local/bin/tin \-u
-.ft P
-.fi
+.Ve
 .RE
 .PP
 If you are low on local disk space you should consider using
@@ -2740,12 +2749,10 @@ manually purge cached data for groups you are not reading anymore
 with something like:
 .PP
 .RS
-.nf
-.ft CW
+.Vb
 find ${TIN_INDEX_NEWSDIR\-"${TIN_HOMEDIR\-"$HOME"}/.tin"}/.news* \\
 \-type f \-name "[0\-9]*.[0\-9]" \-atime +28 | xargs rm \-f
-.ft P
-.fi
+.Ve
 .RE
 .\"
 .\"
@@ -3170,7 +3177,7 @@ for more information.
 .B tin
 does conform to the Base Definitions volume of IEEE Std 1003.1-2001, Section
 12, Utility Conventions (Utility Argument Syntax, Utility Syntax Guidelines).
-.\" - RFC977, RFC1036, RFC2045, RFC2047, RFC2980, RFC2822
+.\" - RFC1036, RFC2045, RFC2047, RFC2822, RFC2980, RFC3977
 .\"   or whatever
 .\"
 .\"
@@ -3196,7 +3203,7 @@ the TODO-file which comes with the source.
 Before mailing a bug-report to <tin\-bugs@tin.org> please check if you
 are using the latest (stable) release, and if not, please upgrade
 first! Have a look a the doc/TODO file for known bugs. If you still
-think you've found a bug, please use the \fB*BugReport\fP ('\fBR\fP')
+think you've found a bug, please use the \fBBugReport\fP ('\fBR\fP')
 function and write in English. Please do NOT enclose a core-file in
 your bugreport until we request it.
 .\"
@@ -3312,3 +3319,4 @@ Urs Janssen <urs@tin.org>
 .BR RFC2048 ,
 .BR RFC2822 ,
 .BR RFC2980
+.\" .BR RFC3977

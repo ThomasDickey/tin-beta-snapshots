@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-03-07
+ *  Updated   : 2005-06-20
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -592,7 +592,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	define PATH_ISPELL	"ispell"
 #endif /* !PATH_ISPELL */
 
-#ifndef PATH_METAMAIL	/* unly unset if !HAVE_METAMAIL */
+#ifndef PATH_METAMAIL	/* only unset if !HAVE_METAMAIL */
 #	define PATH_METAMAIL	"metamail"
 #endif /* !PATH_METAMAIL */
 #define METAMAIL_CMD		PATH_METAMAIL" -e -p -m \"tin\""
@@ -1136,8 +1136,11 @@ enum {
 #define THREAD_REFS		2
 #define THREAD_BOTH		3
 #define THREAD_MULTI		4
+#define THREAD_PERC		5
 
-#define THREAD_MAX		THREAD_MULTI
+#define THREAD_MAX		THREAD_PERC
+
+#define THREAD_PERC_DEFAULT	75
 
 /*
  * Values for show_author
@@ -1293,7 +1296,9 @@ enum {
 /*
  * Assertion verifier
  */
-#undef assert
+#ifdef assert
+#	undef assert
+#endif /* assert */
 #ifdef CPP_DOES_EXPAND
 #	define assert(p)	if(! (p)) asfail(__FILE__, __LINE__, #p); else (void)0;
 #else
@@ -1356,9 +1361,6 @@ enum {
 /*
  * filter_type used in struct t_filter
  */
-#define FILTER_KILL		0
-#define FILTER_SELECT		1
-
 #define SCORE_MAX		10000
 
 #define FILTER_SUBJ_CASE_SENSITIVE		0
@@ -1458,7 +1460,7 @@ struct t_msgid {
  * struct t_article - article header
  *
  * article.thread:
- *  the next article in thread
+ * the next article in thread
  *	-1  (ART_UNTHREADED) article exists but is not (yet) threaded
  *	-2  (ART_EXPIRED) article has expired (wasn't found in search of spool
  *	    directory for the group)
@@ -1643,10 +1645,10 @@ struct t_filter {
 	char *from;			/* From: line */
 	char *msgid;			/* Message-ID: line */
 	char lines_cmp;			/* Lines compare <> */
-	int  lines_num;			/* Lines: line */
+	int lines_num;			/* Lines: line */
 	char gnksa_cmp;			/* GNKSA compare <> */
-	int  gnksa_num;			/* GNKSA code */
-	int  score;			/* score to give if rule matches */
+	int gnksa_num;			/* GNKSA code */
+	int score;			/* score to give if rule matches */
 	char *xref;			/* groups in xref line */
 	time_t time;			/* expire time in seconds */
 	struct t_filter *next;		/* next rule valid in group */

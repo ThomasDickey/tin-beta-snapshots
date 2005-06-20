@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2005-03-20
+ *  Updated   : 2005-06-20
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2005 Michael Bienia <michael@vorlon.ping.de>
@@ -178,6 +178,9 @@ option_is_visible(
 		case OPT_MONO_MARKSTROKE:
 			return tinrc.word_highlight;
 
+		case OPT_THREAD_PERC:
+			return (tinrc.thread_articles == THREAD_PERC);
+
 		default:
 			return TRUE;
 	}
@@ -322,6 +325,7 @@ print_any_option(
 	strncpy(screen[row - INDEX_TOP].col, temp, cCOLS);
 #endif /* USE_CURSES */
 }
+
 
 static void
 repaint_option(
@@ -1098,6 +1102,8 @@ change_config_file(
 										grpmenu.curr = n;
 								}
 							}
+							set_last_option_on_screen(first_option_on_screen);
+							redraw_screen(option);
 							clear_message();
 							break;
 
@@ -1436,6 +1442,12 @@ change_config_file(
 									make_threads(group, FALSE);
 							}
 							redraw_screen(option);
+							break;
+
+						case OPT_THREAD_PERC:
+							prompt_option_num(option);
+							if (tinrc.thread_perc < 0 || tinrc.thread_perc > 100)
+								tinrc.thread_perc = THREAD_PERC_DEFAULT;
 							break;
 
 						case OPT_WRAP_COLUMN:

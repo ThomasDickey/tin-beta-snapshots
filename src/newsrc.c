@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2004-11-16
+ *  Updated   : 2005-05-04
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -91,7 +91,7 @@ read_newsrc(
 		selmenu.max = skip_newgroups();
 
 	/*
-	 * make a .newsrc if one doesn't exist & auto subscribe to set groups
+	 * make a .newsrc if none exist & auto subscribe to set groups
 	 */
 	if (stat(newsrc_file, &statbuf) == -1) {
 		if (!create_newsrc(newsrc_file))
@@ -274,24 +274,22 @@ create_newsrc(
 /*
  * Get a list of default groups to subscribe to
  */
-/* TODO: fixme/checkme
- *      - logic seems to be wrong, NNTP_ABLE && read_saved_news
- *        looks for a local subscriptions_file, but read_saved_news doesn't
- *        require a local server... (a missing subscriptions_file doesn't
- *        cause any trouble, we just have to bother with the read_saved_news
- *        and a existing local subscriptions_file file case).
- *        open_newgroups_fp() uses the same logic.
- */
 static FILE *
 open_subscription_fp(
 	void)
 {
+	if (!read_saved_news) {
 #ifdef NNTP_ABLE
-	if (read_news_via_nntp && !read_saved_news)
-		return (nntp_command("LIST SUBSCRIPTIONS", OK_GROUPS, NULL, 0));
-	else
+		if (read_news_via_nntp) {
+			/* if (nntp_caps.type = 2 && !nntp_caps.list_subscriptions)
+				return NULL;
+			else */
+				return (nntp_command("LIST SUBSCRIPTIONS", OK_GROUPS, NULL, 0));
+		} else
 #endif /* NNTP_ABLE */
-		return (fopen(subscriptions_file, "r"));
+			return (fopen(subscriptions_file, "r"));
+	} else
+		return NULL;
 }
 
 
@@ -1556,6 +1554,7 @@ set_default_bitmap(
 
 /* TEST harness */
 #ifdef DEBUG_NEWSRC
+#	if 0
 static void set_bitmap_range_read(struct t_newsrc *my_newsrc, long beg, long end);
 static void set_bitmap_range_unread(struct t_newsrc *my_newsrc, long beg, long end);
 
@@ -1690,4 +1689,5 @@ my_newsrc->xmin, my_newsrc->xmax, beg, end, offset, length);
 		}
 	}
 }
+#	endif /* 0 */
 #endif /* DEBUG_NEWSRC */

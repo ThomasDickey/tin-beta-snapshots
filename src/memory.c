@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-02-25
+ *  Updated   : 2005-05-06
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -253,6 +253,8 @@ free_all_arrays(
 		free_newnews_array();
 		FreeAndNull(newnews);
 	}
+
+	FreeAndNull(nntp_caps.implementation);
 
 	tin_fgets(NULL, FALSE);
 }

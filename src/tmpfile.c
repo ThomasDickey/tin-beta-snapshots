@@ -53,10 +53,10 @@ FILE *
 tmpfile(
 	void)
 {
-	sigset_t set, oset;
 	FILE *fp;
-	int sverrno, fd = -1;
 	char buf[sizeof(_PATH_TMP) + sizeof(TRAILER)];
+	int sverrno, fd = -1;
+	sigset_t set, oset;
 
 	(void) memcpy(buf, _PATH_TMP, sizeof(_PATH_TMP) - 1);
 	(void) memcpy(buf + sizeof(_PATH_TMP) - 1, TRAILER, sizeof(TRAILER));

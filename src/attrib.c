@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2005-03-15
+ *  Updated   : 2005-05-07
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2005 Iain Lea <iain@bricbrac.de>
@@ -466,103 +466,142 @@ do_set_attrib(
 		case ATTRIB_MAILDIR:
 			free_if_not_default(&group->attribute->maildir, tinrc.maildir);
 			SET_STRING(maildir);
+
 		case ATTRIB_SAVEDIR:
 			free_if_not_default(&group->attribute->savedir, tinrc.savedir);
 			SET_STRING(savedir);
+
 		case ATTRIB_SAVEFILE:
 			FreeIfNeeded(group->attribute->savefile);
 			SET_STRING(savefile);
+
 		case ATTRIB_ORGANIZATION:
 			free_if_not_default(&group->attribute->organization, default_organization);
 			SET_STRING(organization);
+
 		case ATTRIB_FROM:
 			free_if_not_default(&group->attribute->from, tinrc.mail_address);
 			SET_STRING(from);
+
 		case ATTRIB_SIGFILE:
 			free_if_not_default(&group->attribute->sigfile, tinrc.sigfile);
 			SET_STRING(sigfile);
+
 		case ATTRIB_FOLLOWUP_TO:
 			FreeIfNeeded(group->attribute->followup_to);
 			SET_STRING(followup_to);
+
 		case ATTRIB_AUTO_SELECT:
 			SET_INTEGER(auto_select);
+
 		case ATTRIB_AUTO_SAVE:
 			SET_INTEGER(auto_save);
+
 		case ATTRIB_BATCH_SAVE:
 			SET_INTEGER(batch_save);
+
 		case ATTRIB_DELETE_TMP_FILES:
 			SET_INTEGER(delete_tmp_files);
+
 		case ATTRIB_SHOW_ONLY_UNREAD:
 			SET_INTEGER(show_only_unread);
+
 		case ATTRIB_THREAD_ARTS:
 			SET_INTEGER(thread_arts);
+
 		case ATTRIB_SHOW_AUTHOR:
 			SET_INTEGER(show_author);
+
 		case ATTRIB_SHOW_INFO:
 			SET_INTEGER(show_info);
+
 		case ATTRIB_SORT_ART_TYPE:
 			SET_INTEGER(sort_art_type);
+
 		case ATTRIB_SORT_THREADS_TYPE:
 			SET_INTEGER(sort_threads_type);
+
 		case ATTRIB_POST_PROC_TYPE:
 			SET_INTEGER(post_proc_type);
+
 		case ATTRIB_QUICK_KILL_HEADER:
 			SET_INTEGER(quick_kill_header);
+
 		case ATTRIB_QUICK_KILL_SCOPE:
 			FreeIfNeeded(group->attribute->quick_kill_scope);
 			SET_STRING(quick_kill_scope);
+
 		case ATTRIB_QUICK_KILL_EXPIRE:
 			SET_INTEGER(quick_kill_expire);
+
 		case ATTRIB_QUICK_KILL_CASE:
 			SET_INTEGER(quick_kill_case);
+
 		case ATTRIB_QUICK_SELECT_HEADER:
 			SET_INTEGER(quick_select_header);
+
 		case ATTRIB_QUICK_SELECT_SCOPE:
 			FreeIfNeeded(group->attribute->quick_select_scope);
 			SET_STRING(quick_select_scope);
+
 		case ATTRIB_QUICK_SELECT_EXPIRE:
 			SET_INTEGER(quick_select_expire);
+
 		case ATTRIB_QUICK_SELECT_CASE:
 			SET_INTEGER(quick_select_case);
+
 		case ATTRIB_MAILING_LIST:
 			FreeIfNeeded(group->attribute->mailing_list);
 			SET_STRING(mailing_list);
+
 #ifdef CHARSET_CONVERSION
 		case ATTRIB_MM_NETWORK_CHARSET:
 			SET_INTEGER(mm_network_charset);
+
 		case ATTRIB_UNDECLARED_CHARSET:
 			FreeIfNeeded(group->attribute->undeclared_charset);
 			SET_STRING(undeclared_charset);
 #endif /* CHARSET_CONVERSION */
+
 		case ATTRIB_X_HEADERS:
 			FreeIfNeeded(group->attribute->x_headers);
 			SET_STRING(x_headers);
+
 		case ATTRIB_X_BODY:
 			FreeIfNeeded(group->attribute->x_body);
 			SET_STRING(x_body);
+
 		case ATTRIB_X_COMMENT_TO:
 			SET_INTEGER(x_comment_to);
+
 		case ATTRIB_FCC:
 			FreeIfNeeded(group->attribute->fcc);
 			SET_STRING(fcc);
+
 		case ATTRIB_NEWS_QUOTE:
 			free_if_not_default(&group->attribute->news_quote_format, tinrc.news_quote_format);
 			SET_STRING(news_quote_format);
+
 		case ATTRIB_QUOTE_CHARS:
 			free_if_not_default(&group->attribute->quote_chars, tinrc.quote_chars);
 			SET_STRING(quote_chars);
+
 		case ATTRIB_MIME_TYPES_TO_SAVE:
 			FreeIfNeeded(group->attribute->mime_types_to_save);
 			SET_STRING(mime_types_to_save);
+
 		case ATTRIB_MIME_FORWARD:
 			SET_INTEGER(mime_forward);
+
 #ifdef HAVE_ISPELL
 		case ATTRIB_ISPELL:
 			FreeIfNeeded(group->attribute->ispell);
 			SET_STRING(ispell);
 #endif /* HAVE_ISPELL */
+
 		case ATTRIB_TEX2ISO_CONV:
 			SET_INTEGER(tex2iso_conv);
+
 		default:
 			break;
 	}
@@ -719,10 +758,11 @@ write_attributes_file(
 		fprintf(fp, "scope=*sources*\n");
 		fprintf(fp, "post_proc_type=%d\n\n", POST_PROC_SHAR);
 
-		fprintf(fp, _("# in *binaries* do full post processing, remove tmp files\n"));
-		fprintf(fp, _("# and set Followup-To: poster\n"));
+		fprintf(fp, _("# in *binaries* do full post processing but no TeX2ISO conversion,\n"));
+		fprintf(fp, _("# remove tmp files and set Followup-To: poster\n"));
 		fprintf(fp, "scope=*binaries*\n");
 		fprintf(fp, "post_proc_type=%d\n", POST_PROC_YES);
+		fprintf(fp, "tex2iso_conv=OFF\n");
 		fprintf(fp, "delete_tmp_files=ON\n");
 		fprintf(fp, "followup_to=poster\n\n");
 	} else {
@@ -748,7 +788,8 @@ write_attributes_file(
 		error_message(_(txt_filesystem_full), ATTRIBUTES_FILE);
 	else if (copy_ok)
 		rename_file(new_file, file);
-	else unlink (new_file);
+	else
+		unlink (new_file);
 
 	free(new_file);
 	return;

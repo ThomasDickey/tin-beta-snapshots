@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2004-07-20
+ *  Updated   : 2005-04-18
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -102,7 +102,7 @@ static TTY _raw_tty, _original_tty;
 
 #else	/* FIXME: prune the non-autoconf'd stuff */
 
-#	if (defined(COHERENT) || defined(BSD)
+#	if defined(COHERENT) || defined(BSD)
 #		ifdef BSD4_1
 #			include <termio.h>
 #			define USE_TERMIO 1
@@ -134,7 +134,7 @@ static TTY _raw_tty, _original_tty;
 #	endif /* COHERENT || BSD */
 
 #	ifndef VMS
-#		if (defined(BSD) || defined(MINIX)
+#		if defined(BSD) || defined(MINIX)
 #			define USE_SGTTY 1
 struct sgttyb _raw_tty, _original_tty;
 #		else

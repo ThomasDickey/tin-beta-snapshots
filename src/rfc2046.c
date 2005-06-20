@@ -1001,6 +1001,7 @@ dump_uue(
 	}
 }
 
+
 static void
 dump_art(
 	t_openartinfo *art)

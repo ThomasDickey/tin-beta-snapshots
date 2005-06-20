@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-03-20
+ *  Updated   : 2005-06-20
  *  Notes     :
  *
  * Copyright (c) 1997-2005 Iain Lea <iain@bricbrac.de>
@@ -831,12 +831,6 @@ extern constext txt_is_tex_encoded[];
 extern constext txt_keymap_missing_key[];
 extern constext txt_keymap_invalid_key[];
 extern constext txt_keymap_invalid_name[];
-#ifdef DEBUG
-	extern constext txt_keymap_redef[];
-#endif /* DEBUG */
-#if 0 /* ununsed */
-	extern constext txt_keymap_conflict[];
-#endif /* 0 */
 extern constext txt_keymap_upgraded[];
 extern constext txt_kill_from[];
 extern constext txt_kill_lines[];
@@ -1278,6 +1272,7 @@ extern struct t_group *curr_group;
 extern struct t_newnews *newnews;
 extern struct t_option option_table[];
 extern struct t_save *save;
+extern struct t_capabilities nntp_caps;
 
 extern t_bool *OPT_ON_OFF_list[];
 extern t_bool can_post;
@@ -1530,7 +1525,7 @@ extern struct opttxt txt_post_process;
 extern struct opttxt txt_post_process_view;
 extern struct opttxt txt_posted_articles_file;
 extern struct opttxt txt_posting_options;
-#ifndef DISABLE_PRINTING  
+#ifndef DISABLE_PRINTING
 	extern struct opttxt txt_print_header;
 	extern struct opttxt txt_printer;
 #endif /* !DISABLE_PRINTING */
@@ -1572,6 +1567,7 @@ extern struct opttxt txt_strokes_regex;
 extern struct opttxt txt_tab_goto_next_unread;
 extern struct opttxt txt_tex2iso_conv;
 extern struct opttxt txt_thread_articles;
+extern struct opttxt txt_thread_perc;
 extern struct opttxt txt_thread_catchup_on_exit;
 extern struct opttxt txt_thread_score;
 extern struct opttxt txt_underscores_regex;

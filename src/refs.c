@@ -98,10 +98,10 @@ static struct t_msgid *msgids[MSGID_HASH_SIZE] = {0};
  *
  *    When threading on Refs, a much better view of the original thread
  *    can be built up using this data, and threading is much faster
- *	   because all the article relationships are automatically available
- *	   to us.
+ *    because all the article relationships are automatically available
+ *    to us.
  *
- *	  NB: We don't cache msgids from the filter file.
+ * NB: We don't cache msgids from the filter file.
  */
 
 /*

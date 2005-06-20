@@ -4,14 +4,10 @@ not read only ,-).
 
 Bugs
 ----
-o  the decription in the online 'h'elp for is dublicated (in
-   all levels) if the "same" key is mapped to the same function twice
-   (e.g: GroupReadBasenote	^J	^M)
-   | Group/thread/article operations
-   | -------------------------------
-   | <CR>      read chosen group
-   | <CR>      read chosen group
-   [20050311 Urs Janssen <urs@tin.org>]
+o  a wrong usename in ~/.newsauth leeds to an endless authentication loop
+   as it can't be corrected anymore, see
+   <nntp://news.tin.org/20050524124906.GA10933@akk10.akk.uni-karlsruhe.de>
+   [20050524 Urs Janssen <urs@tin.org>]
 
 o  can 'V'iew mime-parts with (illegal) encoded filename, e.g:
    | Content-Type: image/jpeg;
@@ -135,6 +131,8 @@ o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
 
 New features
 ------------
+o  allow remapping of the 'z' abort-key (lynx style) in wait_for_input().
+
 o  add user defined screen layout at different levels
    [20041025 Urs Janssen <urs@tin.org>]
 
@@ -289,12 +287,11 @@ o  add cmd-line/tinrc-switch to fetch only headers of unread articles;
    [-G is a start]
    allow setting a per group limit via attributes
 
-o  check if server supports 'LIST MOTD' (e.g. INN >= 2.0) and display
-   it on startup. check if server supports 'LIST MODERATORS' and/or
-   'LIST DISTRIB.PATS' and if it does parse the output so it can be shown
-   to the user. (e.g. when posting to a moderated group, show the
-   moderators mail-address, but still leave the mailing to the server; if
-   the group has limited distribution inform the user, ...)
+o  check if server supports 'LIST MODERATORS' and/or 'LIST DISTRIB.PATS' and
+   if it does parse the output so it can be shown to the user. (e.g. when
+   posting to a moderated group, show the moderators mail-address, but still
+   leave the mailing to the server; if the group has limited distribution
+   inform the user, ...)
 
 o  if using "-n" commandline switch you can't subscribe to newsgroups not
    present in your newsrc - a simple check against the server
@@ -328,6 +325,8 @@ o  Additions to the thread menu:
      'r'  (reply to) /* not 'R' cause it conflicts with mail_bugreport */
      ''   r should be toggle show all/show only unread
      'f'  (post a followup) (maybe also 'F', '^W', ...)
+     'N'  (next unread article)
+     'P'  (previous unread article)
      'X'  (mark all unread articles that have not been selected as read)
      ';'  (mark unread arts as hot if >= 1 art in thread is hot)
      '+'  (mark thread as hot)
@@ -396,14 +395,16 @@ o  Merge the selection code with the range code. Having two similar methods
 
 o  add check for libbzip2/zlib (>=1.1.4)/[mini]lzo
    (<http://sources.redhat.com/bzip2/>, <http://www.gzip.org/zlib/>,
-    <http://www.oberhumer.com/opensource/lzo/>) and
-   option to write/read {g,b,l}zipped local overviews
-   zlib, libbzip2 lzo might also be used for post-processing.
+    <http://www.oberhumer.com/opensource/lzo/>) and add an
+   option to write/read {g,b,l}zipped local overviews.
+   zlib, libbzip2 and lzo might also be used for post-processing.
 
 o  add check for GPGME (<http://www.gnupg.org/gpgme.html>) and if found
    use it for pgp actions.
 
-o  rewrite/cleanup all the debugging code
+o  rewrite/cleanup all the debugging code; clearly seperate the debugging
+   levels, e.g.: NNTP=0x01, FILTER=0x02, NEWSRC=0x04, MEMORY=0x08,
+   ALL=0x0f
 
 Posting enhancements
 --------------------
@@ -488,41 +489,52 @@ o  suppress hide_uue=2 checking unless first line in an article or following
 
 Internal Changes
 ----------------
+o  remove untranslateable constructs like txt_prefix_*
+   [20050413 Urs Janssen <urs@tin.org>]
+
+o  keys which could be renamed/merged:
+   - 'm' GroupMail, PageMail, PostMail, ThreadMail
+   - 'N' GroupNextUnreadArt, PageNextUnreadArt, (SelectNextUnreadGrp)
+   - 'S' GroupAutoSave, PageAutoSave, ThreadAutoSave
+   - 'P' GroupPrevUnreadArt, PagePrevUnreadArt
+   - '@' GroupReverseSel, ThreadReverseSel
+   - '~' GroupUndoSel, ThreadUndoSel
+   [20050408 Urs Janssen <urs@tin.org>]
+
 o  read_overview() calls eat_re() which strips the "Re: " out of the
    subject. the modified subject ist used for batch_mode opperatios (-N/-M)
    which might not be what ppl. expect and eat_re() is the only function
    which needs the 'regex' overhead in batch_mode... (see also the note
    about "Re: "strpping at "Filtering enhancements").
-   [20050225 Urs Janssen <urs@akk.org>]
+   [20050225 Urs Janssen <urs@tin.org>]
 
 o  use new_nntp_command() instead of nntp_command() in the rest of the
    code (where usefull; if we do a global change, rename it to
    nntp_command()). see check_extensions() for a sample usage.
-   [20050211 Urs Janssen <urs@akk.org>]
+   [20050211 Urs Janssen <urs@tin.org>]
 
 o  replace various occurrence of "US-ASCII" by DEFAULT(_MIME)_CHARSET
    and define that to "US-ASCII" (to make 'updates' easier).
-   [20040929 Urs Janssen <urs@akk.org>]
+   [20040929 Urs Janssen <urs@tin.org>]
 
 o  add configure option for slrnface
-   [20030506 Urs Janssen <urs@akk.org>]
+   [20030506 Urs Janssen <urs@tin.org>]
 
 o  get rid of CURR_GROUP, use t_group instead
    create a global t_group *CURR_GROUP instead of the current macro
    reduce dependencies on my_group[] & selmenu outside of select.c
-   [20030501 Urs Janssen <urs@akk.org>]
+   [20030501 Urs Janssen <urs@tin.org>]
 
 o  clean up $AUTOSUBSCRIBE code (the NNTP code path is a mess)
-   [20030412 Urs Janssen <urs@akk.org>]
-
-o  in page level Up2 ('k') does the same as PageNextUnreadArt ('N'), but
-   Up ('^P') behaves different. shouldn't 'k' be named PageNextUnreadArt2
-   here?
-   [Urs Janssen <urs@tin.org>]
+   [20030412 Urs Janssen <urs@tin.org>]
 
 o  try to get rid of the magic numbers like NUM_MIME_CHARSETS and use
    a sentinel in the arrays instead (match_list is a showstopper here).
    [20030203 Urs Janssen <urs@tin.org>]
+
+o  clean up options_menu.c to remove the enum/int mixing (e.g.
+   search_config() returns int instead of option_enum).
+   [20050615 Urs Janssen <urs@tin.org>]
 
 o  check where joinpath() should be used; check joinpath() for overruns.
    (e.g. grep for TMPDIR in the source)
@@ -649,7 +661,8 @@ o  add normalization
 
 Docs/online help
 ----------------
-o  review the turkish translation (tr.po)
+o  review the turkish, russian and kinyarwanda translations
+   (tr.po, ru.po, rw.po)
 
 o  add installation guide (in html)
 
@@ -667,6 +680,9 @@ o  replace "\\" by "\e" in manpages (portable?)
 
 Not yet classified
 ------------------
+o  add PGP_INCLUDE_KEY to pgp_mail_keys?
+   [20050426 Urs Janssen <urs@tin.org>]
+
 o  there is no command to undo a range ('#') selection
 
 o  'article loss' reported in
@@ -676,9 +692,9 @@ o  should 'tin -z foo.bar' only start up if there is any unread news in
    foo.bar?
    [20040325 Urs Janssen <urs@tin.org>]
 
-o  trn uses ~/.nntpauth (format is "^server\s+user\s+password"),
-   shall we also try ~/.nntpauth if we can't find a matching entry
-   in ~/.newsauth?
+o  trn and perls Net::NNTP::Auth use ~/.nntpauth (format is
+   "^server\s+user\s+password"), shall we also try ~/.nntpauth if we can't
+   find a matching entry in ~/.newsauth?
    [20040128 Urs Janssen <urs@tin.org>]
 
 o  what todo if in a CTE: x-uue the CD: filename differs from the one given
@@ -725,6 +741,9 @@ o  check_article_to_be_posted() still need some cleanup
    [20010629 Urs Janssen <urs@tin.org>]
 
 o  update gettext stuff to > gettext-0.12.1
+
+o  clean up included pcre stuff (pcre/Makefile.in)
+   [20050608 Urs Janssen <urs@tin.org>]
 
 o  tin in batchmode dumps core if getting a SIGINT, useful?
 

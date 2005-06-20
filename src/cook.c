@@ -156,7 +156,7 @@ put_cooked(
 	char *p, *bufp, *buf;
 	int wrap_column;
 	int space;
-/*	static int overflow = 0; *//* TODO: we don't use it (anymore?) */
+/*	static int overflow = 0; */ /* TODO: we don't use it (anymore?) */
 	static int saved_flags = 0;
 	va_list ap;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)

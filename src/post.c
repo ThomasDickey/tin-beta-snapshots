@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-03-04
+ *  Updated   : 2005-05-24
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -350,7 +350,7 @@ msg_add_header(
 {
 	const char *p;
 	char *ptr;
-	char *new_name = NULL;
+	char *new_name;
 	char *new_text = NULL;
 	int i;
 	t_bool done = FALSE;
@@ -759,6 +759,7 @@ check_article_to_be_posted(
 	t_bool mime_7bit = TRUE;
 	t_bool mime_usascii = FALSE;
 	t_bool contains_8bit = FALSE;
+	int must_break_line = 0;
 #ifdef CHARSET_CONVERSION
 	t_bool charset_conversion_fails = FALSE;
 	int mmnwcharset = *group ? (*group)->attribute->mm_network_charset : tinrc.mm_network_charset;
@@ -907,8 +908,17 @@ check_article_to_be_posted(
 		}
 
 		if (cp - line == 10 && !strncasecmp(line, "Message-ID", 10)) {
+#if 0 /* see comment about "<>" in misc.c:gnksa_split_from() */
+			char addr[HEADER_LEN], name[HEADER_LEN];
+			int type;
+
+			i = gnksa_check_from(cp + 1);
+			gnksa_split_from(cp + 1, addr, name, &type);
+			if (((GNKSA_OK != i) && (GNKSA_LOCALPART_MISSING > i)) || !*addr) {
+#else
 			i = gnksa_check_from(cp + 1);
 			if ((GNKSA_OK != i) && (GNKSA_LOCALPART_MISSING > i)) {
+#endif /* 0 */
 				setup_check_article_screen(&init);
 				StartInverse();
 				my_fprintf(stderr, _(txt_error_bad_msgidfqdn), i);
@@ -1067,9 +1077,9 @@ check_article_to_be_posted(
 	if (found_newsgroups_lines > 1)
 		errors_catbp |= CA_ERROR_DUPLICATED_NEWSGROUPS;
 
-	if (!found_subject_lines) {
+	if (!found_subject_lines)
 		errors_catbp |= CA_ERROR_MISSING_SUBJECT;
-	} else {
+	else {
 		if (found_subject_lines > 1)
 			errors_catbp |= CA_ERROR_DUPLICATED_SUBJECT;
 	}
@@ -1127,36 +1137,32 @@ check_article_to_be_posted(
 			got_long_line = TRUE;
 			warnings++;
 		}
-#if 0 /* disabled till 1.7.x */
+		if (strlen(line) > 998 && !must_break_line)
+			must_break_line = cnt;
+	}
+
+#if 1
 /*
- * TODO: cleanup, test me, move to the right location (after testing the
- *       whole body for 8bit chars), adjust and translate warings, ...
+ * TODO: cleanup, test me, move to the right location, strings -> lang.c, ...
  */
-		if (strlen(line) > 998 && strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_base64)) {
-			setup_check_article_screen(&init);
+	if (must_break_line && strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_base64)) {
+		setup_check_article_screen(&init);
 #	ifdef MIME_BREAK_LONG_LINES
-			if (contains_8bit) { /* we only know if the body contained 8bits till this line, that is not 100% correct */
-				if (strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_quoted_printable)) {
-					my_fprintf(stderr, "Line %d is longer than 998 octets and should be folded, but\n", cnt);
-					my_fprintf(stderr, "encoding is neither set to %s nor to %s\n", txt_quoted_printable, txt_base64);
-				}
-			} else
+		if (contains_8bit) {
+			if (strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_quoted_printable))
+				my_fprintf(stderr, _("Line %d is longer than 998 octets and should be folded, but\nencoding is neither set to %s nor to %s\n"), must_break_line, txt_quoted_printable, txt_base64);
+		} else
 #	endif /* MIME_BREAK_LONG_LINES */
-			{
-				if (!strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_quoted_printable)) {
-					my_fprintf(stderr, "Line %d is longer than 998 octets, and should be folded, but\n", cnt);
-					my_fprintf(stderr, "encoding is set to %s without enabling MIME_BREAK_LONG_LINES or\n", txt_quoted_printable);
-					my_fprintf(stderr, "posting doesn't contain any 8bit chars and thus folding won't happen\n");
-				} else {
-					my_fprintf(stderr, "Line %d is longer than 998 octets, and should be folded, but\n", cnt);
-					my_fprintf(stderr, "encoding is not set to %s\n", txt_base64);
-				}
-			}
+		{
+			if (!strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_quoted_printable))
+				my_fprintf(stderr, _("Line %d is longer than 998 octets, and should be folded, but\nencoding is set to %s without enabling MIME_BREAK_LONG_LINES or\nposting doesn't contain any 8bit chars and thus folding won't happen\n"), must_break_line, txt_quoted_printable);
+			else
+				my_fprintf(stderr, _("Line %d is longer than 998 octets, and should be folded, but\nencoding is not set to %s\n"), must_break_line, txt_base64);
+		}
 		my_fflush(stderr);
 		warnings++;
-		}
-#endif /* 0 */
 	}
+#endif /* 1 */
 
 	if (saw_sig_dashes > 1)
 		warnings_catbp |= CA_WARNING_MULTIPLE_SIGDASHES;
@@ -1449,14 +1455,14 @@ post_loop(
 	int type,				/* type of posting */
 	struct t_group *group,
 	t_function func,
-	const char *posting_msg,/* displayed just prior to article submission */
+	const char *posting_msg, /* displayed just prior to article submission */
 	int art_type,			/* news, mail etc. */
 	int offset)				/* editor start offset */
 {
 	char a_message_id[HEADER_LEN];	/* Message-ID of the article if known */
 	int ret_code = POSTED_NONE;
 	int i = 1;
-	long artchanged = 0L;		/* artchanged work was not done in post_postponed_article */
+	long artchanged;		/* artchanged work was not done in post_postponed_article */
 	struct t_group *ogroup = curr_group;
 	t_bool art_unchanged;
 
@@ -1953,9 +1959,9 @@ post_postponed_article(
 	const char *subject,
 	const char *newsgroups)
 {
-	char buf[LEN];
 	char *ng;
 	char *p;
+	char buf[LEN];
 
 	if (!can_post) {
 		info_message(_(txt_cannot_post));
@@ -2172,6 +2178,7 @@ pickup_postponed_articles(
 				unlink(article);
 				if (func != PROMPT_NO)
 					return TRUE;
+				break;
 
 			default:
 				break;
@@ -2579,11 +2586,10 @@ post_response(
 		} else {
 			msg_add_header("Newsgroups", note_h.newsgroups);
 			if (tinrc.prompt_followupto)
-				msg_add_header("Followup-To",
-				(strchr(note_h.newsgroups, ',') != NULL) ? note_h.newsgroups : "");
-			if (group && group->attribute->followup_to != NULL) {
+				msg_add_header("Followup-To", (strchr(note_h.newsgroups, ',') != NULL) ? note_h.newsgroups : "");
+			if (group && group->attribute->followup_to != NULL)
 				msg_add_header("Followup-To", group->attribute->followup_to);
-			} else {
+			else {
 				if ((ptr = strchr(note_h.newsgroups, ',')))
 					msg_add_header("Followup-To", note_h.newsgroups);
 			}
@@ -2807,7 +2813,7 @@ mail_loop(
 {
 	FILE *fp;
 	int ret = POSTED_NONE;
-	long artchanged = 0L;
+	long artchanged;
 	struct t_header hdr;
 	struct t_group *group = (struct t_group *) 0;
 	t_bool is_changed = FALSE;
@@ -2916,8 +2922,8 @@ add_mail_quote(
 	FILE *fp,
 	int respnum)
 {
-	char buf[HEADER_LEN];
 	char *s;
+	char buf[HEADER_LEN];
 	int line_count = 0;
 
 	if (strfquote(CURR_GROUP.name, respnum, buf, sizeof(buf), tinrc.mail_quote_format)) {
@@ -3040,7 +3046,7 @@ mail_bug_report(
 		DEFAULT_ACTIVE_NUM,
 		DEFAULT_ARTICLE_NUM,
 		tinrc.reread_active_file_secs,
-		bool_unparse(xover_cmd != NULL));
+		bool_unparse(nntp_caps.over_cmd != NULL));
 	fprintf(fp, "CFG2 : debug=%d, threading=%d\n", debug, tinrc.thread_articles);
 	fprintf(fp, "CFG3 : domain=[%s]\n", BlankIfNull(domain));
 	start_line_offset += 4;
@@ -3053,7 +3059,10 @@ mail_bug_report(
 		fprintf(fp, "NNTP2: %s\n", bug_nntpserver2);
 		start_line_offset++;
 	}
-
+	if (nntp_caps.implementation){
+		fprintf(fp, "IMPLE: %s\n", nntp_caps.implementation);
+		start_line_offset++;
+	}
 	fprintf(fp, "\nPlease enter _detailed_ bug report, gripe or comment:\n\n");
 	start_line_offset += 2;
 
@@ -3093,13 +3102,11 @@ mail_to_author(
 	char initials[64];
 	int ret_code = POSTED_NONE;
 	struct t_header note_h = pgart.hdr;
-	t_bool spamtrap_found = FALSE;
 
 	wait_message(0, _(txt_reply_to_author));
 	find_reply_to_addr(from_addr, FALSE, &pgart.hdr);
-	spamtrap_found = check_for_spamtrap(from_addr);
 
-	if (spamtrap_found) {
+	if (check_for_spamtrap(from_addr)) {
 		char keyabort[MAXKEYLEN], keycont[MAXKEYLEN];
 		t_function func;
 
@@ -3685,7 +3692,7 @@ repost_article(
 	 * on supersede change default-key
 	 *
 	 * FIXME: this is only useful when entering the editor.
-	 * After leaving the editor it should be iKeyPostPost3
+	 * After leaving the editor it should be GLOBAL_POST
 	 */
 	if (Superseding) {
 		default_func = POST_EDIT;
@@ -4464,7 +4471,7 @@ get_recipients(
 {
 	char **to_addresses, **cc_addresses, **bcc_addresses, **all_addresses;
 	char *dest, *src;
-	unsigned int num_to = 0, num_cc = 0, num_bcc = 0, num_all = 0, j = 0, i;
+	unsigned int num_to = 0, num_cc = 0, num_bcc = 0, num_all, j = 0, i;
 
 	/* get individual e-mail addresses from To, Cc and Bcc headers */
 	to_addresses = split_address_list(hdr->to, &num_to);
@@ -4689,7 +4696,7 @@ add_headers(
 	FILE *fp_in;
 	char *line;
 	char outfile[PATH_LEN];
-	int fd_out = -1;
+	int fd_out;
 	t_bool inhdrs = TRUE, writesuccess = TRUE;
 	t_bool addmid = TRUE;
 	t_bool adddate = TRUE;

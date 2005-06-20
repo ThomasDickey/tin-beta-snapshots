@@ -219,7 +219,7 @@
  * requested new TLDs:
  * .ax  Aaland-Islands (Finnish)
  * .cs  Serbia and Montenegro
- * .eu  European Union (planned for 2004-11)
+ * .eu  European Union (planned for 2006)
  *
  * xccTLDs:
  * .gb  United Kingdom, use .uk
@@ -280,7 +280,7 @@ static const char *gnksa_domain_list[] = {
 	"name",	/* For registration by individuals */
 	"museum",	/* Museums */
 	/*
-	 * more gTLDs to come in 2004, proposed are:
+	 * more gTLDs to come in 2005, proposed are:
 	 *  .asia   .cat    .jobs   .mail   .mobi
 	 *  .post   .tel    .travel .xxx
 	 */

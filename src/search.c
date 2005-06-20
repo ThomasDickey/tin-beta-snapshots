@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-03-07
+ *  Updated   : 2005-05-10
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -203,8 +203,8 @@ search_active(
 	t_bool repeat)
 {
 	char *buf;
+	char *ptr;
 	char buf2[LEN];
-	char *ptr = buf2;
 	int i;
 
 	if (!selmenu.max) {
@@ -390,9 +390,9 @@ subject_search(
 	char *buf;
 
 #ifdef HAVE_UNICODE_NORMALIZATION
-	if (IS_LOCAL_CHARSET("UTF-8")) {
+	if (IS_LOCAL_CHARSET("UTF-8"))
 		buf = normalize(arts[i].subject);
-	} else
+	else
 #endif /* HAVE_UNICODE_NORMALIZATION */
 		buf = my_strdup(arts[i].subject);
 

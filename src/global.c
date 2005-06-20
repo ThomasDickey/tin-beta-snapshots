@@ -285,7 +285,7 @@ scroll_up(
 #ifdef USE_CURSES
 	do_scroll(-1);
 	currmenu->draw_item(currmenu->first);
-	 stow_cursor();
+	stow_cursor();
 	if (currmenu->curr >= currmenu->first + NOTESLINES)
 		move_to_item(currmenu->curr - 1);
 #else
@@ -404,6 +404,7 @@ handle_keypad(
 				case KEYMAP_MOUSE:
 					if (mouse_action)
 						func = mouse_action(left_action, right_action);
+					break;
 
 				default:
 					break;

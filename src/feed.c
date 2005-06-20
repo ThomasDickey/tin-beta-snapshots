@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2005-02-12
+ *  Updated   : 2005-05-13
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -242,7 +242,7 @@ get_feed_key(
 		case FEED_REPOST:
 			if (!can_post) {				/* Get this over with before asking any Q's */
 				info_message(_(txt_cannot_post));
-				return 0;
+				return NOT_ASSIGNED;
 			}
 			prompt = txt_repost;
 			break;
@@ -303,7 +303,7 @@ get_feed_key(
 		case GLOBAL_ABORT:
 			clear_message();
 			return GLOBAL_ABORT;
-			/* NOT REACHED */
+			/* NOTREACHED */
 			break;
 
 		default:
@@ -521,8 +521,8 @@ feed_articles(
 	struct t_group *group,
 	int respnum)
 {
-	char outpath[PATH_LEN];
 	char *prompt;
+	char outpath[PATH_LEN];
 	int art;
 	int i;
 	int saved_curr_line = -1;
@@ -677,7 +677,7 @@ feed_articles(
 							supersede = TRUE;
 							break;
 
-						case FEED_REPOST:
+						case FEED_KEY_REPOST:
 							tmp = fmt_string(_(txt_repost_group), tinrc.default_repost_group);
 							supersede = FALSE;
 							break;

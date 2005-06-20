@@ -3,7 +3,7 @@
  *  Module    : rfc2045.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2004-11-04
+ *  Updated   : 2005-05-10
  *  Notes     : RFC 2045/2047 encoding
  *
  * Copyright (c) 1995-2005 Chris Blum <chris@resolution.de>
@@ -323,9 +323,9 @@ read_decoded_base64_line(
 {
 	char *buf2;	/* holds the entire decoded line */
 	char *buf;	/* holds the entire encoded line*/
-	int count = 0;
+	int count;
 	int lines_read = 0;
-	int put_chars = 0;
+	int put_chars;
 
 	/*
 	 * First of all, catch everything that is left over from the last decoding.
@@ -437,9 +437,9 @@ read_decoded_qp_line(
 	char *ptr;
 	char c;
 	int buflen = LEN;
-	int count = 0;
+	int count;
 	int lines_read = 0;
-	size_t chars_to_add = 0;
+	size_t chars_to_add;
 
 	buf = my_malloc(buflen); /* initial internal line buffer */
 	*buf = '\0';

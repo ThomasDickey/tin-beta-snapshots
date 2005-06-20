@@ -1,15 +1,15 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2005-03-06
+# Updated: 2005-06-17
 #
 
 PROJECT	= tin
 LVER	= 1
 PVER	= 7
-SVER	= 8
+SVER	= 9
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20050321
+DVER	= 20050620
 EXE	= tin
 
 # directory structure
@@ -220,26 +220,38 @@ PCRE	= \
 	$(PCREDIR)/config.h \
 	$(PCREDIR)/configure.in \
 	$(PCREDIR)/dftables.c \
-	$(PCREDIR)/get.c \
-	$(PCREDIR)/internal.h \
-	$(PCREDIR)/maketables.c \
 	$(PCREDIR)/pcre-config.in \
-	$(PCREDIR)/pcre.c \
-	$(PCREDIR)/pcre.def \
 	$(PCREDIR)/pcre.in \
+	$(PCREDIR)/pcre_compile.c \
+	$(PCREDIR)/pcre_config.c \
+	$(PCREDIR)/pcre_dfa_exec.c \
+	$(PCREDIR)/pcre_exec.c \
+	$(PCREDIR)/pcre_fullinfo.c \
+	$(PCREDIR)/pcre_get.c \
+	$(PCREDIR)/pcre_globals.c \
+	$(PCREDIR)/pcre_info.c \
+	$(PCREDIR)/pcre_internal.h \
+	$(PCREDIR)/pcre_maketables.c \
+	$(PCREDIR)/pcre_ord2utf8.c \
+	$(PCREDIR)/pcre_printint.c \
+	$(PCREDIR)/pcre_refcount.c \
+	$(PCREDIR)/pcre_study.c \
+	$(PCREDIR)/pcre_tables.c \
+	$(PCREDIR)/pcre_try_flipped.c \
+	$(PCREDIR)/pcre_ucp_findchar.c \
+	$(PCREDIR)/pcre_valid_utf8.c \
+	$(PCREDIR)/pcre_version.c \
+	$(PCREDIR)/pcre_xclass.c \
 	$(PCREDIR)/pcredemo.c \
 	$(PCREDIR)/pcregrep.c \
 	$(PCREDIR)/pcreposix.c \
 	$(PCREDIR)/pcreposix.h \
 	$(PCREDIR)/pcretest.c \
 	$(PCREDIR)/perltest \
-	$(PCREDIR)/printint.c \
-	$(PCREDIR)/study.c \
-	$(PCREDIR)/ucp.c \
+	$(PCREDIR)/ucp_findchar.c \
 	$(PCREDIR)/ucp.h \
 	$(PCREDIR)/ucpinternal.h \
 	$(PCREDIR)/ucptable.c \
-	$(PCREDIR)/ucptypetable.c \
 	$(PCREDIR)/version.sh \
 	$(PCREDIR)/doc/pcre.3 \
 	$(PCREDIR)/doc/pcrepattern.3 \
@@ -249,12 +261,18 @@ PCRE	= \
 	$(PCREDIR)/testdata/testinput4 \
 	$(PCREDIR)/testdata/testinput5 \
 	$(PCREDIR)/testdata/testinput6 \
+	$(PCREDIR)/testdata/testinput7 \
+	$(PCREDIR)/testdata/testinput8 \
+	$(PCREDIR)/testdata/testinput9 \
 	$(PCREDIR)/testdata/testoutput1 \
 	$(PCREDIR)/testdata/testoutput2 \
 	$(PCREDIR)/testdata/testoutput3 \
 	$(PCREDIR)/testdata/testoutput4 \
 	$(PCREDIR)/testdata/testoutput5 \
-	$(PCREDIR)/testdata/testoutput6
+	$(PCREDIR)/testdata/testoutput6 \
+	$(PCREDIR)/testdata/testoutput7 \
+	$(PCREDIR)/testdata/testoutput8 \
+	$(PCREDIR)/testdata/testoutput9
 
 CAN	= \
 	$(CANDIR)/Build \
@@ -337,6 +355,10 @@ POFILES = \
 	$(PODIR)/et.po \
 	$(PODIR)/fr.gmo \
 	$(PODIR)/fr.po \
+	$(PODIR)/ru.gmo \
+	$(PODIR)/ru.po \
+	$(PODIR)/rw.gmo \
+	$(PODIR)/rw.po \
 	$(PODIR)/tr.gmo \
 	$(PODIR)/tr.po
 
@@ -403,6 +425,7 @@ clean:
 	@-if $(TEST) -r $(INTLDIR)/Makefile ; then $(CD) $(INTLDIR) && $(MAKE) clean ; fi
 	@-if $(TEST) -r $(PODIR)/Makefile ; then $(CD) $(PODIR) && $(MAKE) clean ; fi
 	@-if $(TEST) -r $(SRCDIR)/Makefile ; then $(CD) $(SRCDIR) && $(MAKE) clean ; fi
+	@-if $(TEST) -r $(CANDIR)/hmactest ; then $(CD) $(CANDIR) && ./Build clean ; fi
 
 man:
 	@$(MAKE) manpage
@@ -511,12 +534,7 @@ distclean:
 	$(INCDIR)/autoconf.h \
 	$(SRCDIR)/Makefile \
 	$(PCREDIR)/Makefile \
-	$(INTLDIR)/po2tbl.sed \
-	$(CANDIR)/*.[oa] \
-	$(CANDIR)/endian.h \
-	$(CANDIR)/canlocktest \
-	$(CANDIR)/endian \
-	$(CANDIR)/hmactest
+	$(INTLDIR)/po2tbl.sed
 
 configure: configure.in aclocal.m4
 	autoconf

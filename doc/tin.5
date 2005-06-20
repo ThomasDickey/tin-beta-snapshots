@@ -2,10 +2,21 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2005-03-14
+.\" Updated   : 2005-06-20
 .\" Notes     : needs a some work
 .\"
-.TH tin 5 "March 12th, 2005" "1.7.8" "A Usenet newsreader"
+.\" Macros
+.de Vb \" Begin verbatim text
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve \" End verbatim text
+.ft R
+.fi
+..
+.\"
+.TH tin 5 "June 20th, 2005" "1.7.8" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -720,11 +731,12 @@ their defaults.
 \fBLastPage\fP	$
 \fBToggleColor\fP	&
 \fBLastViewed\fP	\-
+\fBSearchRepeat\fP	\\
 \fBSearchSubjF\fP	/
 \fBSearchSubjB\fP	?
 \fBSearchAuthB\fP	A
 \fBSearchBody\fP	B
-\fBSearchRepeat\fP	\\
+\fBCatchupNextUnread\fP	C
 \fBEditFilter\fP   E
 \fBToggleHelpDisplay\fP	H
 \fBToggleInverseVideo\fP	I
@@ -732,9 +744,12 @@ their defaults.
 \fBOptionMenu\fP	M
 \fBPostponed\fP	O	^O
 \fBQuitTin\fP	Q
+\fBBugReport\fP   R
 \fBDisplayPostHist\fP	W
+\fBMarkThrUnread\fP   Z
 \fBFirstPage\fP	^
 \fBSearchAuthF\fP	a
+\fBCatchup\fP	c
 \fBHelp\fP	h
 \fBToggleInfoLastLine\fP	i
 \fBDown\fP	j	^N
@@ -743,6 +758,7 @@ their defaults.
 \fBQuit\fP	q
 \fBVersion\fP	v
 \fBPost\fP	w
+\fBMarkArtUnread\fP      z
 \fBQuickFilterSelect\fP	[
 \fBQuickFilterKill\fP	]
 \fBPipe\fP	|
@@ -780,18 +796,14 @@ their defaults.
 \fBGroupSelThdIfUnreadSelected\fP	;
 \fBGroupSelPattern\fP	=
 \fBGroupReverseSel\fP	@
-\fBGroupCatchupNextUnread\fP	C
 \fBGroupToggleGetartLimit\fP	G
 \fBGroupMarkThdRead\fP	K
 \fBGroupNextUnreadArt\fP	N
 \fBGroupPrevUnreadArt\fP	P
-\fBGroupBugReport\fP	R
 \fBGroupAutoSave\fP	S
 \fBGroupTagParts\fP	T
 \fBGroupUntag\fP	U
 \fBGroupMarkUnselArtRead\fP	X
-\fBGroupMarkThdUnread\fP	Z
-\fBGroupCatchup\fP	c
 \fBGroupToggleSubjDisplay\fP	d
 \fBGroupGoto\fP	g
 \fBGroupListThd\fP	l
@@ -803,7 +815,6 @@ their defaults.
 \fBGroupTag\fP	t
 \fBGroupToggleThreading\fP	u
 \fBGroupRepost\fP	x
-\fBGroupMarkArtUnread\fP	z
 \fBGroupUndoSel\fP	~
 .sp
 \fBHelpLastPage\fP	G
@@ -823,7 +834,6 @@ their defaults.
 \fBPageSkipIncludedText\fP	:
 \fBPageTopThd\fP	<
 \fBPageBotThd\fP	>
-\fBPageCatchupNextUnread\fP	C
 \fBPageCancel\fP	D
 \fBPageFollowup\fP	F
 \fBPageLastPage\fP	G
@@ -835,9 +845,7 @@ their defaults.
 \fBPageGroupSel\fP	T
 \fBPageViewUrl\fP	U
 \fBPageViewAttach\fP	V
-\fBPageMarkThdUnread\fP	Z
 \fBPageToggleHighlight\fP	_
-\fBPageCatchup\fP	c
 \fBPageEditArticle\fP	e
 \fBPageFollowupQuote\fP	f
 \fBPageFirstPage\fP	g
@@ -850,7 +858,6 @@ their defaults.
 \fBPageTag\fP	t
 \fBPageGotoParent\fP	u
 \fBPageRepost\fP	x
-\fBPageMarkArtUnread\fP	z
 .sp
 \fBPgpEncSign\fP	b
 \fBPgpEncrypt\fP	e
@@ -887,14 +894,11 @@ their defaults.
 \fBSelectReadGrp\fP	^J	^M
 \fBSelectResetNewsrc\fP	^R
 \fBSelectSortActive\fP	.
-\fBSelectCatchupNextUnread\fP	C
 \fBSelectNextUnreadGrp\fP	N
-\fBSelectBugReport\fP	R
 \fBSelectSubscribePat\fP	S
 \fBSelectUnsubscribePat\fP	U
 \fBSelectQuitNoWrite\fP	X
 \fBSelectSyncWithActive\fP	Y
-\fBSelectCatchup\fP	c
 \fBSelectToggleDescriptions\fP	d
 \fBSelectGoto\fP	g
 \fBSelectMoveGrp\fP	m
@@ -909,18 +913,13 @@ their defaults.
 \fBThreadSelArt\fP	*
 \fBThreadToggleArtSel\fP	.
 \fBThreadReverseSel\fP	@
-\fBThreadCatchupNextUnread\fP	C
 \fBThreadMarkArtRead\fP	K
-\fBThreadBugReport\fP	R
 \fBThreadAutoSave\fP	S
 \fBThreadUntag\fP	U
-\fBThreadMarkThdUnread\fP	Z
-\fBThreadCatchup\fP	c
 \fBThreadToggleSubjDisplay\fP	d
 \fBThreadMail\fP	m
 \fBThreadSave\fP	s
 \fBThreadTag\fP	t
-\fBThreadMarkArtUnread\fP	z
 \fBThreadUndoSel\fP	~
 .fi
 .RE
@@ -1199,7 +1198,7 @@ can ask for manual confirmation to protect the user. Available choices:
 .in +.5i
 .B commands:
 Ask for confirmation before executing certain dangerous commands (e.g.,
-\fBSelectCatchup\fP ('\fBc\fP')). Commands that this affects are marked in
+\fBCatchup\fP ('\fBc\fP')). Commands that this affects are marked in
 this manual with '[after confirmation]'.
 .\" TODO: check if all affected commands are marked [after confirmation]
 .sp
@@ -1930,9 +1929,15 @@ Defines which threading method to use. The choices are:
 0) Don't thread, 1) Thread on Subject only 2) Thread on References only,
 3) Thread on References then Subject (default)
 4) Thread multipart articles on Subject.
+5) Thread on Percentage Match of the Subjects
 It's also possible to set the threading type on a per group basis by setting
-the group attribute variable \fBthread_arts\fP to 0 - 4 in the file
+the group attribute variable \fBthread_arts\fP to 0 - 5 in the file
 \fI${TIN_HOMEDIR\-"$HOME"}/.tin/attributes\fR.
+.TP
+.B thread_perc
+Defines how close the subjects must match while threading by Percentage
+Match for threads to be considered part of a single thread. This value
+is in the range 0 to 100. The default is 75.
 .TP
 .B thread_catchup_on_exit
 If ON catchup group/thread when leaving with the left arrow key. Default is

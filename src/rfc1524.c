@@ -3,7 +3,7 @@
  *  Module    : rfc1524.c
  *  Author    : Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-05-15
- *  Updated   : 2004-11-28
+ *  Updated   : 2005-05-10
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
  * Copyright (c) 2000-2005 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
@@ -65,7 +65,7 @@ get_mailcap_entry(
 	t_part *part,
 	const char *path)
 {
-	FILE *fp = NULL;
+	FILE *fp;
 	char *ptr, *ptr2, *nptr;
 	char buf[LEN];
 	char filename[LEN];	/* name of current mailcap file */

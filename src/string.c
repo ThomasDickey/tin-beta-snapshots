@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2005-03-30
+ *  Updated   : 2005-04-16
  *  Notes     :
  *
  * Copyright (c) 1997-2005 Urs Janssen <urs@tin.org>
@@ -73,19 +73,23 @@
 
 /*
  * special ltoa()
- * converts value into a string with a len of digits
- * last char may be one of the following
- * Kilo, Mega, Giga, Terra
+ * converts value into a string with a maxlen of digits (usualy should be
+ * >=4), last char may be one of the following:
+ * Kilo, Mega, Giga, Terra, Peta, Exa, Zetta, Yotta,
+ * Xona, Weka, Vunda, Uda (these last 4 are no official SI-prefixes)
  */
 char *
 tin_ltoa(
 	long value,
 	int digits)
 {
-	static char buffer[256];
-	static const char power[] = " KMGT";
+	static char buffer[64];
+	static const char power[] = { ' ', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y', 'X', 'W', 'V', 'U', '\0' };
 	int len;
-	int i = 0;
+	size_t i = 0;
+
+	if (digits <= 0)
+		return NULL;
 
 	snprintf(buffer, sizeof(buffer), "%ld", value);
 	len = (int) strlen(buffer);
@@ -93,6 +97,11 @@ tin_ltoa(
 	while (len > digits) {
 		len -= 3;
 		i++;
+	}
+
+	if (i >= strlen(power)) {
+		buffer[(digits & 0xff)] = '\0';
+		return buffer;
 	}
 
 	if (i) {
@@ -564,11 +573,11 @@ sh_format(
 	const char *fmt,
 	...)
 {
-	int result = 0;
 	char *src;
 	char temp[20];
-	va_list ap;
+	int result = 0;
 	int quote = 0;
+	va_list ap;
 
 	va_start(ap, fmt);
 
@@ -724,8 +733,8 @@ char *
 wchar_t2char(
 	const wchar_t *wstr)
 {
-	size_t len;
 	char *str;
+	size_t len;
 
 	len = wcstombs(NULL, wstr, 0);
 	if (len == (size_t) (-1))
@@ -820,6 +829,7 @@ strunc(
 
 	return tmp;
 }
+
 
 /*
  * if you use UTF-8 as local charset and want to use
@@ -919,8 +929,8 @@ static char *
 UChar2char(
 	const UChar *ustr)
 {
-	int32_t needed;
 	char *str;
+	int32_t needed;
 	UErrorCode status = U_ZERO_ERROR;
 
 	u_strToUTF8(NULL, 0, &needed, ustr, -1, &status);
@@ -1069,8 +1079,8 @@ render_bidi(
 	const char *str,
 	t_bool *is_rtl)
 {
-	int32_t ustr_len;
 	char *tmp;
+	int32_t ustr_len;
 	UBiDi *bidi_data;
 	UChar *ustr, *ustr_reordered;
 	UErrorCode status = U_ZERO_ERROR;

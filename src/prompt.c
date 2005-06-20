@@ -402,8 +402,8 @@ t_bool
 prompt_option_string(
 	int option) /* return value is always ignored */
 {
-	char prompt[LEN];
 	char *variable = OPT_STRING_list[option_table[option].var_index];
+	char prompt[LEN];
 
 	show_menu_help(option_table[option].txt->help);
 	fmt_option_prompt(prompt, sizeof(prompt) - 1, TRUE, option);
