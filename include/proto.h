@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2005-03-20
+ *  Updated   : 2005-05-04
  *  Notes     :
  *
  * Copyright (c) 1997-2005 Urs Janssen <urs@tin.org>
@@ -161,6 +161,9 @@ extern void word_highlight_string(int row, int col, int size, int color);
 	extern void debug_print_filters(void);
 	extern void debug_print_header(struct t_article *s);
 	extern void debug_print_malloc(int is_malloc, const char *xfile, int line, size_t size);
+#	ifdef NNTP_ABLE
+		extern void debug_print_nntp_extensions(void);
+#	endif /* NNTP_ABLE */
 #endif /* DEBUG */
 #ifdef DEBUG_NEWSRC
 	extern void debug_print_newsrc(struct t_newsrc *NewSrc, FILE *fp);
@@ -178,8 +181,8 @@ extern void feed_articles(int function, int level, struct t_group *group, int re
 
 /* filter.c */
 extern t_bool filter_articles(struct t_group *group);
-extern t_bool filter_menu(int type, struct t_group *group, struct t_article *art);
-extern t_bool quick_filter(int type, struct t_group *group, struct t_article *art);
+extern t_bool filter_menu(t_function type, struct t_group *group, struct t_article *art);
+extern t_bool quick_filter(t_function type, struct t_group *group, struct t_article *art);
 extern t_bool quick_filter_select_posted_art(struct t_group *group, const char *subj, const char *a_message_id);
 extern t_bool read_filter_file(const char *file);
 extern void free_filter_array(struct t_filters *ptr);
@@ -250,6 +253,7 @@ extern void joinpath(char *result, const char *dir, const char *file);
 extern char *printascii(char *buf, int ch);
 extern t_bool read_keymap_file(void);
 extern void free_keymaps(void);
+extern void setup_default_keys(void);
 
 /* langinfo.c */
 #ifndef NO_LOCALE
@@ -404,7 +408,9 @@ extern void thd_mark_read(struct t_group *group, long thread);
 extern void thd_mark_unread(struct t_group *group, long thread);
 extern void set_default_bitmap(struct t_group *group);
 #ifdef DEBUG_NEWSRC
+#	if 0
 	extern void newsrc_test_harness(void);
+#	endif /* 0 */
 #endif /* DEBUG_NEWSRC */
 
 /* nntplib.c */

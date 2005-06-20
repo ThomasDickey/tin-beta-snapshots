@@ -40,15 +40,15 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.7.8"
+#		define VERSION		"1.7.9"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20050321"
+#	define RELEASEDATE	"20050620"
 #	define RELEASENAME	"Hellisay"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.7"
 #	define ATTRIBUTES_VERSION	"1.0.3"
 #	define FILTER_VERSION	"1.0.0"
-#	define KEYMAP_VERSION	"1.0.4"
+#	define KEYMAP_VERSION	"1.0.6"
 #	define SERVERCONFIG_VERSION	"1.0.0"
 
 #	ifdef VMS

@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-02-12
+ *  Updated   : 2005-05-12
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -199,7 +199,7 @@ copy_fp(
  * try to backup filename as backupname. on success backupname has the same
  * permissions as filename.
  *
- * returncodes:
+ * return codes:
  * TRUE  = backup complete or source file was missing
  * FALSE = backup failed
  */
@@ -1661,7 +1661,6 @@ strfpath(
 }
 
 
-
 /*
  * TODO: Properly explain this
  */
@@ -2029,7 +2028,7 @@ cleanup_tmp_files(
 #if 0
 	char acNovFile[PATH_LEN];
 
-	if (xover_cmd && !tinrc.cache_overview_files) {
+	if (nntp_caps.over_cmd && !tinrc.cache_overview_files) {
 		snprintf(acNovFile, sizeof(acNovFile), "%s%d.idx", TMPDIR, (int) process_id);
 		unlink(acNovFile);
 	}
@@ -3397,7 +3396,15 @@ gnksa_split_from(
 		}
 	}
 
+	/*
+	 * if we allow <> as From: we must disallow <> as Mesage-ID,
+	 * see code in post.c:check_article_to_be_posted()
+	 */
+#if 0
+	if (!strchr(address, '@') && *address) /* check for From: without an @ but allow <> */
+#else
 	if (!strchr(address, '@')) /* check for From: without an @ */
+#endif /* 0 */
 		return GNKSA_ATSIGN_MISSING;
 
 	/* split successful */

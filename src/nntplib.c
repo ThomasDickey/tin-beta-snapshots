@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2005-02-12
+ *  Updated   : 2005-06-17
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -30,7 +30,6 @@
 #endif /* VMS */
 
 char *nntp_server = NULL;
-constext *xover_cmd = NULL;
 #ifdef NO_POSTING
 	t_bool can_post = FALSE;
 #else
@@ -48,11 +47,9 @@ static TCP *nntp_wr_fp = NULL;
 	static char last_put[NNTP_STRLEN];
 	static constext *xover_cmds = "XOVER";
 #	if 0 /* currently not used */
-	static constext *xhdr_cmd = NULL;
 	static constext *xhdr_cmds = "XHDR";
 #	endif /* 0 */
 	enum extension_type { NO, LIST_EXTENSIONS, CAPABILITIES };
-	static int have_list_extensions = NO;
 	/* Set so we don't reconnect just to QUIT */
 	static t_bool quitting = FALSE;
 #endif /* NNTP_ABLE */
@@ -61,11 +58,13 @@ static TCP *nntp_wr_fp = NULL;
  * local prototypes
  */
 #ifdef NNTP_ABLE
+	static int mode_reader(t_bool *sec);
 	static int new_nntp_command(const char *command, int success, char *message, size_t mlen);
 	static int reconnect(int retry);
 	static int server_init(char *machine, const char *cservice, int port, char *text, size_t mlen);
-	static void check_extensions(void);
+	static int check_extensions(t_bool *sec);
 	static void close_server(void);
+	static void list_motd(void);
 #	ifdef INET6
 		static int get_tcp6_socket(char *machine, unsigned short port);
 #	else
@@ -614,7 +613,7 @@ get_tcp6_socket(
 {
 	char mymachine[MAXHOSTNAMELEN + 1];
 	char myport[12];
-	int c = -1, s = -1, err = -1;
+	int s = -1, err = -1;
 	struct addrinfo hints, *res, *res0;
 
 	snprintf(mymachine, sizeof(mymachine), "%s", machine);
@@ -645,7 +644,7 @@ get_tcp6_socket(
 	for (res = res0; res; res = res->ai_next) {
 		if ((s = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0)
 			continue;
-		if ((c = connect(s, res->ai_addr, res->ai_addrlen)) < 0)
+		if (connect(s, res->ai_addr, res->ai_addrlen) != 0)
 			close(s);
 		else {
 			err = 0;
@@ -704,6 +703,7 @@ get_dnet_socket(
 			sdn.sdn_add.a_addr[0] = node % 256;
 			sdn.sdn_add.a_addr[1] = node / 256;
 			break;
+
 		default:
 			if ((np = getnodebyname(machine)) == NULL) {
 				my_fprintf(stderr, _(txt_gethostbyname), "", machine);
@@ -769,13 +769,12 @@ u_put_server(
  * Returns: Nothing.
  *
  *	Side effects: Talks to the server.
- *			Closes connection if things are not right.
+ *	              Closes connection if things are not right.
  *
  * Note: This routine flushes the buffer each time it is called. For large
- *	      transmissions (i.e., posting news) don't use it. Instead, do the
- *	      fprintf's yourself, and then a final fflush.
+ *       transmissions (i.e., posting news) don't use it. Instead, do the
+ *       fprintf's yourself, and then a final fflush.
  *       Only cache commands, don't cache data transmissions.
- *
  */
 void
 put_server(
@@ -958,119 +957,265 @@ close_server(
  * issuing other NNTP commands because the correct methods may be mentioned
  * in the list of extensions.
  *
- * Sets up: have_list_extensions, xover_cmd, (xhdr_cmd)
+ * Sets up: t_capabilities nntp_caps
  */
-static void
+static int
 check_extensions(
-	void)
+	t_bool *sec)
 {
 	char *ptr;
-	int i;
+	int ret = 0;
 #	if 0 /* "CAPABILITIES" will replace "LIST EXTENSIONS" */
 	FILE *fp;
+	char *d;
 
 	if ((fp = nntp_command("CAPABILITIES", INF_CAPABILITIES, NULL, 0)) != NULL) {
-		int cap_version = -1;
-
-		have_list_extensions = CAPABILITIES;
+		nntp_caps.type = CAPABILITIES;
 		while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
 #		ifdef DEBUG
 			debug_nntp("<<<", ptr);
 #		endif /* DEBUG */
-			/* look for version number */
-			if (cap_version == -1 && have_list_extensions == CAPABILITIES) {
-				if (!strncasecmp(ptr, "VERSION", 7))
-					cap_version = atoi(ptr + 8);
+			/* look for version number(s) */
+			if (!nntp_caps.version && nntp_caps.type == CAPABILITIES) {
+				if (!strcasecmp(ptr, "VERSION")) {
+					d = ptr + 7;
+					d = strpbrk(d, " \t");
+					while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
+						d++;
+						nntp_caps.version = MAX(nntp_caps.version, (unsigned int) atoi(d));
+						d = strpbrk(d, " \t");
+					}
+				}
 			}
 			/* we currently only support CAPABILITIES VERSION 2 */
-			if (cap_version == 2) {
+			if (nntp_caps.version == 2) {
 				/*
-				 * Check for (X)OVER
-				 * XOVER should not be listed in CAPABILITIES
-				 * but checking for it if OVER is not found does no harm.
+				 * check for LIST variants - this code is untested
 				 */
-				if (!xover_cmd) {
-					for (i = 1; i >= 0; i--) {
-						if (strcasecmp(ptr, &xover_cmds[i]) == 0) {
-							xover_cmd = &xover_cmds[i];
-							break;
-						}
+				if (!strcasecmp(ptr, "LIST")) {
+					d = ptr + 4;
+					d = strpbrk(d, " \t");
+					while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
+						d++;
+						if (!strcasecmp(d, "ACTIVE.TIMES"))
+							nntp_caps.list_active_times = TRUE;
+						else if (!strcasecmp(d, "ACTIVE"))
+							nntp_caps.list_active_times = TRUE;
+						else if (!strcasecmp(d, "DISTRIB.PATS"))
+							nntp_caps.list_distrib_pats = TRUE;
+						else if (!strcasecmp(d, "DISTRIBUTIONS"))
+							nntp_caps.list_distributions = TRUE;
+						else if (!strcasecmp(d, "HEADERS"))
+							nntp_caps.list_headers = TRUE; /* HDR requires LIST HEADERS, but not vice versa */
+						else if (!strcasecmp(d, "NEWSGROUPS"))
+							nntp_caps.list_newsgroups = TRUE;
+						else if (!strcasecmp(d, "OVERVIEW.FMT")) /* OVER requires OVERVIEW.FMT, but not vice versa */
+							nntp_caps.list_overview_fmt = TRUE;
+						else if (!strcasecmp(d, "MOTD")) /* "private" extension */
+							nntp_caps.list_motd = TRUE;
+						else if (!strcasecmp(d, "SUBSCRIPTIONS")) /* "private" extension, RFC 2980 */
+							nntp_caps.list_subscriptions = TRUE;
+						d = strpbrk(d, " \t");
+					}
+				} else if (!strcasecmp(ptr, "IMPLEMENTATION"))
+					nntp_caps.implementation = my_strdup(ptr + 14);
+				else if (!strcasecmp(ptr, "MODE-READER")) {
+					if (!nntp_caps.reader)
+						nntp_caps.mode_reader = TRUE;
+				} else if (!strcasecmp(ptr, "READER")) {
+					nntp_caps.reader = TRUE;
+					nntp_caps.mode_reader = FALSE;
+				} else if (!strcasecmp(d, "POST"))
+					nntp_caps.post = TRUE;
+				else if (!strcasecmp(ptr, "NEWNEWS"))
+					nntp_caps.newnews = TRUE;
+				else if (!strcasecmp(ptr, "XPAT")) /* extension, RFC 2980 */
+					nntp_caps.xpat = TRUE;
+				else if (!strcasecmp(ptr, "STARTTLS"))
+					nntp_caps.starttls = TRUE;
+				/*
+				 * NOTE: if we saw OVER, LIST OVERVIEW.FMT _must_ be implemented
+				 */
+				else if (!strcasecmp(ptr, &xover_cmds[1])) {
+					nntp_caps.over = TRUE;
+					nntp_caps.list_overview_fmt = TRUE;
+					nntp_caps.over_cmd = &xover_cmds[1];
+					d = ptr + strlen(&xover_cmds[1]);
+					d = strpbrk(d, " \t");
+					while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
+						d++;
+						if (!strcasecmp(d, "MSGID"))
+							nntp_caps.over_msgid = TRUE;
+						d = strpbrk(d, " \t");
+					}
+				} else if (!strcasecmp(ptr, "AUTHINFO")) {
+					d = ptr + 8;
+					d = strpbrk(d, " \t");
+					while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
+						d++;
+						if (!strcasecmp(d, "USER"))
+							nntp_caps.authinfo_user = TRUE;
+						if (!strcasecmp(d, "SASL"))
+							nntp_caps.authinfo_sasl = TRUE;
+						d = strpbrk(d, " \t");
 					}
 				}
-#		if 0 /* currently not used */
+#		if 0
 				/*
-				 * Check for (X)HDR
-				 * XHDR should not be listed in EXTENSIONS (but sometimes is)
-				 * checking for it if HDR is not found does no harm.
+				 * NOTE: if we saw HDR, LIST HEADERS _must_ be implemented
 				 */
-				if (!xhdr_cmd) {
-					for (i = 1; i >= 0; i--) {
-						if (strcasecmp(ptr, &xhdr_cmds[i]) == 0) {
-							xhdr_cmd = &xhdr_cmds[i];
-							break;
-						}
-					}
+				else if (!strcasecmp(ptr, &xhdr_cmds[1])) {
+						nntp_caps.hdr_cmd = &xhdr_cmds[1];
+						nntp_caps.hdr = TRUE;
+						nntp_caps.list_headers = TRUE;
 				}
+				else if (!strcasecmp(ptr, "IHAVE"))
+						nntp_caps.ihave = TRUE;
 #		endif /* 0 */
 				/*
-				 * LIST, READER, SASL, STARTTLS, STREAMING, AUTHINFO, IHAVE
-				 * IMPLEMENTATION, (MODE-READER)
+				 * TODO: SASL, STREAMING
 				 */
 			} else
-				have_list_extensions = NO;
+				nntp_caps.type = NO;
 		}
 	}
-#	endif /* 0 */
+#		ifdef DEBUG
+	debug_print_nntp_extensions();
+#		endif /* DEBUG */
+	if (!*sec && !nntp_caps.reader) {
+		if (nntp_caps.type == CAPABILITIES && !nntp_caps.mode_reader)
+			return -1; /* no mode-switching and no reader mode, give up */
+		if ((ret = mode_reader(&*sec)) != 0)
+			return ret;
+		else if (nntp_caps.type == CAPABILITIES) /* 2nd pass */
+			ret = check_extensions(&*sec);
+	}
 
-#	if 1
+#	else
+
 	/*
 	 * "LIST EXTENSIONS" is somewhat troublesome as there are a lot
 	 * of broken implementations out there and it is a multiline response
 	 */
-	if (have_list_extensions == NO) {
+	if (nntp_caps.type == NO) {
 		char buf[NNTP_STRLEN];
+		int i;
 
 		buf[0] = '\0';
 		i = new_nntp_command("LIST EXTENSIONS", OK_EXTENSIONS, buf, sizeof(buf));
 		switch (i) {
 			case OK_EXTENSIONS:	/* as defined draft-ietf-nntpext-base-24.txt */
-				have_list_extensions = LIST_EXTENSIONS;
-				/* FALLTHROUGH */
 			case 205:	/* M$ Exchange 5.5 */
-			case 215:	/* Netscape-Collabra/3.52 && NetWare-News-Server/5.1*/
+			case 215:	/* Netscape-Collabra/3.52 && NetWare-News-Server/5.1 */
+				nntp_caps.type = LIST_EXTENSIONS;
 				while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
-					if (have_list_extensions == LIST_EXTENSIONS) {
+					if (nntp_caps.type == LIST_EXTENSIONS) {
 #		ifdef DEBUG
 						debug_nntp("<<<", ptr);
 #		endif /* DEBUG */
 						/*
-						 * some servers (e.g. Hamster 1.3) have leading spaces in the
-						 * extension list
+						 * some servers (e.g. Hamster 1.3) have leading spaces in
+						 * the extension list
 						 */
 						str_trim(ptr);
 						/*
 						 * Check for (X)OVER
-						 * XOVER should not be listed in EXTENSIONS (but sometimes is)
-						 * checking for it if OVER is not found does no harm.
+						 * XOVER should not be listed in EXTENSIONS (but sometimes
+						 * is) checking for it if OVER is not found does no harm.
 						 */
-						if (!xover_cmd) {
+						if (!nntp_caps.over_cmd) {
 							for (i = 1; i >= 0; i--) {
 								if (strcasecmp(ptr, &xover_cmds[i]) == 0) {
-									xover_cmd = &xover_cmds[i];
+									nntp_caps.over_cmd = &xover_cmds[i];
 									break;
 								}
 							}
 						}
 					}
 				}
+				/*
+				 * as the server did support LIST EXTENSIONS it's likely that it
+				 * also can do LIST MOTD (we don't bother to parse the LIST
+				 * EXTENSIONS output for MOTD as it never was standartizised;
+				 * draft-ietf-nntpext-base-24.txt only described OVER, HDR and
+				 * LISTGROUP).
+				 */
+				nntp_caps.list_motd = TRUE;
 				break;
 
 			default:
 				break;
-			}
 		}
-#	endif /* 1 */
-	return;
+#		ifdef DEBUG
+		debug_print_nntp_extensions();
+#		endif /* DEBUG */
+		if (!*sec)
+			ret = mode_reader(&*sec);
+	}
+#	endif /* 0 */
+	return ret;
+}
+
+
+/*
+ * Switch INN into NNRP mode with 'mode reader'
+ */
+static int
+mode_reader(
+	t_bool *sec)
+{
+	int ret = 0;
+
+	if (!nntp_caps.reader) {
+		char line[NNTP_STRLEN];
+#ifdef DEBUG
+		debug_nntp("mode_reader", "mode reader");
+#endif /* DEBUG */
+		DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
+		put_server("MODE READER");
+
+		/*
+		 * According to the latest NNTP draft (May 2005), MODE READER may only
+		 * return the following response codes:
+		 *
+		 *   200 (OK_CANPOST)     Hello, you can post
+		 *   201 (OK_NOPOST)      Hello, you can't post
+		 *  (202 (OK_NOIHAVE)     discussed on the itef mailinglist; withdrawn)
+		 *  (203 (OK_NOPOSTIHAVE) discussed on the itef mailinglist; withdrawn)
+		 *   502 (ERR_ACCESS)     Service unavailable
+		 *
+		 * However, there may be old servers out there that do not implement this
+		 * command and therefore return ERR_COMMAND (500). Unfortunately there
+		 * are some new servers out there (i.e. INN 2.4.0 (20020220 prerelease)
+		 * which do return ERR_COMMAND if they are feed only servers.
+		 */
+
+		switch ((ret = get_respcode(line, sizeof(line)))) {
+			case OK_CANPOST:
+	/*		case OK_NOIHAVE: */
+				can_post = TRUE && !force_no_post;
+				*sec = TRUE;
+				ret = 0;
+				break;
+
+			case OK_NOPOST:
+	/*		case OK_NOPOSTIHAVE: */
+				can_post = FALSE;
+				*sec = TRUE;
+				ret = 0;
+				break;
+
+			case ERR_GOODBYE:
+			case ERR_ACCESS:
+				error_message(line);
+				return ret;
+
+			case ERR_COMMAND:
+			default:
+				break;
+		}
+	}
+	return ret;
 }
 #endif /* NNTP_ABLE */
 
@@ -1179,59 +1324,10 @@ nntp_open(
 	 * Find out which NNTP extensions are available
 	 * TODO: The authentication method required may be mentioned in the list of
 	 *       extensions. (For details about authentication methods, see
-	 *       draft-newman-nntpext-auth-01.txt).
+	 *       draft-ietf-nntpext-authinfo-07.txt).
 	 */
-	check_extensions();
-
-	/*
-	 * Switch INN into NNRP mode with 'mode reader'
-	 */
-#	ifdef DEBUG
-	debug_nntp("nntp_open", "mode reader");
-#	endif /* DEBUG */
-	DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
-	put_server("MODE READER");
-
-	/*
-	 * According to the latest NNTP draft (Jan 2002), MODE READER may only
-	 * return the following response codes:
-	 *
-	 *   200 (OK_CANPOST)     Hello, you can post
-	 *   201 (OK_NOPOST)      Hello, you can't post
-	 *  (202 (OK_NOIHAVE)     discussed on the itef mailinglist)
-	 *  (203 (OK_NOPOSTIHAVE) discussed on the itef mailinglist)
-	 *   400 (ERR_GOODBYE)    Service temporarily unavailable
-	 *   502 (ERR_ACCESS)     Service unavailable
-	 *
-	 * However, there may be old servers out there that do not implement this
-	 * command and therefore return ERR_COMMAND (500). Unfortunately there
-	 * are some new servers out there (i.e. INN 2.4.0 (20020220 prerelease)
-	 * which do return ERR_COMMAND if they are feed only servers.
-	 */
-
-	switch ((ret = get_respcode(line, sizeof(line)))) {
-		case OK_CANPOST:
-/*		case OK_NOIHAVE: */
-			can_post = TRUE && !force_no_post;
-			sec = TRUE;
-			break;
-
-		case OK_NOPOST:
-/*		case OK_NOPOSTIHAVE: */
-			can_post = FALSE;
-			sec = TRUE;
-			break;
-
-		case ERR_GOODBYE:
-		case ERR_ACCESS:
-			error_message(line);
-			return ret;
-
-		case ERR_COMMAND:
-		default:
-			break;
-
-	}
+	if ((ret = check_extensions(&sec)))
+		return ret; /* required "MODE READER" failed, exit */
 
 	/*
 	 * If the user wants us to authenticate on connection startup, do it now.
@@ -1245,30 +1341,8 @@ nntp_open(
 		debug_nntp("nntp_open", "authenticate");
 #	endif /* DEBUG */
 		authenticate(nntp_server, userid, TRUE);
-		put_server("MODE READER");
-		switch ((ret = get_respcode(line, sizeof(line)))) {
-			case OK_CANPOST:
-/*			case OK_NOIHAVE: */
-				can_post = TRUE && !force_no_post;
-				sec = TRUE;
-				break;
-
-			case OK_NOPOST:
-/*			case OK_NOPOSTIHAVE: */
-				can_post = FALSE;
-				sec = TRUE;
-				break;
-
-			case ERR_GOODBYE:
-			case ERR_ACCESS:
-				error_message(line);
-				return ret;
-
-			case ERR_COMMAND:	/* Uh-oh ... now we don't know if posting */
-			default:				/* is allowed or not ... so use last 200 */
-				break;			/* or 201 response to decide. */
-
-		}
+		if ((ret = mode_reader(&sec)))
+			return ret; /* "MODE READER" failed, exit */
 	}
 
 	if (!is_reconnect) {
@@ -1317,35 +1391,35 @@ nntp_open(
 	 * (successor of XOVER as of latest NNTP Draft (Jan 2002)
 	 * We have to check that we _don't_ get an ERR_COMMAND
 	 */
-	if (have_list_extensions == NO) {
+	if (nntp_caps.type == NO) {
 		for (i = 0; i < 2; i++) {
 			if (!nntp_command(&xover_cmds[i], ERR_COMMAND, NULL, 0)) {
-				xover_cmd = &xover_cmds[i];
+				nntp_caps.over_cmd = &xover_cmds[i];
 				break;
 			}
 		}
 	} else {
-		if (!xover_cmd) {
+		if (!nntp_caps.over_cmd) {
 			/*
-			 * LIST EXTENSIONS didn't mention OVER or XOVER, try
+			 * CAPABILITIES/LIST EXTENSIONS didn't mention OVER or XOVER, try
 			 * XOVER
 			 */
 			if (!nntp_command(xover_cmds, ERR_COMMAND, NULL, 0))
-				xover_cmd = xover_cmds;
+				nntp_caps.over_cmd = xover_cmds;
 		}
 #	if 0 /* unused */
-		if (!xhdr_cmd) {
+		if (!nntp_caps.hdr_cmd) {
 			/*
 			 * LIST EXTENSIONS didn't mention HDR or XHDR, try
 			 * XHDR
 			 */
 			if (!nntp_command(xhdr_cmds, ERR_COMMAND, NULL, 0))
-				xhdr_cmd = xhdr_cmds;
+				nntp_caps.hdr_cmd = xhdr_cmds;
 		}
 #	endif /* 0 */
 	}
 
-	if (!xover_cmd) {
+	if (!nntp_caps.over_cmd) {
 		if (!is_reconnect && !batch_mode) {
 			wait_message(2, _(txt_no_xover_support));
 
@@ -1365,13 +1439,23 @@ nntp_open(
 
 #	if 0
 	/*
-	 * TODO: if we're using -n, check for LIST NEWSGROUPS <wildmat> */
-	 * see also comments in open_newsgroups_fp() */
+	 * TODO: if we're using -n, check for LIST NEWSGROUPS <wildmat>
+	 * see also comments in open_newsgroups_fp()
 	 */
 	if (newsrc_active && !list_active) { /* -n */
 		/* code goes here */
 	}
 #	endif /* 0 */
+
+	if (!is_reconnect && !batch_mode && show_description && check_for_new_newsgroups) {
+		/*
+		 * TODO:
+		 * - document that "-d" and/or "-q" turns off "LIST MOTD" (or add
+		 *   a tinrc var to turn LIST MOTD on/off)
+		 */
+		if (nntp_caps.list_motd)
+			list_motd();
+	}
 
 	is_reconnect = TRUE;
 
@@ -1566,7 +1650,7 @@ DEBUG_IO((stderr, "nntp_command(%s)\n", command));
 
 
 /*
- * same as above, but with a slightly more usefull returncode.
+ * same as above, but with a slightly more usefull return code.
  * TODO: use it instead of nntp_command in the rest of the code
  *       (wherever it is more usefull).
  */
@@ -1597,5 +1681,51 @@ DEBUG_IO((stderr, "nntp_command(%s)\n", command));
 	debug_nntp(command, "OK");
 #	endif /* DEBUG */
 	return respcode;
+}
+
+
+static void
+list_motd(
+	void)
+{
+	char *ptr;
+	char buf[NNTP_STRLEN];
+	int i;
+	unsigned int l = 0;
+
+	buf[0] = '\0';
+	i = new_nntp_command("LIST MOTD", OK_MOTD, buf, sizeof(buf));
+
+	switch (i) {
+		case OK_MOTD:
+#	ifdef HAVE_COLOR
+			fcol(tinrc.col_message);
+#	endif /* HAVE_COLOR */
+			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+#	ifdef DEBUG
+				debug_nntp("<<<", ptr);
+#	endif /* DEBUG */
+				/*
+				 * TODO: - store a hash value of the entire motd in the server-rc
+				 *         and only if it differs from the old value display the
+				 *         motd?
+				 *       - use some sort of pager?
+				 *       - -> lang.c
+				 */
+				my_printf("%s%s\n", _("MOTD: "), ptr);
+				l++;
+			}
+#	ifdef HAVE_COLOR
+			fcol(tinrc.col_normal);
+#	endif /* HAVE_COLOR */
+			if (l) {
+				my_flush();
+				sleep((l >> 1) | 0x01);
+			}
+			break;
+
+		default:	/* common response codes are 500, 501, 503 */
+			break;
+	}
 }
 #endif /* NNTP_ABLE */

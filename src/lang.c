@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-03-20
+ *  Updated   : 2005-06-20
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -458,9 +458,6 @@ constext txt_inverse_on[] = N_("Inverse video enabled");
 constext txt_keymap_missing_key[] = N_("Missing definition for %s\n");
 constext txt_keymap_invalid_key[] = N_("Invalid key definition '%s'\n");
 constext txt_keymap_invalid_name[] = N_("Invalid keyname '%s'\n");
-#if 0 /* unused */
-	constext txt_keymap_conflict[] = N_("Key '%s' is defined for both %s%s and %s%s\n");
-#endif /* 0 */
 constext txt_keymap_upgraded[] = N_("Keymap file was upgraded to version %s\n");
 constext txt_kill_from[] = N_("Kill From:     [%s] (y/n): ");
 constext txt_kill_lines[] = N_("Kill Lines: (</>num): ");
@@ -836,7 +833,6 @@ Warning: Posting is in %s and contains characters which are not\n\
 #endif /* CHARSET_CONVERSION */
 
 #ifdef DEBUG
-	constext txt_keymap_redef[] = N_("Redefined key %s '%s' -> '%s'\n");
 	constext txt_usage_debug[] = N_("  -D       debug mode 1=NNTP 2=ALL");
 #endif /* DEBUG */
 
@@ -1099,7 +1095,8 @@ constext *txt_threading[] = {
 	N_("Subject"),
 	N_("References"),
 	N_("Both Subject and References"),
-	N_("Multipart Subject")
+	N_("Multipart Subject"),
+	N_("Percentage Match")
 };
 
 /*
@@ -1419,7 +1416,21 @@ struct opttxt txt_thread_articles = {
 #   1 = Subject\n\
 #   2 = References\n\
 # * 3 = Both (Subject and References)\n\
-#   4 = Multipart Subject\n")
+#   4 = Multipart Subject\n\
+#   5 = Percentage Match\n")
+};
+
+struct opttxt txt_thread_perc = {
+	N_("Enter percentage match required to thread together. <CR> sets."),
+	N_("Thread percentage match"),
+	N_("# Thread percentage match...\n\
+# the percentage of characters in the subject of an article that must match\n\
+# a base article for both those articles to be considered to belong to the\n\
+# same thread. This option is an integer percentage, eg. 80, no decimals may\n\
+# follow. If 80 is used here, then 80%% of the characters must match exactly,\n\
+# no insertion of a character, for the two articles to be put in the same\n\
+# thread. eg. 'happy' and 'harpy' would match, but 'harpie', 'happie' and\n\
+# 'harppy' would be threaded separately from 'happy'\n")
 };
 
 struct opttxt txt_thread_score = {

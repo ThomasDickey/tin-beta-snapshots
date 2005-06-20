@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-01-30
+ *  Updated   : 2005-06-20
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -291,6 +291,7 @@ struct t_config tinrc = {
 	SORT_THREADS_BY_SCORE_DESCEND,		/* sort_threads_type */
 	BOGUS_SHOW,		/* strip_bogus */
 	THREAD_BOTH,		/* thread_articles */
+	THREAD_PERC_DEFAULT,	/* thread_perc */
 	THREAD_SCORE_MAX,	/* thread_score */
 	0,		/* Default to wildmat, not regex */
 	-50,		/* score_limit_kill */
@@ -375,7 +376,7 @@ struct t_config tinrc = {
 	FALSE,		/* prompt_followupto */
 	QUOTE_COMPRESS|QUOTE_EMPTY,	/* quote_style */
 	TRUE,		/* show_description */
-	1,		/* show_infos */
+	SHOW_INFO_LINES,		/* show_info */
 	TRUE,		/* show_only_unread_arts */
 	FALSE,		/* show_only_unread_groups */
 	TRUE,		/* show_signatures */
@@ -417,6 +418,43 @@ struct t_config tinrc = {
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
 	FALSE		/* render_bidi */
 #endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
+};
+
+struct t_capabilities nntp_caps = {
+	0, /* type (none, LIST EXTENSIONS, CAPABILITIES) */
+	0, /* CAPABILITIES version */
+	FALSE, /* MODE-READER: "MODE READER" */
+	FALSE, /* READER: "ARTICLE", "BODY" */
+	FALSE, /* POST */
+	FALSE, /* LIST: "LIST ACTIVE" */
+	FALSE, /* LIST: "LIST ACTIVE.TIMES" */
+	FALSE, /* LIST: "LIST DISTRIB.PATS" */
+	FALSE, /* LIST: "LIST HEADERS" */
+	FALSE, /* LIST: "LIST NEWSGROUPS" */
+	FALSE, /* LIST: "LIST OVERVIEW.FMT" */
+	FALSE, /* LIST: "LIST MOTD" */
+	FALSE, /* LIST: "LIST SUBSCRIPTIONS" */
+	FALSE, /* LIST: "LIST DISTRIBUTIONS" */
+	FALSE, /* XPAT */
+	FALSE, /* HDR: "HDR", "LIST HEADERS" */
+	NULL, /* [X]HDR */
+	FALSE, /* OVER: "OVER", "LIST OVERVIEW.FMT" */
+	FALSE, /* OVER: "OVER mid" */
+	NULL, /* [X]OVER */
+	FALSE, /* NEWNEWS */
+	NULL, /* IMPLEMENTATION */
+	FALSE, /* STARTTLS */
+	FALSE, /* AUTHINFO USER/PASS */
+	FALSE, /* AUTHINFO SASL */
+#if 0
+	FALSE, /* SASL CRAM-MD5 */
+	FALSE, /* SASL DIGEST-MD5 */
+	FALSE, /* SASL PLAIN */
+	FALSE, /* SASL GSSAPI */
+	FALSE, /* SASL EXTERNAL */
+	FALSE, /* STREAMING: "MODE STREAM", "CHECK", "TAKETHIS" */
+	FALSE /* IHAVE */
+#endif /* 0 */
 };
 
 static mode_t real_umask;
@@ -502,9 +540,9 @@ void
 init_selfinfo(
 	void)
 {
+	FILE *fp;
 	char *ptr;
 	const char *cptr;
-	FILE *fp;
 	struct stat sb;
 	struct passwd *myentry;
 

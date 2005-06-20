@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-03-14
+ *  Updated   : 2005-05-10
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -149,6 +149,11 @@ build_tline(
 	 * Start with 2 spaces for ->
 	 * then index number of the message and whitespace (2+4+1 chars)
 	 */
+#if 0 /* usefull? see also group.c:build_sline() */
+	if (!tinrc.draw_arrow)
+		sprintf(buffer, "%s ", tin_ltoa(l + 1, 6));
+	else
+#endif /* 0 */
 	sprintf(buffer, "  %s ", tin_ltoa(l + 1, 4));
 	rest_of_line -= 7;
 
@@ -543,7 +548,7 @@ thread_page(
 				 *        is 'troublesome'
 				 */
 				n = find_response(thread_basenote, thdmenu.curr);
-				filter_menu((func == GLOBAL_MENU_FILTER_KILL) ? FILTER_KILL : FILTER_SELECT, group, &arts[n]);
+				filter_menu(func, group, &arts[n]);
 				if (filter_articles(group)) {
 					make_threads(group, FALSE);
 					if ((n = next_unread(n)) == -1) {
@@ -615,8 +620,8 @@ thread_page(
 				break;
 
 			case SPECIAL_CATCHUP_LEFT:				/* come here when exiting thread via <- */
-			case THREAD_CATCHUP:				/* catchup thread, move to next one */
-			case THREAD_CATCHUP_NEXT_UNREAD:	/* -> next with unread arts */
+			case CATCHUP:				/* catchup thread, move to next one */
+			case CATCHUP_NEXT_UNREAD:	/* -> next with unread arts */
 				ret_code = thread_catchup(func);
 				break;
 
@@ -732,7 +737,7 @@ thread_page(
 				info_message(cvers);
 				break;
 
-			case THREAD_MARK_ARTICLE_UNREAD:	/* mark article as unread */
+			case MARK_ARTICLE_UNREAD:	/* mark article as unread */
 				n = find_response(thread_basenote, thdmenu.curr);
 				art_mark(group, &arts[n], ART_WILL_RETURN);
 				mark[0] = get_art_mark(&arts[n]);
@@ -741,7 +746,7 @@ thread_page(
 				info_message(_(txt_marked_as_unread), _(txt_article_upper));
 				break;
 
-			case THREAD_MARK_THREAD_UNREAD:		/* mark thread as unread */
+			case MARK_THREAD_UNREAD:		/* mark thread as unread */
 				thd_mark_unread(group, base[thread_basenote]);
 				update_thread_page();
 				info_message(_(txt_marked_as_unread), _(txt_thread_upper));
@@ -807,8 +812,8 @@ static void
 show_thread_page(
 	void)
 {
-	int i, art;
 	char *title;
+	int i, art;
 
 	signal_context = cThread;
 	currmenu = &thdmenu;
@@ -1372,18 +1377,23 @@ thread_catchup(
 	}
 
 	if (i != -1) {				/* still unread arts in this thread */
-		snprintf(buf, sizeof(buf), _(txt_mark_thread_read), (func == THREAD_CATCHUP_NEXT_UNREAD) ? _(txt_enter_next_thread) : "");
+		/*
+		 * TODO: if (group->attribute->thread_arts == THREAD_NONE)
+		 *          snprintf(buf, sizeof(buf), _("Mark article as read%s?"), (func == CATCHUP_NEXT_UNREAD) ? _(" and enter next unread article") : "");
+		 *       else
+		 */
+		snprintf(buf, sizeof(buf), _(txt_mark_thread_read), (func == CATCHUP_NEXT_UNREAD) ? _(txt_enter_next_thread) : "");
 		if ((!TINRC_CONFIRM_ACTION) || (pyn = prompt_yn(buf, TRUE)) == 1)
 			thd_mark_read(curr_group, base[thread_basenote]);
 	}
 
 	switch (func) {
-		case THREAD_CATCHUP:				/* 'c' */
+		case CATCHUP:				/* 'c' */
 			if (pyn == 1)
 				return GRP_NEXT;
 			break;
 
-		case THREAD_CATCHUP_NEXT_UNREAD:	/* 'C' */
+		case CATCHUP_NEXT_UNREAD:	/* 'C' */
 			if (pyn == 1)
 				return GRP_NEXTUNREAD;
 			break;
@@ -1520,7 +1530,7 @@ mark_art_read(
 	struct t_group *group)
 {
 	char keytagged[MAXKEYLEN], keycurrent[MAXKEYLEN], keyquit[MAXKEYLEN];
-	int n = -1, cnt = 0;
+	int n, cnt = 0;
 	int tmp_num_of_tagged_arts = num_of_tagged_arts;
 	t_function func = MARK_READ_CURRENT;
 

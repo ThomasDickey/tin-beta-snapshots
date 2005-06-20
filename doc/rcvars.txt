@@ -9,7 +9,7 @@ Adding new tinrc variables:
 . Add NAME with the correct type to the master declaration in tinrc.h
 . Add an initial value for NAME in the correct position in t_config tinrc={};
   in init.c
-. In config.c, add the following:
+. In config.c/options_menu.c, add the following:
 
 	In read_config_file(), a match_*() function to read NAME into the
 	internal tinrc table, which may not necessarily be the same type.

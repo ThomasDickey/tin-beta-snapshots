@@ -1,3 +1,53 @@
+-- 1.7.9 release 20050620 "" --
+
+U044) Travis Brown <travisb@sfu.ca>
+      ADD. new threading method THREAD_PERC
+      FIX. extern.h, tin.h, tinrc.h, art.c, config.c, init.c, lang.c
+           options_menu.c, tincfg.tbl, tin.1, tin.5
+
+U043) Urs Janssen <urs@tin.org>
+      BUG. POST_EDIT was mssing from post_cancel_keys
+      BUG. GLOBAL_QUIT was missing from post_edit_keys and
+           post_edit_ext_keys and not rebindable in post_continue_keys
+      BUG. dublicated onlinehelp entries
+      BUG. FeedRepost didn't work
+      ADD. pcre update (5.0 -> 6.0)
+      ADD. warning about lines exceeding 998 octets
+      ADD. try LIST MOTD at start and show it's output if any
+      ADD. merged GroupBugReport, SelectBugReport, ThreadBugReport to
+           BugReport; GroupMarkArtUnread, PageMarkArtUnread,
+           ThreadMarkArtUnread to MarkArticleUnread; GroupMarkThdUnread,
+           PageMarkThdUnread ThreadMarkThdUnread to MarkThreadUnread;
+           GroupCatchup, PageCatchup, SelectCatchup, ThreadCatchup to
+           Catchup; GroupCatchupNextUnread, PageCatchupNextUnread,
+           SelectCatchupNextUnread, ThreadCatchupNextUnread to
+           CatchupNextUnread
+      ADD. don't care about subscritions file if reading saved news
+      ADD. extended tin_ltoa() and fix a hypotetic out of bounds write
+      ADD. set LINT to : if no lint found
+      ADD. config.guess, config.sub update
+      ADD. some more CAPABILITIES parsing
+      FIX. Makefile, configure[.in], extern.h, keymap.h, nntplib.h, art.c
+           attrib.c, debug.c, curses.c, feed.c, filter.c, global.c, group.c
+           help.c, init.c, keymap.c, lang.c, main.c, misc.c, newsrc.c
+           nntplib.c, options_menu.c, page.c, post.c, save.c, select.c
+           string.c, thread.c, xref.c, tin.1, tin.5, config.guess, config.sub
+           de.po, pcre/*
+
+U042) Steven Michael Murphy <murf@e-tools.com>
+      ADD. started kinyarwanda translation
+      FIX. rw.po
+
+U041) Andrei Emeltchenko <andrei.emeltchenko@finik.org>
+      ADD. started russian translation
+      FIX. ru.po
+
+U040) Michael Bienia <michael@vorlon.ping.de>
+      BUG. keybindings were inited to late
+      ADD. dynamic space calculation in filter_menu()
+      FIX. proto.h, tin.h, filter.c, group.c, keymap.c, main.c, page.c
+           thread.c
+
 -- 1.7.8 release 20050321 "Hellisay" --
 
 U039) Matt Anton <tin@syrius.org>
@@ -27,7 +77,7 @@ U035) Urs Janssen <urs@tin.org>
       ADD. GLOBAL_PRINT ('o') to thread-level
       ADD. EDIT_FILTER ('E') to select- and thread-level
       ADD. update online 'h'elp
-      ADD. ad configure check and fallback for non ANSI-C strsep() function
+      ADD. configure check and fallback for non ANSI-C strsep() function
       BUG. typos in the german translation
       BUG. didn't compile if configured with --disable-printing
       BUG. description of a few keys in the online help was wrong
@@ -37,7 +87,7 @@ U035) Urs Janssen <urs@tin.org>
            debug.c, feed.c, filter.c, group.c, help.c, keymap.c, lang.c, main.c
            memory.c, misc.c, nntplib.c, options_menu.c, page.c, post.c
            screen.c, select.c, string.c, thread.c, xref.c, de.po, tr.po
-           Makefile, configure.in, autoconf.hin. config.guess, config.sub
+           Makefile, configure[.in], autoconf.hin. config.guess, config.sub
            tin.1, tin.5
 
 -- 1.7.7 release 20041215 "Scalpay" --

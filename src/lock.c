@@ -62,7 +62,7 @@
  *
  * try to lock a file descriptor with fcntl(), flock() or lockf()
  *
- * returncodes:
+ * return codes:
  *  0 = file locked successfully
  * -1 = some error occured
  */
@@ -105,7 +105,7 @@ fd_lock(
  * check for an existing lock on file descriptor with fcntl(), lockf()
  * or flock()
  *
- * returncodes:
+ * return codes:
  *  0 = file is not locked
  *  1 = file is locked
  * -1 = some error occured
@@ -167,7 +167,7 @@ test_fd_lock(
  *
  * try to unlock a file descriptor with fcntl(), lockf() or flock()
  *
- * returncodes:
+ * return codes:
  *  0 = file unlocked successfully
  * -1 = some error occured
  */
@@ -209,7 +209,7 @@ fd_unlock(
  *
  * try to lock filename via dotfile locking
  *
- * returncodes:
+ * return codes:
  *  TRUE  = file locked successfully
  *  FALSE = some error occured
  */
@@ -255,7 +255,7 @@ t_bool dot_lock(
 /*
  * try to remove a dotlock for filename
  *
- * returncodes:
+ * return codes:
  *  TRUE  = file unlocked successfully
  *  FALSE = some error occured
  */

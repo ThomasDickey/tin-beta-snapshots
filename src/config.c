@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-02-15
+ *  Updated   : 2005-06-20
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -432,6 +432,7 @@ read_config_file(
 
 			if (match_integer(buf, "interactive_mailer=", &tinrc.interactive_mailer, INTERACTIVE_NONE))
 				break;
+
 			break;
 
 		case 'k':
@@ -703,6 +704,9 @@ read_config_file(
 			if (match_integer(buf, "thread_articles=", &tinrc.thread_articles, THREAD_MAX))
 				break;
 
+			if (match_integer(buf, "thread_perc=", &tinrc.thread_perc, 100))
+				break;
+
 			if (match_integer(buf, "thread_score=", &tinrc.thread_score, THREAD_SCORE_WEIGHT))
 				break;
 
@@ -923,6 +927,9 @@ write_config_file(
 
 	fprintf(fp, _(txt_thread_articles.tinrc));
 	fprintf(fp, "thread_articles=%d\n\n", tinrc.thread_articles);
+
+	fprintf(fp, _(txt_thread_perc.tinrc));
+	fprintf(fp, "thread_perc=%d\n\n", tinrc.thread_perc);
 
 	fprintf(fp, _(txt_show_description.tinrc));
 	fprintf(fp, "show_description=%s\n\n", print_boolean(tinrc.show_description));
@@ -1682,6 +1689,7 @@ rc_update(
 	t_bool show_lines = FALSE;
 	t_bool show_score = FALSE;
 	t_bool thread_articles = FALSE;
+	t_bool thread_perc = FALSE;
 	t_bool use_builtin_inews = FALSE;
 	t_bool use_getart_limit = FALSE;
 	t_bool use_mailreader_i = FALSE;
@@ -1783,6 +1791,9 @@ rc_update(
 
 	if (thread_articles)
 		tinrc.thread_articles = THREAD_BOTH;
+
+	if (thread_perc)
+		tinrc.thread_perc = THREAD_PERC_DEFAULT;
 
 	if (use_builtin_inews)
 		strncpy(tinrc.inews_prog, INTERNAL_CMD, sizeof(tinrc.inews_prog) - 1);

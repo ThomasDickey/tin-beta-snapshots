@@ -244,10 +244,10 @@ selection_page(
 				}
 				break;
 
-			case SELECT_CATCHUP:			/* catchup - mark all articles as read */
-			case SELECT_CATCHUP_NEXT_UNREAD:	/* and goto next unread group */
+			case CATCHUP:			/* catchup - mark all articles as read */
+			case CATCHUP_NEXT_UNREAD:	/* and goto next unread group */
 				if (selmenu.max)
-					catchup_group(&CURR_GROUP, (func == SELECT_CATCHUP_NEXT_UNREAD));
+					catchup_group(&CURR_GROUP, (func == CATCHUP_NEXT_UNREAD));
 				else
 					info_message(_(txt_no_groups));
 				break;
@@ -814,8 +814,8 @@ int
 choose_new_group(
 	void)
 {
-	int idx;
 	char *prompt;
+	int idx;
 
 	prompt = fmt_string(_(txt_newsgroup), tinrc.default_goto_group);
 

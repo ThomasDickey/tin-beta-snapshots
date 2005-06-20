@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-03-12
+ *  Updated   : 2005-05-04
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -129,6 +129,7 @@ main(
 	hash_init();
 	init_selfinfo();
 	init_group_hash();
+	setup_default_keys(); /* preinit keybindings */
 
 	/*
 	 * Read user local & global config files
@@ -186,9 +187,9 @@ main(
 
 	/*
 	 * exit early - unfortunately we can't do that in read_cmd_line_options()
-	 * as xover_cmd is set in nntp_open()
+	 * as nntp_caps.over_cmd is set in nntp_open()
 	 */
-	if (update_index && xover_cmd && !tinrc.cache_overview_files) {
+	if (update_index && nntp_caps.over_cmd && !tinrc.cache_overview_files) {
 		error_message(_(txt_batch_update_unavail), tin_progname);
 		giveup();
 	}
@@ -196,7 +197,7 @@ main(
 	/*
 	 * Check if overview indexes contain Xref: lines
 	 */
-	if (xover_cmd)
+	if (nntp_caps.over_cmd)
 		xref_supported = overview_xref_support();
 
 #ifdef DEBUG_NEWSRC
@@ -205,7 +206,9 @@ main(
 
 		joinpath(file, TMPDIR, "BITMAP");
 		unlink(file);
-		/* newsrc_test_harness(); */
+#	if 0
+		newsrc_test_harness();
+#	endif /* 0 */
 	}
 #endif /* DEBUG_NEWSRC */
 

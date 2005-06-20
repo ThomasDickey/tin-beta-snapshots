@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2004-02-28
+dnl Updated   : 2005-06-09
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2005 Thomas E. Dickey <dickey@invisible-island.net>
@@ -161,7 +161,8 @@ AC_DEFUN([AM_ICONV],
   dnl those with the standalone portable GNU libiconv installed).
 
   AC_ARG_WITH([libiconv-prefix],
-[  --with-libiconv-prefix=DIR  search for libiconv in DIR/include and DIR/lib], [
+[  --with-libiconv-prefix=DIR
+                          search for libiconv in DIR/include and DIR/lib], [
     for dir in `echo "$withval" | tr : ' '`; do
       if test -d $dir/include; then CPPFLAGS="$CPPFLAGS -I$dir/include"; fi
       if test -d $dir/lib; then LDFLAGS="$LDFLAGS -L$dir/lib"; fi

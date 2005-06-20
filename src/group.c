@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-03-14
+ *  Updated   : 2005-04-18
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -322,7 +322,7 @@ group_page(
 				old_top = top_art;
 				n = (int) base[grpmenu.curr];
 				old_artnum = arts[n].artnum;
-				if (filter_menu((func == GLOBAL_MENU_FILTER_KILL) ? FILTER_KILL : FILTER_SELECT, group, &arts[n])) {
+				if (filter_menu(func, group, &arts[n])) {
 					if (filter_articles(group)) {
 						make_threads(group, FALSE);
 						grpmenu.curr = find_new_pos(old_top, old_artnum, grpmenu.curr);
@@ -353,7 +353,7 @@ group_page(
 					old_top = top_art;
 					n = (int) base[grpmenu.curr]; /* should this depend on show_only_unread? */
 					old_artnum = arts[n].artnum;
-					if (quick_filter((func == GLOBAL_QUICK_FILTER_KILL) ? FILTER_KILL : FILTER_SELECT, group, &arts[n])) {
+					if (quick_filter(func, group, &arts[n])) {
 						info_message((func == GLOBAL_QUICK_FILTER_KILL) ? _(txt_info_add_kill) : _(txt_info_add_select));
 						if (filter_articles(group)) {
 							make_threads(group, FALSE);
@@ -392,8 +392,8 @@ group_page(
 				break;
 
 			case SPECIAL_CATCHUP_LEFT:
-			case GROUP_CATCHUP:
-			case GROUP_CATCHUP_NEXT_UNREAD:
+			case CATCHUP:
+			case CATCHUP_NEXT_UNREAD:
 				ret_code = group_catchup(func);
 				break;
 
@@ -677,7 +677,7 @@ group_page(
 					show_group_page();
 				break;
 
-			case GROUP_MARK_ARTICLE_UNREAD:		/* mark base article of thread unread */
+			case MARK_ARTICLE_UNREAD:		/* mark base article of thread unread */
 				if (grpmenu.curr < 0)
 					info_message(_(txt_no_arts));
 				else {
@@ -711,7 +711,7 @@ group_page(
 				}
 				break;
 
-			case GROUP_MARK_THREAD_UNREAD:		/* mark whole thread as unread */
+			case MARK_THREAD_UNREAD:		/* mark whole thread as unread */
 				if (grpmenu.curr < 0)
 					info_message(_(txt_no_arts));
 				else {
@@ -1283,6 +1283,33 @@ build_sline(
 		tmp_from = wcspart(wc, len_from, TRUE);
 	}
 
+#	if 0 /* use additional space if !draw_arrow - usefull? */
+	if (!tinrc.draw_arrow) {
+		if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH) {
+			mbstowcs(format, "%s %s %s%6d %-ls%s%-ls", ARRAY_SIZE(format) - 1);
+			swprintf(wbuffer, ARRAY_SIZE(wbuffer) - 1, format,
+				 tin_ltoa(i + 1, 6), new_resps, art_cnt, sbuf.score, tmp_subj,
+				 spaces, tmp_from);
+		} else {
+			mbstowcs(format, "%s %s %s %-ls%s%-ls", ARRAY_SIZE(format) - 1);
+			swprintf(wbuffer, ARRAY_SIZE(wbuffer) - 1, format,
+				 tin_ltoa(i + 1, 6), new_resps, art_cnt, tmp_subj,
+				 spaces, tmp_from);
+		}
+	} else {
+		if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH) {
+			mbstowcs(format, "  %s %s %s%6d %-ls%s%-ls", ARRAY_SIZE(format) - 1);
+			swprintf(wbuffer, ARRAY_SIZE(wbuffer) - 1, format,
+				 tin_ltoa(i + 1, 4), new_resps, art_cnt, sbuf.score, tmp_subj,
+				 spaces, tmp_from);
+		} else {
+			mbstowcs(format, "  %s %s %s %-ls%s%-ls", ARRAY_SIZE(format) - 1);
+			swprintf(wbuffer, ARRAY_SIZE(wbuffer) - 1, format,
+				 tin_ltoa(i + 1, 4), new_resps, art_cnt, tmp_subj,
+				 spaces, tmp_from);
+		}
+	}
+#	else
 	if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH) {
 		mbstowcs(format, "  %s %s %s%6d %-ls%s%-ls", ARRAY_SIZE(format) - 1);
 		swprintf(wbuffer, ARRAY_SIZE(wbuffer) - 1, format,
@@ -1294,6 +1321,7 @@ build_sline(
 			 tin_ltoa(i + 1, 4), new_resps, art_cnt, tmp_subj,
 			 spaces, tmp_from);
 	}
+#	endif /* 0 */
 
 	FreeIfNeeded(tmp_subj);
 	FreeIfNeeded(tmp_from);
@@ -1304,6 +1332,31 @@ build_sline(
 #else
 	arts_sub[len_subj - 12 + 1] = '\0';
 
+#	if 0 /* use additional space if !draw_arrow - usefull? */
+	if (!tinrc.draw_arrow) {
+		if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH)
+			snprintf(buffer, cCOLS + 1, "%s %s %s%6d %-*.*s%s%-*.*s",
+				 tin_ltoa(i + 1, 6), new_resps, art_cnt, sbuf.score,
+				 len_subj - 12, len_subj - 12, arts_sub,
+				 spaces, len_from, len_from, from);
+		else
+			snprintf(buffer, cCOLS + 1, "%s %s %s%-*.*s%s%-*.*s",
+				 tin_ltoa(i + 1, 6), new_resps, art_cnt,
+				 len_subj - 12, len_subj - 12, arts_sub,
+				 spaces, len_from, len_from, from);
+	} else {
+		if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH)
+			snprintf(buffer, cCOLS + 1, "  %s %s %s%6d %-*.*s%s%-*.*s",
+				 tin_ltoa(i + 1, 4), new_resps, art_cnt, sbuf.score,
+				 len_subj - 12, len_subj - 12, arts_sub,
+				 spaces, len_from, len_from, from);
+		else
+			snprintf(buffer, cCOLS + 1, "  %s %s %s%-*.*s%s%-*.*s",
+				 tin_ltoa(i + 1, 4), new_resps, art_cnt,
+				 len_subj - 12, len_subj - 12, arts_sub,
+				 spaces, len_from, len_from, from);
+	}
+#	else
 	if (curr_group->attribute->show_info == SHOW_INFO_SCORE || curr_group->attribute->show_info == SHOW_INFO_BOTH)
 		snprintf(buffer, cCOLS + 1, "  %s %s %s%6d %-*.*s%s%-*.*s",
 			 tin_ltoa(i + 1, 4), new_resps, art_cnt, sbuf.score,
@@ -1314,6 +1367,7 @@ build_sline(
 			 tin_ltoa(i + 1, 4), new_resps, art_cnt,
 			 len_subj - 12, len_subj - 12, arts_sub,
 			 spaces, len_from, len_from, from);
+#	endif /* 0 */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	/*
@@ -1577,18 +1631,18 @@ group_catchup(
 	if (num_of_tagged_arts && prompt_yn(_(txt_catchup_despite_tags), TRUE) != 1)
 		return 0;
 
-	snprintf(buf, sizeof(buf), _(txt_mark_arts_read), (func == GROUP_CATCHUP_NEXT_UNREAD) ? _(txt_enter_next_unread_group) : "");
+	snprintf(buf, sizeof(buf), _(txt_mark_arts_read), (func == CATCHUP_NEXT_UNREAD) ? _(txt_enter_next_unread_group) : "");
 
 	if (!curr_group->newsrc.num_unread || (!TINRC_CONFIRM_ACTION) || (pyn = prompt_yn(buf, TRUE)) == 1)
 		grp_mark_read(curr_group, arts);
 
 	switch (func) {
-		case GROUP_CATCHUP:				/* 'c' */
+		case CATCHUP:				/* 'c' */
 			if (pyn == 1)
 				return GRP_NEXT;
 			break;
 
-		case GROUP_CATCHUP_NEXT_UNREAD:			/* 'C' */
+		case CATCHUP_NEXT_UNREAD:			/* 'C' */
 			if (pyn == 1)
 				return GRP_NEXTUNREAD;
 			break;

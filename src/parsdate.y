@@ -19,10 +19,10 @@
  *  Copyright : This code is in the public domain and has no copyright.
  */
 
-/* SUPPRESS 530 *//* Empty body for statement */
-/* SUPPRESS 593 on yyerrlab *//* Label was not used */
-/* SUPPRESS 593 on yynewstate *//* Label was not used */
-/* SUPPRESS 595 on yypvt *//* Automatic variable may be used before set */
+/* SUPPRESS 530 */ /* Empty body for statement */
+/* SUPPRESS 593 on yyerrlab */ /* Label was not used */
+/* SUPPRESS 593 on yynewstate */ /* Label was not used */
+/* SUPPRESS 595 on yypvt */ /* Automatic variable may be used before set */
 
 #include "tin.h"
 
@@ -544,7 +544,7 @@ Convert(
 	}
     if (Year < EPOCH || Year > END_OF_TIME
      || Month < 1 || Month > 12
-     /* NOSTRICT *//* conversion from long may lose accuracy */
+     /* NOSTRICT */ /* conversion from long may lose accuracy */
      || Day < 1 || Day > mp[(int)Month])
 	return -1;
 
@@ -774,7 +774,7 @@ GetTimeInfo(
 #endif	/* !defined(DONT_HAVE_TM_GMTOFF) */
 
     /* Get the basic time. */
-#if	defined(HAVE_GETTIMEOFDAY)
+#if defined(HAVE_GETTIMEOFDAY)
     if (gettimeofday(&tv, (struct timezone *)NULL) == -1)
 	return -1;
     Now->time = tv.tv_sec;
@@ -783,7 +783,7 @@ GetTimeInfo(
     /* Can't check for -1 since that might be a time, I guess. */
     (void)time(&Now->time);
     Now->usec = 0;
-#endif	/* defined(HAVE_GETTIMEOFDAY) */
+#endif /* defined(HAVE_GETTIMEOFDAY) */
 
     /* Now get the timezone if it's been an hour since the last time. */
     if (Now->time - LastTime > 60 * 60) {

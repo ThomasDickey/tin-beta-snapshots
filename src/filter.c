@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2005-02-12
+ *  Updated   : 2005-05-04
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -617,9 +617,8 @@ read_filter_file(
 	}
 	fclose(fp);
 
-	if (expired || upgrade == RC_UPGRADE) {
+	if (expired || upgrade == RC_UPGRADE)
 		write_filter_file(file);
-	}
 
 	if (cmd_line && !batch_mode)
 		printf("\r\n");
@@ -986,7 +985,7 @@ fmt_filter_menu_prompt(
  */
 t_bool
 filter_menu(
-	int type,
+	t_function type,
 	struct t_group *group,
 	struct t_article *art)
 {
@@ -1003,11 +1002,14 @@ filter_menu(
 	char text_time[PATH_LEN];
 	char double_time[PATH_LEN];
 	char quat_time[PATH_LEN];
-	t_function func, default_func = FILTER_SAVE;
-	int i, len;
+	int i, len, clen = 0, flen = 0;
 	struct t_filter_rule rule;
 	t_bool proceed;
 	t_bool ret;
+	t_function func, default_func = FILTER_SAVE;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wbuf;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	signal_context = cFilter;
 
@@ -1036,7 +1038,7 @@ filter_menu(
 	printascii(keyquit, func_to_key(GLOBAL_QUIT, filter_keys));
 	printascii(keysave, func_to_key(FILTER_SAVE, filter_keys));
 
-	if (type == FILTER_KILL) {
+	if (type == GLOBAL_MENU_FILTER_KILL) {
 		ptr_filter_from = _(txt_kill_from);
 		ptr_filter_lines = _(txt_kill_lines);
 		ptr_filter_menu = _(txt_kill_menu);
@@ -1047,7 +1049,7 @@ filter_menu(
 		ptr_filter_time = _(txt_kill_time);
 		ptr_filter_help_scope = _(txt_help_kill_scope);
 		ptr_filter_quit_edit_save = _(txt_quit_edit_save_kill);
-	} else {
+	} else {	/* type == GLOBAL_MENU_FILTER_SELECT */
 		ptr_filter_from = _(txt_select_from);
 		ptr_filter_lines = _(txt_select_lines);
 		ptr_filter_menu = _(txt_select_menu);
@@ -1063,11 +1065,54 @@ filter_menu(
 	ptr_filter_comment = _(txt_filter_comment);
 	ptr_filter_groupname = group->name;
 
-	len = cCOLS - 33;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	if ((wbuf = char2wchar_t(_(txt_no))) != NULL) {
+		clen = MAX(clen, wcswidth(wbuf, wcslen(wbuf)));
+		free(wbuf);
+	}
+	if ((wbuf = char2wchar_t(_(txt_yes))) != NULL) {
+		clen = MAX(clen, wcswidth(wbuf, wcslen(wbuf)));
+		free(wbuf);
+	}
+	if ((wbuf = char2wchar_t(_(txt_full))) != NULL) {
+		clen = MAX(clen, wcswidth(wbuf, wcslen(wbuf)));
+		free(wbuf);
+	}
+	if ((wbuf = char2wchar_t(_(txt_last))) != NULL) {
+		clen = MAX(clen, wcswidth(wbuf, wcslen(wbuf)));
+		free(wbuf);
+	}
+	if ((wbuf = char2wchar_t(_(txt_only))) != NULL) {
+		clen = MAX(clen, wcswidth(wbuf, wcslen(wbuf)));
+		free(wbuf);
+	}
+	if ((wbuf = char2wchar_t(ptr_filter_subj)) != NULL) {
+		flen = MAX(flen, wcswidth(wbuf, wcslen(wbuf)) - 2);
+		free(wbuf);
+	}
+	if ((wbuf = char2wchar_t(ptr_filter_from)) != NULL) {
+		flen = MAX(flen, wcswidth(wbuf, wcslen(wbuf)) - 2);
+		free(wbuf);
+	}
+	if ((wbuf = char2wchar_t(ptr_filter_msgid)) != NULL) {
+		flen = MAX(flen, wcswidth(wbuf, wcslen(wbuf)) - 2);
+		free(wbuf);
+	}
+#else
+	clen = MAX(clen, (int) strlen(_(txt_no)));
+	clen = MAX(clen, (int) strlen(_(txt_yes)));
+	clen = MAX(clen, (int) strlen(_(txt_full)));
+	clen = MAX(clen, (int) strlen(_(txt_last)));
+	clen = MAX(clen, (int) strlen(_(txt_only)));
+	flen = MAX(flen, (int) strlen(ptr_filter_subj) - 2);
+	flen = MAX(flen, (int) strlen(ptr_filter_from) - 2);
+	flen = MAX(flen, (int) strlen(ptr_filter_msgid) - 2);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	len = cCOLS - flen - clen - 1 + 4;
 
 	snprintf(text_time, sizeof(text_time), _(txt_time_default_days), tinrc.filter_days);
 	fmt_filter_menu_prompt(text_subj, sizeof(text_subj), ptr_filter_subj, len, art->subject);
-	snprintf(text_score, sizeof(text_score), _(txt_filter_score), (type == FILTER_KILL ? -tinrc.score_kill : tinrc.score_select));
+	snprintf(text_score, sizeof(text_score), _(txt_filter_score), (type == GLOBAL_MENU_FILTER_KILL ? -tinrc.score_kill : tinrc.score_select));
 	fmt_filter_menu_prompt(text_from, sizeof(text_from), ptr_filter_from, len, art->from);
 	fmt_filter_menu_prompt(text_msgid, sizeof(text_msgid), ptr_filter_msgid, len - 4, MSGID(art));
 
@@ -1105,8 +1150,7 @@ filter_menu(
 		list[3] = (char *) _(txt_from_line_only);
 		list[4] = (char *) _(txt_msgid_line_only);
 
-		i = get_choice(INDEX_TOP + 3, _(txt_help_filter_text_type),
-			       _(txt_filter_text_type), list, 5);
+		i = get_choice(INDEX_TOP + 3, _(txt_help_filter_text_type), _(txt_filter_text_type), list, 5);
 		free(list);
 
 		if (i == -1) {
@@ -1278,9 +1322,9 @@ filter_menu(
 		rule.score = atoi(buf);
 	else {
 		/* use default score */
-		if (type == FILTER_KILL)
+		if (type == GLOBAL_MENU_FILTER_KILL)
 			rule.score = tinrc.score_kill;
-		else /* type == FILTER_SELECT */
+		else /* type == GLOBAL_MENU_FILTER_SELECT */
 			rule.score = tinrc.score_select;
 	}
 
@@ -1298,7 +1342,7 @@ filter_menu(
 		rule.score = SCORE_MAX;
 
 	/* get the right sign for the score */
-	if (type == FILTER_KILL)
+	if (type == GLOBAL_MENU_FILTER_KILL)
 		rule.score = -rule.score;
 
 	/*
@@ -1404,7 +1448,7 @@ filter_menu(
  */
 t_bool
 quick_filter(
-	int type,
+	t_function type,
 	struct t_group *group,
 	struct t_article *art)
 {
@@ -1414,12 +1458,12 @@ quick_filter(
 	struct t_filter_rule rule;
 	t_bool ret;
 
-	if (type == FILTER_KILL) {
+	if (type == GLOBAL_QUICK_FILTER_KILL) {
 		header = group->attribute->quick_kill_header;
 		expire = group->attribute->quick_kill_expire;
 		icase = group->attribute->quick_kill_case;
 		scope = group->attribute->quick_kill_scope;
-	} else {
+	} else {	/* type == GLOBAL_QUICK_FILTER_SELECT */
 		header = group->attribute->quick_select_header;
 		expire = group->attribute->quick_select_expire;
 		icase = group->attribute->quick_select_case;
@@ -1429,7 +1473,7 @@ quick_filter(
 #ifdef DEBUG
 	if (debug)
 		error_message("%s header=[%d] scope=[%s] expire=[%s] case=[%d]",
-			(type == FILTER_KILL) ? "KILL" : "SELECT", header,
+			(type == GLOBAL_QUICK_FILTER_KILL) ? "KILL" : "SELECT", header,
 			BlankIfNull(scope), txt_onoff[expire != FALSE ? 1 : 0], icase);
 #endif /* DEBUG */
 
@@ -1447,7 +1491,7 @@ quick_filter(
 	rule.subj_ok = (header == FILTER_SUBJ_CASE_SENSITIVE || header == FILTER_SUBJ_CASE_IGNORE);
 
 	/* create an auto-comment. */
-	if (type == FILTER_KILL)
+	if (type == GLOBAL_QUICK_FILTER_KILL)
 		snprintf(txt, sizeof(txt), "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", ']', "' (", _(txt_help_article_quick_kill), ").");
 	else
 		snprintf(txt, sizeof(txt), "%s%s%c%s%s%s", _(txt_filter_rule_created), "'", '[', "' (", _(txt_help_article_quick_select), ").");
@@ -1457,7 +1501,7 @@ quick_filter(
 	rule.icase = icase;
 	rule.expire_time = expire;
 	rule.check_string = TRUE;
-	rule.score = (type == FILTER_KILL) ? tinrc.score_kill : tinrc.score_select;
+	rule.score = (type == GLOBAL_QUICK_FILTER_KILL) ? tinrc.score_kill : tinrc.score_select;
 
 	ret = add_filter_rule(group, art, &rule, TRUE);
 	rule.comment = free_filter_comment(rule.comment);
@@ -2127,10 +2171,10 @@ open_xhdr_fp(
 	long max)
 {
 #	ifdef NNTP_ABLE
-	if (read_news_via_nntp && !read_saved_news && xhdr_cmd) {
+	if (read_news_via_nntp && !read_saved_news && nntp_caps.hdr_cmd) {
 		char buf[NNTP_STRLEN];
 
-		snprintf(buf, sizeof(buf), "%s %s %ld-%ld", xhdr_cmd, header, min, max);
+		snprintf(buf, sizeof(buf), "%s %s %ld-%ld", nntp_caps.hdr_cmd, header, min, max);
 		return (nntp_command(buf, OK_HEAD, NULL, 0));
 	} else
 #	endif /* NNTP_ABLE */

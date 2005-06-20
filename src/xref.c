@@ -3,7 +3,7 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2005-02-11
+ *  Updated   : 2005-05-04
  *  Notes     :
  *
  * Copyright (c) 1993-2005 Iain Lea <iain@bricbrac.de>
@@ -62,7 +62,7 @@ open_overview_fmt_fp(
 
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && !read_saved_news) {
-		if (!xover_cmd)
+		if (!nntp_caps.over_cmd)
 			return (FILE *) 0;
 
 		snprintf(line, sizeof(line), "LIST %s", OVERVIEW_FMT);

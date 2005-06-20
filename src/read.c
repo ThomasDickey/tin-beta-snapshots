@@ -64,7 +64,7 @@ static int offset = 0;
  */
 static char *tin_read(char *buffer, size_t len, FILE *fp, t_bool header);
 #ifdef NNTP_ABLE
-	static t_bool wait_for_input(void /*FILE *fd*/);
+	static t_bool wait_for_input(void);
 #endif /* NNTP_ABLE */
 
 
@@ -77,7 +77,7 @@ static char *tin_read(char *buffer, size_t len, FILE *fp, t_bool header);
  */
 static t_bool
 wait_for_input(
-	void /*FILE *fd*/)
+	void)
 {
 #	ifndef HAVE_SELECT
 #		ifdef VMS
@@ -210,7 +210,7 @@ tin_read(
 	partial_read = FALSE;
 
 #ifdef NNTP_ABLE
-	if (wait_for_input(/* fp */)) {			/* Check if okay to read */
+	if (wait_for_input()) {			/* Check if okay to read */
 		info_message(_("Aborting read, please wait..."));
 		drain_buffer(fp);
 		clear_message();

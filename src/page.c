@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-03-14
+ *  Updated   : 2005-06-18
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -686,7 +686,7 @@ page_goto_next_unread:
 
 			case GLOBAL_QUICK_FILTER_SELECT:	/* quickly auto-select article */
 			case GLOBAL_QUICK_FILTER_KILL:		/* quickly kill article */
-				if ((filtered_articles = quick_filter((func == GLOBAL_QUICK_FILTER_KILL) ? FILTER_KILL : FILTER_SELECT, group, &arts[this_resp])))
+				if ((filtered_articles = quick_filter(func, group, &arts[this_resp])))
 					goto return_to_index;
 
 				draw_page(group->name, 0);
@@ -695,7 +695,7 @@ page_goto_next_unread:
 			case GLOBAL_MENU_FILTER_SELECT:		/* auto-select article menu */
 			case GLOBAL_MENU_FILTER_KILL:			/* kill article menu */
 				XFACE_CLEAR();
-				if (filter_menu((func == GLOBAL_MENU_FILTER_KILL) ? FILTER_KILL : FILTER_SELECT, group, &arts[this_resp])) {
+				if (filter_menu(func, group, &arts[this_resp])) {
 					if ((filtered_articles = filter_articles(group)))
 						goto return_to_index;
 				}
@@ -734,23 +734,27 @@ page_goto_next_unread:
 				}
 				break;
 
-			case PAGE_CATCHUP:			/* catchup - mark read, goto next */
-			case PAGE_CATCHUP_NEXT_UNREAD:	/* goto next unread */
-				snprintf(buf, sizeof(buf), _(txt_mark_thread_read), (func == PAGE_CATCHUP_NEXT_UNREAD) ? _(txt_enter_next_thread) : "");
+			case CATCHUP:			/* catchup - mark read, goto next */
+			case CATCHUP_NEXT_UNREAD:	/* goto next unread */
+				/*
+				 * TODO: if (group->attribute->thread_arts == THREAD_NONE)
+				 *       	snprintf(buf, sizeof(buf), _("Mark article as read%s?"), (func == CATCHUP_NEXT_UNREAD) ? _(" and enter next unread article") : "");
+				 *       else
+				 */
+				snprintf(buf, sizeof(buf), _(txt_mark_thread_read), (func == CATCHUP_NEXT_UNREAD) ? _(txt_enter_next_thread) : "");
 				if ((!TINRC_CONFIRM_ACTION) || prompt_yn(buf, TRUE) == 1) {
 					thd_mark_read(group, base[which_thread(this_resp)]);
 					XFACE_CLEAR();
-					return (func == PAGE_CATCHUP_NEXT_UNREAD) ? GRP_NEXTUNREAD : GRP_NEXT;
+					return (func == CATCHUP_NEXT_UNREAD) ? GRP_NEXTUNREAD : GRP_NEXT;
 				}
 				break;
 
-			case PAGE_MARK_THREAD_UNREAD:
+			case MARK_THREAD_UNREAD:
 				thd_mark_unread(group, base[which_thread(this_resp)]);
-				/*
-				 * FIXME: replace txt_thread by txt_article_upper
-				 * if THREAD_NONE
-				 */
-				info_message(_(txt_marked_as_unread), _(txt_thread_upper));
+				if (group->attribute->thread_arts != THREAD_NONE)
+					info_message(_(txt_marked_as_unread), _(txt_thread_upper));
+				else
+					info_message(_(txt_marked_as_unread), _(txt_article_upper));
 				break;
 
 			case PAGE_CANCEL:			/* cancel an article */
@@ -936,7 +940,7 @@ return_to_index:
 				XFACE_SHOW();
 				break;
 
-			case PAGE_MARK_ARTICLE_UNREAD:	/* mark article as unread(to return) */
+			case MARK_ARTICLE_UNREAD:	/* mark article as unread(to return) */
 				art_mark(group, &arts[this_resp], ART_WILL_RETURN);
 				info_message(_(txt_marked_as_unread), _(txt_article_upper));
 				break;
@@ -1694,7 +1698,8 @@ load_article(
 	struct t_group *group)
 {
 #ifdef DEBUG
-	fprintf(stderr, "load_art %s(new=%d, curr=%d)\n", (new_respnum == this_resp) ? "ALREADY OPEN!" : "", new_respnum, this_resp);
+	if (debug == 2)
+		fprintf(stderr, "load_art %s(new=%d, curr=%d)\n", (new_respnum == this_resp) ? "ALREADY OPEN!" : "", new_respnum, this_resp);
 #endif /* DEBUG */
 
 	if (new_respnum != this_resp) {

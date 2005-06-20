@@ -67,6 +67,7 @@ show_last_line_prev_page     *
 group_catchup_on_exit        *
 thread_catchup_on_exit       *
 thread_articles                thread_arts in attributes
+thread_perc                  *
 show_author
 news_headers_to_display      *
 news_headers_to_not_display  *

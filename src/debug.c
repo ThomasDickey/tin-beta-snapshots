@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-02-11
+ *  Updated   : 2005-05-04
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -141,8 +141,8 @@ void
 debug_print_header(
 	struct t_article *s)
 {
-	char file[PATH_LEN];
 	FILE *fp;
+	char file[PATH_LEN];
 
 	if (debug != 2)
 		return;
@@ -180,8 +180,8 @@ void
 debug_print_active(
 	void)
 {
-	char file[PATH_LEN];
 	FILE *fp;
+	char file[PATH_LEN];
 	int i;
 	struct t_group *group;
 
@@ -303,8 +303,8 @@ void
 debug_print_filters(
 	void)
 {
-	char file[PATH_LEN];
 	FILE *fp;
+	char file[PATH_LEN];
 	int i, num;
 	struct t_filter *the_filter;
 
@@ -330,15 +330,32 @@ debug_print_filters(
 		fclose(fp);
 	}
 }
+
+
+/* TODO: print out all fields of t_capabilities */
+#	ifdef NNTP_ABLE
+void
+debug_print_nntp_extensions(
+	void)
+{
+	if (debug < 2)
+		return;
+	debug_nntp("###", "NNTP EXTENSIONS/CAPABILITIES");
+	debug_nntp("###", "Type/Version : %d/%d", nntp_caps.type, nntp_caps.version);
+	debug_nntp("###", "Command-names: %s %s", BlankIfNull(nntp_caps.over_cmd), BlankIfNull(nntp_caps.hdr_cmd));
+	debug_nntp("###", "List         : %s", nntp_caps.list_motd ? "MOTD" : "");
+}
+#	endif /* NNTP_ABLE */
 #endif /* DEBUG */
+
 
 #ifdef DEBUG_NEWSRC
 void
 debug_print_comment(
 	const char *comment)
 {
-	char file[PATH_LEN];
 	FILE *fp;
+	char file[PATH_LEN];
 
 	if (debug < 2)
 		return;
@@ -358,8 +375,8 @@ debug_print_bitmap(
 	struct t_group *group,
 	struct t_article *art)
 {
-	char file[PATH_LEN];
 	FILE *fp;
+	char file[PATH_LEN];
 
 	if (debug != 3)
 		return;

@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2004-06-06
+ *  Updated   : 2004-06-20
  *  Notes     :
  *
  * Copyright (c) 1999-2005 Jason Faultless <jason@altarstone.com>
@@ -141,6 +141,7 @@ struct t_config {
 	int sort_threads_type;				/* method used to sort base[] */
 	int strip_bogus;
 	int thread_articles;				/* threading system for viewing articles */
+	int thread_perc;				/* how close the match needs to be for THREAD_PERC to recognize two articles as the same thread */
 	int thread_score;				/* how the score for threads is computed*/
 	int wildcard;						/* 0=wildmat, 1=regex */
 	int score_limit_kill;					/* score limit to kill articles */
@@ -204,7 +205,7 @@ struct t_config {
 	t_bool keep_dead_articles;			/* keep all dead articles in dead.articles */
 	char posted_articles_file[LEN];		/* if set, file in which to keep posted articles */
 	t_bool mail_8bit_header;			/* allow 8bit chars. in header of mail message */
-	t_bool mark_ignore_tags;			/* Ignore tags for iKeyGroupMarkThdRead/iKeyThreadMarkArtRead */
+	t_bool mark_ignore_tags;			/* Ignore tags for GROUP_MARK_THREAD_READ/THREAD_MARK_ARTICLE_READ */
 	t_bool mark_saved_read;				/* mark saved article/thread as read */
 	t_bool pgdn_goto_next;
 	t_bool pos_first_unread;			/* position cursor at first/last unread article */
