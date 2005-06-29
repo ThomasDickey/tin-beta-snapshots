@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-06-20
+ *  Updated   : 2005-06-21
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -69,7 +69,7 @@ static int read_site_config(void);
 char **news_headers_to_display_array;	/* array of which headers to display */
 char **news_headers_to_not_display_array;	/* array of which headers to not display */
 char active_times_file[PATH_LEN];
-char article[PATH_LEN];			/* ~/TIN_ARTICLE_NAME file */
+char article_name[PATH_LEN];			/* ~/TIN_ARTICLE_NAME file */
 char bug_nntpserver1[PATH_LEN];		/* welcome message of NNTP server used */
 char bug_nntpserver2[PATH_LEN];		/* welcome message of NNTP server used */
 char cmdline_nntpserver[PATH_LEN];
@@ -789,9 +789,9 @@ init_selfinfo(
 	strcpy(tinrc.printer, DEFAULT_PRINTER);
 #endif /* !DISABLE_PRINTING */
 	strcpy(tinrc.inews_prog, PATH_INEWS);
-	joinpath(article, homedir, TIN_ARTICLE_NAME);
+	joinpath(article_name, homedir, TIN_ARTICLE_NAME);
 #ifdef APPEND_PID
-	snprintf(article + strlen(article), sizeof(article) - strlen(article), ".%d", (int) process_id);
+	snprintf(article_name + strlen(article_name), sizeof(article_name) - strlen(article_name), ".%d", (int) process_id);
 #endif /* APPEND_PID */
 	joinpath(dead_article, homedir, "dead.article");
 	joinpath(dead_articles, homedir, "dead.articles");

@@ -320,8 +320,8 @@ o  add feature show_new_newsgroups_since
 
 o  Additions to the thread menu:
      'D'  (cancel article)
-     ']'  QuickFilterKill/GLOBAL_QUICK_FILTER_KILL
-     '['  QuickFilterSelect/GLOBAL_QUICK_FILTER_SELECT
+     ']'  (GLOBAL_QUICK_FILTER_KILL)
+     '['  (GLOBAL_QUICK_FILTER_SELECT)
      'r'  (reply to) /* not 'R' cause it conflicts with mail_bugreport */
      ''   r should be toggle show all/show only unread
      'f'  (post a followup) (maybe also 'F', '^W', ...)
@@ -344,13 +344,15 @@ o  Additions to the select menu:
      '%'  (toggle rot13 encoding of screen content)
 
 o  Add to the 'M'enu:
-     'h'  (help screen)
-     DEFAULT_MAILER
+     'h'  (GLOBAL_HELP)
+     'R'  (GLOBAL_BUGREPORT)
+     '!'  (GLOBAL_SHELL_ESCAPE)
+     and maybe a way to changed built in path like DEFAULT_MAILER, PATH_PGP, ...
 
 o  Add to the POST_INFO-level:
-     '?','/' search (partly done, currently only the displayed page is
-                     searched which is not that useful)
-     'h' help-screen
+     '?','/','\' search (partly done, currently only the displayed page is
+                         searched which is not that useful)
+     'h'  (GLOBAL_HELP)
 
 o  Add a commandline switch (-V) that prints out all values of cpp-symbols
    etc. [partly done, but should be cleaned up]
@@ -531,10 +533,6 @@ o  clean up $AUTOSUBSCRIBE code (the NNTP code path is a mess)
 o  try to get rid of the magic numbers like NUM_MIME_CHARSETS and use
    a sentinel in the arrays instead (match_list is a showstopper here).
    [20030203 Urs Janssen <urs@tin.org>]
-
-o  clean up options_menu.c to remove the enum/int mixing (e.g.
-   search_config() returns int instead of option_enum).
-   [20050615 Urs Janssen <urs@tin.org>]
 
 o  check where joinpath() should be used; check joinpath() for overruns.
    (e.g. grep for TMPDIR in the source)

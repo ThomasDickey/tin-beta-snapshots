@@ -87,7 +87,7 @@ AC_PROG_INSTALL
 CF_PROG_YACC
 AC_CHECK_PROGS(LINT, lint alint lclint tdlint splint, :)
 AC_AIX
-CF_GNU_SOURCE
+CF_XOPEN_SOURCE
 AC_ISC_POSIX
 CF_ANSI_CC_REQD
 CF_PROG_EXT
@@ -1189,20 +1189,19 @@ LIBS="$LIBS $LIBICONV"
 ### check for alloca (required for bison and/or intl/*)
 case "$YACC" in
 bison*)
-	AC_FUNC_ALLOCA
+	use_alloca=yes
 	;;
 *)
-	case "$USE_INCLUDED_LIBINTL" in
-	yes)
-		AC_FUNC_ALLOCA
-		;;
-	no)
-		ALLOCA=""
-		AC_SUBST(ALLOCA)
-		;;
-	esac
+	use_alloca=$USE_INCLUDED_LIBINTL
 	;;
 esac
+
+if test ".$use_alloca" = .yes ; then
+	CF_FUNC_ALLOCA
+else
+	ALLOCA=""
+	AC_SUBST(ALLOCA)
+fi
 
 CF_CHECK_HEADERS(iconv.h)
 AC_MSG_CHECKING(for iconv_open() //TRANSLIT extension)

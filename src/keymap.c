@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2005-05-03
+ *  Updated   : 2005-06-22
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2005 Dirk Nimmich <nimmich@muenster.de>
@@ -2425,6 +2425,15 @@ setup_default_keys(
 	add_default_key(&info_keys, '\\', GLOBAL_SEARCH_REPEAT);
 
 	/* options menu */
+	add_default_key(&option_menu_keys, '1', DIGIT_1);
+	add_default_key(&option_menu_keys, '2', DIGIT_2);
+	add_default_key(&option_menu_keys, '3', DIGIT_3);
+	add_default_key(&option_menu_keys, '4', DIGIT_4);
+	add_default_key(&option_menu_keys, '5', DIGIT_5);
+	add_default_key(&option_menu_keys, '6', DIGIT_6);
+	add_default_key(&option_menu_keys, '7', DIGIT_7);
+	add_default_key(&option_menu_keys, '8', DIGIT_8);
+	add_default_key(&option_menu_keys, '9', DIGIT_9);
 	add_default_key(&option_menu_keys, ctrl('B'), GLOBAL_PAGE_UP);
 	add_default_key(&option_menu_keys, ctrl('D'), GLOBAL_PAGE_DOWN);
 	add_default_key(&option_menu_keys, ctrl('F'), GLOBAL_PAGE_DOWN);
@@ -2439,6 +2448,7 @@ setup_default_keys(
 	add_default_key(&option_menu_keys, 'j', GLOBAL_LINE_DOWN);
 	add_default_key(&option_menu_keys, 'k', GLOBAL_LINE_UP);
 	add_default_key(&option_menu_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&option_menu_keys, 'v', GLOBAL_VERSION);
 	add_default_key(&option_menu_keys, 'G', GLOBAL_LAST_PAGE);
 	add_default_key(&option_menu_keys, 'Q', CONFIG_NO_SAVE);
 	add_default_key(&option_menu_keys, '^', GLOBAL_FIRST_PAGE);

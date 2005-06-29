@@ -15,7 +15,7 @@
 msgid	""
 msgstr	"Project-Id-Version: tin 1.7.8\n"
 	"Report-Msgid-Bugs-To: \n"
-	"POT-Creation-Date: 2005-06-20 14:24+0200\n"
+	"POT-Creation-Date: 2005-06-22 20:13+0200\n"
 	"PO-Revision-Date: 2005-04-03 10:55-0700\n"
 	"Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 	"Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -4749,17 +4749,16 @@ msgid	"# Thread articles by ...\n"
 	"# * 3 = Both (Subject and References)\n"
 	"#   4 = Multipart Subject\n"
 	"#   5 = Percentage Match\n"
-msgstr	"#ku Uduciro i Mburabuzi ni cy/ byagarajwe Na: 0 1. 2. 3. Na 4."
+msgstr	"# ku Uduciro i Mburabuzi ni cy/ byagarajwe Na: 0 1. 2. 3. Na 4."
 
 #: src/lang.c:1424
-#, fuzzy
 msgid	"Enter percentage match required to thread together. <CR> sets."
-msgstr	"Inkingi Umubare Kuri Gufunika Ingingo Imirongo Kuri in i Peja"
+msgstr	""
 
 #: src/lang.c:1425
 #, fuzzy
 msgid	"Thread percentage match"
-msgstr	"Urutonde"
+msgstr	""
 
 #: src/lang.c:1426
 #, c-format
@@ -6829,26 +6828,26 @@ msgstr	""
 msgid	"couldn't expand %s\n"
 msgstr	"Kwagura"
 
-#: src/post.c:1153
+#: src/post.c:1152
 #, c-format
 msgid	"Line %d is longer than 998 octets and should be folded, but\n"
 	"encoding is neither set to %s nor to %s\n"
 msgstr	""
 
-#: src/post.c:1158
+#: src/post.c:1157
 #, c-format
 msgid	"Line %d is longer than 998 octets, and should be folded, but\n"
 	"encoding is set to %s without enabling MIME_BREAK_LONG_LINES or\n"
 	"posting doesn't contain any 8bit chars and thus folding won't happen\n"
 msgstr	""
 
-#: src/post.c:1160
+#: src/post.c:1159
 #, c-format
 msgid	"Line %d is longer than 998 octets, and should be folded, but\n"
 	"encoding is not set to %s\n"
 msgstr	""
 
-#: src/post.c:1975
+#: src/post.c:1974
 #, fuzzy, c-format
 msgid	"Posting: %.*s ..."
 msgstr	"S"

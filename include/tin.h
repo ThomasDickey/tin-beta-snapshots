@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-06-20
+ *  Updated   : 2005-06-28
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -78,7 +78,7 @@
 
 #define N_(Str) Str
 
-#ifdef ENABLE_NLS
+#if defined(ENABLE_NLS) && !defined(__BUILD__)
 #	include <libintl.h>
 #	define _(Text)	gettext(Text)
 #else
@@ -87,7 +87,7 @@
 #	undef textdomain
 #	define textdomain(Domain) /* empty */
 #	define _(Text) Text
-#endif /* ENABLE_NLS */
+#endif /* ENABLE_NLS && !__BUILD__ */
 
 #ifndef LOCALEDIR
 #	define LOCALEDIR "/usr/share/locale"

@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-06-20
+ *  Updated   : 2005-06-23
  *  Notes     :
  *
  * Copyright (c) 1997-2005 Iain Lea <iain@bricbrac.de>
@@ -330,6 +330,7 @@ extern char *OPT_CHAR_list[];
 extern char *OPT_STRING_list[];
 extern char *nntp_server;
 extern char active_times_file[PATH_LEN];
+extern char article_name[PATH_LEN];
 extern char bug_addr[LEN];
 extern char bug_nntpserver1[PATH_LEN];
 extern char bug_nntpserver2[PATH_LEN];
@@ -1168,8 +1169,6 @@ extern constext txt_yanked_sub_groups[];
 extern constext txt_show_unread[];
 extern constext txt_yes[];
 extern constext txt_you_have_mail[];
-
-extern constext *xover_cmd;
 
 #ifndef DISABLE_PRINTING
 	extern constext txt_print[];

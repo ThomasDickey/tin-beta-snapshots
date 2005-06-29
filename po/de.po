@@ -7,7 +7,7 @@
 msgid	""
 msgstr	"Project-Id-Version: tin 1.7.9\n"
 	"Report-Msgid-Bugs-To: \n"
-	"POT-Creation-Date: 2005-06-20 14:24+0200\n"
+	"POT-Creation-Date: 2005-06-22 20:13+0200\n"
 	"PO-Revision-Date: 2005-01-29 23:50+0100\n"
 	"Last-Translator: Sven Hartge <oweh@ds9.argh.org>, Kai Bojens <kbojens@on-"
 	"luebeck.de>\n"
@@ -4542,17 +4542,15 @@ msgstr	"# Gruppiere Artikel nach\n"
 	"#   2 = References\n"
 	"# * 3 = beides (Subject und References)\n"
 	"#   4 = Mehrteilige Artikel\n"
-	"#   5 = prozentualer Treffer\n"
+	"#   5 = prozentualer Subject vergleich\n"
 
-# TRANSLATION MISSING
 #: src/lang.c:1424
 msgid	"Enter percentage match required to thread together. <CR> sets."
-msgstr	""
+msgstr	"Prozent des Subject das gleich sein muﬂ. <CR> setzt."
 
-# TRANSLATION MISSING
 #: src/lang.c:1425
 msgid	"Thread percentage match"
-msgstr	""
+msgstr	"Prozentualer Subject vergleich"
 
 # TRANSLATION MISSING
 #: src/lang.c:1426
@@ -4620,11 +4618,9 @@ msgstr	"# Sortiere Artikel nach\n"
 	"#   9 = Lines absteigend\n"
 	"#  10 = Lines aufsteigend\n"
 
-# TRANLSATION TOO LONG
 #: src/lang.c:1465
 msgid	"Sort threads by Nothing or Score. <SPACE> toggles & <CR> sets."
-msgstr	"Threads nach Bewertung (Score) oder nichts ordnen. <SPACE> wechselt & <CR> "
-	"setzt."
+msgstr	"Threads nach Bewertung (Score) ordnen? <SPACE> wechselt & <CR> setzt."
 
 #: src/lang.c:1466
 msgid	"Sort threads by"
@@ -6483,14 +6479,14 @@ msgstr	""
 msgid	"couldn't expand %s\n"
 msgstr	"Kann %s nicht expandieren\n"
 
-#: src/post.c:1153
+#: src/post.c:1152
 #, c-format
 msgid	"Line %d is longer than 998 octets and should be folded, but\n"
 	"encoding is neither set to %s nor to %s\n"
 msgstr	"Zeile %d ist l‰nger als 998 Oktets und sollte gefaltet werden,\n"
 	"aber die Kodierung ist weder auf %s noch auf %s gestellt\n"
 
-#: src/post.c:1158
+#: src/post.c:1157
 #, c-format
 msgid	"Line %d is longer than 998 octets, and should be folded, but\n"
 	"encoding is set to %s without enabling MIME_BREAK_LONG_LINES or\n"
@@ -6500,14 +6496,14 @@ msgstr	"Zeile %d ist l‰nger als 998 Oktets und sollte gefaltet werden,\n"
 	"angeschaltet zu haben, oder der Artikel enh‰lt keine 8Bit Zeichen\n"
 	"und wird daher nicht automatisch gefaltet wird.\n"
 
-#: src/post.c:1160
+#: src/post.c:1159
 #, c-format
 msgid	"Line %d is longer than 998 octets, and should be folded, but\n"
 	"encoding is not set to %s\n"
 msgstr	"Zeile %d ist l‰nger als 998 Oktets und sollte gefaltet werden,\n"
 	"aber die Kodierung ist nicht auf %s gesetzt\n"
 
-#: src/post.c:1975
+#: src/post.c:1974
 #, c-format
 msgid	"Posting: %.*s ..."
 msgstr	"Poste: %.*s ..."

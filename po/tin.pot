@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-06-20 14:24+0200\n"
+"POT-Creation-Date: 2005-06-22 20:13+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -6167,14 +6167,14 @@ msgstr ""
 msgid "couldn't expand %s\n"
 msgstr ""
 
-#: src/post.c:1153
+#: src/post.c:1152
 #, c-format
 msgid ""
 "Line %d is longer than 998 octets and should be folded, but\n"
 "encoding is neither set to %s nor to %s\n"
 msgstr ""
 
-#: src/post.c:1158
+#: src/post.c:1157
 #, c-format
 msgid ""
 "Line %d is longer than 998 octets, and should be folded, but\n"
@@ -6182,14 +6182,14 @@ msgid ""
 "posting doesn't contain any 8bit chars and thus folding won't happen\n"
 msgstr ""
 
-#: src/post.c:1160
+#: src/post.c:1159
 #, c-format
 msgid ""
 "Line %d is longer than 998 octets, and should be folded, but\n"
 "encoding is not set to %s\n"
 msgstr ""
 
-#: src/post.c:1975
+#: src/post.c:1974
 #, c-format
 msgid "Posting: %.*s ..."
 msgstr ""
