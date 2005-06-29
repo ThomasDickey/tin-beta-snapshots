@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2005-01-30
+# Updated: 2005-06-22
 #
 # Copyright (c) 1995-2005 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -412,7 +412,7 @@ TAGS :
 	@-$(RM) -f TAGS
 	@$(ETAGS) $(HFILES) $(CFILES)
 
-lint :	$(CFILES) $(OBJDIR)/parsdate.c tincfg.h
+lint :	$(CFILES) $(OBJDIR)/parsdate.c tincfg.h options_menu.h
 	@$(ECHO) "Linting source (results in ./LINT) ..."
 	@$(LINT) $(LINTFLAGS) -DNNTP_ABLE `$(LS) $(CFILES)|$(SED) -e 's/\.y/.c/'` $(LIBS) > LINT
 
@@ -421,7 +421,7 @@ clean :
 	@-$(RM) -f $(OFILES)
 	@-$(RM) -f $(OBJDIR)/parsdate.c
 	@-$(RM) -f LINT *.ln *.out
-	@-$(RM) -f makecfg$X makecfg$o tincfg.h
+	@-$(RM) -f makecfg$X makecfg$o tincfg.h options_menu.h
 	@-$(RM) -f core *~
 	@-$(RM) -f $(EXE)
 @PCREDIR_MAKE@	@-if test -r ../pcre/Makefile ; then $(CD) ../pcre && $(ECHO) "Cleaning Philip Hazel's Perl-compatible regular expressions library ..." && $(MAKE) @cf_cv_makeflags@ clean ; fi
@@ -453,17 +453,6 @@ canlock :
 	@$(ECHO) "Building libcanlock ..."
 	@$(CD) ../libcanlock && ./Build
 
-TIN_DEP	= \
-	Makefile \
-	$(INCDIR)/tin.h \
-	$(INCDIR)/tinrc.h \
-	../include/autoconf.h \
-	$(INCDIR)/bool.h \
-	$(INCDIR)/extern.h \
-	$(INCDIR)/nntplib.h \
-	$(INCDIR)/tcurses.h \
-	$(INCDIR)/proto.h $(EXTRA_PCREHDRS) $(EXTRA_INTLLIBS)
-
 @PCREDIR_MAKE@../pcre/pcre.h ../pcre/$(PRELIB)pcre.a :
 @PCREDIR_MAKE@	@$(ECHO) "Building Philip Hazel's Perl regular expressions library ..."
 @PCREDIR_MAKE@	@$(CD) ../pcre && $(MAKE) @cf_cv_makeflags@ $(PRELIB)pcre.a
@@ -472,13 +461,32 @@ TIN_DEP	= \
 @INTLDIR_MAKE@	@$(ECHO) "Building GNU gettext library ..."
 @INTLDIR_MAKE@	@$(CD) ../intl && $(MAKE) @cf_cv_makeflags@
 
-tincfg.h :			$(SRCDIR)/tincfg.tbl \
+options_menu.h :		$(SRCDIR)/tincfg.tbl \
 				makecfg$X
 	./makecfg $(SRCDIR)/tincfg.tbl tincfg.h
 
-makecfg$X :			$(SRCDIR)/makecfg.c $(TIN_DEP)
+tincfg.h :			$(SRCDIR)/tincfg.tbl \
+				makecfg$X
+	./makecfg $(SRCDIR)/tincfg.tbl $@
+
+makecfg$X :			$(SRCDIR)/makecfg.c \
+				Makefile \
+				$(INCDIR)/tin.h \
+				../include/autoconf.h
 @SHOW_CC@
-	@ECHO_CC@$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -o $@ makecfg.c $(BUILD_LIBS)
+	@ECHO_CC@$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -o $@ makecfg.c #$(BUILD_LIBS)
+
+TIN_DEP	= \
+	Makefile \
+	options_menu.h \
+	$(INCDIR)/tin.h \
+	$(INCDIR)/tinrc.h \
+	../include/autoconf.h \
+	$(INCDIR)/bool.h \
+	$(INCDIR)/extern.h \
+	$(INCDIR)/nntplib.h \
+	$(INCDIR)/tcurses.h \
+	$(INCDIR)/proto.h $(EXTRA_PCREHDRS) $(EXTRA_INTLLIBS)
 
 $(OBJDIR)/active$o :		$(SRCDIR)/active.c $(TIN_DEP)
 $(OBJDIR)/art$o :		$(SRCDIR)/art.c $(TIN_DEP) \

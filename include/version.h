@@ -42,8 +42,8 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.7.9"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20050620"
-#	define RELEASENAME	"Hellisay"
+#	define RELEASEDATE	"20050629"
+#	define RELEASENAME	"Grimsay"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.7"
 #	define ATTRIBUTES_VERSION	"1.0.3"

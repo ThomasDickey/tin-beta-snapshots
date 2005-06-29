@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-05-24
+ *  Updated   : 2005-06-21
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -115,7 +115,6 @@
 /* When prompting for subject, display no more than 20 characters */
 #define DISPLAY_SUBJECT_LEN 20
 
-extern char article[PATH_LEN];			/* Fixed path of the file holding temp. article */
 static int start_line_offset = 1;		/* used by invoke_editor for line no. */
 
 char bug_addr[LEN];			/* address to add send bug reports to */
@@ -283,7 +282,7 @@ repair_article(
 
 	*result = func;
 	if (func == POST_EDIT) {
-		if (invoke_editor(article, start_line_offset))
+		if (invoke_editor(article_name, start_line_offset))
 			return TRUE;
 	} else if (func == GLOBAL_OPTION_MENU) {
 		(void) change_config_file(group); /*OD:*/
@@ -1477,12 +1476,12 @@ post_article_loop:
 				 * This was VERY different in repost_article Code existed to
 				 * recheck subject and restart editor, but is not enabled
 				 */
-				artchanged = file_mtime(article);
-				if (!invoke_editor(article, offset)) {
-					if (file_size(article) > 0L) {
-						if (artchanged != file_mtime(article)) {
-							unlink(backup_article_name(article));
-							rename_file(article, dead_article);
+				artchanged = file_mtime(article_name);
+				if (!invoke_editor(article_name, offset)) {
+					if (file_size(article_name) > 0L) {
+						if (artchanged != file_mtime(article_name)) {
+							unlink(backup_article_name(article_name));
+							rename_file(article_name, dead_article);
 							if (tinrc.keep_dead_articles)
 								append_file(dead_articles, dead_article);
 						}
@@ -1492,10 +1491,10 @@ post_article_loop:
 				ret_code = POSTED_REDRAW;
 
 				/* This might be erroneous with posting postponed */
-				if (file_size(article) > 0L) {
-					if (artchanged == file_mtime(article))
+				if (file_size(article_name) > 0L) {
+					if (artchanged == file_mtime(article_name))
 						art_unchanged = TRUE;
-					while ((i = check_article_to_be_posted(article, art_type, &group, art_unchanged)) == 1 && repair_article(&func, group))
+					while ((i = check_article_to_be_posted(article_name, art_type, &group, art_unchanged)) == 1 && repair_article(&func, group))
 						;
 					if (func == POST_EDIT || func == GLOBAL_OPTION_MENU)
 						break;
@@ -1509,58 +1508,58 @@ post_article_loop:
 					if (tinrc.keep_dead_articles)
 						append_file(dead_articles, dead_article);
 #endif /* 0 */
-					unlink(article);
+					unlink(article_name);
 				}
 				clear_message();
 				return ret_code;
 
 			case GLOBAL_OPTION_MENU:
 				(void) change_config_file(group);
-				while ((i = check_article_to_be_posted(article, art_type, &group, art_unchanged) == 1) && repair_article(&func, group))
+				while ((i = check_article_to_be_posted(article_name, art_type, &group, art_unchanged) == 1) && repair_article(&func, group))
 					;
 				break;
 
 #ifdef HAVE_ISPELL
 			case POST_ISPELL:
-				invoke_ispell(article, group);
+				invoke_ispell(article_name, group);
 				ret_code = POSTED_REDRAW; /* not all versions did this */
 				break;
 #endif /* HAVE_ISPELL */
 
 #ifdef HAVE_PGP_GPG
 			case POST_PGP:
-				invoke_pgp_news(article);
+				invoke_pgp_news(article_name);
 				break;
 #endif /* HAVE_PGP_GPG */
 
 			case GLOBAL_POST:
 				wait_message(0, posting_msg);
-				backup_article(article);
+				backup_article(article_name);
 
 				/* Functions that didn't handle mail didn't do this */
 				if (art_type == GROUP_TYPE_NEWS) {
-					if (submit_news_file(article, group, a_message_id))
+					if (submit_news_file(article_name, group, a_message_id))
 						ret_code = POSTED_OK;
 				} else {
-					if (submit_mail_file(article, group, NULL, FALSE)) /* mailing_list */
+					if (submit_mail_file(article_name, group, NULL, FALSE)) /* mailing_list */
 						ret_code = POSTED_OK;
 				}
 
 				if (ret_code == POSTED_OK) {
-					unlink(backup_article_name(article));
+					unlink(backup_article_name(article_name));
 					wait_message(2, _(txt_art_posted), *a_message_id ? a_message_id : "");
 					goto post_article_done;
 				} else {
 					if ((func = prompt_rejected()) == POST_POSTPONE)
 						/* reuse clean copy which didn't get modified by submit_news_file() */
-						postpone_article(backup_article_name(article));
+						postpone_article(backup_article_name(article_name));
 					else if (func == POST_EDIT) {
 						/* replace modified article with clean backup */
-						rename_file(backup_article_name(article), article);
+						rename_file(backup_article_name(article_name), article_name);
 						goto post_article_loop;
 					} else {
-						unlink(backup_article_name(article));
-						rename_file(article, dead_article);
+						unlink(backup_article_name(article_name));
+						rename_file(article_name, dead_article);
 						if (tinrc.keep_dead_articles)
 							append_file(dead_articles, dead_article);
 						wait_message(2, _(txt_art_rejected), dead_article);
@@ -1569,7 +1568,7 @@ post_article_loop:
 				}
 
 			case POST_POSTPONE:
-				postpone_article(article);
+				postpone_article(article_name);
 				goto post_article_postponed;
 
 			default:
@@ -1640,8 +1639,8 @@ post_article_done:
 
 		memset(&header, 0, sizeof(struct t_header));
 
-		if ((art_fp = fopen(article, "r")) == NULL)
-			perror_message(_(txt_cannot_open), article);
+		if ((art_fp = fopen(article_name, "r")) == NULL)
+			perror_message(_(txt_cannot_open), article_name);
 		else {
 			curr_group = group;
 			parse_rfc822_headers(&header, art_fp, NULL);
@@ -1717,10 +1716,10 @@ post_article_done:
 			 * log Message-ID if given in a_message_id,
 			 * add Date:, remove empty headers
 			 */
-			add_headers(article, a_message_id);
+			add_headers(article_name, a_message_id);
 			if (!strfpath(posted_msgs_file, a_mailbox, sizeof(a_mailbox), group))
 				STRCPY(a_mailbox, posted_msgs_file);
-			if (!append_mail(article, userid, a_mailbox)) {
+			if (!append_mail(article_name, userid, a_mailbox)) {
 				/* TODO: error message */
 			}
 		}
@@ -1730,7 +1729,7 @@ post_article_done:
 post_article_postponed:
 	curr_group = ogroup;
 	if (tinrc.unlink_article)
-		unlink(article);
+		unlink(article_name);
 
 	return ret_code;
 }
@@ -1844,8 +1843,8 @@ create_normal_article_headers(
 	free(prompt);
 	free(tmp2);
 
-	if ((fp = fopen(article, "w")) == NULL) {
-		perror_message(_(txt_cannot_open), article);
+	if ((fp = fopen(article_name, "w")) == NULL) {
+		perror_message(_(txt_cannot_open), article_name);
 		return FALSE;
 	}
 
@@ -2134,7 +2133,7 @@ pickup_postponed_articles(
 		return FALSE;
 
 	for (i = 0; i < count; i++) {
-		if (!fetch_postponed_article(article, subject, newsgroups))
+		if (!fetch_postponed_article(article_name, subject, newsgroups))
 			return TRUE;
 
 		if (!all) {
@@ -2172,10 +2171,10 @@ pickup_postponed_articles(
 			case PROMPT_NO:
 			case GLOBAL_QUIT:
 			case GLOBAL_ABORT:
-				if (!append_mail(article, userid, postponed_articles_file)) {
+				if (!append_mail(article_name, userid, postponed_articles_file)) {
 					/* TODO: : error -message */
 				}
-				unlink(article);
+				unlink(article_name);
 				if (func != PROMPT_NO)
 					return TRUE;
 				break;
@@ -2553,8 +2552,8 @@ post_response(
 		}
 	}
 
-	if ((fp = fopen(article, "w")) == NULL) {
-		perror_message(_(txt_cannot_open), article);
+	if ((fp = fopen(article_name, "w")) == NULL) {
+		perror_message(_(txt_cannot_open), article_name);
 		return ret_code;
 	}
 
@@ -3566,8 +3565,8 @@ repost_article(
 	if ((group = check_moderated(groupname, &art_type, _(txt_art_not_posted))) == NULL)
 		return ret_code;
 
-	if ((fp = fopen(article, "w")) == NULL) {
-		perror_message(_(txt_cannot_open), article);
+	if ((fp = fopen(article_name, "w")) == NULL) {
+		perror_message(_(txt_cannot_open), article_name);
 		return ret_code;
 	}
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));

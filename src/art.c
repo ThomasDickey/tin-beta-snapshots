@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-06-20
+ *  Updated   : 2005-06-25
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -736,7 +736,7 @@ thread_by_percentage(
 	int root_num = 0; /* The index number of the root we are currently working on. */
 	int unmatched; /* This is the number of characters that don't match between the two strings */
 	unsigned int percentage = 100 - tinrc.thread_perc;
-	int length_diff;
+	size_t slen;
 
 	/* First we need to sort art[] to simplify and speed up the matching. */
 	SortBy(subj_comp_asc);
@@ -755,22 +755,9 @@ thread_by_percentage(
 		/* Check each character to see if it matched enough */
 		k = 0;
 		unmatched = 0;
-		for (j = 0; arts[base[root_num]].subject[j] != '\0' && arts[i].subject[k] != '\0'; j++) {
-			if (arts[base[root_num]].subject[j] == arts[i].subject[k]) {
-				/* The characters match up. So we move onto the next*/
-				k++;
-				continue;
-			}
-
-			/*
-			 * So the characters didn't match up and a character
-			 * wasn't inserted. So we'll just ignore these two
-			 * characters and see if they were just differing, but
-			 * don't through the alignment out. We need to keep
-			 * track of this character as a difference.
-			 */
-			k++;
-			unmatched++;
+		for (j = 0; arts[base[root_num]].subject[j] != '\0' && arts[i].subject[k] != '\0'; j++, k++) {
+			if (arts[base[root_num]].subject[j] != arts[i].subject[k])
+				unmatched++;
 		}
 
 		/*
@@ -781,27 +768,20 @@ thread_by_percentage(
 		 * we count differences in the length of the strings against
 		 * them matching.
 		 */
-
-		length_diff = strlen(arts[base[root_num]].subject) - strlen(arts[i].subject);
-		/* ensure that it's positive */
-		if (length_diff < 0)
-			length_diff = -1 * length_diff;
-
-		unmatched += length_diff;
-		if ((unmatched * 100) / strlen(arts[base[root_num]].subject) > percentage) {
+		slen = strlen(arts[base[root_num]].subject);
+		unmatched += abs(slen - strlen(arts[i].subject));
+		if ((unmatched * 100) / slen > percentage) {
 			/*
-			 * If there is less greater than percentage% different
-			 *  start a new thread.
+			 * If there is less greater than percentage% different start a
+			 * new thread.
 			 */
-			root_num++;
-			base[root_num] = i;
+			base[++root_num] = i;
 			arts[i].prev = ART_NORMAL;
 			continue;
 		} else {
 			/*
-			 * The subject lines match enough to consider them part
-			 * of a single thread, so add the current article to
-			 * the thread.
+			 * The subject lines match enough to consider them part of a single
+			 * thread, so add the current article to the thread.
 			 */
 			if (arts[base[root_num]].thread < 0)
 				arts[base[root_num]].thread = i;
@@ -1850,14 +1830,14 @@ find_nov_file(
 		joinpath(nov_file, dir, buf);
 
 		if ((fp = fopen(nov_file, "r")) == NULL)
-			return nov_file;
+			break;
 
 		/*
 		 * No group name header, so not a valid index file => overwrite it
 		 */
 		if (fgets(buf, (int) sizeof(buf), fp) == NULL) {
 			fclose(fp);
-			return nov_file;
+			break;
 		}
 		fclose(fp);
 
@@ -1865,7 +1845,7 @@ find_nov_file(
 			*ptr = '\0';
 
 		if (strcmp(buf, group->name) == 0)
-			return nov_file;
+			break;
 
 	}
 

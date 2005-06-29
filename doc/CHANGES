@@ -1,4 +1,8 @@
--- 1.7.9 release 20050620 "" --
+-- 1.7.9 release 20050629 "Grimsay" --
+
+U045) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update configure macros and some dependencies in Makefile
+      FIX. aclocal.m4, configure[.in], Makefile[.in], art.c
 
 U044) Travis Brown <travisb@sfu.ca>
       ADD. new threading method THREAD_PERC
@@ -11,7 +15,9 @@ U043) Urs Janssen <urs@tin.org>
            post_edit_ext_keys and not rebindable in post_continue_keys
       BUG. dublicated onlinehelp entries
       BUG. FeedRepost didn't work
-      ADD. pcre update (5.0 -> 6.0)
+      BUG. digits were missing in option_menu_keys
+      BUG. PGP_INCLUDE_KEY in the pgp-2 case didn't work
+      ADD. pcre update (5.0 -> 6.1)
       ADD. warning about lines exceeding 998 octets
       ADD. try LIST MOTD at start and show it's output if any
       ADD. merged GroupBugReport, SelectBugReport, ThreadBugReport to
@@ -27,12 +33,12 @@ U043) Urs Janssen <urs@tin.org>
       ADD. set LINT to : if no lint found
       ADD. config.guess, config.sub update
       ADD. some more CAPABILITIES parsing
-      FIX. Makefile, configure[.in], extern.h, keymap.h, nntplib.h, art.c
-           attrib.c, debug.c, curses.c, feed.c, filter.c, global.c, group.c
-           help.c, init.c, keymap.c, lang.c, main.c, misc.c, newsrc.c
-           nntplib.c, options_menu.c, page.c, post.c, save.c, select.c
-           string.c, thread.c, xref.c, tin.1, tin.5, config.guess, config.sub
-           de.po, pcre/*
+      FIX. Makefile, aclocal.m4, configure[.in], extern.h, keymap.h, nntplib.h
+           tin.h, art.c, attrib.c, debug.c, curses.c, feed.c, filter.c
+           global.c, group.c, help.c, init.c, keymap.c, lang.c, main.c, misc.c
+           newsrc.c, nntplib.c, options_menu.c, page.c, post.c, save.c
+           select.c, string.c, thread.c, xref.c, tin.1, tin.5, config.guess
+           config.sub, de.po, pcre/*
 
 U042) Steven Michael Murphy <murf@e-tools.com>
       ADD. started kinyarwanda translation
@@ -45,8 +51,10 @@ U041) Andrei Emeltchenko <andrei.emeltchenko@finik.org>
 U040) Michael Bienia <michael@vorlon.ping.de>
       BUG. keybindings were inited to late
       ADD. dynamic space calculation in filter_menu()
-      FIX. proto.h, tin.h, filter.c, group.c, keymap.c, main.c, page.c
-           thread.c
+      ADD. use enum option_enum instead of int where appropiate
+      FIX. Makefile[.in], proto.h, tin.h, filter.c, group.c, keymap.c, main.c
+           options_menu.c, page.c, prompt.c, search.c, signal.c, thread.c
+           makecfg.c
 
 -- 1.7.8 release 20050321 "Hellisay" --
 

@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-02-12
+ *  Updated   : 2005-06-21
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -361,7 +361,7 @@ prompt_list(
  */
 t_bool
 prompt_option_on_off(
-	int option)
+	enum option_enum option)
 {
 	char prompt[LEN];
 	t_bool *variable = OPT_ON_OFF_list[option_table[option].var_index];
@@ -378,7 +378,7 @@ prompt_option_on_off(
  */
 t_bool
 prompt_option_list(
-	int option)
+	enum option_enum option)
 {
 	char prompt[LEN];
 	int *variable = option_table[option].variable;
@@ -400,7 +400,7 @@ prompt_option_list(
  */
 t_bool
 prompt_option_string(
-	int option) /* return value is always ignored */
+	enum option_enum option) /* return value is always ignored */
 {
 	char *variable = OPT_STRING_list[option_table[option].var_index];
 	char prompt[LEN];
@@ -421,7 +421,7 @@ prompt_option_string(
  */
 t_bool
 prompt_option_num(
-	int option) /* return value is always ignored */
+	enum option_enum option) /* return value is always ignored */
 {
 	char prompt[LEN];
 	char number[LEN];
@@ -453,7 +453,7 @@ prompt_option_num(
  */
 t_bool
 prompt_option_char(
-	int option) /* return value is always ignored */
+	enum option_enum option) /* return value is always ignored */
 {
 	char prompt[LEN];
 	char input[2];

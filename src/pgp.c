@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2005-02-12
+ *  Updated   : 2005-06-22
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2005 Steven J. Madsen <steve@erinet.com>
@@ -59,7 +59,7 @@
 #		define PGP_PUBRING	"pubring.pgp"
 #		define CHECK_SIGN	"%s %s -f <%s %s"
 #		define ADD_KEY		"%s %s -ka %s"
-#		define APPEND_KEY	"%s %s -kxa %s %s"
+#		define APPEND_KEY	"%s %s -kxa %s %s", PGPNAME, pgpopts, buf, keyfile
 #		define DO_ENCRYPT	"%s %s -ate %s %s", PGPNAME, pgpopts, pt, mailto
 #		define DO_SIGN		"%s %s -ats %s %s", PGPNAME, pgpopts, pt, mailto
 #		define DO_SIGN1		"%s %s -ats %s %s -u %s", PGPNAME, pgpopts, pt, mailto, mailfrom
@@ -73,7 +73,7 @@
 #		define PGP_PUBRING	"pubring.pkr"
 #		define CHECK_SIGN	"%sv %s -f <%s %s"
 #		define ADD_KEY		"%sk %s -a %s"
-#		define APPEND_KEY	"%sk %s -xa %s -o %s"
+#		define APPEND_KEY	"%sk %s -xa %s -o %s", PGPNAME, pgpopts, keyfile, buf
 #		define DO_ENCRYPT	"%se %s -at %s %s", PGPNAME, pgpopts, pt, mailto
 #		define DO_SIGN		"%ss %s -at %s %s", PGPNAME, pgpopts, pt, mailto
 #		define DO_SIGN1		"%ss %s -at %s %s -u %s", PGPNAME, pgpopts, pt, mailto, mailfrom
@@ -87,7 +87,7 @@
 #		define PGP_PUBRING	"pubring.gpg"
 #		define CHECK_SIGN	"%s %s --no-batch --decrypt <%s %s"
 #		define ADD_KEY		"%s %s --no-batch --import %s"
-#		define APPEND_KEY	"%s %s --no-batch --armor --output %s --export %s"
+#		define APPEND_KEY	"%s %s --no-batch --armor --output %s --export %s", PGPNAME, pgpopts, keyfile, buf
 /* #		define LOCAL_USER	"--local-user %s" */
 #		define DO_ENCRYPT	\
 "%s %s --textmode --armor --no-batch --output %s.asc --recipient %s --encrypt %s", \
@@ -121,14 +121,11 @@ PGPNAME, pgpopts, pt, mailto, mailfrom, pt
 #	endif /* HAVE_LONG_FILE_NAMES */
 
 
-#	define PGP_SIGN 0x01
-#	define PGP_ENCRYPT 0x02
-
 /*
  * local prototypes
  */
 static t_bool pgp_available(void);
-static void do_pgp(int what, const char *file, const char *mail_to);
+static void do_pgp(t_function what, const char *file, const char *mail_to);
 static void join_files(const char *file);
 static void pgp_append_public_key(char *file);
 static void split_file(const char *file);
@@ -234,7 +231,7 @@ err_art:
 
 static void
 do_pgp(
-	int what,
+	t_function what,
 	const char *file,
 	const char *mail_to)
 {
@@ -249,24 +246,35 @@ do_pgp(
 	/*
 	 * <mailfrom> is valid only when signing and a local address exists
 	 */
-	if (what & PGP_SIGN) {
-		if ((CURR_GROUP.attribute->from) != NULL)
-			strip_name(CURR_GROUP.attribute->from, mailfrom);
-		if (strlen(mailfrom)) {
-			if (what & PGP_ENCRYPT)
-				sh_format(cmd, sizeof(cmd), DO_BOTH1);
-			else
+	if ((CURR_GROUP.attribute->from) != NULL)
+		strip_name(CURR_GROUP.attribute->from, mailfrom);
+
+	switch (what) {
+		case PGP_KEY_SIGN:
+			if (strlen(mailfrom))
 				sh_format(cmd, sizeof(cmd), DO_SIGN1);
-		} else {
-			if (what & PGP_ENCRYPT)
-				sh_format(cmd, sizeof(cmd), DO_BOTH);
 			else
 				sh_format(cmd, sizeof(cmd), DO_SIGN);
-		}
-	} else
-		sh_format(cmd, sizeof(cmd), DO_ENCRYPT);
+			invoke_cmd(cmd);
+			break;
 
-	invoke_cmd(cmd);
+		case PGP_KEY_ENCRYPT_SIGN:
+			if (strlen(mailfrom))
+				sh_format(cmd, sizeof(cmd), DO_BOTH1);
+			else
+				sh_format(cmd, sizeof(cmd), DO_BOTH);
+			invoke_cmd(cmd);
+			break;
+
+		case PGP_KEY_ENCRYPT:
+			sh_format(cmd, sizeof(cmd), DO_ENCRYPT);
+			invoke_cmd(cmd);
+			break;
+
+		default:
+			break;
+	}
+
 	join_files(file);
 }
 
@@ -289,8 +297,7 @@ pgp_append_public_key(
  * TODO: I'm guessing the pgp append key command creates 'keyfile' and that
  * we should remove it
  */
-	sh_format(cmd, sizeof(cmd), APPEND_KEY, PGPNAME, pgpopts, keyfile, buf);
-
+	sh_format(cmd, sizeof(cmd), APPEND_KEY);
 	if (invoke_cmd(cmd)) {
 		if ((fp = fopen(file, "a")) != NULL) {
 			if ((key = fopen(keyfile, "r")) != NULL) {
@@ -334,7 +341,7 @@ invoke_pgp_mail(
 {
 	char keyboth[MAXKEYLEN], keyencrypt[MAXKEYLEN], keyquit[MAXKEYLEN];
 	char keysign[MAXKEYLEN];
-	t_function func, default_func = PGP_SIGN;
+	t_function func, default_func = PGP_KEY_SIGN;
 
 	if (!pgp_available())
 		return;
@@ -345,16 +352,12 @@ invoke_pgp_mail(
 			printascii(keyboth, func_to_key(PGP_KEY_ENCRYPT_SIGN, pgp_mail_keys)),
 			printascii(keyquit, func_to_key(GLOBAL_QUIT, pgp_mail_keys)));
 	switch (func) {
-		case GLOBAL_ABORT:
-		case GLOBAL_QUIT:
-			break;
-
 		case PGP_KEY_SIGN:
 #ifdef HAVE_PGPK
 			ClearScreen();
 			MoveCursor(cLINES - 7, 0);
 #endif /* HAVE_PGPK */
-			do_pgp(PGP_SIGN, nam, NULL);
+			do_pgp(func, nam, NULL);
 			break;
 
 		case PGP_KEY_ENCRYPT_SIGN:
@@ -362,13 +365,15 @@ invoke_pgp_mail(
 			ClearScreen();
 			MoveCursor(cLINES - 7, 0);
 #endif /* HAVE_PGPK */
-			do_pgp(PGP_SIGN | PGP_ENCRYPT, nam, mail_to);
+			do_pgp(func, nam, mail_to);
 			break;
 
 		case PGP_KEY_ENCRYPT:
-			do_pgp(PGP_ENCRYPT, nam, mail_to);
+			do_pgp(func, nam, mail_to);
 			break;
 
+		case GLOBAL_ABORT:
+		case GLOBAL_QUIT:
 		default:
 			break;
 	}
@@ -380,7 +385,7 @@ invoke_pgp_news(
 	char *artfile)
 {
 	char keyinclude[MAXKEYLEN], keyquit[MAXKEYLEN], keysign[MAXKEYLEN];
-	t_function func, default_func = PGP_SIGN;
+	t_function func, default_func = PGP_KEY_SIGN;
 
 	if (!pgp_available())
 		return;
@@ -400,7 +405,7 @@ invoke_pgp_news(
 			MoveCursor(cLINES - 7, 0);
 			my_printf("\n");
 #endif /* HAVE_PGPK */
-			do_pgp(PGP_SIGN, artfile, NULL);
+			do_pgp(func, artfile, NULL);
 			break;
 
 		case PGP_INCLUDE_KEY:
@@ -409,7 +414,7 @@ invoke_pgp_news(
 			MoveCursor(cLINES - 7, 0);
 			my_printf("\n");
 #endif /* HAVE_PGPK */
-			do_pgp(PGP_SIGN, artfile, NULL);
+			do_pgp(PGP_KEY_SIGN, artfile, NULL);
 			pgp_append_public_key(artfile);
 			break;
 
@@ -470,6 +475,7 @@ pgp_check_article(
 		Raw(TRUE);
 	}
 
+	prompt_continue();
 	if (pgp_key) {
 		if (prompt_yn(_(txt_pgp_add), FALSE) == 1) {
 			Raw(FALSE);
@@ -481,7 +487,6 @@ pgp_check_article(
 		}
 	}
 
-	prompt_continue();
 	unlink(artfile);
 	return TRUE;
 }

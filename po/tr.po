@@ -7,7 +7,7 @@
 msgid	""
 msgstr	"Project-Id-Version: tin 1.7.7\n"
 	"Report-Msgid-Bugs-To: \n"
-	"POT-Creation-Date: 2005-06-20 14:24+0200\n"
+	"POT-Creation-Date: 2005-06-22 20:13+0200\n"
 	"PO-Revision-Date: 2005-03-06 09:25+0200\n"
 	"Last-Translator: Þebnem Korkmaz <sebnem_k@hotmail.com>\n"
 	"Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -5018,7 +5018,6 @@ msgid	"Thread articles by"
 msgstr	"Makaleleri belirle"
 
 #: src/lang.c:1413
-#, fuzzy
 msgid	"# Thread articles by ...\n"
 	"# Possible values are (the default is marked with *):\n"
 	"#   0 = nothing\n"
@@ -5027,22 +5026,15 @@ msgid	"# Thread articles by ...\n"
 	"# * 3 = Both (Subject and References)\n"
 	"#   4 = Multipart Subject\n"
 	"#   5 = Percentage Match\n"
-msgstr	"# Makaleleri sýrala 0=(hiçbirþey) 1=(Konu azalmasý) 2=(Konu yükselmesi)\n"
-	"# 3=(Gönderen azalmasý) 4=(Gönderen yükselmesi) 5=(Tarih azalmasý) 6=(Tarih "
-	"yükselmesi)\n"
-	"# 7=(Skor azalmasý) 8=(Skor yükselmesi) 9=(Satýrlar azalmasý) 10=(Satýrlar "
-	"yükselmesi).\n"
+msgstr	""
 
 #: src/lang.c:1424
-#, fuzzy
 msgid	"Enter percentage match required to thread together. <CR> sets."
-msgstr	"Sayfalayýcýdaki makale satýrlarýný çevrelemek için sütun mumarasýný yazýn. "
-	"<CR> ayarlar."
+msgstr	""
 
 #: src/lang.c:1425
-#, fuzzy
 msgid	"Thread percentage match"
-msgstr	"en küçük yürütme birimi aralýðý"
+msgstr	""
 
 #: src/lang.c:1426
 #, c-format
@@ -7127,26 +7119,26 @@ msgstr	""
 msgid	"couldn't expand %s\n"
 msgstr	"%s geniþletilemedi\n"
 
-#: src/post.c:1153
+#: src/post.c:1152
 #, c-format
 msgid	"Line %d is longer than 998 octets and should be folded, but\n"
 	"encoding is neither set to %s nor to %s\n"
 msgstr	""
 
-#: src/post.c:1158
+#: src/post.c:1157
 #, c-format
 msgid	"Line %d is longer than 998 octets, and should be folded, but\n"
 	"encoding is set to %s without enabling MIME_BREAK_LONG_LINES or\n"
 	"posting doesn't contain any 8bit chars and thus folding won't happen\n"
 msgstr	""
 
-#: src/post.c:1160
+#: src/post.c:1159
 #, c-format
 msgid	"Line %d is longer than 998 octets, and should be folded, but\n"
 	"encoding is not set to %s\n"
 msgstr	""
 
-#: src/post.c:1975
+#: src/post.c:1974
 #, fuzzy, c-format
 msgid	"Posting: %.*s ..."
 msgstr	"Gönderiliyor: %.*s ..."

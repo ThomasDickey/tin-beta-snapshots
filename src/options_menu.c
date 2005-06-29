@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2005-06-20
+ *  Updated   : 2005-06-22
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2005 Michael Bienia <michael@vorlon.ping.de>
@@ -38,9 +38,9 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
-#ifndef TINTBL_H
+#ifndef TINCFG_H
 #	include "tincfg.h"
-#endif /* !TINTBL_H */
+#endif /* !TINCFG_H */
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
@@ -85,10 +85,10 @@ static void unhighlight_option(enum option_enum option);
  */
 int
 option_row(
-	int option)
+	enum option_enum option)
 {
 	int i = 0;
-	int j = first_option_on_screen;
+	enum option_enum j = first_option_on_screen;
 
 	while (j < option) {
 		if (option_is_visible(j))
@@ -139,7 +139,7 @@ set_option_num(
  */
 t_bool
 option_is_visible(
-	int option)
+	enum option_enum option)
 {
 	switch (option) {
 #ifdef HAVE_COLOR
@@ -214,7 +214,7 @@ fmt_option_prompt(
 	char *dst,
 	size_t len,
 	t_bool editing,
-	int option)
+	enum option_enum option)
 {
 	char *buf;
 	size_t option_width = MAX(35, cCOLS / 2 - 9);
@@ -227,6 +227,7 @@ fmt_option_prompt(
 
 	if (!option_is_title(option)) {
 		int num = get_option_num(option);
+
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (wbuf != NULL) {
 			wbuf2 = wstrunc(wbuf, option_width);
@@ -590,12 +591,12 @@ unhighlight_option(
  */
 void
 refresh_config_page(
-	int act_option)
+	enum option_enum act_option)
 {
-	static int last_option = 0;
+	static enum option_enum last_option = 0;
 	/* t_bool force_redraw = FALSE; */
 
-	if (act_option < 0) {	/* called by signal handler */
+	if (act_option == SIGNAL_HANDLER) {	/* called by signal handler */
 		/* force_redraw = TRUE; */
 		act_option = last_option;
 		set_last_option_on_screen(first_option_on_screen); /* terminal size may have changed */
@@ -873,6 +874,10 @@ change_config_file(
 			case GLOBAL_REDRAW_SCREEN:
 				set_last_option_on_screen(first_option_on_screen);
 				redraw_screen(option);
+				break;
+
+			case GLOBAL_VERSION:
+				info_message(cvers);
 				break;
 
 			default:

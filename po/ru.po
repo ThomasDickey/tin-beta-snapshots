@@ -6,7 +6,7 @@
 msgid	""
 msgstr	"Project-Id-Version: tin 1.7.8\n"
 	"Report-Msgid-Bugs-To: \n"
-	"POT-Creation-Date: 2005-06-20 14:24+0200\n"
+	"POT-Creation-Date: 2005-06-22 20:13+0200\n"
 	"PO-Revision-Date: 2005-03-23 15:39+0200\n"
 	"Last-Translator: Andrei Emeltchenko <andrei.emeltchenko@finik.org>\n"
 	"Language-Team: Russian <ru@li.org>\n"
@@ -4345,9 +4345,8 @@ msgid	"Enter percentage match required to thread together. <CR> sets."
 msgstr	""
 
 #: src/lang.c:1425
-#, fuzzy
 msgid	"Thread percentage match"
-msgstr	"Диапазон дискуссии"
+msgstr	""
 
 #: src/lang.c:1426
 #, c-format
@@ -6038,26 +6037,26 @@ msgstr	""
 msgid	"couldn't expand %s\n"
 msgstr	"не получилось раскрыть %s\n"
 
-#: src/post.c:1153
+#: src/post.c:1152
 #, c-format
 msgid	"Line %d is longer than 998 octets and should be folded, but\n"
 	"encoding is neither set to %s nor to %s\n"
 msgstr	""
 
-#: src/post.c:1158
+#: src/post.c:1157
 #, c-format
 msgid	"Line %d is longer than 998 octets, and should be folded, but\n"
 	"encoding is set to %s without enabling MIME_BREAK_LONG_LINES or\n"
 	"posting doesn't contain any 8bit chars and thus folding won't happen\n"
 msgstr	""
 
-#: src/post.c:1160
+#: src/post.c:1159
 #, c-format
 msgid	"Line %d is longer than 998 octets, and should be folded, but\n"
 	"encoding is not set to %s\n"
 msgstr	""
 
-#: src/post.c:1975
+#: src/post.c:1974
 #, c-format
 msgid	"Posting: %.*s ..."
 msgstr	"Отправление в группу %.*s ..."

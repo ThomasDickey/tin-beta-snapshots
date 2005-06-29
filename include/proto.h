@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2005-05-04
+ *  Updated   : 2005-06-21
  *  Notes     :
  *
  * Copyright (c) 1997-2005 Urs Janssen <urs@tin.org>
@@ -41,6 +41,9 @@
 #ifndef KEYMAP_H
 #	include "keymap.h"
 #endif /* !KEYMAP_H */
+#ifndef OPTIONS_MENU_H
+#	include "options_menu.h"
+#endif /* !OPTIONS_MENU_H */
 
 /* This fixes ambiguities on platforms that don't distinguish extern case */
 #ifdef CASE_PROBLEM
@@ -433,12 +436,12 @@ extern int get_newsrcname(char *newsrc_name, const char *nntpserver_name);
 extern void get_nntpserver(char *nntpserver_name, char *nick_name);
 
 /* options_menu.c */
-extern char *fmt_option_prompt(char *dst, size_t len, t_bool editing, int option);
+extern char *fmt_option_prompt(char *dst, size_t len, t_bool editing, enum option_enum option);
 extern int change_config_file(struct t_group *group);
-extern int option_row(int option);
-extern t_bool option_is_visible(int option);
+extern int option_row(enum option_enum option);
+extern t_bool option_is_visible(enum option_enum option);
 extern void check_score_defaults(void);
-extern void refresh_config_page(int act_option);
+extern void refresh_config_page(enum option_enum act_option);
 extern void show_menu_help(const char *help_message);
 
 /* page.c */
@@ -496,11 +499,11 @@ extern int prompt_yn(const char *prompt, t_bool default_answer);
 extern int prompt_msgid(void);
 extern t_bool prompt_default_string(const char *prompt, char *buf, int buf_len, char *default_prompt, int which_hist);
 extern t_bool prompt_menu_string(int line, const char *prompt, char *var);
-extern t_bool prompt_option_char(int option);
-extern t_bool prompt_option_list(int option);
-extern t_bool prompt_option_num(int option);
-extern t_bool prompt_option_on_off(int option);
-extern t_bool prompt_option_string(int option);
+extern t_bool prompt_option_char(enum option_enum option);
+extern t_bool prompt_option_list(enum option_enum option);
+extern t_bool prompt_option_num(enum option_enum option);
+extern t_bool prompt_option_on_off(enum option_enum option);
+extern t_bool prompt_option_string(enum option_enum option);
 extern t_bool prompt_string(const char *prompt, char *buf, int which_hist);
 extern void prompt_continue(void);
 extern void prompt_slk_redraw(void);
@@ -586,7 +589,7 @@ extern int get_search_vectors(int *start, int *end);
 extern int search(t_function func, int current_art, t_bool repeat);
 extern int search_active(t_bool forward, t_bool repeat);
 extern int search_article(t_bool forward, t_bool repeat, int start_line, int lines, t_lineinfo *line, int reveal_ctrl_l_lines, FILE *fp);
-extern int search_config(t_bool forward, t_bool repeat, int current, int last);
+extern enum option_enum search_config(t_bool forward, t_bool repeat, enum option_enum current, enum option_enum last);
 extern int search_body(struct t_group *group, int current_art, t_bool repeat);
 extern void reset_srch_offsets(void);
 

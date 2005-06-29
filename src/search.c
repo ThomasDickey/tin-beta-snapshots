@@ -3,7 +3,7 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-05-10
+ *  Updated   : 2005-06-21
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -135,17 +135,16 @@ get_search_pattern(
 /*
  * called by config.c
  */
-int
+enum option_enum
 search_config(
 	t_bool forward,
 	t_bool repeat,
-	int current,
-	int last)
+	enum option_enum current,
+	enum option_enum last)
 {
 	char *pattern, *buf;
-	int n;
-	int incr;
-	int result = current;
+	enum option_enum n = current;
+	enum option_enum result = current;
 
 	if (!(pattern = get_search_pattern(&forward, repeat, _(txt_search_forwards), _(txt_search_backwards), tinrc.default_search_config, HIST_CONFIG_SEARCH)))
 		return result;
@@ -153,16 +152,14 @@ search_config(
 	if (tinrc.wildcard && !(compile_regex(pattern, &search_regex, PCRE_CASELESS)))
 		return result;
 
-	incr = forward ? 1 : -1;
-
-	current += incr;
-	n = current;
 	do {
-		if (n < 0)
+		if (n == 0 && !forward)
 			n = last;
 		else {
-			if (n > last)
+			if (n == last && forward)
 				n = 0;
+			else
+				n += forward ? 1 : -1;
 		}
 		/* search only visible options */
 		if (option_is_visible(n)) {
@@ -180,7 +177,6 @@ search_config(
 			}
 			free(buf);
 		}
-		n += incr;
 	} while (n != current);
 
 	clear_message();

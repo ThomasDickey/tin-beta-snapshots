@@ -45,7 +45,7 @@
 #	include "keymap.h"
 #endif /* !KEYMAP_H */
 
-#define EXPIRED(a) ((a)->article == ART_UNAVAILABLE || arts[(a)->article].thread == ART_EXPIRED)
+#define IS_EXPIRED(a) ((a)->article == ART_UNAVAILABLE || arts[(a)->article].thread == ART_EXPIRED)
 
 int thread_basenote = 0;				/* Index in base[] of basenote */
 static int thread_respnum = 0;			/* Index in arts[] of basenote ie base[thread_basenote] */
@@ -247,7 +247,7 @@ build_tline(
 		if (gap > 0) {
 			size_t len = strlen(buffer);
 
-			for (ptr = art->refptr->parent; ptr && EXPIRED(ptr); ptr = ptr->parent)
+			for (ptr = art->refptr->parent; ptr && IS_EXPIRED(ptr); ptr = ptr->parent)
 				;
 			if (!(ptr && arts[ptr->article].subject == art->subject)) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
@@ -1274,7 +1274,7 @@ static t_bool
 find_unexpired(
 	struct t_msgid *ptr)
 {
-	return ptr && (!EXPIRED(ptr) || find_unexpired(ptr->child) || find_unexpired(ptr->sibling));
+	return ptr && (!IS_EXPIRED(ptr) || find_unexpired(ptr->child) || find_unexpired(ptr->sibling));
 }
 
 
@@ -1286,7 +1286,7 @@ has_sibling(
 		if (find_unexpired(ptr->sibling))
 			return TRUE;
 		ptr = ptr->parent;
-	} while (ptr && EXPIRED(ptr));
+	} while (ptr && IS_EXPIRED(ptr));
 	return FALSE;
 }
 
@@ -1311,7 +1311,7 @@ make_prefix(
 	struct t_msgid *ptr;
 
 	for (ptr = art->parent; ptr; ptr = ptr->parent)
-		depth += (!EXPIRED(ptr) ? 1 : 0);
+		depth += (!IS_EXPIRED(ptr) ? 1 : 0);
 
 	if ((depth == 0) || (maxlen < 1)) {
 		prefix[0] = '\0';
@@ -1338,7 +1338,7 @@ make_prefix(
 	buf[--prefix_ptr] = (has_sibling(art) ? '+' : '`');
 
 	for (ptr = art->parent; prefix_ptr > 1; ptr = ptr->parent) {
-		if (EXPIRED(ptr))
+		if (IS_EXPIRED(ptr))
 			continue;
 		buf[--prefix_ptr] = ' ';
 		buf[--prefix_ptr] = (has_sibling(ptr) ? '|' : ' ');
