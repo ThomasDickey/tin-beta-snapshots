@@ -3,7 +3,7 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2003-09-19
+ *  Updated   : 2005-07-09
  *
  * Copyright (c) 1997-2005 Urs Janssen <urs@tin.org>
  * All rights reserved.
@@ -154,8 +154,9 @@ get_fqdn(
 
 #	ifdef HAVE_INET_ADDR
 	if ('0' <= *name && *name <= '9') {
-		in.s_addr = inet_addr(name);
-		if ((hp = gethostbyaddr((char *) &in.s_addr, 4, AF_INET)))
+		in_addr_t addr = inet_addr(name);
+
+		if ((hp = gethostbyaddr((char *) &addr, 4, AF_INET)))
 			in.s_addr = (*hp->h_addr);
 		return (hp && strchr(hp->h_name, '.') ? hp->h_name : inet_ntoa(in));
 	}

@@ -4,10 +4,9 @@ not read only ,-).
 
 Bugs
 ----
-o  a wrong usename in ~/.newsauth leeds to an endless authentication loop
-   as it can't be corrected anymore, see
-   <nntp://news.tin.org/20050524124906.GA10933@akk10.akk.uni-karlsruhe.de>
-   [20050524 Urs Janssen <urs@tin.org>]
+ o  a wrong usename in ~/.newsauth can't be corrected in the first
+    pass
+    [20050816 Urs Janssen <urs@tin.org>]
 
 o  can 'V'iew mime-parts with (illegal) encoded filename, e.g:
    | Content-Type: image/jpeg;
@@ -137,8 +136,9 @@ o  add user defined screen layout at different levels
    [20041025 Urs Janssen <urs@tin.org>]
 
 o  add TLS, NNTPS support
-   (see draft-ietf-nntpext-tls-nntp-03.txt;
-    <http://www.gnu.org/software/gnutls/> might be useful;
+   (see draft-ietf-nntpext-tls-nntp-09.txt;
+    <http://www.gnu.org/software/gnutls/>, <http://www.openssl.org/>
+    might be useful;
     "stunnel -c -d 1119 -r news.example.org:563; tin -g localhost -p 1119"
     can be used for NNTPS)
    [20031210 Urs Janssen <urs@tin.org>]
@@ -458,11 +458,13 @@ o  add config option for (external) viewer to show postings stored in
 
 Filtering enhancements
 ----------------------
-o  add used filter-type to filter-file or filter-rule or use different
+o  add spamassassin interface when ever adding body filters
+
+o  add used filter-type to filter file or filter rule or use different
    filter files for wildmat/regexp
 
-o  add command: mark all articles older/newer than <date> as read
-   (useful when subscribing to a new group with high-traffic...)
+o  add command: mark all articles older/newer than <date> (or <days>) as
+   read (useful when subscribing to a new group with high-traffic...)
 
 o  fix kill/hot mechanism so that it is possible to match articles on
    arbitrary headers
@@ -491,8 +493,30 @@ o  suppress hide_uue=2 checking unless first line in an article or following
 
 Internal Changes
 ----------------
+o  move serveral (server related) files into the per-server dir
+   e.g.:
+      ${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}/.news${NNTPSERVER+"-$NNTPSERVER"}/
+   should be
+      ${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}${NNTPSERVER+"/$NNTPSERVER"}/.news/
+   [20050807 Urs Janssen <urs@tin.org>]
+
+o  make article numbers uint_least64_t (on OSs where possible), provide
+   usefull fallbacks if system doesn't have <inttypes.h>/<stdint.h>
+   [20050728 Urs Janssen <urs@tin.org>]
+
+o  upgrade configure-script to autoconf-2.59
+   [20050728 Urs Janssen <urs@tin.org>]
+
 o  remove untranslateable constructs like txt_prefix_*
    [20050413 Urs Janssen <urs@tin.org>]
+
+o  merge tinrc.space_goto_next_unread, tinrc.tab_goto_next_unread and
+   tinrc.pgdn_goto_next into a single option list
+   tinrc.goto_next_unread = {SPACE, TAB, PGDN,
+                             SPACE | TAB, SPACE | PGDN,
+                             TAB | PGDN, SPACE | TAB | PGDN}
+   to shorten 'M'enu and tinrc.
+   [20050709 Urs Janssen <urs@tin.org>]
 
 o  keys which could be renamed/merged:
    - 'm' GroupMail, PageMail, PostMail, ThreadMail
@@ -646,6 +670,14 @@ o  make mm_network_charset an "option_list" to avoid junk input or
     check wether KOI8-RU is still used/valid)
    [done except configure check 20010907 urs@tin.org]
 
+o  make mm_network_charset an user configurable item list
+   ("US-ASCII:ISO-8859-1:ISO-8859-9:ISO-8859-15:UTF-8",
+    "US-ASCII:ISO 8859-5:KOI8-R:UTF-8",
+    "EUC-CN:ISO-2022-CN:ISO-2022-CN-EXT:Big5:UTF-8", whatever)
+   and try all given charsets in order till the one is found which matches
+   best (i.e. can display most (all) of the chars in the article).
+   [20050805 <urs@tin.org>]
+
 o  add IDNA support (RFC 3490ff.)
    (<http://www.gnu.org/software/libidn/> might be usefull)
    (added minimalistic IDNA decoding support if a recent libidn is found, urs)
@@ -665,6 +697,9 @@ o  review the turkish, russian and kinyarwanda translations
 o  add installation guide (in html)
 
 o  add cross-compilation hints
+   	CC="crosscc" LD="crossld" AR="crossar" RANLIB=":" MAKE="crossmake" \
+   	./configure --with-build-cc=gcc --with-build-cpp=cpp \
+   	--target=cross-traget-tripple --without-x # usual configure flags
 
 o  better document keymap feature
 
@@ -678,6 +713,12 @@ o  replace "\\" by "\e" in manpages (portable?)
 
 Not yet classified
 ------------------
+o  in several places only the latest keybinding is shown in prompts
+    (e.g. "q=quit, e=edit, i=ispell, g=pgp, M=menu, w=post, o=postpone: w"
+     with "PostPost	p	y	w" in keymaps)
+   should we try to show them all?
+   [20050718 Urs Janssen <urs@tin.org>]
+
 o  add PGP_INCLUDE_KEY to pgp_mail_keys?
    [20050426 Urs Janssen <urs@tin.org>]
 

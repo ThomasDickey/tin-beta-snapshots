@@ -25,6 +25,7 @@ case $method in
 			( netscape -remote openURL\($url\) || netscape $url ) || exit 1
 		fi
 		;;
+
 	ftp)
 		if test x$DISPLAY = x; then
 			target=`echo $url | sed 's;^.*://\([^/]*\)/*\(.*\);\1:/\2;'`
@@ -33,18 +34,22 @@ case $method in
 			( netscape -remote openURL\($url\) || netscape $url ) || exit 1
 		fi
 		;;
+
 	mailto)
-		# mutt can't handle mailto:-URLs with embedet subject
-		if test `echo $url | grep -c '\?'` -eq 0 ; then
-			( mutt `echo $url | sed 's;^[^:]*:\(.*\);\1;'` ) || exit 1
-		else
-			if test x$DISPLAY = x; then
-				lynx $url || exit 1
-			else
-				( netscape -remote openURL\($url\) || netscape $url ) || exit 1
-			fi
-		fi
+		( mutt `echo $url` ) || exit 1
+		# ( pine -url `echo $url` ) || exit 1
+#		# old mutts can't handle mailto:-URLs with embedet subject
+#		if test `echo $url | grep -c '\?'` -eq 0 ; then
+#			( mutt `echo $url | sed 's;^[^:]*:\(.*\);\1;'` ) || exit 1
+#		else
+#			if test x$DISPLAY = x; then
+#				lynx $url || exit 1
+#			else
+#				( netscape -remote openURL\($url\) || netscape $url ) || exit 1
+#			fi
+#		fi
 		;;
+
 	news|snews)
 		# usualy ment for reading news on the local server
 		if test x$DISPLAY = x; then
@@ -53,12 +58,14 @@ case $method in
 			( netscape -remote openURL\($url\) || netscape $url ) || exit 1
 		fi
 		;;
+
 	nntp)
 		# usualy ment for reading news via NNTP
 		# needs a special case as netscape can't handle nntp-URLs
 		# *sigh*
 		lynx $url || exit 1
 		;;
+
 esac
 
 exit 0

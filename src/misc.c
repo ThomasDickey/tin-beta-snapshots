@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-05-12
+ *  Updated   : 2005-08-14
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -50,9 +50,6 @@
 #ifndef TIN_POLICY_H
 #	include "policy.h"
 #endif /* !TIN_POLICY_H */
-#ifndef RFC2046_H
-#	include "rfc2046.h"
-#endif /* !RFC2046_H */
 
 #if defined(HAVE_IDNA_H) && !defined(_IDNA_H)
 #	include <idna.h>
@@ -915,6 +912,7 @@ dir_name(
  *
  * TODO: why not cache the mailbox_name?
  */
+#define MAILDIR_NEW	"/new"
 t_bool
 mail_check(
 	void)
@@ -924,8 +922,35 @@ mail_check(
 
 	mailbox_name = get_val("MAIL", mailbox);
 
-	if (mailbox_name != 0 && stat(mailbox_name, &buf) >= 0 && buf.st_atime < buf.st_mtime && buf.st_size > 0)
-		return TRUE;
+	if (mailbox_name != 0 && stat(mailbox_name, &buf) >= 0) {
+		if ((int) (buf.st_mode & S_IFMT) == (int) S_IFDIR) { /* maildir setup */
+			DIR *dirp;
+			char *maildir_box;
+			struct dirent *dp;
+
+			maildir_box = my_malloc(strlen(mailbox_name) + strlen(MAILDIR_NEW) + 1);
+#ifdef VMS
+			joindir(maildir_box, mailbox_name, MAILDIR_NEW);
+#else
+			joinpath(maildir_box, mailbox_name, MAILDIR_NEW);
+#endif /* VMS */
+			if (!(dirp = opendir(maildir_box))) {
+				free(maildir_box);
+				return FALSE;
+			}
+			free(maildir_box);
+			while ((dp = readdir(dirp)) != NULL) {
+				if ((strcmp(dp->d_name, ".")) && (strcmp(dp->d_name, ".."))) {
+					closedir(dirp);
+					return TRUE;
+				}
+			}
+			closedir(dirp);
+		} else {
+			if (buf.st_atime < buf.st_mtime && buf.st_size > 0)
+				return TRUE;
+		}
+	}
 	return FALSE;
 }
 
@@ -2033,9 +2058,6 @@ cleanup_tmp_files(
 		unlink(acNovFile);
 	}
 #endif /* 0 */
-
-	if (!tinrc.cache_overview_files)
-		unlink(local_newsgroups_file);
 
 	if (batch_mode)
 		unlink(lock_file);

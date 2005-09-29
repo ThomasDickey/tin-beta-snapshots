@@ -3,7 +3,7 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2004-03-01
+ *  Updated   : 2005-07-20
  *  Notes     : Cacheing of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
@@ -238,7 +238,7 @@ add_msgid(
 	struct t_msgid *newparent)
 {
 	struct t_msgid *ptr;
-	struct t_msgid *i = NULL;
+	struct t_msgid *i;
 	unsigned int h;
 
 	if (!msgid) {

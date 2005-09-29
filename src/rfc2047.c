@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2004-11-26
+ *  Updated   : 2005-07-02
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2005 Chris Blum <chris@resolution.de>
@@ -38,9 +38,7 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
-#ifndef RFC2046_H
-#	include "rfc2046.h"
-#endif /* !RFC2046_H */
+
 
 #define isreturn(c) ((c) == '\r' || ((c) == '\n'))
 

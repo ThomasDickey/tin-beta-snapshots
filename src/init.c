@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-06-21
+ *  Updated   : 2005-08-14
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -44,9 +44,6 @@
 #ifndef included_trace_h
 #	include "trace.h"
 #endif /* !included_trace_h */
-#ifndef KEYMAP_H
-#	include "keymap.h"
-#endif /* !KEYMAP_H */
 #ifndef VERSION_H
 #	include "version.h"
 #endif /* !VERSION_H */
@@ -435,6 +432,7 @@ struct t_capabilities nntp_caps = {
 	FALSE, /* LIST: "LIST MOTD" */
 	FALSE, /* LIST: "LIST SUBSCRIPTIONS" */
 	FALSE, /* LIST: "LIST DISTRIBUTIONS" */
+	FALSE, /* LIST: "LIST MODERATORS" */
 	FALSE, /* XPAT */
 	FALSE, /* HDR: "HDR", "LIST HEADERS" */
 	NULL, /* [X]HDR */
@@ -813,7 +811,6 @@ init_selfinfo(
 	joinpath(filter_file, rcdir, FILTER_FILE);
 	joinpath(local_input_history_file, rcdir, INPUT_HISTORY_FILE);
 	joinpath(local_newsrctable_file, rcdir, NEWSRCTABLE_FILE);
-	joinpath(local_newsgroups_file, rcdir, NEWSGROUPS_FILE);
 #ifdef HAVE_MH_MAIL_HANDLING
 	joinpath(mail_active_file, rcdir, ACTIVE_MAIL_FILE);
 #endif /* HAVE_MH_MAIL_HANDLING */

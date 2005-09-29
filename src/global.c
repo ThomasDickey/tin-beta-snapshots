@@ -3,7 +3,7 @@
  *  Module    : global.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-12
- *  Updated   : 2005-01-30
+ *  Updated   : 2005-07-02
  *  Notes     : Generic nagivation and key handling routines
  *
  * Copyright (c) 1999-2005 Jason Faultless <jason@altarstone.com>
@@ -41,9 +41,6 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef KEYMAP_H
-#	include "keymap.h"
-#endif /* !KEYMAP_H */
 
 /*
  * Local prototypes

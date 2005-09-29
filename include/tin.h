@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-06-28
+ *  Updated   : 2005-06-30
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1532,7 +1532,8 @@ struct t_attribute {
 	unsigned batch_save:1;			/* 0=none, 1=save -S/mail -M */
 	unsigned delete_tmp_files:1;		/* 0=leave, 1=delete */
 	unsigned show_only_unread:1;		/* 0=all, 1=only unread */
-	unsigned thread_arts:3;			/* 0=unthread, 1=subject, 2=refs, 3=both, 4=multipart*/
+	unsigned thread_arts:3;			/* 0=unthread, 1=subject, 2=refs, 3=both, 4=multipart, 5=percentage */
+	unsigned thread_perc:7;			/* percentage thrreading threshold */
 	unsigned show_author:2;			/* 0=none, 1=name, 2=addr, 3=both */
 	unsigned show_info:2;			/* 0=none, 1=lines, 2=score, 3=both */
 	unsigned sort_art_type:4;		/* 0=none, 1=subj descend, 2=subj ascend,

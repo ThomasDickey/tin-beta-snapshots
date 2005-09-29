@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-05-04
+ *  Updated   : 2005-08-14
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -288,8 +288,11 @@ main(
 	/*
 	 * Read text descriptions for mail and/or news groups
 	 */
-	if (show_description && !batch_mode)
+	if (show_description && !batch_mode) {
+		no_write = tmp_no_write; /* restore original value */
 		read_descriptions(TRUE);
+		no_write = TRUE; /* disable newsrc updates */
+	}
 
 	/*
 	 * TODO: what has write_config_file() to do with create_mail_save_dirs ()

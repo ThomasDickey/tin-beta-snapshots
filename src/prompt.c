@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-06-21
+ *  Updated   : 2005-07-02
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -41,9 +41,7 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef KEYMAP_H
-#	include "keymap.h"
-#endif /* !KEYMAP_H */
+
 
 static char *prompt_slk_message;	/* prompt message for prompt_slk_redraw */
 

@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-04-28
+ *  Updated   : 2005-07-02
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -41,12 +41,6 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef KEYMAP_H
-#	include "keymap.h"
-#endif /* !KEYMAP_H */
-#ifndef RFC2046_H
-/* #	include "rfc2046.h" */
-#endif /* !RFC2046_H */
 
 #ifdef HAVE_UUDEVIEW_H
 #	ifndef __UUDEVIEW_H__

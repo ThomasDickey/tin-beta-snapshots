@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2004-03-23
+ *  Updated   : 2005-08-14
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2005 Iain Lea <iain@bricbrac.de>
@@ -252,14 +252,19 @@ open_newsgroups_fp(
 
 	if (read_news_via_nntp && !read_saved_news) {
 		if (read_local_newsgroups_file) {
-			result = fopen(local_newsgroups_file, "r");
-			if (result != NULL) {
+			struct stat buf;
+
+			if (!stat(local_newsgroups_file, &buf)) {
+				if (buf.st_size > 0) {
+					if ((result = fopen(local_newsgroups_file, "r")) != NULL) {
 #	ifdef DEBUG
-				debug_nntp("open_newsgroups_fp", "Using local copy of newsgroups file");
+						debug_nntp("open_newsgroups_fp", "Using local copy of newsgroups file");
 #	endif /* DEBUG */
-				return result;
+						return result;
+					}
+				} else
+					unlink(local_newsgroups_file);
 			}
-			read_local_newsgroups_file = FALSE;
 		}
 #	if 0 /* TODO: */
 		if (list_newsgroups_wildmat_supported && newsrc_active
@@ -292,8 +297,12 @@ read_newsgroups_file(
 		if (!batch_mode && verb)
 			wait_message(0, _(txt_reading_newsgroups_file));
 
-		if (read_news_via_nntp && !read_local_newsgroups_file && !no_write)
-			fp_save = fopen(local_newsgroups_file, "w" FOPEN_OPTS);
+		if (read_news_via_nntp && !no_write) {
+			struct stat buf;
+
+			if (stat(local_newsgroups_file, &buf) || !read_local_newsgroups_file)
+				fp_save = fopen(local_newsgroups_file, "w" FOPEN_OPTS);
+		}
 
 		read_groups_descriptions(fp, fp_save);
 
@@ -353,7 +362,7 @@ read_groups_descriptions(
 		 * newsgroups file to only subscribed-to groups when tin is called
 		 * with the "-q" option.
 		 */
-		if ((fp_save != NULL) && read_news_via_nntp && !read_local_newsgroups_file)
+		if ((fp_save != NULL) && read_news_via_nntp)
 			fprintf(fp_save, "%s\n", ptr);
 
 		if (!space) { /* initial malloc */

@@ -388,7 +388,8 @@ you may select are: curses, ncurses, ncursesw, pdcurses.
 Define this if you want to link with ncurses instead of termcap. Note: This
 is required on some Linux distributions (i.e., SuSE) where there is either a
 curses or termcap library which is not ncurses. If ncurses is installed as
-the curses library, this option is usually not needed.
+the curses library, this option is usually not needed. This option is
+depriciated, use --with-screen=ncurses (see above) instead.
 
 --enable-curses (default: off)
 Enable this if you wish to use the curses screen optimizing rather than
@@ -396,8 +397,8 @@ termcap. This has been tested well starting with ncurses 4.1; it should work
 (except for mouse support and screen resizing) with SVr4 curses (Solaris 2.5
 is known to have a bug in libc which prevents use of curses, ncurses works
 well on that platform). To build with ncurses screen optimizing, you must
-give both the --with-ncurses and --enable-curses options or give the
---with-screen=ncurses option.
+give both the --with-ncurses and --enable-curses options. This option is
+depriciated, use --with-screen=ncurses (see above) instead.
 
 --enable-inverse-video (default: on)
 Disable if you want inverse video and highlighted bar disabled by default.
@@ -644,5 +645,6 @@ Compiled & installed
 --------------------
 Tin was successfully built and installed on a variety of platforms including
 Linux, FreeBSD, OpenBSD, NetBSD, BSDi, Darwin, Solaris, IRIX, HP-UX, Ultrix,
-Tru64, AIX, SINIX, UXP/V, SUPER-UX, QNX, GNU Hurd, DG/UX, SEIUX, Openstep,
-MiNT and Cygwin. For a detailed list see <http://www.tin.org/builds.html>
+Tru64, AIX, SINIX, UXP/V, SUPER-UX, Unicos, QNX, GNU Hurd, DG/UX, SEIUX,
+Openstep, MiNT and Cygwin.
+For a detailed list see <http://www.tin.org/builds.html>

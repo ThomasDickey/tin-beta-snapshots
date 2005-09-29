@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2005-06-22
+ *  Updated   : 2005-07-29
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2005 Dirk Nimmich <nimmich@muenster.de>
@@ -37,9 +37,6 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
-#ifndef KEYMAP_H
-#	include "keymap.h"
-#endif /* !KEYMAP_H */
 #ifndef VERSION_H
 #	include "version.h"
 #endif /* !VERSION_H */
@@ -47,11 +44,11 @@
 /*
  * local prototypes
  */
-static void add_default_key(struct keylist *keys, char key, t_function func);
+static void add_default_key(struct keylist *key_list, const char *keys, t_function func);
 static void add_global_keys(struct keylist *keys);
 static void free_keylist(struct keylist *keys);
 static void upgrade_keymap_file(char *old);
-static t_bool add_key(struct keylist *keys, char key, t_function func, t_bool overwrite);
+static t_bool add_key(struct keylist *keys, const char key, t_function func, t_bool override);
 static t_bool process_keys(t_function func, const char *keys, struct keylist *kl);
 static t_bool process_mapping(char *keyname, char *keys);
 
@@ -124,14 +121,15 @@ func_to_key(
 
 /*
  * adds a key to a keylist
+ * default_key: TRUE if a default key should be added
  * returns TRUE if the key was succesfully added else FALSE
  */
 static t_bool
 add_key(
 	struct keylist *keys,
-	char key,
+	const char key,
 	t_function func,
-	t_bool overwrite)
+	t_bool override)
 {
 	size_t i;
 	struct keynode *entry = NULL;
@@ -143,7 +141,7 @@ add_key(
 	}
 
 	if (entry != NULL) {
-		if (overwrite) {
+		if (override) {
 			entry->function = func;
 			return TRUE;
 		} else
@@ -170,11 +168,17 @@ add_key(
 
 static void
 add_default_key(
-	struct keylist *keys,
-	char key,
+	struct keylist *key_list,
+	const char *keys,
 	t_function func)
 {
-	add_key(keys, key, func, FALSE);
+	const char *key = keys;
+	/* check if the function has already a key assigned before we add the default one */
+	if (func_to_key(func, *key_list) != '?')
+		return;
+
+	for (; *key != '\0'; key++)
+		add_key(key_list, *key, func, FALSE);
 }
 
 
@@ -231,7 +235,9 @@ printascii(
 	char *buf,
 	int ch)
 {
-	if ((ch == 0) || isgraph(ch)) {	/* Regular printables */
+	if (ch == 0)
+		strcpy(buf, _("NULL"));
+	else if (isgraph(ch)) {	/* Regular printables */
 		buf[0] = ch;
 		buf[1] = '\0';
 	} else if (ch == '\t') {	/* TAB */
@@ -391,8 +397,12 @@ process_keys(
 		 * SPACE -> ' '
 		 */
 		if (strlen(keydef) > 1) {
-			switch (keydef[0]) {
-				case 'S':		/* Only test 1st char - crude but effective */
+			switch (keydef[0]) {	/* Only test 1st char - crude but effective */
+				case 'N':
+					key = '\0';
+					break;
+
+				case 'S':
 					key = ' ';
 					break;
 
@@ -2229,364 +2239,347 @@ setup_default_keys(
 {
 	/* select level */
 	add_global_keys(&select_keys);
-	add_default_key(&select_keys, ctrl('J'), SELECT_ENTER_GROUP);
-	add_default_key(&select_keys, ctrl('M'), SELECT_ENTER_GROUP);
-	add_default_key(&select_keys, ctrl('R'), SELECT_RESET_NEWSRC);
-	add_default_key(&select_keys, 'c', CATCHUP);
-	add_default_key(&select_keys, 'd', SELECT_TOGGLE_DESCRIPTIONS);
-	add_default_key(&select_keys, 'g', SELECT_GOTO);
-	add_default_key(&select_keys, 'm', SELECT_MOVE_GROUP);
-	add_default_key(&select_keys, 'n', SELECT_ENTER_NEXT_UNREAD_GROUP);
-	add_default_key(&select_keys, 'r', SELECT_TOGGLE_READ_DISPLAY);
-	add_default_key(&select_keys, 's', SELECT_SUBSCRIBE);
-	add_default_key(&select_keys, 'u', SELECT_UNSUBSCRIBE);
-	add_default_key(&select_keys, 'y', SELECT_YANK_ACTIVE);
-	add_default_key(&select_keys, 'z', SELECT_MARK_GROUP_UNREAD);
-	add_default_key(&select_keys, 'C', CATCHUP_NEXT_UNREAD);
-	add_default_key(&select_keys, 'E', GLOBAL_EDIT_FILTER);
-	add_default_key(&select_keys, 'N', SELECT_NEXT_UNREAD_GROUP);
-	add_default_key(&select_keys, 'S', SELECT_SUBSCRIBE_PATTERN);
-	add_default_key(&select_keys, 'U', SELECT_UNSUBSCRIBE_PATTERN);
-	add_default_key(&select_keys, 'X', SELECT_QUIT_NO_WRITE);
-	add_default_key(&select_keys, 'Y', SELECT_SYNC_WITH_ACTIVE);
-	add_default_key(&select_keys, 'Z', SELECT_MARK_GROUP_UNREAD);
-	add_default_key(&select_keys, ' ', GLOBAL_PAGE_DOWN);
-	add_default_key(&select_keys, '.', SELECT_SORT_ACTIVE);
-	add_default_key(&select_keys, '\t', SELECT_ENTER_NEXT_UNREAD_GROUP);
+	add_default_key(&select_keys, " ", GLOBAL_PAGE_DOWN);
+	add_default_key(&select_keys, "\n\r", SELECT_ENTER_GROUP);
+	add_default_key(&select_keys, "", SELECT_RESET_NEWSRC);
+	add_default_key(&select_keys, "c", CATCHUP);
+	add_default_key(&select_keys, "d", SELECT_TOGGLE_DESCRIPTIONS);
+	add_default_key(&select_keys, "g", SELECT_GOTO);
+	add_default_key(&select_keys, "m", SELECT_MOVE_GROUP);
+	add_default_key(&select_keys, "n\t", SELECT_ENTER_NEXT_UNREAD_GROUP);
+	add_default_key(&select_keys, "r", SELECT_TOGGLE_READ_DISPLAY);
+	add_default_key(&select_keys, "s", SELECT_SUBSCRIBE);
+	add_default_key(&select_keys, "u", SELECT_UNSUBSCRIBE);
+	add_default_key(&select_keys, "y", SELECT_YANK_ACTIVE);
+	add_default_key(&select_keys, "z", SELECT_MARK_GROUP_UNREAD);
+	add_default_key(&select_keys, "C", CATCHUP_NEXT_UNREAD);
+	add_default_key(&select_keys, "E", GLOBAL_EDIT_FILTER);
+	add_default_key(&select_keys, "N", SELECT_NEXT_UNREAD_GROUP);
+	add_default_key(&select_keys, "S", SELECT_SUBSCRIBE_PATTERN);
+	add_default_key(&select_keys, "U", SELECT_UNSUBSCRIBE_PATTERN);
+	add_default_key(&select_keys, "X", SELECT_QUIT_NO_WRITE);
+	add_default_key(&select_keys, "Y", SELECT_SYNC_WITH_ACTIVE);
+	add_default_key(&select_keys, "Z", SELECT_MARK_GROUP_UNREAD);
+	add_default_key(&select_keys, ".", SELECT_SORT_ACTIVE);
+	add_default_key(&select_keys, ">", GLOBAL_SCROLL_DOWN);
+	add_default_key(&select_keys, "<", GLOBAL_SCROLL_UP);
 
 	/* group level */
 	add_global_keys(&group_keys);
-	add_default_key(&group_keys, ctrl('A'), GLOBAL_MENU_FILTER_SELECT);
-	add_default_key(&group_keys, ctrl('J'), GROUP_READ_BASENOTE);
-	add_default_key(&group_keys, ctrl('K'), GLOBAL_MENU_FILTER_KILL);
-	add_default_key(&group_keys, ctrl('M'), GROUP_READ_BASENOTE);
-	add_default_key(&group_keys, 'a', GLOBAL_SEARCH_AUTHOR_FORWARD);
-	add_default_key(&group_keys, 'c', CATCHUP);
-	add_default_key(&group_keys, 'd', GROUP_TOGGLE_SUBJECT_DISPLAY);
-	add_default_key(&group_keys, 'g', GROUP_GOTO);
-	add_default_key(&group_keys, 'l', GROUP_LIST_THREAD);
-	add_default_key(&group_keys, 'm', GROUP_MAIL);
-	add_default_key(&group_keys, 'n', GROUP_NEXT_GROUP);
+	add_default_key(&group_keys, " ", GLOBAL_PAGE_DOWN);
+	add_default_key(&group_keys, "", GLOBAL_MENU_FILTER_SELECT);
+	add_default_key(&group_keys, "\n\r", GROUP_READ_BASENOTE);
+	add_default_key(&group_keys, "", GLOBAL_MENU_FILTER_KILL);
+	add_default_key(&group_keys, "a", GLOBAL_SEARCH_AUTHOR_FORWARD);
+	add_default_key(&group_keys, "c", CATCHUP);
+	add_default_key(&group_keys, "d", GROUP_TOGGLE_SUBJECT_DISPLAY);
+	add_default_key(&group_keys, "g", GROUP_GOTO);
+	add_default_key(&group_keys, "l", GROUP_LIST_THREAD);
+	add_default_key(&group_keys, "m", GROUP_MAIL);
+	add_default_key(&group_keys, "n", GROUP_NEXT_GROUP);
 #ifndef DISABLE_PRINTING
-	add_default_key(&group_keys, 'o', GLOBAL_PRINT);
+	add_default_key(&group_keys, "o", GLOBAL_PRINT);
 #endif /* !DISABLE_PRINTING */
-	add_default_key(&group_keys, 'p', GROUP_PREVIOUS_GROUP);
-	add_default_key(&group_keys, 'r', GROUP_TOGGLE_READ_UNREAD);
-	add_default_key(&group_keys, 's', GROUP_SAVE);
-	add_default_key(&group_keys, 't', GROUP_TAG);
-	add_default_key(&group_keys, 'u', GROUP_TOGGLE_THREADING);
-	add_default_key(&group_keys, 'x', GROUP_REPOST);
-	add_default_key(&group_keys, 'z', MARK_ARTICLE_UNREAD);
-	add_default_key(&group_keys, 'A', GLOBAL_SEARCH_AUTHOR_BACKWARD);
-	add_default_key(&group_keys, 'B', GLOBAL_SEARCH_BODY);
-	add_default_key(&group_keys, 'C', CATCHUP_NEXT_UNREAD);
-	add_default_key(&group_keys, 'E', GLOBAL_EDIT_FILTER);
-	add_default_key(&group_keys, 'G', GROUP_TOGGLE_GET_ARTICLES_LIMIT);
-	add_default_key(&group_keys, 'K', GROUP_MARK_THREAD_READ);
-	add_default_key(&group_keys, 'L', GLOBAL_LOOKUP_MESSAGEID);
-	add_default_key(&group_keys, 'N', GROUP_NEXT_UNREAD_ARTICLE);
-	add_default_key(&group_keys, 'P', GROUP_PREVIOUS_UNREAD_ARTICLE);
-	add_default_key(&group_keys, 'S', GROUP_AUTOSAVE);
-	add_default_key(&group_keys, 'T', GROUP_TAG_PARTS);
-	add_default_key(&group_keys, 'U', GROUP_UNTAG);
-	add_default_key(&group_keys, 'X', GROUP_MARK_UNSELECTED_ARTICLES_READ);
-	add_default_key(&group_keys, 'Z', MARK_THREAD_UNREAD);
-	add_default_key(&group_keys, '\t', GROUP_NEXT_UNREAD_ARTICLE_OR_GROUP);
-	add_default_key(&group_keys, ' ', GLOBAL_PAGE_DOWN);
-	add_default_key(&group_keys, '-', GLOBAL_LAST_VIEWED);
-	add_default_key(&group_keys, '|', GLOBAL_PIPE);
-	add_default_key(&group_keys, '[', GLOBAL_QUICK_FILTER_SELECT);
-	add_default_key(&group_keys, ']', GLOBAL_QUICK_FILTER_KILL);
-	add_default_key(&group_keys, '*', GROUP_SELECT_THREAD);
-	add_default_key(&group_keys, '.', GROUP_TOGGLE_SELECT_THREAD);
-	add_default_key(&group_keys, '@', GROUP_REVERSE_SELECTIONS);
-	add_default_key(&group_keys, '~', GROUP_UNDO_SELECTIONS);
-	add_default_key(&group_keys, '=', GROUP_SELECT_PATTERN);
-	add_default_key(&group_keys, ';', GROUP_SELECT_THREAD_IF_UNREAD_SELECTED);
-	add_default_key(&group_keys, '+', GROUP_DO_AUTOSELECT);
+	add_default_key(&group_keys, "p", GROUP_PREVIOUS_GROUP);
+	add_default_key(&group_keys, "r", GROUP_TOGGLE_READ_UNREAD);
+	add_default_key(&group_keys, "s", GROUP_SAVE);
+	add_default_key(&group_keys, "t", GROUP_TAG);
+	add_default_key(&group_keys, "u", GROUP_TOGGLE_THREADING);
+	add_default_key(&group_keys, "x", GROUP_REPOST);
+	add_default_key(&group_keys, "z", MARK_ARTICLE_UNREAD);
+	add_default_key(&group_keys, "A", GLOBAL_SEARCH_AUTHOR_BACKWARD);
+	add_default_key(&group_keys, "B", GLOBAL_SEARCH_BODY);
+	add_default_key(&group_keys, "C", CATCHUP_NEXT_UNREAD);
+	add_default_key(&group_keys, "E", GLOBAL_EDIT_FILTER);
+	add_default_key(&group_keys, "G", GROUP_TOGGLE_GET_ARTICLES_LIMIT);
+	add_default_key(&group_keys, "K", GROUP_MARK_THREAD_READ);
+	add_default_key(&group_keys, "L", GLOBAL_LOOKUP_MESSAGEID);
+	add_default_key(&group_keys, "N", GROUP_NEXT_UNREAD_ARTICLE);
+	add_default_key(&group_keys, "P", GROUP_PREVIOUS_UNREAD_ARTICLE);
+	add_default_key(&group_keys, "S", GROUP_AUTOSAVE);
+	add_default_key(&group_keys, "T", GROUP_TAG_PARTS);
+	add_default_key(&group_keys, "U", GROUP_UNTAG);
+	add_default_key(&group_keys, "X", GROUP_MARK_UNSELECTED_ARTICLES_READ);
+	add_default_key(&group_keys, "Z", MARK_THREAD_UNREAD);
+	add_default_key(&group_keys, "\t", GROUP_NEXT_UNREAD_ARTICLE_OR_GROUP);
+	add_default_key(&group_keys, "-", GLOBAL_LAST_VIEWED);
+	add_default_key(&group_keys, "|", GLOBAL_PIPE);
+	add_default_key(&group_keys, "[", GLOBAL_QUICK_FILTER_SELECT);
+	add_default_key(&group_keys, "]", GLOBAL_QUICK_FILTER_KILL);
+	add_default_key(&group_keys, "*", GROUP_SELECT_THREAD);
+	add_default_key(&group_keys, ".", GROUP_TOGGLE_SELECT_THREAD);
+	add_default_key(&group_keys, "@", GROUP_REVERSE_SELECTIONS);
+	add_default_key(&group_keys, "~", GROUP_UNDO_SELECTIONS);
+	add_default_key(&group_keys, "=", GROUP_SELECT_PATTERN);
+	add_default_key(&group_keys, ";", GROUP_SELECT_THREAD_IF_UNREAD_SELECTED);
+	add_default_key(&group_keys, "+", GROUP_DO_AUTOSELECT);
+	add_default_key(&group_keys, ">", GLOBAL_SCROLL_DOWN);
+	add_default_key(&group_keys, "<", GLOBAL_SCROLL_UP);
 
 	/* thread keys */
 	add_global_keys(&thread_keys);
-	add_default_key(&thread_keys, ctrl('A'), GLOBAL_MENU_FILTER_SELECT);
-	add_default_key(&thread_keys, ctrl('K'), GLOBAL_MENU_FILTER_KILL);
-	add_default_key(&thread_keys, ctrl('J'), THREAD_READ_ARTICLE);
-	add_default_key(&thread_keys, ctrl('M'), THREAD_READ_ARTICLE);
-	add_default_key(&thread_keys, 'a', GLOBAL_SEARCH_AUTHOR_FORWARD);
-	add_default_key(&thread_keys, 'c', CATCHUP);
-	add_default_key(&thread_keys, 'd', THREAD_TOGGLE_SUBJECT_DISPLAY);
-	add_default_key(&thread_keys, 'm', THREAD_MAIL);
+	add_default_key(&thread_keys, " ", GLOBAL_PAGE_DOWN);
+	add_default_key(&thread_keys, "", GLOBAL_MENU_FILTER_SELECT);
+	add_default_key(&thread_keys, "", GLOBAL_MENU_FILTER_KILL);
+	add_default_key(&thread_keys, "\n\r", THREAD_READ_ARTICLE);
+	add_default_key(&thread_keys, "a", GLOBAL_SEARCH_AUTHOR_FORWARD);
+	add_default_key(&thread_keys, "c", CATCHUP);
+	add_default_key(&thread_keys, "d", THREAD_TOGGLE_SUBJECT_DISPLAY);
+	add_default_key(&thread_keys, "m", THREAD_MAIL);
 #ifndef DISABLE_PRINTING
-	add_default_key(&thread_keys, 'o', GLOBAL_PRINT);
+	add_default_key(&thread_keys, "o", GLOBAL_PRINT);
 #endif /* !DISABLE_PRINTING */
-	add_default_key(&thread_keys, 's', THREAD_SAVE);
-	add_default_key(&thread_keys, 't', THREAD_TAG);
-	add_default_key(&thread_keys, 'z', MARK_ARTICLE_UNREAD);
-	add_default_key(&thread_keys, 'A', GLOBAL_SEARCH_AUTHOR_BACKWARD);
-	add_default_key(&thread_keys, 'B', GLOBAL_SEARCH_BODY);
-	add_default_key(&thread_keys, 'C', CATCHUP_NEXT_UNREAD);
-	add_default_key(&thread_keys, 'E', GLOBAL_EDIT_FILTER);
-	add_default_key(&thread_keys, 'K', THREAD_MARK_ARTICLE_READ);
-	add_default_key(&thread_keys, 'L', GLOBAL_LOOKUP_MESSAGEID);
-	add_default_key(&thread_keys, 'S', THREAD_AUTOSAVE);
-	add_default_key(&thread_keys, 'U', THREAD_UNTAG);
-	add_default_key(&thread_keys, 'Z', MARK_THREAD_UNREAD);
-	add_default_key(&thread_keys, '\t', THREAD_READ_NEXT_ARTICLE_OR_THREAD);
-	add_default_key(&thread_keys, ' ', GLOBAL_PAGE_DOWN);
-	add_default_key(&thread_keys, '-', GLOBAL_LAST_VIEWED);
-	add_default_key(&thread_keys, '|', GLOBAL_PIPE);
-	add_default_key(&thread_keys, '*', THREAD_SELECT_ARTICLE);
-	add_default_key(&thread_keys, '.', THREAD_TOGGLE_ARTICLE_SELECTION);
-	add_default_key(&thread_keys, '@', THREAD_REVERSE_SELECTIONS);
-	add_default_key(&thread_keys, '~', THREAD_UNDO_SELECTIONS);
+	add_default_key(&thread_keys, "s", THREAD_SAVE);
+	add_default_key(&thread_keys, "t", THREAD_TAG);
+	add_default_key(&thread_keys, "z", MARK_ARTICLE_UNREAD);
+	add_default_key(&thread_keys, "A", GLOBAL_SEARCH_AUTHOR_BACKWARD);
+	add_default_key(&thread_keys, "B", GLOBAL_SEARCH_BODY);
+	add_default_key(&thread_keys, "C", CATCHUP_NEXT_UNREAD);
+	add_default_key(&thread_keys, "E", GLOBAL_EDIT_FILTER);
+	add_default_key(&thread_keys, "K", THREAD_MARK_ARTICLE_READ);
+	add_default_key(&thread_keys, "L", GLOBAL_LOOKUP_MESSAGEID);
+	add_default_key(&thread_keys, "S", THREAD_AUTOSAVE);
+	add_default_key(&thread_keys, "U", THREAD_UNTAG);
+	add_default_key(&thread_keys, "Z", MARK_THREAD_UNREAD);
+	add_default_key(&thread_keys, "\t", THREAD_READ_NEXT_ARTICLE_OR_THREAD);
+	add_default_key(&thread_keys, "-", GLOBAL_LAST_VIEWED);
+	add_default_key(&thread_keys, "|", GLOBAL_PIPE);
+	add_default_key(&thread_keys, "*", THREAD_SELECT_ARTICLE);
+	add_default_key(&thread_keys, ".", THREAD_TOGGLE_ARTICLE_SELECTION);
+	add_default_key(&thread_keys, "@", THREAD_REVERSE_SELECTIONS);
+	add_default_key(&thread_keys, "~", THREAD_UNDO_SELECTIONS);
+	add_default_key(&thread_keys, ">", GLOBAL_SCROLL_DOWN);
+	add_default_key(&thread_keys, "<", GLOBAL_SCROLL_UP);
 
 	/* page level */
 	add_global_keys(&page_keys);
-	add_default_key(&page_keys, ctrl('A'), GLOBAL_MENU_FILTER_SELECT);
-	add_default_key(&page_keys, ctrl('E'), PAGE_REPLY_QUOTE_HEADERS);
+	add_default_key(&page_keys, "", GLOBAL_PAGE_DOWN);
+	add_default_key(&page_keys, "", GLOBAL_MENU_FILTER_SELECT);
+	add_default_key(&page_keys, "", PAGE_REPLY_QUOTE_HEADERS);
 #ifdef HAVE_PGP_GPG
-	add_default_key(&page_keys, ctrl('G'), PAGE_PGP_CHECK_ARTICLE);
+	add_default_key(&page_keys, "", PAGE_PGP_CHECK_ARTICLE);
 #endif /* HAVE_PGP_GPG */
-	add_default_key(&page_keys, ctrl('H'), PAGE_TOGGLE_HEADERS);
-	add_default_key(&page_keys, ctrl('J'), PAGE_NEXT_THREAD);
-	add_default_key(&page_keys, ctrl('K'), GLOBAL_MENU_FILTER_KILL);
-	add_default_key(&page_keys, ctrl('M'), PAGE_NEXT_THREAD);
-	add_default_key(&page_keys, ctrl('T'), PAGE_TOGGLE_TABS);
-	add_default_key(&page_keys, ctrl('W'), PAGE_FOLLOWUP_QUOTE_HEADERS);
-	add_default_key(&page_keys, 'a', GLOBAL_SEARCH_AUTHOR_FORWARD);
-	add_default_key(&page_keys, 'c', CATCHUP);
-	add_default_key(&page_keys, 'e', PAGE_EDIT_ARTICLE);
-	add_default_key(&page_keys, 'f', PAGE_FOLLOWUP_QUOTE);
-	add_default_key(&page_keys, 'g', GLOBAL_FIRST_PAGE);
-	add_default_key(&page_keys, 'l', PAGE_LIST_THREAD);
-	add_default_key(&page_keys, 'm', PAGE_MAIL);
-	add_default_key(&page_keys, 'n', PAGE_NEXT_ARTICLE);
+	add_default_key(&page_keys, "", PAGE_TOGGLE_HEADERS);
+	add_default_key(&page_keys, "", GLOBAL_MENU_FILTER_KILL);
+	add_default_key(&page_keys, "\n\r", PAGE_NEXT_THREAD);
+	add_default_key(&page_keys, "", PAGE_TOGGLE_TABS);
+	add_default_key(&page_keys, "", PAGE_FOLLOWUP_QUOTE_HEADERS);
+	add_default_key(&page_keys, "a", GLOBAL_SEARCH_AUTHOR_FORWARD);
+	add_default_key(&page_keys, "c", CATCHUP);
+	add_default_key(&page_keys, "e", PAGE_EDIT_ARTICLE);
+	add_default_key(&page_keys, "f", PAGE_FOLLOWUP_QUOTE);
+	add_default_key(&page_keys, "g", GLOBAL_FIRST_PAGE);
+	add_default_key(&page_keys, "l", PAGE_LIST_THREAD);
+	add_default_key(&page_keys, "m", PAGE_MAIL);
+	add_default_key(&page_keys, "n", PAGE_NEXT_ARTICLE);
 #ifndef DISABLE_PRINTING
-	add_default_key(&page_keys, 'o', GLOBAL_PRINT);
+	add_default_key(&page_keys, "o", GLOBAL_PRINT);
 #endif /* !DISABLE_PRINTING */
-	add_default_key(&page_keys, 'p', PAGE_PREVIOUS_ARTICLE);
-	add_default_key(&page_keys, 'r', PAGE_REPLY_QUOTE);
-	add_default_key(&page_keys, 's', PAGE_SAVE);
-	add_default_key(&page_keys, 't', PAGE_TAG);
-	add_default_key(&page_keys, 'u', PAGE_GOTO_PARENT);
-	add_default_key(&page_keys, 'x', PAGE_REPOST);
-	add_default_key(&page_keys, 'z', MARK_ARTICLE_UNREAD);
-	add_default_key(&page_keys, 'A', GLOBAL_SEARCH_AUTHOR_BACKWARD);
-	add_default_key(&page_keys, 'B', GLOBAL_SEARCH_BODY);
-	add_default_key(&page_keys, 'C', CATCHUP_NEXT_UNREAD);
-	add_default_key(&page_keys, 'D', PAGE_CANCEL);
-	add_default_key(&page_keys, 'E', GLOBAL_EDIT_FILTER);
-	add_default_key(&page_keys, 'F', PAGE_FOLLOWUP);
-	add_default_key(&page_keys, 'G', GLOBAL_LAST_PAGE);
-	add_default_key(&page_keys, 'K', PAGE_MARK_THREAD_READ);
-	add_default_key(&page_keys, 'L', GLOBAL_LOOKUP_MESSAGEID);
-	add_default_key(&page_keys, 'N', PAGE_NEXT_UNREAD_ARTICLE);
-	add_default_key(&page_keys, 'P', PAGE_PREVIOUS_UNREAD_ARTICLE);
-	add_default_key(&page_keys, 'R', PAGE_REPLY);
-	add_default_key(&page_keys, 'S', PAGE_AUTOSAVE);
-	add_default_key(&page_keys, 'T', PAGE_GROUP_SELECT);
-	add_default_key(&page_keys, 'U', PAGE_VIEW_URL);
-	add_default_key(&page_keys, 'V', PAGE_VIEW_ATTACHMENTS);
-	add_default_key(&page_keys, 'Z', MARK_THREAD_UNREAD);
-	add_default_key(&page_keys, '\t', PAGE_NEXT_UNREAD);
-	add_default_key(&page_keys, ' ', PAGE_PAGE_DOWN3);
-	add_default_key(&page_keys, '-', GLOBAL_LAST_VIEWED);
-	add_default_key(&page_keys, '|', GLOBAL_PIPE);
-	add_default_key(&page_keys, '<', PAGE_TOP_THREAD);
-	add_default_key(&page_keys, '>', PAGE_BOTTOM_THREAD);
-	add_default_key(&page_keys, '"', PAGE_TOGGLE_TEX2ISO);
-	add_default_key(&page_keys, '(', PAGE_TOGGLE_UUE);
-	add_default_key(&page_keys, ')', PAGE_REVEAL);
-	add_default_key(&page_keys, '[', GLOBAL_QUICK_FILTER_SELECT);
-	add_default_key(&page_keys, ']', GLOBAL_QUICK_FILTER_KILL);
-	add_default_key(&page_keys, '%', PAGE_TOGGLE_ROT13);
-	add_default_key(&page_keys, ':', PAGE_SKIP_INCLUDED_TEXT);
-	add_default_key(&page_keys, '_', PAGE_TOGGLE_HIGHLIGHTING);
+	add_default_key(&page_keys, "p", PAGE_PREVIOUS_ARTICLE);
+	add_default_key(&page_keys, "r", PAGE_REPLY_QUOTE);
+	add_default_key(&page_keys, "s", PAGE_SAVE);
+	add_default_key(&page_keys, "t", PAGE_TAG);
+	add_default_key(&page_keys, "u", PAGE_GOTO_PARENT);
+	add_default_key(&page_keys, "x", PAGE_REPOST);
+	add_default_key(&page_keys, "z", MARK_ARTICLE_UNREAD);
+	add_default_key(&page_keys, "A", GLOBAL_SEARCH_AUTHOR_BACKWARD);
+	add_default_key(&page_keys, "B", GLOBAL_SEARCH_BODY);
+	add_default_key(&page_keys, "C", CATCHUP_NEXT_UNREAD);
+	add_default_key(&page_keys, "D", PAGE_CANCEL);
+	add_default_key(&page_keys, "E", GLOBAL_EDIT_FILTER);
+	add_default_key(&page_keys, "F", PAGE_FOLLOWUP);
+	add_default_key(&page_keys, "G", GLOBAL_LAST_PAGE);
+	add_default_key(&page_keys, "K", PAGE_MARK_THREAD_READ);
+	add_default_key(&page_keys, "L", GLOBAL_LOOKUP_MESSAGEID);
+	add_default_key(&page_keys, "N", PAGE_NEXT_UNREAD_ARTICLE);
+	add_default_key(&page_keys, "P", PAGE_PREVIOUS_UNREAD_ARTICLE);
+	add_default_key(&page_keys, "R", PAGE_REPLY);
+	add_default_key(&page_keys, "S", PAGE_AUTOSAVE);
+	add_default_key(&page_keys, "T", PAGE_GROUP_SELECT);
+	add_default_key(&page_keys, "U", PAGE_VIEW_URL);
+	add_default_key(&page_keys, "V", PAGE_VIEW_ATTACHMENTS);
+	add_default_key(&page_keys, "Z", MARK_THREAD_UNREAD);
+	add_default_key(&page_keys, "\t", PAGE_NEXT_UNREAD);
+	add_default_key(&page_keys, " ", PAGE_PAGE_DOWN3);
+	add_default_key(&page_keys, "-", GLOBAL_LAST_VIEWED);
+	add_default_key(&page_keys, "|", GLOBAL_PIPE);
+	add_default_key(&page_keys, "<", PAGE_TOP_THREAD);
+	add_default_key(&page_keys, ">", PAGE_BOTTOM_THREAD);
+	add_default_key(&page_keys, "\"", PAGE_TOGGLE_TEX2ISO);
+	add_default_key(&page_keys, "(", PAGE_TOGGLE_UUE);
+	add_default_key(&page_keys, ")", PAGE_REVEAL);
+	add_default_key(&page_keys, "[", GLOBAL_QUICK_FILTER_SELECT);
+	add_default_key(&page_keys, "]", GLOBAL_QUICK_FILTER_KILL);
+	add_default_key(&page_keys, "%", PAGE_TOGGLE_ROT13);
+	add_default_key(&page_keys, ":", PAGE_SKIP_INCLUDED_TEXT);
+	add_default_key(&page_keys, "_", PAGE_TOGGLE_HIGHLIGHTING);
 
 	/* info pager */
-	add_default_key(&info_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&info_keys, ctrl('B'), GLOBAL_PAGE_UP);
-	add_default_key(&info_keys, ctrl('D'), GLOBAL_PAGE_DOWN);
-	add_default_key(&info_keys, ctrl('F'), GLOBAL_PAGE_DOWN);
-	add_default_key(&info_keys, ctrl('N'), GLOBAL_LINE_DOWN);
-	add_default_key(&info_keys, ctrl('P'), GLOBAL_LINE_UP);
-	add_default_key(&info_keys, ctrl('U'), GLOBAL_PAGE_UP);
-	add_default_key(&info_keys, 'b', GLOBAL_PAGE_UP);
-	add_default_key(&info_keys, 'g', GLOBAL_FIRST_PAGE);
-	add_default_key(&info_keys, 'j', GLOBAL_LINE_DOWN);
-	add_default_key(&info_keys, 'k', GLOBAL_LINE_UP);
-	add_default_key(&info_keys, 'q', GLOBAL_QUIT);
-	add_default_key(&info_keys, 'G', GLOBAL_LAST_PAGE);
-	add_default_key(&info_keys, 'H', GLOBAL_TOGGLE_HELP_DISPLAY);
-	add_default_key(&info_keys, ' ', GLOBAL_PAGE_DOWN);
-	add_default_key(&info_keys, '^', GLOBAL_FIRST_PAGE);
-	add_default_key(&info_keys, '$', GLOBAL_LAST_PAGE);
-	add_default_key(&info_keys, '/', GLOBAL_SEARCH_SUBJECT_FORWARD);
-	add_default_key(&info_keys, '?', GLOBAL_SEARCH_SUBJECT_BACKWARD);
-	add_default_key(&info_keys, '\\', GLOBAL_SEARCH_REPEAT);
+	add_default_key(&info_keys, "", GLOBAL_ABORT);
+	add_default_key(&info_keys, "j", GLOBAL_LINE_DOWN);
+	add_default_key(&info_keys, "k", GLOBAL_LINE_UP);
+	add_default_key(&info_keys, " ", GLOBAL_PAGE_DOWN);
+	add_default_key(&info_keys, "b", GLOBAL_PAGE_UP);
+	add_default_key(&info_keys, "g^", GLOBAL_FIRST_PAGE);
+	add_default_key(&info_keys, "G$", GLOBAL_LAST_PAGE);
+	add_default_key(&info_keys, "q", GLOBAL_QUIT);
+	add_default_key(&info_keys, "H", GLOBAL_TOGGLE_HELP_DISPLAY);
+	add_default_key(&info_keys, "/", GLOBAL_SEARCH_SUBJECT_FORWARD);
+	add_default_key(&info_keys, "?", GLOBAL_SEARCH_SUBJECT_BACKWARD);
+	add_default_key(&info_keys, "\\", GLOBAL_SEARCH_REPEAT);
 
 	/* options menu */
-	add_default_key(&option_menu_keys, '1', DIGIT_1);
-	add_default_key(&option_menu_keys, '2', DIGIT_2);
-	add_default_key(&option_menu_keys, '3', DIGIT_3);
-	add_default_key(&option_menu_keys, '4', DIGIT_4);
-	add_default_key(&option_menu_keys, '5', DIGIT_5);
-	add_default_key(&option_menu_keys, '6', DIGIT_6);
-	add_default_key(&option_menu_keys, '7', DIGIT_7);
-	add_default_key(&option_menu_keys, '8', DIGIT_8);
-	add_default_key(&option_menu_keys, '9', DIGIT_9);
-	add_default_key(&option_menu_keys, ctrl('B'), GLOBAL_PAGE_UP);
-	add_default_key(&option_menu_keys, ctrl('D'), GLOBAL_PAGE_DOWN);
-	add_default_key(&option_menu_keys, ctrl('F'), GLOBAL_PAGE_DOWN);
-	add_default_key(&option_menu_keys, ctrl('J'), CONFIG_SELECT);
-	add_default_key(&option_menu_keys, ctrl('L'), GLOBAL_REDRAW_SCREEN);
-	add_default_key(&option_menu_keys, ctrl('M'), CONFIG_SELECT);
-	add_default_key(&option_menu_keys, ctrl('N'), GLOBAL_LINE_DOWN);
-	add_default_key(&option_menu_keys, ctrl('P'), GLOBAL_LINE_UP);
-	add_default_key(&option_menu_keys, ctrl('U'), GLOBAL_PAGE_UP);
-	add_default_key(&option_menu_keys, 'b', GLOBAL_PAGE_UP);
-	add_default_key(&option_menu_keys, 'g', GLOBAL_FIRST_PAGE);
-	add_default_key(&option_menu_keys, 'j', GLOBAL_LINE_DOWN);
-	add_default_key(&option_menu_keys, 'k', GLOBAL_LINE_UP);
-	add_default_key(&option_menu_keys, 'q', GLOBAL_QUIT);
-	add_default_key(&option_menu_keys, 'v', GLOBAL_VERSION);
-	add_default_key(&option_menu_keys, 'G', GLOBAL_LAST_PAGE);
-	add_default_key(&option_menu_keys, 'Q', CONFIG_NO_SAVE);
-	add_default_key(&option_menu_keys, '^', GLOBAL_FIRST_PAGE);
-	add_default_key(&option_menu_keys, '$', GLOBAL_LAST_PAGE);
-	add_default_key(&option_menu_keys, ' ', GLOBAL_PAGE_DOWN);
-	add_default_key(&option_menu_keys, '>', GLOBAL_SCROLL_DOWN);
-	add_default_key(&option_menu_keys, '<', GLOBAL_SCROLL_UP);
-	add_default_key(&option_menu_keys, '/', GLOBAL_SEARCH_SUBJECT_FORWARD);
-	add_default_key(&option_menu_keys, '?', GLOBAL_SEARCH_SUBJECT_BACKWARD);
-	add_default_key(&option_menu_keys, '\\', GLOBAL_SEARCH_REPEAT);
+	add_default_key(&option_menu_keys, "1", DIGIT_1);
+	add_default_key(&option_menu_keys, "2", DIGIT_2);
+	add_default_key(&option_menu_keys, "3", DIGIT_3);
+	add_default_key(&option_menu_keys, "4", DIGIT_4);
+	add_default_key(&option_menu_keys, "5", DIGIT_5);
+	add_default_key(&option_menu_keys, "6", DIGIT_6);
+	add_default_key(&option_menu_keys, "7", DIGIT_7);
+	add_default_key(&option_menu_keys, "8", DIGIT_8);
+	add_default_key(&option_menu_keys, "9", DIGIT_9);
+	add_default_key(&option_menu_keys, "b", GLOBAL_PAGE_UP);
+	add_default_key(&option_menu_keys, " ", GLOBAL_PAGE_DOWN);
+	add_default_key(&option_menu_keys, "\n\r", CONFIG_SELECT);
+	add_default_key(&option_menu_keys, "", GLOBAL_REDRAW_SCREEN);
+	add_default_key(&option_menu_keys, "j", GLOBAL_LINE_DOWN);
+	add_default_key(&option_menu_keys, "k", GLOBAL_LINE_UP);
+	add_default_key(&option_menu_keys, "g^", GLOBAL_FIRST_PAGE);
+	add_default_key(&option_menu_keys, "G$", GLOBAL_LAST_PAGE);
+	add_default_key(&option_menu_keys, "q", GLOBAL_QUIT);
+	add_default_key(&option_menu_keys, "v", GLOBAL_VERSION);
+	add_default_key(&option_menu_keys, "Q", CONFIG_NO_SAVE);
+	add_default_key(&option_menu_keys, ">", GLOBAL_SCROLL_DOWN);
+	add_default_key(&option_menu_keys, "<", GLOBAL_SCROLL_UP);
+	add_default_key(&option_menu_keys, "/", GLOBAL_SEARCH_SUBJECT_FORWARD);
+	add_default_key(&option_menu_keys, "?", GLOBAL_SEARCH_SUBJECT_BACKWARD);
+	add_default_key(&option_menu_keys, "\\", GLOBAL_SEARCH_REPEAT);
 
 	/* prompt keys */
-	add_default_key(&prompt_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&prompt_keys, 'n', PROMPT_NO);
-	add_default_key(&prompt_keys, 'q', GLOBAL_QUIT);
-	add_default_key(&prompt_keys, 'y', PROMPT_YES);
-	add_default_key(&prompt_keys, 'N', PROMPT_NO);
-	add_default_key(&prompt_keys, 'Y', PROMPT_YES);
+	add_default_key(&prompt_keys, "", GLOBAL_ABORT);
+	add_default_key(&prompt_keys, "nN", PROMPT_NO);
+	add_default_key(&prompt_keys, "q", GLOBAL_QUIT);
+	add_default_key(&prompt_keys, "yY", PROMPT_YES);
 
 	/* post keys */
-	add_default_key(&post_send_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&post_send_keys, 'e', POST_EDIT);
+	add_default_key(&post_send_keys, "", GLOBAL_ABORT);
+	add_default_key(&post_send_keys, "e", POST_EDIT);
 #ifdef HAVE_PGP_GPG
-	add_default_key(&post_send_keys, 'g', POST_PGP);
+	add_default_key(&post_send_keys, "g", POST_PGP);
 #endif /* HAVE_PGP_GPG */
 #ifdef HAVE_ISPELL
-	add_default_key(&post_send_keys, 'i', POST_ISPELL);
+	add_default_key(&post_send_keys, "i", POST_ISPELL);
 #endif /* HAVE_ISPELL */
-	add_default_key(&post_send_keys, 'q', GLOBAL_QUIT);
-	add_default_key(&post_send_keys, 's', POST_SEND);
+	add_default_key(&post_send_keys, "q", GLOBAL_QUIT);
+	add_default_key(&post_send_keys, "s", POST_SEND);
 
-	add_default_key(&post_edit_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&post_edit_keys, 'e', POST_EDIT);
-	add_default_key(&post_edit_keys, 'o', POST_POSTPONE);
-	add_default_key(&post_edit_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&post_edit_keys, "", GLOBAL_ABORT);
+	add_default_key(&post_edit_keys, "e", POST_EDIT);
+	add_default_key(&post_edit_keys, "o", POST_POSTPONE);
+	add_default_key(&post_edit_keys, "q", GLOBAL_QUIT);
 
-	add_default_key(&post_edit_ext_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&post_edit_ext_keys, 'e', POST_EDIT);
-	add_default_key(&post_edit_ext_keys, 'q', GLOBAL_QUIT);
-	add_default_key(&post_edit_ext_keys, 'M', GLOBAL_OPTION_MENU);
+	add_default_key(&post_edit_ext_keys, "", GLOBAL_ABORT);
+	add_default_key(&post_edit_ext_keys, "e", POST_EDIT);
+	add_default_key(&post_edit_ext_keys, "q", GLOBAL_QUIT);
+	add_default_key(&post_edit_ext_keys, "M", GLOBAL_OPTION_MENU);
 
-	add_default_key(&post_post_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&post_post_keys, 'e', POST_EDIT);
+	add_default_key(&post_post_keys, "", GLOBAL_ABORT);
+	add_default_key(&post_post_keys, "e", POST_EDIT);
 #ifdef HAVE_PGP_GPG
-	add_default_key(&post_post_keys, 'g', POST_PGP);
+	add_default_key(&post_post_keys, "g", POST_PGP);
 #endif /* HAVE_PGP_GPG */
 #ifdef HAVE_ISPELL
-	add_default_key(&post_post_keys, 'i', POST_ISPELL);
+	add_default_key(&post_post_keys, "i", POST_ISPELL);
 #endif /* HAVE_ISPELL */
-	add_default_key(&post_post_keys, 'o', POST_POSTPONE);
-	add_default_key(&post_post_keys, 'p', GLOBAL_POST);
-	add_default_key(&post_post_keys, 'q', GLOBAL_QUIT);
-	add_default_key(&post_post_keys, 'M', GLOBAL_OPTION_MENU);
+	add_default_key(&post_post_keys, "o", POST_POSTPONE);
+	add_default_key(&post_post_keys, "p", GLOBAL_POST);
+	add_default_key(&post_post_keys, "q", GLOBAL_QUIT);
+	add_default_key(&post_post_keys, "M", GLOBAL_OPTION_MENU);
 
-	add_default_key(&post_postpone_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&post_postpone_keys, 'n', PROMPT_NO);
-	add_default_key(&post_postpone_keys, 'q', GLOBAL_QUIT);
-	add_default_key(&post_postpone_keys, 'y', PROMPT_YES);
-	add_default_key(&post_postpone_keys, 'A', POSTPONE_ALL);
-	add_default_key(&post_postpone_keys, 'Y', POSTPONE_OVERRIDE);
+	add_default_key(&post_postpone_keys, "", GLOBAL_ABORT);
+	add_default_key(&post_postpone_keys, "n", PROMPT_NO);
+	add_default_key(&post_postpone_keys, "q", GLOBAL_QUIT);
+	add_default_key(&post_postpone_keys, "y", PROMPT_YES);
+	add_default_key(&post_postpone_keys, "A", POSTPONE_ALL);
+	add_default_key(&post_postpone_keys, "Y", POSTPONE_OVERRIDE);
 
-	add_default_key(&post_mail_fup_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&post_mail_fup_keys, 'm', POST_MAIL);
-	add_default_key(&post_mail_fup_keys, 'p', GLOBAL_POST);
-	add_default_key(&post_mail_fup_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&post_mail_fup_keys, "", GLOBAL_ABORT);
+	add_default_key(&post_mail_fup_keys, "m", POST_MAIL);
+	add_default_key(&post_mail_fup_keys, "p", GLOBAL_POST);
+	add_default_key(&post_mail_fup_keys, "q", GLOBAL_QUIT);
 
-	add_default_key(&post_ignore_fupto_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&post_ignore_fupto_keys, 'i', POST_IGNORE_FUPTO);
-	add_default_key(&post_ignore_fupto_keys, 'p', GLOBAL_POST);
-	add_default_key(&post_ignore_fupto_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&post_ignore_fupto_keys, "", GLOBAL_ABORT);
+	add_default_key(&post_ignore_fupto_keys, "i", POST_IGNORE_FUPTO);
+	add_default_key(&post_ignore_fupto_keys, "p", GLOBAL_POST);
+	add_default_key(&post_ignore_fupto_keys, "q", GLOBAL_QUIT);
 
-	add_default_key(&post_continue_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&post_continue_keys, 'a', POST_ABORT);
-	add_default_key(&post_continue_keys, 'c', POST_CONTINUE);
-	add_default_key(&post_continue_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&post_continue_keys, "", GLOBAL_ABORT);
+	add_default_key(&post_continue_keys, "a", POST_ABORT);
+	add_default_key(&post_continue_keys, "c", POST_CONTINUE);
+	add_default_key(&post_continue_keys, "q", GLOBAL_QUIT);
 
-	add_default_key(&post_delete_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&post_delete_keys, 'd', POST_CANCEL);
-	add_default_key(&post_delete_keys, 'q', GLOBAL_QUIT);
-	add_default_key(&post_delete_keys, 's', POST_SUPERSEDE);
+	add_default_key(&post_delete_keys, "", GLOBAL_ABORT);
+	add_default_key(&post_delete_keys, "d", POST_CANCEL);
+	add_default_key(&post_delete_keys, "q", GLOBAL_QUIT);
+	add_default_key(&post_delete_keys, "s", POST_SUPERSEDE);
 
-	add_default_key(&post_cancel_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&post_cancel_keys, 'e', POST_EDIT);
-	add_default_key(&post_cancel_keys, 'd', POST_CANCEL);
-	add_default_key(&post_cancel_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&post_cancel_keys, "", GLOBAL_ABORT);
+	add_default_key(&post_cancel_keys, "e", POST_EDIT);
+	add_default_key(&post_cancel_keys, "d", POST_CANCEL);
+	add_default_key(&post_cancel_keys, "q", GLOBAL_QUIT);
 
 	/* feed keys */
-	add_default_key(&feed_post_process_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&feed_post_process_keys, 'n', POSTPROCESS_NO);
-	add_default_key(&feed_post_process_keys, 's', POSTPROCESS_SHAR);
-	add_default_key(&feed_post_process_keys, 'y', POSTPROCESS_YES);
-	add_default_key(&feed_post_process_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&feed_post_process_keys, "", GLOBAL_ABORT);
+	add_default_key(&feed_post_process_keys, "n", POSTPROCESS_NO);
+	add_default_key(&feed_post_process_keys, "s", POSTPROCESS_SHAR);
+	add_default_key(&feed_post_process_keys, "y", POSTPROCESS_YES);
+	add_default_key(&feed_post_process_keys, "q", GLOBAL_QUIT);
 
-	add_default_key(&feed_type_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&feed_type_keys, 'a', FEED_ARTICLE);
-	add_default_key(&feed_type_keys, 'h', FEED_HOT);
-	add_default_key(&feed_type_keys, 'p', FEED_PATTERN);
-	add_default_key(&feed_type_keys, 'q', GLOBAL_QUIT);
-	add_default_key(&feed_type_keys, 't', FEED_THREAD);
-	add_default_key(&feed_type_keys, 'T', FEED_TAGGED);
+	add_default_key(&feed_type_keys, "", GLOBAL_ABORT);
+	add_default_key(&feed_type_keys, "a", FEED_ARTICLE);
+	add_default_key(&feed_type_keys, "h", FEED_HOT);
+	add_default_key(&feed_type_keys, "p", FEED_PATTERN);
+	add_default_key(&feed_type_keys, "q", GLOBAL_QUIT);
+	add_default_key(&feed_type_keys, "t", FEED_THREAD);
+	add_default_key(&feed_type_keys, "T", FEED_TAGGED);
 
-	add_default_key(&feed_supersede_article_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&feed_supersede_article_keys, 'q', GLOBAL_QUIT);
-	add_default_key(&feed_supersede_article_keys, 'r', FEED_KEY_REPOST);
-	add_default_key(&feed_supersede_article_keys, 's', FEED_SUPERSEDE);
+	add_default_key(&feed_supersede_article_keys, "", GLOBAL_ABORT);
+	add_default_key(&feed_supersede_article_keys, "q", GLOBAL_QUIT);
+	add_default_key(&feed_supersede_article_keys, "r", FEED_KEY_REPOST);
+	add_default_key(&feed_supersede_article_keys, "s", FEED_SUPERSEDE);
 
 	/* filter keys */
-	add_default_key(&filter_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&filter_keys, 'e', FILTER_EDIT);
-	add_default_key(&filter_keys, 'q', GLOBAL_QUIT);
-	add_default_key(&filter_keys, 's', FILTER_SAVE);
+	add_default_key(&filter_keys, "", GLOBAL_ABORT);
+	add_default_key(&filter_keys, "e", FILTER_EDIT);
+	add_default_key(&filter_keys, "q", GLOBAL_QUIT);
+	add_default_key(&filter_keys, "s", FILTER_SAVE);
 
 	/* mark read */
-	add_default_key(&mark_read_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&mark_read_keys, 'c', MARK_READ_CURRENT);
-	add_default_key(&mark_read_keys, 'q', GLOBAL_QUIT);
-	add_default_key(&mark_read_keys, 't', MARK_READ_TAGGED);
+	add_default_key(&mark_read_keys, "", GLOBAL_ABORT);
+	add_default_key(&mark_read_keys, "c", MARK_READ_CURRENT);
+	add_default_key(&mark_read_keys, "q", GLOBAL_QUIT);
+	add_default_key(&mark_read_keys, "t", MARK_READ_TAGGED);
 
 #ifdef HAVE_PGP_GPG
 	/* pgp mail */
-	add_default_key(&pgp_mail_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&pgp_mail_keys, 'b', PGP_KEY_ENCRYPT_SIGN);
-	add_default_key(&pgp_mail_keys, 'e', PGP_KEY_ENCRYPT);
-	add_default_key(&pgp_mail_keys, 'q', GLOBAL_QUIT);
-	add_default_key(&pgp_mail_keys, 's', PGP_KEY_SIGN);
+	add_default_key(&pgp_mail_keys, "", GLOBAL_ABORT);
+	add_default_key(&pgp_mail_keys, "b", PGP_KEY_ENCRYPT_SIGN);
+	add_default_key(&pgp_mail_keys, "e", PGP_KEY_ENCRYPT);
+	add_default_key(&pgp_mail_keys, "q", GLOBAL_QUIT);
+	add_default_key(&pgp_mail_keys, "s", PGP_KEY_SIGN);
 
 	/* pgp news */
-	add_default_key(&pgp_news_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&pgp_news_keys, 'i', PGP_INCLUDE_KEY);
-	add_default_key(&pgp_news_keys, 'q', GLOBAL_QUIT);
-	add_default_key(&pgp_news_keys, 's', PGP_KEY_SIGN);
+	add_default_key(&pgp_news_keys, "", GLOBAL_ABORT);
+	add_default_key(&pgp_news_keys, "i", PGP_INCLUDE_KEY);
+	add_default_key(&pgp_news_keys, "q", GLOBAL_QUIT);
+	add_default_key(&pgp_news_keys, "s", PGP_KEY_SIGN);
 #endif /* HAVE_PGP_GPG */
 
 	/* save */
-	add_default_key(&save_append_overwrite_keys, ESC, GLOBAL_ABORT);
-	add_default_key(&save_append_overwrite_keys, 'a', SAVE_APPEND_FILE);
-	add_default_key(&save_append_overwrite_keys, 'o', SAVE_OVERWRITE_FILE);
-	add_default_key(&save_append_overwrite_keys, 'q', GLOBAL_QUIT);
+	add_default_key(&save_append_overwrite_keys, "", GLOBAL_ABORT);
+	add_default_key(&save_append_overwrite_keys, "a", SAVE_APPEND_FILE);
+	add_default_key(&save_append_overwrite_keys, "o", SAVE_OVERWRITE_FILE);
+	add_default_key(&save_append_overwrite_keys, "q", GLOBAL_QUIT);
 }
 
 
@@ -2598,52 +2591,43 @@ static void
 add_global_keys(
 	struct keylist *keys)
 {
-	add_default_key(keys, ESC, GLOBAL_ABORT);
-	add_default_key(keys, '0', DIGIT_0);
-	add_default_key(keys, '1', DIGIT_1);
-	add_default_key(keys, '2', DIGIT_2);
-	add_default_key(keys, '3', DIGIT_3);
-	add_default_key(keys, '4', DIGIT_4);
-	add_default_key(keys, '5', DIGIT_5);
-	add_default_key(keys, '6', DIGIT_6);
-	add_default_key(keys, '7', DIGIT_7);
-	add_default_key(keys, '8', DIGIT_8);
-	add_default_key(keys, '9', DIGIT_9);
-	add_default_key(keys, ctrl('B'), GLOBAL_PAGE_UP);
-	add_default_key(keys, ctrl('D'), GLOBAL_PAGE_DOWN);
-	add_default_key(keys, ctrl('F'), GLOBAL_PAGE_DOWN);
-	add_default_key(keys, ctrl('L'), GLOBAL_REDRAW_SCREEN);
-	add_default_key(keys, ctrl('N'), GLOBAL_LINE_DOWN);
-	add_default_key(keys, ctrl('O'), GLOBAL_POSTPONED);
-	add_default_key(keys, ctrl('P'), GLOBAL_LINE_UP);
-	add_default_key(keys, ctrl('U'), GLOBAL_PAGE_UP);
-	add_default_key(keys, 'b', GLOBAL_PAGE_UP);
-	add_default_key(keys, 'h', GLOBAL_HELP);
-	add_default_key(keys, 'i', GLOBAL_TOGGLE_INFO_LAST_LINE);
-	add_default_key(keys, 'j', GLOBAL_LINE_DOWN);
-	add_default_key(keys, 'k', GLOBAL_LINE_UP);
-	add_default_key(keys, 'q', GLOBAL_QUIT);
-	add_default_key(keys, 'v', GLOBAL_VERSION);
-	add_default_key(keys, 'w', GLOBAL_POST);
-	add_default_key(keys, 'H', GLOBAL_TOGGLE_HELP_DISPLAY);
-	add_default_key(keys, 'I', GLOBAL_TOGGLE_INVERSE_VIDEO);
-	add_default_key(keys, 'M', GLOBAL_OPTION_MENU);
-	add_default_key(keys, 'O', GLOBAL_POSTPONED);
-	add_default_key(keys, 'Q', GLOBAL_QUIT_TIN);
-	add_default_key(keys, 'R', GLOBAL_BUGREPORT);
-	add_default_key(keys, 'W', GLOBAL_DISPLAY_POST_HISTORY);
-	add_default_key(keys, '^', GLOBAL_FIRST_PAGE);
-	add_default_key(keys, '$', GLOBAL_LAST_PAGE);
-	add_default_key(keys, '>', GLOBAL_SCROLL_DOWN);
-	add_default_key(keys, '<', GLOBAL_SCROLL_UP);
-	add_default_key(keys, '/', GLOBAL_SEARCH_SUBJECT_FORWARD);
-	add_default_key(keys, '?', GLOBAL_SEARCH_SUBJECT_BACKWARD);
-	add_default_key(keys, '\\', GLOBAL_SEARCH_REPEAT);
-	add_default_key(keys, '#', GLOBAL_SET_RANGE);
+	add_default_key(keys, "", GLOBAL_ABORT);
+	add_default_key(keys, "0", DIGIT_0);
+	add_default_key(keys, "1", DIGIT_1);
+	add_default_key(keys, "2", DIGIT_2);
+	add_default_key(keys, "3", DIGIT_3);
+	add_default_key(keys, "4", DIGIT_4);
+	add_default_key(keys, "5", DIGIT_5);
+	add_default_key(keys, "6", DIGIT_6);
+	add_default_key(keys, "7", DIGIT_7);
+	add_default_key(keys, "8", DIGIT_8);
+	add_default_key(keys, "9", DIGIT_9);
+	add_default_key(keys, "b", GLOBAL_PAGE_UP);
+	add_default_key(keys, "", GLOBAL_REDRAW_SCREEN);
+	add_default_key(keys, "j", GLOBAL_LINE_DOWN);
+	add_default_key(keys, "k", GLOBAL_LINE_UP);
+	add_default_key(keys, "O", GLOBAL_POSTPONED);
+	add_default_key(keys, "h", GLOBAL_HELP);
+	add_default_key(keys, "i", GLOBAL_TOGGLE_INFO_LAST_LINE);
+	add_default_key(keys, "q", GLOBAL_QUIT);
+	add_default_key(keys, "v", GLOBAL_VERSION);
+	add_default_key(keys, "w", GLOBAL_POST);
+	add_default_key(keys, "H", GLOBAL_TOGGLE_HELP_DISPLAY);
+	add_default_key(keys, "I", GLOBAL_TOGGLE_INVERSE_VIDEO);
+	add_default_key(keys, "M", GLOBAL_OPTION_MENU);
+	add_default_key(keys, "Q", GLOBAL_QUIT_TIN);
+	add_default_key(keys, "R", GLOBAL_BUGREPORT);
+	add_default_key(keys, "W", GLOBAL_DISPLAY_POST_HISTORY);
+	add_default_key(keys, "^", GLOBAL_FIRST_PAGE);
+	add_default_key(keys, "$", GLOBAL_LAST_PAGE);
+	add_default_key(keys, "/", GLOBAL_SEARCH_SUBJECT_FORWARD);
+	add_default_key(keys, "?", GLOBAL_SEARCH_SUBJECT_BACKWARD);
+	add_default_key(keys, "\\", GLOBAL_SEARCH_REPEAT);
+	add_default_key(keys, "#", GLOBAL_SET_RANGE);
 #ifndef NO_SHELL_ESCAPE
-	add_default_key(keys, '!', GLOBAL_SHELL_ESCAPE);
+	add_default_key(keys, "!", GLOBAL_SHELL_ESCAPE);
 #endif /* NO_SHELL_ESCAPE */
 #ifdef HAVE_COLOR
-	add_default_key(keys, '&', GLOBAL_TOGGLE_COLOR);
+	add_default_key(keys, "&", GLOBAL_TOGGLE_COLOR);
 #endif /* HAVE COLOR */
 }

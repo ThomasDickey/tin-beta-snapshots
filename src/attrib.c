@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2005-05-07
+ *  Updated   : 2005-06-30
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2005 Iain Lea <iain@bricbrac.de>
@@ -65,6 +65,7 @@ enum {
 	ATTRIB_DELETE_TMP_FILES,
 	ATTRIB_SHOW_ONLY_UNREAD,
 	ATTRIB_THREAD_ARTS,
+	ATTRIB_THREAD_PERC,
 	ATTRIB_SHOW_AUTHOR,
 	ATTRIB_SHOW_INFO,
 	ATTRIB_SORT_ART_TYPE,
@@ -152,6 +153,7 @@ set_default_attributes(
 	attributes->quick_select_expire = tinrc.default_filter_select_expire;
 	attributes->show_only_unread = tinrc.show_only_unread_arts;
 	attributes->thread_arts = tinrc.thread_articles;
+	attributes->thread_perc = tinrc.thread_perc;
 	attributes->sort_art_type = tinrc.sort_article_type;
 	attributes->sort_threads_type = tinrc.sort_threads_type;
 	attributes->show_info = tinrc.show_info;
@@ -355,6 +357,7 @@ read_attributes_file(
 				case 't':
 					MATCH_BOOLEAN("tex2iso_conv=", ATTRIB_TEX2ISO_CONV);
 					MATCH_INTEGER("thread_arts=", ATTRIB_THREAD_ARTS, THREAD_MAX);
+					MATCH_INTEGER("thread_perc=", ATTRIB_THREAD_PERC, 100);
 					break;
 
 				case 'u':
@@ -508,6 +511,9 @@ do_set_attrib(
 
 		case ATTRIB_THREAD_ARTS:
 			SET_INTEGER(thread_arts);
+
+		case ATTRIB_THREAD_PERC:
+			SET_INTEGER(thread_perc);
 
 		case ATTRIB_SHOW_AUTHOR:
 			SET_INTEGER(show_author);
@@ -670,6 +676,7 @@ write_attributes_file(
 		fprintf(fp, "%d=%s, ", i, _(txt_threading[i]));
 	}
 	fprintf(fp, "\n");
+	fprintf(fp, _("#  thread_perc=NUM\n"));
 	fprintf(fp, _("#  show_author=NUM\n"));
 	fprintf(fp, "#    %d=%s, %d=%s, %d=%s, %d=%s\n",
 		SHOW_FROM_NONE, _(txt_show_from[SHOW_FROM_NONE]),
@@ -818,6 +825,7 @@ write_attributes_file(
 #	endif /* HAVE_ISPELL */
 		fprintf(fp, "show_only_unread=%s\n", print_boolean(attr->show_only_unread));
 		fprintf(fp, "thread_arts=%d\n", attr->thread_arts);
+		fprintf(fp, "thread_perc=%d\n", attr->thread_perc);
 		fprintf(fp, "auto_select=%s\n", print_boolean(attr->auto_select));
 		fprintf(fp, "auto_save=%s\n", print_boolean(attr->auto_save));
 		fprintf(fp, "batch_save=%s\n", print_boolean(attr->batch_save));
@@ -910,6 +918,7 @@ dump_attributes(
 #		endif /* HAVE_ISPELL */
 		fprintf(stderr, "\tshow_only_unread=%s\n", print_boolean(group->attribute->show_only_unread));
 		fprintf(stderr, "\tthread_arts=%d\n", group->attribute->thread_arts);
+		fprintf(stderr, "\tthread_perc=%d\n", group->attribute->thread_perc);
 		fprintf(stderr, "\tauto_select=%s\n", print_boolean(group->attribute->auto_select));
 		fprintf(stderr, "\tauto_save=%s\n", print_boolean(group->attribute->auto_save));
 		fprintf(stderr, "\tbatch_save=%s\n", print_boolean(group->attribute->batch_save));

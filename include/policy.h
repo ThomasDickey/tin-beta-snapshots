@@ -280,9 +280,9 @@ static const char *gnksa_domain_list[] = {
 	"name",	/* For registration by individuals */
 	"museum",	/* Museums */
 	/*
-	 * more gTLDs to come in 2005, proposed are:
+	 * more gTLDs to come >=2005, proposed are:
 	 *  .asia   .cat    .jobs   .mail   .mobi
-	 *  .post   .tel    .travel .xxx
+	 *  .post   .tel    .travel .xxx	.kids
 	 */
 #	if 0		/* $DEAD */
 	"uucp",

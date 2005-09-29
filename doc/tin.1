@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2005-06-29
+.\" Updated   : 2005-09-14
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -19,7 +19,7 @@
 .fi
 ..
 .\"
-.TH tin 1 "June 29th, 2005" "1.7.9" "A Usenet newsreader"
+.TH tin 1 "September 14th, 2005" "1.7.10" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -2811,7 +2811,7 @@ For a detailed description see
 .IR ${TIN_INDEX_MAILDIR\-"${TIN_HOMEDIR\-"$HOME"}/.tin"}/.mail/
 .PP
 
-.IR ${TIN_INDEX_NEWSDIR\-"${TIN_HOMEDIR\-"$HOME"}/.tin"}/.news/
+.IR ${TIN_INDEX_NEWSDIR\-"${TIN_HOMEDIR\-"$HOME"}/.tin"}/.news${NNTPSERVER+"\-$NNTPSERVER"}/
 .PP
 
 .IR ${TIN_INDEX_SAVEDIR\-"${TIN_HOMEDIR\-"$HOME"}/.tin"}/.save/
@@ -2850,6 +2850,9 @@ For a detailed description see
 .PP
 
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/postponed.articles
+.PP
+
+.IR ${TIN_HOMEDIR\-"$HOME"}/.tin/$NNTPSERVER:${NNTPPORT+":$NNTPPORT"}/newsgroups
 .PP
 
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/$NNTPSERVER:${NNTPPORT+":$NNTPPORT"}/serverrc

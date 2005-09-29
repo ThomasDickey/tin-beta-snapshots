@@ -3,7 +3,7 @@
  *  Module    : nrctbl.c
  *  Author    : Sven Paulus <sven@tin.org>
  *  Created   : 1996-10-06
- *  Updated   : 2005-02-02
+ *  Updated   : 2005-07-02
  *  Notes     : This module does the NNTP server name lookup in
  *              ~/.tin/newsrctable and returns the real hostname
  *              and the name of the newsrc file for a given
@@ -47,9 +47,7 @@
 #ifndef VERSION_H
 #	include "version.h"
 #endif /* !VERSION_H */
-#ifndef KEYMAP_H
-#	include "keymap.h"
-#endif /* !KEYMAP_H */
+
 
 /*
  * local prototypes
@@ -230,6 +228,10 @@ get_newsrcname(
 						return TRUE;
 
 					case 'a':
+						/*
+						 * FIXME this (e.g. the location of the alternativce name)
+						 * is not documented in the man page
+						 */
 						snprintf(name_found, sizeof(name_found), ".newsrc-%s", nntpserver_name);
 						joinpath(newsrc_name, homedir, name_found);
 						return TRUE;

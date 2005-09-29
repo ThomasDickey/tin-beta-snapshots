@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2005-06-21
+dnl Updated   : 2005-07-10
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2005 Thomas E. Dickey <dickey@invisible-island.net>
@@ -1844,6 +1844,7 @@ dnl	dash	Debian Almquist Shell (sh based)
 dnl	jsh	Job Control Bourne Shell (sh based)
 dnl	keysh	Key Shell (ksh based)
 dnl	ksh	Korn Shell (sh based)
+dnl	mksh	MirBSD Korn shell (pdksh based)
 dnl	pdksh	Public-domain ksh
 dnl	sh	Bourne Shell or POSIX Shell
 dnl	zsh	Z Shell (sh, ksh based)
@@ -1855,7 +1856,7 @@ AC_DEFUN([CF_DEFAULT_SHELL],
 AC_MSG_CHECKING(for the default shell program)
 cf_shell_progs="ifelse($1,,sh,[$1])"
 if test -z "$cf_shell_progs" ; then
-	cf_shell_progs="sh ksh bash zsh pdksh jsh keysh ash dash"
+	cf_shell_progs="sh ksh bash zsh pdksh mksh jsh keysh ash dash"
 	# TIN preferred default shell for BSD systems is csh. Others are sh.
 	AC_TRY_COMPILE([
 #include <sys/params.h>],[
@@ -4544,6 +4545,10 @@ sco*) #(vi
 solaris*) #(vi
 	CPPFLAGS="$CPPFLAGS -D__EXTENSIONS__"
 	;;
+## dennis should test this:
+#sunos4.1.*) #(vi
+#	CPPFLAGS="$CPPFLAGS -D__EXTENSIONS__"
+#	;;
 *)
 	AC_CACHE_CHECK(if we should define _XOPEN_SOURCE,cf_cv_xopen_source,[
 	AC_TRY_COMPILE([#include <sys/types.h>],[

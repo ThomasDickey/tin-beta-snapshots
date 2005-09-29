@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2005-03-20
+ *  Updated   : 2005-07-16
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2005 Thomas Dickey <dickey@invisible-island.net>
@@ -138,6 +138,7 @@
  * Data types
  */
 #	undef gid_t
+#	undef in_addr_t
 #	undef mode_t
 #	undef off_t
 #	undef pid_t
@@ -331,6 +332,7 @@
 #	undef DECL_BZERO
 #	undef DECL_CALLOC
 #	undef DECL_CONNECT
+#	undef DECL_FCHMOD
 #	undef DECL_FCLOSE
 #	undef DECL_FDOPEN
 #	undef DECL_FFLUSH

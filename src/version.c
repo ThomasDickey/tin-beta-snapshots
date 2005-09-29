@@ -3,7 +3,7 @@
  *  Module    : version.c
  *  Author    : U. Janssen
  *  Created   : 2003-05-11
- *  Updated   : 2005-01-30
+ *  Updated   : 2005-07-02
  *  Notes     :
  *
  * Copyright (c) 2003-2005 Urs Janssen <urs@tin.org>
@@ -41,9 +41,7 @@
 #ifndef VERSION_H
 #	include "version.h"
 #endif /* !VERSION_H */
-#ifndef KEYMAP_H
-#	include "keymap.h"
-#endif /* !KEYMAP_H */
+
 
 /*
  * line     is the entire line we should check

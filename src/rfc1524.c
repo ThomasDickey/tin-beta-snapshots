@@ -3,7 +3,7 @@
  *  Module    : rfc1524.c
  *  Author    : Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-05-15
- *  Updated   : 2005-05-10
+ *  Updated   : 2005-07-02
  *  Notes     : mailcap parsing as defined in RFC 1524
  *
  * Copyright (c) 2000-2005 Urs Janssen <urs@tin.org>, Jason Faultless <jason@altarstone.com>
@@ -37,9 +37,7 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
-#ifndef RFC2046_H
-#	include "rfc2046.h"
-#endif /* !RFC2046_H */
+
 
 /* TODO: what about !unix systems? */
 #define DEFAULT_MAILCAPS "~/.mailcap:/etc/mailcap:/usr/etc/mailcap:/usr/local/etc/mailcap:/etc/mail/mailcap"

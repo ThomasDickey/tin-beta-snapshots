@@ -3,7 +3,7 @@
  *  Module    : list.c
  *  Author    : I. Lea
  *  Created   : 1993-12-18
- *  Updated   : 2002-05-13
+ *  Updated   : 2005-07-20
  *  Notes     : Low level functions handling the active[] list and its group_hash index
  *
  * Copyright (c) 1993-2005 Iain Lea <iain@bricbrac.de>
@@ -38,9 +38,11 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
-#ifndef TCURSES_H
-#	include "tcurses.h"
-#endif /* !TCURSES_H */
+#ifdef DEBUG
+#	ifndef TCURSES_H
+#		include "tcurses.h"
+#	endif /* !TCURSES_H */
+#endif /* DEBUG */
 
 static int group_hash[TABLE_SIZE];	/* group name --> active[] */
 
@@ -93,7 +95,9 @@ hash_groupname(
 		}
 	}
 	hash_value = hash % prime;
+#	ifdef DEBUG
 /*	my_printf("hash=[%s] [%ld]\n", group, hash_value); */
+#	endif /* DEBUG */
 #else
 	unsigned long hash_value = 0L;
 	unsigned int len = 0;

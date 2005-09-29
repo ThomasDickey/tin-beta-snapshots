@@ -2,9 +2,9 @@
 # Matt Anton <tin@syrius.org>, 2003-2004
 #
 msgid	""
-msgstr	"Project-Id-Version: 1.7.8\n"
+msgstr	"Project-Id-Version: 1.7.9\n"
 	"Report-Msgid-Bugs-To: \n"
-	"POT-Creation-Date: 2005-06-22 20:13+0200\n"
+	"POT-Creation-Date: 2005-09-29 13:20+0200\n"
 	"PO-Revision-Date: 2004-11-17 00:50+0100\n"
 	"Last-Translator: Matt Anton <tin@syrius.org\n"
 	"Language-Team: French <tin@syrius.org>\n"
@@ -12,285 +12,293 @@ msgstr	"Project-Id-Version: 1.7.8\n"
 	"Content-Type: text/plain; charset=ISO-8859-15\n"
 	"Content-Transfer-Encoding: 8bit\n"
 
-#: src/art.c:1553
+#: src/art.c:1533
 #, c-format
 msgid	"%d Bad overview record (%d fields) '%s'"
 msgstr	"%d Mauvais overview (%d champs) '%s'"
 
-#: src/attrib.c:643
+#: src/attrib.c:649
 #, c-format
 msgid	"# Do not edit this comment block\n"
 	"#\n"
 msgstr	"# Ne pas éditer ce commentaire\n"
 	"#\n"
 
-#: src/attrib.c:644
+#: src/attrib.c:650
 #, c-format
 msgid	"#  scope=STRING (ie. alt.*,!alt.bin*) [mandatory]\n"
 msgstr	"#  scope=TERME (pe. alt.*,!alt.bin*) [obligatoire]\n"
 
-#: src/attrib.c:645
+#: src/attrib.c:651
 #, c-format
 msgid	"#  maildir=STRING (ie. ~/Mail)\n"
 msgstr	"#  maildir=TERME (pe. ~/Mail)\n"
 
-#: src/attrib.c:646
+#: src/attrib.c:652
 #, c-format
 msgid	"#  savedir=STRING (ie. ~user/News)\n"
 msgstr	"#  savedir=TERME (pe. ~user/News)\n"
 
-#: src/attrib.c:647
+#: src/attrib.c:653
 #, c-format
 msgid	"#  savefile=STRING (ie. =linux)\n"
 msgstr	"#  savefile=TERME (pe. =linux)\n"
 
-#: src/attrib.c:648
+#: src/attrib.c:654
 #, c-format
 msgid	"#  sigfile=STRING (ie. $var/sig)\n"
 msgstr	"#  sigfile=TERME (pe. $var/sig)\n"
 
-#: src/attrib.c:649
+#: src/attrib.c:655
 #, c-format
 msgid	"#  organization=STRING (if beginning with '/' read from file)\n"
 msgstr	"#  organization=TERME (si commence par '/' lire dans fichier)\n"
 
-#: src/attrib.c:650
+#: src/attrib.c:656
 #, c-format
 msgid	"#  followup_to=STRING\n"
 msgstr	"#  followup_to=TERME\n"
 
-#: src/attrib.c:651
+#: src/attrib.c:657
 #, c-format
 msgid	"#  mailing_list=STRING (ie. majordomo@example.org)\n"
 msgstr	"#  mailing_list=TERME (pe. majordomo@example.org)\n"
 
-#: src/attrib.c:652
+#: src/attrib.c:658
 #, c-format
 msgid	"#  x_headers=STRING (ie. ~/.tin/extra-headers)\n"
 msgstr	"#  x_headers=TERME (pe. ~/.tin/extra-headers)\n"
 
-#: src/attrib.c:653
+#: src/attrib.c:659
 #, c-format
 msgid	"#  x_body=STRING (ie. ~/.tin/extra-body-text)\n"
 msgstr	"#  x_body=TERME (pe. ~/.tin/extra-body-text)\n"
 
-#: src/attrib.c:654
+#: src/attrib.c:660
 #, c-format
 msgid	"#  from=STRING (just append wanted From:-line, don't use quotes)\n"
 msgstr	"#  from=TERME (choix du 'From:', ne pas utiliser celui cité)\n"
 
-#: src/attrib.c:655
+#: src/attrib.c:661
 #, c-format
 msgid	"#  news_quote_format=STRING\n"
 msgstr	"#  news_quote_format=TERME\n"
 
-#: src/attrib.c:656
+#: src/attrib.c:662
 #, c-format
 msgid	"#  quote_chars=STRING (%%s, %%S for initials)\n"
 msgstr	"#  quote_chars=TERME (%%s, %%S pour les initiales)\n"
 
-#: src/attrib.c:657
+#: src/attrib.c:663
 #, c-format
 msgid	"#  mime_types_to_save=STRING (eg. image/*,!image/bmp)\n"
 msgstr	"#  mime_types_to_save=TERME (pe. image/*,!image/bmp)\n"
 
-#: src/attrib.c:659
+#: src/attrib.c:665
 #, c-format
 msgid	"#  ispell=STRING\n"
 msgstr	"#  ispell=TERME\n"
 
-#: src/attrib.c:661
+#: src/attrib.c:667
 #, c-format
 msgid	"#  auto_select=ON/OFF\n"
 msgstr	"#  auto_select=ON/OFF\n"
 
-#: src/attrib.c:662
+#: src/attrib.c:668
 #, c-format
 msgid	"#  auto_save=ON/OFF\n"
 msgstr	"#  auto_save=ON/OFF\n"
 
-#: src/attrib.c:663
+#: src/attrib.c:669
 #, c-format
 msgid	"#  batch_save=ON/OFF\n"
 msgstr	"#  batch_save=ON/OFF\n"
 
-#: src/attrib.c:664
+#: src/attrib.c:670
 #, c-format
 msgid	"#  delete_tmp_files=ON/OFF\n"
 msgstr	"#  delete_tmp_files=ON/OFF\n"
 
-#: src/attrib.c:665
+#: src/attrib.c:671
 #, c-format
 msgid	"#  show_only_unread=ON/OFF\n"
 msgstr	"#  show_only_unread=ON/OFF\n"
 
-#: src/attrib.c:666
+#: src/attrib.c:672
 #, c-format
 msgid	"#  thread_arts=NUM"
 msgstr	"#  thread_arts=NUM"
 
-#: src/attrib.c:673
+#: src/attrib.c:679
+#, c-format
+msgid	"#  thread_perc=NUM\n"
+msgstr	"#  thread_perc=NUM\n"
+
+#: src/attrib.c:680
 #, c-format
 msgid	"#  show_author=NUM\n"
 msgstr	"#  show_author=NUM\n"
 
-#: src/attrib.c:679
+#: src/attrib.c:686
 #, c-format
 msgid	"#  show_info=NUM\n"
 msgstr	"#  show_info=NUM\n"
 
-#: src/attrib.c:685
+#: src/attrib.c:692
 #, c-format
 msgid	"#  sort_art_type=NUM\n"
 msgstr	"#  sort_art_type=NUM\n"
 
-#: src/attrib.c:703
+#: src/attrib.c:710
 #, c-format
 msgid	"#  sort_threads_type=NUM\n"
 msgstr	"#  sort_threads_type=NUM\n"
 
-#: src/attrib.c:708
+#: src/attrib.c:715
 #, c-format
 msgid	"#  post_proc_type=NUM\n"
 msgstr	"#  post_proc_type=NUM\n"
 
-#: src/attrib.c:713
+#: src/attrib.c:720
 #, c-format
 msgid	"#  quick_kill_scope=STRING (ie. talk.*)\n"
 msgstr	"#  quick_kill_scope=TERME (pe. talk.*)\n"
 
-#: src/attrib.c:714
+#: src/attrib.c:721
 #, c-format
 msgid	"#  quick_kill_expire=ON/OFF\n"
 msgstr	"#  quick_kill_expire=ON/OFF\n"
 
-#: src/attrib.c:715
+#: src/attrib.c:722
 #, c-format
 msgid	"#  quick_kill_case=ON/OFF\n"
 msgstr	"#  quick_kill_case=ON/OFF\n"
 
-#: src/attrib.c:716
+#: src/attrib.c:723
 #, c-format
 msgid	"#  quick_kill_header=NUM\n"
 msgstr	"#  quick_kill_header=NUM\n"
 
-#: src/attrib.c:717 src/attrib.c:724
+#: src/attrib.c:724 src/attrib.c:731
 #, c-format
 msgid	"#    0=subj (case sensitive) 1=subj (ignore case)\n"
 msgstr	"#    0=subject (casse sensible) 1=subject (ignore la casse)\n"
 
-#: src/attrib.c:718 src/attrib.c:725
+#: src/attrib.c:725 src/attrib.c:732
 #, c-format
 msgid	"#    2=from (case sensitive) 3=from (ignore case)\n"
 msgstr	"#    2=from (casse sensible) 3=from (ignore la casse)\n"
 
-#: src/attrib.c:719 src/attrib.c:726
+#: src/attrib.c:726 src/attrib.c:733
 #, c-format
 msgid	"#    4=msgid 5=lines\n"
 msgstr	"#    4=msgid 5=lines\n"
 
-#: src/attrib.c:720
+#: src/attrib.c:727
 #, c-format
 msgid	"#  quick_select_scope=STRING\n"
 msgstr	"#  quick_select_scope=TERME\n"
 
-#: src/attrib.c:721
+#: src/attrib.c:728
 #, c-format
 msgid	"#  quick_select_expire=ON/OFF\n"
 msgstr	"#  quick_select_expire=ON/OFF\n"
 
-#: src/attrib.c:722
+#: src/attrib.c:729
 #, c-format
 msgid	"#  quick_select_case=ON/OFF\n"
 msgstr	"#  quick_select_case=ON/OFF\n"
 
-#: src/attrib.c:723
+#: src/attrib.c:730
 #, c-format
 msgid	"#  quick_select_header=NUM\n"
 msgstr	"#  quick_select_header=NUM\n"
 
-#: src/attrib.c:727
+#: src/attrib.c:734
 #, c-format
 msgid	"#  x_comment_to=ON/OFF\n"
 msgstr	"#  x_comment_to=ON/OFF\n"
 
-#: src/attrib.c:728
+#: src/attrib.c:735
 #, c-format
 msgid	"#  fcc=STRING (eg. =mailbox)\n"
 msgstr	"#  fcc=TERME (pe. =mailbox)\n"
 
-#: src/attrib.c:729
+#: src/attrib.c:736
 #, c-format
 msgid	"#  tex2iso_conv=ON/OFF\n"
 msgstr	"#  tex2iso_conv=ON/OFF\n"
 
-#: src/attrib.c:730
+#: src/attrib.c:737
 #, c-format
 msgid	"#  mime_forward=ON/OFF\n"
 msgstr	"#  mime_forward=ON/OFF\n"
 
-#: src/attrib.c:732
+#: src/attrib.c:739
 #, c-format
 msgid	"#  mm_network_charset=supported_charset"
 msgstr	"#  mm_network_charset=encodage_supporté"
 
-#: src/attrib.c:739
+#: src/attrib.c:746
 #, c-format
 msgid	"#  undeclared_charset=STRING (default is US-ASCII)\n"
 msgstr	"#  undeclared_charset=TERME (défaut est US-ASCII)\n"
 
-#: src/attrib.c:741
+#: src/attrib.c:748
 #, c-format
 msgid	"#\n"
 	"# Note that it is best to put general (global scoping)\n"
 msgstr	"#\n"
 	"# Notez que placer les entrées générales (portée globale) en premier\n"
 
-#: src/attrib.c:742
+#: src/attrib.c:749
 #, c-format
 msgid	"# entries first followed by group specific entries.\n"
 	"#\n"
 msgstr	"# est préférable, suivies des entrées spécifiques aux groupes.\n"
 	"#\n"
 
-#: src/attrib.c:743
+#: src/attrib.c:750
 #, c-format
 msgid	"############################################################################\n"
 	"\n"
 msgstr	"############################################################################\n"
 	"\n"
 
-#: src/attrib.c:749
+#: src/attrib.c:756
 #, c-format
 msgid	"# include extra headers\n"
 msgstr	"# inclure des en-têtes supplémentaires\n"
 
-#: src/attrib.c:757
+#: src/attrib.c:764
 #, c-format
 msgid	"# in *sources* set post process type to shar only\n"
 msgstr	"# dans *sources* choisir le type shar en post-traitement\n"
 
-#: src/attrib.c:761
+#: src/attrib.c:768
 #, fuzzy, c-format
 msgid	"# in *binaries* do full post processing but no TeX2ISO conversion,\n"
-msgstr	"# dans *binaries* faire traitement complet, effaçant les fichiers "
-	"temporaires\n"
+msgstr	"# dans *binaries* faire traitement complet,\n"
 
-#: src/attrib.c:762
-#, fuzzy, c-format
+#: src/attrib.c:769
+#, c-format
 msgid	"# remove tmp files and set Followup-To: poster\n"
-msgstr	"# et utiliser Followup-To: poster\n"
+msgstr	"# effaçant les fichiers temporaires et utiliser Followup-To: poster\n"
 
-#: src/cook.c:497
+#: src/cook.c:495
 msgid	"(unknown)"
 msgstr	"(inconnu)"
 
 #.
 #. * TODO: add to the right rule, give better explanation, -> lang.c
 #.
-#: src/filter.c:600 src/filter.c:608
+#: src/filter.c:597 src/filter.c:605
 msgid	"Removed from the previous rule: "
 msgstr	"Effacé de la règle précédente : "
+
+#: src/keymap.c:239
+msgid	"NULL"
+msgstr	""
 
 #: src/lang.c:42
 msgid	"1 Response"
@@ -6436,12 +6444,12 @@ msgstr	"Rendu BiDi"
 msgid	"# If ON, bi-directional text is rendered by tin\n"
 msgstr	"# Si ON, le texte bi-directionnel est affiché par tin\n"
 
-#: src/misc.c:3728
+#: src/misc.c:3750
 #, c-format
 msgid	"Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr	"Version : %s %s release %s (\"%s\") %s %s\n"
 
-#: src/misc.c:3731
+#: src/misc.c:3753
 #, c-format
 msgid	"Version: %s %s release %s (\"%s\")\n"
 msgstr	"Version : %s %s release %s (\"%s\")\n"
@@ -6479,24 +6487,24 @@ msgstr	"Réenvoyer la dernière commande (%s)\n"
 #. *       - use some sort of pager?
 #. *       - -> lang.c
 #.
-#: src/nntplib.c:1715
+#: src/nntplib.c:1724
 msgid	"MOTD: "
 msgstr	""
 
-#: src/nrctbl.c:172
+#: src/nrctbl.c:170
 #, c-format
 msgid	"couldn't expand %s\n"
 msgstr	"impossible de décompacter %s\n"
 
 # TRANSLATION MISSING
-#: src/post.c:1152
+#: src/post.c:1171
 #, c-format
 msgid	"Line %d is longer than 998 octets and should be folded, but\n"
 	"encoding is neither set to %s nor to %s\n"
 msgstr	""
 
 # TRANSLATION MISSING
-#: src/post.c:1157
+#: src/post.c:1176
 #, c-format
 msgid	"Line %d is longer than 998 octets, and should be folded, but\n"
 	"encoding is set to %s without enabling MIME_BREAK_LONG_LINES or\n"
@@ -6504,27 +6512,27 @@ msgid	"Line %d is longer than 998 octets, and should be folded, but\n"
 msgstr	""
 
 # TRANSLATION MISSING
-#: src/post.c:1159
+#: src/post.c:1178
 #, c-format
 msgid	"Line %d is longer than 998 octets, and should be folded, but\n"
 	"encoding is not set to %s\n"
 msgstr	""
 
-#: src/post.c:1974
+#: src/post.c:1993
 #, c-format
 msgid	"Posting: %.*s ..."
 msgstr	"Postage : %.*s ..."
 
 #. Check if okay to read
-#: src/read.c:214
+#: src/read.c:211
 msgid	"Aborting read, please wait..."
 msgstr	"Annulation de la lecture, un moment svp..."
 
-#: src/read.c:361
+#: src/read.c:358
 msgid	"Aborted read\n"
 msgstr	"Lecture annulée\n"
 
-#: src/read.c:417
+#: src/read.c:414
 msgid	"Draining\n"
 msgstr	"Purge\n"
 
@@ -6541,7 +6549,7 @@ msgstr	"[- Indisponible -]"
 #. * preamble
 #. * TODO: -> lang.c
 #.
-#: src/rfc2047.c:1203
+#: src/rfc2047.c:1201
 #, c-format
 msgid	"This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
 	"are reading this prefix, your mail reader probably has not yet been modified\n"
@@ -6552,19 +6560,19 @@ msgstr	"Ce message a été composé avec le format MIME 'multipart/mixed'. Si vous\
 	"ce qui suit peut paraître assez bizarre.\n"
 	"\n"
 
-#: src/save.c:978
+#: src/save.c:972
 msgid	"bytes"
 msgstr	"octets"
 
-#: src/select.c:381
+#: src/select.c:379
 msgid	"unread"
 msgstr	"non lu(s)"
 
-#: src/select.c:381
+#: src/select.c:379
 msgid	"all"
 msgstr	"tout"
 
-#: src/select.c:551 src/select.c:553
+#: src/select.c:549 src/select.c:551
 msgid	" R"
 msgstr	" R"
 

@@ -52,7 +52,6 @@ OBJ = \
 	pcre_info$o \
 	pcre_maketables$o \
 	pcre_ord2utf8$o \
-	pcre_printint$o \
 	pcre_refcount$o \
 	pcre_study$o \
 	pcre_tables$o \
@@ -121,7 +120,7 @@ dftables$X :	dftables.c pcre_maketables.c $(PCR_DEP)
 
 clean :;		$(RM) -f *$o *.a pcretest$x pcregrep$x
 
-distclean :	clean ; $(RM) -f pcre.h dftables$X chartables.c RunTest
+distclean :	clean ; $(RM) -f pcre.h dftables$X pcre_chartables.c RunTest
 
 runtest :	all
 		./RunTest
