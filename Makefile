@@ -7,9 +7,9 @@
 PROJECT	= tin
 LVER	= 1
 PVER	= 7
-SVER	= 9
+SVER	= 10
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20050629
+DVER	= 20050929
 EXE	= tin
 
 # directory structure
@@ -221,7 +221,7 @@ PCRE	= \
 	$(PCREDIR)/configure.in \
 	$(PCREDIR)/dftables.c \
 	$(PCREDIR)/pcre-config.in \
-	$(PCREDIR)/pcre.in \
+	$(PCREDIR)/pcre.h.in \
 	$(PCREDIR)/pcre_compile.c \
 	$(PCREDIR)/pcre_config.c \
 	$(PCREDIR)/pcre_dfa_exec.c \
@@ -233,7 +233,7 @@ PCRE	= \
 	$(PCREDIR)/pcre_internal.h \
 	$(PCREDIR)/pcre_maketables.c \
 	$(PCREDIR)/pcre_ord2utf8.c \
-	$(PCREDIR)/pcre_printint.c \
+	$(PCREDIR)/pcre_printint.src \
 	$(PCREDIR)/pcre_refcount.c \
 	$(PCREDIR)/pcre_study.c \
 	$(PCREDIR)/pcre_tables.c \
@@ -248,7 +248,6 @@ PCRE	= \
 	$(PCREDIR)/pcreposix.h \
 	$(PCREDIR)/pcretest.c \
 	$(PCREDIR)/perltest \
-	$(PCREDIR)/ucp_findchar.c \
 	$(PCREDIR)/ucp.h \
 	$(PCREDIR)/ucpinternal.h \
 	$(PCREDIR)/ucptable.c \

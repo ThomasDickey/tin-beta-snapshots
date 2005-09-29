@@ -3,7 +3,7 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2005-06-22
+ *  Updated   : 2005-07-02
  *  Notes     : PGP support
  *
  * Copyright (c) 1995-2005 Steven J. Madsen <steve@erinet.com>
@@ -43,9 +43,6 @@
 #	ifndef TCURSES_H
 #		include "tcurses.h"
 #	endif /* !TCURSES_H */
-#	ifndef KEYMAP_H
-#		include "keymap.h"
-#	endif /* !KEYMAP_H */
 
 
 /*

@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2005-06-29
+.\" Updated   : 2005-09-14
 .\" Notes     : needs a some work
 .\"
 .\" Macros
@@ -16,7 +16,7 @@
 .fi
 ..
 .\"
-.TH tin 5 "June 29th, 2005" "1.7.9" "A Usenet newsreader"
+.TH tin 5 "September 14th, 2005" "1.7.10" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -340,7 +340,7 @@ mailgroups index files
 .RE
 .PP
 
-.IR ${TIN_INDEX_NEWSDIR\-"${TIN_HOMEDIR\-"$HOME"}/.tin"}/.news/
+.IR ${TIN_INDEX_NEWSDIR\-"${TIN_HOMEDIR\-"$HOME"}/.tin"}/.news${NNTPSERVER+"\-$NNTPSERVER"}/
 .sp
 .RS
 newsgroups index files
@@ -524,6 +524,9 @@ Identical to the tinrc variable of the same name
 .TP
 .B thread_arts
 Identical to the tinrc variable \fBthread_articles\fP
+.TP
+.B thread_perc
+Identical to the tinrc variable \fBthread_perc\fP
 .TP
 .B x_body
 A piece of text that will be added at the start of a message body. If this
@@ -721,7 +724,7 @@ subj=\\b(cd|[rk]?)?tin(d|pre)?[\-.0\-9]*\\b
 .RS
 Keymap-file, containing "\fIkeyname\fR \fIvalue\fR \fI[value]\fR" pairs
 seperated by spaces or tabs.  Below is a list of all rebindable keynames and
-their defaults.
+their defaults. If a keynames is bound to NULL it is unassigned.
 .sp
 .nf
 .ta \w'GroupSelThdIfUnreadSelected    'u +\w'SPACE'u +\w'SPACE'u
@@ -770,7 +773,6 @@ their defaults.
 \fBPostponed\fP	^O
 \fBMenuFilterSelect\fP	^A
 \fBMenuFilterKill\fP	^K
-
 .sp
 \fBConfigSelect\fP	^J	^M
 \fBConfigLastPage\fP	G
@@ -992,6 +994,24 @@ Pool of postponed articles. This file is in
 format.
 .RE
 .PP
+
+.IR ${TIN_HOMEDIR\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT+":$NNTPPORT"}/newsgroups
+.sp
+.RS
+This file a copy of the servers newsgroups file which provides short
+descriptions of each newsgroup. It is automatically updated on startup
+except when using the ''\fB\-X\fP''or ''\fB\-q\fP'' command-line option and
+an old copy exists. Each line consist of two tab-separated fields
+"\fIgroup.name\fR	\fIone-line description\fR".
+.TP
+.B group.name
+is the name of the newsgroup
+.TP
+.B one-line description
+is a short single-line description of the group
+.RE
+.PP
+
 
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT+":$NNTPPORT"}/serverrc
 .sp

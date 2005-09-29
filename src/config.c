@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-06-20
+ *  Updated   : 2005-08-14
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -1833,7 +1833,7 @@ read_server_config(
 	}
 	JOINPATH(serverdir, rcdir, file);
 	joinpath(file, serverdir, SERVERCONFIG_FILE);
-
+	joinpath(local_newsgroups_file, serverdir, NEWSGROUPS_FILE);
 	if ((fp = fopen(file, "r")) == NULL)
 		return;
 	while (NULL != (line = tin_fgets(fp, FALSE))) {

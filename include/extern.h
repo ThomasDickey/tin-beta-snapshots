@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-06-23
+ *  Updated   : 2005-07-16
  *  Notes     :
  *
  * Copyright (c) 1997-2005 Iain Lea <iain@bricbrac.de>
@@ -78,6 +78,9 @@
 #ifdef DECL_CALLOC
 	extern void *calloc(size_t, size_t);
 #endif /* DECL_CALLOC */
+#ifdef DECL_FCHMOD
+	extern int fchmod(int, mode_t);
+#endif /* DECL_FCHMOD */
 #ifdef DECL_FCLOSE
 	extern int fclose(FILE *);
 #endif /* DECL_FCLOSE */

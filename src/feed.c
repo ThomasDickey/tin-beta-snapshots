@@ -3,7 +3,7 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2005-05-13
+ *  Updated   : 2005-07-02
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -44,14 +44,6 @@
 #		include "tcurses.h"
 #	endif /* !TCURSES_H */
 #endif /* DEBUG */
-
-#ifndef KEYMAP_H
-#	include "keymap.h"
-#endif /* !KEYMAP_H */
-
-#ifndef RFC2046_H
-#	include "rfc2046.h"
-#endif /* !RFC2046_H */
 
 
 static t_bool confirm;					/* only used for FEED_MAIL */

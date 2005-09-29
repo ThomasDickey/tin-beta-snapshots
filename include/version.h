@@ -40,13 +40,13 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.7.9"
+#		define VERSION		"1.7.10"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20050629"
-#	define RELEASENAME	"Grimsay"
+#	define RELEASEDATE	"20050929"
+#	define RELEASENAME	"Tahay"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.7"
-#	define ATTRIBUTES_VERSION	"1.0.3"
+#	define ATTRIBUTES_VERSION	"1.0.4"
 #	define FILTER_VERSION	"1.0.0"
 #	define KEYMAP_VERSION	"1.0.6"
 #	define SERVERCONFIG_VERSION	"1.0.0"

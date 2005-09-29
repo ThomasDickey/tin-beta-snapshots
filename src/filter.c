@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2005-05-04
+ *  Updated   : 2005-07-06
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -44,9 +44,6 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef KEYMAP_H
-#	include "keymap.h"
-#endif /* !KEYMAP_H */
 
 
 #define IS_READ(i)	(arts[i].status == ART_READ)
@@ -77,8 +74,8 @@
  * Easier access to hashed msgids. Note that in REFS(), y must be free()d
  * msgid is mandatory in an article and cannot be NULL
  */
-#define MSGID(x)			(x->refptr->txt)
-#define REFS(x,y)			((y = get_references(x->refptr->parent)) ? y : "")
+#define MSGID(x)			(x->refptr ? x->refptr->txt : "")
+#define REFS(x,y)			((y = get_references(x->refptr ? x->refptr->parent : NULL)) ? y : "")
 
 /*
  * global filter array
@@ -1936,7 +1933,7 @@ filter_articles(
 							break;
 
 						case FILTER_MSGID_LAST:
-							myrefs = (art->refptr->parent) ? art->refptr->parent->txt : "";
+							myrefs = art->refptr ? (art->refptr->parent ? art->refptr->parent->txt : "") : "";
 							mymsgid = MSGID(art);
 							break;
 

@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-04-19
+ *  Updated   : 2005-07-02
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -41,9 +41,6 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef KEYMAP_H
-#	include "keymap.h"
-#endif /* !KEYMAP_H */
 
 
 typedef struct thp {
@@ -475,7 +472,7 @@ make_help_page(
 			fprintf(fp, "%s", buf);
 		} else {
 			for (i = 0; i < keys.used; i++) {
-				if (keys.list[i].function == helppage->func) {
+				if (keys.list[i].function == helppage->func && keys.list[i].key) {
 					buf = my_realloc(buf, LEN);
 					snprintf(buf, LEN, "%s\t  %s", printascii(key, keys.list[i].key), _(helppage->helptext));
 					buf[LEN - 1] = '\0';

@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-06-25
+ *  Updated   : 2005-06-30
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -86,7 +86,7 @@ static t_bool parse_headers(FILE *fp, struct t_article *h);
 static t_compfunc eval_sort_arts_func(unsigned int sort_art_type);
 static void sort_base(unsigned int sort_threads_type);
 static void thread_by_multipart(void);
-static void thread_by_percentage(void);
+static void thread_by_percentage(struct t_group *group);
 static void thread_by_subject(void);
 
 
@@ -730,12 +730,12 @@ thread_by_subject(
  */
 static void
 thread_by_percentage(
-	void)
+	struct t_group *group)
 {
 	int i, j, k;
 	int root_num = 0; /* The index number of the root we are currently working on. */
 	int unmatched; /* This is the number of characters that don't match between the two strings */
-	unsigned int percentage = 100 - tinrc.thread_perc;
+	unsigned int percentage = 100 - group->attribute->thread_perc;
 	size_t slen;
 
 	/* First we need to sort art[] to simplify and speed up the matching. */
@@ -1094,7 +1094,7 @@ make_threads(
 			break;
 
 		case THREAD_PERC:
-			thread_by_percentage();
+			thread_by_percentage(group);
 			break;
 
 		default: /* not reached */

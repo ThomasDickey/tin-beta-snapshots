@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2005-06-22
+# Updated: 2005-07-02
 #
 # Copyright (c) 1995-2005 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -499,10 +499,10 @@ $(OBJDIR)/color$o :		$(SRCDIR)/color.c $(TIN_DEP)
 $(OBJDIR)/config$o :		$(SRCDIR)/config.c $(TIN_DEP) \
 				$(INCDIR)/tnntp.h \
 				$(INCDIR)/version.h
-$(OBJDIR)/curses$o :		$(SRCDIR)/curses.c $(TIN_DEP) \
-				$(INCDIR)/tnntp.h
 $(OBJDIR)/cook$o :		$(SRCDIR)/cook.c $(TIN_DEP) \
 				$(INCDIR)/rfc2046.h
+$(OBJDIR)/curses$o :		$(SRCDIR)/curses.c $(TIN_DEP) \
+				$(INCDIR)/tnntp.h
 $(OBJDIR)/debug$o :		$(SRCDIR)/debug.c $(TIN_DEP) \
 				$(INCDIR)/newsrc.h
 $(OBJDIR)/envarg$o :		$(SRCDIR)/envarg.c $(TIN_DEP)
@@ -600,9 +600,9 @@ $(OBJDIR)/strftime$o :		$(SRCDIR)/strftime.c $(TIN_DEP)
 $(OBJDIR)/string$o :		$(SRCDIR)/string.c $(TIN_DEP)
 $(OBJDIR)/tags$o :		$(SRCDIR)/tags.c $(TIN_DEP)
 $(OBJDIR)/tcurses$o :		$(SRCDIR)/tcurses.c $(TIN_DEP)
-$(OBJDIR)/tmpfile$o :		$(SRCDIR)/tmpfile.c $(TIN_DEP)
 $(OBJDIR)/thread$o :		$(SRCDIR)/thread.c $(TIN_DEP) \
 				$(INCDIR)/keymap.h
+$(OBJDIR)/tmpfile$o :		$(SRCDIR)/tmpfile.c $(TIN_DEP)
 $(OBJDIR)/version$o :		$(SRCDIR)/version.c $(TIN_DEP) \
 				$(INCDIR)/keymap.h \
 				$(INCDIR)/version.h

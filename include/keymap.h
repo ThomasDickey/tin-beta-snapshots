@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2005-04-10
+ *  Updated   : 2005-07-16
  *  Notes     :
  *
  * Copyright (c) 1999-2005 Jason Faultless <jason@altarstone.com>
@@ -384,8 +384,8 @@ extern struct keylist select_keys;
 extern struct keylist thread_keys;
 
 
-extern t_function key_to_func (const char key, struct keylist keys);
-extern char func_to_key (t_function func, struct keylist keys);
+extern char func_to_key (t_function func, const struct keylist keys);
+extern t_function global_mouse_action(t_function (*left_action) (void), t_function (*right_action) (void));
 extern t_function handle_keypad(
 	t_function (*left_action) (void),
 	t_function (*right_action) (void),
@@ -393,8 +393,6 @@ extern t_function handle_keypad(
 		t_function (*left_action) (void),
 		t_function (*right_action) (void)),
 	const struct keylist keys);
-extern t_function global_mouse_action(
-	t_function (*left_action) (void),
-	t_function (*right_action) (void));
-extern t_function prompt_slk_response(t_function default_func, struct keylist keys, const char *fmt, ...);
+extern t_function key_to_func (const char key, const struct keylist keys);
+extern t_function prompt_slk_response(t_function default_func, const struct keylist keys, const char *fmt, ...);
 #endif /* !KEYMAP_H */

@@ -3,7 +3,7 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 2005-02-12
+ *  Updated   : 2005-07-02
  *
  * Copyright (c) 1997-2005 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
@@ -40,9 +40,6 @@
 #ifndef TNNTP_H
 #	include "tnntp.h"
 #endif /* !TNNTP_H */
-#ifndef KEYMAP_H
-#	include "keymap.h"
-#endif /* !KEYMAP_H */
 
 
 /*

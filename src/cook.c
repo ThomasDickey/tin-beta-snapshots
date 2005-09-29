@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2004-11-04
+ *  Updated   : 2005-07-20
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2005 Jason Faultless <jason@altarstone.com>
@@ -40,9 +40,7 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef RFC2046_H
-#	include "rfc2046.h"
-#endif /* !RFC2046_H */
+
 
 /*
  * We malloc() this many t_lineinfo's at a time
@@ -507,7 +505,7 @@ process_text_body_part(
 		 * Skip output if we're hiding uue or the sig
 		 */
 		if (in_uue && hide_uue)
-			continue;						/* No further processing needed */
+			continue;	/* No further processing needed */
 
 		flags = in_sig ? C_SIG : C_BODY;
 

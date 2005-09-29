@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-06-21
+ *  Updated   : 2005-07-20
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -41,12 +41,6 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef KEYMAP_H
-#	include "keymap.h"
-#endif /* !KEYMAP_H */
-#ifndef RFC2046_H
-#	include "rfc2046.h"
-#endif /* !RFC2046_H */
 #ifndef VERSION_H
 #	include "version.h"
 #endif /* !VERSION_H */
@@ -1120,14 +1114,39 @@ check_article_to_be_posted(
 		}
 #endif /* CHARSET_CONVERSION */
 
-		col = 0;
-		for (cp = line; *cp; cp++) {
-			if (!contains_8bit && !isascii(*cp))
-				contains_8bit = TRUE;
-			if (*cp == '\t')
-				col += 8 - (col % 8);
-			else
-				col++;
+		{
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			int num_bytes, wc_width;
+			wchar_t wc;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
+			col = 0;
+			for (cp = line; *cp; ) {
+				if (*cp == '\t') {
+					col += 8 - (col % 8);
+					cp++;
+				} else {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+					if ((num_bytes = mbtowc(&wc, cp, MB_CUR_MAX)) != -1) {
+						cp += num_bytes;
+						if (!contains_8bit && num_bytes > 1)
+							contains_8bit = TRUE;
+						if (iswprint(wc) && ((wc_width = wcwidth(wc)) != -1))
+							col += wc_width;
+						else
+							col++;
+					} else {
+						cp++;
+						col++;
+					}
+#else
+					if (!contains_8bit && !isascii(*cp))
+						contains_8bit = TRUE;
+					cp++;
+					col++;
+#endif /* MULTIBYTE_ABLE && ! NO_LOCALE */
+				}
+			}
 		}
 		if (col > MAX_COL && !got_long_line) {
 			setup_check_article_screen(&init);
@@ -3100,12 +3119,16 @@ mail_to_author(
 	char subject[HEADER_LEN];
 	char initials[64];
 	int ret_code = POSTED_NONE;
+	int i;
 	struct t_header note_h = pgart.hdr;
 
 	wait_message(0, _(txt_reply_to_author));
 	find_reply_to_addr(from_addr, FALSE, &pgart.hdr);
 
-	if (check_for_spamtrap(from_addr)) {
+	i = gnksa_check_from(from_addr);
+
+	/* TODO: make gnksa error level configurable */
+	if (check_for_spamtrap(from_addr) || (i > GNKSA_OK && i < GNKSA_ILLEGAL_UNQUOTED_CHAR)) {
 		char keyabort[MAXKEYLEN], keycont[MAXKEYLEN];
 		t_function func;
 
@@ -3171,8 +3194,7 @@ mail_to_author(
 					 */
 					fseek(pgart.cooked, 0L, SEEK_SET);
 				} else { /* without headers */
-					int i = 0;
-
+					i = 0;
 					while (pgart.cookl[i].flags & C_HEADER) /* skip headers in cooked art if any */
 						i++;
 					if (i) /* cooked art contained any headers, so skip also the header/body seperator */
@@ -3287,7 +3309,7 @@ cancel_article(
 	int oldraw;
 	struct t_header note_h = pgart.hdr, hdr;
 	t_bool redraw_screen = FALSE;
-	t_function func = POST_CANCEL;
+	t_function func;
 	t_function default_func = POST_CANCEL;
 
 	msg_init_headers();

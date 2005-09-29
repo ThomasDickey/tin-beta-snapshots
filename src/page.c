@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-06-18
+ *  Updated   : 2005-07-02
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -41,12 +41,7 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef KEYMAP_H
-#	include "keymap.h"
-#endif /* !KEYMAP_H */
-#ifndef RFC2046_H
-#	include "rfc2046.h"
-#endif /* !RFC2046_H */
+
 
 #if defined(HAVE_IDNA_H) && !defined(_IDNA_H)
 #	include <idna.h>
@@ -1703,14 +1698,14 @@ load_article(
 #endif /* DEBUG */
 
 	if (new_respnum != this_resp) {
-		char *progress_mesg;
+		char *progress_mesg = my_strdup(_(txt_reading_article));
 		int ret;
 
 		art_close(&pgart);			/* close previously opened art in pager */
 
-		progress_mesg = my_strdup(_(txt_reading_article));
 		ret = art_open(TRUE, &arts[new_respnum], group, &pgart, TRUE, progress_mesg);
 		free(progress_mesg);
+
 		switch (ret) {
 			case ART_UNAVAILABLE:
 				art_mark(group, &arts[new_respnum], ART_READ);

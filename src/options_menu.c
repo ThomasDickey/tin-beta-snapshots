@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2005-06-22
+ *  Updated   : 2005-07-02
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2005 Michael Bienia <michael@vorlon.ping.de>
@@ -44,9 +44,7 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef KEYMAP_H
-#	include "keymap.h"
-#endif /* !KEYMAP_H */
+
 
 #define option_lines_per_page (cLINES - INDEX_TOP - 3)
 
@@ -177,9 +175,6 @@ option_is_visible(
 		case OPT_MONO_MARKSLASH:
 		case OPT_MONO_MARKSTROKE:
 			return tinrc.word_highlight;
-
-		case OPT_THREAD_PERC:
-			return (tinrc.thread_articles == THREAD_PERC);
 
 		default:
 			return TRUE;

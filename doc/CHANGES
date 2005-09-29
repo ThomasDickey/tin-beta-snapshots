@@ -1,3 +1,48 @@
+-- 1.7.10 release 20050929 "Tahay" --
+
+U052) Jessica Brennan <jib@panix.com>
+      Urs Janssen <urs@tin.org>
+      ADD. check for new mail now also works with maildir-format
+      FIX. misc.c
+
+U051) Matthias Buelow <mkb@incubus.de>
+      ADD. cache nntp-username and password
+      FIX. auth.c
+
+U050) Thomas Bliem <bliem@math.uni-wuppertal.de>
+      BUG. typos in the german translation
+      FIX. de.po
+
+U049) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
+U048) Michael Bienia <michael@vorlon.ping.de>
+      ADD. user defined keymappings now do override default bindings
+      ADD. look at char-width for long line warning
+      FIX. keymap.c
+
+U047) Urs Janssen <urs@tin.org>
+      BUG. crash on broken overview data
+      BUG. long line warning was wrong in multibyte environments
+      BUG. incorrect prototypes for key_to_func(), func_to_key() and
+           prompt_slk_response()
+      BUG. newsgroups file caching didn't work
+      ADD. pcre update (6.1 -> 6.4)
+      ADD. check replyto address befor mailing
+      ADD. a few missing german translations
+      ADD. config.guess, config.sub update
+      ADD. allow unbinding keys by mapping them to "NULL"
+      ADD. configure check for in_addr_t, mksh and fchmod declaration
+      FIX. autoconf.h[in], extern.h, keymap.h, config.c, filter.c, header.c
+           help.c, init.c, keymap.c, mail.c, main.c, misc.c, nntplib.c, post.c
+           thread.c, de.po, config.guess, config.sub, aclocal.m4
+           configure[.in], pcre/*
+
+U046) Travis Brown <travisb@sfu.ca>
+      ADD. THREAD_PERC to attributes
+      FIX. tin.h, art.c, attrib.c, tin.5
+
 -- 1.7.9 release 20050629 "Grimsay" --
 
 U045) Thomas E. Dickey <dickey@invisible-island.net>

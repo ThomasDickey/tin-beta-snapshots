@@ -521,7 +521,7 @@ show_progress(
 	last_count = count;
 	gettimeofday(&last_time, NULL);
 
-#else /* HAVE_GETTIMEOFDAY */
+#else
 	snprintf(display, sizeof(display), "%s %3d%%", txt, ratio);
 #endif /* HAVE_GETTIMEOFDAY */
 

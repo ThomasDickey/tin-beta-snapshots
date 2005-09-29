@@ -3,7 +3,7 @@
  *  Module    : nntplib.h
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-05-23
+ *  Updated   : 2005-07-21
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -170,27 +170,28 @@
  * CAPABILITIES
  */
 struct t_capabilities {
-	unsigned int type:3;				/* none, LIST EXTENSIONS, CAPABILITIES */
+	unsigned int type:3;			/* none, LIST EXTENSIONS, CAPABILITIES */
 	unsigned int version;			/* CAPABILITIES version */
 	t_bool mode_reader:1;			/* MODE-READER: "MODE READER" */
-	t_bool reader:1;					/* READER: "ARTCILE", "BODY", "LISTGROUP" */
-	t_bool post:1;						/*	POST */
+	t_bool reader:1;				/* READER: "ARTCILE", "BODY", "LISTGROUP" */
+	t_bool post:1;					/* POST */
 	t_bool list_active:1;			/* LIST ACTIVE */
-	t_bool list_active_times:1;	/* LIST ACTIVE.TIMES, optional */
-	t_bool list_distrib_pats:1;	/* LIST DISTRIB.PATS, optional */
+	t_bool list_active_times:1;		/* LIST ACTIVE.TIMES, optional */
+	t_bool list_distrib_pats:1;		/* LIST DISTRIB.PATS, optional */
 	t_bool list_headers:1;			/* LIST HEADERS */
 	t_bool list_newsgroups:1;		/* LIST NEWSGROUPS */
-	t_bool list_overview_fmt:1;	/* LIST OVERVIEW.FMT */
+	t_bool list_overview_fmt:1;		/* LIST OVERVIEW.FMT */
 	t_bool list_motd:1;				/* LIST MOTD, "private" extension */
 	t_bool list_subscriptions:1;	/* LIST SUBSCRIPTIONS, "private" extension, RFC 2980 */
 	t_bool list_distributions:1;	/* LIST DISTRIBUTIONS, "private" extension, RFC 2980 */
-	t_bool xpat:1;						/* XPAT, "private" extension, RFC 2980 */
-	t_bool hdr:1;						/* HDR: "HDR", "LIST HEADERS" */
-	const char *hdr_cmd;				/* [X]HDR */
-	t_bool over:1;						/* OVER: "OVER", "LIST OVERVIEW.FMT" */
-	t_bool over_msgid:1;				/* OVER: "OVER mid" */
+	t_bool list_moderators:1;		/* LIST MODERATORS, "private" extension */
+	t_bool xpat:1;					/* XPAT, "private" extension, RFC 2980 */
+	t_bool hdr:1;					/* HDR: "HDR", "LIST HEADERS" */
+	const char *hdr_cmd;			/* [X]HDR */
+	t_bool over:1;					/* OVER: "OVER", "LIST OVERVIEW.FMT" */
+	t_bool over_msgid:1;			/* OVER: "OVER mid" */
 	const char *over_cmd;			/* [X]OVER */
-	t_bool newnews:1;					/* NEWNEWS */
+	t_bool newnews:1;				/* NEWNEWS */
 	char *implementation;			/* IMPLEMENTATION */
 	t_bool starttls:1;				/* STARTTLS */
 	t_bool authinfo_user:1;			/* AUTHINFO USER/PASS */
@@ -198,7 +199,7 @@ struct t_capabilities {
 #if 0
 	t_bool sasl_cram_md5:1;			/* SASL CRAM-MD5 */
 	t_bool sasl_digest_md5:1;		/* SASL DIGEST-MD5 */
-	t_bool sasl_plain:1;				/* SASL PLAIN */
+	t_bool sasl_plain:1;			/* SASL PLAIN */
 	t_bool sasl_gssapi:1;			/* SASL GSSAPI */
 	t_bool sasl_external:1;			/* SASL EXTERNAL */
 	t_bool streaming:1;				/* STREAMING: "MODE STREAM", "CHECK", "TAKETHIS" */

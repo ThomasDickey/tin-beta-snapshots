@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-05-10
+ *  Updated   : 2005-07-27
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -41,9 +41,7 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-#ifndef KEYMAP_H
-#	include "keymap.h"
-#endif /* !KEYMAP_H */
+
 
 #define IS_EXPIRED(a) ((a)->article == ART_UNAVAILABLE || arts[(a)->article].thread == ART_EXPIRED)
 
@@ -797,7 +795,7 @@ thread_page(
 				break;
 
 			default:
-				info_message(_(txt_bad_command), printascii(key, key_to_func(GLOBAL_HELP, thread_keys)));
+				info_message(_(txt_bad_command), printascii(key, func_to_key(GLOBAL_HELP, thread_keys)));
 		}
 	} /* ret_code >= 0 */
 

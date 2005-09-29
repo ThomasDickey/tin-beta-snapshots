@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2005-06-09
+dnl Updated   : 2005-07-16
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2005 Thomas E. Dickey <dickey@invisible-island.net>
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.7.9
+VERSION=1.7.10
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -386,14 +386,14 @@ pdcurses) #(vi
 none)
 	AC_MSG_CHECKING(if you want to use ncurses library)
 	AC_ARG_WITH(ncurses,
-		[  --with-ncurses          link with ncurses if available],
+		[  --with-ncurses          link with ncurses if available (depriciated)],
 		[use_ncurses=$withval],
 		[use_ncurses=no])
 	AC_MSG_RESULT($use_ncurses)
 
 	AC_MSG_CHECKING(if you want curses rather than termcap interface)
 	CF_ARG_ENABLE(curses,
-		[  --enable-curses         use curses interface],
+		[  --enable-curses         use curses interface (depriciated)],
 		[cf_with_screen=curses;  use_curses=$withval],
 		[cf_with_screen=termcap; use_curses=no])
 	AC_MSG_RESULT($enableval)
@@ -436,7 +436,7 @@ CF_BUNDLED_PCRE($PCRE_HOME)
 
 PCRE_MAKEFILE=
 if test "$PCRE_HOME" = "no" ; then
-	PCRE_MAKEFILE="$PCRE_MAKEFILE pcre/Makefile pcre/RunTest pcre/pcre.h:pcre/pcre.in"
+	PCRE_MAKEFILE="$PCRE_MAKEFILE pcre/Makefile pcre/RunTest pcre/pcre.h"
 fi
 
 ## debugging libraries (do this after other libraries)
@@ -752,6 +752,11 @@ AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_CHECK_TYPE(ssize_t, int)
 AC_CHECK_TYPE(time_t, long)
+AC_EGREP_HEADER(in_addr_t, netinet/in.h, ,[
+	AC_EGREP_HEADER(in_addr_t, sys/endian.h, ,[
+		AC_CHECK_TYPE(in_addr_t, unsigned long)]
+	)]
+)
 AC_TYPE_UID_T
 
 dnl test to see if quad_t is defined
@@ -1102,6 +1107,7 @@ CF_CHECK_DECL(\
 	bcopy \
 	bzero \
 	calloc \
+	fchmod \
 	fclose \
 	fdopen \
 	fflush \

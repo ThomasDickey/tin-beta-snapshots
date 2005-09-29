@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2005-06-17
+ *  Updated   : 2005-07-21
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -630,8 +630,8 @@ get_tcp6_socket(
 #		endif /* PF_UNSPEC */
 #	endif /* AF_UNSPEC */
 	memset(&hints, 0, sizeof(hints));
-/*	hints.ai_flags    = AI_CANONNAME; */
-	hints.ai_family   = ADDRFAM;
+/*	hints.ai_flags = AI_CANONNAME; */
+	hints.ai_family = ADDRFAM;
 	hints.ai_socktype = SOCK_STREAM;
 	res = (struct addrinfo *) 0;
 	res0 = (struct addrinfo *) 0;
@@ -1003,7 +1003,7 @@ check_extensions(
 							nntp_caps.list_active_times = TRUE;
 						else if (!strcasecmp(d, "DISTRIB.PATS"))
 							nntp_caps.list_distrib_pats = TRUE;
-						else if (!strcasecmp(d, "DISTRIBUTIONS"))
+						else if (!strcasecmp(d, "DISTRIBUTIONS")) /* LIST DISTRIBUTIONS, "private" extension, RFC 2980 */
 							nntp_caps.list_distributions = TRUE;
 						else if (!strcasecmp(d, "HEADERS"))
 							nntp_caps.list_headers = TRUE; /* HDR requires LIST HEADERS, but not vice versa */
@@ -1015,6 +1015,8 @@ check_extensions(
 							nntp_caps.list_motd = TRUE;
 						else if (!strcasecmp(d, "SUBSCRIPTIONS")) /* "private" extension, RFC 2980 */
 							nntp_caps.list_subscriptions = TRUE;
+						else if (!strcasecmp(d, "MODERATORS")) /* "private" extension */
+							nntp_caps.list_moderators = TRUE;
 						d = strpbrk(d, " \t");
 					}
 				} else if (!strcasecmp(ptr, "IMPLEMENTATION"))
@@ -1104,9 +1106,16 @@ check_extensions(
 		buf[0] = '\0';
 		i = new_nntp_command("LIST EXTENSIONS", OK_EXTENSIONS, buf, sizeof(buf));
 		switch (i) {
-			case OK_EXTENSIONS:	/* as defined draft-ietf-nntpext-base-24.txt */
+			case 215:	/* Netscape-Collabra/3.52 (badly broken); NetWare-News-Server/5.1 */
+#		ifdef DEBUG
+				debug_nntp("LIST EXTENSIONS", "skipping data");
+#		endif /* DEBUG */
+				while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL)
+					;
+				break;
+
+			case OK_EXTENSIONS:	/* as defined draft-ietf-nntpext-base-27.txt */
 			case 205:	/* M$ Exchange 5.5 */
-			case 215:	/* Netscape-Collabra/3.52 && NetWare-News-Server/5.1 */
 				nntp_caps.type = LIST_EXTENSIONS;
 				while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 					if (nntp_caps.type == LIST_EXTENSIONS) {

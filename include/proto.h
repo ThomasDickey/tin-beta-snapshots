@@ -585,11 +585,11 @@ extern void stow_cursor(void);
 extern void wait_message(unsigned int sdelay, const char *fmt, ...);
 
 /* search.c */
+extern enum option_enum search_config(t_bool forward, t_bool repeat, enum option_enum current, enum option_enum last);
 extern int get_search_vectors(int *start, int *end);
 extern int search(t_function func, int current_art, t_bool repeat);
 extern int search_active(t_bool forward, t_bool repeat);
 extern int search_article(t_bool forward, t_bool repeat, int start_line, int lines, t_lineinfo *line, int reveal_ctrl_l_lines, FILE *fp);
-extern enum option_enum search_config(t_bool forward, t_bool repeat, enum option_enum current, enum option_enum last);
 extern int search_body(struct t_group *group, int current_art, t_bool repeat);
 extern void reset_srch_offsets(void);
 

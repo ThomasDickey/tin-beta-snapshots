@@ -57,7 +57,7 @@ t_bool have_linescroll = TRUE;	/* USE_CURSES always allows line scrolling */
 #define DEFAULT_COLUMNS_ON_TERMINAL	80
 
 int cLINES = DEFAULT_LINES_ON_TERMINAL - 1;
-int cCOLS  = DEFAULT_COLUMNS_ON_TERMINAL;
+int cCOLS = DEFAULT_COLUMNS_ON_TERMINAL;
 int _hp_glitch = FALSE;		/* stdout not erased by overwriting on HP terms */
 static int _inraw = FALSE;	/* are we IN rawmode? */
 static int xclicks = FALSE;	/* do we have an xterm? */
@@ -335,9 +335,9 @@ get_termcaps(
 	for (n = 0; n < ARRAY_SIZE(table); n++) {
 		*(table[n].value) = TGETSTR(table[n].capname, &ptr);
 	}
-	_lines          = TGETNUM(dCAPNAME("li", "lines"));
-	_columns        = TGETNUM(dCAPNAME("co", "cols"));
-	_hp_glitch      = TGETFLAG(dCAPNAME("xs", "xhp"));
+	_lines = TGETNUM(dCAPNAME("li", "lines"));
+	_columns = TGETNUM(dCAPNAME("co", "cols"));
+	_hp_glitch = TGETFLAG(dCAPNAME("xs", "xhp"));
 
 #	if defined(USE_TERMCAP) && defined(HAVE_EXTERN_TCAP_PC)
 	t = TGETSTR(CAPNAME("pc", "pad"), &p);
@@ -347,10 +347,10 @@ get_termcaps(
 
 	if (STRCMPEQ(the_termname, "xterm")) {
 		static char x_init[] = "\033[?9h";
-		static char x_end[]  = "\033[?9l";
+		static char x_end[] = "\033[?9l";
 		xclicks = TRUE;
-		_xclickinit	= x_init;
-		_xclickend	= x_end;
+		_xclickinit = x_init;
+		_xclickend = x_end;
 	}
 
 	if (NO_CAP(_clearscreen)) {
@@ -418,35 +418,34 @@ InitScreen(
 	 * we're going to assume a terminal here...
 	 */
 
-	_clearscreen	= "\033[1;1H\033[J";
-	_moveto		= "\033[%d;%dH";	/* not a termcap string! */
-	_cleartoeoln	= "\033[K";
-	_setinverse	= "\033[7m";
-	_clearinverse	= "\033[0m";
-	_setunderline	= "\033[4m";
-	_clearunderline	= "\033[0m";
-	_keypadlocal	= "";
-	_keypadxmit	= "";
+	_clearscreen = "\033[1;1H\033[J";
+	_moveto = "\033[%d;%dH";	/* not a termcap string! */
+	_cleartoeoln = "\033[K";
+	_setinverse = "\033[7m";
+	_clearinverse = "\033[0m";
+	_setunderline = "\033[4m";
+	_clearunderline = "\033[0m";
+	_keypadlocal = "";
+	_keypadxmit = "";
 #	ifdef VMS
-	_cleartoeos	= "\033[J";
-	_terminalinit	= NULL;
-	_terminalend	= "";
+	_cleartoeos = "\033[J";
+	_terminalinit = NULL;
+	_terminalend = "";
 #	endif /* VMS */
 	/* needed for word highlighting */
-	_reset		= "\033[0m";
-	_reversevideo	= "\033[7m";
-	_blink		= "\033[5m";
-	_dim		= "\033[2m";
-	_bold		= "\033[1m";
+	_reset = "\033[0m";
+	_reversevideo = "\033[7m";
+	_blink = "\033[5m";
+	_dim = "\033[2m";
+	_bold = "\033[1m";
 
 	_lines = _columns = -1;
 
-	if ((ptr = getenv("LINES")) != 0) {
+	if ((ptr = getenv("LINES")) != 0)
 		_lines = atol(ptr);
-	}
-	if ((ptr = getenv("COLUMNS")) != 0) {
+
+	if ((ptr = getenv("COLUMNS")) != 0)
 		_columns = atol(ptr);
-	}
 
 	/*
 	 * If that failed, try get a response from the console itself
@@ -508,7 +507,7 @@ InitScreen(
 			xclicks = TRUE;
 			if (!eightbit) {
 				_xclickinit = "\033[?9h";
-				_xclickend  = "\033[?9l";
+				_xclickend = "\033[?9l";
 			}
 #			if 0
 			else {

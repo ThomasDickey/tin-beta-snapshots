@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2004-06-30
+ *  Updated   : 2005-08-16
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -289,8 +289,10 @@ do_authinfo_original(
 /*
  * NNTP user authorization. Returns TRUE if authorization succeeded,
  * FALSE if not.
- * Password read from ~/.newsauth or, if not present or no matching
+ * If username/passwd already given, and server wasn't changed, retry those.
+ * Otherwise, read password from ~/.newsauth or, if not present or no matching
  * server found, from console.
+ *
  * The ~/.newsauth authorization file has the format:
  *   nntpserver1 password [user]
  *   nntpserver2 password [user]
@@ -303,22 +305,36 @@ authinfo_original(
 	t_bool startup)
 {
 	char *authpass;
-	char authusername[PATH_LEN];
-	char authpassword[PATH_LEN];
 	int ret = ERR_AUTHBAD, changed;
+	static char authusername[PATH_LEN] = "";
+	static char authpassword[PATH_LEN] = "";
 	static char last_server[PATH_LEN] = "";
 	static t_bool already_failed = FALSE;
+	static t_bool initialized = FALSE;
 
 #ifdef DEBUG
 	debug_nntp("authorization", "original authinfo");
 #endif /* DEBUG */
+
+
+	changed = strcmp(server, last_server);	/* do we need new auth values? */
+	strncpy(last_server, server, PATH_LEN - 1);
+	last_server[PATH_LEN - 1] = '\0';
+
+	/*
+	 * Let's try the previous auth pair first, if applicable.
+	 * Else, proceed to the other mechanisms.
+	 */
+	if (initialized && !changed && !already_failed && do_authinfo_original(server, authusername, authpassword))
+		return TRUE;
 
 	authpassword[0] = '\0';
 	authuser = strncpy(authusername, authuser, sizeof(authusername) - 1);
 	authpass = authpassword;
 
 	/*
-	 * read .newsauth only if we had not failed authentication yet for the
+	 * No username/password given yet.
+	 * Read .newsauth only if we had not failed authentication yet for the
 	 * current server (we don't want to try wrong username/password pairs
 	 * more than once because this may lead to an infinite loop at connection
 	 * startup: nntp_open tries to authenticate, it fails, server closes
@@ -330,7 +346,7 @@ authinfo_original(
 	 * and restart tin or change to another server and back in order to get
 	 * it read again.
 	 */
-	if ((changed = strcmp(server, last_server)) || (!changed && !already_failed)) {
+	if (changed || (!changed && !already_failed)) {
 		already_failed = FALSE;
 		if (read_newsauth_file(server, authuser, authpass)) {
 			ret = do_authinfo_original(server, authuser, authpass);
@@ -338,6 +354,7 @@ authinfo_original(
 #ifdef DEBUG
 				debug_nntp("authorization", "succeeded");
 #endif /* DEBUG */
+				initialized = TRUE;
 				return TRUE;
 			}
 		}
@@ -392,6 +409,7 @@ authinfo_original(
 #endif /* USE_CURSES */
 
 		ret = do_authinfo_original(server, authuser, authpass);
+		initialized = TRUE;
 		my_retouch();			/* Get rid of the chaff */
 	}
 
