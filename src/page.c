@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-07-02
+ *  Updated   : 2005-10-19
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1658,7 +1658,7 @@ draw_page_header(
 	cur_pos += strlen(tmp);
 	free(tmp);
 
-	if (note_h->org && cCOLS - cur_pos - 1 >= strlen(_(txt_at_s)) - 2 + 3) {
+	if (note_h->org && cCOLS - cur_pos - 1 >= (int) strlen(_(txt_at_s)) - 2 + 3) {
 		/* we have enough space to print at least " at ..." */
 		snprintf(buf, line_len, _(txt_at_s), note_h->org);
 

@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-06-20
+ *  Updated   : 2005-10-19
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -451,6 +451,9 @@ of %s to be configured via a menu.\n\n\
 For more information read the manual page, README, INSTALL, TODO and FTP files.\n\
 Please send bug-reports/comments to %s with the 'R' command.\n");
 constext txt_invalid_from[] = N_("Invalid  From: %s  line. Read the INSTALL file again.");
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	constext txt_invalid_multibyte_sequence[] = N_("Invalid multibyte sequence found\n");
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 constext txt_invalid_sender[] = N_("Invalid  Sender:-header %s");
 constext txt_inverse_off[] = N_("Inverse video disabled");
 constext txt_inverse_on[] = N_("Inverse video enabled");

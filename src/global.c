@@ -3,7 +3,7 @@
  *  Module    : global.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-12
- *  Updated   : 2005-07-02
+ *  Updated   : 2005-10-19
  *  Notes     : Generic nagivation and key handling routines
  *
  * Copyright (c) 1999-2005 Jason Faultless <jason@altarstone.com>
@@ -357,7 +357,11 @@ handle_keypad(
 		t_function (*right_action) (void)),
 	const struct keylist keys)
 {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wint_t ch = ReadWch();
+#else
 	int ch = ReadCh();
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	t_function func = NOT_ASSIGNED;
 
 	switch (ch) {
@@ -365,7 +369,7 @@ handle_keypad(
 #	ifdef HAVE_KEY_PREFIX
 		case KEY_PREFIX:
 #	endif /* HAVE_KEY_PREFIX */
-			switch (get_arrow_key(ch)) {
+			switch (get_arrow_key((int) ch)) {
 				case KEYMAP_UP:
 					func = GLOBAL_LINE_UP;
 					break;

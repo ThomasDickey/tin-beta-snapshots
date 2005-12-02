@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2005-04-16
+ *  Updated   : 2005-11-04
  *  Notes     :
  *
  * Copyright (c) 1997-2005 Urs Janssen <urs@tin.org>
@@ -75,8 +75,9 @@
  * special ltoa()
  * converts value into a string with a maxlen of digits (usualy should be
  * >=4), last char may be one of the following:
- * Kilo, Mega, Giga, Terra, Peta, Exa, Zetta, Yotta,
- * Xona, Weka, Vunda, Uda (these last 4 are no official SI-prefixes)
+ * 'K'ilo, 'M'ega, 'G'iga, 'T'erra, 'P'eta, 'E'xa, 'Z'etta, 'Y'otta,
+ * 'X'ona, 'W'eka, 'V'unda, 'U'da (these last 4 are no official SI-prefixes)
+ * or 'e' if an error occurs
  */
 char *
 tin_ltoa(
@@ -88,8 +89,10 @@ tin_ltoa(
 	int len;
 	size_t i = 0;
 
-	if (digits <= 0)
-		return NULL;
+	if (digits <= 0) {
+		buffer[0] = 'e';
+		return buffer;
+	}
 
 	snprintf(buffer, sizeof(buffer), "%ld", value);
 	len = (int) strlen(buffer);
@@ -99,8 +102,9 @@ tin_ltoa(
 		i++;
 	}
 
-	if (i >= strlen(power)) {
-		buffer[(digits & 0xff)] = '\0';
+	if (i >= strlen(power)) {	/* buffer is to small */
+		buffer[(digits & 0x7f) - 1] = 'e';
+		buffer[(digits & 0x7f)] = '\0';
 		return buffer;
 	}
 
@@ -108,7 +112,11 @@ tin_ltoa(
 		while (len < (digits - 1))
 			buffer[len++] = ' ';
 
-		buffer[digits - 1] = power[i];
+		if (digits > len)
+			buffer[digits - 1] = power[i];
+		else /* overflow */
+			buffer[digits - 1] = 'e';
+
 		buffer[digits] = '\0';
 	} else
 		snprintf(buffer, sizeof(buffer), "%*ld", digits, value);

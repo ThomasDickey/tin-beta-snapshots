@@ -3,7 +3,7 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-07-02
+ *  Updated   : 2005-10-19
  *  Notes     :
  *
  * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
@@ -163,19 +163,39 @@ prompt_yn(
 {
 	char *keyprompt;
 	char keyno[MAXKEYLEN], keyyes[MAXKEYLEN];
+	int keyyes_len = 0, keyno_len = 0, maxlen;
+	t_function func;
+#if defined (MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wint_t yes, no, prompt_ch, ch;
+	wchar_t *wtmp;
+#else
 	char yes, no, prompt_ch;
 	int ch;
-	size_t maxlen;
-	t_function func;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 /*	fflush(stdin); */		/* Prevent finger trouble from making important decisions */
 
 	yes = func_to_key(PROMPT_YES, prompt_keys);
 	no = func_to_key(PROMPT_NO, prompt_keys);
 
+#if defined (MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	printascii(keyyes, (default_answer ? towupper(yes) : yes));
+	if ((wtmp = char2wchar_t(keyyes))) {
+		keyyes_len = wcswidth(wtmp, wcslen(wtmp));
+		free(wtmp);
+	}
+	printascii(keyno, (!default_answer ? towupper(no) : no));
+	if ((wtmp = char2wchar_t(keyno))) {
+		keyno_len = wcswidth(wtmp, wcslen(wtmp));
+		free(wtmp);
+	}
+#else
 	printascii(keyyes, (default_answer ? toupper(yes) : yes));
 	printascii(keyno, (!default_answer ? toupper(no) : no));
-	maxlen = MAX(strlen(keyyes), strlen(keyno));
+	keyyes_len = (int) strlen(keyyes);
+	keyno_len = (int) strlen(keyno);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	maxlen = MAX(keyyes_len, keyno_len);
 
 	do {
 		prompt_ch = (default_answer ? yes : no);
@@ -185,14 +205,18 @@ prompt_yn(
 			MoveCursor(cLINES, 0);
 			CleartoEOLN();
 		}
-		my_printf("%s (%s/%s) %-*s", prompt, keyyes, keyno, (int) maxlen, keyprompt);
+		my_printf("%s (%s/%s) %-*s", prompt, keyyes, keyno, maxlen, keyprompt);
 		if (!cmd_line)
 			cursoron();
 		my_flush();
 		if (!cmd_line)
-			MoveCursor(cLINES, (int) strlen(prompt) + strlen(keyyes) + strlen(keyno) + 5);
+			MoveCursor(cLINES, (int) strlen(prompt) + keyyes_len + keyno_len + 5);
 
+#if defined (MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if (((ch = ReadWch()) == '\n') || (ch == '\r'))
+#else
 		if (((ch = (char) ReadCh()) == '\n') || (ch == '\r'))
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			ch = prompt_ch;
 
 		switch (ch) {
@@ -200,7 +224,7 @@ prompt_yn(
 #	ifdef HAVE_KEY_PREFIX
 			case KEY_PREFIX:
 #	endif /* HAVE_KEY_PREFIX */
-				switch (get_arrow_key(ch)) {
+				switch (get_arrow_key((int) ch)) {
 					case KEYMAP_UP:
 					case KEYMAP_DOWN:
 						default_answer = bool_not(default_answer);
@@ -613,23 +637,43 @@ prompt_slk_response(
 	...)
 {
 	va_list ap;
-	char ch;
 	char buf[LEN];
 	t_function func;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t ch;
+#else
+	char ch;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	va_start(ap, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
 
 	prompt_slk_message = my_malloc(strlen(buf) + 2);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	{
+		char *tmp;
+		wchar_t wtmp[2] = { '\0', '\0' };
+
+		wtmp[0] = func_to_key(default_func, keys);
+		tmp = wchar_t2char(wtmp);
+		snprintf(prompt_slk_message, strlen(buf) + 2, "%s%s", buf, tmp);
+		FreeIfNeeded(tmp);
+	}
+#else
 	snprintf(prompt_slk_message, strlen(buf) + 2, "%s%c", buf, func_to_key(default_func, keys));
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	input_context = cPromptSLK;
 
 	do {
 		prompt_slk_redraw();		/* draw the prompt */
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if ((ch = ReadWch()) == '\r' || ch == '\n')
+#else
 		if ((ch = ReadCh()) == '\r' || ch == '\n')
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			func = default_func;
 		else
 			func = key_to_func(ch, keys);

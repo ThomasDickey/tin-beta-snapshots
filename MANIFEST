@@ -1,28 +1,28 @@
-MANIFEST for tin-1.7.10 (Thu Sep 29 13:37:31 CEST 2005)
+MANIFEST for tin-1.7.11 (Fri Dec  2 11:26:10 CET 2005)
 ----------------------------------------------------
   13770 ./Makefile
-   8299 ./MANIFEST
+   8298 ./MANIFEST
    1440 ./README
     564 ./README.MAC
    2209 ./README.VMS
    1006 ./README.WIN
  147008 ./aclocal.m4
     882 ./conf-tin
-  43400 ./config.guess
-  31689 ./config.sub
+  43401 ./config.guess
+  31885 ./config.sub
  487329 ./configure
   31033 ./configure.in
    7123 ./install.sh
     838 ./mkdirs.sh
    1506 ./tin.spec
   18847 ./doc/ABOUT-NLS
-  25013 ./doc/CHANGES
+  25685 ./doc/CHANGES
  226345 ./doc/CHANGES.old
    4814 ./doc/CREDITS
    1469 ./doc/DEBUG_REFS
   30017 ./doc/INSTALL
-  34052 ./doc/TODO
-    995 ./doc/WHATSNEW
+  34428 ./doc/TODO
+   1029 ./doc/WHATSNEW
    2618 ./doc/art_handling.txt
    1700 ./doc/article.txt
    3862 ./doc/auth.txt
@@ -63,17 +63,17 @@ MANIFEST for tin-1.7.10 (Thu Sep 29 13:37:31 CEST 2005)
    2778 ./include/bool.h
    2039 ./include/bugrep.h
    9502 ./include/oldconfig.h
-  58603 ./include/extern.h
-  12965 ./include/keymap.h
+  58747 ./include/extern.h
+  13625 ./include/keymap.h
    6340 ./include/newsrc.h
    8397 ./include/nntplib.h
     665 ./include/plp_snprintf.h
-  12247 ./include/policy.h
-  31052 ./include/proto.h
+  12337 ./include/policy.h
+  31008 ./include/proto.h
    5047 ./include/rfc2046.h
    3373 ./include/stpwatch.h
    5756 ./include/tcurses.h
-  63099 ./include/tin.h
+  63109 ./include/tin.h
   13398 ./include/tinrc.h
    5670 ./include/tnntp.h
    2264 ./include/trace.h
@@ -85,14 +85,14 @@ MANIFEST for tin-1.7.10 (Thu Sep 29 13:37:31 CEST 2005)
   13712 ./src/charset.c
    8220 ./src/color.c
   58140 ./src/config.c
-  19996 ./src/cook.c
+  20158 ./src/cook.c
   30433 ./src/curses.c
   10378 ./src/debug.c
    3408 ./src/envarg.c
   26308 ./src/feed.c
   56651 ./src/filter.c
   18114 ./src/getline.c
-   8941 ./src/global.c
+   9070 ./src/global.c
   47307 ./src/group.c
    3900 ./src/hashstr.c
    8764 ./src/header.c
@@ -100,8 +100,8 @@ MANIFEST for tin-1.7.10 (Thu Sep 29 13:37:31 CEST 2005)
   13890 ./src/inews.c
   33763 ./src/init.c
    2216 ./src/joinpath.c
-  87594 ./src/keymap.c
- 117365 ./src/lang.c
+  90146 ./src/keymap.c
+ 117545 ./src/lang.c
    4486 ./src/langinfo.c
    7102 ./src/list.c
    6667 ./src/lock.c
@@ -112,15 +112,15 @@ MANIFEST for tin-1.7.10 (Thu Sep 29 13:37:31 CEST 2005)
    5257 ./src/mimetypes.c
   90399 ./src/misc.c
   40030 ./src/newsrc.c
-  44275 ./src/nntplib.c
+  45076 ./src/nntplib.c
    7192 ./src/nrctbl.c
   41832 ./src/options_menu.c
-  58521 ./src/page.c
+  58527 ./src/page.c
   24138 ./src/parsdate.y
   16966 ./src/plp_snprintf.c
   12713 ./src/pgp.c
  133826 ./src/post.c
-  17075 ./src/prompt.c
+  18446 ./src/prompt.c
   10566 ./src/read.c
   25559 ./src/refs.c
    5276 ./src/regex.c
@@ -135,7 +135,7 @@ MANIFEST for tin-1.7.10 (Thu Sep 29 13:37:31 CEST 2005)
    7590 ./src/sigfile.c
   12667 ./src/signal.c
    7215 ./src/strftime.c
-  23262 ./src/string.c
+  23476 ./src/string.c
   13852 ./src/tags.c
   16944 ./src/tcurses.c
    3071 ./src/tmpfile.c
@@ -299,19 +299,19 @@ MANIFEST for tin-1.7.10 (Thu Sep 29 13:37:31 CEST 2005)
      41 ./intl/VERSION
    4962 ./po/Makefile.inn
     847 ./po/POTFILES.in
- 123131 ./po/tin.pot
- 166596 ./po/de.gmo
- 199467 ./po/de.po
+ 123205 ./po/tin.pot
+ 166689 ./po/de.gmo
+ 199584 ./po/de.po
    7359 ./po/en_GB.gmo
- 125715 ./po/en_GB.po
- 159087 ./po/et.gmo
- 190767 ./po/et.po
+ 125789 ./po/en_GB.po
+ 159114 ./po/et.gmo
+ 190846 ./po/et.po
  162233 ./po/fr.gmo
- 196118 ./po/fr.po
+ 196236 ./po/fr.po
   72197 ./po/ru.gmo
- 152112 ./po/ru.po
+ 152186 ./po/ru.po
    2081 ./po/rw.gmo
- 169331 ./po/rw.po
+ 169405 ./po/rw.po
    5889 ./po/tr.gmo
- 190106 ./po/tr.po
-7869369 total
+ 190180 ./po/tr.po
+7877726 total

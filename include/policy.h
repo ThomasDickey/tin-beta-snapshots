@@ -3,7 +3,7 @@
  *  Module    : policy.h
  *  Author    : Ralf Doeblitz <doeblitz@gmx.de>
  *  Created   : 1999-01-12
- *  Updated   : 2004-01-02
+ *  Updated   : 2005-11-17
  *  Notes     : #defines and static data for policy configuration
  *
  * Copyright (c) 1999-2005 Ralf Doeblitz <doeblitz@gmx.de>
@@ -61,9 +61,8 @@
  * .bj  Benin                          .bm  Bermuda
  * .bn  Brunei Darussalam              .bo  Bolivia
  * .br  Brazil                         .bs  Bahamas
- * .bt  Bhutan                         .bv  Bouvet Island
- * .bw  Botswana                       .by  Belarus
- * .bz  Belize
+ * .bt  Bhutan                         .bw  Botswana
+ * .by  Belarus                        .bz  Belize
  *
  * .ca  Canada                         .cc  Cocos (Keeling) Islands
  * .cd  Congo, Democratic People's Republic
@@ -83,6 +82,7 @@
  * .ec  Ecuador                        .ee  Estonia
  * .eg  Egypt                          .er  Eritrea
  * .es  Spain                          .et  Ethiopia
+ * .eu  European Union
  *
  * .fi  Finland                        .fj  Fiji
  * .fk  Falkland Islands (Malvina)     .fm  Micronesia, Federal State of
@@ -163,21 +163,22 @@
  * .sc  Seychelles                     .sd  Sudan
  * .se  Sweden                         .sg  Singapore
  * .sh  St. Helena                     .si  Slovenia
- * .sj  Svalbard and Jan Mayen Islands .sk  Slovakia
- * .sl  Sierra Leone                   .sm  San Marino
- * .sn  Senegal                        .so  Somalia
- * .sr  Surinam                        .st  Sao Tome and Principe
- * .su  Soviet Union (former)          .sv  El Salvador
- * .sy  Syrian Arab Republic           .sz  Swaziland
+ * .sk  Slovakia                       .sl  Sierra Leone
+ * .sm  San Marino                     .sn  Senegal
+ * .so  Somalia                        .sr  Surinam
+ * .st  Sao Tome and Principe          .su  Soviet Union (former)
+ * .sv  El Salvador                    .sy  Syrian Arab Republic
+ * .sz  Swaziland
  *
  * .tc  The Turks & Caicos Islands     .td  Chad
  * .tf  French Southern Territories    .tg  Togo
  * .th  Thailand                       .tj  Tajikistan
- * .tk  Tokelau                        .tm  Turkmenistan
- * .tn  Tunisia                        .to  Tonga
- * .tp  East Timor                     .tr  Turkey
- * .tt  Trinidad and Tobago            .tv  Tuvalu
- * .tw  Taiwan                         .tz  Tanzania
+ * .tk  Tokelau                        .tl  Timor-Leste
+ * .tm  Turkmenistan                   .tn  Tunisia
+ * .to  Tonga                          .tp  East Timor
+ * .tr  Turkey                         .tt  Trinidad and Tobago
+ * .tv  Tuvalu                         .tw  Taiwan
+ * .tz  Tanzania
  *
  * .ua  Ukraine                        .ug  Uganda
  * .uk  United Kingdom
@@ -212,29 +213,31 @@
  * .aa, .qm, .qz, .xa, .xz, .zz
  *
  * unused TLDs:
+ * .bv  Bouvet Island
  * .eh  Western Sahara
  * .kp  Korea, Democratic People's Republic
  * .nt  Neutral Zone
+ * .sj  Svalbard and Jan Mayen Islands
  *
  * requested new TLDs:
- * .ax  Aaland-Islands (Finnish)
+ * .ax  Aaland-Islands (Finnish; planned for 2006)
  * .cs  Serbia and Montenegro
- * .eu  European Union (planned for 2006)
  *
  * xccTLDs:
  * .gb  United Kingdom, use .uk
  * .hk  Hong Kong, now .cn
  * .su  former USSR, now .ru
+ * .tp  former East Timor, now .tl
  * .yu  former Yugoslavia
  */
 
 static char gnksa_country_codes[26*26] = {
 /*      A B C D E  F G H I J  K L M N O  P Q R S T  U V W X Y Z */
 /* A */ 0,0,1,1,1, 1,1,0,1,0, 0,1,1,1,1, 0,1,1,1,1, 1,0,1,0,0,1,
-/* B */ 1,1,0,1,1, 1,1,1,1,1, 0,0,1,1,1, 0,0,1,1,1, 0,1,1,0,1,1,
+/* B */ 1,1,0,1,1, 1,1,1,1,1, 0,0,1,1,1, 0,0,1,1,1, 0,0,1,0,1,1,
 /* C */ 1,0,1,1,0, 1,1,1,1,0, 1,1,1,1,1, 0,0,1,0,0, 1,1,0,1,1,1,
 /* D */ 0,0,0,0,1, 0,0,0,0,1, 1,0,1,0,1, 0,0,0,0,0, 0,0,0,0,0,1,
-/* E */ 0,0,1,0,1, 0,1,0,0,0, 0,0,0,0,0, 0,0,1,1,1, 0,0,0,0,0,0,
+/* E */ 0,0,1,0,1, 0,1,0,0,0, 0,0,0,0,0, 0,0,1,1,1, 1,0,0,0,0,0,
 /* F */ 0,0,0,0,0, 0,0,0,1,1, 1,0,1,0,1, 0,0,1,0,0, 0,0,0,0,0,0,
 /* G */ 1,1,0,1,1, 1,1,1,1,0, 0,1,1,1,0, 1,1,1,1,1, 1,0,1,0,1,0,
 /* H */ 0,0,0,0,0, 0,0,0,0,0, 1,0,1,1,0, 0,0,1,0,1, 1,0,0,0,0,0,
@@ -248,8 +251,8 @@ static char gnksa_country_codes[26*26] = {
 /* P */ 1,0,0,0,1, 1,1,1,0,0, 1,1,1,1,0, 0,0,1,1,1, 0,0,1,0,1,0,
 /* Q */ 1,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0,0,
 /* R */ 0,0,0,0,1, 0,0,0,0,0, 0,0,0,0,1, 0,0,0,0,0, 1,0,1,0,0,0,
-/* S */ 1,1,1,1,1, 0,1,1,1,1, 1,1,1,1,1, 0,0,1,0,1, 1,1,0,0,1,1,
-/* T */ 0,0,1,1,0, 1,1,1,0,1, 1,0,1,1,1, 1,0,1,0,1, 0,1,1,0,0,1,
+/* S */ 1,1,1,1,1, 0,1,1,1,0, 1,1,1,1,1, 0,0,1,0,1, 1,1,0,0,1,1,
+/* T */ 0,0,1,1,0, 1,1,1,0,1, 1,1,1,1,1, 1,0,1,0,1, 0,1,1,0,0,1,
 /* U */ 1,0,0,0,0, 0,1,0,0,0, 1,0,1,0,0, 0,0,0,1,0, 0,0,0,0,1,1,
 /* V */ 1,0,1,0,1, 0,1,0,1,0, 0,0,0,1,0, 0,0,0,0,0, 1,0,0,0,0,0,
 /* W */ 0,0,0,0,0, 1,0,0,0,0, 0,0,0,0,0, 0,0,0,1,0, 0,0,0,0,0,0,
@@ -285,6 +288,7 @@ static const char *gnksa_domain_list[] = {
 	 *  .post   .tel    .travel .xxx	.kids
 	 */
 #	if 0		/* $DEAD */
+	"nato",
 	"uucp",
 	"bitnet",
 #	endif /* 0 */

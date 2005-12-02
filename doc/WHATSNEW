@@ -28,6 +28,8 @@ New features
 
 . user defined date_format
 
+. support non-ascii key-bindings
+
 . 'percentage match' threading
 
 Retired Features

@@ -1,3 +1,22 @@
+-- 1.7.11 release 20051202 "" --
+
+U055) Urs Janssen <urs@tin.org>
+      BUG. hypothetical buffer overrun in tin_ltoa()
+      ADD. handle bogus multiline response to XOVER with no group selected
+      ADD. config.guess, config.sub update
+      ADD. allow new .eu and .tl toplevel domains, disallow unused .bv and
+           .sj toplevel domains
+      FIX. nntplib.c, string.c, policy.h
+
+U054) Michael Bienia <michael@vorlon.ping.de>
+      ADD. allow non-ASCII keybindings
+      FIX. extern.h, keymap.h, proto.h, global.c, keymap.c, lang.c, page.c
+           prompt.c
+
+U053) Toomas Soome <Toomas.Soome@microlink.ee>
+      ADD. updated estonian translation
+      FIX. et.po
+
 -- 1.7.10 release 20050929 "Tahay" --
 
 U052) Jessica Brennan <jib@panix.com>

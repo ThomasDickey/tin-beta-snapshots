@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-07-16
+ *  Updated   : 2005-10-19
  *  Notes     :
  *
  * Copyright (c) 1997-2005 Iain Lea <iain@bricbrac.de>
@@ -828,6 +828,9 @@ extern constext txt_info_postponed[];
 extern constext txt_info_x_conversion_note[];
 extern constext txt_invalid_from[];
 extern constext txt_invalid_sender[];
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	extern constext txt_invalid_multibyte_sequence[];
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 extern constext txt_inverse_off[];
 extern constext txt_inverse_on[];
 extern constext txt_is_mailbox[];
