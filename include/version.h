@@ -40,9 +40,9 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.7.10"
+#		define VERSION		"1.7.11"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20050929"
+#	define RELEASEDATE	"20051202"
 #	define RELEASENAME	"Tahay"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.7"

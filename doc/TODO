@@ -4,9 +4,9 @@ not read only ,-).
 
 Bugs
 ----
- o  a wrong usename in ~/.newsauth can't be corrected in the first
-    pass
-    [20050816 Urs Janssen <urs@tin.org>]
+o  a wrong usename in ~/.newsauth can't be corrected in the first
+   pass
+   [20050816 Urs Janssen <urs@tin.org>]
 
 o  can 'V'iew mime-parts with (illegal) encoded filename, e.g:
    | Content-Type: image/jpeg;
@@ -317,6 +317,13 @@ o  pgp-{6,7} support
 o  add feature Cc:
 
 o  add feature show_new_newsgroups_since
+
+o  add new key which taggs articles based on a prompted regex, could be used
+   for GROUP_MARK_THREAD_READ,PAGE_MARK_THREAD_READ,THREAD_MARK_ARTICLE_READ
+   and/or something like GROUP_SELECT_THREAD/THREAD_SELECT_ARTICLE which
+   works on tagged arts (the later might be usefull in conjnction with
+   GROUP_MARK_UNSELECTED_ARTICLES_READ)
+   [20051110 Urs Janssen <urs@tin.org>]
 
 o  Additions to the thread menu:
      'D'  (cancel article)

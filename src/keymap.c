@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2005-07-29
+ *  Updated   : 2005-10-19
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2005 Dirk Nimmich <nimmich@muenster.de>
@@ -48,9 +48,13 @@ static void add_default_key(struct keylist *key_list, const char *keys, t_functi
 static void add_global_keys(struct keylist *keys);
 static void free_keylist(struct keylist *keys);
 static void upgrade_keymap_file(char *old);
-static t_bool add_key(struct keylist *keys, const char key, t_function func, t_bool override);
 static t_bool process_keys(t_function func, const char *keys, struct keylist *kl);
 static t_bool process_mapping(char *keyname, char *keys);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	static t_bool add_key(struct keylist *keys, const wchar_t key, t_function func, t_bool override);
+#else
+	static t_bool add_key(struct keylist *keys, const char key, t_function func, t_bool override);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 struct keylist feed_post_process_keys = { NULL, 0, 0 };
 struct keylist feed_supersede_article_keys = { NULL, 0, 0 };
@@ -86,7 +90,11 @@ struct keylist thread_keys = { NULL, 0, 0 };
  */
 t_function
 key_to_func(
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	const wchar_t key,
+#else
 	const char key,
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	const struct keylist keys)
 {
 	size_t i;
@@ -103,7 +111,11 @@ key_to_func(
 /*
  * lookup the associated key to the specified function
  */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+wchar_t
+#else
 char
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 func_to_key(
 	t_function func,
 	const struct keylist keys)
@@ -114,8 +126,11 @@ func_to_key(
 		if (keys.list[i].function == func)
 			return keys.list[i].key;
 	}
-
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	return (wchar_t) '?';
+#else
 	return '?';
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 }
 
 
@@ -127,7 +142,11 @@ func_to_key(
 static t_bool
 add_key(
 	struct keylist *keys,
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	const wchar_t key,
+#else
 	const char key,
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	t_function func,
 	t_bool override)
 {
@@ -166,6 +185,10 @@ add_key(
 }
 
 
+/*
+ * FIXME:
+ * as long as we use only ASCII for default keys no need to change 'keys' to wchar_t
+ */
 static void
 add_default_key(
 	struct keylist *key_list,
@@ -178,7 +201,11 @@ add_default_key(
 		return;
 
 	for (; *key != '\0'; key++)
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		add_key(key_list, (wchar_t) *key, func, FALSE);
+#else
 		add_key(key_list, *key, func, FALSE);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 }
 
 
@@ -229,26 +256,47 @@ free_keymaps(
 /*
  * Render ch in human readable ASCII
  * Is there no lib function to do this ?
+ * *buf must have a size of at least MAXKEYLEN
  */
 char *
 printascii(
 	char *buf,
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wint_t ch)
+#else
 	int ch)
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 {
 	if (ch == 0)
 		strcpy(buf, _("NULL"));
-	else if (isgraph(ch)) {	/* Regular printables */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	else if (iswgraph(ch)) {	/* Regular printables */
+		int i = wctomb(buf, ch);
+
+		if (i > 0)
+			buf[i] = '\0';
+		else
+			buf[0] = '\0';
+	}
+#else
+	else if (isgraph(ch)) {		/* Regular printables */
 		buf[0] = ch;
 		buf[1] = '\0';
-	} else if (ch == '\t') {	/* TAB */
+	}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+	else if (ch == '\t') {	/* TAB */
 		strcpy(buf, _(txt_tab));
 	} else if ((ch == '\n') || (ch == '\r')) {	/* LF, CR */
 		strcpy(buf, _(txt_cr));
 	} else if (ch == ESC) {		/* Escape */
 		strcpy(buf, _(txt_esc));
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	} else if (iswcntrl(ch)) {	/* Control keys */
+#else
 	} else if (iscntrl(ch)) {	/* Control keys */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 		buf[0] = '^';
-		buf[1] = (ch & 0xFF) + '@';
+		buf[1] = ((int) ch & 0xFF) + '@';
 		buf[2] = '\0';
 	} else if (ch == ' ')		/* SPACE */
 		strcpy(buf, _(txt_space));
@@ -381,14 +429,29 @@ process_keys(
 	struct keylist *kl)
 {
 	char *keydef, *tmp;
-	char key;
 	t_bool error, ret = TRUE;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wkeydef;
+	wchar_t key;
+#else
+	char key;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 	tmp = my_strdup(keys);		/* don't change "keys" */
 	keydef = strtok(tmp, KEYSEPS);
 
 	while (keydef != NULL) {
 		error = FALSE;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if ((wkeydef = char2wchar_t(keydef)) == NULL) {
+			wait_message(1, _(txt_invalid_multibyte_sequence));
+			ret = FALSE;
+
+			keydef = strtok(NULL, KEYSEPS);
+			continue;
+		}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+
 		/*
 		 * Parse the key sequence into 'key'
 		 * Special sequences are:
@@ -396,8 +459,14 @@ process_keys(
 		 * TAB -> ^I
 		 * SPACE -> ' '
 		 */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		if (wcslen(wkeydef) > 1) {
+			switch (wkeydef[0])	/* Only test 1st char - crude but effective */
+#else
 		if (strlen(keydef) > 1) {
-			switch (keydef[0]) {	/* Only test 1st char - crude but effective */
+			switch (keydef[0])	/* Only test 1st char - crude but effective */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			{
 				case 'N':
 					key = '\0';
 					break;
@@ -411,10 +480,18 @@ process_keys(
 					break;
 
 				case '^':
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+					/* allow only ^A to ^Z */
+					if (wkeydef[1] >= 'A' && wkeydef[1] <= 'Z') {
+						key = ctrl(wkeydef[1]);
+						break;
+					}
+#else
 					if (isupper((int)(unsigned char) keydef[1])) {
 						key = ctrl(keydef[1]);
 						break;
 					}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 					/* FALLTHROUGH */
 				default:
 					wait_message(0, _(txt_keymap_invalid_key), keydef);
@@ -423,7 +500,12 @@ process_keys(
 					break;
 			}
 		} else {
-			if (isdigit(key = keydef[0])) {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			if (iswdigit(key = wkeydef[0]))
+#else
+			if (isdigit(key = keydef[0]))
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+			{
 				wait_message(0, _(txt_keymap_invalid_key), keydef);
 				ret = FALSE;
 				error = TRUE;
@@ -434,6 +516,9 @@ process_keys(
 			add_key(kl, key, func, TRUE);
 
 		keydef = strtok(NULL, KEYSEPS);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+		FreeIfNeeded(wkeydef);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	}
 	free(tmp);
 

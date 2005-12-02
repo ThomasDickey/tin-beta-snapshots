@@ -719,7 +719,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 
 /*
  * URL related regexs:
- * add TELNET & WAIS (RFC 1738), IMAP (RFC 2192), NFS (RFC 2224)
+ * add TELNET (RFC 4248), WAIS (RFC 4156), IMAP (RFC 2192), NFS (RFC 2224)
  *     LDAP (RFC 2255), POP (RFC 2384)
  * add IPv6 (RFC 2732, RFC 2373) support
  */

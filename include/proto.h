@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2005-06-21
+ *  Updated   : 2005-10-19
  *  Notes     :
  *
  * Copyright (c) 1997-2005 Urs Janssen <urs@tin.org>
@@ -253,7 +253,6 @@ extern void postinit_regexp(void);
 extern void joinpath(char *result, const char *dir, const char *file);
 
 /* keymap.c */
-extern char *printascii(char *buf, int ch);
 extern t_bool read_keymap_file(void);
 extern void free_keymaps(void);
 extern void setup_default_keys(void);

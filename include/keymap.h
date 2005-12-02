@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2005-07-16
+ *  Updated   : 2005-10-19
  *  Notes     :
  *
  * Copyright (c) 1999-2005 Jason Faultless <jason@altarstone.com>
@@ -122,9 +122,15 @@
 
 /*
  * Maximum chars (including null byte) needed to print a key name
- * the longest name will probably something like SPACE
+ * A multibyte character can use up to MB_CUR_MAX chars. But as MB_CUR_MAX
+ * can't be used here, use MB_LEN_MAX instead.
+ * Some values for MB_LEN_MAX:
+ * - glibc 2.3.5: 16
+ * - gcc 4.0: 1
+ * - icc 8.0/9.0: 8
+ * Use the largest + 1 to be on the safe side.
  */
-#define MAXKEYLEN 10
+#define MAXKEYLEN 17
 
 /* TODO: permanently move here from tin.h */
 #define ctrl(c)	((c) & 0x1F)
@@ -343,7 +349,11 @@ typedef enum defined_functions t_function;
 
 
 struct keynode {
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t key;
+#else
 	char key;
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	t_function function;
 };
 
@@ -384,7 +394,6 @@ extern struct keylist select_keys;
 extern struct keylist thread_keys;
 
 
-extern char func_to_key (t_function func, const struct keylist keys);
 extern t_function global_mouse_action(t_function (*left_action) (void), t_function (*right_action) (void));
 extern t_function handle_keypad(
 	t_function (*left_action) (void),
@@ -393,6 +402,14 @@ extern t_function handle_keypad(
 		t_function (*left_action) (void),
 		t_function (*right_action) (void)),
 	const struct keylist keys);
-extern t_function key_to_func (const char key, const struct keylist keys);
 extern t_function prompt_slk_response(t_function default_func, const struct keylist keys, const char *fmt, ...);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	extern char *printascii(char *buf, wint_t ch);
+	extern wchar_t func_to_key(t_function func, const struct keylist keys);
+	extern t_function key_to_func(const wchar_t key, const struct keylist keys);
+#else
+	extern char *printascii(char *buf, int ch);
+	extern char func_to_key (t_function func, const struct keylist keys);
+	extern t_function key_to_func (const char key, const struct keylist keys);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #endif /* !KEYMAP_H */

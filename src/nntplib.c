@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2005-07-21
+ *  Updated   : 2005-11-17
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -1401,10 +1401,28 @@ nntp_open(
 	 * We have to check that we _don't_ get an ERR_COMMAND
 	 */
 	if (nntp_caps.type == NO) {
-		for (i = 0; i < 2; i++) {
-			if (!nntp_command(&xover_cmds[i], ERR_COMMAND, NULL, 0)) {
-				nntp_caps.over_cmd = &xover_cmds[i];
-				break;
+		int j = 0;
+
+		for (i = 0; i < 2 && j >= 0; i++) {
+			j = new_nntp_command(&xover_cmds[i], ERR_NCING, line, sizeof(line));
+			switch (j) {
+				case ERR_COMMAND:
+					break;
+
+				case 224:	/* unexpected multiline ok, e.g.: Synchronet 3.13 NNTP Service 1.92 */
+					nntp_caps.over_cmd = &xover_cmds[i];
+#	ifdef DEBUG
+					debug_nntp(&xover_cmds[i], "skipping data");
+#	endif /* DEBUG */
+					while ((linep = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL)
+						;
+					j = -1;
+					break;
+
+				default:
+					nntp_caps.over_cmd = &xover_cmds[i];
+					j = -1;
+					break;
 			}
 		}
 	} else {
@@ -1413,8 +1431,25 @@ nntp_open(
 			 * CAPABILITIES/LIST EXTENSIONS didn't mention OVER or XOVER, try
 			 * XOVER
 			 */
-			if (!nntp_command(xover_cmds, ERR_COMMAND, NULL, 0))
-				nntp_caps.over_cmd = xover_cmds;
+			i = new_nntp_command(xover_cmds, ERR_NCING, line, sizeof(line));
+
+			switch (i) {
+				case ERR_COMMAND:
+					break;
+
+				case 224:	/* unexpected multiline ok, e.g.: Synchronet 3.13 NNTP Service 1.92 */
+					nntp_caps.over_cmd = xover_cmds;
+#	ifdef DEBUG
+					debug_nntp(xover_cmds, "skipping data");
+#	endif /* DEBUG */
+					while ((linep = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL)
+						;
+					break;
+
+				default:
+					nntp_caps.over_cmd = xover_cmds;
+					break;
+			}
 		}
 #	if 0 /* unused */
 		if (!nntp_caps.hdr_cmd) {

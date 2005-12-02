@@ -170,7 +170,11 @@ put_cooked(
 	if (tinrc.wrap_column < 0)
 		wrap_column = ((tinrc.wrap_column > -cCOLS) ? cCOLS + tinrc.wrap_column : cCOLS);
 	else
+#if 1
 		wrap_column = ((tinrc.wrap_column > 0) ? tinrc.wrap_column : cCOLS);
+#else	/* never cut off long lines */
+		wrap_column = (((tinrc.wrap_column > 0) && (tinrc.wrap_column < cCOLS)) ? tinrc.wrap_column : cCOLS);
+#endif /* 1 */
 
 	p = bufp = buf;
 
