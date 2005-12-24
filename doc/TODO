@@ -4,6 +4,10 @@ not read only ,-).
 
 Bugs
 ----
+o  when entering an article from the group level via GroupNextUnreadArtOrGrp
+   ('TAB'), PageListThd ('l') points to a 'random' article in the thread
+   [20051224 Urs Janssen <urs@tin.org>]
+
 o  a wrong usename in ~/.newsauth can't be corrected in the first
    pass
    [20050816 Urs Janssen <urs@tin.org>]

@@ -4,7 +4,7 @@
 msgid	""
 msgstr	"Project-Id-Version: 1.7.9\n"
 	"Report-Msgid-Bugs-To: \n"
-	"POT-Creation-Date: 2005-10-26 11:16+0200\n"
+	"POT-Creation-Date: 2005-12-24 19:09+0100\n"
 	"PO-Revision-Date: 2004-11-17 00:50+0100\n"
 	"Last-Translator: Matt Anton <tin@syrius.org\n"
 	"Language-Team: French <tin@syrius.org>\n"
@@ -275,6 +275,7 @@ msgstr	"# inclure des en-têtes supplémentaires\n"
 msgid	"# in *sources* set post process type to shar only\n"
 msgstr	"# dans *sources* choisir le type shar en post-traitement\n"
 
+# TRANSLATION OUTDATED
 #: src/attrib.c:768
 #, fuzzy, c-format
 msgid	"# in *binaries* do full post processing but no TeX2ISO conversion,\n"
@@ -4522,6 +4523,7 @@ msgstr	"# Si ON, utilise la vidéo inversée pour les en-têtes dans les différente
 msgid	"Thread articles by"
 msgstr	"Regrouper les articles par"
 
+# TRANSLATION OUTDATED
 #: src/lang.c:1416
 #, fuzzy
 msgid	"# Thread articles by ...\n"
@@ -6493,7 +6495,7 @@ msgstr	"Réenvoyer la dernière commande (%s)\n"
 #. *       - use some sort of pager?
 #. *       - -> lang.c
 #.
-#: src/nntplib.c:1724
+#: src/nntplib.c:1759
 msgid	"MOTD: "
 msgstr	""
 

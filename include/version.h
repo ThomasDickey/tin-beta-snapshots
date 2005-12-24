@@ -6,7 +6,7 @@
  *  Updated   : 2004-10-19
  *  Notes     :
  *
- * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,10 +40,10 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.7.11"
+#		define VERSION		"1.8.0"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20051202"
-#	define RELEASENAME	"Tahay"
+#	define RELEASEDATE	"20051224"
+#	define RELEASENAME	"Ronay"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.7"
 #	define ATTRIBUTES_VERSION	"1.0.4"
