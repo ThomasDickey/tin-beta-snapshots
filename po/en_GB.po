@@ -4,7 +4,7 @@
 msgid	""
 msgstr	"Project-Id-Version: tin 1.7.9\n"
 	"Report-Msgid-Bugs-To: \n"
-	"POT-Creation-Date: 2005-10-26 11:16+0200\n"
+	"POT-Creation-Date: 2005-12-24 19:09+0100\n"
 	"PO-Revision-Date: 2002-11-15 20:10+0000\n"
 	"Last-Translator: Robert Brady <rwb197@zepler.org>\n"
 	"Language-Team: \n"
@@ -5949,7 +5949,7 @@ msgstr	""
 #. *       - use some sort of pager?
 #. *       - -> lang.c
 #.
-#: src/nntplib.c:1724
+#: src/nntplib.c:1759
 msgid	"MOTD: "
 msgstr	""
 

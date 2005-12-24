@@ -6,7 +6,7 @@
  *  Updated   : 2005-11-17
  *  Notes     : #defines and static data for policy configuration
  *
- * Copyright (c) 1999-2005 Ralf Doeblitz <doeblitz@gmx.de>
+ * Copyright (c) 1999-2006 Ralf Doeblitz <doeblitz@gmx.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

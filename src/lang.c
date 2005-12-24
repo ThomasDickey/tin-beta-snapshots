@@ -6,7 +6,7 @@
  *  Updated   : 2005-10-19
  *  Notes     :
  *
- * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -930,7 +930,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 #endif /* HAVE_PGP_GPG */
 
 #ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2005 Iain Lea.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2006 Iain Lea.";
 #endif /* M_UNIX */
 
 #ifdef NNTP_ABLE
@@ -982,7 +982,7 @@ Tin will try to use XHDR XREF instead (slows down things a bit).\n");
 #endif /* NNTP_INEWS */
 
 #ifdef VMS
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2005 Iain Lea & Tod McQuillin & other.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2006 Iain Lea & Tod McQuillin & other.";
 #endif /* VMS */
 
 #ifndef DISABLE_PRINTING

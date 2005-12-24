@@ -15,7 +15,7 @@
 msgid	""
 msgstr	"Project-Id-Version: tin 1.7.8\n"
 	"Report-Msgid-Bugs-To: \n"
-	"POT-Creation-Date: 2005-10-26 11:16+0200\n"
+	"POT-Creation-Date: 2005-12-24 19:09+0100\n"
 	"PO-Revision-Date: 2005-04-03 10:55-0700\n"
 	"Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 	"Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -6831,7 +6831,7 @@ msgstr	"Iheruka Komandi:"
 #. *       - use some sort of pager?
 #. *       - -> lang.c
 #.
-#: src/nntplib.c:1724
+#: src/nntplib.c:1759
 msgid	"MOTD: "
 msgstr	""
 

@@ -5,9 +5,9 @@
 # Christian Garbs <tin-dev@cgarbs.de>, 2003
 #
 msgid	""
-msgstr	"Project-Id-Version: tin 1.7.11\n"
+msgstr	"Project-Id-Version: tin 1.8.0\n"
 	"Report-Msgid-Bugs-To: \n"
-	"POT-Creation-Date: 2005-10-26 11:16+0200\n"
+	"POT-Creation-Date: 2005-12-24 19:09+0100\n"
 	"PO-Revision-Date: 2005-01-29 23:50+0100\n"
 	"Last-Translator: Sven Hartge <oweh@ds9.argh.org>, Kai Bojens <kbojens@on-"
 	"luebeck.de>\n"
@@ -6485,7 +6485,7 @@ msgstr	"Sende letztes Kommando (%s) neu\n"
 #. *       - use some sort of pager?
 #. *       - -> lang.c
 #.
-#: src/nntplib.c:1724
+#: src/nntplib.c:1759
 msgid	"MOTD: "
 msgstr	""
 

@@ -8,7 +8,7 @@
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
  *
- * Copyright (c) 1996-2005 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1996-2006 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

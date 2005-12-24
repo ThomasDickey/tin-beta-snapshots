@@ -3,9 +3,9 @@
 # Toomas Soome <Toomas.Soome@microlink.ee>, 2005.
 #
 msgid	""
-msgstr	"Project-Id-Version: tin 1.7.10\n"
+msgstr	"Project-Id-Version: tin 1.7.11\n"
 	"Report-Msgid-Bugs-To: \n"
-	"POT-Creation-Date: 2005-10-26 11:16+0200\n"
+	"POT-Creation-Date: 2005-12-24 19:09+0100\n"
 	"PO-Revision-Date: 2005-09-30 09:49+0300\n"
 	"Last-Translator: Toomas Soome <Toomas.Soome@microlink.ee>\n"
 	"Language-Team: Estonian <et@li.org>\n"
@@ -1661,10 +1661,9 @@ msgstr	"eemalda märgistus kõikidelt märgitud teemadelt"
 msgid	"mark all articles in group as read"
 msgstr	"märgi valitud grupis kõik artiklid loetuks"
 
-# TRANSLATION TOO LONG
 #: src/lang.c:380
 msgid	"mark all articles in group as read and move to next unread group"
-msgstr	"märgi grupis kõik artiklid loetuks ja liigu järgmisele lugemata grupile"
+msgstr	"märgi grupi artiklid loetuks ja liigu järgmisse lugemata gruppi"
 
 #: src/lang.c:381
 msgid	"choose first group in list"
@@ -1952,10 +1951,9 @@ msgstr	"\n"
 msgid	"Invalid  From: %s  line. Read the INSTALL file again."
 msgstr	"Vigane From: %s rida. Lugege uuesti faili INSTALL."
 
-# TRANSLATION MISSING
 #: src/lang.c:455
 msgid	"Invalid multibyte sequence found\n"
-msgstr	""
+msgstr	"Leiti vigane mitmebaidi järjend\n"
 
 #: src/lang.c:457
 #, c-format
@@ -6279,10 +6277,9 @@ msgstr	"newsrcs ainult tellitud grupid"
 msgid	"# If ON strip unsubscribed groups from newsrc\n"
 msgstr	"# Kui väärtus on ON, eemalda tellimata grupid newsrc failist\n"
 
-# TRANSLATION TOO LONG
 #: src/lang.c:2439
 msgid	"Remove bogus groups from newsrc"
-msgstr	"Eemalda olematud grupid newsrc failist"
+msgstr	"Eemalda vigased grupid newsrcst"
 
 #: src/lang.c:2440
 msgid	"# What to do with bogus groups in newsrc file\n"
@@ -6411,7 +6408,7 @@ msgstr	"Saada viimane käsk uuesti (%s)\n"
 #. *       - use some sort of pager?
 #. *       - -> lang.c
 #.
-#: src/nntplib.c:1724
+#: src/nntplib.c:1759
 msgid	"MOTD: "
 msgstr	"MOTD: "
 

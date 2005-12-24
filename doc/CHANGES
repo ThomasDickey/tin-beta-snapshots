@@ -1,12 +1,18 @@
--- 1.7.11 release 20051202 "" --
+-- 1.8.0 release 20051224 "Ronay" --
+
+U056) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update configure macros
+      FIX. aclocal.m4
 
 U055) Urs Janssen <urs@tin.org>
       BUG. hypothetical buffer overrun in tin_ltoa()
+      ADD. preserve Organization line in Supersedes
       ADD. handle bogus multiline response to XOVER with no group selected
       ADD. config.guess, config.sub update
       ADD. allow new .eu and .tl toplevel domains, disallow unused .bv and
            .sj toplevel domains
-      FIX. nntplib.c, string.c, policy.h
+      ADD. config.guess, config.sub update
+      FIX. nntplib.c, post.c, string.c, policy.h, onfig.guess, config.sub
 
 U054) Michael Bienia <michael@vorlon.ping.de>
       ADD. allow non-ASCII keybindings

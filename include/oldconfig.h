@@ -6,7 +6,7 @@
  *  Updated   : 2001-07-22
  *  Notes     : #defines to determine different OS capabilites
  *
- * Copyright (c) 1995-2005 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1995-2006 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

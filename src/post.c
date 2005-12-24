@@ -3,10 +3,10 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-07-20
+ *  Updated   : 2005-12-23
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
- * Copyright (c) 1991-2005 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -3666,6 +3666,15 @@ repost_article(
 		if (*my_distribution)
 			msg_add_header("Distribution", my_distribution);
 
+	} else {
+		if (note_h.org)
+			msg_add_header("Organization", note_h.org);
+		else {
+			if (group->attribute->organization != NULL)
+				msg_add_header("Organization", random_organization(group->attribute->organization));
+			else if (*default_organization)
+				msg_add_header("Organization", random_organization(default_organization));
+		}
 	}
 
 	/*
