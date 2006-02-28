@@ -1,0 +1,57 @@
+short descriptions of files in the tools-directory
+
+tinews.pl
+        a perl script that can be used as a inews replacement if posting via
+        NNTP. the main purpose of this script is to automatically sign
+        posted/mailed articles via pgp or gpg. besides the autosigning
+        feature it takes care about Cc: and Bcc: lines in news-postings
+        and adds a Posted-And-Mailed: header if necessary.
+
+w2r.pl
+	is a small perl script that turns a wildmat filter file
+	into a regexp filter file (don't forget to set wildmat= in tinrc
+	accordingly)
+	usage:
+	w2r.pl < wildmat-filter-file > regexp-filter-file
+
+opt-case.pl
+	is a small perl script that tries to opt out case insensitive
+	regexp, it will put a comment above each line it touched.
+	usage:
+	opt-case.pl < regexp-filter-file > regexp-filter-file-case
+
+	w2r.pl and opt-case.pl might be used together, i.e:
+	w2r.pl < wildmat-filter-file | opt-case.pl > regexp-filter-file-case
+
+tinlock
+	is a small shell script that creates a lockfile before starting
+	tin to avoid multiple copies of tin running, when tin exits cleanly
+	the lockfile is removed; tinlock will warn about suspicious
+	locks/deadlocks. tinlock is kind of NFS safe.
+	usage:
+	tinlock [tin-cmdline-args]
+
+metamutt
+	is a small shell script to replace metamail, set
+	metamail_prog=metamutt in tin and till will pass multipart
+	MIME-articles to metamutt instead of metamail. metamutt will pass
+	the article to mutt (a mail client with an excellent MIME-parser).
+	this might become obsolete as tin now has a small (and unfinished)
+	built in MIME-parser, set metamail_prog=--internal to use the built
+	in version.
+
+url_handler.sh
+	is a shell script (need to be placed in /usr/local/bin/) which
+	passes the URL selected by the 'U' command to a related
+	viewer/application. this one is very basic.
+
+expand_aliases.tgz
+	is a small c-source which reads you elm-aliasfile, translates the
+	alias into the real address and passes it to the MTA. see included
+	README-file/man-page for more details.
+
+expiretover
+	is a small shell script to expire old tin overview files. if you use
+	cache_overview_files=ON in your tinrc you might want to run this
+	script regularly (e.g. once a day from cron) to purge old overview
+	files.

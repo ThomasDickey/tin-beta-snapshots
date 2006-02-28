@@ -1,0 +1,76 @@
+                  Authentication to a NNTP server with tin
+
+Tin is able to do authentication to news servers according to the "Common
+NNTP Extensions" (this document is available at [1]). There are several
+ways of authentication described in that text which are referred to as
+Original AUTHINFO, AUTHINFO GENERIC, and AUTHINFO SIMPLE. Tin supports the
+Original AUTHINFO and the AUTHINFO GENERIC methods. In addition to answers
+to authentication requests as described in the "Common NNTP Extensions",
+tin also provides authentication at connection startup.
+
+Unfortunately, you cannot rely on the response codes of authentication
+requests as described in the "Common NNTP Extensions"; today's news servers
+mostly send NNTP codes 480, regardless of the type of authentication they
+expect. Therefore, authentication is always done in the same manner: First,
+tin tries an AUTHINFO GENERIC authorization. If this fails, Original
+AUTHINFO is used. If this does not work for you (which it should), please
+contact me to track this problem down. There are known problems with the
+reference nntp server available at ftp.academ.com -- this is a server bug
+and not tin's fault; if you need a patch or workaround, drop me a mail.
+
+Authentication requests will be handled whenever they occur; the command
+that caused the request will be sent again.
+
+For an authentication with the Original AUTHINFO method, tin needs a
+user-name and a password for the current news server. This information is
+obtained from a file .newsauth in the $HOME directory. The format of the
+.newsauth file is as follows:
+
+news.server1 password1 [username1]
+news.server2 password2 [username2]
+...
+
+The first line matching the current news server is taken. The delimiters
+between the fields MUST be spaces or TABS. If a password contains spaces,
+you have to surround the whole password by double quotes. If no user-name is
+given for the current news server, the user-id of the user who started tin
+is assumed.
+
+Security consideration: Make sure that the .newsauth file cannot be read by
+others. Tin checks the permissions of the file and complains if they are
+insecure (i.e., if they are not -rw-------) but continues.
+
+If you do not have a .newsauth file in your $HOME directory, tin prompts
+you for a user-name and a password. This is not done automatically at
+connection startup, because there is no way for tin to find out if an
+authentication at this time is needed. If you need to authenticate at the
+beginning of your news session, use the -A option when invoking tin or just
+provide a .newsauth file.
+
+The AUTHINFO GENERIC authentication was implemented by someone else and has
+not been tested by me since I do not know a server that supports this.
+
+To use AUTHINFO GENERIC, set up an environment variable NNTPAUTH with the
+command and its parameters to invoke for authentication. The content of
+NNTPAUTH is also used as the authenticator in the AUTHINFO GENERIC response
+to the server. The environment variable NNTP_AUTH_FDS is used to store file
+descriptors for reading from and writing to the server, and for a temporary
+file ("cookie"); the three descriptors are separated by dots. The
+authentication command can take use of NNTP_AUTH_FDS when invoked; it should
+exit successful if the authentication was accepted.
+
+If NNTPAUTH is empty or not available, tin sends an "authinfo generic any
+<user-id>" command to the server and expects the result as a NNTP response
+code.
+
+The AUTHINFO SIMPLE authentication method is not supported by tin (and
+possibly won't be since nobody seems to use it and there are some problems
+with the protocol). If you need this, drop me a message or see the source
+code in auth.c. With the specification at [1], the implementation should not
+be difficult.
+
+Dirk Nimmich (2000-01-22)
+<nimmich@uni-muenster.de>
+
+References:
+<http://www.karlsruhe.org/rfc/rfc2980.txt>

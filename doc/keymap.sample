@@ -1,0 +1,229 @@
+# Keymap file V1.0.6 for the TIN newsreader
+#
+# Sample keymap file
+# This file contains the default key mappings
+#
+# Global keys
+
+PageDown3			SPACE
+ShellEscape			!
+SetRange			#
+LastPage			$
+ToggleColor			&
+LastViewed			-
+SearchRepeat			\
+SearchSubjF			/
+SearchSubjB			?
+SearchAuthB			A
+SearchBody			B
+CatchupNextUnread		C
+EditFilter			E
+ToggleHelpDisplay		H
+ToggleInverseVideo		I
+LookupMessage			L
+OptionMenu			M
+Postponed			O	^O
+QuitTin				Q
+BugReport                  	R
+DisplayPostHist			W
+MarkThreadUnread		Z
+FirstPage			^
+SearchAuthF			a
+Catchup				c
+Help				h
+ToggleInfoLastLine		i
+Down				j	^N
+Up				k	^P
+Print				o
+Quit				q
+Version				v
+Post				w
+MarkArticleUnread		z
+Pipe				|
+QuickFilterSelect		[
+QuickFilterKill			]
+ScrollUp			<
+ScrollDown			>
+PageUp				b	^B	^U
+PageDown			^D	^F
+RedrawScr			^L
+MenuFilterSelect		^A
+MenuFilterKill			^K
+
+#####
+
+ConfigSelect			^J	^M
+ConfigLastPage			G
+ConfigNoSave			Q
+ConfigFirstPage			g
+
+#####
+
+FeedTag				T
+FeedArt				a
+FeedHot				h
+FeedPat				p
+FeedRepost			r
+FeedSupersede			s
+FeedThd				t
+
+#####
+
+FilterEdit			e
+FilterSave			s
+
+#####
+
+GroupNextUnreadArtOrGrp		TAB
+GroupReadBasenote		^J	^M
+GroupSelThd			*
+GroupDoAutoSel			+
+GroupToggleThdSel		.
+GroupSelThdIfUnreadSelected	;
+GroupSelPattern			=
+GroupReverseSel			@
+GroupToggleGetartLimit		G
+GroupMarkThdRead		K
+GroupNextUnreadArt		N
+GroupPrevUnreadArt		P
+GroupAutoSave			S
+GroupTagParts			T
+GroupUntag			U
+GroupMarkUnselArtRead		X
+GroupToggleSubjDisplay		d
+GroupGoto			g
+GroupListThd			l
+GroupMail			m
+GroupNextGroup			n
+GroupPrevGroup			p
+GroupToggleReadUnread		r
+GroupSave			s
+GroupTag			t
+GroupToggleThreading		u
+GroupRepost			x
+GroupUndoSel			~
+
+#####
+
+HelpLastPage			G
+HelpFirstPage			g
+
+#####
+
+PageReplyQuoteHeaders		^E
+PagePGPCheckArticle		^G
+PageToggleHeaders		^H
+PageNextUnread			TAB
+PageNextThd			^J	^M
+PageToggleTabs			^T
+PageFollowupQuoteHeaders	^W
+PageToggleTex2iso		"
+PageToggleRot			%
+PageToggleUue			(
+PageReveal			)
+PageSkipIncludedText		:
+PageTopThd			<
+PageBotThd			>
+PageCancel			D
+PageFollowup			F
+PageLastPage			G
+PageKillThd			K
+PageNextUnreadArt		N
+PagePrevUnreadArt		P
+PageReply			R
+PageAutoSave			S
+PageGroupSel			T
+PageViewUrl			U
+PageViewAttach			V
+PageToggleHighlight		_
+PageEditArticle			e
+PageFollowupQuote		f
+PageFirstPage			g
+PageListThd			l
+PageMail			m
+PageNextArt			n
+PagePrevArt			p
+PageReplyQuote			r
+PageSave			s
+PageTag				t
+PageGotoParent			u
+PageRepost			x
+
+#####
+
+PgpEncSign			b
+PgpEncrypt			e
+PgpIncludekey			i
+PgpSign				s
+
+#####
+
+PostCancel			d
+PostEdit			e
+PostPGP				g
+PostIspell			i
+PostContinue			c
+PostAbort			a
+PostIgnore			i
+PostMail			m
+PostPost			p	y
+PostSend			s	y
+PostSupersede			s
+PostPostpone			o
+
+#####
+
+PostponeOverride		Y
+PostponeAll			A
+
+#####
+
+PromptYes			y	Y
+PromptNo			n	N
+
+#####
+
+SaveAppendFile			a
+SaveOverwriteFile		o
+
+#####
+
+PProcNo				n
+PProcShar			s
+PProcYes			y
+
+#####
+
+SelectEnterNextUnreadGrp	TAB	n
+SelectReadGrp			^J	^M
+SelectResetNewsrc		^R
+SelectSortActive		.
+SelectNextUnreadGrp		N
+SelectSubscribePat		S
+SelectUnsubscribePat		U
+SelectQuitNoWrite		X
+SelectSyncWithActive		Y
+SelectToggleDescriptions	d
+SelectGoto			g
+SelectMoveGrp			m
+SelectToggleReadDisplay		r
+SelectSubscribe			s
+SelectUnsubscribe		u
+SelectYankActive		y
+SelectMarkGrpUnread		z	Z
+
+#####
+
+ThreadReadNextArtOrThread	TAB
+ThreadReadArt			^J	^M
+ThreadSelArt			*
+ThreadToggleArtSel		.
+ThreadReverseSel		@
+ThreadMarkArtRead		K
+ThreadAutoSave			S
+ThreadUntag			U
+ThreadToggleSubjDisplay		d
+ThreadMail			m
+ThreadSave			s
+ThreadTag			t
+ThreadUndoSel			~

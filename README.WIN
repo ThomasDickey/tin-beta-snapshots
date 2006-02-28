@@ -1,0 +1,40 @@
+Compile Tin For Windows
+-----------------------
+
+     - what is it?
+       - A Usenet newsreader
+
+     - system
+       - Windows NT
+
+     - Cygwin (http://sources.redhat.com/cygwin/)
+       - Cygwin >= 1.1.x
+       - ncurses
+
+     - preliminaries
+       - needs ncusres (precompiled version available)
+       - get tin source
+              (e.g. from ftp://ftp.tin.org/pub/news/clients/tin/stable/)
+
+     - configure
+       - export CC=gcc
+       - ./configure --enable-nntp-only --disable-locale
+
+     - make
+       - cd src
+       - make
+
+     - install
+       - make install
+       - add to your profile:
+              export NNTPSERVER=your.nntp.server
+
+     - notes
+       - You also need an editor. vim works fine (comes with cygwin).
+       - tin needs an /etc/passwd
+              username:x:1000:100:Real Name:/home:/bin/sh.exe
+       - in autoexec or in cygnus.bat
+              set HOME=c:\home
+              set USER=username
+       - tested with
+           1.5.8 release 20010221 "Blue Water"
