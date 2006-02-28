@@ -1,0 +1,56 @@
+#! /bin/sh
+# wrapper to prevent running multiple instances of tin
+# 2000-01-19 <urs@tin.org>
+
+prog=/usr/local/bin/tin
+
+args=${1+"$@"}
+
+name=`basename $prog`
+host=`hostname`
+pid=$$
+lock=$host"	"$pid
+
+if test ${TIN_HOMEDIR-"$HOME"} ; then
+	lockdir=${TIN_HOMEDIR-"$HOME"}/.tin
+	file=tinlock
+else
+	lockdir=${TMPDIR-/tmp}
+	if test -z $USER; then
+		if test -z $UID ; then
+			UID=`id|sed 's,uid=\([0-9]\+\).*,\1,'`
+		fi
+	fi
+	file=tinlock.${USER-"$UID"}
+fi
+
+lockfile=$lockdir/$file
+
+if test -f $lockfile ; then
+	echo "Found \"$lockfile\"! Another $name running on:"
+	awk '{print $1" with pid: "$2"?"}' < $lockfile
+	echo "(q)uit - start (r)ead-only - (d)elete lock and start normal."
+	IFS="       " read key
+	case $key in
+		[dD]*)
+			echo "Removing \"$lockfile\" and starting $name normal..."
+			rm -f $lockfile || (echo "Can't delete \"$lockfile\"" ; exit 1)
+			trap "rm -f $lockfile; exit" 0 1 2 3 15
+			(echo $lock > $lockfile && $prog $args && rm -f $lockfile) || echo "Oops!"
+			;;
+		[rR]*)
+			echo "Starting $name in no-write (-X) mode..."
+			$prog -X $args
+			echo "There might still be copy(s) of $name running on:"
+			awk '{print $1" with pid: "$2}' < $lockfile
+			echo "If this is not the case remember to remove \"$lockfile\"."
+			;;
+		*)
+			echo "Aborting..."
+			exit 1
+			;;
+	esac
+else
+	trap "rm -f $lockfile; exit" 0 1 2 3 15
+	(echo $lock > $lockfile && $prog $args && rm -f $lockfile) || echo "Oops!"
+fi

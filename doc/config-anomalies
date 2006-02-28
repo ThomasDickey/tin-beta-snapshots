@@ -1,0 +1,134 @@
+config anomalies in tin:
+
+different variable names in tinrc file and struct tinrc:
+post_process_type	tinrc.post_process
+show_only_unread	tinrc.show_only_unread_arts
+default_maildir		tinrc.maildir
+default_savedir		tinrc.savedir
+default_printer		tinrc.printer
+default_editor_format	tinrc.editor_format
+default_mailer_format	tinrc.mailer_format
+default_sigfile		tinrc.sigfile
+default_filter_days	tinrc.filter_days
+
+changing the struct tinrc names can help cleaning up read/write_config_file()
+a lot if variable name is saved in option_table (t_option should hold the
+variable name).
+
+not in struct option_table, but different variable names in tinrc
+file and struct tinrc:
+default_author_search	tinrc.default_search_author
+default_config_search	tinrc.default_search_config
+default_group_search	tinrc.default_search_group
+default_subject_search	tinrc.default_search_subject
+default_art_search	tinrc.default_search_art
+default_repost_group	tinrc.default_repost_group
+
+integrate txt_tinrc_colors in txt_col_normal.tinrc
+
+Values of post_mime_encoding and mail_mime_encoding are generated from a
+list.
+
+news_headers_to_display, news_headers_to_not_display must be converted to a
+string before writing to tinrc file.
+
+quote_chars must be converted by quote_space_to_dash() before writing to
+tinrc file.
+
+art_marked_deleted, art_marked_inrange, art_marked_return,
+art_marked_selected, art_marked_recent, art_marked_unread, art_marked_read,
+art_marked_killed and art_marked_read_selected must be converted by
+SPACE_TO_DASH() before writing to tinrc file.
+
+default_filter_kill_case and default_filter_select_case write inverted values
+to tinrc file (not really a problem -- these are not in option_table and must
+be handled explicitly anyway)
+
+-----------------------------------------------------------------------------
+
+tinrc variables that should be removed because they can be used in the
+attributes file with scope=*:
+
+default_savedir                savedir in attributes
+auto_save
+mark_saved_read              *
+post_process_type              post_proc_type in attributes
+post_process_view            *
+process_only_unread          *
+prompt_followupto            *
+pos_first_unread             *
+show_only_unread             *
+kill_level                   *
+tab_goto_next_unread         *
+space_goto_next_unread       *
+pgdn_goto_next               *
+full_page_scroll             *
+show_last_line_prev_page     *
+group_catchup_on_exit        *
+thread_catchup_on_exit       *
+thread_articles                thread_arts in attributes
+thread_perc                  *
+show_author
+news_headers_to_display      *
+news_headers_to_not_display  *
+sort_article_type              sort_art_type in attributes
+sort_threads_type
+default_maildir                maildir in attributes
+print_header                 *
+batch_save
+start_editor_offset          * allows for different editors in different
+default_editor_format        * hierarchies (e.g. a special one for asian
+                               newsgroups)
+show_info                    *
+posted_articles_file         *
+add_posted_to_filter         *
+default_sigfile                sigfile in attributes
+sigdashes                    * it doesn't make sense to set that globally if
+                               you can have different sigfiles in different
+                               groups
+signature_repost             *
+advertising                  *
+quote_chars
+quote_regex                  *
+quote_regex2                 *
+quote_regex3                 *
+strip_re_regex               *
+strip_was_regex              *
+show_signatures              *
+hide_uue                     *
+news_quote_format
+mail_quote_format            *
+xpost_quote_format           *
+auto_cc                      *
+auto_bcc                     *
+default_filter_days          *
+getart_limit                 *
+recent_time                  *
+mail_address                   from in attributes; should be splitted into
+                               username and addresse
+mm_charset                     mm_network_charset
+                               (if charset conversion is available)
+post_mime_encoding           *
+mail_mime_encoding           *
+post_8bit_header             *
+mail_8bit_header             *
+default_filter_kill_header     quick_kill_header in attributes
+default_filter_kill_global     quick_kill_scope=* in attributes
+default_filter_kill_case       quick_kill_case in attributes
+default_filter_kill_expire     quick_kill_expire in attributes
+default_filter_select_header   quick_select_header in attributes
+default_filter_select_global   quick_select_scope=* in attributes
+default_filter_select_case     quick_select_case in attributes
+default_filter_select_expire   quick_select_expire in attributes
+default_save_file              savefile in attributes
+
+*) These variables are not available in attributes yet.
+
+variables with different types in tinrc and attributes:
+default_filter_kill_header (int)     quick_kill_header (unsigned int)
+default_filter_select_header (int)   quick_select_header (unsigned int)
+thread_articles (int)                thread_arts (unsigned int)
+sort_article_type (int)              sort_art_type (unsigned int)
+sort_threads_type (int)              sort_threads_type (unsigned int)
+show_author (int)                    show_author (unsigned int)
+post_process (int)                   post_proc_type (unsigned int)

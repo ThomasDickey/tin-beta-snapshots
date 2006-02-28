@@ -1,0 +1,232 @@
+;   Project   : tin - a Usenet reader
+;   Module    : tincfg.tbl
+;   Author    : Thomas E. Dickey
+;   Created   : 1996-11-01
+;   Updated   : 2005-06-20
+;   Notes     : #defines and structs for config.c
+;
+; Copyright (c) 1996-2005 Thomas E. Dickey <dickey@invisible-island.net>
+; All rights reserved.
+;
+; Redistribution and use in source and binary forms, with or without
+; modification, are permitted provided that the following conditions
+; are met:
+; 1. Redistributions of source code must retain the above copyright
+;    notice, this list of conditions and the following disclaimer.
+; 2. Redistributions in binary form must reproduce the above copyright
+;    notice, this list of conditions and the following disclaimer in the
+;    documentation and/or other materials provided with the distribution.
+; 3. The name of the author may not be used to endorse or promote
+;    products derived from this software without specific prior written
+;    permission.
+;
+; THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+; OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+; WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+; ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+; DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+; DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+; GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+; WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+;
+
+
+; display options
+	display_options			OPT_TITLE
+	beginner_level			OPT_ON_OFF
+	show_description		OPT_ON_OFF
+	show_author			txt_show_from	SHOW_FROM_BOTH+1
+	draw_arrow			OPT_ON_OFF
+	inverse_okay			OPT_ON_OFF
+	strip_blanks			OPT_ON_OFF
+	thread_articles			txt_threading	THREAD_MAX+1
+	thread_perc			OPT_NUM
+	sort_article_type		txt_sort_a_type	SORT_ARTICLES_BY_LINES_ASCEND+1
+	sort_threads_type		txt_sort_t_type	SORT_THREADS_BY_SCORE_ASCEND+1
+	pos_first_unread		OPT_ON_OFF
+	show_only_unread_arts		OPT_ON_OFF
+	show_only_unread_groups		OPT_ON_OFF
+	kill_level			txt_kill_level_type	KILL_NOTHREAD+1
+	tab_goto_next_unread		OPT_ON_OFF
+	space_goto_next_unread		OPT_ON_OFF
+	pgdn_goto_next			OPT_ON_OFF
+	auto_list_thread		OPT_ON_OFF
+	wrap_on_next_unread		OPT_ON_OFF
+	art_marked_deleted		OPT_CHAR
+	art_marked_inrange		OPT_CHAR
+	art_marked_return		OPT_CHAR
+	art_marked_selected		OPT_CHAR
+	art_marked_recent		OPT_CHAR
+	art_marked_unread		OPT_CHAR
+	art_marked_read			OPT_CHAR
+	art_marked_killed		OPT_CHAR
+	art_marked_read_selected	OPT_CHAR
+	groupname_max_length		OPT_NUM
+	show_info			txt_show_info_type	SHOW_INFO_BOTH+1
+	thread_score			txt_thread_score_type	THREAD_SCORE_WEIGHT+1
+	scroll_lines			OPT_NUM
+	show_signatures			OPT_ON_OFF
+	news_headers_to_display		OPT_STRING
+	news_headers_to_not_display	OPT_STRING
+	alternative_handling		OPT_ON_OFF
+	hide_uue			txt_hide_uue_type	UUE_ALL+1
+	tex2iso_conv			OPT_ON_OFF
+	metamail_prog			OPT_STRING
+	ask_for_metamail		OPT_ON_OFF
+	catchup_read_groups		OPT_ON_OFF
+	group_catchup_on_exit		OPT_ON_OFF
+	thread_catchup_on_exit		OPT_ON_OFF
+	confirm_choice			txt_confirm_choices	NUM_CONFIRM_CHOICES
+	mark_ignore_tags		OPT_ON_OFF
+	use_mouse			OPT_ON_OFF
+#ifdef HAVE_KEYPAD
+	use_keypad			OPT_ON_OFF
+#endif
+	wrap_column			OPT_NUM
+
+; getart_limit options
+	getart_limit_options		OPT_TITLE
+	getart_limit			OPT_NUM
+	recent_time			OPT_NUM
+
+; filtering options
+	filtering_options		OPT_TITLE
+	wildcard			txt_wildcard_type	2
+	score_limit_kill		OPT_NUM
+	score_kill			OPT_NUM
+	score_limit_select		OPT_NUM
+	score_select			OPT_NUM
+	filter_days			OPT_NUM
+	add_posted_to_filter		OPT_ON_OFF
+
+; colour options
+#ifdef HAVE_COLOR
+	color_options			OPT_TITLE
+	use_color			OPT_ON_OFF
+	col_normal			txt_colors	MAX_COLOR+1
+	col_back			txt_colors	MAX_COLOR+1
+	col_invers_bg			txt_colors	MAX_COLOR+1
+	col_invers_fg			txt_colors	MAX_COLOR+1
+	col_text			txt_colors	MAX_COLOR+1
+	col_minihelp			txt_colors	MAX_COLOR+1
+	col_help			txt_colors	MAX_COLOR+1
+	col_message			txt_colors	MAX_COLOR+1
+	col_quote			txt_colors	MAX_COLOR+1
+	col_quote2			txt_colors	MAX_COLOR+1
+	col_quote3			txt_colors	MAX_COLOR+1
+	col_head			txt_colors	MAX_COLOR+1
+	col_newsheaders			txt_colors	MAX_COLOR+1
+	col_subject			txt_colors	MAX_COLOR+1
+	col_response			txt_colors	MAX_COLOR+1
+	col_from			txt_colors	MAX_COLOR+1
+	col_title			txt_colors	MAX_COLOR+1
+	col_signature			txt_colors	MAX_COLOR+1
+	col_urls			txt_colors	MAX_COLOR+1
+#endif
+	url_highlight			OPT_ON_OFF
+	word_highlight			OPT_ON_OFF
+	word_h_display_marks		txt_marks	MAX_MARK+1
+#ifdef HAVE_COLOR
+	col_markstar			txt_colors	MAX_COLOR+1
+	col_markdash			txt_colors	MAX_COLOR+1
+	col_markslash			txt_colors	MAX_COLOR+1
+	col_markstroke			txt_colors	MAX_COLOR+1
+#endif
+	mono_markstar			txt_attrs	MAX_ATTR+1
+	mono_markdash			txt_attrs	MAX_ATTR+1
+	mono_markslash			txt_attrs	MAX_ATTR+1
+	mono_markstroke			txt_attrs	MAX_ATTR+1
+
+; posting/mailing options
+	posting_options			OPT_TITLE
+	mail_address			OPT_STRING
+	prompt_followupto		OPT_ON_OFF
+	sigfile				OPT_STRING
+	sigdashes			OPT_ON_OFF
+	signature_repost		OPT_ON_OFF
+	quote_chars			OPT_STRING
+	quote_style			txt_quote_style_type (QUOTE_COMPRESS|QUOTE_SIGS|QUOTE_EMPTY)+1
+	news_quote_format		OPT_STRING
+	xpost_quote_format		OPT_STRING
+	mail_quote_format		OPT_STRING
+	advertising			OPT_ON_OFF
+#if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
+	translit			OPT_ON_OFF
+#endif
+#ifndef CHARSET_CONVERSION
+	mm_charset			OPT_STRING
+#endif
+#ifdef CHARSET_CONVERSION
+	mm_network_charset		txt_mime_charsets	NUM_MIME_CHARSETS
+#endif
+	post_mime_encoding		txt_mime_encodings	NUM_MIME_ENCODINGS
+	post_8bit_header		OPT_ON_OFF
+	mail_mime_encoding		txt_mime_encodings	NUM_MIME_ENCODINGS
+	mail_8bit_header		OPT_ON_OFF
+	auto_cc				OPT_ON_OFF
+	auto_bcc			OPT_ON_OFF
+	spamtrap_warning_addresses	OPT_STRING
+
+; saving/printing options
+	saving_options			OPT_TITLE
+	maildir				OPT_STRING
+	mailbox_format			txt_mailbox_formats	NUM_MAILBOX_FORMATS
+	batch_save			OPT_ON_OFF
+	savedir				OPT_STRING
+	auto_save			OPT_ON_OFF
+	mark_saved_read			OPT_ON_OFF
+	post_process			txt_post_process_type	POST_PROC_YES+1
+	post_process_view		OPT_ON_OFF
+	process_only_unread		OPT_ON_OFF
+#ifndef DISABLE_PRINTING
+	print_header			OPT_ON_OFF
+	printer				OPT_STRING
+#endif
+
+; expert options
+	expert_options			OPT_TITLE
+#ifdef HAVE_COLOR
+	quote_regex			OPT_STRING
+	quote_regex2			OPT_STRING
+	quote_regex3			OPT_STRING
+#endif
+	slashes_regex			OPT_STRING
+	stars_regex			OPT_STRING
+	strokes_regex			OPT_STRING
+	underscores_regex		OPT_STRING
+	strip_re_regex			OPT_STRING
+	strip_was_regex			OPT_STRING
+	force_screen_redraw		OPT_ON_OFF
+	start_editor_offset		OPT_ON_OFF
+	editor_format			OPT_STRING
+	inews_prog			OPT_STRING
+	mailer_format			OPT_STRING
+	interactive_mailer		txt_interactive_mailers NUM_INTERACTIVE_MAILERS
+	unlink_article			OPT_ON_OFF
+	posted_articles_file		OPT_STRING
+	keep_dead_articles		OPT_ON_OFF
+	strip_newsrc			OPT_ON_OFF
+	strip_bogus			txt_strip_bogus_type BOGUS_SHOW+1
+	reread_active_file_secs		OPT_NUM
+	auto_reconnect			OPT_ON_OFF
+	cache_overview_files		OPT_ON_OFF
+#ifdef XFACE_ABLE
+	use_slrnface			OPT_ON_OFF
+#endif
+	url_handler			OPT_STRING
+	date_format			OPT_STRING
+#ifdef HAVE_UNICODE_NORMALIZATION
+#	ifdef HAVE_LIBICUUC
+		normalization_form		txt_normalization_forms NORMALIZE_NFD+1
+#	else
+#		ifdef HAVE_LIBIDN
+			normalization_form		txt_normalization_forms 2
+#		endif
+#	endif
+#endif
+#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
+	render_bidi			OPT_ON_OFF
+#endif

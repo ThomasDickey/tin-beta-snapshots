@@ -1,0 +1,28 @@
+# sample mailcap file
+application/pgp;\
+	pgp -m %s;\
+	needsterminal
+image/jpeg;\
+	xv -8 -geometry +0 '%s';\
+	description=JPEG Image;\
+	test=test "$DISPLAY"
+image/*;\
+	xv -8 -geometry +0 '%s';\
+	description=%t Image;\
+	test=test "$DISPLAY";\
+	nametemplate=%s.IMAGE
+message/rfc822;\
+	if test -x /usr/bin/less \; then less '%s' \; else more '%s' \; fi;\
+	description=Mail Text;\
+	needsterminal
+text/html;\
+	lynx -force_html '%s';\
+	description=HTML Text;\
+	needsterminal;\
+	nametemplate=%s.html
+text/*;\
+	if test -x /usr/bin/less \; then less '%s' \; else more '%s' \; fi;\
+	edit=${EDITOR-vi} '%s';\
+	compose=${EDITOR-vi} '%s';\
+	print=a2ps '%s';\
+	needsterminal

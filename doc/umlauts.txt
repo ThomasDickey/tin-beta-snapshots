@@ -1,0 +1,92 @@
+Charset and umlaut handling in tin
+==================================
+
+Umlauts when reading
+--------------------
+
+After reading a posting from the newsserver tin checks if a charset has been
+declared in the header. If not, tin assumes the appropriate entry of a
+corresponding undeclared_charset variable in the attributes file. If there
+still is no match, tin assumes US-ASCII as the charset for this posting.
+
+After that the posting is converted to the local charset. This charset is
+set in the so-called locales which are normally set via environment
+variables (LANG, LC_*). If the posting contains characters not included in
+the determined charset (e. g. 8 bit characters in a US-ASCII posting), these
+characters are substituted by a question mark. This is also the case for
+characters that cannot be displayed in the local charset. The now converted
+posting is then displayed.
+
+
+Umlauts when writing
+--------------------
+
+If you answer to a posting, the converted posting will be handed over to
+your editor. The editor should be able to cope with characters in your local
+charset, of course. Joe, for example, has difficulties with UTF-8, so you
+shouldn't use it in such an environment. Finish your response in the editor
+as normal and leave it to get back to tin.
+
+When you post the message, tin determines the charset you want to use. You
+set this charset with the variable mm_network_charset either in your
+attributes file for the current group or globally in your tinrc file. The
+later can also be done from the Menu (watch out for MM_NETWORK_CHARSET). Tin
+then converts the posting (or the mail) from the local charset to the
+mentioned charset. As when reading it might be possible that you used
+characters locally that are not available in the destination charset. In
+this case tin issues a warning so that you can replace the offending
+characters. If you ignore the warning, these characters are again
+substituted by question marks.
+
+
+When you always see question marks
+----------------------------------
+
+First you should make sure that tin knows what local charset to use for
+display. Tin normally uses "locale" for that. Just enter `locale` on your
+console to find out, or `echo $LANG, $LC_TYPE`. You should get something
+like "de_DE.ISO-8859-1" which is a language code (de in this case) followed
+by an underscore, a country code (DE) followed by a dot, and a charset
+(ISO-8859-1).
+
+If you don't see a valid setting for your locale you should setup one for
+yourself as described above. For example, in the US and for a UTF-8 capable
+terminal you would use `LC_CTYPE=en_US.UTF-8; export LC_CTYPE` in a bash or
+ksh; the corresponding command for (t)csh is `setenv LC_TYPE en_US.UTF-8`.
+
+As the next step you should configure a charset that tin assumes if there is
+no charset declared in the header of a posting. This can be done via the
+undeclared_charset variable in your attributes file (to be found in your
+.tin directory:
+
+scope=*
+undeclared_charset=Windows-1252
+
+This tells tin to assume the Windows-1252 charset. Since most people use
+Windows nowadays and this charset is default for North America and Western
+Europe, and this charset is mostly compatible with the widespread ISO 8859-1
+charset, this should cover many postings. For special newsgroups this
+configuration should be improved by setting up another charset in a
+different scope. For example, the pl.* hierarchy mostly uses ISO 8859-2:
+
+scope=pl.*,cz.*,hin.*,sk.*,hr.*
+undeclared_charset=ISO-8859-2
+
+Especially in the Far East you may need further entries, for example:
+
+scope=chinese.*,alt.chinese.text.big5,tw.*
+undeclared_charset=Big5
+
+scope=fj.*,jp.*,japan.*
+undeclared_charset=ISO-2022-JP
+
+If all these settings don't help you it is likely that the system locales
+are broken or even not installed. If the latter is the case, you should
+install an appropriate library (or let your administration do it for you if
+you use a pre-configured environment). Libiconv from Bruno Haible is a good
+choice.
+
+If even this isn't possible the last alternative is to recompile tin. Invoke
+`make distclean` and configure with --disable-locale added your normal
+options. In this case tin assumes every posting to be in the local charset.
+Note: This can screw up your terminal.

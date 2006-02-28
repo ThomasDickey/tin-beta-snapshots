@@ -1,0 +1,869 @@
+/*
+ *  Project   : tin - a Usenet reader
+ *  Module    : autoconf.hin
+ *  Author    : Thomas Dickey
+ *  Created   : 1995-08-24
+ *  Updated   : 2005-07-16
+ *  Notes     : #include files, #defines & struct's
+ *
+ * Copyright (c) 1995-2006 Thomas Dickey <dickey@invisible-island.net>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+
+#ifndef TIN_AUTOCONF_H
+#	define TIN_AUTOCONF_H
+
+/* Package and version */
+#	undef PACKAGE
+#	undef VERSION
+
+#	undef SYSTEM_NAME
+
+/* compiler, compilerflags, ... */
+#	undef TIN_CC
+#	undef TIN_CFLAGS
+#	undef TIN_CPP
+#	undef TIN_CPPFLAGS
+#	undef TIN_LD
+#	undef TIN_LDFLAGS
+#	undef TIN_LIBS
+
+/*
+ * If we're able to run the 'configure' script, it's close enough to UNIX for
+ * our purposes. (It's predefined on SCO).
+ */
+#	ifndef M_UNIX
+#		define M_UNIX
+#	endif /* !M_UNIX */
+
+/*
+ * SCO requires special handling
+ */
+#	undef NEED_TIMEVAL_FIX
+#	undef NEED_PTEM_H
+
+/*
+ * Mac OS X need some extras
+ */
+#	undef MAC_OS_X
+
+/*
+ * SEIUX has strange struct utsname values
+ */
+#	undef SEIUX
+
+/*
+ * These are set as configure options, some must be guarded by ifdefs because
+ * they're also used in makefile rules (e.g., lint, proto).
+ */
+#	undef HAVE_MH_MAIL_HANDLING
+#	undef NNTP_ABLE
+#	undef NNTP_ONLY
+
+#	ifndef HAVE_COLOR
+#		undef HAVE_COLOR
+#	endif /* !HAVE_COLOR */
+
+#	undef DEFAULT_ISO2ASC
+#	undef DEFAULT_SHELL
+#	undef DOMAIN_NAME
+#	undef HAVE_FASCIST_NEWSADMIN
+#	undef INEWSDIR
+#	undef PATH_INEWS
+#	undef INN_NNTPLIB
+#	undef MIME_BREAK_LONG_LINES
+#	undef MIME_STRICT_CHARSET
+#	undef MM_CHARSET
+#	undef NEWSLIBDIR
+#	undef NNTP_DEFAULT_SERVER
+#	undef NOVROOTDIR
+#	undef NO_ETIQUETTE
+#	undef NO_LOCALE
+#	undef NO_POSTING
+#	undef NO_SHELL_ESCAPE
+#	undef OVERVIEW_FILE
+#	undef SOCKS
+#	undef SPOOLDIR
+#	undef USE_INN_NNTPLIB
+#	undef USE_INVERSE_HACK
+#	undef USE_SOCKS4_PREFIX
+#	undef USE_SOCKS5
+
+/*
+ * These are defined if the corresponding program is found during configuration
+ */
+#	undef HAVE_ISPELL
+#	undef HAVE_METAMAIL
+/* pgp-2 */
+#	undef HAVE_PGP
+/* pgp-5 */
+#	undef HAVE_PGPK
+/* gpg */
+#	undef HAVE_GPG
+#	undef HAVE_SUM
+
+/*
+ * Compiler characteristics
+ */
+#	undef inline
+#	undef const
+#	undef HAVE_NESTED_PARAMS
+
+/*
+ * Data types
+ */
+#	undef gid_t
+#	undef in_addr_t
+#	undef mode_t
+#	undef off_t
+#	undef pid_t
+#	undef quad_t
+#	undef size_t
+#	undef ssize_t
+#	undef time_t
+#	undef uid_t
+#	undef RETSIGTYPE
+#	undef HAVE_LONG_LONG
+#	undef HAVE_NL_ITEM
+
+/*
+ * The following xxx_H definitions are set by the 'configure' script to
+ * defined or commented-out, according to whether the corresponding header
+ * file was detected during configuration.
+ */
+#	undef HAVE_ALLOCA_H
+#	undef HAVE_ARPA_INET_H
+#	undef HAVE_CURSES_H
+#	undef HAVE_DIRENT_H
+#	undef HAVE_ERRNO_H
+#	undef HAVE_FCNTL_H
+#	undef HAVE_GETOPT_H
+#	undef HAVE_ICONV_H
+#	undef HAVE_IOCTL_H
+#	undef HAVE_LANGINFO_H
+#	undef HAVE_LIBC_H
+#	undef HAVE_LOCALE_H
+#	undef HAVE_MALLOC_H
+#	undef HAVE_NCURSESW_NCURSES_H
+#	undef HAVE_NCURSESW_TERM_H
+#	undef HAVE_NCURSES_H		/* obsolete versions of ncurses */
+#	undef HAVE_NCURSES_NCURSES_H
+#	undef HAVE_NCURSES_TERM_H
+#	undef HAVE_NETDB_H
+#	undef HAVE_NETINET_IN_H
+#	undef HAVE_NETLIB_H
+#	undef HAVE_NET_SOCKET_H		/* __BEOS__ */
+#	undef HAVE_NOMACROS_H		/* ncurses 4.1 */
+#	undef HAVE_PATHS_H
+#	undef HAVE_POLL_H
+#	undef HAVE_PROTOTYPES_H
+#	undef HAVE_PWD_H
+#	undef HAVE_SGTTY_H
+#	undef HAVE_SOCKET_H
+#	undef HAVE_STDARG_H
+#	undef HAVE_STDBOOL_H
+#	undef HAVE_STDDEF_H
+#	undef HAVE_STDLIB_H
+#	undef HAVE_STRINGS_H
+#	undef HAVE_STRING_H
+#	undef HAVE_STROPTS_H
+#	undef HAVE_SYS_BSDTYPES_H
+#	undef HAVE_SYS_DIR_H
+#	undef HAVE_SYS_ERRNO_H
+#	undef HAVE_SYS_FILE_H
+#	undef HAVE_SYS_IOCTL_H
+#	undef HAVE_SYS_NDIR_H
+#	undef HAVE_SYS_PARAM_H
+#	undef HAVE_SYS_POLL_H
+#	undef HAVE_SYS_PTEM_H
+#	undef HAVE_SYS_PTY_H
+#	undef HAVE_SYS_SELECT_H
+#	undef HAVE_SYS_SOCKET_H
+#	undef HAVE_SYS_STAT_H
+#	undef HAVE_SYS_STREAM_H
+#	undef HAVE_SYS_TIMEB_H
+#	undef HAVE_SYS_TIMES_H
+#	undef HAVE_SYS_TIME_H
+#	undef HAVE_SYS_TYPES_H
+#	undef HAVE_SYS_UTSNAME_H
+#	undef HAVE_SYS_WAIT_H
+#	undef HAVE_TERMCAP_H
+#	undef HAVE_TERMIOS_H
+#	undef HAVE_TERMIO_H
+#	undef HAVE_TERM_H
+#	undef HAVE_TIME_H
+#	undef HAVE_UNISTD_H
+#	undef HAVE_VARARGS_H
+#	undef HAVE_WCHAR_H
+#	undef HAVE_WCTYPE_H
+#	undef STDC_HEADERS
+#	undef TIME_WITH_SYS_TIME
+
+/*
+ * The following are defined by the configure script if the corresponding
+ * function is found in a library.
+ */
+#	undef HAVE_ATOI
+#	undef HAVE_ATOL
+#	undef HAVE_BCOPY
+#	undef HAVE_CHMOD
+#	undef HAVE_CLOSESOCKET		/* __BEOS__ */
+#	undef HAVE_EXECLP
+#	undef HAVE_FCNTL
+#	undef HAVE_FDOPEN
+#	undef HAVE_FLOCK
+#	undef HAVE_FORK
+#	undef HAVE_FTIME
+#	undef HAVE_FTRUNCATE
+#	undef HAVE_GAI_STRERROR
+#	undef HAVE_GETADDRINFO
+#	undef HAVE_GETCWD
+#	undef HAVE_GETHOSTBYNAME
+#	undef HAVE_GETHOSTNAME
+#	undef HAVE_GETSERVBYNAME
+#	undef HAVE_GETTIMEOFDAY
+#	undef HAVE_GETWD
+#	undef HAVE_ICONV
+#	undef HAVE_INET_ADDR
+#	undef HAVE_INET_ATON
+#	undef HAVE_INET_NTOA
+#	undef HAVE_ISASCII
+#	undef HAVE_IS_XTERM
+#	undef HAVE_LINK
+#	undef HAVE_LOCKF
+#	undef HAVE_MEMCMP
+#	undef HAVE_MEMCPY
+#	undef HAVE_MEMMOVE
+#	undef HAVE_MEMSET
+#	undef HAVE_MKDIR
+#	undef HAVE_MKFIFO
+#	undef HAVE_MKSTEMP
+#	undef HAVE_MKTEMP
+#	undef HAVE_MUNMAP
+#	undef HAVE_NL_LANGINFO
+#	undef HAVE_POLL
+#	undef HAVE_PUTENV
+#	undef HAVE_RESIZETERM
+#	undef HAVE_REWINDDIR
+#	undef HAVE_SELECT
+#	undef HAVE_SETENV
+#	undef HAVE_SETLOCALE
+#	undef HAVE_SETTZ
+#	undef HAVE_SNPRINTF
+#	undef HAVE_STPCPY
+#	undef HAVE_STRCASECMP
+#	undef HAVE_STRCASESTR
+#	undef HAVE_STRCHR
+#	undef HAVE_STRDUP
+#	undef HAVE_STRERROR
+#	undef HAVE_STRFTIME
+#	undef HAVE_STRNCASECMP
+#	undef HAVE_STRPBRK
+#	undef HAVE_STRRSTR
+#	undef HAVE_STRSEP
+#	undef HAVE_STRSTR
+#	undef HAVE_STRTOL
+#	undef HAVE_TCGETATTR
+#	undef HAVE_TCSETATTR
+#	undef HAVE_TIGETINT
+#	undef HAVE_TIGETNUM
+#	undef HAVE_TMPFILE
+#	undef HAVE_TZSET
+#	undef HAVE_UNAME
+#	undef HAVE_UNLINK
+#	undef HAVE_USE_DEFAULT_COLORS
+#	undef HAVE_USLEEP
+#	undef HAVE_VASPRINTF
+#	undef HAVE_VSNPRINTF
+#	undef HAVE_WAITPID
+#	undef HAVE__TRACEF
+
+/*
+ * The following are functions/data that we'll have to declare if they're not
+ * declared in the system include files, since they return values other than
+ * int.
+ */
+#	undef DECL_ERRNO
+#	undef DECL_GETENV
+#	undef DECL_GETHOSTBYNAME
+#	undef DECL_GETLOGIN
+#	undef DECL_GETPWNAM
+#	undef DECL_GETSERVBYNAME
+#	undef DECL_POPEN
+#	undef DECL_STRCASESTR
+#	undef DECL_STRSEP
+#	undef DECL_SYS_ERRLIST
+#	undef DECL_TGETSTR
+#	undef DECL_TGOTO
+#	undef DECL_TIGETSTR
+
+/*
+ * The following are functions that we'll optionally prototype (to stifle
+ * warnings, etc., for development/testing).
+ */
+#	undef DECL_ATOI
+#	undef DECL_ATOL
+#	undef DECL_BCOPY
+#	undef DECL_BZERO
+#	undef DECL_CALLOC
+#	undef DECL_CONNECT
+#	undef DECL_FCHMOD
+#	undef DECL_FCLOSE
+#	undef DECL_FDOPEN
+#	undef DECL_FFLUSH
+#	undef DECL_FGETC
+#	undef DECL_FILENO
+#	undef DECL_FPRINTF
+#	undef DECL_FPUTC
+#	undef DECL_FPUTS
+#	undef DECL_FREAD
+#	undef DECL_FREE
+#	undef DECL_FSEEK
+#	undef DECL_FWRITE
+#	undef DECL_GETCWD
+#	undef DECL_GETHOSTNAME
+#	undef DECL_GETOPT
+#	undef DECL_GETPASS
+#	undef DECL_GETWD
+#	undef DECL_INET_ADDR
+#	undef DECL_INET_ATON
+#	undef DECL_INET_NTOA
+#	undef DECL_IOCTL
+#	undef DECL_ISASCII
+#	undef DECL_KILL
+#	undef DECL_MALLOC
+#	undef DECL_MEMSET
+#	undef DECL_MKSTEMP
+#	undef DECL_MKTEMP
+#	undef DECL_PCLOSE
+#	undef DECL_PERROR
+#	undef DECL_PRINTF
+#	undef DECL_PUTENV
+#	undef DECL_QSORT
+#	undef DECL_REALLOC
+#	undef DECL_RENAME
+#	undef DECL_REWIND
+#	undef DECL_SELECT
+#	undef DECL_SETENV
+#	undef DECL_SNPRINTF
+#	undef DECL_SOCKET
+#	undef DECL_SSCANF
+#	undef DECL_STRCASECMP
+#	undef DECL_STRCHR
+#	undef DECL_STRFTIME
+#	undef DECL_STRNCASECMP
+#	undef DECL_STRTOL
+#	undef DECL_SYSTEM
+#	undef DECL_TGETENT
+#	undef DECL_TGETFLAG
+#	undef DECL_TGETNUM
+#	undef DECL_TIGETFLAG
+#	undef DECL_TIGETNUM
+#	undef DECL_TIME
+#	undef DECL_TOLOWER
+#	undef DECL_TOUPPER
+#	undef DECL_TPUTS
+#	undef DECL_UNGETC
+#	undef DECL_USLEEP
+#	undef DECL_VSNPRINTF
+#	undef DECL_VSPRINTF
+#	undef DECL__FLSBUF
+
+
+#	undef HAVE_POSIX_JC
+#	undef HAVE_SELECT_INTP
+#	undef HAVE_TYPE_SIGACTION
+#	undef HAVE_TYPE_UNIONWAIT
+
+/*
+ * Enable IPv6 support
+ */
+#	undef ENABLE_IPV6
+
+/*
+ * Define a symbol to control whether we use curses, or the termcap/terminfo
+ * interface
+ */
+#	undef HAVE_XCURSES
+#	undef NEED_CURSES_H
+#	undef NEED_TERMCAP_H
+#	undef NEED_TERM_H
+#	undef USE_CURSES
+#	undef USE_TRACE
+#	undef XCURSES
+
+/*
+ * Symbols used for wide-character curses
+ */
+#	undef NEED_WCHAR_H
+#	undef WIDEC_CURSES
+/*
+ * Define symbols to prototype the function 'outchar()'
+ */
+#	undef USE_TERMINFO
+#	undef OUTC_RETURN
+#	undef OUTC_ARGS
+
+/*
+ * Miscelleneous terminfo/termcap definitions
+ */
+#	undef HAVE_EXTERN_TCAP_PC
+
+/*
+ * Define a symbol for the prototype arguments of a signal handler
+ */
+#	undef SIG_ARGS
+
+/*
+ * define if setpgrp() takes no arguments
+ */
+#	undef SETPGRP_VOID
+
+/*
+ * Define this if it's safe to redefine the signal constants with prototypes.
+ */
+#	undef DECL_SIG_CONST
+
+
+/* FIXME: remove absolut-paths! */
+/*
+ * Program-paths (i.e., the invocation-path)
+ */
+#	undef DEFAULT_EDITOR
+#	undef DEFAULT_MAILBOX
+#	undef DEFAULT_MAILER
+#	undef PATH_ISPELL
+#	undef PATH_METAMAIL
+#	undef PATH_SUM
+#	undef PATH_PGP
+/* FIXME: this is _not_ the path to the pgp-5 binarie we usually need */
+#	undef PATH_PGPK
+#	undef PATH_GPG
+
+/*
+ * Configure also checks whether sum takes -r
+ * And defines PATH_SUM_R appropriately
+ */
+#	undef SUM_TAKES_DASH_R
+#	undef PATH_SUM_R
+
+/*
+ * Define this if the host system has long (>14 character) filenames
+ */
+#	undef HAVE_LONG_FILE_NAMES
+
+/*
+ * Use this if you want pid attached to the end of .article filename
+ */
+#	undef APPEND_PID
+
+/*
+ * requested locking scheme
+ */
+#	undef USE_FCNTL
+#	undef USE_FLOCK
+#	undef USE_LOCKF
+
+/*
+ * Define this if the compiler performs ANSI-style token substitution (used in
+ * our 'assert' macro).
+ */
+#	undef CPP_DOES_EXPAND
+/*
+ * Define this if the compiler performs ANSI-style token concatenation (used in
+ * our 'tincfg.h' macros).
+ */
+#	undef CPP_DOES_CONCAT
+
+/*
+ * One of the following two is defined, according to whether qsort's compare
+ * function is ANSI (declared with 'void *' parameters) or not.
+ */
+#	undef HAVE_COMPTYPE_VOID
+#	undef HAVE_COMPTYPE_CHAR
+
+/*
+ * Define this to enable interpretation of 8-bit keycodes (e.g., beginning
+ * with 0x9b).
+ */
+#	undef HAVE_KEY_PREFIX
+
+/*
+ * Define this if an application can dump core. Some systems (e.g., apollo)
+ * don't at all. Others may not, depending on how they're configured.
+ */
+#	undef HAVE_COREFILE
+
+/*
+ * Define if the system doesn't define SIGWINCH, or the associated structs
+ * to determine the window's size.
+ */
+#	undef DONT_HAVE_SIGWINCH
+
+/*
+ * Definitions for debugging-malloc libraries
+ */
+#	ifndef __BUILD__
+#		undef USE_DBMALLOC	/* use Conor Cahill's dbmalloc library */
+#		undef USE_DMALLOC	/* use Gray Watson's dmalloc library */
+#	endif /* !__BUILD__ */
+
+/*
+ * Define if the system doesn't support pipes, or if it is not a desired
+ * feature.
+ */
+#	undef DONT_HAVE_PIPING
+
+/*
+ * Define if the system doesn't support printing, or if it is not a
+ * desired feature.
+ */
+#	undef DISABLE_PRINTING
+
+/*
+ * Used in get_full_name()
+ */
+#	undef DONT_HAVE_PW_GECOS
+
+/*
+ * Used in parsedate.y
+ */
+#	undef DONT_HAVE_TM_GMTOFF
+
+#	if defined(__hpux)
+#		define HAVE_KEYPAD
+#	endif /* __hpux */
+
+/*
+ * Not all platforms have either strerror or sys_errlist[].
+ */
+#	undef HAVE_SYS_ERRLIST
+
+#	undef USE_SYSTEM_STATUS
+
+/*
+ * allow fallback to XHDR XREF if XOVER isn't supported?
+ */
+#	undef XHDR_XREF
+
+/*
+ * The directory, where tin looks first for its tin.defaults file
+ * can be left empty, tin searches for some standard places
+ * XXXXX please define surrounded with double quotes! XXXXX
+ */
+#	undef TIN_DEFAULTS_DIR
+
+/*
+ * define if second and thrid argument of setvbuf() are swapped
+ * (System V before Release 3)
+ */
+#	undef SETVBUF_REVERSED
+
+/*
+ * define if closedir() does not return a status
+ */
+#	undef CLOSEDIR_VOID
+
+/*
+ * define if gettimeofday() takes the timezone as 2nd argument
+ */
+#	undef	GETTIMEOFDAY_2ARGS
+
+/*
+ * define if your NNTP server needs an extra GROUP command before
+ * accepting a LISTGROUP command.
+ * (old versions of leafnode and NNTPcache need this)
+ */
+#	undef BROKEN_LISTGROUP
+
+/*
+ * on some old systems the WIFEXITED()/WEXITSTATUS() macros do not work,
+ * e.g. SEIUX3.2, DG/UX5.4R3, NEXTSTEP3
+ */
+#	undef IGNORE_SYSTEM_STATUS
+
+#	undef HAVE_COFFEE
+
+/*
+ * libuu - used in save.c
+ */
+#	undef HAVE_UUDEVIEW_H
+#	undef HAVE_LIBUU
+
+/*
+ * libidn - used for unicode normalization and
+ *          Internationalized Domain Names
+ */
+#	undef HAVE_IDNA_H
+#	undef HAVE_STRINGPREP_H
+#	undef HAVE_IDNA_TO_UNICODE_LZLZ
+#	undef HAVE_IDNA_USE_STD3_ASCII_RULES
+#	undef HAVE_LIBIDN
+
+/*
+ * ICU - International Components for Unicode
+ *       used for unicode normalization
+ */
+#	undef HAVE_UNICODE_UNORM_H
+#	undef HAVE_UNICODE_USTRING_H
+#	undef HAVE_UNICODE_UBIDI_H
+#	undef HAVE_LIBICUUC
+
+/*
+ * Define as const if the declaration of iconv() needs const.
+ */
+#	undef ICONV_CONST
+
+/*
+ * Define if iconv_open() has //TRNALSIT extension.
+ */
+#	undef HAVE_ICONV_OPEN_TRANSLIT
+
+/*
+ * Define if you have swprintf() and co.
+ */
+#	undef MULTIBYTE_ABLE
+#	undef HAVE_LIBUTF8_H
+
+/*
+ * Definition used in PCRE:
+ */
+#	if defined(MULTIBYTE_ABLE) || defined(HAVE_LIBUTF8_H)
+#		define SUPPORT_UTF8 1
+#		define SUPPORT_UCP 1
+#	endif /* MULTIBYTE_ABLE || HAVE_LIBUTF8_H */
+
+/*
+ * Define if you have <langinfo.h> and nl_langinfo(CODESET).
+ */
+#	undef HAVE_LANGINFO_CODESET
+
+/*
+ * Some older socks libraries, especially AIX need special definitions
+ */
+#	if defined(_AIX) && !defined(USE_SOCKS5)
+#		undef accept
+#		undef bind
+#		undef connect
+#		undef getpeername
+#		undef getsockname
+#		undef listen
+#		undef recvfrom
+#		undef select
+#	endif /* _AIX && !USE_SOCKS5 */
+
+/* FIXME: move things below to right place above */
+
+/* GNU gettext */
+/* Define to 1 if NLS is requested. */
+#	undef ENABLE_NLS
+
+/* Define if your locale.h file contains LC_MESSAGES. */
+#	undef HAVE_LC_MESSAGES
+
+/* Define if you have the i library (-li). */
+#	undef HAVE_LIBI
+
+#	undef HAVE___ARGZ_COUNT
+#	undef HAVE___ARGZ_NEXT
+#	undef HAVE___ARGZ_STRINGIFY
+#	undef HAVE_CATGETS
+#	undef HAVE_DCGETTEXT
+#	undef HAVE_GETTEXT
+
+/*
+-----------------------------------
+Added missing headers after gettext update, using autoheader
+-----------------------------------
+*/
+/* Define if using alloca.c. */
+#	undef C_ALLOCA
+
+/*
+ * Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP systems.
+ * This function is required for alloca.c support on those systems.
+ */
+#	undef CRAY_STACKSEG_END
+
+/* Define if you have the <argz.h> header file. */
+#	undef HAVE_ARGZ_H
+
+/* Define if you don't have vprintf but do have _doprnt. */
+#	undef HAVE_DOPRNT
+
+/* Define if you have the feof_unlocked function. */
+#	undef HAVE_FEOF_UNLOCKED
+
+/* Define if you have the fgets_unlocked function. */
+#	undef HAVE_FGETS_UNLOCKED
+
+/* Define if your system has a working fnmatch function. */
+#	undef HAVE_FNMATCH
+
+/* Define if you have the getegid function. */
+#	undef HAVE_GETEGID
+
+/* Define if you have the geteuid function. */
+#	undef HAVE_GETEUID
+
+/* Define if you have the getgid function. */
+#	undef HAVE_GETGID
+
+/* Define if your system has its own `getloadavg' function. */
+#	undef HAVE_GETLOADAVG
+
+/* Define if you have the getmntent function. */
+#	undef HAVE_GETMNTENT
+
+/* Define if you have the getnameinfo function. */
+#	undef HAVE_GETNAMEINFO
+
+/* Define if you have the getpagesize function. */
+#	undef HAVE_GETPAGESIZE
+
+/* Define if you have the getuid function. */
+#	undef HAVE_GETUID
+
+/* Define if you have the nsl library (-lnsl). */
+#	undef HAVE_LIBNSL
+
+/* Define if you have the socket library (-lsocket). */
+#	undef HAVE_LIBSOCKET
+
+/* Define if you have the <limits.h> header file. */
+#	undef HAVE_LIMITS_H
+
+/* Define if the `long double' type works. */
+#	undef HAVE_LONG_DOUBLE
+
+/* Define if you have the mempcpy function. */
+#	undef HAVE_MEMPCPY
+
+/* Define if you have a working `mmap' system call. */
+#	undef HAVE_MMAP
+
+/* Define if you have the <ndir.h> header file. */
+#	undef HAVE_NDIR_H
+
+/* Define if you have the <nl_types.h> header file. */
+#	undef HAVE_NL_TYPES_H
+
+/*
+ * Define if system calls automatically restart after interruption
+ * by a signal.
+ */
+#	undef HAVE_RESTARTABLE_SYSCALLS
+
+/* Define if you have the sigaction function. */
+#	undef HAVE_SIGACTION
+
+/* Define if your struct stat has st_blksize. */
+#	undef HAVE_ST_BLKSIZE
+
+/* Define if your struct stat has st_blocks. */
+#	undef HAVE_ST_BLOCKS
+
+/* Define if you have the strcoll function and it is properly defined. */
+#	undef HAVE_STRCOLL
+
+/* Define if your struct stat has st_rdev. */
+#	undef HAVE_ST_RDEV
+
+/* Define if you have the ANSI # stringizing operator in cpp. */
+#	undef HAVE_STRINGIZE
+
+/* Define if you have the strtoul function. */
+#	undef HAVE_STRTOUL
+
+/* Define if you have the <sys/termio.h> header file. */
+#	undef HAVE_SYS_TERMIO_H
+
+/* Define if your struct tm has tm_zone. */
+#	undef HAVE_TM_ZONE
+
+/* Define if you have the tsearch function. */
+#	undef HAVE_TSEARCH
+
+/*
+ * Define if you don't have tm_zone but do have the external array
+ * tzname.
+ */
+#	undef HAVE_TZNAME
+
+/* Define if utime(file, NULL) sets file's timestamp to the present. */
+#	undef HAVE_UTIME_NULL
+
+/* Define if you have <vfork.h>. */
+#	undef HAVE_VFORK_H
+
+/* Define if you have the vprintf function. */
+#	undef HAVE_VPRINTF
+
+/* Define if you have the wait3 system call. */
+#	undef HAVE_WAIT3
+
+/* Define if you have the <wait.h> header file. */
+#	undef HAVE_WAIT_H
+
+/* Define if your C compiler doesn't accept -c and -o together. */
+#	undef NO_MINUS_C_MINUS_O
+
+/* Define if your Fortran 77 compiler doesn't accept -c and -o together. */
+#	undef F77_NO_MINUS_C_MINUS_O
+
+/* Define to the type of arg1 for select(). */
+#	undef SELECT_TYPE_ARG1
+
+/* Define to the type of args 2, 3 and 4 for select(). */
+#	undef SELECT_TYPE_ARG234
+
+/* Define to the type of arg5 for select(). */
+#	undef SELECT_TYPE_ARG5
+
+/*
+ * If using the C implementation of alloca, define if you know the
+ * direction of stack growth for your system; otherwise it will be
+ * automatically deduced at run-time.
+ * STACK_DIRECTION > 0 => grows toward higher addresses
+ * STACK_DIRECTION < 0 => grows toward lower addresses
+ * STACK_DIRECTION = 0 => direction of growth unknown
+ */
+#	undef STACK_DIRECTION
+
+/* Define if the X Window System is missing or not being used. */
+#	undef X_DISPLAY_MISSING
+
+/*
+ * TODO: define if:
+ *       !X_DISPLAY_MISSING && !DONT_HAVE_PIPING &&
+ *       HAVE_MKFIFO && HAVE_FORK && HAVE_EXECLP && HAVE_WAITPID
+ *       [&& HAVE_SLRNFACE if we add a check or a configure option for that ]
+ */
+#	undef XFACE_ABLE
+
+#endif /* !TIN_AUTOCONF_H */

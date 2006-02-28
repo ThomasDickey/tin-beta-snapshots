@@ -1,0 +1,42 @@
+#! /bin/sh
+# Remove the files created by this script before running it.
+#rm -f config.cache config.status config.log
+rm -f src/Makefile include/autoconf.h
+
+if test ! -f configure
+then
+	autoconf
+fi
+
+OUT=td-conf.out
+cat >>$OUT <<EOF/
+** `date`
+** node: `uname -a`
+** from: `pwd`
+** user: `id`
+** conf: $*
+EOF/
+OPTS="$*"
+
+CC="${CC-cc}"
+
+# set
+#	--with-domain-name=doma.in
+# and
+#	--with-nntp-default-server=news.doma.in
+# to your local needs
+# if your like to use pgp and you have more then method installed on your
+# system _disable_ two of the three offered pgp/pgp supports, i.e. use:
+# 	-without-pgpk --without-gpg
+# for pgp-2 support
+
+echo "Making with $CC $CFLAGS"
+CFLAGS="$CFLAGS" \
+CC="$CC" \
+./configure --verbose \
+	--disable-echo \
+	--enable-prototypes \
+	--enable-nntp-only \
+	--with-domain-name=/etc/NNTP_INEWS_DOMAIN \
+	--with-coffee \
+        $OPTS $* 2>&1 |tee -a $OUT

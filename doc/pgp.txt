@@ -1,0 +1,108 @@
+This file is correct as of tin-1.5.8
+
+Ensuring support is compiled in
+-------------------------------
+Tin will compile in support for PGP or GPG if it can find it.
+
+It looks for 'pgp' on the path
+If this is found, then PGP2 support is assumed
+It looks for 'pgpk' on the path
+If this is found, then PGP5 support is assumed
+It looks for 'gpg' on the path
+If this is found, then GPG support is assumed
+If neither is found, then no pgp and gpg support is compiled in
+
+If you have more than one of these programs installed, you have to decide
+which of these should be used by tin. By default, PGP2 is preferred over PGP5
+and PGP5 over GPG. If you want to use PGP2 or PGP5 and GPG is installed, make
+sure that you invoke configure with --without-gpg (otherwise appending public
+keys will fail). If you want to use GPG, invoke configure with --without-pgp
+and --without-pgpk. To use PGP5, invoke configure with --without-pgp and
+--without-gpg.
+
+If configure is called with --disable-pgp-gpg, then no pgp and gpg support is
+compiled in.
+
+When you try to use PGP
+-----------------------
+PGP2 support expects pubring.pgp
+PGP5 support expects pubring.pkr
+GPG support expects pubring.gpg
+
+It wants to find the above in:
+$HOME/.pgp/pubring.* if using PGP2 or PGP5
+$HOME/.gnupg/pubring.gpg if using GPG
+
+Or you can override this with $PGPPATH/pubring.*
+
+If an environment var PGPOPTS is defined, then tin will use it.
+
+Internal usage of PGP
+---------------------
+There are 3 places where pgp is invoked:
+
+1) Checking articles (^G in the pager)
+
+   If the article is pgp signed (-----BEGIN PGP SIGNED MESSAGE-----)
+
+   PGP2:  pgp -f $PGPOPTS <article >/dev/null
+   PGP5:  pgpv -f $PGPOPTS <article >/dev/null
+   GPG:   gpg $PGPOPTS --nobatch --decrypt <article >/dev/null
+
+   If the article has (-----BEGIN PGP PUBLIC KEY BLOCK-----)
+
+   pgp $PGPOPTS -ka article
+   pgpk $PGPOPTS -a article
+   gpg $PGPOPTS --nobatch --import article
+
+2) When posting news or mail
+
+   For signing when tinrc.mail_address or attributes.from is not defined:
+
+   PGP2:  pgp $PGPOPTS -ats plaintextfile to_address
+   PGP5:  pgps $PGPOPTS -at plaintextfile to_address
+   GPG:   gpg $PGPOPTS --textmode --armor --no-batch --output
+              plaintextfile.asc --escape-from --clearsign plaintextfile
+
+   For signing and encrypting when tinrc.mail_address or attributes.from is
+   not defined:
+
+   PGP2:  pgp $PGPOPTS -ates plaintextfile to_address
+   PGP5:  pgpe $PGPOPTS -ats plaintextfile to_address
+   GPG:   gpg $PGPOPTS --textmode --armor --no-batch --output
+              plaintextfile.asc --recipient to_address --sign --encrypt
+              plaintextfile
+
+   For signing when tinrc.mail_address or attributes.from is defined:
+
+   PGP2:  pgp $PGPOPTS -ats plaintextfile to_address -u from_address
+   PGP5:  pgps $PGPOPTS -at plaintextfile to_address -u from_address
+   GPG:   gpg $PGPOPTS --textmode --armor --no-batch --local-user
+              from_address --output plaintextfile.asc --escape-from
+              --clearsign plaintextfile
+
+   For signing and encrypting when tinrc.mail_address or attributes.from is
+   defined:
+
+   PGP2:  pgp $PGPOPTS -ates plaintextfile to_address -u from_address
+   PGP5:  pgpe $PGPOPTS -ats plaintextfile to_address -u from_address
+   GPG:   gpg $PGPOPTS --textmode --armor --no-batch --output
+              plaintextfile.asc --recipient to_address --local-user
+              from_address --sign --encrypt plaintextfile
+
+   For encrypting:
+
+   PGP2:  pgp $PGPOPTS -ate plaintextfile to_address
+   PGP5:  pgpe $PGPOPTS -at plaintextfile to_address
+   GPG:   gpg $PGPOPTS --textmode --armor --no-batch --output
+              plaintextfile.asc --recipient to_address --encrypt
+              plaintextfile
+
+3) Appending public key
+
+   PGP2: pgp $PGPOPTS -kxa from_address keyfile
+   PGP5: pgpk $PGPOPTS -xa from_address -o keyfile
+   GPG:  gpg $PGPOPTS --nobatch --armor --output keyfile --export
+             from_address
+
+   Where from_address is the posting/mailing address
