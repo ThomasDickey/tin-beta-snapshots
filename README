@@ -1,0 +1,39 @@
+Quick Install:
+
+configure to your local setup (have a look at):
+	./configure --help (or ./conf-tin)
+
+check your local setup in:
+	include/autoconf.h
+
+compile with:
+	make build (or cd src; make)
+
+install with:
+	make install
+
+Install at your own risk.
+
+For a more detailed description of all the configure options read
+doc/INSTALL.
+
+Note that tin requires a valid fully qualified domain name for the host
+you are running tin on. IF YOU DON'T HAVE A HOST NAME WITH A VALID DOMAIN
+GO AND GET ONE AND CONFIGURE YOUR HOST -- NOW! (This will prevent problems
+with other software, too.) Otherwise users may get "Invalid Sender" error
+messages and won't be able to post using the internal inews.
+
+Before mailing a bug-report to tin-bugs@tin.org please check if you are
+using the latest (stable) release, and if not, please upgrade first! Have a
+look a the doc/TODO file for known bugs. If you still think you've found a
+bug, please use the mail_bugreport function (shift-R) and write in English.
+Please do NOT enclose a core-file in your bugreport until we request it.
+
+The latest release is available at:
+<ftp://ftp.tin.org/pub/news/clients/tin/current/>
+or its mirrors.
+
+If you have additional questions or would like to be informed about the
+latest new features/version you may subscribe to the (developers)
+tin mailing lists; to subscribe write to majordomo@tin.org, asking
+in the body to: subscribe <listname> and/or read news.software.readers.

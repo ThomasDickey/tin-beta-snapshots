@@ -1,0 +1,6964 @@
+# translation of tin to Kinyarwanda.
+# Copyright (C) 2005 Free Software Foundation, Inc.
+# This file is distributed under the same license as the tin package.
+# Steve Murphy <murf@e-tools.com>, 2005
+# Steve performed initial rough translation from compendium built from translations provided by the following translators:
+# Philibert Ndandali  <ndandali@yahoo.fr>, 2005.
+# Viateur MUGENZI <muvia1@yahoo.fr>, 2005.
+# Noëlla Mupole <s24211045@tuks.co.za>, 2005.
+# Carole Karema <karemacarole@hotmail.com>, 2005.
+# JEAN BAPTISTE NGENDAHAYO <ngenda_denis@yahoo.co.uk>, 2005.
+# Augustin KIBERWA  <akiberwa@yahoo.co.uk>, 2005.
+# Donatien NSENGIYUMVA <ndonatienuk@yahoo.co.uk>, 2005.
+# Antoine Bigirimana <antoine@e-tools.com>, 2005.
+#
+msgid	""
+msgstr	"Project-Id-Version: tin 1.7.8\n"
+	"Report-Msgid-Bugs-To: \n"
+	"POT-Creation-Date: 2006-04-09 17:19+0200\n"
+	"PO-Revision-Date: 2005-04-03 10:55-0700\n"
+	"Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
+	"Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
+	"MIME-Version: 1.0\n"
+	"Content-Type: text/plain; charset=ISO-8859-1\n"
+	"Content-Transfer-Encoding: 8bit\n"
+
+#: src/art.c:1533
+#, fuzzy, c-format
+msgid	"%d Bad overview record (%d fields) '%s'"
+msgstr	"%d Incamake Icyabitswe Imyanya"
+
+#: src/attrib.c:649
+#, fuzzy, c-format
+msgid	"# Do not edit this comment block\n"
+	"#\n"
+msgstr	"# O YA Guhindura iyi Icyo wongeraho\n"
+	"#\n"
+
+#: src/attrib.c:650
+#, fuzzy, c-format
+msgid	"#  scope=STRING (ie. alt.*,!alt.bin*) [mandatory]\n"
+msgstr	"#  Alt. Alt.\n"
+
+#: src/attrib.c:651
+#, c-format
+msgid	"#  maildir=STRING (ie. ~/Mail)\n"
+msgstr	""
+
+#: src/attrib.c:652
+#, fuzzy, c-format
+msgid	"#  savedir=STRING (ie. ~user/News)\n"
+msgstr	"#  Ukoresha:\n"
+
+#: src/attrib.c:653
+#, c-format
+msgid	"#  savefile=STRING (ie. =linux)\n"
+msgstr	""
+
+#: src/attrib.c:654
+#, fuzzy, c-format
+msgid	"#  sigfile=STRING (ie. $var/sig)\n"
+msgstr	"#  VAR\n"
+
+#: src/attrib.c:655
+#, fuzzy, c-format
+msgid	"#  organization=STRING (if beginning with '/' read from file)\n"
+msgstr	"#  Ihuzagahunda NIBA Itangiriro Na: Gusoma Bivuye IDOSIYE\n"
+
+#: src/attrib.c:656
+#, c-format
+msgid	"#  followup_to=STRING\n"
+msgstr	""
+
+#: src/attrib.c:657
+#, fuzzy, c-format
+msgid	"#  mailing_list=STRING (ie. majordomo@example.org)\n"
+msgstr	"#  Urutonde rwa Imeli Urugero org\n"
+
+#: src/attrib.c:658
+#, c-format
+msgid	"#  x_headers=STRING (ie. ~/.tin/extra-headers)\n"
+msgstr	""
+
+#: src/attrib.c:659
+#, c-format
+msgid	"#  x_body=STRING (ie. ~/.tin/extra-body-text)\n"
+msgstr	""
+
+#: src/attrib.c:660
+#, fuzzy, c-format
+msgid	"#  from=STRING (just append wanted From:-line, don't use quotes)\n"
+msgstr	"#  Bivuye Kongeraho... Umurongo Gukoresha\n"
+
+#: src/attrib.c:661
+#, c-format
+msgid	"#  news_quote_format=STRING\n"
+msgstr	""
+
+#: src/attrib.c:662
+#, fuzzy, c-format
+msgid	"#  quote_chars=STRING (%%s, %%S for initials)\n"
+msgstr	"#  kugirango Izibanza\n"
+
+#: src/attrib.c:663
+#, fuzzy, c-format
+msgid	"#  mime_types_to_save=STRING (eg. image/*,!image/bmp)\n"
+msgstr	"#  Ishusho Ishusho bmp\n"
+
+#: src/attrib.c:665
+#, c-format
+msgid	"#  ispell=STRING\n"
+msgstr	""
+
+#: src/attrib.c:667
+#, c-format
+msgid	"#  auto_select=ON/OFF\n"
+msgstr	""
+
+#: src/attrib.c:668
+#, fuzzy, c-format
+msgid	"#  auto_save=ON/OFF\n"
+msgstr	"#  NyaMwishyingura\n"
+
+#: src/attrib.c:669
+#, c-format
+msgid	"#  batch_save=ON/OFF\n"
+msgstr	""
+
+#: src/attrib.c:670
+#, c-format
+msgid	"#  delete_tmp_files=ON/OFF\n"
+msgstr	""
+
+#: src/attrib.c:671
+#, c-format
+msgid	"#  show_only_unread=ON/OFF\n"
+msgstr	""
+
+#: src/attrib.c:672
+#, c-format
+msgid	"#  thread_arts=NUM"
+msgstr	""
+
+#: src/attrib.c:679
+#, c-format
+msgid	"#  thread_perc=NUM\n"
+msgstr	""
+
+#: src/attrib.c:680
+#, c-format
+msgid	"#  show_author=NUM\n"
+msgstr	""
+
+#: src/attrib.c:686
+#, c-format
+msgid	"#  show_info=NUM\n"
+msgstr	""
+
+#: src/attrib.c:692
+#, c-format
+msgid	"#  sort_art_type=NUM\n"
+msgstr	""
+
+#: src/attrib.c:710
+#, c-format
+msgid	"#  sort_threads_type=NUM\n"
+msgstr	""
+
+#: src/attrib.c:715
+#, c-format
+msgid	"#  post_proc_type=NUM\n"
+msgstr	""
+
+#: src/attrib.c:720
+#, c-format
+msgid	"#  quick_kill_scope=STRING (ie. talk.*)\n"
+msgstr	""
+
+#: src/attrib.c:721
+#, c-format
+msgid	"#  quick_kill_expire=ON/OFF\n"
+msgstr	""
+
+#: src/attrib.c:722
+#, c-format
+msgid	"#  quick_kill_case=ON/OFF\n"
+msgstr	""
+
+#: src/attrib.c:723
+#, c-format
+msgid	"#  quick_kill_header=NUM\n"
+msgstr	""
+
+#: src/attrib.c:724 src/attrib.c:731
+#, fuzzy, c-format
+msgid	"#    0=subj (case sensitive) 1=subj (ignore case)\n"
+msgstr	"#    0 1. Kwirengagiza\n"
+
+#: src/attrib.c:725 src/attrib.c:732
+#, fuzzy, c-format
+msgid	"#    2=from (case sensitive) 3=from (ignore case)\n"
+msgstr	"#    2. Bivuye 3. Bivuye Kwirengagiza\n"
+
+#: src/attrib.c:726 src/attrib.c:733
+#, c-format
+msgid	"#    4=msgid 5=lines\n"
+msgstr	""
+
+#: src/attrib.c:727
+#, c-format
+msgid	"#  quick_select_scope=STRING\n"
+msgstr	""
+
+#: src/attrib.c:728
+#, c-format
+msgid	"#  quick_select_expire=ON/OFF\n"
+msgstr	""
+
+#: src/attrib.c:729
+#, c-format
+msgid	"#  quick_select_case=ON/OFF\n"
+msgstr	""
+
+#: src/attrib.c:730
+#, c-format
+msgid	"#  quick_select_header=NUM\n"
+msgstr	""
+
+#: src/attrib.c:734
+#, c-format
+msgid	"#  x_comment_to=ON/OFF\n"
+msgstr	""
+
+#: src/attrib.c:735
+#, c-format
+msgid	"#  fcc=STRING (eg. =mailbox)\n"
+msgstr	""
+
+#: src/attrib.c:736
+#, c-format
+msgid	"#  tex2iso_conv=ON/OFF\n"
+msgstr	""
+
+#: src/attrib.c:737
+#, c-format
+msgid	"#  mime_forward=ON/OFF\n"
+msgstr	""
+
+#: src/attrib.c:739
+#, c-format
+msgid	"#  mm_network_charset=supported_charset"
+msgstr	""
+
+#: src/attrib.c:746
+#, fuzzy, c-format
+msgid	"#  undeclared_charset=STRING (default is US-ASCII)\n"
+msgstr	"#  Mburabuzi ni\n"
+
+#: src/attrib.c:748
+#, fuzzy, c-format
+msgid	"#\n"
+	"# Note that it is best to put general (global scoping)\n"
+msgstr	"#\n"
+	"# ni Kuri Gushyira Rusange\n"
+
+#: src/attrib.c:749
+#, fuzzy, c-format
+msgid	"# entries first followed by group specific entries.\n"
+	"#\n"
+msgstr	"# Ibyinjijwe Itangira ku Itsinda Ibyinjijwe\n"
+	"#\n"
+
+#: src/attrib.c:750
+#, c-format
+msgid	"############################################################################\n"
+	"\n"
+msgstr	""
+
+#: src/attrib.c:756
+#, fuzzy, c-format
+msgid	"# include extra headers\n"
+msgstr	"# Gushyiramo Birenga\n"
+
+#: src/attrib.c:764
+#, fuzzy, c-format
+msgid	"# in *sources* set post process type to shar only\n"
+msgstr	"# in Gushyiraho Iposita Ubwoko Kuri\n"
+
+#: src/attrib.c:768
+#, fuzzy, c-format
+msgid	"# in *binaries* do full post processing but no TeX2ISO conversion,\n"
+msgstr	"# in Iposita Inonosora Gukuraho...\n"
+
+#: src/attrib.c:769
+#, fuzzy, c-format
+msgid	"# remove tmp files and set Followup-To: poster\n"
+msgstr	"# Na Gushyiraho\n"
+
+#: src/cook.c:507
+#, fuzzy
+msgid	"(unknown)"
+msgstr	"(Itazwi)"
+
+#.
+#. * TODO: add to the right rule, give better explanation, -> lang.c
+#.
+#: src/filter.c:597 src/filter.c:605
+#, fuzzy
+msgid	"Removed from the previous rule: "
+msgstr	"Bivuye i Ibanjirije"
+
+#: src/keymap.c:271
+msgid	"NULL"
+msgstr	""
+
+#: src/lang.c:42
+#, fuzzy
+msgid	"1 Response"
+msgstr	"1."
+
+#: src/lang.c:46
+#, fuzzy, c-format
+msgid	"\n"
+	"%s contains no newsgroups. Exiting."
+msgstr	"\n"
+	"%sKirimo Oya Imbuga z'amakuru"
+
+#: src/lang.c:47
+#, fuzzy
+msgid	"all "
+msgstr	"Byose"
+
+#: src/lang.c:48
+msgid	"All groups"
+msgstr	"amatsinda yose"
+
+#: src/lang.c:49
+#, fuzzy, c-format
+msgid	"File %s exists. %s=append, %s=overwrite, %s=quit: "
+msgstr	"Idosiye Kongeraho... Guhindura Kuvamo"
+
+#: src/lang.c:50
+#, fuzzy
+msgid	"Article cancelled (deleted)."
+msgstr	"Kureka Cyasibwe"
+
+#: src/lang.c:51
+#, fuzzy
+msgid	"Article cannot be cancelled (deleted)."
+msgstr	"Kureka Cyasibwe"
+
+#: src/lang.c:52
+#, fuzzy
+msgid	"Article deleted."
+msgstr	"Cyasibwe"
+
+#: src/lang.c:53
+#, fuzzy, c-format
+msgid	"\n"
+	"Your article:\n"
+	"  \"%s\"\n"
+	"will be posted to the following %s:\n"
+msgstr	"Ingingo Kuri i"
+
+#: src/lang.c:54
+#, fuzzy
+msgid	"Article not posted!"
+msgstr	"OYA"
+
+#: src/lang.c:55
+#, fuzzy
+msgid	"Article not saved"
+msgstr	"OYA"
+
+#: src/lang.c:56
+msgid	"Article Level Commands"
+msgstr	""
+
+#: src/lang.c:57
+#, fuzzy
+msgid	"Article has no parent"
+msgstr	"Oya"
+
+#: src/lang.c:58
+#, fuzzy
+msgid	"Parent article has been killed"
+msgstr	"Ingingo"
+
+#: src/lang.c:59
+#, fuzzy
+msgid	"Parent article is unavailable"
+msgstr	"Ingingo ni"
+
+#: src/lang.c:60
+#, c-format
+msgid	"Article posted: %s"
+msgstr	""
+
+#: src/lang.c:61
+#, fuzzy, c-format
+msgid	"Article rejected (saved to %s)"
+msgstr	"Byanzwe Kuri"
+
+#: src/lang.c:62
+#, fuzzy, c-format
+msgid	"%s=article, %s=thread, %s=hot, %s=pattern, %s=tagged articles, %s=quit: "
+msgstr	"%s=Ingingo Urudodo Ishusho Kuvamo"
+
+#: src/lang.c:63
+msgid	"Article unavailable"
+msgstr	""
+
+#: src/lang.c:64
+msgid	"Article undeleted."
+msgstr	""
+
+#: src/lang.c:66
+msgid	"articles"
+msgstr	""
+
+#: src/lang.c:67
+#, fuzzy
+msgid	"This is a repost of the following article:"
+msgstr	"ni a Bya i Ingingo"
+
+#: src/lang.c:68
+#, fuzzy
+msgid	"article"
+msgstr	"Ingingo"
+
+#: src/lang.c:69
+msgid	"Article"
+msgstr	"Ingingo"
+
+#: src/lang.c:70
+#, c-format
+msgid	"-- %d %s mailed --"
+msgstr	""
+
+# 345
+#: src/lang.c:71
+#, fuzzy, c-format
+msgid	" at %s"
+msgstr	" ku %s"
+
+#: src/lang.c:72
+#, fuzzy, c-format
+msgid	"%*s[-- %s/%s, encoding %s%s%s, %d lines%s%s --]\n"
+msgstr	"%*s[--%s/%s,Imisobekere: Imirongo"
+
+#: src/lang.c:73
+msgid	", charset: "
+msgstr	""
+
+#: src/lang.c:74
+#, c-format
+msgid	"%*s[-- Description: %s --]\n"
+msgstr	""
+
+#: src/lang.c:75
+#, fuzzy, c-format
+msgid	"%d Authentication failed"
+msgstr	"%dByanze"
+
+#: src/lang.c:76
+msgid	"Server expects authentication.\n"
+msgstr	""
+
+#: src/lang.c:77
+#, fuzzy
+msgid	"    Please enter password: "
+msgstr	"Injiza Ijambobanga..."
+
+#: src/lang.c:78
+#, fuzzy
+msgid	"    Please enter username: "
+msgstr	"Injiza Izina ry'ukoresha"
+
+#: src/lang.c:79
+#, fuzzy, c-format
+msgid	"Author search backwards [%s]> "
+msgstr	"Gushaka Inyuma"
+
+#: src/lang.c:80
+#, fuzzy, c-format
+msgid	"Author search forwards [%s]> "
+msgstr	"Gushaka"
+
+#: src/lang.c:81
+#, fuzzy, c-format
+msgid	"Authorized for user: %s\n"
+msgstr	"kugirango Ukoresha:"
+
+#: src/lang.c:82
+#, fuzzy, c-format
+msgid	"Authorization failed for user: %s\n"
+msgstr	"Byanze kugirango Ukoresha:"
+
+#: src/lang.c:83
+#, fuzzy, c-format
+msgid	"\n"
+	"Autosubscribed to %s"
+msgstr	"Kuri"
+
+#: src/lang.c:84
+#, fuzzy
+msgid	"Autosubscribing groups...\n"
+msgstr	"Amatsinda"
+
+#: src/lang.c:85
+#, fuzzy, c-format
+msgid	"Autoselecting articles (use '%s' to see all unread) ..."
+msgstr	"Gukoresha Kuri Byose Bidasomye"
+
+#: src/lang.c:87
+#, fuzzy, c-format
+msgid	"Active file corrupt - %s"
+msgstr	"IDOSIYE"
+
+#: src/lang.c:88
+#, fuzzy, c-format
+msgid	"Article to be posted resulted in errors/warnings. %s=quit, %s=Menu, %s=edit: "
+msgstr	"Kuri in Amakosa Iburira Kuvamo Guhindura"
+
+#: src/lang.c:89
+#, fuzzy, c-format
+msgid	"Unrecognized attribute: %s"
+msgstr	"Ikiranga"
+
+#: src/lang.c:90
+#, fuzzy, c-format
+msgid	"Bad command. Type '%s' for help."
+msgstr	"Komandi: kugirango Ifashayobora"
+
+#: src/lang.c:92
+#, fuzzy
+msgid	"Base article"
+msgstr	"Base Ingingo"
+
+#: src/lang.c:93
+#, fuzzy
+msgid	"Base article range"
+msgstr	"Base Ingingo Urutonde"
+
+#: src/lang.c:94
+#, fuzzy, c-format
+msgid	"%s: Updating of index files not supported\n"
+msgstr	"%s:Bya Umubarendanga Idosiye OYA"
+
+#: src/lang.c:95
+#, fuzzy
+msgid	"*** Beginning of article ***"
+msgstr	"***Bya Ingingo"
+
+#: src/lang.c:97
+#, fuzzy, c-format
+msgid	"Cancel (delete) or supersede (overwrite) article [%%s]? (%s/%s/%s): "
+msgstr	"Gusiba Cyangwa Guhindura Ingingo"
+
+#: src/lang.c:98
+#, fuzzy
+msgid	"Cancelling article..."
+msgstr	"Ingingo"
+
+#: src/lang.c:100
+#, fuzzy, c-format
+msgid	"Cannot create %s"
+msgstr	"Kurema"
+
+#: src/lang.c:101
+#, fuzzy, c-format
+msgid	"Can't find base article %d"
+msgstr	"Gushaka SHINGIRO Ingingo"
+
+#: src/lang.c:102
+#, fuzzy, c-format
+msgid	"Can't open %s"
+msgstr	"Gufungura"
+
+#: src/lang.c:103
+#, fuzzy, c-format
+msgid	"Couldn't open %s for saving"
+msgstr	"Gufungura kugirango Mu kubika"
+
+#: src/lang.c:104
+#, fuzzy
+msgid	"*** Posting not allowed ***"
+msgstr	"***OYA"
+
+#: src/lang.c:105
+#, fuzzy, c-format
+msgid	"Posting is not allowed to %s"
+msgstr	"ni OYA Kuri"
+
+#: src/lang.c:106
+#, c-format
+msgid	"Can't retrieve %s"
+msgstr	""
+
+#: src/lang.c:107
+#, fuzzy, c-format
+msgid	"%s is a directory"
+msgstr	"%sni a bushyinguro"
+
+#: src/lang.c:108
+msgid	"Catchup"
+msgstr	""
+
+#: src/lang.c:109
+#, c-format
+msgid	"Catchup %s..."
+msgstr	""
+
+#: src/lang.c:110
+#, fuzzy
+msgid	"Catchup all groups entered during this session?"
+msgstr	"Byose Amatsinda iyi Umukoro"
+
+#: src/lang.c:111
+#, fuzzy
+msgid	"You have tagged articles in this group - catchup anyway?"
+msgstr	"in iyi Itsinda"
+
+#: src/lang.c:112
+#, fuzzy, c-format
+msgid	"%s %d %s in %lu seconds\n"
+msgstr	"%s%d%sin"
+
+#: src/lang.c:113
+msgid	"Caughtup"
+msgstr	""
+
+#: src/lang.c:114
+msgid	"Check Prepared Article"
+msgstr	""
+
+#: src/lang.c:115
+#, fuzzy
+msgid	"Checking for new groups... "
+msgstr	"kugirango Gishya Amatsinda"
+
+#: src/lang.c:116
+#, fuzzy
+msgid	"Checking for news..."
+msgstr	"kugirango Amakuru"
+
+#: src/lang.c:117
+#, fuzzy, c-format
+msgid	"Post-process %s=no, %s=yes, %s=shar, %s=quit: "
+msgstr	"Oya Yego Kuvamo"
+
+#: src/lang.c:119
+#, fuzzy
+msgid	"ANSI color disabled"
+msgstr	"Ibara Yahagaritswe"
+
+#: src/lang.c:120
+#, fuzzy
+msgid	"ANSI color enabled"
+msgstr	"Ibara Bikora"
+
+#: src/lang.c:122
+#, fuzzy, c-format
+msgid	"Command failed: %s"
+msgstr	"Byanze"
+
+#: src/lang.c:123
+#, fuzzy
+msgid	"Mark not selected articles read?"
+msgstr	"OYA Byahiswemo Gusoma"
+
+#: src/lang.c:124
+#, fuzzy, c-format
+msgid	"Connecting to %s..."
+msgstr	"Kwihuza na %s..."
+
+#: src/lang.c:125
+msgid	"<CR>"
+msgstr	""
+
+#: src/lang.c:126
+#, fuzzy
+msgid	"Creating active file for saved groups...\n"
+msgstr	"Gikora IDOSIYE kugirango Amatsinda"
+
+#: src/lang.c:127
+#, fuzzy
+msgid	"Creating newsrc file...\n"
+msgstr	"IDOSIYE"
+
+#: src/lang.c:129 src/lang.c:1146
+msgid	"Default"
+msgstr	"Mburabuzi"
+
+#: src/lang.c:130
+#, fuzzy
+msgid	"Delete saved files that have been post processed?"
+msgstr	"Idosiye Iposita"
+
+#: src/lang.c:131
+#, fuzzy
+msgid	"Deleting temporary files..."
+msgstr	"By'igihe gito Idosiye"
+
+#: src/lang.c:133
+#, fuzzy
+msgid	"*** End of article ***"
+msgstr	"***Impera Bya Ingingo"
+
+#: src/lang.c:134
+#, fuzzy
+msgid	"*** End of articles ***"
+msgstr	"***Impera Bya"
+
+#: src/lang.c:135
+#, fuzzy
+msgid	"*** End of groups ***"
+msgstr	"***Impera Bya Amatsinda"
+
+#: src/lang.c:136
+#, fuzzy
+msgid	"*** End of thread ***"
+msgstr	"***Impera Bya Urudodo"
+
+#: src/lang.c:137
+#, fuzzy
+msgid	"Enter limit of articles to get> "
+msgstr	"Bya Kuri Kubona"
+
+#: src/lang.c:138
+#, fuzzy
+msgid	"Enter Message-ID to go to> "
+msgstr	"Kuri Gyayo Kuri"
+
+#: src/lang.c:139
+#, fuzzy
+msgid	" and enter next unread thread"
+msgstr	"Na Injiza Komeza>> Bidasomye Urudodo"
+
+#: src/lang.c:140
+#, fuzzy
+msgid	" and enter next unread group"
+msgstr	"Na Injiza Komeza>> Bidasomye Itsinda"
+
+#: src/lang.c:141
+#, fuzzy
+msgid	"Enter option number> "
+msgstr	"Ihitamo Umubare"
+
+#: src/lang.c:142
+#, fuzzy, c-format
+msgid	"Enter range [%s]> "
+msgstr	"Urutonde"
+
+#: src/lang.c:143
+#, fuzzy
+msgid	"\n"
+	"Warning: Approved: header used.\n"
+msgstr	"Umutwempangano"
+
+#: src/lang.c:145
+#, fuzzy
+msgid	"\n"
+	"Error: Bad address in Approved: header.\n"
+msgstr	"Aderesi in Umutwempangano"
+
+#: src/lang.c:146
+#, fuzzy
+msgid	"\n"
+	"Error: Bad address in From: header.\n"
+msgstr	"Aderesi in Umutwempangano"
+
+#: src/lang.c:147
+#, fuzzy
+msgid	"\n"
+	"Error: Bad address in Reply-To: header.\n"
+msgstr	"Aderesi in Umutwempangano"
+
+#: src/lang.c:148
+#, fuzzy
+msgid	"\n"
+	"Error: Bad FQDN in Message-ID: header.\n"
+msgstr	"in Umutwempangano"
+
+#: src/lang.c:149
+#, c-format
+msgid	"Can't unlock %s"
+msgstr	""
+
+#: src/lang.c:151
+#, fuzzy, c-format
+msgid	"Corrupted file %s"
+msgstr	"IDOSIYE"
+
+#: src/lang.c:152
+#, fuzzy, c-format
+msgid	"Couldn't dotlock %s - article not appended!"
+msgstr	"Ingingo OYA"
+
+#: src/lang.c:153
+#, fuzzy, c-format
+msgid	"Couldn't lock %s - article not appended!"
+msgstr	"Ingingo OYA"
+
+#: src/lang.c:155
+#, fuzzy
+msgid	"Internal error in GNKSA routine - send bug report.\n"
+msgstr	"Ikosa in Kohereza Icyegeranyo"
+
+#: src/lang.c:156
+#, fuzzy
+msgid	"Left angle bracket missing in route address.\n"
+msgstr	"Imfuruka Ibuze in Aderesi"
+
+#: src/lang.c:157
+#, fuzzy
+msgid	"Left parenthesis missing in old-style address.\n"
+msgstr	"Ibuze in ki/ bishaje IMISUSIRE Aderesi"
+
+#: src/lang.c:158
+#, fuzzy
+msgid	"Right parenthesis missing in old-style address.\n"
+msgstr	"Ibuze in ki/ bishaje IMISUSIRE Aderesi"
+
+#: src/lang.c:159
+#, fuzzy
+msgid	"At-sign missing in mail address.\n"
+msgstr	"IKIMENYETSO Ibuze in Ubutumwa Aderesi"
+
+#: src/lang.c:160
+#, fuzzy
+msgid	"Single component FQDN is not allowed. Add your domain.\n"
+msgstr	"ni OYA Urwego"
+
+#: src/lang.c:161
+#, fuzzy
+msgid	"Invalid domain. Send bug report if your top level domain really exists.\n"
+	"Use .invalid as top level domain for munged addresses.\n"
+msgstr	"Urwego Icyegeranyo NIBA Hejuru: urwego Urwego Sibyo Nka Hejuru: urwego Urwego "
+	"kugirango Amaderesi"
+
+#: src/lang.c:162
+#, fuzzy
+msgid	"Illegal domain. Send bug report if your top level domain really exists.\n"
+	"Use .invalid as top level domain for munged addresses.\n"
+msgstr	"Urwego Icyegeranyo NIBA Hejuru: urwego Urwego Sibyo Nka Hejuru: urwego Urwego "
+	"kugirango Amaderesi"
+
+#: src/lang.c:163
+#, fuzzy
+msgid	"Unknown domain. Send bug report if your top level domain really exists.\n"
+	"Use .invalid as top level domain for munged addresses.\n"
+msgstr	"Urwego Icyegeranyo NIBA Hejuru: urwego Urwego Sibyo Nka Hejuru: urwego Urwego "
+	"kugirango Amaderesi"
+
+#: src/lang.c:164
+#, fuzzy
+msgid	"Illegal character in FQDN.\n"
+msgstr	"Inyuguti in"
+
+#: src/lang.c:165
+#, fuzzy
+msgid	"Zero length FQDN component not allowed.\n"
+msgstr	"Uburebure OYA"
+
+#: src/lang.c:166
+#, fuzzy
+msgid	"FQDN component exceeds maximum allowed length (63 chars).\n"
+msgstr	"Kinini Uburebure"
+
+#: src/lang.c:167
+#, fuzzy
+msgid	"FQDN component may not start or end with hyphen.\n"
+msgstr	"Gicurasi OYA Gutangira Cyangwa Impera Na:"
+
+#: src/lang.c:168
+#, fuzzy
+msgid	"FQDN component may not start with digit.\n"
+msgstr	"Gicurasi OYA Gutangira Na:"
+
+#: src/lang.c:169
+#, fuzzy
+msgid	"Domain literal has impossible numeric value.\n"
+msgstr	"Bikurikije umubare Agaciro"
+
+#: src/lang.c:170
+#, fuzzy
+msgid	"Domain literal is for private use only and not allowed for global use.\n"
+msgstr	"ni kugirango By'umwihariko Gukoresha Na OYA kugirango Gukoresha"
+
+#: src/lang.c:171
+#, fuzzy
+msgid	"Right bracket missing in domain literal.\n"
+msgstr	"Ibuze in Urwego"
+
+#: src/lang.c:172
+#, fuzzy
+msgid	"Missing localpart of mail address.\n"
+msgstr	"Bya Ubutumwa Aderesi"
+
+#: src/lang.c:173
+#, fuzzy
+msgid	"Illegal character in localpart of mail address.\n"
+msgstr	"Inyuguti in Bya Ubutumwa Aderesi"
+
+#: src/lang.c:174
+#, fuzzy
+msgid	"Zero length localpart component not allowed.\n"
+msgstr	"Uburebure OYA"
+
+#: src/lang.c:175
+#, fuzzy
+msgid	"Illegal character in realname.\n"
+	"Unquoted words may not contain '!()<>@,;:\\.[]' in route addresses.\n"
+msgstr	"Inyuguti in Amagambo Gicurasi OYA in Amaderesi"
+
+#: src/lang.c:176
+#, fuzzy
+msgid	"Illegal character in realname.\n"
+	"Quoted words may not contain '()<>\\'.\n"
+msgstr	"Inyuguti in Amagambo Gicurasi OYA"
+
+#: src/lang.c:177
+#, fuzzy
+msgid	"Illegal character in realname.\n"
+	"Encoded words may not contain '!()<>@,;:\"\\.[]/=' in parameter.\n"
+msgstr	"Inyuguti in Amagambo Gicurasi OYA in"
+
+#: src/lang.c:178
+#, fuzzy
+msgid	"Bad syntax in encoded word used in realname.\n"
+msgstr	"in ijambo in"
+
+#: src/lang.c:179
+#, fuzzy
+msgid	"Illegal character in realname.\n"
+	"Unquoted words may not contain '()<>\\' in old-style addresses.\n"
+msgstr	"Inyuguti in Amagambo Gicurasi OYA in ki/ bishaje IMISUSIRE Amaderesi"
+
+#: src/lang.c:180
+#, fuzzy
+msgid	"Illegal character in realname.\n"
+	"Control characters and unencoded 8bit characters > 127 are not allowed.\n"
+msgstr	"Inyuguti in Inyuguti Na Inyuguti OYA"
+
+#: src/lang.c:181
+#, fuzzy
+msgid	"\n"
+	"Error: No blank line found after header.\n"
+msgstr	"Ahatanditseho Umurongo Byabonetse Nyuma Umutwempangano"
+
+#. TODO: fixme, US-ASCII is not the only 7bit charset we know about
+#: src/lang.c:183
+#, fuzzy
+msgid	"\n"
+	"Error: Posting contains non-ASCII characters but MM_CHARSET is set to\n"
+	"       US-ASCII  - please change this setting to a suitable value for\n"
+	"       your language  using the  M)enu of configurable  options or by\n"
+	"       editing tinrc.\n"
+msgstr	"Kirimo Inyuguti ni Gushyiraho Guhindura>> iyi Igenamiterere Kuri a Agaciro "
+	"Ururimi ikoresha i Bya Amahitamo Cyangwa"
+
+#: src/lang.c:188
+#, fuzzy
+msgid	"\n"
+	"Error: Posting contains  non-ASCII characters  but the  MIME encoding\n"
+	"       for news  messages  is set  to \"7bit\"  -  please change this\n"
+	"       setting to \"8bit\" or \"quoted-printable\" depending  on what\n"
+	"       is more common  in your part  of the world.  This can  be done\n"
+	"       using the M)enu of configurable options or by editing tinrc.\n"
+msgstr	"Kirimo Inyuguti i kugirango Amakuru Ubutumwa ni Gushyiraho Kuri Guhindura>> "
+	"Igenamiterere Kuri Cyangwa Gicapika ku ni Birenzeho in Bya i ikoresha i Bya "
+	"Amahitamo Cyangwa ku"
+
+#: src/lang.c:194
+#, fuzzy
+msgid	"\n"
+	"Error: Article starts with blank line instead of header\n"
+msgstr	"Na: Ahatanditseho Umurongo Bya"
+
+#: src/lang.c:195
+#, fuzzy, c-format
+msgid	"\n"
+	"Error: Header on line %d does not have a colon after the header name:\n"
+	"%s\n"
+msgstr	"ku Umurongo OYA a Nyuma i Umutwempangano Izina:"
+
+#: src/lang.c:196
+#, fuzzy, c-format
+msgid	"\n"
+	"Error: The \"%s:\" line is empty.\n"
+msgstr	"Umurongo ni ubusa"
+
+#: src/lang.c:197
+#, fuzzy, c-format
+msgid	"\n"
+	"Error: The \"%s:\" line is missing from the article header.\n"
+msgstr	"Umurongo ni Ibuze Bivuye i Ingingo Umutwempangano"
+
+#: src/lang.c:198
+#, fuzzy, c-format
+msgid	"\n"
+	"Error: Header on line %d does not have a space after the colon:\n"
+	"%s\n"
+msgstr	"ku Umurongo OYA a Umwanya Nyuma i"
+
+#: src/lang.c:199
+#, fuzzy, c-format
+msgid	"\n"
+	"Error: There are multiple (%d) \"%s:\" lines in the header.\n"
+msgstr	"Igikubo Imirongo in i Umutwempangano"
+
+#: src/lang.c:200
+#, fuzzy, c-format
+msgid	"Insecure permissions of %s (%o)"
+msgstr	"Uruhushya Bya"
+
+#: src/lang.c:201
+#, fuzzy, c-format
+msgid	"Invalid response to GROUP command, %s"
+msgstr	"Kuri Komandi:"
+
+#: src/lang.c:203
+#, fuzzy, c-format
+msgid	"MIME parse error: Unexpected end of %s/%s article"
+msgstr	"Ikosa Impera Bya Ingingo"
+
+#: src/lang.c:204
+#, fuzzy
+msgid	"MIME parse error: Start boundary whilst reading headers"
+msgstr	"Ikosa Gutangira Imitwe"
+
+#: src/lang.c:205
+#, fuzzy
+msgid	"Can't get a (fully-qualified) domain-name!"
+msgstr	"Kubona a Urwego Izina:"
+
+#: src/lang.c:206
+#, fuzzy, c-format
+msgid	"No permissions to go into %s\n"
+msgstr	"Uruhushya Kuri Gyayo"
+
+#: src/lang.c:207
+#, fuzzy
+msgid	"\n"
+	"Error: From: line missing.\n"
+msgstr	"Umurongo Ibuze"
+
+#: src/lang.c:208
+#, fuzzy, c-format
+msgid	"No read permissions for %s\n"
+msgstr	"Gusoma Uruhushya kugirango"
+
+#: src/lang.c:209
+#, fuzzy, c-format
+msgid	"File %s does not exist\n"
+msgstr	"Idosiye OYA"
+
+#: src/lang.c:210
+#, fuzzy, c-format
+msgid	"No write permissions for %s\n"
+msgstr	"Kwandika Uruhushya kugirango"
+
+#: src/lang.c:211
+#, fuzzy
+msgid	"Can't get user information (/etc/passwd missing?)"
+msgstr	"Kubona Ukoresha: Ibisobanuro Ibuze"
+
+#: src/lang.c:212
+#, fuzzy
+msgid	"errors"
+msgstr	"Amakosa"
+
+#: src/lang.c:213
+#, fuzzy, c-format
+msgid	"\n"
+	"Error on line %d: \"Sender:\" header not allowed (it will be added for you)\n"
+msgstr	"ku Umurongo Umutwempangano OYA Kyongewe kugirango"
+
+#: src/lang.c:214
+#, fuzzy, c-format
+msgid	"Server has non of the groups listed in %s"
+msgstr	"Bya i Amatsinda in"
+
+#: src/lang.c:215
+#, fuzzy
+msgid	"error"
+msgstr	"Ikosa"
+
+#: src/lang.c:216
+#, fuzzy
+msgid	"Unknown display level"
+msgstr	"Kugaragaza urwego"
+
+#: src/lang.c:217
+msgid	"<ESC>"
+msgstr	""
+
+#: src/lang.c:218
+msgid	"Exiting..."
+msgstr	""
+
+#: src/lang.c:219
+#, fuzzy
+msgid	"leaving external mail-reader"
+msgstr	"external Ubutumwa"
+
+#: src/lang.c:220
+#, c-format
+msgid	"Extracting %s..."
+msgstr	""
+
+#: src/lang.c:222
+#, fuzzy, c-format
+msgid	"Error writing %s file. Filesystem full? File reset to previous state."
+msgstr	"IDOSIYE Idosiye Kugarura Kuri Ibanjirije Leta"
+
+#: src/lang.c:223
+#, fuzzy, c-format
+msgid	"Error making backup of %s file. Filesystem full?"
+msgstr	"Inyibutsa Bya IDOSIYE"
+
+#: src/lang.c:224
+#, c-format
+msgid	"Filtering global rules (%d/%d)..."
+msgstr	""
+
+#: src/lang.c:225
+#, fuzzy
+msgid	"Rule created by: "
+msgstr	"Byaremwe ku"
+
+#: src/lang.c:226
+#, fuzzy, c-format
+msgid	"Enter pattern [%s]> "
+msgstr	"Ishusho"
+
+#: src/lang.c:227
+#, fuzzy, c-format
+msgid	"\n"
+	"You requested followups to your article to go to the following %s:\n"
+msgstr	"Kuri Ingingo Kuri Gyayo Kuri i"
+
+#: src/lang.c:228
+#, fuzzy, c-format
+msgid	"  %s\t Answers will be directed to you by mail.\n"
+msgstr	"%sKuri ku Ubutumwa"
+
+#: src/lang.c:229
+#, fuzzy
+msgid	"-- forwarded message --\n"
+msgstr	"--Ubutumwa"
+
+#: src/lang.c:230
+#, fuzzy
+msgid	"-- end of forwarded message --\n"
+msgstr	"--Impera Bya Ubutumwa"
+
+#: src/lang.c:231
+#, fuzzy
+msgid	"# Format:\n"
+	"#   comment=STRING    Optional. Multiple lines allowed. Comments must be "
+	"placed\n"
+	"#                     at the beginning of a rule, or they will be moved to "
+	"the\n"
+	"#                     next rule. '#' is not a valid keyword for a comment!\n"
+	"#   group=STRING      Mandatory. Newsgroups list (e.g. comp.*,!*sources*).\n"
+	"#   case=NUM          Mandatory. Compare=0 / ignore=1 case when filtering.\n"
+	"#   score=NUM|STRING  Mandatory. Score to give. Either:\n"
+	"#     score=NUM         A number (e.g. 70). Or:\n"
+	"#     score=STRING      One of the two keywords: 'hot' or 'kill'.\n"
+	"#   subj=STRING       Optional. Subject: line (e.g. How to be a wizard).\n"
+	"#   from=STRING       Optional. From: line (e.g. *Craig Shergold*).\n"
+	"#   msgid=STRING      Optional. Message-ID: line (e.g. <123@ether.net>) with\n"
+	"#                     full references.\n"
+	"#   msgid_last=STRING Optional. Like above, but with last reference only.\n"
+	"#   msgid_only=STRING Optional. Like above, but without references.\n"
+	"#   refs_only=STRING  Optional. References: line (e.g. <123@ether.net>) "
+	"without\n"
+	"#                     Message-ID:\n"
+	"#   lines=[<>]?NUM    Optional. Lines: line. '<' or '>' are optional.\n"
+	"#   gnksa=[<>]?NUM    Optional. GNKSA parse_from() return code. '<' or '>' "
+	"opt.\n"
+	"#   xref=PATTERN      Optional. Kill pattern (e.g. alt.flame*)\n"
+	"#   time=NUM          Optional. time_t value when rule expires\n"
+	"#\n"
+msgstr	"#g. g. g. g. g. g. g. Alt."
+
+#: src/lang.c:252
+#, fuzzy, c-format
+msgid	"Enter score for rule (default=%d): "
+msgstr	"kugirango Mburabuzi"
+
+#: src/lang.c:253
+#, fuzzy, c-format
+msgid	"Enter the score weight (range 0 < score <= %d)"
+msgstr	"i Uburemere Urutonde 0"
+
+#. SCORE_MAX
+#: src/lang.c:254
+msgid	"Full"
+msgstr	""
+
+#: src/lang.c:255
+#, fuzzy
+msgid	"Comment (optional)  : "
+msgstr	"Bitari ngombwa"
+
+#: src/lang.c:256
+#, fuzzy
+msgid	"Apply pattern to    : "
+msgstr	"Ishusho Kuri"
+
+#: src/lang.c:257
+#, fuzzy
+msgid	"From: line (ignore case)      "
+msgstr	"Umurongo Kwirengagiza"
+
+#: src/lang.c:258
+#, fuzzy
+msgid	"From: line (case sensitive)   "
+msgstr	"Umurongo"
+
+#: src/lang.c:260
+#, fuzzy, c-format
+msgid	"%s%s: Unknown host.\n"
+msgstr	"%s%s:Ubuturo"
+
+#: src/lang.c:261
+msgid	"global "
+msgstr	""
+
+#: src/lang.c:262
+#, fuzzy, c-format
+msgid	"Please use %.100s instead"
+msgstr	"Gukoresha"
+
+#: src/lang.c:263
+#, fuzzy, c-format
+msgid	"%s is bogus"
+msgstr	"%sni"
+
+#: src/lang.c:264
+#, fuzzy, c-format
+msgid	"Group %s is moderated. Continue?"
+msgstr	"Dukomeza."
+
+#: src/lang.c:265
+#, fuzzy
+msgid	"groups"
+msgstr	"Amatsinda"
+
+#: src/lang.c:266
+#, c-format
+msgid	"Rereading %s..."
+msgstr	""
+
+#: src/lang.c:267
+msgid	"Top Level Commands"
+msgstr	""
+
+#: src/lang.c:268
+msgid	"Group Selection"
+msgstr	""
+
+#: src/lang.c:269
+#, fuzzy
+msgid	"group"
+msgstr	"Itsinda"
+
+#: src/lang.c:271
+#, fuzzy
+msgid	"One or more lines of comment. <CR> to add a line or proceed if line is empty."
+msgstr	"Cyangwa Birenzeho Imirongo Bya Icyo wongeraho Kuri Kongeramo a Umurongo "
+	"Cyangwa NIBA Umurongo ni ubusa"
+
+#: src/lang.c:272
+#, fuzzy
+msgid	"From: line to add to filter file. <SPACE> toggles & <CR> sets."
+msgstr	"Umurongo Kuri Kongeramo Kuri Muyunguruzi... IDOSIYE"
+
+#: src/lang.c:273
+#, fuzzy
+msgid	"Linecount of articles to be filtered. < for less, > for more, = for equal."
+msgstr	"Bya Kuri kugirango Birutwa kugirango Birenzeho kugirango bingana"
+
+#: src/lang.c:274
+#, fuzzy
+msgid	"Message-ID: line to add to filter file. <SPACE> toggles & <CR> sets."
+msgstr	"Umurongo Kuri Kongeramo Kuri Muyunguruzi... IDOSIYE"
+
+#: src/lang.c:275
+#, fuzzy
+msgid	"Subject: line to add to filter file. <SPACE> toggles & <CR> sets."
+msgstr	"Umurongo Kuri Kongeramo Kuri Muyunguruzi... IDOSIYE"
+
+#: src/lang.c:276
+#, fuzzy
+msgid	"Enter text pattern to filter if Subject: & From: lines are not what you want."
+msgstr	"Umwandiko Ishusho Kuri Muyunguruzi... NIBA Imirongo OYA"
+
+#: src/lang.c:277
+#, fuzzy
+msgid	"Select where text pattern should be applied. <SPACE> toggles & <CR> sets."
+msgstr	"Umwandiko Ishusho Byashyizweho"
+
+#: src/lang.c:278
+#, fuzzy
+msgid	"Expiration time in days for the entered filter. <SPACE> toggles & <CR> sets."
+msgstr	"Igihe in Iminsi kugirango i Muyunguruzi..."
+
+#: src/lang.c:279
+#, fuzzy
+msgid	"Apply kill only to current group or all groups. <SPACE> toggles & <CR> sets."
+msgstr	"Kuri KIGEZWEHO Itsinda Cyangwa Byose Amatsinda"
+
+#: src/lang.c:280
+#, fuzzy
+msgid	"Apply select to current group or all groups. <SPACE> toggles & <CR> sets."
+msgstr	"Guhitamo Kuri KIGEZWEHO Itsinda Cyangwa Byose Amatsinda"
+
+#: src/lang.c:281
+#, fuzzy
+msgid	"kill an article via a menu"
+msgstr	"Ingingo Biturutse a Ibikubiyemo"
+
+#: src/lang.c:282
+#, fuzzy
+msgid	"auto-select (hot) an article via a menu"
+msgstr	"Ikiyega Guhitamo Ingingo Biturutse a Ibikubiyemo"
+
+#: src/lang.c:283
+#, fuzzy
+msgid	"Browse URLs in article"
+msgstr	"in Ingingo"
+
+#: src/lang.c:284
+#, fuzzy
+msgid	"0 - 9\t  display article by number in current thread"
+msgstr	"0 Kugaragaza Ingingo ku Umubare in KIGEZWEHO Urudodo"
+
+#: src/lang.c:285
+#, fuzzy
+msgid	"cancel (delete) or supersede (overwrite) current article"
+msgstr	"Kureka Gusiba Cyangwa Guhindura KIGEZWEHO Ingingo"
+
+#: src/lang.c:286
+#, fuzzy
+msgid	"edit article (mail-groups only)"
+msgstr	"Guhindura Ingingo Ubutumwa Amatsinda"
+
+#: src/lang.c:287
+#, fuzzy
+msgid	"display first article in current thread"
+msgstr	"Kugaragaza Itangira Ingingo in KIGEZWEHO Urudodo"
+
+#: src/lang.c:288
+#, fuzzy
+msgid	"display first page of article"
+msgstr	"Kugaragaza Itangira Ipaji Bya Ingingo"
+
+#: src/lang.c:289
+#, fuzzy
+msgid	"post followup to current article"
+msgstr	"Iposita Kuri KIGEZWEHO Ingingo"
+
+#: src/lang.c:290
+#, fuzzy
+msgid	"post followup (don't copy text) to current article"
+msgstr	"Iposita Gukoporora Umwandiko Kuri KIGEZWEHO Ingingo"
+
+#: src/lang.c:291
+#, fuzzy
+msgid	"post followup to current article quoting complete headers"
+msgstr	"Iposita Kuri KIGEZWEHO Ingingo Byuzuye Imitwe"
+
+#: src/lang.c:292
+#, fuzzy
+msgid	"display last article in current thread"
+msgstr	"Kugaragaza Iheruka Ingingo in KIGEZWEHO Urudodo"
+
+#: src/lang.c:293
+#, fuzzy
+msgid	"display last page of article"
+msgstr	"Kugaragaza Iheruka Ipaji Bya Ingingo"
+
+#: src/lang.c:294
+#, fuzzy
+msgid	"mark rest of thread as read and advance to next unread"
+msgstr	"Ikimenyetso Bya Urudodo Nka Gusoma Na Kuri Komeza>> Bidasomye"
+
+#: src/lang.c:295
+#, fuzzy
+msgid	"display next article"
+msgstr	"Kugaragaza Komeza>> Ingingo"
+
+#: src/lang.c:296
+#, fuzzy
+msgid	"display first article in next thread"
+msgstr	"Kugaragaza Itangira Ingingo in Komeza>> Urudodo"
+
+#: src/lang.c:297
+#, fuzzy
+msgid	"display next unread article"
+msgstr	"Kugaragaza Komeza>> Bidasomye Ingingo"
+
+#: src/lang.c:298
+#, fuzzy
+msgid	"go to the article that this one followed up"
+msgstr	"Gyayo Kuri i Ingingo iyi Hejuru"
+
+#: src/lang.c:299
+#, fuzzy
+msgid	"display previous article"
+msgstr	"Kugaragaza Ibanjirije Ingingo"
+
+#: src/lang.c:300
+#, fuzzy
+msgid	"display previous unread article"
+msgstr	"Kugaragaza Ibanjirije Bidasomye Ingingo"
+
+#: src/lang.c:301
+#, fuzzy
+msgid	"quickly kill an article using defaults"
+msgstr	"Ingingo ikoresha"
+
+#: src/lang.c:302
+#, fuzzy
+msgid	"quickly auto-select (hot) an article using defaults"
+msgstr	"Ikiyega Guhitamo Ingingo ikoresha"
+
+#: src/lang.c:303
+#, fuzzy
+msgid	"return to group selection level"
+msgstr	"Garuka Kuri Itsinda Ihitamo urwego"
+
+#: src/lang.c:304
+#, fuzzy
+msgid	"reply through mail to author"
+msgstr	"Subiza Gihinguranya Ubutumwa Kuri Umwanditsi"
+
+#: src/lang.c:305
+#, fuzzy
+msgid	"reply through mail (don't copy text) to author"
+msgstr	"Subiza Gihinguranya Ubutumwa Gukoporora Umwandiko Kuri Umwanditsi"
+
+#: src/lang.c:306
+#, fuzzy
+msgid	"reply through mail to author quoting complete headers"
+msgstr	"Subiza Gihinguranya Ubutumwa Kuri Umwanditsi Byuzuye Imitwe"
+
+#: src/lang.c:307
+#, fuzzy
+msgid	"repost chosen article to another group"
+msgstr	"Ingingo Kuri Itsinda"
+
+#: src/lang.c:308
+#, fuzzy
+msgid	"search backwards within this article"
+msgstr	"Gushaka Inyuma muri iyi Ingingo"
+
+#: src/lang.c:309
+#, fuzzy
+msgid	"search forwards within this article"
+msgstr	"Gushaka muri iyi Ingingo"
+
+#: src/lang.c:310
+#, fuzzy
+msgid	"show article in raw-mode (including all headers)"
+msgstr	"Garagaza Ingingo in Ubwoko Byose Imitwe"
+
+#: src/lang.c:311
+#, fuzzy
+msgid	"skip next block of included text"
+msgstr	"Komeza>> Funga Bya Umwandiko"
+
+#: src/lang.c:312
+#, fuzzy
+msgid	"toggle display of sections hidden by a form-feed (^L) on/off"
+msgstr	"Mukomatanya Kugaragaza Bya Ibyatoranyijwe gihishwe ku a Ifishi ku Bidakora"
+
+#: src/lang.c:313
+#, fuzzy
+msgid	"toggle word highlighting on/off"
+msgstr	"Mukomatanya ijambo Igaragaza cyane ku Bidakora"
+
+#: src/lang.c:314
+#, fuzzy
+msgid	"toggle ROT-13 (basic decode) for current article"
+msgstr	"Mukomatanya BASIC kugirango KIGEZWEHO Ingingo"
+
+#: src/lang.c:315
+#, fuzzy
+msgid	"toggle tabwidth 4 <-> 8"
+msgstr	"Mukomatanya 4. 8"
+
+#: src/lang.c:316
+#, fuzzy
+msgid	"toggle german TeX style decoding for current article"
+msgstr	"Mukomatanya Ikidage IMISUSIRE kugirango KIGEZWEHO Ingingo"
+
+#: src/lang.c:317
+#, fuzzy
+msgid	"toggle display of uuencoded sections"
+msgstr	"Mukomatanya Kugaragaza Bya Ibyatoranyijwe"
+
+#: src/lang.c:318
+#, fuzzy
+msgid	"View/save multimedia attachments"
+msgstr	"Kubika Imigereka"
+
+#: src/lang.c:319
+#, fuzzy, c-format
+msgid	"report bug or comment via mail to %s"
+msgstr	"Icyegeranyo Cyangwa Icyo wongeraho Biturutse Ubutumwa Kuri"
+
+#: src/lang.c:320
+#, fuzzy
+msgid	"choose range of articles to be affected by next command"
+msgstr	"Guhitamo Urutonde Bya Kuri ku Komeza>> Komandi:"
+
+#: src/lang.c:321
+#, fuzzy
+msgid	"escape from command prompt"
+msgstr	"Bivuye Komandi: Urwinjiriro"
+
+#: src/lang.c:322
+#, fuzzy
+msgid	"edit filter file"
+msgstr	"Guhindura Muyunguruzi... IDOSIYE"
+
+#: src/lang.c:323
+#, fuzzy
+msgid	"get help"
+msgstr	"Kubona Ifashayobora"
+
+#: src/lang.c:324
+#, fuzzy
+msgid	"display last article viewed"
+msgstr	"Kugaragaza Iheruka Ingingo"
+
+#: src/lang.c:325
+#, fuzzy
+msgid	"down one line"
+msgstr	"Hasi Umurongo"
+
+#: src/lang.c:326
+#, fuzzy
+msgid	"up one line"
+msgstr	"Hejuru Umurongo"
+
+#: src/lang.c:327
+#, fuzzy
+msgid	"go to article chosen by Message-ID"
+msgstr	"Gyayo Kuri Ingingo ku"
+
+#: src/lang.c:328
+#, fuzzy
+msgid	"mail article/thread/hot/pattern/tagged articles to someone"
+msgstr	"Ubutumwa Ingingo Urudodo Ishusho Kuri"
+
+#: src/lang.c:329
+#, fuzzy
+msgid	"menu of configurable options"
+msgstr	"Ibikubiyemo Bya Amahitamo"
+
+#: src/lang.c:330
+#, fuzzy
+msgid	"down one page"
+msgstr	"Hasi Ipaji"
+
+#: src/lang.c:331
+#, fuzzy
+msgid	"up one page"
+msgstr	"Hejuru Ipaji"
+
+#: src/lang.c:332
+#, fuzzy
+msgid	"post (write) article to current group"
+msgstr	"Iposita Kwandika Ingingo Kuri KIGEZWEHO Itsinda"
+
+#: src/lang.c:333
+#, fuzzy
+msgid	"post postponed articles"
+msgstr	"Iposita"
+
+#: src/lang.c:334
+#, fuzzy
+msgid	"list articles posted by you (from posted file)"
+msgstr	"Urutonde ku Bivuye IDOSIYE"
+
+#: src/lang.c:335
+#, fuzzy
+msgid	"return to previous menu"
+msgstr	"Garuka Kuri Ibanjirije Ibikubiyemo"
+
+#: src/lang.c:336
+#, fuzzy
+msgid	"quit tin immediately"
+msgstr	"Kuvamo Ako kanya"
+
+#: src/lang.c:337
+#, fuzzy
+msgid	"redraw page"
+msgstr	"Kongera Gushushanya Ipaji"
+
+#: src/lang.c:338
+#, fuzzy
+msgid	"save article/thread/hot/pattern/tagged articles to file"
+msgstr	"Kubika Ingingo Urudodo Ishusho Kuri IDOSIYE"
+
+#: src/lang.c:339
+#, fuzzy
+msgid	"save marked articles automatically without user prompts"
+msgstr	"Kubika cy/ byagarajwe ku buryo bwikora Ukoresha:"
+
+#: src/lang.c:340
+#, fuzzy
+msgid	"scroll the screen one line down"
+msgstr	"i Mugaragaza Umurongo Hasi"
+
+#: src/lang.c:341
+#, fuzzy
+msgid	"scroll the screen one line up"
+msgstr	"i Mugaragaza Umurongo Hejuru"
+
+#: src/lang.c:342
+#, fuzzy
+msgid	"search for articles by author backwards"
+msgstr	"Gushaka kugirango ku Umwanditsi Inyuma"
+
+#: src/lang.c:343
+#, fuzzy
+msgid	"search for articles by author forwards"
+msgstr	"Gushaka kugirango ku Umwanditsi"
+
+#: src/lang.c:344
+#, fuzzy
+msgid	"search all articles for a given string (this may take some time)"
+msgstr	"Gushaka Byose kugirango a Ikurikiranyanyuguti iyi Gicurasi Igihe"
+
+#: src/lang.c:345
+#, fuzzy
+msgid	" \t  (searches are case-insensitive and wrap around to all articles)"
+msgstr	"(Na Gufunika Kuri Byose"
+
+#: src/lang.c:346
+#, fuzzy
+msgid	"search for articles by Subject line backwards"
+msgstr	"Gushaka kugirango ku Umurongo Inyuma"
+
+#: src/lang.c:347
+#, fuzzy
+msgid	"search for articles by Subject line forwards"
+msgstr	"Gushaka kugirango ku Umurongo"
+
+#: src/lang.c:348
+#, fuzzy
+msgid	"repeat last search"
+msgstr	"Gusubiramo Iheruka Gushaka"
+
+#: src/lang.c:349
+#, fuzzy
+msgid	"tag current article for reposting/mailing/piping/printing/saving"
+msgstr	"Itagi: KIGEZWEHO Ingingo kugirango Icapa... Mu kubika"
+
+#: src/lang.c:350
+#, fuzzy
+msgid	"toggle info message in last line (subject/description)"
+msgstr	"Mukomatanya Ibisobanuro Ubutumwa in Iheruka Umurongo Ikivugwaho "
+	"Isobanuramiterere"
+
+#: src/lang.c:351
+#, fuzzy
+msgid	"toggle inverse video"
+msgstr	"Mukomatanya Videwo..."
+
+#: src/lang.c:352
+#, fuzzy
+msgid	"toggle mini help menu display"
+msgstr	"Mukomatanya Ifashayobora Ibikubiyemo Kugaragaza"
+
+#: src/lang.c:353
+#, fuzzy
+msgid	"cycle the display of authors email address, real name, both or neither"
+msgstr	"Uruziga i Kugaragaza Bya Abahanzi imeli Aderesi Izina: Byombi Cyangwa"
+
+#: src/lang.c:354
+#, fuzzy
+msgid	"show version information"
+msgstr	"Garagaza Verisiyo Ibisobanuro"
+
+#: src/lang.c:355
+#, fuzzy
+msgid	"mark all articles as read and return to group selection menu"
+msgstr	"Ikimenyetso Byose Nka Gusoma Na Garuka Kuri Itsinda Ihitamo Ibikubiyemo"
+
+#: src/lang.c:356
+#, fuzzy
+msgid	"mark all articles as read and enter next group with unread articles"
+msgstr	"Ikimenyetso Byose Nka Gusoma Na Injiza Komeza>> Itsinda Na: Bidasomye"
+
+#: src/lang.c:357
+#, fuzzy
+msgid	"choose first thread in list"
+msgstr	"Guhitamo Itangira Urudodo in Urutonde"
+
+#: src/lang.c:358
+#, fuzzy
+msgid	"choose last thread in list"
+msgstr	"Guhitamo Iheruka Urudodo in Urutonde"
+
+#: src/lang.c:359
+#, fuzzy
+msgid	"list articles within current thread (bring up Thread sub-menu)"
+msgstr	"Urutonde muri KIGEZWEHO Urudodo Hejuru Ibikubiyemo"
+
+#: src/lang.c:360
+#, fuzzy
+msgid	"mark article as unread"
+msgstr	"Ikimenyetso Ingingo Nka Bidasomye"
+
+#: src/lang.c:361
+#, fuzzy
+msgid	"mark current thread or tagged threads as read"
+msgstr	"Ikimenyetso KIGEZWEHO Urudodo Cyangwa Nka Gusoma"
+
+#: src/lang.c:362
+#, fuzzy
+msgid	"mark thread as unread"
+msgstr	"Ikimenyetso Urudodo Nka Bidasomye"
+
+#: src/lang.c:363
+#, fuzzy
+msgid	"toggle display of all/selected articles"
+msgstr	"Mukomatanya Kugaragaza Bya Byose Byahiswemo"
+
+#: src/lang.c:364
+#, fuzzy
+msgid	"display next group"
+msgstr	"Kugaragaza Komeza>> Itsinda"
+
+#: src/lang.c:365
+#, fuzzy
+msgid	"display previous group"
+msgstr	"Kugaragaza Ibanjirije Itsinda"
+
+#: src/lang.c:366
+#, fuzzy
+msgid	"toggle all selections (all articles)"
+msgstr	"Mukomatanya Byose Byose"
+
+#: src/lang.c:367
+#, fuzzy
+msgid	"select group (make \"hot\")"
+msgstr	"Guhitamo Itsinda Ubwoko"
+
+#: src/lang.c:368
+#, fuzzy
+msgid	"select thread"
+msgstr	"Guhitamo Urudodo"
+
+#: src/lang.c:369
+#, fuzzy
+msgid	"select threads if at least one unread article is selected"
+msgstr	"Guhitamo NIBA ku Bidasomye Ingingo ni Byahiswemo"
+
+#: src/lang.c:370
+#, fuzzy
+msgid	"select threads that match user specified pattern"
+msgstr	"Guhitamo BIHUYE Ukoresha: Ishusho"
+
+#: src/lang.c:371
+#, fuzzy
+msgid	"tag all parts of current multipart-message in order"
+msgstr	"Itagi: Byose Bya KIGEZWEHO Ubutumwa in Itondekanya"
+
+#: src/lang.c:372
+#, fuzzy
+msgid	"0 - 9\t  choose thread by number"
+msgstr	"0 Guhitamo Urudodo ku Umubare"
+
+#: src/lang.c:373
+#, fuzzy
+msgid	"toggle limit number of articles to get, and reload"
+msgstr	"Mukomatanya Umubare Bya Kuri Kubona Na Kongera Gutangiza"
+
+#: src/lang.c:374
+#, fuzzy
+msgid	"toggle display of all/unread articles"
+msgstr	"Mukomatanya Kugaragaza Bya Byose Bidasomye"
+
+#: src/lang.c:375
+#, fuzzy
+msgid	"toggle selection of thread"
+msgstr	"Mukomatanya Ihitamo Bya Urudodo"
+
+#: src/lang.c:376
+#, fuzzy
+msgid	"cycle through threading options available"
+msgstr	"Uruziga Gihinguranya Amahitamo Bihari"
+
+#: src/lang.c:377
+#, fuzzy
+msgid	"undo all selections (all articles)"
+msgstr	"Isubiranyuma Byose Byose"
+
+#: src/lang.c:378
+#, fuzzy
+msgid	"untag all tagged threads"
+msgstr	"Byose"
+
+#: src/lang.c:379
+#, fuzzy
+msgid	"mark all articles in group as read"
+msgstr	"Ikimenyetso Byose in Itsinda Nka Gusoma"
+
+#: src/lang.c:380
+#, fuzzy
+msgid	"mark all articles in group as read and move to next unread group"
+msgstr	"Ikimenyetso Byose in Itsinda Nka Gusoma Na Kwimura Kuri Komeza>> Bidasomye "
+	"Itsinda"
+
+#: src/lang.c:381
+#, fuzzy
+msgid	"choose first group in list"
+msgstr	"Guhitamo Itangira Itsinda in Urutonde"
+
+#: src/lang.c:382
+#, fuzzy
+msgid	"choose group by name"
+msgstr	"Guhitamo Itsinda ku Izina:"
+
+#: src/lang.c:383
+#, fuzzy
+msgid	"0 - 9\t  choose group by number"
+msgstr	"0 Guhitamo Itsinda ku Umubare"
+
+#: src/lang.c:384
+#, fuzzy
+msgid	"choose range of groups to be affected by next command"
+msgstr	"Guhitamo Urutonde Bya Amatsinda Kuri ku Komeza>> Komandi:"
+
+#: src/lang.c:385
+#, fuzzy
+msgid	"choose last group in list"
+msgstr	"Guhitamo Iheruka Itsinda in Urutonde"
+
+#: src/lang.c:386
+#, fuzzy
+msgid	"mark all articles in chosen group unread"
+msgstr	"Ikimenyetso Byose in Itsinda Bidasomye"
+
+#: src/lang.c:387
+#, fuzzy
+msgid	"move chosen group within list"
+msgstr	"Kwimura Itsinda muri Urutonde"
+
+#: src/lang.c:388
+#, fuzzy
+msgid	"choose next group with unread news"
+msgstr	"Guhitamo Komeza>> Itsinda Na: Bidasomye Amakuru"
+
+#: src/lang.c:389 src/lang.c:1193
+#, fuzzy
+msgid	"quit"
+msgstr	"Kuvamo"
+
+#: src/lang.c:390
+#, fuzzy
+msgid	"quit without saving configuration changes"
+msgstr	"Kuvamo Mu kubika Iboneza Amahinduka"
+
+#: src/lang.c:391
+#, fuzzy
+msgid	"read chosen group"
+msgstr	"Gusoma Itsinda"
+
+#: src/lang.c:392
+#, fuzzy
+msgid	"reset .newsrc (all available articles in groups marked unread)"
+msgstr	"Kugarura."
+
+#: src/lang.c:393
+#, fuzzy
+msgid	"search backwards for a group name"
+msgstr	"Gushaka Inyuma kugirango a Itsinda Izina:"
+
+#: src/lang.c:394
+#, fuzzy
+msgid	" \t  (all searches are case-insensitive and wrap around)"
+msgstr	"(Byose Na Gufunika"
+
+#: src/lang.c:395
+#, fuzzy
+msgid	"search forwards for a group name"
+msgstr	"Gushaka kugirango a Itsinda Izina:"
+
+#: src/lang.c:396
+#, fuzzy
+msgid	"subscribe to chosen group"
+msgstr	"Kwiyandikisha Kuri Itsinda"
+
+#: src/lang.c:397
+#, fuzzy
+msgid	"subscribe to groups that match pattern"
+msgstr	"Kwiyandikisha Kuri Amatsinda BIHUYE Ishusho"
+
+#: src/lang.c:398
+#, fuzzy
+msgid	"reread active file to check for any new news"
+msgstr	"Gikora IDOSIYE Kuri Kugenzura... kugirango Gishya Amakuru"
+
+#: src/lang.c:399
+#, fuzzy
+msgid	"toggle display of group name only or group name plus description"
+msgstr	"Mukomatanya Kugaragaza Bya Itsinda Izina: Cyangwa Itsinda Izina: Guteranya "
+	"Isobanuramiterere"
+
+#: src/lang.c:400
+#, fuzzy
+msgid	"toggle display to show all/unread subscribed groups"
+msgstr	"Mukomatanya Kugaragaza Kuri Garagaza Byose Bidasomye yanditswe/ byemewe "
+	"Amatsinda"
+
+#: src/lang.c:401
+#, fuzzy
+msgid	"unsubscribe from chosen group"
+msgstr	"Kwivana aho wiyandikishe Bivuye Itsinda"
+
+#: src/lang.c:402
+#, fuzzy
+msgid	"unsubscribe from groups that match pattern"
+msgstr	"Kwivana aho wiyandikishe Bivuye Amatsinda BIHUYE Ishusho"
+
+#: src/lang.c:403
+#, fuzzy
+msgid	"sort the list of groups"
+msgstr	"Ishungura i Urutonde Bya Amatsinda"
+
+#: src/lang.c:404
+#, fuzzy
+msgid	"toggle display to show all/subscribed groups"
+msgstr	"Mukomatanya Kugaragaza Kuri Garagaza Byose yanditswe/ byemewe Amatsinda"
+
+#: src/lang.c:405
+#, fuzzy
+msgid	"0 - 9\t  choose article by number"
+msgstr	"0 Guhitamo Ingingo ku Umubare"
+
+#: src/lang.c:406
+#, fuzzy
+msgid	"mark thread as read and return to group index page"
+msgstr	"Ikimenyetso Urudodo Nka Gusoma Na Garuka Kuri Itsinda Umubarendanga Ipaji"
+
+#: src/lang.c:407
+#, fuzzy
+msgid	"mark thread as read and enter next unread thread or group"
+msgstr	"Ikimenyetso Urudodo Nka Gusoma Na Injiza Komeza>> Bidasomye Urudodo Cyangwa "
+	"Itsinda"
+
+#: src/lang.c:408
+#, fuzzy
+msgid	"choose first article in list"
+msgstr	"Guhitamo Itangira Ingingo in Urutonde"
+
+#: src/lang.c:409
+#, fuzzy
+msgid	"choose last article in list"
+msgstr	"Guhitamo Iheruka Ingingo in Urutonde"
+
+#: src/lang.c:410
+#, fuzzy
+msgid	"mark article or tagged articles as read and move cursor to next unread article"
+msgstr	"Ikimenyetso Ingingo Cyangwa Nka Gusoma Na Kwimura indanga Kuri Komeza>> "
+	"Bidasomye Ingingo"
+
+#: src/lang.c:411
+#, fuzzy
+msgid	"read chosen article"
+msgstr	"Gusoma Ingingo"
+
+#: src/lang.c:412
+msgid	"Display properties\n"
+	"------------------"
+msgstr	""
+
+#: src/lang.c:413
+msgid	"Miscellaneous\n"
+	"-------------"
+msgstr	""
+
+#: src/lang.c:414
+msgid	"Moving around\n"
+	"-------------"
+msgstr	""
+
+#: src/lang.c:415
+#, fuzzy
+msgid	"Group/thread/article operations\n"
+	"-------------------------------"
+msgstr	"Urudodo Ingingo"
+
+#: src/lang.c:417
+msgid	"Group Level Commands"
+msgstr	""
+
+#: src/lang.c:418
+#, fuzzy
+msgid	"Kill filter added"
+msgstr	"Muyunguruzi... Kyongewe"
+
+#: src/lang.c:419
+#, fuzzy
+msgid	"Auto-selection filter added"
+msgstr	"Ihitamo Muyunguruzi... Kyongewe"
+
+#: src/lang.c:420
+msgid	"All parts tagged"
+msgstr	""
+
+#: src/lang.c:421
+#, fuzzy
+msgid	"Storing article for later posting"
+msgstr	"Ingingo kugirango"
+
+#: src/lang.c:422
+#, fuzzy
+msgid	"Please enter a valid character"
+msgstr	"Injiza a Byemewe Inyuguti"
+
+#: src/lang.c:423
+#, c-format
+msgid	"Missing part #%d"
+msgstr	""
+
+#: src/lang.c:424
+msgid	"*** No postponed articles ***"
+msgstr	""
+
+#: src/lang.c:425
+#, fuzzy
+msgid	"Not a multi-part message"
+msgstr	"a Ubutumwa"
+
+#: src/lang.c:426
+#, fuzzy
+msgid	"You are not subscribed to this group"
+msgstr	"OYA yanditswe/ byemewe Kuri iyi Itsinda"
+
+#: src/lang.c:427
+#, fuzzy
+msgid	"No previous expression"
+msgstr	"Ibanjirije imvugo"
+
+#: src/lang.c:428
+#, fuzzy
+msgid	"Operation disabled in no-overwrite mode"
+msgstr	"Yahagaritswe in Oya Guhindura Ubwoko"
+
+#. TODO: replace hardcoded key-name in txt_info_postponed
+#: src/lang.c:430
+#, fuzzy, c-format
+msgid	"%d postponed %s, reuse with ^O...\n"
+msgstr	"%dNa:"
+
+#: src/lang.c:431
+#, fuzzy
+msgid	"X-Conversion-Note: multipart/alternative contents have been removed.\n"
+	"  To get the whole article, turn alternative handling OFF in the Option Menu\n"
+msgstr	"Ibigize Cyavanyweho Kubona i Ingingo in i"
+
+#: src/lang.c:433
+#, fuzzy, c-format
+msgid	"Save filename for %s/%s is a mailbox. Attachment not saved"
+msgstr	"Kubika Izina ry'idosiye: kugirango ni a OYA"
+
+#: src/lang.c:434
+#, fuzzy
+msgid	"TeX2Iso encoded article"
+msgstr	"Ingingo"
+
+#: src/lang.c:435
+msgid	"incomplete "
+msgstr	""
+
+#. TODO: replace hardcoded key-names
+#: src/lang.c:437
+#, fuzzy, c-format
+msgid	"\n"
+	"Welcome to %s, a full screen threaded Netnews reader. It can read news "
+	"locally\n"
+	"(ie. <spool>/news) or remotely (-r option)  from a NNTP (Network News "
+	"Transport\n"
+	"Protocol) server. -h lists the available command line options.\n"
+	"\n"
+	"%s  has four newsreading levels, the newsgroup selection page, the group "
+	"index\n"
+	"page, the thread listing page and the article viewer. Help is available at "
+	"each\n"
+	"level by pressing the 'h' command.\n"
+	"\n"
+	"Move up/down by using the terminal arrow keys or 'j' and 'k'.  Use PgUp/PgDn "
+	"or\n"
+	"Ctrl-U and Ctrl-D to page up/down. Enter a newsgroup by pressing RETURN/TAB.\n"
+	"\n"
+	"Articles, threads, tagged articles or articles matching a pattern can be "
+	"mailed\n"
+	"('m' command), printed ('o' command), saved ('s' command), piped ('|' "
+	"command).\n"
+	"Use  the 'w' command  to post a  news article,  the 'f'/'F' commands  to post "
+	"a\n"
+	"follow-up to  an existing  news article  and the 'r'/'R' commands  to reply "
+	"via\n"
+	"mail to an  existing news article author.  The 'M' command allows the "
+	"operation\n"
+	"of %s to be configured via a menu.\n"
+	"\n"
+	"For more information read the manual page, README, INSTALL, TODO and FTP "
+	"files.\n"
+	"Please send bug-reports/comments to %s with the 'R' command.\n"
+msgstr	"Kuri a Mugaragaza Gusoma Amakuru Amakuru Cyangwa R Ihitamo Bivuye a Seriveri "
+	"h Intonde i Bihari Komandi: Umurongo Amahitamo Intera i Urubuga rw'amakuru "
+	"Ihitamo Ipaji i Itsinda i Urudodo Ipaji Na i Ingingo ni Bihari ku ku i "
+	"Komandi: Hejuru Hasi ku ikoresha i Akambi Utubuto Cyangwa Na U Na Kuri Ipaji "
+	"Hejuru Hasi a Urubuga rw'amakuru ku Cyangwa a Ishusho Komandi: Byacapwe "
+	"Komandi: Komandi: Komandi: i Komandi: Kuri Iposita a Amakuru Ingingo i "
+	"Amabwiriza Kuri Iposita Hejuru Kuri Amakuru Ingingo Na i Amabwiriza Kuri "
+	"Subiza Kuri Amakuru Ingingo Umwanditsi Komandi: i Kuri Biturutse a "
+	"Ibikubiyemo Birenzeho Ibisobanuro Gusoma i Bikorwa Ipaji Na Idosiye Kohereza "
+	"Raporo Ibisobanuro Kuri Na: i Komandi:"
+
+#: src/lang.c:453
+#, fuzzy, c-format
+msgid	"Invalid  From: %s  line. Read the INSTALL file again."
+msgstr	"Umurongo i IDOSIYE"
+
+#: src/lang.c:455
+msgid	"Invalid multibyte sequence found\n"
+msgstr	""
+
+#: src/lang.c:457
+#, fuzzy, c-format
+msgid	"Invalid  Sender:-header %s"
+msgstr	"Umutwempangano"
+
+#: src/lang.c:458
+#, fuzzy
+msgid	"Inverse video disabled"
+msgstr	"Videwo... Yahagaritswe"
+
+#: src/lang.c:459
+#, fuzzy
+msgid	"Inverse video enabled"
+msgstr	"Videwo... Bikora"
+
+#: src/lang.c:461
+#, fuzzy, c-format
+msgid	"Missing definition for %s\n"
+msgstr	"Insobanuro kugirango"
+
+#: src/lang.c:462
+#, fuzzy, c-format
+msgid	"Invalid key definition '%s'\n"
+msgstr	"Urufunguzo Insobanuro"
+
+#: src/lang.c:463
+#, c-format
+msgid	"Invalid keyname '%s'\n"
+msgstr	""
+
+#: src/lang.c:464
+#, fuzzy, c-format
+msgid	"Keymap file was upgraded to version %s\n"
+msgstr	"IDOSIYE Kuri Verisiyo"
+
+#: src/lang.c:465
+#, c-format
+msgid	"Kill From:     [%s] (y/n): "
+msgstr	""
+
+#: src/lang.c:466
+msgid	"Kill Lines: (</>num): "
+msgstr	""
+
+#: src/lang.c:467
+msgid	"Kill Article Menu"
+msgstr	""
+
+#: src/lang.c:468
+#, c-format
+msgid	"Kill Msg-Id:   [%s] (f/l/o/n): "
+msgstr	""
+
+#: src/lang.c:469
+#, fuzzy
+msgid	"Kill pattern scope  : "
+msgstr	"Ishusho Ingano:"
+
+#: src/lang.c:470
+#, c-format
+msgid	"Kill Subject:  [%s] (y/n): "
+msgstr	""
+
+#: src/lang.c:471
+#, fuzzy
+msgid	"Kill text pattern   : "
+msgstr	"Umwandiko Ishusho"
+
+#: src/lang.c:472
+#, fuzzy
+msgid	"Kill time in days   : "
+msgstr	"Igihe in Iminsi"
+
+#: src/lang.c:474
+msgid	"Last"
+msgstr	"Iheruka"
+
+#: src/lang.c:475
+msgid	"-- Last response --"
+msgstr	""
+
+#: src/lang.c:476
+#, fuzzy, c-format
+msgid	"Lines %s  "
+msgstr	"Imirongo."
+
+#: src/lang.c:478
+#, fuzzy
+msgid	"Message-ID: line              "
+msgstr	"Umurongo"
+
+# sfx2/source\appl\app.src:STR_MAIL.text
+#: src/lang.c:479
+msgid	"Mail"
+msgstr	"Ubutumwa"
+
+#: src/lang.c:480
+msgid	"mailbox "
+msgstr	""
+
+#: src/lang.c:481
+#, fuzzy, c-format
+msgid	"Mail article(s) to [%.*s]> "
+msgstr	"Ingingo S Kuri S"
+
+#: src/lang.c:482
+#, fuzzy, c-format
+msgid	"Mailing log to %s\n"
+msgstr	"LOG Kuri %s\n"
+
+#: src/lang.c:483
+#, fuzzy
+msgid	"Mail bug report..."
+msgstr	"Icyegeranyo"
+
+#: src/lang.c:484
+#, fuzzy, c-format
+msgid	"Mail BUG REPORT to %s?"
+msgstr	"Kuri"
+
+#: src/lang.c:485
+msgid	"Mailed"
+msgstr	""
+
+#: src/lang.c:486
+#, fuzzy, c-format
+msgid	"Mailing to %s..."
+msgstr	"Kuri %s"
+
+#: src/lang.c:487
+#, fuzzy
+msgid	"# [Mail/Save] active file. Format is like news active file:\n"
+	"#   groupname  max.artnum  min.artnum  /dir\n"
+	"# The 4th field is the basedir (ie. ~/Mail or ~/News)\n"
+	"#\n"
+msgstr	"#[Kubika Gikora IDOSIYE ni nka Amakuru Gikora IDOSIYE KININI GITO Umwanya ni "
+	"i Cyangwa"
+
+#: src/lang.c:490
+#, fuzzy, c-format
+msgid	"%s marked as unread"
+msgstr	"%scy/ byagarajwe Nka Bidasomye"
+
+#: src/lang.c:491
+#, fuzzy, c-format
+msgid	"Marked %d of %d tagged %s as read"
+msgstr	"Bya Nka Gusoma"
+
+#: src/lang.c:492
+#, fuzzy, c-format
+msgid	"Mark all articles as read%s?"
+msgstr	"Byose Nka Gusoma"
+
+#: src/lang.c:493
+#, fuzzy, c-format
+msgid	"Mark %s=tagged articles, %s=current article, %s=quit: "
+msgstr	"KIGEZWEHO Ingingo Kuvamo"
+
+#: src/lang.c:494
+#, fuzzy, c-format
+msgid	"Mark group %s as read?"
+msgstr	"Itsinda Nka Gusoma"
+
+#: src/lang.c:495
+#, fuzzy, c-format
+msgid	"Mark thread as read%s?"
+msgstr	"Urudodo Nka Gusoma"
+
+#: src/lang.c:496
+#, fuzzy, c-format
+msgid	"Mark %s=tagged articles/threads, %s=current thread, %s=quit: "
+msgstr	"KIGEZWEHO Urudodo Kuvamo"
+
+#: src/lang.c:497
+#, fuzzy, c-format
+msgid	"Matching %s groups..."
+msgstr	"Amatsinda"
+
+#: src/lang.c:498 src/lang.c:502
+#, fuzzy, c-format
+msgid	"<n>=set current to n; %s=next unread; %s=search pattern; %s=kill/select"
+msgstr	"<N Gushyiraho KIGEZWEHO Kuri N Komeza>> Bidasomye Gushaka Ishusho Guhitamo"
+
+#: src/lang.c:499
+#, fuzzy, c-format
+msgid	"%s=author search; %s=catchup; %s=line down; %s=line up; %s=mark read; %s=list "
+	"thread"
+msgstr	"%s=Umwanditsi Gushaka Umurongo Hasi Umurongo Hejuru Ikimenyetso Gusoma "
+	"Urutonde Urudodo"
+
+#: src/lang.c:500
+#, fuzzy, c-format
+msgid	"%s=line up; %s=line down; %s=page up; %s=page down; %s=top; %s=bottom"
+msgstr	"%s=Umurongo Hejuru Umurongo Hasi Ipaji Hejuru Ipaji Hasi Hejuru: Hasi:"
+
+#: src/lang.c:501
+#, fuzzy, c-format
+msgid	"%s=search forwards; %s=search backwards; %s=quit"
+msgstr	"%s=Gushaka Gushaka Inyuma Kuvamo"
+
+#: src/lang.c:503
+#, fuzzy, c-format
+msgid	"%s=author search; %s=body search; %s=catchup; %s=followup; %s=mark read"
+msgstr	"%s=Umwanditsi Gushaka Umubiri Gushaka Ikimenyetso Gusoma"
+
+#: src/lang.c:504
+#, fuzzy, c-format
+msgid	"<n>=set current to n; %s=next unread; %s,%s=search pattern; %s=catchup"
+msgstr	"<N Gushyiraho KIGEZWEHO Kuri N Komeza>> Bidasomye Gushaka Ishusho"
+
+#: src/lang.c:505
+#, fuzzy, c-format
+msgid	"%s=line down; %s=line up; %s=help; %s=move; %s=quit; %s=toggle all/unread"
+msgstr	"%s=Umurongo Hasi Umurongo Hejuru Ifashayobora Kwimura Kuvamo Mukomatanya "
+	"Byose Bidasomye"
+
+#: src/lang.c:506
+#, fuzzy, c-format
+msgid	"%s=subscribe; %s=sub pattern; %s=unsubscribe; %s=unsub pattern; %s=yank in/out"
+msgstr	"%s=Kwiyandikisha Ishusho Kwivana aho wiyandikishe Ishusho in Inyuma"
+
+#: src/lang.c:507
+#, fuzzy, c-format
+msgid	"<n>=set current to n; %s=next unread; %s=catchup; %s=display toggle"
+msgstr	"<N Gushyiraho KIGEZWEHO Kuri N Komeza>> Bidasomye Kugaragaza Mukomatanya"
+
+#: src/lang.c:508
+#, fuzzy, c-format
+msgid	"%s=help; %s=line down; %s=line up; %s=quit; %s=tag; %s=mark unread"
+msgstr	"%s=Ifashayobora Umurongo Hasi Umurongo Hejuru Kuvamo Itagi: Ikimenyetso "
+	"Bidasomye"
+
+#: src/lang.c:509
+msgid	"--More--"
+msgstr	""
+
+#: src/lang.c:510
+#, c-format
+msgid	"Moving %s..."
+msgstr	""
+
+#: src/lang.c:512
+#, fuzzy
+msgid	", name: "
+msgstr	",IZINA! "
+
+#: src/lang.c:513
+#, fuzzy, c-format
+msgid	"Goto newsgroup [%s]> "
+msgstr	"Urubuga rw'amakuru"
+
+# svtools/source\misc\mediatyp.src:STR_SVT_MIMETYPE_CNT_BBBOX.text
+#: src/lang.c:514
+#, fuzzy
+msgid	"newsgroups"
+msgstr	"Imbuga z'amakuru"
+
+#: src/lang.c:515
+#, c-format
+msgid	"Position %s in group list (1,2,..,$) [%d]> "
+msgstr	""
+
+#: src/lang.c:516
+#, fuzzy
+msgid	"newsgroup"
+msgstr	"Urubuga rw'amakuru"
+
+#: src/lang.c:517
+#, fuzzy
+msgid	"Try and save newsrc file again?"
+msgstr	"Na Kubika IDOSIYE"
+
+#: src/lang.c:518
+#, fuzzy
+msgid	"Warning: No newsgroups were written to your newsrc file. Save aborted."
+msgstr	"Imbuga z'amakuru Kuri IDOSIYE Kubika"
+
+#: src/lang.c:519
+#, fuzzy
+msgid	"newsrc file saved successfully.\n"
+msgstr	"IDOSIYE"
+
+#: src/lang.c:520
+msgid	"-- Next response --"
+msgstr	""
+
+#: src/lang.c:521
+#, fuzzy, c-format
+msgid	"NNTP authorization password not found for %s"
+msgstr	"Ijambobanga... OYA Byabonetse kugirango"
+
+#: src/lang.c:522
+#, fuzzy
+msgid	"No  "
+msgstr	"Oya"
+
+#: src/lang.c:523
+msgid	"*** No articles ***"
+msgstr	""
+
+#: src/lang.c:524
+msgid	"No articles have been posted"
+msgstr	""
+
+#: src/lang.c:525
+#, fuzzy
+msgid	"*** No description ***"
+msgstr	"*** Isobanuramiterere ***"
+
+#: src/lang.c:526
+#, fuzzy
+msgid	"No filename"
+msgstr	"Izina ry'idosiye:"
+
+#: src/lang.c:527
+#, fuzzy
+msgid	"No group"
+msgstr	"Itsinda"
+
+#: src/lang.c:528
+#, fuzzy
+msgid	"*** No groups ***"
+msgstr	"*** Amatsinda ***"
+
+#: src/lang.c:529
+#, fuzzy
+msgid	"No more groups to read"
+msgstr	"Birenzeho Amatsinda Kuri Gusoma"
+
+#: src/lang.c:530
+#, fuzzy
+msgid	"No last message"
+msgstr	"Iheruka Ubutumwa"
+
+#: src/lang.c:531
+#, fuzzy
+msgid	"No mail address"
+msgstr	"Ubutumwa Aderesi"
+
+#: src/lang.c:532
+#, fuzzy
+msgid	"No articles marked for saving"
+msgstr	"cy/ byagarajwe kugirango Mu kubika"
+
+#: src/lang.c:533
+#, fuzzy
+msgid	"No match"
+msgstr	"BIHUYE"
+
+#: src/lang.c:534
+#, fuzzy
+msgid	"No more groups"
+msgstr	"Birenzeho Amatsinda"
+
+#: src/lang.c:535
+#, fuzzy
+msgid	"No newsgroups"
+msgstr	"Imbuga z'amakuru"
+
+#: src/lang.c:536
+#, fuzzy
+msgid	"No next unread article"
+msgstr	"Komeza>> Bidasomye Ingingo"
+
+#: src/lang.c:537
+#, fuzzy
+msgid	"No previous group"
+msgstr	"Ibanjirije Itsinda"
+
+#: src/lang.c:538
+#, fuzzy
+msgid	"No previous unread article"
+msgstr	"Ibanjirije Bidasomye Ingingo"
+
+#: src/lang.c:539
+msgid	"No responses"
+msgstr	""
+
+#: src/lang.c:540
+#, fuzzy
+msgid	"No responses to list in current thread"
+msgstr	"Kuri Urutonde in KIGEZWEHO Urudodo"
+
+#: src/lang.c:541
+#, fuzzy
+msgid	"No search string"
+msgstr	"Gushaka Ikurikiranyanyuguti"
+
+#: src/lang.c:542
+msgid	"No subject"
+msgstr	"Nta kivugwaho"
+
+#: src/lang.c:544
+#, fuzzy, c-format
+msgid	"%s: Terminal must have clear to end-of-line (ce)\n"
+msgstr	"%s:Gusiba Kuri Impera Bya Umurongo"
+
+#: src/lang.c:545
+#, fuzzy, c-format
+msgid	"%s: Terminal must have clear to end-of-screen (cd)\n"
+msgstr	"%s:Gusiba Kuri Impera Bya Mugaragaza"
+
+#: src/lang.c:546
+#, c-format
+msgid	"%s: Terminal must have clearscreen (cl) capability\n"
+msgstr	""
+
+#: src/lang.c:547
+#, fuzzy, c-format
+msgid	"%s: Terminal must have cursor motion (cm)\n"
+msgstr	"%s:indanga cm"
+
+#: src/lang.c:548
+#, fuzzy, c-format
+msgid	"%s: TERM variable must be set to use screen capabilities\n"
+msgstr	"%s:IMPINDURAGACIRO Gushyiraho Kuri Gukoresha Mugaragaza"
+
+#: src/lang.c:550
+#, fuzzy, c-format
+msgid	"No viewer found for %s/%s\n"
+msgstr	"Byabonetse kugirango"
+
+#: src/lang.c:551
+#, fuzzy
+msgid	"Newsgroup does not exist on this server"
+msgstr	"OYA ku iyi Seriveri"
+
+#: src/lang.c:552
+#, fuzzy, c-format
+msgid	"Group %s not found in active file"
+msgstr	"OYA Byabonetse in Gikora IDOSIYE"
+
+#: src/lang.c:553
+#, fuzzy
+msgid	"c)reate it, use a)lternative name, use d)efault .newsrc, q)uit tin: "
+msgstr	"C Gukoresha a Izina: Gukoresha D Q"
+
+#: src/lang.c:554
+#, fuzzy
+msgid	"use a)lternative name, use d)efault .newsrc, q)uit tin: "
+msgstr	"Gukoresha a Izina: Gukoresha D Q"
+
+#: src/lang.c:555
+#, c-format
+msgid	"# NNTP-server -> newsrc translation table and NNTP-server\n"
+	"# shortname list for %s %s\n"
+	"#\n"
+	"# the format of this file is\n"
+	"#   <FQDN of NNTP-server> <newsrc file> <shortname> ...\n"
+	"#\n"
+	"# if <newsrc file> is given without path, $HOME is assumed as its location\n"
+	"#\n"
+	"# examples:\n"
+	"#   news.tin.org  .newsrc-tin.org  tinorg\n"
+	"#   news.ka.nu    /tmp/nrc-nu      kanu    nu\n"
+	"#\n"
+msgstr	""
+
+#: src/lang.c:562
+msgid	"Only"
+msgstr	""
+
+#: src/lang.c:563
+#, fuzzy, c-format
+msgid	"Option not enabled. Recompile with %s."
+msgstr	"OYA Bikora Na:"
+
+#: src/lang.c:564
+msgid	"Options Menu"
+msgstr	""
+
+#: src/lang.c:567
+#, fuzzy, c-format
+msgid	"Error in regex: %s at pos. %d '%s'"
+msgstr	"in ku"
+
+#: src/lang.c:568
+#, fuzzy, c-format
+msgid	"Error in regex: pcre internal error %d"
+msgstr	"in By'imbere Ikosa"
+
+#: src/lang.c:569
+#, fuzzy, c-format
+msgid	"Error in regex: study - pcre internal error %s"
+msgstr	"in By'imbere Ikosa"
+
+#: src/lang.c:570
+msgid	"Post a followup..."
+msgstr	""
+
+#. TODO: replace hardcoded key-name in txt_post_error_ask_postpone
+#: src/lang.c:572
+#, fuzzy
+msgid	"An error has occurred while posting the article. If you think that this\n"
+	"error is temporary or otherwise correctable, you can postpone the article\n"
+	"and pick it up again with ^O later.\n"
+msgstr	"Ikosa i Ingingo ni By'igihe gito Cyangwa i Hejuru Na:"
+
+#: src/lang.c:575
+#, fuzzy
+msgid	"Posted articles history"
+msgstr	"Urutonde"
+
+#: src/lang.c:576
+#, fuzzy, c-format
+msgid	"Post to newsgroup(s) [%s]> "
+msgstr	"Kuri Urubuga rw'amakuru S"
+
+#: src/lang.c:577
+#, fuzzy
+msgid	"-- post processing started --"
+msgstr	"--Iposita Inonosora--"
+
+#: src/lang.c:578
+#, fuzzy
+msgid	"-- post processing completed --"
+msgstr	"--Iposita Inonosora--"
+
+#: src/lang.c:579
+#, fuzzy, c-format
+msgid	"Post subject [%s]> "
+msgstr	"Ikivugwaho"
+
+#: src/lang.c:580
+#, fuzzy
+msgid	"# Summary of mailed/posted messages viewable by 'W' command from within tin.\n"
+msgstr	"# Bya Ubutumwa ku Komandi: Bivuye muri"
+
+#: src/lang.c:581
+#, fuzzy
+msgid	"Posting article..."
+msgstr	"Ingingo"
+
+#: src/lang.c:582
+#, c-format
+msgid	"Post postponed articles [%%s]? (%s/%s/%s/%s/%s): "
+msgstr	""
+
+#: src/lang.c:583
+#, c-format
+msgid	"Hot %s"
+msgstr	""
+
+#: src/lang.c:584
+#, c-format
+msgid	"Tagged %s"
+msgstr	""
+
+#: src/lang.c:585
+#, c-format
+msgid	"Untagged %s"
+msgstr	""
+
+#: src/lang.c:586
+#, fuzzy
+msgid	"Processing mail messages marked for deletion."
+msgstr	"Ubutumwa Ubutumwa cy/ byagarajwe kugirango Isibwa"
+
+#: src/lang.c:587
+#, fuzzy
+msgid	"Processing saved articles marked for deletion."
+msgstr	"cy/ byagarajwe kugirango Isibwa"
+
+#: src/lang.c:588
+#, fuzzy, c-format
+msgid	"Accept Followup-To? %s=post, %s=ignore, %s=quit: "
+msgstr	"Iposita Kwirengagiza Kuvamo"
+
+#: src/lang.c:589
+#, fuzzy
+msgid	"Article unchanged, abort mailing?"
+msgstr	"Kureka"
+
+#: src/lang.c:590
+#, fuzzy, c-format
+msgid	"Do you want to see postponed articles (%d)?"
+msgstr	"Kuri"
+
+#: src/lang.c:592
+#, fuzzy
+msgid	"Add quick kill filter?"
+msgstr	"Muyunguruzi..."
+
+#: src/lang.c:593
+#, fuzzy
+msgid	"Add quick selection filter?"
+msgstr	"Ihitamo Muyunguruzi..."
+
+#: src/lang.c:594
+#, fuzzy
+msgid	"Do you really want to quit?"
+msgstr	"Kuri Kuvamo"
+
+#: src/lang.c:595
+#, fuzzy, c-format
+msgid	"%s=edit cancel message, %s=quit, %s=delete (cancel) [%%s]: "
+msgstr	"%s=Guhindura Kureka Ubutumwa Kuvamo Gusiba Kureka"
+
+#: src/lang.c:596
+#, fuzzy
+msgid	"You have tagged articles in this group - quit anyway?"
+msgstr	"in iyi Itsinda Kuvamo"
+
+#: src/lang.c:597
+#, fuzzy, c-format
+msgid	"%s=quit, %s=edit, %s=postpone: "
+msgstr	"%s=Kuvamo Guhindura"
+
+#: src/lang.c:598
+#, fuzzy, c-format
+msgid	"%s=quit %s=edit %s=save kill description: "
+msgstr	"%s=Kuvamo Guhindura Kubika Isobanuramiterere"
+
+#: src/lang.c:599
+#, fuzzy, c-format
+msgid	"%s=quit %s=edit %s=save select description: "
+msgstr	"%s=Kuvamo Guhindura Kubika Guhitamo Isobanuramiterere"
+
+#: src/lang.c:600
+#, fuzzy
+msgid	"Do you really want to quit without saving your configuration?"
+msgstr	"Kuri Kuvamo Mu kubika Iboneza"
+
+#: src/lang.c:603
+#, fuzzy
+msgid	"Invalid range - valid are '0-9.$' eg. 1-$"
+msgstr	"Urutonde Byemewe 0 9 1."
+
+#: src/lang.c:604
+#, fuzzy
+msgid	"Do you want to abort this operation?"
+msgstr	"Kuri Kureka iyi"
+
+#: src/lang.c:605
+#, fuzzy
+msgid	"Do you want to exit tin immediately?"
+msgstr	"Kuri Gusohoka Ako kanya"
+
+#: src/lang.c:606
+msgid	"Read response> "
+msgstr	""
+
+#: src/lang.c:607
+#, fuzzy
+msgid	"Reading ('q' to quit)..."
+msgstr	"Kuri Kuvamo"
+
+#: src/lang.c:608
+#, c-format
+msgid	"Reading %sarticles..."
+msgstr	""
+
+#: src/lang.c:609
+#, fuzzy, c-format
+msgid	"Reading %sattributes file...\n"
+msgstr	"IDOSIYE"
+
+#: src/lang.c:610
+#, fuzzy, c-format
+msgid	"Reading %sconfig file...\n"
+msgstr	"IDOSIYE"
+
+#: src/lang.c:611
+#, fuzzy
+msgid	"Reading filter file...\n"
+msgstr	"Muyunguruzi... IDOSIYE"
+
+#: src/lang.c:612
+#, fuzzy, c-format
+msgid	"Reading %s groups..."
+msgstr	"Amatsinda"
+
+#: src/lang.c:613
+#, fuzzy
+msgid	"Reading input history file...\n"
+msgstr	"Iyinjiza Urutonde IDOSIYE"
+
+#: src/lang.c:614
+#, fuzzy
+msgid	"Reading keymap file...\n"
+msgstr	"IDOSIYE"
+
+#: src/lang.c:615
+#, fuzzy
+msgid	"Reading groups from active file... "
+msgstr	"Amatsinda Bivuye Gikora IDOSIYE"
+
+#: src/lang.c:616
+#, fuzzy
+msgid	"Reading groups from newsrc file... "
+msgstr	"Amatsinda Bivuye IDOSIYE"
+
+#: src/lang.c:617
+#, fuzzy
+msgid	"Reading newsgroups file... "
+msgstr	"Imbuga z'amakuru IDOSIYE"
+
+#: src/lang.c:618
+#, fuzzy
+msgid	"Reading newsrc file..."
+msgstr	"IDOSIYE"
+
+#: src/lang.c:620
+#, c-format
+msgid	"(%d:%02d remaining)"
+msgstr	""
+
+#: src/lang.c:622
+#, fuzzy, c-format
+msgid	"Bogus group %s removed."
+msgstr	"Itsinda Cyavanyweho"
+
+#: src/lang.c:623
+#, fuzzy, c-format
+msgid	"Error: rename %s to %s"
+msgstr	"Guhindura izina Kuri"
+
+#: src/lang.c:624
+#, fuzzy
+msgid	"Reply to author..."
+msgstr	"Kuri Umwanditsi"
+
+#: src/lang.c:625
+msgid	"Repost"
+msgstr	""
+
+#: src/lang.c:626
+#, fuzzy
+msgid	"Reposting article..."
+msgstr	"Ingingo"
+
+#: src/lang.c:627
+#, fuzzy, c-format
+msgid	"Repost article(s) to group(s) [%s]> "
+msgstr	"Ingingo S Kuri Itsinda S"
+
+#: src/lang.c:628
+msgid	"Reset newsrc?"
+msgstr	""
+
+#: src/lang.c:629
+#, fuzzy
+msgid	"Responses have been directed to the following newsgroups"
+msgstr	"Kuri i Imbuga z'amakuru"
+
+#: src/lang.c:630
+#, fuzzy, c-format
+msgid	"Responses have been directed to poster. %s=mail, %s=post, %s=quit: "
+msgstr	"Kuri Umuteguro Ubutumwa Iposita Kuvamo"
+
+#: src/lang.c:631
+#, fuzzy, c-format
+msgid	"RespNo %4d of %4d"
+msgstr	"Bya"
+
+#: src/lang.c:632
+#, fuzzy
+msgid	"Press <RETURN> to continue..."
+msgstr	"Kuri urifuzagukomeza"
+
+#: src/lang.c:634
+#, fuzzy, c-format
+msgid	"Select From    [%s] (y/n): "
+msgstr	"Y N"
+
+#: src/lang.c:635
+msgid	"Select Lines: (</>num): "
+msgstr	""
+
+#: src/lang.c:636
+#, fuzzy
+msgid	"Auto-select Article Menu"
+msgstr	"Guhitamo"
+
+#: src/lang.c:637
+#, fuzzy, c-format
+msgid	"Select Msg-Id  [%s] (f/l/o/n): "
+msgstr	"F L o N"
+
+#: src/lang.c:638
+#, fuzzy
+msgid	"Select pattern scope: "
+msgstr	"Ishusho Ingano:"
+
+#: src/lang.c:639
+#, fuzzy, c-format
+msgid	"Select Subject [%s] (y/n): "
+msgstr	"Y N"
+
+#: src/lang.c:640
+#, fuzzy
+msgid	"Select text pattern : "
+msgstr	"Umwandiko Ishusho"
+
+#: src/lang.c:641
+#, fuzzy
+msgid	"Select time in days   : "
+msgstr	"Igihe in Iminsi"
+
+#: src/lang.c:642
+#, fuzzy, c-format
+msgid	"# %s server configuration file\n"
+	"# This file was automatically saved by %s %s %s (\"%s\")\n"
+	"#\n"
+	"# Do not edit while %s is running, since all your changes to this file\n"
+	"# will be overwritten when you leave %s.\n"
+	"# Do not edit at all if you don't know what you do.\n"
+	"############################################################################\n"
+	"\n"
+msgstr	"#%sSeriveri Iboneza IDOSIYE ku buryo bwikora ku OYA Guhindura ni guhera Byose "
+	"Amahinduka Kuri iyi Ryari: OYA Guhindura ku Byose NIBA"
+
+#: src/lang.c:648
+#, fuzzy
+msgid	"Showing unread groups only"
+msgstr	"Bidasomye Amatsinda"
+
+#: src/lang.c:649
+#, fuzzy
+msgid	"Subject: line (ignore case)   "
+msgstr	"Umurongo Kwirengagiza"
+
+#: src/lang.c:650
+#, fuzzy
+msgid	"Subject: line (case sensitive)"
+msgstr	"Umurongo"
+
+#: src/lang.c:651
+msgid	"Save"
+msgstr	"Kubika"
+
+#: src/lang.c:652
+#, fuzzy, c-format
+msgid	"Save '%s' (%s/%s)?"
+msgstr	"Kubika"
+
+#: src/lang.c:653
+#, fuzzy
+msgid	"Save configuration before continuing?"
+msgstr	"Kubika Iboneza Mbere"
+
+#: src/lang.c:654
+#, fuzzy
+msgid	"Save filename> "
+msgstr	"Kubika Izina ry'idosiye:"
+
+#: src/lang.c:655
+msgid	"Saved"
+msgstr	""
+
+#: src/lang.c:656
+#, fuzzy, c-format
+msgid	"%4d unread (%4d hot) %s in %s\n"
+msgstr	"%4dBidasomye in"
+
+#: src/lang.c:657
+#, c-format
+msgid	"Saved %s...\n"
+msgstr	""
+
+#: src/lang.c:658
+msgid	"Nothing was saved"
+msgstr	""
+
+#: src/lang.c:659
+#, fuzzy, c-format
+msgid	"\n"
+	"%s %d %s from %d %s\n"
+msgstr	"%s%d%sBivuye"
+
+#: src/lang.c:660
+#, fuzzy, c-format
+msgid	"-- %s saved to %s%s --"
+msgstr	"--%sKuri"
+
+#: src/lang.c:661
+#, fuzzy, c-format
+msgid	"-- %s saved to %s - %s --"
+msgstr	"--%sKuri"
+
+#: src/lang.c:662
+#, fuzzy
+msgid	"Saving..."
+msgstr	"Kubika%S"
+
+#: src/lang.c:663
+#, fuzzy, c-format
+msgid	"%s: Screen initialization failed"
+msgstr	"%s:Byanze"
+
+#: src/lang.c:665
+#, fuzzy, c-format
+msgid	"%s: screen is too small\n"
+msgstr	"%s:Mugaragaza ni"
+
+#: src/lang.c:667
+#, fuzzy, c-format
+msgid	"screen is too small, %s is exiting\n"
+msgstr	"Mugaragaza ni Gitoya ni"
+
+# svx/source\form\fmsearch.src:RID_SVXDLG_SEARCHFORM.CB_BACKWARD.text
+#: src/lang.c:668
+#, fuzzy, c-format
+msgid	"Search backwards [%s]> "
+msgstr	"Gushakisha inyuma"
+
+#: src/lang.c:669
+#, fuzzy, c-format
+msgid	"Search body [%s]> "
+msgstr	"Umubiri"
+
+#: src/lang.c:670
+#, c-format
+msgid	"Search forwards [%s]> "
+msgstr	""
+
+# 5374
+#: src/lang.c:671
+msgid	"Searching..."
+msgstr	"Gushakisha..."
+
+#: src/lang.c:672
+#, fuzzy, c-format
+msgid	"Searching article %d of %d ('q' to abort)..."
+msgstr	"Ingingo Bya Kuri Kureka"
+
+#: src/lang.c:673
+#, fuzzy
+msgid	"Select article> "
+msgstr	"Ingingo"
+
+#: src/lang.c:674
+#, fuzzy
+msgid	"Select option number before text or use arrow keys and <CR>. 'q' to quit."
+msgstr	"Ihitamo Umubare Mbere Umwandiko Cyangwa Gukoresha Akambi Utubuto Na Kuri "
+	"Kuvamo"
+
+#: src/lang.c:675
+#, fuzzy
+msgid	"Select group> "
+msgstr	"Itsinda"
+
+#: src/lang.c:676
+#, fuzzy, c-format
+msgid	"Enter selection pattern [%s]> "
+msgstr	"Ihitamo Ishusho"
+
+#: src/lang.c:677
+#, fuzzy
+msgid	"Select thread > "
+msgstr	"Urudodo"
+
+#: src/lang.c:678
+#, fuzzy, c-format
+msgid	"%s %s %s (\"%s\") [%s]: send a DETAILED bug report to %s\n"
+msgstr	"%s%s%s(\"%s\")[%s]:Kohereza a Icyegeranyo Kuri"
+
+#: src/lang.c:679
+#, fuzzy
+msgid	"servers active-file"
+msgstr	"Gikora IDOSIYE"
+
+#: src/lang.c:680
+#, fuzzy
+msgid	"Cannot move into new newsgroups. Subscribe first..."
+msgstr	"Kwimura Gishya Imbuga z'amakuru Itangira"
+
+#: src/lang.c:681
+msgid	"<SPACE>"
+msgstr	""
+
+#: src/lang.c:682
+#, c-format
+msgid	"Starting: (%s)"
+msgstr	""
+
+#: src/lang.c:683
+#, fuzzy, c-format
+msgid	"List Thread (%d of %d)"
+msgstr	"Bya"
+
+#: src/lang.c:684
+#, fuzzy, c-format
+msgid	"Thread (%.*s)"
+msgstr	"S"
+
+#: src/lang.c:685
+#, fuzzy
+msgid	"Enter wildcard subscribe pattern> "
+msgstr	"Kwiyandikisha Ishusho"
+
+#: src/lang.c:686
+#, fuzzy, c-format
+msgid	"subscribed to %d groups"
+msgstr	"yanditswe/ byemewe Kuri Amatsinda"
+
+#: src/lang.c:687
+#, fuzzy, c-format
+msgid	"Subscribed to %s"
+msgstr	"Kuri"
+
+#: src/lang.c:688
+msgid	"Subscribing... "
+msgstr	""
+
+#: src/lang.c:689
+#, fuzzy, c-format
+msgid	"Repost or supersede article(s) [%%s]? (%s/%s/%s): "
+msgstr	"Cyangwa Ingingo S"
+
+#: src/lang.c:690
+#, fuzzy, c-format
+msgid	"Supersede article(s) to group(s) [%s]> "
+msgstr	"Ingingo S Kuri Itsinda S"
+
+#: src/lang.c:691
+#, fuzzy
+msgid	"Superseding article ..."
+msgstr	"Ingingo"
+
+#: src/lang.c:692
+#, fuzzy, c-format
+msgid	"\n"
+	"Stopped. Type 'fg' to restart %s\n"
+msgstr	"Kuri Ongera utangire"
+
+#: src/lang.c:694
+#, fuzzy, c-format
+msgid	"%d days"
+msgstr	"%dIminsi"
+
+#: src/lang.c:695
+msgid	"<TAB>"
+msgstr	""
+
+#: src/lang.c:696
+msgid	"TeX "
+msgstr	""
+
+#: src/lang.c:697
+#, fuzzy
+msgid	"# Default action/prompt strings\n"
+msgstr	"#Igikorwa Urwinjiriro"
+
+#: src/lang.c:698
+#, fuzzy
+msgid	"# Defaults for quick (1 key) kill & auto-selection filters\n"
+	"# header=NUM  0,1=Subject: 2,3=From: 4=Message-ID: & full References: line\n"
+	"#             5=Message-ID: & last References: entry only\n"
+	"#             6=Message-ID: entry only 7=Lines:\n"
+	"# global=ON/OFF  ON=apply to all groups OFF=apply to current group\n"
+	"# case=ON/OFF    ON=filter case sensitive OFF=ignore case\n"
+	"# expire=ON/OFF  ON=limit to default_filter_days OFF=don't ever expire\n"
+msgstr	"#kugirango 1. Urufunguzo Ikiyega Ihitamo Umutwempangano 0 1. 2. 3. 4. 5 "
+	"Iheruka Icyinjijwe 6 Icyinjijwe 7 Gukurikiza Kuri Byose Amatsinda Gukurikiza "
+	"Kuri KIGEZWEHO Muyunguruzi... Kwirengagiza Kuri"
+
+#: src/lang.c:711
+#, fuzzy
+msgid	"# If ON use print current subject or newsgroup description in the last line\n"
+msgstr	"#Gukoresha Gucapa KIGEZWEHO Ikivugwaho Cyangwa Urubuga rw'amakuru "
+	"Isobanuramiterere in i Iheruka"
+
+#: src/lang.c:712
+#, fuzzy
+msgid	"# Host & time info used for detecting new groups (don't touch)\n"
+msgstr	"#Igihe Ibisobanuro kugirango Gishya Amatsinda"
+
+#: src/lang.c:713
+#, fuzzy
+msgid	"There is no news\n"
+msgstr	"ni Oya"
+
+#: src/lang.c:714
+msgid	"Thread"
+msgstr	"Urudodo"
+
+#: src/lang.c:715
+msgid	"Thread Level Commands"
+msgstr	""
+
+#: src/lang.c:716
+msgid	"Thread deselected"
+msgstr	""
+
+#: src/lang.c:717
+#, fuzzy
+msgid	"Thread selected"
+msgstr	"Byahiswemo"
+
+#: src/lang.c:719
+msgid	"threads"
+msgstr	""
+
+#: src/lang.c:721
+#, fuzzy
+msgid	"Thread range"
+msgstr	"Urutonde"
+
+#: src/lang.c:722
+#, fuzzy
+msgid	"thread"
+msgstr	"Urudodo"
+
+#: src/lang.c:723
+#, fuzzy, c-format
+msgid	"Thread %4s of %4s"
+msgstr	"Bya"
+
+#: src/lang.c:724
+msgid	"Threading articles..."
+msgstr	""
+
+#: src/lang.c:725
+#, fuzzy, c-format
+msgid	"Toggled word highlighting %s"
+msgstr	"ijambo Igaragaza cyane"
+
+#: src/lang.c:726
+#, fuzzy
+msgid	"Toggled rot13 encoding"
+msgstr	"ROT13 Imisobekere:"
+
+#: src/lang.c:727
+#, fuzzy, c-format
+msgid	"Toggled german TeX encoding %s"
+msgstr	"Ikidage Imisobekere:"
+
+#: src/lang.c:728
+#, fuzzy, c-format
+msgid	"Toggled tab-width to %d"
+msgstr	"Isunika Ubugari Kuri"
+
+#: src/lang.c:729
+#, fuzzy, c-format
+msgid	"%d Trying to dotlock %s"
+msgstr	"%dKuri"
+
+#: src/lang.c:730
+#, fuzzy, c-format
+msgid	"%d Trying to lock %s"
+msgstr	"%dKuri"
+
+#: src/lang.c:731
+#, fuzzy
+msgid	"           h=help\n"
+msgstr	"h"
+
+#: src/lang.c:733
+msgid	"Unlimited"
+msgstr	""
+
+#: src/lang.c:734
+#, fuzzy
+msgid	"Enter wildcard unsubscribe pattern> "
+msgstr	"Kwivana aho wiyandikishe Ishusho"
+
+#: src/lang.c:735
+#, c-format
+msgid	"Error decoding %s : %s"
+msgstr	""
+
+#: src/lang.c:736
+#, fuzzy
+msgid	"No end."
+msgstr	"Impera"
+
+#: src/lang.c:737
+#, c-format
+msgid	"%s successfully decoded."
+msgstr	""
+
+#: src/lang.c:738
+#, fuzzy, c-format
+msgid	"%*s[-- %s/%s, %suuencoded file, %d lines, name: %s --]\n"
+	"\n"
+msgstr	"%*s[--%s/%s,%suuencodedIDOSIYE Imirongo Izina:"
+
+#: src/lang.c:739
+#, fuzzy
+msgid	"unread "
+msgstr	"Bidasomye"
+
+#: src/lang.c:740
+#, fuzzy, c-format
+msgid	"unsubscribed from %d groups"
+msgstr	"Bivuye Amatsinda"
+
+#: src/lang.c:741
+#, fuzzy, c-format
+msgid	"Unsubscribed from %s"
+msgstr	"Bivuye"
+
+#: src/lang.c:742
+msgid	"Unsubscribing... "
+msgstr	""
+
+#: src/lang.c:743
+msgid	"Unthreading articles..."
+msgstr	""
+
+#: src/lang.c:744
+msgid	"Updated"
+msgstr	""
+
+#: src/lang.c:745
+msgid	"Updating"
+msgstr	"Ivugurura"
+
+#: src/lang.c:746
+#, fuzzy, c-format
+msgid	"Opening %s\n"
+msgstr	"Gufungura %s%S"
+
+#: src/lang.c:747
+#, fuzzy
+msgid	"No more URL's in this article"
+msgstr	"Birenzeho in iyi Ingingo"
+
+#: src/lang.c:748
+#, fuzzy
+msgid	"Use MIME display program for this message?"
+msgstr	"Kugaragaza Porogaramu kugirango iyi Ubutumwa"
+
+#: src/lang.c:749
+#, fuzzy
+msgid	"  -c       mark all news as read in subscribed newsgroups (batch mode)"
+msgstr	"-C Ikimenyetso Byose Amakuru Nka Gusoma in yanditswe/ byemewe Imbuga "
+	"z'amakuru Ubwoko"
+
+#: src/lang.c:750
+#, fuzzy
+msgid	"  -Z       return status indicating if any unread news (batch mode)"
+msgstr	"-Garuka Imimerere NIBA Bidasomye Amakuru Ubwoko"
+
+#: src/lang.c:751
+#, fuzzy
+msgid	"  -q       don't check for new newsgroups"
+msgstr	"-Q Kugenzura... kugirango Gishya Imbuga z'amakuru"
+
+#: src/lang.c:752
+#, fuzzy
+msgid	"  -X       don't save any files on quit"
+msgstr	"-Kubika Idosiye ku Kuvamo"
+
+#: src/lang.c:753
+#, fuzzy
+msgid	"  -d       don't show newsgroup descriptions"
+msgstr	"-D Garagaza Urubuga rw'amakuru"
+
+#: src/lang.c:754
+#, fuzzy
+msgid	"  -G limit get only limit articles/group"
+msgstr	"-Kubona Itsinda"
+
+#: src/lang.c:755
+#, fuzzy, c-format
+msgid	"  -H       help information about %s"
+msgstr	"-H Ifashayobora Ibisobanuro Ibyerekeye"
+
+#: src/lang.c:756
+#, fuzzy
+msgid	"  -h       this help message"
+msgstr	"-h iyi Ifashayobora Ubutumwa"
+
+#: src/lang.c:757
+#, fuzzy, c-format
+msgid	"  -I dir   news index file directory [default=%s]"
+msgstr	"-Amakuru Umubarendanga IDOSIYE bushyinguro Mburabuzi"
+
+#: src/lang.c:758
+#, fuzzy
+msgid	"  -u       update index files (batch mode)"
+msgstr	"-u Kuvugurura Umubarendanga Idosiye Ubwoko"
+
+#: src/lang.c:759
+#, fuzzy, c-format
+msgid	"  -m dir   mailbox directory [default=%s]"
+msgstr	"-M bushyinguro Mburabuzi"
+
+#: src/lang.c:760
+#, fuzzy, c-format
+msgid	"\n"
+	"Mail bug reports/comments to %s"
+msgstr	"Raporo Ibisobanuro Kuri"
+
+#: src/lang.c:761
+#, fuzzy
+msgid	"  -N       mail new news to your posts (batch mode)"
+msgstr	"-Ubutumwa Gishya Amakuru Kuri Ubwoko"
+
+#: src/lang.c:762
+#, fuzzy
+msgid	"  -M user  mail new news to specified user (batch mode)"
+msgstr	"-Ukoresha: Ubutumwa Gishya Amakuru Kuri Ukoresha: Ubwoko"
+
+#: src/lang.c:763
+#, fuzzy, c-format
+msgid	"  -f file  subscribed to newsgroups file [default=%s]"
+msgstr	"-F IDOSIYE yanditswe/ byemewe Kuri Imbuga z'amakuru IDOSIYE Mburabuzi"
+
+#: src/lang.c:764
+#, fuzzy
+msgid	"  -x       no posting mode"
+msgstr	"-X Oya Ubwoko"
+
+#: src/lang.c:765
+#, fuzzy
+msgid	"  -w       post an article and exit"
+msgstr	"-W Iposita Ingingo Na Gusohoka"
+
+#: src/lang.c:766
+#, fuzzy
+msgid	"  -o       post all postponed articles and exit"
+msgstr	"-o Iposita Byose Na Gusohoka"
+
+#: src/lang.c:767
+#, fuzzy
+msgid	"  -r       read news remotely from default NNTP server"
+msgstr	"-R Gusoma Amakuru Bivuye Mburabuzi Seriveri"
+
+#: src/lang.c:768
+#, fuzzy
+msgid	"  -R       read news saved by -S option"
+msgstr	"-Gusoma Amakuru ku Ihitamo"
+
+#: src/lang.c:769
+#, fuzzy, c-format
+msgid	"  -s dir   save news directory [default=%s]"
+msgstr	"-S Kubika Amakuru bushyinguro Mburabuzi"
+
+#: src/lang.c:770
+#, fuzzy
+msgid	"  -S       save new news for later reading (batch mode)"
+msgstr	"-Kubika Gishya Amakuru kugirango Ubwoko"
+
+#: src/lang.c:771
+#, fuzzy
+msgid	"  -z       start if any unread news"
+msgstr	"-Z Gutangira NIBA Bidasomye Amakuru"
+
+#: src/lang.c:772
+#, fuzzy, c-format
+msgid	"A Usenet reader.\n"
+	"\n"
+	"Usage: %s [options] [newsgroup[,...]]"
+msgstr	"A Amahitamo Urubuga rw'amakuru"
+
+#: src/lang.c:773
+#, fuzzy
+msgid	"  -v       verbose output for batch mode options"
+msgstr	"-v Ibisohoka kugirango Ubwoko Amahitamo"
+
+#: src/lang.c:774
+#, fuzzy
+msgid	"  -V       print version & date information"
+msgstr	"-V Gucapa Verisiyo Itariki Ibisobanuro"
+
+#: src/lang.c:775
+#, fuzzy, c-format
+msgid	"%s only useful without batch mode operations\n"
+msgstr	"%sUbwoko"
+
+#: src/lang.c:776
+#, fuzzy, c-format
+msgid	"%s only useful for batch mode operations\n"
+msgstr	"%skugirango Ubwoko"
+
+#: src/lang.c:778
+#, fuzzy, c-format
+msgid	"\n"
+	"%s%d out of range (0 - %d). Reset to 0"
+msgstr	"%s%dInyuma Bya Urutonde 0 Kuri 0"
+
+#: src/lang.c:779
+#, fuzzy, c-format
+msgid	"View '%s' (%s/%s)?"
+msgstr	"Kureba"
+
+#: src/lang.c:781
+#, fuzzy, c-format
+msgid	"\n"
+	"Warning: posting exceeds %d columns. Line %d is the first long one:\n"
+	"%-100s\n"
+msgstr	"Inkingi ni i Itangira"
+
+#: src/lang.c:782
+#, fuzzy
+msgid	"\n"
+	"Warning: article unchanged after editing\n"
+msgstr	"Ingingo Nyuma"
+
+#: src/lang.c:783
+#, fuzzy
+msgid	"\n"
+	"Warning: \"Subject:\" contains only whitespaces.\n"
+msgstr	"Kirimo"
+
+#: src/lang.c:784
+#, fuzzy
+msgid	"\n"
+	"Warning: \"Subject:\" begins with \"Re: \" but there are no \"References:\".\n"
+msgstr	"Na: Oya"
+
+#: src/lang.c:786
+#, fuzzy
+msgid	"\n"
+	"Warning: Article has \"References:\" but \"Subject:\" does not begin\n"
+	"         with \"Re: \" and does not contain \"(was:\".\n"
+msgstr	"OYA Na: Na OYA"
+
+#: src/lang.c:789
+#, fuzzy
+msgid	"Read carefully!\n"
+	"\n"
+	"  You are about to cancel an article seemingly written by you. This will "
+	"wipe\n"
+	"  the article from most  news servers  throughout the world,  but there is "
+	"no\n"
+	"  guarantee that it will work.\n"
+	"\n"
+	"This is the article you are about to cancel:\n"
+	"\n"
+msgstr	"Ibyerekeye Kuri Kureka Ingingo ku i Ingingo Bivuye Amakuru i ni Akazi ni i "
+	"Ingingo Ibyerekeye Kuri Kureka"
+
+#: src/lang.c:793
+#, fuzzy
+msgid	"\n"
+	"Warning: You are using a non-plain transfer encoding (such as base64 or\n"
+	"         quoted-printable) and an external inews program to submit your\n"
+	"         article. If a signature is appended by that inews program it will\n"
+	"         not be encoded properly.\n"
+msgstr	"ikoresha a Byuzuye Imisobekere: Nka Gicapika Na external Porogaramu Kuri "
+	"Tanga Ingingo a Isinya ni ku Porogaramu OYA"
+
+#: src/lang.c:798
+#, fuzzy, c-format
+msgid	"\n"
+	"\n"
+	"You are upgrading to tin %s from an earlier version.\n"
+	"Some values in your %s file have changed!\n"
+	"Read WHATSNEW, etc...\n"
+msgstr	"Kuri Bivuye Verisiyo Uduciro in IDOSIYE Byahinduwe"
+
+#: src/lang.c:800
+#, fuzzy, c-format
+msgid	"\n"
+	"\n"
+	"You are downgrading to tin %s from a more recent version!\n"
+	"Some values in your %s file may be ignored, others might have changed!\n"
+msgstr	"Kuri Bivuye a Birenzeho Verisiyo Uduciro in IDOSIYE Gicurasi Ibindi Byahinduwe"
+
+#: src/lang.c:803
+#, fuzzy, c-format
+msgid	"Warning: tin wrote fewer groups to your\n"
+	"\t%s\n"
+	"than it read at startup. If you didn't unsubscribe from %ld %s during\n"
+	"this session this indicates an error and you should backup your %s\n"
+	"before you start tin once again!\n"
+msgstr	"Bike Amatsinda Kuri Gusoma ku Kwivana aho wiyandikishe Bivuye Umukoro iyi "
+	"Ikosa Na Inyibutsa Mbere Gutangira Rimwe"
+
+#: src/lang.c:807
+#, fuzzy, c-format
+msgid	"\n"
+	"Warning: Found %d '-- \\n' lines, this may confuse some people.\n"
+msgstr	"Imirongo iyi Gicurasi Abantu"
+
+#: src/lang.c:808
+#, fuzzy, c-format
+msgid	"Warning: Only %d out of %d articles were saved"
+msgstr	"Inyuma Bya"
+
+#: src/lang.c:809
+#, fuzzy, c-format
+msgid	"\n"
+	"Warning: Your signature  is longer than %d lines.  Since signatures usually "
+	"do\n"
+	"         not  transport any  useful information,  they should be as  short "
+	"as\n"
+	"         possible.\n"
+msgstr	"Isinya ni Imirongo OYA Ibisobanuro Nka"
+
+#: src/lang.c:813
+#, fuzzy, c-format
+msgid	"Warning: this mail address may contain a spamtrap. %s=continue, %s=abort? "
+msgstr	"iyi Ubutumwa Aderesi Gicurasi a urifuzagukomeza Kureka"
+
+#: src/lang.c:814
+#, fuzzy
+msgid	"\n"
+	"Warning: Signatures should start with '-- \\n' not with '--\\n'.\n"
+msgstr	"Gutangira Na: OYA Na:"
+
+#: src/lang.c:815
+#, fuzzy
+msgid	"Writing attributes file..."
+msgstr	"Ibiranga IDOSIYE"
+
+#: src/lang.c:817
+#, c-format
+msgid	"%d Responses"
+msgstr	""
+
+#: src/lang.c:819
+#, fuzzy, c-format
+msgid	"Added %d %s"
+msgstr	"Kyongewe"
+
+#: src/lang.c:820
+#, fuzzy
+msgid	"No unsubscribed groups to show"
+msgstr	"Amatsinda Kuri Garagaza"
+
+#: src/lang.c:821
+#, fuzzy
+msgid	"Showing subscribed to groups only"
+msgstr	"yanditswe/ byemewe Kuri Amatsinda"
+
+#: src/lang.c:822
+#, fuzzy
+msgid	"Yes "
+msgstr	"Yego"
+
+#: src/lang.c:823
+msgid	"    You have mail\n"
+msgstr	""
+
+#: src/lang.c:828
+#, fuzzy, c-format
+msgid	"\n"
+	"Warning: Posting is in %s and contains characters which are not\n"
+	"         in your selected MM_NETWORK_CHARSET: %s.\n"
+	"         These characters will be replaced by '?' if you post this\n"
+	"         article unchanged. To avoid garbling your article please either\n"
+	"         edit it and remove those characters or change the setting of\n"
+	"         MM_NETWORK_CHARSET to a suitable value for your posting via the\n"
+	"         M)enu option.\n"
+msgstr	"ni in Na Kirimo Inyuguti in Byahiswemo Inyuguti ku NIBA Iposita Ingingo "
+	"Ingingo Guhindura Na Gukuraho... Inyuguti Cyangwa Guhindura>> i Igenamiterere "
+	"Kuri a Agaciro kugirango Biturutse Ihitamo"
+
+#: src/lang.c:839
+#, fuzzy
+msgid	"  -D       debug mode 1=NNTP 2=ALL"
+msgstr	"-Kosora amakosa Ubwoko 1. 2."
+
+#: src/lang.c:843
+#, fuzzy
+msgid	"Read carefully!\n"
+	"\n"
+	"  You are about to cancel an article seemingly not written by you.  This "
+	"will\n"
+	"  wipe the article from lots of news servers throughout the world;\n"
+	"  Usenet's majority  considers this  rather inappropriate,  to say the "
+	"least.\n"
+	"  Only press 'd'  if you are  absolutely positive  that you are ready to "
+	"take\n"
+	"  the rap.\n"
+	"\n"
+	"This is the article you are about to cancel:\n"
+	"\n"
+msgstr	"Ibyerekeye Kuri Kureka Ingingo OYA ku Guhanagura i Ingingo Bivuye Bya Amakuru "
+	"i iyi Kuri i Kanda NIBA Cyiteguye Kuri i ni i Ingingo Ibyerekeye Kuri Kureka"
+
+#: src/lang.c:852
+#, fuzzy
+msgid	"toggle color"
+msgstr	"Mukomatanya Ibara"
+
+#: src/lang.c:853
+#, fuzzy
+msgid	"# Changing colors of several screen parts\n"
+	"# Possible values are:\n"
+	"#  -1 = default (white for foreground and black for background)\n"
+	"#   0 = black\n"
+	"#   1 = red\n"
+	"#   2 = green\n"
+	"#   3 = brown\n"
+	"#   4 = blue\n"
+	"#   5 = pink\n"
+	"#   6 = cyan\n"
+	"#   7 = white\n"
+	"# These are *only* for foreground:\n"
+	"#   8 = gray\n"
+	"#   9 = light red\n"
+	"#  10 = light green\n"
+	"#  11 = yellow\n"
+	"#  12 = light blue\n"
+	"#  13 = light pink\n"
+	"#  14 = light cyan\n"
+	"#  15 = light white\n"
+	"\n"
+msgstr	"#Amabara Bya Mugaragaza Uduciro 1. Mburabuzi Umweru kugirango Na umukara "
+	"kugirango Mbuganyuma 0 1. 2. 3. 4. 5 6 7 kugirango 8 9 kimurika 10 kimurika "
+	"12 kimurika kimurika 14 kimurika 15 kimurika"
+
+#: src/lang.c:873
+#, fuzzy
+msgid	"  -a       toggle color flag"
+msgstr	"-a Mukomatanya Ibara Ibendera"
+
+#: src/lang.c:877
+#, fuzzy
+msgid	"\n"
+	"Error: Followup-To set to more than one newsgroup!\n"
+msgstr	"Gushyiraho Kuri Birenzeho Urubuga rw'amakuru"
+
+#: src/lang.c:878
+#, fuzzy, c-format
+msgid	"\n"
+	"Error: cross-posting to %d newsgroups and no Followup-To line!\n"
+msgstr	"Kwambukiranya Kuri Imbuga z'amakuru Na Oya Umurongo"
+
+#: src/lang.c:879
+#, fuzzy, c-format
+msgid	"\n"
+	"Error: \"%s\" is not a valid newsgroup!\n"
+msgstr	"ni OYA a Byemewe Urubuga rw'amakuru"
+
+#: src/lang.c:881
+#, fuzzy
+msgid	"\n"
+	"Warning: Followup-To set to more than one newsgroup!\n"
+msgstr	"Gushyiraho Kuri Birenzeho Urubuga rw'amakuru"
+
+#: src/lang.c:882
+#, fuzzy, c-format
+msgid	"\n"
+	"Warning: cross-posting to %d newsgroups and no Followup-To line!\n"
+msgstr	"Kwambukiranya Kuri Imbuga z'amakuru Na Oya Umurongo"
+
+#: src/lang.c:883
+#, fuzzy, c-format
+msgid	"\n"
+	"Warning: \"%s\" is not in your newsrc, it may be invalid at this site!\n"
+msgstr	"ni OYA in Gicurasi Sibyo ku iyi Ipaji"
+
+#: src/lang.c:884
+#, fuzzy, c-format
+msgid	"\n"
+	"Warning: \"%s\" is not a valid newsgroup at this site!\n"
+msgstr	"ni OYA a Byemewe Urubuga rw'amakuru ku iyi Ipaji"
+
+#: src/lang.c:888
+#, fuzzy, c-format
+msgid	"%d files successfully written from %d articles. %d %s occurred."
+msgstr	"%dIdosiye Bivuye"
+
+#: src/lang.c:889
+msgid	"Missing parts."
+msgstr	""
+
+#: src/lang.c:890
+#, fuzzy
+msgid	"No beginning."
+msgstr	"Itangiriro"
+
+#: src/lang.c:891
+#, fuzzy
+msgid	"No data."
+msgstr	"Ibyatanzwe"
+
+# # @name OTHER
+# # @loc none
+#: src/lang.c:892
+#, fuzzy
+msgid	"Unknown error."
+msgstr	"Ikosa itazwi"
+
+#: src/lang.c:895
+#, fuzzy, c-format
+msgid	"\tChecksum of %s (%ld %s)"
+msgstr	"Bya"
+
+#: src/lang.c:900
+#, fuzzy
+msgid	"Reading mail active file... "
+msgstr	"Ubutumwa Gikora IDOSIYE"
+
+#: src/lang.c:901
+#, fuzzy
+msgid	"Reading mailgroups file... "
+msgstr	"IDOSIYE"
+
+#: src/lang.c:905
+#, fuzzy
+msgid	"perform PGP operations on article"
+msgstr	"Ibikorwa: ku Ingingo"
+
+#: src/lang.c:906
+#, fuzzy
+msgid	"Add key(s) to public keyring?"
+msgstr	"Urufunguzo S Kuri Rusange"
+
+#: src/lang.c:907
+#, fuzzy, c-format
+msgid	"%s=encrypt, %s=sign, %s=both, %s=quit: "
+msgstr	"%s=Shyiraho Umutekano IKIMENYETSO Byombi Kuvamo"
+
+#: src/lang.c:908
+#, fuzzy, c-format
+msgid	"%s=sign, %s=sign & include public key, %s=quit: "
+msgstr	"%s=IKIMENYETSO IKIMENYETSO Gushyiramo Rusange Urufunguzo Kuvamo"
+
+#: src/lang.c:909
+#, fuzzy, c-format
+msgid	"PGP has not been set up (can't open %s)"
+msgstr	"OYA Gushyiraho Hejuru Gufungura"
+
+#: src/lang.c:910
+#, fuzzy
+msgid	"Article not signed and no public keys found"
+msgstr	"OYA Na Oya Rusange Utubuto Byabonetse"
+
+#: src/lang.c:912
+#, fuzzy, c-format
+msgid	"%s=quit, %s=edit, %s=ispell, %s=pgp, %s=menu, %s=post, %s=postpone: "
+msgstr	"%s=Kuvamo Guhindura Ibikubiyemo Iposita"
+
+#: src/lang.c:913
+#, fuzzy, c-format
+msgid	"%s=quit, %s=edit, %s=ispell, %s=pgp, %s=send [%%s]: "
+msgstr	"%s=Kuvamo Guhindura Kohereza"
+
+#: src/lang.c:914
+#, fuzzy, c-format
+msgid	"%s=quit, %s=edit, %s=ispell, %s=pgp, %s=menu, %s=post, %s=postpone [%%s]: "
+msgstr	"%s=Kuvamo Guhindura Ibikubiyemo Iposita"
+
+#: src/lang.c:916
+#, fuzzy, c-format
+msgid	"%s=quit, %s=edit, %s=pgp, %s=menu, %s=post, %s=postpone: "
+msgstr	"%s=Kuvamo Guhindura Ibikubiyemo Iposita"
+
+#: src/lang.c:917
+#, fuzzy, c-format
+msgid	"%s=quit, %s=edit, %s=pgp, %s=send [%%s]: "
+msgstr	"%s=Kuvamo Guhindura Kohereza"
+
+#: src/lang.c:918
+#, fuzzy, c-format
+msgid	"%s=quit, %s=edit, %s=pgp, %s=menu, %s=post, %s=postpone [%%s]: "
+msgstr	"%s=Kuvamo Guhindura Ibikubiyemo Iposita"
+
+#: src/lang.c:922
+#, fuzzy, c-format
+msgid	"%s=quit, %s=edit, %s=ispell, %s=menu, %s=post, %s=postpone: "
+msgstr	"%s=Kuvamo Guhindura Ibikubiyemo Iposita"
+
+#: src/lang.c:923
+#, fuzzy, c-format
+msgid	"%s=quit, %s=edit, %s=ispell, %s=send [%%s]: "
+msgstr	"%s=Kuvamo Guhindura Kohereza"
+
+#: src/lang.c:924
+#, fuzzy, c-format
+msgid	"%s=quit, %s=edit, %s=ispell, %s=menu, %s=post, %s=postpone [%%s]: "
+msgstr	"%s=Kuvamo Guhindura Ibikubiyemo Iposita"
+
+#: src/lang.c:926
+#, fuzzy, c-format
+msgid	"%s=quit, %s=edit, %s=menu, %s=post, %s=postpone: "
+msgstr	"%s=Kuvamo Guhindura Ibikubiyemo Iposita"
+
+#: src/lang.c:927
+#, fuzzy, c-format
+msgid	"%s=quit, %s=edit, %s=send [%%s]: "
+msgstr	"%s=Kuvamo Guhindura Kohereza"
+
+#: src/lang.c:928
+#, fuzzy, c-format
+msgid	"%s=quit, %s=edit, %s=menu, %s=post, %s=postpone [%%s]: "
+msgstr	"%s=Kuvamo Guhindura Ibikubiyemo Iposita"
+
+#: src/lang.c:937
+#, fuzzy
+msgid	"Try cache_overview_files to speed up things.\n"
+msgstr	"Kuri Umuvuduko Hejuru"
+
+#: src/lang.c:938
+#, fuzzy
+msgid	"Tin will use local index files instead.\n"
+msgstr	"Gukoresha Umubarendanga Idosiye"
+
+#: src/lang.c:939
+#, fuzzy
+msgid	"Cannot find NNTP server name"
+msgstr	"Gushaka Seriveri Izina:"
+
+#: src/lang.c:940
+#, fuzzy, c-format
+msgid	"Connecting to %s:%d..."
+msgstr	"Kwihuza na\"\"..."
+
+#: src/lang.c:941
+#, fuzzy
+msgid	"Disconnecting from server...\n"
+msgstr	"Bivuye Seriveri"
+
+#: src/lang.c:942
+#, fuzzy, c-format
+msgid	"Wrong newsgroup name in response of GROUP command, %s for %s"
+msgstr	"Urubuga rw'amakuru Izina: in Bya Komandi: kugirango"
+
+#: src/lang.c:943
+#, fuzzy, c-format
+msgid	"Failed to connect to NNTP server %s. Exiting..."
+msgstr	"Kuri Kwihuza Kuri Seriveri"
+
+#: src/lang.c:944
+#, fuzzy
+msgid	"205  Closing connection"
+msgstr	"Ukwihuza"
+
+#: src/lang.c:945
+#, fuzzy
+msgid	"Your server does not support the NNTP XOVER or OVER command.\n"
+msgstr	"Seriveri OYA Gushigikira i Cyangwa Komandi:"
+
+#: src/lang.c:946
+#, fuzzy
+msgid	"Connection to news server has timed out. Reconnect?"
+msgstr	"Kongerakwihuza."
+
+#: src/lang.c:947
+#, fuzzy, c-format
+msgid	"Put the server name in the file %s,\n"
+	"or set the environment variable NNTPSERVER"
+msgstr	"i Seriveri Izina: in i IDOSIYE Cyangwa Gushyiraho i IMPINDURAGACIRO"
+
+#: src/lang.c:948
+#, fuzzy
+msgid	"  -A       force authentication on connect"
+msgstr	"-A ku Kwihuza"
+
+#: src/lang.c:949
+#, fuzzy, c-format
+msgid	"  -g serv  read news from NNTP server serv [default=%s]"
+msgstr	"-g Gusoma Amakuru Bivuye Seriveri Mburabuzi"
+
+#: src/lang.c:950
+#, fuzzy, c-format
+msgid	"  -p port  use port as NNTP port [default=%d]"
+msgstr	"-P Umuyoboro Gukoresha Umuyoboro Nka Umuyoboro Mburabuzi"
+
+#: src/lang.c:951
+#, fuzzy
+msgid	"  -Q       quick start. Same as -nqd"
+msgstr	"-Gutangira Nka"
+
+#: src/lang.c:952
+#, fuzzy
+msgid	"  -l       use only LIST instead of GROUP (-n) command"
+msgstr	"-L Gukoresha Bya N Komandi:"
+
+#: src/lang.c:953
+#, fuzzy
+msgid	"  -n       only read subscribed .newsrc groups from NNTP server"
+msgstr	"-N Gusoma yanditswe/ byemewe Amatsinda Bivuye Seriveri"
+
+#: src/lang.c:955
+#, fuzzy, c-format
+msgid	"%s/tcp: Unknown service.\n"
+msgstr	"%s/Serivisi"
+
+#: src/lang.c:958
+#, fuzzy
+msgid	"\n"
+	"socket or connect problem\n"
+msgstr	"Cyangwa Kwihuza"
+
+#: src/lang.c:960
+#, fuzzy, c-format
+msgid	"\n"
+	"Connection to %s: "
+msgstr	"Kuri"
+
+#: src/lang.c:961
+#, fuzzy
+msgid	"Giving up...\n"
+msgstr	"Hejuru"
+
+#: src/lang.c:964
+#, fuzzy
+msgid	"Your server does not have Xref: in its XOVER information.\n"
+	"Tin will try to use XHDR XREF instead (slows down things a bit).\n"
+msgstr	"Seriveri OYA in Ibisobanuro Kuri Gukoresha Hasi a"
+
+#: src/lang.c:967
+#, fuzzy
+msgid	"Your server does not have Xref: in its XOVER information.\n"
+msgstr	"Seriveri OYA in Ibisobanuro"
+
+#: src/lang.c:970
+#, fuzzy, c-format
+msgid	"Can't open %s. Try %s -r to read news via NNTP.\n"
+msgstr	"Gufungura R Kuri Gusoma Amakuru Biturutse"
+
+#: src/lang.c:973
+#, fuzzy
+msgid	"  -Q       quick start. Same as -qd"
+msgstr	"-Gutangira Nka"
+
+#: src/lang.c:974
+#, fuzzy
+msgid	"  -l       read only active file instead of scanning spool (-n) command"
+msgstr	"-L Gusoma Gikora IDOSIYE Bya N Komandi:"
+
+#: src/lang.c:975
+#, fuzzy
+msgid	"  -n       only read subscribed .newsrc groups from spool"
+msgstr	"-N Gusoma yanditswe/ byemewe Amatsinda Bivuye"
+
+#: src/lang.c:976
+#, fuzzy
+msgid	"Your server does not have Xref: in its NOV-files.\n"
+msgstr	"Seriveri OYA in Idosiye"
+
+#: src/lang.c:980
+#, fuzzy
+msgid	"Posting using external inews failed. Use built in inews instead?"
+msgstr	"ikoresha external Byanze in"
+
+#: src/lang.c:981
+#, fuzzy
+msgid	"It worked! Should I always use my built in inews from now on?"
+msgstr	"Buri gihe Gukoresha in Bivuye NONEAHA ku"
+
+#: src/lang.c:985
+#, fuzzy, c-format
+msgid	"%d %s printed"
+msgstr	"%d%sByacapwe"
+
+#: src/lang.c:986
+#, fuzzy
+msgid	"output article/thread/hot/pattern/tagged articles to printer"
+msgstr	"Ibisohoka Ingingo Urudodo Ishusho Kuri Mucapyi"
+
+#: src/lang.c:987
+msgid	"Print"
+msgstr	"Gucapa"
+
+#: src/lang.c:988
+msgid	"Printing..."
+msgstr	"Icapa..."
+
+#: src/lang.c:992
+#, fuzzy
+msgid	"pipe article/thread/hot/pattern/tagged articles into command"
+msgstr	"Ingingo Urudodo Ishusho Komandi:"
+
+#: src/lang.c:993
+#, fuzzy
+msgid	"No command"
+msgstr	"Komandi:"
+
+#: src/lang.c:994
+msgid	"Pipe"
+msgstr	""
+
+#: src/lang.c:995
+#, fuzzy, c-format
+msgid	"Pipe to command [%.*s]> "
+msgstr	"Kuri Komandi: S"
+
+#: src/lang.c:996
+msgid	"Piping..."
+msgstr	""
+
+#: src/lang.c:998
+#, fuzzy
+msgid	"Piping not enabled."
+msgstr	"OYA Bikora"
+
+#: src/lang.c:1002
+#, fuzzy, c-format
+msgid	"\n"
+	"Error: The \"%s:\" line has spaces  in it that MUST be removed.\n"
+	"       The only allowable  space is the one  separating the colon (:)\n"
+	"       from  the  contents.  Use a  comma  (,)  to separate  multiple\n"
+	"       newsgroup names.\n"
+msgstr	"Umurongo Imyanya in Cyavanyweho Umwanya ni i i Bivuye i Ibigize a Akitso Kuri "
+	"Urubuga rw'amakuru Amazina"
+
+#: src/lang.c:1007
+#, fuzzy, c-format
+msgid	"\n"
+	"Error: The \"%s:\" line is  continued in  the next line.  Since\n"
+	"       the line  may not  contain  whitespace,  this is  not allowed.\n"
+	"       Please write all newsgroups into a single line.\n"
+msgstr	"Umurongo ni in i Komeza>> Umurongo i Umurongo Gicurasi OYA iyi ni OYA "
+	"Kwandika Byose Imbuga z'amakuru a UMWE Umurongo"
+
+#: src/lang.c:1012
+#, fuzzy, c-format
+msgid	"\n"
+	"Warning: The \"%s:\" line is continued in the next line.\n"
+	"         This is a very new feature and may not be accepted by all servers.\n"
+	"         To avoid trouble please write all newsgroups into a single line.\n"
+msgstr	"Umurongo ni in i Komeza>> Umurongo ni a Gishya Na Gicurasi OYA Byemewe ku "
+	"Byose Kwandika Byose Imbuga z'amakuru a UMWE Umurongo"
+
+#: src/lang.c:1016
+#, fuzzy, c-format
+msgid	"\n"
+	"Warning: The \"%s:\" line has spaces in it that SHOULD be removed.\n"
+msgstr	"Umurongo Imyanya in Cyavanyweho"
+
+#: src/lang.c:1021
+#, fuzzy
+msgid	"\n"
+	"  If your article contains quoted text  please take some time to pare it "
+	"down\n"
+	"  to just the  key points to which you are  responding,  or people will "
+	"think\n"
+	"  you are a dweeb!  Many people have the habit of skipping any article  "
+	"whose\n"
+	"  first page is largely  quoted material.  Format your article to fit in "
+	"less\n"
+	"  then 80 chars,  since that's the conventional size  (72 is a good choice "
+	"as\n"
+	"  it allows quoting without exceeding the limit).  If your lines are too "
+	"long\n"
+	"  they'll wrap  around  ugly and  people won't  read what you  write.  If "
+	"you\n"
+	"  aren't  careful  and considerate  in  formatting  your posting, people  "
+	"are\n"
+	"  likely to ignore it completely.  It's a crowded net out there.\n"
+msgstr	"Ingingo Kirimo Umwandiko Igihe Kuri Kuri i Urufunguzo Utudomo Kuri Cyangwa "
+	"Abantu a Abantu i Bya Gusimbuka:%s Ingingo Itangira Ipaji ni Ibikoresho "
+	"Ingingo Kuri in Hanyuma guhera i Ingano ni a i Imirongo Gufunika Na Abantu "
+	"Gusoma Kwandika Na in Ihinduramiterere Abantu Kuri Kwirengagiza a Cyuzuye "
+	"Inyuma"
+
+#: src/lang.c:1034
+#, fuzzy
+msgid	"shell escape"
+msgstr	"Igikonoshwa"
+
+#: src/lang.c:1035
+#, c-format
+msgid	"Shell Command (%s)"
+msgstr	""
+
+#: src/lang.c:1036
+#, fuzzy, c-format
+msgid	"Enter shell command [%s]> "
+msgstr	"Igikonoshwa Komandi:"
+
+#: src/lang.c:1040
+#, fuzzy, c-format
+msgid	"%s: Can't get entry for TERM\n"
+msgstr	"%s:Kubona Icyinjijwe kugirango"
+
+#: src/lang.c:1044
+#, fuzzy, c-format
+msgid	"Group %.*s ('q' to quit)..."
+msgstr	"S Kuri Kuvamo"
+
+#: src/lang.c:1046
+#, fuzzy, c-format
+msgid	"Group %.*s..."
+msgstr	"S"
+
+#: src/lang.c:1050
+msgid	"Server unavailable\n"
+msgstr	""
+
+#: src/lang.c:1056
+#, fuzzy, c-format
+msgid	"%s=pipe; %s=mail; %s=print; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %"
+	"s=post"
+msgstr	"%s=Ubutumwa Gucapa Kuvamo Mukomatanya Byose Bidasomye Kubika Itagi: Iposita"
+
+#: src/lang.c:1057
+#, fuzzy, c-format
+msgid	"%s=pipe; %s=mail; %s=print; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
+msgstr	"%s=Ubutumwa Gucapa Kuvamo Subiza Ubutumwa Kubika Itagi: Iposita"
+
+#: src/lang.c:1059
+#, fuzzy, c-format
+msgid	"%s=mail; %s=print; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post"
+msgstr	"%s=Ubutumwa Gucapa Kuvamo Mukomatanya Byose Bidasomye Kubika Itagi: Iposita"
+
+#: src/lang.c:1060
+#, fuzzy, c-format
+msgid	"%s=mail; %s=print; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
+msgstr	"%s=Ubutumwa Gucapa Kuvamo Subiza Ubutumwa Kubika Itagi: Iposita"
+
+#: src/lang.c:1064
+#, fuzzy, c-format
+msgid	"%s=pipe; %s=mail; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post"
+msgstr	"%s=Ubutumwa Kuvamo Mukomatanya Byose Bidasomye Kubika Itagi: Iposita"
+
+#: src/lang.c:1065
+#, fuzzy, c-format
+msgid	"%s=pipe; %s=mail; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
+msgstr	"%s=Ubutumwa Kuvamo Subiza Ubutumwa Kubika Itagi: Iposita"
+
+#: src/lang.c:1067
+#, fuzzy, c-format
+msgid	"%s=mail; %s=quit; %s=toggle all/unread; %s=save; %s=tag; %s=post"
+msgstr	"%s=Ubutumwa Kuvamo Mukomatanya Byose Bidasomye Kubika Itagi: Iposita"
+
+#: src/lang.c:1068
+#, fuzzy, c-format
+msgid	"%s=mail; %s=quit; %s=reply mail; %s=save; %s=tag; %s=post"
+msgstr	"%s=Ubutumwa Kuvamo Subiza Ubutumwa Kubika Itagi: Iposita"
+
+#: src/lang.c:1074
+#, fuzzy
+msgid	"Terminal does not support color"
+msgstr	"OYA Gushigikira Ibara"
+
+#: src/lang.c:1079
+#, c-format
+msgid	"Trying %s"
+msgstr	""
+
+# goodies/source\filter.vcl\eps\dlgeps.src:DLG_EXPORT_EPS.RB_COMPRESSION_NONE.text
+#: src/lang.c:1093 src/lang.c:1119 src/lang.c:1135 src/lang.c:1314 src/refs.c:296
+msgid	"None"
+msgstr	"Nta na kimwe"
+
+#: src/lang.c:1094
+msgid	"Subject"
+msgstr	"Ikivugwaho"
+
+#: src/lang.c:1095
+msgid	"References"
+msgstr	"Indango"
+
+#: src/lang.c:1096
+#, fuzzy
+msgid	"Both Subject and References"
+msgstr	"Na"
+
+#: src/lang.c:1097
+msgid	"Multipart Subject"
+msgstr	""
+
+#: src/lang.c:1098
+msgid	"Percentage Match"
+msgstr	""
+
+#: src/lang.c:1110 src/lang.c:1221
+msgid	"No"
+msgstr	"Oya"
+
+#: src/lang.c:1111 src/lang.c:1223
+msgid	"Yes"
+msgstr	"Yego"
+
+#: src/lang.c:1112
+#, fuzzy
+msgid	"Hide All"
+msgstr	"Guhisha byose"
+
+#: src/lang.c:1120
+msgid	"Address"
+msgstr	"Aderesi"
+
+#: src/lang.c:1121
+msgid	"Full Name"
+msgstr	""
+
+#: src/lang.c:1122
+#, fuzzy
+msgid	"Address and Name"
+msgstr	"Na"
+
+#: src/lang.c:1129
+msgid	"Max"
+msgstr	"Kinini"
+
+#: src/lang.c:1130
+msgid	"Sum"
+msgstr	"Igiteranyo"
+
+#: src/lang.c:1131
+msgid	"Average"
+msgstr	"Impuzandengo"
+
+#: src/lang.c:1136
+msgid	"Lines"
+msgstr	"Imirongo"
+
+#: src/lang.c:1137
+msgid	"Score"
+msgstr	""
+
+#: src/lang.c:1138
+msgid	"Lines & Score"
+msgstr	""
+
+#: src/lang.c:1147
+msgid	"Black"
+msgstr	"Umukara"
+
+#: src/lang.c:1148
+msgid	"Red"
+msgstr	"Umutuku"
+
+#: src/lang.c:1149
+msgid	"Green"
+msgstr	"Icyatsi"
+
+#: src/lang.c:1150
+msgid	"Brown"
+msgstr	"Igihogo"
+
+#: src/lang.c:1151
+msgid	"Blue"
+msgstr	"Ubururu"
+
+#: src/lang.c:1152
+msgid	"Pink"
+msgstr	""
+
+#: src/lang.c:1153
+msgid	"Cyan"
+msgstr	"Ubururu bukeye"
+
+#: src/lang.c:1154
+msgid	"White"
+msgstr	"Umweru"
+
+#: src/lang.c:1155
+msgid	"Gray"
+msgstr	"Ikigina"
+
+#: src/lang.c:1156
+msgid	"Light Red"
+msgstr	"Umutuku Werurutse"
+
+#: src/lang.c:1157
+msgid	"Light Green"
+msgstr	"Icyatsi Cyerurutse"
+
+#: src/lang.c:1158
+msgid	"Yellow"
+msgstr	"Umuhondo"
+
+#: src/lang.c:1159
+msgid	"Light Blue"
+msgstr	"Ubururu Bwerurutse"
+
+#: src/lang.c:1160
+msgid	"Light Pink"
+msgstr	""
+
+#: src/lang.c:1161
+msgid	"Light Cyan"
+msgstr	"Ubururu Bwerurutse"
+
+#: src/lang.c:1162
+msgid	"Light White"
+msgstr	""
+
+#: src/lang.c:1170 src/lang.c:1227 src/lang.c:1241
+msgid	"Nothing"
+msgstr	""
+
+# 3737
+#: src/lang.c:1171
+msgid	"Mark"
+msgstr	"garagaza"
+
+#: src/lang.c:1172
+msgid	"Space"
+msgstr	"Umwanya"
+
+#: src/lang.c:1179
+msgid	"Normal"
+msgstr	"Bisanzwe"
+
+#: src/lang.c:1180
+#, fuzzy
+msgid	"Best highlighting"
+msgstr	"Igaragaza cyane"
+
+#: src/lang.c:1181
+msgid	"Underline"
+msgstr	"Gucaho umurongo"
+
+#: src/lang.c:1182
+#, fuzzy
+msgid	"Reverse video"
+msgstr	"Videwo..."
+
+#: src/lang.c:1183
+msgid	"Blinking"
+msgstr	"Kinyoteera"
+
+#: src/lang.c:1184
+#, fuzzy
+msgid	"Half bright"
+msgstr	"Bibonerana"
+
+#: src/lang.c:1185
+msgid	"Bold"
+msgstr	"Bitsindagiye"
+
+#: src/lang.c:1190
+msgid	"none"
+msgstr	"ntacyo"
+
+# sfx2/source\doc\docvor.src:DLG_ORGANIZE.BTN_EDIT.text
+#: src/lang.c:1191
+#, fuzzy
+msgid	"commands"
+msgstr	"Amabwiriza"
+
+#: src/lang.c:1192
+msgid	"select"
+msgstr	"guhitamo"
+
+#: src/lang.c:1194
+#, fuzzy
+msgid	"commands & quit"
+msgstr	"Amabwiriza Kuvamo"
+
+#: src/lang.c:1195
+#, fuzzy
+msgid	"commands & select"
+msgstr	"Amabwiriza Guhitamo"
+
+#: src/lang.c:1196
+#, fuzzy
+msgid	"quit & select"
+msgstr	"Kuvamo Guhitamo"
+
+#: src/lang.c:1197
+#, fuzzy
+msgid	"commands & quit & select"
+msgstr	"Amabwiriza Kuvamo Guhitamo"
+
+#: src/lang.c:1222
+msgid	"Shell archive"
+msgstr	""
+
+#: src/lang.c:1228
+#, fuzzy
+msgid	"Subject: (descending)"
+msgstr	"Ubujyesi"
+
+#: src/lang.c:1229
+#, fuzzy
+msgid	"Subject: (ascending)"
+msgstr	"Ubujyejuru"
+
+#: src/lang.c:1230
+#, fuzzy
+msgid	"From: (descending)"
+msgstr	"Ubujyesi"
+
+#: src/lang.c:1231
+#, fuzzy
+msgid	"From: (ascending)"
+msgstr	"Ubujyejuru"
+
+#: src/lang.c:1232
+#, fuzzy
+msgid	"Date: (descending)"
+msgstr	"Ubujyesi"
+
+#: src/lang.c:1233
+#, fuzzy
+msgid	"Date: (ascending)"
+msgstr	"Ubujyejuru"
+
+#: src/lang.c:1234 src/lang.c:1242
+#, fuzzy
+msgid	"Score (descending)"
+msgstr	"Ubujyesi"
+
+#: src/lang.c:1235 src/lang.c:1243
+#, fuzzy
+msgid	"Score (ascending)"
+msgstr	"Ubujyejuru"
+
+#: src/lang.c:1236
+#, fuzzy
+msgid	"Lines: (descending)"
+msgstr	"Ubujyesi"
+
+#: src/lang.c:1237
+#, fuzzy
+msgid	"Lines: (ascending)"
+msgstr	"Ubujyejuru"
+
+#: src/lang.c:1248
+msgid	"Always Keep"
+msgstr	""
+
+#: src/lang.c:1249
+msgid	"Always Remove"
+msgstr	""
+
+#: src/lang.c:1250
+#, fuzzy
+msgid	"Mark with D on selection screen"
+msgstr	"Na: ku Ihitamo Mugaragaza"
+
+#: src/lang.c:1255
+#, fuzzy
+msgid	"Kill only unread arts"
+msgstr	"Bidasomye"
+
+#: src/lang.c:1256
+#, fuzzy
+msgid	"Kill all arts & show with K"
+msgstr	"Byose Garagaza Na:"
+
+#. TODO: s/K/art_marked_killed/
+#: src/lang.c:1257
+#, fuzzy
+msgid	"Kill all arts and never show"
+msgstr	"Byose Na Nta narimwe Garagaza"
+
+#: src/lang.c:1262
+#, fuzzy
+msgid	"Nothing special"
+msgstr	"Bidasanzwe"
+
+#: src/lang.c:1263
+msgid	"Compress quotes"
+msgstr	""
+
+#: src/lang.c:1264
+msgid	"Quote signatures"
+msgstr	""
+
+#: src/lang.c:1265
+#, fuzzy
+msgid	"Compress quotes, quote sigs"
+msgstr	"Gushyiraho akugarizo"
+
+#: src/lang.c:1266
+#, fuzzy
+msgid	"Quote empty lines"
+msgstr	"ubusa Imirongo"
+
+#: src/lang.c:1267
+#, fuzzy
+msgid	"Compress quotes, quote empty lines"
+msgstr	"Gushyiraho akugarizo ubusa Imirongo"
+
+#: src/lang.c:1268
+#, fuzzy
+msgid	"Quote sigs & empty lines"
+msgstr	"ubusa Imirongo"
+
+#: src/lang.c:1269
+#, fuzzy
+msgid	"Comp. q., quote sigs & empty lines"
+msgstr	"Q."
+
+#: src/lang.c:1307
+#, fuzzy
+msgid	"no"
+msgstr	"Oya"
+
+#: src/lang.c:1308
+#, fuzzy
+msgid	"with headers"
+msgstr	"Na: Imitwe"
+
+#: src/lang.c:1309
+#, fuzzy
+msgid	"without headers"
+msgstr	"Imitwe"
+
+#: src/lang.c:1316 src/lang.c:1322
+msgid	"NFKC"
+msgstr	""
+
+#: src/lang.c:1317
+msgid	"NFKD"
+msgstr	""
+
+#: src/lang.c:1318
+msgid	"NFC"
+msgstr	""
+
+#: src/lang.c:1319
+msgid	"NFD"
+msgstr	""
+
+#: src/lang.c:1330
+msgid	"Display Options"
+msgstr	""
+
+#: src/lang.c:1337
+msgid	"Color Options"
+msgstr	""
+
+#: src/lang.c:1344
+msgid	"Article-Limiting Options"
+msgstr	""
+
+#: src/lang.c:1350
+msgid	"Posting/Mailing Options"
+msgstr	""
+
+#: src/lang.c:1356
+msgid	"Saving/Printing Options"
+msgstr	""
+
+#: src/lang.c:1362
+msgid	"Expert Options"
+msgstr	""
+
+#: src/lang.c:1368
+msgid	"Filtering Options"
+msgstr	""
+
+#: src/lang.c:1373 src/lang.c:1404 src/lang.c:1410 src/lang.c:1436 src/lang.c:1486
+#: src/lang.c:1492 src/lang.c:1502 src/lang.c:1522 src/lang.c:1597 src/lang.c:1767
+#: src/lang.c:1773 src/lang.c:1779 src/lang.c:1785 src/lang.c:1797 src/lang.c:1804
+#: src/lang.c:1858 src/lang.c:1867 src/lang.c:1873 src/lang.c:1880 src/lang.c:1887
+#: src/lang.c:1894 src/lang.c:1901 src/lang.c:1908 src/lang.c:1915 src/lang.c:1922
+#: src/lang.c:1929 src/lang.c:1936 src/lang.c:1943 src/lang.c:1950 src/lang.c:1957
+#: src/lang.c:1964 src/lang.c:1971 src/lang.c:1978 src/lang.c:1985 src/lang.c:1992
+#: src/lang.c:1999 src/lang.c:2006 src/lang.c:2013 src/lang.c:2020 src/lang.c:2027
+#: src/lang.c:2035 src/lang.c:2051 src/lang.c:2058 src/lang.c:2065 src/lang.c:2072
+#: src/lang.c:2078 src/lang.c:2084 src/lang.c:2101 src/lang.c:2113 src/lang.c:2147
+#: src/lang.c:2200 src/lang.c:2207 src/lang.c:2213 src/lang.c:2238 src/lang.c:2255
+#: src/lang.c:2308 src/lang.c:2344 src/lang.c:2364 src/lang.c:2399 src/lang.c:2409
+#: src/lang.c:2434 src/lang.c:2450 src/lang.c:2469 src/lang.c:2482
+msgid	"<SPACE> toggles, <CR> sets, <ESC> cancels."
+msgstr	""
+
+#: src/lang.c:1374
+#, fuzzy
+msgid	"Show mini menu & posting etiquette"
+msgstr	"Ibikubiyemo"
+
+#: src/lang.c:1375
+#, fuzzy
+msgid	"# If ON show a mini menu of useful commands at each level\n"
+	"# and posting etiquette after composing an article\n"
+msgstr	"#Garagaza a Ibikubiyemo Bya Amabwiriza ku Na Nyuma"
+
+#: src/lang.c:1380
+#, fuzzy
+msgid	"Show short description for each newsgroup. <SPACE> toggles & <CR> sets."
+msgstr	"Isobanuramiterere kugirango Urubuga rw'amakuru"
+
+#: src/lang.c:1381
+#, fuzzy
+msgid	"Show description of each newsgroup"
+msgstr	"Isobanuramiterere Bya Urubuga rw'amakuru"
+
+#: src/lang.c:1382
+#, fuzzy
+msgid	"# If ON show group description text after newsgroup name at\n"
+	"# group selection level\n"
+msgstr	"#Garagaza Itsinda Isobanuramiterere Umwandiko Nyuma Urubuga rw'amakuru Izina: "
+	"Itsinda Ihitamo"
+
+#: src/lang.c:1387
+#, fuzzy
+msgid	"Show Subject & From (author) fields in group menu. <SPACE> toggles & <CR> "
+	"sets."
+msgstr	"Umwanditsi Imyanya in Itsinda Ibikubiyemo"
+
+#: src/lang.c:1388
+#, fuzzy
+msgid	"In group menu, show author by"
+msgstr	"Itsinda Ibikubiyemo Garagaza Umwanditsi ku"
+
+#: src/lang.c:1389
+#, fuzzy
+msgid	"# Part of from field to display\n"
+	"# Possible values are (the default is marked with *):\n"
+	"#   0 = none\n"
+	"#   1 = address\n"
+	"# * 2 = full name\n"
+	"#   3 = both\n"
+msgstr	"#Bya Bivuye Umwanya Kuri Uduciro i Mburabuzi ni cy/ byagarajwe Na: 0 1. 2. 3."
+
+#: src/lang.c:1398
+#, fuzzy
+msgid	"Draw -> or highlighted bar for selection. <SPACE> toggles & <CR> sets."
+msgstr	"Cyangwa kugirango Ihitamo"
+
+#: src/lang.c:1399
+#, fuzzy
+msgid	"Draw -> instead of highlighted bar"
+msgstr	"Bya"
+
+#: src/lang.c:1400
+#, fuzzy
+msgid	"# If ON use -> otherwise highlighted bar for selection\n"
+msgstr	"#Gukoresha kugirango"
+
+#: src/lang.c:1405
+#, fuzzy
+msgid	"Use inverse video for page headers"
+msgstr	"Videwo... kugirango Ipaji Imitwe"
+
+#: src/lang.c:1406
+#, fuzzy
+msgid	"# If ON use inverse video for page headers at different levels\n"
+msgstr	"#Gukoresha Videwo... kugirango Ipaji Imitwe ku"
+
+#: src/lang.c:1411
+#, fuzzy
+msgid	"Thread articles by"
+msgstr	"ku"
+
+#: src/lang.c:1412
+#, fuzzy
+msgid	"# Thread articles by ...\n"
+	"# Possible values are (the default is marked with *):\n"
+	"#   0 = nothing\n"
+	"#   1 = Subject\n"
+	"#   2 = References\n"
+	"# * 3 = Both (Subject and References)\n"
+	"#   4 = Multipart Subject\n"
+	"#   5 = Percentage Match\n"
+msgstr	"# ku Uduciro i Mburabuzi ni cy/ byagarajwe Na: 0 1. 2. 3. Na 4."
+
+#: src/lang.c:1423
+msgid	"Enter percentage match required to thread together. <CR> sets."
+msgstr	""
+
+#: src/lang.c:1424
+msgid	"Thread percentage match"
+msgstr	""
+
+#: src/lang.c:1425
+#, c-format
+msgid	"# Thread percentage match...\n"
+	"# the percentage of characters in the subject of an article that must match\n"
+	"# a base article for both those articles to be considered to belong to the\n"
+	"# same thread. This option is an integer percentage, eg. 80, no decimals may\n"
+	"# follow. If 80 is used here, then 80%% of the characters must match "
+	"exactly,\n"
+	"# no insertion of a character, for the two articles to be put in the same\n"
+	"# thread. eg. 'happy' and 'harpy' would match, but 'harpie', 'happie' and\n"
+	"# 'harppy' would be threaded separately from 'happy'\n"
+msgstr	""
+
+#: src/lang.c:1437
+#, fuzzy
+msgid	"Score of a thread"
+msgstr	"Bya a Urudodo"
+
+#: src/lang.c:1438
+#, fuzzy
+msgid	"# Thread score\n"
+	"# Possible values are (the default is marked with *):\n"
+	"# * 0 = max\n"
+	"#   1 = sum\n"
+	"#   2 = average\n"
+msgstr	"#Uduciro i Mburabuzi ni cy/ byagarajwe Na: 0 1. 2."
+
+#: src/lang.c:1446
+#, fuzzy
+msgid	"Sort articles by Subject, From, Date or Score. <SPACE> toggles & <CR> sets."
+msgstr	"ku Cyangwa"
+
+#: src/lang.c:1447
+#, fuzzy
+msgid	"Sort articles by"
+msgstr	"ku"
+
+#: src/lang.c:1448
+#, fuzzy
+msgid	"# Sort articles by ...\n"
+	"# Possible values are (the default is marked with *):\n"
+	"#   0 = nothing\n"
+	"#   1 = Subject descending\n"
+	"#   2 = Subject ascending\n"
+	"#   3 = From descending\n"
+	"#   4 = From ascending\n"
+	"#   5 = Date descending\n"
+	"# * 6 = Date ascending\n"
+	"#   7 = Score descending\n"
+	"#   8 = Score ascending\n"
+	"#   9 = Lines descending\n"
+	"#  10 = Lines ascending\n"
+msgstr	"#ku Uduciro i Mburabuzi ni cy/ byagarajwe Na: 0 1. 2. 3. 4. 5 6 7 8 9 10"
+
+#: src/lang.c:1464
+#, fuzzy
+msgid	"Sort threads by Nothing or Score. <SPACE> toggles & <CR> sets."
+msgstr	"ku Cyangwa"
+
+#: src/lang.c:1465
+#, fuzzy
+msgid	"Sort threads by"
+msgstr	"ku"
+
+#: src/lang.c:1466
+#, fuzzy
+msgid	"# Sort thread by ...\n"
+	"# Possible values are (the default is marked with *):\n"
+	"#   0 = nothing\n"
+	"# * 1 = Score descending\n"
+	"#   2 = Score ascending\n"
+msgstr	"#Urudodo ku Uduciro i Mburabuzi ni cy/ byagarajwe Na: 0 1. 2."
+
+#: src/lang.c:1474
+#, fuzzy
+msgid	"Put cursor at first/last unread art in groups. <SPACE> toggles & <CR> sets."
+msgstr	"indanga ku Itangira Iheruka Bidasomye in Amatsinda"
+
+#: src/lang.c:1475
+#, fuzzy
+msgid	"Goto first unread article in group"
+msgstr	"Itangira Bidasomye Ingingo in Itsinda"
+
+#: src/lang.c:1476
+#, fuzzy
+msgid	"# If ON put cursor at first unread art in group otherwise last art\n"
+msgstr	"#Gushyira indanga ku Itangira Bidasomye in Itsinda Iheruka"
+
+#: src/lang.c:1480
+#, fuzzy
+msgid	"Show all articles or only unread articles. <SPACE> toggles & <CR> sets."
+msgstr	"Byose Cyangwa Bidasomye"
+
+#: src/lang.c:1481
+#, fuzzy
+msgid	"Show only unread articles"
+msgstr	"Bidasomye"
+
+#: src/lang.c:1482
+#, fuzzy
+msgid	"# If ON show only new/unread articles otherwise show all.\n"
+msgstr	"#Garagaza Gishya Bidasomye Garagaza Byose"
+
+#: src/lang.c:1487
+#, fuzzy
+msgid	"Show only groups with unread arts"
+msgstr	"Amatsinda Na: Bidasomye"
+
+#: src/lang.c:1488
+#, fuzzy
+msgid	"# If ON show only subscribed to groups that contain unread articles.\n"
+msgstr	"#Garagaza yanditswe/ byemewe Kuri Amatsinda Bidasomye"
+
+#: src/lang.c:1493
+msgid	"Filter which articles"
+msgstr	""
+
+#: src/lang.c:1494
+#, fuzzy
+msgid	"# Filter which articles\n"
+	"# Possible values are (the default is marked with *):\n"
+	"# * 0 = only kill unread articles\n"
+	"#   1 = kill all articles and show in threads marked with K\n"
+	"#   2 = kill all articles and never show them\n"
+msgstr	"#Uduciro i Mburabuzi ni cy/ byagarajwe Na: 0 Bidasomye 1. Byose Na Garagaza "
+	"in cy/ byagarajwe Na: 2. Byose Na Nta narimwe Garagaza"
+
+#: src/lang.c:1503
+#, fuzzy
+msgid	"Tab goes to next unread article"
+msgstr	"Kuri Komeza>> Bidasomye Ingingo"
+
+#: src/lang.c:1504
+#, fuzzy
+msgid	"# If ON the TAB command will go to next unread article at article viewer "
+	"level\n"
+msgstr	"#i Komandi: Gyayo Kuri Komeza>> Bidasomye Ingingo ku Ingingo"
+
+#: src/lang.c:1508
+#, fuzzy
+msgid	"Scrolling with <SPACE> past the end of an art. jumps to the next unread one."
+msgstr	"Na: i Impera Bya Kuri i Komeza>> Bidasomye"
+
+#: src/lang.c:1509
+#, fuzzy
+msgid	"Space goes to next unread article"
+msgstr	"Kuri Komeza>> Bidasomye Ingingo"
+
+#: src/lang.c:1510
+#, fuzzy
+msgid	"# If ON the SPACE command will go to next unread article at article viewer\n"
+	"# level when the end of the article is reached (rn-style pager)\n"
+msgstr	"#i Komandi: Gyayo Kuri Komeza>> Bidasomye Ingingo ku Ingingo urwego Ryari: i "
+	"Impera Bya i Ingingo ni IMISUSIRE Peja"
+
+#: src/lang.c:1515
+#, fuzzy
+msgid	"Scrolling with <PGDN>/<DOWN> past the end of an art. jumps to the unread one."
+msgstr	"Na: i Impera Bya Kuri i Bidasomye"
+
+#: src/lang.c:1516
+#, fuzzy
+msgid	"PgDn goes to next unread article"
+msgstr	"Kuri Komeza>> Bidasomye Ingingo"
+
+#: src/lang.c:1517
+#, fuzzy
+msgid	"# If ON the PGDN or DOWN command will go to next unread article when\n"
+	"# pressed at end of message\n"
+msgstr	"#i Cyangwa Komandi: Gyayo Kuri Komeza>> Bidasomye Ingingo ku Impera Bya"
+
+#: src/lang.c:1523
+#, fuzzy
+msgid	"List thread using right arrow key"
+msgstr	"Urudodo ikoresha Iburyo: Akambi Urufunguzo"
+
+#: src/lang.c:1524
+#, fuzzy
+msgid	"# If ON automatically list thread when entering it using right arrow key.\n"
+msgstr	"#ku buryo bwikora Urutonde Urudodo Ryari: ikoresha Iburyo: Akambi Urufunguzo"
+
+#: src/lang.c:1528
+#, fuzzy
+msgid	"Enter character to indicate deleted articles. <CR> sets, <ESC> cancels."
+msgstr	"Inyuguti Kuri Cyasibwe"
+
+#: src/lang.c:1529
+#, fuzzy
+msgid	"Character to show deleted articles"
+msgstr	"Kuri Garagaza Cyasibwe"
+
+#: src/lang.c:1530
+#, fuzzy
+msgid	"# Character used to show that an art was deleted (default 'D')\n"
+	"# _ is turned into ' '\n"
+msgstr	"#Kuri Garagaza Cyasibwe Mburabuzi ni"
+
+#: src/lang.c:1535
+#, fuzzy
+msgid	"Enter character to indicate articles in a range. <CR> sets, <ESC> cancels."
+msgstr	"Inyuguti Kuri in a Urutonde"
+
+#: src/lang.c:1536
+#, fuzzy
+msgid	"Character to show inrange articles"
+msgstr	"Kuri Garagaza"
+
+#: src/lang.c:1537
+#, fuzzy
+msgid	"# Character used to show that an art is in a range (default '#')\n"
+	"# _ is turned into ' '\n"
+msgstr	"#Kuri Garagaza ni in a Urutonde Mburabuzi ni"
+
+#: src/lang.c:1542
+#, fuzzy
+msgid	"Enter character to indicate that article will return. <CR> sets, <ESC> "
+	"cancels."
+msgstr	"Inyuguti Kuri Ingingo Garuka"
+
+#: src/lang.c:1543
+#, fuzzy
+msgid	"Character to show returning arts"
+msgstr	"Kuri Garagaza"
+
+#: src/lang.c:1544
+#, fuzzy
+msgid	"# Character used to show that an art will return (default '-')\n"
+	"# _ is turned into ' '\n"
+msgstr	"#Kuri Garagaza Garuka Mburabuzi ni"
+
+#: src/lang.c:1549
+#, fuzzy
+msgid	"Enter character to indicate selected articles. <CR> sets, <ESC> cancels."
+msgstr	"Inyuguti Kuri Byahiswemo"
+
+#: src/lang.c:1550
+#, fuzzy
+msgid	"Character to show selected articles"
+msgstr	"Kuri Garagaza Byahiswemo"
+
+#: src/lang.c:1551
+#, fuzzy
+msgid	"# Character used to show that an art was auto-selected (default '*')\n"
+	"# _ is turned into ' '\n"
+msgstr	"#Kuri Garagaza Ikiyega Byahiswemo Mburabuzi ni"
+
+#: src/lang.c:1556
+#, fuzzy
+msgid	"Enter character to indicate recent articles. <CR> sets, <ESC> cancels."
+msgstr	"Inyuguti Kuri"
+
+#: src/lang.c:1557
+#, fuzzy
+msgid	"Character to show recent articles"
+msgstr	"Kuri Garagaza"
+
+#: src/lang.c:1558
+#, fuzzy
+msgid	"# Character used to show that an art is recent (default 'o')\n"
+	"# _ is turned into ' '\n"
+msgstr	"#Kuri Garagaza ni Mburabuzi ni"
+
+#: src/lang.c:1563
+#, fuzzy
+msgid	"Enter character to indicate unread articles. <CR> sets, <ESC> cancels."
+msgstr	"Inyuguti Kuri Bidasomye"
+
+#: src/lang.c:1564
+#, fuzzy
+msgid	"Character to show unread articles"
+msgstr	"Kuri Garagaza Bidasomye"
+
+#: src/lang.c:1565
+#, fuzzy
+msgid	"# Character used to show that an art is unread (default '+')\n"
+	"# _ is turned into ' '\n"
+msgstr	"#Kuri Garagaza ni Bidasomye Mburabuzi ni"
+
+#: src/lang.c:1570
+#, fuzzy
+msgid	"Enter character to indicate read articles. <CR> sets, <ESC> cancels."
+msgstr	"Inyuguti Kuri Gusoma"
+
+#: src/lang.c:1571
+#, fuzzy
+msgid	"Character to show read articles"
+msgstr	"Kuri Garagaza Gusoma"
+
+#: src/lang.c:1572
+#, fuzzy
+msgid	"# Character used to show that an art was read (default ' ')\n"
+	"# _ is turned into ' '\n"
+msgstr	"#Kuri Garagaza Gusoma Mburabuzi ni"
+
+#: src/lang.c:1577
+#, fuzzy
+msgid	"Enter character to indicate killed articles. <CR> sets, <ESC> cancels."
+msgstr	"Inyuguti Kuri"
+
+#: src/lang.c:1578
+#, fuzzy
+msgid	"Character to show killed articles"
+msgstr	"Kuri Garagaza"
+
+#: src/lang.c:1579
+#, fuzzy
+msgid	"# Character used to show that an art was killed (default 'K')\n"
+	"# kill_level must be set accordingly, _ is turned into ' '\n"
+msgstr	"#Kuri Garagaza Mburabuzi Gushyiraho ni"
+
+#: src/lang.c:1584
+#, fuzzy
+msgid	"Enter character to indicate read selected articles. <CR> sets, <ESC> cancels."
+msgstr	"Inyuguti Kuri Gusoma Byahiswemo"
+
+#: src/lang.c:1585
+#, fuzzy
+msgid	"Character to show readselected arts"
+msgstr	"Kuri Garagaza"
+
+#: src/lang.c:1586
+#, fuzzy
+msgid	"# Character used to show that an art was selected before read (default ':')\n"
+	"# kill_level must be set accordingly, _ is turned into ' '\n"
+msgstr	"#Kuri Garagaza Byahiswemo Mbere Gusoma Mburabuzi Gushyiraho ni"
+
+#: src/lang.c:1591
+#, fuzzy
+msgid	"Enter maximum length of newsgroup names displayed. <CR> sets."
+msgstr	"Kinini Uburebure Bya Urubuga rw'amakuru Amazina"
+
+#: src/lang.c:1592
+#, fuzzy
+msgid	"Max. length of group names shown"
+msgstr	"Uburebure Bya Itsinda Amazina"
+
+#: src/lang.c:1593
+#, fuzzy
+msgid	"# Maximum length of the names of newsgroups displayed\n"
+msgstr	"#Uburebure Bya i Amazina Bya Imbuga z'amakuru"
+
+#: src/lang.c:1598
+#, fuzzy
+msgid	"Show lines/score in listings"
+msgstr	"Imirongo in"
+
+#: src/lang.c:1599
+#, fuzzy
+msgid	"# What informations should be displayed in article/thread listing\n"
+	"# Possible values are (the default is marked with *):\n"
+	"#   0 = nothing\n"
+	"# * 1 = lines\n"
+	"#   2 = score\n"
+	"#   3 = lines & score\n"
+msgstr	"#in Ingingo Urudodo Uduciro i Mburabuzi ni cy/ byagarajwe Na: 0 1. 2. 3. "
+	"Imirongo"
+
+#: src/lang.c:1608
+#, fuzzy
+msgid	"0 = full page scrolling, -1 = show previous last line as first on next page, -"
+	"2 = half page"
+msgstr	"0 Ipaji 1. Garagaza Ibanjirije Iheruka Umurongo Nka Itangira ku Komeza>> "
+	"Ipaji 2. Ipaji"
+
+#: src/lang.c:1609
+#, fuzzy
+msgid	"Number of lines to scroll in pager"
+msgstr	"Bya Imirongo Kuri in Peja"
+
+#: src/lang.c:1610
+#, fuzzy
+msgid	"# Number of lines that cursor-up/down will scroll in article pager\n"
+	"# Possible values are (the default is marked with *):\n"
+	"#  -2 = half-page scrolling\n"
+	"#  -1 = the top/bottom line is carried over onto the next page\n"
+	"#   0 = page-by-page (traditional behavior)\n"
+	"# * 1 = line-by-line\n"
+	"#   2 or greater = scroll by 2 or more lines (only in the pager)\n"
+msgstr	"#Bya Imirongo indanga Hejuru Hasi in Ingingo Uduciro i Mburabuzi ni cy/ "
+	"byagarajwe Na: 2. Ipaji 1. i Hejuru: Hasi: Umurongo ni KURI i Komeza>> 0 "
+	"Ipaji ku Ipaji imyitwarire 1. Umurongo ku 2. Cyangwa Biruta ku 2. Cyangwa "
+	"Birenzeho Imirongo in i Peja"
+
+#: src/lang.c:1620
+msgid	"Display signatures. <SPACE> toggles & <CR> sets."
+msgstr	""
+
+#: src/lang.c:1621
+msgid	"Display signatures"
+msgstr	""
+
+#: src/lang.c:1622
+#, fuzzy
+msgid	"# If OFF don't show signatures when displaying articles\n"
+msgstr	"#Garagaza Ryari:"
+
+#: src/lang.c:1626
+#, fuzzy
+msgid	"Display uuencoded data as tagged attachments. <SPACE> toggles & <CR> sets."
+msgstr	"Ibyatanzwe Nka Imigereka"
+
+#: src/lang.c:1627
+#, fuzzy
+msgid	"Display uue data as an attachment"
+msgstr	"Ibyatanzwe Nka umugereka"
+
+#: src/lang.c:1628
+#, fuzzy
+msgid	"# Handling of uuencoded data in the pager\n"
+	"# Possible values are (the default is marked with *):\n"
+	"# * 0 = no, display raw uuencoded data\n"
+	"#   1 = yes, uuencoded data will be condensed to a single tag line showing\n"
+	"#       size and filename, similar to how MIME attachments are displayed\n"
+	"#   2 = hide all, as for 1, but any line that looks like uuencoded data will\n"
+	"#       be folded into a tag line.\n"
+msgstr	"#Bya Ibyatanzwe in i Uduciro i Mburabuzi ni cy/ byagarajwe Na: 0 Oya "
+	"Kugaragaza 1. Yego Ibyatanzwe Cyegeranye Kuri a UMWE Itagi: Umurongo Ingano "
+	"Na Izina ry'idosiye: Kuri Imigereka 2. Gushisha Byose Nka kugirango 1. "
+	"Umurongo nka Ibyatanzwe a Itagi: Umurongo"
+
+#: src/lang.c:1638
+#, fuzzy
+msgid	"Decode German style TeX umlaut codes to ISO. <SPACE> toggles & <CR> sets."
+msgstr	"IMISUSIRE Kuri"
+
+#: src/lang.c:1639
+#, fuzzy
+msgid	"Display \"a as Umlaut-a"
+msgstr	"a Nka a"
+
+#: src/lang.c:1640
+#, fuzzy
+msgid	"# If ON decode German style TeX umlaut codes to ISO and\n"
+	"# show \"a as Umlaut-a, etc.\n"
+msgstr	"#IMISUSIRE Kuri Garagaza a Nka a"
+
+#: src/lang.c:1645 src/lang.c:1655
+#, fuzzy
+msgid	"Space separated list of header fields"
+msgstr	"Urutonde Bya Umutwempangano Imyanya"
+
+#: src/lang.c:1646
+#, fuzzy
+msgid	"Display these header fields (or *)"
+msgstr	"Umutwempangano Imyanya Cyangwa"
+
+#: src/lang.c:1647
+#, fuzzy
+msgid	"# Which news headers you wish to see. If you want to see _all_ the headers,\n"
+	"# place an '*' as this value. This is the only way a wildcard can be used.\n"
+	"# If you enter 'X-' as the value, you will see all headers beginning with\n"
+	"# 'X-' (like X-Alan or X-Pape). You can list more than one by delimiting "
+	"with\n"
+	"# spaces. Not defining anything turns off this option.\n"
+msgstr	"#Amakuru Imitwe Kuri Kuri Byose i Imitwe Nka iyi Agaciro ni i a Injiza Nka i "
+	"Agaciro Byose Imitwe Itangiriro nka Cyangwa Urutonde Birenzeho ku Imyanya "
+	"Bidakora iyi Ihitamo"
+
+#: src/lang.c:1656
+#, fuzzy
+msgid	"Do not display these header fields"
+msgstr	"OYA Kugaragaza Umutwempangano Imyanya"
+
+#: src/lang.c:1657
+#, fuzzy
+msgid	"# Same as 'news_headers_to_display' except it denotes the opposite.\n"
+	"# An example of using both options might be if you thought X- headers were\n"
+	"# A Good Thing(tm), but thought Alan and Pape were miscreants...well then "
+	"you\n"
+	"# would do something like this:\n"
+	"# news_headers_to_display=X-\n"
+	"# news_headers_to_not_display=X-Alan X-Pape\n"
+	"# Not defining anything turns off this option.\n"
+msgstr	"#Nka i Urugero Bya ikoresha Byombi Amahitamo NIBA Imitwe A Na Hanyuma nka iyi "
+	"Bidakora iyi Ihitamo"
+
+#: src/lang.c:1667
+#, fuzzy
+msgid	"Do you want to enable automatic handling of multipart/alternative articles?"
+msgstr	"Kuri Gushoboza Byikoresha Bya"
+
+#: src/lang.c:1668
+msgid	"Skip multipart/alternative parts"
+msgstr	""
+
+#: src/lang.c:1669
+#, fuzzy
+msgid	"# If ON strip multipart/alternative messages automatically\n"
+msgstr	"#Ubutumwa"
+
+#: src/lang.c:1674
+#, fuzzy
+msgid	"A regex used to decide which lines to show in col_quote."
+msgstr	"A Kuri Imirongo Kuri Garagaza in"
+
+#: src/lang.c:1675
+#, fuzzy
+msgid	"Regex used to show quoted lines"
+msgstr	"Kuri Garagaza Imirongo"
+
+#: src/lang.c:1676
+#, fuzzy
+msgid	"# A regular expression that tin will use to decide which lines are\n"
+	"# quoted when viewing articles. Quoted lines are shown in col_quote.\n"
+	"# If you leave this blank, tin will use a built in default.\n"
+msgstr	"#A Ibisanzwe imvugo Gukoresha Kuri Imirongo Ryari: Imirongo in iyi "
+	"Ahatanditseho Gukoresha a in Mburabuzi"
+
+#: src/lang.c:1682
+#, fuzzy
+msgid	"A regex used to decide which lines to show in col_quote2."
+msgstr	"A Kuri Imirongo Kuri Garagaza in"
+
+#: src/lang.c:1683
+#, fuzzy
+msgid	"Regex used to show twice quoted l."
+msgstr	"Kuri Garagaza L"
+
+#: src/lang.c:1684
+#, fuzzy
+msgid	"# A regular expression that tin will use to decide which lines are\n"
+	"# quoted twice. Twice quoted lines are shown in col_quote2.\n"
+	"# If you leave this blank, tin will use a built in default.\n"
+msgstr	"#A Ibisanzwe imvugo Gukoresha Kuri Imirongo Imirongo in iyi Ahatanditseho "
+	"Gukoresha a in Mburabuzi"
+
+#: src/lang.c:1690
+#, fuzzy
+msgid	"A regex used to decide which lines to show in col_quote3."
+msgstr	"A Kuri Imirongo Kuri Garagaza in"
+
+#: src/lang.c:1691
+#, fuzzy
+msgid	"Regex used to show >= 3 times q.l."
+msgstr	"L."
+
+#: src/lang.c:1692
+#, fuzzy
+msgid	"# A regular expression that tin will use to decide which lines are\n"
+	"# quoted >=3 times. >=3 times quoted lines are shown in col_quote3.\n"
+	"# If you leave this blank, tin will use a built in default.\n"
+msgstr	"#A Ibisanzwe imvugo Gukoresha Kuri Imirongo 3. Times 3. Times Imirongo in iyi "
+	"Ahatanditseho Gukoresha a in Mburabuzi"
+
+#: src/lang.c:1699
+#, fuzzy
+msgid	"A regex used to decide which words to show in col_markslashes."
+msgstr	"A Kuri Amagambo Kuri Garagaza in"
+
+#: src/lang.c:1700
+#, fuzzy
+msgid	"Regex used to highlight /slashes/"
+msgstr	"Kuri garagaza cyane"
+
+#: src/lang.c:1701
+#, fuzzy
+msgid	"# A regular expression that tin will use to decide which words\n"
+	"# bounded by '/' are to be shown in col_markslashes.\n"
+	"# If you leave this blank, tin will use a built in default.\n"
+msgstr	"#A Ibisanzwe imvugo Gukoresha Kuri ku Kuri in iyi Ahatanditseho Gukoresha a "
+	"in Mburabuzi"
+
+#: src/lang.c:1707
+#, fuzzy
+msgid	"A regex used to decide which words to show in col_markstars."
+msgstr	"A Kuri Amagambo Kuri Garagaza in"
+
+#: src/lang.c:1708
+#, fuzzy
+msgid	"Regex used to highlight *stars*"
+msgstr	"Kuri garagaza cyane Inyenyeri"
+
+#: src/lang.c:1709
+#, fuzzy
+msgid	"# A regular expression that tin will use to decide which words\n"
+	"# bounded by '*' are to be shown in col_markstars.\n"
+	"# If you leave this blank, tin will use a built in default.\n"
+msgstr	"#A Ibisanzwe imvugo Gukoresha Kuri ku Kuri in iyi Ahatanditseho Gukoresha a "
+	"in Mburabuzi"
+
+#: src/lang.c:1715
+#, fuzzy
+msgid	"A regex used to decide which words to show in col_markstroke."
+msgstr	"A Kuri Amagambo Kuri Garagaza in"
+
+#: src/lang.c:1716
+#, fuzzy
+msgid	"Regex used to highlight -strokes-"
+msgstr	"Kuri garagaza cyane"
+
+#: src/lang.c:1717
+#, fuzzy
+msgid	"# A regular expression that tin will use to decide which words\n"
+	"# bounded by '-' are to be shown in col_markstroke.\n"
+	"# If you leave this blank, tin will use a built in default.\n"
+msgstr	"#A Ibisanzwe imvugo Gukoresha Kuri ku Kuri in iyi Ahatanditseho Gukoresha a "
+	"in Mburabuzi"
+
+#: src/lang.c:1723
+#, fuzzy
+msgid	"A regex used to decide which words to show in col_markdash."
+msgstr	"A Kuri Amagambo Kuri Garagaza in"
+
+#: src/lang.c:1724
+#, fuzzy
+msgid	"Regex used to highlight _underline_"
+msgstr	"Kuri garagaza cyane Gucaho umurongo"
+
+#: src/lang.c:1725
+#, fuzzy
+msgid	"# A regular expression that tin will use to decide which words\n"
+	"# bounded by '_' are to be shown in col_markdash.\n"
+	"# If you leave this blank, tin will use a built in default.\n"
+msgstr	"#A Ibisanzwe imvugo Gukoresha Kuri ku Kuri in iyi Ahatanditseho Gukoresha a "
+	"in Mburabuzi"
+
+#: src/lang.c:1731
+#, fuzzy
+msgid	"A regex used to find Subject prefixes to remove.  Use '|' as separator."
+msgstr	"A Kuri Gushaka Kuri Gukuraho... Nka Mutandukanya"
+
+#: src/lang.c:1732
+#, fuzzy
+msgid	"Regex with Subject prefixes"
+msgstr	"Na:"
+
+#: src/lang.c:1733
+#, fuzzy
+msgid	"# A regular expression that tin will use to find Subject prefixes\n"
+	"# which will be removed before showing the header.\n"
+msgstr	"#A Ibisanzwe imvugo Gukoresha Kuri Gushaka Cyavanyweho Mbere i Umutwempangano"
+
+#: src/lang.c:1738
+#, fuzzy
+msgid	"A regex used to find Subject suffixes to remove.  Use '|' as separator."
+msgstr	"A Kuri Gushaka Imigereka Kuri Gukuraho... Nka Mutandukanya"
+
+#: src/lang.c:1739
+#, fuzzy
+msgid	"Regex with Subject suffixes"
+msgstr	"Na: Imigereka"
+
+#: src/lang.c:1740
+#, fuzzy
+msgid	"# A regular expression that tin will use to find Subject suffixes\n"
+	"# which will be removed when replying or posting followup.\n"
+msgstr	"#A Ibisanzwe imvugo Gukoresha Kuri Gushaka Cyavanyweho Ryari: Cyangwa"
+
+#: src/lang.c:1745
+#, fuzzy
+msgid	"Enter name and options for external MIME viewer, --internal for built-in "
+	"viewer"
+msgstr	"Izina: Na Amahitamo kugirango external By'imbere kugirango in"
+
+#: src/lang.c:1746
+#, fuzzy
+msgid	"MIME binary content viewer"
+msgstr	"Nyabibiri Ibikubiyemo"
+
+#: src/lang.c:1747
+#, fuzzy
+msgid	"# If --internal automatically use the built in MIME viewer for non-text\n"
+	"# parts of articles.\n"
+	"# Otherwise specify an external viewer program (eg, metamail) or leave blank\n"
+	"# for no automatic viewing\n"
+msgstr	"#By'imbere ku buryo bwikora Gukoresha i in kugirango Bya external Porogaramu "
+	"Cyangwa kugirango Oya Byikoresha"
+
+#: src/lang.c:1754
+#, fuzzy
+msgid	"Confirm before starting non-text viewing program"
+msgstr	"Mbere Umwandiko Porogaramu"
+
+#: src/lang.c:1755
+#, fuzzy
+msgid	"Ask before using MIME viewer"
+msgstr	"Mbere ikoresha"
+
+#: src/lang.c:1756
+#, fuzzy
+msgid	"# If ON tin will ask before using metamail to display MIME messages\n"
+	"# this only happens if metamail_prog is set to something\n"
+msgstr	"#Mbere ikoresha Kuri Kugaragaza iyi NIBA ni Gushyiraho Kuri"
+
+#: src/lang.c:1761
+#, fuzzy
+msgid	"Ask to mark groups read when quitting. <SPACE> toggles & <CR> sets."
+msgstr	"Kuri Ikimenyetso Amatsinda Gusoma Ryari:"
+
+#: src/lang.c:1762
+#, fuzzy
+msgid	"Catchup read groups when quitting"
+msgstr	"Gusoma Amatsinda Ryari:"
+
+#: src/lang.c:1763
+#, fuzzy
+msgid	"# If ON ask user if read groups should all be marked read\n"
+msgstr	"#Ukoresha: NIBA Gusoma Amatsinda Byose cy/ byagarajwe"
+
+#: src/lang.c:1768
+#, fuzzy
+msgid	"Catchup group using left key"
+msgstr	"Itsinda ikoresha Ibumoso: Urufunguzo"
+
+#: src/lang.c:1769
+#, fuzzy
+msgid	"# If ON catchup group/thread when leaving with the left arrow key.\n"
+msgstr	"#Itsinda Urudodo Ryari: Na: i Ibumoso: Akambi Urufunguzo"
+
+#: src/lang.c:1774
+#, fuzzy
+msgid	"Catchup thread by using left key"
+msgstr	"Urudodo ku ikoresha Ibumoso: Urufunguzo"
+
+#: src/lang.c:1780
+#, fuzzy
+msgid	"Which actions require confirmation"
+msgstr	"Iyemeza"
+
+#: src/lang.c:1781
+#, fuzzy
+msgid	"# What should we ask confirmation for.\n"
+msgstr	"#Twebwe Iyemeza kugirango"
+
+#: src/lang.c:1786
+#, fuzzy
+msgid	"'Mark article read' ignores tags"
+msgstr	"'Ingingo"
+
+#: src/lang.c:1787
+#, fuzzy
+msgid	"# If ON the 'Mark article read' function marks only the current article.\n"
+msgstr	"#i Ingingo Umumaro i KIGEZWEHO Ingingo"
+
+#: src/lang.c:1791
+#, fuzzy
+msgid	"Program to run to open URL's, <CR> sets, <ESC> cancels."
+msgstr	"Kuri Gukoresha Kuri Gufungura"
+
+#: src/lang.c:1792
+msgid	"Program that opens URL's"
+msgstr	""
+
+#: src/lang.c:1793
+#, fuzzy
+msgid	"# The program used to open URL's. The actual URL will be appended\n"
+msgstr	"#Porogaramu Kuri Gufungura"
+
+#: src/lang.c:1798
+#, fuzzy
+msgid	"Use mouse in xterm"
+msgstr	"Imbeba in"
+
+#: src/lang.c:1799
+#, fuzzy
+msgid	"# If ON enable mouse key support on xterm terminals\n"
+msgstr	"#Gushoboza Imbeba Urufunguzo Gushigikira ku"
+
+#: src/lang.c:1805
+#, fuzzy
+msgid	"Use scroll keys on keypad"
+msgstr	"Utubuto ku"
+
+#: src/lang.c:1806
+#, fuzzy
+msgid	"# If ON enable scroll keys on terminals that support it\n"
+msgstr	"#Gushoboza Utubuto ku Gushigikira"
+
+#: src/lang.c:1811
+#, fuzzy
+msgid	"Enter maximum number of article to get. <CR> sets."
+msgstr	"Kinini Umubare Bya Ingingo Kuri Kubona"
+
+#: src/lang.c:1812
+#, fuzzy
+msgid	"Number of articles to get"
+msgstr	"Bya Kuri Kubona"
+
+#: src/lang.c:1813
+#, fuzzy
+msgid	"# Number of articles to get (0=no limit), if negative sets maximum number\n"
+	"# of already read articles to be read before first unread one\n"
+msgstr	"#Bya Kuri Kubona 0 Oya NIBA Kinini Bya Gusoma Kuri Gusoma Mbere Itangira "
+	"Bidasomye"
+
+#: src/lang.c:1818
+#, fuzzy
+msgid	"Enter number of days article is considered recent. <CR> sets."
+msgstr	"Umubare Bya Iminsi Ingingo ni"
+
+#: src/lang.c:1819
+#, fuzzy
+msgid	"Article recentness time limit"
+msgstr	"Igihe"
+
+#: src/lang.c:1820
+#, fuzzy
+msgid	"# Number of days in which article is considered recent, (0=OFF)\n"
+msgstr	"#Bya Iminsi in Ingingo ni 0"
+
+#: src/lang.c:1824
+#, fuzzy
+msgid	"WILDMAT for normal wildcards, REGEX for full regular expression matching."
+msgstr	"kugirango Bisanzwe kugirango Ibisanzwe imvugo"
+
+#: src/lang.c:1825
+msgid	"Wildcard matching"
+msgstr	""
+
+#: src/lang.c:1826
+#, fuzzy
+msgid	"# Wildcard matching\n"
+	"# Possible values are (the default is marked with *):\n"
+	"# * 0 = wildmat\n"
+	"#   1 = regex\n"
+msgstr	"#Uduciro i Mburabuzi ni cy/ byagarajwe Na: 0 1."
+
+#: src/lang.c:1833
+#, fuzzy
+msgid	"Enter minimal score before an article is marked killed. <CR> sets."
+msgstr	"Mbere Ingingo ni cy/ byagarajwe"
+
+#: src/lang.c:1834
+msgid	"Score limit (kill)"
+msgstr	""
+
+#: src/lang.c:1835
+#, fuzzy
+msgid	"# Score limit before an article is marked killed\n"
+msgstr	"#Mbere Ingingo ni cy/ byagarajwe"
+
+#: src/lang.c:1839
+#, fuzzy
+msgid	"Enter default score to kill articles. <CR> sets."
+msgstr	"Mburabuzi Kuri"
+
+#: src/lang.c:1840
+#, fuzzy
+msgid	"Default score to kill articles"
+msgstr	"Kuri"
+
+#: src/lang.c:1841
+#, fuzzy
+msgid	"# Default score to kill articles\n"
+msgstr	"#Kuri"
+
+#: src/lang.c:1845
+#, fuzzy
+msgid	"Enter minimal score before an article is marked hot. <CR> sets."
+msgstr	"Mbere Ingingo ni cy/ byagarajwe"
+
+#: src/lang.c:1846
+#, fuzzy
+msgid	"Score limit (select)"
+msgstr	"Guhitamo"
+
+#: src/lang.c:1847
+#, fuzzy
+msgid	"# Score limit before an article is marked hot\n"
+msgstr	"#Mbere Ingingo ni cy/ byagarajwe"
+
+#: src/lang.c:1851
+#, fuzzy
+msgid	"Enter default score to select articles. <CR> sets."
+msgstr	"Mburabuzi Kuri Guhitamo"
+
+#: src/lang.c:1852
+#, fuzzy
+msgid	"Default score to select articles"
+msgstr	"Kuri Guhitamo"
+
+#: src/lang.c:1853
+#, fuzzy
+msgid	"# Default score to select articles\n"
+msgstr	"#Kuri Guhitamo"
+
+#: src/lang.c:1859
+#, fuzzy
+msgid	"Use slrnface to show ''X-Face:''s"
+msgstr	"Kuri Garagaza S"
+
+#: src/lang.c:1860
+#, fuzzy
+msgid	"# If ON using slrnface(1) to interpret the ''X-Face:'' header.\n"
+	"# Only useful when running in an xterm.\n"
+msgstr	"#ikoresha 1. Kuri i Umutwempangano Ryari: in"
+
+#: src/lang.c:1868
+#, fuzzy
+msgid	"Use ANSI color"
+msgstr	"Ibara"
+
+#: src/lang.c:1869
+#, fuzzy
+msgid	"# If ON using ANSI-color\n"
+msgstr	"#ikoresha"
+
+#: src/lang.c:1874
+#, fuzzy
+msgid	"Standard foreground color"
+msgstr	"Ibara"
+
+#: src/lang.c:1875
+#, fuzzy
+msgid	"# Standard foreground color\n"
+	"# Default: -1 (default color)\n"
+msgstr	"#1. Mburabuzi Ibara"
+
+#: src/lang.c:1881
+#, fuzzy
+msgid	"Standard background color"
+msgstr	"Mbuganyuma Ibara"
+
+#: src/lang.c:1882
+#, fuzzy
+msgid	"# Standard background color\n"
+	"# Default: -1 (default color)\n"
+msgstr	"#Mbuganyuma 1. Mburabuzi Ibara"
+
+#: src/lang.c:1888
+#, fuzzy
+msgid	"Color for inverse text (background)"
+msgstr	"kugirango Umwandiko Mbuganyuma"
+
+#: src/lang.c:1889
+#, fuzzy
+msgid	"# Color of background for inverse text\n"
+	"# Default: 4 (blue)\n"
+msgstr	"#Bya Mbuganyuma kugirango 4. Ubururu"
+
+#: src/lang.c:1895
+#, fuzzy
+msgid	"Color for inverse text (foreground)"
+msgstr	"kugirango Umwandiko"
+
+#: src/lang.c:1896
+#, fuzzy
+msgid	"# Color of foreground for inverse text\n"
+	"# Default: 7 (white)\n"
+msgstr	"#Bya kugirango 7 Umweru"
+
+#: src/lang.c:1902
+#, fuzzy
+msgid	"Color of text lines"
+msgstr	"Bya Umwandiko Imirongo"
+
+#: src/lang.c:1903
+#, fuzzy
+msgid	"# Color of text lines\n"
+	"# Default: -1 (default color)\n"
+msgstr	"#Bya Umwandiko 1. Mburabuzi Ibara"
+
+#: src/lang.c:1909
+#, fuzzy
+msgid	"Color of mini help menu"
+msgstr	"Bya Ifashayobora Ibikubiyemo"
+
+#: src/lang.c:1910
+#, fuzzy
+msgid	"# Color of mini help menu\n"
+	"# Default: 3 (brown)\n"
+msgstr	"#Bya Ifashayobora 3. Igihogo"
+
+#: src/lang.c:1916
+#, fuzzy
+msgid	"Color of help text"
+msgstr	"Bya Ifashayobora Umwandiko"
+
+#: src/lang.c:1917
+#, fuzzy
+msgid	"# Color of help pages\n"
+	"# Default: -1 (default color)\n"
+msgstr	"#Bya Ifashayobora 1. Mburabuzi Ibara"
+
+#: src/lang.c:1923
+#, fuzzy
+msgid	"Color of status messages"
+msgstr	"Bya Imimerere Ubutumwa"
+
+#: src/lang.c:1924
+#, fuzzy
+msgid	"# Color of messages in last line\n"
+	"# Default: 6 (cyan)\n"
+msgstr	"#Bya Ubutumwa in Iheruka 6 Ubururu bukeye"
+
+#: src/lang.c:1930
+#, fuzzy
+msgid	"Color of quoted lines"
+msgstr	"Bya Imirongo"
+
+#: src/lang.c:1931
+#, fuzzy
+msgid	"# Color of quote-lines\n"
+	"# Default: 2 (green)\n"
+msgstr	"#Bya Gushyiraho akugarizo 2. Icyatsi"
+
+#: src/lang.c:1937
+#, fuzzy
+msgid	"Color of twice quoted line"
+msgstr	"Bya Umurongo"
+
+#: src/lang.c:1938
+#, fuzzy
+msgid	"# Color of twice quoted lines\n"
+	"# Default: 3 (brown)\n"
+msgstr	"#Bya 3. Igihogo"
+
+#: src/lang.c:1944
+#, fuzzy
+msgid	"Color of =>3 times quoted line"
+msgstr	"Bya 3. Times Umurongo"
+
+#: src/lang.c:1945
+#, fuzzy
+msgid	"# Color of >=3 times quoted lines\n"
+	"# Default: 4 (blue)\n"
+msgstr	"#Bya 3. Times 4. Ubururu"
+
+#: src/lang.c:1951
+#, fuzzy
+msgid	"Color of article header lines"
+msgstr	"Bya Ingingo Umutwempangano Imirongo"
+
+#: src/lang.c:1952
+#, fuzzy
+msgid	"# Color of header-lines\n"
+	"# Default: 2 (green)\n"
+msgstr	"#Bya Umutwempangano 2. Icyatsi"
+
+#: src/lang.c:1958
+#, fuzzy
+msgid	"Color of actual news header fields"
+msgstr	"Bya Amakuru Umutwempangano Imyanya"
+
+#: src/lang.c:1959
+#, fuzzy
+msgid	"# Color of actual news header fields\n"
+	"# Default: 9 (light red)\n"
+msgstr	"#Bya Amakuru Umutwempangano 9 kimurika Umutuku"
+
+#: src/lang.c:1965
+#, fuzzy
+msgid	"Color of article subject lines"
+msgstr	"Bya Ingingo Ikivugwaho Imirongo"
+
+#: src/lang.c:1966
+#, fuzzy
+msgid	"# Color of article subject\n"
+	"# Default: 6 (cyan)\n"
+msgstr	"#Bya Ingingo 6 Ubururu bukeye"
+
+#: src/lang.c:1972
+#, fuzzy
+msgid	"Color of response counter"
+msgstr	"Bya"
+
+#: src/lang.c:1973
+#, fuzzy
+msgid	"# Color of response counter\n"
+	"# Default: 2 (green)\n"
+msgstr	"#Bya 2. Icyatsi"
+
+#: src/lang.c:1979
+#, fuzzy
+msgid	"Color of sender (From:)"
+msgstr	"Bya Uwohereza"
+
+#: src/lang.c:1980
+#, fuzzy
+msgid	"# Color of sender (From:)\n"
+	"# Default: 2 (green)\n"
+msgstr	"#Bya Uwohereza 2. Icyatsi"
+
+#: src/lang.c:1986
+#, fuzzy
+msgid	"Color of help/mail sign"
+msgstr	"Bya Ifashayobora Ubutumwa IKIMENYETSO"
+
+#: src/lang.c:1987
+#, fuzzy
+msgid	"# Color of Help/Mail-Sign\n"
+	"# Default: 4 (blue)\n"
+msgstr	"#Bya 4. Ubururu"
+
+#: src/lang.c:1993
+#, fuzzy
+msgid	"Color of signatures"
+msgstr	"Bya"
+
+#: src/lang.c:1994
+#, fuzzy
+msgid	"# Color of signature\n"
+	"# Default: 4 (blue)\n"
+msgstr	"#Bya 4. Ubururu"
+
+#: src/lang.c:2000
+#, fuzzy
+msgid	"Color of highlighted URLs"
+msgstr	"Bya"
+
+#: src/lang.c:2001
+#, fuzzy
+msgid	"# Color of highlighted URLs\n"
+	"# Default: -1 (default color)\n"
+msgstr	"#Bya 1. Mburabuzi Ibara"
+
+#: src/lang.c:2007
+#, fuzzy
+msgid	"Color of highlighting with *stars*"
+msgstr	"Bya Igaragaza cyane Na: Inyenyeri"
+
+#: src/lang.c:2008
+#, fuzzy
+msgid	"# Color of word highlighting with *stars*\n"
+	"# Default: 11 (yellow)\n"
+msgstr	"#Bya ijambo Igaragaza cyane Na: Inyenyeri Umuhondo"
+
+#: src/lang.c:2014
+#, fuzzy
+msgid	"Color of highlighting with _dash_"
+msgstr	"Bya Igaragaza cyane Na: AKANYEREZO"
+
+#: src/lang.c:2015
+#, fuzzy
+msgid	"# Color of word highlighting with _dash_\n"
+	"# Default: 13 (light pink)\n"
+msgstr	"#Bya ijambo Igaragaza cyane Na: kimurika"
+
+#: src/lang.c:2021
+#, fuzzy
+msgid	"Color of highlighting with /slash/"
+msgstr	"Bya Igaragaza cyane Na: AKARONGOKABERAMYE"
+
+#: src/lang.c:2022
+#, fuzzy
+msgid	"# Color of word highlighting with /slash/\n"
+	"# Default: 14 (light cyan)\n"
+msgstr	"#Bya ijambo Igaragaza cyane Na: AKARONGOKABERAMYE 14 kimurika Ubururu bukeye"
+
+#: src/lang.c:2028
+#, fuzzy
+msgid	"Color of highlighting with -stroke-"
+msgstr	"Bya Igaragaza cyane Na: Akarongo"
+
+#: src/lang.c:2029
+#, fuzzy
+msgid	"# Color of word highlighting with -stroke-\n"
+	"# Default: 12 (light blue)\n"
+msgstr	"#Bya ijambo Igaragaza cyane Na: Akarongo 12 kimurika Ubururu"
+
+#: src/lang.c:2036
+#, fuzzy
+msgid	"Attr. of highlighting with *stars*"
+msgstr	"Bya Igaragaza cyane Na: Inyenyeri"
+
+#: src/lang.c:2037
+#, fuzzy
+msgid	"# Attributes of word highlighting on mono terminals\n"
+	"# Possible values are:\n"
+	"#   0 = Normal\n"
+	"#   1 = Underline\n"
+	"#   2 = Best highlighting\n"
+	"#   3 = Reverse video\n"
+	"#   4 = Blinking\n"
+	"#   5 = Half bright\n"
+	"#   6 = Bold\n"
+	"\n"
+	"# Attribute of word highlighting with *stars*\n"
+	"# Default: 6 (bold)\n"
+msgstr	"#Bya ijambo Igaragaza cyane ku Uduciro 0 1. 2. 3. 4. 5 6 Bya ijambo Igaragaza "
+	"cyane Na: Inyenyeri 6 UTSINDAGIYE"
+
+#: src/lang.c:2052
+#, fuzzy
+msgid	"Attr. of highlighting with _dash_"
+msgstr	"Bya Igaragaza cyane Na: AKANYEREZO"
+
+#: src/lang.c:2053
+#, fuzzy
+msgid	"# Attribute of word highlighting with _dash_\n"
+	"# Default: 2 (best highlighting)\n"
+msgstr	"#Bya ijambo Igaragaza cyane Na: 2. Igaragaza cyane"
+
+#: src/lang.c:2059
+#, fuzzy
+msgid	"Attr. of highlighting with /slash/"
+msgstr	"Bya Igaragaza cyane Na: AKARONGOKABERAMYE"
+
+#: src/lang.c:2060
+#, fuzzy
+msgid	"# Attribute of word highlighting with /slash/\n"
+	"# Default: 5 (half bright)\n"
+msgstr	"#Bya ijambo Igaragaza cyane Na: AKARONGOKABERAMYE 5 Bibonerana"
+
+#: src/lang.c:2066
+#, fuzzy
+msgid	"Attr. of highlighting with -stroke-"
+msgstr	"Bya Igaragaza cyane Na: Akarongo"
+
+#: src/lang.c:2067
+#, fuzzy
+msgid	"# Attribute of word highlighting with -stroke-\n"
+	"# Default: 3 (reverse video)\n"
+msgstr	"#Bya ijambo Igaragaza cyane Na: Akarongo 3. Ihindurakerekezo Videwo..."
+
+#: src/lang.c:2073
+#, fuzzy
+msgid	"URL highlighting in message body"
+msgstr	"Igaragaza cyane in Ubutumwa Umubiri"
+
+#: src/lang.c:2074
+#, fuzzy
+msgid	"# Enable URL highlighting?\n"
+msgstr	"#Igaragaza cyane"
+
+#: src/lang.c:2079
+#, fuzzy
+msgid	"Word highlighting in message body"
+msgstr	"Igaragaza cyane in Ubutumwa Umubiri"
+
+#: src/lang.c:2080
+#, fuzzy
+msgid	"# Enable word highlighting?\n"
+msgstr	"#ijambo Igaragaza cyane"
+
+#: src/lang.c:2085
+#, fuzzy
+msgid	"What to display instead of mark"
+msgstr	"Kuri Kugaragaza Bya Ikimenyetso"
+
+#: src/lang.c:2086
+#, fuzzy
+msgid	"# Should the leading and ending stars and dashes also be displayed,\n"
+	"# even when they are highlighting marks?\n"
+	"# Possible values are (the default is marked with *):\n"
+	"#   0 = no\n"
+	"#   1 = yes, display mark\n"
+	"# * 2 = print a space instead\n"
+msgstr	"#i Nyobora Na Inyenyeri Na Utunyerezo ATARIIGIHARWE Ryari: Igaragaza cyane "
+	"Uduciro i Mburabuzi ni cy/ byagarajwe Na: 0 1. Yego Kugaragaza 2. Gucapa a "
+	"Umwanya"
+
+#: src/lang.c:2095
+#, fuzzy
+msgid	"Enter column number to wrap article lines to in the pager. <CR> sets."
+msgstr	"Inkingi Umubare Kuri Gufunika Ingingo Imirongo Kuri in i Peja"
+
+#: src/lang.c:2096
+#, fuzzy
+msgid	"Page line wrap column"
+msgstr	"Umurongo Gufunika Inkingi"
+
+#: src/lang.c:2097
+#, fuzzy
+msgid	"# Wrap article lines at column\n"
+msgstr	"#Ingingo Imirongo ku"
+
+#: src/lang.c:2102
+#, fuzzy
+msgid	"Wrap around threads on next unread"
+msgstr	"ku Komeza>> Bidasomye"
+
+#: src/lang.c:2103
+#, fuzzy
+msgid	"# If ON wrap around threads on searching next unread article\n"
+msgstr	"#Gufunika ku Ishakisha Komeza>> Bidasomye"
+
+#: src/lang.c:2107
+#, fuzzy
+msgid	"Enter default mail address (and fullname). <CR> sets."
+msgstr	"Mburabuzi Ubutumwa Aderesi Na"
+
+#: src/lang.c:2108
+#, fuzzy
+msgid	"Mail address (and fullname)"
+msgstr	"Aderesi Na"
+
+#: src/lang.c:2109
+#, fuzzy
+msgid	"# User's mail address (and fullname), if not username@host (fullname)\n"
+msgstr	"#Ubutumwa Aderesi Na NIBA OYA Izina ry'ukoresha Ubuturo"
+
+#: src/lang.c:2114
+#, fuzzy
+msgid	"Show empty Followup-To in editor"
+msgstr	"ubusa in Muhinduzi"
+
+#: src/lang.c:2115
+#, fuzzy
+msgid	"# If ON show empty Followup-To header when editing an article\n"
+msgstr	"#Garagaza ubusa Umutwempangano Ryari:"
+
+#: src/lang.c:2119
+#, fuzzy
+msgid	"Enter path/! command/--none to create your default signature. <CR> sets."
+msgstr	"Inzira Komandi: Ntacyo Kuri Kurema Mburabuzi Isinya"
+
+#: src/lang.c:2120
+#, fuzzy
+msgid	"Create signature from path/command"
+msgstr	"Isinya Bivuye Inzira Komandi:"
+
+#: src/lang.c:2121
+#, fuzzy
+msgid	"# Signature path (random sigs)/file to be used when posting/replying\n"
+	"# default_sigfile=file       appends file as signature\n"
+	"# default_sigfile=!command   executes external command to generate a "
+	"signature\n"
+	"# default_sigfile=--none     don't append a signature\n"
+msgstr	"#Inzira IDOSIYE Kuri Ryari: IDOSIYE IDOSIYE Nka Komandi: external Komandi: "
+	"Kuri a Ntacyo Kongeraho... a"
+
+#: src/lang.c:2128
+#, fuzzy
+msgid	"Prepend signature with \"-- \" on own line. <SPACE> toggles & <CR> sets."
+msgstr	"Isinya Na: ku Umurongo"
+
+#: src/lang.c:2129
+#, fuzzy
+msgid	"Prepend signature with \"-- \""
+msgstr	"Isinya Na:"
+
+#: src/lang.c:2130
+#, fuzzy
+msgid	"# If ON prepend the signature with dashes '\\n-- \\n'\n"
+msgstr	"#i Isinya Na: Utunyerezo N"
+
+#: src/lang.c:2134
+#, fuzzy
+msgid	"Add signature when reposting articles. <SPACE> toggles & <CR> sets."
+msgstr	"Isinya Ryari:"
+
+#: src/lang.c:2135
+#, fuzzy
+msgid	"Add signature when reposting"
+msgstr	"Isinya Ryari:"
+
+#: src/lang.c:2136
+#, fuzzy
+msgid	"# If ON add signature to reposted articles\n"
+msgstr	"#Kongeramo Isinya Kuri"
+
+#: src/lang.c:2140
+#, fuzzy, c-format
+msgid	"Enter quotation marks, %s or %S for author's initials."
+msgstr	"Gusubiramo ibyavuzwe Cyangwa kugirango Izibanza"
+
+#: src/lang.c:2141
+#, fuzzy
+msgid	"Characters used as quote-marks"
+msgstr	"Nka Gushyiraho akugarizo"
+
+#: src/lang.c:2142
+#, fuzzy, c-format
+msgid	"# Characters used in quoting to followups and replies.\n"
+	"# '_' is replaced by ' ', %%s, %%S are replaced by author's initials.\n"
+msgstr	"#in Kuri Na ni ku ku Izibanza"
+
+#: src/lang.c:2148
+#, fuzzy
+msgid	"Quoting behavior"
+msgstr	"imyitwarire"
+
+#: src/lang.c:2149
+#, fuzzy
+msgid	"# How quoting should be handled when following up or replying.\n"
+	"# Possible values are (the default is marked with *):\n"
+	"#   0 = Nothing special\n"
+	"#   1 = Compress quotes\n"
+	"#   2 = Quote signatures\n"
+	"#   3 = Compress quotes, quote signatures\n"
+	"#   4 = Quote empty lines\n"
+	"# * 5 = Compress quotes, quote empty lines\n"
+	"#   6 = Quote signatures, quote empty lines\n"
+	"#   7 = Compress quotes, quote signatures, quote empty lines\n"
+msgstr	"#Ryari: Hejuru Cyangwa Uduciro i Mburabuzi ni cy/ byagarajwe Na: 0 1. 2. 3. "
+	"Gushyiraho akugarizo 4. ubusa 5 Gushyiraho akugarizo ubusa 6 Gushyiraho "
+	"akugarizo ubusa 7 Gushyiraho akugarizo Gushyiraho akugarizo ubusa"
+
+#: src/lang.c:2162 src/lang.c:2170 src/lang.c:2176
+msgid	"%A Addr %D Date %F Addr+Name %G Groupname %M Message-ID %N Name %C First Name"
+msgstr	""
+
+#: src/lang.c:2163
+#, fuzzy
+msgid	"Quote line when following up"
+msgstr	"Umurongo Ryari: Hejuru"
+
+#: src/lang.c:2164
+#, fuzzy, c-format
+msgid	"# Format of quote line when mailing/posting/following-up an article\n"
+	"# %%A Address    %%D Date   %%F Addr+Name   %%G Groupname   %%M Message-ID\n"
+	"# %%N Full Name  %%C First Name   %%I Initials\n"
+msgstr	"#Bya Gushyiraho akugarizo Umurongo Ryari: Hejuru"
+
+#: src/lang.c:2171
+#, fuzzy
+msgid	"Quote line when cross-posting"
+msgstr	"Umurongo Ryari: Kwambukiranya"
+
+#: src/lang.c:2177
+#, fuzzy
+msgid	"Quote line when mailing"
+msgstr	"Umurongo Ryari:"
+
+#: src/lang.c:2182
+#, fuzzy
+msgid	"If ON, include User-Agent: header. <SPACE> toggles & <CR> sets."
+msgstr	"Gushyiramo Umutwempangano"
+
+#: src/lang.c:2183
+#, fuzzy
+msgid	"Insert 'User-Agent:'-header"
+msgstr	"Umutwempangano"
+
+#: src/lang.c:2184
+#, fuzzy
+msgid	"# If ON include advertising User-Agent: header\n"
+msgstr	"#Gushyiramo"
+
+#: src/lang.c:2189
+#, fuzzy
+msgid	"Enter charset name for MIME (e.g. US-ASCII, ISO-8859-1, EUC-KR), <CR> to set."
+msgstr	"g."
+
+#: src/lang.c:2190
+msgid	"MM_CHARSET"
+msgstr	""
+
+#: src/lang.c:2191
+#, fuzzy
+msgid	"# Charset supported locally which is also used for MIME header and\n"
+	"# Content-Type header.\n"
+	"# If not set, the value of the environment variable MM_CHARSET is used.\n"
+	"# Set to US-ASCII or compile time default if neither of them is defined.\n"
+	"# If MIME_STRICT_CHARSET is defined at compile-time, charset other than\n"
+	"# mm_charset is considered not displayable and represented as '?'.\n"
+msgstr	"#Project- Id- Version: basctl\n"
+	"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+	"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+	"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+	"Content- Type: text/ plain; charset= UTF- 8\n"
+	"Content- Transfer- Encoding: 8bit\n"
+	"X- Generator: KBabel 1. 0\n"
+	"."
+
+#: src/lang.c:2201
+msgid	"MM_NETWORK_CHARSET"
+msgstr	""
+
+#: src/lang.c:2202
+#, fuzzy
+msgid	"# Charset used for MIME (Content-Type) header in postings.\n"
+msgstr	"#kugirango Umutwempangano in"
+
+#: src/lang.c:2208
+#, fuzzy
+msgid	"Mailbox format"
+msgstr	"Imiterere"
+
+#: src/lang.c:2209
+#, fuzzy
+msgid	"# Format of the mailbox.\n"
+msgstr	"#Bya i"
+
+#: src/lang.c:2214
+#, fuzzy
+msgid	"MIME encoding in news messages"
+msgstr	"Imisobekere: in Amakuru Ubutumwa"
+
+#: src/lang.c:2215
+#, fuzzy
+msgid	"# MIME encoding (8bit, base64, quoted-printable, 7bit) of the body\n"
+	"# for mails and posts, if necessary. QP is efficient for most European\n"
+	"# character sets (ISO-8859-X) with small fraction of non-US-ASCII chars,\n"
+	"# while Base64 is more efficient for most 8bit East Asian, Greek, and\n"
+	"# Russian charsets with a lot of 8bit characters.\n"
+msgstr	"#Imisobekere: Gicapika Bya i kugirango Na NIBA ni kugirango Inyuguti Na: "
+	"Gitoya Imigabane Bya ni Birenzeho kugirango Na: a Bya Inyuguti"
+
+#: src/lang.c:2223 src/lang.c:2244
+#, fuzzy
+msgid	"Don't change unless you know what you are doing. <ESC> cancels."
+msgstr	"Guhindura>>"
+
+#: src/lang.c:2224
+#, fuzzy
+msgid	"Use 8bit characters in news headers"
+msgstr	"Inyuguti in Amakuru Imitwe"
+
+#: src/lang.c:2225
+#, fuzzy
+msgid	"# If ON, 8bit characters in news headers are NOT encoded.\n"
+	"# default is OFF. Thus 8bit characters are encoded by default.\n"
+	"# 8bit chars in header are encoded regardless of the value of this\n"
+	"# parameter unless post_mime_encoding is 8bit as well.\n"
+msgstr	"#Inyuguti in Amakuru Imitwe Mburabuzi ni Inyuguti ku Mburabuzi in "
+	"Umutwempangano Bya i Agaciro Bya ni Nka"
+
+#: src/lang.c:2232
+#, fuzzy
+msgid	"Auto-view post-processed files <SPACE> toggles, <CR> sets, <ESC> cancels."
+msgstr	"Kureba Iposita Idosiye"
+
+#: src/lang.c:2233
+#, fuzzy
+msgid	"View post-processed files"
+msgstr	"Iposita Idosiye"
+
+#: src/lang.c:2234
+#, fuzzy
+msgid	"# If set, post processed files will be opened in a viewer\n"
+msgstr	"#Gushyiraho Iposita Idosiye in a"
+
+#: src/lang.c:2239
+#, fuzzy
+msgid	"MIME encoding in mail messages"
+msgstr	"Imisobekere: in Ubutumwa Ubutumwa"
+
+#: src/lang.c:2245
+#, fuzzy
+msgid	"Use 8bit characters in mail headers"
+msgstr	"Inyuguti in Ubutumwa Imitwe"
+
+#: src/lang.c:2246
+#, fuzzy
+msgid	"# If ON, 8bit characters in mail headers are NOT encoded.\n"
+	"# default is OFF. Thus 8bit characters are encoded by default.\n"
+	"# 8bit chars in headers are encoded regardless of the value of this "
+	"parameter\n"
+	"# unless mail_mime_encoding is 8bit as well. Note that RFC 2822\n"
+	"# prohibits 8bit characters in mail headers so that you are advised NOT to\n"
+	"# turn it ON unless you have some compelling reason.\n"
+msgstr	"#Inyuguti in Ubutumwa Imitwe Mburabuzi ni Inyuguti ku Mburabuzi in Imitwe Bya "
+	"i Agaciro Bya iyi ni Nka Inyuguti in Ubutumwa Imitwe"
+
+#: src/lang.c:2256
+#, fuzzy
+msgid	"Strip blanks from ends of lines"
+msgstr	"Bivuye Bya Imirongo"
+
+#: src/lang.c:2257
+#, fuzzy
+msgid	"# If ON strip blanks from ends of lines for faster display on slow "
+	"terminals.\n"
+msgstr	"#Bivuye Bya Imirongo kugirango Kugaragaza ku Buhoro"
+
+#: src/lang.c:2262
+#, fuzzy
+msgid	"If ON, use transliteration. <SPACE> toggles & <CR> sets."
+msgstr	"Gukoresha"
+
+#: src/lang.c:2263
+msgid	"Transliteration"
+msgstr	""
+
+#: src/lang.c:2264
+#, fuzzy
+msgid	"# If ON, use //TRANSLIT extension. This means that when a character cannot\n"
+	"# be represented in the in the target character set, it can be approximated\n"
+	"# through one or several similarly looking characters.\n"
+msgstr	"#Gukoresha Umugereka Ryari: a Inyuguti in i in i Intego Inyuguti Gushyiraho "
+	"Gihinguranya Cyangwa Inyuguti"
+
+#: src/lang.c:2271
+#, fuzzy
+msgid	"Send you a carbon copy automatically. <SPACE> toggles & <CR> sets."
+msgstr	"a Gukoporora ku buryo bwikora"
+
+#: src/lang.c:2272
+#, fuzzy
+msgid	"Send you a cc automatically"
+msgstr	"a KopiKubandi ku buryo bwikora"
+
+#: src/lang.c:2273
+#, fuzzy
+msgid	"# If ON automatically put your name in the Cc: field when mailing an article\n"
+msgstr	"#ku buryo bwikora Gushyira Izina: in i Umwanya Ryari:"
+
+#: src/lang.c:2277
+#, fuzzy
+msgid	"Send you a blind carbon copy automatically. <SPACE> toggles & <CR> sets."
+msgstr	"a Gukoporora ku buryo bwikora"
+
+#: src/lang.c:2278
+#, fuzzy
+msgid	"Send you a blind cc automatically"
+msgstr	"a KopiKubandi ku buryo bwikora"
+
+#: src/lang.c:2279
+#, fuzzy
+msgid	"# If ON automatically put your name in the Bcc: field when mailing an "
+	"article\n"
+msgstr	"#ku buryo bwikora Gushyira Izina: in i Umwanya Ryari:"
+
+#: src/lang.c:2283
+#, fuzzy
+msgid	"Enter address elements about which you want to be warned. <CR> sets."
+msgstr	"Aderesi Ibintu Ibyerekeye Kuri"
+
+#: src/lang.c:2284
+#, fuzzy
+msgid	"Spamtrap warning address parts"
+msgstr	"Iburira Aderesi"
+
+#: src/lang.c:2285
+#, fuzzy
+msgid	"# A comma-delimited list of address-parts you want to be warned\n"
+	"# about when trying to reply by email.\n"
+msgstr	"#A Akitso Urutonde Bya Aderesi Kuri Ibyerekeye Ryari: Kuri Subiza ku imeli"
+
+#: src/lang.c:2290
+#, fuzzy
+msgid	"Enter default number of days a filter entry will be valid. <CR> sets."
+msgstr	"Mburabuzi Umubare Bya Iminsi a Muyunguruzi... Icyinjijwe Byemewe"
+
+#: src/lang.c:2291
+#, fuzzy
+msgid	"No. of days a filter entry is valid"
+msgstr	"Bya Iminsi a Muyunguruzi... Icyinjijwe ni Byemewe"
+
+#: src/lang.c:2292
+#, fuzzy
+msgid	"# Number of days a short term filter will be active\n"
+msgstr	"#Bya Iminsi a Ijambo Muyunguruzi..."
+
+#: src/lang.c:2296
+#, fuzzy
+msgid	"Add posted articles to filter. <SPACE> toggles & <CR> sets."
+msgstr	"Kuri Muyunguruzi..."
+
+#: src/lang.c:2297
+#, fuzzy
+msgid	"Add posted articles to filter"
+msgstr	"Kuri Muyunguruzi..."
+
+#: src/lang.c:2298
+#, fuzzy
+msgid	"# If ON add posted articles which start a new thread to filter for\n"
+	"# highlighting follow-ups\n"
+msgstr	"#Kongeramo Gutangira a Gishya Urudodo Kuri Muyunguruzi... Igaragaza cyane"
+
+#: src/lang.c:2302
+#, fuzzy
+msgid	"The directory where articles/threads are to be saved in mailbox format."
+msgstr	"bushyinguro Kuri in Imiterere"
+
+#: src/lang.c:2303
+#, fuzzy
+msgid	"Mail directory"
+msgstr	"bushyinguro"
+
+#: src/lang.c:2304
+#, fuzzy
+msgid	"# (-m) directory where articles/threads are saved in mailbox format\n"
+msgstr	"#(-M bushyinguro in"
+
+#: src/lang.c:2309
+#, fuzzy
+msgid	"Save articles in batch mode (-S)"
+msgstr	"Kubika in Ubwoko"
+
+#: src/lang.c:2310
+#, fuzzy
+msgid	"# If ON articles/threads will be saved in batch mode when save -S\n"
+	"# or mail (-M/-N) is specified on the command line\n"
+msgstr	"#in Ubwoko Ryari: Kubika Cyangwa Ubutumwa ni ku i Komandi:"
+
+#: src/lang.c:2315
+#, fuzzy
+msgid	"The directory where you want articles/threads saved."
+msgstr	"bushyinguro"
+
+#: src/lang.c:2316
+#, fuzzy
+msgid	"Directory to save arts/threads in"
+msgstr	"Kuri Kubika in"
+
+#: src/lang.c:2317
+msgid	"# Directory where articles/threads are saved\n"
+msgstr	""
+
+#: src/lang.c:2321
+#, fuzzy
+msgid	"Auto save article/thread by Archive-name: header. <SPACE> toggles & <CR> sets."
+msgstr	"Kubika Ingingo Urudodo ku Izina: Umutwempangano"
+
+#: src/lang.c:2322
+#, fuzzy
+msgid	"Use Archive-name: header for save"
+msgstr	"Izina: Umutwempangano kugirango Kubika"
+
+#: src/lang.c:2323
+#, fuzzy
+msgid	"# If ON articles/threads with Archive-name: in mail header will\n"
+	"# be automatically saved with the Archive-name & part/patch no.\n"
+msgstr	"#Na: Izina: in Ubutumwa Umutwempangano ku buryo bwikora Na: i Izina: Oya"
+
+#: src/lang.c:2328
+#, fuzzy
+msgid	"Mark saved articles/threads as read. <SPACE> toggles, <CR> sets, <ESC> "
+	"cancels."
+msgstr	"Nka Gusoma"
+
+#: src/lang.c:2329
+#, fuzzy
+msgid	"Mark saved articles/threads as read"
+msgstr	"Nka Gusoma"
+
+#: src/lang.c:2330
+#, fuzzy
+msgid	"# If ON mark articles that are saved as read\n"
+msgstr	"#Ikimenyetso Nka"
+
+#: src/lang.c:2334
+#, fuzzy
+msgid	"Do post processing (eg. extract attachments) for saved articles."
+msgstr	"Iposita Inonosora Imigereka kugirango"
+
+#: src/lang.c:2335
+msgid	"Post process saved articles"
+msgstr	""
+
+#: src/lang.c:2336
+#, fuzzy
+msgid	"# Perform post processing (saving binary attachments) from saved articles.\n"
+	"# Possible values are (the default is marked with *):\n"
+	"# * 0 = no\n"
+	"#   1 = extract shell archives (shar) only\n"
+	"#   2 = yes\n"
+msgstr	"#Iposita Inonosora Mu kubika Nyabibiri Imigereka Bivuye Uduciro i Mburabuzi "
+	"ni cy/ byagarajwe Na: 0 1. Igikonoshwa Ubushyinguro 2."
+
+#: src/lang.c:2345
+#, fuzzy
+msgid	"Process only unread articles"
+msgstr	"Bidasomye"
+
+#: src/lang.c:2346
+#, fuzzy
+msgid	"# If ON only save/print/pipe/mail unread articles (tagged articles excepted)\n"
+msgstr	"#Kubika Gucapa Ubutumwa Bidasomye"
+
+#: src/lang.c:2351
+#, fuzzy
+msgid	"Print all or just part of header. <SPACE> toggles & <CR> sets."
+msgstr	"Byose Cyangwa Bya Umutwempangano"
+
+#: src/lang.c:2352
+#, fuzzy
+msgid	"Print all headers when printing"
+msgstr	"Byose Imitwe Ryari: Icapa..."
+
+#: src/lang.c:2353
+#, fuzzy
+msgid	"# If ON print all of article header otherwise just the important lines\n"
+msgstr	"#Gucapa Byose Bya Ingingo Umutwempangano i By'ingirakamaro"
+
+#: src/lang.c:2357
+#, fuzzy
+msgid	"The printer program with options that is to be used to print articles/threads."
+msgstr	"Mucapyi Porogaramu Na: Amahitamo ni Kuri Kuri Gucapa"
+
+#: src/lang.c:2358
+#, fuzzy
+msgid	"Printer program with options"
+msgstr	"Porogaramu Na: Amahitamo"
+
+#: src/lang.c:2359
+#, fuzzy
+msgid	"# Print program with parameters used to print articles/threads\n"
+msgstr	"#Porogaramu Na: Ibigenga Kuri Gucapa"
+
+#: src/lang.c:2365
+#, fuzzy
+msgid	"Force redraw after certain commands"
+msgstr	"Kongera Gushushanya Nyuma Amabwiriza"
+
+#: src/lang.c:2366
+#, fuzzy
+msgid	"# If ON a screen redraw will always be done after certain external commands\n"
+msgstr	"#a Mugaragaza Kongera Gushushanya Buri gihe Byakozwe Nyuma external"
+
+#: src/lang.c:2370
+#, fuzzy
+msgid	"Start editor with line offset. <SPACE> toggles, <CR> sets, <ESC> cancels."
+msgstr	"Gutangira Muhinduzi Na: Umurongo Nta- boneza"
+
+#: src/lang.c:2371
+#, fuzzy
+msgid	"Start editor with line offset"
+msgstr	"Gutangira Muhinduzi Na: Umurongo Nta- boneza"
+
+#: src/lang.c:2372
+#, fuzzy
+msgid	"# If ON editor will be started with cursor offset into the file\n"
+	"# otherwise the cursor will be positioned at the first line\n"
+msgstr	"#Muhinduzi Na: indanga Nta- boneza i i indanga ku i Itangira"
+
+#: src/lang.c:2377
+#, fuzzy
+msgid	"Enter %E for editor, %F for filename, %N for line-number, <CR> to set."
+msgstr	"kugirango Muhinduzi kugirango Izina ry'idosiye: kugirango Umurongo Umubare "
+	"Kuri Gushyiraho"
+
+#: src/lang.c:2378
+#, fuzzy
+msgid	"Invocation of your editor"
+msgstr	"Bya Muhinduzi"
+
+#: src/lang.c:2379
+#, fuzzy, c-format
+msgid	"# Format of editor line including parameters\n"
+	"# %%E Editor  %%F Filename  %%N Linenumber\n"
+msgstr	"#Bya Muhinduzi Umurongo"
+
+#: src/lang.c:2384
+#, fuzzy
+msgid	"Enter name and options for external-inews, --internal for internal inews"
+msgstr	"Izina: Na Amahitamo kugirango external By'imbere kugirango By'imbere"
+
+#: src/lang.c:2385
+msgid	"External inews"
+msgstr	""
+
+#: src/lang.c:2386
+#, fuzzy
+msgid	"# If --internal use the built in mini inews for posting via NNTP\n"
+	"# otherwise use an external inews program\n"
+msgstr	"#By'imbere Gukoresha i in kugirango Biturutse Gukoresha external"
+
+#: src/lang.c:2390
+#, fuzzy
+msgid	"Enter %M for mailer, %S for subject, %T for to, %F for filename, <CR> to set."
+msgstr	"kugirango Uwanditse kugirango Ikivugwaho kugirango Kuri kugirango Izina "
+	"ry'idosiye: Kuri Gushyiraho"
+
+#: src/lang.c:2391
+#, fuzzy
+msgid	"Invocation of your mail command"
+msgstr	"Bya Ubutumwa Komandi:"
+
+#: src/lang.c:2392
+#, fuzzy, c-format
+msgid	"# Format of mailer line including parameters\n"
+	"# %%M Mailer  %%S Subject  %%T To  %%F Filename\n"
+	"# ie. to use elm as your mailer:    elm -s \"%%S\" \"%%T\" < %%F\n"
+	"# ie. elm interactive          :    elm -i %%F -s \"%%S\" \"%%T\"\n"
+msgstr	"#Bya Uwanditse Umurongo Kuri Gukoresha Nka Uwanditse S Biganira i S"
+
+#: src/lang.c:2400
+#, fuzzy
+msgid	"Use interactive mail reader"
+msgstr	"Biganira Ubutumwa"
+
+#: src/lang.c:2401
+#, fuzzy
+msgid	"# Interactive mailreader\n"
+	"# Possible values are (the default is marked with *):\n"
+	"# * 0 = no interactive mailreader\n"
+	"#   1 = use interactive mailreader with headers in file\n"
+	"#   2 = use interactive mailreader without headers in file\n"
+msgstr	"#Uduciro i Mburabuzi ni cy/ byagarajwe Na: 0 Oya Biganira 1. Gukoresha "
+	"Biganira Na: Imitwe in 2. Gukoresha Biganira Imitwe in"
+
+#: src/lang.c:2410
+#, fuzzy
+msgid	"Remove ~/.article after posting"
+msgstr	"Ingingo Nyuma"
+
+#: src/lang.c:2411
+#, fuzzy
+msgid	"# If ON remove ~/.article after posting.\n"
+msgstr	"#Gukuraho... Ingingo Nyuma"
+
+#: src/lang.c:2415
+#, fuzzy
+msgid	"Filename for all posted articles, <CR> sets, no filename=do not save."
+msgstr	"kugirango Byose Oya Izina ry'idosiye: OYA Kubika"
+
+#: src/lang.c:2416
+#, fuzzy
+msgid	"Filename for posted articles"
+msgstr	"kugirango"
+
+#: src/lang.c:2417
+#, fuzzy
+msgid	"# Filename where to keep all postings (default posted)\n"
+	"# If no filename is set then postings will not be saved\n"
+msgstr	"#Kuri Gumana: Byose Mburabuzi Oya Izina ry'idosiye: ni Gushyiraho Hanyuma OYA"
+
+#: src/lang.c:2422
+#, fuzzy
+msgid	"Keep all failed articles in ~/dead.articles. <SPACE> toggles & <CR> sets."
+msgstr	"Byose Byanze in"
+
+#: src/lang.c:2423
+#, fuzzy
+msgid	"Keep failed arts in ~/dead.articles"
+msgstr	"Byanze in"
+
+#: src/lang.c:2424
+#, fuzzy
+msgid	"# If ON keep all failed postings in ~/dead.articles\n"
+msgstr	"#Gumana: Byose Byanze in"
+
+#: src/lang.c:2428
+#, fuzzy
+msgid	"Do you want to strip unsubscribed groups from .newsrc"
+msgstr	"Kuri Amatsinda Bivuye"
+
+#: src/lang.c:2429
+#, fuzzy
+msgid	"No unsubscribed groups in newsrc"
+msgstr	"Amatsinda in"
+
+#: src/lang.c:2430
+#, fuzzy
+msgid	"# If ON strip unsubscribed groups from newsrc\n"
+msgstr	"#Amatsinda Bivuye"
+
+#: src/lang.c:2435
+#, fuzzy
+msgid	"Remove bogus groups from newsrc"
+msgstr	"Amatsinda Bivuye"
+
+#: src/lang.c:2436
+#, fuzzy
+msgid	"# What to do with bogus groups in newsrc file\n"
+	"# Possible values are (the default is marked with *):\n"
+	"# * 0 = keep\n"
+	"#   1 = remove\n"
+	"#   2 = highlight with D on selection screen\n"
+msgstr	"#Kuri Na: Amatsinda in Uduciro i Mburabuzi ni cy/ byagarajwe Na: 0 1. 2. "
+	"garagaza cyane Na: ku Ihitamo"
+
+#: src/lang.c:2444
+#, fuzzy
+msgid	"Enter number of seconds until active file will be reread. <CR> sets."
+msgstr	"Umubare Bya amasogonda Gikora IDOSIYE"
+
+#: src/lang.c:2445
+#, fuzzy
+msgid	"Interval in secs to reread active"
+msgstr	"in Kuri Gikora"
+
+#: src/lang.c:2446
+#, fuzzy
+msgid	"# Time interval in seconds between rereading the active file (0=never)\n"
+msgstr	"#Intera in amasogonda hagati i Gikora IDOSIYE 0 Nta narimwe"
+
+#: src/lang.c:2451
+#, fuzzy
+msgid	"Reconnect to server automatically"
+msgstr	"Kongerakwihuza Kuri Seriveri ku buryo bwikora"
+
+#: src/lang.c:2452
+#, fuzzy
+msgid	"# If ON automatically reconnect to NNTP server if the connection is broken\n"
+msgstr	"#ku buryo bwikora Kuri Seriveri NIBA i Ukwihuza ni"
+
+#: src/lang.c:2456
+#, fuzzy
+msgid	"Create local copies of NNTP overview files. <SPACE> toggles & <CR> sets."
+msgstr	"Amakopi Bya Incamake Idosiye"
+
+#: src/lang.c:2457
+#, fuzzy
+msgid	"Cache NNTP overview files locally"
+msgstr	"Incamake Idosiye"
+
+#: src/lang.c:2458
+#, fuzzy
+msgid	"# If ON, create local copies of NNTP overview files.\n"
+msgstr	"#Kurema Amakopi Bya Incamake Idosiye"
+
+#: src/lang.c:2462
+#, fuzzy
+msgid	"Enter format string. <CR> sets, <ESC> cancels."
+msgstr	"Imiterere Ikurikiranyanyuguti"
+
+#: src/lang.c:2463
+#, fuzzy
+msgid	"Format string for display of dates"
+msgstr	"Ikurikiranyanyuguti kugirango Kugaragaza Bya Amatariki"
+
+#: src/lang.c:2464
+#, fuzzy
+msgid	"# Format string for date representation\n"
+msgstr	"#Ikurikiranyanyuguti kugirango Itariki"
+
+#: src/lang.c:2470
+#, fuzzy
+msgid	"Unicode normalization form"
+msgstr	"Ifishi"
+
+#: src/lang.c:2471
+#, fuzzy
+msgid	"# Unicode normalization form\n"
+	"# Possible values are (the default is marked with *):\n"
+	"#   0 = None\n"
+	"# * 1 = NFKC\n"
+	"#   2 = NFKD\n"
+	"#   3 = NFC\n"
+	"#   4 = NFD\n"
+msgstr	"#Uduciro i Mburabuzi ni cy/ byagarajwe Na: 0 1. 2. 3. 4."
+
+#: src/lang.c:2483
+msgid	"Render BiDi"
+msgstr	""
+
+#: src/lang.c:2484
+#, fuzzy
+msgid	"# If ON, bi-directional text is rendered by tin\n"
+msgstr	"#Umwandiko ni ku"
+
+#: src/misc.c:3693
+#, c-format
+msgid	"Version: %s %s release %s (\"%s\") %s %s\n"
+msgstr	""
+
+#: src/misc.c:3696
+#, c-format
+msgid	"Version: %s %s release %s (\"%s\")\n"
+msgstr	""
+
+#: src/newsrc.c:430
+msgid	"Unreachable?\n"
+msgstr	""
+
+#: src/nntplib.c:816
+#, fuzzy, c-format
+msgid	"\n"
+	"Server timed out, trying reconnect # %d\n"
+msgstr	"Inyuma"
+
+#: src/nntplib.c:834 src/nntplib.c:1621
+#, fuzzy
+msgid	"Rejoin current group\n"
+msgstr	"KIGEZWEHO"
+
+# svx/inc\globlmn.hrc:ITEM_FILE_MAIL_INBOX.text
+#: src/nntplib.c:841 src/nntplib.c:1628
+#, fuzzy, c-format
+msgid	"Read (%s)\n"
+msgstr	"Gusoma"
+
+#: src/nntplib.c:843
+#, fuzzy, c-format
+msgid	"Resend last command (%s)\n"
+msgstr	"Iheruka Komandi:"
+
+#.
+#. * TODO: - store a hash value of the entire motd in the server-rc
+#. *         and only if it differs from the old value display the
+#. *         motd?
+#. *       - use some sort of pager?
+#. *       - -> lang.c
+#.
+#: src/nntplib.c:1760
+msgid	"MOTD: "
+msgstr	""
+
+#: src/nrctbl.c:170
+#, fuzzy, c-format
+msgid	"couldn't expand %s\n"
+msgstr	"Kwagura"
+
+#: src/post.c:1171
+#, c-format
+msgid	"Line %d is longer than 998 octets and should be folded, but\n"
+	"encoding is neither set to %s nor to %s\n"
+msgstr	""
+
+#: src/post.c:1176
+#, c-format
+msgid	"Line %d is longer than 998 octets, and should be folded, but\n"
+	"encoding is set to %s without enabling MIME_BREAK_LONG_LINES or\n"
+	"posting doesn't contain any 8bit chars and thus folding won't happen\n"
+msgstr	""
+
+#: src/post.c:1178
+#, c-format
+msgid	"Line %d is longer than 998 octets, and should be folded, but\n"
+	"encoding is not set to %s\n"
+msgstr	""
+
+#: src/post.c:1993
+#, fuzzy, c-format
+msgid	"Posting: %.*s ..."
+msgstr	"S"
+
+#. Check if okay to read
+#: src/read.c:191
+#, fuzzy
+msgid	"Aborting read, please wait..."
+msgstr	"Gusoma Tegereza"
+
+#: src/read.c:338
+msgid	"Aborted read\n"
+msgstr	""
+
+#: src/read.c:394
+msgid	"Draining\n"
+msgstr	""
+
+#. Don't hash the initial '<'
+#: src/refs.c:251
+msgid	"unchanged"
+msgstr	""
+
+#: src/refs.c:609
+msgid	"[- Unavailable -]"
+msgstr	""
+
+#.
+#. * preamble
+#. * TODO: -> lang.c
+#.
+#: src/rfc2047.c:1201
+#, fuzzy, c-format
+msgid	"This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
+	"are reading this prefix, your mail reader probably has not yet been modified\n"
+	"to understand the new format, and some of what follows may look strange.\n"
+	"\n"
+msgstr	"Ubutumwa in i Imiterere iyi Imbanziriza Ubutumwa OYA i Gishya Imiterere Na "
+	"Bya Gicurasi"
+
+#: src/save.c:958
+#, fuzzy
+msgid	"bytes"
+msgstr	"Bayite"
+
+#: src/select.c:379
+#, fuzzy
+msgid	"unread"
+msgstr	"Bidasomye"
+
+#: src/select.c:379
+#, fuzzy
+msgid	"all"
+msgstr	"Byose"
+
+#: src/select.c:549 src/select.c:551
+#, fuzzy
+msgid	" R"
+msgstr	" R"
+
+#. TODO: use tin global 'homedir' instead? or even rcdir?
+#: src/xface.c:91
+#, fuzzy, c-format
+msgid	"Can't run slrnface: Environment variable %s not found."
+msgstr	"Gukoresha IMPINDURAGACIRO OYA Byabonetse"
+
+#: src/xface.c:99 src/xface.c:131
+#, fuzzy, c-format
+msgid	"Can't run slrnface: failed to create %s"
+msgstr	"Gukoresha Byanze Kuri Kurema"
+
+#: src/xface.c:109
+#, fuzzy
+msgid	"This directory is used to create named pipes for communication between\n"
+	"slrnface and its parent process. It should normally be empty because\n"
+	"the pipe is deleted right after it has been opened by both processes.\n"
+	"\n"
+	"File names generated by slrnface have the form \"hostname.pid\". It is\n"
+	"probably an error if they linger here longer than a fraction of a second.\n"
+	"\n"
+	"However, if the directory is mounted from an NFS server, you might see\n"
+	"special files created by your NFS server while slrnface is running.\n"
+	"Do not try to remove them.\n"
+msgstr	"bushyinguro ni Kuri Kurema kugirango Itumanaho Na ubusa ni Cyasibwe Iburyo: "
+	"Nyuma ku Byombi Idosiye Amazina ku i Ifishi Izina ry'inturo: Ikosa NIBA a "
+	"Imigabane Bya a ISEGONDA NIBA i bushyinguro ni Bivuye Seriveri Idosiye "
+	"Byaremwe ku Seriveri ni OYA Kuri Gukuraho..."
+
+#: src/xface.c:123
+#, fuzzy
+msgid	"Can't run slrnface: couldn't construct fifo name."
+msgstr	"Gukoresha Izina:"
+
+#: src/xface.c:162
+#, fuzzy, c-format
+msgid	"Slrnface abnormally exited, code %d."
+msgstr	"ITEGEKONGENGA"
+
+#: src/xface.c:206
+#, fuzzy, c-format
+msgid	"Slrnface failed: %s."
+msgstr	"Byanze"

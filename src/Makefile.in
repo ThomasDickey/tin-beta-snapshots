@@ -1,0 +1,612 @@
+# Source Makefile for tin
+# - for configuration options read the ../doc/INSTALL file.
+#
+# Updated: 2005-07-02
+#
+# Copyright (c) 1995-2005 Thomas E. Dickey <dickey@invisible-island.net>
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. The name of the author may not be used to endorse or promote
+#    products derived from this software without specific prior written
+#    permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+# OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+# GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+PACKAGE = @PACKAGE@
+VERSION = @VERSION@
+
+SHELL		= /bin/sh
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+top_srcdir	= @top_srcdir@
+top_builddir	= ..
+srcdir		= @srcdir@
+VPATH		= $(srcdir)
+
+# Compiler, linker & parser commands
+CC		= @CC@
+CPP		= @CPP@
+PRELIB		= @LIB_PREFIX@
+
+x		= @EXEEXT@
+o		= .@OBJEXT@
+
+DEBUG		= @ENABLE_DEBUG@ -DDEBUG #-DDEBUG_NEWSRC -DPROFILE -DDEBUG_REFS
+CANLOCK		= # -DUSE_CANLOCK # -DEVIL_INSIDE
+
+INTL_CPPFLAGS	= -DLOCALEDIR=\"$(prefix)/@DATADIRNAME@/locale\"
+PCRE_CPPFLAGS	= @PCREDIR_CPPFLAGS@ @PCREDIR_MAKE@ -I$(top_builddir)/pcre -I$(top_srcdir)/pcre
+
+CPPFLAGS	= @DEFS@ -I. -I../include $(PCRE_CPPFLAGS) $(INTL_CPPFLAGS) -I$(INCDIR) $(DEBUG) $(CANLOCK) @CPPFLAGS@
+CFLAGS		= @CFLAGS@
+
+LDFLAGS		= @LDFLAGS@
+YACC		= @YACC@
+
+BUILD_CC	= @BUILD_CC@
+BUILD_CFLAGS	= @BUILD_CFLAGS@
+BUILD_CPPFLAGS	= @BUILD_CPPFLAGS@ $(PCRE_CPPFLAGS)
+BUILD_LDFLAGS	= @BUILD_LDFLAGS@
+BUILD_LIBS	= @BUILD_LIBS@
+X		= $(BUILD_EXEEXT)
+
+CANLIB		= # -L../libcanlock -lcanlock
+INTL_LIBS	= @INTLLIBS@
+PCRE_LIBS	= @PCREDIR_LIBS@ @PCREDIR_MAKE@ -L../pcre -lpcre
+LIBS		= @LIBS@
+LINK_LIBS	= $(PCRE_LIBS) $(CANLIB) @LIBS@ @INN_NNTPLIB@ $(INTL_LIBS)
+
+# Where do you want the binary & manual page installed?
+DESTDIR	= @DESTDIR@
+INS_BINARY_DIR	= @bindir@
+INS_MANUAL_DIR	= @mandir@/man
+INS_SYSDEF_DIR	= @TIN_DEFAULTS_DIR@
+INS_MANUAL_EXT	= 1
+INS_OLD_SUFFIX	= old
+
+# Project
+PROJECT	= @PACKAGE@
+EXE	= @PACKAGE@$x
+VER	= @VERSION@
+
+# directory structure
+DOCDIR	= $(top_srcdir)/doc
+INCDIR	= $(top_srcdir)/include
+BINDIR	= .
+OBJDIR	= .
+SRCDIR	= $(srcdir)
+TOLDIR	= $(top_srcdir)/tools
+
+# standard commands
+CD	= cd
+CHMOD	= chmod
+CP	= cp
+ECHO	= echo
+LS	= ls
+MV	= mv
+RM	= rm
+SED	= sed
+CFLOW	= cflow
+CSCOPE	= cscope
+TAGS	= ctags
+ETAGS	= etags
+LINT	= @LINT@
+LN	= @LN_S@
+INSTALL	= @INSTALL@
+@SET_MAKE@
+
+HFILES	= \
+	../include/autoconf.h \
+	$(INCDIR)/bool.h \
+	$(INCDIR)/bugrep.h \
+	$(INCDIR)/extern.h \
+	$(INCDIR)/keymap.h \
+	$(INCDIR)/newsrc.h \
+	$(INCDIR)/nntplib.h \
+	$(INCDIR)/plp_snprintf.h \
+	$(INCDIR)/policy.h \
+	$(INCDIR)/proto.h \
+	$(INCDIR)/rfc2046.h \
+	$(INCDIR)/stpwatch.h \
+	$(INCDIR)/tin.h \
+	$(INCDIR)/tinrc.h \
+	$(INCDIR)/tnntp.h \
+	$(INCDIR)/version.h
+#	$(INCDIR)/config.h
+
+CFILES	= \
+	$(SRCDIR)/active.c \
+	$(SRCDIR)/art.c \
+	$(SRCDIR)/attrib.c \
+	$(SRCDIR)/auth.c \
+	$(SRCDIR)/charset.c \
+	$(SRCDIR)/color.c \
+	$(SRCDIR)/config.c \
+	$(SRCDIR)/cook.c \
+	$(SRCDIR)/curses.c \
+	$(SRCDIR)/debug.c \
+	$(SRCDIR)/envarg.c \
+	$(SRCDIR)/feed.c \
+	$(SRCDIR)/filter.c \
+	$(SRCDIR)/getline.c \
+	$(SRCDIR)/global.c \
+	$(SRCDIR)/group.c \
+	$(SRCDIR)/hashstr.c \
+	$(SRCDIR)/header.c \
+	$(SRCDIR)/help.c \
+	$(SRCDIR)/inews.c \
+	$(SRCDIR)/init.c \
+	$(SRCDIR)/keymap.c \
+	$(SRCDIR)/lang.c \
+	$(SRCDIR)/langinfo.c \
+	$(SRCDIR)/list.c \
+	$(SRCDIR)/lock.c \
+	$(SRCDIR)/mail.c \
+	$(SRCDIR)/main.c \
+	$(SRCDIR)/memory.c \
+	$(SRCDIR)/mimetypes.c \
+	$(SRCDIR)/misc.c \
+	$(SRCDIR)/my_tmpfile.c \
+	$(SRCDIR)/newsrc.c \
+	$(SRCDIR)/nntplib.c \
+	$(SRCDIR)/nrctbl.c \
+	$(SRCDIR)/options_menu.c \
+	$(SRCDIR)/page.c \
+	$(SRCDIR)/parsdate.y \
+	$(SRCDIR)/pgp.c \
+	$(SRCDIR)/plp_snprintf.c \
+	$(SRCDIR)/post.c \
+	$(SRCDIR)/prompt.c \
+	$(SRCDIR)/read.c \
+	$(SRCDIR)/refs.c \
+	$(SRCDIR)/regex.c \
+	$(SRCDIR)/rfc1524.c \
+	$(SRCDIR)/rfc2045.c \
+	$(SRCDIR)/rfc2046.c \
+	$(SRCDIR)/rfc2047.c \
+	$(SRCDIR)/save.c \
+	$(SRCDIR)/screen.c \
+	$(SRCDIR)/search.c \
+	$(SRCDIR)/select.c \
+	$(SRCDIR)/sigfile.c \
+	$(SRCDIR)/signal.c \
+	$(SRCDIR)/strftime.c \
+	$(SRCDIR)/string.c \
+	$(SRCDIR)/tags.c \
+	$(SRCDIR)/tcurses.c \
+	$(SRCDIR)/tmpfile.c \
+	$(SRCDIR)/thread.c \
+	$(SRCDIR)/version.c \
+	$(SRCDIR)/wildmat.c \
+	$(SRCDIR)/xface.c \
+	$(SRCDIR)/xref.c
+
+EXTRAOBJS = @EXTRAOBJS@
+
+EXTRA_INTLLIBS = @INTLDIR_MAKE@ @INTLLIBS@
+EXTRA_PCREHDRS = @PCREDIR_MAKE@ ../pcre/pcre.h
+EXTRA_PCRELIBS = @PCREDIR_MAKE@ ../pcre/$(PRELIB)pcre.a
+EXTRALIBS = $(EXTRA_INTLLIBS) $(EXTRA_PCRELIBS)
+
+OFILES	= @ALLOCA@ $(EXTRAOBJS) \
+	$(OBJDIR)/active$o \
+	$(OBJDIR)/art$o \
+	$(OBJDIR)/attrib$o \
+	$(OBJDIR)/auth$o \
+	$(OBJDIR)/charset$o \
+	$(OBJDIR)/color$o \
+	$(OBJDIR)/config$o \
+	$(OBJDIR)/cook$o \
+	$(OBJDIR)/curses$o \
+	$(OBJDIR)/debug$o \
+	$(OBJDIR)/envarg$o \
+	$(OBJDIR)/feed$o \
+	$(OBJDIR)/filter$o \
+	$(OBJDIR)/getline$o \
+	$(OBJDIR)/global$o \
+	$(OBJDIR)/group$o \
+	$(OBJDIR)/hashstr$o \
+	$(OBJDIR)/header$o \
+	$(OBJDIR)/help$o \
+	$(OBJDIR)/inews$o \
+	$(OBJDIR)/init$o \
+	$(OBJDIR)/joinpath$o \
+	$(OBJDIR)/keymap$o \
+	$(OBJDIR)/lang$o \
+	$(OBJDIR)/langinfo$o \
+	$(OBJDIR)/list$o \
+	$(OBJDIR)/lock$o \
+	$(OBJDIR)/mail$o \
+	$(OBJDIR)/main$o \
+	$(OBJDIR)/memory$o \
+	$(OBJDIR)/mimetypes$o \
+	$(OBJDIR)/misc$o \
+	$(OBJDIR)/my_tmpfile$o \
+	$(OBJDIR)/newsrc$o \
+	$(OBJDIR)/nntplib$o \
+	$(OBJDIR)/nrctbl$o \
+	$(OBJDIR)/options_menu$o \
+	$(OBJDIR)/page$o \
+	$(OBJDIR)/parsdate$o \
+	$(OBJDIR)/pgp$o \
+	$(OBJDIR)/plp_snprintf$o \
+	$(OBJDIR)/post$o \
+	$(OBJDIR)/prompt$o \
+	$(OBJDIR)/read$o \
+	$(OBJDIR)/refs$o \
+	$(OBJDIR)/regex$o \
+	$(OBJDIR)/rfc1524$o \
+	$(OBJDIR)/rfc2045$o \
+	$(OBJDIR)/rfc2046$o \
+	$(OBJDIR)/rfc2047$o \
+	$(OBJDIR)/save$o \
+	$(OBJDIR)/screen$o \
+	$(OBJDIR)/search$o \
+	$(OBJDIR)/select$o \
+	$(OBJDIR)/sigfile$o \
+	$(OBJDIR)/signal$o \
+	$(OBJDIR)/strftime$o \
+	$(OBJDIR)/string$o \
+	$(OBJDIR)/tags$o \
+	$(OBJDIR)/tcurses$o \
+	$(OBJDIR)/tmpfile$o \
+	$(OBJDIR)/thread$o \
+	$(OBJDIR)/version$o \
+	$(OBJDIR)/wildmat$o \
+	$(OBJDIR)/xface$o \
+	$(OBJDIR)/xref$o
+
+ALL_FILES = $(HFILES) $(CFILES) $(NNTP)
+
+LINTFLAGS = -a -c -h -n -x $(CPPFLAGS) -I/usr/local/include/ \
+	-DUSE_ISO2ASC=\"2\" \
+	-DHAVE_ISPELL \
+	-DHAVE_COLOR
+
+all : $(BINDIR)/$(EXE)
+
+.SUFFIXES : .i
+
+.c$o :
+@SHOW_CC@
+	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) -c $(srcdir)/$*.c
+
+.c.i :
+@SHOW_CC@
+	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $*.c >$@
+
+# explicit rules to allow running lint, and to accommodate older 'make' programs
+$(OBJDIR)/parsdate$o : $(SRCDIR)/parsdate.y
+	@$(ECHO) "expect 6 shift/reduce conflicts ..."
+	$(YACC) $(SRCDIR)/parsdate.y
+	$(MV) -f y.tab.c $(OBJDIR)/parsdate.c
+@SHOW_CC@
+	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) -c $(OBJDIR)/parsdate.c
+
+$(OBJDIR)/parsdate.c : $(SRCDIR)/parsdate.y
+	@$(ECHO) "expect 6 shift/reduce conflicts ..."
+	$(YACC) $(SRCDIR)/parsdate.y
+	$(MV) -f y.tab.c $(OBJDIR)/parsdate.c
+
+$(BINDIR)/$(EXE) : $(OFILES) $(EXTRALIBS)
+	@$(ECHO) "Linking $(EXE) v$(VER) ..."
+	$(CC) $(LDFLAGS) -o $(BINDIR)/$(EXE) $(OFILES) $(LINK_LIBS) $(DEBUG)
+	@$(LS) -l $(BINDIR)/$(EXE)
+
+help :
+	@$(ECHO) "This Makefile offers the following options:"
+	@$(ECHO) " "
+	@$(ECHO) "    make [all]                 [ Build the binary for your OS ]"
+	@$(ECHO) "    make [un]install           [ [Un]install the binaries & manual pages ]"
+	@$(ECHO) "      make [un]install_helpers [ [Un]install helper applications ]"
+	@$(ECHO) "      make [un]install_manpage [ [Un]install the manual pages ]"
+	@$(ECHO) "      make [un]install_nls     [ [Un]install native language files ]"
+	@$(ECHO) "    make [un]install_sysdefs   [ [Un]install the system-wide defaults file ]"
+	@$(ECHO) "    make clean                 [ Delete all object files ]"
+	@$(ECHO) "    make help                  [ Show this text ]"
+	@$(ECHO) " "
+
+$(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT) \
+$(DESTDIR)$(INS_MANUAL_DIR)5 \
+$(DESTDIR)$(INS_BINARY_DIR) \
+$(DESTDIR)$(INS_SYSDEF_DIR) :
+	$(top_srcdir)/mkdirs.sh $@
+
+install_manpage : $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT) $(DESTDIR)$(INS_MANUAL_DIR)5
+	@$(ECHO) "Installing $(PROJECT) manual pages to $(DESTDIR)$(INS_MANUAL_DIR) ..."
+	@$(INSTALL) -m 444 $(DOCDIR)/tin.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(PROJECT).$(INS_MANUAL_EXT)
+	@( $(CD) $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT) && $(RM) -f r$(PROJECT).$(INS_MANUAL_EXT) && $(LN) $(PROJECT).$(INS_MANUAL_EXT) r$(PROJECT).$(INS_MANUAL_EXT) )
+	@$(INSTALL) -m 444 $(DOCDIR)/tin.5 $(DESTDIR)$(INS_MANUAL_DIR)5/$(PROJECT).5
+	@-if test ! -f $(DESTDIR)$(INS_MANUAL_DIR)5/mbox.5 ; then $(INSTALL) -m 444 $(DOCDIR)/mbox.5 $(DESTDIR)$(INS_MANUAL_DIR)5/mbox.5 ; else $(ECHO) "  ... skipping $(DESTDIR)$(INS_MANUAL_DIR)5/mbox.5 - file already exists" ; fi
+	@-if test ! -f $(DESTDIR)$(INS_MANUAL_DIR)5/mmdf.5 ; then $(INSTALL) -m 444 $(DOCDIR)/mmdf.5 $(DESTDIR)$(INS_MANUAL_DIR)5/mmdf.5 ; else $(ECHO) "  ... skipping $(DESTDIR)$(INS_MANUAL_DIR)5/mmdf.5 - file already exists" ; fi
+
+uninstall_manpage :
+	@$(ECHO) "Uninstalling $(PROJECT) manual page in $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT) ..."
+	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/$(PROJECT).$(INS_MANUAL_EXT)
+	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/r$(PROJECT).$(INS_MANUAL_EXT)
+	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)5/$(PROJECT).5
+#	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)5/mbox.5
+#	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)5/mmdf.5
+
+install_sysdefs : $(DESTDIR)$(INS_SYSDEF_DIR)
+	@$(ECHO) "Installing system-wide defaults to $(DESTDIR)$(INS_SYSDEF_DIR) ..."
+	@-if test -f $(DESTDIR)$(INS_SYSDEF_DIR)/tin.defaults ; then $(ECHO) "  ... backing up existing tin.defaults file to tin.defaults.$(INS_OLD_SUFFIX)" ; $(MV) -f $(DESTDIR)$(INS_SYSDEF_DIR)/tin.defaults $(DESTDIR)$(INS_SYSDEF_DIR)/tin.defaults.$(INS_OLD_SUFFIX) ; fi
+	@-if test -f $(DESTDIR)$(INS_SYSDEF_DIR)/mime.types ; then $(ECHO) "  ... backing up existing mime.types file to mime.types.$(INS_OLD_SUFFIX)" ; $(MV) -f $(DESTDIR)$(INS_SYSDEF_DIR)/mime.types $(DESTDIR)$(INS_SYSDEF_DIR)/mime.types.$(INS_OLD_SUFFIX) ; fi
+	@$(INSTALL) -m 644 $(DOCDIR)/tin.defaults $(DESTDIR)$(INS_SYSDEF_DIR)/tin.defaults
+	@$(INSTALL) -m 644 $(DOCDIR)/mime.types $(DESTDIR)$(INS_SYSDEF_DIR)/mime.types
+
+uninstall_sysdefs :
+	@$(ECHO) "Uninstalling system-wide defaults in $(DESTDIR)$(INS_SYSDEF_DIR) ..."
+	@-$(RM) -f $(DESTDIR)$(INS_SYSDEF_DIR)/tin.defaults
+	@-$(RM) -f $(DESTDIR)$(INS_SYSDEF_DIR)/mime.types
+
+install_helpers : $(DESTDIR)$(INS_BINARY_DIR) $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)
+	@$(ECHO) "Installing helper applications ..."
+	@-if test ! -f $(DESTDIR)$(INS_BINARY_DIR)/url_handler.sh ; then $(INSTALL) -m 755 $(TOLDIR)/url_handler.sh $(DESTDIR)$(INS_BINARY_DIR)/url_handler.sh ; fi
+	@-if test ! -f $(DESTDIR)$(INS_BINARY_DIR)/metamutt ; then $(INSTALL) -m 755 $(TOLDIR)/metamutt $(DESTDIR)$(INS_BINARY_DIR)/metamutt ; fi
+	@$(INSTALL) -m 755 $(TOLDIR)/w2r.pl $(DESTDIR)$(INS_BINARY_DIR)/w2r.pl
+	@$(INSTALL) -m 755 $(TOLDIR)/opt-case.pl $(DESTDIR)$(INS_BINARY_DIR)/opt-case.pl
+	@$(INSTALL) -m 755 $(TOLDIR)/tinews.pl $(DESTDIR)$(INS_BINARY_DIR)/tinews.pl
+	@$(INSTALL) -m 444 $(DOCDIR)/w2r.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/w2r.pl.$(INS_MANUAL_EXT)
+	@$(INSTALL) -m 444 $(DOCDIR)/opt-case.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/opt-case.pl.$(INS_MANUAL_EXT)
+	@$(INSTALL) -m 444 $(DOCDIR)/tinews.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/tinews.pl.$(INS_MANUAL_EXT)
+
+uninstall_helpers :
+	@$(ECHO) "Removing helper applications ..."
+	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/w2r.pl
+	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/opt-case.pl
+	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/tinews.pl
+	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/w2r.pl.$(INS_MANUAL_EXT)
+	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/opt-case.pl.$(INS_MANUAL_EXT)
+	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/tinews.pl.$(INS_MANUAL_EXT)
+
+install : $(DESTDIR)$(INS_BINARY_DIR)
+	@$(MAKE) all
+	@$(ECHO) "Installing $(EXE) v$(VER) to $(DESTDIR)$(INS_BINARY_DIR) ..."
+	@$(INSTALL) -s $(BINDIR)/$(EXE) $(DESTDIR)$(INS_BINARY_DIR)/$(EXE)
+	@( $(CD) $(DESTDIR)$(INS_BINARY_DIR) && $(RM) -f r$(EXE) && $(LN) $(EXE) r$(EXE) )
+	@$(MAKE) install_helpers
+	@$(MAKE) install_manpage
+@MSG_DIR_MAKE@	@$(MAKE) install_nls
+
+uninstall :
+	@$(ECHO) "Uninstalling $(EXE) in $(DESTDIR)$(INS_BINARY_DIR) ..."
+	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/$(EXE)
+	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/r$(EXE)
+	@$(MAKE) uninstall_helpers
+	@$(MAKE) uninstall_manpage
+@MSG_DIR_MAKE@	@$(MAKE) uninstall_nls
+
+install_nls :
+@MSG_DIR_MAKE@	@-if test -r ../po/Makefile ; then $(ECHO) "Installing NLS-files" ; $(CD) ../po/ && $(MAKE) install ; fi
+
+uninstall_nls :
+@MSG_DIR_MAKE@	@-if test -r ../po/Makefile ; then $(ECHO) "Uninstalling NLS-files" ; $(CD) ../po/ && $(MAKE) uninstall ; fi
+
+tags :
+	@$(ECHO) "Generating tags (results in ./tags) ..."
+	@-$(RM) -f tags
+	@$(TAGS) $(HFILES) $(CFILES)
+
+TAGS :
+	@$(ECHO) "Generating emacs tags (results in ./TAGS) ..."
+	@-$(RM) -f TAGS
+	@$(ETAGS) $(HFILES) $(CFILES)
+
+lint :	$(CFILES) $(OBJDIR)/parsdate.c tincfg.h options_menu.h
+	@$(ECHO) "Linting source (results in ./LINT) ..."
+	@$(LINT) $(LINTFLAGS) -DNNTP_ABLE `$(LS) $(CFILES)|$(SED) -e 's/\.y/.c/'` $(LIBS) > LINT
+
+clean :
+	@$(ECHO) "Cleaning ..."
+	@-$(RM) -f $(OFILES)
+	@-$(RM) -f $(OBJDIR)/parsdate.c
+	@-$(RM) -f LINT *.ln *.out
+	@-$(RM) -f makecfg$X makecfg$o tincfg.h options_menu.h
+	@-$(RM) -f core *~
+	@-$(RM) -f $(EXE)
+@PCREDIR_MAKE@	@-if test -r ../pcre/Makefile ; then $(CD) ../pcre && $(ECHO) "Cleaning Philip Hazel's Perl-compatible regular expressions library ..." && $(MAKE) @cf_cv_makeflags@ clean ; fi
+@MSG_DIR_MAKE@	@-if test -r ../po/Makefile ; then $(CD) ../po && $(MAKE) @cf_cv_makeflags@ $@ ; fi
+@INTLDIR_MAKE@	@-if test -r ../intl/Makefile ; then $(CD) ../intl && $(MAKE) @cf_cv_makeflags@ $@ ; fi
+
+laundry \
+dirty :
+	@$(ECHO) "I'm sorry, this is not supported yet ..."
+
+distclean \
+clobber :: clean
+	@$(ECHO) "Clobbering ..."
+	@-$(RM) -f $(OFILES) $(BINDIR)/$(EXE) tags TAGS LINT cflow.$(PROJECT)
+
+distclean ::
+@INTLDIR_MAKE@	@-$(CD) ../intl && $(MAKE) @cf_cv_makeflags@ $@
+@MSG_DIR_MAKE@	@-$(CD) ../po && $(MAKE) @cf_cv_makeflags@ clean
+
+cflow :
+	@$(ECHO) "Creating cflow for $(PROJECT) ..."
+@PCREDIR_MAKE@	@$(CFLOW) -I$(INCDIR) -I$(SRCDIR) -I../pcre $(CFILES) > cflow.$(PROJECT)
+
+cscope :
+	@$(ECHO) "Creating cscope database $(PROJECT) ..."
+	@$(CSCOPE) $(ALL_FILES)
+
+canlock :
+	@$(ECHO) "Building libcanlock ..."
+	@$(CD) ../libcanlock && ./Build
+
+@PCREDIR_MAKE@../pcre/pcre.h ../pcre/$(PRELIB)pcre.a :
+@PCREDIR_MAKE@	@$(ECHO) "Building Philip Hazel's Perl regular expressions library ..."
+@PCREDIR_MAKE@	@$(CD) ../pcre && $(MAKE) @cf_cv_makeflags@ $(PRELIB)pcre.a
+
+@INTLDIR_MAKE@@INTLLIBS@ :
+@INTLDIR_MAKE@	@$(ECHO) "Building GNU gettext library ..."
+@INTLDIR_MAKE@	@$(CD) ../intl && $(MAKE) @cf_cv_makeflags@
+
+options_menu.h :		$(SRCDIR)/tincfg.tbl \
+				makecfg$X
+	./makecfg $(SRCDIR)/tincfg.tbl tincfg.h
+
+tincfg.h :			$(SRCDIR)/tincfg.tbl \
+				makecfg$X
+	./makecfg $(SRCDIR)/tincfg.tbl $@
+
+makecfg$X :			$(SRCDIR)/makecfg.c \
+				Makefile \
+				$(INCDIR)/tin.h \
+				../include/autoconf.h
+@SHOW_CC@
+	@ECHO_CC@$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -o $@ makecfg.c #$(BUILD_LIBS)
+
+TIN_DEP	= \
+	Makefile \
+	options_menu.h \
+	$(INCDIR)/tin.h \
+	$(INCDIR)/tinrc.h \
+	../include/autoconf.h \
+	$(INCDIR)/bool.h \
+	$(INCDIR)/extern.h \
+	$(INCDIR)/nntplib.h \
+	$(INCDIR)/tcurses.h \
+	$(INCDIR)/proto.h $(EXTRA_PCREHDRS) $(EXTRA_INTLLIBS)
+
+$(OBJDIR)/active$o :		$(SRCDIR)/active.c $(TIN_DEP)
+$(OBJDIR)/art$o :		$(SRCDIR)/art.c $(TIN_DEP) \
+				$(INCDIR)/stpwatch.h
+$(OBJDIR)/attrib$o :		$(SRCDIR)/attrib.c $(TIN_DEP) \
+				$(INCDIR)/version.h
+$(OBJDIR)/auth$o :		$(SRCDIR)/auth.c $(TIN_DEP)
+$(OBJDIR)/charset$o :		$(SRCDIR)/charset.c $(TIN_DEP)
+$(OBJDIR)/color$o :		$(SRCDIR)/color.c $(TIN_DEP)
+$(OBJDIR)/config$o :		$(SRCDIR)/config.c $(TIN_DEP) \
+				$(INCDIR)/tnntp.h \
+				$(INCDIR)/version.h
+$(OBJDIR)/cook$o :		$(SRCDIR)/cook.c $(TIN_DEP) \
+				$(INCDIR)/rfc2046.h
+$(OBJDIR)/curses$o :		$(SRCDIR)/curses.c $(TIN_DEP) \
+				$(INCDIR)/tnntp.h
+$(OBJDIR)/debug$o :		$(SRCDIR)/debug.c $(TIN_DEP) \
+				$(INCDIR)/newsrc.h
+$(OBJDIR)/envarg$o :		$(SRCDIR)/envarg.c $(TIN_DEP)
+$(OBJDIR)/feed$o :		$(SRCDIR)/feed.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h \
+				$(INCDIR)/rfc2046.h
+$(OBJDIR)/filter$o :		$(SRCDIR)/filter.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h \
+				$(INCDIR)/version.h
+$(OBJDIR)/getline$o :		$(SRCDIR)/getline.c $(TIN_DEP)
+$(OBJDIR)/global$o :		$(SRCDIR)/global.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h
+$(OBJDIR)/group$o :		$(SRCDIR)/group.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h
+$(OBJDIR)/hashstr$o :		$(SRCDIR)/hashstr.c $(TIN_DEP)
+$(OBJDIR)/header$o :		$(SRCDIR)/header.c $(TIN_DEP) \
+				$(INCDIR)/tnntp.h
+$(OBJDIR)/help$o :		$(SRCDIR)/help.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h
+$(OBJDIR)/inews$o :		$(SRCDIR)/inews.c $(TIN_DEP) \
+				$(INCDIR)/tnntp.h
+$(OBJDIR)/init$o :		$(SRCDIR)/init.c $(TIN_DEP) \
+				$(INCDIR)/bugrep.h \
+				$(INCDIR)/keymap.h \
+				$(INCDIR)/tnntp.h \
+				$(INCDIR)/version.h
+$(OBJDIR)/joinpath$o :		$(SRCDIR)/joinpath.c $(TIN_DEP)
+$(OBJDIR)/keymap$o :		$(SRCDIR)/keymap.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h \
+				$(INCDIR)/version.h
+$(OBJDIR)/lang$o :		$(SRCDIR)/lang.c $(TIN_DEP)
+$(OBJDIR)/langinfo$o :		$(SRCDIR)/langinfo.c $(TIN_DEP)
+$(OBJDIR)/list$o :		$(SRCDIR)/list.c $(TIN_DEP)
+$(OBJDIR)/lock$o :		$(SRCDIR)/lock.c $(TIN_DEP)
+$(OBJDIR)/mail$o :		$(SRCDIR)/mail.c $(TIN_DEP)
+$(OBJDIR)/main$o :		$(SRCDIR)/main.c $(TIN_DEP) \
+				$(INCDIR)/version.h
+$(OBJDIR)/memory$o :		$(SRCDIR)/memory.c $(TIN_DEP) \
+				$(INCDIR)/rfc2046.h
+$(OBJDIR)/mimetypes$o :		$(SRCDIR)/mimetypes.c $(TIN_DEP)
+$(OBJDIR)/misc$o :		$(SRCDIR)/misc.c $(TIN_DEP) \
+				$(INCDIR)/policy.h \
+				$(INCDIR)/rfc2046.h \
+				$(INCDIR)/version.h
+$(OBJDIR)/my_tmpfile$o :	$(SRCDIR)/my_tmpfile.c $(TIN_DEP)
+$(OBJDIR)/newsrc$o :		$(SRCDIR)/newsrc.c $(TIN_DEP) \
+				$(INCDIR)/newsrc.h \
+				$(INCDIR)/tnntp.h
+$(OBJDIR)/nntplib$o :		$(SRCDIR)/nntplib.c $(TIN_DEP) \
+				$(INCDIR)/tnntp.h
+$(OBJDIR)/nrctbl$o :		$(SRCDIR)/nrctbl.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h \
+				$(INCDIR)/version.h
+$(OBJDIR)/options_menu$o :	$(SRCDIR)/options_menu.c $(TIN_DEP) \
+				tincfg.h \
+				$(INCDIR)/keymap.h
+$(OBJDIR)/page$o :		$(SRCDIR)/page.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h \
+				$(INCDIR)/rfc2046.h
+$(OBJDIR)/parsdate$o :		$(OBJDIR)/parsdate.y $(TIN_DEP)
+$(OBJDIR)/pgp$o :		$(SRCDIR)/pgp.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h
+$(OBJDIR)/plp_snprintf$o :	$(SRCDIR)/plp_snprintf.c $(TIN_DEP) \
+				$(INCDIR)/plp_snprintf.h
+$(OBJDIR)/post$o :		$(SRCDIR)/post.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h \
+				$(INCDIR)/rfc2046.h \
+				$(INCDIR)/version.h
+$(OBJDIR)/prompt$o :		$(SRCDIR)/prompt.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h
+$(OBJDIR)/read$o :		$(SRCDIR)/read.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h \
+				$(INCDIR)/tnntp.h
+$(OBJDIR)/refs$o :		$(SRCDIR)/refs.c $(TIN_DEP)
+$(OBJDIR)/regex$o :		$(SRCDIR)/regex.c $(TIN_DEP)
+$(OBJDIR)/rfc1524$o :		$(SRCDIR)/rfc1524.c $(TIN_DEP) \
+				$(INCDIR)/rfc2046.h
+$(OBJDIR)/rfc2045$o :		$(SRCDIR)/rfc2045.c $(TIN_DEP)
+$(OBJDIR)/rfc2046$o :		$(SRCDIR)/rfc2046.c $(TIN_DEP) \
+				$(INCDIR)/rfc2046.h
+$(OBJDIR)/rfc2047$o :		$(SRCDIR)/rfc2047.c $(TIN_DEP) \
+				$(INCDIR)/rfc2046.h
+$(OBJDIR)/save$o :		$(SRCDIR)/save.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h \
+				$(INCDIR)/rfc2046.h
+$(OBJDIR)/screen$o :		$(SRCDIR)/screen.c $(TIN_DEP)
+$(OBJDIR)/search$o :		$(SRCDIR)/search.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h
+$(OBJDIR)/select$o :		$(SRCDIR)/select.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h
+$(OBJDIR)/sigfile$o :		$(SRCDIR)/sigfile.c $(TIN_DEP)
+$(OBJDIR)/signal$o :		$(SRCDIR)/signal.c $(TIN_DEP) \
+				$(INCDIR)/version.h
+$(OBJDIR)/strftime$o :		$(SRCDIR)/strftime.c $(TIN_DEP)
+$(OBJDIR)/string$o :		$(SRCDIR)/string.c $(TIN_DEP)
+$(OBJDIR)/tags$o :		$(SRCDIR)/tags.c $(TIN_DEP)
+$(OBJDIR)/tcurses$o :		$(SRCDIR)/tcurses.c $(TIN_DEP)
+$(OBJDIR)/thread$o :		$(SRCDIR)/thread.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h
+$(OBJDIR)/tmpfile$o :		$(SRCDIR)/tmpfile.c $(TIN_DEP)
+$(OBJDIR)/version$o :		$(SRCDIR)/version.c $(TIN_DEP) \
+				$(INCDIR)/keymap.h \
+				$(INCDIR)/version.h
+$(OBJDIR)/wildmat$o :		$(SRCDIR)/wildmat.c $(TIN_DEP)
+$(OBJDIR)/xface$o :		$(SRCDIR)/xface.c $(TIN_DEP)
+$(OBJDIR)/xref$o :		$(SRCDIR)/xref.c $(TIN_DEP) \
+				$(INCDIR)/newsrc.h

@@ -1,0 +1,66 @@
+Basic API
+---------
+An article is opened with art_open() and closed with art_close()
+There is no side-effect, all I/O is done via a t_openartinfo.
+art_close() is not implied anywhere - you must call it when you need to.
+
+t_openartinfo
+-------------
+This is basically an 'open article context'. You can pass these around or do
+anything with them independently of the rest of the program.
+
+This structure contains open file pointers, one to the raw article,
+the other to the cooked article. There is no file related to these streams.
+If you close them, the data is lost.
+
+Each stream has a summary array of type t_lineinfo which is an array of
+line offsets and 'hint' flags associated with that line.
+The array for the raw stream is built on demand since most of the time it
+is not needed.
+The flags are used for speedy access to parts of the article as well as
+information about interesting things on that line.
+
+The cooked stream lineinfo is of size 'cooked_lines' which is found in
+the t_openartinfo structure. The size of the raw stream is stored in
+the article structure information attached to the header.
+
+The header contains all the useful information about the article & its
+structure.
+
+t_header
+--------
+This builds upon the header structure in tin-1.4
+The main structure consists of pointers to the regular RFC822 headers
+
+Every article has a pointer to an 'ext' structure (of type t_part) which holds
+extended header information.
+
+If there are attachments, then the ext structure is the head of a linked
+list of attachments.
+
+t_part
+------
+There is one of these per article 'part' or attachment. The article as a
+whole counts as 1 part so there will always be at least one of these structures
+linked to the header.
+Each t_part is pre-initialised to the RFC2045 defaults. (text/plain, 7bit etc..)
+Content-* headers if present will then supercede this information.
+The other fields are:
+params		A linked list of parameters associated with the Content-Type and
+			Content-Disposition headers
+offset		The byte offset of this attachment. The offset of header->ext is
+			the offset of the 822 body
+lines		The number of lines of raw text in this attachment. The number of
+			lines in header->ext is the total number of lines in the article
+			body
+uue			A linked list of uuencoded sections found in the current t_part
+			The uue filename is found in a parameter called 'name'
+
+
+
+The code tries to conform to the following RFC's
+
+1806 - Content-Disposition header
+2045 - MIME article extensions to RFC822
+2046 - Content-Type, multipart article structure
+2047 - MIME encodings (most of the code still refers to 1522)

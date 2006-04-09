@@ -1,0 +1,59 @@
+Adding new tinrc variables:
+
+. Think of a name for your variable, we'll call it NAME
+. Add it to tincfg.tbl, the ordering of this file decides the order of the
+  Option 'M'enu. Use an appropriate type.
+. Add an entry for it to the tin.1 manpage under the
+  "GLOBAL OPTIONS MENU AND TINRC CONFIGURABLE VARIABLES" section
+  and one to the tin.5 manpage under the "FILES" section (subsection tinrc)
+. Add NAME with the correct type to the master declaration in tinrc.h
+. Add an initial value for NAME in the correct position in t_config tinrc={};
+  in init.c
+. In config.c/options_menu.c, add the following:
+
+	In read_config_file(), a match_*() function to read NAME into the
+	internal tinrc table, which may not necessarily be the same type.
+
+	In write_config_file(), code to write out NAME in some ASCII
+	friendly format.
+
+	In change_config_file(), you may need an OPT_NAME: switch to do any
+	special post-processing needed when NAME is changed on the Option
+	'M'enu, particularly when using OPT_STRING
+
+. Add the following definition to extern.h
+	struct opttxt txt_NAME
+
+. Fill the above structure out in lang.c
+	help text  - shown as help when asked for in Option 'M'enu
+	             should be 80 characters max
+	opt text   - the text shown on the left side in the Option 'M'enu
+	             should be 36 characters max, including the tailing :
+	tinrc text - the comment text that precedes the variable when
+	             written to the tinrc file. This is optional.
+
+. If the variable is to be chosen from a list, then the second field of
+  tincfg.tbl is the name of an array which holds the textual descriptions
+  of the options. Add this array to lang.c and extern.h
+  The third field is the maximum value of the variable, ie the array size.
+
+Adding a new attribute:
+
+. Think of a name, we'll call it NAME
+. Document it on the tin.5 manpage under the
+  "${TIN_HOMEDIR-"$HOME"}/.tin/attributes" section
+. Add it to the t_attribute structure in tin.h
+. Define the default value for it in set_default_attributes()
+. Add it to the list of enumerated types at the beginning of attrib.c
+. In read_attributes_file() add a MATCH_<TYPE> entry to parse it in
+  under the appropriate first letter section.
+. In do_set_attrib(), add a corresponding SET_<TYPE> entry
+. In write_attributes_file(), add a minimal entry in the header to
+  describe the usage of the attribute
+  Add code to write out the attribute in the for_each_group() loop
+  [ Currently unused, but wise to keep it up to date ]
+. Add code to write out the attribute in dump_attributes()
+. Free up the attribute in memory.c:free_attributes_array() if needed
+
+Where possible try to keep the ordering of the attributes in the various
+functions and structures consistent
