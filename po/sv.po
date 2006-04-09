@@ -6,7 +6,7 @@
 msgid	""
 msgstr	"Project-Id-Version: tin 1.8.0\n"
 	"Report-Msgid-Bugs-To: \n"
-	"POT-Creation-Date: 2006-02-28 19:59+0100\n"
+	"POT-Creation-Date: 2006-04-09 17:19+0200\n"
 	"PO-Revision-Date: 2006-01-11 21:22+0100\n"
 	"Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 	"Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -283,7 +283,7 @@ msgstr	""
 msgid	"# remove tmp files and set Followup-To: poster\n"
 msgstr	""
 
-#: src/cook.c:499
+#: src/cook.c:507
 msgid	"(unknown)"
 msgstr	"(okänd)"
 
@@ -5892,12 +5892,12 @@ msgstr	""
 msgid	"# If ON, bi-directional text is rendered by tin\n"
 msgstr	""
 
-#: src/misc.c:3691
+#: src/misc.c:3693
 #, c-format
 msgid	"Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr	"Version: %s %s utgåva %s (\"%s\") %s %s\n"
 
-#: src/misc.c:3694
+#: src/misc.c:3696
 #, c-format
 msgid	"Version: %s %s release %s (\"%s\")\n"
 msgstr	"Version: %s %s utgåva %s (\"%s\")\n"
@@ -5912,11 +5912,11 @@ msgid	"\n"
 	"Server timed out, trying reconnect # %d\n"
 msgstr	""
 
-#: src/nntplib.c:834
+#: src/nntplib.c:834 src/nntplib.c:1621
 msgid	"Rejoin current group\n"
 msgstr	""
 
-#: src/nntplib.c:841
+#: src/nntplib.c:841 src/nntplib.c:1628
 #, c-format
 msgid	"Read (%s)\n"
 msgstr	"Läs (%s)\n"
@@ -5933,7 +5933,7 @@ msgstr	""
 #. *       - use some sort of pager?
 #. *       - -> lang.c
 #.
-#: src/nntplib.c:1750
+#: src/nntplib.c:1760
 msgid	"MOTD: "
 msgstr	""
 
