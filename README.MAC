@@ -1,0 +1,18 @@
+Compiling tin for MacOS X:
+
+First, you either need:
+- the DevTools if you are running Mac OS X 10.2 (Darwin 6.x) or below
+or
+- the Xcode Tools if you are running Mac OS X 10.3 (Darwin 7.x.x)
+
+configure needs at least the argument:
+--with-domain-name=<your domain>
+
+Compile tin, install it and run in a ISO-8859-1(5) terminal.
+
+Here are two other ways to build and install tin:
+- DarwinPorts   <http://darwinports.opendarwin.org/>
+- Fink          <http://fink.sf.net/>
+
+Instead of using the shell-script url_handler.sh you might want to use
+open(1) as URL-handler.

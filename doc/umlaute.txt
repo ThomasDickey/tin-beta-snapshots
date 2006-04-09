@@ -1,0 +1,102 @@
+Zeichensatz- und Umlautebehandlung in tin
+=========================================
+
+Umlaute beim Lesen
+------------------
+
+Nachdem ein Posting vom Newsserver geladen wurde, prüft tin, ob im Header
+ein Zeichensatz deklariert wurde. Falls nicht, wird der (gerade passende)
+Wert aus der attributes-Datei für undeclared_charset angenommen, wenn es den
+auch nicht gibt, nimmt tin US-ASCII an.
+
+Anschließend wird das Posting in den lokalen Zeichensatz konvertiert. Dieser
+Zeichensatz ist im Locale angegeben, den Du normalerweise mittels
+Umgebungsvariablen setzt (LANG, LC_*). Sollte das Posting Zeichen enthalten,
+die im Header angegebenen bzw. durch tin angenommenen Zeichensatz nicht
+vorkommen (z. B. 8-Bit-Zeichen bei US-ASCII- oder fehlender Deklaration),
+werden sie durch Fragezeichen ersetzt. Enthält das Posting Zeichen, die im
+lokalen Zeichensatz nicht vorkommen (z. B. Euro-Zeichen in einer
+ISO-8859-1-Umgebung), werden diese ebenfalls durch Fragezeichen ersetzt. Das
+so konvertierte Posting wird dann angezeigt.
+
+
+Umlaute beim Schreiben
+----------------------
+
+Solltest Du auf die Idee kommen, auf ein Posting antworten, wird das wie
+oben beschrieben konvertierte Posting an den Editor übergeben. Der sollte
+dann natürlich auch mit dem lokalen Zeichensatz umgehen können (joe hat zum
+Beispiel Probleme mit UTF-8, den sollte man dann nicht nehmen). Dort
+bearbeitest Du dann Deine Antwort ganz normal und beendest den Editor
+wieder, um zu tin zurückzugelangen.
+
+Wenn Du die Antwort verschickst, schaut tin nach, in welchem Zeichensatz Du
+das tun möchtest: Entweder hast Du das in der attributes-Datei für die
+jeweilige Gruppe (oder mehrere davon) oder global in der tinrc-Datei in
+mm_network_charset festgelegt. Letzteres geht auch über das Menü: der Punkt
+heißt MM_NETWORK_CHARSET. Tin konvertiert dann das Posting oder die Mail vom
+lokalen Zeichensatz in den angegebenen Zeichensatz um. Auch hier kann es
+dann passieren, daß Du lokal Zeichen verwendet hast, die im Zielzeichensatz
+nicht verfügbar sind. Wie schon beim Anzeigen werden dann solche Zeichen in
+Fragezeichen umgewandelt. In diesem Fall gibt tin außerdem eine Warnung aus,
+so daß Du vor dem Posten noch korrigierend eingreifen kannst.
+
+
+Wenn die Fragezeichen nerven
+----------------------------
+
+Als erstes solltest Du sicherstellen, daß tin auch weiß, welchen lokalen
+Zeichensatz Du zur Anzeige verwendest. Tin fragt dazu die "locales" ab. Gib
+in der Kommandozeile einfach mal den Befehl `locale` ein, alternativ `echo
+$LANG, $LC_CTYPE`. Herauskommen sollte etwas wie "de_DE.ISO-8859-1", also ein
+Sprachencode (hier de) gefolgt von einem Unterstrich, einem Ländercode (hier
+DE) gefolgt von einem Punkt und ein Zeichensatz (hier ISO-8859-1).
+
+Ist das nicht der Fall, solltest Du entweder LANG oder LC_CTYPE auf einen
+für Dich passenden Wert stellen. Diesen Wert kannst Du wie oben beschrieben
+zusammensetzen. In der französischsprachigen Schweiz und in einem Terminal,
+das UTF-8 darstellt, würdest Du in der bash und in der ksh zum Beispiel den
+Befehl `LC_CTYPE=fr_CH.UTF-8; export LC_CTYPE` verwenden; in der (t)csh
+lautet er `setenv LC_CTYPE fr_CH.UTF-8`.
+
+Im nächsten Schritt solltest Du in der attributes-Datei (im
+.tin-Verzeichnis) einen Zeichensatz einstellen, der angenommen wird, wenn im
+Posting keiner angegeben ist. Zum Beispiel so:
+
+scope=*
+undeclared_charset=Windows-1252
+
+Damit legst Du für alle Newsgruppen fest, daß als Zeichensatz Windows-1252
+angenommen werden soll. Da die meisten Leute unter Windows arbeiten dürften
+und für Nordamerika sowie Westeuropa unter Window dieser Zeichensatz
+voreingestellt ist, und dieser Zeichensatz im wesentlichen kompatibel zum
+weit verbreiteten ISO-8859-1-Satz ist, ist das eine recht gute Näherung. Für
+spezielle Newsgruppen solltest Du das ggf. in einem weiteren Eintrag ändern.
+So ist zum Beispiel u.a. in der Hierarchie pl.* der Zeichensatz ISO 8859-2
+üblich:
+
+scope=pl.*,cz.*,hin.*,sk.*,hr.*
+undeclared_charset=ISO-8859-2
+
+Insbesondere in Fernost dürften hier noch andere Einstellungen notwendig
+sein, beispielsweise so:
+
+scope=chinese.*,alt.chinese.text.big5,tw.*
+undeclared_charset=Big5
+
+scope=fj.*,jp.*,japan.*
+undeclared_charset=ISO-2022-JP
+
+Sollten auch diese Einstellungen zu keinem Erfolg führen, sind die Locales
+des Systems entweder nicht vorhanden oder kaputt. Zumindest in ersterem Fall
+wäre es angebracht, ein entsprechendes Paket zu installieren (oder
+installieren zu lassen). Libiconv von Bruno Haible wäre da eine sinnvolle
+Wahl.
+
+Wenn auch das nicht möglich ist, bleibt als allerletzte Möglichkeit nur, tin
+neu zu compilieren. Dazu vorher `make distclean` und configure zusätzlich zu
+den normalen Optionen mit --disable-locale aufrufen. In diesem Fall geht tin
+grundsätzlich davon aus, daß die Postings im lokalen Zeichensatz zu
+interpretieren sind. Hinweis: Das kann schon mal dazu führen, daß das
+Terminal nur noch "komische" Zeichen ausgibt oder die Zeichen nicht da
+ausgegeben werden, wo sie hinsollen.
