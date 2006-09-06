@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-06-30
+ *  Updated   : 2006-06-21
  *  Notes     :
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -70,6 +70,8 @@ static int from_comp_asc(t_comptype p1, t_comptype p2);
 static int from_comp_desc(t_comptype p1, t_comptype p2);
 static int global_get_multiparts(int aindex, MultiPartInfo **malloc_and_setme_info);
 static int global_look_for_multipart_info(int aindex, MultiPartInfo *setme, char start, char stop, int *offset);
+static int last_date_comp_base_asc(t_comptype p1, t_comptype p2);
+static int last_date_comp_base_desc(t_comptype p1, t_comptype p2);
 static int lines_comp_asc(t_comptype p1, t_comptype p2);
 static int lines_comp_desc(t_comptype p1, t_comptype p2);
 static int read_art_headers(struct t_group *group, int total, long top);
@@ -84,6 +86,7 @@ static long find_first_unread(struct t_group *group);
 static long setup_hard_base(struct t_group *group);
 static t_bool parse_headers(FILE *fp, struct t_article *h);
 static t_compfunc eval_sort_arts_func(unsigned int sort_art_type);
+static time_t get_last_posting_date(long n);
 static void sort_base(unsigned int sort_threads_type);
 static void thread_by_multipart(void);
 static void thread_by_percentage(struct t_group *group);
@@ -768,7 +771,8 @@ thread_by_percentage(
 		 * we count differences in the length of the strings against
 		 * them matching.
 		 */
-		slen = strlen(arts[base[root_num]].subject);
+		if (!(slen = strlen(arts[base[root_num]].subject)))
+			slen++;
 		unmatched += abs(slen - strlen(arts[i].subject));
 		if ((unmatched * 100) / slen > percentage) {
 			/*
@@ -1168,10 +1172,18 @@ static void
 sort_base(
 	unsigned int sort_threads_type)
 {
-	switch (sort_threads_type) { /* this switch doesn't look very usefull */
+	switch (sort_threads_type) {
 		case SORT_THREADS_BY_SCORE_DESCEND:
 		case SORT_THREADS_BY_SCORE_ASCEND:
 			qsort(base, (size_t) grpmenu.max, sizeof(long), score_comp_base);
+			break;
+
+		case SORT_THREADS_BY_LAST_POSTING_DATE_DESCEND:
+			qsort(base, (size_t) grpmenu.max, sizeof(long), last_date_comp_base_desc);
+			break;
+
+		case SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND:
+			qsort(base, (size_t) grpmenu.max, sizeof(long), last_date_comp_base_asc);
 			break;
 	}
 }
@@ -2163,6 +2175,61 @@ score_comp_base(
 	if (CURR_GROUP.attribute->sort_threads_type == SORT_THREADS_BY_SCORE_ASCEND)
 		return a > b ? 1 : -1;
 	return a < b ? 1 : -1;
+}
+
+
+/*
+ * Compare the date of the last posted article of two threads.
+ * Used for sorting base[].
+ */
+static int
+last_date_comp_base_desc(
+	t_comptype p1,
+	t_comptype p2)
+{
+	time_t s1_last = get_last_posting_date(*(const long *) p1);
+	time_t s2_last = get_last_posting_date(*(const long *) p2);
+
+	if (s2_last < s1_last)
+		return -1;
+
+	if (s2_last > s1_last)
+		return 1;
+
+	return 0;
+}
+
+
+static int
+last_date_comp_base_asc(
+	t_comptype p1,
+	t_comptype p2)
+{
+	time_t s1_last = get_last_posting_date(*(const long *) p1);
+	time_t s2_last = get_last_posting_date(*(const long *) p2);
+
+	if (s2_last > s1_last)
+		return -1;
+
+	if (s2_last < s1_last)
+		return 1;
+
+	return 0;
+}
+
+
+static time_t get_last_posting_date(
+	long n)
+{
+	long i;
+	time_t last = (time_t) 0;
+
+	for (i = n; i >= 0; i = arts[i].thread) {
+		if (arts[i].date > last)
+			last = arts[i].date;
+	}
+
+	return last;
 }
 
 

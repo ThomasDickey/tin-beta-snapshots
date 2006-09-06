@@ -1195,6 +1195,10 @@ PCREDIR_CPPFLAGS=
 case .$cf_pcre_home in #(vi
 .no) #(vi
 	# setup to compile the bundled PCRE:
+	. $srcdir/pcre/version.sh
+	AC_SUBST(PCRE_MAJOR)
+	AC_SUBST(PCRE_MINOR)
+	AC_SUBST(PCRE_DATE)
 	AC_SUBST(PCRE_DEFINES)
 	;;
 .yes) #(vi

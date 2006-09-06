@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2006-02-15
+ *  Updated   : 2006-09-02
  *  Notes     :
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -59,6 +59,7 @@ static FILE *open_save_filename(const char *path, t_bool mbox);
 static int match_content_type(t_part *part, char *type);
 static t_bool check_save_mime_type(t_part *part, const char *mime_types);
 static t_bool decode_save_one(t_part *part, FILE *rawfp, t_bool postproc);
+static t_bool expand_save_filename(char *outpath, const char *path);
 static void generate_filename(char *buf, int buflen, const char *suffix);
 static void post_process_uud(void);
 static void post_process_sh(void);
@@ -600,26 +601,31 @@ generate_filename(
  * Expand metacharacters and use defaults as needed.
  * Return TRUE if the path is a mailbox, or FALSE otherwise.
  */
-t_bool
+static t_bool
 expand_save_filename(
 	char *outpath,
 	const char *path)
 {
-	int ret = strfpath(path, outpath, PATH_LEN, curr_group);
+	char base_filename[PATH_LEN];
+	char buf[PATH_LEN];
+	char buf_path[PATH_LEN];
+	int ret;
 
 	/*
-	 * If no path exists or the above failed in some way, use sensible defaults
-	 * Put the generic path into 'outpath'
+	 * Make sure that externally supplied filename is a filename only and fits
+	 * into buffer
 	 */
-	if ((ret == 0) || !(strrchr(outpath, DIRSEP))) {
-		char buf[PATH_LEN];
+	STRCPY(buf_path, path); base_name(buf_path, base_filename);
 
-		if (!strfpath(curr_group->attribute->savedir, buf, sizeof(buf), curr_group))
-			joinpath(buf, homedir, DEFAULT_SAVEDIR);
-		joinpath(outpath, buf, path);
-		return FALSE;
-	} else
-		return (ret == 1);
+	/* Build default path to save to */
+	if (!(ret = strfpath(curr_group->attribute->savedir, buf, sizeof(buf), curr_group)))
+		joinpath(buf, homedir, DEFAULT_SAVEDIR);
+
+	/* Join path and filename */
+	/* TODO: make sure full path fits into outpath! */
+	joinpath(outpath, buf, base_filename);
+
+	return (ret == 1);	/* should now always evaluate to FALSE */
 }
 
 

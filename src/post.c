@@ -3043,11 +3043,18 @@ mail_bug_report(
 #	ifdef _AIX
 	fprintf(fp, "BOX1 : %s %s.%s", system_info.sysname, system_info.version, system_info.release);
 #	else
-#		ifdef SEIUX
+#		if defined(SEIUX) || defined(__riscos)
+/*
+ * #if defined(host_mips) && defined(MIPSEB)
+ * #if defined(SYSTYPE_SYSV) || defined(SYSTYPE_SVR4) ||  defined(SYSTYPE_BSD43) || defined(SYSTYPE_BSD)
+ * RISC/os
+ * #endif
+ * #endif
+ */
 	fprintf(fp, "BOX1 : %s %s", system_info.version, system_info.release);
 #		else
 	fprintf(fp, "BOX1 : %s %s (%s)", system_info.sysname, system_info.release, system_info.machine);
-#		endif /* SEIUX */
+#		endif /* SEIUX || __riscos */
 #	endif /* _AIX */
 #else
 	fprintf(fp, "BOX1 : Please enter the following information: Machine+OS");
@@ -3955,13 +3962,13 @@ checknadd_headers(
 		snprintf(suffix, sizeof(suffix), " (%s/%s.%s)",
 			system_info.sysname, system_info.version, system_info.release);
 #	else
-#		ifdef SEIUX
+#		if defined(SEIUX) || defined (__riscos)
 			snprintf(suffix, sizeof(suffix), " (%s/%s)",
 				system_info.version, system_info.release);
 #		else
 			snprintf(suffix, sizeof(suffix), " (%s/%s (%s))",
 				system_info.sysname, system_info.release, system_info.machine);
-#		endif /* SEIUX */
+#		endif /* SEIUX || __riscos */
 #	endif /* _AIX */
 		}
 #endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */

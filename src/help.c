@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-07-02
+ *  Updated   : 2006-06-28
  *  Notes     :
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>
@@ -326,7 +326,6 @@ static t_help_page thread_help_page[] = {
 static t_help_page page_help_page[] = {
 	{ txt_help_title_navi, NOT_ASSIGNED },
 	{ txt_help_global_page_down, GLOBAL_PAGE_DOWN },
-	{ txt_help_global_page_down, PAGE_PAGE_DOWN3 },
 	{ txt_help_global_page_up, GLOBAL_PAGE_UP },
 	{ txt_help_global_line_down, GLOBAL_LINE_DOWN },
 	{ txt_help_global_line_up, GLOBAL_LINE_UP },
@@ -469,7 +468,7 @@ make_help_page(
 				snprintf(buf, LEN, "%s", _(helppage->helptext));
 			buf[LEN - 1] = '\0';
 			expand_ctrl_chars(&buf, &length, 8);
-			fprintf(fp, "%s", buf);
+			fprintf(fp, "%s\n", buf);
 		} else {
 			for (i = 0; i < keys.used; i++) {
 				if (keys.list[i].function == helppage->func && keys.list[i].key) {
@@ -478,7 +477,7 @@ make_help_page(
 					buf[LEN - 1] = '\0';
 					expand_ctrl_chars(&buf, &length, 8);
 					if (strcmp(last, buf)) {
-						fprintf(fp, "%s", buf);
+						fprintf(fp, "%s\n", buf);
 						strncpy(last, buf, LEN);
 					}
 				}

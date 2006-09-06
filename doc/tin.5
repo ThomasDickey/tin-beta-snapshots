@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2005-09-14
+.\" Updated   : 2006-06-28
 .\" Notes     : needs a some work
 .\"
 .\" Macros
@@ -16,7 +16,7 @@
 .fi
 ..
 .\"
-.TH tin 5 "February 28th, 2006" "1.9.1" "A Usenet newsreader"
+.TH tin 5 "June 28th, 2006" "1.9.2" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -191,7 +191,7 @@ xv \-8 \-geometry +0 '%s';\\
 .br
 description=%{name} %t\-Image;\\
 .br
-test=test "$DISPLAY" \\
+test=test "$DISPLAY" != "";\\
 .br
 nametemplate=%s.IMAGE
 .in -.3i
@@ -199,17 +199,13 @@ nametemplate=%s.IMAGE
 message/rfc822;\\
 .br
 .in +.3i
-if test \-x /usr/bin/less \\;\\
-.in +.3i
-then less '%s' \\;\\
-else more '%s' \\; fi;\\
-.in -.3i
+${PAGER\-"more"} '%s';\\
 .br
-edit=${EDITOR\-vi} '%s';\\
+edit=${EDITOR\-"vi"} '%s';\\
 .br
-compose=${EDITOR\-vi} '%s';\\
+compose=${EDITOR\-"vi"} '%s';\\
 .br
-print=a2ps %s;\\
+print=a2ps '%s';\\
 .br
 needsterminal
 .in -.3i
@@ -303,7 +299,9 @@ news.software.readers: 1\-19567,19571\-19597
 .RE
 .PP
 
+.nf
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT+":$NNTPPORT"}/.oldnewsrc
+.fi
 .sp
 .RS
 backup of \fI${TIN_HOMEDIR\-"$HOME"}/.newsrc\fR
@@ -340,7 +338,9 @@ mailgroups index files
 .RE
 .PP
 
+.nf
 .IR ${TIN_INDEX_NEWSDIR\-"${TIN_HOMEDIR\-"$HOME"}/.tin"}/.news${NNTPSERVER+"\-$NNTPSERVER"}/
+.fi
 .sp
 .RS
 newsgroups index files
@@ -716,9 +716,11 @@ subj=\\b(cd|[rk]?)?tin(d|pre)?[\-.0\-9]*\\b
 
 .\"
 .\" TODO: mention THREAD_EDIT_FILTER and SELECT_EDIT_FILTER
+.nf
 .IR /etc/tin/keymap${${LC_ALL\-"${LC_CTYPE\-"${LC_MESSAGES\-"$LANG"}"}"}:+".${LC_ALL\-"${LC_CTYPE\-"${LC_MESSAGES\-"$LANG"}"}"}"}
 .br
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/keymap${${LC_ALL\-"${LC_CTYPE\-"${LC_MESSAGES\-"$LANG"}"}"}:+".${LC_ALL\-"${LC_CTYPE\-"${LC_MESSAGES\-"$LANG"}"}"}"}
+.fi
 .\" sorry that one got a bit complex ,-)
 .sp
 .RS
@@ -728,7 +730,6 @@ their defaults. If a keynames is bound to NULL it is unassigned.
 .sp
 .nf
 .ta \w'GroupSelThdIfUnreadSelected    'u +\w'SPACE'u +\w'SPACE'u
-\fBPageDown3\fP	SPACE
 \fBShellEscape\fP	!
 \fBSetRange\fP	#
 \fBLastPage\fP	$
@@ -768,7 +769,7 @@ their defaults. If a keynames is bound to NULL it is unassigned.
 \fBScrollUp\fP	<
 \fBScrollDown\fP	>
 \fBPageUp\fP	b	^B	^U
-\fBPageDown\fP	^D	^F
+\fBPageDown\fP	^D	^F	SPACE
 \fBRedrawScr\fP	^L
 \fBPostponed\fP	^O
 \fBMenuFilterSelect\fP	^A
@@ -995,7 +996,9 @@ format.
 .RE
 .PP
 
+.nf
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT+":$NNTPPORT"}/newsgroups
+.fi
 .sp
 .RS
 This file a copy of the servers newsgroups file which provides short
@@ -1013,7 +1016,9 @@ is a short single-line description of the group
 .PP
 
 
+.nf
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT+":$NNTPPORT"}/serverrc
+.fi
 .sp
 .RS
 File to store $\fBNNTPSERVER\fP and $\fBNNTPPORT\fP related
@@ -1409,6 +1414,14 @@ are fetched from the server. If \fBgetart_limit\fP is < 0
 will start fetching articles from your first unread minus absolute value of
 \fBgetart_limit\fP. Default is 0, which means no limit.
 .TP
+.B goto_next_unread
+Which keys \fBtin\fP should accept to jump to the next unread article.
+Possible is any combination of \fBPageDown\fP and \fBPageNextUnread\fP.
+When \fBPageDown\fP is set \fBtin\fP jumps to the next article at the
+end of the current one. When \fBPageNextUnread\fP is set \fBtin\fP jumps
+immediately to the next article when \fBPageNextUnread\fP ('\fB<TAB>\fP')
+is pressed. Default is PageNextUnread.
+.TP
 .B group_catchup_on_exit
 If ON catchup group when leaving with the left arrow key. Default is ON.
 .TP
@@ -1628,10 +1641,6 @@ Some normalization modes are only available if they are supported by the
 library
 .BR tin (1)
 uses to do the normalization. Default is NFKC.
-.TP
-.B pgdn_goto_next
-If ON the \fBPageDown\fP keys will go to the next unread article when
-pressed at the end of a message. Default is ON.
 .TP
 .B pos_first_unread
 If ON put cursor at first unread article in group otherwise at last article.
@@ -1886,13 +1895,11 @@ the default. The following sort types are allowed:
 (default).
 .IP 2
 \fBScore (ascending)\fP, sort threads by filtering score ascending.
+.IP 3
+\fBLast posting date (descending)\fP, sort threads by date of last posting descending.
+.IP 4
+\fBLast posting date (ascending)\fP, sort threads by  date of last posting ascending.
 .RE
-.TP
-.B space_goto_next_unread
-SPACE normally acts as a \fBPageDown\fP key and has no effect at the end of
-an article. If this option is turned ON the SPACE command will go to the
-next unread article when the end of the article is reached (\fBrn\fP
-(1)-style pager).
 .TP
 .B spamtrap_warning_addresses
 Set this option to a list of comma-separated strings to be warned if you are
@@ -1933,11 +1940,6 @@ matching words are shown in \fBcol_markstroke\fP or \fBmono_markstroke\fP.
 If \fBstrokes_regex\fP is blank, then
 .BR tin (1)
 uses a built-in default.
-.TP
-.B tab_goto_next_unread
-If enabled pressing \fBPageNextUnread\fP ('\fB<TAB>\fP') at the article viewer
-level will go to the next unread article immediately instead of first paging
-through the current one. Default is ON.
 .TP
 .B tex2iso_conv
 Decode German style TeX umlaut codes to ISO
@@ -2027,6 +2029,14 @@ must be running in an
 and
 .BR slrnface (1)
 must be in your $\fBPATH\fP. Default is OFF.
+.TP
+.B verbatim_begin_regex
+A regular expression that tin will use to find the begin of a verbatim block.
+Default is #v+
+.TP
+.B verbatim_end_regex
+A regular expression that tin will use to find the end of a verbatim block.
+Default is #v-
 .TP
 .B wildcard
 Allows you to select how

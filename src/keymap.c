@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2005-10-19
+ *  Updated   : 2006-06-28
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2006 Dirk Nimmich <nimmich@muenster.de>
@@ -946,16 +946,6 @@ process_mapping(
 
 				return TRUE;
 			}
-			if (strcmp(keyname, "PageDown3") == 0) {
-				process_keys(GLOBAL_PAGE_DOWN, keys, &group_keys);
-				process_keys(GLOBAL_PAGE_DOWN, keys, &info_keys);
-				process_keys(GLOBAL_PAGE_DOWN, keys, &option_menu_keys);
-				process_keys(GLOBAL_PAGE_DOWN, keys, &select_keys);
-				process_keys(GLOBAL_PAGE_DOWN, keys, &thread_keys);
-				process_keys(PAGE_PAGE_DOWN3, keys, &page_keys);
-
-				return TRUE;
-			}
 			if (strcmp(keyname, "PageEditArticle") == 0) {
 				process_keys(PAGE_EDIT_ARTICLE, keys, &page_keys);
 
@@ -1725,7 +1715,7 @@ upgrade_keymap_file(
 	char *mark_thread_unread[3] = { NULL, NULL, NULL };
 	char *menu_filter_kill[3] = { NULL, NULL, NULL };
 	char *menu_filter_select[3] = { NULL, NULL, NULL };
-	char *pagedown[2] = { NULL, NULL };
+	char *pagedown[3] = { NULL, NULL, NULL };
 	char *pagenextthd[2] = { NULL, NULL };
 	char *pageup[3] = { NULL, NULL, NULL };
 	char *postponed[2] = { NULL, NULL };
@@ -1787,15 +1777,18 @@ upgrade_keymap_file(
 				FreeAndNull(groupreadbasenote[0]);
 				FreeAndNull(groupreadbasenote[1]);
 			}
-			if (pagedown[0] || pagedown[1]) {
+			if (pagedown[0] || pagedown[1] || pagedown[2]) {
 				fprintf(newfp, "PageDown\t\t");
 				if (pagedown[0])
 					fprintf(newfp, "\t%s", pagedown[0]);
 				if (pagedown[1])
 					fprintf(newfp, "\t%s", pagedown[1]);
+				if (pagedown[2])
+					fprintf(newfp, "\t%s", pagedown[2]);
 				fprintf(newfp, "\n");
 				FreeAndNull(pagedown[0]);
 				FreeAndNull(pagedown[1]);
+				FreeAndNull(pagedown[2]);
 			}
 			if (pagenextthd[0] || pagenextthd[1]) {
 				fprintf(newfp, "PageNextThd\t\t");
@@ -2014,6 +2007,8 @@ upgrade_keymap_file(
 					pagedown[0] = my_strdup(keydef);
 				else if (strcmp(keyname, "PageDown2") == 0)
 					pagedown[1] = my_strdup(keydef);
+				else if (strcmp(keyname, "PageDown3") == 0)
+					pagedown[2] = my_strdup(keydef);
 				else if (strcmp(keyname, "PageEditFilter") == 0)
 					edit_filter[1] = my_strdup(keydef);
 				else if (strcmp(keyname, "PageNextThd") == 0)
@@ -2324,7 +2319,6 @@ setup_default_keys(
 {
 	/* select level */
 	add_global_keys(&select_keys);
-	add_default_key(&select_keys, " ", GLOBAL_PAGE_DOWN);
 	add_default_key(&select_keys, "\n\r", SELECT_ENTER_GROUP);
 	add_default_key(&select_keys, "", SELECT_RESET_NEWSRC);
 	add_default_key(&select_keys, "c", CATCHUP);
@@ -2351,7 +2345,6 @@ setup_default_keys(
 
 	/* group level */
 	add_global_keys(&group_keys);
-	add_default_key(&group_keys, " ", GLOBAL_PAGE_DOWN);
 	add_default_key(&group_keys, "", GLOBAL_MENU_FILTER_SELECT);
 	add_default_key(&group_keys, "\n\r", GROUP_READ_BASENOTE);
 	add_default_key(&group_keys, "", GLOBAL_MENU_FILTER_KILL);
@@ -2403,7 +2396,6 @@ setup_default_keys(
 
 	/* thread keys */
 	add_global_keys(&thread_keys);
-	add_default_key(&thread_keys, " ", GLOBAL_PAGE_DOWN);
 	add_default_key(&thread_keys, "", GLOBAL_MENU_FILTER_SELECT);
 	add_default_key(&thread_keys, "", GLOBAL_MENU_FILTER_KILL);
 	add_default_key(&thread_keys, "\n\r", THREAD_READ_ARTICLE);
@@ -2438,7 +2430,6 @@ setup_default_keys(
 
 	/* page level */
 	add_global_keys(&page_keys);
-	add_default_key(&page_keys, "", GLOBAL_PAGE_DOWN);
 	add_default_key(&page_keys, "", GLOBAL_MENU_FILTER_SELECT);
 	add_default_key(&page_keys, "", PAGE_REPLY_QUOTE_HEADERS);
 #ifdef HAVE_PGP_GPG
@@ -2485,7 +2476,6 @@ setup_default_keys(
 	add_default_key(&page_keys, "V", PAGE_VIEW_ATTACHMENTS);
 	add_default_key(&page_keys, "Z", MARK_THREAD_UNREAD);
 	add_default_key(&page_keys, "\t", PAGE_NEXT_UNREAD);
-	add_default_key(&page_keys, " ", PAGE_PAGE_DOWN3);
 	add_default_key(&page_keys, "-", GLOBAL_LAST_VIEWED);
 	add_default_key(&page_keys, "|", GLOBAL_PIPE);
 	add_default_key(&page_keys, "<", PAGE_TOP_THREAD);
@@ -2688,6 +2678,7 @@ add_global_keys(
 	add_default_key(keys, "8", DIGIT_8);
 	add_default_key(keys, "9", DIGIT_9);
 	add_default_key(keys, "b", GLOBAL_PAGE_UP);
+	add_default_key(keys, " ", GLOBAL_PAGE_DOWN);
 	add_default_key(keys, "", GLOBAL_REDRAW_SCREEN);
 	add_default_key(keys, "j", GLOBAL_LINE_DOWN);
 	add_default_key(keys, "k", GLOBAL_LINE_UP);

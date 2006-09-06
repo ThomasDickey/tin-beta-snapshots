@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2005-10-19
+ *  Updated   : 2006-06-28
  *  Notes     :
  *
  * Copyright (c) 1999-2006 Jason Faultless <jason@altarstone.com>
@@ -263,7 +263,6 @@ enum defined_functions {
 	PAGE_NEXT_THREAD,
 	PAGE_NEXT_UNREAD,
 	PAGE_NEXT_UNREAD_ARTICLE,
-	PAGE_PAGE_DOWN3,	/* special handling at page.c */
 #ifdef HAVE_PGP_GPG
 	PAGE_PGP_CHECK_ARTICLE,
 #endif /* HAVE_PGP_GPG */

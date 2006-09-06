@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2006-03-11
+ *  Updated   : 2006-05-30
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2006 Jason Faultless <jason@altarstone.com>
@@ -59,6 +59,9 @@ static t_bool header_wanted(const char *line);
 static t_part *new_uue(t_part **part, char *name);
 static void process_text_body_part(t_bool wrap_lines, FILE *in, t_part *part, int hide_uue, int tabs);
 static void put_cooked(size_t buf_len, t_bool wrap_lines, int flags, const char *fmt, ...);
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	static t_bool wexpand_ctrl_chars(wchar_t **wline, size_t *length, size_t lcook_width);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #ifdef DEBUG_ART
 	static void dump_cooked(void);
 #endif /* DEBUG_ART */
@@ -82,58 +85,107 @@ expand_ctrl_chars(
 	int *length,
 	size_t lcook_width)
 {
+	t_bool ctrl_L = FALSE;
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	wchar_t *wline = char2wchar_t(*line);
+	size_t wlen;
+
+	/*
+	 * remove the assert() before release
+	 * it should help us find problems with wide-char strings
+	 * in the development branch
+	 */
+	assert (wline != NULL);
+	wlen = wcslen(wline);
+	ctrl_L = wexpand_ctrl_chars(&wline, &wlen, lcook_width);
+	free(*line);
+	*line = wchar_t2char(wline);
+	free(wline);
+	assert (line != NULL);
+	*length = strlen(*line);
+#else
 	int curr_len = LEN;
 	int i = 0, j;
 	char *buf = my_malloc(curr_len);
 	char *c;
-	t_bool ctrl_L = FALSE, resize = FALSE;
 
 	c = *line;
 	while (*c) {
-		if (resize) {
+		if (i > curr_len - 3) {
 			curr_len <<= 1;
 			buf = my_realloc(buf, curr_len);
-			resize = FALSE;
 		}
-		if (*c == '\t') { /* expand tabs */
+		if (*c == '\t') { 		/* expand tabs */
 /*			j = ((i + lcook_width) / lcook_width) * lcook_width; */
 			j = i + lcook_width - (i % lcook_width);
-			if (j > curr_len - 2) {
-				resize = TRUE;
-				continue;
-			}
 			for (; i < j; i++)
 				buf[i] = ' ';
+		} else if (((*c) & 0xFF) < ' ' && *c != '\n' && (!IS_LOCAL_CHARSET("Big5") || *c != 27)) {	/* literal ctrl chars */
+			buf[i++] = '^';
+			buf[i++] = ((*c) & 0xFF) + '@';
+			if (*c == '\f')		/* ^L detected */
+				ctrl_L = TRUE;
 		} else {
-			if (((*c) & 0xFF) < ' ' && *c != '\n' && (!IS_LOCAL_CHARSET("Big5") || *c != 27)) {	/* literal ctrl chars */
-				if (i > curr_len - 4) {
-					resize = TRUE;
-					continue;
-				}
-				buf[i++] = '^';
-				buf[i++] = ((*c) & 0xFF) + '@';
-				if (*c == '\f')	/* ^L detected */
-					ctrl_L = TRUE;
-			} else {
-				if (i > curr_len - 3) {
-					resize = TRUE;
-					continue;
-				}
+			if (!my_isprint(*c) && *c != '\n')
+				buf[i++] = '?';
+			else
 				buf[i++] = *c;
-			}
 		}
 		c++;
 	}
-	/* put_cooked() requires a newline at the end of the line */
-	if (buf[i - 1] != '\n')
-		buf[i++] = '\n';	/* Force last char of string to be \n */
 	buf[i] = '\0';
 	*length = i + 1;
 	*line = my_realloc(*line, *length);
 	strcpy(*line, buf);
 	free(buf);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	return ctrl_L;
 }
+
+
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+static t_bool
+wexpand_ctrl_chars(
+	wchar_t **wline,
+	size_t *length,
+	size_t lcook_width)
+{
+	size_t cur_len = LEN, i = 0, j;
+	wchar_t *wbuf = my_malloc(cur_len * sizeof(wchar_t));
+	wchar_t *wc;
+	t_bool ctrl_L = FALSE;
+
+	wc = *wline;
+	while (*wc) {
+		if (i > cur_len - 3) {
+			cur_len <<= 1;
+			wbuf = my_realloc(wbuf, cur_len * sizeof(wchar_t));
+		}
+		if (*wc == '\t') {		/* expand_tabs */
+			j = i + lcook_width - (i % lcook_width);
+			for (; i < j; i++)
+				wbuf[i] = ' ';
+		} else if (*wc  < ' ' && *wc != '\n' && (!IS_LOCAL_CHARSET("Big5") || *wc != 27)) {	/* literal ctrl chars */
+			wbuf[i++] = '^';
+			wbuf[i++] = *wc + '@';
+			if (*wc == '\f')	/* ^L detected */
+				ctrl_L = TRUE;
+		} else {
+			if (!iswprint((wint_t) *wc) && *wc != '\n')
+				wbuf[i++] = '?';
+			else
+				wbuf[i++] = *wc;
+		}
+		wc++;
+	}
+	wbuf[i] = '\0';
+	*length = i + 1;
+	*wline = my_realloc(*wline, *length * sizeof(wchar_t));
+	wcscpy(*wline, wbuf);
+	free(wbuf);
+	return ctrl_L;
+}
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 
 /*
@@ -552,13 +604,6 @@ process_text_body_part(
 		if (MATCH_REGEX(news_regex, line, len))
 			flags |= C_NEWS;
 
-		/*
-		 * Basically, c_b2p() does: if (!(my_isprint(*c) || *c==8 || *c==9 || *c==12))
-		 * It is only used here
-		 * How about if !isprint() && !isctrl() - expand_ctrl_chars is done at display time.
-		 * TODO: integrate into expand_ctrl_chars
-		 */
-		convert_body2printable(line);
 		if (expand_ctrl_chars(&line, &max_line_len, tabs))
 			flags |= C_CTRLL;				/* Line contains form-feed */
 		put_cooked(max_line_len, wrap_lines && (!IS_LOCAL_CHARSET("Big5")), flags, "%s", line);
@@ -692,7 +737,7 @@ cook_article(
 
 		if (header_wanted(line)) {	/* Put cooked data */
 			int i = LEN;
-			char *l = my_strdup(convert_body2printable(rfc1522_decode(line)));	/* FIXME: don't decode addr-part of From:/Cc:/ etc.pp. */
+			char *l = my_strdup(rfc1522_decode(line));	/* FIXME: don't decode addr-part of From:/Cc:/ etc.pp. */
 
 			header_put = TRUE;
 			expand_ctrl_chars(&l, &i, tabs);

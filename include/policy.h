@@ -3,7 +3,7 @@
  *  Module    : policy.h
  *  Author    : Ralf Doeblitz <doeblitz@gmx.de>
  *  Created   : 1999-01-12
- *  Updated   : 2006-04-05
+ *  Updated   : 2006-08-16
  *  Notes     : #defines and static data for policy configuration
  *
  * Copyright (c) 1999-2006 Ralf Doeblitz <doeblitz@gmx.de>
@@ -52,7 +52,7 @@
  * .aq  Antarctica                     .ar  Argentina
  * .as  American Samoa                 .at  Austria
  * .au  Australia                      .aw  Aruba
- * .az  Azerbaijan
+ * .ax  Aland                          .az  Azerbaijan
  *
  * .ba  Bosnia and Herzegowina         .bb  Barbados
  * .bd  Bangladesh                     .be  Belgium
@@ -221,7 +221,6 @@
  * .um  United States Minor Outlying Islands
  *
  * requested new TLDs:
- * .ax  Aaland-Islands (Finnish; planned for 2006)
  * .cs  Serbia and Montenegro
  * .ct  Catalonia
  *
@@ -234,7 +233,7 @@
 
 static char gnksa_country_codes[26*26] = {
 /*      A B C D E  F G H I J  K L M N O  P Q R S T  U V W X Y Z */
-/* A */ 0,0,1,1,1, 1,1,0,1,0, 0,1,1,1,1, 0,1,1,1,1, 1,0,1,0,0,1,
+/* A */ 0,0,1,1,1, 1,1,0,1,0, 0,1,1,1,1, 0,1,1,1,1, 1,0,1,1,0,1,
 /* B */ 1,1,0,1,1, 1,1,1,1,1, 0,0,1,1,1, 0,0,1,1,1, 0,0,1,0,1,1,
 /* C */ 1,0,1,1,0, 1,1,1,1,0, 1,1,1,1,1, 0,0,1,0,0, 1,1,0,1,1,1,
 /* D */ 0,0,0,0,1, 0,0,0,0,1, 1,0,1,0,1, 0,0,0,0,0, 0,0,0,0,0,1,
@@ -289,8 +288,8 @@ static const char *gnksa_domain_list[] = {
 	"travel",	/* Travel industry */
 	/*
 	 * more gTLDs to come >=2006, proposed are:
-	 *  .asia   .mail    .kids  (.berlin)
-	 *  .post   .tel     .xxx   (.sco)
+	 *  .asia     .kids     .mail     .post     .tel
+	 *  (.berlin) (.sco)
 	 */
 #	if 0		/* $DEAD */
 	"nato",

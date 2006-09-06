@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-02-15
+ *  Updated   : 2006-06-28
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>
@@ -406,6 +406,9 @@ read_config_file(
 			if (match_integer(buf, "getart_limit=", &tinrc.getart_limit, 0))
 				break;
 
+			if (match_integer(buf, "goto_next_unread=", &tinrc.goto_next_unread, NUM_GOTO_NEXT_UNREAD))
+				break;
+
 			if (match_integer(buf, "groupname_max_length=", &tinrc.groupname_max_length, 132))
 				break;
 
@@ -571,9 +574,6 @@ read_config_file(
 			if (match_boolean(buf, "prompt_followupto=", &tinrc.prompt_followupto))
 				break;
 
-			if (match_boolean(buf, "pgdn_goto_next=", &tinrc.pgdn_goto_next))
-				break;
-
 			break;
 
 		case 'q':
@@ -658,7 +658,7 @@ read_config_file(
 			if (match_integer(buf, "sort_article_type=", &tinrc.sort_article_type, SORT_ARTICLES_BY_LINES_ASCEND))
 				break;
 
-			if (match_integer(buf, "sort_threads_type=", &tinrc.sort_threads_type, SORT_THREADS_BY_SCORE_ASCEND))
+			if (match_integer(buf, "sort_threads_type=", &tinrc.sort_threads_type, SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND))
 				break;
 
 			if (match_integer(buf, "scroll_lines=", &tinrc.scroll_lines, 0))
@@ -695,9 +695,6 @@ read_config_file(
 			if (match_string(buf, "strip_was_regex=", tinrc.strip_was_regex, sizeof(tinrc.strip_was_regex)))
 				break;
 
-			if (match_boolean(buf, "space_goto_next_unread=", &tinrc.space_goto_next_unread))
-				break;
-
 			break;
 
 		case 't':
@@ -708,9 +705,6 @@ read_config_file(
 				break;
 
 			if (match_integer(buf, "thread_score=", &tinrc.thread_score, THREAD_SCORE_WEIGHT))
-				break;
-
-			if (match_boolean(buf, "tab_goto_next_unread=", &tinrc.tab_goto_next_unread))
 				break;
 
 			if (match_boolean(buf, "tex2iso_conv=", &tinrc.tex2iso_conv))
@@ -758,6 +752,15 @@ read_config_file(
 			if (match_boolean(buf, "use_slrnface=", &tinrc.use_slrnface))
 				break;
 #endif /* XFACE_ABLE */
+
+			break;
+
+		case 'v':
+			if (match_string(buf, "verbatim_begin_regex=", tinrc.verbatim_begin_regex, sizeof(tinrc.verbatim_begin_regex)))
+				break;
+
+			if (match_string(buf, "verbatim_end_regex=", tinrc.verbatim_end_regex, sizeof(tinrc.verbatim_end_regex)))
+				break;
 
 			break;
 
@@ -906,14 +909,8 @@ write_config_file(
 	fprintf(fp, _(txt_kill_level.tinrc));
 	fprintf(fp, "kill_level=%d\n\n", tinrc.kill_level);
 
-	fprintf(fp, _(txt_tab_goto_next_unread.tinrc));
-	fprintf(fp, "tab_goto_next_unread=%s\n\n", print_boolean(tinrc.tab_goto_next_unread));
-
-	fprintf(fp, _(txt_space_goto_next_unread.tinrc));
-	fprintf(fp, "space_goto_next_unread=%s\n\n", print_boolean(tinrc.space_goto_next_unread));
-
-	fprintf(fp, _(txt_pgdn_goto_next.tinrc));
-	fprintf(fp, "pgdn_goto_next=%s\n\n", print_boolean(tinrc.pgdn_goto_next));
+	fprintf(fp, _(txt_goto_next_unread.tinrc));
+	fprintf(fp, "goto_next_unread=%d\n\n", tinrc.goto_next_unread);
 
 	fprintf(fp, _(txt_scroll_lines.tinrc));
 	fprintf(fp, "scroll_lines=%d\n\n", tinrc.scroll_lines);
@@ -1054,6 +1051,11 @@ write_config_file(
 	fprintf(fp, "strip_re_regex=%s\n\n", tinrc.strip_re_regex);
 	fprintf(fp, _(txt_strip_was_regex.tinrc));
 	fprintf(fp, "strip_was_regex=%s\n\n", tinrc.strip_was_regex);
+
+	fprintf(fp, _(txt_verbatim_begin_regex.tinrc));
+	fprintf(fp, "verbatim_begin_regex=%s\n\n", tinrc.verbatim_begin_regex);
+	fprintf(fp, _(txt_verbatim_end_regex.tinrc));
+	fprintf(fp, "verbatim_end_regex=%s\n\n", tinrc.verbatim_end_regex);
 
 	fprintf(fp, _(txt_show_signatures.tinrc));
 	fprintf(fp, "show_signatures=%s\n\n", print_boolean(tinrc.show_signatures));
@@ -1680,14 +1682,18 @@ rc_update(
 	t_bool confirm_to_quit = FALSE;
 	t_bool confirm_action = FALSE;
 	t_bool compress_quotes = FALSE;
+	t_bool set_goto_next_unread = FALSE;
 	t_bool hide_uue = FALSE;
 	t_bool keep_posted_articles = FALSE;
+	t_bool pgdn_goto_next = FALSE;
 	t_bool quote_empty_lines = FALSE;
 	t_bool quote_signatures = FALSE;
 	t_bool save_to_mmdf_mailbox = FALSE;
 	t_bool show_last_line_prev_page = FALSE;
 	t_bool show_lines = FALSE;
 	t_bool show_score = FALSE;
+	t_bool space_goto_next_unread = FALSE;
+	t_bool tab_goto_next_unread = FALSE;
 	t_bool thread_articles = FALSE;
 	t_bool thread_perc = FALSE;
 	t_bool use_builtin_inews = FALSE;
@@ -1729,6 +1735,13 @@ rc_update(
 					break;
 				break;
 
+			case 'p':
+				if (match_boolean(buf, "pgdn_goto_next=", &pgdn_goto_next)) {
+					set_goto_next_unread = TRUE;
+					break;
+				}
+				break;
+
 			case 'q':
 				if (match_boolean(buf, "quote_signatures=" , &quote_signatures))
 					break;
@@ -1737,6 +1750,10 @@ rc_update(
 				break;
 
 			case 's':
+				if (match_boolean(buf, "space_goto_next_unread=", &space_goto_next_unread)) {
+					set_goto_next_unread = TRUE;
+					break;
+				}
 				if (match_boolean(buf, "save_to_mmdf_mailbox=", &save_to_mmdf_mailbox))
 					break;
 				if (match_boolean(buf, "show_last_line_prev_page=", &show_last_line_prev_page))
@@ -1748,6 +1765,10 @@ rc_update(
 				break;
 
 			case 't':
+				if (match_boolean(buf, "tab_goto_next_unread=", &tab_goto_next_unread)) {
+					set_goto_next_unread = TRUE;
+					break;
+				}
 				if (match_boolean(buf, "thread_articles=", &thread_articles))
 					break;
 				break;
@@ -1773,6 +1794,14 @@ rc_update(
 
 	if (!use_getart_limit)
 		tinrc.getart_limit = 0;
+
+	if (set_goto_next_unread) {
+		tinrc.goto_next_unread = 0;
+		if (pgdn_goto_next || space_goto_next_unread)
+			tinrc.goto_next_unread |= GOTO_NEXT_UNREAD_PGDN;
+		if (tab_goto_next_unread)
+			tinrc.goto_next_unread |= GOTO_NEXT_UNREAD_TAB;
+	}
 
 	if (hide_uue)
 		tinrc.hide_uue = 1;

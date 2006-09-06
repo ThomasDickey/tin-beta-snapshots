@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2004-06-20
+ *  Updated   : 2006-06-28
  *  Notes     :
  *
  * Copyright (c) 1999-2006 Jason Faultless <jason@altarstone.com>
@@ -117,6 +117,8 @@ struct t_config {
 	char sigfile[PATH_LEN];
 	char strip_re_regex[LEN];			/* regex used to find and remove 'Re:'-like strings */
 	char strip_was_regex[LEN];			/* regex used to find and remove '(was:.*'-like strings */
+	char verbatim_begin_regex[LEN];			/* regex used to find the begin of a verbatim block */
+	char verbatim_end_regex[LEN];			/* regex used to find the end of a verbatim block */
 	char savedir[PATH_LEN];				/* directory to save articles to */
 	char spamtrap_warning_addresses[LEN];
 	char url_handler[LEN];				/* Helper app for opening URL's */
@@ -128,6 +130,7 @@ struct t_config {
 	int default_save_mode;				/* Append/Overwrite existing file when saving */
 	int getart_limit;					/* number of article to get */
 	int recent_time;				/* Time limit when article is "fresh" */
+	int goto_next_unread;				/* jump to next unread article with SPACE|PGDN|TAB */
 	int groupname_max_length;			/* max len of group names to display on screen */
 	int hide_uue;						/* treatment of uuencoded data in pager */
 	int kill_level;						/* Define how killed articles are shown */
@@ -207,7 +210,6 @@ struct t_config {
 	t_bool mail_8bit_header;			/* allow 8bit chars. in header of mail message */
 	t_bool mark_ignore_tags;			/* Ignore tags for GROUP_MARK_THREAD_READ/THREAD_MARK_ARTICLE_READ */
 	t_bool mark_saved_read;				/* mark saved article/thread as read */
-	t_bool pgdn_goto_next;
 	t_bool pos_first_unread;			/* position cursor at first/last unread article */
 	t_bool post_8bit_header;			/* allow 8bit chars. in header when posting to newsgroup */
 	t_bool post_process_view;			/* set TRUE to invoke mailcap viewer app */
@@ -224,11 +226,9 @@ struct t_config {
 	t_bool show_signatures;				/* show signatures when displaying articles */
 	t_bool sigdashes;					/* set TRUE to prepend every signature with dashes */
 	t_bool signature_repost;			/* set TRUE to add signature when reposting articles */
-	t_bool space_goto_next_unread;
 	t_bool start_editor_offset;
 	t_bool strip_blanks;
 	t_bool strip_newsrc;
-	t_bool tab_goto_next_unread;
 	t_bool tex2iso_conv;			/* convert "a to Umlaut-a */
 	t_bool thread_catchup_on_exit;		/* catchup thread with left arrow key or not */
 	t_bool unlink_article;

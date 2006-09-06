@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-07-27
+ *  Updated   : 2006-07-20
  *  Notes     :
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>
@@ -1467,6 +1467,7 @@ again:
 
 		case GRP_GOTOTHREAD:		/* 'l' from pager */
 			show_thread_page();
+			move_to_item(which_response(this_resp));
 			return 0;
 
 		default:					/* >=0 normal exit, new basenote */

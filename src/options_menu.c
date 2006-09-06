@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2005-07-02
+ *  Updated   : 2006-06-28
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2006 Michael Bienia <michael@vorlon.ping.de>
@@ -160,6 +160,9 @@ option_is_visible(
 		case OPT_COL_TEXT:
 		case OPT_COL_TITLE:
 		case OPT_COL_URLS:
+		case OPT_QUOTE_REGEX:
+		case OPT_QUOTE_REGEX2:
+		case OPT_QUOTE_REGEX3:
 			return tinrc.use_color;
 
 		case OPT_COL_MARKSTAR:
@@ -174,6 +177,10 @@ option_is_visible(
 		case OPT_MONO_MARKDASH:
 		case OPT_MONO_MARKSLASH:
 		case OPT_MONO_MARKSTROKE:
+		case OPT_SLASHES_REGEX:
+		case OPT_STARS_REGEX:
+		case OPT_STROKES_REGEX:
+		case OPT_UNDERSCORES_REGEX:
 			return tinrc.word_highlight;
 
 		default:
@@ -900,7 +907,6 @@ change_config_file(
 						case OPT_KEEP_DEAD_ARTICLES:
 						case OPT_MARK_IGNORE_TAGS:
 						case OPT_MARK_SAVED_READ:
-						case OPT_PGDN_GOTO_NEXT:
 						case OPT_POS_FIRST_UNREAD:
 						case OPT_POST_PROCESS_VIEW:
 #ifndef DISABLE_PRINTING
@@ -912,11 +918,9 @@ change_config_file(
 						case OPT_SHOW_SIGNATURES:
 						case OPT_SIGDASHES:
 						case OPT_SIGNATURE_REPOST:
-						case OPT_SPACE_GOTO_NEXT_UNREAD:
 						case OPT_START_EDITOR_OFFSET:
 						case OPT_STRIP_BLANKS:
 						case OPT_STRIP_NEWSRC:
-						case OPT_TAB_GOTO_NEXT_UNREAD:
 						case OPT_TEX2ISO_CONV:
 						case OPT_THREAD_CATCHUP_ON_EXIT:
 #if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
@@ -1065,6 +1069,7 @@ change_config_file(
 						case OPT_COL_MARKSTROKE:
 						case OPT_COL_URLS:
 #endif /* HAVE_COLOR */
+						case OPT_GOTO_NEXT_UNREAD:
 						case OPT_HIDE_UUE:
 						case OPT_INTERACTIVE_MAILER:
 						case OPT_WORD_H_DISPLAY_MARKS:
@@ -1383,6 +1388,24 @@ change_config_file(
 									STRCPY(tinrc.strip_was_regex, DEFAULT_STRIP_WAS_REGEX);
 							}
 							compile_regex(tinrc.strip_was_regex, &strip_was_regex, 0);
+							break;
+
+						case OPT_VERBATIM_BEGIN_REGEX:
+							prompt_option_string(option);
+							FreeIfNeeded(verbatim_begin_regex.re);
+							FreeIfNeeded(verbatim_begin_regex.extra);
+							if (!strlen(tinrc.verbatim_begin_regex))
+								STRCPY(tinrc.verbatim_begin_regex, DEFAULT_VERBATIM_BEGIN_REGEX);
+							compile_regex(tinrc.verbatim_begin_regex, &verbatim_begin_regex, PCRE_ANCHORED);
+							break;
+
+						case OPT_VERBATIM_END_REGEX:
+							prompt_option_string(option);
+							FreeIfNeeded(verbatim_end_regex.re);
+							FreeIfNeeded(verbatim_end_regex.extra);
+							if (!strlen(tinrc.verbatim_end_regex))
+								STRCPY(tinrc.verbatim_end_regex, DEFAULT_VERBATIM_END_REGEX);
+							compile_regex(tinrc.verbatim_end_regex, &verbatim_end_regex, PCRE_ANCHORED);
 							break;
 
 						case OPT_DATE_FORMAT:
