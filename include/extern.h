@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-03-11
+ *  Updated   : 2006-06-28
  *  Notes     :
  *
  * Copyright (c) 1997-2006 Iain Lea <iain@bricbrac.de>
@@ -395,6 +395,7 @@ extern constext *txt_attrs[];
 	extern constext *txt_colors[];
 #endif /* HAVE_COLOR */
 extern constext *txt_confirm_choices[];
+extern constext *txt_goto_next_unread_options[];
 extern constext *txt_hide_uue_type[];
 extern constext *txt_interactive_mailers[];
 extern constext *txt_kill_level_type[];
@@ -882,7 +883,10 @@ extern constext txt_mini_thread_1[];
 extern constext txt_mini_thread_2[];
 extern constext txt_more[];
 extern constext txt_moving[];
+extern constext txt_msgid_line_last[];
 extern constext txt_msgid_line_only[];
+extern constext txt_msgid_refs_line[];
+extern constext txt_refs_line_only[];
 extern constext txt_name[];
 extern constext txt_newsgroup[];
 extern constext txt_newsgroup_plural[];
@@ -987,6 +991,7 @@ extern constext txt_reading_newsrc[];
 #ifdef NNTP_ABLE
 	extern constext txt_reconnect_to_news_server[];
 #endif /* NNTP_ABLE */
+extern constext txt_refs_line_only[];
 #ifdef HAVE_GETTIMEOFDAY
 	extern constext txt_remaining[];
 #endif /* HAVE_GETTIMEOFDAY */
@@ -1496,6 +1501,7 @@ extern struct opttxt txt_filtering_options;
 extern struct opttxt txt_force_screen_redraw;
 extern struct opttxt txt_getart_limit;
 extern struct opttxt txt_getart_limit_options;
+extern struct opttxt txt_goto_next_unread;
 extern struct opttxt txt_group_catchup_on_exit;
 extern struct opttxt txt_groupname_max_length;
 extern struct opttxt txt_hide_uue;
@@ -1524,7 +1530,6 @@ extern struct opttxt txt_metamail_prog;
 extern struct opttxt txt_news_headers_to_display;
 extern struct opttxt txt_news_headers_to_not_display;
 extern struct opttxt txt_news_quote_format;
-extern struct opttxt txt_pgdn_goto_next;
 extern struct opttxt txt_pos_first_unread;
 extern struct opttxt txt_post_8bit_header;
 extern struct opttxt txt_post_mime_encoding;
@@ -1561,7 +1566,6 @@ extern struct opttxt txt_signature_repost;
 extern struct opttxt txt_slashes_regex;
 extern struct opttxt txt_sort_article_type;
 extern struct opttxt txt_sort_threads_type;
-extern struct opttxt txt_space_goto_next_unread;
 extern struct opttxt txt_spamtrap_warning_addresses;
 extern struct opttxt txt_stars_regex;
 extern struct opttxt txt_start_editor_offset;
@@ -1571,7 +1575,6 @@ extern struct opttxt txt_strip_newsrc;
 extern struct opttxt txt_strip_re_regex;
 extern struct opttxt txt_strip_was_regex;
 extern struct opttxt txt_strokes_regex;
-extern struct opttxt txt_tab_goto_next_unread;
 extern struct opttxt txt_tex2iso_conv;
 extern struct opttxt txt_thread_articles;
 extern struct opttxt txt_thread_perc;
@@ -1582,6 +1585,8 @@ extern struct opttxt txt_unlink_article;
 extern struct opttxt txt_url_handler;
 extern struct opttxt txt_url_highlight;
 extern struct opttxt txt_use_mouse;
+extern struct opttxt txt_verbatim_begin_regex;
+extern struct opttxt txt_verbatim_end_regex;
 extern struct opttxt txt_wildcard;
 extern struct opttxt txt_word_highlight;
 extern struct opttxt txt_word_h_display_marks;

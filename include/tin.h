@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2006-03-11
+ *  Updated   : 2006-06-28
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2006 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -599,8 +599,8 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define SHAR_REGEX	"\\#(?:!\\s?(?:/usr)?/bin/sh|\\s?(?i)this\\sis\\sa\\sshell\\sarchive)"
 
 /* slrn verbatim marks, case sensitive & ^-anchored */
-#define VERBATIM_BEGIN_REGEX	"#v+"
-#define VERBATIM_END_REGEX	"#v-"
+#define DEFAULT_VERBATIM_BEGIN_REGEX	"#v+"
+#define DEFAULT_VERBATIM_END_REGEX	"#v-"
 
 /*
  * URL related regexs:
@@ -654,7 +654,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 
 #define FILTER_FILE	"filter"
 /* editor offset for filter-file; TODO: doesn't match for german filter-file */
-#define FILTER_FILE_OFFSET	27
+#define FILTER_FILE_OFFSET	26
 #define INPUT_HISTORY_FILE	".inputhistory"
 #ifdef HAVE_MH_MAIL_HANDLING
 #	define MAILGROUPS_FILE	"mailgroups"
@@ -861,6 +861,13 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define TINRC_CONFIRM_ACTION	(tinrc.confirm_choice == 1 || tinrc.confirm_choice == 4 || tinrc.confirm_choice == 5 || tinrc.confirm_choice == 7)
 #define TINRC_CONFIRM_TO_QUIT	(tinrc.confirm_choice == 3 || tinrc.confirm_choice == 4 || tinrc.confirm_choice == 6 || tinrc.confirm_choice == 7)
 #define TINRC_CONFIRM_SELECT	(tinrc.confirm_choice == 2 || tinrc.confirm_choice == 5 || tinrc.confirm_choice == 6 || tinrc.confirm_choice == 7)
+
+/*
+ * defines for tinrc.goto_next_unread
+ */
+#define NUM_GOTO_NEXT_UNREAD	4
+#define GOTO_NEXT_UNREAD_PGDN	1
+#define GOTO_NEXT_UNREAD_TAB	2
 
 /*
  * MIME Encodings
@@ -1085,6 +1092,8 @@ enum {
 #define SORT_THREADS_BY_NOTHING			0
 #define SORT_THREADS_BY_SCORE_DESCEND	1
 #define SORT_THREADS_BY_SCORE_ASCEND	2
+#define SORT_THREADS_BY_LAST_POSTING_DATE_DESCEND	3
+#define SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND	4
 
 /*
  * Different values of strip_bogus - the ways to handle bogus groups
@@ -1420,7 +1429,8 @@ struct t_attribute {
 						   3=from descend, 4=from ascend,
 						   5=date descend, 6=date ascend,
 						   7=score descend, 8=score ascend */
-	unsigned sort_threads_type:2;	/* 0=none, 1=score descend, 2=score ascend */
+	unsigned sort_threads_type:3;		/* 0=none, 1=score descend, 2=score ascend,
+						   3=last posting date descend, 4=last posting date ascend */
 	unsigned int post_proc_type:2;		/* 0=none, 1=shar, 2=uudecode */
 	unsigned int x_comment_to:1;		/* insert X-Comment-To: in Followup */
 	unsigned int tex2iso_conv:1;		/* Convert TeX2ISO */

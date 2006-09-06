@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-03-11
+ *  Updated   : 2006-06-28
  *  Notes     :
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>
@@ -261,6 +261,8 @@ struct t_config tinrc = {
 	"",		/* sigfile */
 	"",		/* strip_re_regex */
 	"",		/* strip_was_regex */
+	"",		/* verbatim_begin_regex */
+	"",		/* verbatim_end_regex */
 	"",		/* savedir */
 	"",		/* spamtrap_warning_addresses */
 	DEFAULT_URL_HANDLER,	/* url_handler */
@@ -272,6 +274,7 @@ struct t_config tinrc = {
 	'a',		/* default_save_mode */
 	0,		/* getart_limit */
 	2,		/* recent_time */
+	GOTO_NEXT_UNREAD_TAB,		/* goto_next_unread */
 	32,		/* groupname_max_length */
 	UUE_NO,	/* hide_uue */
 	KILL_UNREAD,		/* kill_level */
@@ -359,7 +362,6 @@ struct t_config tinrc = {
 	FALSE,		/* mail_8bit_header */
 	FALSE,		/* mark_ignore_tags */
 	TRUE,		/* mark_saved_read */
-	TRUE,		/* pgdn_goto_next */
 	TRUE,		/* pos_first_unread */
 	FALSE,		/* post_8bit_header */
 	TRUE,		/* post_process_view */
@@ -376,7 +378,6 @@ struct t_config tinrc = {
 	TRUE,		/* show_signatures */
 	TRUE,		/* sigdashes */
 	TRUE,		/* signature_repost */
-	FALSE,		/* space_goto_next_unread */
 #ifdef M_UNIX
 	TRUE,		/* start_editor_offset */
 #else
@@ -384,7 +385,6 @@ struct t_config tinrc = {
 #endif /* M_UNIX */
 	TRUE,		/* strip_blanks */
 	FALSE,		/* strip_newsrc */
-	TRUE,		/* tab_goto_next_unread */
 	FALSE,		/* tex2iso_conv */
 	TRUE,		/* thread_catchup_on_exit */
 	TRUE,		/* unlink_article */
@@ -595,15 +595,7 @@ init_selfinfo(
 	created_rcdir = FALSE;
 	dangerous_signal_exit = FALSE;
 	disable_gnksa_domain_check = FALSE;
-#ifdef MAC_OS_X	/* usualy they don't have a valid FQDN */
-	/*
-	 * TODO: check if gnksa_check_domain(get_fqdn()) returns ok
-	 *       and if it does, don't disable Sender
-	 */
-	disable_sender = TRUE;
-#else
-	disable_sender = FALSE;
-#endif /* MAC_OS_X */
+	disable_sender = FALSE;	/* we set force_no_post=TRUE later on if we don't have a valid FQDN */
 	filtered_articles = FALSE;
 	iso2asc_supported = atoi(get_val("ISO2ASC", DEFAULT_ISO2ASC));
 	if (iso2asc_supported > NUM_ISO_TABLES || iso2asc_supported < 0) /* TODO: issue a warning here? */
@@ -976,11 +968,15 @@ postinit_regexp(
 		STRCPY(tinrc.underscores_regex, DEFAULT_UNDERSCORES_REGEX);
 	compile_regex(tinrc.underscores_regex, &underscores_regex, PCRE_CASELESS);
 
+	if (!strlen(tinrc.verbatim_begin_regex))
+		STRCPY(tinrc.verbatim_begin_regex, DEFAULT_VERBATIM_BEGIN_REGEX);
+	compile_regex(tinrc.verbatim_begin_regex, &verbatim_begin_regex, PCRE_ANCHORED);
+	if (!strlen(tinrc.verbatim_end_regex))
+		STRCPY(tinrc.verbatim_end_regex, DEFAULT_VERBATIM_END_REGEX);
+	compile_regex(tinrc.verbatim_end_regex, &verbatim_end_regex, PCRE_ANCHORED);
+
 	compile_regex(UUBEGIN_REGEX, &uubegin_regex, PCRE_ANCHORED);
 	compile_regex(UUBODY_REGEX, &uubody_regex, PCRE_ANCHORED);
-
-	compile_regex(VERBATIM_BEGIN_REGEX, &verbatim_begin_regex, PCRE_ANCHORED);
-	compile_regex(VERBATIM_END_REGEX, &verbatim_end_regex, PCRE_ANCHORED);
 
 	compile_regex(URL_REGEX, &url_regex, PCRE_CASELESS);
 	compile_regex(MAIL_REGEX, &mail_regex, PCRE_CASELESS);

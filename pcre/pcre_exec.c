@@ -6,7 +6,7 @@
 and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
-           Copyright (c) 1997-2006 University of Cambridge
+           Copyright (c) 1997-2005 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,7 @@ are on the heap, not on the stack. */
 
 typedef struct eptrblock {
   struct eptrblock *epb_prev;
-  USPTR epb_saved_eptr;
+  const uschar *epb_saved_eptr;
 } eptrblock;
 
 /* Flag bits for the match() function */
@@ -128,10 +128,10 @@ Returns:      TRUE if matched
 */
 
 static BOOL
-match_ref(int offset, register USPTR eptr, int length, match_data *md,
+match_ref(int offset, register const uschar *eptr, int length, match_data *md,
   unsigned long int ims)
 {
-USPTR p = md->start_subject + md->offset_vector[offset];
+const uschar *p = md->start_subject + md->offset_vector[offset];
 
 #ifdef DEBUG
 if (eptr >= md->end_subject)
@@ -169,50 +169,32 @@ return TRUE;
 ****************************************************************************
                    RECURSION IN THE match() FUNCTION
 
-The match() function is highly recursive, though not every recursive call
-increases the recursive depth. Nevertheless, some regular expressions can cause
-it to recurse to a great depth. I was writing for Unix, so I just let it call
-itself recursively. This uses the stack for saving everything that has to be
-saved for a recursive call. On Unix, the stack can be large, and this works
-fine.
+The match() function is highly recursive. Some regular expressions can cause
+it to recurse thousands of times. I was writing for Unix, so I just let it
+call itself recursively. This uses the stack for saving everything that has
+to be saved for a recursive call. On Unix, the stack can be large, and this
+works fine.
 
-It turns out that on some non-Unix-like systems there are problems with
-programs that use a lot of stack. (This despite the fact that every last chip
-has oodles of memory these days, and techniques for extending the stack have
-been known for decades.) So....
+It turns out that on non-Unix systems there are problems with programs that
+use a lot of stack. (This despite the fact that every last chip has oodles
+of memory these days, and techniques for extending the stack have been known
+for decades.) So....
 
 There is a fudge, triggered by defining NO_RECURSE, which avoids recursive
 calls by keeping local variables that need to be preserved in blocks of memory
-obtained from malloc() instead instead of on the stack. Macros are used to
+obtained from malloc instead instead of on the stack. Macros are used to
 achieve this so that the actual code doesn't look very different to what it
 always used to.
 ****************************************************************************
 ***************************************************************************/
 
 
-/* These versions of the macros use the stack, as normal. There are debugging
-versions and production versions. */
+/* These versions of the macros use the stack, as normal */
 
 #ifndef NO_RECURSE
 #define REGISTER register
-#ifdef DEBUG
-#define RMATCH(rx,ra,rb,rc,rd,re,rf,rg) \
-  { \
-  printf("match() called in line %d\n", __LINE__); \
-  rx = match(ra,rb,rc,rd,re,rf,rg,rdepth+1); \
-  printf("to line %d\n", __LINE__); \
-  }
-#define RRETURN(ra) \
-  { \
-  printf("match() returned %d from line %d ", ra, __LINE__); \
-  return ra; \
-  }
-#else
-#define RMATCH(rx,ra,rb,rc,rd,re,rf,rg) \
-  rx = match(ra,rb,rc,rd,re,rf,rg,rdepth+1)
+#define RMATCH(rx,ra,rb,rc,rd,re,rf,rg) rx = match(ra,rb,rc,rd,re,rf,rg)
 #define RRETURN(ra) return ra
-#endif
-
 #else
 
 
@@ -233,7 +215,6 @@ match(), which never changes. */
     newframe->Xims = re;\
     newframe->Xeptrb = rf;\
     newframe->Xflags = rg;\
-    newframe->Xrdepth = frame->Xrdepth + 1;\
     newframe->Xprevframe = frame;\
     frame = newframe;\
     DPRINTF(("restarting from line %d\n", __LINE__));\
@@ -275,7 +256,6 @@ typedef struct heapframe {
   long int Xims;
   eptrblock *Xeptrb;
   int Xflags;
-  int Xrdepth;
 
   /* Function local variables */
 
@@ -298,11 +278,11 @@ typedef struct heapframe {
 
 #ifdef SUPPORT_UCP
   int Xprop_type;
-  int Xprop_value;
   int Xprop_fail_result;
   int Xprop_category;
   int Xprop_chartype;
-  int Xprop_script;
+  int Xprop_othercase;
+  int Xprop_test_against;
   int *Xprop_test_variable;
 #endif
 
@@ -363,18 +343,17 @@ Arguments:
    flags       can contain
                  match_condassert - this is an assertion condition
                  match_isgroup - this is the start of a bracketed group
-   rdepth      the recursion depth
 
 Returns:       MATCH_MATCH if matched            )  these values are >= 0
                MATCH_NOMATCH if failed to match  )
                a negative PCRE_ERROR_xxx value if aborted by an error condition
-                 (e.g. stopped by repeated call or recursion limit)
+                 (e.g. stopped by recursion limit)
 */
 
 static int
-match(REGISTER USPTR eptr, REGISTER const uschar *ecode,
+match(REGISTER const uschar *eptr, REGISTER const uschar *ecode,
   int offset_top, match_data *md, unsigned long int ims, eptrblock *eptrb,
-  int flags, int rdepth)
+  int flags)
 {
 /* These variables do not need to be preserved over recursion in this function,
 so they can be ordinary variables in all cases. Mark them with "register"
@@ -402,7 +381,6 @@ frame->Xoffset_top = offset_top;
 frame->Xims = ims;
 frame->Xeptrb = eptrb;
 frame->Xflags = flags;
-frame->Xrdepth = rdepth;
 
 /* This is where control jumps back to to effect "recursion" */
 
@@ -416,7 +394,6 @@ HEAP_RECURSE:
 #define ims                frame->Xims
 #define eptrb              frame->Xeptrb
 #define flags              frame->Xflags
-#define rdepth             frame->Xrdepth
 
 /* Ditto for the local variables */
 
@@ -441,11 +418,11 @@ HEAP_RECURSE:
 
 #ifdef SUPPORT_UCP
 #define prop_type          frame->Xprop_type
-#define prop_value         frame->Xprop_value
 #define prop_fail_result   frame->Xprop_fail_result
 #define prop_category      frame->Xprop_category
 #define prop_chartype      frame->Xprop_chartype
-#define prop_script        frame->Xprop_script
+#define prop_othercase     frame->Xprop_othercase
+#define prop_test_against  frame->Xprop_test_against
 #define prop_test_variable frame->Xprop_test_variable
 #endif
 
@@ -475,20 +452,20 @@ i, and fc and c, can be the same variables. */
 #define fc c
 
 
-#ifdef SUPPORT_UTF8                /* Many of these variables are used only  */
-const uschar *charptr;             /* in small blocks of the code. My normal */
-#endif                             /* style of coding would have declared    */
-const uschar *callpat;             /* them within each of those blocks.      */
-const uschar *data;                /* However, in order to accommodate the   */
-const uschar *next;                /* version of this code that uses an      */
-USPTR         pp;                  /* external "stack" implemented on the    */
-const uschar *prev;                /* heap, it is easier to declare them all */
-USPTR         saved_eptr;          /* here, so the declarations can be cut   */
-                                   /* out in a block. The only declarations  */
-recursion_info new_recursive;      /* within blocks below are for variables  */
-                                   /* that do not have to be preserved over  */
-BOOL cur_is_word;                  /* a recursive call to RMATCH().          */
-BOOL condition;
+#ifdef SUPPORT_UTF8                /* Many of these variables are used ony */
+const uschar *charptr;             /* small blocks of the code. My normal  */
+#endif                             /* style of coding would have declared  */
+const uschar *callpat;             /* them within each of those blocks.    */
+const uschar *data;                /* However, in order to accommodate the */
+const uschar *next;                /* version of this code that uses an    */
+const uschar *pp;                  /* external "stack" implemented on the  */
+const uschar *prev;                /* heap, it is easier to declare them   */
+const uschar *saved_eptr;          /* all here, so the declarations can    */
+                                   /* be cut out in a block. The only      */
+recursion_info new_recursive;      /* declarations within blocks below are */
+                                   /* for variables that do not have to    */
+BOOL cur_is_word;                  /* be preserved over a recursive call   */
+BOOL condition;                    /* to RMATCH().                         */
 BOOL minimize;
 BOOL prev_is_word;
 
@@ -496,11 +473,11 @@ unsigned long int original_ims;
 
 #ifdef SUPPORT_UCP
 int prop_type;
-int prop_value;
 int prop_fail_result;
 int prop_category;
 int prop_chartype;
-int prop_script;
+int prop_othercase;
+int prop_test_against;
 int *prop_test_variable;
 #endif
 
@@ -522,24 +499,19 @@ eptrblock newptrb;
 variables. */
 
 #ifdef SUPPORT_UCP
-prop_value = 0;
 prop_fail_result = 0;
+prop_test_against = 0;
 prop_test_variable = NULL;
 #endif
 
-/* OK, now we can get on with the real code of the function. Recursive calls
-are specified by the macro RMATCH and RRETURN is used to return. When
-NO_RECURSE is *not* defined, these just turn into a recursive call to match()
-and a "return", respectively (possibly with some debugging if DEBUG is
-defined). However, RMATCH isn't like a function call because it's quite a
-complicated macro. It has to be used in one particular way. This shouldn't,
-however, impact performance when true recursion is being used. */
-
-/* First check that we haven't called match() too many times, or that we
-haven't exceeded the recursive call limit. */
+/* OK, now we can get on with the real code of the function. Recursion is
+specified by the macros RMATCH and RRETURN. When NO_RECURSE is *not* defined,
+these just turn into a recursive call to match() and a "return", respectively.
+However, RMATCH isn't like a function call because it's quite a complicated
+macro. It has to be used in one particular way. This shouldn't, however, impact
+performance when true recursion is being used. */
 
 if (md->match_call_count++ >= md->match_limit) RRETURN(PCRE_ERROR_MATCHLIMIT);
-if (rdepth >= md->match_limit_recursion) RRETURN(PCRE_ERROR_RECURSIONLIMIT);
 
 original_ims = ims;    /* Save for resetting on ')' */
 utf8 = md->utf8;       /* Local copy of the flag */
@@ -709,7 +681,7 @@ for (;;)
     if (md->recursive != NULL && md->recursive->group_num == 0)
       {
       recursion_info *rec = md->recursive;
-      DPRINTF(("End of pattern in a (?0) recursion\n"));
+      DPRINTF(("Hit the end in a (?0) recursion\n"));
       md->recursive = rec->prevrec;
       memmove(md->offset_vector, rec->offset_save,
         rec->saved_max * sizeof(int));
@@ -828,7 +800,7 @@ for (;;)
       cb.version          = 1;   /* Version 1 of the callout block */
       cb.callout_number   = ecode[1];
       cb.offset_vector    = md->offset_vector;
-      cb.subject          = (PCRE_SPTR)md->start_subject;
+      cb.subject          = (const char *)md->start_subject;
       cb.subject_length   = md->end_subject - md->start_subject;
       cb.start_match      = md->start_match - md->start_subject;
       cb.current_position = eptr - md->start_subject;
@@ -910,17 +882,12 @@ for (;;)
             eptrb, match_isgroup);
         if (rrc == MATCH_MATCH)
           {
-          DPRINTF(("Recursion matched\n"));
           md->recursive = new_recursive.prevrec;
           if (new_recursive.offset_save != stacksave)
             (pcre_free)(new_recursive.offset_save);
           RRETURN(MATCH_MATCH);
           }
-        else if (rrc != MATCH_NOMATCH)
-          {
-          DPRINTF(("Recursion gave error %d\n", rrc));
-          RRETURN(rrc);
-          }
+        else if (rrc != MATCH_NOMATCH) RRETURN(rrc);
 
         md->recursive = &new_recursive;
         memcpy(md->offset_vector, new_recursive.offset_save,
@@ -1385,43 +1352,23 @@ for (;;)
     if (eptr >= md->end_subject) RRETURN(MATCH_NOMATCH);
     GETCHARINCTEST(c, eptr);
       {
-      int chartype, script;
-      int category = _pcre_ucp_findprop(c, &chartype, &script);
+      int chartype, rqdtype;
+      int othercase;
+      int category = _pcre_ucp_findchar(c, &chartype, &othercase);
 
-      switch(ecode[1])
+      rqdtype = *(++ecode);
+      ecode++;
+
+      if (rqdtype >= 128)
         {
-        case PT_ANY:
-        if (op == OP_NOTPROP) RRETURN(MATCH_NOMATCH);
-        break;
-
-        case PT_LAMP:
-        if ((chartype == ucp_Lu ||
-             chartype == ucp_Ll ||
-             chartype == ucp_Lt) == (op == OP_NOTPROP))
+        if ((rqdtype - 128 != category) == (op == OP_PROP))
           RRETURN(MATCH_NOMATCH);
-         break;
-
-        case PT_GC:
-        if ((ecode[2] != category) == (op == OP_PROP))
-          RRETURN(MATCH_NOMATCH);
-        break;
-
-        case PT_PC:
-        if ((ecode[2] != chartype) == (op == OP_PROP))
-          RRETURN(MATCH_NOMATCH);
-        break;
-
-        case PT_SC:
-        if ((ecode[2] != script) == (op == OP_PROP))
-          RRETURN(MATCH_NOMATCH);
-        break;
-
-        default:
-        RRETURN(PCRE_ERROR_INTERNAL);
-        break;
         }
-
-      ecode += 3;
+      else
+        {
+        if ((rqdtype != chartype) == (op == OP_PROP))
+          RRETURN(MATCH_NOMATCH);
+        }
       }
     break;
 
@@ -1432,8 +1379,9 @@ for (;;)
     if (eptr >= md->end_subject) RRETURN(MATCH_NOMATCH);
     GETCHARINCTEST(c, eptr);
       {
-      int chartype, script;
-      int category = _pcre_ucp_findprop(c, &chartype, &script);
+      int chartype;
+      int othercase;
+      int category = _pcre_ucp_findchar(c, &chartype, &othercase);
       if (category == ucp_M) RRETURN(MATCH_NOMATCH);
       while (eptr < md->end_subject)
         {
@@ -1442,7 +1390,7 @@ for (;;)
           {
           GETCHARLEN(c, eptr, len);
           }
-        category = _pcre_ucp_findprop(c, &chartype, &script);
+        category = _pcre_ucp_findchar(c, &chartype, &othercase);
         if (category != ucp_M) break;
         eptr += len;
         }
@@ -1735,8 +1683,8 @@ for (;;)
           while (eptr >= pp)
             {
             RMATCH(rrc, eptr, ecode, offset_top, md, ims, eptrb, 0);
-            if (rrc != MATCH_NOMATCH) RRETURN(rrc);
             eptr--;
+            if (rrc != MATCH_NOMATCH) RRETURN(rrc);
             }
           }
 
@@ -1893,12 +1841,16 @@ for (;;)
         ecode += length;
 
         /* If we have Unicode property support, we can use it to test the other
-        case of the character, if there is one. */
+        case of the character, if there is one. The result of _pcre_ucp_findchar() is
+        < 0 if the char isn't found, and othercase is returned as zero if there
+        isn't one. */
 
         if (fc != dc)
           {
 #ifdef SUPPORT_UCP
-          if (dc != _pcre_ucp_othercase(fc))
+          int chartype;
+          int othercase;
+          if (_pcre_ucp_findchar(fc, &chartype, &othercase) < 0 || dc != othercase)
 #endif
             RRETURN(MATCH_NOMATCH);
           }
@@ -1966,9 +1918,10 @@ for (;;)
 
 #ifdef SUPPORT_UCP
         int othercase;
+        int chartype;
         if ((ims & PCRE_CASELESS) != 0 &&
-            (othercase = _pcre_ucp_othercase(fc)) >= 0 &&
-             othercase >= 0)
+             _pcre_ucp_findchar(fc, &chartype, &othercase) >= 0 &&
+             othercase > 0)
           oclength = _pcre_ord2utf8(othercase, occhars);
 #endif  /* SUPPORT_UCP */
 
@@ -2455,7 +2408,16 @@ for (;;)
       {
       prop_fail_result = ctype == OP_NOTPROP;
       prop_type = *ecode++;
-      prop_value = *ecode++;
+      if (prop_type >= 128)
+        {
+        prop_test_against = prop_type - 128;
+        prop_test_variable = &prop_category;
+        }
+      else
+        {
+        prop_test_against = prop_type;
+        prop_test_variable = &prop_chartype;
+        }
       }
     else prop_type = -1;
 #endif
@@ -2472,68 +2434,14 @@ for (;;)
     if (min > 0)
       {
 #ifdef SUPPORT_UCP
-      if (prop_type >= 0)
+      if (prop_type > 0)
         {
-        switch(prop_type)
+        for (i = 1; i <= min; i++)
           {
-          case PT_ANY:
-          if (prop_fail_result) RRETURN(MATCH_NOMATCH);
-          for (i = 1; i <= min; i++)
-            {
-            if (eptr >= md->end_subject) RRETURN(MATCH_NOMATCH);
-            GETCHARINC(c, eptr);
-            }
-          break;
-
-          case PT_LAMP:
-          for (i = 1; i <= min; i++)
-            {
-            if (eptr >= md->end_subject) RRETURN(MATCH_NOMATCH);
-            GETCHARINC(c, eptr);
-            prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
-            if ((prop_chartype == ucp_Lu ||
-                 prop_chartype == ucp_Ll ||
-                 prop_chartype == ucp_Lt) == prop_fail_result)
-              RRETURN(MATCH_NOMATCH);
-            }
-          break;
-
-          case PT_GC:
-          for (i = 1; i <= min; i++)
-            {
-            if (eptr >= md->end_subject) RRETURN(MATCH_NOMATCH);
-            GETCHARINC(c, eptr);
-            prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
-            if ((prop_category == prop_value) == prop_fail_result)
-              RRETURN(MATCH_NOMATCH);
-            }
-          break;
-
-          case PT_PC:
-          for (i = 1; i <= min; i++)
-            {
-            if (eptr >= md->end_subject) RRETURN(MATCH_NOMATCH);
-            GETCHARINC(c, eptr);
-            prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
-            if ((prop_chartype == prop_value) == prop_fail_result)
-              RRETURN(MATCH_NOMATCH);
-            }
-          break;
-
-          case PT_SC:
-          for (i = 1; i <= min; i++)
-            {
-            if (eptr >= md->end_subject) RRETURN(MATCH_NOMATCH);
-            GETCHARINC(c, eptr);
-            prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
-            if ((prop_script == prop_value) == prop_fail_result)
-              RRETURN(MATCH_NOMATCH);
-            }
-          break;
-
-          default:
-          RRETURN(PCRE_ERROR_INTERNAL);
-          break;
+          GETCHARINC(c, eptr);
+          prop_category = _pcre_ucp_findchar(c, &prop_chartype, &prop_othercase);
+          if ((*prop_test_variable == prop_test_against) == prop_fail_result)
+            RRETURN(MATCH_NOMATCH);
           }
         }
 
@@ -2545,7 +2453,7 @@ for (;;)
         for (i = 1; i <= min; i++)
           {
           GETCHARINCTEST(c, eptr);
-          prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
+          prop_category = _pcre_ucp_findchar(c, &prop_chartype, &prop_othercase);
           if (prop_category == ucp_M) RRETURN(MATCH_NOMATCH);
           while (eptr < md->end_subject)
             {
@@ -2554,7 +2462,7 @@ for (;;)
               {
               GETCHARLEN(c, eptr, len);
               }
-            prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
+            prop_category = _pcre_ucp_findchar(c, &prop_chartype, &prop_othercase);
             if (prop_category != ucp_M) break;
             eptr += len;
             }
@@ -2716,78 +2624,17 @@ for (;;)
     if (minimize)
       {
 #ifdef SUPPORT_UCP
-      if (prop_type >= 0)
+      if (prop_type > 0)
         {
-        switch(prop_type)
+        for (fi = min;; fi++)
           {
-          case PT_ANY:
-          for (fi = min;; fi++)
-            {
-            RMATCH(rrc, eptr, ecode, offset_top, md, ims, eptrb, 0);
-            if (rrc != MATCH_NOMATCH) RRETURN(rrc);
-            if (fi >= max || eptr >= md->end_subject) RRETURN(MATCH_NOMATCH);
-            GETCHARINC(c, eptr);
-            if (prop_fail_result) RRETURN(MATCH_NOMATCH);
-            }
-          break;
-
-          case PT_LAMP:
-          for (fi = min;; fi++)
-            {
-            RMATCH(rrc, eptr, ecode, offset_top, md, ims, eptrb, 0);
-            if (rrc != MATCH_NOMATCH) RRETURN(rrc);
-            if (fi >= max || eptr >= md->end_subject) RRETURN(MATCH_NOMATCH);
-            GETCHARINC(c, eptr);
-            prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
-            if ((prop_chartype == ucp_Lu ||
-                 prop_chartype == ucp_Ll ||
-                 prop_chartype == ucp_Lt) == prop_fail_result)
-              RRETURN(MATCH_NOMATCH);
-            }
-          break;
-
-          case PT_GC:
-          for (fi = min;; fi++)
-            {
-            RMATCH(rrc, eptr, ecode, offset_top, md, ims, eptrb, 0);
-            if (rrc != MATCH_NOMATCH) RRETURN(rrc);
-            if (fi >= max || eptr >= md->end_subject) RRETURN(MATCH_NOMATCH);
-            GETCHARINC(c, eptr);
-            prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
-            if ((prop_category == prop_value) == prop_fail_result)
-              RRETURN(MATCH_NOMATCH);
-            }
-          break;
-
-          case PT_PC:
-          for (fi = min;; fi++)
-            {
-            RMATCH(rrc, eptr, ecode, offset_top, md, ims, eptrb, 0);
-            if (rrc != MATCH_NOMATCH) RRETURN(rrc);
-            if (fi >= max || eptr >= md->end_subject) RRETURN(MATCH_NOMATCH);
-            GETCHARINC(c, eptr);
-            prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
-            if ((prop_chartype == prop_value) == prop_fail_result)
-              RRETURN(MATCH_NOMATCH);
-            }
-          break;
-
-          case PT_SC:
-          for (fi = min;; fi++)
-            {
-            RMATCH(rrc, eptr, ecode, offset_top, md, ims, eptrb, 0);
-            if (rrc != MATCH_NOMATCH) RRETURN(rrc);
-            if (fi >= max || eptr >= md->end_subject) RRETURN(MATCH_NOMATCH);
-            GETCHARINC(c, eptr);
-            prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
-            if ((prop_script == prop_value) == prop_fail_result)
-              RRETURN(MATCH_NOMATCH);
-            }
-          break;
-
-          default:
-          RRETURN(PCRE_ERROR_INTERNAL);
-          break;
+          RMATCH(rrc, eptr, ecode, offset_top, md, ims, eptrb, 0);
+          if (rrc != MATCH_NOMATCH) RRETURN(rrc);
+          if (fi >= max || eptr >= md->end_subject) RRETURN(MATCH_NOMATCH);
+          GETCHARINC(c, eptr);
+          prop_category = _pcre_ucp_findchar(c, &prop_chartype, &prop_othercase);
+          if ((*prop_test_variable == prop_test_against) == prop_fail_result)
+            RRETURN(MATCH_NOMATCH);
           }
         }
 
@@ -2802,7 +2649,7 @@ for (;;)
           if (rrc != MATCH_NOMATCH) RRETURN(rrc);
           if (fi >= max || eptr >= md->end_subject) RRETURN(MATCH_NOMATCH);
           GETCHARINCTEST(c, eptr);
-          prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
+          prop_category = _pcre_ucp_findchar(c, &prop_chartype, &prop_othercase);
           if (prop_category == ucp_M) RRETURN(MATCH_NOMATCH);
           while (eptr < md->end_subject)
             {
@@ -2811,7 +2658,7 @@ for (;;)
               {
               GETCHARLEN(c, eptr, len);
               }
-            prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
+            prop_category = _pcre_ucp_findchar(c, &prop_chartype, &prop_othercase);
             if (prop_category != ucp_M) break;
             eptr += len;
             }
@@ -2936,74 +2783,17 @@ for (;;)
       pp = eptr;  /* Remember where we started */
 
 #ifdef SUPPORT_UCP
-      if (prop_type >= 0)
+      if (prop_type > 0)
         {
-        switch(prop_type)
+        for (i = min; i < max; i++)
           {
-          case PT_ANY:
-          for (i = min; i < max; i++)
-            {
-            int len = 1;
-            if (eptr >= md->end_subject) break;
-            GETCHARLEN(c, eptr, len);
-            if (prop_fail_result) break;
-            eptr+= len;
-            }
-          break;
-
-          case PT_LAMP:
-          for (i = min; i < max; i++)
-            {
-            int len = 1;
-            if (eptr >= md->end_subject) break;
-            GETCHARLEN(c, eptr, len);
-            prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
-            if ((prop_chartype == ucp_Lu ||
-                 prop_chartype == ucp_Ll ||
-                 prop_chartype == ucp_Lt) == prop_fail_result)
-              break;
-            eptr+= len;
-            }
-          break;
-
-          case PT_GC:
-          for (i = min; i < max; i++)
-            {
-            int len = 1;
-            if (eptr >= md->end_subject) break;
-            GETCHARLEN(c, eptr, len);
-            prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
-            if ((prop_category == prop_value) == prop_fail_result)
-              break;
-            eptr+= len;
-            }
-          break;
-
-          case PT_PC:
-          for (i = min; i < max; i++)
-            {
-            int len = 1;
-            if (eptr >= md->end_subject) break;
-            GETCHARLEN(c, eptr, len);
-            prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
-            if ((prop_chartype == prop_value) == prop_fail_result)
-              break;
-            eptr+= len;
-            }
-          break;
-
-          case PT_SC:
-          for (i = min; i < max; i++)
-            {
-            int len = 1;
-            if (eptr >= md->end_subject) break;
-            GETCHARLEN(c, eptr, len);
-            prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
-            if ((prop_script == prop_value) == prop_fail_result)
-              break;
-            eptr+= len;
-            }
-          break;
+          int len = 1;
+          if (eptr >= md->end_subject) break;
+          GETCHARLEN(c, eptr, len);
+          prop_category = _pcre_ucp_findchar(c, &prop_chartype, &prop_othercase);
+          if ((*prop_test_variable == prop_test_against) == prop_fail_result)
+            break;
+          eptr+= len;
           }
 
         /* eptr is now past the end of the maximum run */
@@ -3026,7 +2816,7 @@ for (;;)
           {
           if (eptr >= md->end_subject) break;
           GETCHARINCTEST(c, eptr);
-          prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
+          prop_category = _pcre_ucp_findchar(c, &prop_chartype, &prop_othercase);
           if (prop_category == ucp_M) break;
           while (eptr < md->end_subject)
             {
@@ -3035,7 +2825,7 @@ for (;;)
               {
               GETCHARLEN(c, eptr, len);
               }
-            prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
+            prop_category = _pcre_ucp_findchar(c, &prop_chartype, &prop_othercase);
             if (prop_category != ucp_M) break;
             eptr += len;
             }
@@ -3056,7 +2846,7 @@ for (;;)
               {
               GETCHARLEN(c, eptr, len);
               }
-            prop_category = _pcre_ucp_findprop(c, &prop_chartype, &prop_script);
+            prop_category = _pcre_ucp_findchar(c, &prop_chartype, &prop_othercase);
             if (prop_category != ucp_M) break;
             eptr--;
             }
@@ -3410,9 +3200,9 @@ Returns:          > 0 => success; value is the number of elements filled in
                  < -1 => some kind of unexpected problem
 */
 
-PCRE_DATA_SCOPE int
+PCRE_EXPORT int
 pcre_exec(const pcre *argument_re, const pcre_extra *extra_data,
-  PCRE_SPTR subject, int length, int start_offset, int options, int *offsets,
+  const char *subject, int length, int start_offset, int options, int *offsets,
   int offsetcount)
 {
 int rc, resetcount, ocount;
@@ -3429,9 +3219,9 @@ BOOL req_byte_caseless = FALSE;
 match_data match_block;
 const uschar *tables;
 const uschar *start_bits = NULL;
-USPTR start_match = (USPTR)subject + start_offset;
-USPTR end_subject;
-USPTR req_byte_ptr = start_match - 1;
+const uschar *start_match = (const uschar *)subject + start_offset;
+const uschar *end_subject;
+const uschar *req_byte_ptr = start_match - 1;
 
 pcre_study_data internal_study;
 const pcre_study_data *study;
@@ -3452,7 +3242,6 @@ the default values. */
 
 study = NULL;
 match_block.match_limit = MATCH_LIMIT;
-match_block.match_limit_recursion = MATCH_LIMIT_RECURSION;
 match_block.callout_data = NULL;
 
 /* The table pointer is always in native byte order. */
@@ -3466,8 +3255,6 @@ if (extra_data != NULL)
     study = (const pcre_study_data *)extra_data->study_data;
   if ((flags & PCRE_EXTRA_MATCH_LIMIT) != 0)
     match_block.match_limit = extra_data->match_limit;
-  if ((flags & PCRE_EXTRA_MATCH_LIMIT_RECURSION) != 0)
-    match_block.match_limit_recursion = extra_data->match_limit_recursion;
   if ((flags & PCRE_EXTRA_CALLOUT_DATA) != 0)
     match_block.callout_data = extra_data->callout_data;
   if ((flags & PCRE_EXTRA_TABLES) != 0) tables = extra_data->tables;
@@ -3502,7 +3289,7 @@ firstline = (re->options & PCRE_FIRSTLINE) != 0;
 match_block.start_code = (const uschar *)external_re + re->name_table_offset +
   re->name_count * re->name_entry_size;
 
-match_block.start_subject = (USPTR)subject;
+match_block.start_subject = (const uschar *)subject;
 match_block.start_offset = start_offset;
 match_block.end_subject = match_block.start_subject + length;
 end_subject = match_block.end_subject;
@@ -3628,7 +3415,7 @@ the loop runs just once. */
 
 do
   {
-  USPTR save_end_subject = end_subject;
+  const uschar *save_end_subject = end_subject;
 
   /* Reset the maximum number of extractions we might see. */
 
@@ -3647,7 +3434,7 @@ do
 
   if (firstline)
     {
-    USPTR t = start_match;
+    const uschar *t = start_match;
     while (t < save_end_subject && *t != '\n') t++;
     end_subject = t;
     }
@@ -3717,7 +3504,7 @@ do
       end_subject - start_match < REQ_BYTE_MAX &&
       !match_block.partial)
     {
-    register USPTR p = start_match + ((first_byte >= 0)? 1 : 0);
+    register const uschar *p = start_match + ((first_byte >= 0)? 1 : 0);
 
     /* We don't need to repeat the search if we haven't yet reached the
     place we found it at last time. */
@@ -3763,7 +3550,7 @@ do
   match_block.match_call_count = 0;
 
   rc = match(start_match, match_block.start_code, 2, &match_block, ims, NULL,
-    match_isgroup, 0);
+    match_isgroup);
 
   /* When the result is no match, if the subject's first character was a
   newline and the PCRE_FIRSTLINE option is set, break (which will return

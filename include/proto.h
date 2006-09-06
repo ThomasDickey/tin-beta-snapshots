@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2005-10-19
+ *  Updated   : 2006-09-02
  *  Notes     :
  *
  * Copyright (c) 1997-2006 Urs Janssen <urs@tin.org>
@@ -85,7 +85,6 @@ extern void write_attributes_file(const char *file);
 
 /* charset.c */
 extern char *convert_to_printable(char *buf);
-extern char *convert_body2printable(char* buf);
 extern t_bool is_art_tex_encoded(FILE *fp);
 extern void convert_iso2asc(char *iso, char **asc_buffer, int *max_line_len, int t);
 extern void convert_tex2iso(char *from, char *to);
@@ -561,7 +560,6 @@ extern void compose_mail_text_plain(const char *filename, struct t_group *group)
 /* save.c */
 extern int check_start_save_any_news(int function, t_bool catchup);
 extern t_bool create_path(const char *path);
-extern t_bool expand_save_filename(char *outpath, const char *path);
 extern t_bool post_process_files(t_function proc_type_type, t_bool auto_delete);
 extern t_bool save_and_process_art(t_openartinfo *artinfo, struct t_article *artptr, t_bool is_mailbox, const char *inpath, int max, t_bool post_process);
 extern void decode_save_mime(t_openartinfo *art, t_bool postproc);

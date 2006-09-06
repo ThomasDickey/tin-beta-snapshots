@@ -4,22 +4,14 @@ not read only ,-).
 
 Bugs
 ----
-o  when entering an article from the group level via GroupNextUnreadArtOrGrp
-   ('TAB'), PageListThd ('l') points to a 'random' article in the thread
-   [20051224 Urs Janssen <urs@tin.org>]
+o  CatchupNextUnread in pagelevel doesn't always work (if commeing directly
+   from group level (via GroupNextUnreadArtOrGrp)): instead of leaving the
+   thread and entering the next one it stays at the current article.
+   [20060515 Urs Janssen <urs@tin.org>]
 
 o  a wrong usename in ~/.newsauth can't be corrected in the first
    pass
    [20050816 Urs Janssen <urs@tin.org>]
-
-o  can 'V'iew mime-parts with (illegal) encoded filename, e.g:
-   | Content-Type: image/jpeg;
-   |  name="=?iso-8859-1?Q?internationales_Zeichen_f=FCr_Ehe.jpg?="
-   | Content-Disposition: attachment;
-   |  filename="=?iso-8859-1?Q?internationales_Zeichen_f=FCr_Ehe.jpg?="
-   as tin treats the leading '=' as mailbox indicator and complains
-   | Save filename for image/jpeg is a mailbox. Attachment not saved
-   [20050203 Urs Janssen <urs@tin.org>]
 
 o  unexpected multiline responses confuse tin, e.g.:
    | 240 Article posted =?ISO-8859-1?Q?=3C=3D=3Fiso=2D8859=2D1=3Fq=3F=3F=3D87r7k8na?=
@@ -30,10 +22,6 @@ o  unexpected multiline responses confuse tin, e.g.:
 o  fast/endless reconecction loop after a "200\n\r400\n\r" greeting,
    see
    <nntp://news.tin.org/Pine.LNX.4.61.0411190338000.24950@avenger.apcoh.org>
-
-o  rot13-toggle '%' doesn't work in raw '^H' mode (but isn't disabled, so
-   the info message in the last line is wrong).
-   [20041125 Urs Janssen <urs@tin.org>]
 
 o  AFAICS change_config_file() currently has a static return value,
    but some callers do check the return value and in case we did
@@ -177,7 +165,7 @@ o  allow bold, underline, italic, ... as colour substitution for
    [20030218 Serge Matveev <sm@cl.spb.ru>]
 
 o  add 'M'enu option to turn on/off slrn '#v+'/'#v-' verbatim mark handling.
-   (and make the VERBATIM_*_REGEXs user configurable; add a verbatim_color; ...)
+   (and add a verbatim_color; ...)
    [20060311 Urs Janssen <urs@tin.org>]
 
 o  hierarchical 'M'enu, e.g. put all art_marked_*into a 'submenu', ...
@@ -525,14 +513,6 @@ o  upgrade configure-script to autoconf-2.59
 o  remove untranslateable constructs like txt_prefix_*
    [20050413 Urs Janssen <urs@tin.org>]
 
-o  merge tinrc.space_goto_next_unread, tinrc.tab_goto_next_unread and
-   tinrc.pgdn_goto_next into a single option list
-   tinrc.goto_next_unread = {SPACE, TAB, PGDN,
-                             SPACE | TAB, SPACE | PGDN,
-                             TAB | PGDN, SPACE | TAB | PGDN}
-   to shorten 'M'enu and tinrc.
-   [20050709 Urs Janssen <urs@tin.org>]
-
 o  keys which could be renamed/merged:
    - 'm' GroupMail, PageMail, PostMail, ThreadMail
    - 'N' GroupNextUnreadArt, PageNextUnreadArt, (SelectNextUnreadGrp)
@@ -728,6 +708,14 @@ o  replace "\\" by "\e" in manpages (portable?)
 
 Not yet classified
 ------------------
+o  rename prompt_followupto (to prompt_extra_headres) and make it an option
+   list like {"Followup-To"; "Summary"; "Keywords";
+   "Followup-To & Summary"; "Followup-To & Keywords";
+   "Summary & Keywords"; "Followup-To, Summary & Keywords"} or make it a
+   user-definable text field like news_headers_to_display? or leave this
+   entirely to the user - he could tweak atributes accrodingly.
+   [20060503 Urs Janssen <urs@tin.org>]
+
 o  in several places only the latest keybinding is shown in prompts
     (e.g. "q=quit, e=edit, i=ispell, g=pgp, M=menu, w=post, o=postpone: w"
      with "PostPost	p	y	w" in keymaps)
@@ -825,7 +813,7 @@ o  cleanup main.c/init_selfinfo()
 o  either use libinn(3) where ever it's possible inside the code (if
    configured to use that lib; the related configure check needs to be
    rewritten from scratch (limitations to SPOOLDIR doesn't make sense
-   anymore, test for libinn.h is missing, ...)) or drop support for it. 
+   anymore, test for libinn.h is missing, ...)) or drop support for it.
    [20030511 Urs Janssen <urs@tin.org>]
 
 o  detect pcre version and add compatibility macros for old versions

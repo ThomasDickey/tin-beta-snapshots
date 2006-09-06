@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2006-03-27
+.\" Updated   : 2006-06-28
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -19,7 +19,7 @@
 .fi
 ..
 .\"
-.TH tin 1 "March 27th, 2006" "1.9.1" "A Usenet newsreader"
+.TH tin 1 "June 28th, 2006" "1.9.2" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -419,8 +419,7 @@ within \fBtin\fP.
 Beg. of list/article	\fBHome\fP	\fBFirstPage\fP (\fB^\fP)
 End of list/article	\fBEnd\fP	\fBLastPage\fP (\fB$\fP)
 Page Up	\fBPgUp\fP	\fBPageUp\fP (\fBu\fP, \fB^U\fP or \fB^B\fP)
-Page Down	\fBPgDn\fP	\fBPageDown\fP (\fB^D\fP or \fB^F\fP)
-		or \fBPageDown3\fP (\fB<SPACE>\fP)
+Page Down	\fBPgDn\fP	\fBPageDown\fP (\fB^D\fP or \fB^F\fP or \fB<SPACE>\fP)
 Line Up	\fBUp arrow\fP	\fBUp\fP (\fBk\fP or \fB^P\fP)
 Line Down	\fBDown arrow\fP	\fBDown\fP (\fBj\fP or \fB^N\fP)
 .fi
@@ -1124,8 +1123,9 @@ information on filtering.
 Goto next base article.
 .TP
 .B PageNextUnread '<TAB>'
-Goto next unread article. If the tinrc variable \fBtab_goto_next_unread\fP
-is set to OFF, then this key will first page through the current article.
+Goto next unread article. If the tinrc variable \fBgoto_next_unread\fP
+doesn't contain PageNextUnread, then this key will first page through the
+current article.
 .TP
 .B SearchAuthF 'a'
 Author forward search.
@@ -1663,6 +1663,14 @@ fetching articles from your first unread minus absolute value of
 .B Catchup group using left key (group_catchup_on_exit)
 If ON catchup group when leaving with the left arrow key. Default is ON.
 .TP
+.B Go to the next unread article with (goto_next_unread)
+Which keys \fBtin\fP should accept to jump to the next unread article.
+Possible is any combination of \fBPageDown\fP and \fBPageNextUnread\fP.
+When \fBPageDown\fP is set \fBtin\fP jumps to the next article at the
+end of the current one. When \fBPageNextUnread\fP is set \fBtin\fP jumps
+immediately to the next article when \fBPageNextUnread\fP ('\fB<TAB>\fP')
+is pressed. Default is PageNextUnread.
+.TP
 .B Max. length of group names shown (groupname_max_length)
 Maximum length of the names of newsgroups to be displayed so that more of
 the newsgroup description can be displayed. Default is 32.
@@ -1878,10 +1886,6 @@ The possible values are:
 .RE
 Some normalization modes are only available if they are supported by the
 library \fBtin\fP uses to do the normalization. Default is NFKC.
-.TP
-.B PgDn goes to next unread article (pgdn_goto_next)
-If ON the Page Down keys will go to the next unread article when pressed
-at the end of a message. Default is ON.
 .TP
 .B Goto first unread article in group (pos_first_unread)
 If ON put cursor at first unread article in group otherwise at last
@@ -2114,6 +2118,10 @@ allowed:
 (default).
 .IP 2
 \fBScore (ascending)\fP, sort threads by filtering score ascending.
+.IP 3
+\fBLast posting date (descending)\fP, sort threads by date of last posting descending.
+.IP 4
+\fBLast posting date (ascending)\fP, sort threads by  date of last posting ascending.
 .RE
 .TP
 .B Spamtrap warning address parts (spamtrap_warning_addresses)
@@ -2122,12 +2130,6 @@ replying to an article by mail where the e-mail address contains one of
 these strings. The matching is case-insensitive. Example:
 .sp
 \fIspam,delete,remove\fR
-.TP
-.B Space goes to next unread article (space_goto_next_unread)
-<SPACE> normally acts as a Page Down key and has no effect at the end of an
-article. If this option is turned ON the <SPACE> command will go to the next
-unread article when the end of the article is reached (rn-style pager).
-Default is OFF.
 .TP
 .B Regex used to highlight *stars* (stars_regex)
 A regular expression that will be applied when reading articles. All
@@ -2162,11 +2164,6 @@ If ON, then unsubscribed groups will be permanently removed from your
 A regular expression that will be applied when reading articles. All
 matching words are shown in \fBcol_markstroke\fP or \fBmono_markstroke\fP.
 If \fBstrokes_regex\fP is blank, then \fBtin\fP uses a built-in default.
-.TP
-.B Tab goes to next unread article (tab_goto_next_unread)
-If enabled pressing \fBPageNextUnread\fP ('\fB<TAB>\fP') at the Article
-level will go to the next unread article immediately instead of first
-paging through the current one. Default is ON.
 .TP
 .B Wrap around threads on next unread (wrap_on_next_unread)
 If enabled a search for the next unread article will wrap around all
@@ -2266,6 +2263,12 @@ to interpret the ''X\-Face:'' header. For this option to have any effect,
 and
 .BR slrnface (1)
 must be in your $\fBPATH\fP. Default is OFF.
+.TP
+.B Regex for begin of a verbatim block (verbatim_begin_regex)
+A regular expression that tin will use to find the begin of a verbatim block.
+.TP
+.B Regex for end of a verbatim block (verbatim_end_regex)
+A regular expression that tin will use to find the end of a verbatim block.
 .TP
 .B Wildcard matching (wildcard)
 Allows you to select how \fBtin\fP matches strings. The default is 0 and
@@ -2794,7 +2797,9 @@ For a detailed description see
 .IR ${TIN_HOMEDIR\-"$HOME"}/.newsrc
 .PP
 
+.nf
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/$NNTPSERVER${NNTPPORT+":$NNTPPORT"}/.oldnewsrc
+.fi
 .PP
 
 .IR ${TIN_HOMEDIR\-"$HOME"}/.signature
@@ -2811,7 +2816,9 @@ For a detailed description see
 .IR ${TIN_INDEX_MAILDIR\-"${TIN_HOMEDIR\-"$HOME"}/.tin"}/.mail/
 .PP
 
+.nf
 .IR ${TIN_INDEX_NEWSDIR\-"${TIN_HOMEDIR\-"$HOME"}/.tin"}/.news${NNTPSERVER+"\-$NNTPSERVER"}/
+.fi
 .PP
 
 .IR ${TIN_INDEX_SAVEDIR\-"${TIN_HOMEDIR\-"$HOME"}/.tin"}/.save/
@@ -2832,9 +2839,11 @@ For a detailed description see
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/filter
 .PP
 
+.nf
 .IR /etc/tin/keymap${${LC_ALL\-"${LC_CTYPE\-"${LC_MESSAGES\-"$LANG"}"}"}:+".${LC_ALL\-"${LC_CTYPE\-"${LC_MESSAGES\-"$LANG"}"}"}"}
 .br
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/keymap${${LC_ALL\-"${LC_CTYPE\-"${LC_MESSAGES\-"$LANG"}"}"}:+".${LC_ALL\-"${LC_CTYPE\-"${LC_MESSAGES\-"$LANG"}"}"}"}
+.fi
 .PP
 
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/mailgroups
@@ -2852,10 +2861,14 @@ For a detailed description see
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/postponed.articles
 .PP
 
+.nf
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/$NNTPSERVER:${NNTPPORT+":$NNTPPORT"}/newsgroups
+.fi
 .PP
 
+.nf
 .IR ${TIN_HOMEDIR\-"$HOME"}/.tin/$NNTPSERVER:${NNTPPORT+":$NNTPPORT"}/serverrc
+.fi
 .PP
 
 .\" .IR ${TIN_LIBDIR\-NEWSLIBDIR}/tinrc

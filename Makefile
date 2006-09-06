@@ -7,9 +7,9 @@
 PROJECT	= tin
 LVER	= 1
 PVER	= 9
-SVER	= 1
+SVER	= 2
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20060409
+DVER	= 20060906
 EXE	= tin
 
 # directory structure
@@ -191,9 +191,10 @@ PCRE	= \
 	$(PCREDIR)/README \
 	$(PCREDIR)/RunTest.in \
 	$(PCREDIR)/config.h \
+	$(PCREDIR)/configure.in \
 	$(PCREDIR)/dftables.c \
-	$(PCREDIR)/pcre.h \
 	$(PCREDIR)/pcre-config.in \
+	$(PCREDIR)/pcre.h.in \
 	$(PCREDIR)/pcre_compile.c \
 	$(PCREDIR)/pcre_config.c \
 	$(PCREDIR)/pcre_dfa_exec.c \
@@ -210,7 +211,7 @@ PCRE	= \
 	$(PCREDIR)/pcre_study.c \
 	$(PCREDIR)/pcre_tables.c \
 	$(PCREDIR)/pcre_try_flipped.c \
-	$(PCREDIR)/pcre_ucp_searchfuncs.c \
+	$(PCREDIR)/pcre_ucp_findchar.c \
 	$(PCREDIR)/pcre_valid_utf8.c \
 	$(PCREDIR)/pcre_version.c \
 	$(PCREDIR)/pcre_xclass.c \
@@ -223,6 +224,7 @@ PCRE	= \
 	$(PCREDIR)/ucp.h \
 	$(PCREDIR)/ucpinternal.h \
 	$(PCREDIR)/ucptable.c \
+	$(PCREDIR)/version.sh \
 	$(PCREDIR)/doc/pcre.3 \
 	$(PCREDIR)/doc/pcrepattern.3 \
 	$(PCREDIR)/testdata/testinput1 \
@@ -435,6 +437,7 @@ chmod:
 	$(TOLDIR)/url_handler.sh \
 	$(TOLDIR)/w2r.pl \
 	$(PCREDIR)/perltest \
+	$(PCREDIR)/version.sh \
 	$(CANDIR)/Build
 
 tar:

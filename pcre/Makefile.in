@@ -28,7 +28,6 @@ X		= $(BUILD_EXEEXT)
 CPPOPTS = \
 	-DLINK_SIZE=2 \
 	-DMATCH_LIMIT=10000000 \
-	-DMATCH_LIMIT_RECURSION=10000000 \
 	-DNEWLINE=10 \
 	-DPOSIX_MALLOC_THRESHOLD=10 \
 	@DEFS@ -I. -I../include
@@ -57,7 +56,7 @@ OBJ = \
 	pcre_study$o \
 	pcre_tables$o \
 	pcre_try_flipped$o \
-	pcre_ucp_searchfuncs$o \
+	pcre_ucp_findchar$o \
 	pcre_valid_utf8$o \
 	pcre_version$o \
 	pcre_xclass$o
@@ -121,7 +120,7 @@ dftables$X :	dftables.c pcre_maketables.c $(PCR_DEP)
 
 clean :;		$(RM) -f *$o *.a pcretest$x pcregrep$x
 
-distclean :	clean ; $(RM) -f dftables$X pcre_chartables.c RunTest
+distclean :	clean ; $(RM) -f pcre.h dftables$X pcre_chartables.c RunTest
 
 runtest :	all
 		./RunTest

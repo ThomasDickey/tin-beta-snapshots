@@ -5,7 +5,6 @@
 #
 # Global keys
 
-PageDown3			SPACE
 ShellEscape			!
 SetRange			#
 LastPage			$
@@ -45,7 +44,7 @@ QuickFilterKill			]
 ScrollUp			<
 ScrollDown			>
 PageUp				b	^B	^U
-PageDown			^D	^F
+PageDown			^D	^F	SPACE
 RedrawScr			^L
 MenuFilterSelect		^A
 MenuFilterKill			^K

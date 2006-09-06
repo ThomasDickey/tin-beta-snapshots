@@ -3,7 +3,7 @@
  *  Module    : lock.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1998-07-27
- *  Updated   : 2003-05-16
+ *  Updated   : 2006-05-11
  *  Notes     :
  *
  * Copyright (c) 1998-2006 Urs Janssen <urs@tin.org>
@@ -234,7 +234,9 @@ t_bool dot_lock(
 	if (stat(lockfile, &statbuf)) {				/* lockfile doesn't exist */
 		if (!link(tempfile, lockfile)) {			/* link succsessfull */
 			if (!stat(tempfile, &statbuf)) {	/* tempfile exist */
+/* #	ifndef __CYGWIN__ */ /* TODO: test if needed/usefull */
 				if (statbuf.st_nlink == 2)			/* link count ok */
+/* #	endif *//* !__CYGWIN__ */
 					rval = TRUE;
 			}
 		}

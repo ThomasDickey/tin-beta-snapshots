@@ -1,3 +1,61 @@
+-- 1.9.2 release 20060906 "" --
+
+U005) Dirk Nimmich <nimmich@muenster.de>
+      BUG. raw-mode didn't allow rot13
+      BUG. can't 'V'iew mime-parts with (illegal) encoded filename
+      FIX. proto.h, feed.c, page.c, save.c
+
+ 015) Michael Bienia <michael@vorlon.ping.de>
+      BUG. 'l' from the pager doesn't reposition cursor to last viewed
+           article
+      FIX. thread.c
+
+ 014) Urs Janssen <urs@tin.org>  
+      BUG. "Kill text pattern" form killfile menu was applied to
+           Message-ID and References instead of Message-ID only
+      BUG. FILTER_FILE_OFFSET was wrong
+      ADD. allow .ax TLD
+      FIX. tin.h, filter.c, policy.h
+
+ 013) Urs Janssen <urs@tin.org>
+      ADD. minor manpage tweaking
+      FIX. tin.1, tin.5
+
+ 012) Peter Breitenlohner <peb@mppmu.mpg.de>
+      BUG. build problem with with VPATH
+      FIX. Makefile.in
+
+ 011) Andrey Simonenko <simon@comsys.ntu-kpi.kiev.ua>
+      ADD. updated russian translation
+      FIX. ru.po
+
+ 010) Urs Janssen <urs@tin.org>
+      BUG. possible division by zero in thread_by_percentage()
+      FIX. art.c
+
+U004) Urs Janssen <urs@tin.org>
+      ADD. pcre downgrade (6.6 -> 6.4)
+      ADD. RISC OS handling
+      ADD. more options to filter menu "Kill text pattern"
+      REM. don't generate Sender on Mac OS X
+      ADD. config.guess, config.sub update
+      ADD. hide some regex in 'M'enu if the related option is off
+      ADD. disallow .so, .um TLDs
+      FIX. Makefile, aclocal.m4, configure[.in], extern.h, policy.h, filter.c
+           init.c, options_menu.c, post.c, pcre/*, config.guess, config.sub
+
+U003) Michael Bienia <michael@vorlon.ping.de>
+      ADD. 'M'enu option for VERBATIM_*_REGEXs
+      ADD. new option: sort by date of last posted article
+      ADD. merge tinrc.{pgdn_goto_next,tab_goto_next_unread,
+           space_goto_next_unread} into one option tinrc.goto_next_unread
+      ADD. merge PAGE_PAGE_DOWN3 (SPACE) into GLOBAL_PAGE_DOWN
+      ADD. minor code cleanup
+      FIX. extern.h, keymap.h, proto.h, tin.h, tinrc.h, version.h, art.c
+           attrib.c, charset.c, config.c, cook.c, help.c, init.c, keymap.c
+           lang.c, options_menu.c, page.c, tincfg.tbl, keymap.sample, tin.1
+           tin.5
+
 -- 1.9.1 release 20060409 "Benmore" --
 
 U002) Urs Janssen <urs@tin.org>

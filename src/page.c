@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-10-19
+ *  Updated   : 2006-06-28
  *  Notes     :
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -390,8 +390,7 @@ show_page(
 
 			case GLOBAL_PAGE_DOWN:		/* page down or next response */
 			case PAGE_NEXT_UNREAD:
-			case PAGE_PAGE_DOWN3:
-				if (!((func == PAGE_NEXT_UNREAD) && tinrc.tab_goto_next_unread) && deactivate_next_ctrl_l())
+				if (!((func == PAGE_NEXT_UNREAD) && (tinrc.goto_next_unread & GOTO_NEXT_UNREAD_TAB)) && deactivate_next_ctrl_l())
 					draw_page(group->name, 0);
 				else {
 					if (curr_line + ARTLINES >= artlines) {	/* End is already on screen */
@@ -400,12 +399,7 @@ show_page(
 								goto page_goto_next_unread;
 
 							case GLOBAL_PAGE_DOWN:
-								if (tinrc.pgdn_goto_next)
-									goto page_goto_next_unread;
-								break;
-
-							case PAGE_PAGE_DOWN3:			/* <SPACE> */
-								if (tinrc.space_goto_next_unread)
+								if (tinrc.goto_next_unread & GOTO_NEXT_UNREAD_PGDN)
 									goto page_goto_next_unread;
 								break;
 
@@ -414,7 +408,7 @@ show_page(
 						}
 						info_message(_(txt_end_of_art));
 					} else {
-						if ((func == PAGE_NEXT_UNREAD) && tinrc.tab_goto_next_unread)
+						if ((func == PAGE_NEXT_UNREAD) && (tinrc.goto_next_unread & GOTO_NEXT_UNREAD_TAB))
 							goto page_goto_next_unread;
 
 						curr_line += (tinrc.scroll_lines == -2) ? ARTLINES / 2 : ARTLINES;
@@ -1027,7 +1021,7 @@ print_message_page(
 		/*
 		 * rotN encoding on body and sig data only
 		 */
-		if ((rotate != 0) && (curr->flags & (C_BODY | C_SIG))) {
+		if ((rotate != 0) && ((curr->flags & (C_BODY | C_SIG)) || show_all_headers)) {
 			for (p = line; *p; p++) {
 				if (*p >= 'A' && *p <= 'Z')
 					*p = (*p - 'A' + rotate) % 26 + 'A';

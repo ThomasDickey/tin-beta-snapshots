@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-02-15
+ *  Updated   : 2006-06-28
  *  Notes     :
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>
@@ -475,7 +475,6 @@ constext txt_last[] = N_("Last");
 constext txt_last_resp[] = N_("-- Last response --");
 constext txt_lines[] = N_("Lines %s  ");
 
-constext txt_msgid_line_only[] = N_("Message-ID: line              ");
 constext txt_mail[] = N_("Mail");
 constext txt_mailbox[] = N_("mailbox ");
 constext txt_mail_art_to[] = N_("Mail article(s) to [%.*s]> ");
@@ -508,6 +507,9 @@ constext txt_mini_thread_1[] = N_("<n>=set current to n; %s=next unread; %s=catc
 constext txt_mini_thread_2[] = N_("%s=help; %s=line down; %s=line up; %s=quit; %s=tag; %s=mark unread");
 constext txt_more[] = N_("--More--");
 constext txt_moving[] = N_("Moving %s...");
+constext txt_msgid_line_last[] = N_("Message-ID: & last Reference  ");
+constext txt_msgid_line_only[] = N_("Message-ID: line              ");
+constext txt_msgid_refs_line[] = N_("Message-ID: & References: line");
 
 constext txt_name[] = N_(", name: ");
 constext txt_newsgroup[] = N_("Goto newsgroup [%s]> ");
@@ -616,6 +618,7 @@ constext txt_reading_news_active_file[] = N_("Reading groups from active file...
 constext txt_reading_news_newsrc_file[] = N_("Reading groups from newsrc file... ");
 constext txt_reading_newsgroups_file[] = N_("Reading newsgroups file... ");
 constext txt_reading_newsrc[] = N_("Reading newsrc file...");
+constext txt_refs_line_only[] = N_("References: line              ");
 #ifdef HAVE_GETTIMEOFDAY
 	constext txt_remaining[] = N_("(%d:%02d remaining)");
 #endif /* HAVE_GETTIMEOFDAY */
@@ -1197,6 +1200,14 @@ constext *txt_confirm_choices[] = {
 	N_("commands & quit & select")
 };
 
+/* diffent options for goto_next_unread */
+constext *txt_goto_next_unread_options[] = {
+	N_("none"),
+	N_("PageDown"),
+	N_("PageNextUnread"),
+	N_("PageDown or PageNextUnread"),
+};
+
 /*
  * MIME-Content-Transfer-Encodings.
  */
@@ -1240,7 +1251,9 @@ constext *txt_sort_a_type[] = {
 constext *txt_sort_t_type[] = {
 		N_("Nothing"),
 		N_("Score (descending)"),
-		N_("Score (ascending)")
+		N_("Score (ascending)"),
+		N_("Last posting date (descending)"),
+		N_("Last posting date (ascending)")
 };
 
 /* Ways of handling bogus groups */
@@ -1467,7 +1480,9 @@ struct opttxt txt_sort_threads_type = {
 # Possible values are (the default is marked with *):\n\
 #   0 = nothing\n\
 # * 1 = Score descending\n\
-#   2 = Score ascending\n")
+#   2 = Score ascending\n\
+#   3 = Last posting date descending\n\
+#   4 = Last posting date ascending\n")
 };
 
 struct opttxt txt_pos_first_unread = {
@@ -1498,24 +1513,15 @@ struct opttxt txt_kill_level = {
 #   2 = kill all articles and never show them\n")
 };
 
-struct opttxt txt_tab_goto_next_unread = {
+struct opttxt txt_goto_next_unread = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
-	N_("Tab goes to next unread article"),
-	N_("# If ON the TAB command will go to next unread article at article viewer level\n")
-};
-
-struct opttxt txt_space_goto_next_unread = {
-	N_("Scrolling with <SPACE> past the end of an art. jumps to the next unread one."),
-	N_("Space goes to next unread article"),
-	N_("# If ON the SPACE command will go to next unread article at article viewer\n\
-# level when the end of the article is reached (rn-style pager)\n")
-};
-
-struct opttxt txt_pgdn_goto_next = {
-	N_("Scrolling with <PGDN>/<DOWN> past the end of an art. jumps to the unread one."),
-	N_("PgDn goes to next unread article"),
-	N_("# If ON the PGDN or DOWN command will go to next unread article when\n\
-# pressed at end of message\n")
+	N_("Go to the next unread article with"),
+	N_("# Go to the unread article with folling key(s)\n\
+# Possible values are (the default is marked with *):\n\
+#   0 = nothing\n\
+#   1 = PAGE DOWN\n\
+# * 2 = TAB\n\
+#   3 = PAGE DOWN or TAB\n")
 };
 
 struct opttxt txt_auto_list_thread = {
@@ -1739,6 +1745,20 @@ struct opttxt txt_strip_was_regex = {
 	N_("Regex with Subject suffixes"),
 	N_("# A regular expression that tin will use to find Subject suffixes\n\
 # which will be removed when replying or posting followup.\n")
+};
+
+struct opttxt txt_verbatim_begin_regex = {
+	N_("A regex used to find the begin of a verbatim block."),
+	N_("Regex for begin of a verbatim block"),
+	N_("# A regular expression that tin will use to find the begin of\n\
+# a verbatim block.\n")
+};
+
+struct opttxt txt_verbatim_end_regex = {
+	N_("A regex used to find the end of a verbatim block."),
+	N_("Regex for end of a verbatim block"),
+	N_("# A regular expression that tin will use to find the end of\n\
+# a verbatim block.\n")
 };
 
 struct opttxt txt_metamail_prog = {

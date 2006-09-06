@@ -3,7 +3,7 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2006-02-21
+ *  Updated   : 2006-05-30
  *  Notes     : ISO to ascii charset conversion routines
  *
  * Copyright (c) 1993-2006 Markus Kuhn <mgk25@cl.cam.ac.uk>
@@ -427,45 +427,3 @@ wconvert_to_printable(
 	return wbuf;
 }
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-
-
-/*
- * Same as convert_to_printable() but allows Backspace (ASCII 8), TAB (ASCII
- * 9), and FormFeed (ASCII 12) according to son of RFC 1036 section 4.4;
- * LineFeed (ASCII 10) and CarriageReturn (ASCII 13) are allowed, too.
- *
- * NOTES: don't make wc a wint_t as libutf8 (at least version 0.8)
- *        sometimes fails to propper convert (wchar_t) 0 to (wint_t) 0
- *        and thus loop termination fails.
- */
-char *
-convert_body2printable(
-	char *buf)
-{
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	char *buffer;
-	wchar_t *wc, *wbuffer;
-	size_t len = strlen(buf) + 1;
-
-	if ((wbuffer = char2wchar_t(buf)) != NULL) {
-		for (wc = wbuffer; *wc; wc++) {
-			if (!(iswprint((wint_t) *wc) || *wc == (wchar_t) 8 || *wc == (wchar_t) 9 || *wc == (wchar_t) 10 || *wc == (wchar_t) 12 || *wc == (wchar_t) 13 || (IS_LOCAL_CHARSET("Big5") && *wc == (wchar_t) 27)))
-				*wc = (wchar_t) '?';
-		}
-		if ((buffer = wchar_t2char(wbuffer)) != NULL) {
-			strncpy(buf, buffer, len);
-			buf[len - 1] = '\0';
-			free(buffer);
-		}
-		free(wbuffer);
-	}
-#else
-	unsigned char *c;
-
-	for (c = (unsigned char *) buf; *c; c++) {
-		if (!(my_isprint(*c) || *c == 8 || *c == 9 || *c == 10 || *c == 12 || *c == 13 || (IS_LOCAL_CHARSET("Big5") && *c == 27)))
-			*c = '?';
-	}
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-	return buf;
-}

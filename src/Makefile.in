@@ -131,7 +131,6 @@ HFILES	= \
 	$(INCDIR)/tinrc.h \
 	$(INCDIR)/tnntp.h \
 	$(INCDIR)/version.h
-#	$(INCDIR)/config.h
 
 CFILES	= \
 	$(SRCDIR)/active.c \
@@ -474,7 +473,7 @@ makecfg$X :			$(SRCDIR)/makecfg.c \
 				$(INCDIR)/tin.h \
 				../include/autoconf.h
 @SHOW_CC@
-	@ECHO_CC@$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -o $@ makecfg.c #$(BUILD_LIBS)
+	@ECHO_CC@$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -o $@ $(SRCDIR)/makecfg.c #$(BUILD_LIBS)
 
 TIN_DEP	= \
 	Makefile \

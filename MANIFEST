@@ -1,26 +1,26 @@
-MANIFEST for tin-1.9.1 (Sun Apr  9 18:34:38 CEST 2006)
+MANIFEST for tin-1.9.2 (Wed Sep  6 16:39:31 CEST 2006)
 ----------------------------------------------------
-  13113 ./Makefile
-   7678 ./MANIFEST
+  13190 ./Makefile
+   7732 ./MANIFEST
    1440 ./README
     564 ./README.MAC
    1006 ./README.WIN
- 150679 ./aclocal.m4
+ 150771 ./aclocal.m4
     882 ./conf-tin
-  43937 ./config.guess
-  32372 ./config.sub
- 491128 ./configure
-  31023 ./configure.in
+  44127 ./config.guess
+  32453 ./config.sub
+ 491258 ./configure
+  31035 ./configure.in
    7123 ./install.sh
     838 ./mkdirs.sh
    1505 ./tin.spec
   18847 ./doc/ABOUT-NLS
-   2112 ./doc/CHANGES
+   4307 ./doc/CHANGES
  252172 ./doc/CHANGES.old
-   4895 ./doc/CREDITS
+   4916 ./doc/CREDITS
    1469 ./doc/DEBUG_REFS
   30011 ./doc/INSTALL
-  34823 ./doc/TODO
+  34309 ./doc/TODO
     162 ./doc/WHATSNEW
    2618 ./doc/art_handling.txt
    1700 ./doc/article.txt
@@ -30,8 +30,8 @@ MANIFEST for tin-1.9.1 (Sun Apr  9 18:34:38 CEST 2006)
   35304 ./doc/good-netkeeping-seal
    3803 ./doc/internals.txt
   23621 ./doc/iso2asc.txt
-   3488 ./doc/keymap.sample
-    660 ./doc/mailcap.sample
+   3476 ./doc/keymap.sample
+    572 ./doc/mailcap.sample
    3365 ./doc/mime.types
    1541 ./doc/nov_tests
    5155 ./doc/opt-case.1
@@ -47,8 +47,8 @@ MANIFEST for tin-1.9.1 (Sun Apr  9 18:34:38 CEST 2006)
    4168 ./doc/mmdf.5
    2128 ./doc/newsoverview.5
    6963 ./doc/plp_snprintf.3
- 118214 ./doc/tin.1
-  72829 ./doc/tin.5
+ 118445 ./doc/tin.1
+  73006 ./doc/tin.5
    4733 ./doc/w2r.1
    2196 ./doc/wildmat.3
     344 ./tools/expiretover
@@ -61,48 +61,48 @@ MANIFEST for tin-1.9.1 (Sun Apr  9 18:34:38 CEST 2006)
    1661 ./tools/expand_aliases.tgz
    2778 ./include/bool.h
    1947 ./include/bugrep.h
-  58841 ./include/extern.h
-  13625 ./include/keymap.h
+  59042 ./include/extern.h
+  13574 ./include/keymap.h
    6340 ./include/newsrc.h
    8397 ./include/nntplib.h
     665 ./include/plp_snprintf.h
-  12538 ./include/policy.h
-  31008 ./include/proto.h
+  12520 ./include/policy.h
+  30891 ./include/proto.h
    5047 ./include/rfc2046.h
    3373 ./include/stpwatch.h
    5756 ./include/tcurses.h
-  59301 ./include/tin.h
-  13398 ./include/tinrc.h
+  59627 ./include/tin.h
+  13568 ./include/tinrc.h
    4405 ./include/tnntp.h
    2264 ./include/trace.h
    2507 ./include/version.h
   25899 ./src/active.c
-  58423 ./src/art.c
-  32260 ./src/attrib.c
+  59717 ./src/art.c
+  32522 ./src/attrib.c
   12947 ./src/auth.c
-  13728 ./src/charset.c
+  12425 ./src/charset.c
    8220 ./src/color.c
-  58140 ./src/config.c
-  20553 ./src/cook.c
+  59004 ./src/config.c
+  21665 ./src/cook.c
   26667 ./src/curses.c
   10378 ./src/debug.c
    3408 ./src/envarg.c
-  26308 ./src/feed.c
-  56651 ./src/filter.c
+  27175 ./src/feed.c
+  56748 ./src/filter.c
   18114 ./src/getline.c
    9070 ./src/global.c
   47307 ./src/group.c
    3900 ./src/hashstr.c
    8351 ./src/header.c
-  28753 ./src/help.c
+  28708 ./src/help.c
   13665 ./src/inews.c
-  33304 ./src/init.c
+  33383 ./src/init.c
    2145 ./src/joinpath.c
-  90146 ./src/keymap.c
- 117417 ./src/lang.c
+  89717 ./src/keymap.c
+ 117952 ./src/lang.c
    4486 ./src/langinfo.c
    7102 ./src/list.c
-   6667 ./src/lock.c
+   6759 ./src/lock.c
   13489 ./src/mail.c
   21250 ./src/main.c
   10814 ./src/makecfg.c
@@ -112,12 +112,12 @@ MANIFEST for tin-1.9.1 (Sun Apr  9 18:34:38 CEST 2006)
   39712 ./src/newsrc.c
   45256 ./src/nntplib.c
    7192 ./src/nrctbl.c
-  41832 ./src/options_menu.c
-  58527 ./src/page.c
+  42710 ./src/options_menu.c
+  58452 ./src/page.c
   24138 ./src/parsdate.y
   16966 ./src/plp_snprintf.c
   12713 ./src/pgp.c
- 133419 ./src/post.c
+ 133686 ./src/post.c
   18446 ./src/prompt.c
   10071 ./src/read.c
   25559 ./src/refs.c
@@ -126,7 +126,7 @@ MANIFEST for tin-1.9.1 (Sun Apr  9 18:34:38 CEST 2006)
   15046 ./src/rfc2045.c
   29853 ./src/rfc2046.c
   32609 ./src/rfc2047.c
-  36840 ./src/save.c
+  37062 ./src/save.c
   11358 ./src/screen.c
   16533 ./src/search.c
   30811 ./src/select.c
@@ -138,7 +138,7 @@ MANIFEST for tin-1.9.1 (Sun Apr  9 18:34:38 CEST 2006)
   16944 ./src/tcurses.c
    3071 ./src/tmpfile.c
    3364 ./src/my_tmpfile.c
-  40369 ./src/thread.c
+  40413 ./src/thread.c
    2472 ./src/trace.c
    4347 ./src/version.c
    5453 ./src/wildmat.c
@@ -146,71 +146,73 @@ MANIFEST for tin-1.9.1 (Sun Apr  9 18:34:38 CEST 2006)
    7784 ./src/xref.c
     422 ./pcre/AUTHORS
    2515 ./pcre/COPYING
-  95469 ./pcre/ChangeLog
+  84049 ./pcre/ChangeLog
    8049 ./pcre/INSTALL
    2515 ./pcre/LICENCE
-   2956 ./pcre/Makefile.in
-  26060 ./pcre/Makefile.in-old
-  10800 ./pcre/NEWS
-  10634 ./pcre/NON-UNIX-USE
-  23456 ./pcre/README
-   6164 ./pcre/RunTest.in
-    147 ./pcre/config.h
+   2924 ./pcre/Makefile.in
+  24763 ./pcre/Makefile.in-old
+   9915 ./pcre/NEWS
+  10772 ./pcre/NON-UNIX-USE
+  22383 ./pcre/README
+   5996 ./pcre/RunTest.in
+    143 ./pcre/config.h
+   8703 ./pcre/configure.in
    5876 ./pcre/dftables.c
-  11912 ./pcre/pcre.h
    1171 ./pcre/pcre-config.in
- 162063 ./pcre/pcre_compile.c
-   3504 ./pcre/pcre_config.c
-  68288 ./pcre/pcre_dfa_exec.c
- 117538 ./pcre/pcre_exec.c
-   4933 ./pcre/pcre_fullinfo.c
+  10608 ./pcre/pcre.h.in
+ 160094 ./pcre/pcre_compile.c
+   3396 ./pcre/pcre_config.c
+  66595 ./pcre/pcre_dfa_exec.c
+ 110857 ./pcre/pcre_exec.c
+   4929 ./pcre/pcre_fullinfo.c
   11915 ./pcre/pcre_get.c
    3159 ./pcre/pcre_globals.c
-   3845 ./pcre/pcre_info.c
-  37990 ./pcre/pcre_internal.h
-   5456 ./pcre/pcre_maketables.c
-   2973 ./pcre/pcre_ord2utf8.c
-  12832 ./pcre/pcre_printint.src
-   3315 ./pcre/pcre_refcount.c
-  14380 ./pcre/pcre_study.c
-   8792 ./pcre/pcre_tables.c
-   5336 ./pcre/pcre_try_flipped.c
-   5997 ./pcre/pcre_ucp_searchfuncs.c
-   4470 ./pcre/pcre_valid_utf8.c
-   2627 ./pcre/pcre_version.c
-   4607 ./pcre/pcre_xclass.c
+   3841 ./pcre/pcre_info.c
+  36724 ./pcre/pcre_internal.h
+   5310 ./pcre/pcre_maketables.c
+   2985 ./pcre/pcre_ord2utf8.c
+  12388 ./pcre/pcre_printint.src
+   3311 ./pcre/pcre_refcount.c
+  14376 ./pcre/pcre_study.c
+   4610 ./pcre/pcre_tables.c
+   5348 ./pcre/pcre_try_flipped.c
+   4598 ./pcre/pcre_ucp_findchar.c
+   4482 ./pcre/pcre_valid_utf8.c
+   2573 ./pcre/pcre_version.c
+   4150 ./pcre/pcre_xclass.c
   11707 ./pcre/pcredemo.c
-  50765 ./pcre/pcregrep.c
-  11074 ./pcre/pcreposix.c
-   4775 ./pcre/pcreposix.h
-  55784 ./pcre/pcretest.c
-   5247 ./pcre/perltest
-   2656 ./pcre/ucp.h
-   3376 ./pcre/ucpinternal.h
-  89059 ./pcre/ucptable.c
-   9814 ./pcre/doc/pcre.3
-  65123 ./pcre/doc/pcrepattern.3
+  33516 ./pcre/pcregrep.c
+  10376 ./pcre/pcreposix.c
+   4086 ./pcre/pcreposix.h
+  54545 ./pcre/pcretest.c
+   5234 ./pcre/perltest
+   1612 ./pcre/ucp.h
+   3547 ./pcre/ucpinternal.h
+ 453166 ./pcre/ucptable.c
+    395 ./pcre/version.sh
+   9685 ./pcre/doc/pcre.3
+  63013 ./pcre/doc/pcrepattern.3
   74037 ./pcre/testdata/testinput1
-  27506 ./pcre/testdata/testinput2
-    932 ./pcre/testdata/testinput3
-   8420 ./pcre/testdata/testinput4
-   3558 ./pcre/testdata/testinput5
-  10209 ./pcre/testdata/testinput6
-  74603 ./pcre/testdata/testinput7
+  26948 ./pcre/testdata/testinput2
+    596 ./pcre/testdata/testinput3
+   8401 ./pcre/testdata/testinput4
+   3516 ./pcre/testdata/testinput5
+   7432 ./pcre/testdata/testinput6
+  74550 ./pcre/testdata/testinput7
    8795 ./pcre/testdata/testinput8
-  11437 ./pcre/testdata/testinput9
-  98413 ./pcre/testdata/testoutput1
- 124961 ./pcre/testdata/testoutput2
-   2218 ./pcre/testdata/testoutput3
-  14740 ./pcre/testdata/testoutput4
-  23439 ./pcre/testdata/testoutput5
-  20608 ./pcre/testdata/testoutput6
- 103554 ./pcre/testdata/testoutput7
-  51389 ./pcre/testdata/testoutput8
-  28769 ./pcre/testdata/testoutput9
+   8762 ./pcre/testdata/testinput9
+  98443 ./pcre/testdata/testoutput1
+ 122705 ./pcre/testdata/testoutput2
+   1513 ./pcre/testdata/testoutput3
+  14738 ./pcre/testdata/testoutput4
+  22902 ./pcre/testdata/testoutput5
+  16226 ./pcre/testdata/testoutput6
+ 103487 ./pcre/testdata/testoutput7
+  51419 ./pcre/testdata/testoutput8
+  24236 ./pcre/testdata/testoutput9
   19917 ./include/autoconf.hin
-  21094 ./src/Makefile.in
-   7657 ./src/tincfg.tbl
+  21083 ./src/Makefile.in
+   7705 ./src/tincfg.tbl
     946 ./libcanlock/Build
     882 ./libcanlock/CHANGES
     789 ./libcanlock/MANIFEST
@@ -271,21 +273,21 @@ MANIFEST for tin-1.9.1 (Sun Apr  9 18:34:38 CEST 2006)
      41 ./intl/VERSION
    4962 ./po/Makefile.inn
     847 ./po/POTFILES.in
- 123241 ./po/tin.pot
- 166688 ./po/de.gmo
- 199619 ./po/de.po
+ 123828 ./po/tin.pot
+ 166860 ./po/de.gmo
+ 201242 ./po/de.po
    7359 ./po/en_GB.gmo
- 125825 ./po/en_GB.po
- 159182 ./po/et.gmo
- 190832 ./po/et.po
- 162233 ./po/fr.gmo
- 196318 ./po/fr.po
- 124139 ./po/ru.gmo
- 175572 ./po/ru.po
+ 126725 ./po/en_GB.po
+ 157681 ./po/et.gmo
+ 191517 ./po/et.po
+ 160585 ./po/fr.gmo
+ 197331 ./po/fr.po
+ 128197 ./po/ru.gmo
+ 179130 ./po/ru.po
    2081 ./po/rw.gmo
- 169441 ./po/rw.po
+ 170341 ./po/rw.po
   23145 ./po/sv.gmo
- 130546 ./po/sv.po
+ 131435 ./po/sv.po
    5889 ./po/tr.gmo
- 190216 ./po/tr.po
-7661174 total
+ 191261 ./po/tr.po
+7978309 total

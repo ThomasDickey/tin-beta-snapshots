@@ -3,7 +3,7 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2005-07-06
+ *  Updated   : 2006-06-20
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>
@@ -1140,14 +1140,17 @@ filter_menu(
 	}
 
 	if (*rule.text) {
-		list = my_malloc(sizeof(char *) * 5);
+		list = my_malloc(sizeof(char *) * 8);
 		list[0] = (char *) _(txt_subj_line_only_case);
 		list[1] = (char *) _(txt_subj_line_only);
 		list[2] = (char *) _(txt_from_line_only_case);
 		list[3] = (char *) _(txt_from_line_only);
-		list[4] = (char *) _(txt_msgid_line_only);
+		list[4] = (char *) _(txt_msgid_refs_line);
+		list[5] = (char *) _(txt_msgid_line_last);
+		list[6] = (char *) _(txt_msgid_line_only);
+		list[7] = (char *) _(txt_refs_line_only);
 
-		i = get_choice(INDEX_TOP + 3, _(txt_help_filter_text_type), _(txt_filter_text_type), list, 5);
+		i = get_choice(INDEX_TOP + 3, _(txt_help_filter_text_type), _(txt_filter_text_type), list, 8);
 		free(list);
 
 		if (i == -1) {
@@ -1167,7 +1170,7 @@ filter_menu(
 			case FILTER_MSGID:
 			case FILTER_MSGID_LAST:
 			case FILTER_MSGID_ONLY:
-				/* rule.icase is FALSE already, no assignment necessary */
+			case FILTER_REFS_ONLY:
 				break;
 
 			default: /* should not happen */

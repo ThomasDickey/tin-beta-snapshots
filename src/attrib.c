@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2006-02-15
+ *  Updated   : 2006-06-21
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2006 Iain Lea <iain@bricbrac.de>
@@ -351,7 +351,7 @@ read_attributes_file(
 					MATCH_BOOLEAN("show_only_unread=", ATTRIB_SHOW_ONLY_UNREAD);
 					MATCH_STRING("sigfile=", ATTRIB_SIGFILE);
 					MATCH_INTEGER("sort_art_type=", ATTRIB_SORT_ART_TYPE, SORT_ARTICLES_BY_LINES_ASCEND);
-					MATCH_INTEGER("sort_threads_type=", ATTRIB_SORT_THREADS_TYPE, SORT_THREADS_BY_SCORE_DESCEND);
+					MATCH_INTEGER("sort_threads_type=", ATTRIB_SORT_THREADS_TYPE, SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND);
 					break;
 
 				case 't':
@@ -712,6 +712,9 @@ write_attributes_file(
 		SORT_THREADS_BY_NOTHING, _(txt_sort_t_type[SORT_THREADS_BY_NOTHING]),
 		SORT_THREADS_BY_SCORE_DESCEND, _(txt_sort_t_type[SORT_THREADS_BY_SCORE_DESCEND]),
 		SORT_THREADS_BY_SCORE_ASCEND, _(txt_sort_t_type[SORT_THREADS_BY_SCORE_ASCEND]));
+	fprintf(fp, "#    %d=%s, %d=%s\n",
+		SORT_THREADS_BY_LAST_POSTING_DATE_DESCEND, _(txt_sort_t_type[SORT_THREADS_BY_LAST_POSTING_DATE_DESCEND]),
+		SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND, _(txt_sort_t_type[SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND]));
 	fprintf(fp, _("#  post_proc_type=NUM\n"));
 	fprintf(fp, "#    %d=%s, %d=%s, %d=%s\n",
 		POST_PROC_NO, _(txt_post_process_type[POST_PROC_NO]),

@@ -3,7 +3,7 @@
  *  Module    : version.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-02-15
+ *  Updated   : 2006-06-28
  *  Notes     :
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>
@@ -40,15 +40,15 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.9.1"
+#		define VERSION		"1.9.2"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20060409"
+#	define RELEASEDATE	"20060906"
 #	define RELEASENAME	"Benmore"
 /* config-file versions - must by dotted triples */
-#	define TINRC_VERSION	"1.3.7"
+#	define TINRC_VERSION	"1.3.8"
 #	define ATTRIBUTES_VERSION	"1.0.4"
 #	define FILTER_VERSION	"1.0.0"
-#	define KEYMAP_VERSION	"1.0.6"
+#	define KEYMAP_VERSION	"1.0.7"
 #	define SERVERCONFIG_VERSION	"1.0.0"
 
 #	ifdef M_UNIX

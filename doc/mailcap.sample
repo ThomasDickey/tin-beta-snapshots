@@ -12,7 +12,7 @@ image/*;\
 	test=test "$DISPLAY";\
 	nametemplate=%s.IMAGE
 message/rfc822;\
-	if test -x /usr/bin/less \; then less '%s' \; else more '%s' \; fi;\
+	${PAGER-"more"} '%s'\;
 	description=Mail Text;\
 	needsterminal
 text/html;\
@@ -21,8 +21,8 @@ text/html;\
 	needsterminal;\
 	nametemplate=%s.html
 text/*;\
-	if test -x /usr/bin/less \; then less '%s' \; else more '%s' \; fi;\
-	edit=${EDITOR-vi} '%s';\
-	compose=${EDITOR-vi} '%s';\
+	${PAGER-"more"} '%s'\;
+	edit=${EDITOR-"vi"} '%s';\
+	compose=${EDITOR-"vi"} '%s';\
 	print=a2ps '%s';\
 	needsterminal
