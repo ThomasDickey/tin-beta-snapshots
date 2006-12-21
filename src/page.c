@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2006-06-28
+ *  Updated   : 2006-10-01
  *  Notes     :
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -300,7 +300,6 @@ show_page(
 	char buf[LEN];
 	char key[MAXKEYLEN];
 	int i, n = 0;
-	int filter_state = NO_FILTERING;
 	int old_sort_art_type = tinrc.sort_article_type;
 	int art_type = GROUP_TYPE_NEWS;
 	t_bool mouse_click_on = TRUE;
@@ -791,14 +790,14 @@ page_goto_next_unread:
 			case GLOBAL_QUIT:	/* return to index page */
 return_to_index:
 				XFACE_CLEAR();
-				if (filter_state == NO_FILTERING && tinrc.sort_article_type != old_sort_art_type)
+				if (tinrc.sort_article_type != old_sort_art_type)
 					make_threads(group, TRUE);
 
 				i = which_thread(this_resp);
 				if (threadnum)
 					*threadnum = which_response(this_resp);
 
-				if (filter_state == FILTERING || filtered_articles) {
+				if (filtered_articles) {
 					int old_top = top_art;
 					long old_artnum = arts[this_resp].artnum;
 
@@ -830,8 +829,7 @@ return_to_index:
 
 			case GLOBAL_OPTION_MENU:	/* option menu */
 				XFACE_CLEAR();
-				if (change_config_file(group) == FILTERING)
-					filter_state = FILTERING;
+				change_config_file(group);
 				draw_page(group->name, 0);
 				break;
 
@@ -894,10 +892,13 @@ return_to_index:
 				break;
 
 			case PAGE_GROUP_SELECT:	/* return to group selection page */
+#if 0
+				/* Hasn't been used since tin 1.1 PL4 */
 				if (filter_state == FILTERING) {
 					filter_articles(group);
 					make_threads(group, FALSE);
 				}
+#endif /* 0 */
 				XFACE_CLEAR();
 				return GRP_RETSELECT;
 

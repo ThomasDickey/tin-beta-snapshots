@@ -1,7 +1,7 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2006-02-15
+# Updated: 2006-10-25
 #
 
 PROJECT	= tin
@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 9
 SVER	= 2
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20060906
+DVER	= 20061221
 EXE	= tin
 
 # directory structure
@@ -194,7 +194,7 @@ PCRE	= \
 	$(PCREDIR)/configure.in \
 	$(PCREDIR)/dftables.c \
 	$(PCREDIR)/pcre-config.in \
-	$(PCREDIR)/pcre.h.in \
+	$(PCREDIR)/pcre.h \
 	$(PCREDIR)/pcre_compile.c \
 	$(PCREDIR)/pcre_config.c \
 	$(PCREDIR)/pcre_dfa_exec.c \
@@ -205,13 +205,14 @@ PCRE	= \
 	$(PCREDIR)/pcre_info.c \
 	$(PCREDIR)/pcre_internal.h \
 	$(PCREDIR)/pcre_maketables.c \
+	$(PCREDIR)/pcre_newline.c \
 	$(PCREDIR)/pcre_ord2utf8.c \
 	$(PCREDIR)/pcre_printint.src \
 	$(PCREDIR)/pcre_refcount.c \
 	$(PCREDIR)/pcre_study.c \
 	$(PCREDIR)/pcre_tables.c \
 	$(PCREDIR)/pcre_try_flipped.c \
-	$(PCREDIR)/pcre_ucp_findchar.c \
+	$(PCREDIR)/pcre_ucp_searchfuncs.c \
 	$(PCREDIR)/pcre_valid_utf8.c \
 	$(PCREDIR)/pcre_version.c \
 	$(PCREDIR)/pcre_xclass.c \
@@ -224,7 +225,6 @@ PCRE	= \
 	$(PCREDIR)/ucp.h \
 	$(PCREDIR)/ucpinternal.h \
 	$(PCREDIR)/ucptable.c \
-	$(PCREDIR)/version.sh \
 	$(PCREDIR)/doc/pcre.3 \
 	$(PCREDIR)/doc/pcrepattern.3 \
 	$(PCREDIR)/testdata/testinput1 \
@@ -249,6 +249,7 @@ PCRE	= \
 CAN	= \
 	$(CANDIR)/Build \
 	$(CANDIR)/CHANGES \
+	$(CANDIR)/HOWTO \
 	$(CANDIR)/MANIFEST \
 	$(CANDIR)/README \
 	$(CANDIR)/base64.c \
@@ -268,17 +269,12 @@ CAN	= \
 	$(CANDIR)/md5.c \
 	$(CANDIR)/md5.h \
 	$(CANDIR)/sha1.c \
-	$(CANDIR)/sha1.h \
-	$(CANDIR)/doc/HOWTO \
-	$(CANDIR)/doc/draft-ietf-usefor-cancel-lock-01.txt \
-	$(CANDIR)/doc/rfc2104.txt \
-	$(CANDIR)/doc/rfc2202.txt \
-	$(CANDIR)/doc/rfc2286.txt
+	$(CANDIR)/sha1.h
 
 MISC	= \
 	$(INCDIR)/autoconf.hin \
 	$(SRCDIR)/Makefile.in \
-	$(SRCDIR)/tincfg.tbl \
+	$(SRCDIR)/tincfg.tbl
 
 INTLFILES = \
 	$(INTLDIR)/bindtextdom.c \
@@ -337,7 +333,7 @@ POFILES = \
 
 ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(PCRE) $(MISC) $(CAN) $(INTLFILES) $(POFILES)
 
-ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(CANDIR)/doc $(INTLDIR) $(PODIR)
+ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(INTLDIR) $(PODIR)
 
 # standard commands
 CD	= cd
@@ -423,12 +419,12 @@ chmod:
 	@$(CHMOD) 644 $(ALL_FILES)
 	@$(CHMOD) 755 \
 	$(ALL_DIRS) \
-	./conf-tin \
-	./config.guess \
-	./config.sub \
-	./configure \
-	./install.sh \
-	./mkdirs.sh \
+	$(TOPDIR)/conf-tin \
+	$(TOPDIR)/config.guess \
+	$(TOPDIR)/config.sub \
+	$(TOPDIR)/configure \
+	$(TOPDIR)/install.sh \
+	$(TOPDIR)/mkdirs.sh \
 	$(TOLDIR)/expiretover \
 	$(TOLDIR)/metamutt \
 	$(TOLDIR)/opt-case.pl \
@@ -437,7 +433,6 @@ chmod:
 	$(TOLDIR)/url_handler.sh \
 	$(TOLDIR)/w2r.pl \
 	$(PCREDIR)/perltest \
-	$(PCREDIR)/version.sh \
 	$(CANDIR)/Build
 
 tar:
@@ -499,10 +494,10 @@ distclean:
 	@-if $(TEST) -r $(INTLDIR)/Makefile ; then $(CD) $(INTLDIR) && $(MAKE) distclean ; fi
 	@-if $(TEST) -r $(PCREDIR)/Makefile ; then $(CD) $(PCREDIR) && $(MAKE) distclean ; fi
 	@-$(RM) -f \
-	config.cache \
-	config.log \
-	config.status \
-	td-conf.out \
+	$(TOPDIR)/config.cache \
+	$(TOPDIR)/config.log \
+	$(TOPDIR)/config.status \
+	$(TOPDIR)/td-conf.out \
 	$(INCDIR)/autoconf.h \
 	$(SRCDIR)/Makefile \
 	$(PCREDIR)/Makefile \
@@ -512,4 +507,4 @@ configure: configure.in aclocal.m4
 	autoconf
 
 config.status: configure
-	./config.status --recheck
+	$(TOPDIR)/config.status --recheck

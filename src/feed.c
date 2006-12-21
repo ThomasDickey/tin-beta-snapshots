@@ -166,7 +166,7 @@ expand_feed_filename(
 	 */
 	if ((ret == 0) || !(strrchr(outpath, DIRSEP))) {
 		char buf[PATH_LEN];
-		
+
 		if (!strfpath(curr_group->attribute->savedir, buf, sizeof(buf), curr_group))
 			joinpath(buf, homedir, DEFAULT_SAVEDIR);
 		joinpath(outpath, buf, path);
@@ -174,7 +174,8 @@ expand_feed_filename(
 	} else
 		return (ret == 1);
 }
-     
+
+
 /*
  * Find out what post-processing to perform.
  * This is not used when saving to mailboxes (we don't postprocess mailboxes)

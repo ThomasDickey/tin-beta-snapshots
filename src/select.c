@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-07-02
+ *  Updated   : 2006-10-01
  *  Notes     :
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -342,7 +342,7 @@ selection_page(
 				break;
 
 			case GLOBAL_OPTION_MENU:
-				(void) change_config_file(NULL);
+				change_config_file(NULL);
 				read_attributes_files();
 				show_selection_page();
 				break;

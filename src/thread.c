@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-07-20
+ *  Updated   : 2006-09-16
  *  Notes     :
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>
@@ -448,7 +448,7 @@ thread_page(
 	 * See if we're on a direct call from the group menu to the pager
 	 */
 	if (page) {
-		if ((ret_code = enter_pager(page->art, page->ignore_unavail, GROUP_LEVEL)) != 0)
+		if ((ret_code =	enter_pager(page->art, page->ignore_unavail, GROUP_LEVEL)) != 0)
 			return ret_code;
 		/* else fall through to stay in thread level */
 	}

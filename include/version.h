@@ -42,7 +42,7 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.9.2"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20060906"
+#	define RELEASEDATE	"20061221"
 #	define RELEASENAME	"Benmore"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.8"

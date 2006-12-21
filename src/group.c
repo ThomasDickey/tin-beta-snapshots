@@ -3,7 +3,7 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-07-02
+ *  Updated   : 2006-10-06
  *  Notes     :
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -455,7 +455,8 @@ group_page(
 					old_artnum = arts[(int) base[grpmenu.curr]].artnum;
 				}
 				n = tinrc.sort_article_type;
-				if ((change_config_file(group) == NO_FILTERING) && n != tinrc.sort_article_type)
+				change_config_file(group);
+				if (n != tinrc.sort_article_type)
 					make_threads(group, TRUE);
 				grpmenu.curr = find_new_pos(old_top, old_artnum, grpmenu.curr);
 				show_group_page();
@@ -1567,14 +1568,19 @@ enter_thread(
 
 			case GRP_NEXTUNREAD:				/* 'C'atchup */
 				if ((n = next_unread((int) base[grpmenu.curr])) >= 0) {
+					if (page)
+						page->art = n;
 					if ((n = which_thread(n)) >= 0) {
 						grpmenu.curr = n;
 						depth = 0;
 						break;		/* Drop into next thread with unread */
 					}
 				}
-				/* No more unread threads in this group */
-				/* FALLTHROUGH */
+				/* No more unread threads in this group, enter next group */
+				grpmenu.curr = 0;
+				return GRP_NEXTUNREAD;
+				/* NOTREACHED */
+				break;
 
 			case GRP_KILLED:
 				grpmenu.curr = 0;

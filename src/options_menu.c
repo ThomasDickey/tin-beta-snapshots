@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2006-06-28
+ *  Updated   : 2006-10-01
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2006 Michael Bienia <michael@vorlon.ping.de>
@@ -696,17 +696,14 @@ option_right(
 /*
  * options menu so that the user can dynamically change parameters
  *
- * TODO: - why do we use ret_code when we never modify it?  what about calling
- *         code which checks the return value?
- *       - when we change something we need to update the related attributes
+ * TODO: - when we change something we need to update the related attributes
  *         as well (see line 2009).
  */
-int
+void
 change_config_file(
 	struct t_group *group)
 {
 	enum option_enum option, old_option;
-	int ret_code = NO_FILTERING;
 	int mime_encoding = MIME_ENCODING_7BIT;
 	t_bool change_option = FALSE;
 	t_function func;
@@ -725,7 +722,7 @@ change_config_file(
 				/* FALLTHROUGH */
 			case CONFIG_NO_SAVE:
 				clear_note_area();
-				return ret_code;
+				return;
 
 			case GLOBAL_LINE_UP:
 				unhighlight_option(option);
@@ -1517,5 +1514,5 @@ change_config_file(
 		} /* if (change_option) */
 	} /* forever */
 	/* NOTREACHED */
-	return ret_code;
+	return;
 }

@@ -59,9 +59,9 @@ static t_bool authinfo_original(char *server, char *authuser, t_bool startup);
 
 
 /*
- * Process AUTHINFO GENERIC method.
+ * Process AUTHINFO GENERIC method, deprecated by RFC 4643.
  * TRUE means succeeded.
- * FALSE means failed
+ * FALSE means failed.
  */
 static t_bool
 authinfo_generic(

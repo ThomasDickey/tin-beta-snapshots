@@ -1145,6 +1145,7 @@ extern constext txt_usage_verbose[];
 extern constext txt_usage_version[];
 extern constext txt_useful_without_batch_mode[];
 extern constext txt_useful_with_batch_mode[];
+extern constext txt_useless_combination[];
 extern constext txt_use_mime[];
 extern constext txt_value_out_of_range[];
 extern constext txt_view_attachment[];

@@ -436,7 +436,7 @@ CF_BUNDLED_PCRE($PCRE_HOME)
 
 PCRE_MAKEFILE=
 if test "$PCRE_HOME" = "no" ; then
-	PCRE_MAKEFILE="$PCRE_MAKEFILE pcre/Makefile pcre/RunTest pcre/pcre.h"
+	PCRE_MAKEFILE="$PCRE_MAKEFILE pcre/Makefile pcre/RunTest"
 fi
 
 ## debugging libraries (do this after other libraries)

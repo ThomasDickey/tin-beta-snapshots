@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2006-02-15
+ *  Updated   : 2006-10-16
  *  Notes     :
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -658,7 +658,7 @@ read_cmd_line_options(
 	}
 
 	/*
-	 * Sort out conflicts of options....
+	 * Sort out option conflicts
 	 */
 	if (!batch_mode) {
 		if (verbose) {
@@ -675,6 +675,33 @@ read_cmd_line_options(
 			read_saved_news = FALSE;
 		}
 	}
+	if (post_postponed_and_exit && force_no_post) {
+		wait_message(2, _(txt_useless_combination), "-o", "-x", "-x");
+		force_no_post = FALSE;
+	}
+	if (post_article_and_exit && force_no_post) {
+		wait_message(2, _(txt_useless_combination), "-w", "-x", "-x");
+		force_no_post = FALSE;
+	}
+	if (catchup && start_any_unread) {
+		wait_message(2, _(txt_useless_combination), "-c", "-z", "-c");
+		catchup = FALSE;
+	}
+	if (catchup && no_write) {
+		wait_message(2, _(txt_useless_combination), "-c", "-X", "-c");
+		catchup = FALSE;
+	}
+	if (catchup && check_any_unread) {
+		wait_message(2, _(txt_useless_combination), "-c", "-Z", "-c");
+		catchup = FALSE;
+	}
+	if (mail_news || save_news || update_index || check_any_unread || catchup)
+		batch_mode = TRUE;
+	else
+		batch_mode = FALSE;
+	if (batch_mode && (post_article_and_exit || post_postponed_and_exit))
+		 batch_mode = FALSE;
+
 #ifdef NNTP_ABLE
 	/*
 	 * If we're reading from an NNTP server and we've been asked not to look
