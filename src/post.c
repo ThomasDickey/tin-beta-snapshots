@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-02-15
+ *  Updated   : 2006-10-12
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>
@@ -125,6 +125,7 @@ static struct msg_header {
  * Local prototypes
  */
 static FILE *create_mail_headers(char *filename, const char *suffix, const char *to, const char *subject, struct t_header *extra_hdrs);
+static char **build_nglist(char *ngs_list, int *ngcnt);
 static char **split_address_list(const char *addresses, unsigned int *cnt);
 static char *backup_article_name(const char *the_article);
 static int add_mail_quote(FILE *fp, int respnum);
@@ -147,6 +148,7 @@ static t_bool insert_from_header(const char *infile);
 static t_bool is_crosspost(const char *xref);
 static t_bool must_include(const char *id);
 static t_bool repair_article(t_function *result, struct t_group *group);
+static t_bool stripped_double_ngs(char **newsgroups, int *ngcnt);
 static t_bool submit_mail_file(const char *file, struct t_group *group, FILE *articlefp, t_bool include_text);
 static t_function prompt_rejected(void);
 static t_function prompt_to_send(const char *subject);
@@ -279,7 +281,7 @@ repair_article(
 		if (invoke_editor(article_name, start_line_offset))
 			return TRUE;
 	} else if (func == GLOBAL_OPTION_MENU) {
-		(void) change_config_file(group); /*OD:*/
+		change_config_file(group); /*OD:*/
 		return TRUE;
 	}
 	return FALSE;
@@ -724,7 +726,8 @@ check_article_to_be_posted(
 	t_bool art_unchanged)
 {
 	FILE *fp;
-	char *ngptrs[NGLIMIT], *ftngptrs[NGLIMIT];
+	char **newsgroups = NULL;
+	char **followupto = NULL;
 	char *line, *cp, *cp2;
 	char references[HEADER_LEN];
 	char subject[HEADER_LEN];
@@ -743,7 +746,6 @@ check_article_to_be_posted(
 	int found_subject_lines = 0;
 	int errors_catbp = 0; /* sum of error-codes */
 	int warnings_catbp = 0; /* sum of warning-codes */
-	size_t nglens[NGLIMIT], ftnglens[NGLIMIT];
 	struct t_group *psGrp;
 	t_bool end_of_header = FALSE;
 	t_bool got_long_line = FALSE;
@@ -774,12 +776,10 @@ check_article_to_be_posted(
 			break;
 		}
 
-		if (!contains_8bit) {
-			for (cp = line; *cp; cp++) {
-				if (!isascii(*cp)) {
-					contains_8bit = TRUE;
-					break;
-				}
+		for (cp = line; *cp && !contains_8bit; cp++) {
+			if (!isascii(*cp)) {
+				contains_8bit = TRUE;
+				break;
 			}
 		}
 #ifdef CHARSET_CONVERSION
@@ -956,28 +956,10 @@ check_article_to_be_posted(
 				unfold_header(line);
 			}
 
-			strip_double_ngs(cp);
-			while (*cp) {
-				if (!(cp2 = strchr(cp, ',')))
-					cp2 = cp + strlen(cp);
-				else
-					*cp2++ = '\0';
-				if (ngcnt < NGLIMIT) {
-					nglens[ngcnt] = strlen(cp);
-					ngptrs[ngcnt] = my_malloc(nglens[ngcnt] + 1);
-					if (!ngptrs[ngcnt]) {
-						for (i = 0; i < ngcnt; i++)
-							FreeIfNeeded(ngptrs[i]);
-						for (i = 0; i < ftngcnt; i++)
-							FreeIfNeeded(ftngptrs[i]);
-						Raw(oldraw);
-						return 1;
-					}
-					strcpy(ngptrs[ngcnt], cp);
-					ngcnt++;
-				}
-				cp = cp2;
-			}
+			newsgroups = build_nglist(cp, &ngcnt);
+			if (newsgroups && ngcnt)
+				(void) stripped_double_ngs(newsgroups, &ngcnt);
+
 			if (!ngcnt)
 				errors_catbp |= CA_ERROR_EMPTY_NEWSGROUPS;
 		}
@@ -987,7 +969,6 @@ check_article_to_be_posted(
 				;
 			if (strlen(cp)) /* Followup-To not empty */
 				found_followup_to_lines++;
-			strip_double_ngs(cp);
 			if (strchr(cp, ' ') || strchr(cp, '\t')) {
 #ifdef FOLLOW_USEFOR_DRAFT
 				warnings_catbp |= CA_WARNING_SPACE_IN_FOLLOWUP_TO;
@@ -1003,28 +984,10 @@ check_article_to_be_posted(
 #endif /* FOLLOW_USEFOR_DRAFT */
 				unfold_header(line);
 			}
-			while (*cp) {
-				if (!(cp2 = strchr(cp, ',')))
-					cp2 = cp + strlen(cp);
-				else
-					*cp2++ = '\0';
-				if (ftngcnt < NGLIMIT) {
-					ftnglens[ftngcnt] = strlen(cp);
-					ftngptrs[ftngcnt] = my_malloc(ftnglens[ftngcnt] + 1);
-					if (!ftngptrs[ftngcnt]) {
-						/* out of memory? */
-						for (i = 0; i < ftngcnt; i++)
-							FreeIfNeeded(ftngptrs[i]);
-						for (i = 0; i < ngcnt; i++)
-							FreeIfNeeded(ngptrs[i]);
-						Raw(oldraw);
-						return 1;
-					}
-					strcpy(ftngptrs[ftngcnt], cp);
-					ftngcnt++;
-				}
-				cp = cp2;
-			}
+
+			followupto = build_nglist(cp, &ftngcnt);
+			if (followupto && ftngcnt)
+				(void) stripped_double_ngs(followupto, &ftngcnt);
 		}
 	}
 
@@ -1215,7 +1178,7 @@ check_article_to_be_posted(
 	 * Is this correct for crosspostings?
 	 */
 	if (ngcnt)
-		*group = group_find(ngptrs[0]);
+		*group = group_find(newsgroups[0]);
 
 	/*
 	 * check for known 7bit charsets
@@ -1269,7 +1232,7 @@ check_article_to_be_posted(
 		if (errors_catbp & CA_ERROR_MISSING_NEWSGROUPS)
 			my_fprintf(stderr, _(txt_error_header_line_missing), "Newsgroups");
 
-		/* dublicated headers */
+		/* duplicated headers */
 		if (errors_catbp & CA_ERROR_DUPLICATED_FROM)
 			my_fprintf(stderr, _(txt_error_header_duplicate), found_from_lines, "From");
 		if (errors_catbp & CA_ERROR_DUPLICATED_SUBJECT)
@@ -1360,17 +1323,17 @@ check_article_to_be_posted(
 			my_fprintf(stderr, _(txt_warn_article_unchanged));
 		my_fprintf(stderr, _(txt_art_newsgroups), subject, PLURAL(ngcnt, txt_newsgroup));
 		for (i = 0; i < ngcnt; i++) {
-			if ((psGrp = group_find(ngptrs[i])))
-				my_fprintf(stderr, "  %s\t %s\n", ngptrs[i], BlankIfNull(psGrp->description));
+			if ((psGrp = group_find(newsgroups[i])))
+				my_fprintf(stderr, "  %s\t %s\n", newsgroups[i], BlankIfNull(psGrp->description));
 			else {
 #ifdef HAVE_FASCIST_NEWSADMIN
 				StartInverse();
 				errors++;
-				my_fprintf(stderr, _(txt_error_not_valid_newsgroup), ngptrs[i]);
+				my_fprintf(stderr, _(txt_error_not_valid_newsgroup), newsgroups[i]);
 				my_fflush(stderr);
 				EndInverse();
 #else
-				my_fprintf(stderr, (!list_active ? /* did we read the whole active file? */ _(txt_warn_not_in_newsrc) : _(txt_warn_not_valid_newsgroup)), ngptrs[i]);
+				my_fprintf(stderr, (!list_active ? /* did we read the whole active file? */ _(txt_warn_not_in_newsrc) : _(txt_warn_not_valid_newsgroup)), newsgroups[i]);
 				warnings++;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 			}
@@ -1406,20 +1369,20 @@ check_article_to_be_posted(
 #endif /* HAVE_FASCIST_NEWSADMIN */
 				my_fprintf(stderr, _(txt_followup_newsgroups), PLURAL(ftngcnt, txt_newsgroup));
 				for (i = 0; i < ftngcnt; i++) {
-					if ((psGrp = group_find(ftngptrs[i])))
-						my_fprintf(stderr, "  %s\t %s\n", ftngptrs[i], BlankIfNull(psGrp->description));
+					if ((psGrp = group_find(followupto[i])))
+						my_fprintf(stderr, "  %s\t %s\n", followupto[i], BlankIfNull(psGrp->description));
 					else {
-						if (STRCMPEQ("poster", ftngptrs[i]))
-							my_fprintf(stderr, _(txt_followup_poster), ftngptrs[i]);
+						if (STRCMPEQ("poster", followupto[i]))
+							my_fprintf(stderr, _(txt_followup_poster), followupto[i]);
 						else {
 #ifdef HAVE_FASCIST_NEWSADMIN
 							StartInverse();
-							my_fprintf(stderr, _(txt_error_not_valid_newsgroup), ftngptrs[i]);
+							my_fprintf(stderr, _(txt_error_not_valid_newsgroup), followupto[i]);
 							my_fflush(stderr);
 							EndInverse();
 							errors++;
 #else
-							my_fprintf(stderr, (!list_active ? /* did we read the whole active file? */ _(txt_warn_not_in_newsrc) : _(txt_warn_not_valid_newsgroup)), ftngptrs[i]);
+							my_fprintf(stderr, (!list_active ? /* did we read the whole active file? */ _(txt_warn_not_in_newsrc) : _(txt_warn_not_valid_newsgroup)), followupto[i]);
 							warnings++;
 #endif /* HAVE_FASCIST_NEWSADMIN */
 						}
@@ -1441,10 +1404,14 @@ check_article_to_be_posted(
 	Raw(oldraw);		/* restore raw/unraw state */
 
 	/* free memory */
-	for (i = 0; i < ngcnt; i++)
-		FreeIfNeeded(ngptrs[i]);
-	for (i = 0; i < ftngcnt; i++)
-		FreeIfNeeded(ftngptrs[i]);
+	if (newsgroups && ngcnt) {
+		FreeIfNeeded(*newsgroups);
+		FreeIfNeeded(newsgroups);
+	}
+	if (followupto && ftngcnt) {
+		FreeIfNeeded(*followupto);
+		FreeIfNeeded(followupto);
+	}
 
 	return (errors ? 1 : warnings ? 2 : 0);
 }
@@ -1533,7 +1500,7 @@ post_article_loop:
 				return ret_code;
 
 			case GLOBAL_OPTION_MENU:
-				(void) change_config_file(group);
+				change_config_file(group);
 				while ((i = check_article_to_be_posted(article_name, art_type, &group, art_unchanged) == 1) && repair_article(&func, group))
 					;
 				break;
@@ -4834,72 +4801,93 @@ radix32(
 #endif /* EVIL_INSIDE */
 
 
-/*
- * Strip duplicate newsgroups from within a given list of comma separated
- * groups
- * 14-Jun-'96 Sven Paulus <sven@oops.sub.de>
- */
+static char **
+build_nglist(
+	char *ngs_list,
+	int *ngcnt)
+{
+	char **newsgroups;
+	char *dst;
+	char *my_list;
+	char *src;
+	char cp;
+
+	/* ulBuildArgv likes to have spaces, not commas */
+	my_list = my_malloc(strlen(ngs_list) + 1);
+	src = ngs_list;
+	dst = my_list;
+	while ((cp = *src++)) {
+		if (cp == ',') cp = ' ';
+		*dst++ = cp;
+	}
+	*dst = cp;
+
+	/* now build the list of newsgroups */
+	newsgroups = ulBuildArgv(my_list, ngcnt);
+	free(my_list);
+	return newsgroups;
+}
+
+
+static t_bool
+stripped_double_ngs(
+	char **newsgroups,
+	int *ngcnt)
+{
+	char *that_group;
+	char *this_group;
+	unsigned int i = 0;
+	unsigned int j;
+	unsigned int k;
+	t_bool changed = FALSE;
+
+	if (*ngcnt < 2) /* no need to do anything with no or just one group */
+		return FALSE;
+
+	while ((this_group = newsgroups[i++])) {
+		j = i;
+		while ((that_group = newsgroups[j])) {
+			if (strcasecmp(this_group, that_group) == 0) {
+				/* Double newsgroup. Move all following newsgroups downwards */
+				k = j + 1;
+				do {
+					newsgroups[k-1] = newsgroups[k];
+				} while (newsgroups[k++]);
+				changed = TRUE;
+				(*ngcnt)--;
+			} else
+				j++;
+		}
+	}
+	return changed;
+}
+
+
 static void
 strip_double_ngs(
 	char *ngs_list)
 {
-	char *ptr;			/* start of next (outer) newsgroup */
-	char *ptr2;			/* temporary pointer */
-	char ngroup1[HEADER_LEN];	/* outer newsgroup to compare */
-	char ngroup2[HEADER_LEN];	/* inner newsgroup to compare */
-	char cmplist[HEADER_LEN];	/* last loops output */
-	char newlist[HEADER_LEN];	/* the newly generated list without */
-										/* any duplicates of the first nwsg */
-	int ncnt1;			/* counter for the first newsgroup */
-	int ncnt2;			/* counter for the second newsgroup */
-	t_bool over1;		/* TRUE when the outer loop is over */
-	t_bool over2;		/* TRUE when the inner loop is over */
+	char **newsgroups;
+	int ngcnt;
 
-	/* shortcut, check if there is only 1 group */
-	if (strchr(ngs_list, ',') != NULL) {
-		over1 = FALSE;
-		ncnt1 = 0;
-		strcpy(newlist, ngs_list);		/* make a "working copy" */
-		ptr = newlist;						/* the next outer newsg. is the 1st */
+	if (strchr(ngs_list, ',') == NULL)	/* shortcut, only one newsgroup */
+		return;
 
-		while (!over1) {
-			ncnt1++;							/* inc. outer counter */
-			strcpy(cmplist, newlist);	/* duplicate groups for inner loop */
-			ptr2 = strchr(ptr, ',');	/* search "," ... */
-			if (ptr2 != NULL) {	/* if found ... */
-				*ptr2 = '\0';
-				strcpy(ngroup1, ptr);	/* chop off first outer newsgroup */
-				ptr = ptr2 + 1;			/* pointer points to next newsgr. */
-			} else {							/* ... if not: last group */
-				over1 = TRUE;				/* wow, everything is done after . */
-				strcpy(ngroup1, ptr);	/* ... this last outer newsgroup */
-			}
+	if ((newsgroups = build_nglist(ngs_list, &ngcnt)) == NULL) /* something went wrong */
+		return;
 
-			over2 = FALSE;
-			ncnt2 = 0;
+	if (stripped_double_ngs(newsgroups, &ngcnt)) {
+		/* something has changed, rebuild newsgroups list */
+		char *this_group;
+		unsigned int i = 0;
 
-			/*
-			 * now compare with each inner newsgroup on the list,
-			 * which is behind the momentary outer newsgroup
-			 * if it is different from the outer newsgroup, append
-			 * to list, strip double-commas
-			 */
-			while (!over2) {
-				ncnt2++;
-				strcpy(ngroup2, cmplist);
-				ptr2 = strchr(ngroup2, ',');
-				if (ptr2 != NULL) {
-					strcpy(cmplist, ptr2 + 1);
-					*ptr2 = '\0';
-				} else
-					over2 = TRUE;
-
-				if ((ncnt2 > ncnt1) && (strcasecmp(ngroup1, ngroup2)) && (strlen(ngroup2) != 0)) {
-					strcat(newlist, ",");
-					strcat(newlist, ngroup2);
-				}
-			}
+		this_group = newsgroups[i++];
+		strcpy(ngs_list, this_group);
+		while ((this_group = newsgroups[i++])) {
+			strcat(ngs_list, ",");
+			strcat(ngs_list, this_group);
 		}
-		strcpy(ngs_list, newlist);	/* move string to its real location */
 	}
+	free(*newsgroups);
+	free(newsgroups);
 }

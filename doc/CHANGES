@@ -1,21 +1,33 @@
--- 1.9.2 release 20060906 "" --
+-- 1.9.2 release 20061221 "" --
+
+U006) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update configure macros
+      FIX. aclocal.m4
 
 U005) Dirk Nimmich <nimmich@muenster.de>
       BUG. raw-mode didn't allow rot13
-      BUG. can't 'V'iew mime-parts with (illegal) encoded filename
-      FIX. proto.h, feed.c, page.c, save.c
+      BUG. can't 'V'iew mime-parts with (illegally) encoded filename
+      BUG. CatchupNextUnread in page level didn't always work
+      BUG. 'C'atchup in pager was still not correct (we didn't ever enter the
+           next group)
+      BUG. fast/endless reconecction loop after a "200\n\r400\n\r" greeting
+      BUG. resent command on 503 error
+      ADD. rewrote NGLIMIT handling
+      REM. return value of change_config_file()
+      FIX. proto.h, tin.h, feed.c, group.c, nntplib.c, options_menu.c, page.c
+           post.c, save.c, select.c
 
  015) Michael Bienia <michael@vorlon.ping.de>
       BUG. 'l' from the pager doesn't reposition cursor to last viewed
            article
       FIX. thread.c
 
- 014) Urs Janssen <urs@tin.org>  
+ 014) Urs Janssen <urs@tin.org>
       BUG. "Kill text pattern" form killfile menu was applied to
            Message-ID and References instead of Message-ID only
       BUG. FILTER_FILE_OFFSET was wrong
       ADD. allow .ax TLD
-      FIX. tin.h, filter.c, policy.h
+      FIX. filter.c, policy.h, tin.h
 
  013) Urs Janssen <urs@tin.org>
       ADD. minor manpage tweaking
@@ -34,15 +46,19 @@ U005) Dirk Nimmich <nimmich@muenster.de>
       FIX. art.c
 
 U004) Urs Janssen <urs@tin.org>
-      ADD. pcre downgrade (6.6 -> 6.4)
+      ADD. pcre update (6.6 -> 7.0)
       ADD. RISC OS handling
       ADD. more options to filter menu "Kill text pattern"
       REM. don't generate Sender on Mac OS X
       ADD. config.guess, config.sub update
       ADD. hide some regex in 'M'enu if the related option is off
       ADD. disallow .so, .um TLDs
+      ADD. warn about useless cmd-line option combinations
+      ADD. enable CAPABILLITIES code
+      ADD. updated german translation
       FIX. Makefile, aclocal.m4, configure[.in], extern.h, policy.h, filter.c
-           init.c, options_menu.c, post.c, pcre/*, config.guess, config.sub
+           init.c, lang.c, main.c, nntplib.c, options_menu.c, post.c, pcre/*
+           config.guess, config.sub, de.po
 
 U003) Michael Bienia <michael@vorlon.ping.de>
       ADD. 'M'enu option for VERBATIM_*_REGEXs

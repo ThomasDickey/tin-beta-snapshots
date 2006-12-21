@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2006-09-02
+ *  Updated   : 2006-10-01
  *  Notes     :
  *
  * Copyright (c) 1997-2006 Urs Janssen <urs@tin.org>
@@ -435,7 +435,7 @@ extern void get_nntpserver(char *nntpserver_name, char *nick_name);
 
 /* options_menu.c */
 extern char *fmt_option_prompt(char *dst, size_t len, t_bool editing, enum option_enum option);
-extern int change_config_file(struct t_group *group);
+extern void change_config_file(struct t_group *group);
 extern int option_row(enum option_enum option);
 extern t_bool option_is_visible(enum option_enum option);
 extern void check_score_defaults(void);

@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2006-06-28
+ *  Updated   : 2006-10-01
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2006 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -1196,14 +1196,10 @@ enum {
 
 #define ESC	27
 
-
 /*
- * return codes for change_config_file ()
+ * filter entrys expire after DEFAULT_FILTER_DAYS
  */
-#define NO_FILTERING		0
-#define FILTERING		1
 #define DEFAULT_FILTER_DAYS		28
-
 
 /*
  * art.thread

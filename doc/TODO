@@ -4,11 +4,6 @@ not read only ,-).
 
 Bugs
 ----
-o  CatchupNextUnread in pagelevel doesn't always work (if commeing directly
-   from group level (via GroupNextUnreadArtOrGrp)): instead of leaving the
-   thread and entering the next one it stays at the current article.
-   [20060515 Urs Janssen <urs@tin.org>]
-
 o  a wrong usename in ~/.newsauth can't be corrected in the first
    pass
    [20050816 Urs Janssen <urs@tin.org>]
@@ -19,24 +14,12 @@ o  unexpected multiline responses confuse tin, e.g.:
    (the servers response should be a single line (INN 2.2))
    [20050207 Urs Janssen <urs@tin.org>]
 
-o  fast/endless reconecction loop after a "200\n\r400\n\r" greeting,
-   see
-   <nntp://news.tin.org/Pine.LNX.4.61.0411190338000.24950@avenger.apcoh.org>
-
-o  AFAICS change_config_file() currently has a static return value,
-   but some callers do check the return value and in case we did
-   change something we should update (global) attributes accordingly.
-   [20030511 Urs Janssen <urs@tin.org>]
-
 o  Changes to int/bool tinrc variables in the Option Menu don't propagate
    back to the attributes, not even groups with global attributes.
    This is because the Option-Menu in {group,page}.c doesn't reread the
    attributes, whereas select.c does. Fix the problem properly in config.c by
    flashing changes to all affected groups and remove the reread of the
    attributes file from select.c
-
-o  'C'atchup in pager is still not correct (we don't ever enter the next group)
-   [20030515 Urs Janssen <urs@tin.org>]
 
 o  piping/printing articles grabbles screen
    [20030501 Urs Janssen <urs@tin.org>]
@@ -53,8 +36,6 @@ o  batch mode has several bugs
       cmd-line group) and the cmd-line group is not displayed in the
       statistics nor taken into account for the 'any unread news' status.
    - -vc could be more verbose (like -vcZ is)
-   - -cZ has an unclear return value (shall we return 0 or 2 if there
-      was unread news before -c marked it as read?)
    - -o currently is not a 'batch_mode' option
    [Urs Janssen <urs@tin.org>]
 
@@ -72,13 +53,6 @@ o  add version number to other config-files (e.g. tin.defaults)
    ISO-8859-x vs. unicode)
    [Urs Janssen <urs@tin.org>]
 
-o  'K' is still a bit inconsistent:
-   - in the group and thread menu it marks current item read & jumps to the
-     next unread item.
-   - in the article pager (page.c) it marks the rest of the current thread
-     read and jumps to the next unread article. should we let 'K' behave
-     like <TAB> in the pager?
-
 o  rewrite code to use INEWS_PATH instead of INEWSDIR
    [20021007 Urs Janssen <urs@tin.org>
 
@@ -92,10 +66,6 @@ o  overview file cacheing code is over-complex
      are no original overviews, cache the original data from the postings
      headers (after unfolding and tab removal).
    - Add docs to explain how to create system-wide overviews
-
-o  tin uses the first sig-isolator as recent one, USEFOR says it should
-   use the last. There is no consensus that tin should follow this USEFOR
-   requirement.
 
 o  iso2asc conversion is missing for 'internal' strings (e.g. 'M'enu)
    [20020319 Urs Janssen <urs@tin.org>]
@@ -350,7 +320,7 @@ o  Add to the 'M'enu:
      'h'  (GLOBAL_HELP)
      'R'  (GLOBAL_BUGREPORT)
      '!'  (GLOBAL_SHELL_ESCAPE)
-     and maybe a way to changed built in path like DEFAULT_MAILER, PATH_PGP, ...
+     and maybe a way to change built in path like DEFAULT_MAILER, PATH_PGP, ...
 
 o  Add to the POST_INFO-level:
      '?','/','\' search (partly done, currently only the displayed page is
@@ -429,11 +399,6 @@ o  check if any valid groups are in the Followup-To:-line and if not inform
 o  bring up a warning on a long Newsgroups: (>=5) line and
    force the user to confirm every single group he wants to post (or
    redirect followups to) in. (N/y)
-   rewrite NGLIMIT handling (post.c) ulBuildArgv() would replace a lot of
-   the current code
-   (not just truncate Newsgroups:-line after the NGLIMITth newsgroup -
-    or if we do so - give an extra warning to the user and give him the
-    chance to reedit the Newsgroups:-line)
 
 o  bring up a warning when trying to f'up into a binary group
    (use a regexp to detect binary groups e.g.:
@@ -597,8 +562,6 @@ o  close potential security holes:
     <http://www.dwheeler.com/flawfinder/> can locate potential security
     holes]
 
-o  add a _-_ to the local part of the MSGID on a subject-change
-
 o  add to autoconf:
    - eradicate platform/compiler ifdefs
 
@@ -708,6 +671,17 @@ o  replace "\\" by "\e" in manpages (portable?)
 
 Not yet classified
 ------------------
+o  tin uses the first sig-isolator as recent one, USEFOR says it should
+   use the last. There is no consensus that tin should follow this USEFOR
+   requirement.
+
+o  'K' is still a bit inconsistent:
+   - in the group and thread menu it marks current item read & jumps to the
+     next unread item.
+   - in the article pager (page.c) it marks the rest of the current thread
+     read and jumps to the next unread article. should we let 'K' behave
+     like <TAB> in the pager?
+
 o  rename prompt_followupto (to prompt_extra_headres) and make it an option
    list like {"Followup-To"; "Summary"; "Keywords";
    "Followup-To & Summary"; "Followup-To & Keywords";

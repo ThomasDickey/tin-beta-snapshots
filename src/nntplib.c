@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2006-03-05
+ *  Updated   : 2006-10-24
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -956,126 +956,139 @@ check_extensions(
 {
 	char *ptr;
 	int ret = 0;
-#	if 0 /* "CAPABILITIES" will replace "LIST EXTENSIONS" */
-	FILE *fp;
+#	if 1 /* "CAPABILITIES" replaces "LIST EXTENSIONS" */
+	char buf[NNTP_STRLEN];
 	char *d;
+	int i;
 
-	if ((fp = nntp_command("CAPABILITIES", INF_CAPABILITIES, NULL, 0)) != NULL) {
-		nntp_caps.type = CAPABILITIES;
-		while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+	buf[0] = '\0';
+	i = new_nntp_command("CAPABILITIES", INF_CAPABILITIES, buf, sizeof(buf));
+	switch (i) {
+		case INF_CAPABILITIES:
+			nntp_caps.type = CAPABILITIES;
+			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #		ifdef DEBUG
-			debug_nntp("<<<", ptr);
+				debug_nntp("<<<", ptr);
 #		endif /* DEBUG */
-			/* look for version number(s) */
-			if (!nntp_caps.version && nntp_caps.type == CAPABILITIES) {
-				if (!strcasecmp(ptr, "VERSION")) {
-					d = ptr + 7;
-					d = strpbrk(d, " \t");
-					while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
-						d++;
-						nntp_caps.version = MAX(nntp_caps.version, (unsigned int) atoi(d));
+				/* look for version number(s) */
+				if (!nntp_caps.version && nntp_caps.type == CAPABILITIES) {
+					if (!strcasecmp(ptr, "VERSION")) {
+						d = ptr + 7;
 						d = strpbrk(d, " \t");
+						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
+							d++;
+							nntp_caps.version = MAX(nntp_caps.version, (unsigned int) atoi(d));
+							d = strpbrk(d, " \t");
+						}
 					}
 				}
-			}
-			/* we currently only support CAPABILITIES VERSION 2 */
-			if (nntp_caps.version == 2) {
-				/*
-				 * check for LIST variants - this code is untested
-				 */
-				if (!strcasecmp(ptr, "LIST")) {
-					d = ptr + 4;
-					d = strpbrk(d, " \t");
-					while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
-						d++;
-						if (!strcasecmp(d, "ACTIVE.TIMES"))
-							nntp_caps.list_active_times = TRUE;
-						else if (!strcasecmp(d, "ACTIVE"))
-							nntp_caps.list_active_times = TRUE;
-						else if (!strcasecmp(d, "DISTRIB.PATS"))
-							nntp_caps.list_distrib_pats = TRUE;
-						else if (!strcasecmp(d, "DISTRIBUTIONS")) /* LIST DISTRIBUTIONS, "private" extension, RFC 2980 */
-							nntp_caps.list_distributions = TRUE;
-						else if (!strcasecmp(d, "HEADERS"))
-							nntp_caps.list_headers = TRUE; /* HDR requires LIST HEADERS, but not vice versa */
-						else if (!strcasecmp(d, "NEWSGROUPS"))
-							nntp_caps.list_newsgroups = TRUE;
-						else if (!strcasecmp(d, "OVERVIEW.FMT")) /* OVER requires OVERVIEW.FMT, but not vice versa */
-							nntp_caps.list_overview_fmt = TRUE;
-						else if (!strcasecmp(d, "MOTD")) /* "private" extension */
-							nntp_caps.list_motd = TRUE;
-						else if (!strcasecmp(d, "SUBSCRIPTIONS")) /* "private" extension, RFC 2980 */
-							nntp_caps.list_subscriptions = TRUE;
-						else if (!strcasecmp(d, "MODERATORS")) /* "private" extension */
-							nntp_caps.list_moderators = TRUE;
+				/* we currently only support CAPABILITIES VERSION 2 */
+				if (nntp_caps.version == 2) {
+					/*
+					 * check for LIST variants - this code is untested
+					 */
+					if (!strcasecmp(ptr, "LIST")) {
+						d = ptr + 4;
 						d = strpbrk(d, " \t");
-					}
-				} else if (!strcasecmp(ptr, "IMPLEMENTATION"))
-					nntp_caps.implementation = my_strdup(ptr + 14);
-				else if (!strcasecmp(ptr, "MODE-READER")) {
-					if (!nntp_caps.reader)
-						nntp_caps.mode_reader = TRUE;
-				} else if (!strcasecmp(ptr, "READER")) {
-					nntp_caps.reader = TRUE;
-					nntp_caps.mode_reader = FALSE;
-				} else if (!strcasecmp(d, "POST"))
-					nntp_caps.post = TRUE;
-				else if (!strcasecmp(ptr, "NEWNEWS"))
-					nntp_caps.newnews = TRUE;
-				else if (!strcasecmp(ptr, "XPAT")) /* extension, RFC 2980 */
-					nntp_caps.xpat = TRUE;
-				else if (!strcasecmp(ptr, "STARTTLS"))
-					nntp_caps.starttls = TRUE;
-				/*
-				 * NOTE: if we saw OVER, LIST OVERVIEW.FMT _must_ be implemented
-				 */
-				else if (!strcasecmp(ptr, &xover_cmds[1])) {
-					nntp_caps.over = TRUE;
-					nntp_caps.list_overview_fmt = TRUE;
-					nntp_caps.over_cmd = &xover_cmds[1];
-					d = ptr + strlen(&xover_cmds[1]);
-					d = strpbrk(d, " \t");
-					while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
-						d++;
-						if (!strcasecmp(d, "MSGID"))
-							nntp_caps.over_msgid = TRUE;
+						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
+							d++;
+							if (!strcasecmp(d, "ACTIVE.TIMES"))
+								nntp_caps.list_active_times = TRUE;
+							else if (!strcasecmp(d, "ACTIVE"))
+								nntp_caps.list_active_times = TRUE;
+							else if (!strcasecmp(d, "DISTRIB.PATS"))
+								nntp_caps.list_distrib_pats = TRUE;
+							else if (!strcasecmp(d, "DISTRIBUTIONS")) /* LIST DISTRIBUTIONS, "private" extension, RFC 2980 */
+								nntp_caps.list_distributions = TRUE;
+							else if (!strcasecmp(d, "HEADERS"))
+								nntp_caps.list_headers = TRUE; /* HDR requires LIST HEADERS, but not vice versa */
+							else if (!strcasecmp(d, "NEWSGROUPS"))
+								nntp_caps.list_newsgroups = TRUE;
+							else if (!strcasecmp(d, "OVERVIEW.FMT")) /* OVER requires OVERVIEW.FMT, but not vice versa */
+								nntp_caps.list_overview_fmt = TRUE;
+							else if (!strcasecmp(d, "MOTD")) /* "private" extension */
+								nntp_caps.list_motd = TRUE;
+							else if (!strcasecmp(d, "SUBSCRIPTIONS")) /* "private" extension, RFC 2980 */
+								nntp_caps.list_subscriptions = TRUE;
+							else if (!strcasecmp(d, "MODERATORS")) /* "private" extension */
+								nntp_caps.list_moderators = TRUE;
+							d = strpbrk(d, " \t");
+						}
+					} else if (!strcasecmp(ptr, "IMPLEMENTATION"))
+						nntp_caps.implementation = my_strdup(ptr + 14);
+					else if (!strcasecmp(ptr, "MODE-READER")) {
+						if (!nntp_caps.reader)
+							nntp_caps.mode_reader = TRUE;
+					} else if (!strcasecmp(ptr, "READER")) {
+						nntp_caps.reader = TRUE;
+						nntp_caps.mode_reader = FALSE;
+					} else if (!strcasecmp(d, "POST"))
+						nntp_caps.post = TRUE;
+					else if (!strcasecmp(ptr, "NEWNEWS"))
+						nntp_caps.newnews = TRUE;
+					else if (!strcasecmp(ptr, "XPAT")) /* extension, RFC 2980 */
+						nntp_caps.xpat = TRUE;
+					else if (!strcasecmp(ptr, "STARTTLS"))
+						nntp_caps.starttls = TRUE;
+					/*
+					 * NOTE: if we saw OVER, LIST OVERVIEW.FMT _must_ be implemented
+					 */
+					else if (!strcasecmp(ptr, &xover_cmds[1])) {
+						nntp_caps.over = TRUE;
+						nntp_caps.list_overview_fmt = TRUE;
+						nntp_caps.over_cmd = &xover_cmds[1];
+						d = ptr + strlen(&xover_cmds[1]);
 						d = strpbrk(d, " \t");
-					}
-				} else if (!strcasecmp(ptr, "AUTHINFO")) {
-					d = ptr + 8;
-					d = strpbrk(d, " \t");
-					while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
-						d++;
-						if (!strcasecmp(d, "USER"))
-							nntp_caps.authinfo_user = TRUE;
-						if (!strcasecmp(d, "SASL"))
-							nntp_caps.authinfo_sasl = TRUE;
+						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
+							d++;
+							if (!strcasecmp(d, "MSGID"))
+								nntp_caps.over_msgid = TRUE;
+							d = strpbrk(d, " \t");
+						}
+					} else if (!strcasecmp(ptr, "AUTHINFO")) {
+						d = ptr + 8;
 						d = strpbrk(d, " \t");
+						while (d != NULL && (d + 1 < (ptr + strlen(ptr)))) {
+							d++;
+							if (!strcasecmp(d, "USER"))
+								nntp_caps.authinfo_user = TRUE;
+							if (!strcasecmp(d, "SASL"))
+								nntp_caps.authinfo_sasl = TRUE;
+							d = strpbrk(d, " \t");
+						}
 					}
-				}
 #		if 0
-				/*
-				 * NOTE: if we saw HDR, LIST HEADERS _must_ be implemented
-				 */
-				else if (!strcasecmp(ptr, &xhdr_cmds[1])) {
+					/*
+					 * NOTE: if we saw HDR, LIST HEADERS _must_ be implemented
+					 */
+					else if (!strcasecmp(ptr, &xhdr_cmds[1])) {
 						nntp_caps.hdr_cmd = &xhdr_cmds[1];
 						nntp_caps.hdr = TRUE;
 						nntp_caps.list_headers = TRUE;
-				}
-				else if (!strcasecmp(ptr, "IHAVE"))
+					}
+					else if (!strcasecmp(ptr, "IHAVE"))
 						nntp_caps.ihave = TRUE;
 #		endif /* 0 */
-				/*
-				 * TODO: SASL, STREAMING
-				 */
-			} else
-				nntp_caps.type = NO;
-		}
+					/*
+					 * TODO: SASL, STREAMING
+					 */
+				} else
+					nntp_caps.type = NO;
+			}
+			break;
+
+		case ERR_GOODBYE:
+			ret = i;
+			error_message(buf);
+			break;
+
+		default:
+			break;
 	}
 #		ifdef DEBUG
 	debug_print_nntp_extensions();
 #		endif /* DEBUG */
-	if (!*sec && !nntp_caps.reader) {
+	if ((ret != ERR_GOODBYE) && !*sec && !nntp_caps.reader) {
 		if (nntp_caps.type == CAPABILITIES && !nntp_caps.mode_reader)
 			return -1; /* no mode-switching and no reader mode, give up */
 		if ((ret = mode_reader(&*sec)) != 0)
@@ -1085,8 +1098,10 @@ check_extensions(
 	}
 
 #	else
-
 	/*
+	 * TODO: the following code can go away in tin 2.0 as it's
+	 *       obsolete by RFC 3977
+	 *
 	 * "LIST EXTENSIONS" is somewhat troublesome as there are a lot
 	 * of broken implementations out there and it is a multiline response
 	 */
@@ -1136,11 +1151,16 @@ check_extensions(
 				/*
 				 * as the server did support LIST EXTENSIONS it's likely that it
 				 * also can do LIST MOTD (we don't bother to parse the LIST
-				 * EXTENSIONS output for MOTD as it never was standartizised;
+				 * EXTENSIONS output for MOTD as it never was standardized;
 				 * draft-ietf-nntpext-base-24.txt only described OVER, HDR and
 				 * LISTGROUP).
 				 */
 				nntp_caps.list_motd = TRUE;
+				break;
+
+			case ERR_GOODBYE:
+				ret = i;
+				error_message(buf);
 				break;
 
 			default:
@@ -1149,10 +1169,10 @@ check_extensions(
 #		ifdef DEBUG
 		debug_print_nntp_extensions();
 #		endif /* DEBUG */
-		if (!*sec)
+		if ((ret != ERR_GOODBYE) && !*sec)
 			ret = mode_reader(&*sec);
 	}
-#	endif /* 0 */
+#	endif /* 1 */
 	return ret;
 }
 
@@ -1553,8 +1573,11 @@ get_only_respcode(
 	respcode = (int) strtol(ptr, &end, 10);
 	DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
 
-	/* TODO: reconnect on ERR_FAULT? */
-	if ((respcode == ERR_FAULT || respcode == ERR_GOODBYE || respcode == OK_GOODBYE) && last_put[0] != '\0' && strcmp(last_put, "QUIT")) {
+	/*
+	 * we also reconnect on ERR_FAULT if last_put was ARTICLE or LIST or POST
+	 * as inn (2.2.3) sends ERR_FAULT on timeout
+	 */
+	if (((respcode == ERR_FAULT && !strncmp(last_put, "ARTICLE", 7)) || (respcode == ERR_FAULT && !strncmp(last_put, "POST", 4)) || (respcode == ERR_FAULT && !strcmp(last_put, "LIST")) ||  respcode == ERR_GOODBYE || respcode == OK_GOODBYE) && last_put[0] != '\0' && strcmp(last_put, "QUIT")) {
 		/*
 		 * Maybe server timed out.
 		 * If so, retrying will force a reconnect.

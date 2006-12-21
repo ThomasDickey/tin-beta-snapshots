@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-06-28
+ *  Updated   : 2006-10-16
  *  Notes     :
  *
  * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>
@@ -777,6 +777,7 @@ constext txt_usage_verbose[] = N_("  -v       verbose output for batch mode opti
 constext txt_usage_version[] = N_("  -V       print version & date information");
 constext txt_useful_without_batch_mode[] = N_("%s only useful without batch mode operations\n");
 constext txt_useful_with_batch_mode[] = N_("%s only useful for batch mode operations\n");
+constext txt_useless_combination[] = N_("Useless combination %s and %s. Ignoring %s.\n");
 
 constext txt_value_out_of_range[] = N_("\n%s%d out of range (0 - %d). Reset to 0");
 constext txt_view_attachment[] = N_("View '%s' (%s/%s)?");
@@ -1816,7 +1817,7 @@ struct opttxt txt_url_handler = {
 struct opttxt txt_use_mouse = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Use mouse in xterm"),
-	N_("# If ON enable mouse key support on xterm terminals\n")
+	N_("# If ON enable mouse button support on xterm terminals\n")
 };
 
 #ifdef HAVE_KEYPAD
