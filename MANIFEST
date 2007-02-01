@@ -1,4 +1,4 @@
-MANIFEST for tin-1.9.2 (Thu Dec 21 15:34:25 CET 2006)
+MANIFEST for tin-1.9.2 (Thu Feb  1 15:09:13 CET 2007)
 ----------------------------------------------------
   13104 ./Makefile
    7558 ./MANIFEST
@@ -7,21 +7,21 @@ MANIFEST for tin-1.9.2 (Thu Dec 21 15:34:25 CET 2006)
    1006 ./README.WIN
  155443 ./aclocal.m4
     882 ./conf-tin
-  44398 ./config.guess
-  32548 ./config.sub
+  44469 ./config.guess
+  32587 ./config.sub
  505380 ./configure
   31023 ./configure.in
    7123 ./install.sh
     838 ./mkdirs.sh
    1505 ./tin.spec
   18847 ./doc/ABOUT-NLS
-   5026 ./doc/CHANGES
+   5299 ./doc/CHANGES
  252172 ./doc/CHANGES.old
-   4916 ./doc/CREDITS
+   4956 ./doc/CREDITS
    1469 ./doc/DEBUG_REFS
   30011 ./doc/INSTALL
   33061 ./doc/TODO
-    162 ./doc/WHATSNEW
+    232 ./doc/WHATSNEW
    2618 ./doc/art_handling.txt
    1700 ./doc/article.txt
    3862 ./doc/auth.txt
@@ -75,7 +75,7 @@ MANIFEST for tin-1.9.2 (Thu Dec 21 15:34:25 CET 2006)
   13568 ./include/tinrc.h
    4405 ./include/tnntp.h
    2264 ./include/trace.h
-   2507 ./include/version.h
+   2508 ./include/version.h
   25899 ./src/active.c
   59717 ./src/art.c
   32522 ./src/attrib.c
@@ -103,14 +103,14 @@ MANIFEST for tin-1.9.2 (Thu Dec 21 15:34:25 CET 2006)
    4486 ./src/langinfo.c
    7102 ./src/list.c
    6759 ./src/lock.c
-  13489 ./src/mail.c
+  13415 ./src/mail.c
   22105 ./src/main.c
   10814 ./src/makecfg.c
   12418 ./src/memory.c
    5187 ./src/mimetypes.c
   89340 ./src/misc.c
   39712 ./src/newsrc.c
-  45992 ./src/nntplib.c
+  45995 ./src/nntplib.c
    7192 ./src/nrctbl.c
   42537 ./src/options_menu.c
   58375 ./src/page.c
@@ -135,7 +135,7 @@ MANIFEST for tin-1.9.2 (Thu Dec 21 15:34:25 CET 2006)
    7215 ./src/strftime.c
   23476 ./src/string.c
   13852 ./src/tags.c
-  16944 ./src/tcurses.c
+  16965 ./src/tcurses.c
    3071 ./src/tmpfile.c
    3364 ./src/my_tmpfile.c
   40413 ./src/thread.c
@@ -286,4 +286,4 @@ MANIFEST for tin-1.9.2 (Thu Dec 21 15:34:25 CET 2006)
  131244 ./po/sv.po
    5889 ./po/tr.gmo
  190760 ./po/tr.po
-7884757 total
+7885201 total

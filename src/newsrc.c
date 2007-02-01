@@ -6,7 +6,7 @@
  *  Updated   : 2006-02-15
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
- * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

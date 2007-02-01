@@ -6,7 +6,7 @@
  *  Updated   : 2006-02-15
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
- * Copyright (c) 1992-2006 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2007 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -397,10 +397,8 @@ read_groups_descriptions(
 			r_len = strlen(r);
 			/*
 			 * Protect against invalid character sequences.
-			 *
-			 * TODO: change US-ASCII to UTF-8 when NNTP draft becomes RFC
 			 */
-			process_charsets(&r, &r_len, "US-ASCII", tinrc.mm_local_charset, FALSE);
+			process_charsets(&r, &r_len, "UTF-8", tinrc.mm_local_charset, FALSE);
 			group->description = convert_to_printable(r);
 		}
 

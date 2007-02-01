@@ -7,7 +7,7 @@
 msgid	""
 msgstr	"Project-Id-Version: tin 1.9.2\n"
 	"Report-Msgid-Bugs-To: \n"
-	"POT-Creation-Date: 2006-11-21 15:22+0100\n"
+	"POT-Creation-Date: 2007-02-01 14:02+0100\n"
 	"PO-Revision-Date: 2005-01-29 23:50+0100\n"
 	"Last-Translator: Sven Hartge <oweh@ds9.argh.org>, Kai Bojens <kbojens@on-"
 	"luebeck.de>\n"

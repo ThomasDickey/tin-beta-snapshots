@@ -6,7 +6,7 @@
  *  Updated   : 2006-10-16
  *  Notes     :
  *
- * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -934,7 +934,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 #endif /* HAVE_PGP_GPG */
 
 #ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2006 Iain Lea.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2007 Iain Lea.";
 #endif /* M_UNIX */
 
 #ifdef NNTP_ABLE

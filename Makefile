@@ -1,7 +1,7 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2006-10-25
+# Updated: 2006-12-21
 #
 
 PROJECT	= tin
@@ -9,7 +9,7 @@ LVER	= 1
 PVER	= 9
 SVER	= 2
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20061221
+DVER	= 20070201
 EXE	= tin
 
 # directory structure

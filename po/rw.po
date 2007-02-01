@@ -15,7 +15,7 @@
 msgid	""
 msgstr	"Project-Id-Version: tin 1.7.8\n"
 	"Report-Msgid-Bugs-To: \n"
-	"POT-Creation-Date: 2006-11-21 15:22+0100\n"
+	"POT-Creation-Date: 2007-02-01 14:02+0100\n"
 	"PO-Revision-Date: 2005-04-03 10:55-0700\n"
 	"Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 	"Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
