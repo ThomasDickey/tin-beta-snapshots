@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2006-10-24
+ *  Updated   : 2007-01-09
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -433,12 +433,12 @@ get_tcp_socket(
 #			endif /* HAVE_GETSERVBYNAME */
 
 	/* If not a raw ip address, try nameserver */
-	if (!isdigit((unsigned char) *machine) ||
+	if (!isdigit((unsigned char) *machine)
 #			ifdef HAVE_INET_ATON
-	    !inet_aton(machine, &defaddr)
+	    || !inet_aton(machine, &defaddr)
 #			else
 #				ifdef HAVE_INET_ADDR
-	    (long) (defaddr.s_addr = (long) inet_addr(machine)) == -1
+	    || (long) (defaddr.s_addr = (long) inet_addr(machine)) == -1
 #				endif /* HAVE_INET_ADDR */
 #			endif /* HAVE_INET_ATON */
 	    )

@@ -6,7 +6,7 @@
  *  Updated   : 2006-06-28
  *  Notes     :
  *
- * Copyright (c) 1991-2006 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,8 +42,8 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.9.2"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20061221"
-#	define RELEASENAME	"Benmore"
+#	define RELEASEDATE	"20070201"
+#	define RELEASENAME	"Dalaruan"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.8"
 #	define ATTRIBUTES_VERSION	"1.0.4"

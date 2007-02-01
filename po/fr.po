@@ -4,7 +4,7 @@
 msgid	""
 msgstr	"Project-Id-Version: 1.8.0\n"
 	"Report-Msgid-Bugs-To: \n"
-	"POT-Creation-Date: 2006-11-21 15:22+0100\n"
+	"POT-Creation-Date: 2007-02-01 14:02+0100\n"
 	"PO-Revision-Date: 2004-11-17 00:50+0100\n"
 	"Last-Translator: Matt Anton <tin@syrius.org\n"
 	"Language-Team: French <tin@syrius.org>\n"

@@ -3,11 +3,11 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2004-06-07
+ *  Updated   : 2007-01-25
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
- * Copyright (c) 1997-2006 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2007 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -582,6 +582,7 @@ again:
 			/* read in the multibyte sequence */
 			char *mbs = my_malloc(MB_CUR_MAX + 1);
 			int i, ch;
+			wchar_t wc;
 
 			mbs[0] = (char) wch;
 			nodelay(stdscr, TRUE);
@@ -594,12 +595,14 @@ again:
 			nodelay(stdscr, FALSE);
 
 			mbs[i] = '\0';
-			res = mbtowc((wchar_t *) (&wch), mbs, MB_CUR_MAX);
+			res = mbtowc(&wc, mbs, MB_CUR_MAX);
 			free(mbs);
 			if (res == -1)
 				return WEOF; /* error */
-			else
+			else {
 				res = OK;
+				wch = wc;
+			}
 		} else {
 			res = KEY_CODE_YES;
 #			if defined(KEY_RESIZE) && defined(USE_CURSES)

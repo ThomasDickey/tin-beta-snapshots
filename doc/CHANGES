@@ -1,4 +1,12 @@
--- 1.9.2 release 20061221 "" --
+-- 1.9.2 release 20070201 "Dalaruan" --
+
+ 018) Christian Weisgerber <naddy@mips.inka.de>
+      BUG. assumed that wchar_t and wint_t are of the same size  
+      FIX. tcurses.c    
+
+ 017) Antonio Querubin <tony@lava.net>
+      BUG. missplaced ||
+      FIX. nntplib.c
 
 U006) Thomas E. Dickey <dickey@invisible-island.net>
       ADD. update configure macros
@@ -34,7 +42,7 @@ U005) Dirk Nimmich <nimmich@muenster.de>
       FIX. tin.1, tin.5
 
  012) Peter Breitenlohner <peb@mppmu.mpg.de>
-      BUG. build problem with with VPATH
+      BUG. build problem with VPATH
       FIX. Makefile.in
 
  011) Andrey Simonenko <simon@comsys.ntu-kpi.kiev.ua>
@@ -49,6 +57,7 @@ U004) Urs Janssen <urs@tin.org>
       ADD. pcre update (6.6 -> 7.0)
       ADD. RISC OS handling
       ADD. more options to filter menu "Kill text pattern"
+      ADD. allow UTF-8 descriptions
       REM. don't generate Sender on Mac OS X
       ADD. config.guess, config.sub update
       ADD. hide some regex in 'M'enu if the related option is off
@@ -57,8 +66,8 @@ U004) Urs Janssen <urs@tin.org>
       ADD. enable CAPABILLITIES code
       ADD. updated german translation
       FIX. Makefile, aclocal.m4, configure[.in], extern.h, policy.h, filter.c
-           init.c, lang.c, main.c, nntplib.c, options_menu.c, post.c, pcre/*
-           config.guess, config.sub, de.po
+           init.c, lang.c, main.c, mail.c, nntplib.c, options_menu.c, post.c
+           pcre/*, config.guess, config.sub, de.po
 
 U003) Michael Bienia <michael@vorlon.ping.de>
       ADD. 'M'enu option for VERBATIM_*_REGEXs
