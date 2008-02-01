@@ -3,10 +3,10 @@
  *  Module    : list.c
  *  Author    : I. Lea
  *  Created   : 1993-12-18
- *  Updated   : 2005-07-20
+ *  Updated   : 2007-12-30
  *  Notes     : Low level functions handling the active[] list and its group_hash index
  *
- * Copyright (c) 1993-2007 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2008 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -121,22 +121,43 @@ hash_groupname(
  */
 int
 find_group_index(
-	const char *group)
+	const char *group,
+	t_bool ignore_case)
 {
+	char *group_lcase = NULL;
 	int i;
 	unsigned long h;
 
-	h = hash_groupname(group);
+	group_lcase = my_strdup(group);
+	str_lwr(group_lcase);
+
+	h = hash_groupname(group_lcase);
 	i = group_hash[h];
+
+	free(group_lcase);
 
 	/*
 	 * hash linked list chaining
+	 * first try to find group in original spelling only
 	 */
 	while (i >= 0) {
 		if (STRCMPEQ(group, active[i].name))
 			return i;
 
 		i = active[i].next;
+	}
+
+	/*
+	 * group not found in original spelling, try to find not case sensitive
+	 * if desired
+	 */
+	if (ignore_case) {
+		i = group_hash[h];
+		while (i >= 0) {
+			if (0 == strcasecmp(group, active[i].name))
+				return i;
+			i = active[i].next;
+		}
 	}
 
 	return -1;
@@ -148,11 +169,12 @@ find_group_index(
  */
 struct t_group *
 group_find(
-	const char *group_name)
+	const char *group_name,
+	t_bool ignore_case)
 {
 	int i;
 
-	if ((i = find_group_index(group_name)) != -1)
+	if ((i = find_group_index(group_name, ignore_case)) != -1)
 		return &active[i];
 
 	return (struct t_group *) 0;
@@ -168,7 +190,13 @@ group_add_to_hash(
 	const char *groupname,
 	int idx)
 {
-	unsigned long h = hash_groupname(groupname);
+	char *groupname_lcase = NULL;
+	unsigned long h;
+
+	groupname_lcase = my_strdup(groupname);
+	str_lwr(groupname_lcase);
+	h = hash_groupname(groupname_lcase);
+	free(groupname_lcase);
 
 	if (group_hash[h] == -1)
 		group_hash[h] = idx;

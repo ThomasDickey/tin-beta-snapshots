@@ -3,10 +3,10 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2005-07-02
+ *  Updated   : 2007-12-30
  *  Notes     : RFC 2046 MIME article parsing
  *
- * Copyright (c) 2000-2007 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2008 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -80,7 +80,7 @@ static void
 progress(
 	int line_count)
 {
-	if (progress_mesg != NULL && line_count && line_count % MODULO_COUNT_NUM == 0)
+	if (progress_mesg != NULL && art_lines > 0 && line_count && line_count % MODULO_COUNT_NUM == 0)
 		show_progress(progress_mesg, line_count, art_lines);
 }
 
@@ -623,7 +623,7 @@ parse_header(
 					else
 						sprintf(ptr, "%s <%s>", convert_to_printable(rfc1522_decode(name)), addr);
 				} else
-					sprintf(ptr, "%s", addr);
+					strcpy(ptr, addr);
 			} else
 				return convert_to_printable(ptr);
 		} else
@@ -817,8 +817,10 @@ unfold_header(
 	char *src = line, *dst = line;
 	char c;
 
-	while ((c = *src++))
-		if (c != '\n') *dst++ = c;
+	while ((c = *src++)) {
+		if (c != '\n')
+			*dst++ = c;
+	}
 	*dst = c;
 }
 
@@ -1112,22 +1114,23 @@ open_art_fp(
 	long art)
 {
 	FILE *art_fp;
-	char buf[NNTP_STRLEN];
 
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && group->type == GROUP_TYPE_NEWS) {
+		char buf[NNTP_STRLEN];
 		snprintf(buf, sizeof(buf), "ARTICLE %ld", art);
 		art_fp = nntp_command(buf, OK_ARTICLE, NULL, 0);
 	} else {
 #endif /* NNTP_ABLE */
+		char buf[PATH_LEN];
 		char pbuf[PATH_LEN];
 		char fbuf[NAME_LEN + 1];
 		char group_path[PATH_LEN];
 
 		make_group_path(group->name, group_path);
-		joinpath(buf, group->spooldir, group_path);
+		joinpath(buf, sizeof(buf), group->spooldir, group_path);
 		snprintf(fbuf, sizeof(fbuf), "%ld", art);
-		joinpath(pbuf, buf, fbuf);
+		joinpath(pbuf, sizeof(pbuf), buf, fbuf);
 
 		art_fp = fopen(pbuf, "r");
 #ifdef NNTP_ABLE

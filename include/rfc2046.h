@@ -3,10 +3,10 @@
  *  Module    : rfc2046.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2003-05-06
+ *  Updated   : 2007-09-11
  *  Notes     : rfc2046 MIME article definitions
  *
- * Copyright (c) 2000-2007 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2008 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,13 +42,15 @@
 
 /* These must track the array definitions in lang.c */
 #	define NUM_CONTENT_TYPES	7
-#	define NUM_ENCODINGS		6
-
 #	define TYPE_TEXT			0
 #	define TYPE_MULTIPART		1
 #	define TYPE_APPLICATION		2
 #	define TYPE_MESSAGE			3
+#	define TYPE_IMAGE			4
+#	define TYPE_AUDIO			5
+#	define TYPE_VIDEO			6
 
+#	define NUM_ENCODINGS		6
 #	define ENCODING_7BIT		0
 #	define ENCODING_QP			1
 #	define ENCODING_BASE64		2

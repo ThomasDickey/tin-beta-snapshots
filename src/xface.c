@@ -3,10 +3,10 @@
  *  Module    : xface.c
  *  Author    : Joshua Crawford & Drazen Kacar
  *  Created   : 2003-04-27
- *  Updated   : 2004-07-27
+ *  Updated   : 2007-10-04
  *  Notes     :
  *
- * Copyright (c) 2003-2007 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
+ * Copyright (c) 2003-2008 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,7 +66,10 @@ slrnface_start(
 
 #ifdef HAVE_IS_XTERM
 	if (!is_xterm())
-		/* error_message(_("Can't run slrnface: Not running in a xterm.")); */
+#	ifdef DEBUG
+		if (debug & DEBUG_MISC)
+			error_message(_("Can't run slrnface: Not running in a xterm."));
+#	endif /* DEBUG */
 		return;
 #endif /* HAVE_IS_XTERM */
 
@@ -74,7 +77,10 @@ slrnface_start(
 	 * $DISPLAY holds the (default) display name
 	 */
 	if (!getenv("DISPLAY")) {
-		/* error_message(_("Can't run slrnface: Environment variable %s not found."), "DISPLAY"); */
+#	ifdef DEBUG
+		if (debug & DEBUG_MISC)
+			error_message(_("Can't run slrnface: Environment variable %s not found."), "DISPLAY");
+#	endif /* DEBUG */
 		return;
 	}
 
@@ -82,13 +88,19 @@ slrnface_start(
 	 * $WINDOWID holds the X window id number of the xterm window
 	 */
 	if (!getenv("WINDOWID")) {
-		/* error_message(_("Can't run slrnface: Environment variable %s not found."), "WINDOWID"); */
+#	ifdef DEBUG
+		if (debug & DEBUG_MISC)
+			error_message(_("Can't run slrnface: Environment variable %s not found."), "WINDOWID");
+#	endif /* DEBUG */
 		return;
 	}
 
 	uname(&u);
 	if (!(ptr = getenv("HOME"))) { /* TODO: use tin global 'homedir' instead? or even rcdir? */
-		error_message(_("Can't run slrnface: Environment variable %s not found."), "HOME");
+#	ifdef DEBUG
+		if (debug & DEBUG_MISC)
+			error_message(_("Can't run slrnface: Environment variable %s not found."), "HOME");
+#	endif /* DEBUG */
 		return;
 	}
 	pathlen = strlen(ptr) + strlen("/.slrnfaces/") + strlen(u.nodename) + 30;

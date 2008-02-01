@@ -2,7 +2,7 @@
 ;   Module    : tincfg.tbl
 ;   Author    : Thomas E. Dickey
 ;   Created   : 1996-11-01
-;   Updated   : 2006-06-28
+;   Updated   : 2008-01-10
 ;   Notes     : #defines and structs for config.c
 ;
 ; Copyright (c) 1996-2005 Thomas E. Dickey <dickey@invisible-island.net>
@@ -156,9 +156,11 @@
 #endif
 #ifndef CHARSET_CONVERSION
 	mm_charset			OPT_STRING
-#endif
-#ifdef CHARSET_CONVERSION
+#else
 	mm_network_charset		txt_mime_charsets	NUM_MIME_CHARSETS
+#endif
+#if defined(NO_LOCALE) && defined(CHARSET_CONVERSION)
+	mm_local_charset		OPT_STRING
 #endif
 	post_mime_encoding		txt_mime_encodings	NUM_MIME_ENCODINGS
 	post_8bit_header		OPT_ON_OFF

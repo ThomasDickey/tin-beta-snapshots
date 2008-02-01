@@ -3,11 +3,11 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2005-08-16
+ *  Updated   : 2007-12-30
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
- * Copyright (c) 1997-2007 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 1997-2008 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -78,7 +78,8 @@ authinfo_generic(
 #endif /* !HAVE_SETENV && HAVE_PUTENV */
 
 #ifdef DEBUG
-	debug_nntp("authorization", "authinfo generic");
+	if (debug & DEBUG_NNTP)
+		debug_print_file("NNTP", "authorization authinfo generic");
 #endif /* DEBUG */
 
 	/*
@@ -92,7 +93,8 @@ authinfo_generic(
 		char tempfile[PATH_LEN];
 		if ((cookiefd = my_tmpfile_only(tempfile)) == -1) {
 #	ifdef DEBUG
-			debug_nntp("authorization", txt_cannot_create_uniq_name);
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "authorization %s", txt_cannot_create_uniq_name);
 #	endif /* DEBUG */
 			return FALSE;
 		} else {
@@ -150,14 +152,15 @@ read_newsauth_file(
 	FILE *fp;
 	char *_authpass;
 	char *ptr;
+	char filename[PATH_LEN];
 	char line[PATH_LEN];
 	int found = 0;
 	int fd;
 	struct stat statbuf;
 
-	joinpath(line, homedir, ".newsauth");
+	joinpath(filename, sizeof(filename), homedir, ".newsauth");
 
-	if ((fp = fopen(line, "r"))) {
+	if ((fp = fopen(filename, "r"))) {
 		if ((fd = fileno(fp)) == -1) {
 			fclose(fp);
 			return FALSE;
@@ -167,20 +170,22 @@ read_newsauth_file(
 			return FALSE;
 		}
 
+#ifndef FILE_MODE_BROKEN
 		if (S_ISREG(statbuf.st_mode) && (statbuf.st_mode|S_IRUSR|S_IWUSR) != (S_IRUSR|S_IWUSR|S_IFREG)) {
-			error_message(_(txt_error_insecure_permissions), line, statbuf.st_mode);
+			error_message(_(txt_error_insecure_permissions), filename, statbuf.st_mode);
 			sleep(2);
 			/*
 			 * TODO: fix permssions?
 			 * fchmod(fd, S_IRUSR|S_IWUSR);
 			 */
 		}
+#endif /* !FILE_MODE_BROKEN */
 
 		/*
 		 * Search through authorization file for correct NNTP server
 		 * File has format:  'nntp-server' 'password' ['username']
 		 */
-		while (fgets(line, PATH_LEN, fp) != NULL) {
+		while (fgets(line, sizeof(line), fp) != NULL) {
 
 			/*
 			 * strip trailing newline character
@@ -260,7 +265,8 @@ do_authinfo_original(
 
 	snprintf(line, sizeof(line), "AUTHINFO USER %s", authuser);
 #ifdef DEBUG
-	debug_nntp("authorization", line);
+	if (debug & DEBUG_NNTP)
+		debug_print_file("NNTP", "authorization %s", line);
 #endif /* DEBUG */
 	put_server(line);
 	if ((ret = get_only_respcode(NULL, 0)) != NEED_AUTHDATA)
@@ -268,7 +274,8 @@ do_authinfo_original(
 
 	if ((authpass == NULL) || (*authpass == '\0')) {
 #ifdef DEBUG
-		debug_nntp("authorization", "failed: no password");
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", "authorization failed: no password");
 #endif /* DEBUG */
 		error_message(_(txt_nntp_authorization_failed), server);
 		return ERR_AUTHBAD;
@@ -276,7 +283,8 @@ do_authinfo_original(
 
 	snprintf(line, sizeof(line), "AUTHINFO PASS %s", authpass);
 #ifdef DEBUG
-	debug_nntp("authorization", line);
+	if (debug & DEBUG_NNTP)
+		debug_print_file("NNTP", "authorization %s", line);
 #endif /* DEBUG */
 	put_server(line);
 	ret = get_only_respcode(line, sizeof(line));
@@ -313,7 +321,8 @@ authinfo_original(
 	static t_bool initialized = FALSE;
 
 #ifdef DEBUG
-	debug_nntp("authorization", "original authinfo");
+	if (debug & DEBUG_NNTP)
+		debug_print_file("NNTP", "authorization original authinfo");
 #endif /* DEBUG */
 
 
@@ -352,7 +361,8 @@ authinfo_original(
 			ret = do_authinfo_original(server, authuser, authpass);
 			if (!(already_failed = (ret != OK_AUTH))) {
 #ifdef DEBUG
-				debug_nntp("authorization", "succeeded");
+				if (debug & DEBUG_NNTP)
+					debug_print_file("NNTP", "authorization succeeded");
 #endif /* DEBUG */
 				initialized = TRUE;
 				return TRUE;
@@ -385,7 +395,8 @@ authinfo_original(
 
 		if (!prompt_default_string(_(txt_auth_user), authuser, PATH_LEN, authusername, HIST_NONE)) {
 #ifdef DEBUG
-			debug_nntp("authorization", "failed: no username");
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "authorization failed: no username");
 #endif /* DEBUG */
 			return FALSE;
 		}
@@ -414,7 +425,8 @@ authinfo_original(
 	}
 
 #ifdef DEBUG
-	debug_nntp("authorization", (ret == OK_AUTH ? "succeeded" : "failed"));
+	if (debug & DEBUG_NNTP)
+		debug_print_file("NNTP", "authorization %s", (ret == OK_AUTH ? "succeeded" : "failed"));
 #endif /* DEBUG */
 
 	return (ret == OK_AUTH);

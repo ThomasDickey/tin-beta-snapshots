@@ -3,9 +3,9 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2006-02-15
+ *  Updated   : 2007-10-04
  *
- * Copyright (c) 1997-2007 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2008 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -316,7 +316,7 @@ get_from_name(
 	sprintf(from_name, ((strpbrk(get_full_name(), "!()<>@,;:\\\".[]")) ? "\"%s\" <%s@%s>" : "%s <%s@%s>"), get_full_name(), get_user_name(), fromhost);
 
 #	ifdef DEBUG
-	if (debug == 2)
+	if (debug & DEBUG_MISC)
 		error_message("FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", from_name, get_user_name(), domain_name, get_full_name());
 #	endif /* DEBUG */
 

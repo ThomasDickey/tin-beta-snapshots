@@ -3,10 +3,10 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2006-02-15
+ *  Updated   : 2007-12-30
  *  Notes     : NNTP built in version of inews
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -116,20 +116,20 @@ submit_inews(
 		if (line[0] == '\0') /* end of headers */
 			break;
 
-		ptr = strchr(line, ':');
-		if (ptr - line == 4 && !strncasecmp(line, "From", 4)) {
-			STRCPY(from_name, line);
-		}
+		if ((ptr = strchr(line, ':'))) {
+			if (ptr - line == 4 && !strncasecmp(line, "From", 4)) {
+				STRCPY(from_name, line);
+			}
 
-		if (ptr - line == 10 && !strncasecmp(line, "Message-ID", 10)) {
-			STRCPY(message_id, ptr + 2);
-			id_in_article = TRUE;
-		}
-
+			if (ptr - line == 10 && !strncasecmp(line, "Message-ID", 10)) {
+				STRCPY(message_id, ptr + 2);
+				id_in_article = TRUE;
+			}
 #	ifdef USE_CANLOCK
-		if (ptr - line == 11 && !strncasecmp(line, "Cancel-Lock", 11))
-			can_lock_in_article = TRUE;
+			if (ptr - line == 11 && !strncasecmp(line, "Cancel-Lock", 11))
+				can_lock_in_article = TRUE;
 #	endif /* USE_CANLOCK */
+		}
 	}
 
 	if ((from_name[0] == '\0') || (from_name[6] == '\0')) {
@@ -406,7 +406,7 @@ submit_news_file(
 				strncpy(buf, tinrc.inews_prog, sizeof(buf) - 1);
 			else {
 				if (*inewsdir)
-					joinpath(buf, inewsdir, "inews -h");
+					joinpath(buf, sizeof(buf), inewsdir, "inews -h");
 				else
 					strcpy(buf, "inews -h");
 			}
@@ -457,7 +457,7 @@ sender_needed(
 	char sender_name[HEADER_LEN];
 
 #	ifdef DEBUG
-	if (debug == 2) {
+	if (debug & DEBUG_MISC) {
 		wait_message(3, "sender_needed From:=[%s]", from);
 		wait_message(3, "sender_needed Sender:=[%s]", sender);
 	}
@@ -480,8 +480,10 @@ sender_needed(
 	free(p);
 
 	from_at_pos = strchr(from_addr, '@');
-	sender_at_pos = strchr(sender_addr, '@');
-	sender_dot_pos = strchr(sender_at_pos, '.');
+	if ((sender_at_pos = strchr(sender_addr, '@')))
+		sender_dot_pos = strchr(sender_at_pos, '.');
+	else /* this case is catched by the gnksa_do_check_from() code above; anyway ... */
+		return -2;
 
 	if (strncasecmp(from_addr, sender_addr, (from_at_pos - from_addr)))
 		return 1; /* login differs */

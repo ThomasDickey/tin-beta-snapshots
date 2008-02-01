@@ -3,13 +3,13 @@
  *  Module    : nrctbl.c
  *  Author    : Sven Paulus <sven@tin.org>
  *  Created   : 1996-10-06
- *  Updated   : 2005-07-02
+ *  Updated   : 2007-12-30
  *  Notes     : This module does the NNTP server name lookup in
  *              ~/.tin/newsrctable and returns the real hostname
  *              and the name of the newsrc file for a given
  *              alias of the server.
  *
- * Copyright (c) 1996-2007 Sven Paulus <sven@tin.org>
+ * Copyright (c) 1996-2008 Sven Paulus <sven@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -84,6 +84,7 @@ write_newsrctable_file(
 void
 get_nntpserver(
 	char *nntpserver_name,
+	size_t nntpserver_name_len,
 	char *nick_name)
 {
 	FILE *fp;
@@ -102,7 +103,7 @@ get_nntpserver(
 					line_entry_counter++;
 
 					if (line_entry_counter == 1)
-						strcpy(name_found, line_entry);
+						STRCPY(name_found, line_entry);
 
 					if ((line_entry_counter > 2) && (!strcasecmp(line_entry, nick_name)))
 						found = TRUE;
@@ -110,11 +111,12 @@ get_nntpserver(
 			}
 		}
 		fclose(fp);
-		strcpy(nntpserver_name, (found ? name_found : nick_name));
+		strncpy(nntpserver_name, (found ? name_found : nick_name), nntpserver_name_len);
 	} else {
 		write_newsrctable_file();
-		strcpy(nntpserver_name, nick_name);
+		strncpy(nntpserver_name, nick_name, nntpserver_name_len);
 	}
+	nntpserver_name[nntpserver_name_len - 1] = '\0';
 }
 
 
@@ -126,6 +128,7 @@ get_nntpserver(
 int
 get_newsrcname(
 	char *newsrc_name,
+	size_t newsrc_name_len,
 	const char *nntpserver_name) /* return value is always ignored */
 {
 	FILE *fp;
@@ -154,7 +157,7 @@ get_newsrcname(
 						do_cpy = TRUE;
 					}
 					if (do_cpy && (line_entry_counter == 2)) {
-						strcpy(name_found, line_entry);
+						STRCPY(name_found, line_entry);
 						do_cpy = FALSE;
 					}
 				}
@@ -170,12 +173,13 @@ get_newsrcname(
 					my_fprintf(stderr, _("couldn't expand %s\n"), name_found); /* TODO: -> lang.c */
 					error = 1;
 			} else {
-				if (tmp_newsrc[0] == '/')
-					(void) strcpy(newsrc_name, tmp_newsrc);
-				else
-					joinpath(newsrc_name, homedir, tmp_newsrc);
+				if (tmp_newsrc[0] == '/') {
+					(void) strncpy(newsrc_name, tmp_newsrc, newsrc_name_len);
+					newsrc_name[newsrc_name_len - 1] = '\0';
+				} else
+					joinpath(newsrc_name, newsrc_name_len, homedir, tmp_newsrc);
 			}
-			(void) strcpy(dir, newsrc_name);
+			STRCPY(dir, newsrc_name);
 			if (strchr(dir, '/'))
 				*strrchr(dir, '/') = (char) 0;
 
@@ -224,7 +228,7 @@ get_newsrcname(
 						return TRUE;
 
 					case 'd':
-						joinpath(newsrc_name, homedir, ".newsrc");
+						joinpath(newsrc_name, newsrc_name_len, homedir, ".newsrc");
 						return TRUE;
 
 					case 'a':
@@ -233,7 +237,7 @@ get_newsrcname(
 						 * is not documented in the man page
 						 */
 						snprintf(name_found, sizeof(name_found), ".newsrc-%s", nntpserver_name);
-						joinpath(newsrc_name, homedir, name_found);
+						joinpath(newsrc_name, newsrc_name_len, homedir, name_found);
 						return TRUE;
 
 					case 'q':

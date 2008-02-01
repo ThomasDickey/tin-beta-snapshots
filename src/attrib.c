@@ -3,10 +3,10 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2006-06-21
+ *  Updated   : 2007-12-30
  *  Notes     : Group attribute routines
  *
- * Copyright (c) 1993-2007 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2008 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -81,7 +81,6 @@ enum {
 	ATTRIB_MAILING_LIST,
 	ATTRIB_X_HEADERS,
 	ATTRIB_X_BODY,
-	ATTRIB_AUTO_SAVE_MSG, /* TODO: what is this? dublicate of ATTRIB_AUTO_SAVE? */
 	ATTRIB_X_COMMENT_TO,
 	ATTRIB_FCC,
 	ATTRIB_NEWS_QUOTE,
@@ -102,9 +101,10 @@ enum {
 /*
  * Local prototypes
  */
+static void _do_set_attrib(struct t_attribute *attributes, int type, const char *data);
 static void do_set_attrib(struct t_group *group, int type, const char *data);
 static void read_attributes_file(t_bool global_file, t_bool startup);
-static void set_attrib(int type, const char *scope, const char *data);
+static void set_attrib(int type, const char *scope, const char *data, t_bool global_file);
 static void set_default_attributes(struct t_attribute *attributes);
 #if 0 /* unused */
 #	ifdef DEBUG
@@ -126,6 +126,7 @@ static void
 set_default_attributes(
 	struct t_attribute *attributes)
 {
+	attributes->scope = NULL;
 	attributes->global = FALSE;	/* global/group specific */
 	attributes->maildir = tinrc.maildir;
 	attributes->savedir = tinrc.savedir;
@@ -177,26 +178,26 @@ set_default_attributes(
 #define MATCH_BOOLEAN(pattern, type) \
 	if (match_boolean(line, pattern, &flag)) { \
 		num = (flag != FALSE); \
-		set_attrib(type, scope, (char *) &num); \
+		set_attrib(type, scope, (char *) &num, global_file); \
 		found = TRUE; \
 		break; \
 	}
 #define MATCH_INTEGER(pattern, type, maxval) \
 	if (match_integer(line, pattern, &num, maxval)) { \
-		set_attrib(type, scope, (char *) &num); \
+		set_attrib(type, scope, (char *) &num, global_file); \
 		found = TRUE; \
 		break; \
 	}
 #define MATCH_STRING(pattern, type) \
 	if (match_string(line, pattern, buf, sizeof(buf) - strlen(pattern))) { \
-		set_attrib(type, scope, buf); \
+		set_attrib(type, scope, buf, global_file); \
 		found = TRUE; \
 		break; \
 	}
 #ifdef CHARSET_CONVERSION
 #	define MATCH_LIST(pattern, type, table, tablelen) \
 		if (match_list(line, pattern, table, tablelen, &num)) { \
-			set_attrib(type, scope, (char *) &num); \
+			set_attrib(type, scope, (char *) &num, global_file); \
 			found = TRUE; \
 			break; \
 		}
@@ -209,6 +210,12 @@ set_default_attributes(
 		}
 #endif /* !CHARSET_CONVERSION || !HAVE_ISPELL */
 
+#define ADD_SCOPE(this_scope) \
+	if ((num_local_attributes >= max_local_attributes) || (num_local_attributes < 0) || (local_attributes == NULL)) \
+		expand_local_attributes(); \
+	STRCPY(scope, this_scope); \
+	set_default_attributes(&local_attributes[num_local_attributes]); \
+	local_attributes[num_local_attributes++].scope = my_strdup(scope);
 
 /*
  * (re)read global/local attributes file
@@ -220,7 +227,7 @@ read_attributes_files(
 	static t_bool startup = TRUE;
 
 	if (!startup) { /* reinit attributes */
-		free_attributes_array();
+		free_attributes_array();	/* TODO: 'forget' list of editable entries in free_attributes_array() */
 		read_attributes_file(TRUE, startup);
 		read_attributes_file(FALSE, startup);
 	} else {
@@ -333,7 +340,7 @@ read_attributes_file(
 					MATCH_STRING("quick_select_scope=", ATTRIB_QUICK_SELECT_SCOPE);
 					if (match_string(line, "quote_chars=", buf, sizeof(buf))) {
 						quote_dash_to_space(buf);
-						set_attrib(ATTRIB_QUOTE_CHARS, scope, buf);
+						set_attrib(ATTRIB_QUOTE_CHARS, scope, buf, global_file);
 						found = TRUE;
 						break;
 					}
@@ -343,6 +350,14 @@ read_attributes_file(
 					MATCH_STRING("savedir=", ATTRIB_SAVEDIR);
 					MATCH_STRING("savefile=", ATTRIB_SAVEFILE);
 					if (match_string(line, "scope=", scope, sizeof(scope))) {
+						if (!global_file) {
+							/* Add a new entry to the list of editable attributes */
+							if ((num_local_attributes >= max_local_attributes) || (num_local_attributes < 0) || (local_attributes == NULL))
+								expand_local_attributes();
+							set_default_attributes(&local_attributes[num_local_attributes]);
+							local_attributes[num_local_attributes].scope = my_strdup(scope);
+							num_local_attributes++;
+						}
 						found = TRUE;
 						break;
 					}
@@ -386,10 +401,30 @@ read_attributes_file(
 		fclose(fp);
 
 		/*
-		 * TODO: do something usfull for the other cases
+		 * TODO: do something useful for the other cases
 		 */
 		if (upgrade == RC_UPGRADE && !global_file)
 			write_attributes_file(file);
+	} else if (!global_file) {
+		/* no local attributes file, add some useful defaults and write file */
+
+		ADD_SCOPE("*");
+		set_attrib(ATTRIB_X_HEADERS, scope, "~/.tin/headers", global_file);
+
+		ADD_SCOPE("*sources*");
+		num = POST_PROC_SHAR;
+		set_attrib(ATTRIB_POST_PROC_TYPE, scope, (char *) &num, global_file);
+
+		ADD_SCOPE("*binaries*");
+		num = POST_PROC_YES;
+		set_attrib(ATTRIB_POST_PROC_TYPE, scope, (char *) &num, global_file);
+		num = FALSE;
+		set_attrib(ATTRIB_TEX2ISO_CONV, scope, (char *) &num, global_file);
+		num = TRUE;
+		set_attrib(ATTRIB_DELETE_TMP_FILES, scope, (char *) &num, global_file);
+		set_attrib(ATTRIB_FOLLOWUP_TO, scope, "poster", global_file);
+
+		write_attributes_file(file);
 	}
 
 	/*
@@ -409,7 +444,8 @@ static void
 set_attrib(
 	int type,
 	const char *scope,
-	const char *data)
+	const char *data,
+	t_bool global_file)
 {
 	struct t_group *group;
 
@@ -422,11 +458,14 @@ set_attrib(
 	fprintf(stderr, "set_attrib #%d %s %s(%d)\n", type, scope, data, (int) *data);
 #endif /* 0 */
 
+	if (!global_file && (num_local_attributes > 0))
+		_do_set_attrib(&local_attributes[num_local_attributes - 1], type, data);
+
 	/*
 	 * Does scope refer to 1 or more than 1 group
 	 */
 	if (!strpbrk(scope, "*,")) {
-		if ((group = group_find(scope)) != NULL)
+		if ((group = group_find(scope, TRUE)) != NULL)
 			do_set_attrib(group, type, data);
 	} else {
 		int i;
@@ -442,10 +481,10 @@ set_attrib(
 
 
 #define SET_STRING(string) \
-	group->attribute->string = my_strdup(data); \
+	attributes->string = my_strdup(data); \
 	break
 #define SET_INTEGER(integer) \
-	group->attribute->integer = *data; \
+	attributes->integer = *data; \
 	break
 
 static void
@@ -461,37 +500,48 @@ do_set_attrib(
 		group->attribute = my_malloc(sizeof(struct t_attribute));
 		set_default_attributes(group->attribute);
 	}
+	_do_set_attrib(group->attribute, type, data);
+}
+
+static void
+_do_set_attrib(
+	struct t_attribute *attributes,
+	int type,
+	const char *data)
+{
+	if (!attributes)
+		return;
 
 	/*
 	 * Now set the required attribute
 	 */
 	switch (type) {
 		case ATTRIB_MAILDIR:
-			free_if_not_default(&group->attribute->maildir, tinrc.maildir);
+			free_if_not_default(&attributes->maildir, tinrc.maildir);
 			SET_STRING(maildir);
 
 		case ATTRIB_SAVEDIR:
-			free_if_not_default(&group->attribute->savedir, tinrc.savedir);
+			free_if_not_default(&attributes->savedir, tinrc.savedir);
 			SET_STRING(savedir);
 
 		case ATTRIB_SAVEFILE:
-			FreeIfNeeded(group->attribute->savefile);
+			FreeIfNeeded(attributes->savefile);
 			SET_STRING(savefile);
 
 		case ATTRIB_ORGANIZATION:
-			free_if_not_default(&group->attribute->organization, default_organization);
+			free_if_not_default(&attributes->organization, default_organization);
 			SET_STRING(organization);
 
 		case ATTRIB_FROM:
-			free_if_not_default(&group->attribute->from, tinrc.mail_address);
+			free_if_not_default(&attributes->from, tinrc.mail_address);
 			SET_STRING(from);
 
 		case ATTRIB_SIGFILE:
-			free_if_not_default(&group->attribute->sigfile, tinrc.sigfile);
+			free_if_not_default(&attributes->sigfile, tinrc.sigfile);
 			SET_STRING(sigfile);
 
 		case ATTRIB_FOLLOWUP_TO:
-			FreeIfNeeded(group->attribute->followup_to);
+			FreeIfNeeded(attributes->followup_to);
 			SET_STRING(followup_to);
 
 		case ATTRIB_AUTO_SELECT:
@@ -534,7 +584,7 @@ do_set_attrib(
 			SET_INTEGER(quick_kill_header);
 
 		case ATTRIB_QUICK_KILL_SCOPE:
-			FreeIfNeeded(group->attribute->quick_kill_scope);
+			FreeIfNeeded(attributes->quick_kill_scope);
 			SET_STRING(quick_kill_scope);
 
 		case ATTRIB_QUICK_KILL_EXPIRE:
@@ -547,7 +597,7 @@ do_set_attrib(
 			SET_INTEGER(quick_select_header);
 
 		case ATTRIB_QUICK_SELECT_SCOPE:
-			FreeIfNeeded(group->attribute->quick_select_scope);
+			FreeIfNeeded(attributes->quick_select_scope);
 			SET_STRING(quick_select_scope);
 
 		case ATTRIB_QUICK_SELECT_EXPIRE:
@@ -557,7 +607,7 @@ do_set_attrib(
 			SET_INTEGER(quick_select_case);
 
 		case ATTRIB_MAILING_LIST:
-			FreeIfNeeded(group->attribute->mailing_list);
+			FreeIfNeeded(attributes->mailing_list);
 			SET_STRING(mailing_list);
 
 #ifdef CHARSET_CONVERSION
@@ -565,35 +615,35 @@ do_set_attrib(
 			SET_INTEGER(mm_network_charset);
 
 		case ATTRIB_UNDECLARED_CHARSET:
-			FreeIfNeeded(group->attribute->undeclared_charset);
+			FreeIfNeeded(attributes->undeclared_charset);
 			SET_STRING(undeclared_charset);
 #endif /* CHARSET_CONVERSION */
 
 		case ATTRIB_X_HEADERS:
-			FreeIfNeeded(group->attribute->x_headers);
+			FreeIfNeeded(attributes->x_headers);
 			SET_STRING(x_headers);
 
 		case ATTRIB_X_BODY:
-			FreeIfNeeded(group->attribute->x_body);
+			FreeIfNeeded(attributes->x_body);
 			SET_STRING(x_body);
 
 		case ATTRIB_X_COMMENT_TO:
 			SET_INTEGER(x_comment_to);
 
 		case ATTRIB_FCC:
-			FreeIfNeeded(group->attribute->fcc);
+			FreeIfNeeded(attributes->fcc);
 			SET_STRING(fcc);
 
 		case ATTRIB_NEWS_QUOTE:
-			free_if_not_default(&group->attribute->news_quote_format, tinrc.news_quote_format);
+			free_if_not_default(&attributes->news_quote_format, tinrc.news_quote_format);
 			SET_STRING(news_quote_format);
 
 		case ATTRIB_QUOTE_CHARS:
-			free_if_not_default(&group->attribute->quote_chars, tinrc.quote_chars);
+			free_if_not_default(&attributes->quote_chars, tinrc.quote_chars);
 			SET_STRING(quote_chars);
 
 		case ATTRIB_MIME_TYPES_TO_SAVE:
-			FreeIfNeeded(group->attribute->mime_types_to_save);
+			FreeIfNeeded(attributes->mime_types_to_save);
 			SET_STRING(mime_types_to_save);
 
 		case ATTRIB_MIME_FORWARD:
@@ -601,7 +651,7 @@ do_set_attrib(
 
 #ifdef HAVE_ISPELL
 		case ATTRIB_ISPELL:
-			FreeIfNeeded(group->attribute->ispell);
+			FreeIfNeeded(attributes->ispell);
 			SET_STRING(ispell);
 #endif /* HAVE_ISPELL */
 
@@ -622,7 +672,7 @@ void
 write_attributes_file(
 	const char *file)
 {
-	FILE *fp, *infp;
+	FILE *fp;
 	char *new_file;
 	int i;
 	t_bool copy_ok = TRUE;
@@ -647,16 +697,16 @@ write_attributes_file(
 	 */
 	fprintf(fp, "# Group attributes file V%s for the TIN newsreader\n", ATTRIBUTES_VERSION);
 	fprintf(fp, _("# Do not edit this comment block\n#\n"));
-	fprintf(fp, _("#  scope=STRING (ie. alt.*,!alt.bin*) [mandatory]\n"));
-	fprintf(fp, _("#  maildir=STRING (ie. ~/Mail)\n"));
-	fprintf(fp, _("#  savedir=STRING (ie. ~user/News)\n"));
-	fprintf(fp, _("#  savefile=STRING (ie. =linux)\n"));
-	fprintf(fp, _("#  sigfile=STRING (ie. $var/sig)\n"));
+	fprintf(fp, _("#  scope=STRING (eg. alt.*,!alt.bin*) [mandatory]\n"));
+	fprintf(fp, _("#  maildir=STRING (eg. ~/Mail)\n"));
+	fprintf(fp, _("#  savedir=STRING (eg. ~user/News)\n"));
+	fprintf(fp, _("#  savefile=STRING (eg. =linux)\n"));
+	fprintf(fp, _("#  sigfile=STRING (eg. $var/sig)\n"));
 	fprintf(fp, _("#  organization=STRING (if beginning with '/' read from file)\n"));
 	fprintf(fp, _("#  followup_to=STRING\n"));
-	fprintf(fp, _("#  mailing_list=STRING (ie. majordomo@example.org)\n"));
-	fprintf(fp, _("#  x_headers=STRING (ie. ~/.tin/extra-headers)\n"));
-	fprintf(fp, _("#  x_body=STRING (ie. ~/.tin/extra-body-text)\n"));
+	fprintf(fp, _("#  mailing_list=STRING (eg. majordomo@example.org)\n"));
+	fprintf(fp, _("#  x_headers=STRING (eg. ~/.tin/extra-headers)\n"));
+	fprintf(fp, _("#  x_body=STRING (eg. ~/.tin/extra-body-text)\n"));
 	fprintf(fp, _("#  from=STRING (just append wanted From:-line, don't use quotes)\n"));
 	fprintf(fp, _("#  news_quote_format=STRING\n"));
 	fprintf(fp, _("#  quote_chars=STRING (%%s, %%S for initials)\n"));
@@ -752,43 +802,101 @@ write_attributes_file(
 	fprintf(fp, _("# entries first followed by group specific entries.\n#\n"));
 	fprintf(fp, _("############################################################################\n\n"));
 
-	/*
-	 * Add some useful defaults if no attributes file currently exists
-	 */
-	if ((infp = fopen(file, "r")) == NULL) {
-		fprintf(fp, _("# include extra headers\n"));
-		fprintf(fp, "scope=*\n");
-		/*
-		 * ${TIN_HOMEDIR-HOME} would be correct, but tin doesn't expand it,
-		 * so we take ~ instead
-		 */
-		fprintf(fp, "x_headers=~/.tin/headers\n\n");
+	if ((num_local_attributes > 0) && (local_attributes != NULL)) {
+		struct t_attribute *attr;
+		struct t_attribute default_attr;
 
-		fprintf(fp, _("# in *sources* set post process type to shar only\n"));
-		fprintf(fp, "scope=*sources*\n");
-		fprintf(fp, "post_proc_type=%d\n\n", POST_PROC_SHAR);
+		set_default_attributes(&default_attr);
 
-		fprintf(fp, _("# in *binaries* do full post processing but no TeX2ISO conversion,\n"));
-		fprintf(fp, _("# remove tmp files and set Followup-To: poster\n"));
-		fprintf(fp, "scope=*binaries*\n");
-		fprintf(fp, "post_proc_type=%d\n", POST_PROC_YES);
-		fprintf(fp, "tex2iso_conv=OFF\n");
-		fprintf(fp, "delete_tmp_files=ON\n");
-		fprintf(fp, "followup_to=poster\n\n");
-	} else {
-		char *ptr;
-		char buf[LEN];
+		for (i = 0; i < num_local_attributes; i++) {
+			attr = &local_attributes[i];
 
-		/*
-		 * Until the write code is fixed, just copy the existing settings after
-		 * the updated header
-		 */
-		while ((ptr = fgets(buf, sizeof(buf), infp)) != NULL) {
-			if (ptr[0] != '#' )				/* End of headers */
-				break;
+			fprintf(fp, "\nscope=%s\n", attr->scope);
+			if (attr->maildir && (attr->maildir != default_attr.maildir))
+				fprintf(fp, "maildir=%s\n", attr->maildir);
+			if (attr->savedir && (attr->savedir != default_attr.savedir))
+				fprintf(fp, "savedir=%s\n", attr->savedir);
+			if (attr->savefile)
+				fprintf(fp, "savefile=%s\n", attr->savefile);
+			if (attr->sigfile && (attr->sigfile != default_attr.sigfile))
+				fprintf(fp, "sigfile=%s\n", attr->sigfile);
+			if (attr->organization && (attr->organization != default_attr.organization))
+				fprintf(fp, "organization=%s\n", attr->organization);
+			if (attr->followup_to)
+				fprintf(fp, "followup_to=%s\n", attr->followup_to);
+			if (attr->mailing_list)
+				fprintf(fp, "mailing_list=%s\n", attr->mailing_list);
+			if (attr->x_headers)
+				fprintf(fp, "x_headers=%s\n", attr->x_headers);
+			if (attr->x_body)
+				fprintf(fp, "x_body=%s\n", attr->x_body);
+			if (attr->from && (attr->from != default_attr.from))
+				fprintf(fp, "from=%s\n", attr->from);
+			if (attr->news_quote_format && (attr->news_quote_format != default_attr.news_quote_format))
+				fprintf(fp, "news_quote_format=%s\n", attr->news_quote_format);
+			if (attr->quote_chars && (attr->quote_chars != default_attr.quote_chars))
+				fprintf(fp, "quote_chars=%s\n", quote_space_to_dash(attr->quote_chars));
+			if (strcasecmp(attr->mime_types_to_save, default_attr.mime_types_to_save))
+				fprintf(fp, "mime_types_to_save=%s\n", attr->mime_types_to_save);
+#	ifdef HAVE_ISPELL
+			if (attr->ispell)
+				fprintf(fp, "ispell=%s\n", attr->ispell);
+#	endif /* HAVE_ISPELL */
+			if (attr->show_only_unread != default_attr.show_only_unread)
+				fprintf(fp, "show_only_unread=%s\n", print_boolean(attr->show_only_unread));
+			if (attr->thread_arts != default_attr.thread_arts)
+				fprintf(fp, "thread_arts=%d\n", attr->thread_arts);
+			if (attr->thread_perc != default_attr.thread_perc)
+				fprintf(fp, "thread_perc=%d\n", attr->thread_perc);
+			if (attr->auto_select != default_attr.auto_select)
+				fprintf(fp, "auto_select=%s\n", print_boolean(attr->auto_select));
+			if (attr->auto_save != default_attr.auto_save)
+				fprintf(fp, "auto_save=%s\n", print_boolean(attr->auto_save));
+			if (attr->batch_save != default_attr.batch_save)
+				fprintf(fp, "batch_save=%s\n", print_boolean(attr->batch_save));
+			if (attr->delete_tmp_files != default_attr.delete_tmp_files)
+				fprintf(fp, "delete_tmp_files=%s\n", print_boolean(attr->delete_tmp_files));
+			if (attr->sort_art_type != default_attr.sort_art_type)
+				fprintf(fp, "sort_art_type=%d\n", attr->sort_art_type);
+			if (attr->sort_threads_type != default_attr.sort_threads_type)
+				fprintf(fp, "sort_threads_type=%d\n", attr->sort_threads_type);
+			if (attr->show_author != default_attr.show_author)
+				fprintf(fp, "show_author=%d\n", attr->show_author);
+			if (attr->show_info != default_attr.show_info)
+				fprintf(fp, "show_info=%d\n", attr->show_info);
+			if (attr->post_proc_type != default_attr.post_proc_type)
+				fprintf(fp, "post_proc_type=%d\n", attr->post_proc_type);
+			if (strcasecmp(attr->quick_kill_scope, default_attr.quick_kill_scope))
+				fprintf(fp, "quick_kill_scope=%s\n", attr->quick_kill_scope);
+			if (attr->quick_kill_case != default_attr.quick_kill_case)
+				fprintf(fp, "quick_kill_case=%s\n", print_boolean(attr->quick_kill_case));
+			if (attr->quick_kill_expire != default_attr.quick_kill_expire)
+				fprintf(fp, "quick_kill_expire=%s\n", print_boolean(attr->quick_kill_expire));
+			if (attr->quick_kill_header != default_attr.quick_kill_header)
+				fprintf(fp, "quick_kill_header=%d\n", attr->quick_kill_header);
+			if (strcasecmp(attr->quick_select_scope, default_attr.quick_select_scope))
+				fprintf(fp, "quick_select_scope=%s\n", attr->quick_select_scope);
+			if (attr->quick_select_case != default_attr.quick_select_case)
+				fprintf(fp, "quick_select_case=%s\n", print_boolean(attr->quick_select_case));
+			if (attr->quick_select_expire != default_attr.quick_select_expire)
+				fprintf(fp, "quick_select_expire=%s\n", print_boolean(attr->quick_select_expire));
+			if (attr->quick_select_header != default_attr.quick_select_header)
+				fprintf(fp, "quick_select_header=%d\n", attr->quick_select_header);
+			if (attr->x_comment_to != default_attr.x_comment_to)
+				fprintf(fp, "x_comment_to=%s\n", print_boolean(attr->x_comment_to));
+			if (attr->fcc)
+				fprintf(fp, "fcc=%s\n", attr->fcc);
+			if (attr->tex2iso_conv != default_attr.tex2iso_conv)
+				fprintf(fp, "tex2iso_conv=%s\n", print_boolean(attr->tex2iso_conv));
+			if (attr->mime_forward != default_attr.mime_forward)
+				fprintf(fp, "mime_forward=%s\n", print_boolean(attr->mime_forward));
+#	ifdef CHARSET_CONVERSION
+			if (attr->mm_network_charset && (attr->mm_network_charset != default_attr.mm_network_charset))
+				fprintf(fp, "mm_network_charset=%s\n", txt_mime_charsets[attr->mm_network_charset]);
+			if (attr->undeclared_charset)
+				fprintf(fp, "undeclared_charset=%s\n", attr->undeclared_charset);
+#	endif /* CHARSET_CONVERSION */
 		}
-		copy_ok = copy_fp(infp, fp);
-		fclose(infp);
 	}
 
 	/* rename_file() preserves mode, so this is safe */
@@ -803,59 +911,6 @@ write_attributes_file(
 
 	free(new_file);
 	return;
-
-#if 0 /* FIXME */
-	for_each_group(i) {
-		struct t_attribute *attr = active[i].attribute;
-
-		/* TODO: only write out none empty && no defaut entrys */
-		fprintf(fp, "scope=%s\n", active[i].name);
-		fprintf(fp, "maildir=%s\n", attr->maildir);
-		fprintf(fp, "savedir=%s\n", attr->savedir);
-		fprintf(fp, "savefile=%s\n", attr->savefile);
-		fprintf(fp, "sigfile=%s\n", attr->sigfile);
-		fprintf(fp, "organization=%s\n", attr->organization);
-		fprintf(fp, "followup_to=%s\n", attr->followup_to);
-		fprintf(fp, "mailing_list=%s\n", attr->mailing_list);
-		fprintf(fp, "x_headers=%s\n", attr->x_headers);
-		fprintf(fp, "x_body=%s\n", attr->x_body);
-		fprintf(fp, "from=%s\n", attr->from);
-		fprintf(fp, "news_quote_format=%s\n", attr->news_quote_format);
-		fprintf(fp, "quote_chars=%s\n", quote_space_to_dash(attr->quote_chars));
-		fprintf(fp, "mime_types_to_save=%s\n", attr->mime_types_to_save);
-#	ifdef HAVE_ISPELL
-		fprintf(fp, "ispell=%s\n", attr->ispell);
-#	endif /* HAVE_ISPELL */
-		fprintf(fp, "show_only_unread=%s\n", print_boolean(attr->show_only_unread));
-		fprintf(fp, "thread_arts=%d\n", attr->thread_arts);
-		fprintf(fp, "thread_perc=%d\n", attr->thread_perc);
-		fprintf(fp, "auto_select=%s\n", print_boolean(attr->auto_select));
-		fprintf(fp, "auto_save=%s\n", print_boolean(attr->auto_save));
-		fprintf(fp, "batch_save=%s\n", print_boolean(attr->batch_save));
-		fprintf(fp, "delete_tmp_files=%s\n", print_boolean(attr->delete_tmp_files));
-		fprintf(fp, "sort_art_type=%d\n", attr->sort_art_type);
-		fprintf(fp, "sort_threads_type=%d\n", attr->sort_threads_type);
-		fprintf(fp, "show_author=%d\n", attr->show_author);
-		fprintf(fp, "show_info=%d\n", attr->show_info);
-		fprintf(fp, "post_proc_type=%d\n", attr->post_proc_type);
-		fprintf(fp, "quick_kill_scope=%s\n", attr->quick_kill_scope);
-		fprintf(fp, "quick_kill_case=%s\n", print_boolean(attr->quick_kill_case));
-		fprintf(fp, "quick_kill_expire=%s\n", print_boolean(attr->quick_kill_expire));
-		fprintf(fp, "quick_kill_header=%d\n", attr->quick_kill_header);
-		fprintf(fp, "quick_select_scope=%s\n", attr->quick_select_scope);
-		fprintf(fp, "quick_select_case=%s\n", print_boolean(attr->quick_select_case));
-		fprintf(fp, "quick_select_expire=%s\n", print_boolean(attr->quick_select_expire));
-		fprintf(fp, "quick_select_header=%d\n", attr->quick_select_header);
-		fprintf(fp, "x_comment_to=%s\n", print_boolean(attr->x_comment_to));
-		fprintf(fp, "fcc=%s\n", attr->fcc);
-		fprintf(fp, "tex2iso_conv=%s\n", print_boolean(attr->tex2iso_conv));
-		fprintf(fp, "mime_forward=%s\n", print_boolean(attr->mime_forward));
-#	ifdef CHARSET_CONVERSION
-		fprintf(fp, "mm_network_charset=%s\n", txt_mime_charsets[attr->mm_network_charset]);
-		fprintf(fp, "undeclared_charset=%s\n", attr->undeclared_charset);
-#	endif /* CHARSET_CONVERSION */
-	}
-#endif /* 0 */
 }
 
 

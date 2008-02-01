@@ -22,32 +22,33 @@ The following configure options and defines are documented in detail:
   --enable-break-long-lines               --with-curses-dir
   --enable-broken-listgroup-fix           --with-dbmalloc
   --enable-broken-system-fix              --with-defaults-dir
-  --enable-color                          --with-dmalloc
-  --enable-curses                         --with-domain-name
-  --enable-debug                          --with-editor
-  --enable-echo                           --with-gpg
-  --enable-etiquette                      --with-included-gettext
-  --enable-fascist-newsadmin              --with-inews-dir
-  --enable-flock                          --with-inn-nntplib
-  --enable-inverse-video                  --with-iso-to-ascii
-  --enable-locale                         --with-ispell
-  --enable-lockf                          --with-libdir
-  --enable-mh-mail-handling               --with-libiconv-prefix
-  --enable-mime-strict-charset            --with-mailbox
-  --enable-nls                            --with-mailer
-  --enable-nntp                           --with-metamail
-  --enable-nntp-only                      --with-mime-default-charset
-  --enable-pgp-gpg                        --with-ncurses
-  --enable-piping                         --with-nntp-default-server
-  --enable-posting                        --with-nov-dir
-  --enable-printing                       --with-nov-fname
-  --enable-prototypes                     --with-pcre
-  --enable-shell-escape                   --with-pgp
-  --enable-warnings                       --with-pgpk
-  --enable-xhdr-xref                      --with-screen
-  --exec-prefix                           --with-shell
-  --mandir                                --with-spooldir
-  --prefix                                --with-trace
+  --enable-cancel-locks                   --with-dmalloc
+  --enable-color                          --with-domain-name
+  --enable-curses                         --with-editor
+  --enable-debug                          --with-gpg
+  --enable-echo                           --with-included-gettext
+  --enable-etiquette                      --with-inews-dir
+  --enable-fascist-newsadmin              --with-inn-nntplib
+  --enable-flock                          --with-iso-to-ascii
+  --enable-inverse-video                  --with-ispell
+  --enable-locale                         --with-libdir
+  --enable-lockf                          --with-libiconv-prefix
+  --enable-mh-mail-handling               --with-mailbox
+  --enable-mime-strict-charset            --with-mailer
+  --enable-nls                            --with-metamail
+  --enable-nntp                           --with-mime-default-charset
+  --enable-nntp-only                      --with-ncurses
+  --enable-pgp-gpg                        --with-nntp-default-server
+  --enable-piping                         --with-nov-dir
+  --enable-posting                        --with-nov-fname
+  --enable-printing                       --with-pcre
+  --enable-prototypes                     --with-pgp
+  --enable-shell-escape                   --with-pgpk
+  --enable-warnings                       --with-screen
+  --enable-xhdr-xref                      --with-shell
+  --exec-prefix                           --with-spooldir
+  --mandir                                --with-trace
+  --prefix
 
 
   ENFORCE_RFC1034                         HAVE_UUDEVIEW_H
@@ -56,7 +57,7 @@ The following configure options and defines are documented in detail:
   FORGERY                                 PROFILE
   REQUIRE_BRACKETS_IN_DOMAIN_LITERAL      SMALL_MEMORY_MACHINE
   HAVE_LIBUU                              XFACE_ABLE
-  USE_CANLOCK                             HAVE_BROKEN_SSCANF
+  HAVE_BROKEN_SSCANF
 
 
 Not yet documented configure options and defines:
@@ -66,10 +67,10 @@ TIN related:
   --with-socks                           --with-sum
 
   DEBUG                                   MATCH_TAR_PATTERN
-  DEBUG_NEWSRC                            NEW_HASH_METHOD
-  DEBUG_REFS (see doc/DEBUG_REFS)         OPTIMIZE_JUST_STAR
-  JUST_TESTING                            REREAD_ACTIVE_FILE_SECS
-  USE_UTF8_HORIZONTAL_ELLIPSIS
+  JUST_TESTING                            NEW_HASH_METHOD
+  OPTIMIZE_JUST_STAR                      REREAD_ACTIVE_FILE_SECS
+  USE_UTF8_HORIZONTAL_ELLIPSIS            NO_LOCKING
+  FILE_MODE_BROKEN
 
 System related:
   --datadir                               --localstatedir
@@ -503,6 +504,11 @@ yet fully implemented. You can expect errors if you use this option so let
 me know the problems by sending me a bug report ('R' bug command from
 within tin). See doc/reading-mail.txt for further information.
 
+--enable-cancel-locks (default: off)
+Turn on Cancel-Locks. This feature requires the client to know the
+Message-ID of the posting, so if your server does not offer server side
+purposed IDs you have to mess around with EVIL_INSIDE
+
 --enable-nls (default: on)
 The --enable-nls option enables Native Language Support (NLS), which allows
 tin to run in languages other than American English. Native Language
@@ -538,7 +544,7 @@ by tin -Dn where n is 1 for NNTP only debug logging, n is 2 for logging
 most debug info, n is 3 for newsrc debugging and n is 4 for malloc debug
 logging. Debug files written to /tmp are ARTS, ACTIVE, BASE, NNTP, SAVE_COMP,
 BITMAP, MALLOC and FILTER. Depending on the debuglevel some files may not be
-generated. newsrc debugging also needs DEBUG_NEWSRC defined.
+generated.
 
 --with-trace (default: off)
 Trace data which is formatted and written to the screen. Use this to debug
@@ -628,11 +634,6 @@ allow additional toplevel domains (GNKSA-check)
 
 EVIL_INSIDE
 let tin generate Message-IDs
-
-USE_CANLOCK
-turn on cancel-locks, you need to compile libcanlock first by running
-./Build in the libcanlock dir or by using "make canlock" from the src
-dir. You also have to uncomment the CANLOCK/CANLIB lines in src/Makefile.
 
 FOLLOW_USEFOR_DRAFT
 issue a warning instead of an error-message if Newsgroups: or

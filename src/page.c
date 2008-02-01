@@ -3,10 +3,10 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2006-10-01
+ *  Updated   : 2008-01-11
  *  Notes     :
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -337,7 +337,6 @@ show_page(
 			case GLOBAL_ABORT:       /* Abort */
 				break;
 
-			case DIGIT_0:
 			case DIGIT_1:
 			case DIGIT_2:
 			case DIGIT_3:
@@ -1273,7 +1272,7 @@ draw_page_header(
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	/* convert to wide-char format strings */
 	fmt_thread = char2wchar_t(_(txt_thread_x_of_n));
-	fmt_resp = char2wchar_t(_(txt_resp_x_of_n));
+	fmt_resp = char2wchar_t(_(txt_art_x_of_n));
 
 	/*
 	 * determine the needed space for the text at the right hand margin
@@ -1422,7 +1421,7 @@ draw_page_header(
 		my_fputc(' ', stdout);
 
 	if (whichresp)
-		my_printf(_(txt_resp_x_of_n), whichresp, x_resp);
+		my_printf(_(txt_art_x_of_n), whichresp + 1, x_resp + 1);
 	else {
 		if (!x_resp)
 			my_printf(_(txt_no_responses));
@@ -1500,7 +1499,7 @@ draw_page_header(
 	 * the formating info (%4s) needs 3 positions but we need 4 positions
 	 * on the screen for each counter
 	 */
-	right_len = MAX((strlen(_(txt_thread_x_of_n)) - 6 + 8), (strlen(_(txt_resp_x_of_n)) - 6 + 8));
+	right_len = MAX((strlen(_(txt_thread_x_of_n)) - 6 + 8), (strlen(_(txt_art_x_of_n)) - 6 + 8));
 
 	/*
 	 * first line
@@ -1616,7 +1615,7 @@ draw_page_header(
 		my_fputc(' ', stdout);
 
 	if (whichresp)
-		my_printf(_(txt_resp_x_of_n), whichresp, x_resp);
+		my_printf(_(txt_art_x_of_n), whichresp + 1, x_resp + 1);
 	else {
 		if (!x_resp)
 			my_printf(_(txt_no_responses));
@@ -1688,7 +1687,7 @@ load_article(
 	struct t_group *group)
 {
 #ifdef DEBUG
-	if (debug == 2)
+	if (debug & DEBUG_MISC)
 		fprintf(stderr, "load_art %s(new=%d, curr=%d)\n", (new_respnum == this_resp) ? "ALREADY OPEN!" : "", new_respnum, this_resp);
 #endif /* DEBUG */
 
@@ -1785,7 +1784,7 @@ prompt_response(
 
 	clear_message();
 
-	if ((num = prompt_num(ch, _(txt_read_resp))) == -1) {
+	if ((num = (prompt_num(ch, _(txt_select_art)) - 1)) == -1) {
 		clear_message();
 		return -1;
 	}
@@ -1901,7 +1900,7 @@ toggle_raw(
 							offset += num_bytes;
 						}
 #else
-						if (my_isprint((int) *p)) {
+						if (my_isprint((unsigned char) *p)) {
 							space--;
 							p++;
 							offset++;

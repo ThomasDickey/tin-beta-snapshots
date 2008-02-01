@@ -8,6 +8,9 @@ New features
 
 Changes
 -------
+. Cancel-Locks can be enabled via configure switch
+. url_handler.pl as DEFAULT_URL_HANDLER
+. mime_forward is forced on multipart articles
 
 Retired Features
 ----------------

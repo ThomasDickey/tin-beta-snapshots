@@ -7,7 +7,7 @@ Compile Tin For Windows
      - system
        - Windows NT
 
-     - Cygwin (http://sources.redhat.com/cygwin/)
+     - Cygwin <http://www.cygwin.com/>
        - Cygwin >= 1.1.x
        - ncurses
 
@@ -18,7 +18,7 @@ Compile Tin For Windows
 
      - configure
        - export CC=gcc
-       - ./configure --enable-nntp-only --disable-locale
+       - ./configure --enable-nntp-only --disable-nls
 
      - make
        - cd src
@@ -37,4 +37,4 @@ Compile Tin For Windows
               set HOME=c:\home
               set USER=username
        - tested with
-           1.5.8 release 20010221 "Blue Water"
+           1.9.3 release 20010221 "Blue Water"

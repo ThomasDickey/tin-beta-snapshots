@@ -3,10 +3,10 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-10-12
+ *  Updated   : 2008-01-08
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -124,7 +124,7 @@ static struct msg_header {
 /*
  * Local prototypes
  */
-static FILE *create_mail_headers(char *filename, const char *suffix, const char *to, const char *subject, struct t_header *extra_hdrs);
+static FILE *create_mail_headers(char *filename, size_t filename_len, const char *suffix, const char *to, const char *subject, struct t_header *extra_hdrs);
 static char **build_nglist(char *ngs_list, int *ngcnt);
 static char **split_address_list(const char *addresses, unsigned int *cnt);
 static char *backup_article_name(const char *the_article);
@@ -415,7 +415,8 @@ msg_write_headers(
 			p = msg_headers[i].text;
 			do {
 				wrote++;
-				p = strchr(++p, '\n');
+				++p;
+				p = strchr(p, '\n');
 			} while (p);
 		}
 	}
@@ -578,10 +579,12 @@ append_mail(
 	char *bufp;
 	char buf[LEN];
 	int fd;
-	int retrys = 10;	/* maximum lock retrys */
 	time_t epoch;
 	t_bool mmdf = FALSE;
 	t_bool rval = FALSE;
+#ifndef NO_LOCKING
+	int retrys = 10;	/* maximum lock retrys */
+#endif /* NO_LOCKING */
 
 	if (!strcasecmp(txt_mailbox_formats[tinrc.mailbox_format], "MMDF") && the_mailbox != postponed_articles_file)
 		mmdf = TRUE;
@@ -591,6 +594,8 @@ append_mail(
 
 	if ((fp_out = fopen(the_mailbox, "a+")) != NULL) {
 		fd = fileno(fp_out);
+
+#ifndef NO_LOCKING
 		/* TODO: move the retry/error stuff into a function? */
 		while (retrys-- && fd_lock(fd, FALSE))
 			wait_message(1, _(txt_trying_lock), retrys, the_mailbox);
@@ -609,6 +614,7 @@ append_mail(
 			fclose(fp_in);
 			return rval;
 		}
+#endif /* !NO_LOCKING */
 
 		if (mmdf)
 			fprintf(fp_out, "%s", MMDFHDRTXT);
@@ -639,8 +645,10 @@ append_mail(
 		print_art_seperator_line(fp_out, mmdf);
 
 		fflush(fp_out);
+#ifndef NO_LOCKING
 		if (fd_unlock(fd) || !dot_unlock(the_mailbox))
 			wait_message(4, _(txt_error_cant_unlock), the_mailbox);
+#endif /* !NO_LOCKING */
 
 		fclose(fp_out);
 		rval = TRUE;
@@ -1178,7 +1186,7 @@ check_article_to_be_posted(
 	 * Is this correct for crosspostings?
 	 */
 	if (ngcnt)
-		*group = group_find(newsgroups[0]);
+		*group = group_find(newsgroups[0], FALSE);
 
 	/*
 	 * check for known 7bit charsets
@@ -1323,7 +1331,7 @@ check_article_to_be_posted(
 			my_fprintf(stderr, _(txt_warn_article_unchanged));
 		my_fprintf(stderr, _(txt_art_newsgroups), subject, PLURAL(ngcnt, txt_newsgroup));
 		for (i = 0; i < ngcnt; i++) {
-			if ((psGrp = group_find(newsgroups[i])))
+			if ((psGrp = group_find(newsgroups[i], FALSE)))
 				my_fprintf(stderr, "  %s\t %s\n", newsgroups[i], BlankIfNull(psGrp->description));
 			else {
 #ifdef HAVE_FASCIST_NEWSADMIN
@@ -1369,7 +1377,7 @@ check_article_to_be_posted(
 #endif /* HAVE_FASCIST_NEWSADMIN */
 				my_fprintf(stderr, _(txt_followup_newsgroups), PLURAL(ftngcnt, txt_newsgroup));
 				for (i = 0; i < ftngcnt; i++) {
-					if ((psGrp = group_find(followupto[i])))
+					if ((psGrp = group_find(followupto[i], FALSE)))
 						my_fprintf(stderr, "  %s\t %s\n", followupto[i], BlankIfNull(psGrp->description));
 					else {
 						if (STRCMPEQ("poster", followupto[i]))
@@ -1650,7 +1658,7 @@ post_article_done:
 			 * FIXME: This logic is faithful to the original, but awful
 			 */
 			if (art_type == GROUP_TYPE_NEWS && tinrc.add_posted_to_filter && (type == POST_QUICK || type == POST_POSTPONED || type == POST_NORMAL)) {
-				if ((group = group_find(header.newsgroups)) && (type != POST_POSTPONED || (type == POST_POSTPONED && !strchr(header.newsgroups, ',')))) {
+				if ((group = group_find(header.newsgroups, FALSE)) && (type != POST_POSTPONED || (type == POST_POSTPONED && !strchr(header.newsgroups, ',')))) {
 					quick_filter_select_posted_art(group, header.subj, a_message_id);
 					if (type == POST_QUICK || (type == POST_POSTPONED && post_postponed_and_exit))
 						write_filter_file(filter_file);
@@ -1697,7 +1705,7 @@ post_article_done:
 			char a_mailbox[LEN];
 			char posted_msgs_file[PATH_LEN];
 
-			joinpath(posted_msgs_file, tinrc.maildir, tinrc.posted_articles_file);
+			joinpath(posted_msgs_file, sizeof(posted_msgs_file), tinrc.maildir, tinrc.posted_articles_file);
 			/*
 			 * log Message-ID if given in a_message_id,
 			 * add Date:, remove empty headers
@@ -1747,7 +1755,7 @@ check_moderated(
 	do {
 		vnum++; /* number of newsgroups */
 
-		if (!(group = group_find(groupname))) {
+		if (!(group = group_find(groupname, FALSE))) {
 			bnum++;	/* number of bogus groups */
 			continue;
 		}
@@ -1958,7 +1966,7 @@ post_postponed_article(
 		*p = '\0';
 
 	snprintf(buf, sizeof(buf), _("Posting: %.*s ..."), cCOLS - 14, subject); /* TODO: -> lang.c, use strunc() */
-	post_loop(POST_POSTPONED, group_find(ng), (ask ? POST_EDIT : GLOBAL_POST), buf, GROUP_TYPE_NEWS, 0);
+	post_loop(POST_POSTPONED, group_find(ng, FALSE), (ask ? POST_EDIT : GLOBAL_POST), buf, GROUP_TYPE_NEWS, 0);
 	free(ng);
 	return;
 }
@@ -2316,7 +2324,11 @@ is_crosspost(
  * several newsservers out there which do have some length limit, so
  * shortening to 998 is a good idea.
  */
-#define MAXREFSIZE 998
+#ifdef NNTP_ONLY
+#	define MAXREFSIZE 998
+#else /* some extern inews (required for posting right into the spool) can't handle 1k-lines */
+#	define MAXREFSIZE 512
+#endif /* NNTP_ONLY */
 
 
 /*
@@ -2545,7 +2557,7 @@ post_response(
 
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
 
-	group = group_find(groupname);
+	group = group_find(groupname, FALSE);
 	get_from_name(from_name, group);
 #ifdef FORGERY
 	make_path_header(line);
@@ -2693,6 +2705,7 @@ post_response(
 static FILE *
 create_mail_headers(
 	char *filename,
+	size_t filename_len,
 	const char *suffix,
 	const char *to,
 	const char *subject,
@@ -2701,10 +2714,10 @@ create_mail_headers(
 	FILE *fp;
 
 	msg_init_headers();
-	joinpath(filename, homedir, suffix);
+	joinpath(filename, filename_len, homedir, suffix);
 
 #ifdef APPEND_PID
-	snprintf(filename + strlen(filename), PATH_LEN - strlen(filename), ".%d", (int) process_id);
+	snprintf(filename + strlen(filename), filename_len - strlen(filename), ".%d", (int) process_id);
 #endif /* APPEND_PID */
 
 	if ((fp = fopen(filename, "w")) == NULL) {
@@ -2806,7 +2819,7 @@ mail_loop(
 #endif /* HAVE_PGP_GPG */
 
 	if (groupname)
-		group = group_find(groupname);
+		group = group_find(groupname, FALSE);
 
 	forever {
 		switch (func) {
@@ -2934,7 +2947,7 @@ mail_to_someone(
 	const struct t_group *group)
 {
 	FILE *fp;
-	char nam[HEADER_LEN];
+	char nam[PATH_LEN];
 	char subject[HEADER_LEN];
 	int ret_code = POSTED_NONE;
 	struct t_header note_h = artinfo->hdr;
@@ -2949,13 +2962,50 @@ mail_to_someone(
 	 * the full original headers in either the body of the mail or a separate
 	 * message/rfc822 MIME part.
 	 */
-	if ((fp = create_mail_headers(nam, TIN_LETTER_NAME, address, subject, NULL)) == NULL)
+	if ((fp = create_mail_headers(nam, sizeof(nam), TIN_LETTER_NAME, address, subject, NULL)) == NULL)
 		return ret_code;
+
+	/*
+	 * TODO: This is a undocumented hack!
+	 * in the !mime_forward case we should get the charset of each part
+	 * and convert it to the local one (as this is also needed for the
+	 * interactive_mailer case).
+	 */
+	if (note_h.ext->type == TYPE_MULTIPART)
+		mime_forward = TRUE; /* force mime_forward for multipart articles */
 
 	if (!mime_forward || INTERACTIVE_NONE != tinrc.interactive_mailer) {
 		rewind(artinfo->raw);
 		fprintf(fp, _(txt_forwarded));
-		copy_fp(artinfo->raw, fp);
+
+		if (!note_h.mime)
+			copy_fp(artinfo->raw, fp);
+		else {
+			const char *charset;
+			char *line, *buff = my_malloc(LEN);
+			size_t l, last = LEN;
+			t_bool in_head = TRUE;
+
+			/* intentionally no undeclared_charset support here! */
+			if (!(charset = get_param(note_h.ext->params, "charset")))
+				charset = "US-ASCII";
+
+			while ((line = tin_fgets(artinfo->raw, FALSE)) != NULL) {
+				if (*line == '\0')
+					in_head = FALSE;
+				l = strlen(line) * 4 + 4 ;  /* should suffice for -> UTF-8 */
+				if (l > last) { /* realloc if needed */
+					buff = my_realloc(buff, l);
+					last = l;
+				}
+				strcpy(buff, line);
+				if (!in_head) /* just convert body */
+					process_charsets(&buff, &l, charset, tinrc.mm_local_charset, FALSE);
+				strcat(buff, "\n");
+				fwrite(buff, 1, strlen(buff), fp);
+			}
+			free(buff);
+		}
 		fprintf(fp, _(txt_forwarded_end));
 	}
 
@@ -3002,7 +3052,7 @@ mail_bug_report(
 	wait_message(0, _(txt_mail_bug_report));
 	snprintf(subject, sizeof(subject), "BUG REPORT %s\n", page_header);
 
-	if ((fp = create_mail_headers(nam, ".bugreport", bug_addr, subject, NULL)) == NULL)
+	if ((fp = create_mail_headers(nam, sizeof(nam), ".bugreport", bug_addr, subject, NULL)) == NULL)
 		return FALSE;
 
 	start_line_offset += tin_version_info(fp);
@@ -3088,7 +3138,7 @@ mail_to_author(
 	FILE *fp;
 	char *p, *q;
 	char from_addr[HEADER_LEN];
-	char nam[100];
+	char nam[PATH_LEN];
 	char subject[HEADER_LEN];
 	char initials[64];
 	int ret_code = POSTED_NONE;
@@ -3132,7 +3182,7 @@ mail_to_author(
 	 * add extra headers in the mail_to_author() case as we don't include the
 	 * full original headers in the body of the mail
 	 */
-	if ((fp = create_mail_headers(nam, TIN_LETTER_NAME, from_addr, subject, &note_h)) == NULL)
+	if ((fp = create_mail_headers(nam, sizeof(nam), TIN_LETTER_NAME, from_addr, subject, &note_h)) == NULL)
 		return ret_code;
 
 	if (copy_text) {
@@ -3220,7 +3270,7 @@ mail_to_author(
 	resize_article(TRUE, &pgart);	/* rebreak long lines */
 
 	if (raw_data)	/* we've been in raw mode */
-		toggle_raw(group_find(group));
+		toggle_raw(group_find(group, FALSE));
 
 	return ret_code;
 }
@@ -3268,7 +3318,7 @@ cancel_article(
 {
 	FILE *fp;
 	char buf[HEADER_LEN];
-	char cancel[HEADER_LEN];
+	char cancel[PATH_LEN];
 	char from_name[HEADER_LEN];
 	char a_message_id[HEADER_LEN];
 #ifdef FORGERY
@@ -3302,7 +3352,7 @@ cancel_article(
 #endif /* FORGERY */
 
 #ifdef DEBUG
-	if (debug == 2)
+	if (debug & DEBUG_MISC)
 		error_message("From=[%s]  Cancel=[%s]", art->from, from_name);
 #endif /* DEBUG */
 
@@ -3342,7 +3392,7 @@ cancel_article(
 
 	clear_message();
 
-	joinpath(cancel, homedir, TIN_CANCEL_NAME);
+	joinpath(cancel, sizeof(cancel), homedir, TIN_CANCEL_NAME);
 #ifdef APPEND_PID
 	snprintf(cancel + strlen(cancel), sizeof(cancel) - strlen(cancel), ".%d", (int) process_id);
 #endif /* APPEND_PID */
@@ -3411,13 +3461,14 @@ cancel_article(
 	/* some ppl. like X-Headers: in cancels */
 	msg_add_x_headers(group->attribute->x_headers);
 
-	start_line_offset = msg_write_headers(fp);
+	start_line_offset = msg_write_headers(fp) + 1;
 	msg_free_headers();
 
 #ifdef FORGERY
-	if (author)
+	if (author) {
 		fprintf(fp, txt_article_cancelled);
-	else {
+		start_line_offset++;
+	} else {
 		rewind(pgart.raw);
 		copy_fp(pgart.raw, fp);
 	}
@@ -3426,6 +3477,7 @@ cancel_article(
 	redraw_screen = TRUE;
 #else
 	fprintf(fp, txt_article_cancelled);
+	start_line_offset++;
 	fclose(fp);
 #endif /* FORGERY */
 
@@ -3983,7 +4035,7 @@ insert_from_header(
 				get_from_name(from_name + 6, (struct t_group *) 0);
 
 #	ifdef DEBUG
-			if (debug == 2)
+			if (debug & DEBUG_MISC)
 				wait_message(2, "insert_from_header [%s]", from_name + 6);
 #	endif /* DEBUG */
 
@@ -4170,7 +4222,7 @@ update_active_after_posting(
 		src++;
 		if (*dst == ',' || *dst == '\0') {
 			*dst = '\0';
-			group = group_find(groupname);
+			group = group_find(groupname, FALSE);
 			if (group != NULL && group->subscribed) {
 				reread_active_for_posted_arts = TRUE;
 				group->art_was_posted = TRUE;
@@ -4534,6 +4586,7 @@ build_messageid(
 	void)
 {
 	int i;
+	size_t j;
 	static char buf[1024]; /* Message-IDs are limited to 998-12+CRLF octets */
 	static unsigned long int seqnum = 0; /* we'd use a counter in tinrc */
 	time_t t = time(NULL);
@@ -4569,6 +4622,12 @@ build_messageid(
 	snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "N%s@%s>", radix32(getuid()), get_fqdn(get_host_name()));
 #	endif /* !FORGERY */
 
+	/* disallow .invalid TLD for Message-IDs */
+	if ((i = strlen(buf) - 9) > 0) /* strlen(".invalid>") */
+		if (!strcasecmp(".invalid>", buf + i))
+			return NULL
+	}
+
 	i = gnksa_check_from(buf);
 	if ((GNKSA_OK != i) && (GNKSA_LOCALPART_MISSING > i))
 		buf[0] = '\0';
@@ -4595,10 +4654,10 @@ build_canlock(
 		 * sha_lock should be
 		 * const char *sha_lock(const char *, size_t, const char *, size_t)
 		 * but unfortunately is
-		 * unsigned char *sha_lock(char *, size_t, char *, size_t)
+		 * char *sha_lock(const unsigned char *, size_t, const unsigned char *, size_t)
 		 * -> cast as cast can
 		 */
-		return (const char *) (sha_lock((char *) secret, strlen(secret), (char *) messageid, strlen(messageid)));
+		return (const char *) (sha_lock((const unsigned char *) secret, strlen(secret), (const unsigned char *) messageid, strlen(messageid)));
 }
 
 
@@ -4618,10 +4677,10 @@ build_cankey(
 		 * sha_key should be
 		 * const char *sha_key(const char *, size_t, const char *, size_t)
 		 * but unfortunately is
-		 * unsigned char *sha_key(char *, size_t, char *, size_t)
+		 * char *sha_key(const unsigned char *, size_t, const unsigned char *, size_t)
 		 * -> cast as cast can
 		 */
-		return (const char *) (sha_key((char *) secret, strlen(secret), (char *) messageid, strlen(messageid)));
+		return (const char *) (sha_key((const unsigned char *) secret, strlen(secret), (const unsigned char *) messageid, strlen(messageid)));
 }
 
 
@@ -4638,9 +4697,11 @@ get_secret(
 	char *ptr;
 	char path_secret[PATH_LEN];
 	static char cancel_secret[HEADER_LEN];
+	int fd;
+	struct stat statbuf;
 
 	cancel_secret[0] = '\0';
-	joinpath(path_secret, homedir, SECRET_FILE);
+	joinpath(path_secret, sizeof(path_secret), homedir, SECRET_FILE);
 	if ((fp_secret = fopen(path_secret, "r")) == NULL) {
 #	ifdef DEBUG
 		/* TODO: prompt for secret manually here? */
@@ -4650,6 +4711,24 @@ get_secret(
 #	endif /* DEBUG */
 		return NULL;
 	} else {
+		if ((fd = fileno(fp_secret)) == -1) {
+			fclose(fp_secret);
+			return NULL;
+		}
+		if (fstat(fd, &statbuf) == -1) {
+			fclose(fp_secret);
+			return NULL;
+		}
+#	ifndef FILE_MODE_BROKEN
+		if (S_ISREG(statbuf.st_mode) && (statbuf.st_mode|S_IRUSR|S_IWUSR) != (S_IRUSR|S_IWUSR|S_IFREG)) {
+#		ifdef DEBUG
+			error_message(_(txt_error_insecure_permissions), path_secret, statbuf.st_mode);
+			sleep(2);
+#		else
+			fchmod(fd, S_IRUSR|S_IWUSR);
+#		endif /* DEBUG */
+		}
+#	endif /* !FILE_MODE_BROKEN */
 		(void) fread(cancel_secret, HEADER_LEN - 1, 1, fp_secret);
 		fclose(fp_secret);
 	}

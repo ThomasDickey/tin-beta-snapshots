@@ -3,10 +3,10 @@
  *  Module    : my_tmpfile.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 2001-03-11
- *  Updated   : 2004-06-30
+ *  Updated   : 2007-12-30
  *  Notes     :
  *
- * Copyright (c) 2001-2007 Urs Janssen <urs@tin.org>
+ * Copyright (c) 2001-2008 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,7 +60,12 @@ my_tmpfile(
 {
 	int fd = -1;
 	char buf[PATH_LEN];
-
+#if defined(HAVE_MKTEMP) && !defined(HAVE_MKSTEMP)
+	char *t;
+#endif /* HAVE_MKTEMP && !HAVE_MKSTEMP */
+#ifdef DEBUG
+	int sverrno;
+#endif /* DEBUG */
 	errno = 0;
 
 	if (filename != NULL && name_size > 0) {
@@ -81,23 +86,29 @@ my_tmpfile(
 
 		if (base_dir) {
 			snprintf(buf, MIN(name_size, (sizeof(buf) - 1)), "tin-%s-%d-XXXXXX", get_host_name(), process_id);
-			joinpath(filename, base_dir, buf);
+			joinpath(filename, name_size, base_dir, buf);
 		} else {
 			snprintf(buf, MIN(name_size, (sizeof(buf) - 1)), "tin_XXXXXX");
-			joinpath(filename, TMPDIR, buf);
+			joinpath(filename, name_size, TMPDIR, buf);
 		}
+#ifdef DEBUG
+		sverrno = errno = 0;
+#endif /* DEBUG */
 #ifdef HAVE_MKSTEMP
 		fd = mkstemp(filename);
 #	ifdef DEBUG
-		if (errno)
-			wait_message(5, "HAVE_MKSTEMP %s: %s", filename, strerror(errno));
+		sverrno = errno;
+		if (fd == -1 && sverrno)
+			wait_message(5, "HAVE_MKSTEMP %s: %s", filename, strerror(sverrno));
 #	endif /* DEBUG */
 #else
 #	ifdef HAVE_MKTEMP
-		fd = open(mktemp(filename), (O_WRONLY|O_CREAT|O_EXCL), (mode_t) (S_IRUSR|S_IWUSR));
+		if ((t = mktemp(filename)) != NULL)
+			fd = open(t, (O_WRONLY|O_CREAT|O_EXCL), (mode_t) (S_IRUSR|S_IWUSR));
 #		ifdef DEBUG
-		if (errno)
-			wait_message(5, "HAVE_MKTEMP %s: %s", filename, strerror(errno));
+		sverrno = errno;
+		if (sverrno)
+			wait_message(5, "HAVE_MKTEMP %s: %s", filename, strerror(sverrno));
 #		endif /* DEBUG */
 #	endif /* HAVE_MKTEMP */
 #endif /* HAVE_MKSTEMP */

@@ -3,10 +3,10 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2006-10-06
+ *  Updated   : 2007-10-04
  *  Notes     :
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -186,9 +186,10 @@ group_page(
 
 	show_group_page();
 
-#	ifdef DEBUG_NEWSRC
-	debug_print_bitmap(group, NULL);
-#	endif /* DEBUG_NEWSRC */
+#	ifdef DEBUG
+	if (debug & DEBUG_NEWSRC)
+		debug_print_bitmap(group, NULL);
+#	endif /* DEBUG */
 
 	/* reset ret_code */
 	ret_code = 0;
@@ -1397,14 +1398,14 @@ show_group_title(
 		if (curr_group->attribute->show_only_unread) {
 			if (arts[i].status != ART_READ) {
 				art_cnt++;
-				if (tinrc.recent_time && ((time((time_t) 0) - arts[i].date) < (tinrc.recent_time * DAY)))
+				if (tinrc.recent_time && ((time((time_t *) 0) - arts[i].date) < (tinrc.recent_time * DAY)))
 					recent_art_cnt++;
 			}
 			if (arts[i].killed == ART_KILLED_UNREAD)
 				killed_art_cnt++;
 		} else {
 			art_cnt++;
-			if (tinrc.recent_time && ((time((time_t) 0) - arts[i].date) < (tinrc.recent_time * DAY)))
+			if (tinrc.recent_time && ((time((time_t *) 0) - arts[i].date) < (tinrc.recent_time * DAY)))
 				recent_art_cnt++;
 
 			if (arts[i].killed)

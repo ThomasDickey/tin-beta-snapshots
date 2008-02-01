@@ -3,10 +3,10 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2006-04-06
+ *  Updated   : 2008-01-10
  *  Notes     :
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -80,7 +80,7 @@ static int gnksa_dequote_plainphrase(char *realname, char *decoded, int addrtype
 static int strfeditor(char *editor, int linenum, const char *filename, char *s, size_t maxsize, char *format);
 static void write_input_history_file(void);
 #ifdef CHARSET_CONVERSION
-	static t_bool buffer_to_local(char **line, int *max_line_len, const char *network_charset, const char *local_charset);
+	static t_bool buffer_to_local(char **line, size_t *max_line_len, const char *network_charset, const char *local_charset);
 #endif /* CHARSET_CONVERSION */
 #if 0 /* currently unused */
 	static t_bool stat_article(long art, const char *group_path);
@@ -318,7 +318,7 @@ copy_body(
 					}
 					buf2[i] = '\0';
 					if (status_char)	/* already quoted */
-						retcode = fprintf(fp_op, "%s>%s", buf2, strchr(buf, '>'));
+						retcode = fprintf(fp_op, "%s>%s", buf2, BlankIfNull(strchr(buf, '>')));
 					else	/* ... to be quoted ... */
 						retcode = fprintf(fp_op, "%s%s", prefixbuf, buf);
 				} else	/* line was not already quoted (no >) */
@@ -594,9 +594,7 @@ tin_done(
 		}
 
 		write_input_history_file();
-#if 0
 		write_attributes_file(local_attributes_file);
-#endif /* 0 */
 
 #ifdef HAVE_MH_MAIL_HANDLING
 		write_mail_active_file();
@@ -750,7 +748,9 @@ invoke_cmd(
 {
 	int ret;
 	t_bool save_cmd_line = cmd_line;
+#ifndef IGNORE_SYSTEM_STATUS
 	t_bool success;
+#endif /* IGNORE_SYSTEM_STATUS */
 
 	if (!save_cmd_line) {
 		EndWin();
@@ -881,10 +881,11 @@ mail_check(
 		if ((int) (buf.st_mode & S_IFMT) == (int) S_IFDIR) { /* maildir setup */
 			DIR *dirp;
 			char *maildir_box;
+			size_t maildir_box_len = strlen(mailbox_name) + strlen(MAILDIR_NEW) + 2;
 			struct dirent *dp;
 
-			maildir_box = my_malloc(strlen(mailbox_name) + strlen(MAILDIR_NEW) + 2);
-			joinpath(maildir_box, mailbox_name, MAILDIR_NEW);
+			maildir_box = my_malloc(maildir_box_len);
+			joinpath(maildir_box, maildir_box_len, mailbox_name, MAILDIR_NEW);
 
 			if (!(dirp = opendir(maildir_box))) {
 				free(maildir_box);
@@ -932,13 +933,13 @@ eat_re(
 		data = pcre_exec(strip_re_regex.re, strip_re_regex.extra, s, strlen(s), 0, 0, offsets, size_offsets);
 		if (offsets[0] == 0)
 			s += offsets[1];
-	} while (data > 0);
+	} while (data >= 0);
 
 	if (eat_was) do {
 		data = pcre_exec(strip_was_regex.re, strip_was_regex.extra, s, strlen(s), 0, 0, offsets, size_offsets);
 		if (offsets[0] > 0)
 			s[offsets[0]] = '\0';
-	} while (data > 0);
+	} while (data >= 0);
 
 	return s;
 }
@@ -1456,7 +1457,7 @@ _strfpath(
 			case '~':			/* Users or another users homedir */
 				switch (*++format) {
 					case '/':	/* users homedir */
-						joinpath(tbuf, homedir, "");
+						joinpath(tbuf, sizeof(tbuf), homedir, "");
 						break;
 
 					default:	/* some other users homedir */
@@ -1530,9 +1531,9 @@ _strfpath(
 
 					if (strfpath(group->attribute->maildir, buf, sizeof(buf), group)) {
 						if (*(format + 1) == '\0')				/* Just an = */
-							joinpath(tbuf, buf, group->name);
+							joinpath(tbuf, sizeof(tbuf), buf, group->name);
 						else
-							joinpath(tbuf, buf, "");
+							joinpath(tbuf, sizeof(tbuf), buf, "");
 						if ((str = strfpath_cp(str, tbuf, endp)) == NULL)
 							return 0;
 					} else {
@@ -1561,8 +1562,8 @@ _strfpath(
 #else
 						my_strncpy(tmp, group->name, 14);
 #endif /* HAVE_LONG_FILE_NAMES */
-						joinpath(tbuf, buf, tmp);	/* Add the group name */
-						joinpath(tmp, tbuf, "");
+						joinpath(tbuf, sizeof(tbuf), buf, tmp);	/* Add the group name */
+						joinpath(tmp, sizeof(tmp), tbuf, "");
 						if ((str = strfpath_cp(str, tmp, endp)) == NULL)
 							return 0;
 					} else {
@@ -1977,12 +1978,13 @@ void
 make_base_group_path(
 	const char *base_dir,
 	const char *group_name,
-	char *group_path)
+	char *group_path,
+	size_t group_path_len)
 {
 	char buf[LEN];
 
 	make_group_path(group_name, buf);
-	joinpath(group_path, base_dir, buf);
+	joinpath(group_path, group_path_len, base_dir, buf);
 }
 
 
@@ -2287,7 +2289,7 @@ strip_name(
 static t_bool
 buffer_to_local(
 	char **line,
-	int *max_line_len,
+	size_t *max_line_len,
 	const char *network_charset,
 	const char *local_charset)
 {
@@ -2426,7 +2428,7 @@ buffer_to_local(
 				} while (inbytesleft > 0);
 
 				**&outbuf = '\0';
-				if (*max_line_len < (int) strlen(obuf) + 1) {
+				if (*max_line_len < strlen(obuf) + 1) {
 					*max_line_len = strlen(obuf) + 1;
 					*line = my_realloc(*line, *max_line_len);
 				}
@@ -2536,7 +2538,7 @@ buffer_to_ascii(
 void
 process_charsets(
 	char **line,
-	int *max_line_len,
+	size_t *max_line_len,
 	const char *network_charset,
 	const char *local_charset,
 	t_bool conv_tex2iso)
@@ -3396,7 +3398,7 @@ gnksa_do_check_from(
 	decoded[0] = '\0';
 
 #ifdef DEBUG
-	if (debug == 2)
+	if (debug & DEBUG_MISC)
 		wait_message(0, "From:=[%s]", from);
 #endif /* DEBUG */
 
@@ -3406,7 +3408,7 @@ gnksa_do_check_from(
 		return code;
 
 #ifdef DEBUG
-	if (debug == 2)
+	if (debug & DEBUG_MISC)
 		wait_message(0, "address=[%s]", address);
 #endif /* DEBUG */
 
@@ -3420,7 +3422,7 @@ gnksa_do_check_from(
 		*addr_begin++ = '\0';
 
 #ifdef DEBUG
-		if (debug == 2)
+		if (debug & DEBUG_MISC)
 			wait_message(0, "FQDN=[%s]", addr_begin);
 #endif /* DEBUG */
 
@@ -3440,7 +3442,7 @@ gnksa_do_check_from(
 	}
 
 #ifdef DEBUG
-	if (debug == 2)
+	if (debug & DEBUG_MISC)
 		wait_message(0, "realname=[%s]", realname);
 #endif /* DEBUG */
 
@@ -3452,9 +3454,9 @@ gnksa_do_check_from(
 		strcpy(realname, decoded);
 
 #ifdef DEBUG
-	if (debug == 2) {
+	if (debug & DEBUG_MISC) {
 		if (GNKSA_OK != code)
-			wait_message(3, "From:=[%s], GNKSA=[%d]", from, code);
+			wait_message(2, "From:=[%s], GNKSA=[%d]", from, code);
 		else
 			wait_message(0, "GNKSA=[%d]", code);
 	}
@@ -3947,24 +3949,26 @@ stat_article(
 	long art,
 	const char *group_path)
 {
-	char buf[NNTP_STRLEN];
 	struct t_group currgrp;
 
 	currgrp = CURR_GROUP;
 
 #	ifdef NNTP_ABLE
 	if (read_news_via_nntp && currgrp.type == GROUP_TYPE_NEWS) {
+		char buf[NNTP_STRLEN];
+
 		snprintf(buf, sizeof(buf), "STAT %ld", art);
 		return (nntp_command(buf, OK_NOTEXT, NULL, 0) != NULL);
 	} else
 #	endif /* NNTP_ABLE */
 	{
+		char filename[PATH_LEN];
 		struct stat sb;
 
-		joinpath(buf, currgrp.spooldir, group_path);
-		snprintf(&buf[strlen(buf)], sizeof(buf), "/%ld", art);
+		joinpath(filename, sizeof(filename), currgrp.spooldir, group_path);
+		snprintf(&filename[strlen(filename)], sizeof(filename), "/%ld", art);
 
-		return (stat(buf, &sb) != -1);
+		return (stat(filename, &sb) != -1);
 	}
 }
 #endif /* 0 */

@@ -3,10 +3,10 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2006-09-02
+ *  Updated   : 2007-12-30
  *  Notes     :
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,7 @@ static FILE *open_save_filename(const char *path, t_bool mbox);
 static int match_content_type(t_part *part, char *type);
 static t_bool check_save_mime_type(t_part *part, const char *mime_types);
 static t_bool decode_save_one(t_part *part, FILE *rawfp, t_bool postproc);
-static t_bool expand_save_filename(char *outpath, const char *path);
+static t_bool expand_save_filename(char *outpath, size_t outpath_len, const char *path);
 static void generate_filename(char *buf, int buflen, const char *suffix);
 static void post_process_uud(void);
 static void post_process_sh(void);
@@ -118,14 +118,14 @@ check_start_save_any_news(
 			break;
 
 		case MAIL_ANY_NEWS:
-			joinpath(savefile, TMPDIR, "tin");
+			joinpath(savefile, sizeof(savefile), TMPDIR, "tin");
 #ifdef APPEND_PID
 			snprintf(savefile + strlen(savefile), sizeof(savefile) - strlen(savefile), ".%d", (int) process_id);
 #endif /* APPEND_PID */
 			/* FALLTHROUGH */
 
 		case SAVE_ANY_NEWS:
-			joinpath(logfile, rcdir, "log");
+			joinpath(logfile, sizeof(logfile), rcdir, "log");
 
 			if (no_write || (fp_log = fopen(logfile, "w")) == NULL) {
 				perror_message(_(txt_cannot_open), logfile);
@@ -177,10 +177,10 @@ check_start_save_any_news(
 				char tmp[PATH_LEN];
 
 				if (!strfpath(group->attribute->savedir, tmp, sizeof(tmp), group))
-					joinpath(tmp, homedir, DEFAULT_SAVEDIR);
+					joinpath(tmp, sizeof(tmp), homedir, DEFAULT_SAVEDIR);
 
 				make_group_path(group->name, group_path);
-				joinpath(path, tmp, group_path);
+				joinpath(path, sizeof(path), tmp, group_path);
 				create_path(path);	/* TODO error handling */
 			}
 		}
@@ -218,7 +218,7 @@ check_start_save_any_news(
 
 					if (function == SAVE_ANY_NEWS) {
 						snprintf(buf, sizeof(buf), "%ld", arts[j].artnum);
-						joinpath(savefile, path, buf);
+						joinpath(savefile, sizeof(savefile), path, buf);
 					}
 
 					if ((savefp = fopen(savefile, "w")) == NULL) {
@@ -465,11 +465,11 @@ save_and_process_art(
 
 		/* Add on the archive name as a directory */
 		/* TODO: maybe a s!/!.! on archive-name would be better */
-		joinpath(archpath, path, artptr->archive->name);
+		joinpath(archpath, sizeof(archpath), path, artptr->archive->name);
 
 		/* Generate the filename part and append it */
 		snprintf(filename, sizeof(filename), "%s%s", partprefix, artptr->archive->partnum);
-		joinpath(path, archpath, filename);
+		joinpath(path, sizeof(path), archpath, filename);
 /*fprintf(stderr, "save_and_process_art archive-name mangled path=(%s)\n", path);*/
 		if (!create_path(path))
 			return FALSE;
@@ -604,6 +604,7 @@ generate_filename(
 static t_bool
 expand_save_filename(
 	char *outpath,
+	size_t outpath_len,
 	const char *path)
 {
 	char base_filename[PATH_LEN];
@@ -619,11 +620,10 @@ expand_save_filename(
 
 	/* Build default path to save to */
 	if (!(ret = strfpath(curr_group->attribute->savedir, buf, sizeof(buf), curr_group)))
-		joinpath(buf, homedir, DEFAULT_SAVEDIR);
+		joinpath(buf, sizeof(buf), homedir, DEFAULT_SAVEDIR);
 
 	/* Join path and filename */
-	/* TODO: make sure full path fits into outpath! */
-	joinpath(outpath, buf, base_filename);
+	joinpath(outpath, outpath_len, buf, base_filename);
 
 	return (ret == 1);	/* should now always evaluate to FALSE */
 }
@@ -753,7 +753,7 @@ post_process_uud(
 
 			/* item->mimetype seems not to be available for uudecoded files etc */
 			if (tinrc.post_process_view) {
-				joinpath(path, file_out_dir, item->filename);
+				joinpath(path, sizeof(path), file_out_dir, item->filename);
 				view_file(path, strrchr(path, DIRSEP) + 1);
 			}
 		} else {
@@ -844,7 +844,7 @@ post_process_uud(
 							generate_filename(name, sizeof(name), "uue");
 
 						filename = name;
-						expand_save_filename(path, filename);
+						expand_save_filename(path, sizeof(path), filename);
 						filename = strrchr(path, DIRSEP) + 1;	/* ptr to filename portion */
 						if ((fp_out = fopen(path, "w")) == NULL) {
 							perror_message(_(txt_cannot_open), path);
@@ -1112,7 +1112,7 @@ print_art_seperator_line(
 	t_bool is_mailbox)
 {
 #ifdef DEBUG
-	if (debug == 2)
+	if (debug & DEBUG_MISC)
 		error_message("Mailbox=[%d], mailbox_format=[%s]", is_mailbox, txt_mailbox_formats[tinrc.mailbox_format]);
 #endif /* DEBUG */
 
@@ -1200,9 +1200,9 @@ decode_save_one(
 
 		lookup_extension(extension, sizeof(extension), content_types[part->type], part->subtype);
 		generate_filename(buf, sizeof(buf), extension);
-		mbox = expand_save_filename(savepath, buf);
+		mbox = expand_save_filename(savepath, sizeof(savepath), buf);
 	} else
-		mbox = expand_save_filename(savepath, name);
+		mbox = expand_save_filename(savepath, sizeof(savepath), name);
 
 	/*
 	 * Not a good idea to dump attachments over a mailbox

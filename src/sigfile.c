@@ -3,10 +3,10 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2003-09-19
+ *  Updated   : 2007-12-30
  *  Notes     : Generate random signature for posting/mailing etc.
  *
- * Copyright (c) 1992-2007 Mike Gleason
+ * Copyright (c) 1992-2008 Mike Gleason
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,7 +95,7 @@ msg_write_signature(
 
 		if (!strfpath(thisgroup->attribute->sigfile, path, sizeof(path), thisgroup)) {
 			if (!strfpath(tinrc.sigfile, path, sizeof(path), thisgroup))
-				joinpath(path, homedir, ".Sig");
+				joinpath(path, sizeof(path), homedir, ".Sig");
 		}
 
 		/*
@@ -107,22 +107,22 @@ msg_write_signature(
 		 */
 		if ((sigfp = open_random_sig(path)) != NULL) {
 #ifdef DEBUG
-			if (debug == 2)
+			if (debug & DEBUG_MISC)
 				error_message("USING random sig=[%s]", sigfile);
 #endif /* DEBUG */
 			fprintf(fp, "\n%s", tinrc.sigdashes ? SIGDASHES : "\n");
-			joinpath(pathfixed, path, ".sigfixed");
+			joinpath(pathfixed, sizeof(pathfixed), path, ".sigfixed");
 #ifdef DEBUG
-			if (debug == 2)
+			if (debug & DEBUG_MISC)
 				error_message("TRYING fixed sig=[%s]", pathfixed);
 #endif /* DEBUG */
 			if ((fixfp = fopen(pathfixed, "r")) != NULL) {
 				copy_fp(fixfp, fp);
 				fclose(fixfp);
 			} else {
-				joinpath(pathfixed, homedir, ".sigfixed");
+				joinpath(pathfixed, sizeof(pathfixed), homedir, ".sigfixed");
 #ifdef DEBUG
-				if (debug == 2)
+				if (debug & DEBUG_MISC)
 					error_message("TRYING fixed sig=[%s]", pathfixed);
 #endif /* DEBUG */
 				if ((fixfp = fopen(pathfixed, "r")) != NULL) {
@@ -171,13 +171,13 @@ open_random_sig(
 
 			if (thrashdir(sigdir) || !*sigfile) {
 #ifdef DEBUG
-				if (debug == 2)
+				if (debug & DEBUG_MISC)
 					error_message("NO sigfile=[%s]", sigfile);
 #endif /* DEBUG */
 				return (FILE *) 0;
 			} else {
 #ifdef DEBUG
-				if (debug == 2)
+				if (debug & DEBUG_MISC)
 					error_message("sigfile=[%s]", sigfile);
 #endif /* DEBUG */
 				return fopen(sigfile, "r");
@@ -229,7 +229,7 @@ thrashdir(
 	 */
 	for (safeguard = 0, dp = NULL; safeguard < MAXLOOPS && dp == NULL; safeguard++) {
 #ifdef DEBUG
-		if (debug == 2)
+		if (debug & DEBUG_MISC)
 			error_message("sig loop=[%d] recurse=[%d]", safeguard, recurse);
 #endif /* DEBUG */
 #ifdef HAVE_REWINDDIR
@@ -276,7 +276,7 @@ thrashdir(
 					strcat(sigfile, "/");
 					strcat(sigfile, dp->d_name);
 #ifdef DEBUG
-					if (debug == 2)
+					if (debug & DEBUG_MISC)
 						error_message("Found a file=[%s]", sigfile);
 #endif /* DEBUG */
 				}
@@ -285,7 +285,7 @@ thrashdir(
 	}
 	free(cwd);
 #ifdef DEBUG
-	if (debug == 2)
+	if (debug & DEBUG_MISC)
 		error_message("return 0: sigfile=[%s]", sigfile);
 #endif /* DEBUG */
 	CLOSEDIR(dirp);

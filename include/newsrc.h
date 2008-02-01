@@ -6,7 +6,7 @@
  *  Updated   : 2003-11-18
  *  Notes     : newsrc bit handling
  *
- * Copyright (c) 1997-2007 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -116,23 +116,23 @@
 
 #define NBITMASK(beg,end)	(unsigned char) ~(((1 << (((NMAXBIT - beg) - (NMAXBIT - end)) + 1)) - 1) << (NMAXBIT - end))
 
-#define NTEST(n,b)	(n[NOFFSET(b)] &   (1 << NBITIDX(b)))
+#define NTEST(n,b)	(n[NOFFSET(b)] & (1 << NBITIDX(b)))
 
 #define NSETBLK1(n,i)	(memset (n, NBITSON, (size_t) NOFFSET(i)+1))
 #define NSETBLK0(n,i)	(memset (n, 0, (size_t) NOFFSET(i)+1))
 
 /* dbmalloc checks memset() parameters, so we'll use it to check the assignments */
 #ifdef USE_DBMALLOC
-#	define NSET1(n,b) memset(n + NOFFSET(b), n[NOFFSET(b)] | NTEST(n,b), 1)
-#	define NSET0(n,b) memset(n + NOFFSET(b), n[NOFFSET(b)] & ~NTEST(n,b), 1)
-#	define BIT_OR(n, b, mask)   memset(n + NOFFSET(b), n[NOFFSET(b)] | (mask), 1)
-#	define BIT_AND(n, b, mask)  memset(n + NOFFSET(b), n[NOFFSET(b)] & (mask), 1)
+#	define NSET1(n,b)	memset(n + NOFFSET(b), n[NOFFSET(b)] | NTEST(n,b), 1)
+#	define NSET0(n,b)	memset(n + NOFFSET(b), n[NOFFSET(b)] & ~NTEST(n,b), 1)
+#	define BIT_OR(n, b, mask)	memset(n + NOFFSET(b), n[NOFFSET(b)] | (mask), 1)
+#	define BIT_AND(n, b, mask)	memset(n + NOFFSET(b), n[NOFFSET(b)] & (mask), 1)
 #	include <dbmalloc.h> /* dbmalloc 1.4 */
 #else
-#	define NSET1(n,b)	(n[NOFFSET(b)] |=  (1 << NBITIDX(b)))
+#	define NSET1(n,b)	(n[NOFFSET(b)] |= (1 << NBITIDX(b)))
 #	define NSET0(n,b)	(n[NOFFSET(b)] &= ~(1 << NBITIDX(b)))
-#	define BIT_OR(n, b, mask)   n[NOFFSET(b)] |= mask
-#	define BIT_AND(n, b, mask)  n[NOFFSET(b)] &= mask
+#	define BIT_OR(n, b, mask)	n[NOFFSET(b)] |= mask
+#	define BIT_AND(n, b, mask)	n[NOFFSET(b)] &= mask
 #endif /* USE_DBMALLOC */
 
 #define BITS_TO_BYTES(n)	((size_t) ((n + NBITS - 1) / NBITS))

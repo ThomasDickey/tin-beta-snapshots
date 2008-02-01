@@ -3,10 +3,10 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2006-10-01
+ *  Updated   : 2007-12-05
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2007 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -530,6 +530,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #	define DEFAULT_SAVE_NUM	30
 #endif /* SMALL_MEMORY_MACHINE */
 #define DEFAULT_ACTIVE_NUM	1800
+#define DEFAULT_LOCAL_ATTRIBUTES_NUM	8
 #define DEFAULT_NEWNEWS_NUM	5
 
 #define RCDIR	".tin"
@@ -546,7 +547,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define SERVERCONFIG_FILE	"serverrc"
 #define DEFAULT_MAILDIR	"Mail"
 #define DEFAULT_SAVEDIR	"News"
-#define DEFAULT_URL_HANDLER "url_handler.sh"
+#define DEFAULT_URL_HANDLER "url_handler.pl"
 /* Prefixes saved attachments with no set filename */
 #define SAVEFILE_PREFIX		"unknown"
 
@@ -583,11 +584,11 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 /* case sensitive && ^-anchored */
 #define DEFAULT_STRIP_RE_REGEX	"(?:R[eE](?:\\^\\d+|\\[\\d\\])?|A[wW]|Odp|Sv):\\s"
 /* case sensitive */
-#define DEFAULT_STRIP_WAS_REGEX	".\\((?:[Ww]a[rs]|[Bb]y[l³]o):.*\\)\\s*$"
+#define DEFAULT_STRIP_WAS_REGEX	".\\((?:[Ww]a[rs]|[Bb]y[l\\xb3]o):.*\\)\\s*$"
 #define DEFAULT_U8_STRIP_WAS_REGEX	".\\((?:[Ww]a[rs]|[Bb]y[l\\x{0142}]o):.*\\)\\s*$"
 /*
  * overkill regexp for balanced '()':
- * #define DEFAULT_STRIP_WAS_REGEX	".\\((?:[Ww]a[rs]|[Bb]y[l³]o):(?:(?:[^)(])*(?:\\([^)(]*\\))*)+\\)\\s*$"
+ * #define DEFAULT_STRIP_WAS_REGEX	".\\((?:[Ww]a[rs]|[Bb]y[l\xb3]o):(?:(?:[^)(])*(?:\\([^)(]*\\))*)+\\)\\s*$"
  */
 
 /* case sensitive & ^-anchored */
@@ -676,7 +677,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 
 
 #ifdef USE_INN_NNTPLIB
-#	include <libinn.h> /* TODO: add configure chek for it */
+#	include <libinn.h> /* TODO: add configure check for it */
 #	define _CONF_FROMHOST	"fromhost"
 #	define _CONF_ORGANIZATION	"organization"
 #	define _CONF_SERVER	"server"
@@ -925,7 +926,7 @@ enum {
 #define IGNORE_ART_THREAD(i)	(arts[i].thread != ART_UNTHREADED || (tinrc.kill_level == KILL_NOTHREAD && arts[i].killed))
 
 /*
- * Is this part text/plain ?
+ * Is this part text/plain?
  */
 #define IS_PLAINTEXT(x) \
 			(x->type == TYPE_TEXT && strcasecmp("plain", x->subtype) == 0)
@@ -1007,12 +1008,6 @@ enum {
 #define FEED_SAVE		4
 #define FEED_AUTOSAVE	5
 #define FEED_REPOST		6
-
-#if 0
-#	define DEBUG_IO(x)	fprintf x
-#else
-#	define DEBUG_IO(x)	/* nothing */
-#endif /* 0 */
 
 
 /*
@@ -1208,7 +1203,7 @@ enum {
 #define ART_EXPIRED		-2
 
 /*
- * Where does this belong ?? It is overloaded
+ * Where does this belong?? It is overloaded
  */
 #define ART_NORMAL		-1
 
@@ -1303,7 +1298,6 @@ enum {
 /*
  * used in checking article header before posting
  */
-#define NGLIMIT		20	/* Max. num. of crossposted groups before warning */
 #define MAX_COL		78	/* Max. line length before issuing a warning */
 #define MAX_SIG_LINES	4	/* Max. num. of signature lines before warning */
 
@@ -1387,54 +1381,55 @@ struct t_article {
  * struct t_attribute - configurable attributes on a per group basis
  */
 struct t_attribute {
+	char *scope;				/* scope for these group attributes */
 	char *maildir;				/* mail dir if other than ~/Mail */
 	char *savedir;				/* save dir if other than ~/News */
-	char *savefile;			/* save articles to specified file */
+	char *savefile;				/* save articles to specified file */
 	char *sigfile;				/* sig file if other than ~/.Sig */
 	char *organization;			/* organization name */
 	char *followup_to;			/* where posts should be redirected */
-	char *quick_kill_scope;			/* quick filter kill scope */
-	char *quick_select_scope;		/* quick filter select scope */
+	char *quick_kill_scope;		/* quick filter kill scope */
+	char *quick_select_scope;	/* quick filter select scope */
 	char *mailing_list;			/* mail list email address */
 	char *x_headers;			/* extra headers for message header */
-	char *x_body;				/* bolierplate text for message body */
-	char *from;				/* from line */
-	char *news_quote_format;		/* another way to begin a posting format */
+	char *x_body;				/* boilerplate text for message body */
+	char *from;					/* from line */
+	char *news_quote_format;	/* another way to begin a posting format */
 	char *quote_chars;			/* string to precede quoted text on each line */
 	char *mime_types_to_save;	/* MIME content major/minors we want to save */
 #ifdef HAVE_ISPELL
-	char *ispell;			/* path to ispell and options */
+	char *ispell;				/* path to ispell and options */
 #endif /* HAVE_ISPELL */
 	unsigned global:1;			/* global/group specific */
-	unsigned quick_kill_header:3;		/* quick filter kill header */
-	unsigned quick_kill_expire:1;		/* quick filter kill limited/unlimited time */
+	unsigned quick_kill_header:3;	/* quick filter kill header */
+	unsigned quick_kill_expire:1;	/* quick filter kill limited/unlimited time */
 	unsigned quick_kill_case:1;		/* quick filter kill case sensitive? */
-	unsigned quick_select_header:3;		/* quick filter select header */
-	unsigned quick_select_expire:1;		/* quick filter select limited/unlimited time */
-	unsigned quick_select_case:1;		/* quick filter select case sensitive? */
+	unsigned quick_select_header:3;	/* quick filter select header */
+	unsigned quick_select_expire:1;	/* quick filter select limited/unlimited time */
+	unsigned quick_select_case:1;	/* quick filter select case sensitive? */
 	unsigned auto_select:1;			/* 0=show all unread, 1='X' just hot arts */
 	unsigned auto_save:1;			/* 0=none, 1=save */
 	unsigned batch_save:1;			/* 0=none, 1=save -S/mail -M */
-	unsigned delete_tmp_files:1;		/* 0=leave, 1=delete */
-	unsigned show_only_unread:1;		/* 0=all, 1=only unread */
+	unsigned delete_tmp_files:1;	/* 0=leave, 1=delete */
+	unsigned show_only_unread:1;	/* 0=all, 1=only unread */
 	unsigned thread_arts:3;			/* 0=unthread, 1=subject, 2=refs, 3=both, 4=multipart, 5=percentage */
-	unsigned thread_perc:7;			/* percentage thrreading threshold */
+	unsigned thread_perc:7;			/* percentage threading threshold */
 	unsigned show_author:2;			/* 0=none, 1=name, 2=addr, 3=both */
 	unsigned show_info:2;			/* 0=none, 1=lines, 2=score, 3=both */
 	unsigned sort_art_type:4;		/* 0=none, 1=subj descend, 2=subj ascend,
 						   3=from descend, 4=from ascend,
 						   5=date descend, 6=date ascend,
 						   7=score descend, 8=score ascend */
-	unsigned sort_threads_type:3;		/* 0=none, 1=score descend, 2=score ascend,
+	unsigned sort_threads_type:3;	/* 0=none, 1=score descend, 2=score ascend,
 						   3=last posting date descend, 4=last posting date ascend */
-	unsigned int post_proc_type:2;		/* 0=none, 1=shar, 2=uudecode */
-	unsigned int x_comment_to:1;		/* insert X-Comment-To: in Followup */
-	unsigned int tex2iso_conv:1;		/* Convert TeX2ISO */
-	unsigned int mime_forward:1;		/* forward articles as attachment or inline */
-	char *fcc;							/* Fcc folder for mail */
+	unsigned int post_proc_type:2;	/* 0=none, 1=shar, 2=uudecode */
+	unsigned int x_comment_to:1;	/* insert X-Comment-To: in Followup */
+	unsigned int tex2iso_conv:1;	/* Convert TeX2ISO */
+	unsigned int mime_forward:1;	/* forward articles as attachment or inline */
+	char *fcc;						/* Fcc folder for mail */
 #ifdef CHARSET_CONVERSION
-	int mm_network_charset;				/* network charset */
-	char *undeclared_charset;			/* charset of articles without MIME charset declaration */
+	int mm_network_charset;			/* network charset */
+	char *undeclared_charset;		/* charset of articles without MIME charset declaration */
 #endif /* CHARSET_CONVERSION */
 };
 
@@ -1445,7 +1440,7 @@ struct t_attribute {
  * struct t_newsrc - newsrc related info.
  */
 struct t_newsrc {
-	t_bool present:1;		/* update newsrc ? */
+	t_bool present:1;		/* update newsrc? */
 	long num_unread;		/* unread articles in group */
 	long xmax;			/* newsrc max */
 	long xmin;			/* newsrc min */
@@ -1460,7 +1455,7 @@ struct t_newsrc {
  * struct t_group - newsgroup info from active file
  */
 struct t_group {
-	char *name;			/* newsgroup / mailbox name */
+	char *name;			/* newsgroup/mailbox name */
 	char *aliasedto;		/* =new.group in active file, NULL if not */
 	char *description;	/* text from NEWSLIBDIR/newsgroups file */
 	char *spooldir;		/* groups spool directory */
@@ -1468,7 +1463,7 @@ struct t_group {
 	long count;			/* article number count */
 	long xmax;			/* max. article number */
 	long xmin;			/* min. article number */
-	unsigned int type:4;		/* grouptype - newsgroup / mailbox / savebox */
+	unsigned int type:4;		/* grouptype - newsgroup/mailbox/savebox */
 	t_bool inrange:1;		/* TRUE if group selected via # range command */
 	t_bool read_during_session:1;	/* TRUE if group entered during session */
 	t_bool art_was_posted:1;	/* TRUE if art was posted to group */
@@ -1539,7 +1534,7 @@ struct t_filter {
 	char *xref;			/* groups in xref line */
 	time_t time;			/* expire time in seconds */
 	struct t_filter *next;		/* next rule valid in group */
-	unsigned int inscope:4;		/* if group matches scope ie. 'comp.os.*' */
+	unsigned int inscope:4;		/* if group matches scope e.g. 'comp.os.*' */
 	unsigned int icase:2;		/* Case sensitive filtering */
 	unsigned int fullref:4;		/* use full references or last entry only */
 };
@@ -1640,7 +1635,7 @@ struct t_option {
 	int *variable;		/* ptr to variable to change */
 	constext **opt_list;	/* ptr to list entries if OPT_LIST */
 	int opt_count;		/* no. of list entries if OPT_LIST */
-	struct opttxt *txt;	/* ptr to information / help on option */
+	struct opttxt *txt;	/* ptr to information/help on option */
 };
 
 /*
@@ -1690,7 +1685,7 @@ typedef struct _TIMEINFO {
 /*
  * mailcap fields
  * the x-token field is missing, we would need something like
- * struct t_xtoken { char *xtoken; t_xtoken *next; } for that...
+ * struct t_xtoken { char *xtoken; t_xtoken *next; } for that ...
  */
 typedef struct {
 	char *type;		/* content-type, mandatory */
@@ -1869,8 +1864,8 @@ typedef int (*t_compfunc)(t_comptype, t_comptype);
 
 #define BlankIfNull(p)	((p) ? (p) : "")
 
-#define my_group_find(x)	add_my_group(x, FALSE)
-#define my_group_add(x)		add_my_group(x, TRUE)
+#define my_group_find(x)	add_my_group(x, FALSE, FALSE)
+#define my_group_add(x, y)		add_my_group(x, TRUE, y)
 #define for_each_group(x)	for (x = 0; x < num_active; x++)
 #define for_each_art(x)		for (x = 0; x < top_art; x++)
 #define for_each_art_in_thread(x, y)	for (x = (int) base[y]; x >= 0; x = arts[x].thread)
@@ -1980,9 +1975,9 @@ typedef void (*BodyPtr) (char *, FILE *, int);
 
 #ifndef my_tmpfile_only
 /*
- * shortcut if we arn't interrested in the tmpfiles filename/location
+ * shortcut if we aren't interested in the tmpfiles filename/location
  * argument can't be a pointer and if argument is changed on return
- * we must unlik the tmp-file ourself
+ * we must unlink the tmp-file ourself
  */
 #	define my_tmpfile_only(a)	my_tmpfile(a, sizeof(a) - 1, FALSE, (char *) 0)
 #endif /* !my_tmpfile_only */
@@ -2048,7 +2043,7 @@ extern struct tm *localtime(time_t *);
 
 /* libcanlock */
 #ifdef USE_CANLOCK
-#	include "../libcanlock/canlock.h"
+#	include "../libcanlock/include/canlock.h"
 #endif /* USE_CANLOCK */
 
 /* snprintf(), vsnprintf() */
@@ -2088,5 +2083,9 @@ extern struct tm *localtime(time_t *);
 #define TIN_ARTICLE_NAME	".article"
 #define TIN_CANCEL_NAME	".cancel"
 #define TIN_LETTER_NAME	".letter"
+
+#ifndef DEBUG_H
+#	include "debug.h"
+#endif /* !DEBUG_H */
 
 #endif /* !TIN_H */

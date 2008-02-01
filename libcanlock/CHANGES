@@ -1,24 +1,49 @@
+VERSION 2a:
+
+11 Aug 2003
+        - Only very minor changes.  The makefile was tweaked slightly
+          for increased portability, and a typo in lock_strip was fixed.
+
+VERSION 2:
+
+10 Aug 2003
+        - Replaced the SHA-1 library with the source code from RFC 1374.
+          The old code had problems on PowerPC that I was too lazy to hunt
+          down and fix.
+        - Replaced the ISC version of Base64 with an implementation
+          produced by Sweden's Royal Institute of Technology (KTH). The
+          old functions carried a weird patent disclaimer from IBM, while
+          the new ones use a nice simple non-scary BSD license.
+        - The md5_key(), md5_lock() and md5_verify() functions have been
+          removed.  As far as I can tell they weren't being used.
+        - Added a Makefile instead of the Build thingy.
+        - Did a bunch of cleanup to get rid of various warnings.
+
+VERSION 1:
+
 24 Sep 1998
-	- Now trying to be compatible with an updated cancel lock draft.
-	- We now generate the lock by hashing the Base64 encoding of the
-	  cancel key, instead of the underlying binary digest.
-	- the xxx_key() and xxx_lock() functions now add the md5: or sha1:
-	  tag to the lock.
-	- lock_strip_alpha() now discards pesky clue strings and normalizes
-	  the case of type codes.
-	- the old lock_strip() that returned numeric codes will be going
-	  away.
+        - Now trying to be compatible with an updated cancel lock draft.
+        - We now generate the lock by hashing the Base64 encoding of the
+          cancel key, instead of the underlying binary digest.
+        - the xxx_key() and xxx_lock() functions now add the md5: or sha1:
+          tag to the lock.
+        - lock_strip_alpha() now discards pesky clue strings and normalizes
+          the case of type codes.
+        - the old lock_strip() that returned numeric codes will be going
+          away.
+
+VERSION 0:
 
 21 Sep 1998
-	- Endianness is now automatically figured out by build.
+        - Endianness is now automatically figured out by build.
 
 19 Sep 1998
-	- Added MD5 hashes.
-	- We now accommodate the possibility that strings will be identified
-	  by name instead of number, those darned drafts will get you every
-	  time.
-	- Make changes to the hmac stuff to account for GCC weirdness; some
-	  check values were not coming out correctly, but they are now.
+        - Added MD5 hashes.
+        - We now accommodate the possibility that strings will be identified
+          by name instead of number, those darned drafts will get you every
+          time.
+        - Make changes to the hmac stuff to account for GCC weirdness; some
+          check values were not coming out correctly, but they are now.
 
 15 Sep 1998
-	- Initial, just SHA-1.
+        - Initial, just SHA-1.

@@ -1,9 +1,9 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2005-07-02
+# Updated: 2007-10-04
 #
-# Copyright (c) 1995-2005 Thomas E. Dickey <dickey@invisible-island.net>
+# Copyright (c) 1995-2008 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -50,13 +50,13 @@ PRELIB		= @LIB_PREFIX@
 x		= @EXEEXT@
 o		= .@OBJEXT@
 
-DEBUG		= @ENABLE_DEBUG@ -DDEBUG #-DDEBUG_NEWSRC -DPROFILE -DDEBUG_REFS
-CANLOCK		= # -DUSE_CANLOCK # -DEVIL_INSIDE
+DEBUG		= @ENABLE_DEBUG@ -DDEBUG #-DPROFILE
+FEATURES	= # -DEVIL_INSIDE
 
 INTL_CPPFLAGS	= -DLOCALEDIR=\"$(prefix)/@DATADIRNAME@/locale\"
 PCRE_CPPFLAGS	= @PCREDIR_CPPFLAGS@ @PCREDIR_MAKE@ -I$(top_builddir)/pcre -I$(top_srcdir)/pcre
 
-CPPFLAGS	= @DEFS@ -I. -I../include $(PCRE_CPPFLAGS) $(INTL_CPPFLAGS) -I$(INCDIR) $(DEBUG) $(CANLOCK) @CPPFLAGS@
+CPPFLAGS	= @DEFS@ -I. -I../include $(PCRE_CPPFLAGS) $(INTL_CPPFLAGS) -I$(INCDIR) $(DEBUG) $(FEATURES) @CPPFLAGS@
 CFLAGS		= @CFLAGS@
 
 LDFLAGS		= @LDFLAGS@
@@ -69,7 +69,7 @@ BUILD_LDFLAGS	= @BUILD_LDFLAGS@
 BUILD_LIBS	= @BUILD_LIBS@
 X		= $(BUILD_EXEEXT)
 
-CANLIB		= # -L../libcanlock -lcanlock
+CANLIB		= @CANLIBS@
 INTL_LIBS	= @INTLLIBS@
 PCRE_LIBS	= @PCREDIR_LIBS@ @PCREDIR_MAKE@ -L../pcre -lpcre
 LIBS		= @LIBS@
@@ -118,6 +118,7 @@ HFILES	= \
 	../include/autoconf.h \
 	$(INCDIR)/bool.h \
 	$(INCDIR)/bugrep.h \
+	$(INCDIR)/debug.h \
 	$(INCDIR)/extern.h \
 	$(INCDIR)/keymap.h \
 	$(INCDIR)/newsrc.h \
@@ -204,7 +205,8 @@ EXTRAOBJS = @EXTRAOBJS@
 EXTRA_INTLLIBS = @INTLDIR_MAKE@ @INTLLIBS@
 EXTRA_PCREHDRS = @PCREDIR_MAKE@ ../pcre/pcre.h
 EXTRA_PCRELIBS = @PCREDIR_MAKE@ ../pcre/$(PRELIB)pcre.a
-EXTRALIBS = $(EXTRA_INTLLIBS) $(EXTRA_PCRELIBS)
+EXTRA_CANLIBS = @CANDIR_MAKE@ ../libcanlock/$(PRELIB)canlock.a
+EXTRALIBS = $(EXTRA_INTLLIBS) $(EXTRA_PCRELIBS) $(EXTRA_CANLIBS)
 
 OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/active$o \
@@ -360,23 +362,26 @@ uninstall_sysdefs :
 
 install_helpers : $(DESTDIR)$(INS_BINARY_DIR) $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)
 	@$(ECHO) "Installing helper applications ..."
-	@-if test ! -f $(DESTDIR)$(INS_BINARY_DIR)/url_handler.sh ; then $(INSTALL) -m 755 $(TOLDIR)/url_handler.sh $(DESTDIR)$(INS_BINARY_DIR)/url_handler.sh ; fi
 	@-if test ! -f $(DESTDIR)$(INS_BINARY_DIR)/metamutt ; then $(INSTALL) -m 755 $(TOLDIR)/metamutt $(DESTDIR)$(INS_BINARY_DIR)/metamutt ; fi
 	@$(INSTALL) -m 755 $(TOLDIR)/w2r.pl $(DESTDIR)$(INS_BINARY_DIR)/w2r.pl
 	@$(INSTALL) -m 755 $(TOLDIR)/opt-case.pl $(DESTDIR)$(INS_BINARY_DIR)/opt-case.pl
 	@$(INSTALL) -m 755 $(TOLDIR)/tinews.pl $(DESTDIR)$(INS_BINARY_DIR)/tinews.pl
+	@$(INSTALL) -m 755 $(TOLDIR)/url_handler.pl $(DESTDIR)$(INS_BINARY_DIR)/url_handler.pl
 	@$(INSTALL) -m 444 $(DOCDIR)/w2r.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/w2r.pl.$(INS_MANUAL_EXT)
 	@$(INSTALL) -m 444 $(DOCDIR)/opt-case.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/opt-case.pl.$(INS_MANUAL_EXT)
 	@$(INSTALL) -m 444 $(DOCDIR)/tinews.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/tinews.pl.$(INS_MANUAL_EXT)
+	@$(INSTALL) -m 444 $(DOCDIR)/url_handler.1 $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/url_handler.pl.$(INS_MANUAL_EXT)
 
 uninstall_helpers :
 	@$(ECHO) "Removing helper applications ..."
 	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/w2r.pl
 	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/opt-case.pl
 	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/tinews.pl
-	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/w2r.pl.$(INS_MANUAL_EXT)
-	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/opt-case.pl.$(INS_MANUAL_EXT)
-	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/tinews.pl.$(INS_MANUAL_EXT)
+	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/url_handler.pl
+	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/w2r.$(INS_MANUAL_EXT)
+	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/opt-case.$(INS_MANUAL_EXT)
+	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/tinews.$(INS_MANUAL_EXT)
+	@-$(RM) -f $(DESTDIR)$(INS_MANUAL_DIR)$(INS_MANUAL_EXT)/url_handler.$(INS_MANUAL_EXT)
 
 install : $(DESTDIR)$(INS_BINARY_DIR)
 	@$(MAKE) all
@@ -448,10 +453,6 @@ cscope :
 	@$(ECHO) "Creating cscope database $(PROJECT) ..."
 	@$(CSCOPE) $(ALL_FILES)
 
-canlock :
-	@$(ECHO) "Building libcanlock ..."
-	@$(CD) ../libcanlock && ./Build
-
 @PCREDIR_MAKE@../pcre/pcre.h ../pcre/$(PRELIB)pcre.a :
 @PCREDIR_MAKE@	@$(ECHO) "Building Philip Hazel's Perl regular expressions library ..."
 @PCREDIR_MAKE@	@$(CD) ../pcre && $(MAKE) @cf_cv_makeflags@ $(PRELIB)pcre.a
@@ -459,6 +460,10 @@ canlock :
 @INTLDIR_MAKE@@INTLLIBS@ :
 @INTLDIR_MAKE@	@$(ECHO) "Building GNU gettext library ..."
 @INTLDIR_MAKE@	@$(CD) ../intl && $(MAKE) @cf_cv_makeflags@
+
+@CANDIR_MAKE@../libcanlock/$(PRELIB)canlock.a :
+@CANDIR_MAKE@	@$(ECHO) "Building Cancel-Lock library ..."
+@CANDIR_MAKE@	@$(CD) ../libcanlock && $(MAKE) @cf_cv_makeflags@ lib
 
 options_menu.h :		$(SRCDIR)/tincfg.tbl \
 				makecfg$X
@@ -482,6 +487,7 @@ TIN_DEP	= \
 	$(INCDIR)/tinrc.h \
 	../include/autoconf.h \
 	$(INCDIR)/bool.h \
+	$(INCDIR)/debug.h \
 	$(INCDIR)/extern.h \
 	$(INCDIR)/nntplib.h \
 	$(INCDIR)/tcurses.h \

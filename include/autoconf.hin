@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2006-03-16
+ *  Updated   : 2008-01-08
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2007 Thomas Dickey <dickey@invisible-island.net>
@@ -606,6 +606,11 @@
  */
 #	undef IGNORE_SYSTEM_STATUS
 
+/*
+ * generate Cancel-Locks
+ */
+#	undef USE_CANLOCK
+
 #	undef HAVE_COFFEE
 
 /*
@@ -856,6 +861,18 @@ Added missing headers after gettext update, using autoheader
 
 /* Define if the X Window System is missing or not being used. */
 #	undef X_DISPLAY_MISSING
+
+/*
+ * define if you don't want to use file-locking (fcntl/flock/lockf/dotlock)
+ * TODO: add --disable-file-locking switch and rename
+ */
+#	undef NO_LOCKING
+
+/*
+ * define if you can't chmod go-r
+ * TODO: write configure check and find a better name
+ */
+#	undef FILE_MODE_BROKEN
 
 /*
  * TODO: define if:

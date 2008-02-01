@@ -3,10 +3,10 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2006-10-16
+ *  Updated   : 2007-12-30
  *  Notes     :
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -96,6 +96,25 @@ main(
 		sleep(2);
 	}
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
+
+	/*
+	 * determine local charset
+	 */
+#ifndef NO_LOCALE
+	{
+		const char *p;
+
+		if ((p = tin_nl_langinfo(CODESET)) != NULL) {
+			if (!strcasecmp(p, "ANSI_X3.4-1968"))
+				STRCPY(tinrc.mm_local_charset, "US-ASCII");
+			else
+				STRCPY(tinrc.mm_local_charset, p);
+		}
+	}
+#endif /* !NO_LOCALE */
+	/* always set a default value */
+	if (!*tinrc.mm_local_charset)
+		STRCPY(tinrc.mm_local_charset, "US-ASCII");
 
 	set_signal_handlers();
 
@@ -197,17 +216,17 @@ main(
 	if (nntp_caps.over_cmd)
 		xref_supported = overview_xref_support();
 
-#ifdef DEBUG_NEWSRC
-	{
+#ifdef DEBUG
+	if (debug & DEBUG_NEWSRC) {
 		char file[PATH_LEN];
 
-		joinpath(file, TMPDIR, "BITMAP");
+		joinpath(file, sizeof(file), TMPDIR, "BITMAP");
 		unlink(file);
 #	if 0
 		newsrc_test_harness();
 #	endif /* 0 */
 	}
-#endif /* DEBUG_NEWSRC */
+#endif /* DEBUG */
 
 	/*
 	 * avoid empty regexp, we also need to do this in batch_mode
@@ -446,7 +465,7 @@ read_cmd_line_options(
 				show_description = FALSE;
 				break;
 
-			case 'D':		/* debug mode 1=NNTP, 2=ALL, 3=newsrc, 4=malloc */
+			case 'D':		/* debug mode */
 #ifdef DEBUG
 				debug = atoi(optarg);
 				debug_delete_files();
@@ -641,18 +660,18 @@ read_cmd_line_options(
 	max_cmdargs = argc;
 	if (!newsrc_set) {
 		if (read_news_via_nntp)
-			get_newsrcname(newsrc, getserverbyfile(NNTP_SERVER_FILE));
+			get_newsrcname(newsrc, sizeof(newsrc), getserverbyfile(NNTP_SERVER_FILE));
 		else {
 #if defined(HAVE_SYS_UTSNAME_H) && defined(HAVE_UNAME)
 			struct utsname uts;
 			(void) uname(&uts);
-			get_newsrcname(newsrc, uts.nodename);
+			get_newsrcname(newsrc, sizeof(newsrc), uts.nodename);
 #else
 			char nodenamebuf[256]; /* SUSv2 limit; better use HOST_NAME_MAX */
 #ifdef HAVE_GETHOSTNAME
 			(void) gethostname(nodenamebuf, sizeof(nodenamebuf));
 #endif /* HAVE_GETHOSTNAME */
-			get_newsrcname(newsrc, nodenamebuf);
+			get_newsrcname(newsrc, sizeof(newsrc), nodenamebuf);
 #endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
 		}
 	}
@@ -851,7 +870,7 @@ read_cmd_line_groups(
 
 			for_each_group(i) {
 				if (match_group_list(active[i].name, cmdargs[num])) {
-					if (my_group_add(active[i].name) != -1)
+					if (my_group_add(active[i].name, TRUE) != -1)
 						matched++;
 				}
 			}
@@ -874,7 +893,7 @@ create_mail_save_dirs(
 	struct stat sb;
 
 	if (!strfpath(tinrc.maildir, path, sizeof(path), NULL))
-		joinpath(path, homedir, DEFAULT_MAILDIR);
+		joinpath(path, sizeof(path), homedir, DEFAULT_MAILDIR);
 
 	if (stat(path, &sb) == -1) {
 		my_mkdir(path, (mode_t) (S_IRWXU));
@@ -882,7 +901,7 @@ create_mail_save_dirs(
 	}
 
 	if (!strfpath(tinrc.savedir, path, sizeof(path), NULL))
-		joinpath(path, homedir, DEFAULT_SAVEDIR);
+		joinpath(path, sizeof(path), homedir, DEFAULT_SAVEDIR);
 
 	if (stat(path, &sb) == -1) {
 		my_mkdir(path, (mode_t) (S_IRWXU));

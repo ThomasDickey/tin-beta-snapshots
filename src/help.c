@@ -3,10 +3,10 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-06-28
+ *  Updated   : 2007-11-27
  *  Notes     :
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -446,7 +446,7 @@ make_help_page(
 	 * length is only needed to pass it to expand_ctrl_chars()
 	 * we have no need for the value
 	 */
-	int length;
+	size_t length;
 	size_t i;
 
 	if (!helppage)
@@ -463,9 +463,9 @@ make_help_page(
 			buf = my_realloc(buf, LEN);
 
 			if (!strlen(helppage->helptext))	/* avoid translation of empty strings */
-				snprintf(buf, LEN, "\n");
+				strcpy(buf, "\n");
 			else
-				snprintf(buf, LEN, "%s", _(helppage->helptext));
+				strncpy(buf, _(helppage->helptext), LEN);
 			buf[LEN - 1] = '\0';
 			expand_ctrl_chars(&buf, &length, 8);
 			fprintf(fp, "%s\n", buf);

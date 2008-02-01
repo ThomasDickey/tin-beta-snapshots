@@ -3,10 +3,10 @@
  *  Module    : version.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-06-28
+ *  Updated   : 2008-01-08
  *  Notes     :
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,9 +40,9 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.9.2"
+#		define VERSION		"1.9.3"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20070201"
+#	define RELEASEDATE	"20080201"
 #	define RELEASENAME	"Dalaruan"
 /* config-file versions - must by dotted triples */
 #	define TINRC_VERSION	"1.3.8"
@@ -55,11 +55,6 @@
 #		ifdef __BEOS__
 #			define OSNAME	"BeOS"
 #		endif /* __BEOS__ */
-#		ifdef __CYGWIN__
-#			ifdef __WINNT__ /* also defined on Win95 *sigh* */
-#				define OSNAME	"Windows/NT"
-#			endif /*__WINNT__ */
-#		endif /* __CYGWIN__ */
 #		ifndef OSNAME
 #			define OSNAME	"UNIX"
 #		endif /* !OSNAME */

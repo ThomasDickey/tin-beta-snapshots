@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2007-01-09
+ *  Updated   : 2007-12-30
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -42,10 +42,8 @@ static TCP *nntp_wr_fp = NULL;
 	/* Copy of last NNTP command sent, so we can retry it if needed */
 	static char last_put[NNTP_STRLEN];
 	static constext *xover_cmds = "XOVER";
-#	if 0 /* currently not used */
 	static constext *xhdr_cmds = "XHDR";
-#	endif /* 0 */
-	enum extension_type { NO, LIST_EXTENSIONS, CAPABILITIES };
+	enum extension_type { NO, LIST_EXTENSIONS, CAPABILITIES, BROKEN };
 	/* Set so we don't reconnect just to QUIT */
 	static t_bool quitting = FALSE;
 #endif /* NNTP_ABLE */
@@ -134,7 +132,7 @@ getserverbyfile(
 
 #ifdef NNTP_ABLE
 	if (cmdline_nntpserver[0] != '\0') {
-		get_nntpserver(buf, cmdline_nntpserver);
+		get_nntpserver(buf, sizeof(buf), cmdline_nntpserver);
 #	ifdef HAVE_SETENV
 		setenv("NNTPSERVER", buf, 1);
 #	else
@@ -150,7 +148,7 @@ getserverbyfile(
 	}
 
 	if ((cp = getenv("NNTPSERVER")) != NULL) {
-		get_nntpserver(buf, cp);
+		get_nntpserver(buf, sizeof(buf), cp);
 		return buf;
 	}
 
@@ -173,7 +171,7 @@ getserverbyfile(
 		(void) fclose(fp);
 
 		if (cp != NULL) {
-			get_nntpserver(buf, cp);
+			get_nntpserver(buf, sizeof(buf), cp);
 			return buf;
 		}
 	}
@@ -749,7 +747,8 @@ u_put_server(
 {
 	s_puts(string, nntp_wr_fp);
 #	ifdef DEBUG
-	debug_nntp(">>>", string);
+	if (debug & DEBUG_NNTP)
+		debug_print_file("NNTP", ">>> %s", string);
 #	endif /* DEBUG */
 }
 
@@ -777,7 +776,8 @@ put_server(
 		s_puts(string, nntp_wr_fp);
 		s_puts("\r\n", nntp_wr_fp);
 #	ifdef DEBUG
-		debug_nntp(">>>", string);
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", ">>> %s", string);
 #	endif /* DEBUG */
 		/*
 		 * remember the last command we wrote to be able to resend it after a
@@ -836,7 +836,8 @@ reconnect(
 			put_server(last_put);
 			s_gets(last_put, NNTP_STRLEN, nntp_rd_fp);
 #	ifdef DEBUG
-			debug_nntp("<<<", last_put);
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "<<< %s", last_put);
 #	endif /* DEBUG */
 			DEBUG_IO((stderr, _("Read (%s)\n"), last_put));
 		}
@@ -895,6 +896,15 @@ get_server(
 		 * when user is quitting tin if tinrc.auto_reconnect is false.
 		 */
 		if (strncmp(last_put, "QUIT", 4)) {
+			/*
+			 * Typhoon v2.1.1.363 colses the connection right after an unknown
+			 * command, (i.e. CAPABILITIES) so we avoid the reissue it on a
+			 * reconnect if it was the last command.
+			 */
+			if (!strncmp(last_put, "CAPABILITIES", 12)) {
+				strcpy(last_put, "MODE READER");
+				nntp_caps.type = BROKEN;
+			}
 			retry = reconnect(retry);		/* Will abort when out of tries */
 			reconnected_in_last_get_server = TRUE;
 		} else {
@@ -968,7 +978,8 @@ check_extensions(
 			nntp_caps.type = CAPABILITIES;
 			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #		ifdef DEBUG
-				debug_nntp("<<<", ptr);
+				if (debug & DEBUG_NNTP)
+					debug_print_file("NNTP", "<<< %s", ptr);
 #		endif /* DEBUG */
 				/* look for version number(s) */
 				if (!nntp_caps.version && nntp_caps.type == CAPABILITIES) {
@@ -1045,6 +1056,14 @@ check_extensions(
 								nntp_caps.over_msgid = TRUE;
 							d = strpbrk(d, " \t");
 						}
+					}
+					/*
+					 * NOTE: if we saw HDR, LIST HEADERS _must_ be implemented
+					 */
+					else if (!strcasecmp(ptr, &xhdr_cmds[1])) {
+						nntp_caps.hdr_cmd = &xhdr_cmds[1];
+						nntp_caps.hdr = TRUE;
+						nntp_caps.list_headers = TRUE;
 					} else if (!strcasecmp(ptr, "AUTHINFO")) {
 						d = ptr + 8;
 						d = strpbrk(d, " \t");
@@ -1058,25 +1077,23 @@ check_extensions(
 						}
 					}
 #		if 0
-					/*
-					 * NOTE: if we saw HDR, LIST HEADERS _must_ be implemented
-					 */
-					else if (!strcasecmp(ptr, &xhdr_cmds[1])) {
-						nntp_caps.hdr_cmd = &xhdr_cmds[1];
-						nntp_caps.hdr = TRUE;
-						nntp_caps.list_headers = TRUE;
-					}
 					else if (!strcasecmp(ptr, "IHAVE"))
 						nntp_caps.ihave = TRUE;
-#		endif /* 0 */
 					/*
 					 * TODO: SASL, STREAMING
 					 */
+#		endif /* 0 */
 				} else
 					nntp_caps.type = NO;
 			}
 			break;
 
+		/*
+		 * XanaNewz 2 Server Version 2.0.0.3 doesn't know CAPABILITIES
+		 * and responses with 400 _without_ closing the connection, if
+		 * you must use tin on a XanaNewz 2 Server comment out the following
+		 * case.
+		 */
 		case ERR_GOODBYE:
 			ret = i;
 			error_message(buf);
@@ -1114,7 +1131,8 @@ check_extensions(
 		switch (i) {
 			case 215:	/* Netscape-Collabra/3.52 (badly broken); NetWare-News-Server/5.1 */
 #		ifdef DEBUG
-				debug_nntp("LIST EXTENSIONS", "skipping data");
+				if (debug & DEBUG_NNTP)
+					debug_print_file("NNTP", "LIST EXTENSIONS skipping data");
 #		endif /* DEBUG */
 				while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL)
 					;
@@ -1126,7 +1144,8 @@ check_extensions(
 				while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 					if (nntp_caps.type == LIST_EXTENSIONS) {
 #		ifdef DEBUG
-						debug_nntp("<<<", ptr);
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "<<< %s", ptr);
 #		endif /* DEBUG */
 						/*
 						 * some servers (e.g. Hamster 1.3) have leading spaces in
@@ -1189,7 +1208,8 @@ mode_reader(
 	if (!nntp_caps.reader) {
 		char line[NNTP_STRLEN];
 #ifdef DEBUG
-		debug_nntp("mode_reader", "mode reader");
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", "mode_reader() MODE READER");
 #endif /* DEBUG */
 		DEBUG_IO((stderr, "nntp_command(MODE READER)\n"));
 		put_server("MODE READER");
@@ -1263,7 +1283,8 @@ nntp_open(
 		return 0;
 
 #	ifdef DEBUG
-	debug_nntp("nntp_open", "BEGIN");
+	if (debug & DEBUG_NNTP)
+		debug_print_file("NNTP", "nntp_open() BEGIN");
 #	endif /* DEBUG */
 
 	if (nntp_server == NULL) {
@@ -1280,7 +1301,8 @@ nntp_open(
 	}
 
 #	ifdef DEBUG
-	debug_nntp("nntp_open", nntp_server);
+	if (debug & DEBUG_NNTP)
+		debug_print_file("NNTP", "nntp_open() %s", nntp_server);
 #	endif /* DEBUG */
 
 	ret = server_init(nntp_server, NNTP_TCP_NAME, nntp_tcp_port, line, sizeof(line));
@@ -1290,7 +1312,8 @@ nntp_open(
 		my_fputc('\n', stdout);
 
 #	ifdef DEBUG
-	debug_nntp("nntp_open", line);
+	if (debug & DEBUG_NNTP)
+		debug_print_file("NNTP", "nntp_open() %s", line);
 #	endif /* DEBUG */
 
 	switch (ret) {
@@ -1342,12 +1365,19 @@ nntp_open(
 
 	/*
 	 * Find out which NNTP extensions are available
-	 * TODO: The authentication method required may be mentioned in the list of
-	 *       extensions. (For details about authentication methods, see
-	 *       draft-ietf-nntpext-authinfo-07.txt).
+	 * - Typhoon v2.1.1.363 closes the connection after an unknown command
+	 *   (i.e. CAPABILITIES) but as we are not allowed to cache CAPABILITIES
+	 *   we reissue the command on reconnect. To prevent a loop we catch this
+	 *   case.
+     *
+	 * TODO: The authentication method required may be mentioned in the list
+	 *       of extensions. (For details about authentication methods, see
+	 *       RFC 4643).
 	 */
-	if ((ret = check_extensions(&sec)))
-		return ret; /* required "MODE READER" failed, exit */
+	if (nntp_caps.type != BROKEN) {
+		if ((ret = check_extensions(&sec)))
+			return ret; /* required "MODE READER" failed, exit */
+	}
 
 	/*
 	 * If the user wants us to authenticate on connection startup, do it now.
@@ -1358,7 +1388,8 @@ nntp_open(
 	 */
 	if (force_auth_on_conn_open) {
 #	ifdef DEBUG
-		debug_nntp("nntp_open", "authenticate");
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", "nntp_open() authenticate()");
 #	endif /* DEBUG */
 		authenticate(nntp_server, userid, TRUE);
 		if ((ret = mode_reader(&sec)))
@@ -1423,7 +1454,8 @@ nntp_open(
 				case 224:	/* unexpected multiline ok, e.g.: Synchronet 3.13 NNTP Service 1.92 */
 					nntp_caps.over_cmd = &xover_cmds[i];
 #	ifdef DEBUG
-					debug_nntp(&xover_cmds[i], "skipping data");
+					if (debug & DEBUG_NNTP)
+						debug_print_file("NNTP" "nntp_open() %s skipping data", &xover_cmds[i]);
 #	endif /* DEBUG */
 					while ((linep = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL)
 						;
@@ -1451,7 +1483,8 @@ nntp_open(
 				case 224:	/* unexpected multiline ok, e.g.: Synchronet 3.13 NNTP Service 1.92 */
 					nntp_caps.over_cmd = xover_cmds;
 #	ifdef DEBUG
-					debug_nntp(xover_cmds, "skipping data");
+					if (debug & DEBUG_NNTP)
+						debug_print_file("NNTP", "nntp_open() %s skipping data", xover_cmds);
 #	endif /* DEBUG */
 					while ((linep = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL)
 						;
@@ -1462,16 +1495,14 @@ nntp_open(
 					break;
 			}
 		}
-#	if 0 /* unused */
 		if (!nntp_caps.hdr_cmd) {
 			/*
-			 * LIST EXTENSIONS didn't mention HDR or XHDR, try
+			 * CAPABILITIES/LIST EXTENSIONS didn't mention HDR or XHDR, try
 			 * XHDR
 			 */
 			if (!nntp_command(xhdr_cmds, ERR_COMMAND, NULL, 0))
 				nntp_caps.hdr_cmd = xhdr_cmds;
 		}
-#	endif /* 0 */
 	}
 
 	if (!nntp_caps.over_cmd) {
@@ -1483,16 +1514,15 @@ nntp_open(
 			else
 				wait_message(2, _(txt_caching_off));
 		}
+	}
 #	if 0
-	} else {
+	else {
 		/*
 		 * TODO: issue warning if old index files found?
 		 *	      in index_newsdir?
 		 */
-#	endif /* 0 */
 	}
 
-#	if 0
 	/*
 	 * TODO: if we're using -n, check for LIST NEWSGROUPS <wildmat>
 	 * see also comments in open_newsgroups_fp()
@@ -1531,7 +1561,8 @@ nntp_close(
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp) {
 #	ifdef DEBUG
-		debug_nntp("nntp_close", "END");
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", "nntp_close() END");
 #	endif /* DEBUG */
 		close_server();
 	}
@@ -1556,19 +1587,21 @@ get_only_respcode(
 {
 	int respcode = 0;
 #ifdef NNTP_ABLE
-	char *ptr, *end;
+	char *end, *ptr = NULL;
 
 	ptr = tin_fgets(FAKE_NNTP_FP, FALSE);
 
 	if (tin_errno || ptr == NULL) {
 #	ifdef DEBUG
-		debug_nntp("<<<", "Error: tin_error<>0 or ptr==NULL in get_only_respcode()");
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", "<<< Error: tin_error<>0 or ptr==NULL in get_only_respcode()");
 #	endif /* DEBUG */
 		return -1;
 	}
 
 #	ifdef DEBUG
-	debug_nntp("<<<", ptr);
+	if (debug & DEBUG_NNTP)
+		debug_print_file("NNTP", "<<< %s",  ptr);
 #	endif /* DEBUG */
 	respcode = (int) strtol(ptr, &end, 10);
 	DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
@@ -1583,20 +1616,23 @@ get_only_respcode(
 		 * If so, retrying will force a reconnect.
 		 */
 #	ifdef DEBUG
-		debug_nntp("get_only_respcode", "timeout");
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", "get_only_respcode() timeout");
 #	endif /* DEBUG */
 		put_server(last_put);
 		ptr = tin_fgets(FAKE_NNTP_FP, FALSE);
 
 		if (tin_errno) {
 #	ifdef DEBUG
-			debug_nntp("<<<", "Error: tin_errno <> 0");
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "<<< Error: tin_errno <> 0");
 #	endif /* DEBUG */
 			return -1;
 		}
 
 #	ifdef DEBUG
-		debug_nntp("<<<", ptr);
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", "<<< %s", ptr);
 #	endif /* DEBUG */
 		respcode = (int) strtol(ptr, &end, 10);
 		DEBUG_IO((stderr, "get_only_respcode(%d)\n", respcode));
@@ -1635,7 +1671,8 @@ get_respcode(
 		 * Server requires authentication.
 		 */
 #	ifdef DEBUG
-		debug_nntp("get_respcode", "authentication");
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", "get_respcode() authentication");
 #	endif /* DEBUG */
 		strncpy(savebuf, last_put, sizeof(savebuf) - 1);		/* Take copy, as authenticate() will clobber this */
 
@@ -1646,7 +1683,8 @@ get_respcode(
 				put_server(last_put);
 				s_gets(last_put, NNTP_STRLEN, nntp_rd_fp);
 #	ifdef DEBUG
-				debug_nntp("<<<", last_put);
+				if (debug & DEBUG_NNTP)
+					debug_print_file("NNTP", "<<< %s", last_put);
 #	endif /* DEBUG */
 				DEBUG_IO((stderr, _("Read (%s)\n"), last_put));
 			}
@@ -1657,13 +1695,15 @@ get_respcode(
 
 			if (tin_errno) {
 #	ifdef DEBUG
-				debug_nntp("<<<", "Error: tin_errno <> 0");
+				if (debug & DEBUG_NNTP)
+					debug_print_file("NNTP", "<<< Error: tin_errno <> 0");
 #	endif /* DEBUG */
 				return -1;
 			}
 
 #	ifdef DEBUG
-			debug_nntp("<<<", ptr);
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "<<< %s", ptr);
 #	endif /* DEBUG */
 			respcode = (int) strtol(ptr, &end, 10);
 			if (message != NULL && mlen > 1)				/* Pass out the rest of the text */
@@ -1697,21 +1737,24 @@ nntp_command(
 {
 DEBUG_IO((stderr, "nntp_command(%s)\n", command));
 #	ifdef DEBUG
-	debug_nntp("nntp command", command);
+	if (debug & DEBUG_NNTP)
+		debug_print_file("NNTP", "nntp_command(%s)", command);
 #	endif /* DEBUG */
 	put_server(command);
 
 	if (!bool_equal(dangerous_signal_exit, TRUE)) {
 		if (get_respcode(message, mlen) != success) {
 #	ifdef DEBUG
-			debug_nntp(command, "NOT_OK");
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "nntp_command(%s) NOT_OK", command);
 #	endif /* DEBUG */
 			/* error_message("%s", message); */
 			return (FILE *) 0;
 		}
 	}
 #	ifdef DEBUG
-	debug_nntp(command, "OK");
+	if (debug & DEBUG_NNTP)
+		debug_print_file("NNTP", "nntp_command(%s) OK", command);
 #	endif /* DEBUG */
 	return FAKE_NNTP_FP;
 }
@@ -1733,20 +1776,23 @@ new_nntp_command(
 
 DEBUG_IO((stderr, "nntp_command(%s)\n", command));
 #	ifdef DEBUG
-	debug_nntp("nntp command", command);
+	if (debug & DEBUG_NNTP)
+		debug_print_file("NNTP", "nntp_command(%s)", command);
 #	endif /* DEBUG */
 	put_server(command);
 
 	if (!bool_equal(dangerous_signal_exit, TRUE)) {
 		if ((respcode = get_respcode(message, mlen)) != success) {
 #	ifdef DEBUG
-			debug_nntp(command, "NOT_OK - Expected: %d, got: %d", success, respcode);
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "new_nntp_command(%s) NOT_OK - Expected: %d, got: %d", command, success, respcode);
 #	endif /* DEBUG */
 			return respcode;
 		}
 	}
 #	ifdef DEBUG
-	debug_nntp(command, "OK");
+	if (debug & DEBUG_NNTP)
+		debug_print_file("NNTP", "new_nntp_command(%s) OK", command);
 #	endif /* DEBUG */
 	return respcode;
 }
@@ -1771,7 +1817,8 @@ list_motd(
 #	endif /* HAVE_COLOR */
 			while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #	ifdef DEBUG
-				debug_nntp("<<<", ptr);
+				if (debug & DEBUG_NNTP)
+					debug_print_file("NNTP", "<<< $s", ptr);
 #	endif /* DEBUG */
 				/*
 				 * TODO: - store a hash value of the entire motd in the server-rc

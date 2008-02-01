@@ -3,10 +3,10 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2006-03-11
+ *  Updated   : 2007-12-30
  *  Notes     :
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,8 @@
  */
 int max_active;
 int num_active = -1;
+int max_local_attributes;
+int num_local_attributes = -1;
 int max_newnews;
 int num_newnews = 0;
 int max_art;
@@ -58,6 +60,7 @@ int num_save = 0;
 int *my_group;				/* .newsrc --> active[] */
 long *base;				/* base articles for each thread */
 struct t_group *active;			/* active newsgroups */
+struct t_attribute *local_attributes = NULL;	/* attributes stores in .tin/attributes */
 struct t_newnews *newnews;		/* active file sizes on differnet servers */
 struct t_article *arts;			/* articles headers in current group */
 struct t_save *save;			/* sorts articles before saving them */
@@ -66,6 +69,7 @@ struct t_save *save;			/* sorts articles before saving them */
  * Local prototypes
  */
 static void free_active_arrays(void);
+static void free_attributes(struct t_attribute *attributes);
 static void free_newnews_array(void);
 static void free_input_history(void);
 static void free_global_arrays(void);
@@ -101,6 +105,12 @@ init_alloc(
 	base = my_malloc(sizeof(long) * max_art);
 
 	/*
+	 * attributes array
+	 */
+	max_local_attributes = DEFAULT_LOCAL_ATTRIBUTES_NUM;
+	expand_local_attributes();
+
+	/*
 	 * save file array
 	 */
 	max_save = DEFAULT_SAVE_NUM;
@@ -134,6 +144,21 @@ expand_active(
 	} else {
 		active = my_realloc(active, sizeof(*active) * max_active);
 		my_group = my_realloc(my_group, sizeof(int) * max_active);
+	}
+}
+
+
+void
+expand_local_attributes(
+	void)
+{
+	if ((local_attributes == NULL) || (num_local_attributes < 0)) {
+		if (local_attributes == NULL)
+			local_attributes = my_malloc(sizeof(*local_attributes) * max_local_attributes);
+		num_local_attributes = 0;
+	} else {
+		max_local_attributes += max_local_attributes >> 1;	/* increase by 50 % */
+		local_attributes = my_realloc(local_attributes, sizeof(*local_attributes) * max_local_attributes);
 	}
 }
 
@@ -307,7 +332,53 @@ free_if_not_default(
 
 
 /*
+ * Free memory of one attributes struct only
+ */
+static void
+free_attributes(
+	struct t_attribute *attributes)
+{
+	FreeAndNull(attributes->scope);
+
+	free_if_not_default(&attributes->maildir, tinrc.maildir);
+	free_if_not_default(&attributes->savedir, tinrc.savedir);
+
+	FreeAndNull(attributes->savefile);
+
+	free_if_not_default(&attributes->sigfile, tinrc.sigfile);
+	free_if_not_default(&attributes->organization, default_organization);
+
+	FreeAndNull(attributes->followup_to);
+
+	FreeAndNull(attributes->fcc);
+
+	FreeAndNull(attributes->mailing_list);
+	FreeAndNull(attributes->x_headers);
+	FreeAndNull(attributes->x_body);
+
+	free_if_not_default(&attributes->from, tinrc.mail_address);
+	free_if_not_default(&attributes->news_quote_format, tinrc.news_quote_format);
+	free_if_not_default(&attributes->quote_chars, tinrc.quote_chars);
+
+	FreeAndNull(attributes->mime_types_to_save);
+
+#ifdef HAVE_ISPELL
+	FreeAndNull(attributes->ispell);
+#endif /* HAVE_ISPELL */
+
+	FreeAndNull(attributes->quick_kill_scope);
+	FreeAndNull(attributes->quick_select_scope);
+
+#ifdef CHARSET_CONVERSATION
+	FreeAndNull(attributes->undeclared_charset);
+#endif /* CHARSET_CONVERSATION */
+}
+
+
+/*
  * TODO: fix the leaks in the global case
+ *       Are there any leaks left? If there are, they would also be there for
+ *       every group, wouldn't they? 2006-11-12, -dn
  */
 void
 free_attributes_array(
@@ -318,78 +389,25 @@ free_attributes_array(
 
 	for_each_group(i) {
 		group = &active[i];
-		if (!group->bogus && group->attribute && !group->attribute->global) {
-			free_if_not_default(&group->attribute->maildir, tinrc.maildir);
-			free_if_not_default(&group->attribute->savedir, tinrc.savedir);
-
-			FreeAndNull(group->attribute->savefile);
-
-			free_if_not_default(&group->attribute->sigfile, tinrc.sigfile);
-			free_if_not_default(&group->attribute->organization, default_organization);
-
-			FreeAndNull(group->attribute->followup_to);
-
-			FreeAndNull(group->attribute->fcc);
-
-			FreeAndNull(group->attribute->mailing_list);
-			FreeAndNull(group->attribute->x_headers);
-			FreeAndNull(group->attribute->x_body);
-
-			free_if_not_default(&group->attribute->from, tinrc.mail_address);
-			free_if_not_default(&group->attribute->news_quote_format, tinrc.news_quote_format);
-			free_if_not_default(&group->attribute->quote_chars, tinrc.quote_chars);
-
-			FreeAndNull(group->attribute->mime_types_to_save);
-
-#ifdef HAVE_ISPELL
-			FreeAndNull(group->attribute->ispell);
-#endif /* HAVE_ISPELL */
-
-			FreeAndNull(group->attribute->quick_kill_scope);
-			FreeAndNull(group->attribute->quick_select_scope);
-
-#ifdef CHARSET_CONVERSION
-			FreeAndNull(group->attribute->undeclared_charset);
-#endif /* CHARSET_CONVERSION */
-
+		/*
+		 * Check for bogus group removed to prevent memory leaks because
+		 * attrib.c:do_set_attrib() also doesn't check but allocates memory
+		 * unconditionally. Groups may become bogus on a resync of the active
+		 * file (after attributes are "applied"), too. 2006-11-12, -dn
+		 */
+		if (/* !group->bogus && */ group->attribute && !group->attribute->global) {
+			free_attributes(group->attribute);
 			free(group->attribute);
 		}
 		group->attribute = (struct t_attribute *) 0;
 	}
 
+	/* free the local attributes array */
+	while (num_local_attributes > 0)
+		free_attributes(&local_attributes[--num_local_attributes]);
+
 	/* free the global attributes array */
-	free_if_not_default(&glob_attributes.maildir, tinrc.maildir);
-	free_if_not_default(&glob_attributes.savedir, tinrc.savedir);
-
-	FreeAndNull(glob_attributes.savefile);
-
-	free_if_not_default(&glob_attributes.sigfile, tinrc.sigfile);
-	free_if_not_default(&glob_attributes.organization, default_organization);
-
-	FreeAndNull(glob_attributes.followup_to);
-
-	FreeAndNull(glob_attributes.fcc);
-
-	FreeAndNull(glob_attributes.mailing_list);
-	FreeAndNull(glob_attributes.x_headers);
-	FreeAndNull(glob_attributes.x_body);
-
-	free_if_not_default(&glob_attributes.from, tinrc.mail_address);
-	free_if_not_default(&glob_attributes.news_quote_format, tinrc.news_quote_format);
-	free_if_not_default(&glob_attributes.quote_chars, tinrc.quote_chars);
-
-	FreeAndNull(glob_attributes.mime_types_to_save);
-
-#ifdef HAVE_ISPELL
-	FreeAndNull(glob_attributes.ispell);
-#endif /* HAVE_ISPELL */
-
-	FreeAndNull(glob_attributes.quick_kill_scope);
-	FreeAndNull(glob_attributes.quick_select_scope);
-
-#ifdef CHARSET_CONVERSATION
-	FreeAndNull(glob_attributes.undeclared_charset);
-#endif /* CHARSET_CONVERSATION */
+	free_attributes(&glob_attributes);
 }
 
 
@@ -428,6 +446,8 @@ free_active_arrays(
 		free_attributes_array();
 		FreeAndNull(active);
 	}
+	FreeAndNull(local_attributes);
+	num_local_attributes = -1;
 	num_active = -1;
 }
 
@@ -530,7 +550,14 @@ my_realloc1(
 	debug_print_malloc(FALSE, file, line, size);
 #endif /* DEBUG */
 
-	p = ((!p) ? (calloc(1, size)) : realloc(p, size));
+	if (!size) {
+		if (p)
+			free(p);
+
+		return NULL;
+	}
+
+	p = ((!p) ? (malloc(size)) : realloc(p, size));
 
 	if (p == NULL) {
 		error_message(txt_out_of_memory, tin_progname, size, file, line);

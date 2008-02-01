@@ -1,15 +1,15 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2006-12-21
+# Updated: 2007-09-24
 #
 
 PROJECT	= tin
 LVER	= 1
 PVER	= 9
-SVER	= 2
+SVER	= 3
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20070201
+DVER	= 20080201
 EXE	= tin
 
 # directory structure
@@ -27,6 +27,7 @@ INTLDIR	= ./intl
 HFILES	= \
 	$(INCDIR)/bool.h \
 	$(INCDIR)/bugrep.h \
+	$(INCDIR)/debug.h \
 	$(INCDIR)/extern.h \
 	$(INCDIR)/keymap.h \
 	$(INCDIR)/newsrc.h \
@@ -132,23 +133,24 @@ DOC	= \
 	$(DOCDIR)/iso2asc.txt \
 	$(DOCDIR)/keymap.sample \
 	$(DOCDIR)/mailcap.sample \
+	$(DOCDIR)/mbox.5 \
 	$(DOCDIR)/mime.types \
+	$(DOCDIR)/mmdf.5 \
+	$(DOCDIR)/newsoverview.5 \
 	$(DOCDIR)/nov_tests \
 	$(DOCDIR)/opt-case.1 \
+	$(DOCDIR)/plp_snprintf.3 \
 	$(DOCDIR)/pgp.txt \
 	$(DOCDIR)/rcvars.txt \
 	$(DOCDIR)/reading-mail.txt \
 	$(DOCDIR)/umlaute.txt \
 	$(DOCDIR)/umlauts.txt \
+	$(DOCDIR)/url_handler.1 \
+	$(DOCDIR)/tin.1 \
+	$(DOCDIR)/tin.5 \
 	$(DOCDIR)/tin.defaults \
 	$(DOCDIR)/tinews.1 \
 	$(DOCDIR)/tools.txt \
-	$(DOCDIR)/mbox.5 \
-	$(DOCDIR)/mmdf.5 \
-	$(DOCDIR)/newsoverview.5 \
-	$(DOCDIR)/plp_snprintf.3 \
-	$(DOCDIR)/tin.1 \
-	$(DOCDIR)/tin.5 \
 	$(DOCDIR)/w2r.1 \
 	$(DOCDIR)/wildmat.3
 
@@ -158,6 +160,7 @@ TOL	= \
 	$(TOLDIR)/opt-case.pl \
 	$(TOLDIR)/tinlock \
 	$(TOLDIR)/tinews.pl \
+	$(TOLDIR)/url_handler.pl \
 	$(TOLDIR)/url_handler.sh \
 	$(TOLDIR)/w2r.pl \
 	$(TOLDIR)/expand_aliases.tgz
@@ -247,29 +250,22 @@ PCRE	= \
 	$(PCREDIR)/testdata/testoutput9
 
 CAN	= \
-	$(CANDIR)/Build \
 	$(CANDIR)/CHANGES \
 	$(CANDIR)/HOWTO \
-	$(CANDIR)/MANIFEST \
 	$(CANDIR)/README \
-	$(CANDIR)/base64.c \
-	$(CANDIR)/base64.h \
-	$(CANDIR)/canlock.h \
-	$(CANDIR)/canlock_md5.c \
-	$(CANDIR)/canlock_misc.c \
-	$(CANDIR)/canlock_sha1.c \
-	$(CANDIR)/canlocktest.c \
-	$(CANDIR)/endian.c \
-	$(CANDIR)/hmac_md5.c \
-	$(CANDIR)/hmac_md5.h \
-	$(CANDIR)/hmac_sha1.c \
-	$(CANDIR)/hmac_sha1.h \
-	$(CANDIR)/hmactest.c \
-	$(CANDIR)/main.c \
-	$(CANDIR)/md5.c \
-	$(CANDIR)/md5.h \
-	$(CANDIR)/sha1.c \
-	$(CANDIR)/sha1.h
+	$(CANDIR)/Makefile.in \
+	$(CANDIR)/src/base64.c \
+	$(CANDIR)/src/canlock.c \
+	$(CANDIR)/src/hmac_sha1.c \
+	$(CANDIR)/src/sha1.c \
+	$(CANDIR)/include/base64.h \
+	$(CANDIR)/include/canlock.h \
+	$(CANDIR)/include/hmac_sha1.h \
+	$(CANDIR)/include/sha1.h \
+	$(CANDIR)/t/canlocktest.c \
+	$(CANDIR)/t/hmactest.c \
+	$(CANDIR)/t/canlocktest.shouldbe \
+	$(CANDIR)/t/hmactest.shouldbe
 
 MISC	= \
 	$(INCDIR)/autoconf.hin \
@@ -393,7 +389,7 @@ clean:
 	@-if $(TEST) -r $(INTLDIR)/Makefile ; then $(CD) $(INTLDIR) && $(MAKE) clean ; fi
 	@-if $(TEST) -r $(PODIR)/Makefile ; then $(CD) $(PODIR) && $(MAKE) clean ; fi
 	@-if $(TEST) -r $(SRCDIR)/Makefile ; then $(CD) $(SRCDIR) && $(MAKE) clean ; fi
-	@-if $(TEST) -r $(CANDIR)/hmactest ; then $(CD) $(CANDIR) && ./Build clean ; fi
+	@-if $(TEST) -r $(CANDIR)/Makefile ; then $(CD) $(CANDIR) && $(MAKE) clean ; fi
 
 man:
 	@$(MAKE) manpage
@@ -430,10 +426,10 @@ chmod:
 	$(TOLDIR)/opt-case.pl \
 	$(TOLDIR)/tinlock \
 	$(TOLDIR)/tinews.pl \
+	$(TOLDIR)/url_handler.pl \
 	$(TOLDIR)/url_handler.sh \
 	$(TOLDIR)/w2r.pl \
-	$(PCREDIR)/perltest \
-	$(CANDIR)/Build
+	$(PCREDIR)/perltest
 
 tar:
 	@$(ECHO) "Generating gzipped tar file..."
@@ -493,6 +489,7 @@ distclean:
 	@-if $(TEST) -r $(PODIR)/Makefile ; then $(CD) $(PODIR) && $(MAKE) distclean ; fi
 	@-if $(TEST) -r $(INTLDIR)/Makefile ; then $(CD) $(INTLDIR) && $(MAKE) distclean ; fi
 	@-if $(TEST) -r $(PCREDIR)/Makefile ; then $(CD) $(PCREDIR) && $(MAKE) distclean ; fi
+	@-if $(TEST) -r $(CANDIR)/Makefile ; then $(CD) $(CANDIR) && $(MAKE) distclean ; fi
 	@-$(RM) -f \
 	$(TOPDIR)/config.cache \
 	$(TOPDIR)/config.log \
@@ -501,6 +498,7 @@ distclean:
 	$(INCDIR)/autoconf.h \
 	$(SRCDIR)/Makefile \
 	$(PCREDIR)/Makefile \
+	$(CANDIR)/Makefile \
 	$(INTLDIR)/po2tbl.sed
 
 configure: configure.in aclocal.m4

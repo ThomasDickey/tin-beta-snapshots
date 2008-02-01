@@ -3,10 +3,10 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2006-10-01
+ *  Updated   : 2007-12-30
  *  Notes     :
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -458,7 +458,7 @@ selection_page(
 					snprintf(buf, sizeof(buf), _(txt_post_newsgroups), tinrc.default_post_newsgroups);
 					if (!prompt_string_default(buf, tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS))
 						break;
-					if (group_find(tinrc.default_post_newsgroups) == NULL) {
+					if (group_find(tinrc.default_post_newsgroups, FALSE) == NULL) {
 						error_message(_(txt_not_in_active_file), tinrc.default_post_newsgroups);
 						break;
 					} else {
@@ -469,7 +469,7 @@ selection_page(
 						 * CHARSET_CONVERSION conversion case in new_part()
 						 * which relies currently relies on CURR_GROUP
 						 */
-						selmenu.curr = my_group_add(buf);
+						selmenu.curr = my_group_add(buf, FALSE);
 						/*
 						 * and the next hack to avoid a grabbled selection
 						 * screen after the posting
@@ -830,7 +830,7 @@ choose_new_group(
 
 	clear_message();
 
-	if ((idx = my_group_add(tinrc.default_goto_group)) == -1)
+	if ((idx = my_group_add(tinrc.default_goto_group, TRUE)) == -1)
 		info_message(_(txt_not_in_active_file), tinrc.default_goto_group);
 
 	return idx;
@@ -867,11 +867,12 @@ skip_newgroups(
 int
 add_my_group(
 	const char *group,
-	t_bool add)
+	t_bool add,
+	t_bool ignore_case)
 {
 	int i, j;
 
-	if ((i = find_group_index(group)) < 0)
+	if ((i = find_group_index(group, ignore_case)) < 0)
 		return -1;
 
 	for (j = 0; j < selmenu.max; j++) {
@@ -1129,14 +1130,14 @@ toggle_my_groups(
 		if ((ptr = strchr(buf, SUBSCRIBED)) != NULL) {
 			*ptr = '\0';
 
-			if ((i = find_group_index(buf)) < 0)
+			if ((i = find_group_index(buf, FALSE)) < 0)
 				continue;
 
 			if (tinrc.show_only_unread_groups) {
 				if (active[i].newsrc.num_unread || (active[i].bogus && tinrc.strip_bogus == BOGUS_SHOW))
-					my_group_add(buf);
+					my_group_add(buf, FALSE);
 			} else
-				my_group_add(buf);
+				my_group_add(buf, FALSE);
 		}
 	}
 	fclose(fp);
@@ -1146,8 +1147,8 @@ toggle_my_groups(
 
 
 /*
- * Subscribe or unsubscribe from a list of groups. List can be full list as supported
- * by match_group_list()
+ * Subscribe or unsubscribe from a list of groups. List can be full list as
+ * supported by match_group_list()
  */
 static void
 subscribe_pattern(
@@ -1169,37 +1170,21 @@ subscribe_pattern(
 
 	wait_message(0, message);
 
-	/*
-	 * TODO: why do we do a pass over my_group[] before another one
-	 *       over active[]? AFAICS the first loop can go away.
-	 */
-	for (i = 0; i < selmenu.max; i++) {
-		if (match_group_list(active[my_group[i]].name, buf)) {
-			if (active[my_group[i]].subscribed != (state != FALSE)) {
+	for_each_group(i) {
+		if (match_group_list(active[i].name, buf)) {
+			if (active[i].subscribed != (state != FALSE)) {
 				spin_cursor();
-				subscribe(&active[my_group[i]], SUB_CHAR(state), TRUE);
-				subscribe_num++;
-			}
-		}
-	}
-
-	if (num_active > selmenu.max) {			/* ie, there are groups yanked out */
-		for_each_group(i) {
-			if (match_group_list(active[i].name, buf)) {
-				if (active[i].subscribed != (state != FALSE)) {
-					spin_cursor();
-					/* If found and group is not subscribed add it to end of my_group[]. */
-					subscribe(&active[i], SUB_CHAR(state), TRUE);
-					if (state) {
-						my_group_add(active[i].name);
-						/*
-						 * TODO: grp_mark_unread() or something needs to do a
-						 *       group_get_art_info() to get initial count right
-						 */
-						grp_mark_unread(&active[i]);
-					}
-					subscribe_num++;
+				/* If found and group is not subscribed add it to end of my_group[]. */
+				subscribe(&active[i], SUB_CHAR(state), TRUE);
+				if (state) {
+					my_group_add(active[i].name, FALSE);
+					/*
+					 * TODO: grp_mark_unread() or something needs to do a
+					 *       group_get_art_info() to get initial count right
+					 */
+					grp_mark_unread(&active[i]);
 				}
+				subscribe_num++;
 			}
 		}
 	}

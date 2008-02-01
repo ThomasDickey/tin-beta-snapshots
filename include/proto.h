@@ -3,10 +3,10 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2006-10-01
+ *  Updated   : 2008-01-24
  *  Notes     :
  *
- * Copyright (c) 1997-2007 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2008 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -86,7 +86,7 @@ extern void write_attributes_file(const char *file);
 /* charset.c */
 extern char *convert_to_printable(char *buf);
 extern t_bool is_art_tex_encoded(FILE *fp);
-extern void convert_iso2asc(char *iso, char **asc_buffer, int *max_line_len, int t);
+extern void convert_iso2asc(char *iso, char **asc_buffer, size_t *max_line_len, int t);
 extern void convert_tex2iso(char *from, char *to);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	extern wchar_t *wconvert_to_printable(wchar_t *wbuf);
@@ -116,7 +116,7 @@ extern void write_config_file(char *file);
 /* cook.c */
 extern const char *get_filename(t_param *ptr);
 extern t_bool cook_article(t_bool wrap_lines, t_openartinfo *artinfo, int tabs, int hide_uue);
-extern t_bool expand_ctrl_chars(char **line, int *length, size_t cook_width);
+extern t_bool expand_ctrl_chars(char **line, size_t *length, size_t cook_width);
 
 /* curses.c */
 extern OUTC_RETTYPE outchar(OUTC_ARGS);
@@ -157,23 +157,19 @@ extern void word_highlight_string(int row, int col, int size, int color);
 /* debug.c */
 #ifdef DEBUG
 	extern void debug_delete_files(void);
-	extern void debug_nntp(const char *func, const char *fmt, ...);
+	extern void debug_print_file(const char *fname, const char *fmt, ...);
 	extern void debug_print_active(void);
 	extern void debug_print_arts(void);
+	extern void debug_print_bitmap(struct t_group *group, struct t_article *art);
+	extern void debug_print_comment(const char *comment);
 	extern void debug_print_filters(void);
 	extern void debug_print_header(struct t_article *s);
 	extern void debug_print_malloc(int is_malloc, const char *xfile, int line, size_t size);
+	extern void debug_print_newsrc(struct t_newsrc *NewSrc, FILE *fp);
 #	ifdef NNTP_ABLE
 		extern void debug_print_nntp_extensions(void);
 #	endif /* NNTP_ABLE */
 #endif /* DEBUG */
-#ifdef DEBUG_NEWSRC
-	extern void debug_print_newsrc(struct t_newsrc *NewSrc, FILE *fp);
-#endif /* DEBUG_NEWSRC */
-#if defined(DEBUG) || defined(DEBUG_NEWSRC)
-	extern void debug_print_bitmap(struct t_group *group, struct t_article *art);
-	extern void debug_print_comment(const char *comment);
-#endif /* DEBUG || DEBUG_NEWSRC */
 
 /* envarg.c */
 extern void envargs(int *Pargc, char ***Pargv, const char *envstr);
@@ -249,7 +245,7 @@ extern void postinit_regexp(void);
 #endif /* HAVE_COLOR */
 
 /* joinpath.c */
-extern void joinpath(char *result, const char *dir, const char *file);
+extern void joinpath(char *result, size_t result_size, const char *dir, const char *file);
 
 /* keymap.c */
 extern t_bool read_keymap_file(void);
@@ -263,9 +259,9 @@ extern void setup_default_keys(void);
 
 /* list.c */
 extern char *random_organization(char *in_org);
-extern int find_group_index(const char *group);
+extern int find_group_index(const char *group, t_bool ignore_case);
 extern struct t_group *group_add(const char *group);
-extern struct t_group *group_find(const char *group_name);
+extern struct t_group *group_find(const char *group_name, t_bool ignore_case);
 extern unsigned long hash_groupname(const char *group);
 extern void group_rehash(t_bool yanked_out);
 extern void init_group_hash(void);
@@ -300,6 +296,7 @@ extern void giveup(void);
 /* memory.c */
 extern void expand_active(void);
 extern void expand_art(void);
+extern void expand_local_attributes(void);
 extern void expand_newnews(void);
 extern void expand_save(void);
 extern void init_alloc(void);
@@ -360,9 +357,9 @@ extern void draw_mark_selected(int i);
 extern void draw_percent_mark(long cur_num, long max_num);
 extern void get_author(t_bool thread, struct t_article *art, char *str, size_t len);
 extern void get_cwd(char *buf);
-extern void make_base_group_path(const char *base_dir, const char *group_name, char *group_path);
+extern void make_base_group_path(const char *base_dir, const char *group_name, char *group_path, size_t group_path_len);
 extern void make_group_path(const char *name, char *path);
-extern void process_charsets(char **line, int *max_line_len, const char *network_charset, const char *local_charset, t_bool conv_tex2iso);
+extern void process_charsets(char **line, size_t *max_line_len, const char *network_charset, const char *local_charset, t_bool conv_tex2iso);
 extern void read_input_history_file(void);
 extern void rename_file(const char *old_filename, const char *new_filename);
 extern void show_inverse_video_status(void);
@@ -430,8 +427,8 @@ extern void u_put_server(const char *string);
 #endif /* NNTP_ABLE */
 
 /* nrctbl.c */
-extern int get_newsrcname(char *newsrc_name, const char *nntpserver_name);
-extern void get_nntpserver(char *nntpserver_name, char *nick_name);
+extern int get_newsrcname(char *newsrc_name, size_t newsrc_name_len, const char *nntpserver_name);
+extern void get_nntpserver(char *nntpserver_name, size_t nntpserver_name_len, char *nick_name);
 
 /* options_menu.c */
 extern char *fmt_option_prompt(char *dst, size_t len, t_bool editing, enum option_enum option);
@@ -531,8 +528,8 @@ extern t_mailcap *get_mailcap_entry(t_part *part, const char *path);
 extern void free_mailcap(t_mailcap *tmailcap);
 
 /* rfc2045.c */
-extern int read_decoded_base64_line(FILE *file, char **line, int *max_line_len, const int max_lines_to_read, char **rest);
-extern int read_decoded_qp_line(FILE *file, char **line, int *max_line_len, const int max_lines_to_read);
+extern int read_decoded_base64_line(FILE *file, char **line, size_t *max_line_len, const int max_lines_to_read, char **rest);
+extern int read_decoded_qp_line(FILE *file, char **line, size_t *max_line_len, const int max_lines_to_read);
 extern void rfc1521_encode(char *line, FILE *f, int e);
 
 /* rfc2046.c */
@@ -591,7 +588,7 @@ extern int search_body(struct t_group *group, int current_art, t_bool repeat);
 extern void reset_srch_offsets(void);
 
 /* select.c */
-extern int add_my_group(const char *group, t_bool add);
+extern int add_my_group(const char *group, t_bool add, t_bool ignore_case);
 extern int choose_new_group(void);
 extern int skip_newgroups(void);
 extern void selection_page(int start_groupnum, int num_cmd_line_groups);
@@ -665,7 +662,6 @@ extern void str_lwr(char *str);
 	extern wchar_t *char2wchar_t(const char *str);
 	extern wchar_t *wcspart(const wchar_t *wstr, int columns, t_bool pad);
 	extern wchar_t *wstrunc(const wchar_t *wmessage, int len);
-	extern wchar_t *my_wcsdup(const wchar_t *wstr);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
 	extern char *render_bidi(const char *str, t_bool *is_rtl);

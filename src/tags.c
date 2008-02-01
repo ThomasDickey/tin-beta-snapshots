@@ -3,10 +3,10 @@
  *  Module    : tags.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-06
- *  Updated   : 2005-05-10
+ *  Updated   : 2007-10-04
  *  Notes     : Split out from other modules
  *
- * Copyright (c) 1999-2007 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2008 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -523,9 +523,10 @@ do_auto_select_arts(
 
 	for_each_art(i) {
 		if (arts[i].status == ART_UNREAD && !arts[i].selected) {
-#	ifdef DEBUG_NEWSRC
-			debug_print_comment("group.c: X command");
-#	endif /* DEBUG_NEWSRC */
+#	ifdef DEBUG
+			if (debug & DEBUG_NEWSRC)
+				debug_print_comment("group.c: X command");
+#	endif /* DEBUG */
 			art_mark(curr_group, &arts[i], ART_READ);
 			arts[i].zombie = TRUE;
 		}
@@ -547,9 +548,10 @@ undo_auto_select_arts(
 
 	for_each_art(i) {
 		if (arts[i].status == ART_READ && arts[i].zombie) {
-#	ifdef DEBUG_NEWSRC
-			debug_print_comment("group.c: + command");
-#	endif /* DEBUG_NEWSRC */
+#	ifdef DEBUG
+			if (debug & DEBUG_NEWSRC)
+				debug_print_comment("group.c: + command");
+#	endif /* DEBUG */
 			art_mark(curr_group, &arts[i], ART_UNREAD);
 			arts[i].zombie = FALSE;
 		}

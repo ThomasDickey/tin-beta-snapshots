@@ -3,10 +3,10 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2006-06-28
+ *  Updated   : 2007-12-30
  *  Notes     : This file contains key mapping routines and variables.
  *
- * Copyright (c) 2000-2007 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 2000-2008 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -319,7 +319,7 @@ read_keymap_file(
 	FILE *fp = (FILE *) 0;
 	char *line, *keydef, *kname;
 	char *map, *ptr;
-	char buf[LEN], buff[NAME_LEN + 1];
+	char buf[LEN], buff[NAME_LEN + 1], filename[PATH_LEN];
 	int upgrade = RC_CHECK;
 	t_bool ret = TRUE;
 
@@ -329,7 +329,7 @@ read_keymap_file(
 	 *
 	 * locale is first match from LC_ALL, LC_CTYPE, LC_MESSAGES, LANG
 	 *
-	 * TODO: fix possible buf-overflows
+	 * TODO: LC_CTYPE has higgher priority than LC_MESSAGES, does this make sense?
 	 */
 	/* get locale suffix */
 	map = my_strdup(get_val("LC_ALL", get_val("LC_CTYPE", get_val("LC_MESSAGES", get_val("LANG", "")))));
@@ -337,21 +337,21 @@ read_keymap_file(
 		if ((ptr = strchr(map, '.')))
 			*ptr = '\0';
 		snprintf(buff, sizeof(buff), "%s.%s", KEYMAP_FILE, map);
-		joinpath(buf, rcdir, buff);
-		fp = fopen(buf, "r");
+		joinpath(filename, sizeof(filename), rcdir, buff);
+		fp = fopen(filename, "r");
 	}
 	if (!fp) {
-		joinpath(buf, rcdir, KEYMAP_FILE);
-		fp = fopen(buf, "r");
+		joinpath(filename, sizeof(filename), rcdir, KEYMAP_FILE);
+		fp = fopen(filename, "r");
 	}
 #ifdef TIN_DEFAULTS_DIR
 	if (strlen(map) && !fp) {
-		joinpath(buf, TIN_DEFAULTS_DIR, buff);
-		fp = fopen(buf, "r");
+		joinpath(filename, sizeof(filename), TIN_DEFAULTS_DIR, buff);
+		fp = fopen(filename, "r");
 	}
 	if (!fp) {
-		joinpath(buf, TIN_DEFAULTS_DIR, KEYMAP_FILE);
-		fp = fopen(buf, "r");
+		joinpath(filename, sizeof(filename), TIN_DEFAULTS_DIR, KEYMAP_FILE);
+		fp = fopen(filename, "r");
 	}
 #endif /* TIN_DEFAULTS_DIR */
 
@@ -360,7 +360,7 @@ read_keymap_file(
 	if (!fp)
 		return TRUE; /* no keymap file is not an error */
 
-	map = my_strdup(buf); /* remember keymap-name */
+	map = my_strdup(filename); /* remember keymap-name */
 
 	/* check if keymap file is uptodate */
 	while ((line = fgets(buf, sizeof(buf), fp)) != NULL) {
