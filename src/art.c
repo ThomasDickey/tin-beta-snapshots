@@ -3,10 +3,10 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2006-06-21
+ *  Updated   : 2008-01-10
  *  Notes     :
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -198,7 +198,6 @@ static long
 setup_hard_base(
 	struct t_group *group)
 {
-	char buf[NNTP_STRLEN];
 	long art;
 	long total = 0;
 
@@ -209,6 +208,7 @@ setup_hard_base(
 	 */
 	if (read_news_via_nntp && group->type == GROUP_TYPE_NEWS) {
 #ifdef NNTP_ABLE
+		char buf[NNTP_STRLEN];
 		FILE *fp;
 
 #	ifdef BROKEN_LISTGROUP
@@ -230,7 +230,8 @@ setup_hard_base(
 			char *ptr;
 
 #	ifdef DEBUG
-			debug_nntp("setup_hard_base", buf);
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "setup_hard_base() %s", buf);
 #	endif /* DEBUG */
 
 			while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
@@ -284,15 +285,16 @@ setup_hard_base(
 	} else {
 		DIR *d;
 		DIR_BUF *e;
+		char group_path[PATH_LEN];
 
-		make_base_group_path(group->spooldir, group->name, buf);
+		make_base_group_path(group->spooldir, group->name, group_path, sizeof(group_path));
 
-		if (access(buf, R_OK) != 0) {
+		if (access(group_path, R_OK) != 0) {
 			error_message(_(txt_not_exist));
 			return -1;
 		}
 
-		if ((d = opendir(buf)) != NULL) {
+		if ((d = opendir(group_path)) != NULL) {
 			while ((e = readdir(d)) != NULL) {
 				art = atol(e->d_name);
 				if (art >= 1) {
@@ -362,10 +364,12 @@ index_group(
 	EndStopWatch();
 	PrintStopWatch();
 
-#ifdef DEBUG_NEWSRC
-	debug_print_comment("Before read_overview");
-	debug_print_bitmap(group, NULL);
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+	if (debug & DEBUG_NEWSRC) {
+		debug_print_comment("Before read_overview");
+		debug_print_bitmap(group, NULL);
+	}
+#endif /* DEBUG */
 
 	min = grpmenu.max ? base[0] : group->xmin;
 	max = grpmenu.max ? base[grpmenu.max - 1] : min - 1;
@@ -435,19 +439,23 @@ index_group(
 			return FALSE;		/* user aborted indexing */
 	}
 
-#ifdef DEBUG_NEWSRC
-	debug_print_comment("Before parse_unread_arts()");
-	debug_print_bitmap(group, NULL);
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+	if (debug & DEBUG_NEWSRC) {
+		debug_print_comment("Before parse_unread_arts()");
+		debug_print_bitmap(group, NULL);
+	}
+#endif /* DEBUG */
 	/*
 	 * Do this before calling art_mark(,, ART_READ) if you want
 	 * the unread count to be correct.
 	 */
 	parse_unread_arts(group);
-#ifdef DEBUG_NEWSRC
-	debug_print_comment("After parse_unread_arts()");
-	debug_print_bitmap(group, NULL);
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+	if (debug & DEBUG_NEWSRC) {
+		debug_print_comment("After parse_unread_arts()");
+		debug_print_bitmap(group, NULL);
+	}
+#endif /* DEBUG */
 
 	/*
 	 * Stat all articles to see if any have expired
@@ -455,9 +463,10 @@ index_group(
 	for_each_art(i) {
 		if (arts[i].thread == ART_EXPIRED) {
 			changed++;
-#ifdef DEBUG_NEWSRC
-			debug_print_comment("art.c: index_group() purging...");
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+			if (debug & DEBUG_NEWSRC)
+				debug_print_comment("art.c: index_group() purging...");
+#endif /* DEBUG */
 			art_mark(group, &arts[i], ART_READ);
 		}
 	}
@@ -596,7 +605,7 @@ read_art_headers(
 		char buf[PATH_LEN];
 
 		get_cwd(dir);
-		make_base_group_path(group->spooldir, group->name, buf);
+		make_base_group_path(group->spooldir, group->name, buf, sizeof(buf));
 		my_chdir(buf);
 	}
 
@@ -642,7 +651,8 @@ read_art_headers(
 			char buf[PATH_LEN];
 
 			snprintf(buf, sizeof(buf), "FAILED parse_headers(%ld)", art);
-			debug_nntp("read_art_headers", buf);
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "read_art_headers() %s", buf);
 #endif /* DEBUG */
 			continue;
 		}
@@ -1026,7 +1036,7 @@ make_threads(
 		info_message((group->attribute->thread_arts == THREAD_NONE ? _(txt_unthreading_arts) : _(txt_threading_arts)));
 
 #ifdef DEBUG
-	if (debug == 2)
+	if (debug & DEBUG_MISC)
 		error_message("rethread=[%d]  thread_arts=[%d]  attr_thread_arts=[%d]",
 				rethread, tinrc.thread_articles, group->attribute->thread_arts);
 #endif /* DEBUG */
@@ -1207,7 +1217,6 @@ parse_headers(
 {
 	char art_from_addr[HEADER_LEN];
 	char art_full_name[HEADER_LEN];
-	char art_trunc_subj[HEADER_LEN];
 	char *hdr, *ptr;
 	unsigned int lineno = 0;
 	unsigned int max_lineno = 25;
@@ -1309,18 +1318,10 @@ parse_headers(
 				}
 				break;
 
-			/*
-			 * FIXME: Subject: truncation is a HACK and it's not multibyte safe
-			 *        the core problem are probably fixed length buffers
-			 *        (i.e. in rfc1522_encode() called from write_overview()
-			 *         with the data read in here).
-			 */
 			case 'S':	/* Subject:  mandatory */
 				if (!h->subject) {
-					if ((hdr = parse_header(ptr + 1, "ubject", FALSE, FALSE))) {
-						strncpy(art_trunc_subj, eat_re(eat_tab(convert_to_printable(rfc1522_decode(hdr))), FALSE), sizeof(art_trunc_subj) - 1);
-						h->subject = hash_str(art_trunc_subj);
-					}
+					if ((hdr = parse_header(ptr + 1, "ubject", FALSE, FALSE)))
+						 h->subject = hash_str(eat_re(eat_tab(convert_to_printable(rfc1522_decode(hdr))), FALSE));
 				}
 				break;
 
@@ -1540,11 +1541,10 @@ read_overview(
 #ifdef DEBUG
 		/* Complain if incorrect # of fields */
 		if (count < (xref_supported ? 8 : 7) || oerror) {
-			char errbuf[LEN];
-
-			error_message(_("%d Bad overview record (%d fields) '%s'"), oerror, count, BlankIfNull(ptr)); /* TODO move to lang.c */
-			snprintf(errbuf, sizeof(errbuf), "%d Bad overview record (%d fields)", oerror, count);
-			debug_nntp("read_overview", errbuf);
+			if (debug & DEBUG_MISC)
+				error_message(_("%d Bad overview record (%d fields) '%s'"), oerror, count, BlankIfNull(ptr)); /* TODO move to lang.c */
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "read_overview() %d Bad overview record (%d fields)", oerror, count);
 		}
 		debug_print_header(art);
 		oerror = 0;
@@ -1687,7 +1687,7 @@ write_overview(
 
 			fprintf(fp, "\n");
 			free(p);
-			if (q != ref) {
+			if (article->refs) {
 				free(ref);
 				ref = q = NULL;
 			}
@@ -1762,8 +1762,8 @@ find_nov_file(
 			 */
 #ifndef NNTP_ONLY
 			if (!read_news_via_nntp) {
-				make_base_group_path(novrootdir, group->name, buf);
-				joinpath(nov_file, buf, novfilename);
+				make_base_group_path(novrootdir, group->name, buf, sizeof(buf));
+				joinpath(nov_file, sizeof(nov_file), buf, novfilename);
 				if (access(nov_file, R_OK) == 0) {
 					if (mode == R_OK)
 						return nov_file;		/* Use system wide overviews */
@@ -1817,7 +1817,7 @@ find_nov_file(
 			 * now that we know it is valid
 			 */
 			if (!once_only)
-				joinpath(local_newsgroups_file, index_newsdir, NEWSGROUPS_FILE);
+				joinpath(local_newsgroups_file, sizeof(local_newsgroups_file), index_newsdir, NEWSGROUPS_FILE);
 
 			dir = index_newsdir;
 			break;
@@ -1839,7 +1839,7 @@ find_nov_file(
 		char *ptr;
 
 		snprintf(buf, sizeof(buf), "%lu.%d", hash, i);
-		joinpath(nov_file, dir, buf);
+		joinpath(nov_file, sizeof(nov_file), dir, buf);
 
 		if ((fp = fopen(nov_file, "r")) == NULL)
 			break;

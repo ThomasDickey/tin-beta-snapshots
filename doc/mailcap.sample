@@ -12,7 +12,7 @@ image/*;\
 	test=test "$DISPLAY";\
 	nametemplate=%s.IMAGE
 message/rfc822;\
-	${PAGER-"more"} '%s'\;
+	formail > '%s.mbox' < '%s' \&\& mutt -m mbox -f '%s.mbox' \&\& rm -f '%s.mbox';\
 	description=Mail Text;\
 	needsterminal
 text/html;\
@@ -21,8 +21,8 @@ text/html;\
 	needsterminal;\
 	nametemplate=%s.html
 text/*;\
-	${PAGER-"more"} '%s'\;
-	edit=${EDITOR-"vi"} '%s';\
-	compose=${EDITOR-"vi"} '%s';\
+	${PAGER:-"more"} '%s'\;
+	edit=${EDITOR:-"vi"} '%s';\
+	compose=${EDITOR:-"vi"} '%s';\
 	print=a2ps '%s';\
 	needsterminal

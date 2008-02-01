@@ -3,10 +3,10 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2004-06-30
+ *  Updated   : 2007-12-30
  *  Notes     :
  *
- * Copyright (c) 1992-2007 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2008 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -193,7 +193,7 @@ process_bogus(
 	active_add(ptr, 0L, 1L, 0L, "n");
 	ptr->bogus = TRUE;		/* Mark it bogus */
 
-	if (my_group_add(name) < 0)
+	if (my_group_add(name, FALSE) < 0)
 		return TRUE;
 
 	return FALSE;		/* Nothing was printed yet */
@@ -210,17 +210,22 @@ parse_active_line(
 	long *min,
 	char *moderated)
 {
-	char *p, *q, *r;
+	char *p = NULL, *q = NULL, *r = NULL;
+	t_bool lineok = FALSE;
 
 	if (line[0] == '#' || line[0] == '\0')
 		return FALSE;
 
-	(void) strtok(line, ACTIVE_SEP);		/* skip group name */
-	p = strtok(NULL, ACTIVE_SEP);	/* group max count */
-	q = strtok(NULL, ACTIVE_SEP);	/* group min count */
-	r = strtok(NULL, ACTIVE_SEP);	/* mod status or path to mailgroup */
+	if (strtok(line, ACTIVE_SEP)) {		/* skip group name */
+		if ((p = strtok(NULL, ACTIVE_SEP))) {	/* group max count */
+			if ((q = strtok(NULL, ACTIVE_SEP))) {	/* group min count */
+				r = strtok(NULL, ACTIVE_SEP);	/* mod status or path to mailgroup */
+				lineok = TRUE;
+			}
+		}
+	}
 
-	if (!p || !q || !r) {
+	if (!p || !q || !r || !lineok) {
 		error_message(_(txt_bad_active_file), line);
 		return FALSE;
 	}
@@ -301,7 +306,8 @@ read_newsrc_active_file(
 				ngnames[index_i] = my_strdup(ptr);
 				snprintf(buf, sizeof(buf), "GROUP %s", ngnames[index_i]);
 #	ifdef DEBUG
-				debug_nntp("read_newsrc_active_file", buf);
+				if (debug & DEBUG_NNTP)
+					debug_print_file("NNTP", "read_newsrc_active_file() %s", buf);
 #	endif /* DEBUG */
 				put_server(buf);
 				index_i = (index_i + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
@@ -322,7 +328,8 @@ read_newsrc_active_file(
 					for (i = 0; i < window - 1; i++) {
 						snprintf(buf, sizeof(buf), "GROUP %s", ngnames[j]);
 #	ifdef DEBUG
-						debug_nntp("read_newsrc_active_file", buf);
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "read_newsrc_active_file() %s",  buf);
 #	endif /* DEBUG */
 						put_server(buf);
 						j = (j + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
@@ -367,7 +374,8 @@ read_newsrc_active_file(
 
 					default:
 #	ifdef DEBUG
-						debug_nntp("NOT_OK", line);
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "NOT_OK %s", line);
 #	endif /* DEBUG */
 						free(ngnames[index_o]);
 						index_o = (index_o + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
@@ -395,7 +403,7 @@ read_newsrc_active_file(
 		if ((grpptr = group_add(ptr)) == NULL) {
 			t_bool changed = FALSE;
 
-			if ((grpptr = group_find(ptr)) == NULL)
+			if ((grpptr = group_find(ptr, FALSE)) == NULL)
 				continue;
 
 			if (max > grpptr->xmax) {
@@ -501,7 +509,7 @@ read_active_file(
 		 * This call may implicitly ++num_active
 		 */
 		if ((grpptr = group_add(ptr)) == NULL) {
-			if ((grpptr = group_find(ptr)) == NULL)
+			if ((grpptr = group_find(ptr, FALSE)) == NULL)
 				continue;
 
 			if (max > grpptr->xmax) {
@@ -661,10 +669,8 @@ check_for_any_new_groups(
 	}
 
 #ifdef DEBUG
-	if (debug == 2) {
-		error_message("Newnews old=[%lu]  new=[%lu]", (unsigned long int) old_newnews_time, (unsigned long int) new_newnews_time);
-		(void) sleep(2);
-	}
+	if (debug & DEBUG_NNTP)
+		debug_print_file("NNTP", "Newnews old=[%lu]  new=[%lu]", (unsigned long int) old_newnews_time, (unsigned long int) new_newnews_time);
 #endif /* DEBUG */
 
 	if ((fp = open_newgroups_fp(newnews_index)) != NULL) {
@@ -738,7 +744,7 @@ subscribe_new_group(
 	 * be properly updated when we enter the group. Otherwise there is some
 	 * mismatch in the active.times data and we ignore the newgroup.
 	 */
-	if ((idx = my_group_add(group)) < 0) {
+	if ((idx = my_group_add(group, FALSE)) < 0) {
 		if (list_active) {
 /*			my_fprintf(stderr, "subscribe_new_group: %s not in active[] && list_active\n", group); */
 			return;
@@ -747,7 +753,7 @@ subscribe_new_group(
 		if ((ptr = group_add(group)) != NULL)
 			active_add(ptr, 0L, 1L, 0L, "y");
 
-		if ((idx = my_group_add(group)) < 0)
+		if ((idx = my_group_add(group, FALSE)) < 0)
 			return;
 	}
 
@@ -879,8 +885,8 @@ load_newnews_info(
 	newnews[i].time = new_time;
 
 #ifdef DEBUG
-	if (debug == 2)
-		error_message("ACTIVE host=[%s] time=[%lu]", newnews[i].host, (unsigned long int) newnews[i].time);
+	if (debug & DEBUG_NNTP)
+		debug_print_file("NNTP", "ACTIVE host=[%s] time=[%lu]", newnews[i].host, (unsigned long int) newnews[i].time);
 #endif /* DEBUG */
 }
 
@@ -939,9 +945,9 @@ create_save_active_file(
 	char group_path[PATH_LEN];
 	char local_save_active_file[PATH_LEN];
 
-	joinpath(local_save_active_file, rcdir, ACTIVE_SAVE_FILE);
+	joinpath(local_save_active_file, sizeof(local_save_active_file), rcdir, ACTIVE_SAVE_FILE);
 
-	if (no_write && file_size(local_save_active_file) != -1L)
+	if (no_write && file_size(local_save_active_file) != 1L)
 		return;
 
 	my_printf(_(txt_creating_active));
@@ -972,7 +978,7 @@ make_group_list(
 		is_dir = FALSE;
 		while ((direntry = readdir(dir)) != NULL) {
 			STRCPY(filename, direntry->d_name);
-			joinpath(path, group_path, filename);
+			joinpath(path, sizeof(path), group_path, filename);
 
 			if (!(filename[0] == '.' && filename[1] == '\0') &&
 				!(filename[0] == '.' && filename[1] == '.' && filename[2] == '\0')) {

@@ -3,10 +3,10 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2005-11-04
+ *  Updated   : 2008-01-31
  *  Notes     :
  *
- * Copyright (c) 1997-2007 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2008 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,11 +65,14 @@
 /*
  * local prototypes
  */
-#if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	static UChar *char2UChar(const char *str);
-	static char *UChar2char(const UChar *ustr);
-#endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && !NO_LOCALE */
-
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	static wchar_t *my_wcsdup(const wchar_t *wstr);
+#	if defined(HAVE_LIBICUUC)
+		static UChar *char2UChar(const char *str);
+		static char *UChar2char(const UChar *ustr);
+#	endif /* HAVE_LIBICUUC */
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
+                                        
 
 /*
  * special ltoa()
@@ -890,7 +893,7 @@ wstrunc(
 /*
  * duplicates a wide-char string
  */
-wchar_t *
+static wchar_t *
 my_wcsdup(
 	const wchar_t *wstr)
 {

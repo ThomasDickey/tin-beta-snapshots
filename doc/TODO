@@ -4,8 +4,23 @@ not read only ,-).
 
 Bugs
 ----
-o  a wrong usename in ~/.newsauth can't be corrected in the first
-   pass
+o  plug mem-leaks in attrib.c
+   [20071231 Urs Janssen <urs@tin.org>]
+
+!o  -S/-R is broken, ${TIN_HOMEDIR-"$HOME"}/.tin/active.save isn't
+!   created/keept.
+!   [20071224 Urs Janssen <urs@tin.org>]
+
+!o  after cancelling an article, when using '-' form the next article this
+!   article is also marked as unavailable.
+!   <nntp://news.tin.org/20070202035746.GA19829@akk.org>
+!   [20070202 Urs Janssen <urs@tin.org>]
+
+o  cLINES < MIN_LINES_ON_TERMINAL || cCOLS < MIN_COLUMNS_ON_TERMINAL
+   isn't checked on startup
+   [20071210 Urs Janssen <urs@tin.org>]
+
+o  a wrong username in ~/.newsauth can't be corrected in the first pass
    [20050816 Urs Janssen <urs@tin.org>]
 
 o  unexpected multiline responses confuse tin, e.g.:
@@ -37,6 +52,8 @@ o  batch mode has several bugs
       statistics nor taken into account for the 'any unread news' status.
    - -vc could be more verbose (like -vcZ is)
    - -o currently is not a 'batch_mode' option
+   - if server requires authentication (and no ~/.newsauth entry matches)
+     tin prompts for username but not for password
    [Urs Janssen <urs@tin.org>]
 
 o  '-s' cmd-line switch implicitly changes 'savedir' in tinrc
@@ -52,12 +69,6 @@ o  add version number to other config-files (e.g. tin.defaults)
    (wildmat or regexp) and the charset the file is written in (e.g.
    ISO-8859-x vs. unicode)
    [Urs Janssen <urs@tin.org>]
-
-o  rewrite code to use INEWS_PATH instead of INEWSDIR
-   [20021007 Urs Janssen <urs@tin.org>
-
-o  remove built in path of external commands (metamail, ispell, ...)
-   [for ispell $ISPELL can be used to override systempath and progname]
 
 o  overview file cacheing code is over-complex
    - cache the original overview info instead of rebuilding it from
@@ -80,6 +91,7 @@ o  remove Message-IDs with 8bit chars in them when they occur in
    [done for References in replies/followups, Urs]
 
 o  repost ('x') ignores ~/.tin/attributes - bug or feature?!
+   [IMHO a bug as settings like mailing_list are essential, Urs]
 
 o  forged cancelling via Supersedes:/Also-Control:/Control:-header is possible
    if it is supplied by hand (inews_prog=--internal)
@@ -338,22 +350,6 @@ o  A system-wide tinrc configuration file (to hold some defaults).
    Maybe a second file which could be used to force settings (eg
    inews & mailer) (tin.defaults [--with-defaults-dir] is a start)
 
-o  (g)oto group is case sensitive (note that MH mailgroups might
-   contain uppercase chars)
-   also newsgroup names in the command-line are case sensitive
-   better would be: check if they exist and if not ask if you would
-   like to convert newsgroup name to lowercase
-	[son_of_1036]
-	NOTE: Possibly newsgroup names  should  have  been
-	case-insensitive, but all existing software treats
-	them as case-sensitive.   (RFC  977  [rrr]  claims
-	that they are case-insensitive in NNTP, but exist-
-	ing implementations are believed to ignore  this.)
-	The simplest solution is just to ban use of upper-
-	case letters, since no widespread  newsgroup  name
-	uses  them  anyway; this avoids any possibility of
-	confusion.
-
 o  when From: only contains "First-name Last-name" tin strips the
    Last-name in group/thread/page-level
    [20020319 Urs Janssen <urs@tin.org>]
@@ -377,9 +373,7 @@ o  add check for libbzip2/zlib (>=1.1.4)/[mini]lzo
 o  add check for GPGME (<http://www.gnupg.org/gpgme.html>) and if found
    use it for pgp actions.
 
-o  rewrite/cleanup all the debugging code; clearly seperate the debugging
-   levels, e.g.: NNTP=0x01, FILTER=0x02, NEWSRC=0x04, MEMORY=0x08,
-   ALL=0x0f
+o  rewrite/cleanup all the debugging code, the output in /tmp is messy, ...
 
 Posting enhancements
 --------------------
@@ -487,8 +481,12 @@ o  keys which could be renamed/merged:
    - '~' GroupUndoSel, ThreadUndoSel
    [20050408 Urs Janssen <urs@tin.org>]
 
+o  options which could be renamed/merged:
+   - auto_cc/auto_bcc {off, cc, bcc, cc & bcc}
+   [20071026 Urs Janssen <urs@tin.org>]
+
 o  read_overview() calls eat_re() which strips the "Re: " out of the
-   subject. the modified subject ist used for batch_mode opperatios (-N/-M)
+   subject. the modified subject is used for batch_mode opperatios (-N/-M)
    which might not be what ppl. expect and eat_re() is the only function
    which needs the 'regex' overhead in batch_mode... (see also the note
    about "Re: "strpping at "Filtering enhancements").
@@ -518,8 +516,7 @@ o  try to get rid of the magic numbers like NUM_MIME_CHARSETS and use
    a sentinel in the arrays instead (match_list is a showstopper here).
    [20030203 Urs Janssen <urs@tin.org>]
 
-o  check where joinpath() should be used; check joinpath() for overruns.
-   (e.g. grep for TMPDIR in the source)
+o  check where joinpath() should be used (e.g. grep for TMPDIR in the source)
    [Urs Janssen <urs@tin.org>]
 
 o  make configure look for strrstr() in libpub/publib.h
@@ -593,6 +590,11 @@ o  rewrite the tag code so that arts[].tagged becomes index in arts[]
 o  do real overview.fmt parsing - not only looking for Xref:full
    [Urs Janssen <urs@tin.org>]
 
+o  if Xref:full is missing from the overview.fmt we end up in issuing a
+   lot of "[X]HDR XREF num" later on instead of doing a "[X]HDR XREF low-high"
+   right after the "[X]OVER low-high" and assing the result to the articles.
+   [20071204 Urs Janssen <urs@tin.org>]
+
 o  strip Xref:-header if saving news in batch mode (-S)?
    [Urs Janssen <urs@tin.org>]
 
@@ -602,6 +604,12 @@ o  When reading local spool, assign the filehandle of the on-spool
    [Jason Faultless <jason@altarstone.com>]
 
 o  what is with NEW_HASH_METHOD in list.c?
+
+o  rewrite code to use INEWS_PATH instead of INEWSDIR
+   [20021007 Urs Janssen <urs@tin.org>
+
+o  remove built in path of external commands (metamail, ispell, ...)
+   [for ispell $ISPELL can be used to override systempath and progname]
 
 Unicode
 -------
@@ -671,6 +679,9 @@ o  replace "\\" by "\e" in manpages (portable?)
 
 Not yet classified
 ------------------
+o  -M/-N report is malied to userid, should we use tinrc.mail_address
+   instead?
+
 o  tin uses the first sig-isolator as recent one, USEFOR says it should
    use the last. There is no consensus that tin should follow this USEFOR
    requirement.
@@ -754,8 +765,7 @@ o  check_article_to_be_posted() still need some cleanup
 
 o  update gettext stuff to > gettext-0.12.1
 
-o  clean up included pcre stuff (pcre/Makefile.in)
-   [20050608 Urs Janssen <urs@tin.org>]
+o  clean up included pcre stuff and update to >= pcre-7.6
 
 o  tin in batchmode dumps core if getting a SIGINT, useful?
 
@@ -778,6 +788,13 @@ o  doesn't handle symlinks for .oldnewsrc
     if we're going to 'fix' this we must be careful to avoid symlink
     attacks (<http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-1999-1091>)
    [20020627 Jeff Sheinberg <jeffsh@erols.com>]
+
+o  missing newsrc file and connecting to a server without groups leads to the
+   question "Try and save newsrc file again? (Y/n)" but a newsrc file doesn't
+   get written. Same may occur on quitting if newsrc file had been removed
+   while tin was running. Useful? Should write_newsrc() try to create a newsrc
+   file if it is missing instead of just leaving?
+   [20061102 Dirk Nimmich <nimmich@muenster.de>]
 
 o  cleanup main.c/init_selfinfo()
    ('strace -e trace=file tin' and/or 'ltrace -e getenv tin' and you know

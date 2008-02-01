@@ -3,10 +3,10 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-06-28
+ *  Updated   : 2007-12-30
  *  Notes     :
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -241,7 +241,7 @@ struct t_config tinrc = {
 #else
 	-1,		/* mm_network_charset, defaults to $MM_CHARSET */
 #endif /* !CHARSET_CONVERSION */
-	"",		/* mm_local_charset, display charset */
+	"US-ASCII",		/* mm_local_charset, display charset */
 #ifdef HAVE_ICONV_OPEN_TRANSLIT
 	FALSE,	/* translit */
 #endif /* HAVE_ICONV_OPEN_TRANSLIT */
@@ -415,7 +415,7 @@ struct t_config tinrc = {
 };
 
 struct t_capabilities nntp_caps = {
-	0, /* type (none, LIST EXTENSIONS, CAPABILITIES) */
+	0, /* type (none, LIST EXTENSIONS, CAPABILITIES, BROKEN) */
 	0, /* CAPABILITIES version */
 	FALSE, /* MODE-READER: "MODE READER" */
 	FALSE, /* READER: "ARTICLE", "BODY" */
@@ -691,18 +691,18 @@ init_selfinfo(
 	 * values given in env-vars? ($MM_CHARSET, $TIN_ACTIVEFILE)
 	 */
 	if (!*news_active_file) /* TODO: really prepend libdir here in case of $TIN_ACTIVEFILE is set? */
-		joinpath(news_active_file, libdir, get_val("TIN_ACTIVEFILE", ACTIVE_FILE));
+		joinpath(news_active_file, sizeof(news_active_file), libdir, get_val("TIN_ACTIVEFILE", ACTIVE_FILE));
 	if (!*active_times_file)
-		joinpath(active_times_file, libdir, ACTIVE_TIMES_FILE);
+		joinpath(active_times_file, sizeof(active_times_file), libdir, ACTIVE_TIMES_FILE);
 	if (!*newsgroups_file)
-		joinpath(newsgroups_file, libdir, NEWSGROUPS_FILE);
+		joinpath(newsgroups_file, sizeof(newsgroups_file), libdir, NEWSGROUPS_FILE);
 	if (!*subscriptions_file)
-		joinpath(subscriptions_file, libdir, SUBSCRIPTIONS_FILE);
+		joinpath(subscriptions_file, sizeof(subscriptions_file), libdir, SUBSCRIPTIONS_FILE);
 	if (!*default_organization) {
-		char buf[LEN];
+		char buf[LEN], filename[PATH_LEN];
 
-		joinpath(buf, libdir, "organization");
-		if ((fp = fopen(buf, "r")) != NULL) {
+		joinpath(filename, sizeof(filename), libdir, "organization");
+		if ((fp = fopen(filename, "r")) != NULL) {
 			if (fgets(buf, (int) sizeof(buf), fp) != NULL) {
 				ptr = strrchr(buf, '\n');
 				if (ptr != NULL)
@@ -736,15 +736,15 @@ init_selfinfo(
 #endif /* !CHARSET_CONVERSION */
 
 #ifdef TIN_DEFAULTS_DIR
-	joinpath(global_attributes_file, TIN_DEFAULTS_DIR, ATTRIBUTES_FILE);
-	joinpath(global_config_file, TIN_DEFAULTS_DIR, CONFIG_FILE);
+	joinpath(global_attributes_file, sizeof(global_attributes_file), TIN_DEFAULTS_DIR, ATTRIBUTES_FILE);
+	joinpath(global_config_file, sizeof(global_config_file), TIN_DEFAULTS_DIR, CONFIG_FILE);
 #else
 	/* read_site_config() might have changed the value of libdir */
-	joinpath(global_attributes_file, libdir, ATTRIBUTES_FILE);
-	joinpath(global_config_file, libdir, CONFIG_FILE);
+	joinpath(global_attributes_file, sizeof(global_attributes_file), libdir, ATTRIBUTES_FILE);
+	joinpath(global_config_file, sizeof(global_config_file), libdir, CONFIG_FILE);
 #endif /* TIN_DEFAULTS_DIR */
 
-	joinpath(rcdir, homedir, RCDIR);
+	joinpath(rcdir, sizeof(rcdir), homedir, RCDIR);
 	if (stat(rcdir, &sb) == -1) {
 		created_rcdir = TRUE;
 		my_mkdir(rcdir, (mode_t) (S_IRWXU));
@@ -755,45 +755,45 @@ init_selfinfo(
 	strcpy(tinrc.printer, DEFAULT_PRINTER);
 #endif /* !DISABLE_PRINTING */
 	strcpy(tinrc.inews_prog, PATH_INEWS);
-	joinpath(article_name, homedir, TIN_ARTICLE_NAME);
+	joinpath(article_name, sizeof(article_name), homedir, TIN_ARTICLE_NAME);
 #ifdef APPEND_PID
 	snprintf(article_name + strlen(article_name), sizeof(article_name) - strlen(article_name), ".%d", (int) process_id);
 #endif /* APPEND_PID */
-	joinpath(dead_article, homedir, "dead.article");
-	joinpath(dead_articles, homedir, "dead.articles");
-	joinpath(tinrc.maildir, homedir, DEFAULT_MAILDIR);
-	joinpath(tinrc.savedir, homedir, DEFAULT_SAVEDIR);
-	joinpath(tinrc.sigfile, homedir, ".Sig");
-	joinpath(default_signature, homedir, ".signature");
+	joinpath(dead_article, sizeof(dead_article), homedir, "dead.article");
+	joinpath(dead_articles, sizeof(dead_articles), homedir, "dead.articles");
+	joinpath(tinrc.maildir, sizeof(tinrc.maildir), homedir, DEFAULT_MAILDIR);
+	joinpath(tinrc.savedir, sizeof(tinrc.savedir), homedir, DEFAULT_SAVEDIR);
+	joinpath(tinrc.sigfile, sizeof(tinrc.sigfile), homedir, ".Sig");
+	joinpath(default_signature, sizeof(default_signature), homedir, ".signature");
 
 	if (!index_newsdir[0])
-		joinpath(index_newsdir, get_val("TIN_INDEX_NEWSDIR", rcdir), INDEX_NEWSDIR);
-	joinpath(index_maildir, get_val("TIN_INDEX_MAILDIR", rcdir), INDEX_MAILDIR);
+		joinpath(index_newsdir, sizeof(index_newsdir), get_val("TIN_INDEX_NEWSDIR", rcdir), INDEX_NEWSDIR);
+	joinpath(index_maildir, sizeof(index_maildir), get_val("TIN_INDEX_MAILDIR", rcdir), INDEX_MAILDIR);
 	if (stat(index_maildir, &sb) == -1)
 		my_mkdir(index_maildir, (mode_t) S_IRWXU);
-	joinpath(index_savedir, get_val("TIN_INDEX_SAVEDIR", rcdir), INDEX_SAVEDIR);
+	joinpath(index_savedir, sizeof(index_savedir), get_val("TIN_INDEX_SAVEDIR", rcdir), INDEX_SAVEDIR);
 	if (stat(index_savedir, &sb) == -1)
 		my_mkdir(index_savedir, (mode_t) S_IRWXU);
-	joinpath(local_attributes_file, rcdir, ATTRIBUTES_FILE);
-	joinpath(local_config_file, rcdir, CONFIG_FILE);
-	joinpath(filter_file, rcdir, FILTER_FILE);
-	joinpath(local_input_history_file, rcdir, INPUT_HISTORY_FILE);
-	joinpath(local_newsrctable_file, rcdir, NEWSRCTABLE_FILE);
+	joinpath(local_attributes_file, sizeof(local_attributes_file), rcdir, ATTRIBUTES_FILE);
+	joinpath(local_config_file, sizeof(local_config_file), rcdir, CONFIG_FILE);
+	joinpath(filter_file, sizeof(filter_file), rcdir, FILTER_FILE);
+	joinpath(local_input_history_file, sizeof(local_input_history_file), rcdir, INPUT_HISTORY_FILE);
+	joinpath(local_newsrctable_file, sizeof(local_newsrctable_file), rcdir, NEWSRCTABLE_FILE);
 #ifdef HAVE_MH_MAIL_HANDLING
-	joinpath(mail_active_file, rcdir, ACTIVE_MAIL_FILE);
+	joinpath(mail_active_file, sizeof(mail_active_file), rcdir, ACTIVE_MAIL_FILE);
 #endif /* HAVE_MH_MAIL_HANDLING */
-	joinpath(mailbox, DEFAULT_MAILBOX, userid);
+	joinpath(mailbox, sizeof(mailbox), DEFAULT_MAILBOX, userid);
 #ifdef HAVE_MH_MAIL_HANDLING
-	joinpath(mailgroups_file, rcdir, MAILGROUPS_FILE);
+	joinpath(mailgroups_file, sizeof(mailgroups_file), rcdir, MAILGROUPS_FILE);
 #endif /* HAVE_MH_MAIL_HANDLING */
-	joinpath(newsrc, homedir, NEWSRC_FILE);
-	joinpath(newnewsrc, homedir, NEWNEWSRC_FILE);
+	joinpath(newsrc, sizeof(newsrc), homedir, NEWSRC_FILE);
+	joinpath(newnewsrc, sizeof(newnewsrc), homedir, NEWNEWSRC_FILE);
 #ifdef APPEND_PID
 	snprintf(newnewsrc + strlen(newnewsrc), sizeof(newnewsrc) - strlen(newnewsrc), ".%d", (int) process_id);
 #endif /* APPEND_PID */
-	joinpath(posted_info_file, rcdir, POSTED_FILE);
-	joinpath(postponed_articles_file, rcdir, POSTPONED_FILE);
-	joinpath(save_active_file, rcdir, ACTIVE_SAVE_FILE);
+	joinpath(posted_info_file, sizeof(posted_info_file), rcdir, POSTED_FILE);
+	joinpath(postponed_articles_file, sizeof(postponed_articles_file), rcdir, POSTPONED_FILE);
+	joinpath(save_active_file, sizeof(save_active_file), rcdir, ACTIVE_SAVE_FILE);
 
 	snprintf(lock_file, sizeof(lock_file), INDEX_LOCK, TMPDIR, userid);
 
@@ -808,9 +808,6 @@ init_selfinfo(
 			fclose(fp);
 		}
 	}
-
-	if (stat(local_attributes_file, &sb) == -1)
-		write_attributes_file(local_attributes_file);
 
 	init_postinfo();
 	snprintf(txt_help_bug_report, sizeof(txt_help_bug_report), _(txt_help_bug), bug_addr);
@@ -835,7 +832,7 @@ read_site_config(
 	void)
 {
 	FILE *fp = (FILE *) 0;
-	char buf[LEN];
+	char buf[LEN], filename[PATH_LEN];
 	static const char *tin_defaults[] = { TIN_DEFAULTS };
 	int i = 0;
 
@@ -843,8 +840,8 @@ read_site_config(
 	 * try to find tin.defaults in some different locations
 	 */
 	while (tin_defaults[i] != NULL) {
-		joinpath(buf, tin_defaults[i++], "tin.defaults");
-		if ((fp = fopen(buf, "r")) != NULL)
+		joinpath(filename, sizeof(filename), tin_defaults[i++], "tin.defaults");
+		if ((fp = fopen(filename, "r")) != NULL)
 			break;
 	}
 

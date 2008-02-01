@@ -3,10 +3,10 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-07-02
+ *  Updated   : 2007-10-04
  *  Notes     :
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -303,7 +303,7 @@ body_search(
 				art_close(&pgart);		/* Switch the pager over to matched art */
 				pgart = artinfo;
 #ifdef DEBUG
-				if (debug == 2)
+				if (debug & DEBUG_MISC)
 					fprintf(stderr, "art_switch(%p = %p)\n", (void *) &pgart, (void *) &artinfo);
 #endif /* DEBUG */
 				free(line);

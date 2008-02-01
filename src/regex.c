@@ -3,11 +3,11 @@
  *  Module    : regex.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-02-21
- *  Updated   : 2003-12-17
+ *  Updated   : 2007-04-12
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
- * Copyright (c) 1997-2007 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1997-2008 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -146,7 +146,7 @@ highlight_regexes(
 	int color)
 {
 	char *ptr;
-	int offsets[6];
+	int offsets[6]; /* we are not interrested in any supatterns, so 6 is sufficient */
 	int offsets_size = ARRAY_SIZE(offsets);
 #ifdef USE_CURSES
 	char buf[LEN];
@@ -162,7 +162,8 @@ highlight_regexes(
 #endif /* USE_CURSES */
 	ptr = buf;
 
-	while (pcre_exec(regex->re, regex->extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) > 0) {
+	/* also check for 0 as offsets[] might be too small to hold all captured subpatterns */
+	while (pcre_exec(regex->re, regex->extra, ptr, strlen(ptr), 0, 0, offsets, offsets_size) >= 0) {
 		/* we have a match */
 		if (color >= 0) /* color the matching text */
 			word_highlight_string(row, (ptr - buf) + offsets[0], offsets[1] - offsets[0], color);

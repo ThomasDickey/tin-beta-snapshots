@@ -3,10 +3,10 @@
  *  Module    : charset.c
  *  Author    : M. Kuhn, T. Burmester
  *  Created   : 1993-12-10
- *  Updated   : 2006-05-30
+ *  Updated   : 2007-11-27
  *  Notes     : ISO to ascii charset conversion routines
  *
- * Copyright (c) 1993-2007 Markus Kuhn <mgk25@cl.cam.ac.uk>
+ * Copyright (c) 1993-2008 Markus Kuhn <mgk25@cl.cam.ac.uk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -153,7 +153,7 @@ void
 convert_iso2asc(
 	char *iso,
 	char **asc_buffer,
-	int *max_line_len,
+	size_t *max_line_len,
 	int t)
 {
 	constext *p;
@@ -177,7 +177,7 @@ convert_iso2asc(
 			first = TRUE;
 			while (*p) {
 				*(asc++) = *(p++);
-				if ((asc - *asc_buffer) >= *max_line_len) {
+				if ((asc - *asc_buffer) >= (int) *max_line_len) {
 					int offset = asc - *asc_buffer;
 					*max_line_len += 64;
 					*asc_buffer = my_realloc(*asc_buffer, *max_line_len);
@@ -237,7 +237,7 @@ convert_iso2asc(
 				first = TRUE;
 			}
 		}
-		if ((asc - *asc_buffer) >= *max_line_len) {
+		if ((asc - *asc_buffer) >= (int) *max_line_len) {
 			int offset = asc - *asc_buffer;
 			*max_line_len += 64;
 			*asc_buffer = my_realloc(*asc_buffer, *max_line_len);

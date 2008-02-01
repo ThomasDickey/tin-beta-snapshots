@@ -41,9 +41,14 @@ metamutt
 	in version.
 
 url_handler.sh
-	is a shell script (need to be placed in /usr/local/bin/) which
-	passes the URL selected by the 'U' command to a related
-	viewer/application. this one is very basic.
+	is a shell script (need to be placed in $PATH) which passes the URL
+	selected by the 'U' command to a related viewer/application. this
+	one is very basic.
+
+url_handler.pl
+	is a perl script (need to be placed in $PATH) which passes the URL
+	selected by the 'U' command to a related viewer/application. the
+	perl version has full $BROWSER support.
 
 expand_aliases.tgz
 	is a small c-source which reads you elm-aliasfile, translates the

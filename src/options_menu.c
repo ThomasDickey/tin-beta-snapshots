@@ -3,10 +3,10 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2006-10-01
+ *  Updated   : 2008-01-10
  *  Notes     : Split from config.c
  *
- * Copyright (c) 2004-2007 Michael Bienia <michael@vorlon.ping.de>
+ * Copyright (c) 2004-2008 Michael Bienia <michael@vorlon.ping.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -294,12 +294,12 @@ print_any_option(
 		case OPT_LIST:
 			list = option_table[option].opt_list;
 			ptr2 = my_strdup(list[*(option_table[option].variable) + ((strcasecmp(_(list[0]), _(txt_default)) == 0) ? 1 : 0)]);
-			snprintf(ptr, len, "%s", _(ptr2));
+			strncpy(ptr, _(ptr2), len);
 			free(ptr2);
 			break;
 
 		case OPT_STRING:
-			snprintf(ptr, len, "%s", OPT_STRING_list[option_table[option].var_index]);
+			strncpy(ptr, OPT_STRING_list[option_table[option].var_index], len);
 			break;
 
 		case OPT_NUM:
@@ -1166,9 +1166,6 @@ change_config_file(
 								glob_attributes.mm_network_charset = tinrc.mm_network_charset;
 								if (group)
 									group->attribute->mm_network_charset = tinrc.mm_network_charset;
-#	ifdef NO_LOCALE
-								strcpy(tinrc.mm_local_charset, txt_mime_charsets[tinrc.mm_network_charset]);
-#	endif /* NO_LOCALE */
 							}
 							/*
 							 * check if we have selected a 7bit charset, otherwise
@@ -1194,7 +1191,7 @@ change_config_file(
 										tinrc.post_mime_encoding = MIME_ENCODING_8BIT;
 										repaint_option(OPT_POST_MIME_ENCODING);
 									}
-								} else { /* and vice versa, if we have a 7bit chaset but a !7bit encoding, fix that */
+								} else { /* and vice versa, if we have a 7bit charset but a !7bit encoding, fix that */
 									for (i = 0; *txt_mime_7bit_charsets[i]; i++) {
 										if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], txt_mime_7bit_charsets[i])) {
 											tinrc.mail_mime_encoding = tinrc.post_mime_encoding = MIME_ENCODING_7BIT;
@@ -1248,9 +1245,6 @@ change_config_file(
 						case OPT_MAIL_ADDRESS:
 						case OPT_MAIL_QUOTE_FORMAT:
 						case OPT_METAMAIL_PROG:
-#ifndef CHARSET_CONVERSION
-						case OPT_MM_CHARSET:
-#endif /* !CHARSET_CONVERSION */
 						case OPT_NEWS_QUOTE_FORMAT:
 						case OPT_QUOTE_CHARS:
 						case OPT_SPAMTRAP_WARNING_ADDRESSES:
@@ -1258,6 +1252,25 @@ change_config_file(
 						case OPT_XPOST_QUOTE_FORMAT:
 							prompt_option_string(option);
 							break;
+
+#ifndef CHARSET_CONVERSION
+						case OPT_MM_CHARSET:
+							prompt_option_string(option);
+							/*
+							 * No charset conversion available, assume local charset
+							 * to be network charset.
+							 */
+							STRCPY(tinrc.mm_local_charset, tinrc.mm_charset);
+							break;
+#else
+#	ifdef NO_LOCALE
+						case OPT_MM_LOCAL_CHARSET:
+							prompt_option_string(option);
+							/* no locales -> can't guess local charset */
+							break;
+
+#	endif /* NO_LOCALE */
+#endif /* !CHARSET_CONVERSION */
 
 						case OPT_NEWS_HEADERS_TO_DISPLAY:
 							prompt_option_string(option);

@@ -3,10 +3,10 @@
  *  Module    : policy.h
  *  Author    : Ralf Doeblitz <doeblitz@gmx.de>
  *  Created   : 1999-01-12
- *  Updated   : 2006-08-16
+ *  Updated   : 2007-09-29
  *  Notes     : #defines and static data for policy configuration
  *
- * Copyright (c) 1999-2007 Ralf Doeblitz <doeblitz@gmx.de>
+ * Copyright (c) 1999-2008 Ralf Doeblitz <doeblitz@gmx.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -126,16 +126,16 @@
  * .lv  Latvia                         .ly  Libyan Arab Jamahiriya
  *
  * .ma  Morocco                        .mc  Monaco
- * .md  Moldova, Republic of           .mg  Madagascar
- * .mh  Marshall Islands               .mk  Macedonia
- * .ml  Mali                           .mm  Myanmar
- * .mn  Mongolia                       .mo  Macau
- * .mp  Northern Mariana Islands       .mq  Martinique
- * .mr  Mauritania                     .ms  Montserrat
- * .mt  Malta                          .mu  Mauritius
- * .mv  Maldives                       .mw  Malawi
- * .mx  Mexico                         .my  Malaysia
- * .mz  Mozambique
+ * .md  Moldova, Republic of           .me  Montenegro
+ * .mg  Madagascar                     .mh  Marshall Islands
+ * .mk  Macedonia                      .ml  Mali
+ * .mm  Myanmar                        .mn  Mongolia
+ * .mo  Macau                          .mp  Northern Mariana Islands
+ * .mq  Martinique                     .mr  Mauritania
+ * .ms  Montserrat                     .mt  Malta
+ * .mu  Mauritius                      .mv  Maldives
+ * .mw  Malawi                         .mx  Mexico
+ * .my  Malaysia                       .mz  Mozambique
  *
  * .na  Namibia                        .nc  New Caledonia
  * .ne  Niger                          .nf  Norfolk Island
@@ -157,7 +157,8 @@
  * .qa  Qatar
  *
  * .re  Reunion                        .ro  Romania
- * .ru  Russian Federation             .rw  Rwanda
+ * .rs  Republic of Serbia             .ru  Russian Federation
+ * .rw  Rwanda
  *
  * .sa  Saudi Arabia                   .sb  Solomon Islands
  * .sc  Seychelles                     .sd  Sudan
@@ -221,7 +222,6 @@
  * .um  United States Minor Outlying Islands
  *
  * requested new TLDs:
- * .cs  Serbia and Montenegro
  * .ct  Catalonia
  *
  * xccTLDs:
@@ -245,12 +245,12 @@ static char gnksa_country_codes[26*26] = {
 /* J */ 0,0,0,0,1, 0,0,0,0,0, 0,0,1,0,1, 1,0,0,0,0, 0,0,0,0,0,0,
 /* K */ 0,0,0,0,1, 0,1,1,1,0, 0,0,1,1,0, 0,0,1,0,0, 0,0,1,0,1,1,
 /* L */ 1,1,1,0,0, 0,0,0,1,0, 1,0,0,0,0, 0,0,1,1,1, 1,1,0,0,1,0,
-/* M */ 1,0,1,1,0, 0,1,1,0,0, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,
+/* M */ 1,0,1,1,1, 0,1,1,0,0, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,
 /* N */ 1,0,1,0,1, 1,1,0,1,0, 0,1,0,0,1, 1,0,1,0,0, 1,0,0,0,0,1,
 /* O */ 0,0,0,0,0, 0,0,0,0,0, 0,0,1,0,0, 0,0,0,0,0, 0,0,0,0,0,0,
 /* P */ 1,0,0,0,1, 1,1,1,0,0, 1,1,1,1,0, 0,0,1,1,1, 0,0,1,0,1,0,
 /* Q */ 1,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0,0,
-/* R */ 0,0,0,0,1, 0,0,0,0,0, 0,0,0,0,1, 0,0,0,0,0, 1,0,1,0,0,0,
+/* R */ 0,0,0,0,1, 0,0,0,0,0, 0,0,0,0,1, 0,0,0,1,0, 1,0,1,0,0,0,
 /* S */ 1,1,1,1,1, 0,1,1,1,0, 1,1,1,1,0, 0,0,1,0,1, 1,1,0,0,1,1,
 /* T */ 0,0,1,1,0, 1,1,1,0,1, 1,1,1,1,1, 1,0,1,0,1, 0,1,1,0,0,1,
 /* U */ 1,0,0,0,0, 0,1,0,0,0, 1,0,0,0,0, 0,0,0,1,0, 0,0,0,0,1,1,
@@ -277,6 +277,7 @@ static const char *gnksa_domain_list[] = {
 	"net",	/* Networks */
 	"org",	/* Organizations */
 	"pro",	/* Accountants, lawyers, and physicians */
+	"tel",	/* Internet communication */
 	"aero",	/* Air-transport industry */
 	"arpa",	/* Address and Routing Parameter Area */
 	"coop",	/* Non-profit cooperatives */
@@ -284,12 +285,13 @@ static const char *gnksa_domain_list[] = {
 	"jobs",	/* Human resource managers */
 	"mobi",	/* Mobile products and services */
 	"name",	/* For registration by individuals */
+	"asia",	/* Asia and the Pacific */
 	"museum",	/* Museums */
 	"travel",	/* Travel industry */
 	/*
-	 * more gTLDs to come >=2006, proposed are:
-	 *  .asia     .kids     .mail     .post     .tel
-	 *  (.berlin) (.sco)
+	 * more gTLDs to come >=2007, proposed are:
+	 *  .kids     .mail     .post
+	 *  (.berlin) (.sco)    (.bzh)    (.cym)    (.gal)
 	 */
 #	if 0		/* $DEAD */
 	"nato",

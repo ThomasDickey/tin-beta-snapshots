@@ -3,10 +3,10 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2006-06-20
+ *  Updated   : 2007-10-02
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -347,6 +347,7 @@ read_filter_file(
 					break;
 				}
 				if (match_string(buf + 1, "omment=", comment_line, sizeof(comment_line)))
+					str_trim(comment_line);
 					comment = add_filter_comment(comment, comment_line);
 				break;
 
@@ -368,11 +369,10 @@ read_filter_file(
 
 			case 'g':
 				if (match_string(buf + 1, "roup=", scope, sizeof(scope))) {
+					str_trim(scope);
 #ifdef DEBUG
-					if (debug) {
-						my_printf("group=[%s] num=[%d]\n", scope, glob_filter.num);
-						my_flush();
-					}
+					if (debug & DEBUG_FILTER)
+						debug_print_file("FILTER", "\nnum=[%d] group=[%s]", glob_filter.num, scope);
 #endif /* DEBUG */
 					if (glob_filter.num >= glob_filter.max)
 						expand_filter_array(&glob_filter);
@@ -505,12 +505,9 @@ read_filter_file(
 							ptr[i].subj = my_strdup(subj);
 						}
 					}
-
 #ifdef DEBUG
-					if (debug) {
-						my_printf("6. buf=[%s]  Gsubj=[%s]\n", ptr[i].subj, glob_filter.filter[i].subj);
-						my_flush();
-					}
+					if (debug & DEBUG_FILTER)
+						debug_print_file("FILTER","buf=[%s]  Gsubj=[%s]", ptr[i].subj, glob_filter.filter[i].subj);
 #endif /* DEBUG */
 					break;
 				}
@@ -521,10 +518,8 @@ read_filter_file(
 				if (match_string(buf + 1, "core=", scbuf, PATH_LEN)) {
 					score = atoi(scbuf);
 #ifdef DEBUG
-					if (debug) {
-						my_printf("score=[%d]\n", score);
-						my_flush();
-					}
+					if (debug & DEBUG_FILTER)
+						debug_print_file("FILTER","score=[%d]", score);
 #endif /* DEBUG */
 					if (ptr && !expired_time) {
 						if (score > SCORE_MAX)
@@ -555,10 +550,8 @@ read_filter_file(
 						/* rule expired? */
 						if (secs && current_secs > (time_t) secs) {
 #ifdef DEBUG
-							if (debug) {
-								my_printf("EXPIRED  secs=[%lu]  current_secs=[%lu]\n", (unsigned long int) secs, (unsigned long int) current_secs);
-								my_flush();
-							}
+							if (debug & DEBUG_FILTER)
+								debug_print_file("FILTER", "EXPIRED  secs=[%lu]  current_secs=[%lu]", (unsigned long int) secs, (unsigned long int) current_secs);
 #endif /* DEBUG */
 							glob_filter.num--;
 							expired_time = TRUE;
@@ -574,6 +567,7 @@ read_filter_file(
 				 *       should we comment out older xref rules like below?
 				 */
 				if (match_string(buf + 1, "ref=", xref, sizeof(xref))) {
+					str_trim(xref);
 					if (ptr && !expired_time) {
 						if (tinrc.wildcard && ptr[i].xref != NULL) {
 							/* merge with already read value */
@@ -685,14 +679,16 @@ write_filter_array(
 		return;
 
 	for (i = 0; i < ptr->num; i++) {
-/* my_printf("WRITE i=[%d] subj=[%s] from=[%s]\n", i, BlankIfNull(ptr->filter[i].subj), BlankIfNull(ptr->filter[i].from)); */
+#ifdef DEBUG
+		debug_print_file("FILTER", "WRITE i=[%d] subj=[%s] from=[%s]\n", i, BlankIfNull(ptr->filter[i].subj), BlankIfNull(ptr->filter[i].from));
+#endif /* DEBUG */
 
 		if (ptr->filter[i].time && theTime > ptr->filter[i].time)
 				continue;
-/*
-my_printf("Scope=[%s]" cCRLF, (ptr->filter[i].scope != NULL ? ptr->filter[i].scope : "*"));
-my_flush();
-*/
+#ifdef DEBUG
+		debug_print_file("FILTER", "Scope=[%s]" cCRLF, (ptr->filter[i].scope != NULL ? ptr->filter[i].scope : "*"));
+#endif /* DEBUG */
+
 		fprintf(fp, "\n");		/* makes filter file more readable */
 
 		/* comments appear always first, if there are any... */
@@ -1471,10 +1467,8 @@ quick_filter(
 	}
 
 #ifdef DEBUG
-	if (debug)
-		error_message("%s header=[%d] scope=[%s] expire=[%s] case=[%d]",
-			(type == GLOBAL_QUICK_FILTER_KILL) ? "KILL" : "SELECT", header,
-			BlankIfNull(scope), txt_onoff[expire != FALSE ? 1 : 0], icase);
+	if (debug & DEBUG_FILTER)
+		error_message("%s header=[%d] scope=[%s] expire=[%s] case=[%d]", (type == GLOBAL_QUICK_FILTER_KILL) ? "KILL" : "SELECT", header, BlankIfNull(scope), txt_onoff[expire != FALSE ? 1 : 0], icase);
 #endif /* DEBUG */
 
 	/*
@@ -1750,18 +1744,9 @@ add_filter_rule(
 
 	if (filtered) {
 #ifdef DEBUG
-		if (debug)
-			wait_message(2, "inscope=[%s] scope=[%s]  case=[%d] subj=[%s] from=[%s] msgid=[%s] fullref=[%d] line=[%d %d] time=[%lu]",
-				bool_unparse(ptr[i].inscope),
-				BlankIfNull(rule->scope),
-				ptr[i].icase,
-				BlankIfNull(ptr[i].subj),
-				BlankIfNull(ptr[i].from),
-				BlankIfNull(ptr[i].msgid),
-				ptr[i].fullref, ptr[i].lines_cmp,
-				ptr[i].lines_num, (unsigned long int) ptr[i].time);
+		if (debug & DEBUG_FILTER)
+			wait_message(2, "inscope=[%s] scope=[%s]  case=[%d] subj=[%s] from=[%s] msgid=[%s] fullref=[%d] line=[%d %d] time=[%lu]", bool_unparse(ptr[i].inscope), BlankIfNull(rule->scope), ptr[i].icase, BlankIfNull(ptr[i].subj), BlankIfNull(ptr[i].from), BlankIfNull(ptr[i].msgid), ptr[i].fullref, ptr[i].lines_cmp, ptr[i].lines_num, (unsigned long int) ptr[i].time);
 #endif /* DEBUG */
-
 		write_filter_file(filter_file);
 	}
 	return filtered;
@@ -1962,6 +1947,10 @@ filter_articles(
 					switch (x) {
 						case 1:
 							SET_FILTER(group, i, j);
+#ifdef DEBUG
+							if (debug & DEBUG_FILTER)
+								debug_print_file("FILTER", "Group[%s] Rule[%d][%s] ArtMSGID[%s] Artnum[%d]", group->name, j, ptr[j].msgid, mymsgid, i);
+#endif /* DEBUG */
 							break;
 
 						case -1:

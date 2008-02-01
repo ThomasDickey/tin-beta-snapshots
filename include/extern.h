@@ -3,10 +3,10 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-06-28
+ *  Updated   : 2008-01-10
  *  Notes     :
  *
- * Copyright (c) 1997-2007 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1997-2008 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -440,6 +440,7 @@ extern constext txt_art_posted[];
 extern constext txt_art_rejected[];
 extern constext txt_art_thread_regex_tag[];
 extern constext txt_art_unavailable[];
+extern constext txt_art_x_of_n[];
 extern constext txt_article_cancelled[];
 extern constext txt_article_plural[];
 extern constext txt_article_reposted[];
@@ -975,7 +976,6 @@ extern constext txt_quoted_printable[];
 extern constext txt_range_invalid[];
 extern constext txt_read_abort[];
 extern constext txt_read_exit[];
-extern constext txt_read_resp[];
 extern constext txt_reading_article[];
 extern constext txt_reading_arts[];
 extern constext txt_reading_attributes_file[];
@@ -1004,7 +1004,6 @@ extern constext txt_repost_group[];
 extern constext txt_reset_newsrc[];
 extern constext txt_resp_redirect[];
 extern constext txt_resp_to_poster[];
-extern constext txt_resp_x_of_n[];
 extern constext txt_return_key[];
 extern constext txt_save[];
 extern constext txt_save_attachment[];
@@ -1230,12 +1229,14 @@ extern int iso2asc_supported;
 extern int last_resp;
 extern int max_active;
 extern int max_art;
+extern int max_local_attributes;
 extern int max_newnews;
 extern int max_save;
+extern int need_resize;
 extern int num_headers_to_display;
 extern int num_headers_to_not_display;
-extern int need_resize;
 extern int num_active;
+extern int num_local_attributes;
 extern int num_newnews;
 extern int num_of_tagged_arts;
 extern int num_save;
@@ -1277,6 +1278,7 @@ extern struct regex_cache strokes_regex;
 #endif /* HAVE_COLOR */
 
 extern struct t_article *arts;
+extern struct t_attribute *local_attributes;
 extern struct t_attribute glob_attributes;
 extern struct t_config tinrc;
 extern struct t_filters glob_filter;
@@ -1526,6 +1528,10 @@ extern struct opttxt txt_mono_markslash;
 extern struct opttxt txt_mono_markstroke;
 #ifndef CHARSET_CONVERSION
 	extern struct opttxt txt_mm_charset;
+#else
+#	ifdef NO_LOCALE
+		extern struct opttxt txt_mm_local_charset;
+#	endif /* NO_LOCALE */
 #endif /* CHARSET_CONVERSION */
 extern struct opttxt txt_metamail_prog;
 extern struct opttxt txt_news_headers_to_display;

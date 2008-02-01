@@ -7,7 +7,7 @@
 msgid	""
 msgstr	"Project-Id-Version: tin 1.7.7\n"
 	"Report-Msgid-Bugs-To: \n"
-	"POT-Creation-Date: 2007-02-01 14:02+0100\n"
+	"POT-Creation-Date: 2008-01-21 01:23+0100\n"
 	"PO-Revision-Date: 2005-03-06 09:25+0200\n"
 	"Last-Translator: Þebnem Korkmaz <sebnem_k@hotmail.com>\n"
 	"Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -20,282 +20,262 @@ msgstr	"Project-Id-Version: tin 1.7.7\n"
 msgid	"%d Bad overview record (%d fields) '%s'"
 msgstr	""
 
-#: src/attrib.c:649
+#: src/attrib.c:699
 #, c-format
 msgid	"# Do not edit this comment block\n"
 	"#\n"
 msgstr	"# Bu açýklama bloðunu düzenlemeyin\n"
 	"#\n"
 
-#: src/attrib.c:650
-#, c-format
-msgid	"#  scope=STRING (ie. alt.*,!alt.bin*) [mandatory]\n"
+#: src/attrib.c:700
+#, fuzzy, c-format
+msgid	"#  scope=STRING (eg. alt.*,!alt.bin*) [mandatory]\n"
 msgstr	"#  scope=DÝZGE (kapsam, örn. alt.*,!alt.bin*) [zorunlu]\n"
 
-#: src/attrib.c:651
-#, c-format
-msgid	"#  maildir=STRING (ie. ~/Mail)\n"
+#: src/attrib.c:701
+#, fuzzy, c-format
+msgid	"#  maildir=STRING (eg. ~/Mail)\n"
 msgstr	"#  maildir=DÝZGE (posta dizini, örn. ~/Mail)\n"
 
-#: src/attrib.c:652
-#, c-format
-msgid	"#  savedir=STRING (ie. ~user/News)\n"
+#: src/attrib.c:702
+#, fuzzy, c-format
+msgid	"#  savedir=STRING (eg. ~user/News)\n"
 msgstr	"#  savedir=DÝZGE (saklama dizini, örn. ~user/News)\n"
 
-#: src/attrib.c:653
-#, c-format
-msgid	"#  savefile=STRING (ie. =linux)\n"
+#: src/attrib.c:703
+#, fuzzy, c-format
+msgid	"#  savefile=STRING (eg. =linux)\n"
 msgstr	"#  savefile=DÝZGE (saklama dosyasý, örn. =linux)\n"
 
-#: src/attrib.c:654
-#, c-format
-msgid	"#  sigfile=STRING (ie. $var/sig)\n"
+#: src/attrib.c:704
+#, fuzzy, c-format
+msgid	"#  sigfile=STRING (eg. $var/sig)\n"
 msgstr	"#  sigfile=DÝZGE (imza dosyasý, örn. $var/sig)\n"
 
-#: src/attrib.c:655
+#: src/attrib.c:705
 #, c-format
 msgid	"#  organization=STRING (if beginning with '/' read from file)\n"
 msgstr	"#  organization=DÝZGE (kurum; eðer / ile baþlýyor ise, dosyadan okunur)\n"
 
-#: src/attrib.c:656
+#: src/attrib.c:706
 #, c-format
 msgid	"#  followup_to=STRING\n"
 msgstr	"#  followup_to=DÝZGE (cevap yönlendirmesi)\n"
 
-#: src/attrib.c:657
-#, c-format
-msgid	"#  mailing_list=STRING (ie. majordomo@example.org)\n"
+#: src/attrib.c:707
+#, fuzzy, c-format
+msgid	"#  mailing_list=STRING (eg. majordomo@example.org)\n"
 msgstr	"#  mailing_list=DÝZGE (posta listesi, örn. majordomo@example.org)\n"
 
-#: src/attrib.c:658
-#, c-format
-msgid	"#  x_headers=STRING (ie. ~/.tin/extra-headers)\n"
+#: src/attrib.c:708
+#, fuzzy, c-format
+msgid	"#  x_headers=STRING (eg. ~/.tin/extra-headers)\n"
 msgstr	"#  x_headers=DÝZGE (ekstra baþlýk dosyasý, örn. ~/.tin/extra-headers)\n"
 
-#: src/attrib.c:659
-#, c-format
-msgid	"#  x_body=STRING (ie. ~/.tin/extra-body-text)\n"
+#: src/attrib.c:709
+#, fuzzy, c-format
+msgid	"#  x_body=STRING (eg. ~/.tin/extra-body-text)\n"
 msgstr	"#  x_body=DÝZGE (extra gövde dosyasý, örn. ~/.tin/extra-body-text)\n"
 
-#: src/attrib.c:660
+#: src/attrib.c:710
 #, c-format
 msgid	"#  from=STRING (just append wanted From:-line, don't use quotes)\n"
 msgstr	""
 
-#: src/attrib.c:661
+#: src/attrib.c:711
 #, fuzzy, c-format
 msgid	"#  news_quote_format=STRING\n"
 msgstr	"#  news_quote_format=DÝZGE\n"
 
-#: src/attrib.c:662
+#: src/attrib.c:712
 #, c-format
 msgid	"#  quote_chars=STRING (%%s, %%S for initials)\n"
 msgstr	""
 
-#: src/attrib.c:663
+#: src/attrib.c:713
 #, c-format
 msgid	"#  mime_types_to_save=STRING (eg. image/*,!image/bmp)\n"
 msgstr	""
 
-#: src/attrib.c:665
+#: src/attrib.c:715
 #, fuzzy, c-format
 msgid	"#  ispell=STRING\n"
 msgstr	"#  ispell=DÝZGE\n"
 
-#: src/attrib.c:667
+#: src/attrib.c:717
 #, c-format
 msgid	"#  auto_select=ON/OFF\n"
 msgstr	""
 
-#: src/attrib.c:668
+#: src/attrib.c:718
 #, c-format
 msgid	"#  auto_save=ON/OFF\n"
 msgstr	""
 
-#: src/attrib.c:669
+#: src/attrib.c:719
 #, c-format
 msgid	"#  batch_save=ON/OFF\n"
 msgstr	""
 
-#: src/attrib.c:670
+#: src/attrib.c:720
 #, c-format
 msgid	"#  delete_tmp_files=ON/OFF\n"
 msgstr	""
 
-#: src/attrib.c:671
+#: src/attrib.c:721
 #, c-format
 msgid	"#  show_only_unread=ON/OFF\n"
 msgstr	""
 
-#: src/attrib.c:672
+#: src/attrib.c:722
 #, c-format
 msgid	"#  thread_arts=NUM"
 msgstr	""
 
-#: src/attrib.c:679
+#: src/attrib.c:729
 #, c-format
 msgid	"#  thread_perc=NUM\n"
 msgstr	""
 
-#: src/attrib.c:680
+#: src/attrib.c:730
 #, c-format
 msgid	"#  show_author=NUM\n"
 msgstr	""
 
-#: src/attrib.c:686
+#: src/attrib.c:736
 #, c-format
 msgid	"#  show_info=NUM\n"
 msgstr	""
 
-#: src/attrib.c:692
+#: src/attrib.c:742
 #, c-format
 msgid	"#  sort_art_type=NUM\n"
 msgstr	""
 
-#: src/attrib.c:710
+#: src/attrib.c:760
 #, c-format
 msgid	"#  sort_threads_type=NUM\n"
 msgstr	""
 
-#: src/attrib.c:718
+#: src/attrib.c:768
 #, c-format
 msgid	"#  post_proc_type=NUM\n"
 msgstr	""
 
-#: src/attrib.c:723
+#: src/attrib.c:773
 #, c-format
 msgid	"#  quick_kill_scope=STRING (ie. talk.*)\n"
 msgstr	""
 
-#: src/attrib.c:724
+#: src/attrib.c:774
 #, c-format
 msgid	"#  quick_kill_expire=ON/OFF\n"
 msgstr	""
 
-#: src/attrib.c:725
+#: src/attrib.c:775
 #, c-format
 msgid	"#  quick_kill_case=ON/OFF\n"
 msgstr	""
 
-#: src/attrib.c:726
+#: src/attrib.c:776
 #, c-format
 msgid	"#  quick_kill_header=NUM\n"
 msgstr	""
 
-#: src/attrib.c:727 src/attrib.c:734
+#: src/attrib.c:777 src/attrib.c:784
 #, c-format
 msgid	"#    0=subj (case sensitive) 1=subj (ignore case)\n"
 msgstr	""
 
-#: src/attrib.c:728 src/attrib.c:735
+#: src/attrib.c:778 src/attrib.c:785
 #, c-format
 msgid	"#    2=from (case sensitive) 3=from (ignore case)\n"
 msgstr	""
 
-#: src/attrib.c:729 src/attrib.c:736
+#: src/attrib.c:779 src/attrib.c:786
 #, c-format
 msgid	"#    4=msgid 5=lines\n"
 msgstr	""
 
-#: src/attrib.c:730
+#: src/attrib.c:780
 #, fuzzy, c-format
 msgid	"#  quick_select_scope=STRING\n"
 msgstr	"#  quick_select_scope=DÝZGE\n"
 
-#: src/attrib.c:731
+#: src/attrib.c:781
 #, c-format
 msgid	"#  quick_select_expire=ON/OFF\n"
 msgstr	""
 
-#: src/attrib.c:732
+#: src/attrib.c:782
 #, c-format
 msgid	"#  quick_select_case=ON/OFF\n"
 msgstr	""
 
-#: src/attrib.c:733
+#: src/attrib.c:783
 #, c-format
 msgid	"#  quick_select_header=NUM\n"
 msgstr	""
 
-#: src/attrib.c:737
+#: src/attrib.c:787
 #, c-format
 msgid	"#  x_comment_to=ON/OFF\n"
 msgstr	""
 
-#: src/attrib.c:738
+#: src/attrib.c:788
 #, c-format
 msgid	"#  fcc=STRING (eg. =mailbox)\n"
 msgstr	""
 
-#: src/attrib.c:739
+#: src/attrib.c:789
 #, c-format
 msgid	"#  tex2iso_conv=ON/OFF\n"
 msgstr	""
 
-#: src/attrib.c:740
+#: src/attrib.c:790
 #, c-format
 msgid	"#  mime_forward=ON/OFF\n"
 msgstr	""
 
-#: src/attrib.c:742
+#: src/attrib.c:792
 #, c-format
 msgid	"#  mm_network_charset=supported_charset"
 msgstr	""
 
-#: src/attrib.c:749
+#: src/attrib.c:799
 #, c-format
 msgid	"#  undeclared_charset=STRING (default is US-ASCII)\n"
 msgstr	""
 
-#: src/attrib.c:751
+#: src/attrib.c:801
 #, fuzzy, c-format
 msgid	"#\n"
 	"# Note that it is best to put general (global scoping)\n"
 msgstr	"#\n"
 	"# Genel(küresel) kaplamýn en iyi olduðunu not ediniz.\n"
 
-#: src/attrib.c:752
+#: src/attrib.c:802
 #, fuzzy, c-format
 msgid	"# entries first followed by group specific entries.\n"
 	"#\n"
 msgstr	"# Öncelikle özgül grup girdileri tarafýndan takip edilen girdiler\n"
 	"#\n"
 
-#: src/attrib.c:753
+#: src/attrib.c:803
 #, c-format
 msgid	"############################################################################\n"
 	"\n"
 msgstr	"############################################################################\n"
 	"\n"
 
-#: src/attrib.c:759
-#, c-format
-msgid	"# include extra headers\n"
-msgstr	"# extra baþlýklarý içerir\n"
-
-#: src/attrib.c:767
-#, c-format
-msgid	"# in *sources* set post process type to shar only\n"
-msgstr	""
-
-#: src/attrib.c:771
-#, fuzzy, c-format
-msgid	"# in *binaries* do full post processing but no TeX2ISO conversion,\n"
-msgstr	"# ikilik dosyalarda iþletim sonrasýný tam yapýn, tmp dosyalarýný kaldýrýn.\n"
-
-#: src/attrib.c:772
-#, c-format
-msgid	"# remove tmp files and set Followup-To: poster\n"
-msgstr	""
-
-#: src/cook.c:559
+#: src/cook.c:558
 msgid	"(unknown)"
 msgstr	"(bilinmiyor)"
 
 #.
 #. * TODO: add to the right rule, give better explanation, -> lang.c
 #.
-#: src/filter.c:597 src/filter.c:605
+#: src/filter.c:591 src/filter.c:599
 msgid	"Removed from the previous rule: "
 msgstr	"Önceki kuraldan kaldýrýldý: "
 
@@ -402,531 +382,536 @@ msgstr	"Makale kullanýlamýyor."
 msgid	"Article undeleted."
 msgstr	"Makale silinmeden geri alýndý."
 
-#: src/lang.c:66
+#: src/lang.c:65
+#, fuzzy, c-format
+msgid	"Article %4d of %4d"
+msgstr	"Makale %4d of %4d"
+
+#: src/lang.c:67
 msgid	"articles"
 msgstr	"makaleler"
 
-#: src/lang.c:67
+#: src/lang.c:68
 #, fuzzy
 msgid	"This is a repost of the following article:"
 msgstr	"Bu dosyanýn yeniden gönderimi dieðildir:"
 
-#: src/lang.c:68
+#: src/lang.c:69
 msgid	"article"
 msgstr	"makale"
 
-#: src/lang.c:69
+#: src/lang.c:70
 msgid	"Article"
 msgstr	"Makale"
 
-#: src/lang.c:70
+#: src/lang.c:71
 #, c-format
 msgid	"-- %d %s mailed --"
 msgstr	"-- %d %s postalandý --"
 
-#: src/lang.c:71
+#: src/lang.c:72
 #, c-format
 msgid	" at %s"
 msgstr	" %s de"
 
-#: src/lang.c:72
+#: src/lang.c:73
 #, fuzzy, c-format
 msgid	"%*s[-- %s/%s, encoding %s%s%s, %d lines%s%s --]\n"
 msgstr	"%*s[-- %s/%s, kodluyor %s%s%s, %d satýr%s%s --]\n"
 
-#: src/lang.c:73
+#: src/lang.c:74
 msgid	", charset: "
 msgstr	""
 
-#: src/lang.c:74
+#: src/lang.c:75
 #, c-format
 msgid	"%*s[-- Description: %s --]\n"
 msgstr	"%*s[-- Taným: %s --]\n"
 
-#: src/lang.c:75
+#: src/lang.c:76
 #, c-format
 msgid	"%d Authentication failed"
 msgstr	"%d Kimlik denetimi baþarýsýz"
 
-#: src/lang.c:76
+#: src/lang.c:77
 #, fuzzy
 msgid	"Server expects authentication.\n"
 msgstr	"Sunucu doðrulama bekliyor.\n"
 
-#: src/lang.c:77
+#: src/lang.c:78
 msgid	"    Please enter password: "
 msgstr	"    Lütfen parola girin: "
 
-#: src/lang.c:78
+#: src/lang.c:79
 msgid	"    Please enter username: "
 msgstr	"    Lütfen kullanýcý adý girin: "
 
-#: src/lang.c:79
+#: src/lang.c:80
 #, fuzzy, c-format
 msgid	"Author search backwards [%s]> "
 msgstr	"Yazar geriye doðru arýyor[%s]> "
 
-#: src/lang.c:80
+#: src/lang.c:81
 #, fuzzy, c-format
 msgid	"Author search forwards [%s]> "
 msgstr	"Yazar ileriye doðru arýyor [%s]> "
 
-#: src/lang.c:81
+#: src/lang.c:82
 #, fuzzy, c-format
 msgid	"Authorized for user: %s\n"
 msgstr	"Kullanýcý için yetkilendirlmiþ: %s\n"
 
-#: src/lang.c:82
+#: src/lang.c:83
 #, c-format
 msgid	"Authorization failed for user: %s\n"
 msgstr	"Kullanýcý için yetkilendirme baþarýsýz: %s\n"
 
-#: src/lang.c:83
+#: src/lang.c:84
 #, fuzzy, c-format
 msgid	"\n"
 	"Autosubscribed to %s"
 msgstr	"\n"
 	"Otomatik abone %s"
 
-#: src/lang.c:84
+#: src/lang.c:85
 #, fuzzy
 msgid	"Autosubscribing groups...\n"
 msgstr	"Gruplar otomatik abone ediliyor...\n"
 
-#: src/lang.c:85
+#: src/lang.c:86
 #, c-format
 msgid	"Autoselecting articles (use '%s' to see all unread) ..."
 msgstr	"Makaleler otomatik seçiliyor (tüm okunmamýþlarý görmek için '%s' kullanýn) ..."
 
-#: src/lang.c:87
+#: src/lang.c:88
 #, c-format
 msgid	"Active file corrupt - %s"
 msgstr	"Aktif dosya bozuk - %s"
 
-#: src/lang.c:88
+#: src/lang.c:89
 #, fuzzy, c-format
 msgid	"Article to be posted resulted in errors/warnings. %s=quit, %s=Menu, %s=edit: "
 msgstr	"Gönderilecek dosyada hatalar/uyarýlar çýktý. %s=çýk, %s=Menü, %s=düzelt: "
 
-#: src/lang.c:89
+#: src/lang.c:90
 #, c-format
 msgid	"Unrecognized attribute: %s"
 msgstr	"Tanýnmayan öznitelik: %s"
 
-#: src/lang.c:90
+#: src/lang.c:91
 #, c-format
 msgid	"Bad command. Type '%s' for help."
 msgstr	"Bozuk komut. Yardým için '%s' yazýn."
 
-#: src/lang.c:92
+#: src/lang.c:93
 #, fuzzy
 msgid	"Base article"
 msgstr	"Temel makale"
 
-#: src/lang.c:93
+#: src/lang.c:94
 #, fuzzy
 msgid	"Base article range"
 msgstr	"Temel makale aralýðý"
 
-#: src/lang.c:94
+#: src/lang.c:95
 #, fuzzy, c-format
 msgid	"%s: Updating of index files not supported\n"
 msgstr	"%s: Desteklenmeyen dizin dosyalarý güncelleniyor\n"
 
-#: src/lang.c:95
+#: src/lang.c:96
 msgid	"*** Beginning of article ***"
 msgstr	"*** Makalenin baþý ***"
 
-#: src/lang.c:97
+#: src/lang.c:98
 #, fuzzy, c-format
 msgid	"Cancel (delete) or supersede (overwrite) article [%%s]? (%s/%s/%s): "
 msgstr	"Dosyayý Ýptal et(sil) veya dosyanýn yerini al(üstüne yaz)[%%s]? (%s/%s/%s): "
 
-#: src/lang.c:98
+#: src/lang.c:99
 msgid	"Cancelling article..."
 msgstr	"Makale iptal ediliyor..."
 
-#: src/lang.c:100
+#: src/lang.c:101
 #, fuzzy, c-format
 msgid	"Cannot create %s"
 msgstr	"Yaratýlmaýyor %s"
 
-#: src/lang.c:101
+#: src/lang.c:102
 #, fuzzy, c-format
 msgid	"Can't find base article %d"
 msgstr	"Temel makale bulunamýyor %d"
 
-#: src/lang.c:102
+#: src/lang.c:103
 #, fuzzy, c-format
 msgid	"Can't open %s"
 msgstr	"Açýlamýyor %s"
 
-#: src/lang.c:103
+#: src/lang.c:104
 #, fuzzy, c-format
 msgid	"Couldn't open %s for saving"
 msgstr	"Kaydetmek için %s açýlmadý"
 
-#: src/lang.c:104
+#: src/lang.c:105
 msgid	"*** Posting not allowed ***"
 msgstr	"*** Gönderim izni yok ***"
 
-#: src/lang.c:105
+#: src/lang.c:106
 #, c-format
 msgid	"Posting is not allowed to %s"
 msgstr	"%s için gönderim izni yok"
 
-#: src/lang.c:106
+#: src/lang.c:107
 #, fuzzy, c-format
 msgid	"Can't retrieve %s"
 msgstr	"Alýnamýyor %s"
 
-#: src/lang.c:107
+#: src/lang.c:108
 #, c-format
 msgid	"%s is a directory"
 msgstr	"%s bir dizindir"
 
-#: src/lang.c:108
+#: src/lang.c:109
 msgid	"Catchup"
 msgstr	""
 
-#: src/lang.c:109
+#: src/lang.c:110
 #, c-format
 msgid	"Catchup %s..."
 msgstr	""
 
-#: src/lang.c:110
+#: src/lang.c:111
 msgid	"Catchup all groups entered during this session?"
 msgstr	""
 
-#: src/lang.c:111
+#: src/lang.c:112
 #, fuzzy
 msgid	"You have tagged articles in this group - catchup anyway?"
 msgstr	"Bu makalede imlenmiþ makaleler var - catchup anyway?"
 
-#: src/lang.c:112
+#: src/lang.c:113
 #, c-format
 msgid	"%s %d %s in %lu seconds\n"
 msgstr	"%4$lu saniyede %1$s %2$d %3$s\n"
 
-#: src/lang.c:113
+#: src/lang.c:114
 msgid	"Caughtup"
 msgstr	""
 
-#: src/lang.c:114
+#: src/lang.c:115
 #, fuzzy
 msgid	"Check Prepared Article"
 msgstr	"Hazýr Makaleyi Denetle"
 
-#: src/lang.c:115
+#: src/lang.c:116
 #, fuzzy
 msgid	"Checking for new groups... "
 msgstr	"Yeni gruplar denetleniyor... "
 
-#: src/lang.c:116
+#: src/lang.c:117
 #, fuzzy
 msgid	"Checking for news..."
 msgstr	"Haberler denetleniyor..."
 
-#: src/lang.c:117
+#: src/lang.c:118
 #, fuzzy, c-format
 msgid	"Post-process %s=no, %s=yes, %s=shar, %s=quit: "
 msgstr	"Son-iþlem %s=hayýr, %s=evet, %s=ortak, %s=çýk: "
 
-#: src/lang.c:119
+#: src/lang.c:120
 #, fuzzy
 msgid	"ANSI color disabled"
 msgstr	"ANSI renk geçersiz"
 
-#: src/lang.c:120
+#: src/lang.c:121
 #, fuzzy
 msgid	"ANSI color enabled"
 msgstr	"ANSI renk geçerli"
 
-#: src/lang.c:122
+#: src/lang.c:123
 #, c-format
 msgid	"Command failed: %s"
 msgstr	"Komut baþarýsýz: %s"
 
-#: src/lang.c:123
+#: src/lang.c:124
 msgid	"Mark not selected articles read?"
 msgstr	""
 
-#: src/lang.c:124
+#: src/lang.c:125
 #, fuzzy, c-format
 msgid	"Connecting to %s..."
 msgstr	"Baðlanýyor %s..."
 
-#: src/lang.c:125
+#: src/lang.c:126
 msgid	"<CR>"
 msgstr	"<CR>"
 
-#: src/lang.c:126
+#: src/lang.c:127
 #, fuzzy
 msgid	"Creating active file for saved groups...\n"
 msgstr	"Kaydedilen kümeler için aktif dosya oluþturuyor...\n"
 
-#: src/lang.c:127
+#: src/lang.c:128
 #, fuzzy
 msgid	"Creating newsrc file...\n"
 msgstr	"Newsrc dosyasý oluþturuluyor...\n"
 
-#: src/lang.c:129 src/lang.c:1150
+#: src/lang.c:130 src/lang.c:1150
 msgid	"Default"
 msgstr	"Öntanýmlý"
 
-#: src/lang.c:130
+#: src/lang.c:131
 #, fuzzy
 msgid	"Delete saved files that have been post processed?"
 msgstr	"Son iþlenen kaydedilmiþ dosyalarý sil?"
 
-#: src/lang.c:131
+#: src/lang.c:132
 msgid	"Deleting temporary files..."
 msgstr	"Geçici dosyalar siliniyor..."
 
-#: src/lang.c:133
+#: src/lang.c:134
 msgid	"*** End of article ***"
 msgstr	"*** Makalenin sonu ***"
 
-#: src/lang.c:134
+#: src/lang.c:135
 msgid	"*** End of articles ***"
 msgstr	"*** Makalelerin sonu ***"
 
-#: src/lang.c:135
+#: src/lang.c:136
 #, fuzzy
 msgid	"*** End of groups ***"
 msgstr	"*** Kümelerin sonu ***"
 
-#: src/lang.c:136
+#: src/lang.c:137
 #, fuzzy
 msgid	"*** End of thread ***"
 msgstr	"*** Parçacýklarýn sonu ***"
 
-#: src/lang.c:137
+#: src/lang.c:138
 #, fuzzy
 msgid	"Enter limit of articles to get> "
 msgstr	"Alýnacak makalelerin limitini girin> "
 
-#: src/lang.c:138
+#: src/lang.c:139
 #, fuzzy
 msgid	"Enter Message-ID to go to> "
 msgstr	"Gitmek için kimlik mesajýný girin> "
 
-#: src/lang.c:139
+#: src/lang.c:140
 #, fuzzy
 msgid	" and enter next unread thread"
 msgstr	" ve sonraki okuma parçacýðýný yazýn"
 
-#: src/lang.c:140
+#: src/lang.c:141
 #, fuzzy
 msgid	" and enter next unread group"
 msgstr	" ve sonraki okuma kümesini yazýn"
 
-#: src/lang.c:141
+#: src/lang.c:142
 #, fuzzy
 msgid	"Enter option number> "
 msgstr	"Seçenek numarasýný yazýn> "
 
-#: src/lang.c:142
+#: src/lang.c:143
 #, fuzzy, c-format
 msgid	"Enter range [%s]> "
 msgstr	"Aralýðý yazýn [%s]> "
 
-#: src/lang.c:143
+#: src/lang.c:144
 #, fuzzy
 msgid	"\n"
 	"Warning: Approved: header used.\n"
 msgstr	"\n"
 	"Uyarý: Onaylandý: baþlýk kullanýldý.\n"
 
-#: src/lang.c:145
+#: src/lang.c:146
 #, fuzzy
 msgid	"\n"
 	"Error: Bad address in Approved: header.\n"
 msgstr	"\n"
 	"Hata: Onaylananda bozuk adres: baþlýk.\n"
 
-#: src/lang.c:146
+#: src/lang.c:147
 #, fuzzy
 msgid	"\n"
 	"Error: Bad address in From: header.\n"
 msgstr	"\n"
 	"Hata: Gönderende bozuk adres: baþlýk.\n"
 
-#: src/lang.c:147
+#: src/lang.c:148
 #, fuzzy
 msgid	"\n"
 	"Error: Bad address in Reply-To: header.\n"
 msgstr	"\n"
 	"Hata: Yanýtta bozuk adres: baþlýk\n"
 
-#: src/lang.c:148
+#: src/lang.c:149
 #, fuzzy
 msgid	"\n"
 	"Error: Bad FQDN in Message-ID: header.\n"
 msgstr	"\n"
 	"Hata: Kimilk mesajýnda bozuk FQDN: baþlýk.\n"
 
-#: src/lang.c:149
+#: src/lang.c:150
 #, fuzzy, c-format
 msgid	"Can't unlock %s"
 msgstr	"Açýlamýyor %s"
 
-#: src/lang.c:151
+#: src/lang.c:152
 #, fuzzy, c-format
 msgid	"Corrupted file %s"
 msgstr	"Virüslü dosya %s"
 
-#: src/lang.c:152
+#: src/lang.c:153
 #, fuzzy, c-format
 msgid	"Couldn't dotlock %s - article not appended!"
 msgstr	"Açýlamadý %s - makale eklenmedi!"
 
-#: src/lang.c:153
+#: src/lang.c:154
 #, fuzzy, c-format
 msgid	"Couldn't lock %s - article not appended!"
 msgstr	"Kapatýlamadý %s - makale eklenmedi!"
 
-#: src/lang.c:155
+#: src/lang.c:156
 msgid	"Internal error in GNKSA routine - send bug report.\n"
 msgstr	"GNKSA yordamýnda iç hata - hata raporu gönder.\n"
 
-#: src/lang.c:156
+#: src/lang.c:157
 #, fuzzy
 msgid	"Left angle bracket missing in route address.\n"
 msgstr	"Yordam adresinde sol açýlý ayraç eksik.\n"
 
-#: src/lang.c:157
+#: src/lang.c:158
 msgid	"Left parenthesis missing in old-style address.\n"
 msgstr	"Eski-biçemli adreste sol ayraç eksik.\n"
 
-#: src/lang.c:158
+#: src/lang.c:159
 msgid	"Right parenthesis missing in old-style address.\n"
 msgstr	"Eski-biçemli adreste sað ayraç eksik.\n"
 
-#: src/lang.c:159
+#: src/lang.c:160
 msgid	"At-sign missing in mail address.\n"
 msgstr	"Posta adresinde @ iþareti eksik.\n"
 
-#: src/lang.c:160
+#: src/lang.c:161
 #, fuzzy
 msgid	"Single component FQDN is not allowed. Add your domain.\n"
 msgstr	"FQDN tekli bileþenine izin verilmedi. Taným kümesi ekleyin.\n"
 
-#: src/lang.c:161
+#: src/lang.c:162
 #, fuzzy
 msgid	"Invalid domain. Send bug report if your top level domain really exists.\n"
 	"Use .invalid as top level domain for munged addresses.\n"
 msgstr	"Geçersiz etki alaný. Üst düzey etki alaný varsa hata raporu gönderin.\n"
 	"Kullan . munged adresler için geçersiz üst düzey etki alaný.\n"
 
-#: src/lang.c:162
+#: src/lang.c:163
 #, fuzzy
 msgid	"Illegal domain. Send bug report if your top level domain really exists.\n"
 	"Use .invalid as top level domain for munged addresses.\n"
 msgstr	"Kuraldýþý etki alaný. Üst düzey etki alaný varsa hata raporu gönderin.\n"
 	"Kuulan . munged adresler için geçersiz üst düzey etki alaný.\n"
 
-#: src/lang.c:163
+#: src/lang.c:164
 #, fuzzy
 msgid	"Unknown domain. Send bug report if your top level domain really exists.\n"
 	"Use .invalid as top level domain for munged addresses.\n"
 msgstr	"Bilinmeyen etki alaný. Üst düzey etki alalný varsa hata raporu gönderin.\n"
 	"Kullan. munged adresler geçersiz üst düzey etki alaný.\n"
 
-#: src/lang.c:164
+#: src/lang.c:165
 msgid	"Illegal character in FQDN.\n"
 msgstr	"FQDN'de kuraldýþý karakter.\n"
 
-#: src/lang.c:165
+#: src/lang.c:166
 #, fuzzy
 msgid	"Zero length FQDN component not allowed.\n"
 msgstr	"Sýfýr unzunluklu FQDN bileþenine izin verilmedi.\n"
 
-#: src/lang.c:166
+#: src/lang.c:167
 #, fuzzy
 msgid	"FQDN component exceeds maximum allowed length (63 chars).\n"
 msgstr	"FQDN bileþeni izin verilen maximum uzunluðu aþýyor.(63 kar.).\n"
 
-#: src/lang.c:167
+#: src/lang.c:168
 #, fuzzy
 msgid	"FQDN component may not start or end with hyphen.\n"
 msgstr	"FQDN bileþeni tire ile baþlamayabilir veya bitmeyebilir.\n"
 
-#: src/lang.c:168
+#: src/lang.c:169
 #, fuzzy
 msgid	"FQDN component may not start with digit.\n"
 msgstr	"FQDN bileþeni basamak ile baþlamayabilir.\n"
 
-#: src/lang.c:169
+#: src/lang.c:170
 #, fuzzy
 msgid	"Domain literal has impossible numeric value.\n"
 msgstr	"Deðiþmez etki alaný imkansýz sayýsal deðere sahip.\n"
 
-#: src/lang.c:170
+#: src/lang.c:171
 #, fuzzy
 msgid	"Domain literal is for private use only and not allowed for global use.\n"
 msgstr	"Deðiþmez etki alaný sadece özel kullaným içindir ve küresel kullanýma izin "
 	"verilmez.\n"
 
-#: src/lang.c:171
+#: src/lang.c:172
 #, fuzzy
 msgid	"Right bracket missing in domain literal.\n"
 msgstr	"Deðiþmez etki alanýnda sað köþeli ayraç eksik.\n"
 
-#: src/lang.c:172
+#: src/lang.c:173
 msgid	"Missing localpart of mail address.\n"
 msgstr	"Posta adresinin yerel kýsmý eksik.\n"
 
-#: src/lang.c:173
+#: src/lang.c:174
 msgid	"Illegal character in localpart of mail address.\n"
 msgstr	"Posta adresinin yerel kýsmýnda kuraldýþý karakter.\n"
 
-#: src/lang.c:174
+#: src/lang.c:175
 #, fuzzy
 msgid	"Zero length localpart component not allowed.\n"
 msgstr	"Sýfýr uzunluklu yerel kýsým bileþenine izin verilmedi.\n"
 
-#: src/lang.c:175
+#: src/lang.c:176
 #, fuzzy
 msgid	"Illegal character in realname.\n"
 	"Unquoted words may not contain '!()<>@,;:\\.[]' in route addresses.\n"
 msgstr	"Gerçek isimde kuraldýþý karakter.\n"
 	"Ýmlenmemiþ sözcükler yordam adreslerinde '!()<>@,;:\\.[]' içermeyebilir.\n"
 
-#: src/lang.c:176
+#: src/lang.c:177
 #, fuzzy
 msgid	"Illegal character in realname.\n"
 	"Quoted words may not contain '()<>\\'.\n"
 msgstr	"Gerçek isimde kuraldýþý karakter.\n"
 	"Ýmlenmil sözcükler '()<>\\' içermeyebilir.\n"
 
-#: src/lang.c:177
+#: src/lang.c:178
 #, fuzzy
 msgid	"Illegal character in realname.\n"
 	"Encoded words may not contain '!()<>@,;:\"\\.[]/=' in parameter.\n"
 msgstr	"Gerçek isimde kuraldýþý karakter.\n"
 	"Kodlanmýþ sözcükler parametrelerde '!()<>@,;:\"\\.[]/= içermeyebilir.\n"
 
-#: src/lang.c:178
+#: src/lang.c:179
 #, fuzzy
 msgid	"Bad syntax in encoded word used in realname.\n"
 msgstr	"Gerçek isimde kullanýlan kodlanmýþ sözkükte bozuk sözdizimi.\n"
 
-#: src/lang.c:179
+#: src/lang.c:180
 #, fuzzy
 msgid	"Illegal character in realname.\n"
 	"Unquoted words may not contain '()<>\\' in old-style addresses.\n"
 msgstr	"Gerçek isimde kuraldýþý karakter.\n"
 	"Ýmlenmemiþ sözcükler eski-biçemli adreslerde '()<>\\' içermeyebilir.\n"
 
-#: src/lang.c:180
+#: src/lang.c:181
 #, fuzzy
 msgid	"Illegal character in realname.\n"
 	"Control characters and unencoded 8bit characters > 127 are not allowed.\n"
 msgstr	"Gerçek isimde kuraldýþý karakter. Denetim karakterlerine ve kodlanmamýþ 8bit "
 	"karakterlerine > 127 izin verilmedi.\n"
 
-#: src/lang.c:181
+#: src/lang.c:182
 #, fuzzy
 msgid	"\n"
 	"Error: No blank line found after header.\n"
@@ -934,7 +919,7 @@ msgstr	"\n"
 	"Hata: Baþlýktan sonra boþ satýr bulunamadý.\n"
 
 #. TODO: fixme, US-ASCII is not the only 7bit charset we know about
-#: src/lang.c:183
+#: src/lang.c:184
 #, fuzzy
 msgid	"\n"
 	"Error: Posting contains non-ASCII characters but MM_CHARSET is set to\n"
@@ -947,7 +932,7 @@ msgstr	"\n"
 	" diliniz için yapýlandýrabilen seçenekler M)enüsünü kullanarak ya da\n"
 	" tinric düzenleyerek.\n"
 
-#: src/lang.c:188
+#: src/lang.c:189
 #, fuzzy
 msgid	"\n"
 	"Error: Posting contains  non-ASCII characters  but the  MIME encoding\n"
@@ -962,14 +947,14 @@ msgstr	"\n"
 	" yaþadýðýnýz bölgede daha yaygýn olana. Bu yapýlabilir\n"
 	" yapýlandýrabilen seçenekler  M)enüsü kullanýlarak veya tinrc düzenlenerek.\n"
 
-#: src/lang.c:194
+#: src/lang.c:195
 #, fuzzy
 msgid	"\n"
 	"Error: Article starts with blank line instead of header\n"
 msgstr	"\n"
 	"Hata: Makale baþlýk yerine boþ satýrla baþlýyor\n"
 
-#: src/lang.c:195
+#: src/lang.c:196
 #, fuzzy, c-format
 msgid	"\n"
 	"Error: Header on line %d does not have a colon after the header name:\n"
@@ -978,21 +963,21 @@ msgstr	"\n"
 	"Hata: Satýrdaki baþlýkta %d baþlýk isminden sonra iki nokta yok:\n"
 	"%s\n"
 
-#: src/lang.c:196
+#: src/lang.c:197
 #, fuzzy, c-format
 msgid	"\n"
 	"Error: The \"%s:\" line is empty.\n"
 msgstr	"\n"
 	"Hata: \"%s:\"satýrý boþ.\n"
 
-#: src/lang.c:197
+#: src/lang.c:198
 #, fuzzy, c-format
 msgid	"\n"
 	"Error: The \"%s:\" line is missing from the article header.\n"
 msgstr	"\n"
 	"Hata: Makale baþlýðýnda \"%s:\" satýrý eksik.\n"
 
-#: src/lang.c:198
+#: src/lang.c:199
 #, fuzzy, c-format
 msgid	"\n"
 	"Error: Header on line %d does not have a space after the colon:\n"
@@ -1001,76 +986,76 @@ msgstr	"\n"
 	"Hata: %d satýrýndaki baþlýkta iki noktadan sonra boþluk yok:\n"
 	"%s\n"
 
-#: src/lang.c:199
+#: src/lang.c:200
 #, fuzzy, c-format
 msgid	"\n"
 	"Error: There are multiple (%d) \"%s:\" lines in the header.\n"
 msgstr	"\n"
 	"Hata: Baþlýkta (%d) \"%s:\" çoklu satýlrarý var.\n"
 
-#: src/lang.c:200
+#: src/lang.c:201
 #, fuzzy, c-format
 msgid	"Insecure permissions of %s (%o)"
 msgstr	"Güvenli olmayan yetkiler %s (%o)"
 
-#: src/lang.c:201
+#: src/lang.c:202
 #, fuzzy, c-format
 msgid	"Invalid response to GROUP command, %s"
 msgstr	"KÜME komutuna geçersiz yanýt.%s"
 
-#: src/lang.c:203
+#: src/lang.c:204
 #, fuzzy, c-format
 msgid	"MIME parse error: Unexpected end of %s/%s article"
 msgstr	"MIME ayrýþtýrma hatasý: Makale %s/%s için beklenmeyen son"
 
-#: src/lang.c:204
+#: src/lang.c:205
 #, fuzzy
 msgid	"MIME parse error: Start boundary whilst reading headers"
 msgstr	"MIME ayrýþtýrma hatasý: Baþlýklarý okurken baþlatma sýnýrý"
 
-#: src/lang.c:205
+#: src/lang.c:206
 #, fuzzy
 msgid	"Can't get a (fully-qualified) domain-name!"
 msgstr	"(Tam niletelendirilmiþ) etki alaný adý alýnamadý!"
 
-#: src/lang.c:206
+#: src/lang.c:207
 #, fuzzy, c-format
 msgid	"No permissions to go into %s\n"
 msgstr	"%s için gidiþ yetkisi yok\n"
 
-#: src/lang.c:207
+#: src/lang.c:208
 #, fuzzy
 msgid	"\n"
 	"Error: From: line missing.\n"
 msgstr	"\n"
 	"Hata: Baþlangýç:satýr eksik.\n"
 
-#: src/lang.c:208
+#: src/lang.c:209
 #, fuzzy, c-format
 msgid	"No read permissions for %s\n"
 msgstr	"%s için okuma yetkisi yok\n"
 
-#: src/lang.c:209
+#: src/lang.c:210
 #, fuzzy, c-format
 msgid	"File %s does not exist\n"
 msgstr	"%s dosyasý yok\n"
 
-#: src/lang.c:210
+#: src/lang.c:211
 #, fuzzy, c-format
 msgid	"No write permissions for %s\n"
 msgstr	"%s için yazma yetkisi yok\n"
 
-#: src/lang.c:211
+#: src/lang.c:212
 #, fuzzy
 msgid	"Can't get user information (/etc/passwd missing?)"
 msgstr	"Kullanýcý bilgisi alýnamýyor(/etc/passwd kayýp?)"
 
-#: src/lang.c:212
+#: src/lang.c:213
 #, fuzzy
 msgid	"errors"
 msgstr	"hatalar"
 
-#: src/lang.c:213
+#: src/lang.c:214
 #, fuzzy, c-format
 msgid	"\n"
 	"Error on line %d: \"Sender:\" header not allowed (it will be added for you)\n"
@@ -1078,88 +1063,88 @@ msgstr	"\n"
 	"%d satýrýnda hata \"Sender:\" baþlýk için izin verilmedi (sizin için "
 	"eklenecek)\n"
 
-#: src/lang.c:214
+#: src/lang.c:215
 #, fuzzy, c-format
 msgid	"Server has non of the groups listed in %s"
 msgstr	"Sunucuda %s'de listelenen gruplarýn hiçbiri yok"
 
-#: src/lang.c:215
+#: src/lang.c:216
 #, fuzzy
 msgid	"error"
 msgstr	"hata"
 
-#: src/lang.c:216
+#: src/lang.c:217
 #, fuzzy
 msgid	"Unknown display level"
 msgstr	"Bilinmeyen gösterim düzeyi"
 
-#: src/lang.c:217
+#: src/lang.c:218
 #, fuzzy
 msgid	"<ESC>"
 msgstr	"<ESC>"
 
-#: src/lang.c:218
+#: src/lang.c:219
 #, fuzzy
 msgid	"Exiting..."
 msgstr	"Çýkýyor..."
 
-#: src/lang.c:219
+#: src/lang.c:220
 #, fuzzy
 msgid	"leaving external mail-reader"
 msgstr	"Dýþ posta-okuyucuyu býrakýyor"
 
-#: src/lang.c:220
+#: src/lang.c:221
 #, fuzzy, c-format
 msgid	"Extracting %s..."
 msgstr	"Ayýklýyor %s..."
 
-#: src/lang.c:222
+#: src/lang.c:223
 #, fuzzy, c-format
 msgid	"Error writing %s file. Filesystem full? File reset to previous state."
 msgstr	"%s dosyasýný yazarken hata. Dosya sistemi dolu? Dosya önceki durumuna "
 	"dönüþtürüldü."
 
-#: src/lang.c:223
+#: src/lang.c:224
 #, fuzzy, c-format
 msgid	"Error making backup of %s file. Filesystem full?"
 msgstr	"%s dosyasýný yedeklemede hata. Dosya sistemi dolu?"
 
-#: src/lang.c:224
+#: src/lang.c:225
 #, fuzzy, c-format
 msgid	"Filtering global rules (%d/%d)..."
 msgstr	"Genel kurallar süzgeçleniyor (%d/%d)..."
 
-#: src/lang.c:225
+#: src/lang.c:226
 #, fuzzy
 msgid	"Rule created by: "
 msgstr	"Kural oluþturuldu: "
 
-#: src/lang.c:226
+#: src/lang.c:227
 #, fuzzy, c-format
 msgid	"Enter pattern [%s]> "
 msgstr	"Örüntüyü girin [%s]> "
 
-#: src/lang.c:227
+#: src/lang.c:228
 #, fuzzy, c-format
 msgid	"\n"
 	"You requested followups to your article to go to the following %s:\n"
 msgstr	"\n"
 	"Gitmek için makalenize takip-et istediniz %s:\n"
 
-#: src/lang.c:228
+#: src/lang.c:229
 #, fuzzy, c-format
 msgid	"  %s\t Answers will be directed to you by mail.\n"
 msgstr	"  %s\t Cevaplarý postayla yönlendirilecek.\n"
 
-#: src/lang.c:229
+#: src/lang.c:230
 msgid	"-- forwarded message --\n"
 msgstr	""
 
-#: src/lang.c:230
+#: src/lang.c:231
 msgid	"-- end of forwarded message --\n"
 msgstr	""
 
-#: src/lang.c:231
+#: src/lang.c:232
 #, fuzzy
 msgid	"# Format:\n"
 	"#   comment=STRING    Optional. Multiple lines allowed. Comments must be "
@@ -1212,905 +1197,905 @@ msgstr	"# Format:\n"
 	"#   time=NUM          Seçmeli.Kural bitince time_t deðeri\n"
 	"#\n"
 
-#: src/lang.c:252
+#: src/lang.c:253
 #, fuzzy, c-format
 msgid	"Enter score for rule (default=%d): "
 msgstr	"Kural için skoru yazýn (varsayýlan=%d): "
 
-#: src/lang.c:253
+#: src/lang.c:254
 #, fuzzy, c-format
 msgid	"Enter the score weight (range 0 < score <= %d)"
 msgstr	"Skor aðýrlýðýný yazýn (aralýk 0 < skor <= %d)"
 
 #. SCORE_MAX
-#: src/lang.c:254
+#: src/lang.c:255
 #, fuzzy
 msgid	"Full"
 msgstr	"Tam"
 
-#: src/lang.c:255
+#: src/lang.c:256
 #, fuzzy
 msgid	"Comment (optional)  : "
 msgstr	"Komut (seçmeli)   : "
 
-#: src/lang.c:256
+#: src/lang.c:257
 #, fuzzy
 msgid	"Apply pattern to    : "
 msgstr	"Örüntüyü uygula   : "
 
-#: src/lang.c:257
+#: src/lang.c:258
 #, fuzzy
 msgid	"From: line (ignore case)      "
 msgstr	"Gönderen: satýr (büyük/küçük harfleri yoksay) "
 
-#: src/lang.c:258
+#: src/lang.c:259
 #, fuzzy
 msgid	"From: line (case sensitive)   "
 msgstr	"Gönderen: satýr (büyük/küçük harfe duyarlý)   "
 
-#: src/lang.c:260
+#: src/lang.c:261
 #, fuzzy, c-format
 msgid	"%s%s: Unknown host.\n"
 msgstr	"%s%s: Bilinmeyen ana sunucu.\n"
 
-#: src/lang.c:261
+#: src/lang.c:262
 #, fuzzy
 msgid	"global "
 msgstr	"küresel "
 
-#: src/lang.c:262
+#: src/lang.c:263
 #, fuzzy, c-format
 msgid	"Please use %.100s instead"
 msgstr	"Lütfen % kullanýn.100s yerine"
 
-#: src/lang.c:263
+#: src/lang.c:264
 #, c-format
 msgid	"%s is bogus"
 msgstr	"%s sahte"
 
-#: src/lang.c:264
+#: src/lang.c:265
 #, fuzzy, c-format
 msgid	"Group %s is moderated. Continue?"
 msgstr	"Küme %s ayarlandý. Devam?"
 
-#: src/lang.c:265
+#: src/lang.c:266
 #, fuzzy
 msgid	"groups"
 msgstr	"kümeler"
 
-#: src/lang.c:266
+#: src/lang.c:267
 #, c-format
 msgid	"Rereading %s..."
 msgstr	"%s tekrar okunuyor..."
 
-#: src/lang.c:267
+#: src/lang.c:268
 #, fuzzy
 msgid	"Top Level Commands"
 msgstr	"Üst Düzey Komutlar"
 
-#: src/lang.c:268
+#: src/lang.c:269
 #, fuzzy
 msgid	"Group Selection"
 msgstr	"Küme Seçimi"
 
-#: src/lang.c:269
+#: src/lang.c:270
 #, fuzzy
 msgid	"group"
 msgstr	"küme"
 
-#: src/lang.c:271
+#: src/lang.c:272
 #, fuzzy
 msgid	"One or more lines of comment. <CR> to add a line or proceed if line is empty."
 msgstr	"Komutun bir veya birden çok satýrý. Satýr boþsa satýr eklemek veya devam "
 	"etmek için <CR>."
 
-#: src/lang.c:272
+#: src/lang.c:273
 #, fuzzy
 msgid	"From: line to add to filter file. <SPACE> toggles & <CR> sets."
 msgstr	"Gönderen: Süzgeç dosyaya eklenecek satýr.<SPACE> deðiþtirir & <CR> ayarlar."
 
-#: src/lang.c:273
+#: src/lang.c:274
 #, fuzzy
 msgid	"Linecount of articles to be filtered. < for less, > for more, = for equal."
 msgstr	"Süzgeçlenecek makalelerin satýr sayýsý. < az , > çok , =eþit."
 
-#: src/lang.c:274
+#: src/lang.c:275
 #, fuzzy
 msgid	"Message-ID: line to add to filter file. <SPACE> toggles & <CR> sets."
 msgstr	"Ýleti-kimliði: Dosya süzgeçlemek için eklenecek satýr. <SPACE> deðiþtirir & "
 	"<CR> ayarlar."
 
-#: src/lang.c:275
+#: src/lang.c:276
 #, fuzzy
 msgid	"Subject: line to add to filter file. <SPACE> toggles & <CR> sets."
 msgstr	"Konu: Dosya süzgeçlemek için eklenecek satýr. <SPACE> deðiþtirir & <CR> "
 	"ayarlar."
 
-#: src/lang.c:276
+#: src/lang.c:277
 #, fuzzy
 msgid	"Enter text pattern to filter if Subject: & From: lines are not what you want."
 msgstr	"Süzgeçlemek için metin örüntüsünü girin eðer Konu: & Gönderen: istediðiniz "
 	"satýrlar deðilse."
 
-#: src/lang.c:277
+#: src/lang.c:278
 #, fuzzy
 msgid	"Select where text pattern should be applied. <SPACE> toggles & <CR> sets."
 msgstr	"Metin örüntüsünün nereye uygulanacaðýný seçin. <SPACE> deðiþtirir & <CR> "
 	"ayarlar."
 
-#: src/lang.c:278
+#: src/lang.c:279
 #, fuzzy
 msgid	"Expiration time in days for the entered filter. <SPACE> toggles & <CR> sets."
 msgstr	"Yazýlan süzgeç için gün olarak kullaným süresi bitimi.<SPACE> deðiþtirir & "
 	"<CR> ayarlar."
 
-#: src/lang.c:279
+#: src/lang.c:280
 #, fuzzy
 msgid	"Apply kill only to current group or all groups. <SPACE> toggles & <CR> sets."
 msgstr	"Sadece mevcut küme veya bütün kümeler için kill uygulayýn. <SPACE> deðiþtirir "
 	"& <CR>ayarlar."
 
-#: src/lang.c:280
+#: src/lang.c:281
 #, fuzzy
 msgid	"Apply select to current group or all groups. <SPACE> toggles & <CR> sets."
 msgstr	"Mevcut küme veya bütün kümeler için seç uygulayýn <SPACE> deðiþtirir & "
 	"<CR>ayarlar."
 
-#: src/lang.c:281
+#: src/lang.c:282
 #, fuzzy
 msgid	"kill an article via a menu"
 msgstr	"makaleyi menü aracýlýðýyla öldür"
 
-#: src/lang.c:282
+#: src/lang.c:283
 #, fuzzy
 msgid	"auto-select (hot) an article via a menu"
 msgstr	"makaleyi menü aracýlýyla otomatik-seç (hot)"
 
-#: src/lang.c:283
+#: src/lang.c:284
 #, fuzzy
 msgid	"Browse URLs in article"
 msgstr	"Makaledeki URL'lara gözat"
 
-#: src/lang.c:284
+#: src/lang.c:285
 #, fuzzy
 msgid	"0 - 9\t  display article by number in current thread"
 msgstr	"0 - 9\t  makaleyi mevcut parçacýktaki sayýyla görüntüle"
 
-#: src/lang.c:285
+#: src/lang.c:286
 msgid	"cancel (delete) or supersede (overwrite) current article"
 msgstr	""
 
-#: src/lang.c:286
+#: src/lang.c:287
 #, fuzzy
 msgid	"edit article (mail-groups only)"
 msgstr	"makaleyi düzenle (sadece posta-gruplarý)"
 
-#: src/lang.c:287
+#: src/lang.c:288
 #, fuzzy
 msgid	"display first article in current thread"
 msgstr	"mevcut parçacýktaki makaleyi ilk görüntüle"
 
-#: src/lang.c:288
+#: src/lang.c:289
 #, fuzzy
 msgid	"display first page of article"
 msgstr	"makalenin ilk sayfasýný görüntüle"
 
-#: src/lang.c:289
+#: src/lang.c:290
 #, fuzzy
 msgid	"post followup to current article"
 msgstr	"mevcut makale için takip-et gönder"
 
-#: src/lang.c:290
+#: src/lang.c:291
 #, fuzzy
 msgid	"post followup (don't copy text) to current article"
 msgstr	"mevcut makale için takip-et gönder (metni kopyalama)"
 
-#: src/lang.c:291
+#: src/lang.c:292
 #, fuzzy
 msgid	"post followup to current article quoting complete headers"
 msgstr	"tam baþlýklarý imleyen mevcut makale için takip-et gönder"
 
-#: src/lang.c:292
+#: src/lang.c:293
 #, fuzzy
 msgid	"display last article in current thread"
 msgstr	"mevcut parçacýktaki son makaleyi görüntüle"
 
-#: src/lang.c:293
+#: src/lang.c:294
 #, fuzzy
 msgid	"display last page of article"
 msgstr	"makalenin son sayfasný görüntüle"
 
-#: src/lang.c:294
+#: src/lang.c:295
 #, fuzzy
 msgid	"mark rest of thread as read and advance to next unread"
 msgstr	"parçacýðýn kalanýný okunmuþ olarak iþaretle ve sonraki okunmamýþa geç"
 
-#: src/lang.c:295
+#: src/lang.c:296
 #, fuzzy
 msgid	"display next article"
 msgstr	"sonraki makaleyi görüntüle"
 
-#: src/lang.c:296
+#: src/lang.c:297
 #, fuzzy
 msgid	"display first article in next thread"
 msgstr	"sonraki baþlýktaki ilk makaleyi görüntüle"
 
-#: src/lang.c:297
+#: src/lang.c:298
 #, fuzzy
 msgid	"display next unread article"
 msgstr	"sonraki okunmamýþ makaleyi görüntüle"
 
-#: src/lang.c:298
+#: src/lang.c:299
 #, fuzzy
 msgid	"go to the article that this one followed up"
 msgstr	"bunu takip eden makaleye git"
 
-#: src/lang.c:299
+#: src/lang.c:300
 #, fuzzy
 msgid	"display previous article"
 msgstr	"önceki makaleyi görüntüle"
 
-#: src/lang.c:300
+#: src/lang.c:301
 #, fuzzy
 msgid	"display previous unread article"
 msgstr	"önceki okunmamýþ makaleyi görüntüle"
 
-#: src/lang.c:301
+#: src/lang.c:302
 #, fuzzy
 msgid	"quickly kill an article using defaults"
 msgstr	"varsayýlanlarý kullanarak makaleyi hemen öldür"
 
-#: src/lang.c:302
+#: src/lang.c:303
 #, fuzzy
 msgid	"quickly auto-select (hot) an article using defaults"
 msgstr	"varsayýlanlarý kullanarak makaleyi hemen otomatik-seç(hot)"
 
-#: src/lang.c:303
+#: src/lang.c:304
 #, fuzzy
 msgid	"return to group selection level"
 msgstr	"küme seçme düzeyine dön"
 
-#: src/lang.c:304
+#: src/lang.c:305
 #, fuzzy
 msgid	"reply through mail to author"
 msgstr	"yazara posta aracýlýðyla yanýt ver"
 
-#: src/lang.c:305
+#: src/lang.c:306
 #, fuzzy
 msgid	"reply through mail (don't copy text) to author"
 msgstr	"yazara posta aracýlýyla yanýt ver (metni kopyalama)"
 
-#: src/lang.c:306
+#: src/lang.c:307
 #, fuzzy
 msgid	"reply through mail to author quoting complete headers"
 msgstr	"tam baþlýklarý imleyerek yazara posta aracýlýðýyla yanýt ver"
 
-#: src/lang.c:307
+#: src/lang.c:308
 #, fuzzy
 msgid	"repost chosen article to another group"
 msgstr	"seçilen makaleyi baþka bir kümeye yeniden gönder"
 
-#: src/lang.c:308
+#: src/lang.c:309
 #, fuzzy
 msgid	"search backwards within this article"
 msgstr	"bu makalede geriye doðru ara"
 
-#: src/lang.c:309
+#: src/lang.c:310
 #, fuzzy
 msgid	"search forwards within this article"
 msgstr	"bu makalede ileriye doðru ara"
 
-#: src/lang.c:310
+#: src/lang.c:311
 #, fuzzy
 msgid	"show article in raw-mode (including all headers)"
 msgstr	"makaleyi ham-kipte göster (bütün baþlýklar dahil)"
 
-#: src/lang.c:311
+#: src/lang.c:312
 #, fuzzy
 msgid	"skip next block of included text"
 msgstr	"ekli dosyanýn sonraki öbeðine atla"
 
-#: src/lang.c:312
+#: src/lang.c:313
 #, fuzzy
 msgid	"toggle display of sections hidden by a form-feed (^L) on/off"
 msgstr	"(^L)açýk/kapalý form-besleme tarafýndan gizlenen bölümlerin gösterimini "
 	"deðiþtir"
 
-#: src/lang.c:313
+#: src/lang.c:314
 #, fuzzy
 msgid	"toggle word highlighting on/off"
 msgstr	"açýk/kapalý vurgulayan sözcüðü deðiþtir"
 
-#: src/lang.c:314
+#: src/lang.c:315
 #, fuzzy
 msgid	"toggle ROT-13 (basic decode) for current article"
 msgstr	"mevcut makale için ROT-13 (temel kod çözücü) deðiþtir"
 
-#: src/lang.c:315
+#: src/lang.c:316
 #, fuzzy
 msgid	"toggle tabwidth 4 <-> 8"
 msgstr	"sekme aralýðýný deðiþtir 4 <-> 8"
 
-#: src/lang.c:316
+#: src/lang.c:317
 #, fuzzy
 msgid	"toggle german TeX style decoding for current article"
 msgstr	"german TeX kod biçemi mevcut makale için deðiþtir"
 
-#: src/lang.c:317
+#: src/lang.c:318
 #, fuzzy
 msgid	"toggle display of uuencoded sections"
 msgstr	"metinsele kodlanmýþ bölümlerin gösterimini deðiþtir"
 
-#: src/lang.c:318
+#: src/lang.c:319
 #, fuzzy
 msgid	"View/save multimedia attachments"
 msgstr	"çoklu-ortam eklerini Görüntüle/kaydet"
 
-#: src/lang.c:319
+#: src/lang.c:320
 #, fuzzy, c-format
 msgid	"report bug or comment via mail to %s"
 msgstr	"hata veya komutu posta aracýlýðýyla bildirin %s"
 
-#: src/lang.c:320
+#: src/lang.c:321
 #, fuzzy
 msgid	"choose range of articles to be affected by next command"
 msgstr	"sonraki komuttan etkilenen makalelerin aralýðýný seç"
 
-#: src/lang.c:321
+#: src/lang.c:322
 #, fuzzy
 msgid	"escape from command prompt"
 msgstr	"komut isteminden çýk"
 
-#: src/lang.c:322
+#: src/lang.c:323
 #, fuzzy
 msgid	"edit filter file"
 msgstr	"Süz dosyasý okunuyor"
 
-#: src/lang.c:323
+#: src/lang.c:324
 #, fuzzy
 msgid	"get help"
 msgstr	"yardým al"
 
-#: src/lang.c:324
+#: src/lang.c:325
 #, fuzzy
 msgid	"display last article viewed"
 msgstr	"görüntülenen son makaleyi göster"
 
-#: src/lang.c:325
+#: src/lang.c:326
 #, fuzzy
 msgid	"down one line"
 msgstr	"bir satýr aþaðý"
 
-#: src/lang.c:326
+#: src/lang.c:327
 #, fuzzy
 msgid	"up one line"
 msgstr	"bir satýr aþaðý"
 
-#: src/lang.c:327
+#: src/lang.c:328
 #, fuzzy
 msgid	"go to article chosen by Message-ID"
 msgstr	"Ýleti-kimliði tarafýndn seçilen makaleye git"
 
-#: src/lang.c:328
+#: src/lang.c:329
 #, fuzzy
 msgid	"mail article/thread/hot/pattern/tagged articles to someone"
 msgstr	"makale/parçacýk/hot/örüntü/etiketlenmiþ makaleleri postala"
 
-#: src/lang.c:329
+#: src/lang.c:330
 #, fuzzy
 msgid	"menu of configurable options"
 msgstr	"yapýlandýrabilir seçenekler menüsü"
 
-#: src/lang.c:330
+#: src/lang.c:331
 #, fuzzy
 msgid	"down one page"
 msgstr	"bir sayfa alta"
 
-#: src/lang.c:331
+#: src/lang.c:332
 #, fuzzy
 msgid	"up one page"
 msgstr	"bir sayfa yukarýya"
 
-#: src/lang.c:332
+#: src/lang.c:333
 #, fuzzy
 msgid	"post (write) article to current group"
 msgstr	"makaleyi mevcut kümeye gönder(yaz)"
 
-#: src/lang.c:333
+#: src/lang.c:334
 #, fuzzy
 msgid	"post postponed articles"
 msgstr	"ertelenmiþ makaleleri postala"
 
-#: src/lang.c:334
+#: src/lang.c:335
 #, fuzzy
 msgid	"list articles posted by you (from posted file)"
 msgstr	"(postalanmýþ dosyadan) tarafýnýzdan postalanan makaleleri listele"
 
-#: src/lang.c:335
+#: src/lang.c:336
 #, fuzzy
 msgid	"return to previous menu"
 msgstr	"önceki menüye dön"
 
-#: src/lang.c:336
+#: src/lang.c:337
 #, fuzzy
 msgid	"quit tin immediately"
 msgstr	"tin'den hemen çýk"
 
-#: src/lang.c:337
+#: src/lang.c:338
 #, fuzzy
 msgid	"redraw page"
 msgstr	"sayfayý yeniden çiz"
 
-#: src/lang.c:338
+#: src/lang.c:339
 #, fuzzy
 msgid	"save article/thread/hot/pattern/tagged articles to file"
 msgstr	"makale/parçacýk/hot/örüntü/etiketlenmiþ makaleleri dosyaya kaydet"
 
-#: src/lang.c:339
+#: src/lang.c:340
 #, fuzzy
 msgid	"save marked articles automatically without user prompts"
 msgstr	"iþaretlenmiþ makaleleri kullanýcý istemi olmadan otomatik kaydet"
 
-#: src/lang.c:340
+#: src/lang.c:341
 msgid	"scroll the screen one line down"
 msgstr	""
 
-#: src/lang.c:341
+#: src/lang.c:342
 msgid	"scroll the screen one line up"
 msgstr	""
 
-#: src/lang.c:342
+#: src/lang.c:343
 #, fuzzy
 msgid	"search for articles by author backwards"
 msgstr	"makaleleri yazara göre geriye doðru ara"
 
-#: src/lang.c:343
+#: src/lang.c:344
 #, fuzzy
 msgid	"search for articles by author forwards"
 msgstr	"makaleleri yazara göre ileriye doðru ara"
 
-#: src/lang.c:344
+#: src/lang.c:345
 #, fuzzy
 msgid	"search all articles for a given string (this may take some time)"
 msgstr	"bütün makaleleri verilen dizgi için ara (bu uzun sürebilir)"
 
-#: src/lang.c:345
+#: src/lang.c:346
 #, fuzzy
 msgid	" \t  (searches are case-insensitive and wrap around to all articles)"
 msgstr	" \t  (arayýcýlar büyük/küçük harfe duyarlýdýr ve bütün makaleleri çevreler)"
 
-#: src/lang.c:346
+#: src/lang.c:347
 #, fuzzy
 msgid	"search for articles by Subject line backwards"
 msgstr	"makaleleri Konu satýrýna göre geriye doðru ara"
 
-#: src/lang.c:347
+#: src/lang.c:348
 #, fuzzy
 msgid	"search for articles by Subject line forwards"
 msgstr	"makaleleri Konuya göre ileriye doðru ara"
 
-#: src/lang.c:348
+#: src/lang.c:349
 #, fuzzy
 msgid	"repeat last search"
 msgstr	"son aramayý tekrarla"
 
-#: src/lang.c:349
+#: src/lang.c:350
 #, fuzzy
 msgid	"tag current article for reposting/mailing/piping/printing/saving"
 msgstr	"mevcut makaleyi yeniden gönderme/postalama/kanal/yazdýrma/kaydetme için "
 	"etiketle"
 
-#: src/lang.c:350
+#: src/lang.c:351
 #, fuzzy
 msgid	"toggle info message in last line (subject/description)"
 msgstr	"son satýrdaki bilgi iletisini deðiþtir (konu/taným)"
 
-#: src/lang.c:351
+#: src/lang.c:352
 #, fuzzy
 msgid	"toggle inverse video"
 msgstr	"ters video'yu deðiþtir"
 
-#: src/lang.c:352
+#: src/lang.c:353
 #, fuzzy
 msgid	"toggle mini help menu display"
 msgstr	"mini yardým menüsü görünümünü deðiþtir"
 
-#: src/lang.c:353
+#: src/lang.c:354
 #, fuzzy
 msgid	"cycle the display of authors email address, real name, both or neither"
 msgstr	"yazarlarýn e-posta adreslerinin, gerçek isimlerinin, ikisinin veya hiçbirinin "
 	"görünümünü çevir"
 
-#: src/lang.c:354
+#: src/lang.c:355
 #, fuzzy
 msgid	"show version information"
 msgstr	"sürüm bilgisini göster"
 
-#: src/lang.c:355
+#: src/lang.c:356
 #, fuzzy
 msgid	"mark all articles as read and return to group selection menu"
 msgstr	"bürtümn makaleleri okunmuþ olarak iþaretle ve küme seçme menüsüne geri dön"
 
-#: src/lang.c:356
+#: src/lang.c:357
 #, fuzzy
 msgid	"mark all articles as read and enter next group with unread articles"
 msgstr	"bütün makaleleri okunmuþ olarak iþaretle ve okunmamýþ makalelerin bulunduðu "
 	"sonraki kümeye gir"
 
-#: src/lang.c:357
+#: src/lang.c:358
 #, fuzzy
 msgid	"choose first thread in list"
 msgstr	"listedeki ilk parçacýðý seç"
 
-#: src/lang.c:358
+#: src/lang.c:359
 #, fuzzy
 msgid	"choose last thread in list"
 msgstr	"listedeki son parçacýðý seç"
 
-#: src/lang.c:359
+#: src/lang.c:360
 #, fuzzy
 msgid	"list articles within current thread (bring up Thread sub-menu)"
 msgstr	"mevcut parçacýk kapsamýndaki makaleleri seç ( Parçacýk alt-menüsünü aç)"
 
-#: src/lang.c:360
+#: src/lang.c:361
 #, fuzzy
 msgid	"mark article as unread"
 msgstr	"makaleyi okunmamýþ olarak iþaretle"
 
-#: src/lang.c:361
+#: src/lang.c:362
 #, fuzzy
 msgid	"mark current thread or tagged threads as read"
 msgstr	"mevcut parçacýðý veya etiketlenmiþ parçacýklarý okunmuþ olarak iþaretle "
 
-#: src/lang.c:362
+#: src/lang.c:363
 #, fuzzy
 msgid	"mark thread as unread"
 msgstr	"parçacýðý okunmamýþ olarak iþaretle"
 
-#: src/lang.c:363
+#: src/lang.c:364
 #, fuzzy
 msgid	"toggle display of all/selected articles"
 msgstr	"Bütün/seçilen makalelerin görünümünü deðiþtir"
 
-#: src/lang.c:364
+#: src/lang.c:365
 #, fuzzy
 msgid	"display next group"
 msgstr	"sonraki kümeyi görüntüle"
 
-#: src/lang.c:365
+#: src/lang.c:366
 #, fuzzy
 msgid	"display previous group"
 msgstr	"önceki kümeyi görüntüle"
 
-#: src/lang.c:366
+#: src/lang.c:367
 #, fuzzy
 msgid	"toggle all selections (all articles)"
 msgstr	"bütün seçimleri (bütün makaleleri) deðiþtir"
 
-#: src/lang.c:367
+#: src/lang.c:368
 #, fuzzy
 msgid	"select group (make \"hot\")"
 msgstr	"küme seç (yap \"hot\")"
 
-#: src/lang.c:368
+#: src/lang.c:369
 #, fuzzy
 msgid	"select thread"
 msgstr	"parçacýk seç"
 
-#: src/lang.c:369
+#: src/lang.c:370
 #, fuzzy
 msgid	"select threads if at least one unread article is selected"
 msgstr	"en az bir okunmamýþ makale seçilmiþse parçacýk seç)"
 
-#: src/lang.c:370
+#: src/lang.c:371
 #, fuzzy
 msgid	"select threads that match user specified pattern"
 msgstr	"kullanýcý tanýmlý kalýba uyan baþlýklarý seç"
 
-#: src/lang.c:371
+#: src/lang.c:372
 #, fuzzy
 msgid	"tag all parts of current multipart-message in order"
 msgstr	"mevcut çok-bölümlü iletinin bütün bölümlerini sýrayla etiketle"
 
-#: src/lang.c:372
+#: src/lang.c:373
 #, fuzzy
 msgid	"0 - 9\t  choose thread by number"
 msgstr	"0 - 9\t  sayýya göre parçacýk seç"
 
-#: src/lang.c:373
+#: src/lang.c:374
 #, fuzzy
 msgid	"toggle limit number of articles to get, and reload"
 msgstr	"alýnacak ve yeniden yüklenecek makalelerin sýnýr sayýsýný deðiþtir."
 
-#: src/lang.c:374
+#: src/lang.c:375
 #, fuzzy
 msgid	"toggle display of all/unread articles"
 msgstr	"bütün/okunmamýþ makalelerin görünümünü deðiþtir"
 
-#: src/lang.c:375
+#: src/lang.c:376
 #, fuzzy
 msgid	"toggle selection of thread"
 msgstr	"parçacýk seçimini deðiþtir"
 
-#: src/lang.c:376
+#: src/lang.c:377
 #, fuzzy
 msgid	"cycle through threading options available"
 msgstr	"kullanýlabilir parçacýk seçenekleriyle çevir"
 
-#: src/lang.c:377
+#: src/lang.c:378
 #, fuzzy
 msgid	"undo all selections (all articles)"
 msgstr	"bütün seçimleri (bütün makaleleri) geri al"
 
-#: src/lang.c:378
+#: src/lang.c:379
 #, fuzzy
 msgid	"untag all tagged threads"
 msgstr	"etiketlenmiþ bütün parçacýklarýn etiketini kaldýr"
 
-#: src/lang.c:379
+#: src/lang.c:380
 #, fuzzy
 msgid	"mark all articles in group as read"
 msgstr	"kümedeki bütün makaleleri okunmuþ olarak iþaretle"
 
-#: src/lang.c:380
+#: src/lang.c:381
 #, fuzzy
 msgid	"mark all articles in group as read and move to next unread group"
 msgstr	"kümedeki bütün makaleleri okumuþ olarak iþaretle ve sonraki okunmamýþ kümeye "
 	"geç"
 
-#: src/lang.c:381
+#: src/lang.c:382
 #, fuzzy
 msgid	"choose first group in list"
 msgstr	"listedeki ilk kümeyi seç"
 
-#: src/lang.c:382
+#: src/lang.c:383
 #, fuzzy
 msgid	"choose group by name"
 msgstr	"Ýsme göre küme seç"
 
-#: src/lang.c:383
+#: src/lang.c:384
 #, fuzzy
 msgid	"0 - 9\t  choose group by number"
 msgstr	"0 - 9\t  sayýya göre küme seç"
 
-#: src/lang.c:384
+#: src/lang.c:385
 #, fuzzy
 msgid	"choose range of groups to be affected by next command"
 msgstr	"sonraki komuttan etkilenecek olan kümelerin aralýðýný seç"
 
-#: src/lang.c:385
+#: src/lang.c:386
 #, fuzzy
 msgid	"choose last group in list"
 msgstr	"listedeki son kümeyi seç"
 
-#: src/lang.c:386
+#: src/lang.c:387
 #, fuzzy
 msgid	"mark all articles in chosen group unread"
 msgstr	"seçilen kümedeki bütün makaleleri okunmamýþ olarak iþaretle"
 
-#: src/lang.c:387
+#: src/lang.c:388
 #, fuzzy
 msgid	"move chosen group within list"
 msgstr	"Listede seçilen kümeye git"
 
-#: src/lang.c:388
+#: src/lang.c:389
 #, fuzzy
 msgid	"choose next group with unread news"
 msgstr	"okunmamýþ haberlerde sonraki kümeyi seç"
 
-#: src/lang.c:389 src/lang.c:1197
+#: src/lang.c:390 src/lang.c:1197
 #, fuzzy
 msgid	"quit"
 msgstr	"çýk"
 
-#: src/lang.c:390
+#: src/lang.c:391
 #, fuzzy
 msgid	"quit without saving configuration changes"
 msgstr	"yapýlandýrabilir deðiþiklikleri kaydetmeden çýk"
 
-#: src/lang.c:391
+#: src/lang.c:392
 #, fuzzy
 msgid	"read chosen group"
 msgstr	"seçilen kümeyi oku"
 
-#: src/lang.c:392
+#: src/lang.c:393
 #, fuzzy
 msgid	"reset .newsrc (all available articles in groups marked unread)"
 msgstr	"reset .newsrc (kümelerdeki bütün kullanýlabilir makaleler okunmamýþ olarak "
 	"iþaretlendi)"
 
-#: src/lang.c:393
+#: src/lang.c:394
 #, fuzzy
 msgid	"search backwards for a group name"
 msgstr	"geriye doðru küme ismi ara"
 
-#: src/lang.c:394
+#: src/lang.c:395
 #, fuzzy
 msgid	" \t  (all searches are case-insensitive and wrap around)"
 msgstr	" \t  (bütün arayýcýlar büyük/küçük harfe duyarlýdýr ve çevreler)"
 
-#: src/lang.c:395
+#: src/lang.c:396
 #, fuzzy
 msgid	"search forwards for a group name"
 msgstr	"ileriye doðru küme ismi ara"
 
-#: src/lang.c:396
+#: src/lang.c:397
 #, fuzzy
 msgid	"subscribe to chosen group"
 msgstr	"seçilen kümeye abone ol"
 
-#: src/lang.c:397
+#: src/lang.c:398
 #, fuzzy
 msgid	"subscribe to groups that match pattern"
 msgstr	"örüntüye uyan kümelere abone ol"
 
-#: src/lang.c:398
+#: src/lang.c:399
 #, fuzzy
 msgid	"reread active file to check for any new news"
 msgstr	"aktif dosyayý yeni haberleri onaylamak için yeniden oku"
 
-#: src/lang.c:399
+#: src/lang.c:400
 #, fuzzy
 msgid	"toggle display of group name only or group name plus description"
 msgstr	"sadece küme ismini veya küme ismi ve taným görünümünü deðiþtir"
 
-#: src/lang.c:400
+#: src/lang.c:401
 #, fuzzy
 msgid	"toggle display to show all/unread subscribed groups"
 msgstr	"bütün7okunmamýþ abone olmayan kümeleri göstermek için görünümü deðiþtir"
 
-#: src/lang.c:401
+#: src/lang.c:402
 #, fuzzy
 msgid	"unsubscribe from chosen group"
 msgstr	"seçilen küme için abonelikten çýk"
 
-#: src/lang.c:402
+#: src/lang.c:403
 #, fuzzy
 msgid	"unsubscribe from groups that match pattern"
 msgstr	"örüntüye uyan bütün kümeler için abonelikten çýk"
 
-#: src/lang.c:403
+#: src/lang.c:404
 #, fuzzy
 msgid	"sort the list of groups"
 msgstr	"küme listelerini sýrala"
 
-#: src/lang.c:404
+#: src/lang.c:405
 #, fuzzy
 msgid	"toggle display to show all/subscribed groups"
 msgstr	"bütün/abone olmayan kümeleri göstermek için görünümü deðiþtir"
 
-#: src/lang.c:405
+#: src/lang.c:406
 #, fuzzy
 msgid	"0 - 9\t  choose article by number"
 msgstr	"0 - 9\t  sayýya göre makale seç"
 
-#: src/lang.c:406
+#: src/lang.c:407
 #, fuzzy
 msgid	"mark thread as read and return to group index page"
 msgstr	"parçacýðý okunmuþ olarak iþaretle ve küme dizin sayfasýna geri dön"
 
-#: src/lang.c:407
+#: src/lang.c:408
 #, fuzzy
 msgid	"mark thread as read and enter next unread thread or group"
 msgstr	"parçacýðý okunmuþ olarak iþaretle ve sonraki okunmamýþ parçacýða veya kümeye "
 	"gir"
 
-#: src/lang.c:408
+#: src/lang.c:409
 #, fuzzy
 msgid	"choose first article in list"
 msgstr	"listedeki ilk makaleyi seç"
 
-#: src/lang.c:409
+#: src/lang.c:410
 #, fuzzy
 msgid	"choose last article in list"
 msgstr	"listedeki son makaleyi seç"
 
-#: src/lang.c:410
+#: src/lang.c:411
 #, fuzzy
 msgid	"mark article or tagged articles as read and move cursor to next unread article"
 msgstr	"makaleyi veya etiketlenen makaleleri okunmuþ olarak iþaretle ve imleçi "
 	"sonraki okunmamýþ makaleye taþý"
 
-#: src/lang.c:411
+#: src/lang.c:412
 #, fuzzy
 msgid	"read chosen article"
 msgstr	"seçilen makaleyi oku"
 
-#: src/lang.c:412
+#: src/lang.c:413
 #, fuzzy
 msgid	"Display properties\n"
 	"------------------"
 msgstr	"Özellikleri görüntüle\n"
 	"---------------------"
 
-#: src/lang.c:413
+#: src/lang.c:414
 #, fuzzy
 msgid	"Miscellaneous\n"
 	"-------------"
 msgstr	"Diðer\n"
 	"-----"
 
-#: src/lang.c:414
+#: src/lang.c:415
 #, fuzzy
 msgid	"Moving around\n"
 	"-------------"
 msgstr	"Etrafýna taþý\n"
 	"-------------"
 
-#: src/lang.c:415
+#: src/lang.c:416
 #, fuzzy
 msgid	"Group/thread/article operations\n"
 	"-------------------------------"
 msgstr	"Küme/parçacýk/makale iþlemleri\n"
 	"-------------------------------"
 
-#: src/lang.c:417
+#: src/lang.c:418
 #, fuzzy
 msgid	"Group Level Commands"
 msgstr	"Küme Düzey Komutlarý"
 
-#: src/lang.c:418
+#: src/lang.c:419
 #, fuzzy
 msgid	"Kill filter added"
 msgstr	"Eklendikten sonra öldür"
 
-#: src/lang.c:419
+#: src/lang.c:420
 #, fuzzy
 msgid	"Auto-selection filter added"
 msgstr	"Eklendikten sonra otomatik-seç"
 
-#: src/lang.c:420
+#: src/lang.c:421
 #, fuzzy
 msgid	"All parts tagged"
 msgstr	"Bütün bölümler etiketlendi"
 
-#: src/lang.c:421
+#: src/lang.c:422
 #, fuzzy
 msgid	"Storing article for later posting"
 msgstr	"Makale daha sonra postlama için yükleniyor"
 
-#: src/lang.c:422
+#: src/lang.c:423
 #, fuzzy
 msgid	"Please enter a valid character"
 msgstr	"Lütfen geçerli bir karakter yazýn"
 
-#: src/lang.c:423
+#: src/lang.c:424
 #, fuzzy, c-format
 msgid	"Missing part #%d"
 msgstr	"Eksik bölüm #%d"
 
-#: src/lang.c:424
+#: src/lang.c:425
 #, fuzzy
 msgid	"*** No postponed articles ***"
 msgstr	"*** Ertelenmiþ makale yok ***"
 
-#: src/lang.c:425
+#: src/lang.c:426
 #, fuzzy
 msgid	"Not a multi-part message"
 msgstr	"Çok-bölümlü ileti deðil"
 
-#: src/lang.c:426
+#: src/lang.c:427
 #, fuzzy
 msgid	"You are not subscribed to this group"
 msgstr	"Bu kümeye abone deðilsiniz"
 
-#: src/lang.c:427
+#: src/lang.c:428
 #, fuzzy
 msgid	"No previous expression"
 msgstr	"Önceki ifade yok"
 
-#: src/lang.c:428
+#: src/lang.c:429
 #, fuzzy
 msgid	"Operation disabled in no-overwrite mode"
 msgstr	"Üstüne yazýlmayan kipte iþlem geçersiz"
 
 #. TODO: replace hardcoded key-name in txt_info_postponed
-#: src/lang.c:430
+#: src/lang.c:431
 #, fuzzy, c-format
 msgid	"%d postponed %s, reuse with ^O...\n"
 msgstr	"%d ertelendi %s, tekrar kullan ^O...\n"
 
-#: src/lang.c:431
+#: src/lang.c:432
 #, fuzzy
 msgid	"X-Conversion-Note: multipart/alternative contents have been removed.\n"
 	"  To get the whole article, turn alternative handling OFF in the Option Menu\n"
@@ -2118,23 +2103,23 @@ msgstr	"X-Çevirim Notu: çok-bölümlü/alternatif içerikler kaldýrýldý.\n"
 	"  Bütün makaleyi almak için, Seçenekler Menüsündeki alternatif kotarmayý\n"
 	"  OFF durumuna getirin\n"
 
-#: src/lang.c:433
+#: src/lang.c:434
 #, fuzzy, c-format
 msgid	"Save filename for %s/%s is a mailbox. Attachment not saved"
 msgstr	"Dosya adýný %s/%s için kaydet bir posta kutusudur. Ek kaydedilmedi"
 
-#: src/lang.c:434
+#: src/lang.c:435
 #, fuzzy
 msgid	"TeX2Iso encoded article"
 msgstr	"TeX2Iso makaleyi kodladý"
 
-#: src/lang.c:435
+#: src/lang.c:436
 #, fuzzy
 msgid	"incomplete "
 msgstr	"tamamlanmadý "
 
 #. TODO: replace hardcoded key-names
-#: src/lang.c:437
+#: src/lang.c:438
 #, fuzzy, c-format
 msgid	"\n"
 	"Welcome to %s, a full screen threaded Netnews reader. It can read news "
@@ -2195,146 +2180,146 @@ msgstr	"\n"
 	"dosyalarýný okuyun.\n"
 	"Hata-raporlarýný ve önerileri 'R' komutu ile %s'e gönderin.\n"
 
-#: src/lang.c:453
+#: src/lang.c:454
 #, fuzzy, c-format
 msgid	"Invalid  From: %s  line. Read the INSTALL file again."
 msgstr	"Geçersiz Gönderen: %s satýrý. INSTALL dosyasýný yeniden okuyun."
 
-#: src/lang.c:455
+#: src/lang.c:456
 msgid	"Invalid multibyte sequence found\n"
 msgstr	""
 
-#: src/lang.c:457
+#: src/lang.c:458
 #, fuzzy, c-format
 msgid	"Invalid  Sender:-header %s"
 msgstr	"Geçersiz Gönderen: -baþlýk %s"
 
-#: src/lang.c:458
+#: src/lang.c:459
 #, fuzzy
 msgid	"Inverse video disabled"
 msgstr	"Ters video geçersiz"
 
-#: src/lang.c:459
+#: src/lang.c:460
 #, fuzzy
 msgid	"Inverse video enabled"
 msgstr	"Ters video geçerli"
 
-#: src/lang.c:461
+#: src/lang.c:462
 #, fuzzy, c-format
 msgid	"Missing definition for %s\n"
 msgstr	"Taným eksik %s\n"
 
-#: src/lang.c:462
+#: src/lang.c:463
 #, fuzzy, c-format
 msgid	"Invalid key definition '%s'\n"
 msgstr	"Geçersiz tuþ tanýmý '%s'\n"
 
-#: src/lang.c:463
+#: src/lang.c:464
 #, fuzzy, c-format
 msgid	"Invalid keyname '%s'\n"
 msgstr	"Geçersiz anahtar sözcük '%s'\n"
 
-#: src/lang.c:464
+#: src/lang.c:465
 #, c-format
 msgid	"Keymap file was upgraded to version %s\n"
 msgstr	""
 
-#: src/lang.c:465
+#: src/lang.c:466
 #, fuzzy, c-format
 msgid	"Kill From:     [%s] (y/n): "
 msgstr	"Göndereni yok et:     [%s] (y/n): "
 
-#: src/lang.c:466
+#: src/lang.c:467
 #, fuzzy
 msgid	"Kill Lines: (</>num): "
 msgstr	"Satýrlarý yok et:(</>num): "
 
-#: src/lang.c:467
+#: src/lang.c:468
 #, fuzzy
 msgid	"Kill Article Menu"
 msgstr	"Makale menüsünü yok et"
 
-#: src/lang.c:468
+#: src/lang.c:469
 #, fuzzy, c-format
 msgid	"Kill Msg-Id:   [%s] (f/l/o/n): "
 msgstr	"Ýleti-Kimliðini yko et:   [%s] (f/l/o/n): "
 
-#: src/lang.c:469
+#: src/lang.c:470
 #, fuzzy
 msgid	"Kill pattern scope  : "
 msgstr	"Örüntü kapsamýný yok et: "
 
-#: src/lang.c:470
+#: src/lang.c:471
 #, fuzzy, c-format
 msgid	"Kill Subject:  [%s] (y/n): "
 msgstr	"Konuyu yok et: [%s] (y/n): "
 
-#: src/lang.c:471
+#: src/lang.c:472
 #, fuzzy
 msgid	"Kill text pattern   : "
 msgstr	"Metin örüntüsünü yok et : "
 
-#: src/lang.c:472
+#: src/lang.c:473
 #, fuzzy
 msgid	"Kill time in days   : "
 msgstr	"Zamaný gün olarak yok et: "
 
-#: src/lang.c:474
+#: src/lang.c:475
 #, fuzzy
 msgid	"Last"
 msgstr	"Son"
 
-#: src/lang.c:475
+#: src/lang.c:476
 #, fuzzy
 msgid	"-- Last response --"
 msgstr	"-- Son yanýt --"
 
-#: src/lang.c:476
+#: src/lang.c:477
 #, fuzzy, c-format
 msgid	"Lines %s  "
 msgstr	"Satýrlar %s "
 
-#: src/lang.c:478
+#: src/lang.c:479
 #, fuzzy
 msgid	"Mail"
 msgstr	"Postalandý"
 
-#: src/lang.c:479
+#: src/lang.c:480
 #, fuzzy
 msgid	"mailbox "
 msgstr	"posta kutusu "
 
-#: src/lang.c:480
+#: src/lang.c:481
 #, fuzzy, c-format
 msgid	"Mail article(s) to [%.*s]> "
 msgstr	"Makaleleri postala [%.*s]> "
 
-#: src/lang.c:481
+#: src/lang.c:482
 #, fuzzy, c-format
 msgid	"Mailing log to %s\n"
 msgstr	"Günlüðü postalýyor %s\n"
 
-#: src/lang.c:482
+#: src/lang.c:483
 #, fuzzy
 msgid	"Mail bug report..."
 msgstr	"Hata raporu postala..."
 
-#: src/lang.c:483
+#: src/lang.c:484
 #, fuzzy, c-format
 msgid	"Mail BUG REPORT to %s?"
 msgstr	"HATA RAPORUNU postala %s?"
 
-#: src/lang.c:484
+#: src/lang.c:485
 #, fuzzy
 msgid	"Mailed"
 msgstr	"Postalandý"
 
-#: src/lang.c:485
+#: src/lang.c:486
 #, fuzzy, c-format
 msgid	"Mailing to %s..."
 msgstr	"Postalanýyor %s..."
 
-#: src/lang.c:486
+#: src/lang.c:487
 #, fuzzy
 msgid	"# [Mail/Save] active file. Format is like news active file:\n"
 	"#   groupname  max.artnum  min.artnum  /dir\n"
@@ -2345,336 +2330,336 @@ msgstr	"# (Mail/Save) aktif dosya. Format haber aktif dosyasyla ayný:\n"
 	"# 4. alan basedir(örn.~/Mail or ~/News)\n"
 	"#\n"
 
-#: src/lang.c:489
+#: src/lang.c:490
 #, fuzzy, c-format
 msgid	"%s marked as unread"
 msgstr	"%s okunmamýþ olarak iþaretlendi"
 
-#: src/lang.c:490
+#: src/lang.c:491
 #, fuzzy, c-format
 msgid	"Marked %d of %d tagged %s as read"
 msgstr	"%d içerisinde %d iþaretlendi %s okunmuþ olarak etiketlendi"
 
-#: src/lang.c:491
+#: src/lang.c:492
 #, fuzzy, c-format
 msgid	"Mark all articles as read%s?"
 msgstr	"Bütün makaleleri okunmuþ olarak iþaretle%s?"
 
-#: src/lang.c:492
+#: src/lang.c:493
 #, fuzzy, c-format
 msgid	"Mark %s=tagged articles, %s=current article, %s=quit: "
 msgstr	"Ýþaretle %s=etiketlenen makaleler, %s=mevcut makale, %s=çýk: "
 
-#: src/lang.c:493
+#: src/lang.c:494
 #, fuzzy, c-format
 msgid	"Mark group %s as read?"
 msgstr	"Küme %s 'i okunmuþ olarak iþaretle?"
 
-#: src/lang.c:494
+#: src/lang.c:495
 #, fuzzy, c-format
 msgid	"Mark thread as read%s?"
 msgstr	"Parçacýk %s 'i okunmuþ olarak iþaretle?"
 
-#: src/lang.c:495
+#: src/lang.c:496
 #, fuzzy, c-format
 msgid	"Mark %s=tagged articles/threads, %s=current thread, %s=quit: "
 msgstr	"Ýþaretle %s=etiketlenen makale7parçacýklar, %s= mevcut parçacýk, %s=çýk: "
 
-#: src/lang.c:496
+#: src/lang.c:497
 #, fuzzy, c-format
 msgid	"Matching %s groups..."
 msgstr	"%s kümelerini eþleþtiriyor..."
 
-#: src/lang.c:497 src/lang.c:501
+#: src/lang.c:498 src/lang.c:502
 #, fuzzy, c-format
 msgid	"<n>=set current to n; %s=next unread; %s=search pattern; %s=kill/select"
 msgstr	"<n>=muvcut n için ayarlandý; %s=sonraki okunmayan; %s=arama örüntüsü; %s=yok "
 	"et/seç"
 
-#: src/lang.c:498
+#: src/lang.c:499
 #, fuzzy, c-format
 msgid	"%s=author search; %s=catchup; %s=line down; %s=line up; %s=mark read; %s=list "
 	"thread"
 msgstr	"%s=yazar aramasý; %s=catchup; %s=alt satýr; %s=üst satýr; %s= okunmuþ "
 	"iþaretle; %s=parçacýk listele"
 
-#: src/lang.c:499
+#: src/lang.c:500
 #, fuzzy, c-format
 msgid	"%s=line up; %s=line down; %s=page up; %s=page down; %s=top; %s=bottom"
 msgstr	"%s=üst satýr; %s=alt satýr; %s=üst sayfa; %s= alt sayfa; %s=üst; %s=alt"
 
-#: src/lang.c:500
+#: src/lang.c:501
 #, fuzzy, c-format
 msgid	"%s=search forwards; %s=search backwards; %s=quit"
 msgstr	"%s=ileriye doðru ara; %s=geriye doðru ara; %s=çýk"
 
-#: src/lang.c:502
+#: src/lang.c:503
 #, fuzzy, c-format
 msgid	"%s=author search; %s=body search; %s=catchup; %s=followup; %s=mark read"
 msgstr	"%s=yazar aramasý; %s=gövde aramasý; %s=catchup; %s=takip-et; %s=okumuþ olarak "
 	"iþaretle"
 
-#: src/lang.c:503
+#: src/lang.c:504
 #, fuzzy, c-format
 msgid	"<n>=set current to n; %s=next unread; %s,%s=search pattern; %s=catchup"
 msgstr	"<n>=mevcut n için ayarlandý; %s=sonraki okunmayan; %s,%s=arama örgüsü; %"
 	"s=catchup"
 
-#: src/lang.c:504
+#: src/lang.c:505
 #, fuzzy, c-format
 msgid	"%s=line down; %s=line up; %s=help; %s=move; %s=quit; %s=toggle all/unread"
 msgstr	"%s=alt satýr; %s=üst satýr; %s=yardým; %s=taþý; %s=çýk; %s=bütün/okunmamýþ "
 	"deðiþtir"
 
-#: src/lang.c:505
+#: src/lang.c:506
 #, fuzzy, c-format
 msgid	"%s=subscribe; %s=sub pattern; %s=unsubscribe; %s=unsub pattern; %s=yank in/out"
 msgstr	"%s=abone ol; %s=alt örüntü; %s=abonelikten çýk; %s=alt olmayan örüntü; %"
 	"s=yank in/out"
 
-#: src/lang.c:506
+#: src/lang.c:507
 #, fuzzy, c-format
 msgid	"<n>=set current to n; %s=next unread; %s=catchup; %s=display toggle"
 msgstr	"<n>= muvcut n için ayarlandý; %s=sonraki okunmayan; %s=catchup; %s=deðiþimi "
 	"görüntüle"
 
-#: src/lang.c:507
+#: src/lang.c:508
 #, fuzzy, c-format
 msgid	"%s=help; %s=line down; %s=line up; %s=quit; %s=tag; %s=mark unread"
 msgstr	"%s=yardým; %s=alt satýr; %s=üst satýr; %s=quit; %s=etiketle; %s=okunmamýþ "
 	"olarak iþaretle"
 
-#: src/lang.c:508
+#: src/lang.c:509
 #, fuzzy
 msgid	"--More--"
 msgstr	"--Tümü--"
 
-#: src/lang.c:509
+#: src/lang.c:510
 #, fuzzy, c-format
 msgid	"Moving %s..."
 msgstr	"Taþýnan %s..."
 
-#: src/lang.c:510
+#: src/lang.c:511
 msgid	"Message-ID: & last Reference  "
 msgstr	""
 
-#: src/lang.c:511
+#: src/lang.c:512
 #, fuzzy
 msgid	"Message-ID: line              "
 msgstr	"Ýleti-Kimliði: satýr             "
 
-#: src/lang.c:512
+#: src/lang.c:513
 msgid	"Message-ID: & References: line"
 msgstr	""
 
-#: src/lang.c:514
+#: src/lang.c:515
 #, fuzzy
 msgid	", name: "
 msgstr	", isim: "
 
-#: src/lang.c:515
+#: src/lang.c:516
 #, fuzzy, c-format
 msgid	"Goto newsgroup [%s]> "
 msgstr	"Haber grubuna gidin [%s]> "
 
-#: src/lang.c:516
+#: src/lang.c:517
 #, fuzzy
 msgid	"newsgroups"
 msgstr	"haber gruplarý"
 
-#: src/lang.c:517
+#: src/lang.c:518
 #, fuzzy, c-format
 msgid	"Position %s in group list (1,2,..,$) [%d]> "
 msgstr	"Grup listesinde %s konumlayýn (1,2,..,$) [%d]> "
 
-#: src/lang.c:518
+#: src/lang.c:519
 #, fuzzy
 msgid	"newsgroup"
 msgstr	"haber gruplarý"
 
-#: src/lang.c:519
+#: src/lang.c:520
 #, fuzzy
 msgid	"Try and save newsrc file again?"
 msgstr	"Newsrc dosyasýný kaydetmeyi tekrar dene?"
 
-#: src/lang.c:520
+#: src/lang.c:521
 #, fuzzy
 msgid	"Warning: No newsgroups were written to your newsrc file. Save aborted."
 msgstr	"Uyarý: Newsrc dosyanýza herhangi bir haber grubu yazýlmadý. Kaydetme "
 	"durduruldu."
 
-#: src/lang.c:521
+#: src/lang.c:522
 #, fuzzy
 msgid	"newsrc file saved successfully.\n"
 msgstr	"newsrc dosyasý baþarýyla kaydedildi.\n"
 
-#: src/lang.c:522
+#: src/lang.c:523
 #, fuzzy
 msgid	"-- Next response --"
 msgstr	"-- Sonraki yanýt --"
 
-#: src/lang.c:523
+#: src/lang.c:524
 #, fuzzy, c-format
 msgid	"NNTP authorization password not found for %s"
 msgstr	"NNTP yetki þifresi %s için bulunamadý"
 
-#: src/lang.c:524
+#: src/lang.c:525
 #, fuzzy
 msgid	"No  "
 msgstr	"Hayýr"
 
-#: src/lang.c:525
+#: src/lang.c:526
 #, fuzzy
 msgid	"*** No articles ***"
 msgstr	"*** Makale yok ***"
 
-#: src/lang.c:526
+#: src/lang.c:527
 #, fuzzy
 msgid	"No articles have been posted"
 msgstr	"Hiçbir makale gönderilmedi"
 
-#: src/lang.c:527
+#: src/lang.c:528
 #, fuzzy
 msgid	"*** No description ***"
 msgstr	"*** Taným yok ***"
 
-#: src/lang.c:528
+#: src/lang.c:529
 #, fuzzy
 msgid	"No filename"
 msgstr	"Dosya adý yok"
 
-#: src/lang.c:529
+#: src/lang.c:530
 #, fuzzy
 msgid	"No group"
 msgstr	"Küme yok"
 
-#: src/lang.c:530
+#: src/lang.c:531
 #, fuzzy
 msgid	"*** No groups ***"
 msgstr	"*** Kümeler yok ***"
 
-#: src/lang.c:531
+#: src/lang.c:532
 #, fuzzy
 msgid	"No more groups to read"
 msgstr	"Okunacak küme kalmadý"
 
-#: src/lang.c:532
+#: src/lang.c:533
 #, fuzzy
 msgid	"No last message"
 msgstr	"Son ileti yok"
 
-#: src/lang.c:533
+#: src/lang.c:534
 #, fuzzy
 msgid	"No mail address"
 msgstr	"Posta adresi yok"
 
-#: src/lang.c:534
+#: src/lang.c:535
 #, fuzzy
 msgid	"No articles marked for saving"
 msgstr	"Kaydetmek için hiçbir makale iþaretlenmedi"
 
-#: src/lang.c:535
+#: src/lang.c:536
 #, fuzzy
 msgid	"No match"
 msgstr	"Eþ yok"
 
-#: src/lang.c:536
+#: src/lang.c:537
 #, fuzzy
 msgid	"No more groups"
 msgstr	"Baþka küme yok"
 
-#: src/lang.c:537
+#: src/lang.c:538
 #, fuzzy
 msgid	"No newsgroups"
 msgstr	"Haber gruplarý yok"
 
-#: src/lang.c:538
+#: src/lang.c:539
 #, fuzzy
 msgid	"No next unread article"
 msgstr	"Sonraki okunmamýþ makale yok"
 
-#: src/lang.c:539
+#: src/lang.c:540
 #, fuzzy
 msgid	"No previous group"
 msgstr	"Önceki küme yok"
 
-#: src/lang.c:540
+#: src/lang.c:541
 #, fuzzy
 msgid	"No previous unread article"
 msgstr	"Önceki okunmamýþ makale yok"
 
-#: src/lang.c:541
+#: src/lang.c:542
 #, fuzzy
 msgid	"No responses"
 msgstr	"Yanýt yok"
 
-#: src/lang.c:542
+#: src/lang.c:543
 #, fuzzy
 msgid	"No responses to list in current thread"
 msgstr	"Mevcut parçacýkta listelemek için hiç yanýt yok"
 
-#: src/lang.c:543
+#: src/lang.c:544
 #, fuzzy
 msgid	"No search string"
 msgstr	"Arama dizgisi yok"
 
-#: src/lang.c:544
+#: src/lang.c:545
 #, fuzzy
 msgid	"No subject"
 msgstr	"Konu yok"
 
-#: src/lang.c:546
+#: src/lang.c:547
 #, fuzzy, c-format
 msgid	"%s: Terminal must have clear to end-of-line (ce)\n"
 msgstr	"%s: Uçbirim satýr sonuna kadar boþ olmak zorunda (ce)\n"
 
-#: src/lang.c:547
+#: src/lang.c:548
 #, fuzzy, c-format
 msgid	"%s: Terminal must have clear to end-of-screen (cd)\n"
 msgstr	"%s: Uçbirim ekran sonuna kadar boþ olmak zorunda (cd)\n"
 
-#: src/lang.c:548
+#: src/lang.c:549
 #, fuzzy, c-format
 msgid	"%s: Terminal must have clearscreen (cl) capability\n"
 msgstr	"%s: Uçbirimin ekran temizleme (cl) yeteneði olmalý\n"
 
-#: src/lang.c:549
+#: src/lang.c:550
 #, fuzzy, c-format
 msgid	"%s: Terminal must have cursor motion (cm)\n"
 msgstr	"%s: Uçbirimin imleç hareketi olmalý (cm)\n"
 
-#: src/lang.c:550
+#: src/lang.c:551
 #, fuzzy, c-format
 msgid	"%s: TERM variable must be set to use screen capabilities\n"
 msgstr	"%s: TERM deðiþkeni ekran yetenekleri kullanýlacak þekilde ayarlanmalý\n"
 
-#: src/lang.c:552
+#: src/lang.c:553
 #, fuzzy, c-format
 msgid	"No viewer found for %s/%s\n"
 msgstr	"%s/%s için görüntüleyici yok\n"
 
-#: src/lang.c:553
+#: src/lang.c:554
 #, fuzzy
 msgid	"Newsgroup does not exist on this server"
 msgstr	"Bu sunucuda haber grubu yok"
 
-#: src/lang.c:554
+#: src/lang.c:555
 #, fuzzy, c-format
 msgid	"Group %s not found in active file"
 msgstr	"Küme %s aktif dosyada bulunamadý"
 
-#: src/lang.c:555
+#: src/lang.c:556
 #, fuzzy
 msgid	"c)reate it, use a)lternative name, use d)efault .newsrc, q)uit tin: "
 msgstr	"c)yarat, a)lternatif isim kullan, d)varsayýlaný kullan, mewsrc, q)tin'den "
 	"çýk: "
 
-#: src/lang.c:556
+#: src/lang.c:557
 #, fuzzy
 msgid	"use a)lternative name, use d)efault .newsrc, q)uit tin: "
 msgstr	"a)lternatif isim kullan, d)varsayýlaný kullan, newsrc, q)tin'den çýk: "
 
-#: src/lang.c:557
+#: src/lang.c:558
 #, fuzzy, c-format
 msgid	"# NNTP-server -> newsrc translation table and NNTP-server\n"
 	"# shortname list for %s %s\n"
@@ -2702,43 +2687,43 @@ msgstr	"# NNTP-sunucu -> newsrc çeviri dosyasý ile NNTP-sunucu\n"
 	"#   news.ka.nu    /tmp/nrc-nu      kanu    nu\n"
 	"#\n"
 
-#: src/lang.c:564
+#: src/lang.c:565
 #, fuzzy
 msgid	"Only"
 msgstr	"Sadece"
 
-#: src/lang.c:565
+#: src/lang.c:566
 #, fuzzy, c-format
 msgid	"Option not enabled. Recompile with %s."
 msgstr	"Seçenek etkin kýlýnmadý. Yeniden derle %s."
 
-#: src/lang.c:566
+#: src/lang.c:567
 #, fuzzy
 msgid	"Options Menu"
 msgstr	"Seçenekler menüsü"
 
-#: src/lang.c:569
+#: src/lang.c:570
 #, fuzzy, c-format
 msgid	"Error in regex: %s at pos. %d '%s'"
 msgstr	"Regex'de hata: poda %s. %d '%s'"
 
-#: src/lang.c:570
+#: src/lang.c:571
 #, fuzzy, c-format
 msgid	"Error in regex: pcre internal error %d"
 msgstr	"Regex'de hata: pcre iç hata %d"
 
-#: src/lang.c:571
+#: src/lang.c:572
 #, fuzzy, c-format
 msgid	"Error in regex: study - pcre internal error %s"
 msgstr	"Regex'de hata: incele - pcre iç hata %s"
 
-#: src/lang.c:572
+#: src/lang.c:573
 #, fuzzy
 msgid	"Post a followup..."
 msgstr	"Takip edici gönder..."
 
 #. TODO: replace hardcoded key-name in txt_post_error_ask_postpone
-#: src/lang.c:574
+#: src/lang.c:575
 #, fuzzy
 msgid	"An error has occurred while posting the article. If you think that this\n"
 	"error is temporary or otherwise correctable, you can postpone the article\n"
@@ -2747,150 +2732,145 @@ msgstr	"Makaleyi gönderirken hata oluþtu. Bu makalenin düzeltibeleceðini "
 	"düþünüyorsanýz, makaleyi erteleyebilir ve tekrar ^O komutunu kulanarak "
 	"ulaþabilirsiniz.\n"
 
-#: src/lang.c:577
+#: src/lang.c:578
 #, fuzzy
 msgid	"Posted articles history"
 msgstr	"Gönderilmiþ makalelerin geçmiþi"
 
-#: src/lang.c:578
+#: src/lang.c:579
 #, fuzzy, c-format
 msgid	"Post to newsgroup(s) [%s]> "
 msgstr	"habergrup(lar)a gönder [%s]> "
 
-#: src/lang.c:579
+#: src/lang.c:580
 #, fuzzy
 msgid	"-- post processing started --"
 msgstr	"-- gönderme iþlemi baþlatýldý --"
 
-#: src/lang.c:580
+#: src/lang.c:581
 #, fuzzy
 msgid	"-- post processing completed --"
 msgstr	"-- gönderme iþlemi tamamlandý --"
 
-#: src/lang.c:581
+#: src/lang.c:582
 #, fuzzy, c-format
 msgid	"Post subject [%s]> "
 msgstr	"Konuyu gönder (%s)> "
 
-#: src/lang.c:582
+#: src/lang.c:583
 #, fuzzy
 msgid	"# Summary of mailed/posted messages viewable by 'W' command from within tin.\n"
 msgstr	"# 'W' komutundan görünebilir postalanmýþ/gönderilmiþ iletilerin özeti.\n"
 
-#: src/lang.c:583
+#: src/lang.c:584
 #, fuzzy
 msgid	"Posting article..."
 msgstr	"Makale gönderiliyor..."
 
-#: src/lang.c:584
+#: src/lang.c:585
 #, fuzzy, c-format
 msgid	"Post postponed articles [%%s]? (%s/%s/%s/%s/%s): "
 msgstr	"Ertelenmiþ makaleleri gönder [%%s]? (%s/%s/%s/%s/%s): "
 
-#: src/lang.c:585
+#: src/lang.c:586
 #, fuzzy, c-format
 msgid	"Hot %s"
 msgstr	"Hot %s"
 
-#: src/lang.c:586
+#: src/lang.c:587
 #, fuzzy, c-format
 msgid	"Tagged %s"
 msgstr	"%s imlenmiþ"
 
-#: src/lang.c:587
+#: src/lang.c:588
 #, fuzzy, c-format
 msgid	"Untagged %s"
 msgstr	"%s imlenmemiþ"
 
-#: src/lang.c:588
+#: src/lang.c:589
 #, fuzzy
 msgid	"Processing mail messages marked for deletion."
 msgstr	"Silinmek için iþaretlenen iletilerin iþletilmesi."
 
-#: src/lang.c:589
+#: src/lang.c:590
 #, fuzzy
 msgid	"Processing saved articles marked for deletion."
 msgstr	"Silinmek için iþaretlenen kaydedilmiþ makalelerin iþletilmesi."
 
-#: src/lang.c:590
+#: src/lang.c:591
 #, fuzzy, c-format
 msgid	"Accept Followup-To? %s=post, %s=ignore, %s=quit: "
 msgstr	"Takip edilsin? %s=gönder, %s=yoksay, %s=terk et: "
 
-#: src/lang.c:591
+#: src/lang.c:592
 #, fuzzy
 msgid	"Article unchanged, abort mailing?"
 msgstr	"Makale deðiþtirilmesini, posta iptal edilsin mi?"
 
-#: src/lang.c:592
+#: src/lang.c:593
 #, fuzzy, c-format
 msgid	"Do you want to see postponed articles (%d)?"
 msgstr	"Ertelediðiniz makaleleri görmek ister misiniz (%d)?"
 
-#: src/lang.c:594
+#: src/lang.c:595
 #, fuzzy
 msgid	"Add quick kill filter?"
 msgstr	"Öldürücü hýzlý süzü eklensin mi?"
 
-#: src/lang.c:595
+#: src/lang.c:596
 #, fuzzy
 msgid	"Add quick selection filter?"
 msgstr	"Hýzlý seçenek süzü eklensin mi?"
 
-#: src/lang.c:596
+#: src/lang.c:597
 #, fuzzy
 msgid	"Do you really want to quit?"
 msgstr	"Terketmek istediðinizden emin misiniz?"
 
-#: src/lang.c:597
+#: src/lang.c:598
 #, fuzzy, c-format
 msgid	"%s=edit cancel message, %s=quit, %s=delete (cancel) [%%s]: "
 msgstr	"%s=düzenle iletiyi iptal et, %s=terk et, %s=sil (iptal) [%%s]: "
 
-#: src/lang.c:598
+#: src/lang.c:599
 #, fuzzy
 msgid	"You have tagged articles in this group - quit anyway?"
 msgstr	"Bu gruptaki makaleleri imlediniz-yine de terk edilsin mi?"
 
-#: src/lang.c:599
+#: src/lang.c:600
 #, fuzzy, c-format
 msgid	"%s=quit, %s=edit, %s=postpone: "
 msgstr	"%s=terk et, %s=düzenle, %s=ertele: "
 
-#: src/lang.c:600
+#: src/lang.c:601
 #, fuzzy, c-format
 msgid	"%s=quit %s=edit %s=save kill description: "
 msgstr	"%s=terk et %s=düzenle %s=kaydet tanýmý öldür: "
 
-#: src/lang.c:601
+#: src/lang.c:602
 #, fuzzy, c-format
 msgid	"%s=quit %s=edit %s=save select description: "
 msgstr	"%s=terk et %s=düzenle %s=kaydet tanýmý seç: "
 
-#: src/lang.c:602
+#: src/lang.c:603
 #, fuzzy
 msgid	"Do you really want to quit without saving your configuration?"
 msgstr	"Yapýlandýrmalarý kaydetmeden terk etmek istediðinizden emin misiniz?"
 
-#: src/lang.c:605
+#: src/lang.c:606
 #, fuzzy
 msgid	"Invalid range - valid are '0-9.$' eg. 1-$"
 msgstr	"Geçersiz aralýklar- '0-9.$' eg. 1-$ geçerlidir"
 
-#: src/lang.c:606
+#: src/lang.c:607
 #, fuzzy
 msgid	"Do you want to abort this operation?"
 msgstr	"Ýþlem durdurulsun mu?"
 
-#: src/lang.c:607
+#: src/lang.c:608
 #, fuzzy
 msgid	"Do you want to exit tin immediately?"
 msgstr	"tin'den hemen çýkmak istediðinizden emin misisniz?"
-
-#: src/lang.c:608
-#, fuzzy
-msgid	"Read response> "
-msgstr	"Yanýtý oku> "
 
 #: src/lang.c:609
 #, fuzzy
@@ -3006,11 +2986,6 @@ msgstr	"Yanýtlar sonraki habergruplara yönlendirildi"
 #, fuzzy, c-format
 msgid	"Responses have been directed to poster. %s=mail, %s=post, %s=quit: "
 msgstr	"Yanýtlar göndericiye yönlendirildi. %s=postala, %s=gönder, %s=iptal: "
-
-#: src/lang.c:634
-#, fuzzy, c-format
-msgid	"RespNo %4d of %4d"
-msgstr	"YanýtNo %4d of %4d"
 
 #: src/lang.c:635
 #, fuzzy
@@ -3881,9 +3856,8 @@ msgstr	"\n"
 	"    deðiþtirin.\n"
 
 #: src/lang.c:843
-#, fuzzy
-msgid	"  -D       debug mode 1=NNTP 2=ALL"
-msgstr	"  -D       hata ayýklma kipi 1=NNTP 2=HEPSÝ"
+msgid	"  -D mode  debug mode"
+msgstr	""
 
 #: src/lang.c:847
 #, fuzzy
@@ -4503,7 +4477,7 @@ msgstr	"Uçbirim renk desteklemiyor"
 msgid	"Trying %s"
 msgstr	"%s deneniyor"
 
-#: src/lang.c:1097 src/lang.c:1123 src/lang.c:1139 src/lang.c:1328 src/refs.c:296
+#: src/lang.c:1097 src/lang.c:1123 src/lang.c:1139 src/lang.c:1328 src/refs.c:304
 #, fuzzy
 msgid	"None"
 msgstr	"Hiçbiri"
@@ -4981,9 +4955,9 @@ msgstr	"Süzgeçleme Seçenekleri"
 #: src/lang.c:2020 src/lang.c:2027 src/lang.c:2034 src/lang.c:2041 src/lang.c:2048
 #: src/lang.c:2056 src/lang.c:2072 src/lang.c:2079 src/lang.c:2086 src/lang.c:2093
 #: src/lang.c:2099 src/lang.c:2105 src/lang.c:2122 src/lang.c:2134 src/lang.c:2168
-#: src/lang.c:2221 src/lang.c:2228 src/lang.c:2234 src/lang.c:2259 src/lang.c:2276
-#: src/lang.c:2329 src/lang.c:2365 src/lang.c:2385 src/lang.c:2420 src/lang.c:2430
-#: src/lang.c:2455 src/lang.c:2471 src/lang.c:2490 src/lang.c:2503
+#: src/lang.c:2221 src/lang.c:2235 src/lang.c:2241 src/lang.c:2266 src/lang.c:2283
+#: src/lang.c:2336 src/lang.c:2372 src/lang.c:2392 src/lang.c:2427 src/lang.c:2437
+#: src/lang.c:2462 src/lang.c:2478 src/lang.c:2497 src/lang.c:2510
 #, fuzzy
 msgid	"<SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr	"<SPACE> deðiþtirir, <CR> ayarlar, <ESC> iptal eder."
@@ -6523,22 +6497,37 @@ msgid	"# Charset used for MIME (Content-Type) header in postings.\n"
 msgstr	"# Çok Amaçlý Internet Posta Uzantýlarýn (içerik-tür) posta baþlýklarý için "
 	"kulanýlan karakter kümesi\n"
 
+#: src/lang.c:2227
+#, fuzzy
+msgid	"Enter local charset name (e.g. US-ASCII, ISO-8859-1, EUC-KR), <CR> to set."
+msgstr	"(US-ASCII, ISO-8859-1, EUC-KR) Çok Amaçlý Internet Posta Uzantýlarý için "
+	"karakterküme ismini giriniz."
+
+#: src/lang.c:2228
+#, fuzzy
+msgid	"MM_LOCAL_CHARSET"
+msgstr	"MM_AÐ_KARAKTERKÜMESÝ"
+
 #: src/lang.c:2229
+msgid	"# Charset supported locally.\n"
+msgstr	""
+
+#: src/lang.c:2236
 #, fuzzy
 msgid	"Mailbox format"
 msgstr	"posta kutusu"
 
-#: src/lang.c:2230
+#: src/lang.c:2237
 #, fuzzy
 msgid	"# Format of the mailbox.\n"
 msgstr	"# Posta kutusunun biçimi.\n"
 
-#: src/lang.c:2235
+#: src/lang.c:2242
 #, fuzzy
 msgid	"MIME encoding in news messages"
 msgstr	"Yeni mesajlarda Çok Amaçlý Internet Posta Uzantýlarý kodla"
 
-#: src/lang.c:2236
+#: src/lang.c:2243
 #, fuzzy
 msgid	"# MIME encoding (8bit, base64, quoted-printable, 7bit) of the body\n"
 	"# for mails and posts, if necessary. QP is efficient for most European\n"
@@ -6552,17 +6541,17 @@ msgstr	"# Çok Amaçlý Internet Posta Uzantýlarý kodlayýcý (8bit, base64, quoted-"
 	"# Base64 8bit Doðu Asya ve Yunancadan daha yüksek verimlidir\n"
 	"# Rusça karakter kümesinin 8bit karakterler.\n"
 
-#: src/lang.c:2244 src/lang.c:2265
+#: src/lang.c:2251 src/lang.c:2272
 #, fuzzy
 msgid	"Don't change unless you know what you are doing. <ESC> cancels."
 msgstr	"Ne yaptýðýný bilmiyorsan deðiþtirme. <ESC> iptal eder."
 
-#: src/lang.c:2245
+#: src/lang.c:2252
 #, fuzzy
 msgid	"Use 8bit characters in news headers"
 msgstr	"Yeni baþlýklarda 8bit karakter kullan."
 
-#: src/lang.c:2246
+#: src/lang.c:2253
 #, fuzzy
 msgid	"# If ON, 8bit characters in news headers are NOT encoded.\n"
 	"# default is OFF. Thus 8bit characters are encoded by default.\n"
@@ -6573,33 +6562,33 @@ msgstr	"# ON durumdaysa, 8bit karakterler yeni baþlýklarda kodlanmaz.\n"
 	"# karakterlerin deðeri bakýlmadan kodlanýr\n"
 	"# Çok Amaçlý Internet Posta Uzantýlarý kodlamasý 8bit ise\n"
 
-#: src/lang.c:2253
+#: src/lang.c:2260
 #, fuzzy
 msgid	"Auto-view post-processed files <SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr	"Soniþemci dosyalarý otomatik olarak göster <SPACE> toggles, <CR> sets, <ESC> "
 	"cancels."
 
-#: src/lang.c:2254
+#: src/lang.c:2261
 #, fuzzy
 msgid	"View post-processed files"
 msgstr	"Soniþlemci dosyalarý göster"
 
-#: src/lang.c:2255
+#: src/lang.c:2262
 #, fuzzy
 msgid	"# If set, post processed files will be opened in a viewer\n"
 msgstr	"# Kurulmuþsa, soniþlemci dosyalar görünüleyicide açýlacak\n"
 
-#: src/lang.c:2260
+#: src/lang.c:2267
 #, fuzzy
 msgid	"MIME encoding in mail messages"
 msgstr	"Çok Amaçlý Internet Posta Uzantýlarý posta iletilerinde kodla"
 
-#: src/lang.c:2266
+#: src/lang.c:2273
 #, fuzzy
 msgid	"Use 8bit characters in mail headers"
 msgstr	"Posta baþlýklarýnda 8bit karakter kullan"
 
-#: src/lang.c:2267
+#: src/lang.c:2274
 #, fuzzy
 msgid	"# If ON, 8bit characters in mail headers are NOT encoded.\n"
 	"# default is OFF. Thus 8bit characters are encoded by default.\n"
@@ -6615,28 +6604,28 @@ msgstr	"# ON durumdaysa, 8bit karakterler posta baþlýklarýnda kodlanmaz\n"
 	"# posta baþlýklarýnda 8bit karakterleri yasaksa iptal önerilir HAYIR -e\n"
 	"# Çok önemli neden yoksa ON durumuna getir\n"
 
-#: src/lang.c:2277
+#: src/lang.c:2284
 #, fuzzy
 msgid	"Strip blanks from ends of lines"
 msgstr	"Satýr sonu boþlarý yok et"
 
-#: src/lang.c:2278
+#: src/lang.c:2285
 #, fuzzy
 msgid	"# If ON strip blanks from ends of lines for faster display on slow "
 	"terminals.\n"
 msgstr	"# ON durumdaysa yavaþ uçbirimde daha hýzlý görüntü için boþlarý yok et.\n"
 
-#: src/lang.c:2283
+#: src/lang.c:2290
 #, fuzzy
 msgid	"If ON, use transliteration. <SPACE> toggles & <CR> sets."
 msgstr	"ON durumdaysa damga çevirisi kullan.  <SPACE> toggles & <CR> sets."
 
-#: src/lang.c:2284
+#: src/lang.c:2291
 #, fuzzy
 msgid	"Transliteration"
 msgstr	"Damga çevirisi"
 
-#: src/lang.c:2285
+#: src/lang.c:2292
 #, fuzzy
 msgid	"# If ON, use //TRANSLIT extension. This means that when a character cannot\n"
 	"# be represented in the in the target character set, it can be approximated\n"
@@ -6645,50 +6634,50 @@ msgstr	"# ON durumdaysa, //DAMGAÇEVÝRÝSÝ uzantýsý kullan. Karakterin yapamadýðýn
 	"# daha büyük damga kümesi, yaklaþýk deðer verilebilir\n"
 	"# Bir veya daha fazla ayný karakter\n"
 
-#: src/lang.c:2292
+#: src/lang.c:2299
 #, fuzzy
 msgid	"Send you a carbon copy automatically. <SPACE> toggles & <CR> sets."
 msgstr	"Mektup kopyasý otomatik olarak kendine gönder. <SPACE> toggles & <CR> sets."
 
-#: src/lang.c:2293
+#: src/lang.c:2300
 #, fuzzy
 msgid	"Send you a cc automatically"
 msgstr	"Mektup kopyasý otomatik olarak kendine gönder."
 
-#: src/lang.c:2294
+#: src/lang.c:2301
 #, fuzzy
 msgid	"# If ON automatically put your name in the Cc: field when mailing an article\n"
 msgstr	"# ON durumdaysa otomatic olarak ismini mektup kopyasýna koy: Makaleyi "
 	"gönderirken alan yarat\n"
 
-#: src/lang.c:2298
+#: src/lang.c:2305
 #, fuzzy
 msgid	"Send you a blind carbon copy automatically. <SPACE> toggles & <CR> sets."
 msgstr	"Gizli mektup kopyasý otomatik olarak kendine gönder."
 
-#: src/lang.c:2299
+#: src/lang.c:2306
 #, fuzzy
 msgid	"Send you a blind cc automatically"
 msgstr	"Gizli mektup kopyasý otomatik olarak kendine gönder"
 
-#: src/lang.c:2300
+#: src/lang.c:2307
 #, fuzzy
 msgid	"# If ON automatically put your name in the Bcc: field when mailing an "
 	"article\n"
 msgstr	"# ON durumdaysa otomatic olarak ismini görünmeyen mektup kopyasýna koy: "
 	"Makaleyi gönderirken alan yarat\n"
 
-#: src/lang.c:2304
+#: src/lang.c:2311
 #, fuzzy
 msgid	"Enter address elements about which you want to be warned. <CR> sets."
 msgstr	"uyarýlmak istediðin adres öðelerine gir <CR> sets."
 
-#: src/lang.c:2305
+#: src/lang.c:2312
 #, fuzzy
 msgid	"Spamtrap warning address parts"
 msgstr	"isteneyen e-mail posta uyarýsý"
 
-#: src/lang.c:2306
+#: src/lang.c:2313
 #, fuzzy
 msgid	"# A comma-delimited list of address-parts you want to be warned\n"
 	"# about when trying to reply by email.\n"
@@ -6696,125 +6685,125 @@ msgstr	"# Uyarýlmak isiyorsan virgülle-sýnýrlanmýþ address-kýsýmlarýn listesini 
 	"göster\n"
 	"# e-posta ile cevap yazmak istediðin zaman\n"
 
-#: src/lang.c:2311
+#: src/lang.c:2318
 #, fuzzy
 msgid	"Enter default number of days a filter entry will be valid. <CR> sets."
 msgstr	"Süz giriþin geçerli olacaðý varsayýlan günler sayýsýna gir <CR> sets."
 
-#: src/lang.c:2312
+#: src/lang.c:2319
 #, fuzzy
 msgid	"No. of days a filter entry is valid"
 msgstr	"Süz girdisinin geçerli günler sayýsý"
 
-#: src/lang.c:2313
+#: src/lang.c:2320
 #, fuzzy
 msgid	"# Number of days a short term filter will be active\n"
 msgstr	"# Kýsa sürecek süzün aktif olacaðý günler sayýsý\n"
 
-#: src/lang.c:2317
+#: src/lang.c:2324
 msgid	"Add posted articles to filter. <SPACE> toggles & <CR> sets."
 msgstr	""
 
-#: src/lang.c:2318
+#: src/lang.c:2325
 #, fuzzy
 msgid	"Add posted articles to filter"
 msgstr	"Gönderilen makaleleri süzgece ekle"
 
-#: src/lang.c:2319
+#: src/lang.c:2326
 #, fuzzy
 msgid	"# If ON add posted articles which start a new thread to filter for\n"
 	"# highlighting follow-ups\n"
 msgstr	"# ON durumduysa gönderilmiþ makaleleri ekle# highlighting follow-ups\n"
 
-#: src/lang.c:2323
+#: src/lang.c:2330
 #, fuzzy
 msgid	"The directory where articles/threads are to be saved in mailbox format."
 msgstr	"makaleler/iç parçacýklarýn posta kutusu olarak kaydedilecek dizin."
 
-#: src/lang.c:2324
+#: src/lang.c:2331
 #, fuzzy
 msgid	"Mail directory"
 msgstr	"Posta dizini"
 
-#: src/lang.c:2325
+#: src/lang.c:2332
 #, fuzzy
 msgid	"# (-m) directory where articles/threads are saved in mailbox format\n"
 msgstr	"# makaleler/iç parçacýklarýn posta kutusu olarak kaydetmek istediðin dizin\n"
 
-#: src/lang.c:2330
+#: src/lang.c:2337
 #, fuzzy
 msgid	"Save articles in batch mode (-S)"
 msgstr	"Makaleleri toplu moda kaydet (-S)"
 
-#: src/lang.c:2331
+#: src/lang.c:2338
 #, fuzzy
 msgid	"# If ON articles/threads will be saved in batch mode when save -S\n"
 	"# or mail (-M/-N) is specified on the command line\n"
 msgstr	"# ON durumdaysa kaydeti bastýðýn zaman makaleler/iç parçacýklar\n"
 	"# toplu mode olarak kaydedilir\n"
 
-#: src/lang.c:2336
+#: src/lang.c:2343
 #, fuzzy
 msgid	"The directory where you want articles/threads saved."
 msgstr	"makeleleri7iç parçacýklarýný kaydetmek istediðin dizin."
 
-#: src/lang.c:2337
+#: src/lang.c:2344
 #, fuzzy
 msgid	"Directory to save arts/threads in"
 msgstr	"iç parçacýklarýn kaydedildiði dizin"
 
-#: src/lang.c:2338
+#: src/lang.c:2345
 #, fuzzy
 msgid	"# Directory where articles/threads are saved\n"
 msgstr	"# Kaydedilmiþ makalelerin/iç parçacýklarýn olduðu dizin\n"
 
-#: src/lang.c:2342
+#: src/lang.c:2349
 #, fuzzy
 msgid	"Auto save article/thread by Archive-name: header. <SPACE> toggles & <CR> sets."
 msgstr	"Arçivadý olarak makaleleri/iç parçacýklarý otomatik olarak kaydet: header. "
 	"<SPACE> toggles & <CR> sets."
 
-#: src/lang.c:2343
+#: src/lang.c:2350
 #, fuzzy
 msgid	"Use Archive-name: header for save"
 msgstr	"Arþiv ismi kullan: baþlýk kaydetme"
 
-#: src/lang.c:2344
+#: src/lang.c:2351
 #, fuzzy
 msgid	"# If ON articles/threads with Archive-name: in mail header will\n"
 	"# be automatically saved with the Archive-name & part/patch no.\n"
 msgstr	"# ON durumdaysa Arþiv ismi ile makaleleri/iç parçacýklarý: posta baþlýðý\n"
 	"# will Arþiv ismi &\n"
 
-#: src/lang.c:2349
+#: src/lang.c:2356
 #, fuzzy
 msgid	"Mark saved articles/threads as read. <SPACE> toggles, <CR> sets, <ESC> "
 	"cancels."
 msgstr	"Kaydedilmiþ makaleleri /iç parçacýklarý okunmuþ olarak iþaretle. <ARALIK> "
 	"büyük küçük harf, <CR> kümeler, <ESC> iptal et."
 
-#: src/lang.c:2350
+#: src/lang.c:2357
 #, fuzzy
 msgid	"Mark saved articles/threads as read"
 msgstr	"Kaydedilmiþ makaleleri /iç parçacýklarý okunmuþ olarak iþaretle"
 
-#: src/lang.c:2351
+#: src/lang.c:2358
 #, fuzzy
 msgid	"# If ON mark articles that are saved as read\n"
 msgstr	"# ON durumdaysa kaydedilmiþ makaleleri okunmuþ olarak iþaretle\n"
 
-#: src/lang.c:2355
+#: src/lang.c:2362
 #, fuzzy
 msgid	"Do post processing (eg. extract attachments) for saved articles."
 msgstr	"Kaydedilmiþ makaleler için iþlem gönder (örn. ekleri çýkart) for saved "
 	"articles."
 
-#: src/lang.c:2356
+#: src/lang.c:2363
 #, fuzzy
 msgid	"Post process saved articles"
 msgstr	"Kaydedilmiþ makaleleri gönder"
 
-#: src/lang.c:2357
+#: src/lang.c:2364
 #, fuzzy
 msgid	"# Perform post processing (saving binary attachments) from saved articles.\n"
 	"# Possible values are (the default is marked with *):\n"
@@ -6824,108 +6813,108 @@ msgid	"# Perform post processing (saving binary attachments) from saved articles
 msgstr	"# Kaydedilmiþ makaleler gönderme iþlemini bitir.\n"
 	"# 0=(evet) 1=(hayýr) 2=(kabuk arþivleri bul (shar) only)\n"
 
-#: src/lang.c:2366
+#: src/lang.c:2373
 #, fuzzy
 msgid	"Process only unread articles"
 msgstr	"Sadece okunmayan makaleleri iþle"
 
-#: src/lang.c:2367
+#: src/lang.c:2374
 #, fuzzy
 msgid	"# If ON only save/print/pipe/mail unread articles (tagged articles excepted)\n"
 msgstr	"# ON durumundaysa okunmamýþ makaleleri sadece kaydet/yazdýr/ilet/postala "
 	"(imlenmiþ makaleler hariç tutulur)\n"
 
-#: src/lang.c:2372
+#: src/lang.c:2379
 #, fuzzy
 msgid	"Print all or just part of header. <SPACE> toggles & <CR> sets."
 msgstr	"Baþlýðýn tümünü ya da bir kýsmýný yazdýr.  <SPACE> deðiþtirir & <CR> ayarlar."
 
-#: src/lang.c:2373
+#: src/lang.c:2380
 #, fuzzy
 msgid	"Print all headers when printing"
 msgstr	"Yazdýrýrken tüm baþlýklarý yazdýr"
 
-#: src/lang.c:2374
+#: src/lang.c:2381
 #, fuzzy
 msgid	"# If ON print all of article header otherwise just the important lines\n"
 msgstr	"# On durumundaysa makale baþlýðýnýn tümünü deðilse sadece önemli olanlarý "
 	"yazdýr\n"
 
-#: src/lang.c:2378
+#: src/lang.c:2385
 #, fuzzy
 msgid	"The printer program with options that is to be used to print articles/threads."
 msgstr	"Makaleleri/parçacýklarý yazdýrmak için kullanýlacak seçenekli yazýcý programý."
 
-#: src/lang.c:2379
+#: src/lang.c:2386
 #, fuzzy
 msgid	"Printer program with options"
 msgstr	"Seçenekli yazýcý programý"
 
-#: src/lang.c:2380
+#: src/lang.c:2387
 #, fuzzy
 msgid	"# Print program with parameters used to print articles/threads\n"
 msgstr	"# Makaleleri/iþ parçacýklarý yazdýrmak için parameterli yazýcý program "
 	"kullan\n"
 
-#: src/lang.c:2386
+#: src/lang.c:2393
 #, fuzzy
 msgid	"Force redraw after certain commands"
 msgstr	"Kesin komutlardan sonra ekrandaki çizimin yenilenmesini güçlendir"
 
-#: src/lang.c:2387
+#: src/lang.c:2394
 #, fuzzy
 msgid	"# If ON a screen redraw will always be done after certain external commands\n"
 msgstr	"# ON durumdaysa ekrandaki çizimin yenilenmesi bazý dýþ komutlardan sonra "
 	"tamamlanacak\n"
 
-#: src/lang.c:2391
+#: src/lang.c:2398
 #, fuzzy
 msgid	"Start editor with line offset. <SPACE> toggles, <CR> sets, <ESC> cancels."
 msgstr	"Satýr kaydýrarak düzenleciyi baþlat. <ARALIK> büyük küçük harf, <CR> kümeler, "
 	"<ESC> iptal et."
 
-#: src/lang.c:2392
+#: src/lang.c:2399
 #, fuzzy
 msgid	"Start editor with line offset"
 msgstr	"Düzenleyiciyi satýr konumu ile baþlat"
 
-#: src/lang.c:2393
+#: src/lang.c:2400
 #, fuzzy
 msgid	"# If ON editor will be started with cursor offset into the file\n"
 	"# otherwise the cursor will be positioned at the first line\n"
 msgstr	"# ON düzenleyicir dosyadaki imleç kaydýrýcýlarda açýlacak\n"
 	"# aksi takdirde imleç ilk satýrda yer alacak\n"
 
-#: src/lang.c:2398
+#: src/lang.c:2405
 #, fuzzy
 msgid	"Enter %E for editor, %F for filename, %N for line-number, <CR> to set."
 msgstr	"Düzenleyici için %E, dosya adý için %F, satýr numarasý için %N, kümelemek "
 	"için <CR> yazýn."
 
-#: src/lang.c:2399
+#: src/lang.c:2406
 #, fuzzy
 msgid	"Invocation of your editor"
 msgstr	"Düzenleyicinizin yürütülmesi"
 
-#: src/lang.c:2400
+#: src/lang.c:2407
 #, fuzzy, c-format
 msgid	"# Format of editor line including parameters\n"
 	"# %%E Editor  %%F Filename  %%N Linenumber\n"
 msgstr	"# Parametrelerle birlikte düzenleyici satýrý biçimi\n"
 	"# %%E Düzenleyici  %%F Dosya adý  %%N Satýr numarasý\n"
 
-#: src/lang.c:2405
+#: src/lang.c:2412
 #, fuzzy
 msgid	"Enter name and options for external-inews, --internal for internal inews"
 msgstr	"Dýþ inew programlarý için isim ve seçenekleri, --iç inew programlarý için "
 	"içseli girin"
 
-#: src/lang.c:2406
+#: src/lang.c:2413
 #, fuzzy
 msgid	"External inews"
 msgstr	"Dýþ inew programlarý"
 
-#: src/lang.c:2407
+#: src/lang.c:2414
 #, fuzzy
 msgid	"# If --internal use the built in mini inews for posting via NNTP\n"
 	"# otherwise use an external inews program\n"
@@ -6933,18 +6922,18 @@ msgstr	"# Eðer --içsel ise NNTP yoluyla gönderim için yerleþik mini inew "
 	"programlarýný kullanýn\n"
 	"# deðilse bir dýþ inew programý kullanýn\n"
 
-#: src/lang.c:2411
+#: src/lang.c:2418
 #, fuzzy
 msgid	"Enter %M for mailer, %S for subject, %T for to, %F for filename, <CR> to set."
 msgstr	"Posta gönderici için %M, konu için %S, gönderilen için %T, dosya adý için %F, "
 	"kümelemek için <CR> yazýn."
 
-#: src/lang.c:2412
+#: src/lang.c:2419
 #, fuzzy
 msgid	"Invocation of your mail command"
 msgstr	"Posta komutunuzun yürütülmesi"
 
-#: src/lang.c:2413
+#: src/lang.c:2420
 #, fuzzy, c-format
 msgid	"# Format of mailer line including parameters\n"
 	"# %%M Mailer  %%S Subject  %%T To  %%F Filename\n"
@@ -6956,12 +6945,12 @@ msgstr	"# Parametrelerle birlikte gönderici satýrý biçimi\n"
 	"F\n"
 	"# ie. elm etkileþimli            :    elm -i %%F -s \"%%S\" \"%%T\"\n"
 
-#: src/lang.c:2421
+#: src/lang.c:2428
 #, fuzzy
 msgid	"Use interactive mail reader"
 msgstr	"Etkileþimli posta okuyucu kullan"
 
-#: src/lang.c:2422
+#: src/lang.c:2429
 msgid	"# Interactive mailreader\n"
 	"# Possible values are (the default is marked with *):\n"
 	"# * 0 = no interactive mailreader\n"
@@ -6969,71 +6958,71 @@ msgid	"# Interactive mailreader\n"
 	"#   2 = use interactive mailreader without headers in file\n"
 msgstr	""
 
-#: src/lang.c:2431
+#: src/lang.c:2438
 #, fuzzy
 msgid	"Remove ~/.article after posting"
 msgstr	"Kaldýr ~/.article sonra makale"
 
-#: src/lang.c:2432
+#: src/lang.c:2439
 #, fuzzy
 msgid	"# If ON remove ~/.article after posting.\n"
 msgstr	"# ON durumundaysa kaldýr  ~/.gönderimden sonra makale.\n"
 
-#: src/lang.c:2436
+#: src/lang.c:2443
 #, fuzzy
 msgid	"Filename for all posted articles, <CR> sets, no filename=do not save."
 msgstr	"Tüm gönderilen makaleler için dosya adý, <CR> ayarlar, dosya adý "
 	"yok=kaydetmeyin."
 
-#: src/lang.c:2437
+#: src/lang.c:2444
 #, fuzzy
 msgid	"Filename for posted articles"
 msgstr	"Gönderilen makaleler için dosya adý"
 
-#: src/lang.c:2438
+#: src/lang.c:2445
 #, fuzzy
 msgid	"# Filename where to keep all postings (default posted)\n"
 	"# If no filename is set then postings will not be saved\n"
 msgstr	"# Postalarýn tutunacak dosyaadý (gönderilmiþ varsayýlan)\n"
 	"# Dosyaadý yoksa hiçbir posta kaydedilmeyecek\n"
 
-#: src/lang.c:2443
+#: src/lang.c:2450
 #, fuzzy
 msgid	"Keep all failed articles in ~/dead.articles. <SPACE> toggles & <CR> sets."
 msgstr	"Baþarýsýz makaleleri tut ~/ölü.makale. <Aralýk> büyük küçük harf & <CR> "
 	"kümeleri."
 
-#: src/lang.c:2444
+#: src/lang.c:2451
 #, fuzzy
 msgid	"Keep failed arts in ~/dead.articles"
 msgstr	"Baþarýsýz makaleleri tut ~/ölü.makale"
 
-#: src/lang.c:2445
+#: src/lang.c:2452
 #, fuzzy
 msgid	"# If ON keep all failed postings in ~/dead.articles\n"
 msgstr	"# If ON gönderilemeyen bütün postalarý tut ~/ölü.makale\n"
 
-#: src/lang.c:2449
+#: src/lang.c:2456
 #, fuzzy
 msgid	"Do you want to strip unsubscribed groups from .newsrc"
 msgstr	"Abone olmayan gruplarý çýkart .newsrc"
 
-#: src/lang.c:2450
+#: src/lang.c:2457
 #, fuzzy
 msgid	"No unsubscribed groups in newsrc"
 msgstr	"Abone olmayan grup yok newsrc"
 
-#: src/lang.c:2451
+#: src/lang.c:2458
 #, fuzzy
 msgid	"# If ON strip unsubscribed groups from newsrc\n"
 msgstr	"# If ON abone olmamýþ gruplarý çýkart newsrc\n"
 
-#: src/lang.c:2456
+#: src/lang.c:2463
 #, fuzzy
 msgid	"Remove bogus groups from newsrc"
 msgstr	"Bogus gruplarý kaldýr newsrc"
 
-#: src/lang.c:2457
+#: src/lang.c:2464
 #, fuzzy
 msgid	"# What to do with bogus groups in newsrc file\n"
 	"# Possible values are (the default is marked with *):\n"
@@ -7043,66 +7032,66 @@ msgid	"# What to do with bogus groups in newsrc file\n"
 msgstr	"# newsrc dosyasýnda olan bogus gruplara ne yapýlsýn\n"
 	"# 0=(Koru) 1=(Kaldýr) 2=(Highlight with D on selection screen).\n"
 
-#: src/lang.c:2465
+#: src/lang.c:2472
 #, fuzzy
 msgid	"Enter number of seconds until active file will be reread. <CR> sets."
 msgstr	"Aktif dosya tekrar okunana kadar saniye miktarýný girin. <CR> ayarlar."
 
-#: src/lang.c:2466
+#: src/lang.c:2473
 #, fuzzy
 msgid	"Interval in secs to reread active"
 msgstr	"yeniden etkin kýlma saniye aralýðý"
 
-#: src/lang.c:2467
+#: src/lang.c:2474
 #, fuzzy
 msgid	"# Time interval in seconds between rereading the active file (0=never)\n"
 msgstr	"# Aktif dosyalar okunurken saniyeler süren zaman aralýðý (0=asla)\n"
 
-#: src/lang.c:2472
+#: src/lang.c:2479
 #, fuzzy
 msgid	"Reconnect to server automatically"
 msgstr	"Sunucuya otomatik olarak baðlan"
 
-#: src/lang.c:2473
+#: src/lang.c:2480
 #, fuzzy
 msgid	"# If ON automatically reconnect to NNTP server if the connection is broken\n"
 msgstr	"# ON konumunda ise baðlantý kesilirse NNTP sunucusuna otomatik olarak tekrar "
 	"baðlan\n"
 
-#: src/lang.c:2477
+#: src/lang.c:2484
 #, fuzzy
 msgid	"Create local copies of NNTP overview files. <SPACE> toggles & <CR> sets."
 msgstr	"NNTP giriþ sayfalarýnýn yerel kopyalarýný yarat. <SPACE> deðiþtirir & <CR> "
 	"ayarlar."
 
-#: src/lang.c:2478
+#: src/lang.c:2485
 #, fuzzy
 msgid	"Cache NNTP overview files locally"
 msgstr	"Að Haberleri Aktarma Protokolü önbelleði yerel olarak giriþ dosyalarý"
 
-#: src/lang.c:2479
+#: src/lang.c:2486
 #, fuzzy
 msgid	"# If ON, create local copies of NNTP overview files.\n"
 msgstr	"# On durumundaysa, NNTP giriþ dosyalarýnýn yerel kopyalarýný yarat.\n"
 
-#: src/lang.c:2483
+#: src/lang.c:2490
 #, fuzzy
 msgid	"Enter format string. <CR> sets, <ESC> cancels."
 msgstr	"Okunan makaleleri imlemek için karakter girin. <CR> yarlar, <ESC> iptal eder."
 
-#: src/lang.c:2484
+#: src/lang.c:2491
 msgid	"Format string for display of dates"
 msgstr	""
 
-#: src/lang.c:2485
+#: src/lang.c:2492
 msgid	"# Format string for date representation\n"
 msgstr	""
 
-#: src/lang.c:2491
+#: src/lang.c:2498
 msgid	"Unicode normalization form"
 msgstr	""
 
-#: src/lang.c:2492
+#: src/lang.c:2499
 msgid	"# Unicode normalization form\n"
 	"# Possible values are (the default is marked with *):\n"
 	"#   0 = None\n"
@@ -7112,25 +7101,25 @@ msgid	"# Unicode normalization form\n"
 	"#   4 = NFD\n"
 msgstr	""
 
-#: src/lang.c:2504
+#: src/lang.c:2511
 msgid	"Render BiDi"
 msgstr	""
 
-#: src/lang.c:2505
+#: src/lang.c:2512
 msgid	"# If ON, bi-directional text is rendered by tin\n"
 msgstr	""
 
-#: src/misc.c:3693
+#: src/misc.c:3695
 #, fuzzy, c-format
 msgid	"Version: %s %s release %s (\"%s\") %s %s\n"
 msgstr	"Sürüm: %s %s serbest býrak %s (\"%s\") %s %s\n"
 
-#: src/misc.c:3696
+#: src/misc.c:3698
 #, fuzzy, c-format
 msgid	"Version: %s %s release %s (\"%s\")\n"
 msgstr	"Sürüm: %s %s serbest býrak %s (\"%s\")\n"
 
-#: src/newsrc.c:430
+#: src/newsrc.c:431
 #, fuzzy
 msgid	"Unreachable?\n"
 msgstr	"Ulaþýlamaz?\n"
@@ -7142,17 +7131,17 @@ msgid	"\n"
 msgstr	"\n"
 	"Sunucu süresi doldu, tekrar baðlanmaya çalýþýyor # %d\n"
 
-#: src/nntplib.c:834 src/nntplib.c:1644
+#: src/nntplib.c:834 src/nntplib.c:1681
 #, fuzzy
 msgid	"Rejoin current group\n"
 msgstr	"Þu anki gruba tekrar katýl\n"
 
-#: src/nntplib.c:841 src/nntplib.c:1651
+#: src/nntplib.c:842 src/nntplib.c:1689
 #, fuzzy, c-format
 msgid	"Read (%s)\n"
 msgstr	"Oku (%s)\n"
 
-#: src/nntplib.c:843
+#: src/nntplib.c:844
 #, fuzzy, c-format
 msgid	"Resend last command (%s)\n"
 msgstr	"Son komutu tekrr yolla (%s)\n"
@@ -7164,35 +7153,35 @@ msgstr	"Son komutu tekrr yolla (%s)\n"
 #. *       - use some sort of pager?
 #. *       - -> lang.c
 #.
-#: src/nntplib.c:1783
+#: src/nntplib.c:1830
 msgid	"MOTD: "
 msgstr	""
 
-#: src/nrctbl.c:170
+#: src/nrctbl.c:173
 #, c-format
 msgid	"couldn't expand %s\n"
 msgstr	"%s geniþletilemedi\n"
 
-#: src/post.c:1134
+#: src/post.c:1142
 #, c-format
 msgid	"Line %d is longer than 998 octets and should be folded, but\n"
 	"encoding is neither set to %s nor to %s\n"
 msgstr	""
 
-#: src/post.c:1139
+#: src/post.c:1147
 #, c-format
 msgid	"Line %d is longer than 998 octets, and should be folded, but\n"
 	"encoding is set to %s without enabling MIME_BREAK_LONG_LINES or\n"
 	"posting doesn't contain any 8bit chars and thus folding won't happen\n"
 msgstr	""
 
-#: src/post.c:1141
+#: src/post.c:1149
 #, c-format
 msgid	"Line %d is longer than 998 octets, and should be folded, but\n"
 	"encoding is not set to %s\n"
 msgstr	""
 
-#: src/post.c:1960
+#: src/post.c:1968
 #, fuzzy, c-format
 msgid	"Posting: %.*s ..."
 msgstr	"Gönderiliyor: %.*s ..."
@@ -7211,13 +7200,12 @@ msgstr	"Okuma durduruldu\n"
 msgid	"Draining\n"
 msgstr	"Akaçlanma\n"
 
-#. Don't hash the initial '<'
-#: src/refs.c:251
+#: src/refs.c:248
 #, fuzzy
 msgid	"unchanged"
 msgstr	"deðiþtirilmedi"
 
-#: src/refs.c:609
+#: src/refs.c:629
 #, fuzzy
 msgid	"[- Unavailable -]"
 msgstr	"[- Kullanýlamýyor -]"
@@ -7226,7 +7214,7 @@ msgstr	"[- Kullanýlamýyor -]"
 #. * preamble
 #. * TODO: -> lang.c
 #.
-#: src/rfc2047.c:1201
+#: src/rfc2047.c:1272
 #, c-format
 msgid	"This message has been composed in the 'multipart/mixed' MIME-format. If you\n"
 	"are reading this prefix, your mail reader probably has not yet been modified\n"
@@ -7250,19 +7238,23 @@ msgstr	"Hepsi"
 msgid	" R"
 msgstr	" R"
 
+#: src/xface.c:71
+#, fuzzy
+msgid	"Can't run slrnface: Not running in a xterm."
+msgstr	"Slrnface çalýþtýrýlamýyor: fifo isim oluþturulamadý."
+
 #  TODO: use tin global 'homedir' instead? or even rcdir?
-#. TODO: use tin global 'homedir' instead? or even rcdir?
-#: src/xface.c:91
+#: src/xface.c:82 src/xface.c:93 src/xface.c:102
 #, c-format
 msgid	"Can't run slrnface: Environment variable %s not found."
 msgstr	"Slrnface çalýþtýrýlamýyor: Çevre deðiþkeni %s bulunamadý."
 
-#: src/xface.c:99 src/xface.c:131
+#: src/xface.c:111 src/xface.c:143
 #, fuzzy, c-format
 msgid	"Can't run slrnface: failed to create %s"
 msgstr	"Slrnface çalýþtýrýlamýyor: yaratým baþarýsýz %s"
 
-#: src/xface.c:109
+#: src/xface.c:121
 #, fuzzy
 msgid	"This directory is used to create named pipes for communication between\n"
 	"slrnface and its parent process. It should normally be empty because\n"
@@ -7286,17 +7278,25 @@ msgstr	"Bu dizin slrnface ve ana iþlem arasýndaki iletiþimi saðlayan adý konmuþ\
 	"NFS sunucunuzun yarattýðý özel dosyalari görebilirsiniz.\n"
 	"Kaldýrmaya çalýþmayýnýz.\n"
 
-#: src/xface.c:123
+#: src/xface.c:135
 #, fuzzy
 msgid	"Can't run slrnface: couldn't construct fifo name."
 msgstr	"Slrnface çalýþtýrýlamýyor: fifo isim oluþturulamadý."
 
-#: src/xface.c:162
+#: src/xface.c:174
 #, fuzzy, c-format
 msgid	"Slrnface abnormally exited, code %d."
 msgstr	"Slrnface beklenmedik þekilde sonlandýrýldý, kod %d."
 
-#: src/xface.c:206
+#: src/xface.c:218
 #, fuzzy, c-format
 msgid	"Slrnface failed: %s."
 msgstr	"Slrnface baþarýsýz: %s."
+
+#~ msgid	"# include extra headers\n"
+#~ msgstr	"# extra baþlýklarý içerir\n"
+
+#, fuzzy
+#~ msgid	"# in *binaries* do full post processing but no TeX2ISO conversion,\n"
+#~ msgstr	"# ikilik dosyalarda iþletim sonrasýný tam yapýn, tmp dosyalarýný "
+#~ 	"kaldýrýn.\n"

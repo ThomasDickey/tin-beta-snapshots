@@ -3,10 +3,10 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2006-09-02
+ *  Updated   : 2007-12-30
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,7 +66,7 @@ struct t_counters {
  * Local prototypes
  */
 static char *get_save_filename(struct t_group *group, int function, char *filename, int filelen, int respnum);
-static t_bool expand_feed_filename(char *outpath, const char *path);
+static t_bool expand_feed_filename(char *outpath, size_t outpath_len, const char *path);
 static t_bool feed_article(int art, int function, struct t_counters *counter, t_bool use_current, const char *data, struct t_group *group);
 static t_function get_feed_key(int function, int level, struct t_group *group, struct t_art_stat *thread, int respnum);
 static t_function get_post_proc_type(void);
@@ -156,6 +156,7 @@ get_save_filename(
 static t_bool
 expand_feed_filename(
 	char *outpath,
+	size_t outpath_len,
 	const char *path)
 {
 	int ret = strfpath(path, outpath, PATH_LEN, curr_group);
@@ -168,8 +169,8 @@ expand_feed_filename(
 		char buf[PATH_LEN];
 
 		if (!strfpath(curr_group->attribute->savedir, buf, sizeof(buf), curr_group))
-			joinpath(buf, homedir, DEFAULT_SAVEDIR);
-		joinpath(outpath, buf, path);
+			joinpath(buf, sizeof(buf), homedir, DEFAULT_SAVEDIR);
+		joinpath(outpath, outpath_len, buf, path);
 		return FALSE;
 	} else
 		return (ret == 1);
@@ -655,7 +656,7 @@ feed_articles(
 				}
 
 				/* We don't postprocess mailboxen */
-				if ((is_mailbox = expand_feed_filename(outpath, savefile)) == TRUE)
+				if ((is_mailbox = expand_feed_filename(outpath, sizeof(outpath), savefile)) == TRUE)
 					pproc_func = POSTPROCESS_NO;
 				else {
 					if (function != FEED_AUTOSAVE && (pproc_func = get_post_proc_type()) == GLOBAL_ABORT)

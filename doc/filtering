@@ -151,12 +151,13 @@ matches:            matched to:
 
 subj=pattern        Subject:
 from=pattern        From:
-                    Tin converts the contents of the From-header to an old-style
-                    e-mail address, i.e. ''some@body.example (John Doe)''
-                    instead of ''John Doe <some@body.example>'', before trying to
-                    match the patterns in the filter rule. That way a rule tailored to
-                    to match the full from header "jsmith@ac.example (John Smith)" will still
-                    work when John posts with a different newsreader which uses
+                    Tin converts the contents of the From-header to an
+                    old-style e-mail address, i.e. ''some@body.example (John
+                    Doe)'' instead of ''John Doe <some@body.example>'',
+                    before trying to match the patterns in the filter rule.
+                    That way a rule tailored to to match the full from
+                    header "jsmith@ac.example (John Smith)" will still work
+                    when John posts with a different newsreader which uses
                     "John Smith <jsmith@ac.example>".
 msgid=pattern       Message-Id: *AND* full References:
 msgid_last=pattern  Message-Id: and last Reference:s entry only
@@ -307,7 +308,7 @@ score=-100
 refs_only=.*<[^@\s]+@\S+(?<!akk3\.akk\.uni-karlsruhe\.de)>$
 
 comment= Kill all articles from John Smith, who writes under different
-comment= addresses at ac.me, e.g john@ac.me and boss@ac.me
+comment= addresses at ac.example, e.g john@ac.example and boss@ac.example
 group=*
 case=1
 score=kill

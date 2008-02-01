@@ -3,10 +3,10 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-10-16
+ *  Updated   : 2008-01-10
  *  Notes     :
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,6 +62,7 @@ constext txt_art_rejected[] = N_("Article rejected (saved to %s)");
 constext txt_art_thread_regex_tag[] = N_("%s=article, %s=thread, %s=hot, %s=pattern, %s=tagged articles, %s=quit: ");
 constext txt_art_unavailable[] = N_("Article unavailable");
 constext txt_art_undeleted[] = N_("Article undeleted.");
+constext txt_art_x_of_n[] = N_("Article %4d of %4d");
 constext txt_article_cancelled[] = "Article cancelled by author.\n";
 constext txt_article_plural[] = N_("articles");
 constext txt_article_reposted[] = N_("This is a repost of the following article:");
@@ -605,7 +606,6 @@ constext txt_quoted_printable[] = "quoted-printable";
 constext txt_range_invalid[] = N_("Invalid range - valid are '0-9.$' eg. 1-$");
 constext txt_read_abort[] = N_("Do you want to abort this operation?");
 constext txt_read_exit[] = N_("Do you want to exit tin immediately?");
-constext txt_read_resp[] = N_("Read response> ");
 constext txt_reading_article[] = N_("Reading ('q' to quit)...");
 constext txt_reading_arts[] = N_("Reading %sarticles...");
 constext txt_reading_attributes_file[] = N_("Reading %sattributes file...\n");
@@ -631,7 +631,7 @@ constext txt_repost_group[] = N_("Repost article(s) to group(s) [%s]> ");
 constext txt_reset_newsrc[] = N_("Reset newsrc?");
 constext txt_resp_redirect[] = N_("Responses have been directed to the following newsgroups");
 constext txt_resp_to_poster[] = N_("Responses have been directed to poster. %s=mail, %s=post, %s=quit: ");
-constext txt_resp_x_of_n[] = N_("RespNo %4d of %4d");
+
 constext txt_return_key[] = N_("Press <RETURN> to continue...");
 
 constext txt_select_from[] = N_("Select From    [%s] (y/n): ");
@@ -840,7 +840,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 #endif /* CHARSET_CONVERSION */
 
 #ifdef DEBUG
-	constext txt_usage_debug[] = N_("  -D       debug mode 1=NNTP 2=ALL");
+	constext txt_usage_debug[] = N_("  -D mode  debug mode");
 #endif /* DEBUG */
 
 #ifdef FORGERY
@@ -934,7 +934,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 #endif /* HAVE_PGP_GPG */
 
 #ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2007 Iain Lea.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2008 Iain Lea.";
 #endif /* M_UNIX */
 
 #ifdef NNTP_ABLE
@@ -2222,6 +2222,13 @@ struct opttxt txt_mm_network_charset = {
 	N_("MM_NETWORK_CHARSET"),
 	N_("# Charset used for MIME (Content-Type) header in postings.\n")
 };
+#	ifdef NO_LOCALE
+struct opttxt txt_mm_local_charset = {
+	N_("Enter local charset name (e.g. US-ASCII, ISO-8859-1, EUC-KR), <CR> to set."),
+	N_("MM_LOCAL_CHARSET"),
+	N_("# Charset supported locally.\n")
+};
+#	endif /* NO_LOCALE */
 #endif /* !CHARSET_CONVERSION */
 
 struct opttxt txt_mailbox_format = {

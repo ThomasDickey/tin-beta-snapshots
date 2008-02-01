@@ -3,10 +3,10 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2005-07-02
+ *  Updated   : 2007-12-30
  *  Notes     : PGP support
  *
- * Copyright (c) 1995-2007 Steven J. Madsen <steve@erinet.com>
+ * Copyright (c) 1995-2008 Steven J. Madsen <steve@erinet.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -149,7 +149,7 @@ init_pgp(
 		if ((ptr = getenv("PGPPATH")) != NULL)
 			my_strncpy(pgp_data, ptr, sizeof(pgp_data) - 1);
 		else
-			joinpath(pgp_data, homedir, PGPDIR);
+			joinpath(pgp_data, sizeof(pgp_data), homedir, PGPDIR);
 	}
 }
 
@@ -320,7 +320,7 @@ pgp_available(
 	FILE *fp;
 	char keyring[PATH_LEN];
 
-	joinpath(keyring, pgp_data, PGP_PUBRING);
+	joinpath(keyring, sizeof(keyring), pgp_data, PGP_PUBRING);
 	if ((fp = fopen(keyring, "r")) == NULL) {
 		wait_message(2, _(txt_pgp_not_avail), keyring);
 		return FALSE;
@@ -433,7 +433,7 @@ pgp_check_article(
 	if (!pgp_available())
 		return FALSE;
 
-	joinpath(artfile, homedir, TIN_ARTICLE_NAME);
+	joinpath(artfile, sizeof(artfile), homedir, TIN_ARTICLE_NAME);
 #	ifdef APPEND_PID
 	snprintf(artfile + strlen(artfile), sizeof(artfile) - strlen(artfile), ".%d", (int) process_id);
 #	endif /* APPEND_PID */

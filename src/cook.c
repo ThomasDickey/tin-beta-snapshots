@@ -3,10 +3,10 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2006-05-30
+ *  Updated   : 2008-01-10
  *  Notes     : Split from page.c
  *
- * Copyright (c) 2000-2007 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2008 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,7 +82,7 @@ static t_openartinfo *art;
 t_bool
 expand_ctrl_chars(
 	char **line,
-	int *length,
+	size_t *length,
 	size_t lcook_width)
 {
 	t_bool ctrl_L = FALSE;
@@ -107,7 +107,7 @@ expand_ctrl_chars(
 	int curr_len = LEN;
 	int i = 0, j;
 	char *buf = my_malloc(curr_len);
-	char *c;
+	unsigned char *c;
 
 	c = *line;
 	while (*c) {
@@ -115,8 +115,7 @@ expand_ctrl_chars(
 			curr_len <<= 1;
 			buf = my_realloc(buf, curr_len);
 		}
-		if (*c == '\t') { 		/* expand tabs */
-/*			j = ((i + lcook_width) / lcook_width) * lcook_width; */
+		if (*c == '\t') { /* expand tabs */
 			j = i + lcook_width - (i % lcook_width);
 			for (; i < j; i++)
 				buf[i] = ' ';
@@ -401,7 +400,7 @@ process_text_body_part(
 {
 	char *rest = NULL;
 	char *line = NULL, *buf;
-	int max_line_len = 0;
+	size_t max_line_len = 0;
 	int flags, len, lines_left;
 	int offsets[6];
 	int size_offsets = ARRAY_SIZE(offsets);
@@ -444,7 +443,7 @@ process_text_body_part(
 				 * especially if we must resize it.
 				 * So copy buf to line (and resize line if necessary).
 				 */
-				if (max_line_len < (int) strlen(buf) + 2) {
+				if (max_line_len < strlen(buf) + 2) {
 					max_line_len = strlen(buf) + 2;
 					line = my_realloc(line, max_line_len);
 				};
@@ -533,7 +532,7 @@ process_text_body_part(
 				else if (len == sum + 1 + 1)
 					is_uubody = TRUE;
 #ifdef DEBUG_ART
-				if (debug == 2)
+				if (debug & DEBUG_MISC)
 					fprintf(stderr, "%s sum=%d len=%d (%s)\n", bool_unparse(is_uubody), sum, len, line);
 #endif /* DEBUG_ART */
 			}
@@ -736,7 +735,7 @@ cook_article(
 		}
 
 		if (header_wanted(line)) {	/* Put cooked data */
-			int i = LEN;
+			size_t i = LEN;
 			char *l = my_strdup(rfc1522_decode(line));	/* FIXME: don't decode addr-part of From:/Cc:/ etc.pp. */
 
 			header_put = TRUE;

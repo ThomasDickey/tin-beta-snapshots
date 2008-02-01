@@ -3,10 +3,10 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-05-04
+ *  Updated   : 2007-12-30
  *  Notes     : debug routines
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,14 +39,14 @@
 #	include "tin.h"
 #endif /* !TIN_H */
 
-#if defined(DEBUG) || defined(DEBUG_NEWSRC)
+#ifdef DEBUG
 #	ifndef NEWSRC_H
 #		include "newsrc.h"
 #	endif /* !NEWSRC_H */
 #	ifndef TCURSES_H
 #		include "tcurses.h"
 #	endif /* !TCURSES_H */
-#endif /* DEBUG || DEBUG_NEWSRC */
+#endif /* DEBUG */
 
 int debug;
 
@@ -68,55 +68,23 @@ debug_delete_files(
 	char file[PATH_LEN];
 
 	if (debug) {
-		joinpath(file, TMPDIR, "NNTP");
+		joinpath(file, sizeof(file), TMPDIR, "NNTP");
 		unlink(file);
-		joinpath(file, TMPDIR, "ARTS");
+		joinpath(file, sizeof(file), TMPDIR, "ARTS");
 		unlink(file);
-		joinpath(file, TMPDIR, "SAVE_COMP");
+		joinpath(file, sizeof(file), TMPDIR, "SAVE_COMP");
 		unlink(file);
-		joinpath(file, TMPDIR, "BASE");
+		joinpath(file, sizeof(file), TMPDIR, "BASE");
 		unlink(file);
-		joinpath(file, TMPDIR, "ACTIVE");
+		joinpath(file, sizeof(file), TMPDIR, "ACTIVE");
 		unlink(file);
-		joinpath(file, TMPDIR, "BITMAP");
+		joinpath(file, sizeof(file), TMPDIR, "BITMAP");
 		unlink(file);
-		joinpath(file, TMPDIR, "MALLOC");
+		joinpath(file, sizeof(file), TMPDIR, "MALLOC");
 		unlink(file);
-		joinpath(file, TMPDIR, "FILTER");
+		joinpath(file, sizeof(file), TMPDIR, "FILTER");
 		unlink(file);
 	}
-}
-
-
-/*
- * nntp specific debug routines
- */
-void
-debug_nntp(
-	const char *func,
-	const char *fmt,
-	...)
-{
-	FILE *fp;
-	char *buf;
-	char file[PATH_LEN];
-	va_list ap;
-
-	if (!debug)
-		return;
-
-	va_start(ap, fmt);
-	buf = fmt_message(fmt, ap);
-
-	joinpath(file, TMPDIR, "NNTP");
-
-	if ((fp = fopen(file, "a+")) != NULL) {
-		fprintf(fp,"%s: %s\n", func, buf);
-		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
-		fclose(fp);
-	}
-	free(buf);
-	va_end(ap);
 }
 
 
@@ -129,7 +97,7 @@ debug_print_arts(
 {
 	int i;
 
-	if (debug != 2)
+	if (!(debug & DEBUG_FILTER))
 		return;
 
 	for_each_art(i)
@@ -144,10 +112,10 @@ debug_print_header(
 	FILE *fp;
 	char file[PATH_LEN];
 
-	if (debug != 2)
+	if (!(debug & DEBUG_FILTER))
 		return;
 
-	joinpath(file, TMPDIR, "ARTS");
+	joinpath(file, sizeof(file), TMPDIR, "ARTS");
 
 	if ((fp = fopen(file, "a+")) != NULL) {
 		fprintf(fp,"art=[%5ld] tag=[%s] kill=[%s] selected=[%s]\n", s->artnum,
@@ -185,10 +153,10 @@ debug_print_active(
 	int i;
 	struct t_group *group;
 
-	if (debug != 2)
+	if (!(debug & DEBUG_MISC))
 		return;
 
-	joinpath(file, TMPDIR, "ACTIVE");
+	joinpath(file, sizeof(file), TMPDIR, "ACTIVE");
 
 	if ((fp = fopen(file, "w")) != NULL) {
 		for_each_group(i) {
@@ -201,9 +169,10 @@ debug_print_active(
 				group->count, group->xmax, group->xmin, group->moderated);
 			fprintf(fp, " nxt=[%4d] hash=[%ld]  description=[%s]\n", group->next,
 				hash_groupname(group->name), BlankIfNull(group->description));
-#	ifdef DEBUG_NEWSRC
-			debug_print_newsrc(&group->newsrc, fp);
-#	endif /* DEBUG_NEWSRC */
+#	ifdef DEBUG
+			if (debug & DEBUG_NEWSRC)
+				debug_print_newsrc(&group->newsrc, fp);
+#	endif /* DEBUG */
 			debug_print_attributes(group->attribute, fp);
 		}
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
@@ -260,8 +229,8 @@ debug_print_malloc(
 	char file[PATH_LEN];
 	static int total = 0;
 
-	if (debug == 4) {
-		joinpath(file, TMPDIR, "MALLOC");
+	if (debug & DEBUG_MEM) {
+		joinpath(file, sizeof(file), TMPDIR, "MALLOC");
 		if ((fp = fopen(file, "a+")) != NULL) {
 			total += size;
 			/* sometimes size_t is long */
@@ -282,11 +251,11 @@ debug_print_filter(
 	int num,
 	struct t_filter *the_filter)
 {
-	fprintf(fp, "[%3d]  group=[%s] inscope=[%s] score=[%d] case=[%d] lines=[%d %d]\n",
+	fprintf(fp, "[%3d]  group=[%s] inscope=[%s] score=[%d] case=[%s] lines=[%d %d]\n",
 		num, BlankIfNull(the_filter->scope),
 		(the_filter->inscope ? "TRUE" : "FILTER"),
 		the_filter->score,
-		the_filter->icase,
+		the_filter->icase ? "C" : "I",
 		the_filter->lines_cmp, the_filter->lines_num);
 
 	fprintf(fp, "       subj=[%s] from=[%s] msgid=[%s]\n",
@@ -295,7 +264,7 @@ debug_print_filter(
 		BlankIfNull(the_filter->msgid));
 
 	if (the_filter->time)
-		fprintf(fp, "       time=[%ld][%s", the_filter->time, (the_filter->time ? ctime(&the_filter->time) : "]\n"));
+		fprintf(fp, "       time=[%ld][%s]\n", the_filter->time, BlankIfNull(str_trim(ctime(&the_filter->time))));
 }
 
 
@@ -308,10 +277,10 @@ debug_print_filters(
 	int i, num;
 	struct t_filter *the_filter;
 
-	if (debug < 2)
+	if (!(debug & DEBUG_FILTER))
 		return;
 
-	joinpath(file, TMPDIR, "FILTER");
+	joinpath(file, sizeof(file), TMPDIR, "FILTER");
 
 	if ((fp = fopen(file, "w")) != NULL) {
 		/*
@@ -332,24 +301,52 @@ debug_print_filters(
 }
 
 
+void
+debug_print_file(
+	const char *fname,
+	const char *fmt,
+	...)
+{
+	FILE *fp;
+	char *buf;
+	char file[PATH_LEN];
+	va_list ap;
+
+	if (!debug)
+		return;
+
+	va_start(ap, fmt);
+	buf = fmt_message(fmt, ap);
+
+	joinpath(file, sizeof(file), TMPDIR, fname);
+
+	if ((fp = fopen(file, "a+")) != NULL) {
+		fprintf(fp,"%s\n", buf);
+		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
+		fclose(fp);
+	}
+	free(buf);
+	va_end(ap);
+}
+
+
 /* TODO: print out all fields of t_capabilities */
 #	ifdef NNTP_ABLE
 void
 debug_print_nntp_extensions(
 	void)
 {
-	if (debug < 2)
+	if (!(debug & DEBUG_NNTP))
 		return;
-	debug_nntp("###", "NNTP EXTENSIONS/CAPABILITIES");
-	debug_nntp("###", "Type/Version : %d/%d", nntp_caps.type, nntp_caps.version);
-	debug_nntp("###", "Command-names: %s %s", BlankIfNull(nntp_caps.over_cmd), BlankIfNull(nntp_caps.hdr_cmd));
-	debug_nntp("###", "List         : %s", nntp_caps.list_motd ? "MOTD" : "");
+
+	debug_print_file("NNTP", "### NNTP EXTENSIONS/CAPABILITIES");
+	debug_print_file("NNTP", "### Type/Version : %d/%d", nntp_caps.type, nntp_caps.version);
+	debug_print_file("NNTP", "### Command-names: %s %s", BlankIfNull(nntp_caps.over_cmd), BlankIfNull(nntp_caps.hdr_cmd));
+	debug_print_file("NNTP", "### List         : %s", nntp_caps.list_motd ? "MOTD" : "");
 }
 #	endif /* NNTP_ABLE */
-#endif /* DEBUG */
 
 
-#ifdef DEBUG_NEWSRC
 void
 debug_print_comment(
 	const char *comment)
@@ -357,10 +354,10 @@ debug_print_comment(
 	FILE *fp;
 	char file[PATH_LEN];
 
-	if (debug < 2)
+	if (!(debug & DEBUG_NEWSRC))
 		return;
 
-	joinpath(file, TMPDIR, "BITMAP");
+	joinpath(file, sizeof(file), TMPDIR, "BITMAP");
 
 	if ((fp = fopen(file, "a+")) != NULL) {
 		fprintf(fp,"\n%s\n", comment);
@@ -378,10 +375,10 @@ debug_print_bitmap(
 	FILE *fp;
 	char file[PATH_LEN];
 
-	if (debug != 3)
+	if (!(debug & DEBUG_NEWSRC))
 		return;
 
-	joinpath(file, TMPDIR, "BITMAP");
+	joinpath(file, sizeof(file), TMPDIR, "BITMAP");
 	if ((fp = fopen(file, "a+")) != NULL) {
 		fprintf(fp, "\nActive: Group=[%s] sub=[%c] min=[%ld] max=[%ld] count=[%ld] num_unread=[%ld]\n",
 			group->name, SUB_CHAR(group->subscribed),
@@ -429,4 +426,4 @@ debug_print_newsrc(
 	fprintf(fp, "]\n");
 	fflush(fp);
 }
-#endif /* DEBUG_NEWSRC */
+#endif /* DEBUG */

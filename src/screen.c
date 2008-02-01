@@ -3,10 +3,10 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2005-02-11
+ *  Updated   : 2007-10-29
  *  Notes     :
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -444,7 +444,7 @@ show_progress(
 	long count_diff;
 #endif /* HAVE_GETTIMEOFDAY */
 
-	if (batch_mode || count <= 0 || total == 0)
+	if (batch_mode || count <= 0 || total <= 0)
 		return;
 
 	/* If this is a new progress meter, start recalculating */

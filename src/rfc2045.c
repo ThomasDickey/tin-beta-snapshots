@@ -3,10 +3,10 @@
  *  Module    : rfc2045.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2005-05-10
+ *  Updated   : 2007-11-27
  *  Notes     : RFC 2045/2047 encoding
  *
- * Copyright (c) 1995-2007 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2008 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@
 /*
  * local prototypes
  */
-static int put_rest(char **rest, char **line, int *max_line_len, const int offset);
+static int put_rest(char **rest, char **line, size_t *max_line_len, const int offset);
 static unsigned char bin2hex(unsigned int x);
 static void set_rest(char **rest, const char *ptr);
 
@@ -251,7 +251,7 @@ static int
 put_rest(
 	char **rest,
 	char **line,
-	int *max_line_len,
+	size_t *max_line_len,
 	const int offset)
 {
 	char *my_rest = *rest;
@@ -272,7 +272,7 @@ put_rest(
 		/*
 		 * Resize line if necessary. Keep in mind that we add LF and \0 later.
 		 */
-		if (put_chars >= *max_line_len - 2) {
+		if (put_chars >= (int) *max_line_len - 2) {
 			if (*max_line_len == 0)
 				*max_line_len = LEN;
 			else
@@ -317,7 +317,7 @@ int
 read_decoded_base64_line(
 	FILE *file,
 	char **line,
-	int *max_line_len,
+	size_t *max_line_len,
 	const int max_lines_to_read,
 	char **rest)
 {
@@ -379,7 +379,7 @@ read_decoded_base64_line(
 			 * newline is expected at the end of a line by some other code in
 			 * cook.c.
 			 */
-			if (put_chars > *max_line_len - 2) {
+			if (put_chars > (int) *max_line_len - 2) {
 				*max_line_len <<= 1;
 				*line = my_realloc(*line, *max_line_len);
 			}
@@ -403,7 +403,7 @@ read_decoded_base64_line(
 	 * newline is expected at the end of a line by some other code in
 	 * cook.c.
 	 */
-	if (put_chars > *max_line_len - 2) {
+	if (put_chars > (int) *max_line_len - 2) {
 		*max_line_len <<= 1;
 		*line = my_realloc(*line, *max_line_len);
 	}
@@ -430,7 +430,7 @@ int
 read_decoded_qp_line(
 	FILE *file,
 	char **line,					/* where to copy the decoded line */
-	int *max_line_len,				/* (maximum) line length */
+	size_t *max_line_len,				/* (maximum) line length */
 	const int max_lines_to_read)	/* don't read more physical lines than told here */
 {
 	char *buf, *buf2;
@@ -512,7 +512,7 @@ read_decoded_qp_line(
 	} else	/* error in encoding: copy raw line */
 		ptr = buf;
 
-	if (*max_line_len < (int) strlen(ptr) + 1) {
+	if (*max_line_len < strlen(ptr) + 1) {
 		*max_line_len = strlen(ptr) + 1;
 		*line = my_realloc(*line, *max_line_len);
 	}

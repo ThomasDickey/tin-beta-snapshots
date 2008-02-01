@@ -6,7 +6,7 @@
  *  Updated   : 2006-09-16
  *  Notes     :
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -89,7 +89,7 @@ get_art_mark(
 	if (art->inrange) {
 		return tinrc.art_marked_inrange;
 	} else if (art->status == ART_UNREAD) {
-		return (art->selected ? tinrc.art_marked_selected : (tinrc.recent_time && ((time((time_t) 0) - art->date) < (tinrc.recent_time * DAY))) ? tinrc.art_marked_recent : tinrc.art_marked_unread);
+		return (art->selected ? tinrc.art_marked_selected : (tinrc.recent_time && ((time((time_t *) 0) - art->date) < (tinrc.recent_time * DAY))) ? tinrc.art_marked_recent : tinrc.art_marked_unread);
 	} else if (art->status == ART_WILL_RETURN) {
 		return tinrc.art_marked_return;
 	} else if (art->killed && tinrc.kill_level != KILL_NOTHREAD) {
@@ -1119,7 +1119,7 @@ stat_thread(
 	else if (sbuf->selected_unread)
 		sbuf->art_mark = tinrc.art_marked_selected;
 	else if (sbuf->unread) {
-		if (tinrc.recent_time && (time((time_t) 0) - sbuf->time) < (tinrc.recent_time * DAY))
+		if (tinrc.recent_time && (time((time_t *) 0) - sbuf->time) < (tinrc.recent_time * DAY))
 			sbuf->art_mark = tinrc.art_marked_recent;
 		else
 			sbuf->art_mark = tinrc.art_marked_unread;

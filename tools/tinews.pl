@@ -33,39 +33,46 @@
 #
 #
 # TODO: - FIXME add debug mode which doesn't delete tmp-files and is verbose
-#         (e.g. warns about missing mime-headers if body contains 8bit
-#          chars)
 #       - add pgp6 support
-#       - check for ~/.newsauth (and ~/.nntpauth?) and use username/password
-#         if found
 #       - check for /etc/nntpserver (and /etc/news/server)
-#       - allow config in ~/.tinewsrc
+#       - also check for ~/.nntpauth?
 #       - add $PGPOPTS, $PGPPATH, $GNUPGHOME support
 #       - cleanup, remove duplicated code
 #
 # version Number
-my $version = "1.1.10";
+my $version = "1.1.20";
 
 my %config;
 
-$config{'NNTPServer'}	= 'news';	# your NNTP servers name
-$config{'NNTPPort'}	= 119;		# NNTP-port
-$config{'NNTPUser'}	= '';
-$config{'NNTPPass'}	= '';
+# configuration, may be overwritten via ~/.tinewsrc
+$config{'NNTPServer'}	= 'news';	# your NNTP servers name, may be set via $NNTPSERVER
+$config{'NNTPPort'}		= 119;	# NNTP-port, may be set via $NNTPPORT
+$config{'NNTPUser'}		= '';	# username for nntp-auth, may be set via ~/.newsauth
+$config{'NNTPPass'}		= '';	# password for nntp-auth, may be set via ~/.newsauth
 
-$config{'PGPSigner'}	= '';		# sign as who?
-$config{'PGPPass'}	= '';		# pgp2 only
-$config{'PathtoPGPPass'}= '';		# pgp2, pgp5 and gpg
+$config{'PGPSigner'}	= '';	# sign as who?
+$config{'PGPPass'}		= '';	# pgp2 only
+$config{'PathtoPGPPass'}= '';	# pgp2, pgp5 and gpg
 
-$config{'pgp'}		= '/usr/bin/pgp';# path to pgp
-$config{'PGPVersion'}	= '2';		# Use 2 for 2.X, 5 for PGP > 2.X and GPG for GPG
-$config{'digest-algo'}	= 'MD5';	# Digest Algorithm for GPG -- Must be supported by your installation
+$config{'pgp'}			= '/usr/bin/pgp';	# path to pgp
+$config{'PGPVersion'}	= '2';	# Use 2 for 2.X, 5 for PGP > 2.X and GPG for GPG
+$config{'digest-algo'}	= 'MD5';# Digest Algorithm for GPG. Must be supported by your installation
 
-$config{'Interactive'}	= "yes";	# allow interactive usage
+$config{'Interactive'}	= 'yes';# allow interactive usage
 
-$config{'add_signature'}= "yes";	# Add ~/.signature to posting if there is no sig
+$config{'sig_path'}		= glob('~/.signature');	# path to signature
+$config{'add_signature'}= 'yes';# Add $config{'sig_path'} to posting if there is no sig
+$config{'sig_max_lines'}= 4;	# max number of signatures lines
 
-$config{'sendmail'}	= '| /usr/sbin/sendmail -i -t'; # set to '' to disable mail-actions
+$config{'sendmail'}		= '| /usr/sbin/sendmail -i -t'; # set to '' to disable mail-actions
+
+$config{'pgptmpf'}		= 'pgptmp';	# temporary file for PGP.
+
+$config{'pgpheader'}	= 'X-PGP-Sig';
+$config{'pgpbegin'}		= '-----BEGIN PGP SIGNATURE-----';	# Begin of PGP-Signature
+$config{'pgpend'}		= '-----END PGP SIGNATURE-----';	# End of PGP-Signature
+
+# $config{'canlock_secret'}	= '~/.cancelsecret';		# Path to canlock secret file
 
 $config{'PGPSignHeaders'} = ['From', 'Newsgroups', 'Subject', 'Control',
 	'Supersedes', 'Followup-To', 'Date', 'Sender', 'Approved',
@@ -78,12 +85,6 @@ $config{'PGPorderheaders'} = ['from', 'newsgroups', 'subject', 'control',
 	'content-transfer-encoding', 'summary', 'keywords', 'cancel-lock',
 	'cancel-key', 'also-control', 'x-pgp', 'user-agent'];
 
-$config{'pgptmpf'}	= 'pgptmp';	# temporary file for PGP.
-
-$config{'pgpheader'}	= 'X-PGP-Sig';
-$config{'pgpbegin'}	= '-----BEGIN PGP SIGNATURE-----';	# Begin of PGP-Signature
-$config{'pgpend'}	= '-----END PGP SIGNATURE-----';	# End of PGP-Signature
-
 ################################################################################
 
 use strict;
@@ -92,22 +93,35 @@ use Net::NNTP;
 use Time::Local;
 use Term::ReadLine;
 
-my $pname = $0;
-$pname =~ s#^.*/##;
+(my $pname = $0) =~ s#^.*/##;
 
 my %cli_headers;
 
+# read config file ~/.tinewsrc if present
+if (-r glob('~/.tinewsrc')) {
+	open (TINEWSRC, glob('~/.tinewsrc'));
+	while (defined($_ = <TINEWSRC>)) {
+		if (m/^([^#\s]+)\s*=\s*(\S+)/io) {
+			$config{$1} = $2;
+		}
+	}
+	close (TINEWSRC);
+}
+
+# these env-vars have higher priority
 $config{'NNTPServer'} = $ENV{'NNTPSERVER'} if ($ENV{'NNTPSERVER'});
 $config{'NNTPPort'} = $ENV{'NNTPPORT'} if ($ENV{'NNTPPORT'});
 
 # Get options:
 $Getopt::Long::ignorecase=0;
-GetOptions('A|V|W|O|no-organization|h|headers' => [], #do nothing
-	'debug|D|N'	=> \$config{'debug'}, #XXX
+GetOptions('A|V|W|O|no-organization|h|headers' => [], # do nothing
+	'debug|D|N'	=> \$config{'debug'},
 	'port|p=i'	=> \$config{'NNTPPort'},
 	'no-sign|X'	=> \$config{'no_sign'},
 	'no-control|R'	=> \$config{'no_control'},
 	'no-signature|S'	=> \$config{'no_signature'},
+	'no-canlock|L'	=> \$config{'no_canlock'},
+	'force-auth|Y'	=> \$config{'force_auth'},
 	'approved|a=s'	=> \$config{'approved'},
 	'control|c=s'	=> \$config{'control'},
 	'distribution|d=s'	=> \$config{'distribution'},
@@ -116,6 +130,7 @@ GetOptions('A|V|W|O|no-organization|h|headers' => [], #do nothing
 	'followupto|w=s'	=> \$config{'followup-to'},
 	'newsgroups|n=s'	=> \$config{'newsgroups'},
 	'replyto|r=s'	=> \$config{'reply-to'},
+	'savedir|s=s'	=> \$config{'savedir'},
 	'subject|t=s'	=> \$config{'subject'},
 	'references|F=s'	=> \$config{'references'},
 	'organization|o=s'	=> \$config{'organization'},
@@ -128,7 +143,14 @@ foreach (@ARGV) {
 	usage();
 }
 
-usage() if($config{'help'});
+usage() if ($config{'help'});
+
+# Cancel-Locks require some more modules
+if ($config{'canlock_secret'} && !$config{'no_canlock'}) {
+	use MIME::Base64();
+	use Digest::SHA1();
+	use Digest::HMAC_SHA1();
+}
 
 my $term = new Term::ReadLine 'tinews';
 my $attribs = $term->Attribs;
@@ -137,16 +159,15 @@ my (@Header, %Header, @Body, $PGPCommand);
 
 if (! $config{'no_sign'}) {
 	$config{'PGPSigner'} = $ENV{'SIGNER'} if ($ENV{'SIGNER'});
-
 	$config{'PathtoPGPPass'} = $ENV{'PGPPASSFILE'} if ($ENV{'PGPPASSFILE'});
 	if ($config{'PathtoPGPPass'}) {
-		open (PGPPass, $config{'PathtoPGPPass'}) or
+		open (PGPPass, glob($config{'PathtoPGPPass'})) or
 			$config{'Interactive'} && die ("$0: Can't open ".$config{'PathtoPGPPass'}.": $!");
 		chomp ($config{'PGPPass'} = <PGPPass>);
 		close(PGPPass);
 	}
-	if ($config{'PGPVersion'} eq '2') {
-		$config{'PGPPass'} = $ENV{'PGPPASS'} if ($ENV{'PGPPASS'});
+	if ($config{'PGPVersion'} eq '2' && $ENV{'PGPPASS'}) {
+		$config{'PGPPass'} = $ENV{'PGPPASS'};
 	}
 }
 
@@ -157,17 +178,19 @@ readarticle(\%Header, \@Body);
 # Add signature if there is none
 if (!$config{'no_signature'}) {
 	if ($config{'add_signature'} && !grep /^-- /, @Body) {
-		if (-r (glob("~/.signature"))[0]) {
+		if (-r $config{'sig_path'}) {
 			my $l = 0;
 			push @Body, "-- \n";
-			open SIGNATURE, (glob("~/.signature"))[0] or die "Can't open ~/.signature: $!";
+			open SIGNATURE, ($config{'sig_path'}) or die "Can't open " . $config{'sig_path'} . ": $!";
 			while (<SIGNATURE>){
-				die "~/.signature longer than 4 lines!" if (++$l > 4);
+				die $config{'sig_path'} . " longer than " . $config{'sig_max_lines'}. " lines!" if (++$l > $config{'sig_max_lines'});
 				push @Body, $_;
 			}
 			close SIGNATURE;
 		} else {
-			warn "Tried to add ~/.signature, but ~/.signature is not readable";
+			if ($config{'debug'}) {
+				warn "Tried to add " . $config{'sig_path'} . ", but it is unreadable";
+			}
 		}
 	}
 }
@@ -216,7 +239,36 @@ if ($config{'no_control'} and $Header{control}) {
 	exit 1;
 }
 
-if (defined($Header{'newsgroups'}) && !defined($Header{'message-id'})) {
+# various checks
+if ($config{'debug'}) {
+	foreach (keys %Header) {
+		warn "Raw 8-bit data in the following header:\n$Header{$_}" if ($Header{$_} =~ m/[\x80-\xff]/o);
+	}
+	if (!defined($Header{'mime-version'}) || !defined($Header{'content-type'}) || !defined($Header{'content-transfer-encoding'})) {
+		warn "8bit body without MIME-headers\n" if (grep /[\x80-\xff]/, @Body);
+	}
+}
+
+# try ~/.newsauth if no $config{'NNTPPass'} was set
+if (!$config{'NNTPPass'}) {
+	if (-r (glob("~/.newsauth"))[0]) {
+		my ($l, $server, $pass, $user);
+		open NEWSAUTH, (glob("~/.newsauth"))[0] or die "Can't open ~/.newsauth: $!";
+		while ($l = <NEWSAUTH>) {
+			chomp $l;
+			next if ($l =~ m/^[#\s]/);
+			($server, $pass, $user) = split(/\s+\b/, $l);
+			last if ($server =~ m/\Q$config{'NNTPServer'}\E/);
+		}
+		close (NEWSAUTH);
+		if ($pass) {
+			$config{'NNTPPass'} = $pass;
+			$config{'NNTPUser'} = $user || getlogin || getpwuid($<) || $ENV{USER};
+		}
+	}
+}
+
+if (! $config{'savedir'} && defined($Header{'newsgroups'}) && !defined($Header{'message-id'})) {
 	my $Server = AuthonNNTP();
 	my $ServerMsg = $Server->message();
 	$Server->datasend('.');
@@ -229,6 +281,50 @@ if (!defined($Header{'message-id'})) {
 	chomp (my $hname = `hostname`);
 	my ($hostname,) = gethostbyname($hname);
 	$Header{'message-id'} = "Message-ID: " . sprintf ("<N%xI%xT%x@%s>\n", $>, timelocal(localtime), $$, $hostname);
+}
+
+# add Cancel-Lock (and Cancel-Key) header(s) if requested
+if ($config{'canlock_secret'} && !$config{'no_canlock'}) {
+	open (CANLock, glob($config{'canlock_secret'})) or die ("$0: Can't open " . $config{'canlock_secret'} . ": $!");
+	chomp (my $key = <CANLock>);
+	close (CANLock);
+	(my $data = $Header{'message-id'}) =~ s#^Message-ID: ##i;
+	chomp $data;
+	my $digest = Digest::HMAC_SHA1::hmac_sha1($data, $key);
+	my $cancel_key = MIME::Base64::encode($digest, '');
+	my $cancel_lock = MIME::Base64::encode(Digest::SHA1::sha1($cancel_key, ''));
+	if (defined($Header{'cancel-lock'})) {
+		chomp $Header{'cancel-lock'};
+		$Header{'cancel-lock'} .= " sha1:" . $cancel_lock;
+	} else {
+		$Header{'cancel-lock'} = "Cancel-Lock: sha1:" . $cancel_lock;
+	}
+
+	if ((defined($Header{'supersedes'}) && $Header{'supersedes'} =~ m/^Supersedes:\s+<\S+>\s*$/i) || (defined($Header{'control'}) && $Header{'control'} =~ m/^Control:\s+cancel\s+<\S+>\s*$/i) ||(defined($Header{'also-control'}) && $Header{'also-control'} =~ m/^Also-Control:\s+cancel\s+<\S+>\s*$/i)) {
+		if (defined($Header{'also-control'}) && $Header{'also-control'} =~ m/^Also-Control:\s+cancel\s+/i) {
+			($data = $Header{'also-control'}) =~ s#^Also-Control:\s+cancel\s+##i;
+			chomp $data;
+			$cancel_key = MIME::Base64::encode(Digest::HMAC_SHA1::hmac_sha1($data, $key),'');
+		} else {
+			if (defined($Header{'control'}) && $Header{'control'} =~ m/^Control: cancel /i) {
+				($data = $Header{'control'})=~ s#^Control:\s+cancel\s+##i;
+				chomp $data;
+				$cancel_key = MIME::Base64::encode(Digest::HMAC_SHA1::hmac_sha1($data, $key),'');
+			} else {
+				if (defined($Header{'supersedes'})) {
+					($data = $Header{'supersedes'}) =~ s#^Supersedes: ##i;
+					chomp $data;
+					$cancel_key = MIME::Base64::encode(Digest::HMAC_SHA1::hmac_sha1($data, $key),'');
+				}
+			}
+		}
+		if (defined($Header{'cancel-key'})) {
+			chomp $Header{'cancel-key'};
+			$Header{'cancel-key'} .= " sha1:" . $cancel_key . "\n";
+		} else {
+			$Header{'cancel-key'} = "Cancel-Key: sha1:" . $cancel_key . "\n";
+		}
+	}
 }
 
 # set Posted-And-Mailed if we send a mailcopy to someone else
@@ -268,8 +364,12 @@ if ($config{'no_sign'}) {
 	$MessageR = signarticle(\%Header, \@Body);
 }
 
-# post article
-postarticle($MessageR) if ($Newsgroups);
+# post or save article
+if (! $config{'savedir'}) {
+	postarticle($MessageR) if ($Newsgroups);
+} else {
+	savearticle($MessageR) if ($Newsgroups);
+}
 
 # mail article
 if (($To || $Cc || $Bcc) && $config{'sendmail'}) {
@@ -356,7 +456,7 @@ sub AuthonNNTP {
 	}
 
 	# read access - try auth
-	if ($ServerCod == 201) {
+	if ($ServerCod == 201 || $config{'force_auth'}) {
 		if ($config{'NNTPPass'} eq "") {
 			if ($config{'Interactive'}) {
 				$config{'NNTPUser'} = $term->readline("Your Username at ".$config{'NNTPServer'}.": ");
@@ -463,6 +563,23 @@ sub postarticle {
 }
 
 
+#-------- sub savearticle
+# savearticle saves your article to the directory $config{'savedir'}
+#
+# Receives:
+#      - $ArticleR: A reference to an array containing the article
+sub savearticle {
+	my ($ArticleR) = @_;
+	my $timestamp = timelocal(localtime);
+	(my $ng = $Newsgroups) =~ s#^Newsgroups:\s*([^,\s]+).*#$1#i;
+	my $gn = join "", map { substr($_,0,1) } (split (/\./, $ng));
+	my $filename = $config{'savedir'}."/".$timestamp."-".$gn."-".$$;
+	open (SH, '>', $filename) or die("$0: can't open $filename: $!\n");
+	print SH @$ArticleR;
+	close(SH) or warn "$0: Couldn't close: $!\n";
+}
+
+
 #-------- sub signarticle
 # signarticle signs an articel and returns a reference to an array
 # 	containing the whole signed Message.
@@ -564,7 +681,7 @@ sub signarticle {
 		}
 	}
 
-	push @pgphead, ("X-PGP-Hash: " . $config{'digest-algo'} . "\n");
+	push @pgphead, ("X-PGP-Hash: " . $config{'digest-algo'} . "\n") if (defined($config{'digest-algo'}));
 	push @pgphead, ("X-PGP-Key: " . $config{'PGPSigner'} . "\n"), $tmppgpheader;
 	undef $tmppgpheader;
 
@@ -586,13 +703,16 @@ sub usage {
 	print "  -o string  set Organization:-header to string\n";
 	print "  -p port    use port as NNTP port [default=".$config{'NNTPPort'}."]\n";
 	print "  -r string  set Reply-To:-header to string\n";
+	print "  -s string  save signed article to directory string instead of posting\n";
 	print "  -t string  set Subject:-header to string\n";
 	print "  -w string  set Followup-To:-header to string\n";
 	print "  -x string  set Path:-header to string\n";
 	print "  -H         show help\n";
+	print "  -L         do not add Cacenl-Lock: / Cancel-Key: headers\n";
 	print "  -R         disallow control messages\n";
-	print "  -S         do not append \$HOME/.signature\n";
+	print "  -S         do not append " . $config{'sig_path'} . "\n";
 	print "  -X         do not sign article\n";
+	print "  -Y         force authentication on connect\n";
 	exit 0;
 }
 
@@ -614,6 +734,9 @@ B<gpg>(1) and posts it to a newsserver.
 If the article contains To:, Cc: or Bcc: headers and mail-actions are
 configured it will automatically add a "Posted-And-Mailed: yes" header
 to the article and send out the mail-copies.
+
+If a Cancel-Lock secret file is defined it will automatically add a
+Cancel-Lock: (and Cancel-Key: if required) header.
 
 =head1 OPTIONS
 
@@ -655,6 +778,10 @@ use C<port> as NNTP-port
 
 Set the article header field Reply-To: to the given value.
 
+=item -B<s> F<directory> | --B<savedir> F<directory>
+
+Save signed article to directory F<directory> instead of posting.
+
 =item -B<t> C<Subject> | --B<subject> C<Subject>
 
 Set the article header field Subject: to the given value.
@@ -671,17 +798,25 @@ Set the article header field Path: to the given value.
 
 Show help-page.
 
+=item -B<L> | --B<no-canlock>
+
+Do not add Cancel-Lock: / Cancel-Key: headers.
+
 =item -B<R> | --B<no-control>
 
 Restricted mode, disallow control-messages.
 
 =item -B<S> | --B<no-signature>
 
-Do not append F<$HOME/.signature>
+Do not append F<$HOME/.signature>.
 
 =item -B<X> | --B<no-sign>
 
 Do not sign the article.
+
+=item -B<Y> | --B<force-auth>
+
+Force authentication on connect even if not required by the server.
 
 =item -B<A> -B<V> -B<W>
 
@@ -772,11 +907,11 @@ command-line option overrides B<$DISTRIBUTION>.
 
 =item F<pgptmp.txt>
 
-Temporary file used to store the reformatted article
+Temporary file used to store the reformatted article.
 
 =item F<pgptmp.txt.asc>
 
-Temporary file used to store the reformatted and signed article
+Temporary file used to store the reformatted and signed article.
 
 =item F<$PGPPASSFILE>
 
@@ -784,7 +919,25 @@ The passphrase file to be used for B<pgp>(1) or B<gpg>(1).
 
 =item F<$HOME/.signature>
 
-Signature-file which will be automatically included.
+Signature file which will be automatically included.
+
+=item F<$HOME/.cancelsecret>
+
+The passphrase file to be used for Cancel-Locks. This feature is turned
+off by default.
+
+=item F<$HOME/.newsauth>
+
+"nntpserver password [user]" pairs for NNTP servers that require
+authorization. Any line that starts with "#" is a comment. Blank lines are
+ignored. This file should be readable only for the user as it contains the
+users uncrypted password for reading news.
+
+=item F<$HOME/.tinewsrc>
+
+"option=value" configuration pairs. Lines that start with "#" are ignored.
+If the file contains uncrypted passwords (e.g. NNTPPass or PGPPass), it
+should be only readable for the user.
 
 =back
 
@@ -804,6 +957,10 @@ B<tinews.pl> requires the following standard modules to be installed:
 B<Getopt::Long>(3pm), B<Net::NNTP>(3pm), B<Time::Local>(3pm) and
 B<Term::Readline>(3pm).
 
+If the Cacenl-Lock feature is enabled the following additional modules
+must be installed: B<MIME::Base64>(3pm), B<Digest::SHA1>(3pm) and
+B<Digest::HMAC_SHA1>(3pm)
+
 =head1 AUTHOR
 
 Urs Janssen E<lt>urs@tin.orgE<gt>,
@@ -811,7 +968,8 @@ Marc Brockschmidt E<lt>marc@marcbrockschmidt.deE<gt>
 
 =head1 SEE ALSO
 
-B<pgp>(1), B<gpg>(1), B<pgps>(1), B<Getopt::Long>(3pm), B<Net::NNTP>(3pm),
-B<Time::Local>(3pm), B<Term::Readline>(3pm)
+B<pgp>(1), B<gpg>(1), B<pgps>(1), B<Digest::HMAC_SHA1>(3pm),
+B<Digest::SHA1>(3pm), B<Getopt::Long>(3pm), B<MIME::Base64>(3pm),
+B<Net::NNTP>(3pm), B<Time::Local>(3pm), B<Term::Readline>(3pm)
 
 =cut

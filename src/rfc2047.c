@@ -3,10 +3,10 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2005-07-02
+ *  Updated   : 2007-12-29
  *  Notes     : MIME header encoding/decoding stuff
  *
- * Copyright (c) 1995-2007 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2008 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -224,7 +224,7 @@ rfc1522_decode(
 	char *t;
 #define BUFFER_LEN 2048
 	static char buffer[BUFFER_LEN];
-	int max_len;
+	size_t max_len;
 	char charset[1024];
 	char encoding;
 	t_bool adjacentflag = FALSE;
@@ -509,18 +509,17 @@ rfc1522_do_encode(
 	 * (just checking that they don get longer than 76 characters),
 	 * then, in a second pass, we replace all SPACEs inside encoded
 	 * words by '_', break long lines, etc.
-	 *
-	 * *group is passed for evaluation of group-attributes,
-	 * set to NULL for e-mails
 	 */
+	char *buffer;				/* buffer for encoded stuff */
 	char *c;
 	char *t;
-	char buf[2048];				/* buffer for encoded stuff */
-	char buf2[80];					/* buffer for this and that */
-	int encoding;					/* which encoding to use ('B' or 'Q') */
+	char buf2[80];				/* buffer for this and that */
+	int encoding;				/* which encoding to use ('B' or 'Q') */
 	int ew_taken_len;
 	int column = 0;				/* current column */
 	int word_cnt = 0;
+	int offset;
+	size_t bufferlen = 0;		/* size of buffer */
 	size_t ewsize = 0;			/* size of current encoded-word */
 	t_bool quoting = FALSE;		/* currently inside quote block? */
 	t_bool any_quoting_done = FALSE;
@@ -544,21 +543,29 @@ rfc1522_do_encode(
 		}
 	} while (*(++strptr) != 0);
 
-	t = buf;
+	bufferlen = 2048;
+	t = buffer = my_malloc(bufferlen);
 	encoding = which_encoding(what);
 	ew_taken_len = strlen(charset) + 7 /* =?c?E?d?= */;
 	while (*what) {
 		if (break_long_line)
 			word_cnt++;
-/*
- * if a word with 8bit chars is broken in the middle, whatever follows
- * after the point where it's split should be encoded (i.e. even if
- * they are made of only 7bit chars)
- */
+		/*
+		 * if a word with 8bit chars is broken in the middle, whatever
+		 * follows after the point where it's split should be encoded (i.e.
+		 * even if they are made of only 7bit chars)
+		 */
 		if (contains_nonprintables(what, isstruct_head) || isbroken_within) {
 			if (encoding == 'Q') {
 				if (!quoting) {
 					snprintf(buf2, sizeof(buf2), "=?%s?%c?", charset, encoding);
+					while (t - buffer + strlen(buf2) >= bufferlen) {
+						/* buffer too small, double its size */
+						offset = t - buffer;
+						bufferlen <<= 1;
+						buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
+						t = buffer + offset;
+					}
 					ewsize = mystrcat(&t, buf2);
 					if (break_long_line) {
 						if (word_cnt == 2) {
@@ -568,7 +575,7 @@ rfc1522_do_encode(
 							 * since we cannot break the line
 							 * directly after the keyword.
 							 */
-							ewsize = t - buf;
+							ewsize = t - buffer;
 						}
 					}
 					quoting = TRUE;
@@ -583,11 +590,25 @@ rfc1522_do_encode(
 #endif /* 0 */
 					{
 						snprintf(buf2, sizeof(buf2), "=%2.2X", *EIGHT_BIT(what));
+						if ((size_t)( t - buffer + 3) >= bufferlen) {
+							/* buffer too small, double its size */
+							offset = t - buffer;
+							bufferlen <<= 1;
+							buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
+							t = buffer + offset;
+						}
 						*t++ = buf2[0];
 						*t++ = buf2[1];
 						*t++ = buf2[2];
 						ewsize += 3;
 					} else {
+						if ((size_t) (t - buffer + 1) >= bufferlen) {
+							/* buffer too small, double its size */
+							offset = t - buffer;
+							bufferlen <<= 1;
+							buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
+							t = buffer + offset;
+						}
 						*t++ = *what;
 						ewsize++;
 					}
@@ -607,15 +628,26 @@ rfc1522_do_encode(
 				}
 				if (!contains_nonprintables(what, isstruct_head) || ewsize >= 70 - strlen(charset)) {
 					/* next word is 'clean', close encoding */
+					if ((size_t) (t - buffer + 2) >= bufferlen) {
+						/* buffer too small, double its size */
+						offset = t - buffer;
+						bufferlen <<= 1;
+						buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
+						t = buffer + offset;
+					}
 					*t++ = '?';
 					*t++ = '=';
 					ewsize += 2;
-/*
- * if a word with 8bit chars is broken in the middle, whatever follows
- * after the point where it's split should be encoded (i.e. even if
- * they are made of only 7bit chars)
- */
+					/*
+					 */
 					if (ewsize >= 70 - strlen(charset) && (contains_nonprintables(what, isstruct_head) || isbroken_within)) {
+						if ((size_t) (t - buffer + 1) >= bufferlen) {
+							/* buffer too small, double its size */
+							offset = t - buffer;
+							bufferlen <<= 1;
+							buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
+							t = buffer + offset;
+						}
 						*t++ = ' ';
 						ewsize++;
 					}
@@ -623,6 +655,13 @@ rfc1522_do_encode(
 				} else {
 					/* process whitespace in-between by quoting it properly */
 					while (*what && isspace((unsigned char) *what)) {
+						if ((size_t) (t - buffer + 3) >= bufferlen) {
+							/* buffer probably too small, double its size */
+							offset = t - buffer;
+							bufferlen <<= 1;
+							buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
+							t = buffer + offset;
+						}
 						if (*what == 32 /* not ' ', compare chapter 4! */ ) {
 							*t++ = '_';
 							ewsize++;
@@ -646,11 +685,25 @@ rfc1522_do_encode(
 				 */
 				while (*what && (!isbetween(*what, isstruct_head) || rightafter_ew)) {
 					snprintf(buf2, sizeof(buf2), "=?%s?%c?", charset, encoding);
+					while (t - buffer + strlen(buf2) >= bufferlen) {
+						/* buffer too small, double its size */
+						offset = t - buffer;
+						bufferlen <<= 1;
+						buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
+						t = buffer + offset;
+					}
 					ewsize = mystrcat(&t, buf2);
 
 					if (word_cnt == 2)
-						ewsize = t - buf;
+						ewsize = t - buffer;
 					what += do_b_encode(what, buf2, 75 - ew_taken_len, isstruct_head);
+					while (t - buffer + strlen(buf2) + 3 >= bufferlen) {
+						/* buffer too small, double its size */
+						offset = t - buffer;
+						bufferlen <<= 1;
+						buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
+						t = buffer + offset;
+					}
 					ewsize += mystrcat(&t, buf2);
 					*t++ = '?';
 					*t++ = '=';
@@ -673,60 +726,77 @@ rfc1522_do_encode(
 				}
 			}		/* end of B encoding */
 		} else {
-			while (*what && !isbetween(*what, isstruct_head))
+			while (*what && !isbetween(*what, isstruct_head)) {
+				if ((size_t) (t - buffer + 1) >= bufferlen) {
+					/* buffer too small, double its size */
+					offset = t - buffer;
+					bufferlen <<= 1;
+					buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
+					t = buffer + offset;
+				}
 				*t++ = *what++;		/* output word unencoded */
-			while (*what && isbetween(*what, isstruct_head))
+			}
+			while (*what && isbetween(*what, isstruct_head)) {
+				if ((size_t) (t - buffer + 1) >= bufferlen) {
+					/* buffer too small, double its size */
+					offset = t - buffer;
+					bufferlen <<= 1;
+					buffer = my_realloc(buffer, bufferlen * sizeof(*buffer));
+					t = buffer + offset;
+				}
 				*t++ = *what++;		/* output trailing whitespace unencoded */
+			}
 			rightafter_ew = FALSE;
 		}
 	}		/* end of pass 1 while loop */
 	*t = 0;
-	/* Pass 2: break long lines if there are MIME-sequences in the result */
-	c = buf;
-	if (break_long_line) {
-		column = 0;
-		if (any_quoting_done) {
-			word_cnt = 1;			/*
-									 * note, if the user has typed a continuation
-									 * line, we will consider the initial
-									 * whitespace to be delimiting word one (well,
-									 * just assume an empty word).
-									 */
-			while (*c) {
-				if (isspace((unsigned char) *c)) {
-					/*
-					 * According to rfc1522, header lines containing encoded
-					 * words are limited to 76 chars, but if the first line is
-					 * too long (due to a long header keyword), we cannot stick
-					 * to that, since we would break the line directly after the
-					 * keyword's colon, which is not allowed. The same is
-					 * necessary for a continuation line with an unencoded word
-					 * that is too long.
-					 */
-					if (sizeofnextword(c) + column > 76 && word_cnt != 1) {
-						*((*where)++) = '\n';
-						column = 0;
-					}
-					if (c > buf && !isspace((unsigned char) *(c - 1)))
-						word_cnt++;
-					*((*where)++) = *c++;
-					column++;
-				} else
-					while (*c && !isspace((unsigned char) *c)) {
-						*((*where)++) = *c++;
-						column++;
-					}
-			}
-		} else {
-			while (*c)
-				*((*where)++) = *c++;
-		}
-	} else {		/* !break_long_line */
-		while (*c)
-			*((*where)++) = *c++;
-	}
 
-	**where = 0;
+	/* Pass 2: break long lines if there are MIME-sequences in the result */
+	c = buffer;
+	if (break_long_line && any_quoting_done) {
+		char *new_buffer;
+		size_t new_bufferlen = strlen(buffer) * 2 + 1; /* maximum length if
+every "word" were a space ... */
+
+		new_buffer = my_malloc(new_bufferlen);
+		t = new_buffer;
+		column = 0;
+		word_cnt = 1;			/*
+						 * note, if the user has typed a continuation
+						 * line, we will consider the initial
+						 * whitespace to be delimiting word one (well,
+						 * just assume an empty word).
+						 */
+		while (*c) {
+			if (isspace((unsigned char) *c)) {
+				/*
+				 * According to rfc1522, header lines containing encoded
+				 * words are limited to 76 chars, but if the first line is
+				 * too long (due to a long header keyword), we cannot stick
+				 * to that, since we would break the line directly after the
+				 * keyword's colon, which is not allowed. The same is
+				 * necessary for a continuation line with an unencoded word
+				 * that is too long.
+				 */
+				if (sizeofnextword(c) + column > 76 && word_cnt != 1) {
+					*t++ = '\n';
+					column = 0;
+				}
+				if (c > buffer && !isspace((unsigned char) *(c - 1)))
+					word_cnt++;
+				*t++ = *c++;
+				column++;
+			} else
+				while (*c && !isspace((unsigned char) *c)) {
+					*t++ = *c++;
+					column++;
+				}
+		}
+		FreeAndNull(buffer);
+		buffer = new_buffer;
+	}
+	*t = 0;
+	*where = buffer;
 	return any_quoting_done;
 }
 
@@ -740,26 +810,27 @@ rfc1522_encode(
 	const char *charset,
 	t_bool ismail)
 {
-	char *b, *buf;
+	char *buf;
 	t_bool x;
-/*
- * break_long_line is FALSE for news posting unless MIME_BREAK_LONG_LINES is
- * defined, but it's TRUE for mail messages regardless of whether or not
- * MIME_BREAK_LONG_LINES is defined
- */
+
+	/*
+	 * break_long_line is FALSE for news posting unless
+	 * MIME_BREAK_LONG_LINES is defined, but it's TRUE for mail messages
+	 * regardless of whether or not MIME_BREAK_LONG_LINES is defined
+	 */
 #ifdef MIME_BREAK_LONG_LINES
 	t_bool break_long_line = TRUE;
 #else
-/*
- * Even if MIME_BREAK_LONG_LINES is NOT defined, long headers in mail
- * messages should be broken up in accordance with RFC 2047(1522)
- */
+	/*
+	 * Even if MIME_BREAK_LONG_LINES is NOT defined, long headers in mail
+	 * messages should be broken up in accordance with RFC 2047(1522)
+	 */
 	t_bool break_long_line = ismail;
 #endif /* MIME_BREAK_LONG_LINES */
 
-	b = buf = my_malloc(2048);
-	x = rfc1522_do_encode(s, &b, charset, break_long_line);
+	x = rfc1522_do_encode(s, &buf, charset, break_long_line);
 	quoteflag = quoteflag || x;
+
 	return buf;
 }
 

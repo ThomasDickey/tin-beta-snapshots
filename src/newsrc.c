@@ -3,10 +3,10 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2006-02-15
+ *  Updated   : 2008-01-10
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -109,7 +109,7 @@ read_newsrc(
 			line_count++;
 
 			if (sub == SUBSCRIBED) {
-				if ((i = my_group_add(grp)) >= 0) {
+				if ((i = my_group_add(grp, FALSE)) >= 0) {
 					if (!active[my_group[i]].bogus) {
 						active[my_group[i]].subscribed = SUB_BOOL(sub);
 						parse_bitmap_seq(&active[my_group[i]], seq);
@@ -159,7 +159,7 @@ write_newsrc_line(
 	 * are set to auto removal. Also check for bogus flag just in case
 	 * strip_bogus was changed since tin started
 	 */
-	group = group_find(line);
+	group = group_find(line, FALSE);
 
 	if (tinrc.strip_bogus == BOGUS_REMOVE) {
 		if (group == NULL || group->bogus) { /* group dosen't exist */
@@ -325,7 +325,7 @@ auto_subscribe_groups(
 	/* TODO: test me! */
 	while ((ptr = tin_fgets(fp_subs, FALSE)) != NULL) {
 		if (ptr[0] != '#') {
-			if (group_find(ptr) != 0)
+			if (group_find(ptr, FALSE) != 0)
 				fprintf(fp_newsrc, "%s:\n", ptr);
 		}
 	}
@@ -358,13 +358,13 @@ backup_newsrc(
 	{
 		STRCPY(filebuf, quote_space_to_dash(nntp_server));
 	}
-	joinpath(dirbuf, rcdir, filebuf);
-	joinpath(filebuf, dirbuf, OLDNEWSRC_FILE);
+	joinpath(dirbuf, sizeof(dirbuf), rcdir, filebuf);
+	joinpath(filebuf, sizeof(filebuf), dirbuf, OLDNEWSRC_FILE);
 
 	if (-1 == stat(dirbuf, &statbuf)) {
 		if (-1 == my_mkdir(dirbuf, (mode_t) (S_IRWXU)))
 			/* Can't create directory: Fall back on Homedir */
-			joinpath(filebuf, homedir, OLDNEWSRC_FILE);
+			joinpath(filebuf, sizeof(filebuf), homedir, OLDNEWSRC_FILE);
 	}
 
 	if (!backup_file(newsrc, filebuf))
@@ -388,18 +388,18 @@ group_get_art_info(
 {
 	DIR *dir;
 	DIR_BUF *direntry;
-	char buf[NNTP_STRLEN];
 	long artnum;
 
 	if (read_news_via_nntp && grouptype == GROUP_TYPE_NEWS) {
 #ifdef NNTP_ABLE
 		char line[NNTP_STRLEN];
 
-		snprintf(buf, sizeof(buf), "GROUP %s", groupname);
+		snprintf(line, sizeof(line), "GROUP %s", groupname);
 #	ifdef DEBUG
-		debug_nntp("group_get_art_info", buf);
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", "group_get_art_info %s", line);
 #	endif /* DEBUG */
-		put_server(buf);
+		put_server(line);
 
 		switch (get_respcode(line, sizeof(line))) {
 			case OK_GROUP:
@@ -422,7 +422,8 @@ group_get_art_info(
 
 			default:
 #	ifdef DEBUG
-				debug_nntp("NOT_OK", line);
+				if (debug & DEBUG_NNTP)
+					debug_print_file("NNTP", "NOT_OK %s", line);
 #	endif /* DEBUG */
 				return -1;
 		}
@@ -431,13 +432,14 @@ group_get_art_info(
 		return 0;
 #endif /* NNTP_ABLE */
 	} else {
+		char group_path[PATH_LEN];
 		*art_count = 0;
 		*art_min = 1;
 		*art_max = 0;
 
-		make_base_group_path(tin_spooldir, groupname, buf);
+		make_base_group_path(tin_spooldir, groupname, group_path, sizeof(group_path));
 
-		if ((dir = opendir(buf)) != NULL) {
+		if ((dir = opendir(group_path)) != NULL) {
 			while ((direntry = readdir(dir)) != NULL) {
 				artnum = atol(direntry->d_name); /* should be '\0' terminated... */
 				if (artnum >= 1) {
@@ -518,18 +520,19 @@ subscribe(
 
 	if ((fp = fopen(newsrc, "r")) != NULL) {
 		while ((line = tin_fgets(fp, FALSE)) != NULL) {
-			seq = parse_newsrc_line(line, &sub);
-			if (STRCMPEQ(line, group->name)) {
-				fprintf(newfp, "%s%c %s\n", line, sub_state, seq);
-				group->subscribed = SUB_BOOL(sub_state);
+			if ((seq = parse_newsrc_line(line, &sub))) {
+				if (STRCMPEQ(line, group->name)) {
+					fprintf(newfp, "%s%c %s\n", line, sub_state, seq);
+					group->subscribed = SUB_BOOL(sub_state);
 
-				/* If previously subscribed to in .newsrc, load up any existing information */
-				if (sub_state == SUBSCRIBED)
-					parse_bitmap_seq(group, seq);
+					/* If previously subscribed to in .newsrc, load up any existing information */
+					if (sub_state == SUBSCRIBED)
+						parse_bitmap_seq(group, seq);
 
-				found = TRUE;
-			} else
-				fprintf(newfp, "%s%c %s\n", line, sub, seq);
+					found = TRUE;
+				} else
+					fprintf(newfp, "%s%c %s\n", line, sub, seq);
+			}
 		}
 
 		fclose(fp);
@@ -612,11 +615,10 @@ delete_group(
 
 		if ((fp = fopen(newsrc, "r")) != NULL) {
 			while ((line = tin_fgets(fp, FALSE)) != NULL) {
-				seq = parse_newsrc_line(line, &sub);
-
-				if (!STRCMPEQ(line, group))
-					fprintf(newfp, "%s%c %s\n", line, sub, seq);
-
+				if ((seq = parse_newsrc_line(line, &sub))) {
+					if (!STRCMPEQ(line, group))
+						fprintf(newfp, "%s%c %s\n", line, sub, seq);
+				}
 			}
 			fclose(fp);
 		}
@@ -643,9 +645,10 @@ grp_mark_read(
 {
 	int i;
 
-#ifdef DEBUG_NEWSRC
-	debug_print_comment("c/C command");
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+	if (debug & DEBUG_NEWSRC)
+		debug_print_comment("c/C command");
+#endif /* DEBUG */
 
 	if (art != NULL) {
 		for_each_art(i)
@@ -668,9 +671,10 @@ grp_mark_unread(
 	int bitlength;
 	t_bitmap *newbitmap = (t_bitmap *)0;
 
-#ifdef DEBUG_NEWSRC
-	debug_print_comment("Z command");
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+	if (debug & DEBUG_NEWSRC)
+		debug_print_comment("Z command");
+#endif /* DEBUG */
 
 	group_get_art_info(group->spooldir, group->name, group->type, &group->count, &group->xmax, &group->xmin);
 
@@ -692,9 +696,10 @@ grp_mark_unread(
 	if (bitlength)
 		NSETRNG1(group->newsrc.xbitmap, 0L, bitlength - 1L);
 
-#ifdef DEBUG_NEWSRC
-	debug_print_bitmap(group, NULL);
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+	if (debug & DEBUG_NEWSRC)
+		debug_print_bitmap(group, NULL);
+#endif /* DEBUG */
 }
 
 
@@ -705,9 +710,10 @@ thd_mark_read(
 {
 	int i;
 
-#ifdef DEBUG_NEWSRC
-	debug_print_comment("Mark thread read K command");
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+	if (debug & DEBUG_NEWSRC)
+		debug_print_comment("Mark thread read K command");
+#endif /* DEBUG */
 
 	for (i = (int) thread; i >= 0; i = arts[i].thread)
 		art_mark(group, &arts[i], ART_READ);
@@ -721,9 +727,10 @@ thd_mark_unread(
 {
 	int i;
 
-#ifdef DEBUG_NEWSRC
-	debug_print_comment("Mark thread unread Z command");
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+	if (debug & DEBUG_NEWSRC)
+		debug_print_comment("Mark thread unread Z command");
+#endif /* DEBUG */
 
 	for (i = (int) thread; i >= 0; i = arts[i].thread)
 		art_mark(group, &arts[i], ART_WILL_RETURN);
@@ -752,15 +759,15 @@ parse_bitmap_seq(
 	while (ptr && *ptr && (*ptr < '0' || *ptr > '9'))
 		ptr++;
 
-#ifdef DEBUG_NEWSRC
-	{
+#ifdef DEBUG
+	if (debug & DEBUG_NEWSRC) {
 		char buf[NEWSRC_LINE];
 
 		snprintf(buf, sizeof(buf), "Parsing [%s%c %.*s]", group->name, SUB_CHAR(group->subscribed), (int) (NEWSRC_LINE - strlen(group->name) - 20), ptr);
 		debug_print_comment(buf);
 		debug_print_bitmap(group, NULL);
 	}
-#endif /* DEBUG_NEWSRC */
+#endif /* DEBUG */
 
 	if (ptr) {
 		gotseq = TRUE;
@@ -828,9 +835,10 @@ wait_message(2, "BITMAP Grp=[%s] MinMax=[%ld-%ld] Len=[%ld]\n",
 		sum = (int) ((group->count >= 0) ? group->count : ((group->newsrc.xmax - group->newsrc.xmin) + 1));
 
 	group->newsrc.num_unread = sum;
-#ifdef DEBUG_NEWSRC
-	debug_print_bitmap(group, NULL);
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+	if (debug & DEBUG_NEWSRC)
+		debug_print_bitmap(group, NULL);
+#endif /* DEBUG */
 }
 
 
@@ -1027,10 +1035,12 @@ print_bitmap_seq(
 	long i, last;
 	t_bool flag = FALSE;
 
-#ifdef DEBUG_NEWSRC
-	debug_print_comment("print_bitmap_seq()");
-	debug_print_bitmap(group, NULL);
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+	if (debug & DEBUG_NEWSRC) {
+		debug_print_comment("print_bitmap_seq()");
+		debug_print_bitmap(group, NULL);
+	}
+#endif /* DEBUG */
 
 	if (group->count == 0 || group->xmin > group->xmax) {
 		if (group->newsrc.xmax > 1)
@@ -1038,9 +1048,10 @@ print_bitmap_seq(
 
 		fprintf(fp, "\n");
 		fflush(fp);
-#ifdef DEBUG_NEWSRC
-		debug_print_comment("print_bitmap_seq(): group->count == 0");
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+		if (debug & DEBUG_NEWSRC)
+			debug_print_comment("print_bitmap_seq(): group->count == 0");
+#endif /* DEBUG */
 		return;
 	}
 
@@ -1082,9 +1093,10 @@ print_bitmap_seq(
 		if (group->newsrc.xmin > 2)
 			fprintf(fp, "-%ld", group->newsrc.xmin - 1);
 
-#ifdef DEBUG_NEWSRC
-		debug_print_comment("print_bitmap_seq(): !flag && group->newsrc.xmin > 1");
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+		if (debug & DEBUG_NEWSRC)
+			debug_print_comment("print_bitmap_seq(): !flag && group->newsrc.xmin > 1");
+#endif /* DEBUG */
 	}
 
 	fprintf(fp, "\n");
@@ -1104,9 +1116,9 @@ pos_group_in_newsrc(
 	FILE *fp_sub = NULL, *fp_unsub = NULL;
 	char *newsgroup = NULL;
 	char *line;
-	char buf[HEADER_LEN];
-	char sub[HEADER_LEN];
-	char unsub[HEADER_LEN];
+	char filename[PATH_LEN];
+	char sub[PATH_LEN];
+	char unsub[PATH_LEN];
 	int subscribed_pos = 1;
 	size_t group_len;
 	t_bool found = FALSE;
@@ -1131,11 +1143,11 @@ pos_group_in_newsrc(
 	if (newsrc_mode)
 		fchmod(fileno(fp_out), newsrc_mode);
 
-	joinpath(buf, TMPDIR, ".subrc");
-	snprintf(sub, sizeof(sub), "%s.%d", buf, (int) process_id);
+	joinpath(filename, sizeof(filename), TMPDIR, ".subrc");
+	snprintf(sub, sizeof(sub), "%s.%d", filename, (int) process_id);
 
-	joinpath(buf, TMPDIR, ".unsubrc");
-	snprintf(unsub, sizeof(unsub), "%s.%d", buf, (int) process_id);
+	joinpath(filename, sizeof(filename), TMPDIR, ".unsubrc");
+	snprintf(unsub, sizeof(unsub), "%s.%d", filename, (int) process_id);
 
 	if ((fp_sub = fopen(sub, "w")) == NULL)
 		goto rewrite_group_done;
@@ -1367,18 +1379,20 @@ expand_bitmap(
 		bitlen = 0;
 		FreeIfNeeded(group->newsrc.xbitmap);
 		group->newsrc.xbitmap = (t_bitmap *) 0;
-#ifdef DEBUG_NEWSRC
-		debug_print_comment("expand_bitmap: group->newsrc.bitlen == 0");
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+		if (debug & DEBUG_NEWSRC)
+			debug_print_comment("expand_bitmap: group->newsrc.bitlen == 0");
+#endif /* DEBUG */
 	} else if (group->newsrc.xbitmap == NULL) {
 		group->newsrc.xbitmap = my_malloc(BITS_TO_BYTES(bitlen));
 		if (group->newsrc.xmin > first)
 			NSETRNG0(group->newsrc.xbitmap, 0L, group->newsrc.xmin - first - 1L);
 		if (bitlen > group->newsrc.xmin - first)
 			NSETRNG1(group->newsrc.xbitmap, group->newsrc.xmin - first, bitlen - 1);
-#ifdef DEBUG_NEWSRC
-		debug_print_comment("expand_bitmap: group->newsrc.xbitmap == NULL");
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+		if (debug & DEBUG_NEWSRC)
+			debug_print_comment("expand_bitmap: group->newsrc.xbitmap == NULL");
+#endif /* DEBUG */
 	} else if (need_full_copy) {
 		t_bitmap *newbitmap = my_malloc(BITS_TO_BYTES(bitlen));
 
@@ -1417,9 +1431,10 @@ expand_bitmap(
 
 		free(group->newsrc.xbitmap);
 		group->newsrc.xbitmap = newbitmap;
-#ifdef DEBUG_NEWSRC
-		debug_print_comment("expand_bitmap: group->newsrc.bitlen != (group->max-group->min)+1 and need full copy");
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+		if (debug & DEBUG_NEWSRC)
+			debug_print_comment("expand_bitmap: group->newsrc.bitlen != (group->max-group->min)+1 and need full copy");
+#endif /* DEBUG */
 	} else if (max != group->newsrc.xmax || first != group->newsrc.xmin) {
 		t_bitmap *newbitmap;
 		newbitmap = my_malloc(BITS_TO_BYTES(bitlen));
@@ -1456,9 +1471,10 @@ expand_bitmap(
 
 		free(group->newsrc.xbitmap);
 		group->newsrc.xbitmap = newbitmap;
-#ifdef DEBUG_NEWSRC
-		debug_print_comment("expand_bitmap: group->newsrc.bitlen != (group->max-group->min)+1");
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+		if (debug & DEBUG_NEWSRC)
+			debug_print_comment("expand_bitmap: group->newsrc.bitlen != (group->max-group->min)+1");
+#endif /* DEBUG */
 	}
 	group->newsrc.xmin = first;
 	if (group->newsrc.xmax < max)
@@ -1483,9 +1499,10 @@ art_mark(
 			if (group != NULL) {
 				if (art->artnum >= group->newsrc.xmin && art->artnum <= group->newsrc.xmax)
 					NSET0(group->newsrc.xbitmap, art->artnum - group->newsrc.xmin);
-#ifdef DEBUG_NEWSRC
-				debug_print_bitmap(group, art);
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+				if (debug & DEBUG_NEWSRC)
+					debug_print_bitmap(group, art);
+#endif /* DEBUG */
 			}
 			if ((art->status == ART_UNREAD) || (art->status == ART_WILL_RETURN)) {
 				art_mark_xref_read(art);
@@ -1510,9 +1527,10 @@ art_mark(
 					expand_bitmap(group, art->artnum);
 				else {
 					NSET1(group->newsrc.xbitmap, art->artnum - group->newsrc.xmin);
-#ifdef DEBUG_NEWSRC
-					debug_print_bitmap(group, art);
-#endif /* DEBUG_NEWSRC */
+#ifdef DEBUG
+					if (debug & DEBUG_NEWSRC)
+						debug_print_bitmap(group, art);
+#endif /* DEBUG */
 				}
 			}
 			break;
@@ -1545,7 +1563,7 @@ set_default_bitmap(
 
 
 /* TEST harness */
-#ifdef DEBUG_NEWSRC
+#ifdef DEBUG
 #	if 0
 static void set_bitmap_range_read(struct t_newsrc *my_newsrc, long beg, long end);
 static void set_bitmap_range_unread(struct t_newsrc *my_newsrc, long beg, long end);
@@ -1682,4 +1700,4 @@ my_newsrc->xmin, my_newsrc->xmax, beg, end, offset, length);
 	}
 }
 #	endif /* 0 */
-#endif /* DEBUG_NEWSRC */
+#endif /* DEBUG */

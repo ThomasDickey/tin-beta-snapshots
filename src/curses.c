@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2006-02-15
+ *  Updated   : 2007-12-30
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -1327,6 +1327,7 @@ ReadWch(
 
 	/* FIXME: add support for other multi-byte charsets */
 
+	free(mbs);
 	return WEOF;
 }
 #	endif /* MULTIBYTE_ABLE && !NO_LOCALE */

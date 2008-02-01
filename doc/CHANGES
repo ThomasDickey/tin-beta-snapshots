@@ -1,8 +1,63 @@
+-- 1.9.3 release 20080108 "" --
+
+U009) Dirk Nimmich <nimmich@muenster.de>
+      ADD. (g)oto group search now case insensitive
+      ADD. infrastructure for editing and writing attributes
+      ADD. write attributes file from internal structures
+      BUG. possible memleak when freeing group attributes
+      ADD. check joinpath for overruns
+      BUG. potential buffer overruns
+      BUG. memleak in curses.c:ReadWch()
+      BUG. uninitialized mm_local_charset when no config files available,
+           leading to an endless loop on exit when newsrc cannot be written
+      BUG. inconsistent update of mm_local_charset on runtime
+      BUG. fixed length buffer in rfc1522_do_encode()
+      FIX. extern.h proto.h, tin.h, active.c, art.c, attrib.c, auth.c, config.c
+           curses.c, debug.c, feed.c, inews.c, init.c, joinpath.c, keymap.c
+           list.c, mail.c, main.c, memory.c, mimetypes.c, my_tmpfile.c
+           newsrc.c, nntplib.c, nrctbl.c, options_menu.c, pgp.c, post.c
+           rfc2046.c, save.c, select.c, sigfile.c, string.c, xref.c
+
+ 020) Urs Janssen <urs@tin.org>
+      BUG. my_realloc() didn't handle zero size reallocs
+      FIX. memory.c
+
+U008) Rado S <regrado@web.de>
+      ADD. use same article numbers in different levels
+      FIX. extern.h, lang.c, page.c
+
+ 019) Philip Hazel <ph10@cam.ac.uk>
+      BUG. missing a check for a possible return value of pcre_exec()
+      FIX. misc.c, regex.c
+
+U007) Urs Janssen <urs@tin.org>
+      ADD. enable some more CAPABILLITIES related code
+      ADD. minor code cleanup
+      ADD. config.guess, config.sub update
+      ADD. allow .me, .rs, .tel and .asia TLDs
+      ADD. check permissions of .cancelsecret-file
+      ADD. --enable-cancel-locks configure option
+      ADD. libcanlock update (1.0 -> 2b-4)
+      ADD. url_handler.pl as new DEFAULT_URL_HANDLER
+      ADD. remove leading/tailing whitespace in filter scope
+      ADD. increase internal buffer in rfc1522_encode()/rfc1522_do__encode()
+      ADD. disallow .invalidTLD in tin generated Message-IDs
+      BUG. subscribe_pattern() was overcomplex
+      BUG. mail_to_someone() didn't convert the article into the local charset
+      FIX. active.c, art.c, auth.c, charset.c, config.c, color.c, cook.c
+           debug.c, filter.c, group.c, header.c, help.c, inews.c, lang.c
+           mail.c, main.c, mimetypes.c, misc.c, my_tmpfile.c, newsrc.c
+           nntplib.c, page.c, post.c, refs.c, rfc2045.c, rfc2047.c, save.c
+           screen.c, search.c, select.c, sigfile.c, tags.c, xface.c, xref.c
+           config.guess, config.sub, de.po, autoconf.h[in], debug.h, extern.h
+           policy.h, proto.h, rfc2046.h, tin.h, version.h, Makefile
+           configure[.in], Makefile[.in], libcanlock/*, tin.1, tin.5
+
 -- 1.9.2 release 20070201 "Dalaruan" --
 
  018) Christian Weisgerber <naddy@mips.inka.de>
-      BUG. assumed that wchar_t and wint_t are of the same size  
-      FIX. tcurses.c    
+      BUG. assumed that wchar_t and wint_t are of the same size
+      FIX. tcurses.c
 
  017) Antonio Querubin <tony@lava.net>
       BUG. missplaced ||
@@ -18,7 +73,7 @@ U005) Dirk Nimmich <nimmich@muenster.de>
       BUG. CatchupNextUnread in page level didn't always work
       BUG. 'C'atchup in pager was still not correct (we didn't ever enter the
            next group)
-      BUG. fast/endless reconecction loop after a "200\n\r400\n\r" greeting
+      BUG. fast/endless reconnection loop after a "200\n\r400\n\r" greeting
       BUG. resent command on 503 error
       ADD. rewrote NGLIMIT handling
       REM. return value of change_config_file()

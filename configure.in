@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2006-12-21
+dnl Updated   : 2008-01-08
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2007 Thomas E. Dickey <dickey@invisible-island.net>
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.9.2
+VERSION=1.9.3
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -516,6 +516,20 @@ CF_ARG_ENABLE(mh-mail-handling,
 	[AC_DEFINE(HAVE_MH_MAIL_HANDLING)])
 AC_MSG_RESULT($enableval)
 
+CAN_MAKEFILE=
+CANDIR_MAKE=
+AC_MSG_CHECKING(whether to use Cancel-Locks)
+CF_ARG_ENABLE(cancel-locks,
+	[  --enable-cancel-locks   enable creation of Cancel-Locks],
+	[CANLIBS='-L../libcanlock -lcanlock'
+	CAN_MAKEFILE="libcanlock/Makefile"
+	AC_DEFINE(USE_CANLOCK)],
+	[CANDIR_MAKE='#'
+	CANLIBS=''])
+AC_MSG_RESULT($enableval)
+AC_SUBST(CANDIR_MAKE)
+AC_SUBST(CANLIBS)
+
 AC_MSG_CHECKING(whether to enable 8-bit keycodes)
 CF_ARG_DISABLE(8bit-keys,
 	[  --disable-8bit-keys     disable 8-bit keycode support],,
@@ -564,7 +578,12 @@ AC_MSG_RESULT($DEFAULT_ISO2ASC)
 AC_MSG_CHECKING(whether to enable locale support)
 CF_ARG_DISABLE(locale,
 	[  --disable-locale        disable locale support],
-	[AC_DEFINE(NO_LOCALE)])
+	[AC_DEFINE(NO_LOCALE)])#, # TODO fixme!
+#	[ case "$host_os" in
+#	*cygwin*)
+#	AC_DEFINE(NO_LOCALE)
+#	;;
+#	esac])
 AC_MSG_RESULT($enableval)
 
 AC_MSG_CHECKING(whether to enable posting)
@@ -919,7 +938,6 @@ AC_CHECK_FUNCS(\
 	inet_aton \
 	is_xterm \
 	isascii \
-	link \
 	lockf \
 	memcmp \
 	memcpy \
@@ -1230,6 +1248,21 @@ int main() {
 	AC_MSG_RESULT(unknown)
 )
 
+# FIXME
+# locale is broken on cygwin
+# locking doesn't work on cygwin
+# group/other bits don't work on cygwin
+# link(2) is detected but doesn't work on cygwin
+
+case "$host_os" in
+	*cygwin*)
+		AC_DEFINE(NO_LOCALE)
+		AC_DEFINE(NO_LOCKING)
+		AC_DEFINE(FILE_MODE_BROKEN)
+		;;
+	*)
+		AC_CHECK_FUNC(link, AC_DEFINE(HAVE_LINK))
+esac
 
 # tin has mkdirs.sh instead of mkinstalldirs, overwrite the result of test
 # in gettext.m4
@@ -1264,4 +1297,5 @@ CF_DEFINE_STRING(TIN_LIBS,     "$LIBS")
 
 AC_OUTPUT($PCRE_MAKEFILE
 	$SUB_MAKEFILE
+	$CAN_MAKEFILE
 	src/Makefile)

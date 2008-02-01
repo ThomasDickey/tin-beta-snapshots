@@ -3,10 +3,10 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-06-28
+ *  Updated   : 2008-01-10
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2007 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -465,6 +465,10 @@ read_config_file(
 				break;
 			if (match_list(buf, "mm_network_charset=", txt_mime_charsets, NUM_MIME_CHARSETS, &tinrc.mm_network_charset))
 				break;
+#	ifdef NO_LOCALE
+			if (match_string(buf, "mm_local_charset=", tinrc.mm_local_charset, sizeof(tinrc.mm_local_charset)))
+				break;
+#	endif /* NO_LOCALE */
 #endif /* !CHARSET_CONVERSION */
 
 			if (match_boolean(buf, "mark_ignore_tags=", &tinrc.mark_ignore_tags))
@@ -804,28 +808,10 @@ read_config_file(
 	if (!(tinrc.draw_arrow || tinrc.inverse_okay))
 		tinrc.draw_arrow = TRUE;
 
-	/*
-	 * determine local charset, or in case of NO_LOCALE use
-	 * mm{_network}_charset
-	 */
-	{
-#ifndef NO_LOCALE
-		const char *p;
-
-		if ((p = tin_nl_langinfo(CODESET)) != NULL) {
-			if (!strcmp(p, "ANSI_X3.4-1968"))
-				strcpy(tinrc.mm_local_charset, "US-ASCII");
-			else
-				strcpy(tinrc.mm_local_charset, p);
-		} else
-#endif /* !NO_LOCALE */
-			if (!*tinrc.mm_local_charset)
-#ifndef CHARSET_CONVERSION
-				strcpy(tinrc.mm_local_charset, tinrc.mm_charset);
-#else
-				strcpy(tinrc.mm_local_charset, txt_mime_charsets[tinrc.mm_network_charset]);
-#endif /* !CHARSET_CONVERSION */
-	}
+	/* determine local charset */
+#if defined(NO_LOCALE) && !defined(CHARSET_CONVERSION)
+	strcpy(tinrc.mm_local_charset, tinrc.mm_charset);
+#endif /* NO_LOCALE && !CHARSET_CONVERSION */
 	return TRUE;
 }
 
@@ -1263,6 +1249,10 @@ write_config_file(
 	fprintf(fp, _(txt_mm_network_charset.tinrc));
 	fprintf(fp, "mm_network_charset=%s\n\n", txt_mime_charsets[tinrc.mm_network_charset]);
 
+#	ifdef NO_LOCALE
+	fprintf(fp, _(txt_mm_local_charset.tinrc));
+	fprintf(fp, "mm_local_charset=%s\n\n", tinrc.mm_local_charset);
+#	endif /* NO_LOCALE */
 #	ifdef HAVE_ICONV_OPEN_TRANSLIT
 	fprintf(fp, _(txt_translit.tinrc));
 	fprintf(fp, "translit=%s\n\n", print_boolean(tinrc.translit));
@@ -1860,9 +1850,9 @@ read_server_config(
 	{
 		STRCPY(file, quote_space_to_dash(nntp_server));
 	}
-	joinpath(serverdir, rcdir, file);
-	joinpath(file, serverdir, SERVERCONFIG_FILE);
-	joinpath(local_newsgroups_file, serverdir, NEWSGROUPS_FILE);
+	joinpath(serverdir, sizeof(serverdir), rcdir, file);
+	joinpath(file, sizeof(file), serverdir, SERVERCONFIG_FILE);
+	joinpath(local_newsgroups_file, sizeof(local_newsgroups_file), serverdir, NEWSGROUPS_FILE);
 	if ((fp = fopen(file, "r")) == NULL)
 		return;
 	while (NULL != (line = tin_fgets(fp, FALSE))) {
@@ -1918,8 +1908,8 @@ write_server_config(
 	{
 		STRCPY(file, nntp_server);
 	}
-	joinpath(serverdir, rcdir, file);
-	joinpath(file, serverdir, SERVERCONFIG_FILE);
+	joinpath(serverdir, sizeof(serverdir), rcdir, file);
+	joinpath(file, sizeof(file), serverdir, SERVERCONFIG_FILE);
 
 	if ((no_write || post_article_and_exit || post_postponed_and_exit) && file_size(file) != -1L)
 		return;

@@ -3,10 +3,10 @@
  *  Module    : joinpath.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-01-10
- *  Updated   : 2003-09-19
+ *  Updated   : 2007-12-30
  *  Notes     :
  *
- * Copyright (c) 1997-2007 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2008 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,11 +46,21 @@
 void
 joinpath(
 	char *result,
+	size_t result_size,
 	const char *dir,
 	const char *file)
 {
-	(void) strcpy(result, dir);
-	if (result[0] == '\0' || result[strlen(result) - 1] != '/')
+	size_t result_len = 0;
+
+	(void) strncpy(result, dir, result_size - 1);
+	result[result_size - 1] = '\0';
+	result_len = strlen(result);
+	if ((result_len < (result_size - 1)) && (result[0] == '\0' || result[strlen(result) - 1] != '/')) {
 		(void) strcat(result, "/");
-	(void) strcat(result, BlankIfNull(file));
+		result_len++;
+	}
+	if (result_len < (result_size - 1)) {
+		(void) strncat(result, BlankIfNull(file), result_size - result_len - 1);
+		result[result_size - 1] = '\0';
+	}
 }

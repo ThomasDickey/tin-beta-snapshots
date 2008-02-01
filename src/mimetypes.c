@@ -3,10 +3,10 @@
  *  Module    : mimetypes.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-31
- *  Updated   : 2006-02-15
+ *  Updated   : 2007-12-30
  *  Notes     : mime.types handling
  *
- * Copyright (c) 2000-2007 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2008 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,17 +70,17 @@ _lookup_mimetype(
 		if (buf[0] == '#' || buf[0] == '\n')		/* Skip comments & blank lines */
 			continue;
 
-		strtok(buf, " \t\n");
-
-		while ((exts = strtok(NULL, " \t\n")) != NULL) {	/* Work through list of extensions */
-			if (strcasecmp(ext, exts) == 0) {
-				if ((i = content_type(strtok(buf, "/"))) != -1) {
-					if ((ptr = strtok(NULL, "\n")) != NULL) {
-						part->type = i;
-						FreeIfNeeded(part->subtype);
-						part->subtype = my_strdup(ptr);
-						fclose(fp);
-						return TRUE;
+		if (strtok(buf, " \t\n")) {
+			while ((exts = strtok(NULL, " \t\n")) != NULL) {	/* Work through list of extensions */
+				if (strcasecmp(ext, exts) == 0) {
+					if ((i = content_type(strtok(buf, "/"))) != -1) {
+						if ((ptr = strtok(NULL, "\n")) != NULL) {
+							part->type = i;
+							FreeIfNeeded(part->subtype);
+							part->subtype = my_strdup(ptr);
+							fclose(fp);
+							return TRUE;
+						}
 					}
 				}
 			}
@@ -105,7 +105,7 @@ lookup_mimetype(
 {
 	char buf[PATH_LEN];
 
-	joinpath(buf, homedir, ".mime.types");
+	joinpath(buf, sizeof(buf), homedir, ".mime.types");
 	if (_lookup_mimetype(buf, ext, part))
 		return;
 
@@ -115,7 +115,7 @@ lookup_mimetype(
 #endif /* M_UNIX */
 
 #ifdef TIN_DEFAULTS_DIR
-	joinpath(buf, TIN_DEFAULTS_DIR, "mime.types");
+	joinpath(buf, sizeof(buf), TIN_DEFAULTS_DIR, "mime.types");
 	_lookup_mimetype(buf, ext, part);
 #endif /* TIN_DEFAULTS_DIR */
 
@@ -143,12 +143,14 @@ _lookup_extension(
 	while ((fgets(buf, sizeof(buf), fp)) != NULL) {
 		if (buf[0] == '#' || buf[0] == '\n' || strncmp(buf, type, strlen(type)))
 			continue;
-		if (strlen((p = strtok(buf, " \t\n"))) != strlen(type))
-			continue;
-		if ((p = strtok(NULL, " \t\n")) != NULL) {
-			my_strncpy(extension, p, ext_len - 1);
-			fclose(fp);
-			return TRUE;
+		if ((p = strtok(buf, " \t\n"))) {
+			if (strlen(p) != strlen(type))
+				continue;
+			if ((p = strtok(NULL, " \t\n")) != NULL) {
+				my_strncpy(extension, p, ext_len - 1);
+				fclose(fp);
+				return TRUE;
+			}
 		}
 	}
 	fclose(fp);
@@ -184,7 +186,7 @@ lookup_extension(
 	strcat(type, "/");
 	strcat(type, minor);
 
-	joinpath(buf, homedir, ".mime.types");
+	joinpath(buf, sizeof(buf), homedir, ".mime.types");
 	if (_lookup_extension(extension, ext_len, buf, type)) {
 		free(type);
 		return TRUE;
@@ -198,7 +200,7 @@ lookup_extension(
 #endif /* M_UNIX */
 
 #ifdef TIN_DEFAULTS_DIR
-	joinpath(buf, TIN_DEFAULTS_DIR, "mime.types");
+	joinpath(buf, sizeof(buf), TIN_DEFAULTS_DIR, "mime.types");
 	if (_lookup_extension(extension, ext_len, buf, type)) {
 		free(type);
 		return TRUE;

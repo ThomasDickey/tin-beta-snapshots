@@ -3,10 +3,10 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2005-05-04
+ *  Updated   : 2007-12-30
  *  Notes     :
  *
- * Copyright (c) 1993-2007 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2008 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,10 +58,10 @@ static FILE *
 open_overview_fmt_fp(
 	void)
 {
-	char line[NNTP_STRLEN];
-
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && !read_saved_news) {
+		char line[NNTP_STRLEN];
+
 		if (!nntp_caps.over_cmd)
 			return (FILE *) 0;
 
@@ -69,8 +69,10 @@ open_overview_fmt_fp(
 		return (nntp_command(line, OK_GROUPS, NULL, 0));
 	} else {
 #endif /* NNTP_ABLE */
-		joinpath(line, libdir, OVERVIEW_FMT);
-		return (fopen(line, "r"));
+		char filename[PATH_LEN];
+
+		joinpath(filename, sizeof(filename), libdir, OVERVIEW_FMT);
+		return (fopen(filename, "r"));
 #ifdef NNTP_ABLE
 	}
 #endif /* NNTP_ABLE */
@@ -91,7 +93,8 @@ overview_xref_support(
 	if ((fp = open_overview_fmt_fp()) != NULL) {
 		while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
 #if defined(DEBUG) && defined(NNTP_ABLE)
-			debug_nntp("<<<", ptr);
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "<<< %s", ptr);
 #endif /* DEBUG && NNTP_ABLE */
 			if (!supported && STRNCASECMPEQ(ptr, "Xref:full", 9))
 				supported = TRUE;
@@ -213,18 +216,16 @@ art_mark_xref_read(
 
 		c = *ptr;
 		*ptr = '\0';
-		group = group_find(groupname);
+		group = group_find(groupname, FALSE);
 
 #ifdef DEBUG
-		if (debug == 3) {
+		if (debug & DEBUG_NEWSRC) {
 			debug_mesg = fmt_string("LOOKUP Xref: [%s:%ld] active=[%s] num_unread=[%ld]",
 				groupname, artnum,
 				(group ? group->name : ""),
 				(group ? group->newsrc.num_unread : 0));
-#	ifdef DEBUG_NEWSRC
-			debug_print_comment(debug_mesg);
-			debug_print_bitmap(group, NULL);
-#	endif /* DEBUG_NEWSRC */
+				debug_print_comment(debug_mesg);
+				debug_print_bitmap(group, NULL);
 			error_message(debug_mesg);
 			free(debug_mesg);
 		}
@@ -237,13 +238,13 @@ art_mark_xref_read(
 					if (group->newsrc.num_unread > 0)
 						group->newsrc.num_unread--;
 #ifdef DEBUG
-					if (debug == 3) {
+					if (debug & DEBUG_NEWSRC) {
 						debug_mesg = fmt_string("FOUND!Xref: [%s:%ld] marked READ num_unread=[%ld]",
 							groupname, artnum, group->newsrc.num_unread);
-#	ifdef DEBUG_NEWSRC
-						debug_print_comment(debug_mesg);
-						debug_print_bitmap(group, NULL);
-#	endif /* DEBUG_NEWSRC */
+						if (debug & DEBUG_NEWSRC) {
+							debug_print_comment(debug_mesg);
+							debug_print_bitmap(group, NULL);
+						}
 						wait_message(2, debug_mesg);
 						free(debug_mesg);
 					}

@@ -6,7 +6,7 @@
  *  Updated   : 2006-05-11
  *  Notes     :
  *
- * Copyright (c) 1998-2007 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1998-2008 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -234,9 +234,7 @@ t_bool dot_lock(
 	if (stat(lockfile, &statbuf)) {				/* lockfile doesn't exist */
 		if (!link(tempfile, lockfile)) {			/* link succsessfull */
 			if (!stat(tempfile, &statbuf)) {	/* tempfile exist */
-/* #	ifndef __CYGWIN__ */ /* TODO: test if needed/usefull */
 				if (statbuf.st_nlink == 2)			/* link count ok */
-/* #	endif *//* !__CYGWIN__ */
 					rval = TRUE;
 			}
 		}
