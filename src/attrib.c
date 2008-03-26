@@ -3,7 +3,7 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2007-12-30
+ *  Updated   : 2008-03-25
  *  Notes     : Group attribute routines
  *
  * Copyright (c) 1993-2008 Iain Lea <iain@bricbrac.de>
@@ -675,9 +675,8 @@ write_attributes_file(
 	FILE *fp;
 	char *new_file;
 	int i;
-	t_bool copy_ok = TRUE;
 
-	if (no_write && file_size(file) != -1L)
+	if (file_size(file) != -1L && (no_write || num_local_attributes <= 0))
 		return;
 
 	new_file = get_tmpfilename(file);
@@ -800,7 +799,7 @@ write_attributes_file(
 #endif /* CHARSET_CONVERSION */
 	fprintf(fp, _("#\n# Note that it is best to put general (global scoping)\n"));
 	fprintf(fp, _("# entries first followed by group specific entries.\n#\n"));
-	fprintf(fp, _("############################################################################\n\n"));
+	fprintf(fp, _("############################################################################\n"));
 
 	if ((num_local_attributes > 0) && (local_attributes != NULL)) {
 		struct t_attribute *attr;
@@ -897,17 +896,19 @@ write_attributes_file(
 				fprintf(fp, "undeclared_charset=%s\n", attr->undeclared_charset);
 #	endif /* CHARSET_CONVERSION */
 		}
+		free(default_attr.mime_types_to_save);
+		FreeIfNeeded(default_attr.quick_kill_scope);
+		FreeIfNeeded(default_attr.quick_select_scope);
 	}
 
 	/* rename_file() preserves mode, so this is safe */
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
 
-	if (ferror(fp) || fclose(fp))
+	if (ferror(fp) || fclose(fp)) {
 		error_message(_(txt_filesystem_full), ATTRIBUTES_FILE);
-	else if (copy_ok)
+		unlink(new_file);
+	} else
 		rename_file(new_file, file);
-	else
-		unlink (new_file);
 
 	free(new_file);
 	return;

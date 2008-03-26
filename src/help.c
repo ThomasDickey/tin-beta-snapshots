@@ -3,7 +3,7 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2007-11-27
+ *  Updated   : 2008-03-26
  *  Notes     :
  *
  * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
@@ -527,6 +527,7 @@ show_help_page(
 
 	info_pager(fp, title, TRUE);
 	fclose(fp);
+	info_pager(NULL, NULL, TRUE); /* free mem */
 	return;
 }
 

@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-01-08
+ *  Updated   : 2008-03-26
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
@@ -519,6 +519,7 @@ user_posted_messages(
 	FreeAndNull(posted);
 	info_pager(fp, _(txt_post_history_menu), TRUE);
 	fclose(fp);
+	info_pager(NULL, NULL, TRUE); /* free mem */
 
 	return TRUE;
 }
@@ -3992,10 +3993,8 @@ checknadd_headers(
 		}
 #endif /* HAVE_SYS_UTSNAME_H && HAVE_UNAME */
 #ifdef SYSTEM_NAME
-		if (!*suffix) {
-			if (strlen(SYSTEM_NAME))
+		if (!*suffix && strlen(SYSTEM_NAME))
 				snprintf(suffix, sizeof(suffix), " (%s)", SYSTEM_NAME);
-		}
 #endif /* SYSTEM_NAME */
 
 		fprintf(fp_out, "User-Agent: %s/%s-%s (\"%s\") (%s)%s\n",

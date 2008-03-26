@@ -3,7 +3,7 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-02-15
+ *  Updated   : 2008-02-09
  *  Notes     : signal handlers for different modes and window resizing
  *
  * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
@@ -146,6 +146,9 @@ static const struct {
 #	ifdef SIGUSR1
 	{ SIGUSR1,	"SIGUSR1" },	/* User-defined signal 1 */
 #	endif /* SIGUSR1 */
+#	ifdef SIGUSR2
+	{ SIGUSR2,	"SIGUSR2" },	/* User-defined signal 2 */
+#	endif /* SIGUSR2 */
 #	ifdef SIGTERM
 	{ SIGTERM,	"SIGTERM" },	/* termination */
 #	endif /* SIGTERM */
@@ -357,11 +360,8 @@ signal_handler(
 	switch (sig) {
 #ifdef SIGINT
 		case SIGINT:
-			if (!batch_mode) {
-				RESTORE_HANDLER(sig, signal_handler);
-				return;
-			}
-			break;
+			RESTORE_HANDLER(sig, signal_handler);
+			return;
 #endif /* SIGINT */
 
 #ifdef SIGCHLD
@@ -388,9 +388,17 @@ signal_handler(
 #ifdef SIGWINCH
 		case SIGWINCH:
 			need_resize = cYes;
-			RESTORE_HANDLER(SIGWINCH, signal_handler);
+			RESTORE_HANDLER(sig, signal_handler);
 			return;
 #endif /* SIGWINCH */
+
+#ifdef SIGUSR2
+		case SIGUSR2:
+			if (!no_write) /* TODO: add more config-files to be saved */
+				write_newsrc();
+			RESTORE_HANDLER(sig, signal_handler);
+			return;
+#endif /* SIGUSR2 */
 
 		default:
 			break;

@@ -28,7 +28,7 @@ The following configure options and defines are documented in detail:
   --enable-debug                          --with-gpg
   --enable-echo                           --with-included-gettext
   --enable-etiquette                      --with-inews-dir
-  --enable-fascist-newsadmin              --with-inn-nntplib
+  --enable-fascist-newsadmin
   --enable-flock                          --with-iso-to-ascii
   --enable-inverse-video                  --with-ispell
   --enable-locale                         --with-libdir
@@ -57,7 +57,7 @@ The following configure options and defines are documented in detail:
   FORGERY                                 PROFILE
   REQUIRE_BRACKETS_IN_DOMAIN_LITERAL      SMALL_MEMORY_MACHINE
   HAVE_LIBUU                              XFACE_ABLE
-  HAVE_BROKEN_SSCANF
+  HAVE_BROKEN_SSCANF                      DISABLE_PIPELINING
 
 
 Not yet documented configure options and defines:
@@ -260,10 +260,6 @@ Can be overridden by setting the environment variable NNTPSERVER.
 Bypass a bug in some broken NNTPservers which need an extra GROUP command
 before accepting a LISTGROUP command.
 
---with-inn-nntplib=PATH (default: not set)
-Define if you want to use the INN library functions GetConfigValue()
-& GetFQDN(). PATH must be the correct path to the INN library.
-
 --enable-xhdr-xref (default: on)
 If disabled, don't allow using XHDR XREF if XOVER doesn't work to mark
 crossposted articles as read in all groups.
@@ -292,6 +288,8 @@ time they use tin.
 NNTP_SERVER_FILE (default: /etc/nntpserver)
 Only define if your NNTP-server file is other than /etc/nntpserver.
 
+DISABLE_PIPELINING
+Define if your newsserver can't handle pipelined commands.
 
 Options to set some default values
 ----------------------------------
@@ -539,16 +537,20 @@ Link with Conor Cahill's dbmalloc library, used to check for memory leaks,
 incorrect frees, etc.
 
 --enable-debug (default: off)
-Define if you want tin to log debug information to files in /tmp. Activated
-by tin -Dn where n is 1 for NNTP only debug logging, n is 2 for logging
-most debug info, n is 3 for newsrc debugging and n is 4 for malloc debug
-logging. Debug files written to /tmp are ARTS, ACTIVE, BASE, NNTP, SAVE_COMP,
-BITMAP, MALLOC and FILTER. Depending on the debuglevel some files may not be
-generated.
+Define if you want tin to log debug information to files in $TMPDIR.
+Activated by tin -Dn where n is 1 = NNTP-dialog, 2 = filter-file,
+4 = newsrc-file, 8 = threading, 16 = memory allocation (malloc/free),
+32 = misc (-D 63 = debug all). Debug files written to $TMPDIR are ARTS,
+ACTIVE, BASE, NNTP, SAVE_COMP, BITMAP, MALLOC and FILTER. Depending on
+the debuglevel some files may not be generated. As the files written in
+$TMPDIR are world readable and may contian uncryted password information
+(e.g. when using -D 1) don't run "-D n" on multiuser systems without setting
+$TMPDIR to a safe location, e.g. "TMPDIR=$HOME ./tin -D 1".
 
 --with-trace (default: off)
 Trace data which is formatted and written to the screen. Use this to debug
-changes to the curses or termcap interfaces.
+changes to the curses or termcap interfaces. A file trace will be created in
+$PWD when tin is started.
 
 --with-dmalloc (default: off)
 Link with Gray Watson's dmalloc library, used to check for memory leaks,

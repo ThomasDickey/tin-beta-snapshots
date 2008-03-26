@@ -3,7 +3,7 @@
  *  Module    : options_menu.c
  *  Author    : Michael Bienia <michael@vorlon.ping.de>
  *  Created   : 2004-09-05
- *  Updated   : 2008-01-10
+ *  Updated   : 2008-02-25
  *  Notes     : Split from config.c
  *
  * Copyright (c) 2004-2008 Michael Bienia <michael@vorlon.ping.de>
@@ -704,7 +704,7 @@ change_config_file(
 	struct t_group *group)
 {
 	enum option_enum option, old_option;
-	int mime_encoding = MIME_ENCODING_7BIT;
+	int mime_encoding;
 	t_bool change_option = FALSE;
 	t_function func;
 

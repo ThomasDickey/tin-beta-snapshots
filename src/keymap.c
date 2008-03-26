@@ -3,7 +3,7 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2007-12-30
+ *  Updated   : 2008-03-26
  *  Notes     : This file contains key mapping routines and variables.
  *
  * Copyright (c) 2000-2008 Dirk Nimmich <nimmich@muenster.de>
@@ -169,7 +169,7 @@ add_key(
 		/* add a new entry */
 		if (keys->used >= keys->max) {
 			if (keys->list == NULL) {
-				keys->max = 1;
+				keys->max = DEFAULT_MAPKEYS_NUM;
 				keys->list = my_malloc(keys->max * sizeof(struct keynode));
 			} else {
 				keys->max++;

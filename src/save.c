@@ -199,7 +199,7 @@ check_start_save_any_news(
 						print_first = FALSE;
 					}
 					if (!verbose && !catchup) /* we don't need details */
-						return 2;
+						return NEWS_AVAIL_EXIT;
 					art_count++;
 					if (arts[j].score >= tinrc.score_select)
 						hot_count++;
@@ -290,11 +290,11 @@ check_start_save_any_news(
 			 * TODO: shall we return 2 or 0 in the -cZ case?
 			 */
 			if (unread_news && !catchup)
-				return 2;
+				return NEWS_AVAIL_EXIT;
 			else {
 				if (verbose)
 					wait_message(1, _(txt_there_is_no_news));
-				return 0;
+				return EXIT_SUCCESS;
 			}
 			/* NOTREACHED */
 
@@ -616,7 +616,8 @@ expand_save_filename(
 	 * Make sure that externally supplied filename is a filename only and fits
 	 * into buffer
 	 */
-	STRCPY(buf_path, path); base_name(buf_path, base_filename);
+	STRCPY(buf_path, path);
+	base_name(buf_path, base_filename);
 
 	/* Build default path to save to */
 	if (!(ret = strfpath(curr_group->attribute->savedir, buf, sizeof(buf), curr_group)))

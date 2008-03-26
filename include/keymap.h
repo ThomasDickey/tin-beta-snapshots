@@ -3,7 +3,7 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2006-06-28
+ *  Updated   : 2008-03-26
  *  Notes     :
  *
  * Copyright (c) 1999-2008 Jason Faultless <jason@altarstone.com>
@@ -285,10 +285,12 @@ enum defined_functions {
 	PAGE_TOP_THREAD,
 	PAGE_VIEW_ATTACHMENTS,
 	PAGE_VIEW_URL,
+#ifdef HAVE_PGP_GPG
 	PGP_KEY_ENCRYPT,
 	PGP_KEY_ENCRYPT_SIGN,
 	PGP_INCLUDE_KEY,
 	PGP_KEY_SIGN,
+#endif /* HAVE_PGP_GPG */
 	POST_ABORT,
 	POST_CANCEL,
 	POST_CONTINUE,

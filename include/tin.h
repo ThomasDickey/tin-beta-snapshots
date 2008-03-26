@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2007-12-05
+ *  Updated   : 2008-03-26
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -290,19 +290,19 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
  */
 #ifdef HAVE_DIRENT_H
 #	include <dirent.h>
-#	define DIR_BUF	struct dirent
 #else
-#	ifdef HAVE_SYS_DIR_H
-#		include <sys/dir.h>
-#	endif /* HAVE_SYS_DIR_H */
 #	ifdef HAVE_SYS_NDIR_H
 #		include <sys/ndir.h>
 #	endif /* HAVE_SYS_NDIR_H */
-#	define DIR_BUF	struct direct
+#	ifdef HAVE_SYS_DIR_H
+#		include <sys/dir.h>
+#	endif /* HAVE_SYS_DIR_H */
+#	if HAVE_NDIR_H
+#		include <ndir.h>
+#	endif /* HAVE_NDIR_H */
 #endif /* HAVE_DIRENT_H */
 
 #ifndef DIR_BUF
-#	include <dirent.h>
 #	define DIR_BUF	struct dirent
 #endif /* !DIR_BUF */
 
@@ -532,6 +532,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define DEFAULT_ACTIVE_NUM	1800
 #define DEFAULT_LOCAL_ATTRIBUTES_NUM	8
 #define DEFAULT_NEWNEWS_NUM	5
+#define DEFAULT_MAPKEYS_NUM 100	/* ~remappable keys per level (avoid massiv reallocs) */
 
 #define RCDIR	".tin"
 #define INDEX_MAILDIR	".mail"
@@ -674,14 +675,6 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define SUBSCRIPTIONS_FILE	"subscriptions"
 #define NEWSGROUPS_FILE	"newsgroups"
 #define KEYMAP_FILE	"keymap"
-
-
-#ifdef USE_INN_NNTPLIB
-#	include <libinn.h> /* TODO: add configure check for it */
-#	define _CONF_FROMHOST	"fromhost"
-#	define _CONF_ORGANIZATION	"organization"
-#	define _CONF_SERVER	"server"
-#endif /* USE_INN_NNTPLIB */
 
 #define SIGDASHES "-- \n"
 
@@ -1175,7 +1168,8 @@ enum {
 #	define EXIT_FAILURE	1	/* Failing exit status */
 #endif /* !EXIT_FAILURE */
 
-#define NNTP_ERROR_EXIT	2
+#define NEWS_AVAIL_EXIT 2
+#define NNTP_ERROR_EXIT	3
 
 /*
  * Assertion verifier
@@ -1847,7 +1841,7 @@ typedef int (*t_compfunc)(t_comptype, t_comptype);
 #endif /* !F_OK */
 
 /* Various function redefinitions */
-#ifdef USE_DBMALLOC
+#if defined(USE_DBMALLOC) || defined(USE_DMALLOC)
 #	define my_malloc(size)	malloc(size)
 #	define my_calloc(nmemb, size)	calloc((nmemb), (size))
 #	define my_realloc(ptr, size)	realloc((ptr), (size))
@@ -1855,7 +1849,7 @@ typedef int (*t_compfunc)(t_comptype, t_comptype);
 #	define my_malloc(size)	my_malloc1(__FILE__, __LINE__, (size))
 #	define my_calloc(nmemb, size)	my_calloc1(__FILE__, __LINE__, (nmemb), (size))
 #	define my_realloc(ptr, size)	my_realloc1(__FILE__, __LINE__, (ptr), (size))
-#endif /* USE_DBMALLOC */
+#endif /* USE_DBMALLOC || USE_DMALLOC */
 
 #define ARRAY_SIZE(array)	((int) (sizeof(array) / sizeof(array[0])))
 
@@ -1951,6 +1945,9 @@ typedef void (*BodyPtr) (char *, FILE *, int);
 #ifdef USE_DMALLOC
 #	include <dmalloc.h>
 #	define DMALLOC_FUNC_CHECK
+#	ifdef HAVE_STRDUP
+#		define my_strdup(s) strdup((s))
+#	endif /* HAVE_STRDUP */
 #endif /* USE_DMALLOC */
 
 #ifdef DOALLOC
@@ -2046,6 +2043,11 @@ extern struct tm *localtime(time_t *);
 #	include "../libcanlock/include/canlock.h"
 #endif /* USE_CANLOCK */
 
+/* gsasl */
+#ifdef USE_SASL
+#	include <gsasl.h>
+#endif /* USE_SASL */
+
 /* snprintf(), vsnprintf() */
 #ifndef HAVE_SNPRINTF
 #	define snprintf	plp_snprintf
@@ -2083,6 +2085,11 @@ extern struct tm *localtime(time_t *);
 #define TIN_ARTICLE_NAME	".article"
 #define TIN_CANCEL_NAME	".cancel"
 #define TIN_LETTER_NAME	".letter"
+
+/* read_news_active_file() / open_newsgroups_fp() */
+#ifndef DISABLE_PIPELINING
+#	define PIPELINE_LIMIT 30
+#endif /* DISABLE_PIPELINING */
 
 #ifndef DEBUG_H
 #	include "debug.h"

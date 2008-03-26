@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2007-12-29
+ *  Updated   : 2008-02-25
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2008 Chris Blum <chris@resolution.de>
@@ -516,10 +516,9 @@ rfc1522_do_encode(
 	char buf2[80];				/* buffer for this and that */
 	int encoding;				/* which encoding to use ('B' or 'Q') */
 	int ew_taken_len;
-	int column = 0;				/* current column */
 	int word_cnt = 0;
 	int offset;
-	size_t bufferlen = 0;		/* size of buffer */
+	size_t bufferlen = 2048;		/* size of buffer */
 	size_t ewsize = 0;			/* size of current encoded-word */
 	t_bool quoting = FALSE;		/* currently inside quote block? */
 	t_bool any_quoting_done = FALSE;
@@ -543,7 +542,6 @@ rfc1522_do_encode(
 		}
 	} while (*(++strptr) != 0);
 
-	bufferlen = 2048;
 	t = buffer = my_malloc(bufferlen);
 	encoding = which_encoding(what);
 	ew_taken_len = strlen(charset) + 7 /* =?c?E?d?= */;
@@ -757,10 +755,10 @@ rfc1522_do_encode(
 		char *new_buffer;
 		size_t new_bufferlen = strlen(buffer) * 2 + 1; /* maximum length if
 every "word" were a space ... */
+		int column = 0;				/* current column */
 
 		new_buffer = my_malloc(new_bufferlen);
 		t = new_buffer;
-		column = 0;
 		word_cnt = 1;			/*
 						 * note, if the user has typed a continuation
 						 * line, we will consider the initial

@@ -5,6 +5,7 @@ New features
 . slrn style verbatim marks
 . UTF-8 descriptions (RFC 3977)
 . sort by date of last posted article
+. writes out newsrc if getting SIGUSR2
 
 Changes
 -------
@@ -15,3 +16,4 @@ Changes
 Retired Features
 ----------------
 . VMS support
+. libinn support (was broken for ages)

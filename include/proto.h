@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2008-01-24
+ *  Updated   : 2008-03-18
  *  Notes     :
  *
  * Copyright (c) 1997-2008 Urs Janssen <urs@tin.org>
@@ -405,11 +405,6 @@ extern void subscribe(struct t_group *group, int sub_state, t_bool get_info);
 extern void thd_mark_read(struct t_group *group, long thread);
 extern void thd_mark_unread(struct t_group *group, long thread);
 extern void set_default_bitmap(struct t_group *group);
-#ifdef DEBUG_NEWSRC
-#	if 0
-	extern void newsrc_test_harness(void);
-#	endif /* 0 */
-#endif /* DEBUG_NEWSRC */
 
 /* nntplib.c */
 extern FILE *get_nntp_fp(FILE *fp);
@@ -418,6 +413,7 @@ extern char *getserverbyfile(const char *file);
 extern char *get_server(char *string, int size);
 extern int get_respcode(char *, size_t);
 extern int get_only_respcode(char *, size_t);
+extern int new_nntp_command(const char *command, int success, char *message, size_t mlen);
 extern int nntp_open(void);
 extern void nntp_close(void);
 extern void put_server(const char *string);
