@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-01-11
+ *  Updated   : 2008-03-26
  *  Notes     :
  *
  * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -562,7 +562,7 @@ page_goto_next_unread:
 
 			case GLOBAL_SEARCH_SUBJECT_FORWARD:	/* search in article */
 			case GLOBAL_SEARCH_SUBJECT_BACKWARD:
-				if ((i = search_article((func == GLOBAL_SEARCH_SUBJECT_FORWARD), repeat_search, search_line, artlines, artline, reveal_ctrl_l_lines, note_fp)) == -1)
+				if (search_article((func == GLOBAL_SEARCH_SUBJECT_FORWARD), repeat_search, search_line, artlines, artline, reveal_ctrl_l_lines, note_fp) == -1)
 					break;
 
 				if (func == GLOBAL_SEARCH_SUBJECT_BACKWARD && !reveal_ctrl_l) {
@@ -2054,6 +2054,8 @@ info_pager(
 	info_title = title;
 	curr_info_line = 0;
 	preprocess_info_message(info_fh);
+	if (!info_fh)
+		return;
 	set_xclick_off();
 	display_info_page(0);
 
@@ -2226,17 +2228,17 @@ display_info_page(
 }
 
 
-/*
- * TODO: plug mem leak: malloced mem is not freed on exit
- */
 static void
 preprocess_info_message(
 	FILE *info_fh)
 {
 	int chunk = 50;
 
+	FreeAndNull(infoline);
+	if (!info_fh)
+		return;
+
 	rewind(info_fh);
-	FreeIfNeeded(infoline);
 	infoline = my_malloc(sizeof(t_lineinfo) * chunk);
 	num_info_lines = 0;
 

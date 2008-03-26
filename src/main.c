@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2007-12-30
+ *  Updated   : 2008-03-14
  *  Notes     :
  *
  * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -204,6 +204,10 @@ main(
 	/*
 	 * exit early - unfortunately we can't do that in read_cmd_line_options()
 	 * as nntp_caps.over_cmd is set in nntp_open()
+	 *
+	 * TODO: does the logic make sense? what
+	 * if (update_index && !nntp_caps.over_cmd && !tinrc.cache_overview_files)
+	 * no error message? why?
 	 */
 	if (update_index && nntp_caps.over_cmd && !tinrc.cache_overview_files) {
 		error_message(_(txt_batch_update_unavail), tin_progname);
@@ -222,9 +226,6 @@ main(
 
 		joinpath(file, sizeof(file), TMPDIR, "BITMAP");
 		unlink(file);
-#	if 0
-		newsrc_test_harness();
-#	endif /* 0 */
 	}
 #endif /* DEBUG */
 
@@ -719,7 +720,7 @@ read_cmd_line_options(
 	else
 		batch_mode = FALSE;
 	if (batch_mode && (post_article_and_exit || post_postponed_and_exit))
-		 batch_mode = FALSE;
+		batch_mode = FALSE;
 
 #ifdef NNTP_ABLE
 	/*

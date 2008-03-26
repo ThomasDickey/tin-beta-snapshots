@@ -3,7 +3,7 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-01-10
+ *  Updated   : 2008-03-14
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
  * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -235,6 +235,7 @@ write_newsrc(
 
 	if (tot < 1) {
 		error_message(_(txt_newsrc_nogroups));
+		unlink(newnewsrc);
 		return 0L;		/* So we don't get prompted to try again */
 	}
 
@@ -281,7 +282,11 @@ open_subscription_fp(
 	if (!read_saved_news) {
 #ifdef NNTP_ABLE
 		if (read_news_via_nntp) {
-			/* if (nntp_caps.type = 2 && !nntp_caps.list_subscriptions)
+			/*
+			 * RFC 3977 doesn't list SUBSCRIPTIONS, so we keep this check
+			 * disabled till this is fixed in the next RFC
+			 */
+			/* if (nntp_caps.type == CAPABILITIES && !nntp_caps.list_subscriptions)
 				return NULL;
 			else */
 				return (nntp_command("LIST SUBSCRIPTIONS", OK_GROUPS, NULL, 0));
@@ -1560,144 +1565,3 @@ set_default_bitmap(
 		group->newsrc.xmax = group->newsrc.xmin - 1;
 	}
 }
-
-
-/* TEST harness */
-#ifdef DEBUG
-#	if 0
-static void set_bitmap_range_read(struct t_newsrc *my_newsrc, long beg, long end);
-static void set_bitmap_range_unread(struct t_newsrc *my_newsrc, long beg, long end);
-
-void
-newsrc_test_harness(
-	void)
-{
-	FILE *fp = NULL;
-	char seq[20000];
-	int i;
-	int retry = 10; /* max. retrys */
-	long rng_min, rng_max;
-	struct t_group group;
-
-	/*
-	 * those env.-vars are not documented:
-	 * $TIN_RNG_MIN, $TIN_RNG_MAX, $TIN_MIN, $TIN_MAX, $TIN_COUNT
-	 * $TIN_SEQ
-	 */
-	rng_min = atoi(get_val("TIN_RNG_MIN", "1"));
-	rng_max = atoi(get_val("TIN_RNG_MAX", "1"));
-
-	group.name = my_strdup("test.newsrc");
-	group.xmin = atoi(get_val("TIN_MIN", "1"));
-	group.xmax = atoi(get_val("TIN_MAX", "0"));
-	group.count = atoi(get_val("TIN_COUNT", "-1"));
-	group.type = GROUP_TYPE_NEWS;
-	group.subscribed = TRUE;
-	group.newsrc.xbitmap = (t_bitmap *) 0;
-	set_default_bitmap(&group);
-
-	strcpy(seq, get_val("TIN_SEQ", ""));
-
-	fprintf(stderr, "\nENV Min=[%ld] Max=[%ld] Rng=[%ld-%ld] Count=[%ld] Seq=[%s]\n",
-		group.xmin, group.xmax, rng_min, rng_max, group.count, seq);
-
-	for (i = 0; i < 3; i++) {
-		if (group.newsrc.xbitmap != NULL) {
-			free(group.newsrc.xbitmap);
-			group.newsrc.xbitmap = (t_bitmap *) 0;
-			group.newsrc.xbitlen = 0;
-			group.newsrc.num_unread = 0;
-			group.newsrc.xmin = 1;
-			group.newsrc.xmax = 0;
-		}
-		while (retry) {
-		/* FIXME - this is secure now, but doesn't write any debug output */
-		/* (it didn't before too) */
-			if ((fp = tmpfile()) != NULL) {
-				fprintf(stderr, "\n%d. PARSE Seq=[%s]\n", i + 1, seq);
-				parse_bitmap_seq(&group, seq);
-				debug_print_newsrc(&group.newsrc, stderr);
-				print_bitmap_seq(fp, &group);
-				fprintf(stderr, "   PRINT Seq=");
-				print_bitmap_seq(stderr, &group);
-				rewind(fp);
-				break;
-			} else
-				retry--;
-		}
-
-		debug_print_newsrc(&group.newsrc, stderr);
-
-		if (!retry || !fp)
-			error_message(_(txt_cannot_create_uniq_name));
-		else {
-			fgets(seq, (int) sizeof(seq), fp);
-			seq[strlen(seq) - 1] = '\0';
-			fclose(fp);
-		}
-	}
-	set_bitmap_range_read(&group.newsrc, rng_min, rng_max);
-	debug_print_newsrc(&group.newsrc, stderr);
-
-	set_bitmap_range_unread(&group.newsrc, rng_min, rng_max);
-	debug_print_newsrc(&group.newsrc, stderr);
-
-	if (group.newsrc.xbitmap != NULL)
-		NSETBLK0(group.newsrc.xbitmap, group.newsrc.xbitlen);
-	debug_print_newsrc(&group.newsrc, stderr);
-
-	if (group.newsrc.xbitmap != NULL)
-		NSETBLK1(group.newsrc.xbitmap, group.newsrc.xbitlen);
-	debug_print_newsrc(&group.newsrc, stderr);
-	my_printf("\n");
-}
-
-
-static void
-set_bitmap_range_read(
-	struct t_newsrc *my_newsrc,
-	long beg,
-	long end)
-{
-	long length, offset;
-
-	if (beg >= my_newsrc->xmin && end <= my_newsrc->xmax) {
-		offset = beg - my_newsrc->xmin;
-		length = end - my_newsrc->xmin;
-
-fprintf(stderr, "\nRNG Min-Max=[%ld-%ld] Beg-End=[%ld-%ld] OFF=[%ld] LEN=[%ld]\n",
-my_newsrc->xmin, my_newsrc->xmax, beg, end, offset, length);
-
-		if (beg == end) {
-			NSET0(my_newsrc->xbitmap, offset);
-		} else {
-			NSETRNG0(my_newsrc->xbitmap, offset, length);
-		}
-	}
-}
-
-
-static void
-set_bitmap_range_unread(
-	struct t_newsrc *my_newsrc,
-	long beg,
-	long end)
-{
-	long length, offset;
-
-	if (beg >= my_newsrc->xmin && end <= my_newsrc->xmax) {
-		offset = beg - my_newsrc->xmin;
-		length = end - my_newsrc->xmin;
-
-fprintf(stderr, "\nRNG Min-Max=[%ld-%ld] Beg-End=[%ld-%ld] OFF=[%ld] LEN=[%ld]\n",
-my_newsrc->xmin, my_newsrc->xmax, beg, end, offset, length);
-
-		if (beg == end) {
-			NSET1(my_newsrc->xbitmap, offset);
-		} else {
-			NSETRNG1(my_newsrc->xbitmap, offset, length);
-		}
-	}
-}
-#	endif /* 0 */
-#endif /* DEBUG */

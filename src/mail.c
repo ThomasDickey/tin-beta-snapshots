@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2007-12-30
+ *  Updated   : 2008-03-18
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2008 Iain Lea <iain@bricbrac.de>
@@ -41,7 +41,11 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
-
+#ifdef NNTP_ABLE
+#	ifndef TNNTP_H
+#		include "tnntp.h"
+#	endif /* !TNNTP_H */
+#endif  /* NNTP_ABLE */
 /*
  * local prototypes
  */
@@ -239,9 +243,14 @@ read_mailgroups_file(
 
 
 /*
- * If reading via NNTP the newsgroups file will be saved to ~/.tin/newsgroups
- * so that any subsequent rereads on the active file will not have to waste
- * net bandwidth and the local copy of the newsgroups file can be accessed.
+ * If reading via NNTP the newsgroups file will be saved to
+ * ~/.tin/$NNTPSERVER/newsgroups so that any subsequent rereads on the
+ * active file will not have to waste net bandwidth and the local copy
+ * of the newsgroups file can be accessed.
+ *
+ * in the newsrc_active case (-n cmd-line switch) we use "LIST NEWSGROUPS grp"
+ * instead of "LIST NEWSGROUPS" if we have just a few groups in the newsrc,
+ * due to pipelining the code is a bit complex.
  */
 static FILE *
 open_newsgroups_fp(
@@ -249,6 +258,7 @@ open_newsgroups_fp(
 {
 #ifdef NNTP_ABLE
 	FILE *result;
+	static int no_more_wildmat = 0;
 
 	if (read_news_via_nntp && !read_saved_news) {
 		if (read_local_newsgroups_file) {
@@ -267,15 +277,85 @@ open_newsgroups_fp(
 					unlink(local_newsgroups_file);
 			}
 		}
-#	if 0 /* TODO: */
-		if (list_newsgroups_wildmat_supported && newsrc_active
-		    && !list_active && num_active < some_useful_limit) {
-			for_each_group(i) {
-				snprintf(buff, sizeof(buff), "LIST NEWSGROUPS %s", active[i].name);
-				nntp_command(buff, OK_LIST, NULL, 0);
+		/*
+		 * TODO: test me, find a usefull limit,
+		 *       optimize more than n groups (e.g. 5) of the same
+		 *       subhierarchie to a wildmat?
+		 */
+		if (((nntp_caps.type == CAPABILITIES && nntp_caps.list_newsgroups) || nntp_caps.type != CAPABILITIES) && newsrc_active && !list_active && !no_more_wildmat && num_active < PIPELINE_LIMIT) {
+			char *ptr;
+			char buff[NNTP_STRLEN];
+			char line[NNTP_STRLEN];
+			char file[PATH_LEN];
+			char serverdir[PATH_LEN];
+			int resp, i;
+
+			if (nntp_tcp_port != IPPORT_NNTP)
+				snprintf(file, sizeof(file), "%s:%d", nntp_server, nntp_tcp_port);
+			else
+				STRCPY(file, quote_space_to_dash(nntp_server));
+
+			joinpath(serverdir, sizeof(serverdir), rcdir, file);
+			joinpath(file, sizeof(file), serverdir, NEWSGROUPS_FILE".tmp");
+
+			if ((result = fopen(file, "w")) != NULL) {
+				for_each_group(i) {
+					snprintf(buff, sizeof(buff), "LIST NEWSGROUPS %s", active[i].name);
+#		ifdef DISABLE_PIPELINING
+					if ((resp = new_nntp_command(buff, OK_GROUPS, line, sizeof(line))) != OK_GROUPS) {
+						no_more_wildmat = resp;
+						break;
+					}
+					while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+#			ifdef DEBUG
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "<<< %s", ptr);
+#			endif /* DEBUG */
+						fprintf(result, "%s\n", str_trim(ptr));
+					}
+#		else
+					put_server(buff);
+#		endif /* DISABLE_PIPELINING */
+				}
+#		ifndef DISABLE_PIPELINING
+				for_each_group(i) {
+					/*
+					 * don't use get_respcode() as it will try to auth if we
+					 * see a 480 but that could fail as there might be
+					 * pending data
+					 */
+					if ((resp = get_only_respcode(line, sizeof(line))) != OK_GROUPS) {
+						if (!no_more_wildmat)
+							no_more_wildmat = resp;
+						continue;
+					}
+					while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+#			ifdef DEBUG
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "<<< %s", ptr);
+#			endif /* DEBUG */
+						fprintf(result, "%s\n", str_trim(ptr));
+					}
+				}
+				if (no_more_wildmat == ERR_NOAUTH || no_more_wildmat == NEED_AUTHINFO) {
+					if (!authenticate(nntp_server, userid, FALSE)) {
+						error_message(_(txt_auth_failed), ERR_ACCESS);
+						tin_done(EXIT_FAILURE);
+					}
+				}
+#		endif /* !DISABLE_PIPELINING */
+				fclose(result);
+				result = fopen(file, "r");
+				unlink(file); /* unlink on close */
 			}
-		} else
-#	endif /* 0 */
+
+			if (result != NULL) {
+				if (!no_more_wildmat)
+					 return result;
+				else /* AUTH request while pipeling or some error */
+					fclose(result);
+			}
+		}
 		return (nntp_command("LIST NEWSGROUPS", OK_GROUPS, NULL, 0));
 	} else
 #endif /* NNTP_ABLE */
@@ -364,7 +444,7 @@ read_groups_descriptions(
 		 * with the "-q" option.
 		 */
 		if ((fp_save != NULL) && read_news_via_nntp)
-			fprintf(fp_save, "%s\n", ptr);
+			fprintf(fp_save, "%s\n", str_trim(ptr));
 
 		if (!space) { /* initial malloc */
 			space = strlen(ptr) + 1;

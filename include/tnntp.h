@@ -38,28 +38,26 @@
 #ifndef TNNTP_H
 #define TNNTP_H 1
 
-#define s_printf	fprintf
 #define s_fdopen	fdopen
 #define s_flush	fflush
 #define s_fclose	fclose
 #define s_gets	fgets
 #if 0 /* __BEOS__ port in progress */
 #	ifdef HAVE_CLOSESOCKET
-#		define s_close closesocket
+#		define s_close	closesocket
 #	else
 #		define s_close	close
 #	endif /* HAVE_CLOSESOCKET */
 #	ifdef __BEOS__
 #		define s_puts(s,fd)	write(fileno(fd),s,strlen(s))
 #	else
-#		define s_puts(s,fd)	fputs(s,fd)
+#		define s_puts	fputs
 #	endif /* __BEOS__ */
 #else
-#	define s_close close
+#	define s_close	close
 #	define s_puts	fputs
 #endif /* 0 */
-#define s_dup		dup
-#define s_init()	(1)
+#define s_dup	dup
 #define s_end()
 
 #if defined(NNTP_ABLE) || defined(HAVE_GETHOSTBYNAME)

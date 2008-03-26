@@ -231,7 +231,7 @@ setup_hard_base(
 
 #	ifdef DEBUG
 			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "setup_hard_base() %s", buf);
+				debug_print_file("NNTP", "setup_hard_base(%s)", buf);
 #	endif /* DEBUG */
 
 			while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
@@ -264,6 +264,10 @@ setup_hard_base(
 			if (sscanf(line, "%ld %ld %ld", &count, &start, &last) != 3)
 				return -1;
 
+#	ifdef DEBUG
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "setup_hard_base(%s)", buf);
+#	endif /* DEBUG */
 			/*
 			 * TODO: AFAICS "total" and "count" arn't used in the code below
 			 *       anymore, why do we bother to set them?
@@ -353,7 +357,7 @@ index_group(
 	free_art_array();
 	free_msgids();
 
-	BegStopWatch("setup_hard_base");
+	BegStopWatch("setup_hard_base()");
 
 	/*
 	 * Get list of valid article numbers
@@ -489,7 +493,7 @@ index_group(
 	 */
 	filtered = filter_articles(group);
 
-	BegStopWatch("make_thread");
+	BegStopWatch("make_threads()");
 
 	/*
 	 * Thread the group
@@ -1633,12 +1637,13 @@ write_overview(
 	fprintf(fp, "%s\n", group->name);
 
 	for_each_art(i) {
+		char *p;
+		char *q, *ref;
+
 		article = &arts[i];
 
 		if (article->thread != ART_EXPIRED && article->artnum >= group->xmin) {
-			char *p;
-			char *q = NULL, *ref = NULL;
-
+			q = ref = NULL;
 			/*
 			 * TODO: instead of tinrc.mm_local_charset we'd better use UTF-8
 			 *       here and in print_from() in the CHARSET_CONVERSION case.
@@ -1688,8 +1693,8 @@ write_overview(
 			fprintf(fp, "\n");
 			free(p);
 			if (article->refs) {
-				free(ref);
-				ref = q = NULL;
+				FreeIfNeeded(ref);
+				q = NULL;
 			}
 		}
 	}

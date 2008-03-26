@@ -3,7 +3,7 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2008-01-08
+ *  Updated   : 2008-02-02
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1995-2007 Thomas Dickey <dickey@invisible-island.net>
@@ -108,7 +108,6 @@
 #	undef OVERVIEW_FILE
 #	undef SOCKS
 #	undef SPOOLDIR
-#	undef USE_INN_NNTPLIB
 #	undef USE_INVERSE_HACK
 #	undef USE_SOCKS4_PREFIX
 #	undef USE_SOCKS5
@@ -317,6 +316,7 @@
 #	undef DECL_STRCASESTR
 #	undef DECL_STRSEP
 #	undef DECL_SYS_ERRLIST
+#	undef DECL_TMPFILE
 #	undef DECL_TGETSTR
 #	undef DECL_TGOTO
 #	undef DECL_TIGETSTR
@@ -611,6 +611,11 @@
  */
 #	undef USE_CANLOCK
 
+/*
+ * use libgsasl for AUTH
+ */
+#	undef USE_SASL
+
 #	undef HAVE_COFFEE
 
 /*
@@ -881,5 +886,11 @@ Added missing headers after gettext update, using autoheader
  *       [&& HAVE_SLRNFACE if we add a check or a configure option for that ]
  */
 #	undef XFACE_ABLE
+
+/*
+ * define if newsserver can't handle pipelined (streamed) commands
+ * TODO: write configure option
+ */
+#	undef DISABLE_PIPELINING
 
 #endif /* !TIN_AUTOCONF_H */

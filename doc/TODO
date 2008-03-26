@@ -4,7 +4,7 @@ not read only ,-).
 
 Bugs
 ----
-o  plug mem-leaks in attrib.c
+o  plug mem-leaks in attrib.c and color.c
    [20071231 Urs Janssen <urs@tin.org>]
 
 !o  -S/-R is broken, ${TIN_HOMEDIR-"$HOME"}/.tin/active.save isn't
@@ -109,13 +109,18 @@ o  allow remapping of the 'z' abort-key (lynx style) in wait_for_input().
 o  add user defined screen layout at different levels
    [20041025 Urs Janssen <urs@tin.org>]
 
-o  add TLS, NNTPS support
-   (see draft-ietf-nntpext-tls-nntp-09.txt;
-    <http://www.gnu.org/software/gnutls/>, <http://www.openssl.org/>
-    might be useful;
+o  add TLS (RFC 4642), NNTPS support
+   (<http://www.gnu.org/software/gnutls/>, <http://www.openssl.org/>
+    might be useful (but unfortunately we use fputs()/fgets() instead of
+    read()/write() ...);
     "stunnel -c -d 1119 -r news.example.org:563; tin -g localhost -p 1119"
     can be used for NNTPS)
    [20031210 Urs Janssen <urs@tin.org>]
+
+o  add more AUTHINFO SASL (RFC 4643) support (DIGEST-MD5, EXTERNAL, ...)
+   and a fallback if no libgsasl is found (e.g cyrus-sasl or a handrolled
+   version for at least PLAIN)
+   [20080316 Urs Janssen <urs@tin.org>]
 
 o  make 'GNKSA'-parser RFC2822/USEFOR compliant
 
@@ -274,11 +279,9 @@ o  check if server supports 'LIST MODERATORS' and/or 'LIST DISTRIB.PATS' and
 o  if using "-n" commandline switch you can't subscribe to newsgroups not
    present in your newsrc - a simple check against the server
    (e.g. GROUP $newsgroup or if !NNTP try to stat the dir) would help.
-   if we are running in NNTP mode and if the server understands
-   LIST NEWSGROUPS pattern (don't use XGTITLE, it will become obsolete) we
-   could also fetch the description without loosing "-n" speed improvements;
-   if the server understands LIST ACTIVE pattern we could also get the group
-   attribute (moderated, etc.)
+   if the server understands "LIST ACTIVE grp" we could also get the group's
+   attribute (moderated, etc.) and with "LIST NEWSGROUPS grp" it's
+   description.
 
 o  item_by_item_etiquette_warnings [compile-time?]
    (e.g. enable x-posts without f'up warning, disable long-sig warning)
@@ -466,7 +469,7 @@ o  make article numbers uint_least64_t (on OSs where possible), provide
    usefull fallbacks if system doesn't have <inttypes.h>/<stdint.h>
    [20050728 Urs Janssen <urs@tin.org>]
 
-o  upgrade configure-script to autoconf-2.59
+o  upgrade configure-script to >= autoconf-2.61
    [20050728 Urs Janssen <urs@tin.org>]
 
 o  remove untranslateable constructs like txt_prefix_*
@@ -657,6 +660,13 @@ o  add normalization
 
 Docs/online help
 ----------------
+o  document the different singnals/actions (i.e. SIGUSR2 writes newsrc)
+   [20080209 Urs Janssen <urs@tin.org>]
+
+o  exit staus documentation in tzhe manpage isn't correct, we have more
+   exit codes than just 0/1 (and 2 in the -Z case).
+   [20080320 Urs Janssen <urs@tin.org>]
+
 o  review the turkish, russian and kinyarwanda translations
    (tr.po, ru.po, rw.po)
 
@@ -679,6 +689,13 @@ o  replace "\\" by "\e" in manpages (portable?)
 
 Not yet classified
 ------------------
+o  create debug output in
+   ${TIN_HOMEDIR-"$HOME"}/.tin"}${NNTPSERVER+"/$NNTPSERVER"}
+   instead of in $TMPDIR (as it may contain username and password,
+   access restrictions in $TMPDIR are a bad idea as other users
+   need to be able to overwrite the file)
+   [20080211 Urs Janssen <urs@tin.org>]
+
 o  -M/-N report is malied to userid, should we use tinrc.mail_address
    instead?
 
@@ -767,8 +784,6 @@ o  update gettext stuff to > gettext-0.12.1
 
 o  clean up included pcre stuff and update to >= pcre-7.6
 
-o  tin in batchmode dumps core if getting a SIGINT, useful?
-
 o  what is with conflicting tinrc settings? should we disallow those, or leave
    it to the user to realise that e.g. strip_blanks=ON && inverse_okay=ON
    looks ugly?
@@ -801,14 +816,13 @@ o  cleanup main.c/init_selfinfo()
     what I mean)
    [fixed some of the double/tripple reads, urs]
 
-o  either use libinn(3) where ever it's possible inside the code (if
-   configured to use that lib; the related configure check needs to be
-   rewritten from scratch (limitations to SPOOLDIR doesn't make sense
-   anymore, test for libinn.h is missing, ...)) or drop support for it.
-   [20030511 Urs Janssen <urs@tin.org>]
-
 o  detect pcre version and add compatibility macros for old versions
    (interface has changed twice and might do so again)
    (leafnode comes with a (suboptimal) check)
    (is this still needed with the configure option for extern pcre?)
    [Urs Janssen <urs@tin.org>]
+
+o  re add innlib support? (the old one was dropped as the lib has retired
+   all (which were not that many) features we used and our code didn't
+   use the innlibs code where ever it was possible (and usefull).
+   [20080211 Urs Janssen <urs@tin.org>]

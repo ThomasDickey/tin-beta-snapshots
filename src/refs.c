@@ -46,7 +46,7 @@
 
 #ifdef DEBUG
 #	define DEBUG_PRINT(x)	fprintf x
-FILE *dbgfd;
+static FILE *dbgfd;
 #endif /* DEBUG */
 
 /*
@@ -61,12 +61,12 @@ static unsigned int hash_msgid(const char *key);
 static void add_to_parent(struct t_msgid *ptr);
 static void build_thread(struct t_msgid *ptr);
 #ifdef DEBUG
-	static void dump_thread(FILE *fp, struct t_msgid *msgid, int level);
 	static void dump_msgid_thread(struct t_msgid *ptr, int level);
 	static void dump_msgid_threads(void);
 #endif /* DEBUG */
 #if 0
 	static void dump_msgids(void);
+	static void dump_thread(FILE *fp, struct t_msgid *msgid, int level);
 #endif /* 0 */
 
 /*
@@ -521,6 +521,45 @@ free_msgids(
 
 
 #if 0	/* But please don't remove it */
+/*
+ * Function to dump an ASCII tree map of a thread rooted at msgid.
+ * Output goes to fp, level is the current depth of the tree.
+ */
+static void
+dump_thread(
+	FILE *fp,
+	struct t_msgid *msgid,
+	int level)
+{
+	char buff[120];		/* This is _probably_ enough */
+	char *ptr = buff;
+	int i, len;
+
+	/*
+	 * Dump the current article
+	 */
+	sprintf(ptr, "%3d %*s", msgid->article, 2*level, "  ");
+
+	len = strlen(ptr);
+	i = cCOLS - len - 20;
+
+	if (msgid->article >= 0)
+		sprintf(ptr + len, "%-*.*s   %-17.17s", i, i, arts[msgid->article].subject, (arts[msgid->article].name) ? arts[msgid->article].name : arts[msgid->article].from);
+	else
+		sprintf(ptr + len, "%-*.*s", i, i, _("[- Unavailable -]"));
+
+	fprintf(fp, "%s\n", ptr);
+
+	if (msgid->child != NULL)
+		dump_thread(fp, msgid->child, level + 1);
+
+	if (msgid->sibling != NULL)
+		dump_thread(fp, msgid->sibling, level);
+
+	return;
+}
+
+
 static void
 dump_msgids(
 	void)
@@ -600,46 +639,8 @@ clear_art_ptrs(
 }
 
 
-/*
- * Function to dump an ASCII tree map of a thread rooted at msgid.
- * Output goes to fp, level is the current depth of the tree.
- */
+
 #ifdef DEBUG
-static void
-dump_thread(
-	FILE *fp,
-	struct t_msgid *msgid,
-	int level)
-{
-	char buff[120];		/* This is _probably_ enough */
-	char *ptr = buff;
-	int i, len;
-
-	/*
-	 * Dump the current article
-	 */
-	sprintf(ptr, "%3d %*s", msgid->article, 2*level, "  ");
-
-	len = strlen(ptr);
-	i = cCOLS - len - 20;
-
-	if (msgid->article >= 0)
-		sprintf(ptr + len, "%-*.*s   %-17.17s", i, i, arts[msgid->article].subject, (arts[msgid->article].name) ? arts[msgid->article].name : arts[msgid->article].from);
-	else
-		sprintf(ptr + len, "%-*.*s", i, i, _("[- Unavailable -]"));
-
-	fprintf(fp, "%s\n", ptr);
-
-	if (msgid->child != NULL)
-		dump_thread(fp, msgid->child, level + 1);
-
-	if (msgid->sibling != NULL)
-		dump_thread(fp, msgid->sibling, level);
-
-	return;
-}
-
-
 /*
  * Dump out all the threads from the msgid point of view, show the
  * related article index in arts[] where possible

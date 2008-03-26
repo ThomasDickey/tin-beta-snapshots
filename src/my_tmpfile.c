@@ -75,8 +75,10 @@ my_tmpfile(
 			if ((fp = tmpfile()) != NULL)
 				fd = fileno(fp);
 #ifdef DEBUG
-			else
-				wait_message(5, "HAVE_TMPFILE %s", strerror(errno));
+			else {
+				sverrno = errno;
+				wait_message(5, "HAVE_TMPFILE %s", strerror(sverrno));
+			}
 #endif /* DEBUG */
 			*filename = '\0';
 			if (fd == -1)
@@ -92,7 +94,7 @@ my_tmpfile(
 			joinpath(filename, name_size, TMPDIR, buf);
 		}
 #ifdef DEBUG
-		sverrno = errno = 0;
+		errno = 0;
 #endif /* DEBUG */
 #ifdef HAVE_MKSTEMP
 		fd = mkstemp(filename);

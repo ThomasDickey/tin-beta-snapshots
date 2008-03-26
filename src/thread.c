@@ -3,7 +3,7 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2006-09-16
+ *  Updated   : 2008-02-25
  *  Notes     :
  *
  * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
@@ -427,7 +427,7 @@ thread_page(
 		thdmenu.curr = thread_depth;
 	else {
 		if (tinrc.pos_first_unread) {
-			if ((i = new_responses(thread_basenote))) {
+			if (new_responses(thread_basenote)) {
 				for (n = 0, i = (int) base[thread_basenote]; i >= 0; i = arts[i].thread, n++) {
 					if (arts[i].status == ART_UNREAD || arts[i].status == ART_WILL_RETURN) {
 						if (arts[i].thread == ART_EXPIRED)

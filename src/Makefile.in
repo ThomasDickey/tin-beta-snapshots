@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2007-10-04
+# Updated: 2008-03-30
 #
 # Copyright (c) 1995-2008 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -73,7 +73,7 @@ CANLIB		= @CANLIBS@
 INTL_LIBS	= @INTLLIBS@
 PCRE_LIBS	= @PCREDIR_LIBS@ @PCREDIR_MAKE@ -L../pcre -lpcre
 LIBS		= @LIBS@
-LINK_LIBS	= $(PCRE_LIBS) $(CANLIB) @LIBS@ @INN_NNTPLIB@ $(INTL_LIBS)
+LINK_LIBS	= $(PCRE_LIBS) $(CANLIB) @GSASL_LIBS@ @LIBS@ $(INTL_LIBS)
 
 # Where do you want the binary & manual page installed?
 DESTDIR	= @DESTDIR@
@@ -276,12 +276,9 @@ OFILES	= @ALLOCA@ $(EXTRAOBJS) \
 	$(OBJDIR)/xface$o \
 	$(OBJDIR)/xref$o
 
-ALL_FILES = $(HFILES) $(CFILES) $(NNTP)
+ALL_FILES = $(HFILES) $(CFILES)
 
-LINTFLAGS = -a -c -h -n -x $(CPPFLAGS) -I/usr/local/include/ \
-	-DUSE_ISO2ASC=\"2\" \
-	-DHAVE_ISPELL \
-	-DHAVE_COLOR
+LINTFLAGS = @LINTFLAGS@ $(CPPFLAGS)
 
 all : $(BINDIR)/$(EXE)
 
@@ -418,13 +415,13 @@ TAGS :
 
 lint :	$(CFILES) $(OBJDIR)/parsdate.c tincfg.h options_menu.h
 	@$(ECHO) "Linting source (results in ./LINT) ..."
-	@$(LINT) $(LINTFLAGS) -DNNTP_ABLE `$(LS) $(CFILES)|$(SED) -e 's/\.y/.c/'` $(LIBS) > LINT
+	@$(LINT) $(LINTFLAGS) `$(ECHO) $(CFILES)|$(SED) -e 's/\.y/.c/'` $(LIBS) 1>LINT 2>&1
 
 clean :
 	@$(ECHO) "Cleaning ..."
 	@-$(RM) -f $(OFILES)
 	@-$(RM) -f $(OBJDIR)/parsdate.c
-	@-$(RM) -f LINT *.ln *.out
+	@-$(RM) -f LINT *.ln *.out trace
 	@-$(RM) -f makecfg$X makecfg$o tincfg.h options_menu.h
 	@-$(RM) -f core *~
 	@-$(RM) -f $(EXE)
@@ -615,3 +612,4 @@ $(OBJDIR)/wildmat$o :		$(SRCDIR)/wildmat.c $(TIN_DEP)
 $(OBJDIR)/xface$o :		$(SRCDIR)/xface.c $(TIN_DEP)
 $(OBJDIR)/xref$o :		$(SRCDIR)/xref.c $(TIN_DEP) \
 				$(INCDIR)/newsrc.h
+$(EXTRAOBJS) :			options_menu.h

@@ -3,7 +3,7 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2007-12-30
+ *  Updated   : 2008-03-11
  *  Notes     :
  *
  * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -455,6 +455,10 @@ selection_page(
 
 			case GLOBAL_POST:			/* post a basenote */
 				if (!selmenu.max) {
+					if (!can_post) {
+						info_message(_(txt_cannot_post));
+						break;
+					}
 					snprintf(buf, sizeof(buf), _(txt_post_newsgroups), tinrc.default_post_newsgroups);
 					if (!prompt_string_default(buf, tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS))
 						break;

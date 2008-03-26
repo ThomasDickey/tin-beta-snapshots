@@ -3,7 +3,7 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2008-01-31
+ *  Updated   : 2008-03-26
  *  Notes     :
  *
  * Copyright (c) 1997-2008 Urs Janssen <urs@tin.org>
@@ -72,7 +72,7 @@
 		static char *UChar2char(const UChar *ustr);
 #	endif /* HAVE_LIBICUUC */
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-                                        
+
 
 /*
  * special ltoa()
@@ -128,6 +128,7 @@ tin_ltoa(
 }
 
 
+#if !defined(USE_DMALLOC) || (defined(USE_DMALLOC) && !defined(HAVE_STRDUP))
 /*
  * Handrolled version of strdup(), presumably to take advantage of
  * the enhanced error detection in my_malloc
@@ -141,15 +142,15 @@ my_strdup(
 	size_t len = strlen(str) + 1;
 	void *ptr = my_malloc(len);
 
-#if 0 /* as my_malloc exits on error, ptr can't be NULL */
+#	if 0 /* as my_malloc exits on error, ptr can't be NULL */
 	if (ptr == NULL)
 		return NULL;
-#endif /* 0 */
+#	endif /* 0 */
 
 	memcpy(ptr, str, len);
 	return (char *) ptr;
 }
-
+#endif /* !USE_DMALLOC || (USE_DMALLOC && !HAVE_STRDUP) */
 
 /*
  * strtok that understands empty tokens
@@ -425,7 +426,7 @@ OUT:
 
 	return (sign * (-val));
 }
-#	undef DIGIT(x)
+#	undef DIGIT
 #	undef MBASE
 #endif /* !HAVE_STRTOL */
 

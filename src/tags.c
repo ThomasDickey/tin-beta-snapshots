@@ -374,7 +374,7 @@ set_range(
 			range = tinrc.default_range_thread;
 			break;
 
-		default:
+		default:	/* should no happen */
 			return FALSE;
 	}
 

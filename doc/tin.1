@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2007-09-23
+.\" Updated   : 2008-03-20
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -19,7 +19,7 @@
 .fi
 ..
 .\"
-.TH tin 1 "September 3rd, 2007" "1.9.3" "A Usenet newsreader"
+.TH tin 1 "March 20th, 2008" "1.9.3" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -63,7 +63,7 @@ option) via a NNTP (Network News Transport Protocol) server. It will
 automatically utilize NOV
 .BR newsoverview (5)
 style index files if available locally or via the NNTP [X]OVER command
-(\fBRFC2980\fP).
+(\fBRFC2980\fP, \fBRFC3977\fP).
 .PP
 .B tin
 has four separate levels of operation: Selection level, Group level,
@@ -125,7 +125,8 @@ option and mark all articles as read.
 Don't load newsgroup descriptions (interactive mode).
 .TP
 .BI \-D " debug-level"
-Enter debug-level (1 = NNTP, 2 = filter, 4 = newsrc, 8 = threading, 16 = memory, 32 = misc).
+Enter debug-level (1 = NNTP, 2 = filter, 4 = newsrc, 8 = threading, 16 =
+memory, 32 = misc).
 .TP
 .BI \-f " file"
 Use the specified file of subscribed to newsgroups in place of
@@ -154,12 +155,12 @@ NNTP and \fBcache_overview_files\fP is turned off.
 .BI \-l
 Get number of articles per group from the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fR file. If
-reading via NNTP this is done with the LIST command (\fBRFC977\fP). This
+reading via NNTP this is done with the LIST command (\fBRFC3977\fP). This
 might result in incorrect article counts but is usually faster than the
 default which is to read the
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fR file
 (either directly or via LIST) and then check the article count via
-NNTP GROUP command (\fBRFC977\fP) ''\fB\-ln\fP''.
+NNTP GROUP command (\fBRFC3977\fP) ''\fB\-ln\fP''.
 .TP
 .BI \-m " dir"
 Mailbox directory to use. Default is \fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fR.
@@ -2763,6 +2764,9 @@ find ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news* \\
 .SH FILES
 .\" TODO: mention dead.article, dead.articles
 .\"               .article[.$$], .cancel[.$$], .letter[.$$]?
+.\"       $PWD/trace (--with-trace)
+.\"       $TMPDIR/NNTP, $TMPDIR/ARTS, $TMPDIR/ACTIVE, $TMPDIR/BASE,
+\."       $TMPDIR/SAVE_COMP, $TMPDIR/BITMAP, $TMPDIR/MALLOC, $TMPDIR/FILTER
 For a detailed description see
 .BR tin (5).
 .PP
@@ -2907,15 +2911,14 @@ For a detailed description see
 .\" TODO: sort in a useful order, add undocumented env-vars like:
 .\"
 .\" .TP
-.\" .B TIN_RNG_MIN, TIN_RNG_MAX, TIN_MIN, TIN_MAX, TIN_COUNT, TIN_SEQ
-.\" (all used in vNewsrcTestHarness())
-.\"
-.\" .TP
 .\" .B SHELL (Unix)
 .\"
+.\" the next two will go away once we remove AUTHINFO GENERIC (deprecated by RFC 4643)
 .\" .TP
 .\" .B NNTPAUTH
 .\" "\fInntppassword\fR \fInntpusername\fR" pair for genereic authentication.
+.\" .TP
+.\" .B NNTP_AUTH_FDS
 .\"
 .TP
 .B TINRC
@@ -3179,13 +3182,36 @@ See
 for more information.
 .\"
 .\"
+.\" TODO: addd missing, sort usefull, document in detail
+.SH SIGNALS
+.B tin
+handles a couple of signals:
+.TP
+.B SIGHUP
+Terminate gracefully.
+.TP
+.B SIGTERM
+Terminate gracefully.
+.TP
+.B SIGUSR1
+Terminate gracefully but do not restore tty.
+.TP
+.B SIGUSR2
+Write out \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fR-file.
+.\"
+.\"
 .\" .SH DIAGNOSTICS
 .\" give an overview of the most common error messages and how to cope with
 .\" them.
 .\"
 .\"
-.\" .SH SECURITY
-.\" add a note about clear text passwords used by NNTP and in ~/.newsauth
+.\"
+.SH SECURITY
+When \fBtin\fP is started in debug mode (''\fB\-D n\fP'') it will create
+world readable files in \fB$TMPDIR\fP which may contain the users NNTP
+password in cleartext. On multiuser-systems \fB$TMPDIR\fP should be set
+to a safe location befor starting tin in debug mode (e.g.
+\fBTMPDIR=$HOME tin \-D 1\fP).
 .\"
 .\"
 .SH "CONFORMING TO"
@@ -3210,10 +3236,9 @@ ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/
 .BR noffle (1)
 (<= V1.0-pre5) and
 .BR NewsCache
-(<= V1.1.91) can't handle simultaneous GROUP commands. If you run into
+(<= V1.1.91) can't handle pipelined GROUP commands. If you run into
 trouble with any of the mentioned servers define
-NUM_SIMULTANEOUS_GROUP_COMMAND to 1 in active.c and recompile. See also
-the TODO-file which comes with the source.
+DISABLE_PIPELINING in include/autoconf.h and recompile.
 .br
 Before mailing a bug-report to <tin\-bugs@tin.org> please check if you
 are using the latest (stable) release, and if not, please upgrade

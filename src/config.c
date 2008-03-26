@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-01-10
+ *  Updated   : 2008-03-14
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
@@ -1684,8 +1684,6 @@ rc_update(
 	t_bool show_score = FALSE;
 	t_bool space_goto_next_unread = FALSE;
 	t_bool tab_goto_next_unread = FALSE;
-	t_bool thread_articles = FALSE;
-	t_bool thread_perc = FALSE;
 	t_bool use_builtin_inews = FALSE;
 	t_bool use_getart_limit = FALSE;
 	t_bool use_mailreader_i = FALSE;
@@ -1759,8 +1757,6 @@ rc_update(
 					set_goto_next_unread = TRUE;
 					break;
 				}
-				if (match_boolean(buf, "thread_articles=", &thread_articles))
-					break;
 				break;
 
 			case 'u':
@@ -1807,12 +1803,6 @@ rc_update(
 
 	if (show_last_line_prev_page)
 		tinrc.scroll_lines = -1;
-
-	if (thread_articles)
-		tinrc.thread_articles = THREAD_BOTH;
-
-	if (thread_perc)
-		tinrc.thread_perc = THREAD_PERC_DEFAULT;
 
 	if (use_builtin_inews)
 		strncpy(tinrc.inews_prog, INTERNAL_CMD, sizeof(tinrc.inews_prog) - 1);

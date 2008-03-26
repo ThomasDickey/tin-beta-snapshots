@@ -3,7 +3,7 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2007-12-30
+ *  Updated   : 2008-03-19
  *  Notes     :
  *
  * Copyright (c) 1992-2008 Iain Lea <iain@bricbrac.de>
@@ -48,11 +48,12 @@
  */
 #define ACTIVE_SEP	" \n"
 
-/*
- * if you are using C-News nntpd set NUM_SIMULTANEOUS_GROUP_COMMAND to 1
- */
 #ifdef NNTP_ABLE
-#	define NUM_SIMULTANEOUS_GROUP_COMMAND 50
+#	ifdef DISABLE_PIPELINING
+#		define NUM_SIMULTANEOUS_GROUP_COMMAND 1
+#	else
+#		define NUM_SIMULTANEOUS_GROUP_COMMAND 50
+#	endif /* DISABLE_PIPELINING */
 #endif /* NNTP_ABLE */
 
 t_bool force_reread_active_file = FALSE;
@@ -577,8 +578,92 @@ read_news_active_file(
 		read_active_file();
 
 	/* Read .newsrc and check each group */
-	if (newsrc_active)
+	if (newsrc_active) {
+#ifdef NNTP_ABLE
+#	ifndef DISABLE_PIPELINING
+		/*
+		 * TODO: test me. do we want this overhead? add a DISABLE_PIPELINING
+		 *       code-path? we don't have list_active set but we use some
+		 *       sort of LIST ACTIVE -> our documentation is a bit incorrect
+		 *       now.
+		 *
+		 * use "LIST ACTIVE grp" if we have less than PIPELINE_LIMIT
+		 * groups and we use -n but not -Q
+		 */
+		if (read_news_via_nntp && ((nntp_caps.type == CAPABILITIES && nntp_caps.list_active) || nntp_caps.type != CAPABILITIES) && (show_description || check_for_new_newsgroups)) {
+			char buff[NNTP_STRLEN];
+			char *ptr, *q;
+			char moderated[PATH_LEN];
+			int i, r, j = 0;
+			long count = -1L, min = 1L, max = 0L;
+			struct t_group *grpptr;
+			t_bool need_auth = FALSE;
+
+			/* we can't use for_each_group(i) yet, so we have to prase the newsrc */
+			if ((fp = fopen(newsrc, "r")) != NULL) {
+				while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+					j++;
+				}
+				rewind(fp);
+				if (j < PIPELINE_LIMIT) {
+					while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+						if (ptr) {
+							if (!(q = strpbrk(ptr, ":!")))
+								continue;
+							*q = '\0';
+							snprintf(buff, sizeof(buff), "LIST ACTIVE %s", ptr);
+							put_server(buff);
+						}
+					}
+				}
+				fclose(fp);
+
+				if (j < PIPELINE_LIMIT) {
+					for (i = 0; i < j; i++) {
+						if ((r = get_only_respcode(buff, sizeof(buff))) != OK_GROUPS) {
+							if (r == ERR_NOAUTH || r == NEED_AUTHINFO)
+								need_auth = TRUE;
+							continue;
+						} else {
+							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+#		ifdef DEBUG
+								if (debug & DEBUG_NNTP)
+									debug_print_file("NNTP", "<<< %s", ptr);
+#		endif /* DEBUG */
+								if (!parse_active_line(ptr, &max, &min, moderated))
+									continue;
+
+								if ((grpptr = group_add(ptr)) == NULL) {
+									if ((grpptr = group_find(ptr, FALSE)) == NULL)
+										continue;
+
+									if (max > grpptr->xmax) {
+										grpptr->xmax = max;
+										grpptr->count = count;
+									}
+									if (min > grpptr->xmin) {
+										grpptr->xmin = min;
+										grpptr->count = count;
+									}
+									continue;
+								}
+								active_add(grpptr, count, max, min, moderated);
+							}
+						}
+					}
+					if (need_auth) { /* retry after auth is overkill here, so just auth */
+						if (!authenticate(nntp_server, userid, FALSE)) {
+							error_message(_(txt_auth_failed), ERR_ACCESS);
+							tin_done(EXIT_FAILURE);
+						}
+					}
+				}
+			}
+		}
+#	endif /* !DISABLE_PIPELINING */
+#endif /* NNTP_ABLE */
 		read_newsrc_active_file();
+	}
 
 	(void) time(&active_timestamp);
 	force_reread_active_file = FALSE;

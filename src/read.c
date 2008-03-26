@@ -108,7 +108,6 @@ wait_for_input(
 		 * Something is waiting. See what's cooking...
 		 */
 		if (nfds > 0) {
-
 			/*
 			 * User pressed something. If 'q'uit, then handle this. Process
 			 * user input 1st so they get chance to quit on busy (or stalled)

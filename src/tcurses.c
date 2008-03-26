@@ -512,7 +512,9 @@ ReadCh(
 	if (cmd_line)
 		ch = cmdReadCh();
 	else {
+#	if defined(KEY_RESIZE) && defined(USE_CURSES)
 again:
+#	endif /* KEY_RESIZE && USE_CURSES */
 		allow_resize(TRUE);
 #	if defined(KEY_RESIZE) && defined(USE_CURSES)
 		if ((ch = getch()) == KEY_RESIZE)

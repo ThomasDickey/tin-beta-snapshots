@@ -1,4 +1,4 @@
--- 1.9.3 release 20080108 "" --
+-- 1.9.3 release 20080326 "" --
 
 U009) Dirk Nimmich <nimmich@muenster.de>
       ADD. (g)oto group search now case insensitive
@@ -40,18 +40,26 @@ U007) Urs Janssen <urs@tin.org>
       ADD. libcanlock update (1.0 -> 2b-4)
       ADD. url_handler.pl as new DEFAULT_URL_HANDLER
       ADD. remove leading/tailing whitespace in filter scope
-      ADD. increase internal buffer in rfc1522_encode()/rfc1522_do__encode()
+      ADD. increase internal buffer in rfc1522_encode()/rfc1522_do_encode()
       ADD. disallow .invalidTLD in tin generated Message-IDs
+      ADD. SIGUSR2 handler to write out newsrc
+      ADD. configure check for gsasl.h/libgsasl
+      ADD. AUTHINFO SASL PLAIN support if gsasl.h/libgsasl found
+      ADD. use "LIST NEWSGROUPS grp" with -n cmd-line switch
+      ADD. use "LIST ACTIVE grp" with -n cmd-line switch
+      BUG. newnewsrc tmp-file wasn't always removed
       BUG. subscribe_pattern() was overcomplex
       BUG. mail_to_someone() didn't convert the article into the local charset
-      FIX. active.c, art.c, auth.c, charset.c, config.c, color.c, cook.c
-           debug.c, filter.c, group.c, header.c, help.c, inews.c, lang.c
-           mail.c, main.c, mimetypes.c, misc.c, my_tmpfile.c, newsrc.c
-           nntplib.c, page.c, post.c, refs.c, rfc2045.c, rfc2047.c, save.c
-           screen.c, search.c, select.c, sigfile.c, tags.c, xface.c, xref.c
-           config.guess, config.sub, de.po, autoconf.h[in], debug.h, extern.h
-           policy.h, proto.h, rfc2046.h, tin.h, version.h, Makefile
-           configure[.in], Makefile[.in], libcanlock/*, tin.1, tin.5
+      REM. libinn support (was broken for ages)
+      FIX. active.c, art.c, attrib.c, auth.c, charset.c, config.c, color.c
+           cook.c, debug.c, filter.c, group.c, header.c, help.c, inews.c
+           init.c, keymap.c, lang.c, mail.c, main.c, mimetypes.c, misc.c
+           my_tmpfile.c, newsrc.c, nntplib.c, options_menu.c, page.c, post.c
+           refs.c, rfc2045.c, rfc2047.c, save.c, screen.c, search.c, select.c
+           sigfile.c, signcal.c, string.c, tags.c, tcurses.c, thread.c, xface.c
+           xref.c, config.guess, config.sub, de.po, autoconf.h[in], debug.h
+           extern.h, policy.h, proto.h, rfc2046.h, keymap.h, tin.h, version.h
+           Makefile, configure[.in], Makefile[.in], libcanlock/*, tin.1, tin.5
 
 -- 1.9.2 release 20070201 "Dalaruan" --
 

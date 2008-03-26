@@ -109,7 +109,7 @@ expand_ctrl_chars(
 	char *buf = my_malloc(curr_len);
 	unsigned char *c;
 
-	c = *line;
+	c = (unsigned char *) *line;
 	while (*c) {
 		if (i > curr_len - 3) {
 			curr_len <<= 1;

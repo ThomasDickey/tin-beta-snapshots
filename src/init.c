@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2007-12-30
+ *  Updated   : 2008-03-10
  *  Notes     :
  *
  * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
@@ -441,12 +441,12 @@ struct t_capabilities nntp_caps = {
 	FALSE, /* STARTTLS */
 	FALSE, /* AUTHINFO USER/PASS */
 	FALSE, /* AUTHINFO SASL */
-#if 0
 	FALSE, /* SASL CRAM-MD5 */
 	FALSE, /* SASL DIGEST-MD5 */
 	FALSE, /* SASL PLAIN */
 	FALSE, /* SASL GSSAPI */
 	FALSE, /* SASL EXTERNAL */
+#if 0
 	FALSE, /* STREAMING: "MODE STREAM", "CHECK", "TAKETHIS" */
 	FALSE /* IHAVE */
 #endif /* 0 */
@@ -649,11 +649,6 @@ init_selfinfo(
 #else
 	my_strncpy(default_organization, get_val("ORGANIZATION", ""), sizeof(default_organization) - 1);
 #endif /* apollo */
-
-#ifdef USE_INN_NNTPLIB
-	if ((ptr = GetConfigValue(_CONF_ORGANIZATION)) != NULL)
-		my_strncpy(default_organization, ptr, sizeof(default_organization) - 1);
-#endif /* USE_INN_NNTPLIB */
 
 #ifndef NNTP_ONLY
 	my_strncpy(libdir, get_val("TIN_LIBDIR", NEWSLIBDIR), sizeof(libdir) - 1);

@@ -3,7 +3,7 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-01-10
+ *  Updated   : 2008-02-02
  *  Notes     :
  *
  * Copyright (c) 1997-2008 Iain Lea <iain@bricbrac.de>
@@ -235,12 +235,18 @@
 #ifdef DECL_STRNCASECMP
 	extern int strncasecmp(const char *, const char *, size_t);
 #endif /* DECL_STRNCASECMP */
+#ifdef DECL_STRSEP
+        extern char *strsep(char **, const char *);
+#endif /* DECL_STRSEP */
 #ifdef DECL_STRTOL
 	extern long strtol(const char *, char **, int);
 #endif /* DECL_STRTOL */
 #ifdef DECL_SYSTEM
 	extern int system(const char *);
 #endif /* DECL_SYSTEM */
+#ifdef DECL_TMPFILE
+	extern  FILE *tmpfile(void);
+#endif /* DECL_TMPFILE */
 #ifdef DECL_TGETENT
 	extern int tgetent(char *, char *);
 #endif /* DECL_TGETENT */
@@ -263,7 +269,7 @@
 	extern int tigetnum(char *);
 #endif /* DECL_TGETNUM */
 #ifdef DECL_TIGETSTR
-	extern char *tigetstr(char *, char **);
+	extern char *tigetstr(char *);
 #endif /* DECL_TIGETSTR */
 #ifdef DECL_TIME
 	extern time_t time(time_t *);

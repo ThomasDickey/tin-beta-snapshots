@@ -3,7 +3,7 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-01-10
+ *  Updated   : 2008-02-25
  *  Notes     :
  *
  * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -570,7 +570,8 @@ tin_done(
 	if (!no_write) {
 		i = 3; /* max retries */
 		while (i--) {
-			if (((wrote_newsrc_lines = write_newsrc()) >= 0L) && (wrote_newsrc_lines >= read_newsrc_lines)) {
+			wrote_newsrc_lines = write_newsrc();
+			if ((wrote_newsrc_lines >= 0L) && (wrote_newsrc_lines >= read_newsrc_lines)) {
 				if (!batch_mode || verbose)
 					my_fputs(_(txt_newsrc_saved), stdout);
 				break;
@@ -611,6 +612,7 @@ tin_done(
 
 	free_all_arrays();
 
+	/* TODO: why do we make this exception here? */
 #ifdef SIGUSR1
 	if (ret != -SIGUSR1) {
 #endif /* SIGUSR1 */

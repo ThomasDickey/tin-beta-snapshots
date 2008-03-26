@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2008-01-08
+dnl Updated   : 2008-03-20
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2007 Thomas E. Dickey <dickey@invisible-island.net>
@@ -182,7 +182,7 @@ fi
 ###	use option --enable-debug to compile-in test/development code
 AC_MSG_CHECKING(if you want to compile-in debug support)
 CF_ARG_ENABLE(debug,
-	[  --enable-debug          turn on debug/profiling/traces],
+	[  --enable-debug          turn on debug support],
 	[ENABLE_DEBUG=''
 	CFLAGS="-g $CFLAGS"
 	LDFLAGS="-g $LDFLAGS"],
@@ -273,19 +273,6 @@ if test "$ac_cv_path_INEWS" != ""; then
 		CF_DEFINE_STRING(PATH_INEWS, "$INEWS -h")
 	fi
 fi
-
-## !NNTP_ONLY
-if test "$USE_SPOOLDIR" = "yes"; then
-	## options for libraries
-	AC_MSG_CHECKING(for optional INN-NNTP library)
-	CF_WITH_VALUE(inn-nntplib,
-		[  --with-inn-nntplib=PATH specify INN-NNTP library],
-		INN_NNTPLIB)
-	AC_MSG_RESULT($INN_NNTPLIB)
-else
-	INN_NNTPLIB=""
-fi
-AC_SUBST(INN_NNTPLIB)
 
 ### Look for network libraries first, since some functions (such as gethostname)
 ### are used in a lot of places.
@@ -444,21 +431,21 @@ debug_malloc=none
 CF_WITH_DBMALLOC(debug_malloc=DBMALLOC)
 CF_WITH_DMALLOC(debug_malloc=DMALLOC)
 
-AC_MSG_CHECKING(if you want debugging-trace)
 AC_ARG_WITH(trace,
-	[  --with-trace            use debugging/traces],
-	[use_trace=yes],
-	[use_trace=no])
-AC_MSG_RESULT($use_trace)
-if test "$use_trace" = yes ; then
-	AC_DEFINE(USE_TRACE)
-	EXTRAOBJS="$EXTRAOBJS trace.o"
+	[  --with-trace            use debugging/traces for screen output],
+	[
 	AC_CHECK_FUNC(_tracef,[AC_DEFINE(HAVE__TRACEF)],[
 	AC_CHECK_LIB(${cf_with_screen}_g,_tracef,
 		[AC_DEFINE(HAVE__TRACEF)
 		 LIBS=`echo "$LIBS" | sed -e s/-l${cf_with_screen}// -e s/-lcurses//`
-		 LIBS="-l${cf_with_screen}_g $LIBS"])])
-fi
+		 LIBS="-l${cf_with_screen}_g $LIBS"
+		 use_trace=yes
+		 AC_DEFINE(USE_TRACE)
+		 EXTRAOBJS="$EXTRAOBJS trace.o"],
+		 use_trace=no)])],
+	[use_trace=no])
+#AC_MSG_CHECKING(if you want debugging-trace)
+#AC_MSG_RESULT($use_trace)
 AC_SUBST(EXTRAOBJS)
 
 ## options for miscellaneous definitions
@@ -529,6 +516,23 @@ CF_ARG_ENABLE(cancel-locks,
 AC_MSG_RESULT($enableval)
 AC_SUBST(CANDIR_MAKE)
 AC_SUBST(CANLIBS)
+
+## gsasl - used for AUTH SASL PLAIN
+GSASL_LIBS=
+AC_CHECK_HEADER(gsasl.h,
+	AC_CHECK_LIB(gsasl, gsasl_check_version,
+		gsasl=yes, gsasl=no),
+	gsasl=no)
+if test "$gsasl" = "yes"; then
+	CF_ARG_DISABLE(gsasl,
+	        [  --disable-gsasl         don't use GNU SASL],
+	        USE_SASL=no,
+	        [USE_SASL=yes
+		AC_DEFINE(USE_SASL, 1, [Define to 1 if you want GNU SASL.])
+		GSASL_LIBS='-lgsasl'])
+fi
+AC_SUBST(GSASL_LIBS)
+
 
 AC_MSG_CHECKING(whether to enable 8-bit keycodes)
 CF_ARG_DISABLE(8bit-keys,
@@ -1094,6 +1098,7 @@ CF_CHECK_DECL(\
 	strchr \
 	strcasestr \
 	strsep \
+	tmpfile \
 )
 
 dnl Check network stuff separately, to limit the effect of inconsistent headers
@@ -1286,6 +1291,9 @@ fi
 
 ### Finally, build autoconf.h and the makefiles
 CFLAGS="$CFLAGS $EXTRA_CFLAGS"
+
+LINTFLAGS=$LINTFLAGS
+AC_SUBST(LINTFLAGS)
 
 CF_DEFINE_STRING(TIN_CC,       "$CC")
 CF_DEFINE_STRING(TIN_CFLAGS,   "$CFLAGS")

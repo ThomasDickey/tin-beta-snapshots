@@ -133,7 +133,7 @@ get_fqdn(
 	char name[MAXHOSTNAMELEN + 1];
 	static char fqdn[1024];
 	struct hostent *hp;
-	struct in_addr in;
+	struct in_addr in = {0};
 
 	*fqdn = '\0';
 	domain = NULL;
@@ -299,14 +299,7 @@ get_from_name(
 	char *from_name,
 	struct t_group *thisgrp)
 {
-#	ifdef USE_INN_NNTPLIB
-	char *fromhost = GetConfigValue(_CONF_FROMHOST);
-#	else
-	char *fromhost = NULL;
-#	endif /* USE_INN_NNTPLIB */
-
-	if (!(fromhost && *fromhost))
-		fromhost = domain_name;
+	char *fromhost = domain_name;
 
 	if (thisgrp && *thisgrp->attribute->from != '\0') {
 		strcpy(from_name, thisgrp->attribute->from);

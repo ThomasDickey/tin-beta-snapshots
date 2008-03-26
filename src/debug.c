@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2007-12-30
+ *  Updated   : 2008-03-10
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
@@ -340,9 +340,10 @@ debug_print_nntp_extensions(
 		return;
 
 	debug_print_file("NNTP", "### NNTP EXTENSIONS/CAPABILITIES");
-	debug_print_file("NNTP", "### Type/Version : %d/%d", nntp_caps.type, nntp_caps.version);
-	debug_print_file("NNTP", "### Command-names: %s %s", BlankIfNull(nntp_caps.over_cmd), BlankIfNull(nntp_caps.hdr_cmd));
-	debug_print_file("NNTP", "### List         : %s", nntp_caps.list_motd ? "MOTD" : "");
+	debug_print_file("NNTP", "### Implementation: %s", BlankIfNull(nntp_caps.implementation));
+	debug_print_file("NNTP", "### Type/Version  : %d/%d", nntp_caps.type, nntp_caps.version);
+	debug_print_file("NNTP", "### Command-names : %s %s", BlankIfNull(nntp_caps.over_cmd), BlankIfNull(nntp_caps.hdr_cmd));
+	debug_print_file("NNTP", "### List          : %s", nntp_caps.list_motd ? "MOTD" : "");
 }
 #	endif /* NNTP_ABLE */
 
