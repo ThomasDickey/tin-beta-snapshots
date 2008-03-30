@@ -107,12 +107,12 @@ case "$host_cpu:$host_vendor:$host_os" in
 	powerpc:apple:darwin*)  #
 		AC_DEFINE(MAC_OS_X)
 		;;
-	# check for cygwin enviroment
+	# check for cygwin environment
 	# -DSTATIC is needed for pcre
 	*:*:*cygwin*)	#(vi
 		PCRE_DEFINES="$PCRE_DEFINES -DSTATIC"
 		;;
-	# SEIUX doesn't have any usefull preprocessor symbol
+	# SEIUX doesn't have any useful preprocessor symbol
 	mips:sei:seiux*)
 		AC_DEFINE(SEIUX)
 		;;
