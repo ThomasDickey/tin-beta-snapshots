@@ -3,10 +3,10 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2007-12-30
+ *  Updated   : 2008-11-25
  *  Notes     : NNTP built in version of inews
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -134,7 +134,7 @@ submit_inews(
 
 	if ((from_name[0] == '\0') || (from_name[6] == '\0')) {
 		/* we could silently add a From: line here if we want to... */
-		error_message(_(txt_error_no_from));
+		error_message(2, _(txt_error_no_from));
 		fclose(fp);
 		return ret_code;
 	}
@@ -151,7 +151,7 @@ submit_inews(
 	 * check for valid From: line
 	 */
 	if (!tinrc.post_8bit_header && GNKSA_OK != gnksa_check_from(from_name + 6)) { /* error in address */
-		error_message(_(txt_invalid_from), from_name + 6);
+		error_message(2, _(txt_invalid_from), from_name + 6);
 		fclose(fp);
 		return ret_code;
 	}
@@ -161,18 +161,18 @@ submit_inews(
 		rewind(fp);
 
 #	ifndef FORGERY
-		if ((ptr = build_sender()) && (!disable_sender)) {
+		if (!disable_sender && (ptr = build_sender())) {
 			sender = sender_needed(from_name + 6, group, ptr);
 			switch (sender) {
 				case -2: /* can't build Sender: */
-					error_message(_(txt_invalid_sender), ptr);
+					error_message(2, _(txt_invalid_sender), ptr);
 					fclose(fp);
 					return ret_code;
 					/* NOTREACHED */
 					break;
 
 				case -1: /* illegal From: (can't happen as check is done above already) */
-					error_message(_(txt_invalid_from), from_name + 6);
+					error_message(2, _(txt_invalid_from), from_name + 6);
 					fclose(fp);
 					return ret_code;
 					/* NOTREACHED */
@@ -207,7 +207,7 @@ submit_inews(
 		 * Receive CONT_POST or ERROR response code from NNTP server
 		 */
 		if (nntp_command("POST", CONT_POST, response, sizeof(response)) == NULL) {
-			error_message("%s", response);
+			error_message(2, "%s", response);
 			fclose(fp);
 			return ret_code;
 		}
@@ -257,7 +257,7 @@ submit_inews(
 #	ifdef USE_CANLOCK
 			if (!can_lock_in_article) {
 					char lock[1024];
-					const char *lptr = (const char *) 0;
+					const char *lptr;
 
 					lock[0] = '\0';
 					if ((lptr = build_canlock(message_id, get_secret())) != NULL) {
@@ -287,9 +287,7 @@ submit_inews(
 
 			if (can_lock_in_article && !id_in_article) {
 				ptr = strchr(line, ':');
-				if (ptr - line == 11 && !strncasecmp(line, "Cancel-Lock", 11)) {
-					; /* skip line */
-				} else {
+				if (ptr - line != 11 || strncasecmp(line, "Cancel-Lock", 11)) {
 					u_put_server(line);
 					u_put_server("\r\n");
 				}
@@ -318,6 +316,8 @@ submit_inews(
 		 * Don't leave this loop if we only tried once to post and an
 		 * authentication request was received. Leave loop on any other
 		 * response or any further authentication requests.
+		 *
+		 * TODO: add 483 (RFC 3977) support
 		 */
 		if (((respcode == ERR_NOAUTH) || (respcode == NEED_AUTHINFO)) && (auth_error++ < 1) && (authenticate(nntp_server, userid, FALSE)))
 			leave_loop = FALSE;
@@ -334,7 +334,7 @@ submit_inews(
 	 */
 	if (respcode != OK_POSTED) {
 		/* TODO: -> lang.c */
-		error_message("Posting failed (%s)", str_trim(response));
+		error_message(2, "Posting failed (%s)", str_trim(response));
 		return ret_code;
 	}
 
@@ -389,7 +389,7 @@ submit_news_file(
 
 	a_message_id[0] = '\0';
 
-	fcc = checknadd_headers(name);
+	fcc = checknadd_headers(name, group);
 	FreeIfNeeded(fcc); /* we don't use it at the moment */
 
 	rfc15211522_encode(name, txt_mime_encodings[tinrc.post_mime_encoding], group, tinrc.post_8bit_header, ismail);
@@ -403,7 +403,7 @@ submit_news_file(
 #ifdef M_UNIX
 			/* use tinrc.inews_prog or 'inewsdir/inews -h' 'inews -h' */
 			if (0 != strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
-				strncpy(buf, tinrc.inews_prog, sizeof(buf) - 1);
+				STRCPY(buf, tinrc.inews_prog);
 			else {
 				if (*inewsdir)
 					joinpath(buf, sizeof(buf), inewsdir, "inews -h");

@@ -4,8 +4,13 @@ not read only ,-).
 
 Bugs
 ----
-o  plug mem-leaks in attrib.c and color.c
-   [20071231 Urs Janssen <urs@tin.org>]
+o  col_response is a misnomer as the counter doesn't count responses
+   anymore (except on the very first article). The man-page is outdated too.
+   [20080826 Urs Janssen <urs@tin.org>]
+
+o  'T'ag all parts of multipart message doesn't work (it never did)
+   with thread_arts 4 (multipart) or 5 (percentage)
+   [20080606 Urs Janssen <urs@tin.org>]
 
 !o  -S/-R is broken, ${TIN_HOMEDIR-"$HOME"}/.tin/active.save isn't
 !   created/keept.
@@ -23,18 +28,15 @@ o  cLINES < MIN_LINES_ON_TERMINAL || cCOLS < MIN_COLUMNS_ON_TERMINAL
 o  a wrong username in ~/.newsauth can't be corrected in the first pass
    [20050816 Urs Janssen <urs@tin.org>]
 
+o  a wrong username/password in ~/.newsauth can lead to an endless AUTH-loop
+   when using -A and issuing a wrong username/password in the prompt
+   [20080926 Urs Janssen <urs@tin.org>]
+
 o  unexpected multiline responses confuse tin, e.g.:
    | 240 Article posted =?ISO-8859-1?Q?=3C=3D=3Fiso=2D8859=2D1=3Fq=3F=3F=3D87r7k8na?=
    |   =?ISO-8859-1?Q?vt=2Efsf=40urs=2Did=2Etest=2Eka=2Enu=3E?=
    (the servers response should be a single line (INN 2.2))
    [20050207 Urs Janssen <urs@tin.org>]
-
-o  Changes to int/bool tinrc variables in the Option Menu don't propagate
-   back to the attributes, not even groups with global attributes.
-   This is because the Option-Menu in {group,page}.c doesn't reread the
-   attributes, whereas select.c does. Fix the problem properly in config.c by
-   flashing changes to all affected groups and remove the reread of the
-   attributes file from select.c
 
 o  piping/printing articles grabbles screen
    [20030501 Urs Janssen <urs@tin.org>]
@@ -56,7 +58,9 @@ o  batch mode has several bugs
      tin prompts for username but not for password
    [Urs Janssen <urs@tin.org>]
 
-o  '-s' cmd-line switch implicitly changes 'savedir' in tinrc
+o  '-s' cmd-line switch implicitly changes tinrc.savedir;
+   '-G' cmd-line switch implicitly changes tinrc.getart_limit,
+   but '-a' does not change tinrc.use_color - IMHO '-s'/'-G' behave wrong.
    [Urs Janssen <urs@tin.org>]
    Is -s supposed to affect all save operations? What about attributes?
    Might get away with simply setting glob_attributes->savedir
@@ -81,6 +85,10 @@ o  overview file cacheing code is over-complex
 o  iso2asc conversion is missing for 'internal' strings (e.g. 'M'enu)
    [20020319 Urs Janssen <urs@tin.org>]
 
+o  comments in attributes get lost (we need to do something like we do for
+   the filter file)
+   [20080425 Urs Janssen <urs@tin.org>]
+
 Pager Problems
 --------------
 
@@ -104,6 +112,13 @@ o  mailers other than sendmail (f.e. elm) and use_mailreader_i=OFF may lead
 
 New features
 ------------
+o  add DEFAULT_SIGDASHES_REGEX and related 'M'enu-entry for signature
+   detection in cook.c
+   [20080925 Urs Janssen <urs@tin.org>]
+
+o  give an error message if append_mail() fails (grep TODO post.c)
+   [20080423 Urs Janssen <urs@tin.org>]
+
 o  allow remapping of the 'z' abort-key (lynx style) in wait_for_input().
 
 o  add user defined screen layout at different levels
@@ -112,7 +127,7 @@ o  add user defined screen layout at different levels
 o  add TLS (RFC 4642), NNTPS support
    (<http://www.gnu.org/software/gnutls/>, <http://www.openssl.org/>
     might be useful (but unfortunately we use fputs()/fgets() instead of
-    read()/write() ...);
+    read()/write() - BIO_*() may be usefull);
     "stunnel -c -d 1119 -r news.example.org:563; tin -g localhost -p 1119"
     can be used for NNTPS)
    [20031210 Urs Janssen <urs@tin.org>]
@@ -151,11 +166,10 @@ o  allow bold, underline, italic, ... as colour substitution for
    <nntp://news.tin.org/20020416202232.A4575@bloatware.reston01.va.comcast.net>)
    [20030218 Serge Matveev <sm@cl.spb.ru>]
 
-o  add 'M'enu option to turn on/off slrn '#v+'/'#v-' verbatim mark handling.
-   (and add a verbatim_color; ...)
-   [20060311 Urs Janssen <urs@tin.org>]
-
-o  hierarchical 'M'enu, e.g. put all art_marked_*into a 'submenu', ...
+o  hierarchical 'M'enu, e.g. put all art_marked_*into a 'submenu',
+   restructure/sort 'M'enu items, some disply-options (render BiDi) are
+   currently under expert options, some options in display options are
+   navigation options (catchup thread, use mouse, ...)
    [20020322 Urs Janssen <urs@tin.org>]
 
 o  add a postponed 'browser' (store postponed arts in MH or maildir
@@ -315,6 +329,7 @@ o  Additions to the thread menu:
      'f'  (post a followup) (maybe also 'F', '^W', ...)
      'N'  (next unread article)
      'P'  (previous unread article)
+     'T'  (tag all parts of current multipart-message in order)
      'X'  (mark all unread articles that have not been selected as read)
      ';'  (mark unread arts as hot if >= 1 art in thread is hot)
      '+'  (mark thread as hot)
@@ -335,6 +350,7 @@ o  Add to the 'M'enu:
      'h'  (GLOBAL_HELP)
      'R'  (GLOBAL_BUGREPORT)
      '!'  (GLOBAL_SHELL_ESCAPE)
+     '&'  (GLOBAL_TOGGLE_COLOR)
      and maybe a way to change built in path like DEFAULT_MAILER, PATH_PGP, ...
 
 o  Add to the POST_INFO-level:
@@ -373,10 +389,12 @@ o  add check for libbzip2/zlib (>=1.1.4)/[mini]lzo
    option to write/read {g,b,l}zipped local overviews.
    zlib, libbzip2 and lzo might also be used for post-processing.
 
-o  add check for GPGME (<http://www.gnupg.org/gpgme.html>) and if found
-   use it for pgp actions.
+o  add check for GPGME (<http://www.gnupg.org/related_software/gpgme/>) and if
+   found use it for pgp actions.
 
-o  rewrite/cleanup all the debugging code, the output in /tmp is messy, ...
+o  rewrite/cleanup all the debugging code, the output in /tmp is messy; the
+   on screen output either slows down things dramatically or is unreadable;
+   add timestamps to at least the NNTP-log; split DEBUG_MISC?
 
 Posting enhancements
 --------------------
@@ -458,6 +476,15 @@ o  suppress hide_uue=2 checking unless first line in an article or following
 
 Internal Changes
 ----------------
+o  tinrc.confirm_choice should be written/read as int, not string as users
+   who edit the tinrc manually can't know the exact strings required.
+   unfortunately rc_update() can't handle type changes (rc_update should
+   also get the splitted version number as arg so we can do specific
+   changes).
+   [20081112 Urs Janssen <urs@tin.org>]
+
+o  use read()/write() instead of fputs()/fgets()
+
 o  move serveral (server related) files into the per-server dir
    e.g.:
       ${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}/.news${NNTPSERVER+"-$NNTPSERVER"}/
@@ -503,9 +530,6 @@ o  use new_nntp_command() instead of nntp_command() in the rest of the
 o  replace various occurrence of "US-ASCII" by DEFAULT(_MIME)_CHARSET
    and define that to "US-ASCII" (to make 'updates' easier).
    [20040929 Urs Janssen <urs@tin.org>]
-
-o  add configure option for slrnface
-   [20030506 Urs Janssen <urs@tin.org>]
 
 o  get rid of CURR_GROUP, use t_group instead
    create a global t_group *CURR_GROUP instead of the current macro
@@ -590,14 +614,6 @@ o  rewrite the tag code so that arts[].tagged becomes index in arts[]
    tagged art. Traversing tagged arts becomes much easier & faster.
    [Jason Faultless <jason@altarstone.com>]
 
-o  do real overview.fmt parsing - not only looking for Xref:full
-   [Urs Janssen <urs@tin.org>]
-
-o  if Xref:full is missing from the overview.fmt we end up in issuing a
-   lot of "[X]HDR XREF num" later on instead of doing a "[X]HDR XREF low-high"
-   right after the "[X]OVER low-high" and assing the result to the articles.
-   [20071204 Urs Janssen <urs@tin.org>]
-
 o  strip Xref:-header if saving news in batch mode (-S)?
    [Urs Janssen <urs@tin.org>]
 
@@ -634,9 +650,9 @@ o  make mm_network_charset an "option_list" to avoid junk input or
    undesired (UTF-1, UTF-7, UTF-16*, UTF-32*, UCS-2, UCS-4, ...) encodings.
    add configure check for the hardcoded charsets (try iconv_open(x,
    us-ascii) on each...) and disable those not available.
-   (think about more network charsets (GB2312, Shift_JIS,
-    ISO-8859-6[-{I,E}], ISO-8859-8[-{I,E}]), ISO-8859-11, VISCII, VIQR;
-    check wether KOI8-RU is still used/valid)
+   (think about more network charsets (GB2312, GB18030, Shift_JIS,
+    ISO-8859-6[-{I,E}], ISO-8859-8[-{I,E}], ISO-8859-11, VISCII, VIQR;
+    check wether KOI8-RU is still used/valid))
    [done except configure check 20010907 urs@tin.org]
 
 o  make mm_network_charset an user configurable item list
@@ -663,12 +679,12 @@ Docs/online help
 o  document the different singnals/actions (i.e. SIGUSR2 writes newsrc)
    [20080209 Urs Janssen <urs@tin.org>]
 
-o  exit staus documentation in tzhe manpage isn't correct, we have more
+o  exit staus documentation in the manpage isn't correct, we have more
    exit codes than just 0/1 (and 2 in the -Z case).
    [20080320 Urs Janssen <urs@tin.org>]
 
 o  review the turkish, russian and kinyarwanda translations
-   (tr.po, ru.po, rw.po)
+   (tr.po, ru.po, rw.po); add/finish man-page translation(s).
 
 o  add installation guide (in html)
 
@@ -687,8 +703,22 @@ o  tin.defaults could use more documentation in manpage (tin.5)
 
 o  replace "\\" by "\e" in manpages (portable?)
 
+o  integrate doc/auth.txt into tin.1-manpage
+
 Not yet classified
 ------------------
+o  support $XDG_CONFIG_HOME / $XDG_DATA_HOME?
+   <http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html>
+   [20081010 Urs Janssen <urs@tin.org>]
+
+o  add //IGNORE iconv-option like //TRANSLIT?
+   [20080824 Urs Janssen <urs@tin.org>]
+
+o  what about REDIRECT_OUTPUT? shouldn't we better add this to DEFAULT_PRINTER
+   so ppl. can override it via the 'M'enu? and shouldn't DEFAULT_PRINTER be
+   detected via configure?
+   [20080625 Urs Janssen <urs@tin.org>]
+
 o  create debug output in
    ${TIN_HOMEDIR-"$HOME"}/.tin"}${NNTPSERVER+"/$NNTPSERVER"}
    instead of in $TMPDIR (as it may contain username and password,
@@ -753,7 +783,7 @@ o  inverse_okay's Menu description isn't accurate (invers is also used for
 o  --disable-inverse-video seems to be ignored - do we still need it?
 
 o  move tinrc.defaults for certain comands to a pre-filled .inputhistory?
-   (if so, also move i_key_search_last there)
+   (if so, also move last_search there)
    [Jason Faultless]
 
 o  what about -a cmd-line flag? is this really needed? IMHO this can be
@@ -782,7 +812,7 @@ o  check_article_to_be_posted() still need some cleanup
 
 o  update gettext stuff to > gettext-0.12.1
 
-o  clean up included pcre stuff and update to >= pcre-7.6
+o  clean up included pcre stuff and update to >= pcre-7.8
 
 o  what is with conflicting tinrc settings? should we disallow those, or leave
    it to the user to realise that e.g. strip_blanks=ON && inverse_okay=ON
@@ -815,12 +845,6 @@ o  cleanup main.c/init_selfinfo()
    ('strace -e trace=file tin' and/or 'ltrace -e getenv tin' and you know
     what I mean)
    [fixed some of the double/tripple reads, urs]
-
-o  detect pcre version and add compatibility macros for old versions
-   (interface has changed twice and might do so again)
-   (leafnode comes with a (suboptimal) check)
-   (is this still needed with the configure option for extern pcre?)
-   [Urs Janssen <urs@tin.org>]
 
 o  re add innlib support? (the old one was dropped as the lib has retired
    all (which were not that many) features we used and our code didn't

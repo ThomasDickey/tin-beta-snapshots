@@ -3,10 +3,10 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-03-11
+ *  Updated   : 2008-11-25
  *  Notes     :
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -251,7 +251,7 @@ selection_page(
 				break;
 
 			case GLOBAL_EDIT_FILTER:
-				if (!invoke_editor(filter_file, FILTER_FILE_OFFSET))
+				if (!invoke_editor(filter_file, FILTER_FILE_OFFSET, NULL))
 					break;
 				(void) read_filter_file(filter_file);
 				break;
@@ -343,7 +343,6 @@ selection_page(
 
 			case GLOBAL_OPTION_MENU:
 				change_config_file(NULL);
-				read_attributes_files();
 				show_selection_page();
 				break;
 
@@ -463,7 +462,7 @@ selection_page(
 					if (!prompt_string_default(buf, tinrc.default_post_newsgroups, _(txt_no_newsgroups), HIST_POST_NEWSGROUPS))
 						break;
 					if (group_find(tinrc.default_post_newsgroups, FALSE) == NULL) {
-						error_message(_(txt_not_in_active_file), tinrc.default_post_newsgroups);
+						error_message(2, _(txt_not_in_active_file), tinrc.default_post_newsgroups);
 						break;
 					} else {
 						strcpy(buf, tinrc.default_post_newsgroups);
@@ -930,7 +929,7 @@ reposition_group(
 	 * Can't move into newgroups, they aren't in .newsrc
 	 */
 	if (pos_num <= newgroups) {
-		error_message(_(txt_skipping_newgroups));
+		error_message(2, _(txt_skipping_newgroups));
 		return default_num;
 	}
 

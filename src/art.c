@@ -3,10 +3,10 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-01-10
+ *  Updated   : 2008-11-28
  *  Notes     :
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,7 @@ int top_art = 0;				/* # of articles in arts[] */
 /*
  * Local prototypes
  */
-static FILE *open_art_header(long art, long *next);
+static FILE *open_art_header(char *groupname, long art, long *next);
 static FILE *open_xover_fp(struct t_group *group, const char *mode, long min, long max, t_bool local);
 static char *find_nov_file(struct t_group *group, int mode);
 static char *print_date(time_t secs);
@@ -135,7 +135,7 @@ find_base(
 		if (grpmenu.max >= max_art)
 			expand_art();
 
-		if (group->attribute->show_only_unread) {
+		if (group->attribute->show_only_unread_arts) {
 			if (arts[i].status != ART_READ)
 				base[grpmenu.max++] = i;
 			else {
@@ -215,7 +215,8 @@ setup_hard_base(
 		/*
 		 * Some nntp servers are broken and need an extra GROUP command
 		 * (reported by reorx@irc.pl). This affects (old?) versions of
-		 * nntpcache and leafnode. Usually this should not be needed.
+		 * nntpcache, leafnode and SurgeNews. Usually this should not be
+		 * needed.
 		 */
 		snprintf(buf, sizeof(buf), "GROUP %s", group->name);
 		if (nntp_command(buf, OK_GROUP, NULL, 0) == NULL)
@@ -294,7 +295,7 @@ setup_hard_base(
 		make_base_group_path(group->spooldir, group->name, group_path, sizeof(group_path));
 
 		if (access(group_path, R_OK) != 0) {
-			error_message(_(txt_not_exist));
+			error_message(2, _(txt_not_exist));
 			return -1;
 		}
 
@@ -538,12 +539,14 @@ find_first_unread(
  */
 static FILE *
 open_art_header(
+	char *groupname,
 	long art,
 	long *next)
 {
 	char buf[NNTP_STRLEN];
 #ifdef NNTP_ABLE
 	FILE *fp;
+	int i;
 
 	if (read_news_via_nntp && CURR_GROUP.type == GROUP_TYPE_NEWS) {
 		/*
@@ -562,8 +565,32 @@ open_art_header(
 		 * HEAD failed, try to find NEXT
 		 * Should return "223 artno message-id more text...."
 		 */
-		if (nntp_command("NEXT", OK_NOTEXT, buf, sizeof(buf)))
-			*next = atoi(buf);		/* Set next art number */
+		i = new_nntp_command("NEXT", OK_NOTEXT, buf, sizeof(buf));
+		switch (i) {
+			case OK_NOTEXT:
+				*next = atoi(buf);		/* Set next art number */
+				break;
+
+#	ifndef BROKEN_LISTGROUP
+			/*
+			 * might happen if LISTGROUP doesn't select group, but
+			 * we are not -DBROKEN_LISTGROUP
+			 */
+			case ERR_NCING:
+				snprintf(buf, sizeof(buf), "GROUP %s", groupname);
+				if (nntp_command(buf, OK_GROUP, NULL, 0) == NULL)
+					return NULL;
+				snprintf(buf, sizeof(buf), "HEAD %ld", art);
+				if ((fp = nntp_command(buf, OK_HEAD, NULL, 0)) != NULL)
+					return fp;
+				if (nntp_command("NEXT", OK_NOTEXT, buf, sizeof(buf)))
+					*next = atoi(buf);
+				break;
+#	endif /*! BROKEN_LISTGROUP */
+
+			default:
+				break;
+		}
 
 		return NULL;
 	}
@@ -629,7 +656,7 @@ read_art_headers(
 		/*
 		 * Try and open the article
 		 */
-		if ((fp = open_art_header(art, &head_next)) == NULL)
+		if ((fp = open_art_header(group->name, art, &head_next)) == NULL)
 			continue;
 
 		/*
@@ -652,11 +679,12 @@ read_art_headers(
 
 		if (!res) {
 #ifdef DEBUG
-			char buf[PATH_LEN];
+			if (debug & DEBUG_NNTP) {
+				char buf[PATH_LEN];
 
-			snprintf(buf, sizeof(buf), "FAILED parse_headers(%ld)", art);
-			if (debug & DEBUG_NNTP)
+				snprintf(buf, sizeof(buf), "FAILED parse_headers(%ld)", art);
 				debug_print_file("NNTP", "read_art_headers() %s", buf);
+			}
 #endif /* DEBUG */
 			continue;
 		}
@@ -738,6 +766,7 @@ thread_by_subject(
 #endif /* 0 */
 }
 
+
 /*
  * This Threading algorithm threads articles into 'buckets' where each bucket
  * contains all the articles which match the root article's subject line to
@@ -809,6 +838,7 @@ thread_by_percentage(
 		}
 	}
 }
+
 
 /*
  * This was brought over from tags.c, however this version doesn't not
@@ -1037,12 +1067,12 @@ make_threads(
 	t_bool rethread)
 {
 	if (!cmd_line && !batch_mode)
-		info_message((group->attribute->thread_arts == THREAD_NONE ? _(txt_unthreading_arts) : _(txt_threading_arts)));
+		info_message((group->attribute->thread_articles == THREAD_NONE ? _(txt_unthreading_arts) : _(txt_threading_arts)));
 
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
-		error_message("rethread=[%d]  thread_arts=[%d]  attr_thread_arts=[%d]",
-				rethread, tinrc.thread_articles, group->attribute->thread_arts);
+		error_message(2, "rethread=[%d]  thread_articles=[%d]  attr_thread_articles=[%d]",
+				rethread, tinrc.thread_articles, group->attribute->thread_articles);
 #endif /* DEBUG */
 
 	/*
@@ -1051,7 +1081,7 @@ make_threads(
 	 * on arts[] and so the base messages under all threading systems
 	 * will be sorted in this way.
 	 */
-	sort_arts(group->attribute->sort_art_type);
+	sort_arts(group->attribute->sort_article_type);
 
 	/*
 	 * Reset all the ptrs to articles following the above sort
@@ -1062,7 +1092,7 @@ make_threads(
 	 * The threading pointers need to be reset if re-threading
 	 * If using ref threading, revector the links back to the articles
 	 */
-	if (rethread || group->attribute->thread_arts) {
+	if (rethread || group->attribute->thread_articles) {
 		int i;
 
 		for_each_art(i) {
@@ -1074,14 +1104,15 @@ make_threads(
 			/* Should never happen if tree is built properly */
 			if (arts[i].refptr == 0) {
 #ifdef DEBUG
-				my_fprintf(stderr, "\nError  : art->refptr is NULL\n");
-				my_fprintf(stderr, "Artnum : %ld\n", arts[i].artnum);
-				my_fprintf(stderr, "Subject: %s\n", arts[i].subject);
-				my_fprintf(stderr, "From   : %s\n", arts[i].from);
-				assert(arts[i].refptr != 0);
-#else
-				continue;
+				if (debug & DEBUG_REFS) {
+					my_fprintf(stderr, "\nError  : art->refptr is NULL\n");
+					my_fprintf(stderr, "Artnum : %ld\n", arts[i].artnum);
+					my_fprintf(stderr, "Subject: %s\n", arts[i].subject);
+					my_fprintf(stderr, "From   : %s\n", arts[i].from);
+					assert(arts[i].refptr != 0);
+				} else
 #endif /* DEBUG */
+					continue;
 			}
 			arts[i].refptr->article = i;
 		}
@@ -1090,7 +1121,7 @@ make_threads(
 	/*
 	 * Do the right thing according to the threading strategy
 	 */
-	switch (group->attribute->thread_arts) {
+	switch (group->attribute->thread_articles) {
 		case THREAD_NONE:
 			break;
 
@@ -1315,7 +1346,7 @@ parse_headers(
 
 				/* Received:  If found it's probably a mail article */
 				if (!got_received) {
-					if ((hdr = parse_header(ptr + 1, "eceived", FALSE, FALSE))) {
+					if (parse_header(ptr + 1, "eceived", FALSE, FALSE)) {
 						max_lineno <<= 1;		/* double the max number of line to read for mails */
 						got_received = TRUE;
 					}
@@ -1325,7 +1356,7 @@ parse_headers(
 			case 'S':	/* Subject:  mandatory */
 				if (!h->subject) {
 					if ((hdr = parse_header(ptr + 1, "ubject", FALSE, FALSE)))
-						 h->subject = hash_str(eat_re(eat_tab(convert_to_printable(rfc1522_decode(hdr))), FALSE));
+						h->subject = hash_str(eat_re(eat_tab(convert_to_printable(rfc1522_decode(hdr))), FALSE));
 				}
 				break;
 
@@ -1368,11 +1399,6 @@ parse_headers(
 }
 
 
-#ifdef DEBUG
-#	define handle_overview_fmt_error()	else oerror += 1<<count
-#else
-#	define handle_overview_fmt_error()
-#endif /* DEBUG */
 /*
  * Read in an overview index file. Fields are separated by TAB.
  * return the number of expired articles encountered or -1 if the user aborted
@@ -1402,6 +1428,7 @@ read_overview(
 {
 	FILE *fp;
 	char *ptr;
+	char *q;
 	char *buf;
 	char *group_msg;
 	char art_full_name[HEADER_LEN];
@@ -1410,9 +1437,7 @@ read_overview(
 	int expired = 0;
 	long artnum;
 	struct t_article *art;
-#ifdef DEBUG
-	unsigned int oerror = 0;
-#endif /* DEBUG */
+	size_t over_fields;
 
 	/*
 	 * open the overview file (whether it be local or via nntp)
@@ -1424,6 +1449,31 @@ read_overview(
 		group->xmax = max;
 
 	group_msg = fmt_string(_(txt_group), cCOLS - strlen(_(txt_group)) + 2 - 3, group->name);
+
+	/* get the number of fields per over-record as announced by LIST OVERVIEW.FMT */
+	for (over_fields = 1; ofmt[over_fields].name; over_fields++)
+		;
+	if (!--over_fields) { /* e.g. nntp_caps.type == CAPABILITIES && !nntp_caps.list_overview_fmt -> assume defaults */
+		ofmt = my_realloc(ofmt, sizeof(struct t_overview_fmt) * (8 + 1));
+		ofmt[1].type = OVER_T_STRING;
+		ofmt[1].name = strdup("Subject:");
+		ofmt[2].type = OVER_T_STRING;
+		ofmt[2].name = strdup("From:");
+		ofmt[3].type = OVER_T_STRING;
+		ofmt[3].name = strdup("Date:");
+		ofmt[4].type = OVER_T_STRING;
+		ofmt[4].name = strdup("Message-ID:");
+		ofmt[5].type = OVER_T_STRING;
+		ofmt[5].name = strdup("References:");
+		ofmt[6].type = OVER_T_INT;
+		ofmt[6].name = strdup("Bytes:");
+		ofmt[7].type = OVER_T_INT;
+		ofmt[7].name = strdup("Lines:");
+		ofmt[8].type = OVER_T_ERROR;
+		ofmt[8].name = NULL;
+		over_fields = 7;
+	}
+
 	while ((buf = tin_fgets(fp, FALSE)) != NULL) {
 		if (need_resize) {
 			handle_resize((need_resize == cRedraw) ? TRUE : FALSE);
@@ -1478,81 +1528,223 @@ read_overview(
 		 *       to check for additions like we do with xref_supported
 		 */
 		for (count = 1; (ptr = tin_strtok(NULL, "\t")) != NULL; count++) {
-			switch (count) {
-				case 1:		/* Subject */
-					/*
-					 * TODO: As eat_re() is also called in batch_mode we need
-					 *       to init (all) regexes (but do not use the others).
-					 *       Calling eat_re() isn't very wise at all as we use
-					 *       the modified subject for -N/-M batch opperations
-					 *       so ppl. can't tell from the subject if the posting
-					 *       was a reply or not.
-					 */
-					art->subject = hash_str(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr))), FALSE));
-					break;
-
-				case 2:		/* From */
-					art->gnksa_code = parse_from(ptr, art_from_addr, art_full_name);
-					art->from = hash_str(buffer_to_ascii(art_from_addr));
-
-					if (*art_full_name)
-						art->name = hash_str(eat_tab(convert_to_printable(rfc1522_decode(art_full_name))));
-					break;
-
-				case 3:		/* Date */
-					art->date = parsedate(ptr, (TIMEINFO *) 0);
+			/* skip unexpected tailing fields */
+			if (count > over_fields) {
 #ifdef DEBUG
-					if (art->date == (time_t) -1)
-						oerror += 1<<count;
-#endif /* DEBUG */
-					break;
+				if (debug & DEBUG_NNTP)
+					debug_print_file("NNTP", "OVER(%d) Unexpected overview-field %d of %d: %s", artnum, count, over_fields, ptr);
+#endif	/* DEBUG */
 
-				case 4:		/* Message-ID */
-					if (*ptr)
-						art->msgid = my_strdup(ptr);
-					handle_overview_fmt_error();
-					break;
-
-				case 5:		/* References */
-					if (*ptr)
-						art->refs = my_strdup(ptr);
-					break;
-
-				case 6:		/* Bytes */
+				/* "common error" Xref:full in overview-data but not in OVERVIEW.FTM */
+				if (count == over_fields + 1) {
+					if (!strncasecmp(ptr, "Xref: ", 6)) {
 #ifdef DEBUG
-					if (!isdigit((unsigned char) *ptr))
-						oerror += 1<<count;
-#endif /* DEBUG */
-					break;
-
-				case 7:		/* Lines */
-					if (isdigit((unsigned char) *ptr))
-						art->line_count = atoi(ptr);
-					handle_overview_fmt_error();
-					break;
-
-				case 8:		/* Xref: */
-					if (!xref_supported)
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "OVER: found unexpected Xref: on semi std. position");
+#endif  /* DEBUG */
+						over_fields++;
+						ofmt = my_realloc(ofmt, sizeof(struct t_overview_fmt) * (over_fields + 2)); /* + 2 = artnum and end-marker */
+						ofmt[over_fields].type = OVER_T_FSTRING;
+						ofmt[over_fields].name = my_strdup("Xref:");
+						ofmt[over_fields + 1].type = OVER_T_ERROR;
+						ofmt[over_fields + 1].name = NULL;
+						xref_supported = TRUE;
+					} else
 						continue;
-					/* TODO: crosscheck artnum against Xref:-line (if Xref:full) */
-					if ((ptr = parse_header(ptr, "Xref", FALSE, FALSE)) != NULL)
-						art->xref = my_strdup(ptr);
-					handle_overview_fmt_error();
-					break;
+				} else
+					continue;
+			}
+
+			if (expensive_over_parse) { /* strange order */
+				/* madatory fields */
+				if (ofmt[count].type == OVER_T_STRING) {
+					if (!strcasecmp(ofmt[count].name, "Subject:")) {
+						if (*ptr)
+							art->subject = hash_str(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr))), FALSE));
+						else {
+							art->subject = hash_str("");
+#ifdef DEBUG
+							if (debug & DEBUG_NNTP)
+								debug_print_file("NNTP", "OVER(%d) empty overview-field %s", artnum, ofmt[count].name);
+#endif /* DEBUG */
+						}
+						continue;
+					}
+
+					if (!strcasecmp(ofmt[count].name, "From:")) {
+						if (*ptr) {
+							art->gnksa_code = parse_from(ptr, art_from_addr, art_full_name);
+							art->from = hash_str(buffer_to_ascii(art_from_addr));
+							if (*art_full_name)
+								art->name = hash_str(eat_tab(convert_to_printable(rfc1522_decode(art_full_name))));
+						} else {
+							art->from = hash_str("");
+#ifdef DEBUG
+							if (debug & DEBUG_NNTP)
+								debug_print_file("NNTP", "OVER(%d) empty overview-field %s", artnum, ofmt[count].name);
+#endif /* DEBUG */
+						}
+						continue;
+					}
+
+					if (!strcasecmp(ofmt[count].name, "Date:")) {
+						art->date = parsedate(ptr, (TIMEINFO *) 0);
+#ifdef DEBUG
+						if ((debug & DEBUG_NNTP) && art->date == (time_t) -1)
+							debug_print_file("NNTP", "OVER(%d) bogus overview-field %s %s", artnum, ofmt[count].name, ptr);
+#endif /* DEBUG */
+						continue;
+					}
+
+					if (!strcasecmp(ofmt[count].name, "Message-ID:")) {
+						if (*ptr)
+							art->msgid = my_strdup(ptr);
+						else {
+							art->msgid = NULL;
+#ifdef DEBUG
+							if (debug & DEBUG_NNTP)
+								debug_print_file("NNTP", "OVER(%d) empty overview-field %s", artnum, ofmt[count].name);
+#endif /* DEBUG */
+						}
+						continue;
+					}
+
+					if (!strcasecmp(ofmt[count].name, "References:")) {
+						if (*ptr)
+							art->refs = my_strdup(ptr);
+						else
+							art->refs = NULL;
+						continue;
+					}
+				}
+				/* metadata fiels */
+				if (ofmt[count].type == OVER_T_INT) {
+					if (!strcasecmp(ofmt[count].name, "Bytes:")) {
+						if (*ptr) {
+#ifdef DEBUG
+							if ((debug & DEBUG_NNTP) && !isdigit((unsigned char) *ptr))
+									debug_print_file("NNTP", "OVER(%d) overview field %d (%s) missmatch: %s", artnum, count, ofmt[count].name, ptr);
+#endif /* DEBUG */
+						}
+						continue;
+					}
+
+					if (!strcasecmp(ofmt[count].name, "Lines:")) {
+						if (*ptr) {
+							if (isdigit((unsigned char) *ptr))
+								art->line_count = atoi(ptr);
+							else {
+								art->line_count = 0;
+#ifdef DEBUG
+								if (debug & DEBUG_NNTP)
+									debug_print_file("NNTP", "OVER(%d) overview field %d (%s) missmatch: %s", artnum, count, ofmt[count].name, ptr);
+#endif /* DEBUG */
+							}
+						} else
+							art->line_count = 0;
+						continue;
+					}
+				}
+			} else { /* first 7 fields are in RFC 3977 order */
+				switch(count) {
+					case 1: /* Subject: */
+						if (*ptr)
+							art->subject = hash_str(eat_re(eat_tab(convert_to_printable(rfc1522_decode(ptr))), FALSE));
+						else {
+							art->subject = hash_str("");
+#ifdef DEBUG
+							if (debug & DEBUG_NNTP)
+								debug_print_file("NNTP", "OVER(%d) empty overview-field %s", artnum, ofmt[count].name);
+#endif /* DEBUG */
+						}
+						break;
+
+					case 2:	/* From: */
+						if (*ptr) {
+							art->gnksa_code = parse_from(ptr, art_from_addr, art_full_name);
+							art->from = hash_str(buffer_to_ascii(art_from_addr));
+							if (*art_full_name)
+								art->name = hash_str(eat_tab(convert_to_printable(rfc1522_decode(art_full_name))));
+						} else {
+							art->from = hash_str("");
+#ifdef DEBUG
+							if (debug & DEBUG_NNTP)
+								debug_print_file("NNTP", "OVER(%d) empty overview-field %s", artnum, ofmt[count].name);
+#endif /* DEBUG */
+						}
+						break;
+
+					case 3:	/* Date: */
+						art->date = parsedate(ptr, (TIMEINFO *) 0);
+#ifdef DEBUG
+						if ((debug & DEBUG_NNTP) && art->date == (time_t) -1)
+							debug_print_file("NNTP", "OVER(%d) bogus overview-field %s %s", artnum, ofmt[count].name, ptr);
+#endif /* DEBUG */
+						break;
+
+					case 4:	/* Message-ID: */
+						if (*ptr)
+							art->msgid = my_strdup(ptr);
+						else {
+							art->msgid = NULL;
+#ifdef DEBUG
+							if (debug & DEBUG_NNTP)
+								debug_print_file("NNTP", "OVER(%d) empty overview-field %s", artnum, ofmt[count].name);
+#endif /* DEBUG */
+						}
+						break;
+
+					case 5:	/* References: */
+						if (*ptr)
+							art->refs = my_strdup(ptr);
+						else
+							art->refs = NULL;
+						break;
+
+					case 6:	/* :bytes || Bytes: */
+						if (*ptr) {
+#ifdef DEBUG
+							if ((debug & DEBUG_NNTP) && !isdigit((unsigned char) *ptr))
+								debug_print_file("NNTP", "OVER(%d) overview field %d (%s) missmatch: %s", artnum, count, ofmt[count].name, ptr);
+#endif /* DEBUG */
+						}
+						break;
+
+					case 7:	/* :lines || Lines: */
+						if (*ptr) {
+							if (isdigit((unsigned char) *ptr))
+								art->line_count = atoi(ptr);
+							else {
+								art->line_count = 0;
+#ifdef DEBUG
+								if (debug & DEBUG_NNTP)
+									debug_print_file("NNTP", "OVER(%d) overview field %d (%s) missmatch: %s", artnum, count, ofmt[count].name, ptr);
+#endif /* DEBUG */
+							}
+						} else
+							art->line_count = 0;
+						break;
+
+					default:
+						break;
+				}
+			}
+
+			/* optional fields */
+			if (ofmt[count].type == OVER_T_FSTRING) {
+				if (!strcasecmp(ofmt[count].name, "Xref:")) {
+					if ((q = parse_header(ptr, "Xref", FALSE, FALSE)) != NULL)
+						art->xref = my_strdup(q);
+#ifdef DEBUG
+					else {
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "OVER(%d) bogus overview-field %s %s", artnum, ofmt[count].name, ptr);
+					}
+#endif /* DEBUG */
+				}
+				continue;
 			}
 		}
-
-#ifdef DEBUG
-		/* Complain if incorrect # of fields */
-		if (count < (xref_supported ? 8 : 7) || oerror) {
-			if (debug & DEBUG_MISC)
-				error_message(_("%d Bad overview record (%d fields) '%s'"), oerror, count, BlankIfNull(ptr)); /* TODO move to lang.c */
-			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "read_overview() %d Bad overview record (%d fields)", oerror, count);
-		}
-		debug_print_header(art);
-		oerror = 0;
-#endif /* DEBUG */
 
 		/*
 		 * RFC says Message-ID is mandatory in newsgroups (but not in
@@ -1568,12 +1760,78 @@ read_overview(
 
 		top_art++;				/* Basically this statement commits the article */
 	}
-	free(group_msg);
 
+	free(group_msg);
 	TIN_FCLOSE(fp);
 
 	if (tin_errno)
 		return -1;
+
+#if defined(NNTP_ABLE) && defined(XHDR_XREF)
+	if (read_news_via_nntp && !read_saved_news && !xref_supported && nntp_caps.hdr_cmd) {
+		char cbuf[HEADER_LEN];
+		static t_bool found;
+		static t_bool first = TRUE;
+
+		if (first) {
+			found = TRUE;
+			/*
+			 * TODO: do once a start and cache full result
+			 *       if "LIST HEADERS RANGE" failed try "LIST HEADERS"?
+			 */
+			if (nntp_caps.type == CAPABILITIES && nntp_caps.list_headers) {
+				int i = new_nntp_command("LIST HEADERS RANGE", 215, cbuf, sizeof(cbuf));
+
+				found = FALSE;
+				switch (i) {
+					case 215:
+						while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+#	ifdef DEBUG
+							if (debug & DEBUG_NNTP)
+								debug_print_file("NNTP", "<<< %s", ptr);
+#	endif /* DEBUG */
+							if (!found && ((*ptr == ':' && *(ptr + 1) == '\0') || !strncasecmp(ptr, "Xref", 4)))
+								found = TRUE;
+						}
+						break;
+
+					default:
+						break;
+				}
+				first = FALSE;
+			}
+		}
+
+		if (found) {
+			snprintf(cbuf, sizeof(cbuf), "%s XREF %ld-%ld", nntp_caps.hdr_cmd, min, max);
+			group_msg = fmt_string("%s XREF loop", nntp_caps.hdr_cmd); /* TODO: find a better message, move to lang.c */
+			if ((fp = nntp_command(cbuf, OK_HEAD, NULL, 0)) != NULL) {
+				while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+					artnum = atol(ptr);
+					if (artnum <= 0 || artnum < group->xmin || artnum > group->xmax)
+						continue;
+					art = &arts[top_art];
+					set_article(art);
+					if (!art->xref && !strstr(ptr, "(none)")) {
+						if ((q = strchr(ptr, ' ')) == NULL) /* skip article number */
+							continue;
+						ptr = q;
+						while (*ptr && isspace((int) *ptr))
+							ptr++;
+						q = strchr(ptr, '\n');
+						if (q)
+							*q = '\0';
+						art->xref = my_strdup(ptr);
+					}
+					/* we might loose accuracy here, but that shouldn't hurt */
+					if (artnum % MODULO_COUNT_NUM == 0)
+						show_progress(group_msg, artnum - min, max - min);
+				}
+			}
+			free(group_msg);
+		}
+	}
+#endif /* NNTP_ABLE && XHDR_XREF */
 
 	return expired;
 }
@@ -1628,7 +1886,7 @@ write_overview(
 	if ((fp = open_xover_fp(group, "w", 0L, 0L, FALSE)) == NULL)
 		return;
 
-	if (group->attribute->sort_art_type != SORT_ARTICLES_BY_NOTHING)
+	if (group->attribute->sort_article_type != SORT_ARTICLES_BY_NOTHING)
 		SortBy(artnum_comp);
 
 	/*
@@ -2170,7 +2428,7 @@ score_comp_base(
 	if (a == b) {
 		const struct t_article *s1 = &arts[*(const long *)p1];
 		const struct t_article *s2 = &arts[*(const long *)p2];
-		t_compfunc comp_func = eval_sort_arts_func(CURR_GROUP.attribute->sort_art_type);
+		t_compfunc comp_func = eval_sort_arts_func(CURR_GROUP.attribute->sort_article_type);
 
 		if (comp_func)
 			return (*comp_func)(s1, s2);
@@ -2382,7 +2640,7 @@ open_xover_fp(
 				return fp;
 
 			if (*mode != 'r')
-				error_message(_(txt_cannot_open), nov_file);
+				error_message(2, _(txt_cannot_open), nov_file);
 		}
 	}
 	return NULL;

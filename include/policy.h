@@ -3,10 +3,10 @@
  *  Module    : policy.h
  *  Author    : Ralf Doeblitz <doeblitz@gmx.de>
  *  Created   : 1999-01-12
- *  Updated   : 2007-09-29
+ *  Updated   : 2008-04-23
  *  Notes     : #defines and static data for policy configuration
  *
- * Copyright (c) 1999-2008 Ralf Doeblitz <doeblitz@gmx.de>
+ * Copyright (c) 1999-2009 Ralf Doeblitz <doeblitz@gmx.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -115,6 +115,7 @@
  * .ke  Kenya                          .kg  Kyrgystan
  * .kh  Cambodia                       .ki  Kiribati
  * .km  Comoros                        .kn  Saint Kitts and Nevis
+ * .kp  Korea, Democratic People's Republic
  * .kr  Korea, Republic of             .kw  Kuwait
  * .ky  Cayman Islands                 .kz  Kazakhstan
  *
@@ -204,6 +205,7 @@
  * .cs  former Czechoslovakia, now .cz and .sk
  * .dd  former German Democratic Republic, now .de
  * .fx  France, Metropolitan
+ * .um  United States Minor Outlying Islands
  * .yd  Democratic Yemen, now .ye
  * .wg  West Bank and Gaza, now .ps
  * .zr  former Zaire, now .cd
@@ -215,11 +217,9 @@
  * .bv  Bouvet Island (Norway)
  * .eh  Western Sahara
  * .gb  United Kingdom, use .uk
- * .kp  Korea, Democratic People's Republic
  * .nt  Neutral Zone
  * .sj  Svalbard and Jan Mayen Islands (Norway)
  * .so  Somalia
- * .um  United States Minor Outlying Islands
  *
  * requested new TLDs:
  * .ct  Catalonia
@@ -243,7 +243,7 @@ static char gnksa_country_codes[26*26] = {
 /* H */ 0,0,0,0,0, 0,0,0,0,0, 1,0,1,1,0, 0,0,1,0,1, 1,0,0,0,0,0,
 /* I */ 0,0,0,1,1, 0,0,0,0,0, 0,1,1,1,1, 0,1,1,1,1, 0,0,0,0,0,0,
 /* J */ 0,0,0,0,1, 0,0,0,0,0, 0,0,1,0,1, 1,0,0,0,0, 0,0,0,0,0,0,
-/* K */ 0,0,0,0,1, 0,1,1,1,0, 0,0,1,1,0, 0,0,1,0,0, 0,0,1,0,1,1,
+/* K */ 0,0,0,0,1, 0,1,1,1,0, 0,0,1,1,0, 1,0,1,0,0, 0,0,1,0,1,1,
 /* L */ 1,1,1,0,0, 0,0,0,1,0, 1,0,0,0,0, 0,0,1,1,1, 1,1,0,0,1,0,
 /* M */ 1,0,1,1,1, 0,1,1,0,0, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1,1,
 /* N */ 1,0,1,0,1, 1,1,0,1,0, 0,1,0,0,1, 1,0,1,0,0, 1,0,0,0,0,1,

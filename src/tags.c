@@ -3,10 +3,10 @@
  *  Module    : tags.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-06
- *  Updated   : 2007-10-04
+ *  Updated   : 2008-11-22
  *  Notes     : Split out from other modules
  *
- * Copyright (c) 1999-2008 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2009 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -253,7 +253,7 @@ line_is_tagged(
 {
 	int code = 0;
 
-	if (curr_group->attribute->thread_arts) {
+	if (curr_group->attribute->thread_articles) {
 		int i;
 		for (i = n; i >= 0; i = arts[i].thread) {
 			if (arts[i].tagged > code)
@@ -379,7 +379,7 @@ set_range(
 	}
 
 #if 0
-	error_message("Min=[%d] Max=[%d] Cur=[%d] DefRng=[%s]", min, max, curr, range);
+	error_message(2, "Min=[%d] Max=[%d] Cur=[%d] DefRng=[%s]", min, max, curr, range);
 #endif /* 0 */
 	prompt = fmt_string(_(txt_enter_range), range);
 
@@ -531,7 +531,7 @@ do_auto_select_arts(
 			arts[i].zombie = TRUE;
 		}
 	}
-	if (curr_group->attribute->show_only_unread)
+	if (curr_group->attribute->show_only_unread_arts)
 		find_base(curr_group);
 
 	grpmenu.curr = 0;
@@ -556,7 +556,7 @@ undo_auto_select_arts(
 			arts[i].zombie = FALSE;
 		}
 	}
-	if (curr_group->attribute->show_only_unread)
+	if (curr_group->attribute->show_only_unread_arts)
 		find_base(curr_group);
 
 	grpmenu.curr = 0;	/* do we want this? */

@@ -1,15 +1,15 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2007-09-24
+# Updated: 2008-08-19
 #
 
 PROJECT	= tin
 LVER	= 1
 PVER	= 9
-SVER	= 3
+SVER	= 4
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20080326
+DVER	= 20081230
 EXE	= tin
 
 # directory structure
@@ -23,6 +23,7 @@ CANDIR	= ./libcanlock
 TOLDIR	= ./tools
 PODIR	= ./po
 INTLDIR	= ./intl
+L10NDIR	= ./doc/l10n
 
 HFILES	= \
 	$(INCDIR)/bool.h \
@@ -195,6 +196,7 @@ PCRE	= \
 	$(PCREDIR)/RunTest.in \
 	$(PCREDIR)/config.h \
 	$(PCREDIR)/configure.in \
+	$(PCREDIR)/version.sh \
 	$(PCREDIR)/dftables.c \
 	$(PCREDIR)/pcre-config.in \
 	$(PCREDIR)/pcre.h \
@@ -326,10 +328,17 @@ POFILES = \
 	$(PODIR)/tr.gmo \
 	$(PODIR)/tr.po
 
+L10NFILES = \
+	$(L10NDIR)/de/tin.1 \
+	$(L10NDIR)/de/tin.5 \
+	$(L10NDIR)/de.add \
+	$(L10NDIR)/de.po \
+	$(L10NDIR)/po4a.conf \
+	$(L10NDIR)/tin-man.pot
 
-ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(PCRE) $(MISC) $(CAN) $(INTLFILES) $(POFILES)
+ALL_FILES = $(TOP) $(DOC) $(TOL) $(HFILES) $(CFILES) $(PCRE) $(MISC) $(CAN) $(INTLFILES) $(POFILES) $(L10NFILES)
 
-ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(INTLDIR) $(PODIR)
+ALL_DIRS = $(TOPDIR) $(DOCDIR) $(SRCDIR) $(INCDIR) $(PCREDIR) $(PCREDIR)/doc $(PCREDIR)/testdata $(CANDIR) $(INTLDIR) $(PODIR) $(L10NDIR) $(L10NDIR)/de
 
 # standard commands
 CD	= cd
@@ -429,7 +438,8 @@ chmod:
 	$(TOLDIR)/url_handler.pl \
 	$(TOLDIR)/url_handler.sh \
 	$(TOLDIR)/w2r.pl \
-	$(PCREDIR)/perltest
+	$(PCREDIR)/perltest \
+	$(PCREDIR)/version.sh
 
 tar:
 	@$(ECHO) "Generating gzipped tar file..."
@@ -506,3 +516,6 @@ configure: configure.in aclocal.m4
 
 config.status: configure
 	$(TOPDIR)/config.status --recheck
+
+po4a:
+	@$(CD) $(L10NDIR) && po4a --no-backups --rm-backups po4a.conf

@@ -2,21 +2,11 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2007-12-21
+.\" Updated   : 2008-12-02
 .\" Notes     : needs a some work
 .\"
-.\" Macros
-.de Vb \" Begin verbatim text
-.ft CW
-.nf
-.ne \\$1
-..
-.de Ve \" End verbatim text
-.ft R
-.fi
-..
 .\"
-.TH tin 5 "October 13th, 2007" "1.9.3" "A Usenet newsreader"
+.TH tin 5 "June 25th, 2008" "1.9.4" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -25,7 +15,7 @@ tin, rtin \- related files
 This manpage describes the various (config) files and their formats used by
 the
 .BR tin (1)
-newsreader.
+newsreader. All files are expteced to have unix style ('\\n' aka LF) line endings.
 
 .SH FILES
 .\" TODO: mention
@@ -246,10 +236,12 @@ mime type / filename extension pairs
 .IR ${TIN_HOMEDIR:\-"$HOME"}/.newsauth
 .sp
 .RS
-"\fInntpserver\fR \fIpassword\fR [\fIuser\fR]" pairs for NNTP servers
-that require authorization. Any line that starts with "#" is a comment.
-Blank lines are ignored. This file should be readable only for the user as
-it contains the users uncrypted password for reading news!
+"\fInntpserver\fR \fIpassword\fR [\fIuser\fR]" pairs for NNTP servers that
+require authorization. If the password contains a space or a tab it must be
+enclosed in doublequotes ("). Usernames must not be enclosed in doublequotes
+and thus can't contain spaces or tabs. Any line that starts with "#" is a
+comment. Blank lines are ignored. This file should be readable only for the
+user as it contains the users uncrypted password for reading news!
 .TP
 .B nntpserver
 full qualified domain name of the newsserver.
@@ -258,16 +250,18 @@ full qualified domain name of the newsserver.
 users uncrypted password for reading news.
 .TP
 .B user
-username on the newsserver if it differs from the local login. this field is
+username on the newsserver if it differs from the local login. This field is
 optional.
 .TP
 Example:
 .RS
 # sample .newsauth file
 .br
-news.example.org  example
+news.example.org  secret
 .br
-news.example.net  news      guest
+news.example.net  arcane  guest
+.br
+news.example.com  "top secret"  james.bond
 .RE
 .RE
 .PP
@@ -409,17 +403,39 @@ The group attributes files may be used to override some global settings from
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/tinrc\fR on a per group basis. Order is
 important as last match counts; this allows to refine attributes for
 narrowed scopes. Note that the \fIscope=<grouplist>\fR line has to be
-specified before the attributes are specified for that list. All attributes
-are set to a reasonable default so you only have to specify the attribute
-that you want to change. All toggle attributes are set by specifying ON/OFF.
-Otherwise, they function exactly as their global equivalents. The following
-group attributes are available:
+specified before the attributes are specified for that list and each
+attribute can only be set once per scope section. All attributes are set to
+a reasonable default so you only have to specify the attribute that you want
+to change. All toggle attributes are set by specifying ON/OFF. Otherwise,
+they function exactly as their global equivalents. The following group
+attributes are available:
 .TP
 .B scope
 This changes the list of groups to which the attributes that follow will be
 applied. See the section NEWSGROUP LISTS & WILDCARDS in
 .BR tin (1)
 for the types of pattern that can be used here.
+.TP
+.B add_posted_to_filter
+Identical to the tinrc variable of the same name
+.TP
+.B advertising
+Identical to the tinrc variable of the same name
+.TP
+.B alternative_handling
+Identical to the tinrc variable of the same name
+.TP
+.B ask_for_metamail
+Identical to the tinrc variable of the same name
+.TP
+.B auto_bcc
+Identical to the tinrc variable of the same name
+.TP
+.B auto_cc
+Identical to the tinrc variable of the same name
+.TP
+.B auto_list_thread
+Identical to the tinrc variable of the same name
 .TP
 .B auto_save
 Identical to the tinrc variable of the same name
@@ -434,12 +450,18 @@ per group basis. For more information read section AUTOMATIC MAILING AND
 SAVING NEW NEWS in
 .BR tin (1).
 .TP
+.B date_format
+Identical to the tinrc variable of the same name
+.TP
 .B delete_tmp_files
 If this is set to ON, then saved article files that have been
 post-processed will be automatically deleted, otherwise the user will
 be asked whether to delete the post-processed files. Automatic
 processing of marked articles using \fBGroupAutoSave\fP
 ('\fBS\fP') will suppress prompting.
+.TP
+.B editor_format
+Identical to the tinrc variable of the same name
 .TP
 .B fcc
 Mailbox to save sent mails. The format of the mailbox is controlled
@@ -451,12 +473,21 @@ Set ''Followup\-To:''-header to the specified group(s).
 .B from
 Identical to the tinrc variable \fBmail_address\fP
 .TP
+.B group_catchup_on_exit
+Identical to the tinrc variable of the same name
+.TP
 .B maildir
-Identical to the tinrc variable \fBdefault_maildir\fP
+Identical to the tinrc variable of the same name
 .TP
 .B mailing_list
 Used when a group is a mailing list. All responses to the group will be
 directed to this email address instead
+.TP
+.B mark_ignore_tags
+Identical to the tinrc variable of the same name
+.TP
+.B mark_saved_unread
+Identical to the tinrc variable of the same name
 .TP
 .B mime_forward
 Determines whether usenet articles are forwarded as attachment or
@@ -482,6 +513,12 @@ A single * can be used to wildcard the major and/or minor type and
 a ! as the first character in an entry will negate it, eg:
 image/*,!image/bmp,!text/html. Default is */*
 .TP
+.B news_headers_to_display
+Identical to the tinrc variable of the same name
+.TP
+.B news_headers_to_not_display
+Identical to the tinrc variable of the same name
+.TP
 .B news_quote_format
 Identical to the tinrc variable of the same name
 .TP
@@ -492,14 +529,29 @@ overrides the setting (if any) of organization in
 Apollo DomainOS). Note that some newsserver might still overwrite the
 \&''Organization:''-header.
 .TP
-.B post_proc_type
-Identical to the tinrc variable \fBpost_process_type\fP
+.B pos_first_unread
+Identical to the tinrc variable of the same name
+.TP
+.B post_process_type
+Identical to the tinrc variable of the same name
+.TP
+.B post_process_view
+Identical to the tinrc variable of the same name
+.TP
+.B print_header
+Identical to the tinrc variable of the same name
+.TP
+.B process_only_unread
+Identical to the tinrc variable of the same name
+.TP
+.B prompt_followupto
+Identical to the tinrc variable of the same name
 .TP
 .B quote_chars
 Identical to the tinrc variable of the same name
 .TP
 .B savedir
-Identical to the tinrc variable \fBdefault_savedir\fP
+Identical to the tinrc variable of the same name
 .TP
 .\" TODO: document option
 .B savefile
@@ -510,26 +562,50 @@ Identical to the tinrc variable of the same name
 .B show_info
 Identical to the tinrc variable of the same name
 .TP
-.B show_only_unread
+.B show_only_unread_arts
+Identical to the tinrc variable of the same name
+.TP
+.B show_signatures
+Identical to the tinrc variable of the same name
+.TP
+.B sigdashes
 Identical to the tinrc variable of the same name
 .TP
 .B sigfile
-Identical to the tinrc variable \fBdefault_sigfile\fP
+Identical to the tinrc variable of the same name
 .TP
-.B sort_art_type
+.B signature_repost
+Identical to the tinrc variable of the same name
+.TP
+.B sort_article_type
 Identical to the tinrc variable \fBsort_article_type\fP
 .TP
 .B sort_threads_type
 Identical to the tinrc variable of the same name
 .TP
+.B start_editor_offset
+Identical to the tinrc variable of the same name
+.TP
 .B tex2iso_conv
 Identical to the tinrc variable of the same name
 .TP
-.B thread_arts
-Identical to the tinrc variable \fBthread_articles\fP
+.B thread_articles
+Identical to the tinrc variable of the same name
+.TP
+.B thread_catchup_on_exit
+Identical to the tinrc variable of the same name
 .TP
 .B thread_perc
-Identical to the tinrc variable \fBthread_perc\fP
+Identical to the tinrc variable of the same name
+.TP
+.B trim_article_body
+Identical to the tinrc variable of the same name
+.TP
+.B verbatim_handling
+Identical to the tinrc variable of the same name
+.TP
+.B wrap_on_next_unread
+Identical to the tinrc variable of the same name
 .TP
 .B x_body
 A piece of text that will be added at the start of a message body. If this
@@ -606,12 +682,12 @@ undeclared_charset=ISO\-8859\-1
 
 # in *sources* set post process type to shar only
 scope=*sources*
-post_proc_type=1
+post_process_type=1
 
 # in *binaries* turn on full post processing,
 # remove tmp files and set Followup\-To: poster
 scope=*binaries*
-post_proc_type=2
+post_process_type=2
 delete_tmp_files=ON
 followup_to=poster
 
@@ -965,7 +1041,7 @@ Example:
 .br
 news.tin.org .newsrc\-tin.org tinorg
 .br
-news.ka.nu /tmp/nrc\-nu kanu nu
+news.example.org /tmp/nrc\-ex example ex
 .RE
 .RE
 .PP
@@ -1208,6 +1284,9 @@ Color of signatures
 .B col_urls
 Color of urls highlight
 .TP
+.B col_verbatim
+Color of verbatim blocks
+.TP
 .B col_subject
 Color of article subject
 .TP
@@ -1255,11 +1334,6 @@ Default is "%a, %d %b %Y %H:%M:%S".
 .TP
 .B default_config_search
 The last article/author/config option that was searched for.
-.TP
-.B default_editor_format
-The format string used to create the editor start command with parameters.
-Default is '%E +%N %F' (e.g., /bin/vi +7 .article).
-.\" TODO: document %E, %F, %N
 .TP
 .B default_filter_days
 Default is 28.
@@ -1322,35 +1396,6 @@ Default for quick (1 key) auto-selection filter header.
 .TP
 .B default_mail_address
 .TP
-.B default_maildir
-The directory where articles/threads are to be saved in
-.BR mbox (5)
-format. This feature is mainly for use with the
-.BR elm (1)
-mail program. It allows the user to save articles/threads/groups simply
-by giving '=' as the filename to save to. Default is
-\fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fR.
-.TP
-.B default_mailer_format
-The format string used to create the mailer command with parameters that is
-used for mailing articles to other people. Default is '%M "%T" < %F' (e.g.,
-/bin/mail "iain" < .article). The flexible format allows other mailers with
-different command line parameters to be used such as 'elm \-s "%S" "%T" <
-"%F"' (e.g., elm \-s "subject" "iain" < .article) or 'sendmail \-oem \-t < %F'
-(e.g. sendmail \-oem \-t < .article). The following substitutions are
-supported:
-.in +.3i
-.nf
-.ta \w'%S'u +\w'subject-field'u
-%F	filename
-%M	default_mailer
-%S	subject-field
-%T	to-filed
-%U	username
-%%	%
-.fi
-.in -.3i
-.TP
 .B default_move_group
 .TP
 .B default_pattern
@@ -1360,16 +1405,6 @@ supported:
 .B default_post_newsgroups
 .TP
 .B default_post_subject
-.TP
-.B default_printer
-The printer program with options that is to be used to print articles. The
-default is
-.BR lpr (1)
-for BSD machines and
-.BR lp (1)
-for SysV machines. Printing from
-.BR tin (1)
-may have been disabled by the System Administrator.
 .TP
 .B default_range_group
 .TP
@@ -1383,30 +1418,20 @@ may have been disabled by the System Administrator.
 .TP
 .B default_save_mode
 .TP
-.B default_savedir
-Directory where articles/threads are saved. Default is
-\fI${TIN_HOMEDIR:\-"$HOME"}/News\fR.
-.TP
 .B default_select_pattern
 .TP
 .B default_shell_command
-.TP
-.B default_sigfile
-The path that specifies the signature file to use when posting, following
-up to or replying to an article. If the path is a directory then the
-signature will be randomly generated from files that are in the specified
-directory. If the path starts with a ! the program the path points to will
-be executed to generate a signature.
-.BR tin (1)
-will pass the name of the current newsgroup as argument to the
-program. \-\-none will suppress any signature.
-Default is \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fR.
 .TP
 .B default_subject_search
 .TP
 .B draw_arrow
 Allows groups/articles to be selected by an arrow '\->' if set ON or by an
 highlighted bar if set OFF.
+.TP
+.B editor_format
+The format string used to create the editor start command with parameters.
+Default is '%E +%N %F' with %E=Editor, %N=Linenumber and %F=Filename
+(e.g., /bin/vi +7 .article).
 .TP
 .B force_screen_redraw
 Specifies whether a screen redraw should always be done after certain
@@ -1461,7 +1486,7 @@ available to display long subjects. Default is OFF.
 If greater than 0 your mailreader will be invoked earlier for reply so you can
 use more of its features (e.g. MIME, pgp, ...). 1 means include headers, 2
 means don't include headers (old use_mailreader_i=ON option). 0 turns off
-usage. This option has to suit \fBdefault_mailer_format\fP. Default is 0.
+usage. This option has to suit \fBmailer_format\fP. Default is 0.
 .TP
 .B inverse_okay
 If ON use inverse video for page headers and URL highlighting.
@@ -1523,6 +1548,35 @@ MBOXRD or MMDF (default on SCO). See
 for more details on MBOXO and MBOXRD and
 .BR mmdf (5)
 for more details about MMDF.
+.TP
+.B maildir
+The directory where articles/threads are to be saved in
+.BR mbox (5)
+format. This feature is mainly for use with the
+.BR elm (1)
+mail program. It allows the user to save articles/threads/groups simply
+by giving '=' as the filename to save to. Default is
+\fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fR.
+.TP
+.B mailer_format
+The format string used to create the mailer command with parameters that is
+used for mailing articles to other people. Default is '%M "%T" < %F' (e.g.,
+/bin/mail "iain" < .article). The flexible format allows other mailers with
+different command line parameters to be used such as 'elm \-s "%S" "%T" <
+"%F"' (e.g., elm \-s "subject" "iain" < .article) or 'sendmail \-oem \-t < %F'
+(e.g. sendmail \-oem \-t < .article). The following substitutions are
+supported:
+.in +.3i
+.nf
+.ta \w'%S'u +\w'subject-field'u
+%F	filename
+%M	default_mailer
+%S	subject-field
+%T	to-filed
+%U	username
+%%	%
+.fi
+.in -.3i
 .TP
 .B mark_saved_read
 If ON mark articles that are saved as read. Default is ON.
@@ -1700,6 +1754,16 @@ Default is 'posted'.
 If ON, then the full article header is sent to the printer. Otherwise only
 the ''Subject:'' and ''From:'' fields are output. Default is OFF.
 .TP
+.B printer
+The printer program with options that is to be used to print articles. The
+default is
+.BR lpr (1)
+for BSD machines and
+.BR lp (1)
+for SysV machines. Printing from
+.BR tin (1)
+may have been disabled by the System Administrator.
+.TP
 .B process_only_unread
 If ON only save/print/pipe/mail unread articles (tagged articles excepted).
 Default is OFF.
@@ -1728,7 +1792,8 @@ option is on by default.
 \fBQuote Signatures\fP This option is off by default. Signatures are
 always quoted regardless of this option when you are viewing an article
 in raw mode \fBPageToggleHeaders\fP ('\fB^H\fP') and followup or reply
-to it.
+to it. Signatures are never quoted regardless of this option when
+\fBshow_signatures\fP is off.
 .IP 4
 \fBQuote empty lines\fP This option is on by default.
 .RE
@@ -1767,6 +1832,10 @@ The news \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fR file
 is reread at regular intervals to show if any new news has arrived. Default
 is 1200. Setting this to 0 will disable this feature.
 .TP
+.B savedir
+Directory where articles/threads are saved. Default is
+\fI${TIN_HOMEDIR:\-"$HOME"}/News\fR.
+.TP
 .B score_limit_kill
 If the score of an article is below or equal this value the article gets
 marked as killed.
@@ -1786,9 +1855,9 @@ Score of an article which should be marked hot, this must be >=
 .B scroll_lines
 The number of lines that will be scrolled up/down in the article pager when
 using cursor-up/down. The default is 1 (line-by-line). Set to 0 to get
-traditional page-by-page scrolling. Set to -1 to get page-by-page
+traditional page-by-page scrolling. Set to \-1 to get page-by-page
 scrolling where the top/bottom line is carried over onto the next page.
-This setting supersedes show_last_line_prev_page=ON. Set to -2 to get
+This setting supersedes show_last_line_prev_page=ON. Set to \-2 to get
 half-page scrolling. This setting supersedes full_page_scroll=OFF.
 .TP
 .B show_author
@@ -1848,6 +1917,17 @@ If OFF don't show signatures when displaying articles. Default is ON.
 .TP
 .B sigdashes
 If ON prepend the signature with sigdashes. Default is ON.
+.TP
+.B sigfile
+The path that specifies the signature file to use when posting, following
+up to or replying to an article. If the path is a directory then the
+signature will be randomly generated from files that are in the specified
+directory. If the path starts with a ! the program the path points to will
+be executed to generate a signature.
+.BR tin (1)
+will pass the name of the current newsgroup as argument to the
+program. \-\-none will suppress any signature.
+Default is \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fR.
 .TP
 .B signature_repost
 If ON add signature to reposted articles. Default is ON.
@@ -1957,7 +2037,7 @@ Defines which threading method to use. The choices are:
 4) Thread multipart articles on Subject.
 5) Thread on Percentage Match of the Subjects
 It's also possible to set the threading type on a per group basis by setting
-the group attribute variable \fBthread_arts\fP to 0 - 5 in the file
+the group attribute variable \fBthread_articles\fP to 0 - 5 in the file
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes\fR.
 .TP
 .B thread_perc
@@ -1988,6 +2068,29 @@ to enable transliteration. This means that when a character cannot be
 represented in the target character set, it can be approximated through one
 or several similarly looking characters. On systems where this extension
 doesn't exist, this option is disabled. Default is OFF.
+.TP
+.B trim_article_body
+Allows you to select how \fBtin\fP treats blank lines in article bodys.
+Default is 0. This option does not affect lines within verbatim blocks.
+.RS +1i
+.IP 0 3
+\fBDon't trim article body\fP, do nothing.
+.IP 1
+\fBSkip leading blank lines\fP.
+.IP 2
+\fBSkip trailing blank lines\fP.
+.IP 3
+\fBSkip leading and trailing blank l.\fP, skip leading and trailing blank lines.
+.IP 4
+\fBCompact multiple between text\fP, replace multiple blank lines between
+textblocks with one blank line.
+.IP 5
+\fBCompact multiple and skip leading\fP, 4 + 1
+.IP 6
+\fBCompact multiple and skip trailing\fP, 4 + 2
+.IP 7
+\fBCompact mltpl., skip lead. & trai.\fP, 4 + 3
+.RE
 .TP
 .B underscores_regex
 A regular expression that will be applied when reading articles. All
@@ -2041,6 +2144,10 @@ Default is #v+
 .B verbatim_end_regex
 A regular expression that tin will use to find the end of a verbatim block.
 Default is #v-
+.TP
+.B verbatim_handling
+If ON verbatim blocks will be detected.
+Default is ON
 .TP
 .B wildcard
 Allows you to select how
@@ -2164,6 +2271,11 @@ overrides any specified value.
 Name of a single overview file, common values are \fI.overview\fR,
 \fIover.view\fR.
 .TP
+.B overviewfmtfile
+Full pathname of your newssystem's overview.fmt file; usually the
+overview.fmt file is in \fInewslibdir\fR, so you only have to change this
+setting if your configuration differs.
+.TP
 .B activefile
 Full pathname of your newssystem's active file; usually the active file
 resides in \fInewslibdir\fR and is named \fIactive\fR, so you only have
@@ -2255,7 +2367,7 @@ articles are locally filed into the ''foo.bar'' group
 only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,
 .BR tin (1)
-uses the LIST (\fBRFC977\fP) command instead.
+uses the LIST (\fBRFC3977\fP) command instead.
 .RE
 .PP
 
@@ -2282,7 +2394,7 @@ is the electronic mail address of the person who created the group.
 only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,
 .BR tin (1)
-uses the NEWGROUPS (\fBRFC977\fP) command instead.
+uses the NEWGROUPS (\fBRFC3977\fP) command instead.
 .RE
 .PP
 
@@ -2305,7 +2417,7 @@ is a short single-line description of the group
 only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,
 .BR tin (1)
-uses the LIST NEWSGROUPS (\fBRFC2980\fP) command instead.
+uses the LIST NEWSGROUPS (\fBRFC3977\fP) command instead.
 .RE
 .PP
 
@@ -2326,15 +2438,13 @@ This file specifies the organization of the news overview database (see
 also
 .BR newsoverview (5)).
 The order of lines in this file is important; it determines the order in
-which the fields will appear in the database.
-.BR tin (1)
-currently only understands the order specified in \fBRFC2980\fP. See also
+which the fields will appear in the database. See also
 .BR overview.fmt (5).
 .BR tin (1)
 only tries to read the file if you read directly from the local spool,
 if you read news via NNTP,
 .BR tin (1)
-uses the LIST OVERVIEW.FMT (\fBRFC2980\fP) command instead.
+uses the LIST OVERVIEW.FMT (\fBRFC3977\fP) command instead.
 .RE
 .PP
 

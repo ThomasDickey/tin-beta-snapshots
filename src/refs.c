@@ -3,12 +3,12 @@
  *  Module    : refs.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1996-05-09
- *  Updated   : 2007-10-04
+ *  Updated   : 2008-12-04
  *  Notes     : Cacheing of message ids / References based threading
  *  Credits   : Richard Hodson <richard@macgyver.tele2.co.uk>
  *              hash_msgid, free_msgid
  *
- * Copyright (c) 1996-2008 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1996-2009 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -237,7 +237,7 @@ add_msgid(
 	unsigned int h;
 
 	if (!msgid) {
-		error_message("add_msgid: NULL msgid\n");
+		error_message(2, "add_msgid: NULL msgid\n");
 		giveup();
 	}
 
@@ -324,7 +324,7 @@ add_msgid(
 			return i;
 		}
 
-		error_message("Error: Impossible combination of conditions !\n");
+		error_message(2, "Error: Impossible combination of conditions !\n");
 		return i;
 	}
 
@@ -456,7 +456,7 @@ _get_references(
 #ifdef DEBUG
 		if (debug & DEBUG_REFS) {
 			if (depth > MAX_REFS)
-				error_message("Warning: Too many refs near to %s. Truncated\n", refptr->txt);
+				error_message(2, "Warning: Too many refs near to %s. Truncated\n", refptr->txt);
 		}
 #endif /* DEBUG */
 		refs = my_malloc(len + 1);	/* total length + nullbyte */
@@ -639,7 +639,6 @@ clear_art_ptrs(
 }
 
 
-
 #ifdef DEBUG
 /*
  * Dump out all the threads from the msgid point of view, show the
@@ -810,7 +809,10 @@ thread_by_reference(
 
 #ifdef DEBUG
 	if (debug & DEBUG_REFS) {
-		dbgfd = fopen("Refs.info", "w");
+		char file[PATH_LEN];
+
+		joinpath(file, sizeof(file), TMPDIR, "REFS.info");
+		dbgfd = fopen(file, "w");
 		dump_msgid_threads();
 	}
 #endif /* DEBUG */
@@ -939,18 +941,21 @@ build_references(
 	/*
 	 * The articles are currently unsorted, and are as they were put by setup_hard_base()
 	 */
-	if (group->attribute->sort_art_type != SORT_ARTICLES_BY_NOTHING)
-		sort_arts(group->attribute->sort_art_type);
+	if (group->attribute->sort_article_type != SORT_ARTICLES_BY_NOTHING)
+		sort_arts(group->attribute->sort_article_type);
 
-	sort_ascend = (group->attribute->sort_art_type == SORT_ARTICLES_BY_SUBJ_ASCEND ||
-	               group->attribute->sort_art_type == SORT_ARTICLES_BY_FROM_ASCEND ||
-	               group->attribute->sort_art_type == SORT_ARTICLES_BY_DATE_ASCEND ||
-	               group->attribute->sort_art_type == SORT_ARTICLES_BY_SCORE_ASCEND ||
-	               group->attribute->sort_art_type == SORT_ARTICLES_BY_LINES_ASCEND);
+	sort_ascend = (group->attribute->sort_article_type == SORT_ARTICLES_BY_SUBJ_ASCEND ||
+	               group->attribute->sort_article_type == SORT_ARTICLES_BY_FROM_ASCEND ||
+	               group->attribute->sort_article_type == SORT_ARTICLES_BY_DATE_ASCEND ||
+	               group->attribute->sort_article_type == SORT_ARTICLES_BY_SCORE_ASCEND ||
+	               group->attribute->sort_article_type == SORT_ARTICLES_BY_LINES_ASCEND);
 
 #ifdef DEBUG
 	if (debug & DEBUG_REFS) {
-		dbgfd = fopen("Refs.dump", "w");
+		char file[PATH_LEN];
+
+		joinpath(file, sizeof(file), TMPDIR, "REFS.dump");
+		dbgfd = fopen(file, "w");
 		SETVBUF(dbgfd, NULL, _IONBF, 0);
 		fprintf(dbgfd, "MSGID phase\n");
 	}

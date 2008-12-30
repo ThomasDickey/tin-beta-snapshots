@@ -3,10 +3,10 @@
  *  Module    : version.c
  *  Author    : U. Janssen
  *  Created   : 2003-05-11
- *  Updated   : 2005-07-02
+ *  Updated   : 2008-11-22
  *  Notes     :
  *
- * Copyright (c) 2003-2008 Urs Janssen <urs@tin.org>
+ * Copyright (c) 2003-2009 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,9 +38,6 @@
 #ifndef TIN_H
 #	include "tin.h"
 #endif /* !TIN_H */
-#ifndef VERSION_H
-#	include "version.h"
-#endif /* !VERSION_H */
 
 
 /*
@@ -57,7 +54,7 @@
  * Don't make the arguments to sscanf() consts, as some old systems require
  * them to writable (but do not change them)
  */
-int
+enum rc_state
 check_upgrade(
 	char *line,
 	const char *skip,
@@ -101,20 +98,20 @@ check_upgrade(
 
 void
 upgrade_prompt_quit(
-	int reason,
+	enum rc_state reason,
 	const char *file)
 {
 	switch (reason) {
 		case RC_UPGRADE:
-			error_message(_(txt_warn_update), VERSION, file);
+			error_message(2, _(txt_warn_update), VERSION, file);
 			break;
 
 		case RC_DOWNGRADE:
-			error_message(_(txt_warn_downgrade), VERSION, file);
+			error_message(2, _(txt_warn_downgrade), VERSION, file);
 			break;
 
 		case RC_ERROR: /* can't parse internal version string, should not happen */
-			error_message(txt_warn_unrecognized_version);
+			error_message(2, txt_warn_unrecognized_version);
 			giveup();
 			/* NOTREACHED */
 			break;
@@ -123,7 +120,7 @@ upgrade_prompt_quit(
 			return;
 	}
 
-	error_message(_(txt_return_key));
+	error_message(2, _(txt_return_key));
 
 	/*
 	 * TODO: document, use something unbuffered here

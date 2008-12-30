@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2008-03-20
+dnl Updated   : 2008-05-12
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2007 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2009 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.9.3
+VERSION=1.9.4
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -104,16 +104,16 @@ CF_SUBST(archiver options,AR_OPTS,rv)
 
 case "$host_cpu:$host_vendor:$host_os" in
 	# check for MacOS X, exclude Darwin on ix86
-	powerpc:apple:darwin*)  #
-		AC_DEFINE(MAC_OS_X)
-		;;
+#	powerpc:apple:darwin*)  #(vi
+#		AC_DEFINE(MAC_OS_X)
+#		;;
 	# check for cygwin environment
 	# -DSTATIC is needed for pcre
 	*:*:*cygwin*)	#(vi
 		PCRE_DEFINES="$PCRE_DEFINES -DSTATIC"
 		;;
 	# SEIUX doesn't have any useful preprocessor symbol
-	mips:sei:seiux*)
+	mips:sei:seiux*)	#(vi
 		AC_DEFINE(SEIUX)
 		;;
 esac
@@ -152,6 +152,10 @@ if test "$USE_PGP_GPG" = "yes" ; then
 	CF_WITH_PROGRAM(gpg,
 	[  --with-gpg              (default: from system path)])
 fi
+
+## slrnface
+CF_WITH_PROGRAM(slrnface,
+[  --with-slrnface         (default: from system path)])
 
 ## Default shell
 AC_ARG_WITH(shell,
@@ -303,7 +307,7 @@ fi
 ### first look for all available locking methods
 CF_LOCKFILE
 
-AC_MSG_CHECKING(which locking method should be used)
+AC_MSG_CHECKING(which locking method will be used)
 ### fcntl() is preferred, if the user just disables fcntl()
 ### without specifying an alternative lockf() is preferred
 CF_ARG_DISABLE(fcntl,
@@ -332,7 +336,8 @@ if test -n "$cf_cv_lockfile"; then
 	CF_UPPER(used_locking,$used_locking)
 	AC_DEFINE_UNQUOTED(USE_$used_locking)
 else
-	AC_MSG_WARN(None of fcntl(), lockf(), flock() available)
+	AC_MSG_RESULT(none);
+	AC_MSG_WARN([[None of fcntl(), lockf(), flock() available]])
 fi
 
 
@@ -518,21 +523,17 @@ AC_SUBST(CANDIR_MAKE)
 AC_SUBST(CANLIBS)
 
 ## gsasl - used for AUTH SASL PLAIN
-GSASL_LIBS=
 AC_CHECK_HEADER(gsasl.h,
-	AC_CHECK_LIB(gsasl, gsasl_check_version,
-		gsasl=yes, gsasl=no),
+	AC_CHECK_LIB(gsasl, gsasl_check_version, gsasl=yes, gsasl=no),
 	gsasl=no)
 if test "$gsasl" = "yes"; then
 	CF_ARG_DISABLE(gsasl,
-	        [  --disable-gsasl         don't use GNU SASL],
-	        USE_SASL=no,
-	        [USE_SASL=yes
+		[  --disable-gsasl         don't use GNU SASL],
+		USE_SASL=no,
+		[USE_SASL=yes
 		AC_DEFINE(USE_SASL, 1, [Define to 1 if you want GNU SASL.])
-		GSASL_LIBS='-lgsasl'])
+		LIBS="$LIBS -lgsasl"])
 fi
-AC_SUBST(GSASL_LIBS)
-
 
 AC_MSG_CHECKING(whether to enable 8-bit keycodes)
 CF_ARG_DISABLE(8bit-keys,

@@ -3,10 +3,10 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-02-25
+ *  Updated   : 2008-12-16
  *  Notes     :
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -363,7 +363,8 @@ get_val(
 t_bool
 invoke_editor(
 	const char *filename,
-	int lineno) /* return value is always ignored */
+	int lineno,
+	struct t_group *group) /* return value is always ignored */
 {
 	char buf[PATH_LEN], fnameb[PATH_LEN];
 	char editor_format[PATH_LEN];
@@ -376,7 +377,10 @@ invoke_editor(
 		first = FALSE;
 	}
 
-	my_strncpy(editor_format, (*tinrc.editor_format ? tinrc.editor_format : (tinrc.start_editor_offset ? TIN_EDITOR_FMT_ON : TIN_EDITOR_FMT_OFF)), sizeof(editor_format) - 1);
+	if (group != NULL)
+		my_strncpy(editor_format, (*group->attribute->editor_format ? group->attribute->editor_format : (group->attribute->start_editor_offset ? TIN_EDITOR_FMT_ON : TIN_EDITOR_FMT_OFF)), sizeof(editor_format) - 1);
+	else
+		my_strncpy(editor_format, (*tinrc.editor_format ? tinrc.editor_format : (tinrc.start_editor_offset ? TIN_EDITOR_FMT_ON : TIN_EDITOR_FMT_OFF)), sizeof(editor_format) - 1);
 
 	if (!strfeditor(editor, lineno, filename, buf, sizeof(buf), editor_format))
 		sh_format(buf, sizeof(buf), "%s %s", editor, filename);
@@ -633,6 +637,11 @@ tin_done(
 	} else
 		ret = SIGUSR1;
 #endif /* SIGUSR1 */
+#ifdef HAVE_COLOR
+#	ifdef USE_CURSES
+	free_color_pair_arrays();
+#	endif /* USE_CURSES */
+#endif /* HAVE_COLOR */
 	cleanup_tmp_files();
 
 #ifdef DOALLOC
@@ -739,7 +748,6 @@ rename_file(
 #endif /* M_UNIX */
 
 
-
 /*
  * Note that we exit screen/curses mode when invoking
  * external commands
@@ -781,7 +789,7 @@ invoke_cmd(
 	success = (ret == 0);
 
 	if (!success || system_status != 0)
-		error_message(_(txt_command_failed), nam);
+		error_message(2, _(txt_command_failed), nam);
 
 	return success;
 #endif /* IGNORE_SYSTEM_STATUS */
@@ -947,14 +955,15 @@ eat_re(
 }
 
 
+#if defined(NO_LOCALE) || !defined(MULTIBYTE_ABLE)
 int
 my_isprint(
 	int c)
 {
-#ifndef NO_LOCALE
+#	ifndef NO_LOCALE
 	/* use locale */
 	return isprint(c);
-#else
+#	else
 	if (IS_LOCAL_CHARSET("ISO-8859"))
 		return (isprint(c) || (c >= 0xa0 && c <= 0xff));
 	else if (IS_LOCAL_CHARSET("ISO-2022"))
@@ -965,8 +974,9 @@ my_isprint(
 		return 1;
 	else /* KOI8-* and UTF-8 */
 		return (isprint(c) || (c >= 0x80 && c <= 0xff));
-#endif /* !NO_LOCALE */
+#	endif /* !NO_LOCALE */
 }
+#endif /* NO_LOCALE || !MULTIBYTE_ABLE */
 
 
 /*
@@ -1085,7 +1095,7 @@ create_index_lock_file(
 		if ((fp = fopen(the_lock_file, "r")) != NULL) {
 			fgets(buf, (int) sizeof(buf), fp);
 			fclose(fp);
-			error_message("\n%s: Already started pid=[%d] on %s", tin_progname, atoi(buf), buf + 8);
+			error_message(2, "\n%s: Already started pid=[%d] on %s", tin_progname, atoi(buf), buf + 8);
 			giveup();
 		}
 	} else {
@@ -1094,7 +1104,7 @@ create_index_lock_file(
 			(void) time(&epoch);
 			fprintf(fp, "%6d  %s\n", (int) process_id, ctime(&epoch));
 			if (ferror(fp) || fclose(fp))
-				error_message(_(txt_filesystem_full), the_lock_file);
+				error_message(2, _(txt_filesystem_full), the_lock_file);
 		}
 	}
 }
@@ -1198,8 +1208,8 @@ strfquote(
 					}
 					break;
 
-				case 'D':	/* Articles Date (reformated as specified in tinrc.date_format) */
-					if (!my_strftime(tbuf, LEN - 1, tinrc.date_format, localtime(&arts[this_resp].date))) {
+				case 'D':	/* Articles Date (reformated as specified in attributes->date_format) */
+					if (!my_strftime(tbuf, LEN - 1, curr_group->attribute->date_format, localtime(&arts[this_resp].date))) {
 						STRCPY(tbuf, BlankIfNull(pgart.hdr.date));
 					}
 					break;
@@ -2175,7 +2185,7 @@ write_input_history_file(
 	file_tmp = get_tmpfilename(local_input_history_file);
 
 	if ((fp = fopen(file_tmp, "w")) == NULL) {
-		error_message(_(txt_filesystem_full_backup), local_input_history_file);
+		error_message(2, _(txt_filesystem_full_backup), local_input_history_file);
 		/* free memory for tmp-filename */
 		free(file_tmp);
 		umask(mask);
@@ -2198,7 +2208,7 @@ write_input_history_file(
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR)); /* rename_file() preserves mode */
 
 	if (ferror(fp) || fclose(fp)) {
-		error_message(_(txt_filesystem_full), local_input_history_file);
+		error_message(2, _(txt_filesystem_full), local_input_history_file);
 		/* fix modes for all pre 1.4.1 local_input_history_file files */
 		chmod(local_input_history_file, (mode_t) (S_IRUSR|S_IWUSR));
 	} else
@@ -3456,7 +3466,7 @@ gnksa_do_check_from(
 		strcpy(realname, decoded);
 
 #ifdef DEBUG
-	if (debug & DEBUG_MISC) {
+	if (debug & DEBUG_MISC) { /* TODO: dump to a file instead of wait_message() */
 		if (GNKSA_OK != code)
 			wait_message(2, "From:=[%s], GNKSA=[%d]", from, code);
 		else
@@ -3744,6 +3754,11 @@ tin_version_info(
 
 	fprintf(fp, "Characteristics:\n\t"
 /* TODO: complete list and do some useful grouping */
+#ifdef DEBUG
+			"+DEBUG "
+#else
+			"-DEBUG "
+#endif /* DEBUG */
 #ifdef NNTP_ONLY
 			"+NNTP_ONLY "
 #else

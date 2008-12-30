@@ -6,7 +6,7 @@
  *  Updated   : 2008-02-25
  *  Notes     : MIME header encoding/decoding stuff
  *
- * Copyright (c) 1995-2008 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2009 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,7 +82,7 @@ enum {
  */
 static FILE *compose_message_rfc822(FILE *articlefp, t_bool *is_8bit);
 static FILE *compose_multipart_mixed(FILE *textfp, FILE *articlefp);
-static int do_b_encode(char *w, char *b, int max_ewsize, t_bool isstruct_head);
+static int do_b_encode(char *w, char *b, size_t max_ewsize, t_bool isstruct_head);
 static int sizeofnextword(char *w);
 static int which_encoding(char *w);
 static t_bool contains_8bit_characters(FILE *fp);
@@ -355,7 +355,7 @@ static int
 do_b_encode(
 	char *w,
 	char *b,
-	int max_ewsize,
+	size_t max_ewsize,
 	t_bool isstruct_head)
 {
 	char tmp[60];				/* strings to be B encoded */
@@ -515,7 +515,7 @@ rfc1522_do_encode(
 	char *t;
 	char buf2[80];				/* buffer for this and that */
 	int encoding;				/* which encoding to use ('B' or 'Q') */
-	int ew_taken_len;
+	size_t ew_taken_len;
 	int word_cnt = 0;
 	int offset;
 	size_t bufferlen = 2048;		/* size of buffer */

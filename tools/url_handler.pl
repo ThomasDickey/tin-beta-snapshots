@@ -10,7 +10,7 @@ use strict;
 die "Usage: $pname URL" if $#ARGV != 0;
 
 # version Number
-my $version = "0.0.8";
+my $version = "0.0.9";
 
 my ($method, $url, $browser, $match, @try);
 $method = $url = $ARGV[0];
@@ -23,9 +23,9 @@ if ($ENV{BROWSER}) {
 	push(@try, 'mozilla -remote openURL\(%s\)');
 	push(@try, 'opera -remote openURL\(%s\)');
 	push(@try, 'galeon -n');
-	push(@try, 'kfmclient newTab');
-	push(@try, 'links2 -g');
-	push(@try, qw(links lynx w3m));
+	push(@try, 'lynx');	# prefer lynx over links as it can handle news:-urls
+	push(@try, qw('links2 -g' links w3m));
+	push(@try, 'kfmclient newTab'); # has no usefull return-value on error
 }
 
 if ($ENV{DISPLAY}) { # X running

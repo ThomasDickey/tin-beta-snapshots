@@ -3,10 +3,10 @@
  *  Module    : version.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-01-08
+ *  Updated   : 2008-11-08
  *  Notes     :
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,13 +40,13 @@
 
 #	define PRODUCT		"tin"
 #	ifndef TIN_AUTOCONF_H
-#		define VERSION		"1.9.3"
+#		define VERSION		"1.9.4"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20080326"
-#	define RELEASENAME	"Dalaruan"
+#	define RELEASEDATE	"20081230"
+#	define RELEASENAME	"Dalintober"
 /* config-file versions - must by dotted triples */
-#	define TINRC_VERSION	"1.3.8"
-#	define ATTRIBUTES_VERSION	"1.0.4"
+#	define TINRC_VERSION	"1.3.10"
+#	define ATTRIBUTES_VERSION	"1.0.6"
 #	define FILTER_VERSION	"1.0.0"
 #	define KEYMAP_VERSION	"1.0.7"
 #	define SERVERCONFIG_VERSION	"1.0.0"

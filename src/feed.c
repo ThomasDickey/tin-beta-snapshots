@@ -3,10 +3,10 @@
  *  Module    : feed.c
  *  Author    : I. Lea
  *  Created   : 1991-08-31
- *  Updated   : 2007-12-30
+ *  Updated   : 2008-11-22
  *  Notes     : provides same interface to mail,pipe,print,save & repost commands
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -102,7 +102,7 @@ get_save_filename(
 	/*
 	 * Group attribute savefile overrides tinrc default savefile
 	 */
-	strncpy(default_savefile, (group->attribute->savefile ? group->attribute->savefile : tinrc.default_save_file), sizeof(default_savefile) - 1);
+	my_strncpy(default_savefile, (group->attribute->savefile ? group->attribute->savefile : tinrc.default_save_file), sizeof(default_savefile) - 1);
 
 	/*
 	 * We don't ask when auto'S'aving or Archive-Name saving with auto_save
@@ -192,7 +192,7 @@ get_post_proc_type(
 	char keyshar[MAXKEYLEN];
 	t_function default_func, func;
 
-	switch (curr_group->attribute->post_proc_type) {
+	switch (curr_group->attribute->post_process_type) {
 		case POST_PROC_YES:
 			default_func = POSTPROCESS_YES;
 			break;
@@ -506,7 +506,7 @@ feed_article(
 	 * Mark read for the SAVE cases (but not print/pipe etc..)
 	 */
 	if (function == FEED_SAVE || function == FEED_AUTOSAVE) {
-		if (ok && tinrc.mark_saved_read)
+		if (ok && curr_group->attribute->mark_saved_read)
 			art_mark(curr_group, &arts[art], ART_READ);
 	}
 
@@ -559,7 +559,7 @@ feed_articles(
 
 #ifdef DONT_HAVE_PIPING
 	if (function == FEED_PIPE) {
-		error_message(_(txt_piping_not_enabled));
+		error_message(2, _(txt_piping_not_enabled));
 		clear_message();
 		return;
 	}
@@ -640,7 +640,7 @@ feed_articles(
 				if (get_save_filename(group, function, savefile, sizeof(savefile), respnum) == NULL)
 					return;
 
-				switch (curr_group->attribute->post_proc_type) {
+				switch (curr_group->attribute->post_process_type) {
 					case POST_PROC_YES:
 						pproc_func = POSTPROCESS_YES;
 						break;
@@ -753,12 +753,12 @@ feed_articles(
 		case FEED_THREAD:		/* thread */
 			/* Get accurate count first */
 			for_each_art_in_thread(art, which_thread(respnum)) {
-				if (!(tinrc.process_only_unread && arts[art].status == ART_READ))
+				if (!(curr_group->attribute->process_only_unread && arts[art].status == ART_READ))
 					counter.max++;
 			}
 
 			for_each_art_in_thread(art, which_thread(respnum)) {
-				if (!(tinrc.process_only_unread && arts[art].status == ART_READ)) {
+				if (!(curr_group->attribute->process_only_unread && arts[art].status == ART_READ)) {
 					/* Keep going - don't abort on errors */
 					if (!feed_article(art, function, &counter, use_current, outpath, group))
 						handle_SIGPIPE();
@@ -796,7 +796,7 @@ feed_articles(
 					} else if (!arts[art].selected)
 						continue;
 
-					if (tinrc.process_only_unread && arts[art].status == ART_READ)
+					if (curr_group->attribute->process_only_unread && arts[art].status == ART_READ)
 						continue;
 
 					arts[art].matched = TRUE;
@@ -882,7 +882,7 @@ got_sig_pipe_while_piping:
 	}
 
 	if (level != PAGE_LEVEL)
-		ret1 = tinrc.mark_saved_read;
+		ret1 = curr_group->attribute->mark_saved_read;
 
 	if (ret1 || post_processed_ok)
 		redraw_screen = TRUE;
@@ -958,7 +958,7 @@ print_file(
 		return FALSE;
 	}
 
-	if (tinrc.print_header)
+	if (curr_group->attribute->print_header)
 		rewind(artinfo->raw);
 	else {
 		if (hdr->newsgroups)

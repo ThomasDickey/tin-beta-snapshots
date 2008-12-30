@@ -3,10 +3,10 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-03-14
+ *  Updated   : 2008-12-11
  *  Notes     :
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -91,10 +91,8 @@ main(
 		bindtextdomain(PACKAGE, LOCALEDIR);
 		textdomain(PACKAGE);
 #	endif /* ENABLE_NLS */
-	} else {
-		error_message(txt_error_locale);
-		sleep(2);
-	}
+	} else
+		error_message(4, txt_error_locale);
 #endif /* HAVE_SETLOCALE && !NO_LOCALE */
 
 	/*
@@ -132,7 +130,7 @@ main(
 #	ifdef NNTP_ABLE
 		read_news_via_nntp = TRUE;
 #	else
-		error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
+		error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
 		giveup();
 #	endif /* NNTP_ABLE */
 	}
@@ -167,7 +165,7 @@ main(
 #ifdef M_UNIX
 #	ifndef USE_CURSES
 		if (!get_termcaps()) {
-			error_message(_(txt_screen_init_failed), tin_progname);
+			error_message(2, _(txt_screen_init_failed), tin_progname);
 			giveup();
 		}
 #	endif /* !USE_CURSES */
@@ -177,7 +175,7 @@ main(
 		 * Init curses emulation
 		 */
 		if (!InitScreen()) {
-			error_message(_(txt_screen_init_failed), tin_progname);
+			error_message(2, _(txt_screen_init_failed), tin_progname);
 			giveup();
 		}
 
@@ -210,24 +208,17 @@ main(
 	 * no error message? why?
 	 */
 	if (update_index && nntp_caps.over_cmd && !tinrc.cache_overview_files) {
-		error_message(_(txt_batch_update_unavail), tin_progname);
+		error_message(2, _(txt_batch_update_unavail), tin_progname);
 		giveup();
 	}
 
 	/*
 	 * Check if overview indexes contain Xref: lines
 	 */
-	if (nntp_caps.over_cmd)
+#ifdef NNTP_ABLE
+	if ((read_news_via_nntp && nntp_caps.over_cmd) || !read_news_via_nntp)
+#endif /* NNTP_ABLE */
 		xref_supported = overview_xref_support();
-
-#ifdef DEBUG
-	if (debug & DEBUG_NEWSRC) {
-		char file[PATH_LEN];
-
-		joinpath(file, sizeof(file), TMPDIR, "BITMAP");
-		unlink(file);
-	}
-#endif /* DEBUG */
 
 	/*
 	 * avoid empty regexp, we also need to do this in batch_mode
@@ -263,7 +254,7 @@ main(
 
 	/*
 	 * Initialise active[] and add new newsgroups to start of my_group[]
-	 * also reads attributes
+	 * also reads global/local attributes
 	 */
 	selmenu.max = 0;
 	/*
@@ -271,6 +262,8 @@ main(
 	 * $AUTOSUBSCRIBE groups
 	 */
 	no_write = tmp_no_write;
+	read_attributes_file(TRUE);
+	read_attributes_file(FALSE);
 	read_news_active_file();
 #ifdef DEBUG
 	debug_print_active();
@@ -367,7 +360,7 @@ main(
 	 * Save any new articles to savedir structure for later reading
 	 *
 	 * TODO: should we temporarely set
-	 *       getart_limit=-1,thread_arts=0,sort_art_type=0
+	 *       getart_limit=-1,thread_articles=0,sort_article_type=0
 	 *       for speed reasons?
 	 */
 	if (mail_news || save_news) {
@@ -439,7 +432,7 @@ read_cmd_line_options(
 #ifdef HAVE_COLOR
 				use_color = bool_not(use_color);
 #else
-				error_message(_(txt_option_not_enabled), "-DHAVE_COLOR");
+				error_message(2, _(txt_option_not_enabled), "-DHAVE_COLOR");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -450,7 +443,7 @@ read_cmd_line_options(
 #ifdef NNTP_ABLE
 				force_auth_on_conn_open = TRUE;
 #else
-				error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
+				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -471,7 +464,7 @@ read_cmd_line_options(
 				debug = atoi(optarg);
 				debug_delete_files();
 #else
-				error_message(_(txt_option_not_enabled), "-DDEBUG");
+				error_message(2, _(txt_option_not_enabled), "-DDEBUG");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -492,7 +485,7 @@ read_cmd_line_options(
 				my_strncpy(cmdline_nntpserver, optarg, sizeof(cmdline_nntpserver) - 1);
 				read_news_via_nntp = TRUE;
 #else
-				error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
+				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -542,7 +535,7 @@ read_cmd_line_options(
 				post_postponed_and_exit = TRUE;
 				check_for_new_newsgroups = FALSE;
 #else
-				error_message(_(txt_option_not_enabled), "-UNO_POSTING");
+				error_message(2, _(txt_option_not_enabled), "-UNO_POSTING");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -555,7 +548,7 @@ read_cmd_line_options(
 				if (atoi(optarg) != 0)
 					nntp_tcp_port = (unsigned short) atoi(optarg);
 #else
-				error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
+				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -576,7 +569,7 @@ read_cmd_line_options(
 #ifdef NNTP_ABLE
 				read_news_via_nntp = TRUE;
 #else
-				error_message(_(txt_option_not_enabled), "-DNNTP_ABLE");
+				error_message(2, _(txt_option_not_enabled), "-DNNTP_ABLE");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -620,7 +613,7 @@ read_cmd_line_options(
 				post_article_and_exit = TRUE;
 				check_for_new_newsgroups = FALSE;
 #else
-				error_message(_(txt_option_not_enabled), "-UNO_POSTING");
+				error_message(2, _(txt_option_not_enabled), "-UNO_POSTING");
 				giveup();
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -746,64 +739,64 @@ static void
 usage(
 	char *theProgname)
 {
-	error_message(_(txt_usage_tin), theProgname);
+	error_message(2, _(txt_usage_tin), theProgname);
 
 #ifdef HAVE_COLOR
-		error_message(_(txt_usage_toggle_color));
+		error_message(2, _(txt_usage_toggle_color));
 #endif /* HAVE_COLOR */
 #ifdef NNTP_ABLE
-		error_message(_(txt_usage_force_authentication));
+		error_message(2, _(txt_usage_force_authentication));
 #endif /* NNTP_ABLE */
 
-	error_message(_(txt_usage_catchup));
-	error_message(_(txt_usage_dont_show_descriptions));
+	error_message(2, _(txt_usage_catchup));
+	error_message(2, _(txt_usage_dont_show_descriptions));
 
 #ifdef DEBUG
-	error_message(_(txt_usage_debug));
+	error_message(2, _(txt_usage_debug));
 #endif /* DEBUG */
 
-	error_message(_(txt_usage_newsrc_file), newsrc);
-	error_message(_(txt_usage_getart_limit));
+	error_message(2, _(txt_usage_newsrc_file), newsrc);
+	error_message(2, _(txt_usage_getart_limit));
 
 #ifdef NNTP_ABLE
-	error_message(_(txt_usage_newsserver), get_val("NNTPSERVER", NNTP_DEFAULT_SERVER));
+	error_message(2, _(txt_usage_newsserver), get_val("NNTPSERVER", NNTP_DEFAULT_SERVER));
 #endif /* NNTP_ABLE */
 
-	error_message(_(txt_usage_help_message));
-	error_message(_(txt_usage_help_information), theProgname);
-	error_message(_(txt_usage_index_newsdir), index_newsdir);
-	error_message(_(txt_usage_read_only_active));
-	error_message(_(txt_usage_maildir), tinrc.maildir);
-	error_message(_(txt_usage_mail_new_news_to_user));
-	error_message(_(txt_usage_read_only_subscribed));
-	error_message(_(txt_usage_mail_new_news));
-	error_message(_(txt_usage_post_postponed_arts));
+	error_message(2, _(txt_usage_help_message));
+	error_message(2, _(txt_usage_help_information), theProgname);
+	error_message(2, _(txt_usage_index_newsdir), index_newsdir);
+	error_message(2, _(txt_usage_read_only_active));
+	error_message(2, _(txt_usage_maildir), tinrc.maildir);
+	error_message(2, _(txt_usage_mail_new_news_to_user));
+	error_message(2, _(txt_usage_read_only_subscribed));
+	error_message(2, _(txt_usage_mail_new_news));
+	error_message(2, _(txt_usage_post_postponed_arts));
 
 #ifdef NNTP_ABLE
-	error_message(_(txt_usage_port), nntp_tcp_port);
+	error_message(2, _(txt_usage_port), nntp_tcp_port);
 #endif /* NNTP_ABLE */
 
-	error_message(_(txt_usage_dont_check_new_newsgroups));
-	error_message(_(txt_usage_quickstart));
+	error_message(2, _(txt_usage_dont_check_new_newsgroups));
+	error_message(2, _(txt_usage_quickstart));
 
 #ifdef NNTP_ABLE
 	if (!read_news_via_nntp)
-		error_message(_(txt_usage_read_news_remotely));
+		error_message(2, _(txt_usage_read_news_remotely));
 #endif /* NNTP_ABLE */
 
-	error_message(_(txt_usage_read_saved_news));
-	error_message(_(txt_usage_savedir), tinrc.savedir);
-	error_message(_(txt_usage_save_new_news));
-	error_message(_(txt_usage_update_index_files));
-	error_message(_(txt_usage_verbose));
-	error_message(_(txt_usage_version));
-	error_message(_(txt_usage_post_article));
-	error_message(_(txt_usage_no_posting));
-	error_message(_(txt_usage_dont_save_files_on_quit));
-	error_message(_(txt_usage_start_if_unread_news));
-	error_message(_(txt_usage_check_for_unread_news));
+	error_message(2, _(txt_usage_read_saved_news));
+	error_message(2, _(txt_usage_savedir), tinrc.savedir);
+	error_message(2, _(txt_usage_save_new_news));
+	error_message(2, _(txt_usage_update_index_files));
+	error_message(2, _(txt_usage_verbose));
+	error_message(2, _(txt_usage_version));
+	error_message(2, _(txt_usage_post_article));
+	error_message(2, _(txt_usage_no_posting));
+	error_message(2, _(txt_usage_dont_save_files_on_quit));
+	error_message(2, _(txt_usage_start_if_unread_news));
+	error_message(2, _(txt_usage_check_for_unread_news));
 
-	error_message(_(txt_usage_mail_bugreport), bug_addr);
+	error_message(2, _(txt_usage_mail_bugreport), bug_addr);
 }
 
 

@@ -3,10 +3,10 @@
  *  Module    : xref.c
  *  Author    : I. Lea & H. Brugge
  *  Created   : 1993-07-01
- *  Updated   : 2007-12-30
+ *  Updated   : 2008-12-07
  *  Notes     :
  *
- * Copyright (c) 1993-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,11 +45,10 @@
 /*
  * local prototypes
  */
-#if defined(NNTP_ABLE) && defined(XHDR_XREF)
-	static void read_xref_header(struct t_article *art);
-#endif /* NNTP_ABLE && XHDR_XREF */
 static FILE *open_overview_fmt_fp(void);
 
+struct t_overview_fmt *ofmt;
+t_bool expensive_over_parse = FALSE;
 
 /*
  * Open the NEWSLIBDIR/overview.fmt file locally or send LIST OVERVIEW.FMT
@@ -60,27 +59,21 @@ open_overview_fmt_fp(
 {
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && !read_saved_news) {
-		char line[NNTP_STRLEN];
-
 		if (!nntp_caps.over_cmd)
 			return (FILE *) 0;
 
-		snprintf(line, sizeof(line), "LIST %s", OVERVIEW_FMT);
-		return (nntp_command(line, OK_GROUPS, NULL, 0));
-	} else {
+		if ((nntp_caps.type == CAPABILITIES && nntp_caps.list_overview_fmt) || nntp_caps.type != CAPABILITIES)
+			return (nntp_command("LIST OVERVIEW.FMT", OK_GROUPS, NULL, 0));
+		else
+			return (FILE *) 0;
+	} else
 #endif /* NNTP_ABLE */
-		char filename[PATH_LEN];
-
-		joinpath(filename, sizeof(filename), libdir, OVERVIEW_FMT);
-		return (fopen(filename, "r"));
-#ifdef NNTP_ABLE
-	}
-#endif /* NNTP_ABLE */
+		return (fopen(overviewfmt_file, "r"));
 }
 
 
 /*
- * Read NEWSLIBDIR/overview.fmt file to check if Xref:full is enabled/disabled
+ * Read overview.fmt file to check if Xref:full is enabled/disabled
  */
 t_bool
 overview_xref_support(
@@ -88,74 +81,238 @@ overview_xref_support(
 {
 	FILE *fp;
 	char *ptr;
+	char *p, *q;
 	t_bool supported = FALSE;
+	size_t res_fields = 9; /* inital number of overview fields */
+	size_t fields = 0;
+	size_t i;
+
+	ofmt = my_malloc(sizeof(*ofmt) * res_fields);
+	ofmt[0].type = OVER_T_INT;
+	ofmt[0].name = strdup("Artnum:");
 
 	if ((fp = open_overview_fmt_fp()) != NULL) {
 		while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+			if (*ptr == '#' || *ptr == '\n')	/* skip comments and empty lines */
+				continue;
+
 #if defined(DEBUG) && defined(NNTP_ABLE)
 			if (debug & DEBUG_NNTP)
 				debug_print_file("NNTP", "<<< %s", ptr);
 #endif /* DEBUG && NNTP_ABLE */
-			if (!supported && STRNCASECMPEQ(ptr, "Xref:full", 9))
-				supported = TRUE;
+
+			fields++;
+
+			/* expand overview fmt array */
+			if (fields >= res_fields) {
+				res_fields <<= 1;
+				ofmt = my_realloc(ofmt, sizeof(struct t_overview_fmt) * res_fields);
+			}
+
+			if ((p = strchr(ptr, ':'))) {
+				if (p == ptr) { /* metadata items start with : */
+					/* currently there is only :lines ands :bytes reserved */
+					if (!strcasecmp(ptr, ":lines")) {
+						ofmt[fields].type = OVER_T_INT;
+						ofmt[fields].name = strdup("Lines:");
+						if (fields != 7) {
+							expensive_over_parse = TRUE;
+#ifdef DEBUG
+							if (debug & DEBUG_NNTP)
+								debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 7);
+#endif /* DEBUG */
+						}
+						continue;
+					}
+
+					if (!strcasecmp(ptr, ":bytes")) {
+						ofmt[fields].type = OVER_T_INT;
+						ofmt[fields].name = strdup("Bytes:");
+						if (fields != 6) {
+							expensive_over_parse = TRUE;
+#ifdef DEBUG
+							if (debug & DEBUG_NNTP)
+								debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 6);
+#endif /* DEBUG */
+						}
+						continue;
+					}
+					/* unknown metadata item */
+				}
+
+				/* non metadata items end with : or :full */
+				/* optional items require :full */
+				if (!strcasecmp(p, ":full")) {
+					ofmt[fields].type = OVER_T_FSTRING;
+					q = strchr(p, ':');
+					*(++q) = '\0';
+					ofmt[fields].name = strdup(ptr);
+					if (fields < 7) {
+						expensive_over_parse = TRUE;
+#ifdef DEBUG
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected > %d", ptr, fields, 7);
+#endif /* DEBUG */
+					}
+					continue;
+				}
+
+				/* madatory items */
+				if (!strcasecmp(ptr, "Subject:")) {
+					ofmt[fields].type = OVER_T_STRING;
+					ofmt[fields].name = strdup(ptr);
+					if (fields != 1) {
+						expensive_over_parse = TRUE;
+#ifdef DEBUG
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 1);
+#endif /* DEBUG */
+					}
+					continue;
+				}
+
+				if (!strcasecmp(ptr, "From:")) {
+					ofmt[fields].type = OVER_T_STRING;
+					ofmt[fields].name = strdup(ptr);
+					if (fields != 2) {
+						expensive_over_parse = TRUE;
+#ifdef DEBUG
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 2);
+#endif /* DEBUG */
+					}
+					continue;
+				}
+
+				if (!strcasecmp(ptr, "Date:")) {
+					ofmt[fields].type = OVER_T_STRING;
+					ofmt[fields].name = strdup(ptr);
+					if (fields != 3) {
+						expensive_over_parse = TRUE;
+#ifdef DEBUG
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 3);
+#endif /* DEBUG */
+					}
+					continue;
+				}
+
+				if (!strcasecmp(ptr, "Message-ID:")) {
+					ofmt[fields].type = OVER_T_STRING;
+					ofmt[fields].name = strdup(ptr);
+					if (fields != 4) {
+						expensive_over_parse = TRUE;
+#ifdef DEBUG
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 4);
+#endif /* DEBUG */
+					}
+					continue;
+				}
+
+				if (!strcasecmp(ptr, "References:")) {
+					ofmt[fields].type = OVER_T_STRING;
+					ofmt[fields].name = strdup(ptr);
+					if (fields != 5) {
+						expensive_over_parse = TRUE;
+#ifdef DEBUG
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 5);
+#endif /* DEBUG */
+					}
+					continue;
+				}
+
+				if (!strcasecmp(ptr, "Bytes:")) {
+					ofmt[fields].type = OVER_T_INT;
+					ofmt[fields].name = strdup(ptr);
+					if (fields != 6) {
+						expensive_over_parse = TRUE;
+#ifdef DEBUG
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 6);
+#endif /* DEBUG */
+					}
+					continue;
+				}
+
+				if (!strcasecmp(ptr, "Lines:")) {
+					ofmt[fields].type = OVER_T_INT;
+					ofmt[fields].name = strdup(ptr);
+					if (fields != 7) {
+						expensive_over_parse = TRUE;
+#ifdef DEBUG
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "OVERVIEW.FTM: %s at position %d expected %d", ptr, fields, 7);
+#endif /* DEBUG */
+					}
+					continue;
+				}
+			}
+			/* bogus entry */
+			ofmt[fields].type = OVER_T_ERROR;
+			ofmt[fields].name = strdup(ptr);
 		}
 		TIN_FCLOSE(fp);
-		/*
-		 * If user aborted with 'q', then we continue regardless. If Xref was
-		 * found, then fair enough. If not, tough. No real harm done
-		 */
 	}
 
-	if (!supported)
+	fields++;
+	/* resize */
+	ofmt = my_realloc(ofmt, sizeof(struct t_overview_fmt) * (fields + 1));
+
+	/* end marker */
+	ofmt[fields].type = OVER_T_ERROR;
+	ofmt[fields].name = NULL;
+
+	if (fields < 2) {
+#ifdef DEBUG
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", "OVERVIEW.FTM: Empty response - using safe defaults");
+#endif /* DEBUG */
+		ofmt = my_realloc(ofmt, sizeof(struct t_overview_fmt) * (8 + 1));
+		ofmt[1].type = OVER_T_STRING;
+		ofmt[1].name = strdup("Subject:");
+		ofmt[2].type = OVER_T_STRING;
+		ofmt[2].name = strdup("From:");
+		ofmt[3].type = OVER_T_STRING;
+		ofmt[3].name = strdup("Date:");
+		ofmt[4].type = OVER_T_STRING;
+		ofmt[4].name = strdup("Message-ID:");
+		ofmt[5].type = OVER_T_STRING;
+		ofmt[5].name = strdup("References:");
+		ofmt[6].type = OVER_T_INT;
+		ofmt[6].name = strdup("Bytes:");
+		ofmt[7].type = OVER_T_INT;
+		ofmt[7].name = strdup("Lines:");
+		ofmt[8].type = OVER_T_ERROR;
+		ofmt[8].name = NULL;
+		fields = 8;
+	}
+
+	for (i = 0; i <= fields; i++) {
+		if (ofmt[i].type == OVER_T_FSTRING) {
+			if (!strcasecmp(ofmt[i].name, "Xref:"))
+				supported = TRUE;
+		}
+	}
+
+	/*
+	 * If user aborted with 'q', then we continue regardless. If Xref was
+	 * found, then fair enough. If not, tough. No real harm done
+	 */
+	/*
+	 * TODO: warning message is not correct
+	 *       - in the NNTP_ABLE but !read_news_via_nntp case when
+	 *         OVERVIEW.FMT-file wasn't found or didn't mention Xref:
+	 *       - if the used command is OVER instead of XOVER
+	 *       - if the used command is HDR XREF instead of XHDR XREF
+	 *       - if server doesn't mention XREF in LIST HEADERS
+	 */
+	if (read_news_via_nntp && !supported)
 		wait_message(2, _(txt_warn_xref_not_supported));
 
 	return supported;
 }
-
-
-/*
- * read xref reference for current article
- * This enables crosspost marking even if the xref records are not
- * part of the xover record.
- */
-#if defined(NNTP_ABLE) && defined(XHDR_XREF)
-static void
-read_xref_header(
-	struct t_article *art)
-{
-	FILE *fp;
-	char *ptr, *q;
-	char buf[HEADER_LEN];
-	long artnum;
-
-	snprintf(buf, sizeof(buf), "XHDR XREF %ld", art->artnum);
-	if ((fp = nntp_command(buf, OK_HEAD, NULL, 0)) == NULL)
-		return;
-
-	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
-		while (*ptr && isspace((int) *ptr))
-			ptr++;
-		if (*ptr == '.')
-			break;
-		/*
-		 * read the article number
-		 */
-		artnum = atol(ptr);
-		if ((artnum == art->artnum) && !art->xref && !strstr(ptr, "(none)")) {
-			if ((q = strchr(ptr, ' ')) == NULL)	/* skip article number */
-				continue;
-			ptr = q;
-			while (*ptr && isspace((int) *ptr))
-				ptr++;
-			q = strchr(ptr, '\n');
-			if (q)
-				*q = '\0';
-			art->xref = my_strdup(ptr);
-		}
-	}
-	return;
-}
-#endif /* NNTP_ABLE && XHDR_XREF */
 
 
 /*
@@ -174,12 +331,6 @@ art_mark_xref_read(
 #ifdef DEBUG
 	char *debug_mesg;
 #endif /* DEBUG */
-
-#if defined(NNTP_ABLE) && defined(XHDR_XREF)
-	/* xref_supported => xref info was already read in xover record */
-	if (!xref_supported && read_news_via_nntp && art && !art->xref)
-		read_xref_header(art);
-#endif /* NNTP_ABLE && XHDR_XREF */
 
 	if (art->xref == NULL)
 		return;
@@ -224,9 +375,9 @@ art_mark_xref_read(
 				groupname, artnum,
 				(group ? group->name : ""),
 				(group ? group->newsrc.num_unread : 0));
-				debug_print_comment(debug_mesg);
-				debug_print_bitmap(group, NULL);
-			error_message(debug_mesg);
+			debug_print_comment(debug_mesg);
+			debug_print_bitmap(group, NULL);
+/*			error_message(2, debug_mesg); */
 			free(debug_mesg);
 		}
 #endif /* DEBUG */
@@ -241,11 +392,9 @@ art_mark_xref_read(
 					if (debug & DEBUG_NEWSRC) {
 						debug_mesg = fmt_string("FOUND!Xref: [%s:%ld] marked READ num_unread=[%ld]",
 							groupname, artnum, group->newsrc.num_unread);
-						if (debug & DEBUG_NEWSRC) {
 							debug_print_comment(debug_mesg);
 							debug_print_bitmap(group, NULL);
-						}
-						wait_message(2, debug_mesg);
+/*						error_message(2, debug_mesg); */
 						free(debug_mesg);
 					}
 #endif /* DEBUG */
@@ -269,7 +418,9 @@ NSETRNG1(
 	long i;
 
 	if (bitmap == NULL) {
-		error_message("NSETRNG1() failed. Bitmap == NULL");
+#ifdef DEBUG
+		error_message(2, "NSETRNG1() failed. Bitmap == NULL");
+#endif /* DEBUG */
 		return;
 	}
 
@@ -301,7 +452,7 @@ NSETRNG0(
 	long i;
 
 	if (bitmap == NULL) {
-		error_message("NSETRNG0() failed. Bitmap == NULL");
+		error_message(2, "NSETRNG0() failed. Bitmap == NULL");
 		return;
 	}
 

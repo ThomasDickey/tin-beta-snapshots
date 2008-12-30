@@ -3,10 +3,10 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2008-03-18
+ *  Updated   : 2008-12-24
  *  Notes     :
  *
- * Copyright (c) 1997-2008 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2009 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,7 +75,10 @@ extern void sort_arts(unsigned /* int */ sort_art_type);
 extern void write_overview(struct t_group *group);
 
 /* attrib.c */
-extern void read_attributes_files(void);
+extern int add_scope(const char *scope, t_bool tmpscope);
+extern void assign_attributes_to_groups(void);
+extern void build_news_headers_array(struct t_attribute *scope, t_bool header_to_display);
+extern void read_attributes_file(t_bool global_file);
 extern void write_attributes_file(const char *file);
 
 /* auth.c */
@@ -97,6 +100,9 @@ extern void draw_pager_line(const char *str, int flags, t_bool raw_data);
 #ifdef HAVE_COLOR
 	extern void bcol(int color);
 	extern void fcol(int color);
+#	ifdef USE_CURSES
+		extern void free_color_pair_arrays(void);
+#	endif /* USE_CURSES */
 #endif /* HAVE_COLOR */
 
 /* config.c */
@@ -165,7 +171,6 @@ extern void word_highlight_string(int row, int col, int size, int color);
 	extern void debug_print_filters(void);
 	extern void debug_print_header(struct t_article *s);
 	extern void debug_print_malloc(int is_malloc, const char *xfile, int line, size_t size);
-	extern void debug_print_newsrc(struct t_newsrc *NewSrc, FILE *fp);
 #	ifdef NNTP_ABLE
 		extern void debug_print_nntp_extensions(void);
 #	endif /* NNTP_ABLE */
@@ -296,14 +301,12 @@ extern void giveup(void);
 /* memory.c */
 extern void expand_active(void);
 extern void expand_art(void);
-extern void expand_local_attributes(void);
 extern void expand_newnews(void);
 extern void expand_save(void);
+extern void expand_scope(void);
 extern void init_alloc(void);
 extern void free_all_arrays(void);
 extern void free_art_array(void);
-extern void free_attributes_array(void);
-extern void free_if_not_default(char **attrib, char *deflt);
 extern void free_save_array(void);
 extern void *my_malloc1(const char *file, int line, size_t size);
 extern void *my_calloc1(const char *file, int line, size_t nmemb, size_t size);
@@ -332,7 +335,6 @@ extern int gnksa_split_from(const char *from, char *address, char *realname, int
 extern int get_initials(int respnum, char *s, int maxsize);
 extern int gnksa_do_check_from(const char *from, char *address, char *realname);
 extern int my_chdir(char *path);
-extern int my_isprint(int c);
 extern int my_mkdir(char *path, mode_t mode);
 extern int parse_from(const char *from, char *address, char *realname);
 extern int strfmailer(const char *mail_prog, char *subject, char *to, const char *filename, char *dest, size_t maxsize, const char *format);
@@ -344,7 +346,7 @@ extern long file_size(const char *file);
 extern t_bool backup_file(const char *filename, const char *backupname);
 extern t_bool copy_fp(FILE *fp_ip, FILE *fp_op);
 extern t_bool invoke_cmd(const char *nam);
-extern t_bool invoke_editor(const char *filename, int lineno);
+extern t_bool invoke_editor(const char *filename, int lineno, struct t_group *group);
 extern t_bool mail_check(void);
 extern void append_file(char *old_filename, char *new_filename);
 extern void asfail(const char *file, int line, const char *cond);
@@ -369,6 +371,9 @@ extern void toggle_inverse_video(void);
 #if defined(CHARSET_CONVERSION) || (defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE))
 	extern char *utf8_valid(char *line);
 #endif /* CHARSET_CONVERSION || (MULTIBYTE_ABLE && !NO_LOCALE) */
+#if defined(NO_LOCALE) || !defined(MULTIBYTE_ABLE)
+	extern int my_isprint(int c);
+#endif /* NO_LOCALE || !MULTIBYTE_ABLE */
 #ifdef CHARSET_CONVERSION
 	extern t_bool buffer_to_network(char *line, int mmnwcharset);
 #endif /* CHARSET_CONVERSION */
@@ -410,16 +415,16 @@ extern void set_default_bitmap(struct t_group *group);
 extern FILE *get_nntp_fp(FILE *fp);
 extern FILE *get_nntp_wr_fp(FILE *fp);
 extern char *getserverbyfile(const char *file);
-extern char *get_server(char *string, int size);
-extern int get_respcode(char *, size_t);
-extern int get_only_respcode(char *, size_t);
-extern int new_nntp_command(const char *command, int success, char *message, size_t mlen);
 extern int nntp_open(void);
 extern void nntp_close(void);
-extern void put_server(const char *string);
-extern void u_put_server(const char *string);
 #ifdef NNTP_ABLE
 	extern FILE *nntp_command(const char *, int, char *, size_t);
+	extern char *get_server(char *string, int size);
+	extern int get_respcode(char *, size_t);
+	extern int get_only_respcode(char *, size_t);
+	extern int new_nntp_command(const char *command, int success, char *message, size_t mlen);
+	extern void put_server(const char *string);
+	extern void u_put_server(const char *string);
 #endif /* NNTP_ABLE */
 
 /* nrctbl.c */
@@ -463,7 +468,7 @@ extern time_t parsedate(char *p, TIMEINFO *now);
 #endif /* !HAVE_VSNPRINTF */
 
 /* post.c */
-extern char *checknadd_headers(const char *infile);
+extern char *checknadd_headers(const char *infile, struct t_group *group);
 extern int count_postponed_articles(void);
 extern int mail_to_author(const char *group, int respnum, t_bool copy_text, t_bool with_headers, t_bool raw_data);
 extern int mail_to_someone(const char *address, t_bool confirm_to_mail, t_openartinfo *artinfo, const struct t_group *group);
@@ -564,7 +569,7 @@ extern void center_line(int line, t_bool inverse, const char *str);
 extern void clear_message(void);
 extern void draw_arrow_mark(int line);
 extern void erase_arrow(void);
-extern void error_message(const char *fmt, ...);
+extern void error_message(unsigned int sdelay, const char *fmt, ...);
 extern void info_message(const char *fmt, ...);
 extern void perror_message(const char *fmt, ...);
 extern void ring_bell(void);
@@ -705,8 +710,8 @@ extern int thread_page(struct t_group *group, int respnum, int thread_depth, t_p
 extern void fixup_thread(int respnum, t_bool redraw);
 
 /* version.c */
-extern int check_upgrade(char *line, const char *skip, const char *version);
-extern void upgrade_prompt_quit(int reason, const char *file);
+extern enum rc_state check_upgrade(char *line, const char *skip, const char *version);
+extern void upgrade_prompt_quit(enum rc_state reason, const char *file);
 
 /* wildmat.c */
 extern t_bool wildmat(const char *text, char *p, t_bool icase);

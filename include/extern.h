@@ -3,10 +3,10 @@
  *  Module    : extern.h
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-02-02
+ *  Updated   : 2008-12-11
  *  Notes     :
  *
- * Copyright (c) 1997-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1997-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -236,7 +236,7 @@
 	extern int strncasecmp(const char *, const char *, size_t);
 #endif /* DECL_STRNCASECMP */
 #ifdef DECL_STRSEP
-        extern char *strsep(char **, const char *);
+	extern char *strsep(char **, const char *);
 #endif /* DECL_STRSEP */
 #ifdef DECL_STRTOL
 	extern long strtol(const char *, char **, int);
@@ -333,8 +333,6 @@ extern char *optarg;
 #	define txt_help_thd_C	txt_help_thd_BIGC
 #endif /* CASE_PROBLEM */
 
-extern char **news_headers_to_display_array;
-extern char **news_headers_to_not_display_array;
 extern char *OPT_CHAR_list[];
 extern char *OPT_STRING_list[];
 extern char *nntp_server;
@@ -356,7 +354,6 @@ extern char index_maildir[PATH_LEN];
 extern char index_newsdir[PATH_LEN];
 extern char index_savedir[PATH_LEN];
 extern char inewsdir[PATH_LEN];
-extern char libdir[PATH_LEN];
 extern char local_attributes_file[PATH_LEN];
 extern char local_config_file[PATH_LEN];
 extern char filter_file[PATH_LEN];
@@ -387,6 +384,7 @@ extern char rcdir[PATH_LEN];
 extern char save_active_file[PATH_LEN];
 extern char spooldir[PATH_LEN];
 extern char subscriptions_file[PATH_LEN];
+extern char overviewfmt_file[PATH_LEN];
 extern char txt_help_bug_report[LEN];
 extern char userid[PATH_LEN];
 
@@ -416,7 +414,7 @@ extern constext *txt_mime_encodings[];
 	extern constext *txt_normalization_forms[];
 #endif /* HAVE_UNICODE_NORMALIZATION */
 extern constext *txt_onoff[];
-extern constext *txt_post_process_type[];
+extern constext *txt_post_process_types[];
 extern constext *txt_quote_style_type[];
 extern constext *txt_show_from[];
 extern constext *txt_show_info_type[];
@@ -425,6 +423,7 @@ extern constext *txt_sort_t_type[];	/* t=threads */
 extern constext *txt_strip_bogus_type[];
 extern constext *txt_threading[];
 extern constext *txt_thread_score_type[];
+extern constext *txt_trim_article_body_options[];
 extern constext *txt_wildcard_type[];
 extern constext txt_1_resp[];
 extern constext txt_7bit[];
@@ -893,7 +892,6 @@ extern constext txt_moving[];
 extern constext txt_msgid_line_last[];
 extern constext txt_msgid_line_only[];
 extern constext txt_msgid_refs_line[];
-extern constext txt_refs_line_only[];
 extern constext txt_name[];
 extern constext txt_newsgroup[];
 extern constext txt_newsgroup_plural[];
@@ -1235,17 +1233,15 @@ extern int iso2asc_supported;
 extern int last_resp;
 extern int max_active;
 extern int max_art;
-extern int max_local_attributes;
 extern int max_newnews;
 extern int max_save;
+extern int max_scope;
 extern int need_resize;
-extern int num_headers_to_display;
-extern int num_headers_to_not_display;
 extern int num_active;
-extern int num_local_attributes;
 extern int num_newnews;
 extern int num_of_tagged_arts;
 extern int num_save;
+extern int num_scope;
 extern int signal_context;
 extern int srch_lineno;
 extern int system_status;
@@ -1284,8 +1280,7 @@ extern struct regex_cache strokes_regex;
 #endif /* HAVE_COLOR */
 
 extern struct t_article *arts;
-extern struct t_attribute *local_attributes;
-extern struct t_attribute glob_attributes;
+extern struct t_attribute *scopes;
 extern struct t_config tinrc;
 extern struct t_filters glob_filter;
 extern struct t_group *active;
@@ -1301,6 +1296,7 @@ extern t_bool check_for_new_newsgroups;
 extern t_bool cmd_line;
 extern t_bool created_rcdir;
 extern t_bool dangerous_signal_exit; /* TRUE if SIGHUP, SIGTERM, SIGUSR1 */
+extern t_bool did_reconnect;
 extern t_bool disable_gnksa_domain_check;
 extern t_bool disable_sender;
 extern t_bool force_no_post;
@@ -1323,6 +1319,7 @@ extern t_bool show_subject;
 extern t_bool batch_mode;
 extern t_bool verbose;
 extern t_bool xref_supported;
+extern t_bool expensive_over_parse;
 
 extern t_function last_search;
 
@@ -1331,6 +1328,8 @@ extern t_menu grpmenu;
 extern t_menu *currmenu;
 
 extern t_openartinfo pgart;
+
+extern struct t_overview_fmt *ofmt;
 
 enum {
 	HIST_OTHER = 0,
@@ -1546,7 +1545,7 @@ extern struct opttxt txt_news_quote_format;
 extern struct opttxt txt_pos_first_unread;
 extern struct opttxt txt_post_8bit_header;
 extern struct opttxt txt_post_mime_encoding;
-extern struct opttxt txt_post_process;
+extern struct opttxt txt_post_process_type;
 extern struct opttxt txt_post_process_view;
 extern struct opttxt txt_posted_articles_file;
 extern struct opttxt txt_posting_options;
@@ -1593,6 +1592,7 @@ extern struct opttxt txt_thread_articles;
 extern struct opttxt txt_thread_perc;
 extern struct opttxt txt_thread_catchup_on_exit;
 extern struct opttxt txt_thread_score;
+extern struct opttxt txt_trim_article_body;
 extern struct opttxt txt_underscores_regex;
 extern struct opttxt txt_unlink_article;
 extern struct opttxt txt_url_handler;
@@ -1600,6 +1600,7 @@ extern struct opttxt txt_url_highlight;
 extern struct opttxt txt_use_mouse;
 extern struct opttxt txt_verbatim_begin_regex;
 extern struct opttxt txt_verbatim_end_regex;
+extern struct opttxt txt_verbatim_handling;
 extern struct opttxt txt_wildcard;
 extern struct opttxt txt_word_highlight;
 extern struct opttxt txt_word_h_display_marks;
@@ -1633,6 +1634,7 @@ extern struct opttxt txt_xpost_quote_format;
 	extern struct opttxt txt_col_title;
 	extern struct opttxt txt_col_signature;
 	extern struct opttxt txt_col_urls;
+	extern struct opttxt txt_col_verbatim;
 	extern struct opttxt txt_col_markstar;
 	extern struct opttxt txt_col_markdash;
 	extern struct opttxt txt_col_markslash;

@@ -3,10 +3,10 @@
  *  Module    : search.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2007-10-04
+ *  Updated   : 2008-11-08
  *  Notes     :
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -94,7 +94,7 @@ get_search_pattern(
 		last_forward = *forward;
 		my_strncpy(last_pattern, def, LEN);
 
-		/* HIST_BODY_SEARCH doesn't exist, hence i_key_search_last is set directly in search_body() */
+		/* HIST_BODY_SEARCH doesn't exist, hence last_search is set directly in search_body() */
 		if (which_hist == HIST_AUTHOR_SEARCH)
 			last_search = *forward ? GLOBAL_SEARCH_AUTHOR_FORWARD : GLOBAL_SEARCH_AUTHOR_BACKWARD;
 		else
@@ -435,7 +435,7 @@ search_group(
 		}
 
 		/* Only search displayed articles */
-		if (curr_group->attribute->show_only_unread && arts[i].status != ART_UNREAD)
+		if (curr_group->attribute->show_only_unread_arts && arts[i].status != ART_UNREAD)
 			continue;
 
 		ret = search_func(i, searchbuff);
@@ -648,7 +648,7 @@ search_body(
 	/*
 	 * Count up the articles to be processed for the progress meter
 	 */
-	if (group->attribute->show_only_unread) {
+	if (group->attribute->show_only_unread_arts) {
 		for (i = 0; i < grpmenu.max; i++)
 			total_cnt += new_responses(i);
 	} else {

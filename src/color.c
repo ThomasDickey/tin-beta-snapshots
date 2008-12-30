@@ -7,11 +7,11 @@
  *              Julien Oster <fuzzy@cu8.cum.de> (word highlighting)
  *              T.Dickey <dickey@invisible-island.net> (curses support)
  *  Created   : 1995-06-02
- *  Updated   : 2008-01-11
+ *  Updated   : 2008-12-16
  *  Notes     : This are the basic function for ansi-color
  *              and word highlighting
  *
- * Copyright (c) 1995-2008 Roland Rosenfeld <roland@spinnaker.rhein.de>
+ * Copyright (c) 1995-2009 Roland Rosenfeld <roland@spinnaker.rhein.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,6 +58,12 @@ int default_bcol = 0;
 
 #	ifdef USE_CURSES
 	static int current_fcol = 7;
+	static struct LIST {
+		struct LIST *link;
+		int pair;
+		int fg;
+		int bg;
+	} *list;
 #	endif /* USE_CURSES */
 static int current_bcol = 0;
 
@@ -76,12 +82,6 @@ set_colors(
 	int fcolor,
 	int bcolor)
 {
-	static struct LIST {
-		struct LIST *link;
-		int pair;
-		int fg;
-		int bg;
-	} *list;
 	static int nextpair;
 
 #		ifndef HAVE_USE_DEFAULT_COLORS
@@ -124,7 +124,7 @@ set_colors(
 			if (found)
 				pair = p->pair;
 			else if (++nextpair < COLOR_PAIRS) {
-				p = my_malloc(sizeof(struct LIST)); /* TODO: plug mem leak */
+				p = my_malloc(sizeof(struct LIST));
 				p->fg = fcolor;
 				p->bg = bcolor;
 				p->pair = pair = nextpair;
@@ -145,6 +145,19 @@ refresh_color(
 	void)
 {
 	set_colors(current_fcol, current_bcol);
+}
+
+
+void
+free_color_pair_arrays(
+	void)
+{
+	struct LIST *p, *q;
+
+	for (p = list; p != NULL; p = q) {
+		q = p->link;
+		free(p);
+	}
 }
 #	endif /* USE_CURSES */
 
@@ -228,6 +241,8 @@ draw_pager_line(
 				fcol(tinrc.col_quote2);
 			} else if (flags & C_QUOTE1) {
 				fcol(tinrc.col_quote);
+			} else if (flags & C_VERBATIM) {
+				fcol(tinrc.col_verbatim);
 			} else
 				fcol(tinrc.col_text);
 		}
@@ -312,7 +327,7 @@ draw_pager_line(
 				 * non-printable char
 				 * print as an octal value
 				 */
-				snprintf(octal, sizeof(octal), "\\%03o", (int) *c & 0xff);
+				snprintf(octal, sizeof(octal), "\\%03o", (int) (*c & 0xff));
 				my_fputs(octal, stdout);
 				c++;
 			}

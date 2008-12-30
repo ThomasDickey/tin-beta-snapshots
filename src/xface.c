@@ -3,10 +3,10 @@
  *  Module    : xface.c
  *  Author    : Joshua Crawford & Drazen Kacar
  *  Created   : 2003-04-27
- *  Updated   : 2007-10-04
+ *  Updated   : 2008-11-22
  *  Notes     :
  *
- * Copyright (c) 2003-2008 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
+ * Copyright (c) 2003-2009 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,9 +36,7 @@
 
 
 /*
- * TODO: - add configure check option for use_slrnface
- *         (see comments include/autoconf.hin)
- *       - document the used vars/files/dir in the mapage
+ * TODO: - document the used vars/files/dir in the mapage
  *       - move strings to lang.c
  */
 
@@ -57,20 +55,22 @@ slrnface_start(
 {
 	char *fifo;
 	char *ptr;
-	int pathlen, status;
+	int status;
 	pid_t pid, pidst;
+	size_t pathlen;
 	struct utsname u;
 
 	if (!tinrc.use_slrnface)
 		return;
 
 #ifdef HAVE_IS_XTERM
-	if (!is_xterm())
+	if (!is_xterm()) {
 #	ifdef DEBUG
 		if (debug & DEBUG_MISC)
-			error_message(_("Can't run slrnface: Not running in a xterm."));
+			error_message(2, _("Can't run slrnface: Not running in a xterm."));
 #	endif /* DEBUG */
 		return;
+	}
 #endif /* HAVE_IS_XTERM */
 
 	/*
@@ -79,7 +79,7 @@ slrnface_start(
 	if (!getenv("DISPLAY")) {
 #	ifdef DEBUG
 		if (debug & DEBUG_MISC)
-			error_message(_("Can't run slrnface: Environment variable %s not found."), "DISPLAY");
+			error_message(2, _("Can't run slrnface: Environment variable %s not found."), "DISPLAY");
 #	endif /* DEBUG */
 		return;
 	}
@@ -90,7 +90,7 @@ slrnface_start(
 	if (!getenv("WINDOWID")) {
 #	ifdef DEBUG
 		if (debug & DEBUG_MISC)
-			error_message(_("Can't run slrnface: Environment variable %s not found."), "WINDOWID");
+			error_message(2, _("Can't run slrnface: Environment variable %s not found."), "WINDOWID");
 #	endif /* DEBUG */
 		return;
 	}
@@ -99,14 +99,14 @@ slrnface_start(
 	if (!(ptr = getenv("HOME"))) { /* TODO: use tin global 'homedir' instead? or even rcdir? */
 #	ifdef DEBUG
 		if (debug & DEBUG_MISC)
-			error_message(_("Can't run slrnface: Environment variable %s not found."), "HOME");
+			error_message(2, _("Can't run slrnface: Environment variable %s not found."), "HOME");
 #	endif /* DEBUG */
 		return;
 	}
 	pathlen = strlen(ptr) + strlen("/.slrnfaces/") + strlen(u.nodename) + 30;
 	fifo = my_malloc(pathlen);
-	sprintf(fifo, "%s/.slrnfaces", ptr);
-	if (mkdir(fifo, 0700)) {	/* TODO: use my_mkdir() */
+	snprintf(fifo, pathlen, "%s/.slrnfaces", ptr);
+	if (my_mkdir(fifo, (mode_t) S_IRWXU)) {
 		if (errno != EEXIST) {
 			perror_message(_("Can't run slrnface: failed to create %s"), fifo);
 			free(fifo);
@@ -115,8 +115,8 @@ slrnface_start(
 	} else {
 		FILE *fp;
 
-		/* We'll abuse fifo filename memory here. It's long enough. */
-		sprintf(fifo, "%s/.slrnfaces/README", ptr);
+		/* We abuse fifo filename memory here. It is long enough. */
+		snprintf(fifo, pathlen, "%s/.slrnfaces/README", ptr);
 		if ((fp = fopen(fifo, "w")) != NULL) {
 			fputs(_("This directory is used to create named pipes for communication between\n"
 "slrnface and its parent process. It should normally be empty because\n"
@@ -132,7 +132,7 @@ slrnface_start(
 
 	snprintf(fifo, pathlen, "%s/.slrnfaces/%s.%ld", ptr, u.nodename, (long) getpid());
 	if (!(status = strlen(fifo))) {
-		error_message(_("Can't run slrnface: couldn't construct fifo name."));
+		error_message(2, _("Can't run slrnface: couldn't construct fifo name."));
 		unlink(fifo);
 		free(fifo);
 		return;
@@ -171,7 +171,7 @@ slrnface_start(
 				pidst = waitpid(pid, &status, 0);
 			} while (pidst == -1 && errno == EINTR);
 			if (!WIFEXITED(status))
-				error_message(_("Slrnface abnormally exited, code %d."), status);
+				error_message(2, _("Slrnface abnormally exited, code %d."), status);
 			else {
 				const char *message;
 
@@ -215,7 +215,7 @@ slrnface_start(
 						message = "unknown error";
 				}
 				if (message)
-					error_message(_("Slrnface failed: %s."), message);
+					error_message(2, _("Slrnface failed: %s."), message);
 			}
 	}
 	unlink(fifo);

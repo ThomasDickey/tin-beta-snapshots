@@ -3,10 +3,10 @@
  *  Module    : rfc2046.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2007-09-11
+ *  Updated   : 2008-09-21
  *  Notes     : rfc2046 MIME article definitions
  *
- * Copyright (c) 2000-2008 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2009 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -129,21 +129,22 @@ struct t_header
 
 /* flags for lineinfo.flags */
 /* Primary colours */
-#	define C_HEADER		0x001
-#	define C_BODY		0x002
-#	define C_SIG		0x004
-#	define C_ATTACH		0x008
-#	define C_UUE		0x010
+#	define C_HEADER		0x0001
+#	define C_BODY		0x0002
+#	define C_SIG		0x0004
+#	define C_ATTACH		0x0008
+#	define C_UUE		0x0010
 
 /* Secondary flags */
-#	define C_QUOTE1	0x020
-#	define C_QUOTE2	0x040
-#	define C_QUOTE3	0x080
+#	define C_QUOTE1	0x0020
+#	define C_QUOTE2	0x0040
+#	define C_QUOTE3	0x0080
 
-#	define C_URL		0x100	/* Contains http|ftp|gopher: */
-#	define C_MAIL		0x200	/* Contains mailto: */
-#	define C_NEWS		0x400	/* Contains news|nntp: */
-#	define C_CTRLL		0x800	/* Contains ^L */
+#	define C_URL		0x0100	/* Contains http|ftp|gopher: */
+#	define C_MAIL		0x0200	/* Contains mailto: */
+#	define C_NEWS		0x0400	/* Contains news|nntp: */
+#	define C_CTRLL		0x0800	/* Contains ^L */
+#	define C_VERBATIM	0x1000	/* Verbatim block */
 
 
 typedef struct lineinfo

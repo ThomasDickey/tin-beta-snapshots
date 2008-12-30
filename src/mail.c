@@ -3,10 +3,10 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2008-03-18
+ *  Updated   : 2008-11-25
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
- * Copyright (c) 1992-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -107,7 +107,7 @@ read_mail_active_file(
 			my_fputc('\n', stderr);
 
 		if (!created_rcdir) /* no error on first start */
-			error_message(_(txt_cannot_open), mail_active_file);
+			error_message(2, _(txt_cannot_open), mail_active_file);
 		/*
 		 * TODO: do an autoscan of maildir, create & reopen?
 		 */
@@ -188,7 +188,7 @@ write_mail_active_file(
 	file_tmp = get_tmpfilename(mail_active_file);
 
 	if (!backup_file(mail_active_file, file_tmp)) {
-		error_message(_(txt_filesystem_full_backup), mail_active_file);
+		error_message(2, _(txt_filesystem_full_backup), mail_active_file);
 		/* free memory for tmp-filename */
 		free(file_tmp);
 		return;
@@ -206,7 +206,7 @@ write_mail_active_file(
 			}
 		}
 		if (ferror(fp) || fclose(fp)) {
-			error_message(_(txt_filesystem_full), mail_active_file);
+			error_message(2, _(txt_filesystem_full), mail_active_file);
 			rename(file_tmp, mail_active_file);
 		} else
 			unlink(file_tmp);
@@ -288,6 +288,7 @@ open_newsgroups_fp(
 			char line[NNTP_STRLEN];
 			char file[PATH_LEN];
 			char serverdir[PATH_LEN];
+			struct t_group *group;
 			int resp, i;
 
 			if (nntp_tcp_port != IPPORT_NNTP)
@@ -300,22 +301,26 @@ open_newsgroups_fp(
 
 			if ((result = fopen(file, "w")) != NULL) {
 				for_each_group(i) {
-					snprintf(buff, sizeof(buff), "LIST NEWSGROUPS %s", active[i].name);
+					if ((group = group_find(active[i].name, FALSE)) != NULL) {
+						if (group->type == GROUP_TYPE_NEWS) {
+							snprintf(buff, sizeof(buff), "LIST NEWSGROUPS %s", active[i].name);
 #		ifdef DISABLE_PIPELINING
-					if ((resp = new_nntp_command(buff, OK_GROUPS, line, sizeof(line))) != OK_GROUPS) {
-						no_more_wildmat = resp;
-						break;
-					}
-					while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+							if ((resp = new_nntp_command(buff, OK_GROUPS, line, sizeof(line))) != OK_GROUPS) {
+								no_more_wildmat = resp;
+								break;
+							}
+							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #			ifdef DEBUG
-						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "<<< %s", ptr);
+								if (debug & DEBUG_NNTP)
+									debug_print_file("NNTP", "<<< %s", ptr);
 #			endif /* DEBUG */
-						fprintf(result, "%s\n", str_trim(ptr));
-					}
+								fprintf(result, "%s\n", str_trim(ptr));
+							}
 #		else
-					put_server(buff);
+							put_server(buff);
 #		endif /* DISABLE_PIPELINING */
+						}
+					}
 				}
 #		ifndef DISABLE_PIPELINING
 				for_each_group(i) {
@@ -324,22 +329,27 @@ open_newsgroups_fp(
 					 * see a 480 but that could fail as there might be
 					 * pending data
 					 */
-					if ((resp = get_only_respcode(line, sizeof(line))) != OK_GROUPS) {
-						if (!no_more_wildmat)
-							no_more_wildmat = resp;
-						continue;
-					}
-					while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+					if ((group = group_find(active[i].name, FALSE)) != NULL) {
+						if (group->type == GROUP_TYPE_NEWS) {
+							if ((resp = get_only_respcode(line, sizeof(line))) != OK_GROUPS) {
+								if (!no_more_wildmat)
+									no_more_wildmat = resp;
+								continue;
+							}
+							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #			ifdef DEBUG
-						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "<<< %s", ptr);
+								if (debug & DEBUG_NNTP)
+									debug_print_file("NNTP", "<<< %s", ptr);
 #			endif /* DEBUG */
-						fprintf(result, "%s\n", str_trim(ptr));
+								fprintf(result, "%s\n", str_trim(ptr));
+							}
+						}
 					}
 				}
+				/* TODO: add 483 (RFC 3977) support */
 				if (no_more_wildmat == ERR_NOAUTH || no_more_wildmat == NEED_AUTHINFO) {
 					if (!authenticate(nntp_server, userid, FALSE)) {
-						error_message(_(txt_auth_failed), ERR_ACCESS);
+						error_message(2, _(txt_auth_failed), ERR_ACCESS);
 						tin_done(EXIT_FAILURE);
 					}
 				}
@@ -636,7 +646,7 @@ art_edit(
 	if (!backup_file(article_filename, temp_filename))
 		return FALSE;
 
-	if (!invoke_editor(temp_filename, 1)) {
+	if (!invoke_editor(temp_filename, 1, group)) {
 		unlink(temp_filename);
 		return FALSE;
 	} else
