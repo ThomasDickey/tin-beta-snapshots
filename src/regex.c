@@ -3,11 +3,11 @@
  *  Module    : regex.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-02-21
- *  Updated   : 2007-04-12
+ *  Updated   : 2008-11-22
  *  Notes     : Regular expression subroutines
  *  Credits   :
  *
- * Copyright (c) 1997-2008 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1997-2009 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -77,8 +77,10 @@ match_regex(
 	}
 
 	if ((error = pcre_exec(ptr_cache->re, ptr_cache->extra, string, strlen(string), 0, 0, NULL, 0)) >= 0) {
-		FreeIfNeeded(tmp_cache.re);
-		FreeIfNeeded(tmp_cache.extra);
+		if (ptr_cache == &tmp_cache) {
+			FreeIfNeeded(tmp_cache.re);
+			FreeIfNeeded(tmp_cache.extra);
+		}
 
 		return TRUE;
 	}
@@ -89,7 +91,7 @@ match_regex(
 	 * an error message on each call
 	 */
 	if (error != PCRE_ERROR_NOMATCH)
-		error_message(_(txt_pcre_error_num), error);
+		error_message(2, _(txt_pcre_error_num), error);
 #endif /* 0 */
 
 	FreeIfNeeded(tmp_cache.re);
@@ -122,13 +124,13 @@ compile_regex(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE && PCRE_MAJOR && PCRE_MAJOR >= 4*/
 
 	if ((cache->re = pcre_compile(regex, my_options, &regex_errmsg, &regex_errpos, NULL)) == NULL)
-		error_message(_(txt_pcre_error_at), regex_errmsg, regex_errpos, regex);
+		error_message(2, _(txt_pcre_error_at), regex_errmsg, regex_errpos, regex);
 	else {
 		cache->extra = pcre_study(cache->re, 0, &regex_errmsg);
 		if (regex_errmsg != NULL) {
 			/* we failed, clean up */
 			FreeAndNull(cache->re);
-			error_message(_(txt_pcre_error_text), regex_errmsg);
+			error_message(2, _(txt_pcre_error_text), regex_errmsg);
 		} else
 			return TRUE;
 	}

@@ -3,11 +3,11 @@
  *  Module    : stpwatch.h
  *  Author    : I. Lea
  *  Created   : 1993-08-03
- *  Updated   : 1997-04-05
+ *  Updated   : 2008-11-22
  *  Notes     : Simple stopwatch routines for timing code using timeb
  *	             or gettimeofday structs
  *
- * Copyright (c) 1993-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,7 +60,7 @@ struct timeb end_tb;
 				 end_tb.time, end_tb.millitm, \
 				 (((end_tb.time - LSECS) * 1000) + end_tb.millitm) - \
 				 (((beg_tb.time - LSECS) * 1000) + beg_tb.millitm)); \
-				 error_message (tmp_tb, "");}
+				 error_message(2, tmp_tb, "");}
 
 #		else	/* HAVE_SYS_TIMEB_H && HAVE_FTIME */
 
@@ -83,7 +83,7 @@ float d_time;
 				 d_time = (end_tb.tv_sec*1000.0 + ((float)end_tb.tv_usec)/1000.0);}
 
 #			define PrintStopWatch()	{sprintf (tmp_tb, "StopWatch(%s): %6.3f ms", msg_tb, d_time); \
-				 error_message (tmp_tb, "");}
+				 error_message(2, tmp_tb, "");}
 
 #		endif /* HAVE_SYS_TIME_H */
 #	endif /* HAVE_SYS_TIMEB_H && HAVE_FTIME */

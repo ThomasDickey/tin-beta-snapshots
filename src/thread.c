@@ -3,10 +3,10 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-02-25
+ *  Updated   : 2008-11-25
  *  Notes     :
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -364,7 +364,7 @@ static t_function
 thread_left(
 	void)
 {
-	if (tinrc.thread_catchup_on_exit)
+	if (curr_group->attribute->thread_catchup_on_exit)
 		return SPECIAL_CATCHUP_LEFT;			/* ie, not via 'c' or 'C' */
 	else
 		return GLOBAL_QUIT;
@@ -426,7 +426,7 @@ thread_page(
 	if (thread_depth)
 		thdmenu.curr = thread_depth;
 	else {
-		if (tinrc.pos_first_unread) {
+		if (group->attribute->pos_first_unread) {
 			if (new_responses(thread_basenote)) {
 				for (n = 0, i = (int) base[thread_basenote]; i >= 0; i = arts[i].thread, n++) {
 					if (arts[i].status == ART_UNREAD || arts[i].status == ART_WILL_RETURN) {
@@ -559,7 +559,7 @@ thread_page(
 				break;
 
 			case GLOBAL_EDIT_FILTER:
-				if (!invoke_editor(filter_file, FILTER_FILE_OFFSET))
+				if (!invoke_editor(filter_file, FILTER_FILE_OFFSET, NULL))
 					break;
 				unfilter_articles();
 				(void) read_filter_file(filter_file);
@@ -822,7 +822,7 @@ show_thread_page(
 	/*
 	 * If threading by Refs, it helps to see the subject line
 	 */
-	show_subject = ((arts[thread_respnum].archive != NULL) || (curr_group->attribute->thread_arts == THREAD_REFS) || (curr_group->attribute->thread_arts == THREAD_BOTH));
+	show_subject = ((arts[thread_respnum].archive != NULL) || (curr_group->attribute->thread_articles == THREAD_REFS) || (curr_group->attribute->thread_articles == THREAD_BOTH));
 
 	if (show_subject)
 		title = fmt_string(_(txt_stp_list_thread), grpmenu.curr + 1, grpmenu.max);
@@ -955,7 +955,7 @@ which_thread(
 			return j;
 	}
 
-	error_message(_(txt_cannot_find_base_art), n);
+	error_message(2, _(txt_cannot_find_base_art), n);
 	return -1;
 }
 
@@ -1103,7 +1103,7 @@ stat_thread(
 		if (arts[i].killed)
 			++sbuf->killed;
 
-		if ((curr_group->attribute->thread_arts == THREAD_MULTI) && global_get_multipart_info(i, &minfo) && (minfo.total >= 1)) {
+		if ((curr_group->attribute->thread_articles == THREAD_MULTI) && global_get_multipart_info(i, &minfo) && (minfo.total >= 1)) {
 			sbuf->multipart_compare_len = minfo.subject_compare_len;
 			sbuf->multipart_total = minfo.total;
 			sbuf->multipart_have++;
@@ -1236,7 +1236,7 @@ next_unread(
 		n = next_response(n);
 	}
 
-	if (tinrc.wrap_on_next_unread) {
+	if (curr_group->attribute->wrap_on_next_unread) {
 		n = base[0];
 		while (n != cur_base_art) {
 			if (((arts[n].status == ART_UNREAD) || (arts[n].status == ART_WILL_RETURN)) && arts[n].thread != ART_EXPIRED)
@@ -1376,7 +1376,7 @@ thread_catchup(
 
 	if (i != -1) {				/* still unread arts in this thread */
 		/*
-		 * TODO: if (group->attribute->thread_arts == THREAD_NONE)
+		 * TODO: if (group->attribute->thread_articles == THREAD_NONE)
 		 *          snprintf(buf, sizeof(buf), _("Mark article as read%s?"), (func == CATCHUP_NEXT_UNREAD) ? _(" and enter next unread article") : "");
 		 *       else
 		 */
@@ -1533,7 +1533,7 @@ mark_art_read(
 	int tmp_num_of_tagged_arts = num_of_tagged_arts;
 	t_function func = MARK_READ_CURRENT;
 
-	if (!tinrc.mark_ignore_tags && got_tagged_unread_arts()) {
+	if (!group->attribute->mark_ignore_tags && got_tagged_unread_arts()) {
 		func = prompt_slk_response(MARK_READ_TAGGED,
 				mark_read_keys,
 				_(txt_mark_art_read_tagged_current),

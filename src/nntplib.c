@@ -3,7 +3,7 @@
  *  Module    : nntplib.c
  *  Author    : S. Barber & I. Lea
  *  Created   : 1991-01-12
- *  Updated   : 2008-03-19
+ *  Updated   : 2008-11-22
  *  Notes     : NNTP client routines taken from clientlib.c 1.5.11 (1991-02-10)
  *  Copyright : (c) Copyright 1991-99 by Stan Barber & Iain Lea
  *              Permission is hereby granted to copy, reproduce, redistribute
@@ -34,6 +34,8 @@ char *nntp_server = NULL;
 
 /* Flag to show whether tin did reconnect in last get_server() */
 t_bool reconnected_in_last_get_server = FALSE;
+/* Flag used in LIST ACVTIVE loop */
+t_bool did_reconnect = FALSE;
 
 static TCP *nntp_rd_fp = NULL;
 static TCP *nntp_wr_fp = NULL;
@@ -53,7 +55,7 @@ static TCP *nntp_wr_fp = NULL;
 #ifdef NNTP_ABLE
 	static int mode_reader(t_bool *sec);
 	static int reconnect(int retry);
-	static int server_init(char *machine, const char *cservice, int port, char *text, size_t mlen);
+	static int server_init(char *machine, const char *cservice, unsigned short port, char *text, size_t mlen);
 	static int check_extensions(t_bool *sec);
 	static void close_server(void);
 	static void list_motd(void);
@@ -204,7 +206,7 @@ static int
 server_init(
 	char *machine,
 	const char *cservice,	/* usually a literal */
-	int port,
+	unsigned short port,
 	char *text,
 	size_t mlen)
 {
@@ -226,9 +228,9 @@ server_init(
 		sockt_rd = get_tcp_socket(machine, service, port);
 #	else
 #		ifdef INET6
-	sockt_rd = get_tcp6_socket(machine, (unsigned short) port);
+	sockt_rd = get_tcp6_socket(machine, port);
 #		else
-	sockt_rd = get_tcp_socket(machine, service, (unsigned short) port);
+	sockt_rd = get_tcp_socket(machine, service, port);
 #		endif /* INET6 */
 #	endif /* DECNET */
 
@@ -617,8 +619,7 @@ get_tcp6_socket(
 	hints.ai_socktype = SOCK_STREAM;
 	res = (struct addrinfo *) 0;
 	res0 = (struct addrinfo *) 0;
-	err = getaddrinfo(mymachine, myport, &hints, &res0);
-	if (err != 0) {
+	if ((err = getaddrinfo(mymachine, myport, &hints, &res0))) {
 		my_fprintf(stderr, "\ngetaddrinfo: %s\n", gai_strerror(err));
 		return -1;
 	}
@@ -775,8 +776,15 @@ put_server(
 		/*
 		 * remember the last command we wrote to be able to resend it after a
 		 * reconnect. reconnection is handled by get_server()
+		 *
+		 * don't cache "LIST ACTIVE something" as we would need to
+		 * resend all of them but we remeber just the last one. we cache
+		 * "LIST" instead, this will slow down things, but that's ok on
+		 * reconnect.
 		 */
-		if (last_put != string)
+		if (!strncmp(string, "LIST ACTIVE ", 12))
+			STRCPY(last_put, "LIST");
+		else
 			STRCPY(last_put, string);
 	}
 	(void) s_flush(nntp_wr_fp);
@@ -836,6 +844,7 @@ reconnect(
 		}
 		DEBUG_IO((stderr, _("Resend last command (%s)\n"), buf));
 		put_server(buf);
+		did_reconnect = TRUE;
 		return 0;
 	}
 
@@ -871,9 +880,12 @@ get_server(
 
 	/*
 	 * NULL socket reads indicates socket has closed. Try a few times more
+	 *
+	 * TODO: add a timeout (some servers do not close the connection but
+	 *       simply do not send any response data -> we need a timeout to
+	 *       leave the s_gets() in that case)
 	 */
 	while (nntp_rd_fp == NULL || s_gets(string, size, nntp_rd_fp) == NULL) {
-
 		if (quitting)						/* Don't bother to reconnect */
 			tin_done(NNTP_ERROR_EXIT);		/* And don't try to disconnect again! */
 
@@ -1024,9 +1036,11 @@ check_extensions(
 					} else if (!strcasecmp(ptr, "MODE-READER")) {
 						if (!nntp_caps.reader)
 							nntp_caps.mode_reader = TRUE;
-					} else if (!strcasecmp(ptr, "READER")) {
+					} else if (!strcasecmp(ptr, "READER")) { /* if we saw READER, "LIST ACTIVE" and "LIST NEWSGROUPS" must be implemented */
 						nntp_caps.reader = TRUE;
 						nntp_caps.mode_reader = FALSE;
+						nntp_caps.list_newsgroups = TRUE;
+						nntp_caps.list_active = TRUE;
 					} else if (!strcasecmp(ptr, "POST"))
 						nntp_caps.post = TRUE;
 					else if (!strcasecmp(ptr, "NEWNEWS"))
@@ -1088,7 +1102,7 @@ check_extensions(
 					else if (!strcasecmp(ptr, "IHAVE"))
 						nntp_caps.ihave = TRUE;
 					else if (!strcasecmp(ptr, "STREAMING"))
-					 	nntp_caps.streaming = TRUE;
+						nntp_caps.streaming = TRUE;
 #		endif /* 0 */
 				} else
 					nntp_caps.type = NONE;
@@ -1097,14 +1111,16 @@ check_extensions(
 
 		/*
 		 * XanaNewz 2 Server Version 2.0.0.3 doesn't know CAPABILITIES
-		 * but responses with 400 _without_ closing the connection. If
+		 * but respondes with 400 _without_ closing the connection. If
 		 * you use tin on a XanaNewz 2 Server comment out the following
 		 * case.
 		 */
+#if 1
 		case ERR_GOODBYE:
 			ret = i;
-			error_message(buf);
+			error_message(2, buf);
 			break;
+#endif /* 1 */
 
 		default:
 			break;
@@ -1115,7 +1131,7 @@ check_extensions(
 	if ((ret != ERR_GOODBYE) && !*sec && !nntp_caps.reader) {
 		if (nntp_caps.type == CAPABILITIES && !nntp_caps.mode_reader) {
 			if (!nntp_caps.post) { /* as a last resort check if post was mentioned */
-				error_message(_("CAPABILITIES did not announce any of READER, MODE-READER, POST")); /* TODO: -> lang.c */
+				error_message(2, _("CAPABILITIES did not announce any of READER, MODE-READER, POST")); /* TODO: -> lang.c */
 				return -1; /* give up */
 			}
 		}
@@ -1190,7 +1206,7 @@ check_extensions(
 
 			case ERR_GOODBYE:
 				ret = i;
-				error_message(buf);
+				error_message(2, buf);
 				break;
 
 			default:
@@ -1233,10 +1249,11 @@ mode_reader(
 		 *   201 (OK_NOPOST)      Hello, you can't post
 		 *   502 (ERR_ACCESS)     Service unavailable
 		 *
-		 * However, there may be old servers out there that do not implement this
-		 * command and therefore return ERR_COMMAND (500). Unfortunately there
-		 * are some new servers out there (i.e. INN 2.4.0 (20020220 prerelease)
-		 * which do return ERR_COMMAND if they are feed only servers.
+		 * However, there are servers out there (e.g. Delegate 9.8.x) that do
+		 * not implement this command and therefore return ERR_COMMAND (500).
+		 * Unfortunately there are some new servers out there (i.e. INN 2.4.0
+		 * (20020220 prerelease) which do return ERR_COMMAND if they are feed
+		 * only servers.
 		 */
 
 		switch ((ret = get_respcode(line, sizeof(line)))) {
@@ -1254,10 +1271,15 @@ mode_reader(
 
 			case ERR_GOODBYE:
 			case ERR_ACCESS:
-				error_message(line);
+				error_message(2, line);
 				return ret;
 
 			case ERR_COMMAND:
+#if 1
+				ret = 0;
+				break;
+#endif /* 1 */
+
 			default:
 				break;
 		}
@@ -1295,8 +1317,8 @@ nntp_open(
 #	endif /* DEBUG */
 
 	if (nntp_server == NULL) {
-		error_message(_(txt_cannot_get_nntp_server_name));
-		error_message(_(txt_server_name_in_file_env_var), NNTP_SERVER_FILE);
+		error_message(2, _(txt_cannot_get_nntp_server_name));
+		error_message(2, _(txt_server_name_in_file_env_var), NNTP_SERVER_FILE);
 		return -EHOSTUNREACH;
 	}
 
@@ -1351,9 +1373,9 @@ nntp_open(
 				break;
 			}
 			if (ret < 0)
-				error_message(_(txt_failed_to_connect_to_server), nntp_server);
+				error_message(2, _(txt_failed_to_connect_to_server), nntp_server);
 			else
-				error_message(line);
+				error_message(2, line);
 
 			return ret;
 	}
@@ -1372,7 +1394,7 @@ nntp_open(
 	 *   (i.e. CAPABILITIES) but as we are not allowed to cache CAPABILITIES
 	 *   we reissue the command on reconnect. To prevent a loop we catch this
 	 *   case.
-     *
+	 *
 	 * TODO: The authentication method required may be mentioned in the list
 	 *       of extensions. (For details about authentication methods, see
 	 *       RFC 4643).
@@ -1456,13 +1478,13 @@ nntp_open(
 				case ERR_COMMAND:
 					break;
 
-				case 224:	/* unexpected multiline ok, e.g.: Synchronet 3.13 NNTP Service 1.92 */
+				case OK_XOVER:	/* unexpected multiline ok, e.g.: Synchronet 3.13 NNTP Service 1.92 */
 					nntp_caps.over_cmd = &xover_cmds[i];
 #	ifdef DEBUG
 					if (debug & DEBUG_NNTP)
-						debug_print_file("NNTP" "nntp_open() %s skipping data", &xover_cmds[i]);
+						debug_print_file("NNTP", "nntp_open() %s skipping data", &xover_cmds[i]);
 #	endif /* DEBUG */
-					while ((linep = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL)
+					while (tin_fgets(FAKE_NNTP_FP, FALSE))
 						;
 					j = -1;
 					break;
@@ -1473,25 +1495,48 @@ nntp_open(
 					break;
 			}
 		}
+#	ifdef XHDR_XREF
+		for (i = 0, j = 0; i < 2 && j >= 0; i++) {
+			j = new_nntp_command(&xhdr_cmds[i], ERR_CMDSYN, line, sizeof(line));
+			switch (j) {
+				case ERR_COMMAND:
+					break;
+
+				case 221:	/* unexpected multiline ok, e.g.: SoftVelocity Discussions 2.5q */
+					nntp_caps.hdr_cmd = &xhdr_cmds[i];
+#	ifdef DEBUG
+					if (debug & DEBUG_NNTP)
+						debug_print_file("NNTP", "nntp_open() %s skipping data", &xhdr_cmds[i]);
+#	endif /* DEBUG */
+					while (tin_fgets(FAKE_NNTP_FP, FALSE))
+						;
+					j = -1;
+					break;
+
+				default:	/* usualy ERR_CMDSYN (args missing), Typhoon/Twister sends ERR_NCING */
+					nntp_caps.hdr_cmd = &xhdr_cmds[i];
+					j = -1;
+					break;
+			}
+		}
+#	endif /* XHDR_XREF */
 	} else {
 		if (!nntp_caps.over_cmd) {
 			/*
 			 * CAPABILITIES/LIST EXTENSIONS didn't mention OVER or XOVER, try
 			 * XOVER
 			 */
-			i = new_nntp_command(xover_cmds, ERR_NCING, line, sizeof(line));
-
-			switch (i) {
+			switch (new_nntp_command(xover_cmds, ERR_NCING, line, sizeof(line))) {
 				case ERR_COMMAND:
 					break;
 
-				case 224:	/* unexpected multiline ok, e.g.: Synchronet 3.13 NNTP Service 1.92 */
+				case OK_XOVER:	/* unexpected multiline ok, e.g.: Synchronet 3.13 NNTP Service 1.92 */
 					nntp_caps.over_cmd = xover_cmds;
 #	ifdef DEBUG
 					if (debug & DEBUG_NNTP)
 						debug_print_file("NNTP", "nntp_open() %s skipping data", xover_cmds);
 #	endif /* DEBUG */
-					while ((linep = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL)
+					while (tin_fgets(FAKE_NNTP_FP, FALSE))
 						;
 					break;
 
@@ -1506,8 +1551,24 @@ nntp_open(
 			 * CAPABILITIES/LIST EXTENSIONS didn't mention HDR or XHDR, try
 			 * XHDR
 			 */
-			if (!nntp_command(xhdr_cmds, ERR_COMMAND, NULL, 0))
-				nntp_caps.hdr_cmd = xhdr_cmds;
+			switch (new_nntp_command(xhdr_cmds, ERR_CMDSYN, line, sizeof(line))) {
+				case ERR_COMMAND:
+					break;
+
+				case 221:	/* unexpected multiline ok, e.g.: SoftVelocity Discussions 2.5q */
+					nntp_caps.hdr_cmd = xhdr_cmds;
+#	ifdef DEBUG
+					if (debug & DEBUG_NNTP)
+						debug_print_file("NNTP", "nntp_open() %s skipping data", xhdr_cmds);
+#	endif /* DEBUG */
+					while (tin_fgets(FAKE_NNTP_FP, FALSE))
+						;
+					break;
+
+				default:	/* usualy ERR_CMDSYN (args missing), Typhoon/Twister sends ERR_NCING */
+					nntp_caps.hdr_cmd = xhdr_cmds;
+					break;
+			}
 		}
 #	endif /* XHDR_XREF */
 	}
@@ -1528,14 +1589,6 @@ nntp_open(
 		 * TODO: issue warning if old index files found?
 		 *	      in index_newsdir?
 		 */
-	}
-
-	/*
-	 * TODO: if we're using -n, check for LIST NEWSGROUPS <wildmat>
-	 * see also comments in open_newsgroups_fp()
-	 */
-	if (newsrc_active && !list_active) { /* -n */
-		/* code goes here */
 	}
 #	endif /* 0 */
 
@@ -1576,7 +1629,7 @@ nntp_close(
 #endif /* NNTP_ABLE */
 }
 
-
+#ifdef NNTP_ABLE
 /*
  * Get a response code from the server.
  * Returns:
@@ -1592,9 +1645,8 @@ get_only_respcode(
 	char *message,
 	size_t mlen)
 {
-	int respcode = 0;
-#ifdef NNTP_ABLE
-	char *end, *ptr = NULL;
+	int respcode;
+	char *end, *ptr;
 
 	ptr = tin_fgets(FAKE_NNTP_FP, FALSE);
 
@@ -1617,7 +1669,7 @@ get_only_respcode(
 	 * we also reconnect on ERR_FAULT if last_put was ARTICLE or LIST or POST
 	 * as inn (2.2.3) sends ERR_FAULT on timeout
 	 */
-	if (last_put[0] != '\0' && ((respcode == ERR_FAULT && !strncmp(last_put, "ARTICLE", 7)) || (respcode == ERR_FAULT && !strncmp(last_put, "POST", 4)) || (respcode == ERR_FAULT && !strcmp(last_put, "LIST")) || respcode == ERR_GOODBYE || respcode == OK_GOODBYE) && strcmp(last_put, "QUIT")) {
+	if (last_put[0] != '\0' && ((respcode == ERR_FAULT && !strncmp(last_put, "ARTICLE", 7)) || (respcode == ERR_FAULT && !strcmp(last_put, "POST")) || (respcode == ERR_FAULT && !strcmp(last_put, "LIST")) || respcode == ERR_GOODBYE || respcode == OK_GOODBYE) && strcmp(last_put, "QUIT")) {
 		/*
 		 * Maybe server timed out.
 		 * If so, retrying will force a reconnect.
@@ -1647,7 +1699,6 @@ get_only_respcode(
 	if (message != NULL && mlen > 1)		/* Pass out the rest of the text */
 		my_strncpy(message, end, mlen - 1);
 
-#endif /* NNTP_ABLE */
 	return respcode;
 }
 
@@ -1661,14 +1712,15 @@ get_only_respcode(
  *	code is copied into it.
  * Performs authentication if required and repeats the last command if
  * necessary after a timeout.
+ *
+ * TODO: make this handle 483 (RFC 3977) return codes
  */
 int
 get_respcode(
 	char *message,
 	size_t mlen)
 {
-	int respcode = 0;
-#ifdef NNTP_ABLE
+	int respcode;
 	char savebuf[NNTP_STRLEN];
 	char *ptr, *end;
 
@@ -1717,17 +1769,15 @@ get_respcode(
 				strncpy(message, end, mlen - 1);
 
 		} else {
-			error_message(_(txt_auth_failed), ERR_ACCESS);
+			error_message(2, _(txt_auth_failed), ERR_ACCESS);
 			/*	return -1; */
 			tin_done(EXIT_FAILURE);
 		}
 	}
-#endif /* NNTP_ABLE */
 	return respcode;
 }
 
 
-#ifdef NNTP_ABLE
 /*
  * Do an NNTP command. Send command to server, and read the reply.
  * If the reply code matches success, then return an open file stream
@@ -1755,7 +1805,7 @@ DEBUG_IO((stderr, "nntp_command(%s)\n", command));
 			if (debug & DEBUG_NNTP)
 				debug_print_file("NNTP", "nntp_command(%s) NOT_OK", command);
 #	endif /* DEBUG */
-			/* error_message("%s", message); */
+			/* error_message(2, "%s", message); */
 			return (FILE *) 0;
 		}
 	}

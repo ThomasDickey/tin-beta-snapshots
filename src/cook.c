@@ -3,10 +3,10 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2008-01-10
+ *  Updated   : 2008-12-11
  *  Notes     : Split from page.c
  *
- * Copyright (c) 2000-2008 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2009 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,7 @@
 #define CHUNK		50
 
 #define STRIP_ALTERNATIVE(x) \
-			(tinrc.alternative_handling && \
+			(curr_group->attribute->alternative_handling && \
 			(x)->hdr.ext->type == TYPE_MULTIPART && \
 			strcasecmp("alternative", (x)->hdr.ext->subtype) == 0)
 
@@ -164,7 +164,7 @@ wexpand_ctrl_chars(
 			j = i + lcook_width - (i % lcook_width);
 			for (; i < j; i++)
 				wbuf[i] = ' ';
-		} else if (*wc  < ' ' && *wc != '\n' && (!IS_LOCAL_CHARSET("Big5") || *wc != 27)) {	/* literal ctrl chars */
+		} else if (*wc < ' ' && *wc != '\n' && (!IS_LOCAL_CHARSET("Big5") || *wc != 27)) {	/* literal ctrl chars */
 			wbuf[i++] = '^';
 			wbuf[i++] = *wc + '@';
 			if (*wc == '\f')	/* ^L detected */
@@ -385,7 +385,8 @@ get_filename(
 			_(txt_attach_description),	\
 			depth, "",	\
 			part->description);	\
-	put_cooked(1, wrap_lines, C_ATTACH, "\n")
+	if (part->next != NULL)	\
+		put_cooked(1, wrap_lines, C_ATTACH, "\n")
 
 /*
  * Decodes text bodies, remove sig's, detects uuencoded sections
@@ -399,15 +400,19 @@ process_text_body_part(
 	int tabs)
 {
 	char *rest = NULL;
-	char *line = NULL, *buf;
+	char *line = NULL, *buf, *tmpline;
 	size_t max_line_len = 0;
-	int flags, len, lines_left;
+	int flags, len, lines_left, len_blank;
 	int offsets[6];
 	int size_offsets = ARRAY_SIZE(offsets);
+	int lines_skipped = 0;
 	t_bool in_sig = FALSE;			/* Set when in sig portion */
 	t_bool in_uue = FALSE;			/* Set when in uuencoded section */
-	t_bool verbatim = FALSE;		/* Set when in verbatim section */
+	t_bool in_verbatim = FALSE;		/* Set when in verbatim section */
+	t_bool verbatim_begin = FALSE;	/* Set when verbatim_begin_regex matches */
 	t_bool is_uubody;				/* Set when current line looks like a uuencoded line */
+	t_bool first_line_blank = TRUE;	/* Unset when first non-blank line is reached */
+	t_bool put_blank_lines = FALSE;	/* Set when previously skipped lines needs to put */
 	t_part *curruue = NULL;
 
 	if (part->uue) {				/* These are redone each time we recook/resize etc.. */
@@ -472,13 +477,71 @@ process_text_body_part(
 
 		len = (int) strlen(line);
 
-		/* look for verbatim marks */
-		if (!in_sig && !in_uue && !verbatim && MATCH_REGEX(verbatim_begin_regex, line, len))
-			verbatim = TRUE;
-		if (verbatim && MATCH_REGEX(verbatim_end_regex, line, len))
-			verbatim = FALSE;
+		/*
+		 * trim article body and sig (not verbatim blocks):
+		 * - skip leading blank lines
+		 * - replace multiple blank lines with one empty line
+		 * - skip tailing blank lines, keep one if an
+		 *   attachement follows
+		 */
+		if (curr_group->attribute->trim_article_body && !in_uue && !in_verbatim && !verbatim_begin) {
+			len_blank = 1;
+			tmpline = line;
+			/* check if line contains only whitespace */
+			while ((' ' == *tmpline) || ('\t' == *tmpline)) {
+				len_blank++;
+				tmpline++;
+			}
+			if (len_blank == len) {		/* line is blank */
+				if (lines_left == 0 && (curr_group->attribute->trim_article_body & SKIP_TRAILING)) {
+					if (!(part->next == NULL || (STRIP_ALTERNATIVE(art) && !IS_PLAINTEXT(part->next))))
+						put_cooked(1, TRUE, in_sig ? C_SIG : C_BODY, "\n");
+					continue;
+				}
+				if (first_line_blank) {
+					if (curr_group->attribute->trim_article_body & SKIP_LEADING)
+						continue;
+				} else if ((curr_group->attribute->trim_article_body & (COMPACT_MULTIPLE | SKIP_TRAILING)) && (!in_sig || curr_group->attribute->show_signatures)) {
+					lines_skipped++;
+					if (lines_left == 0 && !(curr_group->attribute->trim_article_body & SKIP_TRAILING)) {
+						for (; lines_skipped > 0; lines_skipped--)
+							put_cooked(1, TRUE, in_sig ? C_SIG : C_BODY, "\n");
+					}
+					continue;
+				}
+			} else {	/* line is not blank */
+				if (first_line_blank)
+					first_line_blank = FALSE;
+				if (lines_skipped && (!in_sig || curr_group->attribute->show_signatures)) {
+					if (strcmp(line, SIGDASHES) != 0 || curr_group->attribute->show_signatures) {
+						if (curr_group->attribute->trim_article_body & COMPACT_MULTIPLE)
+							put_cooked(1, TRUE, in_sig ? C_SIG : C_BODY, "\n");
+						else
+							put_blank_lines = TRUE;
+					} else if (!(curr_group->attribute->trim_article_body & SKIP_TRAILING))
+						put_blank_lines = TRUE;
+					if (put_blank_lines) {
+						for (; lines_skipped > 0; lines_skipped--)
+							put_cooked(1, TRUE, in_sig ? C_SIG : C_BODY, "\n");
+					}
+					put_blank_lines = FALSE;
+					lines_skipped = 0;
+				}
+			}
+		} /* if (tinrc.trim_article_body...) */
 
-		if (!verbatim) {
+		/* look for verbatim marks, set in_verbatim only for lines in between */
+		if (curr_group->attribute->verbatim_handling) {
+			if (verbatim_begin) {
+				in_verbatim = TRUE;
+				verbatim_begin = FALSE;
+			} else if (!in_sig && !in_uue && !in_verbatim && MATCH_REGEX(verbatim_begin_regex, line, len))
+				verbatim_begin = TRUE;
+			if (in_verbatim && MATCH_REGEX(verbatim_end_regex, line, len))
+				in_verbatim = FALSE;
+		}
+
+		if (!in_verbatim) {
 			/*
 			 * Detect and skip signatures if necessary
 			 */
@@ -493,7 +556,7 @@ process_text_body_part(
 				}
 			}
 
-			if (in_sig && !tinrc.show_signatures)
+			if (in_sig && !(curr_group->attribute->show_signatures))
 				continue;					/* No further processing needed */
 
 			/*
@@ -571,12 +634,16 @@ process_text_body_part(
 				continue;	/* No further processing needed */
 		}
 
-		flags = verbatim ? 0 : in_sig ? C_SIG : C_BODY;
+		flags = in_verbatim ? C_VERBATIM : in_sig ? C_SIG : C_BODY;
 
 		/*
 		 * Don't do any further handling of uue || verbatim lines
 		 */
-		if (in_uue || verbatim) {
+		if (in_uue) {
+			put_cooked(max_line_len, wrap_lines, flags, "%s", line);
+			continue;
+		} else if (in_verbatim) {
+			expand_ctrl_chars(&line, &max_line_len, 8);
 			put_cooked(max_line_len, wrap_lines, flags, "%s", line);
 			continue;
 		}
@@ -629,22 +696,22 @@ header_wanted(
 	int i;
 	t_bool ret = FALSE;
 
-	if (num_headers_to_display && (news_headers_to_display_array[0][0] == '*'))
+	if (curr_group->attribute->headers_to_display->num && (curr_group->attribute->headers_to_display->header[0][0] == '*'))
 		ret = TRUE; /* wild do */
 	else {
-		for (i = 0; i < num_headers_to_display; i++) {
-			if (!strncasecmp(line, news_headers_to_display_array[i], strlen(news_headers_to_display_array[i]))) {
+		for (i = 0; i < curr_group->attribute->headers_to_display->num; i++) {
+			if (!strncasecmp(line, curr_group->attribute->headers_to_display->header[i], strlen(curr_group->attribute->headers_to_display->header[i]))) {
 				ret = TRUE;
 				break;
 			}
 		}
 	}
 
-	if (num_headers_to_not_display && (news_headers_to_not_display_array[0][0] == '*'))
+	if (curr_group->attribute->headers_to_not_display->num && (curr_group->attribute->headers_to_not_display->header[0][0] == '*'))
 		ret = FALSE; /* wild don't: doesn't make sense! */
 	else {
-		for (i = 0; i < num_headers_to_not_display; i++) {
-			if (!strncasecmp(line, news_headers_to_not_display_array[i], strlen(news_headers_to_not_display_array[i]))) {
+		for (i = 0; i < curr_group->attribute->headers_to_not_display->num; i++) {
+			if (!strncasecmp(line, curr_group->attribute->headers_to_not_display->header[i], strlen(curr_group->attribute->headers_to_not_display->header[i]))) {
 				ret = FALSE;
 				break;
 			}
@@ -738,6 +805,10 @@ cook_article(
 			size_t i = LEN;
 			char *l = my_strdup(rfc1522_decode(line));	/* FIXME: don't decode addr-part of From:/Cc:/ etc.pp. */
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+			if (IS_LOCAL_CHARSET("UTF-8"))
+				utf8_valid(l);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			header_put = TRUE;
 			expand_ctrl_chars(&l, &i, tabs);
 			put_cooked(LEN, wrap_lines, C_HEADER, "%s", l);

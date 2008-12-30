@@ -3,10 +3,10 @@
  *  Module    : list.c
  *  Author    : I. Lea
  *  Created   : 1993-12-18
- *  Updated   : 2007-12-30
+ *  Updated   : 2008-11-28
  *  Notes     : Low level functions handling the active[] list and its group_hash index
  *
- * Copyright (c) 1993-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -124,7 +124,7 @@ find_group_index(
 	const char *group,
 	t_bool ignore_case)
 {
-	char *group_lcase = NULL;
+	char *group_lcase;
 	int i;
 	unsigned long h;
 
@@ -190,7 +190,7 @@ group_add_to_hash(
 	const char *groupname,
 	int idx)
 {
-	char *groupname_lcase = NULL;
+	char *groupname_lcase;
 	unsigned long h;
 
 	groupname_lcase = my_strdup(groupname);
@@ -287,7 +287,8 @@ group_rehash(
 	}
 
 #ifdef DEBUG
-	debug_print_active_hash();
+	if (debug & DEBUG_MISC)
+		debug_print_active_hash();
 #endif /* DEBUG */
 }
 
@@ -334,5 +335,6 @@ debug_print_active_hash(
 	for (i = 0; i < 32; i++)
 		fprintf(stderr, "%2d ", collisions[i]);
 	fprintf(stderr, "\n");
+	sleep(4);
 }
 #endif /* DEBUG */

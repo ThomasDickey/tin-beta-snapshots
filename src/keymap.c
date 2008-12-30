@@ -3,10 +3,10 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2008-03-26
+ *  Updated   : 2008-10-22
  *  Notes     : This file contains key mapping routines and variables.
  *
- * Copyright (c) 2000-2008 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 2000-2009 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -320,7 +320,7 @@ read_keymap_file(
 	char *line, *keydef, *kname;
 	char *map, *ptr;
 	char buf[LEN], buff[NAME_LEN + 1], filename[PATH_LEN];
-	int upgrade = RC_CHECK;
+	enum rc_state upgrade = RC_CHECK;
 	t_bool ret = TRUE;
 
 	/*
@@ -364,16 +364,21 @@ read_keymap_file(
 
 	/* check if keymap file is uptodate */
 	while ((line = fgets(buf, sizeof(buf), fp)) != NULL) {
-		if (line[0] == '#' && upgrade == RC_CHECK) {
-			if ((upgrade = check_upgrade(line, "# Keymap file V", KEYMAP_VERSION)) == RC_UPGRADE) {
-				fclose(fp);
-				upgrade_keymap_file(map);
-				upgrade = RC_IGNORE;
-				fp = fopen(map, "r");
+		if (line[0] == '#') {
+			if (upgrade == RC_CHECK && match_string(buf, "# Keymap file V", NULL, 0)) {
+				/* TODO: keymap downgrade */
+				if ((upgrade = check_upgrade(line, "# Keymap file V", KEYMAP_VERSION)) == RC_UPGRADE) {
+					fclose(fp);
+					upgrade_keymap_file(map);
+					upgrade = RC_IGNORE;
+					if (!(fp = fopen(map, "r"))) /* TODO: issue error message? */
+						return TRUE;
+				}
+				break;
 			}
-			break;
 		}
 	}
+	rewind(fp);
 
 	free_keymaps();
 	while ((line = fgets(buf, sizeof(buf), fp)) != NULL) {
@@ -389,7 +394,7 @@ read_keymap_file(
 			 * Warn about basic syntax errors
 			 */
 			if (keydef == NULL || !strlen(keydef)) {
-				wait_message(0, _(txt_keymap_missing_key), kname);
+				error_message(0, _(txt_keymap_missing_key), kname);
 				ret = FALSE;
 				continue;
 			}
@@ -398,10 +403,10 @@ read_keymap_file(
 
 		/*
 		 * TODO: useful? shared keymaps (NFS-Home) may differ
-		 * depending on the OS (i.e. on tin has color the other has not)
+		 * depending on the OS (i.e. one tin has color the other has not)
 		 */
 		if (!process_mapping(kname, keydef)) {
-			wait_message(0, _(txt_keymap_invalid_name), kname);
+			error_message(0, _(txt_keymap_invalid_name), kname);
 			prompt_continue();
 			ret = FALSE;
 			continue;
@@ -444,7 +449,7 @@ process_keys(
 		error = FALSE;
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if ((wkeydef = char2wchar_t(keydef)) == NULL) {
-			wait_message(1, _(txt_invalid_multibyte_sequence));
+			error_message(1, _(txt_invalid_multibyte_sequence));
 			ret = FALSE;
 
 			keydef = strtok(NULL, KEYSEPS);
@@ -494,7 +499,7 @@ process_keys(
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 					/* FALLTHROUGH */
 				default:
-					wait_message(0, _(txt_keymap_invalid_key), keydef);
+					error_message(0, _(txt_keymap_invalid_key), keydef);
 					ret = FALSE;
 					error = TRUE;
 					break;
@@ -506,7 +511,7 @@ process_keys(
 			if (isdigit(key = keydef[0]))
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			{
-				wait_message(0, _(txt_keymap_invalid_key), keydef);
+				error_message(0, _(txt_keymap_invalid_key), keydef);
 				ret = FALSE;
 				error = TRUE;
 			}

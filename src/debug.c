@@ -3,10 +3,10 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-03-10
+ *  Updated   : 2008-12-12
  *  Notes     : debug routines
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,9 +43,6 @@
 #	ifndef NEWSRC_H
 #		include "newsrc.h"
 #	endif /* !NEWSRC_H */
-#	ifndef TCURSES_H
-#		include "tcurses.h"
-#	endif /* !TCURSES_H */
 #endif /* DEBUG */
 
 int debug;
@@ -56,6 +53,7 @@ int debug;
  */
 static void debug_print_attributes(struct t_attribute *attr, FILE *fp);
 static void debug_print_filter(FILE *fp, int num, struct t_filter *the_filter);
+static void debug_print_newsrc(struct t_newsrc *NewSrc, FILE *fp);
 
 
 /*
@@ -72,10 +70,6 @@ debug_delete_files(
 		unlink(file);
 		joinpath(file, sizeof(file), TMPDIR, "ARTS");
 		unlink(file);
-		joinpath(file, sizeof(file), TMPDIR, "SAVE_COMP");
-		unlink(file);
-		joinpath(file, sizeof(file), TMPDIR, "BASE");
-		unlink(file);
 		joinpath(file, sizeof(file), TMPDIR, "ACTIVE");
 		unlink(file);
 		joinpath(file, sizeof(file), TMPDIR, "BITMAP");
@@ -83,6 +77,8 @@ debug_delete_files(
 		joinpath(file, sizeof(file), TMPDIR, "MALLOC");
 		unlink(file);
 		joinpath(file, sizeof(file), TMPDIR, "FILTER");
+		unlink(file);
+		joinpath(file, sizeof(file), TMPDIR, "ATTRIBUTES");
 		unlink(file);
 	}
 }
@@ -150,8 +146,6 @@ debug_print_active(
 {
 	FILE *fp;
 	char file[PATH_LEN];
-	int i;
-	struct t_group *group;
 
 	if (!(debug & DEBUG_MISC))
 		return;
@@ -159,6 +153,9 @@ debug_print_active(
 	joinpath(file, sizeof(file), TMPDIR, "ACTIVE");
 
 	if ((fp = fopen(file, "w")) != NULL) {
+		int i;
+		struct t_group *group;
+
 		for_each_group(i) {
 			group = &active[i];
 			fprintf(fp, "[%4d]=[%s] type=[%s] spooldir=[%s]\n",
@@ -167,13 +164,12 @@ debug_print_active(
 				group->spooldir);
 			fprintf(fp, "count=[%4ld] max=[%4ld] min=[%4ld] mod=[%c]\n",
 				group->count, group->xmax, group->xmin, group->moderated);
-			fprintf(fp, " nxt=[%4d] hash=[%ld]  description=[%s]\n", group->next,
+			fprintf(fp, " nxt=[%4d] hash=[%lu]  description=[%s]\n", group->next,
 				hash_groupname(group->name), BlankIfNull(group->description));
-#	ifdef DEBUG
 			if (debug & DEBUG_NEWSRC)
 				debug_print_newsrc(&group->newsrc, fp);
-#	endif /* DEBUG */
-			debug_print_attributes(group->attribute, fp);
+			if (debug & DEBUG_ATTRIB)
+				debug_print_attributes(group->attribute, fp);
 		}
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
 		fclose(fp);
@@ -191,14 +187,14 @@ debug_print_attributes(
 
 	fprintf(fp, "global=[%d] show=[%d] thread=[%d] sort=[%d] author=[%d] auto_select=[%d] auto_save=[%d] batch_save=[%d] process=[%d]\n",
 		attr->global,
-		attr->show_only_unread,
-		attr->thread_arts,
-		attr->sort_art_type,
+		attr->show_only_unread_arts,
+		attr->thread_articles,
+		attr->sort_article_type,
 		attr->show_author,
 		attr->auto_select,
 		attr->auto_save,
 		attr->batch_save,
-		attr->post_proc_type);
+		attr->post_process_type);
 	fprintf(fp, "select_header=[%d] select_global=[%s] select_expire=[%s]\n",
 		attr->quick_select_header,
 		BlankIfNull(attr->quick_select_scope),
@@ -227,17 +223,14 @@ debug_print_malloc(
 {
 	FILE *fp;
 	char file[PATH_LEN];
-	static int total = 0;
+	static size_t total = 0;
 
 	if (debug & DEBUG_MEM) {
 		joinpath(file, sizeof(file), TMPDIR, "MALLOC");
 		if ((fp = fopen(file, "a+")) != NULL) {
 			total += size;
 			/* sometimes size_t is long */
-			if (is_malloc)
-				fprintf(fp, "%10s:%-4d Malloc  %6ld. Total %d\n", xfile, line, (long) size, total);
-			else
-				fprintf(fp, "%10s:%-4d Realloc %6ld. Total %d\n", xfile, line, (long) size, total);
+			fprintf(fp, "%12s:%-4d %s(%6lu). Total %lu\n", xfile, line, is_malloc ? " malloc" : "realloc" , (unsigned long) size, (unsigned long) total);
 			fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
 			fclose(fp);
 		}
@@ -343,7 +336,7 @@ debug_print_nntp_extensions(
 	debug_print_file("NNTP", "### Implementation: %s", BlankIfNull(nntp_caps.implementation));
 	debug_print_file("NNTP", "### Type/Version  : %d/%d", nntp_caps.type, nntp_caps.version);
 	debug_print_file("NNTP", "### Command-names : %s %s", BlankIfNull(nntp_caps.over_cmd), BlankIfNull(nntp_caps.hdr_cmd));
-	debug_print_file("NNTP", "### List          : %s", nntp_caps.list_motd ? "MOTD" : "");
+	debug_print_file("NNTP", "### List          : %s%s%s%s%s%s%s%s%s%s", nntp_caps.list_active ? "ACTIVE " : "", nntp_caps.list_newsgroups ? "NEWSGROUPS " : "", nntp_caps.list_overview_fmt ? "OVERVIEW.FMT " : "", nntp_caps.list_headers ? "HEADERS " : "", nntp_caps.list_motd ? "MOTD " : "", nntp_caps.list_subscriptions ? "SUBSCRIPTIONS " : "", nntp_caps.list_active_times ? "ACTIVE.TIMES " : "", nntp_caps.list_moderators ? "MODERATORS " : "", nntp_caps.list_distributions ? "DISTRIBUTIONS " : "", nntp_caps.list_distrib_pats? "DISTRIB.PATS " : "");
 }
 #	endif /* NNTP_ABLE */
 
@@ -352,19 +345,10 @@ void
 debug_print_comment(
 	const char *comment)
 {
-	FILE *fp;
-	char file[PATH_LEN];
-
 	if (!(debug & DEBUG_NEWSRC))
 		return;
 
-	joinpath(file, sizeof(file), TMPDIR, "BITMAP");
-
-	if ((fp = fopen(file, "a+")) != NULL) {
-		fprintf(fp,"\n%s\n", comment);
-		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
-		fclose(fp);
-	}
+	debug_print_file("BITMAP", comment);
 }
 
 
@@ -380,30 +364,32 @@ debug_print_bitmap(
 		return;
 
 	joinpath(file, sizeof(file), TMPDIR, "BITMAP");
-	if ((fp = fopen(file, "a+")) != NULL) {
-		fprintf(fp, "\nActive: Group=[%s] sub=[%c] min=[%ld] max=[%ld] count=[%ld] num_unread=[%ld]\n",
-			group->name, SUB_CHAR(group->subscribed),
-			group->xmin, group->xmax, group->count,
-			group->newsrc.num_unread);
-		if (art != NULL) {
-			fprintf(fp, "art=[%5ld] tag=[%s] kill=[%s] selected=[%s] subj=[%s]\n",
-				art->artnum,
-				bool_unparse(art->tagged),
-				bool_unparse(art->killed),
-				bool_unparse(art->selected),
-				art->subject);
-			fprintf(fp, "thread=[%d]  prev=[%d]  status=[%s]\n",
-				art->thread, art->prev,
-				(art->status == ART_READ ? "READ" : "UNREAD"));
+	if (group != NULL) {
+		if ((fp = fopen(file, "a+")) != NULL) {
+			fprintf(fp, "\nActive: Group=[%s] sub=[%c] min=[%ld] max=[%ld] count=[%ld] num_unread=[%ld]\n",
+				group->name, SUB_CHAR(group->subscribed),
+				group->xmin, group->xmax, group->count,
+				group->newsrc.num_unread);
+			if (art != NULL) {
+				fprintf(fp, "art=[%5ld] tag=[%s] kill=[%s] selected=[%s] subj=[%s]\n",
+					art->artnum,
+					bool_unparse(art->tagged),
+					bool_unparse(art->killed),
+					bool_unparse(art->selected),
+					art->subject);
+				fprintf(fp, "thread=[%d]  prev=[%d]  status=[%s]\n",
+					art->thread, art->prev,
+					(art->status == ART_READ ? "READ" : "UNREAD"));
+			}
+			debug_print_newsrc(&group->newsrc, fp);
 		}
-		debug_print_newsrc(&group->newsrc, fp);
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
 		fclose(fp);
 	}
 }
 
 
-void
+static void
 debug_print_newsrc(
 	struct t_newsrc *lnewsrc,
 	FILE *fp)

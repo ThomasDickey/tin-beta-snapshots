@@ -3,9 +3,9 @@
  *  Module    : header.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-03-10
- *  Updated   : 2007-10-04
+ *  Updated   : 2008-11-22
  *
- * Copyright (c) 1997-2008 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2009 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,7 @@ get_host_name(
 #endif /* HAVE_GETHOSTNAME */
 #ifdef HAVE_SYS_UTSNAME_H
 	if (!*hostname)
-		strncpy(hostname, system_info.nodename, sizeof(hostname) - 1);
+		my_strncpy(hostname, system_info.nodename, sizeof(hostname) - 1);
 #endif /* HAVE_SYS_UTSNAME_H */
 	if (!*hostname) {
 		if ((ptr = getenv("HOST")) != NULL)
@@ -142,7 +142,7 @@ get_fqdn(
 	if (host) {
 		if (strchr(host, '.'))
 			return host;
-		strncpy(name, host, sizeof(name) - 1);
+		my_strncpy(name, host, sizeof(name) - 1);
 	} else {
 #	ifdef HAVE_GETHOSTNAME
 		if (gethostname(name, sizeof(name) - 1))
@@ -236,7 +236,7 @@ get_user_name(
 		strcpy(username, pw->pw_name);
 	else {
 		if (!*username) {
-			error_message(_(txt_error_passwd_missing));
+			error_message(2, _(txt_error_passwd_missing));
 			tin_done(EXIT_FAILURE);
 		}
 	}
@@ -310,7 +310,7 @@ get_from_name(
 
 #	ifdef DEBUG
 	if (debug & DEBUG_MISC)
-		error_message("FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", from_name, get_user_name(), domain_name, get_full_name());
+		error_message(2, "FROM=[%s] USER=[%s] HOST=[%s] NAME=[%s]", from_name, get_user_name(), domain_name, get_full_name());
 #	endif /* DEBUG */
 
 }

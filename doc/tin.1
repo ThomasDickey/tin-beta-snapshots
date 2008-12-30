@@ -3,23 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2008-03-20
+.\" Updated   : 2008-12-12
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
-.\" Macros
-.de Vb \" Begin verbatim text
-.ft CW
-.nf
-.ne \\$1
-..
-.de Ve \" End verbatim text
-.ft R
-.fi
-..
 .\"
-.TH tin 1 "March 20th, 2008" "1.9.3" "A Usenet newsreader"
+.TH tin 1 "May 6th, 2008" "1.9.4" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -34,7 +24,7 @@ tin, rtin \- A Usenet newsreader
 .RB [\| \-ArzxX \|]\|]
 .RB [\|[\| \-R \||\| \-S \|]
 .RB \|\| \-s
-.IR News-dir \|]
+.IR News_dir \|]
 .RB [\| \-cuvZ \|]
 .RB [\| \-N \||\| \-M
 .IR address \|]
@@ -126,7 +116,7 @@ Don't load newsgroup descriptions (interactive mode).
 .TP
 .BI \-D " debug-level"
 Enter debug-level (1 = NNTP, 2 = filter, 4 = newsrc, 8 = threading, 16 =
-memory, 32 = misc).
+memory, 32 = attributes, 64 = misc).
 .TP
 .BI \-f " file"
 Use the specified file of subscribed to newsgroups in place of
@@ -353,7 +343,7 @@ recent articles and the number of killed articles. I.e.:
 .PP
 .nf
 .\" FIXME - make this autocenter
-            alt.sources (5B -50/23+ 0* 3o 0K).
+            alt.sources (5B \-50/23+ 0* 3o 0K)
 .fi
 .PP
 The characters after the numbers are depending to the configuration and if
@@ -403,7 +393,7 @@ At the Article level the page header has the following format:
 .\" FIXME - make this autoscale
 .nf
 Sun, 28 Dec 1997 21:21:01   de.admin.news.groups      Thread   20 of 86
-Lines 50   Re: EINSPRUCH zu RESULT:de.comm.mobil.ALL   RespNo  47 of 59
+Lines 50   Re: EINSPRUCH zu RESULT:de.comm.mobil.ALL   Article  47 of 59
 Urs Janssen <urs@akk.org>        at Arbeitskreis Kultur und Kommunikati
 
 article-body
@@ -1342,7 +1332,7 @@ The character used to show that an article has not been read. Default is
 .B Character to show read articles (art_marked_read)
 The character used to show that an article was read. Default is ' '.
 .TP
-.B Character to show read articles (art_marked_killed)
+.B Character to show killed articles (art_marked_killed)
 The character used to show that an article was killed. Default is 'K'.
 \fBkill_level\fP must be set accordingly.
 .TP
@@ -1459,6 +1449,9 @@ Color of signatures
 .B Color of urls highlight (col_urls)
 Color of urls highlight
 .TP
+.B Color of verbatim blocks (col_verbatim)
+Color of verbatim blocks
+.TP
 .B Color of article subject lines (col_subject)
 Color of article subject
 .TP
@@ -1505,10 +1498,6 @@ Default is "%a, %d %b %Y %H:%M:%S".
 .TP
 .B (default_config_search)
 The last article/author/config option that was searched for.
-.TP
-.B Invocation of your editor (default_editor_format)
-The format string used to create the editor start command with parameters.
-Default is "%E +%N %F" (i.e., /bin/vi +7 .article).
 .TP
 .B (default_filter_days)
 Default is 28.
@@ -1579,24 +1568,6 @@ Default for quick (1 key) auto-selection filter header.
 .TP
 .B (default_mail_address)
 .TP
-.B Mail directory (default_maildir)
-The directory where articles/threads are to be saved in
-.BR mbox (5)
-format. This feature is mainly for use with the
-.BR elm (1)
-mail program. It allows the user to save articles/threads/groups simply by
-giving '=' as the filename to save to.
-Default is \fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fR.
-.TP
-.B Invocation of your mail command (default_mailer_format)
-.\" TODO: document %S, %T, %M, %F, %U ...
-The format string used to create the mailer command with parameters that is
-used for mailing articles to other people. Default is '%M "%T" < %F' (e.g.,
-/bin/mail "iain" < .article). The flexible format allows other mailers with
-different command-line parameters to be used such as 'elm \-s "%S" "%T" <
-"%F"' (e.g., elm \-s "subject" "iain" < .article) or 'sendmail \-oi \-oem \-t <
-%F' (e.g. sendmail \-oi \-oem \-t < .article).
-.TP
 .B (default_move_group)
 .TP
 .B (default_pattern)
@@ -1606,15 +1577,6 @@ different command-line parameters to be used such as 'elm \-s "%S" "%T" <
 .B (default_post_newsgroups)
 .TP
 .B (default_post_subject)
-.TP
-.B Printer program with options (default_printer)
-The printer program with options that is to be used to print articles.
-The default is
-.BR lpr (1)
-for BSD machines and
-.BR lp (1)
-for SysV machines. Printing from \fBtin\fP may have been disabled by the
-System Administrator.
 .TP
 .B (default_range_group)
 .TP
@@ -1628,29 +1590,19 @@ System Administrator.
 .TP
 .B (default_save_mode)
 .TP
-.B Directory to save arts/threads in (default_savedir)
-Directory where articles/threads are saved. Default is
-\fI${TIN_HOMEDIR:\-"$HOME"}/News\fR.
-.TP
 .B (default_select_pattern)
 .TP
 .B (default_shell_command)
-.TP
-.B Create signature from path/command (default_sigfile)
-The path that specifies the signature file to use when posting, following
-up to or replying to an article. If the path is a directory then the
-signature will be randomly generated from files that are in the specified
-directory. If the path starts with a ! the program the path points to will
-be executed to generate a signature. \fBtin\fP will pass the name of the
-current newsgroup as argument to the program. \-\-none will suppress any
-signature.
-Default is \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fR.
 .TP
 .B (default_subject_search)
 .TP
 .B Draw \-> instead of highlighted bar (draw_arrow)
 Allows groups/articles to be selected by an arrow '\->' if set ON or
 by an highlighted bar if set OFF. Default is OFF.
+.TP
+.B Invocation of your editor (editor_format)
+The format string used to create the editor start command with parameters.
+Default is "%E +%N %F" (i.e., /bin/vi +7 .article).
 .TP
 .B Force redraw after certain commands (force_screen_redraw)
 Specifies whether a screen redraw should always be done after certain
@@ -1705,7 +1657,7 @@ Interactive mailreader: if greater than 0 your mailreader will be invoked
 earlier for reply so you can use more of its features (e.g. MIME,
 pgp, ...). 1 means include headers, 2 means don't include headers
 (old use_mailreader_i=ON option). 0 turns off usage. This option has to
-suit \fBdefault_mailer_format\fP. Default is 0.
+suit \fBmailer_format\fP. Default is 0.
 .TP
 .\" TODO: fix menu description
 .\"       mono_mark* currently do allow "Reverse video" even if
@@ -1770,6 +1722,24 @@ SCO), MBOXRD or MMDF (default on SCO). See
 for more details on MBOXO and MBOXRD and
 .BR mmdf (5)
 for more details about MMDF.
+.TP
+.B Mail directory (maildir)
+The directory where articles/threads are to be saved in
+.BR mbox (5)
+format. This feature is mainly for use with the
+.BR elm (1)
+mail program. It allows the user to save articles/threads/groups simply by
+giving '=' as the filename to save to.
+Default is \fI${TIN_HOMEDIR:\-"$HOME"}/Mail\fR.
+.TP
+.B Invocation of your mail command (mailer_format)
+.\" TODO: document %S, %T, %M, %F, %U ...
+The format string used to create the mailer command with parameters that is
+used for mailing articles to other people. Default is '%M "%T" < %F' (e.g.,
+/bin/mail "iain" < .article). The flexible format allows other mailers with
+different command-line parameters to be used such as 'elm \-s "%S" "%T" <
+"%F"' (e.g., elm \-s "subject" "iain" < .article) or 'sendmail \-oi \-oem \-t <
+%F' (e.g. sendmail \-oi \-oem \-t < .article).
 .TP
 .B 'Mark article read' ignores tags (mark_ignore_tags)
 When this is ON, the \fBGroupMarkThdRead\fP, \fBThreadMarkArtRead\fP
@@ -1938,6 +1908,15 @@ Default is 'posted'.
 If ON, then the full article header is sent to the printer. Otherwise only
 the ''Subject:'' and ''From:'' fields are output. Default is OFF.
 .TP
+.B Printer program with options (printer)
+The printer program with options that is to be used to print articles.
+The default is
+.BR lpr (1)
+for BSD machines and
+.BR lp (1)
+for SysV machines. Printing from \fBtin\fP may have been disabled by the
+System Administrator.
+.TP
 .B Process only unread articles (process_only_unread)
 If ON only save/print/pipe/mail unread articles (tagged articles excepted).
 Default is OFF.
@@ -1959,6 +1938,7 @@ is to compress quotes, and to quote empty lines.
 .br
 When you are viewing an article in raw mode ('\fB^H\fP'), and follow up or
 reply to it, the signature will be quoted even if it would otherwise not be.
+If \fBshow_signatures\fP is off, then the signature will never be quoted.
 .TP
 .B Regex used to show quoted lines (quote_regex)
 A regular expression that will be applied when reading articles. All
@@ -1988,6 +1968,10 @@ The news \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fR file is
 reread at regular intervals to show if any new news has arrived. Default is
 1200. Setting this to 0 will disable this feature.
 .TP
+.B Directory to save arts/threads in (savedir)
+Directory where articles/threads are saved. Default is
+\fI${TIN_HOMEDIR:\-"$HOME"}/News\fR.
+.TP
 .B Score limit (kill) (score_limit_kill)
 If the score of an article is below or equal this value the article gets
 marked as killed.
@@ -2007,9 +1991,9 @@ Score of an article which should be marked hot, this must be >=
 .B Number of lines to scroll in pager (scroll_lines)
 The number of lines that will be scrolled up/down in the article pager when
 using cursor-up/down. The default is 1 (line-by-line). Set to 0 to get
-traditional tin page-by-page scrolling. Set to -1 to get page-by-page
+traditional tin page-by-page scrolling. Set to \-1 to get page-by-page
 scrolling where the top/bottom line is carried over onto the next page.
-This setting supersedes show_last_line_prev_page=ON. Set to -2 to get
+This setting supersedes show_last_line_prev_page=ON. Set to \-2 to get
 half-page scrolling. This setting supersedes full_page_scroll=OFF.
 .TP
 .B In group menu, show author by (show_author)
@@ -2070,6 +2054,16 @@ Default is ON.
 .TP
 .B Prepend signature with '\en\-\- \en' (sigdashes)
 If ON prepend the signature with sigdashes. Default is ON.
+.TP
+.B Create signature from path/command (sigfile)
+The path that specifies the signature file to use when posting, following
+up to or replying to an article. If the path is a directory then the
+signature will be randomly generated from files that are in the specified
+directory. If the path starts with a ! the program the path points to will
+be executed to generate a signature. \fBtin\fP will pass the name of the
+current newsgroup as argument to the program. \-\-none will suppress any
+signature.
+Default is \fI${TIN_HOMEDIR:\-"$HOME"}/.Sig\fR.
 .TP
 .B Add signature when reposting (signature_repost)
 If ON add signature to reposted articles. Default is ON.
@@ -2228,6 +2222,29 @@ represented in the target character set, it can be approximated through one
 or several similarly looking characters. On systems where this extension
 doesn't exist, this option is disabled. Default is OFF.
 .TP
+.B How to treat blank lines (trim_article_body)
+Allows you to select how \fBtin\fP treats blank lines in article bodys.
+Default is 0. This option does not affect lines within verbatim blocks.
+.RS +.5i
+.IP 0 3
+\fBDon't trim article body\fP, do nothing.
+.IP 1
+\fBSkip leading blank lines\fP.
+.IP 2
+\fBSkip trailing blank lines\fP.
+.IP 3
+\fBSkip leading and trailing blank l.\fP, skip leading and trailing blank lines.
+.IP 4
+\fBCompact multiple between text\fP, replace multiple blank lines between
+textblocks with one blank line.
+.IP 5
+\fBCompact multiple and skip leading\fP, 4 + 1
+.IP 6
+\fBCompact multiple and skip trailing\fP, 4 + 2
+.IP 7
+\fBCompact mltpl., skip lead. & trai.\fP, 4 + 3
+.RE
+.TP
 .B Regex used to highlight _underline_ (underscores_regex)
 A regular expression that will be applied when reading articles. All
 matching words are shown in \fBcol_markdash\fP or \fBmono_markdash\fP. If
@@ -2271,6 +2288,9 @@ A regular expression that tin will use to find the begin of a verbatim block.
 .TP
 .B Regex for end of a verbatim block (verbatim_end_regex)
 A regular expression that tin will use to find the end of a verbatim block.
+.TP
+.B Detection of verbatim blocks (verbatim_handling)
+If ON verbatim blocks will be detected. Default is ON.
 .TP
 .B Wildcard matching (wildcard)
 Allows you to select how \fBtin\fP matches strings. The default is 0 and
@@ -2369,9 +2389,8 @@ within \fBtin\fP.
 The filtering capabilities of \fBtin\fP have been significantly enhanced
 over previous versions to include scoring and better pattern matching. It is
 recommended that you read the file \fIfiltering\fR in the \fBtin\fP
-documentation directory.
-.\" FIXME - insert URL
-.\" This file can also be read online at http://www.tin.org/FIXME
+documentation directory. This file can also be read online at
+<http://www.tin.org/filtering.txt>.
 .PP
 .\" FIXME - Next paragraph is out of date
 The on-screen filtering menu is accessed by pressing '\fB^K\fP' at the Group
@@ -2447,17 +2466,21 @@ following variables are expanded if found in the tinrc variables
 .RE
 e.g.,
 .RS
-.Vb
+.ft CW
+.nf
 mail_quote_format=On %D in %G you wrote:
 news_quote_format=In %M, %F wrote:
-.Ve
+.ft R
+.fi
 .RE
 would expand to:
 .RS
-.Vb
-On 21 Sep 1993 09:45:51 -0400 in alt.sources you wrote:
+.ft CW
+.nf
+On 21 Sep 1993 09:45:51 \-0400 in alt.sources you wrote:
 In <abcINN123@example.org>, Joe Bar <joe@example.org> wrote:
-.Ve
+.ft R
+.fi
 .RE
 The quoted text section of an article is marked by a preceding quote string
 at the beginning of each quoted line. The default quote string is set to
@@ -2501,11 +2524,11 @@ Environment variables can themselves contain other special characters.
 To save articles to a mailbox enter '=<mailbox name>' when asked for the
 save filename. If you enter just '=' then articles will be saved to a
 mailbox with the name of the current newsgroup (eg, alt.sources).
-See \fBdefault_maildir\fP.
+See \fBmaildir\fP.
 .PP
 To save in savedir/<news.group.name>/<filename> format enter '+<filename>'.
 Environment variables are allowed within a filename (e.g.,
-\fI$SOURCES/dir/filename\fR). See \fBdefault_savedir\fP.
+\fI$SOURCES/dir/filename\fR). See \fBsavedir\fP.
 .PP
 When saving articles you can specify whether the saved files should be
 post processed. A default process type can be set
@@ -2571,7 +2594,7 @@ prefixed with exclamation points. An exclamation point negates the
 meaning of a match on this pattern, and can be used to cancel certain
 matches. Some examples:
 .sp
-\fIalt.config news.*,!news.test\fR
+\fIalt.config,news.*,!news.test\fR
 .sp
 Matches alt.config and everything in the 'news' hierarchy except news.test
 .PP
@@ -2594,10 +2617,12 @@ editor for both posting and mailing commands.
 .PP
 The following is an example of a \fI.Sig\fR file:
 .RS
-.Vb
+.ft CW
+.nf
 NAMES  Joe Bar <joe@example.org>
 SNAIL  Musterweg 12, 99999 Notreal, Germany
-.Ve
+.ft R
+.fi
 .RE
 .PP
 \fBtin\fP also has the capability to generate random signatures on a per
@@ -2743,9 +2768,11 @@ the system batcher
 with the ''\fB\-u\fP'' option:
 .PP
 .RS
-.Vb
+.ft CW
+.nf
 30 6 * * * /usr/local/bin/tin \-u
-.Ve
+.ft R
+.fi
 .RE
 .PP
 If you are low on local disk space you should consider using
@@ -2754,19 +2781,29 @@ manually purge cached data for groups you are not reading anymore
 with something like:
 .PP
 .RS
-.Vb
+.ft CW
+.nf
 find ${TIN_INDEX_NEWSDIR:\-"${TIN_HOMEDIR:\-"$HOME"}/.tin"}/.news* \\
 \-type f \-name "[0\-9]*.[0\-9]" \-atime +28 | xargs rm \-f
-.Ve
+.ft R
+.fi
 .RE
 .\"
 .\"
 .SH FILES
 .\" TODO: mention dead.article, dead.articles
 .\"               .article[.$$], .cancel[.$$], .letter[.$$]?
-.\"       $PWD/trace (--with-trace)
-.\"       $TMPDIR/NNTP, $TMPDIR/ARTS, $TMPDIR/ACTIVE, $TMPDIR/BASE,
-\."       $TMPDIR/SAVE_COMP, $TMPDIR/BITMAP, $TMPDIR/MALLOC, $TMPDIR/FILTER
+.\"       $PWD/trace[.out]   (--with-trace)
+.\"       $TMPDIR/NNTP       (-D 1)
+.\"       $TMPDIR/FILTER     (-D 2)
+.\"       $TMPDIR/ARTS       (-D 2)
+.\"       $TMPDIR/BITMAP     (-D 4)
+.\"       $TMPDIR/REFS.dump  (-D 8)
+.\"       $TMPDIR/REFS.info  (-D 8)
+.\"       $TMPDIR/MALLOC     (-D 16)
+.\"       $TMPDIR/ATTRIBUTES (-D 32)
+.\"       $TMPDIR/SCOPES     (-D 32)
+.\"       $TMPDIR/ACTIVE     (-D 64)
 For a detailed description see
 .BR tin (5).
 .PP
@@ -2912,13 +2949,22 @@ For a detailed description see
 .\"
 .\" .TP
 .\" .B SHELL (Unix)
+.\" The pathname of the user's login shell.
 .\"
 .\" the next two will go away once we remove AUTHINFO GENERIC (deprecated by RFC 4643)
 .\" .TP
 .\" .B NNTPAUTH
-.\" "\fInntppassword\fR \fInntpusername\fR" pair for genereic authentication.
+.\" command and parameters for generic authentication.
 .\" .TP
 .\" .B NNTP_AUTH_FDS
+.\" dot separated file descriptors for generic authentication.
+.\"
+.\" used in xface support
+.\" .TP
+.\" .B DISPLAY
+.\" .TP
+.\" .B WINDOWID
+.\"
 .\"
 .TP
 .B TINRC
@@ -3257,7 +3303,7 @@ March 1991; its first version was released on August 23rd 1991.
 itself was heavily influenced by notesfiles a public domain UNIX version of
 PLATO Notes, developed at the University of Illinois by Ray Essick and Rob
 Kolstad in 1982. For a version overview see
-<http://www.tin.org/history.html>
+<http://www.tin.org/history.html>.
 .\"
 .\"
 .SH CREDITS
@@ -3311,7 +3357,7 @@ Urs Janssen <urs@tin.org>
 .\"
 .\"
 .SH "SEE ALSO"
-.BR cron (1)
+.BR cron (1),
 .BR elm (1),
 .BR emacs (1),
 .BR gpg (1),

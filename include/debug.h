@@ -3,10 +3,10 @@
  *  Module    : debug.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2008-03-20
+ *  Updated   : 2008-12-12
  *  Notes     :
  *
- * Copyright (c) 2007-2008 Urs Janssen <urs@tin.org>
+ * Copyright (c) 2007-2009 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,8 +47,9 @@
 #	define DEBUG_NEWSRC	0x04	/* 4 */
 #	define DEBUG_REFS	0x08	/* 8 */
 #	define DEBUG_MEM	0x10	/* 16 */
-#	define DEBUG_MISC	0x20	/* 32 */
-#	define DEBUG_ALL	0x3f	/* 63 */
+#	define DEBUG_ATTRIB	0x20	/* 32 */
+#	define DEBUG_MISC	0x40	/* 64 */
+#	define DEBUG_ALL	0x7f	/* 127 */
 
 #	if 0 /* this is very noisy */
 #		define DEBUG_IO(x)	fprintf x

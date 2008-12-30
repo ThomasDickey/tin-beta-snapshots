@@ -28,7 +28,7 @@ The following configure options and defines are documented in detail:
   --enable-debug                          --with-gpg
   --enable-echo                           --with-included-gettext
   --enable-etiquette                      --with-inews-dir
-  --enable-fascist-newsadmin
+  --enable-fascist-newsadmin              --with-slrnface
   --enable-flock                          --with-iso-to-ascii
   --enable-inverse-video                  --with-ispell
   --enable-locale                         --with-libdir
@@ -56,7 +56,7 @@ The following configure options and defines are documented in detail:
   FOLLOW_USEFOR_DRAFT                     NNTP_SERVER_FILE
   FORGERY                                 PROFILE
   REQUIRE_BRACKETS_IN_DOMAIN_LITERAL      SMALL_MEMORY_MACHINE
-  HAVE_LIBUU                              XFACE_ABLE
+  HAVE_LIBUU
   HAVE_BROKEN_SSCANF                      DISABLE_PIPELINING
 
 
@@ -258,7 +258,9 @@ Can be overridden by setting the environment variable NNTPSERVER.
 
 --enable-broken-listgroup-fix (default: off)
 Bypass a bug in some broken NNTPservers which need an extra GROUP command
-before accepting a LISTGROUP command.
+before accepting a LISTGROUP command. This can be also used to bypass the
+bug in some servers (i.e. DeleGate) where LISTGROUP doesn't select the
+group and thus subseqent cmds. fail.
 
 --enable-xhdr-xref (default: on)
 If disabled, don't allow using XHDR XREF if XOVER doesn't work to mark
@@ -462,6 +464,10 @@ found in search path, this is used automatically.
 Define if you want metamail display your MIME messages. If found in search
 path, this is used automatically.
 
+--with-slrnface=PATH (default: set automatically)
+Define if you have slrnface installed and want to use it to show X-Faces. If
+found in search path, this is used automatically.
+
 --enable-posting (default: on)
 If disabled, TIN does not allow posting/followup of articles.
 
@@ -641,8 +647,6 @@ FOLLOW_USEFOR_DRAFT
 issue a warning instead of an error-message if Newsgroups: or
 Followup-To:-header contains spaces, newlines or tabs.
 
-XFACE_ABLE
-Define if you have slrnface installed and want to use it to show X-Faces
 
 Compiled & installed
 --------------------

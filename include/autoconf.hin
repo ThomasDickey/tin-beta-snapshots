@@ -6,7 +6,7 @@
  *  Updated   : 2008-02-02
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1995-2007 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1995-2009 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -124,6 +124,10 @@
 /* gpg */
 #	undef HAVE_GPG
 #	undef HAVE_SUM
+
+/* slrnface */
+#	undef HAVE_SLRNFACE
+#	undef PATH_SLRNFACE
 
 /*
  * Compiler characteristics
@@ -879,13 +883,6 @@ Added missing headers after gettext update, using autoheader
  */
 #	undef FILE_MODE_BROKEN
 
-/*
- * TODO: define if:
- *       !X_DISPLAY_MISSING && !DONT_HAVE_PIPING &&
- *       HAVE_MKFIFO && HAVE_FORK && HAVE_EXECLP && HAVE_WAITPID
- *       [&& HAVE_SLRNFACE if we add a check or a configure option for that ]
- */
-#	undef XFACE_ABLE
 
 /*
  * define if newsserver can't handle pipelined (streamed) commands

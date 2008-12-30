@@ -3,10 +3,10 @@
  *  Module    : joinpath.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-01-10
- *  Updated   : 2007-12-30
+ *  Updated   : 2008-12-04
  *  Notes     :
  *
- * Copyright (c) 1997-2008 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2009 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,7 @@ joinpath(
 	const char *dir,
 	const char *file)
 {
-	size_t result_len = 0;
+	size_t result_len;
 
 	(void) strncpy(result, dir, result_size - 1);
 	result[result_size - 1] = '\0';

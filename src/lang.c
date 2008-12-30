@@ -3,10 +3,10 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-01-10
+ *  Updated   : 2008-12-02
  *  Notes     :
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -559,8 +559,8 @@ constext txt_nrctbl_info[] = N_("# NNTP-server -> newsrc translation table and N
 # shortname list for %s %s\n#\n# the format of this file is\n\
 #   <FQDN of NNTP-server> <newsrc file> <shortname> ...\n#\n\
 # if <newsrc file> is given without path, $HOME is assumed as its location\n\
-#\n# examples:\n#   news.tin.org  .newsrc-tin.org  tinorg\n\
-#   news.ka.nu    /tmp/nrc-nu      kanu    nu\n#\n");
+#\n# examples:\n#   news.tin.org      .newsrc-tin.org  tinorg\n\
+#   news.example.org  /tmp/nrc-ex      example    ex\n#\n");
 
 constext txt_only[] = N_("Only");
 constext txt_option_not_enabled[] = N_("Option not enabled. Recompile with %s.");
@@ -934,14 +934,14 @@ Warning: Posting is in %s and contains characters which are not\n\
 #endif /* HAVE_PGP_GPG */
 
 #ifdef M_UNIX
-	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2008 Iain Lea.";
+	constext txt_copyright_notice[] = "%s (c) Copyright 1991-2009 Iain Lea.";
 #endif /* M_UNIX */
 
 #ifdef NNTP_ABLE
 	constext txt_caching_off[] = N_("Try cache_overview_files to speed up things.\n");
 	constext txt_caching_on[] = N_("Tin will use local index files instead.\n");
 	constext txt_cannot_get_nntp_server_name[] = N_("Cannot find NNTP server name");
-	constext txt_connecting_port[] = N_("Connecting to %s:%d...");
+	constext txt_connecting_port[] = N_("Connecting to %s:%u...");
 	constext txt_disconnecting[] = N_("Disconnecting from server...\n");
 	constext txt_error_wrong_newsgroupname_in_group_response[] = N_("Wrong newsgroup name in response of GROUP command, %s for %s");
 	constext txt_failed_to_connect_to_server[] = N_("Failed to connect to NNTP server %s. Exiting...");
@@ -1201,12 +1201,24 @@ constext *txt_confirm_choices[] = {
 	N_("commands & quit & select")
 };
 
-/* diffent options for goto_next_unread */
+/* different options for goto_next_unread */
 constext *txt_goto_next_unread_options[] = {
 	N_("none"),
 	N_("PageDown"),
 	N_("PageNextUnread"),
 	N_("PageDown or PageNextUnread"),
+};
+
+/* different options for trim_article_body */
+constext *txt_trim_article_body_options[] = {
+	N_("Don't trim article body"),
+	N_("Skip leading blank lines"),
+	N_("Skip trailing blank lines"),
+	N_("Skip leading and trailing blank l."),
+	N_("Compact multiple between text"),
+	N_("Compact multiple and skip leading"),
+	N_("Compact multiple and skip trailing"),
+	N_("Compact mltpl., skip lead. & trai."),
 };
 
 /*
@@ -1229,7 +1241,7 @@ const char *content_types[] = {
  * Array of possible post processing descriptions and short-keys
  * This must match the ordering of the defines in tin.h
  */
-constext *txt_post_process_type[] = {
+constext *txt_post_process_types[] = {
 		N_("No"),
 		N_("Shell archive"),
 		N_("Yes")
@@ -1525,6 +1537,24 @@ struct opttxt txt_goto_next_unread = {
 #   3 = PAGE DOWN or TAB\n")
 };
 
+struct opttxt txt_trim_article_body = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("How to treat blank lines"),
+	N_("# Trim the article body, remove unecessary blank lines.\n\
+# Possible values are (the default is marked with *):\n\
+# * 0 = Nothing special\n\
+#   1 = Skip leading blank lines\n\
+#   2 = Skip trailing blank lines\n\
+#   3 = Skip leading and trailing blank lines\n\
+#   4 = Compact multiple blank lines between textblocks\n\
+#   5 = Compact multiple blank lines between textblocks and skip\n\
+#       leading blank lines\n\
+#   6 = Compact multiple blank lines between textblocks and skip\n\
+#       trailing blank lines\n\
+#   7 = Compact multiple blank lines between textblocks and skip\n\
+#       leading and trailing blank lines\n")
+};
+
 struct opttxt txt_auto_list_thread = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("List thread using right arrow key"),
@@ -1674,6 +1704,12 @@ struct opttxt txt_alternative_handling = {
 	N_("Do you want to enable automatic handling of multipart/alternative articles?"),
 	N_("Skip multipart/alternative parts"),
 	N_("# If ON strip multipart/alternative messages automatically\n")
+};
+
+struct opttxt txt_verbatim_handling = {
+	N_("Enable detection of verbatim blocks? <SPACE> toggles & <CR> sets."),
+	N_("Detection of verbatim blocks"),
+	N_("# If ON detect verbatim blocks in articles\n")
 };
 
 #ifdef HAVE_COLOR
@@ -2023,6 +2059,13 @@ struct opttxt txt_col_urls = {
 # Default: -1 (default color)\n")
 };
 
+struct opttxt txt_col_verbatim = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Color of verbatim blocks"),
+	N_("# Color of verbatim blocks\n\
+# Default: 5 (pink)\n")
+};
+
 struct opttxt txt_col_markstar = {
 	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
 	N_("Color of highlighting with *stars*"),
@@ -2140,9 +2183,9 @@ struct opttxt txt_sigfile = {
 	N_("Enter path/! command/--none to create your default signature. <CR> sets."),
 	N_("Create signature from path/command"),
 	N_("# Signature path (random sigs)/file to be used when posting/replying\n\
-# default_sigfile=file       appends file as signature\n\
-# default_sigfile=!command   executes external command to generate a signature\n\
-# default_sigfile=--none     don't append a signature\n")
+# sigfile=file       appends file as signature\n\
+# sigfile=!command   executes external command to generate a signature\n\
+# sigfile=--none     don't append a signature\n")
 };
 
 struct opttxt txt_sigdashes = {
@@ -2358,7 +2401,7 @@ struct opttxt txt_mark_saved_read = {
 	N_("# If ON mark articles that are saved as read\n")
 };
 
-struct opttxt txt_post_process = {
+struct opttxt txt_post_process_type = {
 	N_("Do post processing (eg. extract attachments) for saved articles."),
 	N_("Post process saved articles"),
 	N_("# Perform post processing (saving binary attachments) from saved articles.\n\

@@ -1,5 +1,5 @@
 #
-# TIN 1.5 - a threaded newsreader
+# TIN 1.9.4 - a threaded newsreader
 #
 # tin.defaults - set some machine specified options
 #                and override compile time defaults
@@ -116,6 +116,14 @@
 #
 #overviewfile=.overview
 
+# overviewfmtfile - the full pathname of your newssystem's
+#                   overview.fmt file
+#
+# usually the overview.fmt file is in newslibdir, so you only have
+# to change this setting if your configuration differs
+#
+#overviewfmtfile=/usr/lib/news/overview.fmt
+
 # activefile - the full pathname of your newssystem's active file
 #
 # usually the active file is in newslibdir, so you only have
@@ -140,7 +148,7 @@
 # subscriptionsfile - the full pathname of your newssystem's
 #                     subscriptions file
 #
-# usually the newsgroups file is in newslibdir, so you only have
+# usually the subscriptionsfile file is in newslibdir, so you only have
 # to change this setting if your configuration differs
 #
 #subscriptionsfile=/usr/lib/news/subscriptions

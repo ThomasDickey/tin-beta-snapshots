@@ -3,10 +3,10 @@
  *  Module    : my_tmpfile.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 2001-03-11
- *  Updated   : 2007-12-30
+ *  Updated   : 2008-11-22
  *  Notes     :
  *
- * Copyright (c) 2001-2008 Urs Janssen <urs@tin.org>
+ * Copyright (c) 2001-2009 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,7 +82,7 @@ my_tmpfile(
 #endif /* DEBUG */
 			*filename = '\0';
 			if (fd == -1)
-				error_message(_(txt_cannot_create_uniq_name));
+				error_message(2, _(txt_cannot_create_uniq_name));
 			return fd;
 		}
 
@@ -116,6 +116,6 @@ my_tmpfile(
 #endif /* HAVE_MKSTEMP */
 		}
 	if (fd == -1)
-		error_message(_(txt_cannot_create_uniq_name));
+		error_message(2, _(txt_cannot_create_uniq_name));
 	return fd;
 }

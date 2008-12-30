@@ -3,10 +3,10 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2007-12-30
+ *  Updated   : 2008-12-24
  *  Notes     :
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,13 +46,13 @@
  */
 int max_active;
 int num_active = -1;
-int max_local_attributes;
-int num_local_attributes = -1;
 int max_newnews;
 int num_newnews = 0;
 int max_art;
 int max_save;
 int num_save = 0;
+int max_scope;
+int num_scope = -1;
 
 /*
  * Dynamic arrays
@@ -60,7 +60,7 @@ int num_save = 0;
 int *my_group;				/* .newsrc --> active[] */
 long *base;				/* base articles for each thread */
 struct t_group *active;			/* active newsgroups */
-struct t_attribute *local_attributes = NULL;	/* attributes stores in .tin/attributes */
+struct t_attribute *scopes = NULL;	/* attributes stores in .tin/attributes */
 struct t_newnews *newnews;		/* active file sizes on differnet servers */
 struct t_article *arts;			/* articles headers in current group */
 struct t_save *save;			/* sorts articles before saving them */
@@ -70,11 +70,11 @@ struct t_save *save;			/* sorts articles before saving them */
  */
 static void free_active_arrays(void);
 static void free_attributes(struct t_attribute *attributes);
+static void free_attributes_array(void);
 static void free_newnews_array(void);
+static void free_if_not_default(char **attrib, char *deflt);
 static void free_input_history(void);
-static void free_global_arrays(void);
-
-
+        
 /*
  * Dynamic table management
  * These settings are memory conservative: small initial allocations
@@ -105,17 +105,17 @@ init_alloc(
 	base = my_malloc(sizeof(long) * max_art);
 
 	/*
-	 * attributes array
-	 */
-	max_local_attributes = DEFAULT_LOCAL_ATTRIBUTES_NUM;
-	expand_local_attributes();
-
-	/*
 	 * save file array
 	 */
 	max_save = DEFAULT_SAVE_NUM;
 
 	save = my_malloc(sizeof(*save) * max_save);
+
+	/*
+	 * scope array
+	 */
+	max_scope = DEFAULT_SCOPE_NUM;
+	expand_scope();
 
 #ifndef USE_CURSES
 	screen = (struct t_screen *) 0;
@@ -149,26 +149,26 @@ expand_active(
 
 
 void
-expand_local_attributes(
-	void)
-{
-	if ((local_attributes == NULL) || (num_local_attributes < 0)) {
-		if (local_attributes == NULL)
-			local_attributes = my_malloc(sizeof(*local_attributes) * max_local_attributes);
-		num_local_attributes = 0;
-	} else {
-		max_local_attributes += max_local_attributes >> 1;	/* increase by 50 % */
-		local_attributes = my_realloc(local_attributes, sizeof(*local_attributes) * max_local_attributes);
-	}
-}
-
-
-void
 expand_save(
 	void)
 {
 	max_save += max_save >> 1;		/* increase by 50% */
 	save = my_realloc(save, sizeof(struct t_save) * max_save);
+}
+
+
+void
+expand_scope(
+	void)
+{
+	if ((scopes == NULL) || (num_scope < 0)) {
+		if (scopes == NULL)
+			scopes = my_malloc(sizeof(*scopes) * max_scope);
+		num_scope = 0;
+	} else {
+		max_scope += max_scope >> 1;	/* increase by 50 % */
+		scopes = my_realloc(scopes, sizeof(*scopes) * max_scope);
+	}
 }
 
 
@@ -213,6 +213,8 @@ void
 free_all_arrays(
 	void)
 {
+	int i;
+
 	hash_reclaim();
 
 #ifndef USE_CURSES
@@ -225,7 +227,6 @@ free_all_arrays(
 	FreeAndNull(arts);
 	free_filter_array(&glob_filter);
 	free_active_arrays();
-	free_global_arrays();
 
 #ifdef HAVE_COLOR
 	FreeIfNeeded(quote_regex.re);
@@ -283,6 +284,12 @@ free_all_arrays(
 
 	FreeAndNull(nntp_caps.implementation);
 
+	if (ofmt) { /* ofmt might not be allocated yet on early abort */
+		for (i = 0; ofmt[i].name; i++)
+			free(ofmt[i].name);
+		free(ofmt);
+	}
+
 	tin_fgets(NULL, FALSE);
 }
 
@@ -321,7 +328,7 @@ free_art_array(
  * Use this only for attributes that have a fixed default of a static string
  * in tinrc
  */
-void
+static void
 free_if_not_default(
 	char **attrib,
 	char *deflt)
@@ -338,49 +345,51 @@ static void
 free_attributes(
 	struct t_attribute *attributes)
 {
-	FreeAndNull(attributes->scope);
-
-	free_if_not_default(&attributes->maildir, tinrc.maildir);
-	free_if_not_default(&attributes->savedir, tinrc.savedir);
-
-	FreeAndNull(attributes->savefile);
-
-	free_if_not_default(&attributes->sigfile, tinrc.sigfile);
-	free_if_not_default(&attributes->organization, default_organization);
-
-	FreeAndNull(attributes->followup_to);
-
+	free_if_not_default(&attributes->date_format, tinrc.date_format);
+	free_if_not_default(&attributes->editor_format, tinrc.editor_format);
 	FreeAndNull(attributes->fcc);
-
-	FreeAndNull(attributes->mailing_list);
-	FreeAndNull(attributes->x_headers);
-	FreeAndNull(attributes->x_body);
-
 	free_if_not_default(&attributes->from, tinrc.mail_address);
-	free_if_not_default(&attributes->news_quote_format, tinrc.news_quote_format);
-	free_if_not_default(&attributes->quote_chars, tinrc.quote_chars);
-
-	FreeAndNull(attributes->mime_types_to_save);
-
+	FreeAndNull(attributes->followup_to);
 #ifdef HAVE_ISPELL
 	FreeAndNull(attributes->ispell);
 #endif /* HAVE_ISPELL */
-
+	free_if_not_default(&attributes->maildir, tinrc.maildir);
+	FreeAndNull(attributes->mailing_list);
+	FreeAndNull(attributes->mime_types_to_save);
+	free_if_not_default(&attributes->news_headers_to_display, tinrc.news_headers_to_display);
+	free_if_not_default(&attributes->news_headers_to_not_display, tinrc.news_headers_to_not_display);
+	if (attributes->headers_to_display) {
+		if (attributes->headers_to_display->header)
+			FreeIfNeeded(*attributes->headers_to_display->header);
+		FreeAndNull(attributes->headers_to_display->header);
+		free(attributes->headers_to_display);
+		attributes->headers_to_display = (struct t_newsheader *) 0;
+	}
+	if (attributes->headers_to_not_display) {
+		if (attributes->headers_to_not_display->header)
+			FreeIfNeeded(*attributes->headers_to_not_display->header);
+		FreeAndNull(attributes->headers_to_not_display->header);
+		free(attributes->headers_to_not_display);
+		attributes->headers_to_not_display = (struct t_newsheader *) 0;
+	}
+	free_if_not_default(&attributes->news_quote_format, tinrc.news_quote_format);
+	free_if_not_default(&attributes->organization, default_organization);
 	FreeAndNull(attributes->quick_kill_scope);
 	FreeAndNull(attributes->quick_select_scope);
-
-#ifdef CHARSET_CONVERSATION
+	free_if_not_default(&attributes->quote_chars, tinrc.quote_chars);
+	free_if_not_default(&attributes->savedir, tinrc.savedir);
+	FreeAndNull(attributes->savefile);
+	free_if_not_default(&attributes->sigfile, tinrc.sigfile);
+	FreeAndNull(attributes->scope);
+#ifdef CHARSET_CONVERSION
 	FreeAndNull(attributes->undeclared_charset);
-#endif /* CHARSET_CONVERSATION */
+#endif /* CHARSET_CONVERSION */
+	FreeAndNull(attributes->x_headers);
+	FreeAndNull(attributes->x_body);
 }
 
 
-/*
- * TODO: fix the leaks in the global case
- *       Are there any leaks left? If there are, they would also be there for
- *       every group, wouldn't they? 2006-11-12, -dn
- */
-void
+static void
 free_attributes_array(
 	void)
 {
@@ -395,33 +404,14 @@ free_attributes_array(
 		 * unconditionally. Groups may become bogus on a resync of the active
 		 * file (after attributes are "applied"), too. 2006-11-12, -dn
 		 */
-		if (/* !group->bogus && */ group->attribute && !group->attribute->global) {
-			free_attributes(group->attribute);
+		if (/* !group->bogus && */ group->attribute && !group->attribute->global)
 			free(group->attribute);
-		}
 		group->attribute = (struct t_attribute *) 0;
 	}
 
-	/* free the local attributes array */
-	while (num_local_attributes > 0)
-		free_attributes(&local_attributes[--num_local_attributes]);
-
-	/* free the global attributes array */
-	free_attributes(&glob_attributes);
-}
-
-
-static void
-free_global_arrays(
-	void)
-{
-	if (news_headers_to_display_array)
-		FreeIfNeeded(*news_headers_to_display_array);
-	FreeAndNull(news_headers_to_display_array);
-
-	if (news_headers_to_not_display_array)
-		FreeIfNeeded(*news_headers_to_not_display_array);
-	FreeAndNull(news_headers_to_not_display_array);
+	/* free the scope attributes array */
+	while (num_scope > 0)
+		free_attributes(&scopes[--num_scope]);
 }
 
 
@@ -446,8 +436,8 @@ free_active_arrays(
 		free_attributes_array();
 		FreeAndNull(active);
 	}
-	FreeAndNull(local_attributes);
-	num_local_attributes = -1;
+	FreeAndNull(scopes);
+	num_scope = -1;
 	num_active = -1;
 }
 
@@ -508,7 +498,7 @@ my_malloc1(
 #endif /* DEBUG */
 
 	if ((p = malloc(size)) == NULL) {
-		error_message(txt_out_of_memory, tin_progname, size, file, line);
+		error_message(2, txt_out_of_memory, tin_progname, size, file, line);
 		giveup();
 	}
 	return p;
@@ -532,7 +522,7 @@ my_calloc1(
 #endif /* DEBUG */
 
 	if ((p = calloc(nmemb, size)) == NULL) {
-		error_message(txt_out_of_memory, tin_progname, nmemb * size, file, line);
+		error_message(2, txt_out_of_memory, tin_progname, nmemb * size, file, line);
 		giveup();
 	}
 	return p;
@@ -560,7 +550,7 @@ my_realloc1(
 	p = ((!p) ? (malloc(size)) : realloc(p, size));
 
 	if (p == NULL) {
-		error_message(txt_out_of_memory, tin_progname, size, file, line);
+		error_message(2, txt_out_of_memory, tin_progname, size, file, line);
 		giveup();
 	}
 	return p;

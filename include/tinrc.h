@@ -3,10 +3,10 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2006-06-28
+ *  Updated   : 2008-11-08
  *  Notes     :
  *
- * Copyright (c) 1999-2008 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2009 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -136,7 +136,7 @@ struct t_config {
 	int kill_level;						/* Define how killed articles are shown */
 	int mail_mime_encoding;
 	int post_mime_encoding;
-	int post_process;					/* type of post processing to be performed */
+	int post_process_type;				/* type of post processing to be performed */
 	int reread_active_file_secs;		/* reread active file interval in seconds */
 	int scroll_lines;					/* # lines to scroll by in pager */
 	int show_author;					/* show_author value from 'M' menu in tinrc */
@@ -151,6 +151,7 @@ struct t_config {
 	int score_limit_select;					/* score limit to select articles */
 	int score_kill;						/* default score for "kill" filter rules */
 	int score_select;					/* default score for "hot" filter rules */
+	int trim_article_body;				/* remove unnecessary blank lines */
 #	ifdef HAVE_COLOR
 		int col_back;						/* standard background color */
 		int col_from;						/* color of sender (From:) */
@@ -172,6 +173,7 @@ struct t_config {
 		int col_response;					/* color of respone counter */
 		int col_signature;					/* color of signature */
 		int col_urls;						/* color of urls highlight */
+		int col_verbatim;					/* color of verbatim blocks */
 		int col_subject;					/* color of article subject */
 		int col_text;						/* color of textlines*/
 		int col_title;						/* color of Help/Mail-Sign */
@@ -232,6 +234,7 @@ struct t_config {
 	t_bool tex2iso_conv;			/* convert "a to Umlaut-a */
 	t_bool thread_catchup_on_exit;		/* catchup thread with left arrow key or not */
 	t_bool unlink_article;
+	t_bool verbatim_handling;			/* Detection of verbatim blocks */
 	char inews_prog[PATH_LEN];
 	int interactive_mailer;			/* invoke user's mailreader */
 	t_bool use_mouse;					/* enables/disables mouse support under xterm */

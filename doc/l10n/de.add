@@ -1,0 +1,5 @@
+PO4A-HEADER: mode=after; position=MAINTAINER;beginboundary=^\.SH
+.SH ÜBERSETZUNG
+.TP 1i
+Erika Mustermann <erika@example.org>
+.\"

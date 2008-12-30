@@ -2,7 +2,8 @@ New features and changes since tin-1.8.1
 
 New features
 ------------
-. slrn style verbatim marks
+. configurable verbatim marks (default is slrn style)
+. configurable body trimming
 . UTF-8 descriptions (RFC 3977)
 . sort by date of last posted article
 . writes out newsrc if getting SIGUSR2
@@ -12,6 +13,19 @@ Changes
 . Cancel-Locks can be enabled via configure switch
 . url_handler.pl as DEFAULT_URL_HANDLER
 . mime_forward is forced on multipart articles
+. changed names in tinrc:
+    default_editor_format -> editor_format
+    default_maildir       -> maildir
+    default_mailer_format -> mailer_format
+    default_printer       -> printer
+    default_savedir       -> savedir
+    default_sigfile       -> sigfile
+    show_only_unread      -> show_only_unread_arts
+. changed names in attributes:
+    post_proc_type        -> post_process_type
+    show_only_unread      -> show_only_unread_arts
+    sort_art_type         -> sort_article_type
+    thread_arts           -> thread_articles
 
 Retired Features
 ----------------

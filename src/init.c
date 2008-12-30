@@ -3,10 +3,10 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-03-10
+ *  Updated   : 2008-12-02
  *  Notes     :
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,8 +63,6 @@ static int read_site_config(void);
 #endif /* HAVE_COLOR */
 
 
-char **news_headers_to_display_array;	/* array of which headers to display */
-char **news_headers_to_not_display_array;	/* array of which headers to not display */
 char active_times_file[PATH_LEN];
 char article_name[PATH_LEN];			/* ~/TIN_ARTICLE_NAME file */
 char bug_nntpserver1[PATH_LEN];		/* welcome message of NNTP server used */
@@ -83,7 +81,6 @@ char index_maildir[PATH_LEN];
 char index_newsdir[PATH_LEN];	/* directory for private overview data */
 char index_savedir[PATH_LEN];
 char inewsdir[PATH_LEN];
-char libdir[PATH_LEN];			/* directory where news config files are (ie. active) */
 char local_attributes_file[PATH_LEN];
 char local_config_file[PATH_LEN];
 char local_input_history_file[PATH_LEN];
@@ -104,7 +101,8 @@ char postponed_articles_file[PATH_LEN];	/* ~/.tin/postponed.articles file */
 char rcdir[PATH_LEN];
 char save_active_file[PATH_LEN];
 char spooldir[PATH_LEN];		/* directory where news is */
-char subscriptions_file[PATH_LEN];
+char overviewfmt_file[PATH_LEN];	/* full path to overview.fmt */
+char subscriptions_file[PATH_LEN];	/* full path to subscriptions */
 char tin_progname[PATH_LEN];		/* program name */
 char txt_help_bug_report[LEN];		/* address to send bug reports to */
 char userid[PATH_LEN];
@@ -121,8 +119,6 @@ t_function last_search;	/* for repeated search */
 int hist_last[HIST_MAXNUM + 1];
 int hist_pos[HIST_MAXNUM + 1];
 int iso2asc_supported;			/* Convert ISO-Latin1 to Ascii */
-int num_headers_to_display;		/* num headers to display -- swp */
-int num_headers_to_not_display;		/* num headers to not display -- swp */
 int system_status;
 int xmouse, xrow, xcol;			/* xterm button pressing information */
 
@@ -280,7 +276,7 @@ struct t_config tinrc = {
 	KILL_UNREAD,		/* kill_level */
 	MIME_ENCODING_7BIT,		/* mail_mime_encoding */
 	MIME_ENCODING_7BIT,		/* post_mime_encoding */
-	POST_PROC_NO,			/* post_process */
+	POST_PROC_NO,			/* post_process_type */
 	REREAD_ACTIVE_FILE_SECS,	/* reread_active_file_secs */
 	1,		/* scroll_lines */
 	SHOW_FROM_NAME,				/* show_author */
@@ -295,6 +291,7 @@ struct t_config tinrc = {
 	50,		/* score_limit_select */
 	-100,		/* score_kill */
 	100,		/* score_select */
+	0,		/* trim_article_body */
 #ifdef HAVE_COLOR
 	0,		/* col_back (initialised later) */
 	0,		/* col_from (initialised later) */
@@ -316,6 +313,7 @@ struct t_config tinrc = {
 	0,		/* col_response (initialised later) */
 	0,		/* col_signature (initialised later) */
 	0,		/* col_urls (initialised later) */
+	0,		/* col_verbatim (initialised later) */
 	0,		/* col_subject (initialised later) */
 	0,		/* col_text (initialised later) */
 	0,		/* col_title (initialised later) */
@@ -388,6 +386,7 @@ struct t_config tinrc = {
 	FALSE,		/* tex2iso_conv */
 	TRUE,		/* thread_catchup_on_exit */
 	TRUE,		/* unlink_article */
+	TRUE,		/* verbatim_handling */
 	"",		/* inews_prog */
 	INTERACTIVE_NONE,		/* interactive_mailer */
 	FALSE,		/* use_mouse */
@@ -415,7 +414,7 @@ struct t_config tinrc = {
 };
 
 struct t_capabilities nntp_caps = {
-	0, /* type (none, LIST EXTENSIONS, CAPABILITIES, BROKEN) */
+	NONE, /* type (none, LIST EXTENSIONS, CAPABILITIES, BROKEN) */
 	0, /* CAPABILITIES version */
 	FALSE, /* MODE-READER: "MODE READER" */
 	FALSE, /* READER: "ARTICLE", "BODY" */
@@ -452,6 +451,7 @@ struct t_capabilities nntp_caps = {
 #endif /* 0 */
 };
 
+static char libdir[PATH_LEN];			/* directory where news config files are (ie. active) */
 static mode_t real_umask;
 
 #ifdef HAVE_COLOR
@@ -484,10 +484,12 @@ static const struct {
 	{ &tinrc.col_response,    2 },
 	{ &tinrc.col_signature,   4 },
 	{ &tinrc.col_urls,       -1 },
+	{ &tinrc.col_verbatim,    5 },
 	{ &tinrc.col_subject,     6 },
 	{ &tinrc.col_text,       DFT_FORE },
 	{ &tinrc.col_title,       4 },
 };
+
 
 static void
 preinit_colors(
@@ -545,9 +547,7 @@ init_selfinfo(
 
 #ifdef HAVE_SYS_UTSNAME_H
 #	ifdef HAVE_UNAME
-	if (uname(&system_info) != -1)
-		;
-	else
+	if (uname(&system_info) == -1)
 #	endif /* HAVE_UNAME */
 	{
 		strcpy(system_info.sysname, "unknown");
@@ -576,7 +576,7 @@ init_selfinfo(
 	(void) umask(real_umask);
 
 	if ((myentry = getpwuid(getuid())) == NULL) {
-		error_message(_(txt_error_passwd_missing));
+		error_message(2, _(txt_error_passwd_missing));
 		giveup();
 	}
 
@@ -602,8 +602,6 @@ init_selfinfo(
 		iso2asc_supported = -1;
 	list_active = FALSE;
 	newsrc_active = FALSE;
-	num_headers_to_display = 0;
-	num_headers_to_not_display = 0;
 	post_article_and_exit = FALSE;
 	post_postponed_and_exit = FALSE;
 	read_local_newsgroups_file = FALSE;
@@ -630,8 +628,6 @@ init_selfinfo(
 	snprintf(cvers, sizeof(cvers), txt_copyright_notice, page_header);
 
 	default_organization[0] = '\0';
-	news_headers_to_display_array = ulBuildArgv(tinrc.news_headers_to_display, &num_headers_to_display);
-	news_headers_to_not_display_array = NULL;
 
 	strncpy(bug_addr, BUG_REPORT_ADDRESS, sizeof(bug_addr) - 1);
 
@@ -660,6 +656,7 @@ init_selfinfo(
 	news_active_file[0] = '\0';
 	active_times_file[0] = '\0';
 	newsgroups_file[0] = '\0';
+	overviewfmt_file[0] = '\0';
 	subscriptions_file[0] = '\0';
 
 	/*
@@ -673,8 +670,7 @@ init_selfinfo(
 	 * if it's still unset fall into no posting mode.
 	 */
 	if (domain_name[0] == '\0') {
-		error_message(_(txt_error_no_domain_name));
-		sleep(2);
+		error_message(4, _(txt_error_no_domain_name));
 		force_no_post = TRUE;
 	}
 
@@ -693,6 +689,8 @@ init_selfinfo(
 		joinpath(newsgroups_file, sizeof(newsgroups_file), libdir, NEWSGROUPS_FILE);
 	if (!*subscriptions_file)
 		joinpath(subscriptions_file, sizeof(subscriptions_file), libdir, SUBSCRIPTIONS_FILE);
+	if (!*overviewfmt_file)
+		joinpath(overviewfmt_file, sizeof(overviewfmt_file), libdir, OVERVIEW_FMT);
 	if (!*default_organization) {
 		char buf[LEN], filename[PATH_LEN];
 
@@ -864,6 +862,8 @@ read_site_config(
 		if (match_string(buf, "newslibdir=", libdir, sizeof(libdir)))
 			continue;
 		if (match_string(buf, "subscriptionsfile=", subscriptions_file, sizeof(subscriptions_file)))
+			continue;
+		if (match_string(buf, "overviewfmtfile=", overviewfmt_file, sizeof(overviewfmt_file)))
 			continue;
 		if (match_string(buf, "domainname=", domain_name, sizeof(domain_name)))
 			continue;

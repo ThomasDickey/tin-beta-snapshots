@@ -1,7 +1,56 @@
--- 1.9.3 release 20080326 "" --
+-- 1.9.4 release 20081230 "" --
+
+ 021) Dennis Preiser <onkelp@gmx.de>
+      BUG. memleak in free_attributes()
+      FIX. memory.c
+
+U012) Dennis Preiser <onkelp@gmx.de>
+      BUG. mem-leak in set_colors()
+      ADD. enhance attributes documentation
+      ADD. menu-option/attribute to turn verbatim block handling on and off
+      ADD. menu-option to color the lines between the verbatim marks
+      ADD. menu-option/attribute to trim article body (compact empty lines)
+      ADD. most tinrc options to attributes
+      BUG. long lines in verbatim blocks may grabble the screen
+      BUG. unescaped metacharacter in DEFAULT_VERBATIM_BEGIN_REGEX
+      BUG. rot13 does not rotate the verbatim_begin_regex line
+      BUG. numeric attributes got lost on big-endian OSs
+      FIX. active.c, art.c, attrib.c, color.c, config.c, cook.c, debug.c
+           feed.c, filter.c, group.c, inews.c, init.c, lang.c, mail.c, main.c
+           memory.c, misc.c, options_menu.c, page.c, post.c, refs.c, save.c
+           search.c, select.c, sigfile.c, tags.c, thread.c, extern.h, proto.h
+           rfc2046.h, tin.h, tinrc.h, version.h, tincfg.tbl, tin.1, tin.5
+
+U011) Urs Janssen <urs@tin.org>
+      ADD. minor code cleanup
+      ADD. workaround bogus XHDR response from SoftVelocity Discussions 2.5q
+      ADD. configurable path via tin.defaults to overview.fmt file
+      ADD. send "LIST HEADES" befor doing "HDR" if server supports it
+      ADD. config.guess, config.sub update
+      ADD. started german manpage translation
+      ADD. issue extra "GROUP" when NEXT receives 411
+      ADD. issue a warning if attributes file has an unexpected version number
+      BUG. don't break long body-lines in original article when superseding
+      BUG. don't send "LIST NEWSGROUPS" for mailgroups in the -n case
+      BUG. empty but present Followup-To header (server bug) was used in f'ups
+      FIX. active.c, art.c, attrib.c, auth.c, config.c, cook.c, debug.c, feed.c
+           filter.c, getline.c, group.c, header.c, help.c, inews.c, init.c
+           keymap.c, lang.c, list.c, mail.c, main.c, memory.c, misc.c
+           my_tmpfile.c, newsrc.c, nntplib.c, options_menu.c, page.c, post.c
+           prompt.c, refs.c, regex.c, rfc2046.c, save.c, screen.c, select.c
+           sigfile.c, tags.c, thread.c, version.c, xface.c, xref.c, extern.h
+           proto.h, stpwatch.h, tin.h, version.h, tincfg.tbl, Makefile[.in]
+           configure[.in], tin.defaults, tin.5, config.guess, config.sub
+           doc/l10n/*
+
+-- 1.9.3 release 20080506 "Dalintober" --
+
+U010) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update configure macros
+      FIX. aclocal.m4, configure[.in], mkdirs.sh
 
 U009) Dirk Nimmich <nimmich@muenster.de>
-      ADD. (g)oto group search now case insensitive
+      ADD. (g)oto group search now is case insensitive
       ADD. infrastructure for editing and writing attributes
       ADD. write attributes file from internal structures
       BUG. possible memleak when freeing group attributes
@@ -20,7 +69,9 @@ U009) Dirk Nimmich <nimmich@muenster.de>
 
  020) Urs Janssen <urs@tin.org>
       BUG. my_realloc() didn't handle zero size reallocs
-      FIX. memory.c
+      BUG. subjects > 256 chars were tunrcated at group-level without adding
+           a \0-termination
+      FIX. group.c, memory.c
 
 U008) Rado S <regrado@web.de>
       ADD. use same article numbers in different levels
@@ -34,32 +85,42 @@ U007) Urs Janssen <urs@tin.org>
       ADD. enable some more CAPABILLITIES related code
       ADD. minor code cleanup
       ADD. config.guess, config.sub update
-      ADD. allow .me, .rs, .tel and .asia TLDs
+      ADD. allow .kp, .me, .rs, .tel and .asia TLDs
       ADD. check permissions of .cancelsecret-file
       ADD. --enable-cancel-locks configure option
+      ADD. --with-slrnface configure option
       ADD. libcanlock update (1.0 -> 2b-4)
       ADD. url_handler.pl as new DEFAULT_URL_HANDLER
       ADD. remove leading/tailing whitespace in filter scope
       ADD. increase internal buffer in rfc1522_encode()/rfc1522_do_encode()
-      ADD. disallow .invalidTLD in tin generated Message-IDs
+      ADD. restrictions to tin generated Message-IDs (disallow
+           .invalid-TLD, disallow IDs > 250 octets)
       ADD. SIGUSR2 handler to write out newsrc
       ADD. configure check for gsasl.h/libgsasl
-      ADD. AUTHINFO SASL PLAIN support if gsasl.h/libgsasl found
+      ADD. AUTHINFO SASL PLAIN support if gsasl.h/libgsasl is found
       ADD. use "LIST NEWSGROUPS grp" with -n cmd-line switch
       ADD. use "LIST ACTIVE grp" with -n cmd-line switch
+      ADD. don't treat empty Bytes or Lines-filed in overview as error in
+           debug mode
+      ADD. parse LIST OVERVIEW.FMT
+      ADD. if LIST OVERVIEW.FMT didn't mention Xref:full, but XOVER includes
+           Xref: use it instead of sending XHDR XREF
+      ADD. do "XHDR XREF -" instead of gazillions of single cmds.
+      BUG. missing utf-8 validation for news_headers_to_display
       BUG. newnewsrc tmp-file wasn't always removed
       BUG. subscribe_pattern() was overcomplex
       BUG. mail_to_someone() didn't convert the article into the local charset
       REM. libinn support (was broken for ages)
       FIX. active.c, art.c, attrib.c, auth.c, charset.c, config.c, color.c
            cook.c, debug.c, filter.c, group.c, header.c, help.c, inews.c
-           init.c, keymap.c, lang.c, mail.c, main.c, mimetypes.c, misc.c
-           my_tmpfile.c, newsrc.c, nntplib.c, options_menu.c, page.c, post.c
-           refs.c, rfc2045.c, rfc2047.c, save.c, screen.c, search.c, select.c
-           sigfile.c, signcal.c, string.c, tags.c, tcurses.c, thread.c, xface.c
-           xref.c, config.guess, config.sub, de.po, autoconf.h[in], debug.h
-           extern.h, policy.h, proto.h, rfc2046.h, keymap.h, tin.h, version.h
-           Makefile, configure[.in], Makefile[.in], libcanlock/*, tin.1, tin.5
+           init.c, keymap.c, lang.c, mail.c, main.c, memory.c, mimetypes.c
+           misc.c, my_tmpfile.c, newsrc.c, nntplib.c, options_menu.c, page.c
+           post.c, refs.c, regex.c, rfc2045.c, rfc2047.c, save.c, screen.c
+           search.c, select.c, sigfile.c, signcal.c, string.c, tags.c
+           tcurses.c, thread.c, version.c, xface.c, xref.c, config.guess
+           config.sub, de.po, autoconf.h[in], debug.h, extern.h, policy.h
+           proto.h, rfc2046.h, keymap.h, tin.h, version.h, Makefile
+           configure[.in], Makefile[.in], libcanlock/*, tin.1, tin.5
 
 -- 1.9.2 release 20070201 "Dalaruan" --
 

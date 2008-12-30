@@ -3,10 +3,10 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-03-14
+ *  Updated   : 2008-11-28
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -225,7 +225,7 @@ write_newsrc(
 		 * Don't rename if either fclose() fails or ferror() is set
 		 */
 		if (ferror(fp_op) || fclose(fp_op)) {
-			error_message(_(txt_filesystem_full), NEWSRC_FILE);
+			error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
 			unlink(newnewsrc);
 		} else
 			write_ok = TRUE;
@@ -234,7 +234,7 @@ write_newsrc(
 	fclose(fp_ip);
 
 	if (tot < 1) {
-		error_message(_(txt_newsrc_nogroups));
+		error_message(2, _(txt_newsrc_nogroups));
 		unlink(newnewsrc);
 		return 0L;		/* So we don't get prompted to try again */
 	}
@@ -263,7 +263,7 @@ create_newsrc(
 			fprintf(fp, "%s!\n", active[i].name);
 
 		if (ferror(fp) || fclose(fp)) {
-			error_message(_(txt_filesystem_full), NEWSRC_FILE);
+			error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
 			return FALSE;
 		}
 		return TRUE; /* newsrc created */
@@ -338,7 +338,7 @@ auto_subscribe_groups(
 	/* We ignore user 'q'uits here. They will get them next time in any case */
 
 	if (ferror(fp_newsrc) || fclose(fp_newsrc))
-		error_message(_(txt_filesystem_full), NEWSRC_FILE);
+		error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
 
 	TIN_FCLOSE(fp_subs);
 }
@@ -373,7 +373,7 @@ backup_newsrc(
 	}
 
 	if (!backup_file(newsrc, filebuf))
-		error_message(_(txt_filesystem_full_backup), NEWSRC_FILE);
+		error_message(2, _(txt_filesystem_full_backup), NEWSRC_FILE);
 }
 
 
@@ -409,7 +409,7 @@ group_get_art_info(
 		switch (get_respcode(line, sizeof(line))) {
 			case OK_GROUP:
 				if (sscanf(line, "%ld %ld %ld", art_count, art_min, art_max) != 3)
-					error_message(_(txt_error_invalid_response_to_group), line);
+					error_message(2, _(txt_error_invalid_response_to_group), line);
 				break;
 
 			case ERR_NOGROUP:
@@ -419,7 +419,7 @@ group_get_art_info(
 				return -ERR_NOGROUP;
 
 			case ERR_ACCESS:
-				error_message("%s%s", cCRLF, line);
+				error_message(2, "%s%s", cCRLF, line);
 				tin_done(NNTP_ERROR_EXIT);
 				/* keep lint quiet: */
 				/* NOTREACHED */
@@ -480,8 +480,10 @@ get_subscribe_info(
 
 	if (grp->newsrc.num_unread > grp->count) {
 #ifdef DEBUG
-		my_printf(cCRLF "Unread WRONG %s unread=[%ld] count=[%ld]", grp->name, grp->newsrc.num_unread, grp->count);
-		my_flush();
+		if (debug & DEBUG_NEWSRC) { /* TODO: is this the right debug-level? */
+			my_printf(cCRLF "Unread WRONG %s unread=[%ld] count=[%ld]", grp->name, grp->newsrc.num_unread, grp->count);
+			my_flush();
+		}
 #endif /* DEBUG */
 		grp->newsrc.num_unread = grp->count;
 	}
@@ -489,8 +491,10 @@ get_subscribe_info(
 	if (grp->xmin != oldmin || grp->xmax != oldmax) {
 		expand_bitmap(grp, 0);
 #ifdef DEBUG
-		my_printf(cCRLF "Min/Max DIFF %s old=[%ld-%ld] new=[%ld-%ld]", grp->name, oldmin, oldmax, grp->xmin, grp->xmax);
-		my_flush();
+		if (debug & DEBUG_NEWSRC) { /* TODO: is this the right debug-level? */
+			my_printf(cCRLF "Min/Max DIFF %s old=[%ld-%ld] new=[%ld-%ld]", grp->name, oldmin, oldmax, grp->xmin, grp->xmax);
+			my_flush();
+		}
 #endif /* DEBUG */
 	}
 }
@@ -558,7 +562,7 @@ subscribe(
 	}
 
 	if (ferror(newfp) || fclose(newfp)) {
-		error_message(_(txt_filesystem_full), NEWSRC_FILE);
+		error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
 		unlink(newnewsrc);
 	} else
 		rename_file(newnewsrc, newsrc);
@@ -587,7 +591,7 @@ reset_newsrc(
 			fclose(fp);
 		}
 		if (ferror(newfp) || fclose(newfp)) {
-			error_message(_(txt_filesystem_full), NEWSRC_FILE);
+			error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
 			unlink(newnewsrc);
 		} else
 			rename_file(newnewsrc, newsrc);
@@ -629,7 +633,7 @@ delete_group(
 		}
 
 		if (ferror(newfp) || fclose(newfp)) {
-			error_message(_(txt_filesystem_full), NEWSRC_FILE);
+			error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
 			unlink(newnewsrc);
 		} else
 			rename_file(newnewsrc, newsrc);
@@ -1185,7 +1189,7 @@ pos_group_in_newsrc(
 	}
 
 	if (ferror(fp_sub) || fclose(fp_sub) || ferror(fp_unsub) || fclose(fp_unsub)) {
-		error_message(_(txt_filesystem_full), NEWSRC_FILE);
+		error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
 		fp_sub = fp_unsub = NULL;
 		goto rewrite_group_done;
 	}
@@ -1243,7 +1247,7 @@ pos_group_in_newsrc(
 	 * Try and cleanly close out the newnewsrc file
 	 */
 	if (ferror(fp_out) || fclose(fp_out))
-		error_message(_(txt_filesystem_full), NEWSRC_FILE);
+		error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
 	else {
 		if (repositioned) {
 			rename_file(newnewsrc, newsrc);

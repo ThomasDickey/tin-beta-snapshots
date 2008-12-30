@@ -3,10 +3,10 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-03-26
+ *  Updated   : 2008-11-22
  *  Notes     :
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -520,7 +520,7 @@ show_help_page(
 
 		case INFO_PAGER:
 		default: /* should not happen */
-			error_message(_(txt_error_unknown_dlevel));
+			error_message(2, _(txt_error_unknown_dlevel));
 			fclose(fp);
 			return;
 	}
@@ -668,7 +668,7 @@ show_mini_help(
 			break;
 
 		default: /* should not happen */
-			error_message(_(txt_error_unknown_dlevel));
+			error_message(2, _(txt_error_unknown_dlevel));
 			break;
 	}
 #ifdef HAVE_COLOR

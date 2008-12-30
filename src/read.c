@@ -5,7 +5,7 @@
  *  Created   : 1997-04-10
  *  Updated   : 2006-02-15
  *
- * Copyright (c) 1997-2008 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1997-2009 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -212,8 +212,8 @@ tin_read(
 
 /* TODO: develop this next line? */
 #ifdef DEBUG
-	if (errno)
-		fprintf(stderr, "errno in tin_read %d\n", errno);
+	if (errno && (debug & DEBUG_MISC))
+		fprintf(stderr, "tin_read(%s)", strerror(errno));
 #endif /* DEBUG */
 
 	if (ptr == 0)	/* End of data? */

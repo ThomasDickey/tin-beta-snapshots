@@ -3,10 +3,10 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2007-10-02
+ *  Updated   : 2008-11-28
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -209,7 +209,7 @@ test_regex(
 			if (regex_errpos >= 0)
 				return 1;
 			else if (regex_errpos != PCRE_ERROR_NOMATCH) {
-				error_message(_(txt_pcre_error_num), regex_errpos);
+				error_message(2, _(txt_pcre_error_num), regex_errpos);
 				return -1;
 			}
 		}
@@ -310,7 +310,7 @@ read_filter_file(
 	t_bool expired_time = FALSE;
 	time_t current_secs = (time_t) 0;
 	static t_bool first_read = TRUE;
-	int upgrade = RC_CHECK;
+	enum rc_state upgrade = RC_CHECK;
 
 	if ((fp = fopen(file, "r")) == NULL)
 		return FALSE;
@@ -327,13 +327,14 @@ read_filter_file(
 		free_filter_array(&glob_filter);
 
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
-		if (*buf == '#' || *buf == '\n') {
-			if (upgrade == RC_CHECK && first_read) {
+		if (*buf == '\n')
+			continue;
+		if (*buf == '#') {
+			if (upgrade == RC_CHECK && first_read && match_string(buf, "# Filter file V", NULL, 0)) {
 				first_read = FALSE;
 				upgrade = check_upgrade(buf, "# Filter file V", FILTER_VERSION);
 				if (upgrade != RC_IGNORE)
-					upgrade_prompt_quit(upgrade, FILTER_FILE);
-				/* TODO: do something (more) useful here */
+					upgrade_prompt_quit(upgrade, FILTER_FILE); /* TODO: do something (more) useful here */
 			}
 			continue;
 		}
@@ -346,9 +347,10 @@ read_filter_file(
 
 					break;
 				}
-				if (match_string(buf + 1, "omment=", comment_line, sizeof(comment_line)))
+				if (match_string(buf + 1, "omment=", comment_line, sizeof(comment_line))) {
 					str_trim(comment_line);
 					comment = add_filter_comment(comment, comment_line);
+				}
 				break;
 
 			case 'f':
@@ -638,7 +640,7 @@ write_filter_file(
 	file_tmp = get_tmpfilename(filename);
 
 	if (!backup_file(filename, file_tmp)) {
-		error_message(_(txt_filesystem_full_backup), filename);
+		error_message(2, _(txt_filesystem_full_backup), filename);
 		free(file_tmp);
 		return;
 	}
@@ -657,7 +659,7 @@ write_filter_file(
 	write_filter_array(fp, &glob_filter);
 
 	if (ferror(fp) || fclose(fp)) {
-		error_message(_(txt_filesystem_full), filename);
+		error_message(2, _(txt_filesystem_full), filename);
 		rename_file(file_tmp, filename);
 	} else
 		unlink(file_tmp);
@@ -680,13 +682,15 @@ write_filter_array(
 
 	for (i = 0; i < ptr->num; i++) {
 #ifdef DEBUG
-		debug_print_file("FILTER", "WRITE i=[%d] subj=[%s] from=[%s]\n", i, BlankIfNull(ptr->filter[i].subj), BlankIfNull(ptr->filter[i].from));
+		if (debug & DEBUG_FILTER)
+			debug_print_file("FILTER", "WRITE i=[%d] subj=[%s] from=[%s]\n", i, BlankIfNull(ptr->filter[i].subj), BlankIfNull(ptr->filter[i].from));
 #endif /* DEBUG */
 
 		if (ptr->filter[i].time && theTime > ptr->filter[i].time)
 				continue;
 #ifdef DEBUG
-		debug_print_file("FILTER", "Scope=[%s]" cCRLF, (ptr->filter[i].scope != NULL ? ptr->filter[i].scope : "*"));
+		if (debug & DEBUG_FILTER)
+			debug_print_file("FILTER", "Scope=[%s]" cCRLF, (ptr->filter[i].scope != NULL ? ptr->filter[i].scope : "*"));
 #endif /* DEBUG */
 
 		fprintf(fp, "\n");		/* makes filter file more readable */
@@ -1405,7 +1409,7 @@ filter_menu(
 		case FILTER_EDIT:
 			add_filter_rule(group, art, &rule, FALSE); /* save the rule */
 			rule.comment = free_filter_comment(rule.comment);
-			if (!invoke_editor(filter_file, FILTER_FILE_OFFSET))
+			if (!invoke_editor(filter_file, FILTER_FILE_OFFSET, NULL))
 				return FALSE;
 			unfilter_articles();
 			(void) read_filter_file(filter_file);
@@ -1468,7 +1472,7 @@ quick_filter(
 
 #ifdef DEBUG
 	if (debug & DEBUG_FILTER)
-		error_message("%s header=[%d] scope=[%s] expire=[%s] case=[%d]", (type == GLOBAL_QUICK_FILTER_KILL) ? "KILL" : "SELECT", header, BlankIfNull(scope), txt_onoff[expire != FALSE ? 1 : 0], icase);
+		error_message(2, "%s header=[%d] scope=[%s] expire=[%s] case=[%d]", (type == GLOBAL_QUICK_FILTER_KILL) ? "KILL" : "SELECT", header, BlankIfNull(scope), txt_onoff[expire != FALSE ? 1 : 0], icase);
 #endif /* DEBUG */
 
 	/*
@@ -1718,7 +1722,7 @@ add_filter_rule(
 			 * So the thread remains open (in group level). To overcome this,
 			 * the first msgid from references field is taken in this case.
 			 */
-			if (quick_filter_rule && group->attribute->thread_arts == THREAD_REFS &&
+			if (quick_filter_rule && group->attribute->thread_articles == THREAD_REFS &&
 				(group->attribute->quick_kill_header == FILTER_MSGID ||
 				 group->attribute->quick_kill_header == FILTER_REFS_ONLY) &&
 				 art->refptr->parent != NULL)
@@ -2040,7 +2044,7 @@ wait_message(1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].lin
 						t_bool skip = FALSE;
 
 						s = arts[i].xref;
-						while (*s && !isspace((int) *s))
+						while (*s && !isspace((int) *s))	/* skip server name */
 							s++;
 						while (*s && isspace((int) *s))
 							s++;

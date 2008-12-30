@@ -5,7 +5,7 @@ dnl Created   : 1995-08-24
 dnl Updated   : 2008-03-27
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2008 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2009 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -1311,7 +1311,7 @@ case .$cf_pcre_home in #(vi
 .no) #(vi
 	# setup to compile the bundled PCRE.  "version.sh" is not provided by
     # upstream; the user of this macro must provide it.
-	. $srcdir/pcre/version.sh
+#	. $srcdir/pcre/version.sh
 	AC_SUBST(PCRE_MAJOR)
 	AC_SUBST(PCRE_MINOR)
 	AC_SUBST(PCRE_DATE)

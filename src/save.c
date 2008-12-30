@@ -3,10 +3,10 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2007-12-30
+ *  Updated   : 2008-11-22
  *  Notes     :
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,9 +48,10 @@
 #	endif /* !__UUDEVIEW_H__ */
 #endif /* HAVE_UUDEVIEW_H */
 
+#ifndef HAVE_LIBUU
 #undef OFF
-
 enum state { INITIAL, MIDDLE, OFF, END };
+#endif /* !HAVE_LIBUU */
 
 /*
  * Local prototypes
@@ -753,7 +754,7 @@ post_process_uud(
 			my_printf(cCRLF);
 
 			/* item->mimetype seems not to be available for uudecoded files etc */
-			if (tinrc.post_process_view) {
+			if (curr_group->attribute->post_process_view) {
 				joinpath(path, sizeof(path), file_out_dir, item->filename);
 				view_file(path, strrchr(path, DIRSEP) + 1);
 			}
@@ -906,7 +907,7 @@ post_process_uud(
 				my_printf(_(txt_uu_success), filename);
 				my_printf(cCRLF);
 				sum_file(path, filename);
-				if (tinrc.post_process_view)
+				if (curr_group->attribute->post_process_view)
 					view_file(path, filename);
 				state = INITIAL;
 				continue;
@@ -1114,7 +1115,7 @@ print_art_seperator_line(
 {
 #ifdef DEBUG
 	if (debug & DEBUG_MISC)
-		error_message("Mailbox=[%d], mailbox_format=[%s]", is_mailbox, txt_mailbox_formats[tinrc.mailbox_format]);
+		error_message(2, "Mailbox=[%d], mailbox_format=[%s]", is_mailbox, txt_mailbox_formats[tinrc.mailbox_format]);
 #endif /* DEBUG */
 
 	fprintf(fp, "%s", (is_mailbox && !strcasecmp(txt_mailbox_formats[tinrc.mailbox_format], "MMDF")) ? MMDFHDRTXT : "\n");
@@ -1133,15 +1134,10 @@ start_viewer(
 	t_mailcap *foo;
 
 	if ((foo = get_mailcap_entry(part, path)) != NULL) {
-		char buff[LEN];
-
 		if (foo->nametemplate)	/* honor nametemplate */
 			rename_file(path, foo->nametemplate);
 
 		wait_message(0, _(txt_starting_command), foo->command);
-
-		/* are the () needed if foo->command holds more than one cmd? */
-		snprintf(buff, sizeof(buff), "(%s)", foo->command);
 		if (foo->needsterminal) {
 			set_xclick_off();
 			EndWin();
@@ -1214,7 +1210,7 @@ decode_save_one(
 	}
 
 	if (!(create_path(savepath))) {
-		error_message(_(txt_cannot_open_for_saving), savepath);
+		error_message(2, _(txt_cannot_open_for_saving), savepath);
 		return FALSE;
 	}
 
@@ -1222,7 +1218,7 @@ decode_save_one(
 	 * Decode/save the attachment
 	 */
 	if ((fp = open_save_filename(savepath, FALSE)) == NULL) {
-		error_message(_(txt_cannot_open_for_saving), savepath);
+		error_message(2, _(txt_cannot_open_for_saving), savepath);
 		return FALSE;
 	}
 
@@ -1267,7 +1263,7 @@ decode_save_one(
 	 * View the attachment
 	 */
 	if (postproc) {
-		if (tinrc.post_process_view) {
+		if (curr_group->attribute->post_process_view) {
 			start_viewer(part, savepath);
 			my_printf(cCRLF);
 		}
@@ -1284,7 +1280,7 @@ decode_save_one(
 	/*
 	 * Save the attachment
 	 */
-	if (postproc && tinrc.post_process_view) {
+	if (postproc && curr_group->attribute->post_process_view) {
 		my_printf(_(txt_uu_success), savepath);
 		my_printf(cCRLF);
 	}

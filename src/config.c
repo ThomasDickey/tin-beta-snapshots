@@ -3,10 +3,10 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-03-14
+ *  Updated   : 2008-12-02
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,7 +73,7 @@ read_config_file(
 {
 	FILE *fp;
 	char buf[LEN], tmp[LEN];
-	int upgrade = RC_CHECK;
+	enum rc_state upgrade = RC_CHECK;
 
 	if ((fp = fopen(file, "r")) == NULL)
 		return FALSE;
@@ -84,8 +84,10 @@ read_config_file(
 		wait_message(0, _(txt_reading_config_file), (global_file) ? _(txt_global) : "");
 
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
-		if (buf[0] == '#' || buf[0] == '\n') {
-			if (upgrade == RC_CHECK && !global_file) {
+		if (buf[0] == '\n')
+			continue;
+		if (buf[0] == '#') {
+			if (upgrade == RC_CHECK && !global_file && match_string(buf, "# tin configuration file V", NULL, 0)) {
 				upgrade = check_upgrade(buf, "# tin configuration file V", TINRC_VERSION);
 				if (upgrade != RC_IGNORE)
 					upgrade_prompt_quit(upgrade, CONFIG_FILE);
@@ -245,6 +247,9 @@ read_config_file(
 			if (match_color(buf, "col_urls=", &tinrc.col_urls, MAX_COLOR))
 				break;
 
+			if (match_color(buf, "col_verbatim=", &tinrc.col_verbatim, MAX_COLOR))
+				break;
+
 			if (match_color(buf, "col_markstar=", &tinrc.col_markstar, MAX_COLOR))
 				break;
 
@@ -264,31 +269,6 @@ read_config_file(
 
 		case 'd':
 			if (match_string(buf, "date_format=", tinrc.date_format, sizeof(tinrc.date_format)))
-				break;
-
-			if (match_string(buf, "default_editor_format=", tinrc.editor_format, sizeof(tinrc.editor_format)))
-				break;
-
-			if (match_string(buf, "default_mailer_format=", tinrc.mailer_format, sizeof(tinrc.mailer_format)))
-				break;
-
-			if (match_string(buf, "default_savedir=", tinrc.savedir, sizeof(tinrc.savedir))) {
-				if (tinrc.savedir[0] == '.' && strlen(tinrc.savedir) == 1) {
-					get_cwd(buf);
-					my_strncpy(tinrc.savedir, buf, sizeof(tinrc.savedir) - 1);
-				}
-				break;
-			}
-
-			if (match_string(buf, "default_maildir=", tinrc.maildir, sizeof(tinrc.maildir)))
-				break;
-
-#ifndef DISABLE_PRINTING
-			if (match_string(buf, "default_printer=", tinrc.printer, sizeof(tinrc.printer)))
-				break;
-#endif /* !DISABLE_PRINTING */
-
-			if (match_string(buf, "default_sigfile=", tinrc.sigfile, sizeof(tinrc.sigfile)))
 				break;
 
 			if (match_integer(buf, "default_filter_days=", &tinrc.filter_days, 0)) {
@@ -396,6 +376,13 @@ read_config_file(
 
 			break;
 
+		case 'e':
+			if (match_string(buf, "editor_format=", tinrc.editor_format, sizeof(tinrc.editor_format)))
+				break;
+
+			break;
+
+
 		case 'f':
 			if (match_boolean(buf, "force_screen_redraw=", &tinrc.force_screen_redraw))
 				break;
@@ -448,6 +435,12 @@ read_config_file(
 			break;
 
 		case 'm':
+			if (match_string(buf, "maildir=", tinrc.maildir, sizeof(tinrc.maildir)))
+				break;
+
+			if (match_string(buf, "mailer_format=", tinrc.mailer_format, sizeof(tinrc.mailer_format)))
+				break;
+
 			if (match_list(buf, "mail_mime_encoding=", txt_mime_encodings, NUM_MIME_ENCODINGS, &tinrc.mail_mime_encoding))
 				break;
 
@@ -510,22 +503,12 @@ read_config_file(
 			}
 
 			/* pick which news headers to display */
-			if (match_string(buf, "news_headers_to_display=", tinrc.news_headers_to_display, sizeof(tinrc.news_headers_to_display))) {
-				if (news_headers_to_display_array)
-					FreeIfNeeded(*news_headers_to_display_array);
-				FreeIfNeeded(news_headers_to_display_array);
-				news_headers_to_display_array = ulBuildArgv(tinrc.news_headers_to_display, &num_headers_to_display);
+			if (match_string(buf, "news_headers_to_display=", tinrc.news_headers_to_display, sizeof(tinrc.news_headers_to_display)))
 				break;
-			}
 
 			/* pick which news headers to NOT display */
-			if (match_string(buf, "news_headers_to_not_display=", tinrc.news_headers_to_not_display, sizeof(tinrc.news_headers_to_not_display))) {
-				if (news_headers_to_not_display_array)
-					FreeIfNeeded(*news_headers_to_not_display_array);
-				FreeIfNeeded(news_headers_to_not_display_array);
-				news_headers_to_not_display_array = ulBuildArgv(tinrc.news_headers_to_not_display, &num_headers_to_not_display);
+			if (match_string(buf, "news_headers_to_not_display=", tinrc.news_headers_to_not_display, sizeof(tinrc.news_headers_to_not_display)))
 				break;
-			}
 
 			if (match_string(buf, "news_quote_format=", tinrc.news_quote_format, sizeof(tinrc.news_quote_format)))
 				break;
@@ -556,6 +539,9 @@ read_config_file(
 			}
 
 #ifndef DISABLE_PRINTING
+			if (match_string(buf, "printer=", tinrc.printer, sizeof(tinrc.printer)))
+				break;
+
 			if (match_boolean(buf, "print_header=", &tinrc.print_header))
 				break;
 #endif /* !DISABLE_PRINTING */
@@ -563,7 +549,7 @@ read_config_file(
 			if (match_boolean(buf, "pos_first_unread=", &tinrc.pos_first_unread))
 				break;
 
-			if (match_integer(buf, "post_process_type=", &tinrc.post_process, POST_PROC_YES))
+			if (match_integer(buf, "post_process_type=", &tinrc.post_process_type, POST_PROC_YES))
 				break;
 
 			if (match_boolean(buf, "post_process_view=", &tinrc.post_process_view))
@@ -617,6 +603,14 @@ read_config_file(
 			break;
 
 		case 's':
+			if (match_string(buf, "savedir=", tinrc.savedir, sizeof(tinrc.savedir))) {
+				if (tinrc.savedir[0] == '.' && strlen(tinrc.savedir) == 1) {
+					get_cwd(buf);
+					my_strncpy(tinrc.savedir, buf, sizeof(tinrc.savedir) - 1);
+				}
+				break;
+			}
+
 			if (match_integer(buf, "score_limit_kill=", &tinrc.score_limit_kill, 0))
 				break;
 
@@ -641,13 +635,16 @@ read_config_file(
 				break;
 			}
 
-			if (match_boolean(buf, "show_only_unread=", &tinrc.show_only_unread_arts))
+			if (match_boolean(buf, "show_only_unread_arts=", &tinrc.show_only_unread_arts))
 				break;
 
 			if (match_boolean(buf, "show_only_unread_groups=", &tinrc.show_only_unread_groups))
 				break;
 
 			if (match_boolean(buf, "sigdashes=", &tinrc.sigdashes))
+				break;
+
+			if (match_string(buf, "sigfile=", tinrc.sigfile, sizeof(tinrc.sigfile)))
 				break;
 
 			if (match_boolean(buf, "signature_repost=", &tinrc.signature_repost))
@@ -722,6 +719,9 @@ read_config_file(
 				break;
 #endif /* HAVE_ICONV_OPEN_TRANSLIT && CHARSET_CONVERSION */
 
+			if (match_integer(buf, "trim_article_body=", &tinrc.trim_article_body, NUM_TRIM_ARTICLE_BODY))
+				break;
+
 			break;
 
 		case 'u':
@@ -766,6 +766,9 @@ read_config_file(
 			if (match_string(buf, "verbatim_end_regex=", tinrc.verbatim_end_regex, sizeof(tinrc.verbatim_end_regex)))
 				break;
 
+			if (match_boolean(buf, "verbatim_handling=", &tinrc.verbatim_handling))
+				break;
+
 			break;
 
 		case 'w':
@@ -808,6 +811,12 @@ read_config_file(
 	if (!(tinrc.draw_arrow || tinrc.inverse_okay))
 		tinrc.draw_arrow = TRUE;
 
+	/* set defaults if blank */
+	if (!*tinrc.editor_format)
+		STRCPY(tinrc.editor_format, TIN_EDITOR_FMT_ON);
+	if (!*tinrc.date_format)
+		STRCPY(tinrc.date_format, DEFAULT_DATE_FORMAT);
+
 	/* determine local charset */
 #if defined(NO_LOCALE) && !defined(CHARSET_CONVERSION)
 	strcpy(tinrc.mm_local_charset, tinrc.mm_charset);
@@ -834,7 +843,7 @@ write_config_file(
 	file_tmp = get_tmpfilename(file);
 
 	if ((fp = fopen(file_tmp, "w")) == NULL) {
-		error_message(_(txt_filesystem_full_backup), CONFIG_FILE);
+		error_message(2, _(txt_filesystem_full_backup), CONFIG_FILE);
 		free(file_tmp);
 		return;
 	}
@@ -842,13 +851,10 @@ write_config_file(
 	if (!cmd_line)
 		wait_message(0, _(txt_saving));
 
-	if (!*tinrc.editor_format)
-		strcpy(tinrc.editor_format, TIN_EDITOR_FMT_ON);
-
 	fprintf(fp, txt_tinrc_header, PRODUCT, TINRC_VERSION, tin_progname, VERSION, RELEASEDATE, RELEASENAME);
 
 	fprintf(fp, _(txt_savedir.tinrc));
-	fprintf(fp, "default_savedir=%s\n\n", tinrc.savedir);
+	fprintf(fp, "savedir=%s\n\n", tinrc.savedir);
 
 	fprintf(fp, _(txt_auto_save.tinrc));
 	fprintf(fp, "auto_save=%s\n\n", print_boolean(tinrc.auto_save));
@@ -856,8 +862,8 @@ write_config_file(
 	fprintf(fp, _(txt_mark_saved_read.tinrc));
 	fprintf(fp, "mark_saved_read=%s\n\n", print_boolean(tinrc.mark_saved_read));
 
-	fprintf(fp, _(txt_post_process.tinrc));
-	fprintf(fp, "post_process_type=%d\n\n", tinrc.post_process);
+	fprintf(fp, _(txt_post_process_type.tinrc));
+	fprintf(fp, "post_process_type=%d\n\n", tinrc.post_process_type);
 
 	fprintf(fp, _(txt_post_process_view.tinrc));
 	fprintf(fp, "post_process_view=%s\n\n", print_boolean(tinrc.post_process_view));
@@ -887,7 +893,7 @@ write_config_file(
 	fprintf(fp, "pos_first_unread=%s\n\n", print_boolean(tinrc.pos_first_unread));
 
 	fprintf(fp, _(txt_show_only_unread_arts.tinrc));
-	fprintf(fp, "show_only_unread=%s\n\n", print_boolean(tinrc.show_only_unread_arts));
+	fprintf(fp, "show_only_unread_arts=%s\n\n", print_boolean(tinrc.show_only_unread_arts));
 
 	fprintf(fp, _(txt_show_only_unread_groups.tinrc));
 	fprintf(fp, "show_only_unread_groups=%s\n\n", print_boolean(tinrc.show_only_unread_groups));
@@ -921,16 +927,10 @@ write_config_file(
 	fprintf(fp, "show_author=%d\n\n", tinrc.show_author);
 
 	fprintf(fp, _(txt_news_headers_to_display.tinrc));
-	fprintf(fp, "news_headers_to_display=");
-	for (i = 0; i < num_headers_to_display; i++)
-		fprintf(fp, "%s ", news_headers_to_display_array[i]);
-	fprintf(fp, "\n\n");
+	fprintf(fp, "news_headers_to_display=%s\n\n", tinrc.news_headers_to_display);
 
 	fprintf(fp, _(txt_news_headers_to_not_display.tinrc));
-	fprintf(fp, "news_headers_to_not_display=");
-	for (i = 0; i < num_headers_to_not_display; i++)
-		fprintf(fp, "%s ", news_headers_to_not_display_array[i]);
-	fprintf(fp, "\n\n");
+	fprintf(fp, "news_headers_to_not_display=%s\n\n", tinrc.news_headers_to_not_display);
 
 	fprintf(fp, _(txt_tinrc_info_in_last_line));
 	fprintf(fp, "info_in_last_line=%s\n\n", print_boolean(tinrc.info_in_last_line));
@@ -942,7 +942,7 @@ write_config_file(
 	fprintf(fp, "sort_threads_type=%d\n\n", tinrc.sort_threads_type);
 
 	fprintf(fp, _(txt_maildir.tinrc));
-	fprintf(fp, "default_maildir=%s\n\n", tinrc.maildir);
+	fprintf(fp, "maildir=%s\n\n", tinrc.maildir);
 
 	fprintf(fp, _(txt_mailbox_format.tinrc));
 	fprintf(fp, "mailbox_format=%s\n\n", txt_mailbox_formats[tinrc.mailbox_format]);
@@ -952,7 +952,7 @@ write_config_file(
 	fprintf(fp, "print_header=%s\n\n", print_boolean(tinrc.print_header));
 
 	fprintf(fp, _(txt_printer.tinrc));
-	fprintf(fp, "default_printer=%s\n\n", tinrc.printer);
+	fprintf(fp, "printer=%s\n\n", tinrc.printer);
 #endif /* !DISABLE_PRINTING */
 
 	fprintf(fp, _(txt_batch_save.tinrc));
@@ -962,10 +962,10 @@ write_config_file(
 	fprintf(fp, "start_editor_offset=%s\n\n", print_boolean(tinrc.start_editor_offset));
 
 	fprintf(fp, _(txt_editor_format.tinrc));
-	fprintf(fp, "default_editor_format=%s\n\n", tinrc.editor_format);
+	fprintf(fp, "editor_format=%s\n\n", tinrc.editor_format);
 
 	fprintf(fp, _(txt_mailer_format.tinrc));
-	fprintf(fp, "default_mailer_format=%s\n\n", tinrc.mailer_format);
+	fprintf(fp, "mailer_format=%s\n\n", tinrc.mailer_format);
 
 	fprintf(fp, _(txt_interactive_mailer.tinrc));
 	fprintf(fp, "interactive_mailer=%d\n\n", tinrc.interactive_mailer);
@@ -989,7 +989,7 @@ write_config_file(
 	fprintf(fp, "add_posted_to_filter=%s\n\n", print_boolean(tinrc.add_posted_to_filter));
 
 	fprintf(fp, _(txt_sigfile.tinrc));
-	fprintf(fp, "default_sigfile=%s\n\n", tinrc.sigfile);
+	fprintf(fp, "sigfile=%s\n\n", tinrc.sigfile);
 
 	fprintf(fp, _(txt_sigdashes.tinrc));
 	fprintf(fp, "sigdashes=%s\n\n", print_boolean(tinrc.sigdashes));
@@ -1200,6 +1200,9 @@ write_config_file(
 
 	fprintf(fp, _(txt_col_urls.tinrc));
 	fprintf(fp, "col_urls=%d\n\n", tinrc.col_urls);
+
+	fprintf(fp, _(txt_col_verbatim.tinrc));
+	fprintf(fp, "col_verbatim=%d\n\n", tinrc.col_verbatim);
 #endif /* HAVE_COLOR */
 
 	fprintf(fp, _(txt_url_highlight.tinrc));
@@ -1242,6 +1245,9 @@ write_config_file(
 	fprintf(fp, _(txt_wrap_column.tinrc));
 	fprintf(fp, "wrap_column=%d\n\n", tinrc.wrap_column);
 
+	fprintf(fp, _(txt_trim_article_body.tinrc));
+	fprintf(fp, "trim_article_body=%d\n\n", tinrc.trim_article_body);
+
 #ifndef CHARSET_CONVERSION
 	fprintf(fp, _(txt_mm_charset.tinrc));
 	fprintf(fp, "mm_charset=%s\n\n", tinrc.mm_charset);
@@ -1282,6 +1288,9 @@ write_config_file(
 
 	fprintf(fp, _(txt_alternative_handling.tinrc));
 	fprintf(fp, "alternative_handling=%s\n\n", print_boolean(tinrc.alternative_handling));
+
+	fprintf(fp, _(txt_verbatim_handling.tinrc));
+	fprintf(fp, "verbatim_handling=%s\n\n", print_boolean(tinrc.verbatim_handling));
 
 	fprintf(fp, _(txt_strip_newsrc.tinrc));
 	fprintf(fp, "strip_newsrc=%s\n\n", print_boolean(tinrc.strip_newsrc));
@@ -1364,7 +1373,7 @@ write_config_file(
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR)); /* rename_file() preserves mode */
 
 	if (ferror(fp) || fclose(fp))
-		error_message(_(txt_filesystem_full), CONFIG_FILE);
+		error_message(2, _(txt_filesystem_full), CONFIG_FILE);
 	else
 		rename_file(file_tmp, file);
 
@@ -1709,7 +1718,32 @@ rc_update(
 
 			case 'd':
 				/* simple rename */
+				if (match_string(buf, "default_editor_format=", tinrc.editor_format, sizeof(tinrc.editor_format)))
+					break;
+				/* simple rename */
+				if (match_string(buf, "default_maildir=", tinrc.maildir, sizeof(tinrc.maildir)))
+					break;
+				/* simple rename */
+				if (match_string(buf, "default_mailer_format=", tinrc.mailer_format, sizeof(tinrc.mailer_format)))
+					break;
+				/* simple rename */
+#ifndef DISABLE_PRINTING
+				if (match_string(buf, "default_printer=", tinrc.printer, sizeof(tinrc.printer)))
+					break;
+#endif /* !DISABLE_PRINTING */
+				/* simple rename */
 				if (match_string(buf, "default_regex_pattern=", tinrc.default_pattern, sizeof(tinrc.default_pattern)))
+					break;
+				/* simple rename */
+				if (match_string(buf, "default_savedir=", tinrc.savedir, sizeof(tinrc.savedir))) {
+					if (tinrc.savedir[0] == '.' && strlen(tinrc.savedir) == 1) {
+						get_cwd(buf);
+						my_strncpy(tinrc.savedir, buf, sizeof(tinrc.savedir) - 1);
+					}
+					break;
+				}
+				/* simple rename */
+				if (match_string(buf, "default_sigfile=", tinrc.sigfile, sizeof(tinrc.sigfile)))
 					break;
 				break;
 
@@ -1747,6 +1781,9 @@ rc_update(
 				if (match_boolean(buf, "show_last_line_prev_page=", &show_last_line_prev_page))
 					break;
 				if (match_boolean(buf, "show_lines=", &show_lines))
+					break;
+				/* simple rename */
+				if (match_boolean(buf, "show_only_unread=", &tinrc.show_only_unread_arts))
 					break;
 				if (match_boolean(buf, "show_score=", &show_score))
 					break;
@@ -1830,7 +1867,7 @@ read_server_config(
 	char file[PATH_LEN];
 	char newnews_info[LEN];
 	char serverdir[PATH_LEN];
-	int upgrade = RC_CHECK;
+	enum rc_state upgrade = RC_CHECK;
 
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && !read_saved_news && nntp_tcp_port != IPPORT_NNTP)
@@ -1914,7 +1951,7 @@ write_server_config(
 	file_tmp = get_tmpfilename(file);
 
 	if ((fp = fopen(file_tmp, "w")) == NULL) {
-		error_message(_(txt_filesystem_full_backup), SERVERCONFIG_FILE);
+		error_message(2, _(txt_filesystem_full_backup), SERVERCONFIG_FILE);
 		free(file_tmp);
 		return;
 	}
@@ -1929,7 +1966,7 @@ write_server_config(
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR)); /* rename_file() preserves mode */
 
 	if (ferror(fp) || fclose(fp))
-		error_message(_(txt_filesystem_full), SERVERCONFIG_FILE);
+		error_message(2, _(txt_filesystem_full), SERVERCONFIG_FILE);
 	else
 		rename_file(file_tmp, file);
 

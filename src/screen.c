@@ -3,10 +3,10 @@
  *  Module    : screen.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2007-10-29
+ *  Updated   : 2008-11-22
  *  Notes     :
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -158,6 +158,7 @@ wait_message(
  */
 void
 error_message(
+	unsigned int sdelay,
 	const char *fmt,
 	...)
 {
@@ -179,7 +180,7 @@ error_message(
 		fflush(stderr);
 	} else {
 		stow_cursor();
-		(void) sleep(2);
+		(void) sleep(sdelay);
 		clear_message();
 	}
 
@@ -206,7 +207,7 @@ perror_message(
 	clear_message();
 
 	if ((buf = fmt_message(fmt, ap)) != NULL) {
-		error_message("%s: Error: %s", buf, strerror(err));
+		error_message(2, "%s: Error: %s", buf, strerror(err));
 		free(buf);
 	}
 

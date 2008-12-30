@@ -6,7 +6,7 @@
  *  Updated   : 2001-07-22
  *  Notes     : debugging support via TRACE macro.
  *
- * Copyright (c) 1997-2008 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2009 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

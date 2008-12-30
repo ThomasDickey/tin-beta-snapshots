@@ -3,7 +3,7 @@
  *  Module    : getline.c
  *  Author    : Chris Thewalt & Iain Lea
  *  Created   : 1991-11-09
- *  Updated   : 2004-07-02
+ *  Updated   : 2008-11-22
  *  Notes     : emacs style line editing input package.
  *  Copyright : (c) Copyright 1991-99 by Chris Thewalt & Iain Lea
  *              Permission to use, copy, modify, and distribute this
@@ -344,7 +344,7 @@ gl_addchar(
 	 * This was the original code:
 	 *
 	if (gl_cnt >= BUF_SIZE - 1) {
-		error_message("tin_getline: input buffer overflow");
+		error_message(2, "tin_getline: input buffer overflow");
 		giveup();
 	}
 	 */
@@ -382,7 +382,7 @@ gl_newline(
 		 * code should never be reached. A proper implementation is
 		 * desirable though.
 		 */
-		error_message("tin_getline: input buffer overflow");
+		error_message(2, "tin_getline: input buffer overflow");
 		giveup();
 	}
 	hist_add(w);		/* only adds if nonblank */

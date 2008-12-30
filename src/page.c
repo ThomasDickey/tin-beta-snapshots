@@ -3,10 +3,10 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-03-26
+ *  Updated   : 2008-12-02
  *  Notes     :
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,13 +42,14 @@
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
 
-
+#if 0
 #if defined(HAVE_IDNA_H) && !defined(_IDNA_H)
 #	include <idna.h>
 #endif /* HAVE_IDNA_H && !_IDNA_H */
 #if defined(HAVE_STRINGPREP_H) && !defined(_STRINGPREP_H)
 #	include <stringprep.h>
 #endif /* HAVE_STRINGPREP_H & !_STRINGPREP_H */
+#endif /* 0 */
 
 /*
  * PAGE_HEADER is the size in lines of the article page header
@@ -113,7 +114,7 @@ static void invoke_metamail(FILE *fp);
 #	define XFACE_CLEAR()	if (tinrc.use_slrnface) \
 								slrnface_clear_xface()
 #	define XFACE_SUPPRESS()	if (tinrc.use_slrnface) \
-										slrnface_suppress_xface()
+								slrnface_suppress_xface()
 #else
 #	define XFACE_SHOW()	/*nothing*/
 #	define XFACE_CLEAR()	/*nothing*/
@@ -691,7 +692,7 @@ page_goto_next_unread:
 
 			case GLOBAL_EDIT_FILTER:
 				XFACE_CLEAR();
-				if (!invoke_editor(filter_file, FILTER_FILE_OFFSET))
+				if (!invoke_editor(filter_file, FILTER_FILE_OFFSET, NULL))
 					break;
 				unfilter_articles();
 				(void) read_filter_file(filter_file);
@@ -724,7 +725,7 @@ page_goto_next_unread:
 			case CATCHUP:			/* catchup - mark read, goto next */
 			case CATCHUP_NEXT_UNREAD:	/* goto next unread */
 				/*
-				 * TODO: if (group->attribute->thread_arts == THREAD_NONE)
+				 * TODO: if (group->attribute->thread_articles == THREAD_NONE)
 				 *       	snprintf(buf, sizeof(buf), _("Mark article as read%s?"), (func == CATCHUP_NEXT_UNREAD) ? _(" and enter next unread article") : "");
 				 *       else
 				 */
@@ -738,7 +739,7 @@ page_goto_next_unread:
 
 			case MARK_THREAD_UNREAD:
 				thd_mark_unread(group, base[which_thread(this_resp)]);
-				if (group->attribute->thread_arts != THREAD_NONE)
+				if (group->attribute->thread_articles != THREAD_NONE)
 					info_message(_(txt_marked_as_unread), _(txt_thread_upper));
 				else
 					info_message(_(txt_marked_as_unread), _(txt_article_upper));
@@ -966,7 +967,7 @@ return_to_index:
 			case PAGE_VIEW_URL:
 				if (!show_all_headers) { /* cooked mode? */
 					XFACE_SUPPRESS();
-					resize_article(FALSE, &pgart); /* umbreak long lines */
+					resize_article(FALSE, &pgart); /* unbreak long lines */
 					process_url();
 					resize_article(TRUE, &pgart); /* rebreak long lines */
 					draw_page(group->name, 0);
@@ -1264,7 +1265,7 @@ draw_page_header(
 	line_len = LEN + 1;
 	buf = my_malloc(line_len);
 
-	if (!my_strftime(buf, line_len, tinrc.date_format, localtime(&arts[this_resp].date))) {
+	if (!my_strftime(buf, line_len, curr_group->attribute->date_format, localtime(&arts[this_resp].date))) {
 		strncpy(buf, BlankIfNull(note_h->date), line_len);
 		buf[line_len - 1] = '\0';
 	}
@@ -1760,7 +1761,7 @@ load_article(
 	if (*tinrc.metamail_prog == '\0' || getenv("NOMETAMAIL") != NULL)	/* Viewer turned off */
 		return 0;
 
-	if (tinrc.ask_for_metamail) {
+	if (group->attribute->ask_for_metamail) {
 		if (prompt_yn(_(txt_use_mime), TRUE) != 1)
 			return 0;
 	}

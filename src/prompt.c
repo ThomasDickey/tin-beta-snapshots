@@ -3,10 +3,10 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2005-10-19
+ *  Updated   : 2008-11-22
  *  Notes     :
  *
- * Copyright (c) 1991-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -178,20 +178,18 @@ prompt_yn(
 	yes = func_to_key(PROMPT_YES, prompt_keys);
 	no = func_to_key(PROMPT_NO, prompt_keys);
 
-#if defined (MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	printascii(keyyes, (default_answer ? towupper(yes) : yes));
+	printascii(keyno, (!default_answer ? towupper(no) : no));
+#if defined (MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if ((wtmp = char2wchar_t(keyyes))) {
 		keyyes_len = wcswidth(wtmp, wcslen(wtmp));
 		free(wtmp);
 	}
-	printascii(keyno, (!default_answer ? towupper(no) : no));
 	if ((wtmp = char2wchar_t(keyno))) {
 		keyno_len = wcswidth(wtmp, wcslen(wtmp));
 		free(wtmp);
 	}
 #else
-	printascii(keyyes, (default_answer ? toupper(yes) : yes));
-	printascii(keyno, (!default_answer ? toupper(no) : no));
 	keyyes_len = (int) strlen(keyyes);
 	keyno_len = (int) strlen(keyno);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
@@ -529,7 +527,7 @@ prompt_string_default(
 		my_strncpy(def, pattern, LEN);
 	else {
 		if (def[0] == '\0') {		/* no default - give up */
-			error_message(failtext);
+			error_message(2, failtext);
 			return NULL;
 		}
 	}

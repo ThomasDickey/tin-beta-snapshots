@@ -3,10 +3,10 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2008-03-19
+ *  Updated   : 2008-12-11
  *  Notes     :
  *
- * Copyright (c) 1992-2008 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2009 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -121,7 +121,7 @@ resync_active_file(
 	else
 		toggle_my_groups(old_group);
 
-	FreeAndNull(old_group);
+	FreeIfNeeded(old_group);
 	show_selection_page();
 
 	return TRUE;
@@ -227,7 +227,11 @@ parse_active_line(
 	}
 
 	if (!p || !q || !r || !lineok) {
-		error_message(_(txt_bad_active_file), line);
+#	ifdef DEBUG
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", txt_bad_active_file, line);
+#	endif /* DEBUG */
+		error_message(2, _(txt_bad_active_file), line);
 		return FALSE;
 	}
 
@@ -351,9 +355,9 @@ read_newsrc_active_file(
 
 							snprintf(fmt, sizeof(fmt), "%%ld %%ld %%ld %%%ds", NNTP_STRLEN);
 							if (sscanf(line, fmt, &count, &min, &max, ngname) != 4)
-								error_message(_(txt_error_invalid_response_to_group), line);
+								error_message(2, _(txt_error_invalid_response_to_group), line);
 							if (strcmp(ngname, ngnames[index_o]) != 0)
-								error_message(_(txt_error_wrong_newsgroupname_in_group_response), line, ngnames[index_o]);
+								error_message(2, _(txt_error_wrong_newsgroupname_in_group_response), line, ngnames[index_o]);
 							ptr = ngname;
 							free(ngnames[index_o]);
 							index_o = (index_o + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
@@ -368,7 +372,7 @@ read_newsrc_active_file(
 						continue;
 
 					case ERR_ACCESS:
-						error_message("%s%s", cCRLF, line);
+						error_message(2, "%s%s", cCRLF, line);
 						tin_done(NNTP_ERROR_EXIT);
 						/* keep lint quiet: */
 						/* FALLTHROUGH */
@@ -435,9 +439,9 @@ read_newsrc_active_file(
 	 */
 	if (tin_errno || !num_active) {
 		if (newsrc_active && !num_active)
-			error_message(_(txt_error_server_has_no_listed_groups), newsrc);
+			error_message(2, _(txt_error_server_has_no_listed_groups), newsrc);
 		else
-			error_message(_(txt_active_file_is_empty), (read_news_via_nntp ? _(txt_servers_active) : news_active_file));
+			error_message(2, _(txt_active_file_is_empty), (read_news_via_nntp ? _(txt_servers_active) : news_active_file));
 		tin_done(EXIT_FAILURE);
 	}
 
@@ -485,13 +489,13 @@ read_active_file(
 
 #ifdef NNTP_ABLE
 		if (read_news_via_nntp)
-			error_message(_(txt_cannot_retrieve), ACTIVE_FILE);
+			error_message(2, _(txt_cannot_retrieve), ACTIVE_FILE);
 #	ifndef NNTP_ONLY
 		else
-			error_message(_(txt_cannot_open_active_file), news_active_file, tin_progname);
+			error_message(2, _(txt_cannot_open_active_file), news_active_file, tin_progname);
 #	endif /* !NNTP_ONLY */
 #else
-		error_message(_(txt_cannot_open), news_active_file);
+		error_message(2, _(txt_cannot_open), news_active_file);
 #endif /* NNTP_ABLE */
 
 		tin_done(EXIT_FAILURE);
@@ -538,7 +542,7 @@ read_active_file(
 	 * Exit if active file wasn't read correctly or is empty
 	 */
 	if (tin_errno || !num_active) {
-		error_message(_(txt_active_file_is_empty), (read_news_via_nntp ? _(txt_servers_active) : news_active_file));
+		error_message(2, _(txt_active_file_is_empty), (read_news_via_nntp ? _(txt_servers_active) : news_active_file));
 		tin_done(EXIT_FAILURE);
 	}
 
@@ -590,7 +594,7 @@ read_news_active_file(
 		 * use "LIST ACTIVE grp" if we have less than PIPELINE_LIMIT
 		 * groups and we use -n but not -Q
 		 */
-		if (read_news_via_nntp && ((nntp_caps.type == CAPABILITIES && nntp_caps.list_active) || nntp_caps.type != CAPABILITIES) && (show_description || check_for_new_newsgroups)) {
+		if (read_news_via_nntp && !list_active && ((nntp_caps.type == CAPABILITIES && nntp_caps.list_active) || nntp_caps.type != CAPABILITIES) && (show_description || check_for_new_newsgroups)) {
 			char buff[NNTP_STRLEN];
 			char *ptr, *q;
 			char moderated[PATH_LEN];
@@ -619,8 +623,9 @@ read_news_active_file(
 				fclose(fp);
 
 				if (j < PIPELINE_LIMIT) {
-					for (i = 0; i < j; i++) {
+					for (i = 0; i < j && !did_reconnect; i++) {
 						if ((r = get_only_respcode(buff, sizeof(buff))) != OK_GROUPS) {
+							/* TODO: add 483 (RFC 3977) code */
 							if (r == ERR_NOAUTH || r == NEED_AUTHINFO)
 								need_auth = TRUE;
 							continue;
@@ -653,11 +658,12 @@ read_news_active_file(
 					}
 					if (need_auth) { /* retry after auth is overkill here, so just auth */
 						if (!authenticate(nntp_server, userid, FALSE)) {
-							error_message(_(txt_auth_failed), ERR_ACCESS);
+							error_message(2, _(txt_auth_failed), ERR_ACCESS);
 							tin_done(EXIT_FAILURE);
 						}
 					}
 				}
+				did_reconnect = FALSE;
 			}
 		}
 #	endif /* !DISABLE_PIPELINING */
@@ -677,7 +683,7 @@ read_news_active_file(
 	/*
 	 * finally we have a list of all groups an can set the attributes
 	 */
-	read_attributes_files();
+	assign_attributes_to_groups();
 }
 
 
