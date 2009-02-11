@@ -7,6 +7,7 @@ New features
 . UTF-8 descriptions (RFC 3977)
 . sort by date of last posted article
 . writes out newsrc if getting SIGUSR2
+. authentication via SASL PLAIN (RFC 4643) is prefered over USER/PASS
 
 Changes
 -------

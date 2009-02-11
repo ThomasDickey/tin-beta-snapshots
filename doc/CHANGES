@@ -1,25 +1,35 @@
--- 1.9.4 release 20081230 "" --
+-- 1.9.4 release 20090211 "Rieclachan" --
+
+U013) Thomas E. Dickey <dickey@invisible-island.net>
+      ADD. update configure macros
+      ADD. configure check to guess $ARFLAGS
+      FIX. aclocal.m4, configure[.in], libcanlock/Makefile.in, pcre/Makefile.in
 
  021) Dennis Preiser <onkelp@gmx.de>
       BUG. memleak in free_attributes()
       FIX. memory.c
 
 U012) Dennis Preiser <onkelp@gmx.de>
-      BUG. mem-leak in set_colors()
       ADD. enhance attributes documentation
       ADD. menu-option/attribute to turn verbatim block handling on and off
       ADD. menu-option to color the lines between the verbatim marks
       ADD. menu-option/attribute to trim article body (compact empty lines)
       ADD. most tinrc options to attributes
+      ADD. merged auto_cc and auto_bcc into auto_cc_bcc
+      BUG. mem-leak in set_colors()
+      BUG. -S used group specific savedir if set via attributes
       BUG. long lines in verbatim blocks may grabble the screen
       BUG. unescaped metacharacter in DEFAULT_VERBATIM_BEGIN_REGEX
       BUG. rot13 does not rotate the verbatim_begin_regex line
       BUG. numeric attributes got lost on big-endian OSs
+      BUG. missing newline in multipart/mixed articles befor the very last
+           text/plain part
       FIX. active.c, art.c, attrib.c, color.c, config.c, cook.c, debug.c
            feed.c, filter.c, group.c, inews.c, init.c, lang.c, mail.c, main.c
-           memory.c, misc.c, options_menu.c, page.c, post.c, refs.c, save.c
-           search.c, select.c, sigfile.c, tags.c, thread.c, extern.h, proto.h
-           rfc2046.h, tin.h, tinrc.h, version.h, tincfg.tbl, tin.1, tin.5
+           memory.c, misc.c, options_menu.c, page.c, post.c, refs.c, rfc2047.c
+           save.c, search.c, select.c, sigfile.c, tags.c, thread.c, extern.h
+           proto.h, rfc2046.h, tin.h, tinrc.h, version.h, tincfg.tbl, tin.1
+           tin.5
 
 U011) Urs Janssen <urs@tin.org>
       ADD. minor code cleanup
@@ -30,9 +40,27 @@ U011) Urs Janssen <urs@tin.org>
       ADD. started german manpage translation
       ADD. issue extra "GROUP" when NEXT receives 411
       ADD. issue a warning if attributes file has an unexpected version number
+      ADD. check for 8bit chars in Newsgroups, Followup-To and Distribution
+           befor posting
+      ADD. check user supplied Message-ID, Date and Expires-header befor
+           posting
+      ADD. speedup -S, -N, -M
+      ADD. improved DEFAULT_STRIP_WAS_REGEX
+      BUG. PageEditArticle was allowed for GROUP_TYPE_SAVE
+      BUG. Distribution was mime-decoded
       BUG. don't break long body-lines in original article when superseding
       BUG. don't send "LIST NEWSGROUPS" for mailgroups in the -n case
       BUG. empty but present Followup-To header (server bug) was used in f'ups
+      BUG. didn't recheck CAPABILITIES after successfull auth or after mode
+           switching if received 500er response in the first pass
+      BUG. don't prompt for authdata if we can't auth as the server doesn't
+           offer any auth-method we can send
+      BUG. configure options --program-prefix, --program-suffix and
+           --program-transform-name didn't work
+      BUG. headers with just one byte content were automagicaly removed
+      BUG. -R didn't work if savedir was set to an unexpanded path
+      BUG. fixed memleak with -R
+      BUG. --disable-posting didn't catch 'x' (repost) early enough
       FIX. active.c, art.c, attrib.c, auth.c, config.c, cook.c, debug.c, feed.c
            filter.c, getline.c, group.c, header.c, help.c, inews.c, init.c
            keymap.c, lang.c, list.c, mail.c, main.c, memory.c, misc.c

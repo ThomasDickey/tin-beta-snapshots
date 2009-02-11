@@ -3,7 +3,7 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-12-24
+ *  Updated   : 2009-02-01
  *  Notes     :
  *
  * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -60,7 +60,7 @@ int num_scope = -1;
 int *my_group;				/* .newsrc --> active[] */
 long *base;				/* base articles for each thread */
 struct t_group *active;			/* active newsgroups */
-struct t_attribute *scopes = NULL;	/* attributes stores in .tin/attributes */
+struct t_scope *scopes = NULL;	/* attributes stores in .tin/attributes */
 struct t_newnews *newnews;		/* active file sizes on differnet servers */
 struct t_article *arts;			/* articles headers in current group */
 struct t_save *save;			/* sorts articles before saving them */
@@ -70,11 +70,12 @@ struct t_save *save;			/* sorts articles before saving them */
  */
 static void free_active_arrays(void);
 static void free_attributes(struct t_attribute *attributes);
-static void free_attributes_array(void);
+static void free_scopes_arrays(void);
 static void free_newnews_array(void);
 static void free_if_not_default(char **attrib, char *deflt);
 static void free_input_history(void);
-        
+
+
 /*
  * Dynamic table management
  * These settings are memory conservative: small initial allocations
@@ -227,6 +228,7 @@ free_all_arrays(
 	FreeAndNull(arts);
 	free_filter_array(&glob_filter);
 	free_active_arrays();
+	free_scopes_arrays();
 
 #ifdef HAVE_COLOR
 	FreeIfNeeded(quote_regex.re);
@@ -380,7 +382,6 @@ free_attributes(
 	free_if_not_default(&attributes->savedir, tinrc.savedir);
 	FreeAndNull(attributes->savefile);
 	free_if_not_default(&attributes->sigfile, tinrc.sigfile);
-	FreeAndNull(attributes->scope);
 #ifdef CHARSET_CONVERSION
 	FreeAndNull(attributes->undeclared_charset);
 #endif /* CHARSET_CONVERSION */
@@ -390,28 +391,22 @@ free_attributes(
 
 
 static void
-free_attributes_array(
+free_scopes_arrays(
 	void)
 {
-	int i;
-	struct t_group *group;
+	struct t_scope *scope;
 
-	for_each_group(i) {
-		group = &active[i];
-		/*
-		 * Check for bogus group removed to prevent memory leaks because
-		 * attrib.c:do_set_attrib() also doesn't check but allocates memory
-		 * unconditionally. Groups may become bogus on a resync of the active
-		 * file (after attributes are "applied"), too. 2006-11-12, -dn
-		 */
-		if (/* !group->bogus && */ group->attribute && !group->attribute->global)
-			free(group->attribute);
-		group->attribute = (struct t_attribute *) 0;
+	while (num_scope > 0) {
+		scope = &scopes[--num_scope];
+		FreeAndNull(scope->scope);
+		free_attributes(scope->attribute);
+		free(scope->attribute);
+		scope->attribute = (struct t_attribute *) 0;
+		free(scope->state);
+		scope->state = (struct t_attribute_state *) 0;
 	}
-
-	/* free the scope attributes array */
-	while (num_scope > 0)
-		free_attributes(&scopes[--num_scope]);
+	FreeAndNull(scopes);
+	num_scope = -1;
 }
 
 
@@ -428,16 +423,17 @@ free_active_arrays(
 			FreeAndNull(active[i].name);
 			FreeAndNull(active[i].description);
 			FreeAndNull(active[i].aliasedto);
-			if (active[i].type == GROUP_TYPE_MAIL) {
+			if (active[i].type == GROUP_TYPE_MAIL || active[i].type == GROUP_TYPE_SAVE) {
 				FreeAndNull(active[i].spooldir);
 			}
 			FreeAndNull(active[i].newsrc.xbitmap);
+			if (active[i].attribute && !active[i].attribute->global) {
+				free(active[i].attribute);
+				active[i].attribute = (struct t_attribute *) 0;
+			}
 		}
-		free_attributes_array();
 		FreeAndNull(active);
 	}
-	FreeAndNull(scopes);
-	num_scope = -1;
 	num_active = -1;
 }
 

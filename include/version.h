@@ -42,11 +42,11 @@
 #	ifndef TIN_AUTOCONF_H
 #		define VERSION		"1.9.4"
 #	endif /* !TIN_AUTOCONF_H */
-#	define RELEASEDATE	"20081230"
-#	define RELEASENAME	"Dalintober"
+#	define RELEASEDATE	"20090211"
+#	define RELEASENAME	"Rieclachan"
 /* config-file versions - must by dotted triples */
-#	define TINRC_VERSION	"1.3.10"
-#	define ATTRIBUTES_VERSION	"1.0.6"
+#	define TINRC_VERSION	"1.3.11"
+#	define ATTRIBUTES_VERSION	"1.0.7"
 #	define FILTER_VERSION	"1.0.0"
 #	define KEYMAP_VERSION	"1.0.7"
 #	define SERVERCONFIG_VERSION	"1.0.0"

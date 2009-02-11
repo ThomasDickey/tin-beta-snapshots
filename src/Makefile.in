@@ -1,7 +1,7 @@
 # Source Makefile for tin
 # - for configuration options read the ../doc/INSTALL file.
 #
-# Updated: 2008-12-04
+# Updated: 2009-01-07
 #
 # Copyright (c) 1995-2009 Thomas E. Dickey <dickey@invisible-island.net>
 # All rights reserved.
@@ -84,7 +84,8 @@ INS_MANUAL_EXT	= 1
 INS_OLD_SUFFIX	= old
 
 # Project
-PROJECT	= @PACKAGE@
+PROJECT	= `echo @PACKAGE@|sed '@program_transform_name@'`
+PROJEXE = $(PROJECT)$x
 EXE	= @PACKAGE@$x
 VER	= @VERSION@
 
@@ -383,17 +384,17 @@ uninstall_helpers :
 
 install : $(DESTDIR)$(INS_BINARY_DIR)
 	@$(MAKE) all
-	@$(ECHO) "Installing $(EXE) v$(VER) to $(DESTDIR)$(INS_BINARY_DIR) ..."
-	@$(INSTALL) -s $(BINDIR)/$(EXE) $(DESTDIR)$(INS_BINARY_DIR)/$(EXE)
-	@( $(CD) $(DESTDIR)$(INS_BINARY_DIR) && $(RM) -f r$(EXE) && $(LN) $(EXE) r$(EXE) )
+	@$(ECHO) "Installing $(EXE) v$(VER) to $(DESTDIR)$(INS_BINARY_DIR)/$(PROJEXE) ..."
+	@$(INSTALL) -s $(BINDIR)/$(EXE) $(DESTDIR)$(INS_BINARY_DIR)/$(PROJEXE)
+	@( $(CD) $(DESTDIR)$(INS_BINARY_DIR) && $(RM) -f r$(PROJEXE) && $(LN) $(PROJEXE) r$(PROJEXE) )
 	@$(MAKE) install_helpers
 	@$(MAKE) install_manpage
 @MSG_DIR_MAKE@	@$(MAKE) install_nls
 
 uninstall :
-	@$(ECHO) "Uninstalling $(EXE) in $(DESTDIR)$(INS_BINARY_DIR) ..."
-	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/$(EXE)
-	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/r$(EXE)
+	@$(ECHO) "Uninstalling $(PROJEXE) in $(DESTDIR)$(INS_BINARY_DIR) ..."
+	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/$(PROJEXE)
+	@-$(RM) -f $(DESTDIR)$(INS_BINARY_DIR)/r$(PROJEXE)
 	@$(MAKE) uninstall_helpers
 	@$(MAKE) uninstall_manpage
 @MSG_DIR_MAKE@	@$(MAKE) uninstall_nls
@@ -437,18 +438,18 @@ dirty :
 distclean \
 clobber :: clean
 	@$(ECHO) "Clobbering ..."
-	@-$(RM) -f $(OFILES) $(BINDIR)/$(EXE) tags TAGS LINT cflow.$(PROJECT)
+	@-$(RM) -f $(OFILES) $(BINDIR)/$(EXE) tags TAGS LINT cflow.$(PACKAGE)
 
 distclean ::
 @INTLDIR_MAKE@	@-$(CD) ../intl && $(MAKE) @cf_cv_makeflags@ $@
 @MSG_DIR_MAKE@	@-$(CD) ../po && $(MAKE) @cf_cv_makeflags@ clean
 
 cflow :
-	@$(ECHO) "Creating cflow for $(PROJECT) ..."
-@PCREDIR_MAKE@	@$(CFLOW) -I$(INCDIR) -I$(SRCDIR) -I../pcre $(CFILES) > cflow.$(PROJECT)
+	@$(ECHO) "Creating cflow for $(PACKAGE) ..."
+@PCREDIR_MAKE@	@$(CFLOW) -I$(INCDIR) -I$(SRCDIR) -I../pcre $(CFILES) > cflow.$(PACKAGE)
 
 cscope :
-	@$(ECHO) "Creating cscope database $(PROJECT) ..."
+	@$(ECHO) "Creating cscope database $(PACKAGE) ..."
 	@$(CSCOPE) $(ALL_FILES)
 
 @PCREDIR_MAKE@../pcre/pcre.h ../pcre/$(PRELIB)pcre.a :

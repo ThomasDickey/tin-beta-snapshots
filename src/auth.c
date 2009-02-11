@@ -3,7 +3,7 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2008-11-22
+ *  Updated   : 2009-01-07
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
@@ -255,6 +255,8 @@ read_newsauth_file(
 /*
  * Perform authentication with AUTHINFO USER method. Return response
  * code from server.
+ *
+ * we don't handle ERR_ENCRYPT right now
  */
 static int
 do_authinfo_user(
@@ -340,7 +342,10 @@ authinfo_plain(
 			ret = do_authinfo_sasl_plain(authusername, authpassword);
 		if (ret != OK_AUTH)
 #	endif /* USE_SASL */
-			ret = do_authinfo_user(server, authusername, authpassword);
+		{
+			if (nntp_caps.type != CAPABILITIES || (nntp_caps.type == CAPABILITIES && nntp_caps.authinfo_user))
+				ret = do_authinfo_user(server, authusername, authpassword);
+		}
 		return (ret == OK_AUTH);
 	}
 
@@ -371,7 +376,10 @@ authinfo_plain(
 
 			if (ret != OK_AUTH)
 #	endif /* USE_SASL */
-				ret = do_authinfo_user(server, authuser, authpass);
+			{
+				if (force_auth_on_conn_open || nntp_caps.type != CAPABILITIES || (nntp_caps.type == CAPABILITIES && nntp_caps.authinfo_user))
+					ret = do_authinfo_user(server, authuser, authpass);
+			}
 
 			if (!(already_failed = (ret != OK_AUTH))) {
 #	ifdef DEBUG
@@ -398,49 +406,61 @@ authinfo_plain(
 	 * that the server doesn't want a password; so only ask for it if needed.
 	 */
 	if (force_auth_on_conn_open || !startup) {
+		if ((nntp_caps.type == CAPABILITIES && (nntp_caps.sasl_plain || nntp_caps.authinfo_user)) || nntp_caps.type != CAPABILITIES) {
 #	ifdef USE_CURSES
-		int state = RawState();
+			int state = RawState();
 #	endif /* USE_CURSES */
 
-		wait_message(0, _(txt_auth_needed));
+			wait_message(0, _(txt_auth_needed));
 #	ifdef USE_CURSES
-		Raw(TRUE);
+			Raw(TRUE);
 #	endif /* USE_CURSES */
 
-		if (!prompt_default_string(_(txt_auth_user), authuser, PATH_LEN, authusername, HIST_NONE)) {
+			if (!prompt_default_string(_(txt_auth_user), authuser, PATH_LEN, authusername, HIST_NONE)) {
 #	ifdef DEBUG
-			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "authorization failed: no username");
+				if (debug & DEBUG_NNTP)
+					debug_print_file("NNTP", "authorization failed: no username");
 #	endif /* DEBUG */
-			return FALSE;
-		}
+				return FALSE;
+			}
 
 #	ifdef USE_CURSES
-		Raw(state);
-		my_printf("%s", _(txt_auth_pass));
-		wgetnstr(stdscr, authpassword, sizeof(authpassword));
-		Raw(TRUE);
+			Raw(state);
+			my_printf("%s", _(txt_auth_pass));
+			wgetnstr(stdscr, authpassword, sizeof(authpassword));
+			Raw(TRUE);
 #	else
 #		if 0
-		/*
-		 * on some systems (i.e. Solaris) getpass(3) is limited to 8 chars ->
-		 * we use tin_getline() till we have a config check
-		 * for getpass() or our own getpass()
-		 */
-		authpass = strncpy(authpassword, getpass(_(txt_auth_pass)), sizeof(authpassword) - 1);
+			/*
+			 * on some systems (i.e. Solaris) getpass(3) is limited to 8 chars ->
+			 * we use tin_getline() till we have a config check
+			 * for getpass() or our own getpass()
+			 */
+			authpass = strncpy(authpassword, getpass(_(txt_auth_pass)), sizeof(authpassword) - 1);
 #		else
-		authpass = strncpy(authpassword, tin_getline(_(txt_auth_pass), FALSE, NULL, PATH_LEN, TRUE, HIST_NONE), sizeof(authpassword) - 1);
+			authpass = strncpy(authpassword, tin_getline(_(txt_auth_pass), FALSE, NULL, PATH_LEN, TRUE, HIST_NONE), sizeof(authpassword) - 1);
 #		endif /* 0 */
 #	endif /* USE_CURSES */
 
 #	ifdef USE_SASL
-		if (nntp_caps.sasl_plain)
-			ret = do_authinfo_sasl_plain(authuser, authpass);
-		if (ret != OK_AUTH)
+			if (nntp_caps.sasl_plain)
+				ret = do_authinfo_sasl_plain(authuser, authpass);
+			if (ret != OK_AUTH)
 #	endif /* USE_SASL */
-			ret = do_authinfo_user(server, authuser, authpass);
-		initialized = TRUE;
-		my_retouch();			/* Get rid of the chaff */
+			{
+				if (nntp_caps.type != CAPABILITIES || (nntp_caps.type == CAPABILITIES && nntp_caps.authinfo_user))
+					ret = do_authinfo_user(server, authuser, authpass);
+			}
+			initialized = TRUE;
+			my_retouch();			/* Get rid of the chaff */
+		}
+#	ifdef DEBUG
+		else {
+			if (debug & DEBUG_NNTP)
+				debug_print_file("NNTP", "!!! No supported authmethod available");
+		}
+#	endif /* DEBUG */
+
 	}
 
 #	ifdef DEBUG

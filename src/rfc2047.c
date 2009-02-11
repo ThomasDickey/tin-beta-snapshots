@@ -3,7 +3,7 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2008-02-25
+ *  Updated   : 2009-01-07
  *  Notes     : MIME header encoding/decoding stuff
  *
  * Copyright (c) 1995-2009 Chris Blum <chris@resolution.de>
@@ -1128,7 +1128,7 @@ compose_mail_text_plain(
 	const char *filename,
 	struct t_group *group)
 {
-	rfc15211522_encode(filename, txt_mime_encodings[tinrc.mail_mime_encoding], group, tinrc.mail_8bit_header, TRUE);
+	rfc15211522_encode(filename, txt_mime_encodings[(group ? group->attribute->mail_mime_encoding : tinrc.mail_mime_encoding)], group, (group ? group->attribute->mail_8bit_header : tinrc.mail_8bit_header), TRUE);
 }
 
 
@@ -1152,8 +1152,8 @@ compose_mail_mime_forwarded(
 	FILE *textfp = NULL;
 	FILE *entityfp;
 	char *line;
-	constext* encoding = txt_mime_encodings[tinrc.mail_mime_encoding];
-	t_bool allow_8bit_header = tinrc.mail_8bit_header;
+	constext* encoding = txt_mime_encodings[(group ? group->attribute->mail_mime_encoding : tinrc.mail_mime_encoding)];
+	t_bool allow_8bit_header = (group ? group->attribute->mail_8bit_header : tinrc.mail_8bit_header);
 	t_bool _8bit;
 
 	/* Split mail into headers and text */

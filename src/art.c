@@ -3,7 +3,7 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-11-28
+ *  Updated   : 2009-01-15
  *  Notes     :
  *
  * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -61,7 +61,7 @@ static FILE *open_art_header(char *groupname, long art, long *next);
 static FILE *open_xover_fp(struct t_group *group, const char *mode, long min, long max, t_bool local);
 static char *find_nov_file(struct t_group *group, int mode);
 static char *print_date(time_t secs);
-static char *print_from(struct t_article *article);
+static char *print_from(struct t_group *group, struct t_article *article);
 static int artnum_comp(t_comptype p1, t_comptype p2);
 static int base_comp(t_comptype p1, t_comptype p2);
 static int date_comp_asc(t_comptype p1, t_comptype p2);
@@ -206,7 +206,7 @@ setup_hard_base(
 	/*
 	 * If reading with NNTP, issue a LISTGROUP
 	 */
-	if (read_news_via_nntp && group->type == GROUP_TYPE_NEWS) {
+	if (read_news_via_nntp && !read_saved_news && group->type == GROUP_TYPE_NEWS) {
 #ifdef NNTP_ABLE
 		char buf[NNTP_STRLEN];
 		FILE *fp;
@@ -225,6 +225,13 @@ setup_hard_base(
 
 		/*
 		 * See if LISTGROUP works
+		 *
+		 * think about something like:
+		 * if (nntp_caps.type == CAPABILITIES && tinrc.getart_limit != 0) {
+		 *    calculate some usefull min vals, eg. if getart_limit < 0
+		 *    use lowest unread art + 2*getart_limit (to include holes)
+		 *    snprintf(buf, sizeof(buf), "LISTGROUP %s %d-%d, group->name, min, max);
+		 * }
 		 */
 		snprintf(buf, sizeof(buf), "LISTGROUP %s", group->name);
 		if ((fp = nntp_command(buf, OK_GROUP, NULL, 0)) != NULL) {
@@ -440,6 +447,12 @@ index_group(
 	 * Add any articles to arts[] that are new or were killed
 	 */
 	if (total > 0) {
+		/*
+		 * TODO
+		 * his doesn't honor tinrc.getart_limit
+		 * something like (tinrc.getart_limit ? min : last_read_article)
+		 * as 3rd arg to read_art_headers() might solve this
+		 */
 		if ((changed += read_art_headers(group, total, last_read_article)) == -1)
 			return FALSE;		/* user aborted indexing */
 	}
@@ -1437,7 +1450,7 @@ read_overview(
 	int expired = 0;
 	long artnum;
 	struct t_article *art;
-	size_t over_fields;
+	size_t over_fields = 1;
 
 	/*
 	 * open the overview file (whether it be local or via nntp)
@@ -1451,24 +1464,28 @@ read_overview(
 	group_msg = fmt_string(_(txt_group), cCOLS - strlen(_(txt_group)) + 2 - 3, group->name);
 
 	/* get the number of fields per over-record as announced by LIST OVERVIEW.FMT */
-	for (over_fields = 1; ofmt[over_fields].name; over_fields++)
-		;
+	if (ofmt) {
+		for (; ofmt[over_fields].name; over_fields++)
+			;
+	}
 	if (!--over_fields) { /* e.g. nntp_caps.type == CAPABILITIES && !nntp_caps.list_overview_fmt -> assume defaults */
 		ofmt = my_realloc(ofmt, sizeof(struct t_overview_fmt) * (8 + 1));
+		ofmt[0].type = OVER_T_INT;
+		ofmt[0].name = my_strdup("Artnum:");
 		ofmt[1].type = OVER_T_STRING;
-		ofmt[1].name = strdup("Subject:");
+		ofmt[1].name = my_strdup("Subject:");
 		ofmt[2].type = OVER_T_STRING;
-		ofmt[2].name = strdup("From:");
+		ofmt[2].name = my_strdup("From:");
 		ofmt[3].type = OVER_T_STRING;
-		ofmt[3].name = strdup("Date:");
+		ofmt[3].name = my_strdup("Date:");
 		ofmt[4].type = OVER_T_STRING;
-		ofmt[4].name = strdup("Message-ID:");
+		ofmt[4].name = my_strdup("Message-ID:");
 		ofmt[5].type = OVER_T_STRING;
-		ofmt[5].name = strdup("References:");
+		ofmt[5].name = my_strdup("References:");
 		ofmt[6].type = OVER_T_INT;
-		ofmt[6].name = strdup("Bytes:");
+		ofmt[6].name = my_strdup("Bytes:");
 		ofmt[7].type = OVER_T_INT;
-		ofmt[7].name = strdup("Lines:");
+		ofmt[7].name = my_strdup("Lines:");
 		ofmt[8].type = OVER_T_ERROR;
 		ofmt[8].name = NULL;
 		over_fields = 7;
@@ -1937,8 +1954,8 @@ write_overview(
 
 			fprintf(fp, "%ld\t%s\t%s\t%s\t%s\t%s\t%d\t%d",
 				article->artnum,
-				tinrc.post_8bit_header ? article->subject : p,
-				print_from(article),
+				group->attribute->post_8bit_header ? article->subject : p,
+				print_from(group, article),
 				print_date(article->date),
 				BlankIfNull(article->msgid),
 				BlankIfNull(ref),
@@ -2587,6 +2604,7 @@ print_date(
 
 static char *
 print_from(
+	struct t_group *group,
 	struct t_article *article)
 {
 	char *p;
@@ -2598,9 +2616,9 @@ print_from(
 		p = rfc1522_encode(article->name, tinrc.mm_local_charset, FALSE);
 		unfold_header(p);
 		if (strpbrk(article->name, "\".:;<>@[]()\\") != NULL && article->name[0] != '"' && article->name[strlen(article->name)] != '"')
-			snprintf(from, sizeof(from), "\"%s\" <%s>", tinrc.post_8bit_header ? article->name : p, article->from);
+			snprintf(from, sizeof(from), "\"%s\" <%s>", group->attribute->post_8bit_header ? article->name : p, article->from);
 		else
-			snprintf(from, sizeof(from), "%s <%s>", tinrc.post_8bit_header ? article->name : p, article->from);
+			snprintf(from, sizeof(from), "%s <%s>", group->attribute->post_8bit_header ? article->name : p, article->from);
 
 		free(p);
 	}

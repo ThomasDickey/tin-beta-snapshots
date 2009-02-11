@@ -3,7 +3,7 @@
  *  Module    : proto.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2008-12-24
+ *  Updated   : 2009-01-09
  *  Notes     :
  *
  * Copyright (c) 1997-2009 Urs Janssen <urs@tin.org>
@@ -75,7 +75,7 @@ extern void sort_arts(unsigned /* int */ sort_art_type);
 extern void write_overview(struct t_group *group);
 
 /* attrib.c */
-extern int add_scope(const char *scope, t_bool tmpscope);
+extern int add_tempscope(const char *scope);
 extern void assign_attributes_to_groups(void);
 extern void build_news_headers_array(struct t_attribute *scope, t_bool header_to_display);
 extern void read_attributes_file(t_bool global_file);
@@ -171,9 +171,6 @@ extern void word_highlight_string(int row, int col, int size, int color);
 	extern void debug_print_filters(void);
 	extern void debug_print_header(struct t_article *s);
 	extern void debug_print_malloc(int is_malloc, const char *xfile, int line, size_t size);
-#	ifdef NNTP_ABLE
-		extern void debug_print_nntp_extensions(void);
-#	endif /* NNTP_ABLE */
 #endif /* DEBUG */
 
 /* envarg.c */
@@ -248,6 +245,9 @@ extern void postinit_regexp(void);
 #ifdef HAVE_COLOR
 	extern void postinit_colors(void);
 #endif /* HAVE_COLOR */
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
+	extern t_bool utf8_pcre(void);
+#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 
 /* joinpath.c */
 extern void joinpath(char *result, size_t result_size, const char *dir, const char *file);

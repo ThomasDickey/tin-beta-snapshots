@@ -3,7 +3,7 @@
  *  Module    : lang.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-12-02
+ *  Updated   : 2009-01-23
  *  Notes     :
  *
  * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
@@ -48,7 +48,9 @@ constext txt_all[] = N_("all ");
 constext txt_all_groups[] = N_("All groups");
 constext txt_append_overwrite_quit[] = N_("File %s exists. %s=append, %s=overwrite, %s=quit: ");
 constext txt_art_cancel[] = N_("Article cancelled (deleted).");
-constext txt_art_cannot_cancel[] = N_("Article cannot be cancelled (deleted).");
+#ifndef FORGERY
+	constext txt_art_cannot_cancel[] = N_("Article cannot be cancelled (deleted).");
+#endif /* !FORGERY */
 constext txt_art_deleted[] = N_("Article deleted.");
 constext txt_art_newsgroups[] = N_("\nYour article:\n  \"%s\"\nwill be posted to the following %s:\n");
 constext txt_art_not_posted[] = N_("Article not posted!");
@@ -147,11 +149,13 @@ constext txt_error_bad_approved[] = N_("\nError: Bad address in Approved: header
 constext txt_error_bad_from[] = N_("\nError: Bad address in From: header.\n");
 constext txt_error_bad_replyto[] = N_("\nError: Bad address in Reply-To: header.\n");
 constext txt_error_bad_msgidfqdn[] = N_("\nError: Bad FQDN in Message-ID: header.\n");
-constext txt_error_cant_unlock[] = N_("Can't unlock %s");
+#ifndef NO_LOCKING
+	constext txt_error_cant_unlock[] = N_("Can't unlock %s");
+	constext txt_error_couldnt_dotlock[] = N_("Couldn't dotlock %s - article not appended!");
+	constext txt_error_couldnt_lock[] = N_("Couldn't lock %s - article not appended!");
+#endif /* NO_LOCKING */
 constext txt_error_copy_fp[] = "copy_fp() failed";
 constext txt_error_corrupted_file[] = N_("Corrupted file %s");
-constext txt_error_couldnt_dotlock[] = N_("Couldn't dotlock %s - article not appended!");
-constext txt_error_couldnt_lock[] = N_("Couldn't lock %s - article not appended!");
 constext txt_error_fseek[] = "fseek() error on [%s]";
 constext txt_error_gnksa_internal[] = N_("Internal error in GNKSA routine - send bug report.\n");
 constext txt_error_gnksa_langle[] = N_("Left angle bracket missing in route address.\n");
@@ -180,6 +184,7 @@ constext txt_error_gnksa_rn_encsyn[] = N_("Bad syntax in encoded word used in re
 constext txt_error_gnksa_rn_paren[] = N_("Illegal character in realname.\nUnquoted words may not contain '()<>\\' in old-style addresses.\n");
 constext txt_error_gnksa_rn_invalid[] = N_("Illegal character in realname.\nControl characters and unencoded 8bit characters > 127 are not allowed.\n");
 constext txt_error_header_and_body_not_separate[] = N_("\nError: No blank line found after header.\n");
+constext txt_error_header_format[] = N_("\nError: Illegal formated %s.\n");
 /* TODO: fixme, US-ASCII is not the only 7bit charset we know about */
 constext txt_error_header_line_bad_charset[] = N_("\n\
 Error: Posting contains non-ASCII characters but MM_CHARSET is set to\n\
@@ -196,6 +201,7 @@ constext txt_error_header_line_blank[] = N_("\nError: Article starts with blank 
 constext txt_error_header_line_colon[] = N_("\nError: Header on line %d does not have a colon after the header name:\n%s\n");
 constext txt_error_header_line_empty[] = N_("\nError: The \"%s:\" line is empty.\n");
 constext txt_error_header_line_missing[] = N_("\nError: The \"%s:\" line is missing from the article header.\n");
+constext txt_error_header_line_not_7bit[] = N_("\nError: %s contains non 7bit chars.\n");
 constext txt_error_header_line_space[] = N_("\nError: Header on line %d does not have a space after the colon:\n%s\n");
 constext txt_error_header_duplicate[] = N_("\nError: There are multiple (%d) \"%s:\" lines in the header.\n");
 constext txt_error_insecure_permissions[] = N_("Insecure permissions of %s (%o)");
@@ -211,7 +217,9 @@ constext txt_error_no_such_file[] = N_("File %s does not exist\n");
 constext txt_error_no_write_permission[] = N_("No write permissions for %s\n");
 constext txt_error_passwd_missing[] = N_("Can't get user information (/etc/passwd missing?)");
 constext txt_error_plural[] = N_("errors");
-constext txt_error_sender_in_header_not_allowed[] = N_("\nError on line %d: \"Sender:\" header not allowed (it will be added for you)\n");
+#ifndef FORGERY
+	constext txt_error_sender_in_header_not_allowed[] = N_("\nError on line %d: \"Sender:\" header not allowed (it will be added for you)\n");
+#endif /* !FORGERY */
 constext txt_error_server_has_no_listed_groups[] = N_("Server has non of the groups listed in %s");
 constext txt_error_singular[] = N_("error");
 constext txt_error_unknown_dlevel[] = N_("Unknown display level");
@@ -283,13 +291,16 @@ constext txt_help_article_autokill[] = N_("kill an article via a menu");
 constext txt_help_article_autoselect[] = N_("auto-select (hot) an article via a menu");
 constext txt_help_article_browse_urls[] = N_("Browse URLs in article");
 constext txt_help_article_by_num[] = N_("0 - 9\t  display article by number in current thread");
-constext txt_help_article_cancel[] = N_("cancel (delete) or supersede (overwrite) current article");
+#ifndef NO_POSTING
+	constext txt_help_article_cancel[] = N_("cancel (delete) or supersede (overwrite) current article");
+	constext txt_help_article_followup[] = N_("post followup to current article");
+	constext txt_help_article_followup_no_quote[] = N_("post followup (don't copy text) to current article");
+	constext txt_help_article_followup_with_header[] = N_("post followup to current article quoting complete headers");
+	constext txt_help_article_repost[] = N_("repost chosen article to another group");
+#endif /* NO_POSTING */
 constext txt_help_article_edit[] = N_("edit article (mail-groups only)");
 constext txt_help_article_first_in_thread[] = N_("display first article in current thread");
 constext txt_help_article_first_page[] = N_("display first page of article");
-constext txt_help_article_followup[] = N_("post followup to current article");
-constext txt_help_article_followup_no_quote[] = N_("post followup (don't copy text) to current article");
-constext txt_help_article_followup_with_header[] = N_("post followup to current article quoting complete headers");
 constext txt_help_article_last_in_thread[] = N_("display last article in current thread");
 constext txt_help_article_last_page[] = N_("display last page of article");
 constext txt_help_article_mark_thread_read[] = N_("mark rest of thread as read and advance to next unread");
@@ -305,7 +316,6 @@ constext txt_help_article_quit_to_select_level[] = N_("return to group selection
 constext txt_help_article_reply[] = N_("reply through mail to author");
 constext txt_help_article_reply_no_quote[] = N_("reply through mail (don't copy text) to author");
 constext txt_help_article_reply_with_header[] = N_("reply through mail to author quoting complete headers");
-constext txt_help_article_repost[] = N_("repost chosen article to another group");
 constext txt_help_article_search_backwards[] = N_("search backwards within this article");
 constext txt_help_article_search_forwards[] = N_("search forwards within this article");
 constext txt_help_article_show_raw[] = N_("show article in raw-mode (including all headers)");
@@ -330,8 +340,10 @@ constext txt_help_global_mail[] = N_("mail article/thread/hot/pattern/tagged art
 constext txt_help_global_option_menu[] = N_("menu of configurable options");
 constext txt_help_global_page_down[] = N_("down one page");
 constext txt_help_global_page_up[] = N_("up one page");
-constext txt_help_global_post[] = N_("post (write) article to current group");
-constext txt_help_global_post_postponed[] = N_("post postponed articles");
+#ifndef NO_POSTING
+	constext txt_help_global_post[] = N_("post (write) article to current group");
+	constext txt_help_global_post_postponed[] = N_("post postponed articles");
+#endif /* NO_POSTING */
 constext txt_help_global_posting_history[] = N_("list articles posted by you (from posted file)");
 constext txt_help_global_previous_menu[] = N_("return to previous menu");
 constext txt_help_global_quit_tin[] = N_("quit tin immediately");
@@ -455,7 +467,9 @@ constext txt_invalid_from[] = N_("Invalid  From: %s  line. Read the INSTALL file
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	constext txt_invalid_multibyte_sequence[] = N_("Invalid multibyte sequence found\n");
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
-constext txt_invalid_sender[] = N_("Invalid  Sender:-header %s");
+#ifndef FORGERY
+	constext txt_invalid_sender[] = N_("Invalid  Sender:-header %s");
+#endif /* !FORGERY */
 constext txt_inverse_off[] = N_("Inverse video disabled");
 constext txt_inverse_on[] = N_("Inverse video enabled");
 
@@ -729,8 +743,10 @@ constext txt_toggled_high[] = N_("Toggled word highlighting %s");
 constext txt_toggled_rot13[] = N_("Toggled rot13 encoding");
 constext txt_toggled_tex2iso[] = N_("Toggled german TeX encoding %s");
 constext txt_toggled_tabwidth[] = N_("Toggled tab-width to %d");
-constext txt_trying_dotlock[] = N_("%d Trying to dotlock %s");
-constext txt_trying_lock[] = N_("%d Trying to lock %s");
+#ifndef NO_LOCKING
+	constext txt_trying_dotlock[] = N_("%d Trying to dotlock %s");
+	constext txt_trying_lock[] = N_("%d Trying to lock %s");
+#endif /* NO_LOCKING */
 constext txt_type_h_for_help[] = N_("           h=help\n");
 
 constext txt_unlimited_time[] = N_("Unlimited");
@@ -767,7 +783,6 @@ constext txt_usage_newsrc_file[] = N_("  -f file  subscribed to newsgroups file 
 constext txt_usage_no_posting[] = N_("  -x       no posting mode");
 constext txt_usage_post_article[] = N_("  -w       post an article and exit");
 constext txt_usage_post_postponed_arts[] = N_("  -o       post all postponed articles and exit");
-constext txt_usage_read_news_remotely[] = N_("  -r       read news remotely from default NNTP server");
 constext txt_usage_read_saved_news[] = N_("  -R       read news saved by -S option");
 constext txt_usage_savedir[] = N_("  -s dir   save news directory [default=%s]");
 constext txt_usage_save_new_news[] = N_("  -S       save new news for later reading (batch mode)");
@@ -953,6 +968,7 @@ Warning: Posting is in %s and contains characters which are not\n\
 	constext txt_usage_newsserver[] = N_("  -g serv  read news from NNTP server serv [default=%s]");
 	constext txt_usage_port[] = N_("  -p port  use port as NNTP port [default=%d]");
 	constext txt_usage_quickstart[] = N_("  -Q       quick start. Same as -nqd");
+	constext txt_usage_read_news_remotely[] = N_("  -r       read news remotely from default NNTP server");
 	constext txt_usage_read_only_active[] = N_("  -l       use only LIST instead of GROUP (-n) command");
 	constext txt_usage_read_only_subscribed[] = N_("  -n       only read subscribed .newsrc groups from NNTP server");
 #	ifdef HAVE_GETSERVBYNAME
@@ -1187,6 +1203,14 @@ constext *txt_attrs[] = {
 	N_("Blinking"),
 	N_("Half bright"),
 	N_("Bold")
+};
+
+/* different options for auto_cc_bcc */
+constext *txt_auto_cc_bcc_options[] = {
+	N_("No"),
+	N_("Cc"),
+	N_("Bcc"),
+	N_("Cc and Bcc")
 };
 
 /* different confirm choices */
@@ -2338,16 +2362,15 @@ struct opttxt txt_translit = {
 };
 #endif /* HAVE_ICONV_OPEN_TRANSLIT */
 
-struct opttxt txt_auto_cc = {
-	N_("Send you a carbon copy automatically. <SPACE> toggles & <CR> sets."),
-	N_("Send you a cc automatically"),
-	N_("# If ON automatically put your name in the Cc: field when mailing an article\n")
-};
-
-struct opttxt txt_auto_bcc = {
-	N_("Send you a blind carbon copy automatically. <SPACE> toggles & <CR> sets."),
-	N_("Send you a blind cc automatically"),
-	N_("# If ON automatically put your name in the Bcc: field when mailing an article\n")
+struct opttxt txt_auto_cc_bcc = {
+	N_("<SPACE> toggles, <CR> sets, <ESC> cancels."),
+	N_("Send you a Cc/Bcc automatically"),
+	N_("# Put your name in the Cc: and/or Bcc: field when mailing an article.\n\
+# Possible values are (the default is marked with *):\n\
+# * 0 = No\n\
+#   1 = Cc\n\
+#   2 = Bcc\n\
+#   3 = Cc and Bcc\n")
 };
 
 struct opttxt txt_spamtrap_warning_addresses = {

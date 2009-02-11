@@ -2,11 +2,11 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2008-12-02
+.\" Updated   : 2009-02-11
 .\" Notes     : needs a some work
 .\"
 .\"
-.TH tin 5 "June 25th, 2008" "1.9.4" "A Usenet newsreader"
+.TH tin 5 "February 11th, 2009" "1.9.4" "A Usenet newsreader"
 
 .SH NAME
 tin, rtin \- related files
@@ -24,7 +24,17 @@ newsreader. All files are expteced to have unix style ('\\n' aka LF) line ending
 .\" ${TIN_HOMEDIR:\-"$HOME"}/.article[.$$]
 .\" ${TIN_HOMEDIR:\-"$HOME"}/.cancel[.$$]
 .\" ${TIN_HOMEDIR:\-"$HOME"}/.letter[.$$]
-.\" $TMPDIR/NNTP and co.
+.\" $PWD/trace[.out]   (--with-trace)
+.\" $TMPDIR/NNTP       (-D 1)
+.\" $TMPDIR/FILTER     (-D 2)
+.\" $TMPDIR/ARTS       (-D 2)
+.\" $TMPDIR/BITMAP     (-D 4)
+.\" $TMPDIR/REFS.dump  (-D 8)
+.\" $TMPDIR/REFS.info  (-D 8)
+.\" $TMPDIR/MALLOC     (-D 16)
+.\" $TMPDIR/ATTRIBUTES (-D 32)
+.\" $TMPDIR/SCOPES     (-D 32)
+.\" $TMPDIR/ACTIVE     (-D 64)
 .PP
 .IR $MAILCAPS
 .br
@@ -428,10 +438,7 @@ Identical to the tinrc variable of the same name
 .B ask_for_metamail
 Identical to the tinrc variable of the same name
 .TP
-.B auto_bcc
-Identical to the tinrc variable of the same name
-.TP
-.B auto_cc
+.B auto_cc_bcc
 Identical to the tinrc variable of the same name
 .TP
 .B auto_list_thread
@@ -474,6 +481,12 @@ Set ''Followup\-To:''-header to the specified group(s).
 Identical to the tinrc variable \fBmail_address\fP
 .TP
 .B group_catchup_on_exit
+Identical to the tinrc variable of the same name
+.TP
+.B mail_8bit_header
+Identical to the tinrc variable of the same name
+.TP
+.B mail_mime_encoding
 Identical to the tinrc variable of the same name
 .TP
 .B maildir
@@ -530,6 +543,12 @@ Apollo DomainOS). Note that some newsserver might still overwrite the
 \&''Organization:''-header.
 .TP
 .B pos_first_unread
+Identical to the tinrc variable of the same name
+.TP
+.B post_8bit_header
+Identical to the tinrc variable of the same name
+.TP
+.B post_mime_encoding
 Identical to the tinrc variable of the same name
 .TP
 .B post_process_type
@@ -1182,13 +1201,9 @@ will ask before using a MIME viewer (\fBmetamail_prog\fP) to display
 MIME messages. This only occurs if a MIME viewer is set. Default is
 OFF.
 .TP
-.B auto_bcc
-If ON automatically put your name in the ''Bcc:'' field when mailing an
-article. Default is OFF.
-.TP
-.B auto_cc
-If ON automatically put your name in the ''Cc:'' field when mailing an
-article. Default is OFF.
+.B auto_cc_bcc
+Automatically put your name in the ''Cc:'' and/or ''Bcc:'' field when
+mailing an article. Default is No.
 .TP
 .B auto_list_thread
 If ON automatically list thread when entering it using right arrow key.
@@ -1523,7 +1538,7 @@ option. Killed articles simply does not get displayed at all.
 Allows 8bit characters unencoded in the header of mail message. Default is
 OFF. Turning it ON is effective only if \fBmail_mime_encoding\fP is also set
 to 8bit. Leaving it OFF is safe for most users and compliant to Internet
-Mail Standard (\fBRFC2822\fP and \fBRFC2047\fP). Default is OFF.
+Mail Standard (\fBRFC5322\fP and \fBRFC2047\fP). Default is OFF.
 .TP
 .B mail_address
 User's mail address (and full name), if not username@host. This is used when
@@ -1533,8 +1548,7 @@ signing.
 .TP
 .B mail_mime_encoding
 MIME encoding of the body in mail message, if necessary (8bit, base64,
-quoted-printable, 7bit). Default is 8bit and no encoding (or charset
-conversion) is performed (i.e., local charset is used as it is).
+quoted-printable, 7bit). Default is quoted-printable.
 .TP
 .B mail_quote_format
 Format of quote line when replying (via mail) to an article (%A=Address,
@@ -1717,7 +1731,7 @@ and \fBpost_mime_encoding\fP.
 .TP
 .B post_mime_encoding
 MIME encoding of the body in news message, if necessary. (8bit, base64,
-quoted-printable, 7bit) Default is 8bit, which leads to no encoding.
+quoted-printable, 7bit). Default is 8bit, which leads to no encoding.
 base64 and quoted-printable are usually undesired on usenet.
 .TP
 .B post_process_view
@@ -2496,7 +2510,7 @@ uses the LIST SUBSCRIPTIONS (\fBRFC2980\fP) command instead.
 .BR RFC2046 ,
 .BR RFC2047 ,
 .BR RFC2048 ,
-.BR RFC2822 ,
 .BR RFC2980 ,
 .BR RFC3977 ,
-.BR RFC4643
+.BR RFC4643 ,
+.BR RFC5322

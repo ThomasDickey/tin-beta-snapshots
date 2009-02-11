@@ -3,13 +3,13 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2008-12-12
+.\" Updated   : 2009-02-11
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
 .\"
 .\"
-.TH tin 1 "May 6th, 2008" "1.9.4" "A Usenet newsreader"
+.TH tin 1 "February 11th, 2009" "1.9.4" "A Usenet newsreader"
 .\"
 .\"
 .SH NAME
@@ -1345,13 +1345,9 @@ If ON \fBtin\fP will ask before using a MIME viewer
 (\fBmetamail_prog\fP) to display MIME messages. This only occurs if a
 MIME viewer is set. Default is OFF.
 .TP
-.B Send you a blind cc automatically (auto_bcc)
-If ON automatically put your name in the ''Bcc:'' field when mailing an
-article. Default is OFF.
-.TP
-.B Send you a cc automatically (auto_cc)
-If ON automatically put your name in the ''Cc:'' field when mailing an
-article. Default is OFF.
+.B Send you a cc and/or bcc automatically (auto_cc_bcc)
+Automatically put your name in the ''Cc:'' and/or ''Bcc:'' field when
+mailing an article. Default is No.
 .TP
 .B List thread using right arrow key (auto_list_thread)
 If ON automatically list thread when entering it using right arrow key.
@@ -1697,7 +1693,7 @@ Default is 0 (\fBKill only unread arts\fP).
 Allows 8bit characters unencoded in the header of mail message. Default is
 OFF. Turning it ON is effective only if \fBmail_mime_encoding\fP is also set
 to 8bit. Leaving it OFF is safe for most users and compliant to Internet
-Mail Standard (\fBRFC2822\fP and \fBRFC2047\fP). Default is OFF.
+Mail Standard (\fBRFC5322\fP and \fBRFC2047\fP). Default is OFF.
 .TP
 .B Mail address (mail_address)
 User's mail address (and full name), if not username@host. This is used when
@@ -1707,8 +1703,7 @@ signing.
 .TP
 .B MIME encoding in mail messages (mail_mime_encoding)
 MIME encoding of the body in mail message, if necessary (8bit, base64,
-quoted-printable, 7bit) Default is 8bit and no encoding (or charset
-conversion) is performed (i.e., local charset is used as it is).
+quoted-printable, 7bit). Default is quoted-printable.
 .TP
 .B Quote line when mailing (mail_quote_format)
 Format of quote line when replying (via mail) to an article (%A=Address,
@@ -1876,7 +1871,7 @@ and \fBpost_mime_encoding\fP.
 .TP
 .B MIME encoding in news messages (post_mime_encoding)
 MIME encoding of the body in news message, if necessary. (8bit,
-base64, quoted-printable, 7bit) Default is 8bit, which leads to no
+base64, quoted-printable, 7bit). Default is 8bit, which leads to no
 encoding. base64 and quoted-printable are usually undesired on usenet.
 .TP
 .B View post-processed files (post_process_view)
@@ -3264,7 +3259,7 @@ to a safe location befor starting tin in debug mode (e.g.
 .B tin
 does conform to the Base Definitions volume of IEEE Std 1003.1-2001, Section
 12, Utility Conventions (Utility Argument Syntax, Utility Syntax Guidelines).
-.\" - RFC1036, RFC2045, RFC2047, RFC2822, RFC2980, RFC3977
+.\" - RFC1036, RFC2045, RFC2047, RFC2980, RFC3977, RFC4643, RFC5322
 .\"   or whatever
 .\"
 .\"
@@ -3400,7 +3395,7 @@ Urs Janssen <urs@tin.org>
 .BR RFC2046 ,
 .BR RFC2047 ,
 .BR RFC2048 ,
-.BR RFC2822 ,
 .BR RFC2980 ,
 .BR RFC3977 ,
-.BR RFC4643
+.BR RFC4643 ,
+.BR RFC5322

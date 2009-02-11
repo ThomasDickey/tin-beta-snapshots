@@ -97,10 +97,10 @@ mail_address                   from in attributes; should be splitted into
                                username and addresse
 mm_charset                     mm_network_charset
                                (if charset conversion is available)
-post_mime_encoding           *
-mail_mime_encoding           *
-post_8bit_header             *
-mail_8bit_header             *
+post_mime_encoding
+mail_mime_encoding
+post_8bit_header
+mail_8bit_header
 default_filter_kill_header     quick_kill_header in attributes
 default_filter_kill_global     quick_kill_scope=* in attributes
 default_filter_kill_case       quick_kill_case in attributes

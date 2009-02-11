@@ -3,7 +3,7 @@
  *  Module    : page.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-12-02
+ *  Updated   : 2009-01-20
  *  Notes     :
  *
  * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -542,9 +542,12 @@ page_goto_next_unread:
 #endif /* !DISABLE_PRINTING */
 
 			case PAGE_REPOST:	/* repost current article */
-				XFACE_SUPPRESS();
-				feed_articles(FEED_REPOST, PAGE_LEVEL, group, this_resp);
-				XFACE_SHOW();
+				if (can_post) {
+					XFACE_SUPPRESS();
+					feed_articles(FEED_REPOST, PAGE_LEVEL, group, this_resp);
+					XFACE_SHOW();
+				} else
+					info_message(_(txt_cannot_post));
 				break;
 
 			case PAGE_SAVE:	/* save article/thread/tagged articles */

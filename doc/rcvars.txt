@@ -47,12 +47,14 @@ Adding a new attribute:
 . Add it to the list of enumerated types at the beginning of attrib.c
 . In read_attributes_file() add a MATCH_<TYPE> entry to parse it in
   under the appropriate first letter section.
-. In do_set_attrib(), add a corresponding SET_<TYPE> entry
+. In set_attrib() and assign_attributes_to_groups(), add a corresponding
+  SET_<TYPE> entry
 . In write_attributes_file(), add a minimal entry in the header to
-  describe the usage of the attribute
-  Add code to write out the attribute in the for_each_group() loop
-  [ Currently unused, but wise to keep it up to date ]
-. Add code to write out the attribute in dump_attributes()
+  describe the usage of the attribute and add code to write out the
+  attribute
+. Add code to write out the attribute in dump_attributes() and dump_scopes()
+. In options_menu.c:change_config_file() add UPDATE_(INT_|STRING_)ATTRIBUTES
+  under the appropriate case OPT_* section
 . Free up the attribute in memory.c:free_attributes_array() if needed
 
 Where possible try to keep the ordering of the attributes in the various

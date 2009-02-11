@@ -40,7 +40,7 @@
 #       - cleanup, remove duplicated code
 #
 # version Number
-my $version = "1.1.20";
+my $version = "1.1.23";
 
 my %config;
 
@@ -147,9 +147,14 @@ usage() if ($config{'help'});
 
 # Cancel-Locks require some more modules
 if ($config{'canlock_secret'} && !$config{'no_canlock'}) {
-	use MIME::Base64();
-	use Digest::SHA1();
-	use Digest::HMAC_SHA1();
+	foreach ('MIME::Base64()', 'Digest::SHA1()', 'Digest::HMAC_SHA1()') {
+		eval "use $_";
+		if ($@) {
+			$config{'no_canlock'} = 1;
+			warn "Cancel-Locks disabled: Can't locate ".$_."\n" if $config{'debug'};
+			last;
+		}
+	}
 }
 
 my $term = new Term::ReadLine 'tinews';
@@ -506,6 +511,20 @@ sub AuthonNNTP {
 sub getpgpcommand {
 	my ($PGPVersion) = @_;
 	my $PGPCommand;
+	my $found = 0;
+
+	if ($config{'pgp'} !~ /^\//) {
+		foreach(split(/:/, $ENV{'PATH'})) {
+			if (-x $_."/".$config{'pgp'}) {
+				$found++;
+				last;
+			}
+		}
+	}
+	if (!-x $config{'pgp'} && ! $found) {
+		warn "PGP signing disabled: Can't locate executable ".$config{'pgp'}."\n" if $config{'debug'};
+		$config{'no_sign'} = 1;
+	}
 
 	if ($PGPVersion eq '2') {
 		if ($config{'PGPPass'}) {
@@ -567,7 +586,7 @@ sub postarticle {
 # savearticle saves your article to the directory $config{'savedir'}
 #
 # Receives:
-#      - $ArticleR: A reference to an array containing the article
+# 	- $ArticleR: A reference to an array containing the article
 sub savearticle {
 	my ($ArticleR) = @_;
 	my $timestamp = timelocal(localtime);
