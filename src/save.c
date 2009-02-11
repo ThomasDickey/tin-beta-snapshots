@@ -3,7 +3,7 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-11-22
+ *  Updated   : 2009-01-14
  *  Notes     :
  *
  * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -161,9 +161,6 @@ check_start_save_any_news(
 		if (group->bogus || !group->subscribed)
 			continue;
 
-		if (!index_group(group))
-			continue;
-
 		if (function == MAIL_ANY_NEWS || function == SAVE_ANY_NEWS) {
 			if (!group->attribute->batch_save)
 				continue;
@@ -177,7 +174,7 @@ check_start_save_any_news(
 			if (function == SAVE_ANY_NEWS) {
 				char tmp[PATH_LEN];
 
-				if (!strfpath(group->attribute->savedir, tmp, sizeof(tmp), group))
+				if (!strfpath(tinrc.savedir, tmp, sizeof(tmp), group))
 					joinpath(tmp, sizeof(tmp), homedir, DEFAULT_SAVEDIR);
 
 				make_group_path(group->name, group_path);
@@ -185,6 +182,9 @@ check_start_save_any_news(
 				create_path(path);	/* TODO error handling */
 			}
 		}
+
+		if (!index_group(group))
+			continue;
 
 		/*
 		 * For each article in this group...

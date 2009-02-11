@@ -260,8 +260,11 @@ group_page(
 #endif /* !DISABLE_PRINTING */
 
 			case GROUP_REPOST:	/* repost current article */
-				if (grpmenu.curr >= 0)
-					feed_articles(FEED_REPOST, GROUP_LEVEL, group, (int) base[grpmenu.curr]);
+				if (can_post) {
+					if (grpmenu.curr >= 0)
+						feed_articles(FEED_REPOST, GROUP_LEVEL, group, (int) base[grpmenu.curr]);
+				} else
+					info_message(_(txt_cannot_post));
 				break;
 
 			case GROUP_SAVE:	/* save articles with prompting */

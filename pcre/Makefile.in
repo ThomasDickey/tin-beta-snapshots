@@ -26,7 +26,7 @@ X		= $(BUILD_EXEEXT)
 
 # The -D options correspond to pcre 4.1's default values.
 CPPOPTS = \
-	-DLINK_SIZE=2 \
+	@LINK_SIZE@ \
 	-DMATCH_LIMIT=10000000 \
 	-DMATCH_LIMIT_RECURSION=10000000 \
 	-DNEWLINE=10 \
@@ -37,7 +37,7 @@ RANLIB	= @RANLIB@
 RM	= rm
 
 PRELIB	= @LIB_PREFIX@
-ARCHIVE	= @AR@ @AR_OPTS@
+ARCHIVE	= @AR@ @ARFLAGS@
 
 ##########################################################################
 
@@ -122,7 +122,7 @@ dftables$X :	dftables.c pcre_maketables.c $(PCR_DEP)
 
 clean :;		$(RM) -f *$o *.a pcretest$x pcregrep$x
 
-distclean :	clean ; $(RM) -f dftables$X pcre_chartables.c RunTest
+distclean :	clean ; $(RM) -f dftables$X pcre_chartables.c RunTest testsavedregex testtry
 
 runtest :	all
 		./RunTest

@@ -3,7 +3,7 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2008-11-08
+ *  Updated   : 2009-01-14
  *  Notes     :
  *
  * Copyright (c) 1999-2009 Jason Faultless <jason@altarstone.com>
@@ -192,8 +192,7 @@ struct t_config {
 	t_bool add_posted_to_filter;
 	t_bool advertising;
 	t_bool alternative_handling;
-	t_bool auto_bcc;					/* add your name to bcc automatically */
-	t_bool auto_cc;						/* add your name to cc automatically */
+	int auto_cc_bcc;					/* add your name to cc/bcc automatically */
 	t_bool auto_list_thread;			/* list thread when entering it using right arrow */
 	t_bool auto_reconnect;				/* automatically reconnect to news server */
 	t_bool auto_save;					/* save thread with name from Archive-name: field */

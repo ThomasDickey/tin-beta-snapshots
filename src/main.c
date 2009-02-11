@@ -3,7 +3,7 @@
  *  Module    : main.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-12-11
+ *  Updated   : 2009-01-22
  *  Notes     :
  *
  * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -708,6 +708,22 @@ read_cmd_line_options(
 		wait_message(2, _(txt_useless_combination), "-c", "-Z", "-c");
 		catchup = FALSE;
 	}
+	if (newsrc_active && read_saved_news) {
+		wait_message(2, _(txt_useless_combination), "-n", "-R", "-n");
+		newsrc_active = read_news_via_nntp = FALSE;
+	}
+	if (start_any_unread && save_news) {
+		wait_message(2, _(txt_useless_combination), "-z", "-S", "-z");
+		start_any_unread = FALSE;
+	}
+	if (save_news && check_any_unread) {
+		wait_message(2, _(txt_useless_combination), "-S", "-Z", "-S");
+		save_news = FALSE;
+	}
+	if (start_any_unread && check_any_unread) {
+		wait_message(2, _(txt_useless_combination), "-Z", "-z", "-Z");
+		check_any_unread = FALSE;
+	}
 	if (mail_news || save_news || update_index || check_any_unread || catchup)
 		batch_mode = TRUE;
 	else
@@ -759,7 +775,11 @@ usage(
 	error_message(2, _(txt_usage_getart_limit));
 
 #ifdef NNTP_ABLE
+#	ifdef NNTP_DEFAULT_SERVER
 	error_message(2, _(txt_usage_newsserver), get_val("NNTPSERVER", NNTP_DEFAULT_SERVER));
+#	else
+	error_message(2, _(txt_usage_newsserver), get_val("NNTPSERVER", "news"));
+#	endif /* NNTP_DEFAULT_SERVER */
 #endif /* NNTP_ABLE */
 
 	error_message(2, _(txt_usage_help_message));

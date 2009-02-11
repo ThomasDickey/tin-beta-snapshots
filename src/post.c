@@ -3,7 +3,7 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-12-28
+ *  Updated   : 2009-01-20
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
  * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
@@ -524,6 +524,11 @@ user_posted_messages(
 }
 
 
+/*
+ * TODO:
+ * - mime-encode subject so we get the right charset (it may be different
+ *   in subsequent sessions); update user_posted_messages accordingly.
+ */
 static void
 update_posted_info_file(
 	const char *group,
@@ -549,10 +554,14 @@ update_posted_info_file(
 	if ((fp = fopen(posted_info_file, "a+")) != NULL) {
 		(void) time(&epoch);
 		pitm = localtime(&epoch);
-		if (*a_message_id)
-			fprintf(fp, "%02d-%02d-%02d|%c|%s|%s|%s\n", pitm->tm_mday, pitm->tm_mon + 1, pitm->tm_year % 100, action, BlankIfNull(group), BlankIfNull(subj), a_message_id);
-		else
+		if (*a_message_id) {
+			char *mid = my_strdup(a_message_id);
+
+			fprintf(fp, "%02d-%02d-%02d|%c|%s|%s|%s\n", pitm->tm_mday, pitm->tm_mon + 1, pitm->tm_year % 100, action, BlankIfNull(group), BlankIfNull(subj), BlankIfNull(str_trim(mid)));
+			free(mid);
+		} else
 			fprintf(fp, "%02d-%02d-%02d|%c|%s|%s\n", pitm->tm_mday, pitm->tm_mon + 1, pitm->tm_year % 100, action, BlankIfNull(group), BlankIfNull(subj));
+
 		if (ferror(fp) || fclose(fp)) {
 			error_message(2, _(txt_filesystem_full), posted_info_file);
 			rename_file(file_tmp, posted_info_file);
@@ -578,11 +587,11 @@ append_mail(
 	FILE *fp_in, *fp_out;
 	char *bufp;
 	char buf[LEN];
-	int fd;
 	time_t epoch;
 	t_bool mmdf = FALSE;
 	t_bool rval = FALSE;
 #ifndef NO_LOCKING
+	int fd;
 	unsigned int retrys = 11;	/* maximum lock retrys + 1 */
 #endif /* NO_LOCKING */
 
@@ -593,9 +602,8 @@ append_mail(
 		return rval;
 
 	if ((fp_out = fopen(the_mailbox, "a+")) != NULL) {
-		fd = fileno(fp_out);
-
 #ifndef NO_LOCKING
+		fd = fileno(fp_out);
 		/* TODO: move the retry/error stuff into a function? */
 		while (--retrys && fd_lock(fd, FALSE))
 			wait_message(1, _(txt_trying_lock), retrys, the_mailbox);
@@ -660,6 +668,15 @@ append_mail(
 
 
 /*
+ * TODO:
+ * - cleanup!!
+ * - check for illegal (8bit) chars in References, X-Face, MIME-Version,
+ *   Content-Type, Content-Transfer-Encoding, Content-Disposition, Supersedes
+ * - check for 'illegal' headers: Xref, Injection-Info, (NNTP-Posting-Host,
+ *   NNTP-Posting-Date, X-Trace, X-Complaints-To), Date-Received,
+ *   Posting-Version, Relay-Version, Also-Control, Article-Names,
+ *   Article-Updates, See-Also
+ *
  * Check the article file for correct header syntax and if there
  * is a blank between the header information and the text.
  *
@@ -696,11 +713,17 @@ append_mail(
 #define CA_ERROR_DUPLICATED_FOLLOWUP_TO   0x000400
 #define CA_ERROR_BAD_CHARSET              0x000800
 #define CA_ERROR_BAD_ENCODING             0x001000
+#define CA_ERROR_BAD_MESSAGE_ID           0x002000
+#define CA_ERROR_BAD_DATE                 0x004000
+#define CA_ERROR_BAD_EXPIRES              0x008000
+#define CA_ERROR_NEWSGROUPS_NOT_7BIT      0x010000
+#define CA_ERROR_FOLLOWUP_TO_NOT_7BIT     0x020000
+#define CA_ERROR_DISTRIBUTIOIN_NOT_7BIT   0x040000
 #ifndef FOLLOW_USEFOR_DRAFT
-#	define CA_ERROR_SPACE_IN_NEWSGROUPS    0x002000
-#	define CA_ERROR_NEWLINE_IN_NEWSGROUPS  0x004000
-#	define CA_ERROR_SPACE_IN_FOLLOWUP_TO   0x008000
-#	define CA_ERROR_NEWLINE_IN_FOLLOWUP_TO 0x010000
+#	define CA_ERROR_SPACE_IN_NEWSGROUPS    0x080000
+#	define CA_ERROR_NEWLINE_IN_NEWSGROUPS  0x100000
+#	define CA_ERROR_SPACE_IN_FOLLOWUP_TO   0x200000
+#	define CA_ERROR_NEWLINE_IN_FOLLOWUP_TO 0x400000
 #endif /* !FOLLOW_USEFOR_DRAFT */
 #define CA_WARNING_SPACES_ONLY_SUBJECT      0x000001
 #define CA_WARNING_RE_WITHOUT_REFERENCES    0x000002
@@ -720,7 +743,7 @@ append_mail(
 #endif /* FOLLOW_USEFOR_DRAFT */
 
 /*
- * TODO: cleanup
+ * TODO: cleanup!
  *
  * return values:
  * 	0	article ok
@@ -755,6 +778,7 @@ check_article_to_be_posted(
 	int found_subject_lines = 0;
 	int errors_catbp = 0; /* sum of error-codes */
 	int warnings_catbp = 0; /* sum of warning-codes */
+	int must_break_line = 0;
 	struct t_group *psGrp;
 	t_bool end_of_header = FALSE;
 	t_bool got_long_line = FALSE;
@@ -763,7 +787,6 @@ check_article_to_be_posted(
 	t_bool mime_7bit = TRUE;
 	t_bool mime_usascii = FALSE;
 	t_bool contains_8bit = FALSE;
-	int must_break_line = 0;
 #ifdef CHARSET_CONVERSION
 	t_bool charset_conversion_fails = FALSE;
 	int mmnwcharset = *group ? (*group)->attribute->mm_network_charset : tinrc.mm_network_charset;
@@ -914,13 +937,14 @@ check_article_to_be_posted(
 			char addr[HEADER_LEN], name[HEADER_LEN];
 			int type;
 
-			i = gnksa_check_from(cp + 1);
-			gnksa_split_from(cp + 1, addr, name, &type);
-			if (((GNKSA_OK != i) && (GNKSA_LOCALPART_MISSING > i)) || !*addr) {
+			i = gnksa_check_from(++cp);
+			gnksa_split_from(cp, addr, name, &type);
+			if (((GNKSA_OK != i) && (GNKSA_LOCALPART_MISSING > i)) || !*addr)
 #else
-			i = gnksa_check_from(cp + 1);
-			if ((GNKSA_OK != i) && (GNKSA_LOCALPART_MISSING > i)) {
+			i = gnksa_check_from(++cp);
+			if ((GNKSA_OK != i) && (GNKSA_LOCALPART_MISSING > i))
 #endif /* 0 */
+			{
 				setup_check_article_screen(&init);
 				StartInverse();
 				my_fprintf(stderr, _(txt_error_bad_msgidfqdn), i);
@@ -931,6 +955,8 @@ check_article_to_be_posted(
 				errors++;
 #endif /* !FORGERY */
 			}
+			if (damaged_id(cp))
+				errors_catbp |= CA_ERROR_BAD_MESSAGE_ID;
 		}
 
 		if (cp - line == 10 && !strncasecmp(line, "References", 10)) {
@@ -939,6 +965,24 @@ check_article_to_be_posted(
 			STRCPY(references, cp);
 			if (strlen(references))
 				saw_references = TRUE;
+		}
+
+		if (cp - line == 4 && !strncasecmp(line, "Date", 4)) {
+			if ((cp2 = parse_header(line, "Date", FALSE, FALSE))) {
+				if (parsedate(cp2,  (struct _TIMEINFO *) 0) <= 0)
+				errors_catbp |= CA_ERROR_BAD_DATE;
+			} else {
+				errors_catbp |= CA_ERROR_BAD_DATE;
+			}
+		}
+
+		if (cp - line == 7 && !strncasecmp(line, "Expires", 7)) {
+			if ((cp2 = parse_header(line, "Expires", FALSE, FALSE))) {
+				if (parsedate(cp2,  (struct _TIMEINFO *) 0) <= 0)
+				errors_catbp |= CA_ERROR_BAD_EXPIRES;
+			} else {
+				errors_catbp |= CA_ERROR_BAD_EXPIRES;
+			}
 		}
 
 		/*
@@ -971,6 +1015,23 @@ check_article_to_be_posted(
 
 			if (!ngcnt)
 				errors_catbp |= CA_ERROR_EMPTY_NEWSGROUPS;
+			else {
+				for (cp = line + 11; *cp ; cp++) {
+					if (!isascii(*cp)) {
+						errors_catbp |= CA_ERROR_NEWSGROUPS_NOT_7BIT;
+						break;
+					}
+				}
+			}
+		}
+
+		if (cp - line == 12 && !strncasecmp(line, "Distribution", 12)) {
+			for (cp = line + 13; *cp ; cp++) {
+				if (!isascii(*cp)) {
+					errors_catbp |= CA_ERROR_DISTRIBUTIOIN_NOT_7BIT;
+					break;
+				}
+			}
 		}
 
 		if (cp - line == 11 && !strncasecmp(line, "Followup-To", 11)) {
@@ -995,8 +1056,15 @@ check_article_to_be_posted(
 			}
 
 			followupto = build_nglist(cp, &ftngcnt);
-			if (followupto && ftngcnt)
+			if (followupto && ftngcnt) {
 				(void) stripped_double_ngs(followupto, &ftngcnt);
+				for (cp = line + 12; *cp ; cp++) {
+					if (!isascii(*cp)) {
+						errors_catbp |= CA_ERROR_FOLLOWUP_TO_NOT_7BIT;
+						break;
+					}
+				}
+			}
 		}
 	}
 
@@ -1135,16 +1203,16 @@ check_article_to_be_posted(
 /*
  * TODO: cleanup, test me, move to the right location, strings -> lang.c, ...
  */
-	if (must_break_line && strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_base64)) {
+	if (must_break_line && ((*group ? (*group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) != MIME_ENCODING_BASE64)) {
 		setup_check_article_screen(&init);
 #	ifdef MIME_BREAK_LONG_LINES
 		if (contains_8bit) {
-			if (strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_quoted_printable))
+			if ((*group ? (*group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) != MIME_ENCODING_QP)
 				my_fprintf(stderr, _("Line %d is longer than 998 octets and should be folded, but\nencoding is neither set to %s nor to %s\n"), must_break_line, txt_quoted_printable, txt_base64);
 		} else
 #	endif /* MIME_BREAK_LONG_LINES */
 		{
-			if (!strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_quoted_printable))
+			if ((*group ? (*group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) == MIME_ENCODING_QP)
 				my_fprintf(stderr, _("Line %d is longer than 998 octets, and should be folded, but\nencoding is set to %s without enabling MIME_BREAK_LONG_LINES or\nposting doesn't contain any 8bit chars and thus folding won't happen\n"), must_break_line, txt_quoted_printable);
 			else
 				my_fprintf(stderr, _("Line %d is longer than 998 octets, and should be folded, but\nencoding is not set to %s\n"), must_break_line, txt_base64);
@@ -1203,7 +1271,7 @@ check_article_to_be_posted(
 			break;
 		}
 	}
-	if (strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], "7bit"))
+	if ((*group ? (*group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) != MIME_ENCODING_7BIT)
 		mime_7bit = FALSE;
 	if (contains_8bit && mime_usascii)
 #ifndef CHARSET_CONVERSION
@@ -1221,7 +1289,7 @@ check_article_to_be_posted(
 	 * signature it will not be encoded. We might additionally check if there's
 	 * a file named ~/.signature and skip the warning if it is not present.
 	 */
-	if (((tinrc.post_mime_encoding == MIME_ENCODING_QP) || (tinrc.post_mime_encoding == MIME_ENCODING_BASE64)) && 0 != strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
+	if ((((*group ? (*group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) == MIME_ENCODING_QP) || ((*group ? (*group)->attribute->post_mime_encoding : tinrc.post_mime_encoding) == MIME_ENCODING_BASE64)) && 0 != strcasecmp(tinrc.inews_prog, INTERNAL_CMD))
 		warnings_catbp |= CA_WARNING_ENCODING_EXTERNAL_INEWS;
 
 	/* give most error messages */
@@ -1276,6 +1344,20 @@ check_article_to_be_posted(
 			my_fprintf(stderr, _(txt_error_header_line_bad_charset));
 		if (errors_catbp & CA_ERROR_BAD_ENCODING)
 			my_fprintf(stderr, _(txt_error_header_line_bad_encoding));
+
+		if (errors_catbp & CA_ERROR_DISTRIBUTIOIN_NOT_7BIT)
+			my_fprintf(stderr, _(txt_error_header_line_not_7bit), "Distribution");
+		if (errors_catbp & CA_ERROR_NEWSGROUPS_NOT_7BIT)
+			my_fprintf(stderr, _(txt_error_header_line_not_7bit), "Newsgroups");
+		if (errors_catbp & CA_ERROR_FOLLOWUP_TO_NOT_7BIT)
+			my_fprintf(stderr, _(txt_error_header_line_not_7bit), "Followup-To");
+
+		if (errors_catbp & CA_ERROR_BAD_MESSAGE_ID)
+			my_fprintf(stderr, _(txt_error_header_format), "Message-ID");
+		if (errors_catbp & CA_ERROR_BAD_DATE)
+			my_fprintf(stderr, _(txt_error_header_format), "Date");
+		if (errors_catbp & CA_ERROR_BAD_EXPIRES)
+			my_fprintf(stderr, _(txt_error_header_format), "Expires");
 
 		my_fflush(stderr);
 		EndInverse();
@@ -1706,7 +1788,7 @@ post_article_done:
 			char a_mailbox[LEN];
 			char posted_msgs_file[PATH_LEN];
 
-			joinpath(posted_msgs_file, sizeof(posted_msgs_file), tinrc.maildir, tinrc.posted_articles_file);
+			joinpath(posted_msgs_file, sizeof(posted_msgs_file), (group ? group->attribute->maildir : tinrc.maildir), tinrc.posted_articles_file);
 			/*
 			 * log Message-ID if given in a_message_id,
 			 * add Date:, remove empty headers
@@ -2765,10 +2847,10 @@ create_mail_headers(
 		 * put in the file in the first place, so we don't do it.
 		 */
 		if (!address_in_list(to, strlen(from_address) ? from_address : userid)) {
-			if ((curr_group && curr_group->attribute->auto_cc) || (!curr_group && tinrc.auto_cc))
+			if ((curr_group && (curr_group->attribute->auto_cc_bcc & AUTO_CC)) || (!curr_group && (tinrc.auto_cc_bcc & AUTO_CC)))
 				msg_add_header("Cc", strlen(from_address) ? from_address : userid);
 
-			if ((curr_group && curr_group->attribute->auto_bcc) || (!curr_group && tinrc.auto_bcc))
+			if ((curr_group && (curr_group->attribute->auto_cc_bcc & AUTO_BCC)) || (!curr_group && (tinrc.auto_cc_bcc & AUTO_BCC)))
 				msg_add_header("Bcc", strlen(from_address) ? from_address : userid);
 		}
 
@@ -3059,7 +3141,7 @@ mail_bug_report(
 	wait_message(0, _(txt_mail_bug_report));
 	snprintf(subject, sizeof(subject), "BUG REPORT %s\n", page_header);
 
-	if ((fp = create_mail_headers(nam, sizeof(nam), ".bugreport", bug_addr, subject, NULL)) == NULL)
+	if ((fp = create_mail_headers(nam, sizeof(nam), TIN_BUGREPORT_NAME, bug_addr, subject, NULL)) == NULL)
 		return FALSE;
 
 	start_line_offset += tin_version_info(fp);
@@ -3099,18 +3181,23 @@ mail_bug_report(
 	fprintf(fp, "CFG3 : domain=[%s]\n", BlankIfNull(domain));
 	start_line_offset += 4;
 
-	if (*bug_nntpserver1) {
-		fprintf(fp, "NNTP1: %s\n", bug_nntpserver1);
-		start_line_offset++;
+#ifdef NNTP_ABLE
+	if (read_news_via_nntp) {
+		if (*bug_nntpserver1) {
+			fprintf(fp, "NNTP1: %s\n", bug_nntpserver1);
+			start_line_offset++;
+		}
+		if (*bug_nntpserver2) {
+			fprintf(fp, "NNTP2: %s\n", bug_nntpserver2);
+			start_line_offset++;
+		}
+		if (nntp_caps.implementation){
+			fprintf(fp, "IMPLE: %s\n", nntp_caps.implementation);
+			start_line_offset++;
+		}
 	}
-	if (*bug_nntpserver2) {
-		fprintf(fp, "NNTP2: %s\n", bug_nntpserver2);
-		start_line_offset++;
-	}
-	if (nntp_caps.implementation){
-		fprintf(fp, "IMPLE: %s\n", nntp_caps.implementation);
-		start_line_offset++;
-	}
+#endif /* NNTP_ABLE */
+
 	fprintf(fp, "\nPlease enter _detailed_ bug report, gripe or comment:\n\n");
 	start_line_offset += 2;
 
@@ -3980,7 +4067,7 @@ checknadd_headers(
 		} else if ((ptr = parse_header(l, "Fcc", FALSE, FALSE))) {
 			fcc = my_strdup(ptr);
 		} else if ((ptr = strchr(l, ':')) != NULL) { /* valid header? */
-			if (strlen(ptr) > 3) /* skip empty headers ": \n\0" */
+			if (strlen(ptr) > 2) /* skip empty headers ": \0" */
 				fprintf(fp_out, "%s\n", l);
 		}
 	} /* end of headers */
@@ -4018,6 +4105,7 @@ checknadd_headers(
 
 	while ((l = tin_fgets(fp_in, FALSE)) != NULL)
 		fprintf(fp_out, "%s\n", l);
+
 	fclose(fp_out);
 	fclose(fp_in);
 	rename_file(outfile, infile);

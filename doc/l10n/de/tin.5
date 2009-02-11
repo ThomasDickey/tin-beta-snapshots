@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2008-12-02
+.\" Updated   : 2009-02-11
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -11,7 +11,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "25. Juni 2008" 1.9.4 "Usenet Newsreader"
+.TH tin 5 "11. Februar 2008" 1.9.4 "Usenet Newsreader"
 
 .SH NAME
 tin, rtin \- zugehörige Dateien
@@ -28,7 +28,17 @@ Zeilenenden ('\en' aka LF) haben.
 .\" ${TIN_HOMEDIR:\-"$HOME"}/.article[.$$]
 .\" ${TIN_HOMEDIR:\-"$HOME"}/.cancel[.$$]
 .\" ${TIN_HOMEDIR:\-"$HOME"}/.letter[.$$]
-.\" $TMPDIR/NNTP and co.
+.\" $PWD/trace[.out]   (--with-trace)
+.\" $TMPDIR/NNTP       (-D 1)
+.\" $TMPDIR/FILTER     (-D 2)
+.\" $TMPDIR/ARTS       (-D 2)
+.\" $TMPDIR/BITMAP     (-D 4)
+.\" $TMPDIR/REFS.dump  (-D 8)
+.\" $TMPDIR/REFS.info  (-D 8)
+.\" $TMPDIR/MALLOC     (-D 16)
+.\" $TMPDIR/ATTRIBUTES (-D 32)
+.\" $TMPDIR/SCOPES     (-D 32)
+.\" $TMPDIR/ACTIVE     (-D 64)
 .PP
 \fI$MAILCAPS\fP
 .br
@@ -425,10 +435,7 @@ Identisch mit der tinrc\-Variable gleichen Namens
 \fBask_for_metamail\fP
 Identisch mit der tinrc\-Variable gleichen Namens
 .TP 
-\fBauto_bcc\fP
-Identisch mit der tinrc\-Variable gleichen Namens
-.TP 
-\fBauto_cc\fP
+\fBauto_cc_bcc\fP
 Identisch mit der tinrc\-Variable gleichen Namens
 .TP 
 \fBauto_list_thread\fP
@@ -469,6 +476,12 @@ Set \*(rqFollowup\-To:\*(rq\-header to the specified group(s).
 Identical to the tinrc variable \fBmail_address\fP
 .TP 
 \fBgroup_catchup_on_exit\fP
+Identisch mit der tinrc\-Variable gleichen Namens
+.TP 
+\fBmail_8bit_header\fP
+Identisch mit der tinrc\-Variable gleichen Namens
+.TP 
+\fBmail_mime_encoding\fP
 Identisch mit der tinrc\-Variable gleichen Namens
 .TP 
 \fBmaildir\fP
@@ -522,6 +535,12 @@ and $\fBORGANIZATION\fP (or $\fBNEWSORG\fP on Apollo DomainOS). Note that some
 newsserver might still overwrite the \&\*(rqOrganization:\*(rq\-header.
 .TP 
 \fBpos_first_unread\fP
+Identisch mit der tinrc\-Variable gleichen Namens
+.TP 
+\fBpost_8bit_header\fP
+Identisch mit der tinrc\-Variable gleichen Namens
+.TP 
+\fBpost_mime_encoding\fP
 Identisch mit der tinrc\-Variable gleichen Namens
 .TP 
 \fBpost_process_type\fP
@@ -1156,13 +1175,9 @@ If ON \fBtin\fP(1)  will ask before using a MIME viewer (\fBmetamail_prog\fP) to
 display MIME messages. This only occurs if a MIME viewer is set. Default is
 OFF.
 .TP 
-\fBauto_bcc\fP
-If ON automatically put your name in the \*(rqBcc:\*(rq field when mailing an
-article. Default is OFF.
-.TP 
-\fBauto_cc\fP
-If ON automatically put your name in the \*(rqCc:\*(rq field when mailing an
-article. Default is OFF.
+\fBauto_cc_bcc\fP
+Automatically put your name in the \*(rqCc:\*(rq and/or \*(rqBcc:\*(rq field when
+mailing an article. Default is No.
 .TP 
 \fBauto_list_thread\fP
 If ON automatically list thread when entering it using right arrow key. 
@@ -1483,7 +1498,7 @@ articles simply does not get displayed at all.
 Allows 8bit characters unencoded in the header of mail message. Default is
 OFF. Turning it ON is effective only if \fBmail_mime_encoding\fP is also set to
 8bit. Leaving it OFF is safe for most users and compliant to Internet Mail
-Standard (\fBRFC2822\fP and \fBRFC2047\fP). Default is OFF.
+Standard (\fBRFC5322\fP and \fBRFC2047\fP). Default is OFF.
 .TP 
 \fBmail_address\fP
 User's mail address (and full name), if not username@host. This is used when
@@ -1491,8 +1506,7 @@ creating articles, sending mail and when \fBpgp\fP(1)  signing.
 .TP 
 \fBmail_mime_encoding\fP
 MIME encoding of the body in mail message, if necessary (8bit, base64,
-quoted\-printable, 7bit). Default is 8bit and no encoding (or charset
-conversion) is performed (i.e., local charset is used as it is).
+quoted\-printable, 7bit). Default is quoted\-printable.
 .TP 
 \fBmail_quote_format\fP
 Format of quote line when replying (via mail) to an article (%A=Address,
@@ -1652,8 +1666,8 @@ local hierarchy of your interest to determine what to do with this and
 .TP 
 \fBpost_mime_encoding\fP
 MIME encoding of the body in news message, if necessary. (8bit, base64,
-quoted\-printable, 7bit) Default is 8bit, which leads to no encoding.  base64
-and quoted\-printable are usually undesired on usenet.
+quoted\-printable, 7bit). Default is 8bit, which leads to no encoding. 
+base64 and quoted\-printable are usually undesired on usenet.
 .TP 
 \fBpost_process_view\fP
 If ON, then \fBtin\fP(1)  will start an appropriate viewer program to display
@@ -2342,5 +2356,5 @@ SUBSCRIPTIONS (\fBRFC2980\fP) command instead.
 \fBxterm\fP(1x), \fBiconv\fP(3), \fBiconv_open\fP(3), \fBnl_langinfo\fP(3), \fBpcre\fP(3),
 \fBstrftime\fP(3), \fBsystem\fP(3), \fBmailcap\fP(4), \fBactive\fP(5), \fBmbox\fP(5),
 \fBmmdf\fP(5), \fBnewsoverview\fP(5), \fBoverview.fmt\fP(5), \fBinnd\fP(8), \fBRFC1036\fP,
-\fBRFC1524\fP, \fBRFC2045\fP, \fBRFC2046\fP, \fBRFC2047\fP, \fBRFC2048\fP, \fBRFC2822\fP,
-\fBRFC2980\fP, \fBRFC3977\fP, \fBRFC4643\fP
+\fBRFC1524\fP, \fBRFC2045\fP, \fBRFC2046\fP, \fBRFC2047\fP, \fBRFC2048\fP, \fBRFC2980\fP,
+\fBRFC3977\fP, \fBRFC4643\fP, \fBRFC5322\fP

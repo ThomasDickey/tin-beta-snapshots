@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2008-05-12
+dnl Updated   : 2009-01-11
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2009 Thomas E. Dickey <dickey@invisible-island.net>
@@ -60,6 +60,8 @@ case ".$DESTDIR" in # (vi
 	;;
 esac
 
+AC_ARG_PROGRAM
+
 ###	Compiler/options that autoconf doesn't get right
 case "$host_os" in
 	aix*)	#(vi
@@ -99,8 +101,8 @@ CF_BUILD_CC([-I$(INCDIR)],[])
 dnl These are standard among *NIX systems, but not when cross-compiling
 AC_CHECK_TOOL(RANLIB, ranlib, ':')
 AC_CHECK_TOOL(LD, ld, ld)
-AC_CHECK_TOOL(AR, ar, ar)
-CF_SUBST(archiver options,AR_OPTS,rv)
+CF_PROG_AR
+CF_AR_FLAGS
 
 case "$host_cpu:$host_vendor:$host_os" in
 	# check for MacOS X, exclude Darwin on ix86
@@ -428,6 +430,8 @@ CF_BUNDLED_PCRE($PCRE_HOME)
 
 PCRE_MAKEFILE=
 if test "$PCRE_HOME" = "no" ; then
+	LINK_SIZE="-DLINK_SIZE=2"
+	AC_SUBST(LINK_SIZE)
 	PCRE_MAKEFILE="$PCRE_MAKEFILE pcre/Makefile pcre/RunTest"
 fi
 

@@ -4,7 +4,7 @@ LDFLAGS	= @LDFLAGS@ -L. -lcanlock
 CC	= @CC@
 PRELIB	= @LIB_PREFIX@
 o	= .@OBJEXT@
-ARCHIVE = @AR@ @AR_OPTS@
+ARCHIVE = @AR@ @ARFLAGS@
 RANLIB  = @RANLIB@
 
 LIBOBJS = src/sha1.o src/hmac_sha1.o src/base64.o src/canlock.o

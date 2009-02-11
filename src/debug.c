@@ -3,7 +3,7 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-12-12
+ *  Updated   : 2009-01-20
  *  Notes     : debug routines
  *
  * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
@@ -79,6 +79,8 @@ debug_delete_files(
 		joinpath(file, sizeof(file), TMPDIR, "FILTER");
 		unlink(file);
 		joinpath(file, sizeof(file), TMPDIR, "ATTRIBUTES");
+		unlink(file);
+		joinpath(file, sizeof(file), TMPDIR, "SCOPES");
 		unlink(file);
 	}
 }
@@ -321,24 +323,6 @@ debug_print_file(
 	free(buf);
 	va_end(ap);
 }
-
-
-/* TODO: print out all fields of t_capabilities */
-#	ifdef NNTP_ABLE
-void
-debug_print_nntp_extensions(
-	void)
-{
-	if (!(debug & DEBUG_NNTP))
-		return;
-
-	debug_print_file("NNTP", "### NNTP EXTENSIONS/CAPABILITIES");
-	debug_print_file("NNTP", "### Implementation: %s", BlankIfNull(nntp_caps.implementation));
-	debug_print_file("NNTP", "### Type/Version  : %d/%d", nntp_caps.type, nntp_caps.version);
-	debug_print_file("NNTP", "### Command-names : %s %s", BlankIfNull(nntp_caps.over_cmd), BlankIfNull(nntp_caps.hdr_cmd));
-	debug_print_file("NNTP", "### List          : %s%s%s%s%s%s%s%s%s%s", nntp_caps.list_active ? "ACTIVE " : "", nntp_caps.list_newsgroups ? "NEWSGROUPS " : "", nntp_caps.list_overview_fmt ? "OVERVIEW.FMT " : "", nntp_caps.list_headers ? "HEADERS " : "", nntp_caps.list_motd ? "MOTD " : "", nntp_caps.list_subscriptions ? "SUBSCRIPTIONS " : "", nntp_caps.list_active_times ? "ACTIVE.TIMES " : "", nntp_caps.list_moderators ? "MODERATORS " : "", nntp_caps.list_distributions ? "DISTRIBUTIONS " : "", nntp_caps.list_distrib_pats? "DISTRIB.PATS " : "");
-}
-#	endif /* NNTP_ABLE */
 
 
 void

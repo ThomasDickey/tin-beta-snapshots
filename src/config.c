@@ -3,7 +3,7 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-12-02
+ *  Updated   : 2009-01-14
  *  Notes     : Configuration file routines
  *
  * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
@@ -74,6 +74,10 @@ read_config_file(
 	FILE *fp;
 	char buf[LEN], tmp[LEN];
 	enum rc_state upgrade = RC_CHECK;
+#ifdef CHARSET_CONVERSION
+	int i;
+	t_bool is_7bit;
+#endif /* CHARSET_CONVERSION */
 
 	if ((fp = fopen(file, "r")) == NULL)
 		return FALSE;
@@ -156,10 +160,7 @@ read_config_file(
 			if (match_boolean(buf, "ask_for_metamail=", &tinrc.ask_for_metamail))
 				break;
 
-			if (match_boolean(buf, "auto_bcc=", &tinrc.auto_bcc))
-				break;
-
-			if (match_boolean(buf, "auto_cc=", &tinrc.auto_cc))
+			if (match_integer(buf, "auto_cc_bcc=", &tinrc.auto_cc_bcc, AUTO_CC_BCC))
 				break;
 
 			if (match_boolean(buf, "auto_list_thread=", &tinrc.auto_list_thread))
@@ -444,11 +445,8 @@ read_config_file(
 			if (match_list(buf, "mail_mime_encoding=", txt_mime_encodings, NUM_MIME_ENCODINGS, &tinrc.mail_mime_encoding))
 				break;
 
-			if (match_boolean(buf, "mail_8bit_header=", &tinrc.mail_8bit_header)) {
-				if (strcasecmp(txt_mime_encodings[tinrc.mail_mime_encoding], txt_8bit))
-					tinrc.mail_8bit_header = FALSE;
+			if (match_boolean(buf, "mail_8bit_header=", &tinrc.mail_8bit_header))
 				break;
-			}
 
 #ifndef CHARSET_CONVERSION
 			if (match_string(buf, "mm_charset=", tinrc.mm_charset, sizeof(tinrc.mm_charset)))
@@ -531,12 +529,8 @@ read_config_file(
 			if (match_list(buf, "post_mime_encoding=", txt_mime_encodings, NUM_MIME_ENCODINGS, &tinrc.post_mime_encoding))
 				break;
 
-			if (match_boolean(buf, "post_8bit_header=", &tinrc.post_8bit_header)) {
-				/* if post_mime_encoding != 8bit, post_8bit_header is disabled */
-				if (strcasecmp(txt_mime_encodings[tinrc.post_mime_encoding], txt_8bit))
-					tinrc.post_8bit_header = FALSE;
+			if (match_boolean(buf, "post_8bit_header=", &tinrc.post_8bit_header))
 				break;
-			}
 
 #ifndef DISABLE_PRINTING
 			if (match_string(buf, "printer=", tinrc.printer, sizeof(tinrc.printer)))
@@ -811,6 +805,37 @@ read_config_file(
 	if (!(tinrc.draw_arrow || tinrc.inverse_okay))
 		tinrc.draw_arrow = TRUE;
 
+#ifdef CHARSET_CONVERSION
+	/*
+	 * check if we have a 7bit charset but a !7bit encoding
+	 * or a 8bit charset but a !8bit encoding, update encoding if needed
+	 */
+	is_7bit = FALSE;
+	for (i = 0; *txt_mime_7bit_charsets[i]; i++) {
+		if (!strcasecmp(txt_mime_charsets[tinrc.mm_network_charset], txt_mime_7bit_charsets[i])) {
+			is_7bit = TRUE;
+			break;
+		}
+	}
+	if (is_7bit) {
+		if (tinrc.mail_mime_encoding != MIME_ENCODING_7BIT)
+			tinrc.mail_mime_encoding = MIME_ENCODING_7BIT;
+		if (tinrc.post_mime_encoding != MIME_ENCODING_7BIT)
+			tinrc.post_mime_encoding = MIME_ENCODING_7BIT;
+	} else {
+		if (tinrc.mail_mime_encoding == MIME_ENCODING_7BIT)
+			tinrc.mail_mime_encoding = MIME_ENCODING_QP;
+		if (tinrc.post_mime_encoding == MIME_ENCODING_7BIT)
+			tinrc.post_mime_encoding = MIME_ENCODING_8BIT;
+	}
+#endif /* CHARSET_CONVERSION */
+
+	/* do not use 8 bit headers if mime encoding is not 8bit */
+	if (tinrc.mail_mime_encoding != MIME_ENCODING_8BIT)
+		tinrc.mail_8bit_header = FALSE;
+	if (tinrc.post_mime_encoding != MIME_ENCODING_8BIT)
+		tinrc.post_8bit_header = FALSE;
+
 	/* set defaults if blank */
 	if (!*tinrc.editor_format)
 		STRCPY(tinrc.editor_format, TIN_EDITOR_FMT_ON);
@@ -1057,11 +1082,8 @@ write_config_file(
 	fprintf(fp, "mail_quote_format=%s\n", tinrc.mail_quote_format);
 	fprintf(fp, "xpost_quote_format=%s\n\n", tinrc.xpost_quote_format);
 
-	fprintf(fp, _(txt_auto_cc.tinrc));
-	fprintf(fp, "auto_cc=%s\n\n", print_boolean(tinrc.auto_cc));
-
-	fprintf(fp, _(txt_auto_bcc.tinrc));
-	fprintf(fp, "auto_bcc=%s\n\n", print_boolean(tinrc.auto_bcc));
+	fprintf(fp, _(txt_auto_cc_bcc.tinrc));
+	fprintf(fp, "auto_cc_bcc=%d\n\n", tinrc.auto_cc_bcc);
 
 	fprintf(fp, _(txt_art_marked_deleted.tinrc));
 	fprintf(fp, "art_marked_deleted=%c\n\n", SPACE_TO_DASH(tinrc.art_marked_deleted));
@@ -1678,6 +1700,8 @@ rc_update(
 {
 	char buf[1024];
 	const char *env;
+	t_bool auto_bcc = FALSE;
+	t_bool auto_cc = FALSE;
 	t_bool confirm_to_quit = FALSE;
 	t_bool confirm_action = FALSE;
 	t_bool compress_quotes = FALSE;
@@ -1707,6 +1731,14 @@ rc_update(
 			continue;
 
 		switch (tolower((unsigned char) buf[0])) {
+			case 'a':
+				if (match_boolean(buf, "auto_bcc=", &auto_bcc))
+					break;
+
+				if (match_boolean(buf, "auto_cc=", &auto_cc))
+					break;
+				break;
+
 			case 'c':
 				if (match_boolean(buf, "confirm_action=", &confirm_action))
 					break;
@@ -1813,6 +1845,7 @@ rc_update(
 	}
 
 	/* update the values */
+	tinrc.auto_cc_bcc = (auto_cc ? 1 : 0) + (auto_bcc ? 2 : 0);
 	tinrc.confirm_choice = (confirm_action ? 1 : 0) + (confirm_to_quit ? 3 : 0);
 
 	if (!use_getart_limit)

@@ -3,7 +3,7 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-12-02
+ *  Updated   : 2009-02-02
  *  Notes     :
  *
  * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
@@ -55,9 +55,6 @@
  * local prototypes
  */
 static int read_site_config(void);
-#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-	static t_bool utf8_pcre(void);
-#endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 #ifdef HAVE_COLOR
 	static void preinit_colors(void);
 #endif /* HAVE_COLOR */
@@ -274,8 +271,8 @@ struct t_config tinrc = {
 	32,		/* groupname_max_length */
 	UUE_NO,	/* hide_uue */
 	KILL_UNREAD,		/* kill_level */
-	MIME_ENCODING_7BIT,		/* mail_mime_encoding */
-	MIME_ENCODING_7BIT,		/* post_mime_encoding */
+	MIME_ENCODING_QP,		/* mail_mime_encoding */
+	MIME_ENCODING_8BIT,		/* post_mime_encoding */
 	POST_PROC_NO,			/* post_process_type */
 	REREAD_ACTIVE_FILE_SECS,	/* reread_active_file_secs */
 	1,		/* scroll_lines */
@@ -332,8 +329,7 @@ struct t_config tinrc = {
 	TRUE,		/* add_posted_to_filter */
 	TRUE,		/* advertising */
 	TRUE,		/* alternative_handling */
-	FALSE,		/* auto_bcc */
-	FALSE,		/* auto_cc */
+	0,			/* auto_cc_bcc */
 	TRUE,		/* auto_list_thread */
 	FALSE,		/* auto_reconnect */
 	FALSE,		/* auto_save */
@@ -979,7 +975,7 @@ postinit_regexp(
 
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
-static t_bool
+t_bool
 utf8_pcre(
 	void)
 {

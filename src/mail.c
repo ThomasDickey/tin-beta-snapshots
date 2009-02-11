@@ -3,7 +3,7 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2008-11-25
+ *  Updated   : 2008-01-21
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
  * Copyright (c) 1992-2009 Iain Lea <iain@bricbrac.de>
@@ -361,7 +361,7 @@ open_newsgroups_fp(
 
 			if (result != NULL) {
 				if (!no_more_wildmat)
-					 return result;
+					return result;
 				else /* AUTH request while pipeling or some error */
 					fclose(result);
 			}
@@ -635,7 +635,7 @@ art_edit(
 	/*
 	 * Check if news / mail group
 	 */
-	if (group->type == GROUP_TYPE_NEWS)
+	if (group->type != GROUP_TYPE_MAIL)
 		return FALSE;
 
 	make_base_group_path(group->spooldir, group->name, temp_filename, sizeof(temp_filename));

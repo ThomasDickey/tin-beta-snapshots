@@ -3,7 +3,7 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2008-11-25
+ *  Updated   : 2009-01-07
  *  Notes     : NNTP built in version of inews
  *
  * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
@@ -150,7 +150,7 @@ submit_inews(
 	 *
 	 * check for valid From: line
 	 */
-	if (!tinrc.post_8bit_header && GNKSA_OK != gnksa_check_from(from_name + 6)) { /* error in address */
+	if (!(group ? group->attribute->post_8bit_header : tinrc.post_8bit_header) && GNKSA_OK != gnksa_check_from(from_name + 6)) { /* error in address */
 		error_message(2, _(txt_invalid_from), from_name + 6);
 		fclose(fp);
 		return ret_code;
@@ -183,7 +183,7 @@ submit_inews(
 #		ifdef CHARSET_CONVERSION
 					buffer_to_network(sender_hdr, group ? group->attribute->mm_network_charset : tinrc.mm_network_charset);
 #		endif /* CHARSET_CONVERSION */
-					if (!tinrc.post_8bit_header) {
+					if (!(group ? group->attribute->post_8bit_header : tinrc.post_8bit_header)) {
 						char *p;
 #		ifdef CHARSET_CONVERSION
 						p = rfc1522_encode(sender_hdr, group ? txt_mime_charsets[group->attribute->mm_network_charset] : txt_mime_charsets[tinrc.mm_network_charset], ismail);
@@ -392,7 +392,7 @@ submit_news_file(
 	fcc = checknadd_headers(name, group);
 	FreeIfNeeded(fcc); /* we don't use it at the moment */
 
-	rfc15211522_encode(name, txt_mime_encodings[tinrc.post_mime_encoding], group, tinrc.post_8bit_header, ismail);
+	rfc15211522_encode(name, txt_mime_encodings[(group ? group->attribute->post_mime_encoding : tinrc.post_mime_encoding)], group, (group ? group->attribute->post_8bit_header : tinrc.post_8bit_header), ismail);
 
 #ifdef NNTP_INEWS
 	if (read_news_via_nntp && !read_saved_news && 0 == strcasecmp(tinrc.inews_prog, INTERNAL_CMD))

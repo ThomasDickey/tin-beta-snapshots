@@ -3,7 +3,7 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2008-11-22
+ *  Updated   : 2009-01-13
  *  Notes     : RFC 2046 MIME article parsing
  *
  * Copyright (c) 2000-2009 Jason Faultless <jason@altarstone.com>
@@ -726,7 +726,7 @@ parse_rfc822_headers(
 			hdr->references = my_strdup(ptr);
 			continue;
 		}
-		if ((ptr = parse_header(line, "Distribution", TRUE, FALSE))) {
+		if ((ptr = parse_header(line, "Distribution", FALSE, FALSE))) {
 			FreeIfNeeded(hdr->distrib);
 			hdr->distrib = my_strdup(ptr);
 			continue;

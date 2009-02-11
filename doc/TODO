@@ -12,10 +12,6 @@ o  'T'ag all parts of multipart message doesn't work (it never did)
    with thread_arts 4 (multipart) or 5 (percentage)
    [20080606 Urs Janssen <urs@tin.org>]
 
-!o  -S/-R is broken, ${TIN_HOMEDIR-"$HOME"}/.tin/active.save isn't
-!   created/keept.
-!   [20071224 Urs Janssen <urs@tin.org>]
-
 !o  after cancelling an article, when using '-' form the next article this
 !   article is also marked as unavailable.
 !   <nntp://news.tin.org/20070202035746.GA19829@akk.org>
@@ -89,11 +85,21 @@ o  comments in attributes get lost (we need to do something like we do for
    the filter file)
    [20080425 Urs Janssen <urs@tin.org>]
 
+o  if tin is falling back to HEAD/NEXT ([X]OVER not working) it doesn't honor
+   tinrc.getart_limit
+   [20090112 Urs Janssen <urs@tin.org>]
+
 Pager Problems
 --------------
 
 Posting Problems
 ----------------
+o  8bit chars in some headers are RFC-2047-encoded where this is not allowed
+   according to usefor (Newsgrous, Distribution, ...) - do_rfc15211522_encode()
+   simply encodes all headers no matter if any of them must not be encoded
+   (see parse_rfc822_headers()).
+   [20090112 Urs Janssen <urs@tin.org>]
+
 o  remove Message-IDs with 8bit chars in them when they occur in
    Message-ID or References header
    [done for References in replies/followups, Urs]
@@ -137,7 +143,7 @@ o  add more AUTHINFO SASL (RFC 4643) support (DIGEST-MD5, EXTERNAL, ...)
    version for at least PLAIN)
    [20080316 Urs Janssen <urs@tin.org>]
 
-o  make 'GNKSA'-parser RFC2822/USEFOR compliant
+o  make 'GNKSA'-parser RFC5322/USEFOR compliant
 
 o  add In-Reply-To threading for mailgroups
    [20030518 Urs Janssen <urs@tin.org>]
@@ -256,12 +262,6 @@ o  attributes (still) needs some work, some entrys aren't really useful
    once we have a 'attributes-menu' we could remove most of the
    global 'attributes' set in tinrc and move them to a scope=*
    in attributes (e.g. From)
-   [Urs Janssen <urs@tin.org>]
-
-o  add post_8bit_header, mail_8bit_header, post_mime_encoding,
-   mail_mime_encoding to the attributes file to allow plain 8 bit
-   header in e.g. fr.* but avoid them in e.g. de.*
-   [20020910 Urs Janssen <urs@tin.org>]
    See doc/config-anomalies for other candidates that should move to
    attributes
    [20030303 Dirk Nimmich <nimmich@muenster.de>]
@@ -337,6 +337,7 @@ o  Additions to the thread menu:
      'Y'  (check for new articles in thread)
      '%'  (toggle rot13 encoding of screen content)
      'x'  (repost)
+     'e'  (edit mailgroup article)
      keys to go to previous/next thread
 
 o  Additions to the group menu:
@@ -511,10 +512,6 @@ o  keys which could be renamed/merged:
    - '~' GroupUndoSel, ThreadUndoSel
    [20050408 Urs Janssen <urs@tin.org>]
 
-o  options which could be renamed/merged:
-   - auto_cc/auto_bcc {off, cc, bcc, cc & bcc}
-   [20071026 Urs Janssen <urs@tin.org>]
-
 o  read_overview() calls eat_re() which strips the "Re: " out of the
    subject. the modified subject is used for batch_mode opperatios (-N/-M)
    which might not be what ppl. expect and eat_re() is the only function
@@ -605,9 +602,10 @@ o  add check for sizeof char, short, int, long, ...
 o  cleanup post.c
 
 o  check code with Splint (LCLint) <http://www.splint.org/>,
-   ccmalloc (<http://www.inf.ethz.ch/personal/biere/projects/ccmalloc/>),
-   MSS (<http://hem1.passagen.se/blizzar/mss/>) and
-   valgrind (<http://developer.kde.org/~sewardj/>)
+   ccmalloc (<http://ftp.de.debian.org/debian/pool/main/c/ccmalloc/>),
+   MSS (<http://hem1.passagen.se/blizzar/mss/>),
+   valgrind (<http://valgrind.org/>) and cppcheck
+   (<http://cppcheck.wiki.sourceforge.net/>)
 
 o  rewrite the tag code so that arts[].tagged becomes index in arts[]
    of next tagged article. num_of_tagged_arts becomes index of first
@@ -805,7 +803,7 @@ o  setting TIN_HOMEDIR to a non-existent dir gives a "Filesystem full"
    feature? if the later we should give a more exact error-message.
    [20011112 Urs Janssen <urs@tin.org>]
 
-o  check_article_to_be_posted() still need some cleanup
+o  check_article_to_be_posted() needs a cleanup!
    (avoid setup_check_article_screen(&init);StartInverse();EndInverse();
     overhead)
    [20010629 Urs Janssen <urs@tin.org>]

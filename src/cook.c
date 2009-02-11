@@ -3,7 +3,7 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2008-12-11
+ *  Updated   : 2008-12-30
  *  Notes     : Split from page.c
  *
  * Copyright (c) 2000-2009 Jason Faultless <jason@altarstone.com>
@@ -385,7 +385,7 @@ get_filename(
 			_(txt_attach_description),	\
 			depth, "",	\
 			part->description);	\
-	if (part->next != NULL)	\
+	if (part->next != NULL || IS_PLAINTEXT(part))	\
 		put_cooked(1, wrap_lines, C_ATTACH, "\n")
 
 /*

@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2008-12-12
+.\" Updated   : 2009-02-11
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "6. Mai 2008" 1.9.4 "Usenet Newsreader"
+.TH tin 1 "11. Februar 2008" 1.9.4 "Usenet Newsreader"
 .\"
 .\"
 .SH NAME
@@ -436,8 +436,8 @@ caller.
 .\"
 aborts the present editing operation.
 .SS "ALLGEMEINE BEFEHLE"
-The following commands are available at all 4 menu levels and always have
-the same effect.
+Die folgenden Befehle stehen in allen vier Ebenen zur Verfügung und bewirken
+überall das Gleichen.
 .PP
 .TP  10
 \fBShellEscape '!'\fP
@@ -498,8 +498,8 @@ Reset \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP file. This will destroy all records
 of which articles have been read, so use this carefully.
 .TP 
 \fBSetRange '#'\fP
-Choose a range of articles to be affected by the next command. See the
-section "RANGES" for more information.
+Wählen Sie eine Reihe von Artikeln auf die der nächste Befehl angewendet
+wird. Siehe Abschnitt "BEREICHE" für weitere Informationen.
 .TP 
 \fBSelectSortActive '.'\fP
 Liste vorhandener Newsgroups sortieren.
@@ -630,8 +630,8 @@ Kill article(s) using a menu. Read the section "FILTERING ARTICLES" for more
 information.
 .TP 
 \fBSetRange '#'\fP
-Choose a range of articles to be affected by the next command. See the
-section "RANGES" for more information.
+Wählen Sie eine Reihe von Artikeln auf die der nächste Befehl angewendet
+wird. Siehe Abschnitt "BEREICHE" für weitere Informationen.
 .TP 
 \fBLastViewed '\-'\fP
 Re\-enter the last message that was viewed.
@@ -839,7 +839,7 @@ effect, leaving the group will also clear the toggle effect and make the
 changes permanent.
 .TP 
 \fBMarkArtUnread 'z'\fP
-Mark current article as unread.
+Aktuellen Artikel als ungelesen markieren.
 .TP 
 \fBMarkThdUnread 'Z'\fP
 .\"--------------------------------------------------------------------
@@ -860,8 +860,8 @@ Kill article(s) using a menu. Read the section "FILTERING ARTICLES" for more
 information.
 .TP 
 \fBSetRange '#'\fP
-Choose a range of articles to be affected by the next command. See the
-section "RANGES" for more information.
+Wählen Sie eine Reihe von Artikeln auf die der nächste Befehl angewendet
+wird. Siehe Abschnitt "BEREICHE" für weitere Informationen.
 .TP 
 \fBLastViewed '\-'\fP
 Re\-enter the last message that was viewed.
@@ -1315,20 +1315,16 @@ If ON \fBtin\fP will ask before using a MIME viewer (\fBmetamail_prog\fP) to
 display MIME messages. This only occurs if a MIME viewer is set. Default is
 OFF.
 .TP 
-\fBSendet Ihnen eine blinde cc autom. (auto_bcc)\fP
-If ON automatically put your name in the \*(rqBcc:\*(rq field when mailing an
-article. Default is OFF.
-.TP 
-\fBSendet Ihnen ein Cc automatisch (auto_cc)\fP
-If ON automatically put your name in the \*(rqCc:\*(rq field when mailing an
-article. Default is OFF.
+\fBSendet Ihnen eine cc und/oder eine blinde cc autom. (auto_cc_bcc)\fP
+Automatically put your name in the \*(rqCc:\*(rq and/or \*(rqBcc:\*(rq field when
+mailing an article. Default is No.
 .TP 
 \fBZeige Thread mit rechter Pfeilt. an (auto_list_thread)\fP
 If ON automatically list thread when entering it using right arrow key. 
 Default is ON.
 .TP 
 \fBAutom. Wiederverbindung zum Server (auto_reconnect)\fP
-Default is OFF.
+Standard ist OFF.
 .TP 
 \fBNutze Archive\-name: zum Speichern (auto_save)\fP
 If ON articles/threads with \*(rqArchive\-name:\*(rq in header will be
@@ -1656,7 +1652,7 @@ Default is 0 (\fBKill only unread arts\fP).
 Allows 8bit characters unencoded in the header of mail message. Default is
 OFF. Turning it ON is effective only if \fBmail_mime_encoding\fP is also set to
 8bit. Leaving it OFF is safe for most users and compliant to Internet Mail
-Standard (\fBRFC2822\fP and \fBRFC2047\fP). Default is OFF.
+Standard (\fBRFC5322\fP and \fBRFC2047\fP). Default is OFF.
 .TP 
 \fBMailadresse (und Name) (mail_address)\fP
 User's mail address (and full name), if not username@host. This is used when
@@ -1664,8 +1660,7 @@ creating articles, sending mail and when \fBpgp\fP(1)  signing.
 .TP 
 \fBMIME\-Kodierung für E\-Mails (mail_mime_encoding)\fP
 MIME encoding of the body in mail message, if necessary (8bit, base64,
-quoted\-printable, 7bit) Default is 8bit and no encoding (or charset
-conversion) is performed (i.e., local charset is used as it is).
+quoted\-printable, 7bit). Default is quoted\-printable.
 .TP 
 \fBEinleitungszeile bei Mailantwort (mail_quote_format)\fP
 Format of quote line when replying (via mail) to an article (%A=Address,
@@ -1814,7 +1809,7 @@ local hierarchy of your interest to determine what to do with this and
 .TP 
 \fBMIME\-Kodierung in Newsartikeln (post_mime_encoding)\fP
 MIME encoding of the body in news message, if necessary. (8bit, base64,
-quoted\-printable, 7bit) Default is 8bit, which leads to no encoding. base64
+quoted\-printable, 7bit). Default is 8bit, which leads to no encoding. base64
 and quoted\-printable are usually undesired on usenet.
 .TP 
 \fBNachbearbeitete Artikel anzeigen (post_process_view)\fP
@@ -2194,7 +2189,7 @@ Enable highlighting URLs in message body. Default is ON.
 If enabled \fBtin\fP uses ANSI\-colors. Default is OFF.
 .TP 
 \fBScrollt. vom Nummernblock nutzen (use_keypad)\fP
-Default is OFF.
+Standard ist OFF.
 .TP 
 \fBMaus in xterm nutzen (use_mouse)\fP
 Allows the mouse button support in a \fBxterm\fP(1x)  to be enabled/disabled. 
@@ -2541,10 +2536,10 @@ In den folgenden Newsgruppen finden sich nützliche Informationen über
 Newssoftware:
 .in +.5i
 .ti -\w'\(em'u
-\(emnews.software.readers (info. about news user agents tin, rn, nn, slrn
-etc.)
+\(emde.comm.software.newsreader (Informationen über Newsrader wie tin, slrn,
+\&...)
 .ti -\w'\(em'u
-\(emnews.software.nntp (info. about NNTP)
+\(emnews.software.nntp (Informationen über NNTP)
 .ti -\w'\(em'u
 \(emnews.answers (Frequently Asked Questions (FAQ) about many different
 themes)
@@ -2585,42 +2580,42 @@ clicked outside the list of articles.
 .PP
 In the group selection menu, if the mouse is pointing at a group then:
 .TP  10
-left button
+Linke Maustaste
 moves to and selects the group pointed at, just like \fBSelectReadGrp\fP
 ('\fB<CR>\fP').
 .TP 
-center button
+Mittlere Maustaste
 quits the program, just like \fBQuit\fP ('\fBq\fP').
 .TP 
-right button
+Rechte Maustaste
 moves to the group pointed at.
 .PP
 In the article menu, if the mouse is pointing at an article (or thread)
 then:
 .TP  10
-left button
+Linke Maustaste
 reads the article pointed at, just like \fBGroupReadBasenote\fP
 ('\fB<CR>\fP'), or the thread, just like \fBGroupListThd\fP ('\fBl\fP').
 .TP 
-center button
+Mittlere Maustaste
 exits the menu, catching up on the group if you have
 \fBgroup_catchup_on_exit\fP set in your configuration, just like \fBQuit\fP
 ('\fBq\fP').
 .TP 
-right button
+Rechte Maustaste
 moves to the article (or thread) pointed at.
 .PP
 In the thread menu, if the mouse is pointing at an article then:
 .TP  10
-left button
+Linke Maustaste
 reads article pointed at, just like \fBThreadReadArt\fP ('\fB<CR>\fP').
 .TP 
-center button
+Mittlere Maustaste
 exits the menu, catching up on the thread if you have
 \fBthread_catchup_on_exit\fP set in your configuration, just like \fBQuit\fP
 ('\fBq\fP').
 .TP 
-right button
+Rechte Maustaste
 moves to the article pointed at.
 .PP
 .\"
@@ -3106,7 +3101,7 @@ readable files in \fB$TMPDIR\fP which may contain the users NNTP password in
 cleartext. On multiuser\-systems \fB$TMPDIR\fP should be set to a safe location
 befor starting tin in debug mode (e.g.  \fBTMPDIR=$HOME tin \-D 1\fP).
 .SH "KONFORM ZU"
-.\" - RFC1036, RFC2045, RFC2047, RFC2822, RFC2980, RFC3977
+.\" - RFC1036, RFC2045, RFC2047, RFC2980, RFC3977, RFC4643, RFC5322
 .\"   or whatever
 .\"
 .\"
@@ -3194,4 +3189,4 @@ Erika Mustermann <erika@example.org>
 \fBsnprintf\fP(3), \fBstrftime\fP(3), \fBvsnprintf\fP(3), \fBwildmat\fP(3),
 \fBenviron\fP(5), \fBlocale\fP(5), \fBmbox\fP(5), \fBmmdf\fP(5), \fBnewsoverview\fP(5),
 \fBtin\fP(5), \fBRFC1036\fP, \fBRFC1524\fP, \fBRFC2045\fP, \fBRFC2046\fP, \fBRFC2047\fP,
-\fBRFC2048\fP, \fBRFC2822\fP, \fBRFC2980\fP, \fBRFC3977\fP, \fBRFC4643\fP
+\fBRFC2048\fP, \fBRFC2980\fP, \fBRFC3977\fP, \fBRFC4643\fP, \fBRFC5322\fP

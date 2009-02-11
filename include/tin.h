@@ -3,7 +3,7 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-12-11
+ *  Updated   : 2009-02-10
  *  Notes     : #include files, #defines & struct's
  *
  * Copyright (c) 1997-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
@@ -591,11 +591,11 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 /* case sensitive && ^-anchored */
 #define DEFAULT_STRIP_RE_REGEX	"(?:R[eE](?:\\^\\d+|\\[\\d\\])?|A[wW]|Odp|Sv):\\s"
 /* case sensitive */
-#define DEFAULT_STRIP_WAS_REGEX	".\\((?:[Ww]a[rs]|[Bb]y[l\\xb3]o):.*\\)\\s*$"
-#define DEFAULT_U8_STRIP_WAS_REGEX	".\\((?:[Ww]a[rs]|[Bb]y[l\\x{0142}]o):.*\\)\\s*$"
+#define DEFAULT_STRIP_WAS_REGEX	"(?:(?<=\\S)|\\s)\\((?:[Ww]a[rs]|[Bb]y[l\\xb3]o):.*\\)\\s*$"
+#define DEFAULT_U8_STRIP_WAS_REGEX	"(?:(?<=\\S)|\\s)\\((?:[Ww]a[rs]|[Bb]y[l\\x{0142}]o):.*\\)\\s*$"
 /*
  * overkill regexp for balanced '()':
- * #define DEFAULT_STRIP_WAS_REGEX	".\\((?:[Ww]a[rs]|[Bb]y[l\xb3]o):(?:(?:[^)(])*(?:\\([^)(]*\\))*)+\\)\\s*$"
+ * #define DEFAULT_STRIP_WAS_REGEX	"(?:(?<=\\S)|\\s)\\((?:[Ww]a[rs]|[Bb]y[l\xb3]o):(?:(?:[^)(])*(?:\\([^)(]*\\))*)+\\)\\s*$"
  */
 
 /* case sensitive & ^-anchored */
@@ -861,6 +861,13 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #define TINRC_CONFIRM_ACTION	(tinrc.confirm_choice == 1 || tinrc.confirm_choice == 4 || tinrc.confirm_choice == 5 || tinrc.confirm_choice == 7)
 #define TINRC_CONFIRM_TO_QUIT	(tinrc.confirm_choice == 3 || tinrc.confirm_choice == 4 || tinrc.confirm_choice == 6 || tinrc.confirm_choice == 7)
 #define TINRC_CONFIRM_SELECT	(tinrc.confirm_choice == 2 || tinrc.confirm_choice == 5 || tinrc.confirm_choice == 6 || tinrc.confirm_choice == 7)
+
+/*
+ * defines for tinrc.auto_cc_bcc
+ */
+#define AUTO_CC					1
+#define AUTO_BCC				2
+#define AUTO_CC_BCC				3
 
 /*
  * defines for tinrc.goto_next_unread
@@ -1397,7 +1404,6 @@ struct t_newsheader {
  * struct t_attribute - configurable attributes on a per group basis
  */
 struct t_attribute {
-	char *scope;				/* scope for these group attributes */
 	char *maildir;				/* mail dir if other than ~/Mail */
 	char *savedir;				/* save dir if other than ~/News */
 	char *savefile;				/* save articles to specified file */
@@ -1428,7 +1434,6 @@ struct t_attribute {
 	struct t_newsheader *headers_to_display;	/* array of which headers to display */
 	struct t_newsheader *headers_to_not_display;	/* array of which headers to not display */
 	unsigned global:1;			/* global/group specific */
-	unsigned temp:1;			/* temporary scope for menu changes at group level */
 	unsigned quick_kill_header:3;	/* quick filter kill header */
 	unsigned quick_kill_expire:1;	/* quick filter kill limited/unlimited time */
 	unsigned quick_kill_case:1;		/* quick filter kill case sensitive? */
@@ -1439,17 +1444,20 @@ struct t_attribute {
 	unsigned advertising:1;			/* add User-Agent: -header */
 	unsigned alternative_handling:1;	/* skip multipart/alternative parts */
 	unsigned ask_for_metamail:1;	/* ask before using MIME viewer */
-	unsigned auto_bcc:1;			/* add your name to bcc automatically */
-	unsigned auto_cc:1;				/* add your name to cc automatically */
+	unsigned auto_cc_bcc:2;			/* add your name to cc/bcc automatically */
 	unsigned auto_list_thread:1;	/* list thread when entering it using right arrow */
 	unsigned auto_select:1;			/* 0=show all unread, 1='X' just hot arts */
 	unsigned auto_save:1;			/* 0=none, 1=save */
 	unsigned batch_save:1;			/* 0=none, 1=save -S/mail -M */
 	unsigned delete_tmp_files:1;	/* 0=leave, 1=delete */
 	unsigned group_catchup_on_exit:1;	/* ask if read groups are to be marked read */
+	unsigned mail_8bit_header:1;	/* allow 8bit chars. in header of mail message */
+	unsigned mail_mime_encoding:2;
 	unsigned mark_ignore_tags:1;	/* Ignore tags for GROUP_MARK_THREAD_READ/THREAD_MARK_ARTICLE_READ */
 	unsigned mark_saved_read:1;		/* mark saved article/thread as read */
 	unsigned pos_first_unread:1;	/* position cursor at first/last unread article */
+	unsigned post_8bit_header:1;	/* allow 8bit chars. in header when posting to newsgroup */
+	unsigned post_mime_encoding:2;
 	unsigned post_process_view:1;	/* set TRUE to invoke mailcap viewer app */
 #ifndef DISABLE_PRINTING
 	unsigned print_header:1;		/* print all of mail header or just Subject: & From lines */
@@ -1485,6 +1493,76 @@ struct t_attribute {
 	unsigned x_comment_to:1;	/* insert X-Comment-To: in Followup */
 	unsigned tex2iso_conv:1;	/* Convert TeX2ISO */
 	unsigned mime_forward:1;	/* forward articles as attachment or inline */
+};
+
+/*
+ * struct t_attribute_state - holds additional information
+ * about numeric attributes within a scope
+ */
+struct t_attribute_state {
+	unsigned add_posted_to_filter:1;
+	unsigned advertising:1;
+	unsigned alternative_handling:1;
+	unsigned ask_for_metamail:1;
+	unsigned auto_cc_bcc:1;
+	unsigned auto_list_thread:1;
+	unsigned auto_save:1;
+	unsigned auto_select:1;
+	unsigned batch_save:1;
+	unsigned delete_tmp_files:1;
+	unsigned group_catchup_on_exit:1;
+	unsigned mail_8bit_header:1;
+	unsigned mail_mime_encoding:1;
+	unsigned mark_ignore_tags:1;
+	unsigned mark_saved_read:1;
+	unsigned mime_forward:1;
+#ifdef CHARSET_CONVERSION
+	unsigned mm_network_charset:1;
+#endif /* CHARSET_CONVERSION */
+	unsigned pos_first_unread:1;
+	unsigned post_8bit_header:1;
+	unsigned post_mime_encoding:1;
+	unsigned post_process_view:1;
+	unsigned post_process_type:1;
+#ifndef DISABLE_PRINTING
+	unsigned print_header:1;
+#endif /* !DISABLE_PRINTING */
+	unsigned process_only_unread:1;
+	unsigned prompt_followupto:1;
+	unsigned quick_kill_case:1;
+	unsigned quick_kill_expire:1;
+	unsigned quick_kill_header:1;
+	unsigned quick_select_case:1;
+	unsigned quick_select_expire:1;
+	unsigned quick_select_header:1;
+	unsigned show_author:1;
+	unsigned show_info:1;
+	unsigned show_only_unread_arts:1;
+	unsigned show_signatures:1;
+	unsigned sigdashes:1;
+	unsigned signature_repost:1;
+	unsigned sort_article_type:1;
+	unsigned sort_threads_type:1;
+	unsigned start_editor_offset:1;
+	unsigned tex2iso_conv:1;
+	unsigned thread_articles:1;
+	unsigned thread_catchup_on_exit:1;
+	unsigned thread_perc:1;
+	unsigned trim_article_body:1;
+	unsigned verbatim_handling:1;
+	unsigned wrap_on_next_unread:1;
+	unsigned x_comment_to:1;
+};
+
+/*
+ * struct t_scope
+ */
+struct t_scope {
+	char *scope;				/* scope for these group attributes */
+	struct t_attribute *attribute;	/* the attributes itself */
+	struct t_attribute_state *state;	/* additional information about numeric attributes */
+	unsigned global:1;			/* TRUE for scopes from global_attributes_file */
+	unsigned temp:1;			/* temporary scope for menu changes at group level */
 };
 
 /*
@@ -2145,6 +2223,7 @@ extern struct tm *localtime(time_t *);
 #define TIN_ARTICLE_NAME	".article"
 #define TIN_CANCEL_NAME	".cancel"
 #define TIN_LETTER_NAME	".letter"
+#define TIN_BUGREPORT_NAME	".bugreport"
 
 /* read_news_active_file() / open_newsgroups_fp() */
 #ifndef DISABLE_PIPELINING
