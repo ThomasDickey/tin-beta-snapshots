@@ -3,10 +3,10 @@
  *  Module    : memory.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2009-02-01
+ *  Updated   : 2009-04-14
  *  Notes     :
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -104,6 +104,8 @@ init_alloc(
 
 	arts = my_malloc(sizeof(*arts) * max_art);
 	base = my_malloc(sizeof(long) * max_art);
+
+	ofmt = my_calloc(1, sizeof(*ofmt) * 9);	/* inital number of overview fields */
 
 	/*
 	 * save file array
@@ -214,8 +216,6 @@ void
 free_all_arrays(
 	void)
 {
-	int i;
-
 	hash_reclaim();
 
 #ifndef USE_CURSES
@@ -287,6 +287,7 @@ free_all_arrays(
 	FreeAndNull(nntp_caps.implementation);
 
 	if (ofmt) { /* ofmt might not be allocated yet on early abort */
+		int i;
 		for (i = 0; ofmt[i].name; i++)
 			free(ofmt[i].name);
 		free(ofmt);
@@ -390,21 +391,28 @@ free_attributes(
 }
 
 
+void
+free_scope(
+	int num)
+{
+	struct t_scope *scope;
+
+	scope = &scopes[num];
+	FreeAndNull(scope->scope);
+	free_attributes(scope->attribute);
+	free(scope->attribute);
+	scope->attribute = (struct t_attribute *) 0;
+	free(scope->state);
+	scope->state = (struct t_attribute_state *) 0;
+}
+
+
 static void
 free_scopes_arrays(
 	void)
 {
-	struct t_scope *scope;
-
-	while (num_scope > 0) {
-		scope = &scopes[--num_scope];
-		FreeAndNull(scope->scope);
-		free_attributes(scope->attribute);
-		free(scope->attribute);
-		scope->attribute = (struct t_attribute *) 0;
-		free(scope->state);
-		scope->state = (struct t_attribute_state *) 0;
-	}
+	while (num_scope > 0)
+		free_scope(--num_scope);
 	FreeAndNull(scopes);
 	num_scope = -1;
 }
@@ -414,11 +422,11 @@ static void
 free_active_arrays(
 	void)
 {
-	int i;
-
 	FreeAndNull(my_group);	/* my_group[] */
 
 	if (active != NULL) {	/* active[] */
+		int i;
+
 		for_each_group(i) {
 			FreeAndNull(active[i].name);
 			FreeAndNull(active[i].description);

@@ -3,10 +3,10 @@
  *  Module    : sigfile.c
  *  Author    : M. Gleason & I. Lea
  *  Created   : 1992-10-17
- *  Updated   : 2008-11-22
+ *  Updated   : 2009-07-17
  *  Notes     : Generate random signature for posting/mailing etc.
  *
- * Copyright (c) 1992-2009 Mike Gleason
+ * Copyright (c) 1992-2010 Mike Gleason
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -93,8 +93,8 @@ msg_write_signature(
 #endif /* !DONT_HAVE_PIPING */
 		get_cwd(cwd);
 
-		if (!strfpath(thisgroup->attribute->sigfile, path, sizeof(path), thisgroup)) {
-			if (!strfpath(tinrc.sigfile, path, sizeof(path), thisgroup))
+		if (!strfpath(thisgroup->attribute->sigfile, path, sizeof(path), thisgroup, FALSE)) {
+			if (!strfpath(tinrc.sigfile, path, sizeof(path), thisgroup, FALSE))
 				joinpath(path, sizeof(path), homedir, ".Sig");
 		}
 

@@ -3,10 +3,10 @@
  *  Module    : keymap.c
  *  Author    : D. Nimmich, J. Faultless
  *  Created   : 2000-05-25
- *  Updated   : 2008-10-22
+ *  Updated   : 2009-10-10
  *  Notes     : This file contains key mapping routines and variables.
  *
- * Copyright (c) 2000-2009 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 2000-2010 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,6 @@ struct keylist feed_type_keys = { NULL, 0, 0 };
 struct keylist filter_keys = { NULL, 0, 0 };
 struct keylist group_keys = { NULL, 0, 0 };
 struct keylist info_keys = { NULL, 0, 0 };
-struct keylist mark_read_keys = { NULL, 0, 0 };
 struct keylist option_menu_keys = { NULL, 0, 0 };
 struct keylist page_keys = { NULL, 0, 0 };
 #ifdef HAVE_PGP_GPG
@@ -81,6 +80,7 @@ struct keylist post_postpone_keys = { NULL, 0, 0 };
 struct keylist post_send_keys = { NULL, 0, 0 };
 struct keylist prompt_keys = { NULL, 0, 0 };
 struct keylist save_append_overwrite_keys = { NULL, 0, 0 };
+struct keylist scope_keys = { NULL, 0, 0 };
 struct keylist select_keys = { NULL, 0, 0 };
 struct keylist thread_keys = { NULL, 0, 0 };
 
@@ -154,7 +154,7 @@ add_key(
 	struct keynode *entry = NULL;
 
 	/* is a function already associated with this key */
-	for (i = 0; i < keys->used; i++) {
+	for (i = 0; key != '\0' && i < keys->used; i++) {
 		if (keys->list[i].key == key)
 			entry = &keys->list[i];
 	}
@@ -240,12 +240,12 @@ free_keymaps(
 	free_keylist(&post_delete_keys);
 	free_keylist(&post_cancel_keys);
 	free_keylist(&filter_keys);
-	free_keylist(&mark_read_keys);
 #ifdef HAVE_PGP_GPG
 	free_keylist(&pgp_mail_keys);
 	free_keylist(&pgp_news_keys);
 #endif /* HAVE_PGP_GPG */
 	free_keylist(&save_append_overwrite_keys);
+	free_keylist(&scope_keys);
 	free_keylist(&feed_type_keys);
 	free_keylist(&feed_post_process_keys);
 	free_keylist(&feed_supersede_article_keys);
@@ -583,8 +583,23 @@ process_mapping(
 
 				return TRUE;
 			}
+			if (strcmp(keyname, "ConfigResetAttrib") == 0) {
+				process_keys(CONFIG_RESET_ATTRIB, keys, &option_menu_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ConfigScopeMenu") == 0) {
+				process_keys(CONFIG_SCOPE_MENU, keys, &option_menu_keys);
+
+				return TRUE;
+			}
 			if (strcmp(keyname, "ConfigSelect") == 0) {
 				process_keys(CONFIG_SELECT, keys, &option_menu_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ConfigToggleAttrib") == 0) {
+				process_keys(CONFIG_TOGGLE_ATTRIB, keys, &option_menu_keys);
 
 				return TRUE;
 			}
@@ -604,6 +619,7 @@ process_mapping(
 				process_keys(GLOBAL_LINE_DOWN, keys, &info_keys);
 				process_keys(GLOBAL_LINE_DOWN, keys, &option_menu_keys);
 				process_keys(GLOBAL_LINE_DOWN, keys, &page_keys);
+				process_keys(GLOBAL_LINE_DOWN, keys, &scope_keys);
 				process_keys(GLOBAL_LINE_DOWN, keys, &select_keys);
 				process_keys(GLOBAL_LINE_DOWN, keys, &thread_keys);
 
@@ -635,6 +651,11 @@ process_mapping(
 			}
 			if (strcmp(keyname, "FeedPat") == 0) {
 				process_keys(FEED_PATTERN, keys, &feed_type_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "FeedRange") == 0) {
+				process_keys(FEED_RANGE, keys, &feed_type_keys);
 
 				return TRUE;
 			}
@@ -673,6 +694,7 @@ process_mapping(
 				process_keys(GLOBAL_FIRST_PAGE, keys, &info_keys);
 				process_keys(GLOBAL_FIRST_PAGE, keys, &option_menu_keys);
 				process_keys(GLOBAL_FIRST_PAGE, keys, &page_keys);
+				process_keys(GLOBAL_FIRST_PAGE, keys, &scope_keys);
 				process_keys(GLOBAL_FIRST_PAGE, keys, &select_keys);
 				process_keys(GLOBAL_FIRST_PAGE, keys, &thread_keys);
 
@@ -826,7 +848,9 @@ process_mapping(
 		case 'H':
 			if (strcmp(keyname, "Help") == 0) {
 				process_keys(GLOBAL_HELP, keys, &group_keys);
+				process_keys(GLOBAL_HELP, keys, &option_menu_keys);
 				process_keys(GLOBAL_HELP, keys, &page_keys);
+				process_keys(GLOBAL_HELP, keys, &scope_keys);
 				process_keys(GLOBAL_HELP, keys, &select_keys);
 				process_keys(GLOBAL_HELP, keys, &thread_keys);
 
@@ -850,6 +874,7 @@ process_mapping(
 				process_keys(GLOBAL_LAST_PAGE, keys, &info_keys);
 				process_keys(GLOBAL_LAST_PAGE, keys, &option_menu_keys);
 				process_keys(GLOBAL_LAST_PAGE, keys, &page_keys);
+				process_keys(GLOBAL_LAST_PAGE, keys, &scope_keys);
 				process_keys(GLOBAL_LAST_PAGE, keys, &select_keys);
 				process_keys(GLOBAL_LAST_PAGE, keys, &thread_keys);
 
@@ -872,16 +897,6 @@ process_mapping(
 			break;
 
 		case 'M':
-			if (strcmp(keyname, "MarkReadCur") == 0) {
-				process_keys(MARK_READ_CURRENT, keys, &mark_read_keys);
-
-				return TRUE;
-			}
-			if (strcmp(keyname, "MarkReadTag") == 0) {
-				process_keys(MARK_READ_TAGGED, keys, &mark_read_keys);
-
-				return TRUE;
-			}
 			if (strcmp(keyname, "MarkArticleUnread") == 0) {
 				process_keys(MARK_ARTICLE_UNREAD, keys, &group_keys);
 				process_keys(MARK_ARTICLE_UNREAD, keys, &page_keys);
@@ -893,6 +908,18 @@ process_mapping(
 				process_keys(MARK_THREAD_UNREAD, keys, &group_keys);
 				process_keys(MARK_THREAD_UNREAD, keys, &page_keys);
 				process_keys(MARK_THREAD_UNREAD, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "MarkFeedRead") == 0) {
+				process_keys(MARK_FEED_READ, keys, &group_keys);
+				process_keys(MARK_FEED_READ, keys, &thread_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "MarkFeedUnread") == 0) {
+				process_keys(MARK_FEED_UNREAD, keys, &group_keys);
+				process_keys(MARK_FEED_UNREAD, keys, &thread_keys);
 
 				return TRUE;
 			}
@@ -946,6 +973,7 @@ process_mapping(
 				process_keys(GLOBAL_PAGE_DOWN, keys, &info_keys);
 				process_keys(GLOBAL_PAGE_DOWN, keys, &option_menu_keys);
 				process_keys(GLOBAL_PAGE_DOWN, keys, &page_keys);
+				process_keys(GLOBAL_PAGE_DOWN, keys, &scope_keys);
 				process_keys(GLOBAL_PAGE_DOWN, keys, &select_keys);
 				process_keys(GLOBAL_PAGE_DOWN, keys, &thread_keys);
 
@@ -1123,6 +1151,7 @@ process_mapping(
 				process_keys(GLOBAL_PAGE_UP, keys, &info_keys);
 				process_keys(GLOBAL_PAGE_UP, keys, &option_menu_keys);
 				process_keys(GLOBAL_PAGE_UP, keys, &page_keys);
+				process_keys(GLOBAL_PAGE_UP, keys, &scope_keys);
 				process_keys(GLOBAL_PAGE_UP, keys, &select_keys);
 				process_keys(GLOBAL_PAGE_UP, keys, &thread_keys);
 
@@ -1335,7 +1364,6 @@ process_mapping(
 				process_keys(GLOBAL_QUIT, keys, &filter_keys);
 				process_keys(GLOBAL_QUIT, keys, &group_keys);
 				process_keys(GLOBAL_QUIT, keys, &info_keys);
-				process_keys(GLOBAL_QUIT, keys, &mark_read_keys);
 				process_keys(GLOBAL_QUIT, keys, &option_menu_keys);
 				process_keys(GLOBAL_QUIT, keys, &page_keys);
 #ifdef HAVE_PGP_GPG
@@ -1354,6 +1382,7 @@ process_mapping(
 				process_keys(GLOBAL_QUIT, keys, &post_send_keys);
 				process_keys(GLOBAL_QUIT, keys, &prompt_keys);
 				process_keys(GLOBAL_QUIT, keys, &save_append_overwrite_keys);
+				process_keys(GLOBAL_QUIT, keys, &scope_keys);
 				process_keys(GLOBAL_QUIT, keys, &select_keys);
 				process_keys(GLOBAL_QUIT, keys, &thread_keys);
 
@@ -1374,6 +1403,7 @@ process_mapping(
 				process_keys(GLOBAL_REDRAW_SCREEN, keys, &group_keys);
 				process_keys(GLOBAL_REDRAW_SCREEN, keys, &option_menu_keys);
 				process_keys(GLOBAL_REDRAW_SCREEN, keys, &page_keys);
+				process_keys(GLOBAL_REDRAW_SCREEN, keys, &scope_keys);
 				process_keys(GLOBAL_REDRAW_SCREEN, keys, &select_keys);
 				process_keys(GLOBAL_REDRAW_SCREEN, keys, &thread_keys);
 
@@ -1392,9 +1422,40 @@ process_mapping(
 
 				return TRUE;
 			}
+			if (strcmp(keyname, "ScopeAdd") == 0) {
+				process_keys(SCOPE_ADD, keys, &scope_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ScopeDelete") == 0) {
+				process_keys(SCOPE_DELETE, keys, &scope_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ScopeEditAttributesFile") == 0) {
+				process_keys(SCOPE_EDIT_ATTRIBUTES_FILE, keys, &scope_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ScopeMove") == 0) {
+				process_keys(SCOPE_MOVE, keys, &scope_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ScopeRename") == 0) {
+				process_keys(SCOPE_RENAME, keys, &scope_keys);
+
+				return TRUE;
+			}
+			if (strcmp(keyname, "ScopeSelect") == 0) {
+				process_keys(SCOPE_SELECT, keys, &scope_keys);
+
+				return TRUE;
+			}
 			if (strcmp(keyname, "ScrollDown") == 0) {
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &group_keys);
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &option_menu_keys);
+				process_keys(GLOBAL_SCROLL_DOWN, keys, &scope_keys);
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &select_keys);
 				process_keys(GLOBAL_SCROLL_DOWN, keys, &thread_keys);
 
@@ -1403,6 +1464,7 @@ process_mapping(
 			if (strcmp(keyname, "ScrollUp") == 0) {
 				process_keys(GLOBAL_SCROLL_UP, keys, &group_keys);
 				process_keys(GLOBAL_SCROLL_UP, keys, &option_menu_keys);
+				process_keys(GLOBAL_SCROLL_UP, keys, &scope_keys);
 				process_keys(GLOBAL_SCROLL_UP, keys, &select_keys);
 				process_keys(GLOBAL_SCROLL_UP, keys, &thread_keys);
 
@@ -1643,6 +1705,7 @@ process_mapping(
 				process_keys(GLOBAL_TOGGLE_HELP_DISPLAY, keys, &group_keys);
 				process_keys(GLOBAL_TOGGLE_HELP_DISPLAY, keys, &info_keys);
 				process_keys(GLOBAL_TOGGLE_HELP_DISPLAY, keys, &page_keys);
+				process_keys(GLOBAL_TOGGLE_HELP_DISPLAY, keys, &scope_keys);
 				process_keys(GLOBAL_TOGGLE_HELP_DISPLAY, keys, &select_keys);
 				process_keys(GLOBAL_TOGGLE_HELP_DISPLAY, keys, &thread_keys);
 
@@ -1672,6 +1735,7 @@ process_mapping(
 				process_keys(GLOBAL_LINE_UP, keys, &info_keys);
 				process_keys(GLOBAL_LINE_UP, keys, &option_menu_keys);
 				process_keys(GLOBAL_LINE_UP, keys, &page_keys);
+				process_keys(GLOBAL_LINE_UP, keys, &scope_keys);
 				process_keys(GLOBAL_LINE_UP, keys, &select_keys);
 				process_keys(GLOBAL_LINE_UP, keys, &thread_keys);
 
@@ -1708,7 +1772,7 @@ upgrade_keymap_file(
 	FILE *oldfp, *newfp;
 	char *line, *backup;
 	const char *keyname, *keydef;
-	char new[NAME_LEN + 1], buf[LEN];
+	char newk[NAME_LEN + 1], buf[LEN];
 	char *bugreport[3] = { NULL, NULL, NULL };
 	char *catchup[4] = { NULL, NULL, NULL, NULL };
 	char *catchup_next_unread[4] = { NULL, NULL, NULL, NULL };
@@ -1737,8 +1801,8 @@ upgrade_keymap_file(
 	if ((oldfp = fopen(old, "r")) == NULL)
 		return;
 
-	snprintf(new, sizeof(new), "%s.%d", old, (int) process_id);
-	if ((newfp = fopen(new, "w")) == NULL) {
+	snprintf(newk, sizeof(newk), "%s.%ld", old, (long) process_id);
+	if ((newfp = fopen(newk, "w")) == NULL) {
 		fclose(oldfp);
 		return;
 	}
@@ -2307,7 +2371,7 @@ upgrade_keymap_file(
 
 	fclose(oldfp);
 	fclose(newfp);
-	rename(new, old);
+	rename(newk, old);
 	wait_message(0, _(txt_keymap_upgraded), KEYMAP_VERSION);
 	prompt_continue();
 
@@ -2322,6 +2386,35 @@ void
 setup_default_keys(
 	void)
 {
+	/* scope level */
+	add_default_key(&scope_keys, "1", DIGIT_1);
+	add_default_key(&scope_keys, "2", DIGIT_2);
+	add_default_key(&scope_keys, "3", DIGIT_3);
+	add_default_key(&scope_keys, "4", DIGIT_4);
+	add_default_key(&scope_keys, "5", DIGIT_5);
+	add_default_key(&scope_keys, "6", DIGIT_6);
+	add_default_key(&scope_keys, "7", DIGIT_7);
+	add_default_key(&scope_keys, "8", DIGIT_8);
+	add_default_key(&scope_keys, "9", DIGIT_9);
+	add_default_key(&scope_keys, "a", SCOPE_ADD);
+	add_default_key(&scope_keys, "b", GLOBAL_PAGE_UP);
+	add_default_key(&scope_keys, " ", GLOBAL_PAGE_DOWN);
+	add_default_key(&scope_keys, "d", SCOPE_DELETE);
+	add_default_key(&scope_keys, "h", GLOBAL_HELP);
+	add_default_key(&scope_keys, "\n\r", SCOPE_SELECT);
+	add_default_key(&scope_keys, "E", SCOPE_EDIT_ATTRIBUTES_FILE);
+	add_default_key(&scope_keys, "H", GLOBAL_TOGGLE_HELP_DISPLAY);
+	add_default_key(&scope_keys, "", GLOBAL_REDRAW_SCREEN);
+	add_default_key(&scope_keys, "m", SCOPE_MOVE);
+	add_default_key(&scope_keys, "j", GLOBAL_LINE_DOWN);
+	add_default_key(&scope_keys, "k", GLOBAL_LINE_UP);
+	add_default_key(&scope_keys, "g^", GLOBAL_FIRST_PAGE);
+	add_default_key(&scope_keys, "G$", GLOBAL_LAST_PAGE);
+	add_default_key(&scope_keys, "q", GLOBAL_QUIT);
+	add_default_key(&scope_keys, "r", SCOPE_RENAME);
+	add_default_key(&scope_keys, ">", GLOBAL_SCROLL_DOWN);
+	add_default_key(&scope_keys, "<", GLOBAL_SCROLL_UP);
+
 	/* select level */
 	add_global_keys(&select_keys);
 	add_default_key(&select_keys, "\n\r", SELECT_ENTER_GROUP);
@@ -2353,6 +2446,8 @@ setup_default_keys(
 	add_default_key(&group_keys, "", GLOBAL_MENU_FILTER_SELECT);
 	add_default_key(&group_keys, "\n\r", GROUP_READ_BASENOTE);
 	add_default_key(&group_keys, "", GLOBAL_MENU_FILTER_KILL);
+	add_default_key(&group_keys, "", MARK_FEED_READ);
+	add_default_key(&group_keys, "", MARK_FEED_UNREAD);
 	add_default_key(&group_keys, "a", GLOBAL_SEARCH_AUTHOR_FORWARD);
 	add_default_key(&group_keys, "c", CATCHUP);
 	add_default_key(&group_keys, "d", GROUP_TOGGLE_SUBJECT_DISPLAY);
@@ -2403,6 +2498,8 @@ setup_default_keys(
 	add_global_keys(&thread_keys);
 	add_default_key(&thread_keys, "", GLOBAL_MENU_FILTER_SELECT);
 	add_default_key(&thread_keys, "", GLOBAL_MENU_FILTER_KILL);
+	add_default_key(&thread_keys, "", MARK_FEED_READ);
+	add_default_key(&thread_keys, "", MARK_FEED_UNREAD);
 	add_default_key(&thread_keys, "\n\r", THREAD_READ_ARTICLE);
 	add_default_key(&thread_keys, "a", GLOBAL_SEARCH_AUTHOR_FORWARD);
 	add_default_key(&thread_keys, "c", CATCHUP);
@@ -2521,14 +2618,18 @@ setup_default_keys(
 	add_default_key(&option_menu_keys, "b", GLOBAL_PAGE_UP);
 	add_default_key(&option_menu_keys, " ", GLOBAL_PAGE_DOWN);
 	add_default_key(&option_menu_keys, "\n\r", CONFIG_SELECT);
+	add_default_key(&option_menu_keys, "\t", CONFIG_TOGGLE_ATTRIB);
 	add_default_key(&option_menu_keys, "", GLOBAL_REDRAW_SCREEN);
 	add_default_key(&option_menu_keys, "j", GLOBAL_LINE_DOWN);
 	add_default_key(&option_menu_keys, "k", GLOBAL_LINE_UP);
 	add_default_key(&option_menu_keys, "g^", GLOBAL_FIRST_PAGE);
 	add_default_key(&option_menu_keys, "G$", GLOBAL_LAST_PAGE);
+	add_default_key(&option_menu_keys, "h", GLOBAL_HELP);
 	add_default_key(&option_menu_keys, "q", GLOBAL_QUIT);
+	add_default_key(&option_menu_keys, "r", CONFIG_RESET_ATTRIB);
 	add_default_key(&option_menu_keys, "v", GLOBAL_VERSION);
 	add_default_key(&option_menu_keys, "Q", CONFIG_NO_SAVE);
+	add_default_key(&option_menu_keys, "S", CONFIG_SCOPE_MENU);
 	add_default_key(&option_menu_keys, ">", GLOBAL_SCROLL_DOWN);
 	add_default_key(&option_menu_keys, "<", GLOBAL_SCROLL_UP);
 	add_default_key(&option_menu_keys, "/", GLOBAL_SEARCH_SUBJECT_FORWARD);
@@ -2619,6 +2720,7 @@ setup_default_keys(
 	add_default_key(&feed_type_keys, "a", FEED_ARTICLE);
 	add_default_key(&feed_type_keys, "h", FEED_HOT);
 	add_default_key(&feed_type_keys, "p", FEED_PATTERN);
+	add_default_key(&feed_type_keys, "r", FEED_RANGE);
 	add_default_key(&feed_type_keys, "q", GLOBAL_QUIT);
 	add_default_key(&feed_type_keys, "t", FEED_THREAD);
 	add_default_key(&feed_type_keys, "T", FEED_TAGGED);
@@ -2633,12 +2735,6 @@ setup_default_keys(
 	add_default_key(&filter_keys, "e", FILTER_EDIT);
 	add_default_key(&filter_keys, "q", GLOBAL_QUIT);
 	add_default_key(&filter_keys, "s", FILTER_SAVE);
-
-	/* mark read */
-	add_default_key(&mark_read_keys, "", GLOBAL_ABORT);
-	add_default_key(&mark_read_keys, "c", MARK_READ_CURRENT);
-	add_default_key(&mark_read_keys, "q", GLOBAL_QUIT);
-	add_default_key(&mark_read_keys, "t", MARK_READ_TAGGED);
 
 #ifdef HAVE_PGP_GPG
 	/* pgp mail */

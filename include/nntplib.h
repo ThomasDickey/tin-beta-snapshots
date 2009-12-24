@@ -3,10 +3,10 @@
  *  Module    : nntplib.h
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2009-01-10
+ *  Updated   : 2009-12-19
  *  Notes     : nntp.h 1.5.11/1.6 with extensions for tin
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,13 +45,13 @@
 #define NNTP_TCP_NAME	"nntp"
 #define NNTP_TCP_PORT	"119"
 
-#if 0 /* unused */
 /*
  * # seconds after which a read from the NNTP will timeout
  * NB: This is different from the NNTP server timing us out due to inactivity
  */
-#	define NNTP_READ_TIMEOUT		30
-#endif /* 0 */
+#if defined(HAVE_ALARM) && defined(SIGALRM)
+#	define NNTP_READ_TIMEOUT	60
+#endif /* HAVE_ALARM && SIGALRM */
 
 /*
  * # times to try and reconnect to server after timeout
@@ -105,6 +105,7 @@
 #define	OK_BODY			222	/* Body follows */
 #define	OK_NOTEXT		223	/* No text sent -- stat, next, last */
 #define	OK_XOVER		224	/* .overview data follows */
+#define	OK_HDR			225 /* headers follow */
 #define	OK_NEWNEWS		230	/* New articles by message-id follow */
 #define	OK_NEWGROUPS	231	/* New newsgroups follow */
 #define	OK_XFERED		235	/* Article transferred successfully */
@@ -136,6 +137,8 @@
 #define	ERR_NOPOST		440	/* Posting not allowed */
 #define	ERR_POSTFAIL		441	/* Posting failed */
 #define	ERR_NOAUTH		480	/* authorization required for command */
+#define	ERR_AUTHFAIL	481 /* Authentication failed/rejected */
+#define	ERR_AUTHSEQ		482 /* Authentication commands issued out of sequence or SASL protocol error */
 #define	ERR_ENCRYPT		483	/* encrpytion required */
 
 #define	ERR_COMMAND		500	/* Command not recognized */
@@ -158,10 +161,12 @@ enum f_type { OVER_T_ERROR, OVER_T_INT, OVER_T_STRING, OVER_T_FSTRING };
 /*
  * CAPABILITIES
  */
-enum extension_type { NONE, LIST_EXTENSIONS, CAPABILITIES, BROKEN };
+enum extension_type { NONE, CAPABILITIES, BROKEN };
+
+enum sasl_types { SASL_NONE = 0, SASL_PLAIN = 1, SASL_CRAM_MD5 = 2, SASL_DIGEST_MD5 = 4, SASL_GSSAPI = 8, SASL_EXTERNAL = 16, SASL_OTP = 32, SASL_NTLM = 64, SASL_LOGIN = 128 };
 
 struct t_capabilities {
-	enum extension_type type;		/* none, LIST EXTENSIONS, CAPABILITIES, BROKEN */
+	enum extension_type type;		/* NONE, CAPABILITIES, BROKEN */
 	unsigned int version;			/* CAPABILITIES version */
 	t_bool mode_reader:1;			/* MODE-READER: "MODE READER" */
 	t_bool reader:1;				/* READER: "ARTCILE", "BODY", "DATE", "GROUP", "LAST", "LISTGROUP", "NEWGROUPS", "NEXT" */
@@ -176,6 +181,7 @@ struct t_capabilities {
 	t_bool list_subscriptions:1;	/* LIST SUBSCRIPTIONS, "private" extension, RFC 2980 */
 	t_bool list_distributions:1;	/* LIST DISTRIBUTIONS, "private" extension, RFC 2980 */
 	t_bool list_moderators:1;		/* LIST MODERATORS, "private" extension */
+	t_bool list_counts:1;			/* LIST COUNTS, "private" extension */
 	t_bool xpat:1;					/* XPAT, "private" extension, RFC 2980 */
 	t_bool hdr:1;					/* HDR: "HDR", "LIST HEADERS" */
 	const char *hdr_cmd;			/* [X]HDR */
@@ -187,18 +193,13 @@ struct t_capabilities {
 	t_bool starttls:1;				/* STARTTLS */
 	t_bool authinfo_user:1;			/* AUTHINFO USER/PASS */
 	t_bool authinfo_sasl:1;			/* AUTHINFO SASL */
-	t_bool sasl_cram_md5:1;			/* SASL CRAM-MD5 */
-	t_bool sasl_digest_md5:1;		/* SASL DIGEST-MD5 */
-	t_bool sasl_plain:1;			/* SASL PLAIN */
-	t_bool sasl_gssapi:1;			/* SASL GSSAPI */
-	t_bool sasl_external:1;			/* SASL EXTERNAL */
+	t_bool authinfo_state:1;		/* AUTHINFO not supported in curent state */
+	enum sasl_types sasl;			/* SASL_NONE, SASL_PLAIN, SASL_CRAM_MD5, SASL_DIGEST_MD5, SASL_GSSAPI, SASL_EXTERNAL, SASL_OTP, SASL_NTLM, SASL_LOGIN */
 #if 0
-	t_bool sasl_otp:1;				/* SASL OTP */
-	t_bool sasl_ntlm:1;				/* SASL NTLM */
-	t_bool sasl_login:1;			/* SASL LOGIN */
 	t_bool streaming:1;				/* STREAMING: "MODE STREAM", "CHECK", "TAKETHIS" */
 	t_bool ihave:1;					/* IHAVE: "IHAVE" */
 #endif /* 0 */
+	t_bool broken_listgroup:1;		/* LISTGROUP doesn't select newsgroup */
 };
 
 #endif /* !NNTPLIB_H */

@@ -95,10 +95,15 @@ hmac_sha1(
     
     memcpy(&step2[SHA_DATASIZE], T, Tlen);
 
-    if (sha_init(&hash_ctx))
+    if (sha_init(&hash_ctx)) {
+    	free(step2);
         return NULL;
-    if (sha_update(&hash_ctx, step2, SHA_DATASIZE + Tlen))
+	}
+    if (sha_update(&hash_ctx, step2, SHA_DATASIZE + Tlen)) {
+    	free(step2);
         return NULL;
+	}
+	free(step2);
     if (sha_digest(&hash_ctx, step4))
         return NULL;
 
@@ -108,12 +113,18 @@ hmac_sha1(
     if (!hmac_out)
         return NULL;
 
-    if (sha_init(&hash_ctx))
+    if (sha_init(&hash_ctx)) {
+    	free(hmac_out);
         return NULL;
-    if (sha_update(&hash_ctx, step5, SHA_DATASIZE + SHA_DIGESTSIZE))
+	}
+    if (sha_update(&hash_ctx, step5, SHA_DATASIZE + SHA_DIGESTSIZE)) {
+    	free(hmac_out);
         return NULL;
-    if (sha_digest(&hash_ctx, hmac_out))
+	}
+    if (sha_digest(&hash_ctx, hmac_out)) {
+    	free(hmac_out);
         return NULL;
+	}
 
     return hmac_out;
 }

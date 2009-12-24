@@ -3,10 +3,10 @@
  *  Module    : tin.h
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2009-02-10
+ *  Updated   : 2009-11-30
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1997-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -97,8 +97,8 @@
 
 #include	<signal.h>
 
-enum context { cMain, cArt, cConfig, cFilter, cGroup, cHelp, cInfopager, cPage, cSelect, cThread };
-enum icontext { cNone, cGetline, cPromptSLK };
+enum context { cMain, cArt, cAttrib, cConfig, cFilter, cGroup, cHelp, cInfopager, cPage, cScope, cSelect, cThread };
+enum icontext { cNone, cGetline, cPromptCONT, cPromptSLK, cPromptYN };
 enum resizer { cNo, cYes, cRedraw };
 enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 
@@ -589,7 +589,7 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #endif /* 0 */
 
 /* case sensitive && ^-anchored */
-#define DEFAULT_STRIP_RE_REGEX	"(?:R[eE](?:\\^\\d+|\\[\\d\\])?|A[wW]|Odp|Sv):\\s"
+#define DEFAULT_STRIP_RE_REGEX	"(?:R[eE](?:\\^\\d+|\\[\\d+\\])?|A[wW]|Odp|Sv):\\s"
 /* case sensitive */
 #define DEFAULT_STRIP_WAS_REGEX	"(?:(?<=\\S)|\\s)\\((?:[Ww]a[rs]|[Bb]y[l\\xb3]o):.*\\)\\s*$"
 #define DEFAULT_U8_STRIP_WAS_REGEX	"(?:(?<=\\S)|\\s)\\((?:[Ww]a[rs]|[Bb]y[l\\x{0142}]o):.*\\)\\s*$"
@@ -661,8 +661,6 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 
 
 #define FILTER_FILE	"filter"
-/* editor offset for filter-file; TODO: doesn't match for german filter-file */
-#define FILTER_FILE_OFFSET	26
 #define INPUT_HISTORY_FILE	".inputhistory"
 #ifdef HAVE_MH_MAIL_HANDLING
 #	define MAILGROUPS_FILE	"mailgroups"
@@ -726,6 +724,12 @@ enum rc_state { RC_IGNORE, RC_CHECK, RC_UPGRADE, RC_DOWNGRADE, RC_ERROR };
 #ifdef HAVE_LIBUTF8_H
 #	include <libutf8.h>
 #else
+/*
+ * order is important here:
+ * - Solaris 2.5.1 requires wchar.h before wctype.h
+ * - Tru64 with Desktop Toolkit C requires stdio.h before wchar.h
+ * - BSD/OS 4.0.1 requires stddef.h, stdio.h and time.h before wchar.h
+ */
 #	ifdef HAVE_WCHAR_H
 #		include <wchar.h>
 #	endif /* HAVE_WCHAR_H */
@@ -1006,6 +1010,16 @@ enum {
 
 
 /*
+ * indicate given cmd-line options
+ */
+#define CMDLINE_GETART_LIMIT	1
+#define CMDLINE_MAILDIR			2
+#define CMDLINE_NNTPSERVER		4
+#define CMDLINE_SAVEDIR			8
+#define CMDLINE_USE_COLOR		16
+
+
+/*
  * used by feed_articles() & show_mini_help() & quick_filter & add_filter_rule
  */
 #define SELECT_LEVEL	1
@@ -1013,6 +1027,9 @@ enum {
 #define THREAD_LEVEL	3
 #define PAGE_LEVEL	4
 #define INFO_PAGER	5
+#define SCOPE_LEVEL	6
+#define CONFIG_LEVEL	7
+#define ATTRIB_LEVEL	8
 
 #define MINI_HELP_LINES		5
 
@@ -1022,6 +1039,8 @@ enum {
 #define FEED_SAVE		4
 #define FEED_AUTOSAVE	5
 #define FEED_REPOST		6
+#define FEED_MARK_READ		7
+#define FEED_MARK_UNREAD	8
 
 
 /*
@@ -1330,6 +1349,17 @@ typedef unsigned char	t_bitmap;
 #define MSGID_HASH_SIZE		2609
 
 /*
+ * cmd-line options
+ */
+struct t_cmdlineopts {
+	int getart_limit;			/* getart_limit */
+	char maildir[PATH_LEN];     /* maildir */
+	char nntpserver[PATH_LEN];  /* nntpserver */
+	char savedir[PATH_LEN];     /* savedir */
+	unsigned int args:5;		/* given options */
+};
+
+/*
  * Archive-Name: header
  */
 struct t_archive {
@@ -1509,16 +1539,28 @@ struct t_attribute_state {
 	unsigned auto_save:1;
 	unsigned auto_select:1;
 	unsigned batch_save:1;
+	unsigned date_format:1;
 	unsigned delete_tmp_files:1;
+	unsigned editor_format:1;
+	unsigned fcc:1;
+	unsigned followup_to:1;
+	unsigned from:1;
 	unsigned group_catchup_on_exit:1;
+#ifdef HAVE_ISPELL
+	unsigned ispell:1;
+#endif /* HAVE_ISPELL */
 	unsigned mail_8bit_header:1;
 	unsigned mail_mime_encoding:1;
+	unsigned maildir:1;
+	unsigned mailing_list:1;
 	unsigned mark_ignore_tags:1;
 	unsigned mark_saved_read:1;
 	unsigned mime_forward:1;
-#ifdef CHARSET_CONVERSION
-	unsigned mm_network_charset:1;
-#endif /* CHARSET_CONVERSION */
+	unsigned mime_types_to_save:1;
+	unsigned news_headers_to_display:1;
+	unsigned news_headers_to_not_display:1;
+	unsigned news_quote_format:1;
+	unsigned organization:1;
 	unsigned pos_first_unread:1;
 	unsigned post_8bit_header:1;
 	unsigned post_mime_encoding:1;
@@ -1532,14 +1574,20 @@ struct t_attribute_state {
 	unsigned quick_kill_case:1;
 	unsigned quick_kill_expire:1;
 	unsigned quick_kill_header:1;
+	unsigned quick_kill_scope:1;
 	unsigned quick_select_case:1;
 	unsigned quick_select_expire:1;
 	unsigned quick_select_header:1;
+	unsigned quick_select_scope:1;
+	unsigned quote_chars:1;
+	unsigned savedir:1;
+	unsigned savefile:1;
 	unsigned show_author:1;
 	unsigned show_info:1;
 	unsigned show_only_unread_arts:1;
 	unsigned show_signatures:1;
 	unsigned sigdashes:1;
+	unsigned sigfile:1;
 	unsigned signature_repost:1;
 	unsigned sort_article_type:1;
 	unsigned sort_threads_type:1;
@@ -1549,9 +1597,15 @@ struct t_attribute_state {
 	unsigned thread_catchup_on_exit:1;
 	unsigned thread_perc:1;
 	unsigned trim_article_body:1;
+#ifdef CHARSET_CONVERSION
+	unsigned undeclared_charset:1;
+	unsigned mm_network_charset:1;
+#endif /* CHARSET_CONVERSION */
 	unsigned verbatim_handling:1;
 	unsigned wrap_on_next_unread:1;
+	unsigned x_body:1;
 	unsigned x_comment_to:1;
+	unsigned x_headers:1;
 };
 
 /*
@@ -1562,11 +1616,10 @@ struct t_scope {
 	struct t_attribute *attribute;	/* the attributes itself */
 	struct t_attribute_state *state;	/* additional information about numeric attributes */
 	unsigned global:1;			/* TRUE for scopes from global_attributes_file */
-	unsigned temp:1;			/* temporary scope for menu changes at group level */
 };
 
 /*
- * TODO: turn longs to unsigned long long or at least unsigned long
+ * TODO: turn longs to int_least64_t
  */
 /*
  * struct t_newsrc - newsrc related info.
@@ -1581,7 +1634,7 @@ struct t_newsrc {
 };
 
 /*
- * TODO: turn longs to unsigned long long or at least unsigned long
+ * TODO: turn longs to int_least64_t
  */
 /*
  * struct t_group - newsgroup info from active file
@@ -2227,7 +2280,9 @@ extern struct tm *localtime(time_t *);
 
 /* read_news_active_file() / open_newsgroups_fp() */
 #ifndef DISABLE_PIPELINING
-#	define PIPELINE_LIMIT 30
+#	define PIPELINE_LIMIT 45
+#else
+#	define PIPELINE_LIMIT 1
 #endif /* DISABLE_PIPELINING */
 
 #ifndef DEBUG_H

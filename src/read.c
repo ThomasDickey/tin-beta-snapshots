@@ -3,9 +3,9 @@
  *  Module    : read.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1997-04-10
- *  Updated   : 2006-02-15
+ *  Updated   : 2006-09-02
  *
- * Copyright (c) 1997-2009 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1997-2010 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -191,7 +191,7 @@ tin_read(
 		drain_buffer(fp);
 		clear_message();
 		tin_errno = TIN_ABORT;
-		fflush(stdin);
+		/* fflush(stdin); */
 		return NULL;
 	}
 

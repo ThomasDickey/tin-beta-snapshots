@@ -3,7 +3,7 @@
 .\" Module    : tin.1
 .\" Author    : I. Lea, U. Janssen
 .\" Created   : 1991-08-23
-.\" Updated   : 2009-02-11
+.\" Updated   : 2009-12-24
 .\" Notes     : use american english; still needs some work, e.g.:
 .\"             - document authorization (.newsauth)
 .\"             - document random organization feature
@@ -14,7 +14,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 1 "11. Februar 2008" 1.9.4 "Usenet Newsreader"
+.TH tin 1 "December 24th, 2009" 1.9.5 "Usenet Newsreader"
 .\"
 .\"
 .SH NAME
@@ -164,8 +164,8 @@ Zu benutzende Portnummer falls per NNTP gelesen wird (Standard ist
 Nicht prüfen ob neue Newsgruppen vorhanden sind.
 .TP 
 \fB\-Q\fP
-Schnellstart. \fBtin\fP so schnell wie möglich starten, z.Zt. entspricht diese
-Option \*(rq\fB\-nqd\fP\*(rq.
+Schnellstart. \fBtin\fP so schnell wie möglich starten, zur Zeit entspricht
+diese Option \*(rq\fB\-nqd\fP\*(rq.
 .TP 
 \fB\-r\fP
 Read news remotely from the default NNTP server specified in the environment
@@ -179,7 +179,7 @@ Save/read articles to/in directory. Default is
 \fI${TIN_HOMEDIR:\-"$HOME"}/News\fP.
 .TP 
 \fB\-S\fP
-Speichere ungelesene Artikel zum späteren Lesen mittels \*(rq\fB\-R\fP\*(rq.Für
+Speichere ungelesene Artikel zum späteren Lesen mittels \*(rq\fB\-R\fP\*(rq. Für
 weitere Informationen siehe den Abschnitt "AUTOMATISCHES MAILEN UND
 SPEICHERN VON UNGELESENEN ARTIKELN".
 .TP 
@@ -190,15 +190,15 @@ option. This option is disabled if \fBtin\fP retrieves its index files via a
 NNTP server and \fBcache_overview_files\fP is turned off.
 .TP 
 \fB\-v\fP
-Verbose mode for \*(rq\fB\-c\fP\*(rq, \*(rq\fB\-M\fP\*(rq, \*(rq\fB\-N\fP\*(rq, \*(rq\fB\-S\fP\*(rq, \&\*(rq\fB\-u\fP\*(rq and
-\&\*(rq\fB\-Z\fP\*(rq options.
+Ausführliche Ausgabe für \*(rq\fB\-c\fP\*(rq, \*(rq\fB\-M\fP\*(rq, \*(rq\fB\-N\fP\*(rq, \*(rq\fB\-S\fP\*(rq,
+\&\*(rq\fB\-u\fP\*(rq und \*(rq\fB\-Z\fP\*(rq\-Optionen.
 .TP 
 \fB\-V\fP
 Versionsinformationen ausgeben.
 .TP 
 \fB\-w\fP
-Quick mode to post an article and then exit. In order for this to be really
-quick, it should be used with \*(rq\fB\-n\fP\*(rq if possible.
+Schnell\-Modus um nur einen Artikel zu posten. Nach Möglichkeit mit \*(rq\fB\-n\fP\*(rq
+kombinieren.
 .TP 
 \fB\-x\fP
 No posting mode. You cannot post articles if you use this option.
@@ -234,6 +234,10 @@ group, then you will automatically enter that group. Otherwise the normal
 group selection screen will appear, but with all the matching groups present
 too, as though you had yanked just those groups in.
 .PP
+With the \*(rq\fB\-w\fP\*(rq flag a given group\-name is used as default group to post
+to. If more than one group or a wildcard is specified only the first group
+respectively the first group that matches is used.
+.PP
 Once you use \fBSelectYankActive\fP ('\fBy\fP') to yank in all active groups, or
 \fBSelectToggleReadDisplay\fP ('\fBr\fP') to toggle the read/unread status, then
 the command\-line groups will be gone. You can use \fBSelectSyncWithActive\fP
@@ -241,12 +245,15 @@ the command\-line groups will be gone. You can use \fBSelectSyncWithActive\fP
 \fI${TIN_LIBDIR:\-NEWSLIBDIR}"/"${TIN_ACTIVEFILE:\-active}\fP file and get them
 back.
 .PP
-.\"
-.\"
 NB: With the \*(rq\fB\-n\fP\*(rq flag, only unsubscribed groups in the
 \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP file (or the newsrc\-file given by the
 \&\*(rq\fB\-f\fP\*(rq command\-line switch or via
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/newsrctable\fP) can be matched.
+.PP
+.\"
+.\"
+Command\-line options have higher priority than attributes and tinrc
+options.  Thus, command\-line option takes precedence over configured values.
 .SH GEBRAUCH
 .\"
 .\"
@@ -573,8 +580,9 @@ unread articles. Command has no effect if groups were specified on the
 command\-line when \fBtin\fP was started.
 .TP 
 \fBBugReport 'R'\fP
-Mail a bug report or comment to <tin\-bugs@tin.org>. This is the best
-way of getting bugs fixed and features added/changed.
+Einen Fehlerbericht oder Kommentar an <tin\-bugs@tin.org>
+senden. Dies ist der sinnvollste Weg um Fehler zu melden und behoben zu
+bekommen bzw. nach neuen Funktionen zu fragen.
 .TP 
 \fBSelectSubscribe 's'\fP
 Ausgewählte Gruppe abonnieren.
@@ -615,7 +623,7 @@ see if any new news has arrived since starting \fBtin\fP.
 \fBSelectMarkGrpUnread 'z' 'Z'\fP
 .\"--------------------------------------------------------------------
 .\"
-Mark all articles in the current group as unread.
+Alle Artikel in der aktuellen Gruppe als ungelesen markieren.
 .SS "GROUP INDEX COMMANDS"
 .TP  10
 \fB4\fP
@@ -628,6 +636,16 @@ for more information.
 \fBMenuFilterKill '^K'\fP
 Kill article(s) using a menu. Read the section "FILTERING ARTICLES" for more
 information.
+.TP 
+\fBMarkFeedRead '^X'\fP
+Mark current article, thread, range, auto\-selected (hot) articles, articles
+matching pattern or tagged articles as read. A prompt asks which type should
+be marked.
+.TP 
+\fBMarkFeedUnread '^W'\fP
+Mark current article, thread, range, auto\-selected (hot) articles, articles
+matching pattern or tagged articles as unread. A prompt asks which type
+should be marked.
 .TP 
 \fBSetRange '#'\fP
 Wählen Sie eine Reihe von Artikeln auf die der nächste Befehl angewendet
@@ -747,7 +765,10 @@ line.
 Toggle inverse video.
 .TP 
 \fBGroupMarkThdRead 'K'\fP
-Mark article/thread as read and move onto the next unread article/thread.
+Mark article/thread as read and move onto the next unread article/thread. If
+a range of articles/threads is set, the range will be marked as read instead
+of the current article/thread. When tagged articles/threads are present, a
+prompt asks how to proceed.
 .TP 
 \fBGroupListThd 'l'\fP
 Open the thread under the current cursor position.
@@ -791,8 +812,9 @@ Beendet \fBtin\fP sofort, ohne Bestätigungsnachfrage.
 Toggle the display between all articles and unread articles.
 .TP 
 \fBBugReport 'R'\fP
-Mail a bug report or comment to <tin\-bugs@tin.org>. This is the best
-way of getting bugs fixed and features added/changed.
+Einen Fehlerbericht oder Kommentar an <tin\-bugs@tin.org>
+senden. Dies ist der sinnvollste Weg um Fehler zu melden und behoben zu
+bekommen bzw. nach neuen Funktionen zu fragen.
 .TP 
 \fBGroupSave 's'\fP
 Save current article / thread / auto\-selected (hot) articles / articles
@@ -844,7 +866,9 @@ Aktuellen Artikel als ungelesen markieren.
 \fBMarkThdUnread 'Z'\fP
 .\"--------------------------------------------------------------------
 .\"
-Markiere den aktuellen Thread als ungelesen.
+Mark current thread as unread. If a range of threads is set, the range will
+be marked as unread instead of the current thread. When tagged threads are
+present, a prompt asks how to proceed.
 .SS "THREAD LISTING COMMANDS"
 .\" this sections should be complete
 .TP  10
@@ -858,6 +882,16 @@ for more information.
 \fBMenuFilterKill '^K'\fP
 Kill article(s) using a menu. Read the section "FILTERING ARTICLES" for more
 information.
+.TP 
+\fBMarkFeedRead '^X'\fP
+Mark current article, thread, range, auto\-selected (hot) articles, articles
+matching pattern or tagged articles as read. A prompt asks which type should
+be marked.
+.TP 
+\fBMarkFeedUnread '^W'\fP
+Mark current article, thread, range, auto\-selected (hot) articles, articles
+matching pattern or tagged articles as unread. A prompt asks which type
+should be marked.
 .TP 
 \fBSetRange '#'\fP
 Wählen Sie eine Reihe von Artikeln auf die der nächste Befehl angewendet
@@ -932,7 +966,9 @@ Subject des geöffneten Artikels in der untersten Zeile anzeigen.
 Toggle inverse video.
 .TP 
 \fBThreadMarkArtRead 'K'\fP
-Mark article as read and move onto the next unread article.
+Mark article as read and move onto the next unread article. If a range of
+articles is set, the range will be marked as read instead of the current
+article. When tagged articles are present, a prompt asks how to proceed.
 .TP 
 \fBLookupMessage 'L'\fP
 Look up article by \*(rqMessage\-ID:\*(rq.
@@ -954,8 +990,9 @@ Return to previous level.
 Beendet \fBtin\fP sofort, ohne Bestätigungsnachfrage.
 .TP 
 \fBBugReport 'R'\fP
-Mail a bug report or comment to <tin\-bugs@tin.org>. This is the best
-way of getting bugs fixed and features added/changed.
+Einen Fehlerbericht oder Kommentar an <tin\-bugs@tin.org>
+senden. Dies ist der sinnvollste Weg um Fehler zu melden und behoben zu
+bekommen bzw. nach neuen Funktionen zu fragen.
 .TP 
 \fBThreadSave 's'\fP
 Save current article / thread / auto\-selected (hot) articles / articles
@@ -979,7 +1016,9 @@ it for later processing via \fBPostPostpone\fP ('\fBo\fP') (see also \*(rq\fB\-o
 command\-line switch) or discard it via \fBQuit\fP ('\fBq\fP').
 .TP 
 \fBMarkArtUnread 'z'\fP
-Markiere den aktuellen Artikel als ungelesen.
+Mark current article in thread as unread. If a range of articles is set, the
+range will be marked as unread instead of the current article. When tagged
+articles are present, a prompt asks how to proceed.
 .TP 
 \fBMarkThdUnread 'Z'\fP
 .\"--------------------------------------------------------------------
@@ -1050,8 +1089,9 @@ Forward search the text of this article.
 Backward search the text of this article.
 .TP 
 \fBPageSkipIncludedText ':'\fP
-Skip to the end of the quoted text\-block in this article. Quoted text is
-everything which matches \fBquote_regex\fP, \fBquote_regex2\fP or \fBquote_regex3\fP.
+Skip to the end of the next quoted text\-block in this article. Quoted text
+is everything which matches \fBquote_regex\fP, \fBquote_regex2\fP or
+\fBquote_regex3\fP.
 .TP 
 \fBPageTopThd '<'\fP
 Goto the first article in the current thread.
@@ -1262,6 +1302,14 @@ can use \fBSearchSubjF\fP ('\fB/\fP'), \fBSearchSubjB\fP ('\fB?\fP') and \fBSear
 ('\fB\e\fP') to search for a specific option. Use \fBQuit\fP ('\fBq\fP') to exit the
 option menu and keep your changes. Use \fBQuitTin\fP ('\fBQ\fP') to exit without
 keeping your changes.
+.PP
+The options menu provides access to the attributes menu for the current
+group by the \fBConfigToggleAttrib\fP ('\fB<TAB>\fP') command. Pressing
+\fBConfigToggleAttrib\fP again toggles back to the options menu. For more
+information see section "ATTRIBUTES MENU AND GROUP ATTRIBUTES".
+.PP
+The \fBConfigScopeMenu\fP ('\fBS\fP') command brings up the scopes menu. For more
+information see section "SCOPES MENU".
 .PP
 Here is a full list of all the available variables. The name in braces is
 the name of the corresponding setting in
@@ -1687,11 +1735,13 @@ mailers with different command\-line parameters to be used such as 'elm \-s
 "%S" "%T" < "%F"' (e.g., elm \-s "subject" "iain" < .article) or
 \&'sendmail \-oi \-oem \-t < %F' (e.g. sendmail \-oi \-oem \-t < .article).
 .TP 
-\&\fB'Art. gelesen markieren' ignorie... (mark_ignore_tags)\fP
-When this is ON, the \fBGroupMarkThdRead\fP, \fBThreadMarkArtRead\fP functions
-('\fBK\fP') mark just the current article or thread, ignoring other tagged,
-unread articles. When OFF, the same function presents a menu with choices of
-the current thread or article, all tagged, unread articles, or nothing.
+\&\fB'Art. (un)gelesen markieren' ignorie... (mark_ignore_tags)\fP
+When this is ON, the \fBGroupMarkThdRead\fP ('\fBK\fP'), \fBThreadMarkArtRead\fP
+('\fBK\fP'), \fBMarkThdUnread\fP ('\fBZ\fP') at Group level and \fBMarkArtUnread\fP
+('\fBz\fP') at Thread level functions mark just the current article or thread,
+ignoring other tagged, (un)read articles. When OFF, the same function
+presents a menu with choices of the current thread or article, all tagged,
+unread articles, or nothing.
 .TP 
 \fBMark. gesp. Artikel/Threads gelesen (mark_saved_read)\fP
 If ON mark articles that are saved as read. Default is ON.
@@ -1799,7 +1849,7 @@ article. Default is ON.
 .TP 
 \fBBenutze 8bit\-Zeichen im Newsheader (post_8bit_header)\fP
 Allows 8bit characters unencoded in the header of a news article, if set
-this also disables the generation of MIME\-headers when they are usualy
+this also disables the generation of MIME\-headers when they are usually
 required. Default is OFF. Only enacted if \fBpost_mime_encoding\fP is also set
 to 8bit. In a number of local hierarchies where 8bit characters are used,
 using unencoded (raw)  8bit characters in header is acceptable and sometimes
@@ -2146,7 +2196,7 @@ similarly looking characters. On systems where this extension doesn't exist,
 this option is disabled. Default is OFF.
 .TP 
 \fBHow to treat blank lines (trim_article_body)\fP
-Allows you to select how \fBtin\fP treats blank lines in article bodys. 
+Allows you to select how \fBtin\fP treats blank lines in article bodies. 
 Default is 0. This option does not affect lines within verbatim blocks.
 .RS +.5i
 .IP 0 3
@@ -2253,24 +2303,49 @@ wrapping at the current screen width.
 .\"
 Format is the same as for \fBnews_quote_format\fP, this is used when answering
 to a crossposting to several groups with no \*(rqFollowup\-To:\*(rq set.
-.SS "GROUP ATTRIBUTES"
+.SS "ATTRIBUTES MENU AND GROUP ATTRIBUTES"
 \fBtin\fP allows certain attributes to be set on a per group basis. If it
 exists, the global attributes file, \fI${TIN_LIBDIR:\-NEWSLIBDIR}/attributes\fP
 is read. After that, the user's own attributes file
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/attributes\fP is read.  The global attributes
 file is useful for distributing system\-wide defaults to new users who have
-no private attributes file yet. A later version will provide a menu
-interface to set all the attributes. At present you will have to edit the
-file with your editor.
+no private attributes file yet.
 .PP
-.\"
-.\"
 Note that the \fIscope=<grouplist>\fP line has to be specified before
 the attributes are specified for that list. All attributes are set to a
 reasonable default so you only have to specify the attribute that you want
 to change (e.g., savedir). All toggle attributes are set by specifying
 ON/OFF. Otherwise, these function exactly the same as their global
 equivalents. For more details see \fBtin\fP(5).
+.PP
+Attributes can also be changed from the attributes menu which can be
+accessed by \fBConfigToggleAttrib\fP ('\fB<TAB>\fP') from the options menu
+or \fBScopeSelect\fP ('\fB^J\fP' or '\fB<CR>\fP') from the scopes menu.  The
+attributes menu looks and behaves very similar to the options menu. The
+title shows the current scope. Attributes set in the current scope are
+marked with '\+' to the left of the attributes number.
+.PP
+.\"
+.\"
+Besides the keys for moving around and changing values known from the
+options menu the attributes menu provides the following command:
+\fBConfigResetAttrib\fP ('\fBr\fP') which resets an attribute to a default value.
+.SS "SCOPES MENU"
+The scopes menu (accessible from the options menu with \fBConfigScopeMenu\fP
+('\fBS\fP')) shows all scopes read from the global and local attributes file. 
+Scopes from the global attributes file are marked with '!' to the left of
+the scope number. Delete/rename/move are not possible with those scopes.
+.PP
+.\"
+.\"
+In addition to the common moving keys the following commands are available:
+\fBScopeSelect\fP ('\fB^J\fP' or '\fB<CR>\fP') enter the attributes menu for
+the current scope, \fBScopeEditAttributesFile\fP ('\fBE\fP') edit the local
+attributes file, \fBScopeAdd\fP ('\fBa\fP') add a new scope, \fBScopeDelete\fP
+('\fBd\fP') delete the current scope, \fBScopeMove\fP ('\fBm\fP') move the current
+scope to a new position, \fBScopeRename\fP ('\fBr\fP') rename the current
+scope. \fBToggleHelpDisplay\fP ('\fBH\fP') toggles the help mini menu at the
+bottom of the screen.
 .SS "ARTIKEL FILTERN"
 .\" FIXME - add scoring description
 When there is a subject or an author which you are either very interested
@@ -2445,6 +2520,10 @@ of articles mailed/saved. Articles are saved in a private news structure
 under your <savedir> directory (default is
 \fI${TIN_HOMEDIR:\-"$HOME"}/News\fP). Be careful of using this option if you
 read a lot of groups because you could overflow your file system.
+.PP
+When using \*(rq\fB\-S\fP\*(rq together with a given directory to save to (\*(rq\fB\-s\fP\*(rq
+option), the same directory must be specified when reading the articles by
+\&\*(rq\fB\-R\fP\*(rq.
 .PP
 If you only want to save some of your groups use the \fBbatch_save\fP tinrc
 variable. Set to ON or OFF in tinrc to enable/disable saving of all groups
@@ -2829,14 +2908,6 @@ Für eine ausführlich Beschreibung siehe \fBtin\fP(5).
 .\" .B SHELL (Unix)
 .\" The pathname of the user's login shell.
 .\"
-.\" the next two will go away once we remove AUTHINFO GENERIC (deprecated by RFC 4643)
-.\" .TP
-.\" .B NNTPAUTH
-.\" command and parameters for generic authentication.
-.\" .TP
-.\" .B NNTP_AUTH_FDS
-.\" dot separated file descriptors for generic authentication.
-.\"
 .\" used in xface support
 .\" .TP
 .\" .B DISPLAY
@@ -2950,13 +3021,13 @@ Full path to the users mailbox.
 This variable has precedence over the default editor (i.e., \fBvi\fP(1))  that
 is used in all editing operations within \fBtin\fP (e.g., posting, replying,
 follow\-ups, ...). Evaluation order is \fI${VISUAL:\-"${EDITOR:\-vi}"}\fP. See
-\fBenviron\fP(5)  for more infos.
+\fBenviron\fP(5)  for more info.
 .TP 
 \fBEDITOR\fP
 If $\fBVISUAL\fP is unset, then this variable is looked up for a default
-editor. If $\fBEDITOR\fP and $\fBVISUAL\fP are both unset, \fBtin\fP will uses the
-systems default editor (i.e.  \fBvi\fP(1))  on UNIX\-systems). See \fBenviron\fP(5) 
-for more infos.
+editor. If $\fBEDITOR\fP and $\fBVISUAL\fP are both unset, \fBtin\fP uses the systems
+default editor (i.e.  \fBvi\fP(1))  on UNIX\-systems). See \fBenviron\fP(5)  for
+more info.
 .TP 
 \fBAUTOSUBSCRIBE\fP
 A new group is checked against the list of patterns; if it matches, \fBtin\fP
@@ -3068,7 +3139,7 @@ or window. When \fB$LINES\fP is set, any terminal\-height information implied by
 \fBTERM\fP
 .\"
 .\"
-.\" TODO: addd missing, sort usefull, document in detail
+.\" TODO: add missing, sort useful, document in detail
 Der verwendete Terminaltyp. Weitere Informationen finden sich in
 \fBenviron\fP(5).
 .SH SIGNALE
@@ -3099,10 +3170,10 @@ Write out \fI${TIN_HOMEDIR:\-"$HOME"}/.newsrc\fP\-file.
 When \fBtin\fP is started in debug mode (\*(rq\fB\-D n\fP\*(rq) it will create world
 readable files in \fB$TMPDIR\fP which may contain the users NNTP password in
 cleartext. On multiuser\-systems \fB$TMPDIR\fP should be set to a safe location
-befor starting tin in debug mode (e.g.  \fBTMPDIR=$HOME tin \-D 1\fP).
+before starting tin in debug mode (e.g.  \fBTMPDIR=$HOME tin \-D 1\fP).
 .SH "KONFORM ZU"
-.\" - RFC1036, RFC2045, RFC2047, RFC2980, RFC3977, RFC4643, RFC5322
-.\"   or whatever
+.\" - RFC2045, RFC2047, RFC2980, RFC3977, RFC4643, RFC5322
+.\"   RFC5536, RFC5537 or whatever
 .\"
 .\"
 \fBtin\fP does conform to the Base Definitions volume of IEEE Std 1003.1\-2001,
@@ -3138,20 +3209,20 @@ entwickelt und dessen Code im März 1991 von ihm in alt.sources
 veröffentlicht wurde. Die erste Version von \fBtin\fP wurde am 23. August 1991
 veröffentlicht. \fBtass\fP(1) orientiert sich stark an notesfiles, einer Public
 Domain Version für UNIX von PLATO Notes, welches 1982 von Ray Essick und Rob
-Kolstad and der University of Illinois entstand. Eine Übersicht der
-Versionen findet sich unter <http://www.tin.org/history.html>.
+Kolstad an der University of Illinois entstand. Eine Übersicht der Versionen
+findet sich unter <http://www.tin.org/history.html>.
 .SH DANKSAGUNGEN
 .PP
 .IP "Rich Skrenta"
-author of \fBtass\fP(1)  v3.2 which this newsreader used as its base.
+Autor von \fBtass\fP(1)  v3.2, der Basis für diesen Newsreader.
 .IP "Bill Davidsen"
-author of envarg.c environment variable reading routine.
+Autor von envarg.c, Umgebungsvariablenleseroutine.
 .IP "Mike Gleason"
-author of sigfile.c random signature generation routines.
+Autor von sigfile.c, Zufallssignaturengenerierungsroutine.
 .IP "Markus Kuhn <Markus.Kuhn@cl.cam.ac.uk>"
 author of langinfo.c, charset.c and iso2asc.txt ISO\-8859\-1 documentation.
 .IP "Arnold Robbins"
-author of strftime.c date formatting routine.
+Autor von strftime.c, Datumsfromatierungsroutine.
 .IP "Rich Salz"
 author of wildmat.c pattern matching and parsdate.y date parsing routines.
 .IP "Dave Taylor"
@@ -3161,11 +3232,11 @@ author of getline.c \fBemacs\fP(1)  style editing routine.
 .IP "Steven Madsen"
 for adding \fBpgp\fP(1)  (Pretty Good Privacy) support.
 .IP "Philip Hazel <ph10@cam.ac.uk>"
-for \fBpcre\fP(3)  (Perl\-compatible regular expression library).
+für \fBpcre\fP(3) (Library für Perl\-kompatible reguläre Ausdrücke).
 .IP "Patrick Powell <papowell@astart.com>"
 .\"
 .\"
-for \fBsnprintf\fP(3)  and \fBvsnprintf\fP(3)  fallbacks.
+für \fBsnprintf\fP(3)  und \fBvsnprintf\fP(3)  Fallbacks.
 .SH AUTOR
 .TP  1i
 Iain Lea <iain@bricbrac.de>
@@ -3188,5 +3259,5 @@ Erika Mustermann <erika@example.org>
 \fBiconv_open\fP(3), \fBnl_langinfo\fP(3), \fBpcre\fP(3), \fBpcrepattern\fP(3),
 \fBsnprintf\fP(3), \fBstrftime\fP(3), \fBvsnprintf\fP(3), \fBwildmat\fP(3),
 \fBenviron\fP(5), \fBlocale\fP(5), \fBmbox\fP(5), \fBmmdf\fP(5), \fBnewsoverview\fP(5),
-\fBtin\fP(5), \fBRFC1036\fP, \fBRFC1524\fP, \fBRFC2045\fP, \fBRFC2046\fP, \fBRFC2047\fP,
-\fBRFC2048\fP, \fBRFC2980\fP, \fBRFC3977\fP, \fBRFC4643\fP, \fBRFC5322\fP
+\fBtin\fP(5), \fBRFC1524\fP, \fBRFC2045\fP, \fBRFC2046\fP, \fBRFC2047\fP, \fBRFC2048\fP,
+\fBRFC2980\fP, \fBRFC3977\fP, \fBRFC4643\fP, \fBRFC5322\fP, \fBRFC5536\fP, \fBRFC5537\fP

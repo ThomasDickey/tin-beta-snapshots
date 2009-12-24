@@ -3,10 +3,10 @@
  *  Module    : init.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2009-02-02
+ *  Updated   : 2009-12-13
  *  Notes     :
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,7 +64,6 @@ char active_times_file[PATH_LEN];
 char article_name[PATH_LEN];			/* ~/TIN_ARTICLE_NAME file */
 char bug_nntpserver1[PATH_LEN];		/* welcome message of NNTP server used */
 char bug_nntpserver2[PATH_LEN];		/* welcome message of NNTP server used */
-char cmdline_nntpserver[PATH_LEN];
 char cvers[LEN];
 char dead_article[PATH_LEN];		/* ~/dead.article file */
 char dead_articles[PATH_LEN];		/* ~/dead.articles file */
@@ -134,12 +133,12 @@ t_bool filtered_articles;		/* locally killed / auto-selected articles */
 #else
 	t_bool force_no_post = FALSE;	/* don't force no posting mode */
 #endif /* NO_POSTING */
-t_bool got_sig_pipe = FALSE;
 t_bool list_active;
 t_bool newsrc_active;
 t_bool no_write = FALSE;		/* do not write newsrc on quit (-X cmd-line flag) */
 t_bool post_article_and_exit;		/* quick post of an article then exit(elm like) */
 t_bool post_postponed_and_exit;		/* post postponed articles and exit */
+t_bool range_active;		/* Set if a range is defined */
 t_bool reread_active_for_posted_arts;
 t_bool read_local_newsgroups_file;	/* read newsgroups file locally or via NNTP */
 t_bool read_news_via_nntp = FALSE;	/* read news locally or via NNTP */
@@ -180,6 +179,8 @@ struct regex_cache
 		NULL,
 		NULL
 	};
+
+struct t_cmdlineopts cmdline;
 
 struct t_config tinrc = {
 	ART_MARK_DELETED,		/* art_marked_deleted */
@@ -405,12 +406,92 @@ struct t_config tinrc = {
 	NORMALIZE_NFKC,		/* normalization form */
 #endif /* HAVE_UNICODE_NORMALIZATION */
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
-	FALSE		/* render_bidi */
+	FALSE,		/* render_bidi */
 #endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
+#ifdef CHARSET_CONVERSION
+	-1,		/* attrib_mm_network_charset, defaults to $MM_CHARSET */
+	"",		/* attrib_undeclared_charset */
+#endif /* !CHARSET_CONVERSION */
+	"",		/* attrib_editor_format */
+	"",		/* attrib_fcc */
+	"",		/* attrib_maildir */
+	"",		/* attrib_from */
+	"",		/* attrib_mailing_list */
+	"",		/* attrib_organization */
+	"",		/* attrib_followup_to */
+	"",		/* attrib_mime_types_to_save */
+	"",		/* attrib_news_headers_to_display */
+	"",		/* attrib_news_headers_to_not_display */
+	"",		/* attrib_news_quote_format */
+	"",		/* attrib_quote_chars */
+	"",		/* attrib_sigfile */
+	"",		/* attrib_savedir */
+	"",		/* attrib_savefile */
+	"",		/* attrib_x_body */
+	"",		/* attrib_x_headers */
+#ifdef HAVE_ISPELL
+	"",		/* attrib_ispell */
+#endif /* HAVE_ISPELL */
+	"",		/* attrib_quick_kill_scope */
+	"",		/* attrib_quick_select_scope */
+	"",		/* attrib_date_format */
+	0,		/* attrib_trim_article_body */
+	0,		/* attrib_auto_cc_bcc */
+	SHOW_INFO_LINES,		/* attrib_show_info */
+	FILTER_SUBJ_CASE_SENSITIVE,		/* attrib_quick_kill_header */
+	FILTER_SUBJ_CASE_SENSITIVE,		/* attrib_quick_select_header */
+	MIME_ENCODING_QP,		/* attrib_mail_mime_encoding */
+	MIME_ENCODING_8BIT,		/* attrib_post_mime_encoding */
+	POST_PROC_NO,			/* attrib_post_process_type */
+	SHOW_FROM_NAME,			/* attrib_show_author */
+	SORT_ARTICLES_BY_DATE_ASCEND,		/* attrib_sort_article_type */
+	SORT_THREADS_BY_SCORE_DESCEND,		/* attrib_sort_threads_type */
+	THREAD_BOTH,		/* attrib_thread_articles */
+	THREAD_PERC_DEFAULT,	/* attrib_thread_perc */
+	TRUE,		/* attrib_add_posted_to_filter */
+	TRUE,		/* attrib_advertising */
+	TRUE,		/* attrib_alternative_handling */
+	TRUE,		/* attrib_auto_list_thread */
+	FALSE,		/* attrib_auto_select */
+	FALSE,		/* attrib_auto_save */
+	TRUE,		/* attrib_batch_save */
+	TRUE,		/* attrib_delete_tmp_files */
+	TRUE,		/* attrib_group_catchup_on_exit */
+	FALSE,		/* attrib_mail_8bit_header */
+	FALSE,		/* attrib_mime_forward */
+	FALSE,		/* attrib_mark_ignore_tags */
+	TRUE,		/* attrib_mark_saved_read */
+	TRUE,		/* attrib_pos_first_unread */
+	FALSE,		/* attrib_post_8bit_header */
+	TRUE,		/* attrib_post_process_view */
+#ifndef DISABLE_PRINTING
+	FALSE,		/* attrib_print_header */
+#endif /* !DISABLE_PRINTING */
+	FALSE,		/* attrib_process_only_unread */
+	FALSE,		/* attrib_prompt_followupto */
+	TRUE,		/* attrib_show_only_unread_arts */
+	TRUE,		/* attrib_show_signatures */
+	TRUE,		/* attrib_sigdashes */
+	TRUE,		/* attrib_signature_repost */
+#ifdef M_UNIX
+	TRUE,		/* attrib_start_editor_offset */
+#else
+	FALSE,		/* attrib_start_editor_offset */
+#endif /* M_UNIX */
+	FALSE,		/* attrib_tex2iso_conv */
+	TRUE,		/* attrib_thread_catchup_on_exit */
+	TRUE,		/* attrib_verbatim_handling */
+	FALSE,		/* attrib_x_comment_to */
+	TRUE,		/* attrib_wrap_on_next_unread */
+	FALSE,		/* attrib_ask_for_metamail */
+	FALSE,		/* attrib_quick_kill_case */
+	FALSE,		/* attrib_quick_kill_expire */
+	FALSE,		/* attrib_quick_select_case */
+	FALSE		/* attrib_quick_select_expire */
 };
 
 struct t_capabilities nntp_caps = {
-	NONE, /* type (none, LIST EXTENSIONS, CAPABILITIES, BROKEN) */
+	NONE, /* type (NONE, CAPABILITIES, BROKEN) */
 	0, /* CAPABILITIES version */
 	FALSE, /* MODE-READER: "MODE READER" */
 	FALSE, /* READER: "ARTICLE", "BODY" */
@@ -425,6 +506,7 @@ struct t_capabilities nntp_caps = {
 	FALSE, /* LIST: "LIST SUBSCRIPTIONS" */
 	FALSE, /* LIST: "LIST DISTRIBUTIONS" */
 	FALSE, /* LIST: "LIST MODERATORS" */
+	FALSE, /* LIST: "LIST COUNTS" */
 	FALSE, /* XPAT */
 	FALSE, /* HDR: "HDR", "LIST HEADERS" */
 	NULL, /* [X]HDR */
@@ -436,15 +518,17 @@ struct t_capabilities nntp_caps = {
 	FALSE, /* STARTTLS */
 	FALSE, /* AUTHINFO USER/PASS */
 	FALSE, /* AUTHINFO SASL */
-	FALSE, /* SASL CRAM-MD5 */
-	FALSE, /* SASL DIGEST-MD5 */
-	FALSE, /* SASL PLAIN */
-	FALSE, /* SASL GSSAPI */
-	FALSE, /* SASL EXTERNAL */
+	FALSE, /* AUTHINFO available but not in current state */
+	SASL_NONE, /* SASL CRAM-MD5 DIGEST-MD5 PLAIN GSSAPI EXTERNAL OTP NTLM LOGIN */
 #if 0
 	FALSE, /* STREAMING: "MODE STREAM", "CHECK", "TAKETHIS" */
 	FALSE /* IHAVE */
 #endif /* 0 */
+#ifndef BROKEN_LISTGROUP
+	FALSE /* LISTGROUP doesn't select group */
+#else
+	TRUE
+#endif /*! BROKEN_LISTGROUP */
 };
 
 static char libdir[PATH_LEN];			/* directory where news config files are (ie. active) */
@@ -587,7 +671,6 @@ init_selfinfo(
 	} else
 		strncpy(homedir, TMPDIR, sizeof(homedir) - 1);
 
-	cmdline_nntpserver[0] = '\0';
 	created_rcdir = FALSE;
 	dangerous_signal_exit = FALSE;
 	disable_gnksa_domain_check = FALSE;
@@ -746,7 +829,7 @@ init_selfinfo(
 	strcpy(tinrc.inews_prog, PATH_INEWS);
 	joinpath(article_name, sizeof(article_name), homedir, TIN_ARTICLE_NAME);
 #ifdef APPEND_PID
-	snprintf(article_name + strlen(article_name), sizeof(article_name) - strlen(article_name), ".%d", (int) process_id);
+	snprintf(article_name + strlen(article_name), sizeof(article_name) - strlen(article_name), ".%ld", (long) process_id);
 #endif /* APPEND_PID */
 	joinpath(dead_article, sizeof(dead_article), homedir, "dead.article");
 	joinpath(dead_articles, sizeof(dead_articles), homedir, "dead.articles");

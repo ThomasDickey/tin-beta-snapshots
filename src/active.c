@@ -3,10 +3,10 @@
  *  Module    : active.c
  *  Author    : I. Lea
  *  Created   : 1992-02-16
- *  Updated   : 2009-01-25
+ *  Updated   : 2009-12-09
  *  Notes     :
  *
- * Copyright (c) 1992-2009 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2010 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,13 +65,17 @@ static time_t active_timestamp;	/* time active file read (local) */
  */
 static FILE *open_newgroups_fp(int idx);
 static FILE *open_news_active_fp(void);
+static int check_for_any_new_groups(void);
 static void active_add(struct t_group *ptr, long count, long max, long min, const char *moderated);
 static void append_group_line(char *active_file, char *group_path, long art_max, long art_min, char *base_dir);
-static void check_for_any_new_groups(void);
 static void make_group_list(char *active_file, char *base_dir, char *fixed_base, char *group_path);
 static void read_active_file(void);
 static void read_newsrc_active_file(void);
 static void subscribe_new_group(char *group, char *autosubscribe, char *autounsubscribe);
+#ifdef NNTP_ABLE
+	static t_bool parse_count_line(char *line, long *max, long *min, long *count, char *moderated);
+	static void read_active_counts(void);
+#endif /* NNTP_ABLE */
 
 
 t_bool
@@ -226,10 +230,10 @@ parse_active_line(
 	}
 
 	if (!p || !q || !r || !lineok) {
-#	ifdef DEBUG
+#ifdef DEBUG
 		if (debug & DEBUG_NNTP)
 			debug_print_file("NNTP", txt_bad_active_file, line);
-#	endif /* DEBUG */
+#endif /* DEBUG */
 		error_message(2, _(txt_bad_active_file), line);
 		return FALSE;
 	}
@@ -240,6 +244,56 @@ parse_active_line(
 
 	return TRUE;
 }
+
+
+#ifdef NNTP_ABLE
+/*
+ * Parse line from "LIST COUNTS"
+ * group high low count status, i.e.:
+ * trigofacile.test 326 6 297 y
+ */
+static t_bool
+parse_count_line(
+	char *line,
+	long *max,
+	long *min,
+	long *count,
+	char *moderated)
+{
+	char *p = NULL, *q = NULL, *r = NULL, *s = NULL;
+	t_bool lineok = FALSE;
+
+	if (line[0] == '#' || line[0] == '\0')
+		return FALSE;
+
+	if (strtok(line, ACTIVE_SEP)) {		/* skip group name */
+		if ((p = strtok(NULL, ACTIVE_SEP))) {	/* group max */
+			if ((q = strtok(NULL, ACTIVE_SEP))) {	/* group min */
+				if ((r = strtok(NULL, ACTIVE_SEP))) { /* group count */
+					s = strtok(NULL, ACTIVE_SEP);	/* mod status or path to mailgroup */
+					lineok = TRUE;
+				}
+			}
+		}
+	}
+
+	if (!p || !q || !r || !s || !lineok) {
+#	ifdef DEBUG
+		if (debug & DEBUG_NNTP)
+			debug_print_file("NNTP", _(txt_unparseable_counts), line);
+#	endif /* DEBUG */
+		error_message(2, _(txt_unparseable_counts), line);
+		return FALSE;
+	}
+
+	*max = atol(p);
+	*min = atol(q);
+	*count = atol(r);
+	strcpy(moderated, s);
+
+	return TRUE;
+}
+#endif /* NNTP_ABLE */
 
 
 /*
@@ -265,6 +319,7 @@ read_newsrc_active_file(
 	static char ngname[NNTP_STRLEN];
 	struct t_group *grpptr;
 #ifdef NNTP_ABLE
+	t_bool need_auth = FALSE;
 	char *ngnames[NUM_SIMULTANEOUS_GROUP_COMMAND];
 	int index_i = 0;
 	int index_o = 0;
@@ -282,7 +337,7 @@ read_newsrc_active_file(
 		return;
 	}
 
-	if (!batch_mode)
+	if (!batch_mode || verbose)
 		wait_message(0, _(txt_reading_news_newsrc_file));
 
 	while ((ptr = tin_fgets(fp, FALSE)) != NULL || window != 0) {
@@ -318,7 +373,7 @@ read_newsrc_active_file(
 				window++;
 			}
 			if (window == NUM_SIMULTANEOUS_GROUP_COMMAND || ptr == NULL) {
-				int respcode = get_respcode(line, sizeof(line));
+				int respcode = get_only_respcode(line, sizeof(line));
 
 				if (reconnected_in_last_get_server) {
 					/*
@@ -333,7 +388,7 @@ read_newsrc_active_file(
 						snprintf(buf, sizeof(buf), "GROUP %s", ngnames[j]);
 #	ifdef DEBUG
 						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "read_newsrc_active_file() %s",  buf);
+							debug_print_file("NNTP", "read_newsrc_active_file() %s", buf);
 #	endif /* DEBUG */
 						put_server(buf);
 						j = (j + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
@@ -353,16 +408,32 @@ read_newsrc_active_file(
 							char fmt[20];
 
 							snprintf(fmt, sizeof(fmt), "%%ld %%ld %%ld %%%ds", NNTP_STRLEN);
-							if (sscanf(line, fmt, &count, &min, &max, ngname) != 4)
+							if (sscanf(line, fmt, &count, &min, &max, ngname) != 4) {
 								error_message(2, _(txt_error_invalid_response_to_group), line);
-							if (strcmp(ngname, ngnames[index_o]) != 0)
-								error_message(2, _(txt_error_wrong_newsgroupname_in_group_response), line, ngnames[index_o]);
+#	ifdef DEBUG
+								if (debug & DEBUG_NNTP) /* TODO: -> lang.c */
+									debug_print_file("NNTP", "Invalid response to \"GROUP %s\": \"%s\"", ngnames[index_o], line);
+#	endif /* DEBUG */
+							}
+							if (strcmp(ngname, ngnames[index_o]) != 0) {
+								error_message(2, _(txt_error_wrong_newsgroupname_in_group_response), ngname, ngnames[index_o], line);
+#	ifdef DEBUG
+								if (debug & DEBUG_NNTP) /* TODO: -> lang.c */
+									debug_print_file("NNTP", "Groupname missmatch in response to \"GROUP %s\": \"%s\"", ngnames[index_o], line);
+#	endif /* DEBUG */
+							}
 							ptr = ngname;
 							free(ngnames[index_o]);
 							index_o = (index_o + 1) % NUM_SIMULTANEOUS_GROUP_COMMAND;
 							window--;
 							break;
 						}
+
+					case ERR_NOAUTH:
+					case NEED_AUTHINFO:
+						need_auth = TRUE; /* delay auth till end of loop */
+						/* keep lint quiet: */
+						/* FALLTHROUGH */
 
 					case ERR_NOGROUP:
 						free(ngnames[index_o]);
@@ -431,6 +502,15 @@ read_newsrc_active_file(
 		active_add(grpptr, count, max, min, moderated);
 	}
 
+#ifdef NNTP_ABLE
+	if (need_auth) { /* delayed auth */
+		if (!authenticate(nntp_server, userid, FALSE)) {
+			error_message(2, _(txt_auth_failed), ERR_ACCESS);
+			tin_done(EXIT_FAILURE);
+		}
+	}
+#endif /* NNTP_ABLE */
+
 	fclose(fp);
 
 	/*
@@ -440,12 +520,12 @@ read_newsrc_active_file(
 		if (newsrc_active && !num_active)
 			error_message(2, _(txt_error_server_has_no_listed_groups), newsrc);
 		else
-			error_message(2, _(txt_active_file_is_empty), (read_news_via_nntp ? (read_saved_news ? news_active_file : (txt_servers_active)) : news_active_file));
+			error_message(2, _(txt_active_file_is_empty), (read_news_via_nntp ? (read_saved_news ? news_active_file : _(txt_servers_active)) : news_active_file));
 		tin_done(EXIT_FAILURE);
 	}
 
-	if (!batch_mode)
-		my_fputs("\n", stdout);
+	if (!batch_mode || verbose)
+		my_fputc('\n', stdout);
 }
 
 
@@ -479,7 +559,7 @@ read_active_file(
 	long processed = 0L;
 	struct t_group *grpptr;
 
-	if (!batch_mode)
+	if (!batch_mode || verbose)
 		wait_message(0, _(txt_reading_news_active_file));
 
 	if ((fp = open_news_active_fp()) == NULL) {
@@ -545,20 +625,97 @@ read_active_file(
 		tin_done(EXIT_FAILURE);
 	}
 
-	if (!batch_mode)
-		my_fputs("\n", stdout);
+	if (!batch_mode || verbose)
+		my_fputc('\n', stdout);
 }
+
+
+#ifdef NNTP_ABLE
+/*
+ * Load the active file into active[] via LIST COUNTS
+ */
+static void
+read_active_counts(
+	void)
+{
+	FILE *fp;
+	char *ptr;
+	char moderated[PATH_LEN];
+	long count = -1L, min = 1L, max = 0L;
+	long processed = 0L;
+	struct t_group *grpptr;
+
+	if (!batch_mode || verbose)
+		wait_message(0, _(txt_reading_news_active_file));
+
+	if ((fp = nntp_command("LIST COUNTS", OK_GROUPS, NULL, 0)) == NULL) {
+		if (cmd_line && !batch_mode)
+			my_fputc('\n', stderr);
+
+		error_message(2, _(txt_cannot_retrieve), ACTIVE_FILE);
+		tin_done(EXIT_FAILURE);
+	}
+
+	while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
+		if (!parse_count_line(ptr, &max, &min, &count, moderated))
+			continue;
+
+		if (++processed % MODULO_COUNT_NUM == 0)
+			spin_cursor();
+
+		/*
+		 * Load group into group hash table
+		 * NULL means group already present, so we just fixup the counters
+		 * This call may implicitly ++num_active
+		 */
+		if ((grpptr = group_add(ptr)) == NULL) {
+			if ((grpptr = group_find(ptr, FALSE)) == NULL)
+				continue;
+
+			if (max > grpptr->xmax) {
+				grpptr->xmax = max;
+				grpptr->count = count;
+			}
+
+			if (min > grpptr->xmin) {
+				grpptr->xmin = min;
+				grpptr->count = count;
+			}
+
+			continue;
+		}
+
+		/*
+		 * Load the new group in active[]
+		 */
+		active_add(grpptr, count, max, min, moderated);
+	}
+
+	/*
+	 * Exit if active file wasn't read correctly or is empty
+	 */
+	if (tin_errno || !num_active) {
+		error_message(2, _(txt_active_file_is_empty), _(txt_servers_active));
+		tin_done(EXIT_FAILURE);
+	}
+
+	if (!batch_mode || verbose)
+		my_fputc('\n', stdout);
+}
+#endif /* NNTP_ABLE*/
 
 
 /*
  * Load the active file into active[]
  * Check and preload any new newgroups into my_group[]
  */
-void
+int
 read_news_active_file(
 	void)
 {
 	FILE *fp;
+	int newgrps = 0;
+	t_bool do_group_cmds = !nntp_caps.list_counts;
 
 	/*
 	 * Ignore -n if no .newsrc can be found or .newsrc is empty
@@ -577,27 +734,33 @@ read_news_active_file(
 	}
 
 	/* Read an active file if it is allowed */
-	if (list_active)
-		read_active_file();
+	if (list_active) {
+#ifdef NNTP_ABLE
+		if (read_news_via_nntp && nntp_caps.type == CAPABILITIES && nntp_caps.list_counts)
+			read_active_counts();
+		else
+#endif /* NNTP_ABLE */
+			read_active_file();
+	}
 
 	/* Read .newsrc and check each group */
 	if (newsrc_active) {
 #ifdef NNTP_ABLE
 #	ifndef DISABLE_PIPELINING
 		/*
+		 * use "LIST ACTIVE grp" (or even LIST ACTIVE grp,...) if we have
+		 * less than PIPELINE_LIMIT groups and we use -n but not -Q
+		 *
 		 * TODO: test me. do we want this overhead? add a DISABLE_PIPELINING
 		 *       code-path? we don't have list_active set but we use some
 		 *       sort of LIST ACTIVE -> our documentation is a bit incorrect
 		 *       now.
-		 *
-		 * use "LIST ACTIVE grp" if we have less than PIPELINE_LIMIT
-		 * groups and we use -n but not -Q
 		 */
 		if (read_news_via_nntp && !list_active && ((nntp_caps.type == CAPABILITIES && nntp_caps.list_active) || nntp_caps.type != CAPABILITIES) && (show_description || check_for_new_newsgroups)) {
 			char buff[NNTP_STRLEN];
 			char *ptr, *q;
 			char moderated[PATH_LEN];
-			int i, r, j = 0;
+			int r = 0, i = 0, j = 0;
 			long count = -1L, min = 1L, max = 0L;
 			struct t_group *grpptr;
 			t_bool need_auth = FALSE;
@@ -612,18 +775,43 @@ read_news_active_file(
 						if (!(q = strpbrk(ptr, ":!")))
 							continue;
 						*q = '\0';
-						snprintf(buff, sizeof(buff), "LIST ACTIVE %s", ptr);
+						if (nntp_caps.type == CAPABILITIES && (nntp_caps.list_active || nntp_caps.list_counts)) {
+							/* LIST ACTIVE or LIST COUNTS takes wildmats */
+							if (!i) { /* new wildmat list */
+								i++;
+								snprintf(buff, sizeof(buff), "LIST %s %s", nntp_caps.list_counts ? "COUNTS" : "ACTIVE", ptr);
+								continue;
+							}
+							if (strlen(buff) + strlen(ptr) + 1 < NNTP_STRLEN) { /* append group name */
+								snprintf(buff + strlen(buff), sizeof(buff) - strlen(buff), ",%s", ptr);
+								continue;
+							}
+							i = 0; /* new wildmatlist required */
+						} else
+							snprintf(buff, sizeof(buff), "LIST ACTIVE %s", ptr);
 						put_server(buff);
+						r++;
+						*buff='\0';
 					}
+					if (*buff) {
+						put_server(buff);
+						r++;
+					}
+				} else {
+					do_group_cmds = TRUE;
 				}
 				fclose(fp);
 
 				if (j < PIPELINE_LIMIT) {
-					for (i = 0; i < j && !did_reconnect; i++) {
-						if ((r = get_only_respcode(buff, sizeof(buff))) != OK_GROUPS) {
+					for (i = 0; i < r && !did_reconnect; i++) {
+						if ((j = get_only_respcode(buff, sizeof(buff))) != OK_GROUPS) {
 							/* TODO: add 483 (RFC 3977) code */
-							if (r == ERR_NOAUTH || r == NEED_AUTHINFO)
+							if (j == ERR_NOAUTH || r == NEED_AUTHINFO)
 								need_auth = TRUE;
+#if 0 /* do we need something like this? */
+							if (j == ERR_CMDSYN)
+								list_active = TRUE;
+#endif /* 0 */
 							continue;
 						} else {
 							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
@@ -631,8 +819,13 @@ read_news_active_file(
 								if (debug & DEBUG_NNTP)
 									debug_print_file("NNTP", "<<< %s", ptr);
 #		endif /* DEBUG */
-								if (!parse_active_line(ptr, &max, &min, moderated))
-									continue;
+								if (nntp_caps.type == CAPABILITIES && nntp_caps.list_counts) {
+									if (!parse_count_line(ptr, &max, &min, &count, moderated))
+										continue;
+								} else {
+									if (!parse_active_line(ptr, &max, &min, moderated))
+										continue;
+								}
 
 								if ((grpptr = group_add(ptr)) == NULL) {
 									if ((grpptr = group_find(ptr, FALSE)) == NULL)
@@ -654,7 +847,7 @@ read_news_active_file(
 					}
 					if (need_auth) { /* retry after auth is overkill here, so just auth */
 						if (!authenticate(nntp_server, userid, FALSE)) {
-							error_message(2, _(txt_auth_failed), ERR_ACCESS);
+							error_message(2, _(txt_auth_failed), nntp_caps.type == CAPABILITIES ? ERR_AUTHFAIL : ERR_ACCESS);
 							tin_done(EXIT_FAILURE);
 						}
 					}
@@ -664,7 +857,8 @@ read_news_active_file(
 		}
 #	endif /* !DISABLE_PIPELINING */
 #endif /* NNTP_ABLE */
-		read_newsrc_active_file();
+		if (!nntp_caps.list_counts || do_group_cmds)
+			read_newsrc_active_file();
 	}
 
 	(void) time(&active_timestamp);
@@ -674,12 +868,14 @@ read_news_active_file(
 	 * check_for_any_new_groups() also does $AUTOSUBSCRIBE
 	 */
 	if (check_for_new_newsgroups)
-		check_for_any_new_groups();
+		newgrps = check_for_any_new_groups();
 
 	/*
 	 * finally we have a list of all groups an can set the attributes
 	 */
 	assign_attributes_to_groups();
+
+	return newgrps;
 }
 
 
@@ -727,7 +923,7 @@ open_newgroups_fp(
  * If reading news via NNTP issue a NEWGROUPS command.
  * Format:   (as active file) Groupname Maxart Minart moderated
  */
-static void
+static int
 check_for_any_new_groups(
 	void)
 {
@@ -736,6 +932,7 @@ check_for_any_new_groups(
 	char *ptr, *line, buf[NNTP_STRLEN];
 	char old_newnews_host[PATH_LEN];
 	int newnews_index;
+	int newgrps = 0;
 	time_t old_newnews_time;
 	time_t new_newnews_time;
 
@@ -780,11 +977,12 @@ check_for_any_new_groups(
 				*ptr = '\0';
 			}
 			subscribe_new_group(line, autosubscribe, autounsubscribe);
+			newgrps++;
 		}
 		TIN_FCLOSE(fp);
 
 		if (tin_errno)
-			return;				/* Don't update the time if we quit */
+			return 0;				/* Don't update the time if we quit */
 	}
 
 	/*
@@ -798,6 +996,11 @@ check_for_any_new_groups(
 		snprintf(buf, sizeof(buf), "%s %lu", nntp_server, (unsigned long int) new_newnews_time);
 		load_newnews_info(buf);
 	}
+
+	if (!batch_mode)
+		my_fputc('\n', stdout);
+
+	return newgrps;
 }
 
 
@@ -1041,11 +1244,11 @@ create_save_active_file(
 	wait_message(0, _(txt_creating_active));
 
 	print_active_head(local_save_active_file);
-	strfpath(tinrc.savedir, group_path, sizeof(group_path), NULL);
+	strfpath(cmdline.args & CMDLINE_SAVEDIR ? cmdline.savedir : tinrc.savedir, group_path, sizeof(group_path), NULL, FALSE);
 	while (strlen(group_path) && group_path[strlen(group_path) - 1] == '/')
 		group_path[strlen(group_path) - 1] = '\0';
 	fb = my_strdup(group_path);
-	make_group_list(local_save_active_file, tinrc.savedir, fb, group_path);
+	make_group_list(local_save_active_file, cmdline.args & CMDLINE_SAVEDIR ? cmdline.savedir : tinrc.savedir, fb, group_path);
 	free(fb);
 }
 
@@ -1119,6 +1322,7 @@ append_group_line(
 	if ((fp = fopen(active_file, "a+")) != NULL) {
 		char *ptr;
 		char *group_name;
+		int err;
 
 		ptr = group_name = my_strdup(group_path);
 		ptr++;
@@ -1127,8 +1331,13 @@ append_group_line(
 
 		wait_message(0, "Appending=[%s %ld %ld %s]\n", group_name, art_max, art_min, base_dir);
 		print_group_line(fp, group_name, art_max, art_min, base_dir);
-		if (ferror(fp) || fclose(fp)) /* TODO: issue warning? */
+		if ((err = ferror(fp)) || fclose(fp)) { /* TODO: issue warning? */
 			rename(file_tmp, active_file);
+			if (err) {
+				clearerr(fp);
+				fclose(fp);
+			}
+		}
 		free(group_name);
 	}
 	unlink(file_tmp);

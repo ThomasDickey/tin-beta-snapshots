@@ -3,10 +3,10 @@
  *  Module    : cook.c
  *  Author    : J. Faultless
  *  Created   : 2000-03-08
- *  Updated   : 2008-12-30
+ *  Updated   : 2009-12-10
  *  Notes     : Split from page.c
  *
- * Copyright (c) 2000-2009 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2010 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,7 @@
 
 static t_bool header_wanted(const char *line);
 static t_part *new_uue(t_part **part, char *name);
-static void process_text_body_part(t_bool wrap_lines, FILE *in, t_part *part, int hide_uue, int tabs);
+static void process_text_body_part(t_bool wrap_lines, FILE *in, t_part *part, int hide_uue);
 static void put_cooked(size_t buf_len, t_bool wrap_lines, int flags, const char *fmt, ...);
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	static t_bool wexpand_ctrl_chars(wchar_t **wline, size_t *length, size_t lcook_width);
@@ -105,18 +105,20 @@ expand_ctrl_chars(
 	*length = strlen(*line);
 #else
 	int curr_len = LEN;
-	int i = 0, j;
+	int i = 0, j, ln = 0;
 	char *buf = my_malloc(curr_len);
 	unsigned char *c;
 
 	c = (unsigned char *) *line;
 	while (*c) {
-		if (i > curr_len - 3) {
+		if (i > curr_len - (lcook_width + 1)) {
 			curr_len <<= 1;
 			buf = my_realloc(buf, curr_len);
 		}
+		if (*c == '\n')
+			ln = i + 1;
 		if (*c == '\t') { /* expand tabs */
-			j = i + lcook_width - (i % lcook_width);
+			j = i + lcook_width - ((i - ln) % lcook_width);
 			for (; i < j; i++)
 				buf[i] = ' ';
 		} else if (((*c) & 0xFF) < ' ' && *c != '\n' && (!IS_LOCAL_CHARSET("Big5") || *c != 27)) {	/* literal ctrl chars */
@@ -149,19 +151,21 @@ wexpand_ctrl_chars(
 	size_t *length,
 	size_t lcook_width)
 {
-	size_t cur_len = LEN, i = 0, j;
+	size_t cur_len = LEN, i = 0, j, ln = 0;
 	wchar_t *wbuf = my_malloc(cur_len * sizeof(wchar_t));
 	wchar_t *wc;
 	t_bool ctrl_L = FALSE;
 
 	wc = *wline;
 	while (*wc) {
-		if (i > cur_len - 3) {
+		if (i > cur_len - (lcook_width + 1)) {
 			cur_len <<= 1;
 			wbuf = my_realloc(wbuf, cur_len * sizeof(wchar_t));
 		}
+		if (*wc == '\n')
+			ln = i + 1;
 		if (*wc == '\t') {		/* expand_tabs */
-			j = i + lcook_width - (i % lcook_width);
+			j = i + lcook_width - ((i - ln) % lcook_width);
 			for (; i < j; i++)
 				wbuf[i] = ' ';
 		} else if (*wc < ' ' && *wc != '\n' && (!IS_LOCAL_CHARSET("Big5") || *wc != 27)) {	/* literal ctrl chars */
@@ -365,27 +369,27 @@ get_filename(
 }
 
 
-#define PUT_UUE(part, qualifier_text)					\
-	put_cooked(LEN, wrap_lines, C_UUE, _(txt_uue),			\
-		part->depth * 4, "",							\
-		content_types[part->type], part->subtype,		\
+#define PUT_UUE(part, qualifier_text) \
+	put_cooked(LEN, wrap_lines, C_UUE, _(txt_uue), \
+		part->depth * 4, "", \
+		content_types[part->type], part->subtype, \
 		qualifier_text, part->line_count, get_filename(part->params))
 
 #define PUT_ATTACH(part, depth, name, charset) \
-	put_cooked(LEN, wrap_lines, C_ATTACH, _(txt_attach),	\
-		depth, "",	\
-		content_types[part->type], part->subtype,	\
-		content_encodings[part->encoding],	\
-		charset ? _(txt_attach_charset) : "", BlankIfNull(charset),	\
-		part->line_count,	\
-		name ? _(txt_name) : "", BlankIfNull(name));	\
+	put_cooked(LEN, wrap_lines, C_ATTACH, _(txt_attach), \
+		depth, "", \
+		content_types[part->type], part->subtype, \
+		content_encodings[part->encoding], \
+		charset ? _(txt_attach_charset) : "", BlankIfNull(charset), \
+		part->line_count, \
+		name ? _(txt_name) : "", BlankIfNull(name)); \
 		\
-	if (part->description)	\
-		put_cooked(LEN, wrap_lines, C_ATTACH,	\
-			_(txt_attach_description),	\
-			depth, "",	\
-			part->description);	\
-	if (part->next != NULL || IS_PLAINTEXT(part))	\
+	if (part->description) \
+		put_cooked(LEN, wrap_lines, C_ATTACH, \
+			_(txt_attach_description), \
+			depth, "", \
+			part->description); \
+	if (part->next != NULL || IS_PLAINTEXT(part)) \
 		put_cooked(1, wrap_lines, C_ATTACH, "\n")
 
 /*
@@ -396,8 +400,7 @@ process_text_body_part(
 	t_bool wrap_lines,
 	FILE *in,
 	t_part *part,
-	int hide_uue,
-	int tabs)
+	int hide_uue)
 {
 	char *rest = NULL;
 	char *line = NULL, *buf, *tmpline;
@@ -405,7 +408,7 @@ process_text_body_part(
 	int flags, len, lines_left, len_blank;
 	int offsets[6];
 	int size_offsets = ARRAY_SIZE(offsets);
-	int lines_skipped = 0;
+	unsigned int lines_skipped = 0;
 	t_bool in_sig = FALSE;			/* Set when in sig portion */
 	t_bool in_uue = FALSE;			/* Set when in uuencoded section */
 	t_bool in_verbatim = FALSE;		/* Set when in verbatim section */
@@ -670,7 +673,7 @@ process_text_body_part(
 		if (MATCH_REGEX(news_regex, line, len))
 			flags |= C_NEWS;
 
-		if (expand_ctrl_chars(&line, &max_line_len, tabs))
+		if (expand_ctrl_chars(&line, &max_line_len, tabwidth))
 			flags |= C_CTRLL;				/* Line contains form-feed */
 		put_cooked(max_line_len, wrap_lines && (!IS_LOCAL_CHARSET("Big5")), flags, "%s", line);
 	} /* while */
@@ -762,12 +765,14 @@ dump_cooked(
  *		stripping of sigs if !show_signatures
  * Returns:
  *		TRUE on success
+ *
+ * TODO:
+ *      give an error-message on at least disk-full
  */
 t_bool
 cook_article(
 	t_bool wrap_lines,
 	t_openartinfo *artinfo,
-	int tabs,
 	int hide_uue)
 {
 	const char *charset;
@@ -775,6 +780,10 @@ cook_article(
 	char *line;
 	struct t_header *hdr = &artinfo->hdr;
 	t_bool header_put = FALSE;
+	static const char *struct_header[] = {
+		"Approved: ", "From: ", "Originator: ",
+		"Reply-To: ", "Sender: ", "X-Cancelled-By: ", "X-Comment-To: ",
+		"X-Submissions-To: ", "To: ", "Cc: ", "Bcc: ", "X-Originator: ", 0 };
 
 	art = artinfo;				/* Global saves lots of passing artinfo around */
 
@@ -802,16 +811,44 @@ cook_article(
 		}
 
 		if (header_wanted(line)) {	/* Put cooked data */
+			const char **strptr = struct_header;
+			char *l = NULL, *ptr, *foo, *bar;
 			size_t i = LEN;
-			char *l = my_strdup(rfc1522_decode(line));	/* FIXME: don't decode addr-part of From:/Cc:/ etc.pp. */
+			t_bool found = FALSE;
+
+			/* structured headers */
+			do {
+				if (!strncasecmp(line, *strptr, strlen(*strptr))) {
+					foo = my_strdup(*strptr);
+					if ((ptr = strchr(foo, ':'))) {
+						*ptr = '\0';
+						if ((ptr = parse_header(line, foo, TRUE, TRUE))) {
+							bar = idna_decode(ptr);	/* do we wan't idna_decode() here? */
+							l = my_calloc(1, strlen(bar) + strlen(*strptr) + 1);
+							strncpy(l, line, strlen(*strptr));
+							strcat(l, bar);
+							free(bar);
+						}
+					}
+					free(foo);
+					found = TRUE;
+				}
+			} while (!found && *(++strptr) != 0);
+
+			/* unstructured but must not be decoded */
+			if (l == NULL && (!strncasecmp(line, "References: ", 12) || !strncasecmp(line, "Message-ID: ", 12) || !strncasecmp(line, "Date: ", 6) || !strncasecmp(line, "Newsgroups: ", 12) || !strncasecmp(line, "Distribution: ", 14) || !strncasecmp(line, "Followup-To: ", 13) || !strncasecmp(line, "X-Face: ", 8) || !strncasecmp(line, "Cancel-Lock: ", 13) || !strncasecmp(line, "Cancel-Key: ", 12)))
+				l = my_strdup(line);
+
+			if (l == NULL)
+				l = my_strdup(rfc1522_decode(line));
 
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 			if (IS_LOCAL_CHARSET("UTF-8"))
 				utf8_valid(l);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 			header_put = TRUE;
-			expand_ctrl_chars(&l, &i, tabs);
-			put_cooked(LEN, wrap_lines, C_HEADER, "%s", l);
+			expand_ctrl_chars(&l, &i, tabwidth);
+			put_cooked(i, wrap_lines, C_HEADER, "%s", l);
 			free(l);
 		}
 	}
@@ -842,14 +879,14 @@ cook_article(
 
 			/* Try to view anything of type text, may need to review this */
 			if (IS_PLAINTEXT(ptr))
-				process_text_body_part(wrap_lines, artinfo->raw, ptr, hide_uue, tabs);
+				process_text_body_part(wrap_lines, artinfo->raw, ptr, hide_uue);
 		}
 	} else {
 		/*
 		 * A regular single-body article
 		 */
 		if (IS_PLAINTEXT(hdr->ext))
-			process_text_body_part(wrap_lines, artinfo->raw, hdr->ext, hide_uue, tabs);
+			process_text_body_part(wrap_lines, artinfo->raw, hdr->ext, hide_uue);
 		else {
 			/*
 			 * Non-textual main body

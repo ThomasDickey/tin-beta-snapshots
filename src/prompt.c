@@ -3,10 +3,10 @@
  *  Module    : prompt.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-11-22
+ *  Updated   : 2009-10-22
  *  Notes     :
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,7 @@
 
 
 static char *prompt_slk_message;	/* prompt message for prompt_slk_redraw */
+static char *prompt_yn_message;
 
 /*
  * Local prototypes
@@ -139,7 +140,7 @@ prompt_menu_string(
 	 * connection right before a resync_active() call
 	 * would lead to a 'n' answer to the reconnect prompt
 	 */
-	fflush(stdin);
+	/* fflush(stdin); */
 	MoveCursor(line, 0);
 	if ((p = tin_getline(prompt, FALSE, var, 0, FALSE, HIST_OTHER)) == NULL)
 		return FALSE;
@@ -163,7 +164,7 @@ prompt_yn(
 {
 	char *keyprompt;
 	char keyno[MAXKEYLEN], keyyes[MAXKEYLEN];
-	int keyyes_len = 0, keyno_len = 0, maxlen;
+	int keyyes_len = 0, keyno_len = 0, maxlen, prompt_len;
 	t_function func;
 #if defined (MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	wint_t yes, no, prompt_ch, ch;
@@ -178,9 +179,9 @@ prompt_yn(
 	yes = func_to_key(PROMPT_YES, prompt_keys);
 	no = func_to_key(PROMPT_NO, prompt_keys);
 
+#if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	printascii(keyyes, (default_answer ? towupper(yes) : yes));
 	printascii(keyno, (!default_answer ? towupper(no) : no));
-#if defined (MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 	if ((wtmp = char2wchar_t(keyyes))) {
 		keyyes_len = wcswidth(wtmp, wcslen(wtmp));
 		free(wtmp);
@@ -190,25 +191,23 @@ prompt_yn(
 		free(wtmp);
 	}
 #else
+	printascii(keyyes, (default_answer ? toupper(yes) : yes));
+	printascii(keyno, (!default_answer ? toupper(no) : no));
 	keyyes_len = (int) strlen(keyyes);
 	keyno_len = (int) strlen(keyno);
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE */
 	maxlen = MAX(keyyes_len, keyno_len);
+	prompt_len = (int) strlen(prompt) + keyyes_len + keyno_len + maxlen + 6;
+	prompt_yn_message = my_malloc(prompt_len + 1);
+
+	input_context = cPromptYN;
 
 	do {
 		prompt_ch = (default_answer ? yes : no);
 		keyprompt = (default_answer ? keyyes : keyno);
 
-		if (!cmd_line) {
-			MoveCursor(cLINES, 0);
-			CleartoEOLN();
-		}
-		my_printf("%s (%s/%s) %-*s", prompt, keyyes, keyno, maxlen, keyprompt);
-		if (!cmd_line)
-			cursoron();
-		my_flush();
-		if (!cmd_line)
-			MoveCursor(cLINES, (int) strlen(prompt) + keyyes_len + keyno_len + 5);
+		snprintf(prompt_yn_message, prompt_len, "%s (%s/%s) %-*s", prompt, keyyes, keyno, maxlen, keyprompt);
+		prompt_yn_redraw();
 
 #if defined (MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 		if (((ch = ReadWch()) == '\n') || (ch == '\r'))
@@ -248,11 +247,32 @@ prompt_yn(
 		func = key_to_func(ch, prompt_keys);
 	} while (func == NOT_ASSIGNED);
 
+	input_context = cNone;
+	FreeAndNull(prompt_yn_message);
+
 	if (!cmd_line) {
 		clear_message();
 		my_flush();
 	}
 	return (func == PROMPT_YES) ? 1 : (func == GLOBAL_ABORT) ? -1 : 0;
+}
+
+
+/* (Re)draws the prompt message for prompt_yn() */
+void
+prompt_yn_redraw(
+	void)
+{
+	if (!cmd_line) {
+		MoveCursor(cLINES, 0);
+		CleartoEOLN();
+	}
+	my_printf("%s", prompt_yn_message);
+	if (!cmd_line)
+		cursoron();
+	my_flush();
+	if (!cmd_line)
+		MoveCursor(cLINES, (int) strlen(prompt_yn_message) -1);
 }
 
 
@@ -424,10 +444,15 @@ prompt_option_string(
 {
 	char *variable = OPT_STRING_list[option_table[option].var_index];
 	char prompt[LEN];
+	char old_value[LEN];
 
+	STRCPY(old_value, variable);
 	show_menu_help(option_table[option].txt->help);
 	fmt_option_prompt(prompt, sizeof(prompt) - 1, TRUE, option);
-	return prompt_menu_string(option_row(option), prompt, variable);
+	if (prompt_menu_string(option_row(option), prompt, variable))
+		return strcmp(old_value, variable) ? TRUE : FALSE;
+	else
+		return FALSE;
 }
 
 
@@ -676,12 +701,11 @@ prompt_slk_response(
 		else
 			func = key_to_func(ch, keys);
 
+#if 1
 		/*
-		 * TODO: ignore special-keys which are represented as a
-		 *       multibyte ESC-seq to avoid interpreting them as 'ESC' only
-		 *       like it's done in the ugly code below.
+		 * ignore special-keys which are represented as a multibyte ESC-seq
+		 * to avoid interpreting them as 'ESC' only
 		 */
-#if 0
 		if (ch == ESC) {
 			switch (get_arrow_key(ch)) {
 				case KEYMAP_UP:
@@ -693,13 +717,14 @@ prompt_slk_response(
 				case KEYMAP_HOME:
 				case KEYMAP_END:
 					ch = '\0';
+					func = NOT_ASSIGNED;
 					break;
 
 				default:
 					break;
 			}
 		}
-#endif /* 0 */
+#endif /* 1 */
 	} while (func == NOT_ASSIGNED);
 
 	input_context = cNone;
@@ -745,11 +770,14 @@ prompt_continue(
 	void)
 {
 	int ch;
+	int save_signal_context = signal_context;
 
 #ifdef USE_CURSES
 	cmd_line = TRUE;
 #endif /* USE_CURSES */
 	info_message(_(txt_return_key));
+	signal_context = cMain;
+	input_context = cPromptCONT;
 
 	switch ((ch = ReadCh())) {
 		case ESC:
@@ -762,6 +790,10 @@ prompt_continue(
 		default:
 			break;
 	}
+
+	input_context = cNone;
+	signal_context = save_signal_context;
+	my_fputc('\n', stdout);
 
 #ifdef USE_CURSES
 	cmd_line = FALSE;

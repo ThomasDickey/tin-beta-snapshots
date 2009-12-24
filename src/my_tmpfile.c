@@ -3,10 +3,10 @@
  *  Module    : my_tmpfile.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 2001-03-11
- *  Updated   : 2008-11-22
+ *  Updated   : 2009-02-12
  *  Notes     :
  *
- * Copyright (c) 2001-2009 Urs Janssen <urs@tin.org>
+ * Copyright (c) 2001-2010 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -87,7 +87,7 @@ my_tmpfile(
 		}
 
 		if (base_dir) {
-			snprintf(buf, MIN(name_size, (sizeof(buf) - 1)), "tin-%s-%d-XXXXXX", get_host_name(), process_id);
+			snprintf(buf, MIN(name_size, (sizeof(buf) - 1)), "tin-%s-%ld-XXXXXX", get_host_name(), (long) process_id);
 			joinpath(filename, name_size, base_dir, buf);
 		} else {
 			snprintf(buf, MIN(name_size, (sizeof(buf) - 1)), "tin_XXXXXX");

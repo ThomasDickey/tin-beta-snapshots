@@ -31,7 +31,7 @@ CPPOPTS = \
 	-DMATCH_LIMIT_RECURSION=10000000 \
 	-DNEWLINE=10 \
 	-DPOSIX_MALLOC_THRESHOLD=10 \
-	@DEFS@ -I. -I../include
+	@DEFS@ -I. -I../include -I$(srcdir)
 
 RANLIB	= @RANLIB@
 RM	= rm
@@ -74,6 +74,10 @@ all :	$(PRELIB)pcre.a $(PRELIB)pcreposix.a pcretest$x pcregrep$x
 .c$o :
 @SHOW_CC@
 	@ECHO_CC@$(CC) $(CPPOPTS) $(CFLAGS) -c $(srcdir)/$*.c
+
+pcre_chartables$o : pcre_chartables.c
+@SHOW_CC@
+	@ECHO_CC@$(CC) $(CPPOPTS) $(CFLAGS) -c pcre_chartables.c
 
 .c.i :
 @SHOW_CC@

@@ -2,6 +2,7 @@ New features and changes since tin-1.8.1
 
 New features
 ------------
+. attributes and scope menu
 . configurable verbatim marks (default is slrn style)
 . configurable body trimming
 . UTF-8 descriptions (RFC 3977)
@@ -27,8 +28,15 @@ Changes
     show_only_unread      -> show_only_unread_arts
     sort_art_type         -> sort_article_type
     thread_arts           -> thread_articles
+. '-s', '-m' and '-G' cmd-line options no longer changes the corresponding
+  tinrc values
+. '-w' uses the first given cmd-line group as default group to post to
+. with positive getart_limit all unread articles less than getart_limit are
+  kept as unread
+. mail/pipe/print articles now work on ranges too
 
 Retired Features
 ----------------
 . VMS support
 . libinn support (was broken for ages)
+. AUTHINFO GENERIC (deprecated by RFC 4643)

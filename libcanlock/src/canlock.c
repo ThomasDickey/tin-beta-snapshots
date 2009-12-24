@@ -47,7 +47,7 @@
  * type is set to the lock type, else zero on failure.
  */
 char *
-lock_strip_alpha(const char *key, char *type)
+lock_strip_alpha(char *key, char *type)
 {
     char *ret;
     int offset;
@@ -64,14 +64,14 @@ lock_strip_alpha(const char *key, char *type)
      * draft but could still be present */
     offset = 0;
     while (ret[offset] && ret[offset] != ':')
-	offset++;
+		offset++;
     ret[offset] = '\0';
     return ret;
 }
 
 
 char *
-lock_strip(const char *key, char *type)
+lock_strip(char *key, char *type)
 {
     return lock_strip_alpha(key, type);
 }
@@ -114,9 +114,10 @@ char *
 sha_lock(const unsigned char *secret, size_t seclen,
          const unsigned char *message, size_t msglen)
 {
-    char
-        *canlock[1],
-        junk[SHA_DIGESTSIZE];
+	char
+		*canlock[1],
+		*tmp,
+		junk[SHA_DIGESTSIZE];
     unsigned char
         *cankey,
         hmacbuff[SHA_DIGESTSIZE];
@@ -125,14 +126,20 @@ sha_lock(const unsigned char *secret, size_t seclen,
     SHA_CTX
         hash_ctx;
 
-    cankey = (unsigned char *) lock_strip_alpha(
-                            sha_key(secret, seclen, message, msglen), junk);
+	tmp = sha_key(secret, seclen, message, msglen);
+	cankey = (unsigned char *) lock_strip_alpha(tmp, junk);
+	free(tmp);
     if (!cankey)
         return NULL;
-    if (sha_init(&hash_ctx))
+    if (sha_init(&hash_ctx)) {
+    	free(cankey);
         return NULL;
-    if (sha_update(&hash_ctx, cankey, strlen((char *) cankey)))
+	}
+    if (sha_update(&hash_ctx, cankey, strlen((char *) cankey))) {
+    	free(cankey);
         return NULL;
+	}
+	free(cankey);
     if (sha_digest(&hash_ctx, hmacbuff))
         return NULL;
     locksize = base64_encode(hmacbuff, SHA_DIGESTSIZE, canlock);

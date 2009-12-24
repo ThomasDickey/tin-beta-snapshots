@@ -3,10 +3,10 @@
  *  Module    : misc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-12-16
+ *  Updated   : 2009-12-13
  *  Notes     :
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -72,7 +72,7 @@
  * Local prototypes
  */
 static char *strfpath_cp(char *str, char *tbuf, char *endp);
-static int _strfpath(const char *format, char *str, size_t maxsize, struct t_group *group);
+static int _strfpath(const char *format, char *str, size_t maxsize, struct t_group *group, t_bool expand_all);
 static int gnksa_check_domain(char *domain);
 static int gnksa_check_domain_literal(char *domain);
 static int gnksa_check_localpart(const char *localpart);
@@ -166,7 +166,7 @@ asfail(
 
 /*
  * Quick copying of files
- * Returns FALSE if copy failed. Caller may wish to check for SIGPIPE
+ * Returns FALSE if copy failed. Caller may wish to check for errno == EPIPE.
  */
 t_bool
 copy_fp(
@@ -176,11 +176,13 @@ copy_fp(
 	char buf[8192];
 	size_t have, sent;
 
+	errno = 0;	/* To check errno after write, clear it here */
+
 	while ((have = fread(buf, 1, sizeof(buf), fp_ip)) != 0) {
 		sent = fwrite(buf, 1, have, fp_op);
 		if (sent != have) {
 			TRACE(("copy_fp wrote %d of %d:{%.*s}", sent, have, (int) sent, buf));
-			if (!got_sig_pipe) /* !SIGPIPE => more serious error */
+			if (errno && errno != EPIPE) /* not a broken pipe => more serious error */
 				perror_message(_(txt_error_copy_fp));
 			return FALSE;
 		}
@@ -577,7 +579,7 @@ tin_done(
 			wrote_newsrc_lines = write_newsrc();
 			if ((wrote_newsrc_lines >= 0L) && (wrote_newsrc_lines >= read_newsrc_lines)) {
 				if (!batch_mode || verbose)
-					my_fputs(_(txt_newsrc_saved), stdout);
+					wait_message(0, _(txt_newsrc_saved));
 				break;
 			}
 
@@ -1081,6 +1083,8 @@ show_color_status(
 /*
  * Check for lock file to stop multiple copies of tin -u running and if it
  * does not exist create it so this is the only copy running
+ *
+ * FIXME: get ridd of hardcoded pid-length as pid_t might be long
  */
 void
 create_index_lock_file(
@@ -1090,6 +1094,7 @@ create_index_lock_file(
 	char buf[64];
 	struct stat sb;
 	time_t epoch;
+	int err;
 
 	if (stat(the_lock_file, &sb) == 0) {
 		if ((fp = fopen(the_lock_file, "r")) != NULL) {
@@ -1103,8 +1108,13 @@ create_index_lock_file(
 			fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
 			(void) time(&epoch);
 			fprintf(fp, "%6d  %s\n", (int) process_id, ctime(&epoch));
-			if (ferror(fp) || fclose(fp))
+			if ((err = ferror(fp)) || fclose(fp)) {
 				error_message(2, _(txt_filesystem_full), the_lock_file);
+				if (err) {
+					clearerr(fp);
+					fclose(fp);
+				}
+			}
 		}
 	}
 }
@@ -1417,7 +1427,7 @@ strfpath_cp(
  *   $var/News -> /env/var/News
  *   =file     -> $HOME/Mail/file
  *   =         -> $HOME/Mail/group.name
- *   +file     -> tinrc.savedir/group.name/file
+ *   +file     -> savedir/group.name/file
  *
  * Interestingly, %G is not documented as such and apparently unused
  *   ~/News/%G -> $HOME/News/group.name
@@ -1427,6 +1437,7 @@ strfpath_cp(
  *   str		Return buffer
  *   maxsize	Size of str
  *   group		ptr to current group
+ *   expand_all	true if '+' and '=' should be expanded
  * Returns:
  *   0			on error
  *   1			if generated pathname is a mailbox
@@ -1437,7 +1448,8 @@ _strfpath(
 	const char *format,
 	char *str,
 	size_t maxsize,
-	struct t_group *group)
+	struct t_group *group,
+	t_bool expand_all)
 {
 	char *endp = str + maxsize;
 	const char *startp = format;
@@ -1536,12 +1548,11 @@ _strfpath(
 				 * =dir expands to maildir/dir
 				 * =    expands to maildir/groupname
 				 */
-				is_mailbox = TRUE;
-
-				if (startp == format && group != NULL) {
+				if (startp == format && group != NULL && expand_all) {
 					char buf[PATH_LEN];
 
-					if (strfpath(group->attribute->maildir, buf, sizeof(buf), group)) {
+					is_mailbox = TRUE;
+					if (strfpath(cmdline.args & CMDLINE_MAILDIR ? cmdline.maildir : group->attribute->maildir, buf, sizeof(buf), group, FALSE)) {
 						if (*(format + 1) == '\0')				/* Just an = */
 							joinpath(tbuf, sizeof(tbuf), buf, group->name);
 						else
@@ -1560,14 +1571,16 @@ _strfpath(
 				/*
 				 * Group name expansion
 				 * Only convert if 1st char in format
+				 * +file expands to savedir/group.name/file
 				 */
-				if (startp == format && group != NULL) {
+
+				if (startp == format && group != NULL && expand_all) {
 					char buf[PATH_LEN];
 
 					/*
 					 * Start with the savedir name
 					 */
-					if (strfpath(group->attribute->savedir, buf, sizeof(buf), group)) {
+					if (strfpath(cmdline.args & CMDLINE_SAVEDIR ? cmdline.savedir : group->attribute->savedir, buf, sizeof(buf), group, FALSE)) {
 						char tmp[PATH_LEN];
 #ifdef HAVE_LONG_FILE_NAMES
 						my_strncpy(tmp, group->name, sizeof(tmp) - 1);
@@ -1629,7 +1642,8 @@ strfpath(
 	const char *format,
 	char *str,
 	size_t maxsize,
-	struct t_group *group)
+	struct t_group *group,
+	t_bool expand_all)
 {
 	/*
 	 * Expand any leading env vars first in case they themselves contain
@@ -1638,11 +1652,11 @@ strfpath(
 	if (format[0] == '$') {
 		char buf[PATH_LEN];
 
-		if (_strfpath(format, buf, sizeof(buf), group))
-			return (_strfpath(buf, str, maxsize, group));
+		if (_strfpath(format, buf, sizeof(buf), group, expand_all))
+			return (_strfpath(buf, str, maxsize, group, expand_all));
 	}
 
-	return (_strfpath(format, str, maxsize, group));
+	return (_strfpath(format, str, maxsize, group, expand_all));
 }
 
 
@@ -2011,7 +2025,7 @@ cleanup_tmp_files(
 	char acNovFile[PATH_LEN];
 
 	if (nntp_caps.over_cmd && !tinrc.cache_overview_files) {
-		snprintf(acNovFile, sizeof(acNovFile), "%s%d.idx", TMPDIR, (int) process_id);
+		snprintf(acNovFile, sizeof(acNovFile), "%s%ld.idx", TMPDIR, (long) process_id);
 		unlink(acNovFile);
 	}
 #endif /* 0 */
@@ -2207,10 +2221,14 @@ write_input_history_file(
 
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR)); /* rename_file() preserves mode */
 
-	if (ferror(fp) || fclose(fp)) {
+	if ((his_w = ferror(fp)) || fclose(fp)) {
 		error_message(2, _(txt_filesystem_full), local_input_history_file);
 		/* fix modes for all pre 1.4.1 local_input_history_file files */
 		chmod(local_input_history_file, (mode_t) (S_IRUSR|S_IWUSR));
+		if (his_w) {
+			clearerr(fp);
+			fclose(fp);
+		}
 	} else
 		rename_file(file_tmp, local_input_history_file);
 
@@ -3122,8 +3140,9 @@ gnksa_check_domain_literal(
 	if ((!disable_gnksa_domain_check)
 	    && ((0 == x1)				/* local network */
 		|| (10 == x1)				/* private class A */
-		|| ((172 == x1) && (16 == (x2 & 0xf0)))	/* private class B */
-		|| ((192 == x1) && (168 == x2))		/* private class C */
+		|| ((172 == x1) && (16 == (x2 & 0xf0)))	/* private /12 */
+		|| ((192 == x1) && (168 == x2))		/* private class B */
+		|| ((192 == x1) && (0 == x2) && (2 == x3)) /* private class C */
 		|| (127 == x1)))			/* localhost */
 		return GNKSA_LOCAL_DOMAIN_LITERAL;
 

@@ -2,10 +2,10 @@
 ;   Module    : tincfg.tbl
 ;   Author    : Thomas E. Dickey
 ;   Created   : 1996-11-01
-;   Updated   : 2009-01-14
+;   Updated   : 2009-02-14
 ;   Notes     : #defines and structs for config.c
 ;
-; Copyright (c) 1996-2009 Thomas E. Dickey <dickey@invisible-island.net>
+; Copyright (c) 1996-2010 Thomas E. Dickey <dickey@invisible-island.net>
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without
@@ -86,6 +86,28 @@
 #endif
 	wrap_column			OPT_NUM
 	trim_article_body		txt_trim_article_body_options NUM_TRIM_ARTICLE_BODY
+	attrib_show_author			txt_show_from	SHOW_FROM_BOTH+1
+	attrib_thread_articles			txt_threading	THREAD_MAX+1
+	attrib_thread_perc			OPT_NUM
+	attrib_sort_article_type		txt_sort_a_type	SORT_ARTICLES_BY_LINES_ASCEND+1
+	attrib_sort_threads_type		txt_sort_t_type	SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND+1
+	attrib_pos_first_unread		OPT_ON_OFF
+	attrib_show_only_unread_arts		OPT_ON_OFF
+	attrib_auto_list_thread		OPT_ON_OFF
+	attrib_auto_select		OPT_ON_OFF
+	attrib_wrap_on_next_unread		OPT_ON_OFF
+	attrib_show_info			txt_show_info_type	SHOW_INFO_BOTH+1
+	attrib_show_signatures			OPT_ON_OFF
+	attrib_news_headers_to_display		OPT_STRING
+	attrib_news_headers_to_not_display	OPT_STRING
+	attrib_alternative_handling		OPT_ON_OFF
+	attrib_verbatim_handling		OPT_ON_OFF
+	attrib_tex2iso_conv			OPT_ON_OFF
+	attrib_ask_for_metamail		OPT_ON_OFF
+	attrib_group_catchup_on_exit		OPT_ON_OFF
+	attrib_thread_catchup_on_exit		OPT_ON_OFF
+	attrib_mark_ignore_tags		OPT_ON_OFF
+	attrib_trim_article_body		txt_trim_article_body_options NUM_TRIM_ARTICLE_BODY
 
 ; getart_limit options
 	getart_limit_options		OPT_TITLE
@@ -101,6 +123,15 @@
 	score_select			OPT_NUM
 	filter_days			OPT_NUM
 	add_posted_to_filter		OPT_ON_OFF
+	attrib_add_posted_to_filter	OPT_ON_OFF
+	attrib_quick_kill_scope		OPT_STRING
+	attrib_quick_kill_header	OPT_NUM
+	attrib_quick_kill_case		OPT_ON_OFF
+	attrib_quick_kill_expire	OPT_ON_OFF
+	attrib_quick_select_scope	OPT_STRING
+	attrib_quick_select_header	OPT_NUM
+	attrib_quick_select_case	OPT_ON_OFF
+	attrib_quick_select_expire	OPT_ON_OFF
 
 ; colour options
 #ifdef HAVE_COLOR
@@ -157,11 +188,34 @@
 #if defined(HAVE_ICONV_OPEN_TRANSLIT) && defined(CHARSET_CONVERSION)
 	translit			OPT_ON_OFF
 #endif
+	attrib_from			OPT_STRING
+	attrib_organization			OPT_STRING
+	attrib_prompt_followupto		OPT_ON_OFF
+	attrib_followup_to		OPT_STRING
+	attrib_sigfile				OPT_STRING
+	attrib_sigdashes			OPT_ON_OFF
+	attrib_signature_repost		OPT_ON_OFF
+	attrib_quote_chars			OPT_STRING
+	attrib_news_quote_format		OPT_STRING
+	attrib_advertising			OPT_ON_OFF
 #ifndef CHARSET_CONVERSION
 	mm_charset			OPT_STRING
 #else
 	mm_network_charset		txt_mime_charsets	NUM_MIME_CHARSETS
+	attrib_mm_network_charset		txt_mime_charsets	NUM_MIME_CHARSETS
+	attrib_undeclared_charset		OPT_STRING
 #endif
+	attrib_post_mime_encoding		txt_mime_encodings	NUM_MIME_ENCODINGS
+	attrib_post_8bit_header		OPT_ON_OFF
+	attrib_mail_mime_encoding		txt_mime_encodings	NUM_MIME_ENCODINGS
+	attrib_mail_8bit_header		OPT_ON_OFF
+	attrib_mime_forward		OPT_ON_OFF
+	attrib_mailing_list		OPT_STRING
+	attrib_auto_cc_bcc				txt_auto_cc_bcc_options AUTO_CC_BCC+1
+	attrib_fcc				OPT_STRING
+	attrib_x_body			OPT_STRING
+	attrib_x_comment_to		OPT_ON_OFF
+	attrib_x_headers		OPT_STRING
 #if defined(NO_LOCALE) && defined(CHARSET_CONVERSION)
 	mm_local_charset		OPT_STRING
 #endif
@@ -183,8 +237,20 @@
 	post_process_type		txt_post_process_types	POST_PROC_YES+1
 	post_process_view		OPT_ON_OFF
 	process_only_unread		OPT_ON_OFF
+	attrib_maildir				OPT_STRING
+	attrib_batch_save			OPT_ON_OFF
+	attrib_savedir				OPT_STRING
+	attrib_savefile				OPT_STRING
+	attrib_auto_save			OPT_ON_OFF
+	attrib_delete_tmp_files			OPT_ON_OFF
+	attrib_mark_saved_read			OPT_ON_OFF
+	attrib_post_process_type		txt_post_process_types	POST_PROC_YES+1
+	attrib_post_process_view		OPT_ON_OFF
+	attrib_process_only_unread		OPT_ON_OFF
+	attrib_mime_types_to_save				OPT_STRING
 #ifndef DISABLE_PRINTING
 	print_header			OPT_ON_OFF
+	attrib_print_header			OPT_ON_OFF
 	printer				OPT_STRING
 #endif
 
@@ -234,3 +300,9 @@
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
 	render_bidi			OPT_ON_OFF
 #endif
+	attrib_start_editor_offset		OPT_ON_OFF
+	attrib_editor_format			OPT_STRING
+#ifdef HAVE_ISPELL
+	attrib_ispell			OPT_STRING
+#endif
+	attrib_date_format			OPT_STRING

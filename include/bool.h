@@ -3,10 +3,10 @@
  *  Module    : bool.h
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   :
- *  Updated   : 2003-05-16
+ *  Updated   : 2009-11-24
  *  Notes     :
  *
- * Copyright (c) 1997-2009 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2010 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,13 +75,8 @@
 
 #	endif /* 0 */
 
-	extern /*@unused@*/ t_bool bool_equal (t_bool, t_bool) /*@*/ ;
 #	define bool_equal(a,b) ((a) ? (b) : !(b))
-
-	extern /*@unused@*/ t_bool bool_not (t_bool) /*@*/ ;
 #	define bool_not(b) ((b) ? FALSE : TRUE)
-
-	extern /*@unused@*/ /*@observer@*/ char *bool_unparse (t_bool) /*@*/ ;
 #	define bool_unparse(b) ((b) ? "TRUE" : "FALSE")
 
 #endif /* !BOOL_H */

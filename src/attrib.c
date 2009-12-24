@@ -3,10 +3,10 @@
  *  Module    : attrib.c
  *  Author    : I. Lea
  *  Created   : 1993-12-01
- *  Updated   : 2009-02-02
+ *  Updated   : 2009-11-05
  *  Notes     : Group attribute routines
  *
- * Copyright (c) 1993-2009 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1993-2010 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,99 +41,20 @@
 #ifndef VERSION_H
 #	include "version.h"
 #endif /* !VERSION_H */
+#ifndef TCURSES_H
+#	include "tcurses.h"
+#endif /* !TCURSES_H */
 
-#ifdef DEBUG
-#	ifndef TCURSES_H
-#		include "tcurses.h"
-#	endif /* !TCURSES_H */
-#endif /* DEBUG */
 
 /*
- * Defines used in setting attributes switch
+ * Global file offset for local_attributes_file
  */
-enum {
-	ATTRIB_MAILDIR,
-	ATTRIB_SAVEDIR,
-	ATTRIB_SAVEFILE,
-	ATTRIB_ORGANIZATION,
-	ATTRIB_FROM,
-	ATTRIB_SIGFILE,
-	ATTRIB_FOLLOWUP_TO,
-	ATTRIB_ADD_POSTED_TO_FILTER,
-	ATTRIB_ADVERTISING,
-	ATTRIB_ALTERNATIVE_HANDLING,
-	ATTRIB_ASK_FOR_METAMAIL,
-	ATTRIB_AUTO_CC_BCC,
-	ATTRIB_AUTO_LIST_THREAD,
-	ATTRIB_AUTO_SELECT,
-	ATTRIB_AUTO_SAVE,
-	ATTRIB_BATCH_SAVE,
-	ATTRIB_DATE_FORMAT,
-	ATTRIB_EDITOR_FORMAT,
-	ATTRIB_DELETE_TMP_FILES,
-	ATTRIB_GROUP_CATCHUP_ON_EXIT,
-	ATTRIB_MAIL_8BIT_HEADER,
-	ATTRIB_MAIL_MIME_ENCODING,
-	ATTRIB_MARK_IGNORE_TAGS,
-	ATTRIB_MARK_SAVED_READ,
-	ATTRIB_NEWS_HEADERS_TO_DISPLAY,
-	ATTRIB_NEWS_HEADERS_TO_NOT_DISPLAY,
-	ATTRIB_POS_FIRST_UNREAD,
-	ATTRIB_POST_8BIT_HEADER,
-	ATTRIB_POST_MIME_ENCODING,
-	ATTRIB_POST_PROCESS_VIEW,
-#ifndef DISABLE_PRINTING
-	ATTRIB_PRINT_HEADER,
-#endif /* !DISABLE_PRINTING */
-	ATTRIB_PROCESS_ONLY_UNREAD,
-	ATTRIB_PROMPT_FOLLOWUPTO,
-	ATTRIB_SHOW_ONLY_UNREAD_ARTS,
-	ATTRIB_SIGDASHES,
-	ATTRIB_SIGNATURE_REPOST,
-	ATTRIB_START_EDITOR_OFFSET,
-	ATTRIB_THREAD_ARTICLES,
-	ATTRIB_THREAD_CATCHUP_ON_EXIT,
-	ATTRIB_THREAD_PERC,
-	ATTRIB_SHOW_AUTHOR,
-	ATTRIB_SHOW_INFO,
-	ATTRIB_SHOW_SIGNATURES,
-	ATTRIB_TRIM_ARTICLE_BODY,
-	ATTRIB_VERBATIM_HANDLING,
-	ATTRIB_WRAP_ON_NEXT_UNREAD,
-	ATTRIB_SORT_ARTICLE_TYPE,
-	ATTRIB_POST_PROCESS_TYPE,
-	ATTRIB_QUICK_KILL_HEADER,
-	ATTRIB_QUICK_KILL_SCOPE,
-	ATTRIB_QUICK_KILL_EXPIRE,
-	ATTRIB_QUICK_KILL_CASE,
-	ATTRIB_QUICK_SELECT_HEADER,
-	ATTRIB_QUICK_SELECT_SCOPE,
-	ATTRIB_QUICK_SELECT_EXPIRE,
-	ATTRIB_QUICK_SELECT_CASE,
-	ATTRIB_MAILING_LIST,
-	ATTRIB_X_HEADERS,
-	ATTRIB_X_BODY,
-	ATTRIB_X_COMMENT_TO,
-	ATTRIB_FCC,
-	ATTRIB_NEWS_QUOTE,
-	ATTRIB_QUOTE_CHARS,
-	ATTRIB_MIME_TYPES_TO_SAVE,
-	ATTRIB_MIME_FORWARD,
-#ifdef HAVE_ISPELL
-	ATTRIB_ISPELL,
-#endif /* HAVE_ISPELL */
-	ATTRIB_SORT_THREADS_TYPE,
-	ATTRIB_TEX2ISO_CONV
-#ifdef CHARSET_CONVERSION
-	,ATTRIB_MM_NETWORK_CHARSET
-	,ATTRIB_UNDECLARED_CHARSET
-#endif /* CHARSET_CONVERSION */
-};
+int attrib_file_offset;
+
 
 /*
  * Local prototypes
  */
-static int add_scope(const char *scope);
 static void set_attrib(int type, const char *scope, const char *data);
 static void set_default_attributes(struct t_attribute *attributes, struct t_attribute *scope, t_bool global);
 static void set_default_state(struct t_attribute_state *state);
@@ -251,21 +172,33 @@ set_default_state(
 	state->auto_save = FALSE;
 	state->auto_select = FALSE;
 	state->batch_save = FALSE;
+	state->date_format = FALSE;
 	state->delete_tmp_files = FALSE;
+	state->editor_format = FALSE;
+	state->fcc = FALSE;
+	state->followup_to = FALSE;
+	state->from = FALSE;
 	state->group_catchup_on_exit = FALSE;
+#ifdef HAVE_ISPELL
+	state->ispell = FALSE;
+#endif /* HAVE_ISPELL */
 	state->mail_8bit_header = FALSE;
 	state->mail_mime_encoding = FALSE;
+	state->maildir = FALSE;
+	state->mailing_list = FALSE;
 	state->mark_ignore_tags = FALSE;
 	state->mark_saved_read = FALSE;
 	state->mime_forward = FALSE;
-#ifdef CHARSET_CONVERSION
-	state->mm_network_charset = FALSE;
-#endif /* CHARSET_CONVERSION */
+	state->mime_types_to_save = FALSE;
+	state->news_headers_to_display = FALSE;
+	state->news_headers_to_not_display = FALSE;
+	state->news_quote_format = FALSE;
+	state->organization = FALSE;
 	state->pos_first_unread = FALSE;
 	state->post_8bit_header = FALSE;
 	state->post_mime_encoding = FALSE;
-	state->post_process_view = FALSE;
 	state->post_process_type = FALSE;
+	state->post_process_view = FALSE;
 #ifndef DISABLE_PRINTING
 	state->print_header = FALSE;
 #endif /* !DISABLE_PRINTING */
@@ -274,14 +207,20 @@ set_default_state(
 	state->quick_kill_case = FALSE;
 	state->quick_kill_expire = FALSE;
 	state->quick_kill_header = FALSE;
+	state->quick_kill_scope = FALSE;
 	state->quick_select_case = FALSE;
 	state->quick_select_expire = FALSE;
 	state->quick_select_header = FALSE;
+	state->quick_select_scope = FALSE;
+	state->quote_chars = FALSE;
+	state->savedir = FALSE;
+	state->savefile = FALSE;
 	state->show_author = FALSE;
 	state->show_info = FALSE;
 	state->show_only_unread_arts = FALSE;
 	state->show_signatures = FALSE;
 	state->sigdashes = FALSE;
+	state->sigfile = FALSE;
 	state->signature_repost = FALSE;
 	state->sort_article_type = FALSE;
 	state->sort_threads_type = FALSE;
@@ -291,9 +230,15 @@ set_default_state(
 	state->thread_catchup_on_exit = FALSE;
 	state->thread_perc = FALSE;
 	state->trim_article_body = FALSE;
+#ifdef CHARSET_CONVERSION
+	state->undeclared_charset = FALSE;
+	state->mm_network_charset = FALSE;
+#endif /* CHARSET_CONVERSION */
 	state->verbatim_handling = FALSE;
 	state->wrap_on_next_unread = FALSE;
+	state->x_body = FALSE;
 	state->x_comment_to = FALSE;
+	state->x_headers = FALSE;
 }
 
 
@@ -345,9 +290,10 @@ read_attributes_file(
 	char scope[LEN];
 	int i, num;
 	enum rc_state upgrade = RC_CHECK;
+	static t_bool startup = TRUE;
 	t_bool flag, found = FALSE;
 
-	if (!batch_mode)
+	if (!batch_mode || verbose)
 		wait_message(0, _(txt_reading_attributes_file), (global_file ? _(txt_global) : ""));
 	/*
 	 * Initialize global attributes even if there is no global file
@@ -355,12 +301,15 @@ read_attributes_file(
 	 */
 	if (global_file) {
 		i = add_scope("_default_");
+		scopes[i].global = TRUE;
 		set_default_attributes(scopes[i].attribute, NULL, TRUE);
 		build_news_headers_array(scopes[i].attribute, TRUE);
 		build_news_headers_array(scopes[i].attribute, FALSE);
 		file = global_attributes_file;
-	} else
+	} else {
+		attrib_file_offset = 1;
 		file = local_attributes_file;
+	}
 
 	if ((fp = fopen(file, "r")) != NULL) {
 		scope[0] = '\0';
@@ -368,252 +317,254 @@ read_attributes_file(
 			if (line[0] == '\n')
 				continue;
 			if (line[0] == '#') {
-				if (!global_file && upgrade == RC_CHECK && match_string(line, "# Group attributes file V", NULL, 0)) {
-					upgrade = check_upgrade(line, "# Group attributes file V", ATTRIBUTES_VERSION);
-					if (upgrade != RC_IGNORE)
-						upgrade_prompt_quit(upgrade, file); /* TODO: do something (more) useful here */
+				if (!global_file) {
+					if (scope[0] == '\0')
+						attrib_file_offset++;
+					if (startup && upgrade == RC_CHECK && match_string(line, "# Group attributes file V", NULL, 0)) {
+						upgrade = check_upgrade(line, "# Group attributes file V", ATTRIBUTES_VERSION);
+						if (upgrade != RC_IGNORE)
+							upgrade_prompt_quit(upgrade, file); /* TODO: do something (more) useful here */
+					}
 				}
 				continue;
 			}
 
 			switch (tolower((unsigned char) line[0])) {
 				case 'a':
-					MATCH_BOOLEAN("add_posted_to_filter=", ATTRIB_ADD_POSTED_TO_FILTER);
-					MATCH_BOOLEAN("advertising=", ATTRIB_ADVERTISING);
-					MATCH_BOOLEAN("alternative_handling=", ATTRIB_ALTERNATIVE_HANDLING);
-					MATCH_BOOLEAN("ask_for_metamail=", ATTRIB_ASK_FOR_METAMAIL);
-					MATCH_INTEGER("auto_cc_bcc=", ATTRIB_AUTO_CC_BCC, AUTO_CC_BCC);
-					MATCH_BOOLEAN("auto_list_thread=", ATTRIB_AUTO_LIST_THREAD);
-					MATCH_BOOLEAN("auto_save=", ATTRIB_AUTO_SAVE);
-					MATCH_BOOLEAN("auto_select=", ATTRIB_AUTO_SELECT);
+					MATCH_BOOLEAN("add_posted_to_filter=", OPT_ATTRIB_ADD_POSTED_TO_FILTER);
+					MATCH_BOOLEAN("advertising=", OPT_ATTRIB_ADVERTISING);
+					MATCH_BOOLEAN("alternative_handling=", OPT_ATTRIB_ALTERNATIVE_HANDLING);
+					MATCH_BOOLEAN("ask_for_metamail=", OPT_ATTRIB_ASK_FOR_METAMAIL);
+					MATCH_INTEGER("auto_cc_bcc=", OPT_ATTRIB_AUTO_CC_BCC, AUTO_CC_BCC);
+					MATCH_BOOLEAN("auto_list_thread=", OPT_ATTRIB_AUTO_LIST_THREAD);
+					MATCH_BOOLEAN("auto_save=", OPT_ATTRIB_AUTO_SAVE);
+					MATCH_BOOLEAN("auto_select=", OPT_ATTRIB_AUTO_SELECT);
 					break;
 
 				case 'b':
-					MATCH_BOOLEAN("batch_save=", ATTRIB_BATCH_SAVE);
+					MATCH_BOOLEAN("batch_save=", OPT_ATTRIB_BATCH_SAVE);
 					break;
 
 				case 'd':
-					MATCH_STRING("date_format=", ATTRIB_DATE_FORMAT);
-					MATCH_BOOLEAN("delete_tmp_files=", ATTRIB_DELETE_TMP_FILES);
+					MATCH_STRING("date_format=", OPT_ATTRIB_DATE_FORMAT);
+					MATCH_BOOLEAN("delete_tmp_files=", OPT_ATTRIB_DELETE_TMP_FILES);
 					break;
 
 				case 'e':
-					MATCH_STRING("editor_format=", ATTRIB_EDITOR_FORMAT);
+					MATCH_STRING("editor_format=", OPT_ATTRIB_EDITOR_FORMAT);
 					break;
 
 				case 'f':
-					MATCH_STRING("fcc=", ATTRIB_FCC);
-					MATCH_STRING("followup_to=", ATTRIB_FOLLOWUP_TO);
-					MATCH_STRING("from=", ATTRIB_FROM);
+					MATCH_STRING("fcc=", OPT_ATTRIB_FCC);
+					MATCH_STRING("followup_to=", OPT_ATTRIB_FOLLOWUP_TO);
+					MATCH_STRING("from=", OPT_ATTRIB_FROM);
 					break;
 
 				case 'g':
-					MATCH_BOOLEAN("group_catchup_on_exit=", ATTRIB_GROUP_CATCHUP_ON_EXIT);
+					MATCH_BOOLEAN("group_catchup_on_exit=", OPT_ATTRIB_GROUP_CATCHUP_ON_EXIT);
 					break;
 
 				case 'i':
 #ifdef HAVE_ISPELL
-					MATCH_STRING("ispell=", ATTRIB_ISPELL);
+					MATCH_STRING("ispell=", OPT_ATTRIB_ISPELL);
 #else
 					SKIP_ITEM("ispell=");
 #endif /* HAVE_ISPELL */
 					break;
 
 				case 'm':
-					MATCH_BOOLEAN("mail_8bit_header=", ATTRIB_MAIL_8BIT_HEADER);
-					MATCH_LIST("mail_mime_encoding=", ATTRIB_MAIL_MIME_ENCODING, txt_mime_encodings, NUM_MIME_ENCODINGS);
-					MATCH_STRING("maildir=", ATTRIB_MAILDIR);
-					MATCH_STRING("mailing_list=", ATTRIB_MAILING_LIST);
-					MATCH_BOOLEAN("mark_ignore_tags=", ATTRIB_MARK_IGNORE_TAGS);
-					MATCH_BOOLEAN("mark_saved_read=", ATTRIB_MARK_SAVED_READ);
-					MATCH_BOOLEAN("mime_forward=", ATTRIB_MIME_FORWARD);
-					MATCH_STRING("mime_types_to_save=", ATTRIB_MIME_TYPES_TO_SAVE);
+					MATCH_BOOLEAN("mail_8bit_header=", OPT_ATTRIB_MAIL_8BIT_HEADER);
+					MATCH_LIST("mail_mime_encoding=", OPT_ATTRIB_MAIL_MIME_ENCODING, txt_mime_encodings, NUM_MIME_ENCODINGS);
+					MATCH_STRING("maildir=", OPT_ATTRIB_MAILDIR);
+					MATCH_STRING("mailing_list=", OPT_ATTRIB_MAILING_LIST);
+					MATCH_BOOLEAN("mark_ignore_tags=", OPT_ATTRIB_MARK_IGNORE_TAGS);
+					MATCH_BOOLEAN("mark_saved_read=", OPT_ATTRIB_MARK_SAVED_READ);
+					MATCH_BOOLEAN("mime_forward=", OPT_ATTRIB_MIME_FORWARD);
+					MATCH_STRING("mime_types_to_save=", OPT_ATTRIB_MIME_TYPES_TO_SAVE);
 #ifdef CHARSET_CONVERSION
-					MATCH_LIST("mm_network_charset=", ATTRIB_MM_NETWORK_CHARSET, txt_mime_charsets, NUM_MIME_CHARSETS);
+					MATCH_LIST("mm_network_charset=", OPT_ATTRIB_MM_NETWORK_CHARSET, txt_mime_charsets, NUM_MIME_CHARSETS);
 #else
 					SKIP_ITEM("mm_network_charset=");
 #endif /* CHARSET_CONVERSION */
 					break;
 
 				case 'n':
-					MATCH_STRING("news_headers_to_display=", ATTRIB_NEWS_HEADERS_TO_DISPLAY);
-					MATCH_STRING("news_headers_to_not_display=", ATTRIB_NEWS_HEADERS_TO_NOT_DISPLAY);
-					MATCH_STRING("news_quote_format=", ATTRIB_NEWS_QUOTE);
+					MATCH_STRING("news_headers_to_display=", OPT_ATTRIB_NEWS_HEADERS_TO_DISPLAY);
+					MATCH_STRING("news_headers_to_not_display=", OPT_ATTRIB_NEWS_HEADERS_TO_NOT_DISPLAY);
+					MATCH_STRING("news_quote_format=", OPT_ATTRIB_NEWS_QUOTE_FORMAT);
 					break;
 
 				case 'o':
-					MATCH_STRING("organization=", ATTRIB_ORGANIZATION);
+					MATCH_STRING("organization=", OPT_ATTRIB_ORGANIZATION);
 					break;
 
 				case 'p':
-					MATCH_BOOLEAN("pos_first_unread=", ATTRIB_POS_FIRST_UNREAD);
-					MATCH_BOOLEAN("post_8bit_header=", ATTRIB_POST_8BIT_HEADER);
-					MATCH_LIST("post_mime_encoding=", ATTRIB_POST_MIME_ENCODING, txt_mime_encodings, NUM_MIME_ENCODINGS);
-					MATCH_BOOLEAN("post_process_view=", ATTRIB_POST_PROCESS_VIEW);
-					MATCH_INTEGER("post_process_type=", ATTRIB_POST_PROCESS_TYPE, POST_PROC_YES);
+					MATCH_BOOLEAN("pos_first_unread=", OPT_ATTRIB_POS_FIRST_UNREAD);
+					MATCH_BOOLEAN("post_8bit_header=", OPT_ATTRIB_POST_8BIT_HEADER);
+					MATCH_LIST("post_mime_encoding=", OPT_ATTRIB_POST_MIME_ENCODING, txt_mime_encodings, NUM_MIME_ENCODINGS);
+					MATCH_BOOLEAN("post_process_view=", OPT_ATTRIB_POST_PROCESS_VIEW);
+					MATCH_INTEGER("post_process_type=", OPT_ATTRIB_POST_PROCESS_TYPE, POST_PROC_YES);
 #ifndef DISABLE_PRINTING
-					MATCH_BOOLEAN("print_header=", ATTRIB_PRINT_HEADER);
+					MATCH_BOOLEAN("print_header=", OPT_ATTRIB_PRINT_HEADER);
 #else
 					SKIP_ITEM("print_header=");
 #endif /* !DISABLE_PRINTING */
-					MATCH_BOOLEAN("process_only_unread=", ATTRIB_PROCESS_ONLY_UNREAD);
-					MATCH_BOOLEAN("prompt_followupto=", ATTRIB_PROMPT_FOLLOWUPTO);
+					MATCH_BOOLEAN("process_only_unread=", OPT_ATTRIB_PROCESS_ONLY_UNREAD);
+					MATCH_BOOLEAN("prompt_followupto=", OPT_ATTRIB_PROMPT_FOLLOWUPTO);
 					break;
 
 				case 'q':
-					MATCH_BOOLEAN("quick_kill_case=", ATTRIB_QUICK_KILL_CASE);
-					MATCH_BOOLEAN("quick_kill_expire=", ATTRIB_QUICK_KILL_EXPIRE);
-					MATCH_INTEGER("quick_kill_header=", ATTRIB_QUICK_KILL_HEADER, FILTER_LINES);
-					MATCH_STRING("quick_kill_scope=", ATTRIB_QUICK_KILL_SCOPE);
-					MATCH_BOOLEAN("quick_select_case=", ATTRIB_QUICK_SELECT_CASE);
-					MATCH_BOOLEAN("quick_select_expire=", ATTRIB_QUICK_SELECT_EXPIRE);
-					MATCH_INTEGER("quick_select_header=", ATTRIB_QUICK_SELECT_HEADER, FILTER_LINES);
-					MATCH_STRING("quick_select_scope=", ATTRIB_QUICK_SELECT_SCOPE);
+					MATCH_BOOLEAN("quick_kill_case=", OPT_ATTRIB_QUICK_KILL_CASE);
+					MATCH_BOOLEAN("quick_kill_expire=", OPT_ATTRIB_QUICK_KILL_EXPIRE);
+					MATCH_INTEGER("quick_kill_header=", OPT_ATTRIB_QUICK_KILL_HEADER, FILTER_LINES);
+					MATCH_STRING("quick_kill_scope=", OPT_ATTRIB_QUICK_KILL_SCOPE);
+					MATCH_BOOLEAN("quick_select_case=", OPT_ATTRIB_QUICK_SELECT_CASE);
+					MATCH_BOOLEAN("quick_select_expire=", OPT_ATTRIB_QUICK_SELECT_EXPIRE);
+					MATCH_INTEGER("quick_select_header=", OPT_ATTRIB_QUICK_SELECT_HEADER, FILTER_LINES);
+					MATCH_STRING("quick_select_scope=", OPT_ATTRIB_QUICK_SELECT_SCOPE);
 					if (match_string(line, "quote_chars=", buf, sizeof(buf))) {
 						quote_dash_to_space(buf);
-						set_attrib(ATTRIB_QUOTE_CHARS, scope, buf);
+						set_attrib(OPT_ATTRIB_QUOTE_CHARS, scope, buf);
 						found = TRUE;
 						break;
 					}
 					break;
 
 				case 's':
-					MATCH_STRING("savedir=", ATTRIB_SAVEDIR);
-					MATCH_STRING("savefile=", ATTRIB_SAVEFILE);
+					MATCH_STRING("savedir=", OPT_ATTRIB_SAVEDIR);
+					MATCH_STRING("savefile=", OPT_ATTRIB_SAVEFILE);
 					if (match_string(line, "scope=", scope, sizeof(scope))) {
 						i = add_scope(scope);
 						scopes[i].global = global_file ? TRUE : FALSE;
 						found = TRUE;
 						break;
 					}
-					MATCH_INTEGER("show_author=", ATTRIB_SHOW_AUTHOR, SHOW_FROM_BOTH);
-					MATCH_INTEGER("show_info=", ATTRIB_SHOW_INFO, SHOW_INFO_BOTH);
-					MATCH_BOOLEAN("show_only_unread_arts=", ATTRIB_SHOW_ONLY_UNREAD_ARTS);
-					MATCH_BOOLEAN("show_signatures=", ATTRIB_SHOW_SIGNATURES);
-					MATCH_BOOLEAN("sigdashes=", ATTRIB_SIGDASHES);
-					MATCH_BOOLEAN("signature_repost=", ATTRIB_SIGNATURE_REPOST);
-					MATCH_BOOLEAN("start_editor_offset=", ATTRIB_START_EDITOR_OFFSET);
-					MATCH_STRING("sigfile=", ATTRIB_SIGFILE);
-					MATCH_INTEGER("sort_article_type=", ATTRIB_SORT_ARTICLE_TYPE, SORT_ARTICLES_BY_LINES_ASCEND);
-					MATCH_INTEGER("sort_threads_type=", ATTRIB_SORT_THREADS_TYPE, SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND);
+					MATCH_INTEGER("show_author=", OPT_ATTRIB_SHOW_AUTHOR, SHOW_FROM_BOTH);
+					MATCH_INTEGER("show_info=", OPT_ATTRIB_SHOW_INFO, SHOW_INFO_BOTH);
+					MATCH_BOOLEAN("show_only_unread_arts=", OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS);
+					MATCH_BOOLEAN("show_signatures=", OPT_ATTRIB_SHOW_SIGNATURES);
+					MATCH_BOOLEAN("sigdashes=", OPT_ATTRIB_SIGDASHES);
+					MATCH_BOOLEAN("signature_repost=", OPT_ATTRIB_SIGNATURE_REPOST);
+					MATCH_BOOLEAN("start_editor_offset=", OPT_ATTRIB_START_EDITOR_OFFSET);
+					MATCH_STRING("sigfile=", OPT_ATTRIB_SIGFILE);
+					MATCH_INTEGER("sort_article_type=", OPT_ATTRIB_SORT_ARTICLE_TYPE, SORT_ARTICLES_BY_LINES_ASCEND);
+					MATCH_INTEGER("sort_threads_type=", OPT_ATTRIB_SORT_THREADS_TYPE, SORT_THREADS_BY_LAST_POSTING_DATE_ASCEND);
 					break;
 
 				case 't':
-					MATCH_BOOLEAN("tex2iso_conv=", ATTRIB_TEX2ISO_CONV);
-					MATCH_INTEGER("thread_articles=", ATTRIB_THREAD_ARTICLES, THREAD_MAX);
-					MATCH_BOOLEAN("thread_catchup_on_exit=", ATTRIB_THREAD_CATCHUP_ON_EXIT);
-					MATCH_INTEGER("thread_perc=", ATTRIB_THREAD_PERC, 100);
-					MATCH_INTEGER("trim_article_body=", ATTRIB_TRIM_ARTICLE_BODY, 7);
+					MATCH_BOOLEAN("tex2iso_conv=", OPT_ATTRIB_TEX2ISO_CONV);
+					MATCH_INTEGER("thread_articles=", OPT_ATTRIB_THREAD_ARTICLES, THREAD_MAX);
+					MATCH_BOOLEAN("thread_catchup_on_exit=", OPT_ATTRIB_THREAD_CATCHUP_ON_EXIT);
+					MATCH_INTEGER("thread_perc=", OPT_ATTRIB_THREAD_PERC, 100);
+					MATCH_INTEGER("trim_article_body=", OPT_ATTRIB_TRIM_ARTICLE_BODY, 7);
 					break;
 
 				case 'u':
 #ifdef CHARSET_CONVERSION
-					MATCH_STRING("undeclared_charset=", ATTRIB_UNDECLARED_CHARSET);
+					MATCH_STRING("undeclared_charset=", OPT_ATTRIB_UNDECLARED_CHARSET);
 #else
 					SKIP_ITEM("undeclared_charset=");
 #endif /* CHARSET_CONVERSION */
 					break;
 
 				case 'v':
-					MATCH_BOOLEAN("verbatim_handling=", ATTRIB_VERBATIM_HANDLING);
+					MATCH_BOOLEAN("verbatim_handling=", OPT_ATTRIB_VERBATIM_HANDLING);
 					break;
 
 				case 'w':
-					MATCH_BOOLEAN("wrap_on_next_unread=", ATTRIB_WRAP_ON_NEXT_UNREAD);
+					MATCH_BOOLEAN("wrap_on_next_unread=", OPT_ATTRIB_WRAP_ON_NEXT_UNREAD);
 					break;
 
 				case 'x':
-					MATCH_STRING("x_body=", ATTRIB_X_BODY);
-					MATCH_BOOLEAN("x_comment_to=", ATTRIB_X_COMMENT_TO);
-					MATCH_STRING("x_headers=", ATTRIB_X_HEADERS);
+					MATCH_STRING("x_body=", OPT_ATTRIB_X_BODY);
+					MATCH_BOOLEAN("x_comment_to=", OPT_ATTRIB_X_COMMENT_TO);
+					MATCH_STRING("x_headers=", OPT_ATTRIB_X_HEADERS);
 					break;
 
 				default:
 					break;
 			}
 
+			if (!global_file && upgrade == RC_UPGRADE) {
+				t_bool auto_bcc = FALSE;
+				t_bool auto_cc = FALSE;
+				int auto_cc_bcc;
+
+				switch (tolower((unsigned char) line[0])) {
+					case 'a':
+						if (match_boolean(line, "auto_bcc=", &auto_bcc)) {
+							if (scopes[num_scope -1].attribute->auto_cc_bcc & AUTO_CC)
+								auto_cc_bcc = (auto_bcc ? AUTO_CC_BCC : AUTO_CC);
+							else
+								auto_cc_bcc = (auto_bcc ? AUTO_BCC : 0);
+							set_attrib(OPT_ATTRIB_AUTO_CC_BCC, scope, (const char *) &auto_cc_bcc);
+							found = TRUE;
+							break;
+						}
+						if (match_boolean(line, "auto_cc=", &auto_cc)) {
+							if (scopes[num_scope -1].attribute->auto_cc_bcc & AUTO_BCC)
+								auto_cc_bcc = (auto_cc ? AUTO_CC_BCC : AUTO_BCC);
+							else
+								auto_cc_bcc = (auto_cc ? AUTO_CC : 0);
+							set_attrib(OPT_ATTRIB_AUTO_CC_BCC, scope, (const char *) &auto_cc_bcc);
+							found = TRUE;
+							break;
+						}
+						break;
+
+					case 'p':
+						MATCH_INTEGER("post_proc_type=", OPT_ATTRIB_POST_PROCESS_TYPE, POST_PROC_YES);
+						break;
+
+					case 's':
+						MATCH_BOOLEAN("show_only_unread=", OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS);
+						MATCH_INTEGER("sort_art_type=", OPT_ATTRIB_SORT_ARTICLE_TYPE, SORT_ARTICLES_BY_LINES_ASCEND);
+						break;
+
+					case 't':
+						MATCH_INTEGER("thread_arts=", OPT_ATTRIB_THREAD_ARTICLES, THREAD_MAX);
+						break;
+
+					default:
+						break;
+				}
+			}
+
 			if (found)
 				found = FALSE;
-			else {
-				if (upgrade == RC_UPGRADE && !global_file) {
-					t_bool auto_bcc = FALSE;
-					t_bool auto_cc = FALSE;
-					int auto_cc_bcc;
-
-					switch (tolower((unsigned char) line[0])) {
-						case 'a':
-							if (match_boolean(line, "auto_bcc=", &auto_bcc)) {
-								if (scopes[num_scope -1].attribute->auto_cc_bcc & AUTO_CC)
-									auto_cc_bcc = (auto_bcc ? AUTO_CC_BCC : AUTO_CC);
-								else
-									auto_cc_bcc = (auto_bcc ? AUTO_BCC : 0);
-								set_attrib(ATTRIB_AUTO_CC_BCC, scope, (const char *) &auto_cc_bcc);
-								found = TRUE;
-								break;
-							}
-							if (match_boolean(line, "auto_cc=", &auto_cc)) {
-								if (scopes[num_scope -1].attribute->auto_cc_bcc & AUTO_BCC)
-									auto_cc_bcc = (auto_cc ? AUTO_CC_BCC : AUTO_BCC);
-								else
-									auto_cc_bcc = (auto_cc ? AUTO_CC : 0);
-								set_attrib(ATTRIB_AUTO_CC_BCC, scope, (const char *) &auto_cc_bcc);
-								found = TRUE;
-								break;
-							}
-							break;
-
-						case 'p':
-							MATCH_INTEGER("post_proc_type=", ATTRIB_POST_PROCESS_TYPE, POST_PROC_YES);
-							break;
-
-						case 's':
-							MATCH_BOOLEAN("show_only_unread=", ATTRIB_SHOW_ONLY_UNREAD_ARTS);
-							MATCH_INTEGER("sort_art_type=", ATTRIB_SORT_ARTICLE_TYPE, SORT_ARTICLES_BY_LINES_ASCEND);
-							break;
-
-						case 't':
-							MATCH_INTEGER("thread_arts=", ATTRIB_THREAD_ARTICLES, THREAD_MAX);
-							break;
-
-						default:
-							break;
-					}
-					if (found)
-						found = FALSE;
-					else
-						error_message(1, _(txt_bad_attrib), line);
-				} else
-					error_message(1, _(txt_bad_attrib), line);
-			}
+			else
+				error_message(1, _(txt_bad_attrib), line);
 		}
 		fclose(fp);
 
 		/*
 		 * TODO: do something useful for the other cases
 		 */
-		if (upgrade == RC_UPGRADE && !global_file)
+		if (!global_file && upgrade == RC_UPGRADE)
 			write_attributes_file(file);
-	} else if (!global_file) {
+	} else if (!global_file && startup) {
 		/* no local attributes file, add some useful defaults and write file */
 
 		add_scope("*");
-		set_attrib(ATTRIB_X_HEADERS, "*", "~/.tin/headers");
+		set_attrib(OPT_ATTRIB_X_HEADERS, "*", "~/.tin/headers");
 
 		add_scope("*sources*");
 		num = POST_PROC_SHAR;
-		set_attrib(ATTRIB_POST_PROCESS_TYPE, "*sources*", (char *) &num);
+		set_attrib(OPT_ATTRIB_POST_PROCESS_TYPE, "*sources*", (char *) &num);
 
 		add_scope("*binaries*");
 		num = POST_PROC_YES;
-		set_attrib(ATTRIB_POST_PROCESS_TYPE, "*binaries*", (char *) &num);
+		set_attrib(OPT_ATTRIB_POST_PROCESS_TYPE, "*binaries*", (char *) &num);
 		num = FALSE;
-		set_attrib(ATTRIB_TEX2ISO_CONV, "*binaries*", (char *) &num);
+		set_attrib(OPT_ATTRIB_TEX2ISO_CONV, "*binaries*", (char *) &num);
 		num = TRUE;
-		set_attrib(ATTRIB_DELETE_TMP_FILES, "*binaries*", (char *) &num);
-		set_attrib(ATTRIB_FOLLOWUP_TO, "*binaries*", "poster");
+		set_attrib(OPT_ATTRIB_DELETE_TMP_FILES, "*binaries*", (char *) &num);
+		set_attrib(OPT_ATTRIB_FOLLOWUP_TO, "*binaries*", "poster");
 
 		write_attributes_file(file);
 	}
+	if (!global_file && startup)
+		startup = FALSE;
 #ifdef DEBUG
 	if (!global_file)
 		dump_scopes();
@@ -624,6 +575,7 @@ read_attributes_file(
 #define SET_STRING(string) \
 	FreeIfNeeded(curr_scope->attribute->string); \
 	curr_scope->attribute->string = my_strdup(data); \
+	curr_scope->state->string = TRUE; \
 	break
 #define SET_INTEGER(integer) \
 	curr_scope->attribute->integer = *((const int *) data); \
@@ -651,226 +603,228 @@ set_attrib(
 		 * Now set the required attribute
 		 */
 		switch (type) {
-			case ATTRIB_MAILDIR:
+			case OPT_ATTRIB_MAILDIR:
 				SET_STRING(maildir);
 
-			case ATTRIB_SAVEDIR:
+			case OPT_ATTRIB_SAVEDIR:
 				SET_STRING(savedir);
 
-			case ATTRIB_SAVEFILE:
+			case OPT_ATTRIB_SAVEFILE:
 				SET_STRING(savefile);
 
-			case ATTRIB_ORGANIZATION:
+			case OPT_ATTRIB_ORGANIZATION:
 				SET_STRING(organization);
 
-			case ATTRIB_FROM:
+			case OPT_ATTRIB_FROM:
 				SET_STRING(from);
 
-			case ATTRIB_SIGFILE:
+			case OPT_ATTRIB_SIGFILE:
 				SET_STRING(sigfile);
 
-			case ATTRIB_FOLLOWUP_TO:
+			case OPT_ATTRIB_FOLLOWUP_TO:
 				SET_STRING(followup_to);
 
-			case ATTRIB_ADD_POSTED_TO_FILTER:
+			case OPT_ATTRIB_ADD_POSTED_TO_FILTER:
 				SET_INTEGER(add_posted_to_filter);
 
-			case ATTRIB_ADVERTISING:
+			case OPT_ATTRIB_ADVERTISING:
 				SET_INTEGER(advertising);
 
-			case ATTRIB_ALTERNATIVE_HANDLING:
+			case OPT_ATTRIB_ALTERNATIVE_HANDLING:
 				SET_INTEGER(alternative_handling);
 
-			case ATTRIB_ASK_FOR_METAMAIL:
+			case OPT_ATTRIB_ASK_FOR_METAMAIL:
 				SET_INTEGER(ask_for_metamail);
 
-			case ATTRIB_AUTO_CC_BCC:
+			case OPT_ATTRIB_AUTO_CC_BCC:
 				SET_INTEGER(auto_cc_bcc);
 
-			case ATTRIB_AUTO_LIST_THREAD:
+			case OPT_ATTRIB_AUTO_LIST_THREAD:
 				SET_INTEGER(auto_list_thread);
 
-			case ATTRIB_AUTO_SELECT:
+			case OPT_ATTRIB_AUTO_SELECT:
 				SET_INTEGER(auto_select);
 
-			case ATTRIB_AUTO_SAVE:
+			case OPT_ATTRIB_AUTO_SAVE:
 				SET_INTEGER(auto_save);
 
-			case ATTRIB_BATCH_SAVE:
+			case OPT_ATTRIB_BATCH_SAVE:
 				SET_INTEGER(batch_save);
 
-			case ATTRIB_DATE_FORMAT:
+			case OPT_ATTRIB_DATE_FORMAT:
 				SET_STRING(date_format);
 
-			case ATTRIB_DELETE_TMP_FILES:
+			case OPT_ATTRIB_DELETE_TMP_FILES:
 				SET_INTEGER(delete_tmp_files);
 
-			case ATTRIB_EDITOR_FORMAT:
+			case OPT_ATTRIB_EDITOR_FORMAT:
 				SET_STRING(editor_format);
 
-			case ATTRIB_GROUP_CATCHUP_ON_EXIT:
+			case OPT_ATTRIB_GROUP_CATCHUP_ON_EXIT:
 				SET_INTEGER(group_catchup_on_exit);
 
-			case ATTRIB_MAIL_8BIT_HEADER:
+			case OPT_ATTRIB_MAIL_8BIT_HEADER:
 				SET_INTEGER(mail_8bit_header);
 
-			case ATTRIB_MAIL_MIME_ENCODING:
+			case OPT_ATTRIB_MAIL_MIME_ENCODING:
 				SET_INTEGER(mail_mime_encoding);
 
-			case ATTRIB_MARK_IGNORE_TAGS:
+			case OPT_ATTRIB_MARK_IGNORE_TAGS:
 				SET_INTEGER(mark_ignore_tags);
 
-			case ATTRIB_MARK_SAVED_READ:
+			case OPT_ATTRIB_MARK_SAVED_READ:
 				SET_INTEGER(mark_saved_read);
 
-			case ATTRIB_NEWS_HEADERS_TO_DISPLAY:
+			case OPT_ATTRIB_NEWS_HEADERS_TO_DISPLAY:
 				FreeIfNeeded(curr_scope->attribute->news_headers_to_display);
 				curr_scope->attribute->news_headers_to_display = my_strdup(data);
 				build_news_headers_array(curr_scope->attribute, TRUE);
+				curr_scope->state->news_headers_to_display = TRUE;
 				break;
 
-			case ATTRIB_NEWS_HEADERS_TO_NOT_DISPLAY:
+			case OPT_ATTRIB_NEWS_HEADERS_TO_NOT_DISPLAY:
 				FreeIfNeeded(curr_scope->attribute->news_headers_to_not_display);
 				curr_scope->attribute->news_headers_to_not_display = my_strdup(data);
 				build_news_headers_array(curr_scope->attribute, FALSE);
+				curr_scope->state->news_headers_to_not_display = TRUE;
 				break;
 
-			case ATTRIB_POS_FIRST_UNREAD:
+			case OPT_ATTRIB_POS_FIRST_UNREAD:
 				SET_INTEGER(pos_first_unread);
 
-			case ATTRIB_POST_8BIT_HEADER:
+			case OPT_ATTRIB_POST_8BIT_HEADER:
 				SET_INTEGER(post_8bit_header);
 
-			case ATTRIB_POST_MIME_ENCODING:
+			case OPT_ATTRIB_POST_MIME_ENCODING:
 				SET_INTEGER(post_mime_encoding);
 
-			case ATTRIB_POST_PROCESS_VIEW:
+			case OPT_ATTRIB_POST_PROCESS_VIEW:
 				SET_INTEGER(post_process_view);
 
 #ifndef DISABLE_PRINTING
-			case ATTRIB_PRINT_HEADER:
+			case OPT_ATTRIB_PRINT_HEADER:
 				SET_INTEGER(print_header);
 #endif /* !DISABLE_PRINTING */
 
-			case ATTRIB_PROCESS_ONLY_UNREAD:
+			case OPT_ATTRIB_PROCESS_ONLY_UNREAD:
 				SET_INTEGER(process_only_unread);
 
-			case ATTRIB_PROMPT_FOLLOWUPTO:
+			case OPT_ATTRIB_PROMPT_FOLLOWUPTO:
 				SET_INTEGER(prompt_followupto);
 
-			case ATTRIB_SHOW_ONLY_UNREAD_ARTS:
+			case OPT_ATTRIB_SHOW_ONLY_UNREAD_ARTS:
 				SET_INTEGER(show_only_unread_arts);
 
-			case ATTRIB_SIGDASHES:
+			case OPT_ATTRIB_SIGDASHES:
 				SET_INTEGER(sigdashes);
 
-			case ATTRIB_SIGNATURE_REPOST:
+			case OPT_ATTRIB_SIGNATURE_REPOST:
 				SET_INTEGER(signature_repost);
 
-			case ATTRIB_START_EDITOR_OFFSET:
+			case OPT_ATTRIB_START_EDITOR_OFFSET:
 				SET_INTEGER(start_editor_offset);
 
-			case ATTRIB_THREAD_ARTICLES:
+			case OPT_ATTRIB_THREAD_ARTICLES:
 				SET_INTEGER(thread_articles);
 
-			case ATTRIB_THREAD_CATCHUP_ON_EXIT:
+			case OPT_ATTRIB_THREAD_CATCHUP_ON_EXIT:
 				SET_INTEGER(thread_catchup_on_exit);
 
-			case ATTRIB_THREAD_PERC:
+			case OPT_ATTRIB_THREAD_PERC:
 				SET_INTEGER(thread_perc);
 
-			case ATTRIB_SHOW_AUTHOR:
+			case OPT_ATTRIB_SHOW_AUTHOR:
 				SET_INTEGER(show_author);
 
-			case ATTRIB_SHOW_INFO:
+			case OPT_ATTRIB_SHOW_INFO:
 				SET_INTEGER(show_info);
 
-			case ATTRIB_SHOW_SIGNATURES:
+			case OPT_ATTRIB_SHOW_SIGNATURES:
 				SET_INTEGER(show_signatures);
 
-			case ATTRIB_TRIM_ARTICLE_BODY:
+			case OPT_ATTRIB_TRIM_ARTICLE_BODY:
 				SET_INTEGER(trim_article_body);
 
-			case ATTRIB_VERBATIM_HANDLING:
+			case OPT_ATTRIB_VERBATIM_HANDLING:
 				SET_INTEGER(verbatim_handling);
 
-			case ATTRIB_WRAP_ON_NEXT_UNREAD:
+			case OPT_ATTRIB_WRAP_ON_NEXT_UNREAD:
 				SET_INTEGER(wrap_on_next_unread);
 
-			case ATTRIB_SORT_ARTICLE_TYPE:
+			case OPT_ATTRIB_SORT_ARTICLE_TYPE:
 				SET_INTEGER(sort_article_type);
 
-			case ATTRIB_SORT_THREADS_TYPE:
+			case OPT_ATTRIB_SORT_THREADS_TYPE:
 				SET_INTEGER(sort_threads_type);
 
-			case ATTRIB_POST_PROCESS_TYPE:
+			case OPT_ATTRIB_POST_PROCESS_TYPE:
 				SET_INTEGER(post_process_type);
 
-			case ATTRIB_QUICK_KILL_HEADER:
+			case OPT_ATTRIB_QUICK_KILL_HEADER:
 				SET_INTEGER(quick_kill_header);
 
-			case ATTRIB_QUICK_KILL_SCOPE:
+			case OPT_ATTRIB_QUICK_KILL_SCOPE:
 				SET_STRING(quick_kill_scope);
 
-			case ATTRIB_QUICK_KILL_EXPIRE:
+			case OPT_ATTRIB_QUICK_KILL_EXPIRE:
 				SET_INTEGER(quick_kill_expire);
 
-			case ATTRIB_QUICK_KILL_CASE:
+			case OPT_ATTRIB_QUICK_KILL_CASE:
 				SET_INTEGER(quick_kill_case);
 
-			case ATTRIB_QUICK_SELECT_HEADER:
+			case OPT_ATTRIB_QUICK_SELECT_HEADER:
 				SET_INTEGER(quick_select_header);
 
-			case ATTRIB_QUICK_SELECT_SCOPE:
+			case OPT_ATTRIB_QUICK_SELECT_SCOPE:
 				SET_STRING(quick_select_scope);
 
-			case ATTRIB_QUICK_SELECT_EXPIRE:
+			case OPT_ATTRIB_QUICK_SELECT_EXPIRE:
 				SET_INTEGER(quick_select_expire);
 
-			case ATTRIB_QUICK_SELECT_CASE:
+			case OPT_ATTRIB_QUICK_SELECT_CASE:
 				SET_INTEGER(quick_select_case);
 
-			case ATTRIB_MAILING_LIST:
+			case OPT_ATTRIB_MAILING_LIST:
 				SET_STRING(mailing_list);
 
 #ifdef CHARSET_CONVERSION
-			case ATTRIB_MM_NETWORK_CHARSET:
+			case OPT_ATTRIB_MM_NETWORK_CHARSET:
 				SET_INTEGER(mm_network_charset);
 
-			case ATTRIB_UNDECLARED_CHARSET:
+			case OPT_ATTRIB_UNDECLARED_CHARSET:
 				SET_STRING(undeclared_charset);
 #endif /* CHARSET_CONVERSION */
 
-			case ATTRIB_X_HEADERS:
+			case OPT_ATTRIB_X_HEADERS:
 				SET_STRING(x_headers);
 
-			case ATTRIB_X_BODY:
+			case OPT_ATTRIB_X_BODY:
 				SET_STRING(x_body);
 
-			case ATTRIB_X_COMMENT_TO:
+			case OPT_ATTRIB_X_COMMENT_TO:
 				SET_INTEGER(x_comment_to);
 
-			case ATTRIB_FCC:
+			case OPT_ATTRIB_FCC:
 				SET_STRING(fcc);
 
-			case ATTRIB_NEWS_QUOTE:
+			case OPT_ATTRIB_NEWS_QUOTE_FORMAT:
 				SET_STRING(news_quote_format);
 
-			case ATTRIB_QUOTE_CHARS:
+			case OPT_ATTRIB_QUOTE_CHARS:
 				SET_STRING(quote_chars);
 
-			case ATTRIB_MIME_TYPES_TO_SAVE:
+			case OPT_ATTRIB_MIME_TYPES_TO_SAVE:
 				SET_STRING(mime_types_to_save);
 
-			case ATTRIB_MIME_FORWARD:
+			case OPT_ATTRIB_MIME_FORWARD:
 				SET_INTEGER(mime_forward);
 
 #ifdef HAVE_ISPELL
-			case ATTRIB_ISPELL:
+			case OPT_ATTRIB_ISPELL:
 				SET_STRING(ispell);
 #endif /* HAVE_ISPELL */
 
-			case ATTRIB_TEX2ISO_CONV:
+			case OPT_ATTRIB_TEX2ISO_CONV:
 				SET_INTEGER(tex2iso_conv);
 
 			default:
@@ -881,39 +835,14 @@ set_attrib(
 
 
 /*
- * Look if an entry with the given scope exists and return the index.
- * Otherwise, add an entry, mark it as temporary and return the index.
- */
-int
-add_tempscope(
-	const char *scope)
-{
-	int i = 0;
-
-	if (!scope || !*scope)
-		return i;
-
-	for (i = 1; i < num_scope; i++) {
-		if ((strcasecmp(scope, scopes[i].scope) == 0) && scopes[i].temp)
-			return i;
-	}
-	if ((i = add_scope(scope)))
-		scopes[i].temp = TRUE;
-	return i;
-}
-
-
-/*
  * Insert a new scope entry into scopes[] and return the index.
  */
-static int
+int
 add_scope(
 	const char *scope)
 {
-	int i = 0;
-
 	if (!scope || !*scope)
-		return i;
+		return 0;
 
 	if ((num_scope >= max_scope) || (num_scope < 0) || (scopes == NULL))
 		expand_scope();
@@ -922,17 +851,12 @@ add_scope(
 	set_default_attributes(scopes[num_scope].attribute, NULL, FALSE);
 	scopes[num_scope].state = my_malloc(sizeof(struct t_attribute_state));
 	set_default_state(scopes[num_scope].state);
-	scopes[num_scope].global = scopes[num_scope].temp = FALSE;
+	scopes[num_scope].global = FALSE;
 	return num_scope++;
 }
 
 
-#define SET_STRING_ATTRIB(attr) do { \
-		if (curr_scope->attribute->attr) \
-			group->attribute->attr = curr_scope->attribute->attr; \
-	} while (0)
-
-#define SET_INT_ATTRIB(attr) do { \
+#define SET_ATTRIB(attr) do { \
 		if (curr_scope->state->attr) \
 			group->attribute->attr = curr_scope->attribute->attr; \
 	} while (0)
@@ -946,104 +870,106 @@ assign_attributes_to_groups(
 	void)
 {
 	struct t_group *group;
-	struct t_scope *global_scope, *curr_scope;
+	struct t_scope *default_scope, *curr_scope;
 	t_bool found;
 	int i, j;
 #ifdef CHARSET_CONVERSION
 	t_bool is_7bit;
 #endif /* CHARSET_CONVERSION */
 
-	if (!cmd_line && !batch_mode)
+	if (!batch_mode || verbose)
 		wait_message(0, _("Processing attributes... ")); /* TODO: -> lang.c */
 
-	global_scope = &scopes[0];
+	default_scope = &scopes[0];
 	for_each_group(i) {
 		group = &active[i];
 		found = FALSE;
 		for (j = 1; j < num_scope; j++) {
 			curr_scope = &scopes[j];
 			if (match_group_list(group->name, curr_scope->scope)) {
-				if (group->attribute == NULL || group->attribute == global_scope->attribute)
+				if (group->attribute == NULL || group->attribute == default_scope->attribute)
 					group->attribute = my_malloc(sizeof(struct t_attribute));
 				if (!found)
-					set_default_attributes(group->attribute, global_scope->attribute, FALSE);
+					set_default_attributes(group->attribute, default_scope->attribute, FALSE);
 				found = TRUE;
-				SET_STRING_ATTRIB(maildir);
-				SET_STRING_ATTRIB(savedir);
-				SET_STRING_ATTRIB(savefile);
-				SET_STRING_ATTRIB(sigfile);
-				SET_STRING_ATTRIB(date_format);
-				SET_STRING_ATTRIB(editor_format);
-				SET_STRING_ATTRIB(organization);
-				SET_STRING_ATTRIB(fcc);
-				SET_STRING_ATTRIB(followup_to);
-				SET_STRING_ATTRIB(mailing_list);
-				SET_STRING_ATTRIB(x_headers);
-				SET_STRING_ATTRIB(x_body);
-				SET_STRING_ATTRIB(from);
-				SET_STRING_ATTRIB(news_quote_format);
-				SET_STRING_ATTRIB(quote_chars);
-				SET_STRING_ATTRIB(mime_types_to_save);
+				SET_ATTRIB(maildir);
+				SET_ATTRIB(savedir);
+				SET_ATTRIB(savefile);
+				SET_ATTRIB(sigfile);
+				SET_ATTRIB(date_format);
+				SET_ATTRIB(editor_format);
+				SET_ATTRIB(organization);
+				SET_ATTRIB(fcc);
+				SET_ATTRIB(followup_to);
+				SET_ATTRIB(mailing_list);
+				SET_ATTRIB(x_headers);
+				SET_ATTRIB(x_body);
+				SET_ATTRIB(from);
+				SET_ATTRIB(news_quote_format);
+				SET_ATTRIB(quote_chars);
+				SET_ATTRIB(mime_types_to_save);
 #ifdef HAVE_ISPELL
-				SET_STRING_ATTRIB(ispell);
+				SET_ATTRIB(ispell);
 #endif /* HAVE_ISPELL */
 #ifdef CHARSET_CONVERSION
-				SET_INT_ATTRIB(mm_network_charset);
-				SET_STRING_ATTRIB(undeclared_charset);
+				SET_ATTRIB(mm_network_charset);
+				SET_ATTRIB(undeclared_charset);
 #endif /* CHARSET_CONVERSION */
-				SET_STRING_ATTRIB(quick_kill_scope);
-				SET_INT_ATTRIB(quick_kill_header);
-				SET_INT_ATTRIB(quick_kill_case);
-				SET_INT_ATTRIB(quick_kill_expire);
-				SET_STRING_ATTRIB(quick_select_scope);
-				SET_INT_ATTRIB(quick_select_header);
-				SET_INT_ATTRIB(quick_select_case);
-				SET_INT_ATTRIB(quick_select_expire);
-				SET_INT_ATTRIB(show_only_unread_arts);
-				SET_INT_ATTRIB(thread_articles);
-				SET_INT_ATTRIB(thread_catchup_on_exit);
-				SET_INT_ATTRIB(thread_perc);
-				SET_INT_ATTRIB(sort_article_type);
-				SET_INT_ATTRIB(sort_threads_type);
-				SET_INT_ATTRIB(show_info);
-				SET_INT_ATTRIB(show_author);
-				SET_INT_ATTRIB(show_signatures);
-				SET_INT_ATTRIB(trim_article_body);
-				SET_INT_ATTRIB(verbatim_handling);
-				SET_INT_ATTRIB(wrap_on_next_unread);
-				SET_INT_ATTRIB(add_posted_to_filter);
-				SET_INT_ATTRIB(advertising);
-				SET_INT_ATTRIB(alternative_handling);
-				SET_INT_ATTRIB(ask_for_metamail);
-				SET_INT_ATTRIB(auto_cc_bcc);
-				SET_INT_ATTRIB(auto_list_thread);
-				SET_INT_ATTRIB(auto_save);
-				SET_INT_ATTRIB(auto_select);
-				SET_INT_ATTRIB(batch_save);
-				SET_INT_ATTRIB(delete_tmp_files);
-				SET_INT_ATTRIB(group_catchup_on_exit);
-				SET_INT_ATTRIB(mail_8bit_header);
-				SET_INT_ATTRIB(mail_mime_encoding);
-				SET_INT_ATTRIB(mark_ignore_tags);
-				SET_INT_ATTRIB(mark_saved_read);
-				SET_STRING_ATTRIB(headers_to_display);
-				SET_STRING_ATTRIB(headers_to_not_display);
-				SET_INT_ATTRIB(pos_first_unread);
-				SET_INT_ATTRIB(post_8bit_header);
-				SET_INT_ATTRIB(post_mime_encoding);
-				SET_INT_ATTRIB(post_process_view);
-				SET_INT_ATTRIB(post_process_type);
+				SET_ATTRIB(quick_kill_scope);
+				SET_ATTRIB(quick_kill_header);
+				SET_ATTRIB(quick_kill_case);
+				SET_ATTRIB(quick_kill_expire);
+				SET_ATTRIB(quick_select_scope);
+				SET_ATTRIB(quick_select_header);
+				SET_ATTRIB(quick_select_case);
+				SET_ATTRIB(quick_select_expire);
+				SET_ATTRIB(show_only_unread_arts);
+				SET_ATTRIB(thread_articles);
+				SET_ATTRIB(thread_catchup_on_exit);
+				SET_ATTRIB(thread_perc);
+				SET_ATTRIB(sort_article_type);
+				SET_ATTRIB(sort_threads_type);
+				SET_ATTRIB(show_info);
+				SET_ATTRIB(show_author);
+				SET_ATTRIB(show_signatures);
+				SET_ATTRIB(trim_article_body);
+				SET_ATTRIB(verbatim_handling);
+				SET_ATTRIB(wrap_on_next_unread);
+				SET_ATTRIB(add_posted_to_filter);
+				SET_ATTRIB(advertising);
+				SET_ATTRIB(alternative_handling);
+				SET_ATTRIB(ask_for_metamail);
+				SET_ATTRIB(auto_cc_bcc);
+				SET_ATTRIB(auto_list_thread);
+				SET_ATTRIB(auto_save);
+				SET_ATTRIB(auto_select);
+				SET_ATTRIB(batch_save);
+				SET_ATTRIB(delete_tmp_files);
+				SET_ATTRIB(group_catchup_on_exit);
+				SET_ATTRIB(mail_8bit_header);
+				SET_ATTRIB(mail_mime_encoding);
+				SET_ATTRIB(mark_ignore_tags);
+				SET_ATTRIB(mark_saved_read);
+				if (curr_scope->state->news_headers_to_display)
+					group->attribute->headers_to_display = curr_scope->attribute->headers_to_display;
+				if (curr_scope->state->news_headers_to_not_display)
+					group->attribute->headers_to_not_display = curr_scope->attribute->headers_to_not_display;
+				SET_ATTRIB(pos_first_unread);
+				SET_ATTRIB(post_8bit_header);
+				SET_ATTRIB(post_mime_encoding);
+				SET_ATTRIB(post_process_view);
+				SET_ATTRIB(post_process_type);
 #ifndef DISABLE_PRINTING
-				SET_INT_ATTRIB(print_header);
+				SET_ATTRIB(print_header);
 #endif /* !DISABLE_PRINTING */
-				SET_INT_ATTRIB(process_only_unread);
-				SET_INT_ATTRIB(prompt_followupto);
-				SET_INT_ATTRIB(sigdashes);
-				SET_INT_ATTRIB(signature_repost);
-				SET_INT_ATTRIB(start_editor_offset);
-				SET_INT_ATTRIB(x_comment_to);
-				SET_INT_ATTRIB(tex2iso_conv);
-				SET_INT_ATTRIB(mime_forward);
+				SET_ATTRIB(process_only_unread);
+				SET_ATTRIB(prompt_followupto);
+				SET_ATTRIB(sigdashes);
+				SET_ATTRIB(signature_repost);
+				SET_ATTRIB(start_editor_offset);
+				SET_ATTRIB(x_comment_to);
+				SET_ATTRIB(tex2iso_conv);
+				SET_ATTRIB(mime_forward);
 			}
 		}
 		if (found) {
@@ -1079,8 +1005,11 @@ assign_attributes_to_groups(
 				group->attribute->mail_8bit_header = FALSE;
 			if (group->attribute->post_mime_encoding != MIME_ENCODING_8BIT)
 				group->attribute->post_8bit_header = FALSE;
-		} else
-			group->attribute = global_scope->attribute;
+		} else {
+			if (group->attribute && !group->attribute->global)
+				free(group->attribute);
+			group->attribute = default_scope->attribute;
+		}
 	}
 #ifdef DEBUG
 	dump_attributes();
@@ -1088,6 +1017,12 @@ assign_attributes_to_groups(
 	debug_print_filter_attributes();
 #	endif /* 0 */
 #endif /* DEBUG */
+
+	if (!batch_mode || verbose)
+		my_fputc('\n', stdout);
+
+	if (!cmd_line && !batch_mode)
+		clear_message();
 }
 
 
@@ -1131,20 +1066,20 @@ write_attributes_file(
 	FILE *fp;
 	char *new_file;
 	int i;
+	long fpos;
 
-	if (file_size(file) != -1L && (no_write || num_scope <= 1))
+	if ((batch_mode || no_write || num_scope < 1) && file_size(file) != -1L)
 		return;
 
 	new_file = get_tmpfilename(file);
 
-	if ((fp = fopen(new_file, "w")) == NULL) {
+	if ((fp = fopen(new_file, "w+")) == NULL) {
 		error_message(2, _(txt_filesystem_full_backup), ATTRIBUTES_FILE);
 		free(new_file);
 		return;
 	}
 
-	if (!cmd_line && !batch_mode)
-		wait_message(0, _(txt_writing_attributes_file));
+	wait_message(0, _(txt_writing_attributes_file));
 
 	/*
 	 * TODO: sort in a useful order
@@ -1311,12 +1246,26 @@ write_attributes_file(
 	fprintf(fp, _("# entries first followed by group specific entries.\n#\n"));
 	fprintf(fp, _("############################################################################\n"));
 
+	/*
+	 * determine the file offset
+	 * this is nesessary because a changed locale setting
+	 * may lead to an invalid offset
+	 */
+	fpos = ftell(fp);
+	rewind(fp);
+	attrib_file_offset = 1;
+	while((i = fgetc(fp)) != EOF) {
+		if (i == '\n')
+			attrib_file_offset++;
+	}
+	fseek(fp, fpos, SEEK_SET);
+
 	if ((num_scope > 0) && (scopes != NULL)) {
 		struct t_scope *scope;
 
 		for (i = 1; i < num_scope; i++) {
 			scope = &scopes[i];
-			if (!scope->global && !scope->temp) {
+			if (!scope->global) {
 				fprintf(fp, "\nscope=%s\n", scope->scope);
 				if (scope->state->add_posted_to_filter)
 					fprintf(fp, "add_posted_to_filter=%s\n", print_boolean(scope->attribute->add_posted_to_filter));
@@ -1327,7 +1276,7 @@ write_attributes_file(
 				if (scope->state->ask_for_metamail)
 					fprintf(fp, "ask_for_metamail=%s\n", print_boolean(scope->attribute->ask_for_metamail));
 				if (scope->state->auto_cc_bcc)
-					fprintf(fp, "auto_cc_bcc=%d\n", scope->attribute->auto_cc_bcc);
+					fprintf(fp, "auto_cc_bcc=%u\n", scope->attribute->auto_cc_bcc);
 				if (scope->state->auto_list_thread)
 					fprintf(fp, "auto_list_thread=%s\n", print_boolean(scope->attribute->auto_list_thread));
 				if (scope->state->auto_select)
@@ -1340,13 +1289,13 @@ write_attributes_file(
 					fprintf(fp, "date_format=%s\n", scope->attribute->date_format);
 				if (scope->state->delete_tmp_files)
 					fprintf(fp, "delete_tmp_files=%s\n", print_boolean(scope->attribute->delete_tmp_files));
-				if (scope->attribute->editor_format)
+				if (scope->state->editor_format)
 					fprintf(fp, "editor_format=%s\n", scope->attribute->editor_format);
-				if (scope->attribute->fcc)
+				if (scope->state->fcc)
 					fprintf(fp, "fcc=%s\n", scope->attribute->fcc);
-				if (scope->attribute->followup_to)
+				if (scope->state->followup_to)
 					fprintf(fp, "followup_to=%s\n", scope->attribute->followup_to);
-				if (scope->attribute->from)
+				if (scope->state->from)
 					fprintf(fp, "from=%s\n", scope->attribute->from);
 				if (scope->state->group_catchup_on_exit)
 					fprintf(fp, "group_catchup_on_exit=%s\n", print_boolean(scope->attribute->group_catchup_on_exit));
@@ -1355,12 +1304,12 @@ write_attributes_file(
 				if (scope->state->mail_mime_encoding)
 					fprintf(fp, "mail_mime_encoding=%s\n", txt_mime_encodings[scope->attribute->mail_mime_encoding]);
 #ifdef HAVE_ISPELL
-				if (scope->attribute->ispell)
+				if (scope->state->ispell)
 					fprintf(fp, "ispell=%s\n", scope->attribute->ispell);
 #endif /* HAVE_ISPELL */
-				if (scope->attribute->maildir)
+				if (scope->state->maildir)
 					fprintf(fp, "maildir=%s\n", scope->attribute->maildir);
-				if (scope->attribute->mailing_list)
+				if (scope->state->mailing_list)
 					fprintf(fp, "mailing_list=%s\n", scope->attribute->mailing_list);
 				if (scope->state->mark_ignore_tags)
 					fprintf(fp, "mark_ignore_tags=%s\n", print_boolean(scope->attribute->mark_ignore_tags));
@@ -1368,21 +1317,21 @@ write_attributes_file(
 					fprintf(fp, "mark_saved_read=%s\n", print_boolean(scope->attribute->mark_saved_read));
 				if (scope->state->mime_forward)
 					fprintf(fp, "mime_forward=%s\n", print_boolean(scope->attribute->mime_forward));
-				if (scope->attribute->mime_types_to_save)
+				if (scope->state->mime_types_to_save)
 					fprintf(fp, "mime_types_to_save=%s\n", scope->attribute->mime_types_to_save);
 #ifdef CHARSET_CONVERSION
 				if (scope->state->mm_network_charset)
 					fprintf(fp, "mm_network_charset=%s\n", txt_mime_charsets[scope->attribute->mm_network_charset]);
-				if (scope->attribute->undeclared_charset)
+				if (scope->state->undeclared_charset)
 					fprintf(fp, "undeclared_charset=%s\n", scope->attribute->undeclared_charset);
 #endif /* CHARSET_CONVERSION */
-				if (scope->attribute->news_headers_to_display)
+				if (scope->state->news_headers_to_display)
 					fprintf(fp, "news_headers_to_display=%s\n", scope->attribute->news_headers_to_display);
-				if (scope->attribute->news_headers_to_not_display)
+				if (scope->state->news_headers_to_not_display)
 					fprintf(fp, "news_headers_to_not_display=%s\n", scope->attribute->news_headers_to_not_display);
-				if (scope->attribute->news_quote_format)
+				if (scope->state->news_quote_format)
 					fprintf(fp, "news_quote_format=%s\n", scope->attribute->news_quote_format);
-				if (scope->attribute->organization)
+				if (scope->state->organization)
 					fprintf(fp, "organization=%s\n", scope->attribute->organization);
 				if (scope->state->pos_first_unread)
 					fprintf(fp, "pos_first_unread=%s\n", print_boolean(scope->attribute->pos_first_unread));
@@ -1393,7 +1342,7 @@ write_attributes_file(
 				if (scope->state->post_process_view)
 					fprintf(fp, "post_process_view=%s\n", print_boolean(scope->attribute->post_process_view));
 				if (scope->state->post_process_type)
-					fprintf(fp, "post_process_type=%d\n", scope->attribute->post_process_type);
+					fprintf(fp, "post_process_type=%u\n", scope->attribute->post_process_type);
 #ifndef DISABLE_PRINTING
 				if (scope->state->print_header)
 					fprintf(fp, "print_header=%s\n", print_boolean(scope->attribute->print_header));
@@ -1402,65 +1351,65 @@ write_attributes_file(
 					fprintf(fp, "process_only_unread=%s\n", print_boolean(scope->attribute->process_only_unread));
 				if (scope->state->prompt_followupto)
 					fprintf(fp, "prompt_followupto=%s\n", print_boolean(scope->attribute->prompt_followupto));
-				if (scope->attribute->quick_kill_scope)
+				if (scope->state->quick_kill_scope)
 					fprintf(fp, "quick_kill_scope=%s\n", scope->attribute->quick_kill_scope);
 				if (scope->state->quick_kill_case)
 					fprintf(fp, "quick_kill_case=%s\n", print_boolean(scope->attribute->quick_kill_case));
 				if (scope->state->quick_kill_expire)
 					fprintf(fp, "quick_kill_expire=%s\n", print_boolean(scope->attribute->quick_kill_expire));
 				if (scope->state->quick_kill_header)
-					fprintf(fp, "quick_kill_header=%d\n", scope->attribute->quick_kill_header);
-				if (scope->attribute->quick_select_scope)
+					fprintf(fp, "quick_kill_header=%u\n", scope->attribute->quick_kill_header);
+				if (scope->state->quick_select_scope)
 					fprintf(fp, "quick_select_scope=%s\n", scope->attribute->quick_select_scope);
 				if (scope->state->quick_select_case)
 					fprintf(fp, "quick_select_case=%s\n", print_boolean(scope->attribute->quick_select_case));
 				if (scope->state->quick_select_expire)
 					fprintf(fp, "quick_select_expire=%s\n", print_boolean(scope->attribute->quick_select_expire));
 				if (scope->state->quick_select_header)
-					fprintf(fp, "quick_select_header=%d\n", scope->attribute->quick_select_header);
-				if (scope->attribute->quote_chars)
+					fprintf(fp, "quick_select_header=%u\n", scope->attribute->quick_select_header);
+				if (scope->state->quote_chars)
 					fprintf(fp, "quote_chars=%s\n", quote_space_to_dash(scope->attribute->quote_chars));
-				if (scope->attribute->savedir)
+				if (scope->state->savedir)
 					fprintf(fp, "savedir=%s\n", scope->attribute->savedir);
-				if (scope->attribute->savefile)
+				if (scope->state->savefile)
 					fprintf(fp, "savefile=%s\n", scope->attribute->savefile);
 				if (scope->state->show_author)
-					fprintf(fp, "show_author=%d\n", scope->attribute->show_author);
+					fprintf(fp, "show_author=%u\n", scope->attribute->show_author);
 				if (scope->state->show_info)
-					fprintf(fp, "show_info=%d\n", scope->attribute->show_info);
+					fprintf(fp, "show_info=%u\n", scope->attribute->show_info);
 				if (scope->state->show_only_unread_arts)
 					fprintf(fp, "show_only_unread_arts=%s\n", print_boolean(scope->attribute->show_only_unread_arts));
 				if (scope->state->show_signatures)
 					fprintf(fp, "show_signatures=%s\n", print_boolean(scope->attribute->show_signatures));
 				if (scope->state->sigdashes)
 					fprintf(fp, "sigdashes=%s\n", print_boolean(scope->attribute->sigdashes));
-				if (scope->attribute->sigfile)
+				if (scope->state->sigfile)
 					fprintf(fp, "sigfile=%s\n", scope->attribute->sigfile);
 				if (scope->state->signature_repost)
 					fprintf(fp, "signature_repost=%s\n", print_boolean(scope->attribute->signature_repost));
 				if (scope->state->sort_article_type)
-					fprintf(fp, "sort_article_type=%d\n", scope->attribute->sort_article_type);
+					fprintf(fp, "sort_article_type=%u\n", scope->attribute->sort_article_type);
 				if (scope->state->sort_threads_type)
-					fprintf(fp, "sort_threads_type=%d\n", scope->attribute->sort_threads_type);
+					fprintf(fp, "sort_threads_type=%u\n", scope->attribute->sort_threads_type);
 				if (scope->state->start_editor_offset)
 					fprintf(fp, "start_editor_offset=%s\n", print_boolean(scope->attribute->start_editor_offset));
 				if (scope->state->tex2iso_conv)
 					fprintf(fp, "tex2iso_conv=%s\n", print_boolean(scope->attribute->tex2iso_conv));
 				if (scope->state->thread_articles)
-					fprintf(fp, "thread_articles=%d\n", scope->attribute->thread_articles);
+					fprintf(fp, "thread_articles=%u\n", scope->attribute->thread_articles);
 				if (scope->state->thread_catchup_on_exit)
 					fprintf(fp, "thread_catchup_on_exit=%s\n", print_boolean(scope->attribute->thread_catchup_on_exit));
 				if (scope->state->thread_perc)
-					fprintf(fp, "thread_perc=%d\n", scope->attribute->thread_perc);
+					fprintf(fp, "thread_perc=%u\n", scope->attribute->thread_perc);
 				if (scope->state->trim_article_body)
-					fprintf(fp, "trim_article_body=%d\n", scope->attribute->trim_article_body);
+					fprintf(fp, "trim_article_body=%u\n", scope->attribute->trim_article_body);
 				if (scope->state->verbatim_handling)
 					fprintf(fp, "verbatim_handling=%s\n", print_boolean(scope->attribute->verbatim_handling));
 				if (scope->state->wrap_on_next_unread)
 					fprintf(fp, "wrap_on_next_unread=%s\n", print_boolean(scope->attribute->wrap_on_next_unread));
-				if (scope->attribute->x_headers)
+				if (scope->state->x_headers)
 					fprintf(fp, "x_headers=%s\n", scope->attribute->x_headers);
-				if (scope->attribute->x_body)
+				if (scope->state->x_body)
 					fprintf(fp, "x_body=%s\n", scope->attribute->x_body);
 				if (scope->state->x_comment_to)
 					fprintf(fp, "x_comment_to=%s\n", print_boolean(scope->attribute->x_comment_to));
@@ -1471,9 +1420,13 @@ write_attributes_file(
 	/* rename_file() preserves mode, so this is safe */
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR));
 
-	if (ferror(fp) || fclose(fp)) {
+	if ((i = ferror(fp)) || fclose(fp)) {
 		error_message(2, _(txt_filesystem_full), ATTRIBUTES_FILE);
 		unlink(new_file);
+		if (i) {
+			clearerr(fp);
+			fclose(fp);
+		}
 	} else
 		rename_file(new_file, file);
 

@@ -3,10 +3,10 @@
  *  Module    : tinrc.h
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-04-13
- *  Updated   : 2009-01-14
+ *  Updated   : 2009-02-14
  *  Notes     :
  *
- * Copyright (c) 1999-2009 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2010 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -258,6 +258,82 @@ struct t_config {
 #if defined(HAVE_LIBICUUC) && defined(MULTIBYTE_ABLE) && defined(HAVE_UNICODE_UBIDI_H) && !defined(NO_LOCALE)
 	t_bool render_bidi;
 #endif /* HAVE_LIBICUUC && MULTIBYTE_ABLE && HAVE_UNICODE_UBIDI_H && !NO_LOCALE */
+#	ifdef CHARSET_CONVERSION
+		int attrib_mm_network_charset;
+		char attrib_undeclared_charset[LEN];
+#	endif /* !CHARSET_CONVERSION */
+	char attrib_editor_format[PATH_LEN];
+	char attrib_fcc[PATH_LEN];
+	char attrib_maildir[PATH_LEN];
+	char attrib_from[HEADER_LEN];
+	char attrib_mailing_list[HEADER_LEN];
+	char attrib_organization[LEN];
+	char attrib_followup_to[LEN];
+	char attrib_mime_types_to_save[LEN];
+	char attrib_news_headers_to_display[LEN];
+	char attrib_news_headers_to_not_display[LEN];
+	char attrib_news_quote_format[LEN];
+	char attrib_quote_chars[LEN];
+	char attrib_sigfile[PATH_LEN];
+	char attrib_savedir[PATH_LEN];
+	char attrib_savefile[PATH_LEN];
+	char attrib_x_body[LEN];
+	char attrib_x_headers[HEADER_LEN];
+#	ifdef HAVE_ISPELL
+		char attrib_ispell[PATH_LEN];
+#	endif /* HAVE_ISPELL */
+	char attrib_quick_kill_scope[LEN];
+	char attrib_quick_select_scope[LEN];
+	char attrib_date_format[LEN];
+	int attrib_trim_article_body;
+	int attrib_auto_cc_bcc;
+	int attrib_show_info;
+	int attrib_quick_kill_header;
+	int attrib_quick_select_header;
+	int attrib_mail_mime_encoding;
+	int attrib_post_mime_encoding;
+	int attrib_post_process_type;
+	int attrib_show_author;
+	int attrib_sort_article_type;
+	int attrib_sort_threads_type;
+	int attrib_thread_articles;
+	int attrib_thread_perc;
+	t_bool attrib_add_posted_to_filter;
+	t_bool attrib_advertising;
+	t_bool attrib_alternative_handling;
+	t_bool attrib_auto_list_thread;
+	t_bool attrib_auto_select;
+	t_bool attrib_auto_save;
+	t_bool attrib_batch_save;
+	t_bool attrib_delete_tmp_files;
+	t_bool attrib_group_catchup_on_exit;
+	t_bool attrib_mail_8bit_header;
+	t_bool attrib_mime_forward;
+	t_bool attrib_mark_ignore_tags;
+	t_bool attrib_mark_saved_read;
+	t_bool attrib_pos_first_unread;
+	t_bool attrib_post_8bit_header;
+	t_bool attrib_post_process_view;
+#	ifndef DISABLE_PRINTING
+		t_bool attrib_print_header;
+#	endif /* !DISABLE_PRINTING */
+	t_bool attrib_process_only_unread;
+	t_bool attrib_prompt_followupto;
+	t_bool attrib_show_only_unread_arts;
+	t_bool attrib_show_signatures;
+	t_bool attrib_sigdashes;
+	t_bool attrib_signature_repost;
+	t_bool attrib_start_editor_offset;
+	t_bool attrib_tex2iso_conv;
+	t_bool attrib_thread_catchup_on_exit;
+	t_bool attrib_verbatim_handling;
+	t_bool attrib_x_comment_to;
+	t_bool attrib_wrap_on_next_unread;
+	t_bool attrib_ask_for_metamail;
+	t_bool attrib_quick_kill_case;
+	t_bool attrib_quick_kill_expire;
+	t_bool attrib_quick_select_case;
+	t_bool attrib_quick_select_expire;
 };
 
 #endif /* !TINRC_H */

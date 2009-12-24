@@ -3,10 +3,10 @@
  *  Module    : pgp.c
  *  Author    : Steven J. Madsen
  *  Created   : 1995-05-12
- *  Updated   : 2007-12-30
+ *  Updated   : 2009-02-12
  *  Notes     : PGP support
  *
- * Copyright (c) 1995-2009 Steven J. Madsen <steve@erinet.com>
+ * Copyright (c) 1995-2010 Steven J. Madsen <steve@erinet.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -85,7 +85,6 @@
 #		define CHECK_SIGN	"%s %s --no-batch --decrypt <%s %s"
 #		define ADD_KEY		"%s %s --no-batch --import %s"
 #		define APPEND_KEY	"%s %s --no-batch --armor --output %s --export %s", PGPNAME, pgpopts, keyfile, buf
-/* #		define LOCAL_USER	"--local-user %s" */
 #		define DO_ENCRYPT	\
 "%s %s --textmode --armor --no-batch --output %s.asc --recipient %s --encrypt %s", \
 PGPNAME, pgpopts, pt, mailto, pt
@@ -106,15 +105,15 @@ PGPNAME, pgpopts, pt, mailto, mailfrom, pt
 #	define PGP_SIG_TAG "-----BEGIN PGP SIGNED MESSAGE-----\n"
 #	define PGP_KEY_TAG "-----BEGIN PGP PUBLIC KEY BLOCK-----\n"
 
-#	define HEADERS	"%stin-%d.h"
+#	define HEADERS	"%stin-%ld.h"
 #	ifdef HAVE_LONG_FILE_NAMES
-#		define PLAINTEXT	"%stin-%d.pt"
-#		define CIPHERTEXT	"%stin-%d.pt.asc"
-#		define KEYFILE		"%stin-%d.k.asc"
+#		define PLAINTEXT	"%stin-%ld.pt"
+#		define CIPHERTEXT	"%stin-%ld.pt.asc"
+#		define KEYFILE		"%stin-%ld.k.asc"
 #	else
-#		define PLAINTEXT	"%stn-%d.p"
-#		define CIPHERTEXT	"%stn-%d.p.asc"
-#		define KEYFILE		"%stn-%d.k.asc"
+#		define PLAINTEXT	"%stn-%ld.p"
+#		define CIPHERTEXT	"%stn-%ld.p.asc"
+#		define KEYFILE		"%stn-%ld.k.asc"
 #	endif /* HAVE_LONG_FILE_NAMES */
 
 
@@ -194,9 +193,9 @@ split_file(
 	char buf[LEN];
 	mode_t mask;
 
-	snprintf(hdr, sizeof(hdr), HEADERS, TMPDIR, process_id);
-	snprintf(pt, sizeof(pt), PLAINTEXT, TMPDIR, process_id);
-	snprintf(ct, sizeof(ct), CIPHERTEXT, TMPDIR, process_id);
+	snprintf(hdr, sizeof(hdr), HEADERS, TMPDIR, (long) process_id);
+	snprintf(pt, sizeof(pt), PLAINTEXT, TMPDIR, (long) process_id);
+	snprintf(ct, sizeof(ct), CIPHERTEXT, TMPDIR, (long) process_id);
 
 	if ((art = fopen(file, "r")) == NULL)
 		return;
@@ -288,7 +287,7 @@ pgp_append_public_key(
 	else
 		snprintf(buf, sizeof(buf), "%s@%s", userid, BlankIfNull(get_host_name()));
 
-	snprintf(keyfile, sizeof(keyfile), KEYFILE, TMPDIR, process_id);
+	snprintf(keyfile, sizeof(keyfile), KEYFILE, TMPDIR, (long) process_id);
 
 /*
  * TODO: I'm guessing the pgp append key command creates 'keyfile' and that
@@ -435,7 +434,7 @@ pgp_check_article(
 
 	joinpath(artfile, sizeof(artfile), homedir, TIN_ARTICLE_NAME);
 #	ifdef APPEND_PID
-	snprintf(artfile + strlen(artfile), sizeof(artfile) - strlen(artfile), ".%d", (int) process_id);
+	snprintf(artfile + strlen(artfile), sizeof(artfile) - strlen(artfile), ".%ld", (long) process_id);
 #	endif /* APPEND_PID */
 	if ((art = fopen(artfile, "w")) == NULL) {
 		info_message(_(txt_cannot_open), artfile);

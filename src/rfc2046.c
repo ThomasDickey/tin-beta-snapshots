@@ -3,10 +3,10 @@
  *  Module    : rfc2046.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 2000-02-18
- *  Updated   : 2009-01-13
+ *  Updated   : 2009-06-24
  *  Notes     : RFC 2046 MIME article parsing
  *
- * Copyright (c) 2000-2009 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 2000-2010 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1189,7 +1189,7 @@ art_open(
 		wait_message(0, _(txt_is_tex_encoded));
 
 	/* Maybe fix it so if this fails, we default to raw? */
-	if (!cook_article(wrap_lines, artinfo, 8, tinrc.hide_uue))
+	if (!cook_article(wrap_lines, artinfo, tinrc.hide_uue))
 		return ART_ABORT;
 
 #ifdef DEBUG_ART

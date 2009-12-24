@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : aclocal.m4
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2009-01-18
+dnl Updated   : 2009-09-16
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2009 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2010 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -272,7 +272,7 @@ AC_DEFUN([AM_LC_MESSAGES],
     fi
   fi])dnl
 dnl ---------------------------------------------------------------------------
-dnl AM_MULTIBYTE_ABLE version: 7 updated: 2006/04/17 08:26:33
+dnl AM_MULTIBYTE_ABLE version: 9 updated: 2009/11/03 09:35:00 +0100
 dnl -----------------
 dnl
 dnl check for required multibyte/widechar functions
@@ -292,7 +292,7 @@ AC_DEFUN([AM_MULTIBYTE_ABLE],
 #	include <wctype.h>
 #endif /* HAVE_WCTYPE_H */
 ],
-     [char icb[5] = {0xa4, 0xa4, 0xa4, 0xe5, 0x00};
+     [const char icb[5] = {0xa4, 0xa4, 0xa4, 0xe5, 0x00};
       char ocb[5];
       wchar_t wcb[5];
       wchar_t wcb2[5];
@@ -303,12 +303,30 @@ AC_DEFUN([AM_MULTIBYTE_ABLE],
       fwide(0, 0);
       mbtowc(wcb, icb, MB_CUR_MAX);
       mbstowcs(wcb, icb, 5);
-      iswprint((wint_t) wcb[0]);
-      wcslen(wcb);
-      /* wcsnlen(wcb, 4); */
+      (void) iswalnum((wint_t) wcb[0]);
+      (void) iswcntrl((wint_t) wcb[0]);
+      (void) iswdigit((wint_t) wcb[0]);
+      (void) iswgraph((wint_t) wcb[0]);
+      (void) iswprint((wint_t) wcb[0]);
+      (void) iswspace((wint_t) wcb[0]);
+      (void) towupper((wint_t) wcb[0]);
+      /* (void) iswupper((wint_t) wcb[0]); */
+      /* (void) towlower((wint_t) wcb[0]); */
+      /* (void) iswlower((wint_t) wcb[0]); */
+      /* (void) iswalpha((wint_t) wcb[0]); */
+      /* (void) iswblank((wint_t) wcb[0]); */
+      /* (void) iswpunct((wint_t) wcb[0]); */
+      /* (void) iswxdigit((wint_t) wcb[0]); */
+      /* (void) iswctype((wint_t) wcb[0], wctype("print")); */
+      /* (void) towctranse((wint_t) wcb[0], wctrans("toupper")); */
+      (void) wcslen(wcb);
+      /* (void) wcsnlen(wcb, 4); */
       wcwidth((wint_t) wcb[0]);
       wcswidth(wcb, 5);
       wcstombs(ocb, wcb, 5);
+      wctomb(ocb, wcb[0]);
+      wcscat(wcb2, wcb);
+      wcscpy(wcb2, wcb);
       mbstowcs(format, "%s", 2);
       swprintf(wcb, 5, format, "test");
       wcsncat(wcb2, wcb, 5);],
@@ -316,7 +334,7 @@ AC_DEFUN([AM_MULTIBYTE_ABLE],
      [cf_save_LIBS="$LIBS"
       LIBS="-lutf8 $LIBS"
       AC_TRY_LINK([#include <libutf8.h>],
-       [char icb[5] = {0xa4, 0xa4, 0xa4, 0xe5, 0x00};
+       [const char icb[5] = {0xa4, 0xa4, 0xa4, 0xe5, 0x00};
         char ocb[5];
         wchar_t wcb[5];
         wchar_t wcb2[5];
@@ -327,12 +345,30 @@ AC_DEFUN([AM_MULTIBYTE_ABLE],
         fwide(0, 0);
         mbtowc(wcb, icb, MB_CUR_MAX);
         mbstowcs(wcb, icb, 5);
-        iswprint((wint_t) wcb[0]);
-        wcslen(wcb);
-        /* wcsnlen(wcb, 4); */
+        (void) iswalnum((wint_t) wcb[0]);
+        (void) iswcntrl((wint_t) wcb[0]);
+        (void) iswdigit((wint_t) wcb[0]);
+        (void) iswgraph((wint_t) wcb[0]);
+        (void) iswprint((wint_t) wcb[0]);
+        (void) iswspace((wint_t) wcb[0]);
+        (void) towupper((wint_t) wcb[0]);
+        /* (void) iswupper((wint_t) wcb[0]); */
+        /* (void) towlower((wint_t) wcb[0]); */
+        /* (void) iswlower((wint_t) wcb[0]); */
+        /* (void) iswalpha((wint_t) wcb[0]); */
+        /* (void) iswblank((wint_t) wcb[0]); */
+        /* (void) iswpunct((wint_t) wcb[0]); */
+        /* (void) iswxdigit((wint_t) wcb[0]); */
+        /* (void) iswctype((wint_t) wcb[0], wctype("print")); */
+        /* (void) towctranse((wint_t) wcb[0], wctrans("toupper")); */
+        (void) wcslen(wcb);
+        /* (void) wcsnlen(wcb, 4); */
         wcwidth((wint_t) wcb[0]);
         wcswidth(wcb, 5);
         wcstombs(ocb, wcb, 5);
+        wctomb(ocb, wcb[0]);
+        wcscat(wcb2, wcb);
+        wcscpy(wcb2, wcb);
         mbstowcs(format, "%s", 2);
         swprintf(wcb, 5, format, "test");
         wcsncat(wcb2, wcb, 5);],
@@ -3448,6 +3484,7 @@ dnl	-lresolv -lsocket -lnsl
 dnl	-lnsl -lsocket
 dnl	-lsocket
 dnl	-lbsd
+dnl	-lnetwork
 AC_DEFUN([CF_NETLIBS],[
 cf_test_netlibs=no
 
@@ -3508,6 +3545,9 @@ mingw32) # (vi
 
 	AC_CHECK_FUNCS(gethostbyname,,[
 		CF_RECHECK_FUNC(gethostbyname,nsl,cf_cv_netlibs)])
+
+	AC_CHECK_FUNCS(gethostbyname,,[
+		CF_RECHECK_FUNC(gethostbyname,network,cf_cv_netlibs)])
 
 	AC_CHECK_FUNCS(strcasecmp,,[
 		CF_RECHECK_FUNC(strcasecmp,resolv,cf_cv_netlibs)])

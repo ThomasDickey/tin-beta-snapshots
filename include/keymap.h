@@ -3,10 +3,10 @@
  *  Module    : keymap.h
  *  Author    : J. Faultless, D. Nimmich
  *  Created   : 1999
- *  Updated   : 2008-03-26
+ *  Updated   : 2009-09-27
  *  Notes     :
  *
- * Copyright (c) 1999-2009 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2010 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -158,12 +158,16 @@ enum defined_functions {
 	SPECIAL_MOUSE_TOGGLE,
 	CATCHUP,
 	CATCHUP_NEXT_UNREAD,
+	CONFIG_RESET_ATTRIB,
+	CONFIG_SCOPE_MENU,
 	CONFIG_SELECT,
 	CONFIG_NO_SAVE,
+	CONFIG_TOGGLE_ATTRIB,
 	FEED_ARTICLE,
 	FEED_THREAD,
 	FEED_HOT,
 	FEED_PATTERN,
+	FEED_RANGE,
 	FEED_TAGGED,
 	FEED_KEY_REPOST,
 	FEED_SUPERSEDE,
@@ -244,9 +248,9 @@ enum defined_functions {
 	GROUP_UNDO_SELECTIONS,
 	GROUP_UNTAG,
 	MARK_ARTICLE_UNREAD,
-	MARK_READ_CURRENT,
-	MARK_READ_TAGGED,
 	MARK_THREAD_UNREAD,
+	MARK_FEED_READ,
+	MARK_FEED_UNREAD,
 	PAGE_AUTOSAVE,
 	PAGE_BOTTOM_THREAD,
 	PAGE_CANCEL,
@@ -315,6 +319,12 @@ enum defined_functions {
 	PROMPT_YES,
 	SAVE_APPEND_FILE,
 	SAVE_OVERWRITE_FILE,
+	SCOPE_ADD,
+	SCOPE_DELETE,
+	SCOPE_EDIT_ATTRIBUTES_FILE,
+	SCOPE_MOVE,
+	SCOPE_RENAME,
+	SCOPE_SELECT,
 	SELECT_ENTER_GROUP,
 	SELECT_ENTER_NEXT_UNREAD_GROUP,
 	SELECT_GOTO,
@@ -372,7 +382,6 @@ extern struct keylist feed_type_keys;
 extern struct keylist filter_keys;
 extern struct keylist group_keys;
 extern struct keylist info_keys;
-extern struct keylist mark_read_keys;
 extern struct keylist option_menu_keys;
 extern struct keylist page_keys;
 #ifdef HAVE_PGP_GPG
@@ -391,6 +400,7 @@ extern struct keylist post_postpone_keys;
 extern struct keylist post_send_keys;
 extern struct keylist prompt_keys;
 extern struct keylist save_append_overwrite_keys;
+extern struct keylist scope_keys;
 extern struct keylist select_keys;
 extern struct keylist thread_keys;
 

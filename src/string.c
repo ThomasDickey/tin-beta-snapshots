@@ -3,10 +3,10 @@
  *  Module    : string.c
  *  Author    : Urs Janssen <urs@tin.org>
  *  Created   : 1997-01-20
- *  Updated   : 2008-03-26
+ *  Updated   : 2009-05-07
  *  Notes     :
  *
- * Copyright (c) 1997-2009 Urs Janssen <urs@tin.org>
+ * Copyright (c) 1997-2010 Urs Janssen <urs@tin.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -674,6 +674,9 @@ sh_format(
 #	ifdef HAVE_SYS_ERRLIST
 		extern int sys_nerr;
 #	endif /* HAVE_SYS_ERRLIST */
+#	ifdef DECL_SYS_ERRLIST
+		extern char *sys_errlist[];
+#	endif /* DECL_SYS_ERRLIST */
 char *
 my_strerror(
 	int n)

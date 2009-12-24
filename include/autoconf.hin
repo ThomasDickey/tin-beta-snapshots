@@ -3,10 +3,10 @@
  *  Module    : autoconf.hin
  *  Author    : Thomas Dickey
  *  Created   : 1995-08-24
- *  Updated   : 2008-02-02
+ *  Updated   : 2009-12-19
  *  Notes     : #include files, #defines & struct's
  *
- * Copyright (c) 1995-2009 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1995-2010 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -230,6 +230,7 @@
  * The following are defined by the configure script if the corresponding
  * function is found in a library.
  */
+#	undef HAVE_ALARM
 #	undef HAVE_ATOI
 #	undef HAVE_ATOL
 #	undef HAVE_BCOPY
@@ -329,6 +330,7 @@
  * The following are functions that we'll optionally prototype (to stifle
  * warnings, etc., for development/testing).
  */
+#	undef DECL_ALARM
 #	undef DECL_ATOI
 #	undef DECL_ATOL
 #	undef DECL_BCOPY

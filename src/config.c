@@ -3,10 +3,10 @@
  *  Module    : config.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2009-01-14
+ *  Updated   : 2009-07-17
  *  Notes     : Configuration file routines
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,9 +82,7 @@ read_config_file(
 	if ((fp = fopen(file, "r")) == NULL)
 		return FALSE;
 
-#if 0 /* batch_mode is not set at this stage, so checking for it is useless */
-	if (!batch_mode)
-#endif /* 0 */
+	if (!batch_mode || verbose)
 		wait_message(0, _(txt_reading_config_file), (global_file) ? _(txt_global) : "");
 
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
@@ -741,7 +739,7 @@ read_config_file(
 
 #ifdef HAVE_COLOR
 			if (match_boolean(buf, "use_color=", &tinrc.use_color)) {
-				use_color = tinrc.use_color;
+				use_color = cmdline.args & CMDLINE_USE_COLOR ? bool_not(tinrc.use_color) : tinrc.use_color;
 				break;
 			}
 #endif /* HAVE_COLOR */
@@ -873,8 +871,7 @@ write_config_file(
 		return;
 	}
 
-	if (!cmd_line)
-		wait_message(0, _(txt_saving));
+	wait_message(0, _(txt_saving));
 
 	fprintf(fp, txt_tinrc_header, PRODUCT, TINRC_VERSION, tin_progname, VERSION, RELEASEDATE, RELEASENAME);
 
@@ -1394,9 +1391,13 @@ write_config_file(
 
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR)); /* rename_file() preserves mode */
 
-	if (ferror(fp) || fclose(fp))
+	if ((i = ferror(fp)) || fclose(fp)) {
 		error_message(2, _(txt_filesystem_full), CONFIG_FILE);
-	else
+		if (i) {
+			clearerr(fp);
+			fclose(fp);
+		}
+	} else
 		rename_file(file_tmp, file);
 
 	free(file_tmp);
@@ -1904,7 +1905,7 @@ read_server_config(
 
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && !read_saved_news && nntp_tcp_port != IPPORT_NNTP)
-		snprintf(file, sizeof(file), "%s:%d", nntp_server, nntp_tcp_port);
+		snprintf(file, sizeof(file), "%s:%u", nntp_server, nntp_tcp_port);
 	else
 #endif /* NNTP_ABLE */
 	{
@@ -1962,7 +1963,7 @@ write_server_config(
 		return;
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && nntp_tcp_port != IPPORT_NNTP)
-		snprintf(file, sizeof(file), "%s:%d", nntp_server, nntp_tcp_port);
+		snprintf(file, sizeof(file), "%s:%u", nntp_server, nntp_tcp_port);
 	else
 #endif /* NNTP_ABLE */
 	{
@@ -1998,9 +1999,13 @@ write_server_config(
 
 	fchmod(fileno(fp), (mode_t) (S_IRUSR|S_IWUSR)); /* rename_file() preserves mode */
 
-	if (ferror(fp) || fclose(fp))
+	if ((i = ferror(fp)) || fclose(fp)) {
 		error_message(2, _(txt_filesystem_full), SERVERCONFIG_FILE);
-	else
+		if (i) {
+			clearerr(fp);
+			fclose(fp);
+		}
+	} else
 		rename_file(file_tmp, file);
 
 	free(file_tmp);

@@ -3,10 +3,10 @@
  *  Module    : makecfg.c
  *  Author    : Thomas E. Dickey
  *  Created   : 1997-08-23
- *  Updated   : 2005-06-21
+ *  Updated   : 2009-02-14
  *  Notes     : #defines and structs for options_menu.c
  *
- * Copyright (c) 1997-2009 Thomas E. Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2010 Thomas E. Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,7 @@
 #define L_CURL '{'
 #define R_CURL '}'
 
-#define MAXNAME 27 /* maximum name-length (just for readability formatting) */
+#define MAXNAME 36 /* maximum name-length (just for readability formatting) */
 #define MAXTYPE 5  /* limits opt_type to keep names unique within 31 chars */
 
 #define MYDATA struct mydata
@@ -239,6 +239,8 @@ generate_tbl(
 			/* shorten message-variable names */
 			if (!strncmp(dft_name, "default_", 8))
 				dft_name += 8;
+			else if (!strncmp(dft_name, "attrib_", 7))
+				dft_name += 7;
 
 			fprintf(ofp, "%s", prefix);
 			sprintf(temp, "%s,", is_opt ? p->type : "OPT_LIST");

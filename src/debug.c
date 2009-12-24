@@ -3,10 +3,10 @@
  *  Module    : debug.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2009-01-20
+ *  Updated   : 2009-03-13
  *  Notes     : debug routines
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -134,7 +134,7 @@ debug_print_header(
 			if (s->archive->ispart)
 				fprintf(fp, "archive.ispart=[%s]\n", bool_unparse(s->archive->ispart));
 		}
-		fprintf(fp,"thread=[%d]  prev=[%d]  status=[%d]\n\n", s->thread, s->prev, s->status);
+		fprintf(fp,"thread=[%d]  prev=[%d]  status=[%u]\n\n", s->thread, s->prev, s->status);
 		fflush(fp);
 		fchmod(fileno(fp), (S_IRUGO|S_IWUGO));
 		fclose(fp);
@@ -187,7 +187,7 @@ debug_print_attributes(
 	if (attr == 0)
 		return;
 
-	fprintf(fp, "global=[%d] show=[%d] thread=[%d] sort=[%d] author=[%d] auto_select=[%d] auto_save=[%d] batch_save=[%d] process=[%d]\n",
+	fprintf(fp, "global=[%u] show=[%u] thread=[%u] sort=[%u] author=[%u] auto_select=[%u] auto_save=[%u] batch_save=[%u] process=[%u]\n",
 		attr->global,
 		attr->show_only_unread_arts,
 		attr->thread_articles,
@@ -197,11 +197,11 @@ debug_print_attributes(
 		attr->auto_save,
 		attr->batch_save,
 		attr->post_process_type);
-	fprintf(fp, "select_header=[%d] select_global=[%s] select_expire=[%s]\n",
+	fprintf(fp, "select_header=[%u] select_global=[%s] select_expire=[%s]\n",
 		attr->quick_select_header,
 		BlankIfNull(attr->quick_select_scope),
 		bool_unparse(attr->quick_select_expire));
-	fprintf(fp, "kill_header  =[%d] kill_global  =[%s] kill_expire  =[%s]\n",
+	fprintf(fp, "kill_header  =[%u] kill_global  =[%s] kill_expire  =[%s]\n",
 		attr->quick_kill_header,
 		BlankIfNull(attr->quick_kill_scope),
 		bool_unparse(attr->quick_kill_expire));

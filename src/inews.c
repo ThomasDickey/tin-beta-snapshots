@@ -3,10 +3,10 @@
  *  Module    : inews.c
  *  Author    : I. Lea
  *  Created   : 1992-03-17
- *  Updated   : 2009-01-07
+ *  Updated   : 2009-04-07
  *  Notes     : NNTP built in version of inews
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -257,11 +257,12 @@ submit_inews(
 #	ifdef USE_CANLOCK
 			if (!can_lock_in_article) {
 					char lock[1024];
-					const char *lptr;
+					char *lptr;
 
 					lock[0] = '\0';
 					if ((lptr = build_canlock(message_id, get_secret())) != NULL) {
 						STRCPY(lock, lptr);
+						free(lptr);
 						snprintf(buf, sizeof(buf), "Cancel-Lock: %s", lock);
 						u_put_server(buf);
 						u_put_server("\r\n");

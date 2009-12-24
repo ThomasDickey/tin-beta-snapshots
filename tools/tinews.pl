@@ -4,7 +4,7 @@
 # signs the article and posts it.
 #
 #
-# Copyright (c) 2002-2009 Urs Janssen <urs@tin.org>,
+# Copyright (c) 2002-2010 Urs Janssen <urs@tin.org>,
 #                         Marc Brockschmidt <marc@marcbrockschmidt.de>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@
 #       - cleanup, remove duplicated code
 #
 # version Number
-my $version = "1.1.23";
+my $version = "1.1.24";
 
 my %config;
 
@@ -283,13 +283,21 @@ if (! $config{'savedir'} && defined($Header{'newsgroups'}) && !defined($Header{'
 }
 
 if (!defined($Header{'message-id'})) {
-	chomp (my $hname = `hostname`);
+	my $hname;
+	eval "use Sys::Hostname";
+	if ($@) {
+		chomp ($hname = `hostname`);
+	} else {
+		$hname = hostname();
+	}
 	my ($hostname,) = gethostbyname($hname);
-	$Header{'message-id'} = "Message-ID: " . sprintf ("<N%xI%xT%x@%s>\n", $>, timelocal(localtime), $$, $hostname);
+	if (defined($hostname) && $hostname =~ m/\./io) {
+		$Header{'message-id'} = "Message-ID: " . sprintf ("<N%xI%xT%x@%s>\n", $>, timelocal(localtime), $$, $hostname);
+	}
 }
 
 # add Cancel-Lock (and Cancel-Key) header(s) if requested
-if ($config{'canlock_secret'} && !$config{'no_canlock'}) {
+if ($config{'canlock_secret'} && defined($Header{'message-id'}) && !$config{'no_canlock'}) {
 	open (CANLock, glob($config{'canlock_secret'})) or die ("$0: Can't open " . $config{'canlock_secret'} . ": $!");
 	chomp (my $key = <CANLock>);
 	close (CANLock);
