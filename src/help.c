@@ -3,10 +3,10 @@
  *  Module    : help.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-11-22
+ *  Updated   : 2009-09-27
  *  Notes     :
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,102 @@ static void make_help_page(FILE *fp, const t_help_page *helppage, const struct k
 
 
 static constext txt_help_empty_line[] = "";
+
+static t_help_page attrib_help_page[] = {
+	{ txt_help_title_navi, NOT_ASSIGNED },
+	{ txt_help_global_page_down, GLOBAL_PAGE_DOWN },
+	{ txt_help_global_page_up, GLOBAL_PAGE_UP },
+	{ txt_help_global_line_down, GLOBAL_LINE_DOWN },
+	{ txt_help_global_line_up, GLOBAL_LINE_UP },
+	{ txt_help_global_scroll_down, GLOBAL_SCROLL_DOWN },
+	{ txt_help_global_scroll_up, GLOBAL_SCROLL_UP },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_attrib_first_opt, GLOBAL_FIRST_PAGE },
+	{ txt_help_attrib_last_opt, GLOBAL_LAST_PAGE },
+	{ txt_help_attrib_goto_opt, NOT_ASSIGNED },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_attrib_search_opt_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
+	{ txt_help_attrib_search_opt_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },
+	{ txt_help_select_search_group_comment, NOT_ASSIGNED },
+	{ txt_help_global_search_repeat, GLOBAL_SEARCH_REPEAT },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_attrib_ops, NOT_ASSIGNED },
+	{ txt_help_attrib_reset_attrib , CONFIG_RESET_ATTRIB },
+	{ txt_help_attrib_select , CONFIG_SELECT },
+	{ txt_help_attrib_toggle_attrib , CONFIG_TOGGLE_ATTRIB },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_misc, NOT_ASSIGNED },
+	{ txt_help_select_quit, GLOBAL_QUIT },
+	{ txt_help_select_quit_no_write, CONFIG_NO_SAVE },
+	{ txt_help_global_help, GLOBAL_HELP },
+	{ txt_help_global_redraw_screen, GLOBAL_REDRAW_SCREEN },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_version, GLOBAL_VERSION },
+	{ NULL, NOT_ASSIGNED }
+};
+
+static t_help_page config_help_page[] = {
+	{ txt_help_title_navi, NOT_ASSIGNED },
+	{ txt_help_global_page_down, GLOBAL_PAGE_DOWN },
+	{ txt_help_global_page_up, GLOBAL_PAGE_UP },
+	{ txt_help_global_line_down, GLOBAL_LINE_DOWN },
+	{ txt_help_global_line_up, GLOBAL_LINE_UP },
+	{ txt_help_global_scroll_down, GLOBAL_SCROLL_DOWN },
+	{ txt_help_global_scroll_up, GLOBAL_SCROLL_UP },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_config_first_opt, GLOBAL_FIRST_PAGE },
+	{ txt_help_config_last_opt, GLOBAL_LAST_PAGE },
+	{ txt_help_config_goto_opt, NOT_ASSIGNED },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_config_search_opt_forwards, GLOBAL_SEARCH_SUBJECT_FORWARD },
+	{ txt_help_config_search_opt_backwards, GLOBAL_SEARCH_SUBJECT_BACKWARD },
+	{ txt_help_select_search_group_comment, NOT_ASSIGNED },
+	{ txt_help_global_search_repeat, GLOBAL_SEARCH_REPEAT },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_config_ops, NOT_ASSIGNED },
+	{ txt_help_config_select , CONFIG_SELECT },
+	{ txt_help_config_toggle_attrib , CONFIG_TOGGLE_ATTRIB },
+	{ txt_help_config_scope_menu , CONFIG_SCOPE_MENU },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_misc, NOT_ASSIGNED },
+	{ txt_help_select_quit, GLOBAL_QUIT },
+	{ txt_help_select_quit_no_write, CONFIG_NO_SAVE },
+	{ txt_help_global_help, GLOBAL_HELP },
+	{ txt_help_global_redraw_screen, GLOBAL_REDRAW_SCREEN },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_global_version, GLOBAL_VERSION },
+	{ NULL, NOT_ASSIGNED }
+};
+
+static t_help_page scope_help_page[] = {
+	{ txt_help_title_navi, NOT_ASSIGNED },
+	{ txt_help_global_page_down, GLOBAL_PAGE_DOWN },
+	{ txt_help_global_page_up, GLOBAL_PAGE_UP },
+	{ txt_help_global_line_down, GLOBAL_LINE_DOWN },
+	{ txt_help_global_line_up, GLOBAL_LINE_UP },
+	{ txt_help_global_scroll_down, GLOBAL_SCROLL_DOWN },
+	{ txt_help_global_scroll_up, GLOBAL_SCROLL_UP },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_scope_first_scope, GLOBAL_FIRST_PAGE },
+	{ txt_help_scope_last_scope, GLOBAL_LAST_PAGE },
+	{ txt_help_scope_goto_scope, NOT_ASSIGNED },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_scope_ops, NOT_ASSIGNED },
+	{ txt_help_scope_add, SCOPE_ADD },
+	{ txt_help_scope_move, SCOPE_MOVE },
+	{ txt_help_scope_rename, SCOPE_RENAME },
+	{ txt_help_scope_del, SCOPE_DELETE },
+	{ txt_help_scope_select, SCOPE_SELECT },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_scope_edit_attrib_file, SCOPE_EDIT_ATTRIBUTES_FILE },
+	{ txt_help_empty_line, NOT_ASSIGNED },
+	{ txt_help_title_misc, NOT_ASSIGNED },
+	{ txt_help_select_quit, GLOBAL_QUIT },
+	{ txt_help_global_help, GLOBAL_HELP },
+	{ txt_help_global_toggle_mini_help, GLOBAL_TOGGLE_HELP_DISPLAY },
+	{ txt_help_global_redraw_screen, GLOBAL_REDRAW_SCREEN },
+	{ NULL, NOT_ASSIGNED }
+};
 
 static t_help_page select_help_page[] = {
 	{ txt_help_title_navi, NOT_ASSIGNED },
@@ -203,6 +299,8 @@ static t_help_page group_help_page[] = {
 	{ txt_help_group_catchup_next, CATCHUP_NEXT_UNREAD },
 	{ txt_help_group_mark_article_unread, MARK_ARTICLE_UNREAD },
 	{ txt_help_group_mark_thread_unread, MARK_THREAD_UNREAD },
+	{ txt_help_mark_feed_read, MARK_FEED_READ },
+	{ txt_help_mark_feed_unread, MARK_FEED_UNREAD },
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_group_select_all, GROUP_DO_AUTOSELECT },
 	{ txt_help_group_select_thread, GROUP_SELECT_THREAD },
@@ -293,8 +391,10 @@ static t_help_page thread_help_page[] = {
 	{ txt_help_thread_mark_article_read, THREAD_MARK_ARTICLE_READ },
 	{ txt_help_thread_catchup, CATCHUP },
 	{ txt_help_thread_catchup_next_unread, CATCHUP_NEXT_UNREAD },
-	{ txt_help_group_mark_article_unread, MARK_ARTICLE_UNREAD },
-	{ txt_help_group_mark_thread_unread, MARK_THREAD_UNREAD },
+	{ txt_help_thread_mark_article_unread, MARK_ARTICLE_UNREAD },
+	{ txt_help_thread_mark_thread_unread, MARK_THREAD_UNREAD },
+	{ txt_help_mark_feed_read, MARK_FEED_READ },
+	{ txt_help_mark_feed_unread, MARK_FEED_UNREAD },
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_group_select_thread, THREAD_SELECT_ARTICLE },
 	{ txt_help_group_toggle_thread_selection, THREAD_TOGGLE_ARTICLE_SELECTION },
@@ -402,7 +502,7 @@ static t_help_page page_help_page[] = {
 	{ txt_help_thread_catchup, CATCHUP },
 	{ txt_help_thread_catchup_next_unread, CATCHUP_NEXT_UNREAD },
 	{ txt_help_group_mark_article_unread, MARK_ARTICLE_UNREAD },
-	{ txt_help_group_mark_thread_unread, MARK_THREAD_UNREAD },
+	{ txt_help_thread_mark_thread_unread, MARK_THREAD_UNREAD },
 	{ txt_help_empty_line, NOT_ASSIGNED },
 	{ txt_help_article_autoselect, GLOBAL_MENU_FILTER_SELECT },
 	{ txt_help_article_autokill, GLOBAL_MENU_FILTER_KILL },
@@ -502,6 +602,18 @@ show_help_page(
 		return;
 
 	switch (level) {
+		case ATTRIB_LEVEL:
+			make_help_page(fp, attrib_help_page, option_menu_keys);
+			break;
+
+		case CONFIG_LEVEL:
+			make_help_page(fp, config_help_page, option_menu_keys);
+			break;
+
+		case SCOPE_LEVEL:
+			make_help_page(fp, scope_help_page, scope_keys);
+			break;
+
 		case SELECT_LEVEL:
 			make_help_page(fp, select_help_page, select_keys);
 			break;
@@ -552,6 +664,21 @@ show_mini_help(
 #endif /* HAVE_COLOR */
 
 	switch (level) {
+		case SCOPE_LEVEL:
+			snprintf(buf, bufs, _(txt_mini_scope_1),
+				printascii(key[0], func_to_key(SCOPE_ADD, scope_keys)),
+				printascii(key[1], func_to_key(SCOPE_MOVE, scope_keys)),
+				printascii(key[2], func_to_key(SCOPE_RENAME, scope_keys)),
+				printascii(key[3], func_to_key(SCOPE_DELETE, scope_keys)));
+			center_line(line, FALSE, buf);
+			snprintf(buf, bufs, _(txt_mini_scope_2),
+				printascii(key[0], func_to_key(GLOBAL_LINE_DOWN, scope_keys)),
+				printascii(key[1], func_to_key(GLOBAL_LINE_UP, scope_keys)),
+				printascii(key[2], func_to_key(GLOBAL_HELP, scope_keys)),
+				printascii(key[3], func_to_key(GLOBAL_QUIT, scope_keys)));
+			center_line(line + 1, FALSE, buf);
+			break;
+
 		case SELECT_LEVEL:
 			snprintf(buf, bufs, _(txt_mini_select_1),
 				printascii(key[0], func_to_key(SELECT_ENTER_NEXT_UNREAD_GROUP, select_keys)),

@@ -3,10 +3,10 @@
  *  Module    : newsrc.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-11-28
+ *  Updated   : 2009-11-17
  *  Notes     : ArtCount = (ArtMax - ArtMin) + 1  [could have holes]
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -121,10 +121,11 @@ read_newsrc(
 		fclose(fp);
 		/* If you aborted with 'q', then you get what you get. */
 
-		if (cmd_line) {
+		if (!batch_mode || verbose)
 			my_fputc('\n', stdout);
-			my_flush();
-		}
+
+		if (!cmd_line && !batch_mode)
+			clear_message();
 	}
 	return line_count;
 }
@@ -199,6 +200,7 @@ write_newsrc(
 	signed long int tot = 0L;
 	struct stat note_stat_newsrc;
 	t_bool write_ok = FALSE;
+	int err;
 
 	if (no_write)
 		return 0L;
@@ -224,9 +226,13 @@ write_newsrc(
 		/*
 		 * Don't rename if either fclose() fails or ferror() is set
 		 */
-		if (ferror(fp_op) || fclose(fp_op)) {
+		if ((err = ferror(fp_op)) || fclose(fp_op)) {
 			error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
 			unlink(newnewsrc);
+			if (err) {
+				clearerr(fp_op);
+				fclose(fp_op);
+			}
 		} else
 			write_ok = TRUE;
 	}
@@ -262,8 +268,12 @@ create_newsrc(
 		for_each_group(i)
 			fprintf(fp, "%s!\n", active[i].name);
 
-		if (ferror(fp) || fclose(fp)) {
+		if ((i = ferror(fp)) || fclose(fp)) {
 			error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+			if (i) {
+				clearerr(fp);
+				fclose(fp);
+			}
 			return FALSE;
 		}
 		return TRUE; /* newsrc created */
@@ -283,12 +293,11 @@ open_subscription_fp(
 #ifdef NNTP_ABLE
 		if (read_news_via_nntp) {
 			/*
-			 * RFC 3977 doesn't list SUBSCRIPTIONS, so we keep this check
-			 * disabled till this is fixed in the next RFC
+			 * draft-elie-nntp-list-additions-00.txt
 			 */
-			/* if (nntp_caps.type == CAPABILITIES && !nntp_caps.list_subscriptions)
+			if (nntp_caps.type == CAPABILITIES && !nntp_caps.list_subscriptions)
 				return NULL;
-			else */
+			else
 				return (nntp_command("LIST SUBSCRIPTIONS", OK_GROUPS, NULL, 0));
 		} else
 #endif /* NNTP_ABLE */
@@ -310,6 +319,7 @@ auto_subscribe_groups(
 	FILE *fp_newsrc;
 	FILE *fp_subs;
 	char *ptr;
+	int err;
 
 	/*
 	 * If subscription file exists then first unsubscribe to all groups
@@ -337,8 +347,13 @@ auto_subscribe_groups(
 
 	/* We ignore user 'q'uits here. They will get them next time in any case */
 
-	if (ferror(fp_newsrc) || fclose(fp_newsrc))
+	if ((err = ferror(fp_newsrc)) || fclose(fp_newsrc)) {
 		error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+		if (err) {
+			clearerr(fp_newsrc);
+			fclose(fp_newsrc);
+		}
+	}
 
 	TIN_FCLOSE(fp_subs);
 }
@@ -357,7 +372,7 @@ backup_newsrc(
 
 #ifdef NNTP_ABLE
 	if (read_news_via_nntp && !read_saved_news && nntp_tcp_port != IPPORT_NNTP)
-		snprintf(filebuf, sizeof(filebuf), "%s:%d", nntp_server, nntp_tcp_port);
+		snprintf(filebuf, sizeof(filebuf), "%s:%u", nntp_server, nntp_tcp_port);
 	else
 #endif /* NNTP_ABLE */
 	{
@@ -413,9 +428,9 @@ group_get_art_info(
 				break;
 
 			case ERR_NOGROUP:
-				*art_count = 0;
-				*art_min = 1;
-				*art_max = 0;
+				*art_count = 0L;
+				*art_min = 1L;
+				*art_max = 0L;
 				return -ERR_NOGROUP;
 
 			case ERR_ACCESS:
@@ -438,19 +453,19 @@ group_get_art_info(
 #endif /* NNTP_ABLE */
 	} else {
 		char group_path[PATH_LEN];
-		*art_count = 0;
-		*art_min = 1;
-		*art_max = 0;
+		*art_count = 0L;
+		*art_min = 0L;
+		*art_max = 0L;
 
 		make_base_group_path(tin_spooldir, groupname, group_path, sizeof(group_path));
 
 		if ((dir = opendir(group_path)) != NULL) {
 			while ((direntry = readdir(dir)) != NULL) {
 				artnum = atol(direntry->d_name); /* should be '\0' terminated... */
-				if (artnum >= 1) {
+				if (artnum >= 1L) {
 					if (artnum > *art_max) {
 						*art_max = artnum;
-						if (*art_min == 0)
+						if (*art_min == 0L)
 							*art_min = artnum;
 					} else if (artnum < *art_min)
 						*art_min = artnum;
@@ -458,8 +473,12 @@ group_get_art_info(
 				}
 			}
 			CLOSEDIR(dir);
-		} else
+			if (*art_min == 0L)
+				*art_min = 1L;
+		} else {
+			*art_min = 1L;
 			return -1;
+		}
 	}
 
 	return 0;
@@ -561,8 +580,12 @@ subscribe(
 		}
 	}
 
-	if (ferror(newfp) || fclose(newfp)) {
+	if ((sub = ferror(newfp)) || fclose(newfp)) {
 		error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+		if (sub) {
+			clearerr(newfp);
+			fclose(newfp);
+		}
 		unlink(newnewsrc);
 	} else
 		rename_file(newnewsrc, newsrc);
@@ -590,8 +613,12 @@ reset_newsrc(
 			}
 			fclose(fp);
 		}
-		if (ferror(newfp) || fclose(newfp)) {
+		if ((sub = ferror(newfp)) || fclose(newfp)) {
 			error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+			if (sub) {
+				clearerr(newfp);
+				fclose(newfp);
+			}
 			unlink(newnewsrc);
 		} else
 			rename_file(newnewsrc, newsrc);
@@ -632,8 +659,12 @@ delete_group(
 			fclose(fp);
 		}
 
-		if (ferror(newfp) || fclose(newfp)) {
+		if ((sub = ferror(newfp)) || fclose(newfp)) {
 			error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+			if (sub) {
+				clearerr(newfp);
+				fclose(newfp);
+			}
 			unlink(newnewsrc);
 		} else
 			rename_file(newnewsrc, newsrc);
@@ -662,14 +693,14 @@ grp_mark_read(
 	if (art != NULL) {
 		for_each_art(i)
 			art_mark(group, &art[i], ART_READ);
+	} else {
+		FreeAndNull(group->newsrc.xbitmap);
+		group->newsrc.xbitlen = 0;
+		if (group->xmax > group->newsrc.xmax)
+			group->newsrc.xmax = group->xmax;
+		group->newsrc.xmin = group->newsrc.xmax + 1;
+		group->newsrc.num_unread = 0;
 	}
-
-	FreeAndNull(group->newsrc.xbitmap);
-	group->newsrc.xbitlen = 0;
-	if (group->xmax > group->newsrc.xmax)
-		group->newsrc.xmax = group->xmax;
-	group->newsrc.xmin = group->newsrc.xmax + 1;
-	group->newsrc.num_unread = 0;
 }
 
 
@@ -678,7 +709,7 @@ grp_mark_unread(
 	struct t_group *group)
 {
 	int bitlength;
-	t_bitmap *newbitmap = (t_bitmap *)0;
+	t_bitmap *newbitmap = (t_bitmap *) 0;
 
 #ifdef DEBUG
 	if (debug & DEBUG_NEWSRC)
@@ -973,7 +1004,8 @@ parse_get_seq(
  */
 void
 parse_unread_arts(
-	struct t_group *group)
+	struct t_group *group,
+	long min)
 {
 	int i;
 	long unread = 0;
@@ -996,6 +1028,24 @@ parse_unread_arts(
 	if (group->newsrc.xmax >= bitmin) {
 		newbitmap = my_malloc(BITS_TO_BYTES(group->newsrc.xmax - bitmin + 1));
 		NSETRNG0(newbitmap, 0L, group->newsrc.xmax - bitmin);
+	}
+
+	/*
+	 * if getart_limit > 0 preserve read/unread state
+	 * of all articles below the new minimum
+	 */
+	if (min > 0 && newbitmap) {
+		long j, tmp_bitmax;
+
+		tmp_bitmax = (bitmax < min) ? bitmax : min;
+		for (j = bitmin; j < tmp_bitmax; j++) {
+			if (NTEST(group->newsrc.xbitmap, j - bitmin) != ART_READ)
+				NSET1(newbitmap, j - bitmin);
+		}
+		while (j < min) {
+			NSET1(newbitmap, j - bitmin);
+			j++;
+		}
 	}
 
 	for_each_art(i) {
@@ -1041,7 +1091,7 @@ print_bitmap_seq(
 	struct t_group *group)
 {
 	long artnum;
-	long i, last;
+	long i;
 	t_bool flag = FALSE;
 
 #ifdef DEBUG
@@ -1064,35 +1114,38 @@ print_bitmap_seq(
 		return;
 	}
 
-	for (i = group->newsrc.xmin; i <= group->newsrc.xmax; i++) {
-		if (group->newsrc.xbitmap && NTEST(group->newsrc.xbitmap, i - group->newsrc.xmin) == ART_READ) {
-			if (flag) {
-				artnum = i;
-				fprintf(fp, ",%ld", i);
-			} else {
-				artnum = 1;
+	i = group->newsrc.xmin;
+	if (i <= group->newsrc.xmax) {
+		forever {
+			if (group->newsrc.xbitmap && NTEST(group->newsrc.xbitmap, i - group->newsrc.xmin) == ART_READ) {
+				if (flag) {
+					artnum = i;
+					fprintf(fp, ",%ld", i);
+				} else {
+					artnum = 1;
+					flag = TRUE;
+					fprintf(fp, "1");
+				}
+				while (i < group->newsrc.xmax && NTEST(group->newsrc.xbitmap, (i + 1) - group->newsrc.xmin) == ART_READ)
+					i++;
+
+				if (artnum != i)
+					fprintf(fp, "-%ld", i);
+
+			} else if (!flag) {
 				flag = TRUE;
-				fprintf(fp, "1");
+				if (group->newsrc.xmin > 1) {
+					fprintf(fp, "1");
+
+					if (group->newsrc.xmin > 2)
+						fprintf(fp, "-%ld", group->newsrc.xmin - 1);
+
+				}
 			}
+			if (group->newsrc.xmax == i)
+				break;
+
 			i++;
-
-			while (i <= group->newsrc.xmax && NTEST(group->newsrc.xbitmap, i - group->newsrc.xmin) == ART_READ)
-				i++;
-
-			last = i - 1;
-
-			if (artnum != last)
-				fprintf(fp, "-%ld", last);
-
-		} else if (!flag) {
-			flag = TRUE;
-			if (group->newsrc.xmin > 1) {
-				fprintf(fp, "1");
-
-				if (group->newsrc.xmin > 2)
-					fprintf(fp, "-%ld", group->newsrc.xmin - 1);
-
-			}
 		}
 	}
 
@@ -1129,6 +1182,7 @@ pos_group_in_newsrc(
 	char sub[PATH_LEN];
 	char unsub[PATH_LEN];
 	int subscribed_pos = 1;
+	int err;
 	size_t group_len;
 	t_bool found = FALSE;
 	t_bool newnewsrc_created = FALSE;
@@ -1153,10 +1207,10 @@ pos_group_in_newsrc(
 		fchmod(fileno(fp_out), newsrc_mode);
 
 	joinpath(filename, sizeof(filename), TMPDIR, ".subrc");
-	snprintf(sub, sizeof(sub), "%s.%d", filename, (int) process_id);
+	snprintf(sub, sizeof(sub), "%s.%ld", filename, (long) process_id);
 
 	joinpath(filename, sizeof(filename), TMPDIR, ".unsubrc");
-	snprintf(unsub, sizeof(unsub), "%s.%d", filename, (int) process_id);
+	snprintf(unsub, sizeof(unsub), "%s.%ld", filename, (long) process_id);
 
 	if ((fp_sub = fopen(sub, "w")) == NULL)
 		goto rewrite_group_done;
@@ -1188,11 +1242,25 @@ pos_group_in_newsrc(
 		}
 	}
 
-	if (ferror(fp_sub) || fclose(fp_sub) || ferror(fp_unsub) || fclose(fp_unsub)) {
+	if ((err = ferror(fp_sub)) || fclose(fp_sub)) {
 		error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
-		fp_sub = fp_unsub = NULL;
-		goto rewrite_group_done;
+		if (err) {
+			clearerr(fp_sub);
+			fclose(fp_sub);
+		}
+		fp_sub = NULL;
 	}
+	if ((err = ferror(fp_unsub)) || fclose(fp_unsub)) {
+		if (fp_sub) /* didn't see and error above */
+			error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
+		if (err) {
+			clearerr(fp_unsub);
+			fclose(fp_unsub);
+		}
+		fp_unsub = NULL;
+	}
+	if (fp_sub == NULL || fp_unsub == NULL)
+		goto rewrite_group_done;
 
 	fp_sub = fp_unsub = NULL;
 	fclose(fp_in);
@@ -1246,9 +1314,13 @@ pos_group_in_newsrc(
 	/*
 	 * Try and cleanly close out the newnewsrc file
 	 */
-	if (ferror(fp_out) || fclose(fp_out))
+	if ((err = ferror(fp_out)) || fclose(fp_out)) {
 		error_message(2, _(txt_filesystem_full), NEWSRC_FILE);
-	else {
+		if (err) {
+			clearerr(fp_out);
+			fclose(fp_out);
+		}
+	} else {
 		if (repositioned) {
 			rename_file(newnewsrc, newsrc);
 			ret_code = TRUE;
@@ -1419,15 +1491,12 @@ expand_bitmap(
 		if (first < group->newsrc.xmin) {
 			NSETRNG0(newbitmap, 0L, group->newsrc.xmin - first - 1L);
 		}
-		{
-			long i;
 
-			for (i = group->newsrc.xmin; i < min; i++) {
-				if (NTEST(newbitmap, i - first) != ART_READ) {
-					NSET0(newbitmap, i - first);
-					if (group->newsrc.num_unread)
-						group->newsrc.num_unread--;
-				}
+		for (tmp = group->newsrc.xmin; tmp < min; tmp++) {
+			if (NTEST(newbitmap, tmp - first) != ART_READ) {
+				NSET0(newbitmap, tmp - first);
+				if (group->newsrc.num_unread)
+					group->newsrc.num_unread--;
 			}
 		}
 
@@ -1459,15 +1528,12 @@ expand_bitmap(
 		if (first < group->newsrc.xmin) {
 			NSETRNG0(newbitmap, 0L, group->newsrc.xmin - first - 1L);
 		}
-		{
-			long i;
 
-			for (i = group->newsrc.xmin; i < min; i++) {
-				if (NTEST(newbitmap, i - first) != ART_READ) {
-					NSET0(newbitmap, i - first);
-					if (group->newsrc.num_unread)
-						group->newsrc.num_unread--;
-				}
+		for (tmp = group->newsrc.xmin; tmp < min; tmp++) {
+			if (NTEST(newbitmap, tmp - first) != ART_READ) {
+				NSET0(newbitmap, tmp - first);
+				if (group->newsrc.num_unread)
+					group->newsrc.num_unread--;
 			}
 		}
 

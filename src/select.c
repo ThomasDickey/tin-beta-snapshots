@@ -3,10 +3,10 @@
  *  Module    : select.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-11-25
+ *  Updated   : 2009-10-30
  *  Notes     :
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -251,7 +251,7 @@ selection_page(
 				break;
 
 			case GLOBAL_EDIT_FILTER:
-				if (!invoke_editor(filter_file, FILTER_FILE_OFFSET, NULL))
+				if (!invoke_editor(filter_file, filter_file_offset, NULL))
 					break;
 				(void) read_filter_file(filter_file);
 				break;
@@ -342,7 +342,7 @@ selection_page(
 				break;
 
 			case GLOBAL_OPTION_MENU:
-				change_config_file(NULL);
+				config_page(CURR_GROUP.name);
 				show_selection_page();
 				break;
 
@@ -625,7 +625,14 @@ build_gline(
 	if (active[my_group[i]].inrange)
 		strcpy(tmp, "    #");
 	else if (active[my_group[i]].newsrc.num_unread) {
-		strcpy(tmp, tin_ltoa(active[my_group[i]].newsrc.num_unread, 5));
+		int getart_limit;
+		long num_unread;
+
+		getart_limit = cmdline.args & CMDLINE_GETART_LIMIT ? cmdline.getart_limit : tinrc.getart_limit;
+		num_unread = active[my_group[i]].newsrc.num_unread;
+		if (getart_limit > 0 && getart_limit < num_unread)
+			num_unread = getart_limit;
+		strcpy(tmp, tin_ltoa(num_unread, 5));
 	} else
 		strcpy(tmp, "     ");
 
@@ -746,8 +753,8 @@ active_comp(
 	t_comptype p1,
 	t_comptype p2)
 {
-	const struct t_group *s1 = (const struct t_group *)p1;
-	const struct t_group *s2 = (const struct t_group *)p2;
+	const struct t_group *s1 = (const struct t_group *) p1;
+	const struct t_group *s2 = (const struct t_group *) p2;
 
 	return strcasecmp(s1->name, s2->name);
 }
@@ -763,7 +770,7 @@ save_restore_curr_group(
 	t_bool saving)
 {
 	static char *oldgroup;
-	static int oldmax;
+	static int oldmax = 0;
 	int ret;
 
 	/*
@@ -1126,6 +1133,7 @@ toggle_my_groups(
 		}
 	}
 #else
+	/* preserv group ordering based on newsrc */
 	if ((fp = fopen(newsrc, "r")) == NULL)
 		return;
 
@@ -1181,10 +1189,6 @@ subscribe_pattern(
 				subscribe(&active[i], SUB_CHAR(state), TRUE);
 				if (state) {
 					my_group_add(active[i].name, FALSE);
-					/*
-					 * TODO: grp_mark_unread() or something needs to do a
-					 *       group_get_art_info() to get initial count right
-					 */
 					grp_mark_unread(&active[i]);
 				}
 				subscribe_num++;
@@ -1209,6 +1213,7 @@ select_quit(
 	void)
 {
 	write_config_file(local_config_file);
+	ClearScreen();
 	tin_done(EXIT_SUCCESS);	/* Tin END */
 }
 

@@ -3,10 +3,10 @@
  *  Module    : signal.c
  *  Author    : I.Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-02-09
+ *  Updated   : 2009-12-19
  *  Notes     : signal handlers for different modes and window resizing
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,6 +95,9 @@ static void _CDECL signal_handler(SIG_ARGS);
 #ifdef SIGTSTP
 	static t_bool do_sigtstp = FALSE;
 #endif /* SIGTSTP */
+#if defined(SIGWINCH) || defined(SIGTSTP)
+	static t_bool redraw_after_suspend;
+#endif /* SIGWINCH || SIGTSTP */
 
 int signal_context = cMain;
 int input_context = cNone;
@@ -131,6 +134,9 @@ static const struct {
 #	ifdef SIGPIPE
 	{ SIGPIPE,	"SIGPIPE" },	/* broken pipe */
 #	endif /* SIGPIPE */
+#	ifdef SIGALRM
+	{ SIGALRM,	"SIGALRM" },	/* real-time timer expired */
+#	endif /* SIGALRM */
 #	ifdef SIGCHLD
 	{ SIGCHLD,	"SIGCHLD" },	/* death of a child process */
 #	endif /* SIGCHLD */
@@ -268,9 +274,10 @@ handle_resize(
 	switch (signal_context) {
 		case cArt:
 			ClearScreen();
-			show_art_msg(curr_group->name);
+			show_art_msg(CURR_GROUP.name);
 			break;
 
+		case cAttrib:
 		case cConfig:
 			refresh_config_page(SIGNAL_HANDLER);
 			break;
@@ -284,6 +291,7 @@ handle_resize(
 			break;
 
 		case cGroup:
+		case cScope:
 		case cSelect:
 		case cThread:
 			ClearScreen();
@@ -303,14 +311,24 @@ handle_resize(
 			gl_redraw();
 			break;
 
+		case cPromptCONT:
+			if (redraw_after_suspend)
+				info_message(_(txt_return_key));
+			break;
+
 		case cPromptSLK:
 			prompt_slk_redraw();
+			break;
+
+		case cPromptYN:
+			prompt_yn_redraw();
 			break;
 
 		default:
 			break;
 	}
 	my_fflush(stdout);
+	redraw_after_suspend = FALSE;
 #endif /* SIGWINCH || SIGTSTP */
 }
 
@@ -320,22 +338,34 @@ static void
 handle_suspend(
 	void)
 {
+	t_bool save_cmd_line = cmd_line;
+	t_bool save_state = (!batch_mode || !cmd_line);
+
 	TRACE(("handle_suspend(%d)", signal_context));
 
 	set_keypad_off();
 	if (!cmd_line)
 		set_xclick_off();
 
-	Raw(FALSE);
+	if (save_state) {
+		EndWin();
+		Raw(FALSE);
+	}
+
 	wait_message(0, _(txt_suspended_message), tin_progname);
 
 	kill(0, SIGSTOP);				/* Put ourselves to sleep */
 
 	RESTORE_HANDLER(SIGTSTP, signal_handler);
 
-	if (!batch_mode) {
+	if (save_state) {
 		Raw(TRUE);
+		InitWin();
+		cmd_line = save_cmd_line;
+		if (!cmd_line)
+			my_retouch();
 		need_resize = cRedraw;		/* Flag a redraw */
+		redraw_after_suspend = TRUE;
 	}
 	set_keypad_on();
 	if (!cmd_line)
@@ -364,6 +394,17 @@ signal_handler(
 			return;
 #endif /* SIGINT */
 
+/*
+ * fatal error but we don't want the "signal handler caught signal"
+ * message here
+ */
+#ifdef SIGALRM
+		case SIGALRM:
+			error_message(2, "NNTP connection error. Exiting...");
+			tin_done(NNTP_ERROR_EXIT);
+			return;
+#endif /* SIGALRM */
+
 #ifdef SIGCHLD
 		case SIGCHLD:
 			wait(&wait_status);
@@ -371,13 +412,6 @@ signal_handler(
 			system_status = WIFEXITED(wait_status) ? WEXITSTATUS(wait_status) : 0;
 			return;
 #endif /* SIGCHLD */
-
-#ifdef SIGPIPE
-		case SIGPIPE:
-			got_sig_pipe = TRUE;
-			RESTORE_HANDLER(sig, signal_handler);
-			return;
-#endif /* SIGPIPE */
 
 #ifdef SIGTSTP
 		case SIGTSTP:
@@ -423,12 +457,17 @@ signal_handler(
 			break;
 #endif /* SIGHUP || SIGUSR1 || SIGTERM */
 
-#ifdef SIGBUS
-		case SIGBUS:
-#endif /* SIGBUS */
 #ifdef SIGSEGV
 		case SIGSEGV:
+#	if defined(SIGBUS) && (SIGSEGV != SIGBUS) /* on Haiku SIGSEGV == SIGBUS */
+		case SIGBUS:
+#	endif /* SIGBUS && SIGSEGV != SIGBUS */
+#else
+#	ifdef SIGBUS
+		case SIGBUS:
+#	endif /* SIGBUS */
 #endif /* SIGSEGV */
+
 #if defined(SIGBUS) || defined(SIGSEGV)
 			my_fprintf(stderr, _(txt_send_bugreport), tin_progname, VERSION, RELEASEDATE, RELEASENAME, OSNAME, bug_addr);
 			my_fflush(stderr);
@@ -482,6 +521,11 @@ set_signal_handlers(
 
 	for (n = 0; n < ARRAY_SIZE(signal_list); n++) {
 		switch ((code = signal_list[n].code)) {
+#ifdef SIGPIPE
+		case SIGPIPE:
+			sigdisp(code, SIG_IGN);
+			break;
+#endif /* SIGPIPE */
 #ifdef SIGTSTP
 		case SIGTSTP:
 			ptr = sigdisp(code, SIG_DFL);

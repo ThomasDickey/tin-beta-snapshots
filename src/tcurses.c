@@ -3,11 +3,11 @@
  *  Module    : tcurses.c
  *  Author    : Thomas Dickey <dickey@invisible-island.net>
  *  Created   : 1997-03-02
- *  Updated   : 2007-01-25
+ *  Updated   : 2009-10-22
  *  Notes     : This is a set of wrapper functions adapting the termcap
  *	             interface of tin to use SVr4 curses (e.g., ncurses).
  *
- * Copyright (c) 1997-2009 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2010 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -896,72 +896,77 @@ get_arrow_key(
 #	ifdef NCURSES_MOUSE_VERSION
 	MEVENT my_event;
 #	endif /* NCURSES_MOUSE_VERSION */
-	int ch = getch();
+	int ch;
 	int code = KEYMAP_UNKNOWN;
 
-	switch (ch) {
-		case KEY_DC:
-			code = KEYMAP_DEL;
-			break;
+	if (cmd_line)
+		code = cmd_get_arrow_key(prech);
+	else {
+		ch = getch();
+		switch (ch) {
+			case KEY_DC:
+				code = KEYMAP_DEL;
+				break;
 
-		case KEY_IC:
-			code = KEYMAP_INS;
-			break;
+			case KEY_IC:
+				code = KEYMAP_INS;
+				break;
 
-		case KEY_UP:
-			code = KEYMAP_UP;
-			break;
+			case KEY_UP:
+				code = KEYMAP_UP;
+				break;
 
-		case KEY_DOWN:
-			code = KEYMAP_DOWN;
-			break;
+			case KEY_DOWN:
+				code = KEYMAP_DOWN;
+				break;
 
-		case KEY_LEFT:
-			code = KEYMAP_LEFT;
-			break;
+			case KEY_LEFT:
+				code = KEYMAP_LEFT;
+				break;
 
-		case KEY_RIGHT:
-			code = KEYMAP_RIGHT;
-			break;
+			case KEY_RIGHT:
+				code = KEYMAP_RIGHT;
+				break;
 
-		case KEY_NPAGE:
-			code = KEYMAP_PAGE_DOWN;
-			break;
+			case KEY_NPAGE:
+				code = KEYMAP_PAGE_DOWN;
+				break;
 
-		case KEY_PPAGE:
-			code = KEYMAP_PAGE_UP;
-			break;
+			case KEY_PPAGE:
+				code = KEYMAP_PAGE_UP;
+				break;
 
-		case KEY_HOME:
-			code = KEYMAP_HOME;
-			break;
+			case KEY_HOME:
+				code = KEYMAP_HOME;
+				break;
 
-		case KEY_END:
-			code = KEYMAP_END;
-			break;
+			case KEY_END:
+				code = KEYMAP_END;
+				break;
 
 #	ifdef NCURSES_MOUSE_VERSION
-		case KEY_MOUSE:
-			if (getmouse(&my_event) != ERR) {
-				switch ((int) my_event.bstate) {
-					case BUTTON1_CLICKED:
-						xmouse = MOUSE_BUTTON_1;
-						break;
+			case KEY_MOUSE:
+				if (getmouse(&my_event) != ERR) {
+					switch ((int) my_event.bstate) {
+						case BUTTON1_CLICKED:
+							xmouse = MOUSE_BUTTON_1;
+							break;
 
-					case BUTTON2_CLICKED:
-						xmouse = MOUSE_BUTTON_2;
-						break;
+						case BUTTON2_CLICKED:
+							xmouse = MOUSE_BUTTON_2;
+							break;
 
-					case BUTTON3_CLICKED:
-						xmouse = MOUSE_BUTTON_3;
-						break;
+						case BUTTON3_CLICKED:
+							xmouse = MOUSE_BUTTON_3;
+							break;
+					}
+					xcol = my_event.x;	/* column */
+					xrow = my_event.y;	/* row */
+					code = KEYMAP_MOUSE;
 				}
-				xcol = my_event.x;	/* column */
-				xrow = my_event.y;	/* row */
-				code = KEYMAP_MOUSE;
-			}
-			break;
+				break;
 #	endif /* NCURSES_MOUSE_VERSION */
+		}
 	}
 	return code;
 }

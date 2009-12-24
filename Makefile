@@ -1,15 +1,15 @@
 # Top level Makefile for tin
 # - for configuration options read the doc/INSTALL file.
 #
-# Updated: 2008-08-19
+# Updated: 2009-07-24
 #
 
 PROJECT	= tin
 LVER	= 1
 PVER	= 9
-SVER	= 4
+SVER	= 5
 VER	= $(LVER).$(PVER).$(SVER)
-DVER	= 20090211
+DVER	= 20091224
 EXE	= tin
 
 # directory structure
@@ -354,6 +354,7 @@ SHELL	= /bin/sh
 TAR	= tar
 GZIP	= gzip
 BZIP2	= bzip2
+LZMA	= lzma
 WC	= wc
 SED	= sed
 TR	= tr
@@ -465,6 +466,18 @@ bzip2:
 	@$(CHMOD) 644 $(PROJECT)-$(VER).tar.bz2
 	@$(LS) -l $(PROJECT)-$(VER).tar.bz2
 
+lzma:
+	@$(ECHO) "Generating lzma compressd tar file..."
+	@-$(RM) -f $(PROJECT)-$(VER).tar.lzma
+	@$(TAR) cvf $(PROJECT)-$(VER).tar -C ../ \
+	`$(ECHO) $(ALL_FILES) \
+	| $(TR) -s '[[:space:]]' "[\012*]" \
+	| $(SED) 's,^\./,$(PROJECT)-$(VER)/,' \
+	| $(TR) "[\012]" " "`
+	@$(LZMA) -9 $(PROJECT)-$(VER).tar
+	@$(CHMOD) 644 $(PROJECT)-$(VER).tar.lzma
+	@$(LS) -l $(PROJECT)-$(VER).tar.lzma
+
 #
 # I know it's ugly, but it works
 #
@@ -490,6 +503,7 @@ dist:
 	@$(MAKE) chmod
 	@$(MAKE) tar
 	@$(MAKE) bzip2
+	@$(MAKE) lzma
 
 version:
 	@$(ECHO) "$(PROJECT)-$(VER)"
@@ -509,7 +523,10 @@ distclean:
 	$(SRCDIR)/Makefile \
 	$(PCREDIR)/Makefile \
 	$(CANDIR)/Makefile \
-	$(INTLDIR)/po2tbl.sed
+	$(INTLDIR)/po2tbl.sed \
+	$(PROJECT)-$(VER).tar.gz \
+	$(PROJECT)-$(VER).tar.bz2 \
+	$(PROJECT)-$(VER).tar.lzma
 
 configure: configure.in aclocal.m4
 	autoconf

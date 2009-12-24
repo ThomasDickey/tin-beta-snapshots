@@ -12,17 +12,9 @@ o  'T'ag all parts of multipart message doesn't work (it never did)
    with thread_arts 4 (multipart) or 5 (percentage)
    [20080606 Urs Janssen <urs@tin.org>]
 
-!o  after cancelling an article, when using '-' form the next article this
-!   article is also marked as unavailable.
-!   <nntp://news.tin.org/20070202035746.GA19829@akk.org>
-!   [20070202 Urs Janssen <urs@tin.org>]
-
 o  cLINES < MIN_LINES_ON_TERMINAL || cCOLS < MIN_COLUMNS_ON_TERMINAL
    isn't checked on startup
    [20071210 Urs Janssen <urs@tin.org>]
-
-o  a wrong username in ~/.newsauth can't be corrected in the first pass
-   [20050816 Urs Janssen <urs@tin.org>]
 
 o  a wrong username/password in ~/.newsauth can lead to an endless AUTH-loop
    when using -A and issuing a wrong username/password in the prompt
@@ -44,30 +36,19 @@ o  better integrate saving of MIME/non-MIME articles when not using libuu.
    [Jason Faultless <jason@altarstone.com>]
 
 o  batch mode has several bugs
-   - -Z and giving a cmd-line group ends up in a loop
-     (filters each group several times, ~25 times slower as without a
-      cmd-line group) and the cmd-line group is not displayed in the
-      statistics nor taken into account for the 'any unread news' status.
+   - -Z and giving a cmd-line group the cmd-line group is not displayed in
+     the statistics nor taken into account for the 'any unread news' status.
    - -vc could be more verbose (like -vcZ is)
    - -o currently is not a 'batch_mode' option
    - if server requires authentication (and no ~/.newsauth entry matches)
      tin prompts for username but not for password
    [Urs Janssen <urs@tin.org>]
 
-o  '-s' cmd-line switch implicitly changes tinrc.savedir;
-   '-G' cmd-line switch implicitly changes tinrc.getart_limit,
-   but '-a' does not change tinrc.use_color - IMHO '-s'/'-G' behave wrong.
-   [Urs Janssen <urs@tin.org>]
-   Is -s supposed to affect all save operations? What about attributes?
-   Might get away with simply setting glob_attributes->savedir
-   [Jason Faultless <jason@altarstone.com>]
-
 o  add version number to other config-files (e.g. tin.defaults)
    and do the same checks as for TINRC_VERSION/tinrc. for the
-   filter (and attributes) file also store the editor offset (different
-   languages do use different headers) and the filter method used
-   (wildmat or regexp) and the charset the file is written in (e.g.
-   ISO-8859-x vs. unicode)
+   filter and attributes file store the charset the file is written in
+   (e.g. ISO-8859-x vs. unicode) and for the filter file the filter method
+   used (wildmat or regexp)
    [Urs Janssen <urs@tin.org>]
 
 o  overview file cacheing code is over-complex
@@ -143,12 +124,19 @@ o  add more AUTHINFO SASL (RFC 4643) support (DIGEST-MD5, EXTERNAL, ...)
    version for at least PLAIN)
    [20080316 Urs Janssen <urs@tin.org>]
 
-o  make 'GNKSA'-parser RFC5322/USEFOR compliant
+o  add XZVER (and XZHDR) support (zlib compressed yyencoded overview data)
+   <http://helpdesk.astraweb.com/index.php?_m=news&_a=viewnews&newsid=9>
+
+o  make 'GNKSA'-parser RFC5322/USEFOR compliant and fix bugs
+   (e.g. "<~$!~( )@( )example.com>" causes "illegal character in RHS", but
+   the address is valid)
+
+o  allow IDN ccTLDs (/\.xn--\S+$/) in 'GNKSA'-parser
 
 o  add In-Reply-To threading for mailgroups
    [20030518 Urs Janssen <urs@tin.org>]
 
-o  make auto'S'ave also work for inrange articles/threads(/groups)
+o  make auto'S'ave also work for inrange groups
    (unfortunately 'S' at select level is used for something else)
    [20030508 Urs Janssen <urs@tin.org>]
 
@@ -184,7 +172,7 @@ o  add a postponed 'browser' (store postponed arts in MH or maildir
 
 o  add postpone option for mail-actions;
    reusing p'o'stponed articles in mailing_list groups doesn't work
-   (possible fix: store Newsgroups (and other infos) via msg_add_header()
+   (possible fix: store Newsgroups (and other info) via msg_add_header()
     (to overwrite any old values) in X-Tin-Postponed:-header and remove it
     before posting.)
    [20010623 Urs Janssen <urs@tin.org>]
@@ -257,13 +245,7 @@ o  check if the articles Subject/From in the pager matches (minus
    if they are higher than the server's high-mark don't trust them (and
    discard the locally cached data).
 
-o  attributes (still) needs some work, some entrys aren't really useful
-   on a per group basis but others would (e.g. Reply-To)
-   once we have a 'attributes-menu' we could remove most of the
-   global 'attributes' set in tinrc and move them to a scope=*
-   in attributes (e.g. From)
-   See doc/config-anomalies for other candidates that should move to
-   attributes
+o  attributes (still) needs some work; See doc/config-anomalies.
    [20030303 Dirk Nimmich <nimmich@muenster.de>]
 
 o  add 'make unproto'
@@ -306,6 +288,8 @@ o  unify Fcc and posted_articles_file
 o  MIME-pgp support according to RFC 2015, RFC 3156 - (should be easy now)
    and/or in the format that used by signcontrol/pgpverify (see also
    tinews.pl)
+   As MIME-pgp verification needs the undecoded mime-part with it's headers
+   storing the raw-offset of each part in the article would be very helpful.
 
 o  pgp-{6,7} support
 
@@ -348,13 +332,12 @@ o  Additions to the select menu:
      '%'  (toggle rot13 encoding of screen content)
 
 o  Add to the 'M'enu:
-     'h'  (GLOBAL_HELP)
      'R'  (GLOBAL_BUGREPORT)
      '!'  (GLOBAL_SHELL_ESCAPE)
      '&'  (GLOBAL_TOGGLE_COLOR)
      and maybe a way to change built in path like DEFAULT_MAILER, PATH_PGP, ...
 
-o  Add to the POST_INFO-level:
+o  Add to the POST_INFO-level ('W'):
      '?','/','\' search (partly done, currently only the displayed page is
                          searched which is not that useful)
      'h'  (GLOBAL_HELP)
@@ -384,11 +367,11 @@ o  Merge the selection code with the range code. Having two similar methods
    of picking articles with similar goals is wasteful.
    [Jason Faultless <jason@altarstone.com>]
 
-o  add check for libbzip2/zlib (>=1.1.4)/[mini]lzo
-   (<http://sources.redhat.com/bzip2/>, <http://www.gzip.org/zlib/>,
-    <http://www.oberhumer.com/opensource/lzo/>) and add an
-   option to write/read {g,b,l}zipped local overviews.
-   zlib, libbzip2 and lzo might also be used for post-processing.
+o  add check for liblzma/libbzip2/zlib (>=1.1.4)/[mini]lzo
+   (<http://tukaani.org/xz/>, <http://sources.redhat.com/bzip2/>,
+    <http://www.gzip.org/zlib/>, <http://www.oberhumer.com/opensource/lzo/>)
+   and add an option to write/read {g,b,l}zipped local overviews.
+   liblzma, zlib, libbzip2 and lzo might also be used for post-processing.
 
 o  add check for GPGME (<http://www.gnupg.org/related_software/gpgme/>) and if
    found use it for pgp actions.
@@ -430,8 +413,6 @@ o  posting to a binary group should warn if no followup is set to another
 
 o  when posting to a group containing uppercase-letters: bring up a
    warning: "Newsgroup-names should be all lowercase, correct it? (Y/n)"
-
-o  Enhance -w to take newsgroup name as argument.
 
 o  Enhance -n to take newsgroup name as argument and use group_get_art_info()
    to allow posting to groups other than those in newsrc.
@@ -477,6 +458,20 @@ o  suppress hide_uue=2 checking unless first line in an article or following
 
 Internal Changes
 ----------------
+o  rewrite auth.c
+
+o  make article numbers (u)int_least64_t/PRI[iu]LEAST64 (on OSs where possible),
+   provide usefull fallbacks if system doesn't have <inttypes.h>/<stdint.h>
+   (check for long long and if present use "%lld";
+   #ifdef int_least64_t typedef artnum_t int_least64_t #else ...).
+   use atoll/strtoll for parsing article numbers. (#ifdef HAVE ATOLL
+   #define atoartnum atoll #else ...)
+   [20050728 Urs Janssen <urs@tin.org>]
+
+o  fix aclocal.m4:CF_FUNC_SYSTEM and/or misc.c:invoke_cmd() that
+   --enable-broken-system-fix/IGNORE_SYSTEM_STATUS isn't needed anymore.
+   [20090520 Urs Janssen <urs@tin.org>]
+
 o  tinrc.confirm_choice should be written/read as int, not string as users
    who edit the tinrc manually can't know the exact strings required.
    unfortunately rc_update() can't handle type changes (rc_update should
@@ -492,10 +487,6 @@ o  move serveral (server related) files into the per-server dir
    should be
       ${TIN_INDEX_NEWSDIR-"${TIN_HOMEDIR-"$HOME"}/.tin"}${NNTPSERVER+"/$NNTPSERVER"}/.news/
    [20050807 Urs Janssen <urs@tin.org>]
-
-o  make article numbers uint_least64_t (on OSs where possible), provide
-   usefull fallbacks if system doesn't have <inttypes.h>/<stdint.h>
-   [20050728 Urs Janssen <urs@tin.org>]
 
 o  upgrade configure-script to >= autoconf-2.61
    [20050728 Urs Janssen <urs@tin.org>]
@@ -672,8 +663,15 @@ o  add normalization
    (done for search strings)
    [20031209 Michael Bienia <michael@vorlon.ping.de>]
 
+o  add configure-switch for DISABLE_PIPELINING
+   [20090612 Urs Janssen <urs@tin.org>]
+
 Docs/online help
 ----------------
+o  the online help of GroupMarkUnselArtRead 'X' is unclear as it doesn't
+   say that the article are marked read
+   [20090814 Urs Janssen <urs@tin.org>]
+
 o  document the different singnals/actions (i.e. SIGUSR2 writes newsrc)
    [20080209 Urs Janssen <urs@tin.org>]
 
@@ -681,8 +679,8 @@ o  exit staus documentation in the manpage isn't correct, we have more
    exit codes than just 0/1 (and 2 in the -Z case).
    [20080320 Urs Janssen <urs@tin.org>]
 
-o  review the turkish, russian and kinyarwanda translations
-   (tr.po, ru.po, rw.po); add/finish man-page translation(s).
+o  review the danish, swedish, turkish, russian and kinyarwanda translations
+   (da.po, sv.po, tr.po, ru.po, rw.po); add/finish man-page translation(s).
 
 o  add installation guide (in html)
 
@@ -705,6 +703,17 @@ o  integrate doc/auth.txt into tin.1-manpage
 
 Not yet classified
 ------------------
+o  un/subscribe_pattern() is very slow on servers with a huge active file
+   [20091223 Urs Janssen <urs@tin.org>]
+
+o  replace wildmat.c with uwildmat.c
+   <http://inn.eyrie.org/trac/browser/trunk/lib/uwildmat.c>? It knows poison
+   patterns and can handle UTF-8 strings
+   [20091223 Urs Janssen <urs@tin.org>]
+
+o  mask inline PGP SIGNATURE/KEY BLOCK like we do for uu-sections?
+   [20090722 Urs Janssen <urs@tin.org>]
+
 o  support $XDG_CONFIG_HOME / $XDG_DATA_HOME?
    <http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html>
    [20081010 Urs Janssen <urs@tin.org>]
@@ -788,10 +797,6 @@ o  what about -a cmd-line flag? is this really needed? IMHO this can be
    dropped, '&' can be used for runtime color toggling.
    [20021106 Urs Janssen <urs@tin.org>]
 
-o  -G doesn't "work" in the !NNTP case, shall we disallow it in that case
-   or shall we try to implement it?
-   [20030421 Urs Janssen <urs@tin.org>]
-
 o  commas in real-name might cause problems in mail-replys
    From: Last, First <user@accou.nt> (which is illegal) leads to
    To: Last, First<user@accou.nt> which is last@localhost,user@accou.nt
@@ -810,7 +815,7 @@ o  check_article_to_be_posted() needs a cleanup!
 
 o  update gettext stuff to > gettext-0.12.1
 
-o  clean up included pcre stuff and update to >= pcre-7.8
+o  clean up included pcre stuff and update to >= pcre-8.0
 
 o  what is with conflicting tinrc settings? should we disallow those, or leave
    it to the user to realise that e.g. strip_blanks=ON && inverse_okay=ON

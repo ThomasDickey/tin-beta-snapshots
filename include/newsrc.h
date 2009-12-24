@@ -6,7 +6,7 @@
  *  Updated   : 2003-11-18
  *  Notes     : newsrc bit handling
  *
- * Copyright (c) 1997-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1997-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -118,8 +118,8 @@
 
 #define NTEST(n,b)	(n[NOFFSET(b)] & (1 << NBITIDX(b)))
 
-#define NSETBLK1(n,i)	(memset (n, NBITSON, (size_t) NOFFSET(i)+1))
-#define NSETBLK0(n,i)	(memset (n, 0, (size_t) NOFFSET(i)+1))
+#define NSETBLK1(n,i)	(memset(n, NBITSON, (size_t) NOFFSET(i) + 1))
+#define NSETBLK0(n,i)	(memset(n, 0, (size_t) NOFFSET(i) + 1))
 
 /* dbmalloc checks memset() parameters, so we'll use it to check the assignments */
 #ifdef USE_DBMALLOC

@@ -2,10 +2,10 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2009-01-11
+dnl Updated   : 2009-12-19
 dnl Notes     :
 dnl
-dnl Copyright (c) 1995-2009 Thomas E. Dickey <dickey@invisible-island.net>
+dnl Copyright (c) 1995-2010 Thomas E. Dickey <dickey@invisible-island.net>
 dnl All rights reserved.
 dnl
 dnl Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 
 dnl PACKAGE is required for GNU gettext
 PACKAGE=tin
-VERSION=1.9.4
+VERSION=1.9.5
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
@@ -78,7 +78,7 @@ case "$host_os" in
 esac
 
 ### Native Language Support
-ALL_LINGUAS="de en_GB et fr ru rw sv tr"
+ALL_LINGUAS="da de en_GB et fr ru rw sv tr"
 
 ### Checks for programs
 save_CFLAGS="$CFLAGS"
@@ -440,6 +440,7 @@ debug_malloc=none
 CF_WITH_DBMALLOC(debug_malloc=DBMALLOC)
 CF_WITH_DMALLOC(debug_malloc=DMALLOC)
 
+EXTRAO_DEP='#'
 AC_ARG_WITH(trace,
 	[  --with-trace            use debugging/traces for screen output],
 	[
@@ -450,12 +451,14 @@ AC_ARG_WITH(trace,
 		 LIBS="-l${cf_with_screen}_g $LIBS"
 		 use_trace=yes
 		 AC_DEFINE(USE_TRACE)
+		 EXTRAO_DEP=''
 		 EXTRAOBJS="$EXTRAOBJS trace.o"],
 		 use_trace=no)])],
 	[use_trace=no])
 #AC_MSG_CHECKING(if you want debugging-trace)
 #AC_MSG_RESULT($use_trace)
 AC_SUBST(EXTRAOBJS)
+AC_SUBST(EXTRAO_DEP)
 
 ## options for miscellaneous definitions
 AC_MSG_CHECKING(for domain-name)
@@ -930,6 +933,7 @@ CF_STRERROR
 
 ###	Checks for library functions.
 AC_CHECK_FUNCS(\
+	alarm \
 	atoi \
 	atol \
 	bcopy \
@@ -1130,6 +1134,7 @@ if test $with_decl_check = yes; then
 CHECK_DECL_HDRS="$TIN_DECL_HDRS"
 CF_CHECK_DECL(\
 	_flsbuf \
+	alarm \
 	atoi \
 	atol \
 	bcopy \
@@ -1258,17 +1263,28 @@ int main() {
 	AC_MSG_RESULT(unknown)
 )
 
-# FIXME
-# locale is broken on cygwin
-# locking doesn't work on cygwin
-# group/other bits don't work on cygwin
-# link(2) is detected but doesn't work on cygwin
-
+# FIXME / TESTME
+# locale is broken on cygwin < 1.7.0
+# locking doesn't work on cygwin < 1.7.0
+# group/other bits don't work on cygwin < 1.7.0
+# link(2) is detected but doesn't work on cygwin < 1.7.0
 case "$host_os" in
 	*cygwin*)
-		AC_DEFINE(NO_LOCALE)
+		case `uname -r | sed 's,(.*,,'` in
+			1.7.*)
+				AC_CHECK_FUNC(link, AC_DEFINE(HAVE_LINK))
+				;;
+			*)
+				# link does not work
+				AC_DEFINE(NO_LOCALE)
+				AC_DEFINE(NO_LOCKING)
+				AC_DEFINE(FILE_MODE_BROKEN)
+				;;
+			esac
+		;;
+	*haiku*)
+		# link does not work
 		AC_DEFINE(NO_LOCKING)
-		AC_DEFINE(FILE_MODE_BROKEN)
 		;;
 	*)
 		AC_CHECK_FUNC(link, AC_DEFINE(HAVE_LINK))

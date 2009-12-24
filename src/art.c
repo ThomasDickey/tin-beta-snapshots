@@ -3,10 +3,10 @@
  *  Module    : art.c
  *  Author    : I.Lea & R.Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2009-01-15
+ *  Updated   : 2009-12-23
  *  Notes     :
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,9 @@
 #ifndef TCURSES_H
 #	include "tcurses.h"
 #endif /* !TCURSES_H */
+#ifndef NEWSRC_H
+#	include "newsrc.h"
+#endif /* !NEWSRC_H */
 
 #ifndef STPWATCH_H
 #	include "stpwatch.h"
@@ -91,6 +94,7 @@ static void sort_base(unsigned int sort_threads_type);
 static void thread_by_multipart(void);
 static void thread_by_percentage(struct t_group *group);
 static void thread_by_subject(void);
+static void write_overview(struct t_group *group);
 
 
 /*
@@ -198,7 +202,6 @@ static long
 setup_hard_base(
 	struct t_group *group)
 {
-	long art;
 	long total = 0;
 
 	grpmenu.max = 0;
@@ -211,17 +214,17 @@ setup_hard_base(
 		char buf[NNTP_STRLEN];
 		FILE *fp;
 
-#	ifdef BROKEN_LISTGROUP
 		/*
 		 * Some nntp servers are broken and need an extra GROUP command
 		 * (reported by reorx@irc.pl). This affects (old?) versions of
 		 * nntpcache, leafnode and SurgeNews. Usually this should not be
 		 * needed.
 		 */
-		snprintf(buf, sizeof(buf), "GROUP %s", group->name);
-		if (nntp_command(buf, OK_GROUP, NULL, 0) == NULL)
-			return -1;
-#	endif /* BROKEN_LISTGROUP */
+		if (nntp_caps.broken_listgroup) {
+			snprintf(buf, sizeof(buf), "GROUP %s", group->name);
+			if (nntp_command(buf, OK_GROUP, NULL, 0) == NULL)
+				return -1;
+		}
 
 		/*
 		 * See if LISTGROUP works
@@ -298,6 +301,7 @@ setup_hard_base(
 		DIR *d;
 		DIR_BUF *e;
 		char group_path[PATH_LEN];
+		long art;
 
 		make_base_group_path(group->spooldir, group->name, group_path, sizeof(group_path));
 
@@ -346,10 +350,11 @@ index_group(
 {
 	int i;
 	int changed;				/* Count of articles whose overview has changed */
+	int getart_limit;
 	int respnum;
 	int total;
 	long last_read_article;
-	long min, max;
+	long min, new_min, max;
 	t_bool caching_xover;
 	t_bool filtered;
 
@@ -386,14 +391,20 @@ index_group(
 	min = grpmenu.max ? base[0] : group->xmin;
 	max = grpmenu.max ? base[grpmenu.max - 1] : min - 1;
 
-	if (tinrc.getart_limit > 0) {
-		if (grpmenu.max && (grpmenu.max > tinrc.getart_limit))
-			min = base[grpmenu.max - tinrc.getart_limit];
-	} else if (tinrc.getart_limit < 0) {
+	getart_limit = cmdline.args & CMDLINE_GETART_LIMIT ? cmdline.getart_limit : tinrc.getart_limit;
+
+	if (getart_limit > 0) {
+		if (grpmenu.max && (grpmenu.max > getart_limit))
+			min = base[grpmenu.max - getart_limit];
+		else
+			getart_limit = 0;
+	} else if (getart_limit < 0) {
 		long first_unread = find_first_unread(group);
 
-		if (min - first_unread < tinrc.getart_limit)
-			min = first_unread + tinrc.getart_limit;
+		if (min - first_unread < getart_limit)
+			min = first_unread + getart_limit;
+		else
+			getart_limit = 0;
 	}
 
 	/*
@@ -422,9 +433,9 @@ index_group(
 	 * Only do this if the previous read_overview() was against private cache
 	 */
 	if ((last_read_article < max) && caching_xover) {
-		min = (last_read_article >= min) ? last_read_article + 1 : min;
+		new_min = (last_read_article >= min) ? last_read_article + 1 : min;
 
-		if ((changed += read_overview(group, min, max, &last_read_article, FALSE)) == -1)
+		if ((changed += read_overview(group, new_min, max, &last_read_article, FALSE)) == -1)
 			return FALSE;	/* user aborted indexing */
 	} else
 		caching_xover = FALSE;
@@ -447,13 +458,9 @@ index_group(
 	 * Add any articles to arts[] that are new or were killed
 	 */
 	if (total > 0) {
-		/*
-		 * TODO
-		 * his doesn't honor tinrc.getart_limit
-		 * something like (tinrc.getart_limit ? min : last_read_article)
-		 * as 3rd arg to read_art_headers() might solve this
-		 */
-		if ((changed += read_art_headers(group, total, last_read_article)) == -1)
+		new_min = (getart_limit != 0 && last_read_article < min) ? min - 1 : last_read_article;
+
+		if ((changed += read_art_headers(group, total, new_min)) == -1)
 			return FALSE;		/* user aborted indexing */
 	}
 
@@ -467,7 +474,8 @@ index_group(
 	 * Do this before calling art_mark(,, ART_READ) if you want
 	 * the unread count to be correct.
 	 */
-	parse_unread_arts(group);
+	min = getart_limit > 0 ? min : 0L;
+	parse_unread_arts(group, min);
 #ifdef DEBUG
 	if (debug & DEBUG_NEWSRC) {
 		debug_print_comment("After parse_unread_arts()");
@@ -536,8 +544,8 @@ find_first_unread(
 	long first = group->newsrc.xmin; /* initial value */
 
 	if ((p = group->newsrc.xbitmap)) {
-		end += group->newsrc.xbitlen / 8;
-		for (; *p == '\0' && p < end; p++, first += 8)
+		end += group->newsrc.xbitlen / NBITS;
+		for (; *p == '\0' && p < end; p++, first += NBITS)
 			;
 	}
 	return first;
@@ -590,6 +598,7 @@ open_art_header(
 			 * we are not -DBROKEN_LISTGROUP
 			 */
 			case ERR_NCING:
+				nntp_caps.broken_listgroup = TRUE;
 				snprintf(buf, sizeof(buf), "GROUP %s", groupname);
 				if (nntp_command(buf, OK_GROUP, NULL, 0) == NULL)
 					return NULL;
@@ -602,6 +611,21 @@ open_art_header(
 #	endif /*! BROKEN_LISTGROUP */
 
 			default:
+				/*
+				 * TODO: abort loop over all arts on ERR_NONEXT
+				 */
+#	ifndef BROKEN_LISTGROUP
+				/*
+				 * to avoid out of sync responses
+				 * (listgroup seems to work, but didn't select new group,
+				 *  so xover seems to work but returns old data)
+				 * we set listgroup_broken = TRUE; once we saw a
+				 * ERR_NOARTIG / ERR_NONEXT or the like - even if
+				 * ERR_NOARTIG may occur on servers where listgroup
+				 * isnt't broken...
+				 */
+				nntp_caps.broken_listgroup = TRUE;
+#	endif /*! BROKEN_LISTGROUP */
 				break;
 		}
 
@@ -957,7 +981,7 @@ global_get_multiparts(
 	int i;
 	int part_index;
 	MultiPartInfo tmp, tmp2;
-	MultiPartInfo *info = 0;
+	MultiPartInfo *info = NULL;
 
 	/* entry assertions */
 	assert(0 <= aindex && aindex < top_art && "Invalid index");
@@ -1115,14 +1139,14 @@ make_threads(
 			arts[i].prev = ART_NORMAL;
 
 			/* Should never happen if tree is built properly */
-			if (arts[i].refptr == 0) {
+			if (arts[i].refptr == NULL) {
 #ifdef DEBUG
 				if (debug & DEBUG_REFS) {
 					my_fprintf(stderr, "\nError  : art->refptr is NULL\n");
 					my_fprintf(stderr, "Artnum : %ld\n", arts[i].artnum);
 					my_fprintf(stderr, "Subject: %s\n", arts[i].subject);
 					my_fprintf(stderr, "From   : %s\n", arts[i].from);
-					assert(arts[i].refptr != 0);
+					assert(arts[i].refptr != NULL);
 				} else
 #endif /* DEBUG */
 					continue;
@@ -1296,7 +1320,7 @@ parse_headers(
 					char *s;
 
 					if ((s = strrchr(hdr, '/')) != NULL) {
-						struct t_archive *archptr = my_malloc(sizeof(struct t_article));
+						struct t_archive *archptr = my_malloc(sizeof(struct t_archive));
 
 						if (STRNCASECMPEQ(s + 1, "part", 4)) {
 							archptr->partnum = my_strdup(s + 5);
@@ -1428,7 +1452,7 @@ parse_headers(
  *	5. MessageID:     (ie. <123@ether.net>)    [mandatory]
  *	6. References:    (ie. <message-id> ....)  [optional]
  *	7. Byte count     (Skipped - not used)     [mandatory]
- *	8. Lines: line    (ie. 23)                 [mandatory]
+ *	8. Line count     (ie. 23)                 [mandatory]
  *	9. Xref: line     (ie. alt.test:389)       [optional]
  */
 static int
@@ -1516,6 +1540,12 @@ read_overview(
 			continue;
 
 		/*
+		 * skip artnums below the given minimum (getart_limit)
+		 */
+		if (artnum < min)
+			continue;
+
+		/*
 		 * Check to make sure article in nov file has not expired in group
 		 */
 		if (artnum < group->xmin) {
@@ -1549,16 +1579,16 @@ read_overview(
 			if (count > over_fields) {
 #ifdef DEBUG
 				if (debug & DEBUG_NNTP)
-					debug_print_file("NNTP", "OVER(%d) Unexpected overview-field %d of %d: %s", artnum, count, over_fields, ptr);
-#endif	/* DEBUG */
+					debug_print_file("NNTP", "%s(%d) Unexpected overview-field %d of %d: %s", nntp_caps.over_cmd, artnum, count, over_fields, ptr);
+#endif /* DEBUG */
 
 				/* "common error" Xref:full in overview-data but not in OVERVIEW.FTM */
 				if (count == over_fields + 1) {
 					if (!strncasecmp(ptr, "Xref: ", 6)) {
 #ifdef DEBUG
 						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "OVER: found unexpected Xref: on semi std. position");
-#endif  /* DEBUG */
+							debug_print_file("NNTP", "%s: found unexpected Xref: on semi std. position", nntp_caps.over_cmd);
+#endif /* DEBUG */
 						over_fields++;
 						ofmt = my_realloc(ofmt, sizeof(struct t_overview_fmt) * (over_fields + 2)); /* + 2 = artnum and end-marker */
 						ofmt[over_fields].type = OVER_T_FSTRING;
@@ -1582,7 +1612,7 @@ read_overview(
 							art->subject = hash_str("");
 #ifdef DEBUG
 							if (debug & DEBUG_NNTP)
-								debug_print_file("NNTP", "OVER(%d) empty overview-field %s", artnum, ofmt[count].name);
+								debug_print_file("NNTP", "%s(%d) empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
 #endif /* DEBUG */
 						}
 						continue;
@@ -1598,7 +1628,7 @@ read_overview(
 							art->from = hash_str("");
 #ifdef DEBUG
 							if (debug & DEBUG_NNTP)
-								debug_print_file("NNTP", "OVER(%d) empty overview-field %s", artnum, ofmt[count].name);
+								debug_print_file("NNTP", "%s(%d) empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
 #endif /* DEBUG */
 						}
 						continue;
@@ -1608,7 +1638,7 @@ read_overview(
 						art->date = parsedate(ptr, (TIMEINFO *) 0);
 #ifdef DEBUG
 						if ((debug & DEBUG_NNTP) && art->date == (time_t) -1)
-							debug_print_file("NNTP", "OVER(%d) bogus overview-field %s %s", artnum, ofmt[count].name, ptr);
+							debug_print_file("NNTP", "%s(%d) bogus overview-field %s %s", nntp_caps.over_cmd, artnum, ofmt[count].name, ptr);
 #endif /* DEBUG */
 						continue;
 					}
@@ -1620,7 +1650,7 @@ read_overview(
 							art->msgid = NULL;
 #ifdef DEBUG
 							if (debug & DEBUG_NNTP)
-								debug_print_file("NNTP", "OVER(%d) empty overview-field %s", artnum, ofmt[count].name);
+								debug_print_file("NNTP", "%s(%d) empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
 #endif /* DEBUG */
 						}
 						continue;
@@ -1640,7 +1670,7 @@ read_overview(
 						if (*ptr) {
 #ifdef DEBUG
 							if ((debug & DEBUG_NNTP) && !isdigit((unsigned char) *ptr))
-									debug_print_file("NNTP", "OVER(%d) overview field %d (%s) missmatch: %s", artnum, count, ofmt[count].name, ptr);
+									debug_print_file("NNTP", "%s(%d) overview field %d (%s) missmatch: %s", nntp_caps.over_cmd, artnum, count, ofmt[count].name, ptr);
 #endif /* DEBUG */
 						}
 						continue;
@@ -1654,7 +1684,7 @@ read_overview(
 								art->line_count = 0;
 #ifdef DEBUG
 								if (debug & DEBUG_NNTP)
-									debug_print_file("NNTP", "OVER(%d) overview field %d (%s) missmatch: %s", artnum, count, ofmt[count].name, ptr);
+									debug_print_file("NNTP", "%s(%d) overview field %d (%s) missmatch: %s", nntp_caps.over_cmd, artnum, count, ofmt[count].name, ptr);
 #endif /* DEBUG */
 							}
 						} else
@@ -1671,7 +1701,7 @@ read_overview(
 							art->subject = hash_str("");
 #ifdef DEBUG
 							if (debug & DEBUG_NNTP)
-								debug_print_file("NNTP", "OVER(%d) empty overview-field %s", artnum, ofmt[count].name);
+								debug_print_file("NNTP", "%s(%d) empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
 #endif /* DEBUG */
 						}
 						break;
@@ -1686,7 +1716,7 @@ read_overview(
 							art->from = hash_str("");
 #ifdef DEBUG
 							if (debug & DEBUG_NNTP)
-								debug_print_file("NNTP", "OVER(%d) empty overview-field %s", artnum, ofmt[count].name);
+								debug_print_file("NNTP", "%s(%d) empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
 #endif /* DEBUG */
 						}
 						break;
@@ -1695,7 +1725,7 @@ read_overview(
 						art->date = parsedate(ptr, (TIMEINFO *) 0);
 #ifdef DEBUG
 						if ((debug & DEBUG_NNTP) && art->date == (time_t) -1)
-							debug_print_file("NNTP", "OVER(%d) bogus overview-field %s %s", artnum, ofmt[count].name, ptr);
+							debug_print_file("NNTP", "%s(%d) bogus overview-field %s %s", nntp_caps.over_cmd, artnum, ofmt[count].name, ptr);
 #endif /* DEBUG */
 						break;
 
@@ -1706,7 +1736,7 @@ read_overview(
 							art->msgid = NULL;
 #ifdef DEBUG
 							if (debug & DEBUG_NNTP)
-								debug_print_file("NNTP", "OVER(%d) empty overview-field %s", artnum, ofmt[count].name);
+								debug_print_file("NNTP", "%s(%d) empty overview-field %s", nntp_caps.over_cmd, artnum, ofmt[count].name);
 #endif /* DEBUG */
 						}
 						break;
@@ -1722,7 +1752,7 @@ read_overview(
 						if (*ptr) {
 #ifdef DEBUG
 							if ((debug & DEBUG_NNTP) && !isdigit((unsigned char) *ptr))
-								debug_print_file("NNTP", "OVER(%d) overview field %d (%s) missmatch: %s", artnum, count, ofmt[count].name, ptr);
+								debug_print_file("NNTP", "%s(%d) overview field %d (%s) missmatch: %s", nntp_caps.over_cmd, artnum, count, ofmt[count].name, ptr);
 #endif /* DEBUG */
 						}
 						break;
@@ -1735,7 +1765,7 @@ read_overview(
 								art->line_count = 0;
 #ifdef DEBUG
 								if (debug & DEBUG_NNTP)
-									debug_print_file("NNTP", "OVER(%d) overview field %d (%s) missmatch: %s", artnum, count, ofmt[count].name, ptr);
+									debug_print_file("NNTP", "%s(%d) overview field %d (%s) missmatch: %s", nntp_caps.over_cmd, artnum, count, ofmt[count].name, ptr);
 #endif /* DEBUG */
 							}
 						} else
@@ -1755,7 +1785,7 @@ read_overview(
 #ifdef DEBUG
 					else {
 						if (debug & DEBUG_NNTP)
-							debug_print_file("NNTP", "OVER(%d) bogus overview-field %s %s", artnum, ofmt[count].name, ptr);
+							debug_print_file("NNTP", "%s(%d) bogus overview-field %s %s", nntp_caps.over_cmd, artnum, ofmt[count].name, ptr);
 					}
 #endif /* DEBUG */
 				}
@@ -1820,9 +1850,9 @@ read_overview(
 		}
 
 		if (found) {
-			snprintf(cbuf, sizeof(cbuf), "%s XREF %ld-%ld", nntp_caps.hdr_cmd, min, max);
+			snprintf(cbuf, sizeof(cbuf), "%s XREF %ld-%ld", nntp_caps.hdr_cmd, min, MAX(min, max));
 			group_msg = fmt_string("%s XREF loop", nntp_caps.hdr_cmd); /* TODO: find a better message, move to lang.c */
-			if ((fp = nntp_command(cbuf, OK_HEAD, NULL, 0)) != NULL) {
+			if ((fp = nntp_command(cbuf, nntp_caps.hdr ? OK_HDR : OK_HEAD, NULL, 0)) != NULL) { /* RFC 2980 (XHDR) uses 221; RFC 3977 (HDR) uses 225 */
 				while ((ptr = tin_fgets(fp, FALSE)) != NULL) {
 					artnum = atol(ptr);
 					if (artnum <= 0 || artnum < group->xmin || artnum > group->xmax)
@@ -1865,7 +1895,7 @@ read_overview(
  *	5. MessageID:     (ie. <123@ether.net>)    [mandatory]
  *	6. References:    (ie. <message-id> ....)  [optional]
  *	7. Byte count     (Skipped - not used)     [mandatory]
- *	8. Lines: line    (ie. 23)                 [mandatory]
+ *	8. Line count     (ie. 23)                 [mandatory]
  *	9. Xref: line     (ie. alt.test:389)       [optional]
  *
  * TODO: as we don't use the original data, we currently can't store
@@ -1886,7 +1916,7 @@ read_overview(
  *       which hold the raw data for from/subject. the latter has the
  *       disadvantage that it costs (much) more memory.
  */
-void
+static void
 write_overview(
 	struct t_group *group)
 {
@@ -1895,9 +1925,9 @@ write_overview(
 	struct t_article *article;
 
 	/*
-	 * Can't write or caching is off
+	 * Can't write or caching is off or getart_limit is set
 	 */
-	if (no_write || !tinrc.cache_overview_files)
+	if (no_write || !tinrc.cache_overview_files || (cmdline.args & CMDLINE_GETART_LIMIT ? cmdline.getart_limit : tinrc.getart_limit) != 0)
 		return;
 
 	if ((fp = open_xover_fp(group, "w", 0L, 0L, FALSE)) == NULL)
@@ -2436,15 +2466,15 @@ score_comp_base(
 	t_comptype p1,
 	t_comptype p2)
 {
-	int a = get_score_of_thread(*(const long *)p1);
-	int b = get_score_of_thread(*(const long *)p2);
+	int a = get_score_of_thread(*(const long *) p1);
+	int b = get_score_of_thread(*(const long *) p2);
 
 	/* If scores are equal, compare using the article sort order.
 	 * This determines the order in a group of equally scored threads.
 	 */
 	if (a == b) {
-		const struct t_article *s1 = &arts[*(const long *)p1];
-		const struct t_article *s2 = &arts[*(const long *)p2];
+		const struct t_article *s1 = &arts[*(const long *) p1];
+		const struct t_article *s2 = &arts[*(const long *) p2];
 		t_compfunc comp_func = eval_sort_arts_func(CURR_GROUP.attribute->sort_article_type);
 
 		if (comp_func)
@@ -2621,8 +2651,7 @@ print_from(
 			snprintf(from, sizeof(from), "%s <%s>", group->attribute->post_8bit_header ? article->name : p, article->from);
 
 		free(p);
-	}
-	else
+	} else
 		STRCPY(from, article->from);
 
 	return from;
@@ -2645,7 +2674,7 @@ open_xover_fp(
 	if (!local && nntp_caps.over_cmd && *mode == 'r' && group->type == GROUP_TYPE_NEWS) {
 		char line[NNTP_STRLEN];
 
-		snprintf(line, sizeof(line), "%s %ld-%ld", nntp_caps.over_cmd, min, max);
+		snprintf(line, sizeof(line), "%s %ld-%ld", nntp_caps.over_cmd, min, MAX(min, max));
 		return (nntp_command(line, OK_XOVER, NULL, 0));
 	}
 #endif /* NNTP_ABLE */

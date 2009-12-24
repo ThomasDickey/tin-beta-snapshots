@@ -3,10 +3,10 @@
  *  Module    : xface.c
  *  Author    : Joshua Crawford & Drazen Kacar
  *  Created   : 2003-04-27
- *  Updated   : 2008-11-22
+ *  Updated   : 2009-08-14
  *  Notes     :
  *
- * Copyright (c) 2003-2009 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
+ * Copyright (c) 2003-2010 Joshua Crawford <mortarn@softhome.net> & Drazen Kacar <dave@willfork.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,7 +60,7 @@ slrnface_start(
 	size_t pathlen;
 	struct utsname u;
 
-	if (!tinrc.use_slrnface)
+	if (tinrc.use_slrnface == FALSE)
 		return;
 
 #ifdef HAVE_IS_XTERM
@@ -130,8 +130,8 @@ slrnface_start(
 		}
 	}
 
-	snprintf(fifo, pathlen, "%s/.slrnfaces/%s.%ld", ptr, u.nodename, (long) getpid());
-	if (!(status = strlen(fifo))) {
+	status = snprintf(fifo, pathlen, "%s/.slrnfaces/%s.%ld", ptr, u.nodename, (long) getpid());
+	if (status <= 0 || status >= pathlen) {
 		error_message(2, _("Can't run slrnface: couldn't construct fifo name."));
 		unlink(fifo);
 		free(fifo);
@@ -286,7 +286,7 @@ slrnface_show_xface(
 }
 
 #else
-static void no_xface(void);        /* proto-type */
+static void no_xface(void);	/* proto-type */
 static void
 no_xface(	/* ANSI C requires non-empty source file */
 	void)

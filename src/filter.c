@@ -3,10 +3,10 @@
  *  Module    : filter.c
  *  Author    : I. Lea
  *  Created   : 1992-12-28
- *  Updated   : 2008-11-28
+ *  Updated   : 2009-07-17
  *  Notes     : Filter articles. Kill & auto selection are supported.
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -81,6 +81,12 @@
  * global filter array
  */
 struct t_filters glob_filter = { 0, 0, (struct t_filter *) 0 };
+
+
+/*
+ * Global filter file offset
+ */
+int filter_file_offset;
 
 
 /*
@@ -326,10 +332,14 @@ read_filter_file(
 	if (!first_read)
 		free_filter_array(&glob_filter);
 
+	filter_file_offset = 1;
+	scope[0] = '\0';
 	while (fgets(buf, (int) sizeof(buf), fp) != NULL) {
 		if (*buf == '\n')
 			continue;
 		if (*buf == '#') {
+			if (scope[0] == '\0')
+				filter_file_offset++;
 			if (upgrade == RC_CHECK && first_read && match_string(buf, "# Filter file V", NULL, 0)) {
 				first_read = FALSE;
 				upgrade = check_upgrade(buf, "# Filter file V", FILTER_VERSION);
@@ -613,10 +623,7 @@ read_filter_file(
 	if (expired || upgrade == RC_UPGRADE)
 		write_filter_file(file);
 
-	if (cmd_line && !batch_mode)
-		printf("\r\n");
-
-	if (!batch_mode)
+	if (!cmd_line && !batch_mode)
 		clear_message();
 
 	return TRUE;
@@ -632,6 +639,8 @@ write_filter_file(
 {
 	FILE *fp;
 	char *file_tmp;
+	int i;
+	long fpos;
 
 	if (no_write)
 		return;
@@ -645,12 +654,25 @@ write_filter_file(
 		return;
 	}
 
-	if ((fp = fopen(filename, "w")) == NULL)
+	if ((fp = fopen(filename, "w+")) == NULL)
 		return;
 
 	/* TODO: -> lang.c */
 	fprintf(fp, "# Filter file V%s for the TIN newsreader\n#\n", FILTER_VERSION);
 	fprintf(fp, _(txt_filter_file));
+
+	/* determine the file offset */
+	if (!batch_mode) {
+		fpos = ftell(fp);
+		rewind(fp);
+		filter_file_offset = 1;
+		while((i = fgetc(fp)) != EOF) {
+			if (i == '\n')
+				filter_file_offset++;
+		}
+		fseek(fp, fpos, SEEK_SET);
+	}
+
 	fflush(fp);
 
 	/*
@@ -658,9 +680,13 @@ write_filter_file(
 	 */
 	write_filter_array(fp, &glob_filter);
 
-	if (ferror(fp) || fclose(fp)) {
+	if ((i = ferror(fp)) || fclose(fp)) {
 		error_message(2, _(txt_filesystem_full), filename);
 		rename_file(file_tmp, filename);
+		if (i) {
+			clearerr(fp);
+			fclose(fp);
+		}
 	} else
 		unlink(file_tmp);
 
@@ -1409,7 +1435,7 @@ filter_menu(
 		case FILTER_EDIT:
 			add_filter_rule(group, art, &rule, FALSE); /* save the rule */
 			rule.comment = free_filter_comment(rule.comment);
-			if (!invoke_editor(filter_file, FILTER_FILE_OFFSET, NULL))
+			if (!invoke_editor(filter_file, filter_file_offset, NULL))
 				return FALSE;
 			unfilter_articles();
 			(void) read_filter_file(filter_file);
@@ -1749,7 +1775,7 @@ add_filter_rule(
 	if (filtered) {
 #ifdef DEBUG
 		if (debug & DEBUG_FILTER)
-			wait_message(2, "inscope=[%s] scope=[%s]  case=[%d] subj=[%s] from=[%s] msgid=[%s] fullref=[%d] line=[%d %d] time=[%lu]", bool_unparse(ptr[i].inscope), BlankIfNull(rule->scope), ptr[i].icase, BlankIfNull(ptr[i].subj), BlankIfNull(ptr[i].from), BlankIfNull(ptr[i].msgid), ptr[i].fullref, ptr[i].lines_cmp, ptr[i].lines_num, (unsigned long int) ptr[i].time);
+			wait_message(2, "inscope=[%s] scope=[%s] case=[%d] subj=[%s] from=[%s] msgid=[%s] fullref=[%d] line=[%d %d] time=[%lu]", bool_unparse(ptr[i].inscope), BlankIfNull(rule->scope), ptr[i].icase, BlankIfNull(ptr[i].subj), BlankIfNull(ptr[i].from), BlankIfNull(ptr[i].msgid), ptr[i].fullref, ptr[i].lines_cmp, ptr[i].lines_num, (unsigned long int) ptr[i].time);
 #endif /* DEBUG */
 		write_filter_file(filter_file);
 	}
@@ -1973,27 +1999,18 @@ filter_articles(
 					switch (ptr[j].lines_cmp) {
 						case FILTER_LINES_EQ:
 							if (arts[i].line_count == ptr[j].lines_num) {
-/*
-wait_message(1, "FILTERED Lines arts[%d] == [%d]", arts[i].line_count, ptr[j].lines_num);
-*/
 								SET_FILTER(group, i, j);
 							}
 							break;
 
 						case FILTER_LINES_LT:
 							if (arts[i].line_count < ptr[j].lines_num) {
-/*
-wait_message(1, "FILTERED Lines arts[%d] < [%d]", arts[i].line_count, ptr[j].lines_num);
-*/
 								SET_FILTER(group, i, j);
 							}
 							break;
 
 						case FILTER_LINES_GT:
 							if (arts[i].line_count > ptr[j].lines_num) {
-/*
-wait_message(1, "FILTERED Lines arts[%d] > [%d]", arts[i].line_count, ptr[j].lines_num);
-*/
 								SET_FILTER(group, i, j);
 							}
 							break;

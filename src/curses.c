@@ -3,7 +3,7 @@
  *  Module    : curses.c
  *  Author    : D. Taylor & I. Lea
  *  Created   : 1986-01-01
- *  Updated   : 2007-12-30
+ *  Updated   : 2009-10-22
  *  Notes     : This is a screen management library borrowed with permission
  *              from the Elm mail system. This library was hacked to provide
  *              what tin needs.
@@ -32,6 +32,7 @@
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE) && defined(M_UNIX)
 #	define ReadWch cmdReadWch
 #endif /* MULTIBYTE_ABLE && !NO_LOCALE && M_UNIX */
+#define get_arrow_key cmd_get_arrow_key
 
 void my_dummy(void) { }	/* ANSI C requires non-empty file */
 t_bool have_linescroll = TRUE;	/* USE_CURSES always allows line scrolling */
@@ -920,6 +921,7 @@ word_highlight_string(
 			tputs(_reset, 1, outchar);
 	stow_cursor();
 }
+#endif /* USE_CURSES */
 
 
 /*
@@ -1142,7 +1144,6 @@ get_arrow_key(
 			return KEYMAP_UNKNOWN;
 	}
 }
-#endif /* USE_CURSES */
 
 
 /*

@@ -1,3 +1,106 @@
+-- 1.9.5 release 20091224 "Lochruan" --
+
+U019) Urs Janssen <urs@tin.org>
+      ADD. MarkFeedRead ^X / MarkFeedUnread ^Y to thread-level
+      ADD. configure check for gethostbyname in libnetwork (Haiku)
+      ADD. check if SIGBUS == SIGSEGV (Haiku)
+      ADD. don't define HAVE_LINK on Haiku
+      ADD. config.guess, config.sub update
+      FIX. help.c, keymap.c, signal.c, thread.c, extern.h, tin.1, tin.5
+           configure.in, aclocal.m4, config.guess, config.sub
+
+U018) Frederic Briere <fbriere@fbriere.net>
+      ADD. MarkFeedRead ^X / MarkFeedUnread ^W to page-level
+      FIX. feed.c, group.c, help.c, keymap.c, lang.c, extern.h, keymap.h, tin.h
+
+U017) Joe Hansen <joedalton2@yahoo.dk>
+      ADD. initial danish translation
+      FIX. da.po
+
+U016) Volker Borchert <v.borchert@vistecprivat.de>
+      BUG. used towupper() in the !MULTIBYTE_ABLE case
+      ADD. fallback for missing sys_errlist declaration
+      FIX. prompt.c, string.c, pcre/Makefile[.in]
+
+U015) Dennis Preiser <onkelp@gmx.de>
+      ADD. scope and attributes menu
+      ADD. help pages to the various menus
+      ADD. PageSkipIncludedText now skips over the next quoted block
+      ADD. runtime calculation of the filter file offset
+      ADD. '-w' now suggests the first given cmd-line group to post to
+      ADD. '-s', '-m' and '-G' cmd-line switches no longer change the
+           corresponding tinrc values
+      ADD. -G for the !NNTP-case
+      ADD. disable creation of cached overviews in getart_limit case
+      ADD. disable getart_limit in -u case
+      ADD. mail/pipe/print articles now work on ranges
+      ADD. NNTP read timeout
+      BUG. maildirs starting with '=' caused tin to hang after 's'aving an
+           article to a mailbox
+      BUG. savedirs starting with '+' caused tin to hang after 's'aving an
+           article to a file
+      BUG. in rare cases (aborted article load or '-' after cancel) one
+           article was incorrectly maked as unavailable
+      BUG. memleaks in canlock operations
+      BUG. fix a long overflow in print_bitmap_seq() when xmax = __LONG_MAX__
+      BUG. didn't create Message-ID when cancelling own article when
+           configured as FORGERY + EVIL_INSIDE
+      BUG. batch mode wasn't as quitet/as verbose as it could be
+      BUG. aborted prompt_getart_limit() lost previous value
+      BUG. MARK_FEED_READ/MARK_FEED_UNREAD in thread level with no selected
+           or tagged arts and selecting 'a' marks the base-art read/unead
+      BUG. signal handler not unset while piping
+      BUG. sort_article_type didn't always work correct with
+           thread_articles={2,3}
+      BUG. realloc in expand_ctrl_chars() caused a crash
+      FIX. active.c, art.c, attrib.c, auth.c, config.c, cook.c, curses.c
+           feed.c, filter.c, group.c, help.c, inews.c, init.c, keymap.c, lang.c
+           mail.c, main.c, makecfg.c, memory.c, misc.c, newsrc.c, nntplib.c
+           nrctbl.c, options_menu.c, page.c, post.c, prompt.c, read.c
+           rfc1524.c, rfc2046.c, save.c, select.c, sigfile.c, signal.c
+           tcurses.c, thread.c, tincfg.tbl, extern.h, keymap.h, nntplib.h
+           proto.h, tcurses.h, tin.h, tinrc.h, tin.1, tin.5
+
+U014) Urs Janssen <urs@tin.org>
+      ADD. minor code cleanup
+      ADD. assume pid_t is long instead of int
+      ADD. comment out trace.o dependeny-rule if not configured --with-trace
+      ADD. disable abort-posting for cursor-keys on check-article screen
+           (debian bug #231070)
+      ADD. try AUTHINFO USER/PASS on -A if CAPABILITIES didn't announce any
+           supported auth methods
+      ADD. config.guess, config.sub update
+      ADD. configure check for towupper(), wcscat(), wcscpy() and wctomb() in
+           AM_MULTIBYTE_ABLE
+      ADD. disallow 192.0.2.0/24 in gnksa-checks
+      ADD. convert MOTD from UTF-8 to local-charset
+      ADD. warn about aliased groups
+      ADD. reduce number of "LIST ACTIVE grp" cmds send with -n if server
+           announces "LIST ACTIVE" capabillity
+      ADD. reduce number of "LIST NEWSGROUPS grp" cmds send with -n if server
+           announces "LIST NEWSGROUPS" capabillity
+      ADD. prefer "LIST COUNTS" over "LIST ACTIVE" when announced via
+           CAPABILITIES
+      BUG. NULL was only allowed once to unbound a keymapping
+      BUG. don't de/encode header(-fields) which can not hold RFC2047-encoded
+           words (but strings which may look like encoded words)
+      BUG. memleaks in cancel_article(), submit_mail_file(),
+           create_normal_article_headers()
+      BUG. expand_ctrl_chars() misscalculated tabexpansion on multiline input
+      BUG. uuencoded parts might get 'V'iewd twice
+      BUG. when pipelinming GROUP cmds. and server requires auth for some groups
+           tin got confused
+      BUG. attributes autoupdate on version change didn't work
+      BUG. entered wrong group at startup if a groupname was given on the
+           cmd.-line and there were new groups on the server
+      REM. AUTHINFO GENERIC support
+      FIX. active.c, art.c, attrib.c, auth.c, charset.c, color.c, config.c
+           cook.c, debug.c, filter.c, init.c, keymap.c, lang.c, mail.c, main.c
+           memory.c, misc.c, my_tmpfile.c, newsrc.c, nntplib.c, pgp.c, post.c
+           prompt.c, refs.c, rfc2047.c, save.c, select.c, xref.c, extern.h
+           nntplib.h, proto.h, tin.h, configure[.in], src/Makefile[.in]
+           aclocal.m4, tin.1, tin.5
+
 -- 1.9.4 release 20090211 "Rieclachan" --
 
 U013) Thomas E. Dickey <dickey@invisible-island.net>

@@ -3,10 +3,10 @@
  *  Module    : post.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2009-01-20
+ *  Updated   : 2009-12-01
  *  Notes     : mail/post/replyto/followup/repost & cancel articles
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,10 +49,11 @@
 #ifdef USE_CANLOCK
 #	define ADD_CAN_KEY(id) { \
 		char key[1024]; \
-		const char *kptr; \
+		char *kptr; \
 		key[0] = '\0'; \
 		if ((kptr = build_cankey(id, get_secret())) != NULL) { \
 			STRCPY(key, kptr); \
+			free(kptr); \
 			msg_add_header("Cancel-Key", key); \
 		} \
 	}
@@ -66,10 +67,11 @@
 #	ifdef EVIL_INSIDE
 #		define ADD_CAN_LOCK(id) { \
 			char lock[1024]; \
-			const char *lptr = (const char *) 0; \
+			char *lptr = (char *) 0; \
 			lock[0] = '\0'; \
 			if ((lptr = build_canlock(id, get_secret())) != NULL) { \
 				STRCPY(lock, lptr); \
+				free(lptr); \
 				msg_add_header("Cancel-Lock", lock); \
 			} \
 		}
@@ -174,7 +176,7 @@ static void update_posted_info_file(const char *group, int action, const char *s
 	static char *radix32(unsigned long int num);
 #endif /* EVIL_INSIDE */
 #ifdef USE_CANLOCK
-	static const char *build_cankey(const char *messageid, const char *secret);
+	static char *build_cankey(const char *messageid, const char *secret);
 #endif /* USE_CANLOCK */
 
 
@@ -281,7 +283,7 @@ repair_article(
 		if (invoke_editor(article_name, start_line_offset, group))
 			return TRUE;
 	} else if (func == GLOBAL_OPTION_MENU) {
-		change_config_file(group); /*OD:*/
+		config_page(group->name);
 		return TRUE;
 	}
 	return FALSE;
@@ -412,12 +414,12 @@ msg_write_headers(
 	for (i = 0; i < MAX_MSG_HEADERS; i++) {
 		if (msg_headers[i].name) {
 			fprintf(fp, "%s: %s\n", msg_headers[i].name, BlankIfNull(msg_headers[i].text));
+			wrote++;
 			p = msg_headers[i].text;
-			do {
+			while((p = strchr(p, '\n'))) {
+				p++;
 				wrote++;
-				++p;
-				p = strchr(p, '\n');
-			} while (p);
+			}
 		}
 	}
 	fputc('\n', fp);
@@ -552,6 +554,8 @@ update_posted_info_file(
 	}
 
 	if ((fp = fopen(posted_info_file, "a+")) != NULL) {
+		int err;
+
 		(void) time(&epoch);
 		pitm = localtime(&epoch);
 		if (*a_message_id) {
@@ -562,9 +566,13 @@ update_posted_info_file(
 		} else
 			fprintf(fp, "%02d-%02d-%02d|%c|%s|%s\n", pitm->tm_mday, pitm->tm_mon + 1, pitm->tm_year % 100, action, BlankIfNull(group), BlankIfNull(subj));
 
-		if (ferror(fp) || fclose(fp)) {
+		if ((err = ferror(fp)) || fclose(fp)) {
 			error_message(2, _(txt_filesystem_full), posted_info_file);
 			rename_file(file_tmp, posted_info_file);
+			if (err) {
+				clearerr(fp);
+				fclose(fp);
+			}
 		} else
 			unlink(file_tmp);
 	} else
@@ -1414,9 +1422,21 @@ check_article_to_be_posted(
 			my_fprintf(stderr, _(txt_warn_article_unchanged));
 		my_fprintf(stderr, _(txt_art_newsgroups), subject, PLURAL(ngcnt, txt_newsgroup));
 		for (i = 0; i < ngcnt; i++) {
-			if ((psGrp = group_find(newsgroups[i], FALSE)))
-				my_fprintf(stderr, "  %s\t %s\n", newsgroups[i], BlankIfNull(psGrp->description));
-			else {
+			if ((psGrp = group_find(newsgroups[i], FALSE))) {
+				if (psGrp->aliasedto) {
+#ifdef HAVE_FASCIST_NEWSADMIN
+					StartInverse();
+					errors++;
+					my_fprintf(stderr, N_(txt_error_grp_renamed), newsgroups[i], psGrp->aliasedto);
+					my_fflush(stderr);
+					EndInverse();
+#else
+					my_fprintf(stderr, N_(txt_warn_grp_renamed), newsgroups[i], psGrp->aliasedto);
+					warnings++;
+#endif /* HAVE_FASCIST_NEWSADMIN */
+				} else
+					my_fprintf(stderr, "  %s\t %s\n", newsgroups[i], BlankIfNull(psGrp->description));
+			} else {
 #ifdef HAVE_FASCIST_NEWSADMIN
 				StartInverse();
 				errors++;
@@ -1460,9 +1480,21 @@ check_article_to_be_posted(
 #endif /* HAVE_FASCIST_NEWSADMIN */
 				my_fprintf(stderr, _(txt_followup_newsgroups), PLURAL(ftngcnt, txt_newsgroup));
 				for (i = 0; i < ftngcnt; i++) {
-					if ((psGrp = group_find(followupto[i], FALSE)))
-						my_fprintf(stderr, "  %s\t %s\n", followupto[i], BlankIfNull(psGrp->description));
-					else {
+					if ((psGrp = group_find(followupto[i], FALSE))) {
+						if (psGrp->aliasedto) {
+#ifdef HAVE_FASCIST_NEWSADMIN
+							StartInverse();
+							errors++;
+							my_fprintf(stderr, N_(txt_error_grp_renamed), followupto[i], psGrp->aliasedto);
+							my_fflush(stderr);
+							EndInverse();
+#else
+							my_fprintf(stderr, N_(txt_warn_grp_renamed), followupto[i], psGrp->aliasedto);
+							warnings++;
+#endif /* HAVE_FASCIST_NEWSADMIN */
+						} else
+							my_fprintf(stderr, "  %s\t %s\n", followupto[i], BlankIfNull(psGrp->description));
+					} else {
 						if (STRCMPEQ("poster", followupto[i]))
 							my_fprintf(stderr, _(txt_followup_poster), followupto[i]);
 						else {
@@ -1591,7 +1623,7 @@ post_article_loop:
 				return ret_code;
 
 			case GLOBAL_OPTION_MENU:
-				change_config_file(group);
+				config_page(group->name);
 				while ((i = check_article_to_be_posted(article_name, art_type, &group, art_unchanged) == 1) && repair_article(&func, group))
 					;
 				break;
@@ -1788,13 +1820,13 @@ post_article_done:
 			char a_mailbox[LEN];
 			char posted_msgs_file[PATH_LEN];
 
-			joinpath(posted_msgs_file, sizeof(posted_msgs_file), (group ? group->attribute->maildir : tinrc.maildir), tinrc.posted_articles_file);
+			joinpath(posted_msgs_file, sizeof(posted_msgs_file), cmdline.args & CMDLINE_MAILDIR ? cmdline.maildir : (group ? group->attribute->maildir : tinrc.maildir), tinrc.posted_articles_file);
 			/*
 			 * log Message-ID if given in a_message_id,
 			 * add Date:, remove empty headers
 			 */
 			add_headers(article_name, a_message_id);
-			if (!strfpath(posted_msgs_file, a_mailbox, sizeof(a_mailbox), group))
+			if (!strfpath(posted_msgs_file, a_mailbox, sizeof(a_mailbox), group, TRUE))
 				STRCPY(a_mailbox, posted_msgs_file);
 			if (!append_mail(article_name, userid, a_mailbox)) {
 				/* TODO: error handling */
@@ -2368,7 +2400,11 @@ skip_id(
 	return skipped;
 }
 
-
+/*
+ * Checks if Message-ID has valid format
+ * Returns FALSE if it does, TRUE if it does not
+ * TODO: combine with refs.c:valid_msgid() (return values swapped)
+ */
 static t_bool
 damaged_id(
 	const char *id)
@@ -2806,7 +2842,7 @@ create_mail_headers(
 	joinpath(filename, filename_len, homedir, suffix);
 
 #ifdef APPEND_PID
-	snprintf(filename + strlen(filename), filename_len - strlen(filename), ".%d", (int) process_id);
+	snprintf(filename + strlen(filename), filename_len - strlen(filename), ".%ld", (long) process_id);
 #endif /* APPEND_PID */
 
 	if ((fp = fopen(filename, "w")) == NULL) {
@@ -2940,6 +2976,7 @@ mail_loop(
 					error_message(2, _(txt_error_header_line_missing), "Subject");
 				if (!hdr.to && !hdr.cc && !hdr.bcc)
 					error_message(2, _(txt_error_header_line_missing), "To");
+				free_and_init_header(&hdr);
 				break;
 
 #ifdef HAVE_ISPELL
@@ -2961,6 +2998,7 @@ mail_loop(
 					invoke_pgp_mail(filename, mail_to);
 				else
 					error_message(2, _(txt_error_header_line_missing), "To");
+				free_and_init_header(&hdr);
 				break;
 #endif /* HAVE_PGP_GPG */
 
@@ -3176,7 +3214,7 @@ mail_bug_report(
 		DEFAULT_ACTIVE_NUM,
 		DEFAULT_ARTICLE_NUM,
 		tinrc.reread_active_file_secs,
-		bool_unparse(nntp_caps.over_cmd != NULL));
+		BlankIfNull(nntp_caps.over_cmd));
 	fprintf(fp, "CFG2 : debug=%d, threading=%d\n", debug, tinrc.thread_articles);
 	fprintf(fp, "CFG3 : domain=[%s]\n", BlankIfNull(domain));
 	start_line_offset += 4;
@@ -3488,7 +3526,7 @@ cancel_article(
 
 	joinpath(cancel, sizeof(cancel), homedir, TIN_CANCEL_NAME);
 #ifdef APPEND_PID
-	snprintf(cancel + strlen(cancel), sizeof(cancel) - strlen(cancel), ".%d", (int) process_id);
+	snprintf(cancel + strlen(cancel), sizeof(cancel) - strlen(cancel), ".%ld", (long) process_id);
 #endif /* APPEND_PID */
 	if ((fp = fopen(cancel, "w")) == NULL) {
 		perror_message(_(txt_cannot_open), cancel);
@@ -3520,6 +3558,7 @@ cancel_article(
 		else
 			snprintf(line, sizeof(line), "<%s>", art->from);
 		msg_add_header("From", line);
+		ADD_MSG_ID_HEADER();
 		ADD_CAN_KEY(note_h.messageid);
 	}
 #else
@@ -3568,13 +3607,13 @@ cancel_article(
 	}
 	fclose(fp);
 	invoke_editor(cancel, start_line_offset, group);
-	redraw_screen = TRUE;
 #else
 	fprintf(fp, txt_article_cancelled);
 	start_line_offset++;
 	fclose(fp);
 #endif /* FORGERY */
 
+	redraw_screen = TRUE;
 	oldraw = RawState();
 	setup_check_article_screen(&init);
 
@@ -3618,6 +3657,7 @@ cancel_article(
 
 		switch (func) {
 			case POST_EDIT:
+				free_and_init_header(&hdr);
 				invoke_editor(cancel, start_line_offset, group);
 				if (!(fp = fopen(cancel, "r"))) {
 					/* Oops */
@@ -3638,6 +3678,7 @@ cancel_article(
 					else
 						error_message(2, _(txt_error_header_line_missing), "Subject");
 					unlink(cancel);
+					free_and_init_header(&hdr);
 					return redraw_screen;
 				}
 				break;
@@ -3646,6 +3687,7 @@ cancel_article(
 			case GLOBAL_ABORT:
 				unlink(cancel);
 				clear_message();
+				free_and_init_header(&hdr);
 				return redraw_screen;
 				/* NOTREACHED */
 				break;
@@ -3893,12 +3935,12 @@ msg_add_x_headers(
 {
 	FILE *fp = NULL;
 	char *ptr;
+	char **x_hdrs = NULL;
 	char file[PATH_LEN];
 	char line[HEADER_LEN];
-	char **x_hdrs = NULL;
 	int num_x_hdrs = 0;
-	t_bool a_pipe = FALSE;
 	int i;
+	t_bool a_pipe = FALSE;
 
 	if (!headers)
 		return;
@@ -3917,7 +3959,7 @@ msg_add_x_headers(
 		 * without this else a "x_headers=name" without a ':' would be
 		 * treated as a filename in the current dir - IMHO not very useful
 		 */
-		if (!strfpath(headers, file, sizeof(file), &CURR_GROUP))
+		if (!strfpath(headers, file, sizeof(file), &CURR_GROUP, FALSE))
 			strcpy(file, headers);
 
 #ifndef DONT_HAVE_PIPING
@@ -3995,7 +4037,7 @@ msg_add_x_body(
 		fprintf(fp_out, "%s\n", line);
 		wrote++;
 	} else {
-		if (!strfpath(body, file, sizeof(file), &CURR_GROUP))
+		if (!strfpath(body, file, sizeof(file), &CURR_GROUP, FALSE))
 			strcpy(file, body);
 
 		if ((fp = fopen(file, "r")) != NULL) {
@@ -4039,7 +4081,7 @@ checknadd_headers(
 	if ((fp_in = fopen(infile, "r")) == NULL)
 		return NULL;
 
-	snprintf(outfile, sizeof(outfile), "%s.%d", infile, (int) process_id);
+	snprintf(outfile, sizeof(outfile), "%s.%ld", infile, (long) process_id);
 
 	if ((fp_out = fopen(outfile, "w")) == NULL) {
 		fclose(fp_in);
@@ -4126,7 +4168,7 @@ insert_from_header(
 	t_bool in_header = TRUE;
 
 	if ((fp_in = fopen(infile, "r")) != NULL) {
-		snprintf(outfile, sizeof(outfile), "%s.%d", infile, (int) process_id);
+		snprintf(outfile, sizeof(outfile), "%s.%ld", infile, (long) process_id);
 		if ((fp_out = fopen(outfile, "w")) != NULL) {
 			strcpy(from_name, "From: ");
 			if (*tinrc.mail_address)
@@ -4374,13 +4416,14 @@ submit_mail_file(
 					mailed = TRUE;
 			} else
 				error_message(2, _(txt_error_header_line_missing), "To");
+			free_and_init_header(&hdr);
 		}
 	}
 	if (NULL != fcc) {
 		if (mailed && strlen(fcc)) {
 			char a_mailbox[PATH_LEN];
 
-			if (0 == strfpath(fcc, a_mailbox, sizeof(a_mailbox), group))
+			if (0 == strfpath(fcc, a_mailbox, sizeof(a_mailbox), group, TRUE))
 				STRCPY(a_mailbox, fcc);
 			if (!append_mail(file, userid, a_mailbox)) {
 				/* TODO: error handling */
@@ -4703,7 +4746,7 @@ build_messageid(
 	snprintf(buf, sizeof(buf), "<%sT", radix32(seqnum++));
 	strcat(buf, radix32(t));
 	strcat(buf, "I");
-	strcat(buf, radix32(process_id));
+	strcat(buf, radix32((unsigned long) process_id));
 
 #	ifndef FORGERY
 	{
@@ -4758,22 +4801,15 @@ build_messageid(
  * build_canlock(messageid, secret)
  * returns *(cancel-lock) or NULL
  */
-const char *
+char *
 build_canlock(
 	const char *messageid,
 	const char *secret)
 {
 	if ((messageid == NULL) || (secret == NULL))
-		return ((const char *) 0);
+		return ((char *) 0);
 	else
-		/*
-		 * sha_lock should be
-		 * const char *sha_lock(const char *, size_t, const char *, size_t)
-		 * but unfortunately is
-		 * char *sha_lock(const unsigned char *, size_t, const unsigned char *, size_t)
-		 * -> cast as cast can
-		 */
-		return (const char *) (sha_lock((const unsigned char *) secret, strlen(secret), (const unsigned char *) messageid, strlen(messageid)));
+		return (char *) (sha_lock((const unsigned char *) secret, strlen(secret), (const unsigned char *) messageid, strlen(messageid)));
 }
 
 
@@ -4781,22 +4817,15 @@ build_canlock(
  * build_cankey(messageid, secret)
  * returns *(cancel-key) or NULL
  */
-static const char *
+static char *
 build_cankey(
 	const char *messageid,
 	const char *secret)
 {
 	if ((messageid == NULL) || (secret == NULL))
-		return ((const char *) 0);
+		return ((char *) 0);
 	else
-		/*
-		 * sha_key should be
-		 * const char *sha_key(const char *, size_t, const char *, size_t)
-		 * but unfortunately is
-		 * char *sha_key(const unsigned char *, size_t, const unsigned char *, size_t)
-		 * -> cast as cast can
-		 */
-		return (const char *) (sha_key((const unsigned char *) secret, strlen(secret), (const unsigned char *) messageid, strlen(messageid)));
+		return (sha_key((const unsigned char *) secret, strlen(secret), (const unsigned char *) messageid, strlen(messageid)));
 }
 
 

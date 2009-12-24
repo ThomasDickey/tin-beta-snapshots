@@ -3,10 +3,10 @@
  *  Module    : thread.c
  *  Author    : I. Lea
  *  Created   : 1991-04-01
- *  Updated   : 2008-11-25
+ *  Updated   : 2009-11-12
  *  Notes     :
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,8 +54,7 @@ t_bool show_subject;
  */
 static char get_art_mark(struct t_article *art);
 static int enter_pager(int art, t_bool ignore_unavail, int level);
-static int mark_art_read(struct t_group *group);
-static int thread_catchup(t_function func);
+static int thread_catchup(t_function func, struct t_group *group);
 static int thread_tab_pressed(void);
 static t_bool find_unexpired(struct t_msgid *ptr);
 static t_bool has_sibling(struct t_msgid *ptr);
@@ -247,6 +246,7 @@ build_tline(
 
 			for (ptr = art->refptr->parent; ptr && IS_EXPIRED(ptr); ptr = ptr->parent)
 				;
+
 			if (!(ptr && arts[ptr->article].subject == art->subject)) {
 #if defined(MULTIBYTE_ABLE) && !defined(NO_LOCALE)
 				if ((wtmp = char2wchar_t(art->subject)) != NULL) {
@@ -448,7 +448,7 @@ thread_page(
 	 * See if we're on a direct call from the group menu to the pager
 	 */
 	if (page) {
-		if ((ret_code =	enter_pager(page->art, page->ignore_unavail, GROUP_LEVEL)) != 0)
+		if ((ret_code = enter_pager(page->art, page->ignore_unavail, GROUP_LEVEL)) != 0)
 			return ret_code;
 		/* else fall through to stay in thread level */
 	}
@@ -508,35 +508,47 @@ thread_page(
 				break;
 
 			case GLOBAL_SET_RANGE:		/* set range */
-				if (set_range(THREAD_LEVEL, 1, thdmenu.max, thdmenu.curr + 1))
+				if (set_range(THREAD_LEVEL, 1, thdmenu.max, thdmenu.curr + 1)) {
+					range_active = TRUE;
 					show_thread_page();
+				}
 				break;
 
 			case GLOBAL_PIPE:			/* pipe article(s) to command */
 				if (thread_basenote >= 0)
-					feed_articles(FEED_PIPE, THREAD_LEVEL, group, find_response(thread_basenote, thdmenu.curr));
+					feed_articles(FEED_PIPE, THREAD_LEVEL, NOT_ASSIGNED, group, find_response(thread_basenote, thdmenu.curr));
 				break;
 
 #ifndef DISABLE_PRINTING
 			case GLOBAL_PRINT:			/* print article(s) */
 				if (thread_basenote >= 0)
-					feed_articles(FEED_PRINT, THREAD_LEVEL, group, find_response(thread_basenote, thdmenu.curr));
+					feed_articles(FEED_PRINT, THREAD_LEVEL, NOT_ASSIGNED, group, find_response(thread_basenote, thdmenu.curr));
 				break;
 #endif /* !DISABLE_PRINTING */
 
 			case THREAD_MAIL:	/* mail article(s) to somebody */
 				if (thread_basenote >= 0)
-					feed_articles(FEED_MAIL, THREAD_LEVEL, group, find_response(thread_basenote, thdmenu.curr));
+					feed_articles(FEED_MAIL, THREAD_LEVEL, NOT_ASSIGNED, group, find_response(thread_basenote, thdmenu.curr));
 				break;
 
 			case THREAD_SAVE:	/* save articles with prompting */
 				if (thread_basenote >= 0)
-					feed_articles(FEED_SAVE, THREAD_LEVEL, group, find_response(thread_basenote, thdmenu.curr));
+					feed_articles(FEED_SAVE, THREAD_LEVEL, NOT_ASSIGNED, group, find_response(thread_basenote, thdmenu.curr));
 				break;
 
 			case THREAD_AUTOSAVE:	/* Auto-save articles without prompting */
 				if (thread_basenote >= 0)
-					feed_articles(FEED_AUTOSAVE, THREAD_LEVEL, group, (int) base[grpmenu.curr]);
+					feed_articles(FEED_AUTOSAVE, THREAD_LEVEL, NOT_ASSIGNED, group, (int) base[grpmenu.curr]);
+				break;
+
+			case MARK_FEED_READ:	/* mark selected articles as read */
+				if (thread_basenote >= 0)
+					ret_code = feed_articles(FEED_MARK_READ, THREAD_LEVEL, NOT_ASSIGNED, group, find_response(thread_basenote, thdmenu.curr));
+				break;
+
+			case MARK_FEED_UNREAD:	/* mark selected articles as unread */
+				if (thread_basenote >= 0)
+					feed_articles(FEED_MARK_UNREAD, THREAD_LEVEL, NOT_ASSIGNED, group, find_response(thread_basenote, thdmenu.curr));
 				break;
 
 			case GLOBAL_MENU_FILTER_SELECT:
@@ -559,7 +571,7 @@ thread_page(
 				break;
 
 			case GLOBAL_EDIT_FILTER:
-				if (!invoke_editor(filter_file, FILTER_FILE_OFFSET, NULL))
+				if (!invoke_editor(filter_file, filter_file_offset, NULL))
 					break;
 				unfilter_articles();
 				(void) read_filter_file(filter_file);
@@ -620,11 +632,19 @@ thread_page(
 			case SPECIAL_CATCHUP_LEFT:				/* come here when exiting thread via <- */
 			case CATCHUP:				/* catchup thread, move to next one */
 			case CATCHUP_NEXT_UNREAD:	/* -> next with unread arts */
-				ret_code = thread_catchup(func);
+				ret_code = thread_catchup(func, group);
 				break;
 
-			case THREAD_MARK_ARTICLE_READ: /* mark article as read */
-				ret_code = mark_art_read(group);
+			case THREAD_MARK_ARTICLE_READ:	/* mark current article/range/tagged articles as read */
+			case MARK_ARTICLE_UNREAD:		/* or unread */
+				if (thread_basenote >= 0) {
+					t_function function, type;
+
+					function = func == THREAD_MARK_ARTICLE_READ ? (t_function) FEED_MARK_READ : (t_function) FEED_MARK_UNREAD;
+					type = range_active ? FEED_RANGE : (num_of_tagged_arts && !group->attribute->mark_ignore_tags) ? NOT_ASSIGNED : FEED_ARTICLE;
+					if (feed_articles(function, THREAD_LEVEL, type, group, find_response(thread_basenote, thdmenu.curr)) == 1)
+						ret_code = GRP_EXIT;
+				}
 				break;
 
 			case THREAD_TOGGLE_SUBJECT_DISPLAY:	/* toggle display of subject & subj/author */
@@ -636,7 +656,7 @@ thread_page(
 				break;
 
 			case GLOBAL_OPTION_MENU:
-				change_config_file(group);
+				config_page(group->name);
 				n = find_response(thread_basenote, thdmenu.curr);
 				if (which_thread(n) == -1) /* We have lost the thread */
 					ret_code = GRP_EXIT;
@@ -733,15 +753,6 @@ thread_page(
 
 			case GLOBAL_VERSION:			/* version */
 				info_message(cvers);
-				break;
-
-			case MARK_ARTICLE_UNREAD:	/* mark article as unread */
-				n = find_response(thread_basenote, thdmenu.curr);
-				art_mark(group, &arts[n], ART_WILL_RETURN);
-				mark[0] = get_art_mark(&arts[n]);
-				mark_screen(thdmenu.curr, MARK_OFFSET, mark);
-				draw_thread_arrow();
-				info_message(_(txt_marked_as_unread), _(txt_article_upper));
 				break;
 
 			case MARK_THREAD_UNREAD:		/* mark thread as unread */
@@ -1361,7 +1372,8 @@ make_prefix(
  */
 static int
 thread_catchup(
-	t_function func)
+	t_function func,
+	struct t_group *group)
 {
 	char buf[LEN];
 	int i, n;
@@ -1375,12 +1387,10 @@ thread_catchup(
 	}
 
 	if (i != -1) {				/* still unread arts in this thread */
-		/*
-		 * TODO: if (group->attribute->thread_articles == THREAD_NONE)
-		 *          snprintf(buf, sizeof(buf), _("Mark article as read%s?"), (func == CATCHUP_NEXT_UNREAD) ? _(" and enter next unread article") : "");
-		 *       else
-		 */
-		snprintf(buf, sizeof(buf), _(txt_mark_thread_read), (func == CATCHUP_NEXT_UNREAD) ? _(txt_enter_next_thread) : "");
+		if (group->attribute->thread_articles == THREAD_NONE)
+			snprintf(buf, sizeof(buf), _(txt_mark_art_read), (func == CATCHUP_NEXT_UNREAD) ? _(txt_enter_next_unread_art) : "");
+		else
+			snprintf(buf, sizeof(buf), _(txt_mark_thread_read), (func == CATCHUP_NEXT_UNREAD) ? _(txt_enter_next_thread) : "");
 		if ((!TINRC_CONFIRM_ACTION) || (pyn = prompt_yn(buf, TRUE)) == 1)
 			thd_mark_read(curr_group, base[thread_basenote]);
 	}
@@ -1516,65 +1526,45 @@ thread_tab_pressed(
 
 
 /*
- * If there are any tagged and unread articles, prompt user to mark either
- * all tagged arts as read, or only current article, or cancel operation.
- * Otherwise, use current article.
- * Finally move to next unread article.
+ * Redraw all neccessary parts of the screen after FEED_MARK_(UN)READ
+ * Move cursor to next unread item if needed
  *
- * Return GRP_EXIT if there are no more unread articles in this group,
- * else return 0.
+ * Returns TRUE when no next unread art, FALSE otherwise
  */
-static int
-mark_art_read(
-	struct t_group *group)
+t_bool
+thread_mark_postprocess(
+	int function,
+	t_function feed_type,
+	int respnum)
 {
-	char keytagged[MAXKEYLEN], keycurrent[MAXKEYLEN], keyquit[MAXKEYLEN];
-	int n, cnt = 0;
-	int tmp_num_of_tagged_arts = num_of_tagged_arts;
-	t_function func = MARK_READ_CURRENT;
+	char mark[] = { '\0', '\0' };
+	int n;
 
-	if (!group->attribute->mark_ignore_tags && got_tagged_unread_arts()) {
-		func = prompt_slk_response(MARK_READ_TAGGED,
-				mark_read_keys,
-				_(txt_mark_art_read_tagged_current),
-				printascii(keytagged, func_to_key(MARK_READ_TAGGED, mark_read_keys)),
-				printascii(keycurrent, func_to_key(MARK_READ_CURRENT, mark_read_keys)),
-				printascii(keyquit, func_to_key(GLOBAL_QUIT, mark_read_keys)));
-	}
-
-	switch (func) {
-		case MARK_READ_TAGGED: /* mark tagged unread articles as read */
-			cnt = mark_tagged_read(group);
-			show_thread_page();
-			n = find_response(thread_basenote, thdmenu.curr);
-			break;
-
-		case MARK_READ_CURRENT: /* mark current article as read */
-			n = find_response(thread_basenote, thdmenu.curr);
-			if ((arts[n].status == ART_UNREAD) || (arts[n].status == ART_WILL_RETURN)) {
-				char mark[] = { '\0', '\0' };
-
-				art_mark(group, &arts[n], ART_READ);
-				mark[0] = get_art_mark(&arts[n]);
+	switch (function) {
+		case (FEED_MARK_READ):
+			if (feed_type == FEED_ARTICLE) {
+				mark[0] = get_art_mark(&arts[respnum]);
 				mark_screen(thdmenu.curr, MARK_OFFSET, mark);
-			}
+			} else
+				show_thread_page();
+
+			if ((n = next_unread(respnum)) == -1)	/* no more unread articles */
+				return TRUE;
+			else
+				fixup_thread(n, TRUE);	/* We may be in the next thread now */
 			break;
 
-		case GLOBAL_QUIT: /* cancel operation */
-		case GLOBAL_ABORT:
+		case (FEED_MARK_UNREAD):
+			if (feed_type == FEED_ARTICLE) {
+				mark[0] = get_art_mark(&arts[respnum]);
+				mark_screen(thdmenu.curr, MARK_OFFSET, mark);
+				draw_thread_arrow();
+			} else
+				show_thread_page();
+			break;
+
 		default:
-			return 0;
-			/* NOTREACHED */
 			break;
 	}
-
-	if ((n = next_unread(n)) == -1)	/* no more unread articles */
-		return GRP_EXIT;
-	else
-		fixup_thread(n, TRUE);	/* We may be in the next thread now */
-
-	if (func == MARK_READ_TAGGED)
-		info_message(_(txt_marked_tagged_arts_as_read), cnt, tmp_num_of_tagged_arts, PLURAL(tmp_num_of_tagged_arts, txt_article));
-
-	return 0;
+	return FALSE;
 }

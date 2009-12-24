@@ -3,10 +3,10 @@
  *  Module    : tags.c
  *  Author    : Jason Faultless <jason@altarstone.com>
  *  Created   : 1999-12-06
- *  Updated   : 2008-11-22
+ *  Updated   : 2009-10-03
  *  Notes     : Split out from other modules
  *
- * Copyright (c) 1999-2009 Jason Faultless <jason@altarstone.com>
+ * Copyright (c) 1999-2010 Jason Faultless <jason@altarstone.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -589,48 +589,6 @@ arts_selected(
 	for_each_art(i) {
 		if (arts[i].selected)
 			return TRUE;
-	}
-
-	return FALSE;
-}
-
-
-/*
- * Mark all tagged articles as read.
- * Return number of articles that have been marked.
- */
-int
-mark_tagged_read(
-	struct t_group *group)
-{
-	int i, cnt = 0;
-
-	for_each_art(i) {
-		if (arts[i].tagged && (arts[i].status == ART_UNREAD || arts[i].status == ART_WILL_RETURN)) {
-			art_mark(group, &arts[i], ART_READ);
-			cnt++;
-		}
-	}
-	untag_all_articles();
-
-	return cnt;
-}
-
-
-/*
- * Check if there is at least one tagged _and_ unread article.
- */
-t_bool
-got_tagged_unread_arts(
-	void)
-{
-	int i;
-
-	if (num_of_tagged_arts > 0) {
-		for_each_art(i) {
-			if (arts[i].tagged && (arts[i].status == ART_UNREAD || arts[i].status == ART_WILL_RETURN))
-				return TRUE;
-		}
 	}
 
 	return FALSE;

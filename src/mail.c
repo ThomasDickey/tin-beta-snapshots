@@ -3,10 +3,10 @@
  *  Module    : mail.c
  *  Author    : I. Lea
  *  Created   : 1992-10-02
- *  Updated   : 2008-01-21
+ *  Updated   : 2009-11-19
  *  Notes     : Mail handling routines for creating pseudo newsgroups
  *
- * Copyright (c) 1992-2009 Iain Lea <iain@bricbrac.de>
+ * Copyright (c) 1992-2010 Iain Lea <iain@bricbrac.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,7 @@
 #	ifndef TNNTP_H
 #		include "tnntp.h"
 #	endif /* !TNNTP_H */
-#endif  /* NNTP_ABLE */
+#endif /* NNTP_ABLE */
 /*
  * local prototypes
  */
@@ -125,7 +125,7 @@ read_mail_active_file(
 		if ((ptr = group_find(buf, FALSE)) != NULL) {
 			if (strcmp(ptr->spooldir, my_spooldir) != 0) {
 				free(ptr->spooldir);
-				strfpath(my_spooldir, buf2, sizeof(buf2) - 1, ptr);
+				strfpath(my_spooldir, buf2, sizeof(buf2) - 1, ptr, FALSE);
 				ptr->spooldir = my_strdup(buf2);
 			}
 			ptr->xmax = max;
@@ -142,7 +142,7 @@ read_mail_active_file(
 		/*
 		 * Load group info. TODO: integrate with active_add()
 		 */
-		strfpath(my_spooldir, buf2, sizeof(buf2) - 1, ptr);
+		strfpath(my_spooldir, buf2, sizeof(buf2) - 1, ptr, FALSE);
 		ptr->spooldir = my_strdup(buf2);
 		group_get_art_info(ptr->spooldir, buf, GROUP_TYPE_MAIL, &ptr->count, &ptr->xmax, &ptr->xmin);
 		ptr->aliasedto = NULL;
@@ -205,9 +205,13 @@ write_mail_active_file(
 				print_group_line(fp, group->name, group->xmax, group->xmin, group->spooldir);
 			}
 		}
-		if (ferror(fp) || fclose(fp)) {
+		if ((i = ferror(fp)) || fclose(fp)) {
 			error_message(2, _(txt_filesystem_full), mail_active_file);
 			rename(file_tmp, mail_active_file);
+			if (i) {
+				clearerr(fp);
+				fclose(fp);
+			}
 		} else
 			unlink(file_tmp);
 	}
@@ -282,31 +286,48 @@ open_newsgroups_fp(
 		 *       optimize more than n groups (e.g. 5) of the same
 		 *       subhierarchie to a wildmat?
 		 */
-		if (((nntp_caps.type == CAPABILITIES && nntp_caps.list_newsgroups) || nntp_caps.type != CAPABILITIES) && newsrc_active && !list_active && !no_more_wildmat && num_active < PIPELINE_LIMIT) {
+		if (((nntp_caps.type == CAPABILITIES && nntp_caps.list_newsgroups) || nntp_caps.type != CAPABILITIES) && newsrc_active && !list_active && !no_more_wildmat && (PIPELINE_LIMIT > MAX(1, num_active))) {
 			char *ptr;
 			char buff[NNTP_STRLEN];
 			char line[NNTP_STRLEN];
 			char file[PATH_LEN];
 			char serverdir[PATH_LEN];
 			struct t_group *group;
-			int resp, i;
+			int resp, i, j = 0;
 
 			if (nntp_tcp_port != IPPORT_NNTP)
-				snprintf(file, sizeof(file), "%s:%d", nntp_server, nntp_tcp_port);
+				snprintf(file, sizeof(file), "%s:%u", nntp_server, nntp_tcp_port);
 			else
 				STRCPY(file, quote_space_to_dash(nntp_server));
 
 			joinpath(serverdir, sizeof(serverdir), rcdir, file);
 			joinpath(file, sizeof(file), serverdir, NEWSGROUPS_FILE".tmp");
-
+			*buff = '\0';
 			if ((result = fopen(file, "w")) != NULL) {
 				for_each_group(i) {
 					if ((group = group_find(active[i].name, FALSE)) != NULL) {
 						if (group->type == GROUP_TYPE_NEWS) {
-							snprintf(buff, sizeof(buff), "LIST NEWSGROUPS %s", active[i].name);
+							if (nntp_caps.type == CAPABILITIES && nntp_caps.list_newsgroups) {
+								if (*buff) {
+									if (strlen(buff) + strlen(active[i].name) + 1 < NNTP_STRLEN) {
+										snprintf(buff + strlen(buff), sizeof(buff) - strlen(buff), ",%s", active[i].name);
+										continue;
+									} else {
+										put_server(buff);
+										*buff = '\0';
+										j++;
+									}
+								}
+								if (!*buff) {
+									snprintf(buff, sizeof(buff), "LIST NEWSGROUPS %s", active[i].name);
+									continue;
+								}
+							} else
+								snprintf(buff, sizeof(buff), "LIST NEWSGROUPS %s", active[i].name);
 #		ifdef DISABLE_PIPELINING
 							if ((resp = new_nntp_command(buff, OK_GROUPS, line, sizeof(line))) != OK_GROUPS) {
 								no_more_wildmat = resp;
+								*buff = '\0';
 								break;
 							}
 							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
@@ -318,38 +339,35 @@ open_newsgroups_fp(
 							}
 #		else
 							put_server(buff);
+							*buff = '\0';
+							j++;
 #		endif /* DISABLE_PIPELINING */
 						}
 					}
 				}
+				if (*buff) {
+					put_server(buff);
+					j++;
+				}
 #		ifndef DISABLE_PIPELINING
-				for_each_group(i) {
-					/*
-					 * don't use get_respcode() as it will try to auth if we
-					 * see a 480 but that could fail as there might be
-					 * pending data
-					 */
-					if ((group = group_find(active[i].name, FALSE)) != NULL) {
-						if (group->type == GROUP_TYPE_NEWS) {
-							if ((resp = get_only_respcode(line, sizeof(line))) != OK_GROUPS) {
-								if (!no_more_wildmat)
-									no_more_wildmat = resp;
-								continue;
-							}
-							while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
+				while (j--) {
+					if ((resp = get_only_respcode(line, sizeof(line))) != OK_GROUPS) {
+						if (!no_more_wildmat)
+							no_more_wildmat = resp;
+						continue;
+					}
+					while ((ptr = tin_fgets(FAKE_NNTP_FP, FALSE)) != NULL) {
 #			ifdef DEBUG
-								if (debug & DEBUG_NNTP)
-									debug_print_file("NNTP", "<<< %s", ptr);
+						if (debug & DEBUG_NNTP)
+							debug_print_file("NNTP", "<<< %s", ptr);
 #			endif /* DEBUG */
-								fprintf(result, "%s\n", str_trim(ptr));
-							}
-						}
+						fprintf(result, "%s\n", str_trim(ptr));
 					}
 				}
 				/* TODO: add 483 (RFC 3977) support */
 				if (no_more_wildmat == ERR_NOAUTH || no_more_wildmat == NEED_AUTHINFO) {
 					if (!authenticate(nntp_server, userid, FALSE)) {
-						error_message(2, _(txt_auth_failed), ERR_ACCESS);
+						error_message(2, _(txt_auth_failed), nntp_caps.type == CAPABILITIES ? ERR_AUTHFAIL : ERR_ACCESS);
 						tin_done(EXIT_FAILURE);
 					}
 				}
@@ -583,9 +601,6 @@ grp_del_mail_arts(
 	char artnum[LEN];
 	int i;
 	struct t_article *article;
-#if 0 /* see comment below */
-	t_bool update_index_file = FALSE;
-#endif /* 0 */
 
 	if (group->type == GROUP_TYPE_MAIL || group->type == GROUP_TYPE_SAVE) {
 		/*
@@ -600,25 +615,14 @@ grp_del_mail_arts(
 				joinpath(article_filename, sizeof(article_filename), group_path, artnum);
 				unlink(article_filename);
 				article->thread = ART_EXPIRED;
-#if 0 /* see comment below */
-				update_index_file = TRUE;
-#endif /* 0 */
 			}
 		}
 
-#if 0
-/*
- * current tin's build_references() is changed to free msgid and refs,
- * therefore we cannot call write_overview after it. I simply commented
- * out this codes, NovFile will update at next time.
- */
-/*
- * MAYBE also check if min / max article was deleted. If so then update
- * the active[] entry for the group and rewrite the mail.active file
- */
-		if (update_index_file)
-			write_overview(group);
-#endif /* 0 */
+		/*
+		 * current tin's build_references() is changed to free msgid and
+		 * refs, therefore we cannot call write_overview after it. NovFile
+		 * will update at next time.
+		 */
 	}
 }
 
@@ -641,7 +645,7 @@ art_edit(
 	make_base_group_path(group->spooldir, group->name, temp_filename, sizeof(temp_filename));
 	snprintf(buf, sizeof(buf), "%ld", article->artnum);
 	joinpath(article_filename, sizeof(article_filename), temp_filename, buf);
-	snprintf(temp_filename, sizeof(temp_filename), "%s%d.art", TMPDIR, (int) process_id);
+	snprintf(temp_filename, sizeof(temp_filename), "%s%ld.art", TMPDIR, (long) process_id);
 
 	if (!backup_file(article_filename, temp_filename))
 		return FALSE;

@@ -3,10 +3,10 @@
  *  Module    : tcurses.h
  *  Author    : Thomas Dickey
  *  Created   : 1997-03-02
- *  Updated   : 2004-07-19
+ *  Updated   : 2009-10-22
  *  Notes     : curses #include files, #defines & struct's
  *
- * Copyright (c) 1997-2009 Thomas Dickey <dickey@invisible-island.net>
+ * Copyright (c) 1997-2010 Thomas Dickey <dickey@invisible-island.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,6 +95,7 @@
 #		define HpGlitch(func)			/*nothing*/
 
 extern int cmdReadCh(void);
+extern int cmd_get_arrow_key(int prech);
 extern char *screen_contents(int row, int col, char *buffer);
 extern void MoveCursor(int row, int col);
 extern void my_erase(void);

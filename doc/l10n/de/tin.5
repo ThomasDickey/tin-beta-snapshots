@@ -2,7 +2,7 @@
 .\" Module    : tin.5
 .\" Author    : U. Janssen
 .\" Created   : 2000-07-10
-.\" Updated   : 2009-02-11
+.\" Updated   : 2009-12-24
 .\" Notes     : needs a some work
 .\"
 .\"
@@ -11,7 +11,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH tin 5 "11. Februar 2008" 1.9.4 "Usenet Newsreader"
+.TH tin 5 "December 24th, 2009" 1.9.5 "Usenet Newsreader"
 
 .SH NAME
 tin, rtin \- zugehörige Dateien
@@ -64,9 +64,9 @@ Each individual mailcap entry consists of a content\-type specification, a
 command to execute, and (possibly) a set of optional "flag" values.
 .sp
 The "type" field is simply any legal content type name. It is the string
-that will be matched against the "Content\-Type" header to decide if this is
-the mailcap entry that matches the current message. Additionally, the type
-field may specify a subtype or a wildcard to match all subtypes.
+that will be matched against the \*(rqContent\-Type:\*(rq header to decide if this
+is the mailcap entry that matches the current message. Additionally, the
+type field may specify a subtype or a wildcard to match all subtypes.
 .sp
 The "command" field is any UNIX command and is used to specify the
 interpreter for the given type of message. It will be passed to the shell
@@ -86,7 +86,7 @@ message. If it contains "%t", those two characters will be replaced by the
 content\-type field, including the subtype, if any. If it contains "%{"
 followed by a parameter name and a closing "}", then all those characters
 will be replaced by the value of the named parameter, if any, from the
-Content\-Type header. Finally, if the field contains "\e%", those two
+\&\*(rqContent\-Type:\*(rq header. Finally, if the field contains "\e%", those two
 characters will be replaced by a single "%" character.
 .sp
 Besides the type and command field the following "flags" are defined:
@@ -103,11 +103,11 @@ the data.
 .TP 
 \fBcomposetyped\fP
 The "composetyped" field is similar to the "compose" field, but is to be
-used when the composing program needs to specify the Content\-Type header
-field to be applied to the composed data. The "compose" field is simpler,
-and is preferred for use with existing (non\-mail\-oriented) programs for
-composing data in a given format. The "composetyped" field is necessary when
-the Content\-Type information must include auxiliary parameters, and the
+used when the composing program needs to specify the \*(rqContent\-Type:\*(rq
+header field to be applied to the composed data. The "compose" field is
+simpler, and is preferred for use with existing (non\-mail\-oriented) programs
+for composing data in a given format. The "composetyped" field is necessary
+when the Content\-Type information must include auxiliary parameters, and the
 composition program must then know enough about mail formats to produce
 output that includes the mail type information.
 .TP 
@@ -361,9 +361,9 @@ saved newsgroups index files
 \fI${TIN_HOMEDIR:\-"$HOME"}/.tin/active.mail\fP
 .sp
 .RS
-active file ("\fImail_group_name\fP \fImaxnum\fP \fIminnum\fP \fImailspool\fP"\-pairs) of
-user's mailgroups (requires \fBtin\fP(1)  to be build with mh\-mail\-handling
-support).
+active file ("\fImail_group_name\fP \fImaxnum\fP \fIminnum\fP \fImailspool\fP"
+quadruples) of user's mailgroups (requires \fBtin\fP(1)  to be build with
+mh\-mail\-handling support).
 .TP 
 \fBmail_group_name\fP
 must be the pathname of the mailbox relative to field #4 with / changed to .
@@ -470,7 +470,7 @@ Mailbox to save sent mails. The format of the mailbox is controlled via the
 tinrc \fBmailbox_format\fP variable.
 .TP 
 \fBfollowup_to\fP
-Set \*(rqFollowup\-To:\*(rq\-header to the specified group(s).
+Set \*(rqFollowup\-To:\*(rq header to the specified group(s).
 .TP 
 \fBfrom\fP
 Identical to the tinrc variable \fBmail_address\fP
@@ -532,7 +532,7 @@ Identisch mit der tinrc\-Variable gleichen Namens
 This can be used to set the article header field \*(rqOrganization:\*(rq. It
 overrides the setting (if any) of organization in \fI/etc/tin/tin.defaults\fP
 and $\fBORGANIZATION\fP (or $\fBNEWSORG\fP on Apollo DomainOS). Note that some
-newsserver might still overwrite the \&\*(rqOrganization:\*(rq\-header.
+newsserver might still overwrite the \&\*(rqOrganization:\*(rq header.
 .TP 
 \fBpos_first_unread\fP
 Identisch mit der tinrc\-Variable gleichen Namens
@@ -624,7 +624,7 @@ string starts with a / or ~ then it is assumed to be the name of a file
 containing the text to insert.
 .TP 
 \fBx_comment_to\fP
-Insert \*(rqX\-Comment\-To:\*(rq\-header, this is only useful in FIDO groups.
+Insert \*(rqX\-Comment\-To:\*(rq header, this is only useful in FIDO groups.
 .TP 
 \fBx_headers\fP
 A string including header\-name and the contents of the header that will be
@@ -680,8 +680,8 @@ Assume (broken) articles without MIME charset declaration have this charset
 Beispiel:
 .RS
 .nf
-# include extra headers
-# assume ISO\-8859\-1 as charset if no charset is declared
+# zusätzliche Header einfügen
+# ISO\-8859\-1 als Zeichensatz annehmen falls keiner angegeben wurde
 scope=*
 x_headers=~/.tin/headers
 undeclared_charset=ISO\-8859\-1
@@ -709,7 +709,7 @@ scope=*.test
 sigfile=\-\-none
 x_headers=Subject: test \- ignore \- no reply
 
-# assume ISO\-2022\-JP\-2 as charset
+# ISO\-2022\-JP\-2 als Zeichensatz annehmen
 scope=fj.*,japan.*
 undeclared_charset=ISO\-2022\-JP\-2
 .fi
@@ -747,10 +747,10 @@ Score value of the rule; can also be one of the magic words "kill" or "hot".
 Match against \*(rqSubject:\*(rq
 .TP 
 \fBfrom\fP
-Match against \*(rqFrom:\*(rq.  \fBtin\fP(1)  converts the contents of the
-\&\*(rqFrom:\*(rq\-header to an old style e\-mail address, e.g. \*(rqsome@body.example
-(John Doe)\*(rq instead of \*(rqJohn Doe <some@body.example>\*(rq, before
-trying to match the patterns in the filter rule.
+Match against \*(rqFrom:\*(rq.  \fBtin\fP(1)  converts the contents of the \*(rqFrom:\*(rq
+header to an old style e\-mail address, e.g. \*(rqsome@body.example (John Doe)\*(rq
+instead of \*(rqJohn Doe <some@body.example>\*(rq, before trying to match
+the patterns in the filter rule.
 .TP 
 \fBmsgid\fP
 Match against \*(rqMessage\-ID:\*(rq and full \*(rqReferences:\*(rq
@@ -775,7 +775,7 @@ Match against \*(rqFrom:\*(rq\-address parser return codes.
 \fBxref\fP
 Match against \*(rqXref:\*(rq\-line. Before any matching is done the line is turned
 into the same format \*(rqNewsgroups:\*(rq has that is it is turned into a comma
-separated newsgoup list with all other informations (i.e.  the article
+separated newsgroup list with all other informations (i.e.  the article
 counter) removed.
 .TP 
 \fBtime\fP
@@ -804,9 +804,9 @@ subj=\eb(cd|[rk]?)?tin(d|pre)?[\-.0\-9]*\eb
 .fi
 .sp
 .RS
-Keymap\-file, containing "\fIkeyname\fP \fIvalue\fP \fI[value]\fP" pairs seperated by
+Keymap\-file, containing "\fIkeyname\fP \fIvalue\fP \fI[value]\fP" pairs separated by
 spaces or tabs. Below is a list of all rebindable keynames and their
-defaults. If a keynames is bound to NULL it is unassigned.
+defaults. If a keyname is bound to NULL it is unassigned.
 .sp
 .nf
 .ta \w'GroupSelThdIfUnreadSelected    'u +\w'SPACE'u +\w'SPACE'u
@@ -854,11 +854,16 @@ defaults. If a keynames is bound to NULL it is unassigned.
 \fBPostponed\fP	^O
 \fBMenuFilterSelect\fP	^A
 \fBMenuFilterKill\fP	^K
+\fBMarkFeedRead\fP	^X
+\fBMarkFeedUnread\fP	^W
 .sp
+\fBConfigToggleAttrib\fP	TAB
 \fBConfigSelect\fP	^J	^M
 \fBConfigLastPage\fP	G
 \fBConfigNoSave\fP	Q
+\fBConfigScopeMenu\fP	S
 \fBConfigFirstPage\fP	g
+\fBConfigResetAttrib\fP	r
 .sp
 \fBFeedTag\fP	T
 \fBFeedArt\fP	a
@@ -990,6 +995,13 @@ defaults. If a keynames is bound to NULL it is unassigned.
 \fBSelectUnsubscribe\fP	u
 \fBSelectYankActive\fP	y
 \fBSelectMarkGrpUnread\fP	z	Z
+.sp
+\fBScopeSelect\fP	^J	^M
+\fBScopeEditAttributesFile\fP	E
+\fBScopeAdd\fP	a
+\fBScopeDelete\fP	d
+\fBScopeMove\fP	m
+\fBScopeRename\fP	r
 .sp
 \fBThreadReadNextArtOrThread\fP	TAB
 \fBThreadReadArt\fP	^J	^M
@@ -1282,7 +1294,7 @@ Farbe der Subjectzeile
 Farbe der Textzeilen
 .TP 
 \fBcol_title\fP
-Color of help/main sign
+Farbe des Hilfe/Mail\-Zeichens
 .TP 
 \fBconfirm_choice\fP
 \fBtin\fP(1)  can ask for manual confirmation to protect the user. Available
@@ -1548,10 +1560,12 @@ following substitutions are supported:
 If ON mark articles that are saved as read. Default is ON.
 .TP 
 \fBmark_ignore_tags\fP
-When this is ON, the \fBGroupMarkThdRead\fP, \fBThreadMarkArtRead\fP functions
-('\fBK\fP') mark just the current article or thread, ignoring other tagged,
-unread articles. When OFF, the same function presents a menu with choices of
-the current thread or article, all tagged, unread articles, or nothing.
+When this is ON, the \fBGroupMarkThdRead\fP ('\fBK\fP'), \fBThreadMarkArtRead\fP
+('\fBK\fP'), \fBMarkThdUnread\fP ('\fBZ\fP') at Group level and \fBMarkArtUnread\fP
+('\fBz\fP') at Thread level functions mark just the current article or thread,
+ignoring other tagged, (un)read articles. When OFF, the same function
+presents a menu with choices of the current thread or article, all tagged,
+unread articles, or nothing.
 .TP 
 \fBmetamail_prog\fP
 Path, name and options of external \fBmetamail\fP(1)  program used to view
@@ -1614,16 +1628,16 @@ newsgroups. Do not change them unless you understand what they are for.
 .TP 
 \fBnews_headers_to_display\fP
 Which news headers you wish to see. If you want to see _all_ the headers,
-place an '*' as this value. This is the only way a wildcard can be used.  If
+place an '*' as this value. This is the only way a wildcard can be used. If
 you enter 'X\-' as the value, you will see all headers beginning with 'X\-'
 (like X\-Alan or X\-Pape). You can list more than one by delimiting with
 spaces. Not defining anything turns off this option.
 .TP 
 \fBnews_headers_to_not_display\fP
 Same as \fBnews_headers_to_display\fP except it denotes the opposite. An
-example of using both options might be if you thought X\- headers were A Good
-Thing(tm), but thought Alan and Pape were miscreants... well then you would
-do something like this: \fBnews_headers_to_display=X\-\fP
+example of using both options might be if you thought 'X\-' headers were A
+Good Thing(tm), but thought Alan and Pape were miscreants... well then you
+would do something like this: \fBnews_headers_to_display=X\-\fP
 \fBnews_headers_to_not_display=X\-Alan X\-Pape\fP Not defining anything turns off
 this option.
 .TP 
@@ -1656,7 +1670,7 @@ article.  Default is ON.
 .TP 
 \fBpost_8bit_header\fP
 Allows 8bit characters unencoded in the header of a news article, if set
-this also disables the generation of MIME\-headers when they are usualy
+this also disables the generation of MIME\-headers when they are usually
 required. Default is OFF. Only enacted if \fBpost_mime_encoding\fP is also set
 to 8bit. In a number of local hierarchies where 8bit characters are used,
 using unencoded (raw)  8bit characters in header is acceptable and sometimes
@@ -1994,7 +2008,7 @@ similarly looking characters. On systems where this extension doesn't exist,
 this option is disabled. Default is OFF.
 .TP 
 \fBtrim_article_body\fP
-Allows you to select how \fBtin\fP treats blank lines in article bodys. 
+Allows you to select how \fBtin\fP treats blank lines in article bodies. 
 Default is 0. This option does not affect lines within verbatim blocks.
 .RS +1i
 .IP 0 3
@@ -2140,8 +2154,8 @@ administration if you want to deal with your lusers problems on your own.
 Defines the directory containing of the \fBinews\fP(1)  executable
 .TP 
 \fBmm_charset\fP
-Default charset to be used in MIME's Content\-Type header. $\fBMM_CHARSET\fP
-overrides any specified value.
+Default charset to be used in MIME's \*(rqContent\-Type:\*(rq
+header. $\fBMM_CHARSET\fP overrides any specified value.
 .TP 
 \fBpost_mime_encoding\fP
 Default encoding scheme use in MIME articles. 8bit might be the best value.
@@ -2154,7 +2168,7 @@ choice here.
 Unregistrierte Top\-Level\-Domains zulassen
 .TP 
 \fBdisable_sender\fP
-Keinen \*(rqSender:\*(rq\-Header erzeugen. Falls \fBinews_prog\fP nicht auf \-\-internal
+Keinen \*(rqSender:\*(rq Header erzeugen. Falls \fBinews_prog\fP nicht auf \-\-internal
 steht wird die Einstellung ignoriert.
 .TP 
 \fBspooldir\fP
@@ -2355,6 +2369,6 @@ SUBSCRIPTIONS (\fBRFC2980\fP) command instead.
 \fBperl\fP(1), \fBpgp\fP(1), \fBrn\fP(1), \fBshar\fP(1), \fBslrnface\fP(1), \fBtin\fP(1),
 \fBxterm\fP(1x), \fBiconv\fP(3), \fBiconv_open\fP(3), \fBnl_langinfo\fP(3), \fBpcre\fP(3),
 \fBstrftime\fP(3), \fBsystem\fP(3), \fBmailcap\fP(4), \fBactive\fP(5), \fBmbox\fP(5),
-\fBmmdf\fP(5), \fBnewsoverview\fP(5), \fBoverview.fmt\fP(5), \fBinnd\fP(8), \fBRFC1036\fP,
-\fBRFC1524\fP, \fBRFC2045\fP, \fBRFC2046\fP, \fBRFC2047\fP, \fBRFC2048\fP, \fBRFC2980\fP,
-\fBRFC3977\fP, \fBRFC4643\fP, \fBRFC5322\fP
+\fBmmdf\fP(5), \fBnewsoverview\fP(5), \fBoverview.fmt\fP(5), \fBinnd\fP(8), \fBRFC1524\fP,
+\fBRFC2045\fP, \fBRFC2046\fP, \fBRFC2047\fP, \fBRFC2048\fP, \fBRFC2980\fP, \fBRFC3977\fP,
+\fBRFC4643\fP, \fBRFC5322\fP, \fBRFC5536\fP, \fBRFC5537\fP

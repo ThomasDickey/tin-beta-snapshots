@@ -3,10 +3,10 @@
  *  Module    : rfc2047.c
  *  Author    : Chris Blum <chris@resolution.de>
  *  Created   : 1995-09-01
- *  Updated   : 2009-01-07
+ *  Updated   : 2009-03-18
  *  Notes     : MIME header encoding/decoding stuff
  *
- * Copyright (c) 1995-2009 Chris Blum <chris@resolution.de>
+ * Copyright (c) 1995-2010 Chris Blum <chris@resolution.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -876,7 +876,12 @@ do_rfc15211522_encode(
 		if (*header == '\0')
 			break;
 
-		if (allow_8bit_header)
+		/*
+		 * TODO: - what about 8bit chars in the mentioned headers
+		 *         when !allow_8bit_header?
+		 *       - what about lines longer 998 octets?
+		 */
+		if (allow_8bit_header || (!strncasecmp(header, "References: ", 12) || !strncasecmp(header, "Message-ID: ", 12) || !strncasecmp(header, "Date: ", 6) || !strncasecmp(header, "Newsgroups: ", 12) || !strncasecmp(header, "Distribution: ", 14) || !strncasecmp(header, "Followup-To: ", 13) || !strncasecmp(header, "X-Face: ", 8) || !strncasecmp(header, "Cancel-Lock: ", 13) || !strncasecmp(header, "Cancel-Key: ", 12)))
 			fputs(header, g);
 		else {
 			char *p;

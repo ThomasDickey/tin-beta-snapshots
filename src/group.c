@@ -3,10 +3,10 @@
  *  Module    : group.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2008-11-25
+ *  Updated   : 2009-11-12
  *  Notes     :
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,14 +58,13 @@ static int do_search(t_function func, t_bool repeat);
 static int enter_pager(int art, t_bool ignore_unavail);
 static int enter_thread(int depth, t_pagerinfo *page);
 static int group_catchup(t_function func);
-static int prompt_getart_limit(void);
 static int tab_pressed(void);
+static t_bool prompt_getart_limit(void);
 static t_function group_left(void);
 static t_function group_right(void);
 static void build_sline(int i);
 static void build_multipart_header(char *dest, int maxlen, const char *src, int cmplen, int have, int total);
 static void draw_subject_arrow(void);
-static void mark_thd_read(struct t_group *group, t_bool range_active);
 static void show_group_title(t_bool clear_title);
 static void show_tagged_lines(void);
 static void toggle_read_unread(t_bool force);
@@ -145,7 +144,6 @@ group_page(
 	long old_artnum = 0L;
 	struct t_art_stat sbuf;
 	t_bool flag;
-	t_bool range_active = FALSE;		/* Set if a range is defined */
 	t_bool xflag = FALSE;	/* 'X'-flag */
 	t_bool repeat_search;
 	t_function func;
@@ -157,6 +155,7 @@ group_page(
 
 	curr_group = group;					/* For global access to the current group */
 	num_of_tagged_arts = 0;
+	range_active = FALSE;
 
 	last_resp = -1;
 	this_resp = -1;
@@ -244,41 +243,41 @@ group_page(
 
 			case GLOBAL_PIPE:		/* pipe article/thread/tagged arts to command */
 				if (grpmenu.curr >= 0)
-					feed_articles(FEED_PIPE, GROUP_LEVEL, group, (int) base[grpmenu.curr]);
+					feed_articles(FEED_PIPE, GROUP_LEVEL, NOT_ASSIGNED, group, (int) base[grpmenu.curr]);
 				break;
 
 			case GROUP_MAIL:	/* mail article to somebody */
 				if (grpmenu.curr >= 0)
-					feed_articles(FEED_MAIL, GROUP_LEVEL, group, (int) base[grpmenu.curr]);
+					feed_articles(FEED_MAIL, GROUP_LEVEL, NOT_ASSIGNED, group, (int) base[grpmenu.curr]);
 				break;
 
 #ifndef DISABLE_PRINTING
 			case GLOBAL_PRINT:	/* output art/thread/tagged arts to printer */
 				if (grpmenu.curr >= 0)
-					feed_articles(FEED_PRINT, GROUP_LEVEL, group, (int) base[grpmenu.curr]);
+					feed_articles(FEED_PRINT, GROUP_LEVEL, NOT_ASSIGNED, group, (int) base[grpmenu.curr]);
 				break;
 #endif /* !DISABLE_PRINTING */
 
 			case GROUP_REPOST:	/* repost current article */
 				if (can_post) {
 					if (grpmenu.curr >= 0)
-						feed_articles(FEED_REPOST, GROUP_LEVEL, group, (int) base[grpmenu.curr]);
+						feed_articles(FEED_REPOST, GROUP_LEVEL, NOT_ASSIGNED, group, (int) base[grpmenu.curr]);
 				} else
 					info_message(_(txt_cannot_post));
 				break;
 
 			case GROUP_SAVE:	/* save articles with prompting */
 				if (grpmenu.curr >= 0)
-					feed_articles(FEED_SAVE, GROUP_LEVEL, group, (int) base[grpmenu.curr]);
+					feed_articles(FEED_SAVE, GROUP_LEVEL, NOT_ASSIGNED, group, (int) base[grpmenu.curr]);
 				break;
 
 			case GROUP_AUTOSAVE:	/* Auto-save articles without prompting */
 				if (grpmenu.curr >= 0)
-					feed_articles(FEED_AUTOSAVE, GROUP_LEVEL, group, (int) base[grpmenu.curr]);
+					feed_articles(FEED_AUTOSAVE, GROUP_LEVEL, NOT_ASSIGNED, group, (int) base[grpmenu.curr]);
 				break;
 
 			case GLOBAL_SET_RANGE:	/* set range */
-				if (set_range(GROUP_LEVEL, 1, grpmenu.max, grpmenu.curr + 1)) {
+				if (grpmenu.curr >= 0 && set_range(GROUP_LEVEL, 1, grpmenu.max, grpmenu.curr + 1)) {
 					range_active = TRUE;
 					show_group_page();
 				}
@@ -334,7 +333,7 @@ group_page(
 				break;
 
 			case GLOBAL_EDIT_FILTER:
-				if (!invoke_editor(filter_file, FILTER_FILE_OFFSET, NULL))
+				if (!invoke_editor(filter_file, filter_file_offset, NULL))
 					break;
 				unfilter_articles();
 				(void) read_filter_file(filter_file);
@@ -439,9 +438,16 @@ group_page(
 #	endif /* HAVE_COLOR */
 
 			case GROUP_MARK_THREAD_READ:			/* mark current thread/range/tagged threads as read */
-				mark_thd_read(group, range_active);
-				if (range_active)
-					range_active = FALSE; /* Range has gone now */
+			case MARK_THREAD_UNREAD:				/* or unread */
+				if (grpmenu.curr < 0)
+					info_message(_(txt_no_arts));
+				else {
+					t_function function, type;
+
+					function = func == GROUP_MARK_THREAD_READ ? (t_function) FEED_MARK_READ : (t_function) FEED_MARK_UNREAD;
+					type = range_active ? FEED_RANGE : (num_of_tagged_arts && !group->attribute->mark_ignore_tags) ? NOT_ASSIGNED : FEED_THREAD;
+					feed_articles(function, GROUP_LEVEL, type, group, (int) base[grpmenu.curr]);
+				}
 				break;
 
 			case GROUP_LIST_THREAD:				/* list articles within current thread */
@@ -459,7 +465,7 @@ group_page(
 					old_artnum = arts[(int) base[grpmenu.curr]].artnum;
 				}
 				n = tinrc.sort_article_type;
-				change_config_file(group);
+				config_page(group->name);
 				if (n != tinrc.sort_article_type)
 					make_threads(group, TRUE);
 				grpmenu.curr = find_new_pos(old_top, old_artnum, grpmenu.curr);
@@ -547,8 +553,16 @@ group_page(
 				break;
 
 			case GROUP_TOGGLE_GET_ARTICLES_LIMIT:
-				tinrc.getart_limit = prompt_getart_limit();
-				ret_code = GRP_NEXTUNREAD;
+				if (prompt_getart_limit()) {
+					/*
+					 * if getart limit was given via cmd-line
+					 * make it inactive now in order to use
+					 * tinrc.getart_limit
+					 */
+					if (cmdline.args & CMDLINE_GETART_LIMIT)
+						cmdline.args &= ~CMDLINE_GETART_LIMIT;
+					ret_code = GRP_NEXTUNREAD;
+				}
 				break;
 
 			case GLOBAL_BUGREPORT:
@@ -714,36 +728,14 @@ group_page(
 				}
 				break;
 
-			case MARK_THREAD_UNREAD:		/* mark whole thread as unread */
-				if (grpmenu.curr < 0)
-					info_message(_(txt_no_arts));
-				else {
-					const char *ptr;
+			case MARK_FEED_READ:	/* mark selected articles as read */
+				if (grpmenu.curr >= 0)
+					feed_articles(FEED_MARK_READ, GROUP_LEVEL, NOT_ASSIGNED, group, (int) base[grpmenu.curr]);
+				break;
 
-					/*
-					 * We process all articles in case the threading changed since
-					 * the range was created
-					 */
-					if (range_active) {
-						for_each_art(ii) {
-							if (arts[ii].inrange) {
-								arts[ii].inrange = FALSE;
-								art_mark(group, &arts[ii], ART_WILL_RETURN);
-							}
-						}
-						range_active = FALSE;
-						show_group_page();
-						ptr = _(txt_thread_range);
-					} else {
-						thd_mark_unread(group, base[grpmenu.curr]);
-						ptr = _(txt_thread_upper);
-					}
-
-					show_group_title(TRUE);
-					build_sline(grpmenu.curr);
-					draw_subject_arrow();
-					info_message(_(txt_marked_as_unread), ptr);
-				}
+			case MARK_FEED_UNREAD:	/* mark selected articles as unread */
+				if (grpmenu.curr >= 0)
+					feed_articles(FEED_MARK_UNREAD, GROUP_LEVEL, NOT_ASSIGNED, group, (int) base[grpmenu.curr]);
 				break;
 
 			case GROUP_SELECT_THREAD:	/* mark thread as selected */
@@ -773,14 +765,14 @@ group_page(
 					mark_screen(grpmenu.curr, MARK_OFFSET, mark);
 				}
 
-				info_message(flag ? _(txt_thread_marked_as_selected) : _(txt_thread_marked_as_deselected));
 				show_group_title(TRUE);
 
-				if (grpmenu.curr + 1 < grpmenu.max) {
+				if (grpmenu.curr + 1 < grpmenu.max)
 					move_down();
-					break;
-				}
-				draw_subject_arrow();
+				else
+					draw_subject_arrow();
+
+				info_message(flag ? _(txt_thread_marked_as_selected) : _(txt_thread_marked_as_deselected));
 				break;
 
 			case GROUP_REVERSE_SELECTIONS:	/* reverse selections */
@@ -798,7 +790,7 @@ group_page(
 				break;
 
 			case GROUP_SELECT_PATTERN:	/* select matching patterns */
-				{
+				if (grpmenu.curr >= 0) {
 					char pat[128];
 					char *prompt;
 					struct regex_cache cache = { NULL, NULL };
@@ -839,8 +831,8 @@ group_page(
 						FreeIfNeeded(cache.re);
 						FreeIfNeeded(cache.extra);
 					}
-					break;
 				}
+				break;
 
 			case GROUP_SELECT_THREAD_IF_UNREAD_SELECTED:	/* select all unread arts in thread hot if 1 is hot */
 				for (n = 0; n < grpmenu.max; n++) {
@@ -1392,7 +1384,7 @@ static void
 show_group_title(
 	t_bool clear_title)
 {
-	char buf[LEN], tmp[LEN];
+	char buf[LEN], tmp[LEN], flag;
 	int i, art_cnt = 0, recent_art_cnt = 0, selected_art_cnt = 0, read_selected_art_cnt = 0, killed_art_cnt = 0;
 
 	for_each_art(i) {
@@ -1432,9 +1424,9 @@ show_group_title(
 		*txt_threading[curr_group->attribute->thread_articles]);
 
 	/* article count */
-	if (tinrc.getart_limit)
+	if (cmdline.args & CMDLINE_GETART_LIMIT ? cmdline.getart_limit : tinrc.getart_limit)
 		snprintf(tmp, sizeof(tmp), " %d/%d%c",
-			tinrc.getart_limit, art_cnt,
+			cmdline.args & CMDLINE_GETART_LIMIT ? cmdline.getart_limit : tinrc.getart_limit, art_cnt,
 			(curr_group->attribute->show_only_unread_arts ? tinrc.art_marked_unread : tinrc.art_marked_read));
 	else
 		snprintf(tmp, sizeof(tmp), " %d%c",
@@ -1470,8 +1462,10 @@ show_group_title(
 		strcat(buf, tmp);
 
 	/* group flag */
-	snprintf(tmp, sizeof(tmp), ") %c",
-		group_flag(curr_group->moderated));
+	if ((flag = group_flag(curr_group->moderated)) == ' ')
+		snprintf(tmp, sizeof(tmp), ")");
+	else
+		snprintf(tmp, sizeof(tmp), ") %c", flag);
 	if (sizeof(buf) > strlen(buf) + strlen(tmp))
 		strcat(buf, tmp);
 
@@ -1679,116 +1673,64 @@ group_catchup(
 }
 
 
-static int
+static t_bool
 prompt_getart_limit(
 	void)
 {
 	char *p;
-	int num = 0;
+	t_bool ret = FALSE;
 
 	clear_message();
-	if ((p = tin_getline(_(txt_enter_getart_limit), 2, 0, 0, FALSE, HIST_OTHER)) != NULL)
-		num = atoi(p);
-
+	if ((p = tin_getline(_(txt_enter_getart_limit), 2, 0, 0, FALSE, HIST_OTHER)) != NULL) {
+		tinrc.getart_limit = atoi(p);
+		ret = TRUE;
+	}
 	clear_message();
-	return num;
+	return ret;
 }
 
 
 /*
- * If there's an active range, use that one.
- * If there are any tagged and unread articles, prompt user to mark either
- * all tagged arts/threads as read, or only current thread, or cancel operation.
- * Otherwise, use current thread.
- * Finally move to next unread thread.
+ * Redraw all neccessary parts of the screen after FEED_MARK_(UN)READ
+ * Move cursor to next unread item if needed
+ *
+ * Returns TRUE when no next unread art, FALSE otherwise
  */
-static void
-mark_thd_read(
-	struct t_group *group,
-	t_bool range_active)
+t_bool
+group_mark_postprocess(
+	int function,
+	t_function feed_type,
+	int respnum)
 {
-	char keytagged[MAXKEYLEN], keycurrent[MAXKEYLEN], keyquit[MAXKEYLEN];
-	t_function func = MARK_READ_CURRENT;
-	int n, cnt = 0;
-	int tmp_num_of_tagged_arts = num_of_tagged_arts;
+	int n;
 
-	if (grpmenu.curr < 0) {
-		info_message(_(txt_no_next_unread_art));
-		return;
-	}
-
-	/* Don't prompt if there's an active range or if prompting is turned off */
-	if (!range_active && !group->attribute->mark_ignore_tags && got_tagged_unread_arts()) {
-		func = prompt_slk_response(MARK_READ_TAGGED, mark_read_keys,
-				_(txt_mark_thread_read_tagged_current),
-				printascii(keytagged, func_to_key(MARK_READ_TAGGED, mark_read_keys)),
-				printascii(keycurrent, func_to_key(MARK_READ_CURRENT, mark_read_keys)),
-				printascii(keyquit, func_to_key(GLOBAL_QUIT, mark_read_keys)));
-	}
-
-	switch (func) {
-		case MARK_READ_TAGGED: /* mark tagged unread articles/threads as read */
-			cnt = mark_tagged_read(group);
-			break;
-
-		case MARK_READ_CURRENT: /* mark current thread/range as read */
-			/*
-			 * If a range is active, use it.
-			 */
-			if (range_active) {
-				/*
-				 * We check all arts, in case the user did something clever like
-				 * change the threading mode on us since the range was created
-				 */
-				for_each_art(n) {
-					if (arts[n].inrange) {
-						arts[n].inrange = FALSE;	/* Clear the range */
-						art_mark(group, &arts[n], ART_READ);
-					}
-				}
-			}
-			else
-				thd_mark_read(group, base[grpmenu.curr]);
-			break;
-
-		case GLOBAL_QUIT: /* cancel operation */
-		case GLOBAL_ABORT:
-		default:
-			return;
-			/* NOTREACHED */
-			break;
-	}
-
-	/*
-	 * update the header
-	 */
 	show_group_title(TRUE);
+	switch (function) {
+		case (FEED_MARK_READ):
+			if (feed_type == FEED_THREAD || feed_type == FEED_ARTICLE)
+				build_sline(grpmenu.curr);
+			else
+				show_group_page();
 
-	/*
-	 * Refresh current line or, if necessary, whole group page
-	 */
-	if (range_active || func == MARK_READ_TAGGED)
-		show_group_page();
-	else
-		build_sline(grpmenu.curr);
+			if ((n = next_unread(next_response(respnum))) == -1) {
+				draw_subject_arrow();
+				return TRUE;
+			}
 
-	/*
-	 * Move cursor to next unread
-	 */
-	if ((n = next_unread(next_response((int) base[grpmenu.curr]))) < 0) {
-		draw_subject_arrow();
-		info_message(_(txt_no_next_unread_art));
-		return;
+			move_to_item(which_thread(n));
+			break;
+
+		case (FEED_MARK_UNREAD):
+			if (feed_type == FEED_THREAD || feed_type == FEED_ARTICLE)
+				build_sline(grpmenu.curr);
+			else
+				show_group_page();
+
+			draw_subject_arrow();
+			break;
+
+		default:
+			break;
 	}
-
-	if ((n = which_thread(n)) < 0) {
-		/* TODO: -> lang.c */
-		error_message(2, "Internal error: which_thread(%d) < 0", n);
-		return;
-	}
-
-	move_to_item(n);
-
-	if (func == MARK_READ_TAGGED)
-		info_message(_(txt_marked_tagged_arts_as_read), cnt, tmp_num_of_tagged_arts, PLURAL(tmp_num_of_tagged_arts, txt_article));
+	return FALSE;
 }

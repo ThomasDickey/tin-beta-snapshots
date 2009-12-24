@@ -1,4 +1,4 @@
-# Keymap file V1.0.6 for the TIN newsreader
+# Keymap file V1.0.8 for the TIN newsreader
 #
 # Sample keymap file
 # This file contains the default key mappings
@@ -48,13 +48,18 @@ PageDown			^D	^F	SPACE
 RedrawScr			^L
 MenuFilterSelect		^A
 MenuFilterKill			^K
+MarkFeedRead			^X
+MarkFeedUnread			^W
 
 #####
 
+ConfigToggleAttrib		TAB
 ConfigSelect			^J	^M
 ConfigLastPage			G
 ConfigNoSave			Q
+ConfigScopeMenu			S
 ConfigFirstPage			g
+ConfigResetAttrib		r
 
 #####
 
@@ -210,6 +215,15 @@ SelectSubscribe			s
 SelectUnsubscribe		u
 SelectYankActive		y
 SelectMarkGrpUnread		z	Z
+
+#####
+
+ScopeSelect				^J	^M
+ScopeEditAttributesFile	E
+ScopeAdd				a
+ScopeDelete				d
+ScopeMove				m
+ScopeRename				r
 
 #####
 

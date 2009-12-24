@@ -3,10 +3,10 @@
  *  Module    : save.c
  *  Author    : I. Lea & R. Skrenta
  *  Created   : 1991-04-01
- *  Updated   : 2009-01-14
+ *  Updated   : 2009-07-17
  *  Notes     :
  *
- * Copyright (c) 1991-2009 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
+ * Copyright (c) 1991-2010 Iain Lea <iain@bricbrac.de>, Rich Skrenta <skrenta@pbm.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -121,7 +121,7 @@ check_start_save_any_news(
 		case MAIL_ANY_NEWS:
 			joinpath(savefile, sizeof(savefile), TMPDIR, "tin");
 #ifdef APPEND_PID
-			snprintf(savefile + strlen(savefile), sizeof(savefile) - strlen(savefile), ".%d", (int) process_id);
+			snprintf(savefile + strlen(savefile), sizeof(savefile) - strlen(savefile), ".%ld", (long) process_id);
 #endif /* APPEND_PID */
 			/* FALLTHROUGH */
 
@@ -174,7 +174,7 @@ check_start_save_any_news(
 			if (function == SAVE_ANY_NEWS) {
 				char tmp[PATH_LEN];
 
-				if (!strfpath(tinrc.savedir, tmp, sizeof(tmp), group))
+				if (!strfpath(cmdline.args & CMDLINE_SAVEDIR ? cmdline.savedir : tinrc.savedir, tmp, sizeof(tmp), group, FALSE))
 					joinpath(tmp, sizeof(tmp), homedir, DEFAULT_SAVEDIR);
 
 				make_group_path(group->name, group_path);
@@ -252,7 +252,7 @@ check_start_save_any_news(
 					}
 
 					snprintf(buf, sizeof(buf), "[%5ld]  %s\n", arts[j].artnum, arts[j].subject);
-					fprintf(fp_log, "%s", buf);		/* buf may contain % */
+					fprintf(fp_log, "%s", buf);	/* buf may contain % */
 					if (verbose)
 						wait_message(0, buf);
 
@@ -621,7 +621,7 @@ expand_save_filename(
 	base_name(buf_path, base_filename);
 
 	/* Build default path to save to */
-	if (!(ret = strfpath(curr_group->attribute->savedir, buf, sizeof(buf), curr_group)))
+	if (!(ret = strfpath(cmdline.args & CMDLINE_SAVEDIR ? cmdline.savedir : curr_group->attribute->savedir, buf, sizeof(buf), curr_group, FALSE)))
 		joinpath(buf, sizeof(buf), homedir, DEFAULT_SAVEDIR);
 
 	/* Join path and filename */
@@ -870,8 +870,8 @@ post_process_uud(
 							uudecode_line(u, fp_out);
 						if (t[0] != 'M')
 							uudecode_line(t, fp_out);
-					} else                                  /* end */
-						state = OFF;            /* OFF => a break in the uuencoded data */
+					} else	/* end */
+						state = OFF;	/* OFF => a break in the uuencoded data */
 					break;
 
 				case OFF:
@@ -879,7 +879,7 @@ post_process_uud(
 						uudecode_line(u, fp_out);
 						uudecode_line(t, fp_out);
 						uudecode_line(s, fp_out);
-						state = MIDDLE;         /* Continue output of previously suspended data */
+						state = MIDDLE;	/* Continue output of previously suspended data */
 					} else if (STRNCMPEQ("end", s, 3)) {
 						state = END;
 						if (u[0] != 'M')
@@ -1067,7 +1067,7 @@ post_process_sh(
 	 * Grab the dirname portion
 	 */
 	my_strncpy(file_out_dir, save[0].path, save[0].file - save[0].path);
-	snprintf(file_out, sizeof(file_out), "%ssh%05d", file_out_dir, (int) process_id);
+	snprintf(file_out, sizeof(file_out), "%ssh%ld", file_out_dir, (long) process_id);
 
 	for (i = 0; i < num_save; i++) {
 		if ((fp_in = fopen(save[i].path, "r")) == NULL)
@@ -1435,7 +1435,8 @@ decode_save_mime(
 		 * the role of a multipart part. Check to see if we want to
 		 * save text and if not, skip this part.
 		 */
-		if ((ptr->type == TYPE_MULTIPART || ((NULL != ptr->uue) && (!check_save_mime_type(ptr, curr_group->attribute->mime_types_to_save)))))
+		 /* check_save_mime_type() is done in decode_save_one() and the check for ptr->uue must be done unconditionally */
+		if (ptr->type == TYPE_MULTIPART || (NULL != ptr->uue /* && !check_save_mime_type(ptr, curr_group->attribute->mime_types_to_save) */ ))
 			continue;
 
 		if (!(decode_save_one(ptr, art->raw, postproc)))

@@ -3,11 +3,11 @@
  *  Module    : auth.c
  *  Author    : Dirk Nimmich <nimmich@muenster.de>
  *  Created   : 1997-04-05
- *  Updated   : 2009-01-07
+ *  Updated   : 2009-06-27
  *  Notes     : Routines to authenticate to a news server via NNTP.
  *              DON'T USE get_respcode() THROUGHOUT THIS CODE.
  *
- * Copyright (c) 1997-2009 Dirk Nimmich <nimmich@muenster.de>
+ * Copyright (c) 1997-2010 Dirk Nimmich <nimmich@muenster.de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,92 +52,12 @@
  * local prototypes
  */
 static int do_authinfo_user(char *server, char *authuser, char *authpass);
-static t_bool authinfo_generic(void);
 static t_bool read_newsauth_file(char *server, char *authuser, char *authpass);
 static t_bool authinfo_plain(char *server, char *authuser, t_bool startup);
 #	ifdef USE_SASL
 	static char *sasl_auth_plain(char *user, char *pass);
 	static int do_authinfo_sasl_plain(char *authuser, char *authpass);
 #	endif /* USE_SASL */
-
-
-/*
- * Process AUTHINFO GENERIC method, deprecated by RFC 4643.
- * TRUE means succeeded.
- * FALSE means failed.
- */
-static t_bool
-authinfo_generic(
-	void)
-{
-	char *authcmd;
-	char authval[NNTP_STRLEN];
-	char tmpbuf[NNTP_STRLEN];
-	static int cookiefd = -1;
-	t_bool builtinauth = FALSE;
-#	if !defined(HAVE_SETENV) && defined(HAVE_PUTENV)
-	char *new_env;
-	static char *old_env = NULL;
-#	endif /* !HAVE_SETENV && HAVE_PUTENV */
-
-#	ifdef DEBUG
-	if (debug & DEBUG_NNTP)
-		debug_print_file("NNTP", "authorization authinfo generic");
-#	endif /* DEBUG */
-
-	/*
-	 * If we have authenticated before, NNTP_AUTH_FDS already
-	 * exists, pull out the cookiefd. Just in case we've nested.
-	 */
-	if (cookiefd == -1 && (authcmd = getenv("NNTP_AUTH_FDS")))
-		(void) sscanf(authcmd, "%*d.%*d.%d", &cookiefd);
-
-	if (cookiefd == -1) {
-		char tempfile[PATH_LEN];
-		if ((cookiefd = my_tmpfile_only(tempfile)) == -1) {
-#	ifdef DEBUG
-			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "authorization %s", txt_cannot_create_uniq_name);
-#	endif /* DEBUG */
-			return FALSE;
-		} else {
-			close(cookiefd);
-			if (tempfile[0] != '\0')
-				(void) unlink(tempfile);
-		}
-	}
-
-	strcpy(tmpbuf, "AUTHINFO GENERIC ");
-	STRCPY(authval, get_val("NNTPAUTH", ""));
-	if (strlen(authval))
-		strcat(tmpbuf, authval);
-	else {
-		strcat(tmpbuf, "ANY ");
-		strcat(tmpbuf, userid);
-		builtinauth = TRUE;
-	}
-	put_server(tmpbuf);
-
-#	ifdef HAVE_SETENV
-	snprintf(tmpbuf, sizeof(tmpbuf), "%d.%d.%d",
-			fileno(get_nntp_fp(FAKE_NNTP_FP)),
-			fileno(get_nntp_wr_fp(FAKE_NNTP_FP)), cookiefd);
-	setenv("NNTP_AUTH_FDS", tmpbuf, 1);
-#	else
-#		ifdef HAVE_PUTENV
-	snprintf(tmpbuf, sizeof(tmpbuf), "NNTP_AUTH_FDS=%d.%d.%d",
-			fileno(get_nntp_fp(FAKE_NNTP_FP)),
-			fileno(get_nntp_wr_fp(FAKE_NNTP_FP)), cookiefd);
-	new_env = my_strdup(tmpbuf);
-	(void) putenv(new_env);
-	FreeIfNeeded(old_env);
-	old_env = new_env;	/* we are 'leaking' the last malloced mem at exit here */
-#		endif /* HAVE_PUTENV */
-#	endif /* HAVE_SETENV */
-
-	/* TODO: is it possible that we should have drained server here? */
-	return (builtinauth ? (get_only_respcode(NULL, 0) == OK_AUTH) : (invoke_cmd(authval) ? TRUE : FALSE));
-}
 
 
 /*
@@ -188,19 +108,12 @@ read_newsauth_file(
 		 * File has format:  'nntp-server' 'password' ['username']
 		 */
 		while (fgets(line, sizeof(line), fp) != NULL) {
-
-			/*
-			 * strip trailing newline character
-			 */
-
+			/* strip trailing newline character */
 			ptr = strchr(line, '\n');
 			if (ptr != NULL)
 				*ptr = '\0';
 
-			/*
-			 * Get server from 1st part of the line
-			 */
-
+			/* Get server from 1st part of the line */
 			ptr = strpbrk(line, " \t");
 
 			if (ptr == NULL)		/* no passwd, no auth, skip */
@@ -211,10 +124,7 @@ read_newsauth_file(
 			if ((strcasecmp(line, server)))
 				continue;		/* wrong server, keep on */
 
-			/*
-			 * Get password from 2nd part of the line
-			 */
-
+			/* Get password from 2nd part of the line */
 			while (*ptr == ' ' || *ptr == '\t')
 				ptr++;	/* skip any blanks */
 
@@ -229,10 +139,7 @@ read_newsauth_file(
 					ptr = _authpass;
 			}
 
-			/*
-			 * Get user from 3rd part of the line
-			 */
-
+			/* Get user from 3rd part of the line */
 			ptr = strpbrk(ptr, " \t");	/* find next separating blank */
 
 			if (ptr != NULL) {	/* a 3rd argument follows */
@@ -281,7 +188,7 @@ do_authinfo_user(
 		if (debug & DEBUG_NNTP)
 			debug_print_file("NNTP", "authorization failed: no password");
 #	endif /* DEBUG */
-		error_message(2, _(txt_nntp_authorization_failed), server);
+		error_message(2, _(txt_auth_failed_nopass), server);
 		return ERR_AUTHBAD;
 	}
 
@@ -338,7 +245,7 @@ authinfo_plain(
 	 */
 	if (initialized && !changed && !already_failed) {
 #	ifdef USE_SASL
-		if (nntp_caps.sasl_plain)
+		if (nntp_caps.sasl & SASL_PLAIN)
 			ret = do_authinfo_sasl_plain(authusername, authpassword);
 		if (ret != OK_AUTH)
 #	endif /* USE_SASL */
@@ -367,11 +274,10 @@ authinfo_plain(
 	 * and restart tin or change to another server and back in order to get
 	 * it read again.
 	 */
-	if (changed || (!changed && !already_failed)) {
-		already_failed = FALSE;
+	if ((changed || !initialized) && !already_failed) {
 		if (read_newsauth_file(server, authuser, authpass)) {
 #	ifdef USE_SASL
-			if (nntp_caps.sasl_plain)
+			if (nntp_caps.sasl & SASL_PLAIN)
 				ret = do_authinfo_sasl_plain(authuser, authpass);
 
 			if (ret != OK_AUTH)
@@ -380,8 +286,9 @@ authinfo_plain(
 				if (force_auth_on_conn_open || nntp_caps.type != CAPABILITIES || (nntp_caps.type == CAPABILITIES && nntp_caps.authinfo_user))
 					ret = do_authinfo_user(server, authuser, authpass);
 			}
+			already_failed = (ret != OK_AUTH);
 
-			if (!(already_failed = (ret != OK_AUTH))) {
+			if (ret == OK_AUTH) {
 #	ifdef DEBUG
 				if (debug & DEBUG_NNTP)
 					debug_print_file("NNTP", "authorization succeeded");
@@ -405,8 +312,8 @@ authinfo_plain(
 	 * TODO: Put questions into do_authinfo_user() because it is possible
 	 * that the server doesn't want a password; so only ask for it if needed.
 	 */
-	if (force_auth_on_conn_open || !startup) {
-		if ((nntp_caps.type == CAPABILITIES && (nntp_caps.sasl_plain || nntp_caps.authinfo_user)) || nntp_caps.type != CAPABILITIES) {
+	 if (force_auth_on_conn_open || !startup) {
+		if (nntp_caps.type != CAPABILITIES || (nntp_caps.type == CAPABILITIES && !nntp_caps.authinfo_state && ((nntp_caps.sasl & SASL_PLAIN) || nntp_caps.authinfo_user || (!nntp_caps.authinfo_user && !(nntp_caps.sasl & SASL_PLAIN))))) {
 #	ifdef USE_CURSES
 			int state = RawState();
 #	endif /* USE_CURSES */
@@ -415,7 +322,6 @@ authinfo_plain(
 #	ifdef USE_CURSES
 			Raw(TRUE);
 #	endif /* USE_CURSES */
-
 			if (!prompt_default_string(_(txt_auth_user), authuser, PATH_LEN, authusername, HIST_NONE)) {
 #	ifdef DEBUG
 				if (debug & DEBUG_NNTP)
@@ -430,37 +336,61 @@ authinfo_plain(
 			wgetnstr(stdscr, authpassword, sizeof(authpassword));
 			Raw(TRUE);
 #	else
-#		if 0
 			/*
 			 * on some systems (i.e. Solaris) getpass(3) is limited to 8 chars ->
-			 * we use tin_getline() till we have a config check
-			 * for getpass() or our own getpass()
+			 * we use tin_getline()
 			 */
-			authpass = strncpy(authpassword, getpass(_(txt_auth_pass)), sizeof(authpassword) - 1);
-#		else
 			authpass = strncpy(authpassword, tin_getline(_(txt_auth_pass), FALSE, NULL, PATH_LEN, TRUE, HIST_NONE), sizeof(authpassword) - 1);
-#		endif /* 0 */
 #	endif /* USE_CURSES */
 
 #	ifdef USE_SASL
-			if (nntp_caps.sasl_plain)
+			if (nntp_caps.sasl & SASL_PLAIN)
 				ret = do_authinfo_sasl_plain(authuser, authpass);
 			if (ret != OK_AUTH)
 #	endif /* USE_SASL */
 			{
-				if (nntp_caps.type != CAPABILITIES || (nntp_caps.type == CAPABILITIES && nntp_caps.authinfo_user))
+				if (nntp_caps.type != CAPABILITIES || (nntp_caps.type == CAPABILITIES && (nntp_caps.authinfo_user || (!nntp_caps.authinfo_user && !nntp_caps.authinfo_sasl)))) {
+#	ifdef DEBUG
+					if (debug & DEBUG_NNTP) {
+						if (nntp_caps.type == CAPABILITIES && !nntp_caps.authinfo_sasl && !nntp_caps.authinfo_user)
+							debug_print_file("NNTP", "!!! No supported authmethod available, trying AUTHINFO USER/PASS");
+					}
+#	endif /* DEBUG */
 					ret = do_authinfo_user(server, authuser, authpass);
+					if (ret != OK_AUTH)
+						already_failed = TRUE;
+					/*
+					 * giganews once responded to CAPABILITIES with just
+					 * "VERSION 2", no mode-switching indication, no reader
+					 * indication, no post indication, no authentication
+					 * indication, ... so in case AUTHINFO USER/PASS succeeds
+					 * if not advertized we simply go on but fully ignore
+					 * CAPABILITIES
+					 */
+					if (nntp_caps.type == CAPABILITIES && !nntp_caps.authinfo_user && !nntp_caps.authinfo_sasl && ret == OK_AUTH)
+						nntp_caps.type = BROKEN;
+				}
 			}
 			initialized = TRUE;
 			my_retouch();			/* Get rid of the chaff */
-		}
+		} else {
+			/*
+			 * TODO:
+			 * nntp_caps.type == CAPABILITIES && nntp_caps.authinfo_state
+			 * can we change the sate here? and if so how? SARTTLS? MODE
+			 * READER?
+			 */
 #	ifdef DEBUG
-		else {
 			if (debug & DEBUG_NNTP)
-				debug_print_file("NNTP", "!!! No supported authmethod available");
-		}
+				debug_print_file("NNTP", "authorization not allowed in current sate");
 #	endif /* DEBUG */
-
+			/*
+			 * we return OK_AUTH here once so tin doesn't exit just because a
+			 * single comand requested auth ...
+			 */
+			if (!already_failed)
+				ret = OK_AUTH;
+		}
 	}
 
 #	ifdef DEBUG
@@ -476,8 +406,8 @@ authinfo_plain(
  * Do authentication stuff. Return TRUE if authentication was successful,
  * FALSE otherwise.
  *
- * First try AUTHINFO GENERIC method, then, if that failed, ORIGINAL
- * AUTHINFO method. Other authentication methods can easily be added.
+ * try ORIGINAL AUTHINFO method.
+ * Other authentication methods can easily be added.
  */
 t_bool
 authenticate(
@@ -485,13 +415,7 @@ authenticate(
 	char *user,
 	t_bool startup)
 {
-	switch (nntp_caps.type) {
-		case CAPABILITIES:	/* don't try authinfo_generic() */
-			return authinfo_plain(server, user, startup);
-
-		default:
-			return (authinfo_generic() || authinfo_plain(server, user, startup));
-	}
+	return authinfo_plain(server, user, startup);
 }
 
 
