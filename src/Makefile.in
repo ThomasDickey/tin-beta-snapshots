@@ -287,11 +287,11 @@ all : $(BINDIR)/$(EXE)
 .SUFFIXES : .i
 
 .c$o :
-@SHOW_CC@
+	@SHOW_CC@
 	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) -c $(srcdir)/$*.c
 
 .c.i :
-@SHOW_CC@
+	@SHOW_CC@
 	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $*.c >$@
 
 # explicit rules to allow running lint, and to accommodate older 'make' programs
@@ -299,7 +299,7 @@ $(OBJDIR)/parsdate$o : $(SRCDIR)/parsdate.y
 	@$(ECHO) "expect 6 shift/reduce conflicts ..."
 	$(YACC) $(SRCDIR)/parsdate.y
 	$(MV) -f y.tab.c $(OBJDIR)/parsdate.c
-@SHOW_CC@
+	@SHOW_CC@
 	@ECHO_CC@$(CC) $(CPPFLAGS) $(CFLAGS) -c $(OBJDIR)/parsdate.c
 
 $(OBJDIR)/parsdate.c : $(SRCDIR)/parsdate.y
@@ -476,7 +476,7 @@ makecfg$X :			$(SRCDIR)/makecfg.c \
 				Makefile \
 				$(INCDIR)/tin.h \
 				../include/autoconf.h
-@SHOW_CC@
+	@SHOW_CC@
 	@ECHO_CC@$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -o $@ $(SRCDIR)/makecfg.c #$(BUILD_LIBS)
 
 TIN_DEP	= \
