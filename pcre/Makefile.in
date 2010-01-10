@@ -72,15 +72,15 @@ all :	$(PRELIB)pcre.a $(PRELIB)pcreposix.a pcretest$x pcregrep$x
 .SUFFIXES : .i
 
 .c$o :
-@SHOW_CC@
+	@SHOW_CC@
 	@ECHO_CC@$(CC) $(CPPOPTS) $(CFLAGS) -c $(srcdir)/$*.c
 
 pcre_chartables$o : pcre_chartables.c
-@SHOW_CC@
+	@SHOW_CC@
 	@ECHO_CC@$(CC) $(CPPOPTS) $(CFLAGS) -c pcre_chartables.c
 
 .c.i :
-@SHOW_CC@
+	@SHOW_CC@
 	@ECHO_CC@$(CPP) -C $(CPPOPTS) $*.c >$@
 
 pcregrep$x :	$(PRELIB)pcre.a pcregrep$o
@@ -104,7 +104,7 @@ pcre$o :	chartables.c pcre.c $(PCR_DEP)
 pcreposix$o :	pcreposix.c pcreposix.h $(PCR_DEP)
 
 maketables$o :	pcre_maketables.c $(PCR_DEP)
-@SHOW_CC@
+	@SHOW_CC@
 	@ECHO_CC@$(CC) $(CPPOPTS) $(CFLAGS) -c $(srcdir)/pcre_maketables.c
 
 pcretest$o :	pcretest.c pcre.h
@@ -117,8 +117,8 @@ pcre_chartables.c :	dftables$X
 		./dftables$X $@
 
 dftables$X :	dftables.c pcre_maketables.c $(PCR_DEP)
-@SHOW_CC@
-		@ECHO_CC@$(BUILD_CC) -o $@ $(BUILD_CFLAGS) $(CPPOPTS) $(srcdir)/dftables.c
+	@SHOW_CC@
+	@ECHO_CC@$(BUILD_CC) -o $@ $(BUILD_CFLAGS) $(CPPOPTS) $(srcdir)/dftables.c
 
 # We deliberately omit dftables and chartables.c from 'make clean'; once made
 # chartables.c shouldn't change, and if people have edited the tables by hand,

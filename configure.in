@@ -2,7 +2,7 @@ dnl Project   : tin - a Usenet reader
 dnl Module    : configure.in
 dnl Author    : Thomas E. Dickey <dickey@invisible-island.net>
 dnl Created   : 1995-08-24
-dnl Updated   : 2009-12-19
+dnl Updated   : 2010-01-10
 dnl Notes     :
 dnl
 dnl Copyright (c) 1995-2010 Thomas E. Dickey <dickey@invisible-island.net>
@@ -49,6 +49,7 @@ AC_SUBST(VERSION)
 
 CF_CHECK_CACHE
 
+CF_PATHSEP
 CF_WITH_PATH(install-prefix,
 	[  --with-install-prefix   prefixes actual install location],
 	DESTDIR,/)
@@ -90,6 +91,7 @@ CF_PROG_YACC
 AC_CHECK_PROGS(LINT, lint alint lclint tdlint splint, :)
 AC_AIX
 CF_XOPEN_SOURCE
+CF_SIGWINCH
 AC_ISC_POSIX
 CF_ANSI_CC_REQD
 CF_PROG_EXT
